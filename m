@@ -1,63 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756833AbZCaRWl@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762662AbZCaR0Y@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756833AbZCaRWl (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 31 Mar 2009 13:22:41 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756865AbZCaRWb
+	id S1762662AbZCaR0Y (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 31 Mar 2009 13:26:24 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755826AbZCaR0P
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 31 Mar 2009 13:22:31 -0400
-Received: from smtp-out.google.com ([216.239.45.13]:21367 "EHLO
-	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755244AbZCaRWa (ORCPT
+	Tue, 31 Mar 2009 13:26:15 -0400
+Received: from smtp.ultrahosting.com ([74.213.174.254]:45022 "EHLO
+	smtp.ultrahosting.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754634AbZCaR0O (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 31 Mar 2009 13:22:30 -0400
-DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
-	h=date:from:x-x-sender:to:cc:subject:in-reply-to:message-id:
-	references:user-agent:mime-version:content-type:x-system-of-record;
-	b=bs6Ar/zgx7VUa2CE8oHoXOyDxTW7KMEkK1GNxHcn9Z0RRdkjwJ3nqCowcQlh0b5nJ
-	NuGMUhjdF3Y47VSfueo4w==
-Date: Tue, 31 Mar 2009 10:21:42 -0700 (PDT)
-From: David Rientjes <rientjes@google.com>
-X-X-Sender: rientjes@chino.kir.corp.google.com
-To: Christoph Lameter <cl@linux.com>
-cc: Pekka Enberg <penberg@cs.helsinki.fi>,
-       Nick Piggin <nickpiggin@yahoo.com.au>, Martin Bligh <mbligh@google.com>,
-       linux-kernel@vger.kernel.org
-Subject: Re: [patch 1/3] slub: add per-cache slab thrash ratio
-In-Reply-To: <alpine.DEB.1.10.0903310925130.24040@qirst.com>
-Message-ID: <alpine.DEB.2.00.0903311014140.10407@chino.kir.corp.google.com>
-References: <alpine.DEB.2.00.0903292241300.15813@chino.kir.corp.google.com> <alpine.DEB.2.00.0903292242510.15813@chino.kir.corp.google.com> <alpine.DEB.1.10.0903301026580.13333@qirst.com> <alpine.DEB.2.00.0903301309010.21074@chino.kir.corp.google.com>
- <alpine.DEB.1.10.0903301718080.25929@qirst.com> <alpine.DEB.2.00.0903301545200.30928@chino.kir.corp.google.com> <alpine.DEB.2.00.0903302140250.27065@chino.kir.corp.google.com> <alpine.DEB.1.10.0903310925130.24040@qirst.com>
-User-Agent: Alpine 2.00 (DEB 1167 2008-08-23)
+	Tue, 31 Mar 2009 13:26:14 -0400
+Date: Tue, 31 Mar 2009 13:20:42 -0400 (EDT)
+From: Christoph Lameter <cl@linux.com>
+X-X-Sender: cl@qirst.com
+To: Martin Schwidefsky <schwidefsky@de.ibm.com>
+cc: Tejun Heo <tj@kernel.org>, Ingo Molnar <mingo@elte.hu>,
+       rusty@rustcorp.com.au, tglx@linutronix.de, x86@kernel.org,
+       linux-kernel@vger.kernel.org, hpa@zytor.com,
+       Paul Mundt <lethal@linux-sh.org>, rmk@arm.linux.org.uk,
+       starvik@axis.com, ralf@linux-mips.org, davem@davemloft.net,
+       cooloney@kernel.org, kyle@mcmartin.ca, matthew@wil.cx,
+       grundler@parisc-linux.org, takata@linux-m32r.org,
+       benh@kernel.crashing.org, rth@twiddle.net, ink@jurassic.park.msu.ru,
+       heiko.carstens@de.ibm.com
+Subject: Re: [GIT RFC] percpu: use dynamic percpu allocator as the default
+ percpu allocator
+In-Reply-To: <20090331185431.72ff1707@skybase>
+Message-ID: <alpine.DEB.1.10.0903311318300.1912@qirst.com>
+References: <1236671631-9305-1-git-send-email-tj@kernel.org> <20090316190132.7965a49a@skybase> <49C300D8.5080204@kernel.org> <49C8FAC4.6060508@kernel.org> <20090325122738.42d105b7@skybase> <49CA1AC3.9080908@kernel.org> <20090325122241.GE11571@elte.hu>
+ <49CA2345.70204@kernel.org> <20090325141330.2717dc97@skybase> <49CA2FBF.9000207@kernel.org> <20090325142525.2d31c522@skybase> <49CA32F6.2030408@kernel.org> <20090331185431.72ff1707@skybase>
+User-Agent: Alpine 1.10 (DEB 962 2008-03-14)
 MIME-Version: 1.0
 Content-Type: TEXT/PLAIN; charset=US-ASCII
-X-System-Of-Record: true
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 31 Mar 2009, Christoph Lameter wrote:
+On Tue, 31 Mar 2009, Martin Schwidefsky wrote:
 
-> > @@ -3833,7 +3830,9 @@ static ssize_t order_store(struct kmem_cache *s,
-> >  	if (order > slub_max_order || order < slub_min_order)
-> >  		return -EINVAL;
-> >
-> > +	thrash_ratio = s->min_free_watermark * 100 / oo_objects(s->oo);
-> >  	calculate_sizes(s, order);
-> > +	s->min_free_watermark = oo_objects(s->oo) * thrash_ratio / 100;
-> >  	return length;
-> >  }
-> >
-> 
-> Hmmm.. Still calculating the trash ratio based on existing objects per
-> slab and then resetting the objects per slab to a different number.
-> Shouldnt the trash_ratio simply be zapped to an initial value if the
-> number of objects per slab changes?
-> 
+> I got the dynamic cpu allocator to work with the patch below. Anybody
+> with an objection against the SHIFT_PERCPU_VAR macro ?
 
-Each cache with >= 20 objects per slab will get a default 
-slab_thrash_ratio of 20 in v2 of the series.  If the order of a cache is 
-subsequently tuned, the default slab_thrash_ratio would be cleared without 
-knowledge to the user.
+Please include the patch inline next time.
 
-I'd agree that it should be cleared if the tunable had object units 
-instead of a ratio, but the ratio simply applies to any given order.
+Why is there a difference between percpu alloc and "static" percpu
+variables? The "static" percpu variables can be dynamically allocated when
+a module is loaded.
+
+Isnt this mmore an issue that can be addressed by changing the way the initial per cpu
+segment is allocated? If its also dynamically allocated then there should
+be no problem?
+
+
