@@ -1,50 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764279AbZDAR4Y@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933068AbZDAR5h@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764279AbZDAR4Y (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 1 Apr 2009 13:56:24 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756762AbZDAR4H
+	id S933068AbZDAR5h (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 1 Apr 2009 13:57:37 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755102AbZDAR51
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 1 Apr 2009 13:56:07 -0400
-Received: from moutng.kundenserver.de ([212.227.126.171]:49182 "EHLO
-	moutng.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753490AbZDAR4D (ORCPT
+	Wed, 1 Apr 2009 13:57:27 -0400
+Received: from smtp239.poczta.interia.pl ([217.74.64.239]:16956 "EHLO
+	smtp239.poczta.interia.pl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753704AbZDAR50 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 1 Apr 2009 13:56:03 -0400
-From: Arnd Bergmann <arnd@arndb.de>
-To: Geert Uytterhoeven <geert.uytterhoeven@gmail.com>
-Subject: Re: [RFC] asm-generic/{unistd,types,posix_types}.h for new arch
-Date: Wed, 1 Apr 2009 19:55:52 +0200
-User-Agent: KMail/1.9.9
-Cc: michal.simek@petalogix.com,
-       Linux Kernel list <linux-kernel@vger.kernel.org>,
-       linux-arch@vger.kernel.org, linux-api@vger.kernel.org,
-       Chen Liqin <liqin.chen@sunplusct.com>
-References: <49D071A8.4010703@petalogix.com> <200903301717.57184.arnd@arndb.de> <200904011611.53355.arnd@arndb.de>
-In-Reply-To: <200904011611.53355.arnd@arndb.de>
-X-Face: I@=L^?./?$U,EK.)V[4*>`zSqm0>65YtkOe>TFD'!aw?7OVv#~5xd\s,[~w]-J!)|%=]>=?utf-8?q?+=0A=09=7EohchhkRGW=3F=7C6=5FqTmkd=5Ft=3FLZC=23Q-=60=2E=60Y=2Ea=5E?=
- =?utf-8?q?3zb?=)
- =?utf-8?q?+U-JVN=5DWT=25cw=23=5BYo0=267C=26bL12wWGlZi=0A=09=7EJ=3B=5Cwg?=
- =?utf-8?q?=3B3zRnz?=,J"CT_)=\H'1/{?SR7GDu?WIopm.HaBG=QYj"NZD_[zrM\Gip^U
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="utf-8"
+	Wed, 1 Apr 2009 13:57:26 -0400
+Date: Wed, 1 Apr 2009 18:58:56 +0200
+From: Krzysztof Helt <krzysztof.h1@poczta.fm>
+To: spock@gentoo.org
+Cc: linux-kernel@vger.kernel.org, linux-fbdev-devel@lists.sourceforge.net
+Subject: Re: [Linux-fbdev-devel] [PATCH] vga16fb: fix color component length
+ for pseudocolor modes
+Message-Id: <20090401185856.44d89699.krzysztof.h1@poczta.fm>
+In-Reply-To: <20090330220523.GA6993@spock.one.pl>
+References: <20090330220523.GA6993@spock.one.pl>
+X-Mailer: Sylpheed 2.4.3 (GTK+ 2.11.0; i686-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200904011955.53235.arnd@arndb.de>
-X-Provags-ID: V01U2FsdGVkX19bq8wUhJUby1/ki7IEm5tiwm2XvT7jtUHOEvk
- I4M5UpWAg5CB1gAkrBcv0nhVKd/46gAtjmLq53QyUJ60usXOqa
- 45jaJKmvuVpVoRYyGCTjw==
+X-EMID: a2e2b138
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wednesday 01 April 2009, Arnd Bergmann wrote:
-> +/* fs/readdir.c */
-> +#define __NR3264_getdents __LINE__
-> +__SC_3264(__NR3264_getdents, sys_getdents64, sys_getdents)
+On Tue, 31 Mar 2009 00:05:24 +0200
+Michal Januszewski <spock@gentoo.org> wrote:
 
-Just noticed myself that getdents64 changed more than just off_t
-(namely the file type) and should be used even on 64-bit platforms,
-so I'm putting sys_getdents into my deprecated list now.
+> vga16fb incorrectly sets the length of the color fields to 6 or 2 bits
+> for PSEUDOCOLOR modes, for which either 8 or 4 bits are used per pixel.
+> Fix this by setting the length to 8 or 4, respectively.
+> 
+> Signed-off-by: Michal Januszewski <spock@gentoo.org>
+> ---
+> diff --git a/drivers/video/vga16fb.c b/drivers/video/vga16fb.c
+> index 5b29389..50033b9 100644
+> --- a/drivers/video/vga16fb.c
+> +++ b/drivers/video/vga16fb.c
+> @@ -506,7 +506,7 @@ static int vga16fb_check_var(struct fb_var_screeninfo *var,
+>  	var->red.offset = var->green.offset = var->blue.offset = 
+>  	var->transp.offset = 0;
+>  	var->red.length = var->green.length = var->blue.length =
+> -		(par->isVGA) ? 6 : 2;
+> +		(par->isVGA) ? 8 : 4;
+>  	var->transp.length = 0;
+>  	var->activate = FB_ACTIVATE_NOW;
+>  	var->height = -1;
+> 
 
-	Arnd <><
+There is the second place to change in the vga16fb_probe().
+
+Regards,
+Krzysztof
+
+ 	
+----------------------------------------------------------------------
+Internetowe dowcipy na 1 kwietnia! Sprawdz! ;) 
+http://link.interia.pl/f20f4
+
