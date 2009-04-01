@@ -1,27 +1,27 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763790AbZDAMVk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763762AbZDAMY2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763790AbZDAMVk (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 1 Apr 2009 08:21:40 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762907AbZDAMV3
+	id S1763762AbZDAMY2 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 1 Apr 2009 08:24:28 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757885AbZDAMYQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 1 Apr 2009 08:21:29 -0400
-Received: from mx3.mail.elte.hu ([157.181.1.138]:58878 "EHLO mx3.mail.elte.hu"
+	Wed, 1 Apr 2009 08:24:16 -0400
+Received: from mx3.mail.elte.hu ([157.181.1.138]:34896 "EHLO mx3.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1758109AbZDAMV2 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 1 Apr 2009 08:21:28 -0400
-Date: Wed, 1 Apr 2009 14:21:22 +0200
+	id S1757422AbZDAMYP (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 1 Apr 2009 08:24:15 -0400
+Date: Wed, 1 Apr 2009 14:24:08 +0200
 From: Ingo Molnar <mingo@elte.hu>
 To: Tom Zanussi <tzanussi@gmail.com>
 Cc: linux-kernel <linux-kernel@vger.kernel.org>,
        Steven Rostedt <rostedt@goodmis.org>, fweisbec@gmail.com
-Subject: Re: [PATCH v2] tracing/filters: add run-time field descriptions to
-	TRACE_EVENT_FORMAT events
-Message-ID: <20090401122122.GF12966@elte.hu>
-References: <1238478529.6749.12.camel@bookworm>
+Subject: Re: [PATCH] tracing/filters: allow event filters to be set only
+	when not tracing
+Message-ID: <20090401122408.GG12966@elte.hu>
+References: <1238390546.6368.65.camel@bookworm>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <1238478529.6749.12.camel@bookworm>
+In-Reply-To: <1238390546.6368.65.camel@bookworm>
 User-Agent: Mutt/1.5.18 (2008-05-17)
 X-ELTE-VirusStatus: clean
 X-ELTE-SpamScore: -1.5
@@ -38,16 +38,21 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 * Tom Zanussi <tzanussi@gmail.com> wrote:
 
-> The other is that for the really high-volume tracers e.g. the 
-> function tracer, the volume of filtered events can be so high that 
-> it pushes the unfiltered events out of the ring buffer before they 
-> can be read so e.g. cat'ing the trace file repeatedly shows either 
-> no output, or once in awhile some output but that isn't there the 
-> next time you read the trace, which isn't what you normally expect 
-> when reading the trace file. If you read from the trace_pipe file 
-> though, you can catch them before they disappear.
+> This patch adds code allowing the event filter to be set only if 
+> there's no active tracing going on.
 
-yeah - this artifact of the ringbuffer needs to be fixed too. Steve, 
-what's the plans on that?
+> --- a/kernel/trace/trace_events.c
+> +++ b/kernel/trace/trace_events.c
+> @@ -498,6 +498,9 @@ event_filter_write(struct file *filp, const char __user *ubuf, size_t cnt,
+>  	struct filter_pred *pred;
+>  	int err;
+>  
+> +	if (tracing_is_enabled() && (!tracer_is_nop() || call->enabled))
+> +		return -EBUSY;
+
+hm, but it would be the normal use-case to set filters on the fly. 
+To experiment around with them and shape them until the output is 
+just right. Having to turn the tracer on/off during that seems quite 
+counterproductive to that use-case.
 
 	Ingo
