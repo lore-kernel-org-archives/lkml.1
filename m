@@ -1,70 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764091AbZDARsb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932697AbZDARtZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764091AbZDARsb (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 1 Apr 2009 13:48:31 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755086AbZDARsV
+	id S932697AbZDARtZ (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 1 Apr 2009 13:49:25 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755086AbZDARtP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 1 Apr 2009 13:48:21 -0400
-Received: from mx3.mail.elte.hu ([157.181.1.138]:52095 "EHLO mx3.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753421AbZDARsV (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 1 Apr 2009 13:48:21 -0400
-Date: Wed, 1 Apr 2009 19:47:20 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: Masami Hiramatsu <mhiramat@redhat.com>
-Cc: Arnaldo Carvalho de Melo <acme@redhat.com>,
-       Steven Rostedt <rostedt@goodmis.org>,
-       Ananth N Mavinakayanahalli <ananth@in.ibm.com>,
-       Frederic Weisbecker <fweisbec@gmail.com>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       systemtap-ml <systemtap@sources.redhat.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Jim Keniston <jkenisto@us.ibm.com>
-Subject: Re: [PATCH -tip 0/4 V3] tracing: kprobe-based event tracer
-Message-ID: <20090401174720.GA19225@elte.hu>
-References: <49CC08A2.5030602@redhat.com> <20090401133654.GB18677@elte.hu> <49D37584.50208@redhat.com> <20090401142711.GG18677@elte.hu> <49D3A708.9080501@redhat.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <49D3A708.9080501@redhat.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+	Wed, 1 Apr 2009 13:49:15 -0400
+Received: from smtp239.poczta.interia.pl ([217.74.64.239]:17377 "EHLO
+	smtp239.poczta.interia.pl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753421AbZDARtO convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 1 Apr 2009 13:49:14 -0400
+Date: Wed, 1 Apr 2009 18:50:40 +0200
+From: Krzysztof Helt <krzysztof.h1@poczta.fm>
+To: spock@gentoo.org
+Cc: Geert Uytterhoeven <geert@linux-m68k.org>, linux-kernel@vger.kernel.org,
+       Ville =?ISO-8859-1?Q?Syrj=E4l=E4?= <syrjala@sci.fi>,
+       linux-fbdev-devel@lists.sourceforge.net
+Subject: Re: [PATCH] fbdev: fix color component field length documentation
+Message-Id: <20090401185040.6b77143b.krzysztof.h1@poczta.fm>
+In-Reply-To: <20090331222835.GA8482@tria>
+References: <20090330220007.GC6540@spock.one.pl>
+	<10f740e80903310018v7e12de88m696f07e40dc617e3@mail.gmail.com>
+	<20090331222835.GA8482@tria>
+X-Mailer: Sylpheed 2.4.3 (GTK+ 2.11.0; i686-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 8BIT
+X-EMID: 8ce2b138
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Wed, 1 Apr 2009 00:28:35 +0200
+Michal Januszewski <spock@gentoo.org> wrote:
 
-* Masami Hiramatsu <mhiramat@redhat.com> wrote:
-
-> >> I agreed. Fortunately, Jim Keniston and I wrote an x86 
-> >> instruction decoder :-) which has been made originally for 
-> >> uprobe andd kprobes jump-optimizer.
-> >>
-> >> https://www.redhat.com/archives/utrace-devel/2009-March/msg00031.html
-> > 
-> > looks cool. Needs to be put somewhere in arch/x86/lib/, provided 
-> > as a generic facility, with a Kconfig variable that says that 
-> > the architecture supports it and then the kprobes-tracer could 
-> > make immediate use of it, right?
+> The documentation about the meaning of the color component bitfield lengths
+> in pseudocolor modes is inconsistent.  Fix it, so that it indicates the
+> correct interpretation everywhere, i.e. that 1 << length is the number
+> of palette entries.
 > 
-> Yeah, I'd rather add a safety checker in kprobes-x86 itself, 
-> because sometimes it has to fixup instructions modified by 
-> previous kprobes.
+> Signed-off-by: Michal Januszewski <spock@gentoo.org>
+> Cc: Krzysztof Helt <krzysztof.h1@poczta.fm>
+> Cc: Ville Syrjälä <syrjala@sci.fi>
+> Cc: Geert Uytterhoeven <geert.uytterhoeven@gmail.com>
+> ---
+> This version of the patch incorporates Geert's comments about the
+> meaning of the offset field for pseudocolor modes.
+> 
 
-Oh, certainly! I didnt know how much you wanted to check things on 
-the kprobes side but by all means please add it there too, it will 
-be for the better.
+Acked-by: Krzysztof Helt <krzysztof.h1@wp.pl>
 
-A clear and actionable debug message to the syslog is important for 
-the case where the decoder rejects an action. This is especially 
-important for the kprobes side - we dont want silent breakage of 
-tools.
 
-	Ingo
+
+----------------------------------------------------------------------
+Twoj znajomy na stronie glownej portalu? Wkrec go! ;) 
+Sprawdz >>> http://link.interia.pl/f20f2
+
