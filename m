@@ -1,73 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759143AbZDALXk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759145AbZDAL1J@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759143AbZDALXk (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 1 Apr 2009 07:23:40 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753767AbZDALX2
+	id S1759145AbZDAL1J (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 1 Apr 2009 07:27:09 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753610AbZDAL0x
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 1 Apr 2009 07:23:28 -0400
-Received: from gw-ca.panasas.com ([209.116.51.66]:13326 "EHLO
-	laguna.int.panasas.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1753972AbZDALX1 (ORCPT
+	Wed, 1 Apr 2009 07:26:53 -0400
+Received: from extu-mxob-2.symantec.com ([216.10.194.135]:55149 "EHLO
+	extu-mxob-2.symantec.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752658AbZDAL0v (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 1 Apr 2009 07:23:27 -0400
-Message-ID: <49D34E33.5060700@panasas.com>
-Date: Wed, 01 Apr 2009 14:21:23 +0300
-From: Boaz Harrosh <bharrosh@panasas.com>
-User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1b3pre) Gecko/20090315 Remi/3.0-0.b2.fc10.remi Thunderbird/3.0b2
-MIME-Version: 1.0
-To: Jeff Garzik <jeff@garzik.org>
-CC: Avishay Traeger <avishay@gmail.com>,
+	Wed, 1 Apr 2009 07:26:51 -0400
+Date: Wed, 1 Apr 2009 12:25:04 +0100 (BST)
+From: Hugh Dickins <hugh@veritas.com>
+X-X-Sender: hugh@blonde.anvils
+To: Al Viro <viro@ZenIV.linux.org.uk>
+cc: Oleg Nesterov <oleg@redhat.com>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
        Andrew Morton <akpm@linux-foundation.org>,
-       linux-fsdevel <linux-fsdevel@vger.kernel.org>,
-       open-osd <osd-dev@open-osd.org>, Evgeniy Polyakov <zbr@ioremap.net>,
-       James Bottomley <James.Bottomley@HansenPartnership.com>,
-       linux-kernel <linux-kernel@vger.kernel.org>,
-       FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
-Subject: Re: [PATCHSET 0/8 version 4] exofs for kernel 2.6.30
-References: <49C1331D.1080805@panasas.com> <49D332A0.5080107@garzik.org>
-In-Reply-To: <49D332A0.5080107@garzik.org>
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
-X-OriginalArrivalTime: 01 Apr 2009 11:23:23.0830 (UTC) FILETIME=[4504AD60:01C9B2BC]
+       Joe Malicki <jmalicki@metacarta.com>, Michael Itz <mitz@metacarta.com>,
+       Kenneth Baker <bakerk@metacarta.com>,
+       Chris Wright <chrisw@sous-sol.org>, David Howells <dhowells@redhat.com>,
+       Alexey Dobriyan <adobriyan@gmail.com>,
+       Greg Kroah-Hartman <gregkh@suse.de>, linux-fsdevel@vger.kernel.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: Q: check_unsafe_exec() races (Was: [PATCH 2/4] fix setuid
+ sometimes doesn't)
+In-Reply-To: <20090401030339.GX28946@ZenIV.linux.org.uk>
+Message-ID: <Pine.LNX.4.64.0904011218240.8870@blonde.anvils>
+References: <20090330000338.GB32199@redhat.com> <20090330010843.GM28946@ZenIV.linux.org.uk>
+ <20090330011303.GN28946@ZenIV.linux.org.uk> <20090330013612.GA4080@redhat.com>
+ <20090330014040.GA4807@redhat.com> <20090330123101.GQ28946@ZenIV.linux.org.uk>
+ <Pine.LNX.4.64.0903301506310.11454@blonde.anvils> <20090331061615.GS28946@ZenIV.linux.org.uk>
+ <Pine.LNX.4.64.0904010106310.16500@blonde.anvils> <20090401023849.GW28946@ZenIV.linux.org.uk>
+ <20090401030339.GX28946@ZenIV.linux.org.uk>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 04/01/2009 12:23 PM, Jeff Garzik wrote:
-> Boaz Harrosh wrote:
->> If anyone wants to actually run this code and test it
->> then please start reading at:
->>     http://open-osd.org
->> You will need to checkout the out-of-tree git (below) for the user-mode utilities.
->> Also the exofs.txt file in patch 7/8 should help
+On Wed, 1 Apr 2009, Al Viro wrote:
 > 
-> 
-> hum...  trying to play with this.  If you want exofs to go upstream, I 
-> think you should have a release tarball containing the user-mode utils 
-> posted somewhere.  Would make life a lot easier, both on early adopters 
-> and also on distribution packagers.
-> 
-> 	Jeff
+> Rebased and pushed (same tree, same branch; included into for-next, along
+> with related cleanups).
 
-You are absolutely right, once 2.6.30 will be out there will not be a need
-to compile Kernel modules.
+for-next?  But don't we need all this (or at least the first four of
+your five, on top of the four Linus took from me) in -stable now?
 
-About the binary package. I must admit I'm a total novice. What do I need to do?
+I was wondering if we should ask Chris to do a 2.6.29.1-rc2 with
+them; but perhaps you'd much rather expose them in -next for a
+while, before sending Linus and 2.6.29.2.
 
-One x86_32, one x86_64? What glibc, does it matter what distro I compile on?
-
-I want to have a "make rpm" and "make deb" but I've never done that, I was hoping
-someone more experienced would pick it up.
-
-But you are right I have it on my schedule to work on the Wiki, installation and
-init-scripts, right after this final push to mainline.
-
-Sorry, for not having this already
-Boaz
-
-BTW:
-  Source tar balls are available from the gitweb GUI by pressing on the
-  "snapshot" link next to any commit. I should link to it from the WiKi
-
-Best regards
-Boaz
+Hugh
