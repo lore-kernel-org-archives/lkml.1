@@ -1,44 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757499AbZDAGJT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759100AbZDAGJg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757499AbZDAGJT (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 1 Apr 2009 02:09:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750845AbZDAGI6
+	id S1759100AbZDAGJg (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 1 Apr 2009 02:09:36 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755132AbZDAGJE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 1 Apr 2009 02:08:58 -0400
-Received: from mail-ew0-f165.google.com ([209.85.219.165]:49156 "EHLO
-	mail-ew0-f165.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750742AbZDAGI5 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 1 Apr 2009 02:08:57 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
-         :cc:content-type:content-transfer-encoding;
-        b=P1p6vu2R+b30OVRk3IzQoDqWv1AGRI2iYIZbNps1EgnN/8AqqIIcT6QtTwXDsEkryE
-         X2iA19nfMckodE7XnBN6AbGSqYWf0PmR3jPXLXMHhVBDm80E9385gXR1tCSoF37p6+D9
-         /+/uzOuV9a4/myunmKGqdWQIDNXeWFCMVJ5HI=
+	Wed, 1 Apr 2009 02:09:04 -0400
+Received: from ozlabs.org ([203.10.76.45]:58925 "EHLO ozlabs.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752877AbZDAGJB (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 1 Apr 2009 02:09:01 -0400
+From: Rusty Russell <rusty@rustcorp.com.au>
+To: Gregory Haskins <ghaskins@novell.com>
+Subject: Re: [RFC PATCH 00/17] virtual-bus
+Date: Wed, 1 Apr 2009 16:38:44 +1030
+User-Agent: KMail/1.11.1 (Linux/2.6.27-11-generic; KDE/4.2.1; i686; ; )
+Cc: linux-kernel@vger.kernel.org, agraf@suse.de, pmullaney@novell.com,
+       pmorreale@novell.com, anthony@codemonkey.ws, netdev@vger.kernel.org,
+       kvm@vger.kernel.org
+References: <20090331184057.28333.77287.stgit@dev.haskins.net>
+In-Reply-To: <20090331184057.28333.77287.stgit@dev.haskins.net>
 MIME-Version: 1.0
-In-Reply-To: <1238564771.20906.26.camel@localhost.localdomain>
-References: <200903260039.34013.david-b@pacbell.net>
-	 <200903260042.50236.david-b@pacbell.net>
-	 <1238564771.20906.26.camel@localhost.localdomain>
-Date: Wed, 1 Apr 2009 10:08:54 +0400
-Message-ID: <acd2a5930903312308j47f23c92h95816403a4254230@mail.gmail.com>
-Subject: Re: [patch/rfc 2.6.29 2/2] MTD: support driver model updates
-From: Vitaly Wool <vitalywool@gmail.com>
-To: dedekind@infradead.org
-Cc: David Brownell <david-b@pacbell.net>, Kay Sievers <kay.sievers@vrfy.org>,
-       Linux MTD <linux-mtd@lists.infradead.org>,
-       LKML <linux-kernel@vger.kernel.org>
-Content-Type: text/plain; charset=ISO-8859-1
+Content-Type: text/plain;
+  charset="utf-8"
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200904011638.45135.rusty@rustcorp.com.au>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> Could this be done for all NANDs in nand_base.c instead?
+On Wednesday 01 April 2009 05:12:47 Gregory Haskins wrote:
+> Bare metal: tput = 4078Mb/s, round-trip = 25593pps (39us rtt)
+> Virtio-net: tput = 4003Mb/s, round-trip = 320pps (3125us rtt)
+> Venet: tput = 4050Mb/s, round-trip = 15255 (65us rtt)
 
-Why would it be reasonable?
+That rtt time is awful.  I know the notification suppression heuristic
+in qemu sucks.
 
-Thanks,
-   Vitaly
+I could dig through the code, but I'll ask directly: what heuristic do
+you use for notification prevention in your venet_tap driver?
+
+As you point out, 350-450 is possible, which is still bad, and it's at least
+partially caused by the exit to userspace and two system calls.  If virtio_net
+had a backend in the kernel, we'd be able to compare numbers properly.
+
+> Bare metal: tput = 9717Mb/s, round-trip = 30396pps (33us rtt)
+> Virtio-net: tput = 4578Mb/s, round-trip = 249pps (4016us rtt)
+> Venet: tput = 5802Mb/s, round-trip = 15127 (66us rtt)
+> 
+> Note that even the throughput was slightly better in this test for venet, though
+> neither venet nor virtio-net could achieve line-rate.  I suspect some tuning may
+> allow these numbers to improve, TBD.
+
+At some point, the copying will hurt you.  This is fairly easy to avoid on
+xmit tho.
+
+Cheers,
+Rusty.
