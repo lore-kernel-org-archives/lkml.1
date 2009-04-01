@@ -1,50 +1,202 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932474AbZDAPMk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932407AbZDAPQo@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932474AbZDAPMk (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 1 Apr 2009 11:12:40 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762473AbZDAPMa
+	id S932407AbZDAPQo (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 1 Apr 2009 11:16:44 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763812AbZDAPQe
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 1 Apr 2009 11:12:30 -0400
-Received: from cavan.codon.org.uk ([93.93.128.6]:41333 "EHLO
-	vavatch.codon.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1760752AbZDAPMa (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 1 Apr 2009 11:12:30 -0400
-Date: Wed, 1 Apr 2009 16:12:21 +0100
-From: Matthew Garrett <mjg59@srcf.ucam.org>
-To: Sitsofe Wheeler <sitsofe@yahoo.com>
-Cc: Theodore Tso <tytso@mit.edu>,
-       "Andreas T.Auer" <andreas.t.auer_lkml_73537@ursus.ath.cx>,
-       Alberto Gonzalez <info@gnebu.es>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: Ext4 and the "30 second window of death"
-Message-ID: <20090401151219.GA12285@srcf.ucam.org>
-References: <200903291224.21380.info@gnebu.es> <200903311452.05210.info@gnebu.es> <20090331134547.GJ13356@mit.edu> <200904010002.47077.info@gnebu.es> <49D2A5AB.1090704@ursus.ath.cx> <20090401015010.GB4529@mit.edu> <20090401052050.GA20456@sucs.org>
+	Wed, 1 Apr 2009 11:16:34 -0400
+Received: from hera.kernel.org ([140.211.167.34]:52825 "EHLO hera.kernel.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1763614AbZDAPQd (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 1 Apr 2009 11:16:33 -0400
+Date: Wed, 1 Apr 2009 15:15:51 GMT
+From: Hidetoshi Seto <seto.hidetoshi@jp.fujitsu.com>
+To: linux-tip-commits@vger.kernel.org
+Cc: linux-kernel@vger.kernel.org, hpa@zytor.com, mingo@redhat.com,
+       a.p.zijlstra@chello.nl, seto.hidetoshi@jp.fujitsu.com,
+       tglx@linutronix.de, mingo@elte.hu
+Reply-To: mingo@redhat.com, hpa@zytor.com, linux-kernel@vger.kernel.org,
+       seto.hidetoshi@jp.fujitsu.com, a.p.zijlstra@chello.nl,
+       tglx@linutronix.de, mingo@elte.hu
+In-Reply-To: <49D1CC93.4080401@jp.fujitsu.com>
+References: <49D1CC93.4080401@jp.fujitsu.com>
+Subject: [tip:sched/urgent] posixtimers, sched: Fix posix clock monotonicity
+Message-ID: <tip-c5f8d99585d7b5b7e857fabf8aefd0174903a98c@git.kernel.org>
+Git-Commit-ID: c5f8d99585d7b5b7e857fabf8aefd0174903a98c
+X-Mailer: tip-git-log-daemon
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=UTF-8
 Content-Disposition: inline
-In-Reply-To: <20090401052050.GA20456@sucs.org>
-User-Agent: Mutt/1.5.12-2006-07-14
-X-SA-Exim-Connect-IP: <locally generated>
-X-SA-Exim-Mail-From: mjg59@codon.org.uk
-X-SA-Exim-Scanned: No (on vavatch.codon.org.uk); SAEximRunCond expanded to false
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Wed, 01 Apr 2009 15:15:54 +0000 (UTC)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Apr 01, 2009 at 06:20:50AM +0100, Sitsofe Wheeler wrote:
+Commit-ID:  c5f8d99585d7b5b7e857fabf8aefd0174903a98c
+Gitweb:     http://git.kernel.org/tip/c5f8d99585d7b5b7e857fabf8aefd0174903a98c
+Author:     Hidetoshi Seto <seto.hidetoshi@jp.fujitsu.com>
+AuthorDate: Tue, 31 Mar 2009 16:56:03 +0900
+Committer:  Ingo Molnar <mingo@elte.hu>
+CommitDate: Wed, 1 Apr 2009 16:44:16 +0200
 
-> Just out of curiosity, when laptop mode is happening is there a
-> guarantee that writes to other files won't be reordered to before the
-> fsync? 
+posixtimers, sched: Fix posix clock monotonicity
 
-laptop-mode does two things - tweak the dirty page semantics slightly 
-(not in an interestingly relevant way) and call sys_sync() a few seconds 
-after something hits disk rather than cache. In contrast to Ted's 
-suggestion that laptop-mode reduces data integrity, it actually enhances 
-it by opportunistically ensuring that data hits disk. It's the 
-lengthening of the commit intervals that usually accompanies it that 
-increases the risk of data loss.
+Impact: Regression fix (against clock_gettime() backwarding bug)
 
--- 
-Matthew Garrett | mjg59@srcf.ucam.org
+This patch re-introduces a couple of functions, task_sched_runtime
+and thread_group_sched_runtime, which was once removed at the
+time of 2.6.28-rc1.
+
+These functions protect the sampling of thread/process clock with
+rq lock.  This rq lock is required not to update rq->clock during
+the sampling.
+
+i.e.
+  The clock_gettime() may return
+   ((accounted runtime before update) + (delta after update))
+  that is less than what it should be.
+
+v2 -> v3:
+	- Rename static helper function __task_delta_exec()
+	  to do_task_delta_exec() since -tip tree already has
+	  a __task_delta_exec() of different version.
+
+v1 -> v2:
+	- Revises comments of function and patch description.
+	- Add note about accuracy of thread group's runtime.
+
+Signed-off-by: Hidetoshi Seto <seto.hidetoshi@jp.fujitsu.com>
+Acked-by: Peter Zijlstra <a.p.zijlstra@chello.nl>
+Cc: stable@kernel.org	[2.6.28.x][2.6.29.x]
+LKML-Reference: <49D1CC93.4080401@jp.fujitsu.com>
+Signed-off-by: Ingo Molnar <mingo@elte.hu>
+
+
+---
+ kernel/posix-cpu-timers.c |    7 +++--
+ kernel/sched.c            |   65 +++++++++++++++++++++++++++++++++++++++-----
+ 2 files changed, 61 insertions(+), 11 deletions(-)
+
+diff --git a/kernel/posix-cpu-timers.c b/kernel/posix-cpu-timers.c
+index fa07da9..4318c30 100644
+--- a/kernel/posix-cpu-timers.c
++++ b/kernel/posix-cpu-timers.c
+@@ -224,7 +224,7 @@ static int cpu_clock_sample(const clockid_t which_clock, struct task_struct *p,
+ 		cpu->cpu = virt_ticks(p);
+ 		break;
+ 	case CPUCLOCK_SCHED:
+-		cpu->sched = p->se.sum_exec_runtime + task_delta_exec(p);
++		cpu->sched = task_sched_runtime(p);
+ 		break;
+ 	}
+ 	return 0;
+@@ -240,18 +240,19 @@ static int cpu_clock_sample_group(const clockid_t which_clock,
+ {
+ 	struct task_cputime cputime;
+ 
+-	thread_group_cputime(p, &cputime);
+ 	switch (CPUCLOCK_WHICH(which_clock)) {
+ 	default:
+ 		return -EINVAL;
+ 	case CPUCLOCK_PROF:
++		thread_group_cputime(p, &cputime);
+ 		cpu->cpu = cputime_add(cputime.utime, cputime.stime);
+ 		break;
+ 	case CPUCLOCK_VIRT:
++		thread_group_cputime(p, &cputime);
+ 		cpu->cpu = cputime.utime;
+ 		break;
+ 	case CPUCLOCK_SCHED:
+-		cpu->sched = cputime.sum_exec_runtime + task_delta_exec(p);
++		cpu->sched = thread_group_sched_runtime(p);
+ 		break;
+ 	}
+ 	return 0;
+diff --git a/kernel/sched.c b/kernel/sched.c
+index cc397aa..c8d7f17 100644
+--- a/kernel/sched.c
++++ b/kernel/sched.c
+@@ -4139,9 +4139,25 @@ DEFINE_PER_CPU(struct kernel_stat, kstat);
+ EXPORT_PER_CPU_SYMBOL(kstat);
+ 
+ /*
+- * Return any ns on the sched_clock that have not yet been banked in
++ * Return any ns on the sched_clock that have not yet been accounted in
+  * @p in case that task is currently running.
++ *
++ * Called with task_rq_lock() held on @rq.
+  */
++static u64 do_task_delta_exec(struct task_struct *p, struct rq *rq)
++{
++	u64 ns = 0;
++
++	if (task_current(rq, p)) {
++		update_rq_clock(rq);
++		ns = rq->clock - p->se.exec_start;
++		if ((s64)ns < 0)
++			ns = 0;
++	}
++
++	return ns;
++}
++
+ unsigned long long task_delta_exec(struct task_struct *p)
+ {
+ 	unsigned long flags;
+@@ -4149,16 +4165,49 @@ unsigned long long task_delta_exec(struct task_struct *p)
+ 	u64 ns = 0;
+ 
+ 	rq = task_rq_lock(p, &flags);
++	ns = do_task_delta_exec(p, rq);
++	task_rq_unlock(rq, &flags);
+ 
+-	if (task_current(rq, p)) {
+-		u64 delta_exec;
++	return ns;
++}
+ 
+-		update_rq_clock(rq);
+-		delta_exec = rq->clock - p->se.exec_start;
+-		if ((s64)delta_exec > 0)
+-			ns = delta_exec;
+-	}
++/*
++ * Return accounted runtime for the task.
++ * In case the task is currently running, return the runtime plus current's
++ * pending runtime that have not been accounted yet.
++ */
++unsigned long long task_sched_runtime(struct task_struct *p)
++{
++	unsigned long flags;
++	struct rq *rq;
++	u64 ns = 0;
++
++	rq = task_rq_lock(p, &flags);
++	ns = p->se.sum_exec_runtime + do_task_delta_exec(p, rq);
++	task_rq_unlock(rq, &flags);
++
++	return ns;
++}
+ 
++/*
++ * Return sum_exec_runtime for the thread group.
++ * In case the task is currently running, return the sum plus current's
++ * pending runtime that have not been accounted yet.
++ *
++ * Note that the thread group might have other running tasks as well,
++ * so the return value not includes other pending runtime that other
++ * running tasks might have.
++ */
++unsigned long long thread_group_sched_runtime(struct task_struct *p)
++{
++	struct task_cputime totals;
++	unsigned long flags;
++	struct rq *rq;
++	u64 ns;
++
++	rq = task_rq_lock(p, &flags);
++	thread_group_cputime(p, &totals);
++	ns = totals.sum_exec_runtime + do_task_delta_exec(p, rq);
+ 	task_rq_unlock(rq, &flags);
+ 
+ 	return ns;
