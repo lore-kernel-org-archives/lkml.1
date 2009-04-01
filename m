@@ -1,53 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763265AbZDALk1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763350AbZDALkt@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763265AbZDALk1 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 1 Apr 2009 07:40:27 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754871AbZDALkJ
+	id S1763350AbZDALkt (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 1 Apr 2009 07:40:49 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763324AbZDALkg
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 1 Apr 2009 07:40:09 -0400
-Received: from one.firstfloor.org ([213.235.205.2]:46462 "EHLO
-	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756987AbZDALkI (ORCPT
+	Wed, 1 Apr 2009 07:40:36 -0400
+Received: from an-out-0708.google.com ([209.85.132.251]:39376 "EHLO
+	an-out-0708.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754871AbZDALkf (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 1 Apr 2009 07:40:08 -0400
-Date: Wed, 1 Apr 2009 13:41:46 +0200
-From: Andi Kleen <andi@firstfloor.org>
-To: Arun R Bharadwaj <arun@linux.vnet.ibm.com>
-Cc: linux-kernel@vger.kernel.org, linux-pm@lists.linux-foundation.org,
-       a.p.zijlstra@chello.nl, ego@in.ibm.com, tglx@linutronix.de,
-       mingo@elte.hu, andi@firstfloor.org, venkatesh.pallipadi@intel.com,
-       vatsa@linux.vnet.ibm.com, arjan@infradead.org,
-       svaidy@linux.vnet.ibm.com
-Subject: Re: [v4 RFC PATCH 1/4] timers: Framework for identifying pinned timers
-Message-ID: <20090401114146.GS11935@one.firstfloor.org>
-References: <20090401113128.GA22478@linux.vnet.ibm.com> <20090401113258.GB22478@linux.vnet.ibm.com>
-Mime-Version: 1.0
+	Wed, 1 Apr 2009 07:40:35 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=sender:to:cc:subject:references:from:date:in-reply-to:message-id
+         :user-agent:mime-version:content-type;
+        b=mEo+Wd7c+i8DBOe7F4jb2/RwQ42k1FOMAR9jw2K3CvQZ05s7ZNpBYNkuCjgAZgV6mM
+         NGOfFDzc3xTmNo1Cuqj3al12lZsXkHuve6WGbJ7/8vrL3xuNWLVJPeS58r5AlE6JO/gw
+         mRDJ/hpIoxZnbPksF/d5kpfftwTU9kIjF8oZY=
+To: Phillip Lougher <phillip@lougher.demon.co.uk>
+Cc: Rob Landley <rob@landley.net>, squashfs-devel@lists.sourceforge.net,
+       Geert Uytterhoeven <geert@linux-m68k.org>, linux-kernel@vger.kernel.org
+Subject: Re: [Squashfs-devel] Squashfs 4.0 tools
+References: <20090323180808.2c2ef1a7@nehalam>
+	<10f740e80903290202h1f36b370ga39721536d52a90@mail.gmail.com>
+	<20090330175524.4e8f802e@nehalam> <200903311431.20494.rob@landley.net>
+	<49D2BDE6.7030304@lougher.demon.co.uk>
+From: Peter Korsgaard <jacmet@sunsite.dk>
+Date: Wed, 01 Apr 2009 13:40:23 +0200
+In-Reply-To: <49D2BDE6.7030304@lougher.demon.co.uk> (Phillip Lougher's message of "Wed\, 01 Apr 2009 02\:05\:42 +0100")
+Message-ID: <87myb07gbc.fsf@macbook.be.48ers.dk>
+User-Agent: Gnus/5.11 (Gnus v5.11) Emacs/22.2 (gnu/linux)
+MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090401113258.GB22478@linux.vnet.ibm.com>
-User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Apr 01, 2009 at 05:02:58PM +0530, Arun R Bharadwaj wrote:
-> * Arun R Bharadwaj <arun@linux.vnet.ibm.com> [2009-04-01 17:01:28]:
-> 
-> This patch creates a new framework for identifying cpu-pinned timers
-> and hrtimers.
-> 
-> 
-> This framework is needed because pinned timers are expected to fire on
-> the same CPU on which they are queued. So it is essential to identify
-> these and not migrate them, in case there are any.
+>>>>> "Phillip" == Phillip Lougher <phillip@lougher.demon.co.uk> writes:
 
-How would that interact with add_timer_on()? You currently only
-support the current CPU, don't you?
+Hi,
 
-e.g. the new tip x86 machine check polling code relies on add_timer_on
-staying on that CPU.
+ Phillip> I have thought about adding this option a couple of times,
+ Phillip> but it has always been dropped through lack of time.
+ Phillip> Efficiently adding the option isn't as easy as it sounds
+ Phillip> because the "fake" device nodes have to somehow be made
+ Phillip> available to the recursive directory scan routine that scans
+ Phillip> the source directories for files.  Adding a list of fake
+ Phillip> device nodes which is scanned on every directory for
+ Phillip> potential inclusion in that directory is easy, but not
+ Phillip> terribly efficient.
 
--Andi
+The normal solution for this is fakeroot, which is also what we're
+using for mksquashfs in buildroot:
+
+http://git.buildroot.net/buildroot/tree/target/squashfs/squashfsroot.mk
+
+ Phillip> I'll delay the release of the 4.0 tools and see if I can
+ Phillip> implement this option in the next day or two.
+
+I would say rather get 4.0 out of the door as soon as possible and
+wait with such nice-to-have stuff for later.
 
 -- 
-ak@linux.intel.com -- Speaking for myself only.
+Bye, Peter Korsgaard
