@@ -1,130 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760585AbZDAPxf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761173AbZDAPy0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760585AbZDAPxf (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 1 Apr 2009 11:53:35 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758028AbZDAPxR
+	id S1761173AbZDAPy0 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 1 Apr 2009 11:54:26 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756949AbZDAPyP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 1 Apr 2009 11:53:17 -0400
-Received: from gw-ca.panasas.com ([209.116.51.66]:9032 "EHLO
-	laguna.int.panasas.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1760172AbZDAPxR (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 1 Apr 2009 11:53:17 -0400
-Message-ID: <49D38D4B.7020701@panasas.com>
-Date: Wed, 01 Apr 2009 18:50:35 +0300
-From: Boaz Harrosh <bharrosh@panasas.com>
-User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1b3pre) Gecko/20090315 Remi/3.0-0.b2.fc10.remi Thunderbird/3.0b2
+	Wed, 1 Apr 2009 11:54:15 -0400
+Received: from mx3.mail.elte.hu ([157.181.1.138]:56308 "EHLO mx3.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1756399AbZDAPyO (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 1 Apr 2009 11:54:14 -0400
+Date: Wed, 1 Apr 2009 17:49:13 +0200
+From: Ingo Molnar <mingo@elte.hu>
+To: Christoph Lameter <cl@linux.com>
+Cc: Tejun Heo <tj@kernel.org>, Martin Schwidefsky <schwidefsky@de.ibm.com>,
+       rusty@rustcorp.com.au, tglx@linutronix.de, x86@kernel.org,
+       linux-kernel@vger.kernel.org, hpa@zytor.com,
+       Paul Mundt <lethal@linux-sh.org>, rmk@arm.linux.org.uk,
+       starvik@axis.com, ralf@linux-mips.org, davem@davemloft.net,
+       cooloney@kernel.org, kyle@mcmartin.ca, matthew@wil.cx,
+       grundler@parisc-linux.org, takata@linux-m32r.org,
+       benh@kernel.crashing.org, rth@twiddle.net, ink@jurassic.park.msu.ru,
+       heiko.carstens@de.ibm.com,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Nick Piggin <npiggin@suse.de>
+Subject: Re: [PATCH UPDATED] percpu: use dynamic percpu allocator as the
+	default percpu allocator
+Message-ID: <20090401154913.GA31435@elte.hu>
+References: <20090325122738.42d105b7@skybase> <49CA1AC3.9080908@kernel.org> <20090325150035.541e707a@skybase> <49CA3C2C.5030702@kernel.org> <49D099F0.3000807@kernel.org> <20090330114938.GB10070@elte.hu> <alpine.DEB.1.10.0903301049060.13333@qirst.com> <alpine.DEB.1.10.0903311208110.17960@qirst.com> <49D2B209.9060000@kernel.org> <alpine.DEB.1.10.0904010948120.7643@qirst.com>
 MIME-Version: 1.0
-To: Tejun Heo <tj@kernel.org>
-CC: axboe@kernel.dk, linux-kernel@vger.kernel.org,
-       fujita.tomonori@lab.ntt.co.jp
-Subject: Re: [PATCH 08/17] bio: reimplement bio_copy_user_iov()
-References: <1238593472-30360-1-git-send-email-tj@kernel.org> <1238593472-30360-9-git-send-email-tj@kernel.org>
-In-Reply-To: <1238593472-30360-9-git-send-email-tj@kernel.org>
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
-X-OriginalArrivalTime: 01 Apr 2009 15:52:35.0098 (UTC) FILETIME=[DFEC97A0:01C9B2E1]
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <alpine.DEB.1.10.0904010948120.7643@qirst.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 04/01/2009 04:44 PM, Tejun Heo wrote:
-> Impact: more modular implementation
+
+* Christoph Lameter <cl@linux.com> wrote:
+
+> On Wed, 1 Apr 2009, Tejun Heo wrote:
 > 
-> Break down bio_copy_user_iov() into the following steps.
+> > > 1. Lot of unnecessary use of __read_mostly for local static variables that
+> > > are not on the hotpath. Patch follows in this message.
+> >
+> > Hmmm... Those are basically read-only vars once initialization is
+> > complete.  IIUC, __read_mostly just puts the tagged variables into a
+> > separate segment so that they don't have to worry about cacheline
+> > bouncing.  Is there any reason to remove __read_mostly?  Or is it just
+> > that it's mostly superflous?
 > 
-> 1. bci and page allocation
-> 2. copying data if WRITE
-> 3. create bio accordingly
-> 
-> bci is now responsible for managing any copy related resources.  Given
-> source iov, bci_create() allocates bci and fills it with enough pages
-> to cover the source iov.  The allocated pages are described with a
-> sgl.
-> 
-> Note that new allocator always rounds up rq_map_data->offset to page
-> boundary to simplify implementation and guarantee enough DMA padding
-> area at the end.  As the only user, scsi sg, always passes in zero
-> offset, this doesn't cause any actual behavior difference.  Also,
-> nth_page() is used to walk to the next page rather than directly
-> adding to struct page *.
-> 
-> Copying back and forth is done using bio_memcpy_sgl_uiov() which is
-> implemented using sg mapping iterator and iov iterator.
-> 
-> The last step is done using bio_create_from_sgl().
-> 
-> This patch by itself adds one more level of indirection via sgl and
-> more code but components factored out here will be used for future
-> code refactoring.
-> 
-> Signed-off-by: Tejun Heo <tj@kernel.org>
+> Yes its better for the variables to be all together if its not on hot
+> cache paths. And its better to keep the __read_mostly segment reserved for
+> frequently accessed variables.
 
-Hi dear Tejun
+We need __access_rarely i guess.
 
-I've looked hard and deep into your patchset, and I would like to
-suggest an improvement.
-
-[Option 1]
-What your code is actually using from sgl-code base is:
- for_each_sg
- sg_mapping_iter and it's
-	sg_miter_start, sg_miter_next
- ... (what else)
-
-I would like if you can define above for bvec(s) just the way you like
-them. Then code works directly on the destination bvect inside the final
-bio. One less copy no intermediate allocation, and no kmalloc of
-bigger-then-page buffers.
-
-These are all small inlines, duplicating those will not affect
-Kernel size at all. You are not using the chaining ability of sgl(s)
-so it can be simplified. You will see that not having the intermediate
-copy simplifies the code even more.
-
-Since no out-side user currently needs sgl(s) no functionality is lost.
-
-[Option 2]
-Keep pointer to sgl and not bvec at bio, again code works on final destination.
-Later users of block layer that call blk_rq_fill_sgl (blk_rq_map_sg) will just
-get a copy of the pointer and another allocation and copy is gained.
-This option will spill outside of the current patches scope. Into bvec hacking
-code.
-
-
-I do like your long term vision of separating the DMA part from the virtual part
-of scatterlists. Note how they are actually two disjoint lists altogether. After
-the dma_map does its thing the dma physical list might be shorter then virtual
-and sizes might not correspond at all. The dma mapping code regards the dma part
-as an empty list that gets appended while processing, any segments match is
-accidental. (That is: inside the scatterlist the virtual address most probably
-does not match the dma address)
-
-So [option 1] matches more closely to that vision.
-
-Historically code was doing
-  Many-sources => scatterlist => biovec => scatterlist => dma-scatterlist
-
-Only at 2.6.30 we can say that we shorten a step to do:
-  Many-sources => biovec => scatterlist => dma-scatterlist
-
-Now you want to return the extra step, I hate it.
-[Option 2] can make that even shorter.
-  Many-sources => scatterlist => dma-scatterlist
-
-Please consider [option 1] it will only add some source code
-but it will not increase code size, maybe it will decrease,
-and it will be fast.
-
-Please consider that this code-path is used by me, in exofs and
-pNFS-objcets in a very very hot path, where memory pressure is a
-common scenario.
-
-And I have one more question.
-Are you sure kmalloc of bigger-then-page buffers are safe? As I
-understood it, that tries to allocate physically contiguous pages
-which degrades as time passes, and last time I tried this with a kmem_cache
-(do to a bug) it crashed the kernel randomly after 2 minutes of use.
-
-Thanks
-Boaz
+	Ingo
