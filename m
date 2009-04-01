@@ -1,87 +1,107 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759680AbZDAHGE@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759388AbZDAHKU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759680AbZDAHGE (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 1 Apr 2009 03:06:04 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753951AbZDAHFw
+	id S1759388AbZDAHKU (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 1 Apr 2009 03:10:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754200AbZDAHKF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 1 Apr 2009 03:05:52 -0400
-Received: from mga02.intel.com ([134.134.136.20]:24211 "EHLO mga02.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1757442AbZDAHFv convert rfc822-to-8bit (ORCPT
+	Wed, 1 Apr 2009 03:10:05 -0400
+Received: from terminus.zytor.com ([198.137.202.10]:40042 "EHLO
+	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753951AbZDAHKB (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 1 Apr 2009 03:05:51 -0400
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.39,305,1235980800"; 
-   d="scan'208";a="502548449"
-From: "Metzger, Markus T" <markus.t.metzger@intel.com>
-To: Oleg Nesterov <oleg@redhat.com>, "mingo@elte.hu" <mingo@elte.hu>
-CC: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       "tglx@linutronix.de" <tglx@linutronix.de>,
-       "hpa@zytor.com" <hpa@zytor.com>,
-       "markus.t.metzger@gmail.com" <markus.t.metzger@gmail.com>,
-       "roland@redhat.com" <roland@redhat.com>,
-       "eranian@googlemail.com" <eranian@googlemail.com>,
-       "Villacis, Juan" <juan.villacis@intel.com>,
-       "ak@linux.jf.intel.com" <ak@linux.jf.intel.com>
-Date: Wed, 1 Apr 2009 08:05:42 +0100
-Subject: RE: [patch 0/21] x86, ptrace, bts, hw-branch-tracer: fixes and
-	cleanups
-Thread-Topic: [patch 0/21] x86, ptrace, bts, hw-branch-tracer: fixes and
-	cleanups
-Thread-Index: AcmyWowOqv5uLg6+SKKeFFVKaU1bQQAPKxww
-Message-ID: <928CFBE8E7CB0040959E56B4EA41A77E926D4FDE@irsmsx504.ger.corp.intel.com>
-References: <20090331144229.A11867@sedona.ch.intel.com>
- <20090331233958.GA28228@redhat.com>
-In-Reply-To: <20090331233958.GA28228@redhat.com>
-Accept-Language: en-US
-Content-Language: en-US
-X-MS-Has-Attach: 
-X-MS-TNEF-Correlator: 
-acceptlanguage: en-US
-Content-Type: text/plain; charset="us-ascii"
-MIME-Version: 1.0
-Content-Transfer-Encoding: 8BIT
+	Wed, 1 Apr 2009 03:10:01 -0400
+Date: Wed, 1 Apr 2009 00:08:25 -0700
+Message-Id: <200904010708.n3178PZx004586@voreg.hos.anvin.org>
+From: "H. Peter Anvin" <hpa@zytor.com>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: Peter Teoh <htmldeveloper@gmail.com>, Alain Knaff <alain@knaff.lu>,
+       Jike Song <albcamus@gmail.com>, LKML <linux-kernel@vger.kernel.org>,
+       Frederic Weisbecker <fweisbec@gmail.com>, Ingo Molnar <mingo@elte.hu>,
+       Thomas Gleixer <tglx@linutronix.de>
+In-Reply-To: <804dabb00903312335t660536a1pc029988c1f71f63a@mail.gmail.com>
+Subject: [GIT PULL] bzip2/lzma Kconfig warning fix
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
->-----Original Message-----
->From: Oleg Nesterov [mailto:oleg@redhat.com]
->Sent: Wednesday, April 01, 2009 1:40 AM
->To: Metzger, Markus T
+Hi Linus,
 
+This patch should take care of the annoying Kconfig warning from the
+bzip2/lzma code.
 
->> The first 5 patches apply to .29 with the small preparation patch below.
->
->Tried to review these patches.
->
->As I said, I don't understand ds.c, but I _think_ these changes are good.
->
->I only have a couple of really minor nitpicks...
+The following changes since commit 15f7176eb1cccec0a332541285ee752b935c1c85:
+  Linus Torvalds (1):
+        Merge git://git.kernel.org/.../davem/net-2.6
 
-Thanks for your review!
-I will address the nitpicks in separate patches, if that's OK with everyone.
+are available in the git repository at:
 
+  git://git.kernel.org/pub/scm/linux/kernel/git/x86/linux-2.6-tip.git bzip2-lzma-for-linus
 
-Regarding bisecting, I split the patches to attract reviewers to the smaller
-parts rather than scare them off with one big patch.
-I hope that the bisecting tool can cope with broken builds between patches.
+H. Peter Anvin (1):
+      bzip2/lzma: quiet Kconfig warning for INITRAMFS_COMPRESSION_NONE
 
-regards,
-markus.
+ usr/Kconfig  |   15 +--------------
+ usr/Makefile |    3 ---
+ 2 files changed, 1 insertions(+), 17 deletions(-)
 
----------------------------------------------------------------------
-Intel GmbH
-Dornacher Strasse 1
-85622 Feldkirchen/Muenchen Germany
-Sitz der Gesellschaft: Feldkirchen bei Muenchen
-Geschaeftsfuehrer: Douglas Lusk, Peter Gleissner, Hannes Schwaderer
-Registergericht: Muenchen HRB 47456 Ust.-IdNr.
-VAT Registration No.: DE129385895
-Citibank Frankfurt (BLZ 502 109 00) 600119052
+commit 1359096eacb1971be67eead8bf9b582864d92a30
+Author: H. Peter Anvin <hpa@zytor.com>
+Date:   Tue Mar 31 12:24:17 2009 -0700
 
-This e-mail and any attachments may contain confidential material for
-the sole use of the intended recipient(s). Any review or distribution
-by others is strictly prohibited. If you are not the intended
-recipient, please contact the sender and delete all copies.
+    bzip2/lzma: quiet Kconfig warning for INITRAMFS_COMPRESSION_NONE
+    
+    Impact: quiet Kconfig warning
+    
+    It appears that Kconfig simply has no way to provide defaults for
+    entries that exist inside a conditionalized choice block.
+    Fortunately, it turns out we don't actually ever use
+    CONFIG_INITRAMFS_COMPRESSION_NONE, so we can just drop it for
+    everything outside the choice block.
+    
+    Signed-off-by: H. Peter Anvin <hpa@zytor.com>
 
+diff --git a/usr/Kconfig b/usr/Kconfig
+index 588c588..1c3039f 100644
+--- a/usr/Kconfig
++++ b/usr/Kconfig
+@@ -72,10 +72,8 @@ config RD_LZMA
+ 	  Support loading of a LZMA encoded initial ramdisk or cpio buffer
+ 	  If unsure, say N.
+ 
+-if INITRAMFS_SOURCE!=""
+-
+ choice
+-	prompt "Built-in initramfs compression mode"
++	prompt "Built-in initramfs compression mode" if INITRAMFS_SOURCE!=""
+ 	help
+ 	  This option decides by which algorithm the builtin initramfs
+ 	  will be compressed.  Several compression algorithms are
+@@ -134,14 +132,3 @@ config INITRAMFS_COMPRESSION_LZMA
+ 	  smaller with LZMA in comparison to gzip.
+ 
+ endchoice
+-
+-endif
+-
+-if INITRAMFS_SOURCE=""
+-# The builtin initramfs is so small so we don't want to bug the user...
+-
+-config INITRAMFS_COMPRESSION_NONE
+-	bool
+-	default y
+-
+-endif
+diff --git a/usr/Makefile b/usr/Makefile
+index b84894b..245145a 100644
+--- a/usr/Makefile
++++ b/usr/Makefile
+@@ -6,9 +6,6 @@ klibcdirs:;
+ PHONY += klibcdirs
+ 
+ 
+-# No compression
+-suffix_$(CONFIG_INITRAMFS_COMPRESSION_NONE)   =
+-
+ # Gzip, but no bzip2
+ suffix_$(CONFIG_INITRAMFS_COMPRESSION_GZIP)   = .gz
+ 
