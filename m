@@ -1,110 +1,128 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758282AbZDANoU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764695AbZDANpG@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758282AbZDANoU (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 1 Apr 2009 09:44:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761308AbZDANoI
+	id S1764695AbZDANpG (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 1 Apr 2009 09:45:06 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756577AbZDANoq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 1 Apr 2009 09:44:08 -0400
-Received: from metis.ext.pengutronix.de ([92.198.50.35]:37808 "EHLO
-	metis.ext.pengutronix.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757616AbZDANoH convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 1 Apr 2009 09:44:07 -0400
-From: Juergen Beisert <jbe@pengutronix.de>
-Organization: Pengutronix - Linux Solutions for Science and Industry
-To: linux-mtd@lists.infradead.org
-Date: Wed, 1 Apr 2009 15:43:43 +0200
-User-Agent: KMail/1.9.9
-Cc: Kay Sievers <kay.sievers@vrfy.org>, David Brownell <david-b@pacbell.net>,
-       dwmw2@infradead.org, LKML <linux-kernel@vger.kernel.org>
-References: <200903260042.42091.david-b@pacbell.net> <200903311418.53772.david-b@pacbell.net> <ac3eb2510903311651i4c5f6805tc74fe04ee765be9c@mail.gmail.com>
-In-Reply-To: <ac3eb2510903311651i4c5f6805tc74fe04ee765be9c@mail.gmail.com>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="utf-8"
-Content-Transfer-Encoding: 8BIT
-Content-Disposition: inline
-Message-Id: <200904011543.44124.jbe@pengutronix.de>
-X-SA-Exim-Connect-IP: 92.198.50.58
-X-SA-Exim-Mail-From: jbe@pengutronix.de
-Subject: Re: [patch/rfc 2.6.29 1/2] MTD: driver model updates
-X-SA-Exim-Version: 4.2.1 (built Tue, 09 Jan 2007 17:23:22 +0000)
-X-SA-Exim-Scanned: Yes (on metis.ext.pengutronix.de)
-X-PTX-Original-Recipient: linux-kernel@vger.kernel.org
+	Wed, 1 Apr 2009 09:44:46 -0400
+Received: from hera.kernel.org ([140.211.167.34]:42373 "EHLO hera.kernel.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1756524AbZDANop (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 1 Apr 2009 09:44:45 -0400
+From: Tejun Heo <tj@kernel.org>
+To: axboe@kernel.dk, bharrosh@panasas.com, linux-kernel@vger.kernel.org,
+       fujita.tomonori@lab.ntt.co.jp
+Cc: Tejun Heo <tj@kernel.org>
+Subject: [PATCH 01/17] blk-map: move blk_rq_map_user() below blk_rq_map_user_iov()
+Date: Wed,  1 Apr 2009 22:44:16 +0900
+Message-Id: <1238593472-30360-2-git-send-email-tj@kernel.org>
+X-Mailer: git-send-email 1.6.0.2
+In-Reply-To: <1238593472-30360-1-git-send-email-tj@kernel.org>
+References: <1238593472-30360-1-git-send-email-tj@kernel.org>
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Wed, 01 Apr 2009 13:44:38 +0000 (UTC)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi David, Kay,
+Impact: code reorganization
 
-On Mittwoch, 1. April 2009, Kay Sievers wrote:
-> On Tue, Mar 31, 2009 at 23:18, David Brownell <david-b@pacbell.net> wrote:
-> > On Thursday 26 March 2009, David Brownell wrote:
-> >> From: David Brownell <dbrownell@users.sourceforge.net>
-> >>
-> >> Update driver model support in the MTD framework, so it fits
-> >> better into the current udev-based hotplug framework:
-> >
-> > Hmm, no comments?  I had understood there was interest over on
-> > the MTD side of things in exposing more information through
-> > sysfs, to help avoid the need to add Even More Ioctls as part
-> > of support for things like NAND chips with 4KB pages, or which
-> > handle more than 4GBytes ...
->
-> Please have a look at this. We got asked repeatedly to provide better
-> hotplug/udev integration, and the patches, and having the parent
-> device properly assigned, would solve some of the problems people run
-> into currently.
+blk_rq_map_user() is about to be reimplemented using
+blk_rq_map_user_iov().  Move it below blk_rq_map_user_iov() so that
+the actual conversion patch is easier to read.
 
-Without patch:
---------------
+Signed-off-by: Tejun Heo <tj@kernel.org>
+---
+ block/blk-map.c |   70 +++++++++++++++++++++++++++---------------------------
+ 1 files changed, 35 insertions(+), 35 deletions(-)
 
-$ udevadm info -a -p /sys/block/mtdblock0
-[...]
-  looking at device '/devices/virtual/block/mtdblock0':
-    KERNEL=="mtdblock0"
-    SUBSYSTEM=="block"
-    DRIVER==""
-    ATTR{range}=="1"
-    ATTR{removable}=="0"
-    ATTR{size}=="256"
-    ATTR{capability}=="10"
-    ATTR{stat}=="       0        0        0        0        0        0        0        0        0        0        0"
-
-And nearly the same data for the other flash device. No chance to detect if
-this one is the NOR or the NAND type...
-
-With the patch:
----------------
-
-$ udevadm info -a -p /sys/block/mtdblock0
-[...]
-  looking at parent device '/devices/platform/physmap-flash.0':
-    KERNELS=="physmap-flash.0"
-    SUBSYSTEMS=="platform"
-    DRIVERS=="physmap-flash"
-    ATTRS{modalias}=="platform:physmap-flash"
-
-The second flash device is of NAND type and 'udevadm' shows:
-
-$ udevadm info -a -p /sys/block/mtdblock4
-[...]
-  looking at parent device '/devices/platform/mxc_nand.0':
-    KERNELS=="mxc_nand.0"
-    SUBSYSTEMS=="platform"
-    DRIVERS=="mxc_nand"
-    ATTRS{modalias}=="platform:mxc_nand"
-
-\o/
-
-I will try now to define some udev rules to match for my different flash
-memories.
-
-Thank you,
-Juergen
-
+diff --git a/block/blk-map.c b/block/blk-map.c
+index a43c93c..fdef591 100644
+--- a/block/blk-map.c
++++ b/block/blk-map.c
+@@ -41,41 +41,6 @@ static int __blk_rq_unmap_user(struct bio *bio)
+ }
+ 
+ /**
+- * blk_rq_map_user - map user data to a request, for REQ_TYPE_BLOCK_PC usage
+- * @q:		request queue where request should be inserted
+- * @rq:		request structure to fill
+- * @map_data:   pointer to the rq_map_data holding pages (if necessary)
+- * @ubuf:	the user buffer
+- * @len:	length of user data
+- * @gfp_mask:	memory allocation flags
+- *
+- * Description:
+- *    Data will be mapped directly for zero copy I/O, if possible. Otherwise
+- *    a kernel bounce buffer is used.
+- *
+- *    A matching blk_rq_unmap_user() must be issued at the end of I/O, while
+- *    still in process context.
+- *
+- *    Note: The mapped bio may need to be bounced through blk_queue_bounce()
+- *    before being submitted to the device, as pages mapped may be out of
+- *    reach. It's the callers responsibility to make sure this happens. The
+- *    original bio must be passed back in to blk_rq_unmap_user() for proper
+- *    unmapping.
+- */
+-int blk_rq_map_user(struct request_queue *q, struct request *rq,
+-		    struct rq_map_data *map_data, void __user *ubuf,
+-		    unsigned long len, gfp_t gfp_mask)
+-{
+-	struct sg_iovec iov;
+-
+-	iov.iov_base = ubuf;
+-	iov.iov_len = len;
+-
+-	return blk_rq_map_user_iov(q, rq, map_data, &iov, 1, len, gfp_mask);
+-}
+-EXPORT_SYMBOL(blk_rq_map_user);
+-
+-/**
+  * blk_rq_map_user_iov - map user data to a request, for REQ_TYPE_BLOCK_PC usage
+  * @q:		request queue where request should be inserted
+  * @rq:		request to map data to
+@@ -151,6 +116,41 @@ int blk_rq_map_user_iov(struct request_queue *q, struct request *rq,
+ EXPORT_SYMBOL(blk_rq_map_user_iov);
+ 
+ /**
++ * blk_rq_map_user - map user data to a request, for REQ_TYPE_BLOCK_PC usage
++ * @q:		request queue where request should be inserted
++ * @rq:		request structure to fill
++ * @map_data:   pointer to the rq_map_data holding pages (if necessary)
++ * @ubuf:	the user buffer
++ * @len:	length of user data
++ * @gfp_mask:	memory allocation flags
++ *
++ * Description:
++ *    Data will be mapped directly for zero copy I/O, if possible. Otherwise
++ *    a kernel bounce buffer is used.
++ *
++ *    A matching blk_rq_unmap_user() must be issued at the end of I/O, while
++ *    still in process context.
++ *
++ *    Note: The mapped bio may need to be bounced through blk_queue_bounce()
++ *    before being submitted to the device, as pages mapped may be out of
++ *    reach. It's the callers responsibility to make sure this happens. The
++ *    original bio must be passed back in to blk_rq_unmap_user() for proper
++ *    unmapping.
++ */
++int blk_rq_map_user(struct request_queue *q, struct request *rq,
++		    struct rq_map_data *map_data, void __user *ubuf,
++		    unsigned long len, gfp_t gfp_mask)
++{
++	struct sg_iovec iov;
++
++	iov.iov_base = ubuf;
++	iov.iov_len = len;
++
++	return blk_rq_map_user_iov(q, rq, map_data, &iov, 1, len, gfp_mask);
++}
++EXPORT_SYMBOL(blk_rq_map_user);
++
++/**
+  * blk_rq_unmap_user - unmap a request with user data
+  * @bio:	       start of bio list
+  *
 -- 
-Pengutronix e.K.                              | Juergen Beisert             |
-Linux Solutions for Science and Industry      | Phone: +49-8766-939 228     |
-Vertretung Sued/Muenchen, Germany             | Fax:   +49-5121-206917-5555 |
-Amtsgericht Hildesheim, HRA 2686              | http://www.pengutronix.de/  |
+1.6.0.2
+
