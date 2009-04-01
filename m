@@ -1,80 +1,71 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756540AbZDAQKh@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764064AbZDAQLG@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756540AbZDAQKh (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 1 Apr 2009 12:10:37 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754999AbZDAQK0
+	id S1764064AbZDAQLG (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 1 Apr 2009 12:11:06 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761621AbZDAQKj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 1 Apr 2009 12:10:26 -0400
-Received: from ti-out-0910.google.com ([209.85.142.190]:49862 "EHLO
-	ti-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753712AbZDAQKZ (ORCPT
+	Wed, 1 Apr 2009 12:10:39 -0400
+Received: from wa-out-1112.google.com ([209.85.146.177]:16192 "EHLO
+	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1759077AbZDAQKh (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 1 Apr 2009 12:10:25 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:references:mime-version
-         :content-type:content-disposition:in-reply-to:user-agent;
-        b=mXjVTeVOMQGNGBZwHSDdWzFV2jkKs4BV1WBxCFMtQhfsfESGhjKdyQ19UDTCmc12SU
-         W6gKdMUk3Tuhn0jdBNDoE3dMxxPmoBTUWvSAEPM56//nh/RvV+YJQVXHg2qN9awIfOp9
-         /gBwEj1nmUFgCMJbWY8mcHNxG3BkUgIUSQSFg=
-Date: Thu, 2 Apr 2009 00:11:14 +0800
-From: =?utf-8?Q?Am=C3=A9rico?= Wang <xiyou.wangcong@gmail.com>
-To: Miklos Szeredi <miklos@szeredi.hu>
-Cc: user-mode-linux-devel@lists.sourceforge.net, jdike@addtoit.com,
-       akpm@linux-foundation.org, linux-kernel@vger.kernel.org,
-       viro@zeniv.linux.org.uk
-Subject: do_execve() needs const qualifiers (was Re: [patch 3/3] uml: fix
-	warnings in kernel_execve)
-Message-ID: <20090401161114.GF3848@hack>
-References: <E1LoMQ2-0007bB-By@pomaz-ex.szeredi.hu> <E1LoMTw-0007d2-AI@pomaz-ex.szeredi.hu>
+	Wed, 1 Apr 2009 12:10:37 -0400
+Message-ID: <49D391F5.4080700@codemonkey.ws>
+Date: Wed, 01 Apr 2009 11:10:29 -0500
+From: Anthony Liguori <anthony@codemonkey.ws>
+User-Agent: Thunderbird 2.0.0.21 (X11/20090320)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <E1LoMTw-0007d2-AI@pomaz-ex.szeredi.hu>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+To: Rusty Russell <rusty@rustcorp.com.au>
+CC: Gregory Haskins <ghaskins@novell.com>, linux-kernel@vger.kernel.org,
+       agraf@suse.de, pmullaney@novell.com, pmorreale@novell.com,
+       netdev@vger.kernel.org, kvm@vger.kernel.org
+Subject: Re: [RFC PATCH 00/17] virtual-bus
+References: <20090331184057.28333.77287.stgit@dev.haskins.net> <200904011638.45135.rusty@rustcorp.com.au>
+In-Reply-To: <200904011638.45135.rusty@rustcorp.com.au>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Mar 30, 2009 at 08:45:12PM +0200, Miklos Szeredi wrote:
->From: Miklos Szeredi <mszeredi@suse.cz>
+Rusty Russell wrote:
+> On Wednesday 01 April 2009 05:12:47 Gregory Haskins wrote:
+>   
+>> Bare metal: tput = 4078Mb/s, round-trip = 25593pps (39us rtt)
+>> Virtio-net: tput = 4003Mb/s, round-trip = 320pps (3125us rtt)
+>> Venet: tput = 4050Mb/s, round-trip = 15255 (65us rtt)
+>>     
 >
->Fix the following warnings:
+> That rtt time is awful.  I know the notification suppression heuristic
+> in qemu sucks.
 >
->arch/um/kernel/syscall.c: In function 'kernel_execve':
->arch/um/kernel/syscall.c:130: warning: passing argument 1 of 'um_execve' discards qualifiers from pointer target type
->arch/um/kernel/syscall.c:130: warning: passing argument 2 of 'um_execve' discards qualifiers from pointer target type
->arch/um/kernel/syscall.c:130: warning: passing argument 3 of 'um_execve' discards qualifiers from pointer target type
+> I could dig through the code, but I'll ask directly: what heuristic do
+> you use for notification prevention in your venet_tap driver?
 >
->Signed-off-by: Miklos Szeredi <mszeredi@suse.cz>
->---
-> arch/um/kernel/syscall.c |    3 ++-
-> 1 file changed, 2 insertions(+), 1 deletion(-)
->
->Index: linux-2.6/arch/um/kernel/syscall.c
->===================================================================
->--- linux-2.6.orig/arch/um/kernel/syscall.c	2009-03-30 20:25:17.000000000 +0200
->+++ linux-2.6/arch/um/kernel/syscall.c	2009-03-30 20:36:20.000000000 +0200
->@@ -127,7 +127,8 @@ int kernel_execve(const char *filename,
-> 
-> 	fs = get_fs();
-> 	set_fs(KERNEL_DS);
->-	ret = um_execve(filename, argv, envp);
->+	ret = um_execve((char *)filename, (char __user *__user *)argv,
->+			(char __user *__user *) envp);
+> As you point out, 350-450 is possible, which is still bad, and it's at least
+> partially caused by the exit to userspace and two system calls.  If virtio_net
+> had a backend in the kernel, we'd be able to compare numbers properly.
+>   
 
-Well... I found this many days ago and I did a similar fix.
+I doubt the userspace exit is the problem.  On a modern system, it takes 
+about 1us to do a light-weight exit and about 2us to do a heavy-weight 
+exit.  A transition to userspace is only about ~150ns, the bulk of the 
+additional heavy-weight exit cost is from vcpu_put() within KVM.
 
-However, I think this doesn't fix the real problem. The real problem
-is do_execve() doesn't have the correct const qualifiers, I am queueing
-a huge patch to fix all the 'const' issues from do_execve() and more,
-but I don't if Al would like it or not.
+If you were to switch to another kernel thread, and I'm pretty sure you 
+have to, you're going to still see about a 2us exit cost.  Even if you 
+factor in the two syscalls, we're still talking about less than .5us 
+that you're saving.  Avi mentioned he had some ideas to allow in-kernel 
+thread switching without taking a heavy-weight exit but suffice to say, 
+we can't do that today.
 
-So let's Cc Al to see his advice.
+You have no easy way to generate PCI interrupts in the kernel either.  
+You'll most certainly have to drop down to userspace anyway for that.
 
-Thanks.
+I believe the real issue is that we cannot get enough information today 
+from tun/tap to do proper notification prevention b/c we don't know when 
+the packet processing is completed.
 
+Regards,
 
--- 
-Do what you love, f**k the rest! F**k the regulations!
- 
+Anthony Liguori
