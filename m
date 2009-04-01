@@ -1,193 +1,336 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761751AbZDAXDS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763295AbZDAXDy@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761751AbZDAXDS (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 1 Apr 2009 19:03:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758665AbZDAXCx
+	id S1763295AbZDAXDy (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 1 Apr 2009 19:03:54 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754735AbZDAXD3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 1 Apr 2009 19:02:53 -0400
-Received: from victor.provo.novell.com ([137.65.250.26]:59212 "EHLO
-	victor.provo.novell.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757304AbZDAXCw (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 1 Apr 2009 19:02:52 -0400
-Message-ID: <49D3F31F.8010705@novell.com>
-Date: Wed, 01 Apr 2009 19:05:03 -0400
-From: Gregory Haskins <ghaskins@novell.com>
-User-Agent: Thunderbird 2.0.0.19 (X11/20081227)
+	Wed, 1 Apr 2009 19:03:29 -0400
+Received: from mx2.redhat.com ([66.187.237.31]:38862 "EHLO mx2.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752329AbZDAXD1 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 1 Apr 2009 19:03:27 -0400
+From: David Howells <dhowells@redhat.com>
+Subject: [PATCH 00/43] Permit filesystem local caching [ver #46]
+To: viro@ZenIV.linux.org.uk
+Cc: dhowells@redhat.com, nfsv4@linux-nfs.org, linux-kernel@vger.kernel.org,
+       linux-fsdevel@vger.kernel.org
+Date: Thu, 02 Apr 2009 00:03:21 +0100
+Message-ID: <20090401230321.28177.12010.stgit@warthog.procyon.org.uk>
+User-Agent: StGIT/0.14.3
 MIME-Version: 1.0
-To: Andi Kleen <andi@firstfloor.org>
-CC: linux-kernel@vger.kernel.org, agraf@suse.de, pmullaney@novell.com,
-       pmorreale@novell.com, anthony@codemonkey.ws, rusty@rustcorp.com.au,
-       netdev@vger.kernel.org, kvm@vger.kernel.org
-Subject: Re: [RFC PATCH 00/17] virtual-bus
-References: <20090331184057.28333.77287.stgit@dev.haskins.net> <87ab71monw.fsf@basil.nowhere.org> <49D35825.3050001@novell.com> <20090401132340.GT11935@one.firstfloor.org> <49D37805.1060301@novell.com> <20090401170103.GU11935@one.firstfloor.org> <49D3CEC5.20606@novell.com> <20090401222352.GY11935@one.firstfloor.org>
-In-Reply-To: <20090401222352.GY11935@one.firstfloor.org>
-X-Enigmail-Version: 0.95.7
-OpenPGP: id=D8195319
-Content-Type: multipart/signed; micalg=pgp-sha1;
- protocol="application/pgp-signature";
- boundary="------------enig32B6C464D23A120C2C4B026E"
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This is an OpenPGP/MIME signed message (RFC 2440 and 3156)
---------------enig32B6C464D23A120C2C4B026E
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: quoted-printable
-
-Andi Kleen wrote:
-> On Wed, Apr 01, 2009 at 04:29:57PM -0400, Gregory Haskins wrote:
->  =20
->>> description?
->>>  =20
->>>      =20
->> Yes, good point.  I will be sure to be more explicit in the next rev.
->>
->>    =20
->>>  =20
->>>      =20
->>>> So the administrator can then set these attributes as
->>>> desired to manipulate the configuration of the instance of the devic=
-e,
->>>> on a per device basis.
->>>>    =20
->>>>        =20
->>> How would the guest learn of any changes in there?
->>>  =20
->>>      =20
->> The only events explicitly supported by the infrastructure of this
->> nature would be device-add and device-remove.  So when an admin adds o=
-r
->> removes a device to a bus, the guest would see driver::probe() and
->> driver::remove() callbacks, respectively.  All other events are left (=
-by
->> design) to be handled by the device ABI itself, presumably over the
->> provided shm infrastructure.
->>    =20
->
-> Ok so you rely on a transaction model where everything is set up
-> before it is somehow comitted to the guest? I hope that is made
-> explicit in the interface somehow.
->  =20
-Well, its not an explicit transaction model, but I guess you could think
-of it that way.
-
-Generally you set the device up before you launch the guest.  By the
-time the guest loads and tries to scan the bus for the initial
-discovery, all the devices would be ready to go.
-
-This does bring up the question of hotswap.  Today we fully support
-hotswap in and out, but leaving this "enabled" transaction to the
-individual device means that the device-id would be visible in the bus
-namespace before the device may want to actually communicate.  Hmmm
-
-Perhaps I need to build this in as a more explicit "enabled"
-feature...and the guest will not see the driver::probe() until this happe=
-ns.
-
->  =20
->> This script creates two buses ("client-bus" and "server-bus"),
->> instantiates a single venet-tap on each of them, and then "wires" them=
-
->> together with a private bridge instance called "vbus-br0".  To complet=
-e
->> the picture here, you would want to launch two kvms, one of each of th=
-e
->> client-bus/server-bus instances.  You can do this via /proc/$pid/vbus.=
-  E.g.
->>
->> # (echo client-bus > /proc/self/vbus; qemu-kvm -hda client.img....)
->> # (echo server-bus > /proc/self/vbus; qemu-kvm -hda server.img....)
->>
->> (And as noted, someday qemu will be able to do all the setup that the
->> script did, natively.  It would wire whatever tap it created to an
->> existing bridge with qemu-ifup, just like we do for tun-taps today)
->>    =20
->
-> The usual problem with that is permissions. Just making qemu-ifup suid
-> it not very nice.  It would be good if any new design addressed this.
->  =20
-
-Well, its kind of out of my control.  venet-tap ultimately creates a
-simple netif interface which we must do something with.  Once its
-created, "wiring" it up to something like a linux-bridge is no different
-than something like a tun-tap, so the qemu-ifup requirement doesn't chang=
-e.
-
-The one thing I can think of is it would be possible to build a
-"venet-switch" module, and this could be done without using brctl or
-qemu-ifup...but then I would lose all the benefits of re-using that
-infrastructure.  I do not recommend we actually do this, but it would
-technically be a way to address your concern.
 
 
->  =20
->> the current code doesnt support rw on the mac attributes yet..i need a=
+These patches add local caching for network filesystems such as NFS.  To give a
+really quick overview of the way the facility works:
 
->> parser first).
->>    =20
->
-> parser in kernel space always sounds scary to me.
->  =20
-Heh..why do you think I keep procrastinating ;)
-
->
->  =20
->> Yeah, ultimately I would love to be able to support a fairly wide rang=
-e
->> of the normal userspace/kernel ABI through this mechanism.  In fact, o=
-ne
->> of my original design goals was to somehow expose the syscall ABI
->> directly via some kind of syscall proxy device on the bus.  I have sin=
-ce
->>    =20
->
-> That sounds really scary for security.=20
->
->
->  =20
->> backed away from that idea once I started thinking about things some
->> more and realized that a significant number of system calls are really=
-
->> inappropriate for a guest type environment due to their ability to
->> block.   We really dont want a vcpu to block.....however, the AIO type=
-
->>    =20
->
-> Not only because of blocking, but also because of security issues.
-> After all one of the usual reasons to run a guest is security isolation=
-=2E
->  =20
-Oh yeah, totally agreed.  Not that I am advocating this, because I have
-abandoned the idea.  But back when I was thinking of this, I would have
-addressed the security with the vbus and syscall-proxy-device objects
-themselves.  E.g. if you dont instantiate a syscall-proxy-device on the
-bus, the guest wouldnt have access to syscalls at all.   And you could
-put filters into the module to limit what syscalls were allowed, which
-UID to make the guest appear as, etc.
-
-> In general the more powerful the guest API the more risky it is, so som=
-e
-> self moderation is probably a good thing.
->  =20
-:)
-
--Greg
+	+---------+
+	|         |
+	|   NFS   |--+
+	|         |  |
+	+---------+  |   +----------+
+	             |   |          |
+	+---------+  +-->|          |
+	|         |      |          |
+	|   AFS   |----->| FS-Cache |
+	|         |      |          |--+
+	+---------+  +-->|          |  |
+	             |   |          |  |   +--------------+   +--------------+
+	+---------+  |   +----------+  |   |              |   |              |
+	|         |  |                 +-->|  CacheFiles  |-->|  Ext3        |
+	|  ISOFS  |--+                     |  /var/cache  |   |  /dev/sda6   |
+	|         |                        +--------------+   +--------------+
+	+---------+
 
 
---------------enig32B6C464D23A120C2C4B026E
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: OpenPGP digital signature
-Content-Disposition: attachment; filename="signature.asc"
+ (1) NFS, say, asks FS-Cache to store/retrieve data for it;
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v2.0.9 (GNU/Linux)
-Comment: Using GnuPG with SUSE - http://enigmail.mozdev.org
+ (2) FS-Cache asks the cache backend, in this case CacheFiles to honour the
+     operation;
 
-iEYEARECAAYFAknT8x8ACgkQlOSOBdgZUxla+wCeOmiZgJaxTRDmAsK237O/4C/k
-Xf4AmwQP8jTNo/afgFRdBsZ47784XIpd
-=HYZv
------END PGP SIGNATURE-----
+ (3) CacheFiles 'opens' a file in a mounted filesystem, say Ext3, and does read
+     and write operations of a sort on it;
 
---------------enig32B6C464D23A120C2C4B026E--
+ (4) Ext3 decides how the cache data is laid out on disk - CacheFiles just
+     attempts to use one sparse file per netfs inode.
+
+ (5) If NFS asks for data from the cache, but the file has a hole in it, NFS
+     falls back to asking the server.  The data obtained from the server is
+     then written over the hole in the file.
+
+To look at it another way:
+
+	+---------+
+	|         |
+	| Server  |
+	|         |
+	+---------+
+	     |                  NETWORK
+	~~~~~|~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+	     |
+	     |           +----------+
+	     V           |          |
+	+---------+      |          |
+	|         |      |          |
+	|   NFS   |----->| FS-Cache |
+	|         |      |          |--+
+	+---------+      |          |  |   +--------------+   +--------------+
+	     |           |          |  |   |              |   |              |
+	     V           +----------+  +-->|  CacheFiles  |-->|  Ext3        |
+	+---------+                        |  /var/cache  |   |  /dev/sda6   |
+	|         |                        +--------------+   +--------------+
+	|   VFS   |                                ^                     ^
+	|         |                                |                     |
+	+---------+                                +--------------+      |
+	     |                  KERNEL SPACE                      |      |
+	~~~~~|~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~|~~~~~~|~~~~
+	     |                  USER SPACE                        |      |
+	     V                                                    |      |
+	+---------+                                           +--------------+
+	|         |                                           |              |
+	| Process |                                           | cachefilesd  |
+	|         |                                           |              |
+	+---------+                                           +--------------+
+
+FS-Cache attempts to provide a caching facility to a network filesystem such
+that it's transparent to the users of that network filesystem.
+
+
+The patches can roughly be broken down into a number of sets:
+
+  (*) 01-slow-work.diff
+  (*) 02-slow-work-dynamic.diff
+  (*) 03-slow-work-config.diff
+  (*) 04-slow-work-doc.diff
+
+      A thread pool for (very) slow work items, such as batches of lookup,
+      mkdir, create and [sg]etxattr calls.
+
+      It doesn't make sense to use an ordinary work queue because I want more
+      than one thread, but I don't want to be limited to 1 thread per CPU.
+      The work items in question take a long time, most of which is spent
+      sleeping on I/O.  For the duration the worker thread is unable to do
+      anything else.
+
+      These four patches add the basic facility, make it dynamic, make it
+      configurable and document it.
+
+
+  (*) 05-release-page.diff
+
+      Call the page release function after a failed readahead.
+
+  (*) 06-fscache-page-flags.diff
+
+      Add two extra page flags that FS-Cache then uses to keep track of two
+      bits of per-cached-page information:
+
+	 (1) This page is known by the cache, and that the cache must be
+	     informed if the page is going to go away.  It's an indication to
+	     the netfs that the cache has an interest in this page, where an
+	     interest may be a pointer to it, resources allocated or reserved
+	     for it, or I/O in progress upon it.
+
+	 (2) This page is being written to disk by the cache, and that it
+	     cannot be released until completion.  Ideally it shouldn't be
+	     changed until completion either so as to maintain the known state
+	     of the cache.  This cannot be unified with PG_writeback as the
+	     page may be being written to both the server and the cache at the
+	     same time or at different times.
+
+      To avoid using extra page bits, I could, for example, set up a radix tree
+      per data storage object to keep track of both these bits, however this
+      would mean that the netfs would have to do a call, spinlock, conditional
+      jumps, etc to find out either state.
+
+      On the other hand, if we can spare two page flags, those are sufficient.
+
+      Note that the cache doesn't necessarily need to be able to find the netfs
+      pages, but may have to allocate/pin resources for backing them.
+
+      Further note that PG_private may not be used as I want to be able to use
+      caching with ISOFS eventually, and PG_private is owned by the block
+      buffer code.
+
+      These bits can be otherwise used by any filesystem that doesn't want to
+      use FS-Cache.
+
+
+  (*) 07-fscache-netfs-api.diff
+  (*) 08-fscache-backend-api.diff
+  (*) 09-fscache-kconfig.diff
+  (*) 10-fscache-proc.diff
+  (*) 11-fscache-fsdef.diff
+  (*) 12-fscache-tag-handling.diff
+  (*) 13-fscache-cache-handling.diff
+  (*) 14-fscache-cookie-jar.diff
+  (*) 15-fscache-netfs-reg.diff
+  (*) 16-fscache-bits.diff
+  (*) 17-fscache-object.diff
+  (*) 18-fscache-cookie.diff
+  (*) 19-fscache-operation.diff
+  (*) 20-fscache-io.diff
+
+      Patches to provide a local caching facility for network filesystems.
+
+      FS-Cache is a layer that takes requests from any one of a number of
+      netfs's and passes them to an appropriate cache, if there is one.
+      FS-Cache makes operations requested by the netfs transparently
+      asynchronous where possible.
+
+      FS-Cache also protects the netfs against (a) there being no cache, (b)
+      the cache suffering a fatal I/O error and (c) the cache being removed;
+      and protects the cache against (d) the netfs uncaching pages that the
+      cache is using and (e) conflicting operations from the netfs, some of
+      which may be queued for asynchronous processing.
+
+      Five documents in text file format that describe the FS-Cache interface
+      are added by these patches:
+
+      Documentation/filesystems/caching/fscache.txt gives an overview of the
+      facility and describes the statistical data it makes available.
+
+      Documentation/filesystems/caching/netfs-api.txt describes the API by
+      which a network filesystem would make use of the FS-Cache facility.
+
+      Documentation/filesystems/caching/backend-api.txt describes the API that
+      a cache backend must implement to provide caching services through
+      FS-Cache.
+
+      Documentation/filesystems/caching/object.txt describes the object
+      management state machine used.
+
+      Documentation/filesystems/caching/operations.txt describes the operation
+      scheduling facility provided and used by FS-Cache that can also be used
+      by cache backend modules.
+
+      The patches provide the following components of the FS-Cache facility:
+
+      (07) The netfs API header file and documentation.  A netfs can actually
+      	   be built and run against just this patch.  It won't actually do
+      	   anything without the later patches, though, but it will compile.
+
+      (08) The cache backend API header file and documentation.
+
+      (09) The main selector configuration option, the main module load/unload
+      	   hooks and the debugging code declarations.  With this patch applied,
+      	   it is possible to enable caching in a client netfs, though it won't
+      	   actually do anything.
+
+      (10) The /proc files for statistics presentation, plus the internal
+      	   interfaces for driving it.
+
+      (11) The top level index definition.
+
+      (12) Cache reference tag handling.
+
+      (13) Cache (un)registration and error handling.
+
+      (14) Cookie (de)allocator and initialisation.
+
+      (15) Netfs (un)registration handling.  This is partly usable.  Without a
+      	   later patch, however, a cookie will be leaked from unregistration.
+
+      (16) Bit waiting utility functions.
+
+      (17) The object management state machine implementation and
+      	   documentation.
+
+      (18) Implementation of the cookie management part of the netfs API.  With
+      	   this, it's possible for netfs's to actually be granted cookies and
+      	   to release them without error.
+
+      (19) Cache I/O operation scheduler and documentation.
+
+      (20) Implementation of the data I/O part of the netfs API.
+
+
+  (*) 21-cachefiles-ext3-f_mapping.diff
+  (*) 22-cachefiles-write.diff
+  (*) 23-cachefiles-monitor.diff
+  (*) 24-cachefiles-export.diff
+  (*) 25-cachefiles.diff
+
+      Patches to provide a local cache in a directory of an already mounted
+      filesystem.
+
+      The latter patch adds a document in text file format that describes the
+      CacheFiles cache backend and gives instructions on how it is set up and
+      used.  This will be Documentation/filesystems/caching/cachefiles.txt when
+      the patch is applied.
+
+  (*) 26-afs-fscache.diff
+
+      Patches to provide AFS with local caching.
+
+  (*) 27-nfs-comment.diff
+  (*) 28-nfs-fscache-option.diff
+  (*) 29-nfs-fscache-kconfig.diff
+  (*) 30-nfs-fscache-top-index.diff
+  (*) 31-nfs-fscache-server-obj.diff
+  (*) 32-nfs-fscache-super-obj.diff
+  (*) 33-nfs-fscache-inode-obj.diff
+  (*) 34-nfs-fscache-use-inode.diff
+  (*) 35-nfs-fscache-invalidate-pages.diff
+  (*) 36-nfs-fscache-iostats.diff
+  (*) 37-nfs-fscache-page-management.diff
+  (*) 38-nfs-fscache-read-context.diff
+  (*) 39-nfs-fscache-read-fallback.diff
+  (*) 40-nfs-fscache-read-from-cache.diff
+  (*) 41-nfs-fscache-store-to-cache.diff
+  (*) 42-nfs-fscache-display.diff
+  (*) 43-nfs-fscache-mount.diff
+
+      Patches to provide NFS with local caching.
+
+
+I've renamed the files in fs/fscache/ from fsc-XXX to XXX, and similarly the
+files called cf-XXX to XXX in fs/cachefiles/.
+
+I've also fixed some minor conflicts with NFS changes that have gone in to
+Linus's tree.
+
+I've been testing these patches by throwing batches of eight parallel "tar cf"
+commands across three different 350MB NFS-based kernel trees (3 tars on first
+tree, 3 on second, 2 on third), sometimes with one or more of the trees
+preloaded into the cache.  The complete working data set does not fit into the
+RAM of my test machine, so even three tars that can be entirely satisfied from
+the cache may have to reread everything from disk.
+
+I've also been running tars against AFS mounted kernel trees.
+
+--
+A tarball of the patches is available at:
+
+	http://people.redhat.com/~dhowells/fscache/patches/nfs+fscache-46.tar.bz2
+
+This builds on top of Linus's current kernel.
+
+The code can also be obtained by GIT from:
+
+	git://git.kernel.org/pub/scm/linux/kernel/git/dhowells/linux-2.6-fscache.git
+	http://www.kernel.org/pub/scm/linux/kernel/git/dhowells/linux-2.6-fscache.git
+
+tagged as 'fscache-46'.
+
+To use this version of CacheFiles, the cachefilesd-0.9 is also required.  It
+is available as an SRPM:
+
+	http://people.redhat.com/~dhowells/fscache/cachefilesd-0.9-1.fc7.src.rpm
+
+Or as individual bits:
+
+	http://people.redhat.com/~dhowells/fscache/cachefilesd-0.9.tar.bz2
+	http://people.redhat.com/~dhowells/fscache/cachefilesd.fc
+	http://people.redhat.com/~dhowells/fscache/cachefilesd.if
+	http://people.redhat.com/~dhowells/fscache/cachefilesd.te
+	http://people.redhat.com/~dhowells/fscache/cachefilesd.spec
+
+The .fc, .if and .te files are for manipulating SELinux.
+
+David
