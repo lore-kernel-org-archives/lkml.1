@@ -1,71 +1,74 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755831AbZDAPka@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759340AbZDAPlq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755831AbZDAPka (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 1 Apr 2009 11:40:30 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752316AbZDAPkL
+	id S1759340AbZDAPlq (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 1 Apr 2009 11:41:46 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752316AbZDAPlh
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 1 Apr 2009 11:40:11 -0400
-Received: from mail-bw0-f169.google.com ([209.85.218.169]:46853 "EHLO
-	mail-bw0-f169.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751730AbZDAPkK (ORCPT
+	Wed, 1 Apr 2009 11:41:37 -0400
+Received: from mo-p05-ob.rzone.de ([81.169.146.182]:55471 "EHLO
+	mo-p05-ob.rzone.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751730AbZDAPlg (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 1 Apr 2009 11:40:10 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:date:message-id:subject:from:to:content-type
-         :content-transfer-encoding;
-        b=hJ6qaj+1gYixK1E4rlFE9jDbNNQ66gQXkZwwi2+QQvp23ule/7dnmRUayCFuzHiuc3
-         MNS+wjEKJJTppU1WbQIIgeyN9fIAPXzc3tRzzcO21eYi8iSpTpySJCeDlSVU5MdKCxBA
-         RBDq6PVfVbR1Dl8+N09aECq1MNB2cZpfHDYEA=
+	Wed, 1 Apr 2009 11:41:36 -0400
+X-RZG-AUTH: :LWIQcGC8af5qXkYNYt77sURZEFmV4M3TAgvB+Qeh4tE+44JfzNbYY5/NAUgO
+X-RZG-CLASS-ID: mo05
+Message-ID: <49D38B22.1050105@ursus.ath.cx>
+Date: Wed, 01 Apr 2009 17:41:22 +0200
+From: "Andreas T.Auer" <andreas.t.auer_lkml_73537@ursus.ath.cx>
+User-Agent: Mozilla-Thunderbird 2.0.0.19 (X11/20090103)
 MIME-Version: 1.0
-Date: Wed, 1 Apr 2009 11:40:06 -0400
-Message-ID: <cb0375e10904010840n1543a890w9039465d0f80ffcc@mail.gmail.com>
-Subject: [PATCH 1/1] Tell linkwatch about new interfaces
-From: Andrew Lutomirski <amluto@gmail.com>
-To: netdev@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>
+To: Chris Mason <chris.mason@oracle.com>
+CC: Dave Chinner <david@fromorbit.com>, Mark Lord <lkml@rtr.ca>,
+       Stefan Richter <stefanr@s5r6.in-berlin.de>,
+       Jeff Garzik <jeff@garzik.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Matthew Garrett <mjg59@srcf.ucam.org>,
+       Alan Cox <alan@lxorguk.ukuu.org.uk>, Theodore Tso <tytso@mit.edu>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       David Rees <drees76@gmail.com>, Jesper Krogh <jesper@krogh.cc>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: Linux 2.6.29
+References: <alpine.LFD.2.00.0903271522210.3994@localhost.localdomain>	 <49CD7B10.7010601@garzik.org> <49CD891A.7030103@rtr.ca>	 <49CD9047.4060500@garzik.org> <49CE2633.2000903@s5r6.in-berlin.de>	 <49CE3186.8090903@garzik.org> <49CE35AE.1080702@s5r6.in-berlin.de>	 <49CE3F74.6090103@rtr.ca> <20090329231451.GR26138@disturbed>	 <1238417751.30488.12.camel@think.oraclecorp.com>	 <20090331235509.GU26138@disturbed> <1238590413.18549.7.camel@think.oraclecorp.com>
+In-Reply-To: <1238590413.18549.7.camel@think.oraclecorp.com>
 Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Andrew Lutomirski <amluto@gmail.com>
 
-When a network driver registers a new interface, linkwatch will not notice,
-and hence not set the rfc2863 operstate, until netif_carrier_on gets called.
-If the new interface has no carrier when it is connected, then a status of
-"unknown" is reported to userspace, which confuses various tools
-(NetworkManager, for example).
 
-This fires a linkwatch event for all new interfaces, so that operstate
-gets set reasonably quickly.
+On 01.04.2009 14:53 Chris Mason wrote:
+> On Wed, 2009-04-01 at 10:55 +1100, Dave Chinner wrote:
+>   
+>> If you crash while rsync is running, then the state of the copy
+>> is garbage anyway. You have to restart from scratch and rsync will
+>> detect such failures and resync the file. gnome/kde have no
+>> mechanism for such recovery.
+>>     
+> If this were the recovery system they had in mind, then why use rename
+> at all?  They could just as easily overwrite the original in place.
+>   
 
-Signed-off-by: Andrew Lutomirski <amluto@gmail.com>
+It is not a recovery system.  The renaming procedure is almost atomic
+with e.g. reiser or ext3 (ordered), but simple overwriting would always
+leave a window between truncating and the complete rewrite of the file.
 
----
+> Using rename implies they want to replace the old with a complete new
+> version.
+>
+> There's also the window where you crash after the rsync is done but
+> before all the new data safely makes it into the replacement files.
+>   
 
-This looks like the root cause of the bug I reported here:
+Sure, but in that case you have only lost some of your _mirrored_ data.
+The original will usually be untouched by this. So after the restart you
+just start the mirroring process again, and hopefully, this time you get
+a perfect copy.
 
-http://lkml.org/lkml/2009/3/24/499
+In KDE and lots of other apps the _original_ config files (and not any
+copies) are "overlinked" with the new files by the rename. That's the
+difference.
 
-Without knowing all the locking and ordering constraints imposed on network
-drivers, this seemed like the safest way to fix the bug.  Alternative
-approaches would be to call rfc2863_policy directly or to initialize the
-relevent fields to sane values (for the carrier off state) in alloc_netdev.
+Andreas
 
-This applies to 2.6.29.  I can rediff it for any other tree, but I didn't see
-any changes that would conflict.
-
-diff --git a/net/core/dev.c b/net/core/dev.c
-index e438f54..45911fd 100644
---- a/net/core/dev.c
-+++ b/net/core/dev.c
-@@ -4445,6 +4445,9 @@ int register_netdevice(struct net_device *dev)
- 		dev->reg_state = NETREG_UNREGISTERED;
- 	}
-
-+	/* Update link state. */
-+	linkwatch_fire_event(dev);
-+
- out:
- 	return ret;
