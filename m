@@ -1,15 +1,15 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755998AbZDAKRA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759181AbZDAKQT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755998AbZDAKRA (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 1 Apr 2009 06:17:00 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757031AbZDAKOl
+	id S1759181AbZDAKQT (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 1 Apr 2009 06:16:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756928AbZDAKOb
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 1 Apr 2009 06:14:41 -0400
-Received: from hera.kernel.org ([140.211.167.34]:40034 "EHLO hera.kernel.org"
+	Wed, 1 Apr 2009 06:14:31 -0400
+Received: from hera.kernel.org ([140.211.167.34]:40019 "EHLO hera.kernel.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755872AbZDAKOi (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 1 Apr 2009 06:14:38 -0400
-Date: Wed, 1 Apr 2009 10:14:06 GMT
+	id S1754145AbZDAKO2 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 1 Apr 2009 06:14:28 -0400
+Date: Wed, 1 Apr 2009 10:13:46 GMT
 From: Paul Mackerras <paulus@samba.org>
 To: linux-tip-commits@vger.kernel.org
 Cc: linux-kernel@vger.kernel.org, paulus@samba.org, hpa@zytor.com,
@@ -18,191 +18,197 @@ Cc: linux-kernel@vger.kernel.org, paulus@samba.org, hpa@zytor.com,
 Reply-To: mingo@redhat.com, hpa@zytor.com, paulus@samba.org,
        linux-kernel@vger.kernel.org, a.p.zijlstra@chello.nl,
        tglx@linutronix.de, mingo@elte.hu
-In-Reply-To: <20090330171023.871484899@chello.nl>
-References: <20090330171023.871484899@chello.nl>
-Subject: [tip:perfcounters/core] perf_counter tools: optionally scale counter values in perfstat mode
-Message-ID: <tip-654365a6d9ce51634d6091776af74c7848b0e40e@git.kernel.org>
-Git-Commit-ID: 654365a6d9ce51634d6091776af74c7848b0e40e
+In-Reply-To: <20090330171023.682428180@chello.nl>
+References: <20090330171023.682428180@chello.nl>
+Subject: [tip:perfcounters/core] perf_counter: make it possible for hw_perf_counter_init to return error codes
+Message-ID: <tip-a9ac421ff0a0893671eb4fe2f6a6a1d7dc847dd3@git.kernel.org>
+Git-Commit-ID: a9ac421ff0a0893671eb4fe2f6a6a1d7dc847dd3
 X-Mailer: tip-git-log-daemon
 MIME-Version: 1.0
 Content-Type: text/plain; charset=UTF-8
 Content-Disposition: inline
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Wed, 01 Apr 2009 10:14:08 +0000 (UTC)
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Wed, 01 Apr 2009 10:13:48 +0000 (UTC)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Commit-ID:  654365a6d9ce51634d6091776af74c7848b0e40e
-Gitweb:     http://git.kernel.org/tip/654365a6d9ce51634d6091776af74c7848b0e40e
+Commit-ID:  a9ac421ff0a0893671eb4fe2f6a6a1d7dc847dd3
+Gitweb:     http://git.kernel.org/tip/a9ac421ff0a0893671eb4fe2f6a6a1d7dc847dd3
 Author:     Paul Mackerras <paulus@samba.org>
-AuthorDate: Mon, 30 Mar 2009 19:07:10 +0200
+AuthorDate: Mon, 30 Mar 2009 19:07:08 +0200
 Committer:  Ingo Molnar <mingo@elte.hu>
-CommitDate: Wed, 1 Apr 2009 11:33:36 +0200
+CommitDate: Wed, 1 Apr 2009 11:33:35 +0200
 
-perf_counter tools: optionally scale counter values in perfstat mode
+perf_counter: make it possible for hw_perf_counter_init to return error codes
 
-Impact: new functionality
+Impact: better error reporting
 
-This adds add an option to the perfstat mode of kerneltop to scale the
-reported counter values according to the fraction of time that each
-counter gets to count.  This is invoked with the -l option (I used 'l'
-because s, c, a and e were all taken already.)  This uses the new
-PERF_RECORD_TOTAL_TIME_{ENABLED,RUNNING} read format options.
+At present, if hw_perf_counter_init encounters an error, all it can do
+is return NULL, which causes sys_perf_counter_open to return an EINVAL
+error to userspace.  This isn't very informative for userspace; it means
+that userspace can't tell the difference between "sorry, oprofile is
+already using the PMU" and "we don't support this CPU" and "this CPU
+doesn't support the requested generic hardware event".
 
-With this, we get output like this:
+This commit uses the PTR_ERR/ERR_PTR/IS_ERR set of macros to let
+hw_perf_counter_init return an error code on error rather than just NULL
+if it wishes.  If it does so, that error code will be returned from
+sys_perf_counter_open to userspace.  If it returns NULL, an EINVAL
+error will be returned to userspace, as before.
 
-$ ./perfstat -l -e 0:0,0:1,0:2,0:3,0:4,0:5 ./spin
+This also adapts the powerpc hw_perf_counter_init to make use of this
+to return ENXIO, EINVAL, EBUSY, or EOPNOTSUPP as appropriate.  It would
+be good to add extra error numbers in future to allow userspace to
+distinguish the various errors that are currently reported as EINVAL,
+i.e. irq_period < 0, too many events in a group, conflict between
+exclude_* settings in a group, and PMU resource conflict in a group.
 
- Performance counter stats for './spin':
-
-     4016072055  CPU cycles           (events)  (scaled from 66.53%)
-     2005887318  instructions         (events)  (scaled from 66.53%)
-        1762849  cache references     (events)  (scaled from 66.69%)
-         165229  cache misses         (events)  (scaled from 66.85%)
-     1001298009  branches             (events)  (scaled from 66.78%)
-          41566  branch misses        (events)  (scaled from 66.61%)
-
- Wall-clock time elapsed:  2438.227446 msecs
-
-This also lets us detect when a counter is zero because the counter
-never got to go on the CPU at all.  In that case we print <not counted>
-rather than 0.
+[ v2: fix a bug pointed out by Corey Ashford where error returns from
+      hw_perf_counter_init were not handled correctly in the case of
+      raw hardware events.]
 
 Signed-off-by: Paul Mackerras <paulus@samba.org>
 Signed-off-by: Peter Zijlstra <a.p.zijlstra@chello.nl>
-LKML-Reference: <20090330171023.871484899@chello.nl>
+LKML-Reference: <20090330171023.682428180@chello.nl>
 Signed-off-by: Ingo Molnar <mingo@elte.hu>
 
 
 ---
- Documentation/perf_counter/kerneltop.c |   56 +++++++++++++++++++++++++------
- 1 files changed, 45 insertions(+), 11 deletions(-)
+ arch/powerpc/kernel/perf_counter.c |   14 +++++++-------
+ kernel/perf_counter.c              |   35 ++++++++++++++++++++++-------------
+ 2 files changed, 29 insertions(+), 20 deletions(-)
 
-diff --git a/Documentation/perf_counter/kerneltop.c b/Documentation/perf_counter/kerneltop.c
-index 995111d..c0ca015 100644
---- a/Documentation/perf_counter/kerneltop.c
-+++ b/Documentation/perf_counter/kerneltop.c
-@@ -197,6 +197,8 @@ static int			delay_secs			=  2;
- static int			zero;
- static int			dump_symtab;
+diff --git a/arch/powerpc/kernel/perf_counter.c b/arch/powerpc/kernel/perf_counter.c
+index 560dd1e..0a4d14f 100644
+--- a/arch/powerpc/kernel/perf_counter.c
++++ b/arch/powerpc/kernel/perf_counter.c
+@@ -624,13 +624,13 @@ hw_perf_counter_init(struct perf_counter *counter)
+ 	int err;
  
-+static int			scale;
-+
- struct source_line {
- 	uint64_t		EIP;
- 	unsigned long		count;
-@@ -305,6 +307,7 @@ static void display_perfstat_help(void)
- 	display_events_help();
- 
- 	printf(
-+	" -l                           # scale counter values\n"
- 	" -a                           # system-wide collection\n");
- 	exit(0);
- }
-@@ -328,6 +331,7 @@ static void display_help(void)
- 	" -c CNT    --count=CNT        # event period to sample\n\n"
- 	" -C CPU    --cpu=CPU          # CPU (-1 for all)                 [default: -1]\n"
- 	" -p PID    --pid=PID          # PID of sampled task (-1 for all) [default: -1]\n\n"
-+	" -l                           # show scale factor for RR events\n"
- 	" -d delay  --delay=<seconds>  # sampling/display delay           [default:  2]\n"
- 	" -f CNT    --filter=CNT       # min-event-count filter          [default: 100]\n\n"
- 	" -s symbol --symbol=<symbol>  # function to be showed annotated one-shot\n"
-@@ -436,6 +440,9 @@ static void create_perfstat_counter(int counter)
- 	hw_event.config		= event_id[counter];
- 	hw_event.record_type	= PERF_RECORD_SIMPLE;
- 	hw_event.nmi		= 0;
-+	if (scale)
-+		hw_event.read_format	= PERF_FORMAT_TOTAL_TIME_ENABLED |
-+					  PERF_FORMAT_TOTAL_TIME_RUNNING;
- 
- 	if (system_wide) {
- 		int cpu;
-@@ -507,28 +514,53 @@ int do_perfstat(int argc, char *argv[])
- 	fprintf(stderr, "\n");
- 
- 	for (counter = 0; counter < nr_counters; counter++) {
--		int cpu;
--		__u64 count, single_count;
-+		int cpu, nv;
-+		__u64 count[3], single_count[3];
-+		int scaled;
- 
--		count = 0;
-+		count[0] = count[1] = count[2] = 0;
-+		nv = scale ? 3 : 1;
- 		for (cpu = 0; cpu < nr_cpus; cpu ++) {
- 			res = read(fd[cpu][counter],
--					(char *) &single_count, sizeof(single_count));
--			assert(res == sizeof(single_count));
--			count += single_count;
-+				   single_count, nv * sizeof(__u64));
-+			assert(res == nv * sizeof(__u64));
-+
-+			count[0] += single_count[0];
-+			if (scale) {
-+				count[1] += single_count[1];
-+				count[2] += single_count[2];
-+			}
-+		}
-+
-+		scaled = 0;
-+		if (scale) {
-+			if (count[2] == 0) {
-+				fprintf(stderr, " %14s  %-20s\n",
-+					"<not counted>", event_name(counter));
-+				continue;
-+			}
-+			if (count[2] < count[1]) {
-+				scaled = 1;
-+				count[0] = (unsigned long long)
-+					((double)count[0] * count[1] / count[2] + 0.5);
-+			}
- 		}
- 
- 		if (event_id[counter] == EID(PERF_TYPE_SOFTWARE, PERF_COUNT_CPU_CLOCK) ||
- 		    event_id[counter] == EID(PERF_TYPE_SOFTWARE, PERF_COUNT_TASK_CLOCK)) {
- 
--			double msecs = (double)count / 1000000;
-+			double msecs = (double)count[0] / 1000000;
- 
--			fprintf(stderr, " %14.6f  %-20s (msecs)\n",
-+			fprintf(stderr, " %14.6f  %-20s (msecs)",
- 				msecs, event_name(counter));
- 		} else {
--			fprintf(stderr, " %14Ld  %-20s (events)\n",
--				count, event_name(counter));
-+			fprintf(stderr, " %14Ld  %-20s (events)",
-+				count[0], event_name(counter));
- 		}
-+		if (scaled)
-+			fprintf(stderr, "  (scaled from %.2f%%)",
-+				(double) count[2] / count[1] * 100);
-+		fprintf(stderr, "\n");
+ 	if (!ppmu)
+-		return NULL;
++		return ERR_PTR(-ENXIO);
+ 	if ((s64)counter->hw_event.irq_period < 0)
+-		return NULL;
++		return ERR_PTR(-EINVAL);
+ 	if (!perf_event_raw(&counter->hw_event)) {
+ 		ev = perf_event_id(&counter->hw_event);
+ 		if (ev >= ppmu->n_generic || ppmu->generic_events[ev] == 0)
+-			return NULL;
++			return ERR_PTR(-EOPNOTSUPP);
+ 		ev = ppmu->generic_events[ev];
+ 	} else {
+ 		ev = perf_event_config(&counter->hw_event);
+@@ -656,14 +656,14 @@ hw_perf_counter_init(struct perf_counter *counter)
+ 		n = collect_events(counter->group_leader, ppmu->n_counter - 1,
+ 				   ctrs, events);
+ 		if (n < 0)
+-			return NULL;
++			return ERR_PTR(-EINVAL);
  	}
- 	fprintf(stderr, "\n");
- 	fprintf(stderr, " Wall-clock time elapsed: %12.6f msecs\n",
-@@ -1049,6 +1081,7 @@ static void process_options(int argc, char *argv[])
- 			{"filter",	required_argument,	NULL, 'f'},
- 			{"group",	required_argument,	NULL, 'g'},
- 			{"help",	no_argument,		NULL, 'h'},
-+			{"scale",	no_argument,		NULL, 'l'},
- 			{"nmi",		required_argument,	NULL, 'n'},
- 			{"pid",		required_argument,	NULL, 'p'},
- 			{"vmlinux",	required_argument,	NULL, 'x'},
-@@ -1060,7 +1093,7 @@ static void process_options(int argc, char *argv[])
- 			{"munmap_info",	no_argument,		NULL, 'U'},
- 			{NULL,		0,			NULL,  0 }
- 		};
--		int c = getopt_long(argc, argv, "+:ac:C:d:De:f:g:hn:m:p:s:Sx:zMU",
-+		int c = getopt_long(argc, argv, "+:ac:C:d:De:f:g:hln:m:p:s:Sx:zMU",
- 				    long_options, &option_index);
- 		if (c == -1)
- 			break;
-@@ -1084,6 +1117,7 @@ static void process_options(int argc, char *argv[])
- 		case 'f': count_filter			=   atoi(optarg); break;
- 		case 'g': group				=   atoi(optarg); break;
- 		case 'h':      				  display_help(); break;
-+		case 'l': scale				=	       1; break;
- 		case 'n': nmi				=   atoi(optarg); break;
- 		case 'p':
- 			/* CPU and PID are mutually exclusive */
+ 	events[n] = ev;
+ 	ctrs[n] = counter;
+ 	if (check_excludes(ctrs, n, 1))
+-		return NULL;
++		return ERR_PTR(-EINVAL);
+ 	if (power_check_constraints(events, n + 1))
+-		return NULL;
++		return ERR_PTR(-EINVAL);
+ 
+ 	counter->hw.config = events[n];
+ 	atomic64_set(&counter->hw.period_left, counter->hw_event.irq_period);
+@@ -687,7 +687,7 @@ hw_perf_counter_init(struct perf_counter *counter)
+ 	counter->destroy = hw_perf_counter_destroy;
+ 
+ 	if (err)
+-		return NULL;
++		return ERR_PTR(err);
+ 	return &power_perf_ops;
+ }
+ 
+diff --git a/kernel/perf_counter.c b/kernel/perf_counter.c
+index f35e89e..d07b452 100644
+--- a/kernel/perf_counter.c
++++ b/kernel/perf_counter.c
+@@ -2453,10 +2453,11 @@ perf_counter_alloc(struct perf_counter_hw_event *hw_event,
+ {
+ 	const struct hw_perf_counter_ops *hw_ops;
+ 	struct perf_counter *counter;
++	long err;
+ 
+ 	counter = kzalloc(sizeof(*counter), gfpflags);
+ 	if (!counter)
+-		return NULL;
++		return ERR_PTR(-ENOMEM);
+ 
+ 	/*
+ 	 * Single counters are their own group leaders, with an
+@@ -2505,12 +2506,18 @@ perf_counter_alloc(struct perf_counter_hw_event *hw_event,
+ 		hw_ops = tp_perf_counter_init(counter);
+ 		break;
+ 	}
++done:
++	err = 0;
++	if (!hw_ops)
++		err = -EINVAL;
++	else if (IS_ERR(hw_ops))
++		err = PTR_ERR(hw_ops);
+ 
+-	if (!hw_ops) {
++	if (err) {
+ 		kfree(counter);
+-		return NULL;
++		return ERR_PTR(err);
+ 	}
+-done:
++
+ 	counter->hw_ops = hw_ops;
+ 
+ 	return counter;
+@@ -2583,10 +2590,10 @@ SYSCALL_DEFINE5(perf_counter_open,
+ 			goto err_put_context;
+ 	}
+ 
+-	ret = -EINVAL;
+ 	counter = perf_counter_alloc(&hw_event, cpu, ctx, group_leader,
+ 				     GFP_KERNEL);
+-	if (!counter)
++	ret = PTR_ERR(counter);
++	if (IS_ERR(counter))
+ 		goto err_put_context;
+ 
+ 	ret = anon_inode_getfd("[perf_counter]", &perf_fops, counter, 0);
+@@ -2658,8 +2665,8 @@ inherit_counter(struct perf_counter *parent_counter,
+ 	child_counter = perf_counter_alloc(&parent_counter->hw_event,
+ 					   parent_counter->cpu, child_ctx,
+ 					   group_leader, GFP_KERNEL);
+-	if (!child_counter)
+-		return NULL;
++	if (IS_ERR(child_counter))
++		return child_counter;
+ 
+ 	/*
+ 	 * Link it up in the child's context:
+@@ -2710,15 +2717,17 @@ static int inherit_group(struct perf_counter *parent_counter,
+ {
+ 	struct perf_counter *leader;
+ 	struct perf_counter *sub;
++	struct perf_counter *child_ctr;
+ 
+ 	leader = inherit_counter(parent_counter, parent, parent_ctx,
+ 				 child, NULL, child_ctx);
+-	if (!leader)
+-		return -ENOMEM;
++	if (IS_ERR(leader))
++		return PTR_ERR(leader);
+ 	list_for_each_entry(sub, &parent_counter->sibling_list, list_entry) {
+-		if (!inherit_counter(sub, parent, parent_ctx,
+-				     child, leader, child_ctx))
+-			return -ENOMEM;
++		child_ctr = inherit_counter(sub, parent, parent_ctx,
++					    child, leader, child_ctx);
++		if (IS_ERR(child_ctr))
++			return PTR_ERR(child_ctr);
+ 	}
+ 	return 0;
+ }
