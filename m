@@ -1,60 +1,32 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932698AbZDATh0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932759AbZDATi7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932698AbZDATh0 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 1 Apr 2009 15:37:26 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758977AbZDAThJ
+	id S932759AbZDATi7 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 1 Apr 2009 15:38:59 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758977AbZDATit
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 1 Apr 2009 15:37:09 -0400
-Received: from mx2.mail.elte.hu ([157.181.151.9]:59736 "EHLO mx2.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1757348AbZDAThH (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 1 Apr 2009 15:37:07 -0400
-Date: Wed, 1 Apr 2009 21:36:39 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: Stefani Seibold <stefani@seibold.net>,
-       Andrew Morton <akpm@linux-foundation.org>
-Cc: linux-kernel <linux-kernel@vger.kernel.org>, linux-mm <linux-mm@kvack.org>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>, Joerg Engel <joern@logfs.org>
-Subject: Re: Detailed Stack Information Patch [2/3]
-Message-ID: <20090401193639.GB12316@elte.hu>
-References: <1238511507.364.62.camel@matrix>
+	Wed, 1 Apr 2009 15:38:49 -0400
+Received: from Cpsmtpm-eml106.kpnxchange.com ([195.121.3.10]:56052 "EHLO
+	CPSMTPM-EML106.kpnxchange.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1755508AbZDATis (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 1 Apr 2009 15:38:48 -0400
+From: Frans Pop <elendil@planet.nl>
+To: linux-kbuild@vger.kernel.org
+Subject: [PATCH 4/5]
+Date: Wed, 1 Apr 2009 21:38:44 +0200
+User-Agent: KMail/1.9.9
+Cc: linux-kernel@vger.kernel.org, Sam Ravnborg <sam@ravnborg.org>
+References: <200904012133.37387.elendil@planet.nl>
+In-Reply-To: <200904012133.37387.elendil@planet.nl>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain;
+  charset="utf-8"
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <1238511507.364.62.camel@matrix>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+Message-Id: <200904012138.45442.elendil@planet.nl>
+X-OriginalArrivalTime: 01 Apr 2009 19:38:46.0178 (UTC) FILETIME=[78EB1020:01C9B301]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-* Stefani Seibold <stefani@seibold.net> wrote:
-
-> +config PROC_STACK_MONITOR
-> + 	default y
-> +	depends on PROC_STACK
-> +	bool "Enable /proc/stackmon detailed stack monitoring"
-> + 	help
-> +	  This enables detailed monitoring of process and thread stack
-> +	  utilization via the /proc/stackmon interface.
-> +	  Disabling these interfaces will reduce the size of the kernel by
-> +	  approximately 2kb.
-
-Hm, i'm not convinced about this one. Stupid question: what's wrong 
-with ulimit -s?
-
-Also, if for some reason you dont want to (or cannot) enforce a 
-system-wide stack size ulimit, or it has some limitation that makes 
-it impractical for you - if we add what i suggested to the 
-/proc/*/maps files, your user-space watchdog daemon could scan those 
-periodically and report any excesses and zap the culprit ... right?
-
-	Ingo
