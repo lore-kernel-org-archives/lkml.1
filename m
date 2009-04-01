@@ -1,51 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1765317AbZDAPHk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932783AbZDAPIa@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1765317AbZDAPHk (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 1 Apr 2009 11:07:40 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762948AbZDAPHb
+	id S932783AbZDAPIa (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 1 Apr 2009 11:08:30 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1764842AbZDAPIU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 1 Apr 2009 11:07:31 -0400
-Received: from mx2.mail.elte.hu ([157.181.151.9]:36017 "EHLO mx2.mail.elte.hu"
+	Wed, 1 Apr 2009 11:08:20 -0400
+Received: from mga09.intel.com ([134.134.136.24]:40592 "EHLO mga09.intel.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756198AbZDAPHa (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 1 Apr 2009 11:07:30 -0400
-Date: Wed, 1 Apr 2009 17:07:11 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: Hidetoshi Seto <seto.hidetoshi@jp.fujitsu.com>
-Cc: "H. Peter Anvin" <hpa@zytor.com>, Thomas Gleixner <tglx@linutronix.de>,
-       linux-kernel@vger.kernel.org, Andi Kleen <ak@linux.intel.com>
-Subject: Re: [PATCH -tip 1/3] x86, mce: Add mce_threshold option for intel
-	cmci
-Message-ID: <20090401150711.GA20037@elte.hu>
-References: <49CB3F24.8040804@jp.fujitsu.com> <20090328120825.GB14464@elte.hu> <49D183B0.6060306@jp.fujitsu.com>
+	id S1762948AbZDAPIT convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 1 Apr 2009 11:08:19 -0400
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.39,307,1235980800"; 
+   d="scan'208";a="399399435"
+From: "Sosnowski, Maciej" <maciej.sosnowski@intel.com>
+To: Hans-Christian Egtvedt <hans-christian.egtvedt@atmel.com>
+CC: "Williams, Dan J" <dan.j.williams@intel.com>,
+       "haavard.skinnemoen@atmel.com" <haavard.skinnemoen@atmel.com>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
+Date: Wed, 1 Apr 2009 16:08:13 +0100
+Subject: RE: [PATCH v3 1/1] dw_dmac: add cyclic API to DW DMA driver
+Thread-Topic: [PATCH v3 1/1] dw_dmac: add cyclic API to DW DMA driver
+Thread-Index: Acmy0HyGaY4hFcbQQ+6Utu0FL7/JGgACwbYg
+Message-ID: <129600E5E5FB004392DDC3FB599660D790FECED0@irsmsx504.ger.corp.intel.com>
+References: <20090401153957.6982f050@hskinnemoen-d830>
+ <1238593622-17809-1-git-send-email-hans-christian.egtvedt@atmel.com>
+In-Reply-To: <1238593622-17809-1-git-send-email-hans-christian.egtvedt@atmel.com>
+Accept-Language: en-US
+Content-Language: en-US
+X-MS-Has-Attach: 
+X-MS-TNEF-Correlator: 
+acceptlanguage: en-US
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 8BIT
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <49D183B0.6060306@jp.fujitsu.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-* Hidetoshi Seto <seto.hidetoshi@jp.fujitsu.com> wrote:
-
-> Hi Ingo,
+Hans-Christian Egtvedt wrote:
+> This patch adds a cyclic DMA interface to the DW DMA driver. This is
+> very useful if you want to use the DMA controller in combination with a
+> sound device which uses cyclic buffers.
 > 
-> Sorry, could you drop patch 1/3 and 3/3 from your -tip tree? Andi 
-> and I discussed some and agreed disabling CMCI need to be done in 
-> different way (at least parameter name).
+> Using a DMA channel for cyclic DMA will disable the possibility to use
+> it as a normal DMA engine until the user calls the cyclic free function
+> on the DMA channel. Also a cyclic DMA list can not be prepared if the
+> channel is already active.
+> 
+> Signed-off-by: Hans-Christian Egtvedt <hans-christian.egtvedt@atmel.com>
+> ---
+>  drivers/dma/dw_dmac.c      |  332 +++++++++++++++++++++++++++++++++++++++++++-
+>  drivers/dma/dw_dmac_regs.h |    7 +-
+>  include/linux/dw_dmac.h    |   19 +++
+>  3 files changed, 356 insertions(+), 2 deletions(-)
+> 
 
-Could you please send a patch that changes the parameter name?
-
-Thanks,
-
-	Ingo
+Acked-by: Maciej Sosnowski <maciej.sosnowski@intel.com>
