@@ -1,61 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757860AbZDAF4n@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755102AbZDAGHD@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757860AbZDAF4n (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 1 Apr 2009 01:56:43 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751959AbZDAF4b
+	id S1755102AbZDAGHD (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 1 Apr 2009 02:07:03 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750845AbZDAGGv
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 1 Apr 2009 01:56:31 -0400
-Received: from rv-out-0506.google.com ([209.85.198.238]:40195 "EHLO
-	rv-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750742AbZDAF4a convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 1 Apr 2009 01:56:30 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:sender:in-reply-to:references:date
-         :x-google-sender-auth:message-id:subject:from:to:cc:content-type
-         :content-transfer-encoding;
-        b=u+A1DO09r3qZQbFFofeYOX9PKCkETTW5p9qIeePTyJfcNTFlVxmAWdHEG502eZkVle
-         7NZCbsePmDzDVt6/OAWuqbLjqwNnqTx3CLCURtatXxLFcelhOe9wUfvh1R96iFl3P1v5
-         ooi2ZY3apyPI8McuOLi62LkP/FCLA+gh/PUZ8=
+	Wed, 1 Apr 2009 02:06:51 -0400
+Received: from hera.kernel.org ([140.211.167.34]:60282 "EHLO hera.kernel.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750742AbZDAGGu (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 1 Apr 2009 02:06:50 -0400
+Message-ID: <49D30469.8020006@kernel.org>
+Date: Wed, 01 Apr 2009 15:06:33 +0900
+From: Tejun Heo <tj@kernel.org>
+User-Agent: Thunderbird 2.0.0.19 (X11/20081227)
 MIME-Version: 1.0
-In-Reply-To: <20090331.223128.143365884.davem@davemloft.net>
-References: <20090331.223128.143365884.davem@davemloft.net>
-Date: Tue, 31 Mar 2009 22:56:28 -0700
-X-Google-Sender-Auth: 2116798c0367d393
-Message-ID: <86802c440903312256r6ddbaa22o5c23cf85d83a6662@mail.gmail.com>
-Subject: Re: Inverted NUMA test in setup_pcpu_remap()?
-From: Yinghai Lu <yinghai@kernel.org>
-To: David Miller <davem@davemloft.net>, Ingo Molnar <mingo@elte.hu>,
-       "H. Peter Anvin" <hpa@zytor.com>, Thomas Gleixner <tglx@linutronix.de>
-Cc: tj@kernel.org, linux-kernel@vger.kernel.org
+To: Yinghai Lu <yinghai@kernel.org>, Ingo Molnar <mingo@elte.hu>
+CC: David Miller <davem@davemloft.net>, "H. Peter Anvin" <hpa@zytor.com>,
+       Thomas Gleixner <tglx@linutronix.de>, linux-kernel@vger.kernel.org
+Subject: [PATCH] x86,percpu: fix inverted NUMA test in setup_pcpu_remap()
+References: <20090331.223128.143365884.davem@davemloft.net> <86802c440903312256r6ddbaa22o5c23cf85d83a6662@mail.gmail.com>
+In-Reply-To: <86802c440903312256r6ddbaa22o5c23cf85d83a6662@mail.gmail.com>
+X-Enigmail-Version: 0.95.7
 Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 8BIT
+Content-Transfer-Encoding: 7bit
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Wed, 01 Apr 2009 06:06:37 +0000 (UTC)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Mar 31, 2009 at 10:31 PM, David Miller <davem@davemloft.net> wrote:
->
-> The test currently is:
->
->        if (!cpu_has_pse || pcpu_need_numa())
->                return -EINVAL;
->
-> Don't we really mean "!pcpu_need_numa()"?
->
-> The way I read the intent, setup_pcpu_remap() should be used in the
-> NUMA case.  But that's not what's happening because of how this test
-> is coded.
->
-> In fact, the test here is identical to the one used in
-> setup_pcpu_embed()
-> --
+setup_percpu_remap() is for NUMA machines yet it bailed out with
+-EINVAL if pcpu_need_numa().  Fix the inverted condition.
 
-you are right. on one 4 sockets system got
+This problem was reported by David Miller and verified by Yinhai Lu.
 
-[    0.000000] PERCPU: Allocated 471 4k pages, static data 1925472 bytes
+Signed-off-by: Tejun Heo <tj@kernel.org>
+Reported-by: David Miller <davem@davemloft.net>
+Reported-by: Yinghai Lu <yinghai@kernel.org>
+---
+Oops, thanks for spotting it.  I don't have a numa machine so the
+condition was never tested on actual machines.  :-)
 
-that is from setup_pcpu_4k...
+ arch/x86/kernel/setup_percpu.c |    2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
-YH
+diff --git a/arch/x86/kernel/setup_percpu.c b/arch/x86/kernel/setup_percpu.c
+index 400331b..876b127 100644
+--- a/arch/x86/kernel/setup_percpu.c
++++ b/arch/x86/kernel/setup_percpu.c
+@@ -162,7 +162,7 @@ static ssize_t __init setup_pcpu_remap(size_t static_size)
+ 	 * If large page isn't supported, there's no benefit in doing
+ 	 * this.  Also, on non-NUMA, embedding is better.
+ 	 */
+-	if (!cpu_has_pse || pcpu_need_numa())
++	if (!cpu_has_pse || !pcpu_need_numa())
+ 		return -EINVAL;
+ 
+ 	last = NULL;
