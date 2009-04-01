@@ -1,48 +1,97 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764704AbZDANSx@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764690AbZDANTc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764704AbZDANSx (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 1 Apr 2009 09:18:53 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754175AbZDANSo
+	id S1764690AbZDANTc (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 1 Apr 2009 09:19:32 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758930AbZDANTV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 1 Apr 2009 09:18:44 -0400
-Received: from hera.kernel.org ([140.211.167.34]:36521 "EHLO hera.kernel.org"
+	Wed, 1 Apr 2009 09:19:21 -0400
+Received: from mx2.mail.elte.hu ([157.181.151.9]:40778 "EHLO mx2.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750927AbZDANSn (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 1 Apr 2009 09:18:43 -0400
-Message-ID: <49D3699F.4030105@kernel.org>
-Date: Wed, 01 Apr 2009 22:18:23 +0900
-From: Tejun Heo <tj@kernel.org>
-User-Agent: Thunderbird 2.0.0.19 (X11/20081227)
+	id S1754175AbZDANTU (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 1 Apr 2009 09:19:20 -0400
+Date: Wed, 1 Apr 2009 15:18:58 +0200
+From: Ingo Molnar <mingo@elte.hu>
+To: "Metzger, Markus T" <markus.t.metzger@intel.com>,
+       Steven Rostedt <rostedt@goodmis.org>
+Cc: Oleg Nesterov <oleg@redhat.com>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       "tglx@linutronix.de" <tglx@linutronix.de>,
+       "hpa@zytor.com" <hpa@zytor.com>,
+       "markus.t.metzger@gmail.com" <markus.t.metzger@gmail.com>,
+       "roland@redhat.com" <roland@redhat.com>,
+       "eranian@googlemail.com" <eranian@googlemail.com>,
+       "Villacis, Juan" <juan.villacis@intel.com>,
+       "ak@linux.jf.intel.com" <ak@linux.jf.intel.com>
+Subject: Re: [patch 0/21] x86, ptrace, bts, hw-branch-tracer: fixes and
+	cleanups
+Message-ID: <20090401131858.GA18677@elte.hu>
+References: <20090331144229.A11867@sedona.ch.intel.com> <20090331233958.GA28228@redhat.com> <928CFBE8E7CB0040959E56B4EA41A77E926D4FDE@irsmsx504.ger.corp.intel.com> <20090401114557.GC23678@elte.hu> <928CFBE8E7CB0040959E56B4EA41A77E926D539D@irsmsx504.ger.corp.intel.com>
 MIME-Version: 1.0
-To: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
-CC: axboe@kernel.dk, bharrosh@panasas.com, linux-kernel@vger.kernel.org,
-       tj@kenel.org
-Subject: Re: [PATCH 8/8] blk-map: reimplement blk_rq_map_user() using blk_rq_map_user_iov()
-References: <49D36329.20004@kernel.org>	<20090401215933S.fujita.tomonori@lab.ntt.co.jp>	<49D3662B.3000801@kernel.org> <20090401221102O.fujita.tomonori@lab.ntt.co.jp> <49D36951.9000604@kernel.org>
-In-Reply-To: <49D36951.9000604@kernel.org>
-X-Enigmail-Version: 0.95.7
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Wed, 01 Apr 2009 13:18:27 +0000 (UTC)
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <928CFBE8E7CB0040959E56B4EA41A77E926D539D@irsmsx504.ger.corp.intel.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Tejun Heo wrote:
->>> reason blk_rq_map_user() had multiple bio chaining was to work around
->>> BIO_MAX_SIZE.  blk_rq_map_user_iov() doesn't support multiple bio
->>> chaining, so sans blk_rq_append_bio() or playing with rq/bio internals
->>> directly, there's no way to use or even know about multiple bios.
->> Yes, only non iovec interface of SG_IO supports large data
->> transfer. Users have been lived with that.
+
+* Metzger, Markus T <markus.t.metzger@intel.com> wrote:
+
+> >-----Original Message-----
+> >From: Ingo Molnar [mailto:mingo@elte.hu]
+> >Sent: Wednesday, April 01, 2009 1:46 PM
+> >To: Metzger, Markus T
 > 
-> This patch doesn't remove any feature.  You don't lose anything.  What
-> used to be done with multiple bios is now done with single bio.  The
-> implementation is simpler and shorter.  Using or not using multiple
-> bios doesn't (and shouldn't) make any difference to blk_map_*() users.
+> 
+> >> >> The first 5 patches apply to .29 with the small preparation patch below.
+> >> >
+> >> >Tried to review these patches.
+> >> >
+> >> >As I said, I don't understand ds.c, but I _think_ these changes are good.
+> >> >
+> >> >I only have a couple of really minor nitpicks...
+> >>
+> >> Thanks for your review!
+> >> I will address the nitpicks in separate patches, if that's OK with everyone.
+> >
+> >Please dont forget to propagate Oleg's Reviewed-by (or Acked-by)
+> >tags into the commits.
+> >
+> >> Regarding bisecting, I split the patches to attract reviewers to
+> >> the smaller parts rather than scare them off with one big patch.
+> >>
+> >> I hope that the bisecting tool can cope with broken builds between
+> >> patches.
+> >
+> >It cannot, and even if it did we dont want a single intentionally
+> >broken bisection point in the kernel. Please do small patches that
+> >build fine at each step. We've got more than 100,000 bisectable
+> >commits in the kernel to look at. If you think it's not possible in
+> >a specific case then please describe the situation to us so that we
+> >can suggest a solution.
+> 
+> I can resend the series with fewer but bigger patches that compile 
+> OK.
+> 
+> I'm currently using quilt to manage patches. I use git to get the 
+> sources, but that's it. I send all the patches manually.
+> 
+> You mentioned in another email that I should use "git 
+> format-patch" and "git send-email" and that I should propagate 
+> Oleg's acks into the commit logs.
+> 
+> Is there a way to do this with quilt, as well? Could you point me 
+> to some getting-started documentation?
 
-Oh.. and blk_rq_map_user_iov() now gets to play with large requests
-too.  :-)
+Maybe "quilt mail" does it correctly but i have not checked.
 
--- 
-tejun
+	Ingo
