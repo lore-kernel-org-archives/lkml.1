@@ -1,89 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754827AbZDAKNV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751352AbZDAKNm@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754827AbZDAKNV (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 1 Apr 2009 06:13:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752293AbZDAKNH
+	id S1751352AbZDAKNm (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 1 Apr 2009 06:13:42 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754261AbZDAKNR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 1 Apr 2009 06:13:07 -0400
-Received: from mail09.linbit.com ([212.69.161.110]:52747 "EHLO
-	mail09.linbit.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751953AbZDAKNG (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 1 Apr 2009 06:13:06 -0400
-From: Philipp Reisner <philipp.reisner@linbit.com>
-Organization: LINBIT
-To: Sam Ravnborg <sam@ravnborg.org>
-Subject: Re: [PATCH 13/13] DRBD: final
-Date: Wed, 1 Apr 2009 12:13:01 +0200
-User-Agent: KMail/1.11.0 (Linux/2.6.27-11-generic; KDE/4.2.0; i686; ; )
-Cc: linux-kernel@vger.kernel.org, gregkh@suse.de, jens.axboe@oracle.com,
-       nab@risingtidestorage.com, andi@firstfloor.org,
-       Lars Ellenberg <lars.ellenberg@linbit.com>
-References: <1238431643-19433-7-git-send-email-philipp.reisner@linbit.com> <1238431643-19433-16-git-send-email-philipp.reisner@linbit.com> <20090330190530.GA4028@uranus.ravnborg.org>
-In-Reply-To: <20090330190530.GA4028@uranus.ravnborg.org>
-X-OTRS-FollowUp-SenderType: agent
+	Wed, 1 Apr 2009 06:13:17 -0400
+Received: from hera.kernel.org ([140.211.167.34]:39910 "EHLO hera.kernel.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753410AbZDAKNP (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 1 Apr 2009 06:13:15 -0400
+Date: Wed, 1 Apr 2009 10:12:38 GMT
+From: Lai Jiangshan <laijs@cn.fujitsu.com>
+To: linux-tip-commits@vger.kernel.org
+Cc: linux-kernel@vger.kernel.org, hpa@zytor.com, mingo@redhat.com,
+       arjan@linux.intel.com, srostedt@redhat.com, tglx@linutronix.de,
+       laijs@cn.fujitsu.com, mingo@elte.hu
+Reply-To: mingo@redhat.com, hpa@zytor.com, linux-kernel@vger.kernel.org,
+       arjan@linux.intel.com, srostedt@redhat.com, tglx@linutronix.de,
+       laijs@cn.fujitsu.com, mingo@elte.hu
+In-Reply-To: <49D06B9C.3070209@cn.fujitsu.com>
+References: <49D06B9C.3070209@cn.fujitsu.com>
+Subject: [tip:tracing/urgent] tracing: move scripts/trace/power.pl to scripts/tracing/power.pl
+Message-ID: <tip-4fafd5b03875612a24a5b17dac0c63217a65de42@git.kernel.org>
+Git-Commit-ID: 4fafd5b03875612a24a5b17dac0c63217a65de42
+X-Mailer: tip-git-log-daemon
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=UTF-8
 Content-Disposition: inline
-Message-Id: <200904011213.02121.philipp.reisner@linbit.com>
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Wed, 01 Apr 2009 10:12:40 +0000 (UTC)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Monday 30 March 2009 21:05:30 Sam Ravnborg wrote:
-> > +#
-> > +config BLK_DEV_DRBD
-> > +	tristate "DRBD Distributed Replicated Block Device support"
-> > +	select INET
-> > +	select PROC_FS
-> > +	select CONNECTOR
-> > +	select CRYPTO
-> > +	select CRYPTO_HMAC
->
-> Have you double checked that these symbols are supposed to be 'selected'?
-> If they:
-> - have dependencies
-> - have a prompt
-> then they most likely are not.
->
+Commit-ID:  4fafd5b03875612a24a5b17dac0c63217a65de42
+Gitweb:     http://git.kernel.org/tip/4fafd5b03875612a24a5b17dac0c63217a65de42
+Author:     Lai Jiangshan <laijs@cn.fujitsu.com>
+AuthorDate: Mon, 30 Mar 2009 14:50:04 +0800
+Committer:  Ingo Molnar <mingo@elte.hu>
+CommitDate: Wed, 1 Apr 2009 11:30:35 +0200
 
-Right! Reading kconfig-language.txt makes one wiser ;)
-I have changed them into dependencies.
+tracing: move scripts/trace/power.pl to scripts/tracing/power.pl
 
-> > @@ -0,0 +1,7 @@
-> > +#CFLAGS_drbd_sizeof_sanity_check.o = -Wpadded # -Werror
->
-> Commented out?
->
+Impact: Cleanup
 
-Removed.
+We use scripts/tracing/ to contain tracing scripts.
+Use one directory only instead of two.
 
-> > +
-> > +drbd-objs  :=	drbd_buildtag.o drbd_bitmap.o drbd_proc.o \
-> > +		drbd_worker.o drbd_receiver.o drbd_req.o drbd_actlog.o \
-> > +		lru_cache.o drbd_main.o drbd_strings.o drbd_nl.o
->
-> Please use:
-> drdb-y := drbd_buildtag.o drbd_bitmap.o drbd_proc.o
-> ...
->
-> And my personal taste favours:
-> drdb-y := ...
-> drdb-y += ...
->
+Signed-off-by: Lai Jiangshan <laijs@cn.fujitsu.com>
+Cc: Arjan van de Ven <arjan@linux.intel.com>
+Cc: Steven Rostedt <srostedt@redhat.com>
+LKML-Reference: <49D06B9C.3070209@cn.fujitsu.com>
+Signed-off-by: Ingo Molnar <mingo@elte.hu>
 
-Ok and ok, following your taste.
 
-Thanks for those helpful hints!
+---
+ scripts/{trace => tracing}/power.pl |    0
+ 1 files changed, 0 insertions(+), 0 deletions(-)
 
--Phil
--- 
-: Dipl-Ing Philipp Reisner
-: LINBIT | Your Way to High Availability
-: Tel: +43-1-8178292-50, Fax: +43-1-8178292-82
-: http://www.linbit.com
-
-DRBD(R) and LINBIT(R) are registered trademarks of LINBIT, Austria.
-
+diff --git a/scripts/trace/power.pl b/scripts/tracing/power.pl
+similarity index 100%
+rename from scripts/trace/power.pl
+rename to scripts/tracing/power.pl
