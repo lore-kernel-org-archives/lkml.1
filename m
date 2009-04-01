@@ -1,54 +1,156 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761580AbZDANzf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764308AbZDAN4E@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761580AbZDANzf (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 1 Apr 2009 09:55:35 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756622AbZDANzF
+	id S1764308AbZDAN4E (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 1 Apr 2009 09:56:04 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763790AbZDANze
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 1 Apr 2009 09:55:05 -0400
-Received: from smtp.ultrahosting.com ([74.213.174.254]:42412 "EHLO
-	smtp.ultrahosting.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1765404AbZDANzD (ORCPT
+	Wed, 1 Apr 2009 09:55:34 -0400
+Received: from victor.provo.novell.com ([137.65.250.26]:39920 "EHLO
+	victor.provo.novell.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1764218AbZDANzc (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 1 Apr 2009 09:55:03 -0400
-Date: Wed, 1 Apr 2009 09:49:25 -0400 (EDT)
-From: Christoph Lameter <cl@linux.com>
-X-X-Sender: cl@qirst.com
-To: Tejun Heo <tj@kernel.org>
-cc: Ingo Molnar <mingo@elte.hu>, Martin Schwidefsky <schwidefsky@de.ibm.com>,
-       rusty@rustcorp.com.au, tglx@linutronix.de, x86@kernel.org,
-       linux-kernel@vger.kernel.org, hpa@zytor.com,
-       Paul Mundt <lethal@linux-sh.org>, rmk@arm.linux.org.uk,
-       starvik@axis.com, ralf@linux-mips.org, davem@davemloft.net,
-       cooloney@kernel.org, kyle@mcmartin.ca, matthew@wil.cx,
-       grundler@parisc-linux.org, takata@linux-m32r.org,
-       benh@kernel.crashing.org, rth@twiddle.net, ink@jurassic.park.msu.ru,
-       heiko.carstens@de.ibm.com,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Nick Piggin <npiggin@suse.de>
-Subject: Re: [PATCH UPDATED] percpu: use dynamic percpu allocator as the
- default percpu allocator
-In-Reply-To: <49D2B209.9060000@kernel.org>
-Message-ID: <alpine.DEB.1.10.0904010948120.7643@qirst.com>
-References: <1236671631-9305-1-git-send-email-tj@kernel.org> <20090316190132.7965a49a@skybase> <49C300D8.5080204@kernel.org> <49C8FAC4.6060508@kernel.org> <20090325122738.42d105b7@skybase> <49CA1AC3.9080908@kernel.org> <20090325150035.541e707a@skybase>
- <49CA3C2C.5030702@kernel.org> <49D099F0.3000807@kernel.org> <20090330114938.GB10070@elte.hu> <alpine.DEB.1.10.0903301049060.13333@qirst.com> <alpine.DEB.1.10.0903311208110.17960@qirst.com> <49D2B209.9060000@kernel.org>
-User-Agent: Alpine 1.10 (DEB 962 2008-03-14)
+	Wed, 1 Apr 2009 09:55:32 -0400
+Message-ID: <49D372CD.5000601@novell.com>
+Date: Wed, 01 Apr 2009 09:57:33 -0400
+From: Gregory Haskins <ghaskins@novell.com>
+User-Agent: Thunderbird 2.0.0.19 (X11/20081227)
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+To: Avi Kivity <avi@redhat.com>
+CC: linux-kernel@vger.kernel.org, agraf@suse.de, pmullaney@novell.com,
+       pmorreale@novell.com, anthony@codemonkey.ws, rusty@rustcorp.com.au,
+       netdev@vger.kernel.org, kvm@vger.kernel.org
+Subject: Re: [RFC PATCH 01/17] shm-signal: shared-memory signals
+References: <20090331184057.28333.77287.stgit@dev.haskins.net> <20090331184252.28333.70623.stgit@dev.haskins.net> <49D280C0.8010802@redhat.com> <49D283F7.7030508@novell.com> <49D285AE.7030604@redhat.com> <49D35A2B.10907@novell.com> <49D35D12.6080209@redhat.com>
+In-Reply-To: <49D35D12.6080209@redhat.com>
+X-Enigmail-Version: 0.95.7
+OpenPGP: id=D8195319
+Content-Type: multipart/signed; micalg=pgp-sha1;
+ protocol="application/pgp-signature";
+ boundary="------------enig47790774A0D63CC8E8B97E5F"
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 1 Apr 2009, Tejun Heo wrote:
+This is an OpenPGP/MIME signed message (RFC 2440 and 3156)
+--------------enig47790774A0D63CC8E8B97E5F
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: quoted-printable
 
-> > 1. Lot of unnecessary use of __read_mostly for local static variables that
-> > are not on the hotpath. Patch follows in this message.
+Avi Kivity wrote:
+> Gregory Haskins wrote:
+>> Note that this is exactly what I do (though it is device specific).
+>> venet-tap has a ioq_notifier registered on its "rx" ring (which is the=
+
+>> tx-ring for the guest) that simply calls ioq_notify_disable() (which
+>> calls shm_signal_disable() under the covers) and it wakes its
+>> rx-thread.  This all happens in the context of the hypercall, which th=
+en
+>> returns and allows the vcpu to re-enter guest mode immediately.
+>>  =20
+> I think this is suboptimal.
+
+Heh, yes I know this is your (well documented) position, but I
+respectfully disagree. :)
+
+CPUs are not getting much faster, but they are rapidly getting more
+cores.  If we want to continue to make software run increasingly faster,
+we need to actually use those cores IMO.  Generally this means split
+workloads up into as many threads as possible as long as you can keep
+pipelines filed.
+
+>   The ring is likely to be cache hot on the current cpu, waking a
+> thread will introduce scheduling latency + IPI
+This part is a valid criticism, though note that Linux is very adept at
+scheduling so we are talking mere ns/us range here, which is dwarfed by
+the latency of something like your typical IO device (e.g. 36us for a
+rtt packet on 10GE baremetal, etc).  The benefit, of course, is the
+potential for increased parallelism which I have plenty of data to show
+we are very much taking advantage of here (I can saturate two cores
+almost completely according to LTT traces, one doing vcpu work, and the
+other running my "rx" thread which schedules the packet on the hardware)
+
+> +cache-to-cache transfers.
+This one I take exception to.  While it is perfectly true that splitting
+the work between two cores has a greater cache impact than staying on
+one, you cannot look at this one metric alone and say "this is bad".=20
+Its also a function of how efficiently the second (or more) cores are
+utilized.  There will be a point in the curve where the cost of cache
+coherence will become marginalized by the efficiency added by the extra
+compute power.  Some workloads will invariably be on the bad end of that
+curve, and therefore doing the work on one core is better.  However, we
+cant ignore that there will others that are on the good end of this
+spectrum either.  Otherwise, we risk performance stagnation on our
+effectively uniprocessor box ;).  In addition, the task-scheduler will
+attempt to co-locate tasks that are sharing data according to a best-fit
+within the cache hierarchy.  Therefore, we will still be sharing as much
+as possible (perhaps only L2, L3, or a local NUMA domain, but this is
+still better than nothing)
+
+The way I have been thinking about these issues is something I have been
+calling "soft-asics".  In the early days, we had things like a simple
+uniprocessor box with a simple dumb ethernet.  People figured out that
+if you put more processing power into the NIC, you could offload that
+work from the cpu and do more in parallel.   So things like checksum
+computation and segmentation duties were a good fit.  More recently, we
+see even more advanced hardware where you can do L2 or even L4 packet
+classification right in the hardware, etc.  All of these things are
+effectively parallel computation, and it occurs in a completely foreign
+cache domain!
+
+So a lot of my research has been around the notion of trying to use some
+of our cpu cores to do work like some of the advanced asic based offload
+engines do.  The cores are often under utilized anyway, and this will
+bring some of the features of advanced silicon to commodity resources.=20
+They also have the added flexibility that its just software, so you can
+change or enhance the system at will.
+
+So if you think about it, by using threads like this in venet-tap, I am
+effectively using other cores to do csum/segmentation (if the physical
+hardware doesn't support it), layer 2 classification (linux bridging),
+filtering (iptables in the bridge), queuing, etc as if it was some
+"smart" device out on the PCI bus.  The guest just queues up packets
+independently in its own memory, while the device just "dma's" the data
+on its own (after the initial kick).  The vcpu is keeping the pipeline
+filled on its side independently.
+
 >
-> Hmmm... Those are basically read-only vars once initialization is
-> complete.  IIUC, __read_mostly just puts the tagged variables into a
-> separate segment so that they don't have to worry about cacheline
-> bouncing.  Is there any reason to remove __read_mostly?  Or is it just
-> that it's mostly superflous?
+> On a benchmark setup, host resources are likely to exceed guest
+> requirements, so you can throw cpu at the problem and no one notices.
+Sure, but with the type of design I have presented this still sorts
+itself out naturally even if the host doesn't have the resources.  For
+instance, if there is a large number of threads competing for a small
+number of cores, we will simply see things like the rx-thread stalling
+and going to sleep, or the vcpu thread backpressuring and going idle
+(and therefore sleeping).  All of these things are self throttling.  If
+you don't have enough resources to run a workload at a desirable
+performance level, the system wasn't sized right to begin with. ;)
 
-Yes its better for the variables to be all together if its not on hot
-cache paths. And its better to keep the __read_mostly segment reserved for
-frequently accessed variables.
+>   But I think the bits/cycle figure will decrease, even if bits/sec
+> increases.
+>
+Note that this isn't necessarily a bad thing.  I think studies show that
+most machines are generally idle a significant percentage of the time,
+and this will likely only get worse as we get more and more cores.  So
+if I have to consume more cycles to get more bits on the wire, thats
+probably ok with most of my customers.   If its not, it would be trivial
+to make the venet threading policy a tunable parameter.
+
+-Greg
+
+
+
+--------------enig47790774A0D63CC8E8B97E5F
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: OpenPGP digital signature
+Content-Disposition: attachment; filename="signature.asc"
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v2.0.9 (GNU/Linux)
+Comment: Using GnuPG with SUSE - http://enigmail.mozdev.org
+
+iEYEARECAAYFAknTcs0ACgkQlOSOBdgZUxn1AACfY7vu8gz8XHr/hNHSctT8JIHb
+UPMAn1iBgUKB3JkYYirYAtI7DtLxLyYf
+=8NtR
+-----END PGP SIGNATURE-----
+
+--------------enig47790774A0D63CC8E8B97E5F--
