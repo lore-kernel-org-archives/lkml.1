@@ -1,200 +1,150 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934054AbZDAT3n@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757223AbZDATcU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934054AbZDAT3n (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 1 Apr 2009 15:29:43 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760438AbZDAT3b
+	id S1757223AbZDATcU (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 1 Apr 2009 15:32:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755158AbZDATcH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 1 Apr 2009 15:29:31 -0400
-Received: from mail-bw0-f169.google.com ([209.85.218.169]:53050 "EHLO
-	mail-bw0-f169.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755540AbZDAT3a (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 1 Apr 2009 15:29:30 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=subject:from:to:cc:in-reply-to:references:content-type:date
-         :message-id:mime-version:x-mailer:content-transfer-encoding;
-        b=HTyBx1wvfH5eh37zpwxXd9c0dyWIPoraUHxExtsg18zWKWSXse0PLeiwVja5ZAMWlm
-         q66Ol77N4QXRpoelzhaVKCwODDqbk+/Sv+MQar0oabmwrEMLN3gYxx5nDb3/1WePKMcY
-         XhCeSY3zlAajogvVFhtDxVnQ1Y+Z+gPUAjDcs=
-Subject: Re: [PATCH 3/3] lib: enable lzo-compressed kernels
-From: Andreas Robinson <andr345@gmail.com>
-To: "H. Peter Anvin" <hpa@zytor.com>
-Cc: Alain Knaff <alain@knaff.lu>, linux-kernel@vger.kernel.org
-In-Reply-To: <1238593252-3435-1-git-send-email-andr345@gmail.com>
-References: <1238593252-3435-1-git-send-email-andr345@gmail.com>
-Content-Type: text/plain
-Date: Wed, 01 Apr 2009 21:29:18 +0200
-Message-Id: <1238614158.10514.42.camel@andreas-desktop>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.24.3 
-Content-Transfer-Encoding: 7bit
+	Wed, 1 Apr 2009 15:32:07 -0400
+Received: from mx2.mail.elte.hu ([157.181.151.9]:56676 "EHLO mx2.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1755163AbZDATcF (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 1 Apr 2009 15:32:05 -0400
+Date: Wed, 1 Apr 2009 21:31:35 +0200
+From: Ingo Molnar <mingo@elte.hu>
+To: Stefani Seibold <stefani@seibold.net>,
+       Andrew Morton <akpm@linux-foundation.org>
+Cc: linux-kernel <linux-kernel@vger.kernel.org>, linux-mm <linux-mm@kvack.org>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>, Joerg Engel <joern@logfs.org>,
+       Thomas Gleixner <tglx@linutronix.de>
+Subject: Re: Detailed Stack Information Patch [1/3]
+Message-ID: <20090401193135.GA12316@elte.hu>
+References: <1238511505.364.61.camel@matrix>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1238511505.364.61.camel@matrix>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Signed-off-by: Andreas Robinson <andr345@gmail.com>
-diff --git a/arch/x86/Kconfig b/arch/x86/Kconfig
-index 34bc3a8..3d1c2a6 100644
---- a/arch/x86/Kconfig
-+++ b/arch/x86/Kconfig
-@@ -40,6 +40,7 @@ config X86
- 	select HAVE_GENERIC_DMA_COHERENT if X86_32
- 	select HAVE_EFFICIENT_UNALIGNED_ACCESS
- 	select USER_STACKTRACE_SUPPORT
-+	select HAVE_KERNEL_LZO
- 	select HAVE_KERNEL_GZIP
- 	select HAVE_KERNEL_BZIP2
- 	select HAVE_KERNEL_LZMA
-diff --git a/arch/x86/boot/compressed/Makefile b/arch/x86/boot/compressed/Makefile
-index 3ca4c19..561790b 100644
---- a/arch/x86/boot/compressed/Makefile
-+++ b/arch/x86/boot/compressed/Makefile
-@@ -4,7 +4,7 @@
- # create a compressed vmlinux image from the original vmlinux
- #
- 
--targets := vmlinux vmlinux.bin vmlinux.bin.gz vmlinux.bin.bz2 vmlinux.bin.lzma head_$(BITS).o misc.o piggy.o
-+targets := vmlinux vmlinux.bin vmlinux.bin.lzo vmlinux.bin.gz vmlinux.bin.bz2 vmlinux.bin.lzma head_$(BITS).o misc.o piggy.o
- 
- KBUILD_CFLAGS := -m$(BITS) -D__KERNEL__ $(LINUX_INCLUDE) -O2
- KBUILD_CFLAGS += -fno-strict-aliasing -fPIC
-@@ -45,6 +45,8 @@ $(obj)/vmlinux.bin.all: $(vmlinux.bin.all-y) FORCE
- ifeq ($(CONFIG_X86_32),y)
- 
- ifdef CONFIG_RELOCATABLE
-+$(obj)/vmlinux.bin.lzo: $(obj)/vmlinux.bin.all FORCE
-+	$(call if_changed,lzop)
- $(obj)/vmlinux.bin.gz: $(obj)/vmlinux.bin.all FORCE
- 	$(call if_changed,gzip)
- $(obj)/vmlinux.bin.bz2: $(obj)/vmlinux.bin.all FORCE
-@@ -52,6 +54,8 @@ $(obj)/vmlinux.bin.bz2: $(obj)/vmlinux.bin.all FORCE
- $(obj)/vmlinux.bin.lzma: $(obj)/vmlinux.bin.all FORCE
- 	$(call if_changed,lzma)
- else
-+$(obj)/vmlinux.bin.lzo: $(obj)/vmlinux.bin FORCE
-+	$(call if_changed,lzop)
- $(obj)/vmlinux.bin.gz: $(obj)/vmlinux.bin FORCE
- 	$(call if_changed,gzip)
- $(obj)/vmlinux.bin.bz2: $(obj)/vmlinux.bin FORCE
-@@ -63,6 +67,8 @@ LDFLAGS_piggy.o := -r --format binary --oformat elf32-i386 -T
- 
- else
- 
-+$(obj)/vmlinux.bin.lzo: $(obj)/vmlinux.bin FORCE
-+	$(call if_changed,lzop)
- $(obj)/vmlinux.bin.gz: $(obj)/vmlinux.bin FORCE
- 	$(call if_changed,gzip)
- $(obj)/vmlinux.bin.bz2: $(obj)/vmlinux.bin FORCE
-@@ -73,6 +79,7 @@ $(obj)/vmlinux.bin.lzma: $(obj)/vmlinux.bin FORCE
- LDFLAGS_piggy.o := -r --format binary --oformat elf64-x86-64 -T
- endif
- 
-+suffix_$(CONFIG_KERNEL_LZO)  = lzo
- suffix_$(CONFIG_KERNEL_GZIP)  = gz
- suffix_$(CONFIG_KERNEL_BZIP2) = bz2
- suffix_$(CONFIG_KERNEL_LZMA)  = lzma
-diff --git a/arch/x86/boot/compressed/misc.c b/arch/x86/boot/compressed/misc.c
-index e45be73..a0fd406 100644
---- a/arch/x86/boot/compressed/misc.c
-+++ b/arch/x86/boot/compressed/misc.c
-@@ -150,6 +150,10 @@ static char *vidmem;
- static int vidport;
- static int lines, cols;
- 
-+#ifdef CONFIG_KERNEL_LZO
-+#include "../../../../lib/decompress_unlzo.c"
-+#endif
-+
- #ifdef CONFIG_KERNEL_GZIP
- #include "../../../../lib/decompress_inflate.c"
- #endif
-diff --git a/init/Kconfig b/init/Kconfig
-index 14c483d..c59e55d 100644
---- a/init/Kconfig
-+++ b/init/Kconfig
-@@ -101,6 +101,9 @@ config LOCALVERSION_AUTO
- 
- 	  which is done within the script "scripts/setlocalversion".)
- 
-+config HAVE_KERNEL_LZO
-+	bool
-+
- config HAVE_KERNEL_GZIP
- 	bool
- 
-@@ -113,7 +116,7 @@ config HAVE_KERNEL_LZMA
- choice
- 	prompt "Kernel compression mode"
- 	default KERNEL_GZIP
--	depends on HAVE_KERNEL_GZIP || HAVE_KERNEL_BZIP2 || HAVE_KERNEL_LZMA
-+	depends on HAVE_KERNEL_LZO || HAVE_KERNEL_GZIP || HAVE_KERNEL_BZIP2 || HAVE_KERNEL_LZMA
- 	help
- 	  The linux kernel is a kind of self-extracting executable.
- 	  Several compression algorithms are available, which differ
-@@ -132,20 +135,29 @@ choice
- 
- 	  If in doubt, select 'gzip'
- 
-+config KERNEL_LZO
-+	bool "LZO"
-+	depends on HAVE_KERNEL_LZO
-+	help
-+	  Lempel Ziv Oberhumer compression. Its compression ratio is
-+	  the poorest among the four choices; maximum compression yields
-+	  roughly 7% larger kernels compared to gzip. However, decompression
-+	  time is only 55 - 60% of that of gzip.
-+
- config KERNEL_GZIP
- 	bool "Gzip"
- 	depends on HAVE_KERNEL_GZIP
- 	help
- 	  The old and tried gzip compression. Its compression ratio is
--	  the poorest among the 3 choices; however its speed (both
--	  compression and decompression) is the fastest.
-+	  worse than that of bzip2 and lzma; however compression and
-+	  decompression are faster.
- 
- config KERNEL_BZIP2
- 	bool "Bzip2"
- 	depends on HAVE_KERNEL_BZIP2
- 	help
- 	  Its compression ratio and speed is intermediate.
--	  Decompression speed is slowest among the three.  The kernel
-+	  Decompression speed is slowest among the four.  The kernel
- 	  size is about 10% smaller with bzip2, in comparison to gzip.
- 	  Bzip2 uses a large amount of memory. For modern kernels you
- 	  will need at least 8MB RAM or more for booting.
-@@ -155,9 +167,9 @@ config KERNEL_LZMA
- 	depends on HAVE_KERNEL_LZMA
- 	help
- 	  The most recent compression algorithm.
--	  Its ratio is best, decompression speed is between the other
--	  two. Compression is slowest.	The kernel size is about 33%
--	  smaller with LZMA in comparison to gzip.
-+	  Its ratio is best, decompression speed is between gzip and bzip2
-+	  Compression is slowest. The kernel size is about 33% smaller with
-+	  LZMA compared to gzip.
- 
- endchoice
- 
-diff --git a/scripts/Makefile.lib b/scripts/Makefile.lib
-index 9796195..f29037b 100644
---- a/scripts/Makefile.lib
-+++ b/scripts/Makefile.lib
-@@ -200,3 +200,11 @@ cmd_bzip2 = (bzip2 -9 < $< && $(size_append) $<) > $@ || (rm -f $@ ; false)
- 
- quiet_cmd_lzma = LZMA    $@
- cmd_lzma = (lzma -9 -c $< && $(size_append) $<) >$@ || (rm -f $@ ; false)
-+
-+# Lzo
-+# ---------------------------------------------------------------------------
-+
-+quiet_cmd_lzop = LZOP    $@
-+cmd_lzop = (lzop -9 -c $< && $(size_append) $<) >$@ || (rm -f $@ ; false)
-+
-+
--- 
-1.5.6.3
 
+* Stefani Seibold <stefani@seibold.net> wrote:
 
+> diff -u -N -r linux-2.6.29.orig/fs/exec.c linux-2.6.29/fs/exec.c
+> --- linux-2.6.29.orig/fs/exec.c	2009-03-24 00:12:14.000000000 +0100
+> +++ linux-2.6.29/fs/exec.c	2009-03-31 16:02:55.000000000 +0200
+> @@ -1336,6 +1336,10 @@
+>  	if (retval < 0)
+>  		goto out;
+>  
+> +#ifdef CONFIG_PROC_STACK
+> +	current->stack_start = current->mm->start_stack;
+> +#endif
+
+Ok. The 1/3 patch, the whole "display where the stack is" thing is 
+obviously useful and we know that.
+
+Today we display this:
+
+ earth4:~/tip> cat /proc/self/maps 
+ 00110000-00111000 r-xp 00110000 00:00 0          [vdso]
+ 0053e000-0055e000 r-xp 00000000 09:00 54591597   /lib/ld-2.9.so
+ 0055f000-00560000 r--p 00020000 09:00 54591597   /lib/ld-2.9.so
+ 00560000-00561000 rw-p 00021000 09:00 54591597   /lib/ld-2.9.so
+ 00563000-006d1000 r-xp 00000000 09:00 54591620   /lib/libc-2.9.so
+ 006d1000-006d3000 r--p 0016e000 09:00 54591620   /lib/libc-2.9.so
+ 006d3000-006d4000 rw-p 00170000 09:00 54591620   /lib/libc-2.9.so
+ 006d4000-006d7000 rw-p 006d4000 00:00 0 
+ 08048000-08054000 r-xp 00000000 09:00 27787363   /bin/cat
+ 08054000-08055000 rw-p 0000c000 09:00 27787363   /bin/cat
+ 09996000-099b7000 rw-p 09996000 00:00 0          [heap]
+ b7db9000-b7fb9000 r--p 00000000 09:00 50364418   /usr/lib/locale/locale-archive
+ b7fb9000-b7fbb000 rw-p b7fb9000 00:00 0 
+ bffc7000-bffdc000 rw-p bffeb000 00:00 0          [stack]
+
+I was the one who added the [stack], [heap] and [vdso] annotations a 
+few years ago and user-space developers liked it very much.
+
+Tools parsing these files wont break [they dont care about the final 
+column] - so there's no ABI worries and we can certainly do more 
+here and enhance it.
+
+You extend the above output with (in essence):
+
+> +#ifdef CONFIG_PROC_STACK
+> +static inline void task_show_stack_usage(struct seq_file *m,
+> +						struct task_struct *p)
+
+It would be better to put this into a fresh, related feature that 
+went upstream recently:
+
+ spirit:~> cat /proc/self/stack
+ [<ffffffff8101c333>] save_stack_trace_tsk+0x26/0x43
+ [<ffffffff81129237>] proc_pid_stack+0x63/0xa1
+ [<ffffffff8112a753>] proc_single_show+0x5c/0x79
+ [<ffffffff810fb2d6>] seq_read+0x16f/0x34d
+ [<ffffffff810e3eea>] vfs_read+0xab/0x108
+ [<ffffffff810e4007>] sys_read+0x4a/0x6e
+ [<ffffffff8101133a>] system_call_fastpath+0x16/0x1b
+ [<ffffffffffffffff>] 0xffffffffffffffff
+
+That displays the kernel stack data - and we could display 
+information about the user-stack data as well.
+
+This #ifdef:
+
+> +#ifdef CONFIG_STACK_GROWSUP
+> +	cur_stack = base_page-(p->stack_start >> PAGE_SHIFT);
+> +#else
+> +	cur_stack = (p->stack_start >> PAGE_SHIFT)-base_page;
+> +#endif
+
+Should be hidden in a task_user_stack() inline helper.
+
+Another thing is:
+
+> @@ -240,6 +240,18 @@
+>  				} else if (vma->vm_start <= mm->start_stack &&
+>  					   vma->vm_end >= mm->start_stack) {
+>  					name = "[stack]";
+> +#ifdef CONFIG_PROC_STACK
+> +				} else {
+> +					unsigned long stack_start;
+> +
+> +					stack_start =
+> +						((struct proc_maps_private *)
+> +						 m->private)->task->stack_start;
+> +
+> +					if (vma->vm_start <= stack_start && 
+> +					    vma->vm_end >= stack_start)
+> +						name="[thread stack]";
+> +#endif
+
+This too should be unconditional IMO (it's useful, and 
+ultra-embedded systems worried about kernel .text size can turn off 
+CONFIG_PROC_FS anyway), _and_ i think we could do even better.
+
+How about extending /proc/X/maps with:
+
+ b7db9000-b7fb9000 r--p 00000000 09:00 50364418   /usr/lib/locale/locale-archive
+ b7fb9000-b7fbb000 rw-p b7fb9000 00:00 0 
+ bffc7000-bffdc000 rw-p bffeb000 00:00 0          [stack, usage: 1391 kB]
+
+This is deterministically parseable, and meaningful-at-a-glance. 
+Similarly for 'thread stack'.
+
+This way we dont need any new files in /proc - that just increases 
+the per task memory overhead.
+
+What do you think?
+
+	Ingo
