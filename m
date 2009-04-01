@@ -1,80 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934303AbZDAUYH@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934064AbZDAUZb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934303AbZDAUYH (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 1 Apr 2009 16:24:07 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758336AbZDAUXs
+	id S934064AbZDAUZb (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 1 Apr 2009 16:25:31 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757516AbZDAUZR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 1 Apr 2009 16:23:48 -0400
-Received: from bedivere.hansenpartnership.com ([66.63.167.143]:35613 "EHLO
-	bedivere.hansenpartnership.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1757076AbZDAUXr (ORCPT
+	Wed, 1 Apr 2009 16:25:17 -0400
+Received: from einhorn.in-berlin.de ([192.109.42.8]:41097 "EHLO
+	einhorn.in-berlin.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756684AbZDAUZP (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 1 Apr 2009 16:23:47 -0400
-Subject: Re: [Iscsitarget-devel] [Scst-devel] ISCSI-SCST performance
-	(withalso IET and STGT data)
-From: James Bottomley <James.Bottomley@HansenPartnership.com>
-To: Ross Walker <rswwalker@gmail.com>
-Cc: Bart Van Assche <bart.vanassche@gmail.com>,
-       "Ross S. W. Walker" <RWalker@medallion.com>,
-       Vladislav Bolkhovitin <vst@vlnb.net>,
-       "linux-scsi@vger.kernel.org" <linux-scsi@vger.kernel.org>,
-       iSCSI Enterprise Target Developer List 
-	<iscsitarget-devel@lists.sourceforge.net>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       "stgt@vger.kernel.org" <stgt@vger.kernel.org>,
-       scst-devel <scst-devel@lists.sourceforge.net>
-In-Reply-To: <FA7F6940-CD5C-4460-9777-2F7AE3657B8E@gmail.com>
-References: <49D10256.8030307@vlnb.net>
-	 <e2e108260903301106y2b750c23kfab978567f3de3a0@mail.gmail.com>
-	 <49D11096.3070804@vlnb.net>
-	 <e2e108260903301153x38e86097vd29c47507da2879f@mail.gmail.com>
-	 <49D254E4.8050806@vlnb.net>
-	 <E2BB8074E5500C42984D980D4BD78EF9029E3D0B@MFG-NYC-EXCH2.mfg.prv>
-	 <e2e108260903312329u118a54bfn3107fdca4b3e2b1d@mail.gmail.com>
-	 <FA7F6940-CD5C-4460-9777-2F7AE3657B8E@gmail.com>
-Content-Type: text/plain
-Date: Wed, 01 Apr 2009 20:23:43 +0000
-Message-Id: <1238617423.3318.82.camel@mulgrave.int.hansenpartnership.com>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.22.3.1 (2.22.3.1-1.fc9) 
-Content-Transfer-Encoding: 7bit
+	Wed, 1 Apr 2009 16:25:15 -0400
+X-Envelope-From: stefanr@s5r6.in-berlin.de
+Date: Wed, 1 Apr 2009 22:25:00 +0200 (CEST)
+From: Stefan Richter <stefanr@s5r6.in-berlin.de>
+Subject: [PATCH] Revert "V4L/DVB (10962): fired-avc: fix printk formatting
+ warning."
+To: Mauro Carvalho Chehab <mchehab@redhat.com>
+cc: linux-media@vger.kernel.org, linux-kernel@vger.kernel.org
+Message-ID: <tkrat.c13edc1832a38d6d@s5r6.in-berlin.de>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; CHARSET=us-ascii
+Content-Disposition: INLINE
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 2009-04-01 at 08:20 -0400, Ross Walker wrote:
-> On Apr 1, 2009, at 2:29 AM, Bart Van Assche <bart.vanassche@gmail.com>  
-> wrote:
-> 
-> > On Tue, Mar 31, 2009 at 8:43 PM, Ross S. W. Walker
-> > <RWalker@medallion.com> wrote:
-> >> IET just needs to fix how it does it workload with CFQ which
-> >> somehow SCST has overcome. Of course SCST tweaks the Linux kernel to
-> >> gain some extra speed.
-> >
-> > I'm not familiar with the implementation details of CFQ, but I know
-> > that one of the changes between SCST 1.0.0 and SCST 1.0.1 is that the
-> > default number of kernel threads of the scst_vdisk kernel module has
-> > been increased to 5. Could this explain the performance difference
-> > between SCST and IET for FILEIO and BLOCKIO ?
-> 
-> Thank for the update. IET has used 8 threads per target for ages now,  
-> I don't think it is that.
-> 
-> It may be how the I/O threads are forked in SCST that causes them to  
-> be in the same I/O context with each other.
-> 
-> I'm pretty sure implementing a version of the patch that was used for  
-> the dump command (found on the LKML) will fix this.
-> 
-> But thanks goes to Vlad for pointing this dificiency out so we can fix  
-> it to help make IET even better.
+Commit 34aecd2851bba5c2b7dae2f0dbe8e629b1c5e4ac was made obsolete
+and invalid by commit 40cf65d149053889c8876c6c2b4ce204fde55baa.
 
-SCST explicitly fiddles with the io context to get this to happen.  It
-has a hack to block to export alloc_io_context:
+Signed-off-by: Stefan Richter <stefanr@s5r6.in-berlin.de>
+---
+ drivers/media/dvb/firewire/firedtv-avc.c |    2 +-
+ 1 files changed, 1 insertions(+), 1 deletions(-)
 
-http://marc.info/?t=122893564800003
+diff --git a/drivers/media/dvb/firewire/firedtv-avc.c b/drivers/media/dvb/firewire/firedtv-avc.c
+index 12f7730..32526f1 100644
+--- a/drivers/media/dvb/firewire/firedtv-avc.c
++++ b/drivers/media/dvb/firewire/firedtv-avc.c
+@@ -151,7 +151,7 @@ static void debug_fcp(const u8 *data, int length)
+ 		subunit_type = data[1] >> 3;
+ 		subunit_id = data[1] & 7;
+ 		op = subunit_type == 0x1e || subunit_id == 5 ? ~0 : data[2];
+-		printk(KERN_INFO "%ssu=%x.%x l=%zu: %-8s - %s\n",
++		printk(KERN_INFO "%ssu=%x.%x l=%d: %-8s - %s\n",
+ 		       prefix, subunit_type, subunit_id, length,
+ 		       debug_fcp_ctype(data[0]),
+ 		       debug_fcp_opcode(op, data, length));
 
-James
-
+-- 
+Stefan Richter
+-=====-==--= -=-- ----=
+http://arcgraph.de/sr/
 
