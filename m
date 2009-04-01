@@ -1,114 +1,104 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764894AbZDAM5g@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764914AbZDAM6B@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764894AbZDAM5g (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 1 Apr 2009 08:57:36 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1764856AbZDAM5K
+	id S1764914AbZDAM6B (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 1 Apr 2009 08:58:01 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1764892AbZDAM5f
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 1 Apr 2009 08:57:10 -0400
-Received: from mga14.intel.com ([143.182.124.37]:36437 "EHLO mga14.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1764843AbZDAM5H convert rfc822-to-8bit (ORCPT
+	Wed, 1 Apr 2009 08:57:35 -0400
+Received: from rcsinet12.oracle.com ([148.87.113.124]:17176 "EHLO
+	rgminet12.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754302AbZDAM5e (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 1 Apr 2009 08:57:07 -0400
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.39,306,1235980800"; 
-   d="scan'208";a="126579039"
-From: "Metzger, Markus T" <markus.t.metzger@intel.com>
-To: Ingo Molnar <mingo@elte.hu>
-CC: Oleg Nesterov <oleg@redhat.com>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       "tglx@linutronix.de" <tglx@linutronix.de>,
-       "hpa@zytor.com" <hpa@zytor.com>,
-       "markus.t.metzger@gmail.com" <markus.t.metzger@gmail.com>,
-       "roland@redhat.com" <roland@redhat.com>,
-       "eranian@googlemail.com" <eranian@googlemail.com>,
-       "Villacis, Juan" <juan.villacis@intel.com>,
-       "ak@linux.jf.intel.com" <ak@linux.jf.intel.com>
-Date: Wed, 1 Apr 2009 13:56:58 +0100
-Subject: RE: [patch 0/21] x86, ptrace, bts, hw-branch-tracer: fixes and
-	cleanups
-Thread-Topic: [patch 0/21] x86, ptrace, bts, hw-branch-tracer: fixes and
-	cleanups
-Thread-Index: Acmyv3lxUtUUmj6ASeW37Y/1M/ZVNgACHTrA
-Message-ID: <928CFBE8E7CB0040959E56B4EA41A77E926D539D@irsmsx504.ger.corp.intel.com>
-References: <20090331144229.A11867@sedona.ch.intel.com>
- <20090331233958.GA28228@redhat.com>
- <928CFBE8E7CB0040959E56B4EA41A77E926D4FDE@irsmsx504.ger.corp.intel.com>
- <20090401114557.GC23678@elte.hu>
-In-Reply-To: <20090401114557.GC23678@elte.hu>
-Accept-Language: en-US
-Content-Language: en-US
-X-MS-Has-Attach: 
-X-MS-TNEF-Correlator: 
-acceptlanguage: en-US
-Content-Type: text/plain; charset="us-ascii"
-MIME-Version: 1.0
-Content-Transfer-Encoding: 8BIT
+	Wed, 1 Apr 2009 08:57:34 -0400
+Subject: Re: Linux 2.6.29
+From: Chris Mason <chris.mason@oracle.com>
+To: Dave Chinner <david@fromorbit.com>
+Cc: Mark Lord <lkml@rtr.ca>, Stefan Richter <stefanr@s5r6.in-berlin.de>,
+       Jeff Garzik <jeff@garzik.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Matthew Garrett <mjg59@srcf.ucam.org>,
+       Alan Cox <alan@lxorguk.ukuu.org.uk>, Theodore Tso <tytso@mit.edu>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       David Rees <drees76@gmail.com>, Jesper Krogh <jesper@krogh.cc>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+In-Reply-To: <20090331235509.GU26138@disturbed>
+References: <alpine.LFD.2.00.0903271522210.3994@localhost.localdomain>
+	 <49CD7B10.7010601@garzik.org> <49CD891A.7030103@rtr.ca>
+	 <49CD9047.4060500@garzik.org> <49CE2633.2000903@s5r6.in-berlin.de>
+	 <49CE3186.8090903@garzik.org> <49CE35AE.1080702@s5r6.in-berlin.de>
+	 <49CE3F74.6090103@rtr.ca> <20090329231451.GR26138@disturbed>
+	 <1238417751.30488.12.camel@think.oraclecorp.com>
+	 <20090331235509.GU26138@disturbed>
+Content-Type: text/plain
+Date: Wed, 01 Apr 2009 08:53:33 -0400
+Message-Id: <1238590413.18549.7.camel@think.oraclecorp.com>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.24.1 
+Content-Transfer-Encoding: 7bit
+X-Source-IP: acsmt706.oracle.com [141.146.40.84]
+X-Auth-Type: Internal IP
+X-CT-RefId: str=0001.0A090208.49D363D6.0145:SCFMA4539814,ss=1,fgs=0
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
->-----Original Message-----
->From: Ingo Molnar [mailto:mingo@elte.hu]
->Sent: Wednesday, April 01, 2009 1:46 PM
->To: Metzger, Markus T
-
-
->> >> The first 5 patches apply to .29 with the small preparation patch below.
->> >
->> >Tried to review these patches.
->> >
->> >As I said, I don't understand ds.c, but I _think_ these changes are good.
->> >
->> >I only have a couple of really minor nitpicks...
->>
->> Thanks for your review!
->> I will address the nitpicks in separate patches, if that's OK with everyone.
+On Wed, 2009-04-01 at 10:55 +1100, Dave Chinner wrote:
+> On Mon, Mar 30, 2009 at 08:55:51AM -0400, Chris Mason wrote:
+> > On Mon, 2009-03-30 at 10:14 +1100, Dave Chinner wrote:
+> > > On Sat, Mar 28, 2009 at 11:17:08AM -0400, Mark Lord wrote:
+> > > > The better solution seems to be the rather obvious one:
+> > > >
+> > > >   the filesystem should commit data to disk before altering metadata.
+> > > 
+> > > Generalities are bad. For example:
+> > > 
+> > > write();
+> > > unlink();
+> > > <do more stuff>
+> > > close();
+> > > 
+> > > This is a clear case where you want metadata changed before data is
+> > > committed to disk. In many cases, you don't even want the data to
+> > > hit the disk here.
+> > > 
+> > > Similarly, rsync does the magic open,write,close,rename sequence
+> > > without an fsync before the rename. And it doesn't need the fsync,
+> > > either. The proposed implicit fsync on rename will kill rsync
+> > > performance, and I think that may make many people unhappy....
+> > > 
+> > 
+> > Sorry, I'm afraid that rsync falls into the same category as the
+> > kde/gnome apps here.
+> 
+> I disagree.
 >
->Please dont forget to propagate Oleg's Reviewed-by (or Acked-by)
->tags into the commits.
->
->> Regarding bisecting, I split the patches to attract reviewers to
->> the smaller parts rather than scare them off with one big patch.
->>
->> I hope that the bisecting tool can cope with broken builds between
->> patches.
->
->It cannot, and even if it did we dont want a single intentionally
->broken bisection point in the kernel. Please do small patches that
->build fine at each step. We've got more than 100,000 bisectable
->commits in the kernel to look at. If you think it's not possible in
->a specific case then please describe the situation to us so that we
->can suggest a solution.
+> > There are a lot of backup programs built around rsync, and every one of
+> > them risks losing the old copy of the file by renaming an unflushed new
+> > copy over it.
+> 
+> If you crash while rsync is running, then the state of the copy
+> is garbage anyway. You have to restart from scratch and rsync will
+> detect such failures and resync the file. gnome/kde have no
+> mechanism for such recovery.
+> 
 
-I can resend the series with fewer but bigger patches that compile OK.
+If this were the recovery system they had in mind, then why use rename
+at all?  They could just as easily overwrite the original in place.
+Using rename implies they want to replace the old with a complete new
+version.
 
-I'm currently using quilt to manage patches.
-I use git to get the sources, but that's it. I send all the patches manually.
+There's also the window where you crash after the rsync is done but
+before all the new data safely makes it into the replacement files.
 
-You mentioned in another email that I should use "git format-patch" and
-"git send-email" and that I should propagate Oleg's acks into the commit
-logs.
+> > rsync needs the flushing about a million times more than gnome and kde,
+> > and it doesn't have any option to do it automatically.
+> 
+> And therein lies the problem with a "flush-before-rename"
+> semantic....
 
-Is there a way to do this with quilt, as well?
-Could you point me to some getting-started documentation?
+Here I was just talking about a rsync --flush-after-rename or something,
+not an option from the kernel.
 
+-chris
 
-thanks and regards,
-markus.
-
----------------------------------------------------------------------
-Intel GmbH
-Dornacher Strasse 1
-85622 Feldkirchen/Muenchen Germany
-Sitz der Gesellschaft: Feldkirchen bei Muenchen
-Geschaeftsfuehrer: Douglas Lusk, Peter Gleissner, Hannes Schwaderer
-Registergericht: Muenchen HRB 47456 Ust.-IdNr.
-VAT Registration No.: DE129385895
-Citibank Frankfurt (BLZ 502 109 00) 600119052
-
-This e-mail and any attachments may contain confidential material for
-the sole use of the intended recipient(s). Any review or distribution
-by others is strictly prohibited. If you are not the intended
-recipient, please contact the sender and delete all copies.
 
