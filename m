@@ -1,91 +1,100 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760940AbZDAMwe@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764563AbZDAMxp@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760940AbZDAMwe (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 1 Apr 2009 08:52:34 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752400AbZDAMwZ
+	id S1764563AbZDAMxp (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 1 Apr 2009 08:53:45 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756295AbZDAMxg
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 1 Apr 2009 08:52:25 -0400
-Received: from mx2.redhat.com ([66.187.237.31]:51876 "EHLO mx2.redhat.com"
+	Wed, 1 Apr 2009 08:53:36 -0400
+Received: from mx2.mail.elte.hu ([157.181.151.9]:47685 "EHLO mx2.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751451AbZDAMwY (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 1 Apr 2009 08:52:24 -0400
-Date: Wed, 1 Apr 2009 09:52:05 -0300
-From: Arnaldo Carvalho de Melo <acme@redhat.com>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: Li Zefan <lizf@cn.fujitsu.com>, Jens Axboe <jens.axboe@oracle.com>,
-       Steven Rostedt <rostedt@goodmis.org>,
-       Frederic Weisbecker <fweisbec@gmail.com>,
-       LKML <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH 2/2] blktrace: fix output of BLK_TC_PC events
-Message-ID: <20090401125205.GD25493@ghostprotocols.net>
-References: <49D3236D.3090705@cn.fujitsu.com> <49D32387.9040106@cn.fujitsu.com> <20090401110016.GA15442@elte.hu>
+	id S1752400AbZDAMxf (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 1 Apr 2009 08:53:35 -0400
+Date: Wed, 1 Apr 2009 14:53:14 +0200
+From: Ingo Molnar <mingo@elte.hu>
+To: "Metzger, Markus T" <markus.t.metzger@intel.com>
+Cc: Oleg Nesterov <oleg@redhat.com>, Peter Zijlstra <a.p.zijlstra@chello.nl>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       "tglx@linutronix.de" <tglx@linutronix.de>,
+       "hpa@zytor.com" <hpa@zytor.com>,
+       "markus.t.metzger@gmail.com" <markus.t.metzger@gmail.com>,
+       "roland@redhat.com" <roland@redhat.com>,
+       "eranian@googlemail.com" <eranian@googlemail.com>,
+       "Villacis, Juan" <juan.villacis@intel.com>,
+       "ak@linux.jf.intel.com" <ak@linux.jf.intel.com>
+Subject: Re: [patch 3/21] x86, bts: wait until traced task has been
+	scheduled out
+Message-ID: <20090401125314.GM12966@elte.hu>
+References: <20090331145947.A12565@sedona.ch.intel.com> <20090401001729.GC28228@redhat.com> <20090401114140.GB23678@elte.hu> <928CFBE8E7CB0040959E56B4EA41A77E926D537D@irsmsx504.ger.corp.intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20090401110016.GA15442@elte.hu>
-X-Url: http://oops.ghostprotocols.net:81/blog
+In-Reply-To: <928CFBE8E7CB0040959E56B4EA41A77E926D537D@irsmsx504.ger.corp.intel.com>
 User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Em Wed, Apr 01, 2009 at 01:00:16PM +0200, Ingo Molnar escreveu:
-> 
-> * Li Zefan <lizf@cn.fujitsu.com> wrote:
-> 
-> > +	} else {
-> > +		if (t_sec(ent))
-> > +			return trace_seq_printf(s, "%llu + %u [%d]\n",
-> > +						t_sector(ent),
-> > +						t_sec(ent), t_error(ent));
-> > +		return trace_seq_printf(s, "%llu [%d]\n",
-> > +					t_sector(ent), t_error(ent));
-> > +	}
-> >  }
-> >  
-> >  static int blk_log_remap(struct trace_seq *s, const struct trace_entry *ent)
-> 
-> Neat shortcut - packet command requests can be quite large in 
-> special cases, right?
-> 
-> Sidenote. Right now we reserve the full packet length in the trace 
-> buffer, then copy the full packet into the trace buffer:
-> 
->                 if (pdu_len)
->                         memcpy((void *) t + sizeof(*t), pdu_data, pdu_len);
-> 
-> ... just to scan it a second time during output and discard much of 
-> it later on if it has a lot of trailing zeroes.
-> 
-> It might make sense to pre-compress: by extending the trace record 
-> format with a trailing-zeroes field.
 
-You mean something like asking, at tracer registration time to do this
-kind of compression and have it done on the core tracing code? Looks
-worthy if we can find a second tracer that would benefit from the space
-savings at the cost of using more CPU at each event.
+* Metzger, Markus T <markus.t.metzger@intel.com> wrote:
 
-But perhaps providing a "memcpy" replacement to be used in such things
-and leaving this to the user to decide, i.e. it may be interesting in
-certain scenarios to be able to do:
-
-echo 1 > /sys/kernel/debug/tracing/options/compress
-
-And have the payload compressed.
- 
-> But that would make it more complex and key to tracers is simplicity 
-> of data acquisition.
+> >-----Original Message-----
+> >From: Ingo Molnar [mailto:mingo@elte.hu]
+> >Sent: Wednesday, April 01, 2009 1:42 PM
+> >To: Oleg Nesterov; Peter Zijlstra
 > 
-> Dunno, probably not worth it, except if data stream bloat becomes a 
-> real issue (which i'd not expect them to become in this case).
 > 
-> Anyway - Jens, the two patches look good to me, do they look fine to 
-> you too?
+> >* Oleg Nesterov <oleg@redhat.com> wrote:
+> >
+> >> On 03/31, Markus Metzger wrote:
+> >> >
+> >> > +static void wait_to_unschedule(struct task_struct *task)
+> >> > +{
+> >> > +	unsigned long nvcsw;
+> >> > +	unsigned long nivcsw;
+> >> > +
+> >> > +	if (!task)
+> >> > +		return;
+> >> > +
+> >> > +	if (task == current)
+> >> > +		return;
+> >> > +
+> >> > +	nvcsw  = task->nvcsw;
+> >> > +	nivcsw = task->nivcsw;
+> >> > +	for (;;) {
+> >> > +		if (!task_is_running(task))
+> >> > +			break;
+> >> > +		/*
+> >> > +		 * The switch count is incremented before the actual
+> >> > +		 * context switch. We thus wait for two switches to be
+> >> > +		 * sure at least one completed.
+> >> > +		 */
+> >> > +		if ((task->nvcsw - nvcsw) > 1)
+> >> > +			break;
+> >> > +		if ((task->nivcsw - nivcsw) > 1)
+> >> > +			break;
+> >> > +
+> >> > +		schedule();
+> >>
+> >> schedule() is a nop here. We can wait unpredictably long...
+> >>
+> >> Ingo, do have have any ideas to improve this helper?
+> >
+> >hm, there's a similar looking existing facility:
+> >wait_task_inactive(). Have i missed some subtle detail that makes it
+> >inappropriate for use here?
+> 
+> wait_task_inactive() waits until the task is no longer 
+> TASK_RUNNING.
 
-To me too,
+No, that's wrong, wait_task_inactive() waits until the task 
+deschedules.
 
-Acked-by: Arnaldo Carvalho de Melo <acme@redhat.com>
-
-to this one too.
-
-- Arnaldo
+	Ingo
