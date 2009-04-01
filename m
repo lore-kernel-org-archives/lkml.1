@@ -1,125 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757672AbZDAWIW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762392AbZDAWJu@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757672AbZDAWIW (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 1 Apr 2009 18:08:22 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754426AbZDAWIB
+	id S1762392AbZDAWJu (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 1 Apr 2009 18:09:50 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754426AbZDAWJj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 1 Apr 2009 18:08:01 -0400
-Received: from victor.provo.novell.com ([137.65.250.26]:39981 "EHLO
-	victor.provo.novell.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752348AbZDAWIA (ORCPT
+	Wed, 1 Apr 2009 18:09:39 -0400
+Received: from mail-fx0-f158.google.com ([209.85.220.158]:43798 "EHLO
+	mail-fx0-f158.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752521AbZDAWJi convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 1 Apr 2009 18:08:00 -0400
-Message-ID: <49D3E649.7000906@novell.com>
-Date: Wed, 01 Apr 2009 18:10:17 -0400
-From: Gregory Haskins <ghaskins@novell.com>
-User-Agent: Thunderbird 2.0.0.19 (X11/20081227)
-MIME-Version: 1.0
-To: Chris Wright <chrisw@sous-sol.org>
-CC: Anthony Liguori <anthony@codemonkey.ws>, Andi Kleen <andi@firstfloor.org>,
-       linux-kernel@vger.kernel.org, agraf@suse.de, pmullaney@novell.com,
-       pmorreale@novell.com, rusty@rustcorp.com.au, netdev@vger.kernel.org,
-       kvm@vger.kernel.org
-Subject: Re: [RFC PATCH 00/17] virtual-bus
-References: <20090331184057.28333.77287.stgit@dev.haskins.net> <87ab71monw.fsf@basil.nowhere.org> <49D35825.3050001@novell.com> <20090401132340.GT11935@one.firstfloor.org> <49D37805.1060301@novell.com> <20090401170103.GU11935@one.firstfloor.org> <49D3B64F.6070703@codemonkey.ws> <20090401204039.GR18394@sequoia.sous-sol.org> <49D3D88E.3090009@novell.com> <20090401212830.GT18394@sequoia.sous-sol.org>
-In-Reply-To: <20090401212830.GT18394@sequoia.sous-sol.org>
-X-Enigmail-Version: 0.95.7
-OpenPGP: id=D8195319
-Content-Type: multipart/signed; micalg=pgp-sha1;
- protocol="application/pgp-signature";
- boundary="------------enigD0083754C1714401B1D42039"
+	Wed, 1 Apr 2009 18:09:38 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:to:cc:subject:message-id:in-reply-to:references:x-mailer
+         :mime-version:content-type:content-transfer-encoding;
+        b=mrErqRnEBD//fO2RKZ1gsZ/+SLJkMC1GAv/iyWt3JPfkpNgbQkBhOmyyA+81pespVj
+         dmH/5hPKtTt4T6562JgBe4lP1RCMwX9anzv2soOETYFuTmFaHqTYZhVtkk7hnBUEFXC1
+         wgE08pWBb6fVR2Oysz+q0xOXCY37qZSuGME7s=
+Date: Thu, 2 Apr 2009 00:09:25 +0200
+From: Alejandro Riveira =?UTF-8?B?RmVybsOhbmRleg==?= 
+	<ariveira@gmail.com>
+To: Harald Arnesen <skogtun.harald@gmail.com>
+Cc: david@lang.hm, Bill Davidsen <davidsen@tmr.com>,
+       linux-kernel@vger.kernel.org
+Subject: Re: Linux 2.6.29
+Message-ID: <20090402000925.1e728d7e@varda>
+In-Reply-To: <87hc183uhn.fsf@basilikum.skogtun.org>
+References: <alpine.LFD.2.00.0903271511230.3994@localhost.localdomain>
+	<alpine.LFD.2.00.0903271522210.3994@localhost.localdomain>
+	<49CD7B10.7010601@garzik.org>
+	<49CD891A.7030103@rtr.ca>
+	<49CD9047.4060500@garzik.org>
+	<49CE2633.2000903@s5r6.in-berlin.de>
+	<49CE3186.8090903@garzik.org>
+	<49CE35AE.1080702@s5r6.in-berlin.de>
+	<49CE3F74.6090103@rtr.ca>
+	<20090329231451.GR26138@disturbed>
+	<20090330003948.GA13356@mit.edu>
+	<49D0710A.1030805@ursus.ath.cx>
+	<gqr50k$4aq$1@ger.gmane.org>
+	<alpine.DEB.1.10.0903311813390.28893@asgard.lang.hm>
+	<49D3954A.9010309@tmr.com>
+	<alpine.DEB.1.10.0904011311240.28893@asgard.lang.hm>
+	<87hc183uhn.fsf@basilikum.skogtun.org>
+X-Mailer: Claws Mail 3.7.1 (GTK+ 2.14.4; x86_64-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This is an OpenPGP/MIME signed message (RFC 2440 and 3156)
---------------enigD0083754C1714401B1D42039
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: quoted-printable
-
-Chris Wright wrote:
-> * Gregory Haskins (ghaskins@novell.com) wrote:
->  =20
->> Note that the design of vbus should prevent any weakening
->>    =20
->
-> Could you elaborate?
->  =20
-
-Absolutely.
-
-So you said that something in the kernel could weaken the
-protection/isolation.  And I fully agree that whatever we do here has to
-be done carefully...more carefully than a userspace derived counterpart,
-naturally.
-
-So to address this, I put in various mechanisms to (hopefully? :) ensure
-we can still maintain proper isolation, as well as protect the host,
-other guests, and other applications from corruption.  Here are some of
-the highlights:
-
-*) As I mentioned, a "vbus" is a form of a kernel-resource-container.=20
-It is designed so that the view of a vbus is a unique namespace of
-device-ids.  Each bus has its own individual namespace that consist
-solely of the devices that have been placed on that bus.  The only way
-to create a bus, and/or create a device on a bus, is via the
-administrative interface on the host.
-
-*) A task can only associate with, at most, one vbus at a time.  This
-means that a task can only see the device-id namespace of the devices on
-its associated bus and thats it.  This is enforced by the host kernel by
-placing a reference to the associated vbus on the task-struct itself.=20
-Again, the only way to modify this association is via a host based
-administrative operation.  Note that multiple tasks can associate to the
-same vbus, which would commonly be used by all threads in an app, or all
-vcpus in a guest, etc.
-
-*) the asynchronous nature of the shm/ring interfaces implies we have
-the potential for asynchronous faults.  E.g. "crap" in the ring might
-not be discovered at the EIP of the guest vcpu when it actually inserts
-the crap, but rather later when the host side tries to update the ring.=20
-A naive implementation would have the host do a BUG_ON() when it
-discovers the discrepancy (note that I still have a few of these to fix
-in the venet-tap code).  Instead, what should happen is that we utilize
-an asynchronous fault mechanism that allows the guest to always be the
-one punished (via something like a machine-check for guests, or SIGABRT
-for userspace, etc)
-
-*) "south-to-north path signaling robustness".  Because vbus supports a
-variety of different environments, I call guest/userspace "north', and
-the host/kernel "south".  When the north wants to communicate with the
-kernel, its perfectly ok to stall the north indefinitely if the south is
-not ready.  However, it is not really ok to stall the south when
-communicating with the north because this is an attack vector.  E.g. a
-malicous/broken guest could just stop servicing its ring to cause
-threads in the host to jam up.  This is bad. :)  So what we do is we
-design all south-to-north signaling paths to be robust against
-stalling.  What they do instead is manage backpressure a little bit more
-intelligently than simply blocking like they might in the guest.  For
-instance, in venet-tap, a "transmit" from netif that has to be injected
-in the south-to-north ring when it is full will result in a
-netif_stop_queue().   etc.
-
-I cant think of more examples right now, but I will update this list
-if/when I come up with more.  I hope that satisfactorily answered your
-question, though!
-
-Regards,
--Greg
+El Thu, 02 Apr 2009 00:00:04 +0200
+Harald Arnesen <skogtun.harald@gmail.com> escribió:
 
 
---------------enigD0083754C1714401B1D42039
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: OpenPGP digital signature
-Content-Disposition: attachment; filename="signature.asc"
+> 
+> I've been wondering about that during the last days. How abut JFS and
+> data loss (files containing zeroes after a crash), as compared to ext3,
+> ext4, ordered and writeback journal modes? Is is safe?
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v2.0.9 (GNU/Linux)
-Comment: Using GnuPG with SUSE - http://enigmail.mozdev.org
+  i have had zeroed conf files with jfs (shell history) and corrupted firefox
+ history files too after power outages and the like.
 
-iEYEARECAAYFAknT5kkACgkQlOSOBdgZUxn3gwCfXfWVTztWpilr6M6M7kWyncff
-7O0An0tJsr5/YaQzQMpjncXQik5bWZ9a
-=SUbu
------END PGP SIGNATURE-----
-
---------------enigD0083754C1714401B1D42039--
