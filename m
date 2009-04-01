@@ -1,48 +1,87 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933718AbZDASsl@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933583AbZDASw1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933718AbZDASsl (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 1 Apr 2009 14:48:41 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933324AbZDASsD
+	id S933583AbZDASw1 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 1 Apr 2009 14:52:27 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758219AbZDASwR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 1 Apr 2009 14:48:03 -0400
-Received: from gw1.cosmosbay.com ([212.99.114.194]:33364 "EHLO
-	gw1.cosmosbay.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S933682AbZDASsA convert rfc822-to-8bit (ORCPT
+	Wed, 1 Apr 2009 14:52:17 -0400
+Received: from terminus.zytor.com ([198.137.202.10]:58853 "EHLO
+	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1761250AbZDASwR (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 1 Apr 2009 14:48:00 -0400
-Message-ID: <49D3B6CD.2030908@cosmosbay.com>
-Date: Wed, 01 Apr 2009 20:47:41 +0200
-From: Eric Dumazet <dada1@cosmosbay.com>
-User-Agent: Thunderbird 2.0.0.21 (Windows/20090302)
-MIME-Version: 1.0
-To: Jeremy Fitzhardinge <jeremy@goop.org>
-CC: Ingo Molnar <mingo@elte.hu>, Tejun Heo <htejun@gmail.com>,
-       linux kernel <linux-kernel@vger.kernel.org>,
-       Linux Netdev List <netdev@vger.kernel.org>,
-       Joe Perches <joe@perches.com>, Rusty Russell <rusty@rustcorp.com.au>
-Subject: Re: [PATCH] x86: percpu_to_op() misses memory and flags clobbers
-References: <49D32212.80607@cosmosbay.com> <49D32DC2.9010003@goop.org> <49D33E80.70802@cosmosbay.com> <20090401161218.GB3859@elte.hu> <49D3A0C2.9000403@cosmosbay.com> <49D3AD61.5090206@goop.org>
-In-Reply-To: <49D3AD61.5090206@goop.org>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 8BIT
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-1.6 (gw1.cosmosbay.com [0.0.0.0]); Wed, 01 Apr 2009 20:47:42 +0200 (CEST)
+	Wed, 1 Apr 2009 14:52:17 -0400
+Date: Wed, 1 Apr 2009 11:51:14 -0700
+Message-Id: <200904011851.n31IpEfZ030035@voreg.hos.anvin.org>
+From: "H. Peter Anvin" <hpa@zytor.com>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: "Michael K. Johnson" <johnsonm@rpath.com>,
+       Justin Forbes <jmforbes@linuxtx.org>,
+       Jordan Hargrave <Jordan_Hargrave@dell.com>, Ingo Molnar <mingo@elte.hu>,
+       Thomas Gleixner <tglx@linutronix.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: [GIT PULL] x86 setup BIOS workarounds
+In-Reply-To: <alpine.LFD.2.00.0904011115210.4130@localhost.localdomain>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Jeremy Fitzhardinge a écrit :
-> Eric Dumazet wrote:
->> +#define percpu_inc(var)        percpu_to_op0("inc", per_cpu__##var)
->> +#define percpu_dec(var)        percpu_to_op0("dec", per_cpu__##var)
->>   
+Linus Torvalds wrote:
 > 
-> There's probably not a lot of value in this.  The Intel and AMD
-> optimisation guides tend to deprecate inc/dec in favour of using
-> add/sub, because the former can cause pipeline stalls due to its partial
-> flags update.
+> So at a _minimum_, I'd suggest that we set bug.ext_flags to 1 before the 
+> call - so that if some random BIOS just leaves %ecx unchanged, it won't 
+> mean that the area just gets ignored as a ACPI-3 entry.
 > 
->    J
 
-Sure, but this saves one byte per call, this is probably why we still use
-inc/dec in so many places...
+Argh, I had that in there originally, and then I shuffled stuff around
+and it got left out.  Total thinko on my part.  I'm sorry, and thanks
+for catching that.
 
+I have had the ACPI 3 stuff in Syslinux for quite a while now (*with*
+the flag initialization) and it hasn't caused problems there, so I
+feel it should be safe to push into the kernel.
+
+The following changes since commit c549e71d073a6e9a4847497344db28a784061455:
+  H. Peter Anvin (1):
+        x86, setup: ACPI 3, BIOS workaround for E820-probing code
+
+are available in the git repository at:
+
+  git://git.kernel.org/pub/scm/linux/kernel/git/tip/linux-2.6-tip.git x86-setup-for-linus
+
+H. Peter Anvin (1):
+      x86, setup: guard against pre-ACPI 3 e820 code not updating %ecx
+
+ arch/x86/boot/memory.c |    6 ++++++
+ 1 files changed, 6 insertions(+), 0 deletions(-)
+
+commit cd670599b7b00d9263f6f11a05c0edeb9cbedaf3
+Author: H. Peter Anvin <hpa@zytor.com>
+Date:   Wed Apr 1 11:35:00 2009 -0700
+
+    x86, setup: guard against pre-ACPI 3 e820 code not updating %ecx
+    
+    Impact: BIOS bug safety
+    
+    For pre-ACPI 3 BIOSes, pre-initialize the end of the e820 buffer just
+    in case the BIOS returns an unchanged %ecx but without actually
+    touching the ACPI 3 extended flags field.
+    
+    Signed-off-by: H. Peter Anvin <hpa@zytor.com>
+
+diff --git a/arch/x86/boot/memory.c b/arch/x86/boot/memory.c
+index d5d2360..5054c2d 100644
+--- a/arch/x86/boot/memory.c
++++ b/arch/x86/boot/memory.c
+@@ -31,6 +31,12 @@ static int detect_memory_e820(void)
+ 	struct e820entry *desc = boot_params.e820_map;
+ 	static struct e820_ext_entry buf; /* static so it is zeroed */
+ 
++	/*
++	 * Set this here so that if the BIOS doesn't change this field
++	 * but still doesn't change %ecx, we're still okay...
++	 */
++	buf.ext_flags = 1;
++
+ 	do {
+ 		size = sizeof buf;
+ 
