@@ -1,113 +1,84 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761271AbZDAIMe@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761326AbZDAINU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761271AbZDAIMe (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 1 Apr 2009 04:12:34 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755368AbZDAIMP
+	id S1761326AbZDAINU (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 1 Apr 2009 04:13:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759544AbZDAINF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 1 Apr 2009 04:12:15 -0400
-Received: from mga11.intel.com ([192.55.52.93]:41512 "EHLO mga11.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753373AbZDAIMN convert rfc822-to-8bit (ORCPT
+	Wed, 1 Apr 2009 04:13:05 -0400
+Received: from viefep18-int.chello.at ([62.179.121.38]:40831 "EHLO
+	viefep18-int.chello.at" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754525AbZDAINB (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 1 Apr 2009 04:12:13 -0400
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.39,305,1235980800"; 
-   d="scan'208";a="677748888"
-From: "Metzger, Markus T" <markus.t.metzger@intel.com>
-To: Oleg Nesterov <oleg@redhat.com>, "mingo@elte.hu" <mingo@elte.hu>
-CC: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       "tglx@linutronix.de" <tglx@linutronix.de>,
-       "hpa@zytor.com" <hpa@zytor.com>,
-       "markus.t.metzger@gmail.com" <markus.t.metzger@gmail.com>,
-       "roland@redhat.com" <roland@redhat.com>,
-       "eranian@googlemail.com" <eranian@googlemail.com>,
-       "Villacis, Juan" <juan.villacis@intel.com>,
-       "ak@linux.jf.intel.com" <ak@linux.jf.intel.com>
-Date: Wed, 1 Apr 2009 09:10:43 +0100
-Subject: RE: [patch 1/21] x86, bts: fix race when bts tracer is removed
-Thread-Topic: [patch 1/21] x86, bts: fix race when bts tracer is removed
-Thread-Index: AcmyW6lev8d1y5X3QH6TxXUeb1BF9gAOovWw
-Message-ID: <928CFBE8E7CB0040959E56B4EA41A77E926D5095@irsmsx504.ger.corp.intel.com>
-References: <20090331145051.A12111@sedona.ch.intel.com>
- <20090331234823.GB28228@redhat.com>
-In-Reply-To: <20090331234823.GB28228@redhat.com>
-Accept-Language: en-US
-Content-Language: en-US
-X-MS-Has-Attach: 
-X-MS-TNEF-Correlator: 
-acceptlanguage: en-US
-Content-Type: text/plain; charset="us-ascii"
-MIME-Version: 1.0
-Content-Transfer-Encoding: 8BIT
+	Wed, 1 Apr 2009 04:13:01 -0400
+X-SourceIP: 213.93.53.227
+Subject: Re: [PATCH] perf_counter: allow and require one-page mmap on
+ counting counters
+From: Peter Zijlstra <a.p.zijlstra@chello.nl>
+To: Paul Mackerras <paulus@samba.org>
+Cc: Ingo Molnar <mingo@elte.hu>, Andrew Morton <akpm@linux-foundation.org>,
+       linux-kernel@vger.kernel.org
+In-Reply-To: <18898.53849.913178.781844@drongo.ozlabs.ibm.com>
+References: <18889.59409.260586.87939@cargo.ozlabs.ibm.com>
+	 <20090325082844.GA11217@elte.hu>
+	 <18889.61903.636761.471281@cargo.ozlabs.ibm.com>
+	 <20090325090336.GC2341@elte.hu>
+	 <18889.64659.917207.685779@cargo.ozlabs.ibm.com>
+	 <1238526907.3898.93.camel@laptop>
+	 <18898.53849.913178.781844@drongo.ozlabs.ibm.com>
+Content-Type: text/plain
+Date: Wed, 01 Apr 2009 10:13:42 +0200
+Message-Id: <1238573622.8530.2582.camel@twins>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.26.0 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
->-----Original Message-----
->From: Oleg Nesterov [mailto:oleg@redhat.com]
->Sent: Wednesday, April 01, 2009 1:48 AM
->To: Metzger, Markus T
->Cc: linux-kernel@vger.kernel.org; mingo@elte.hu; tglx@linutronix.de; hpa@zytor.com;
->markus.t.metzger@gmail.com; roland@redhat.com; eranian@googlemail.com; Villacis, Juan;
->ak@linux.jf.intel.com
->Subject: Re: [patch 1/21] x86, bts: fix race when bts tracer is removed
->
->On 03/31, Markus Metzger wrote:
->>
->> Read the tracer once during a context switch.
->> ...
->> @@ -1044,36 +1051,39 @@ void ds_switch_to(struct task_struct *pr
->>  {
->>  	struct ds_context *prev_ctx = prev->thread.ds_ctx;
->>  	struct ds_context *next_ctx = next->thread.ds_ctx;
->> +	unsigned long debugctlmsr = next->thread.debugctlmsr;
->>
->>  	if (prev_ctx) {
->> +		struct bts_tracer *tracer = prev_ctx->bts_master;
->> +
->>  		update_debugctlmsr(0);
->>
->> -		if (prev_ctx->bts_master &&
->> -		    (prev_ctx->bts_master->trace.ds.flags & BTS_TIMESTAMPS)) {
->> +		if (tracer && (tracer->flags & BTS_TIMESTAMPS)) {
->
->In theory, we need barrier() after reading ->bts_master.
->
->(actually, I did see the bug reports when the compiler read the pointer
-> twice with the code like above).
+On Wed, 2009-04-01 at 13:32 +1100, Paul Mackerras wrote:
+> Peter Zijlstra writes:
+> 
+> > On Wed, 2009-03-25 at 20:42 +1100, Paul Mackerras wrote:
+> > > 
+> > > And here's something else that is semi-related: the PAPI guys want a
+> > > kind of counter that counts until it overflows, and then sends a
+> > > signal to the process and disables itself (and the whole group it's
+> > > in).
+> > 
+> > I tried doing this this evening, and its remarkably hard. Disabling a
+> > counter relies on reading the time, and taking ctx->lock and such.
+> > Things that are impossible to do in NMI context.
+> 
+> So, if I have a group where the leader is a hardware counter set to
+> use NMIs, and there is a task_clock software counter in the group,
+> don't we hit exactly the same issue with reading the time?
 
-I guess the same is true for prev_ctx, next_ctx, and debugctlmsr, then.
+Hmm, I think you're right there. Nasty.
 
-Ingo,
-would it be OK to resend this one patch with the barrier()s added?
+> I'd be OK with saying that you can't use stop-and-signal with NMI
+> counters.
 
+Right, so let them use regular IRQs, yes, that will work. Let me code
+that.
 
->Off-topic, but afaics modulo bts_task_departs/bts_task_arrives we
->have the identical code for prev_ctx/next_ctx, perhaps it makes
->sense to make a helper which calls bts_write().
+>   There will still be some issues on powerpc because of our
+> lazy interrupt disabling scheme, so some work might have to get
+> deferred until we soft-enable interrupts, but we have a way to manage
+> that.
 
-Agreed.
+Hmm, you're saying ppc always uses NMIs, even when !hw_event.nmi?
 
->To clarify, even _if_ I am right and _if_ you agree, we can do this
->later, I am not suggesting to change this patch right now.
+> On another topic, I noticed that we have a race with perf_counter_read
+> where we do the IPI but don't check in __read() on the destination cpu
+> that the task we're after is still running on that cpu.  It needs
+> checking and retry logic like we have in other places in
+> perf_counter.c.
 
-Agreed, as well.
+Yep, you're right again. Should we perhaps generalize that whole code
+and provide a method vector for the various bits. That way we could
+collapse all that code replication.
 
+This TODO list keeps growing :-)
 
-thanks and regards,
-markus.
----------------------------------------------------------------------
-Intel GmbH
-Dornacher Strasse 1
-85622 Feldkirchen/Muenchen Germany
-Sitz der Gesellschaft: Feldkirchen bei Muenchen
-Geschaeftsfuehrer: Douglas Lusk, Peter Gleissner, Hannes Schwaderer
-Registergericht: Muenchen HRB 47456 Ust.-IdNr.
-VAT Registration No.: DE129385895
-Citibank Frankfurt (BLZ 502 109 00) 600119052
-
-This e-mail and any attachments may contain confidential material for
-the sole use of the intended recipient(s). Any review or distribution
-by others is strictly prohibited. If you are not the intended
-recipient, please contact the sender and delete all copies.
+BTW, how's progress with the lazy switching?
 
