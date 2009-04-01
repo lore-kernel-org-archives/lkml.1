@@ -1,20 +1,20 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753977AbZDAKus@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756799AbZDAKvL@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753977AbZDAKus (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 1 Apr 2009 06:50:48 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752682AbZDAKuU
+	id S1756799AbZDAKvL (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 1 Apr 2009 06:51:11 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754195AbZDAKuX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 1 Apr 2009 06:50:20 -0400
-Received: from ozlabs.org ([203.10.76.45]:38003 "EHLO ozlabs.org"
+	Wed, 1 Apr 2009 06:50:23 -0400
+Received: from ozlabs.org ([203.10.76.45]:38004 "EHLO ozlabs.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751962AbZDAKuT (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 1 Apr 2009 06:50:19 -0400
-Date: Wed, 1 Apr 2009 21:48:46 +1100
+	id S1751951AbZDAKuU (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 1 Apr 2009 06:50:20 -0400
+Date: Wed, 1 Apr 2009 21:46:33 +1100
 From: Anton Blanchard <anton@samba.org>
 To: linux-kernel@vger.kernel.org
 Cc: arjan@infradead.org, akpm@osdl.org
-Subject: [PATCH] Align vmstat_work
-Message-ID: <20090401104846.GI27084@kryten>
+Subject: [PATCH] Align rekey_work
+Message-ID: <20090401104633.GH27084@kryten>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
@@ -24,34 +24,22 @@ List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-Even though vmstat_work is marked deferrable, there are still benefits to
-aligning it. For certain applications we want to keep OS jitter as low as
-possible and aligning timers and work so they occur together can reduce their
-overall impact.
+Align rekey_work. Even though it's infrequent, we may as well line it up.
 
 Signed-off-by: Anton Blanchard <anton@samba.org>
 ---
 
-diff --git a/mm/vmstat.c b/mm/vmstat.c
-index 9114974..493c89d 100644
---- a/mm/vmstat.c
-+++ b/mm/vmstat.c
-@@ -898,7 +898,7 @@ static void vmstat_update(struct work_struct *w)
- {
- 	refresh_cpu_vm_stats(smp_processor_id());
- 	schedule_delayed_work(&__get_cpu_var(vmstat_work),
--		sysctl_stat_interval);
-+		round_jiffies_relative(sysctl_stat_interval));
+Index: linux-2.6/drivers/char/random.c
+===================================================================
+--- linux-2.6.orig/drivers/char/random.c	2009-04-01 15:47:27.000000000 +1100
++++ linux-2.6/drivers/char/random.c	2009-04-01 16:32:40.000000000 +1100
+@@ -1488,7 +1488,8 @@
+ 	keyptr->count = (ip_cnt & COUNT_MASK) << HASH_BITS;
+ 	smp_wmb();
+ 	ip_cnt++;
+-	schedule_delayed_work(&rekey_work, REKEY_INTERVAL);
++	schedule_delayed_work(&rekey_work,
++			      round_jiffies_relative(REKEY_INTERVAL));
  }
  
- static void __cpuinit start_cpu_timer(int cpu)
-@@ -906,7 +906,8 @@ static void __cpuinit start_cpu_timer(int cpu)
- 	struct delayed_work *vmstat_work = &per_cpu(vmstat_work, cpu);
- 
- 	INIT_DELAYED_WORK_DEFERRABLE(vmstat_work, vmstat_update);
--	schedule_delayed_work_on(cpu, vmstat_work, HZ + cpu);
-+	schedule_delayed_work_on(cpu, vmstat_work,
-+				 __round_jiffies_relative(HZ, cpu));
- }
- 
- /*
+ static inline struct keydata *get_keyptr(void)
