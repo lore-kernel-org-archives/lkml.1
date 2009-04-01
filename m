@@ -1,76 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759266AbZDAIrz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761627AbZDAIsd@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759266AbZDAIrz (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 1 Apr 2009 04:47:55 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753923AbZDAIrq
+	id S1761627AbZDAIsd (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 1 Apr 2009 04:48:33 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761229AbZDAIsT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 1 Apr 2009 04:47:46 -0400
-Received: from mtagate3.de.ibm.com ([195.212.29.152]:39517 "EHLO
-	mtagate3.de.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752813AbZDAIro (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 1 Apr 2009 04:47:44 -0400
-Date: Wed, 1 Apr 2009 10:47:37 +0200
-From: Martin Schwidefsky <schwidefsky@de.ibm.com>
-To: David Miller <davem@davemloft.net>
-Cc: tj@kernel.org, mingo@elte.hu, rusty@rustcorp.com.au, tglx@linutronix.de,
-       x86@kernel.org, linux-kernel@vger.kernel.org, hpa@zytor.com,
-       lethal@linux-sh.org, rmk@arm.linux.org.uk, starvik@axis.com,
-       ralf@linux-mips.org, cooloney@kernel.org, kyle@mcmartin.ca,
-       matthew@wil.cx, grundler@parisc-linux.org, takata@linux-m32r.org,
-       benh@kernel.crashing.org, rth@twiddle.net, ink@jurassic.park.msu.ru,
-       heiko.carstens@de.ibm.com
-Subject: Re: [GIT RFC] percpu: use dynamic percpu allocator as the default
- percpu allocator
-Message-ID: <20090401104737.22c8c66c@skybase>
-In-Reply-To: <20090401.013702.66171229.davem@davemloft.net>
-References: <20090401101054.0a4b187d@skybase>
-	<49D3231D.2040403@kernel.org>
-	<20090401103257.12c2517e@skybase>
-	<20090401.013702.66171229.davem@davemloft.net>
-Organization: IBM Corporation
-X-Mailer: Claws Mail 3.7.1 (GTK+ 2.14.7; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Wed, 1 Apr 2009 04:48:19 -0400
+Received: from cantor.suse.de ([195.135.220.2]:56333 "EHLO mx1.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753923AbZDAIsS (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 1 Apr 2009 04:48:18 -0400
+Date: Wed, 1 Apr 2009 10:48:14 +0200 (CEST)
+From: Jiri Kosina <jkosina@suse.cz>
+X-X-Sender: jkosina@wotan.suse.de
+To: Ali Gholami Rudi <ali@rudi.ir>
+Cc: linux-ext4@vger.kernel.org, linux-kernel@vger.kernel.org,
+       jack@atrey.karlin.mff.cuni.cz, trivial@kernel.org
+Subject: Re: [PATCH][TRIVIAL] ext2: fix a typo in ext2.h
+In-Reply-To: <20090330121927.GA2237@lilem.mirepesht>
+Message-ID: <alpine.LNX.2.00.0904011047570.2777@wotan.suse.de>
+References: <20090330121927.GA2237@lilem.mirepesht>
+User-Agent: Alpine 2.00 (LNX 1167 2008-08-23)
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 01 Apr 2009 01:37:02 -0700 (PDT)
-David Miller <davem@davemloft.net> wrote:
+On Mon, 30 Mar 2009, Ali Gholami Rudi wrote:
 
-> From: Martin Schwidefsky <schwidefsky@de.ibm.com>
-> Date: Wed, 1 Apr 2009 10:32:57 +0200
+> Signed-off-by: Ali Gholami Rudi <ali@rudi.ir>
+> ---
+>  fs/ext2/ext2.h |    2 +-
+>  1 files changed, 1 insertions(+), 1 deletions(-)
 > 
-> > The code sequence with @GOT:
-> > 
-> > 	larl	%r12,_GLOBAL_OFFSET_TABLE_
-> > 	lg	%r1,symbol@GOT(%r12)
-> > 
-> > is equivalent to:
-> > 
-> > 	larl	%r1,symbol@GOTENT
-> > 	lg	%r1,0(%r1)
-> > 
-> > The advantage of the second code sequence is that it need a single
-> > register and the size of the GOT is not limited to 4K as in the first
-> > example (the offset in an RX format instruction is limited to 12 bits -
-> > but that is probably something you don't want to know ;-).
-> 
-> If practical I think you guys should just force all of the module
-> address space below 4GB virtually, as we do on sparc64.  It's a good
-> way to avoid all of these problems.
+> diff --git a/fs/ext2/ext2.h b/fs/ext2/ext2.h
+> index 3203042..6888b2d 100644
+> --- a/fs/ext2/ext2.h
+> +++ b/fs/ext2/ext2.h
+> @@ -27,7 +27,7 @@ struct ext2_inode_info {
+>  	/*
+>  	 * i_block_group is the number of the block group which contains
+>  	 * this file's inode.  Constant across the lifetime of the inode,
+> -	 * it is ued for making block allocation decisions - we try to
+> +	 * it is used for making block allocation decisions - we try to
+>  	 * place a file's data blocks near its inode block, and new inodes
+>  	 * near to their parent directory's inode.
+>  	 */
 
-We have thought about that solution as well but it not really a good
-one. For a machine with more than 4GB of memory we would either loose
-the memory that overlaps with the module area or we'd have to play
-nasty remapping tricks. On s390 the kernel image is linked to address 0
-(PAGE_OFFSET==0) and we have a simple 1:1 mapping for all real memory.
+Applied to trivial tree, thanks Ali.
 
 -- 
-blue skies,
-   Martin.
-
-"Reality continues to ruin my life." - Calvin.
-
+Jiri Kosina
+SUSE Labs
