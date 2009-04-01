@@ -1,84 +1,75 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1765089AbZDAALj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762995AbZDAAMq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1765089AbZDAALj (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 31 Mar 2009 20:11:39 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761169AbZDAAKv
+	id S1762995AbZDAAMq (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 31 Mar 2009 20:12:46 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758552AbZDAAMf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 31 Mar 2009 20:10:51 -0400
-Received: from 69-30-77-85.dq1sn.easystreet.com ([69.30.77.85]:46968 "EHLO
-	kingsolver.anholt.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1764445AbZDAAKu (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 31 Mar 2009 20:10:50 -0400
-Subject: PAGE_CACHE_WC strikes again
-From: Eric Anholt <eric@anholt.net>
-To: lkml <linux-kernel@vger.kernel.org>,
-       Venkatesh Pallipadi <venkatesh.pallipadi@intel.com>
-Content-Type: multipart/signed; micalg="pgp-sha1"; protocol="application/pgp-signature"; boundary="=-NyDJnIK42oTxt+V5+B/9"
-Date: Tue, 31 Mar 2009 17:10:47 -0700
-Message-Id: <1238544647.8369.682.camel@gaiman.anholt.net>
+	Tue, 31 Mar 2009 20:12:35 -0400
+Received: from ist.d-labs.de ([213.239.218.44]:36165 "EHLO mx01.d-labs.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1757580AbZDAAMe (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 31 Mar 2009 20:12:34 -0400
+Date: Wed, 1 Apr 2009 02:12:18 +0200
+From: Florian Mickler <florian@mickler.org>
+To: Eric Anholt <eric@anholt.net>
+Cc: linux-kernel@vger.kernel.org, dri-devel@lists.sourceforge.net,
+       keithp@keithp.com
+Subject: Re: [PATCH 6/6] drm/i915: Fix lock order reversal in GEM relocation
+ entry copying. -- makes X hang
+Message-ID: <20090401021218.4ca403cd@schatten>
+In-Reply-To: <1238528216.8369.390.camel@gaiman.anholt.net>
+References: <1238017510-26784-1-git-send-email-eric@anholt.net>
+	<1238017510-26784-2-git-send-email-eric@anholt.net>
+	<1238017510-26784-3-git-send-email-eric@anholt.net>
+	<1238017510-26784-4-git-send-email-eric@anholt.net>
+	<1238017510-26784-5-git-send-email-eric@anholt.net>
+	<1238017510-26784-6-git-send-email-eric@anholt.net>
+	<1238017510-26784-7-git-send-email-eric@anholt.net>
+	<20090330120011.0d506d20@schatten>
+	<1238528216.8369.390.camel@gaiman.anholt.net>
+X-Mailer: Claws Mail 3.7.0 (GTK+ 2.12.11; x86_64-pc-linux-gnu)
 Mime-Version: 1.0
-X-Mailer: Evolution 2.24.5 
+Content-Type: multipart/signed; boundary="Sig_/qyuQlEhbjOMp.XdlVQFP_o/";
+ protocol="application/pgp-signature"; micalg=PGP-SHA1
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
---=-NyDJnIK42oTxt+V5+B/9
-Content-Type: text/plain
+--Sig_/qyuQlEhbjOMp.XdlVQFP_o/
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: quoted-printable
 
-I just tracked down what was cutting performance 10x on one of my
-systems on a microbenchmark I'd just written:
+On Tue, 31 Mar 2009 12:36:56 -0700
+Eric Anholt <eric@anholt.net> wrote:
 
---- a/drivers/gpu/drm/drm_gem.c
-+++ b/drivers/gpu/drm/drm_gem.c
-@@ -540,7 +540,7 @@ int drm_gem_mmap(struct file *filp, struct
-vm_area_struct *vma)
- 	/* FIXME: use pgprot_writecombine when available */
- 	prot =3D pgprot_val(vma->vm_page_prot);
- #ifdef CONFIG_X86
--	prot |=3D _PAGE_CACHE_WC;
-+	/*prot |=3D _PAGE_CACHE_WC;*/
- #endif
- 	vma->vm_page_prot =3D __pgprot(prot);
-=20
-Turns out that setting PAGE_CACHE_WC disables the WC effect of the MTRR
-on my non-PAT (disabled due to CPU errata) 945GM system, and this
-workaround took GTT-mapped writes from 120MB/s to 1180MB/s.
+>=20
+> Ouch.  Could you file a bug report using:
+>=20
+> http://intellinuxgraphics.org/how_to_report_bug.html
+>=20
+> so I've got the information I need to try to reproduce this?
+>=20
 
-What's the right way to be setting our PTEs?  This is similar to the
-workaround in ef5fa0ab24b87646c7bc98645acbb4b51fc2acd4, but to do it in
-the driver as well means exporting pat_enabled, and it really seems like
-PAT presence shouldn't be something the driver has to worry about --
-I've got a WC MTRR and I'm asking for a WC mapping and I'm getting
-uncached.  If I failed to init the MTRR, the state of the aperture I'm
-mapping would be uncached.
+shure. done.
 
-Test code is at
-git://anongit.freedesktop.org/git/xorg/app/intel-gpu-tools
-under benchmarks/intel_upload_blit_large_gtt but requires libdrm master
-until we get a release out in the next week or so.  Also includes a few
-standalone regression tests, which may be useful for people making
-changes that may affect i915.
+http://bugs.freedesktop.org/show_bug.cgi?id=3D20985
 
---=20
-Eric Anholt
-eric@anholt.net                         eric.anholt@intel.com
+thx,
 
+Florian
 
+p.s. hope i didn't miss some vital piece of information?
 
---=-NyDJnIK42oTxt+V5+B/9
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: This is a digitally signed message part
+--Sig_/qyuQlEhbjOMp.XdlVQFP_o/
+Content-Type: application/pgp-signature; name=signature.asc
+Content-Disposition: attachment; filename=signature.asc
 
 -----BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.9 (GNU/Linux)
+Version: GnuPG v2.0.9 (GNU/Linux)
 
-iEUEABECAAYFAknSsQcACgkQHUdvYGzw6vdkPwCfdUnebvNPu6/SHnuL/NTSI2gR
-ts0AljZig+gREW3l7mIFyAYYjEzuFQg=
-=PXf0
+iEYEARECAAYFAknSsWgACgkQPjqCkyL3Kv38TQCfZmtGxAeRQtWnEVkeEXOUpDFn
+vyEAnA185ECrk22A7SPBCHDdbCUFbww/
+=Xzsx
 -----END PGP SIGNATURE-----
 
---=-NyDJnIK42oTxt+V5+B/9--
-
+--Sig_/qyuQlEhbjOMp.XdlVQFP_o/--
