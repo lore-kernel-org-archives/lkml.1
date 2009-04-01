@@ -1,62 +1,80 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934279AbZDAUXW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934303AbZDAUYH@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934279AbZDAUXW (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 1 Apr 2009 16:23:22 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757564AbZDAUXL
+	id S934303AbZDAUYH (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 1 Apr 2009 16:24:07 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758336AbZDAUXs
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 1 Apr 2009 16:23:11 -0400
-Received: from mail-ew0-f165.google.com ([209.85.219.165]:51621 "EHLO
-	mail-ew0-f165.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757188AbZDAUXK convert rfc822-to-8bit (ORCPT
+	Wed, 1 Apr 2009 16:23:48 -0400
+Received: from bedivere.hansenpartnership.com ([66.63.167.143]:35613 "EHLO
+	bedivere.hansenpartnership.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1757076AbZDAUXr (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 1 Apr 2009 16:23:10 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:sender:in-reply-to:references:date
-         :x-google-sender-auth:message-id:subject:from:to:cc:content-type
-         :content-transfer-encoding;
-        b=iphVIS1h871tZpVbJUsqJnIW6cxzTD8ZMeSgmAKbXJMBm9dbmIsvJHnOj4bZTBH8sS
-         iIVnEzYNADpEidVDV0d54l+7ScrQ235bw9C+KZpMG4N73aJMCTwbE08grDztNPnO1m0P
-         8aAFzJBOvEw40vAixOBQE4FW5Rsw2KKWt9HFk=
-MIME-Version: 1.0
-In-Reply-To: <20090401194810.GY3795@csclub.uwaterloo.ca>
-References: <200903120437.03837.rob@landley.net>
-	 <20090401165741.GA3797@csclub.uwaterloo.ca>
-	 <20090401190340.GA29673@uranus.ravnborg.org>
-	 <20090401194810.GY3795@csclub.uwaterloo.ca>
-Date: Wed, 1 Apr 2009 22:23:06 +0200
-X-Google-Sender-Auth: 4c652b45a617618d
-Message-ID: <10f740e80904011323t219063b0ife4db1677ca0d22b@mail.gmail.com>
-Subject: Re: make headers_install broken for ARCH=m68k in 2.6.29-rc7.
-From: Geert Uytterhoeven <geert@linux-m68k.org>
-To: Lennart Sorensen <lsorense@csclub.uwaterloo.ca>
-Cc: Sam Ravnborg <sam@ravnborg.org>, Rob Landley <rob@landley.net>,
-       linux-kernel@vger.kernel.org, dwmw2@infradead.org
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8BIT
+	Wed, 1 Apr 2009 16:23:47 -0400
+Subject: Re: [Iscsitarget-devel] [Scst-devel] ISCSI-SCST performance
+	(withalso IET and STGT data)
+From: James Bottomley <James.Bottomley@HansenPartnership.com>
+To: Ross Walker <rswwalker@gmail.com>
+Cc: Bart Van Assche <bart.vanassche@gmail.com>,
+       "Ross S. W. Walker" <RWalker@medallion.com>,
+       Vladislav Bolkhovitin <vst@vlnb.net>,
+       "linux-scsi@vger.kernel.org" <linux-scsi@vger.kernel.org>,
+       iSCSI Enterprise Target Developer List 
+	<iscsitarget-devel@lists.sourceforge.net>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       "stgt@vger.kernel.org" <stgt@vger.kernel.org>,
+       scst-devel <scst-devel@lists.sourceforge.net>
+In-Reply-To: <FA7F6940-CD5C-4460-9777-2F7AE3657B8E@gmail.com>
+References: <49D10256.8030307@vlnb.net>
+	 <e2e108260903301106y2b750c23kfab978567f3de3a0@mail.gmail.com>
+	 <49D11096.3070804@vlnb.net>
+	 <e2e108260903301153x38e86097vd29c47507da2879f@mail.gmail.com>
+	 <49D254E4.8050806@vlnb.net>
+	 <E2BB8074E5500C42984D980D4BD78EF9029E3D0B@MFG-NYC-EXCH2.mfg.prv>
+	 <e2e108260903312329u118a54bfn3107fdca4b3e2b1d@mail.gmail.com>
+	 <FA7F6940-CD5C-4460-9777-2F7AE3657B8E@gmail.com>
+Content-Type: text/plain
+Date: Wed, 01 Apr 2009 20:23:43 +0000
+Message-Id: <1238617423.3318.82.camel@mulgrave.int.hansenpartnership.com>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.22.3.1 (2.22.3.1-1.fc9) 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Apr 1, 2009 at 21:48, Lennart Sorensen
-<lsorense@csclub.uwaterloo.ca> wrote:
-> On Wed, Apr 01, 2009 at 09:03:40PM +0200, Sam Ravnborg wrote:
->> They decided to fix it by eliminating the *_{no,mm}.h files for exported headers.
->> The patch is already in mainline.
->
-> Oh good.  Yay!  Just didn't make it into 2.6.29 I suspect.  Well there
-> is always 2.6.30.
+On Wed, 2009-04-01 at 08:20 -0400, Ross Walker wrote:
+> On Apr 1, 2009, at 2:29 AM, Bart Van Assche <bart.vanassche@gmail.com>  
+> wrote:
+> 
+> > On Tue, Mar 31, 2009 at 8:43 PM, Ross S. W. Walker
+> > <RWalker@medallion.com> wrote:
+> >> IET just needs to fix how it does it workload with CFQ which
+> >> somehow SCST has overcome. Of course SCST tweaks the Linux kernel to
+> >> gain some extra speed.
+> >
+> > I'm not familiar with the implementation details of CFQ, but I know
+> > that one of the changes between SCST 1.0.0 and SCST 1.0.1 is that the
+> > default number of kernel threads of the scst_vdisk kernel module has
+> > been increased to 5. Could this explain the performance difference
+> > between SCST and IET for FILEIO and BLOCKIO ?
+> 
+> Thank for the update. IET has used 8 threads per target for ages now,  
+> I don't think it is that.
+> 
+> It may be how the I/O threads are forked in SCST that causes them to  
+> be in the same I/O context with each other.
+> 
+> I'm pretty sure implementing a version of the patch that was used for  
+> the dump command (found on the LKML) will fix this.
+> 
+> But thanks goes to Vlad for pointing this dificiency out so we can fix  
+> it to help make IET even better.
 
-It entered mainline just before v2.6.29 (after v2.6.29-rc8)?
-Or did you find a new problem?
+SCST explicitly fiddles with the io context to get this to happen.  It
+has a hack to block to export alloc_io_context:
 
-Gr{oetje,eeting}s,
+http://marc.info/?t=122893564800003
 
-						Geert
+James
 
---
-Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
 
-In personal conversations with technical people, I call myself a hacker. But
-when I'm talking to journalists I just say "programmer" or something like that.
-							    -- Linus Torvalds
