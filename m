@@ -1,44 +1,75 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934112AbZDAVWW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934389AbZDAVXt@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934112AbZDAVWW (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 1 Apr 2009 17:22:22 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1765526AbZDAVWA
+	id S934389AbZDAVXt (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 1 Apr 2009 17:23:49 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756363AbZDAVXd
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 1 Apr 2009 17:22:00 -0400
-Received: from rv-out-0506.google.com ([209.85.198.238]:52716 "EHLO
-	rv-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756775AbZDAVV7 (ORCPT
+	Wed, 1 Apr 2009 17:23:33 -0400
+Received: from mail-ew0-f165.google.com ([209.85.219.165]:35289 "EHLO
+	mail-ew0-f165.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756609AbZDAVXc (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 1 Apr 2009 17:21:59 -0400
+	Wed, 1 Apr 2009 17:23:32 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:date:message-id:subject:from:to:cc:content-type
+         :content-transfer-encoding;
+        b=fNN4cSNZ7O6uFdlygu3pn7WExUmiUJhq2+atEBVTdenHjL+aS5s1/hQH2Izt3Kl2bU
+         BoTX4Hf4uds1IAJKP3rbt2aLePSs9b0HszpDeo+WJconokxmdgVWBjaJnzqtg7EnQWp3
+         flNy1mk7mbg2NBeSLKP2R6li7Z0ZK2iq3LdF8=
 MIME-Version: 1.0
-In-Reply-To: <20090401174336.GA14726@srcf.ucam.org>
-References: <200903291224.21380.info@gnebu.es> <200903311452.05210.info@gnebu.es> 
-	<20090331134547.GJ13356@mit.edu> <200904010002.47077.info@gnebu.es> 
-	<49D2A5AB.1090704@ursus.ath.cx> <20090401015010.GB4529@mit.edu> 
-	<20090401052050.GA20456@sucs.org> <20090401151219.GA12285@srcf.ucam.org> 
-	<20090401173521.GA15423@mit.edu> <20090401174336.GA14726@srcf.ucam.org>
-Date: Wed, 1 Apr 2009 14:21:43 -0700
-Message-ID: <2c0942db0904011421w58c0c2dyb70235fb739cbd30@mail.gmail.com>
-Subject: Re: Ext4 and the "30 second window of death"
-From: Ray Lee <ray-lk@madrabbit.org>
-To: Matthew Garrett <mjg59@srcf.ucam.org>
-Cc: Theodore Tso <tytso@mit.edu>, Sitsofe Wheeler <sitsofe@yahoo.com>,
-       "Andreas T.Auer" <andreas.t.auer_lkml_73537@ursus.ath.cx>,
-       Alberto Gonzalez <info@gnebu.es>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Date: Thu, 2 Apr 2009 01:23:28 +0400
+Message-ID: <a4423d670904011423x4174a81cj901bc140944412ea@mail.gmail.com>
+Subject: 2.6.29-git: cannot mount ext4/loop
+From: Alexander Beregalov <a.beregalov@gmail.com>
+To: "Theodore Ts'o" <tytso@mit.edu>, Jens Axboe <jens.axboe@oracle.com>
+Cc: linux-ext4@vger.kernel.org, linux-kernel@vger.kernel.org
 Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Apr 1, 2009 at 10:43 AM, Matthew Garrett <mjg59@srcf.ucam.org> wrote:
-> I've got absolutely no idea why anyone would want fsync() to stop
-> meaning "Put my data on the disk please".
+Hi Theodore, Jens
 
-Some guy named Andrew used to run a kernel with 'return 0' at the top
-of fsync and fdatasync: http://lkml.org/lkml/2007/4/27/88
+kernel is 2.6.29-07099-g8b53ef3
 
-It's that the latency penalty of apps using *sync() on common hardware
-sucks. That's all, and finding a way to fix that would make this
-entire thread go away, I think.
+Mount failed:
+
+EXT4-fs: barriers enabled
+kjournald2 starting: pid 1867, dev loop0:8, commit interval 5 seconds
+EXT4-fs error (device loop0): ext4_iget: block reference 2703228928 >=
+max (524288) in inode #2, offset=0
+EXT4-fs: get root inode failed
+EXT4-fs (device loop0): mount failed
+
+=====================================
+[ BUG: bad unlock balance detected! ]
+-------------------------------------
+mount/1865 is trying to release lock (&lo->lo_ctl_mutex) at:
+[<00000000006fa1c0>] mutex_unlock+0x10/0x20
+but there are no more locks to release!
+
+other info that might help us debug this:
+1 lock held by mount/1865:
+ #0:  (&bdev->bd_mutex){+.+.+.}, at: [<00000000004dd570>]
+__blkdev_put+0x1c/0x14c
+
+stack backtrace:
+Call Trace:
+ [0000000000477538] print_unlock_inbalance_bug+0xe8/0xf8
+ [0000000000477624] lock_release_non_nested+0xdc/0x290
+ [0000000000477984] lock_release+0x1ac/0x1d8
+ [00000000006fa120] __mutex_unlock_slowpath+0xe8/0x178
+ [00000000006fa1c0] mutex_unlock+0x10/0x20
+ [0000000000621e38] lo_release+0x70/0x80
+ [00000000004dd5fc] __blkdev_put+0xa8/0x14c
+ [00000000004dd6b8] blkdev_put+0x18/0x2c
+ [00000000004dd704] blkdev_close+0x38/0x4c
+ [00000000004b6f0c] __fput+0xfc/0x1e4
+ [00000000004b701c] fput+0x28/0x38
+ [00000000004b4198] filp_close+0x74/0x88
+ [00000000004529e0] put_files_struct+0x9c/0xfc
+ [0000000000452a70] exit_files+0x30/0x40
+ [000000000045406c] do_exit+0x160/0x734
+ [00000000004546cc] do_group_exit+0x8c/0xc4
