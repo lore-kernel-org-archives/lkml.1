@@ -1,61 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932513AbZDARHt@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764653AbZDARJe@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932513AbZDARHt (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 1 Apr 2009 13:07:49 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1764653AbZDARHO
+	id S1764653AbZDARJe (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 1 Apr 2009 13:09:34 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755591AbZDARJZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 1 Apr 2009 13:07:14 -0400
-Received: from cavan.codon.org.uk ([93.93.128.6]:44057 "EHLO
-	vavatch.codon.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1758686AbZDARHM (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 1 Apr 2009 13:07:12 -0400
-Date: Wed, 1 Apr 2009 18:07:08 +0100
-From: Matthew Garrett <mjg59@srcf.ucam.org>
-To: Azael Avalos <coproscefalo@gmail.com>
-Cc: linux-acpi@vger.kernel.org, dsilvers@simtec.co.uk,
-       toshiba_acpi@memebeam.org, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 2/2] toshiba-acpi: Support TOS1900-type devices
-Message-ID: <20090401170708.GA14167@srcf.ucam.org>
-References: <20090331214501.GC29489@srcf.ucam.org> <20090331214749.GD29489@srcf.ucam.org> <74962ea30903311506m41306659td0cd70c5736f6660@mail.gmail.com> <20090331221107.GA30383@srcf.ucam.org> <74962ea30903311519s2fb6087fxfe8859e3c570ac99@mail.gmail.com> <20090331230217.GA31599@srcf.ucam.org> <74962ea30904010950u31fbdca3w51eafb9b7ec1ca73@mail.gmail.com> <20090401165345.GA13939@srcf.ucam.org> <74962ea30904011003o354e8780ya5e9ac1a6a579084@mail.gmail.com>
+	Wed, 1 Apr 2009 13:09:25 -0400
+Received: from relay3.ptmail.sapo.pt ([212.55.154.23]:34740 "HELO sapo.pt"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with SMTP
+	id S1753941AbZDARJY (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 1 Apr 2009 13:09:24 -0400
+X-AntiVirus: PTMail-AV 0.3-0.92.0
+Date: Wed, 1 Apr 2009 18:06:35 +0100
+From: Luis Henriques <henrix@sapo.pt>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: Thomas Gleixner <tglx@linutronix.de>, linux-kernel@vger.kernel.org
+Subject: [RESEND][PATCH -tip] irq: DEBUG_SHIRQ executed on irq setup failure
+Message-ID: <20090401170635.GA4392@hades.domain.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <74962ea30904011003o354e8780ya5e9ac1a6a579084@mail.gmail.com>
-User-Agent: Mutt/1.5.12-2006-07-14
-X-SA-Exim-Connect-IP: <locally generated>
-X-SA-Exim-Mail-From: mjg59@codon.org.uk
-X-SA-Exim-Scanned: No (on vavatch.codon.org.uk); SAEximRunCond expanded to false
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Apr 02, 2009 at 10:03:05AM +1700, Azael Avalos wrote:
-> On Thu, Apr 2, 2009 at 9:53 AM, Matthew Garrett <mjg59@srcf.ucam.org> wrote:
-> > Yes, you shouldn't be reading directly from TOHK at any point. It seems
-> > to be a purely internal variable - I'm fairly sure that the INFO method
-> > is the only one that should be called on event generation.
-> 
-> Well, on the patches sent to the omnibook module I was polling TOHK directly,
-> it is until now that I realized that I can poll the events via INFO
-> method, that is,
-> if I enable TECF first via method \\_SB.PCI0.LPCB.EC0.NTFY
+When requesting an IRQ, the DEBUG_SHIRQ code executes a fake IRQ just to make
+sure the driver is ready to receive an IRQ immediately.  The problem was that
+this fake IRQ was being executed even if interrupt line failed to be allocated
+by __setup_irq.
 
-Mm. None of the TOS1900 DSDTs I have here have TECF or NTFY methods, so 
-again that doesn't sound like the right way of driving them. Does the 
-ENAB method not do this?
+Signed-off-by: Luis Henriques <henrix@sapo.pt>
+---
+ kernel/irq/manage.c |    2 +-
+ 1 files changed, 1 insertions(+), 1 deletions(-)
 
-> >
-> >> On the patches I sent to the omnibook module I'm able to get events but they
-> >> seem to get repeated 3 times, or perhaps I'm polling to often.
-> >
-> > Hm. I don't have test hardware right now, I'm afraid. I'll look at some
-> > DSDTs a bit more and see if anything springs to mind.
-> 
-> Well, I brought my laptop to work (I'm a sysadmin so I got plenty of time :-P)
-> and I can test if that helps
-
-I'll dig some more and let you know. Thanks!
-
+diff --git a/kernel/irq/manage.c b/kernel/irq/manage.c
+index a3eb7ba..39a0f4d 100644
+--- a/kernel/irq/manage.c
++++ b/kernel/irq/manage.c
+@@ -914,7 +914,7 @@ int request_threaded_irq(unsigned int irq, irq_handler_t handler,
+ 		kfree(action);
+ 
+ #ifdef CONFIG_DEBUG_SHIRQ
+-	if (irqflags & IRQF_SHARED) {
++	if (!retval & (irqflags & IRQF_SHARED)) {
+ 		/*
+ 		 * It's a shared IRQ -- the driver ought to be prepared for it
+ 		 * to happen immediately, so let's make sure....
 -- 
-Matthew Garrett | mjg59@srcf.ucam.org
+1.6.2.1
+
