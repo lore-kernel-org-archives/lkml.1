@@ -1,203 +1,116 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761136AbZDALIV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754535AbZDALIp@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761136AbZDALIV (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 1 Apr 2009 07:08:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754060AbZDALFO
+	id S1754535AbZDALIp (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 1 Apr 2009 07:08:45 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761256AbZDALHj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 1 Apr 2009 07:05:14 -0400
-Received: from hera.kernel.org ([140.211.167.34]:35216 "EHLO hera.kernel.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756407AbZDALFM (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 1 Apr 2009 07:05:12 -0400
-From: Tejun Heo <tj@kernel.org>
-To: axboe@kernel.dk, bharrosh@panasas.com, linux-kernel@vger.kernel.org
-Cc: Tejun Heo <tj@kernel.org>, Tejun Heo <tj@kenel.org>
-Subject: [PATCH 8/8] blk-map: reimplement blk_rq_map_user() using blk_rq_map_user_iov()
-Date: Wed,  1 Apr 2009 20:04:44 +0900
-Message-Id: <1238583884-13517-9-git-send-email-tj@kernel.org>
-X-Mailer: git-send-email 1.6.0.2
-In-Reply-To: <1238583884-13517-1-git-send-email-tj@kernel.org>
-References: <1238583884-13517-1-git-send-email-tj@kernel.org>
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Wed, 01 Apr 2009 11:04:58 +0000 (UTC)
+	Wed, 1 Apr 2009 07:07:39 -0400
+Received: from mtagate2.de.ibm.com ([195.212.17.162]:52546 "EHLO
+	mtagate2.de.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1761136AbZDALHi (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 1 Apr 2009 07:07:38 -0400
+Date: Wed, 1 Apr 2009 13:07:31 +0200
+From: Martin Schwidefsky <schwidefsky@de.ibm.com>
+To: Tejun Heo <tj@kernel.org>
+Cc: Ingo Molnar <mingo@elte.hu>, rusty@rustcorp.com.au, tglx@linutronix.de,
+       x86@kernel.org, linux-kernel@vger.kernel.org, hpa@zytor.com,
+       Paul Mundt <lethal@linux-sh.org>, rmk@arm.linux.org.uk,
+       starvik@axis.com, ralf@linux-mips.org, davem@davemloft.net,
+       cooloney@kernel.org, kyle@mcmartin.ca, matthew@wil.cx,
+       grundler@parisc-linux.org, takata@linux-m32r.org,
+       benh@kernel.crashing.org, rth@twiddle.net, ink@jurassic.park.msu.ru,
+       heiko.carstens@de.ibm.com
+Subject: Re: [GIT RFC] percpu: use dynamic percpu allocator as the default
+ percpu allocator
+Message-ID: <20090401130731.785714c5@skybase>
+In-Reply-To: <49D32B96.3060102@kernel.org>
+References: <1236671631-9305-1-git-send-email-tj@kernel.org>
+	<20090316190132.7965a49a@skybase>
+	<49C300D8.5080204@kernel.org>
+	<49C8FAC4.6060508@kernel.org>
+	<20090325122738.42d105b7@skybase>
+	<49CA1AC3.9080908@kernel.org>
+	<20090325122241.GE11571@elte.hu>
+	<49CA2345.70204@kernel.org>
+	<20090325141330.2717dc97@skybase>
+	<49CA2FBF.9000207@kernel.org>
+	<20090325142525.2d31c522@skybase>
+	<49CA32F6.2030408@kernel.org>
+	<20090331185431.72ff1707@skybase>
+	<49D2B04D.4070604@kernel.org>
+	<20090401101054.0a4b187d@skybase>
+	<49D3231D.2040403@kernel.org>
+	<20090401103257.12c2517e@skybase>
+	<49D32B96.3060102@kernel.org>
+Organization: IBM Corporation
+X-Mailer: Claws Mail 3.7.1 (GTK+ 2.14.7; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Impact: subtle bugs fixed, cleanup
+On Wed, 01 Apr 2009 17:53:42 +0900
+Tejun Heo <tj@kernel.org> wrote:
 
-blk_rq_map_user() supported multi-bio mapping by calling
-bio_map/copy_user() multiple times and linking the resulting bios into
-rq; however, this had subtle bugs.
+> Hello, Martin.
+> 
+> Martin Schwidefsky wrote:
+> > Yes, @GOTENT is a relocation against the GOT slot that contains the
+> > address of the symbol. It is a special version of @GOT that uses larl
+> > to locate the got slot directly without the need of a got base pointer.
+> > 
+> > The code sequence with @GOT:
+> > 
+> > 	larl	%r12,_GLOBAL_OFFSET_TABLE_
+> > 	lg	%r1,symbol@GOT(%r12)
+> > 
+> > is equivalent to:
+> > 
+> > 	larl	%r1,symbol@GOTENT
+> > 	lg	%r1,0(%r1)
+> > 
+> > The advantage of the second code sequence is that it need a single
+> > register and the size of the GOT is not limited to 4K as in the first
+> > example (the offset in an RX format instruction is limited to 12 bits -
+> > but that is probably something you don't want to know ;-).
+> 
+> Maybe we can build indirection pointer manually by twiddling with
+> DEFINE_PER_CPU() in such a way that it doesn't have to distinguish
+> symbols and variables?
 
-* Because each call to bio_map/copy_user() is independent, segment
-  limit check was done only per each bio, so it was possible to create
-  requests which are larger than the driver and hardware limits, which
-  could lead to disastrous outcome.
+Hmm, a provocative idea: can we ban the use of static per-cpu variables
+for modules in common code? There are not many common code modules
+doing this, with a visibility hack I found the following relevant
+locations:
 
-* Layers under FS may call blk_rq_map*() functions during request
-  processing.  Under severe memory pressure and with enough bad luck,
-  this can lead to deadlock.  As fs bvec pool is quite small, the
-  possibility isn't completely theoretical.
+block/as-iosched.c:152: warning: 'visibility' attribute ignored
+crypto/sha512_generic.c:30: warning: 'visibility' attribute ignored
+block/cfq-iosched.c:51: warning: 'visibility' attribute ignored
+mm/kmemleak-test.c:39: warning: 'visibility' attribute ignored
+kernel/rcutorture.c:117: warning: 'visibility' attribute ignored
+kernel/rcutorture.c:119: warning: 'visibility' attribute ignored
+drivers/acpi/processor_core.c:663: warning: 'visibility' attribute ignored
+drivers/acpi/processor_thermal.c:99: warning: 'visibility' attribute ignored
+drivers/cpufreq/cpufreq_stats.c:46: warning: 'visibility' attribute ignored
+drivers/cpufreq/cpufreq_userspace.c:30: warning: 'visibility' attribute ignored
+drivers/cpufreq/cpufreq_userspace.c:31: warning: 'visibility' attribute ignored
+drivers/cpufreq/cpufreq_userspace.c:32: warning: 'visibility' attribute ignored
+drivers/cpufreq/cpufreq_userspace.c:33: warning: 'visibility' attribute ignored
+drivers/cpufreq/cpufreq_userspace.c:35: warning: 'visibility' attribute ignored
+drivers/cpufreq/cpufreq_ondemand.c:90: warning: 'visibility' attribute ignored
+drivers/cpufreq/cpufreq_conservative.c:83: warning: 'visibility' attribute igno\
+red
+drivers/cpufreq/freq_table.c:177: warning: 'visibility' attribute ignored
+net/ipv6/syncookies.c:77: warning: 'visibility' attribute ignored
 
-This patch reimplement blk_rq_map_user() in terms of
-blk_rq_map_user_iov() which doesn't support multi-bio mappping and
-drop multi bio handling from blk_rq_unmap_user().  Note that with the
-previous patch to remove bio max size limit and to add null mapping
-support to blk_rq_map_user_iov(), this change doesn't remove any
-functionality.
+That would "fix" the problem as well..
 
-Signed-off-by: Tejun Heo <tj@kenel.org>
----
- block/blk-map.c |  118 +++++--------------------------------------------------
- 1 files changed, 10 insertions(+), 108 deletions(-)
-
-diff --git a/block/blk-map.c b/block/blk-map.c
-index ac1961d..a43c93c 100644
---- a/block/blk-map.c
-+++ b/block/blk-map.c
-@@ -40,49 +40,6 @@ static int __blk_rq_unmap_user(struct bio *bio)
- 	return ret;
- }
- 
--static int __blk_rq_map_user(struct request_queue *q, struct request *rq,
--			     struct rq_map_data *map_data, void __user *ubuf,
--			     unsigned int len, gfp_t gfp_mask)
--{
--	unsigned long uaddr;
--	struct bio *bio, *orig_bio;
--	int reading, ret;
--
--	reading = rq_data_dir(rq) == READ;
--
--	/*
--	 * if alignment requirement is satisfied, map in user pages for
--	 * direct dma. else, set up kernel bounce buffers
--	 */
--	uaddr = (unsigned long) ubuf;
--	if (blk_rq_aligned(q, ubuf, len) && !map_data)
--		bio = bio_map_user(q, NULL, uaddr, len, reading, gfp_mask);
--	else
--		bio = bio_copy_user(q, map_data, uaddr, len, reading, gfp_mask);
--
--	if (IS_ERR(bio))
--		return PTR_ERR(bio);
--
--	orig_bio = bio;
--	blk_queue_bounce(q, &bio);
--
--	/*
--	 * We link the bounce buffer in and could have to traverse it
--	 * later so we have to get a ref to prevent it from being freed
--	 */
--	bio_get(bio);
--
--	ret = blk_rq_append_bio(q, rq, bio);
--	if (!ret)
--		return bio->bi_size;
--
--	/* if it was boucned we must call the end io function */
--	bio_endio(bio, 0);
--	__blk_rq_unmap_user(orig_bio);
--	bio_put(bio);
--	return ret;
--}
--
- /**
-  * blk_rq_map_user - map user data to a request, for REQ_TYPE_BLOCK_PC usage
-  * @q:		request queue where request should be inserted
-@@ -109,58 +66,12 @@ int blk_rq_map_user(struct request_queue *q, struct request *rq,
- 		    struct rq_map_data *map_data, void __user *ubuf,
- 		    unsigned long len, gfp_t gfp_mask)
- {
--	unsigned long bytes_read = 0;
--	struct bio *bio = NULL;
--	int ret;
-+	struct sg_iovec iov;
- 
--	if (len > (q->max_hw_sectors << 9))
--		return -EINVAL;
--	if (!len)
--		return -EINVAL;
-+	iov.iov_base = ubuf;
-+	iov.iov_len = len;
- 
--	if (!ubuf && (!map_data || !map_data->null_mapped))
--		return -EINVAL;
--
--	while (bytes_read != len) {
--		unsigned long map_len, end, start;
--
--		map_len = min_t(unsigned long, len - bytes_read,
--				BIO_GUARANTEED_SIZE);
--		end = ((unsigned long)ubuf + map_len + PAGE_SIZE - 1)
--								>> PAGE_SHIFT;
--		start = (unsigned long)ubuf >> PAGE_SHIFT;
--
--		/*
--		 * A bad offset could cause us to require
--		 * BIO_GUARANTEED_PAGES + 1 pages. If this happens we
--		 * just lower the requested mapping len by a page so
--		 * that we can fit
--		 */
--		if (end - start > BIO_GUARANTEED_PAGES)
--			map_len -= PAGE_SIZE;
--
--		ret = __blk_rq_map_user(q, rq, map_data, ubuf, map_len,
--					gfp_mask);
--		if (ret < 0)
--			goto unmap_rq;
--		if (!bio)
--			bio = rq->bio;
--		bytes_read += ret;
--		ubuf += ret;
--
--		if (map_data)
--			map_data->offset += ret;
--	}
--
--	if (!bio_flagged(bio, BIO_USER_MAPPED))
--		rq->cmd_flags |= REQ_COPY_USER;
--
--	rq->buffer = rq->data = NULL;
--	return 0;
--unmap_rq:
--	blk_rq_unmap_user(bio);
--	rq->bio = NULL;
--	return ret;
-+	return blk_rq_map_user_iov(q, rq, map_data, &iov, 1, len, gfp_mask);
- }
- EXPORT_SYMBOL(blk_rq_map_user);
- 
-@@ -250,23 +161,14 @@ EXPORT_SYMBOL(blk_rq_map_user_iov);
-  */
- int blk_rq_unmap_user(struct bio *bio)
- {
--	struct bio *mapped_bio;
--	int ret = 0, ret2;
--
--	while (bio) {
--		mapped_bio = bio;
--		if (unlikely(bio_flagged(bio, BIO_BOUNCED)))
--			mapped_bio = bio->bi_private;
-+	struct bio *mapped_bio = bio;
-+	int ret;
- 
--		ret2 = __blk_rq_unmap_user(mapped_bio);
--		if (ret2 && !ret)
--			ret = ret2;
--
--		mapped_bio = bio;
--		bio = bio->bi_next;
--		bio_put(mapped_bio);
--	}
-+	if (unlikely(bio_flagged(bio, BIO_BOUNCED)))
-+		mapped_bio = bio->bi_private;
- 
-+	ret = __blk_rq_unmap_user(mapped_bio);
-+	bio_put(bio);
- 	return ret;
- }
- EXPORT_SYMBOL(blk_rq_unmap_user);
 -- 
-1.6.0.2
+blue skies,
+   Martin.
+
+"Reality continues to ruin my life." - Calvin.
 
