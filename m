@@ -1,50 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1765027AbZDAM7u@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1765127AbZDANA4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1765027AbZDAM7u (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 1 Apr 2009 08:59:50 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1764163AbZDAM7V
+	id S1765127AbZDANA4 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 1 Apr 2009 09:00:56 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1764128AbZDANAn
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 1 Apr 2009 08:59:21 -0400
-Received: from static-220-247-10-204.b-man.svips.gol.ne.jp ([220.247.10.204]:58063
-	"EHLO smtp.kamineko.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757616AbZDAM7U (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 1 Apr 2009 08:59:20 -0400
-Date: Wed, 1 Apr 2009 21:59:17 +0900
-From: Mattia Dongili <malattia@linux.it>
-To: Matthew Garrett <mjg59@srcf.ucam.org>
-Cc: Alexander Beregalov <a.beregalov@gmail.com>,
-       Len Brown <len.brown@intel.com>, linux-next@vger.kernel.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] sony-laptop should depend on RFKILL
-Message-ID: <20090401125917.GC9650@kamineko.org>
-References: <20090331223407.GA10676@orion> <20090331223555.GA31066@srcf.ucam.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090331223555.GA31066@srcf.ucam.org>
-X-Message-Flag: Cranky? Try Free Software instead!
-X-Operating-System: Linux 2.6.26-1 i686
-X-Editor: Vim http://www.vim.org/
-X-Disclaimer: Buh!
-User-Agent: Mutt/1.5.18 (2008-05-17)
+	Wed, 1 Apr 2009 09:00:43 -0400
+Received: from sh.osrg.net ([192.16.179.4]:40783 "EHLO sh.osrg.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1763831AbZDANAm (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 1 Apr 2009 09:00:42 -0400
+Date: Wed, 1 Apr 2009 21:59:26 +0900
+To: tj@kernel.org
+Cc: fujita.tomonori@lab.ntt.co.jp, axboe@kernel.dk, bharrosh@panasas.com,
+       linux-kernel@vger.kernel.org, tj@kenel.org
+Subject: Re: [PATCH 8/8] blk-map: reimplement blk_rq_map_user() using
+ blk_rq_map_user_iov()
+From: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
+In-Reply-To: <49D36329.20004@kernel.org>
+References: <1238583884-13517-9-git-send-email-tj@kernel.org>
+	<20090401214415W.fujita.tomonori@lab.ntt.co.jp>
+	<49D36329.20004@kernel.org>
+Mime-Version: 1.0
+Content-Type: Text/Plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
+Message-Id: <20090401215933S.fujita.tomonori@lab.ntt.co.jp>
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-3.0 (sh.osrg.net [192.16.179.4]); Wed, 01 Apr 2009 21:59:27 +0900 (JST)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Mar 31, 2009 at 11:35:55PM +0100, Matthew Garrett wrote:
-> On Wed, Apr 01, 2009 at 02:34:07AM +0400, Alexander Beregalov wrote:
-> > Fixes this build error when RFKILL is not set:
-> > 
-> > drivers/platform/x86/sony-laptop.c:1050: undefined reference to `rfkill_unregister'
-> > and so on..
-> > 
-> > Signed-off-by: Alexander Beregalov <a.beregalov@gmail.com>
-> 
-> Acked-by: Matthew Garrett <mjg@redhat.com>
+On Wed, 01 Apr 2009 21:50:49 +0900
+Tejun Heo <tj@kernel.org> wrote:
 
-Thanks, applied and forwarding it to Len now with other fixes for
-2.6.30.
--- 
-mattia
-:wq!
+> FUJITA Tomonori wrote:
+> >> * Because each call to bio_map/copy_user() is independent, segment
+> >>   limit check was done only per each bio, so it was possible to create
+> >>   requests which are larger than the driver and hardware limits, which
+> >>   could lead to disastrous outcome.
+> > 
+> > What do you mean? blk_rq_append_bio properly checks the segment and
+> > limit, I think.
+> 
+> Right, ll_back_merge_fn() does that.  Sorry about that.
+> 
+> >> * Layers under FS may call blk_rq_map*() functions during request
+> >>   processing.  Under severe memory pressure and with enough bad luck,
+> >>   this can lead to deadlock.  As fs bvec pool is quite small, the
+> >>   possibility isn't completely theoretical.
+> >>
+> >> This patch reimplement blk_rq_map_user() in terms of
+> >> blk_rq_map_user_iov() which doesn't support multi-bio mappping and
+> >> drop multi bio handling from blk_rq_unmap_user().  Note that with the
+> >> previous patch to remove bio max size limit and to add null mapping
+> >> support to blk_rq_map_user_iov(), this change doesn't remove any
+> >> functionality.
+> > 
+> > I don't think that we can drop multi bio handling from
+> > blk_rq_unmap_user(). It may make some users angry. Mike Christie added
+> > it because it was necessary.
+> 
+> The only user of blk_rq_append_bio() is scsi_lib.c.  Is Mike
+> Christie's code chaining bio's directly into rq?
+
+No, we are not talking about blk_rq_append_bio().
+
+We are talking about the multiple bio handling in blk_rq_map_user,
+which is the feature that Mike added long time ago. The feature is
+surely necessary for some users. So you can't remote it.
