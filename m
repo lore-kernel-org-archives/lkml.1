@@ -1,144 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934408AbZDAUoT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759432AbZDAUut@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934408AbZDAUoT (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 1 Apr 2009 16:44:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761490AbZDAUn6
+	id S1759432AbZDAUut (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 1 Apr 2009 16:50:49 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752363AbZDAUuh
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 1 Apr 2009 16:43:58 -0400
-Received: from juliette.telenet-ops.be ([195.130.137.74]:40289 "EHLO
-	juliette.telenet-ops.be" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1758509AbZDAUn4 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 1 Apr 2009 16:43:56 -0400
-Date: Wed, 1 Apr 2009 22:43:50 +0200 (CEST)
-From: Geert Uytterhoeven <geert@linux-m68k.org>
-To: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
-cc: linux-ide@vger.kernel.org,
-       Linux Kernel Development <linux-kernel@vger.kernel.org>,
-       Linux/m68k <linux-m68k@vger.kernel.org>
-Subject: [PATCH] ide: falconide/q40ide - Use __ide_mm_{in,out}sw() for data
- transfer
-Message-ID: <Pine.LNX.4.64.0904012243060.29342@anakin>
+	Wed, 1 Apr 2009 16:50:37 -0400
+Received: from mx2.redhat.com ([66.187.237.31]:58596 "EHLO mx2.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751917AbZDAUug (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 1 Apr 2009 16:50:36 -0400
+Message-ID: <49D3D3B4.4060702@redhat.com>
+Date: Wed, 01 Apr 2009 16:51:00 -0400
+From: Masami Hiramatsu <mhiramat@redhat.com>
+User-Agent: Thunderbird 2.0.0.21 (X11/20090320)
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+To: Andi Kleen <andi@firstfloor.org>
+CC: Ingo Molnar <mingo@elte.hu>, Arnaldo Carvalho de Melo <acme@redhat.com>,
+       Steven Rostedt <rostedt@goodmis.org>,
+       Ananth N Mavinakayanahalli <ananth@in.ibm.com>,
+       Frederic Weisbecker <fweisbec@gmail.com>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       systemtap-ml <systemtap@sources.redhat.com>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Jim Keniston <jkenisto@us.ibm.com>
+Subject: Re: [PATCH -tip 0/4 V3] tracing: kprobe-based event tracer
+References: <49CC08A2.5030602@redhat.com> <20090401133654.GB18677@elte.hu>	<49D37584.50208@redhat.com> <873acsm8qp.fsf@basil.nowhere.org>
+In-Reply-To: <873acsm8qp.fsf@basil.nowhere.org>
+X-Enigmail-Version: 0.95.7
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Both of commits f94116aeec7a299640dd692128e1d22178affa8d ("ide: cleanup
-<asm-m68k/ide.h>") and 15a453a955f89f6545118770c669b52e925368bd ("ide: include
-<asm/ide.h> only when needed") break falconide:
+Andi Kleen wrote:
+> Masami Hiramatsu <mhiramat@redhat.com> writes:
+>> I agreed. Fortunately, Jim Keniston and I wrote an x86 instruction
+>> decoder :-) which has been made originally for uprobe andd kprobes
+>> jump-optimizer.
+>>
+>> https://www.redhat.com/archives/utrace-devel/2009-March/msg00031.html
+> 
+> An alternative would be to adapt the x86 interpreter in KVM.
+> I thought for some time that that one should be available in 
+> a more generic form in a library.
 
-| Uniform Multi-Platform E-IDE driver
-| ide: Falcon IDE controller
-| Probing IDE interface ide0...
-| hda: Sarge m68k, ATA DISK drive
-| ide0 at 0xfff00000 on irq 15 (serialized)
-| ide-gd driver 1.18
-| hda: max request size: 128KiB
-| hda: 2118816 sectors (1084 MB) w/256KiB Cache, CHS=2102/16/63
-|  hda:<4>hda: lost interrupt
+As far as I can see, KVM's instruction emulator is incomplete
+(it doesn't cover all instructions...) and aims to emulate
+instructions, not to analyze (so I couldn't relay on it).
 
-This happens because falconide relies on {in,out}sw() being redefined in
-<asm/ide.h>, as included by <linux/ide.h>, which is no longer the case.
-Use __ide_mm_{in,out}sw() from <asm/ide.h> instead, just like
-ide_{in,out}put_data() do.
+Anyway, I think making x86 interpreter in a library is a good idea.
 
-The same problem seems to exist in q40ide.
+Thank you,
 
-Signed-off-by: Geert Uytterhoeven <geert@linux-m68k.org>
----
- drivers/ide/falconide.c |   13 +++++++++----
- drivers/ide/q40ide.c    |   14 ++++++++++----
- 2 files changed, 19 insertions(+), 8 deletions(-)
+> 
+> -Andi
+> 
 
-diff --git a/drivers/ide/falconide.c b/drivers/ide/falconide.c
-index b368a5e..1f790da 100644
---- a/drivers/ide/falconide.c
-+++ b/drivers/ide/falconide.c
-@@ -20,6 +20,7 @@
- #include <asm/atarihw.h>
- #include <asm/atariints.h>
- #include <asm/atari_stdma.h>
-+#include <asm/ide.h>
- 
- #define DRV_NAME "falconide"
- 
-@@ -67,8 +68,10 @@ static void falconide_input_data(ide_drive_t *drive, struct ide_cmd *cmd,
- {
- 	unsigned long data_addr = drive->hwif->io_ports.data_addr;
- 
--	if (drive->media == ide_disk && cmd && (cmd->tf_flags & IDE_TFLAG_FS))
--		return insw(data_addr, buf, (len + 1) / 2);
-+	if (drive->media == ide_disk && cmd && (cmd->tf_flags & IDE_TFLAG_FS)) {
-+		__ide_mm_insw(data_addr, buf, (len + 1) / 2);
-+		return;
-+	}
- 
- 	raw_insw_swapw((u16 *)data_addr, buf, (len + 1) / 2);
- }
-@@ -78,8 +81,10 @@ static void falconide_output_data(ide_drive_t *drive, struct ide_cmd *cmd,
- {
- 	unsigned long data_addr = drive->hwif->io_ports.data_addr;
- 
--	if (drive->media == ide_disk && cmd && (cmd->tf_flags & IDE_TFLAG_FS))
--		return outsw(data_addr, buf, (len + 1) / 2);
-+	if (drive->media == ide_disk && cmd && (cmd->tf_flags & IDE_TFLAG_FS)) {
-+		__ide_mm_outsw(data_addr, buf, (len + 1) / 2);
-+		return;
-+	}
- 
- 	raw_outsw_swapw((u16 *)data_addr, buf, (len + 1) / 2);
- }
-diff --git a/drivers/ide/q40ide.c b/drivers/ide/q40ide.c
-index 2a43a2f..f054186 100644
---- a/drivers/ide/q40ide.c
-+++ b/drivers/ide/q40ide.c
-@@ -16,6 +16,8 @@
- #include <linux/blkdev.h>
- #include <linux/ide.h>
- 
-+#include <asm/ide.h>
-+
-     /*
-      *  Bases of the IDE interfaces
-      */
-@@ -77,8 +79,10 @@ static void q40ide_input_data(ide_drive_t *drive, struct ide_cmd *cmd,
- {
- 	unsigned long data_addr = drive->hwif->io_ports.data_addr;
- 
--	if (drive->media == ide_disk && cmd && (cmd->tf_flags & IDE_TFLAG_FS))
--		return insw(data_addr, buf, (len + 1) / 2);
-+	if (drive->media == ide_disk && cmd && (cmd->tf_flags & IDE_TFLAG_FS)) {
-+		__ide_mm_insw(data_addr, buf, (len + 1) / 2);
-+		return;
-+	}
- 
- 	raw_insw_swapw((u16 *)data_addr, buf, (len + 1) / 2);
- }
-@@ -88,8 +92,10 @@ static void q40ide_output_data(ide_drive_t *drive, struct ide_cmd *cmd,
- {
- 	unsigned long data_addr = drive->hwif->io_ports.data_addr;
- 
--	if (drive->media == ide_disk && cmd && (cmd->tf_flags & IDE_TFLAG_FS))
--		return outsw(data_addr, buf, (len + 1) / 2);
-+	if (drive->media == ide_disk && cmd && (cmd->tf_flags & IDE_TFLAG_FS)) {
-+		__ide_mm_outsw(data_addr, buf, (len + 1) / 2);
-+		return;
-+	}
- 
- 	raw_outsw_swapw((u16 *)data_addr, buf, (len + 1) / 2);
- }
 -- 
-1.6.2.1
+Masami Hiramatsu
 
-Gr{oetje,eeting}s,
+Software Engineer
+Hitachi Computer Products (America) Inc.
+Software Solutions Division
 
-						Geert
+e-mail: mhiramat@redhat.com
 
---
-Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
-
-In personal conversations with technical people, I call myself a hacker. But
-when I'm talking to journalists I just say "programmer" or something like that.
-							    -- Linus Torvalds
