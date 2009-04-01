@@ -1,150 +1,100 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757223AbZDATcU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933776AbZDATdw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757223AbZDATcU (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 1 Apr 2009 15:32:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755158AbZDATcH
+	id S933776AbZDATdw (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 1 Apr 2009 15:33:52 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758403AbZDATdl
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 1 Apr 2009 15:32:07 -0400
-Received: from mx2.mail.elte.hu ([157.181.151.9]:56676 "EHLO mx2.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755163AbZDATcF (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 1 Apr 2009 15:32:05 -0400
-Date: Wed, 1 Apr 2009 21:31:35 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: Stefani Seibold <stefani@seibold.net>,
-       Andrew Morton <akpm@linux-foundation.org>
-Cc: linux-kernel <linux-kernel@vger.kernel.org>, linux-mm <linux-mm@kvack.org>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>, Joerg Engel <joern@logfs.org>,
-       Thomas Gleixner <tglx@linutronix.de>
-Subject: Re: Detailed Stack Information Patch [1/3]
-Message-ID: <20090401193135.GA12316@elte.hu>
-References: <1238511505.364.61.camel@matrix>
+	Wed, 1 Apr 2009 15:33:41 -0400
+Received: from Cpsmtpm-eml107.kpnxchange.com ([195.121.3.11]:58156 "EHLO
+	CPSMTPM-EML107.kpnxchange.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1758880AbZDATdl (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 1 Apr 2009 15:33:41 -0400
+From: Frans Pop <elendil@planet.nl>
+To: linux-kbuild@vger.kernel.org
+Subject: [PATCH 0/5] Improve flexibility of deb-pkg target
+Date: Wed, 1 Apr 2009 21:33:36 +0200
+User-Agent: KMail/1.9.9
+Cc: linux-kernel@vger.kernel.org, Sam Ravnborg <sam@ravnborg.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain;
+  charset="utf-8"
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <1238511505.364.61.camel@matrix>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+Message-Id: <200904012133.37387.elendil@planet.nl>
+X-OriginalArrivalTime: 01 Apr 2009 19:33:38.0019 (UTC) FILETIME=[C13DBB30:01C9B300]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Hi Sam,
 
-* Stefani Seibold <stefani@seibold.net> wrote:
+This series of patches aims to make the deb-pkg target more flexible.
+I've been using these patches for the past year or so and they've greatly
+improved my workflow for kernel testing on 4 different architectures
+(2 cross-compiled).
 
-> diff -u -N -r linux-2.6.29.orig/fs/exec.c linux-2.6.29/fs/exec.c
-> --- linux-2.6.29.orig/fs/exec.c	2009-03-24 00:12:14.000000000 +0100
-> +++ linux-2.6.29/fs/exec.c	2009-03-31 16:02:55.000000000 +0200
-> @@ -1336,6 +1336,10 @@
->  	if (retval < 0)
->  		goto out;
->  
-> +#ifdef CONFIG_PROC_STACK
-> +	current->stack_start = current->mm->start_stack;
-> +#endif
+The last 2 patches I've submitted before (in Feb. 2008) but were not
+applied as you had some questions. This new series has improved versions
+and I'll address your questions below.
 
-Ok. The 1/3 patch, the whole "display where the stack is" thing is 
-obviously useful and we know that.
+[1/5] deb-pkg: minor general improvements in builddeb script
+[2/5] deb-pkg: fix 'file not found' error when building .deb package for arm
 
-Today we display this:
+These first 2 patches are minor improvements and fixes.
 
- earth4:~/tip> cat /proc/self/maps 
- 00110000-00111000 r-xp 00110000 00:00 0          [vdso]
- 0053e000-0055e000 r-xp 00000000 09:00 54591597   /lib/ld-2.9.so
- 0055f000-00560000 r--p 00020000 09:00 54591597   /lib/ld-2.9.so
- 00560000-00561000 rw-p 00021000 09:00 54591597   /lib/ld-2.9.so
- 00563000-006d1000 r-xp 00000000 09:00 54591620   /lib/libc-2.9.so
- 006d1000-006d3000 r--p 0016e000 09:00 54591620   /lib/libc-2.9.so
- 006d3000-006d4000 rw-p 00170000 09:00 54591620   /lib/libc-2.9.so
- 006d4000-006d7000 rw-p 006d4000 00:00 0 
- 08048000-08054000 r-xp 00000000 09:00 27787363   /bin/cat
- 08054000-08055000 rw-p 0000c000 09:00 27787363   /bin/cat
- 09996000-099b7000 rw-p 09996000 00:00 0          [heap]
- b7db9000-b7fb9000 r--p 00000000 09:00 50364418   /usr/lib/locale/locale-archive
- b7fb9000-b7fbb000 rw-p b7fb9000 00:00 0 
- bffc7000-bffdc000 rw-p bffeb000 00:00 0          [stack]
+[3/5] deb-pkg: pass Debian maintainer script parameters to packaging hook scripts
 
-I was the one who added the [stack], [heap] and [vdso] annotations a 
-few years ago and user-space developers liked it very much.
+This allows to make hook scripts more specific differentiate their
+behavior for e.g. package installation, removal or upgrade. It's very
+much Debian specific.
 
-Tools parsing these files wont break [they dont care about the final 
-column] - so there's no ABI worries and we can certainly do more 
-here and enhance it.
+[4/5] deb-pkg: allow to specify a custom revision for .deb packages
 
-You extend the above output with (in essence):
+This has helped me to use a different versioning system for bisections
+than for "regular" builds. Note that this does not affect the kernel
+version (which is part of the package name), but only the version of
+the generated .deb package itself.
 
-> +#ifdef CONFIG_PROC_STACK
-> +static inline void task_show_stack_usage(struct seq_file *m,
-> +						struct task_struct *p)
+[5/5] deb-pkg: allow alternative hook scripts directory in .deb packages
 
-It would be better to put this into a fresh, related feature that 
-went upstream recently:
+This last patch comes in two variants (5a and 5b) because for my previous
+submission you asked:
+> Does this btw have to be an environment variable?
+> Why not make it a config option?
 
- spirit:~> cat /proc/self/stack
- [<ffffffff8101c333>] save_stack_trace_tsk+0x26/0x43
- [<ffffffff81129237>] proc_pid_stack+0x63/0xa1
- [<ffffffff8112a753>] proc_single_show+0x5c/0x79
- [<ffffffff810fb2d6>] seq_read+0x16f/0x34d
- [<ffffffff810e3eea>] vfs_read+0xab/0x108
- [<ffffffff810e4007>] sys_read+0x4a/0x6e
- [<ffffffff8101133a>] system_call_fastpath+0x16/0x1b
- [<ffffffffffffffff>] 0xffffffffffffffff
+I personally prefer the first variant (env var) because I feel having a
+config option for this will mainly be confusing for people not using the
+deb-pkg target (probably the vast majority :-).
+Either variant works for me, so I'm happy to let you choose.
 
-That displays the kernel stack data - and we could display 
-information about the user-stack data as well.
+For my previous version of patches 4 and 5 you also asked if the changes
+could be relevant for .rpm packages. AFAICT they are not:
+- .rpm packages do not have a package version separate from the kernel
+  version;
+- .rpm packages do not have a hook scripts structure; it's a .deb-specific
+  mechanism also used for kernel images built using other methods (official
+  kernels, make-kpkg)
+But I'm not an .rpm user, so I may be wrong.
 
-This #ifdef:
 
-> +#ifdef CONFIG_STACK_GROWSUP
-> +	cur_stack = base_page-(p->stack_start >> PAGE_SHIFT);
-> +#else
-> +	cur_stack = (p->stack_start >> PAGE_SHIFT)-base_page;
-> +#endif
+After the changes have been accepted I plan to write a doc explaining how
+the deb-pkg target works. I'll submit that separately later.
 
-Should be hidden in a task_user_stack() inline helper.
+A few of the patches have minor conflicts with the patch series Maximilian
+Attems submitted yesterday, but they should be easy to resolve. If you
+prefer I'll be happy to rebase mine on top of his series when it's
+clear what will get accepted.
 
-Another thing is:
+Cheers,
+FJP
 
-> @@ -240,6 +240,18 @@
->  				} else if (vma->vm_start <= mm->start_stack &&
->  					   vma->vm_end >= mm->start_stack) {
->  					name = "[stack]";
-> +#ifdef CONFIG_PROC_STACK
-> +				} else {
-> +					unsigned long stack_start;
-> +
-> +					stack_start =
-> +						((struct proc_maps_private *)
-> +						 m->private)->task->stack_start;
-> +
-> +					if (vma->vm_start <= stack_start && 
-> +					    vma->vm_end >= stack_start)
-> +						name="[thread stack]";
-> +#endif
+Diffstat with the 5a patch:
+ scripts/package/builddeb |   51 +++++++++++++++++++++++++++++----------------
+ 1 files changed, 33 insertions(+), 18 deletions(-)
 
-This too should be unconditional IMO (it's useful, and 
-ultra-embedded systems worried about kernel .text size can turn off 
-CONFIG_PROC_FS anyway), _and_ i think we could do even better.
-
-How about extending /proc/X/maps with:
-
- b7db9000-b7fb9000 r--p 00000000 09:00 50364418   /usr/lib/locale/locale-archive
- b7fb9000-b7fbb000 rw-p b7fb9000 00:00 0 
- bffc7000-bffdc000 rw-p bffeb000 00:00 0          [stack, usage: 1391 kB]
-
-This is deterministically parseable, and meaningful-at-a-glance. 
-Similarly for 'thread stack'.
-
-This way we dont need any new files in /proc - that just increases 
-the per task memory overhead.
-
-What do you think?
-
-	Ingo
+With the 5b variant this becomes:
+ init/Kconfig             |   12 +++++++++++
+ scripts/package/Makefile |    2 +
+ scripts/package/builddeb |   50 +++++++++++++++++++++++++++++----------------
+ 3 files changed, 46 insertions(+), 18 deletions(-)
