@@ -1,113 +1,76 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764993AbZDAQeH@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932160AbZDAQeg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764993AbZDAQeH (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 1 Apr 2009 12:34:07 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756520AbZDAQdv
+	id S932160AbZDAQeg (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 1 Apr 2009 12:34:36 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1764755AbZDAQeX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 1 Apr 2009 12:33:51 -0400
-Received: from THUNK.ORG ([69.25.196.29]:60141 "EHLO thunker.thunk.org"
+	Wed, 1 Apr 2009 12:34:23 -0400
+Received: from mx2.mail.elte.hu ([157.181.151.9]:48730 "EHLO mx2.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1760018AbZDAQdu (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 1 Apr 2009 12:33:50 -0400
-To: Linus Torvalds <torvalds@linux-foundation.org>
-cc: linux-ext4@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: [GIT PULL] ext4 updates for 2.6.30
-From: "Theodore Ts'o" <tytso@mit.edu>
-Phone: (781) 391-3464
-Message-Id: <E1Lp3Nm-0006eh-Pe@closure.thunk.org>
-Date: Wed, 01 Apr 2009 12:33:42 -0400
-X-SA-Exim-Connect-IP: <locally generated>
-X-SA-Exim-Mail-From: tytso@mit.edu
-X-SA-Exim-Scanned: No (on thunker.thunk.org); SAEximRunCond expanded to false
+	id S1764126AbZDAQeW (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 1 Apr 2009 12:34:22 -0400
+Date: Wed, 1 Apr 2009 18:34:07 +0200
+From: Ingo Molnar <mingo@elte.hu>
+To: Jeff Mahoney <jeffm@suse.com>
+Cc: Linus Torvalds <torvalds@linux-foundation.org>,
+       =?iso-8859-1?Q?Fr=E9d=E9ric?= Weisbecker <fweisbec@gmail.com>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       ReiserFS Development List <reiserfs-devel@vger.kernel.org>
+Subject: Re: [patch 00/35] Jeff's ReiserFS Patch Queue
+Message-ID: <20090401163407.GE22517@elte.hu>
+References: <20090330180215.951354436@suse.com> <alpine.LFD.2.00.0903301236280.4093@localhost.localdomain> <20090401161657.GA13802@elte.hu> <49D39642.9070606@suse.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=iso-8859-1
+Content-Disposition: inline
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <49D39642.9070606@suse.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-Please pull from:
+* Jeff Mahoney <jeffm@suse.com> wrote:
 
-        git://git.kernel.org/pub/scm/linux/kernel/git/tytso/ext4.git for_linus
+> -----BEGIN PGP SIGNED MESSAGE-----
+> Hash: SHA1
+> 
+> Ingo Molnar wrote:
+> > * Linus Torvalds <torvalds@linux-foundation.org> wrote:
+> > 
+> >>> Once this is applied, I expect reiserfs to be in deep 
+> >>> maintenance-only mode.
+> >> Heh, I hadn't expected even this.
+> > 
+> > Note, there are BKL-removal patches in the works by Frédéric 
+> > Weisbecker, for the tip:kill-the-BKL topic branch.
+> > 
+> > Reiser3 is the heaviest (and most non-trivial) BKL user amongst all 
+> > the filesystems, its BKL use is recursive and it frequently relies 
+> > on the implicit dropping of the BKL at various blocking points both 
+> > for correctness and for performance reasons.
+> > 
+> > There might be something worth posting+reviewing soon.
+> 
+> Oh interesting. I'm glad someone is working on this. I've started 
+> to several times and decided to focus my efforts on things outside 
+> of reiserfs instead. The reiserfs usage of the BKL has always been 
+> a black mark.
 
-Thanks!
+I'll let Frederic describe it but AFAIK the patch is working fine 
+with the BKL as a mutex and no lockdep complaints or lockups. The 
+main focus is now on finding the performance affecting spots, 
+because Frederic's main desktop is on reiserfs and he does not 
+accept a slowdown :)
 
-                                                - Ted
-
- Documentation/ABI/testing/sysfs-fs-ext4 |   81 ++++++
- Documentation/filesystems/ext4.txt      |   30 ++-
- Documentation/filesystems/proc.txt      |   21 --
- fs/ext4/balloc.c                        |   14 +-
- fs/ext4/dir.c                           |   16 +-
- fs/ext4/ext4.h                          |   91 +++----
- fs/ext4/ext4_extents.h                  |    1 +
- fs/ext4/ext4_i.h                        |    6 +-
- fs/ext4/ext4_sb.h                       |   14 +-
- fs/ext4/extents.c                       |  127 ++++++++--
- fs/ext4/file.c                          |    7 +-
- fs/ext4/ialloc.c                        |  273 ++++++++++++++------
- fs/ext4/inode.c                         |  424 +++++++++++++++++++------------
- fs/ext4/ioctl.c                         |   17 +-
- fs/ext4/mballoc.c                       |  158 ++++--------
- fs/ext4/mballoc.h                       |    8 +-
- fs/ext4/namei.c                         |  164 ++++++++----
- fs/ext4/resize.c                        |    8 +-
- fs/ext4/super.c                         |  327 +++++++++++++++++++-----
- fs/jbd2/commit.c                        |    5 +-
- fs/jbd2/revoke.c                        |   24 ++-
- fs/jbd2/transaction.c                   |    2 +
- include/linux/jbd2.h                    |    6 +
- 23 files changed, 1224 insertions(+), 600 deletions(-)
-
-
-Aneesh Kumar K.V (4):
-      ext4: Add checks to validate extent entries.
-      ext4: Validate extent details only when read from the disk
-      ext4: Fix discard of inode prealloc space with delayed allocation.
-      ext4: Rename pa_linear to pa_type
-
-Bryan Donlan (1):
-      ext4: return -EIO not -ESTALE on directory traversal through deleted inode
-
-Dan Carpenter (1):
-      ext4: fix typo which causes a memory leak on error path
-
-Duane Griffin (2):
-      ext4: don't inherit inappropriate inode flags from parent
-      ext4: tighten restrictions on inode flags
-
-Jan Kara (1):
-      jbd2: Update locking coments
-
-Mike Snitzer (1):
-      ext4: Remove stale block allocator references from ext4.h
-
-Pekka Enberg (1):
-      ext4: allocate ->s_blockgroup_lock separately
-
-Theodore Ts'o (20):
-      ext4: remove call to ext4_group_desc() in ext4_group_used_meta_blocks()
-      ext4: Use unsigned int for blocksize in dx_make_map() and dx_pack_dirents()
-      ext4: New inode/block allocation algorithms for flex_bg filesystems
-      ext4: Add fine print for the 32000 subdirectory limit
-      ext4: Simplify delalloc implementation by removing mpd.get_block
-      ext4: Save stack space by removing fake buffer heads
-      ext4: Simplify delalloc code by removing mpage_da_writepages()
-      ext4: add EXT4_IOC_ALLOC_DA_BLKS ioctl
-      ext4: Automatically allocate delay allocated blocks on close
-      ext4: Automatically allocate delay allocated blocks on rename
-      ext4: Track lifetime disk writes
-      ext4: Add sysfs support
-      ext4: remove /proc tuning knobs
-      ext4: Use atomic_t's in struct flex_groups
-      ext4: Use struct flex_groups to calculate get_orlov_stats()
-      ext4: Add auto_da_alloc mount option
-      ext4: Use WRITE_SYNC for commits which are caused by fsync()
-      ext4: Check for an valid i_mode when reading the inode from disk
-      ext4: fix locking typo in mballoc which could cause soft lockup hangs
-      ext4: Regularize mount options
-
-Thiemo Nagel (1):
-      ext4: add checks of block references for non-extent inodes
-
-Wei Yongjun (1):
-      ext4: New rec_len encoding for very large blocksizes
-
+	Ingo
