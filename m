@@ -1,214 +1,167 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758913AbZDAKUi@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762253AbZDAKUx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758913AbZDAKUi (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 1 Apr 2009 06:20:38 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759054AbZDAKQE
+	id S1762253AbZDAKUx (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 1 Apr 2009 06:20:53 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760038AbZDAKQu
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 1 Apr 2009 06:16:04 -0400
-Received: from hera.kernel.org ([140.211.167.34]:34040 "EHLO hera.kernel.org"
+	Wed, 1 Apr 2009 06:16:50 -0400
+Received: from hera.kernel.org ([140.211.167.34]:34063 "EHLO hera.kernel.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1759198AbZDAKQA (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 1 Apr 2009 06:16:00 -0400
-Date: Wed, 1 Apr 2009 10:15:16 GMT
-From: Mike Galbraith <efault@gmx.de>
+	id S1759937AbZDAKQs (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 1 Apr 2009 06:16:48 -0400
+Date: Wed, 1 Apr 2009 10:15:06 GMT
+From: Peter Zijlstra <a.p.zijlstra@chello.nl>
 To: linux-tip-commits@vger.kernel.org
 Cc: linux-kernel@vger.kernel.org, paulus@samba.org, hpa@zytor.com,
-       mingo@redhat.com, a.p.zijlstra@chello.nl, efault@gmx.de,
-       tglx@linutronix.de, mingo@elte.hu
+       mingo@redhat.com, a.p.zijlstra@chello.nl, tglx@linutronix.de,
+       mingo@elte.hu
 Reply-To: mingo@redhat.com, hpa@zytor.com, paulus@samba.org,
-       linux-kernel@vger.kernel.org, a.p.zijlstra@chello.nl, efault@gmx.de,
+       linux-kernel@vger.kernel.org, a.p.zijlstra@chello.nl,
        tglx@linutronix.de, mingo@elte.hu
-In-Reply-To: <new-submission>
-References: <new-submission>
-Subject: [tip:perfcounters/core] perf_counter tools: kerneltop: add real-time data acquisition thread
-Message-ID: <tip-f0e36dc28173b65df2216dfae7109645d97a1bd9@git.kernel.org>
-Git-Commit-ID: f0e36dc28173b65df2216dfae7109645d97a1bd9
+In-Reply-To: <20090330171024.459968444@chello.nl>
+References: <20090330171024.459968444@chello.nl>
+Subject: [tip:perfcounters/core] perf_counter: pmc arbitration
+Message-ID: <tip-b4110aa4b80378855c92a090dc079a3c5c69b69c@git.kernel.org>
+Git-Commit-ID: b4110aa4b80378855c92a090dc079a3c5c69b69c
 X-Mailer: tip-git-log-daemon
 MIME-Version: 1.0
 Content-Type: text/plain; charset=UTF-8
 Content-Disposition: inline
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Wed, 01 Apr 2009 10:15:18 +0000 (UTC)
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Wed, 01 Apr 2009 10:15:08 +0000 (UTC)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Commit-ID:  f0e36dc28173b65df2216dfae7109645d97a1bd9
-Gitweb:     http://git.kernel.org/tip/f0e36dc28173b65df2216dfae7109645d97a1bd9
-Author:     Mike Galbraith <efault@gmx.de>
-AuthorDate: Fri, 27 Mar 2009 12:13:43 +0100
+Commit-ID:  b4110aa4b80378855c92a090dc079a3c5c69b69c
+Gitweb:     http://git.kernel.org/tip/b4110aa4b80378855c92a090dc079a3c5c69b69c
+Author:     Peter Zijlstra <a.p.zijlstra@chello.nl>
+AuthorDate: Mon, 30 Mar 2009 19:07:16 +0200
 Committer:  Ingo Molnar <mingo@elte.hu>
-CommitDate: Wed, 1 Apr 2009 12:08:51 +0200
+CommitDate: Wed, 1 Apr 2009 11:33:39 +0200
 
-perf_counter tools: kerneltop: add real-time data acquisition thread
+perf_counter: pmc arbitration
 
-Decouple kerneltop display from event acquisition by introducing
-a separate data acquisition thread. This fixes annnoying kerneltop
-display refresh jitter and missed events.
+Follow the example set by powerpc and try to play nice with oprofile
+and the nmi watchdog.
 
-Also add a -r <prio> option, to switch the data acquisition thread
-to real-time priority.
-
-Signed-off-by: Mike Galbraith <efault@gmx.de>
-Cc: Paul Mackerras <paulus@samba.org>
-Cc: Peter Zijlstra <a.p.zijlstra@chello.nl>
-LKML-Reference: <new-submission>
+Signed-off-by: Peter Zijlstra <a.p.zijlstra@chello.nl>
+Acked-by: Paul Mackerras <paulus@samba.org>
+LKML-Reference: <20090330171024.459968444@chello.nl>
 Signed-off-by: Ingo Molnar <mingo@elte.hu>
 
 
 ---
- Documentation/perf_counter/kerneltop.c |   57 ++++++++++++++++++++++----------
- 1 files changed, 39 insertions(+), 18 deletions(-)
+ arch/x86/kernel/cpu/perf_counter.c |   75 ++++++++++++++++++++++++++++++++++++
+ 1 files changed, 75 insertions(+), 0 deletions(-)
 
-diff --git a/Documentation/perf_counter/kerneltop.c b/Documentation/perf_counter/kerneltop.c
-index 430810d..33b4fcf 100644
---- a/Documentation/perf_counter/kerneltop.c
-+++ b/Documentation/perf_counter/kerneltop.c
-@@ -77,6 +77,8 @@
- #include <errno.h>
- #include <ctype.h>
- #include <time.h>
-+#include <sched.h>
-+#include <pthread.h>
+diff --git a/arch/x86/kernel/cpu/perf_counter.c b/arch/x86/kernel/cpu/perf_counter.c
+index e16dfaf..2a946a1 100644
+--- a/arch/x86/kernel/cpu/perf_counter.c
++++ b/arch/x86/kernel/cpu/perf_counter.c
+@@ -20,6 +20,7 @@
  
- #include <sys/syscall.h>
- #include <sys/ioctl.h>
-@@ -181,6 +183,7 @@ static int			tid				= -1;
- static int			profile_cpu			= -1;
- static int			nr_cpus				=  0;
- static int			nmi				=  1;
-+static unsigned int		realtime_prio			=  0;
- static int			group				=  0;
- static unsigned int		page_size;
- static unsigned int		mmap_pages			=  16;
-@@ -334,6 +337,7 @@ static void display_help(void)
- 	" -l                           # show scale factor for RR events\n"
- 	" -d delay  --delay=<seconds>  # sampling/display delay           [default:  2]\n"
- 	" -f CNT    --filter=CNT       # min-event-count filter          [default: 100]\n\n"
-+	" -r prio   --realtime=<prio>  # event acquisition runs with SCHED_FIFO policy\n"
- 	" -s symbol --symbol=<symbol>  # function to be showed annotated one-shot\n"
- 	" -x path   --vmlinux=<path>   # the vmlinux binary, required for -s use\n"
- 	" -z        --zero             # zero counts after display\n"
-@@ -620,7 +624,6 @@ static int compare(const void *__sym1, const void *__sym2)
- 	return sym_weight(sym1) < sym_weight(sym2);
+ #include <asm/apic.h>
+ #include <asm/stacktrace.h>
++#include <asm/nmi.h>
+ 
+ static bool perf_counters_initialized __read_mostly;
+ 
+@@ -172,6 +173,65 @@ again:
+ 	atomic64_sub(delta, &hwc->period_left);
  }
  
--static time_t			last_refresh;
- static long			events;
- static long			userspace_events;
- static const char		CONSOLE_CLEAR[] = "[H[2J";
-@@ -634,6 +637,7 @@ static void print_sym_table(void)
- 	float events_per_sec = events/delay_secs;
- 	float kevents_per_sec = (events-userspace_events)/delay_secs;
- 
-+	events = userspace_events = 0;
- 	memcpy(tmp, sym_table, sizeof(sym_table[0])*sym_table_count);
- 	qsort(tmp, sym_table_count, sizeof(tmp[0]), compare);
- 
-@@ -714,8 +718,6 @@ static void print_sym_table(void)
- 	if (sym_filter_entry)
- 		show_details(sym_filter_entry);
- 
--	last_refresh = time(NULL);
--
- 	{
- 		struct pollfd stdin_poll = { .fd = 0, .events = POLLIN };
- 
-@@ -726,6 +728,16 @@ static void print_sym_table(void)
- 	}
- }
- 
-+static void *display_thread(void *arg)
++static atomic_t num_counters;
++static DEFINE_MUTEX(pmc_reserve_mutex);
++
++static bool reserve_pmc_hardware(void)
 +{
-+	printf("KernelTop refresh period: %d seconds\n", delay_secs);
++	int i;
 +
-+	while (!sleep(delay_secs))
-+		print_sym_table();
++	if (nmi_watchdog == NMI_LOCAL_APIC)
++		disable_lapic_nmi_watchdog();
 +
-+	return NULL;
++	for (i = 0; i < nr_counters_generic; i++) {
++		if (!reserve_perfctr_nmi(pmc_ops->perfctr + i))
++			goto perfctr_fail;
++	}
++
++	for (i = 0; i < nr_counters_generic; i++) {
++		if (!reserve_evntsel_nmi(pmc_ops->eventsel + i))
++			goto eventsel_fail;
++	}
++
++	return true;
++
++eventsel_fail:
++	for (i--; i >= 0; i--)
++		release_evntsel_nmi(pmc_ops->eventsel + i);
++
++	i = nr_counters_generic;
++
++perfctr_fail:
++	for (i--; i >= 0; i--)
++		release_perfctr_nmi(pmc_ops->perfctr + i);
++
++	if (nmi_watchdog == NMI_LOCAL_APIC)
++		enable_lapic_nmi_watchdog();
++
++	return false;
 +}
 +
- static int read_symbol(FILE *in, struct sym_entry *s)
++static void release_pmc_hardware(void)
++{
++	int i;
++
++	for (i = 0; i < nr_counters_generic; i++) {
++		release_perfctr_nmi(pmc_ops->perfctr + i);
++		release_evntsel_nmi(pmc_ops->eventsel + i);
++	}
++
++	if (nmi_watchdog == NMI_LOCAL_APIC)
++		enable_lapic_nmi_watchdog();
++}
++
++static void hw_perf_counter_destroy(struct perf_counter *counter)
++{
++	if (atomic_dec_and_mutex_lock(&num_counters, &pmc_reserve_mutex)) {
++		release_pmc_hardware();
++		mutex_unlock(&pmc_reserve_mutex);
++	}
++}
++
+ /*
+  * Setup the hardware configuration for a given hw_event_type
+  */
+@@ -179,10 +239,23 @@ static int __hw_perf_counter_init(struct perf_counter *counter)
  {
- 	static int filter_match = 0;
-@@ -1081,19 +1093,20 @@ static void process_options(int argc, char *argv[])
- 			{"filter",	required_argument,	NULL, 'f'},
- 			{"group",	required_argument,	NULL, 'g'},
- 			{"help",	no_argument,		NULL, 'h'},
--			{"scale",	no_argument,		NULL, 'l'},
- 			{"nmi",		required_argument,	NULL, 'n'},
-+			{"mmap_info",	no_argument,		NULL, 'M'},
-+			{"mmap_pages",	required_argument,	NULL, 'm'},
-+			{"munmap_info",	no_argument,		NULL, 'U'},
- 			{"pid",		required_argument,	NULL, 'p'},
--			{"vmlinux",	required_argument,	NULL, 'x'},
-+			{"realtime",	required_argument,	NULL, 'r'},
-+			{"scale",	no_argument,		NULL, 'l'},
- 			{"symbol",	required_argument,	NULL, 's'},
- 			{"stat",	no_argument,		NULL, 'S'},
-+			{"vmlinux",	required_argument,	NULL, 'x'},
- 			{"zero",	no_argument,		NULL, 'z'},
--			{"mmap_pages",	required_argument,	NULL, 'm'},
--			{"mmap_info",	no_argument,		NULL, 'M'},
--			{"munmap_info",	no_argument,		NULL, 'U'},
- 			{NULL,		0,			NULL,  0 }
- 		};
--		int c = getopt_long(argc, argv, "+:ac:C:d:De:f:g:hln:m:p:s:Sx:zMU",
-+		int c = getopt_long(argc, argv, "+:ac:C:d:De:f:g:hln:m:p:r:s:Sx:zMU",
- 				    long_options, &option_index);
- 		if (c == -1)
- 			break;
-@@ -1127,6 +1140,7 @@ static void process_options(int argc, char *argv[])
- 				profile_cpu = -1;
- 			}
- 			tid				=   atoi(optarg); break;
-+		case 'r': realtime_prio			=   atoi(optarg); break;
- 		case 's': sym_filter			= strdup(optarg); break;
- 		case 'S': run_perfstat			=	       1; break;
- 		case 'x': vmlinux			= strdup(optarg); break;
-@@ -1289,6 +1303,7 @@ int main(int argc, char *argv[])
- 	struct pollfd event_array[MAX_NR_CPUS * MAX_COUNTERS];
- 	struct mmap_data mmap_array[MAX_NR_CPUS][MAX_COUNTERS];
- 	struct perf_counter_hw_event hw_event;
-+	pthread_t thread;
- 	int i, counter, group_fd, nr_poll = 0;
- 	unsigned int cpu;
- 	int ret;
-@@ -1363,8 +1378,20 @@ int main(int argc, char *argv[])
- 		}
+ 	struct perf_counter_hw_event *hw_event = &counter->hw_event;
+ 	struct hw_perf_counter *hwc = &counter->hw;
++	int err;
+ 
+ 	if (unlikely(!perf_counters_initialized))
+ 		return -EINVAL;
+ 
++	err = 0;
++	if (atomic_inc_not_zero(&num_counters)) {
++		mutex_lock(&pmc_reserve_mutex);
++		if (atomic_read(&num_counters) == 0 && !reserve_pmc_hardware())
++			err = -EBUSY;
++		else
++			atomic_inc(&num_counters);
++		mutex_unlock(&pmc_reserve_mutex);
++	}
++	if (err)
++		return err;
++
+ 	/*
+ 	 * Generate PMC IRQs:
+ 	 * (keep 'enabled' bit clear for now)
+@@ -230,6 +303,8 @@ static int __hw_perf_counter_init(struct perf_counter *counter)
+ 		hwc->config |= pmc_ops->event_map(perf_event_id(hw_event));
  	}
  
--	printf("KernelTop refresh period: %d seconds\n", delay_secs);
--	last_refresh = time(NULL);
-+	if (pthread_create(&thread, NULL, display_thread, NULL)) {
-+		printf("Could not create display thread.\n");
-+		exit(-1);
-+	}
++	counter->destroy = hw_perf_counter_destroy;
 +
-+	if (realtime_prio) {
-+		struct sched_param param;
-+
-+		param.sched_priority = realtime_prio;
-+		if (sched_setscheduler(0, SCHED_FIFO, &param)) {
-+			printf("Could not set realtime priority.\n");
-+			exit(-1);
-+		}
-+	}
- 
- 	while (1) {
- 		int hits = events;
-@@ -1374,14 +1401,8 @@ int main(int argc, char *argv[])
- 				mmap_read(&mmap_array[i][counter]);
- 		}
- 
--		if (time(NULL) >= last_refresh + delay_secs) {
--			print_sym_table();
--			events = userspace_events = 0;
--		}
--
- 		if (hits == events)
--			ret = poll(event_array, nr_poll, 1000);
--		hits = events;
-+			ret = poll(event_array, nr_poll, 100);
- 	}
- 
  	return 0;
+ }
+ 
