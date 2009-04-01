@@ -1,20 +1,20 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932337AbZDAOGv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932311AbZDAOHa@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932337AbZDAOGv (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 1 Apr 2009 10:06:51 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1765458AbZDAOFI
+	id S932311AbZDAOHa (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 1 Apr 2009 10:07:30 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1765571AbZDAOFQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 1 Apr 2009 10:05:08 -0400
-Received: from earthlight.etchedpixels.co.uk ([81.2.110.250]:37752 "EHLO
+	Wed, 1 Apr 2009 10:05:16 -0400
+Received: from earthlight.etchedpixels.co.uk ([81.2.110.250]:37755 "EHLO
 	www.etchedpixels.co.uk" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1763064AbZDAOFF (ORCPT
+	with ESMTP id S1765547AbZDAOFP (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 1 Apr 2009 10:05:05 -0400
+	Wed, 1 Apr 2009 10:05:15 -0400
 From: Alan Cox <alan@lxorguk.ukuu.org.uk>
-Subject: [PATCH 06/24] blackfin: Use unsigned long for flags with irq functions
+Subject: [PATCH 07/24] blackfin: Fix tty compile error in PIO mode
 To: linux-kernel@vger.kernel.org, torvalds@linux-foundation.org
-Date: Wed, 01 Apr 2009 15:05:20 +0100
-Message-ID: <20090401140517.22882.10717.stgit@localhost.localdomain>
+Date: Wed, 01 Apr 2009 15:05:27 +0100
+Message-ID: <20090401140525.22882.84292.stgit@localhost.localdomain>
 In-Reply-To: <20090401140241.22882.93477.stgit@localhost.localdomain>
 References: <20090401140241.22882.93477.stgit@localhost.localdomain>
 User-Agent: StGIT/0.14.3
@@ -25,38 +25,43 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Mike Frysinger <vapier.adi@gmail.com>
+From: Sonic Zhang <sonic.zhang@analog.com>
 
-Signed-off-by: Mike Frysinger <vapier.adi@gmail.com>
+drivers/serial/bfin_5xx.c: In function bfin_serial_rx_chars:
+drivers/serial/bfin_5xx.c:178: error: struct uart_info has no
+member
+named tty
+make[3]: *** [drivers/serial/bfin_5xx.o] Error 1
+make[2]: *** [drivers/serial] Error 2
+make[1]: *** [drivers] Error 2
+make[1]: *** Waiting for unfinished jobs....
+make[1]: Leaving directory `/root/projects/uClinux-dist/linux-2.6.x'
+make: *** [linux] Error 1
+
+Signed-off-by: Sonic Zhang <sonic.zhang@analog.com>
 Signed-off-by: Bryan Wu <cooloney@kernel.org>
 Signed-off-by: Alan Cox <alan@lxorguk.ukuu.org.uk>
 ---
 
- drivers/serial/bfin_5xx.c |    5 +++--
- 1 files changed, 3 insertions(+), 2 deletions(-)
+ drivers/serial/bfin_5xx.c |    4 ++--
+ 1 files changed, 2 insertions(+), 2 deletions(-)
 
 
 diff --git a/drivers/serial/bfin_5xx.c b/drivers/serial/bfin_5xx.c
-index 318d69d..45c32b2 100644
+index 45c32b2..d7b2716 100644
 --- a/drivers/serial/bfin_5xx.c
 +++ b/drivers/serial/bfin_5xx.c
-@@ -415,7 +415,8 @@ static void bfin_serial_dma_rx_chars(struct bfin_serial_port *uart)
+@@ -174,10 +174,10 @@ static void bfin_serial_rx_chars(struct bfin_serial_port *uart)
+ 			return;
+ 		}
  
- void bfin_serial_rx_dma_timeout(struct bfin_serial_port *uart)
- {
--	int x_pos, pos, flags;
-+	int x_pos, pos;
-+	unsigned long flags;
+-	if (!uart->port.info || !uart->port.info->tty)
++	if (!uart->port.info || !uart->port.info->port.tty)
+ 		return;
+ #endif
+-	tty = uart->port.info->tty;
++	tty = uart->port.info->port.tty;
  
- 	spin_lock_irqsave(&uart->port.lock, flags);
- 
-@@ -1088,7 +1089,7 @@ static void
- bfin_serial_console_write(struct console *co, const char *s, unsigned int count)
- {
- 	struct bfin_serial_port *uart = &bfin_serial_ports[co->index];
--	int flags = 0;
-+	unsigned long flags;
- 
- 	spin_lock_irqsave(&uart->port.lock, flags);
- 	uart_console_write(&uart->port, s, count, bfin_serial_console_putchar);
+ 	if (ANOMALY_05000363) {
+ 		/* The BF533 (and BF561) family of processors have a nice anomaly
 
