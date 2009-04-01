@@ -1,77 +1,97 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761250AbZDARN1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932286AbZDARNr@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761250AbZDARN1 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 1 Apr 2009 13:13:27 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754410AbZDARNQ
+	id S932286AbZDARNr (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 1 Apr 2009 13:13:47 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756762AbZDARN3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 1 Apr 2009 13:13:16 -0400
-Received: from outbound-mail-02.bluehost.com ([69.89.21.12]:41937 "HELO
-	outbound-mail-02.bluehost.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1753590AbZDARNP (ORCPT
+	Wed, 1 Apr 2009 13:13:29 -0400
+Received: from ey-out-2122.google.com ([74.125.78.27]:29263 "EHLO
+	ey-out-2122.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1758391AbZDARN0 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 1 Apr 2009 13:13:15 -0400
-DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws; s=default; d=virtuousgeek.org;
-	h=Received:Date:From:To:Cc:Subject:Message-ID:In-Reply-To:References:X-Mailer:Mime-Version:Content-Type:Content-Transfer-Encoding:X-Identified-User;
-	b=JDfOmJTHQJVgLyhoisNfbIrSlP6u+m7C8iY94ImXDlA8tpE0A3N1aMmUStSowSymZi0xv3ry5qZ/783Ur0tN3m4PxbyHbs6DjkPRos2l1gmSpuC5B9YMEiNvLF3upv4I;
-Date: Wed, 1 Apr 2009 10:13:09 -0700
-From: Jesse Barnes <jbarnes@virtuousgeek.org>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: linux-kernel@vger.kernel.org, linux-pci@vger.kernel.org
-Subject: Re: [git pull] PCI changes for 2.6.30
-Message-ID: <20090401101309.67d0bea5@hobbes>
-In-Reply-To: <alpine.LFD.2.00.0904010957520.4130@localhost.localdomain>
-References: <20090331121331.3673cf59@hobbes>
-	<alpine.LFD.2.00.0904010957520.4130@localhost.localdomain>
-X-Mailer: Claws Mail 3.5.0 (GTK+ 2.14.4; x86_64-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Wed, 1 Apr 2009 13:13:26 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
+         :cc:content-type:content-transfer-encoding;
+        b=ZwShbCi+g246yNK/9/uOpIhGuG7B+4YzEZAaXnFfl5M328bvkugEmbipsb+n4m02RX
+         isbTFo6askOeCgU1X/ZOhUJak8wOtN+I/GPGUJ515QPEBBXbPktXVOtxAjkcWoEO5esJ
+         UAhLeYv/nkuu+/y6Ut+sjVwQEqRAODBWGdx/o=
+MIME-Version: 1.0
+In-Reply-To: <20090401170708.GA14167@srcf.ucam.org>
+References: <20090331214501.GC29489@srcf.ucam.org>
+	 <20090331214749.GD29489@srcf.ucam.org>
+	 <74962ea30903311506m41306659td0cd70c5736f6660@mail.gmail.com>
+	 <20090331221107.GA30383@srcf.ucam.org>
+	 <74962ea30903311519s2fb6087fxfe8859e3c570ac99@mail.gmail.com>
+	 <20090331230217.GA31599@srcf.ucam.org>
+	 <74962ea30904010950u31fbdca3w51eafb9b7ec1ca73@mail.gmail.com>
+	 <20090401165345.GA13939@srcf.ucam.org>
+	 <74962ea30904011003o354e8780ya5e9ac1a6a579084@mail.gmail.com>
+	 <20090401170708.GA14167@srcf.ucam.org>
+Date: Thu, 2 Apr 2009 10:13:23 +1700
+Message-ID: <74962ea30904011013v5ffa0620y1f1aefa2c84e1ce@mail.gmail.com>
+Subject: Re: [PATCH 2/2] toshiba-acpi: Support TOS1900-type devices
+From: Azael Avalos <coproscefalo@gmail.com>
+To: Matthew Garrett <mjg59@srcf.ucam.org>
+Cc: linux-acpi@vger.kernel.org, dsilvers@simtec.co.uk,
+       toshiba_acpi@memebeam.org, linux-kernel@vger.kernel.org
+Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 7bit
-X-Identified-User: {10642:box514.bluehost.com:virtuous:virtuousgeek.org} {sentby:smtp auth 75.111.28.251 authed with jbarnes@virtuousgeek.org}
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 1 Apr 2009 10:01:12 -0700 (PDT)
-Linus Torvalds <torvalds@linux-foundation.org> wrote:
+On Thu, Apr 2, 2009 at 10:07 AM, Matthew Garrett <mjg59@srcf.ucam.org> wrote:
+> On Thu, Apr 02, 2009 at 10:03:05AM +1700, Azael Avalos wrote:
+>> On Thu, Apr 2, 2009 at 9:53 AM, Matthew Garrett <mjg59@srcf.ucam.org> wrote:
+>> > Yes, you shouldn't be reading directly from TOHK at any point. It seems
+>> > to be a purely internal variable - I'm fairly sure that the INFO method
+>> > is the only one that should be called on event generation.
+>>
+>> Well, on the patches sent to the omnibook module I was polling TOHK directly,
+>> it is until now that I realized that I can poll the events via INFO
+>> method, that is,
+>> if I enable TECF first via method \\_SB.PCI0.LPCB.EC0.NTFY
+>
+> Mm. None of the TOS1900 DSDTs I have here have TECF or NTFY methods, so
+> again that doesn't sound like the right way of driving them. Does the
+> ENAB method not do this?
 
-> 
-> 
-> On Tue, 31 Mar 2009, Jesse Barnes wrote:
-> >
-> > Please consider pulling my PCI tree from
-> >   git://git.kernel.org/pub/scm/linux/kernel/git/jbarnes/pci-2.6
-> > linux-next
-> 
-> This produces
-> 
->   WARNING: drivers/built-in.o(.text+0x69a1): Section mismatch in
-> reference from the function dev_rescan_store() to the
-> function .devinit.text:pci_rescan_bus() The function
-> dev_rescan_store() references the function __devinit
-> pci_rescan_bus(). This is often because dev_rescan_store lacks a
-> __devinit annotation or the annotation of pci_rescan_bus is wrong.
-> 
-> Hmm?
+At least not in my model, the ENAB method is empty, heres a snippet of the DSDT:
 
-Arg how did I miss that?  Maybe the last build I did was missing
-hotplug support or something... Anyway looking now (at first glance I
-think pci_rescan_bus needs to drop __devinit).
+                            Method (ENAB, 0, NotSerialized)
+                            {
+                            }
 
-> > Anyway hope this pull is ok.  I went through every warning by hand
-> > to make sure none were caused by PCI commits, but that was with the
-> > bits in this tree, which are -rc8 vintage.
-> 
-> You can tell it's rebased, but at least it's not rebased five minutes
-> ago, so I assume it has some testing. It's the "I just rebased a
-> couple of minutes before posting this 'please pull' message" that I
-> find really annoying, since it's so clear that the end result has no
-> real testing at all.
+                            Method (INFO, 0, NotSerialized)
+                            {
+                                If (TECF)
+                                {
+                                    Store (Zero, TECF)
+                                    Store (^^PCI0.LPCB.EC0.TOHK, Local0)
+                                    Store (Zero, ^^PCI0.LPCB.EC0.TOHK)
+                                }
+                                Else
+                                {
+                                    Store (Zero, Local0)
+                                }
 
-Yeah, this tree generally sees a good amount of testing, especially
-from the hotplug folks.  And yeah, I'd never rebase and then do a pull
-request; I like to let things sit in linux-next for at least a day to
-flush out any build errors and give a chance for people to test any
-merge conflicts I resolved.
+                                Return (Local0)
+                            }
+
+And above scope _SB you can find
+
+                    Method (NTFY, 0, NotSerialized)
+                    {
+                        Store (One, ^^^^VALZ.TECF)
+                        Notify (VALZ, 0x80)
+                        Return (0xAA)
+                    }
+
+Saludos
+Azael
+
 
 -- 
-Jesse Barnes, Intel Open Source Technology Center
+-- El mundo apesta y vosotros apestais tambien --
