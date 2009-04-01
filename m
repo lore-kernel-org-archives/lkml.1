@@ -1,67 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755552AbZDABoj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757216AbZDABo5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755552AbZDABoj (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 31 Mar 2009 21:44:39 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752607AbZDABoa
+	id S1757216AbZDABo5 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 31 Mar 2009 21:44:57 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753951AbZDABoo
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 31 Mar 2009 21:44:30 -0400
-Received: from qw-out-2122.google.com ([74.125.92.26]:8191 "EHLO
-	qw-out-2122.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752597AbZDABo3 convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 31 Mar 2009 21:44:29 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=googlemail.com; s=gamma;
-        h=mime-version:reply-to:in-reply-to:references:date:message-id
-         :subject:from:to:cc:content-type:content-transfer-encoding;
-        b=S2oeKYoX+bTQ0IK3gECe1bP1iUhtFeNiIoKlqaEE22iN93okmQLpfB3VyP9id2FXHu
-         v49Nk/JR2WPSKsJgoKWn2RX1F8aP3PrBepaCjYF2/UwadAhrJHIY2m1rvggs3gwzKSKD
-         HEHTxp1W651/oDaRFfYFzNNBmH7OIW1pC3thc=
+	Tue, 31 Mar 2009 21:44:44 -0400
+Received: from mx2.redhat.com ([66.187.237.31]:47485 "EHLO mx2.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753521AbZDABon (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 31 Mar 2009 21:44:43 -0400
+Date: Wed, 1 Apr 2009 03:40:37 +0200
+From: Oleg Nesterov <oleg@redhat.com>
+To: Matt Helsley <matthltc@us.ibm.com>
+Cc: akpm@linux-foundation.org, linux-kernel@vger.kernel.org,
+       adobriyan@gmail.com, dhowells@redhat.com, ebiederm@xmission.com,
+       hch@lst.de
+Subject: Re: + mm-remove-struct-mm_struct-exe_file-et-al.patch added to -mm
+	tree
+Message-ID: <20090401014037.GA32051@redhat.com>
+References: <200903302344.n2UNi3xd027136@imap1.linux-foundation.org> <20090331144051.GA3951@redhat.com> <20090401003223.GH29821@us.ibm.com>
 MIME-Version: 1.0
-Reply-To: mtk.manpages@gmail.com
-In-Reply-To: <20090401012547.3B581FC3AB@magilla.sf.frob.com>
-References: <20090324102516.459441533@linutronix.de>
-	 <20090331152610.GC4792@redhat.com>
-	 <cfd18e0f0903311816p27a7b8c3jd62e563f4c95299e@mail.gmail.com>
-	 <20090401012547.3B581FC3AB@magilla.sf.frob.com>
-Date: Wed, 1 Apr 2009 14:44:26 +1300
-Message-ID: <cfd18e0f0903311844nd5ab221g6bff6cf5fc73de42@mail.gmail.com>
-Subject: Re: [patch 0/3] add rt_tgsigqueueinfo syscall -V2
-From: Michael Kerrisk <mtk.manpages@googlemail.com>
-To: Roland McGrath <roland@redhat.com>
-Cc: Oleg Nesterov <oleg@redhat.com>, Thomas Gleixner <tglx@linutronix.de>,
-       LKML <linux-kernel@vger.kernel.org>,
-       Ulrich Drepper <drepper@redhat.com>,
-       Andrew Morton <akpm@linux-foundation.org>, Ingo Molnar <mingo@elte.hu>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 8BIT
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20090401003223.GH29821@us.ibm.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Apr 1, 2009 at 2:25 PM, Roland McGrath <roland@redhat.com> wrote:
->> 1) With rt_siqueueinfo(), we can get the PID (TGID) of the sender,
+On 03/31, Matt Helsley wrote:
 >
-> No.  You can get whatever the caller put into the siginfo_t.
-> Only the si_signo field is set by the kernel.
+> On Tue, Mar 31, 2009 at 04:40:51PM +0200, Oleg Nesterov wrote:
+> >
+> > But, as a advocatus diaboli... There was anotrher reason for ->exe_file,
+> > iirc.
+> >
+> > bprm->file->f_op->mmap() can change vma->vm_file, this means proc_exe_link()
+> > can report the "wrong" path. The original file is not pinned in this case.
 >
->> With rt_tgsigqueueinfo(), [...]
->
-> You still get whatever the caller put into the siginfo_t.
+> That's _my_ reason for it. However no mainline code does that and hence it was
+> not the reason Andrew accepted it.
 
-Yes.  I wrote the text awkwardly, but I think the point was clear.  In
-my point 1, I wrongly thought we needed a way to get the sender's TID
-to the receiver, and you pointed out that sigval could do the job.  In
-my point 2, I made the same observation as you just made above.
+Good.
 
-Thanks,
+> I still prefer ->exe_file because I think it's a win not to walk the
+> VMAs with mmap sem when doing a readlink on /proc/*/exe. It's also less
+> sensitive to the order in which VMAs appear should that ever change.
 
-Michael
+I agree with Alexey, I don't think the VMAs walking can be a problem.
 
+But even if it is problem, we could make a much more simple patch
+to avoid it? Just add "struct path exe_path" to ->mm, no?
 
--- 
-Michael Kerrisk
-Linux man-pages maintainer; http://www.kernel.org/doc/man-pages/
-git://git.kernel.org/pub/scm/docs/man-pages/man-pages.git
-man-pages online: http://www.kernel.org/doc/man-pages/online_pages.html
-Found a bug? http://www.kernel.org/doc/man-pages/reporting_bugs.html
+Oleg.
+
