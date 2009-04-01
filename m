@@ -1,26 +1,25 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S935260AbZDAXR7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S935011AbZDAXSo@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S935260AbZDAXR7 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 1 Apr 2009 19:17:59 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934061AbZDAXFe
+	id S935011AbZDAXSo (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 1 Apr 2009 19:18:44 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934093AbZDAXFi
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 1 Apr 2009 19:05:34 -0400
-Received: from mx2.redhat.com ([66.187.237.31]:34661 "EHLO mx2.redhat.com"
+	Wed, 1 Apr 2009 19:05:38 -0400
+Received: from mx2.redhat.com ([66.187.237.31]:34665 "EHLO mx2.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S934101AbZDAXFY (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 1 Apr 2009 19:05:24 -0400
+	id S934102AbZDAXF3 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 1 Apr 2009 19:05:29 -0400
 Organization: Red Hat UK Ltd. Registered Address: Red Hat UK Ltd, Amberley
 	Place, 107-111 Peascod Street, Windsor, Berkshire, SI4 1TE, United
 	Kingdom.
 	Registered in England and Wales under Company Registration No. 3798903
 From: David Howells <dhowells@redhat.com>
-Subject: [PATCH 23/43] CacheFiles: Permit the page lock state to be monitored
-	[ver #46]
+Subject: [PATCH 24/43] CacheFiles: Export things for CacheFiles [ver #46]
 To: viro@ZenIV.linux.org.uk
 Cc: dhowells@redhat.com, nfsv4@linux-nfs.org, linux-kernel@vger.kernel.org,
        linux-fsdevel@vger.kernel.org
-Date: Thu, 02 Apr 2009 00:05:20 +0100
-Message-ID: <20090401230520.28177.61387.stgit@warthog.procyon.org.uk>
+Date: Thu, 02 Apr 2009 00:05:25 +0100
+Message-ID: <20090401230525.28177.27454.stgit@warthog.procyon.org.uk>
 In-Reply-To: <20090401230321.28177.12010.stgit@warthog.procyon.org.uk>
 References: <20090401230321.28177.12010.stgit@warthog.procyon.org.uk>
 User-Agent: StGIT/0.14.3
@@ -31,65 +30,48 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Add a function to install a monitor on the page lock waitqueue for a particular
-page, thus allowing the page being unlocked to be detected.
-
-This is used by CacheFiles to detect read completion on a page in the backing
-filesystem so that it can then copy the data to the waiting netfs page.
+Export a number of functions for CacheFiles's use.
 
 Signed-off-by: David Howells <dhowells@redhat.com>
 Acked-by: Steve Dickson <steved@redhat.com>
 Acked-by: Trond Myklebust <Trond.Myklebust@netapp.com>
 ---
 
- include/linux/pagemap.h |    5 +++++
- mm/filemap.c            |   18 ++++++++++++++++++
- 2 files changed, 23 insertions(+), 0 deletions(-)
+ fs/super.c          |    1 +
+ security/security.c |    2 ++
+ 2 files changed, 3 insertions(+), 0 deletions(-)
 
 
-diff --git a/include/linux/pagemap.h b/include/linux/pagemap.h
-index 1ae38aa..135028e 100644
---- a/include/linux/pagemap.h
-+++ b/include/linux/pagemap.h
-@@ -396,6 +396,11 @@ static inline void wait_on_page_owner_priv_2(struct page *page)
- extern void end_page_owner_priv_2(struct page *page);
- 
- /*
-+ * Add an arbitrary waiter to a page's wait queue
-+ */
-+extern void add_page_wait_queue(struct page *page, wait_queue_t *waiter);
-+
-+/*
-  * Fault a userspace page into pagetables.  Return non-zero on a fault.
-  *
-  * This assumes that two userspace pages are always sufficient.  That's
-diff --git a/mm/filemap.c b/mm/filemap.c
-index d766c2f..15dda3c 100644
---- a/mm/filemap.c
-+++ b/mm/filemap.c
-@@ -565,6 +565,24 @@ void wait_on_page_bit(struct page *page, int bit_nr)
- EXPORT_SYMBOL(wait_on_page_bit);
+diff --git a/fs/super.c b/fs/super.c
+index 2ba4815..77cb4ec 100644
+--- a/fs/super.c
++++ b/fs/super.c
+@@ -287,6 +287,7 @@ int fsync_super(struct super_block *sb)
+ 	__fsync_super(sb);
+ 	return sync_blockdev(sb->s_bdev);
+ }
++EXPORT_SYMBOL_GPL(fsync_super);
  
  /**
-+ * add_page_wait_queue - Add an arbitrary waiter to a page's wait queue
-+ * @page - Page defining the wait queue of interest
-+ * @waiter - Waiter to add to the queue
-+ *
-+ * Add an arbitrary @waiter to the wait queue for the nominated @page.
-+ */
-+void add_page_wait_queue(struct page *page, wait_queue_t *waiter)
-+{
-+	wait_queue_head_t *q = page_waitqueue(page);
-+	unsigned long flags;
-+
-+	spin_lock_irqsave(&q->lock, flags);
-+	__add_wait_queue(q, waiter);
-+	spin_unlock_irqrestore(&q->lock, flags);
-+}
-+EXPORT_SYMBOL_GPL(add_page_wait_queue);
-+
-+/**
-  * unlock_page - unlock a locked page
-  * @page: the page
-  *
+  *	generic_shutdown_super	-	common helper for ->kill_sb()
+diff --git a/security/security.c b/security/security.c
+index 206e538..5284255 100644
+--- a/security/security.c
++++ b/security/security.c
+@@ -445,6 +445,7 @@ int security_inode_create(struct inode *dir, struct dentry *dentry, int mode)
+ 		return 0;
+ 	return security_ops->inode_create(dir, dentry, mode);
+ }
++EXPORT_SYMBOL_GPL(security_inode_create);
+ 
+ int security_inode_link(struct dentry *old_dentry, struct inode *dir,
+ 			 struct dentry *new_dentry)
+@@ -475,6 +476,7 @@ int security_inode_mkdir(struct inode *dir, struct dentry *dentry, int mode)
+ 		return 0;
+ 	return security_ops->inode_mkdir(dir, dentry, mode);
+ }
++EXPORT_SYMBOL_GPL(security_inode_mkdir);
+ 
+ int security_inode_rmdir(struct inode *dir, struct dentry *dentry)
+ {
 
