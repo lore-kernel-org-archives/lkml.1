@@ -1,88 +1,73 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758379AbZDALUs@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759143AbZDALXk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758379AbZDALUs (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 1 Apr 2009 07:20:48 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754739AbZDALUh
+	id S1759143AbZDALXk (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 1 Apr 2009 07:23:40 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753767AbZDALX2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 1 Apr 2009 07:20:37 -0400
-Received: from extu-mxob-1.symantec.com ([216.10.194.28]:48693 "EHLO
-	extu-mxob-1.symantec.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754125AbZDALUg (ORCPT
+	Wed, 1 Apr 2009 07:23:28 -0400
+Received: from gw-ca.panasas.com ([209.116.51.66]:13326 "EHLO
+	laguna.int.panasas.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1753972AbZDALX1 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 1 Apr 2009 07:20:36 -0400
-Date: Wed, 1 Apr 2009 12:18:11 +0100 (BST)
-From: Hugh Dickins <hugh@veritas.com>
-X-X-Sender: hugh@blonde.anvils
-To: Al Viro <viro@ZenIV.linux.org.uk>
-cc: Oleg Nesterov <oleg@redhat.com>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Joe Malicki <jmalicki@metacarta.com>, Michael Itz <mitz@metacarta.com>,
-       Kenneth Baker <bakerk@metacarta.com>,
-       Chris Wright <chrisw@sous-sol.org>, David Howells <dhowells@redhat.com>,
-       Alexey Dobriyan <adobriyan@gmail.com>,
-       Greg Kroah-Hartman <gregkh@suse.de>, linux-fsdevel@vger.kernel.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: Q: check_unsafe_exec() races (Was: [PATCH 2/4] fix setuid
- sometimes doesn't)
-In-Reply-To: <20090401023849.GW28946@ZenIV.linux.org.uk>
-Message-ID: <Pine.LNX.4.64.0904011207400.8870@blonde.anvils>
-References: <20090329235639.GA32199@redhat.com> <20090330000338.GB32199@redhat.com>
- <20090330010843.GM28946@ZenIV.linux.org.uk> <20090330011303.GN28946@ZenIV.linux.org.uk>
- <20090330013612.GA4080@redhat.com> <20090330014040.GA4807@redhat.com>
- <20090330123101.GQ28946@ZenIV.linux.org.uk> <Pine.LNX.4.64.0903301506310.11454@blonde.anvils>
- <20090331061615.GS28946@ZenIV.linux.org.uk> <Pine.LNX.4.64.0904010106310.16500@blonde.anvils>
- <20090401023849.GW28946@ZenIV.linux.org.uk>
+	Wed, 1 Apr 2009 07:23:27 -0400
+Message-ID: <49D34E33.5060700@panasas.com>
+Date: Wed, 01 Apr 2009 14:21:23 +0300
+From: Boaz Harrosh <bharrosh@panasas.com>
+User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1b3pre) Gecko/20090315 Remi/3.0-0.b2.fc10.remi Thunderbird/3.0b2
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+To: Jeff Garzik <jeff@garzik.org>
+CC: Avishay Traeger <avishay@gmail.com>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       linux-fsdevel <linux-fsdevel@vger.kernel.org>,
+       open-osd <osd-dev@open-osd.org>, Evgeniy Polyakov <zbr@ioremap.net>,
+       James Bottomley <James.Bottomley@HansenPartnership.com>,
+       linux-kernel <linux-kernel@vger.kernel.org>,
+       FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
+Subject: Re: [PATCHSET 0/8 version 4] exofs for kernel 2.6.30
+References: <49C1331D.1080805@panasas.com> <49D332A0.5080107@garzik.org>
+In-Reply-To: <49D332A0.5080107@garzik.org>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
+X-OriginalArrivalTime: 01 Apr 2009 11:23:23.0830 (UTC) FILETIME=[4504AD60:01C9B2BC]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 1 Apr 2009, Al Viro wrote:
-> On Wed, Apr 01, 2009 at 01:28:01AM +0100, Hugh Dickins wrote:
->  
-> > Otherwise it looks good to me, except I keep worrying about those
-> > EAGAINs.  The more so once I noticed current->cred_exec_mutex is
-> > already being used to handle a similar issue with ptrace.  What
-> > do you think of this rather smaller patch?  which I'd much rather
-> > send after having slept on it, since it may be embarrassingly and
-> > obviously wrong, but tomorrow may be too late ...
->  
-> Eh...  I'm not particulary happy with fork() growing heavier and heavier.
-
-I don't see it as making fork() any heavier, but never mind.
-The important thing is to get a fix out.
-
-> Besides, there's a subtle problem avoided by another variant - think what
-> happens if past the point of no return execve() will unshare fs_struct
-> (e.g. by explicit unshare() from dynamic linker).
-
-You're too far ahead of me there.
-
+On 04/01/2009 12:23 PM, Jeff Garzik wrote:
+> Boaz Harrosh wrote:
+>> If anyone wants to actually run this code and test it
+>> then please start reading at:
+>>     http://open-osd.org
+>> You will need to checkout the out-of-tree git (below) for the user-mode utilities.
+>> Also the exofs.txt file in patch 7/8 should help
 > 
-> Frankly, -EAGAIN in situation when we have userland race is fine.  And
-> we *do* have a userland race here - execve() will kill -9 those threads
-> in case of success, so if they'd been doing something useful, they are
-> about to be suddenly screwed.
-
-Good point.  I found it quite odd the way the awkward case (shared
-beyond the threadgroup) is allowed to go forward (with possibility
-that setuid will be undone), but the easy case is -EAGAINed.  (And
-I gave up on trying to find a better name for your "in_exec" flag,
-which is rather more subtle than just that!)  But odd as it is,
-there's good reason for doing it that way.
-
 > 
-> So I stand by my variant.
+> hum...  trying to play with this.  If you want exofs to go upstream, I 
+> think you should have a release tarball containing the user-mode utils 
+> posted somewhere.  Would make life a lot easier, both on early adopters 
+> and also on distribution packagers.
+> 
+> 	Jeff
 
-Fair enough.
+You are absolutely right, once 2.6.30 will be out there will not be a need
+to compile Kernel modules.
 
-> Note that if we have *other* tasks sharing
-> fs_struct, your variant will block their clone() for the duration of
-> execve() while mine will simply leave them alone (and accept that we
-> have unsafe sharing).
+About the binary package. I must admit I'm a total novice. What do I need to do?
 
-Yes, intentional, consistent with the existing cred_exec_mutex technique.
+One x86_32, one x86_64? What glibc, does it matter what distro I compile on?
 
-Hugh
+I want to have a "make rpm" and "make deb" but I've never done that, I was hoping
+someone more experienced would pick it up.
+
+But you are right I have it on my schedule to work on the Wiki, installation and
+init-scripts, right after this final push to mainline.
+
+Sorry, for not having this already
+Boaz
+
+BTW:
+  Source tar balls are available from the gitweb GUI by pressing on the
+  "snapshot" link next to any commit. I should link to it from the WiKi
+
+Best regards
+Boaz
