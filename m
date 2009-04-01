@@ -1,83 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932494AbZDAW6q@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932994AbZDAW7W@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932494AbZDAW6q (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 1 Apr 2009 18:58:46 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761204AbZDAW6Z
+	id S932994AbZDAW7W (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 1 Apr 2009 18:59:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761204AbZDAW65
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 1 Apr 2009 18:58:25 -0400
-Received: from mail-in-11.arcor-online.net ([151.189.21.51]:58616 "EHLO
-	mail-in-11.arcor-online.net" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1765760AbZDAW6Y (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 1 Apr 2009 18:58:24 -0400
-X-DKIM: Sendmail DKIM Filter v2.8.2 mail-in-12.arcor-online.net EB3791B3895
-Date: Thu, 2 Apr 2009 00:58:20 +0200 (CEST)
-From: Bodo Eggert <7eggert@gmx.de>
-To: Pavel Machek <pavel@ucw.cz>
-cc: Theodore Tso <tytso@mit.edu>, Bodo Eggert <7eggert@gmx.de>,
-       Artem Bityutskiy <dedekind@yandex.ru>,
-       Artem Bityutskiy <Artem.Bityutskiy@nokia.com>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: replace() system call needed (was Re: EXT4-ish "fixes" in
- UBIFS)
-In-Reply-To: <20090401205201.GI17808@elf.ucw.cz>
-Message-ID: <alpine.LSU.0.999.0904020025180.6204@be1.lrz>
-References: <ckjPq-2Dl-15@gated-at.bofh.it> <cl2jy-65z-1@gated-at.bofh.it>
- <cl2CZ-6q2-21@gated-at.bofh.it> <cl2N9-6Bj-9@gated-at.bofh.it>
- <E1LolUc-0003kM-FU@be1.7eggert.dyndns.org> <20090401000657.GH15063@mit.edu>
- <20090401205201.GI17808@elf.ucw.cz>
+	Wed, 1 Apr 2009 18:58:57 -0400
+Received: from mx2.redhat.com ([66.187.237.31]:51763 "EHLO mx2.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1757304AbZDAW6z (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 1 Apr 2009 18:58:55 -0400
+Message-ID: <49D3F088.50600@redhat.com>
+Date: Thu, 02 Apr 2009 01:54:00 +0300
+From: Izik Eidus <ieidus@redhat.com>
+User-Agent: Thunderbird 2.0.0.21 (Windows/20090302)
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=us-ascii
+To: Anthony Liguori <anthony@codemonkey.ws>
+CC: Andrea Arcangeli <aarcange@redhat.com>, linux-kernel@vger.kernel.org,
+       kvm@vger.kernel.org, linux-mm@kvack.org, avi@redhat.com,
+       chrisw@redhat.com, riel@redhat.com, jeremy@goop.org,
+       mtosatti@redhat.com, hugh@veritas.com, corbet@lwn.net, yaniv@redhat.com,
+       dmonakhov@openvz.org
+Subject: Re: [PATCH 4/4] add ksm kernel shared memory driver.
+References: <1238457560-7613-5-git-send-email-ieidus@redhat.com> <49D17C04.9070307@codemonkey.ws> <49D20B63.8020709@redhat.com> <49D21B33.4070406@codemonkey.ws> <20090331142533.GR9137@random.random> <49D22A9D.4050403@codemonkey.ws> <20090331150218.GS9137@random.random> <49D23224.9000903@codemonkey.ws> <20090331151845.GT9137@random.random> <49D23CD1.9090208@codemonkey.ws> <20090331162525.GU9137@random.random> <49D24A02.6070000@codemonkey.ws>
+In-Reply-To: <49D24A02.6070000@codemonkey.ws>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 1 Apr 2009, Pavel Machek wrote:
-> On Tue 2009-03-31 20:06:57, Theodore Tso wrote:
-> > On Tue, Mar 31, 2009 at 11:27:33PM +0200, Bodo Eggert wrote:
+Anthony Liguori wrote:
+> Andrea Arcangeli wrote:
+>> On Tue, Mar 31, 2009 at 10:54:57AM -0500, Anthony Liguori wrote:
+>>  
+>>> You can still disable ksm and simply return ENOSYS for the MADV_ 
+>>> flag.  You     
+>>
+>>
+Anthony, the biggest problem about madvice() is that it is a real system 
+call api, i wouldnt want in that stage of ksm commit into api changes of 
+linux...
 
-> > > This can be done using implicit logic:
-> > > 
-> > > ->E.g. on close(), mark inodes without being sync()ed as poisoned.
-> > > (I can think of more sophisticated logic, but ...)
-> > > ->On completing the inode with the delayed allocations, unpoison it.
-> > > ->Don't commit rename()s if the corresponding inode is poisoned.
-> > 
-> > Send us patches if you think it's that easy to do what you are
-> > proposing.   I assure it's not easy.
-> 
-> Well, implementing replace() syscall would be quite easy. Would you
-> want such a patch?
+The ioctl itself is restricting, madvice is much more...,
 
-You'd need - minus setting the flag on close - about the same logic:
-- detecting if the inode are dirty
-- detecting when the inode gets into a clean state
-- delaying the commit of the rename() until then
-- not replaying parts of the journal
+Can we draft this issue to after ksm is merged, and after all the big 
+new fetures that we want to add to ksm will be merge....
+(then the api would be much more stable, and we will be able to ask ppl 
+in the list about changing of api, but for new driver that it yet to be 
+merged, it is kind of overkill to add api to linux)
 
-As I understand, the replace() should not behave different from rename(),
-except for making a guaranty. Since this guaranty is desired anyway, I 
-think making it automatically would be a good thing. Especially until
-all applications are rewritten ...
+What do you think?
 
-Off cause if you call replace, you know it's going to be OK, but you could 
-also use pathconf($configdir, _PC_SYNC_BEFORE_RENAME)
-(== 0: Sync or barrier implicit, (data = ordered)
-    1: small chance of data loss due to not syncing, (vfat?)
-    2: guarantee of data loss without sync (ext4))
-
-// userspace.c
-static inline int sync_before_rename(char * where, int is_important_data)
-{
-	#ifndef _PC_SYNC_BEFORE_RENAME
-		// be optimistic for unimportant data
-		return is_important_data;
-	#else
-		int ret = pathconf(where, _PC_SYNC_BEFORE_RENAME);
-		if (is_important_data)
-			return ret;
-		return (ret > 1);
-	#endif
-}
--- 
-How do I set my laser printer on stun?
