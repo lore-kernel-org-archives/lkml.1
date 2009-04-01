@@ -1,59 +1,165 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762628AbZDAQyQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759568AbZDAQyc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762628AbZDAQyQ (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 1 Apr 2009 12:54:16 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758157AbZDAQx6
+	id S1759568AbZDAQyc (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 1 Apr 2009 12:54:32 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761437AbZDAQyT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 1 Apr 2009 12:53:58 -0400
-Received: from cavan.codon.org.uk ([93.93.128.6]:59351 "EHLO
-	vavatch.codon.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753466AbZDAQx5 (ORCPT
+	Wed, 1 Apr 2009 12:54:19 -0400
+Received: from gw-ca.panasas.com ([209.116.51.66]:21775 "EHLO
+	laguna.int.panasas.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1764360AbZDAQyR (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 1 Apr 2009 12:53:57 -0400
-Date: Wed, 1 Apr 2009 17:53:45 +0100
-From: Matthew Garrett <mjg59@srcf.ucam.org>
-To: Azael Avalos <coproscefalo@gmail.com>
-Cc: linux-acpi@vger.kernel.org, dsilvers@simtec.co.uk,
-       toshiba_acpi@memebeam.org, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 2/2] toshiba-acpi: Support TOS1900-type devices
-Message-ID: <20090401165345.GA13939@srcf.ucam.org>
-References: <20090331214501.GC29489@srcf.ucam.org> <20090331214749.GD29489@srcf.ucam.org> <74962ea30903311506m41306659td0cd70c5736f6660@mail.gmail.com> <20090331221107.GA30383@srcf.ucam.org> <74962ea30903311519s2fb6087fxfe8859e3c570ac99@mail.gmail.com> <20090331230217.GA31599@srcf.ucam.org> <74962ea30904010950u31fbdca3w51eafb9b7ec1ca73@mail.gmail.com>
+	Wed, 1 Apr 2009 12:54:17 -0400
+Message-ID: <49D39B6C.7080707@panasas.com>
+Date: Wed, 01 Apr 2009 19:50:52 +0300
+From: Boaz Harrosh <bharrosh@panasas.com>
+User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1b3pre) Gecko/20090315 Remi/3.0-0.b2.fc10.remi Thunderbird/3.0b2
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <74962ea30904010950u31fbdca3w51eafb9b7ec1ca73@mail.gmail.com>
-User-Agent: Mutt/1.5.12-2006-07-14
-X-SA-Exim-Connect-IP: <locally generated>
-X-SA-Exim-Mail-From: mjg59@codon.org.uk
-X-SA-Exim-Scanned: No (on vavatch.codon.org.uk); SAEximRunCond expanded to false
+To: Tejun Heo <tj@kernel.org>
+CC: axboe@kernel.dk, linux-kernel@vger.kernel.org,
+       fujita.tomonori@lab.ntt.co.jp
+Subject: Re: [PATCH 13/17] blk-map: implement blk_rq_map_kern_sgl()
+References: <1238593472-30360-1-git-send-email-tj@kernel.org> <1238593472-30360-14-git-send-email-tj@kernel.org>
+In-Reply-To: <1238593472-30360-14-git-send-email-tj@kernel.org>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
+X-OriginalArrivalTime: 01 Apr 2009 16:52:53.0402 (UTC) FILETIME=[4C99F7A0:01C9B2EA]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Apr 02, 2009 at 09:50:59AM +1700, Azael Avalos wrote:
-> On Wed, Apr 1, 2009 at 4:02 PM, Matthew Garrett <mjg59@srcf.ucam.org> wrote:
-> > Ok, can you try this and let me know what codes it generates (if it
-> > generates any)? It should go on top of the previous patches.
+On 04/01/2009 04:44 PM, Tejun Heo wrote:
+> Impact: new API
 > 
-> Nothing gets generated, even if I change the method to ".INFO" and hotkey
-> events enabled with hci_write2(HCI_HOTKEY_EVENT, 1, 1, &hci_result) and
-> TECF set to 1 (see my DSDT).
+> Implement blk_rq_map_kern_sgl() using bio_copy_{map|kern}_sgl() and
+> reimplement blk_rq_map_kern() in terms of it.  As the bio helpers
+> already have all the necessary checks, all blk_rq_map_kern_sgl() has
+> to do is wrap them and initialize rq accordingly.  The implementation
+> closely resembles blk_rq_msp_user_iov().
 > 
-> I was playing with the code yesterday trying to get some events reported, but no
-> luck so far.
+> This is an exported API and will be used to replace hack in scsi ioctl
+> implementation.
 > 
-> It appears that TOHK variable is _volatile_ and it just stores hotkey events
-> temporarily and they don't get _stored_ like in the System Event FIFO.
+> Signed-off-by: Tejun Heo <tj@kernel.org>
+> ---
+>  block/blk-map.c        |   54 ++++++++++++++++++++++++++++++-----------------
+>  include/linux/blkdev.h |    2 +
+>  2 files changed, 36 insertions(+), 20 deletions(-)
+> 
+> diff --git a/block/blk-map.c b/block/blk-map.c
+> index eb206df..0474c09 100644
+> --- a/block/blk-map.c
+> +++ b/block/blk-map.c
+> @@ -161,47 +161,61 @@ int blk_rq_unmap_user(struct bio *bio)
+>  EXPORT_SYMBOL(blk_rq_unmap_user);
+>  
+>  /**
+> - * blk_rq_map_kern - map kernel data to a request, for REQ_TYPE_BLOCK_PC usage
+> + * blk_rq_map_kern_sg - map kernel data to a request, for REQ_TYPE_BLOCK_PC
+>   * @q:		request queue where request should be inserted
+>   * @rq:		request to fill
+> - * @kbuf:	the kernel buffer
+> - * @len:	length of user data
+> + * @sgl:	area to map
+> + * @nents:	number of elements in @sgl
+>   * @gfp:	memory allocation flags
+>   *
+>   * Description:
+>   *    Data will be mapped directly if possible. Otherwise a bounce
+>   *    buffer is used.
+>   */
+> -int blk_rq_map_kern(struct request_queue *q, struct request *rq, void *kbuf,
+> -		    unsigned int len, gfp_t gfp)
+> +int blk_rq_map_kern_sg(struct request_queue *q, struct request *rq,
+> +		       struct scatterlist *sgl, int nents, gfp_t gfp)
+>  {
+>  	int rw = rq_data_dir(rq);
+> -	int do_copy = 0;
+>  	struct bio *bio;
+>  
+> -	if (len > (q->max_hw_sectors << 9))
+> -		return -EINVAL;
+> -	if (!len || !kbuf)
+> +	if (!sgl || nents <= 0)
+>  		return -EINVAL;
+>  
+> -	do_copy = !blk_rq_aligned(q, kbuf, len) || object_is_on_stack(kbuf);
+> -	if (do_copy)
+> -		bio = bio_copy_kern(q, kbuf, len, gfp, rw);
+> -	else
+> -		bio = bio_map_kern(q, kbuf, len, gfp);
+> -
+> +	bio = bio_map_kern_sg(q, sgl, nents, rw, gfp);
+> +	if (IS_ERR(bio))
+> +		bio = bio_copy_kern_sg(q, sgl, nents, rw, gfp);
+>  	if (IS_ERR(bio))
+>  		return PTR_ERR(bio);
 
-Yes, you shouldn't be reading directly from TOHK at any point. It seems 
-to be a purely internal variable - I'm fairly sure that the INFO method 
-is the only one that should be called on event generation.
+You might want to call bio_copy_kern_sg from within bio_map_kern_sg
+and remove yet another export from bio layer
 
-> On the patches I sent to the omnibook module I'm able to get events but they
-> seem to get repeated 3 times, or perhaps I'm polling to often.
+Same thing with bio_map_user_iov/bio_copy_user_iov
 
-Hm. I don't have test hardware right now, I'm afraid. I'll look at some 
-DSDTs a bit more and see if anything springs to mind.
+>  
+> -	if (rq_data_dir(rq) == WRITE)
+> -		bio->bi_rw |= (1 << BIO_RW);
+> -
+> -	if (do_copy)
+> +	if (!bio_flagged(bio, BIO_USER_MAPPED))
+>  		rq->cmd_flags |= REQ_COPY_USER;
+>  
+> +	blk_queue_bounce(q, &bio);
+>  	blk_rq_bio_prep(q, rq, bio);
 
--- 
-Matthew Garrett | mjg59@srcf.ucam.org
+It could be nice to call blk_rq_append_bio() here
+and support multiple calls to this member.
+This will solve half of my problem with osd_initiator
+
+Hmm .. but you wanted to drop multiple bio chaining
+perhaps you would reconsider.
+
+> -	blk_queue_bounce(q, &rq->bio);
+>  	rq->buffer = rq->data = NULL;
+>  	return 0;
+>  }
+> +EXPORT_SYMBOL(blk_rq_map_kern_sg);
+> +
+> +/**
+> + * blk_rq_map_kern - map kernel data to a request, for REQ_TYPE_BLOCK_PC usage
+> + * @q:		request queue where request should be inserted
+> + * @rq:		request to fill
+> + * @kbuf:	the kernel buffer
+> + * @len:	length of user data
+> + * @gfp:	memory allocation flags
+> + *
+> + * Description:
+> + *    Data will be mapped directly if possible. Otherwise a bounce
+> + *    buffer is used.
+> + */
+> +int blk_rq_map_kern(struct request_queue *q, struct request *rq, void *kbuf,
+> +		    unsigned int len, gfp_t gfp)
+> +{
+> +	struct scatterlist sg;
+> +
+> +	sg_init_one(&sg, kbuf, len);
+> +
+> +	return blk_rq_map_kern_sg(q, rq, &sg, 1, gfp);
+> +}
+>  EXPORT_SYMBOL(blk_rq_map_kern);
+
+could be inline like with the end_request functions
+
+> diff --git a/include/linux/blkdev.h b/include/linux/blkdev.h
+> index d04e118..58b41da 100644
+> --- a/include/linux/blkdev.h
+> +++ b/include/linux/blkdev.h
+> @@ -784,6 +784,8 @@ extern int blk_rq_map_kern(struct request_queue *, struct request *, void *, uns
+>  extern int blk_rq_map_user_iov(struct request_queue *q, struct request *rq,
+>  			       struct rq_map_data *md, struct iovec *iov,
+>  			       int count, unsigned int len, gfp_t gfp);
+> +extern int blk_rq_map_kern_sg(struct request_queue *q, struct request *rq,
+> +			      struct scatterlist *sgl, int nents, gfp_t gfp);
+>  extern int blk_execute_rq(struct request_queue *, struct gendisk *,
+>  			  struct request *, int);
+>  extern void blk_execute_rq_nowait(struct request_queue *, struct gendisk *,
+
