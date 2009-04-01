@@ -1,57 +1,196 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756608AbZDAKBV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757417AbZDAKBk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756608AbZDAKBV (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 1 Apr 2009 06:01:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751962AbZDAKA7
+	id S1757417AbZDAKBk (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 1 Apr 2009 06:01:40 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756185AbZDAKBS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 1 Apr 2009 06:00:59 -0400
-Received: from mail-bw0-f169.google.com ([209.85.218.169]:40341 "EHLO
-	mail-bw0-f169.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752378AbZDAKA5 convert rfc822-to-8bit (ORCPT
+	Wed, 1 Apr 2009 06:01:18 -0400
+Received: from xc.sipsolutions.net ([83.246.72.84]:57644 "EHLO
+	sipsolutions.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755795AbZDAKBQ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 1 Apr 2009 06:00:57 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:date:message-id:subject:from:to:cc:content-type
-         :content-transfer-encoding;
-        b=U1u0wuq0LtP4lmDkzaT5uy1VNpT7JkdhzMr4a+cruRdID73wWJP4BGQNxaZqegQ/C+
-         8M/G3XUGC15Hl7r8OW5PcnNJQIs9v/3WJdngnYavPaiwy0BGGVgpBUOnOxOyCrJpIqBV
-         2PqhuL2HB57X3nhGC3JNvKgxiRRm5rYWzLP88=
-MIME-Version: 1.0
-Date: Wed, 1 Apr 2009 13:00:53 +0300
-Message-ID: <dac45060904010300y7fe8a09dxb582929fc8018ec1@mail.gmail.com>
-Subject: sysfs tagged directory support status (was:. Re: [PATCH 1/8] sysfs: 
-	Implement sysfs tagged directory support)
-From: Mark Ryden <markryde@gmail.com>
-To: Greg KH <gregkh@suse.de>
-Cc: Benjamin Thery <benjamin.thery@bull.net>,
-       David Shwatrz <dshwatrz@gmail.com>, Greg KH <greg@kroah.com>,
-       "Eric W. Biederman" <ebiederm@xmission.com>,
-       Andrew Morton <akpm@linux-foundation.org>, Tejun Heo <htejun@gmail.com>,
-       Daniel Lezcano <dlezcano@fr.ibm.com>, linux-kernel@vger.kernel.org,
-       Al Viro <viro@ftp.linux.org.uk>,
-       Linux Containers <containers@lists.osdl.org>, netdev@vger.kernel.org
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 8BIT
+	Wed, 1 Apr 2009 06:01:16 -0400
+Subject: Re: lockdep report at resume
+From: Johannes Berg <johannes@sipsolutions.net>
+To: Jiri Kosina <jkosina@suse.cz>
+Cc: Dmitry Torokhov <dmitry.torokhov@gmail.com>,
+       linux-input <linux-input@vger.kernel.org>,
+       linux-kernel <linux-kernel@vger.kernel.org>,
+       "Rafael J. Wysocki" <rjw@sisk.pl>, Oleg Nesterov <oleg@redhat.com>
+In-Reply-To: <1238578840.5970.178.camel@johannes.local>
+References: <1234022517.4175.107.camel@johannes.local>
+	 <1237536764.5100.124.camel@johannes.local>
+	 <alpine.LNX.2.00.0903201535470.14346@wotan.suse.de>
+	 <1237800572.19647.97.camel@johannes.local>
+	 <alpine.LNX.2.00.0903311034560.14346@wotan.suse.de>
+	 <1238488692.5970.80.camel@johannes.local>
+	 <alpine.LNX.2.00.0903311039480.14346@wotan.suse.de>
+	 <1238578840.5970.178.camel@johannes.local>
+Content-Type: text/plain
+Date: Wed, 01 Apr 2009 12:00:41 +0200
+Message-Id: <1238580041.5970.180.camel@johannes.local>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.24.5 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hello,
-  I am back to it and I just want to ask if there are any news with
-sysfs tagged directory support patch. Is it merged now ?
-Regards,
-Mark
+On Wed, 2009-04-01 at 11:41 +0200, Johannes Berg wrote:
+> On Tue, 2009-03-31 at 10:40 +0200, Jiri Kosina wrote:
+> 
+> > > > Could you please send me your config?
+> > > Sure, attached. I haven't yet tried to reproduce on .29 though, which 
+> > > this config is for (but I haven't changed it since, only taken it 
+> > > forward).
+> 
+> I've now gotten it again on 2.6.29-wl-20327-g8f2487d-dirty.
 
-On Tue, Oct 7, 2008 at 7:48 PM, Greg KH <gregkh@suse.de> wrote:
-> On Tue, Oct 07, 2008 at 06:39:04PM +0200, Mark Ryden wrote:
->> Hello,
->>   So I wonder: the sysfs tagged directory support patch is in GerKH
->> tree for more than a month.
->
-> I dropped it from my tree 2 days ago, see the thread on lkml for why.
->
-> thanks,
->
-> greg k-h
->
+I guess I should've posted the entire report:
+
+=======================================================
+[ INFO: possible circular locking dependency detected ]
+2.6.29-wl-20327-g8f2487d-dirty #71
+-------------------------------------------------------
+events/0/9 is trying to acquire lock:
+ (&dev->mutex){--..}, at: [<ffffffff804d19e1>] input_disconnect_device+0x31/0xf0
+
+but task is already holding lock:
+ (&usbhid->reset_work){--..}, at: [<ffffffff8025d23b>] run_workqueue+0xbb/0x250
+
+which lock already depends on the new lock.
+
+
+the existing dependency chain (in reverse order) is:
+
+-> #4 (&usbhid->reset_work){--..}:
+       [<ffffffff802771e7>] check_prev_add+0x3b7/0x770
+       [<ffffffff80277b96>] validate_chain+0x5f6/0x6b0
+       [<ffffffff8027808f>] __lock_acquire+0x43f/0xa10
+       [<ffffffff802786f1>] lock_acquire+0x91/0xc0
+       [<ffffffff8025d287>] run_workqueue+0x107/0x250
+       [<ffffffff8025d47f>] worker_thread+0xaf/0x130
+       [<ffffffff80261dae>] kthread+0x4e/0x90
+       [<ffffffff8020cfba>] child_rip+0xa/0x20
+       [<ffffffffffffffff>] 0xffffffffffffffff
+
+-> #3 (events){--..}:
+       [<ffffffff802771e7>] check_prev_add+0x3b7/0x770
+       [<ffffffff80277b96>] validate_chain+0x5f6/0x6b0
+       [<ffffffff8027808f>] __lock_acquire+0x43f/0xa10
+       [<ffffffff802786f1>] lock_acquire+0x91/0xc0
+       [<ffffffff8025d722>] cleanup_workqueue_thread+0x42/0x90
+       [<ffffffff805bca8d>] workqueue_cpu_callback+0x9d/0x132
+       [<ffffffff805d1205>] notifier_call_chain+0x65/0xa0
+       [<ffffffff80267626>] raw_notifier_call_chain+0x16/0x20
+       [<ffffffff805ba91b>] _cpu_down+0x1db/0x350
+       [<ffffffff8024a5b5>] disable_nonboot_cpus+0xe5/0x170
+       [<ffffffff80287ef5>] hibernation_snapshot+0x135/0x170
+       [<ffffffff8028b8a5>] snapshot_ioctl+0x425/0x620
+       [<ffffffff802f27a6>] vfs_ioctl+0x36/0xb0
+       [<ffffffff802f2b89>] do_vfs_ioctl+0x89/0x350
+       [<ffffffff802f2e9f>] sys_ioctl+0x4f/0x80
+       [<ffffffff8020bf0b>] system_call_fastpath+0x16/0x1b
+       [<ffffffffffffffff>] 0xffffffffffffffff
+
+-> #2 (cpu_add_remove_lock){--..}:
+       [<ffffffff802771e7>] check_prev_add+0x3b7/0x770
+       [<ffffffff80277b96>] validate_chain+0x5f6/0x6b0
+       [<ffffffff8027808f>] __lock_acquire+0x43f/0xa10
+       [<ffffffff802786f1>] lock_acquire+0x91/0xc0
+       [<ffffffff805cb56c>] mutex_lock_nested+0xfc/0x390
+       [<ffffffff8024a447>] cpu_maps_update_begin+0x17/0x20
+       [<ffffffff8025d7c8>] destroy_workqueue+0x38/0xb0
+       [<ffffffffa0058115>] input_close_polled_device+0x45/0x60 [input_polldev]
+       [<ffffffff804d145c>] input_close_device+0x5c/0x90
+       [<ffffffffa009f1e9>] evdev_release+0xa9/0xd0 [evdev]
+       [<ffffffff802e4e25>] __fput+0xd5/0x1e0
+       [<ffffffff802e4f55>] fput+0x25/0x30
+       [<ffffffff802e14f8>] filp_close+0x58/0x90
+       [<ffffffff802e15ee>] sys_close+0xbe/0x120
+       [<ffffffff8020bf0b>] system_call_fastpath+0x16/0x1b
+       [<ffffffffffffffff>] 0xffffffffffffffff
+
+-> #1 (polldev_mutex){--..}:
+       [<ffffffff802771e7>] check_prev_add+0x3b7/0x770
+       [<ffffffff80277b96>] validate_chain+0x5f6/0x6b0
+       [<ffffffff8027808f>] __lock_acquire+0x43f/0xa10
+       [<ffffffff802786f1>] lock_acquire+0x91/0xc0
+       [<ffffffff805cb12c>] mutex_lock_interruptible_nested+0xec/0x430
+       [<ffffffffa0058151>] input_open_polled_device+0x21/0xd0 [input_polldev]
+       [<ffffffff804d1528>] input_open_device+0x98/0xc0
+       [<ffffffffa009f468>] evdev_open+0x1c8/0x1f0 [evdev]
+       [<ffffffff804d099f>] input_open_file+0x10f/0x200
+       [<ffffffff802e6e47>] chrdev_open+0x147/0x220
+       [<ffffffff802e18eb>] __dentry_open+0x11b/0x350
+       [<ffffffff802e1c37>] nameidata_to_filp+0x57/0x70
+       [<ffffffff802f0e6e>] do_filp_open+0x1fe/0x970
+       [<ffffffff802e16d0>] do_sys_open+0x80/0x110
+       [<ffffffff802e17a0>] sys_open+0x20/0x30
+       [<ffffffff8020bf0b>] system_call_fastpath+0x16/0x1b
+       [<ffffffffffffffff>] 0xffffffffffffffff
+
+-> #0 (&dev->mutex){--..}:
+       [<ffffffff80276e87>] check_prev_add+0x57/0x770
+       [<ffffffff80277b96>] validate_chain+0x5f6/0x6b0
+       [<ffffffff8027808f>] __lock_acquire+0x43f/0xa10
+       [<ffffffff802786f1>] lock_acquire+0x91/0xc0
+       [<ffffffff805cb56c>] mutex_lock_nested+0xfc/0x390
+       [<ffffffff804d19e1>] input_disconnect_device+0x31/0xf0
+       [<ffffffff804d1aba>] input_unregister_device+0x1a/0x110
+       [<ffffffffa00df329>] bcm5974_disconnect+0x29/0x90 [bcm5974]
+       [<ffffffffa001c9ed>] usb_unbind_interface+0x6d/0x180 [usbcore]
+       [<ffffffff80498661>] __device_release_driver+0x81/0xc0
+       [<ffffffff804987c0>] device_release_driver+0x30/0x50
+       [<ffffffffa001ce48>] usb_driver_release_interface+0xc8/0xf0 [usbcore]
+       [<ffffffffa001cf99>] usb_forced_unbind_intf+0x39/0x90 [usbcore]
+       [<ffffffffa00121a5>] usb_reset_device+0xd5/0x220 [usbcore]
+       [<ffffffffa00957fa>] hid_reset+0x18a/0x280 [usbhid]
+       [<ffffffff8025d28d>] run_workqueue+0x10d/0x250
+       [<ffffffff8025d47f>] worker_thread+0xaf/0x130
+       [<ffffffff80261dae>] kthread+0x4e/0x90
+       [<ffffffff8020cfba>] child_rip+0xa/0x20
+       [<ffffffffffffffff>] 0xffffffffffffffff
+
+other info that might help us debug this:
+
+2 locks held by events/0/9:
+ #0:  (events){--..}, at: [<ffffffff8025d23b>] run_workqueue+0xbb/0x250
+ #1:  (&usbhid->reset_work){--..}, at: [<ffffffff8025d23b>] run_workqueue+0xbb/0x250
+
+stack backtrace:
+Pid: 9, comm: events/0 Not tainted 2.6.29-wl-20327-g8f2487d-dirty #71
+Call Trace:
+ [<ffffffff80276930>] print_circular_bug_tail+0xe0/0xf0
+ [<ffffffff80276e87>] check_prev_add+0x57/0x770
+ [<ffffffff802191bf>] ? save_stack_trace+0x2f/0x50
+ [<ffffffff80277b96>] validate_chain+0x5f6/0x6b0
+ [<ffffffff8027808f>] __lock_acquire+0x43f/0xa10
+ [<ffffffff802780ad>] ? __lock_acquire+0x45d/0xa10
+ [<ffffffff802786f1>] lock_acquire+0x91/0xc0
+ [<ffffffff804d19e1>] ? input_disconnect_device+0x31/0xf0
+ [<ffffffff805cb56c>] mutex_lock_nested+0xfc/0x390
+ [<ffffffff804d19e1>] ? input_disconnect_device+0x31/0xf0
+ [<ffffffff804d19e1>] ? input_disconnect_device+0x31/0xf0
+ [<ffffffff804d19e1>] input_disconnect_device+0x31/0xf0
+ [<ffffffff804d1aba>] input_unregister_device+0x1a/0x110
+ [<ffffffffa00df329>] bcm5974_disconnect+0x29/0x90 [bcm5974]
+ [<ffffffffa001c9ed>] usb_unbind_interface+0x6d/0x180 [usbcore]
+ [<ffffffff80498661>] __device_release_driver+0x81/0xc0
+ [<ffffffff804987c0>] device_release_driver+0x30/0x50
+ [<ffffffffa001ce48>] usb_driver_release_interface+0xc8/0xf0 [usbcore]
+ [<ffffffffa001cf99>] usb_forced_unbind_intf+0x39/0x90 [usbcore]
+ [<ffffffffa00121a5>] usb_reset_device+0xd5/0x220 [usbcore]
+ [<ffffffffa00957fa>] hid_reset+0x18a/0x280 [usbhid]
+ [<ffffffffa0095670>] ? hid_reset+0x0/0x280 [usbhid]
+ [<ffffffff8025d28d>] run_workqueue+0x10d/0x250
+ [<ffffffff8025d23b>] ? run_workqueue+0xbb/0x250
+ [<ffffffff8025d47f>] worker_thread+0xaf/0x130
+ [<ffffffff80262280>] ? autoremove_wake_function+0x0/0x40
+ [<ffffffff8025d3d0>] ? worker_thread+0x0/0x130
+ [<ffffffff80261dae>] kthread+0x4e/0x90
+ [<ffffffff8020cfba>] child_rip+0xa/0x20
+
+
+johannes
+
