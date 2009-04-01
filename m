@@ -1,20 +1,21 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932776AbZDAOOV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763743AbZDAOOm@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932776AbZDAOOV (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 1 Apr 2009 10:14:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932479AbZDAOHE
+	id S1763743AbZDAOOm (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 1 Apr 2009 10:14:42 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932470AbZDAOHL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 1 Apr 2009 10:07:04 -0400
-Received: from earthlight.etchedpixels.co.uk ([81.2.110.250]:37789 "EHLO
+	Wed, 1 Apr 2009 10:07:11 -0400
+Received: from earthlight.etchedpixels.co.uk ([81.2.110.250]:37790 "EHLO
 	www.etchedpixels.co.uk" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S932364AbZDAOHB (ORCPT
+	with ESMTP id S932311AbZDAOHJ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 1 Apr 2009 10:07:01 -0400
+	Wed, 1 Apr 2009 10:07:09 -0400
 From: Alan Cox <alan@lxorguk.ukuu.org.uk>
-Subject: [PATCH 19/24] jsm: define init function as __devinit
+Subject: [PATCH 20/24] jsm: Fix the return variable and removing the unused
+	retval.
 To: linux-kernel@vger.kernel.org, torvalds@linux-foundation.org
-Date: Wed, 01 Apr 2009 15:07:16 +0100
-Message-ID: <20090401140702.22882.42599.stgit@localhost.localdomain>
+Date: Wed, 01 Apr 2009 15:07:25 +0100
+Message-ID: <20090401140721.22882.69623.stgit@localhost.localdomain>
 In-Reply-To: <20090401140241.22882.93477.stgit@localhost.localdomain>
 References: <20090401140241.22882.93477.stgit@localhost.localdomain>
 User-Agent: StGIT/0.14.3
@@ -27,49 +28,55 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 From: Breno Leitao <leitao@linux.vnet.ibm.com>
 
+As it was, the retval was never returned, so its assignments were silly.
+Just consolidate everything to rc, and remove the unused retval variable.
+
 Signed-off-by: Breno Leitao <leitao@linux.vnet.ibm.com>
 Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
-Signed-off-by: Alan Cox <alan@lxorguk.ukuu.org.uk>
+Signed-off-by: Alan Cox <alan@etchedpixels.co.uk>
 ---
 
- drivers/serial/jsm/jsm_driver.c |    2 +-
- drivers/serial/jsm/jsm_tty.c    |    4 ++--
- 2 files changed, 3 insertions(+), 3 deletions(-)
+ drivers/serial/jsm/jsm_driver.c |    7 +++----
+ 1 files changed, 3 insertions(+), 4 deletions(-)
 
 
 diff --git a/drivers/serial/jsm/jsm_driver.c b/drivers/serial/jsm/jsm_driver.c
-index ac79cbe..576aafb 100644
+index 576aafb..d2d32a1 100644
 --- a/drivers/serial/jsm/jsm_driver.c
 +++ b/drivers/serial/jsm/jsm_driver.c
-@@ -52,7 +52,7 @@ int jsm_debug;
- module_param(jsm_debug, int, 0);
- MODULE_PARM_DESC(jsm_debug, "Driver debugging level");
- 
--static int jsm_probe_one(struct pci_dev *pdev, const struct pci_device_id *ent)
-+static int __devinit jsm_probe_one(struct pci_dev *pdev, const struct pci_device_id *ent)
- {
+@@ -57,7 +57,6 @@ static int __devinit jsm_probe_one(struct pci_dev *pdev, const struct pci_device
  	int rc = 0;
  	struct jsm_board *brd;
-diff --git a/drivers/serial/jsm/jsm_tty.c b/drivers/serial/jsm/jsm_tty.c
-index 324c74d..3306963 100644
---- a/drivers/serial/jsm/jsm_tty.c
-+++ b/drivers/serial/jsm/jsm_tty.c
-@@ -367,7 +367,7 @@ static struct uart_ops jsm_ops = {
-  * Init the tty subsystem.  Called once per board after board has been
-  * downloaded and init'ed.
-  */
--int jsm_tty_init(struct jsm_board *brd)
-+int __devinit jsm_tty_init(struct jsm_board *brd)
- {
- 	int i;
- 	void __iomem *vaddr;
-@@ -431,7 +431,7 @@ int jsm_tty_init(struct jsm_board *brd)
- 	return 0;
- }
+ 	static int adapter_count = 0;
+-	int retval;
  
--int jsm_uart_port_init(struct jsm_board *brd)
-+int __devinit jsm_uart_port_init(struct jsm_board *brd)
- {
- 	int i;
- 	struct jsm_channel *ch;
+ 	rc = pci_enable_device(pdev);
+ 	if (rc) {
+@@ -134,7 +133,7 @@ static int __devinit jsm_probe_one(struct pci_dev *pdev, const struct pci_device
+ 	rc = jsm_tty_init(brd);
+ 	if (rc < 0) {
+ 		dev_err(&pdev->dev, "Can't init tty devices (%d)\n", rc);
+-		retval = -ENXIO;
++		rc = -ENXIO;
+ 		goto out_free_irq;
+ 	}
+ 
+@@ -142,7 +141,7 @@ static int __devinit jsm_probe_one(struct pci_dev *pdev, const struct pci_device
+ 	if (rc < 0) {
+ 		/* XXX: leaking all resources from jsm_tty_init here! */
+ 		dev_err(&pdev->dev, "Can't init uart port (%d)\n", rc);
+-		retval = -ENXIO;
++		rc = -ENXIO;
+ 		goto out_free_irq;
+ 	}
+ 
+@@ -161,7 +160,7 @@ static int __devinit jsm_probe_one(struct pci_dev *pdev, const struct pci_device
+ 		/* XXX: leaking all resources from jsm_tty_init and
+ 		 	jsm_uart_port_init here! */
+ 		dev_err(&pdev->dev, "memory allocation for flipbuf failed\n");
+-		retval = -ENOMEM;
++		rc = -ENOMEM;
+ 		goto out_free_irq;
+ 	}
+ 
 
