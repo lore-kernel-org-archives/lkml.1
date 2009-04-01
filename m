@@ -1,53 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756058AbZDAJWa@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760243AbZDAJYQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756058AbZDAJWa (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 1 Apr 2009 05:22:30 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752663AbZDAJWU
+	id S1760243AbZDAJYQ (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 1 Apr 2009 05:24:16 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752823AbZDAJX6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 1 Apr 2009 05:22:20 -0400
-Received: from relay.atmel.no ([80.232.32.139]:64101 "EHLO relay.atmel.no"
+	Wed, 1 Apr 2009 05:23:58 -0400
+Received: from srv5.dvmed.net ([207.36.208.214]:34190 "EHLO mail.dvmed.net"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752599AbZDAJWU (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 1 Apr 2009 05:22:20 -0400
-Date: Wed, 1 Apr 2009 11:21:53 +0200
-From: Haavard Skinnemoen <haavard.skinnemoen@atmel.com>
-To: Alan Cox <alan@lxorguk.ukuu.org.uk>
-Cc: lkml <linux-kernel@vger.kernel.org>, Andrew Victor <linux@maxim.org.za>,
-       Nicolas Ferre <nicolas.ferre@rfo.atmel.com>,
-       Peter Ma <pma@mediamatech.com>
-Subject: Re: [PATCH 2/2] avr32: add hardware handshake support to
- atmel_serial
-Message-ID: <20090401112153.093b27c7@hskinnemoen-d830>
-In-Reply-To: <20090401101348.2293308d@lxorguk.ukuu.org.uk>
-References: <1238576038-8915-1-git-send-email-haavard.skinnemoen@atmel.com>
-	<1238576038-8915-2-git-send-email-haavard.skinnemoen@atmel.com>
-	<20090401101348.2293308d@lxorguk.ukuu.org.uk>
-X-Mailer: Claws Mail 3.6.1 (GTK+ 2.16.0; x86_64-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	id S1750903AbZDAJX5 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 1 Apr 2009 05:23:57 -0400
+Message-ID: <49D332A0.5080107@garzik.org>
+Date: Wed, 01 Apr 2009 05:23:44 -0400
+From: Jeff Garzik <jeff@garzik.org>
+User-Agent: Thunderbird 2.0.0.21 (X11/20090320)
+MIME-Version: 1.0
+To: Boaz Harrosh <bharrosh@panasas.com>
+CC: Avishay Traeger <avishay@gmail.com>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       linux-fsdevel <linux-fsdevel@vger.kernel.org>,
+       open-osd <osd-dev@open-osd.org>, Evgeniy Polyakov <zbr@ioremap.net>,
+       James Bottomley <James.Bottomley@HansenPartnership.com>,
+       linux-kernel <linux-kernel@vger.kernel.org>,
+       FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
+Subject: Re: [PATCHSET 0/8 version 4] exofs for kernel 2.6.30
+References: <49C1331D.1080805@panasas.com>
+In-Reply-To: <49C1331D.1080805@panasas.com>
+Content-Type: text/plain; charset=UTF-8; format=flowed
 Content-Transfer-Encoding: 7bit
+X-Spam-Score: -4.4 (----)
+X-Spam-Report: SpamAssassin version 3.2.5 on srv5.dvmed.net summary:
+	Content analysis details:   (-4.4 points, 5.0 required)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Alan Cox wrote:
-> On Wed,  1 Apr 2009 10:53:58 +0200
-> Haavard Skinnemoen <haavard.skinnemoen@atmel.com> wrote:
-> 
-> > From: Peter Ma <pma@mediamatech.com>
-> > 
-> > Adds Hardware Handshake (aka RTS/CTS flow-control) support to
-> > atmel_serial driver, as a termios flag.
-> > 
-> > For this to actually work, the platform code needs to configure the RTS
-> > and CTS pins for use by the USART. This has been done for AVR32 as a
-> > separate patch.  
-> 
-> Acked-by: Alan Cox <alan@lxorguk.ukuu.org.uk>
-> 
-> Looks fine to me from the tty side. I assume it will go via the atmel
-> tree to keep the patches together nicely ?
+Boaz Harrosh wrote:
+> If anyone wants to actually run this code and test it
+> then please start reading at:
+>     http://open-osd.org
+> You will need to checkout the out-of-tree git (below) for the user-mode utilities.
+> Also the exofs.txt file in patch 7/8 should help
 
-Thanks. I'll merge both through the avr32 tree.
 
-Haavard
+hum...  trying to play with this.  If you want exofs to go upstream, I 
+think you should have a release tarball containing the user-mode utils 
+posted somewhere.  Would make life a lot easier, both on early adopters 
+and also on distribution packagers.
+
+	Jeff
+
+
+
