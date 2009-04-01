@@ -1,91 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758583AbZDAQv5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762628AbZDAQyQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758583AbZDAQv5 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 1 Apr 2009 12:51:57 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753466AbZDAQvp
+	id S1762628AbZDAQyQ (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 1 Apr 2009 12:54:16 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758157AbZDAQx6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 1 Apr 2009 12:51:45 -0400
-Received: from mail-fx0-f158.google.com ([209.85.220.158]:49420 "EHLO
-	mail-fx0-f158.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753309AbZDAQvo (ORCPT
+	Wed, 1 Apr 2009 12:53:58 -0400
+Received: from cavan.codon.org.uk ([93.93.128.6]:59351 "EHLO
+	vavatch.codon.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753466AbZDAQx5 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 1 Apr 2009 12:51:44 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:references:mime-version
-         :content-type:content-disposition:content-transfer-encoding
-         :in-reply-to:user-agent;
-        b=W2pHAjdYAE0S9OM9QNUYnMngTwPqsv4w0FlMzsmeHEasRna2pr+t24qeeQ4EtKXAzV
-         9AhRp3u0QkwQJOTHGpmZNUNhoW2+vauCFxpvIRWTf2iLkNHdT8BGtYwCtfQHGAmCfhlK
-         V5oq6OYBrzfDADtB+seBSHfXaormdgz+Uo8Dw=
-Date: Wed, 1 Apr 2009 18:51:36 +0200
-From: Frederic Weisbecker <fweisbec@gmail.com>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: Jeff Mahoney <jeffm@suse.com>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       ReiserFS Development List <reiserfs-devel@vger.kernel.org>
-Subject: Re: [patch 00/35] Jeff's ReiserFS Patch Queue
-Message-ID: <20090401165134.GA5924@nowhere>
-References: <20090330180215.951354436@suse.com> <alpine.LFD.2.00.0903301236280.4093@localhost.localdomain> <20090401161657.GA13802@elte.hu> <49D39642.9070606@suse.com> <20090401163407.GE22517@elte.hu>
+	Wed, 1 Apr 2009 12:53:57 -0400
+Date: Wed, 1 Apr 2009 17:53:45 +0100
+From: Matthew Garrett <mjg59@srcf.ucam.org>
+To: Azael Avalos <coproscefalo@gmail.com>
+Cc: linux-acpi@vger.kernel.org, dsilvers@simtec.co.uk,
+       toshiba_acpi@memebeam.org, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 2/2] toshiba-acpi: Support TOS1900-type devices
+Message-ID: <20090401165345.GA13939@srcf.ucam.org>
+References: <20090331214501.GC29489@srcf.ucam.org> <20090331214749.GD29489@srcf.ucam.org> <74962ea30903311506m41306659td0cd70c5736f6660@mail.gmail.com> <20090331221107.GA30383@srcf.ucam.org> <74962ea30903311519s2fb6087fxfe8859e3c570ac99@mail.gmail.com> <20090331230217.GA31599@srcf.ucam.org> <74962ea30904010950u31fbdca3w51eafb9b7ec1ca73@mail.gmail.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <20090401163407.GE22517@elte.hu>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+In-Reply-To: <74962ea30904010950u31fbdca3w51eafb9b7ec1ca73@mail.gmail.com>
+User-Agent: Mutt/1.5.12-2006-07-14
+X-SA-Exim-Connect-IP: <locally generated>
+X-SA-Exim-Mail-From: mjg59@codon.org.uk
+X-SA-Exim-Scanned: No (on vavatch.codon.org.uk); SAEximRunCond expanded to false
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Apr 01, 2009 at 06:34:07PM +0200, Ingo Molnar wrote:
+On Thu, Apr 02, 2009 at 09:50:59AM +1700, Azael Avalos wrote:
+> On Wed, Apr 1, 2009 at 4:02 PM, Matthew Garrett <mjg59@srcf.ucam.org> wrote:
+> > Ok, can you try this and let me know what codes it generates (if it
+> > generates any)? It should go on top of the previous patches.
 > 
-> * Jeff Mahoney <jeffm@suse.com> wrote:
+> Nothing gets generated, even if I change the method to ".INFO" and hotkey
+> events enabled with hci_write2(HCI_HOTKEY_EVENT, 1, 1, &hci_result) and
+> TECF set to 1 (see my DSDT).
 > 
-> > -----BEGIN PGP SIGNED MESSAGE-----
-> > Hash: SHA1
-> > 
-> > Ingo Molnar wrote:
-> > > * Linus Torvalds <torvalds@linux-foundation.org> wrote:
-> > > 
-> > >>> Once this is applied, I expect reiserfs to be in deep 
-> > >>> maintenance-only mode.
-> > >> Heh, I hadn't expected even this.
-> > > 
-> > > Note, there are BKL-removal patches in the works by Frédéric 
-> > > Weisbecker, for the tip:kill-the-BKL topic branch.
-> > > 
-> > > Reiser3 is the heaviest (and most non-trivial) BKL user amongst all 
-> > > the filesystems, its BKL use is recursive and it frequently relies 
-> > > on the implicit dropping of the BKL at various blocking points both 
-> > > for correctness and for performance reasons.
-> > > 
-> > > There might be something worth posting+reviewing soon.
-> > 
-> > Oh interesting. I'm glad someone is working on this. I've started 
-> > to several times and decided to focus my efforts on things outside 
-> > of reiserfs instead. The reiserfs usage of the BKL has always been 
-> > a black mark.
+> I was playing with the code yesterday trying to get some events reported, but no
+> luck so far.
 > 
-> I'll let Frederic describe it but AFAIK the patch is working fine 
-> with the BKL as a mutex and no lockdep complaints or lockups. The 
-> main focus is now on finding the performance affecting spots, 
-> because Frederic's main desktop is on reiserfs and he does not 
-> accept a slowdown :)
+> It appears that TOHK variable is _volatile_ and it just stores hotkey events
+> temporarily and they don't get _stored_ like in the System Event FIFO.
 
+Yes, you shouldn't be reading directly from TOHK at any point. It seems 
+to be a purely internal variable - I'm fairly sure that the INFO method 
+is the only one that should be called on event generation.
 
+> On the patches I sent to the omnibook module I'm able to get events but they
+> seem to get repeated 3 times, or perhaps I'm polling to often.
 
-Hehe :-)
-No actually I would accept a tiny slowdown but I fear that the common
-reiserfs users wouldn't.
+Hm. I don't have test hardware right now, I'm afraid. I'll look at some 
+DSDTs a bit more and see if anything springs to mind.
 
-I'm still working on this and once it's ready enough for an RFC patch,
-I'll explain how is done the conversion to a mutex.
-
-Stay tuned.
-
- 
-> 	Ingo
-
+-- 
+Matthew Garrett | mjg59@srcf.ucam.org
