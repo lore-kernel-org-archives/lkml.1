@@ -1,72 +1,81 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760168AbZDABFr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758398AbZDABGY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760168AbZDABFr (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 31 Mar 2009 21:05:47 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752841AbZDABFh
+	id S1758398AbZDABGY (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 31 Mar 2009 21:06:24 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752841AbZDABGO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 31 Mar 2009 21:05:37 -0400
-Received: from anchor-post-3.mail.demon.net ([195.173.77.134]:58720 "EHLO
-	anchor-post-3.mail.demon.net" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1752734AbZDABFh (ORCPT
+	Tue, 31 Mar 2009 21:06:14 -0400
+Received: from fg-out-1718.google.com ([72.14.220.152]:63063 "EHLO
+	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752734AbZDABGM (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 31 Mar 2009 21:05:37 -0400
-Message-ID: <49D2BDE6.7030304@lougher.demon.co.uk>
-Date: Wed, 01 Apr 2009 02:05:42 +0100
-From: Phillip Lougher <phillip@lougher.demon.co.uk>
-User-Agent: Thunderbird 2.0.0.18 (X11/20081125)
+	Tue, 31 Mar 2009 21:06:12 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:to:cc:subject:message-id:references:mime-version
+         :content-type:content-disposition:in-reply-to:user-agent;
+        b=Ry/XYP1vVxZ3rNMS65GdkgNUJ1YPbrwQ+QnF4H8jjVl5xrT97doXotaAGAnE/mrTFK
+         jfb13Xxny29qmzHPcH9GkVXz5pPSu0urzImu3kHNdj/o3YsUOlqeeu6tRziqSss4pGTK
+         9TOQKXFkSh8LdvY+emilkdlpwAjwwTCFV2kes=
+Date: Wed, 1 Apr 2009 05:13:44 +0400
+From: Alexey Dobriyan <adobriyan@gmail.com>
+To: Matt Helsley <matthltc@us.ibm.com>
+Cc: Oleg Nesterov <oleg@redhat.com>, akpm@linux-foundation.org,
+       linux-kernel@vger.kernel.org, dhowells@redhat.com,
+       ebiederm@xmission.com, hch@lst.de
+Subject: Re: + mm-remove-struct-mm_struct-exe_file-et-al.patch added to -mm
+	tree
+Message-ID: <20090401011344.GB22398@x200.localdomain>
+References: <200903302344.n2UNi3xd027136@imap1.linux-foundation.org> <20090331144051.GA3951@redhat.com> <20090401003223.GH29821@us.ibm.com>
 MIME-Version: 1.0
-To: Rob Landley <rob@landley.net>
-CC: Stephen Hemminger <shemminger@vyatta.com>,
-       Geert Uytterhoeven <geert@linux-m68k.org>, linux-kernel@vger.kernel.org,
-       squashfs-devel@lists.sourceforge.net
-Subject: Re: Squashfs 4.0 tools
-References: <20090323180808.2c2ef1a7@nehalam> <10f740e80903290202h1f36b370ga39721536d52a90@mail.gmail.com> <20090330175524.4e8f802e@nehalam> <200903311431.20494.rob@landley.net>
-In-Reply-To: <200903311431.20494.rob@landley.net>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20090401003223.GH29821@us.ibm.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Rob Landley wrote:
-> On Monday 30 March 2009 19:55:24 Stephen Hemminger wrote:
->> I built it from cvs (imported into git), and it works okay.
+On Tue, Mar 31, 2009 at 05:32:23PM -0700, Matt Helsley wrote:
+> On Tue, Mar 31, 2009 at 04:40:51PM +0200, Oleg Nesterov wrote:
+> > s/mm-commits/lkml/
+> > 
+> > On 03/30, Andrew Morton wrote:
+> > >
+> > > From: Alexey Dobriyan <adobriyan@gmail.com>
+> > >
+> > > Commit 925d1c401fa6cfd0df5d2e37da8981494ccdec07 ("procfs task exe
+> > > symlink").  introduced struct mm_struct::exe_file and struct
+> > > mm_struct::num_exe_file_vmas.
+> > >
+> > > The rationale is weak: unifying MMU and no-MMU version of /proc/*/exe
+> > > code.  For this a) struct mm_struct becomes bigger, b) mmap/munmap/exit
+> > > become slower, c) patch adds more code than removes in fact.
+> > >
+> > > ->exe_file maybe well defined, but doesn't make sense always.  After
+> > > original executable is unmapped, /proc/*/exe will still report it and,
+> > > more importantly, pin corresponding struct file.
+> > 
+> > I never liked the change which introduced mm->exe_file, so I vote for
+> > this patch.
+> > 
+> > But, as a advocatus diaboli... There was anotrher reason for ->exe_file,
+> > iirc.
+> > 
+> > bprm->file->f_op->mmap() can change vma->vm_file, this means proc_exe_link()
+> > can report the "wrong" path. The original file is not pinned in this case.
+> > 
+> > Matt?
 > 
-> I grabbed the cvs snapshot gentoo's been using, but I don't see any way to 
-> feed in a device list text file so I can create the /dev/console node root 
-> filesystems need without needing root access on the host to mknod.
+> That's _my_ reason for it. However no mainline code does that and hence it was
+> not the reason Andrew accepted it.
 > 
-> genext2fs has the -D option, which takes:
-> 
->   /dev d 755 0 0 - - - - -
->   /dev/console c 640 0 0 5 1 0 0 -
-> 
-> gen_init_cpio takes:
-> 
->   dir /dev 755 0 0
->   nod /dev/console 660 0 0 c 5 1
-> 
-> Is there a squashfs option I'm missing...?
-> 
+> I still prefer ->exe_file because I think it's a win not to walk the
+> VMAs with mmap sem when doing a readlink on /proc/*/exe.
 
-No you're unfortunately not missing an option :-)  That option
-doesn't exist.
+readlink on /proc/*/exe is rare, so nobody cares. ps(1) and top(1) here
+don't readlink it, e. g. Number of vmas is usually small enough and, as
+was mentioned, file is mapped low, so it'd be among the first VMAs.
 
-But thanks for sending the email, a couple of people over the
-years have asked for something like this, and you've reminded
-me that this option doesn't exist in Mksquashfs...
-
-I have thought about adding this option a couple of times, but
-it has always been dropped through lack of time.  Efficiently
-adding the option isn't as easy as it sounds because the "fake"
-device nodes have to somehow be made available to the
-recursive directory scan routine that scans the source
-directories for files.  Adding a list of fake device
-nodes which is scanned on every directory for potential inclusion
-in that directory is easy, but not terribly efficient.
-
-I'll delay the release of the 4.0 tools and see if I can
-implement this option in the next day or two.
-
-Phillip
-
+> It's also less sensitive to the order in which VMAs appear should that ever
+> change.
