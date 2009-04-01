@@ -1,87 +1,80 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933583AbZDASw1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933565AbZDASzm@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933583AbZDASw1 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 1 Apr 2009 14:52:27 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758219AbZDASwR
+	id S933565AbZDASzm (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 1 Apr 2009 14:55:42 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759443AbZDASzd
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 1 Apr 2009 14:52:17 -0400
-Received: from terminus.zytor.com ([198.137.202.10]:58853 "EHLO
-	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1761250AbZDASwR (ORCPT
+	Wed, 1 Apr 2009 14:55:33 -0400
+Received: from mail-fx0-f158.google.com ([209.85.220.158]:53349 "EHLO
+	mail-fx0-f158.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1758221AbZDASzc (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 1 Apr 2009 14:52:17 -0400
-Date: Wed, 1 Apr 2009 11:51:14 -0700
-Message-Id: <200904011851.n31IpEfZ030035@voreg.hos.anvin.org>
-From: "H. Peter Anvin" <hpa@zytor.com>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: "Michael K. Johnson" <johnsonm@rpath.com>,
-       Justin Forbes <jmforbes@linuxtx.org>,
-       Jordan Hargrave <Jordan_Hargrave@dell.com>, Ingo Molnar <mingo@elte.hu>,
-       Thomas Gleixner <tglx@linutronix.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: [GIT PULL] x86 setup BIOS workarounds
-In-Reply-To: <alpine.LFD.2.00.0904011115210.4130@localhost.localdomain>
+	Wed, 1 Apr 2009 14:55:32 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:to:subject:message-id:references:mime-version
+         :content-type:content-disposition:in-reply-to:user-agent;
+        b=C2XfYmaySwX7vncl3LK+6cpGefXF+UbFIrbtum5GR4KOMTreS56rjJMIOuDh0kM/gg
+         O6/ryKZi6QOxGXZU+YElOAsQKot2aZlqnyaiOvhxDMx2m72a8dZ56VA7YmOlKwQHwe5n
+         wCRL6DPlltH/gELTD4sQZmr4ldAZZyeTXutJs=
+Date: Wed, 1 Apr 2009 22:56:34 +0400
+From: Cyrill Gorcunov <gorcunov@gmail.com>
+To: Ingo Molnar <mingo@elte.hu>, hpa@zytor.com, tglx@linutronix.de,
+       linux-kernel@vger.kernel.org, xemul@openvz.org, yhlu.kernel@gmail.com
+Subject: Re: [patch 4/6] x86: irqinit - merge native_init_IRQ
+Message-ID: <20090401185634.GB28212@localhost>
+References: <20090329201545.470255691@openvz.org> <20090329202208.155551990@openvz.org> <20090401145328.GB6196@elte.hu> <20090401161609.GD15781@localhost> <20090401162250.GA22517@elte.hu> <20090401164001.GE15781@localhost> <20090401172208.GG15781@localhost>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20090401172208.GG15781@localhost>
+User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Linus Torvalds wrote:
-> 
-> So at a _minimum_, I'd suggest that we set bug.ext_flags to 1 before the 
-> call - so that if some random BIOS just leaves %ecx unchanged, it won't 
-> mean that the area just gets ignored as a ACPI-3 entry.
-> 
+[Cyrill Gorcunov - Wed, Apr 01, 2009 at 09:22:08PM +0400]
+| Ingo,
+| 
+| here is what I meant. The x86_quirk_pre_intr_init
+| and x86_quirk_intr_init do all we need. The only
+| paid off -- is that on x86-64 the functions
+| will check for x86_quirks->arch_intr_init and
+| x86_quirks->arch_pre_intr_init which are always
+| NULL for x86-64 (at least for now). If that is
+| acceptable -- then apply the patch below for
+| testing please. Othrewise we could eliminate
+| useless check by #ifdef (which would not be
+| that much differ from what I've posted initially
+| in patch series :)
+| 
+|         Cyrill
+| ---
+| 
+| x86: irqinit - merge native_init_IRQ
+| 
+| For this purpose on X86-64 init_ISA_irqs is called
+| indirectly via x86_quirk_pre_intr_init (ie the same
+| way as X86-32 do).
+| 
+| Signed-off-by: Cyrill Gorcunov <gorcunov@openvz.org>
+| ---
+|  arch/x86/kernel/irqinit_32.c |    4 +++-
+|  arch/x86/kernel/irqinit_64.c |   22 +++++++++++++++++++++-
+|  arch/x86/kernel/setup.c      |    2 +-
+|  3 files changed, 25 insertions(+), 3 deletions(-)
+| 
+...
 
-Argh, I had that in there originally, and then I shuffled stuff around
-and it got left out.  Total thinko on my part.  I'm sorry, and thanks
-for catching that.
+Ingo,
 
-I have had the ACPI 3 stuff in Syslinux for quite a while now (*with*
-the flag initialization) and it hasn't caused problems there, so I
-feel it should be safe to push into the kernel.
+here are the reasons I found to vote for _this_ implementation
+(ie using x86_quirk_intr_init and x86_quirk_pre_intr_init
+ for both x86-32 and x86-64 platforms instead of direct function
+ pointers)
 
-The following changes since commit c549e71d073a6e9a4847497344db28a784061455:
-  H. Peter Anvin (1):
-        x86, setup: ACPI 3, BIOS workaround for E820-probing code
+1) Both are called on x86-32 as a former.
+2) For x86-32 among the init_ISA_irqs call
+   the quirk itself is needed (VISWS code)
 
-are available in the git repository at:
-
-  git://git.kernel.org/pub/scm/linux/kernel/git/tip/linux-2.6-tip.git x86-setup-for-linus
-
-H. Peter Anvin (1):
-      x86, setup: guard against pre-ACPI 3 e820 code not updating %ecx
-
- arch/x86/boot/memory.c |    6 ++++++
- 1 files changed, 6 insertions(+), 0 deletions(-)
-
-commit cd670599b7b00d9263f6f11a05c0edeb9cbedaf3
-Author: H. Peter Anvin <hpa@zytor.com>
-Date:   Wed Apr 1 11:35:00 2009 -0700
-
-    x86, setup: guard against pre-ACPI 3 e820 code not updating %ecx
-    
-    Impact: BIOS bug safety
-    
-    For pre-ACPI 3 BIOSes, pre-initialize the end of the e820 buffer just
-    in case the BIOS returns an unchanged %ecx but without actually
-    touching the ACPI 3 extended flags field.
-    
-    Signed-off-by: H. Peter Anvin <hpa@zytor.com>
-
-diff --git a/arch/x86/boot/memory.c b/arch/x86/boot/memory.c
-index d5d2360..5054c2d 100644
---- a/arch/x86/boot/memory.c
-+++ b/arch/x86/boot/memory.c
-@@ -31,6 +31,12 @@ static int detect_memory_e820(void)
- 	struct e820entry *desc = boot_params.e820_map;
- 	static struct e820_ext_entry buf; /* static so it is zeroed */
- 
-+	/*
-+	 * Set this here so that if the BIOS doesn't change this field
-+	 * but still doesn't change %ecx, we're still okay...
-+	 */
-+	buf.ext_flags = 1;
-+
- 	do {
- 		size = sizeof buf;
- 
+        Cyrill
