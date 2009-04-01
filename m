@@ -1,94 +1,87 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762900AbZDALgb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762918AbZDALhY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762900AbZDALgb (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 1 Apr 2009 07:36:31 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755574AbZDALgT
+	id S1762918AbZDALhY (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 1 Apr 2009 07:37:24 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756110AbZDALg7
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 1 Apr 2009 07:36:19 -0400
-Received: from e28smtp04.in.ibm.com ([59.145.155.4]:57218 "EHLO
-	e28smtp04.in.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757176AbZDALgS (ORCPT
+	Wed, 1 Apr 2009 07:36:59 -0400
+Received: from zeniv.linux.org.uk ([195.92.253.2]:60798 "EHLO
+	ZenIV.linux.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757803AbZDALg6 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 1 Apr 2009 07:36:18 -0400
-Date: Wed, 1 Apr 2009 17:06:05 +0530
-From: Arun R Bharadwaj <arun@linux.vnet.ibm.com>
-To: linux-kernel@vger.kernel.org, linux-pm@lists.linux-foundation.org
-Cc: a.p.zijlstra@chello.nl, ego@in.ibm.com, tglx@linutronix.de, mingo@elte.hu,
-       andi@firstfloor.org, venkatesh.pallipadi@intel.com,
-       vatsa@linux.vnet.ibm.com, arjan@infradead.org,
-       svaidy@linux.vnet.ibm.com, Arun Bharadwaj <arun@linux.vnet.ibm.com>
-Subject: [v4 RFC PATCH 3/4] timers: /proc/sys sysctl hook to enable timer
-	migration
-Message-ID: <20090401113605.GD22478@linux.vnet.ibm.com>
-Reply-To: arun@linux.vnet.ibm.com
-References: <20090401113128.GA22478@linux.vnet.ibm.com>
+	Wed, 1 Apr 2009 07:36:58 -0400
+Date: Wed, 1 Apr 2009 12:36:49 +0100
+From: Al Viro <viro@ZenIV.linux.org.uk>
+To: Mikulas Patocka <mpatocka@redhat.com>
+Cc: Christoph Hellwig <hch@infradead.org>,
+       "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>,
+       linux-fsdevel@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] fix bmap-vs-truncate race
+Message-ID: <20090401113649.GA28946@ZenIV.linux.org.uk>
+References: <Pine.LNX.4.64.0903301518120.23576@hs20-bc2-1.build.redhat.com> <20090331175451.GA19484@infradead.org> <Pine.LNX.4.64.0903311728530.32061@hs20-bc2-1.build.redhat.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20090401113128.GA22478@linux.vnet.ibm.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+In-Reply-To: <Pine.LNX.4.64.0903311728530.32061@hs20-bc2-1.build.redhat.com>
+User-Agent: Mutt/1.5.17 (2007-11-01)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-* Arun R Bharadwaj <arun@linux.vnet.ibm.com> [2009-04-01 17:01:28]:
+On Tue, Mar 31, 2009 at 06:42:34PM -0400, Mikulas Patocka wrote:
+> On Tue, 31 Mar 2009, Christoph Hellwig wrote:
+> 
+> > On Mon, Mar 30, 2009 at 03:20:24PM -0400, Mikulas Patocka wrote:
+> > > Hi
+> > > 
+> > > I'm submitting this patch for 2.6.30 merge window.
+> > 
+> > Please not.  i_alloc_sem is really a horrible hack needed for a couple
+> > filesystems only and we should not leak it into more generic code but
+> > rather move the few instances into the filesystem.
+> 
+> Could you please document locking rules for get_block(), truncate, bmap & 
+> direct i/o in Documentation/filesystems/Locking ?
+> 
+> There is a lot of text about directories, but nothing about locking of 
+> block mappings.
+> 
+> I was living under an impression that get_block() cannot be called on a 
+> block that is being truncated. That's what read/write/direct-io vs 
+> truncate seems to guarante --- truncate will first lower i_size 
+> (preventing any new pages past i_size from being created), then destroy 
+> any existing pages past i_size (that includes waiting for pagelock until 
+> all get_blocks on that page end) and finally truncate the metadata on the 
+> filesystem.
+> 
+> So there should be no situation when you truncate block and call get_block 
+> on it simultaneously. If get_block can race with truncate, document it.
+> 
+> There are filesystems that don't do any locking on get_block() (for 
+> example UFS, HPFS; FAT does it only for bmap and doesn't do it for general 
+> accesses) and other filesystems verify indirect block chains obsessively 
+> if they were truncated under get_block (why? because of bmap? or some 
+> other possibility?) --- so the rules should really be documented.
 
-This patch creates the /proc/sys sysctl interface at
-/proc/sys/kernel/timer_migration
+Indirect chain stuff used to be [1] about truncate that *wouldn't* affect page
+in question.  Look: we have e.g. 4Kb blocks and data at offset 80Kb.  We do
+allocation at offset 40Kb *and* truncate to 60Kb at the same time.
 
-Timer migration is enabled by default.
+Both 40Kb (block 10) and 80Kb (block 20) are covered by the first indirect
+block.  It's there, so get_block() reads it and gets ready to allocate
+a block and put its number in the very beginning of indirect block.  In
+the meanwhile, truncate() sees that the boundary falls within the first
+indirect block (at entry 15).  It sees that we have no blocks prior to
+that, so the indirect block ought to be freed.
 
-To disable timer migration, when CONFIG_SCHED_DEBUG = y,
+Now ext2_get_block() comes back with allocated data block and has nowhere
+to stick it anymore - indirect one just got freed.
 
-echo 0 > /proc/sys/kernel/timer_migration
+_That_ is where verify_chain() came from.  As far as anything outside of
+ext2 can know, this truncate() won't come anywhere near the page we are
+working with.  And it won't - for data, that is.
 
-Signed-off-by: Arun R Bharadwaj <arun@linux.vnet.ibm.com>
----
- include/linux/sched.h |    1 +
- kernel/sched.c        |    1 +
- kernel/sysctl.c       |    8 ++++++++
- 3 files changed, 10 insertions(+)
+Disclaimer: this code has been changed several times since the last time
+I worked with it, so this might not match the current situation anymore.
 
-Index: linux.trees.git/include/linux/sched.h
-===================================================================
---- linux.trees.git.orig/include/linux/sched.h
-+++ linux.trees.git/include/linux/sched.h
-@@ -1763,6 +1763,7 @@ extern unsigned int sysctl_sched_child_r
- extern unsigned int sysctl_sched_features;
- extern unsigned int sysctl_sched_migration_cost;
- extern unsigned int sysctl_sched_nr_migrate;
-+extern unsigned int sysctl_timer_migration;
- 
- int sched_nr_latency_handler(struct ctl_table *table, int write,
- 		struct file *file, void __user *buffer, size_t *length,
-Index: linux.trees.git/kernel/sysctl.c
-===================================================================
---- linux.trees.git.orig/kernel/sysctl.c
-+++ linux.trees.git/kernel/sysctl.c
-@@ -328,6 +328,14 @@ static struct ctl_table kern_table[] = {
- 		.mode		= 0644,
- 		.proc_handler	= &proc_dointvec,
- 	},
-+	{
-+		.ctl_name	= CTL_UNNUMBERED,
-+		.procname	= "timer_migration",
-+		.data		= &sysctl_timer_migration,
-+		.maxlen		= sizeof(unsigned int),
-+		.mode		= 0644,
-+		.proc_handler	= &proc_dointvec,
-+	},
- #endif
- 	{
- 		.ctl_name	= CTL_UNNUMBERED,
-Index: linux.trees.git/kernel/sched.c
-===================================================================
---- linux.trees.git.orig/kernel/sched.c
-+++ linux.trees.git/kernel/sched.c
-@@ -7445,6 +7445,7 @@ static void sched_domain_node_span(int n
- #endif /* CONFIG_NUMA */
- 
- int sched_smt_power_savings = 0, sched_mc_power_savings = 0;
-+const_debug unsigned int sysctl_timer_migration = 1;
- 
- /*
-  * The cpus mask in sched_group and sched_domain hangs off the end.
+[1] see disclaimer above.
