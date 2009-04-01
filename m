@@ -1,20 +1,20 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1765981AbZDAONl@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932776AbZDAOOV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1765981AbZDAONl (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 1 Apr 2009 10:13:41 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932368AbZDAOGp
+	id S932776AbZDAOOV (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 1 Apr 2009 10:14:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932479AbZDAOHE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 1 Apr 2009 10:06:45 -0400
-Received: from earthlight.etchedpixels.co.uk ([81.2.110.250]:37786 "EHLO
+	Wed, 1 Apr 2009 10:07:04 -0400
+Received: from earthlight.etchedpixels.co.uk ([81.2.110.250]:37789 "EHLO
 	www.etchedpixels.co.uk" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S932443AbZDAOGn (ORCPT
+	with ESMTP id S932364AbZDAOHB (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 1 Apr 2009 10:06:43 -0400
+	Wed, 1 Apr 2009 10:07:01 -0400
 From: Alan Cox <alan@lxorguk.ukuu.org.uk>
-Subject: [PATCH 17/24] tty: moxa, fix refcounting in moxa_poll_port
+Subject: [PATCH 19/24] jsm: define init function as __devinit
 To: linux-kernel@vger.kernel.org, torvalds@linux-foundation.org
-Date: Wed, 01 Apr 2009 15:06:48 +0100
-Message-ID: <20090401140646.22882.17685.stgit@localhost.localdomain>
+Date: Wed, 01 Apr 2009 15:07:16 +0100
+Message-ID: <20090401140702.22882.42599.stgit@localhost.localdomain>
 In-Reply-To: <20090401140241.22882.93477.stgit@localhost.localdomain>
 References: <20090401140241.22882.93477.stgit@localhost.localdomain>
 User-Agent: StGIT/0.14.3
@@ -25,56 +25,51 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Jiri Slaby <jirislaby@gmail.com>
+From: Breno Leitao <leitao@linux.vnet.ibm.com>
 
-There is missing tty_kref_put on some paths in moxa_poll_port,
-although the reference is always taken. Fix it.
-
-Signed-off-by: Jiri Slaby <jirislaby@gmail.com>
-Reported-by: Jan 'Yenya' Kasprzak <kas@fi.muni.cz>
+Signed-off-by: Breno Leitao <leitao@linux.vnet.ibm.com>
+Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
 Signed-off-by: Alan Cox <alan@lxorguk.ukuu.org.uk>
 ---
 
- drivers/char/moxa.c |    9 +++++----
- 1 files changed, 5 insertions(+), 4 deletions(-)
+ drivers/serial/jsm/jsm_driver.c |    2 +-
+ drivers/serial/jsm/jsm_tty.c    |    4 ++--
+ 2 files changed, 3 insertions(+), 3 deletions(-)
 
 
-diff --git a/drivers/char/moxa.c b/drivers/char/moxa.c
-index 8b0da97..4a4cab7 100644
---- a/drivers/char/moxa.c
-+++ b/drivers/char/moxa.c
-@@ -1486,11 +1486,11 @@ static int moxa_poll_port(struct moxa_port *p, unsigned int handle,
- 	}
+diff --git a/drivers/serial/jsm/jsm_driver.c b/drivers/serial/jsm/jsm_driver.c
+index ac79cbe..576aafb 100644
+--- a/drivers/serial/jsm/jsm_driver.c
++++ b/drivers/serial/jsm/jsm_driver.c
+@@ -52,7 +52,7 @@ int jsm_debug;
+ module_param(jsm_debug, int, 0);
+ MODULE_PARM_DESC(jsm_debug, "Driver debugging level");
  
- 	if (!handle) /* nothing else to do */
--		return 0;
-+		goto put;
- 
- 	intr = readw(ip); /* port irq status */
- 	if (intr == 0)
--		return 0;
-+		goto put;
- 
- 	writew(0, ip); /* ACK port */
- 	ofsAddr = p->tableAddr;
-@@ -1499,16 +1499,17 @@ static int moxa_poll_port(struct moxa_port *p, unsigned int handle,
- 				ofsAddr + HostStat);
- 
- 	if (!inited)
--		return 0;
-+		goto put;
- 
- 	if (tty && (intr & IntrBreak) && !I_IGNBRK(tty)) { /* BREAK */
- 		tty_insert_flip_char(tty, 0, TTY_BREAK);
- 		tty_schedule_flip(tty);
- 	}
--	tty_kref_put(tty);
- 
- 	if (intr & IntrLine)
- 		moxa_new_dcdstate(p, readb(ofsAddr + FlagStat) & DCD_state);
-+put:
-+	tty_kref_put(tty);
- 
+-static int jsm_probe_one(struct pci_dev *pdev, const struct pci_device_id *ent)
++static int __devinit jsm_probe_one(struct pci_dev *pdev, const struct pci_device_id *ent)
+ {
+ 	int rc = 0;
+ 	struct jsm_board *brd;
+diff --git a/drivers/serial/jsm/jsm_tty.c b/drivers/serial/jsm/jsm_tty.c
+index 324c74d..3306963 100644
+--- a/drivers/serial/jsm/jsm_tty.c
++++ b/drivers/serial/jsm/jsm_tty.c
+@@ -367,7 +367,7 @@ static struct uart_ops jsm_ops = {
+  * Init the tty subsystem.  Called once per board after board has been
+  * downloaded and init'ed.
+  */
+-int jsm_tty_init(struct jsm_board *brd)
++int __devinit jsm_tty_init(struct jsm_board *brd)
+ {
+ 	int i;
+ 	void __iomem *vaddr;
+@@ -431,7 +431,7 @@ int jsm_tty_init(struct jsm_board *brd)
  	return 0;
  }
+ 
+-int jsm_uart_port_init(struct jsm_board *brd)
++int __devinit jsm_uart_port_init(struct jsm_board *brd)
+ {
+ 	int i;
+ 	struct jsm_channel *ch;
 
