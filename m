@@ -1,74 +1,81 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756518AbZDADSn@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755449AbZDADVm@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756518AbZDADSn (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 31 Mar 2009 23:18:43 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754522AbZDADSe
+	id S1755449AbZDADVm (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 31 Mar 2009 23:21:42 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754782AbZDADVa
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 31 Mar 2009 23:18:34 -0400
-Received: from wf-out-1314.google.com ([209.85.200.174]:35767 "EHLO
-	wf-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753592AbZDADSd convert rfc822-to-8bit (ORCPT
+	Tue, 31 Mar 2009 23:21:30 -0400
+Received: from n10.bullet.mail.mud.yahoo.com ([209.191.125.208]:42286 "HELO
+	n10.bullet.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1754651AbZDADV3 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 31 Mar 2009 23:18:33 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
-         :cc:content-type:content-transfer-encoding;
-        b=drPQcggsl8eYJo0fmySgS1lX+xpbCLjNsABTQ1mzes/0aFdzpxGPpkSAru1ef48Ygr
-         3VALSPty6GCAHn7v2etIluPZO22K/tvEhMOmvh8MYvLFElIlmtaUv8WoqntSLu8zIbtw
-         xwh8QhmM0QVG6VLKUsqdLXg5klU+ihLWO3NpA=
+	Tue, 31 Mar 2009 23:21:29 -0400
+X-Yahoo-Newman-Id: 154603.34562.bm@omp416.mail.mud.yahoo.com
+DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
+  s=s1024; d=pacbell.net;
+  h=Received:X-YMail-OSG:X-Yahoo-Newman-Property:From:To:Subject:Date:User-Agent:Cc:References:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Content-Disposition:Message-Id;
+  b=jdG8SaaneAVjUy9igiXw3rDiwgR8kiv/b4UujcjfdgQyAVZNBgAQIEIUIfHMPzxHYUlBgZc+o1M/ZBvZQFToKosSRt/qMqqq4gKhig5s/Zn7aOkjJI+Mm1ZvpPvvMFayrtBPoRk1kMDNEii6ulrxS3dNAtR+XzMH2lisbMW/3h8=  ;
+X-YMail-OSG: Q30URqcVM1l5DJ.78XU3WSus_HjlHxCuDGIcSvYhokiA427MMj9AHlFBEDgSu2MFSD41tONPLrGIN8Tpr52yrjUSQ8OVX0i7.CPrY.5P4F_A43UfwSZZP0twU6c.IIPS5warPABA0BdIyMz50Eb8maSpamGjICmdfLboztkPyC9nlacxli6nuYTBDT3PZoznamc4g.NUFfkFF_e5d4.Xg.0UMKdaDiuSAaJW645gzECVGU82ZtfvsxpZjHq39xyMT2EDGtU6.Tv_VrCyjutoelT_8tJjqn7Fel7S6_nI8AWFj4Dhh4hrGQMP2qFappLA5Lw_KRGRWBmUi9GL.2J_M57bb4Q-
+X-Yahoo-Newman-Property: ymail-3
+From: David Brownell <david-b@pacbell.net>
+To: Kevin Cernekee <kpc.mtd@gmail.com>
+Subject: Re: [patch/rfc 2.6.29 1/2] MTD: driver model updates
+Date: Tue, 31 Mar 2009 20:21:25 -0700
+User-Agent: KMail/1.9.10
+Cc: Linux MTD <linux-mtd@lists.infradead.org>,
+       Kay Sievers <kay.sievers@vrfy.org>, LKML <linux-kernel@vger.kernel.org>
+References: <200903260042.42091.david-b@pacbell.net> <200903311418.53772.david-b@pacbell.net> <a95a62fe0903311817i76f9f6d8qf7470fd14a62b912@mail.gmail.com>
+In-Reply-To: <a95a62fe0903311817i76f9f6d8qf7470fd14a62b912@mail.gmail.com>
 MIME-Version: 1.0
-In-Reply-To: <20090331185712.482877d6@hobbes>
-References: <1238544647.8369.682.camel@gaiman.anholt.net>
-	 <20090331171431.69ad044f@hobbes>
-	 <7E82351C108FA840AB1866AC776AEC4657F48B3E@orsmsx505.amr.corp.intel.com>
-	 <1238547790.27006.7743.camel@localhost.localdomain>
-	 <20090331181251.46cf95b1@hobbes>
-	 <1238549424.27006.7757.camel@localhost.localdomain>
-	 <20090331185712.482877d6@hobbes>
-Date: Wed, 1 Apr 2009 13:18:30 +1000
-Message-ID: <21d7e9970903312018l1a74cfadoc6540dcda7fdeb53@mail.gmail.com>
-Subject: Re: PAGE_CACHE_WC strikes again
-From: Dave Airlie <airlied@gmail.com>
-To: Jesse Barnes <jbarnes@virtuousgeek.org>
-Cc: suresh.b.siddha@intel.com,
-       "Pallipadi, Venkatesh" <venkatesh.pallipadi@intel.com>,
-       Eric Anholt <eric@anholt.net>, lkml <linux-kernel@vger.kernel.org>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 8BIT
+Content-Type: text/plain;
+  charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200903312021.25165.david-b@pacbell.net>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Apr 1, 2009 at 11:57 AM, Jesse Barnes <jbarnes@virtuousgeek.org> wrote:
-> On Tue, 31 Mar 2009 17:30:24 -0800
-> Suresh Siddha <suresh.b.siddha@intel.com> wrote:
->
->> On Tue, 2009-03-31 at 18:12 -0700, Jesse Barnes wrote:
->> > Right, the drm driver code went in before we had
->> > pgprot_writecombine. Now that it's available we should definitely
->> > use it.  I'm not sure about the set_memory_* routines though; we
->> > create io mappings in i915_dma.c at init time, and I thought we
->> > took care of things in i915_gem.c but we may need updates there.
->>
->> Jesse, yes i915_gem.c seems to be doing the right thing.
->>
->> What about various fault handlers in drm_vm.c like
->> drm_do_vm_shm_fault() etc. None of these fault handlers require
->> special attributes like wc/uc etc?
->
-> Those are legacy.  I don't think they need anything changed...  Dave
-> could correct me though.
+On Tuesday 31 March 2009, Kevin Cernekee wrote:
+> On Tue, Mar 31, 2009 at 2:18 PM, David Brownell <david-b@pacbell.net> wrote:
+> > Hmm, no comments?  I had understood there was interest over on
+> > the MTD side of things in exposing more information through
+> > sysfs, to help avoid the need to add Even More Ioctls as part
+> > of support for things like NAND chips with 4KB pages, or which
+> > handle more than 4GBytes ...
+> 
+> Based on this post:
+> http://lists.infradead.org/pipermail/linux-mtd/2009-March/025060.html
+> 
+> I am inferring that the following attributes are wanted in the MTD
+> sysfs interface:
+> 
+> 1) mtd_info_user fields - type, flags, size, erasesize, writesize,
+> oobsize.  So far we have "type," but it should be easy to add the
+> rest.
 
-Yeah just don't look at the top of drm_vm.c:drm_io_prot.
+Yes, easy to add those.  As noted in the $SUBJECT patch, the set
+consisting of just "type" is a "starter set".  :)
 
-the attribute handling in there is one of the bits of the drm I hide away from.
+For procfs elimination, a name/label would be needed too; that can
+be an input to, or output from, cmdlinepart.
 
-and I think we can just move away from that with memory managed
-drivers doing it properly.
+My question about the $SUBJECT patch is whether there's any reason
+not to use that as the start of such driver model enhancements.
+I'm thinking the answer to that seems to be "no", and that someone
+more involved in *using* those sysfs attributes would be a better
+choice for growing that set of attributes.
 
-Dave.
->
-> --
-> Jesse Barnes, Intel Open Source Technology Center
->
+
+> 2) region_info_user fields?  Not really sure how this would work.
+> Maybe a separate subdirectory for each region?
+
+I'm not sure I've ever had reason to care about a "region" (whatever
+that is!) with MTD hardware.
+
+I suspect that a lot of interesting questions could come up in
+the context of enhancing mtd-utils to work with sysfs and bigger
+NAND chips.  Some might relate to "regions".
+
+- Dave
+
