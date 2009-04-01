@@ -1,65 +1,110 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932094AbZDAN5K@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764023AbZDAOES@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932094AbZDAN5K (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 1 Apr 2009 09:57:10 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763790AbZDAN4t
+	id S1764023AbZDAOES (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 1 Apr 2009 10:04:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754251AbZDAOEB
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 1 Apr 2009 09:56:49 -0400
-Received: from gw-ca.panasas.com ([209.116.51.66]:12009 "EHLO
-	laguna.int.panasas.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1761640AbZDAN4s (ORCPT
+	Wed, 1 Apr 2009 10:04:01 -0400
+Received: from earthlight.etchedpixels.co.uk ([81.2.110.250]:36473 "EHLO
+	www.etchedpixels.co.uk" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1753712AbZDAOEA (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 1 Apr 2009 09:56:48 -0400
-Message-ID: <49D371FF.3050202@panasas.com>
-Date: Wed, 01 Apr 2009 16:54:07 +0300
-From: Boaz Harrosh <bharrosh@panasas.com>
-User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1b3pre) Gecko/20090315 Remi/3.0-0.b2.fc10.remi Thunderbird/3.0b2
+	Wed, 1 Apr 2009 10:04:00 -0400
+From: Alan Cox <alan@lxorguk.ukuu.org.uk>
+Subject: [PATCH 00/24] Series short description
+To: linux-kernel@vger.kernel.org, torvalds@linux-foundation.org
+Date: Wed, 01 Apr 2009 15:04:29 +0100
+Message-ID: <20090401140241.22882.93477.stgit@localhost.localdomain>
+User-Agent: StGIT/0.14.3
 MIME-Version: 1.0
-To: Tejun Heo <tj@kernel.org>
-CC: axboe@kernel.dk, linux-kernel@vger.kernel.org,
-       fujita.tomonori@lab.ntt.co.jp
-Subject: Re: [PATCH 15/17] bio/blk-map: kill unused stuff and un-export internal
- functions
-References: <1238593472-30360-1-git-send-email-tj@kernel.org> <1238593472-30360-16-git-send-email-tj@kernel.org>
-In-Reply-To: <1238593472-30360-16-git-send-email-tj@kernel.org>
-Content-Type: text/plain; charset=UTF-8
+Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7bit
-X-OriginalArrivalTime: 01 Apr 2009 13:56:10.0068 (UTC) FILETIME=[9C859940:01C9B2D1]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 04/01/2009 04:44 PM, Tejun Heo wrote:
-> Impact: cleanup, removal of unused / undesirable API
-> 
-> With recent changes, the following functions aren't used anymore.
-> 
-> * bio_{map|copy}_{user|kern}()
-> * blk_rq_append_bio()
-> 
+Serial patch queue for 2.6.30 window. This is mostly consolidation - fixing
+kref leaks and the like. The controversial cpu_relax change for blackfin, and
+the PnP serial console patch have been dropped from this set.
 
-This function is used by drivers/scsi/osd/osd_initiator.c
-Currently in mainline. Please use allmodconfig to compile
-everything.
 
-> The following functions aren't used outside of block layer.
-> 
-> * bio_add_pc_page()
+---
 
-And also this
+Alan Cox (2):
+      isicom: isicom kref leak fix
+      ucc: Fix leaky error path
 
-> * bio_un{map|copy}_user()
-> 
-> Kill the first group and unexport the second.  As bio_add_pc_page() is
-> used only inside fs/bio.c, it's made static.
-> 
-> Signed-off-by: Tejun Heo <tj@kernel.org>
+Alexander Beregalov (1):
+      mux: fix build problem
 
-I've posted propositions on how to fix osd_initiator.c which
-involves making blk_map_kern() append to the request, and a new
-blk_make_request(bio).
+Breno Leitao (3):
+      icom: remove unused variables
+      jsm: Fix the return variable and removing the unused retval.
+      jsm: define init function as __devinit
 
-Any suggestions are welcome
+Danny Kukawka (1):
+      8250_pnp.c: add another Wacom tablet
 
-Thanks
-Boaz
+Graf Yang (1):
+      blackfin: Subtract ANOMALY_05000230 on quot
+
+Jiri Slaby (3):
+      PCI: quirks, don't mark one netmos as class other
+      mxser: remove tty_port_tty_get from mxser_check_modem_status
+      tty: moxa, fix refcounting in moxa_poll_port
+
+Matthew Garrett (1):
+      serial: Update PNP IDs
+
+Michael Hennerich (1):
+      blackfin: BF538/9 serial uart support
+
+Mike Frysinger (1):
+      blackfin: Use unsigned long for flags with irq functions
+
+Roel Kluin (1):
+      rio: addition has higher precedence than ?:
+
+Scott James Remnant (5):
+      riscom8: Auto-load riscom8 module when device opened.
+      usb: Auto-load cdc_acm module when device opened.
+      specialix: Auto-load specialix module when device opened.
+      cyclades: Auto-load cyclades module when device opened.
+      applicom: Auto-load applicom module when device opened.
+
+Shawn Bohrer (1):
+      8250_pci: add support for National Instruments 843x RS232 devices
+
+Sonic Zhang (2):
+      Fix DMA rx ring buffer handling
+      blackfin: Fix tty compile error in PIO mode
+
+Will Page (1):
+      8250_pci: add support for National Instruments legacy 8420 RS232 boards
+
+
+ drivers/char/applicom.c           |    1 
+ drivers/char/cyclades.c           |    2 
+ drivers/char/isicom.c             |    1 
+ drivers/char/moxa.c               |    9 -
+ drivers/char/mxser.c              |    1 
+ drivers/char/rio/rio_linux.c      |    2 
+ drivers/char/riscom8.c            |    2 
+ drivers/char/specialix.c          |    1 
+ drivers/pci/quirks.c              |    6 -
+ drivers/serial/8250_pci.c         |  411 +++++++++++++++++++++++++++++++++++++
+ drivers/serial/8250_pnp.c         |    7 +
+ drivers/serial/Kconfig            |    2 
+ drivers/serial/bfin_5xx.c         |   15 +
+ drivers/serial/icom.c             |   14 -
+ drivers/serial/jsm/jsm_driver.c   |    9 -
+ drivers/serial/jsm/jsm_tty.c      |    4 
+ drivers/serial/ucc_uart.c         |    1 
+ drivers/usb/class/cdc-acm.c       |    2 
+ drivers/usb/serial/symbolserial.c |   67 ------
+ include/linux/pci_ids.h           |   26 ++
+ include/linux/serial_core.h       |    2 
+ 22 files changed, 483 insertions(+), 104 deletions(-)
+
+-- 
+
