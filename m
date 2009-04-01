@@ -1,65 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762143AbZDAIdp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760971AbZDAIgf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762143AbZDAIdp (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 1 Apr 2009 04:33:45 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760836AbZDAIdS
+	id S1760971AbZDAIgf (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 1 Apr 2009 04:36:35 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754757AbZDAIgT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 1 Apr 2009 04:33:18 -0400
-Received: from relay.atmel.no ([80.232.32.139]:51575 "EHLO relay.atmel.no"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1761398AbZDAIdQ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 1 Apr 2009 04:33:16 -0400
-Date: Wed, 1 Apr 2009 10:33:07 +0200
-From: Hans-Christian Egtvedt <hans-christian.egtvedt@atmel.com>
-To: Hans-Christian Egtvedt <hans-christian.egtvedt@atmel.com>
-Cc: "Sosnowski, Maciej" <maciej.sosnowski@intel.com>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       "Williams, Dan J" <dan.j.williams@intel.com>
-Subject: Re: [PATCH 1/2] dw_dmac: set CAP_PRIVATE capability for DW DMA
- controller
-Message-ID: <20090401103307.27c8426d@hcegtvedt>
-In-Reply-To: <20090401070440.326f6e7f@hcegtvedt>
-References: <1237894506-11622-1-git-send-email-hans-christian.egtvedt@atmel.com>
-	<129600E5E5FB004392DDC3FB599660D790F8C3EB@irsmsx504.ger.corp.intel.com>
-	<20090401070440.326f6e7f@hcegtvedt>
-Organization: Atmel
-X-Mailer: Claws Mail 3.6.1 (GTK+ 2.16.0; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Wed, 1 Apr 2009 04:36:19 -0400
+Received: from wf-out-1314.google.com ([209.85.200.170]:24294 "EHLO
+	wf-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753836AbZDAIgQ convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 1 Apr 2009 04:36:16 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
+         :cc:content-type:content-transfer-encoding;
+        b=hZ79yhYjdk3Qjr/h1u2O/M6RZcM63QqUA/0Peh7DbJsTJPSVvssjh1a0HoWoUaI4XO
+         QiStpi8XglNark0jWG5LQ7fe5anDiJJaY6Im2fK3CG8wAEziFQA3TFICW3uHqwSn/1zD
+         BzCsLeEuBXyxkKZHVxUQ+mGxpr/x0MT12pizg=
+MIME-Version: 1.0
+In-Reply-To: <1238196439-16535-29-git-send-email-u.kleine-koenig@pengutronix.de>
+References: <20090327232153.GA16348@pengutronix.de>
+	 <1238196439-16535-29-git-send-email-u.kleine-koenig@pengutronix.de>
+Date: Wed, 1 Apr 2009 14:06:14 +0530
+Message-ID: <5d5443650904010136i7894b01y24393cc69f7b0234@mail.gmail.com>
+Subject: Re: [PATCH 29/58] move omap24xxcam's probe function to .devinit.text
+From: Trilok Soni <soni.trilok@gmail.com>
+To: =?ISO-8859-1?Q?Uwe_Kleine=2DK=F6nig?= 
+	<u.kleine-koenig@pengutronix.de>
+Cc: linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
+       Sakari Ailus <sakari.ailus@nokia.com>,
+       Hans Verkuil <hverkuil@xs4all.nl>,
+       Mauro Carvalho Chehab <mchehab@redhat.com>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 1 Apr 2009 07:04:40 +0200
-Hans-Christian Egtvedt <hans-christian.egtvedt@atmel.com> wrote:
+Hi Uwe,
 
-> On Tue, 31 Mar 2009 15:01:49 +0100
-> "Sosnowski, Maciej" <maciej.sosnowski@intel.com> wrote:
+>
+> -static int __init omap24xxcam_probe(struct platform_device *pdev)
+> +static int __devinit omap24xxcam_probe(struct platform_device *pdev)
+>  {
+>        struct omap24xxcam_device *cam;
+>        struct resource *mem;
+> --
+> 1.6.2
+>
+>
 
-<snipp>
-
-> > Remember however that you can leave the device generally non-private
-> > and attempt as needed to allocate a channel for exclusive usage by
-> > dma_request_channel()
-> >
-> 
-> The weird part was that when testing this, the dma_request_channel()
-> would not return any channel before DMA_PRIVATE flag was set. I think
-> I did this some time ago, I can do a retest with the current 2.6.29
-> and see how it behaves.
-> 
-
-On 2.6.29 I do not have to set the DMA_PRIVATE flag for
-dma_request_channel() to work now. So I guess this patch could be
-skipped.
-
-I am quite sure I did the previous testing without any of the DMA
-clients enabled. My original work was based on 2.6.29-rc3 IIRC. So I do
-not really know why this was needed.
-
-<snipp>
+Acked-by: Trilok Soni <soni.trilok@gmail.com>
 
 -- 
-Best regards,
-Hans-Christian Egtvedt
+---Trilok Soni
+http://triloksoni.wordpress.com
+http://www.linkedin.com/in/triloksoni
