@@ -1,54 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934064AbZDAUZb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934302AbZDAU1e@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934064AbZDAUZb (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 1 Apr 2009 16:25:31 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757516AbZDAUZR
+	id S934302AbZDAU1e (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 1 Apr 2009 16:27:34 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762260AbZDAU1X
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 1 Apr 2009 16:25:17 -0400
-Received: from einhorn.in-berlin.de ([192.109.42.8]:41097 "EHLO
-	einhorn.in-berlin.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756684AbZDAUZP (ORCPT
+	Wed, 1 Apr 2009 16:27:23 -0400
+Received: from baikonur.stro.at ([213.239.196.228]:40651 "EHLO
+	baikonur.stro.at" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1758699AbZDAU1W (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 1 Apr 2009 16:25:15 -0400
-X-Envelope-From: stefanr@s5r6.in-berlin.de
-Date: Wed, 1 Apr 2009 22:25:00 +0200 (CEST)
-From: Stefan Richter <stefanr@s5r6.in-berlin.de>
-Subject: [PATCH] Revert "V4L/DVB (10962): fired-avc: fix printk formatting
- warning."
-To: Mauro Carvalho Chehab <mchehab@redhat.com>
-cc: linux-media@vger.kernel.org, linux-kernel@vger.kernel.org
-Message-ID: <tkrat.c13edc1832a38d6d@s5r6.in-berlin.de>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; CHARSET=us-ascii
-Content-Disposition: INLINE
+	Wed, 1 Apr 2009 16:27:22 -0400
+Date: Wed, 1 Apr 2009 22:24:31 +0200
+From: maximilian attems <max@stro.at>
+To: Frans Pop <elendil@planet.nl>
+Cc: linux-kbuild@vger.kernel.org, linux-kernel@vger.kernel.org,
+       Sam Ravnborg <sam@ravnborg.org>
+Subject: Re: [PATCH 0/5] Improve flexibility of deb-pkg target
+Message-ID: <20090401202431.GE3901@baikonur.stro.at>
+References: <200904012133.37387.elendil@planet.nl>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <200904012133.37387.elendil@planet.nl>
+User-Agent: Mutt/1.5.9i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Commit 34aecd2851bba5c2b7dae2f0dbe8e629b1c5e4ac was made obsolete
-and invalid by commit 40cf65d149053889c8876c6c2b4ce204fde55baa.
+On Wed, Apr 01, 2009 at 09:33:36PM +0200, Frans Pop wrote:
+> Hi Sam,
+> 
+> This series of patches aims to make the deb-pkg target more flexible.
+> I've been using these patches for the past year or so and they've greatly
+> improved my workflow for kernel testing on 4 different architectures
+> (2 cross-compiled).
+> 
+> The last 2 patches I've submitted before (in Feb. 2008) but were not
+> applied as you had some questions. This new series has improved versions
+> and I'll address your questions below.
+> 
+> [1/5] deb-pkg: minor general improvements in builddeb script
+> [2/5] deb-pkg: fix 'file not found' error when building .deb package for arm
+> 
+> These first 2 patches are minor improvements and fixes.
+> 
+> [3/5] deb-pkg: pass Debian maintainer script parameters to packaging hook scripts
+> 
+> This allows to make hook scripts more specific differentiate their
+> behavior for e.g. package installation, removal or upgrade. It's very
+> much Debian specific.
+> 
+> [4/5] deb-pkg: allow to specify a custom revision for .deb packages
+> 
+> This has helped me to use a different versioning system for bisections
+> than for "regular" builds. Note that this does not affect the kernel
+> version (which is part of the package name), but only the version of
+> the generated .deb package itself.
+> 
+> [5/5] deb-pkg: allow alternative hook scripts directory in .deb packages
 
-Signed-off-by: Stefan Richter <stefanr@s5r6.in-berlin.de>
----
- drivers/media/dvb/firewire/firedtv-avc.c |    2 +-
- 1 files changed, 1 insertions(+), 1 deletions(-)
-
-diff --git a/drivers/media/dvb/firewire/firedtv-avc.c b/drivers/media/dvb/firewire/firedtv-avc.c
-index 12f7730..32526f1 100644
---- a/drivers/media/dvb/firewire/firedtv-avc.c
-+++ b/drivers/media/dvb/firewire/firedtv-avc.c
-@@ -151,7 +151,7 @@ static void debug_fcp(const u8 *data, int length)
- 		subunit_type = data[1] >> 3;
- 		subunit_id = data[1] & 7;
- 		op = subunit_type == 0x1e || subunit_id == 5 ? ~0 : data[2];
--		printk(KERN_INFO "%ssu=%x.%x l=%zu: %-8s - %s\n",
-+		printk(KERN_INFO "%ssu=%x.%x l=%d: %-8s - %s\n",
- 		       prefix, subunit_type, subunit_id, length,
- 		       debug_fcp_ctype(data[0]),
- 		       debug_fcp_opcode(op, data, length));
-
--- 
-Stefan Richter
--=====-==--= -=-- ----=
-http://arcgraph.de/sr/
-
+argh none of those apply on top of those that i just sent in,
+will nevertheless review them.
