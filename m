@@ -1,48 +1,100 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764792AbZDAWTx@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932168AbZDAWW2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764792AbZDAWTx (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 1 Apr 2009 18:19:53 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756399AbZDAWTo
+	id S932168AbZDAWW2 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 1 Apr 2009 18:22:28 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756097AbZDAWWM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 1 Apr 2009 18:19:44 -0400
-Received: from hera.kernel.org ([140.211.167.34]:51613 "EHLO hera.kernel.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755996AbZDAWTm (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 1 Apr 2009 18:19:42 -0400
-Message-ID: <49D3E8A2.6070604@kernel.org>
-Date: Thu, 02 Apr 2009 07:20:18 +0900
-From: Tejun Heo <tj@kernel.org>
-User-Agent: Thunderbird 2.0.0.19 (X11/20081227)
-MIME-Version: 1.0
-To: Boaz Harrosh <bharrosh@panasas.com>
-CC: axboe@kernel.dk, linux-kernel@vger.kernel.org,
-       fujita.tomonori@lab.ntt.co.jp
-Subject: Re: [PATCH 10/17] bio: use bio_create_from_sgl() in bio_map_user_iov()
-References: <1238593472-30360-1-git-send-email-tj@kernel.org> <1238593472-30360-11-git-send-email-tj@kernel.org> <49D3974F.6080601@panasas.com>
-In-Reply-To: <49D3974F.6080601@panasas.com>
-X-Enigmail-Version: 0.95.7
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Wed, 01 Apr 2009 22:19:36 +0000 (UTC)
+	Wed, 1 Apr 2009 18:22:12 -0400
+Received: from one.firstfloor.org ([213.235.205.2]:34751 "EHLO
+	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750863AbZDAWWK (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 1 Apr 2009 18:22:10 -0400
+Date: Thu, 2 Apr 2009 00:23:52 +0200
+From: Andi Kleen <andi@firstfloor.org>
+To: Gregory Haskins <ghaskins@novell.com>
+Cc: Andi Kleen <andi@firstfloor.org>, linux-kernel@vger.kernel.org,
+       agraf@suse.de, pmullaney@novell.com, pmorreale@novell.com,
+       anthony@codemonkey.ws, rusty@rustcorp.com.au, netdev@vger.kernel.org,
+       kvm@vger.kernel.org
+Subject: Re: [RFC PATCH 00/17] virtual-bus
+Message-ID: <20090401222352.GY11935@one.firstfloor.org>
+References: <20090331184057.28333.77287.stgit@dev.haskins.net> <87ab71monw.fsf@basil.nowhere.org> <49D35825.3050001@novell.com> <20090401132340.GT11935@one.firstfloor.org> <49D37805.1060301@novell.com> <20090401170103.GU11935@one.firstfloor.org> <49D3CEC5.20606@novell.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <49D3CEC5.20606@novell.com>
+User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Boaz Harrosh wrote:
->>  		ret = get_user_pages_fast(uaddr, local_nr_pages, rw == READ,
->> -					  &pages[cur_page]);
->> +					  &pages[nents]);
+On Wed, Apr 01, 2009 at 04:29:57PM -0400, Gregory Haskins wrote:
+> > description?
+> >   
+> Yes, good point.  I will be sure to be more explicit in the next rev.
 > 
-> Fast look at all users of get_user_pages_fast().
+> >   
+> >> So the administrator can then set these attributes as
+> >> desired to manipulate the configuration of the instance of the device,
+> >> on a per device basis.
+> >>     
+> >
+> > How would the guest learn of any changes in there?
+> >   
+> The only events explicitly supported by the infrastructure of this
+> nature would be device-add and device-remove.  So when an admin adds or
+> removes a device to a bus, the guest would see driver::probe() and
+> driver::remove() callbacks, respectively.  All other events are left (by
+> design) to be handled by the device ABI itself, presumably over the
+> provided shm infrastructure.
+
+Ok so you rely on a transaction model where everything is set up
+before it is somehow comitted to the guest? I hope that is made
+explicit in the interface somehow.
+
+> This script creates two buses ("client-bus" and "server-bus"),
+> instantiates a single venet-tap on each of them, and then "wires" them
+> together with a private bridge instance called "vbus-br0".  To complete
+> the picture here, you would want to launch two kvms, one of each of the
+> client-bus/server-bus instances.  You can do this via /proc/$pid/vbus.  E.g.
 > 
-> This can be converted to take an sglist instead of pages* array.
-> Outside of this code all users either have a fixed-size allocated array
-> or hard coded one page. This here is the main user. (Out of 5)
+> # (echo client-bus > /proc/self/vbus; qemu-kvm -hda client.img....)
+> # (echo server-bus > /proc/self/vbus; qemu-kvm -hda server.img....)
+> 
+> (And as noted, someday qemu will be able to do all the setup that the
+> script did, natively.  It would wire whatever tap it created to an
+> existing bridge with qemu-ifup, just like we do for tun-taps today)
 
-Yeah, that would be nice, although it's understandable that gup taking
-page array as parameter.
+The usual problem with that is permissions. Just making qemu-ifup suid
+it not very nice.  It would be good if any new design addressed this.
 
-Thanks.
+> the current code doesnt support rw on the mac attributes yet..i need a
+> parser first).
 
+parser in kernel space always sounds scary to me.
+
+
+> 
+> Yeah, ultimately I would love to be able to support a fairly wide range
+> of the normal userspace/kernel ABI through this mechanism.  In fact, one
+> of my original design goals was to somehow expose the syscall ABI
+> directly via some kind of syscall proxy device on the bus.  I have since
+
+That sounds really scary for security. 
+
+
+> backed away from that idea once I started thinking about things some
+> more and realized that a significant number of system calls are really
+> inappropriate for a guest type environment due to their ability to
+> block.   We really dont want a vcpu to block.....however, the AIO type
+
+Not only because of blocking, but also because of security issues.
+After all one of the usual reasons to run a guest is security isolation.
+
+In general the more powerful the guest API the more risky it is, so some
+self moderation is probably a good thing.
+
+-Andi
 -- 
-tejun
+ak@linux.intel.com -- Speaking for myself only.
