@@ -1,71 +1,163 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764360AbZDARTY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932155AbZDARVV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764360AbZDARTY (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 1 Apr 2009 13:19:24 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754410AbZDARTL
+	id S932155AbZDARVV (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 1 Apr 2009 13:21:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753369AbZDARVI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 1 Apr 2009 13:19:11 -0400
-Received: from gw-ca.panasas.com ([209.116.51.66]:31800 "EHLO
-	laguna.int.panasas.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1752705AbZDARTK (ORCPT
+	Wed, 1 Apr 2009 13:21:08 -0400
+Received: from fg-out-1718.google.com ([72.14.220.159]:47921 "EHLO
+	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753309AbZDARVG (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 1 Apr 2009 13:19:10 -0400
-Message-ID: <49D3A191.2040000@panasas.com>
-Date: Wed, 01 Apr 2009 20:17:05 +0300
-From: Boaz Harrosh <bharrosh@panasas.com>
-User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1b3pre) Gecko/20090315 Remi/3.0-0.b2.fc10.remi Thunderbird/3.0b2
+	Wed, 1 Apr 2009 13:21:06 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:to:subject:message-id:references:mime-version
+         :content-type:content-disposition:in-reply-to:user-agent;
+        b=gELyYiEAWL84vUC2Rg5/5kr32w3Gq55kEl2KDnqldB+Qi7IQ7E8Oj0+GgORE2auVWl
+         FD1klnlxduslq1V2AwdJwjMnMDz5pkwwzKQ0TTKhXwahHUoFNf7s6eC9w14+JtAJuCpJ
+         Y83bzOwDLqE51WoBmGsC+ncspxq+rKQxCNSUU=
+Date: Wed, 1 Apr 2009 21:22:08 +0400
+From: Cyrill Gorcunov <gorcunov@gmail.com>
+To: Ingo Molnar <mingo@elte.hu>, hpa@zytor.com, tglx@linutronix.de,
+       linux-kernel@vger.kernel.org, xemul@openvz.org, yhlu.kernel@gmail.com
+Subject: Re: [patch 4/6] x86: irqinit - merge native_init_IRQ
+Message-ID: <20090401172208.GG15781@localhost>
+References: <20090329201545.470255691@openvz.org> <20090329202208.155551990@openvz.org> <20090401145328.GB6196@elte.hu> <20090401161609.GD15781@localhost> <20090401162250.GA22517@elte.hu> <20090401164001.GE15781@localhost>
 MIME-Version: 1.0
-To: James Bottomley <James.Bottomley@HansenPartnership.com>
-CC: Tejun Heo <tj@kernel.org>, linux-scsi <linux-scsi@vger.kernel.org>,
-       axboe@kernel.dk, linux-kernel@vger.kernel.org,
-       fujita.tomonori@lab.ntt.co.jp
-Subject: Re: [PATCH 14/17] scsi: replace custom rq mapping with	blk_rq_map_kern_sgl()
-References: <1238593472-30360-1-git-send-email-tj@kernel.org>	 <1238593472-30360-15-git-send-email-tj@kernel.org>	 <49D39DBC.3000206@panasas.com> <1238605538.3318.63.camel@mulgrave.int.hansenpartnership.com>
-In-Reply-To: <1238605538.3318.63.camel@mulgrave.int.hansenpartnership.com>
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
-X-OriginalArrivalTime: 01 Apr 2009 17:19:07.0401 (UTC) FILETIME=[F6C72790:01C9B2ED]
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20090401164001.GE15781@localhost>
+User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 04/01/2009 08:05 PM, James Bottomley wrote:
-> On Wed, 2009-04-01 at 20:00 +0300, Boaz Harrosh wrote:
->> On 04/01/2009 04:44 PM, Tejun Heo wrote:
->>> Impact: hack removal
->>>
->>> SCSI needs to map sgl into rq for kernel PC requests; however, block
->>> API didn't have such feature so it used its own rq mapping function
->>> which hooked into block/bio internals and is generally considered an
->>> ugly hack.  The private function may also produce requests which are
->>> bigger than queue per-rq limits.
->>>
->>> Block blk_rq_map_kern_sgl().  Kill the private implementation and use
->>> it.
->>>
->>> Signed-off-by: Tejun Heo <tj@kernel.org>
->> James, TOMO
->>
->> what happened to Tomo's patches that removes all this after fixing up
->> all users (sg.c)?
->>
->> I thought that was agreed and done? What is left to do for that to go
->> in.
-> 
-> They couldn't go in because they would break libosd.  You were going to
-> send patches to fix libosd so it no longer relied on the exported
-> function ... did that happen and I missed it?
-> 
+Ingo,
 
-That's not related. I'm asking about the scsi ULD patches and finally the
-patch to scsi_lib.c. libosd only conflicts with the very last patch to block
-layer. I don't see how that prevents the cleanups to scsi?
+here is what I meant. The x86_quirk_pre_intr_init
+and x86_quirk_intr_init do all we need. The only
+paid off -- is that on x86-64 the functions
+will check for x86_quirks->arch_intr_init and
+x86_quirks->arch_pre_intr_init which are always
+NULL for x86-64 (at least for now). If that is
+acceptable -- then apply the patch below for
+testing please. Othrewise we could eliminate
+useless check by #ifdef (which would not be
+that much differ from what I've posted initially
+in patch series :)
 
-And BTW, I did send RFC patches that removes usage of blk_rq_append_bio() and
-did not receive any comments
+        Cyrill
+---
 
-> James
-> 
-> 
+x86: irqinit - merge native_init_IRQ
 
-Boaz
+For this purpose on X86-64 init_ISA_irqs is called
+indirectly via x86_quirk_pre_intr_init (ie the same
+way as X86-32 do).
+
+Signed-off-by: Cyrill Gorcunov <gorcunov@openvz.org>
+---
+ arch/x86/kernel/irqinit_32.c |    4 +++-
+ arch/x86/kernel/irqinit_64.c |   22 +++++++++++++++++++++-
+ arch/x86/kernel/setup.c      |    2 +-
+ 3 files changed, 25 insertions(+), 3 deletions(-)
+
+Index: linux-2.6.git/arch/x86/kernel/irqinit_32.c
+===================================================================
+--- linux-2.6.git.orig/arch/x86/kernel/irqinit_32.c
++++ linux-2.6.git/arch/x86/kernel/irqinit_32.c
+@@ -215,7 +215,7 @@ void __init native_init_IRQ(void)
+ 	 */
+ 	for (i = 0; i < (NR_VECTORS - FIRST_EXTERNAL_VECTOR); i++) {
+ 		int vector = FIRST_EXTERNAL_VECTOR + i;
+-		/* SYSCALL_VECTOR was reserved in trap_init. */
++		/* X86-32: SYSCALL_VECTOR was reserved in trap_init. */
+ 		if (!test_bit(vector, used_vectors))
+ 			set_intr_gate(vector, interrupt[i]);
+ 	}
+@@ -229,6 +229,7 @@ void __init native_init_IRQ(void)
+ 	 */
+ 	x86_quirk_intr_init();
+ 
++#ifdef CONFIG_X86_32
+ 	/*
+ 	 * External FPU? Set up irq13 if so, for
+ 	 * original braindamaged IBM FERR coupling.
+@@ -237,4 +238,5 @@ void __init native_init_IRQ(void)
+ 		setup_irq(FPU_IRQ, &fpu_irq);
+ 
+ 	irq_ctx_init(smp_processor_id());
++#endif
+ }
+Index: linux-2.6.git/arch/x86/kernel/irqinit_64.c
+===================================================================
+--- linux-2.6.git.orig/arch/x86/kernel/irqinit_64.c
++++ linux-2.6.git/arch/x86/kernel/irqinit_64.c
+@@ -21,6 +21,7 @@
+ #include <asm/pgtable.h>
+ #include <asm/desc.h>
+ #include <asm/apic.h>
++#include <asm/setup.h>
+ #include <asm/i8259.h>
+ 
+ /*
+@@ -174,7 +175,8 @@ void __init native_init_IRQ(void)
+ {
+ 	int i;
+ 
+-	init_ISA_irqs();
++	/* Execute any quirks before the call gates are initialised: */
++	x86_quirk_pre_intr_init();
+ 
+ 	apic_intr_init();
+ 
+@@ -185,10 +187,28 @@ void __init native_init_IRQ(void)
+ 	 */
+ 	for (i = 0; i < (NR_VECTORS - FIRST_EXTERNAL_VECTOR); i++) {
+ 		int vector = FIRST_EXTERNAL_VECTOR + i;
++		/* X86-32: SYSCALL_VECTOR was reserved in trap_init. */
+ 		if (!test_bit(vector, used_vectors))
+ 			set_intr_gate(vector, interrupt[i]);
+ 	}
+ 
+ 	if (!acpi_ioapic)
+ 		setup_irq(2, &irq2);
++
++	/*
++	 * Call quirks after call gates are initialised (usually add in
++	 * the architecture specific gates):
++	 */
++	x86_quirk_intr_init();
++
++#ifdef CONFIG_X86_32
++	/*
++	 * External FPU? Set up irq13 if so, for
++	 * original braindamaged IBM FERR coupling.
++	 */
++	if (boot_cpu_data.hard_math && !cpu_has_fpu)
++		setup_irq(FPU_IRQ, &fpu_irq);
++
++	irq_ctx_init(smp_processor_id());
++#endif
+ }
+Index: linux-2.6.git/arch/x86/kernel/setup.c
+===================================================================
+--- linux-2.6.git.orig/arch/x86/kernel/setup.c
++++ linux-2.6.git/arch/x86/kernel/setup.c
+@@ -995,7 +995,6 @@ void __init setup_arch(char **cmdline_p)
+ #endif
+ }
+ 
+-#ifdef CONFIG_X86_32
+ 
+ /**
+  * x86_quirk_pre_intr_init - initialisation prior to setting up interrupt vectors
+@@ -1032,6 +1031,7 @@ void __init x86_quirk_intr_init(void)
+ 	}
+ }
+ 
++#ifdef CONFIG_X86_32
+ /**
+  * x86_quirk_trap_init - initialise system specific traps
+  *
