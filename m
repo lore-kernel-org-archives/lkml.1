@@ -1,81 +1,107 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760627AbZDALqa@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760892AbZDALrA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760627AbZDALqa (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 1 Apr 2009 07:46:30 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754830AbZDALqU
+	id S1760892AbZDALrA (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 1 Apr 2009 07:47:00 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754871AbZDALqt
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 1 Apr 2009 07:46:20 -0400
-Received: from mx3.mail.elte.hu ([157.181.1.138]:42610 "EHLO mx3.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754247AbZDALqT (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 1 Apr 2009 07:46:19 -0400
-Date: Wed, 1 Apr 2009 13:45:57 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: "Metzger, Markus T" <markus.t.metzger@intel.com>
-Cc: Oleg Nesterov <oleg@redhat.com>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       "tglx@linutronix.de" <tglx@linutronix.de>,
-       "hpa@zytor.com" <hpa@zytor.com>,
-       "markus.t.metzger@gmail.com" <markus.t.metzger@gmail.com>,
-       "roland@redhat.com" <roland@redhat.com>,
-       "eranian@googlemail.com" <eranian@googlemail.com>,
-       "Villacis, Juan" <juan.villacis@intel.com>,
-       "ak@linux.jf.intel.com" <ak@linux.jf.intel.com>
-Subject: Re: [patch 0/21] x86, ptrace, bts, hw-branch-tracer: fixes and
-	cleanups
-Message-ID: <20090401114557.GC23678@elte.hu>
-References: <20090331144229.A11867@sedona.ch.intel.com> <20090331233958.GA28228@redhat.com> <928CFBE8E7CB0040959E56B4EA41A77E926D4FDE@irsmsx504.ger.corp.intel.com>
+	Wed, 1 Apr 2009 07:46:49 -0400
+Received: from e28smtp07.in.ibm.com ([59.145.155.7]:56215 "EHLO
+	e28smtp07.in.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753935AbZDALqs (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 1 Apr 2009 07:46:48 -0400
+Date: Wed, 1 Apr 2009 17:16:41 +0530
+From: Arun R Bharadwaj <arun@linux.vnet.ibm.com>
+To: linux-kernel@vger.kernel.org, linux-pm@lists.linux-foundation.org
+Cc: a.p.zijlstra@chello.nl, ego@in.ibm.com, tglx@linutronix.de, mingo@elte.hu,
+       andi@firstfloor.org, venkatesh.pallipadi@intel.com,
+       vatsa@linux.vnet.ibm.com, arjan@infradead.org,
+       svaidy@linux.vnet.ibm.com, Arun Bharadwaj <arun@linux.vnet.ibm.com>
+Subject: Re: [v4 RFC PATCH 4/4] timers: logic to move non pinned timers
+Message-ID: <20090401114641.GF22478@linux.vnet.ibm.com>
+Reply-To: arun@linux.vnet.ibm.com
+References: <20090401113128.GA22478@linux.vnet.ibm.com> <20090401113738.GE22478@linux.vnet.ibm.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=iso-8859-1
 Content-Disposition: inline
-In-Reply-To: <928CFBE8E7CB0040959E56B4EA41A77E926D4FDE@irsmsx504.ger.corp.intel.com>
+In-Reply-To: <20090401113738.GE22478@linux.vnet.ibm.com>
 User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+* Arun R Bharadwaj <arun@linux.vnet.ibm.com> [2009-04-01 17:07:38]:
 
-* Metzger, Markus T <markus.t.metzger@intel.com> wrote:
-
-> >-----Original Message-----
-> >From: Oleg Nesterov [mailto:oleg@redhat.com]
-> >Sent: Wednesday, April 01, 2009 1:40 AM
-> >To: Metzger, Markus T
+--------snip--------------
+> Index: linux.trees.git/include/linux/hrtimer.h
+> ===================================================================
+> --- linux.trees.git.orig/include/linux/hrtimer.h
+> +++ linux.trees.git/include/linux/hrtimer.h
+> @@ -22,7 +22,6 @@
+>  #include <linux/wait.h>
+>  #include <linux/percpu.h>
 > 
+> -
+>  struct hrtimer_clock_base;
+>  struct hrtimer_cpu_base;
 > 
-> >> The first 5 patches apply to .29 with the small preparation patch below.
-> >
-> >Tried to review these patches.
-> >
-> >As I said, I don't understand ds.c, but I _think_ these changes are good.
-> >
-> >I only have a couple of really minor nitpicks...
+> @@ -376,6 +375,24 @@ extern ktime_t hrtimer_get_remaining(con
+>  extern int hrtimer_get_res(const clockid_t which_clock, struct timespec *tp);
 > 
-> Thanks for your review!
-> I will address the nitpicks in separate patches, if that's OK with everyone.
-
-Please dont forget to propagate Oleg's Reviewed-by (or Acked-by) 
-tags into the commits.
-
-> Regarding bisecting, I split the patches to attract reviewers to 
-> the smaller parts rather than scare them off with one big patch.
+>  extern ktime_t hrtimer_get_next_event(void);
+> +extern ktime_t hrtimer_get_next_event_on(int cpu);
+> +
+> +#define TICK_PERIOD_IN_NS	NSEC_PER_SEC / HZ
+> +/*
+> + * Helper function to check before migrating a hrtimer if it expires
+> + * before the next timer interrupt on the target cpu.
+> + */
+> +static inline int check_hrtimer_latency(struct hrtimer *timer, int cpu)
+> +{
+> +	unsigned long next_hrtimeout, next_jiffies;
+> +	next_jiffies = get_next_timer_interrupt_on(jiffies, cpu);
+> +	next_jiffies = next_jiffies * TICK_PERIOD_IN_NS;
+> +	next_hrtimeout = hrtimer_get_expires_ns(timer);
+> +
+> +	if (next_hrtimeout > next_jiffies)
+> +		return 1;
+> +	return 0;
+> +}
 >
-> I hope that the bisecting tool can cope with broken builds between 
-> patches.
 
-It cannot, and even if it did we dont want a single intentionally 
-broken bisection point in the kernel. Please do small patches that 
-build fine at each step. We've got more than 100,000 bisectable 
-commits in the kernel to look at. If you think it's not possible in 
-a specific case then please describe the situation to us so that we 
-can suggest a solution.
+This function can be greatly simplified.
+Here i am getting the next timer interrupt on target_cpu.
+The target_cpu is the idle load balancer.
+So we can check if the hrtimer expiry is before the next tick
+on the ilb or not.
+By doing this we can eliminate a lot of extra code, which would
+otherwise be needed in the form of helper functions for
+get_next_timer_interrupt_on().
 
-	Ingo
+After simplification the code would simply look like
+static inline int check_hrtimer_latency(struct hrtimer *timer, int cpu)
+{
+        unsigned long next_hrtimeout, next_jiffies;
+        next_jiffies = (jiffies + 1) * TICK_PERIOD_IN_NS;
+        next_hrtimeout = hrtimer_get_expires_ns(timer);
+
+        if(.....)
+}
+
+--arun
+
+>  /*
+>   * A timer is active, when it is enqueued into the rbtree or the callback
+> Index: linux.trees.git/include/linux/timer.h
+> ===================================================================
+> --- linux.trees.git.orig/include/linux/timer.h
+> +++ linux.trees.git/include/linux/timer.h
+> @@ -184,7 +184,7 @@ extern unsigned long next_timer_interrup
+>   * jiffie.
+>   */
+>  extern unsigned long get_next_timer_interrupt(unsigned long now);
+> -
+> +extern unsigned long get_next_timer_interrupt_on(unsigned long now, int cpu);
+>  /*
+>   * Timer-statistics info:
+>   */
