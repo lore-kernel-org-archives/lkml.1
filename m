@@ -1,57 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761948AbZDAIOu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761391AbZDAISx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761948AbZDAIOu (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 1 Apr 2009 04:14:50 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761356AbZDAIOF
+	id S1761391AbZDAISx (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 1 Apr 2009 04:18:53 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753469AbZDAISg
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 1 Apr 2009 04:14:05 -0400
-Received: from mtagate6.de.ibm.com ([195.212.29.155]:61151 "EHLO
-	mtagate6.de.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1761518AbZDAIOC (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 1 Apr 2009 04:14:02 -0400
-Date: Wed, 1 Apr 2009 10:13:57 +0200
-From: Martin Schwidefsky <schwidefsky@de.ibm.com>
-To: Rik van Riel <riel@redhat.com>
-Cc: linux-mm@kvack.org, linux-kernel@vger.kernel.org,
-       virtualization@lists.osdl.org, frankeh@watson.ibm.com, akpm@osdl.org,
-       nickpiggin@yahoo.com.au, hugh@veritas.com
-Subject: Re: [patch 3/6] Guest page hinting: mlocked pages.
-Message-ID: <20090401101357.7f714f7a@skybase>
-In-Reply-To: <49D2D6D4.8000309@redhat.com>
-References: <20090327150905.819861420@de.ibm.com>
-	<20090327151012.095486071@de.ibm.com>
-	<49D2D6D4.8000309@redhat.com>
-Organization: IBM Corporation
-X-Mailer: Claws Mail 3.7.1 (GTK+ 2.14.7; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Wed, 1 Apr 2009 04:18:36 -0400
+Received: from cn.fujitsu.com ([222.73.24.84]:54989 "EHLO song.cn.fujitsu.com"
+	rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org with ESMTP
+	id S1753029AbZDAISf (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 1 Apr 2009 04:18:35 -0400
+Message-ID: <49D3236D.3090705@cn.fujitsu.com>
+Date: Wed, 01 Apr 2009 16:18:53 +0800
+From: Li Zefan <lizf@cn.fujitsu.com>
+User-Agent: Thunderbird 2.0.0.9 (X11/20071115)
+MIME-Version: 1.0
+To: Ingo Molnar <mingo@elte.hu>
+CC: Jens Axboe <jens.axboe@oracle.com>,
+       Arnaldo Carvalho de Melo <acme@redhat.com>,
+       Steven Rostedt <rostedt@goodmis.org>,
+       Frederic Weisbecker <fweisbec@gmail.com>,
+       LKML <linux-kernel@vger.kernel.org>
+Subject: [PATCH 1/2] blktrace: fix output of unknown events
+Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 31 Mar 2009 22:52:04 -0400
-Rik van Riel <riel@redhat.com> wrote:
+Not all events are pc (packet command) events. An event is a pc
+event only if it has BLK_TC_PC bit set.
 
-> Martin Schwidefsky wrote:
-> > From: Martin Schwidefsky <schwidefsky@de.ibm.com>
-> > From: Hubertus Franke <frankeh@watson.ibm.com>
-> > From: Himanshu Raj
-> > 
-> > Add code to get mlock() working with guest page hinting. The problem
-> > with mlock is that locked pages may not be removed from page cache.
-> > That means they need to be stable. 
-> 
-> > Signed-off-by: Martin Schwidefsky <schwidefsky@de.ibm.com>
-> 
-> Acked-by: Rik van Riel <riel@redhat.com>
+Signed-off-by: Li Zefan <lizf@cn.fujitsu.com>
+---
+ kernel/trace/blktrace.c |    2 +-
+ 1 files changed, 1 insertions(+), 1 deletions(-)
 
-I'll add this one as well. Thanks again.
-
+diff --git a/kernel/trace/blktrace.c b/kernel/trace/blktrace.c
+index 947c5b3..464a6e5 100644
+--- a/kernel/trace/blktrace.c
++++ b/kernel/trace/blktrace.c
+@@ -1181,7 +1181,7 @@ static enum print_line_t print_one_line(struct trace_iterator *iter,
+ 	}
+ 
+ 	if (unlikely(what == 0 || what >= ARRAY_SIZE(what2act)))
+-		ret = trace_seq_printf(s, "Bad pc action %x\n", what);
++		ret = trace_seq_printf(s, "Unknown action %x\n", what);
+ 	else {
+ 		ret = log_action(iter, what2act[what].act[long_act]);
+ 		if (ret)
 -- 
-blue skies,
-   Martin.
+1.5.4.rc3
 
-"Reality continues to ruin my life." - Calvin.
 
