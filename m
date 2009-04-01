@@ -1,40 +1,42 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759310AbZDAIDi@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755212AbZDAIFK@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759310AbZDAIDi (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 1 Apr 2009 04:03:38 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752705AbZDAIDS
+	id S1755212AbZDAIFK (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 1 Apr 2009 04:05:10 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752705AbZDAIEr
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 1 Apr 2009 04:03:18 -0400
-Received: from john.hrz.tu-chemnitz.de ([134.109.132.2]:37539 "EHLO
-	john.hrz.tu-chemnitz.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751943AbZDAIDQ (ORCPT
+	Wed, 1 Apr 2009 04:04:47 -0400
+Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:57770
+	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
+	by vger.kernel.org with ESMTP id S1750728AbZDAIEp (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 1 Apr 2009 04:03:16 -0400
-From: Torsten Schmidt <torsten.schmidt@s2006.tu-chemnitz.de>
-To: linux-kernel@vger.kernel.org
-Subject: Re: "make oldconfig" problem
-Date: Wed, 1 Apr 2009 10:02:13 +0200
-User-Agent: KMail/1.9.1
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="us-ascii"
+	Wed, 1 Apr 2009 04:04:45 -0400
+Date: Wed, 01 Apr 2009 01:04:33 -0700 (PDT)
+Message-Id: <20090401.010433.85907053.davem@davemloft.net>
+To: yinghai@kernel.org
+Cc: tj@kernel.org, mingo@elte.hu, hpa@zytor.com, tglx@linutronix.de,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] x86: remove duplicated code with pcpu_need_numa()
+From: David Miller <davem@davemloft.net>
+In-Reply-To: <49D31770.9090502@kernel.org>
+References: <86802c440903312256r6ddbaa22o5c23cf85d83a6662@mail.gmail.com>
+	<49D30469.8020006@kernel.org>
+	<49D31770.9090502@kernel.org>
+X-Mailer: Mew version 6.1 on Emacs 22.1 / Mule 5.0 (SAKAKI)
+Mime-Version: 1.0
+Content-Type: Text/Plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200904011002.13367.schmto@hrz.tu-chemnitz.de>
-X-Spam-Score: -1.4 (-)
-X-Spam-Report: --- Start der SpamAssassin 3.2.5 Textanalyse (-1.4 Punkte)
-	Fragen an/questions to:  Postmaster TU Chemnitz <postmaster@tu-chemnitz.de>
-	-1.4 ALL_TRUSTED            Nachricht wurde nur ueber vertrauenswuerdige Rechner
-	weitergeleitet
-	--- Ende der SpamAssassin Textanalyse
-X-Scan-Signature: 3ab846f8bbd1dc816c18aeac22246ef5
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi, 
+From: Yinghai Lu <yinghai@kernel.org>
+Date: Wed, 01 Apr 2009 00:27:44 -0700
 
-fixes also my problem, reported some days ago:
-http://lkml.org/lkml/2009/3/30/384
+> 
+> Impact: clean up
+> 
+> those code pcpu_need_numa(), should be removed.
+> 
+> Signed-off-by: Yinghai Lu <yinghai@kernel.org>
 
-Thx, Torsten
+Acked-by: David S. Miller <davem@davemloft.net>
