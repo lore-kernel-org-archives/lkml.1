@@ -1,285 +1,76 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762304AbZDAIil@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759266AbZDAIrz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762304AbZDAIil (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 1 Apr 2009 04:38:41 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760566AbZDAIia
+	id S1759266AbZDAIrz (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 1 Apr 2009 04:47:55 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753923AbZDAIrq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 1 Apr 2009 04:38:30 -0400
-Received: from fgwmail5.fujitsu.co.jp ([192.51.44.35]:47353 "EHLO
-	fgwmail5.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1760627AbZDAIi1 (ORCPT
+	Wed, 1 Apr 2009 04:47:46 -0400
+Received: from mtagate3.de.ibm.com ([195.212.29.152]:39517 "EHLO
+	mtagate3.de.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752813AbZDAIro (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 1 Apr 2009 04:38:27 -0400
-From: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
-To: Hugh Dickins <hugh@veritas.com>
-Subject: Re: add_to_swap_cache with GFP_ATOMIC ?
-Cc: kosaki.motohiro@jp.fujitsu.com, Minchan Kim <minchan.kim@gmail.com>,
-       linux-mm <linux-mm@kvack.org>, lkml <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Christoph Lameter <cl@linux-foundation.org>,
-       Nick Piggin <npiggin@suse.de>
-In-Reply-To: <Pine.LNX.4.64.0903311154570.19028@blonde.anvils>
-References: <28c262360903310338k20b8eebbncb86baac9b09e54@mail.gmail.com> <Pine.LNX.4.64.0903311154570.19028@blonde.anvils>
-Message-Id: <20090401165516.B1EB.A69D9226@jp.fujitsu.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset="US-ASCII"
+	Wed, 1 Apr 2009 04:47:44 -0400
+Date: Wed, 1 Apr 2009 10:47:37 +0200
+From: Martin Schwidefsky <schwidefsky@de.ibm.com>
+To: David Miller <davem@davemloft.net>
+Cc: tj@kernel.org, mingo@elte.hu, rusty@rustcorp.com.au, tglx@linutronix.de,
+       x86@kernel.org, linux-kernel@vger.kernel.org, hpa@zytor.com,
+       lethal@linux-sh.org, rmk@arm.linux.org.uk, starvik@axis.com,
+       ralf@linux-mips.org, cooloney@kernel.org, kyle@mcmartin.ca,
+       matthew@wil.cx, grundler@parisc-linux.org, takata@linux-m32r.org,
+       benh@kernel.crashing.org, rth@twiddle.net, ink@jurassic.park.msu.ru,
+       heiko.carstens@de.ibm.com
+Subject: Re: [GIT RFC] percpu: use dynamic percpu allocator as the default
+ percpu allocator
+Message-ID: <20090401104737.22c8c66c@skybase>
+In-Reply-To: <20090401.013702.66171229.davem@davemloft.net>
+References: <20090401101054.0a4b187d@skybase>
+	<49D3231D.2040403@kernel.org>
+	<20090401103257.12c2517e@skybase>
+	<20090401.013702.66171229.davem@davemloft.net>
+Organization: IBM Corporation
+X-Mailer: Claws Mail 3.7.1 (GTK+ 2.14.7; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-X-Mailer: Becky! ver. 2.50 [ja]
-Date: Wed,  1 Apr 2009 17:38:19 +0900 (JST)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-(cc to related person)
+On Wed, 01 Apr 2009 01:37:02 -0700 (PDT)
+David Miller <davem@davemloft.net> wrote:
 
-> The questionable one is add_to_swap (when vmscanning), which calls
-> it with __GFP_HIGH|__GFP_NOMEMALLOC|__GFP_NOWARN, i.e. GFP_ATOMIC
-> plus __GFP_NOMEMALLOC|__GFP_NOWARN.  That one I have wondered
-> about from time to time: GFP_NOIO would be the obvious choice,
-> that's what swap_writepage will use to allocate bio soon after.
+> From: Martin Schwidefsky <schwidefsky@de.ibm.com>
+> Date: Wed, 1 Apr 2009 10:32:57 +0200
 > 
-> I've been tempted to change it, but afraid to touch that house
-> of cards, and afraid of long testing and justification required.
-> Would it be safe to drop that __GFP_HIGH?  What's the effect of the
-> __GFP_NOMEMALLOC (we've layer on layer of tweak this one way because
-> we're in the reclaim path so let it eat more, then tweak it the other
-> way because we don't want it to eat up _too_ much).  I just let it stay.
+> > The code sequence with @GOT:
+> > 
+> > 	larl	%r12,_GLOBAL_OFFSET_TABLE_
+> > 	lg	%r1,symbol@GOT(%r12)
+> > 
+> > is equivalent to:
+> > 
+> > 	larl	%r1,symbol@GOTENT
+> > 	lg	%r1,0(%r1)
+> > 
+> > The advantage of the second code sequence is that it need a single
+> > register and the size of the GOT is not limited to 4K as in the first
+> > example (the offset in an RX format instruction is limited to 12 bits -
+> > but that is probably something you don't want to know ;-).
+> 
+> If practical I think you guys should just force all of the module
+> address space below 4GB virtually, as we do on sparc64.  It's a good
+> way to avoid all of these problems.
 
-firstly, following some patch indicate add_to_swap() parameter history.
+We have thought about that solution as well but it not really a good
+one. For a machine with more than 4GB of memory we would either loose
+the memory that overlaps with the module area or we'd have to play
+nasty remapping tricks. On s390 the kernel image is linked to address 0
+(PAGE_OFFSET==0) and we have a simple 1:1 mapping for all real memory.
 
-ac47b003d03c2a4f28aef1d505b66d24ad191c4f(Hugh, Jan 6 2009) reverted 
-1480a540c98525640174a7eadd712378fcd6fd63(Cristoph, Jan 8 2006).
+-- 
+blue skies,
+   Martin.
 
-bd53b714d32a29bdf33009f812e295667e92b930(Nick, May 1 2005) added
-__GFP_NOMEMALLOC. __GFP_NOMEMALLOC mean "please don't eat emergency memory".
-
-c4b3efde0744e038d16b33d18110d39e762ef80c(akpm, Jan 6 2003) explained
-why no using emergency memory is better.
-it said 
-
-    In the case of adding pages to swapcache we're still using GFP_ATOMIC, so
-    these addition attempts can still fail.  That's OK, because the error is
-    handled and, unlike file pages, it will not cause user applicaton failures.
-
-
-IOW, GFP_ATOMIC on add_to_swap() was introduced accidentally. the reason 
-was old add_to_page_cache() didn't have gfp_mask parameter and we didn't
- have the reason of changing add_to_swap() behavior.
-I think it don't have deeply reason and changing GFP_NOIO don't cause regression.
-
-
-
----------------------------------------------
-
-commit ac47b003d03c2a4f28aef1d505b66d24ad191c4f
-Author: Hugh Dickins <hugh@veritas.com>
-Date:   Tue Jan 6 14:39:39 2009 -0800
-
-    mm: remove gfp_mask from add_to_swap
-
-    Remove gfp_mask argument from add_to_swap(): it's misleading because its
-    only caller, shrink_page_list(), is not atomic at that point; and in due
-    course (implementing discard) we'll sometimes want to allocate some memory
-    with GFP_NOIO (as is used in swap_writepage) when allocating swap.
-
-    No change to the gfp_mask passed down to add_to_swap_cache(): still use
-    __GFP_HIGH without __GFP_WAIT (with nomemalloc and nowarn as before):
-    though it's not obvious if that's the best combination to ask for here.
-
--int add_to_swap(struct page * page, gfp_t gfp_mask)
-+int add_to_swap(struct page *page)
- {
-        swp_entry_t entry;
-        int err;
-@@ -153,7 +153,7 @@ int add_to_swap(struct page * page, gfp_t gfp_mask)
-                 * Add it to the swap cache and mark it dirty
-                 */
-                err = add_to_swap_cache(page, entry,
--                               gfp_mask|__GFP_NOMEMALLOC|__GFP_NOWARN);
-+                               __GFP_HIGH|__GFP_NOMEMALLOC|__GFP_NOWARN);
-
----------------------------------------------
-
-commit 1480a540c98525640174a7eadd712378fcd6fd63
-Author: Christoph Lameter <clameter@sgi.com>
-Date:   Sun Jan 8 01:00:53 2006 -0800
-
-    [PATCH] SwapMig: add_to_swap() avoid atomic allocations
-
-    Add gfp_mask to add_to_swap
-
-    add_to_swap does allocations with GFP_ATOMIC in order not to interfere with
-    swapping.  During migration we may have use add_to_swap extensively which may
-    lead to out of memory errors.
-
-    This patch makes add_to_swap take a parameter that specifies the gfp mask.
-    The page migration code can then make add_to_swap use GFP_KERNEL.
-
--int add_to_swap(struct page * page)
-+int add_to_swap(struct page * page, gfp_t gfp_mask)
- {
-        swp_entry_t entry;
-        int err;
-@@ -166,7 +166,7 @@ int add_to_swap(struct page * page)
-                 * Add it to the swap cache and mark it dirty
-                 */
-                err = __add_to_swap_cache(page, entry,
--                               GFP_ATOMIC|__GFP_NOMEMALLOC|__GFP_NOWARN);
-+                               gfp_mask|__GFP_NOMEMALLOC|__GFP_NOWARN);
-
----------------------------------------------
-
-commit bd53b714d32a29bdf33009f812e295667e92b930
-Author: Nick Piggin <nickpiggin@yahoo.com.au>
-Date:   Sun May 1 08:58:37 2005 -0700
-
-    [PATCH] mm: use __GFP_NOMEMALLOC
-
-    Use the new __GFP_NOMEMALLOC to simplify the previous handling of
-    PF_MEMALLOC.
-
-    Signed-off-by: Nick Piggin <nickpiggin@yahoo.com.au>
-    Signed-off-by: Andrew Morton <akpm@osdl.org>
-    Signed-off-by: Linus Torvalds <torvalds@osdl.org>
-
-@@ -154,29 +153,19 @@ int add_to_swap(struct page * page)
-                if (!entry.val)
-                        return 0;
-
--               /* Radix-tree node allocations are performing
--                * GFP_ATOMIC allocations under PF_MEMALLOC.
--                * They can completely exhaust the page allocator.
--                *
--                * So PF_MEMALLOC is dropped here.  This causes the slab
--                * allocations to fail earlier, so radix-tree nodes will
--                * then be allocated from the mempool reserves.
-+               /*
-+                * Radix-tree node allocations from PF_MEMALLOC contexts could
-+                * completely exhaust the page allocator. __GFP_NOMEMALLOC
-+                * stops emergency reserves from being allocated.
-                 *
--                * We're still using __GFP_HIGH for radix-tree node
--                * allocations, so some of the emergency pools are available,
--                * just not all of them.
-+                * TODO: this could cause a theoretical memory reclaim
-+                * deadlock in the swap out path.
-                 */
--
--               pf_flags = current->flags;
--               current->flags &= ~PF_MEMALLOC;
--
-                /*
-                 * Add it to the swap cache and mark it dirty
-                 */
--               err = __add_to_swap_cache(page, entry, GFP_ATOMIC|__GFP_NOWARN);
--
--               if (pf_flags & PF_MEMALLOC)
--                       current->flags |= PF_MEMALLOC;
-+               err = __add_to_swap_cache(page, entry,
-+                               GFP_ATOMIC|__GFP_NOMEMALLOC|__GFP_NOWARN);
-
----------------------------------------------
-commit b84a35be0285229b0a8a5e2e04d79360c5b75562
-Author: Nick Piggin <nickpiggin@yahoo.com.au>
-Date:   Sun May 1 08:58:36 2005 -0700
-
-    [PATCH] mempool: NOMEMALLOC and NORETRY
-
-    Mempools have 2 problems.
-
-    The first is that mempool_alloc can possibly get stuck in __alloc_pages
-    when they should opt to fail, and take an element from their reserved pool.
-
-    The second is that it will happily eat emergency PF_MEMALLOC reserves
-    instead of going to their reserved pools.
-
-    Fix the first by passing __GFP_NORETRY in the allocation calls in
-    mempool_alloc.  Fix the second by introducing a __GFP_MEMPOOL flag which
-    directs the page allocator not to allocate from the reserve pool.
-
-    Signed-off-by: Andrew Morton <akpm@osdl.org>
-    Signed-off-by: Linus Torvalds <torvalds@osdl.org>
-
----------------------------------------------
-
-commit c22eeaf4682941543d1426621ca1e3c6d3833fe2
-Author: akpm <akpm>
-Date:   Fri Sep 3 17:20:58 2004 +0000
-
-    [PATCH] add_to_swap(): suppress oom message
-
-    Page allocation failures are expected when add_to_swap() tries to allocate
-    radix-tree nodes without PF_MEMALLOC.  Kill the __alloc_pages() warnings.
-
-    Signed-off-by: Andrew Morton <akpm@osdl.org>
-    Signed-off-by: Linus Torvalds <torvalds@osdl.org>
-
-    BKrev: 4138a7faauXIloxI3vwZ04xvfa1paQ
-
-@@ -171,7 +171,7 @@ int add_to_swap(struct page * page)
-                /*
-                 * Add it to the swap cache and mark it dirty
-                 */
--               err = __add_to_swap_cache(page, entry, GFP_ATOMIC);
-+               err = __add_to_swap_cache(page, entry, GFP_ATOMIC|__GFP_NOWARN);
-
-                if (pf_flags & PF_MEMALLOC)
-                        current->flags |= PF_MEMALLOC;
-
-
----------------------------------------------
-
-commit c4b3efde0744e038d16b33d18110d39e762ef80c
-Author: akpm <akpm>
-Date:   Mon Jan 6 03:51:29 2003 +0000
-
-    [PATCH] handle radix_tree_node allocation failures
-
-    This patch uses the radix_tree_preload() API in add_to_page_cache().
-
-    A new gfp_mask argument is added to add_to_page_cache(), which is then passed
-    on to radix_tree_preload().   It's pretty simple.
-
-    In the case of adding pages to swapcache we're still using GFP_ATOMIC, so
-    these addition attempts can still fail.  That's OK, because the error is
-    handled and, unlike file pages, it will not cause user applicaton failures.
-    This codepath (radix-tree node exhaustion on swapout) was well tested in the
-    days when the swapper_space radix tree was fragmented all over the place due
-    to unfortunate swp_entry bit layout.
-
-    BKrev: 3e18fd41cbfAQY7P7NcjQYCevjYG2g
-
-@@ -149,7 +149,8 @@ int add_to_swap(struct page * page)
-                /*
-                 * Add it to the swap cache and mark it dirty
-                 */
--               err = add_to_page_cache(page, &swapper_space, entry.val);
-+               err = add_to_page_cache(page, &swapper_space,
-+                                       entry.val, GFP_ATOMIC);
-
----------------------------------------------
-
-commit e9cb95284376950d34943acd2ddd33a473ba9ba3
-Author: torvalds <torvalds>
-Date:   Tue Dec 3 22:59:18 2002 +0000
-
-    Merge master.kernel.org:/home/hch/BK/xfs/linux-2.5
-    into penguin.transmeta.com:/home/penguin/torvalds/repositories/kernel/linux
-
-
-@@ -149,9 +150,15 @@ int add_to_swap(struct page * page)
-                /*
-                 * Add it to the swap cache and mark it dirty
-                 */
--               switch (add_to_page_cache(page, &swapper_space, entry.val)) {
-+               err = add_to_page_cache(page, &swapper_space, entry.val);
-+
-+               if (!(pf_flags & PF_NOWARN))
-+                       current->flags &= ~PF_NOWARN;
-+               if (pf_flags & PF_MEMALLOC)
-+                       current->flags |= PF_MEMALLOC;
-+
-+               switch (err) {
-
-
+"Reality continues to ruin my life." - Calvin.
 
