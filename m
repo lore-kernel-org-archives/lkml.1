@@ -1,105 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764276AbZDAMtj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757176AbZDAMuB@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764276AbZDAMtj (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 1 Apr 2009 08:49:39 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759050AbZDAMt2
+	id S1757176AbZDAMuB (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 1 Apr 2009 08:50:01 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1764190AbZDAMtr
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 1 Apr 2009 08:49:28 -0400
-Received: from mx2.redhat.com ([66.187.237.31]:48650 "EHLO mx2.redhat.com"
+	Wed, 1 Apr 2009 08:49:47 -0400
+Received: from mx2.mail.elte.hu ([157.181.151.9]:46290 "EHLO mx2.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754398AbZDAMt0 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 1 Apr 2009 08:49:26 -0400
-Date: Wed, 1 Apr 2009 08:48:43 -0400
-From: Jeff Layton <jlayton@redhat.com>
-To: Wu Fengguang <fengguang.wu@intel.com>
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       "linux-fsdevel@vger.kernel.org" <linux-fsdevel@vger.kernel.org>
-Subject: Re: [PATCH] writeback: guard against jiffies wraparound on
- inode->dirtied_when checks (try #2)
-Message-ID: <20090401084843.560d89ea@barsoom.rdu.redhat.com>
-In-Reply-To: <20090401122627.GA12945@localhost>
-References: <1238544239-31882-1-git-send-email-jlayton@redhat.com>
-	<20090331172031.b2971f1e.akpm@linux-foundation.org>
-	<20090331205018.228ea5f8@tleilax.poochiereds.net>
-	<20090331180730.049d42e7.akpm@linux-foundation.org>
-	<20090401065618.GB10423@localhost>
-	<20090401075320.0f49b5bf@barsoom.rdu.redhat.com>
-	<20090401122627.GA12945@localhost>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	id S1759050AbZDAMtq (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 1 Apr 2009 08:49:46 -0400
+Date: Wed, 1 Apr 2009 14:49:31 +0200
+From: Ingo Molnar <mingo@elte.hu>
+To: Steven Rostedt <rostedt@goodmis.org>
+Cc: linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
+       Frederic Weisbecker <fweisbec@gmail.com>
+Subject: Re: [PATCH 0/2] [GIT PULL] ftrace updates for 2.6.30
+Message-ID: <20090401124931.GJ12966@elte.hu>
+References: <20090330184149.866994402@goodmis.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20090330184149.866994402@goodmis.org>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> > > --- mm.orig/fs/fs-writeback.c
-> > > +++ mm/fs/fs-writeback.c
-> > > @@ -196,7 +196,7 @@ static void redirty_tail(struct inode *i
-> > >  		struct inode *tail_inode;
-> > >  
-> > >  		tail_inode = list_entry(sb->s_dirty.next, struct inode, i_list);
-> > > -		if (!time_after_eq(inode->dirtied_when,
-> > > +		if (time_before(inode->dirtied_when,
-> > >  				tail_inode->dirtied_when))
-> > >  			inode->dirtied_when = jiffies;
-> > >  	}
-> > 
-> > I think we need a similar change in this function in order to maintain
-> > the list order.
-> > 
-> > Consider this case:
-> > 
-> > We have an s_dirty list with a head inode that appears to be in the
-> > future. We start writeback and clear out s_dirty (all of the inodes are
-> > moved to s_io). A new inode is dirtied, and goes onto the empty s_dirty
-> > list with a dirtied_when value that equals now. The inode with the
-> > dirtied_when value that looks like it's in the future is redirtied while
-> > being written and redirty_tail is called. It goes back on the list
-> > without resetting dirtied_when even though it's actually older than the
-> > inode at the tail.
+
+* Steven Rostedt <rostedt@goodmis.org> wrote:
+
+> Ingo,
 > 
-> What's the difference? It _is_ the past because all 2 reference sites
-> are now taught to think so.
+> Please pull the latest tip/tracing/ftrace tree, which can be found at:
 > 
-> So s_dirty is still in order, and the writeback process won't be blocked.
+>   git://git.kernel.org/pub/scm/linux/kernel/git/rostedt/linux-2.6-trace.git
+> tip/tracing/ftrace
 > 
-
-Sanity check -- my understanding is this:
-
-head == least-recently dirtied inode
-tail == most-recently dirtied inode
-
-...if so, then we are violating the list order if we don't make a
-change to redirty_tail. We're putting an inode that's far in the past
-back onto the tail of the list without resetting dirtied_when. A more
-recently-dirtied inode will precede one that was dirtied less recently.
-
-Since the newly dirtied inode is closer to the head of the list, the
-older inode that's constantly being redirtied won't be written out
-until the newly dirtied one passes the older_than_this check (30s or
-so in the usual case).
-
-> > There is another option too that I'll throw out here...
-> > 
-> > We could just make dirtied_when a 64 bit value on 32 bit machines and
-> > use jiffies_64 there. On the upside there is no "problematic
-> > window" with that. The downside is that struct inode would grow by 4
-> > bytes on 32 bit arches, and checking jiffies_64 on such an arch is
-> > more computationally intensive. We'd also have to change the size of
-> > older_than_this value in the writeback_control struct too if we want to
-> > go this route...
 > 
-> Yes that could eliminate the 30s or more temporary writeback stillness.
-> The only problem is the extra costs for normal cases, especially the
-> space cost.
+> Steven Rostedt (2):
+>       function-graph: allow unregistering twice
+>       ring-buffer: do not remove reader page from list on ring buffer free
 > 
+> ----
+>  kernel/trace/ftrace.c      |    4 ++++
+>  kernel/trace/ring_buffer.c |    1 -
+>  2 files changed, 4 insertions(+), 1 deletions(-)
 
-Correct. I'm not necessarily advocating that approach but it's one to
-consider...
+Pulled, thanks Steve!
 
-If your s_more_io_wait patchset comes to fruition though then that
-change really won't be needed, so maybe it's best not to go that route.
-
--- 
-Jeff Layton <jlayton@redhat.com>
+	Ingo
