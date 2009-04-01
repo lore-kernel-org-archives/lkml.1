@@ -1,83 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933966AbZDATC6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933835AbZDATGR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933966AbZDATC6 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 1 Apr 2009 15:02:58 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933884AbZDATBo
+	id S933835AbZDATGR (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 1 Apr 2009 15:06:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932648AbZDATF7
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 1 Apr 2009 15:01:44 -0400
-Received: from pfepb.post.tele.dk ([195.41.46.236]:51317 "EHLO
-	pfepb.post.tele.dk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S933885AbZDATBk (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 1 Apr 2009 15:01:40 -0400
-Date: Wed, 1 Apr 2009 21:03:40 +0200
-From: Sam Ravnborg <sam@ravnborg.org>
-To: Lennart Sorensen <lsorense@csclub.uwaterloo.ca>
-Cc: Rob Landley <rob@landley.net>, linux-kernel@vger.kernel.org,
-       dwmw2@infradead.org
-Subject: Re: make headers_install broken for ARCH=m68k in 2.6.29-rc7.
-Message-ID: <20090401190340.GA29673@uranus.ravnborg.org>
-References: <200903120437.03837.rob@landley.net> <20090401165741.GA3797@csclub.uwaterloo.ca>
-Mime-Version: 1.0
+	Wed, 1 Apr 2009 15:05:59 -0400
+Received: from relay2.sgi.com ([192.48.179.30]:38878 "EHLO relay.sgi.com"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S932564AbZDATF6 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 1 Apr 2009 15:05:58 -0400
+Date: Wed, 1 Apr 2009 14:05:56 -0500
+From: Robin Holt <holt@sgi.com>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: linux-kernel@vger.kernel.org
+Subject: [Patch 1/1] Fix compiler warning.
+Message-ID: <20090401190556.GH8925@sgi.com>
+MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20090401165741.GA3797@csclub.uwaterloo.ca>
-User-Agent: Mutt/1.4.2.1i
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Apr 01, 2009 at 12:57:41PM -0400, Lennart Sorensen wrote:
-> On Thu, Mar 12, 2009 at 04:37:03AM -0500, Rob Landley wrote:
-> > So I'm doing this:
-> > 
-> > make ARCH=m68k headers_install INSTALL_HDR_PATH=walrus
-> > 
-> > And it doesn't install unistd_mm.h which is included from asm/unistd.h.  (The 
-> > file is there in arch/m68k/include/asm/unistd_mm.h, it just doesn't get 
-> > installed.  So any code that #includes <asm/unistd.h> results in a file not 
-> > found error for the other one, which is essentially just a wrapper.)
-> > 
-> > I don't understand what the code's currently doing here well enough to fix it, 
-> > specifically where does this file list come from?  The file  
-> > arch/m68k/include/asm/Kbuild is adding "cachectl.h" to header-y, but there are 
-> > 31 files getting installed from that directory and only one in there.  If the 
-> > list was just the contents of the directory, then unistd_mm.h (and 
-> > unistd_no.h) would get installed, but they don't.  I could add those two to 
-> > the Kbuild file after cachectl.h, but is that the _right_ fix?  Where are the 
-> > other 31 identified?  (Is it getting a listing of some _other_ directory?)
-> 
-> I sent a patch to fix that on Feb 5th.  I guess it hasn't been put in.
-> 
-> It looked like this:
-> 
-> Signed-of-by: Len Sorensen <lsorense@csclub.uwaterloo.ca>
-> 
-> diff --git a/arch/m68k/include/asm/Kbuild b/arch/m68k/include/asm/Kbuild
-> index 1a922fa..d477927 100644
-> --- a/arch/m68k/include/asm/Kbuild
-> +++ b/arch/m68k/include/asm/Kbuild
-> @@ -1,2 +1,18 @@
->  include include/asm-generic/Kbuild.asm
->  header-y += cachectl.h
-> +header-y += param_mm.h
-> +header-y += param_no.h
-> +header-y += ptrace_mm.h
-> +header-y += ptrace_no.h
-> +header-y += setup_mm.h
-> +header-y += setup_no.h
-> +header-y += sigcontext_mm.h
-> +header-y += sigcontext_no.h
-> +header-y += siginfo_mm.h
-> +header-y += siginfo_no.h
-> +header-y += signal_mm.h
-> +header-y += signal_no.h
-> +header-y += swab_mm.h
-> +header-y += swab_no.h
-> +header-y += unistd_mm.h
-> +header-y += unistd_no.h
+Fix a minor compile warning when building on ia64.
 
-They decided to fix it by eliminating the *_{no,mm}.h files for exported headers.
-The patch is already in mainline.
+Signed-off-by: Robin Holt <holt@sgi.com>
 
-	Sam
+---
+
+ drivers/misc/sgi-xp/xpc_sn2.c |   10 +++++-----
+ 1 file changed, 5 insertions(+), 5 deletions(-)
+Index: 20090401-ia64-xpc-no-gru/drivers/misc/sgi-xp/xpc_sn2.c
+===================================================================
+--- 20090401-ia64-xpc-no-gru.orig/drivers/misc/sgi-xp/xpc_sn2.c	2009-04-01 10:50:19.000000000 -0500
++++ 20090401-ia64-xpc-no-gru/drivers/misc/sgi-xp/xpc_sn2.c	2009-04-01 11:27:42.005011690 -0500
+@@ -1737,20 +1737,20 @@ xpc_clear_remote_msgqueue_flags_sn2(stru
+ {
+ 	struct xpc_channel_sn2 *ch_sn2 = &ch->sn.sn2;
+ 	struct xpc_msg_sn2 *msg;
+-	s64 put;
++	s64 put, remote_nentries = ch->remote_nentries;
+ 
+ 	/* flags are zeroed when the buffer is allocated */
+-	if (ch_sn2->remote_GP.put < ch->remote_nentries)
++	if (ch_sn2->remote_GP.put < remote_nentries)
+ 		return;
+ 
+-	put = max(ch_sn2->w_remote_GP.put, ch->remote_nentries);
++	put = max(ch_sn2->w_remote_GP.put, remote_nentries);
+ 	do {
+ 		msg = (struct xpc_msg_sn2 *)((u64)ch_sn2->remote_msgqueue +
+-					     (put % ch->remote_nentries) *
++					     (put % remote_nentries) *
+ 					     ch->entry_size);
+ 		DBUG_ON(!(msg->flags & XPC_M_SN2_READY));
+ 		DBUG_ON(!(msg->flags & XPC_M_SN2_DONE));
+-		DBUG_ON(msg->number != put - ch->remote_nentries);
++		DBUG_ON(msg->number != put - remote_nentries);
+ 		msg->flags = 0;
+ 	} while (++put < ch_sn2->remote_GP.put);
+ }
