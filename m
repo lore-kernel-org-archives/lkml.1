@@ -1,87 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932102AbZDARny@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764091AbZDARsb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932102AbZDARny (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 1 Apr 2009 13:43:54 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753275AbZDARno
+	id S1764091AbZDARsb (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 1 Apr 2009 13:48:31 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755086AbZDARsV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 1 Apr 2009 13:43:44 -0400
-Received: from cavan.codon.org.uk ([93.93.128.6]:46976 "EHLO
-	vavatch.codon.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751876AbZDARnn (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 1 Apr 2009 13:43:43 -0400
-Date: Wed, 1 Apr 2009 18:43:36 +0100
-From: Matthew Garrett <mjg59@srcf.ucam.org>
-To: Theodore Tso <tytso@mit.edu>, Sitsofe Wheeler <sitsofe@yahoo.com>,
-       "Andreas T.Auer" <andreas.t.auer_lkml_73537@ursus.ath.cx>,
-       Alberto Gonzalez <info@gnebu.es>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: Ext4 and the "30 second window of death"
-Message-ID: <20090401174336.GA14726@srcf.ucam.org>
-References: <200903291224.21380.info@gnebu.es> <200903311452.05210.info@gnebu.es> <20090331134547.GJ13356@mit.edu> <200904010002.47077.info@gnebu.es> <49D2A5AB.1090704@ursus.ath.cx> <20090401015010.GB4529@mit.edu> <20090401052050.GA20456@sucs.org> <20090401151219.GA12285@srcf.ucam.org> <20090401173521.GA15423@mit.edu>
+	Wed, 1 Apr 2009 13:48:21 -0400
+Received: from mx3.mail.elte.hu ([157.181.1.138]:52095 "EHLO mx3.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753421AbZDARsV (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 1 Apr 2009 13:48:21 -0400
+Date: Wed, 1 Apr 2009 19:47:20 +0200
+From: Ingo Molnar <mingo@elte.hu>
+To: Masami Hiramatsu <mhiramat@redhat.com>
+Cc: Arnaldo Carvalho de Melo <acme@redhat.com>,
+       Steven Rostedt <rostedt@goodmis.org>,
+       Ananth N Mavinakayanahalli <ananth@in.ibm.com>,
+       Frederic Weisbecker <fweisbec@gmail.com>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       systemtap-ml <systemtap@sources.redhat.com>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Jim Keniston <jkenisto@us.ibm.com>
+Subject: Re: [PATCH -tip 0/4 V3] tracing: kprobe-based event tracer
+Message-ID: <20090401174720.GA19225@elte.hu>
+References: <49CC08A2.5030602@redhat.com> <20090401133654.GB18677@elte.hu> <49D37584.50208@redhat.com> <20090401142711.GG18677@elte.hu> <49D3A708.9080501@redhat.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20090401173521.GA15423@mit.edu>
-User-Agent: Mutt/1.5.12-2006-07-14
-X-SA-Exim-Connect-IP: <locally generated>
-X-SA-Exim-Mail-From: mjg59@codon.org.uk
-X-SA-Exim-Scanned: No (on vavatch.codon.org.uk); SAEximRunCond expanded to false
+In-Reply-To: <49D3A708.9080501@redhat.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Apr 01, 2009 at 01:35:21PM -0400, Theodore Tso wrote:
-> On Wed, Apr 01, 2009 at 04:12:21PM +0100, Matthew Garrett wrote:
-> > On Wed, Apr 01, 2009 at 06:20:50AM +0100, Sitsofe Wheeler wrote:
+
+* Masami Hiramatsu <mhiramat@redhat.com> wrote:
+
+> >> I agreed. Fortunately, Jim Keniston and I wrote an x86 
+> >> instruction decoder :-) which has been made originally for 
+> >> uprobe andd kprobes jump-optimizer.
+> >>
+> >> https://www.redhat.com/archives/utrace-devel/2009-March/msg00031.html
 > > 
-> > > Just out of curiosity, when laptop mode is happening is there a
-> > > guarantee that writes to other files won't be reordered to before the
-> > > fsync? 
-> > 
-> > laptop-mode does two things - tweak the dirty page semantics slightly 
-> > (not in an interestingly relevant way) and call sys_sync() a few seconds 
-> > after something hits disk rather than cache. In contrast to Ted's 
-> > suggestion that laptop-mode reduces data integrity, it actually enhances 
-> > it by opportunistically ensuring that data hits disk. It's the 
-> > lengthening of the commit intervals that usually accompanies it that 
-> > increases the risk of data loss.
+> > looks cool. Needs to be put somewhere in arch/x86/lib/, provided 
+> > as a generic facility, with a Kconfig variable that says that 
+> > the architecture supports it and then the kprobes-tracer could 
+> > make immediate use of it, right?
 > 
-> It *can* reduce data integrity; it really depends on how it's tuned
-> and what scenario you're talking about.  To the extent that it uses
-> sys_sync(), it could help in some cases as well, since filesystems
-> that do delayed allocation will wake up when the commit interval
-> fires, and then force out all writes to the disk, yes.  But before the
-> commit interval, there is an increased risk of data loss --- which the
-> user requested.
+> Yeah, I'd rather add a safety checker in kprobes-x86 itself, 
+> because sometimes it has to fixup instructions modified by 
+> previous kprobes.
 
-Not from laptop-mode. Let's separate the functionality from the typical 
-use case.
+Oh, certainly! I didnt know how much you wanted to check things on 
+the kprobes side but by all means please add it there too, it will 
+be for the better.
 
-> The other subtlety comes if we add fsync() suppression to laptop mode
-> --- which is something that Bart Samwel is very interested in doing
-> and I talked to him at FOSDEM about this.  As Jeff Garzik recently
-> pointed out, however, if we let the system reorder writes across
-> fsync() boundaries, or if we combine two writes to the same block
-> separated by an fsync(), and the system crashes in the middle of
-> pushing all of these blocks out to the disk, we can end up trashing
-> the consistency guarantees of a database such as mysql or postgres.
-> It's a good point, but it only applies if we add fsync() suppression
-> to laptop mode --- which we haven't done yet.
+A clear and actionable debug message to the syslog is important for 
+the case where the decoder rejects an action. This is especially 
+important for the kprobes side - we dont want silent breakage of 
+tools.
 
-I've got absolutely no idea why anyone would want fsync() to stop 
-meaning "Put my data on the disk please". laptop-mode isn't intended to 
-reduce data integrity - it's intended to batch disk write-outs such that 
-there's a lower risk of needing to perform further write-outs in future. 
-It makes sense for applications which really desperately want 
-information on disk to fsync() (for instance, saving a file in 
-OpenOffice).
-
-laptop-mode is something that makes sense as a default behaviour under a 
-lot of circumstances. Adding fsync() suppression means it's utterly 
-impossible to use it in that way. An additional mode would be perfectly 
-reasonable, as long as it's made clear that it's really a request for 
-data to be discarded at some point. The current mode isn't.
-
--- 
-Matthew Garrett | mjg59@srcf.ucam.org
+	Ingo
