@@ -1,90 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1765027AbZDAQrV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756297AbZDAQvV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1765027AbZDAQrV (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 1 Apr 2009 12:47:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759235AbZDAQrH
+	id S1756297AbZDAQvV (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 1 Apr 2009 12:51:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753309AbZDAQvF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 1 Apr 2009 12:47:07 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:48203 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1756723AbZDAQrE (ORCPT
+	Wed, 1 Apr 2009 12:51:05 -0400
+Received: from mail-ew0-f165.google.com ([209.85.219.165]:60978 "EHLO
+	mail-ew0-f165.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753170AbZDAQvC (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 1 Apr 2009 12:47:04 -0400
-Date: Wed, 1 Apr 2009 09:43:13 -0700 (PDT)
-From: Linus Torvalds <torvalds@linux-foundation.org>
-X-X-Sender: torvalds@localhost.localdomain
-To: Trond Myklebust <Trond.Myklebust@netapp.com>
-cc: linux-nfs@vger.kernel.org,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       dhowells@redhat.com
-Subject: Re: [GIT PULL] Please pull the first batch of NFS client changes
- (and cachefs merge)...
-In-Reply-To: <1238522824.6577.5.camel@heimdal.trondhjem.org>
-Message-ID: <alpine.LFD.2.00.0904010935000.4130@localhost.localdomain>
-References: <1238522824.6577.5.camel@heimdal.trondhjem.org>
-User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
+	Wed, 1 Apr 2009 12:51:02 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
+         :cc:content-type:content-transfer-encoding;
+        b=rZx1uPLoNzCr9bTCIgs1x/sTZXxcvzJ2250B2P13aALj4T4tG9NtN6IaL5O8utECYp
+         KWmNj54TBwxtj75pzvBxirAQ9mo0ShQsin05UTU2GP5hDgtyfxMUcX2aJQlvuO0OcqCx
+         UqvJ6pV4o9BIxOMAYKjVni0eN98wyC2+vFnn0=
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+In-Reply-To: <20090331230217.GA31599@srcf.ucam.org>
+References: <20090331214501.GC29489@srcf.ucam.org>
+	 <20090331214749.GD29489@srcf.ucam.org>
+	 <74962ea30903311506m41306659td0cd70c5736f6660@mail.gmail.com>
+	 <20090331221107.GA30383@srcf.ucam.org>
+	 <74962ea30903311519s2fb6087fxfe8859e3c570ac99@mail.gmail.com>
+	 <20090331230217.GA31599@srcf.ucam.org>
+Date: Thu, 2 Apr 2009 09:50:59 +1700
+Message-ID: <74962ea30904010950u31fbdca3w51eafb9b7ec1ca73@mail.gmail.com>
+Subject: Re: [PATCH 2/2] toshiba-acpi: Support TOS1900-type devices
+From: Azael Avalos <coproscefalo@gmail.com>
+To: Matthew Garrett <mjg59@srcf.ucam.org>
+Cc: linux-acpi@vger.kernel.org, dsilvers@simtec.co.uk,
+       toshiba_acpi@memebeam.org, linux-kernel@vger.kernel.org
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Wed, Apr 1, 2009 at 4:02 PM, Matthew Garrett <mjg59@srcf.ucam.org> wrote:
+> Ok, can you try this and let me know what codes it generates (if it
+> generates any)? It should go on top of the previous patches.
+
+Nothing gets generated, even if I change the method to ".INFO" and hotkey
+events enabled with hci_write2(HCI_HOTKEY_EVENT, 1, 1, &hci_result) and
+TECF set to 1 (see my DSDT).
+
+I was playing with the code yesterday trying to get some events reported, but no
+luck so far.
+
+It appears that TOHK variable is _volatile_ and it just stores hotkey events
+temporarily and they don't get _stored_ like in the System Event FIFO.
+
+On the patches I sent to the omnibook module I'm able to get events but they
+seem to get repeated 3 times, or perhaps I'm polling to often.
 
 
-On Tue, 31 Mar 2009, Trond Myklebust wrote:
-> 
-> Please pull from the "for-linus" branch of the repository at
-> 
->    git pull git://git.linux-nfs.org/projects/trondmy/nfs-2.6.git for-linus
+Saludos
+Azael
 
-I _really_ want fscache to come with way more Acked-by's etc. 
 
-So no, I'm not going to pull this. I want a lot more than just
-
-	Signed-off-by: David Howells <dhowells@redhat.com>
-
-on the 100+ lines of changes to the VM. I want the VM people pinged and 
-asked whether it's ok.
-
-And I also have a stupid trivial complaint:
-
-WTF is up with absolutely inane crap like this:
-
->  fs/cachefiles/cf-bind.c                           |  286 +++++++
->  fs/cachefiles/cf-daemon.c                         |  754 ++++++++++++++++++
->  fs/cachefiles/cf-interface.c                      |  449 +++++++++++
->  fs/cachefiles/cf-internal.h                       |  360 +++++++++
->  fs/cachefiles/cf-key.c                            |  159 ++++
->  fs/cachefiles/cf-main.c                           |  106 +++
->  fs/cachefiles/cf-namei.c                          |  772 +++++++++++++++++++
->  fs/cachefiles/cf-proc.c                           |  134 ++++
->  fs/cachefiles/cf-rdwr.c                           |  853 +++++++++++++++++++++
->  fs/cachefiles/cf-security.c                       |  116 +++
->  fs/cachefiles/cf-xattr.c                          |  291 +++++++
-...
->  fs/fscache/fsc-cache.c                            |  415 ++++++++++
->  fs/fscache/fsc-cookie.c                           |  498 ++++++++++++
->  fs/fscache/fsc-fsdef.c                            |  144 ++++
->  fs/fscache/fsc-histogram.c                        |  109 +++
->  fs/fscache/fsc-internal.h                         |  380 +++++++++
->  fs/fscache/fsc-main.c                             |  124 +++
->  fs/fscache/fsc-netfs.c                            |  103 +++
->  fs/fscache/fsc-object.c                           |  810 +++++++++++++++++++
->  fs/fscache/fsc-operation.c                        |  459 +++++++++++
->  fs/fscache/fsc-page.c                             |  771 +++++++++++++++++++
->  fs/fscache/fsc-proc.c                             |   68 ++
->  fs/fscache/fsc-stats.c                            |  212 +++++
-
-What the hell is that "cf-" and "fsc-" prefix? We don't do single-level 
-naming crud. It's already in a directory hierarchy, why the _hell_ does it 
-then add some idiotic extra prefix that is just a (very inferior) copy of 
-that hierarchy?
-
-If you want to write "fscache", write it out. Don't do "fsc". And do it as 
-a directory. But then even an idiot would see that calling it 
-fs/fscache/fscache/proc.c is a bit redundant. So why do you call it 
-fs/fscache/fsc-proc.c?
-
-Gaah. Naming is a bid deal for me, and the above is just crap.
-
-			Linus
+-- 
+-- El mundo apesta y vosotros apestais tambien --
