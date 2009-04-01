@@ -1,156 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764308AbZDAN4E@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932094AbZDAN5K@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764308AbZDAN4E (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 1 Apr 2009 09:56:04 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763790AbZDANze
+	id S932094AbZDAN5K (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 1 Apr 2009 09:57:10 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763790AbZDAN4t
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 1 Apr 2009 09:55:34 -0400
-Received: from victor.provo.novell.com ([137.65.250.26]:39920 "EHLO
-	victor.provo.novell.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1764218AbZDANzc (ORCPT
+	Wed, 1 Apr 2009 09:56:49 -0400
+Received: from gw-ca.panasas.com ([209.116.51.66]:12009 "EHLO
+	laguna.int.panasas.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1761640AbZDAN4s (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 1 Apr 2009 09:55:32 -0400
-Message-ID: <49D372CD.5000601@novell.com>
-Date: Wed, 01 Apr 2009 09:57:33 -0400
-From: Gregory Haskins <ghaskins@novell.com>
-User-Agent: Thunderbird 2.0.0.19 (X11/20081227)
+	Wed, 1 Apr 2009 09:56:48 -0400
+Message-ID: <49D371FF.3050202@panasas.com>
+Date: Wed, 01 Apr 2009 16:54:07 +0300
+From: Boaz Harrosh <bharrosh@panasas.com>
+User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1b3pre) Gecko/20090315 Remi/3.0-0.b2.fc10.remi Thunderbird/3.0b2
 MIME-Version: 1.0
-To: Avi Kivity <avi@redhat.com>
-CC: linux-kernel@vger.kernel.org, agraf@suse.de, pmullaney@novell.com,
-       pmorreale@novell.com, anthony@codemonkey.ws, rusty@rustcorp.com.au,
-       netdev@vger.kernel.org, kvm@vger.kernel.org
-Subject: Re: [RFC PATCH 01/17] shm-signal: shared-memory signals
-References: <20090331184057.28333.77287.stgit@dev.haskins.net> <20090331184252.28333.70623.stgit@dev.haskins.net> <49D280C0.8010802@redhat.com> <49D283F7.7030508@novell.com> <49D285AE.7030604@redhat.com> <49D35A2B.10907@novell.com> <49D35D12.6080209@redhat.com>
-In-Reply-To: <49D35D12.6080209@redhat.com>
-X-Enigmail-Version: 0.95.7
-OpenPGP: id=D8195319
-Content-Type: multipart/signed; micalg=pgp-sha1;
- protocol="application/pgp-signature";
- boundary="------------enig47790774A0D63CC8E8B97E5F"
+To: Tejun Heo <tj@kernel.org>
+CC: axboe@kernel.dk, linux-kernel@vger.kernel.org,
+       fujita.tomonori@lab.ntt.co.jp
+Subject: Re: [PATCH 15/17] bio/blk-map: kill unused stuff and un-export internal
+ functions
+References: <1238593472-30360-1-git-send-email-tj@kernel.org> <1238593472-30360-16-git-send-email-tj@kernel.org>
+In-Reply-To: <1238593472-30360-16-git-send-email-tj@kernel.org>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
+X-OriginalArrivalTime: 01 Apr 2009 13:56:10.0068 (UTC) FILETIME=[9C859940:01C9B2D1]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This is an OpenPGP/MIME signed message (RFC 2440 and 3156)
---------------enig47790774A0D63CC8E8B97E5F
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: quoted-printable
+On 04/01/2009 04:44 PM, Tejun Heo wrote:
+> Impact: cleanup, removal of unused / undesirable API
+> 
+> With recent changes, the following functions aren't used anymore.
+> 
+> * bio_{map|copy}_{user|kern}()
+> * blk_rq_append_bio()
+> 
 
-Avi Kivity wrote:
-> Gregory Haskins wrote:
->> Note that this is exactly what I do (though it is device specific).
->> venet-tap has a ioq_notifier registered on its "rx" ring (which is the=
+This function is used by drivers/scsi/osd/osd_initiator.c
+Currently in mainline. Please use allmodconfig to compile
+everything.
 
->> tx-ring for the guest) that simply calls ioq_notify_disable() (which
->> calls shm_signal_disable() under the covers) and it wakes its
->> rx-thread.  This all happens in the context of the hypercall, which th=
-en
->> returns and allows the vcpu to re-enter guest mode immediately.
->>  =20
-> I think this is suboptimal.
+> The following functions aren't used outside of block layer.
+> 
+> * bio_add_pc_page()
 
-Heh, yes I know this is your (well documented) position, but I
-respectfully disagree. :)
+And also this
 
-CPUs are not getting much faster, but they are rapidly getting more
-cores.  If we want to continue to make software run increasingly faster,
-we need to actually use those cores IMO.  Generally this means split
-workloads up into as many threads as possible as long as you can keep
-pipelines filed.
+> * bio_un{map|copy}_user()
+> 
+> Kill the first group and unexport the second.  As bio_add_pc_page() is
+> used only inside fs/bio.c, it's made static.
+> 
+> Signed-off-by: Tejun Heo <tj@kernel.org>
 
->   The ring is likely to be cache hot on the current cpu, waking a
-> thread will introduce scheduling latency + IPI
-This part is a valid criticism, though note that Linux is very adept at
-scheduling so we are talking mere ns/us range here, which is dwarfed by
-the latency of something like your typical IO device (e.g. 36us for a
-rtt packet on 10GE baremetal, etc).  The benefit, of course, is the
-potential for increased parallelism which I have plenty of data to show
-we are very much taking advantage of here (I can saturate two cores
-almost completely according to LTT traces, one doing vcpu work, and the
-other running my "rx" thread which schedules the packet on the hardware)
+I've posted propositions on how to fix osd_initiator.c which
+involves making blk_map_kern() append to the request, and a new
+blk_make_request(bio).
 
-> +cache-to-cache transfers.
-This one I take exception to.  While it is perfectly true that splitting
-the work between two cores has a greater cache impact than staying on
-one, you cannot look at this one metric alone and say "this is bad".=20
-Its also a function of how efficiently the second (or more) cores are
-utilized.  There will be a point in the curve where the cost of cache
-coherence will become marginalized by the efficiency added by the extra
-compute power.  Some workloads will invariably be on the bad end of that
-curve, and therefore doing the work on one core is better.  However, we
-cant ignore that there will others that are on the good end of this
-spectrum either.  Otherwise, we risk performance stagnation on our
-effectively uniprocessor box ;).  In addition, the task-scheduler will
-attempt to co-locate tasks that are sharing data according to a best-fit
-within the cache hierarchy.  Therefore, we will still be sharing as much
-as possible (perhaps only L2, L3, or a local NUMA domain, but this is
-still better than nothing)
+Any suggestions are welcome
 
-The way I have been thinking about these issues is something I have been
-calling "soft-asics".  In the early days, we had things like a simple
-uniprocessor box with a simple dumb ethernet.  People figured out that
-if you put more processing power into the NIC, you could offload that
-work from the cpu and do more in parallel.   So things like checksum
-computation and segmentation duties were a good fit.  More recently, we
-see even more advanced hardware where you can do L2 or even L4 packet
-classification right in the hardware, etc.  All of these things are
-effectively parallel computation, and it occurs in a completely foreign
-cache domain!
-
-So a lot of my research has been around the notion of trying to use some
-of our cpu cores to do work like some of the advanced asic based offload
-engines do.  The cores are often under utilized anyway, and this will
-bring some of the features of advanced silicon to commodity resources.=20
-They also have the added flexibility that its just software, so you can
-change or enhance the system at will.
-
-So if you think about it, by using threads like this in venet-tap, I am
-effectively using other cores to do csum/segmentation (if the physical
-hardware doesn't support it), layer 2 classification (linux bridging),
-filtering (iptables in the bridge), queuing, etc as if it was some
-"smart" device out on the PCI bus.  The guest just queues up packets
-independently in its own memory, while the device just "dma's" the data
-on its own (after the initial kick).  The vcpu is keeping the pipeline
-filled on its side independently.
-
->
-> On a benchmark setup, host resources are likely to exceed guest
-> requirements, so you can throw cpu at the problem and no one notices.
-Sure, but with the type of design I have presented this still sorts
-itself out naturally even if the host doesn't have the resources.  For
-instance, if there is a large number of threads competing for a small
-number of cores, we will simply see things like the rx-thread stalling
-and going to sleep, or the vcpu thread backpressuring and going idle
-(and therefore sleeping).  All of these things are self throttling.  If
-you don't have enough resources to run a workload at a desirable
-performance level, the system wasn't sized right to begin with. ;)
-
->   But I think the bits/cycle figure will decrease, even if bits/sec
-> increases.
->
-Note that this isn't necessarily a bad thing.  I think studies show that
-most machines are generally idle a significant percentage of the time,
-and this will likely only get worse as we get more and more cores.  So
-if I have to consume more cycles to get more bits on the wire, thats
-probably ok with most of my customers.   If its not, it would be trivial
-to make the venet threading policy a tunable parameter.
-
--Greg
-
-
-
---------------enig47790774A0D63CC8E8B97E5F
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: OpenPGP digital signature
-Content-Disposition: attachment; filename="signature.asc"
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v2.0.9 (GNU/Linux)
-Comment: Using GnuPG with SUSE - http://enigmail.mozdev.org
-
-iEYEARECAAYFAknTcs0ACgkQlOSOBdgZUxn1AACfY7vu8gz8XHr/hNHSctT8JIHb
-UPMAn1iBgUKB3JkYYirYAtI7DtLxLyYf
-=8NtR
------END PGP SIGNATURE-----
-
---------------enig47790774A0D63CC8E8B97E5F--
+Thanks
+Boaz
