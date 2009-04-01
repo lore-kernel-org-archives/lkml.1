@@ -1,44 +1,114 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764967AbZDAVDw@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759614AbZDAVHB@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764967AbZDAVDw (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 1 Apr 2009 17:03:52 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754040AbZDAVDl
+	id S1759614AbZDAVHB (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 1 Apr 2009 17:07:01 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754418AbZDAVGr
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 1 Apr 2009 17:03:41 -0400
-Received: from caffeine.csclub.uwaterloo.ca ([129.97.134.17]:34946 "EHLO
-	caffeine.csclub.uwaterloo.ca" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1752480AbZDAVDk (ORCPT
+	Wed, 1 Apr 2009 17:06:47 -0400
+Received: from victor.provo.novell.com ([137.65.250.26]:38671 "EHLO
+	victor.provo.novell.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752840AbZDAVGq (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 1 Apr 2009 17:03:40 -0400
-Date: Wed, 1 Apr 2009 17:03:38 -0400
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: Linus Torvalds <torvalds@linux-foundation.org>,
-       Theodore Tso <tytso@mit.edu>, David Rees <drees76@gmail.com>,
-       Jesper Krogh <jesper@krogh.cc>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: Linux 2.6.29
-Message-ID: <20090401210337.GB3797@csclub.uwaterloo.ca>
-References: <72dbd3150903241200v38720ca0x392c381f295bdea@mail.gmail.com> <20090325183011.GN32307@mit.edu> <alpine.LFD.2.00.0903251139260.3032@localhost.localdomain> <20090325220530.GR32307@mit.edu> <alpine.LFD.2.00.0903251622420.3032@localhost.localdomain> <20090326171148.9bf8f1ec.akpm@linux-foundation.org> <alpine.LFD.2.00.0903261723250.3994@localhost.localdomain> <20090326174704.cd36bf7b.akpm@linux-foundation.org> <alpine.LFD.2.00.0903261752110.3994@localhost.localdomain> <20090326182519.d576d703.akpm@linux-foundation.org>
+	Wed, 1 Apr 2009 17:06:46 -0400
+Message-ID: <49D3D7EE.4080202@novell.com>
+Date: Wed, 01 Apr 2009 17:09:02 -0400
+From: Gregory Haskins <ghaskins@novell.com>
+User-Agent: Thunderbird 2.0.0.19 (X11/20081227)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090326182519.d576d703.akpm@linux-foundation.org>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-From: lsorense@csclub.uwaterloo.ca (Lennart Sorensen)
+To: Anthony Liguori <anthony@codemonkey.ws>
+CC: Andi Kleen <andi@firstfloor.org>, linux-kernel@vger.kernel.org,
+       agraf@suse.de, pmullaney@novell.com, pmorreale@novell.com,
+       rusty@rustcorp.com.au, netdev@vger.kernel.org, kvm@vger.kernel.org
+Subject: Re: [RFC PATCH 00/17] virtual-bus
+References: <20090331184057.28333.77287.stgit@dev.haskins.net> <87ab71monw.fsf@basil.nowhere.org> <49D35825.3050001@novell.com> <20090401132340.GT11935@one.firstfloor.org> <49D37805.1060301@novell.com> <20090401170103.GU11935@one.firstfloor.org> <49D3B64F.6070703@codemonkey.ws>
+In-Reply-To: <49D3B64F.6070703@codemonkey.ws>
+X-Enigmail-Version: 0.95.7
+OpenPGP: id=D8195319
+Content-Type: multipart/signed; micalg=pgp-sha1;
+ protocol="application/pgp-signature";
+ boundary="------------enig4A3E9E409F0F02282B3086DE"
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Mar 26, 2009 at 06:25:19PM -0700, Andrew Morton wrote:
-> The JBD journal is a massive designed-in contention point.  It's why
-> for several years I've been telling anyone who will listen that we need
-> a new fs.  Hopefully our response to all these problems will soon be
-> "did you try btrfs?".
+This is an OpenPGP/MIME signed message (RFC 2440 and 3156)
+--------------enig4A3E9E409F0F02282B3086DE
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: quoted-printable
 
-Oh I look forward to the day when it will be safe to convert my mythtv
-box from ext3 to btrfs.  Current kernels just have too much IO latency
-with ext3 it seems.  Older kernels were more responsive, but probably
-had other places they were less efficient.
+Anthony Liguori wrote:
+> Andi Kleen wrote:
+>> On Wed, Apr 01, 2009 at 10:19:49AM -0400, Gregory Haskins wrote:
+>> =20
+>>>>>            =20
+>>>> But surely you must have some specific use case in mind? Something
+>>>> that it does better than the various methods that are available
+>>>> today. Or rather there must be some problem you're trying
+>>>> to solve. I'm just not sure what that problem exactly is.
+>>>>        =20
+>>> Performance.  We are trying to create a high performance IO
+>>> infrastructure.
+>>>    =20
+>>
+>> Ok. So the goal is to bypass user space qemu completely for better
+>> performance. Can you please put this into the initial patch
+>> description?
+>>  =20
+>
+> FWIW, there's nothing that prevents in-kernel back ends with virtio so
+> vbus certainly isn't required for in-kernel backends.
 
--- 
-Len Sorensen
+I think there is a slight disconnect here.  This is *exactly* what I am
+trying to do.  You can of course do this many ways, and I am not denying
+it could be done a different way than the path I have chosen.  One
+extreme would be to just slam a virtio-net specific chunk of code
+directly into kvm on the host.  Another extreme would be to build a
+generic framework into Linux for declaring arbitrary IO types,
+integrating it with kvm (as well as other environments such as lguest,
+userspace, etc), and building a virtio-net model on top of that.
+
+So in case it is not obvious at this point, I have gone with the latter
+approach.  I wanted to make sure it wasn't kvm specific or something
+like pci specific so it had the broadest applicability to a range of
+environments.  So that is why the design is the way it is.  I understand
+that this approach is technically "harder/more-complex" than the "slam
+virtio-net into kvm" approach, but I've already done that work.  All we
+need to do now is agree on the details ;)
+
+>
+>
+> That said, I don't think we're bound today by the fact that we're in
+> userspace.
+You will *always* be bound by the fact that you are in userspace.  Its
+purely a question of "how much" and "does anyone care".    Right now,
+the anwer is "a lot (roughly 45x slower)" and "at least Greg's customers
+do".  I have no doubt that this can and will change/improve in the
+future.  But it will always be true that no matter how much userspace
+improves, the kernel based solution will always be faster.  Its simple
+physics.  I'm cutting out the middleman to ultimately reach the same
+destination as the userspace path, so userspace can never be equal.
+
+I agree that the "does anyone care" part of the equation will approach
+zero as the latency difference shrinks across some threshold (probably
+the single microsecond range), but I will believe that is even possible
+when I see it ;)
+
+Regards,
+-Greg
+
+
+--------------enig4A3E9E409F0F02282B3086DE
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: OpenPGP digital signature
+Content-Disposition: attachment; filename="signature.asc"
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v2.0.9 (GNU/Linux)
+Comment: Using GnuPG with SUSE - http://enigmail.mozdev.org
+
+iEYEARECAAYFAknT1+4ACgkQlOSOBdgZUxkGNwCgibnvQaeK8lgKUD1bjhX0MdhV
+lgwAoI8+NEGMILdCm8RahY1sjQlSoDjP
+=kRfx
+-----END PGP SIGNATURE-----
+
+--------------enig4A3E9E409F0F02282B3086DE--
