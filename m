@@ -1,59 +1,186 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759582AbZDAGtP@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759573AbZDAG4o@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759582AbZDAGtP (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 1 Apr 2009 02:49:15 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758605AbZDAGs6
+	id S1759573AbZDAG4o (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 1 Apr 2009 02:56:44 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759158AbZDAG4d
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 1 Apr 2009 02:48:58 -0400
-Received: from smtp.nokia.com ([192.100.122.230]:36606 "EHLO
-	mgw-mx03.nokia.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1758588AbZDAGs5 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 1 Apr 2009 02:48:57 -0400
-Subject: Re: [patch/rfc 2.6.29 2/2] MTD: support driver model updates
-From: Artem Bityutskiy <dedekind@infradead.org>
-Reply-To: dedekind@infradead.org
-To: David Brownell <david-b@pacbell.net>
-Cc: Linux MTD <linux-mtd@lists.infradead.org>,
-       LKML <linux-kernel@vger.kernel.org>, Kay Sievers <kay.sievers@vrfy.org>
-In-Reply-To: <200903312342.24019.david-b@pacbell.net>
-References: <200903260039.34013.david-b@pacbell.net>
-	 <200903312257.37434.david-b@pacbell.net>
-	 <1238566203.20906.31.camel@localhost.localdomain>
-	 <200903312342.24019.david-b@pacbell.net>
-Content-Type: text/plain; charset="UTF-8"
-Date: Wed, 01 Apr 2009 09:48:08 +0300
-Message-Id: <1238568488.20906.34.camel@localhost.localdomain>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.24.5 (2.24.5-1.fc10) 
-Content-Transfer-Encoding: 8bit
-X-OriginalArrivalTime: 01 Apr 2009 06:48:10.0237 (UTC) FILETIME=[D2265AD0:01C9B295]
-X-Nokia-AV: Clean
+	Wed, 1 Apr 2009 02:56:33 -0400
+Received: from mga03.intel.com ([143.182.124.21]:28558 "EHLO mga03.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1759027AbZDAG4c (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 1 Apr 2009 02:56:32 -0400
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.39,305,1235980800"; 
+   d="scan'208";a="126469881"
+Date: Wed, 1 Apr 2009 14:56:18 +0800
+From: Wu Fengguang <fengguang.wu@intel.com>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: Jeff Layton <jlayton@redhat.com>, linux-kernel@vger.kernel.org,
+       linux-fsdevel@vger.kernel.org
+Subject: Re: [PATCH] writeback: guard against jiffies wraparound on
+	inode->dirtied_when checks (try #2)
+Message-ID: <20090401065618.GB10423@localhost>
+References: <1238544239-31882-1-git-send-email-jlayton@redhat.com> <20090331172031.b2971f1e.akpm@linux-foundation.org> <20090331205018.228ea5f8@tleilax.poochiereds.net> <20090331180730.049d42e7.akpm@linux-foundation.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20090331180730.049d42e7.akpm@linux-foundation.org>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 2009-03-31 at 23:42 -0700, David Brownell wrote:
-> On Tuesday 31 March 2009, Artem Bityutskiy wrote:
-> > OK. MTD long needs sysfs, and I'm very happy with this
-> > patches, even though they are not 100% complete. Good
-> > start anyway.
-> > 
-> > Acked-by: Artem Bityutskiy <dedekind@infradead.org>
+On Tue, Mar 31, 2009 at 06:07:30PM -0700, Andrew Morton wrote:
+> On Tue, 31 Mar 2009 20:50:18 -0400 Jeff Layton <jlayton@redhat.com> wrote:
 > 
-> Thanks.  I'll expect someone to handle getting these
-> merged through the MTD tree, then.
+> > On Tue, 31 Mar 2009 17:20:31 -0700
+> > Andrew Morton <akpm@linux-foundation.org> wrote:
+> > 
+> > > On Tue, 31 Mar 2009 20:03:59 -0400
+> > > Jeff Layton <jlayton@redhat.com> wrote:
+> > > 
+> > > > +		 * It's not sufficient to just do a time_after() check on
+> > > > +		 * dirtied_when. That assumes that dirtied_when will always
+> > > > +		 * change within a period of jiffies that encompasses half the
+> > > > +		 * machine word size (2^31 jiffies on 32-bit arch). That's not
+> > > > +		 * necessarily the case if an inode is being constantly
+> > > > +		 * redirtied. Since dirtied_when can never be in the future,
+> > > > +		 * we can assume that if it appears to be so then it is
+> > > > +		 * actually in the distant past.
+> > > 
+> > > so this really is a 32-bit-only thing.
+> > > 
+> > > I guess that isn't worth optimising for though.
+> > > 
+> > 
+> > Yeah, it's pretty much impossible to hit this on a 64-bit machine.
+> > 
+> > > otoh, given that all three comparisons are the same:
+> > > 
+> > > +			time_after(inode->dirtied_when, *older_than_this) &&
+> > > +			time_before_eq(inode->dirtied_when, jiffies))
+> > > 
+> > > (although one is inverted (i think?)), it might end up nicer if this was all done
+> > > in a little helper function?
+> > > 
+> > > That way we only need to comment what's going on at a single site, and
+> > > we could omit the additional test if !CONFIG_64BIT.
+> > 
+> > Ok, that seems reasonable.
+> > 
+> > At one point I had a macro similar to time_in_range(), but dropped it
+> > primarily because time_after_but_before_eq() wasn't easy on the eyes.
+> > Thoughts on better names?
+> 
+> I was thinking
+> 
+> 	bool inode_dirtied_after(...);
+> 
+> and just leave the innards using time_after() and time_before_eq()?
 
-David Woodhouse maintains the MTD tree. He saw your patches,
-not sure when he takes them.
+Andrew, here is the updated patch. Note that the first chunk for
+redirty_tail() was not absolutely necessary and so removed.
 
-> And I'll be rather surprised if no more attributes
-> appear by the time this gets to mainline!  :)
+Thanks,
+Fengguang
+---
+Subject: writeback: guard against jiffies wraparound on inode->dirtied_when checks
+From:	Jeff Layton <jlayton@redhat.com>
 
-If he merges them during this merge window, then this might
-not be the case :-)
+The dirtied_when value on an inode is supposed to represent the first
+time that an inode has one of its pages dirtied. This value is in units
+of jiffies. It's used in several places in the writeback code to
+determine when to write out an inode.
 
--- 
-Best regards,
-Artem Bityutskiy (Битюцкий Артём)
+The problem is that these checks assume that dirtied_when is updated
+periodically. If an inode is continuously being used for I/O it can be
+persistently marked as dirty and will continue to age. Once the time
+difference between dirtied_when and the jiffies value it is being
+compared to is greater than or equal to half the maximum of the jiffies
+type, the logic of the time_*() macros inverts and the opposite of what
+is needed is returned. On 32-bit architectures that's just under 25 days
+(assuming HZ == 1000).
 
+As the least-recently dirtied inode, it'll end up being the first one
+that pdflush will try to write out. sync_sb_inodes() does this check:
+
+	/* Was this inode dirtied after sync_sb_inodes was called? */
+ 	if (time_after(inode->dirtied_when, start))
+ 		break;
+
+...but now dirtied_when appears to be in the future. sync_sb_inodes()
+bails out without attempting to write any dirty inodes. When this
+occurs, pdflush will stop writing out inodes for this superblock.
+Nothing can unwedge it until jiffies moves out of the problematic
+window.
+
+Fix this problem by changing the checks against dirtied_when to also
+check whether it appears to be in the future. If it does, then we
+consider the value to be far in the past.
+
+This should shrink the problematic window of time to such a small
+period(30s) as not to matter.
+
+Acked-by: Ian Kent <raven@themaw.net>
+Signed-off-by: Jeff Layton <jlayton@redhat.com>
+Signed-off-by: Wu Fengguang <fengguang.wu@intel.com>
+---
+ fs/fs-writeback.c |   26 ++++++++++++++++++++++----
+ 1 file changed, 22 insertions(+), 4 deletions(-)
+
+--- mm.orig/fs/fs-writeback.c
++++ mm/fs/fs-writeback.c
+@@ -196,7 +196,7 @@ static void redirty_tail(struct inode *i
+ 		struct inode *tail_inode;
+ 
+ 		tail_inode = list_entry(sb->s_dirty.next, struct inode, i_list);
+-		if (!time_after_eq(inode->dirtied_when,
++		if (time_before(inode->dirtied_when,
+ 				tail_inode->dirtied_when))
+ 			inode->dirtied_when = jiffies;
+ 	}
+@@ -220,6 +220,21 @@ static void inode_sync_complete(struct i
+ 	wake_up_bit(&inode->i_state, __I_SYNC);
+ }
+ 
++static bool inode_dirtied_after(struct inode *inode, unsigned long t)
++{
++	bool ret = time_after(inode->dirtied_when, t);
++#ifndef CONFIG_64BIT
++	/*
++	 * For inodes being constantly redirtied, dirtied_when can get stuck.
++	 * It _appears_ to be in the future, but is actually in distant past.
++	 * This test is necessary to prevent such wrapped-around relative times
++	 * from permanently stopping the whole pdflush writeback.
++	 */
++	ret = ret && time_before_eq(inode->dirtied_when, jiffies);
++#endif
++	return ret;
++}
++
+ /*
+  * Move expired dirty inodes from @delaying_queue to @dispatch_queue.
+  */
+@@ -231,7 +246,7 @@ static void move_expired_inodes(struct l
+ 		struct inode *inode = list_entry(delaying_queue->prev,
+ 						struct inode, i_list);
+ 		if (older_than_this &&
+-			time_after(inode->dirtied_when, *older_than_this))
++				inode_dirtied_after(inode, *older_than_this))
+ 			break;
+ 		list_move(&inode->i_list, dispatch_queue);
+ 	}
+@@ -492,8 +507,11 @@ void generic_sync_sb_inodes(struct super
+ 			continue;		/* blockdev has wrong queue */
+ 		}
+ 
+-		/* Was this inode dirtied after sync_sb_inodes was called? */
+-		if (time_after(inode->dirtied_when, start))
++		/*
++		 * Was this inode dirtied after sync_sb_inodes was called?
++		 * This keeps sync from extra jobs and livelock.
++		 */
++		if (inode_dirtied_after(inode, start))
+ 			break;
+ 
+ 		/* Is another pdflush already flushing this queue? */
