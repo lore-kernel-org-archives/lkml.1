@@ -1,74 +1,81 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759340AbZDAPlq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758619AbZDAPsr@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759340AbZDAPlq (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 1 Apr 2009 11:41:46 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752316AbZDAPlh
+	id S1758619AbZDAPsr (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 1 Apr 2009 11:48:47 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753949AbZDAPsi
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 1 Apr 2009 11:41:37 -0400
-Received: from mo-p05-ob.rzone.de ([81.169.146.182]:55471 "EHLO
-	mo-p05-ob.rzone.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751730AbZDAPlg (ORCPT
+	Wed, 1 Apr 2009 11:48:38 -0400
+Received: from ti-out-0910.google.com ([209.85.142.186]:46006 "EHLO
+	ti-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753675AbZDAPsh (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 1 Apr 2009 11:41:36 -0400
-X-RZG-AUTH: :LWIQcGC8af5qXkYNYt77sURZEFmV4M3TAgvB+Qeh4tE+44JfzNbYY5/NAUgO
-X-RZG-CLASS-ID: mo05
-Message-ID: <49D38B22.1050105@ursus.ath.cx>
-Date: Wed, 01 Apr 2009 17:41:22 +0200
-From: "Andreas T.Auer" <andreas.t.auer_lkml_73537@ursus.ath.cx>
-User-Agent: Mozilla-Thunderbird 2.0.0.19 (X11/20090103)
+	Wed, 1 Apr 2009 11:48:37 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:to:cc:subject:message-id:references:mime-version
+         :content-type:content-disposition:in-reply-to:user-agent;
+        b=Jth8CczVjOE81nnJHKZa2SWc+NckSuQRWxFFAoq+XSTPHMbVPOI9RZaXAW1TztRRVb
+         kqlr98mD4iAchZ1xGAZlUgb/eYM+BVmq0iWRCTCp2YQQ3XHRmhVAnz7Ho+UmsGrJNy4o
+         jyWzRw48NQ2Ia/Ge2dKL0tWtw+SQx/TZ9QDAY=
+Date: Wed, 1 Apr 2009 23:49:24 +0800
+From: =?utf-8?Q?Am=C3=A9rico?= Wang <xiyou.wangcong@gmail.com>
+To: Miklos Szeredi <miklos@szeredi.hu>
+Cc: user-mode-linux-devel@lists.sourceforge.net, jdike@addtoit.com,
+       akpm@linux-foundation.org, linux-kernel@vger.kernel.org
+Subject: Re: [patch 1/3] uml: fix compile error from net_device_ops
+	conversion
+Message-ID: <20090401154924.GD3848@hack>
+References: <E1LoMQ2-0007bB-By@pomaz-ex.szeredi.hu>
 MIME-Version: 1.0
-To: Chris Mason <chris.mason@oracle.com>
-CC: Dave Chinner <david@fromorbit.com>, Mark Lord <lkml@rtr.ca>,
-       Stefan Richter <stefanr@s5r6.in-berlin.de>,
-       Jeff Garzik <jeff@garzik.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Matthew Garrett <mjg59@srcf.ucam.org>,
-       Alan Cox <alan@lxorguk.ukuu.org.uk>, Theodore Tso <tytso@mit.edu>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       David Rees <drees76@gmail.com>, Jesper Krogh <jesper@krogh.cc>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: Linux 2.6.29
-References: <alpine.LFD.2.00.0903271522210.3994@localhost.localdomain>	 <49CD7B10.7010601@garzik.org> <49CD891A.7030103@rtr.ca>	 <49CD9047.4060500@garzik.org> <49CE2633.2000903@s5r6.in-berlin.de>	 <49CE3186.8090903@garzik.org> <49CE35AE.1080702@s5r6.in-berlin.de>	 <49CE3F74.6090103@rtr.ca> <20090329231451.GR26138@disturbed>	 <1238417751.30488.12.camel@think.oraclecorp.com>	 <20090331235509.GU26138@disturbed> <1238590413.18549.7.camel@think.oraclecorp.com>
-In-Reply-To: <1238590413.18549.7.camel@think.oraclecorp.com>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <E1LoMQ2-0007bB-By@pomaz-ex.szeredi.hu>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-
-On 01.04.2009 14:53 Chris Mason wrote:
-> On Wed, 2009-04-01 at 10:55 +1100, Dave Chinner wrote:
->   
->> If you crash while rsync is running, then the state of the copy
->> is garbage anyway. You have to restart from scratch and rsync will
->> detect such failures and resync the file. gnome/kde have no
->> mechanism for such recovery.
->>     
-> If this were the recovery system they had in mind, then why use rename
-> at all?  They could just as easily overwrite the original in place.
->   
-
-It is not a recovery system.  The renaming procedure is almost atomic
-with e.g. reiser or ext3 (ordered), but simple overwriting would always
-leave a window between truncating and the complete rewrite of the file.
-
-> Using rename implies they want to replace the old with a complete new
-> version.
+On Mon, Mar 30, 2009 at 08:41:10PM +0200, Miklos Szeredi wrote:
+>From: Miklos Szeredi <mszeredi@suse.cz>
 >
-> There's also the window where you crash after the rsync is done but
-> before all the new data safely makes it into the replacement files.
->   
+>Fix the following compile error:
+>
+>arch/um/drivers/net_kern.c: In function 'uml_inetaddr_event':
+>arch/um/drivers/net_kern.c:760: error: 'struct net_device' has no member named 'open'
+>
+>This was introduced by commit 8bb95b39, "uml: convert network device
+>to netdevice ops".
+>
+>Signed-off-by: Miklos Szeredi <mszeredi@suse.cz>
 
-Sure, but in that case you have only lost some of your _mirrored_ data.
-The original will usually be untouched by this. So after the restart you
-just start the mirroring process again, and hopefully, this time you get
-a perfect copy.
 
-In KDE and lots of other apps the _original_ config files (and not any
-copies) are "overlinked" with the new files by the rename. That's the
-difference.
+Reviewed-by: WANG Cong <xiyou.wangcong@gmail.com>
 
-Andreas
+Thanks.
 
+>---
+> arch/um/drivers/net_kern.c |    2 +-
+> 1 file changed, 1 insertion(+), 1 deletion(-)
+>
+>Index: linux-2.6/arch/um/drivers/net_kern.c
+>===================================================================
+>--- linux-2.6.orig/arch/um/drivers/net_kern.c	2009-03-30 17:07:10.000000000 +0200
+>+++ linux-2.6/arch/um/drivers/net_kern.c	2009-03-30 19:25:30.000000000 +0200
+>@@ -757,7 +757,7 @@ static int uml_inetaddr_event(struct not
+> 	void (*proc)(unsigned char *, unsigned char *, void *);
+> 	unsigned char addr_buf[4], netmask_buf[4];
+> 
+>-	if (dev->open != uml_net_open)
+>+	if (dev->netdev_ops->ndo_open != uml_net_open)
+> 		return NOTIFY_DONE;
+> 
+> 	lp = netdev_priv(dev);
+>--
+>To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
+>the body of a message to majordomo@vger.kernel.org
+>More majordomo info at  http://vger.kernel.org/majordomo-info.html
+>Please read the FAQ at  http://www.tux.org/lkml/
+
+-- 
+Do what you love, f**k the rest! F**k the regulations!
+ 
