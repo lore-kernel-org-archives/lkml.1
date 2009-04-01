@@ -1,71 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1765418AbZDAASy@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1765289AbZDAAUa@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1765418AbZDAASy (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 31 Mar 2009 20:18:54 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759067AbZDAASe
+	id S1765289AbZDAAUa (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 31 Mar 2009 20:20:30 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759628AbZDAAUM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 31 Mar 2009 20:18:34 -0400
-Received: from hera.kernel.org ([140.211.167.34]:33746 "EHLO hera.kernel.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1764751AbZDAASd (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 31 Mar 2009 20:18:33 -0400
-Message-ID: <49D2B209.9060000@kernel.org>
-Date: Wed, 01 Apr 2009 09:15:05 +0900
-From: Tejun Heo <tj@kernel.org>
-User-Agent: Thunderbird 2.0.0.19 (X11/20081227)
+	Tue, 31 Mar 2009 20:20:12 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:38345 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1758086AbZDAAUK (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 31 Mar 2009 20:20:10 -0400
+Date: Tue, 31 Mar 2009 17:16:47 -0700 (PDT)
+From: Linus Torvalds <torvalds@linux-foundation.org>
+X-X-Sender: torvalds@localhost.localdomain
+To: Trond Myklebust <Trond.Myklebust@netapp.com>
+cc: linux-nfs@vger.kernel.org, linux-kernel@vger.kernel.org,
+       linux-fsdevel@vger.kernel.org, viro@zeniv.linux.org.uk,
+       hch@infradead.org
+Subject: Re: [PATCH 1/4] VFS: Add a VFS helper function
+ vfs_remote_path_lookup()
+In-Reply-To: <1238542722.28445.154.camel@heimdal.trondhjem.org>
+Message-ID: <alpine.LFD.2.00.0903311715110.4130@localhost.localdomain>
+References: <cover.1238525532.git.Trond.Myklebust@netapp.com>  <3f1264127d431f695be25b940b477e3d287edc68.1238525532.git.Trond.Myklebust@netapp.com>  <alpine.LFD.2.00.0903311423280.6474@localhost.localdomain>  <1238539079.28445.103.camel@heimdal.trondhjem.org>
+  <alpine.LFD.2.00.0903311540120.6474@localhost.localdomain> <1238542722.28445.154.camel@heimdal.trondhjem.org>
+User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
 MIME-Version: 1.0
-To: Christoph Lameter <cl@linux.com>
-CC: Ingo Molnar <mingo@elte.hu>, Martin Schwidefsky <schwidefsky@de.ibm.com>,
-       rusty@rustcorp.com.au, tglx@linutronix.de, x86@kernel.org,
-       linux-kernel@vger.kernel.org, hpa@zytor.com,
-       Paul Mundt <lethal@linux-sh.org>, rmk@arm.linux.org.uk,
-       starvik@axis.com, ralf@linux-mips.org, davem@davemloft.net,
-       cooloney@kernel.org, kyle@mcmartin.ca, matthew@wil.cx,
-       grundler@parisc-linux.org, takata@linux-m32r.org,
-       benh@kernel.crashing.org, rth@twiddle.net, ink@jurassic.park.msu.ru,
-       heiko.carstens@de.ibm.com,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Nick Piggin <npiggin@suse.de>
-Subject: Re: [PATCH UPDATED] percpu: use dynamic percpu allocator as the default
- percpu allocator
-References: <1236671631-9305-1-git-send-email-tj@kernel.org> <20090316190132.7965a49a@skybase> <49C300D8.5080204@kernel.org> <49C8FAC4.6060508@kernel.org> <20090325122738.42d105b7@skybase> <49CA1AC3.9080908@kernel.org> <20090325150035.541e707a@skybase> <49CA3C2C.5030702@kernel.org> <49D099F0.3000807@kernel.org> <20090330114938.GB10070@elte.hu> <alpine.DEB.1.10.0903301049060.13333@qirst.com> <alpine.DEB.1.10.0903311208110.17960@qirst.com>
-In-Reply-To: <alpine.DEB.1.10.0903311208110.17960@qirst.com>
-X-Enigmail-Version: 0.95.7
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Wed, 01 Apr 2009 00:15:09 +0000 (UTC)
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hello,
 
-Christoph Lameter wrote:
-> I reviewed the new per cpu allocator. Quite extensive work. Found two
-> issues that I would like to have addressed. But basically:
+
+On Tue, 31 Mar 2009, Trond Myklebust wrote:
 > 
-> Reviewed-by: Christoph Lameter <cl@linux.com>
+> However, if your mount point filehandle has expired, then chances are
+> that you'll probably have to look up all the filehandles in the mount
+> path again too, so why should you cache all that information?
 
-Thanks.
+No, that' not the caching I was thinking about.
 
-> Two issues
-> 
-> 1. Lot of unnecessary use of __read_mostly for local static variables that
-> are not on the hotpath. Patch follows in this message.
+I meant literally just the "namespace" thing. Keeping that around as long 
+as you have a export active. How many of those do you have on your average 
+nfs server? Why not just create those nfsd namespaces once for each 
+export at startup, and destroy them at exit.
 
-Hmmm... Those are basically read-only vars once initialization is
-complete.  IIUC, __read_mostly just puts the tagged variables into a
-separate segment so that they don't have to worry about cacheline
-bouncing.  Is there any reason to remove __read_mostly?  Or is it just
-that it's mostly superflous?
-
-> 2. rbtree is not necessary since we can link back through the an available
-> field in struct page. Patch in next message.
-
-Ah... nice.  I was thinking about adding ->private pointer to the
-vmalloc structure but if page already has the space, all the better.
-
-Thanks.
-
--- 
-tejun
+			Linus
