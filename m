@@ -1,57 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763671AbZDANMU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764110AbZDANOj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763671AbZDANMU (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 1 Apr 2009 09:12:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753570AbZDANMF
+	id S1764110AbZDANOj (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 1 Apr 2009 09:14:39 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756983AbZDANO3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 1 Apr 2009 09:12:05 -0400
-Received: from sh.osrg.net ([192.16.179.4]:60219 "EHLO sh.osrg.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753949AbZDANME (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 1 Apr 2009 09:12:04 -0400
-Date: Wed, 1 Apr 2009 22:10:53 +0900
-To: tj@kernel.org
-Cc: fujita.tomonori@lab.ntt.co.jp, axboe@kernel.dk, bharrosh@panasas.com,
-       linux-kernel@vger.kernel.org, tj@kenel.org
-Subject: Re: [PATCH 8/8] blk-map: reimplement blk_rq_map_user() using
- blk_rq_map_user_iov()
-From: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
-In-Reply-To: <49D3662B.3000801@kernel.org>
-References: <49D36329.20004@kernel.org>
-	<20090401215933S.fujita.tomonori@lab.ntt.co.jp>
-	<49D3662B.3000801@kernel.org>
-Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
-Message-Id: <20090401221102O.fujita.tomonori@lab.ntt.co.jp>
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-3.0 (sh.osrg.net [192.16.179.4]); Wed, 01 Apr 2009 22:10:53 +0900 (JST)
+	Wed, 1 Apr 2009 09:14:29 -0400
+Received: from pc125.solomon-systech.com ([202.76.106.125]:57817 "HELO
+	virus-gateway.solomon-systech.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1753570AbZDANO3 convert rfc822-to-8bit
+	(ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 1 Apr 2009 09:14:29 -0400
+X-Greylist: delayed 3631 seconds by postgrey-1.27 at vger.kernel.org; Wed, 01 Apr 2009 09:14:28 EDT
+X-MimeOLE: Produced By Microsoft Exchange V6.0.6603.0
+content-class: urn:content-classes:message
+MIME-Version: 1.0
+Content-Type: text/plain;
+	charset="us-ascii"
+Content-Transfer-Encoding: 8BIT
+Subject: mmc removal and file system access mutex
+Date: Wed, 1 Apr 2009 20:15:37 +0800
+Message-ID: <6334E09627481B4AA5C8DE1E69E19D3B0C1FF8A6@SSLEXCHANGE.solomonsystech.com>
+X-MS-Has-Attach: 
+X-MS-TNEF-Correlator: 
+Thread-Topic: mmc removal and file system access mutex
+Thread-Index: Acmyw1NNPJGJVKVoRCWHQnH7pabVhg==
+From: <sasin@solomon-systech.com>
+To: <linux-kernel@vger.kernel.org>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 01 Apr 2009 22:03:39 +0900
-Tejun Heo <tj@kernel.org> wrote:
+Hi,
 
-> FUJITA Tomonori wrote:
-> > No, we are not talking about blk_rq_append_bio().
-> > 
-> > We are talking about the multiple bio handling in blk_rq_map_user,
-> > which is the feature that Mike added long time ago. The feature is
-> > surely necessary for some users. So you can't remote it.
-> 
-> How would someone use that without blk_rq_append_bio()?  The only
+I am running into crashes/hangs when repeatedly removing/reinserting an
+MMC card while reading a file on the card.  The card is automatically
+unmounted on removal and remounted on insertion at the same mount point.
 
-Hmm, I'm not sure what you are talking about.
+The hang was caused by elv_next_request in mmc_request repeatedly
+presenting the same request on a dead queue.  The crash is caused by the
+file system read track accessing the freed request queue or some other
+structure element associated with the block device that was removed.
+Isn't there some form of mutex preventing this?
 
-Why do we need to live without blk_rq_append_bio()?
+I am using 2.6.24 on ARM926 - sorry for using such an outdated version
+:-(
 
-You want to remove blk_rq_append_bio()? Please make your goal clear.
-
-
-> reason blk_rq_map_user() had multiple bio chaining was to work around
-> BIO_MAX_SIZE.  blk_rq_map_user_iov() doesn't support multiple bio
-> chaining, so sans blk_rq_append_bio() or playing with rq/bio internals
-> directly, there's no way to use or even know about multiple bios.
-
-Yes, only non iovec interface of SG_IO supports large data
-transfer. Users have been lived with that.
+Best regards,
+Sasi
