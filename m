@@ -1,112 +1,161 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760331AbZDAKRt@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761153AbZDAKSc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760331AbZDAKRt (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 1 Apr 2009 06:17:49 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754739AbZDAKO6
+	id S1761153AbZDAKSc (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 1 Apr 2009 06:18:32 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758115AbZDAKPA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
+	Wed, 1 Apr 2009 06:15:00 -0400
+Received: from hera.kernel.org ([140.211.167.34]:33963 "EHLO hera.kernel.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1758018AbZDAKO6 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
 	Wed, 1 Apr 2009 06:14:58 -0400
-Received: from gw1.cosmosbay.com ([212.99.114.194]:37262 "EHLO
-	gw1.cosmosbay.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757811AbZDAKO4 convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 1 Apr 2009 06:14:56 -0400
-Message-ID: <49D33E80.70802@cosmosbay.com>
-Date: Wed, 01 Apr 2009 12:14:24 +0200
-From: Eric Dumazet <dada1@cosmosbay.com>
-User-Agent: Thunderbird 2.0.0.21 (Windows/20090302)
+Date: Wed, 1 Apr 2009 10:14:25 GMT
+From: Peter Zijlstra <a.p.zijlstra@chello.nl>
+To: linux-tip-commits@vger.kernel.org
+Cc: linux-kernel@vger.kernel.org, paulus@samba.org, hpa@zytor.com,
+       mingo@redhat.com, a.p.zijlstra@chello.nl, tglx@linutronix.de,
+       mingo@elte.hu
+Reply-To: mingo@redhat.com, hpa@zytor.com, paulus@samba.org,
+       linux-kernel@vger.kernel.org, a.p.zijlstra@chello.nl,
+       tglx@linutronix.de, mingo@elte.hu
+In-Reply-To: <20090330171024.047961770@chello.nl>
+References: <20090330171024.047961770@chello.nl>
+Subject: [tip:perfcounters/core] perf_counter: re-arrange the perf_event_type
+Message-ID: <tip-06cb4a0996bf4d2b47058aff0e0192819efe502f@git.kernel.org>
+Git-Commit-ID: 06cb4a0996bf4d2b47058aff0e0192819efe502f
+X-Mailer: tip-git-log-daemon
 MIME-Version: 1.0
-To: Jeremy Fitzhardinge <jeremy@goop.org>
-CC: Ingo Molnar <mingo@elte.hu>, Tejun Heo <htejun@gmail.com>,
-       linux kernel <linux-kernel@vger.kernel.org>,
-       Linux Netdev List <netdev@vger.kernel.org>,
-       Joe Perches <joe@perches.com>
-Subject: Re: [PATCH] x86: percpu_to_op() misses memory and flags clobbers
-References: <49D32212.80607@cosmosbay.com> <49D32DC2.9010003@goop.org>
-In-Reply-To: <49D32DC2.9010003@goop.org>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 8BIT
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-1.6 (gw1.cosmosbay.com [0.0.0.0]); Wed, 01 Apr 2009 12:14:25 +0200 (CEST)
+Content-Type: text/plain; charset=UTF-8
+Content-Disposition: inline
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Wed, 01 Apr 2009 10:14:27 +0000 (UTC)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Jeremy Fitzhardinge a écrit :
-> Eric Dumazet wrote:
->> While playing with new percpu_{read|write|add|sub} stuff in network tree,
->> I found x86 asm was a litle bit optimistic.
->>
->> We need to tell gcc that percpu_{write|add|sub|or|xor} are modyfing
->> memory and possibly eflags. We could add another parameter to
->> percpu_to_op()
->> to separate the plain "mov" case (not changing eflags),
->> but let keep it simple for the moment.
->>   
-> 
-> Did you observe an actual failure that this patch fixed?
-> 
+Commit-ID:  06cb4a0996bf4d2b47058aff0e0192819efe502f
+Gitweb:     http://git.kernel.org/tip/06cb4a0996bf4d2b47058aff0e0192819efe502f
+Author:     Peter Zijlstra <a.p.zijlstra@chello.nl>
+AuthorDate: Mon, 30 Mar 2009 19:07:12 +0200
+Committer:  Ingo Molnar <mingo@elte.hu>
+CommitDate: Wed, 1 Apr 2009 11:33:37 +0200
 
-Not in current tree, as we dont use yet percpu_xxxx() very much.
+perf_counter: re-arrange the perf_event_type
 
-If deployed for SNMP mibs with hundred of call sites,
-can you guarantee it will work as is ?
+Breaks ABI yet again :-)
 
->> Signed-off-by: Eric Dumazet <dada1@cosmosbay.com>
->>
->> diff --git a/arch/x86/include/asm/percpu.h
->> b/arch/x86/include/asm/percpu.h
->> index aee103b..fd4f8ec 100644
->> --- a/arch/x86/include/asm/percpu.h
->> +++ b/arch/x86/include/asm/percpu.h
->> @@ -82,22 +82,26 @@ do {                            \
->>      case 1:                        \
->>          asm(op "b %1,"__percpu_arg(0)        \
->>              : "+m" (var)            \
->> -            : "ri" ((T__)val));            \
->> +            : "ri" ((T__)val)            \
->> +            : "memory", "cc");            \
->>   
-> 
-> This shouldn't be necessary.   The "+m" already tells gcc that var is a
-> memory input and output, and there are no other memory side-effects
-> which it needs to be aware of; clobbering "memory" will force gcc to
-> reload all register-cached memory, which is a pretty hard hit.  I think
-> all asms implicitly clobber "cc", so that shouldn't have any effect, but
-> it does no harm.
+Change the event type so that [0, 2^31-1] are regular event types, but
+[2^31, 2^32-1] forms a bitmask for overflow events.
+
+Signed-off-by: Peter Zijlstra <a.p.zijlstra@chello.nl>
+Acked-by: Paul Mackerras <paulus@samba.org>
+LKML-Reference: <20090330171024.047961770@chello.nl>
+Signed-off-by: Ingo Molnar <mingo@elte.hu>
 
 
-So, we can probably cleanup many asms in tree :)
+---
+ include/linux/perf_counter.h |    6 +++-
+ kernel/perf_counter.c        |   56 ++++++++++++++++++-----------------------
+ 2 files changed, 29 insertions(+), 33 deletions(-)
 
-static inline void __down_read(struct rw_semaphore *sem)
-{
-        asm volatile("# beginning down_read\n\t"
-                     LOCK_PREFIX "  incl      (%%eax)\n\t"
-                     /* adds 0x00000001, returns the old value */
-                     "  jns        1f\n"
-                     "  call call_rwsem_down_read_failed\n"
-                     "1:\n\t"
-                     "# ending down_read\n\t"
-                     : "+m" (sem->count)
-                     : "a" (sem)
-                     : "memory", "cc");
-}
-
-
-
-
-> 
-> Now, its true that the asm isn't actually modifying var itself, but
-> %gs:var, which is a different location.  But from gcc's perspective that
-> shouldn't matter because var makes a perfectly good proxy for that
-> location, and will make sure it correctly order all accesses to var.
-> 
-> I'd be surprised if this were broken, because we'd be seeing all sorts
-> of strange crashes all over the place.  We've seen it before when the
-> old x86-64 pda code didn't have proper constraints on its asm statements.
-
-I was not saying it is broken, but a "litle bit optimistic" :)
-
-Better be safe than sorry, because those errors are very hard to track, since
-it depends a lot on gcc being aggressive or not. I dont have time to test
-all gcc versions all over there.
-
-
+diff --git a/include/linux/perf_counter.h b/include/linux/perf_counter.h
+index 037a811..edf5bfb 100644
+--- a/include/linux/perf_counter.h
++++ b/include/linux/perf_counter.h
+@@ -210,13 +210,15 @@ struct perf_event_header {
+ };
+ 
+ enum perf_event_type {
+-	PERF_EVENT_IP		= 0,
++
+ 	PERF_EVENT_GROUP	= 1,
+ 
+ 	PERF_EVENT_MMAP		= 2,
+ 	PERF_EVENT_MUNMAP	= 3,
+ 
+-	__PERF_EVENT_TID	= 0x100,
++	PERF_EVENT_OVERFLOW	= 1UL << 31,
++	__PERF_EVENT_IP		= 1UL << 30,
++	__PERF_EVENT_TID	= 1UL << 29,
+ };
+ 
+ #ifdef __KERNEL__
+diff --git a/kernel/perf_counter.c b/kernel/perf_counter.c
+index 4471e7e..d93e9dd 100644
+--- a/kernel/perf_counter.c
++++ b/kernel/perf_counter.c
+@@ -1754,50 +1754,44 @@ static void perf_output_end(struct perf_output_handle *handle)
+ 	rcu_read_unlock();
+ }
+ 
+-static int perf_output_write(struct perf_counter *counter, int nmi,
+-			     void *buf, ssize_t size)
+-{
+-	struct perf_output_handle handle;
+-	int ret;
+-
+-	ret = perf_output_begin(&handle, counter, size, nmi);
+-	if (ret)
+-		goto out;
+-
+-	perf_output_copy(&handle, buf, size);
+-	perf_output_end(&handle);
+-
+-out:
+-	return ret;
+-}
+-
+ static void perf_output_simple(struct perf_counter *counter,
+ 			       int nmi, struct pt_regs *regs)
+ {
+-	unsigned int size;
++	int ret;
++	struct perf_output_handle handle;
++	struct perf_event_header header;
++	u64 ip;
+ 	struct {
+-		struct perf_event_header header;
+-		u64 ip;
+ 		u32 pid, tid;
+-	} event;
++	} tid_entry;
+ 
+-	event.header.type = PERF_EVENT_IP;
+-	event.ip = instruction_pointer(regs);
++	header.type = PERF_EVENT_OVERFLOW;
++	header.size = sizeof(header);
+ 
+-	size = sizeof(event);
++	ip = instruction_pointer(regs);
++	header.type |= __PERF_EVENT_IP;
++	header.size += sizeof(ip);
+ 
+ 	if (counter->hw_event.include_tid) {
+ 		/* namespace issues */
+-		event.pid = current->group_leader->pid;
+-		event.tid = current->pid;
++		tid_entry.pid = current->group_leader->pid;
++		tid_entry.tid = current->pid;
+ 
+-		event.header.type |= __PERF_EVENT_TID;
+-	} else
+-		size -= sizeof(u64);
++		header.type |= __PERF_EVENT_TID;
++		header.size += sizeof(tid_entry);
++	}
+ 
+-	event.header.size = size;
++	ret = perf_output_begin(&handle, counter, header.size, nmi);
++	if (ret)
++		return;
++
++	perf_output_put(&handle, header);
++	perf_output_put(&handle, ip);
++
++	if (counter->hw_event.include_tid)
++		perf_output_put(&handle, tid_entry);
+ 
+-	perf_output_write(counter, nmi, &event, size);
++	perf_output_end(&handle);
+ }
+ 
+ static void perf_output_group(struct perf_counter *counter, int nmi)
