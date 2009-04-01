@@ -1,21 +1,21 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1765655AbZDAOFh@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1765911AbZDAOGE@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1765655AbZDAOFh (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 1 Apr 2009 10:05:37 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1764110AbZDAOEg
+	id S1765911AbZDAOGE (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 1 Apr 2009 10:06:04 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1765384AbZDAOEy
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 1 Apr 2009 10:04:36 -0400
-Received: from earthlight.etchedpixels.co.uk ([81.2.110.250]:36484 "EHLO
+	Wed, 1 Apr 2009 10:04:54 -0400
+Received: from earthlight.etchedpixels.co.uk ([81.2.110.250]:37746 "EHLO
 	www.etchedpixels.co.uk" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1764949AbZDAOEf (ORCPT
+	with ESMTP id S1763082AbZDAOEw (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 1 Apr 2009 10:04:35 -0400
+	Wed, 1 Apr 2009 10:04:52 -0400
 From: Alan Cox <alan@lxorguk.ukuu.org.uk>
-Subject: [PATCH 04/24] 8250_pci: add support for National Instruments legacy
-	8420 RS232 boards
+Subject: [PATCH 03/24] 8250_pci: add support for National Instruments 843x
+	RS232 devices
 To: linux-kernel@vger.kernel.org, torvalds@linux-foundation.org
-Date: Wed, 01 Apr 2009 15:05:03 +0100
-Message-ID: <20090401140500.22882.97084.stgit@localhost.localdomain>
+Date: Wed, 01 Apr 2009 15:04:54 +0100
+Message-ID: <20090401140452.22882.77176.stgit@localhost.localdomain>
 In-Reply-To: <20090401140241.22882.93477.stgit@localhost.localdomain>
 References: <20090401140241.22882.93477.stgit@localhost.localdomain>
 User-Agent: StGIT/0.14.3
@@ -26,30 +26,38 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Will Page <will.page@ni.com>
+From: Shawn Bohrer <shawn.bohrer@ni.com>
 
-Signed-off-by: Will Page <will.page@ni.com>
+This implements basic support for all 843x RS232 devices, but does not
+add DMA support.  This means that sustained data transfers at high baud
+rates may not be possible on multiple ports simultaneously.
+
 Signed-off-by: Shawn Bohrer <shawn.bohrer@ni.com>
 Signed-off-by: Alan Cox <alan@lxorguk.ukuu.org.uk>
 ---
 
- drivers/serial/8250_pci.c |  218 +++++++++++++++++++++++++++++++++++++++++++++
- include/linux/pci_ids.h   |   12 ++
- 2 files changed, 230 insertions(+), 0 deletions(-)
+ drivers/serial/8250_pci.c |  193 +++++++++++++++++++++++++++++++++++++++++++++
+ include/linux/pci_ids.h   |   14 +++
+ 2 files changed, 207 insertions(+), 0 deletions(-)
 
 
 diff --git a/drivers/serial/8250_pci.c b/drivers/serial/8250_pci.c
-index 2f570c7..5b0e80d 100644
+index 533f820..2f570c7 100644
 --- a/drivers/serial/8250_pci.c
 +++ b/drivers/serial/8250_pci.c
-@@ -306,6 +306,33 @@ static void __devexit pci_plx9050_exit(struct pci_dev *dev)
+@@ -306,6 +306,36 @@ static void __devexit pci_plx9050_exit(struct pci_dev *dev)
  	}
  }
  
-+#define NI8420_INT_ENABLE_REG	0x38
-+#define NI8420_INT_ENABLE_BIT	0x2000
++/* MITE registers */
++#define MITE_IOWBSR1	0xc4
++#define MITE_IOWCR1	0xf4
++#define MITE_LCIMR1	0x08
++#define MITE_LCIMR2	0x10
 +
-+static void __devexit pci_ni8420_exit(struct pci_dev *dev)
++#define MITE_LCIMR2_CLR_CPU_IE	(1 << 30)
++
++static void __devexit pci_ni8430_exit(struct pci_dev *dev)
 +{
 +	void __iomem *p;
 +	unsigned long base, len;
@@ -67,23 +75,29 @@ index 2f570c7..5b0e80d 100644
 +		return;
 +
 +	/* Disable the CPU Interrupt */
-+	writel(readl(p + NI8420_INT_ENABLE_REG) & ~(NI8420_INT_ENABLE_BIT),
-+	       p + NI8420_INT_ENABLE_REG);
++	writel(MITE_LCIMR2_CLR_CPU_IE, p + MITE_LCIMR2);
 +	iounmap(p);
 +}
 +
-+
- /* MITE registers */
- #define MITE_IOWBSR1	0xc4
- #define MITE_IOWCR1	0xf4
-@@ -627,6 +654,31 @@ static int pci_xircom_init(struct pci_dev *dev)
+ /* SBS Technologies Inc. PMC-OCTPRO and P-OCTAL cards */
+ static int
+ sbs_setup(struct serial_private *priv, const struct pciserial_board *board,
+@@ -597,6 +627,82 @@ static int pci_xircom_init(struct pci_dev *dev)
  	return 0;
  }
  
-+static int pci_ni8420_init(struct pci_dev *dev)
++#define MITE_IOWBSR1_WSIZE	0xa
++#define MITE_IOWBSR1_WIN_OFFSET	0x800
++#define MITE_IOWBSR1_WENAB	(1 << 7)
++#define MITE_LCIMR1_IO_IE_0	(1 << 24)
++#define MITE_LCIMR2_SET_CPU_IE	(1 << 31)
++#define MITE_IOWCR1_RAMSEL_MASK	0xfffffffe
++
++static int pci_ni8430_init(struct pci_dev *dev)
 +{
 +	void __iomem *p;
 +	unsigned long base, len;
++	u32 device_window;
 +	unsigned int bar = 0;
 +
 +	if ((pci_resource_flags(dev, bar) & IORESOURCE_MEM) == 0) {
@@ -97,246 +111,198 @@ index 2f570c7..5b0e80d 100644
 +	if (p == NULL)
 +		return -ENOMEM;
 +
++	/* Set device window address and size in BAR0 */
++	device_window = ((base + MITE_IOWBSR1_WIN_OFFSET) & 0xffffff00)
++	                | MITE_IOWBSR1_WENAB | MITE_IOWBSR1_WSIZE;
++	writel(device_window, p + MITE_IOWBSR1);
++
++	/* Set window access to go to RAMSEL IO address space */
++	writel((readl(p + MITE_IOWCR1) & MITE_IOWCR1_RAMSEL_MASK),
++	       p + MITE_IOWCR1);
++
++	/* Enable IO Bus Interrupt 0 */
++	writel(MITE_LCIMR1_IO_IE_0, p + MITE_LCIMR1);
++
 +	/* Enable CPU Interrupt */
-+	writel(readl(p + NI8420_INT_ENABLE_REG) | NI8420_INT_ENABLE_BIT,
-+	       p + NI8420_INT_ENABLE_REG);
++	writel(MITE_LCIMR2_SET_CPU_IE, p + MITE_LCIMR2);
 +
 +	iounmap(p);
 +	return 0;
 +}
 +
- #define MITE_IOWBSR1_WSIZE	0xa
- #define MITE_IOWBSR1_WIN_OFFSET	0x800
- #define MITE_IOWBSR1_WENAB	(1 << 7)
-@@ -1023,6 +1075,114 @@ static struct pci_serial_quirk pci_serial_quirks[] __refdata = {
++/* UART Port Control Register */
++#define NI8430_PORTCON	0x0f
++#define NI8430_PORTCON_TXVR_ENABLE	(1 << 3)
++
++static int
++pci_ni8430_setup(struct serial_private *priv, struct pciserial_board *board,
++		 struct uart_port *port, int idx)
++{
++	void __iomem *p;
++	unsigned long base, len;
++	unsigned int bar, offset = board->first_offset;
++
++	if (idx >= board->num_ports)
++		return 1;
++
++	bar = FL_GET_BASE(board->flags);
++	offset += idx * board->uart_offset;
++
++	base = pci_resource_start(priv->dev, bar);
++	len =  pci_resource_len(priv->dev, bar);
++	p = ioremap_nocache(base, len);
++
++	/* enable the transciever */
++	writeb(readb(p + offset + NI8430_PORTCON) | NI8430_PORTCON_TXVR_ENABLE,
++	       p + offset + NI8430_PORTCON);
++
++	iounmap(p);
++
++	return setup_port(priv, port, bar, offset, board->reg_shift);
++}
++
++
+ static int pci_netmos_init(struct pci_dev *dev)
+ {
+ 	/* subdevice 0x00PS means <P> parallel, <S> serial */
+@@ -913,6 +1019,18 @@ static struct pci_serial_quirk pci_serial_quirks[] __refdata = {
+ 		.exit		= __devexit_p(pci_ite887x_exit),
+ 	},
+ 	/*
++	 * National Instruments
++	 */
++	{
++		.vendor		= PCI_VENDOR_ID_NI,
++		.device		= PCI_ANY_ID,
++		.subvendor	= PCI_ANY_ID,
++		.subdevice	= PCI_ANY_ID,
++		.init		= pci_ni8430_init,
++		.setup		= pci_ni8430_setup,
++		.exit		= __devexit_p(pci_ni8430_exit),
++	},
++	/*
+ 	 * Panacom
  	 */
  	{
- 		.vendor		= PCI_VENDOR_ID_NI,
-+		.device		= PCI_DEVICE_ID_NI_PCI23216,
-+		.subvendor	= PCI_ANY_ID,
-+		.subdevice	= PCI_ANY_ID,
-+		.init		= pci_ni8420_init,
-+		.setup		= pci_default_setup,
-+		.exit		= __devexit_p(pci_ni8420_exit),
-+	},
-+	{
-+		.vendor		= PCI_VENDOR_ID_NI,
-+		.device		= PCI_DEVICE_ID_NI_PCI2328,
-+		.subvendor	= PCI_ANY_ID,
-+		.subdevice	= PCI_ANY_ID,
-+		.init		= pci_ni8420_init,
-+		.setup		= pci_default_setup,
-+		.exit		= __devexit_p(pci_ni8420_exit),
-+	},
-+	{
-+		.vendor		= PCI_VENDOR_ID_NI,
-+		.device		= PCI_DEVICE_ID_NI_PCI2324,
-+		.subvendor	= PCI_ANY_ID,
-+		.subdevice	= PCI_ANY_ID,
-+		.init		= pci_ni8420_init,
-+		.setup		= pci_default_setup,
-+		.exit		= __devexit_p(pci_ni8420_exit),
-+	},
-+	{
-+		.vendor		= PCI_VENDOR_ID_NI,
-+		.device		= PCI_DEVICE_ID_NI_PCI2322,
-+		.subvendor	= PCI_ANY_ID,
-+		.subdevice	= PCI_ANY_ID,
-+		.init		= pci_ni8420_init,
-+		.setup		= pci_default_setup,
-+		.exit		= __devexit_p(pci_ni8420_exit),
-+	},
-+	{
-+		.vendor		= PCI_VENDOR_ID_NI,
-+		.device		= PCI_DEVICE_ID_NI_PCI2324I,
-+		.subvendor	= PCI_ANY_ID,
-+		.subdevice	= PCI_ANY_ID,
-+		.init		= pci_ni8420_init,
-+		.setup		= pci_default_setup,
-+		.exit		= __devexit_p(pci_ni8420_exit),
-+	},
-+	{
-+		.vendor		= PCI_VENDOR_ID_NI,
-+		.device		= PCI_DEVICE_ID_NI_PCI2322I,
-+		.subvendor	= PCI_ANY_ID,
-+		.subdevice	= PCI_ANY_ID,
-+		.init		= pci_ni8420_init,
-+		.setup		= pci_default_setup,
-+		.exit		= __devexit_p(pci_ni8420_exit),
-+	},
-+	{
-+		.vendor		= PCI_VENDOR_ID_NI,
-+		.device		= PCI_DEVICE_ID_NI_PXI8420_23216,
-+		.subvendor	= PCI_ANY_ID,
-+		.subdevice	= PCI_ANY_ID,
-+		.init		= pci_ni8420_init,
-+		.setup		= pci_default_setup,
-+		.exit		= __devexit_p(pci_ni8420_exit),
-+	},
-+	{
-+		.vendor		= PCI_VENDOR_ID_NI,
-+		.device		= PCI_DEVICE_ID_NI_PXI8420_2328,
-+		.subvendor	= PCI_ANY_ID,
-+		.subdevice	= PCI_ANY_ID,
-+		.init		= pci_ni8420_init,
-+		.setup		= pci_default_setup,
-+		.exit		= __devexit_p(pci_ni8420_exit),
-+	},
-+	{
-+		.vendor		= PCI_VENDOR_ID_NI,
-+		.device		= PCI_DEVICE_ID_NI_PXI8420_2324,
-+		.subvendor	= PCI_ANY_ID,
-+		.subdevice	= PCI_ANY_ID,
-+		.init		= pci_ni8420_init,
-+		.setup		= pci_default_setup,
-+		.exit		= __devexit_p(pci_ni8420_exit),
-+	},
-+	{
-+		.vendor		= PCI_VENDOR_ID_NI,
-+		.device		= PCI_DEVICE_ID_NI_PXI8420_2322,
-+		.subvendor	= PCI_ANY_ID,
-+		.subdevice	= PCI_ANY_ID,
-+		.init		= pci_ni8420_init,
-+		.setup		= pci_default_setup,
-+		.exit		= __devexit_p(pci_ni8420_exit),
-+	},
-+	{
-+		.vendor		= PCI_VENDOR_ID_NI,
-+		.device		= PCI_DEVICE_ID_NI_PXI8422_2324,
-+		.subvendor	= PCI_ANY_ID,
-+		.subdevice	= PCI_ANY_ID,
-+		.init		= pci_ni8420_init,
-+		.setup		= pci_default_setup,
-+		.exit		= __devexit_p(pci_ni8420_exit),
-+	},
-+	{
-+		.vendor		= PCI_VENDOR_ID_NI,
-+		.device		= PCI_DEVICE_ID_NI_PXI8422_2322,
-+		.subvendor	= PCI_ANY_ID,
-+		.subdevice	= PCI_ANY_ID,
-+		.init		= pci_ni8420_init,
-+		.setup		= pci_default_setup,
-+		.exit		= __devexit_p(pci_ni8420_exit),
-+	},
-+	{
-+		.vendor		= PCI_VENDOR_ID_NI,
- 		.device		= PCI_ANY_ID,
- 		.subvendor	= PCI_ANY_ID,
- 		.subdevice	= PCI_ANY_ID,
-@@ -1334,6 +1494,7 @@ enum pci_board_num_t {
- 	pbn_b1_2_115200,
- 	pbn_b1_4_115200,
- 	pbn_b1_8_115200,
-+	pbn_b1_16_115200,
+@@ -1280,6 +1398,10 @@ enum pci_board_num_t {
+ 	pbn_exar_XR17C154,
+ 	pbn_exar_XR17C158,
+ 	pbn_pasemi_1682M,
++	pbn_ni8430_2,
++	pbn_ni8430_4,
++	pbn_ni8430_8,
++	pbn_ni8430_16,
+ };
  
- 	pbn_b1_1_921600,
- 	pbn_b1_2_921600,
-@@ -1343,6 +1504,9 @@ enum pci_board_num_t {
- 	pbn_b1_2_1250000,
- 
- 	pbn_b1_bt_1_115200,
-+	pbn_b1_bt_2_115200,
-+	pbn_b1_bt_4_115200,
-+
- 	pbn_b1_bt_2_921600,
- 
- 	pbn_b1_1_1382400,
-@@ -1609,6 +1773,12 @@ static struct pciserial_board pci_boards[] __devinitdata = {
- 		.base_baud	= 115200,
- 		.uart_offset	= 8,
+ /*
+@@ -1850,6 +1972,37 @@ static struct pciserial_board pci_boards[] __devinitdata = {
+ 		.num_ports	= 1,
+ 		.base_baud	= 8333333,
  	},
-+	[pbn_b1_16_115200] = {
-+		.flags		= FL_BASE1,
++	/*
++	 * National Instruments 843x
++	 */
++	[pbn_ni8430_16] = {
++		.flags		= FL_BASE0,
 +		.num_ports	= 16,
-+		.base_baud	= 115200,
-+		.uart_offset	= 8,
++		.base_baud	= 3686400,
++		.uart_offset	= 0x10,
++		.first_offset	= 0x800,
 +	},
- 
- 	[pbn_b1_1_921600] = {
- 		.flags		= FL_BASE1,
-@@ -1647,6 +1817,18 @@ static struct pciserial_board pci_boards[] __devinitdata = {
- 		.base_baud	= 115200,
- 		.uart_offset	= 8,
- 	},
-+	[pbn_b1_bt_2_115200] = {
-+		.flags		= FL_BASE1|FL_BASE_BARS,
-+		.num_ports	= 2,
-+		.base_baud	= 115200,
-+		.uart_offset	= 8,
++	[pbn_ni8430_8] = {
++		.flags		= FL_BASE0,
++		.num_ports	= 8,
++		.base_baud	= 3686400,
++		.uart_offset	= 0x10,
++		.first_offset	= 0x800,
 +	},
-+	[pbn_b1_bt_4_115200] = {
-+		.flags		= FL_BASE1|FL_BASE_BARS,
++	[pbn_ni8430_4] = {
++		.flags		= FL_BASE0,
 +		.num_ports	= 4,
-+		.base_baud	= 115200,
-+		.uart_offset	= 8,
++		.base_baud	= 3686400,
++		.uart_offset	= 0x10,
++		.first_offset	= 0x800,
 +	},
++	[pbn_ni8430_2] = {
++		.flags		= FL_BASE0,
++		.num_ports	= 2,
++		.base_baud	= 3686400,
++		.uart_offset	= 0x10,
++		.first_offset	= 0x800,
++	},
+ };
  
- 	[pbn_b1_bt_2_921600] = {
- 		.flags		= FL_BASE1|FL_BASE_BARS,
-@@ -3207,6 +3389,42 @@ static struct pci_device_id serial_pci_tbl[] = {
+ static const struct pci_device_id softmodem_blacklist[] = {
+@@ -3052,6 +3205,46 @@ static struct pci_device_id serial_pci_tbl[] = {
+ 		pbn_pasemi_1682M },
+ 
  	/*
- 	 * National Instruments
- 	 */
-+	{	PCI_VENDOR_ID_NI, PCI_DEVICE_ID_NI_PCI23216,
++	 * National Instruments
++	 */
++	{	PCI_VENDOR_ID_NI, PCI_DEVICE_ID_NI_PXI8430_2322,
 +		PCI_ANY_ID, PCI_ANY_ID, 0, 0,
-+		pbn_b1_16_115200 },
-+	{	PCI_VENDOR_ID_NI, PCI_DEVICE_ID_NI_PCI2328,
++		pbn_ni8430_2 },
++	{	PCI_VENDOR_ID_NI, PCI_DEVICE_ID_NI_PCI8430_2322,
 +		PCI_ANY_ID, PCI_ANY_ID, 0, 0,
-+		pbn_b1_8_115200 },
-+	{	PCI_VENDOR_ID_NI, PCI_DEVICE_ID_NI_PCI2324,
++		pbn_ni8430_2 },
++	{	PCI_VENDOR_ID_NI, PCI_DEVICE_ID_NI_PXI8430_2324,
 +		PCI_ANY_ID, PCI_ANY_ID, 0, 0,
-+		pbn_b1_bt_4_115200 },
-+	{	PCI_VENDOR_ID_NI, PCI_DEVICE_ID_NI_PCI2322,
++		pbn_ni8430_4 },
++	{	PCI_VENDOR_ID_NI, PCI_DEVICE_ID_NI_PCI8430_2324,
 +		PCI_ANY_ID, PCI_ANY_ID, 0, 0,
-+		pbn_b1_bt_2_115200 },
-+	{	PCI_VENDOR_ID_NI, PCI_DEVICE_ID_NI_PCI2324I,
++		pbn_ni8430_4 },
++	{	PCI_VENDOR_ID_NI, PCI_DEVICE_ID_NI_PXI8430_2328,
 +		PCI_ANY_ID, PCI_ANY_ID, 0, 0,
-+		pbn_b1_bt_4_115200 },
-+	{	PCI_VENDOR_ID_NI, PCI_DEVICE_ID_NI_PCI2322I,
++		pbn_ni8430_8 },
++	{	PCI_VENDOR_ID_NI, PCI_DEVICE_ID_NI_PCI8430_2328,
 +		PCI_ANY_ID, PCI_ANY_ID, 0, 0,
-+		pbn_b1_bt_2_115200 },
-+	{	PCI_VENDOR_ID_NI, PCI_DEVICE_ID_NI_PXI8420_23216,
++		pbn_ni8430_8 },
++	{	PCI_VENDOR_ID_NI, PCI_DEVICE_ID_NI_PXI8430_23216,
 +		PCI_ANY_ID, PCI_ANY_ID, 0, 0,
-+		pbn_b1_16_115200 },
-+	{	PCI_VENDOR_ID_NI, PCI_DEVICE_ID_NI_PXI8420_2328,
++		pbn_ni8430_16 },
++	{	PCI_VENDOR_ID_NI, PCI_DEVICE_ID_NI_PCI8430_23216,
 +		PCI_ANY_ID, PCI_ANY_ID, 0, 0,
-+		pbn_b1_8_115200 },
-+	{	PCI_VENDOR_ID_NI, PCI_DEVICE_ID_NI_PXI8420_2324,
++		pbn_ni8430_16 },
++	{	PCI_VENDOR_ID_NI, PCI_DEVICE_ID_NI_PXI8432_2322,
 +		PCI_ANY_ID, PCI_ANY_ID, 0, 0,
-+		pbn_b1_bt_4_115200 },
-+	{	PCI_VENDOR_ID_NI, PCI_DEVICE_ID_NI_PXI8420_2322,
++		pbn_ni8430_2 },
++	{	PCI_VENDOR_ID_NI, PCI_DEVICE_ID_NI_PCI8432_2322,
 +		PCI_ANY_ID, PCI_ANY_ID, 0, 0,
-+		pbn_b1_bt_2_115200 },
-+	{	PCI_VENDOR_ID_NI, PCI_DEVICE_ID_NI_PXI8422_2324,
++		pbn_ni8430_2 },
++	{	PCI_VENDOR_ID_NI, PCI_DEVICE_ID_NI_PXI8432_2324,
 +		PCI_ANY_ID, PCI_ANY_ID, 0, 0,
-+		pbn_b1_bt_4_115200 },
-+	{	PCI_VENDOR_ID_NI, PCI_DEVICE_ID_NI_PXI8422_2322,
++		pbn_ni8430_4 },
++	{	PCI_VENDOR_ID_NI, PCI_DEVICE_ID_NI_PCI8432_2324,
 +		PCI_ANY_ID, PCI_ANY_ID, 0, 0,
-+		pbn_b1_bt_2_115200 },
- 	{	PCI_VENDOR_ID_NI, PCI_DEVICE_ID_NI_PXI8430_2322,
- 		PCI_ANY_ID, PCI_ANY_ID, 0, 0,
- 		pbn_ni8430_2 },
++		pbn_ni8430_4 },
++
++	/*
+ 	* ADDI-DATA GmbH communication cards <info@addi-data.com>
+ 	*/
+ 	{	PCI_VENDOR_ID_ADDIDATA,
 diff --git a/include/linux/pci_ids.h b/include/linux/pci_ids.h
-index a8ef08e..977dd7b 100644
+index e5816dd..a8ef08e 100644
 --- a/include/linux/pci_ids.h
 +++ b/include/linux/pci_ids.h
-@@ -944,6 +944,18 @@
+@@ -943,6 +943,20 @@
+ #define PCI_DEVICE_ID_SUN_TOMATILLO	0xa801
  #define PCI_DEVICE_ID_SUN_CASSINI	0xabba
  
- #define PCI_VENDOR_ID_NI		0x1093
-+#define PCI_DEVICE_ID_NI_PCI2322	0xd130
-+#define PCI_DEVICE_ID_NI_PCI2324	0xd140
-+#define PCI_DEVICE_ID_NI_PCI2328	0xd150
-+#define PCI_DEVICE_ID_NI_PXI8422_2322	0xd190
-+#define PCI_DEVICE_ID_NI_PXI8422_2324	0xd1a0
-+#define PCI_DEVICE_ID_NI_PXI8420_2322	0xd1d0
-+#define PCI_DEVICE_ID_NI_PXI8420_2324	0xd1e0
-+#define PCI_DEVICE_ID_NI_PXI8420_2328	0xd1f0
-+#define PCI_DEVICE_ID_NI_PXI8420_23216	0xd1f1
-+#define PCI_DEVICE_ID_NI_PCI2322I	0xd250
-+#define PCI_DEVICE_ID_NI_PCI2324I	0xd270
-+#define PCI_DEVICE_ID_NI_PCI23216	0xd2b0
- #define PCI_DEVICE_ID_NI_PXI8430_2322	0x7080
- #define PCI_DEVICE_ID_NI_PCI8430_2322	0x70db
- #define PCI_DEVICE_ID_NI_PXI8430_2324	0x70dd
++#define PCI_VENDOR_ID_NI		0x1093
++#define PCI_DEVICE_ID_NI_PXI8430_2322	0x7080
++#define PCI_DEVICE_ID_NI_PCI8430_2322	0x70db
++#define PCI_DEVICE_ID_NI_PXI8430_2324	0x70dd
++#define PCI_DEVICE_ID_NI_PCI8430_2324	0x70df
++#define PCI_DEVICE_ID_NI_PXI8430_2328	0x70e2
++#define PCI_DEVICE_ID_NI_PCI8430_2328	0x70e4
++#define PCI_DEVICE_ID_NI_PXI8430_23216	0x70e6
++#define PCI_DEVICE_ID_NI_PCI8430_23216	0x70e7
++#define PCI_DEVICE_ID_NI_PXI8432_2322	0x70e8
++#define PCI_DEVICE_ID_NI_PCI8432_2322	0x70ea
++#define PCI_DEVICE_ID_NI_PXI8432_2324	0x70ec
++#define PCI_DEVICE_ID_NI_PCI8432_2324	0x70ee
++
+ #define PCI_VENDOR_ID_CMD		0x1095
+ #define PCI_DEVICE_ID_CMD_643		0x0643
+ #define PCI_DEVICE_ID_CMD_646		0x0646
 
