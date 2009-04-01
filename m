@@ -1,16 +1,16 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761391AbZDAISx@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762057AbZDAITU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761391AbZDAISx (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 1 Apr 2009 04:18:53 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753469AbZDAISg
+	id S1762057AbZDAITU (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 1 Apr 2009 04:19:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761826AbZDAISw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 1 Apr 2009 04:18:36 -0400
-Received: from cn.fujitsu.com ([222.73.24.84]:54989 "EHLO song.cn.fujitsu.com"
+	Wed, 1 Apr 2009 04:18:52 -0400
+Received: from cn.fujitsu.com ([222.73.24.84]:52067 "EHLO song.cn.fujitsu.com"
 	rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org with ESMTP
-	id S1753029AbZDAISf (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 1 Apr 2009 04:18:35 -0400
-Message-ID: <49D3236D.3090705@cn.fujitsu.com>
-Date: Wed, 01 Apr 2009 16:18:53 +0800
+	id S1761356AbZDAISs (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 1 Apr 2009 04:18:48 -0400
+Message-ID: <49D32387.9040106@cn.fujitsu.com>
+Date: Wed, 01 Apr 2009 16:19:19 +0800
 From: Li Zefan <lizf@cn.fujitsu.com>
 User-Agent: Thunderbird 2.0.0.9 (X11/20071115)
 MIME-Version: 1.0
@@ -20,34 +20,181 @@ CC: Jens Axboe <jens.axboe@oracle.com>,
        Steven Rostedt <rostedt@goodmis.org>,
        Frederic Weisbecker <fweisbec@gmail.com>,
        LKML <linux-kernel@vger.kernel.org>
-Subject: [PATCH 1/2] blktrace: fix output of unknown events
+Subject: [PATCH 2/2] blktrace: fix output of BLK_TC_PC events
+References: <49D3236D.3090705@cn.fujitsu.com>
+In-Reply-To: <49D3236D.3090705@cn.fujitsu.com>
 Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Not all events are pc (packet command) events. An event is a pc
-event only if it has BLK_TC_PC bit set.
+BLK_TC_PC events should be treated differently with BLK_TC_FS events.
+
+Before this patch:
+
+ # echo 1 > /sys/block/sda/sda1/trace/enable
+ # echo pc > /sys/block/sda/sda1/trace/act_mask
+ # echo blk > /debugfs/tracing/current_tracer
+ # (generate some BLK_TC_PC events)
+ # cat trace
+        bash-2184  [000]  1774.275413:   8,7    I   N [bash]
+        bash-2184  [000]  1774.275435:   8,7    D   N [bash]
+        bash-2184  [000]  1774.275540:   8,7    I   R [bash]
+        bash-2184  [000]  1774.275547:   8,7    D   R [bash]
+ ksoftirqd/0-4     [000]  1774.275580:   8,7    C   N 0 [0]
+        bash-2184  [000]  1774.275648:   8,7    I   R [bash]
+        bash-2184  [000]  1774.275653:   8,7    D   R [bash]
+ ksoftirqd/0-4     [000]  1774.275682:   8,7    C   N 0 [0]
+        bash-2184  [000]  1774.275739:   8,7    I   R [bash]
+        bash-2184  [000]  1774.275744:   8,7    D   R [bash]
+ ksoftirqd/0-4     [000]  1774.275771:   8,7    C   N 0 [0]
+        bash-2184  [000]  1774.275804:   8,7    I   R [bash]
+        bash-2184  [000]  1774.275808:   8,7    D   R [bash]
+ ksoftirqd/0-4     [000]  1774.275836:   8,7    C   N 0 [0]
+
+After this patch:
+
+ # cat trace
+        bash-2263  [000]   366.782149:   8,7    I   N 0 (00 ..) [bash]
+        bash-2263  [000]   366.782323:   8,7    D   N 0 (00 ..) [bash]
+        bash-2263  [000]   366.782557:   8,7    I   R 8 (25 00 ..) [bash]
+        bash-2263  [000]   366.782560:   8,7    D   R 8 (25 00 ..) [bash]
+ ksoftirqd/0-4     [000]   366.782582:   8,7    C   N (25 00 ..) [0]
+        bash-2263  [000]   366.782648:   8,7    I   R 8 (5a 00 3f 00) [bash]
+        bash-2263  [000]   366.782650:   8,7    D   R 8 (5a 00 3f 00) [bash]
+ ksoftirqd/0-4     [000]   366.782669:   8,7    C   N (5a 00 3f 00) [0]
+        bash-2263  [000]   366.782710:   8,7    I   R 8 (5a 00 08 00) [bash]
+        bash-2263  [000]   366.782713:   8,7    D   R 8 (5a 00 08 00) [bash]
+ ksoftirqd/0-4     [000]   366.782730:   8,7    C   N (5a 00 08 00) [0]
+        bash-2263  [000]   366.783375:   8,7    I   R 36 (5a 00 08 00) [bash]
+        bash-2263  [000]   366.783379:   8,7    D   R 36 (5a 00 08 00) [bash]
+ ksoftirqd/0-4     [000]   366.783404:   8,7    C   N (5a 00 08 00) [0]
+
+This is what we do with PC events in user-space blktrace.
 
 Signed-off-by: Li Zefan <lizf@cn.fujitsu.com>
 ---
- kernel/trace/blktrace.c |    2 +-
- 1 files changed, 1 insertions(+), 1 deletions(-)
+ kernel/trace/blktrace.c |   88 ++++++++++++++++++++++++++++++++++++++++++----
+ 1 files changed, 80 insertions(+), 8 deletions(-)
 
 diff --git a/kernel/trace/blktrace.c b/kernel/trace/blktrace.c
-index 947c5b3..464a6e5 100644
+index 464a6e5..fd1ff49 100644
 --- a/kernel/trace/blktrace.c
 +++ b/kernel/trace/blktrace.c
-@@ -1181,7 +1181,7 @@ static enum print_line_t print_one_line(struct trace_iterator *iter,
- 	}
+@@ -970,6 +970,16 @@ static inline const void *pdu_start(const struct trace_entry *ent)
+ 	return te_blk_io_trace(ent) + 1;
+ }
  
- 	if (unlikely(what == 0 || what >= ARRAY_SIZE(what2act)))
--		ret = trace_seq_printf(s, "Bad pc action %x\n", what);
-+		ret = trace_seq_printf(s, "Unknown action %x\n", what);
- 	else {
- 		ret = log_action(iter, what2act[what].act[long_act]);
- 		if (ret)
++static inline u32 t_action(const struct trace_entry *ent)
++{
++	return te_blk_io_trace(ent)->action;
++}
++
++static inline u32 t_bytes(const struct trace_entry *ent)
++{
++	return te_blk_io_trace(ent)->bytes;
++}
++
+ static inline u32 t_sec(const struct trace_entry *ent)
+ {
+ 	return te_blk_io_trace(ent)->bytes >> 9;
+@@ -1030,25 +1040,87 @@ static int blk_log_action(struct trace_iterator *iter, const char *act)
+ 				MAJOR(t->device), MINOR(t->device), act, rwbs);
+ }
+ 
++static int blk_log_dump_pdu(struct trace_seq *s, const struct trace_entry *ent)
++{
++	const char *pdu_buf;
++	int pdu_len;
++	int i, end, ret;
++
++	pdu_buf = pdu_start(ent);
++	pdu_len = te_blk_io_trace(ent)->pdu_len;
++
++	if (!pdu_len)
++		return 1;
++
++	/* find the last zero that needs to be printed */
++	for (end = pdu_len - 1; end >= 0; end--)
++		if (pdu_buf[end])
++			break;
++	end++;
++
++	if (!trace_seq_putc(s, '('))
++		return 0;
++
++	for (i = 0; i < pdu_len; i++) {
++
++		ret = trace_seq_printf(s, "%s%02x",
++				       i == 0 ? "" : " ", pdu_buf[i]);
++		if (!ret)
++			return ret;
++
++		/*
++		 * stop when the rest is just zeroes and indicate so
++		 * with a ".." appended
++		 */
++		if (i == end && end != pdu_len - 1)
++			return trace_seq_puts(s, " ..) ");
++	}
++
++	return trace_seq_puts(s, ") ");
++}
++
+ static int blk_log_generic(struct trace_seq *s, const struct trace_entry *ent)
+ {
+ 	char cmd[TASK_COMM_LEN];
+ 
+ 	trace_find_cmdline(ent->pid, cmd);
+ 
+-	if (t_sec(ent))
+-		return trace_seq_printf(s, "%llu + %u [%s]\n",
+-					t_sector(ent), t_sec(ent), cmd);
+-	return trace_seq_printf(s, "[%s]\n", cmd);
++	if (t_action(ent) & BLK_TC_ACT(BLK_TC_PC)) {
++		int ret;
++
++		ret = trace_seq_printf(s, "%u ", t_bytes(ent));
++		if (!ret)
++			return 0;
++		ret = blk_log_dump_pdu(s, ent);
++		if (!ret)
++			return 0;
++		return trace_seq_printf(s, "[%s]\n", cmd);
++	} else {
++		if (t_sec(ent))
++			return trace_seq_printf(s, "%llu + %u [%s]\n",
++						t_sector(ent), t_sec(ent), cmd);
++		return trace_seq_printf(s, "[%s]\n", cmd);
++	}
+ }
+ 
+ static int blk_log_with_error(struct trace_seq *s,
+ 			      const struct trace_entry *ent)
+ {
+-	if (t_sec(ent))
+-		return trace_seq_printf(s, "%llu + %u [%d]\n", t_sector(ent),
+-					t_sec(ent), t_error(ent));
+-	return trace_seq_printf(s, "%llu [%d]\n", t_sector(ent), t_error(ent));
++	if (t_action(ent) & BLK_TC_ACT(BLK_TC_PC)) {
++		int ret;
++
++		ret = blk_log_dump_pdu(s, ent);
++		if (ret)
++			return trace_seq_printf(s, "[%d]\n", t_error(ent));
++		return 0;
++	} else {
++		if (t_sec(ent))
++			return trace_seq_printf(s, "%llu + %u [%d]\n",
++						t_sector(ent),
++						t_sec(ent), t_error(ent));
++		return trace_seq_printf(s, "%llu [%d]\n",
++					t_sector(ent), t_error(ent));
++	}
+ }
+ 
+ static int blk_log_remap(struct trace_seq *s, const struct trace_entry *ent)
 -- 
 1.5.4.rc3
 
