@@ -1,54 +1,130 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932935AbZDAOR1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933005AbZDAOSB@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932935AbZDAOR1 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 1 Apr 2009 10:17:27 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1764468AbZDAOIn
+	id S933005AbZDAOSB (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 1 Apr 2009 10:18:01 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1765683AbZDAOJ6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 1 Apr 2009 10:08:43 -0400
-Received: from hera.kernel.org ([140.211.167.34]:55406 "EHLO hera.kernel.org"
+	Wed, 1 Apr 2009 10:09:58 -0400
+Received: from mx2.redhat.com ([66.187.237.31]:37119 "EHLO mx2.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S932536AbZDAOIm (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 1 Apr 2009 10:08:42 -0400
-Message-ID: <49D3755E.1090209@kernel.org>
-Date: Wed, 01 Apr 2009 23:08:30 +0900
-From: Tejun Heo <tj@kernel.org>
-User-Agent: Thunderbird 2.0.0.19 (X11/20081227)
+	id S932597AbZDAOJ5 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 1 Apr 2009 10:09:57 -0400
+Message-ID: <49D37584.50208@redhat.com>
+Date: Wed, 01 Apr 2009 10:09:08 -0400
+From: Masami Hiramatsu <mhiramat@redhat.com>
+User-Agent: Thunderbird 2.0.0.21 (X11/20090320)
 MIME-Version: 1.0
-To: axboe@kernel.dk, bharrosh@panasas.com, linux-kernel@vger.kernel.org,
-       fujita.tomonori@lab.ntt.co.jp
-CC: linux-scsi <linux-scsi@vger.kernel.org>,
-       James Bottomley <James.Bottomley@HansenPartnership.com>
-Subject: Re: [RFC PATCHSET block] block: blk-map updates and API cleanup
-References: <1238593472-30360-1-git-send-email-tj@kernel.org>
-In-Reply-To: <1238593472-30360-1-git-send-email-tj@kernel.org>
-X-Enigmail-Version: 0.95.7
+To: Ingo Molnar <mingo@elte.hu>
+CC: Arnaldo Carvalho de Melo <acme@redhat.com>,
+       Steven Rostedt <rostedt@goodmis.org>,
+       Ananth N Mavinakayanahalli <ananth@in.ibm.com>,
+       Frederic Weisbecker <fweisbec@gmail.com>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       systemtap-ml <systemtap@sources.redhat.com>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Jim Keniston <jkenisto@us.ibm.com>
+Subject: Re: [PATCH -tip 0/4 V3] tracing: kprobe-based event tracer
+References: <49CC08A2.5030602@redhat.com> <20090401133654.GB18677@elte.hu>
+In-Reply-To: <20090401133654.GB18677@elte.hu>
 Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Wed, 01 Apr 2009 14:08:34 +0000 (UTC)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Tejun Heo wrote:
-> Hello, all.
+Ingo Molnar wrote:
+> * Masami Hiramatsu <mhiramat@redhat.com> wrote:
 > 
-> These patches are available in the following git tree but it's on top
-> of the previous blk-map-related-fixes patchset which needs some
-> updating, so this posting is just for review and comments.  This
-> patchset needs to spend quite some time in RCs even if it gets acked
-> eventually, so definitely no .30 material.  Please also note that I
-> haven't updated the comment about bio chaining violating queue limit,
-> so please ignore that part.
+>> Hi,
+>>
+>> Here are the patches of kprobe-based event tracer for x86, version 
+>> 3. Since this feature seems to attract some developers, I'd like 
+>> to push these basic patches into -tip tree so that they can easily 
+>> play it.
+>>
+>> This version supports only x86(-32/-64) (If someone is interested 
+>> in porting this to other architectures, I'd happy to help :)), and 
+>> no respawn-able probe support (this would be better to push -mm 
+>> tree.)
+>>
+>> This can be applied on the linux-2.6-tip tree.
 > 
->  git://git.kernel.org/pub/scm/linux/kernel/git/tj/misc.git blk-map
->  http://git.kernel.org/?p=linux/kernel/git/tj/misc.git;a=shortlog;h=blk-map
+> This bit:
+> 
+>> Future items:
+>> - Check insertion point safety by using instruction decoder.
+> 
+> is i believe a must-fix-before-merge item.
 
-Oops, forgot to cc linux-scsi.  Cc'ing linux-scsi and James.  The
-thread is (gmane hasn't picked it up yet).
+Hi Ingo,
 
- http://lkml.org/lkml/2009/4/1/228
+I agreed. Fortunately, Jim Keniston and I wrote an x86 instruction
+decoder :-) which has been made originally for uprobe andd kprobes
+jump-optimizer.
 
-Thanks.
+https://www.redhat.com/archives/utrace-devel/2009-March/msg00031.html
+
+> The functionality is genuinely useful, and if used dynamically on 
+> the host it can be a lot more versatile and a lot more accessible 
+> than a KGDB session - but code patching safety is a must-have.
+> 
+> It does not have to be a full decoder, just a simplified decoding 
+> run that starts from a known function-symbol address, and works its 
+> way down in the function looking at instruction boundaries, and 
+> figuring out whether the code patching is safe. If it sees anything 
+> it cannot deal with it bails out.
+
+Yeah, that is what I'll do.
+
+> I suspect you could get very good practical results by supporting 
+> just a small fraction of the x86 instruction set architecture. If 
+> failures to insert a probe safely are printed out in clear terms:
+> 
+>    Could not insert probe at address 0xc01231234 due to:
+>    Unknown instruction: 48 8d 15 db ff ff ff 00 00 00
+> 
+> People will fill in the missing ISA bits quickly :-)
+> 
+> And people doing:
+> 
+>   asm(" .byte 0x00, 0x01, 0x02, 0x03;"); /* hehe, I broke the decoder! */
+> 
+> ... in kernel .text functions will be talked to in private :)
+
+Aha, that function will get illegal instruction exception :-) even
+without kprobe.
+
+> 
+> So please lets do this now, it needs to happen.
+
+Sure.
+
+> Not having this was the main design failure of original kprobes, 
+> this fragility is what isolated kprobes from the rest of the 
+> instrumentation world and made it essentially a SystemTap-only 
+> special. And this problem is fixable.
+> 
+> It does not have to be a full solution, but it has to be a pretty 
+> safe one. If it's safe and there are no showstopper objections from 
+> others we can apply it to -tip
+> 
+> Can you see any fundamental reason why this couldnt be done?
+
+Nope, because we've done :-)
+
+Thanks!
+
+> 
+> Thanks,
+> 
+> 	Ingo
 
 -- 
-tejun
+Masami Hiramatsu
+
+Software Engineer
+Hitachi Computer Products (America) Inc.
+Software Solutions Division
+
+e-mail: mhiramat@redhat.com
+
