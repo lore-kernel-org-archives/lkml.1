@@ -1,55 +1,90 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1765767AbZDAQpc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1765027AbZDAQrV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1765767AbZDAQpc (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 1 Apr 2009 12:45:32 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756288AbZDAQpJ
+	id S1765027AbZDAQrV (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 1 Apr 2009 12:47:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759235AbZDAQrH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 1 Apr 2009 12:45:09 -0400
-Received: from mx3.mail.elte.hu ([157.181.1.138]:39796 "EHLO mx3.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755862AbZDAQpI (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 1 Apr 2009 12:45:08 -0400
-Date: Wed, 1 Apr 2009 18:44:47 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: Jeremy Fitzhardinge <jeremy@goop.org>
-Cc: Eric Dumazet <dada1@cosmosbay.com>, Tejun Heo <htejun@gmail.com>,
-       linux kernel <linux-kernel@vger.kernel.org>,
-       Linux Netdev List <netdev@vger.kernel.org>,
-       Joe Perches <joe@perches.com>, Rusty Russell <rusty@rustcorp.com.au>
-Subject: Re: [PATCH] x86: percpu_to_op() misses memory and flags clobbers
-Message-ID: <20090401164447.GA16626@elte.hu>
-References: <49D32212.80607@cosmosbay.com> <49D32DC2.9010003@goop.org> <49D33E80.70802@cosmosbay.com> <20090401161218.GB3859@elte.hu> <49D39940.80801@goop.org>
+	Wed, 1 Apr 2009 12:47:07 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:48203 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1756723AbZDAQrE (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 1 Apr 2009 12:47:04 -0400
+Date: Wed, 1 Apr 2009 09:43:13 -0700 (PDT)
+From: Linus Torvalds <torvalds@linux-foundation.org>
+X-X-Sender: torvalds@localhost.localdomain
+To: Trond Myklebust <Trond.Myklebust@netapp.com>
+cc: linux-nfs@vger.kernel.org,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       dhowells@redhat.com
+Subject: Re: [GIT PULL] Please pull the first batch of NFS client changes
+ (and cachefs merge)...
+In-Reply-To: <1238522824.6577.5.camel@heimdal.trondhjem.org>
+Message-ID: <alpine.LFD.2.00.0904010935000.4130@localhost.localdomain>
+References: <1238522824.6577.5.camel@heimdal.trondhjem.org>
+User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <49D39940.80801@goop.org>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-* Jeremy Fitzhardinge <jeremy@goop.org> wrote:
 
-> Ingo Molnar wrote:
->>>                      : "memory", "cc");
->>> }
->>>     
->>
->> Hm, what's your point with pasting this inline function?
->>   
->
-> He's pointing out the redundant (but harmless) "cc" clobber.
+On Tue, 31 Mar 2009, Trond Myklebust wrote:
+> 
+> Please pull from the "for-linus" branch of the repository at
+> 
+>    git pull git://git.linux-nfs.org/projects/trondmy/nfs-2.6.git for-linus
 
-ah, yes. We are completely inconsistent about that. It doesnt
-matter on x86 so i guess could be removed everywhere.
+I _really_ want fscache to come with way more Acked-by's etc. 
 
-	Ingo
+So no, I'm not going to pull this. I want a lot more than just
+
+	Signed-off-by: David Howells <dhowells@redhat.com>
+
+on the 100+ lines of changes to the VM. I want the VM people pinged and 
+asked whether it's ok.
+
+And I also have a stupid trivial complaint:
+
+WTF is up with absolutely inane crap like this:
+
+>  fs/cachefiles/cf-bind.c                           |  286 +++++++
+>  fs/cachefiles/cf-daemon.c                         |  754 ++++++++++++++++++
+>  fs/cachefiles/cf-interface.c                      |  449 +++++++++++
+>  fs/cachefiles/cf-internal.h                       |  360 +++++++++
+>  fs/cachefiles/cf-key.c                            |  159 ++++
+>  fs/cachefiles/cf-main.c                           |  106 +++
+>  fs/cachefiles/cf-namei.c                          |  772 +++++++++++++++++++
+>  fs/cachefiles/cf-proc.c                           |  134 ++++
+>  fs/cachefiles/cf-rdwr.c                           |  853 +++++++++++++++++++++
+>  fs/cachefiles/cf-security.c                       |  116 +++
+>  fs/cachefiles/cf-xattr.c                          |  291 +++++++
+...
+>  fs/fscache/fsc-cache.c                            |  415 ++++++++++
+>  fs/fscache/fsc-cookie.c                           |  498 ++++++++++++
+>  fs/fscache/fsc-fsdef.c                            |  144 ++++
+>  fs/fscache/fsc-histogram.c                        |  109 +++
+>  fs/fscache/fsc-internal.h                         |  380 +++++++++
+>  fs/fscache/fsc-main.c                             |  124 +++
+>  fs/fscache/fsc-netfs.c                            |  103 +++
+>  fs/fscache/fsc-object.c                           |  810 +++++++++++++++++++
+>  fs/fscache/fsc-operation.c                        |  459 +++++++++++
+>  fs/fscache/fsc-page.c                             |  771 +++++++++++++++++++
+>  fs/fscache/fsc-proc.c                             |   68 ++
+>  fs/fscache/fsc-stats.c                            |  212 +++++
+
+What the hell is that "cf-" and "fsc-" prefix? We don't do single-level 
+naming crud. It's already in a directory hierarchy, why the _hell_ does it 
+then add some idiotic extra prefix that is just a (very inferior) copy of 
+that hierarchy?
+
+If you want to write "fscache", write it out. Don't do "fsc". And do it as 
+a directory. But then even an idiot would see that calling it 
+fs/fscache/fscache/proc.c is a bit redundant. So why do you call it 
+fs/fscache/fsc-proc.c?
+
+Gaah. Naming is a bid deal for me, and the above is just crap.
+
+			Linus
