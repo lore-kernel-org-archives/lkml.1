@@ -1,17 +1,17 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754009AbZDAEyH@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753000AbZDAE5t@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754009AbZDAEyH (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 1 Apr 2009 00:54:07 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751524AbZDAExy
+	id S1753000AbZDAE5t (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 1 Apr 2009 00:57:49 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751381AbZDAE5j
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 1 Apr 2009 00:53:54 -0400
-Received: from rcsinet11.oracle.com ([148.87.113.123]:23918 "EHLO
-	rgminet11.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751225AbZDAExx (ORCPT
+	Wed, 1 Apr 2009 00:57:39 -0400
+Received: from rcsinet13.oracle.com ([148.87.113.125]:16981 "EHLO
+	rgminet13.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751331AbZDAE5i (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 1 Apr 2009 00:53:53 -0400
-Message-ID: <49D2F30F.2020809@oracle.com>
-Date: Tue, 31 Mar 2009 21:52:31 -0700
+	Wed, 1 Apr 2009 00:57:38 -0400
+Message-ID: <49D2F3F0.4090709@oracle.com>
+Date: Tue, 31 Mar 2009 21:56:16 -0700
 From: Randy Dunlap <randy.dunlap@oracle.com>
 Organization: Oracle Linux Engineering
 User-Agent: Thunderbird 2.0.0.6 (X11/20070801)
@@ -25,9 +25,9 @@ References: <49D280EF.1080507@oracle.com> <200904011012.11527.rusty@rustcorp.com
 In-Reply-To: <49D2F2D4.9090008@oracle.com>
 Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
-X-Source-IP: acsmt701.oracle.com [141.146.40.71]
+X-Source-IP: acsmt703.oracle.com [141.146.40.81]
 X-Auth-Type: Internal IP
-X-CT-RefId: str=0001.0A010209.49D2F317.0055:SCFMA4539814,ss=1,fgs=0
+X-CT-RefId: str=0001.0A090207.49D2F3F9.00F6:SCFMA4539814,ss=1,fgs=0
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
@@ -66,7 +66,9 @@ Randy Dunlap wrote:
 > 2.6.29-git8 works for me without any patches applied.  After applying
 > this patch, I get the same boot hang that I was seeing with 2.6.29-final.
 
-scratch that.  I'm rebooting now to test with the patch applied...  :(
+That's incorrect.  Sorry about that.
+
+2.6.29-git8 with or without this patch applied work for me.
 
 
 > Make sense to you??
