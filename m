@@ -1,84 +1,150 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763928AbZDALz1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762347AbZDAMBr@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763928AbZDALz1 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 1 Apr 2009 07:55:27 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761423AbZDALzJ
+	id S1762347AbZDAMBr (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 1 Apr 2009 08:01:47 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756295AbZDAMBd
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 1 Apr 2009 07:55:09 -0400
-Received: from sh.osrg.net ([192.16.179.4]:56936 "EHLO sh.osrg.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1760351AbZDALzH (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 1 Apr 2009 07:55:07 -0400
-Date: Wed, 1 Apr 2009 20:54:03 +0900
-To: tj@kernel.org
-Cc: axboe@kernel.dk, bharrosh@panasas.com, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 7/8] blk-map: let blk_rq_map_user_iov() support null
- mapping
-From: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
-In-Reply-To: <1238583884-13517-8-git-send-email-tj@kernel.org>
-References: <1238583884-13517-1-git-send-email-tj@kernel.org>
-	<1238583884-13517-8-git-send-email-tj@kernel.org>
-Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
-Message-Id: <20090401205232C.fujita.tomonori@lab.ntt.co.jp>
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-3.0 (sh.osrg.net [192.16.179.4]); Wed, 01 Apr 2009 20:54:03 +0900 (JST)
+	Wed, 1 Apr 2009 08:01:33 -0400
+Received: from victor.provo.novell.com ([137.65.250.26]:47104 "EHLO
+	victor.provo.novell.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754302AbZDAMBb (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 1 Apr 2009 08:01:31 -0400
+Message-ID: <49D35825.3050001@novell.com>
+Date: Wed, 01 Apr 2009 08:03:49 -0400
+From: Gregory Haskins <ghaskins@novell.com>
+User-Agent: Thunderbird 2.0.0.19 (X11/20081227)
+MIME-Version: 1.0
+To: Andi Kleen <andi@firstfloor.org>
+CC: linux-kernel@vger.kernel.org, agraf@suse.de, pmullaney@novell.com,
+       pmorreale@novell.com, anthony@codemonkey.ws, rusty@rustcorp.com.au,
+       netdev@vger.kernel.org, kvm@vger.kernel.org
+Subject: Re: [RFC PATCH 00/17] virtual-bus
+References: <20090331184057.28333.77287.stgit@dev.haskins.net> <87ab71monw.fsf@basil.nowhere.org>
+In-Reply-To: <87ab71monw.fsf@basil.nowhere.org>
+X-Enigmail-Version: 0.95.7
+OpenPGP: id=D8195319
+Content-Type: multipart/signed; micalg=pgp-sha1;
+ protocol="application/pgp-signature";
+ boundary="------------enigB8DC867B88B8805F65F8D5B2"
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed,  1 Apr 2009 20:04:43 +0900
-Tejun Heo <tj@kernel.org> wrote:
+This is an OpenPGP/MIME signed message (RFC 2440 and 3156)
+--------------enigB8DC867B88B8805F65F8D5B2
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: quoted-printable
 
-> Impact: API expansion
-> 
-> Till now, only blk_rq_map() supported null mapping.  Add null mapping
-> support to blk_rq_map_user_iov() by moving BIO_NULL_MAPPED setting to
-> bio_copy_user_iov().
+Andi Kleen wrote:
+> Gregory Haskins <ghaskins@novell.com> writes:
+>
+> What might be useful is if you could expand a bit more on what the high=
+ level
+> use cases for this.=20
+>
+> Questions that come to mind and that would be good to answer:
+>
+> This seems to be aimed at having multiple VMs talk
+> to each other, but not talk to the rest of the world, correct?=20
+> Is that a common use case?=20
+>  =20
 
-Why does blk_rq_map_user_iov() need to support the null mapping?
+Actually we didn't design specifically for either type of environment.=20
+I think it would, in fact, be well suited to either type of
+communication model, even concurrently (e.g. an intra-vm ipc channel
+resource could live right on the same bus as a virtio-net and a
+virtio-disk resource)
+
+> Wouldn't they typically have a default route  anyways and be able to ta=
+lk to each=20
+> other this way?=20
+> And why can't any such isolation be done with standard firewalling? (it=
+'s known that=20
+> current iptables has some scalability issues, but there's work going on=
+ right
+> now to fix that).=20
+>  =20
+vbus itself, and even some of the higher level constructs we apply on
+top of it (like venet) are at a different scope than I think what you
+are getting at above.  Yes, I suppose you could create a private network
+using the existing virtio-net + iptables.  But you could also do the
+same using virtio-net and a private bridge devices as well.  That is not
+what we are trying to address.
+
+What we *are* trying to address is making an easy way to declare virtual
+resources directly in the kernel so that they can be accessed more
+efficiently.  Contrast that to the way its done today, where the models
+live in, say, qemu userspace.
+
+So instead of having
+guest->host->qemu::virtio-net->tap->[iptables|bridge], you simply have
+guest->host->[iptables|bridge].  How you make your private network (if
+that is what you want to do) is orthogonal...its the path to get there
+that we changed.
+
+> What would be the use cases for non networking devices?
+>
+> How would the interfaces to the user look like?
+>  =20
+
+I am not sure if you are asking about the guests perspective or the
+host-administators perspective.
+
+First now lets look at the low-level device interface from the guests
+perspective.  We can cover the admin perspective in a separate doc, if
+need be.
+
+Each device in vbus supports two basic verbs: CALL, and SHM
+
+int (*call)(struct vbus_device_proxy *dev, u32 func,
+            void *data, size_t len, int flags);
+
+int (*shm)(struct vbus_device_proxy *dev, int id, int prio,
+           void *ptr, size_t len,
+           struct shm_signal_desc *sigdesc, struct shm_signal **signal,
+           int flags);
+
+CALL provides a synchronous method for invoking some verb on the device
+(defined by "func") with some arbitrary data.  The namespace for "func"
+is part of the ABI for the device in question.  It is analogous to an
+ioctl, with the primary difference being that its remotable (it invokes
+from the guest driver across to the host device).
+
+SHM provides a way to register shared-memory with the device which can
+be used for asynchronous communication.  The memory is always owned by
+the "north" (the guest), while the "south" (the host) simply maps it
+into its address space.  You can optionally establish a shm_signal
+object on this memory for signaling in either direction, and I
+anticipate most shm regions will use this feature.  Each shm region has
+an "id" namespace, which like the "func" namespace from the CALL method
+is completely owned by the device ABI.  For example, we have might have
+id's of "RX-RING" and "TX-RING", etc.
+
+=46rom there, we can (hopefully) build an arbitrary type of IO service to=
+
+map on top.  So for instance, for venet-tap, we have CALL verbs for
+things like MACQUERY, and LINKUP, and we have SHM ids for RX-QUEUE and
+TX-QUEUE.  We can write a driver that speaks this ABI on the bottom
+edge, and presents a normal netif interface on the top edge.  So the
+actual consumption of these resources can look just like another other
+resource of a similar type.
+
+-Greg
 
 
-> Signed-off-by: Tejun Heo <tj@kernel.org>
-> ---
->  block/blk-map.c |    3 ---
->  fs/bio.c        |    4 +++-
->  2 files changed, 3 insertions(+), 4 deletions(-)
-> 
-> diff --git a/block/blk-map.c b/block/blk-map.c
-> index 6718021..ac1961d 100644
-> --- a/block/blk-map.c
-> +++ b/block/blk-map.c
-> @@ -63,9 +63,6 @@ static int __blk_rq_map_user(struct request_queue *q, struct request *rq,
->  	if (IS_ERR(bio))
->  		return PTR_ERR(bio);
->  
-> -	if (map_data && map_data->null_mapped)
-> -		bio->bi_flags |= (1 << BIO_NULL_MAPPED);
-> -
->  	orig_bio = bio;
->  	blk_queue_bounce(q, &bio);
->  
-> diff --git a/fs/bio.c b/fs/bio.c
-> index 8ad9784..728bef9 100644
-> --- a/fs/bio.c
-> +++ b/fs/bio.c
-> @@ -869,7 +869,9 @@ struct bio *bio_copy_user_iov(struct request_queue *q,
->  	/*
->  	 * success
->  	 */
-> -	if (!write_to_vm && (!map_data || !map_data->null_mapped)) {
-> +	if (unlikely(map_data && map_data->null_mapped))
-> +		bio->bi_flags |= (1 << BIO_NULL_MAPPED);
-> +	else if (!write_to_vm) {
->  		ret = __bio_copy_iov(bio, bio->bi_io_vec, iov, iov_count, 0, 0);
->  		if (ret)
->  			goto cleanup;
-> -- 
-> 1.6.0.2
-> 
-> --
-> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
-> Please read the FAQ at  http://www.tux.org/lkml/
+--------------enigB8DC867B88B8805F65F8D5B2
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: OpenPGP digital signature
+Content-Disposition: attachment; filename="signature.asc"
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v2.0.9 (GNU/Linux)
+Comment: Using GnuPG with SUSE - http://enigmail.mozdev.org
+
+iEYEARECAAYFAknTWCUACgkQlOSOBdgZUxkqbACcDXBZAmQOVVarZNJ82bXiNqHe
+RHkAnjyIKtjLd5IhLfhVjGEbvo/sFJ2h
+=QKxy
+-----END PGP SIGNATURE-----
+
+--------------enigB8DC867B88B8805F65F8D5B2--
