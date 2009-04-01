@@ -1,57 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752180AbZDAEm4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752170AbZDAEpZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752180AbZDAEm4 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 1 Apr 2009 00:42:56 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751209AbZDAEmp
+	id S1752170AbZDAEpZ (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 1 Apr 2009 00:45:25 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751243AbZDAEpL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 1 Apr 2009 00:42:45 -0400
-Received: from mail.hauppauge.com ([167.206.143.4]:2314 "EHLO
-	mail.hauppauge.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751195AbZDAEmp (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 1 Apr 2009 00:42:45 -0400
-Message-ID: <49D2F0BA.7040805@linuxtv.org>
-Date: Wed, 01 Apr 2009 00:42:34 -0400
-From: Michael Krufky <mkrufky@linuxtv.org>
+	Wed, 1 Apr 2009 00:45:11 -0400
+Received: from 2605ds1-ynoe.1.fullrate.dk ([90.184.12.24]:40131 "EHLO
+	shrek.krogh.cc" rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751195AbZDAEpK (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 1 Apr 2009 00:45:10 -0400
+Message-ID: <49D2F137.3060201@krogh.cc>
+Date: Wed, 01 Apr 2009 06:44:39 +0200
+From: Jesper Krogh <jesper@krogh.cc>
 User-Agent: Thunderbird 2.0.0.21 (X11/20090318)
 MIME-Version: 1.0
-To: chrisw@sous-sol.org
-CC: David Miller <davem@davemloft.net>, linux-kernel@vger.kernel.org,
-       stable@kernel.org, jmforbes@linuxtx.org, zwane@arm.linux.org.uk,
-       tytso@mit.edu, rdunlap@xenotime.net, davej@redhat.com,
-       chuckw@quantumlinux.com, reviews@ml.cw.f00f.org, cebbert@redhat.com,
-       cavokz@gmail.com, w@1wt.eu, rbranco@la.checkpoint.com, jake@lwn.net,
-       eteo@redhat.com, torvalds@linux-foundation.org,
-       akpm@linux-foundation.org, alan@lxorguk.ukuu.org.uk
-Subject: Re: [patch 00/45] 2.6.29.1 -stable review
-References: <20090331231045.719396245@sous-sol.org> <20090331.204706.255891471.davem@davemloft.net>
-In-Reply-To: <20090331.204706.255891471.davem@davemloft.net>
+To: Yinghai Lu <yinghai@kernel.org>
+CC: LKML <linux-kernel@vger.kernel.org>
+Subject: Re: 2.6.29 - irq 19:"nobody cared"
+References: <49D23DB1.6020708@krogh.cc> <86802c440903311415o2bce94e7q98a88781371a0fc5@mail.gmail.com>
+In-Reply-To: <86802c440903311415o2bce94e7q98a88781371a0fc5@mail.gmail.com>
 Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-David Miller wrote:
-> From: Chris Wright <chrisw@sous-sol.org>
-> Date: Tue, 31 Mar 2009 16:10:45 -0700
+Yinghai Lu wrote:
+> On Tue, Mar 31, 2009 at 8:58 AM, Jesper Krogh <jesper@krogh.cc> wrote:
+>> On 2.6.29 i got this one.. haven't seen that one on earlier kernels.
+>>
+>> [248240.135187] irq 19: nobody cared (try booting with the "irqpoll" option)
+>> [248240.137978] Pid: 9225, comm: mdrun_mpi.openm Not tainted 2.6.29 #30
+>> [248240.137978] Call Trace:
+>> [248240.137978]  <IRQ>  [<ffffffff8027231e>] __report_bad_irq+0x1e/0x80
+>> [248240.137978]  [<ffffffff80272502>] note_interrupt+0x182/0x1d0
+>> [248240.137978]  [<ffffffff80272f69>] handle_fasteoi_irq+0x89/0xe0
+>> [248240.137978]  [<ffffffff8020e73e>] do_IRQ+0x7e/0x110
+>> [248240.137978]  [<ffffffff8020cc93>] ret_from_intr+0x0/0xa
+>> [248240.137978]  <EOI> <3>handlers:
+>> [248240.137978] [<ffffffffa014c920>] (mpt_interrupt+0x0/0x5f0 [mptbase])
+>> [248240.290859] Disabling IRQ #19
+>>
+>>
+>> The system seems to run fine allthough.
+>>
+>> http://krogh.cc/~jesper/dmesg-hest-20090331.txt
+>> http://krogh.cc/~jesper/config-hest-20090331.txt
+>> http://krogh.cc/~jesper/proc-interrupts-hest-20090331.txt
 > 
->> Responses should be made by Thursday, April 2, 23:00 UTC.
->> Anything received after that time might be too late.
-> 
-> Chris, any chance you can include the 3 sparc fixes I sent
-> to stable right before you posted this?
-> 
-> Thanks!
-> 
+> how about lspci -tv and lspci -vvxxxx?
 
-Chris,
+Here.
+http://krogh.cc/~jesper/lspci-tv-hest-20090331.txt
+http://krogh.cc/~jesper/lspci-vvxxxx-hest-20090331.txt
 
-...and also the v4l2-common fix that I sent ~10 hours before you posted?
-
-If you can add that one too, I'd appreciate it.
-
-Thanks,
-
-Mike Krufky
-
+-- 
+Jesper
