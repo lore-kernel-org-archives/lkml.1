@@ -1,186 +1,110 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759573AbZDAG4o@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759701AbZDAHAj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759573AbZDAG4o (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 1 Apr 2009 02:56:44 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759158AbZDAG4d
+	id S1759701AbZDAHAj (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 1 Apr 2009 03:00:39 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755864AbZDAHA0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 1 Apr 2009 02:56:33 -0400
-Received: from mga03.intel.com ([143.182.124.21]:28558 "EHLO mga03.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1759027AbZDAG4c (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 1 Apr 2009 02:56:32 -0400
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.39,305,1235980800"; 
-   d="scan'208";a="126469881"
-Date: Wed, 1 Apr 2009 14:56:18 +0800
-From: Wu Fengguang <fengguang.wu@intel.com>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: Jeff Layton <jlayton@redhat.com>, linux-kernel@vger.kernel.org,
-       linux-fsdevel@vger.kernel.org
-Subject: Re: [PATCH] writeback: guard against jiffies wraparound on
-	inode->dirtied_when checks (try #2)
-Message-ID: <20090401065618.GB10423@localhost>
-References: <1238544239-31882-1-git-send-email-jlayton@redhat.com> <20090331172031.b2971f1e.akpm@linux-foundation.org> <20090331205018.228ea5f8@tleilax.poochiereds.net> <20090331180730.049d42e7.akpm@linux-foundation.org>
+	Wed, 1 Apr 2009 03:00:26 -0400
+Received: from courier.cs.helsinki.fi ([128.214.9.1]:33012 "EHLO
+	mail.cs.helsinki.fi" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755219AbZDAHAZ (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 1 Apr 2009 03:00:25 -0400
+Date: Wed, 1 Apr 2009 10:00:21 +0300 (EEST)
+From: "=?ISO-8859-1?Q?Ilpo_J=E4rvinen?=" <ilpo.jarvinen@helsinki.fi>
+X-X-Sender: ijjarvin@wrl-59.cs.helsinki.fi
+To: Markus Trippelsdorf <markus@trippelsdorf.de>
+cc: Netdev <netdev@vger.kernel.org>, LKML <linux-kernel@vger.kernel.org>
+Subject: Re: WARNING: at net/ipv4/tcp_input.c:2927 tcp_ack+0xd55/0x1991()
+In-Reply-To: <20090331184959.GA2725@gentoox2.trippelsdorf.de>
+Message-ID: <Pine.LNX.4.64.0904010955510.762@wrl-59.cs.helsinki.fi>
+References: <20090327211202.GA10014@gentoox2.trippelsdorf.de>
+ <Pine.LNX.4.64.0903280031080.5904@wrl-59.cs.helsinki.fi>
+ <20090328045056.GA2394@gentoox2.trippelsdorf.de>
+ <Pine.LNX.4.64.0903280930440.6696@wrl-59.cs.helsinki.fi>
+ <20090328095514.GA2599@gentoox2.trippelsdorf.de>
+ <Pine.LNX.4.64.0903301155150.30150@wrl-59.cs.helsinki.fi>
+ <20090330164035.GA2652@gentoox2.trippelsdorf.de>
+ <Pine.LNX.4.64.0903302137100.29272@wrl-59.cs.helsinki.fi>
+ <20090331071018.GA2641@gentoox2.trippelsdorf.de>
+ <Pine.LNX.4.64.0903311205070.30150@wrl-59.cs.helsinki.fi>
+ <20090331184959.GA2725@gentoox2.trippelsdorf.de>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090331180730.049d42e7.akpm@linux-foundation.org>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+Content-Type: MULTIPART/MIXED; BOUNDARY="-696208474-377895648-1238569221=:762"
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Mar 31, 2009 at 06:07:30PM -0700, Andrew Morton wrote:
-> On Tue, 31 Mar 2009 20:50:18 -0400 Jeff Layton <jlayton@redhat.com> wrote:
+  This message is in MIME format.  The first part should be readable text,
+  while the remaining parts are likely unreadable without MIME-aware tools.
+
+---696208474-377895648-1238569221=:762
+Content-Type: TEXT/PLAIN; charset=iso-8859-1
+Content-Transfer-Encoding: 8BIT
+
+On Tue, 31 Mar 2009, Markus Trippelsdorf wrote:
+
+> On Tue, Mar 31, 2009 at 12:16:51PM +0300, Ilpo Järvinen wrote:
+> > On Tue, 31 Mar 2009, Markus Trippelsdorf wrote:
+> > 
+> > > On Mon, Mar 30, 2009 at 09:52:55PM +0300, Ilpo Järvinen wrote:
+> > > > On Mon, 30 Mar 2009, Markus Trippelsdorf wrote:
+> > > > 
+> > > > > On Mon, Mar 30, 2009 at 07:01:22PM +0300, Ilpo Järvinen wrote:
+> > > > > > On Sat, 28 Mar 2009, Markus Trippelsdorf wrote:
+> > > > > > > On Sat, Mar 28, 2009 at 10:29:58AM +0200, Ilpo Järvinen wrote:
+> > > > > > 
+> > > > > > ...And, let me guess, you're in X and therefore unable to catch a final 
+> > > > > > oops if any would be printed? It would be nice to get around that as well, 
+> > > > > > either use serial/netconsole or hang in text mode while waiting for the 
+> > > > > > crash (should be too hard if you are able to setup the workload first 
+> > > > > > and then switch away from X and if reproducing takes about an hour)...
+> > > > > 
+> > > > > OK, I will try this later.
+> > > > 
+> > > > Lets hope that gives some clue where it ends up going boom (if it is 
+> > > > caused by TCP we certainly should see something more sensible in console 
+> > > > than just a hang)... ...I once again read through tcp commits but just 
+> > > > cannot find anything that could cause fackets_out miscount, not to speak 
+> > > > of crash prone changes so we'll just have to wait and see...
+> > > 
+> > > The machine hanged again this night and I took two pictures:
+> > > http://www.mypicx.com/uploadimg/1055813374_03302009_2.jpg
+> > > http://www.mypicx.com/uploadimg/1543678904_03302009_1.jpg
+> > >
+> > > But this time there was no tcp related warning in the logs.
+> > 
+> > Right. If that oops would be hit often enough one can easily mix the 
+> > warning with that hang though there is no relation (the fact that final 
+> > oops always goes unnoticed in X amplifies the effect).
+> > 
+> > > I then pulled the lateset git changes, rebuild, rebooted and setup the
+> > > workload again. The machine was still up and running in the morning 
+> > > (~4 hours uptime). So it may well be that the issue was fixed with
+> > > the latest changes.
+> > 
+> > Lets hope so, in any case if you still see hangs please get the final oops.
+> > 
+> > > If it ever occurs again I will notify you.
 > 
-> > On Tue, 31 Mar 2009 17:20:31 -0700
-> > Andrew Morton <akpm@linux-foundation.org> wrote:
-> > 
-> > > On Tue, 31 Mar 2009 20:03:59 -0400
-> > > Jeff Layton <jlayton@redhat.com> wrote:
-> > > 
-> > > > +		 * It's not sufficient to just do a time_after() check on
-> > > > +		 * dirtied_when. That assumes that dirtied_when will always
-> > > > +		 * change within a period of jiffies that encompasses half the
-> > > > +		 * machine word size (2^31 jiffies on 32-bit arch). That's not
-> > > > +		 * necessarily the case if an inode is being constantly
-> > > > +		 * redirtied. Since dirtied_when can never be in the future,
-> > > > +		 * we can assume that if it appears to be so then it is
-> > > > +		 * actually in the distant past.
-> > > 
-> > > so this really is a 32-bit-only thing.
-> > > 
-> > > I guess that isn't worth optimising for though.
-> > > 
-> > 
-> > Yeah, it's pretty much impossible to hit this on a 64-bit machine.
-> > 
-> > > otoh, given that all three comparisons are the same:
-> > > 
-> > > +			time_after(inode->dirtied_when, *older_than_this) &&
-> > > +			time_before_eq(inode->dirtied_when, jiffies))
-> > > 
-> > > (although one is inverted (i think?)), it might end up nicer if this was all done
-> > > in a little helper function?
-> > > 
-> > > That way we only need to comment what's going on at a single site, and
-> > > we could omit the additional test if !CONFIG_64BIT.
-> > 
-> > Ok, that seems reasonable.
-> > 
-> > At one point I had a macro similar to time_in_range(), but dropped it
-> > primarily because time_after_but_before_eq() wasn't easy on the eyes.
-> > Thoughts on better names?
+> It happend again. In this case it took ~10 minutes from the warning to
+> the final crash. I'm pretty sure there must be some kind of relation
+> between the two. How else could one explain that the machine crashes just
+> minutes after _each_ instance of that WARNING?
 > 
-> I was thinking
+> (Unfortunately I was in X again, because I thought this problem was
+> solved)
 > 
-> 	bool inode_dirtied_after(...);
-> 
-> and just leave the innards using time_after() and time_before_eq()?
+> ------------[ cut here ]------------
+> WARNING: at net/ipv4/tcp_input.c:2927 tcp_ack+0xd5b/0x19a6()
 
-Andrew, here is the updated patch. Note that the first chunk for
-redirty_tail() was not absolutely necessary and so removed.
+FYI, I think I figured the cause of this WARNING out, I'll post a patch 
+soon and see if it could be causing crashes somewhere (only the 
+packets_out miscount that seems besides the one with fackets_out is the 
+part I'm not fully sure of, other miscounts that happen too should be safe 
+w.r.t crashing). It's post 2.6.29 so your observation seems correct in 
+that respect, thanks.
 
-Thanks,
-Fengguang
----
-Subject: writeback: guard against jiffies wraparound on inode->dirtied_when checks
-From:	Jeff Layton <jlayton@redhat.com>
-
-The dirtied_when value on an inode is supposed to represent the first
-time that an inode has one of its pages dirtied. This value is in units
-of jiffies. It's used in several places in the writeback code to
-determine when to write out an inode.
-
-The problem is that these checks assume that dirtied_when is updated
-periodically. If an inode is continuously being used for I/O it can be
-persistently marked as dirty and will continue to age. Once the time
-difference between dirtied_when and the jiffies value it is being
-compared to is greater than or equal to half the maximum of the jiffies
-type, the logic of the time_*() macros inverts and the opposite of what
-is needed is returned. On 32-bit architectures that's just under 25 days
-(assuming HZ == 1000).
-
-As the least-recently dirtied inode, it'll end up being the first one
-that pdflush will try to write out. sync_sb_inodes() does this check:
-
-	/* Was this inode dirtied after sync_sb_inodes was called? */
- 	if (time_after(inode->dirtied_when, start))
- 		break;
-
-...but now dirtied_when appears to be in the future. sync_sb_inodes()
-bails out without attempting to write any dirty inodes. When this
-occurs, pdflush will stop writing out inodes for this superblock.
-Nothing can unwedge it until jiffies moves out of the problematic
-window.
-
-Fix this problem by changing the checks against dirtied_when to also
-check whether it appears to be in the future. If it does, then we
-consider the value to be far in the past.
-
-This should shrink the problematic window of time to such a small
-period(30s) as not to matter.
-
-Acked-by: Ian Kent <raven@themaw.net>
-Signed-off-by: Jeff Layton <jlayton@redhat.com>
-Signed-off-by: Wu Fengguang <fengguang.wu@intel.com>
----
- fs/fs-writeback.c |   26 ++++++++++++++++++++++----
- 1 file changed, 22 insertions(+), 4 deletions(-)
-
---- mm.orig/fs/fs-writeback.c
-+++ mm/fs/fs-writeback.c
-@@ -196,7 +196,7 @@ static void redirty_tail(struct inode *i
- 		struct inode *tail_inode;
- 
- 		tail_inode = list_entry(sb->s_dirty.next, struct inode, i_list);
--		if (!time_after_eq(inode->dirtied_when,
-+		if (time_before(inode->dirtied_when,
- 				tail_inode->dirtied_when))
- 			inode->dirtied_when = jiffies;
- 	}
-@@ -220,6 +220,21 @@ static void inode_sync_complete(struct i
- 	wake_up_bit(&inode->i_state, __I_SYNC);
- }
- 
-+static bool inode_dirtied_after(struct inode *inode, unsigned long t)
-+{
-+	bool ret = time_after(inode->dirtied_when, t);
-+#ifndef CONFIG_64BIT
-+	/*
-+	 * For inodes being constantly redirtied, dirtied_when can get stuck.
-+	 * It _appears_ to be in the future, but is actually in distant past.
-+	 * This test is necessary to prevent such wrapped-around relative times
-+	 * from permanently stopping the whole pdflush writeback.
-+	 */
-+	ret = ret && time_before_eq(inode->dirtied_when, jiffies);
-+#endif
-+	return ret;
-+}
-+
- /*
-  * Move expired dirty inodes from @delaying_queue to @dispatch_queue.
-  */
-@@ -231,7 +246,7 @@ static void move_expired_inodes(struct l
- 		struct inode *inode = list_entry(delaying_queue->prev,
- 						struct inode, i_list);
- 		if (older_than_this &&
--			time_after(inode->dirtied_when, *older_than_this))
-+				inode_dirtied_after(inode, *older_than_this))
- 			break;
- 		list_move(&inode->i_list, dispatch_queue);
- 	}
-@@ -492,8 +507,11 @@ void generic_sync_sb_inodes(struct super
- 			continue;		/* blockdev has wrong queue */
- 		}
- 
--		/* Was this inode dirtied after sync_sb_inodes was called? */
--		if (time_after(inode->dirtied_when, start))
-+		/*
-+		 * Was this inode dirtied after sync_sb_inodes was called?
-+		 * This keeps sync from extra jobs and livelock.
-+		 */
-+		if (inode_dirtied_after(inode, start))
- 			break;
- 
- 		/* Is another pdflush already flushing this queue? */
+-- 
+ i.
+---696208474-377895648-1238569221=:762--
