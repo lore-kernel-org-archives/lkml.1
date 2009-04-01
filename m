@@ -1,67 +1,87 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932878AbZDARlV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932102AbZDARny@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932878AbZDARlV (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 1 Apr 2009 13:41:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755707AbZDARlJ
+	id S932102AbZDARny (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 1 Apr 2009 13:43:54 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753275AbZDARno
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 1 Apr 2009 13:41:09 -0400
-Received: from mlbe2k2.cs.myharris.net ([137.237.90.89]:32269 "EHLO
-	mlbe2k2.cs.myharris.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753309AbZDARlI convert rfc822-to-8bit (ORCPT
+	Wed, 1 Apr 2009 13:43:44 -0400
+Received: from cavan.codon.org.uk ([93.93.128.6]:46976 "EHLO
+	vavatch.codon.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751876AbZDARnn (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 1 Apr 2009 13:41:08 -0400
-X-Greylist: delayed 1216 seconds by postgrey-1.27 at vger.kernel.org; Wed, 01 Apr 2009 13:41:08 EDT
-X-MimeOLE: Produced By Microsoft Exchange V6.5
-Content-class: urn:content-classes:message
+	Wed, 1 Apr 2009 13:43:43 -0400
+Date: Wed, 1 Apr 2009 18:43:36 +0100
+From: Matthew Garrett <mjg59@srcf.ucam.org>
+To: Theodore Tso <tytso@mit.edu>, Sitsofe Wheeler <sitsofe@yahoo.com>,
+       "Andreas T.Auer" <andreas.t.auer_lkml_73537@ursus.ath.cx>,
+       Alberto Gonzalez <info@gnebu.es>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: Ext4 and the "30 second window of death"
+Message-ID: <20090401174336.GA14726@srcf.ucam.org>
+References: <200903291224.21380.info@gnebu.es> <200903311452.05210.info@gnebu.es> <20090331134547.GJ13356@mit.edu> <200904010002.47077.info@gnebu.es> <49D2A5AB.1090704@ursus.ath.cx> <20090401015010.GB4529@mit.edu> <20090401052050.GA20456@sucs.org> <20090401151219.GA12285@srcf.ucam.org> <20090401173521.GA15423@mit.edu>
 MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="US-ASCII"
-Content-Transfer-Encoding: 8BIT
-Subject: UIO: uio_mem does not handle devices above 4 GB address
-Date: Wed, 1 Apr 2009 13:20:49 -0400
-Message-ID: <6FCCA913376DD7488F4139A4D11B8F48AC8CDE@troe2k1.cs.myharris.net>
-X-MS-Has-Attach: 
-X-MS-TNEF-Correlator: 
-Thread-Topic: UIO: uio_mem does not handle devices above 4 GB address
-Thread-Index: Acmy7jNciFodbr1kQ4u5rd4/KXsL3A==
-From: "Herrera-Bendezu, Luis" <lherrera@harris.com>
-To: <linux-kernel@vger.kernel.org>
-X-OriginalArrivalTime: 01 Apr 2009 17:20:46.0072 (UTC) FILETIME=[31972780:01C9B2EE]
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20090401173521.GA15423@mit.edu>
+User-Agent: Mutt/1.5.12-2006-07-14
+X-SA-Exim-Connect-IP: <locally generated>
+X-SA-Exim-Mail-From: mjg59@codon.org.uk
+X-SA-Exim-Scanned: No (on vavatch.codon.org.uk); SAEximRunCond expanded to false
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-I am working on a PPC440EPx board with some FPGAs located at
-addresses above 4 GB and kernel version 2.6.28.7. The UIO driver is
-used to access the FPGAs. I get following error when trying to read
-FPGA registers:
-Machine check in kernel mode.
-Data Read PLB Error
+On Wed, Apr 01, 2009 at 01:35:21PM -0400, Theodore Tso wrote:
+> On Wed, Apr 01, 2009 at 04:12:21PM +0100, Matthew Garrett wrote:
+> > On Wed, Apr 01, 2009 at 06:20:50AM +0100, Sitsofe Wheeler wrote:
+> > 
+> > > Just out of curiosity, when laptop mode is happening is there a
+> > > guarantee that writes to other files won't be reordered to before the
+> > > fsync? 
+> > 
+> > laptop-mode does two things - tweak the dirty page semantics slightly 
+> > (not in an interestingly relevant way) and call sys_sync() a few seconds 
+> > after something hits disk rather than cache. In contrast to Ted's 
+> > suggestion that laptop-mode reduces data integrity, it actually enhances 
+> > it by opportunistically ensuring that data hits disk. It's the 
+> > lengthening of the commit intervals that usually accompanies it that 
+> > increases the risk of data loss.
+> 
+> It *can* reduce data integrity; it really depends on how it's tuned
+> and what scenario you're talking about.  To the extent that it uses
+> sys_sync(), it could help in some cases as well, since filesystems
+> that do delayed allocation will wake up when the commit interval
+> fires, and then force out all writes to the disk, yes.  But before the
+> commit interval, there is an increased risk of data loss --- which the
+> user requested.
 
-The problem is traced to member addr in struct uio_mem:
-struct uio_mem {
-    unsigned long     addr;
-    unsigned long     size;
-    int               memtype;
-    void __iomem      *internal_addr;
-    struct uio_map    *map;
-};
+Not from laptop-mode. Let's separate the functionality from the typical 
+use case.
 
-When UIO_MEM_PHYS is used with device address > 32-bit then
-uio_mmap_physical() remaps address using idev->info->mem[mi].addr
-thus loosing high address bits.
+> The other subtlety comes if we add fsync() suppression to laptop mode
+> --- which is something that Bart Samwel is very interested in doing
+> and I talked to him at FOSDEM about this.  As Jeff Garzik recently
+> pointed out, however, if we let the system reorder writes across
+> fsync() boundaries, or if we combine two writes to the same block
+> separated by an fsync(), and the system crashes in the middle of
+> pushing all of these blocks out to the disk, we can end up trashing
+> the consistency guarantees of a database such as mysql or postgres.
+> It's a good point, but it only applies if we add fsync() suppression
+> to laptop mode --- which we haven't done yet.
 
-One way to solve this problem is to change addr member to:
-    phys_addr_t       addr;
+I've got absolutely no idea why anyone would want fsync() to stop 
+meaning "Put my data on the disk please". laptop-mode isn't intended to 
+reduce data integrity - it's intended to batch disk write-outs such that 
+there's a lower risk of needing to perform further write-outs in future. 
+It makes sense for applications which really desperately want 
+information on disk to fsync() (for instance, saving a file in 
+OpenOffice).
 
-and modify corresponding attributes in uio.c. Only concern is that
-uio_vma_fault() calls virt_to_page() and vmalloc_to_page() where both
-have addr arg (unsigned long) and (const void *) respectively for
-powerpc. But these functions are only used for UIO_MEM_LOGICAL and
-UIO_MEM_VIRTUAL.
+laptop-mode is something that makes sense as a default behaviour under a 
+lot of circumstances. Adding fsync() suppression means it's utterly 
+impossible to use it in that way. An additional mode would be perfectly 
+reasonable, as long as it's made clear that it's really a request for 
+data to be discarded at some point. The current mode isn't.
 
-Any alternative approach?
-
-Thanks,
-Luis
-
+-- 
+Matthew Garrett | mjg59@srcf.ucam.org
