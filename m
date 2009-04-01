@@ -1,58 +1,81 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752170AbZDAEpZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752439AbZDAEtU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752170AbZDAEpZ (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 1 Apr 2009 00:45:25 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751243AbZDAEpL
+	id S1752439AbZDAEtU (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 1 Apr 2009 00:49:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751225AbZDAEtJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 1 Apr 2009 00:45:11 -0400
-Received: from 2605ds1-ynoe.1.fullrate.dk ([90.184.12.24]:40131 "EHLO
-	shrek.krogh.cc" rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751195AbZDAEpK (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 1 Apr 2009 00:45:10 -0400
-Message-ID: <49D2F137.3060201@krogh.cc>
-Date: Wed, 01 Apr 2009 06:44:39 +0200
-From: Jesper Krogh <jesper@krogh.cc>
-User-Agent: Thunderbird 2.0.0.21 (X11/20090318)
+	Wed, 1 Apr 2009 00:49:09 -0400
+Received: from mail-qy0-f118.google.com ([209.85.221.118]:56227 "EHLO
+	mail-qy0-f118.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751195AbZDAEtH (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 1 Apr 2009 00:49:07 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
+         :cc:content-type:content-transfer-encoding;
+        b=mqFJ9JSua2zI4rApDD93Y/nXKPuSaptqR3WhMzGXIJWbx964jbtvyJgGKRt3JPwtrm
+         Ij3bxQGikuvg4JnjWAoufwDeNi872T+qtDYlvDNkA1vwpIqTvj4UTOECgyq3dZR6Fjt4
+         OkB8IgxcboKp7hxKfpUkUTAnLWxpfF9JkFhxs=
 MIME-Version: 1.0
-To: Yinghai Lu <yinghai@kernel.org>
-CC: LKML <linux-kernel@vger.kernel.org>
-Subject: Re: 2.6.29 - irq 19:"nobody cared"
-References: <49D23DB1.6020708@krogh.cc> <86802c440903311415o2bce94e7q98a88781371a0fc5@mail.gmail.com>
-In-Reply-To: <86802c440903311415o2bce94e7q98a88781371a0fc5@mail.gmail.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+In-Reply-To: <200903312021.25165.david-b@pacbell.net>
+References: <200903260042.42091.david-b@pacbell.net>
+	 <200903311418.53772.david-b@pacbell.net>
+	 <a95a62fe0903311817i76f9f6d8qf7470fd14a62b912@mail.gmail.com>
+	 <200903312021.25165.david-b@pacbell.net>
+Date: Tue, 31 Mar 2009 21:49:03 -0700
+Message-ID: <a95a62fe0903312149j482c1684k564896e1981f9819@mail.gmail.com>
+Subject: Re: [patch/rfc 2.6.29 1/2] MTD: driver model updates
+From: Kevin Cernekee <kpc.mtd@gmail.com>
+To: David Brownell <david-b@pacbell.net>
+Cc: Linux MTD <linux-mtd@lists.infradead.org>,
+       Kay Sievers <kay.sievers@vrfy.org>, LKML <linux-kernel@vger.kernel.org>
+Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Yinghai Lu wrote:
-> On Tue, Mar 31, 2009 at 8:58 AM, Jesper Krogh <jesper@krogh.cc> wrote:
->> On 2.6.29 i got this one.. haven't seen that one on earlier kernels.
->>
->> [248240.135187] irq 19: nobody cared (try booting with the "irqpoll" option)
->> [248240.137978] Pid: 9225, comm: mdrun_mpi.openm Not tainted 2.6.29 #30
->> [248240.137978] Call Trace:
->> [248240.137978]  <IRQ>  [<ffffffff8027231e>] __report_bad_irq+0x1e/0x80
->> [248240.137978]  [<ffffffff80272502>] note_interrupt+0x182/0x1d0
->> [248240.137978]  [<ffffffff80272f69>] handle_fasteoi_irq+0x89/0xe0
->> [248240.137978]  [<ffffffff8020e73e>] do_IRQ+0x7e/0x110
->> [248240.137978]  [<ffffffff8020cc93>] ret_from_intr+0x0/0xa
->> [248240.137978]  <EOI> <3>handlers:
->> [248240.137978] [<ffffffffa014c920>] (mpt_interrupt+0x0/0x5f0 [mptbase])
->> [248240.290859] Disabling IRQ #19
->>
->>
->> The system seems to run fine allthough.
->>
->> http://krogh.cc/~jesper/dmesg-hest-20090331.txt
->> http://krogh.cc/~jesper/config-hest-20090331.txt
->> http://krogh.cc/~jesper/proc-interrupts-hest-20090331.txt
-> 
-> how about lspci -tv and lspci -vvxxxx?
+On 3/31/09, David Brownell <david-b@pacbell.net> wrote:
+>> 2) region_info_user fields?  Not really sure how this would work.
+>> Maybe a separate subdirectory for each region?
+>
+> I'm not sure I've ever had reason to care about a "region" (whatever
+> that is!) with MTD hardware.
 
-Here.
-http://krogh.cc/~jesper/lspci-tv-hest-20090331.txt
-http://krogh.cc/~jesper/lspci-vvxxxx-hest-20090331.txt
+Erase Block Regions.  From the CFI spec:
 
--- 
-Jesper
+"x specifies the number of regions within the device containing one or
+more contiguous Erase Blocks of the same size.  For example, a 128KB
+device (1Mb) having blocking of 16KB, 8KB, four 2KB, two 16KB, and one
+64KB is considered to have 5 Erase Block Regions."
+
+This is fairly common on parallel NOR devices.  Probably less so on
+huge NAND devices.
+
+> I suspect that a lot of interesting questions could come up in
+> the context of enhancing mtd-utils to work with sysfs and bigger
+> NAND chips.  Some might relate to "regions".
+
+Right, this sysfs requirement raises a number of issues that need to
+be fully thought out in order to make sure the new interface is a
+suitable replacement for the "INFO" ioctls.  For instance:
+
+1) If each region is a subdirectory, are user programs supposed to use
+readdir() to count them?  Is ioctl(MEMGETREGIONCOUNT) still the
+preferred method?  Or do we make a new "regioncount" sysfs attribute?
+
+(A somewhat related question is whether MEMGETREGIONCOUNT only exists
+because it was impossible to expand the MEMGETINFO struct.  After all,
+it's just copying another field from the mtd_info struct.)
+
+2) How are user programs expected to access MTD sysfs?  Do we
+introduce a new libsysfs dependency, or roll our own implementation?
+Are there any past examples of ioctls being phased out in favor of
+sysfs, particularly in subsystems that are popular on embedded
+platforms?
+
+3) What should the mtd-utils changes look like?  Do we define
+backward-compatibility wrapper functions that try to work the same way
+the ioctls used to?  New libraries and layers of abstraction?  Or
+something in the middle?
