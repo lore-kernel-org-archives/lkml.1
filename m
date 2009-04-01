@@ -1,68 +1,78 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1765416AbZDAQVm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760408AbZDAQWY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1765416AbZDAQVm (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 1 Apr 2009 12:21:42 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757535AbZDAQVa
+	id S1760408AbZDAQWY (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 1 Apr 2009 12:22:24 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1765148AbZDAQWL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 1 Apr 2009 12:21:30 -0400
-Received: from zeniv.linux.org.uk ([195.92.253.2]:39736 "EHLO
-	ZenIV.linux.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756288AbZDAQV3 (ORCPT
+	Wed, 1 Apr 2009 12:22:11 -0400
+Received: from iolanthe.rowland.org ([192.131.102.54]:56525 "HELO
+	iolanthe.rowland.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with SMTP id S1764024AbZDAQWK (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 1 Apr 2009 12:21:29 -0400
-Date: Wed, 1 Apr 2009 17:21:22 +0100
-From: Al Viro <viro@ZenIV.linux.org.uk>
-To: Am??rico Wang <xiyou.wangcong@gmail.com>
-Cc: Miklos Szeredi <miklos@szeredi.hu>,
-       user-mode-linux-devel@lists.sourceforge.net, jdike@addtoit.com,
-       akpm@linux-foundation.org, linux-kernel@vger.kernel.org
-Subject: Re: do_execve() needs const qualifiers (was Re: [patch 3/3] uml:
-	fix warnings in kernel_execve)
-Message-ID: <20090401162122.GE28946@ZenIV.linux.org.uk>
-References: <E1LoMQ2-0007bB-By@pomaz-ex.szeredi.hu> <E1LoMTw-0007d2-AI@pomaz-ex.szeredi.hu> <20090401161114.GF3848@hack>
+	Wed, 1 Apr 2009 12:22:10 -0400
+Date: Wed, 1 Apr 2009 12:22:08 -0400 (EDT)
+From: Alan Stern <stern@rowland.harvard.edu>
+X-X-Sender: stern@iolanthe.rowland.org
+To: "K.Prasad" <prasad@linux.vnet.ibm.com>
+cc: Ingo Molnar <mingo@elte.hu>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Benjamin Herrenschmidt <benh@au1.ibm.com>,
+       Frederic Weisbecker <fweisbec@gmail.com>, <maneesh@linux.vnet.ibm.com>,
+       Roland McGrath <roland@redhat.com>,
+       Steven Rostedt <rostedt@goodmis.org>
+Subject: Re: [Patch 00/11] Hardware Breakpoint interfaces
+In-Reply-To: <20090328084647.GB5297@in.ibm.com>
+Message-ID: <Pine.LNX.4.44L0.0904011216460.3736-100000@iolanthe.rowland.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090401161114.GF3848@hack>
-User-Agent: Mutt/1.5.17 (2007-11-01)
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Apr 02, 2009 at 12:11:14AM +0800, Am??rico Wang wrote:
-> On Mon, Mar 30, 2009 at 08:45:12PM +0200, Miklos Szeredi wrote:
-> >From: Miklos Szeredi <mszeredi@suse.cz>
-> >
-> >Fix the following warnings:
-> >
-> >arch/um/kernel/syscall.c: In function 'kernel_execve':
-> >arch/um/kernel/syscall.c:130: warning: passing argument 1 of 'um_execve' discards qualifiers from pointer target type
-> >arch/um/kernel/syscall.c:130: warning: passing argument 2 of 'um_execve' discards qualifiers from pointer target type
-> >arch/um/kernel/syscall.c:130: warning: passing argument 3 of 'um_execve' discards qualifiers from pointer target type
-> >
-> >Signed-off-by: Miklos Szeredi <mszeredi@suse.cz>
-> >---
-> > arch/um/kernel/syscall.c |    3 ++-
-> > 1 file changed, 2 insertions(+), 1 deletion(-)
-> >
-> >Index: linux-2.6/arch/um/kernel/syscall.c
-> >===================================================================
-> >--- linux-2.6.orig/arch/um/kernel/syscall.c	2009-03-30 20:25:17.000000000 +0200
-> >+++ linux-2.6/arch/um/kernel/syscall.c	2009-03-30 20:36:20.000000000 +0200
-> >@@ -127,7 +127,8 @@ int kernel_execve(const char *filename,
-> > 
-> > 	fs = get_fs();
-> > 	set_fs(KERNEL_DS);
-> >-	ret = um_execve(filename, argv, envp);
-> >+	ret = um_execve((char *)filename, (char __user *__user *)argv,
-> >+			(char __user *__user *) envp);
-> 
-> Well... I found this many days ago and I did a similar fix.
-> 
-> However, I think this doesn't fix the real problem. The real problem
-> is do_execve() doesn't have the correct const qualifiers, I am queueing
-> a huge patch to fix all the 'const' issues from do_execve() and more,
-> but I don't if Al would like it or not.
+On Sat, 28 Mar 2009, K.Prasad wrote:
 
-I don't know...  The thing is, it'll trail down into bprm->filename /
-bprm->interp and the things get very ugly very fast from that point.
+> On Wed, Mar 25, 2009 at 03:48:31PM -0400, Alan Stern wrote:
+> > > +
+> > > +/*
+> > > + * Handle debug exception notifications.
+> > > + */
+> > > +int __kprobes hw_breakpoint_handler(struct die_args *args)
+> > > +{
+> > > +	int i, rc = NOTIFY_DONE;
+> > > +	struct hw_breakpoint *bp;
+> > > +	/* The DR6 value is stored in args->err */
+> > > +	unsigned long dr7, dr6 = args->err;
+> > 
+> > Please change this.  (I should have changed it long ago, but I never
+> > got around to it.)  Instead of passing the DR6 value in args->err,
+> > pass a pointer to the dr6 variable in do_debug().  That way the
+> > handler routines can turn off bits in that variable and do_debug() can
+> > see which bits remain set at the end.
+> > 
+> > Of course, this will require a corresponding change to the
+> > post_kprobe_handler() routine.
+> >
+> 
+> As I looked at the code with an intention of changing it, I don't find a
+> place - in hw_breakpoint_handler() and in functions called by
+> kprobe_exceptions_notify() where bits in dr6 are written into.
+
+That's because such writes wouldn't do any good in the old code!  :-)
+
+> The thread-specific thread->debugreg6 is updated with causative bits in
+> ptrace_triggered() to help send signals to the user-space. I don't see a
+> user for the change you propose.
+
+For each breakpoint where we decide it's a case of lazy DR switching or
+we invoke a "triggered" callback, the corresponding bit in dr6 should
+be cleared.  This is a way of indicating to do_debug() that the handler 
+has taken care of these causes of the exception.
+
+Similarly, the kprobe routine should clear the single-step bit in dr6 
+when it handles a single-step exception.  When the notifier chain 
+completes, the only bits remaining in dr6 should be for events that 
+still need to be handled.
+
+Alan Stern
+
