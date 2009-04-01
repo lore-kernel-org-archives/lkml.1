@@ -1,74 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763604AbZDAMUp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763387AbZDAMUP@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763604AbZDAMUp (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 1 Apr 2009 08:20:45 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763036AbZDAMU2
+	id S1763387AbZDAMUP (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 1 Apr 2009 08:20:15 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762910AbZDAMT6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 1 Apr 2009 08:20:28 -0400
-Received: from wa-out-1112.google.com ([209.85.146.179]:10426 "EHLO
-	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1762910AbZDAMU0 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 1 Apr 2009 08:20:26 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=references:message-id:from:to:in-reply-to:content-type
-         :content-transfer-encoding:x-mailer:mime-version:subject:date:cc;
-        b=kCJQNWLCigQhVT4J90degfHEB6LUdRV3YWW0x3E3lSGAQtCbXer3IKHdBhOmG81i9H
-         6A7i+DlnO6p0NMIZg8BMmL0W9ZbQcmb9wQZkLrZOxwRPL0gprZVki4s9L/1YqJw9kYQc
-         Btegbwua417jJMhAKLv6LfRmLGycnUguU/1pc=
-References: <49D10256.8030307@vlnb.net> <e2e108260903301106y2b750c23kfab978567f3de3a0@mail.gmail.com> <49D11096.3070804@vlnb.net> <e2e108260903301153x38e86097vd29c47507da2879f@mail.gmail.com> <49D254E4.8050806@vlnb.net> <E2BB8074E5500C42984D980D4BD78EF9029E3D0B@MFG-NYC-EXCH2.mfg.prv> <e2e108260903312329u118a54bfn3107fdca4b3e2b1d@mail.gmail.com>
-Message-Id: <FA7F6940-CD5C-4460-9777-2F7AE3657B8E@gmail.com>
-From: Ross Walker <rswwalker@gmail.com>
-To: Bart Van Assche <bart.vanassche@gmail.com>
-In-Reply-To: <e2e108260903312329u118a54bfn3107fdca4b3e2b1d@mail.gmail.com>
-Content-Type: text/plain;
-	charset=us-ascii;
-	format=flowed;
-	delsp=yes
+	Wed, 1 Apr 2009 08:19:58 -0400
+Received: from sh.osrg.net ([192.16.179.4]:55974 "EHLO sh.osrg.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1762095AbZDAMT5 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 1 Apr 2009 08:19:57 -0400
+Date: Wed, 1 Apr 2009 21:18:43 +0900
+To: jens.axboe@oracle.com
+Cc: fujita.tomonori@lab.ntt.co.jp, tj@kernel.org, bharrosh@panasas.com,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 2/8] block: fix SG_IO vector request data length
+	handling
+From: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
+In-Reply-To: <20090401115058.GD5178@kernel.dk>
+References: <1238583884-13517-3-git-send-email-tj@kernel.org>
+	<20090401204716N.fujita.tomonori@lab.ntt.co.jp>
+	<20090401115058.GD5178@kernel.dk>
+Mime-Version: 1.0
+Content-Type: Text/Plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
-X-Mailer: iPhone Mail (5H11)
-Mime-Version: 1.0 (iPhone Mail 5H11)
-Subject: Re: [Iscsitarget-devel] [Scst-devel] ISCSI-SCST performance (withalso IET and STGT data)
-Date: Wed, 1 Apr 2009 08:20:14 -0400
-Cc: "Ross S. W. Walker" <RWalker@medallion.com>,
-       Vladislav Bolkhovitin <vst@vlnb.net>,
-       "linux-scsi@vger.kernel.org" <linux-scsi@vger.kernel.org>,
-       iSCSI Enterprise Target Developer List 
-	<iscsitarget-devel@lists.sourceforge.net>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       "stgt@vger.kernel.org" <stgt@vger.kernel.org>,
-       scst-devel <scst-devel@lists.sourceforge.net>
+Message-Id: <20090401211851Y.fujita.tomonori@lab.ntt.co.jp>
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-3.0 (sh.osrg.net [192.16.179.4]); Wed, 01 Apr 2009 21:18:45 +0900 (JST)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Apr 1, 2009, at 2:29 AM, Bart Van Assche <bart.vanassche@gmail.com>  
-wrote:
+On Wed, 1 Apr 2009 13:50:58 +0200
+Jens Axboe <jens.axboe@oracle.com> wrote:
 
-> On Tue, Mar 31, 2009 at 8:43 PM, Ross S. W. Walker
-> <RWalker@medallion.com> wrote:
->> IET just needs to fix how it does it workload with CFQ which
->> somehow SCST has overcome. Of course SCST tweaks the Linux kernel to
->> gain some extra speed.
->
-> I'm not familiar with the implementation details of CFQ, but I know
-> that one of the changes between SCST 1.0.0 and SCST 1.0.1 is that the
-> default number of kernel threads of the scst_vdisk kernel module has
-> been increased to 5. Could this explain the performance difference
-> between SCST and IET for FILEIO and BLOCKIO ?
+> On Wed, Apr 01 2009, FUJITA Tomonori wrote:
+> > On Wed,  1 Apr 2009 20:04:38 +0900
+> > Tejun Heo <tj@kernel.org> wrote:
+> > 
+> > > Impact: fix SG_IO behavior such that it matches the documentation
+> > > 
+> > > SG_IO howto says that if ->dxfer_len and sum of iovec disagress, the
+> > > shorter one wins.  However, the current implementation returns -EINVAL
+> > > for such cases.  Trim iovc if it's longer than ->dxfer_len.
+> > 
+> > Is that description about sg's SG_IO?
+> 
+> The more important question is what sg.c actually does, that's more
+> important than the documentation.
 
-Thank for the update. IET has used 8 threads per target for ages now,  
-I don't think it is that.
+Do you think that Doug is a person who makes such mistake? ;)
 
-It may be how the I/O threads are forked in SCST that causes them to  
-be in the same I/O context with each other.
+Seems that sg worked as the howto says. But I think that I broke it
+when I converted sg to use the block layer. I'll fix it soon.
 
-I'm pretty sure implementing a version of the patch that was used for  
-the dump command (found on the LKML) will fix this.
-
-But thanks goes to Vlad for pointing this dificiency out so we can fix  
-it to help make IET even better.
-
--Ross
-
+About this patch, as we know, there are lots of subtle differences
+between sg's SG_IO and the block's. I'm not sure that it's a good idea
+to change the behavior of the block's SG_IO.
