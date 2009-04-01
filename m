@@ -1,44 +1,45 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762096AbZDALuM@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762570AbZDALvS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762096AbZDALuM (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 1 Apr 2009 07:50:12 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755542AbZDALt6
+	id S1762570AbZDALvS (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 1 Apr 2009 07:51:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759010AbZDALvC
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 1 Apr 2009 07:49:58 -0400
-Received: from zeniv.linux.org.uk ([195.92.253.2]:55797 "EHLO
-	ZenIV.linux.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754302AbZDALt5 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 1 Apr 2009 07:49:57 -0400
-Date: Wed, 1 Apr 2009 12:49:55 +0100
-From: Al Viro <viro@ZenIV.linux.org.uk>
-To: Catalin Marinas <catalin.marinas@arm.com>
-Cc: linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
-       Cheng Renquan <crquan@gmail.com>
-Subject: Re: [PATCH] Free the temporary vfsmount created in
-	bdev_cache_init()
-Message-ID: <20090401114955.GC28946@ZenIV.linux.org.uk>
-References: <20090401110703.12974.99902.stgit@pc1117.cambridge.arm.com>
+	Wed, 1 Apr 2009 07:51:02 -0400
+Received: from brick.kernel.dk ([93.163.65.50]:58088 "EHLO kernel.dk"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1755471AbZDALvA (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 1 Apr 2009 07:51:00 -0400
+Date: Wed, 1 Apr 2009 13:50:58 +0200
+From: Jens Axboe <jens.axboe@oracle.com>
+To: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
+Cc: tj@kernel.org, bharrosh@panasas.com, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 2/8] block: fix SG_IO vector request data length
+	handling
+Message-ID: <20090401115058.GD5178@kernel.dk>
+References: <1238583884-13517-1-git-send-email-tj@kernel.org> <1238583884-13517-3-git-send-email-tj@kernel.org> <20090401204716N.fujita.tomonori@lab.ntt.co.jp>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20090401110703.12974.99902.stgit@pc1117.cambridge.arm.com>
-User-Agent: Mutt/1.5.17 (2007-11-01)
+In-Reply-To: <20090401204716N.fujita.tomonori@lab.ntt.co.jp>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Apr 01, 2009 at 12:07:37PM +0100, Catalin Marinas wrote:
-> The vfsmount structure allocated in this function (the bd_mnt local
-> variable) is only used to obtain the blockdev_superblock and there are
-> no other references to it. This structure can be safely freed (and
-> prevent kmemleak from reporting it).
+On Wed, Apr 01 2009, FUJITA Tomonori wrote:
+> On Wed,  1 Apr 2009 20:04:38 +0900
+> Tejun Heo <tj@kernel.org> wrote:
+> 
+> > Impact: fix SG_IO behavior such that it matches the documentation
+> > 
+> > SG_IO howto says that if ->dxfer_len and sum of iovec disagress, the
+> > shorter one wins.  However, the current implementation returns -EINVAL
+> > for such cases.  Trim iovc if it's longer than ->dxfer_len.
+> 
+> Is that description about sg's SG_IO?
 
-NAK.  This kind of kludges is simply not worth doing.  Store the
-pointer to vfsmount into a static-in-file variable if you want
-to get kmemleak to STFU.
+The more important question is what sg.c actually does, that's more
+important than the documentation.
 
-Savings on a vfsmount are not worth neurons needed to remember that
-in this particular case we are OK to do something that is utterly
-wrong in general (free_vfsmnt() is a very low-level stuff that shouldn't
-be used outside of namespace.c and super.c).
+-- 
+Jens Axboe
+
