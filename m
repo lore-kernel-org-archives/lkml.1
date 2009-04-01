@@ -1,74 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759290AbZDAJLf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762011AbZDAJLv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759290AbZDAJLf (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 1 Apr 2009 05:11:35 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750903AbZDAJLZ
+	id S1762011AbZDAJLv (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 1 Apr 2009 05:11:51 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760207AbZDAJL2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 1 Apr 2009 05:11:25 -0400
-Received: from relay.atmel.no ([80.232.32.139]:56718 "EHLO relay.atmel.no"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751191AbZDAJLY (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 1 Apr 2009 05:11:24 -0400
-Date: Wed, 1 Apr 2009 11:11:16 +0200
-From: Hans-Christian Egtvedt <hans-christian.egtvedt@atmel.com>
-To: Haavard Skinnemoen <haavard.skinnemoen@atmel.com>
-Cc: "Sosnowski, Maciej" <maciej.sosnowski@intel.com>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       "Williams, Dan J" <dan.j.williams@intel.com>
-Subject: Re: [PATCH 2/2] dw_dmac: add cyclic API to DW DMA driver
-Message-ID: <20090401111116.7c604530@hcegtvedt>
-In-Reply-To: <20090401102830.6a749ad2@hskinnemoen-d830>
-References: <1237894506-11622-1-git-send-email-hans-christian.egtvedt@atmel.com>
-	<1237894506-11622-2-git-send-email-hans-christian.egtvedt@atmel.com>
-	<129600E5E5FB004392DDC3FB599660D790F8C3F0@irsmsx504.ger.corp.intel.com>
-	<20090401102830.6a749ad2@hskinnemoen-d830>
-Organization: Atmel
-X-Mailer: Claws Mail 3.6.1 (GTK+ 2.16.0; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Wed, 1 Apr 2009 05:11:28 -0400
+Received: from fgwmail5.fujitsu.co.jp ([192.51.44.35]:49083 "EHLO
+	fgwmail5.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1760120AbZDAJL1 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 1 Apr 2009 05:11:27 -0400
+From: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
+To: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+Subject: Re: [PATCH] vmscan: memcg needs may_swap (Re: [patch] vmscan: rename  sc.may_swap to may_unmap)
+Cc: kosaki.motohiro@jp.fujitsu.com, Johannes Weiner <hannes@cmpxchg.org>,
+       Minchan Kim <minchan.kim@gmail.com>,
+       Daisuke Nishimura <nishimura@mxp.nes.nec.co.jp>,
+       linux-kernel@vger.kernel.org, linux-mm@kvack.org,
+       Andrew Morton <akpm@linux-foundation.org>,
+       "Rafael J. Wysocki" <rjw@sisk.pl>, Rik van Riel <riel@redhat.com>,
+       Balbir Singh <balbir@in.ibm.com>
+In-Reply-To: <20090401180445.80b11d90.kamezawa.hiroyu@jp.fujitsu.com>
+References: <20090401040951.GA1548@cmpxchg.org> <20090401180445.80b11d90.kamezawa.hiroyu@jp.fujitsu.com>
+Message-Id: <20090401180756.B1F1.A69D9226@jp.fujitsu.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset="US-ASCII"
 Content-Transfer-Encoding: 7bit
+X-Mailer: Becky! ver. 2.50 [ja]
+Date: Wed,  1 Apr 2009 18:11:20 +0900 (JST)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 1 Apr 2009 10:28:30 +0200
-Haavard Skinnemoen <haavard.skinnemoen@atmel.com> wrote:
-
-> Sosnowski, Maciej wrote:
-> > > +void dw_dma_cyclic_stop(struct dma_chan *chan)
-> > > +{
-> > > +	struct dw_dma_chan	*dwc = to_dw_dma_chan(chan);
-> > > +	struct dw_dma		*dw =
-> > > to_dw_dma(dwc->chan.device); +
-> > > +	channel_clear_bit(dw, CH_EN, dwc->mask);
-> > > +	while (dma_readl(dw, CH_EN) & dwc->mask)
-> > > +		cpu_relax();
-> > > +}  
-> > 
-> > Don't you need locks in dw_dma_cyclic_stop?
+> memory cgroup has 2 calls to this shrink_zone.
+>  1. memory usage hits the limit.
+>  2. mem+swap usage hits the limit.
 > 
-> Good question. On one hand, if cyclic_start() can race with
-> cyclic_stop(), the client probably has more serious issues to deal
-> with. On the other hand, if something ever manages to set the CH_EN
-> bit at the wrong moment, the loop may never finish.
+> At "2", swap-out doesn't decrease the usage of mem+swap, then set may_swap=0.
+> So, we want to kick out only file caches.
+> But, we can reclaim file cache and "unmap file cache and reclaim it!" is 
+> necessary even if may_swap=0.
 > 
-> So it's probably safest to wrap it in spin_lock_bh(). You should
-> probably add a note that this function can not be called from
-> interrupt context too.
+> Then, scanning only FILE LRU makes sense at may_swap=0 *if* memcg is
+> the only user of may_swap=0.
 > 
+> Let's see others.
+> 
+>  - __zone_reclaim sets may_unmap to be 0 when they don't want swap-out.
+>    .....can be replaced with may_swap.
+> 
+>  - shrink_all_memory sets may_swap to be 0. Is this called by hibernation ?
+>    If you don't want to unmap file caches while hibernation, adding may_unmap
+>    as *new* paramter makes sense, I think.
+> 
+> The change you proposed is for dropping unused SwapCache pages. Right ?
+> But this will be dropped by kswapd if necessary.
+> 
+> As far as memcg concerns, scanning ANON LRU even when may_swap=0 is just
+> a waste of cpu time.
 
-The problem then is when calling cyclic_stop from the trigger function
-in an ALSA driver.
+this sentence just explain my intention.
 
-http://www.kernel.org/pub/linux/kernel/people/tiwai/docs/writing-an-alsa-driver/ch05s06.html#pcm-interface-operators-trigger-callback
+1. memcg, zone_reclaim scanning ANON LRU is just waste of cpu.
+2. kswapd and normal direct reclaim can reclaim stealed swapcache anyway.
+   then above trick don't cause any system hang-up and performance degression.
 
-This callback is atomic, and with interrupts disabled. So using
-spin_lock_bh() is AFAICT not allowed.
 
-I am going to brush up the interface and document that the _stop and
-_start interface has to be called with interrupts disabled. Will post a
-v2 shortly.
 
--- 
-Best regards,
-Hans-Christian Egtvedt
