@@ -1,60 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933650AbZDASqU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933681AbZDASsS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933650AbZDASqU (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 1 Apr 2009 14:46:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933612AbZDASpo
+	id S933681AbZDASsS (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 1 Apr 2009 14:48:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933554AbZDASrw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 1 Apr 2009 14:45:44 -0400
-Received: from wa-out-1112.google.com ([209.85.146.178]:23970 "EHLO
-	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S933581AbZDASpl (ORCPT
+	Wed, 1 Apr 2009 14:47:52 -0400
+Received: from rv-out-0506.google.com ([209.85.198.229]:42478 "EHLO
+	rv-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755493AbZDASru (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 1 Apr 2009 14:45:41 -0400
-Message-ID: <49D3B64F.6070703@codemonkey.ws>
-Date: Wed, 01 Apr 2009 13:45:35 -0500
-From: Anthony Liguori <anthony@codemonkey.ws>
-User-Agent: Thunderbird 2.0.0.21 (X11/20090320)
+	Wed, 1 Apr 2009 14:47:50 -0400
 MIME-Version: 1.0
-To: Andi Kleen <andi@firstfloor.org>
-CC: Gregory Haskins <ghaskins@novell.com>, linux-kernel@vger.kernel.org,
-       agraf@suse.de, pmullaney@novell.com, pmorreale@novell.com,
-       rusty@rustcorp.com.au, netdev@vger.kernel.org, kvm@vger.kernel.org
-Subject: Re: [RFC PATCH 00/17] virtual-bus
-References: <20090331184057.28333.77287.stgit@dev.haskins.net> <87ab71monw.fsf@basil.nowhere.org> <49D35825.3050001@novell.com> <20090401132340.GT11935@one.firstfloor.org> <49D37805.1060301@novell.com> <20090401170103.GU11935@one.firstfloor.org>
-In-Reply-To: <20090401170103.GU11935@one.firstfloor.org>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Date: Wed, 1 Apr 2009 11:47:33 -0700
+Message-ID: <43e72e890904011147p5e22eaeejac3fddd2b9cddcfc@mail.gmail.com>
+Subject: Atheros Linux wireless support - ramifications of reverse engineering 
+	alien technology
+From: "Luis R. Rodriguez" <lrodriguez@atheros.com>
+To: linux-wireless <linux-wireless@vger.kernel.org>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       "ath9k-devel@lists.ath9k.org" <ath9k-devel@venema.h4ckr.net>
+Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Andi Kleen wrote:
-> On Wed, Apr 01, 2009 at 10:19:49AM -0400, Gregory Haskins wrote:
->   
->>>>     
->>>>         
->>> But surely you must have some specific use case in mind? Something
->>> that it does better than the various methods that are available
->>> today. Or rather there must be some problem you're trying
->>> to solve. I'm just not sure what that problem exactly is.
->>>   
->>>       
->> Performance.  We are trying to create a high performance IO infrastructure.
->>     
->
-> Ok. So the goal is to bypass user space qemu completely for better
-> performance. Can you please put this into the initial patch
-> description?
->   
+Fellow Linux wireless hackers,
 
-FWIW, there's nothing that prevents in-kernel back ends with virtio so 
-vbus certainly isn't required for in-kernel backends.
+We regret to inform you that Atheros is no longer going to be working
+with the upstream Linux kernel community. We have received notice from
+the Atheros Alien Reverse Engineering Division (AARED) that we have
+given away too much information by opening up our drivers, furthermore
+our batch of newly arrived organic-based wireless technology at AARED
+is far too advanced and current wireless research cannot explain our
+achieved max thoughput figures which violate The Shannon Theorem [1].
+The AARED also fears that the FOSS community will start creating
+communication portals to parallel universes with our hardware[2], a
+feature which is theoretically possible with our latest organic-based
+wireless technology, but unfortunately cannot be allowed due to
+regulatory consideration near the Council Chambers of Zion [3].
 
-That said, I don't think we're bound today by the fact that we're in 
-userspace.  Rather we're bound by the interfaces we have between the 
-host kernel and userspace to generate IO.  I'd rather fix those 
-interfaces than put more stuff in the kernel.
+We may be able to address the communication portal regulatory
+considerations through CRDA [4] and for this we do ask for you advice,
+but please be aware that we already are facing hard questions from the
+NSA, specifically from Agent Smith [5]. The NSA ultimately fears that
+the alien community we have reversed engineered their wireless
+technology from may be watching us and may soon start sending hostile
+ships to earth for retribution, these concerns are coming directly
+from The Architect [6].
 
-Regards,
+  The Atheros Linux team
 
-Anthony Liguori
+[1] http://en.wikipedia.org/wiki/Shannon_theorem
+[2] http://www.sciam.com/article.cfm?id=the-great-cosmic-roller-coaster-ride
+[3] http://en.wikipedia.org/wiki/Zion_(The_Matrix)
+[4] http://wireless.kernel.org/en/developers/Regulatory/CRDA
+[5] http://en.wikipedia.org/wiki/Agent_Smith
+[6] http://en.wikipedia.org/wiki/Architect_(The_Matrix)
