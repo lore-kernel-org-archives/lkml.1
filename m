@@ -1,304 +1,201 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1765776AbZDANrW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753445AbZDANrm@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1765776AbZDANrW (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 1 Apr 2009 09:47:22 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1765370AbZDANow
+	id S1753445AbZDANrm (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 1 Apr 2009 09:47:42 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1765383AbZDANoy
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 1 Apr 2009 09:44:52 -0400
-Received: from hera.kernel.org ([140.211.167.34]:44709 "EHLO hera.kernel.org"
+	Wed, 1 Apr 2009 09:44:54 -0400
+Received: from hera.kernel.org ([140.211.167.34]:44726 "EHLO hera.kernel.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1765100AbZDANou (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 1 Apr 2009 09:44:50 -0400
+	id S1765100AbZDANow (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 1 Apr 2009 09:44:52 -0400
 From: Tejun Heo <tj@kernel.org>
 To: axboe@kernel.dk, bharrosh@panasas.com, linux-kernel@vger.kernel.org,
        fujita.tomonori@lab.ntt.co.jp
-Cc: Tejun Heo <tj@kernel.org>
-Subject: [PATCH 05/17] bio: cleanup rw usage
-Date: Wed,  1 Apr 2009 22:44:20 +0900
-Message-Id: <1238593472-30360-6-git-send-email-tj@kernel.org>
+Cc: Tejun Heo <tj@kernel.org>, Pierre Ossman <drzeus-mmc@drzeus.cx>
+Subject: [PATCH 02/17] scatterlist: improve atomic mapping handling in mapping iterator
+Date: Wed,  1 Apr 2009 22:44:17 +0900
+Message-Id: <1238593472-30360-3-git-send-email-tj@kernel.org>
 X-Mailer: git-send-email 1.6.0.2
 In-Reply-To: <1238593472-30360-1-git-send-email-tj@kernel.org>
 References: <1238593472-30360-1-git-send-email-tj@kernel.org>
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Wed, 01 Apr 2009 13:44:43 +0000 (UTC)
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Wed, 01 Apr 2009 13:44:40 +0000 (UTC)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Impact: cleanup
+Impact: better atomic mapping handling
 
-bio confusingly uses @write_to_vm and @reading for data directions,
-both of which mean the opposite of the usual block/bio convention of
-using READ and WRITE w.r.t. IO devices.  The only place where the
-inversion is necessary is when caling get_user_pages_fast() in
-bio_copy_user_iov() as the gup uses the VM convention of read/write
-w.r.t. VM.
+sg-miter supported atomic mapping using single flag - SG_MITER_ATOMIC.
+It implicly used KM_BIO_SRC_IRQ and required irq to be disabled for
+each iteration to protect the kernel mapping.  This was too limiting
+and didn't allow multiple iterators to be used concurrently (e.g. for
+sgl -> sgl copying).
 
-This patch converts all bio functions to use READ/WRITE rw parameter
-and let the one place where inversion is necessary to rw == READ.
+This patch adds a new interface sg_miter_start_atomic() which takes
+km_type argument and drops @flags from sg_miter_start() so that
+km_type can be specified by the caller for atomic iterators.
 
 Signed-off-by: Tejun Heo <tj@kernel.org>
+Cc: Pierre Ossman <drzeus-mmc@drzeus.cx>
 ---
- block/blk-map.c     |   10 +++++-----
- fs/bio.c            |   50 +++++++++++++++++++++++++-------------------------
- include/linux/bio.h |   18 +++++++++---------
- 3 files changed, 39 insertions(+), 39 deletions(-)
+ drivers/mmc/host/sdhci.c    |    4 +-
+ include/linux/scatterlist.h |   11 +++++++--
+ lib/scatterlist.c           |   49 ++++++++++++++++++++++++++++++++----------
+ 3 files changed, 47 insertions(+), 17 deletions(-)
 
-diff --git a/block/blk-map.c b/block/blk-map.c
-index b0b65ef..29aa60d 100644
---- a/block/blk-map.c
-+++ b/block/blk-map.c
-@@ -68,15 +68,15 @@ int blk_rq_map_user_iov(struct request_queue *q, struct request *rq,
- 			int iov_count, unsigned int len, gfp_t gfp_mask)
- {
- 	struct bio *bio = ERR_PTR(-EINVAL);
--	int read = rq_data_dir(rq) == READ;
-+	int rw = rq_data_dir(rq);
+diff --git a/drivers/mmc/host/sdhci.c b/drivers/mmc/host/sdhci.c
+index accb592..559aca7 100644
+--- a/drivers/mmc/host/sdhci.c
++++ b/drivers/mmc/host/sdhci.c
+@@ -704,8 +704,8 @@ static void sdhci_prepare_data(struct sdhci_host *host, struct mmc_data *data)
+ 	}
  
- 	if (!iov || iov_count <= 0)
- 		return -EINVAL;
+ 	if (!(host->flags & SDHCI_REQ_USE_DMA)) {
+-		sg_miter_start(&host->sg_miter,
+-			data->sg, data->sg_len, SG_MITER_ATOMIC);
++		sg_miter_start_atomic(&host->sg_miter,
++				      data->sg, data->sg_len, KM_BIO_SRC_IRQ);
+ 		host->blocks = data->blocks;
+ 	}
  
- 	if (!map_data)
--		bio = bio_map_user_iov(q, NULL, iov, iov_count, read, gfp_mask);
-+		bio = bio_map_user_iov(q, NULL, iov, iov_count, rw, gfp_mask);
- 	if (bio == ERR_PTR(-EINVAL))
--		bio = bio_copy_user_iov(q, map_data, iov, iov_count, read,
-+		bio = bio_copy_user_iov(q, map_data, iov, iov_count, rw,
- 					gfp_mask);
- 	if (IS_ERR(bio))
- 		return PTR_ERR(bio);
-@@ -177,7 +177,7 @@ EXPORT_SYMBOL(blk_rq_unmap_user);
- int blk_rq_map_kern(struct request_queue *q, struct request *rq, void *kbuf,
- 		    unsigned int len, gfp_t gfp_mask)
- {
--	int reading = rq_data_dir(rq) == READ;
-+	int rw = rq_data_dir(rq);
- 	int do_copy = 0;
- 	struct bio *bio;
+diff --git a/include/linux/scatterlist.h b/include/linux/scatterlist.h
+index e599698..2249caa 100644
+--- a/include/linux/scatterlist.h
++++ b/include/linux/scatterlist.h
+@@ -6,6 +6,7 @@
+ #include <linux/mm.h>
+ #include <linux/string.h>
+ #include <asm/io.h>
++#include <asm/kmap_types.h>
  
-@@ -188,7 +188,7 @@ int blk_rq_map_kern(struct request_queue *q, struct request *rq, void *kbuf,
+ struct sg_table {
+ 	struct scatterlist *sgl;	/* the list */
+@@ -254,11 +255,15 @@ struct sg_mapping_iter {
+ 	struct scatterlist	*__sg;		/* current entry */
+ 	unsigned int		__nents;	/* nr of remaining entries */
+ 	unsigned int		__offset;	/* offset within sg */
+-	unsigned int		__flags;
++	unsigned int		__flags;	/* internal flags */
++	enum km_type		__km_type;	/* atomic kmap type to use */
+ };
  
- 	do_copy = !blk_rq_aligned(q, kbuf, len) || object_is_on_stack(kbuf);
- 	if (do_copy)
--		bio = bio_copy_kern(q, kbuf, len, gfp_mask, reading);
-+		bio = bio_copy_kern(q, kbuf, len, gfp_mask, rw);
- 	else
- 		bio = bio_map_kern(q, kbuf, len, gfp_mask);
+-void sg_miter_start(struct sg_mapping_iter *miter, struct scatterlist *sgl,
+-		    unsigned int nents, unsigned int flags);
++void sg_miter_start(struct sg_mapping_iter *miter,
++		    struct scatterlist *sgl, unsigned int nents);
++void sg_miter_start_atomic(struct sg_mapping_iter *miter,
++			   struct scatterlist *sgl, unsigned int nents,
++			   enum km_type km_type);
+ bool sg_miter_next(struct sg_mapping_iter *miter);
+ void sg_miter_stop(struct sg_mapping_iter *miter);
  
-diff --git a/fs/bio.c b/fs/bio.c
-index 80f61ed..70e5153 100644
---- a/fs/bio.c
-+++ b/fs/bio.c
-@@ -780,7 +780,7 @@ int bio_uncopy_user(struct bio *bio)
-  *	@map_data: pointer to the rq_map_data holding pages (if necessary)
-  *	@iov:	the iovec.
-  *	@iov_count: number of elements in the iovec
-- *	@write_to_vm: bool indicating writing to pages or not
-+ *	@rw: READ or WRITE
-  *	@gfp_mask: memory allocation flags
-  *
-  *	Prepares and returns a bio for indirect user io, bouncing data
-@@ -789,8 +789,8 @@ int bio_uncopy_user(struct bio *bio)
+diff --git a/lib/scatterlist.c b/lib/scatterlist.c
+index a295e40..4158a7c 100644
+--- a/lib/scatterlist.c
++++ b/lib/scatterlist.c
+@@ -306,19 +306,41 @@ EXPORT_SYMBOL(sg_alloc_table);
+  * Context:
+  *   Don't care.
   */
- struct bio *bio_copy_user_iov(struct request_queue *q,
- 			      struct rq_map_data *map_data,
--			      struct sg_iovec *iov, int iov_count,
--			      int write_to_vm, gfp_t gfp_mask)
-+			      struct sg_iovec *iov, int iov_count, int rw,
-+			      gfp_t gfp_mask)
+-void sg_miter_start(struct sg_mapping_iter *miter, struct scatterlist *sgl,
+-		    unsigned int nents, unsigned int flags)
++void sg_miter_start(struct sg_mapping_iter *miter,
++		    struct scatterlist *sgl, unsigned int nents)
  {
- 	struct bio_map_data *bmd;
- 	struct bio_vec *bvec;
-@@ -823,7 +823,8 @@ struct bio *bio_copy_user_iov(struct request_queue *q,
- 	if (!bio)
- 		goto out_bmd;
+ 	memset(miter, 0, sizeof(struct sg_mapping_iter));
  
--	bio->bi_rw |= (!write_to_vm << BIO_RW);
-+	if (rw == WRITE)
-+		bio->bi_rw |= 1 << BIO_RW;
- 
- 	ret = 0;
- 
-@@ -872,7 +873,7 @@ struct bio *bio_copy_user_iov(struct request_queue *q,
- 	 */
- 	if (unlikely(map_data && map_data->null_mapped))
- 		bio->bi_flags |= (1 << BIO_NULL_MAPPED);
--	else if (!write_to_vm) {
-+	else if (rw == WRITE) {
- 		ret = __bio_copy_iov(bio, bio->bi_io_vec, iov, iov_count, 0, 0);
- 		if (ret)
- 			goto cleanup;
-@@ -897,7 +898,7 @@ out_bmd:
-  *	@map_data: pointer to the rq_map_data holding pages (if necessary)
-  *	@uaddr: start of user address
-  *	@len: length in bytes
-- *	@write_to_vm: bool indicating writing to pages or not
-+ *	@rw: READ or WRITE
-  *	@gfp_mask: memory allocation flags
-  *
-  *	Prepares and returns a bio for indirect user io, bouncing data
-@@ -905,21 +906,21 @@ out_bmd:
-  *	call bio_uncopy_user() on io completion.
-  */
- struct bio *bio_copy_user(struct request_queue *q, struct rq_map_data *map_data,
--			  unsigned long uaddr, unsigned int len,
--			  int write_to_vm, gfp_t gfp_mask)
-+			  unsigned long uaddr, unsigned int len, int rw,
-+			  gfp_t gfp_mask)
- {
- 	struct sg_iovec iov;
- 
- 	iov.iov_base = (void __user *)uaddr;
- 	iov.iov_len = len;
- 
--	return bio_copy_user_iov(q, map_data, &iov, 1, write_to_vm, gfp_mask);
-+	return bio_copy_user_iov(q, map_data, &iov, 1, rw, gfp_mask);
+ 	miter->__sg = sgl;
+ 	miter->__nents = nents;
+ 	miter->__offset = 0;
+-	miter->__flags = flags;
  }
- 
- static struct bio *__bio_map_user_iov(struct request_queue *q,
- 				      struct block_device *bdev,
- 				      struct sg_iovec *iov, int iov_count,
--				      int write_to_vm, gfp_t gfp_mask)
-+				      int rw, gfp_t gfp_mask)
- {
- 	int i, j;
- 	size_t tot_len = 0;
-@@ -967,8 +968,8 @@ static struct bio *__bio_map_user_iov(struct request_queue *q,
- 		const int local_nr_pages = end - start;
- 		const int page_limit = cur_page + local_nr_pages;
- 		
--		ret = get_user_pages_fast(uaddr, local_nr_pages,
--				write_to_vm, &pages[cur_page]);
-+		ret = get_user_pages_fast(uaddr, local_nr_pages, rw == READ,
-+					  &pages[cur_page]);
- 		if (ret < local_nr_pages) {
- 			ret = -EFAULT;
- 			goto out_unmap;
-@@ -1008,7 +1009,7 @@ static struct bio *__bio_map_user_iov(struct request_queue *q,
- 	/*
- 	 * set data direction, and check if mapped pages need bouncing
- 	 */
--	if (!write_to_vm)
-+	if (rw == WRITE)
- 		bio->bi_rw |= (1 << BIO_RW);
- 
- 	bio->bi_bdev = bdev;
-@@ -1033,14 +1034,14 @@ static struct bio *__bio_map_user_iov(struct request_queue *q,
-  *	@bdev: destination block device
-  *	@uaddr: start of user address
-  *	@len: length in bytes
-- *	@write_to_vm: bool indicating writing to pages or not
-+ *	@rw: READ or WRITE
-  *	@gfp_mask: memory allocation flags
-  *
-  *	Map the user space address into a bio suitable for io to a block
-  *	device. Returns an error pointer in case of error.
-  */
- struct bio *bio_map_user(struct request_queue *q, struct block_device *bdev,
--			 unsigned long uaddr, unsigned int len, int write_to_vm,
-+			 unsigned long uaddr, unsigned int len, int rw,
- 			 gfp_t gfp_mask)
- {
- 	struct sg_iovec iov;
-@@ -1048,7 +1049,7 @@ struct bio *bio_map_user(struct request_queue *q, struct block_device *bdev,
- 	iov.iov_base = (void __user *)uaddr;
- 	iov.iov_len = len;
- 
--	return bio_map_user_iov(q, bdev, &iov, 1, write_to_vm, gfp_mask);
-+	return bio_map_user_iov(q, bdev, &iov, 1, rw, gfp_mask);
- }
+ EXPORT_SYMBOL(sg_miter_start);
  
  /**
-@@ -1057,20 +1058,19 @@ struct bio *bio_map_user(struct request_queue *q, struct block_device *bdev,
-  *	@bdev: destination block device
-  *	@iov:	the iovec.
-  *	@iov_count: number of elements in the iovec
-- *	@write_to_vm: bool indicating writing to pages or not
-+ *	@rw: READ or WRITE
-  *	@gfp_mask: memory allocation flags
++ * sg_miter_start_atomic - start atomic mapping iteration over a sg list
++ * @miter: sg mapping iter to be started
++ * @sgl: sg list to iterate over
++ * @nents: number of sg entries
++ * @idx: kmap type to use for atomic mapping
++ *
++ * Description:
++ *   Starts atomic mapping iterator @miter.
++ *
++ * Context:
++ *   Don't care.
++ */
++void sg_miter_start_atomic(struct sg_mapping_iter *miter,
++			   struct scatterlist *sgl, unsigned int nents,
++			   enum km_type km_type)
++{
++	sg_miter_start(miter, sgl, nents);
++	miter->__flags |= SG_MITER_ATOMIC;
++	miter->__km_type = km_type;
++}
++EXPORT_SYMBOL(sg_miter_start_atomic);
++
++/**
+  * sg_miter_next - proceed mapping iterator to the next mapping
+  * @miter: sg mapping iter to proceed
   *
-  *	Map the user space address into a bio suitable for io to a block
-  *	device. Returns an error pointer in case of error.
-  */
- struct bio *bio_map_user_iov(struct request_queue *q, struct block_device *bdev,
--			     struct sg_iovec *iov, int iov_count,
--			     int write_to_vm, gfp_t gfp_mask)
-+			     struct sg_iovec *iov, int iov_count, int rw,
-+			     gfp_t gfp_mask)
- {
- 	struct bio *bio;
- 
--	bio = __bio_map_user_iov(q, bdev, iov, iov_count, write_to_vm,
--				 gfp_mask);
-+	bio = __bio_map_user_iov(q, bdev, iov, iov_count, rw, gfp_mask);
- 	if (IS_ERR(bio))
- 		return bio;
- 
-@@ -1219,23 +1219,23 @@ static void bio_copy_kern_endio(struct bio *bio, int err)
-  *	@data: pointer to buffer to copy
-  *	@len: length in bytes
-  *	@gfp_mask: allocation flags for bio and page allocation
-- *	@reading: data direction is READ
-+ *	@rw: READ or WRITE
+@@ -329,8 +351,11 @@ EXPORT_SYMBOL(sg_miter_start);
+  *   current mapping.
   *
-  *	copy the kernel address into a bio suitable for io to a block
-  *	device. Returns an error pointer in case of error.
+  * Context:
+- *   IRQ disabled if SG_MITER_ATOMIC.  IRQ must stay disabled till
+- *   @miter@ is stopped.  May sleep if !SG_MITER_ATOMIC.
++ *   Atomic for atomic miters.  Atomic state must be maintained till
++ *   @miter@ is stopped.  Note that the selected KM type limits which
++ *   atomic (preempt, softirq or hardirq) contexts are allowed.  The
++ *   rules are identical to those of kmap_atomic().  May sleep for
++ *   non-atomic miters.
+  *
+  * Returns:
+  *   true if @miter contains the next mapping.  false if end of sg
+@@ -365,7 +390,7 @@ bool sg_miter_next(struct sg_mapping_iter *miter)
+ 	miter->consumed = miter->length;
+ 
+ 	if (miter->__flags & SG_MITER_ATOMIC)
+-		miter->addr = kmap_atomic(miter->page, KM_BIO_SRC_IRQ) + off;
++		miter->addr = kmap_atomic(miter->page, miter->__km_type) + off;
+ 	else
+ 		miter->addr = kmap(miter->page) + off;
+ 
+@@ -384,7 +409,7 @@ EXPORT_SYMBOL(sg_miter_next);
+  *   resources (kmap) need to be released during iteration.
+  *
+  * Context:
+- *   IRQ disabled if the SG_MITER_ATOMIC is set.  Don't care otherwise.
++ *   Atomic if the SG_MITER_ATOMIC is set.  Don't care otherwise.
   */
- struct bio *bio_copy_kern(struct request_queue *q, void *data, unsigned int len,
--			  gfp_t gfp_mask, int reading)
-+			  gfp_t gfp_mask, int rw)
+ void sg_miter_stop(struct sg_mapping_iter *miter)
  {
- 	struct bio *bio;
- 	struct bio_vec *bvec;
- 	int i;
+@@ -394,10 +419,9 @@ void sg_miter_stop(struct sg_mapping_iter *miter)
+ 	if (miter->addr) {
+ 		miter->__offset += miter->consumed;
  
--	bio = bio_copy_user(q, NULL, (unsigned long)data, len, 1, gfp_mask);
-+	bio = bio_copy_user(q, NULL, (unsigned long)data, len, READ, gfp_mask);
- 	if (IS_ERR(bio))
- 		return bio;
+-		if (miter->__flags & SG_MITER_ATOMIC) {
+-			WARN_ON(!irqs_disabled());
+-			kunmap_atomic(miter->addr, KM_BIO_SRC_IRQ);
+-		} else
++		if (miter->__flags & SG_MITER_ATOMIC)
++			kunmap_atomic(miter->addr, miter->__km_type);
++		else
+ 			kunmap(miter->page);
  
--	if (!reading) {
-+	if (rw == WRITE) {
- 		void *p = data;
+ 		miter->page = NULL;
+@@ -427,8 +451,9 @@ static size_t sg_copy_buffer(struct scatterlist *sgl, unsigned int nents,
+ 	struct sg_mapping_iter miter;
+ 	unsigned long flags;
  
- 		bio_for_each_segment(bvec, bio, i) {
-diff --git a/include/linux/bio.h b/include/linux/bio.h
-index 4bf7442..45f56d2 100644
---- a/include/linux/bio.h
-+++ b/include/linux/bio.h
-@@ -387,24 +387,24 @@ int bio_get_nr_vecs(struct block_device *bdev);
- sector_t bio_sector_offset(struct bio *bio, unsigned short index,
- 			   unsigned int offset);
- struct bio *bio_map_user(struct request_queue *q, struct block_device *bdev,
--			 unsigned long uaddr, unsigned int len,
--			 int write_to_vm, gfp_t gfp_mask);
-+			 unsigned long uaddr, unsigned int len, int rw,
-+			 gfp_t gfp_mask);
- struct bio *bio_map_user_iov(struct request_queue *q, struct block_device *bdev,
--			     struct sg_iovec *iov, int iov_count,
--			     int write_to_vm, gfp_t gfp_mask);
-+			     struct sg_iovec *iov, int iov_count, int rw,
-+			     gfp_t gfp_mask);
- void bio_unmap_user(struct bio *bio);
- struct bio *bio_copy_user(struct request_queue *q, struct rq_map_data *map_data,
--			  unsigned long uaddr, unsigned int len,
--			  int write_to_vm, gfp_t gfp_mask);
-+			  unsigned long uaddr, unsigned int len, int rw,
-+			  gfp_t gfp_mask);
- struct bio *bio_copy_user_iov(struct request_queue *q,
- 			      struct rq_map_data *map_data,
--			      struct sg_iovec *iov, int iov_count,
--			      int write_to_vm, gfp_t gfp_mask);
-+			      struct sg_iovec *iov, int iov_count, int rw,
-+			      gfp_t gfp_mask);
- int bio_uncopy_user(struct bio *bio);
- struct bio *bio_map_kern(struct request_queue *q, void *data, unsigned int len,
- 			 gfp_t gfp_mask);
- struct bio *bio_copy_kern(struct request_queue *q, void *data, unsigned int len,
--			  gfp_t gfp_mask, int reading);
-+			  gfp_t gfp_mask, int rw);
- void bio_set_pages_dirty(struct bio *bio);
- void bio_check_pages_dirty(struct bio *bio);
- void zero_fill_bio(struct bio *bio);
+-	sg_miter_start(&miter, sgl, nents, SG_MITER_ATOMIC);
++	sg_miter_start_atomic(&miter, sgl, nents, KM_BIO_SRC_IRQ);
+ 
++	/* dunno the context we're being called from, plug IRQ */
+ 	local_irq_save(flags);
+ 
+ 	while (sg_miter_next(&miter) && offset < buflen) {
 -- 
 1.6.0.2
 
