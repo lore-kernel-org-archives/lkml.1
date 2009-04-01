@@ -1,55 +1,107 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757455AbZDADFA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755409AbZDADQT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757455AbZDADFA (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 31 Mar 2009 23:05:00 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753262AbZDADEs
+	id S1755409AbZDADQT (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 31 Mar 2009 23:16:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754522AbZDADQE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 31 Mar 2009 23:04:48 -0400
-Received: from zeniv.linux.org.uk ([195.92.253.2]:50310 "EHLO
-	ZenIV.linux.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752559AbZDADEr (ORCPT
+	Tue, 31 Mar 2009 23:16:04 -0400
+Received: from mga01.intel.com ([192.55.52.88]:23588 "EHLO mga01.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753592AbZDADQB convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 31 Mar 2009 23:04:47 -0400
-Date: Wed, 1 Apr 2009 04:03:39 +0100
-From: Al Viro <viro@ZenIV.linux.org.uk>
-To: Hugh Dickins <hugh@veritas.com>
-Cc: Oleg Nesterov <oleg@redhat.com>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Joe Malicki <jmalicki@metacarta.com>, Michael Itz <mitz@metacarta.com>,
-       Kenneth Baker <bakerk@metacarta.com>,
-       Chris Wright <chrisw@sous-sol.org>, David Howells <dhowells@redhat.com>,
-       Alexey Dobriyan <adobriyan@gmail.com>,
-       Greg Kroah-Hartman <gregkh@suse.de>, linux-fsdevel@vger.kernel.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: Q: check_unsafe_exec() races (Was: [PATCH 2/4] fix setuid
-	sometimes doesn't)
-Message-ID: <20090401030339.GX28946@ZenIV.linux.org.uk>
-References: <20090330000338.GB32199@redhat.com> <20090330010843.GM28946@ZenIV.linux.org.uk> <20090330011303.GN28946@ZenIV.linux.org.uk> <20090330013612.GA4080@redhat.com> <20090330014040.GA4807@redhat.com> <20090330123101.GQ28946@ZenIV.linux.org.uk> <Pine.LNX.4.64.0903301506310.11454@blonde.anvils> <20090331061615.GS28946@ZenIV.linux.org.uk> <Pine.LNX.4.64.0904010106310.16500@blonde.anvils> <20090401023849.GW28946@ZenIV.linux.org.uk>
+	Tue, 31 Mar 2009 23:16:01 -0400
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.39,305,1235980800"; 
+   d="scan'208";a="443840512"
+From: "Pallipadi, Venkatesh" <venkatesh.pallipadi@intel.com>
+To: Jesse Barnes <jbarnes@virtuousgeek.org>,
+       "Siddha, Suresh B" <suresh.b.siddha@intel.com>
+CC: Eric Anholt <eric@anholt.net>, lkml <linux-kernel@vger.kernel.org>
+Date: Tue, 31 Mar 2009 20:17:43 -0700
+Subject: RE: PAGE_CACHE_WC strikes again
+Thread-Topic: PAGE_CACHE_WC strikes again
+Thread-Index: AcmyZwIvLQXRHymnTkun15gZMLXhKwAEIyZQ
+Message-ID: <7E82351C108FA840AB1866AC776AEC4657F48CB6@orsmsx505.amr.corp.intel.com>
+References: <1238544647.8369.682.camel@gaiman.anholt.net>
+	<20090331171431.69ad044f@hobbes>
+	<7E82351C108FA840AB1866AC776AEC4657F48B3E@orsmsx505.amr.corp.intel.com>
+	<1238547790.27006.7743.camel@localhost.localdomain>
+ <20090331181251.46cf95b1@hobbes>
+In-Reply-To: <20090331181251.46cf95b1@hobbes>
+Accept-Language: en-US
+Content-Language: en-US
+X-MS-Has-Attach: 
+X-MS-TNEF-Correlator: 
+acceptlanguage: en-US
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 8BIT
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090401023849.GW28946@ZenIV.linux.org.uk>
-User-Agent: Mutt/1.5.17 (2007-11-01)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Apr 01, 2009 at 03:38:49AM +0100, Al Viro wrote:
-> On Wed, Apr 01, 2009 at 01:28:01AM +0100, Hugh Dickins wrote:
-> > Minor bisectability issue: the third patch, which introduces
-> > int unshare_fs_struct(void), needs to return 0 when it succeeds:
-> > that gets corrected in the fourth patch.
-> 
-> ACK.
-> 
-> > Lockdep objects to how check_unsafe_exec nests write_lock(&p->fs_lock)
-> > inside lock_task_sighand(p, &flags).  It's right: we sometimes take
-> > sighand->siglock in interrupt, so if such an interrupt occurred just
-> > after you take fs_lock elsewhere, that could deadlock with this.  It
-> > seems happy with taking fs_lock just outside the lock_task_sighand.
-> 
-> Right you are, check_unsafe_exec() reordered.  Will push in a few.
+ 
 
-Rebased and pushed (same tree, same branch; included into for-next, along
-with related cleanups).
+>-----Original Message-----
+>From: Jesse Barnes [mailto:jbarnes@virtuousgeek.org] 
+>Sent: Tuesday, March 31, 2009 6:13 PM
+>To: Siddha, Suresh B
+>Cc: Pallipadi, Venkatesh; Eric Anholt; lkml
+>Subject: Re: PAGE_CACHE_WC strikes again
+>
+>On Tue, 31 Mar 2009 17:03:10 -0800
+>Suresh Siddha <suresh.b.siddha@intel.com> wrote:
+>
+>> On Tue, 2009-03-31 at 17:29 -0700, Pallipadi, Venkatesh wrote:
+>> > The key point here is 
+>> > 
+>> > > setting PAGE_CACHE_WC disables the WC effect of the
+>> > > MTRR on my non-PAT (disabled due to CPU errata)
+>> > 
+>> > When PAT is disabled, the default setting in PAT MSR is
+>> > 00 - WB
+>> > 01 - WT
+>> > 10 - UC_MINUS
+>> > 11 - UC
+>> > 
+>> > There is no way to set WC with PAT. By hardcoding _PAGE_CACHE_WC
+>> > (which is 01) the driver is basically selecting write-through!
+>> > 
+>> > And when MTRR says WC and PAT says WT, effective type is UC.
+>> > 
+>> > Basically, no one should be hard-coding the memory type. Please use
+>> > pgprot_writecombine() which does the right thing by using WC
+>> > (when PAT is enabled) or UC_MINUS (when PAT is disabled).
+>> 
+>> And the driver should use right API to track the underlying 
+>page frame
+>> thats getting mapped by this vma, with the corresponding attribute.
+>> API's like remap_pfn_range(), vm_insert_pfn() will setup the PTE's
+>> aswell as track the pfn's attributes.
+>> 
+>> API's like set_memory_uc/wc() will explicitly setup the page
+>> attributes.
+>> 
+>> Jesse, As far as I see, the drm GEM fault handler routines don't seem
+>> to do any of this. Am I missing something? We need to fix this so
+>> that we can avoid potential aliasing issues.
+>
+>Right, the drm driver code went in before we had pgprot_writecombine.
+>Now that it's available we should definitely use it.  I'm not sure
+>about the set_memory_* routines though; we create io mappings in
+>i915_dma.c at init time, and I thought we took care of things in
+>i915_gem.c but we may need updates there.
+>
+
+There is one problem of too many single page mappings, most likely
+coming from gem vm_insert_pfn. As in this mail
+http://marc.info/?l=linux-kernel&m=123845244713183&w=2
+
+The actual 'freeing invalid memtype' is a bug that I still trying
+to zero in on. Regardless of that, having so many small WC
+mappings in IO region will result it pretty slow vm_insert_pfn.
+I think we should switch to io_mapping_create_wc kind of API
+where we do bulk reserve and have a vm_insert_pfn_quick().
+
+Thanks,
+Venki
