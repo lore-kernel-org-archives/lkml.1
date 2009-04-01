@@ -1,97 +1,157 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932286AbZDARNr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764551AbZDAROR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932286AbZDARNr (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 1 Apr 2009 13:13:47 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756762AbZDARN3
+	id S1764551AbZDAROR (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 1 Apr 2009 13:14:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761834AbZDARNy
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 1 Apr 2009 13:13:29 -0400
-Received: from ey-out-2122.google.com ([74.125.78.27]:29263 "EHLO
-	ey-out-2122.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1758391AbZDARN0 (ORCPT
+	Wed, 1 Apr 2009 13:13:54 -0400
+Received: from gw1.cosmosbay.com ([212.99.114.194]:52071 "EHLO
+	gw1.cosmosbay.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1759533AbZDARNx convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 1 Apr 2009 13:13:26 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
-         :cc:content-type:content-transfer-encoding;
-        b=ZwShbCi+g246yNK/9/uOpIhGuG7B+4YzEZAaXnFfl5M328bvkugEmbipsb+n4m02RX
-         isbTFo6askOeCgU1X/ZOhUJak8wOtN+I/GPGUJ515QPEBBXbPktXVOtxAjkcWoEO5esJ
-         UAhLeYv/nkuu+/y6Ut+sjVwQEqRAODBWGdx/o=
+	Wed, 1 Apr 2009 13:13:53 -0400
+Message-ID: <49D3A0C2.9000403@cosmosbay.com>
+Date: Wed, 01 Apr 2009 19:13:38 +0200
+From: Eric Dumazet <dada1@cosmosbay.com>
+User-Agent: Thunderbird 2.0.0.21 (Windows/20090302)
 MIME-Version: 1.0
-In-Reply-To: <20090401170708.GA14167@srcf.ucam.org>
-References: <20090331214501.GC29489@srcf.ucam.org>
-	 <20090331214749.GD29489@srcf.ucam.org>
-	 <74962ea30903311506m41306659td0cd70c5736f6660@mail.gmail.com>
-	 <20090331221107.GA30383@srcf.ucam.org>
-	 <74962ea30903311519s2fb6087fxfe8859e3c570ac99@mail.gmail.com>
-	 <20090331230217.GA31599@srcf.ucam.org>
-	 <74962ea30904010950u31fbdca3w51eafb9b7ec1ca73@mail.gmail.com>
-	 <20090401165345.GA13939@srcf.ucam.org>
-	 <74962ea30904011003o354e8780ya5e9ac1a6a579084@mail.gmail.com>
-	 <20090401170708.GA14167@srcf.ucam.org>
-Date: Thu, 2 Apr 2009 10:13:23 +1700
-Message-ID: <74962ea30904011013v5ffa0620y1f1aefa2c84e1ce@mail.gmail.com>
-Subject: Re: [PATCH 2/2] toshiba-acpi: Support TOS1900-type devices
-From: Azael Avalos <coproscefalo@gmail.com>
-To: Matthew Garrett <mjg59@srcf.ucam.org>
-Cc: linux-acpi@vger.kernel.org, dsilvers@simtec.co.uk,
-       toshiba_acpi@memebeam.org, linux-kernel@vger.kernel.org
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
+To: Ingo Molnar <mingo@elte.hu>
+CC: Jeremy Fitzhardinge <jeremy@goop.org>, Tejun Heo <htejun@gmail.com>,
+       linux kernel <linux-kernel@vger.kernel.org>,
+       Linux Netdev List <netdev@vger.kernel.org>,
+       Joe Perches <joe@perches.com>, Rusty Russell <rusty@rustcorp.com.au>
+Subject: Re: [PATCH] x86: percpu_to_op() misses memory and flags clobbers
+References: <49D32212.80607@cosmosbay.com> <49D32DC2.9010003@goop.org> <49D33E80.70802@cosmosbay.com> <20090401161218.GB3859@elte.hu>
+In-Reply-To: <20090401161218.GB3859@elte.hu>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 8BIT
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-1.6 (gw1.cosmosbay.com [0.0.0.0]); Wed, 01 Apr 2009 19:13:39 +0200 (CEST)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Apr 2, 2009 at 10:07 AM, Matthew Garrett <mjg59@srcf.ucam.org> wrote:
-> On Thu, Apr 02, 2009 at 10:03:05AM +1700, Azael Avalos wrote:
->> On Thu, Apr 2, 2009 at 9:53 AM, Matthew Garrett <mjg59@srcf.ucam.org> wrote:
->> > Yes, you shouldn't be reading directly from TOHK at any point. It seems
->> > to be a purely internal variable - I'm fairly sure that the INFO method
->> > is the only one that should be called on event generation.
+Ingo Molnar a écrit :
+> * Eric Dumazet <dada1@cosmosbay.com> wrote:
+> 
+>> Jeremy Fitzhardinge a écrit :
+>>> Eric Dumazet wrote:
+>>>> While playing with new percpu_{read|write|add|sub} stuff in network tree,
+>>>> I found x86 asm was a litle bit optimistic.
+>>>>
+>>>> We need to tell gcc that percpu_{write|add|sub|or|xor} are modyfing
+>>>> memory and possibly eflags. We could add another parameter to
+>>>> percpu_to_op()
+>>>> to separate the plain "mov" case (not changing eflags),
+>>>> but let keep it simple for the moment.
+>>>>   
+>>> Did you observe an actual failure that this patch fixed?
+>>>
+>> Not in current tree, as we dont use yet percpu_xxxx() very much.
 >>
->> Well, on the patches sent to the omnibook module I was polling TOHK directly,
->> it is until now that I realized that I can poll the events via INFO
->> method, that is,
->> if I enable TECF first via method \\_SB.PCI0.LPCB.EC0.NTFY
->
-> Mm. None of the TOS1900 DSDTs I have here have TECF or NTFY methods, so
-> again that doesn't sound like the right way of driving them. Does the
-> ENAB method not do this?
+>> If deployed for SNMP mibs with hundred of call sites,
+>> can you guarantee it will work as is ?
+> 
+> Do we "guarantee" it for you? No.
+> 
+> Is it expected to work just fine? Yes.
+> 
+> Are there any known bugs in this area? No.
 
-At least not in my model, the ENAB method is empty, heres a snippet of the DSDT:
+Good to know. So I shut up. I am a jerk and should blindly trust
+linux kernel, sorry.
 
-                            Method (ENAB, 0, NotSerialized)
-                            {
-                            }
+> 
+> Will we fix it if it's demonstrated to be broken? Of course! :-)
+> 
+> [ Btw., it's definitely cool that you will make heavy use for it for 
+>   SNMP mib statistics - please share with us your experiences with 
+>   the facilities - good or bad experiences alike! ]
 
-                            Method (INFO, 0, NotSerialized)
-                            {
-                                If (TECF)
-                                {
-                                    Store (Zero, TECF)
-                                    Store (^^PCI0.LPCB.EC0.TOHK, Local0)
-                                    Store (Zero, ^^PCI0.LPCB.EC0.TOHK)
-                                }
-                                Else
-                                {
-                                    Store (Zero, Local0)
-                                }
+I tried but I miss kind of an indirect percpu_add() function.
 
-                                Return (Local0)
-                            }
+because of Net namespaces, mibs are dynamically allocated, and
+current percpu_add() works on static percpu only (because of added
+per_cpu__ prefix)
 
-And above scope _SB you can find
+#define percpu_add(var, val)   percpu_to_op("add", per_cpu__##var, val)
 
-                    Method (NTFY, 0, NotSerialized)
-                    {
-                        Store (One, ^^^^VALZ.TECF)
-                        Notify (VALZ, 0x80)
-                        Return (0xAA)
-                    }
+I tried adding :
 
-Saludos
-Azael
+#define dyn_percpu_add(var, val)   percpu_to_op("add", var, val)
 
+But I dont know it this is the plan ?
+Should we get rid of "per_cpu__" prefix and use a special ELF section/
+marker instead ?
 
--- 
--- El mundo apesta y vosotros apestais tambien --
+I have a patch to add percpu_inc() and percpu_dec(), I am not
+sure its worth it...
+
+[PATCH] percpu: Adds percpu_inc() and percpu_dec()
+
+Increments and decrements are quite common operations for SNMP mibs.
+
+Signed-off-by: Eric Dumazet <dada1@cosmosbay.com>
+
+diff --git a/arch/x86/include/asm/percpu.h b/arch/x86/include/asm/percpu.h
+index aee103b..248be11 100644
+--- a/arch/x86/include/asm/percpu.h
++++ b/arch/x86/include/asm/percpu.h
+@@ -103,6 +103,29 @@ do {							\
+ 	}						\
+ } while (0)
+ 
++#define percpu_to_op0(op, var)				\
++do {							\
++	switch (sizeof(var)) {				\
++	case 1:						\
++		asm(op "b "__percpu_arg(0)		\
++		    : "+m" (var));			\
++		break;					\
++	case 2:						\
++		asm(op "w "__percpu_arg(0)		\
++		    : "+m" (var));			\
++		break;					\
++	case 4:						\
++		asm(op "l "__percpu_arg(0)		\
++		    : "+m" (var));			\
++		break;					\
++	case 8:						\
++		asm(op "q "__percpu_arg(0)		\
++		    : "+m" (var));			\
++		break;					\
++	default: __bad_percpu_size();			\
++	}						\
++} while (0)
++
+ #define percpu_from_op(op, var)				\
+ ({							\
+ 	typeof(var) ret__;				\
+@@ -139,6 +162,8 @@ do {							\
+ #define percpu_and(var, val)	percpu_to_op("and", per_cpu__##var, val)
+ #define percpu_or(var, val)	percpu_to_op("or", per_cpu__##var, val)
+ #define percpu_xor(var, val)	percpu_to_op("xor", per_cpu__##var, val)
++#define percpu_inc(var)		percpu_to_op0("inc", per_cpu__##var)
++#define percpu_dec(var)		percpu_to_op0("dec", per_cpu__##var)
+ 
+ /* This is not atomic against other CPUs -- CPU preemption needs to be off */
+ #define x86_test_and_clear_bit_percpu(bit, var)				\
+diff --git a/include/asm-generic/percpu.h b/include/asm-generic/percpu.h
+index 00f45ff..c57357e 100644
+--- a/include/asm-generic/percpu.h
++++ b/include/asm-generic/percpu.h
+@@ -120,6 +120,14 @@ do {									\
+ # define percpu_sub(var, val)		__percpu_generic_to_op(var, (val), -=)
+ #endif
+ 
++#ifndef percpu_inc
++# define percpu_inc(var)			do { percpu_add(var, 1); } while (0)
++#endif
++
++#ifndef percpu_dec
++# define percpu_dec(var)			do { percpu_sub(var, 1); } while (0)
++#endif
++
+ #ifndef percpu_and
+ # define percpu_and(var, val)		__percpu_generic_to_op(var, (val), &=)
+ #endif
+
