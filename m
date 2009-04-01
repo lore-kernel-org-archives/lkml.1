@@ -1,45 +1,105 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764151AbZDAMrf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764276AbZDAMtj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764151AbZDAMrf (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 1 Apr 2009 08:47:35 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763701AbZDAMrM
+	id S1764276AbZDAMtj (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 1 Apr 2009 08:49:39 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759050AbZDAMt2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 1 Apr 2009 08:47:12 -0400
-Received: from brick.kernel.dk ([93.163.65.50]:47020 "EHLO kernel.dk"
+	Wed, 1 Apr 2009 08:49:28 -0400
+Received: from mx2.redhat.com ([66.187.237.31]:48650 "EHLO mx2.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1763196AbZDAMrL (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 1 Apr 2009 08:47:11 -0400
-Date: Wed, 1 Apr 2009 14:47:09 +0200
-From: Jens Axboe <jens.axboe@oracle.com>
-To: Tejun Heo <tj@kernel.org>
-Cc: bharrosh@panasas.com, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 4/8] bio: actually inline inline bvecs into bio
-Message-ID: <20090401124709.GG5178@kernel.dk>
-References: <1238583884-13517-1-git-send-email-tj@kernel.org> <1238583884-13517-5-git-send-email-tj@kernel.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1238583884-13517-5-git-send-email-tj@kernel.org>
+	id S1754398AbZDAMt0 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 1 Apr 2009 08:49:26 -0400
+Date: Wed, 1 Apr 2009 08:48:43 -0400
+From: Jeff Layton <jlayton@redhat.com>
+To: Wu Fengguang <fengguang.wu@intel.com>
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       "linux-fsdevel@vger.kernel.org" <linux-fsdevel@vger.kernel.org>
+Subject: Re: [PATCH] writeback: guard against jiffies wraparound on
+ inode->dirtied_when checks (try #2)
+Message-ID: <20090401084843.560d89ea@barsoom.rdu.redhat.com>
+In-Reply-To: <20090401122627.GA12945@localhost>
+References: <1238544239-31882-1-git-send-email-jlayton@redhat.com>
+	<20090331172031.b2971f1e.akpm@linux-foundation.org>
+	<20090331205018.228ea5f8@tleilax.poochiereds.net>
+	<20090331180730.049d42e7.akpm@linux-foundation.org>
+	<20090401065618.GB10423@localhost>
+	<20090401075320.0f49b5bf@barsoom.rdu.redhat.com>
+	<20090401122627.GA12945@localhost>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Apr 01 2009, Tejun Heo wrote:
-> Impact: cleanup
+> > > --- mm.orig/fs/fs-writeback.c
+> > > +++ mm/fs/fs-writeback.c
+> > > @@ -196,7 +196,7 @@ static void redirty_tail(struct inode *i
+> > >  		struct inode *tail_inode;
+> > >  
+> > >  		tail_inode = list_entry(sb->s_dirty.next, struct inode, i_list);
+> > > -		if (!time_after_eq(inode->dirtied_when,
+> > > +		if (time_before(inode->dirtied_when,
+> > >  				tail_inode->dirtied_when))
+> > >  			inode->dirtied_when = jiffies;
+> > >  	}
+> > 
+> > I think we need a similar change in this function in order to maintain
+> > the list order.
+> > 
+> > Consider this case:
+> > 
+> > We have an s_dirty list with a head inode that appears to be in the
+> > future. We start writeback and clear out s_dirty (all of the inodes are
+> > moved to s_io). A new inode is dirtied, and goes onto the empty s_dirty
+> > list with a dirtied_when value that equals now. The inode with the
+> > dirtied_when value that looks like it's in the future is redirtied while
+> > being written and redirty_tail is called. It goes back on the list
+> > without resetting dirtied_when even though it's actually older than the
+> > inode at the tail.
 > 
-> BIO_INLINE_VECS bvecs are inlined into bio to avoid bvec allocation
-> for small transfers.  This was achieved by declaring zero sized bvec
-> array at the end of bio and allocating bio with extra bytes at the
-> end.  As BIO_INLINE_VECS is constant, there is no reason to do this
-> allocation trick.  This patch simply defines BIO_INLINE_VECS sized
-> bvec array at the end.  This will help fixing bio_kmalloc().
+> What's the difference? It _is_ the past because all 2 reference sites
+> are now taught to think so.
+> 
+> So s_dirty is still in order, and the writeback process won't be blocked.
+> 
 
-I don't like this, it's much nicer to do it with a zero sized array. If
-you don't need a bio_vec, then you don't consume the extra space. I
-guess for that to really work, we'd need one more slab and mempool
-though. At least for non-stack bio's. I also fear that direct uses of
-->bi_inline_vecs[] will then crop up, making it harder to go back.
+Sanity check -- my understanding is this:
+
+head == least-recently dirtied inode
+tail == most-recently dirtied inode
+
+...if so, then we are violating the list order if we don't make a
+change to redirty_tail. We're putting an inode that's far in the past
+back onto the tail of the list without resetting dirtied_when. A more
+recently-dirtied inode will precede one that was dirtied less recently.
+
+Since the newly dirtied inode is closer to the head of the list, the
+older inode that's constantly being redirtied won't be written out
+until the newly dirtied one passes the older_than_this check (30s or
+so in the usual case).
+
+> > There is another option too that I'll throw out here...
+> > 
+> > We could just make dirtied_when a 64 bit value on 32 bit machines and
+> > use jiffies_64 there. On the upside there is no "problematic
+> > window" with that. The downside is that struct inode would grow by 4
+> > bytes on 32 bit arches, and checking jiffies_64 on such an arch is
+> > more computationally intensive. We'd also have to change the size of
+> > older_than_this value in the writeback_control struct too if we want to
+> > go this route...
+> 
+> Yes that could eliminate the 30s or more temporary writeback stillness.
+> The only problem is the extra costs for normal cases, especially the
+> space cost.
+> 
+
+Correct. I'm not necessarily advocating that approach but it's one to
+consider...
+
+If your s_more_io_wait patchset comes to fruition though then that
+change really won't be needed, so maybe it's best not to go that route.
 
 -- 
-Jens Axboe
-
+Jeff Layton <jlayton@redhat.com>
