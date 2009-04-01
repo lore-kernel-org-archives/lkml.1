@@ -1,102 +1,75 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759366AbZDAJco@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752378AbZDAJkN@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759366AbZDAJco (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 1 Apr 2009 05:32:44 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761564AbZDAJcP
+	id S1752378AbZDAJkN (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 1 Apr 2009 05:40:13 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751952AbZDAJj6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 1 Apr 2009 05:32:15 -0400
-Received: from bilbo.ozlabs.org ([203.10.76.25]:59364 "EHLO bilbo.ozlabs.org"
+	Wed, 1 Apr 2009 05:39:58 -0400
+Received: from mx3.mail.elte.hu ([157.181.1.138]:54325 "EHLO mx3.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1761396AbZDAJcM (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 1 Apr 2009 05:32:12 -0400
+	id S1751597AbZDAJj6 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 1 Apr 2009 05:39:58 -0400
+Date: Wed, 1 Apr 2009 11:39:42 +0200
+From: Ingo Molnar <mingo@elte.hu>
+To: Peter Zijlstra <a.p.zijlstra@chello.nl>
+Cc: linux-kernel@vger.kernel.org, Paul Mackerras <paulus@samba.org>
+Subject: Re: [PATCH 09/15] perf_counter tools: optionally scale counter
+	values in perfstat mode
+Message-ID: <20090401093942.GB27865@elte.hu>
+References: <20090330170701.856843742@chello.nl> <20090330171023.871484899@chello.nl>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
-Message-ID: <18899.10669.917693.67352@cargo.ozlabs.ibm.com>
-Date: Wed, 1 Apr 2009 19:45:33 +1100
-From: Paul Mackerras <paulus@samba.org>
-To: Peter Zijlstra <a.p.zijlstra@chello.nl>
-Cc: Corey Ashford <cjashfor@linux.vnet.ibm.com>, Ingo Molnar <mingo@elte.hu>,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 13/15] perf_counter: provide generic callchain bits
-In-Reply-To: <1238572744.8530.2541.camel@twins>
-References: <20090330170701.856843742@chello.nl>
-	<20090330171024.254266860@chello.nl>
-	<18897.46177.528910.51044@cargo.ozlabs.ibm.com>
-	<1238481552.28248.1384.camel@twins>
-	<49D1C544.7020403@linux.vnet.ibm.com>
-	<18897.56973.324304.995540@cargo.ozlabs.ibm.com>
-	<1238508032.8530.278.camel@twins>
-	<18898.58399.957182.181124@drongo.ozlabs.ibm.com>
-	<1238572744.8530.2541.camel@twins>
-X-Mailer: VM 8.0.9 under Emacs 22.2.1 (i486-pc-linux-gnu)
+Content-Disposition: inline
+In-Reply-To: <20090330171023.871484899@chello.nl>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Peter Zijlstra writes:
 
-> Ah, yes, I see how that can confuse. PERF_EVENT_COUNTER_OVERFLOW then?
+* Peter Zijlstra <a.p.zijlstra@chello.nl> wrote:
 
-Sounds reasonable.
-
-> > Also, let's add PERF_RECORD/PERF_EVENT bits for:
-> > 
-> > * EVENT_INSTR_ADDR
+> From: Paul Mackerras <paulus@samba.org>
 > 
-> I'm failing to come up with what this could be..
-
-So, you have lots of instructions in flight in the processor, and one
-of them causes an event that increments a counter and causes it to
-overflow, so an interrupt request is generated.  Even if the interrupt
-is taken "immediately", it can still happen that the set of
-instructions the processor decides to complete before taking the
-interrupt includes some instructions after the instruction that caused
-the counter to overflow, and of course if interrupts are (hard-)
-disabled at the time of the overflow, the interrupt will happen
-later.  That means that the IP from the pt_regs is not generally a
-reliable indication of which instruction made the counter overflow.
-
-On POWER processors we have a register which gives us a much more
-reliable indication of which instruction caused the counter overflow,
-at least in those cases where the event can be attributed to a
-specific instruction.  This EVENT_INSTR_ADDR bit would ask for that
-register to be sampled and recorded.
-
-> > * EVENT_DATA_ADDR
+> Impact: new functionality
 > 
-> This would be the data address operated upon? Like what address caused
-> the fault/cache-miss, etc?
-
-That's right.  POWER processors have a register that records that
-where possible.
-
-> > * EVENT_INSTR_FLAGS
+> This adds add an option to the perfstat mode of kerneltop to scale 
+> the reported counter values according to the fraction of time that 
+> each counter gets to count.  This is invoked with the -l option (I 
+> used 'l' because s, c, a and e were all taken already.)  This uses 
+> the new PERF_RECORD_TOTAL_TIME_{ENABLED,RUNNING} read format 
+> options.
 > 
-> Again not quite sure what this would be.
-
-POWER processors have a register that records information about the
-instruction that caused the counter overflow, such as did it have a
-data address associated with it, did it cause a dcache miss, etc.
-
-> > * EVENT_CPU_FLAGS	(so we can distinguish hypervisor/kernel/user)
+> With this, we get output like this:
 > 
-> Currently we can based on address, an IP < 0 is kernel and > 0 is
-> userspace, but yeah, I see how this makes life easier.
-
-We can't distinguish hypervisor addresses that way, and on some
-architectures (including x86_32 with a 4G/4G split) we can't
-distinguish kernel/user just by the address.  I was thinking the cpu
-flags would also include things like interrupt enable state, FPU
-enable state, etc.
-
-> > We would have to call into arch code to get the values for these.
+> $ ./perfstat -l -e 0:0,0:1,0:2,0:3,0:4,0:5 ./spin
 > 
-> I suppose all these things can be gleaned from pt_regs, so that should
-> be doable.
+>  Performance counter stats for './spin':
+> 
+>      4016072055  CPU cycles           (events)  (scaled from 66.53%)
+>      2005887318  instructions         (events)  (scaled from 66.53%)
+>         1762849  cache references     (events)  (scaled from 66.69%)
+>          165229  cache misses         (events)  (scaled from 66.85%)
+>      1001298009  branches             (events)  (scaled from 66.78%)
+>           41566  branch misses        (events)  (scaled from 66.61%)
+> 
+>  Wall-clock time elapsed:  2438.227446 msecs
+> 
+> This also lets us detect when a counter is zero because the 
+> counter never got to go on the CPU at all.  In that case we print 
+> <not counted> rather than 0.
 
-Hmmm, 3 of the 4 would require SPR (= what x86 calls MSR) reads.
-Maybe it's best to have a block of arch-specific bits that can be
-defined per-arch and implemented in arch code.
+Nice! Shouldnt this be the default mode of output?
 
-Paul.
+I think we want to make users aware of the fact when output is 
+sampled due to over-commit, rather than precise, agreed?
+
+	Ingo
