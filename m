@@ -1,1308 +1,882 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933015AbZDAOSd@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933068AbZDAOTE@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933015AbZDAOSd (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 1 Apr 2009 10:18:33 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932681AbZDAOMM
+	id S933068AbZDAOTE (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 1 Apr 2009 10:19:04 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932802AbZDAOOA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 1 Apr 2009 10:12:12 -0400
-Received: from moutng.kundenserver.de ([212.227.126.171]:62714 "EHLO
-	moutng.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S932691AbZDAOMB (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 1 Apr 2009 10:12:01 -0400
-From: Arnd Bergmann <arnd@arndb.de>
-To: Geert Uytterhoeven <geert.uytterhoeven@gmail.com>
-Subject: [RFC] asm-generic/{unistd,types,posix_types}.h for new arch
-Date: Wed, 1 Apr 2009 16:11:52 +0200
-User-Agent: KMail/1.9.9
-Cc: michal.simek@petalogix.com,
-       Linux Kernel list <linux-kernel@vger.kernel.org>,
-       linux-arch@vger.kernel.org, linux-api@vger.kernel.org,
-       Chen Liqin <liqin.chen@sunplusct.com>, Arnd Bergmann <arnd@arndb.de>
-References: <49D071A8.4010703@petalogix.com> <10f740e80903300741h387e6342veba0ccceea6714e9@mail.gmail.com> <200903301717.57184.arnd@arndb.de>
-In-Reply-To: <200903301717.57184.arnd@arndb.de>
-X-Face: I@=L^?./?$U,EK.)V[4*>`zSqm0>65YtkOe>TFD'!aw?7OVv#~5xd\s,[~w]-J!)|%=]>=?utf-8?q?+=0A=09=7EohchhkRGW=3F=7C6=5FqTmkd=5Ft=3FLZC=23Q-=60=2E=60Y=2Ea=5E?=
- =?utf-8?q?3zb?=)
- =?utf-8?q?+U-JVN=5DWT=25cw=23=5BYo0=267C=26bL12wWGlZi=0A=09=7EJ=3B=5Cwg?=
- =?utf-8?q?=3B3zRnz?=,J"CT_)=\H'1/{?SR7GDu?WIopm.HaBG=QYj"NZD_[zrM\Gip^U
+	Wed, 1 Apr 2009 10:14:00 -0400
+Received: from smtp2.it.da.ut.ee ([193.40.5.67]:53970 "EHLO smtp2.it.da.ut.ee"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S932798AbZDAONv (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 1 Apr 2009 10:13:51 -0400
+Date: Wed, 1 Apr 2009 17:13:47 +0300 (EEST)
+From: Meelis Roos <mroos@linux.ee>
+To: Linux Kernel list <linux-kernel@vger.kernel.org>
+Subject: strange MTRR on 2.6.29-git
+Message-ID: <Pine.SOC.4.64.0904011711210.5672@math.ut.ee>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="utf-8"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200904011611.53355.arnd@arndb.de>
-X-Provags-ID: V01U2FsdGVkX18Gy6MLBora5BoUP/BFIxBk66yZ8nkOdph8/tK
- HW5Kj+e0NwZxUJZdmu4Z/BHNc86DBz1gY2sK1l6bHdJCttlYxj
- dZJFUNXggXLVZA0BXv4rA==
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-I've spent more time on my asm-generic patches and believe I now
-have an unistd.h implementation that can be used by the new
-architectures (score and microblaze) so they don't have to go
-through the error-prone process of coming up with their own lists.
+Found this on todays 2.6.29 + git. The same address range has both WB 
+and UC MTRR-s.
 
-It would be good if more people could in particular look over the
-system call lists. I have left the syscalls that I think should
-be dropped in #ifdef __ARCH_WANT_SYSCALL_{DEPRECATED,NO_AT,NO_FLAGS,OFF_T}
-so that it becomes easy to reenable them temporarily while porting
-the libc, and to easily see which ones get left out.
+reg00: base=0x000000000 (    0MB), size=  512MB, count=1: write-back
+reg01: base=0x020000000 (  512MB), size=    1MB, count=1: write-back
+reg02: base=0x020000000 (  512MB), size=    1MB, count=1: uncachable
+reg03: base=0x0f2000000 ( 3872MB), size=   32MB, count=2: write-combining
+reg04: base=0x0f8000000 ( 3968MB), size=   64MB, count=1: write-combining
 
-I have also changed checksyscalls.sh to stop complaining when
-the old syscalls are not present.
+lspci -vvvnnn:
 
-Signed-off-by: Arnd Bergmann <arnd@arndb.de>
----
- include/asm-generic/posix_types.h |  162 ++++++
- include/asm-generic/types.h       |   63 ++
- include/asm-generic/unistd.h      |  829 +++++++++++++++++++++++++++++
- kernel/Makefile                   |    1 +
- kernel/syscall_table.c            |   12 +
- scripts/checksyscalls.sh          |   93 +++-
- 6 files changed, 1157 insertions(+), 3 deletions(-)
+00:00.0 Host bridge [0600]: Intel Corporation 82815 815 Chipset Host Bridge and Memory Controller Hub [8086:1130] (rev 02)
+	Subsystem: Intel Corporation D815EEA2 mainboard [8086:4532]
+	Control: I/O- Mem+ BusMaster+ SpecCycle- MemWINV- VGASnoop- ParErr- Stepping- SERR+ FastB2B- DisINTx-
+	Status: Cap+ 66MHz- UDF- FastB2B+ ParErr- DEVSEL=fast >TAbort- <TAbort- <MAbort+ >SERR- <PERR- INTx-
+	Latency: 0
+	Region 0: Memory at f8000000 (32-bit, prefetchable) [size=64M]
+	Capabilities: [88] Vendor Specific Information <?>
+	Capabilities: [a0] AGP version 2.0
+		Status: RQ=32 Iso- ArqSz=0 Cal=0 SBA+ ITACoh- GART64- HTrans- 64bit- FW- AGP3- Rate=x1,x2,x4
+		Command: RQ=1 ArqSz=0 Cal=0 SBA+ AGP+ GART64- 64bit- FW- Rate=x2
+	Kernel driver in use: agpgart-intel
+
+00:01.0 PCI bridge [0604]: Intel Corporation 82815 815 Chipset AGP Bridge [8086:1131] (rev 02) (prog-if 00 [Normal decode])
+	Control: I/O+ Mem+ BusMaster+ SpecCycle- MemWINV- VGASnoop- ParErr- Stepping- SERR+ FastB2B- DisINTx-
+	Status: Cap- 66MHz+ UDF- FastB2B- ParErr- DEVSEL=fast >TAbort- <TAbort- <MAbort- >SERR- <PERR- INTx-
+	Latency: 32
+	Bus: primary=00, secondary=02, subordinate=02, sec-latency=32
+	I/O behind bridge: 0000f000-00000fff
+	Memory behind bridge: fda00000-feafffff
+	Prefetchable memory behind bridge: f1700000-f57fffff
+	Secondary status: 66MHz+ FastB2B+ ParErr- DEVSEL=medium >TAbort- <TAbort- <MAbort+ <SERR- <PERR+
+	BridgeCtl: Parity- SERR- NoISA- VGA+ MAbort- >Reset- FastB2B-
+		PriDiscTmr- SecDiscTmr- DiscTmrStat- DiscTmrSERREn-
+
+00:1e.0 PCI bridge [0604]: Intel Corporation 82801 PCI Bridge [8086:244e] (rev 02) (prog-if 00 [Normal decode])
+	Control: I/O+ Mem+ BusMaster+ SpecCycle- MemWINV- VGASnoop- ParErr- Stepping- SERR+ FastB2B- DisINTx-
+	Status: Cap- 66MHz- UDF- FastB2B+ ParErr- DEVSEL=fast >TAbort- <TAbort- <MAbort- >SERR- <PERR- INTx-
+	Latency: 0
+	Bus: primary=00, secondary=01, subordinate=01, sec-latency=32
+	I/O behind bridge: 0000d000-0000dfff
+	Memory behind bridge: fd900000-fd9fffff
+	Prefetchable memory behind bridge: f1600000-f16fffff
+	Secondary status: 66MHz- FastB2B+ ParErr- DEVSEL=medium >TAbort- <TAbort- <MAbort- <SERR- <PERR+
+	BridgeCtl: Parity- SERR+ NoISA+ VGA- MAbort- >Reset- FastB2B-
+		PriDiscTmr- SecDiscTmr- DiscTmrStat- DiscTmrSERREn-
+
+00:1f.0 ISA bridge [0601]: Intel Corporation 82801BA ISA Bridge (LPC) [8086:2440] (rev 02)
+	Control: I/O+ Mem+ BusMaster+ SpecCycle+ MemWINV- VGASnoop- ParErr- Stepping- SERR+ FastB2B- DisINTx-
+	Status: Cap- 66MHz- UDF- FastB2B+ ParErr- DEVSEL=medium >TAbort- <TAbort- <MAbort- >SERR- <PERR- INTx-
+	Latency: 0
+
+00:1f.1 IDE interface [0101]: Intel Corporation 82801BA IDE U100 Controller [8086:244b] (rev 02) (prog-if 80 [Master])
+	Subsystem: Intel Corporation D815EEA2 mainboard [8086:4532]
+	Control: I/O+ Mem- BusMaster+ SpecCycle- MemWINV- VGASnoop- ParErr- Stepping- SERR- FastB2B- DisINTx-
+	Status: Cap- 66MHz- UDF- FastB2B+ ParErr- DEVSEL=medium >TAbort- <TAbort- <MAbort- >SERR- <PERR- INTx-
+	Latency: 0
+	Region 0: [virtual] Memory at 000001f0 (32-bit, non-prefetchable) [size=8]
+	Region 1: [virtual] Memory at 000003f0 (type 3, non-prefetchable) [size=1]
+	Region 2: [virtual] Memory at 00000170 (32-bit, non-prefetchable) [size=8]
+	Region 3: [virtual] Memory at 00000370 (type 3, non-prefetchable) [size=1]
+	Region 4: I/O ports at ffa0 [size=16]
+	Kernel driver in use: ata_piix
+
+00:1f.2 USB Controller [0c03]: Intel Corporation 82801BA/BAM USB Controller #1 [8086:2442] (rev 02) (prog-if 00 [UHCI])
+	Subsystem: Intel Corporation D815EEA2 mainboard [8086:4532]
+	Control: I/O+ Mem- BusMaster+ SpecCycle- MemWINV- VGASnoop- ParErr- Stepping- SERR- FastB2B- DisINTx-
+	Status: Cap- 66MHz- UDF- FastB2B+ ParErr- DEVSEL=medium >TAbort- <TAbort- <MAbort- >SERR- <PERR- INTx-
+	Latency: 0
+	Interrupt: pin D routed to IRQ 11
+	Region 4: I/O ports at ef40 [size=32]
+	Kernel driver in use: uhci_hcd
+
+00:1f.3 SMBus [0c05]: Intel Corporation 82801BA/BAM SMBus Controller [8086:2443] (rev 02)
+	Subsystem: Intel Corporation D815EEA2 mainboard [8086:4532]
+	Control: I/O+ Mem- BusMaster- SpecCycle- MemWINV- VGASnoop- ParErr- Stepping- SERR- FastB2B- DisINTx-
+	Status: Cap- 66MHz- UDF- FastB2B+ ParErr- DEVSEL=medium >TAbort- <TAbort- <MAbort- >SERR- <PERR- INTx-
+	Interrupt: pin B routed to IRQ 10
+	Region 4: I/O ports at efa0 [size=16]
+	Kernel driver in use: i801_smbus
+
+00:1f.4 USB Controller [0c03]: Intel Corporation 82801BA/BAM USB Controller #1 [8086:2444] (rev 02) (prog-if 00 [UHCI])
+	Subsystem: Intel Corporation D815EEA2 mainboard [8086:4532]
+	Control: I/O+ Mem- BusMaster+ SpecCycle- MemWINV- VGASnoop- ParErr- Stepping- SERR- FastB2B- DisINTx-
+	Status: Cap- 66MHz- UDF- FastB2B+ ParErr- DEVSEL=medium >TAbort- <TAbort- <MAbort- >SERR- <PERR- INTx-
+	Latency: 0
+	Interrupt: pin C routed to IRQ 11
+	Region 4: I/O ports at ef80 [size=32]
+	Kernel driver in use: uhci_hcd
+
+00:1f.5 Multimedia audio controller [0401]: Intel Corporation 82801BA/BAM AC'97 Audio Controller [8086:2445] (rev 02)
+	Subsystem: Intel Corporation Device [8086:4656]
+	Control: I/O+ Mem- BusMaster+ SpecCycle- MemWINV- VGASnoop- ParErr- Stepping- SERR- FastB2B- DisINTx-
+	Status: Cap- 66MHz- UDF- FastB2B+ ParErr- DEVSEL=medium >TAbort- <TAbort- <MAbort- >SERR- <PERR- INTx-
+	Latency: 0
+	Interrupt: pin B routed to IRQ 10
+	Region 0: I/O ports at e800 [size=256]
+	Region 1: I/O ports at ef00 [size=64]
+	Kernel driver in use: Intel ICH
+
+01:08.0 Ethernet controller [0200]: Intel Corporation 82801BA/BAM/CA/CAM Ethernet Controller [8086:2449] (rev 01)
+	Subsystem: Intel Corporation EtherExpress PRO/100 VE [8086:3013]
+	Control: I/O+ Mem+ BusMaster+ SpecCycle- MemWINV+ VGASnoop- ParErr- Stepping- SERR+ FastB2B- DisINTx-
+	Status: Cap+ 66MHz- UDF- FastB2B+ ParErr- DEVSEL=medium >TAbort- <TAbort- <MAbort- >SERR- <PERR- INTx-
+	Latency: 32 (2000ns min, 14000ns max), Cache Line Size: 32 bytes
+	Interrupt: pin A routed to IRQ 11
+	Region 0: Memory at fd9f9000 (32-bit, non-prefetchable) [size=4K]
+	Region 1: I/O ports at df00 [size=64]
+	Capabilities: [dc] Power Management version 2
+		Flags: PMEClk- DSI+ D1+ D2+ AuxCurrent=0mA PME(D0+,D1+,D2+,D3hot+,D3cold+)
+		Status: D0 PME-Enable- DSel=0 DScale=2 PME-
+	Kernel driver in use: e100
+
+01:09.0 Token ring network controller [0201]: 3Com Corporation 3c339 TokenLink Velocity [10b7:3390]
+	Control: I/O+ Mem+ BusMaster+ SpecCycle- MemWINV+ VGASnoop- ParErr- Stepping- SERR+ FastB2B- DisINTx-
+	Status: Cap- 66MHz- UDF- FastB2B- ParErr- DEVSEL=medium >TAbort- <TAbort- <MAbort- >SERR- <PERR- INTx-
+	Latency: 32 (250ns min), Cache Line Size: 32 bytes
+	Interrupt: pin A routed to IRQ 11
+	Region 0: I/O ports at df40 [size=32]
+	Region 1: Memory at fd9fe400 (32-bit, non-prefetchable) [size=32]
+	Expansion ROM at f1600000 [disabled] [size=64K]
+	Kernel driver in use: tmspci
+
+01:0a.0 SCSI storage controller [0100]: QLogic Corp. QLA2100 64-bit Fibre Channel Adapter [1077:2100] (rev 03)
+	Subsystem: QLogic Corp. QLA2100 64-bit Fibre Channel Adapter [1077:0001]
+	Control: I/O+ Mem+ BusMaster+ SpecCycle- MemWINV+ VGASnoop- ParErr+ Stepping- SERR+ FastB2B- DisINTx-
+	Status: Cap- 66MHz- UDF- FastB2B+ ParErr- DEVSEL=medium >TAbort- <TAbort- <MAbort- >SERR- <PERR- INTx-
+	Latency: 32, Cache Line Size: 32 bytes
+	Interrupt: pin A routed to IRQ 9
+	Region 0: I/O ports at d800 [size=256]
+	Region 1: Memory at fd9ff000 (32-bit, non-prefetchable) [size=4K]
+	Expansion ROM at f1610000 [disabled] [size=64K]
+	Kernel driver in use: qla2xxx
+
+01:0b.0 Parallel controller [0701]: Lava Computer mfg Inc Lava Parallel [1407:8000] (prog-if 01 [BiDir])
+	Control: I/O+ Mem- BusMaster- SpecCycle- MemWINV- VGASnoop- ParErr- Stepping- SERR- FastB2B- DisINTx-
+	Status: Cap- 66MHz- UDF- FastB2B+ ParErr- DEVSEL=slow >TAbort- <TAbort- <MAbort- >SERR- <PERR- INTx-
+	Interrupt: pin A routed to IRQ 11
+	Region 0: I/O ports at dff0 [size=8]
+	Kernel driver in use: parport_pc
+
+01:0c.0 Fibre Channel [0c04]: Emulex Corporation LP8000 Fibre Channel Host Adapter [10df:f800] (rev 02)
+	Subsystem: Compaq Computer Corporation Device [0e11:f800]
+	Control: I/O+ Mem+ BusMaster+ SpecCycle+ MemWINV+ VGASnoop- ParErr- Stepping- SERR+ FastB2B- DisINTx-
+	Status: Cap- 66MHz- UDF- FastB2B+ ParErr- DEVSEL=medium >TAbort- <TAbort- <MAbort- >SERR- <PERR- INTx-
+	Latency: 248 (63750ns min), Cache Line Size: 32 bytes
+	Interrupt: pin A routed to IRQ 10
+	Region 0: Memory at fd9fd000 (64-bit, non-prefetchable) [size=4K]
+	Region 2: Memory at fd9fe800 (64-bit, non-prefetchable) [size=256]
+	Region 4: I/O ports at d400 [size=256]
+	Kernel driver in use: lpfc
+
+01:0d.0 Token ring network controller [0201]: 3Com Corporation 3c339 TokenLink Velocity [10b7:3390]
+	Control: I/O+ Mem+ BusMaster+ SpecCycle- MemWINV+ VGASnoop- ParErr- Stepping- SERR+ FastB2B- DisINTx-
+	Status: Cap- 66MHz- UDF- FastB2B- ParErr- DEVSEL=medium >TAbort- <TAbort- <MAbort- >SERR- <PERR- INTx-
+	Latency: 32 (250ns min), Cache Line Size: 32 bytes
+	Interrupt: pin A routed to IRQ 11
+	Region 0: I/O ports at df80 [size=32]
+	Region 1: Memory at fd9fec00 (32-bit, non-prefetchable) [size=32]
+	Expansion ROM at f1620000 [disabled] [size=64K]
+	Kernel driver in use: tmspci
+
+02:00.0 VGA compatible controller [0300]: Matrox Graphics, Inc. MGA G550 AGP [102b:2527] (rev 01) (prog-if 00 [VGA controller])
+	Subsystem: Matrox Graphics, Inc. Millennium G550 Dual Head DDR 32Mb [102b:0f84]
+	Control: I/O+ Mem+ BusMaster+ SpecCycle- MemWINV- VGASnoop- ParErr- Stepping- SERR- FastB2B- DisINTx-
+	Status: Cap+ 66MHz- UDF- FastB2B+ ParErr- DEVSEL=medium >TAbort- <TAbort- <MAbort- >SERR- <PERR- INTx-
+	Latency: 32 (4000ns min, 8000ns max), Cache Line Size: 32 bytes
+	Interrupt: pin A routed to IRQ 11
+	Region 0: Memory at f2000000 (32-bit, prefetchable) [size=32M]
+	Region 1: Memory at feafc000 (32-bit, non-prefetchable) [size=16K]
+	Region 2: Memory at fe000000 (32-bit, non-prefetchable) [size=8M]
+	Expansion ROM at feac0000 [disabled] [size=128K]
+	Capabilities: [dc] Power Management version 2
+		Flags: PMEClk- DSI+ D1- D2- AuxCurrent=0mA PME(D0-,D1-,D2-,D3hot-,D3cold-)
+		Status: D0 PME-Enable- DSel=0 DScale=0 PME-
+	Capabilities: [f0] AGP version 2.0
+		Status: RQ=32 Iso- ArqSz=0 Cal=0 SBA+ ITACoh- GART64- HTrans- 64bit- FW- AGP3- Rate=x1,x2,x4
+		Command: RQ=32 ArqSz=0 Cal=0 SBA+ AGP+ GART64- 64bit- FW- Rate=x2
 
 
-diff --git a/include/asm-generic/posix_types.h b/include/asm-generic/posix_types.h
-new file mode 100644
-index 0000000..4772f74
---- /dev/null
-+++ b/include/asm-generic/posix_types.h
-@@ -0,0 +1,162 @@
-+#ifndef __ASM_GENERIC_POSIX_TYPES_H
-+#define __ASM_GENERIC_POSIX_TYPES_H
-+
-+#include <asm/types.h>
-+
-+/*
-+ * This file is generally used by user-level software, so you need to
-+ * be a little careful about namespace pollution etc.
-+ *
-+ * First the types that are often defined in different ways across
-+ * architectures, so that you can override them.
-+ */
-+
-+#ifndef __kernel_ino_t
-+typedef unsigned long	__kernel_ino_t;
-+#endif
-+
-+#ifndef __kernel_mode_t
-+typedef unsigned int	__kernel_mode_t;
-+#endif
-+
-+#ifndef __kernel_nlink_t
-+typedef unsigned long	__kernel_nlink_t;
-+#endif
-+
-+#ifndef __kernel_pid_t
-+typedef int		__kernel_pid_t;
-+#endif
-+
-+#ifndef __kernel_ipc_pid_t
-+typedef int		__kernel_ipc_pid_t;
-+#endif
-+
-+#ifndef __kernel_uid_t
-+typedef unsigned int	__kernel_uid_t;
-+typedef unsigned int	__kernel_gid_t;
-+#endif
-+
-+#ifndef __kernel_suseconds_t
-+typedef long		__kernel_suseconds_t;
-+#endif
-+
-+#ifndef __kernel_daddr_t
-+typedef int		__kernel_daddr_t;
-+#endif
-+
-+#ifndef __kernel_uid32_t
-+typedef __kernel_uid_t	__kernel_uid32_t;
-+typedef __kernel_gid_t	__kernel_gid32_t;
-+#endif
-+
-+#ifndef __kernel_old_uid_t
-+typedef __kernel_uid_t	__kernel_old_uid_t;
-+typedef __kernel_gid_t	__kernel_old_gid_t;
-+#endif
-+
-+#ifndef __kernel_old_dev_t
-+typedef unsigned int	__kernel_old_dev_t;
-+#endif
-+
-+#ifndef __kernel_size_t
-+#if __BITS_PER_LONG != 64
-+typedef unsigned int	__kernel_size_t;
-+typedef int		__kernel_ssize_t;
-+typedef int		__kernel_ptrdiff_t;
-+#else
-+typedef unsigned long	__kernel_size_t;
-+typedef long		__kernel_ssize_t;
-+typedef long		__kernel_ptrdiff_t;
-+#endif
-+#endif
-+
-+/*
-+ * anything below here should be completely generic
-+ */
-+typedef long		__kernel_off_t;
-+typedef long long	__kernel_loff_t;
-+typedef long		__kernel_time_t;
-+typedef long		__kernel_clock_t;
-+typedef int		__kernel_timer_t;
-+typedef int		__kernel_clockid_t;
-+typedef char *		__kernel_caddr_t;
-+typedef unsigned short	__kernel_uid16_t;
-+typedef unsigned short	__kernel_gid16_t;
-+
-+typedef struct {
-+	int	val[2];
-+} __kernel_fsid_t;
-+
-+#ifdef __KERNEL__
-+
-+#undef __FD_SET
-+static inline void __FD_SET(unsigned long __fd, __kernel_fd_set *__fdsetp)
-+{
-+	unsigned long __tmp = __fd / __NFDBITS;
-+	unsigned long __rem = __fd % __NFDBITS;
-+	__fdsetp->fds_bits[__tmp] |= (1UL<<__rem);
-+}
-+
-+#undef __FD_CLR
-+static inline void __FD_CLR(unsigned long __fd, __kernel_fd_set *__fdsetp)
-+{
-+	unsigned long __tmp = __fd / __NFDBITS;
-+	unsigned long __rem = __fd % __NFDBITS;
-+	__fdsetp->fds_bits[__tmp] &= ~(1UL<<__rem);
-+}
-+
-+#undef __FD_ISSET
-+static inline int __FD_ISSET(unsigned long __fd, const __kernel_fd_set *__p)
-+{
-+	unsigned long __tmp = __fd / __NFDBITS;
-+	unsigned long __rem = __fd % __NFDBITS;
-+	return (__p->fds_bits[__tmp] & (1UL<<__rem)) != 0;
-+}
-+
-+/*
-+ * This will unroll the loop for the normal constant case (8 ints,
-+ * for a 256-bit fd_set)
-+ */
-+#undef __FD_ZERO
-+static inline void __FD_ZERO(__kernel_fd_set *__p)
-+{
-+	unsigned long *__tmp = __p->fds_bits;
-+	int __i;
-+
-+	if (__builtin_constant_p(__FDSET_LONGS)) {
-+		switch (__FDSET_LONGS) {
-+		case 16:
-+			__tmp[ 0] = 0; __tmp[ 1] = 0;
-+			__tmp[ 2] = 0; __tmp[ 3] = 0;
-+			__tmp[ 4] = 0; __tmp[ 5] = 0;
-+			__tmp[ 6] = 0; __tmp[ 7] = 0;
-+			__tmp[ 8] = 0; __tmp[ 9] = 0;
-+			__tmp[10] = 0; __tmp[11] = 0;
-+			__tmp[12] = 0; __tmp[13] = 0;
-+			__tmp[14] = 0; __tmp[15] = 0;
-+			return;
-+
-+		case 8:
-+			__tmp[ 0] = 0; __tmp[ 1] = 0;
-+			__tmp[ 2] = 0; __tmp[ 3] = 0;
-+			__tmp[ 4] = 0; __tmp[ 5] = 0;
-+			__tmp[ 6] = 0; __tmp[ 7] = 0;
-+			return;
-+
-+		case 4:
-+			__tmp[ 0] = 0; __tmp[ 1] = 0;
-+			__tmp[ 2] = 0; __tmp[ 3] = 0;
-+			return;
-+		}
-+	}
-+	__i = __FDSET_LONGS;
-+	while (__i) {
-+		__i--;
-+		*__tmp = 0;
-+		__tmp++;
-+	}
-+}
-+
-+#endif /* __KERNEL__ */
-+
-+#endif /* __ASM_GENERIC_POSIX_TYPES_H */
-diff --git a/include/asm-generic/types.h b/include/asm-generic/types.h
-new file mode 100644
-index 0000000..147b553
---- /dev/null
-+++ b/include/asm-generic/types.h
-@@ -0,0 +1,63 @@
-+#ifndef _ASM_GENERIC_TYPES_H
-+#define _ASM_GENERIC_TYPES_H
-+
-+/*
-+ * int-ll64 is used practically everywhere now,
-+ * so use it as a reasonable default.
-+ */
-+#include <asm-generic/int-ll64.h>
-+
-+#ifndef __ASSEMBLY__
-+
-+typedef unsigned short umode_t;
-+
-+#endif /* __ASSEMBLY__ */
-+
-+/*
-+ * There seems to be no way of detecting this automatically from user
-+ * space, so 64 bit architectures should override this in their types.h.
-+ */
-+#ifndef __BITS_PER_LONG
-+#define __BITS_PER_LONG 32
-+#endif
-+
-+/*
-+ * These aren't exported outside the kernel to avoid name space clashes
-+ */
-+#ifdef __KERNEL__
-+
-+#ifdef CONFIG_64BIT
-+#define BITS_PER_LONG 64
-+#else
-+#define BITS_PER_LONG 32
-+#endif /* CONFIG_64BIT */
-+
-+#if BITS_PER_LONG != __BITS_PER_LONG
-+#error cannot determine word size
-+#endif
-+
-+#ifndef __ASSEMBLY__
-+
-+/*
-+ * DMA addresses may be very different from physical addresses
-+ * and pointers. i386 and powerpc may have 64 bit DMA on 32 bit
-+ * systems, while sparc64 uses 32 bit DMA addresses for 64 bit
-+ * physical addresses.
-+ * This default defines dma_addr_t to have the same size as
-+ * phys_addr_t, which is the most common way.
-+ * Do not define the dma64_addr_t type, which never really
-+ * worked.
-+ */
-+#ifndef dma_addr_t
-+#ifdef CONFIG_PHYS_ADDR_T_64BIT
-+typedef u64 dma_addr_t;
-+#else
-+typedef u32 dma_addr_t;
-+#endif /* CONFIG_PHYS_ADDR_T_64BIT */
-+#endif /* dma_addr_t */
-+
-+#endif /* __ASSEMBLY__ */
-+
-+#endif /* __KERNEL__ */
-+
-+#endif /* _ASM_GENERIC_TYPES_H */
-diff --git a/include/asm-generic/unistd.h b/include/asm-generic/unistd.h
-new file mode 100644
-index 0000000..9c27fe0
---- /dev/null
-+++ b/include/asm-generic/unistd.h
-@@ -0,0 +1,829 @@
-+#if !defined(_ASM_GENERIC_UNISTD_H) || defined(__SYSCALL)
-+#define _ASM_GENERIC_UNISTD_H
-+
-+/* need types.h for __BITS_PER_LONG */
-+#include <linux/types.h>
-+
-+/*
-+ * This file contains the system call numbers, based on the
-+ * layout of the x86-64 architecture, which embeds the
-+ * pointer to the syscall in the table.
-+ *
-+ * As a basic principle, no duplication of functionality
-+ * should be added, e.g. we don't use lseek when llseek
-+ * is present. New architectures should use this file
-+ * and implement the less feature-full calls in user space.
-+ *
-+ * This file version is for review only, once the set of
-+ * syscalls that are required has been determined, the
-+ * __LINE__ numbers will be replaced with contiguous
-+ * numbers for the syscalls.
-+ */
-+
-+#ifndef __SYSCALL
-+#define __SYSCALL(x,y)
-+#endif
-+
-+#if __BITS_PER_LONG == 32
-+#define __SC_3264(_nr, _32, _64) __SYSCALL(_nr, _32)
-+#else
-+#define __SC_3264(_nr, _32, _64) __SYSCALL(_nr, _64)
-+#endif
-+
-+#define __NR_io_setup __LINE__
-+__SYSCALL(__NR_io_setup, sys_io_setup)
-+#define __NR_io_destroy __LINE__
-+__SYSCALL(__NR_io_destroy, sys_io_destroy)
-+#define __NR_io_submit __LINE__
-+__SYSCALL(__NR_io_submit, sys_io_submit)
-+#define __NR_io_cancel __LINE__
-+__SYSCALL(__NR_io_cancel, sys_io_cancel)
-+#define __NR_io_getevents __LINE__
-+__SYSCALL(__NR_io_getevents, sys_io_getevents)
-+
-+/* fs/xattr.c */
-+#define __NR_setxattr __LINE__
-+__SYSCALL(__NR_setxattr, sys_setxattr)
-+#define __NR_lsetxattr __LINE__
-+__SYSCALL(__NR_lsetxattr, sys_lsetxattr)
-+#define __NR_fsetxattr __LINE__
-+__SYSCALL(__NR_fsetxattr, sys_fsetxattr)
-+#define __NR_getxattr __LINE__
-+__SYSCALL(__NR_getxattr, sys_getxattr)
-+#define __NR_lgetxattr __LINE__
-+__SYSCALL(__NR_lgetxattr, sys_lgetxattr)
-+#define __NR_fgetxattr __LINE__
-+__SYSCALL(__NR_fgetxattr, sys_fgetxattr)
-+#define __NR_listxattr __LINE__
-+__SYSCALL(__NR_listxattr, sys_listxattr)
-+#define __NR_llistxattr __LINE__
-+__SYSCALL(__NR_llistxattr, sys_llistxattr)
-+#define __NR_flistxattr __LINE__
-+__SYSCALL(__NR_flistxattr, sys_flistxattr)
-+#define __NR_removexattr __LINE__
-+__SYSCALL(__NR_removexattr, sys_removexattr)
-+#define __NR_lremovexattr __LINE__
-+__SYSCALL(__NR_lremovexattr, sys_lremovexattr)
-+#define __NR_fremovexattr __LINE__
-+__SYSCALL(__NR_fremovexattr, sys_fremovexattr)
-+
-+/* fs/dcache.c */
-+#define __NR_getcwd __LINE__
-+__SYSCALL(__NR_getcwd, sys_getcwd)
-+
-+/* fs/cookies.c */
-+#define __NR_lookup_dcookie __LINE__
-+__SYSCALL(__NR_lookup_dcookie, sys_lookup_dcookie)
-+
-+/* fs/eventfd.c */
-+#define __NR_eventfd2 __LINE__
-+__SYSCALL(__NR_eventfd2, sys_eventfd2)
-+
-+/* fs/eventpoll.c */
-+#define __NR_epoll_create1 __LINE__
-+__SYSCALL(__NR_epoll_create1, sys_epoll_create1)
-+#define __NR_epoll_ctl __LINE__
-+__SYSCALL(__NR_epoll_ctl, sys_epoll_ctl)
-+#define __NR_epoll_pwait __LINE__
-+__SYSCALL(__NR_epoll_pwait, sys_epoll_pwait)
-+
-+/* fs/fcntl.c */
-+#define __NR_dup __LINE__
-+__SYSCALL(__NR_dup, sys_dup)
-+#define __NR_dup3 __LINE__
-+__SYSCALL(__NR_dup3, sys_dup3)
-+#define __NR3264_fcntl __LINE__
-+__SC_3264(__NR3264_fcntl, sys_fcntl64, sys_fcntl)
-+
-+/* fs/inotify_user.c */
-+#define __NR_inotify_init1 __LINE__
-+__SYSCALL(__NR_inotify_init1, sys_inotify_init1)
-+#define __NR_inotify_add_watch __LINE__
-+__SYSCALL(__NR_inotify_add_watch, sys_inotify_add_watch)
-+#define __NR_inotify_rm_watch __LINE__
-+__SYSCALL(__NR_inotify_rm_watch, sys_inotify_rm_watch)
-+
-+/* fs/ioctl.c */
-+#define __NR_ioctl __LINE__
-+__SYSCALL(__NR_ioctl, sys_ioctl)
-+
-+/* fs/ioprio.c */
-+#define __NR_ioprio_set __LINE__
-+__SYSCALL(__NR_ioprio_set, sys_ioprio_set)
-+#define __NR_ioprio_get __LINE__
-+__SYSCALL(__NR_ioprio_get, sys_ioprio_get)
-+
-+/* fs/locks.c */
-+#define __NR_flock __LINE__
-+__SYSCALL(__NR_flock, sys_flock)
-+
-+/* fs/namei.c */
-+#define __NR_mknodat __LINE__
-+__SYSCALL(__NR_mknodat, sys_mknodat)
-+#define __NR_mkdirat __LINE__
-+__SYSCALL(__NR_mkdirat, sys_mkdirat)
-+#define __NR_unlinkat __LINE__
-+__SYSCALL(__NR_unlinkat, sys_unlinkat)
-+#define __NR_symlinkat __LINE__
-+__SYSCALL(__NR_symlinkat, sys_symlinkat)
-+#define __NR_linkat __LINE__
-+__SYSCALL(__NR_linkat, sys_linkat)
-+#define __NR_renameat __LINE__
-+__SYSCALL(__NR_renameat, sys_renameat)
-+
-+/* fs/namespace.c */
-+#define __NR_umount2 __LINE__
-+__SYSCALL(__NR_umount2, sys_umount)
-+#define __NR_mount __LINE__
-+__SYSCALL(__NR_mount, sys_mount)
-+#define __NR_pivot_root __LINE__
-+__SYSCALL(__NR_pivot_root, sys_pivot_root)
-+
-+/* fs/nfsctl.c */
-+#define __NR_nfsservctl __LINE__
-+__SYSCALL(__NR_nfsservctl, sys_nfsservctl)
-+
-+/* fs/open.c */
-+#define __NR3264_statfs __LINE__
-+__SC_3264(__NR3264_statfs, sys_statfs64, sys_statfs)
-+#define __NR3264_fstatfs __LINE__
-+__SC_3264(__NR3264_fstatfs, sys_fstatfs64, sys_fstatfs)
-+#define __NR3264_truncate __LINE__
-+__SC_3264(__NR3264_truncate, sys_truncate64, sys_truncate)
-+#define __NR3264_ftruncate __LINE__
-+__SC_3264(__NR3264_ftruncate, sys_ftruncate64, sys_ftruncate)
-+
-+#define __NR_fallocate __LINE__
-+__SYSCALL(__NR_fallocate, sys_fallocate)
-+#define __NR_faccessat __LINE__
-+__SYSCALL(__NR_faccessat, sys_faccessat)
-+#define __NR_chdir __LINE__
-+__SYSCALL(__NR_chdir, sys_chdir)
-+#define __NR_fchdir __LINE__
-+__SYSCALL(__NR_fchdir, sys_fchdir)
-+#define __NR_chroot __LINE__
-+__SYSCALL(__NR_chroot, sys_chroot)
-+#define __NR_fchmod __LINE__
-+__SYSCALL(__NR_fchmod, sys_fchmod)
-+#define __NR_fchmodat __LINE__
-+__SYSCALL(__NR_fchmodat, sys_fchmodat)
-+#define __NR_fchownat __LINE__
-+__SYSCALL(__NR_fchownat, sys_fchownat)
-+#define __NR_fchown __LINE__
-+__SYSCALL(__NR_fchown, sys_fchown)
-+#define __NR_openat __LINE__
-+__SYSCALL(__NR_openat, sys_openat)
-+#define __NR_close __LINE__
-+__SYSCALL(__NR_close, sys_close)
-+#define __NR_vhangup __LINE__
-+__SYSCALL(__NR_vhangup, sys_vhangup)
-+
-+/* fs/pipe.c */
-+#define __NR_pipe2 __LINE__
-+__SYSCALL(__NR_pipe2, sys_pipe2)
-+
-+/* fs/quota.c */
-+#define __NR_quotactl __LINE__
-+__SYSCALL(__NR_quotactl, sys_quotactl)
-+
-+/* fs/readdir.c */
-+#define __NR3264_getdents __LINE__
-+__SC_3264(__NR3264_getdents, sys_getdents64, sys_getdents)
-+
-+/* fs/read_write.c */
-+#define __NR3264_lseek __LINE__
-+__SC_3264(__NR3264_lseek, sys_llseek, sys_lseek)
-+#define __NR_read __LINE__
-+__SYSCALL(__NR_read, sys_read)
-+#define __NR_readv __LINE__
-+__SYSCALL(__NR_readv, sys_readv)
-+#define __NR_write __LINE__
-+__SYSCALL(__NR_write, sys_write)
-+#define __NR_writev __LINE__
-+__SYSCALL(__NR_writev, sys_writev)
-+#define __NR_pread64 __LINE__
-+__SYSCALL(__NR_pread64, sys_pread64)
-+#define __NR_pwrite64 __LINE__
-+__SYSCALL(__NR_pwrite64, sys_pwrite64)
-+
-+/* fs/sendfile.c */
-+#define __NR3264_sendfile __LINE__
-+__SC_3264(__NR3264_sendfile, sys_sendfile64, sys_sendfile)
-+
-+/* fs/select.c */
-+#define __NR_pselect6 __LINE__
-+__SYSCALL(__NR_pselect6, sys_pselect6)
-+#define __NR_ppoll __LINE__
-+__SYSCALL(__NR_ppoll, sys_ppoll)
-+
-+/* fs/signalfd.c */
-+#define __NR_signalfd4 __LINE__
-+__SYSCALL(__NR_signalfd4, sys_signalfd4)
-+
-+/* fs/splice.c */
-+#define __NR_vmsplice __LINE__
-+__SYSCALL(__NR_vmsplice, sys_vmsplice)
-+#define __NR_splice __LINE__
-+__SYSCALL(__NR_splice, sys_splice)
-+#define __NR_tee __LINE__
-+__SYSCALL(__NR_tee, sys_tee)
-+
-+/* fs/stat.c */
-+#define __NR_readlinkat __LINE__
-+__SYSCALL(__NR_readlinkat, sys_readlinkat)
-+#define __NR3264_fstatat __LINE__
-+__SC_3264(__NR3264_fstatat, sys_fstatat64, sys_newfstatat)
-+#define __NR3264_fstat __LINE__
-+__SC_3264(__NR3264_fstat, sys_fstat64, sys_newfstat)
-+
-+/* fs/sync.c */
-+#define __NR_sync __LINE__
-+__SYSCALL(__NR_sync, sys_sync)
-+#define __NR_fsync __LINE__
-+__SYSCALL(__NR_fsync, sys_fsync)
-+#define __NR_fdatasync __LINE__
-+__SYSCALL(__NR_fdatasync, sys_fdatasync)
-+#define __NR_sync_file_range __LINE__
-+__SYSCALL(__NR_sync_file_range, sys_sync_file_range) /* .long sys_sync_file_range2, */
-+
-+/* fs/timerfd.c */
-+#define __NR_timerfd_create __LINE__
-+__SYSCALL(__NR_timerfd_create, sys_timerfd_create)
-+#define __NR_timerfd_settime __LINE__
-+__SYSCALL(__NR_timerfd_settime, sys_timerfd_settime)
-+#define __NR_timerfd_gettime __LINE__
-+__SYSCALL(__NR_timerfd_gettime, sys_timerfd_gettime)
-+
-+/* fs/utimes.c */
-+#define __NR_utimensat __LINE__
-+__SYSCALL(__NR_utimensat, sys_utimensat)
-+
-+/* kernel/acct.c */
-+#define __NR_acct __LINE__
-+__SYSCALL(__NR_acct, sys_acct)
-+
-+/* kernel/capability.c */
-+#define __NR_capget __LINE__
-+__SYSCALL(__NR_capget, sys_capget)
-+#define __NR_capset __LINE__
-+__SYSCALL(__NR_capset, sys_capset)
-+
-+/* kernel/exec_domain.c */
-+#define __NR_personality __LINE__
-+__SYSCALL(__NR_personality, sys_personality)
-+
-+/* kernel/exit.c */
-+#define __NR_exit __LINE__
-+__SYSCALL(__NR_exit, sys_exit)
-+#define __NR_exit_group __LINE__
-+__SYSCALL(__NR_exit_group, sys_exit_group)
-+#define __NR_waitid __LINE__
-+__SYSCALL(__NR_waitid, sys_waitid)
-+
-+/* kernel/fork.c */
-+#define __NR_set_tid_address __LINE__
-+__SYSCALL(__NR_set_tid_address, sys_set_tid_address)
-+#define __NR_unshare __LINE__
-+__SYSCALL(__NR_unshare, sys_unshare)
-+
-+/* kernel/futex.c */
-+#define __NR_futex __LINE__
-+__SYSCALL(__NR_futex, sys_futex)
-+#define __NR_set_robust_list __LINE__
-+__SYSCALL(__NR_set_robust_list, sys_set_robust_list)
-+#define __NR_get_robust_list __LINE__
-+__SYSCALL(__NR_get_robust_list, sys_get_robust_list)
-+
-+/* kernel/hrtimer.c */
-+#define __NR_nanosleep __LINE__
-+__SYSCALL(__NR_nanosleep, sys_nanosleep)
-+
-+/* kernel/itimer.c */
-+#define __NR_getitimer __LINE__
-+__SYSCALL(__NR_getitimer, sys_getitimer)
-+#define __NR_setitimer __LINE__
-+__SYSCALL(__NR_setitimer, sys_setitimer)
-+
-+/* kernel/kexec.c */
-+#define __NR_kexec_load __LINE__
-+__SYSCALL(__NR_kexec_load, sys_kexec_load)
-+
-+/* kernel/module.c */
-+#define __NR_init_module __LINE__
-+__SYSCALL(__NR_init_module, sys_init_module)
-+#define __NR_delete_module __LINE__
-+__SYSCALL(__NR_delete_module, sys_delete_module)
-+
-+/* kernel/posix-timers.c */
-+#define __NR_timer_create __LINE__
-+__SYSCALL(__NR_timer_create, sys_timer_create)
-+#define __NR_timer_gettime __LINE__
-+__SYSCALL(__NR_timer_gettime, sys_timer_gettime)
-+#define __NR_timer_getoverrun __LINE__
-+__SYSCALL(__NR_timer_getoverrun, sys_timer_getoverrun)
-+#define __NR_timer_settime __LINE__
-+__SYSCALL(__NR_timer_settime, sys_timer_settime)
-+#define __NR_timer_delete __LINE__
-+__SYSCALL(__NR_timer_delete, sys_timer_delete)
-+#define __NR_clock_settime __LINE__
-+__SYSCALL(__NR_clock_settime, sys_clock_settime)
-+#define __NR_clock_gettime __LINE__
-+__SYSCALL(__NR_clock_gettime, sys_clock_gettime)
-+#define __NR_clock_getres __LINE__
-+__SYSCALL(__NR_clock_getres, sys_clock_getres)
-+#define __NR_clock_nanosleep __LINE__
-+__SYSCALL(__NR_clock_nanosleep, sys_clock_nanosleep)
-+
-+/* kernel/printk.c */
-+#define __NR_syslog __LINE__
-+__SYSCALL(__NR_syslog, sys_syslog)
-+
-+/* kernel/ptrace.c */
-+#define __NR_ptrace __LINE__
-+__SYSCALL(__NR_ptrace, sys_ptrace)
-+
-+/* kernel/sched.c */
-+#define __NR_sched_setparam __LINE__
-+__SYSCALL(__NR_sched_setparam, sys_sched_setparam)
-+#define __NR_sched_setscheduler __LINE__
-+__SYSCALL(__NR_sched_setscheduler, sys_sched_setscheduler)
-+#define __NR_sched_getscheduler __LINE__
-+__SYSCALL(__NR_sched_getscheduler, sys_sched_getscheduler)
-+#define __NR_sched_getparam __LINE__
-+__SYSCALL(__NR_sched_getparam, sys_sched_getparam)
-+#define __NR_sched_setaffinity __LINE__
-+__SYSCALL(__NR_sched_setaffinity, sys_sched_setaffinity)
-+#define __NR_sched_getaffinity __LINE__
-+__SYSCALL(__NR_sched_getaffinity, sys_sched_getaffinity)
-+#define __NR_sched_yield __LINE__
-+__SYSCALL(__NR_sched_yield, sys_sched_yield)
-+#define __NR_sched_get_priority_max __LINE__
-+__SYSCALL(__NR_sched_get_priority_max, sys_sched_get_priority_max)
-+#define __NR_sched_get_priority_min __LINE__
-+__SYSCALL(__NR_sched_get_priority_min, sys_sched_get_priority_min)
-+#define __NR_sched_rr_get_interval __LINE__
-+__SYSCALL(__NR_sched_rr_get_interval, sys_sched_rr_get_interval)
-+
-+/* kernel/signal.c */
-+#define __NR_restart_syscall __LINE__
-+__SYSCALL(__NR_restart_syscall, sys_restart_syscall)
-+#define __NR_kill __LINE__
-+__SYSCALL(__NR_kill, sys_kill)
-+#define __NR_tkill __LINE__
-+__SYSCALL(__NR_tkill, sys_tkill)
-+#define __NR_tgkill __LINE__
-+__SYSCALL(__NR_tgkill, sys_tgkill)
-+#define __NR_sigaltstack __LINE__
-+__SYSCALL(__NR_sigaltstack, sys_sigaltstack)
-+#define __NR_rt_sigsuspend __LINE__
-+__SYSCALL(__NR_rt_sigsuspend, sys_rt_sigsuspend) /* __ARCH_WANT_SYS_RT_SIGSUSPEND */
-+#define __NR_rt_sigaction __LINE__
-+__SYSCALL(__NR_rt_sigaction, sys_rt_sigaction) /* __ARCH_WANT_SYS_RT_SIGACTION */
-+#define __NR_rt_sigprocmask __LINE__
-+__SYSCALL(__NR_rt_sigprocmask, sys_rt_sigprocmask)
-+#define __NR_rt_sigpending __LINE__
-+__SYSCALL(__NR_rt_sigpending, sys_rt_sigpending)
-+#define __NR_rt_sigtimedwait __LINE__
-+__SYSCALL(__NR_rt_sigtimedwait, sys_rt_sigtimedwait)
-+#define __NR_rt_sigqueueinfo __LINE__
-+__SYSCALL(__NR_rt_sigqueueinfo, sys_rt_sigqueueinfo)
-+#define __NR_rt_sigreturn __LINE__
-+__SYSCALL(__NR_rt_sigreturn, sys_rt_sigreturn) /* sys_rt_sigreturn_wrapper, */
-+
-+/* kernel/sys.c */
-+#define __NR_setpriority __LINE__
-+__SYSCALL(__NR_setpriority, sys_setpriority)
-+#define __NR_getpriority __LINE__
-+__SYSCALL(__NR_getpriority, sys_getpriority)
-+#define __NR_reboot __LINE__
-+__SYSCALL(__NR_reboot, sys_reboot)
-+#define __NR_setregid __LINE__
-+__SYSCALL(__NR_setregid, sys_setregid)
-+#define __NR_setgid __LINE__
-+__SYSCALL(__NR_setgid, sys_setgid)
-+#define __NR_setreuid __LINE__
-+__SYSCALL(__NR_setreuid, sys_setreuid)
-+#define __NR_setuid __LINE__
-+__SYSCALL(__NR_setuid, sys_setuid)
-+#define __NR_setresuid __LINE__
-+__SYSCALL(__NR_setresuid, sys_setresuid)
-+#define __NR_getresuid __LINE__
-+__SYSCALL(__NR_getresuid, sys_getresuid)
-+#define __NR_setresgid __LINE__
-+__SYSCALL(__NR_setresgid, sys_setresgid)
-+#define __NR_getresgid __LINE__
-+__SYSCALL(__NR_getresgid, sys_getresgid)
-+#define __NR_setfsuid __LINE__
-+__SYSCALL(__NR_setfsuid, sys_setfsuid)
-+#define __NR_setfsgid __LINE__
-+__SYSCALL(__NR_setfsgid, sys_setfsgid)
-+#define __NR_times __LINE__
-+__SYSCALL(__NR_times, sys_times)
-+#define __NR_setpgid __LINE__
-+__SYSCALL(__NR_setpgid, sys_setpgid)
-+#define __NR_getpgid __LINE__
-+__SYSCALL(__NR_getpgid, sys_getpgid)
-+#define __NR_getsid __LINE__
-+__SYSCALL(__NR_getsid, sys_getsid)
-+#define __NR_setsid __LINE__
-+__SYSCALL(__NR_setsid, sys_setsid)
-+#define __NR_getgroups __LINE__
-+__SYSCALL(__NR_getgroups, sys_getgroups)
-+#define __NR_setgroups __LINE__
-+__SYSCALL(__NR_setgroups, sys_setgroups)
-+#define __NR_uname __LINE__
-+__SYSCALL(__NR_uname, sys_newuname)
-+#define __NR_sethostname __LINE__
-+__SYSCALL(__NR_sethostname, sys_sethostname)
-+#define __NR_setdomainname __LINE__
-+__SYSCALL(__NR_setdomainname, sys_setdomainname)
-+#define __NR_getrlimit __LINE__
-+__SYSCALL(__NR_getrlimit, sys_getrlimit)
-+#define __NR_setrlimit __LINE__
-+__SYSCALL(__NR_setrlimit, sys_setrlimit)
-+#define __NR_getrusage __LINE__
-+__SYSCALL(__NR_getrusage, sys_getrusage)
-+#define __NR_umask __LINE__
-+__SYSCALL(__NR_umask, sys_umask)
-+#define __NR_prctl __LINE__
-+__SYSCALL(__NR_prctl, sys_prctl)
-+#define __NR_getcpu __LINE__
-+__SYSCALL(__NR_getcpu, sys_getcpu)
-+
-+/* kernel/time.c */
-+#define __NR_gettimeofday __LINE__
-+__SYSCALL(__NR_gettimeofday, sys_gettimeofday)
-+#define __NR_settimeofday __LINE__
-+__SYSCALL(__NR_settimeofday, sys_settimeofday)
-+#define __NR_adjtimex __LINE__
-+__SYSCALL(__NR_adjtimex, sys_adjtimex)
-+
-+/* kernel/timer.c */
-+#define __NR_getpid __LINE__
-+__SYSCALL(__NR_getpid, sys_getpid)
-+#define __NR_getppid __LINE__
-+__SYSCALL(__NR_getppid, sys_getppid)
-+#define __NR_getuid __LINE__
-+__SYSCALL(__NR_getuid, sys_getuid)
-+#define __NR_geteuid __LINE__
-+__SYSCALL(__NR_geteuid, sys_geteuid)
-+#define __NR_getgid __LINE__
-+__SYSCALL(__NR_getgid, sys_getgid)
-+#define __NR_getegid __LINE__
-+__SYSCALL(__NR_getegid, sys_getegid)
-+#define __NR_gettid __LINE__
-+__SYSCALL(__NR_gettid, sys_gettid)
-+#define __NR_sysinfo __LINE__
-+__SYSCALL(__NR_sysinfo, sys_sysinfo)
-+
-+/* ipc/mqueue.c */
-+#define __NR_mq_open __LINE__
-+__SYSCALL(__NR_mq_open, sys_mq_open)
-+#define __NR_mq_unlink __LINE__
-+__SYSCALL(__NR_mq_unlink, sys_mq_unlink)
-+#define __NR_mq_timedsend __LINE__
-+__SYSCALL(__NR_mq_timedsend, sys_mq_timedsend)
-+#define __NR_mq_timedreceive __LINE__
-+__SYSCALL(__NR_mq_timedreceive, sys_mq_timedreceive)
-+#define __NR_mq_notify __LINE__
-+__SYSCALL(__NR_mq_notify, sys_mq_notify)
-+#define __NR_mq_getsetattr __LINE__
-+__SYSCALL(__NR_mq_getsetattr, sys_mq_getsetattr)
-+
-+/* ipc/msg.c */
-+#define __NR_msgget __LINE__
-+__SYSCALL(__NR_msgget, sys_msgget)
-+#define __NR_msgctl __LINE__
-+__SYSCALL(__NR_msgctl, sys_msgctl)
-+#define __NR_msgrcv __LINE__
-+__SYSCALL(__NR_msgrcv, sys_msgrcv)
-+#define __NR_msgsnd __LINE__
-+__SYSCALL(__NR_msgsnd, sys_msgsnd)
-+
-+/* ipc/sem.c */
-+#define __NR_semget __LINE__
-+__SYSCALL(__NR_semget, sys_semget)
-+#define __NR_semctl __LINE__
-+__SYSCALL(__NR_semctl, sys_semctl)
-+#define __NR_semtimedop __LINE__
-+__SYSCALL(__NR_semtimedop, sys_semtimedop)
-+#define __NR_semop __LINE__
-+__SYSCALL(__NR_semop, sys_semop)
-+
-+/* ipc/shm.c */
-+#define __NR_shmget __LINE__
-+__SYSCALL(__NR_shmget, sys_shmget)
-+#define __NR_shmctl __LINE__
-+__SYSCALL(__NR_shmctl, sys_shmctl)
-+#define __NR_shmat __LINE__
-+__SYSCALL(__NR_shmat, sys_shmat)
-+#define __NR_shmdt __LINE__
-+__SYSCALL(__NR_shmdt, sys_shmdt)
-+
-+/* net/socket.c */
-+#define __NR_socket __LINE__
-+__SYSCALL(__NR_socket, sys_socket)
-+#define __NR_socketpair __LINE__
-+__SYSCALL(__NR_socketpair, sys_socketpair)
-+#define __NR_bind __LINE__
-+__SYSCALL(__NR_bind, sys_bind)
-+#define __NR_listen __LINE__
-+__SYSCALL(__NR_listen, sys_listen)
-+#define __NR_accept __LINE__
-+__SYSCALL(__NR_accept, sys_accept)
-+#define __NR_connect __LINE__
-+__SYSCALL(__NR_connect, sys_connect)
-+#define __NR_getsockname __LINE__
-+__SYSCALL(__NR_getsockname, sys_getsockname)
-+#define __NR_getpeername __LINE__
-+__SYSCALL(__NR_getpeername, sys_getpeername)
-+#define __NR_sendto __LINE__
-+__SYSCALL(__NR_sendto, sys_sendto)
-+#define __NR_recvfrom __LINE__
-+__SYSCALL(__NR_recvfrom, sys_recvfrom)
-+#define __NR_setsockopt __LINE__
-+__SYSCALL(__NR_setsockopt, sys_setsockopt)
-+#define __NR_getsockopt __LINE__
-+__SYSCALL(__NR_getsockopt, sys_getsockopt)
-+#define __NR_shutdown __LINE__
-+__SYSCALL(__NR_shutdown, sys_shutdown)
-+#define __NR_sendmsg __LINE__
-+__SYSCALL(__NR_sendmsg, sys_sendmsg)
-+#define __NR_recvmsg __LINE__
-+__SYSCALL(__NR_recvmsg, sys_recvmsg)
-+
-+/* mm/filemap.c */
-+#define __NR_readahead __LINE__
-+__SYSCALL(__NR_readahead, sys_readahead)
-+
-+/* mm/nommu.c, also with MMU */
-+#define __NR_brk __LINE__
-+__SYSCALL(__NR_brk, sys_brk)
-+#define __NR_munmap __LINE__
-+__SYSCALL(__NR_munmap, sys_munmap)
-+#define __NR_mremap __LINE__
-+__SYSCALL(__NR_mremap, sys_mremap)
-+
-+/* security/keys/keyctl.c */
-+#define __NR_add_key __LINE__
-+__SYSCALL(__NR_add_key, sys_add_key)
-+#define __NR_request_key __LINE__
-+__SYSCALL(__NR_request_key, sys_request_key)
-+#define __NR_keyctl __LINE__
-+__SYSCALL(__NR_keyctl, sys_keyctl)
-+
-+/* arch/example/kernel/sys_example.c */
-+#define __NR_clone __LINE__
-+__SYSCALL(__NR_clone, sys_clone)	/* .long sys_clone_wrapper */
-+#define __NR_execve __LINE__
-+__SYSCALL(__NR_execve, sys_execve)	/* .long sys_execve_wrapper */
-+
-+#define __NR3264_mmap __LINE__
-+__SC_3264(__NR3264_mmap, sys_mmap2, sys_mmap)
-+/* mm/fadvise.c */
-+#define __NR3264_fadvise64 __LINE__
-+__SC_3264(__NR3264_fadvise64, sys_fadvise64_64, sys_fadvise64)
-+
-+/* mm/, CONFIG_MMU only */
-+#ifndef __ARCH_NOMMU
-+#define __NR_swapon __LINE__
-+__SYSCALL(__NR_swapon, sys_swapon)
-+#define __NR_swapoff __LINE__
-+__SYSCALL(__NR_swapoff, sys_swapoff)
-+#define __NR_mprotect __LINE__
-+__SYSCALL(__NR_mprotect, sys_mprotect)
-+#define __NR_msync __LINE__
-+__SYSCALL(__NR_msync, sys_msync)
-+#define __NR_mlock __LINE__
-+__SYSCALL(__NR_mlock, sys_mlock)
-+#define __NR_munlock __LINE__
-+__SYSCALL(__NR_munlock, sys_munlock)
-+#define __NR_mlockall __LINE__
-+__SYSCALL(__NR_mlockall, sys_mlockall)
-+#define __NR_munlockall __LINE__
-+__SYSCALL(__NR_munlockall, sys_munlockall)
-+#define __NR_mincore __LINE__
-+__SYSCALL(__NR_mincore, sys_mincore)
-+#define __NR_madvise __LINE__
-+__SYSCALL(__NR_madvise, sys_madvise)
-+#define __NR_remap_file_pages __LINE__
-+__SYSCALL(__NR_remap_file_pages, sys_remap_file_pages)
-+#define __NR_mbind __LINE__
-+__SYSCALL(__NR_mbind, sys_mbind)
-+#define __NR_get_mempolicy __LINE__
-+__SYSCALL(__NR_get_mempolicy, sys_get_mempolicy)
-+#define __NR_set_mempolicy __LINE__
-+__SYSCALL(__NR_set_mempolicy, sys_set_mempolicy)
-+#define __NR_migrate_pages __LINE__
-+__SYSCALL(__NR_migrate_pages, sys_migrate_pages)
-+#define __NR_move_pages __LINE__
-+__SYSCALL(__NR_move_pages, sys_move_pages)
-+#endif
-+
-+/*
-+ * All syscalls below here should go away really,
-+ * these are provided for both review and as a porting
-+ * help for the C library version.
-+*
-+ * Last chance: are any of these important enought to
-+ * enable by default?
-+ */
-+#ifdef __ARCH_WANT_SYSCALL_NO_AT
-+#define __NR_open __LINE__
-+__SYSCALL(__NR_open, sys_open)
-+#define __NR_link __LINE__
-+__SYSCALL(__NR_link, sys_link)
-+#define __NR_unlink __LINE__
-+__SYSCALL(__NR_unlink, sys_unlink)
-+#define __NR_mknod __LINE__
-+__SYSCALL(__NR_mknod, sys_mknod)
-+#define __NR_chmod __LINE__
-+__SYSCALL(__NR_chmod, sys_chmod)
-+#define __NR_chown __LINE__
-+__SYSCALL(__NR_chown, sys_chown)
-+#define __NR_mkdir __LINE__
-+__SYSCALL(__NR_mkdir, sys_mkdir)
-+#define __NR_rmdir __LINE__
-+__SYSCALL(__NR_rmdir, sys_rmdir)
-+#define __NR_lchown __LINE__
-+__SYSCALL(__NR_lchown, sys_lchown)
-+#define __NR_access __LINE__
-+__SYSCALL(__NR_access, sys_access)
-+#define __NR_rename __LINE__
-+__SYSCALL(__NR_rename, sys_rename)
-+#define __NR_readlink __LINE__
-+__SYSCALL(__NR_readlink, sys_readlink)
-+#define __NR_symlink __LINE__
-+__SYSCALL(__NR_symlink, sys_symlink)
-+#define __NR_utimes __LINE__
-+__SYSCALL(__NR_utimes, sys_utimes)
-+#define __NR3264_stat __LINE__
-+__SC_3264(__NR3264_stat, sys_stat64, sys_newstat)
-+#define __NR3264_lstat __LINE__
-+__SC_3264(__NR3264_lstat, sys_lstat64, sys_newlstat)
-+#endif /* __ARCH_WANT_SYSCALL_NO_AT */
-+
-+#ifdef __ARCH_WANT_SYSCALL_NO_FLAGS
-+#define __NR_pipe __LINE__
-+__SYSCALL(__NR_pipe, sys_pipe)
-+#define __NR_dup2 __LINE__
-+__SYSCALL(__NR_dup2, sys_dup2)
-+#define __NR_epoll_create __LINE__
-+__SYSCALL(__NR_epoll_create, sys_epoll_create)
-+#define __NR_inotify_init __LINE__
-+__SYSCALL(__NR_inotify_init, sys_inotify_init)
-+#define __NR_eventfd __LINE__
-+__SYSCALL(__NR_eventfd, sys_eventfd)
-+#define __NR_signalfd __LINE__
-+__SYSCALL(__NR_signalfd, sys_signalfd)
-+#endif /* __ARCH_WANT_SYSCALL_NO_FLAGS */
-+
-+#if __BITS_PER_LONG == 32 && defined(__ARCH_WANT_SYSCALL_OFF_T)
-+#define __NR_sendfile __LINE__
-+__SYSCALL(__NR_sendfile, sys_sendfile)
-+#define __NR_ftruncate __LINE__
-+__SYSCALL(__NR_ftruncate, sys_ftruncate)
-+#define __NR_truncate __LINE__
-+__SYSCALL(__NR_truncate, sys_truncate)
-+#define __NR_stat __LINE__
-+__SYSCALL(__NR_stat, sys_newstat)
-+#define __NR_lstat __LINE__
-+__SYSCALL(__NR_lstat, sys_newlstat)
-+#define __NR_fstat __LINE__
-+__SYSCALL(__NR_fstat, sys_newfstat)
-+#define __NR_fcntl __LINE__
-+__SYSCALL(__NR_fcntl, sys_fcntl)
-+#define __NR_fadvise64 __LINE__
-+#define __ARCH_WANT_SYS_FADVISE64
-+__SYSCALL(__NR_fadvise64, sys_fadvise64)
-+#define __NR_newfstatat __LINE__
-+#define __ARCH_WANT_SYS_NEWFSTATAT
-+__SYSCALL(__NR_newfstatat, sys_newfstatat)
-+#define __NR_fstatfs __LINE__
-+__SYSCALL(__NR_fstatfs, sys_fstatfs)
-+#define __NR_statfs __LINE__
-+__SYSCALL(__NR_statfs, sys_statfs)
-+#define __NR_getdents __LINE__
-+__SYSCALL(__NR_getdents, sys_getdents)
-+#define __NR_lseek __LINE__
-+__SYSCALL(__NR_lseek, sys_lseek)
-+#define __NR_mmap __LINE__
-+__SYSCALL(__NR_mmap, sys_mmap)
-+#endif /* 32 bit off_t syscalls */
-+
-+#ifdef __ARCH_WANT_SYSCALL_DEPRECATED
-+#define __NR_alarm __LINE__
-+#define __ARCH_WANT_SYS_ALARM
-+__SYSCALL(__NR_alarm, sys_alarm)
-+#define __NR_getpgrp __LINE__
-+#define __ARCH_WANT_SYS_GETPGRP
-+__SYSCALL(__NR_getpgrp, sys_getpgrp)
-+#define __NR_pause __LINE__
-+#define __ARCH_WANT_SYS_PAUSE
-+__SYSCALL(__NR_pause, sys_pause)
-+#define __NR_time __LINE__
-+#define __ARCH_WANT_SYS_TIME
-+__SYSCALL(__NR_time, sys_time)
-+#define __NR_utime __LINE__
-+#define __ARCH_WANT_SYS_UTIME
-+__SYSCALL(__NR_utime, sys_utime)
-+
-+#define __NR_creat __LINE__
-+__SYSCALL(__NR_creat, sys_creat)
-+#define __NR_futimesat __LINE__
-+__SYSCALL(__NR_futimesat, sys_futimesat)
-+#define __NR_poll __LINE__
-+__SYSCALL(__NR_poll, sys_poll)
-+#define __NR_select __LINE__
-+__SYSCALL(__NR_select, sys_select)
-+#define __NR_epoll_wait __LINE__
-+__SYSCALL(__NR_epoll_wait, sys_epoll_wait)
-+#define __NR_ustat __LINE__
-+__SYSCALL(__NR_ustat, sys_ustat)
-+#define __NR_vfork __LINE__
-+__SYSCALL(__NR_vfork, sys_vfork)
-+#define __NR_wait4 __LINE__
-+__SYSCALL(__NR_wait4, sys_wait4)
-+
-+#define __NR_fork __LINE__
-+#ifdef CONFIG_MMU
-+__SYSCALL(__NR_fork, sys_fork)
-+#else
-+__SYSCALL(__NR_fork, sys_ni_syscall)
-+#endif /* CONFIG_MMU */
-+#endif /* __ARCH_WANT_SYSCALL_DEPRECATED */
-+
-+#define __NR_syscalls __LINE__
-+
-+/*
-+ * 32 bit systems traditionally used different
-+ * syscalls for off_t and loff_t arguments, while
-+ * 64 bit systems only need the off_t version.
-+ * For new 32 bit platforms, there is no need to
-+ * implement the old 32 bit off_t syscalls, so
-+ * they take different names.
-+ * Here we map the numbers so that both versions
-+ * use the same syscall table layout.
-+ */
-+#if __BITS_PER_LONG == 64
-+#define __NR_fcntl __NR3264_fcntl
-+#define __NR_statfs __NR3264_statfs
-+#define __NR_fstatfs __NR3264_fstatfs
-+#define __NR_truncate __NR3264_truncate
-+#define __NR_ftruncate __NR3264_truncate
-+#define __NR_getdents __NR3264_getdents
-+#define __NR_lseek __NR3264_lseek
-+#define __NR_sendfile __NR3264_sendfile
-+#define __NR_newfstatat __NR3264_fstatat
-+#define __NR_fstat __NR3264_fstat
-+#define __NR_mmap __NR3264_mmap
-+#define __NR_fadvise64 __NR3264_fadvise64
-+#ifdef __NR3264_stat
-+#define __NR_stat __NR3264_stat
-+#define __NR_lstat __NR3264_lstat
-+#endif
-+#else
-+#define __NR_fcntl64 __NR3264_fcntl
-+#define __NR_statfs64 __NR3264_statfs
-+#define __NR_fstatfs64 __NR3264_fstatfs
-+#define __NR_truncate64 __NR3264_truncate
-+#define __NR_ftruncate64 __NR3264_truncate
-+#define __NR_getdents64 __NR3264_getdents
-+#define __NR_llseek __NR3264_lseek
-+#define __NR_sendfile64 __NR3264_sendfile
-+#define __NR_fstatat64 __NR3264_fstatat
-+#define __NR_fstat64 __NR3264_fstat
-+#define __NR_mmap2 __NR3264_mmap
-+#define __NR_fadvise64_64 __NR3264_fadvise64
-+#ifdef __NR3264_stat
-+#define __NR_stat64 __NR3264_stat
-+#define __NR_lstat64 __NR3264_lstat
-+#endif
-+#endif
-+
-+#ifdef __KERNEL__
-+
-+/*
-+ * These are required system calls, we should
-+ * invert the logic eventually and let them
-+ * be selected by default.
-+ */
-+#if __BITS_PER_LONG == 32
-+#define __ARCH_WANT_STAT64
-+#define __ARCH_WANT_SYS_LLSEEK
-+#endif
-+#define __ARCH_WANT_SYS_RT_SIGACTION
-+#define __ARCH_WANT_SYS_RT_SIGSUSPEND
-+
-+/*
-+ * "Conditional" syscalls
-+ *
-+ * What we want is __attribute__((weak,alias("sys_ni_syscall"))),
-+ * but it doesn't work on all toolchains, so we just do it by hand
-+ */
-+#ifndef cond_syscall
-+#define cond_syscall(x) asm(".weak\t" #x "\n\t.set\t" #x ",sys_ni_syscall")
-+#endif
-+
-+#endif /* __KERNEL__ */
-+#endif /* _ASM_GENERIC_UNISTD_H */
-diff --git a/kernel/Makefile b/kernel/Makefile
-index e4791b3..717761b 100644
---- a/kernel/Makefile
-+++ b/kernel/Makefile
-@@ -93,6 +93,7 @@ obj-$(CONFIG_HAVE_GENERIC_DMA_COHERENT) += dma-coherent.o
- obj-$(CONFIG_FUNCTION_TRACER) += trace/
- obj-$(CONFIG_TRACING) += trace/
- obj-$(CONFIG_SMP) += sched_cpupri.o
-+obj-$(CONFIG_GENERIC_SYSCALL_TABLE) += syscall_table.o
- 
- ifneq ($(CONFIG_SCHED_OMIT_FRAME_POINTER),y)
- # According to Alan Modra <alan@linuxcare.com.au>, the -fno-omit-frame-pointer is
-diff --git a/kernel/syscall_table.c b/kernel/syscall_table.c
-new file mode 100644
-index 0000000..a2da111
---- /dev/null
-+++ b/kernel/syscall_table.c
-@@ -0,0 +1,12 @@
-+#include <linux/syscalls.h>
-+#include <linux/signal.h>
-+#include <linux/unistd.h>
-+
-+#include <asm/syscalls.h>
-+
-+#undef __SYSCALL
-+#define __SYSCALL(nr, call) [nr] (call),
-+
-+void *sys_call_table[] = {
-+#include <asm/unistd.h>
-+};
-diff --git a/scripts/checksyscalls.sh b/scripts/checksyscalls.sh
-index 60d00d1..28b9e3e 100755
---- a/scripts/checksyscalls.sh
-+++ b/scripts/checksyscalls.sh
-@@ -14,6 +14,57 @@ cat << EOF
- #include <asm/types.h>
- #include <asm/unistd.h>
- 
-+/* *at */
-+#define __IGNORE_open		/* openat */
-+#define __IGNORE_link		/* linkat */
-+#define __IGNORE_unlink		/* unlinkat */
-+#define __IGNORE_mknod		/* mknodat */
-+#define __IGNORE_chmod		/* fchmodat */
-+#define __IGNORE_chown		/* fchownat */
-+#define __IGNORE_mkdir		/* mkdirat */
-+#define __IGNORE_rmdir		/* unlinkat */
-+#define __IGNORE_lchown		/* fchownat */
-+#define __IGNORE_access		/* faccessat */
-+#define __IGNORE_rename		/* renameat */
-+#define __IGNORE_readlink	/* readlinkat */
-+#define __IGNORE_symlink	/* symlinkat */
-+#define __IGNORE_utimes		/* futimesat */
-+#if BITS_PER_LONG == 64
-+#define __IGNORE_stat		/* fstatat */
-+#define __IGNORE_lstat		/* fstatat */
-+#else
-+#define __IGNORE_stat64		/* fstatat64 */
-+#define __IGNORE_lstat64	/* fstatat64 */
-+#endif
-+
-+/* CLOEXEC flag */
-+#define __IGNORE_pipe		/* pipe2 */
-+#define __IGNORE_dup2		/* dup3 */
-+#define __IGNORE_epoll_create	/* epoll_create1 */
-+#define __IGNORE_inotify_init	/* inotify_init1 */
-+#define __IGNORE_eventfd	/* eventfd2 */
-+#define __IGNORE_signalfd	/* signalfd4 */
-+
-+/* MMU */
-+#ifndef CONFIG_MMU
-+#define __IGNORE_madvise
-+#define __IGNORE_mbind
-+#define __IGNORE_mincore
-+#define __IGNORE_mlock
-+#define __IGNORE_mlockall
-+#define __IGNORE_munlock
-+#define __IGNORE_munlockall
-+#define __IGNORE_mprotect
-+#define __IGNORE_msync
-+#define __IGNORE_migrate_pages
-+#define __IGNORE_move_pages
-+#define __IGNORE_remap_file_pages
-+#define __IGNORE_get_mempolicy
-+#define __IGNORE_set_mempolicy
-+#define __IGNORE_swapoff
-+#define __IGNORE_swapon
-+#endif
-+
- /* System calls for 32-bit kernels only */
- #if BITS_PER_LONG == 64
- #define __IGNORE_sendfile64
-@@ -27,6 +78,24 @@ cat << EOF
- #define __IGNORE_fstatat64
- #define __IGNORE_fstatfs64
- #define __IGNORE_statfs64
-+#define __IGNORE_getdents64
-+#define __IGNORE_llseek
-+#define __IGNORE_mmap2
-+#else
-+#define __IGNORE_sendfile
-+#define __IGNORE_ftruncate
-+#define __IGNORE_truncate
-+#define __IGNORE_stat
-+#define __IGNORE_lstat
-+#define __IGNORE_fstat
-+#define __IGNORE_fcntl
-+#define __IGNORE_fadvise64
-+#define __IGNORE_newfstatat
-+#define __IGNORE_fstatfs
-+#define __IGNORE_statfs
-+#define __IGNORE_getdents
-+#define __IGNORE_lseek
-+#define __IGNORE_mmap
- #endif
- 
- /* i386-specific or historical system calls */
-@@ -44,7 +113,6 @@ cat << EOF
- #define __IGNORE_idle
- #define __IGNORE_modify_ldt
- #define __IGNORE_ugetrlimit
--#define __IGNORE_mmap2
- #define __IGNORE_vm86
- #define __IGNORE_vm86old
- #define __IGNORE_set_thread_area
-@@ -55,7 +123,6 @@ cat << EOF
- #define __IGNORE_oldlstat
- #define __IGNORE_oldolduname
- #define __IGNORE_olduname
--#define __IGNORE_umount2
- #define __IGNORE_umount
- #define __IGNORE_waitpid
- #define __IGNORE_stime
-@@ -75,9 +142,12 @@ cat << EOF
- #define __IGNORE__llseek
- #define __IGNORE__newselect
- #define __IGNORE_create_module
--#define __IGNORE_delete_module
- #define __IGNORE_query_module
- #define __IGNORE_get_kernel_syms
-+#define __IGNORE_sysfs
-+#define __IGNORE_uselib
-+#define __IGNORE__sysctl
-+
- /* ... including the "new" 32-bit uid syscalls */
- #define __IGNORE_lchown32
- #define __IGNORE_getuid32
-@@ -99,6 +169,23 @@ cat << EOF
- #define __IGNORE_setfsuid32
- #define __IGNORE_setfsgid32
- 
-+/* these can be expressed using other calls */
-+#define __IGNORE_alarm		/* setitimer */
-+#define __IGNORE_creat		/* open */
-+#define __IGNORE_fork		/* clone */
-+#define __IGNORE_futimesat	/* utimensat */
-+#define __IGNORE_getpgrp	/* getpgid */
-+#define __IGNORE_pause		/* sigsuspend */
-+#define __IGNORE_poll		/* ppoll */
-+#define __IGNORE_select		/* pselect6 */
-+#define __IGNORE_epoll_wait	/* epoll_pwait */
-+#define __IGNORE_time		/* gettimeofday */
-+#define __IGNORE_uname		/* newuname */
-+#define __IGNORE_ustat		/* statfs */
-+#define __IGNORE_utime		/* utimes */
-+#define __IGNORE_vfork		/* clone */
-+#define __IGNORE_wait4		/* waitid */
-+
- /* sync_file_range had a stupid ABI. Allow sync_file_range2 instead */
- #ifdef __NR_sync_file_range2
- #define __IGNORE_sync_file_range
+
+Full dmesg:
+[    0.000000] Linux version 2.6.29-06608-g15f7176-dirty (mroos@rhn) (gcc version 4.3.3 (Debian 4.3.3-5) ) #195 PREEMPT Tue Mar 31 13:57:57 EEST 2009
+[    0.000000] KERNEL supported cpus:
+[    0.000000]   Intel GenuineIntel
+[    0.000000]   AMD AuthenticAMD
+[    0.000000]   NSC Geode by NSC
+[    0.000000]   Cyrix CyrixInstead
+[    0.000000]   Centaur CentaurHauls
+[    0.000000]   Transmeta GenuineTMx86
+[    0.000000]   Transmeta TransmetaCPU
+[    0.000000]   UMC UMC UMC UMC
+[    0.000000] BIOS-provided physical RAM map:
+[    0.000000]  BIOS-e820: 0000000000000000 - 000000000009fc00 (usable)
+[    0.000000]  BIOS-e820: 000000000009fc00 - 00000000000a0000 (reserved)
+[    0.000000]  BIOS-e820: 00000000000e0000 - 0000000000100000 (reserved)
+[    0.000000]  BIOS-e820: 0000000000100000 - 000000001ffc0000 (usable)
+[    0.000000]  BIOS-e820: 000000001ffc0000 - 000000001fff8000 (ACPI data)
+[    0.000000]  BIOS-e820: 000000001fff8000 - 0000000020000000 (ACPI NVS)
+[    0.000000]  BIOS-e820: 00000000ffb80000 - 00000000ffc00000 (reserved)
+[    0.000000]  BIOS-e820: 00000000fff00000 - 0000000100000000 (reserved)
+[    0.000000] DMI 2.3 present.
+[    0.000000] last_pfn = 0x1ffc0 max_arch_pfn = 0x100000
+[    0.000000] MTRR default type: uncachable
+[    0.000000] MTRR fixed ranges enabled:
+[    0.000000]   00000-9FFFF write-back
+[    0.000000]   A0000-BFFFF uncachable
+[    0.000000]   C0000-CFFFF write-protect
+[    0.000000]   D0000-DFFFF uncachable
+[    0.000000]   E0000-FFFFF write-protect
+[    0.000000] MTRR variable ranges enabled:
+[    0.000000]   0 base 000000000 mask FE0000000 write-back
+[    0.000000]   1 base 020000000 mask FFFF00000 write-back
+[    0.000000]   2 base 020000000 mask FFFF00000 uncachable
+[    0.000000]   3 disabled
+[    0.000000]   4 disabled
+[    0.000000]   5 disabled
+[    0.000000]   6 disabled
+[    0.000000]   7 disabled
+[    0.000000]   get_mtrr: cpu0 reg00 base=0000000000 size=0000020000 write-back
+[    0.000000]   get_mtrr: cpu0 reg01 base=0000020000 size=0000000100 write-back
+[    0.000000]   get_mtrr: cpu0 reg02 base=0000020000 size=0000000100 uncachable
+[    0.000000] init_memory_mapping: 0000000000000000-000000001ffc0000
+[    0.000000]  0000000000 - 001ffc0000 page 4k
+[    0.000000] kernel direct mapping tables up to 1ffc0000 @ 7000-8a000
+[    0.000000] ACPI: RSDP 000FF980, 0014 (r0 AMI   )
+[    0.000000] ACPI: RSDT 1FFF0000, 002C (r1 D815EA D815EEA2 20021106 MSFT     1011)
+[    0.000000] ACPI: FACP 1FFF1000, 0074 (r1 D815EA EA81510A 20021106 MSFT     1011)
+[    0.000000] FADT: X_PM1a_EVT_BLK.bit_width (16) does not match PM1_EVT_LEN (4)
+[    0.000000] ACPI: DSDT 1FFE0000, 30E4 (r1 D815E2 EA81520A       23 MSFT  100000B)
+[    0.000000] ACPI: FACS 1FFF8000, 0040
+[    0.000000] ACPI: SSDT 1FFE30E4, 0035 (r1 D815EA EA81510A       15 MSFT  100000B)
+[    0.000000] 511MB LOWMEM available.
+[    0.000000]   mapped low ram: 0 - 1ffc0000
+[    0.000000]   low ram: 0 - 1ffc0000
+[    0.000000]   node 0 low ram: 00000000 - 1ffc0000
+[    0.000000]   node 0 bootmap 00001000 - 00004ff8
+[    0.000000] (6 early reservations) ==> bootmem [0000000000 - 001ffc0000]
+[    0.000000]   #0 [0000000000 - 0000001000]   BIOS data page ==> [0000000000 - 0000001000]
+[    0.000000]   #1 [0000100000 - 0000db84a0]    TEXT DATA BSS ==> [0000100000 - 0000db84a0]
+[    0.000000]   #2 [000009fc00 - 0000100000]    BIOS reserved ==> [000009fc00 - 0000100000]
+[    0.000000]   #3 [0000db9000 - 0000dbd140]              BRK ==> [0000db9000 - 0000dbd140]
+[    0.000000]   #4 [0000007000 - 0000083000]          PGTABLE ==> [0000007000 - 0000083000]
+[    0.000000]   #5 [0000001000 - 0000005000]          BOOTMAP ==> [0000001000 - 0000005000]
+[    0.000000] Zone PFN ranges:
+[    0.000000]   DMA      0x00000000 -> 0x00001000
+[    0.000000]   Normal   0x00001000 -> 0x0001ffc0
+[    0.000000] Movable zone start PFN for each node
+[    0.000000] early_node_map[2] active PFN ranges
+[    0.000000]     0: 0x00000000 -> 0x0000009f
+[    0.000000]     0: 0x00000100 -> 0x0001ffc0
+[    0.000000] On node 0 totalpages: 130911
+[    0.000000] free_area_init_node: node 0, pgdat c07d1cdc, node_mem_map c1000000
+[    0.000000]   DMA zone: 32 pages used for memmap
+[    0.000000]   DMA zone: 0 pages reserved
+[    0.000000]   DMA zone: 3967 pages, LIFO batch:0
+[    0.000000]   Normal zone: 992 pages used for memmap
+[    0.000000]   Normal zone: 125920 pages, LIFO batch:31
+[    0.000000] Using APIC driver default
+[    0.000000] ACPI: PM-Timer IO Port: 0x408
+[    0.000000] Found and enabled local APIC!
+[    0.000000] nr_irqs_gsi: 16
+[    0.000000] Allocating PCI resources starting at 30000000 (gap: 20000000:dfb80000)
+[    0.000000] Built 1 zonelists in Zone order, mobility grouping on.  Total pages: 129887
+[    0.000000] Kernel command line: root=/dev/sda3 ro
+[    0.000000] Enabling fast FPU save and restore... done.
+[    0.000000] Enabling unmasked SIMD FPU exception support... done.
+[    0.000000] Initializing CPU#0
+[    0.000000] RCU-based detection of stalled CPUs is enabled.
+[    0.000000] NR_IRQS:288
+[    0.000000] CPU 0 irqstacks, hard=c08cf000 soft=c08d0000
+[    0.000000] PID hash table entries: 2048 (order: 11, 8192 bytes)
+[    0.000000] Fast TSC calibration using PIT
+[    0.000000] Detected 897.004 MHz processor.
+[    0.004000] Console: colour VGA+ 80x25
+[    0.004000] console [tty0] enabled
+[    0.004000] Lock dependency validator: Copyright (c) 2006 Red Hat, Inc., Ingo Molnar
+[    0.004000] ... MAX_LOCKDEP_SUBCLASSES:  8
+[    0.004000] ... MAX_LOCK_DEPTH:          48
+[    0.004000] ... MAX_LOCKDEP_KEYS:        8191
+[    0.004000] ... CLASSHASH_SIZE:          4096
+[    0.004000] ... MAX_LOCKDEP_ENTRIES:     8192
+[    0.004000] ... MAX_LOCKDEP_CHAINS:      16384
+[    0.004000] ... CHAINHASH_SIZE:          8192
+[    0.004000]  memory used by lock dependency info: 3103 kB
+[    0.004000]  per task-struct memory footprint: 1920 bytes
+[    0.004000] ------------------------
+[    0.004000] | Locking API testsuite:
+[    0.004000] ----------------------------------------------------------------------------
+[    0.004000]                                  | spin |wlock |rlock |mutex | wsem | rsem |
+[    0.004000]   --------------------------------------------------------------------------
+[    0.004000]                      A-A deadlock:  ok  |  ok  |  ok  |  ok  |  ok  |  ok  |
+[    0.004000]                  A-B-B-A deadlock:  ok  |  ok  |  ok  |  ok  |  ok  |  ok  |
+[    0.004000]              A-B-B-C-C-A deadlock:  ok  |  ok  |  ok  |  ok  |  ok  |  ok  |
+[    0.004000]              A-B-C-A-B-C deadlock:  ok  |  ok  |  ok  |  ok  |  ok  |  ok  |
+[    0.004000]          A-B-B-C-C-D-D-A deadlock:  ok  |  ok  |  ok  |  ok  |  ok  |  ok  |
+[    0.004000]          A-B-C-D-B-D-D-A deadlock:  ok  |  ok  |  ok  |  ok  |  ok  |  ok  |
+[    0.004000]          A-B-C-D-B-C-D-A deadlock:  ok  |  ok  |  ok  |  ok  |  ok  |  ok  |
+[    0.004000]                     double unlock:  ok  |  ok  |  ok  |  ok  |  ok  |  ok  |
+[    0.004000]                   initialize held:  ok  |  ok  |  ok  |  ok  |  ok  |  ok  |
+[    0.004000]                  bad unlock order:  ok  |  ok  |  ok  |  ok  |  ok  |  ok  |
+[    0.004000]   --------------------------------------------------------------------------
+[    0.004000]               recursive read-lock:             |  ok  |             |  ok  |
+[    0.004000]            recursive read-lock #2:             |  ok  |             |  ok  |
+[    0.004000]             mixed read-write-lock:             |  ok  |             |  ok  |
+[    0.004000]             mixed write-read-lock:             |  ok  |             |  ok  |
+[    0.004000]   --------------------------------------------------------------------------
+[    0.004000]      hard-irqs-on + irq-safe-A/12:  ok  |  ok  |  ok  |
+[    0.004000]      soft-irqs-on + irq-safe-A/12:  ok  |  ok  |  ok  |
+[    0.004000]      hard-irqs-on + irq-safe-A/21:  ok  |  ok  |  ok  |
+[    0.004000]      soft-irqs-on + irq-safe-A/21:  ok  |  ok  |  ok  |
+[    0.004000]        sirq-safe-A => hirqs-on/12:  ok  |  ok  |  ok  |
+[    0.004000]        sirq-safe-A => hirqs-on/21:  ok  |  ok  |  ok  |
+[    0.004000]          hard-safe-A + irqs-on/12:  ok  |  ok  |  ok  |
+[    0.004000]          soft-safe-A + irqs-on/12:  ok  |  ok  |  ok  |
+[    0.004000]          hard-safe-A + irqs-on/21:  ok  |  ok  |  ok  |
+[    0.004000]          soft-safe-A + irqs-on/21:  ok  |  ok  |  ok  |
+[    0.004000]     hard-safe-A + unsafe-B #1/123:  ok  |  ok  |  ok  |
+[    0.004000]     soft-safe-A + unsafe-B #1/123:  ok  |  ok  |  ok  |
+[    0.004000]     hard-safe-A + unsafe-B #1/132:  ok  |  ok  |  ok  |
+[    0.004000]     soft-safe-A + unsafe-B #1/132:  ok  |  ok  |  ok  |
+[    0.004000]     hard-safe-A + unsafe-B #1/213:  ok  |  ok  |  ok  |
+[    0.004000]     soft-safe-A + unsafe-B #1/213:  ok  |  ok  |  ok  |
+[    0.004000]     hard-safe-A + unsafe-B #1/231:  ok  |  ok  |  ok  |
+[    0.004000]     soft-safe-A + unsafe-B #1/231:  ok  |  ok  |  ok  |
+[    0.004000]     hard-safe-A + unsafe-B #1/312:  ok  |  ok  |  ok  |
+[    0.004000]     soft-safe-A + unsafe-B #1/312:  ok  |  ok  |  ok  |
+[    0.004000]     hard-safe-A + unsafe-B #1/321:  ok  |  ok  |  ok  |
+[    0.004000]     soft-safe-A + unsafe-B #1/321:  ok  |  ok  |  ok  |
+[    0.004000]     hard-safe-A + unsafe-B #2/123:  ok  |  ok  |  ok  |
+[    0.004000]     soft-safe-A + unsafe-B #2/123:  ok  |  ok  |  ok  |
+[    0.004000]     hard-safe-A + unsafe-B #2/132:  ok  |  ok  |  ok  |
+[    0.004000]     soft-safe-A + unsafe-B #2/132:  ok  |  ok  |  ok  |
+[    0.004000]     hard-safe-A + unsafe-B #2/213:  ok  |  ok  |  ok  |
+[    0.004000]     soft-safe-A + unsafe-B #2/213:  ok  |  ok  |  ok  |
+[    0.004000]     hard-safe-A + unsafe-B #2/231:  ok  |  ok  |  ok  |
+[    0.004000]     soft-safe-A + unsafe-B #2/231:  ok  |  ok  |  ok  |
+[    0.004000]     hard-safe-A + unsafe-B #2/312:  ok  |  ok  |  ok  |
+[    0.004000]     soft-safe-A + unsafe-B #2/312:  ok  |  ok  |  ok  |
+[    0.004000]     hard-safe-A + unsafe-B #2/321:  ok  |  ok  |  ok  |
+[    0.004000]     soft-safe-A + unsafe-B #2/321:  ok  |  ok  |  ok  |
+[    0.004000]       hard-irq lock-inversion/123:  ok  |  ok  |  ok  |
+[    0.004000]       soft-irq lock-inversion/123:  ok  |  ok  |  ok  |
+[    0.004000]       hard-irq lock-inversion/132:  ok  |  ok  |  ok  |
+[    0.004000]       soft-irq lock-inversion/132:  ok  |  ok  |  ok  |
+[    0.004000]       hard-irq lock-inversion/213:  ok  |  ok  |  ok  |
+[    0.004000]       soft-irq lock-inversion/213:  ok  |  ok  |  ok  |
+[    0.004000]       hard-irq lock-inversion/231:  ok  |  ok  |  ok  |
+[    0.004000]       soft-irq lock-inversion/231:  ok  |  ok  |  ok  |
+[    0.004000]       hard-irq lock-inversion/312:  ok  |  ok  |  ok  |
+[    0.004000]       soft-irq lock-inversion/312:  ok  |  ok  |  ok  |
+[    0.004000]       hard-irq lock-inversion/321:  ok  |  ok  |  ok  |
+[    0.004000]       soft-irq lock-inversion/321:  ok  |  ok  |  ok  |
+[    0.004000]       hard-irq read-recursion/123:  ok  |
+[    0.004000]       soft-irq read-recursion/123:  ok  |
+[    0.004000]       hard-irq read-recursion/132:  ok  |
+[    0.004000]       soft-irq read-recursion/132:  ok  |
+[    0.004000]       hard-irq read-recursion/213:  ok  |
+[    0.004000]       soft-irq read-recursion/213:  ok  |
+[    0.004000]       hard-irq read-recursion/231:  ok  |
+[    0.004000]       soft-irq read-recursion/231:  ok  |
+[    0.004000]       hard-irq read-recursion/312:  ok  |
+[    0.004000]       soft-irq read-recursion/312:  ok  |
+[    0.004000]       hard-irq read-recursion/321:  ok  |
+[    0.004000]       soft-irq read-recursion/321:  ok  |
+[    0.004000] -------------------------------------------------------
+[    0.004000] Good, all 218 testcases passed! |
+[    0.004000] ---------------------------------
+[    0.004000] Dentry cache hash table entries: 65536 (order: 6, 262144 bytes)
+[    0.004000] Inode-cache hash table entries: 32768 (order: 5, 131072 bytes)
+[    0.004000] Memory: 505360k/524032k available (3507k kernel code, 18124k reserved, 4521k data, 300k init, 0k highmem)
+[    0.004000] virtual kernel memory layout:
+[    0.004000]     fixmap  : 0xfffac000 - 0xfffff000   ( 332 kB)
+[    0.004000]     vmalloc : 0xe07c0000 - 0xfffaa000   ( 503 MB)
+[    0.004000]     lowmem  : 0xc0000000 - 0xdffc0000   ( 511 MB)
+[    0.004000]       .init : 0xc08d9000 - 0xc0924000   ( 300 kB)
+[    0.004000]       .data : 0xc046ce53 - 0xc08d7540   (4521 kB)
+[    0.004000]       .text : 0xc0100000 - 0xc046ce53   (3507 kB)
+[    0.004000] Checking if this processor honours the WP bit even in supervisor mode...Ok.
+[    0.004000] SLUB: Genslabs=13, HWalign=32, Order=0-3, MinObjects=0, CPUs=1, Nodes=1
+[    0.004085] Calibrating delay loop (skipped), value calculated using timer frequency.. 1794.00 BogoMIPS (lpj=3588016)
+[    0.004925] Mount-cache hash table entries: 512
+[    0.010611] CPU: L1 I cache: 16K, L1 D cache: 16K
+[    0.010789] CPU: L2 cache: 128K
+[    0.010899] Intel machine check architecture supported.
+[    0.011010] Intel machine check reporting enabled on CPU#0.
+[    0.011168] CPU: Intel Celeron (Coppermine) stepping 0a
+[    0.011486] Checking 'hlt' instruction... OK.
+[    0.024716] ACPI: Core revision 20081204
+[    0.081210] ACPI: setting ELCR to 0200 (from 0e00)
+[    0.082613] ftrace: converting mcount calls to 0f 1f 44 00 00
+[    0.082767] ftrace: allocating 11613 entries in 46 pages
+[    0.100001] net_namespace: 1288 bytes
+[    0.104259] khelper used greatest stack depth: 2940 bytes left
+[    0.107240] NET: Registered protocol family 16
+[    0.114064] ACPI: bus type pci registered
+[    0.117579] PCI: PCI BIOS revision 2.10 entry at 0xfda95, last bus=2
+[    0.117726] PCI: Using configuration type 1 for base access
+[    0.141310] bio: create slab <bio-0> at 0
+[    0.158755] khelper used greatest stack depth: 2788 bytes left
+[    0.177438] ACPI: EC: Look up EC in DSDT
+[    0.293238] ACPI: Interpreter enabled
+[    0.293376] ACPI: (supports S0 S5)
+[    0.293762] ACPI: Using PIC for interrupt routing
+[    0.397781] ACPI: No dock devices found.
+[    0.398256] ACPI: PCI Root Bridge [PCI0] (0000:00)
+[    0.400127] pci 0000:00:00.0: reg 10 32bit mmio: [0xf8000000-0xfbffffff]
+[    0.401149] pci 0000:00:1f.0: quirk: region 0400-047f claimed by ICH4 ACPI/GPIO/TCO
+[    0.401343] pci 0000:00:1f.0: quirk: region 0500-053f claimed by ICH4 GPIO
+[    0.401786] pci 0000:00:1f.1: reg 20 io port: [0xffa0-0xffaf]
+[    0.402086] pci 0000:00:1f.2: reg 20 io port: [0xef40-0xef5f]
+[    0.402370] pci 0000:00:1f.3: reg 20 io port: [0xefa0-0xefaf]
+[    0.402653] pci 0000:00:1f.4: reg 20 io port: [0xef80-0xef9f]
+[    0.402851] pci 0000:00:1f.5: reg 10 io port: [0xe800-0xe8ff]
+[    0.402891] pci 0000:00:1f.5: reg 14 io port: [0xef00-0xef3f]
+[    0.403295] pci 0000:02:00.0: reg 10 32bit mmio: [0xf2000000-0xf3ffffff]
+[    0.403337] pci 0000:02:00.0: reg 14 32bit mmio: [0xfeafc000-0xfeafffff]
+[    0.403377] pci 0000:02:00.0: reg 18 32bit mmio: [0xfe000000-0xfe7fffff]
+[    0.403479] pci 0000:02:00.0: reg 30 32bit mmio: [0xfeac0000-0xfeadffff]
+[    0.403829] pci 0000:00:01.0: bridge 32bit mmio: [0xfda00000-0xfeafffff]
+[    0.403859] pci 0000:00:01.0: bridge 32bit mmio pref: [0xf1700000-0xf57fffff]
+[    0.404211] pci 0000:01:08.0: reg 10 32bit mmio: [0xfd9f9000-0xfd9f9fff]
+[    0.404254] pci 0000:01:08.0: reg 14 io port: [0xdf00-0xdf3f]
+[    0.404462] pci 0000:01:08.0: supports D1 D2
+[    0.404476] pci 0000:01:08.0: PME# supported from D0 D1 D2 D3hot D3cold
+[    0.404621] pci 0000:01:08.0: PME# disabled
+[    0.404858] pci 0000:01:09.0: reg 10 io port: [0xdf40-0xdf5f]
+[    0.404899] pci 0000:01:09.0: reg 14 32bit mmio: [0xfd9fe400-0xfd9fe41f]
+[    0.405026] pci 0000:01:09.0: reg 30 32bit mmio: [0xfd9c0000-0xfd9cffff]
+[    0.405184] pci 0000:01:0a.0: reg 10 io port: [0xd800-0xd8ff]
+[    0.405225] pci 0000:01:0a.0: reg 14 32bit mmio: [0xfd9ff000-0xfd9fffff]
+[    0.405352] pci 0000:01:0a.0: reg 30 32bit mmio: [0xfd9e0000-0xfd9effff]
+[    0.405511] pci 0000:01:0b.0: reg 10 io port: [0xdff0-0xdff7]
+[    0.405821] pci 0000:01:0c.0: reg 10 64bit mmio: [0xfd9fd000-0xfd9fdfff]
+[    0.405883] pci 0000:01:0c.0: reg 18 64bit mmio: [0xfd9fe800-0xfd9fe8ff]
+[    0.405924] pci 0000:01:0c.0: reg 20 io port: [0xd400-0xd4ff]
+[    0.406120] pci 0000:01:0d.0: reg 10 io port: [0xdf80-0xdf9f]
+[    0.406161] pci 0000:01:0d.0: reg 14 32bit mmio: [0xfd9fec00-0xfd9fec1f]
+[    0.406288] pci 0000:01:0d.0: reg 30 32bit mmio: [0xfd9d0000-0xfd9dffff]
+[    0.406448] pci 0000:00:1e.0: transparent bridge
+[    0.406577] pci 0000:00:1e.0: bridge io port: [0xd000-0xdfff]
+[    0.406605] pci 0000:00:1e.0: bridge 32bit mmio: [0xfd900000-0xfd9fffff]
+[    0.406634] pci 0000:00:1e.0: bridge 32bit mmio pref: [0xf1600000-0xf16fffff]
+[    0.406704] pci_bus 0000:00: on NUMA node 0
+[    0.406839] ACPI: PCI Interrupt Routing Table [\_SB_.PCI0._PRT]
+[    0.409154] ACPI: PCI Interrupt Routing Table [\_SB_.PCI0.PCI1._PRT]
+[    0.454062] ACPI: PCI Interrupt Link [LNKA] (IRQs 3 4 5 6 7 9 10 *11 12)
+[    0.456718] ACPI: PCI Interrupt Link [LNKB] (IRQs 3 4 5 6 7 9 *10 11 12)
+[    0.459233] ACPI: PCI Interrupt Link [LNKC] (IRQs 3 4 5 6 7 9 10 11 12) *0, disabled.
+[    0.462012] ACPI: PCI Interrupt Link [LNKD] (IRQs 3 4 5 6 7 9 10 *11 12)
+[    0.464664] ACPI: PCI Interrupt Link [LNKE] (IRQs 3 4 5 6 7 9 10 *11 12)
+[    0.467178] ACPI: PCI Interrupt Link [LNKF] (IRQs 3 4 5 6 7 9 10 *11 12)
+[    0.469831] ACPI: PCI Interrupt Link [LNKG] (IRQs 3 4 5 6 7 *9 10 11 12)
+[    0.472469] ACPI: PCI Interrupt Link [LNKH] (IRQs 3 4 5 6 7 9 10 *11 12)
+[    0.474913] ACPI: Power Resource [FDDP] (off)
+[    0.475903] ACPI: Power Resource [URP1] (off)
+[    0.477505] ACPI: Power Resource [URP2] (off)
+[    0.478360] ACPI: Power Resource [LPTP] (off)
+[    0.483297] SCSI subsystem initialized
+[    0.572247] khelper used greatest stack depth: 2768 bytes left
+[    0.661357] libata version 3.00 loaded.
+[    0.666850] PCI: Using ACPI for IRQ routing
+[    0.677263] pnp: PnP ACPI init
+[    0.677728] ACPI: bus type pnp registered
+[    0.746003] pnp: PnP ACPI: found 13 devices
+[    0.746142] ACPI: ACPI bus type pnp unregistered
+[    0.746560] system 00:0c: iomem range 0x0-0x9ffff could not be reserved
+[    0.746720] system 00:0c: iomem range 0xe0000-0xfffff could not be reserved
+[    0.746867] system 00:0c: iomem range 0x100000-0x1fffffff could not be reserved
+[    0.788355] pci 0000:00:01.0: PCI bridge, secondary bus 0000:02
+[    0.788496] pci 0000:00:01.0:   IO window: disabled
+[    0.788629] pci 0000:00:01.0:   MEM window: 0xfda00000-0xfeafffff
+[    0.788757] pci 0000:00:01.0:   PREFETCH window: 0x000000f1700000-0x000000f57fffff
+[    0.789001] pci 0000:00:1e.0: PCI bridge, secondary bus 0000:01
+[    0.789129] pci 0000:00:1e.0:   IO window: 0xd000-0xdfff
+[    0.789260] pci 0000:00:1e.0:   MEM window: 0xfd900000-0xfd9fffff
+[    0.789390] pci 0000:00:1e.0:   PREFETCH window: 0x000000f1600000-0x000000f16fffff
+[    0.789643] pci 0000:00:1e.0: setting latency timer to 64
+[    0.789669] pci_bus 0000:00: resource 0 io:  [0x00-0xffff]
+[    0.789684] pci_bus 0000:00: resource 1 mem: [0x000000-0xffffffff]
+[    0.789699] pci_bus 0000:02: resource 0 mem: [0x0-0x0]
+[    0.789712] pci_bus 0000:02: resource 1 mem: [0xfda00000-0xfeafffff]
+[    0.789726] pci_bus 0000:02: resource 2 mem: [0xf1700000-0xf57fffff]
+[    0.789740] pci_bus 0000:02: resource 3 mem: [0x0-0x0]
+[    0.789754] pci_bus 0000:01: resource 0 io:  [0xd000-0xdfff]
+[    0.789768] pci_bus 0000:01: resource 1 mem: [0xfd900000-0xfd9fffff]
+[    0.789783] pci_bus 0000:01: resource 2 mem: [0xf1600000-0xf16fffff]
+[    0.789796] pci_bus 0000:01: resource 3 io:  [0x00-0xffff]
+[    0.789810] pci_bus 0000:01: resource 4 mem: [0x000000-0xffffffff]
+[    0.790387] NET: Registered protocol family 2
+[    0.792438] IP route cache hash table entries: 4096 (order: 2, 16384 bytes)
+[    0.797743] TCP established hash table entries: 16384 (order: 5, 131072 bytes)
+[    0.799030] TCP bind hash table entries: 16384 (order: 7, 655360 bytes)
+[    0.806245] TCP: Hash tables configured (established 16384 bind 16384)
+[    0.806612] TCP reno registered
+[    0.808301] NET: Registered protocol family 1
+[    0.913189] Initializing RT-Tester: OK
+[    1.073837] VFS: Disk quotas dquot_6.5.2
+[    1.075783] Dquot-cache hash table entries: 1024 (order 0, 4096 bytes)
+[    1.088150] msgmni has been set to 987
+[    1.115730] alg: No test for stdrng (krng)
+[    1.116342] io scheduler noop registered
+[    1.118877] io scheduler cfq registered (default)
+[    1.119339] pci 0000:02:00.0: Boot video device
+[    1.119486] pci 0000:01:08.0: Firmware left e100 interrupts enabled; disabling
+[    1.124586] input: Power Button (FF) as /devices/LNXSYSTM:00/LNXPWRBN:00/input/input0
+[    1.125046] ACPI: Power Button (FF) [PWRF]
+[    1.126570] input: Power Button (CM) as /devices/LNXSYSTM:00/device:00/PNP0C0C:00/input/input1
+[    1.126804] ACPI: Power Button (CM) [PBTN]
+[    1.130816] processor ACPI_CPU:00: registered as cooling_device0
+[    1.173353] Non-volatile memory driver v1.3
+[    1.173497] Linux agpgart interface v0.103
+[    1.174094] agpgart-intel 0000:00:00.0: Intel i815 Chipset
+[    1.180292] agpgart-intel 0000:00:00.0: AGP aperture is 64M @ 0xf8000000
+[    1.180889] Hangcheck: starting hangcheck timer 0.9.0 (tick is 180 seconds, margin is 60 seconds).
+[    1.181062] Hangcheck: Using get_cycles().
+[    1.181704] [drm] Initialized drm 1.1.0 20060810
+[    1.181830] Serial: 8250/16550 driver, 4 ports, IRQ sharing enabled
+[    1.288278] Switched to high resolution mode on CPU 0
+[    1.353181] khelper used greatest stack depth: 2744 bytes left
+[    1.445839] serial8250: ttyS0 at I/O 0x3f8 (irq = 4) is a 16550A
+[    1.705705] serial8250: ttyS1 at I/O 0x2f8 (irq = 3) is a 16550A
+[    1.711751] 00:08: ttyS0 at I/O 0x3f8 (irq = 4) is a 16550A
+[    1.713904] 00:09: ttyS1 at I/O 0x2f8 (irq = 3) is a 16550A
+[    1.716414] Floppy drive(s): fd0 is 1.44M
+[    1.720959] khelper used greatest stack depth: 2716 bytes left
+[    1.737015] FDC 0 is a post-1991 82077
+[    1.741966] Driver 'sd' needs updating - please use bus_type methods
+[    1.742607] ata_piix 0000:00:1f.1: version 2.12
+[    1.743270] ata_piix 0000:00:1f.1: setting latency timer to 64
+[    1.746975] scsi0 : ata_piix
+[    1.754809] scsi1 : ata_piix
+[    1.792731] ata1: PATA max UDMA/100 cmd 0x1f0 ctl 0x3f6 bmdma 0xffa0 irq 14
+[    1.792882] ata2: PATA max UDMA/100 cmd 0x170 ctl 0x376 bmdma 0xffa8 irq 15
+[    1.793676] e100: Intel(R) PRO/100 Network Driver, 3.5.24-k2-NAPI
+[    1.793805] e100: Copyright(c) 1999-2006 Intel Corporation
+[    1.796834] ACPI: PCI Interrupt Link [LNKE] enabled at IRQ 11
+[    1.796987] PCI: setting IRQ 11 as level-triggered
+[    1.797009] e100 0000:01:08.0: PCI INT A -> Link[LNKE] -> GSI 11 (level, low) -> IRQ 11
+[    1.822642] e100 0000:01:08.0: PME# disabled
+[    1.827263] e100: eth0: e100_probe: addr 0xfd9f9000, irq 11, MAC addr 00:03:47:a4:64:d5
+[    1.830019] console [netcon0] enabled
+[    1.830172] netconsole: network logging started
+[    1.831560] PNP: PS/2 Controller [PNP0303:PS2K,PNP0f03:PS2M] at 0x60,0x64 irq 1,12
+[    1.862516] serio: i8042 KBD port at 0x60,0x64 irq 1
+[    1.862874] serio: i8042 AUX port at 0x60,0x64 irq 12
+[    1.865427] mice: PS/2 mouse device common for all mice
+[    1.870906] cpuidle: using governor ladder
+[    1.871062] cpuidle: using governor menu
+[    1.885035] TCP cubic registered
+[    1.885191] NET: Registered protocol family 17
+[    1.885563] Using IPI Shortcut mode
+[    1.892304] khelper used greatest stack depth: 2668 bytes left
+[    1.907089] input: AT Translated Set 2 keyboard as /devices/platform/i8042/serio0/input/input2
+[    2.052972] ata1.00: ATA-6: ST380011A, 3.06, max UDMA/100
+[    2.053111] ata1.00: 156301488 sectors, multi 16: LBA48 
+[    2.068735] ata1.00: configured for UDMA/100
+[    2.072164] scsi 0:0:0:0: Direct-Access     ATA      ST380011A        3.06 PQ: 0 ANSI: 5
+[    2.079475] sd 0:0:0:0: [sda] 156301488 512-byte hardware sectors: (80.0 GB/74.5 GiB)
+[    2.080296] sd 0:0:0:0: [sda] Write Protect is off
+[    2.080434] sd 0:0:0:0: [sda] Mode Sense: 00 3a 00 00
+[    2.081346] sd 0:0:0:0: [sda] Write cache: enabled, read cache: enabled, doesn't support DPO or FUA
+[    2.086143]  sda: sda1 sda2 sda3 sda4
+[    2.121012] sd 0:0:0:0: [sda] Attached SCSI disk
+[    2.232825] ata2.00: ATAPI: CDU5211, YYS2, max UDMA/33, CDB intr
+[    2.233840] ata2.00: configured for UDMA/33
+[    2.236240] scsi 1:0:0:0: CD-ROM            SONY     CDU5211          YYS2 PQ: 0 ANSI: 5
+[    2.857780] input: ImPS/2 Logitech Wheel Mouse as /devices/platform/i8042/serio1/input/input3
+[    2.884989] kjournald starting.  Commit interval 5 seconds
+[    2.886102] EXT3-fs: mounted filesystem with ordered data mode.
+[    2.886753] VFS: Mounted root (ext3 filesystem) readonly on device 259:786432.
+[    2.887380] debug: unmapping init memory c08d9000..c0924000
+[    2.887770] Write protecting the kernel read-only data: 1992k
+[    3.120140] async/0 used greatest stack depth: 2240 bytes left
+[    3.824781] modprobe used greatest stack depth: 1908 bytes left
+[    4.462751] stty used greatest stack depth: 1648 bytes left
+[   18.721756] parport_pc 00:0a: reported by Plug and Play ACPI
+[   18.722296] parport0: PC-style at 0x378 (0x778), irq 7, dma 3 [PCSPP,TRISTATE,COMPAT,ECP,DMA]
+[   18.836570] parport0: Printer, Hewlett-Packard HP LaserJet 1100
+[   18.845483] rtc_cmos 00:02: RTC can wake from S4
+[   18.847381] rtc_cmos 00:02: rtc core: registered rtc_cmos as rtc0
+[   18.847654] rtc0: alarms up to one month, 114 bytes nvram
+[   18.878213] ACPI: PCI Interrupt Link [LNKH] enabled at IRQ 11
+[   18.878373] parport_pc 0000:01:0b.0: PCI INT A -> Link[LNKH] -> GSI 11 (level, low) -> IRQ 11
+[   18.878554] PCI parallel port detected: 1407:8000, I/O at 0xdff0(0x0), IRQ 11
+[   18.878654] parport1: PC-style at 0xdff0, irq 11 [PCSPP,TRISTATE,EPP]
+[   18.995384] modprobe used greatest stack depth: 1556 bytes left
+[   19.654637] tms380tr.c: v1.10 30/12/2002 by Christoph Goos, Adam Fritzler
+[   19.677005] tmspci.c: v1.02 23/11/2000 by Adam Fritzler
+[   19.680658] ACPI: PCI Interrupt Link [LNKF] enabled at IRQ 11
+[   19.680816] tmspci 0000:01:09.0: PCI INT A -> Link[LNKF] -> GSI 11 (level, low) -> IRQ 11
+[   19.681135] tr%d: 3Com Token Link Velocity
+[   19.681256] tr%d:    IO: 0xdf40  IRQ: 11
+[   19.681367] tr%d:    Ring Station Address: 00:a0:24:61:c4:df
+[   19.690363] tmspci 0000:01:0d.0: PCI INT A -> Link[LNKF] -> GSI 11 (level, low) -> IRQ 11
+[   19.690725] tr%d: 3Com Token Link Velocity
+[   19.690847] tr%d:    IO: 0xdf80  IRQ: 11
+[   19.690959] tr%d:    Ring Station Address: 00:a0:24:61:bd:96
+[   19.691208] ------------[ cut here ]------------
+[   19.691327] WARNING: at fs/proc/generic.c:590 proc_register+0x215/0x258()
+[   19.691441] Hardware name:         
+[   19.691540] proc_dir_entry '11/tr%d' already registered
+[   19.691645] Modules linked in: tmspci(+) tms380tr tr scsi_transport_fc scsi_tgt rtc_cmos rtc_core rtc_lib parport_pc parport evdev
+[   19.692449] Pid: 1061, comm: modprobe Not tainted 2.6.29-06608-g15f7176-dirty #195
+[   19.692607] Call Trace:
+[   19.692730]  [<c01303ba>] warn_slowpath+0xb0/0xf1
+[   19.692847]  [<c0161dff>] ? __lock_acquire+0x135a/0x1380
+[   19.692970]  [<c021f817>] ? proc_register+0x1db/0x258
+[   19.693085]  [<c015fe59>] ? trace_hardirqs_on_caller+0x12b/0x166
+[   19.693203]  [<c015fe00>] ? trace_hardirqs_on_caller+0xd2/0x166
+[   19.693323]  [<c021f817>] ? proc_register+0x1db/0x258
+[   19.693438]  [<c015e71c>] ? put_lock_stats+0x18/0x3d
+[   19.693553]  [<c021f817>] ? proc_register+0x1db/0x258
+[   19.693669]  [<c021f851>] proc_register+0x215/0x258
+[   19.694185]  [<c021fb57>] proc_mkdir_mode+0x45/0x82
+[   19.694325]  [<c021fbb6>] proc_mkdir+0x22/0x35
+[   19.694445]  [<c01731cd>] register_handler_proc+0xe2/0x101
+[   19.694568]  [<c01710aa>] __setup_irq+0x25e/0x2f1
+[   19.694685]  [<c0171315>] request_irq+0x123/0x1b6
+[   19.694834]  [<e08d3b74>] ? tms380tr_interrupt+0x0/0xfde [tms380tr]
+[   19.694971]  [<e08df40e>] tms_pci_attach+0x20b/0x2aa [tmspci]
+[   19.695097]  [<c02bc85e>] local_pci_probe+0x22/0x35
+[   19.695215]  [<c02bccf2>] pci_device_probe+0x60/0xc4
+[   19.695348]  [<c034b4f7>] driver_probe_device+0xdb/0x1be
+[   19.695468]  [<c034b64e>] __driver_attach+0x74/0xc2
+[   19.695586]  [<c034b5da>] ? __driver_attach+0x0/0xc2
+[   19.695702]  [<c034aaf6>] bus_for_each_dev+0x5d/0xa8
+[   19.695820]  [<c034b2da>] driver_attach+0x27/0x3a
+[   19.695937]  [<c034b5da>] ? __driver_attach+0x0/0xc2
+[   19.696240]  [<c034a1ac>] bus_add_driver+0xdd/0x293
+[   19.696373]  [<c034ba65>] driver_register+0xeb/0x1a6
+[   19.696493]  [<c02bd005>] __pci_register_driver+0x5c/0xc7
+[   19.696623]  [<e08e3000>] ? tms_pci_init+0x0/0x38 [tmspci]
+[   19.696745]  [<e08e3025>] tms_pci_init+0x25/0x38 [tmspci]
+[   19.696865]  [<c0101082>] _stext+0x82/0x1ee
+[   19.696986]  [<c011deb9>] ? __change_page_attr_set_clr+0x8e8/0x978
+[   19.697114]  [<c0161dff>] ? __lock_acquire+0x135a/0x1380
+[   19.697243]  [<c017873f>] ? tracepoint_update_probe_range+0x2a/0xf5
+[   19.697369]  [<c015e71c>] ? put_lock_stats+0x18/0x3d
+[   19.697487]  [<c015e84a>] ? lock_release_holdtime+0x109/0x122
+[   19.697611]  [<c01297eb>] ? sub_preempt_count+0x87/0xa7
+[   19.697731]  [<c015fb73>] ? mark_held_locks+0x4e/0x78
+[   19.697849]  [<c015fe59>] ? trace_hardirqs_on_caller+0x12b/0x166
+[   19.697968]  [<c015e71c>] ? put_lock_stats+0x18/0x3d
+[   19.698081]  [<c015e84a>] ? lock_release_holdtime+0x109/0x122
+[   19.698199]  [<c01297eb>] ? sub_preempt_count+0x87/0xa7
+[   19.698315]  [<c015e84a>] ? lock_release_holdtime+0x109/0x122
+[   19.698434]  [<c01512de>] ? up_read+0x29/0x4f
+[   19.698548]  [<c01523da>] ? __blocking_notifier_call_chain+0x5c/0x83
+[   19.698671]  [<c0152422>] ? blocking_notifier_call_chain+0x21/0x37
+[   19.698803]  [<c016ec22>] sys_init_module+0xdd/0x21f
+[   19.698921]  [<c010370f>] sysenter_do_call+0x12/0x36
+[   19.699033] ---[ end trace 6da0056ff36dd234 ]---
+[   20.284589] Emulex LightPulse Fibre Channel SCSI driver 8.3.0
+[   20.284742] Copyright(c) 2004-2008 Emulex.  All rights reserved.
+[   20.371301] modprobe used greatest stack depth: 1224 bytes left
+[   20.394333] ACPI: PCI Interrupt Link [LNKB] enabled at IRQ 10
+[   20.394482] PCI: setting IRQ 10 as level-triggered
+[   20.394504] lpfc 0000:01:0c.0: PCI INT A -> Link[LNKB] -> GSI 10 (level, low) -> IRQ 10
+[   20.417338] QLogic Fibre Channel HBA Driver: 8.03.00-k4
+[   20.760895] scsi2 :  on PCI bus 01 device 60 irq 10
+[   21.274384] usbcore: registered new interface driver usbfs
+[   21.274922] usbcore: registered new interface driver hub
+[   21.275852] usbcore: registered new device driver usb
+[   21.312979] i801_smbus 0000:00:1f.3: PCI INT B -> Link[LNKB] -> GSI 10 (level, low) -> IRQ 10
+[   21.440173] Driver 'sr' needs updating - please use bus_type methods
+[   21.446536] sr0: scsi3-mmc drive: 52x/52x cd/rw xa/form2 cdda tray
+[   21.446697] Uniform CD-ROM driver Revision: 3.20
+[   21.448628] sr 1:0:0:0: Attached scsi CD-ROM sr0
+[   21.745101] ehci_hcd: USB 2.0 'Enhanced' Host Controller (EHCI) Driver
+[   21.898277] uhci_hcd: USB Universal Host Controller Interface driver
+[   21.901877] ACPI: PCI Interrupt Link [LNKD] enabled at IRQ 11
+[   21.902034] uhci_hcd 0000:00:1f.2: PCI INT D -> Link[LNKD] -> GSI 11 (level, low) -> IRQ 11
+[   21.902260] uhci_hcd 0000:00:1f.2: setting latency timer to 64
+[   21.902281] uhci_hcd 0000:00:1f.2: UHCI Host Controller
+[   21.902933] uhci_hcd 0000:00:1f.2: new USB bus registered, assigned bus number 1
+[   21.903351] uhci_hcd 0000:00:1f.2: irq 11, io base 0x0000ef40
+[   21.996362] usb usb1: New USB device found, idVendor=1d6b, idProduct=0001
+[   21.996513] usb usb1: New USB device strings: Mfr=3, Product=2, SerialNumber=1
+[   21.996669] usb usb1: Product: UHCI Host Controller
+[   21.996773] usb usb1: Manufacturer: Linux 2.6.29-06608-g15f7176-dirty uhci_hcd
+[   21.996927] usb usb1: SerialNumber: 0000:00:1f.2
+[   21.998338] usb usb1: configuration #1 chosen from 1 choice
+[   21.999067] hub 1-0:1.0: USB hub found
+[   21.999319] hub 1-0:1.0: 2 ports detected
+[   22.001835] uhci_hcd 0000:00:1f.4: PCI INT C -> Link[LNKH] -> GSI 11 (level, low) -> IRQ 11
+[   22.002087] uhci_hcd 0000:00:1f.4: setting latency timer to 64
+[   22.002108] uhci_hcd 0000:00:1f.4: UHCI Host Controller
+[   22.002769] uhci_hcd 0000:00:1f.4: new USB bus registered, assigned bus number 2
+[   22.003094] uhci_hcd 0000:00:1f.4: irq 11, io base 0x0000ef80
+[   22.003853] usb usb2: New USB device found, idVendor=1d6b, idProduct=0001
+[   22.003992] usb usb2: New USB device strings: Mfr=3, Product=2, SerialNumber=1
+[   22.108176] usb usb2: Product: UHCI Host Controller
+[   22.108317] usb usb2: Manufacturer: Linux 2.6.29-06608-g15f7176-dirty uhci_hcd
+[   22.108467] usb usb2: SerialNumber: 0000:00:1f.4
+[   22.109587] usb usb2: configuration #1 chosen from 1 choice
+[   22.110387] hub 2-0:1.0: USB hub found
+[   22.110663] hub 2-0:1.0: 2 ports detected
+[   22.331678] sd 0:0:0:0: Attached scsi generic sg0 type 0
+[   22.338836] sr 1:0:0:0: Attached scsi generic sg1 type 5
+[   24.656786] Intel ICH 0000:00:1f.5: PCI INT B -> Link[LNKB] -> GSI 10 (level, low) -> IRQ 10
+[   24.657092] Intel ICH 0000:00:1f.5: setting latency timer to 64
+[   25.276268] intel8x0_measure_ac97_clock: measured 53658 usecs
+[   25.276638] intel8x0: clocking to 41154
+[   35.268546] BLKGRD allocated 1024 pages for _dump_buf_data at 0xdb800000
+[   35.288461] BLKGRD allocated 1024 pages for _dump_buf_dif at 0xdb400000
+[   35.310814] ACPI: PCI Interrupt Link [LNKG] enabled at IRQ 9
+[   35.310963] PCI: setting IRQ 9 as level-triggered
+[   35.310985] qla2xxx 0000:01:0a.0: PCI INT A -> Link[LNKG] -> GSI 9 (level, low) -> IRQ 9
+[   35.311449] qla2xxx 0000:01:0a.0: Found an ISP2100, irq 9, iobase 0xe0d08000
+[   35.313599] IRQ 9/qla2xxx: IRQF_DISABLED is not guaranteed on shared IRQs
+[   35.313863] qla2xxx 0000:01:0a.0: Configuring PCI space...
+[   35.314219] qla2xxx 0000:01:0a.0: Configure NVRAM parameters...
+[   35.446081] qla2xxx 0000:01:0a.0: Verifying loaded RISC code...
+[   35.460139] qla2xxx 0000:01:0a.0: firmware: requesting ql2100_fw.bin
+[   35.828366] qla2xxx 0000:01:0a.0: Allocated (132 KB) for firmware dump...
+[   35.972506] scsi3 : qla2xxx
+[   40.980178] qla2xxx 0000:01:0a.0: 
+[   40.980184]  QLogic Fibre Channel HBA Driver: 8.03.00-k4
+[   40.980189]   QLogic QLA2100 - 
+[   40.980192]   ISP2100: PCI (33 MHz) @ 0000:01:0a.0 hdma-, host#=3, fw=1.19.25 TP
+[   43.629323] Adding 1004052k swap on /dev/sda2.  Priority:-1 extents:1 across:1004052k 
+[   44.376366] EXT3 FS on sda3, internal journal
+[   46.323891] NTFS driver 2.1.29 [Flags: R/W MODULE].
+[   46.876436] usual_tables: module license 'unspecified' taints kernel.
+[   46.897207] usbcore: registered new interface driver libusual
+[   46.966834] Initializing USB Mass Storage driver...
+[   46.967449] usbcore: registered new interface driver usb-storage
+[   46.967607] USB Mass Storage support registered.
+[   47.093043] smsc47m1: Found SMSC LPC47M10x/LPC47M112/LPC47M13x
+[   47.093588] ACPI: I/O resource smsc47m1 [0x800-0x87f] conflicts with ACPI region RNT4 [0x80a-0x80a]
+[   47.093763] ACPI: Device needs an ACPI driver
+[   47.093903] smsc47m1.2048: use which platform_data?
+[   48.582904] fuse init (API version 7.11)
+[   48.923416] kjournald starting.  Commit interval 5 seconds
+[   48.924696] EXT3 FS on sda4, internal journal
+[   48.924765] EXT3-fs: mounted filesystem with ordered data mode.
+[   54.816172] e100: eth0 NIC Link is Up 100 Mbps Full Duplex
+[   58.190402] qla2xxx 0000:01:0a.0: Cable is unplugged...
+[   90.971408] NET: Registered protocol family 10
+[   91.039559] lo: Disabled Privacy Extensions
+[   95.131471] RPC: Registered udp transport module.
+[   95.131502] RPC: Registered tcp transport module.
+[   95.709750] Installing knfsd (copyright (C) 1996 okir@monad.swb.de).
+[  101.772085] eth0: no IPv6 routers present
+[  103.486912] NFSD: Using /var/lib/nfs/v4recovery as the NFSv4 state recovery directory
+[  103.498955] NFSD: starting 90-second grace period
+[  130.415148] lp0: using parport0 (interrupt-driven).
+[  130.415956] lp1: using parport1 (interrupt-driven).
+[  130.505753] ppdev: user-space parallel port driver
+[  137.203488]   get_mtrr: cpu0 reg00 base=0000000000 size=0000020000 write-back
+[  137.203528]   get_mtrr: cpu0 reg01 base=0000020000 size=0000000100 write-back
+[  137.203551]   get_mtrr: cpu0 reg02 base=0000020000 size=0000000100 uncachable
+[  137.210032]   get_mtrr: cpu0 reg00 base=0000000000 size=0000020000 write-back
+[  137.210071]   get_mtrr: cpu0 reg01 base=0000020000 size=0000000100 write-back
+[  137.210093]   get_mtrr: cpu0 reg02 base=0000020000 size=0000000100 uncachable
+[  137.210222]   get_mtrr: cpu0 reg00 base=0000000000 size=0000020000 write-back
+[  137.210241]   get_mtrr: cpu0 reg01 base=0000020000 size=0000000100 write-back
+[  137.210257]   get_mtrr: cpu0 reg02 base=0000020000 size=0000000100 uncachable
+[  137.210274]   get_mtrr: cpu0 reg00 base=0000000000 size=0000020000 write-back
+[  137.210290]   get_mtrr: cpu0 reg01 base=0000020000 size=0000000100 write-back
+[  137.210305]   get_mtrr: cpu0 reg02 base=0000020000 size=0000000100 uncachable
+[  137.211418]   get_mtrr: cpu0 reg00 base=0000000000 size=0000020000 write-back
+[  137.211459]   get_mtrr: cpu0 reg01 base=0000020000 size=0000000100 write-back
+[  137.211481]   get_mtrr: cpu0 reg02 base=0000020000 size=0000000100 uncachable
+[  137.211503]   get_mtrr: cpu0 reg03 base=00000f2000 size=0000002000 write-combining
+[  137.211968]   get_mtrr: cpu0 reg00 base=0000000000 size=0000020000 write-back
+[  137.211992]   get_mtrr: cpu0 reg01 base=0000020000 size=0000000100 write-back
+[  137.234640]   get_mtrr: cpu0 reg02 base=0000020000 size=0000000100 uncachable
+[  137.234664]   get_mtrr: cpu0 reg03 base=00000f2000 size=0000002000 write-combining
+[  137.234680]   get_mtrr: cpu0 reg03 base=00000f2000 size=0000002000 write-combining
+[  137.245671]   get_mtrr: cpu0 reg00 base=0000000000 size=0000020000 write-back
+[  137.245710]   get_mtrr: cpu0 reg01 base=0000020000 size=0000000100 write-back
+[  137.245732]   get_mtrr: cpu0 reg02 base=0000020000 size=0000000100 uncachable
+[  137.246711]   get_mtrr: cpu0 reg00 base=0000000000 size=0000020000 write-back
+[  137.246751]   get_mtrr: cpu0 reg01 base=0000020000 size=0000000100 write-back
+[  137.246773]   get_mtrr: cpu0 reg02 base=0000020000 size=0000000100 uncachable
+[  137.246889]   get_mtrr: cpu0 reg00 base=0000000000 size=0000020000 write-back
+[  137.246908]   get_mtrr: cpu0 reg01 base=0000020000 size=0000000100 write-back
+[  137.246924]   get_mtrr: cpu0 reg02 base=0000020000 size=0000000100 uncachable
+[  137.246941]   get_mtrr: cpu0 reg00 base=0000000000 size=0000020000 write-back
+[  137.246957]   get_mtrr: cpu0 reg01 base=0000020000 size=0000000100 write-back
+[  137.246972]   get_mtrr: cpu0 reg02 base=0000020000 size=0000000100 uncachable
+[  137.264169]   get_mtrr: cpu0 reg00 base=0000000000 size=0000020000 write-back
+[  137.264205]   get_mtrr: cpu0 reg01 base=0000020000 size=0000000100 write-back
+[  137.264227]   get_mtrr: cpu0 reg02 base=0000020000 size=0000000100 uncachable
+[  137.264249]   get_mtrr: cpu0 reg03 base=00000f2000 size=0000002000 write-combining
+[  137.265065]   get_mtrr: cpu0 reg00 base=0000000000 size=0000020000 write-back
+[  137.265103]   get_mtrr: cpu0 reg01 base=0000020000 size=0000000100 write-back
+[  137.265126]   get_mtrr: cpu0 reg02 base=0000020000 size=0000000100 uncachable
+[  137.265147]   get_mtrr: cpu0 reg03 base=00000f2000 size=0000002000 write-combining
+[  138.301121]   get_mtrr: cpu0 reg00 base=0000000000 size=0000020000 write-back
+[  138.301162]   get_mtrr: cpu0 reg01 base=0000020000 size=0000000100 write-back
+[  138.301185]   get_mtrr: cpu0 reg02 base=0000020000 size=0000000100 uncachable
+[  138.301206]   get_mtrr: cpu0 reg03 base=00000f2000 size=0000002000 write-combining
+[  138.301603]   get_mtrr: cpu0 reg00 base=0000000000 size=0000020000 write-back
+[  138.301637]   get_mtrr: cpu0 reg01 base=0000020000 size=0000000100 write-back
+[  138.301659]   get_mtrr: cpu0 reg02 base=0000020000 size=0000000100 uncachable
+[  138.301680]   get_mtrr: cpu0 reg03 base=00000f2000 size=0000002000 write-combining
+[  138.316686]   get_mtrr: cpu0 reg00 base=0000000000 size=0000020000 write-back
+[  138.316726]   get_mtrr: cpu0 reg01 base=0000020000 size=0000000100 write-back
+[  138.316748]   get_mtrr: cpu0 reg02 base=0000020000 size=0000000100 uncachable
+[  138.316770]   get_mtrr: cpu0 reg03 base=00000f2000 size=0000002000 write-combining
+[  140.455053]   get_mtrr: cpu0 reg00 base=0000000000 size=0000020000 write-back
+[  140.455092]   get_mtrr: cpu0 reg01 base=0000020000 size=0000000100 write-back
+[  140.455115]   get_mtrr: cpu0 reg02 base=0000020000 size=0000000100 uncachable
+[  140.455137]   get_mtrr: cpu0 reg03 base=00000f2000 size=0000002000 write-combining
+[  140.486294]   get_mtrr: cpu0 reg00 base=0000000000 size=0000020000 write-back
+[  140.486322]   get_mtrr: cpu0 reg01 base=0000020000 size=0000000100 write-back
+[  140.486337]   get_mtrr: cpu0 reg02 base=0000020000 size=0000000100 uncachable
+[  140.486353]   get_mtrr: cpu0 reg03 base=00000f2000 size=0000002000 write-combining
+[  140.486369]   get_mtrr: cpu0 reg03 base=00000f2000 size=0000002000 write-combining
+[  140.609920]   get_mtrr: cpu0 reg00 base=0000000000 size=0000020000 write-back
+[  140.609958]   get_mtrr: cpu0 reg01 base=0000020000 size=0000000100 write-back
+[  140.609980]   get_mtrr: cpu0 reg02 base=0000020000 size=0000000100 uncachable
+[  140.610972]   get_mtrr: cpu0 reg00 base=0000000000 size=0000020000 write-back
+[  140.611012]   get_mtrr: cpu0 reg01 base=0000020000 size=0000000100 write-back
+[  140.611035]   get_mtrr: cpu0 reg02 base=0000020000 size=0000000100 uncachable
+[  140.611151]   get_mtrr: cpu0 reg00 base=0000000000 size=0000020000 write-back
+[  140.611170]   get_mtrr: cpu0 reg01 base=0000020000 size=0000000100 write-back
+[  140.611185]   get_mtrr: cpu0 reg02 base=0000020000 size=0000000100 uncachable
+[  140.611203]   get_mtrr: cpu0 reg00 base=0000000000 size=0000020000 write-back
+[  140.611219]   get_mtrr: cpu0 reg01 base=0000020000 size=0000000100 write-back
+[  140.611234]   get_mtrr: cpu0 reg02 base=0000020000 size=0000000100 uncachable
+[  140.630587]   get_mtrr: cpu0 reg00 base=0000000000 size=0000020000 write-back
+[  140.630624]   get_mtrr: cpu0 reg01 base=0000020000 size=0000000100 write-back
+[  140.630646]   get_mtrr: cpu0 reg02 base=0000020000 size=0000000100 uncachable
+[  140.630668]   get_mtrr: cpu0 reg03 base=00000f2000 size=0000002000 write-combining
+[  140.631394]   get_mtrr: cpu0 reg00 base=0000000000 size=0000020000 write-back
+[  140.631431]   get_mtrr: cpu0 reg01 base=0000020000 size=0000000100 write-back
+[  140.631453]   get_mtrr: cpu0 reg02 base=0000020000 size=0000000100 uncachable
+[  140.631475]   get_mtrr: cpu0 reg03 base=00000f2000 size=0000002000 write-combining
+[  140.907666] ACPI: PCI Interrupt Link [LNKA] enabled at IRQ 11
+[  140.907704] pci 0000:02:00.0: PCI INT A -> Link[LNKA] -> GSI 11 (level, low) -> IRQ 11
+[  140.907958]   get_mtrr: cpu0 reg00 base=0000000000 size=0000020000 write-back
+[  140.907982]   get_mtrr: cpu0 reg01 base=0000020000 size=0000000100 write-back
+[  140.907998]   get_mtrr: cpu0 reg02 base=0000020000 size=0000000100 uncachable
+[  140.917592]   get_mtrr: cpu0 reg03 base=00000f2000 size=0000002000 write-combining
+[  140.917619]   get_mtrr: cpu0 reg00 base=0000000000 size=0000020000 write-back
+[  140.917636]   get_mtrr: cpu0 reg01 base=0000020000 size=0000000100 write-back
+[  140.917651]   get_mtrr: cpu0 reg02 base=0000020000 size=0000000100 uncachable
+[  140.917667]   get_mtrr: cpu0 reg03 base=00000f2000 size=0000002000 write-combining
+[  140.919153] [drm] Initialized mga 3.2.1 20051102 for 0000:02:00.0 on minor 0
+[  140.953635]   get_mtrr: cpu0 reg00 base=0000000000 size=0000020000 write-back
+[  140.953663]   get_mtrr: cpu0 reg01 base=0000020000 size=0000000100 write-back
+[  140.953679]   get_mtrr: cpu0 reg02 base=0000020000 size=0000000100 uncachable
+[  140.953694]   get_mtrr: cpu0 reg03 base=00000f2000 size=0000002000 write-combining
+[  140.955583] agpgart-intel 0000:00:00.0: AGP 2.0 bridge
+[  140.955710] agpgart-intel 0000:00:00.0: putting AGP V2 device into 2x mode
+[  140.955897] pci 0000:02:00.0: putting AGP V2 device into 2x mode
+[  140.974864] [drm] Initialized card for AGP DMA.
+[29004.517202]   get_mtrr: cpu0 reg00 base=0000000000 size=0000020000 write-back
+[29004.517239]   get_mtrr: cpu0 reg01 base=0000020000 size=0000000100 write-back
+[29004.517259]   get_mtrr: cpu0 reg02 base=0000020000 size=0000000100 uncachable
+[29004.517278]   get_mtrr: cpu0 reg03 base=00000f2000 size=0000002000 write-combining
+[29004.517298]   get_mtrr: cpu0 reg04 base=00000f8000 size=0000004000 write-combining
+
+
+-- 
+Meelis Roos (mroos@linux.ee)
