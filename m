@@ -1,66 +1,108 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759290AbZDAJGX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762663AbZDAJGj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759290AbZDAJGX (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 1 Apr 2009 05:06:23 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750903AbZDAJGK
+	id S1762663AbZDAJGj (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 1 Apr 2009 05:06:39 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760713AbZDAJGW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 1 Apr 2009 05:06:10 -0400
-Received: from gw-ca.panasas.com ([209.116.51.66]:10287 "EHLO
-	laguna.int.panasas.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1750704AbZDAJGI (ORCPT
+	Wed, 1 Apr 2009 05:06:22 -0400
+Received: from fgwmail6.fujitsu.co.jp ([192.51.44.36]:52783 "EHLO
+	fgwmail6.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1762528AbZDAJGU (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 1 Apr 2009 05:06:08 -0400
-Message-ID: <49D32E7A.7000209@panasas.com>
-Date: Wed, 01 Apr 2009 12:06:02 +0300
-From: Benny Halevy <bhalevy@panasas.com>
-User-Agent: Mozilla/5.0 (X11; U; Linux i686 (x86_64); en-US; rv:1.9.1b3pre) Gecko/20090223 Thunderbird/3.0b2
-MIME-Version: 1.0
-To: Boaz Harrosh <bharrosh@panasas.com>
-CC: Andrew Morton <akpm@linux-foundation.org>,
-       FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>,
-       Jeff Garzik <jeff@garzik.org>,
-       linux-kernel <linux-kernel@vger.kernel.org>,
-       James Bottomley <James.Bottomley@HansenPartnership.com>,
-       Avishay Traeger <avishay@gmail.com>, open-osd <osd-dev@open-osd.org>,
-       linux-fsdevel <linux-fsdevel@vger.kernel.org>,
-       Evgeniy Polyakov <zbr@ioremap.net>
-Subject: Re: [osd-dev] [PATCH 6/8] exofs: super_operations and	file_system_type
-References: <49C1331D.1080805@panasas.com>	<1237399791-29502-1-git-send-email-bharrosh@panasas.com> <20090331010430.72e8137e.akpm@linux-foundation.org> <49D2665A.9090500@panasas.com> <49D32041.4090009@panasas.com>
-In-Reply-To: <49D32041.4090009@panasas.com>
-Content-Type: text/plain; charset=UTF-8
+	Wed, 1 Apr 2009 05:06:20 -0400
+Date: Wed, 1 Apr 2009 18:04:45 +0900
+From: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+To: Johannes Weiner <hannes@cmpxchg.org>
+Cc: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
+       Minchan Kim <minchan.kim@gmail.com>,
+       Daisuke Nishimura <nishimura@mxp.nes.nec.co.jp>,
+       linux-kernel@vger.kernel.org, linux-mm@kvack.org,
+       Andrew Morton <akpm@linux-foundation.org>,
+       "Rafael J. Wysocki" <rjw@sisk.pl>, Rik van Riel <riel@redhat.com>,
+       Balbir Singh <balbir@in.ibm.com>
+Subject: Re: [PATCH] vmscan: memcg needs may_swap (Re: [patch] vmscan:
+ rename  sc.may_swap to may_unmap)
+Message-Id: <20090401180445.80b11d90.kamezawa.hiroyu@jp.fujitsu.com>
+In-Reply-To: <20090401040951.GA1548@cmpxchg.org>
+References: <28c262360903301826w6429720es8ceb361cfc088b1@mail.gmail.com>
+	<20090331104237.e689f279.kamezawa.hiroyu@jp.fujitsu.com>
+	<20090331104625.B1C7.A69D9226@jp.fujitsu.com>
+	<20090401040951.GA1548@cmpxchg.org>
+Organization: FUJITSU Co. LTD.
+X-Mailer: Sylpheed 2.5.0 (GTK+ 2.10.14; i686-pc-mingw32)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-X-OriginalArrivalTime: 01 Apr 2009 09:06:05.0765 (UTC) FILETIME=[16BFB750:01C9B2A9]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Apr. 01, 2009, 11:05 +0300, Boaz Harrosh <bharrosh@panasas.com> wrote:
-> On 03/31/2009 09:52 PM, Benny Halevy wrote:
->> On Mar. 31, 2009, 11:04 +0300, Andrew Morton <akpm@linux-foundation.org> wrote:
->>> ~0 is signed 0xffffffff.
->>>
->>> When assigning to a u64 it gets signed extended to signed
->>> 0xffffffffffffffff and then converted to unsigned 0xffffffffffffffff.
->> Right (I think, I'm not sure in what order)
->>
->>> I think.  Just as with plain old "-1".  Perhaps using plain old "-1"
->>> would be clearer here.
->> or maybe ~0ULL or ~(uint64_t)0 to be extremely anal about it.
->>
->> Benny
->>
-> 
-> There is only one right way => ULLONG_MAX. Takes care of the human factor
-> too. (BTW that one is defined (~0ULL))
+On Wed, 1 Apr 2009 06:09:51 +0200
+Johannes Weiner <hannes@cmpxchg.org> wrote:
 
-Ideally, since the variable is a uint64_t, you'd want a U64_MAX.
-unsigned long long may, at some point, be larger than uint64 on
-some architectures. With the available defs ~(uint64_t)0 or even
-just ~0 seem more portable...
-
-Benny
-
+> On Tue, Mar 31, 2009 at 10:48:32AM +0900, KOSAKI Motohiro wrote:
+> > > > Sorry for too late response.
+> > > > I don't know memcg well.
+> > > > 
+> > > > The memcg managed to use may_swap well with global page reclaim until now.
+> > > > I think that was because may_swap can represent both meaning.
+> > > > Do we need each variables really ?
+> > > > 
+> > > > How about using union variable ?
+> > > 
+> > > or Just removing one of them  ?
+> > 
+> > I hope all may_unmap user convert to using may_swap.
+> > may_swap is more efficient and cleaner meaning.
 > 
-> Thanks
-> Boaz
+> How about making may_swap mean the following:
 > 
+> 	@@ -642,6 +639,8 @@ static unsigned long shrink_page_list(st
+> 	 		 * Try to allocate it some swap space here.
+> 	 		 */
+> 	 		if (PageAnon(page) && !PageSwapCache(page)) {
+> 	+			if (!sc->map_swap)
+> 	+				goto keep_locked;
+> 	 			if (!(sc->gfp_mask & __GFP_IO))
+> 	 				goto keep_locked;
+> 	 			if (!add_to_swap(page))
+> 
+> try_to_free_pages() always sets it.
+> 
+What is the advantage than _not_ scanning ANON LRU at all ?
+
+> try_to_free_mem_cgroup_pages() sets it depending on whether it really
+> wants swapping, and only swapping, right?  But the above would still
+> reclaim already swapped anon pages and I don't know the memory
+> controller.
+> 
+memory cgroup has 2 calls to this shrink_zone.
+ 1. memory usage hits the limit.
+ 2. mem+swap usage hits the limit.
+
+At "2", swap-out doesn't decrease the usage of mem+swap, then set may_swap=0.
+So, we want to kick out only file caches.
+But, we can reclaim file cache and "unmap file cache and reclaim it!" is 
+necessary even if may_swap=0.
+
+Then, scanning only FILE LRU makes sense at may_swap=0 *if* memcg is
+the only user of may_swap=0.
+
+Let's see others.
+
+ - __zone_reclaim sets may_unmap to be 0 when they don't want swap-out.
+   .....can be replaced with may_swap.
+
+ - shrink_all_memory sets may_swap to be 0. Is this called by hibernation ?
+   If you don't want to unmap file caches while hibernation, adding may_unmap
+   as *new* paramter makes sense, I think.
+
+The change you proposed is for dropping unused SwapCache pages. Right ?
+But this will be dropped by kswapd if necessary.
+
+As far as memcg concerns, scanning ANON LRU even when may_swap=0 is just
+a waste of cpu time.
+
+Thanks,
+-Kame
+
