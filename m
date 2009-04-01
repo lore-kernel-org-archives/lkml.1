@@ -1,132 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932994AbZDATxR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933201AbZDAT7q@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932994AbZDATxR (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 1 Apr 2009 15:53:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755163AbZDATxA
+	id S933201AbZDAT7q (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 1 Apr 2009 15:59:46 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750927AbZDAT7e
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 1 Apr 2009 15:53:00 -0400
-Received: from mail-bw0-f169.google.com ([209.85.218.169]:48975 "EHLO
-	mail-bw0-f169.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755013AbZDATw7 (ORCPT
+	Wed, 1 Apr 2009 15:59:34 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:45181 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1754784AbZDAT7e (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 1 Apr 2009 15:52:59 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=googlemail.com; s=gamma;
-        h=subject:from:to:cc:in-reply-to:references:content-type:date
-         :message-id:mime-version:x-mailer:content-transfer-encoding;
-        b=FruhgSMyBOLaXfjSig/2xVbyMlsFfTpdHMC16POAqcNNavB8LClNmqzFd0K5pHycr4
-         lHrVwkxeS+TVzvQsALsZvtoiAAelaeZCZBZCM9Z5aFaYy9z5DO7W0t84jLW/gbEqLP12
-         Je3xK8SHBuz59xPc/fYzBuoATptQdwizhb29A=
-Subject: Re: [patch 3/21] x86, bts: wait until traced task has been
-	scheduled out
-From: Markus Metzger <markus.t.metzger@googlemail.com>
-To: Oleg Nesterov <oleg@redhat.com>
-Cc: "Metzger, Markus T" <markus.t.metzger@intel.com>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       "mingo@elte.hu" <mingo@elte.hu>,
-       "tglx@linutronix.de" <tglx@linutronix.de>,
-       "hpa@zytor.com" <hpa@zytor.com>,
-       "roland@redhat.com" <roland@redhat.com>,
-       "eranian@googlemail.com" <eranian@googlemail.com>,
-       "Villacis, Juan" <juan.villacis@intel.com>,
-       "ak@linux.jf.intel.com" <ak@linux.jf.intel.com>
-In-Reply-To: <20090401190445.GA16033@redhat.com>
-References: <20090331145947.A12565@sedona.ch.intel.com>
-	 <20090401001729.GC28228@redhat.com>
-	 <928CFBE8E7CB0040959E56B4EA41A77E926D5093@irsmsx504.ger.corp.intel.com>
-	 <20090401190445.GA16033@redhat.com>
-Content-Type: text/plain
-Date: Wed, 01 Apr 2009 21:52:47 +0200
-Message-Id: <1238615567.18200.5.camel@raistlin>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.22.3.1
-Content-Transfer-Encoding: 7bit
+	Wed, 1 Apr 2009 15:59:34 -0400
+Date: Wed, 1 Apr 2009 12:39:46 -0700 (PDT)
+From: Linus Torvalds <torvalds@linux-foundation.org>
+X-X-Sender: torvalds@localhost.localdomain
+To: Ingo Molnar <mingo@elte.hu>
+cc: Christoph Lameter <cl@linux.com>, Tejun Heo <tj@kernel.org>,
+       Martin Schwidefsky <schwidefsky@de.ibm.com>, rusty@rustcorp.com.au,
+       tglx@linutronix.de, x86@kernel.org, linux-kernel@vger.kernel.org,
+       hpa@zytor.com, Paul Mundt <lethal@linux-sh.org>, rmk@arm.linux.org.uk,
+       starvik@axis.com, ralf@linux-mips.org, davem@davemloft.net,
+       cooloney@kernel.org, kyle@mcmartin.ca, matthew@wil.cx,
+       grundler@parisc-linux.org, takata@linux-m32r.org,
+       benh@kernel.crashing.org, rth@twiddle.net, ink@jurassic.park.msu.ru,
+       heiko.carstens@de.ibm.com, Nick Piggin <npiggin@suse.de>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>
+Subject: Re: [PATCH UPDATED] percpu: use dynamic percpu allocator as the
+ default percpu allocator
+In-Reply-To: <20090401190113.GA734@elte.hu>
+Message-ID: <alpine.LFD.2.00.0904011235160.4130@localhost.localdomain>
+References: <20090325150035.541e707a@skybase> <49CA3C2C.5030702@kernel.org> <49D099F0.3000807@kernel.org> <20090330114938.GB10070@elte.hu> <alpine.DEB.1.10.0903301049060.13333@qirst.com> <alpine.DEB.1.10.0903311208110.17960@qirst.com> <49D2B209.9060000@kernel.org>
+ <alpine.DEB.1.10.0904010948120.7643@qirst.com> <20090401154913.GA31435@elte.hu> <alpine.DEB.1.10.0904011404240.29839@qirst.com> <20090401190113.GA734@elte.hu>
+User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 2009-04-01 at 21:04 +0200, Oleg Nesterov wrote:
-> On 04/01, Metzger, Markus T wrote:
-> >
-> > >-----Original Message-----
-> > >From: Oleg Nesterov [mailto:oleg@redhat.com]
-> > >Sent: Wednesday, April 01, 2009 2:17 AM
-> > >To: Metzger, Markus T
-> >
-> > >> +static void wait_to_unschedule(struct task_struct *task)
-> > >> +{
-> > >> +	unsigned long nvcsw;
-> > >> +	unsigned long nivcsw;
-> > >> +
-> > >> +	if (!task)
-> > >> +		return;
-> > >> +
-> > >> +	if (task == current)
-> > >> +		return;
-> > >> +
-> > >> +	nvcsw  = task->nvcsw;
-> > >> +	nivcsw = task->nivcsw;
-> > >> +	for (;;) {
-> > >> +		if (!task_is_running(task))
-> > >> +			break;
-> > >> +		/*
-> > >> +		 * The switch count is incremented before the actual
-> > >> +		 * context switch. We thus wait for two switches to be
-> > >> +		 * sure at least one completed.
-> > >> +		 */
-> > >> +		if ((task->nvcsw - nvcsw) > 1)
-> > >> +			break;
-> > >> +		if ((task->nivcsw - nivcsw) > 1)
-> > >> +			break;
-> > >> +
-> > >> +		schedule();
-> > >
-> > >schedule() is a nop here. We can wait unpredictably long...
-> >
-> > Hmmm, As far as I understand the code, rt-workqueues use a higher sched_class
-> > and can thus not be preempted by normal threads. Non-rt workqueues
-> > use the fair_sched_class. And schedule_work() uses a non-rt workqueue.
-> 
-> I was unclear, sorry.
-> 
-> I meant, in this case
-> 
-> 	while (!CONDITION)
-> 		schedule();
-> 
-> is not better compared to
-> 
-> 	while (!CONDITION)
-> 		; /* do nothing */
-> 
-> (OK, schedule() is better without CONFIG_PREEMPT, but this doesn't matter).
-> wait_to_unschedule() just spins waiting for ->nXvcsw, this is not optimal.
-> 
-> And another problem, we can wait unpredictably long, because
-> 
-> > In practice, task is ptraced. It is either stopped or exiting.
-> > I don't expect to loop very often.
-> 
-> No. The task _was_ ptraced when we called (say) ptrace_detach(). But when
-> work->func() runs, the tracee is not traced, it is running (not necessary
-> of course, the tracer _can_ leave it in TASK_STOPPED).
-> 
-> Now, again, suppose that this task does "for (;;) ;" in user-space.
-> If CPU is "free", it can spin "forever" without re-scheduling. Yes sure,
-> this case is not likely in practice, but still.
-
-So I should rather not call schedule()?
-
-I thought it's better to yield the cpu than to spin.
 
 
-I will resend a bisect-friendly version of the series (using quilt mail,
-this time) tomorrow.
+On Wed, 1 Apr 2009, Ingo Molnar wrote:
+>  
+> The rest (unannotated variables) is to be assumed "access-rarely" or 
+> "we-dont-care", by default. This is actually 95% of the global 
+> variables.
 
-I will remove schedule() in the wait_to_unschedule() loop and also
-address the minor nitpicks you mentioned in your other reviews.
+I'm not at all convinced that this is a good option.
 
-thanks,
-markus.
+The thing is, things like "read_mostly" or "access_rarely" may talk about 
+how we access those individual variables, but you're missing a _huge_ 
+chunk of the puzzle if you ignore the _correlations_ of those accesses 
+with accesses to other variables.
 
+The thign is, if you have variables 'a' and 'b', and they are always 
+accessed together, then it's probably worth it to put them in the same 
+cacheline.
 
+And that is true EVEN IF 'b' is basically read-only, but 'a' is always 
+written to. Marking 'a' as read-only or read-mostly is actually a bad 
+idea, since the only thing it can ever result in is a bigger cache 
+footprint.
+
+The fact that the read-only cacheline has "nicer" behavior is totally 
+irrelevant - it's still an extra cacheline that we're accessing. And they 
+aren't free, even if read-only cachelines that can be shared across CPU's 
+are certainly a lot cheaper than ones that bounce.
+
+			Linus
