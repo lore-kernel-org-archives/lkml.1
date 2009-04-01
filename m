@@ -1,20 +1,20 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932905AbZDAOPn@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1765550AbZDAOQT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932905AbZDAOPn (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 1 Apr 2009 10:15:43 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1765898AbZDAOHk
+	id S1765550AbZDAOQT (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 1 Apr 2009 10:16:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932424AbZDAOHl
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 1 Apr 2009 10:07:40 -0400
-Received: from earthlight.etchedpixels.co.uk ([81.2.110.250]:37794 "EHLO
+	Wed, 1 Apr 2009 10:07:41 -0400
+Received: from earthlight.etchedpixels.co.uk ([81.2.110.250]:37795 "EHLO
 	www.etchedpixels.co.uk" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S932424AbZDAOHf (ORCPT
+	with ESMTP id S932467AbZDAOHg (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 1 Apr 2009 10:07:35 -0400
+	Wed, 1 Apr 2009 10:07:36 -0400
 From: Alan Cox <alan@lxorguk.ukuu.org.uk>
-Subject: [PATCH 22/24] icom: remove unused variables
+Subject: [PATCH 23/24] PCI: quirks, don't mark one netmos as class other
 To: linux-kernel@vger.kernel.org, torvalds@linux-foundation.org
-Date: Wed, 01 Apr 2009 15:07:42 +0100
-Message-ID: <20090401140740.22882.65137.stgit@localhost.localdomain>
+Date: Wed, 01 Apr 2009 15:07:51 +0100
+Message-ID: <20090401140747.22882.76124.stgit@localhost.localdomain>
 In-Reply-To: <20090401140241.22882.93477.stgit@localhost.localdomain>
 References: <20090401140241.22882.93477.stgit@localhost.localdomain>
 User-Agent: StGIT/0.14.3
@@ -25,96 +25,36 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Breno Leitao <leitao@linux.vnet.ibm.com>
+From: Jiri Slaby <jirislaby@gmail.com>
 
-Signed-off-by: Breno Leitao <leitao@linux.vnet.ibm.com>
+Let it as serial, since it doesn't have subdevice in the form of 0x00PS.
+
+Signed-off-by: Jiri Slaby <jirislaby@gmail.com>
 Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
-Signed-off-by: Alan Cox <alan@lxorguk.ukuu.org.uk>
+Signed-off-by: Alan Cox <alan@etchedpixels.co.uk>
 ---
 
- drivers/serial/icom.c |   14 ++------------
- 1 files changed, 2 insertions(+), 12 deletions(-)
+ drivers/pci/quirks.c |    6 +++++-
+ 1 files changed, 5 insertions(+), 1 deletions(-)
 
 
-diff --git a/drivers/serial/icom.c b/drivers/serial/icom.c
-index 2b7531d..6579e2b 100644
---- a/drivers/serial/icom.c
-+++ b/drivers/serial/icom.c
-@@ -1098,7 +1098,6 @@ static void icom_set_termios(struct uart_port *port,
- {
- 	int baud;
- 	unsigned cflag, iflag;
--	int bits;
- 	char new_config2;
- 	char new_config3 = 0;
- 	char tmp_byte;
-@@ -1119,34 +1118,27 @@ static void icom_set_termios(struct uart_port *port,
- 	switch (cflag & CSIZE) {
- 	case CS5:		/* 5 bits/char */
- 		new_config2 |= ICOM_ACFG_5BPC;
--		bits = 7;
- 		break;
- 	case CS6:		/* 6 bits/char */
- 		new_config2 |= ICOM_ACFG_6BPC;
--		bits = 8;
- 		break;
- 	case CS7:		/* 7 bits/char */
- 		new_config2 |= ICOM_ACFG_7BPC;
--		bits = 9;
- 		break;
- 	case CS8:		/* 8 bits/char */
- 		new_config2 |= ICOM_ACFG_8BPC;
--		bits = 10;
- 		break;
- 	default:
--		bits = 10;
- 		break;
- 	}
- 	if (cflag & CSTOPB) {
- 		/* 2 stop bits */
- 		new_config2 |= ICOM_ACFG_2STOP_BIT;
--		bits++;
- 	}
- 	if (cflag & PARENB) {
- 		/* parity bit enabled */
- 		new_config2 |= ICOM_ACFG_PARITY_ENAB;
- 		trace(ICOM_PORT, "PARENB", 0);
--		bits++;
- 	}
- 	if (cflag & PARODD) {
- 		/* odd parity */
-@@ -1322,7 +1314,6 @@ static struct uart_driver icom_uart_driver = {
- static int __devinit icom_init_ports(struct icom_adapter *icom_adapter)
- {
- 	u32 subsystem_id = icom_adapter->subsystem_id;
--	int retval = 0;
- 	int i;
- 	struct icom_port *icom_port;
- 
-@@ -1368,7 +1359,7 @@ static int __devinit icom_init_ports(struct icom_adapter *icom_adapter)
- 		}
- 	}
- 
--	return retval;
-+	return 0;
- }
- 
- static void icom_port_active(struct icom_port *icom_port, struct icom_adapter *icom_adapter, int port_num)
-@@ -1391,7 +1382,6 @@ static int __devinit icom_load_ports(struct icom_adapter *icom_adapter)
- {
- 	struct icom_port *icom_port;
- 	int port_num;
--	int retval;
- 
- 	for (port_num = 0; port_num < icom_adapter->numb_ports; port_num++) {
- 
-@@ -1405,7 +1395,7 @@ static int __devinit icom_load_ports(struct icom_adapter *icom_adapter)
- 			icom_port->adapter = icom_adapter;
- 
- 			/* get port memory */
--			if ((retval = get_port_memory(icom_port)) != 0) {
-+			if (get_port_memory(icom_port) != 0) {
- 				dev_err(&icom_port->adapter->pci_dev->dev,
- 					"Memory allocation for port FAILED\n");
- 			}
+diff --git a/drivers/pci/quirks.c b/drivers/pci/quirks.c
+index 92b9efe..5aa2afb 100644
+--- a/drivers/pci/quirks.c
++++ b/drivers/pci/quirks.c
+@@ -1664,9 +1664,13 @@ static void __devinit quirk_netmos(struct pci_dev *dev)
+ 	 * of parallel ports and <S> is the number of serial ports.
+ 	 */
+ 	switch (dev->device) {
++	case PCI_DEVICE_ID_NETMOS_9835:
++		/* Well, this rule doesn't hold for the following 9835 device */
++		if (dev->subsystem_vendor == PCI_VENDOR_ID_IBM &&
++				dev->subsystem_device == 0x0299)
++			return;
+ 	case PCI_DEVICE_ID_NETMOS_9735:
+ 	case PCI_DEVICE_ID_NETMOS_9745:
+-	case PCI_DEVICE_ID_NETMOS_9835:
+ 	case PCI_DEVICE_ID_NETMOS_9845:
+ 	case PCI_DEVICE_ID_NETMOS_9855:
+ 		if ((dev->class >> 8) == PCI_CLASS_COMMUNICATION_SERIAL &&
 
