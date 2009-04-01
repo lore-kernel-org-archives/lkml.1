@@ -1,96 +1,80 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933556AbZDAWZ3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932817AbZDAW1c@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933556AbZDAWZ3 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 1 Apr 2009 18:25:29 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761270AbZDAWZQ
+	id S932817AbZDAW1c (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 1 Apr 2009 18:27:32 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753253AbZDAW1W
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 1 Apr 2009 18:25:16 -0400
-Received: from hera.kernel.org ([140.211.167.34]:37506 "EHLO hera.kernel.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756673AbZDAWZO (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 1 Apr 2009 18:25:14 -0400
-Message-ID: <49D3E9EF.8010407@kernel.org>
-Date: Thu, 02 Apr 2009 07:25:51 +0900
-From: Tejun Heo <tj@kernel.org>
-User-Agent: Thunderbird 2.0.0.19 (X11/20081227)
-MIME-Version: 1.0
-To: Boaz Harrosh <bharrosh@panasas.com>
-CC: axboe@kernel.dk, linux-kernel@vger.kernel.org,
-       fujita.tomonori@lab.ntt.co.jp
-Subject: Re: [PATCH 13/17] blk-map: implement blk_rq_map_kern_sgl()
-References: <1238593472-30360-1-git-send-email-tj@kernel.org> <1238593472-30360-14-git-send-email-tj@kernel.org> <49D39B6C.7080707@panasas.com>
-In-Reply-To: <49D39B6C.7080707@panasas.com>
-X-Enigmail-Version: 0.95.7
-Content-Type: text/plain; charset=UTF-8
+	Wed, 1 Apr 2009 18:27:22 -0400
+Received: from mail-bw0-f169.google.com ([209.85.218.169]:58085 "EHLO
+	mail-bw0-f169.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750902AbZDAW1V (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 1 Apr 2009 18:27:21 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=subject:from:to:cc:in-reply-to:references:content-type:date
+         :message-id:mime-version:x-mailer:content-transfer-encoding;
+        b=CJz+cUPRUmRRvhdIHrd7TqVW2a6P5EAXjMg2aNM0OSkPPMCe8KvAflsumCLpx4g8sj
+         illZDFHBQj4WAnmwgmdX4lnxWBfSLKj901/RZQBYcSqBF6cCoFBCFXbq8NuEOr/u+Dyz
+         Q/Fjh1iPN5mlD6aCQDK1A9C3uOkN6+JOtF+ug=
+Subject: Re: [PATCH 1/2] lib: add fast lzo decompressor
+From: Andreas Robinson <andr345@gmail.com>
+To: "H. Peter Anvin" <hpa@zytor.com>
+Cc: Alain Knaff <alain@knaff.lu>, linux-kernel@vger.kernel.org
+In-Reply-To: <49D3D4C0.1080506@zytor.com>
+References: <1238593252-3435-1-git-send-email-andr345@gmail.com>
+	 <1238593252-3435-2-git-send-email-andr345@gmail.com>
+	 <49D3927A.2050406@zytor.com> <1238613730.10514.35.camel@andreas-desktop>
+	 <49D3D4C0.1080506@zytor.com>
+Content-Type: text/plain
+Date: Thu, 02 Apr 2009 00:27:07 +0200
+Message-Id: <1238624827.15230.58.camel@andreas-desktop>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.24.3 
 Content-Transfer-Encoding: 7bit
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Wed, 01 Apr 2009 22:25:08 +0000 (UTC)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hello,
-
-Boaz Harrosh wrote:
->> -	do_copy = !blk_rq_aligned(q, kbuf, len) || object_is_on_stack(kbuf);
->> -	if (do_copy)
->> -		bio = bio_copy_kern(q, kbuf, len, gfp, rw);
->> -	else
->> -		bio = bio_map_kern(q, kbuf, len, gfp);
->> -
->> +	bio = bio_map_kern_sg(q, sgl, nents, rw, gfp);
->> +	if (IS_ERR(bio))
->> +		bio = bio_copy_kern_sg(q, sgl, nents, rw, gfp);
->>  	if (IS_ERR(bio))
->>  		return PTR_ERR(bio);
+On Wed, 2009-04-01 at 13:55 -0700, H. Peter Anvin wrote:
+> Andreas Robinson wrote:
+> > 
+> > Perhaps the system can default to the safe decompressor for normal use
+> > and choose the fast one if STATIC is defined or when system_state ==
+> > SYSTEM_BOOTING?
+> > 
 > 
-> You might want to call bio_copy_kern_sg from within bio_map_kern_sg
-> and remove yet another export from bio layer
-> 
-> Same thing with bio_map_user_iov/bio_copy_user_iov
+> Do we really need two pieces of code?
 
-Right, that makes sense.  Will incorporate it.
+To get the higher speed offered by the fast function, yes.
 
->>  
->> -	if (rq_data_dir(rq) == WRITE)
->> -		bio->bi_rw |= (1 << BIO_RW);
->> -
->> -	if (do_copy)
->> +	if (!bio_flagged(bio, BIO_USER_MAPPED))
->>  		rq->cmd_flags |= REQ_COPY_USER;
->>  
->> +	blk_queue_bounce(q, &bio);
->>  	blk_rq_bio_prep(q, rq, bio);
-> 
-> It could be nice to call blk_rq_append_bio() here
-> and support multiple calls to this member.
-> This will solve half of my problem with osd_initiator
-> 
-> Hmm .. but you wanted to drop multiple bio chaining
-> perhaps you would reconsider.
+Merging the two with some macro magic and then compile twice with
+different macro definitions could work though. That might hurt the
+readability of the code a bit. Or help. :-) I'll look into it.
 
-I don't want to drop multiple bio chaining at all in itself.  I just
-didn't see the current uses as, well, useful.  If building a sgl for a
-request at once is difficult for your purpose, making blk_rq_map_*()
-functions accumulate bios sounds like a good idea.  The primary goal
-was to remove direct bio visibility/manipulation from low level
-driver's POV.
+Anyway, I assume it is maintainability rather than size you're concerned
+about here?
 
->> +int blk_rq_map_kern(struct request_queue *q, struct request *rq, void *kbuf,
->> +		    unsigned int len, gfp_t gfp)
->> +{
->> +	struct scatterlist sg;
->> +
->> +	sg_init_one(&sg, kbuf, len);
->> +
->> +	return blk_rq_map_kern_sg(q, rq, &sg, 1, gfp);
->> +}
->>  EXPORT_SYMBOL(blk_rq_map_kern);
-> 
-> could be inline like with the end_request functions
+The duplicate function adds just 1.7 KB to the kernel and you throw it
+out once the kernel has finished booting.
 
-Yeap, will make it inline.
+OTOH, the safe version is far from useless. 
 
-Thanks.
+I estimate (but haven't tested yet) that you would lose about 40 ms in
+the Eee test case. That is, the boot-time savings are reduced from 123
+to perhaps 85 ms which is still acceptable. It is certainly much less
+complicated than the alternatives, so if that's what you would prefer I
+can go that way.
 
--- 
-tejun
+>   What if we have memory corruption 
+> during early boot - it seems we'd want to at least try to catch that 
+> with an error message rather than just crashing.
+
+This is very easy to do, so consider it done.
+
+The decompressor is essentially a glorified memcpy that can copy the
+same data to several locations. You only have to check whether the write
+pointer has passed the end of the output buffer to see if something went
+wrong.
+
+
