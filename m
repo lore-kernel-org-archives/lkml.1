@@ -1,37 +1,41 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1765589AbZDAOXb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932389AbZDAOZx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1765589AbZDAOXb (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 1 Apr 2009 10:23:31 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759578AbZDAOXP
+	id S932389AbZDAOZx (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 1 Apr 2009 10:25:53 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1765852AbZDAOZn
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 1 Apr 2009 10:23:15 -0400
-Received: from zeniv.linux.org.uk ([195.92.253.2]:46442 "EHLO
-	ZenIV.linux.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1761423AbZDAOXO (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 1 Apr 2009 10:23:14 -0400
-Date: Wed, 1 Apr 2009 15:23:12 +0100
-From: Al Viro <viro@ZenIV.linux.org.uk>
-To: npiggin@suse.de
-Cc: linux-fsdevel@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: Re: [rfc] scale dcache locking
-Message-ID: <20090401142312.GD28946@ZenIV.linux.org.uk>
-References: <20090329155539.275927173@nick.local0.net>
+	Wed, 1 Apr 2009 10:25:43 -0400
+Received: from smtp2.it.da.ut.ee ([193.40.5.67]:49487 "EHLO smtp2.it.da.ut.ee"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1758225AbZDAOZm (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 1 Apr 2009 10:25:42 -0400
+Date: Wed, 1 Apr 2009 17:25:40 +0300 (EEST)
+From: Meelis Roos <mroos@linux.ee>
+To: Linux Kernel list <linux-kernel@vger.kernel.org>
+Subject: Re: strange MTRR on 2.6.29-git
+In-Reply-To: <Pine.SOC.4.64.0904011711210.5672@math.ut.ee>
+Message-ID: <Pine.SOC.4.64.0904011722350.14173@math.ut.ee>
+References: <Pine.SOC.4.64.0904011711210.5672@math.ut.ee>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090329155539.275927173@nick.local0.net>
-User-Agent: Mutt/1.5.17 (2007-11-01)
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Mar 30, 2009 at 02:55:39AM +1100, npiggin@suse.de wrote:
-> This is my sketch for improving dcache locking scalability. So far I've
-> only really been looking at core code to get an idea of how it might look,
-> so most configurable functionality is broken (and unfortunately it might
-> well be something in there which will cause a fundamental problem for me).
+> Found this on todays 2.6.29 + git. The same address range has both WB 
+> and UC MTRR-s.
+> 
+> reg00: base=0x000000000 (    0MB), size=  512MB, count=1: write-back
+> reg01: base=0x020000000 (  512MB), size=    1MB, count=1: write-back
+> reg02: base=0x020000000 (  512MB), size=    1MB, count=1: uncachable
+> reg03: base=0x0f2000000 ( 3872MB), size=   32MB, count=2: write-combining
+> reg04: base=0x0f8000000 ( 3968MB), size=   64MB, count=1: write-combining
 
-Umm...  Some of that makes obvious sense per se, some...  In particular,
-all of a sudden we get contention between multiple dput() on the same
-dentry, which is dirt-common for directory ones.
+Actually, these double MTRR-s for the range @ 512M are there long time. 
+Testbooted 2.6.20 that is the earliest kernel I have around here and 
+this conflicting double MTRR is still there, so it's not a recent 
+change. In 2.6.20 reg04 was not present but that's probably unimportant 
+since reg01 and reg02 are the same.
+
+-- 
+Meelis Roos (mroos@linux.ee)
