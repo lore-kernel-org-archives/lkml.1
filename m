@@ -1,58 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760971AbZDAIgf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761901AbZDAIhc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760971AbZDAIgf (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 1 Apr 2009 04:36:35 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754757AbZDAIgT
+	id S1761901AbZDAIhc (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 1 Apr 2009 04:37:32 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757703AbZDAIhQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 1 Apr 2009 04:36:19 -0400
-Received: from wf-out-1314.google.com ([209.85.200.170]:24294 "EHLO
-	wf-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753836AbZDAIgQ convert rfc822-to-8bit (ORCPT
+	Wed, 1 Apr 2009 04:37:16 -0400
+Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:39024
+	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
+	by vger.kernel.org with ESMTP id S1756766AbZDAIhO (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 1 Apr 2009 04:36:16 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
-         :cc:content-type:content-transfer-encoding;
-        b=hZ79yhYjdk3Qjr/h1u2O/M6RZcM63QqUA/0Peh7DbJsTJPSVvssjh1a0HoWoUaI4XO
-         QiStpi8XglNark0jWG5LQ7fe5anDiJJaY6Im2fK3CG8wAEziFQA3TFICW3uHqwSn/1zD
-         BzCsLeEuBXyxkKZHVxUQ+mGxpr/x0MT12pizg=
-MIME-Version: 1.0
-In-Reply-To: <1238196439-16535-29-git-send-email-u.kleine-koenig@pengutronix.de>
-References: <20090327232153.GA16348@pengutronix.de>
-	 <1238196439-16535-29-git-send-email-u.kleine-koenig@pengutronix.de>
-Date: Wed, 1 Apr 2009 14:06:14 +0530
-Message-ID: <5d5443650904010136i7894b01y24393cc69f7b0234@mail.gmail.com>
-Subject: Re: [PATCH 29/58] move omap24xxcam's probe function to .devinit.text
-From: Trilok Soni <soni.trilok@gmail.com>
-To: =?ISO-8859-1?Q?Uwe_Kleine=2DK=F6nig?= 
-	<u.kleine-koenig@pengutronix.de>
-Cc: linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
-       Sakari Ailus <sakari.ailus@nokia.com>,
-       Hans Verkuil <hverkuil@xs4all.nl>,
-       Mauro Carvalho Chehab <mchehab@redhat.com>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 8BIT
+	Wed, 1 Apr 2009 04:37:14 -0400
+Date: Wed, 01 Apr 2009 01:37:02 -0700 (PDT)
+Message-Id: <20090401.013702.66171229.davem@davemloft.net>
+To: schwidefsky@de.ibm.com
+Cc: tj@kernel.org, mingo@elte.hu, rusty@rustcorp.com.au, tglx@linutronix.de,
+       x86@kernel.org, linux-kernel@vger.kernel.org, hpa@zytor.com,
+       lethal@linux-sh.org, rmk@arm.linux.org.uk, starvik@axis.com,
+       ralf@linux-mips.org, cooloney@kernel.org, kyle@mcmartin.ca,
+       matthew@wil.cx, grundler@parisc-linux.org, takata@linux-m32r.org,
+       benh@kernel.crashing.org, rth@twiddle.net, ink@jurassic.park.msu.ru,
+       heiko.carstens@de.ibm.com
+Subject: Re: [GIT RFC] percpu: use dynamic percpu allocator as the default
+ percpu allocator
+From: David Miller <davem@davemloft.net>
+In-Reply-To: <20090401103257.12c2517e@skybase>
+References: <20090401101054.0a4b187d@skybase>
+	<49D3231D.2040403@kernel.org>
+	<20090401103257.12c2517e@skybase>
+X-Mailer: Mew version 6.1 on Emacs 22.1 / Mule 5.0 (SAKAKI)
+Mime-Version: 1.0
+Content-Type: Text/Plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Uwe,
+From: Martin Schwidefsky <schwidefsky@de.ibm.com>
+Date: Wed, 1 Apr 2009 10:32:57 +0200
 
->
-> -static int __init omap24xxcam_probe(struct platform_device *pdev)
-> +static int __devinit omap24xxcam_probe(struct platform_device *pdev)
->  {
->        struct omap24xxcam_device *cam;
->        struct resource *mem;
-> --
-> 1.6.2
->
->
+> The code sequence with @GOT:
+> 
+> 	larl	%r12,_GLOBAL_OFFSET_TABLE_
+> 	lg	%r1,symbol@GOT(%r12)
+> 
+> is equivalent to:
+> 
+> 	larl	%r1,symbol@GOTENT
+> 	lg	%r1,0(%r1)
+> 
+> The advantage of the second code sequence is that it need a single
+> register and the size of the GOT is not limited to 4K as in the first
+> example (the offset in an RX format instruction is limited to 12 bits -
+> but that is probably something you don't want to know ;-).
 
-Acked-by: Trilok Soni <soni.trilok@gmail.com>
-
--- 
----Trilok Soni
-http://triloksoni.wordpress.com
-http://www.linkedin.com/in/triloksoni
+If practical I think you guys should just force all of the module
+address space below 4GB virtually, as we do on sparc64.  It's a good
+way to avoid all of these problems.
