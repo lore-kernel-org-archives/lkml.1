@@ -1,49 +1,73 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764110AbZDANOj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764259AbZDANRh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764110AbZDANOj (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 1 Apr 2009 09:14:39 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756983AbZDANO3
+	id S1764259AbZDANRh (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 1 Apr 2009 09:17:37 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755471AbZDANR1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 1 Apr 2009 09:14:29 -0400
-Received: from pc125.solomon-systech.com ([202.76.106.125]:57817 "HELO
-	virus-gateway.solomon-systech.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1753570AbZDANO3 convert rfc822-to-8bit
-	(ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 1 Apr 2009 09:14:29 -0400
-X-Greylist: delayed 3631 seconds by postgrey-1.27 at vger.kernel.org; Wed, 01 Apr 2009 09:14:28 EDT
-X-MimeOLE: Produced By Microsoft Exchange V6.0.6603.0
-content-class: urn:content-classes:message
+	Wed, 1 Apr 2009 09:17:27 -0400
+Received: from hera.kernel.org ([140.211.167.34]:36488 "EHLO hera.kernel.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1755113AbZDANR0 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 1 Apr 2009 09:17:26 -0400
+Message-ID: <49D36951.9000604@kernel.org>
+Date: Wed, 01 Apr 2009 22:17:05 +0900
+From: Tejun Heo <tj@kernel.org>
+User-Agent: Thunderbird 2.0.0.19 (X11/20081227)
 MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="us-ascii"
-Content-Transfer-Encoding: 8BIT
-Subject: mmc removal and file system access mutex
-Date: Wed, 1 Apr 2009 20:15:37 +0800
-Message-ID: <6334E09627481B4AA5C8DE1E69E19D3B0C1FF8A6@SSLEXCHANGE.solomonsystech.com>
-X-MS-Has-Attach: 
-X-MS-TNEF-Correlator: 
-Thread-Topic: mmc removal and file system access mutex
-Thread-Index: Acmyw1NNPJGJVKVoRCWHQnH7pabVhg==
-From: <sasin@solomon-systech.com>
-To: <linux-kernel@vger.kernel.org>
+To: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
+CC: axboe@kernel.dk, bharrosh@panasas.com, linux-kernel@vger.kernel.org,
+       tj@kenel.org
+Subject: Re: [PATCH 8/8] blk-map: reimplement blk_rq_map_user() using blk_rq_map_user_iov()
+References: <49D36329.20004@kernel.org>	<20090401215933S.fujita.tomonori@lab.ntt.co.jp>	<49D3662B.3000801@kernel.org> <20090401221102O.fujita.tomonori@lab.ntt.co.jp>
+In-Reply-To: <20090401221102O.fujita.tomonori@lab.ntt.co.jp>
+X-Enigmail-Version: 0.95.7
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Wed, 01 Apr 2009 13:17:08 +0000 (UTC)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
+Hello,
 
-I am running into crashes/hangs when repeatedly removing/reinserting an
-MMC card while reading a file on the card.  The card is automatically
-unmounted on removal and remounted on insertion at the same mount point.
+FUJITA Tomonori wrote:
+> On Wed, 01 Apr 2009 22:03:39 +0900
+> Tejun Heo <tj@kernel.org> wrote:
+> 
+>> FUJITA Tomonori wrote:
+>>> No, we are not talking about blk_rq_append_bio().
+>>>
+>>> We are talking about the multiple bio handling in blk_rq_map_user,
+>>> which is the feature that Mike added long time ago. The feature is
+>>> surely necessary for some users. So you can't remote it.
+>> How would someone use that without blk_rq_append_bio()?  The only
+> 
+> Hmm, I'm not sure what you are talking about.
+> 
+> Why do we need to live without blk_rq_append_bio()?
+> 
+> You want to remove blk_rq_append_bio()? Please make your goal clear.
 
-The hang was caused by elv_next_request in mmc_request repeatedly
-presenting the same request on a dead queue.  The crash is caused by the
-file system read track accessing the freed request queue or some other
-structure element associated with the block device that was removed.
-Isn't there some form of mutex preventing this?
+Yeah, I'm writing header message for the next patchset.  It will go
+out in a few minutes.  With the bogus fix part removed, this patch
+(and related earlier ones) should have been part of the next set.
+And, yes, the goal is removing blk_rq_append_bio() and any and all
+request/bio internal meddling with further patchsets.
 
-I am using 2.6.24 on ARM926 - sorry for using such an outdated version
-:-(
+>> reason blk_rq_map_user() had multiple bio chaining was to work around
+>> BIO_MAX_SIZE.  blk_rq_map_user_iov() doesn't support multiple bio
+>> chaining, so sans blk_rq_append_bio() or playing with rq/bio internals
+>> directly, there's no way to use or even know about multiple bios.
+> 
+> Yes, only non iovec interface of SG_IO supports large data
+> transfer. Users have been lived with that.
 
-Best regards,
-Sasi
+This patch doesn't remove any feature.  You don't lose anything.  What
+used to be done with multiple bios is now done with single bio.  The
+implementation is simpler and shorter.  Using or not using multiple
+bios doesn't (and shouldn't) make any difference to blk_map_*() users.
+
+Thanks.
+
+-- 
+tejun
