@@ -1,58 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755102AbZDAGHD@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753639AbZDAGHf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755102AbZDAGHD (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 1 Apr 2009 02:07:03 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750845AbZDAGGv
+	id S1753639AbZDAGHf (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 1 Apr 2009 02:07:35 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756840AbZDAGG5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 1 Apr 2009 02:06:51 -0400
-Received: from hera.kernel.org ([140.211.167.34]:60282 "EHLO hera.kernel.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750742AbZDAGGu (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 1 Apr 2009 02:06:50 -0400
-Message-ID: <49D30469.8020006@kernel.org>
-Date: Wed, 01 Apr 2009 15:06:33 +0900
-From: Tejun Heo <tj@kernel.org>
-User-Agent: Thunderbird 2.0.0.19 (X11/20081227)
+	Wed, 1 Apr 2009 02:06:57 -0400
+Received: from n18.bullet.mail.mud.yahoo.com ([68.142.206.145]:44636 "HELO
+	n18.bullet.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1754128AbZDAGGy (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 1 Apr 2009 02:06:54 -0400
+X-Yahoo-Newman-Id: 770679.70483.bm@omp416.mail.mud.yahoo.com
+DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
+  s=s1024; d=pacbell.net;
+  h=Received:X-YMail-OSG:X-Yahoo-Newman-Property:From:To:Subject:Date:User-Agent:Cc:References:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Content-Disposition:Message-Id;
+  b=0kGV40Hl6KpE2yHrSnyHzBOIdMmPw5qku4HUTXMhCcrE96FK2QjYLhdX5dvKrc+olufn0BEZTiCD/LmR2T0+8u7B/qsTFNC43HjFRxB8L0GICg6noSZE8QeaxNUVxWHQ9X4AVJjoBVCxTFNNMVV0iFuin7QP+Ly+wE3v9poJl70=  ;
+X-YMail-OSG: dtBbISUVM1mheQjNS2FQtqCxpzuo_7j_tPxh7d1GQJK9N2K9vYq_Qz_m.LQVAZyYXWcYwVCwNR.hY_bLrqWPOmgWwwSTOJh_m55QHAq8UmnqvTTnDju8vbe.KLMaV9yT3Z4A0GzYUSPOz300Ytv51bnyCnDkoH.vTpYeBN362uCmZ0pLBkJNWXL9s2foPzBKfpjQqAcmqyZNlIWOvtYFsAE_ZqaLJMaZJP68Ahb.1yWdKFJ9WNFv2_PzI.eYEU1Of2CVBlekHhcPbIBGkkIJrd7BQLjH5tz64DcCyfU0VjsmgD8vIr1F
+X-Yahoo-Newman-Property: ymail-3
+From: David Brownell <david-b@pacbell.net>
+To: dedekind@infradead.org
+Subject: Re: [patch/rfc 2.6.29 2/2] MTD: support driver model updates
+Date: Tue, 31 Mar 2009 22:57:37 -0700
+User-Agent: KMail/1.9.10
+Cc: Linux MTD <linux-mtd@lists.infradead.org>,
+       LKML <linux-kernel@vger.kernel.org>, Kay Sievers <kay.sievers@vrfy.org>
+References: <200903260039.34013.david-b@pacbell.net> <200903260042.50236.david-b@pacbell.net> <1238564771.20906.26.camel@localhost.localdomain>
+In-Reply-To: <1238564771.20906.26.camel@localhost.localdomain>
 MIME-Version: 1.0
-To: Yinghai Lu <yinghai@kernel.org>, Ingo Molnar <mingo@elte.hu>
-CC: David Miller <davem@davemloft.net>, "H. Peter Anvin" <hpa@zytor.com>,
-       Thomas Gleixner <tglx@linutronix.de>, linux-kernel@vger.kernel.org
-Subject: [PATCH] x86,percpu: fix inverted NUMA test in setup_pcpu_remap()
-References: <20090331.223128.143365884.davem@davemloft.net> <86802c440903312256r6ddbaa22o5c23cf85d83a6662@mail.gmail.com>
-In-Reply-To: <86802c440903312256r6ddbaa22o5c23cf85d83a6662@mail.gmail.com>
-X-Enigmail-Version: 0.95.7
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Wed, 01 Apr 2009 06:06:37 +0000 (UTC)
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 8bit
+Content-Disposition: inline
+Message-Id: <200903312257.37434.david-b@pacbell.net>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-setup_percpu_remap() is for NUMA machines yet it bailed out with
--EINVAL if pcpu_need_numa().  Fix the inverted condition.
+On Tuesday 31 March 2009, Artem Bityutskiy wrote:
+> > --- a/drivers/mtd/nand/mxc_nand.c
+> > +++ b/drivers/mtd/nand/mxc_nand.c
+> > @@ -866,6 +866,7 @@ static int __init mxcnd_probe(struct pla
+> >       mtd = &host->mtd;
+> >       mtd->priv = this;
+> >       mtd->owner = THIS_MODULE;
+> > +     mtd->dev.parent = &pdev->dev;
+> 
+> Could this be done for all NANDs in nand_base.c instead?
 
-This problem was reported by David Miller and verified by Yinhai Lu.
+By adding the device as a parameter to nand_scan(),
+and presumably nand_scan_ident() ... which is a more
+invasive API change, and would require a "flag day"
+to convert all drivers.
 
-Signed-off-by: Tejun Heo <tj@kernel.org>
-Reported-by: David Miller <davem@davemloft.net>
-Reported-by: Yinghai Lu <yinghai@kernel.org>
----
-Oops, thanks for spotting it.  I don't have a numa machine so the
-condition was never tested on actual machines.  :-)
+My default assumption for API changes is to avoid
+flag days.  They can be done, yes, but I don't see
+a compelling reason to choose one here.
 
- arch/x86/kernel/setup_percpu.c |    2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+- Dave
 
-diff --git a/arch/x86/kernel/setup_percpu.c b/arch/x86/kernel/setup_percpu.c
-index 400331b..876b127 100644
---- a/arch/x86/kernel/setup_percpu.c
-+++ b/arch/x86/kernel/setup_percpu.c
-@@ -162,7 +162,7 @@ static ssize_t __init setup_pcpu_remap(size_t static_size)
- 	 * If large page isn't supported, there's no benefit in doing
- 	 * this.  Also, on non-NUMA, embedding is better.
- 	 */
--	if (!cpu_has_pse || pcpu_need_numa())
-+	if (!cpu_has_pse || !pcpu_need_numa())
- 		return -EINVAL;
- 
- 	last = NULL;
+
