@@ -1,79 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764098AbZDAQ5x@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763378AbZDAQ7m@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764098AbZDAQ5x (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 1 Apr 2009 12:57:53 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756762AbZDAQ5o
+	id S1763378AbZDAQ7m (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 1 Apr 2009 12:59:42 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755593AbZDAQ71
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 1 Apr 2009 12:57:44 -0400
-Received: from caffeine.csclub.uwaterloo.ca ([129.97.134.17]:41091 "EHLO
-	caffeine.csclub.uwaterloo.ca" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1753791AbZDAQ5n (ORCPT
+	Wed, 1 Apr 2009 12:59:27 -0400
+Received: from one.firstfloor.org ([213.235.205.2]:37279 "EHLO
+	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753941AbZDAQ70 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 1 Apr 2009 12:57:43 -0400
-Date: Wed, 1 Apr 2009 12:57:41 -0400
-To: Rob Landley <rob@landley.net>
-Cc: linux-kernel@vger.kernel.org, dwmw2@infradead.org
-Subject: Re: make headers_install broken for ARCH=m68k in 2.6.29-rc7.
-Message-ID: <20090401165741.GA3797@csclub.uwaterloo.ca>
-References: <200903120437.03837.rob@landley.net>
-MIME-Version: 1.0
+	Wed, 1 Apr 2009 12:59:26 -0400
+Date: Wed, 1 Apr 2009 19:01:03 +0200
+From: Andi Kleen <andi@firstfloor.org>
+To: Gregory Haskins <ghaskins@novell.com>
+Cc: Andi Kleen <andi@firstfloor.org>, linux-kernel@vger.kernel.org,
+       agraf@suse.de, pmullaney@novell.com, pmorreale@novell.com,
+       anthony@codemonkey.ws, rusty@rustcorp.com.au, netdev@vger.kernel.org,
+       kvm@vger.kernel.org
+Subject: Re: [RFC PATCH 00/17] virtual-bus
+Message-ID: <20090401170103.GU11935@one.firstfloor.org>
+References: <20090331184057.28333.77287.stgit@dev.haskins.net> <87ab71monw.fsf@basil.nowhere.org> <49D35825.3050001@novell.com> <20090401132340.GT11935@one.firstfloor.org> <49D37805.1060301@novell.com>
+Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <200903120437.03837.rob@landley.net>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-From: lsorense@csclub.uwaterloo.ca (Lennart Sorensen)
+In-Reply-To: <49D37805.1060301@novell.com>
+User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Mar 12, 2009 at 04:37:03AM -0500, Rob Landley wrote:
-> So I'm doing this:
+On Wed, Apr 01, 2009 at 10:19:49AM -0400, Gregory Haskins wrote:
+> >>     
+> >
+> > But surely you must have some specific use case in mind? Something
+> > that it does better than the various methods that are available
+> > today. Or rather there must be some problem you're trying
+> > to solve. I'm just not sure what that problem exactly is.
+> >   
+> Performance.  We are trying to create a high performance IO infrastructure.
+
+Ok. So the goal is to bypass user space qemu completely for better
+performance. Can you please put this into the initial patch
+description?
+
+> So the administrator can then set these attributes as
+> desired to manipulate the configuration of the instance of the device,
+> on a per device basis.
+
+How would the guest learn of any changes in there?
+
+I think the interesting part would be how e.g. a vnet device
+would be connected to the outside interfaces.
+
+> So the admin would instantiate this "vdisk" device and do:
 > 
-> make ARCH=m68k headers_install INSTALL_HDR_PATH=walrus
-> 
-> And it doesn't install unistd_mm.h which is included from asm/unistd.h.  (The 
-> file is there in arch/m68k/include/asm/unistd_mm.h, it just doesn't get 
-> installed.  So any code that #includes <asm/unistd.h> results in a file not 
-> found error for the other one, which is essentially just a wrapper.)
-> 
-> I don't understand what the code's currently doing here well enough to fix it, 
-> specifically where does this file list come from?  The file  
-> arch/m68k/include/asm/Kbuild is adding "cachectl.h" to header-y, but there are 
-> 31 files getting installed from that directory and only one in there.  If the 
-> list was just the contents of the directory, then unistd_mm.h (and 
-> unistd_no.h) would get installed, but they don't.  I could add those two to 
-> the Kbuild file after cachectl.h, but is that the _right_ fix?  Where are the 
-> other 31 identified?  (Is it getting a listing of some _other_ directory?)
+> 'echo /path/to/my/exported/disk.dat > /sys/vbus/devices/foo/src_path'
 
-I sent a patch to fix that on Feb 5th.  I guess it hasn't been put in.
+So it would act like a loop device? Would you reuse the loop device
+or write something new?
 
-It looked like this:
+How about VFS mount name spaces?
 
-Signed-of-by: Len Sorensen <lsorense@csclub.uwaterloo.ca>
-
-diff --git a/arch/m68k/include/asm/Kbuild b/arch/m68k/include/asm/Kbuild
-index 1a922fa..d477927 100644
---- a/arch/m68k/include/asm/Kbuild
-+++ b/arch/m68k/include/asm/Kbuild
-@@ -1,2 +1,18 @@
- include include/asm-generic/Kbuild.asm
- header-y += cachectl.h
-+header-y += param_mm.h
-+header-y += param_no.h
-+header-y += ptrace_mm.h
-+header-y += ptrace_no.h
-+header-y += setup_mm.h
-+header-y += setup_no.h
-+header-y += sigcontext_mm.h
-+header-y += sigcontext_no.h
-+header-y += siginfo_mm.h
-+header-y += siginfo_no.h
-+header-y += signal_mm.h
-+header-y += signal_no.h
-+header-y += swab_mm.h
-+header-y += swab_no.h
-+header-y += unistd_mm.h
-+header-y += unistd_no.h
-
+-Andi
 -- 
-Len Sorensen
+ak@linux.intel.com -- Speaking for myself only.
