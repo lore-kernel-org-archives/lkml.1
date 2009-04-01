@@ -1,164 +1,90 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754615AbZDAIKp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760986AbZDAILd@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754615AbZDAIKp (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 1 Apr 2009 04:10:45 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753463AbZDAIK2
+	id S1760986AbZDAILd (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 1 Apr 2009 04:11:33 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755415AbZDAILQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 1 Apr 2009 04:10:28 -0400
-Received: from mga02.intel.com ([134.134.136.20]:29138 "EHLO mga02.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753233AbZDAIKZ convert rfc822-to-8bit (ORCPT
+	Wed, 1 Apr 2009 04:11:16 -0400
+Received: from mtagate2.de.ibm.com ([195.212.17.162]:48392 "EHLO
+	mtagate2.de.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755368AbZDAILN (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 1 Apr 2009 04:10:25 -0400
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.39,305,1235980800"; 
-   d="scan'208";a="502563278"
-From: "Metzger, Markus T" <markus.t.metzger@intel.com>
-To: Oleg Nesterov <oleg@redhat.com>
-CC: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       "mingo@elte.hu" <mingo@elte.hu>,
-       "tglx@linutronix.de" <tglx@linutronix.de>,
-       "hpa@zytor.com" <hpa@zytor.com>,
-       "markus.t.metzger@gmail.com" <markus.t.metzger@gmail.com>,
-       "roland@redhat.com" <roland@redhat.com>,
-       "eranian@googlemail.com" <eranian@googlemail.com>,
-       "Villacis, Juan" <juan.villacis@intel.com>,
-       "ak@linux.jf.intel.com" <ak@linux.jf.intel.com>
-Date: Wed, 1 Apr 2009 09:09:54 +0100
-Subject: RE: [patch 3/21] x86, bts: wait until traced task has been
-	scheduled out
-Thread-Topic: [patch 3/21] x86, bts: wait until traced task has been
-	scheduled out
-Thread-Index: AcmyX8GZv0e2kQRjQRK+G+a22DolTgAOVEhw
-Message-ID: <928CFBE8E7CB0040959E56B4EA41A77E926D5093@irsmsx504.ger.corp.intel.com>
-References: <20090331145947.A12565@sedona.ch.intel.com>
- <20090401001729.GC28228@redhat.com>
-In-Reply-To: <20090401001729.GC28228@redhat.com>
-Accept-Language: en-US
-Content-Language: en-US
-X-MS-Has-Attach: 
-X-MS-TNEF-Correlator: 
-acceptlanguage: en-US
-Content-Type: text/plain; charset="us-ascii"
-MIME-Version: 1.0
-Content-Transfer-Encoding: 8BIT
+	Wed, 1 Apr 2009 04:11:13 -0400
+Date: Wed, 1 Apr 2009 10:10:54 +0200
+From: Martin Schwidefsky <schwidefsky@de.ibm.com>
+To: Tejun Heo <tj@kernel.org>
+Cc: Ingo Molnar <mingo@elte.hu>, rusty@rustcorp.com.au, tglx@linutronix.de,
+       x86@kernel.org, linux-kernel@vger.kernel.org, hpa@zytor.com,
+       Paul Mundt <lethal@linux-sh.org>, rmk@arm.linux.org.uk,
+       starvik@axis.com, ralf@linux-mips.org, davem@davemloft.net,
+       cooloney@kernel.org, kyle@mcmartin.ca, matthew@wil.cx,
+       grundler@parisc-linux.org, takata@linux-m32r.org,
+       benh@kernel.crashing.org, rth@twiddle.net, ink@jurassic.park.msu.ru,
+       heiko.carstens@de.ibm.com
+Subject: Re: [GIT RFC] percpu: use dynamic percpu allocator as the default
+ percpu allocator
+Message-ID: <20090401101054.0a4b187d@skybase>
+In-Reply-To: <49D2B04D.4070604@kernel.org>
+References: <1236671631-9305-1-git-send-email-tj@kernel.org>
+	<20090316190132.7965a49a@skybase>
+	<49C300D8.5080204@kernel.org>
+	<49C8FAC4.6060508@kernel.org>
+	<20090325122738.42d105b7@skybase>
+	<49CA1AC3.9080908@kernel.org>
+	<20090325122241.GE11571@elte.hu>
+	<49CA2345.70204@kernel.org>
+	<20090325141330.2717dc97@skybase>
+	<49CA2FBF.9000207@kernel.org>
+	<20090325142525.2d31c522@skybase>
+	<49CA32F6.2030408@kernel.org>
+	<20090331185431.72ff1707@skybase>
+	<49D2B04D.4070604@kernel.org>
+Organization: IBM Corporation
+X-Mailer: Claws Mail 3.7.1 (GTK+ 2.14.7; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
->-----Original Message-----
->From: Oleg Nesterov [mailto:oleg@redhat.com]
->Sent: Wednesday, April 01, 2009 2:17 AM
->To: Metzger, Markus T
+On Wed, 01 Apr 2009 09:07:41 +0900
+Tejun Heo <tj@kernel.org> wrote:
 
+> Martin Schwidefsky wrote:
+> > 
+> > I got the dynamic cpu allocator to work with the patch below. Anybody
+> > with an objection against the SHIFT_PERCPU_VAR macro ?
+> 
+> One of the main goals of the percpu allocator is removing the
+> distinction between statically and dynamically allocated percpu
+> variables, so that it can be treated like other normal variables.  For
+> all archs other than s390, alpha and ia64, achieving this is easy, so
+> I wish we could come up with solution for the three archs too.  Is it
+> possible to do similar stuff with pointer values with input
+> constraint which can take both constant and variable?
 
->> +static void wait_to_unschedule(struct task_struct *task)
->> +{
->> +	unsigned long nvcsw;
->> +	unsigned long nivcsw;
->> +
->> +	if (!task)
->> +		return;
->> +
->> +	if (task == current)
->> +		return;
->> +
->> +	nvcsw  = task->nvcsw;
->> +	nivcsw = task->nivcsw;
->> +	for (;;) {
->> +		if (!task_is_running(task))
->> +			break;
->> +		/*
->> +		 * The switch count is incremented before the actual
->> +		 * context switch. We thus wait for two switches to be
->> +		 * sure at least one completed.
->> +		 */
->> +		if ((task->nvcsw - nvcsw) > 1)
->> +			break;
->> +		if ((task->nivcsw - nivcsw) > 1)
->> +			break;
->> +
->> +		schedule();
->
->schedule() is a nop here. We can wait unpredictably long...
+Is the goal to use the same access macros for both dynamically and
+statically allocated percpu variables? That would make the proposed
+solution impractical.
 
-Hmmm, As far as I understand the code, rt-workqueues use a higher sched_class
-and can thus not be preempted by normal threads. Non-rt workqueues
-use the fair_sched_class. And schedule_work() uses a non-rt workqueue.
+The "X" constraint trick we used so far tells the compiler to pass the
+argument verbatim to the assembler. The assembler knows how to deal
+with symbol@GOTENT. If we pass a gcc variable or even a more general
+term via an "X" constraint the assembler gets <something C-ish>@GOTENT.
+It is not possible to parse this in the assembler. To do what you want
+to achieve would mean to avoid using the "X" constraint. Which means
+that we cannot use the GOTENT trick anymore. If we let the compiler
+resolve the address for a static per cpu variable we end up with the
+larl problem. Ouch!
 
-In practice, task is ptraced. It is either stopped or exiting.
-I don't expect to loop very often.
+So far the SHIFT_PERCPU_PTR/SHIFT_PERCPU_VAR is the only solution
+I have found for s390 and the dynamic percpu allocator. I'll keep
+looking for a better solution but I am not optimistic.
 
+-- 
+blue skies,
+   Martin.
 
->
->Ingo, do have have any ideas to improve this helper?
->
->Not that I really like it, but how about
->
->	int force_unschedule(struct task_struct *p)
->	{
->		struct rq *rq;
->		unsigned long flags;
->		int running;
->
->		rq = task_rq_lock(p, &flags);
->		running = task_running(rq, p);
->		task_rq_unlock(rq, &flags);
->
->		if (running)
->			wake_up_process(rq->migration_thread);
->
->		return running;
->	}
->
->which should be used instead of task_is_running() ?
->
->
->We can even do something like
->
->	void wait_to_unschedule(struct task_struct *task)
->	{
->		struct migration_req req;
->
->		rq = task_rq_lock(p, &task);
->		running = task_running(rq, p);
->		if (running) {
->			// make sure __migrate_task() will do nothing
->			req->dest_cpu = NR_CPUS + 1;
->			init_completion(&req->done);
->			list_add(&req->list, &rq->migration_queue);
->		}
->		task_rq_unlock(rq, &flags);
->
->		if (running) {
->			wake_up_process(rq->migration_thread);
->			wait_for_completion(&req.done);
->		}
->	}
->
->This way we don't poll, and we need only one helper.
->
->(Can't resist, this patch is not bisect friendly, without the next patches
-> wait_to_unschedule() is called under write_lock_irq, this is deadlockable).
-
-I know. See the reply to patch 0; I tried to keep the patches small and focused
-to simplify the review work and attract reviewers.
-
-thanks and regards,
-markus.
-
----------------------------------------------------------------------
-Intel GmbH
-Dornacher Strasse 1
-85622 Feldkirchen/Muenchen Germany
-Sitz der Gesellschaft: Feldkirchen bei Muenchen
-Geschaeftsfuehrer: Douglas Lusk, Peter Gleissner, Hannes Schwaderer
-Registergericht: Muenchen HRB 47456 Ust.-IdNr.
-VAT Registration No.: DE129385895
-Citibank Frankfurt (BLZ 502 109 00) 600119052
-
-This e-mail and any attachments may contain confidential material for
-the sole use of the intended recipient(s). Any review or distribution
-by others is strictly prohibited. If you are not the intended
-recipient, please contact the sender and delete all copies.
+"Reality continues to ruin my life." - Calvin.
 
