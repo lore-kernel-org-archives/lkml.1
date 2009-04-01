@@ -1,82 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934578AbZDAVsW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934384AbZDAVtY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934578AbZDAVsW (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 1 Apr 2009 17:48:22 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752015AbZDAVsL
+	id S934384AbZDAVtY (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 1 Apr 2009 17:49:24 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756733AbZDAVtN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 1 Apr 2009 17:48:11 -0400
-Received: from a80-127-65-128.adsl.xs4all.nl ([80.127.65.128]:41828 "EHLO
-	linux.wilsoft.nl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752551AbZDAVsK (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 1 Apr 2009 17:48:10 -0400
-X-Greylist: delayed 3111 seconds by postgrey-1.27 at vger.kernel.org; Wed, 01 Apr 2009 17:48:10 EDT
-From: "W. van den Akker" <listsrv@wilsoft.nl>
-To: "Luis R. Rodriguez" <lrodriguez@atheros.com>
-Subject: Re: Atheros Linux wireless support - ramifications of reverse engineering  alien technology
-Date: Wed, 1 Apr 2009 22:56:10 +0200
-User-Agent: KMail/1.9.9
-Cc: linux-wireless <linux-wireless@vger.kernel.org>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       "ath9k-devel@lists.ath9k.org" <ath9k-devel@venema.h4ckr.net>
-References: <43e72e890904011147p5e22eaeejac3fddd2b9cddcfc@mail.gmail.com>
-In-Reply-To: <43e72e890904011147p5e22eaeejac3fddd2b9cddcfc@mail.gmail.com>
+	Wed, 1 Apr 2009 17:49:13 -0400
+Received: from ogre.sisk.pl ([217.79.144.158]:51979 "EHLO ogre.sisk.pl"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752015AbZDAVtM (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 1 Apr 2009 17:49:12 -0400
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+To: Chris Wright <chrisw@sous-sol.org>
+Subject: Re: 2.6.29 git, resume from ram broken on thinkpad
+Date: Wed, 1 Apr 2009 23:49:09 +0200
+User-Agent: KMail/1.11.1 (Linux/2.6.29-rjw; KDE/4.2.1; x86_64; ; )
+Cc: Arkadiusz Miskiewicz <a.miskiewicz@gmail.com>,
+       linux-kernel@vger.kernel.org, Mike Travis <travis@sgi.com>,
+       Jeremy Fitzhardinge <jeremy@xensource.com>,
+       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
+       Venkatesh Pallipadi <venkatesh.pallipadi@intel.com>,
+       virtualization@lists.osdl.org, xen-devel@lists.xensource.com,
+       Yinghai Lu <yhlu.kernel@gmail.com>
+References: <200904011155.20751.a.miskiewicz@gmail.com> <200904012329.21362.rjw@sisk.pl> <20090401213756.GU18394@sequoia.sous-sol.org>
+In-Reply-To: <20090401213756.GU18394@sequoia.sous-sol.org>
 MIME-Version: 1.0
 Content-Type: text/plain;
-  charset="utf-8"
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-Message-Id: <200904012256.10450.listsrv@wilsoft.nl>
-X-MailScanner-ID: 1Lp7Tm-0003A9-PW
-X-WilSoft-MailScanner: Found to be clean
-X-WilSoft-MailScanner-From: listsrv@wilsoft.nl
+Message-Id: <200904012349.10919.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wednesday 01 April 2009 20:47:33 Luis R. Rodriguez wrote:
-> Fellow Linux wireless hackers,
->
-> We regret to inform you that Atheros is no longer going to be working
-> with the upstream Linux kernel community. We have received notice from
-> the Atheros Alien Reverse Engineering Division (AARED) that we have
-> given away too much information by opening up our drivers, furthermore
-> our batch of newly arrived organic-based wireless technology at AARED
-> is far too advanced and current wireless research cannot explain our
-> achieved max thoughput figures which violate The Shannon Theorem [1].
-> The AARED also fears that the FOSS community will start creating
-> communication portals to parallel universes with our hardware[2], a
-> feature which is theoretically possible with our latest organic-based
-> wireless technology, but unfortunately cannot be allowed due to
-> regulatory consideration near the Council Chambers of Zion [3].
->
-> We may be able to address the communication portal regulatory
-> considerations through CRDA [4] and for this we do ask for you advice,
-> but please be aware that we already are facing hard questions from the
-> NSA, specifically from Agent Smith [5]. The NSA ultimately fears that
-> the alien community we have reversed engineered their wireless
-> technology from may be watching us and may soon start sending hostile
-> ships to earth for retribution, these concerns are coming directly
-> from The Architect [6].
->
->   The Atheros Linux team
->
-> [1] http://en.wikipedia.org/wiki/Shannon_theorem
-> [2]
-> http://www.sciam.com/article.cfm?id=the-great-cosmic-roller-coaster-ride
-> [3] http://en.wikipedia.org/wiki/Zion_(The_Matrix)
-> [4] http://wireless.kernel.org/en/developers/Regulatory/CRDA
-> [5] http://en.wikipedia.org/wiki/Agent_Smith
-> [6] http://en.wikipedia.org/wiki/Architect_(The_Matrix)
-> --
-> To unsubscribe from this list: send the line "unsubscribe linux-wireless"
-> in the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+On Wednesday 01 April 2009, Chris Wright wrote:
+> * Rafael J. Wysocki (rjw@sisk.pl) wrote:
+> > This may be caused by the recent PM changes.  Can you please test if commit
+> > 8efb8c76fcdccf5050c0ea059dac392789baaff2 is fine?
+> 
+> I just tested on my t400, it's not[1].  See same symptoms as Arkadiusz.
+> Seems as if it responds to initial apci event, I see some disk activity,
+> then nothing (as if it tried to wakeup, then went back to sleep).
+> 
+> [1] 15f7176eb1cccec0a332541285ee752b935c1c85 bad
+>     fae3e7fba4c664b3a15f2cf15ac439e8d754afc2 good(ish) (display stays blank)
 
-April fool?? :D:D
+Hmm, can you also test commit 0a0c5168df270a50e3518e4f12bddb31f8f5f38f, please?
 
--- 
-This message has been scanned for viruses and
-dangerous content by MailScanner, and is
-believed to be clean.
-
+Rafael
