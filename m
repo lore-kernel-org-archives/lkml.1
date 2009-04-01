@@ -1,107 +1,71 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759388AbZDAHKU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758787AbZDAH2q@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759388AbZDAHKU (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 1 Apr 2009 03:10:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754200AbZDAHKF
+	id S1758787AbZDAH2q (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 1 Apr 2009 03:28:46 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753624AbZDAH2h
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 1 Apr 2009 03:10:05 -0400
-Received: from terminus.zytor.com ([198.137.202.10]:40042 "EHLO
-	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753951AbZDAHKB (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 1 Apr 2009 03:10:01 -0400
-Date: Wed, 1 Apr 2009 00:08:25 -0700
-Message-Id: <200904010708.n3178PZx004586@voreg.hos.anvin.org>
-From: "H. Peter Anvin" <hpa@zytor.com>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: Peter Teoh <htmldeveloper@gmail.com>, Alain Knaff <alain@knaff.lu>,
-       Jike Song <albcamus@gmail.com>, LKML <linux-kernel@vger.kernel.org>,
-       Frederic Weisbecker <fweisbec@gmail.com>, Ingo Molnar <mingo@elte.hu>,
-       Thomas Gleixer <tglx@linutronix.de>
-In-Reply-To: <804dabb00903312335t660536a1pc029988c1f71f63a@mail.gmail.com>
-Subject: [GIT PULL] bzip2/lzma Kconfig warning fix
+	Wed, 1 Apr 2009 03:28:37 -0400
+Received: from hera.kernel.org ([140.211.167.34]:42135 "EHLO hera.kernel.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752391AbZDAH2g (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 1 Apr 2009 03:28:36 -0400
+Message-ID: <49D31770.9090502@kernel.org>
+Date: Wed, 01 Apr 2009 00:27:44 -0700
+From: Yinghai Lu <yinghai@kernel.org>
+User-Agent: Thunderbird 2.0.0.19 (X11/20081227)
+MIME-Version: 1.0
+To: Tejun Heo <tj@kernel.org>, Ingo Molnar <mingo@elte.hu>,
+       "H. Peter Anvin" <hpa@zytor.com>, Thomas Gleixner <tglx@linutronix.de>
+CC: David Miller <davem@davemloft.net>, linux-kernel@vger.kernel.org
+Subject: [PATCH] x86: remove duplicated code with pcpu_need_numa()
+References: <20090331.223128.143365884.davem@davemloft.net> <86802c440903312256r6ddbaa22o5c23cf85d83a6662@mail.gmail.com> <49D30469.8020006@kernel.org>
+In-Reply-To: <49D30469.8020006@kernel.org>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Linus,
 
-This patch should take care of the annoying Kconfig warning from the
-bzip2/lzma code.
+Impact: clean up
 
-The following changes since commit 15f7176eb1cccec0a332541285ee752b935c1c85:
-  Linus Torvalds (1):
-        Merge git://git.kernel.org/.../davem/net-2.6
+those code pcpu_need_numa(), should be removed.
 
-are available in the git repository at:
+Signed-off-by: Yinghai Lu <yinghai@kernel.org>
 
-  git://git.kernel.org/pub/scm/linux/kernel/git/x86/linux-2.6-tip.git bzip2-lzma-for-linus
+---
+ arch/x86/kernel/setup_percpu.c |   14 --------------
+ 1 file changed, 14 deletions(-)
 
-H. Peter Anvin (1):
-      bzip2/lzma: quiet Kconfig warning for INITRAMFS_COMPRESSION_NONE
-
- usr/Kconfig  |   15 +--------------
- usr/Makefile |    3 ---
- 2 files changed, 1 insertions(+), 17 deletions(-)
-
-commit 1359096eacb1971be67eead8bf9b582864d92a30
-Author: H. Peter Anvin <hpa@zytor.com>
-Date:   Tue Mar 31 12:24:17 2009 -0700
-
-    bzip2/lzma: quiet Kconfig warning for INITRAMFS_COMPRESSION_NONE
-    
-    Impact: quiet Kconfig warning
-    
-    It appears that Kconfig simply has no way to provide defaults for
-    entries that exist inside a conditionalized choice block.
-    Fortunately, it turns out we don't actually ever use
-    CONFIG_INITRAMFS_COMPRESSION_NONE, so we can just drop it for
-    everything outside the choice block.
-    
-    Signed-off-by: H. Peter Anvin <hpa@zytor.com>
-
-diff --git a/usr/Kconfig b/usr/Kconfig
-index 588c588..1c3039f 100644
---- a/usr/Kconfig
-+++ b/usr/Kconfig
-@@ -72,10 +72,8 @@ config RD_LZMA
- 	  Support loading of a LZMA encoded initial ramdisk or cpio buffer
- 	  If unsure, say N.
+Index: linux-2.6/arch/x86/kernel/setup_percpu.c
+===================================================================
+--- linux-2.6.orig/arch/x86/kernel/setup_percpu.c
++++ linux-2.6/arch/x86/kernel/setup_percpu.c
+@@ -153,7 +153,6 @@ static struct page * __init pcpur_get_pa
+ static ssize_t __init setup_pcpu_remap(size_t static_size)
+ {
+ 	static struct vm_struct vm;
+-	pg_data_t *last;
+ 	size_t ptrs_size, dyn_size;
+ 	unsigned int cpu;
+ 	ssize_t ret;
+@@ -165,19 +164,6 @@ static ssize_t __init setup_pcpu_remap(s
+ 	if (!cpu_has_pse || !pcpu_need_numa())
+ 		return -EINVAL;
  
--if INITRAMFS_SOURCE!=""
+-	last = NULL;
+-	for_each_possible_cpu(cpu) {
+-		int node = early_cpu_to_node(cpu);
 -
- choice
--	prompt "Built-in initramfs compression mode"
-+	prompt "Built-in initramfs compression mode" if INITRAMFS_SOURCE!=""
- 	help
- 	  This option decides by which algorithm the builtin initramfs
- 	  will be compressed.  Several compression algorithms are
-@@ -134,14 +132,3 @@ config INITRAMFS_COMPRESSION_LZMA
- 	  smaller with LZMA in comparison to gzip.
- 
- endchoice
+-		if (node_online(node) && NODE_DATA(node) &&
+-		    last && last != NODE_DATA(node))
+-			goto proceed;
 -
--endif
+-		last = NODE_DATA(node);
+-	}
+-	return -EINVAL;
 -
--if INITRAMFS_SOURCE=""
--# The builtin initramfs is so small so we don't want to bug the user...
--
--config INITRAMFS_COMPRESSION_NONE
--	bool
--	default y
--
--endif
-diff --git a/usr/Makefile b/usr/Makefile
-index b84894b..245145a 100644
---- a/usr/Makefile
-+++ b/usr/Makefile
-@@ -6,9 +6,6 @@ klibcdirs:;
- PHONY += klibcdirs
- 
- 
--# No compression
--suffix_$(CONFIG_INITRAMFS_COMPRESSION_NONE)   =
--
- # Gzip, but no bzip2
- suffix_$(CONFIG_INITRAMFS_COMPRESSION_GZIP)   = .gz
- 
+-proceed:
+ 	/*
+ 	 * Currently supports only single page.  Supporting multiple
+ 	 * pages won't be too difficult if it ever becomes necessary.
