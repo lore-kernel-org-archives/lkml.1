@@ -1,67 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754008AbZDAJE1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761225AbZDAJE7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754008AbZDAJE1 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 1 Apr 2009 05:04:27 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750885AbZDAJES
+	id S1761225AbZDAJE7 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 1 Apr 2009 05:04:59 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750903AbZDAJEr
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 1 Apr 2009 05:04:18 -0400
-Received: from smtp.nokia.com ([192.100.105.134]:47569 "EHLO
-	mgw-mx09.nokia.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750704AbZDAJER (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 1 Apr 2009 05:04:17 -0400
-Message-ID: <49D32DAC.501@maxwell.research.nokia.com>
-Date: Wed, 01 Apr 2009 12:02:36 +0300
-From: Sakari Ailus <sakari.ailus@maxwell.research.nokia.com>
-User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.8.1.19) Gecko/20081204 SeaMonkey/1.1.14
+	Wed, 1 Apr 2009 05:04:47 -0400
+Received: from mx2.mail.elte.hu ([157.181.151.9]:46234 "EHLO mx2.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751251AbZDAJEq (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 1 Apr 2009 05:04:46 -0400
+Date: Wed, 1 Apr 2009 11:04:33 +0200
+From: Ingo Molnar <mingo@elte.hu>
+To: Peter Zijlstra <a.p.zijlstra@chello.nl>
+Cc: Paul Mackerras <paulus@samba.org>, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 01/15] perf_counter: unify and fix delayed counter
+	wakeup
+Message-ID: <20090401090433.GA27865@elte.hu>
+References: <20090330170701.856843742@chello.nl> <20090330171023.153932974@chello.nl> <18897.44531.88862.844627@cargo.ozlabs.ibm.com> <1238481425.28248.1377.camel@twins>
 MIME-Version: 1.0
-To: =?ISO-8859-1?Q?Uwe_Kleine-K=F6nig?= 
-	<u.kleine-koenig@pengutronix.de>
-CC: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Trilok Soni <soni.trilok@gmail.com>, Hans Verkuil <hverkuil@xs4all.nl>,
-       Mauro Carvalho Chehab <mchehab@redhat.com>
-Subject: Re: [PATCH 29/58] move omap24xxcam's probe function to	.devinit.text
-References: <20090327232153.GA16348@pengutronix.de> <1238196439-16535-29-git-send-email-u.kleine-koenig@pengutronix.de> <49D31A5F.90108@nokia.com> <20090401082830.GA27668@pengutronix.de>
-In-Reply-To: <20090401082830.GA27668@pengutronix.de>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 8bit
-X-OriginalArrivalTime: 01 Apr 2009 09:02:40.0146 (UTC) FILETIME=[9C30BF20:01C9B2A8]
-X-Nokia-AV: Clean
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1238481425.28248.1377.camel@twins>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Uwe Kleine-König wrote:
-> Hallo Sakari,
+
+* Peter Zijlstra <a.p.zijlstra@chello.nl> wrote:
+
+> On Tue, 2009-03-31 at 16:45 +1100, Paul Mackerras wrote:
+> > Peter Zijlstra writes:
+> > 
+> > > +void perf_counter_wakeup(struct perf_counter *counter)
+> > > +{
+> > > +	struct perf_mmap_data *data;
+> > > +
+> > > +	rcu_read_lock();
+> > > +	data = rcu_dereference(counter->data);
+> > > +	if (data) {
+> > > +		(void)atomic_xchg(&data->wakeup, POLL_IN);
+> > 
+> > Really just a nit, but how is this atomic_xchg any different from
+> > atomic_set(&data->wakeup, POLL_IN) aside from being slower?
 > 
-> On Wed, Apr 01, 2009 at 10:40:15AM +0300, Sakari Ailus wrote:
->> ext Uwe Kleine-König wrote:
->>> A pointer to omap24xxcam_probe is passed to the core via
->>> platform_driver_register and so the function must not disappear when the
->>> .init sections are discarded.  Otherwise (if also having HOTPLUG=y)
->>> unbinding and binding a device to the driver via sysfs will result in an
->>> oops as does a device being registered late.
->>>
->>> An alternative to this patch is using platform_driver_probe instead of
->>> platform_driver_register plus removing the pointer to the probe function
->>> from the struct platform_driver.
->>>
->>> Signed-off-by: Uwe Kleine-König <u.kleine-koenig@pengutronix.de>
->>> Cc: Sakari Ailus <sakari.ailus@nokia.com>
->>> Cc: Trilok Soni <soni.trilok@gmail.com>
->>> Cc: Hans Verkuil <hverkuil@xs4all.nl>
->>> Cc: Mauro Carvalho Chehab <mchehab@redhat.com>
->>> Cc: Andrew Morton <akpm@linux-foundation.org>
->>> ---
->>>  drivers/media/video/omap24xxcam.c |    2 +-
->>>  1 files changed, 1 insertions(+), 1 deletions(-)
->> Signed-off-by: Sakari Ailus <sakari.ailus@maxwell.research.nokia.com>
-> Does your S-o-b means you care for inclusion in mainline?[1]  Or should
-> I record that as an Acked-by?
+> Probably, I got my head in a twist, atomic_set() is simply an 
+> unlocked assignment (although volatile), and I read the value 
+> using a locked xchg().
+> 
+> I wasn't sure how these two would interact and so I chickened out 
+> :-)
 
-Sorry. Take that as Acked-by.
+The fact that you needed to use an ugly cast to silence the compiler 
+should have told you that we kernel developers never chicken out! :)
 
--- 
-Sakari Ailus
-sakari.ailus@maxwell.research.nokia.com
+(And if we do, it's called an orderly tactical retreat.)
+
+	Ingo
