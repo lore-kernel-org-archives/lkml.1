@@ -1,69 +1,75 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933201AbZDAT7q@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932564AbZDAULT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933201AbZDAT7q (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 1 Apr 2009 15:59:46 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750927AbZDAT7e
+	id S932564AbZDAULT (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 1 Apr 2009 16:11:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756209AbZDAULB
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 1 Apr 2009 15:59:34 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:45181 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1754784AbZDAT7e (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 1 Apr 2009 15:59:34 -0400
-Date: Wed, 1 Apr 2009 12:39:46 -0700 (PDT)
-From: Linus Torvalds <torvalds@linux-foundation.org>
-X-X-Sender: torvalds@localhost.localdomain
-To: Ingo Molnar <mingo@elte.hu>
-cc: Christoph Lameter <cl@linux.com>, Tejun Heo <tj@kernel.org>,
-       Martin Schwidefsky <schwidefsky@de.ibm.com>, rusty@rustcorp.com.au,
-       tglx@linutronix.de, x86@kernel.org, linux-kernel@vger.kernel.org,
-       hpa@zytor.com, Paul Mundt <lethal@linux-sh.org>, rmk@arm.linux.org.uk,
-       starvik@axis.com, ralf@linux-mips.org, davem@davemloft.net,
-       cooloney@kernel.org, kyle@mcmartin.ca, matthew@wil.cx,
-       grundler@parisc-linux.org, takata@linux-m32r.org,
-       benh@kernel.crashing.org, rth@twiddle.net, ink@jurassic.park.msu.ru,
-       heiko.carstens@de.ibm.com, Nick Piggin <npiggin@suse.de>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>
-Subject: Re: [PATCH UPDATED] percpu: use dynamic percpu allocator as the
- default percpu allocator
-In-Reply-To: <20090401190113.GA734@elte.hu>
-Message-ID: <alpine.LFD.2.00.0904011235160.4130@localhost.localdomain>
-References: <20090325150035.541e707a@skybase> <49CA3C2C.5030702@kernel.org> <49D099F0.3000807@kernel.org> <20090330114938.GB10070@elte.hu> <alpine.DEB.1.10.0903301049060.13333@qirst.com> <alpine.DEB.1.10.0903311208110.17960@qirst.com> <49D2B209.9060000@kernel.org>
- <alpine.DEB.1.10.0904010948120.7643@qirst.com> <20090401154913.GA31435@elte.hu> <alpine.DEB.1.10.0904011404240.29839@qirst.com> <20090401190113.GA734@elte.hu>
-User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
+	Wed, 1 Apr 2009 16:11:01 -0400
+Received: from www.tglx.de ([62.245.132.106]:49588 "EHLO www.tglx.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1755411AbZDAULB (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 1 Apr 2009 16:11:01 -0400
+Date: Wed, 1 Apr 2009 22:10:45 +0200
+From: "Hans J. Koch" <hjk@linutronix.de>
+To: "Herrera-Bendezu, Luis" <lherrera@harris.com>
+Cc: linux-kernel@vger.kernel.org
+Subject: Re: UIO: uio_mem does not handle devices above 4 GB address
+Message-ID: <20090401201045.GB3734@bluebox.local>
+References: <6FCCA913376DD7488F4139A4D11B8F48AC8CDE@troe2k1.cs.myharris.net>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <6FCCA913376DD7488F4139A4D11B8F48AC8CDE@troe2k1.cs.myharris.net>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Wed, Apr 01, 2009 at 01:20:49PM -0400, Herrera-Bendezu, Luis wrote:
+> I am working on a PPC440EPx board with some FPGAs located at
+> addresses above 4 GB
 
+That's not exactly a good idea on a 32-bit processor. Can't you remap
+that chip select to a decent address?
 
-On Wed, 1 Apr 2009, Ingo Molnar wrote:
->  
-> The rest (unannotated variables) is to be assumed "access-rarely" or 
-> "we-dont-care", by default. This is actually 95% of the global 
-> variables.
+> and kernel version 2.6.28.7. The UIO driver is
+> used to access the FPGAs. I get following error when trying to read
+> FPGA registers:
+> Machine check in kernel mode.
+> Data Read PLB Error
+> 
+> The problem is traced to member addr in struct uio_mem:
+> struct uio_mem {
+>     unsigned long     addr;
+>     unsigned long     size;
+>     int               memtype;
+>     void __iomem      *internal_addr;
+>     struct uio_map    *map;
+> };
+> 
+> When UIO_MEM_PHYS is used with device address > 32-bit then
+> uio_mmap_physical() remaps address using idev->info->mem[mi].addr
+> thus loosing high address bits.
+> 
+> One way to solve this problem is to change addr member to:
+>     phys_addr_t       addr;
 
-I'm not at all convinced that this is a good option.
+That alone won't solve the problem.
 
-The thing is, things like "read_mostly" or "access_rarely" may talk about 
-how we access those individual variables, but you're missing a _huge_ 
-chunk of the puzzle if you ignore the _correlations_ of those accesses 
-with accesses to other variables.
+> 
+> and modify corresponding attributes in uio.c. Only concern is that
+> uio_vma_fault() calls virt_to_page() and vmalloc_to_page() where both
+> have addr arg (unsigned long) and (const void *) respectively for
+> powerpc. But these functions are only used for UIO_MEM_LOGICAL and
+> UIO_MEM_VIRTUAL.
 
-The thign is, if you have variables 'a' and 'b', and they are always 
-accessed together, then it's probably worth it to put them in the same 
-cacheline.
+That probably won't work without large modifications.
 
-And that is true EVEN IF 'b' is basically read-only, but 'a' is always 
-written to. Marking 'a' as read-only or read-mostly is actually a bad 
-idea, since the only thing it can ever result in is a bigger cache 
-footprint.
+> 
+> Any alternative approach?
 
-The fact that the read-only cacheline has "nicer" behavior is totally 
-irrelevant - it's still an extra cacheline that we're accessing. And they 
-aren't free, even if read-only cachelines that can be shared across CPU's 
-are certainly a lot cheaper than ones that bounce.
+Yes, fix your hardware design.
 
-			Linus
+Thanks,
+Hans
+
