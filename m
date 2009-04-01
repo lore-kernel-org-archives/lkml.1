@@ -1,110 +1,87 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759701AbZDAHAj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759680AbZDAHGE@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759701AbZDAHAj (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 1 Apr 2009 03:00:39 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755864AbZDAHA0
+	id S1759680AbZDAHGE (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 1 Apr 2009 03:06:04 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753951AbZDAHFw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 1 Apr 2009 03:00:26 -0400
-Received: from courier.cs.helsinki.fi ([128.214.9.1]:33012 "EHLO
-	mail.cs.helsinki.fi" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755219AbZDAHAZ (ORCPT
+	Wed, 1 Apr 2009 03:05:52 -0400
+Received: from mga02.intel.com ([134.134.136.20]:24211 "EHLO mga02.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1757442AbZDAHFv convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 1 Apr 2009 03:00:25 -0400
-Date: Wed, 1 Apr 2009 10:00:21 +0300 (EEST)
-From: "=?ISO-8859-1?Q?Ilpo_J=E4rvinen?=" <ilpo.jarvinen@helsinki.fi>
-X-X-Sender: ijjarvin@wrl-59.cs.helsinki.fi
-To: Markus Trippelsdorf <markus@trippelsdorf.de>
-cc: Netdev <netdev@vger.kernel.org>, LKML <linux-kernel@vger.kernel.org>
-Subject: Re: WARNING: at net/ipv4/tcp_input.c:2927 tcp_ack+0xd55/0x1991()
-In-Reply-To: <20090331184959.GA2725@gentoox2.trippelsdorf.de>
-Message-ID: <Pine.LNX.4.64.0904010955510.762@wrl-59.cs.helsinki.fi>
-References: <20090327211202.GA10014@gentoox2.trippelsdorf.de>
- <Pine.LNX.4.64.0903280031080.5904@wrl-59.cs.helsinki.fi>
- <20090328045056.GA2394@gentoox2.trippelsdorf.de>
- <Pine.LNX.4.64.0903280930440.6696@wrl-59.cs.helsinki.fi>
- <20090328095514.GA2599@gentoox2.trippelsdorf.de>
- <Pine.LNX.4.64.0903301155150.30150@wrl-59.cs.helsinki.fi>
- <20090330164035.GA2652@gentoox2.trippelsdorf.de>
- <Pine.LNX.4.64.0903302137100.29272@wrl-59.cs.helsinki.fi>
- <20090331071018.GA2641@gentoox2.trippelsdorf.de>
- <Pine.LNX.4.64.0903311205070.30150@wrl-59.cs.helsinki.fi>
- <20090331184959.GA2725@gentoox2.trippelsdorf.de>
+	Wed, 1 Apr 2009 03:05:51 -0400
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.39,305,1235980800"; 
+   d="scan'208";a="502548449"
+From: "Metzger, Markus T" <markus.t.metzger@intel.com>
+To: Oleg Nesterov <oleg@redhat.com>, "mingo@elte.hu" <mingo@elte.hu>
+CC: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       "tglx@linutronix.de" <tglx@linutronix.de>,
+       "hpa@zytor.com" <hpa@zytor.com>,
+       "markus.t.metzger@gmail.com" <markus.t.metzger@gmail.com>,
+       "roland@redhat.com" <roland@redhat.com>,
+       "eranian@googlemail.com" <eranian@googlemail.com>,
+       "Villacis, Juan" <juan.villacis@intel.com>,
+       "ak@linux.jf.intel.com" <ak@linux.jf.intel.com>
+Date: Wed, 1 Apr 2009 08:05:42 +0100
+Subject: RE: [patch 0/21] x86, ptrace, bts, hw-branch-tracer: fixes and
+	cleanups
+Thread-Topic: [patch 0/21] x86, ptrace, bts, hw-branch-tracer: fixes and
+	cleanups
+Thread-Index: AcmyWowOqv5uLg6+SKKeFFVKaU1bQQAPKxww
+Message-ID: <928CFBE8E7CB0040959E56B4EA41A77E926D4FDE@irsmsx504.ger.corp.intel.com>
+References: <20090331144229.A11867@sedona.ch.intel.com>
+ <20090331233958.GA28228@redhat.com>
+In-Reply-To: <20090331233958.GA28228@redhat.com>
+Accept-Language: en-US
+Content-Language: en-US
+X-MS-Has-Attach: 
+X-MS-TNEF-Correlator: 
+acceptlanguage: en-US
+Content-Type: text/plain; charset="us-ascii"
 MIME-Version: 1.0
-Content-Type: MULTIPART/MIXED; BOUNDARY="-696208474-377895648-1238569221=:762"
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-  This message is in MIME format.  The first part should be readable text,
-  while the remaining parts are likely unreadable without MIME-aware tools.
+>-----Original Message-----
+>From: Oleg Nesterov [mailto:oleg@redhat.com]
+>Sent: Wednesday, April 01, 2009 1:40 AM
+>To: Metzger, Markus T
 
----696208474-377895648-1238569221=:762
-Content-Type: TEXT/PLAIN; charset=iso-8859-1
-Content-Transfer-Encoding: 8BIT
 
-On Tue, 31 Mar 2009, Markus Trippelsdorf wrote:
+>> The first 5 patches apply to .29 with the small preparation patch below.
+>
+>Tried to review these patches.
+>
+>As I said, I don't understand ds.c, but I _think_ these changes are good.
+>
+>I only have a couple of really minor nitpicks...
 
-> On Tue, Mar 31, 2009 at 12:16:51PM +0300, Ilpo Järvinen wrote:
-> > On Tue, 31 Mar 2009, Markus Trippelsdorf wrote:
-> > 
-> > > On Mon, Mar 30, 2009 at 09:52:55PM +0300, Ilpo Järvinen wrote:
-> > > > On Mon, 30 Mar 2009, Markus Trippelsdorf wrote:
-> > > > 
-> > > > > On Mon, Mar 30, 2009 at 07:01:22PM +0300, Ilpo Järvinen wrote:
-> > > > > > On Sat, 28 Mar 2009, Markus Trippelsdorf wrote:
-> > > > > > > On Sat, Mar 28, 2009 at 10:29:58AM +0200, Ilpo Järvinen wrote:
-> > > > > > 
-> > > > > > ...And, let me guess, you're in X and therefore unable to catch a final 
-> > > > > > oops if any would be printed? It would be nice to get around that as well, 
-> > > > > > either use serial/netconsole or hang in text mode while waiting for the 
-> > > > > > crash (should be too hard if you are able to setup the workload first 
-> > > > > > and then switch away from X and if reproducing takes about an hour)...
-> > > > > 
-> > > > > OK, I will try this later.
-> > > > 
-> > > > Lets hope that gives some clue where it ends up going boom (if it is 
-> > > > caused by TCP we certainly should see something more sensible in console 
-> > > > than just a hang)... ...I once again read through tcp commits but just 
-> > > > cannot find anything that could cause fackets_out miscount, not to speak 
-> > > > of crash prone changes so we'll just have to wait and see...
-> > > 
-> > > The machine hanged again this night and I took two pictures:
-> > > http://www.mypicx.com/uploadimg/1055813374_03302009_2.jpg
-> > > http://www.mypicx.com/uploadimg/1543678904_03302009_1.jpg
-> > >
-> > > But this time there was no tcp related warning in the logs.
-> > 
-> > Right. If that oops would be hit often enough one can easily mix the 
-> > warning with that hang though there is no relation (the fact that final 
-> > oops always goes unnoticed in X amplifies the effect).
-> > 
-> > > I then pulled the lateset git changes, rebuild, rebooted and setup the
-> > > workload again. The machine was still up and running in the morning 
-> > > (~4 hours uptime). So it may well be that the issue was fixed with
-> > > the latest changes.
-> > 
-> > Lets hope so, in any case if you still see hangs please get the final oops.
-> > 
-> > > If it ever occurs again I will notify you.
-> 
-> It happend again. In this case it took ~10 minutes from the warning to
-> the final crash. I'm pretty sure there must be some kind of relation
-> between the two. How else could one explain that the machine crashes just
-> minutes after _each_ instance of that WARNING?
-> 
-> (Unfortunately I was in X again, because I thought this problem was
-> solved)
-> 
-> ------------[ cut here ]------------
-> WARNING: at net/ipv4/tcp_input.c:2927 tcp_ack+0xd5b/0x19a6()
+Thanks for your review!
+I will address the nitpicks in separate patches, if that's OK with everyone.
 
-FYI, I think I figured the cause of this WARNING out, I'll post a patch 
-soon and see if it could be causing crashes somewhere (only the 
-packets_out miscount that seems besides the one with fackets_out is the 
-part I'm not fully sure of, other miscounts that happen too should be safe 
-w.r.t crashing). It's post 2.6.29 so your observation seems correct in 
-that respect, thanks.
 
--- 
- i.
----696208474-377895648-1238569221=:762--
+Regarding bisecting, I split the patches to attract reviewers to the smaller
+parts rather than scare them off with one big patch.
+I hope that the bisecting tool can cope with broken builds between patches.
+
+regards,
+markus.
+
+---------------------------------------------------------------------
+Intel GmbH
+Dornacher Strasse 1
+85622 Feldkirchen/Muenchen Germany
+Sitz der Gesellschaft: Feldkirchen bei Muenchen
+Geschaeftsfuehrer: Douglas Lusk, Peter Gleissner, Hannes Schwaderer
+Registergericht: Muenchen HRB 47456 Ust.-IdNr.
+VAT Registration No.: DE129385895
+Citibank Frankfurt (BLZ 502 109 00) 600119052
+
+This e-mail and any attachments may contain confidential material for
+the sole use of the intended recipient(s). Any review or distribution
+by others is strictly prohibited. If you are not the intended
+recipient, please contact the sender and delete all copies.
+
