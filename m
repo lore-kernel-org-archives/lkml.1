@@ -1,64 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760128AbZDAMZV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764267AbZDAMZt@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760128AbZDAMZV (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 1 Apr 2009 08:25:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1764058AbZDAMYi
+	id S1764267AbZDAMZt (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 1 Apr 2009 08:25:49 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1764195AbZDAMZZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 1 Apr 2009 08:24:38 -0400
-Received: from brick.kernel.dk ([93.163.65.50]:54312 "EHLO kernel.dk"
+	Wed, 1 Apr 2009 08:25:25 -0400
+Received: from mx3.mail.elte.hu ([157.181.1.138]:35082 "EHLO mx3.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1764072AbZDAMYh (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 1 Apr 2009 08:24:37 -0400
-Date: Wed, 1 Apr 2009 14:24:35 +0200
-From: Jens Axboe <jens.axboe@oracle.com>
-To: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
-Cc: tj@kernel.org, bharrosh@panasas.com, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 2/8] block: fix SG_IO vector request data length
-	handling
-Message-ID: <20090401122434.GE5178@kernel.dk>
-References: <1238583884-13517-3-git-send-email-tj@kernel.org> <20090401204716N.fujita.tomonori@lab.ntt.co.jp> <20090401115058.GD5178@kernel.dk> <20090401211851Y.fujita.tomonori@lab.ntt.co.jp>
+	id S1764187AbZDAMZW (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 1 Apr 2009 08:25:22 -0400
+Date: Wed, 1 Apr 2009 14:25:16 +0200
+From: Ingo Molnar <mingo@elte.hu>
+To: Tom Zanussi <tzanussi@gmail.com>
+Cc: Frederic Weisbecker <fweisbec@gmail.com>,
+       linux-kernel <linux-kernel@vger.kernel.org>,
+       Steven Rostedt <rostedt@goodmis.org>
+Subject: Re: [PATCH] tracing/filters: add run-time field descriptions to
+	TRACE_EVENT_FORMAT events
+Message-ID: <20090401122516.GH12966@elte.hu>
+References: <1238390524.6368.64.camel@bookworm> <20090330103808.GB6058@nowhere> <1238474638.10508.51.camel@bookworm>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20090401211851Y.fujita.tomonori@lab.ntt.co.jp>
+In-Reply-To: <1238474638.10508.51.camel@bookworm>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.5
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Apr 01 2009, FUJITA Tomonori wrote:
-> On Wed, 1 Apr 2009 13:50:58 +0200
-> Jens Axboe <jens.axboe@oracle.com> wrote:
+
+* Tom Zanussi <tzanussi@gmail.com> wrote:
+
+> > Oh, do you know why these unfiltered event are disappearing?
 > 
-> > On Wed, Apr 01 2009, FUJITA Tomonori wrote:
-> > > On Wed,  1 Apr 2009 20:04:38 +0900
-> > > Tejun Heo <tj@kernel.org> wrote:
-> > > 
-> > > > Impact: fix SG_IO behavior such that it matches the documentation
-> > > > 
-> > > > SG_IO howto says that if ->dxfer_len and sum of iovec disagress, the
-> > > > shorter one wins.  However, the current implementation returns -EINVAL
-> > > > for such cases.  Trim iovc if it's longer than ->dxfer_len.
-> > > 
-> > > Is that description about sg's SG_IO?
-> > 
-> > The more important question is what sg.c actually does, that's more
-> > important than the documentation.
+> It's because of the way ring_buffer_discard() currently works - 
+> the filtered events are still there in the ring buffer taking up 
+> space; they just aren't visible in the output because the read 
+> skips over them.
 > 
-> Do you think that Doug is a person who makes such mistake? ;)
+> So if there's a high volume of events being recorded, any given 
+> event can be quickly overwritten before it has a chance to be 
+> read, or it may have been read and appeared in the output, but 
+> between the time it was read and the next cat, could easily have 
+> been overwritten, and therefore 'disappears' on the next cat.
 > 
-> Seems that sg worked as the howto says. But I think that I broke it
-> when I converted sg to use the block layer. I'll fix it soon.
+> It's really no different from the normal case where there is no 
+> filtering in place - the same thing would happen but you wouldn't 
+> notice whether a particular event was still there or not the next 
+> time you cat'ed the file, because of the large volume of events 
+> being displayed. It's just more apparent when most of the events 
+> are discarded and invisible.
+> 
+> At least that's my theory based on my understanding of how the 
+> ring-buffer works...
 
-OK
+Correct, and this needs to be fixed.
 
-> About this patch, as we know, there are lots of subtle differences
-> between sg's SG_IO and the block's. I'm not sure that it's a good idea
-> to change the behavior of the block's SG_IO.
-
-Depends on what it is. For something like this where the alternative is
-returning -EINVAL and the patch makes it work, we definitely should just
-do it.
-
--- 
-Jens Axboe
-
+	Ingo
