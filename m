@@ -1,104 +1,83 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933844AbZDATBX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932994AbZDATCH@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933844AbZDATBX (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 1 Apr 2009 15:01:23 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933777AbZDATA3
+	id S932994AbZDATCH (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 1 Apr 2009 15:02:07 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933830AbZDATBG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 1 Apr 2009 15:00:29 -0400
-Received: from mail.mnementh.co.uk ([173.45.232.4]:51171 "EHLO mnementh.co.uk"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S933770AbZDATAZ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 1 Apr 2009 15:00:25 -0400
-Message-ID: <49D3B9CC.8050304@mnementh.co.uk>
-Date: Wed, 01 Apr 2009 20:00:28 +0100
-From: Ian Molton <ian@mnementh.co.uk>
-User-Agent: Mozilla-Thunderbird 2.0.0.19 (X11/20090103)
+	Wed, 1 Apr 2009 15:01:06 -0400
+Received: from relay3.sgi.com ([192.48.156.57]:48118 "EHLO relay.sgi.com"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S933837AbZDATBE (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 1 Apr 2009 15:01:04 -0400
+X-Greylist: delayed 474 seconds by postgrey-1.27 at vger.kernel.org; Wed, 01 Apr 2009 15:01:04 EDT
+Date: Wed, 1 Apr 2009 13:53:03 -0500
+From: Robin Holt <holt@sgi.com>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: linux-kernel@vger.kernel.org
+Subject: [Patch 1/1] Remove SGI_GRU as a valid config option for ia64
+	configs with SGI_UV.
+Message-ID: <20090401185303.GG8925@sgi.com>
 MIME-Version: 1.0
-To: Magnus Damm <magnus.damm@gmail.com>
-CC: Pierre Ossman <drzeus@drzeus.cx>, linux-kernel@vger.kernel.org,
-       drzeus-wbsd@drzeus.cx, akpm@linux-foundation.org
-Subject: Re: [PATCH 00/05] tmio_mmc: Minor fixes and cnf/irq changes
-References: <20090311125845.1563.31960.sendpatchset@rx1.opensource.se>	 <20090316193010.56644165@mjolnir.ossman.eu>	 <aec7e5c30903171858w12a9ee5bl4f3590d1a25a9971@mail.gmail.com>	 <49C84060.6010903@mnementh.co.uk>	 <aec7e5c30903250156v1eb38bd7qafe1c4236d9daef@mail.gmail.com>	 <aec7e5c30903301951g792a25a2s3abef57ba59fe8ee@mail.gmail.com>	 <49D262F5.6020700@mnementh.co.uk> <aec7e5c30903311920p6b1409b6q8a8a6cbee29b44bf@mail.gmail.com>
-In-Reply-To: <aec7e5c30903311920p6b1409b6q8a8a6cbee29b44bf@mail.gmail.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Magnus Damm wrote:
+Some current configs turn on GRU for ia64.  The GRU code does not
+correctly load on boot on ia64 (GRU does continue to work for
+x86-64), so changing the IA64 Kconfig to not select GRU on ia64
+configs for now until we have time to fix.
 
-> The SoC is directly connected to the SD connector. I've verified this
-> by looking at board schematics. There is no power control hardware on
-> the boards that I've seen so far,
+Signed-off-by: Robin Holt <holt@sgi.com>
+Acked-by: Jack Steiner <steiner@sgi.com>
 
-Which SoC? (I think you said before, but I forgot).
+---
 
-> but I'm currently working with
-> hardware designers to make sure they will add such capabilities to
-> future boards. The power will then be controlled by board specific
-> code, most likely using GPIO pins. The hardware block that the
-> tmio_mmc driver is handling does not have any power control
-> functionality.
-
-Great stuff.
-
-> As for the clock API, adding such a feature to the tmio_mmc driver is
-> not very complicated, especially for the SoC case where we already
-> have control over all system clocks.
-
-The problem (as I pointed out, and you noted below) is that we cant only 
-consider the SoC case because there ARE other current users of the 
-device in-tree and they use MFD. They arent going away.
-
-> Some architectures may have clock framework support, some may not. I
-> guess wrapping the clock functions in #ifdefs is one (ugly) way to
-> support both cases. And if we consider MFD it certainly becomes more
-> complicated.
-
-I dont mind tmio-mmc requiring the clk api. its only used on embedded 
-platforms and these usually have clk support.
-
-> So the current tmio_mmc driver does not use the clock API. With my
-> patches the clock API us still unused. I agree that working on adding
-> clock API support is needed, but I don't see how this is related to
-> single iomem window support.
-
-  Because that second iomem window is _purely_ in control of clock and 
-power management.
-
-Rather than design a bunch of special callbacks for clock control which 
-will later be got rid of I think it is better that we create the proper 
-infrastructure in the first place. Its on my to-do but IIRC Dmitry has 
-done some work on it already and you're more than welcome to finish that 
-work off.
-
-> Regardless of clock API, I still need a way to use the driver with a
-> single iomem window. Please propose how to use single iomem window
-> harware with tmio_mmc.
-
-If you dont want to extend the clk api to cover it, you can use a patch 
-in your local tree?
-
-> So exactly what is the "proper" solution for single iomem window support?
-
-Extand the clk API to be arch agnostic.
-
-> And why does single iomem window support have to block on clock API support?
-
-Because with clk API support it is not necessary.
-
-> But... How do I use tmio_mmc with hardware that only has a single
-> iomem window?
-
-if you get the clk API support generalised, I personally promise I will 
-rip out the second IO window myself and move it to the TMIO/ASIC3 MFD 
-core (where it belongs). Then we both get what we want.
-
-> I need that regardless of clock API, and that's what the
-> code in this patch series is all about.
-
-Not regardless. single IO window in the tmio-mmc driver is  _dependant_ 
-on clk API support, IMO.
-
--Ian
+ arch/ia64/configs/generic_defconfig |    3 ---
+ drivers/misc/Kconfig                |    4 ++--
+ 2 files changed, 2 insertions(+), 5 deletions(-)
+Index: 20090401-ia64-xpc-no-gru/arch/ia64/configs/generic_defconfig
+===================================================================
+--- 20090401-ia64-xpc-no-gru.orig/arch/ia64/configs/generic_defconfig	2009-04-01 11:09:18.000000000 -0500
++++ 20090401-ia64-xpc-no-gru/arch/ia64/configs/generic_defconfig	2009-04-01 11:16:42.121430058 -0500
+@@ -193,7 +193,6 @@ CONFIG_BOUNCE=y
+ CONFIG_NR_QUICK=1
+ CONFIG_VIRT_TO_BUS=y
+ CONFIG_UNEVICTABLE_LRU=y
+-CONFIG_MMU_NOTIFIER=y
+ CONFIG_ARCH_SELECT_MEMORY_MODEL=y
+ CONFIG_ARCH_DISCONTIGMEM_ENABLE=y
+ CONFIG_ARCH_FLATMEM_ENABLE=y
+@@ -416,8 +415,6 @@ CONFIG_SGI_IOC4=y
+ # CONFIG_ENCLOSURE_SERVICES is not set
+ CONFIG_SGI_XP=m
+ # CONFIG_HP_ILO is not set
+-CONFIG_SGI_GRU=m
+-# CONFIG_SGI_GRU_DEBUG is not set
+ # CONFIG_C2PORT is not set
+ CONFIG_HAVE_IDE=y
+ CONFIG_IDE=y
+Index: 20090401-ia64-xpc-no-gru/drivers/misc/Kconfig
+===================================================================
+--- 20090401-ia64-xpc-no-gru.orig/drivers/misc/Kconfig	2009-04-01 11:09:18.000000000 -0500
++++ 20090401-ia64-xpc-no-gru/drivers/misc/Kconfig	2009-04-01 11:09:22.145583991 -0500
+@@ -165,7 +165,7 @@ config SGI_XP
+ 	depends on (IA64_GENERIC || IA64_SGI_SN2 || IA64_SGI_UV || X86_UV) && SMP
+ 	select IA64_UNCACHED_ALLOCATOR if IA64_GENERIC || IA64_SGI_SN2
+ 	select GENERIC_ALLOCATOR if IA64_GENERIC || IA64_SGI_SN2
+-	select SGI_GRU if (IA64_GENERIC || IA64_SGI_UV || X86_64) && SMP
++	select SGI_GRU if X86_64 && SMP
+ 	---help---
+ 	  An SGI machine can be divided into multiple Single System
+ 	  Images which act independently of each other and have
+@@ -189,7 +189,7 @@ config HP_ILO
+ 
+ config SGI_GRU
+ 	tristate "SGI GRU driver"
+-	depends on (X86_UV || IA64_SGI_UV || IA64_GENERIC) && SMP
++	depends on X86_UV && SMP
+ 	default n
+ 	select MMU_NOTIFIER
+ 	---help---
