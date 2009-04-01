@@ -1,128 +1,130 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764695AbZDANpG@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1765530AbZDANpi@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764695AbZDANpG (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 1 Apr 2009 09:45:06 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756577AbZDANoq
+	id S1765530AbZDANpi (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 1 Apr 2009 09:45:38 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1765225AbZDANos
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 1 Apr 2009 09:44:46 -0400
-Received: from hera.kernel.org ([140.211.167.34]:42373 "EHLO hera.kernel.org"
+	Wed, 1 Apr 2009 09:44:48 -0400
+Received: from hera.kernel.org ([140.211.167.34]:42385 "EHLO hera.kernel.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756524AbZDANop (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 1 Apr 2009 09:44:45 -0400
+	id S1764363AbZDANor (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 1 Apr 2009 09:44:47 -0400
 From: Tejun Heo <tj@kernel.org>
 To: axboe@kernel.dk, bharrosh@panasas.com, linux-kernel@vger.kernel.org,
        fujita.tomonori@lab.ntt.co.jp
 Cc: Tejun Heo <tj@kernel.org>
-Subject: [PATCH 01/17] blk-map: move blk_rq_map_user() below blk_rq_map_user_iov()
-Date: Wed,  1 Apr 2009 22:44:16 +0900
-Message-Id: <1238593472-30360-2-git-send-email-tj@kernel.org>
+Subject: [PATCH 03/17] blk-map: improve alignment checking for blk_rq_map_user_iov()
+Date: Wed,  1 Apr 2009 22:44:18 +0900
+Message-Id: <1238593472-30360-4-git-send-email-tj@kernel.org>
 X-Mailer: git-send-email 1.6.0.2
 In-Reply-To: <1238593472-30360-1-git-send-email-tj@kernel.org>
 References: <1238593472-30360-1-git-send-email-tj@kernel.org>
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Wed, 01 Apr 2009 13:44:38 +0000 (UTC)
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Wed, 01 Apr 2009 13:44:40 +0000 (UTC)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Impact: code reorganization
+Impact: stricter more consistent alignment checking
 
-blk_rq_map_user() is about to be reimplemented using
-blk_rq_map_user_iov().  Move it below blk_rq_map_user_iov() so that
-the actual conversion patch is easier to read.
+Move all alignment checks in blk_rq_map_user_iov() to
+__bio_map_user_iov() which has to walk the iov at the beginning
+anyway.  Improve alignment check such that it checks for both the
+start address and length of each segment.
 
 Signed-off-by: Tejun Heo <tj@kernel.org>
 ---
- block/blk-map.c |   70 +++++++++++++++++++++++++++---------------------------
- 1 files changed, 35 insertions(+), 35 deletions(-)
+ block/blk-map.c |   21 +++++----------------
+ fs/bio.c        |   20 +++++++++++++-------
+ 2 files changed, 18 insertions(+), 23 deletions(-)
 
 diff --git a/block/blk-map.c b/block/blk-map.c
-index a43c93c..fdef591 100644
+index fdef591..b0b65ef 100644
 --- a/block/blk-map.c
 +++ b/block/blk-map.c
-@@ -41,41 +41,6 @@ static int __blk_rq_unmap_user(struct bio *bio)
- }
+@@ -67,28 +67,17 @@ int blk_rq_map_user_iov(struct request_queue *q, struct request *rq,
+ 			struct rq_map_data *map_data, struct sg_iovec *iov,
+ 			int iov_count, unsigned int len, gfp_t gfp_mask)
+ {
+-	struct bio *bio;
+-	int i, read = rq_data_dir(rq) == READ;
+-	int unaligned = 0;
++	struct bio *bio = ERR_PTR(-EINVAL);
++	int read = rq_data_dir(rq) == READ;
  
- /**
-- * blk_rq_map_user - map user data to a request, for REQ_TYPE_BLOCK_PC usage
-- * @q:		request queue where request should be inserted
-- * @rq:		request structure to fill
-- * @map_data:   pointer to the rq_map_data holding pages (if necessary)
-- * @ubuf:	the user buffer
-- * @len:	length of user data
-- * @gfp_mask:	memory allocation flags
-- *
-- * Description:
-- *    Data will be mapped directly for zero copy I/O, if possible. Otherwise
-- *    a kernel bounce buffer is used.
-- *
-- *    A matching blk_rq_unmap_user() must be issued at the end of I/O, while
-- *    still in process context.
-- *
-- *    Note: The mapped bio may need to be bounced through blk_queue_bounce()
-- *    before being submitted to the device, as pages mapped may be out of
-- *    reach. It's the callers responsibility to make sure this happens. The
-- *    original bio must be passed back in to blk_rq_unmap_user() for proper
-- *    unmapping.
-- */
--int blk_rq_map_user(struct request_queue *q, struct request *rq,
--		    struct rq_map_data *map_data, void __user *ubuf,
--		    unsigned long len, gfp_t gfp_mask)
--{
--	struct sg_iovec iov;
--
--	iov.iov_base = ubuf;
--	iov.iov_len = len;
--
--	return blk_rq_map_user_iov(q, rq, map_data, &iov, 1, len, gfp_mask);
--}
--EXPORT_SYMBOL(blk_rq_map_user);
--
--/**
-  * blk_rq_map_user_iov - map user data to a request, for REQ_TYPE_BLOCK_PC usage
-  * @q:		request queue where request should be inserted
-  * @rq:		request to map data to
-@@ -151,6 +116,41 @@ int blk_rq_map_user_iov(struct request_queue *q, struct request *rq,
- EXPORT_SYMBOL(blk_rq_map_user_iov);
+ 	if (!iov || iov_count <= 0)
+ 		return -EINVAL;
  
- /**
-+ * blk_rq_map_user - map user data to a request, for REQ_TYPE_BLOCK_PC usage
-+ * @q:		request queue where request should be inserted
-+ * @rq:		request structure to fill
-+ * @map_data:   pointer to the rq_map_data holding pages (if necessary)
-+ * @ubuf:	the user buffer
-+ * @len:	length of user data
-+ * @gfp_mask:	memory allocation flags
-+ *
-+ * Description:
-+ *    Data will be mapped directly for zero copy I/O, if possible. Otherwise
-+ *    a kernel bounce buffer is used.
-+ *
-+ *    A matching blk_rq_unmap_user() must be issued at the end of I/O, while
-+ *    still in process context.
-+ *
-+ *    Note: The mapped bio may need to be bounced through blk_queue_bounce()
-+ *    before being submitted to the device, as pages mapped may be out of
-+ *    reach. It's the callers responsibility to make sure this happens. The
-+ *    original bio must be passed back in to blk_rq_unmap_user() for proper
-+ *    unmapping.
-+ */
-+int blk_rq_map_user(struct request_queue *q, struct request *rq,
-+		    struct rq_map_data *map_data, void __user *ubuf,
-+		    unsigned long len, gfp_t gfp_mask)
-+{
-+	struct sg_iovec iov;
+-	for (i = 0; i < iov_count; i++) {
+-		unsigned long uaddr = (unsigned long)iov[i].iov_base;
+-
+-		if (uaddr & queue_dma_alignment(q)) {
+-			unaligned = 1;
+-			break;
+-		}
+-	}
+-
+-	if (unaligned || (q->dma_pad_mask & len) || map_data)
++	if (!map_data)
++		bio = bio_map_user_iov(q, NULL, iov, iov_count, read, gfp_mask);
++	if (bio == ERR_PTR(-EINVAL))
+ 		bio = bio_copy_user_iov(q, map_data, iov, iov_count, read,
+ 					gfp_mask);
+-	else
+-		bio = bio_map_user_iov(q, NULL, iov, iov_count, read, gfp_mask);
+-
+ 	if (IS_ERR(bio))
+ 		return PTR_ERR(bio);
+ 
+diff --git a/fs/bio.c b/fs/bio.c
+index 728bef9..80f61ed 100644
+--- a/fs/bio.c
++++ b/fs/bio.c
+@@ -26,6 +26,7 @@
+ #include <linux/mempool.h>
+ #include <linux/workqueue.h>
+ #include <linux/blktrace_api.h>
++#include <linux/pfn.h>
+ #include <trace/block.h>
+ #include <scsi/sg.h>		/* for struct sg_iovec */
+ 
+@@ -921,6 +922,7 @@ static struct bio *__bio_map_user_iov(struct request_queue *q,
+ 				      int write_to_vm, gfp_t gfp_mask)
+ {
+ 	int i, j;
++	size_t tot_len = 0;
+ 	int nr_pages = 0;
+ 	struct page **pages;
+ 	struct bio *bio;
+@@ -930,18 +932,22 @@ static struct bio *__bio_map_user_iov(struct request_queue *q,
+ 	for (i = 0; i < iov_count; i++) {
+ 		unsigned long uaddr = (unsigned long)iov[i].iov_base;
+ 		unsigned long len = iov[i].iov_len;
+-		unsigned long end = (uaddr + len + PAGE_SIZE - 1) >> PAGE_SHIFT;
+-		unsigned long start = uaddr >> PAGE_SHIFT;
+ 
+-		nr_pages += end - start;
++		nr_pages += PFN_UP(uaddr + len) - PFN_DOWN(uaddr);
++		tot_len += len;
 +
-+	iov.iov_base = ubuf;
-+	iov.iov_len = len;
-+
-+	return blk_rq_map_user_iov(q, rq, map_data, &iov, 1, len, gfp_mask);
-+}
-+EXPORT_SYMBOL(blk_rq_map_user);
-+
-+/**
-  * blk_rq_unmap_user - unmap a request with user data
-  * @bio:	       start of bio list
-  *
+ 		/*
+-		 * buffer must be aligned to at least hardsector size for now
++		 * Each segment must be aligned on DMA boundary.  The
++		 * last one may have unaligned length as long as the
++		 * total length is aligned to DMA padding alignment.
+ 		 */
+-		if (uaddr & queue_dma_alignment(q))
++		if (i == count - 1)
++			len = 0;
++		if ((uaddr | len) & queue_dma_alignment(q))
+ 			return ERR_PTR(-EINVAL);
+ 	}
+-
+-	if (!nr_pages)
++	/* and total length on DMA padding alignment */
++	if (!nr_pages || tot_len & q->dma_pad_mask)
+ 		return ERR_PTR(-EINVAL);
+ 
+ 	bio = bio_kmalloc(gfp_mask, nr_pages);
 -- 
 1.6.0.2
 
