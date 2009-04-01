@@ -1,45 +1,128 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763187AbZDAMGT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762948AbZDAMKb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763187AbZDAMGT (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 1 Apr 2009 08:06:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757919AbZDAMGH
+	id S1762948AbZDAMKb (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 1 Apr 2009 08:10:31 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758626AbZDAMKN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 1 Apr 2009 08:06:07 -0400
-Received: from silver.sucs.swan.ac.uk ([137.44.10.1]:50876 "EHLO
-	silver.sucs.swan.ac.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757883AbZDAMGG (ORCPT
+	Wed, 1 Apr 2009 08:10:13 -0400
+Received: from victor.provo.novell.com ([137.65.250.26]:43740 "EHLO
+	victor.provo.novell.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752197AbZDAMKL (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 1 Apr 2009 08:06:06 -0400
-Date: Wed, 1 Apr 2009 13:05:58 +0100
-From: Andrew Price <andy@andrewprice.me.uk>
-To: Frank Blaschka <frank.blaschka@de.ibm.com>,
-       Linus Torvalds <torvalds@linux-foundation.org>
-Cc: linux-kernel@vger.kernel.org
-Subject: Commit 64ef89 left empty files
-Message-ID: <20090401120557.GA12726@sucs.org>
+	Wed, 1 Apr 2009 08:10:11 -0400
+Message-ID: <49D35A2B.10907@novell.com>
+Date: Wed, 01 Apr 2009 08:12:27 -0400
+From: Gregory Haskins <ghaskins@novell.com>
+User-Agent: Thunderbird 2.0.0.19 (X11/20081227)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-User-Agent: Mutt/1.5.18 (2008-05-17)
+To: Avi Kivity <avi@redhat.com>
+CC: linux-kernel@vger.kernel.org, agraf@suse.de, pmullaney@novell.com,
+       pmorreale@novell.com, anthony@codemonkey.ws, rusty@rustcorp.com.au,
+       netdev@vger.kernel.org, kvm@vger.kernel.org
+Subject: Re: [RFC PATCH 01/17] shm-signal: shared-memory signals
+References: <20090331184057.28333.77287.stgit@dev.haskins.net> <20090331184252.28333.70623.stgit@dev.haskins.net> <49D280C0.8010802@redhat.com> <49D283F7.7030508@novell.com> <49D285AE.7030604@redhat.com>
+In-Reply-To: <49D285AE.7030604@redhat.com>
+X-Enigmail-Version: 0.95.7
+OpenPGP: id=D8195319
+Content-Type: multipart/signed; micalg=pgp-sha1;
+ protocol="application/pgp-signature";
+ boundary="------------enig4A1F5671234A25D4B0882368"
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
+This is an OpenPGP/MIME signed message (RFC 2440 and 3156)
+--------------enig4A1F5671234A25D4B0882368
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: quoted-printable
 
-After running 'make distclean' on a clone of Linus's linux-2.6 git tree today I
-ran 'git status' and found that these two files had been deleted:
+Avi Kivity wrote:
+> Gregory Haskins wrote:
+>>>> +struct shm_signal_irq {
+>>>> +    __u8                  enabled;
+>>>> +    __u8                  pending;
+>>>> +    __u8                  dirty;
+>>>> +};
+>>>>        =20
+>>> Some ABIs may choose to pad this, suggest explicit padding.
+>>>    =20
+>>
+>> Yeah, good idea.  What is the official way to do this these days?  Are=
 
-#	deleted:    drivers/s390/net/qeth_core_offl.c
-#	deleted:    drivers/s390/net/qeth_core_offl.h
+>> GCC pragmas allowed?
+>>
+>>  =20
+>
+> I just add a __u8 pad[5] in such cases.
 
-This seems to have happened because both of these files are empty and distclean
-removes empty files. Since I use make-kpkg to script my kernel test builds
-(which uses distclean) this is kind of inconvenient.
+Oh, duh.  Dumb question.  I was getting confused with "pack", not pad.  :=
+)
 
-Please could these files be properly 'git rm'd if appropriate?
+>
+>>>> +
+>>>> +struct shm_signal;
+>>>> +
+>>>> +struct shm_signal_ops {
+>>>> +    int      (*inject)(struct shm_signal *s);
+>>>> +    void     (*fault)(struct shm_signal *s, const char *fmt, ...);
+>>>>        =20
+>>> Eww.  Must we involve strings and printf formats?
+>>>    =20
+>>
+>> This is still somewhat of a immature part of the design.  Its supposed=
 
-Thanks,
+>> to be used so that by default, its a panic.  But on the host side, we
+>> can do something like inject a machine-check.  That way malicious/brok=
+en
+>> guests cannot (should not? ;) be able to take down the host.  Note tod=
+ay
+>> I do not map this to anything other than the default panic, so this
+>> needs some love.
+>>
+>> But given the asynchronous nature of the fault, I want to be sure we
+>> have decent accounting to avoid bug reports like "silent MCE kills the=
 
---
-Andrew Price
+>> guest" ;)  At least this way, we can log the fault string somewhere to=
+
+>> get a clue.
+>>  =20
+>
+> I see.
+>
+> This raises a point I've been thinking of - the symmetrical nature of
+> the API vs the assymetrical nature of guest/host or user/kernel
+> interfaces.  This is most pronounced in ->inject(); in the host->guest
+> direction this is async (host can continue processing while the guest
+> is handling the interrupt), whereas in the guest->host direction it is
+> synchronous (the guest is blocked while the host is processing the
+> call, unless the host explicitly hands off work to a different thread).=
+
+
+Note that this is exactly what I do (though it is device specific).=20
+venet-tap has a ioq_notifier registered on its "rx" ring (which is the
+tx-ring for the guest) that simply calls ioq_notify_disable() (which
+calls shm_signal_disable() under the covers) and it wakes its
+rx-thread.  This all happens in the context of the hypercall, which then
+returns and allows the vcpu to re-enter guest mode immediately.
+
+
+>
+>
+
+
+
+--------------enig4A1F5671234A25D4B0882368
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: OpenPGP digital signature
+Content-Disposition: attachment; filename="signature.asc"
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v2.0.9 (GNU/Linux)
+Comment: Using GnuPG with SUSE - http://enigmail.mozdev.org
+
+iEYEARECAAYFAknTWisACgkQlOSOBdgZUxmSkwCggtjW6BuiU2b3xEX5kM4vtg37
+asAAn3RVjDpG4fAkFQNtN79N2VDxlnAG
+=XTuS
+-----END PGP SIGNATURE-----
+
+--------------enig4A1F5671234A25D4B0882368--
