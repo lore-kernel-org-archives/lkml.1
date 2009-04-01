@@ -1,124 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1765517AbZDARkl@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932878AbZDARlV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1765517AbZDARkl (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 1 Apr 2009 13:40:41 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757557AbZDARkb
+	id S932878AbZDARlV (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 1 Apr 2009 13:41:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755707AbZDARlJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 1 Apr 2009 13:40:31 -0400
-Received: from mx2.redhat.com ([66.187.237.31]:34115 "EHLO mx2.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756622AbZDARka (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 1 Apr 2009 13:40:30 -0400
-Message-ID: <49D3A708.9080501@redhat.com>
-Date: Wed, 01 Apr 2009 13:40:24 -0400
-From: Masami Hiramatsu <mhiramat@redhat.com>
-User-Agent: Thunderbird 2.0.0.21 (X11/20090320)
+	Wed, 1 Apr 2009 13:41:09 -0400
+Received: from mlbe2k2.cs.myharris.net ([137.237.90.89]:32269 "EHLO
+	mlbe2k2.cs.myharris.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753309AbZDARlI convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 1 Apr 2009 13:41:08 -0400
+X-Greylist: delayed 1216 seconds by postgrey-1.27 at vger.kernel.org; Wed, 01 Apr 2009 13:41:08 EDT
+X-MimeOLE: Produced By Microsoft Exchange V6.5
+Content-class: urn:content-classes:message
 MIME-Version: 1.0
-To: Ingo Molnar <mingo@elte.hu>
-CC: Arnaldo Carvalho de Melo <acme@redhat.com>,
-       Steven Rostedt <rostedt@goodmis.org>,
-       Ananth N Mavinakayanahalli <ananth@in.ibm.com>,
-       Frederic Weisbecker <fweisbec@gmail.com>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       systemtap-ml <systemtap@sources.redhat.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Jim Keniston <jkenisto@us.ibm.com>
-Subject: Re: [PATCH -tip 0/4 V3] tracing: kprobe-based event tracer
-References: <49CC08A2.5030602@redhat.com> <20090401133654.GB18677@elte.hu> <49D37584.50208@redhat.com> <20090401142711.GG18677@elte.hu>
-In-Reply-To: <20090401142711.GG18677@elte.hu>
-X-Enigmail-Version: 0.95.7
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain;
+	charset="US-ASCII"
+Content-Transfer-Encoding: 8BIT
+Subject: UIO: uio_mem does not handle devices above 4 GB address
+Date: Wed, 1 Apr 2009 13:20:49 -0400
+Message-ID: <6FCCA913376DD7488F4139A4D11B8F48AC8CDE@troe2k1.cs.myharris.net>
+X-MS-Has-Attach: 
+X-MS-TNEF-Correlator: 
+Thread-Topic: UIO: uio_mem does not handle devices above 4 GB address
+Thread-Index: Acmy7jNciFodbr1kQ4u5rd4/KXsL3A==
+From: "Herrera-Bendezu, Luis" <lherrera@harris.com>
+To: <linux-kernel@vger.kernel.org>
+X-OriginalArrivalTime: 01 Apr 2009 17:20:46.0072 (UTC) FILETIME=[31972780:01C9B2EE]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Ingo Molnar wrote:
-> * Masami Hiramatsu <mhiramat@redhat.com> wrote:
-> 
->> Ingo Molnar wrote:
->>> * Masami Hiramatsu <mhiramat@redhat.com> wrote:
->>>
->>>> Hi,
->>>>
->>>> Here are the patches of kprobe-based event tracer for x86, version 
->>>> 3. Since this feature seems to attract some developers, I'd like 
->>>> to push these basic patches into -tip tree so that they can easily 
->>>> play it.
->>>>
->>>> This version supports only x86(-32/-64) (If someone is interested 
->>>> in porting this to other architectures, I'd happy to help :)), and 
->>>> no respawn-able probe support (this would be better to push -mm 
->>>> tree.)
->>>>
->>>> This can be applied on the linux-2.6-tip tree.
->>> This bit:
->>>
->>>> Future items:
->>>> - Check insertion point safety by using instruction decoder.
->>> is i believe a must-fix-before-merge item.
->> Hi Ingo,
->>
->> I agreed. Fortunately, Jim Keniston and I wrote an x86 instruction
->> decoder :-) which has been made originally for uprobe andd kprobes
->> jump-optimizer.
->>
->> https://www.redhat.com/archives/utrace-devel/2009-March/msg00031.html
-> 
-> looks cool. Needs to be put somewhere in arch/x86/lib/, provided as 
-> a generic facility, with a Kconfig variable that says that the 
-> architecture supports it and then the kprobes-tracer could make 
-> immediate use of it, right?
+I am working on a PPC440EPx board with some FPGAs located at
+addresses above 4 GB and kernel version 2.6.28.7. The UIO driver is
+used to access the FPGAs. I get following error when trying to read
+FPGA registers:
+Machine check in kernel mode.
+Data Read PLB Error
 
-Yeah, I'd rather add a safety checker in kprobes-x86 itself, because
-sometimes it has to fixup instructions modified by previous kprobes.
+The problem is traced to member addr in struct uio_mem:
+struct uio_mem {
+    unsigned long     addr;
+    unsigned long     size;
+    int               memtype;
+    void __iomem      *internal_addr;
+    struct uio_map    *map;
+};
+
+When UIO_MEM_PHYS is used with device address > 32-bit then
+uio_mmap_physical() remaps address using idev->info->mem[mi].addr
+thus loosing high address bits.
+
+One way to solve this problem is to change addr member to:
+    phys_addr_t       addr;
+
+and modify corresponding attributes in uio.c. Only concern is that
+uio_vma_fault() calls virt_to_page() and vmalloc_to_page() where both
+have addr arg (unsigned long) and (const void *) respectively for
+powerpc. But these functions are only used for UIO_MEM_LOGICAL and
+UIO_MEM_VIRTUAL.
+
+Any alternative approach?
 
 Thanks,
-
->>> The functionality is genuinely useful, and if used dynamically on 
->>> the host it can be a lot more versatile and a lot more accessible 
->>> than a KGDB session - but code patching safety is a must-have.
->>>
->>> It does not have to be a full decoder, just a simplified decoding 
->>> run that starts from a known function-symbol address, and works its 
->>> way down in the function looking at instruction boundaries, and 
->>> figuring out whether the code patching is safe. If it sees anything 
->>> it cannot deal with it bails out.
->> Yeah, that is what I'll do.
->>
->>> I suspect you could get very good practical results by supporting 
->>> just a small fraction of the x86 instruction set architecture. If 
->>> failures to insert a probe safely are printed out in clear terms:
->>>
->>>    Could not insert probe at address 0xc01231234 due to:
->>>    Unknown instruction: 48 8d 15 db ff ff ff 00 00 00
->>>
->>> People will fill in the missing ISA bits quickly :-)
->>>
->>> And people doing:
->>>
->>>   asm(" .byte 0x00, 0x01, 0x02, 0x03;"); /* hehe, I broke the decoder! */
->>>
->>> ... in kernel .text functions will be talked to in private :)
->> Aha, that function will get illegal instruction exception :-) even
->> without kprobe.
-> 
-> Not if it's under a never-true (not provable to the compiler) branch 
-> condition but i digress :)
-> 
->>> Can you see any fundamental reason why this couldnt be done?
->> Nope, because we've done :-)
-> 
-> Cool :)
-> 
-> 	Ingo
-
--- 
-Masami Hiramatsu
-
-Software Engineer
-Hitachi Computer Products (America) Inc.
-Software Solutions Division
-
-e-mail: mhiramat@redhat.com
+Luis
 
