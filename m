@@ -1,54 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763440AbZDAO7K@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932248AbZDAPA0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763440AbZDAO7K (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 1 Apr 2009 10:59:10 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758525AbZDAO6z
+	id S932248AbZDAPA0 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 1 Apr 2009 11:00:26 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761423AbZDAPAG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 1 Apr 2009 10:58:55 -0400
-Received: from qw-out-2122.google.com ([74.125.92.26]:49003 "EHLO
-	qw-out-2122.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757419AbZDAO6y (ORCPT
+	Wed, 1 Apr 2009 11:00:06 -0400
+Received: from mail-ew0-f165.google.com ([209.85.219.165]:56398 "EHLO
+	mail-ew0-f165.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1758082AbZDAPAE (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 1 Apr 2009 10:58:54 -0400
+	Wed, 1 Apr 2009 11:00:04 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
-        h=mime-version:date:message-id:subject:from:to:content-type
-         :content-transfer-encoding;
-        b=OMBfbkChHefYyixAqdG2tNgCQ/ohPzMk69Z+FzD9DmhnVSJZzJNHyfKyFkGR6DBhuS
-         ltqkk10GeJFY9SPofRWwgx4KP1iW7qCE8FTOLjr7V3dGU/gp/r+WxdoBOUEB5fKxioZz
-         NzwRmuZnTmnaZOdrT8Igm2apu7oYPw2EzZ+dM=
+        h=date:from:to:cc:subject:message-id:references:mime-version
+         :content-type:content-disposition:in-reply-to:user-agent;
+        b=GSAXWuD6bPbpiITBXW6X344NZ5hZ9f0fB1BVUGyTJHAfuM/QQ9saiaQVaJ9MakEri3
+         uV1LqLYXy8F8nUsBzmPAc/SQPOo9fbi17YnErCswt23+WdJrt/afv9iMR8RJZT4WqTkk
+         YMukoLMeV3JmYH9IbEJrteH58J5Ji56GKV5+A=
+Date: Wed, 1 Apr 2009 19:01:02 +0400
+From: Cyrill Gorcunov <gorcunov@gmail.com>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: hpa@zytor.com, tglx@linutronix.de, linux-kernel@vger.kernel.org,
+       xemul@openvz.org, yhlu.kernel@gmail.com
+Subject: Re: [patch 4/6] x86: irqinit - merge native_init_IRQ
+Message-ID: <20090401150102.GC8186@localhost>
+References: <20090329201545.470255691@openvz.org> <20090329202208.155551990@openvz.org> <20090401145328.GB6196@elte.hu>
 MIME-Version: 1.0
-Date: Wed, 1 Apr 2009 23:58:51 +0900
-Message-ID: <a6b9f31a0904010758r23767adco16ea4ee45d7e158e@mail.gmail.com>
-Subject: [RFC] Improving scheduler for asymmetric multi-core processor in 
-	Google's summer of code
-From: Hitoshi Mitake <h.mitake@gmail.com>
-To: linux-kernel@vger.kernel.org, cpufreq@vger.kernel.org
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20090401145328.GB6196@elte.hu>
+User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
+[Ingo Molnar - Wed, Apr 01, 2009 at 04:53:28PM +0200]
+...
+| 
+| > Index: linux-2.6.git/arch/x86/kernel/setup.c
+| > ===================================================================
+| > --- linux-2.6.git.orig/arch/x86/kernel/setup.c
+| > +++ linux-2.6.git/arch/x86/kernel/setup.c
+| > @@ -1087,3 +1087,11 @@ void __init x86_quirk_time_init(void)
+| >  	setup_irq(0, &irq0);
+| >  }
+| >  #endif /* CONFIG_X86_32 */
+| > +
+| > +#ifdef CONFIG_X86_64
+| > +void x86_quirk_pre_intr_init(void)
+| > +{
+| > +	init_ISA_irqs();
+| > +}
+| > +void x86_quirk_intr_init(void) { }
+| > +#endif
+| 
+| Hm, wouldnt it be cleaner to add it as a new quirk function vector 
+| in struct x86_quirks? See arch/x86/include/asm/setup.h.
+| 
+| 	Ingo
+| 
 
-I found an interesting problem, scheduling on Asymmetric multi-core processor.
+Will take a look, thanks!
 
-According to this paper,
-
-http://portal.acm.org/citation.cfm?id=1362694&dl=GUIDE&coll=GUIDE&CFID=28487975&CFTOKEN=68150071
-
-taking performance asymmetry into consideration on multi-core CPUs can
-improve scheduler performance.
-(And I think discarding this could have bad consequences.)
-
-So I have a question:
-Is the current scheduler of Linux aware of possible performance
-asymmetry of the cores?
-By performance asymmetry I mean a case where different cores run on
-different frequencies.
-
-If something tackling this issue is not implemented yet,
-I would like to work on that as a project of Google's summer of code.
-
-Thanks
+        Cyrill
