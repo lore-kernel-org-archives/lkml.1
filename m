@@ -1,76 +1,193 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932160AbZDAQeg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1765671AbZDAQfg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932160AbZDAQeg (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 1 Apr 2009 12:34:36 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1764755AbZDAQeX
+	id S1765671AbZDAQfg (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 1 Apr 2009 12:35:36 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760260AbZDAQfZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 1 Apr 2009 12:34:23 -0400
-Received: from mx2.mail.elte.hu ([157.181.151.9]:48730 "EHLO mx2.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1764126AbZDAQeW (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 1 Apr 2009 12:34:22 -0400
-Date: Wed, 1 Apr 2009 18:34:07 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: Jeff Mahoney <jeffm@suse.com>
-Cc: Linus Torvalds <torvalds@linux-foundation.org>,
-       =?iso-8859-1?Q?Fr=E9d=E9ric?= Weisbecker <fweisbec@gmail.com>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       ReiserFS Development List <reiserfs-devel@vger.kernel.org>
-Subject: Re: [patch 00/35] Jeff's ReiserFS Patch Queue
-Message-ID: <20090401163407.GE22517@elte.hu>
-References: <20090330180215.951354436@suse.com> <alpine.LFD.2.00.0903301236280.4093@localhost.localdomain> <20090401161657.GA13802@elte.hu> <49D39642.9070606@suse.com>
+	Wed, 1 Apr 2009 12:35:25 -0400
+Received: from gw-ca.panasas.com ([209.116.51.66]:21570 "EHLO
+	laguna.int.panasas.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1756288AbZDAQfY (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 1 Apr 2009 12:35:24 -0400
+Message-ID: <49D3974F.6080601@panasas.com>
+Date: Wed, 01 Apr 2009 19:33:19 +0300
+From: Boaz Harrosh <bharrosh@panasas.com>
+User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1b3pre) Gecko/20090315 Remi/3.0-0.b2.fc10.remi Thunderbird/3.0b2
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <49D39642.9070606@suse.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+To: Tejun Heo <tj@kernel.org>
+CC: axboe@kernel.dk, linux-kernel@vger.kernel.org,
+       fujita.tomonori@lab.ntt.co.jp
+Subject: Re: [PATCH 10/17] bio: use bio_create_from_sgl() in bio_map_user_iov()
+References: <1238593472-30360-1-git-send-email-tj@kernel.org> <1238593472-30360-11-git-send-email-tj@kernel.org>
+In-Reply-To: <1238593472-30360-11-git-send-email-tj@kernel.org>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
+X-OriginalArrivalTime: 01 Apr 2009 16:35:19.0772 (UTC) FILETIME=[D896C9C0:01C9B2E7]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-* Jeff Mahoney <jeffm@suse.com> wrote:
-
-> -----BEGIN PGP SIGNED MESSAGE-----
-> Hash: SHA1
+On 04/01/2009 04:44 PM, Tejun Heo wrote:
+> Impact: cleanup
 > 
-> Ingo Molnar wrote:
-> > * Linus Torvalds <torvalds@linux-foundation.org> wrote:
-> > 
-> >>> Once this is applied, I expect reiserfs to be in deep 
-> >>> maintenance-only mode.
-> >> Heh, I hadn't expected even this.
-> > 
-> > Note, there are BKL-removal patches in the works by Frédéric 
-> > Weisbecker, for the tip:kill-the-BKL topic branch.
-> > 
-> > Reiser3 is the heaviest (and most non-trivial) BKL user amongst all 
-> > the filesystems, its BKL use is recursive and it frequently relies 
-> > on the implicit dropping of the BKL at various blocking points both 
-> > for correctness and for performance reasons.
-> > 
-> > There might be something worth posting+reviewing soon.
+> As bio_map_user_iov() is unique in the way it acquires pages to map
+> from all other three operations (user-copy, kern-map, kern-copy), the
+> function still needs to get the pages itself but the bio creation can
+> use bio_create_from_sgl().  Create sgl of mapped pages and use it to
+> create bio from it.  The code will be further simplified with future
+> changes to bio_create_from_sgl().
 > 
-> Oh interesting. I'm glad someone is working on this. I've started 
-> to several times and decided to focus my efforts on things outside 
-> of reiserfs instead. The reiserfs usage of the BKL has always been 
-> a black mark.
+> Signed-off-by: Tejun Heo <tj@kernel.org>
+> ---
+>  fs/bio.c |   79 ++++++++++++++++++++++++++------------------------------------
+>  1 files changed, 33 insertions(+), 46 deletions(-)
+> 
+> diff --git a/fs/bio.c b/fs/bio.c
+> index 4540afc..1ca8b16 100644
+> --- a/fs/bio.c
+> +++ b/fs/bio.c
+> @@ -1059,13 +1059,13 @@ struct bio *bio_copy_user(struct request_queue *q, struct rq_map_data *md,
+>  struct bio *bio_map_user_iov(struct request_queue *q, struct block_device *bdev,
+>  			     struct iovec *iov, int count, int rw, gfp_t gfp)
+>  {
+> -	int i, j;
+>  	size_t tot_len = 0;
+>  	int nr_pages = 0;
+> +	int nents = 0;
+> +	struct scatterlist *sgl;
+>  	struct page **pages;
+>  	struct bio *bio;
+> -	int cur_page = 0;
+> -	int ret, offset;
+> +	int i, ret;
+>  
+>  	for (i = 0; i < count; i++) {
+>  		unsigned long uaddr = (unsigned long)iov[i].iov_base;
+> @@ -1088,70 +1088,57 @@ struct bio *bio_map_user_iov(struct request_queue *q, struct block_device *bdev,
+>  	if (!nr_pages || tot_len & q->dma_pad_mask)
+>  		return ERR_PTR(-EINVAL);
+>  
+> -	bio = bio_kmalloc(gfp, nr_pages);
+> -	if (!bio)
+> +	sgl = kmalloc(nr_pages * sizeof(sgl[0]), gfp);
+> +	if (!sgl)
+>  		return ERR_PTR(-ENOMEM);
+> +	sg_init_table(sgl, nr_pages);
+>  
+>  	ret = -ENOMEM;
+> -	pages = kcalloc(nr_pages, sizeof(struct page *), gfp);
+> +	pages = kcalloc(nr_pages, sizeof(pages[0]), gfp);
+>  	if (!pages)
+> -		goto out;
+> +		goto err_sgl;
+>  
+>  	for (i = 0; i < count; i++) {
+>  		unsigned long uaddr = (unsigned long)iov[i].iov_base;
+>  		unsigned long len = iov[i].iov_len;
+> -		unsigned long end = (uaddr + len + PAGE_SIZE - 1) >> PAGE_SHIFT;
+> -		unsigned long start = uaddr >> PAGE_SHIFT;
+> -		const int local_nr_pages = end - start;
+> -		const int page_limit = cur_page + local_nr_pages;
+> -		
+> +		unsigned long offset = offset_in_page(uaddr);
+> +		int local_nr_pages = PFN_UP(uaddr + len) - PFN_DOWN(uaddr);
+> +
+>  		ret = get_user_pages_fast(uaddr, local_nr_pages, rw == READ,
+> -					  &pages[cur_page]);
+> +					  &pages[nents]);
 
-I'll let Frederic describe it but AFAIK the patch is working fine 
-with the BKL as a mutex and no lockdep complaints or lockups. The 
-main focus is now on finding the performance affecting spots, 
-because Frederic's main desktop is on reiserfs and he does not 
-accept a slowdown :)
+Fast look at all users of get_user_pages_fast().
 
-	Ingo
+This can be converted to take an sglist instead of pages* array.
+Outside of this code all users either have a fixed-size allocated array
+or hard coded one page. This here is the main user. (Out of 5)
+
+Note to self:
+
+>  		if (ret < local_nr_pages) {
+>  			ret = -EFAULT;
+> -			goto out_unmap;
+> +			goto err_pages;
+>  		}
+>  
+> -		offset = uaddr & ~PAGE_MASK;
+> -		for (j = cur_page; j < page_limit; j++) {
+> -			unsigned int bytes = PAGE_SIZE - offset;
+> +		while (len) {
+> +			unsigned int bytes = min(PAGE_SIZE - offset, len);
+>  
+> -			if (len <= 0)
+> -				break;
+> -			
+> -			if (bytes > len)
+> -				bytes = len;
+> -
+> -			/*
+> -			 * sorry...
+> -			 */
+> -			if (bio_add_pc_page(q, bio, pages[j], bytes, offset) <
+> -					    bytes)
+> -				break;
+> +			sg_set_page(&sgl[nents], pages[nents], bytes, offset);
+>  
+> +			nents++;
+>  			len -= bytes;
+>  			offset = 0;
+>  		}
+> -
+> -		cur_page = j;
+> -		/*
+> -		 * release the pages we didn't map into the bio, if any
+> -		 */
+> -		while (j < page_limit)
+> -			page_cache_release(pages[j++]);
+>  	}
+> +	BUG_ON(nents != nr_pages);
+>  
+> -	kfree(pages);
+> +	bio = bio_create_from_sgl(q, sgl, nents, nr_pages, rw, gfp);
+> +	if (IS_ERR(bio)) {
+> +		ret = PTR_ERR(bio);
+> +		goto err_pages;
+> +	}
+>  
+> -	/*
+> -	 * set data direction, and check if mapped pages need bouncing
+> -	 */
+> -	if (rw == WRITE)
+> -		bio->bi_rw |= (1 << BIO_RW);
+> +	/* release the pages we didn't map into the bio, if any */
+> +	for (i = bio->bi_vcnt; i < nr_pages; i++)
+> +		page_cache_release(pages[i]);
+>  
+>  	bio->bi_bdev = bdev;
+>  	bio->bi_flags |= (1 << BIO_USER_MAPPED);
+>  
+> +	kfree(sgl);
+> +	kfree(pages);
+> +
+>  	/*
+>  	 * subtle -- if __bio_map_user() ended up bouncing a bio,
+>  	 * it would normally disappear when its bi_end_io is run.
+> @@ -1162,15 +1149,15 @@ struct bio *bio_map_user_iov(struct request_queue *q, struct block_device *bdev,
+>  
+>  	return bio;
+>  
+> - out_unmap:
+> +err_pages:
+>  	for (i = 0; i < nr_pages; i++) {
+> -		if(!pages[i])
+> +		if (!pages[i])
+>  			break;
+>  		page_cache_release(pages[i]);
+>  	}
+> - out:
+>  	kfree(pages);
+> -	bio_put(bio);
+> +err_sgl:
+> +	kfree(sgl);
+>  	return ERR_PTR(ret);
+>  }
+>  
+
