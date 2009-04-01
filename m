@@ -1,81 +1,176 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752439AbZDAEtU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752877AbZDAExT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752439AbZDAEtU (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 1 Apr 2009 00:49:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751225AbZDAEtJ
+	id S1752877AbZDAExT (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 1 Apr 2009 00:53:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751225AbZDAExF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 1 Apr 2009 00:49:09 -0400
-Received: from mail-qy0-f118.google.com ([209.85.221.118]:56227 "EHLO
-	mail-qy0-f118.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751195AbZDAEtH (ORCPT
+	Wed, 1 Apr 2009 00:53:05 -0400
+Received: from acsinet11.oracle.com ([141.146.126.233]:36338 "EHLO
+	acsinet11.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751195AbZDAExE (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 1 Apr 2009 00:49:07 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
-         :cc:content-type:content-transfer-encoding;
-        b=mqFJ9JSua2zI4rApDD93Y/nXKPuSaptqR3WhMzGXIJWbx964jbtvyJgGKRt3JPwtrm
-         Ij3bxQGikuvg4JnjWAoufwDeNi872T+qtDYlvDNkA1vwpIqTvj4UTOECgyq3dZR6Fjt4
-         OkB8IgxcboKp7hxKfpUkUTAnLWxpfF9JkFhxs=
+	Wed, 1 Apr 2009 00:53:04 -0400
+Message-ID: <49D2F2D4.9090008@oracle.com>
+Date: Tue, 31 Mar 2009 21:51:32 -0700
+From: Randy Dunlap <randy.dunlap@oracle.com>
+Organization: Oracle Linux Engineering
+User-Agent: Thunderbird 2.0.0.6 (X11/20070801)
 MIME-Version: 1.0
-In-Reply-To: <200903312021.25165.david-b@pacbell.net>
-References: <200903260042.42091.david-b@pacbell.net>
-	 <200903311418.53772.david-b@pacbell.net>
-	 <a95a62fe0903311817i76f9f6d8qf7470fd14a62b912@mail.gmail.com>
-	 <200903312021.25165.david-b@pacbell.net>
-Date: Tue, 31 Mar 2009 21:49:03 -0700
-Message-ID: <a95a62fe0903312149j482c1684k564896e1981f9819@mail.gmail.com>
-Subject: Re: [patch/rfc 2.6.29 1/2] MTD: driver model updates
-From: Kevin Cernekee <kpc.mtd@gmail.com>
-To: David Brownell <david-b@pacbell.net>
-Cc: Linux MTD <linux-mtd@lists.infradead.org>,
-       Kay Sievers <kay.sievers@vrfy.org>, LKML <linux-kernel@vger.kernel.org>
-Content-Type: text/plain; charset=UTF-8
+To: Rusty Russell <rusty@rustcorp.com.au>
+CC: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       "Rafael J. Wysocki" <rjw@sisk.pl>, Bjorn Helgaas <bjorn.helgaas@hp.com>,
+       andreas.herrmann3@amd.com, Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: 2.6.29 boot hang
+References: <49D280EF.1080507@oracle.com> <200904011012.11527.rusty@rustcorp.com.au>
+In-Reply-To: <200904011012.11527.rusty@rustcorp.com.au>
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
+X-Source-IP: acsmt701.oracle.com [141.146.40.71]
+X-Auth-Type: Internal IP
+X-CT-RefId: str=0001.0A090205.49D2F2DF.013D:SCFMA4539814,ss=1,fgs=0
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 3/31/09, David Brownell <david-b@pacbell.net> wrote:
->> 2) region_info_user fields?  Not really sure how this would work.
->> Maybe a separate subdirectory for each region?
->
-> I'm not sure I've ever had reason to care about a "region" (whatever
-> that is!) with MTD hardware.
+Rusty Russell wrote:
+> On Wednesday 01 April 2009 07:15:35 Randy Dunlap wrote:
+>> On a 4-proc x86_64 (HP BladeCenter, AMD CPUs) system, booting 2.6.29
+>> (or earlier, back to 2.6.28-6921-g873392c) hangs during boot.
+>>
+>> git bisect says:
+>> 873392ca514f87eae39f53b6944caf85b1a047cb is first bad commit
+>> commit 873392ca514f87eae39f53b6944caf85b1a047cb
+>> Author: Rusty Russell <rusty@rustcorp.com.au>
+>> Date:   Wed Dec 31 23:54:56 2008 +1030
+>>
+>>     PCI: work_on_cpu: use in drivers/pci/pci-driver.c
+> 
+> ...
+> 
+>> If I change CONFIG_MICROCODE_AMD=y to CONFIG_MICROCODE_AMD=n & rebuild,
+>> the kernel boots successfully.
+> 
+> How very very odd.  My first thought was a deadlock with keventd used
+> by work_on_cpu (changed in latest Linus tree), but the microcode code at
+> that version doesn't use work_on_cpu.
 
-Erase Block Regions.  From the CFI spec:
+Yep, I thought it a bit odd also.
 
-"x specifies the number of regions within the device containing one or
-more contiguous Erase Blocks of the same size.  For example, a 128KB
-device (1Mb) having blocking of 16KB, 8KB, four 2KB, two 16KB, and one
-64KB is considered to have 5 Erase Block Regions."
+> So I don't think that's it, but this patch should canonically eliminate it:
+> 
+> Subject: work_on_cpu(): rewrite it to create a kernel thread on demand
+> From: Andrew Morton <akpm@linux-foundation.org>
 
-This is fairly common on parallel NOR devices.  Probably less so on
-huge NAND devices.
+This patch doesn't apply to 2.6.29-final, but it does apply to 2.6.29-git8,
+so I applied/tested it there.  with surprising results (at least to me).
 
-> I suspect that a lot of interesting questions could come up in
-> the context of enhancing mtd-utils to work with sysfs and bigger
-> NAND chips.  Some might relate to "regions".
+2.6.29-git8 works for me without any patches applied.  After applying
+this patch, I get the same boot hang that I was seeing with 2.6.29-final.
 
-Right, this sysfs requirement raises a number of issues that need to
-be fully thought out in order to make sure the new interface is a
-suitable replacement for the "INFO" ioctls.  For instance:
+Make sense to you??
 
-1) If each region is a subdirectory, are user programs supposed to use
-readdir() to count them?  Is ioctl(MEMGETREGIONCOUNT) still the
-preferred method?  Or do we make a new "regioncount" sysfs attribute?
+Thanks for your help.
 
-(A somewhat related question is whether MEMGETREGIONCOUNT only exists
-because it was impossible to expand the MEMGETINFO struct.  After all,
-it's just copying another field from the mtd_info struct.)
+> The various implemetnations and proposed implemetnations of work_on_cpu()
+> are vulnerable to various deadlocks because they all used queues of some
+> form.
+> 
+> Unrelated pieces of kernel code thus gained dependencies wherein if one
+> work_on_cpu() caller holds a lock which some other work_on_cpu() callback
+> also takes, the kernel could rarely deadlock.
+> 
+> Fix this by creating a short-lived kernel thread for each work_on_cpu()
+> invokation.
+> 
+> This is not terribly fast, but the only current caller of work_on_cpu() is
+> pci_call_probe().
+> 
+> It would be nice to find some other way of doing the node-local
+> allocations in the PCI probe code so that we can zap work_on_cpu()
+> altogether.  The code there is rather nasty.  I can't think of anything
+> simple at this time...
+> 
+> Cc: Rusty Russell <rusty@rustcorp.com.au>
+> Cc: Ingo Molnar <mingo@elte.hu>
+> Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
+> Signed-off-by: Rusty Russell <rusty@rustcorp.com.au>
+> ---
+>  kernel/workqueue.c |   36 +++++++++++++++++++-----------------
+>  1 file changed, 19 insertions(+), 17 deletions(-)
+> 
+> diff -puN kernel/workqueue.c~work_on_cpu-rewrite-it-to-create-a-kernel-thread-on-demand kernel/workqueue.c
+> --- a/kernel/workqueue.c~work_on_cpu-rewrite-it-to-create-a-kernel-thread-on-demand
+> +++ a/kernel/workqueue.c
+> @@ -985,20 +985,20 @@ undo:
+>  }
+>  
+>  #ifdef CONFIG_SMP
+> -static struct workqueue_struct *work_on_cpu_wq __read_mostly;
+>  
+>  struct work_for_cpu {
+> -	struct work_struct work;
+> +	struct completion completion;
+>  	long (*fn)(void *);
+>  	void *arg;
+>  	long ret;
+>  };
+>  
+> -static void do_work_for_cpu(struct work_struct *w)
+> +static int do_work_for_cpu(void *_wfc)
+>  {
+> -	struct work_for_cpu *wfc = container_of(w, struct work_for_cpu, work);
+> -
+> +	struct work_for_cpu *wfc = _wfc;
+>  	wfc->ret = wfc->fn(wfc->arg);
+> +	complete(&wfc->completion);
+> +	return 0;
+>  }
+>  
+>  /**
+> @@ -1009,17 +1009,23 @@ static void do_work_for_cpu(struct work_
+>   *
+>   * This will return the value @fn returns.
+>   * It is up to the caller to ensure that the cpu doesn't go offline.
+> + * The caller must not hold any locks which would prevent @fn from completing.
+>   */
+>  long work_on_cpu(unsigned int cpu, long (*fn)(void *), void *arg)
+>  {
+> -	struct work_for_cpu wfc;
+> -
+> -	INIT_WORK(&wfc.work, do_work_for_cpu);
+> -	wfc.fn = fn;
+> -	wfc.arg = arg;
+> -	queue_work_on(cpu, work_on_cpu_wq, &wfc.work);
+> -	flush_work(&wfc.work);
+> -
+> +	struct task_struct *sub_thread;
+> +	struct work_for_cpu wfc = {
+> +		.completion = COMPLETION_INITIALIZER_ONSTACK(wfc.completion),
+> +		.fn = fn,
+> +		.arg = arg,
+> +	};
+> +
+> +	sub_thread = kthread_create(do_work_for_cpu, &wfc, "work_for_cpu");
+> +	if (IS_ERR(sub_thread))
+> +		return PTR_ERR(sub_thread);
+> +	kthread_bind(sub_thread, cpu);
+> +	wake_up_process(sub_thread);
+> +	wait_for_completion(&wfc.completion);
+>  	return wfc.ret;
+>  }
+>  EXPORT_SYMBOL_GPL(work_on_cpu);
+> @@ -1035,8 +1041,4 @@ void __init init_workqueues(void)
+>  	hotcpu_notifier(workqueue_cpu_callback, 0);
+>  	keventd_wq = create_workqueue("events");
+>  	BUG_ON(!keventd_wq);
+> -#ifdef CONFIG_SMP
+> -	work_on_cpu_wq = create_workqueue("work_on_cpu");
+> -	BUG_ON(!work_on_cpu_wq);
+> -#endif
+>  }
+> _
 
-2) How are user programs expected to access MTD sysfs?  Do we
-introduce a new libsysfs dependency, or roll our own implementation?
-Are there any past examples of ioctls being phased out in favor of
-sysfs, particularly in subsystems that are popular on embedded
-platforms?
 
-3) What should the mtd-utils changes look like?  Do we define
-backward-compatibility wrapper functions that try to work the same way
-the ioctls used to?  New libraries and layers of abstraction?  Or
-something in the middle?
+
+-- 
+~Randy
