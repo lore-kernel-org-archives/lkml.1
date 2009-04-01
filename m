@@ -1,75 +1,44 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932573AbZDAVVq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934112AbZDAVWW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932573AbZDAVVq (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 1 Apr 2009 17:21:46 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755391AbZDAVVh
+	id S934112AbZDAVWW (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 1 Apr 2009 17:22:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1765526AbZDAVWA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 1 Apr 2009 17:21:37 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:35054 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1753262AbZDAVVg (ORCPT
+	Wed, 1 Apr 2009 17:22:00 -0400
+Received: from rv-out-0506.google.com ([209.85.198.238]:52716 "EHLO
+	rv-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756775AbZDAVV7 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 1 Apr 2009 17:21:36 -0400
-Date: Wed, 1 Apr 2009 14:17:00 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Martin Schwidefsky <schwidefsky@de.ibm.com>
-Cc: linux-mm@kvack.org, linux-kernel@vger.kernel.org, cotte@de.ibm.com,
-       npiggin@suse.de, jaredeh@gmail.com
-Subject: Re: [PATCH] do_xip_mapping_read: fix length calculation
-Message-Id: <20090401141700.f5ef3c08.akpm@linux-foundation.org>
-In-Reply-To: <20090331153223.74b177bd@skybase>
-References: <20090331153223.74b177bd@skybase>
-X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Wed, 1 Apr 2009 17:21:59 -0400
+MIME-Version: 1.0
+In-Reply-To: <20090401174336.GA14726@srcf.ucam.org>
+References: <200903291224.21380.info@gnebu.es> <200903311452.05210.info@gnebu.es> 
+	<20090331134547.GJ13356@mit.edu> <200904010002.47077.info@gnebu.es> 
+	<49D2A5AB.1090704@ursus.ath.cx> <20090401015010.GB4529@mit.edu> 
+	<20090401052050.GA20456@sucs.org> <20090401151219.GA12285@srcf.ucam.org> 
+	<20090401173521.GA15423@mit.edu> <20090401174336.GA14726@srcf.ucam.org>
+Date: Wed, 1 Apr 2009 14:21:43 -0700
+Message-ID: <2c0942db0904011421w58c0c2dyb70235fb739cbd30@mail.gmail.com>
+Subject: Re: Ext4 and the "30 second window of death"
+From: Ray Lee <ray-lk@madrabbit.org>
+To: Matthew Garrett <mjg59@srcf.ucam.org>
+Cc: Theodore Tso <tytso@mit.edu>, Sitsofe Wheeler <sitsofe@yahoo.com>,
+       "Andreas T.Auer" <andreas.t.auer_lkml_73537@ursus.ath.cx>,
+       Alberto Gonzalez <info@gnebu.es>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 31 Mar 2009 15:32:23 +0200
-Martin Schwidefsky <schwidefsky@de.ibm.com> wrote:
+On Wed, Apr 1, 2009 at 10:43 AM, Matthew Garrett <mjg59@srcf.ucam.org> wrote:
+> I've got absolutely no idea why anyone would want fsync() to stop
+> meaning "Put my data on the disk please".
 
-> From: Martin Schwidefsky <schwidefsky@de.ibm.com>
-> 
-> The calculation of the value nr in do_xip_mapping_read is incorrect. If
-> the copy required more than one iteration in the do while loop the
-> copies variable will be non-zero. The maximum length that may be passed
-> to the call to copy_to_user(buf+copied, xip_mem+offset, nr) is len-copied
-> but the check only compares against (nr > len).
-> 
-> This bug is the cause for the heap corruption Carsten has been chasing
-> for so long:
-> 
-> *** glibc detected *** /bin/bash: free(): invalid next size (normal): 0x00000000800e39f0 ***  
-> ======= Backtrace: =========  
-> /lib64/libc.so.6[0x200000b9b44]  
-> /lib64/libc.so.6(cfree+0x8e)[0x200000bdade]  
-> /bin/bash(free_buffered_stream+0x32)[0x80050e4e]  
-> /bin/bash(close_buffered_stream+0x1c)[0x80050ea4]  
-> /bin/bash(unset_bash_input+0x2a)[0x8001c366]  
-> /bin/bash(make_child+0x1d4)[0x8004115c]  
-> /bin/bash[0x8002fc3c]  
-> /bin/bash(execute_command_internal+0x656)[0x8003048e]  
-> /bin/bash(execute_command+0x5e)[0x80031e1e]  
-> /bin/bash(execute_command_internal+0x79a)[0x800305d2]  
-> /bin/bash(execute_command+0x5e)[0x80031e1e]  
-> /bin/bash(reader_loop+0x270)[0x8001efe0]  
-> /bin/bash(main+0x1328)[0x8001e960]  
-> /lib64/libc.so.6(__libc_start_main+0x100)[0x200000592a8]  
-> /bin/bash(clearerr+0x5e)[0x8001c092]  
+Some guy named Andrew used to run a kernel with 'return 0' at the top
+of fsync and fdatasync: http://lkml.org/lkml/2007/4/27/88
 
-Please get into the habit of adding Cc: <stable@kernel.org> to the
-changelogs?
-
-I believe I personally am pretty good at picking up stable things, but
-other patch-mergers are quite unreliable.  We all need as much help as
-we can get on this, because things are falling through cracks.
-
-> With this bug fix the commit 0e4a9b59282914fe057ab17027f55123964bc2e2
-> "ext2/xip: refuse to change xip flag during remount with busy inodes"
-> can be removed again.
-
-OK, please send a standalone patch to do this at an appropriate time. 
-I guess that this second patch won't be needed in -stable.
-
+It's that the latency penalty of apps using *sync() on common hardware
+sucks. That's all, and finding a way to fix that would make this
+entire thread go away, I think.
