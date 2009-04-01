@@ -1,104 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764914AbZDAM6B@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763698AbZDAM7a@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764914AbZDAM6B (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 1 Apr 2009 08:58:01 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1764892AbZDAM5f
+	id S1763698AbZDAM7a (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 1 Apr 2009 08:59:30 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756110AbZDAM7U
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 1 Apr 2009 08:57:35 -0400
-Received: from rcsinet12.oracle.com ([148.87.113.124]:17176 "EHLO
-	rgminet12.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754302AbZDAM5e (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 1 Apr 2009 08:57:34 -0400
-Subject: Re: Linux 2.6.29
-From: Chris Mason <chris.mason@oracle.com>
-To: Dave Chinner <david@fromorbit.com>
-Cc: Mark Lord <lkml@rtr.ca>, Stefan Richter <stefanr@s5r6.in-berlin.de>,
-       Jeff Garzik <jeff@garzik.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Matthew Garrett <mjg59@srcf.ucam.org>,
-       Alan Cox <alan@lxorguk.ukuu.org.uk>, Theodore Tso <tytso@mit.edu>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       David Rees <drees76@gmail.com>, Jesper Krogh <jesper@krogh.cc>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-In-Reply-To: <20090331235509.GU26138@disturbed>
-References: <alpine.LFD.2.00.0903271522210.3994@localhost.localdomain>
-	 <49CD7B10.7010601@garzik.org> <49CD891A.7030103@rtr.ca>
-	 <49CD9047.4060500@garzik.org> <49CE2633.2000903@s5r6.in-berlin.de>
-	 <49CE3186.8090903@garzik.org> <49CE35AE.1080702@s5r6.in-berlin.de>
-	 <49CE3F74.6090103@rtr.ca> <20090329231451.GR26138@disturbed>
-	 <1238417751.30488.12.camel@think.oraclecorp.com>
-	 <20090331235509.GU26138@disturbed>
-Content-Type: text/plain
-Date: Wed, 01 Apr 2009 08:53:33 -0400
-Message-Id: <1238590413.18549.7.camel@think.oraclecorp.com>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.24.1 
-Content-Transfer-Encoding: 7bit
-X-Source-IP: acsmt706.oracle.com [141.146.40.84]
-X-Auth-Type: Internal IP
-X-CT-RefId: str=0001.0A090208.49D363D6.0145:SCFMA4539814,ss=1,fgs=0
+	Wed, 1 Apr 2009 08:59:20 -0400
+Received: from brick.kernel.dk ([93.163.65.50]:55402 "EHLO kernel.dk"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754247AbZDAM7T (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 1 Apr 2009 08:59:19 -0400
+Date: Wed, 1 Apr 2009 14:59:17 +0200
+From: Jens Axboe <jens.axboe@oracle.com>
+To: Tejun Heo <tj@kernel.org>
+Cc: bharrosh@panasas.com, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 4/8] bio: actually inline inline bvecs into bio
+Message-ID: <20090401125916.GH5178@kernel.dk>
+References: <1238583884-13517-1-git-send-email-tj@kernel.org> <1238583884-13517-5-git-send-email-tj@kernel.org> <20090401124709.GG5178@kernel.dk> <49D36452.9000605@kernel.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <49D36452.9000605@kernel.org>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 2009-04-01 at 10:55 +1100, Dave Chinner wrote:
-> On Mon, Mar 30, 2009 at 08:55:51AM -0400, Chris Mason wrote:
-> > On Mon, 2009-03-30 at 10:14 +1100, Dave Chinner wrote:
-> > > On Sat, Mar 28, 2009 at 11:17:08AM -0400, Mark Lord wrote:
-> > > > The better solution seems to be the rather obvious one:
-> > > >
-> > > >   the filesystem should commit data to disk before altering metadata.
-> > > 
-> > > Generalities are bad. For example:
-> > > 
-> > > write();
-> > > unlink();
-> > > <do more stuff>
-> > > close();
-> > > 
-> > > This is a clear case where you want metadata changed before data is
-> > > committed to disk. In many cases, you don't even want the data to
-> > > hit the disk here.
-> > > 
-> > > Similarly, rsync does the magic open,write,close,rename sequence
-> > > without an fsync before the rename. And it doesn't need the fsync,
-> > > either. The proposed implicit fsync on rename will kill rsync
-> > > performance, and I think that may make many people unhappy....
-> > > 
+On Wed, Apr 01 2009, Tejun Heo wrote:
+> Jens Axboe wrote:
+> > On Wed, Apr 01 2009, Tejun Heo wrote:
+> >> Impact: cleanup
+> >>
+> >> BIO_INLINE_VECS bvecs are inlined into bio to avoid bvec allocation
+> >> for small transfers.  This was achieved by declaring zero sized bvec
+> >> array at the end of bio and allocating bio with extra bytes at the
+> >> end.  As BIO_INLINE_VECS is constant, there is no reason to do this
+> >> allocation trick.  This patch simply defines BIO_INLINE_VECS sized
+> >> bvec array at the end.  This will help fixing bio_kmalloc().
 > > 
-> > Sorry, I'm afraid that rsync falls into the same category as the
-> > kde/gnome apps here.
+> > I don't like this, it's much nicer to do it with a zero sized array. If
+> > you don't need a bio_vec, then you don't consume the extra space. I
+> > guess for that to really work, we'd need one more slab and mempool
+> > though. At least for non-stack bio's. I also fear that direct uses of
+> > ->bi_inline_vecs[] will then crop up, making it harder to go back.
 > 
-> I disagree.
->
-> > There are a lot of backup programs built around rsync, and every one of
-> > them risks losing the old copy of the file by renaming an unflushed new
-> > copy over it.
+> I don't know.  None of the current users cares about it and unless
+> there's plan to make the number of inlined vecs variable, doing it
+> separately doesn't buy much and I think we'll probably pay more by
+> having extra slab and mempool.
 > 
-> If you crash while rsync is running, then the state of the copy
-> is garbage anyway. You have to restart from scratch and rsync will
-> detect such failures and resync the file. gnome/kde have no
-> mechanism for such recovery.
-> 
+> Dropping this one isn't difficult tho.  If your objection is strong,
+> I'll drop it and update the next one accordingly.  Actually, what we
+> can do for bio_kmalloc() is to embed whole bvec as we know the size
+> anyway.
 
-If this were the recovery system they had in mind, then why use rename
-at all?  They could just as easily overwrite the original in place.
-Using rename implies they want to replace the old with a complete new
-version.
+Should not be hard, it's just a matter of what size to pass. Thanks!
 
-There's also the window where you crash after the rsync is done but
-before all the new data safely makes it into the replacement files.
-
-> > rsync needs the flushing about a million times more than gnome and kde,
-> > and it doesn't have any option to do it automatically.
-> 
-> And therein lies the problem with a "flush-before-rename"
-> semantic....
-
-Here I was just talking about a rsync --flush-after-rename or something,
-not an option from the kernel.
-
--chris
-
+-- 
+Jens Axboe
 
