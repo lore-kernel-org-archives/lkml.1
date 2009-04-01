@@ -1,48 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934229AbZDAUW0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934279AbZDAUXW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934229AbZDAUW0 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 1 Apr 2009 16:22:26 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757076AbZDAUWO
+	id S934279AbZDAUXW (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 1 Apr 2009 16:23:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757564AbZDAUXL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 1 Apr 2009 16:22:14 -0400
-Received: from one.firstfloor.org ([213.235.205.2]:49185 "EHLO
-	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754885AbZDAUWN (ORCPT
+	Wed, 1 Apr 2009 16:23:11 -0400
+Received: from mail-ew0-f165.google.com ([209.85.219.165]:51621 "EHLO
+	mail-ew0-f165.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757188AbZDAUXK convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 1 Apr 2009 16:22:13 -0400
-To: Jeff Layton <jlayton@redhat.com>
-Cc: akpm@linux-foundation.org, linux-kernel@vger.kernel.org,
-       linux-fsdevel@vger.kernel.org, fengguang.wu@intel.com
-Subject: Re: [PATCH] writeback: guard against jiffies wraparound on inode->dirtied_when checks (try #3)
-From: Andi Kleen <andi@firstfloor.org>
-References: <1238607475-8203-1-git-send-email-jlayton@redhat.com>
-Date: Wed, 01 Apr 2009 22:22:06 +0200
-In-Reply-To: <1238607475-8203-1-git-send-email-jlayton@redhat.com> (Jeff Layton's message of "Wed,  1 Apr 2009 13:37:55 -0400")
-Message-ID: <87y6ukktu9.fsf@basil.nowhere.org>
-User-Agent: Gnus/5.1008 (Gnus v5.10.8) Emacs/22.3 (gnu/linux)
+	Wed, 1 Apr 2009 16:23:10 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:sender:in-reply-to:references:date
+         :x-google-sender-auth:message-id:subject:from:to:cc:content-type
+         :content-transfer-encoding;
+        b=iphVIS1h871tZpVbJUsqJnIW6cxzTD8ZMeSgmAKbXJMBm9dbmIsvJHnOj4bZTBH8sS
+         iIVnEzYNADpEidVDV0d54l+7ScrQ235bw9C+KZpMG4N73aJMCTwbE08grDztNPnO1m0P
+         8aAFzJBOvEw40vAixOBQE4FW5Rsw2KKWt9HFk=
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <20090401194810.GY3795@csclub.uwaterloo.ca>
+References: <200903120437.03837.rob@landley.net>
+	 <20090401165741.GA3797@csclub.uwaterloo.ca>
+	 <20090401190340.GA29673@uranus.ravnborg.org>
+	 <20090401194810.GY3795@csclub.uwaterloo.ca>
+Date: Wed, 1 Apr 2009 22:23:06 +0200
+X-Google-Sender-Auth: 4c652b45a617618d
+Message-ID: <10f740e80904011323t219063b0ife4db1677ca0d22b@mail.gmail.com>
+Subject: Re: make headers_install broken for ARCH=m68k in 2.6.29-rc7.
+From: Geert Uytterhoeven <geert@linux-m68k.org>
+To: Lennart Sorensen <lsorense@csclub.uwaterloo.ca>
+Cc: Sam Ravnborg <sam@ravnborg.org>, Rob Landley <rob@landley.net>,
+       linux-kernel@vger.kernel.org, dwmw2@infradead.org
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Jeff Layton <jlayton@redhat.com> writes:
+On Wed, Apr 1, 2009 at 21:48, Lennart Sorensen
+<lsorense@csclub.uwaterloo.ca> wrote:
+> On Wed, Apr 01, 2009 at 09:03:40PM +0200, Sam Ravnborg wrote:
+>> They decided to fix it by eliminating the *_{no,mm}.h files for exported headers.
+>> The patch is already in mainline.
 >
-> The problem is that these checks assume that dirtied_when is updated
-> periodically. If an inode is continuously being used for I/O it can be
-> persistently marked as dirty and will continue to age. Once the time
-> difference between dirtied_when and the jiffies value it is being
-> compared to is greater than or equal to half the maximum of the jiffies
-> type, the logic of the time_*() macros inverts and the opposite of what
-> is needed is returned. On 32-bit architectures that's just under 25 days
-> (assuming HZ == 1000).
+> Oh good.  Yay!  Just didn't make it into 2.6.29 I suspect.  Well there
+> is always 2.6.30.
 
-I wonder if this can happen in other places using jiffies time stamp
-too. Why not? Perhaps that check macro should be in timer.h and some auditing done
-over the whiole code base?
+It entered mainline just before v2.6.29 (after v2.6.29-rc8)?
+Or did you find a new problem?
 
--Andi
+Gr{oetje,eeting}s,
 
+						Geert
 
--- 
-ak@linux.intel.com -- Speaking for myself only.
+--
+Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
+
+In personal conversations with technical people, I call myself a hacker. But
+when I'm talking to journalists I just say "programmer" or something like that.
+							    -- Linus Torvalds
