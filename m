@@ -1,233 +1,75 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764549AbZDAM2A@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764370AbZDAM34@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764549AbZDAM2A (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 1 Apr 2009 08:28:00 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1764327AbZDAM1o
+	id S1764370AbZDAM34 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 1 Apr 2009 08:29:56 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761336AbZDAM3p
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 1 Apr 2009 08:27:44 -0400
-Received: from mga14.intel.com ([143.182.124.37]:55675 "EHLO mga14.intel.com"
+	Wed, 1 Apr 2009 08:29:45 -0400
+Received: from brick.kernel.dk ([93.163.65.50]:34812 "EHLO kernel.dk"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1764414AbZDAM1n (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 1 Apr 2009 08:27:43 -0400
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.39,306,1235980800"; 
-   d="scan'208";a="126570655"
-Date: Wed, 1 Apr 2009 20:26:27 +0800
-From: Wu Fengguang <fengguang.wu@intel.com>
-To: Jeff Layton <jlayton@redhat.com>
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       "linux-fsdevel@vger.kernel.org" <linux-fsdevel@vger.kernel.org>
-Subject: Re: [PATCH] writeback: guard against jiffies wraparound on
-	inode->dirtied_when checks (try #2)
-Message-ID: <20090401122627.GA12945@localhost>
-References: <1238544239-31882-1-git-send-email-jlayton@redhat.com> <20090331172031.b2971f1e.akpm@linux-foundation.org> <20090331205018.228ea5f8@tleilax.poochiereds.net> <20090331180730.049d42e7.akpm@linux-foundation.org> <20090401065618.GB10423@localhost> <20090401075320.0f49b5bf@barsoom.rdu.redhat.com>
+	id S1757953AbZDAM3p (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 1 Apr 2009 08:29:45 -0400
+Date: Wed, 1 Apr 2009 14:29:42 +0200
+From: Jens Axboe <jens.axboe@oracle.com>
+To: Tejun Heo <tj@kernel.org>
+Cc: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>, bharrosh@panasas.com,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 2/8] block: fix SG_IO vector request data length
+	handling
+Message-ID: <20090401122942.GF5178@kernel.dk>
+References: <1238583884-13517-3-git-send-email-tj@kernel.org> <20090401204716N.fujita.tomonori@lab.ntt.co.jp> <20090401115058.GD5178@kernel.dk> <20090401211851Y.fujita.tomonori@lab.ntt.co.jp> <49D35D9F.3000204@kernel.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20090401075320.0f49b5bf@barsoom.rdu.redhat.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+In-Reply-To: <49D35D9F.3000204@kernel.org>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Apr 01, 2009 at 07:53:20PM +0800, Jeff Layton wrote:
-> On Wed, 1 Apr 2009 14:56:18 +0800
-> Wu Fengguang <fengguang.wu@intel.com> wrote:
+On Wed, Apr 01 2009, Tejun Heo wrote:
+> FUJITA Tomonori wrote:
+> > On Wed, 1 Apr 2009 13:50:58 +0200
+> > Jens Axboe <jens.axboe@oracle.com> wrote:
+> > 
+> >> On Wed, Apr 01 2009, FUJITA Tomonori wrote:
+> >>> On Wed,  1 Apr 2009 20:04:38 +0900
+> >>> Tejun Heo <tj@kernel.org> wrote:
+> >>>
+> >>>> Impact: fix SG_IO behavior such that it matches the documentation
+> >>>>
+> >>>> SG_IO howto says that if ->dxfer_len and sum of iovec disagress, the
+> >>>> shorter one wins.  However, the current implementation returns -EINVAL
+> >>>> for such cases.  Trim iovc if it's longer than ->dxfer_len.
+> >>> Is that description about sg's SG_IO?
 > 
-> > On Tue, Mar 31, 2009 at 06:07:30PM -0700, Andrew Morton wrote:
-> > > On Tue, 31 Mar 2009 20:50:18 -0400 Jeff Layton <jlayton@redhat.com> wrote:
-> > > 
-> > > > On Tue, 31 Mar 2009 17:20:31 -0700
-> > > > Andrew Morton <akpm@linux-foundation.org> wrote:
-> > > > 
-> > > > > On Tue, 31 Mar 2009 20:03:59 -0400
-> > > > > Jeff Layton <jlayton@redhat.com> wrote:
-> > > > > 
-> > > > > > +		 * It's not sufficient to just do a time_after() check on
-> > > > > > +		 * dirtied_when. That assumes that dirtied_when will always
-> > > > > > +		 * change within a period of jiffies that encompasses half the
-> > > > > > +		 * machine word size (2^31 jiffies on 32-bit arch). That's not
-> > > > > > +		 * necessarily the case if an inode is being constantly
-> > > > > > +		 * redirtied. Since dirtied_when can never be in the future,
-> > > > > > +		 * we can assume that if it appears to be so then it is
-> > > > > > +		 * actually in the distant past.
-> > > > > 
-> > > > > so this really is a 32-bit-only thing.
-> > > > > 
-> > > > > I guess that isn't worth optimising for though.
-> > > > > 
-> > > > 
-> > > > Yeah, it's pretty much impossible to hit this on a 64-bit machine.
-> > > > 
-> > > > > otoh, given that all three comparisons are the same:
-> > > > > 
-> > > > > +			time_after(inode->dirtied_when, *older_than_this) &&
-> > > > > +			time_before_eq(inode->dirtied_when, jiffies))
-> > > > > 
-> > > > > (although one is inverted (i think?)), it might end up nicer if this was all done
-> > > > > in a little helper function?
-> > > > > 
-> > > > > That way we only need to comment what's going on at a single site, and
-> > > > > we could omit the additional test if !CONFIG_64BIT.
-> > > > 
-> > > > Ok, that seems reasonable.
-> > > > 
-> > > > At one point I had a macro similar to time_in_range(), but dropped it
-> > > > primarily because time_after_but_before_eq() wasn't easy on the eyes.
-> > > > Thoughts on better names?
-> > > 
-> > > I was thinking
-> > > 
-> > > 	bool inode_dirtied_after(...);
-> > > 
-> > > and just leave the innards using time_after() and time_before_eq()?
-> > 
-> > Andrew, here is the updated patch. Note that the first chunk for
-> > redirty_tail() was not absolutely necessary and so removed.
-> > 
-> > Thanks,
-> > Fengguang
-> > ---
-> > Subject: writeback: guard against jiffies wraparound on inode->dirtied_when checks
-> > From:	Jeff Layton <jlayton@redhat.com>
-> > 
-> > The dirtied_when value on an inode is supposed to represent the first
-> > time that an inode has one of its pages dirtied. This value is in units
-> > of jiffies. It's used in several places in the writeback code to
-> > determine when to write out an inode.
-> > 
-> > The problem is that these checks assume that dirtied_when is updated
-> > periodically. If an inode is continuously being used for I/O it can be
-> > persistently marked as dirty and will continue to age. Once the time
-> > difference between dirtied_when and the jiffies value it is being
-> > compared to is greater than or equal to half the maximum of the jiffies
-> > type, the logic of the time_*() macros inverts and the opposite of what
-> > is needed is returned. On 32-bit architectures that's just under 25 days
-> > (assuming HZ == 1000).
-> > 
-> > As the least-recently dirtied inode, it'll end up being the first one
-> > that pdflush will try to write out. sync_sb_inodes() does this check:
-> > 
-> > 	/* Was this inode dirtied after sync_sb_inodes was called? */
-> >  	if (time_after(inode->dirtied_when, start))
-> >  		break;
-> > 
-> > ...but now dirtied_when appears to be in the future. sync_sb_inodes()
-> > bails out without attempting to write any dirty inodes. When this
-> > occurs, pdflush will stop writing out inodes for this superblock.
-> > Nothing can unwedge it until jiffies moves out of the problematic
-> > window.
-> > 
-> > Fix this problem by changing the checks against dirtied_when to also
-> > check whether it appears to be in the future. If it does, then we
-> > consider the value to be far in the past.
-> > 
-> > This should shrink the problematic window of time to such a small
-> > period(30s) as not to matter.
-> > 
-> > Acked-by: Ian Kent <raven@themaw.net>
-> > Signed-off-by: Jeff Layton <jlayton@redhat.com>
-> > Signed-off-by: Wu Fengguang <fengguang.wu@intel.com>
-> > ---
-> >  fs/fs-writeback.c |   26 ++++++++++++++++++++++----
-> >  1 file changed, 22 insertions(+), 4 deletions(-)
-> > 
-> > --- mm.orig/fs/fs-writeback.c
-> > +++ mm/fs/fs-writeback.c
-> > @@ -196,7 +196,7 @@ static void redirty_tail(struct inode *i
-> >  		struct inode *tail_inode;
-> >  
-> >  		tail_inode = list_entry(sb->s_dirty.next, struct inode, i_list);
-> > -		if (!time_after_eq(inode->dirtied_when,
-> > +		if (time_before(inode->dirtied_when,
-> >  				tail_inode->dirtied_when))
-> >  			inode->dirtied_when = jiffies;
-> >  	}
+> It looks like it's the closest thing.
 > 
-> I think we need a similar change in this function in order to maintain
-> the list order.
+> >> The more important question is what sg.c actually does, that's more
+> >> important than the documentation.
 > 
-> Consider this case:
+> The current code would fail it with -EINVAL but after brief look into
+> 2.6.12-rc2, it seems like it would use the shorter one.  On direct
+> mapping path, it builds considering both lengths and on indirect path
+> it doesn't seem to look at the iov supplied till the transfer is
+> actually complete using the dxfer_len and then copy out whatever can
+> be copied out.
 > 
-> We have an s_dirty list with a head inode that appears to be in the
-> future. We start writeback and clear out s_dirty (all of the inodes are
-> moved to s_io). A new inode is dirtied, and goes onto the empty s_dirty
-> list with a dirtied_when value that equals now. The inode with the
-> dirtied_when value that looks like it's in the future is redirtied while
-> being written and redirty_tail is called. It goes back on the list
-> without resetting dirtied_when even though it's actually older than the
-> inode at the tail.
+> > Do you think that Doug is a person who makes such mistake? ;)
+> > 
+> > Seems that sg worked as the howto says. But I think that I broke it
+> > when I converted sg to use the block layer. I'll fix it soon.
+> > 
+> > About this patch, as we know, there are lots of subtle differences
+> > between sg's SG_IO and the block's. I'm not sure that it's a good idea
+> > to change the behavior of the block's SG_IO.
+> 
+> I think it's better to make the behavior more consistent.  Using
+> shorter dxfer_len can be considered a feature too, so...
 
-What's the difference? It _is_ the past because all 2 reference sites
-are now taught to think so.
+It's definitely a good feature, it's how you'd probe lots of scsi
+command returns. Setting up the iovec once and passing first a smaller
+than a larger dxfer_len would be a perfectly reasonable way to do that.
 
-So s_dirty is still in order, and the writeback process won't be blocked.
+-- 
+Jens Axboe
 
-> There is another option too that I'll throw out here...
-> 
-> We could just make dirtied_when a 64 bit value on 32 bit machines and
-> use jiffies_64 there. On the upside there is no "problematic
-> window" with that. The downside is that struct inode would grow by 4
-> bytes on 32 bit arches, and checking jiffies_64 on such an arch is
-> more computationally intensive. We'd also have to change the size of
-> older_than_this value in the writeback_control struct too if we want to
-> go this route...
-
-Yes that could eliminate the 30s or more temporary writeback stillness.
-The only problem is the extra costs for normal cases, especially the
-space cost.
-
-Thanks,
-Fengguang
-
-> 
-> > @@ -220,6 +220,21 @@ static void inode_sync_complete(struct i
-> >  	wake_up_bit(&inode->i_state, __I_SYNC);
-> >  }
-> >  
-> > +static bool inode_dirtied_after(struct inode *inode, unsigned long t)
-> > +{
-> > +	bool ret = time_after(inode->dirtied_when, t);
-> > +#ifndef CONFIG_64BIT
-> > +	/*
-> > +	 * For inodes being constantly redirtied, dirtied_when can get stuck.
-> > +	 * It _appears_ to be in the future, but is actually in distant past.
-> > +	 * This test is necessary to prevent such wrapped-around relative times
-> > +	 * from permanently stopping the whole pdflush writeback.
-> > +	 */
-> > +	ret = ret && time_before_eq(inode->dirtied_when, jiffies);
-> > +#endif
-> > +	return ret;
-> > +}
-> > +
-> >  /*
-> >   * Move expired dirty inodes from @delaying_queue to @dispatch_queue.
-> >   */
-> > @@ -231,7 +246,7 @@ static void move_expired_inodes(struct l
-> >  		struct inode *inode = list_entry(delaying_queue->prev,
-> >  						struct inode, i_list);
-> >  		if (older_than_this &&
-> > -			time_after(inode->dirtied_when, *older_than_this))
-> > +				inode_dirtied_after(inode, *older_than_this))
-> >  			break;
-> >  		list_move(&inode->i_list, dispatch_queue);
-> >  	}
-> > @@ -492,8 +507,11 @@ void generic_sync_sb_inodes(struct super
-> >  			continue;		/* blockdev has wrong queue */
-> >  		}
-> >  
-> > -		/* Was this inode dirtied after sync_sb_inodes was called? */
-> > -		if (time_after(inode->dirtied_when, start))
-> > +		/*
-> > +		 * Was this inode dirtied after sync_sb_inodes was called?
-> > +		 * This keeps sync from extra jobs and livelock.
-> > +		 */
-> > +		if (inode_dirtied_after(inode, start))
-> >  			break;
-> >  
-> >  		/* Is another pdflush already flushing this queue? */
-> 
-> 
-> -- 
-> Jeff Layton <jlayton@redhat.com>
