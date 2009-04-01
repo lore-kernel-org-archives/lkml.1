@@ -1,57 +1,45 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758213AbZDAMrQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764151AbZDAMrf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758213AbZDAMrQ (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 1 Apr 2009 08:47:16 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753636AbZDAMq7
+	id S1764151AbZDAMrf (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 1 Apr 2009 08:47:35 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763701AbZDAMrM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 1 Apr 2009 08:46:59 -0400
-Received: from mx2.redhat.com ([66.187.237.31]:48580 "EHLO mx2.redhat.com"
+	Wed, 1 Apr 2009 08:47:12 -0400
+Received: from brick.kernel.dk ([93.163.65.50]:47020 "EHLO kernel.dk"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753445AbZDAMq6 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 1 Apr 2009 08:46:58 -0400
-Date: Wed, 1 Apr 2009 09:46:23 -0300
-From: Arnaldo Carvalho de Melo <acme@redhat.com>
-To: Li Zefan <lizf@cn.fujitsu.com>
-Cc: Ingo Molnar <mingo@elte.hu>, Jens Axboe <jens.axboe@oracle.com>,
-       Steven Rostedt <rostedt@goodmis.org>,
-       Frederic Weisbecker <fweisbec@gmail.com>,
-       LKML <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH 1/2] blktrace: fix output of unknown events
-Message-ID: <20090401124623.GC25493@ghostprotocols.net>
-References: <49D3236D.3090705@cn.fujitsu.com>
+	id S1763196AbZDAMrL (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 1 Apr 2009 08:47:11 -0400
+Date: Wed, 1 Apr 2009 14:47:09 +0200
+From: Jens Axboe <jens.axboe@oracle.com>
+To: Tejun Heo <tj@kernel.org>
+Cc: bharrosh@panasas.com, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 4/8] bio: actually inline inline bvecs into bio
+Message-ID: <20090401124709.GG5178@kernel.dk>
+References: <1238583884-13517-1-git-send-email-tj@kernel.org> <1238583884-13517-5-git-send-email-tj@kernel.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <49D3236D.3090705@cn.fujitsu.com>
-X-Url: http://oops.ghostprotocols.net:81/blog
-User-Agent: Mutt/1.5.18 (2008-05-17)
+In-Reply-To: <1238583884-13517-5-git-send-email-tj@kernel.org>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Em Wed, Apr 01, 2009 at 04:18:53PM +0800, Li Zefan escreveu:
-> Not all events are pc (packet command) events. An event is a pc
-> event only if it has BLK_TC_PC bit set.
+On Wed, Apr 01 2009, Tejun Heo wrote:
+> Impact: cleanup
 > 
-> Signed-off-by: Li Zefan <lizf@cn.fujitsu.com>
-> ---
->  kernel/trace/blktrace.c |    2 +-
->  1 files changed, 1 insertions(+), 1 deletions(-)
-> 
-> diff --git a/kernel/trace/blktrace.c b/kernel/trace/blktrace.c
-> index 947c5b3..464a6e5 100644
-> --- a/kernel/trace/blktrace.c
-> +++ b/kernel/trace/blktrace.c
-> @@ -1181,7 +1181,7 @@ static enum print_line_t print_one_line(struct trace_iterator *iter,
->  	}
->  
->  	if (unlikely(what == 0 || what >= ARRAY_SIZE(what2act)))
-> -		ret = trace_seq_printf(s, "Bad pc action %x\n", what);
-> +		ret = trace_seq_printf(s, "Unknown action %x\n", what);
->  	else {
->  		ret = log_action(iter, what2act[what].act[long_act]);
->  		if (ret)
+> BIO_INLINE_VECS bvecs are inlined into bio to avoid bvec allocation
+> for small transfers.  This was achieved by declaring zero sized bvec
+> array at the end of bio and allocating bio with extra bytes at the
+> end.  As BIO_INLINE_VECS is constant, there is no reason to do this
+> allocation trick.  This patch simply defines BIO_INLINE_VECS sized
+> bvec array at the end.  This will help fixing bio_kmalloc().
 
-Looks ok,
+I don't like this, it's much nicer to do it with a zero sized array. If
+you don't need a bio_vec, then you don't consume the extra space. I
+guess for that to really work, we'd need one more slab and mempool
+though. At least for non-stack bio's. I also fear that direct uses of
+->bi_inline_vecs[] will then crop up, making it harder to go back.
 
-Acked-by: Arnaldo Carvalho de Melo <acme@redhat.com>
+-- 
+Jens Axboe
+
