@@ -1,234 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754125AbZDALAn@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755113AbZDALFN@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754125AbZDALAn (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 1 Apr 2009 07:00:43 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752888AbZDALAc
+	id S1755113AbZDALFN (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 1 Apr 2009 07:05:13 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752888AbZDALE5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 1 Apr 2009 07:00:32 -0400
-Received: from mx3.mail.elte.hu ([157.181.1.138]:40272 "EHLO mx3.mail.elte.hu"
+	Wed, 1 Apr 2009 07:04:57 -0400
+Received: from hera.kernel.org ([140.211.167.34]:35181 "EHLO hera.kernel.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752677AbZDALAb (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 1 Apr 2009 07:00:31 -0400
-Date: Wed, 1 Apr 2009 13:00:16 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: Li Zefan <lizf@cn.fujitsu.com>
-Cc: Jens Axboe <jens.axboe@oracle.com>,
-       Arnaldo Carvalho de Melo <acme@redhat.com>,
-       Steven Rostedt <rostedt@goodmis.org>,
-       Frederic Weisbecker <fweisbec@gmail.com>,
-       LKML <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH 2/2] blktrace: fix output of BLK_TC_PC events
-Message-ID: <20090401110016.GA15442@elte.hu>
-References: <49D3236D.3090705@cn.fujitsu.com> <49D32387.9040106@cn.fujitsu.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <49D32387.9040106@cn.fujitsu.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.5
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+	id S1752660AbZDALE4 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 1 Apr 2009 07:04:56 -0400
+From: Tejun Heo <tj@kernel.org>
+To: axboe@kernel.dk, bharrosh@panasas.com, linux-kernel@vger.kernel.org
+Cc: Tejun Heo <tj@kernel.org>
+Subject: [PATCH 1/8] scatterlist: make sure sg_miter_next() doesn't return 0 sized mappings
+Date: Wed,  1 Apr 2009 20:04:37 +0900
+Message-Id: <1238583884-13517-2-git-send-email-tj@kernel.org>
+X-Mailer: git-send-email 1.6.0.2
+In-Reply-To: <1238583884-13517-1-git-send-email-tj@kernel.org>
+References: <1238583884-13517-1-git-send-email-tj@kernel.org>
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Wed, 01 Apr 2009 11:04:50 +0000 (UTC)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Impact: fix not-so-critical but annoying bug
 
-* Li Zefan <lizf@cn.fujitsu.com> wrote:
+sg_miter_next() returns 0 sized mapping if there is an zero sized sg
+entry in the list or at the end of each iteration.  As the users
+always check the ->length field, this bug shouldn't be critical other
+than causing unnecessary iteration.
 
-> BLK_TC_PC events should be treated differently with BLK_TC_FS events.
-> 
-> Before this patch:
-> 
->  # echo 1 > /sys/block/sda/sda1/trace/enable
->  # echo pc > /sys/block/sda/sda1/trace/act_mask
->  # echo blk > /debugfs/tracing/current_tracer
->  # (generate some BLK_TC_PC events)
->  # cat trace
->         bash-2184  [000]  1774.275413:   8,7    I   N [bash]
->         bash-2184  [000]  1774.275435:   8,7    D   N [bash]
->         bash-2184  [000]  1774.275540:   8,7    I   R [bash]
->         bash-2184  [000]  1774.275547:   8,7    D   R [bash]
->  ksoftirqd/0-4     [000]  1774.275580:   8,7    C   N 0 [0]
->         bash-2184  [000]  1774.275648:   8,7    I   R [bash]
->         bash-2184  [000]  1774.275653:   8,7    D   R [bash]
->  ksoftirqd/0-4     [000]  1774.275682:   8,7    C   N 0 [0]
->         bash-2184  [000]  1774.275739:   8,7    I   R [bash]
->         bash-2184  [000]  1774.275744:   8,7    D   R [bash]
->  ksoftirqd/0-4     [000]  1774.275771:   8,7    C   N 0 [0]
->         bash-2184  [000]  1774.275804:   8,7    I   R [bash]
->         bash-2184  [000]  1774.275808:   8,7    D   R [bash]
->  ksoftirqd/0-4     [000]  1774.275836:   8,7    C   N 0 [0]
-> 
-> After this patch:
-> 
->  # cat trace
->         bash-2263  [000]   366.782149:   8,7    I   N 0 (00 ..) [bash]
->         bash-2263  [000]   366.782323:   8,7    D   N 0 (00 ..) [bash]
->         bash-2263  [000]   366.782557:   8,7    I   R 8 (25 00 ..) [bash]
->         bash-2263  [000]   366.782560:   8,7    D   R 8 (25 00 ..) [bash]
->  ksoftirqd/0-4     [000]   366.782582:   8,7    C   N (25 00 ..) [0]
->         bash-2263  [000]   366.782648:   8,7    I   R 8 (5a 00 3f 00) [bash]
->         bash-2263  [000]   366.782650:   8,7    D   R 8 (5a 00 3f 00) [bash]
->  ksoftirqd/0-4     [000]   366.782669:   8,7    C   N (5a 00 3f 00) [0]
->         bash-2263  [000]   366.782710:   8,7    I   R 8 (5a 00 08 00) [bash]
->         bash-2263  [000]   366.782713:   8,7    D   R 8 (5a 00 08 00) [bash]
->  ksoftirqd/0-4     [000]   366.782730:   8,7    C   N (5a 00 08 00) [0]
->         bash-2263  [000]   366.783375:   8,7    I   R 36 (5a 00 08 00) [bash]
->         bash-2263  [000]   366.783379:   8,7    D   R 36 (5a 00 08 00) [bash]
->  ksoftirqd/0-4     [000]   366.783404:   8,7    C   N (5a 00 08 00) [0]
-> 
-> This is what we do with PC events in user-space blktrace.
-> 
-> Signed-off-by: Li Zefan <lizf@cn.fujitsu.com>
-> ---
->  kernel/trace/blktrace.c |   88 ++++++++++++++++++++++++++++++++++++++++++----
->  1 files changed, 80 insertions(+), 8 deletions(-)
-> 
-> diff --git a/kernel/trace/blktrace.c b/kernel/trace/blktrace.c
-> index 464a6e5..fd1ff49 100644
-> --- a/kernel/trace/blktrace.c
-> +++ b/kernel/trace/blktrace.c
-> @@ -970,6 +970,16 @@ static inline const void *pdu_start(const struct trace_entry *ent)
->  	return te_blk_io_trace(ent) + 1;
->  }
->  
-> +static inline u32 t_action(const struct trace_entry *ent)
-> +{
-> +	return te_blk_io_trace(ent)->action;
-> +}
-> +
-> +static inline u32 t_bytes(const struct trace_entry *ent)
-> +{
-> +	return te_blk_io_trace(ent)->bytes;
-> +}
-> +
->  static inline u32 t_sec(const struct trace_entry *ent)
->  {
->  	return te_blk_io_trace(ent)->bytes >> 9;
-> @@ -1030,25 +1040,87 @@ static int blk_log_action(struct trace_iterator *iter, const char *act)
->  				MAJOR(t->device), MINOR(t->device), act, rwbs);
->  }
->  
-> +static int blk_log_dump_pdu(struct trace_seq *s, const struct trace_entry *ent)
-> +{
-> +	const char *pdu_buf;
-> +	int pdu_len;
-> +	int i, end, ret;
-> +
-> +	pdu_buf = pdu_start(ent);
-> +	pdu_len = te_blk_io_trace(ent)->pdu_len;
-> +
-> +	if (!pdu_len)
-> +		return 1;
-> +
-> +	/* find the last zero that needs to be printed */
-> +	for (end = pdu_len - 1; end >= 0; end--)
-> +		if (pdu_buf[end])
-> +			break;
-> +	end++;
-> +
-> +	if (!trace_seq_putc(s, '('))
-> +		return 0;
-> +
-> +	for (i = 0; i < pdu_len; i++) {
-> +
-> +		ret = trace_seq_printf(s, "%s%02x",
-> +				       i == 0 ? "" : " ", pdu_buf[i]);
-> +		if (!ret)
-> +			return ret;
-> +
-> +		/*
-> +		 * stop when the rest is just zeroes and indicate so
-> +		 * with a ".." appended
-> +		 */
-> +		if (i == end && end != pdu_len - 1)
-> +			return trace_seq_puts(s, " ..) ");
-> +	}
-> +
-> +	return trace_seq_puts(s, ") ");
-> +}
-> +
->  static int blk_log_generic(struct trace_seq *s, const struct trace_entry *ent)
->  {
->  	char cmd[TASK_COMM_LEN];
->  
->  	trace_find_cmdline(ent->pid, cmd);
->  
-> -	if (t_sec(ent))
-> -		return trace_seq_printf(s, "%llu + %u [%s]\n",
-> -					t_sector(ent), t_sec(ent), cmd);
-> -	return trace_seq_printf(s, "[%s]\n", cmd);
-> +	if (t_action(ent) & BLK_TC_ACT(BLK_TC_PC)) {
-> +		int ret;
-> +
-> +		ret = trace_seq_printf(s, "%u ", t_bytes(ent));
-> +		if (!ret)
-> +			return 0;
-> +		ret = blk_log_dump_pdu(s, ent);
-> +		if (!ret)
-> +			return 0;
-> +		return trace_seq_printf(s, "[%s]\n", cmd);
-> +	} else {
-> +		if (t_sec(ent))
-> +			return trace_seq_printf(s, "%llu + %u [%s]\n",
-> +						t_sector(ent), t_sec(ent), cmd);
-> +		return trace_seq_printf(s, "[%s]\n", cmd);
-> +	}
->  }
->  
->  static int blk_log_with_error(struct trace_seq *s,
->  			      const struct trace_entry *ent)
->  {
-> -	if (t_sec(ent))
-> -		return trace_seq_printf(s, "%llu + %u [%d]\n", t_sector(ent),
-> -					t_sec(ent), t_error(ent));
-> -	return trace_seq_printf(s, "%llu [%d]\n", t_sector(ent), t_error(ent));
-> +	if (t_action(ent) & BLK_TC_ACT(BLK_TC_PC)) {
-> +		int ret;
-> +
-> +		ret = blk_log_dump_pdu(s, ent);
-> +		if (ret)
-> +			return trace_seq_printf(s, "[%d]\n", t_error(ent));
-> +		return 0;
-> +	} else {
-> +		if (t_sec(ent))
-> +			return trace_seq_printf(s, "%llu + %u [%d]\n",
-> +						t_sector(ent),
-> +						t_sec(ent), t_error(ent));
-> +		return trace_seq_printf(s, "%llu [%d]\n",
-> +					t_sector(ent), t_error(ent));
-> +	}
->  }
->  
->  static int blk_log_remap(struct trace_seq *s, const struct trace_entry *ent)
+Fix it.
 
-Neat shortcut - packet command requests can be quite large in 
-special cases, right?
+Signed-off-by: Tejun Heo <tj@kernel.org>
+---
+ lib/scatterlist.c |    9 ++++++---
+ 1 files changed, 6 insertions(+), 3 deletions(-)
 
-Sidenote. Right now we reserve the full packet length in the trace 
-buffer, then copy the full packet into the trace buffer:
+diff --git a/lib/scatterlist.c b/lib/scatterlist.c
+index b7b449d..a295e40 100644
+--- a/lib/scatterlist.c
++++ b/lib/scatterlist.c
+@@ -347,9 +347,12 @@ bool sg_miter_next(struct sg_mapping_iter *miter)
+ 	sg_miter_stop(miter);
+ 
+ 	/* get to the next sg if necessary.  __offset is adjusted by stop */
+-	if (miter->__offset == miter->__sg->length && --miter->__nents) {
+-		miter->__sg = sg_next(miter->__sg);
+-		miter->__offset = 0;
++	while (miter->__offset == miter->__sg->length) {
++		if (--miter->__nents) {
++			miter->__sg = sg_next(miter->__sg);
++			miter->__offset = 0;
++		} else
++			return false;
+ 	}
+ 
+ 	/* map the next page */
+-- 
+1.6.0.2
 
-                if (pdu_len)
-                        memcpy((void *) t + sizeof(*t), pdu_data, pdu_len);
-
-... just to scan it a second time during output and discard much of 
-it later on if it has a lot of trailing zeroes.
-
-It might make sense to pre-compress: by extending the trace record 
-format with a trailing-zeroes field.
-
-But that would make it more complex and key to tracers is simplicity 
-of data acquisition.
-
-Dunno, probably not worth it, except if data stream bloat becomes a 
-real issue (which i'd not expect them to become in this case).
-
-Anyway - Jens, the two patches look good to me, do they look fine to 
-you too?
-
-	Ingo
