@@ -1,75 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762267AbZDAJDU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754008AbZDAJE1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762267AbZDAJDU (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 1 Apr 2009 05:03:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751497AbZDAJDG
+	id S1754008AbZDAJE1 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 1 Apr 2009 05:04:27 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750885AbZDAJES
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 1 Apr 2009 05:03:06 -0400
-Received: from gw.goop.org ([64.81.55.164]:38411 "EHLO mail.goop.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750769AbZDAJDE (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 1 Apr 2009 05:03:04 -0400
-Message-ID: <49D32DC2.9010003@goop.org>
-Date: Wed, 01 Apr 2009 02:02:58 -0700
-From: Jeremy Fitzhardinge <jeremy@goop.org>
-User-Agent: Thunderbird 2.0.0.21 (X11/20090320)
+	Wed, 1 Apr 2009 05:04:18 -0400
+Received: from smtp.nokia.com ([192.100.105.134]:47569 "EHLO
+	mgw-mx09.nokia.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750704AbZDAJER (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 1 Apr 2009 05:04:17 -0400
+Message-ID: <49D32DAC.501@maxwell.research.nokia.com>
+Date: Wed, 01 Apr 2009 12:02:36 +0300
+From: Sakari Ailus <sakari.ailus@maxwell.research.nokia.com>
+User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.8.1.19) Gecko/20081204 SeaMonkey/1.1.14
 MIME-Version: 1.0
-To: Eric Dumazet <dada1@cosmosbay.com>
-CC: Ingo Molnar <mingo@elte.hu>, Tejun Heo <htejun@gmail.com>,
-       linux kernel <linux-kernel@vger.kernel.org>,
-       Linux Netdev List <netdev@vger.kernel.org>,
-       Joe Perches <joe@perches.com>
-Subject: Re: [PATCH] x86: percpu_to_op() misses memory and flags clobbers
-References: <49D32212.80607@cosmosbay.com>
-In-Reply-To: <49D32212.80607@cosmosbay.com>
-X-Enigmail-Version: 0.95.6
+To: =?ISO-8859-1?Q?Uwe_Kleine-K=F6nig?= 
+	<u.kleine-koenig@pengutronix.de>
+CC: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Trilok Soni <soni.trilok@gmail.com>, Hans Verkuil <hverkuil@xs4all.nl>,
+       Mauro Carvalho Chehab <mchehab@redhat.com>
+Subject: Re: [PATCH 29/58] move omap24xxcam's probe function to	.devinit.text
+References: <20090327232153.GA16348@pengutronix.de> <1238196439-16535-29-git-send-email-u.kleine-koenig@pengutronix.de> <49D31A5F.90108@nokia.com> <20090401082830.GA27668@pengutronix.de>
+In-Reply-To: <20090401082830.GA27668@pengutronix.de>
 Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Transfer-Encoding: 8bit
+X-OriginalArrivalTime: 01 Apr 2009 09:02:40.0146 (UTC) FILETIME=[9C30BF20:01C9B2A8]
+X-Nokia-AV: Clean
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Eric Dumazet wrote:
-> While playing with new percpu_{read|write|add|sub} stuff in network tree,
-> I found x86 asm was a litle bit optimistic.
->
-> We need to tell gcc that percpu_{write|add|sub|or|xor} are modyfing
-> memory and possibly eflags. We could add another parameter to percpu_to_op()
-> to separate the plain "mov" case (not changing eflags),
-> but let keep it simple for the moment.
->   
+Uwe Kleine-König wrote:
+> Hallo Sakari,
+> 
+> On Wed, Apr 01, 2009 at 10:40:15AM +0300, Sakari Ailus wrote:
+>> ext Uwe Kleine-König wrote:
+>>> A pointer to omap24xxcam_probe is passed to the core via
+>>> platform_driver_register and so the function must not disappear when the
+>>> .init sections are discarded.  Otherwise (if also having HOTPLUG=y)
+>>> unbinding and binding a device to the driver via sysfs will result in an
+>>> oops as does a device being registered late.
+>>>
+>>> An alternative to this patch is using platform_driver_probe instead of
+>>> platform_driver_register plus removing the pointer to the probe function
+>>> from the struct platform_driver.
+>>>
+>>> Signed-off-by: Uwe Kleine-König <u.kleine-koenig@pengutronix.de>
+>>> Cc: Sakari Ailus <sakari.ailus@nokia.com>
+>>> Cc: Trilok Soni <soni.trilok@gmail.com>
+>>> Cc: Hans Verkuil <hverkuil@xs4all.nl>
+>>> Cc: Mauro Carvalho Chehab <mchehab@redhat.com>
+>>> Cc: Andrew Morton <akpm@linux-foundation.org>
+>>> ---
+>>>  drivers/media/video/omap24xxcam.c |    2 +-
+>>>  1 files changed, 1 insertions(+), 1 deletions(-)
+>> Signed-off-by: Sakari Ailus <sakari.ailus@maxwell.research.nokia.com>
+> Does your S-o-b means you care for inclusion in mainline?[1]  Or should
+> I record that as an Acked-by?
 
-Did you observe an actual failure that this patch fixed?
+Sorry. Take that as Acked-by.
 
-> Signed-off-by: Eric Dumazet <dada1@cosmosbay.com>
->
-> diff --git a/arch/x86/include/asm/percpu.h b/arch/x86/include/asm/percpu.h
-> index aee103b..fd4f8ec 100644
-> --- a/arch/x86/include/asm/percpu.h
-> +++ b/arch/x86/include/asm/percpu.h
-> @@ -82,22 +82,26 @@ do {							\
->  	case 1:						\
->  		asm(op "b %1,"__percpu_arg(0)		\
->  		    : "+m" (var)			\
-> -		    : "ri" ((T__)val));			\
-> +		    : "ri" ((T__)val)			\
-> +		    : "memory", "cc");			\
->   
-
-This shouldn't be necessary.   The "+m" already tells gcc that var is a 
-memory input and output, and there are no other memory side-effects 
-which it needs to be aware of; clobbering "memory" will force gcc to 
-reload all register-cached memory, which is a pretty hard hit.  I think 
-all asms implicitly clobber "cc", so that shouldn't have any effect, but 
-it does no harm.
-
-Now, its true that the asm isn't actually modifying var itself, but 
-%gs:var, which is a different location.  But from gcc's perspective that 
-shouldn't matter because var makes a perfectly good proxy for that 
-location, and will make sure it correctly order all accesses to var.
-
-I'd be surprised if this were broken, because we'd be seeing all sorts 
-of strange crashes all over the place.  We've seen it before when the 
-old x86-64 pda code didn't have proper constraints on its asm statements.
-
-    J
+-- 
+Sakari Ailus
+sakari.ailus@maxwell.research.nokia.com
