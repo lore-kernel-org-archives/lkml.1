@@ -1,83 +1,98 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934513AbZDAVeP@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934585AbZDAVed@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934513AbZDAVeP (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 1 Apr 2009 17:34:15 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756345AbZDAVd5
+	id S934585AbZDAVed (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 1 Apr 2009 17:34:33 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756591AbZDAVeU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 1 Apr 2009 17:33:57 -0400
-Received: from mo-p05-ob.rzone.de ([81.169.146.180]:31909 "EHLO
-	mo-p05-ob.rzone.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756024AbZDAVd4 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 1 Apr 2009 17:33:56 -0400
-X-RZG-AUTH: :LWIQcGC8af5qXkYNYt77sURZEFmV4M3TAgvB+Qeh4tE+44JfzNbYY5/NAUgO
-X-RZG-CLASS-ID: mo05
-Message-ID: <49D3DDBF.9060406@ursus.ath.cx>
-Date: Wed, 01 Apr 2009 23:33:51 +0200
-From: "Andreas T.Auer" <andreas.t.auer_lkml_73537@ursus.ath.cx>
-User-Agent: Mozilla-Thunderbird 2.0.0.19 (X11/20090103)
-MIME-Version: 1.0
-To: david@lang.hm
-CC: Bill Davidsen <davidsen@tmr.com>, linux-kernel@vger.kernel.org
-Subject: Re: Linux 2.6.29
-References: <alpine.LFD.2.00.0903271511230.3994@localhost.localdomain> <alpine.LFD.2.00.0903271522210.3994@localhost.localdomain> <49CD7B10.7010601@garzik.org> <49CD891A.7030103@rtr.ca> <49CD9047.4060500@garzik.org> <49CE2633.2000903@s5r6.in-berlin.de> <49CE3186.8090903@garzik.org> <49CE35AE.1080702@s5r6.in-berlin.de> <49CE3F74.6090103@rtr.ca> <20090329231451.GR26138@disturbed> <20090330003948.GA13356@mit.edu> <49D0710A.1030805@ursus.ath.cx> <gqr50k$4aq$1@ger.gmane.org> <alpine.DEB.1.10.0903311813390.28893@asgard.lang.hm> <49D3954A.9010309@tmr.com> <alpine.DEB.1.10.0904011311240.28893@asgard.lang.hm>
-In-Reply-To: <alpine.DEB.1.10.0904011311240.28893@asgard.lang.hm>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+	Wed, 1 Apr 2009 17:34:20 -0400
+Received: from gate.crashing.org ([63.228.1.57]:43155 "EHLO gate.crashing.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1764094AbZDAVeS (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 1 Apr 2009 17:34:18 -0400
+From: Kumar Gala <galak@kernel.crashing.org>
+To: Linus Torvalds <torvalds@osdl.org>
+Cc: linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org
+Subject: [PATCH] Fix highmem build failure
+Date: Wed,  1 Apr 2009 16:33:31 -0500
+Message-Id: <1238621611-4844-1-git-send-email-galak@kernel.crashing.org>
+X-Mailer: git-send-email 1.5.6.6
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+The following commit breaks PPC builds with CONFIG_HIGHMEM=y
 
+commit f4112de6b679d84bd9b9681c7504be7bdfb7c7d5
+Author: Akinobu Mita <akinobu.mita@gmail.com>
+Date:   Tue Mar 31 15:23:25 2009 -0700
 
-On 01.04.2009 22:15 david@lang.hm wrote:
-> On Wed, 1 Apr 2009, Bill Davidsen wrote:
->
->> david@lang.hm wrote:
->>> it's not that it's deliberatly pushing metadata out ahead of file
->>> data, but say you have the following sequence
->>>
->>> write to file1
->>> update metadata for file1
->>> write to file2
->>> update metadata for file2
->>>
->>> if file1 and file2 are in the same directory your software can
->>> finish all four of these steps before _any_ of the data gets pushed
->>> to disk.
->>>
->>> then when the system goes to write the metadata for file1 it is
->>> pushing the then-current copy of that sector to disk, which includes
->>> the metadata for file2, even though the data for file2 hasn't been
->>> written yet.
->>>
->>> if you try to say 'flush all data blocks before metadata blocks' and
->>> have a lot of activity going on in a directory, and have to wait
->>> until it all stops before you write any of the metadata out, you
->>> could be blocked from writing the metadata for a _long_ time.
->>>
->> If you mean "write all data for that file" before the metadata, it
->> would seem to behave the way an fsync would, and the metadata should
->> go out in some reasonable time.
->
-> except if another file in the directory gets modified while it's
-> writing out the first two, that file now would need to get written out
-> as well, before the metadata for that directory can be written. if you
-> have a busy system (say a database or log server), where files are
-> getting modified pretty constantly, it can be a long time before all
-> the file data is written out and the system is idle enough to write
-> the metadata.
-Thank you, David, for this use case, but I think the problem could be
-solved quite easily:
+    mm: introduce debug_kmap_atomic
 
-At any write-out time, e.g. after collecting enough data for delayed
-allocation or at fsync()
+We get:
 
-1) copy the metadata in memory, i.e. snapshot it
-2) write out the data corresponding to the metadata-snapshot
-3) write out the snapshot of the metadata
+ CC      init/main.o
+In file included from include/linux/highmem.h:25,
+                 from include/linux/pagemap.h:11,
+                 from include/linux/mempolicy.h:63,
+                 from init/main.c:53:
+linux-2.6/arch/powerpc/include/asm/highmem.h: In function 'kmap_atomic_prot':
+linux-2.6/arch/powerpc/include/asm/highmem.h:98: error: implicit declaration of function 'debug_kmap_atomic'
+In file included from include/linux/pagemap.h:11,
+                 from include/linux/mempolicy.h:63,
+                 from init/main.c:53:
+include/linux/highmem.h: At top level:
+include/linux/highmem.h:196: warning: conflicting types for 'debug_kmap_atomic'
+include/linux/highmem.h:196: error: static declaration of 'debug_kmap_atomic' follows non-static declaration
+linux-2.6/include/asm/highmem.h:98: error: previous implicit declaration of 'debug_kmap_atomic' was here
+make[1]: *** [init/main.o] Error 1
+make: *** [init] Error 2
 
-In that way subsequent metadata changes should not interfere with the
-metadata-update on disk.
+Signed-off-by: Kumar Gala <galak@kernel.crashing.org>
+---
+ include/linux/highmem.h |   25 +++++++++++++------------
+ 1 files changed, 13 insertions(+), 12 deletions(-)
 
-Andreas
+diff --git a/include/linux/highmem.h b/include/linux/highmem.h
+index 7ff5c55..577b53d 100644
+--- a/include/linux/highmem.h
++++ b/include/linux/highmem.h
+@@ -20,6 +20,19 @@ static inline void flush_kernel_dcache_page(struct page *page)
+ #endif
+ 
+ #ifdef CONFIG_HIGHMEM
++#include <asm/kmap_types.h>
++
++#if defined(CONFIG_DEBUG_HIGHMEM) && defined(CONFIG_TRACE_IRQFLAGS_SUPPORT)
++
++void debug_kmap_atomic(enum km_type type);
++
++#else
++
++static inline void debug_kmap_atomic(enum km_type type)
++{
++}
++
++#endif
+ 
+ #include <asm/highmem.h>
+ 
+@@ -187,16 +200,4 @@ static inline void copy_highpage(struct page *to, struct page *from)
+ 	kunmap_atomic(vto, KM_USER1);
+ }
+ 
+-#if defined(CONFIG_DEBUG_HIGHMEM) && defined(CONFIG_TRACE_IRQFLAGS_SUPPORT)
+-
+-void debug_kmap_atomic(enum km_type type);
+-
+-#else
+-
+-static inline void debug_kmap_atomic(enum km_type type)
+-{
+-}
+-
+-#endif
+-
+ #endif /* _LINUX_HIGHMEM_H */
+-- 
+1.5.6.6
+
