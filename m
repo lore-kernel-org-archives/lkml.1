@@ -1,79 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752197AbZDAN2W@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1765195AbZDAN25@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752197AbZDAN2W (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 1 Apr 2009 09:28:22 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753016AbZDAN2I
+	id S1765195AbZDAN25 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 1 Apr 2009 09:28:57 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1764375AbZDAN2T
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 1 Apr 2009 09:28:08 -0400
-Received: from mx2.redhat.com ([66.187.237.31]:36960 "EHLO mx2.redhat.com"
+	Wed, 1 Apr 2009 09:28:19 -0400
+Received: from hera.kernel.org ([140.211.167.34]:49550 "EHLO hera.kernel.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750927AbZDAN2F (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 1 Apr 2009 09:28:05 -0400
-Message-ID: <49D36B4E.7000702@redhat.com>
-Date: Wed, 01 Apr 2009 09:25:34 -0400
-From: Rik van Riel <riel@redhat.com>
-Organization: Red Hat, Inc
-User-Agent: Thunderbird 2.0.0.17 (X11/20080915)
+	id S1757616AbZDAN2S (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 1 Apr 2009 09:28:18 -0400
+Message-ID: <49D36BE2.9050803@kernel.org>
+Date: Wed, 01 Apr 2009 22:28:02 +0900
+From: Tejun Heo <tj@kernel.org>
+User-Agent: Thunderbird 2.0.0.19 (X11/20081227)
 MIME-Version: 1.0
-To: Martin Schwidefsky <schwidefsky@de.ibm.com>
-CC: linux-mm@kvack.org, linux-kernel@vger.kernel.org,
-       virtualization@lists.osdl.org, frankeh@watson.ibm.com, akpm@osdl.org,
-       nickpiggin@yahoo.com.au, hugh@veritas.com
-Subject: Re: [patch 4/6] Guest page hinting: writable page table entries.
-References: <20090327150905.819861420@de.ibm.com> <20090327151012.398894143@de.ibm.com>
-In-Reply-To: <20090327151012.398894143@de.ibm.com>
-Content-Type: text/plain; charset=UTF-8; format=flowed
+To: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
+CC: axboe@kernel.dk, bharrosh@panasas.com, linux-kernel@vger.kernel.org,
+       tj@kenel.org
+Subject: Re: [PATCH 8/8] blk-map: reimplement blk_rq_map_user() using blk_rq_map_user_iov()
+References: <49D3662B.3000801@kernel.org>	<20090401221102O.fujita.tomonori@lab.ntt.co.jp>	<49D36951.9000604@kernel.org> <20090401222202I.fujita.tomonori@lab.ntt.co.jp>
+In-Reply-To: <20090401222202I.fujita.tomonori@lab.ntt.co.jp>
+X-Enigmail-Version: 0.95.7
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Wed, 01 Apr 2009 13:28:06 +0000 (UTC)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Martin Schwidefsky wrote:
+FUJITA Tomonori wrote:
+> Sounds a good idea. But I need to review that.
+> 
+> But 7/8 and 8/8 patches are not bug fixes at all (as I wrote, your
+> descriptions about checking is untrue). It can't be for 2.6.30. So put
+> them to the next patchset.
 
-This code has me stumped.  Does it mean that if a page already
-has the PageWritable bit set (and count_ok stays 0), we will
-always mark the page as volatile?
+Yeah, it should.
 
-How does that work out on !s390?
+>>>> reason blk_rq_map_user() had multiple bio chaining was to work around
+>>>> BIO_MAX_SIZE.  blk_rq_map_user_iov() doesn't support multiple bio
+>>>> chaining, so sans blk_rq_append_bio() or playing with rq/bio internals
+>>>> directly, there's no way to use or even know about multiple bios.
+>>> Yes, only non iovec interface of SG_IO supports large data
+>>> transfer. Users have been lived with that.
+>> This patch doesn't remove any feature.  You don't lose anything.  What
+>> used to be done with multiple bios is now done with single bio.  The
+>> implementation is simpler and shorter.  Using or not using multiple
+>> bios doesn't (and shouldn't) make any difference to blk_map_*() users.
+> 
+> Hmm, with your change, blk_rq_map_user can't handle larger than
+> BIO_MAX_SIZE, right?
 
->  /**
-> + * __page_check_writable() - check page state for new writable pte
-> + *
-> + * @page: the page the new writable pte refers to
-> + * @pte: the new writable pte
-> + */
-> +void __page_check_writable(struct page *page, pte_t pte, unsigned int offset)
-> +{
-> +	int count_ok = 0;
-> +
-> +	preempt_disable();
-> +	while (page_test_set_state_change(page))
-> +		cpu_relax();
-> +
-> +	if (!TestSetPageWritable(page)) {
-> +		count_ok = check_counts(page, offset);
-> +		if (check_bits(page) && count_ok)
-> +			page_set_volatile(page, 1);
-> +		else
-> +			/*
-> +			 * If two processes create a write mapping at the
-> +			 * same time check_counts will return false or if
-> +			 * the page is currently isolated from the LRU
-> +			 * check_bits will return false but the page might
-> +			 * be in volatile state.
-> +			 * We have to take care about the dirty bit so the
-> +			 * only option left is to make the page stable but
-> +			 * we can try to make it volatile a bit later.
-> +			 */
-> +			page_set_stable_if_present(page);
-> +	}
-> +	page_clear_state_change(page);
-> +	if (!count_ok)
-> +		page_make_volatile(page, 1);
-> +	preempt_enable();
-> +}
-> +EXPORT_SYMBOL(__page_check_writable);
+Yes, it can.  The previous bio_kmalloc() thing was for this.
 
+Thanks.
 
 -- 
-All rights reversed.
+tejun
