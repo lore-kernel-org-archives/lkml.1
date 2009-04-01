@@ -1,80 +1,82 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932817AbZDAW1c@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932915AbZDAW2X@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932817AbZDAW1c (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 1 Apr 2009 18:27:32 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753253AbZDAW1W
+	id S932915AbZDAW2X (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 1 Apr 2009 18:28:23 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755540AbZDAW2O
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 1 Apr 2009 18:27:22 -0400
-Received: from mail-bw0-f169.google.com ([209.85.218.169]:58085 "EHLO
-	mail-bw0-f169.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750902AbZDAW1V (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 1 Apr 2009 18:27:21 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=subject:from:to:cc:in-reply-to:references:content-type:date
-         :message-id:mime-version:x-mailer:content-transfer-encoding;
-        b=CJz+cUPRUmRRvhdIHrd7TqVW2a6P5EAXjMg2aNM0OSkPPMCe8KvAflsumCLpx4g8sj
-         illZDFHBQj4WAnmwgmdX4lnxWBfSLKj901/RZQBYcSqBF6cCoFBCFXbq8NuEOr/u+Dyz
-         Q/Fjh1iPN5mlD6aCQDK1A9C3uOkN6+JOtF+ug=
-Subject: Re: [PATCH 1/2] lib: add fast lzo decompressor
-From: Andreas Robinson <andr345@gmail.com>
-To: "H. Peter Anvin" <hpa@zytor.com>
-Cc: Alain Knaff <alain@knaff.lu>, linux-kernel@vger.kernel.org
-In-Reply-To: <49D3D4C0.1080506@zytor.com>
-References: <1238593252-3435-1-git-send-email-andr345@gmail.com>
-	 <1238593252-3435-2-git-send-email-andr345@gmail.com>
-	 <49D3927A.2050406@zytor.com> <1238613730.10514.35.camel@andreas-desktop>
-	 <49D3D4C0.1080506@zytor.com>
-Content-Type: text/plain
-Date: Thu, 02 Apr 2009 00:27:07 +0200
-Message-Id: <1238624827.15230.58.camel@andreas-desktop>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.24.3 
-Content-Transfer-Encoding: 7bit
+	Wed, 1 Apr 2009 18:28:14 -0400
+Received: from mail.lang.hm ([64.81.33.126]:51137 "EHLO bifrost.lang.hm"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753253AbZDAW2N (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 1 Apr 2009 18:28:13 -0400
+Date: Wed, 1 Apr 2009 15:28:03 -0700 (PDT)
+From: david@lang.hm
+X-X-Sender: dlang@asgard.lang.hm
+To: Harald Arnesen <skogtun.harald@gmail.com>
+cc: Bill Davidsen <davidsen@tmr.com>, linux-kernel@vger.kernel.org
+Subject: Re: Linux 2.6.29
+In-Reply-To: <87hc183uhn.fsf@basilikum.skogtun.org>
+Message-ID: <alpine.DEB.1.10.0904011507590.28893@asgard.lang.hm>
+References: <alpine.LFD.2.00.0903271511230.3994@localhost.localdomain> <alpine.LFD.2.00.0903271522210.3994@localhost.localdomain> <49CD7B10.7010601@garzik.org> <49CD891A.7030103@rtr.ca> <49CD9047.4060500@garzik.org> <49CE2633.2000903@s5r6.in-berlin.de>
+ <49CE3186.8090903@garzik.org> <49CE35AE.1080702@s5r6.in-berlin.de> <49CE3F74.6090103@rtr.ca> <20090329231451.GR26138@disturbed> <20090330003948.GA13356@mit.edu> <49D0710A.1030805@ursus.ath.cx> <gqr50k$4aq$1@ger.gmane.org> <alpine.DEB.1.10.0903311813390.28893@asgard.lang.hm>
+ <49D3954A.9010309@tmr.com> <alpine.DEB.1.10.0904011311240.28893@asgard.lang.hm> <87hc183uhn.fsf@basilikum.skogtun.org>
+User-Agent: Alpine 1.10 (DEB 962 2008-03-14)
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII; format=flowed
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 2009-04-01 at 13:55 -0700, H. Peter Anvin wrote:
-> Andreas Robinson wrote:
-> > 
-> > Perhaps the system can default to the safe decompressor for normal use
-> > and choose the fast one if STATIC is defined or when system_state ==
-> > SYSTEM_BOOTING?
-> > 
-> 
-> Do we really need two pieces of code?
+On Thu, 2 Apr 2009, Harald Arnesen wrote:
 
-To get the higher speed offered by the fast function, yes.
+> david@lang.hm writes:
+>
+>>> Understood that it's not deliberate just careless. The two behaviors
+>>> which are reported are (a) updating a record in an existing file and
+>>> having the entire file content vanish, and (b) finding some one
+>>> else's old data in my file - a serious security issue. I haven't
+>>> seen any report of the case where a process unlinks or truncates a
+>>> file, the disk space gets reused, and then the systems fails before
+>>> the metadata is updated, leaving the data written by some other
+>>> process in the file where it can be read - another possible security
+>>> issue.
+>>
+>> ext3 eliminates this security issue by writing the data before the
+>> metadata. ext4 (and I thing XFS) eliminate this security issue by not
+>> allocating the blocks until it goes to write the data out. I don't
+>> know how other filesystems deal with this.
+>
+> I've been wondering about that during the last days. How abut JFS and
+> data loss (files containing zeroes after a crash), as compared to ext3,
+> ext4, ordered and writeback journal modes? Is is safe?
 
-Merging the two with some macro magic and then compile twice with
-different macro definitions could work though. That might hurt the
-readability of the code a bit. Or help. :-) I'll look into it.
+if you don't do a fsync you can (and will) loose data if there is a crash
 
-Anyway, I assume it is maintainability rather than size you're concerned
-about here?
+period, end of statement, with all filesystems
 
-The duplicate function adds just 1.7 KB to the kernel and you throw it
-out once the kernel has finished booting.
+for all filesystems except ext3 in data=ordered or data=journaled modes 
+journaling does _not_ mean that your files will have valid data in them. 
+all it means is that your metadata will not be inconsistant (things like 
+one block on disk showing up as being part of two different files)
 
-OTOH, the safe version is far from useless. 
+this guarantee means that a crash is not likely to scramble your entire 
+disk, but any data written shortly before the crash may not have made it 
+to disk (and the files may contain garbage in the space that was allocated 
+but not written). as such it is not nessasary to do a fsck after every 
+crash (it's still a good idea to do so every once in a while)
 
-I estimate (but haven't tested yet) that you would lose about 40 ms in
-the Eee test case. That is, the boot-time savings are reduced from 123
-to perhaps 85 ms which is still acceptable. It is certainly much less
-complicated than the alternatives, so if that's what you would prefer I
-can go that way.
+that's _ALL_ that journaling is protecting you from.
 
->   What if we have memory corruption 
-> during early boot - it seems we'd want to at least try to catch that 
-> with an error message rather than just crashing.
+delayed allocateion and data=ordered are ways to address the security 
+problem that the garbage data that could end up as part of the file could 
+contain sensitive data that had been part of other files in the past.
 
-This is very easy to do, so consider it done.
+data=ordered and data=journaled address this security risk by writing the 
+data before they write the metadata (at the cost of long delays in writing 
+the metadata out, and therefor long fsync times)
 
-The decompressor is essentially a glorified memcpy that can copy the
-same data to several locations. You only have to check whether the write
-pointer has passed the end of the output buffer to see if something went
-wrong.
+XFS and ext4 solve the problem by not allocating the data blocks until 
+they are actually ready to write the data.
 
+David Lang
 
