@@ -1,67 +1,116 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1765582AbZDAAVs@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1765662AbZDAAWV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1765582AbZDAAVs (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 31 Mar 2009 20:21:48 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1765543AbZDAAUz
+	id S1765662AbZDAAWV (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 31 Mar 2009 20:22:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763490AbZDAAVR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 31 Mar 2009 20:20:55 -0400
-Received: from bilbo.ozlabs.org ([203.10.76.25]:46154 "EHLO bilbo.ozlabs.org"
+	Tue, 31 Mar 2009 20:21:17 -0400
+Received: from mx2.redhat.com ([66.187.237.31]:56745 "EHLO mx2.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1765536AbZDAAUy (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 31 Mar 2009 20:20:54 -0400
-Subject: Add hvc_console to MAINTAINERS
-From: Michael Ellerman <michael@ellerman.id.au>
-Reply-To: michael@ellerman.id.au
-To: Josh Boyer <jwboyer@linux.vnet.ibm.com>
-Cc: linuxppc-dev@ozlabs.org, Andrew Morton <akpm@linux-foundation.org>,
-       roel.kluin@gmail.com, linux-kernel@vger.kernel.org
-In-Reply-To: <1238544253.6522.14.camel@localhost>
-References: <49BF956B.9030109@gmail.com>
-	 <20090330133531.f5d99c09.akpm@linux-foundation.org>
-	 <20090330205553.GA19278@yoda.jdub.homelinux.org>
-	 <20090330141852.59baaeda.akpm@linux-foundation.org>
-	 <20090331132944.GB2332@yoda.jdub.homelinux.org>
-	 <1238543040.6522.10.camel@localhost>
-	 <20090331235057.GB563@zod.rchland.ibm.com>
-	 <1238544253.6522.14.camel@localhost>
-Content-Type: text/plain
-Date: Wed, 01 Apr 2009 11:20:50 +1100
-Message-Id: <1238545250.6522.17.camel@localhost>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.24.3 
-Content-Transfer-Encoding: 7bit
+	id S1765471AbZDAAVQ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 31 Mar 2009 20:21:16 -0400
+Date: Wed, 1 Apr 2009 02:17:29 +0200
+From: Oleg Nesterov <oleg@redhat.com>
+To: Markus Metzger <markus.t.metzger@intel.com>
+Cc: linux-kernel@vger.kernel.org, mingo@elte.hu, tglx@linutronix.de,
+       hpa@zytor.com, markus.t.metzger@gmail.com, roland@redhat.com,
+       eranian@googlemail.com, juan.villacis@intel.com, ak@linux.jf.intel.com
+Subject: Re: [patch 3/21] x86, bts: wait until traced task has been
+	scheduled out
+Message-ID: <20090401001729.GC28228@redhat.com>
+References: <20090331145947.A12565@sedona.ch.intel.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20090331145947.A12565@sedona.ch.intel.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Add a MAINTAINERS entry for the hypervisor virtual console driver.
+On 03/31, Markus Metzger wrote:
+>
+> +static void wait_to_unschedule(struct task_struct *task)
+> +{
+> +	unsigned long nvcsw;
+> +	unsigned long nivcsw;
+> +
+> +	if (!task)
+> +		return;
+> +
+> +	if (task == current)
+> +		return;
+> +
+> +	nvcsw  = task->nvcsw;
+> +	nivcsw = task->nivcsw;
+> +	for (;;) {
+> +		if (!task_is_running(task))
+> +			break;
+> +		/*
+> +		 * The switch count is incremented before the actual
+> +		 * context switch. We thus wait for two switches to be
+> +		 * sure at least one completed.
+> +		 */
+> +		if ((task->nvcsw - nvcsw) > 1)
+> +			break;
+> +		if ((task->nivcsw - nivcsw) > 1)
+> +			break;
+> +
+> +		schedule();
 
-Signed-off-by: Michael Ellerman <michael@ellerman.id.au>
----
- MAINTAINERS |    6 ++++++
- 1 files changed, 6 insertions(+), 0 deletions(-)
+schedule() is a nop here. We can wait unpredictably long...
 
-How about this?
+Ingo, do have have any ideas to improve this helper?
 
-diff --git a/MAINTAINERS b/MAINTAINERS
-index 1c2ca1d..854437a 100644
---- a/MAINTAINERS
-+++ b/MAINTAINERS
-@@ -1918,6 +1918,12 @@ L:	lm-sensors@lm-sensors.org
- W:	http://www.kernel.org/pub/linux/kernel/people/fseidel/hdaps/
- S:	Maintained
- 
-+HYPERVISOR VIRTUAL CONSOLE DRIVER
-+L:	linuxppc-dev@ozlabs.org
-+L:	linux-kernel@vger.kernel.org
-+S:	Odd Fixes
-+F:	drivers/char/hvc_*
-+
- GSPCA FINEPIX SUBDRIVER
- P:	Frank Zago
- M:	frank@zago.net
--- 
-1.6.1.2
+Not that I really like it, but how about
+
+	int force_unschedule(struct task_struct *p)
+	{
+		struct rq *rq;
+		unsigned long flags;
+		int running;
+
+		rq = task_rq_lock(p, &flags);
+		running = task_running(rq, p);
+		task_rq_unlock(rq, &flags);
+
+		if (running)
+			wake_up_process(rq->migration_thread);
+
+		return running;
+	}
+
+which should be used instead of task_is_running() ?
 
 
+We can even do something like
+
+	void wait_to_unschedule(struct task_struct *task)
+	{
+		struct migration_req req;
+
+		rq = task_rq_lock(p, &task);
+		running = task_running(rq, p);
+		if (running) {
+			// make sure __migrate_task() will do nothing
+			req->dest_cpu = NR_CPUS + 1;
+			init_completion(&req->done);
+			list_add(&req->list, &rq->migration_queue);
+		}
+		task_rq_unlock(rq, &flags);
+
+		if (running) {
+			wake_up_process(rq->migration_thread);
+			wait_for_completion(&req.done);
+		}
+	}
+
+This way we don't poll, and we need only one helper.
+
+(Can't resist, this patch is not bisect friendly, without the next patches
+ wait_to_unschedule() is called under write_lock_irq, this is deadlockable).
+
+But anyway, I think we can do this later.
+
+Oleg.
 
