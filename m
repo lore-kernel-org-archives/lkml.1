@@ -1,21 +1,21 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1765678AbZDANqx@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1765776AbZDANrW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1765678AbZDANqx (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 1 Apr 2009 09:46:53 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1765453AbZDANov
+	id S1765776AbZDANrW (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 1 Apr 2009 09:47:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1765370AbZDANow
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 1 Apr 2009 09:44:51 -0400
-Received: from hera.kernel.org ([140.211.167.34]:44705 "EHLO hera.kernel.org"
+	Wed, 1 Apr 2009 09:44:52 -0400
+Received: from hera.kernel.org ([140.211.167.34]:44709 "EHLO hera.kernel.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1765424AbZDANou (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	id S1765100AbZDANou (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
 	Wed, 1 Apr 2009 09:44:50 -0400
 From: Tejun Heo <tj@kernel.org>
 To: axboe@kernel.dk, bharrosh@panasas.com, linux-kernel@vger.kernel.org,
        fujita.tomonori@lab.ntt.co.jp
 Cc: Tejun Heo <tj@kernel.org>
-Subject: [PATCH 06/17] blk-map/bio: use struct iovec instead of sg_iovec
-Date: Wed,  1 Apr 2009 22:44:21 +0900
-Message-Id: <1238593472-30360-7-git-send-email-tj@kernel.org>
+Subject: [PATCH 05/17] bio: cleanup rw usage
+Date: Wed,  1 Apr 2009 22:44:20 +0900
+Message-Id: <1238593472-30360-6-git-send-email-tj@kernel.org>
 X-Mailer: git-send-email 1.6.0.2
 In-Reply-To: <1238593472-30360-1-git-send-email-tj@kernel.org>
 References: <1238593472-30360-1-git-send-email-tj@kernel.org>
@@ -26,254 +26,279 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 Impact: cleanup
 
-blk-map and bio use sg_iovec for addr-len segments although there
-isn't anything sg-specific about the API.  This is mostly due to
-historical reasons.  sg_iovec is by definition identical to iovec.
-Use iovec instead.  This removes bogus dependency on scsi sg and will
-allow use of iovec helpers.
+bio confusingly uses @write_to_vm and @reading for data directions,
+both of which mean the opposite of the usual block/bio convention of
+using READ and WRITE w.r.t. IO devices.  The only place where the
+inversion is necessary is when caling get_user_pages_fast() in
+bio_copy_user_iov() as the gup uses the VM convention of read/write
+w.r.t. VM.
+
+This patch converts all bio functions to use READ/WRITE rw parameter
+and let the one place where inversion is necessary to rw == READ.
 
 Signed-off-by: Tejun Heo <tj@kernel.org>
 ---
- block/blk-map.c        |    5 ++---
- block/scsi_ioctl.c     |    8 +++-----
- fs/bio.c               |   23 +++++++++++------------
- include/linux/bio.h    |    6 +++---
- include/linux/blkdev.h |    8 ++++----
- 5 files changed, 23 insertions(+), 27 deletions(-)
+ block/blk-map.c     |   10 +++++-----
+ fs/bio.c            |   50 +++++++++++++++++++++++++-------------------------
+ include/linux/bio.h |   18 +++++++++---------
+ 3 files changed, 39 insertions(+), 39 deletions(-)
 
 diff --git a/block/blk-map.c b/block/blk-map.c
-index 29aa60d..4f0221a 100644
+index b0b65ef..29aa60d 100644
 --- a/block/blk-map.c
 +++ b/block/blk-map.c
-@@ -5,7 +5,6 @@
- #include <linux/module.h>
- #include <linux/bio.h>
- #include <linux/blkdev.h>
--#include <scsi/sg.h>		/* for struct sg_iovec */
- 
- #include "blk.h"
- 
-@@ -64,7 +63,7 @@ static int __blk_rq_unmap_user(struct bio *bio)
-  *    unmapping.
-  */
- int blk_rq_map_user_iov(struct request_queue *q, struct request *rq,
--			struct rq_map_data *map_data, struct sg_iovec *iov,
-+			struct rq_map_data *map_data, struct iovec *iov,
+@@ -68,15 +68,15 @@ int blk_rq_map_user_iov(struct request_queue *q, struct request *rq,
  			int iov_count, unsigned int len, gfp_t gfp_mask)
  {
  	struct bio *bio = ERR_PTR(-EINVAL);
-@@ -130,7 +129,7 @@ int blk_rq_map_user(struct request_queue *q, struct request *rq,
- 		    struct rq_map_data *map_data, void __user *ubuf,
- 		    unsigned long len, gfp_t gfp_mask)
+-	int read = rq_data_dir(rq) == READ;
++	int rw = rq_data_dir(rq);
+ 
+ 	if (!iov || iov_count <= 0)
+ 		return -EINVAL;
+ 
+ 	if (!map_data)
+-		bio = bio_map_user_iov(q, NULL, iov, iov_count, read, gfp_mask);
++		bio = bio_map_user_iov(q, NULL, iov, iov_count, rw, gfp_mask);
+ 	if (bio == ERR_PTR(-EINVAL))
+-		bio = bio_copy_user_iov(q, map_data, iov, iov_count, read,
++		bio = bio_copy_user_iov(q, map_data, iov, iov_count, rw,
+ 					gfp_mask);
+ 	if (IS_ERR(bio))
+ 		return PTR_ERR(bio);
+@@ -177,7 +177,7 @@ EXPORT_SYMBOL(blk_rq_unmap_user);
+ int blk_rq_map_kern(struct request_queue *q, struct request *rq, void *kbuf,
+ 		    unsigned int len, gfp_t gfp_mask)
  {
--	struct sg_iovec iov;
-+	struct iovec iov;
+-	int reading = rq_data_dir(rq) == READ;
++	int rw = rq_data_dir(rq);
+ 	int do_copy = 0;
+ 	struct bio *bio;
  
- 	iov.iov_base = ubuf;
- 	iov.iov_len = len;
-diff --git a/block/scsi_ioctl.c b/block/scsi_ioctl.c
-index c8e8868..73cfd91 100644
---- a/block/scsi_ioctl.c
-+++ b/block/scsi_ioctl.c
-@@ -289,7 +289,7 @@ static int sg_io(struct request_queue *q, struct gendisk *bd_disk,
- 	if (hdr->iovec_count) {
- 		const int size = sizeof(struct sg_iovec) * hdr->iovec_count;
- 		size_t iov_data_len;
--		struct sg_iovec *iov;
-+		struct iovec *iov;
+@@ -188,7 +188,7 @@ int blk_rq_map_kern(struct request_queue *q, struct request *rq, void *kbuf,
  
- 		iov = kmalloc(size, GFP_KERNEL);
- 		if (!iov) {
-@@ -304,11 +304,9 @@ static int sg_io(struct request_queue *q, struct gendisk *bd_disk,
- 		}
+ 	do_copy = !blk_rq_aligned(q, kbuf, len) || object_is_on_stack(kbuf);
+ 	if (do_copy)
+-		bio = bio_copy_kern(q, kbuf, len, gfp_mask, reading);
++		bio = bio_copy_kern(q, kbuf, len, gfp_mask, rw);
+ 	else
+ 		bio = bio_map_kern(q, kbuf, len, gfp_mask);
  
- 		/* SG_IO howto says that the shorter of the two wins */
--		iov_data_len = iov_length((struct iovec *)iov,
--					  hdr->iovec_count);
-+		iov_data_len = iov_length(iov, hdr->iovec_count);
- 		if (hdr->dxfer_len < iov_data_len) {
--			hdr->iovec_count = iov_shorten((struct iovec *)iov,
--						       hdr->iovec_count,
-+			hdr->iovec_count = iov_shorten(iov, hdr->iovec_count,
- 						       hdr->dxfer_len);
- 			iov_data_len = hdr->dxfer_len;
- 		}
 diff --git a/fs/bio.c b/fs/bio.c
-index 70e5153..9d13f21 100644
+index 80f61ed..70e5153 100644
 --- a/fs/bio.c
 +++ b/fs/bio.c
-@@ -28,7 +28,6 @@
- #include <linux/blktrace_api.h>
- #include <linux/pfn.h>
- #include <trace/block.h>
--#include <scsi/sg.h>		/* for struct sg_iovec */
- 
- DEFINE_TRACE(block_split);
- 
-@@ -656,17 +655,17 @@ int bio_add_page(struct bio *bio, struct page *page, unsigned int len,
- 
- struct bio_map_data {
- 	struct bio_vec *iovecs;
--	struct sg_iovec *sgvecs;
-+	struct iovec *sgvecs;
- 	int nr_sgvecs;
- 	int is_our_pages;
- };
- 
- static void bio_set_map_data(struct bio_map_data *bmd, struct bio *bio,
--			     struct sg_iovec *iov, int iov_count,
-+			     struct iovec *iov, int iov_count,
- 			     int is_our_pages)
- {
- 	memcpy(bmd->iovecs, bio->bi_io_vec, sizeof(struct bio_vec) * bio->bi_vcnt);
--	memcpy(bmd->sgvecs, iov, sizeof(struct sg_iovec) * iov_count);
-+	memcpy(bmd->sgvecs, iov, sizeof(struct iovec) * iov_count);
- 	bmd->nr_sgvecs = iov_count;
- 	bmd->is_our_pages = is_our_pages;
- 	bio->bi_private = bmd;
-@@ -693,7 +692,7 @@ static struct bio_map_data *bio_alloc_map_data(int nr_segs, int iov_count,
- 		return NULL;
- 	}
- 
--	bmd->sgvecs = kmalloc(sizeof(struct sg_iovec) * iov_count, gfp_mask);
-+	bmd->sgvecs = kmalloc(sizeof(struct iovec) * iov_count, gfp_mask);
- 	if (bmd->sgvecs)
- 		return bmd;
- 
-@@ -703,7 +702,7 @@ static struct bio_map_data *bio_alloc_map_data(int nr_segs, int iov_count,
- }
- 
- static int __bio_copy_iov(struct bio *bio, struct bio_vec *iovecs,
--			  struct sg_iovec *iov, int iov_count, int uncopy,
-+			  struct iovec *iov, int iov_count, int uncopy,
- 			  int do_free_page)
- {
- 	int ret = 0, i;
-@@ -789,7 +788,7 @@ int bio_uncopy_user(struct bio *bio)
+@@ -780,7 +780,7 @@ int bio_uncopy_user(struct bio *bio)
+  *	@map_data: pointer to the rq_map_data holding pages (if necessary)
+  *	@iov:	the iovec.
+  *	@iov_count: number of elements in the iovec
+- *	@write_to_vm: bool indicating writing to pages or not
++ *	@rw: READ or WRITE
+  *	@gfp_mask: memory allocation flags
+  *
+  *	Prepares and returns a bio for indirect user io, bouncing data
+@@ -789,8 +789,8 @@ int bio_uncopy_user(struct bio *bio)
   */
  struct bio *bio_copy_user_iov(struct request_queue *q,
  			      struct rq_map_data *map_data,
--			      struct sg_iovec *iov, int iov_count, int rw,
-+			      struct iovec *iov, int iov_count, int rw,
- 			      gfp_t gfp_mask)
+-			      struct sg_iovec *iov, int iov_count,
+-			      int write_to_vm, gfp_t gfp_mask)
++			      struct sg_iovec *iov, int iov_count, int rw,
++			      gfp_t gfp_mask)
  {
  	struct bio_map_data *bmd;
-@@ -909,7 +908,7 @@ struct bio *bio_copy_user(struct request_queue *q, struct rq_map_data *map_data,
- 			  unsigned long uaddr, unsigned int len, int rw,
- 			  gfp_t gfp_mask)
+ 	struct bio_vec *bvec;
+@@ -823,7 +823,8 @@ struct bio *bio_copy_user_iov(struct request_queue *q,
+ 	if (!bio)
+ 		goto out_bmd;
+ 
+-	bio->bi_rw |= (!write_to_vm << BIO_RW);
++	if (rw == WRITE)
++		bio->bi_rw |= 1 << BIO_RW;
+ 
+ 	ret = 0;
+ 
+@@ -872,7 +873,7 @@ struct bio *bio_copy_user_iov(struct request_queue *q,
+ 	 */
+ 	if (unlikely(map_data && map_data->null_mapped))
+ 		bio->bi_flags |= (1 << BIO_NULL_MAPPED);
+-	else if (!write_to_vm) {
++	else if (rw == WRITE) {
+ 		ret = __bio_copy_iov(bio, bio->bi_io_vec, iov, iov_count, 0, 0);
+ 		if (ret)
+ 			goto cleanup;
+@@ -897,7 +898,7 @@ out_bmd:
+  *	@map_data: pointer to the rq_map_data holding pages (if necessary)
+  *	@uaddr: start of user address
+  *	@len: length in bytes
+- *	@write_to_vm: bool indicating writing to pages or not
++ *	@rw: READ or WRITE
+  *	@gfp_mask: memory allocation flags
+  *
+  *	Prepares and returns a bio for indirect user io, bouncing data
+@@ -905,21 +906,21 @@ out_bmd:
+  *	call bio_uncopy_user() on io completion.
+  */
+ struct bio *bio_copy_user(struct request_queue *q, struct rq_map_data *map_data,
+-			  unsigned long uaddr, unsigned int len,
+-			  int write_to_vm, gfp_t gfp_mask)
++			  unsigned long uaddr, unsigned int len, int rw,
++			  gfp_t gfp_mask)
  {
--	struct sg_iovec iov;
-+	struct iovec iov;
+ 	struct sg_iovec iov;
  
  	iov.iov_base = (void __user *)uaddr;
  	iov.iov_len = len;
-@@ -919,7 +918,7 @@ struct bio *bio_copy_user(struct request_queue *q, struct rq_map_data *map_data,
+ 
+-	return bio_copy_user_iov(q, map_data, &iov, 1, write_to_vm, gfp_mask);
++	return bio_copy_user_iov(q, map_data, &iov, 1, rw, gfp_mask);
+ }
  
  static struct bio *__bio_map_user_iov(struct request_queue *q,
  				      struct block_device *bdev,
--				      struct sg_iovec *iov, int iov_count,
-+				      struct iovec *iov, int iov_count,
- 				      int rw, gfp_t gfp_mask)
+ 				      struct sg_iovec *iov, int iov_count,
+-				      int write_to_vm, gfp_t gfp_mask)
++				      int rw, gfp_t gfp_mask)
  {
  	int i, j;
-@@ -1044,7 +1043,7 @@ struct bio *bio_map_user(struct request_queue *q, struct block_device *bdev,
- 			 unsigned long uaddr, unsigned int len, int rw,
+ 	size_t tot_len = 0;
+@@ -967,8 +968,8 @@ static struct bio *__bio_map_user_iov(struct request_queue *q,
+ 		const int local_nr_pages = end - start;
+ 		const int page_limit = cur_page + local_nr_pages;
+ 		
+-		ret = get_user_pages_fast(uaddr, local_nr_pages,
+-				write_to_vm, &pages[cur_page]);
++		ret = get_user_pages_fast(uaddr, local_nr_pages, rw == READ,
++					  &pages[cur_page]);
+ 		if (ret < local_nr_pages) {
+ 			ret = -EFAULT;
+ 			goto out_unmap;
+@@ -1008,7 +1009,7 @@ static struct bio *__bio_map_user_iov(struct request_queue *q,
+ 	/*
+ 	 * set data direction, and check if mapped pages need bouncing
+ 	 */
+-	if (!write_to_vm)
++	if (rw == WRITE)
+ 		bio->bi_rw |= (1 << BIO_RW);
+ 
+ 	bio->bi_bdev = bdev;
+@@ -1033,14 +1034,14 @@ static struct bio *__bio_map_user_iov(struct request_queue *q,
+  *	@bdev: destination block device
+  *	@uaddr: start of user address
+  *	@len: length in bytes
+- *	@write_to_vm: bool indicating writing to pages or not
++ *	@rw: READ or WRITE
+  *	@gfp_mask: memory allocation flags
+  *
+  *	Map the user space address into a bio suitable for io to a block
+  *	device. Returns an error pointer in case of error.
+  */
+ struct bio *bio_map_user(struct request_queue *q, struct block_device *bdev,
+-			 unsigned long uaddr, unsigned int len, int write_to_vm,
++			 unsigned long uaddr, unsigned int len, int rw,
  			 gfp_t gfp_mask)
  {
--	struct sg_iovec iov;
-+	struct iovec iov;
- 
+ 	struct sg_iovec iov;
+@@ -1048,7 +1049,7 @@ struct bio *bio_map_user(struct request_queue *q, struct block_device *bdev,
  	iov.iov_base = (void __user *)uaddr;
  	iov.iov_len = len;
-@@ -1053,7 +1052,7 @@ struct bio *bio_map_user(struct request_queue *q, struct block_device *bdev,
+ 
+-	return bio_map_user_iov(q, bdev, &iov, 1, write_to_vm, gfp_mask);
++	return bio_map_user_iov(q, bdev, &iov, 1, rw, gfp_mask);
  }
  
  /**
-- *	bio_map_user_iov - map user sg_iovec table into bio
-+ *	bio_map_user_iov - map user iovec table into bio
-  *	@q: the struct request_queue for the bio
+@@ -1057,20 +1058,19 @@ struct bio *bio_map_user(struct request_queue *q, struct block_device *bdev,
   *	@bdev: destination block device
   *	@iov:	the iovec.
-@@ -1065,7 +1064,7 @@ struct bio *bio_map_user(struct request_queue *q, struct block_device *bdev,
+  *	@iov_count: number of elements in the iovec
+- *	@write_to_vm: bool indicating writing to pages or not
++ *	@rw: READ or WRITE
+  *	@gfp_mask: memory allocation flags
+  *
+  *	Map the user space address into a bio suitable for io to a block
   *	device. Returns an error pointer in case of error.
   */
  struct bio *bio_map_user_iov(struct request_queue *q, struct block_device *bdev,
--			     struct sg_iovec *iov, int iov_count, int rw,
-+			     struct iovec *iov, int iov_count, int rw,
- 			     gfp_t gfp_mask)
+-			     struct sg_iovec *iov, int iov_count,
+-			     int write_to_vm, gfp_t gfp_mask)
++			     struct sg_iovec *iov, int iov_count, int rw,
++			     gfp_t gfp_mask)
  {
  	struct bio *bio;
+ 
+-	bio = __bio_map_user_iov(q, bdev, iov, iov_count, write_to_vm,
+-				 gfp_mask);
++	bio = __bio_map_user_iov(q, bdev, iov, iov_count, rw, gfp_mask);
+ 	if (IS_ERR(bio))
+ 		return bio;
+ 
+@@ -1219,23 +1219,23 @@ static void bio_copy_kern_endio(struct bio *bio, int err)
+  *	@data: pointer to buffer to copy
+  *	@len: length in bytes
+  *	@gfp_mask: allocation flags for bio and page allocation
+- *	@reading: data direction is READ
++ *	@rw: READ or WRITE
+  *
+  *	copy the kernel address into a bio suitable for io to a block
+  *	device. Returns an error pointer in case of error.
+  */
+ struct bio *bio_copy_kern(struct request_queue *q, void *data, unsigned int len,
+-			  gfp_t gfp_mask, int reading)
++			  gfp_t gfp_mask, int rw)
+ {
+ 	struct bio *bio;
+ 	struct bio_vec *bvec;
+ 	int i;
+ 
+-	bio = bio_copy_user(q, NULL, (unsigned long)data, len, 1, gfp_mask);
++	bio = bio_copy_user(q, NULL, (unsigned long)data, len, READ, gfp_mask);
+ 	if (IS_ERR(bio))
+ 		return bio;
+ 
+-	if (!reading) {
++	if (rw == WRITE) {
+ 		void *p = data;
+ 
+ 		bio_for_each_segment(bvec, bio, i) {
 diff --git a/include/linux/bio.h b/include/linux/bio.h
-index 45f56d2..8215ded 100644
+index 4bf7442..45f56d2 100644
 --- a/include/linux/bio.h
 +++ b/include/linux/bio.h
-@@ -23,6 +23,7 @@
- #include <linux/highmem.h>
- #include <linux/mempool.h>
- #include <linux/ioprio.h>
-+#include <linux/uio.h>
- 
- #ifdef CONFIG_BLOCK
- 
-@@ -356,7 +357,6 @@ struct bio_pair {
- };
- 
- struct request_queue;
--struct sg_iovec;
- struct rq_map_data;
- 
- struct bio_pair *bio_split(struct bio *bi, int first_sectors);
-@@ -390,7 +390,7 @@ struct bio *bio_map_user(struct request_queue *q, struct block_device *bdev,
- 			 unsigned long uaddr, unsigned int len, int rw,
- 			 gfp_t gfp_mask);
+@@ -387,24 +387,24 @@ int bio_get_nr_vecs(struct block_device *bdev);
+ sector_t bio_sector_offset(struct bio *bio, unsigned short index,
+ 			   unsigned int offset);
+ struct bio *bio_map_user(struct request_queue *q, struct block_device *bdev,
+-			 unsigned long uaddr, unsigned int len,
+-			 int write_to_vm, gfp_t gfp_mask);
++			 unsigned long uaddr, unsigned int len, int rw,
++			 gfp_t gfp_mask);
  struct bio *bio_map_user_iov(struct request_queue *q, struct block_device *bdev,
--			     struct sg_iovec *iov, int iov_count, int rw,
-+			     struct iovec *iov, int iov_count, int rw,
- 			     gfp_t gfp_mask);
+-			     struct sg_iovec *iov, int iov_count,
+-			     int write_to_vm, gfp_t gfp_mask);
++			     struct sg_iovec *iov, int iov_count, int rw,
++			     gfp_t gfp_mask);
  void bio_unmap_user(struct bio *bio);
  struct bio *bio_copy_user(struct request_queue *q, struct rq_map_data *map_data,
-@@ -398,7 +398,7 @@ struct bio *bio_copy_user(struct request_queue *q, struct rq_map_data *map_data,
- 			  gfp_t gfp_mask);
+-			  unsigned long uaddr, unsigned int len,
+-			  int write_to_vm, gfp_t gfp_mask);
++			  unsigned long uaddr, unsigned int len, int rw,
++			  gfp_t gfp_mask);
  struct bio *bio_copy_user_iov(struct request_queue *q,
  			      struct rq_map_data *map_data,
--			      struct sg_iovec *iov, int iov_count, int rw,
-+			      struct iovec *iov, int iov_count, int rw,
- 			      gfp_t gfp_mask);
+-			      struct sg_iovec *iov, int iov_count,
+-			      int write_to_vm, gfp_t gfp_mask);
++			      struct sg_iovec *iov, int iov_count, int rw,
++			      gfp_t gfp_mask);
  int bio_uncopy_user(struct bio *bio);
  struct bio *bio_map_kern(struct request_queue *q, void *data, unsigned int len,
-diff --git a/include/linux/blkdev.h b/include/linux/blkdev.h
-index 465d6ba..d7bb20c 100644
---- a/include/linux/blkdev.h
-+++ b/include/linux/blkdev.h
-@@ -19,6 +19,7 @@
- #include <linux/gfp.h>
- #include <linux/bsg.h>
- #include <linux/smp.h>
-+#include <linux/uio.h>
- 
- #include <asm/scatterlist.h>
- 
-@@ -29,7 +30,6 @@ struct elevator_queue;
- struct request_pm_state;
- struct blk_trace;
- struct request;
--struct sg_io_hdr;
- 
- #define BLKDEV_MIN_RQ	4
- #define BLKDEV_MAX_RQ	128	/* Default maximum */
-@@ -781,9 +781,9 @@ extern int blk_rq_map_user(struct request_queue *, struct request *,
- 			   gfp_t);
- extern int blk_rq_unmap_user(struct bio *);
- extern int blk_rq_map_kern(struct request_queue *, struct request *, void *, unsigned int, gfp_t);
--extern int blk_rq_map_user_iov(struct request_queue *, struct request *,
--			       struct rq_map_data *, struct sg_iovec *, int,
--			       unsigned int, gfp_t);
-+extern int blk_rq_map_user_iov(struct request_queue *q, struct request *rq,
-+			       struct rq_map_data *map_data, struct iovec *iov,
-+			       int iov_count, unsigned int len, gfp_t gfp_mask);
- extern int blk_execute_rq(struct request_queue *, struct gendisk *,
- 			  struct request *, int);
- extern void blk_execute_rq_nowait(struct request_queue *, struct gendisk *,
+ 			 gfp_t gfp_mask);
+ struct bio *bio_copy_kern(struct request_queue *q, void *data, unsigned int len,
+-			  gfp_t gfp_mask, int reading);
++			  gfp_t gfp_mask, int rw);
+ void bio_set_pages_dirty(struct bio *bio);
+ void bio_check_pages_dirty(struct bio *bio);
+ void zero_fill_bio(struct bio *bio);
 -- 
 1.6.0.2
 
