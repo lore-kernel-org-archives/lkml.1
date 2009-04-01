@@ -1,214 +1,392 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933173AbZDAXJG@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934787AbZDAXKX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933173AbZDAXJG (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 1 Apr 2009 19:09:06 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933732AbZDAXEJ
+	id S934787AbZDAXKX (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 1 Apr 2009 19:10:23 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933544AbZDAXEX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 1 Apr 2009 19:04:09 -0400
-Received: from mga09.intel.com ([134.134.136.24]:62623 "EHLO mga09.intel.com"
+	Wed, 1 Apr 2009 19:04:23 -0400
+Received: from mx2.redhat.com ([66.187.237.31]:38905 "EHLO mx2.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S933697AbZDAXEE (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 1 Apr 2009 19:04:04 -0400
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.39,309,1235980800"; 
-   d="scan'208";a="399538921"
-Date: Wed, 1 Apr 2009 16:04:01 -0700
-From: "Pallipadi, Venkatesh" <venkatesh.pallipadi@intel.com>
-To: Arkadiusz Miskiewicz <a.miskiewicz@gmail.com>
-Cc: "Pallipadi, Venkatesh" <venkatesh.pallipadi@intel.com>,
-       "Siddha, Suresh B" <suresh.b.siddha@intel.com>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
-Subject: Re: 2.6.29 git master and PAT problems
-Message-ID: <20090401230401.GD10490@linux-os.sc.intel.com>
-References: <200903302317.04515.a.miskiewicz@gmail.com> <200903310944.32883.a.miskiewicz@gmail.com> <20090331232109.GA11980@linux-os.sc.intel.com> <200904011223.50050.a.miskiewicz@gmail.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <200904011223.50050.a.miskiewicz@gmail.com>
-User-Agent: Mutt/1.4.1i
+	id S1763186AbZDAXES (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 1 Apr 2009 19:04:18 -0400
+Organization: Red Hat UK Ltd. Registered Address: Red Hat UK Ltd, Amberley
+	Place, 107-111 Peascod Street, Windsor, Berkshire, SI4 1TE, United
+	Kingdom.
+	Registered in England and Wales under Company Registration No. 3798903
+From: David Howells <dhowells@redhat.com>
+Subject: [PATCH 09/43] FS-Cache: Add main configuration option,
+	module entry points and debugging [ver #46]
+To: viro@ZenIV.linux.org.uk
+Cc: dhowells@redhat.com, nfsv4@linux-nfs.org, linux-kernel@vger.kernel.org,
+       linux-fsdevel@vger.kernel.org
+Date: Thu, 02 Apr 2009 00:04:08 +0100
+Message-ID: <20090401230407.28177.44457.stgit@warthog.procyon.org.uk>
+In-Reply-To: <20090401230321.28177.12010.stgit@warthog.procyon.org.uk>
+References: <20090401230321.28177.12010.stgit@warthog.procyon.org.uk>
+User-Agent: StGIT/0.14.3
+MIME-Version: 1.0
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Apr 01, 2009 at 03:23:49AM -0700, Arkadiusz Miskiewicz wrote:
-> On Wednesday 01 of April 2009, Pallipadi, Venkatesh wrote:
-> > On Tue, Mar 31, 2009 at 12:44:32AM -0700, Arkadiusz Miskiewicz wrote:
-> > > On Tuesday 31 of March 2009, Pallipadi, Venkatesh wrote:
-> > > > On Mon, Mar 30, 2009 at 04:25:11PM -0700, Arkadiusz Miskiewicz wrote:
-> > > > > On Tuesday 31 of March 2009, Arkadiusz Miskiewicz wrote:
-> > > > > > On Monday 30 of March 2009, Pallipadi, Venkatesh wrote:
-> > > > > >
-> > > > > > More info follows. Now I've switched to
-> > > > > > e1c502482853f84606928f5a2f2eb6da1993cda1 which contains latest drm
-> > > > > > fixes and now I get much lower numbers of PAT errors but still.
-> > > > >
-> > > > > Also when I switch t400 into discrete mode (radeon hd 3400 instead
-> > > > > of integrated intel GM45) I get such errors (probably unrelated
-> > > > > to these seen when using intel):
-> > > > >
-> > > > > [  419.187657] X:10550 conflicting memory types cfff0000-d0000000
-> > > > > uncached<->uncached-minus [  419.187670] reserve_memtype failed
-> > > > > 0xcfff0000-0xd0000000, track uncached, req write-back [  419.553914]
-> > > > > X:10550 conflicting memory types cfff0000-d0000000
-> > > > > uncached<->uncached-minus [  419.553923] reserve_memtype failed
-> > > > > 0xcfff0000-0xd0000000, track uncached, req write-back [  419.813592]
-> > > > > X:10550 conflicting memory types cfff0000-d0000000
-> > > > > uncached<->uncached-minus [  419.813601] reserve_memtype failed
-> > > > > 0xcfff0000-0xd0000000, track uncached, req write-back [  420.100102]
-> > > > > X:10550 conflicting memory types cfff0000-d0000000
-> > > > > uncached<->uncached-minus [  420.100111] reserve_memtype failed
-> > > > > 0xcfff0000-0xd0000000, track uncached, req write-back
-> > > >
-> > > > Yes. This is a different problem than the freeing invalid type one. Are
-> > > > these errors also with latest git kernel? Can you try the patch below
-> > > > (which is a part of a bigger cleanup patch I have lined up).
-> > >
-> > > It's a latest git kernel as of today morning
-> > > (latest commit is 15f7176eb1cccec0a332541285ee752b935c1c85)
-> > > + your patch. Problem persists:
-> > >
-> > > [   74.696353] [drm] Setting GART location based on new memory map
-> > > [   74.711520] [drm] Loading RV620 CP Microcode
-> > > [   74.711792] [drm] Loading RV620 PFP Microcode
-> > > [   74.726719] [drm] Resetting GPU
-> > > [   74.726776] [drm] writeback test succeeded in 1 usecs
-> > > [   75.256034] X:5366 conflicting memory types d0000000-e0000000
-> > > uncached-minus<->write-combining [   75.256043] reserve_memtype failed
-> > > 0xd0000000-0xe0000000, track uncached-minus, req write-back [
-> > > 75.849951] X:5366 conflicting memory types d0000000-e0000000
-> > > uncached-minus<->write-combining [   75.849960] reserve_memtype failed
-> > > 0xd0000000-0xe0000000, track uncached-minus, req write-back [
-> > > 76.054374] X:5366 conflicting memory types d0000000-e0000000
-> > > uncached-minus<->write-combining [   76.054377] reserve_memtype failed
-> > > 0xd0000000-0xe0000000, track uncached-minus, req write-back [
-> > > 76.074481] X:5378 freeing invalid memtype d0000000-e0000000
-> > > [   76.176881] X:5366 conflicting memory types d0000000-e0000000
-> > > uncached-minus<->write-combining [   76.176885] reserve_memtype failed
-> > > 0xd0000000-0xe0000000, track uncached-minus, req write-back [
-> > > 76.207734] X:5380 freeing invalid memtype d0000000-e0000000
-> >
-> > OK. We now have a theory on what is going wrong here.
-> >
-> > The problem seems to be pci mmap uses vm_page_prot flag to remember the
-> > memtype for this region. Looks like that memtype is somehow getting cleared
-> > in this case. We still don't know where it is getting cleared. But, with
-> > debug patch below we can be sure that it is indeed getting cleared, which
-> > is causing problems on fork() as child wont know the memtype that parent
-> > got.
-> >
-> > Can you please try the below debug patch over upstream git and check
-> > whether you indeed hit the warnon.
-> 
-> warns triggered:
-> 
+Add the main configuration option, allowing FS-Cache to be selected; the
+module entry and exit functions and the debugging stuff used by these patches.
 
-OK. Below patch should resolve this problem.
+The two configuration options added are:
 
-Thanks,
-Venki
+	CONFIG_FSCACHE
+	CONFIG_FSCACHE_DEBUG
 
-From: Suresh Siddha <suresh.b.siddha@intel.com>
-Subject: [PATCH] x86, PAT: Remove duplicate memtype reserve in pci mmap
+The first enables the facility, and the second makes the debugging statements
+enableable through the "debug" module parameter.  The value of this parameter
+is a bitmask as described in:
 
-pci mmap code was doing memtype reserve for a while now. Recently we
-added memtype tracking in remap_pfn_range, and pci code indirectly calls
-remap_pfn_range. So, we don't need seperate tracking in pci code
-anymore. Which means a patch that removes ~50 lines of code :-).
+	Documentation/filesystems/caching/fscache.txt
 
-Also, recently we found out that the pci tracking is not working as we expect
-it to work in some cases. Specifically, userlevel X mmap of pci, with some
-recent version of X, is having a problem with vm_page_prot getting reset.
-The pci tracking uses vm_page_prot to pass on the protection type from parent
-to child during fork.
-a) Parent does a pci mmap
-b) We look at PAT and get either UC_MINUS or WC mapping for parent
-c) Store that mapping type in vma vm_page_prot for future use
-d) This thread does a fork
-e) Fork results in mmap_ops ->open for the child process
-f) We get the vm_page_prot from vma and reserve that type for the child process
+The module can be loaded at this point, but all it will do at this point in
+the patch series is to start up the slow work facility and shut it down again.
 
-But, between c) and e) above, the vma vm_page_prot is getting reset to zero.
-This results in PAT reserve failing at the time of fork as in here.
-http://marc.info/?l=linux-kernel&m=123858163103240&w=2
-
-This cleanup makes the above problem go away as we do not depend on
-vm_page_prot in our PAT code anymore.
-
-Signed-off-by: Suresh Siddha <suresh.b.siddha@intel.com>
-Signed-off-by: Venkatesh Pallipadi <venkatesh.pallipadi@intel.com>
+Signed-off-by: David Howells <dhowells@redhat.com>
+Acked-by: Steve Dickson <steved@redhat.com>
+Acked-by: Trond Myklebust <Trond.Myklebust@netapp.com>
 ---
- arch/x86/pci/i386.c |   46 ----------------------------------------------
- 1 file changed, 46 deletions(-)
 
-Index: linux-2.6/arch/x86/pci/i386.c
-===================================================================
---- linux-2.6.orig/arch/x86/pci/i386.c	2009-04-01 10:29:49.000000000 -0700
-+++ linux-2.6/arch/x86/pci/i386.c	2009-04-01 10:33:18.000000000 -0700
-@@ -258,24 +258,7 @@ void pcibios_set_master(struct pci_dev *
- 	pci_write_config_byte(dev, PCI_LATENCY_TIMER, lat);
- }
+ fs/Kconfig            |    6 ++
+ fs/Makefile           |    1 
+ fs/fscache/Kconfig    |   22 +++++++
+ fs/fscache/Makefile   |    8 ++
+ fs/fscache/internal.h |  165 +++++++++++++++++++++++++++++++++++++++++++++++++
+ fs/fscache/main.c     |   75 ++++++++++++++++++++++
+ 6 files changed, 277 insertions(+), 0 deletions(-)
+ create mode 100644 fs/fscache/Kconfig
+ create mode 100644 fs/fscache/Makefile
+ create mode 100644 fs/fscache/internal.h
+ create mode 100644 fs/fscache/main.c
+
+
+diff --git a/fs/Kconfig b/fs/Kconfig
+index cef8b18..3942df6 100644
+--- a/fs/Kconfig
++++ b/fs/Kconfig
+@@ -66,6 +66,12 @@ config GENERIC_ACL
+ 	bool
+ 	select FS_POSIX_ACL
  
--static void pci_unmap_page_range(struct vm_area_struct *vma)
--{
--	u64 addr = (u64)vma->vm_pgoff << PAGE_SHIFT;
--	free_memtype(addr, addr + vma->vm_end - vma->vm_start);
--}
--
--static void pci_track_mmap_page_range(struct vm_area_struct *vma)
--{
--	u64 addr = (u64)vma->vm_pgoff << PAGE_SHIFT;
--	unsigned long flags = pgprot_val(vma->vm_page_prot)
--						& _PAGE_CACHE_MASK;
--
--	reserve_memtype(addr, addr + vma->vm_end - vma->vm_start, flags, NULL);
--}
--
- static struct vm_operations_struct pci_mmap_ops = {
--	.open  = pci_track_mmap_page_range,
--	.close = pci_unmap_page_range,
- 	.access = generic_access_phys,
- };
++menu "Caches"
++
++source "fs/fscache/Kconfig"
++
++endmenu
++
+ if BLOCK
+ menu "CD-ROM/DVD Filesystems"
  
-@@ -283,11 +266,6 @@ int pci_mmap_page_range(struct pci_dev *
- 			enum pci_mmap_state mmap_state, int write_combine)
- {
- 	unsigned long prot;
--	u64 addr = vma->vm_pgoff << PAGE_SHIFT;
--	unsigned long len = vma->vm_end - vma->vm_start;
--	unsigned long flags;
--	unsigned long new_flags;
--	int retval;
- 
- 	/* I/O space cannot be accessed via normal processor loads and
- 	 * stores on this platform.
-@@ -308,30 +286,6 @@ int pci_mmap_page_range(struct pci_dev *
- 
- 	vma->vm_page_prot = __pgprot(prot);
- 
--	flags = pgprot_val(vma->vm_page_prot) & _PAGE_CACHE_MASK;
--	retval = reserve_memtype(addr, addr + len, flags, &new_flags);
--	if (retval)
--		return retval;
--
--	if (flags != new_flags) {
--		if (!is_new_memtype_allowed(flags, new_flags)) {
--			free_memtype(addr, addr+len);
--			return -EINVAL;
--		}
--		flags = new_flags;
--		vma->vm_page_prot = __pgprot(
--			(pgprot_val(vma->vm_page_prot) & ~_PAGE_CACHE_MASK) |
--			flags);
--	}
--
--	if (((vma->vm_pgoff < max_low_pfn_mapped) ||
--	     (vma->vm_pgoff >= (1UL<<(32 - PAGE_SHIFT)) &&
--	      vma->vm_pgoff < max_pfn_mapped)) &&
--	    ioremap_change_attr((unsigned long)__va(addr), len, flags)) {
--		free_memtype(addr, addr + len);
--		return -EINVAL;
--	}
--
- 	if (io_remap_pfn_range(vma, vma->vm_start, vma->vm_pgoff,
- 			       vma->vm_end - vma->vm_start,
- 			       vma->vm_page_prot))
+diff --git a/fs/Makefile b/fs/Makefile
+index 6e82a30..24ce1fe 100644
+--- a/fs/Makefile
++++ b/fs/Makefile
+@@ -63,6 +63,7 @@ obj-$(CONFIG_PROFILING)		+= dcookies.o
+ obj-$(CONFIG_DLM)		+= dlm/
+  
+ # Do not add any filesystems before this line
++obj-$(CONFIG_FSCACHE)		+= fscache/
+ obj-$(CONFIG_REISERFS_FS)	+= reiserfs/
+ obj-$(CONFIG_EXT3_FS)		+= ext3/ # Before ext2 so root fs can be ext3
+ obj-$(CONFIG_EXT2_FS)		+= ext2/
+diff --git a/fs/fscache/Kconfig b/fs/fscache/Kconfig
+new file mode 100644
+index 0000000..7c7bccd
+--- /dev/null
++++ b/fs/fscache/Kconfig
+@@ -0,0 +1,22 @@
++
++config FSCACHE
++	tristate "General filesystem local caching manager"
++	depends on EXPERIMENTAL
++	select SLOW_WORK
++	help
++	  This option enables a generic filesystem caching manager that can be
++	  used by various network and other filesystems to cache data locally.
++	  Different sorts of caches can be plugged in, depending on the
++	  resources available.
++
++	  See Documentation/filesystems/caching/fscache.txt for more information.
++
++config FSCACHE_DEBUG
++	bool "Debug FS-Cache"
++	depends on FSCACHE
++	help
++	  This permits debugging to be dynamically enabled in the local caching
++	  management module.  If this is set, the debugging output may be
++	  enabled by setting bits in /sys/modules/fscache/parameter/debug.
++
++	  See Documentation/filesystems/caching/fscache.txt for more information.
+diff --git a/fs/fscache/Makefile b/fs/fscache/Makefile
+new file mode 100644
+index 0000000..f8038b8
+--- /dev/null
++++ b/fs/fscache/Makefile
+@@ -0,0 +1,8 @@
++#
++# Makefile for general filesystem caching code
++#
++
++fscache-y := \
++	main.o
++
++obj-$(CONFIG_FSCACHE) := fscache.o
+diff --git a/fs/fscache/internal.h b/fs/fscache/internal.h
+new file mode 100644
+index 0000000..95dc92d
+--- /dev/null
++++ b/fs/fscache/internal.h
+@@ -0,0 +1,165 @@
++/* Internal definitions for FS-Cache
++ *
++ * Copyright (C) 2004-2007 Red Hat, Inc. All Rights Reserved.
++ * Written by David Howells (dhowells@redhat.com)
++ *
++ * This program is free software; you can redistribute it and/or
++ * modify it under the terms of the GNU General Public License
++ * as published by the Free Software Foundation; either version
++ * 2 of the License, or (at your option) any later version.
++ */
++
++/*
++ * Lock order, in the order in which multiple locks should be obtained:
++ * - fscache_addremove_sem
++ * - cookie->lock
++ * - cookie->parent->lock
++ * - cache->object_list_lock
++ * - object->lock
++ * - object->parent->lock
++ * - fscache_thread_lock
++ *
++ */
++
++#include <linux/fscache-cache.h>
++#include <linux/sched.h>
++
++#define FSCACHE_MIN_THREADS	4
++#define FSCACHE_MAX_THREADS	32
++
++/*
++ * fsc-main.c
++ */
++extern unsigned fscache_defer_lookup;
++extern unsigned fscache_defer_create;
++extern unsigned fscache_debug;
++extern struct kobject *fscache_root;
++
++/*****************************************************************************/
++/*
++ * debug tracing
++ */
++#define dbgprintk(FMT, ...) \
++	printk(KERN_DEBUG "[%-6.6s] "FMT"\n", current->comm, ##__VA_ARGS__)
++
++/* make sure we maintain the format strings, even when debugging is disabled */
++static inline __attribute__((format(printf, 1, 2)))
++void _dbprintk(const char *fmt, ...)
++{
++}
++
++#define kenter(FMT, ...) dbgprintk("==> %s("FMT")", __func__, ##__VA_ARGS__)
++#define kleave(FMT, ...) dbgprintk("<== %s()"FMT"", __func__, ##__VA_ARGS__)
++#define kdebug(FMT, ...) dbgprintk(FMT, ##__VA_ARGS__)
++
++#define kjournal(FMT, ...) _dbprintk(FMT, ##__VA_ARGS__)
++
++#ifdef __KDEBUG
++#define _enter(FMT, ...) kenter(FMT, ##__VA_ARGS__)
++#define _leave(FMT, ...) kleave(FMT, ##__VA_ARGS__)
++#define _debug(FMT, ...) kdebug(FMT, ##__VA_ARGS__)
++
++#elif defined(CONFIG_FSCACHE_DEBUG)
++#define _enter(FMT, ...)			\
++do {						\
++	if (__do_kdebug(ENTER))			\
++		kenter(FMT, ##__VA_ARGS__);	\
++} while (0)
++
++#define _leave(FMT, ...)			\
++do {						\
++	if (__do_kdebug(LEAVE))			\
++		kleave(FMT, ##__VA_ARGS__);	\
++} while (0)
++
++#define _debug(FMT, ...)			\
++do {						\
++	if (__do_kdebug(DEBUG))			\
++		kdebug(FMT, ##__VA_ARGS__);	\
++} while (0)
++
++#else
++#define _enter(FMT, ...) _dbprintk("==> %s("FMT")", __func__, ##__VA_ARGS__)
++#define _leave(FMT, ...) _dbprintk("<== %s()"FMT"", __func__, ##__VA_ARGS__)
++#define _debug(FMT, ...) _dbprintk(FMT, ##__VA_ARGS__)
++#endif
++
++/*
++ * determine whether a particular optional debugging point should be logged
++ * - we need to go through three steps to persuade cpp to correctly join the
++ *   shorthand in FSCACHE_DEBUG_LEVEL with its prefix
++ */
++#define ____do_kdebug(LEVEL, POINT) \
++	unlikely((fscache_debug & \
++		  (FSCACHE_POINT_##POINT << (FSCACHE_DEBUG_ ## LEVEL * 3))))
++#define ___do_kdebug(LEVEL, POINT) \
++	____do_kdebug(LEVEL, POINT)
++#define __do_kdebug(POINT) \
++	___do_kdebug(FSCACHE_DEBUG_LEVEL, POINT)
++
++#define FSCACHE_DEBUG_CACHE	0
++#define FSCACHE_DEBUG_COOKIE	1
++#define FSCACHE_DEBUG_PAGE	2
++#define FSCACHE_DEBUG_OPERATION	3
++
++#define FSCACHE_POINT_ENTER	1
++#define FSCACHE_POINT_LEAVE	2
++#define FSCACHE_POINT_DEBUG	4
++
++#ifndef FSCACHE_DEBUG_LEVEL
++#define FSCACHE_DEBUG_LEVEL CACHE
++#endif
++
++/*
++ * assertions
++ */
++#if 1 /* defined(__KDEBUGALL) */
++
++#define ASSERT(X)							\
++do {									\
++	if (unlikely(!(X))) {						\
++		printk(KERN_ERR "\n");					\
++		printk(KERN_ERR "FS-Cache: Assertion failed\n");	\
++		BUG();							\
++	}								\
++} while (0)
++
++#define ASSERTCMP(X, OP, Y)						\
++do {									\
++	if (unlikely(!((X) OP (Y)))) {					\
++		printk(KERN_ERR "\n");					\
++		printk(KERN_ERR "FS-Cache: Assertion failed\n");	\
++		printk(KERN_ERR "%lx " #OP " %lx is false\n",		\
++		       (unsigned long)(X), (unsigned long)(Y));		\
++		BUG();							\
++	}								\
++} while (0)
++
++#define ASSERTIF(C, X)							\
++do {									\
++	if (unlikely((C) && !(X))) {					\
++		printk(KERN_ERR "\n");					\
++		printk(KERN_ERR "FS-Cache: Assertion failed\n");	\
++		BUG();							\
++	}								\
++} while (0)
++
++#define ASSERTIFCMP(C, X, OP, Y)					\
++do {									\
++	if (unlikely((C) && !((X) OP (Y)))) {				\
++		printk(KERN_ERR "\n");					\
++		printk(KERN_ERR "FS-Cache: Assertion failed\n");	\
++		printk(KERN_ERR "%lx " #OP " %lx is false\n",		\
++		       (unsigned long)(X), (unsigned long)(Y));		\
++		BUG();							\
++	}								\
++} while (0)
++
++#else
++
++#define ASSERT(X)			do {} while (0)
++#define ASSERTCMP(X, OP, Y)		do {} while (0)
++#define ASSERTIF(C, X)			do {} while (0)
++#define ASSERTIFCMP(C, X, OP, Y)	do {} while (0)
++
++#endif /* assert or not */
+diff --git a/fs/fscache/main.c b/fs/fscache/main.c
+new file mode 100644
+index 0000000..76f7c69
+--- /dev/null
++++ b/fs/fscache/main.c
+@@ -0,0 +1,75 @@
++/* General filesystem local caching manager
++ *
++ * Copyright (C) 2004-2007 Red Hat, Inc. All Rights Reserved.
++ * Written by David Howells (dhowells@redhat.com)
++ *
++ * This program is free software; you can redistribute it and/or
++ * modify it under the terms of the GNU General Public License
++ * as published by the Free Software Foundation; either version
++ * 2 of the License, or (at your option) any later version.
++ */
++
++#define FSCACHE_DEBUG_LEVEL CACHE
++#include <linux/module.h>
++#include <linux/init.h>
++#include <linux/sched.h>
++#include <linux/completion.h>
++#include <linux/slab.h>
++#include "internal.h"
++
++MODULE_DESCRIPTION("FS Cache Manager");
++MODULE_AUTHOR("Red Hat, Inc.");
++MODULE_LICENSE("GPL");
++
++unsigned fscache_defer_lookup = 1;
++module_param_named(defer_lookup, fscache_defer_lookup, uint,
++		   S_IWUSR | S_IRUGO);
++MODULE_PARM_DESC(fscache_defer_lookup,
++		 "Defer cookie lookup to background thread");
++
++unsigned fscache_defer_create = 1;
++module_param_named(defer_create, fscache_defer_create, uint,
++		   S_IWUSR | S_IRUGO);
++MODULE_PARM_DESC(fscache_defer_create,
++		 "Defer cookie creation to background thread");
++
++unsigned fscache_debug;
++module_param_named(debug, fscache_debug, uint,
++		   S_IWUSR | S_IRUGO);
++MODULE_PARM_DESC(fscache_debug,
++		 "FS-Cache debugging mask");
++
++struct kobject *fscache_root;
++
++/*
++ * initialise the fs caching module
++ */
++static int __init fscache_init(void)
++{
++	int ret;
++
++	ret = slow_work_register_user();
++	if (ret < 0)
++		goto error_slow_work;
++
++	printk(KERN_NOTICE "FS-Cache: Loaded\n");
++	return 0;
++
++error_slow_work:
++	return ret;
++}
++
++fs_initcall(fscache_init);
++
++/*
++ * clean up on module removal
++ */
++static void __exit fscache_exit(void)
++{
++	_enter("");
++
++	slow_work_unregister_user();
++	printk(KERN_NOTICE "FS-Cache: Unloaded\n");
++}
++
++module_exit(fscache_exit);
+
