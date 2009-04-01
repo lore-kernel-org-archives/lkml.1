@@ -1,81 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758619AbZDAPsr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757132AbZDAPxT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758619AbZDAPsr (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 1 Apr 2009 11:48:47 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753949AbZDAPsi
+	id S1757132AbZDAPxT (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 1 Apr 2009 11:53:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753706AbZDAPxF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 1 Apr 2009 11:48:38 -0400
-Received: from ti-out-0910.google.com ([209.85.142.186]:46006 "EHLO
-	ti-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753675AbZDAPsh (ORCPT
+	Wed, 1 Apr 2009 11:53:05 -0400
+Received: from fk-out-0910.google.com ([209.85.128.186]:44421 "EHLO
+	fk-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750927AbZDAPxC (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 1 Apr 2009 11:48:37 -0400
+	Wed, 1 Apr 2009 11:53:02 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:references:mime-version
-         :content-type:content-disposition:in-reply-to:user-agent;
-        b=Jth8CczVjOE81nnJHKZa2SWc+NckSuQRWxFFAoq+XSTPHMbVPOI9RZaXAW1TztRRVb
-         kqlr98mD4iAchZ1xGAZlUgb/eYM+BVmq0iWRCTCp2YQQ3XHRmhVAnz7Ho+UmsGrJNy4o
-         jyWzRw48NQ2Ia/Ge2dKL0tWtw+SQx/TZ9QDAY=
-Date: Wed, 1 Apr 2009 23:49:24 +0800
-From: =?utf-8?Q?Am=C3=A9rico?= Wang <xiyou.wangcong@gmail.com>
-To: Miklos Szeredi <miklos@szeredi.hu>
-Cc: user-mode-linux-devel@lists.sourceforge.net, jdike@addtoit.com,
-       akpm@linux-foundation.org, linux-kernel@vger.kernel.org
-Subject: Re: [patch 1/3] uml: fix compile error from net_device_ops
-	conversion
-Message-ID: <20090401154924.GD3848@hack>
-References: <E1LoMQ2-0007bB-By@pomaz-ex.szeredi.hu>
+        d=googlemail.com; s=gamma;
+        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
+         :content-type:content-transfer-encoding;
+        b=fO2gOfpXN0aZgD9jQJBNkpWhkxXO0Af/g7tLNAIzeahRzBrCjP869OUDErYfbx9SN8
+         6HO4Tnoerie2UaOWja0EasJzzN1f19triVHrLizoRWVq1pfSpTkZlBHFv6PX/sigJr2u
+         iY/k8bMCraBeM1b2o8P8rqvnQDGR5AkjSFkWI=
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <E1LoMQ2-0007bB-By@pomaz-ex.szeredi.hu>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+In-Reply-To: <20090401150928.GA5886@denkbrett.schottelius.org>
+References: <20090401164450.f8192631.sfr@canb.auug.org.au>
+	 <20090401150928.GA5886@denkbrett.schottelius.org>
+Date: Wed, 1 Apr 2009 17:52:59 +0200
+Message-ID: <1820d69d0904010852qc07ccc7qc9cec18bcc2837bd@mail.gmail.com>
+Subject: Re: Invalid module format (was: Re: linux-next: Tree for April 1)
+From: Gabriel C <nix.or.die@googlemail.com>
+To: Nico -telmich- Schottelius <nico-linux-next@schottelius.org>,
+       Stephen Rothwell <sfr@canb.auug.org.au>, linux-next@vger.kernel.org,
+       LKML <linux-kernel@vger.kernel.org>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Mar 30, 2009 at 08:41:10PM +0200, Miklos Szeredi wrote:
->From: Miklos Szeredi <mszeredi@suse.cz>
+2009/4/1 Nico -telmich- Schottelius <nico-linux-next@schottelius.org>:
+> Stephen Rothwell [Wed, Apr 01, 2009 at 04:44:50PM +1100]:
+>> Hi all,
+>>
+>> Changes since 20090331:
 >
->Fix the following compile error:
+> Same problem since 20090324.
+
+AFAIK it is since 20090218...
+
 >
->arch/um/drivers/net_kern.c: In function 'uml_inetaddr_event':
->arch/um/drivers/net_kern.c:760: error: 'struct net_device' has no member named 'open'
+> arch=amd64, config attached, all modules have that problem.
+
+Disabling CONFIG_MODVERSIONS should workaround this problem.
+
 >
->This was introduced by commit 8bb95b39, "uml: convert network device
->to netdevice ops".
+> Sincerly,
 >
->Signed-off-by: Miklos Szeredi <mszeredi@suse.cz>
+> Nico
 
-
-Reviewed-by: WANG Cong <xiyou.wangcong@gmail.com>
-
-Thanks.
-
->---
-> arch/um/drivers/net_kern.c |    2 +-
-> 1 file changed, 1 insertion(+), 1 deletion(-)
->
->Index: linux-2.6/arch/um/drivers/net_kern.c
->===================================================================
->--- linux-2.6.orig/arch/um/drivers/net_kern.c	2009-03-30 17:07:10.000000000 +0200
->+++ linux-2.6/arch/um/drivers/net_kern.c	2009-03-30 19:25:30.000000000 +0200
->@@ -757,7 +757,7 @@ static int uml_inetaddr_event(struct not
-> 	void (*proc)(unsigned char *, unsigned char *, void *);
-> 	unsigned char addr_buf[4], netmask_buf[4];
-> 
->-	if (dev->open != uml_net_open)
->+	if (dev->netdev_ops->ndo_open != uml_net_open)
-> 		return NOTIFY_DONE;
-> 
-> 	lp = netdev_priv(dev);
->--
->To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
->the body of a message to majordomo@vger.kernel.org
->More majordomo info at  http://vger.kernel.org/majordomo-info.html
->Please read the FAQ at  http://www.tux.org/lkml/
-
--- 
-Do what you love, f**k the rest! F**k the regulations!
- 
+Gabriel
