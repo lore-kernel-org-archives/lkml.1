@@ -1,60 +1,96 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933519AbZDAWYT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933556AbZDAWZ3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933519AbZDAWYT (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 1 Apr 2009 18:24:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756673AbZDAWYF
+	id S933556AbZDAWZ3 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 1 Apr 2009 18:25:29 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761270AbZDAWZQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 1 Apr 2009 18:24:05 -0400
-Received: from ogre.sisk.pl ([217.79.144.158]:52095 "EHLO ogre.sisk.pl"
+	Wed, 1 Apr 2009 18:25:16 -0400
+Received: from hera.kernel.org ([140.211.167.34]:37506 "EHLO hera.kernel.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755707AbZDAWYB (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 1 Apr 2009 18:24:01 -0400
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-To: Chris Wright <chrisw@sous-sol.org>
-Subject: Re: 2.6.29 git, resume from ram broken on thinkpad
-Date: Thu, 2 Apr 2009 00:23:57 +0200
-User-Agent: KMail/1.11.1 (Linux/2.6.29-rjw; KDE/4.2.1; x86_64; ; )
-Cc: Arkadiusz Miskiewicz <a.miskiewicz@gmail.com>,
-       linux-kernel@vger.kernel.org, Mike Travis <travis@sgi.com>,
-       Jeremy Fitzhardinge <jeremy@xensource.com>,
-       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
-       Venkatesh Pallipadi <venkatesh.pallipadi@intel.com>,
-       virtualization@lists.osdl.org, xen-devel@lists.xensource.com,
-       Yinghai Lu <yhlu.kernel@gmail.com>
-References: <200904011155.20751.a.miskiewicz@gmail.com> <200904012349.10919.rjw@sisk.pl> <20090401221433.GV18394@sequoia.sous-sol.org>
-In-Reply-To: <20090401221433.GV18394@sequoia.sous-sol.org>
+	id S1756673AbZDAWZO (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 1 Apr 2009 18:25:14 -0400
+Message-ID: <49D3E9EF.8010407@kernel.org>
+Date: Thu, 02 Apr 2009 07:25:51 +0900
+From: Tejun Heo <tj@kernel.org>
+User-Agent: Thunderbird 2.0.0.19 (X11/20081227)
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
+To: Boaz Harrosh <bharrosh@panasas.com>
+CC: axboe@kernel.dk, linux-kernel@vger.kernel.org,
+       fujita.tomonori@lab.ntt.co.jp
+Subject: Re: [PATCH 13/17] blk-map: implement blk_rq_map_kern_sgl()
+References: <1238593472-30360-1-git-send-email-tj@kernel.org> <1238593472-30360-14-git-send-email-tj@kernel.org> <49D39B6C.7080707@panasas.com>
+In-Reply-To: <49D39B6C.7080707@panasas.com>
+X-Enigmail-Version: 0.95.7
+Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200904020023.58363.rjw@sisk.pl>
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Wed, 01 Apr 2009 22:25:08 +0000 (UTC)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thursday 02 April 2009, Chris Wright wrote:
-> * Rafael J. Wysocki (rjw@sisk.pl) wrote:
-> > On Wednesday 01 April 2009, Chris Wright wrote:
-> > > * Rafael J. Wysocki (rjw@sisk.pl) wrote:
-> > > > This may be caused by the recent PM changes.  Can you please test if commit
-> > > > 8efb8c76fcdccf5050c0ea059dac392789baaff2 is fine?
-> > > 
-> > > I just tested on my t400, it's not[1].  See same symptoms as Arkadiusz.
-> > > Seems as if it responds to initial apci event, I see some disk activity,
-> > > then nothing (as if it tried to wakeup, then went back to sleep).
-> > > 
-> > > [1] 15f7176eb1cccec0a332541285ee752b935c1c85 bad
-> > >     fae3e7fba4c664b3a15f2cf15ac439e8d754afc2 good(ish) (display stays blank)
-> > 
-> > Hmm, can you also test commit 0a0c5168df270a50e3518e4f12bddb31f8f5f38f, please?
+Hello,
+
+Boaz Harrosh wrote:
+>> -	do_copy = !blk_rq_aligned(q, kbuf, len) || object_is_on_stack(kbuf);
+>> -	if (do_copy)
+>> -		bio = bio_copy_kern(q, kbuf, len, gfp, rw);
+>> -	else
+>> -		bio = bio_map_kern(q, kbuf, len, gfp);
+>> -
+>> +	bio = bio_map_kern_sg(q, sgl, nents, rw, gfp);
+>> +	if (IS_ERR(bio))
+>> +		bio = bio_copy_kern_sg(q, sgl, nents, rw, gfp);
+>>  	if (IS_ERR(bio))
+>>  		return PTR_ERR(bio);
 > 
-> Well, that's already included in 15f7176eb1cccec0a332541285ee752b935c1c85
+> You might want to call bio_copy_kern_sg from within bio_map_kern_sg
+> and remove yet another export from bio layer
+> 
+> Same thing with bio_map_user_iov/bio_copy_user_iov
 
-Sorry for the misunderstanding, I thought the breakage might be introduced
-between 15f7176eb1cccec0a332541285ee752b935c1c85 and
-0a0c5168df270a50e3518e4f12bddb31f8f5f38f, so I thought it would be a good
-idea to verify if 0a0c5168df270a50e3518e4f12bddb31f8f5f38f fails too.
+Right, that makes sense.  Will incorporate it.
 
-Thanks,
-Rafael
+>>  
+>> -	if (rq_data_dir(rq) == WRITE)
+>> -		bio->bi_rw |= (1 << BIO_RW);
+>> -
+>> -	if (do_copy)
+>> +	if (!bio_flagged(bio, BIO_USER_MAPPED))
+>>  		rq->cmd_flags |= REQ_COPY_USER;
+>>  
+>> +	blk_queue_bounce(q, &bio);
+>>  	blk_rq_bio_prep(q, rq, bio);
+> 
+> It could be nice to call blk_rq_append_bio() here
+> and support multiple calls to this member.
+> This will solve half of my problem with osd_initiator
+> 
+> Hmm .. but you wanted to drop multiple bio chaining
+> perhaps you would reconsider.
+
+I don't want to drop multiple bio chaining at all in itself.  I just
+didn't see the current uses as, well, useful.  If building a sgl for a
+request at once is difficult for your purpose, making blk_rq_map_*()
+functions accumulate bios sounds like a good idea.  The primary goal
+was to remove direct bio visibility/manipulation from low level
+driver's POV.
+
+>> +int blk_rq_map_kern(struct request_queue *q, struct request *rq, void *kbuf,
+>> +		    unsigned int len, gfp_t gfp)
+>> +{
+>> +	struct scatterlist sg;
+>> +
+>> +	sg_init_one(&sg, kbuf, len);
+>> +
+>> +	return blk_rq_map_kern_sg(q, rq, &sg, 1, gfp);
+>> +}
+>>  EXPORT_SYMBOL(blk_rq_map_kern);
+> 
+> could be inline like with the end_request functions
+
+Yeap, will make it inline.
+
+Thanks.
+
+-- 
+tejun
