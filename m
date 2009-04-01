@@ -1,90 +1,77 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760713AbZDAIvx@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762339AbZDAIwo@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760713AbZDAIvx (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 1 Apr 2009 04:51:53 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755472AbZDAIvn
+	id S1762339AbZDAIwo (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 1 Apr 2009 04:52:44 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758631AbZDAIwe
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 1 Apr 2009 04:51:43 -0400
-Received: from mo-p05-ob.rzone.de ([81.169.146.181]:36441 "EHLO
-	mo-p05-ob.rzone.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755276AbZDAIvl (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 1 Apr 2009 04:51:41 -0400
-X-RZG-AUTH: :LWIQcGC8af5qXkYNYt77sURZEFmV4M3TAgvB+Qeh4tE+44JfzNbYY5/NAUgO
-X-RZG-CLASS-ID: mo05
-Message-ID: <49D32B17.20503@ursus.ath.cx>
-Date: Wed, 01 Apr 2009 10:51:35 +0200
-From: "Andreas T.Auer" <andreas.t.auer_lkml_73537@ursus.ath.cx>
-User-Agent: Mozilla-Thunderbird 2.0.0.19 (X11/20090103)
+	Wed, 1 Apr 2009 04:52:34 -0400
+Received: from hera.kernel.org ([140.211.167.34]:41832 "EHLO hera.kernel.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754079AbZDAIwc (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 1 Apr 2009 04:52:32 -0400
+Message-ID: <49D32AE5.70709@kernel.org>
+Date: Wed, 01 Apr 2009 17:50:45 +0900
+From: Tejun Heo <tj@kernel.org>
+User-Agent: Thunderbird 2.0.0.19 (X11/20081227)
 MIME-Version: 1.0
-To: Theodore Tso <tytso@mit.edu>
-CC: "Andreas T.Auer" <andreas.t.auer_lkml_73537@ursus.ath.cx>,
-       Alberto Gonzalez <info@gnebu.es>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: Ext4 and the "30 second window of death"
-References: <200903291224.21380.info@gnebu.es> <200903311452.05210.info@gnebu.es> <20090331134547.GJ13356@mit.edu> <200904010002.47077.info@gnebu.es> <49D2A5AB.1090704@ursus.ath.cx> <20090401015010.GB4529@mit.edu>
-In-Reply-To: <20090401015010.GB4529@mit.edu>
+To: Martin Schwidefsky <schwidefsky@de.ibm.com>
+CC: David Miller <davem@davemloft.net>, mingo@elte.hu, rusty@rustcorp.com.au,
+       tglx@linutronix.de, x86@kernel.org, linux-kernel@vger.kernel.org,
+       hpa@zytor.com, lethal@linux-sh.org, rmk@arm.linux.org.uk,
+       starvik@axis.com, ralf@linux-mips.org, cooloney@kernel.org,
+       kyle@mcmartin.ca, matthew@wil.cx, grundler@parisc-linux.org,
+       takata@linux-m32r.org, benh@kernel.crashing.org, rth@twiddle.net,
+       ink@jurassic.park.msu.ru, heiko.carstens@de.ibm.com
+Subject: Re: [GIT RFC] percpu: use dynamic percpu allocator as the default
+ percpu allocator
+References: <20090401101054.0a4b187d@skybase>	<49D3231D.2040403@kernel.org>	<20090401103257.12c2517e@skybase>	<20090401.013702.66171229.davem@davemloft.net> <20090401104737.22c8c66c@skybase>
+In-Reply-To: <20090401104737.22c8c66c@skybase>
+X-Enigmail-Version: 0.95.7
 Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Wed, 01 Apr 2009 08:50:48 +0000 (UTC)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Martin Schwidefsky wrote:
+> On Wed, 01 Apr 2009 01:37:02 -0700 (PDT)
+> David Miller <davem@davemloft.net> wrote:
+> 
+>> From: Martin Schwidefsky <schwidefsky@de.ibm.com>
+>> Date: Wed, 1 Apr 2009 10:32:57 +0200
+>>
+>>> The code sequence with @GOT:
+>>>
+>>> 	larl	%r12,_GLOBAL_OFFSET_TABLE_
+>>> 	lg	%r1,symbol@GOT(%r12)
+>>>
+>>> is equivalent to:
+>>>
+>>> 	larl	%r1,symbol@GOTENT
+>>> 	lg	%r1,0(%r1)
+>>>
+>>> The advantage of the second code sequence is that it need a single
+>>> register and the size of the GOT is not limited to 4K as in the first
+>>> example (the offset in an RX format instruction is limited to 12 bits -
+>>> but that is probably something you don't want to know ;-).
+>> If practical I think you guys should just force all of the module
+>> address space below 4GB virtually, as we do on sparc64.  It's a good
+>> way to avoid all of these problems.
+> 
+> We have thought about that solution as well but it not really a good
+> one. For a machine with more than 4GB of memory we would either loose
+> the memory that overlaps with the module area or we'd have to play
+> nasty remapping tricks. On s390 the kernel image is linked to address 0
+> (PAGE_OFFSET==0) and we have a simple 1:1 mapping for all real memory.
+> 
 
+Also, there is no guarantee that the offset from dynamic allocator
+will fall in the same 4G.  There is reserve mechanism for static ones
+for archs which need it but for dynamic ones, the offset can be any
+value.
 
-On 01.04.2009 03:50 Theodore Tso wrote:
-> On Wed, Apr 01, 2009 at 01:22:19AM +0200, Andreas T.Auer wrote:
->   
->> E.g. your POP3 client receives a very important mail, saves it to disk,
->> uses fsync to make sure it is out and tells the server to delete it. If
->> you are gonna delay the fsync, you will have a long window in which the
->> mail can get lost instead of a minimum window. Or are there any POP3
->> clients, which can synchronize the mail-polling with a spinning a disk?
->>     
->
-> True, but consider --- this is a laptop we're talking about, right?
-> What if the laptop hard drive crashes after you accidentally drop your
-> laptop.  Even if you're using an SSD, what if someone steals your
-> laptop.  
-Well, there is always a worst case, but I had quite a lot system crashes
-with unstable versions without dropping the laptop once.
+Thanks.
 
-> Your first mistake was using POP3.  :-)   
->   
-
-I agree.  :-)   I am using IMAP, but a lot of people have only their
-POP3 account on their only laptop.
-
-> If all they are doing is browsing the web, and the issue is firefox's
-> desire to constantly write to their home directory, the user should be
-> able to say, "you know, my battery life is more important that making
-> sure that every last web page I visit is saved away in some file ---
-> Firefox's 'Awesome Bar' really isn't worth that much to me."
->   
-
-AFAIK especially FF doesn't use fsync that often anymore by default. And
-the user has to know this meanwhile hidden config entry
-toolkit.storage.synchronous to raise the fsync level. But there are
-surely enough applications that use fsync too much, and enough
-applications using it not often enough.
-
-> Of course, there is the question whether most users will be able to
-> understand the risks of doing things like using POP3 and fetchmail as
-> described in your scenario above.  And that's a valid question --- so
-> it's worth asking whether suppressing fsync()'s really saves enough
-> power to be worth it, as opposed to say, fixing applications that are
-> write-happy, or choosing not to use applications which are write-happy
-> when you are running on battery.
->
->   
-Surely a lot of users don't understand all the risks or downsides of any
-write-out policy. But there are users who do understand. For those it
-would be fine, if they could define the policies for fsync and
-non-fsyncs on a per-application basis (with a global default). E.g.: The
-POP3-client should write synchrously with fsync, but can wait for two
-minutes for non-fsynced data. Firefox should have these values and
-openoffice those values etc...
-But I guess the implementation effort is too high.
-
-Andreas
-
+-- 
+tejun
