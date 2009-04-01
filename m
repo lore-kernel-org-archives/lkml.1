@@ -1,81 +1,86 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758398AbZDABGY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762572AbZDABHK@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758398AbZDABGY (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 31 Mar 2009 21:06:24 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752841AbZDABGO
+	id S1762572AbZDABHK (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 31 Mar 2009 21:07:10 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757702AbZDABGy
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 31 Mar 2009 21:06:14 -0400
-Received: from fg-out-1718.google.com ([72.14.220.152]:63063 "EHLO
-	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752734AbZDABGM (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 31 Mar 2009 21:06:12 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:references:mime-version
-         :content-type:content-disposition:in-reply-to:user-agent;
-        b=Ry/XYP1vVxZ3rNMS65GdkgNUJ1YPbrwQ+QnF4H8jjVl5xrT97doXotaAGAnE/mrTFK
-         jfb13Xxny29qmzHPcH9GkVXz5pPSu0urzImu3kHNdj/o3YsUOlqeeu6tRziqSss4pGTK
-         9TOQKXFkSh8LdvY+emilkdlpwAjwwTCFV2kes=
-Date: Wed, 1 Apr 2009 05:13:44 +0400
-From: Alexey Dobriyan <adobriyan@gmail.com>
-To: Matt Helsley <matthltc@us.ibm.com>
-Cc: Oleg Nesterov <oleg@redhat.com>, akpm@linux-foundation.org,
-       linux-kernel@vger.kernel.org, dhowells@redhat.com,
-       ebiederm@xmission.com, hch@lst.de
-Subject: Re: + mm-remove-struct-mm_struct-exe_file-et-al.patch added to -mm
-	tree
-Message-ID: <20090401011344.GB22398@x200.localdomain>
-References: <200903302344.n2UNi3xd027136@imap1.linux-foundation.org> <20090331144051.GA3951@redhat.com> <20090401003223.GH29821@us.ibm.com>
+	Tue, 31 Mar 2009 21:06:54 -0400
+Received: from hera.kernel.org ([140.211.167.34]:57341 "EHLO hera.kernel.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753807AbZDABGx (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 31 Mar 2009 21:06:53 -0400
+Message-ID: <49D2BD59.6020106@kernel.org>
+Date: Wed, 01 Apr 2009 10:03:21 +0900
+From: Tejun Heo <tj@kernel.org>
+User-Agent: Thunderbird 2.0.0.19 (X11/20081227)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090401003223.GH29821@us.ibm.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+To: Jeff Garzik <jeff@garzik.org>
+CC: Jens Axboe <jens.axboe@oracle.com>, Theodore Tso <tytso@mit.edu>,
+       Chris Mason <chris.mason@oracle.com>,
+       =?ISO-8859-1?Q?Fernando_Luis_V=E1zquez_Cao?= 
+	<fernando@oss.ntt.co.jp>,
+       Christoph Hellwig <hch@infradead.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Ingo Molnar <mingo@elte.hu>, Alan Cox <alan@lxorguk.ukuu.org.uk>,
+       Arjan van de Ven <arjan@infradead.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>, Nick Piggin <npiggin@suse.de>,
+       David Rees <drees76@gmail.com>, Jesper Krogh <jesper@krogh.cc>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       david@fromorbit.com
+Subject: Re: [PATCH 2/7] ext3: call blkdev_issue_flush() on fsync()
+References: <49D01F94.6000101@oss.ntt.co.jp> <49D02328.7060108@oss.ntt.co.jp> <49D0258A.9020306@garzik.org> <49D03377.1040909@oss.ntt.co.jp> <49D0B535.2010106@oss.ntt.co.jp> <49D0B70E.8060506@oss.ntt.co.jp> <20090330140427.GG13356@mit.edu> <1238422551.30488.47.camel@think.oraclecorp.com> <20090330143343.GJ13356@mit.edu> <49D17162.1090207@kernel.org> <20090331111818.GL5178@kernel.dk> <49D28B1C.8030601@garzik.org>
+In-Reply-To: <49D28B1C.8030601@garzik.org>
+X-Enigmail-Version: 0.95.7
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Wed, 01 Apr 2009 01:03:25 +0000 (UTC)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Mar 31, 2009 at 05:32:23PM -0700, Matt Helsley wrote:
-> On Tue, Mar 31, 2009 at 04:40:51PM +0200, Oleg Nesterov wrote:
-> > s/mm-commits/lkml/
-> > 
-> > On 03/30, Andrew Morton wrote:
-> > >
-> > > From: Alexey Dobriyan <adobriyan@gmail.com>
-> > >
-> > > Commit 925d1c401fa6cfd0df5d2e37da8981494ccdec07 ("procfs task exe
-> > > symlink").  introduced struct mm_struct::exe_file and struct
-> > > mm_struct::num_exe_file_vmas.
-> > >
-> > > The rationale is weak: unifying MMU and no-MMU version of /proc/*/exe
-> > > code.  For this a) struct mm_struct becomes bigger, b) mmap/munmap/exit
-> > > become slower, c) patch adds more code than removes in fact.
-> > >
-> > > ->exe_file maybe well defined, but doesn't make sense always.  After
-> > > original executable is unmapped, /proc/*/exe will still report it and,
-> > > more importantly, pin corresponding struct file.
-> > 
-> > I never liked the change which introduced mm->exe_file, so I vote for
-> > this patch.
-> > 
-> > But, as a advocatus diaboli... There was anotrher reason for ->exe_file,
-> > iirc.
-> > 
-> > bprm->file->f_op->mmap() can change vma->vm_file, this means proc_exe_link()
-> > can report the "wrong" path. The original file is not pinned in this case.
-> > 
-> > Matt?
+Jeff Garzik wrote:
+> Jens Axboe wrote:
+>> On Tue, Mar 31 2009, Tejun Heo wrote:
+>>> Hello,
+>>>
+>>> Theodore Tso wrote:
+>>>> On Mon, Mar 30, 2009 at 10:15:51AM -0400, Chris Mason wrote:
+>>>>> I'm not sure we want to stick Fernando with changing how barriers are
+>>>>> done in individual filesystems, his patch is just changing the
+>>>>> existing
+>>>>> call points.
+>>>> Well, his patch actually added some calls to block_issue_flush().  But
+>>>> yes, it's probably better if he just changes the existing call points,
+>>>> and we can have the relevant filesystem maintainers double check to
+>>>> make sure that there aren't any new call points which are needed.
+>>> How about having something like blk_ensure_cache_flushed() which
+>>> issues flush iff there hasn't been any write since the last flush?
+>>> It'll be easy to implement and will filter out duplicate flushes in
+>>> most cases.
+>>
+>> My original ide implementation of flushes actually did this. My memory
+>> is a little hazy on why it was dropped, I'm guessing because it
+>> basically never triggered anyway.
 > 
-> That's _my_ reason for it. However no mainline code does that and hence it was
-> not the reason Andrew accepted it.
+> Yeah, and it probably wouldn't trigger today unless we add new code that
+> starts generating enough duplicate cache flushes for this to be
+> significant...
+
+Well, the thread was about adding such a call, so...
+
+> And since duplicate cache flushes are harmless to the drive, you're only
+> talking about no-op ATA command overhead.  Which is only mildly notable
+> on legacy IDE (eight or so inb/outb operations).
 > 
-> I still prefer ->exe_file because I think it's a win not to walk the
-> VMAs with mmap sem when doing a readlink on /proc/*/exe.
+> I would put duplicate cache flush filtering way, way down on the
+> priority list, IMO.
 
-readlink on /proc/*/exe is rare, so nobody cares. ps(1) and top(1) here
-don't readlink it, e. g. Number of vmas is usually small enough and, as
-was mentioned, file is mapped low, so it'd be among the first VMAs.
+Yeap, unless FS guys need it, there's no reason to push it.
+Although having dup flush detection Theodore described (w/ callstack
+saving at issue time) would be nice for debugging.
 
-> It's also less sensitive to the order in which VMAs appear should that ever
-> change.
+Thanks.
+
+-- 
+tejun
