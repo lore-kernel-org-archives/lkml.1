@@ -1,73 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932664AbZDAOLp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932688AbZDAOMU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932664AbZDAOLp (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 1 Apr 2009 10:11:45 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932214AbZDAOGO
+	id S932688AbZDAOMU (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 1 Apr 2009 10:12:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1765817AbZDAOGW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 1 Apr 2009 10:06:14 -0400
-Received: from hera.kernel.org ([140.211.167.34]:55339 "EHLO hera.kernel.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S932179AbZDAOGM (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 1 Apr 2009 10:06:12 -0400
-Message-ID: <49D374C8.7000909@kernel.org>
-Date: Wed, 01 Apr 2009 23:06:00 +0900
-From: Tejun Heo <tj@kernel.org>
-User-Agent: Thunderbird 2.0.0.19 (X11/20081227)
+	Wed, 1 Apr 2009 10:06:22 -0400
+Received: from earthlight.etchedpixels.co.uk ([81.2.110.250]:37777 "EHLO
+	www.etchedpixels.co.uk" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S932271AbZDAOGU (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 1 Apr 2009 10:06:20 -0400
+From: Alan Cox <alan@lxorguk.ukuu.org.uk>
+Subject: [PATCH 15/24] ucc: Fix leaky error path
+To: linux-kernel@vger.kernel.org, torvalds@linux-foundation.org
+Date: Wed, 01 Apr 2009 15:06:32 +0100
+Message-ID: <20090401140629.22882.73409.stgit@localhost.localdomain>
+In-Reply-To: <20090401140241.22882.93477.stgit@localhost.localdomain>
+References: <20090401140241.22882.93477.stgit@localhost.localdomain>
+User-Agent: StGIT/0.14.3
 MIME-Version: 1.0
-To: Boaz Harrosh <bharrosh@panasas.com>
-CC: axboe@kernel.dk, linux-kernel@vger.kernel.org,
-       fujita.tomonori@lab.ntt.co.jp
-Subject: Re: [PATCH 15/17] bio/blk-map: kill unused stuff and un-export internal
- functions
-References: <1238593472-30360-1-git-send-email-tj@kernel.org> <1238593472-30360-16-git-send-email-tj@kernel.org> <49D371FF.3050202@panasas.com>
-In-Reply-To: <49D371FF.3050202@panasas.com>
-X-Enigmail-Version: 0.95.7
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Wed, 01 Apr 2009 14:06:04 +0000 (UTC)
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 8bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hello,
+Found by Daniel Marjamäki using cppcheck
 
-Boaz Harrosh wrote:
-> On 04/01/2009 04:44 PM, Tejun Heo wrote:
->> Impact: cleanup, removal of unused / undesirable API
->>
->> With recent changes, the following functions aren't used anymore.
->>
->> * bio_{map|copy}_{user|kern}()
->> * blk_rq_append_bio()
->>
-> 
-> This function is used by drivers/scsi/osd/osd_initiator.c
-> Currently in mainline. Please use allmodconfig to compile
-> everything.
+Signed-off-by: Alan Cox <alan@lxorguk.ukuu.org.uk>
+---
 
-The patchse is against Jens's tree which hasn't received the changes
-yet and I did allmodconfig.
+ drivers/serial/ucc_uart.c |    1 +
+ 1 files changed, 1 insertions(+), 0 deletions(-)
 
->> The following functions aren't used outside of block layer.
->>
->> * bio_add_pc_page()
-> 
-> And also this
->
->> * bio_un{map|copy}_user()
->>
->> Kill the first group and unexport the second.  As bio_add_pc_page() is
->> used only inside fs/bio.c, it's made static.
->>
->> Signed-off-by: Tejun Heo <tj@kernel.org>
-> 
-> I've posted propositions on how to fix osd_initiator.c which
-> involves making blk_map_kern() append to the request, and a new
-> blk_make_request(bio).
 
-Yeap, I'll take a look at that.
+diff --git a/drivers/serial/ucc_uart.c b/drivers/serial/ucc_uart.c
+index 315a933..7de66c0 100644
+--- a/drivers/serial/ucc_uart.c
++++ b/drivers/serial/ucc_uart.c
+@@ -1274,6 +1274,7 @@ static int ucc_uart_probe(struct of_device *ofdev,
+ 	if (!iprop) {
+ 		iprop = of_get_property(np, "device-id", NULL);
+ 		if (!iprop) {
++			kfree(qe_port);
+ 			dev_err(&ofdev->dev, "UCC is unspecified in "
+ 				"device tree\n");
+ 			return -EINVAL;
 
-Thanks.
-
--- 
-tejun
