@@ -1,77 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751495AbZDAELt@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752180AbZDAEm4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751495AbZDAELt (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 1 Apr 2009 00:11:49 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750777AbZDAELj
+	id S1752180AbZDAEm4 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 1 Apr 2009 00:42:56 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751209AbZDAEmp
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 1 Apr 2009 00:11:39 -0400
-Received: from cmpxchg.org ([85.214.51.133]:60626 "EHLO cmpxchg.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750757AbZDAELi (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 1 Apr 2009 00:11:38 -0400
-Date: Wed, 1 Apr 2009 06:09:51 +0200
-From: Johannes Weiner <hannes@cmpxchg.org>
-To: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
-Cc: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>,
-       Minchan Kim <minchan.kim@gmail.com>,
-       Daisuke Nishimura <nishimura@mxp.nes.nec.co.jp>,
-       linux-kernel@vger.kernel.org, linux-mm@kvack.org,
-       Andrew Morton <akpm@linux-foundation.org>,
-       "Rafael J. Wysocki" <rjw@sisk.pl>, Rik van Riel <riel@redhat.com>,
-       Balbir Singh <balbir@in.ibm.com>
-Subject: Re: [PATCH] vmscan: memcg needs may_swap (Re: [patch] vmscan: rename  sc.may_swap to may_unmap)
-Message-ID: <20090401040951.GA1548@cmpxchg.org>
-References: <28c262360903301826w6429720es8ceb361cfc088b1@mail.gmail.com> <20090331104237.e689f279.kamezawa.hiroyu@jp.fujitsu.com> <20090331104625.B1C7.A69D9226@jp.fujitsu.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090331104625.B1C7.A69D9226@jp.fujitsu.com>
+	Wed, 1 Apr 2009 00:42:45 -0400
+Received: from mail.hauppauge.com ([167.206.143.4]:2314 "EHLO
+	mail.hauppauge.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751195AbZDAEmp (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 1 Apr 2009 00:42:45 -0400
+Message-ID: <49D2F0BA.7040805@linuxtv.org>
+Date: Wed, 01 Apr 2009 00:42:34 -0400
+From: Michael Krufky <mkrufky@linuxtv.org>
+User-Agent: Thunderbird 2.0.0.21 (X11/20090318)
+MIME-Version: 1.0
+To: chrisw@sous-sol.org
+CC: David Miller <davem@davemloft.net>, linux-kernel@vger.kernel.org,
+       stable@kernel.org, jmforbes@linuxtx.org, zwane@arm.linux.org.uk,
+       tytso@mit.edu, rdunlap@xenotime.net, davej@redhat.com,
+       chuckw@quantumlinux.com, reviews@ml.cw.f00f.org, cebbert@redhat.com,
+       cavokz@gmail.com, w@1wt.eu, rbranco@la.checkpoint.com, jake@lwn.net,
+       eteo@redhat.com, torvalds@linux-foundation.org,
+       akpm@linux-foundation.org, alan@lxorguk.ukuu.org.uk
+Subject: Re: [patch 00/45] 2.6.29.1 -stable review
+References: <20090331231045.719396245@sous-sol.org> <20090331.204706.255891471.davem@davemloft.net>
+In-Reply-To: <20090331.204706.255891471.davem@davemloft.net>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Mar 31, 2009 at 10:48:32AM +0900, KOSAKI Motohiro wrote:
-> > > Sorry for too late response.
-> > > I don't know memcg well.
-> > > 
-> > > The memcg managed to use may_swap well with global page reclaim until now.
-> > > I think that was because may_swap can represent both meaning.
-> > > Do we need each variables really ?
-> > > 
-> > > How about using union variable ?
-> > 
-> > or Just removing one of them  ?
+David Miller wrote:
+> From: Chris Wright <chrisw@sous-sol.org>
+> Date: Tue, 31 Mar 2009 16:10:45 -0700
 > 
-> I hope all may_unmap user convert to using may_swap.
-> may_swap is more efficient and cleaner meaning.
+>> Responses should be made by Thursday, April 2, 23:00 UTC.
+>> Anything received after that time might be too late.
+> 
+> Chris, any chance you can include the 3 sparc fixes I sent
+> to stable right before you posted this?
+> 
+> Thanks!
+> 
 
-How about making may_swap mean the following:
+Chris,
 
-	@@ -642,6 +639,8 @@ static unsigned long shrink_page_list(st
-	 		 * Try to allocate it some swap space here.
-	 		 */
-	 		if (PageAnon(page) && !PageSwapCache(page)) {
-	+			if (!sc->map_swap)
-	+				goto keep_locked;
-	 			if (!(sc->gfp_mask & __GFP_IO))
-	 				goto keep_locked;
-	 			if (!add_to_swap(page))
+...and also the v4l2-common fix that I sent ~10 hours before you posted?
 
-try_to_free_pages() always sets it.
+If you can add that one too, I'd appreciate it.
 
-try_to_free_mem_cgroup_pages() sets it depending on whether it really
-wants swapping, and only swapping, right?  But the above would still
-reclaim already swapped anon pages and I don't know the memory
-controller.
+Thanks,
 
-balance_pgdat() always sets it.
+Mike Krufky
 
-__zone_reclaim() sets it depending on zone_reclaim_mode.  The
-RECLAIM_SWAP bit of this field and its documentation in
-Documentation/sysctl/vm.txt suggests it also really only means swap.
-
-shrink_all_memory() would be the sole user of may_unmap because it
-really wants to eat cache first.  But this could be figured out on a
-different occasion.
-
-	Hannes
