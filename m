@@ -1,44 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758022AbZDACO6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760881AbZDACQT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758022AbZDACO6 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 31 Mar 2009 22:14:58 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754025AbZDACOs
+	id S1760881AbZDACQT (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 31 Mar 2009 22:16:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754878AbZDACQB
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 31 Mar 2009 22:14:48 -0400
-Received: from mx2.redhat.com ([66.187.237.31]:54553 "EHLO mx2.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753339AbZDACOr (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 31 Mar 2009 22:14:47 -0400
-Message-ID: <49D2CD28.9080700@redhat.com>
-Date: Tue, 31 Mar 2009 22:10:48 -0400
-From: Rik van Riel <riel@redhat.com>
-Organization: Red Hat, Inc
-User-Agent: Thunderbird 2.0.0.17 (X11/20080915)
+	Tue, 31 Mar 2009 22:16:01 -0400
+Received: from zeniv.linux.org.uk ([195.92.253.2]:33175 "EHLO
+	ZenIV.linux.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753339AbZDACQA (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 31 Mar 2009 22:16:00 -0400
+Date: Wed, 1 Apr 2009 03:15:54 +0100
+From: Al Viro <viro@ZenIV.linux.org.uk>
+To: Trond Myklebust <Trond.Myklebust@netapp.com>
+Cc: Linus Torvalds <torvalds@linux-foundation.org>, linux-nfs@vger.kernel.org,
+       linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org,
+       hch@infradead.org
+Subject: Re: [PATCH 1/4] VFS: Add a VFS helper function
+	vfs_remote_path_lookup()
+Message-ID: <20090401021554.GV28946@ZenIV.linux.org.uk>
+References: <cover.1238525532.git.Trond.Myklebust@netapp.com> <3f1264127d431f695be25b940b477e3d287edc68.1238525532.git.Trond.Myklebust@netapp.com>
 MIME-Version: 1.0
-To: Martin Schwidefsky <schwidefsky@de.ibm.com>
-CC: linux-mm@kvack.org, linux-kernel@vger.kernel.org,
-       virtualization@lists.osdl.org, frankeh@watson.ibm.com, akpm@osdl.org,
-       nickpiggin@yahoo.com.au, hugh@veritas.com
-Subject: Re: [patch 2/6] Guest page hinting: volatile swap cache.
-References: <20090327150905.819861420@de.ibm.com> <20090327151011.798602788@de.ibm.com>
-In-Reply-To: <20090327151011.798602788@de.ibm.com>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <3f1264127d431f695be25b940b477e3d287edc68.1238525532.git.Trond.Myklebust@netapp.com>
+User-Agent: Mutt/1.5.17 (2007-11-01)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Martin Schwidefsky wrote:
-> From: Martin Schwidefsky <schwidefsky@de.ibm.com>
-> From: Hubertus Franke <frankeh@watson.ibm.com>
-> From: Himanshu Raj
+On Wed, Mar 11, 2009 at 03:50:33PM -0400, Trond Myklebust wrote:
+> The purpose of this patch is to improve the mount path lookup support for
+> filesystems such as NFSv4, which require you to look up a mount path
+> string in a remote server's namespace.
 > 
-> The volatile page state can be used for anonymous pages as well, if
-> they have been added to the swap cache and the swap write is finished.
+> Traversing such a path is pretty much identical to walking a local path,
+> in that it may involve following symlinks and even following referrals to
+> volumes that reside on other servers. Since the standard VFS path lookup
+> code already supports all these features (using in-kernel automounts for
+> following referrals) it would be nice to be able to reuse that code rather
+> than special case the mount path lookup in the NFS client.
+> 
+> This patch therefore defines a VFS helper function that sets up a temporary
+> mount namespace to represent the server namespace, and has the current
+> task pivot into that prior to doing the path lookup. Upon completion, it
+> pivots back into the original namespace, and destroys the private one.
 
-> Signed-off-by: Martin Schwidefsky <schwidefsky@de.ibm.com>
-
-Acked-by: Rik van Riel <riel@redhat.com>
-
--- 
-All rights reversed.
+NAK.  You are relying on too many things about caller (e.g. just what happens
+if you have shared fs_struct?  Does caller guarantee it won't happen?), so
+that's a bloody bad interface.  Open-code that sucker, then let's see what
+to do with surrounding code.  As it stands - no.
