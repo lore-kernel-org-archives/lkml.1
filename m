@@ -1,371 +1,468 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1765479AbZDANww@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763455AbZDANxZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1765479AbZDANww (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 1 Apr 2009 09:52:52 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1765424AbZDANpL
+	id S1763455AbZDANxZ (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 1 Apr 2009 09:53:25 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1765747AbZDANrL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 1 Apr 2009 09:45:11 -0400
-Received: from hera.kernel.org ([140.211.167.34]:44748 "EHLO hera.kernel.org"
+	Wed, 1 Apr 2009 09:47:11 -0400
+Received: from relay.atmel.no ([80.232.32.139]:63529 "EHLO relay.atmel.no"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1764378AbZDANo7 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 1 Apr 2009 09:44:59 -0400
-From: Tejun Heo <tj@kernel.org>
-To: axboe@kernel.dk, bharrosh@panasas.com, linux-kernel@vger.kernel.org,
-       fujita.tomonori@lab.ntt.co.jp
-Cc: Tejun Heo <tj@kernel.org>
-Subject: [PATCH 17/17] blk-map/bio: remove superflous @q from blk_rq_map_{user|kern}*()
-Date: Wed,  1 Apr 2009 22:44:32 +0900
-Message-Id: <1238593472-30360-18-git-send-email-tj@kernel.org>
-X-Mailer: git-send-email 1.6.0.2
-In-Reply-To: <1238593472-30360-1-git-send-email-tj@kernel.org>
-References: <1238593472-30360-1-git-send-email-tj@kernel.org>
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Wed, 01 Apr 2009 13:44:50 +0000 (UTC)
+	id S1765752AbZDANrJ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 1 Apr 2009 09:47:09 -0400
+From: Hans-Christian Egtvedt <hans-christian.egtvedt@atmel.com>
+To: linux-kernel@vger.kernel.org
+Cc: dan.j.williams@intel.com, maciej.sosnowski@intel.com,
+       haavard.skinnemoen@atmel.com,
+       Hans-Christian Egtvedt <hans-christian.egtvedt@atmel.com>
+Subject: [PATCH v3 1/1] dw_dmac: add cyclic API to DW DMA driver
+Date: Wed,  1 Apr 2009 15:47:02 +0200
+Message-Id: <1238593622-17809-1-git-send-email-hans-christian.egtvedt@atmel.com>
+X-Mailer: git-send-email 1.5.6.3
+In-Reply-To: <20090401153957.6982f050@hskinnemoen-d830>
+References: <20090401153957.6982f050@hskinnemoen-d830>
+In-Reply-To: <20090401153957.6982f050@hskinnemoen-d830>
+References: <20090401153957.6982f050@hskinnemoen-d830>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Impact: API cleanup
+This patch adds a cyclic DMA interface to the DW DMA driver. This is
+very useful if you want to use the DMA controller in combination with a
+sound device which uses cyclic buffers.
 
-All initialized requests must and are guaranteed to have rq->q set.
-Taking both @q and @rq parameters doesn't improve anything.  It only
-adds pathological corner case where @q != !@rq->q.  Kill the
-superflous @q parameter from blk_rq_map_{user|kern}*().
+Using a DMA channel for cyclic DMA will disable the possibility to use
+it as a normal DMA engine until the user calls the cyclic free function
+on the DMA channel. Also a cyclic DMA list can not be prepared if the
+channel is already active.
 
-Signed-off-by: Tejun Heo <tj@kernel.org>
+Signed-off-by: Hans-Christian Egtvedt <hans-christian.egtvedt@atmel.com>
 ---
- block/blk-map.c                            |   27 +++++++++++----------------
- block/bsg.c                                |    5 ++---
- block/scsi_ioctl.c                         |    6 +++---
- drivers/block/pktcdvd.c                    |    2 +-
- drivers/cdrom/cdrom.c                      |    2 +-
- drivers/scsi/device_handler/scsi_dh_alua.c |    2 +-
- drivers/scsi/device_handler/scsi_dh_emc.c  |    2 +-
- drivers/scsi/device_handler/scsi_dh_rdac.c |    2 +-
- drivers/scsi/scsi_lib.c                    |    7 +++----
- drivers/scsi/scsi_tgt_lib.c                |    3 +--
- drivers/scsi/sg.c                          |    6 +++---
- drivers/scsi/st.c                          |    3 +--
- include/linux/blkdev.h                     |   15 +++++++--------
- 13 files changed, 36 insertions(+), 46 deletions(-)
+ drivers/dma/dw_dmac.c      |  332 +++++++++++++++++++++++++++++++++++++++++++-
+ drivers/dma/dw_dmac_regs.h |    7 +-
+ include/linux/dw_dmac.h    |   19 +++
+ 3 files changed, 356 insertions(+), 2 deletions(-)
 
-diff --git a/block/blk-map.c b/block/blk-map.c
-index f60f439..885d359 100644
---- a/block/blk-map.c
-+++ b/block/blk-map.c
-@@ -10,7 +10,6 @@
- 
- /**
-  * blk_rq_map_user_iov - map user data to a request, for REQ_TYPE_BLOCK_PC usage
-- * @q:		request queue where request should be inserted
-  * @rq:		request to map data to
-  * @md:		pointer to the rq_map_data holding pages (if necessary)
-  * @iov:	pointer to the iovec
-@@ -30,10 +29,10 @@
-  *    original bio must be passed back in to blk_rq_unmap_user() for proper
-  *    unmapping.
-  */
--int blk_rq_map_user_iov(struct request_queue *q, struct request *rq,
--			struct rq_map_data *md, struct iovec *iov, int count,
--			gfp_t gfp)
-+int blk_rq_map_user_iov(struct request *rq, struct rq_map_data *md,
-+			struct iovec *iov, int count, gfp_t gfp)
- {
-+	struct request_queue *q = rq->q;
- 	struct bio *bio = ERR_PTR(-EINVAL);
- 	int rw = rq_data_dir(rq);
- 
-@@ -66,7 +65,6 @@ EXPORT_SYMBOL(blk_rq_map_user_iov);
- 
- /**
-  * blk_rq_map_user - map user data to a request, for REQ_TYPE_BLOCK_PC usage
-- * @q:		request queue where request should be inserted
-  * @rq:		request structure to fill
-  * @md:		pointer to the rq_map_data holding pages (if necessary)
-  * @ubuf:	the user buffer
-@@ -86,16 +84,15 @@ EXPORT_SYMBOL(blk_rq_map_user_iov);
-  *    original bio must be passed back in to blk_rq_unmap_user() for proper
-  *    unmapping.
-  */
--int blk_rq_map_user(struct request_queue *q, struct request *rq,
--		    struct rq_map_data *md, void __user *ubuf,
--		    unsigned long len, gfp_t gfp)
-+int blk_rq_map_user(struct request *rq, struct rq_map_data *md,
-+		    void __user *ubuf, unsigned long len, gfp_t gfp)
- {
- 	struct iovec iov;
- 
- 	iov.iov_base = ubuf;
- 	iov.iov_len = len;
- 
--	return blk_rq_map_user_iov(q, rq, md, &iov, 1, gfp);
-+	return blk_rq_map_user_iov(rq, md, &iov, 1, gfp);
+diff --git a/drivers/dma/dw_dmac.c b/drivers/dma/dw_dmac.c
+index a97c07e..b22ca0d 100644
+--- a/drivers/dma/dw_dmac.c
++++ b/drivers/dma/dw_dmac.c
+@@ -363,6 +363,82 @@ static void dwc_handle_error(struct dw_dma *dw, struct dw_dma_chan *dwc)
+ 	dwc_descriptor_complete(dwc, bad_desc);
  }
- EXPORT_SYMBOL(blk_rq_map_user);
  
-@@ -128,7 +125,6 @@ EXPORT_SYMBOL(blk_rq_unmap_user);
- 
- /**
-  * blk_rq_map_kern_sg - map kernel data to a request, for REQ_TYPE_BLOCK_PC
-- * @q:		request queue where request should be inserted
-  * @rq:		request to fill
-  * @sgl:	area to map
-  * @nents:	number of elements in @sgl
-@@ -138,9 +134,10 @@ EXPORT_SYMBOL(blk_rq_unmap_user);
-  *    Data will be mapped directly if possible. Otherwise a bounce
-  *    buffer is used.
-  */
--int blk_rq_map_kern_sg(struct request_queue *q, struct request *rq,
--		       struct scatterlist *sgl, int nents, gfp_t gfp)
-+int blk_rq_map_kern_sg(struct request *rq, struct scatterlist *sgl, int nents,
-+		       gfp_t gfp)
++/* --------------------- Cyclic DMA API extensions -------------------- */
++
++inline dma_addr_t dw_dma_get_src_addr(struct dma_chan *chan)
++{
++	struct dw_dma_chan *dwc = to_dw_dma_chan(chan);
++	return channel_readl(dwc, SAR);
++}
++EXPORT_SYMBOL(dw_dma_get_src_addr);
++
++inline dma_addr_t dw_dma_get_dst_addr(struct dma_chan *chan)
++{
++	struct dw_dma_chan *dwc = to_dw_dma_chan(chan);
++	return channel_readl(dwc, DAR);
++}
++EXPORT_SYMBOL(dw_dma_get_dst_addr);
++
++/* called with dwc->lock held and all DMAC interrupts disabled */
++static void dwc_handle_cyclic(struct dw_dma *dw, struct dw_dma_chan *dwc,
++		u32 status_block, u32 status_err, u32 status_xfer)
++{
++	if (status_block & dwc->mask) {
++		void (*callback)(void *param);
++		void *callback_param;
++
++		dev_vdbg(chan2dev(&dwc->chan), "new cyclic period llp 0x%08x\n",
++				channel_readl(dwc, LLP));
++		dma_writel(dw, CLEAR.BLOCK, dwc->mask);
++
++		callback = dwc->cdesc->period_callback;
++		callback_param = dwc->cdesc->period_callback_param;
++		if (callback) {
++			spin_unlock(&dwc->lock);
++			callback(callback_param);
++			spin_lock(&dwc->lock);
++		}
++	}
++
++	/*
++	 * Error and transfer complete are highly unlikely, and will most
++	 * likely be due to a configuration error by the user.
++	 */
++	if (unlikely(status_err & dwc->mask) ||
++			unlikely(status_xfer & dwc->mask)) {
++		int i;
++
++		dev_err(chan2dev(&dwc->chan), "cyclic DMA unexpected %s "
++				"interrupt, stopping DMA transfer\n",
++				status_xfer ? "xfer" : "error");
++		dev_err(chan2dev(&dwc->chan),
++			"  SAR: 0x%x DAR: 0x%x LLP: 0x%x CTL: 0x%x:%08x\n",
++			channel_readl(dwc, SAR),
++			channel_readl(dwc, DAR),
++			channel_readl(dwc, LLP),
++			channel_readl(dwc, CTL_HI),
++			channel_readl(dwc, CTL_LO));
++
++		channel_clear_bit(dw, CH_EN, dwc->mask);
++		while (dma_readl(dw, CH_EN) & dwc->mask)
++			cpu_relax();
++
++		/* make sure DMA does not restart by loading a new list */
++		channel_writel(dwc, LLP, 0);
++		channel_writel(dwc, CTL_LO, 0);
++		channel_writel(dwc, CTL_HI, 0);
++
++		dma_writel(dw, CLEAR.BLOCK, dwc->mask);
++		dma_writel(dw, CLEAR.ERROR, dwc->mask);
++		dma_writel(dw, CLEAR.XFER, dwc->mask);
++
++		for (i = 0; i < dwc->cdesc->periods; i++)
++			dwc_dump_lli(dwc, &dwc->cdesc->desc[i]->lli);
++	}
++}
++
++/* ------------------------------------------------------------------------- */
++
+ static void dw_dma_tasklet(unsigned long data)
  {
-+	struct request_queue *q = rq->q;
- 	int rw = rq_data_dir(rq);
- 	struct bio *bio;
- 
-@@ -165,7 +162,6 @@ EXPORT_SYMBOL(blk_rq_map_kern_sg);
- 
- /**
-  * blk_rq_map_kern - map kernel data to a request, for REQ_TYPE_BLOCK_PC usage
-- * @q:		request queue where request should be inserted
-  * @rq:		request to fill
-  * @kbuf:	the kernel buffer
-  * @len:	length of user data
-@@ -175,13 +171,12 @@ EXPORT_SYMBOL(blk_rq_map_kern_sg);
-  *    Data will be mapped directly if possible. Otherwise a bounce
-  *    buffer is used.
-  */
--int blk_rq_map_kern(struct request_queue *q, struct request *rq, void *kbuf,
--		    unsigned int len, gfp_t gfp)
-+int blk_rq_map_kern(struct request *rq, void *kbuf, unsigned int len, gfp_t gfp)
- {
- 	struct scatterlist sg;
- 
- 	sg_init_one(&sg, kbuf, len);
- 
--	return blk_rq_map_kern_sg(q, rq, &sg, 1, gfp);
-+	return blk_rq_map_kern_sg(rq, &sg, 1, gfp);
+ 	struct dw_dma *dw = (struct dw_dma *)data;
+@@ -382,7 +458,10 @@ static void dw_dma_tasklet(unsigned long data)
+ 	for (i = 0; i < dw->dma.chancnt; i++) {
+ 		dwc = &dw->chan[i];
+ 		spin_lock(&dwc->lock);
+-		if (status_err & (1 << i))
++		if (test_bit(DW_DMA_IS_CYCLIC, &dwc->flags))
++			dwc_handle_cyclic(dw, dwc, status_block, status_err,
++					status_xfer);
++		else if (status_err & (1 << i))
+ 			dwc_handle_error(dw, dwc);
+ 		else if ((status_block | status_xfer) & (1 << i))
+ 			dwc_scan_descriptors(dw, dwc);
+@@ -884,6 +963,257 @@ static void dwc_free_chan_resources(struct dma_chan *chan)
+ 	dev_vdbg(chan2dev(chan), "free_chan_resources done\n");
  }
- EXPORT_SYMBOL(blk_rq_map_kern);
-diff --git a/block/bsg.c b/block/bsg.c
-index 206060e..69c222a 100644
---- a/block/bsg.c
-+++ b/block/bsg.c
-@@ -283,7 +283,7 @@ bsg_map_hdr(struct bsg_device *bd, struct sg_io_v4 *hdr, fmode_t has_write_perm,
- 		next_rq->cmd_type = rq->cmd_type;
  
- 		dxferp = (void*)(unsigned long)hdr->din_xferp;
--		ret =  blk_rq_map_user(q, next_rq, NULL, dxferp,
-+		ret =  blk_rq_map_user(next_rq, NULL, dxferp,
- 				       hdr->din_xfer_len, GFP_KERNEL);
- 		if (ret)
- 			goto out;
-@@ -299,8 +299,7 @@ bsg_map_hdr(struct bsg_device *bd, struct sg_io_v4 *hdr, fmode_t has_write_perm,
- 		dxfer_len = 0;
++/* --------------------- Cyclic DMA API extensions -------------------- */
++
++/**
++ * dw_dma_cyclic_start - start the cyclic DMA transfer
++ * @chan: the DMA channel to start
++ *
++ * Must be called with soft interrupts disabled. Returns zero on success or
++ * -errno on failure.
++ */
++int dw_dma_cyclic_start(struct dma_chan *chan)
++{
++	struct dw_dma_chan	*dwc = to_dw_dma_chan(chan);
++	struct dw_dma		*dw = to_dw_dma(dwc->chan.device);
++
++	if (!test_bit(DW_DMA_IS_CYCLIC, &dwc->flags)) {
++		dev_err(chan2dev(&dwc->chan), "missing prep for cyclic DMA\n");
++		return -ENODEV;
++	}
++
++	spin_lock(&dwc->lock);
++
++	/* assert channel is idle */
++	if (dma_readl(dw, CH_EN) & dwc->mask) {
++		dev_err(chan2dev(&dwc->chan),
++			"BUG: Attempted to start non-idle channel\n");
++		dev_err(chan2dev(&dwc->chan),
++			"  SAR: 0x%x DAR: 0x%x LLP: 0x%x CTL: 0x%x:%08x\n",
++			channel_readl(dwc, SAR),
++			channel_readl(dwc, DAR),
++			channel_readl(dwc, LLP),
++			channel_readl(dwc, CTL_HI),
++			channel_readl(dwc, CTL_LO));
++		spin_unlock(&dwc->lock);
++		return -EBUSY;
++	}
++
++	dma_writel(dw, CLEAR.BLOCK, dwc->mask);
++	dma_writel(dw, CLEAR.ERROR, dwc->mask);
++	dma_writel(dw, CLEAR.XFER, dwc->mask);
++
++	/* setup DMAC channel registers */
++	channel_writel(dwc, LLP, dwc->cdesc->desc[0]->txd.phys);
++	channel_writel(dwc, CTL_LO, DWC_CTLL_LLP_D_EN | DWC_CTLL_LLP_S_EN);
++	channel_writel(dwc, CTL_HI, 0);
++
++	channel_set_bit(dw, CH_EN, dwc->mask);
++
++	spin_unlock(&dwc->lock);
++
++	return 0;
++}
++EXPORT_SYMBOL(dw_dma_cyclic_start);
++
++/**
++ * dw_dma_cyclic_stop - stop the cyclic DMA transfer
++ * @chan: the DMA channel to stop
++ *
++ * Must be called with soft interrupts disabled.
++ */
++void dw_dma_cyclic_stop(struct dma_chan *chan)
++{
++	struct dw_dma_chan	*dwc = to_dw_dma_chan(chan);
++	struct dw_dma		*dw = to_dw_dma(dwc->chan.device);
++
++	spin_lock(&dwc->lock);
++
++	channel_clear_bit(dw, CH_EN, dwc->mask);
++	while (dma_readl(dw, CH_EN) & dwc->mask)
++		cpu_relax();
++
++	spin_unlock(&dwc->lock);
++}
++EXPORT_SYMBOL(dw_dma_cyclic_stop);
++
++/**
++ * dw_dma_cyclic_prep - prepare the cyclic DMA transfer
++ * @chan: the DMA channel to prepare
++ * @buf_addr: physical DMA address where the buffer starts
++ * @buf_len: total number of bytes for the entire buffer
++ * @period_len: number of bytes for each period
++ * @direction: transfer direction, to or from device
++ *
++ * Must be called before trying to start the transfer. Returns a valid struct
++ * dw_cyclic_desc if successful or an ERR_PTR(-errno) if not successful.
++ */
++struct dw_cyclic_desc *dw_dma_cyclic_prep(struct dma_chan *chan,
++		dma_addr_t buf_addr, size_t buf_len, size_t period_len,
++		enum dma_data_direction direction)
++{
++	struct dw_dma_chan		*dwc = to_dw_dma_chan(chan);
++	struct dw_cyclic_desc		*cdesc;
++	struct dw_cyclic_desc		*retval = NULL;
++	struct dw_desc			*desc;
++	struct dw_desc			*last = NULL;
++	struct dw_dma_slave		*dws = chan->private;
++	unsigned long			was_cyclic;
++	unsigned int			reg_width;
++	unsigned int			periods;
++	unsigned int			i;
++
++	spin_lock_bh(&dwc->lock);
++	if (!list_empty(&dwc->queue) || !list_empty(&dwc->active_list)) {
++		spin_unlock_bh(&dwc->lock);
++		dev_dbg(chan2dev(&dwc->chan),
++				"queue and/or active list are not empty\n");
++		return ERR_PTR(-EBUSY);
++	}
++
++	was_cyclic = test_and_set_bit(DW_DMA_IS_CYCLIC, &dwc->flags);
++	spin_unlock_bh(&dwc->lock);
++	if (was_cyclic) {
++		dev_dbg(chan2dev(&dwc->chan),
++				"channel already prepared for cyclic DMA\n");
++		return ERR_PTR(-EBUSY);
++	}
++
++	retval = ERR_PTR(-EINVAL);
++	reg_width = dws->reg_width;
++	periods = buf_len / period_len;
++
++	/* Check for too big/unaligned periods and unaligned DMA buffer. */
++	if (period_len > (DWC_MAX_COUNT << reg_width))
++		goto out_err;
++	if (unlikely(period_len & ((1 << reg_width) - 1)))
++		goto out_err;
++	if (unlikely(buf_addr & ((1 << reg_width) - 1)))
++		goto out_err;
++	if (unlikely(!(direction & (DMA_TO_DEVICE | DMA_FROM_DEVICE))))
++		goto out_err;
++
++	retval = ERR_PTR(-ENOMEM);
++
++	if (periods > NR_DESCS_PER_CHANNEL)
++		goto out_err;
++
++	cdesc = kzalloc(sizeof(struct dw_cyclic_desc), GFP_KERNEL);
++	if (!cdesc)
++		goto out_err;
++
++	cdesc->desc = kzalloc(sizeof(struct dw_desc *) * periods, GFP_KERNEL);
++	if (!cdesc->desc)
++		goto out_err_alloc;
++
++	for (i = 0; i < periods; i++) {
++		desc = dwc_desc_get(dwc);
++		if (!desc)
++			goto out_err_desc_get;
++
++		switch (direction) {
++		case DMA_TO_DEVICE:
++			desc->lli.dar = dws->tx_reg;
++			desc->lli.sar = buf_addr + (period_len * i);
++			desc->lli.ctllo = (DWC_DEFAULT_CTLLO
++					| DWC_CTLL_DST_WIDTH(reg_width)
++					| DWC_CTLL_SRC_WIDTH(reg_width)
++					| DWC_CTLL_DST_FIX
++					| DWC_CTLL_SRC_INC
++					| DWC_CTLL_FC_M2P
++					| DWC_CTLL_INT_EN);
++			break;
++		case DMA_FROM_DEVICE:
++			desc->lli.dar = buf_addr + (period_len * i);
++			desc->lli.sar = dws->rx_reg;
++			desc->lli.ctllo = (DWC_DEFAULT_CTLLO
++					| DWC_CTLL_SRC_WIDTH(reg_width)
++					| DWC_CTLL_DST_WIDTH(reg_width)
++					| DWC_CTLL_DST_INC
++					| DWC_CTLL_SRC_FIX
++					| DWC_CTLL_FC_P2M
++					| DWC_CTLL_INT_EN);
++			break;
++		default:
++			break;
++		}
++
++		desc->lli.ctlhi = (period_len >> reg_width);
++		cdesc->desc[i] = desc;
++
++		if (last) {
++			last->lli.llp = desc->txd.phys;
++			dma_sync_single_for_device(chan2parent(chan),
++					last->txd.phys, sizeof(last->lli),
++					DMA_TO_DEVICE);
++		}
++
++		last = desc;
++	}
++
++	/* lets make a cyclic list */
++	last->lli.llp = cdesc->desc[0]->txd.phys;
++	dma_sync_single_for_device(chan2parent(chan), last->txd.phys,
++			sizeof(last->lli), DMA_TO_DEVICE);
++
++	dev_dbg(chan2dev(&dwc->chan), "cyclic prepared buf 0x%08x len %zu "
++			"period %zu periods %d\n", buf_addr, buf_len,
++			period_len, periods);
++
++	cdesc->periods = periods;
++	dwc->cdesc = cdesc;
++
++	return cdesc;
++
++out_err_desc_get:
++	while (i--)
++		dwc_desc_put(dwc, cdesc->desc[i]);
++out_err_alloc:
++	kfree(cdesc);
++out_err:
++	clear_bit(DW_DMA_IS_CYCLIC, &dwc->flags);
++	return (struct dw_cyclic_desc *)retval;
++}
++EXPORT_SYMBOL(dw_dma_cyclic_prep);
++
++/**
++ * dw_dma_cyclic_free - free a prepared cyclic DMA transfer
++ * @chan: the DMA channel to free
++ */
++void dw_dma_cyclic_free(struct dma_chan *chan)
++{
++	struct dw_dma_chan	*dwc = to_dw_dma_chan(chan);
++	struct dw_dma		*dw = to_dw_dma(dwc->chan.device);
++	struct dw_cyclic_desc	*cdesc = dwc->cdesc;
++	int			i;
++
++	dev_dbg(chan2dev(&dwc->chan), "cyclic free\n");
++
++	if (!cdesc)
++		return;
++
++	spin_lock_bh(&dwc->lock);
++
++	channel_clear_bit(dw, CH_EN, dwc->mask);
++	while (dma_readl(dw, CH_EN) & dwc->mask)
++		cpu_relax();
++
++	dma_writel(dw, CLEAR.BLOCK, dwc->mask);
++	dma_writel(dw, CLEAR.ERROR, dwc->mask);
++	dma_writel(dw, CLEAR.XFER, dwc->mask);
++
++	spin_unlock_bh(&dwc->lock);
++
++	for (i = 0; i < cdesc->periods; i++)
++		dwc_desc_put(dwc, cdesc->desc[i]);
++
++	kfree(cdesc->desc);
++	kfree(cdesc);
++
++	clear_bit(DW_DMA_IS_CYCLIC, &dwc->flags);
++}
++EXPORT_SYMBOL(dw_dma_cyclic_free);
++
+ /*----------------------------------------------------------------------*/
  
- 	if (dxfer_len) {
--		ret = blk_rq_map_user(q, rq, NULL, dxferp, dxfer_len,
--				      GFP_KERNEL);
-+		ret = blk_rq_map_user(rq, NULL, dxferp, dxfer_len, GFP_KERNEL);
- 		if (ret)
- 			goto out;
- 	}
-diff --git a/block/scsi_ioctl.c b/block/scsi_ioctl.c
-index fd538f8..a98e4ec 100644
---- a/block/scsi_ioctl.c
-+++ b/block/scsi_ioctl.c
-@@ -306,11 +306,11 @@ static int sg_io(struct request_queue *q, struct gendisk *bd_disk,
- 		hdr->iovec_count = iov_shorten(iov, hdr->iovec_count,
- 					       hdr->dxfer_len);
+ static void dw_dma_off(struct dw_dma *dw)
+diff --git a/drivers/dma/dw_dmac_regs.h b/drivers/dma/dw_dmac_regs.h
+index b252b20..13a5807 100644
+--- a/drivers/dma/dw_dmac_regs.h
++++ b/drivers/dma/dw_dmac_regs.h
+@@ -126,6 +126,10 @@ struct dw_dma_regs {
  
--		ret = blk_rq_map_user_iov(q, rq, NULL, iov, hdr->iovec_count,
-+		ret = blk_rq_map_user_iov(rq, NULL, iov, hdr->iovec_count,
- 					  GFP_KERNEL);
- 		kfree(iov);
- 	} else if (hdr->dxfer_len)
--		ret = blk_rq_map_user(q, rq, NULL, hdr->dxferp, hdr->dxfer_len,
-+		ret = blk_rq_map_user(rq, NULL, hdr->dxferp, hdr->dxfer_len,
- 				      GFP_KERNEL);
+ #define DW_REGLEN		0x400
  
- 	if (ret)
-@@ -449,7 +449,7 @@ int sg_scsi_ioctl(struct request_queue *q, struct gendisk *disk, fmode_t mode,
- 		break;
- 	}
++enum dw_dmac_flags {
++	DW_DMA_IS_CYCLIC = 0,
++};
++
+ struct dw_dma_chan {
+ 	struct dma_chan		chan;
+ 	void __iomem		*ch_regs;
+@@ -134,10 +138,12 @@ struct dw_dma_chan {
+ 	spinlock_t		lock;
  
--	if (bytes && blk_rq_map_kern(q, rq, buffer, bytes, __GFP_WAIT)) {
-+	if (bytes && blk_rq_map_kern(rq, buffer, bytes, __GFP_WAIT)) {
- 		err = DRIVER_ERROR << 24;
- 		goto out;
- 	}
-diff --git a/drivers/block/pktcdvd.c b/drivers/block/pktcdvd.c
-index dc7a8c3..a4e5e9b 100644
---- a/drivers/block/pktcdvd.c
-+++ b/drivers/block/pktcdvd.c
-@@ -771,7 +771,7 @@ static int pkt_generic_packet(struct pktcdvd_device *pd, struct packet_command *
- 			     WRITE : READ, __GFP_WAIT);
+ 	/* these other elements are all protected by lock */
++	unsigned long		flags;
+ 	dma_cookie_t		completed;
+ 	struct list_head	active_list;
+ 	struct list_head	queue;
+ 	struct list_head	free_list;
++	struct dw_cyclic_desc	*cdesc;
  
- 	if (cgc->buflen) {
--		if (blk_rq_map_kern(q, rq, cgc->buffer, cgc->buflen, __GFP_WAIT))
-+		if (blk_rq_map_kern(rq, cgc->buffer, cgc->buflen, __GFP_WAIT))
- 			goto out;
- 	}
+ 	unsigned int		descs_allocated;
+ };
+@@ -158,7 +164,6 @@ static inline struct dw_dma_chan *to_dw_dma_chan(struct dma_chan *chan)
+ 	return container_of(chan, struct dw_dma_chan, chan);
+ }
  
-diff --git a/drivers/cdrom/cdrom.c b/drivers/cdrom/cdrom.c
-index cceace6..ef67aec 100644
---- a/drivers/cdrom/cdrom.c
-+++ b/drivers/cdrom/cdrom.c
-@@ -2112,7 +2112,7 @@ static int cdrom_read_cdda_bpc(struct cdrom_device_info *cdi, __u8 __user *ubuf,
- 			break;
- 		}
+-
+ struct dw_dma {
+ 	struct dma_device	dma;
+ 	void __iomem		*regs;
+diff --git a/include/linux/dw_dmac.h b/include/linux/dw_dmac.h
+index d797dde..c8aad71 100644
+--- a/include/linux/dw_dmac.h
++++ b/include/linux/dw_dmac.h
+@@ -74,4 +74,23 @@ struct dw_dma_slave {
+ #define DWC_CFGL_HS_DST_POL	(1 << 18)	/* dst handshake active low */
+ #define DWC_CFGL_HS_SRC_POL	(1 << 19)	/* src handshake active low */
  
--		ret = blk_rq_map_user(q, rq, NULL, ubuf, len, GFP_KERNEL);
-+		ret = blk_rq_map_user(rq, NULL, ubuf, len, GFP_KERNEL);
- 		if (ret) {
- 			blk_put_request(rq);
- 			break;
-diff --git a/drivers/scsi/device_handler/scsi_dh_alua.c b/drivers/scsi/device_handler/scsi_dh_alua.c
-index e356b43..f3cb900 100644
---- a/drivers/scsi/device_handler/scsi_dh_alua.c
-+++ b/drivers/scsi/device_handler/scsi_dh_alua.c
-@@ -101,7 +101,7 @@ static struct request *get_alua_req(struct scsi_device *sdev,
- 		return NULL;
- 	}
- 
--	if (buflen && blk_rq_map_kern(q, rq, buffer, buflen, GFP_NOIO)) {
-+	if (buflen && blk_rq_map_kern(rq, buffer, buflen, GFP_NOIO)) {
- 		blk_put_request(rq);
- 		sdev_printk(KERN_INFO, sdev,
- 			    "%s: blk_rq_map_kern failed\n", __func__);
-diff --git a/drivers/scsi/device_handler/scsi_dh_emc.c b/drivers/scsi/device_handler/scsi_dh_emc.c
-index 0e572d2..dbbd56d 100644
---- a/drivers/scsi/device_handler/scsi_dh_emc.c
-+++ b/drivers/scsi/device_handler/scsi_dh_emc.c
-@@ -308,7 +308,7 @@ static struct request *get_req(struct scsi_device *sdev, int cmd,
- 	rq->timeout = CLARIION_TIMEOUT;
- 	rq->retries = CLARIION_RETRIES;
- 
--	if (blk_rq_map_kern(rq->q, rq, buffer, len, GFP_NOIO)) {
-+	if (blk_rq_map_kern(rq, buffer, len, GFP_NOIO)) {
- 		blk_put_request(rq);
- 		return NULL;
- 	}
-diff --git a/drivers/scsi/device_handler/scsi_dh_rdac.c b/drivers/scsi/device_handler/scsi_dh_rdac.c
-index 5366476..f50b33a 100644
---- a/drivers/scsi/device_handler/scsi_dh_rdac.c
-+++ b/drivers/scsi/device_handler/scsi_dh_rdac.c
-@@ -219,7 +219,7 @@ static struct request *get_rdac_req(struct scsi_device *sdev,
- 		return NULL;
- 	}
- 
--	if (buflen && blk_rq_map_kern(q, rq, buffer, buflen, GFP_NOIO)) {
-+	if (buflen && blk_rq_map_kern(rq, buffer, buflen, GFP_NOIO)) {
- 		blk_put_request(rq);
- 		sdev_printk(KERN_INFO, sdev,
- 				"get_rdac_req: blk_rq_map_kern failed.\n");
-diff --git a/drivers/scsi/scsi_lib.c b/drivers/scsi/scsi_lib.c
-index 3fa5589..66c3d0b 100644
---- a/drivers/scsi/scsi_lib.c
-+++ b/drivers/scsi/scsi_lib.c
-@@ -216,8 +216,7 @@ int scsi_execute(struct scsi_device *sdev, const unsigned char *cmd,
- 
- 	req = blk_get_request(sdev->request_queue, write, __GFP_WAIT);
- 
--	if (bufflen &&	blk_rq_map_kern(sdev->request_queue, req,
--					buffer, bufflen, __GFP_WAIT))
-+	if (bufflen && blk_rq_map_kern(req, buffer, bufflen, __GFP_WAIT))
- 		goto out;
- 
- 	req->cmd_len = COMMAND_SIZE(cmd[0]);
-@@ -332,9 +331,9 @@ int scsi_execute_async(struct scsi_device *sdev, const unsigned char *cmd,
- 	req->cmd_flags |= REQ_QUIET;
- 
- 	if (use_sg)
--		err = blk_rq_map_kern_sg(req->q, req, buffer, use_sg, gfp);
-+		err = blk_rq_map_kern_sg(req, buffer, use_sg, gfp);
- 	else if (bufflen)
--		err = blk_rq_map_kern(req->q, req, buffer, bufflen, gfp);
-+		err = blk_rq_map_kern(req, buffer, bufflen, gfp);
- 
- 	if (err)
- 		goto free_req;
-diff --git a/drivers/scsi/scsi_tgt_lib.c b/drivers/scsi/scsi_tgt_lib.c
-index 48ba413..55beba4 100644
---- a/drivers/scsi/scsi_tgt_lib.c
-+++ b/drivers/scsi/scsi_tgt_lib.c
-@@ -357,12 +357,11 @@ static int scsi_tgt_transfer_response(struct scsi_cmnd *cmd)
- static int scsi_map_user_pages(struct scsi_tgt_cmd *tcmd, struct scsi_cmnd *cmd,
- 			       unsigned long uaddr, unsigned int len, int rw)
- {
--	struct request_queue *q = cmd->request->q;
- 	struct request *rq = cmd->request;
- 	int err;
- 
- 	dprintk("%lx %u\n", uaddr, len);
--	err = blk_rq_map_user(q, rq, NULL, (void *)uaddr, len, GFP_KERNEL);
-+	err = blk_rq_map_user(rq, NULL, (void *)uaddr, len, GFP_KERNEL);
- 	if (err) {
- 		/*
- 		 * TODO: need to fixup sg_tablesize, max_segment_size,
-diff --git a/drivers/scsi/sg.c b/drivers/scsi/sg.c
-index 5fcf436..a769041 100644
---- a/drivers/scsi/sg.c
-+++ b/drivers/scsi/sg.c
-@@ -1672,11 +1672,11 @@ static int sg_start_req(Sg_request *srp, unsigned char *cmd)
- 	}
- 
- 	if (iov_count)
--		res = blk_rq_map_user_iov(q, rq, md, hp->dxferp, iov_count,
-+		res = blk_rq_map_user_iov(rq, md, hp->dxferp, iov_count,
- 					  GFP_ATOMIC);
- 	else
--		res = blk_rq_map_user(q, rq, md, hp->dxferp,
--				      hp->dxfer_len, GFP_ATOMIC);
-+		res = blk_rq_map_user(rq, md, hp->dxferp, hp->dxfer_len,
-+				      GFP_ATOMIC);
- 
- 	if (!res) {
- 		srp->bio = rq->bio;
-diff --git a/drivers/scsi/st.c b/drivers/scsi/st.c
-index c6f19ee..c4615bb 100644
---- a/drivers/scsi/st.c
-+++ b/drivers/scsi/st.c
-@@ -492,8 +492,7 @@ static int st_scsi_execute(struct st_request *SRpnt, const unsigned char *cmd,
- 	mdata->null_mapped = 1;
- 
- 	if (bufflen) {
--		err = blk_rq_map_user(req->q, req, mdata, NULL, bufflen,
--				      GFP_KERNEL);
-+		err = blk_rq_map_user(req, mdata, NULL, bufflen, GFP_KERNEL);
- 		if (err) {
- 			blk_put_request(req);
- 			return DRIVER_ERROR << 24;
-diff --git a/include/linux/blkdev.h b/include/linux/blkdev.h
-index 6876466..ff0ad9e 100644
---- a/include/linux/blkdev.h
-+++ b/include/linux/blkdev.h
-@@ -770,15 +770,14 @@ extern void __blk_stop_queue(struct request_queue *q);
- extern void __blk_run_queue(struct request_queue *);
- extern void blk_run_queue(struct request_queue *);
- extern void blk_start_queueing(struct request_queue *);
--extern int blk_rq_map_user(struct request_queue *, struct request *,
--			   struct rq_map_data *, void __user *, unsigned long,
--			   gfp_t);
-+extern int blk_rq_map_user(struct request *rq, struct rq_map_data *md,
-+			   void __user *ubuf, unsigned long len, gfp_t gfp);
- extern int blk_rq_unmap_user(struct bio *);
--extern int blk_rq_map_kern(struct request_queue *, struct request *, void *, unsigned int, gfp_t);
--extern int blk_rq_map_user_iov(struct request_queue *q, struct request *rq,
--			       struct rq_map_data *md, struct iovec *iov,
--			       int count, gfp_t gfp);
--extern int blk_rq_map_kern_sg(struct request_queue *q, struct request *rq,
-+extern int blk_rq_map_kern(struct request *rq, void *kbuf, unsigned int len,
-+			   gfp_t gfp);
-+extern int blk_rq_map_user_iov(struct request *rq, struct rq_map_data *md,
-+			       struct iovec *iov, int count, gfp_t gfp);
-+extern int blk_rq_map_kern_sg(struct request *rq,
- 			      struct scatterlist *sgl, int nents, gfp_t gfp);
- extern int blk_execute_rq(struct request_queue *, struct gendisk *,
- 			  struct request *, int);
++/* DMA API extensions */
++struct dw_cyclic_desc {
++	struct dw_desc	**desc;
++	unsigned long	periods;
++	void		(*period_callback)(void *param);
++	void		*period_callback_param;
++};
++
++struct dw_cyclic_desc *dw_dma_cyclic_prep(struct dma_chan *chan,
++		dma_addr_t buf_addr, size_t buf_len, size_t period_len,
++		enum dma_data_direction direction);
++void dw_dma_cyclic_free(struct dma_chan *chan);
++int dw_dma_cyclic_start(struct dma_chan *chan);
++void dw_dma_cyclic_stop(struct dma_chan *chan);
++
++dma_addr_t dw_dma_get_src_addr(struct dma_chan *chan);
++
++dma_addr_t dw_dma_get_dst_addr(struct dma_chan *chan);
++
+ #endif /* DW_DMAC_H */
 -- 
-1.6.0.2
+1.5.6.3
 
