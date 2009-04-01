@@ -1,116 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1765662AbZDAAWV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1765714AbZDAAWn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1765662AbZDAAWV (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 31 Mar 2009 20:22:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763490AbZDAAVR
+	id S1765714AbZDAAWn (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 31 Mar 2009 20:22:43 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1765655AbZDAAWA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 31 Mar 2009 20:21:17 -0400
-Received: from mx2.redhat.com ([66.187.237.31]:56745 "EHLO mx2.redhat.com"
+	Tue, 31 Mar 2009 20:22:00 -0400
+Received: from hera.kernel.org ([140.211.167.34]:49010 "EHLO hera.kernel.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1765471AbZDAAVQ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 31 Mar 2009 20:21:16 -0400
-Date: Wed, 1 Apr 2009 02:17:29 +0200
-From: Oleg Nesterov <oleg@redhat.com>
-To: Markus Metzger <markus.t.metzger@intel.com>
-Cc: linux-kernel@vger.kernel.org, mingo@elte.hu, tglx@linutronix.de,
-       hpa@zytor.com, markus.t.metzger@gmail.com, roland@redhat.com,
-       eranian@googlemail.com, juan.villacis@intel.com, ak@linux.jf.intel.com
-Subject: Re: [patch 3/21] x86, bts: wait until traced task has been
-	scheduled out
-Message-ID: <20090401001729.GC28228@redhat.com>
-References: <20090331145947.A12565@sedona.ch.intel.com>
+	id S1765651AbZDAAV6 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 31 Mar 2009 20:21:58 -0400
+Message-ID: <49D2B2DC.9000401@kernel.org>
+Date: Wed, 01 Apr 2009 09:18:36 +0900
+From: Tejun Heo <tj@kernel.org>
+User-Agent: Thunderbird 2.0.0.19 (X11/20081227)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090331145947.A12565@sedona.ch.intel.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+To: Christoph Lameter <cl@linux.com>
+CC: Ingo Molnar <mingo@elte.hu>, Martin Schwidefsky <schwidefsky@de.ibm.com>,
+       rusty@rustcorp.com.au, tglx@linutronix.de, x86@kernel.org,
+       linux-kernel@vger.kernel.org, hpa@zytor.com,
+       Paul Mundt <lethal@linux-sh.org>, rmk@arm.linux.org.uk,
+       starvik@axis.com, ralf@linux-mips.org, davem@davemloft.net,
+       cooloney@kernel.org, kyle@mcmartin.ca, matthew@wil.cx,
+       grundler@parisc-linux.org, takata@linux-m32r.org,
+       benh@kernel.crashing.org, rth@twiddle.net, ink@jurassic.park.msu.ru,
+       heiko.carstens@de.ibm.com,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Nick Piggin <npiggin@suse.de>
+Subject: Re: [PATCH UPDATED] percpu: use dynamic percpu allocator as the default
+ percpu allocator
+References: <1236671631-9305-1-git-send-email-tj@kernel.org> <20090316190132.7965a49a@skybase> <49C300D8.5080204@kernel.org> <49C8FAC4.6060508@kernel.org> <20090325122738.42d105b7@skybase> <49CA1AC3.9080908@kernel.org> <20090325150035.541e707a@skybase> <49CA3C2C.5030702@kernel.org> <49D099F0.3000807@kernel.org> <20090330114938.GB10070@elte.hu> <alpine.DEB.1.10.0903301049060.13333@qirst.com> <alpine.DEB.1.10.0903311212360.17960@qirst.com>
+In-Reply-To: <alpine.DEB.1.10.0903311212360.17960@qirst.com>
+X-Enigmail-Version: 0.95.7
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Wed, 01 Apr 2009 00:18:40 +0000 (UTC)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 03/31, Markus Metzger wrote:
->
-> +static void wait_to_unschedule(struct task_struct *task)
-> +{
-> +	unsigned long nvcsw;
-> +	unsigned long nivcsw;
-> +
-> +	if (!task)
-> +		return;
-> +
-> +	if (task == current)
-> +		return;
-> +
-> +	nvcsw  = task->nvcsw;
-> +	nivcsw = task->nivcsw;
-> +	for (;;) {
-> +		if (!task_is_running(task))
-> +			break;
-> +		/*
-> +		 * The switch count is incremented before the actual
-> +		 * context switch. We thus wait for two switches to be
-> +		 * sure at least one completed.
-> +		 */
-> +		if ((task->nvcsw - nvcsw) > 1)
-> +			break;
-> +		if ((task->nivcsw - nivcsw) > 1)
-> +			break;
-> +
-> +		schedule();
+Hello,
 
-schedule() is a nop here. We can wait unpredictably long...
+Christoph Lameter wrote:
+> Needs additional feedback and review by Tejun I would think. Just compile
+> tested so far. The removal of the rbtree also relaxes locking restrictions
+> for pcpu_chunk_address_search (which is not really searching anymore).
+> 
+> Subject: dynamic percpu allocator: Remove rbtree
+> 
+> The rbtree is used to determine the chunk from the virtual address. However,
+> we can already determine the page struct from a virtual address and there
+> are several unused fields in page struct used by vmalloc. Use the index
+> field to store a pointer to the chunk. Then there is no need anymore for
+> an rbtree.
+> 
+> Signed-off-by: Christoph Lameter <cl@linux.com>
 
-Ingo, do have have any ideas to improve this helper?
+This is great.  I'll integrate the patch and test it soonish but with
+LSF on the next week, I'll probably be slow during the next two weeks.
 
-Not that I really like it, but how about
+Thanks a lot.
 
-	int force_unschedule(struct task_struct *p)
-	{
-		struct rq *rq;
-		unsigned long flags;
-		int running;
-
-		rq = task_rq_lock(p, &flags);
-		running = task_running(rq, p);
-		task_rq_unlock(rq, &flags);
-
-		if (running)
-			wake_up_process(rq->migration_thread);
-
-		return running;
-	}
-
-which should be used instead of task_is_running() ?
-
-
-We can even do something like
-
-	void wait_to_unschedule(struct task_struct *task)
-	{
-		struct migration_req req;
-
-		rq = task_rq_lock(p, &task);
-		running = task_running(rq, p);
-		if (running) {
-			// make sure __migrate_task() will do nothing
-			req->dest_cpu = NR_CPUS + 1;
-			init_completion(&req->done);
-			list_add(&req->list, &rq->migration_queue);
-		}
-		task_rq_unlock(rq, &flags);
-
-		if (running) {
-			wake_up_process(rq->migration_thread);
-			wait_for_completion(&req.done);
-		}
-	}
-
-This way we don't poll, and we need only one helper.
-
-(Can't resist, this patch is not bisect friendly, without the next patches
- wait_to_unschedule() is called under write_lock_irq, this is deadlockable).
-
-But anyway, I think we can do this later.
-
-Oleg.
-
+-- 
+tejun
