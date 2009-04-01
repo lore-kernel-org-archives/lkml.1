@@ -1,20 +1,20 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1765621AbZDAOPK@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932905AbZDAOPn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1765621AbZDAOPK (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 1 Apr 2009 10:15:10 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1765907AbZDAOHV
+	id S932905AbZDAOPn (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 1 Apr 2009 10:15:43 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1765898AbZDAOHk
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 1 Apr 2009 10:07:21 -0400
-Received: from earthlight.etchedpixels.co.uk ([81.2.110.250]:37793 "EHLO
+	Wed, 1 Apr 2009 10:07:40 -0400
+Received: from earthlight.etchedpixels.co.uk ([81.2.110.250]:37794 "EHLO
 	www.etchedpixels.co.uk" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1765619AbZDAOHU (ORCPT
+	with ESMTP id S932424AbZDAOHf (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 1 Apr 2009 10:07:20 -0400
+	Wed, 1 Apr 2009 10:07:35 -0400
 From: Alan Cox <alan@lxorguk.ukuu.org.uk>
-Subject: [PATCH 21/24] mux: fix build problem
+Subject: [PATCH 22/24] icom: remove unused variables
 To: linux-kernel@vger.kernel.org, torvalds@linux-foundation.org
-Date: Wed, 01 Apr 2009 15:07:34 +0100
-Message-ID: <20090401140730.22882.84147.stgit@localhost.localdomain>
+Date: Wed, 01 Apr 2009 15:07:42 +0100
+Message-ID: <20090401140740.22882.65137.stgit@localhost.localdomain>
 In-Reply-To: <20090401140241.22882.93477.stgit@localhost.localdomain>
 References: <20090401140241.22882.93477.stgit@localhost.localdomain>
 User-Agent: StGIT/0.14.3
@@ -25,35 +25,96 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Alexander Beregalov <a.beregalov@gmail.com>
+From: Breno Leitao <leitao@linux.vnet.ibm.com>
 
-Fixes:
-
-In file included from drivers/serial/mux.c:37:
-include/linux/serial_core.h: In function 'uart_handle_sysrq_char':
-include/linux/serial_core.h:467: error: 'struct uart_port' has no member named 'sysrq'
-include/linux/serial_core.h:468: error: 'struct uart_port' has no member named 'sysrq'
-
-
-Signed-off-by: Alexander Beregalov <a.beregalov@gmail.com>
+Signed-off-by: Breno Leitao <leitao@linux.vnet.ibm.com>
+Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
 Signed-off-by: Alan Cox <alan@lxorguk.ukuu.org.uk>
 ---
 
- include/linux/serial_core.h |    2 +-
- 1 files changed, 1 insertions(+), 1 deletions(-)
+ drivers/serial/icom.c |   14 ++------------
+ 1 files changed, 2 insertions(+), 12 deletions(-)
 
 
-diff --git a/include/linux/serial_core.h b/include/linux/serial_core.h
-index df9245c..83e4b3f 100644
---- a/include/linux/serial_core.h
-+++ b/include/linux/serial_core.h
-@@ -277,7 +277,7 @@ struct uart_port {
- 	struct uart_icount	icount;			/* statistics */
+diff --git a/drivers/serial/icom.c b/drivers/serial/icom.c
+index 2b7531d..6579e2b 100644
+--- a/drivers/serial/icom.c
++++ b/drivers/serial/icom.c
+@@ -1098,7 +1098,6 @@ static void icom_set_termios(struct uart_port *port,
+ {
+ 	int baud;
+ 	unsigned cflag, iflag;
+-	int bits;
+ 	char new_config2;
+ 	char new_config3 = 0;
+ 	char tmp_byte;
+@@ -1119,34 +1118,27 @@ static void icom_set_termios(struct uart_port *port,
+ 	switch (cflag & CSIZE) {
+ 	case CS5:		/* 5 bits/char */
+ 		new_config2 |= ICOM_ACFG_5BPC;
+-		bits = 7;
+ 		break;
+ 	case CS6:		/* 6 bits/char */
+ 		new_config2 |= ICOM_ACFG_6BPC;
+-		bits = 8;
+ 		break;
+ 	case CS7:		/* 7 bits/char */
+ 		new_config2 |= ICOM_ACFG_7BPC;
+-		bits = 9;
+ 		break;
+ 	case CS8:		/* 8 bits/char */
+ 		new_config2 |= ICOM_ACFG_8BPC;
+-		bits = 10;
+ 		break;
+ 	default:
+-		bits = 10;
+ 		break;
+ 	}
+ 	if (cflag & CSTOPB) {
+ 		/* 2 stop bits */
+ 		new_config2 |= ICOM_ACFG_2STOP_BIT;
+-		bits++;
+ 	}
+ 	if (cflag & PARENB) {
+ 		/* parity bit enabled */
+ 		new_config2 |= ICOM_ACFG_PARITY_ENAB;
+ 		trace(ICOM_PORT, "PARENB", 0);
+-		bits++;
+ 	}
+ 	if (cflag & PARODD) {
+ 		/* odd parity */
+@@ -1322,7 +1314,6 @@ static struct uart_driver icom_uart_driver = {
+ static int __devinit icom_init_ports(struct icom_adapter *icom_adapter)
+ {
+ 	u32 subsystem_id = icom_adapter->subsystem_id;
+-	int retval = 0;
+ 	int i;
+ 	struct icom_port *icom_port;
  
- 	struct console		*cons;			/* struct console, if any */
--#ifdef CONFIG_SERIAL_CORE_CONSOLE
-+#if defined(CONFIG_SERIAL_CORE_CONSOLE) || defined(SUPPORT_SYSRQ)
- 	unsigned long		sysrq;			/* sysrq timeout */
- #endif
+@@ -1368,7 +1359,7 @@ static int __devinit icom_init_ports(struct icom_adapter *icom_adapter)
+ 		}
+ 	}
  
+-	return retval;
++	return 0;
+ }
+ 
+ static void icom_port_active(struct icom_port *icom_port, struct icom_adapter *icom_adapter, int port_num)
+@@ -1391,7 +1382,6 @@ static int __devinit icom_load_ports(struct icom_adapter *icom_adapter)
+ {
+ 	struct icom_port *icom_port;
+ 	int port_num;
+-	int retval;
+ 
+ 	for (port_num = 0; port_num < icom_adapter->numb_ports; port_num++) {
+ 
+@@ -1405,7 +1395,7 @@ static int __devinit icom_load_ports(struct icom_adapter *icom_adapter)
+ 			icom_port->adapter = icom_adapter;
+ 
+ 			/* get port memory */
+-			if ((retval = get_port_memory(icom_port)) != 0) {
++			if (get_port_memory(icom_port) != 0) {
+ 				dev_err(&icom_port->adapter->pci_dev->dev,
+ 					"Memory allocation for port FAILED\n");
+ 			}
 
