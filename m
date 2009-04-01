@@ -1,200 +1,200 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934062AbZDATXk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934054AbZDAT3n@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934062AbZDATXk (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 1 Apr 2009 15:23:40 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763979AbZDATXY
+	id S934054AbZDAT3n (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 1 Apr 2009 15:29:43 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760438AbZDAT3b
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 1 Apr 2009 15:23:24 -0400
-Received: from smtp118.sbc.mail.sp1.yahoo.com ([69.147.64.91]:42118 "HELO
-	smtp118.sbc.mail.sp1.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1763983AbZDATXW (ORCPT
+	Wed, 1 Apr 2009 15:29:31 -0400
+Received: from mail-bw0-f169.google.com ([209.85.218.169]:53050 "EHLO
+	mail-bw0-f169.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755540AbZDAT3a (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 1 Apr 2009 15:23:22 -0400
-X-YMail-OSG: pb_uQ3EVM1kWD5.LPX3Q.sDH.z7_4U8vR5_VGN0NMJwVl1huNcuWoTC3Rgmz6h6LShcy2UBZ0MP1vzSLZpiqzNu8U308b_WclGmt9LC.a_tZzRCzFgh7yvUc.oF6K4vTuxbTBTHHA27X_9imoQiHRW3kGqucpVh3DnmmFcS9ZXFuls0UT3wkzydUWepvCHqlI1edhJeRw81gIM2M730Jr9NXpO6D.0GTJbiwCS8NR1_hrYlcjaahLaDe4WJzCJbA6fpyRXzyvwucvXfjKM3DHhKyGUEmTONJbx7aZFMgia4G3FzEbT66.hmozocigidzAr57aI_wjcnNS5wmWIoj
-X-Yahoo-Newman-Property: ymail-3
-Subject: [PATCH] [Target_Core_Mod/Persistent_Reservations]: Make
-	'Registrants only' reservations allow multiple writers
-From: "Nicholas A. Bellinger" <nab@linux-iscsi.org>
-To: LKML <linux-kernel@vger.kernel.org>,
-       linux-scsi <linux-scsi@vger.kernel.org>
-Cc: Brad Fennell <wavebender@hotmail.com>,
-       Jason Hodges <jasonahodges@gmail.com>,
-       Rafiu Fakunle <rafiu@openfiler.com>,
-       Douglas Gilbert <dgilbert@interlog.com>,
-       James Bottomley <James.Bottomley@HansenPartnership.com>
+	Wed, 1 Apr 2009 15:29:30 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=subject:from:to:cc:in-reply-to:references:content-type:date
+         :message-id:mime-version:x-mailer:content-transfer-encoding;
+        b=HTyBx1wvfH5eh37zpwxXd9c0dyWIPoraUHxExtsg18zWKWSXse0PLeiwVja5ZAMWlm
+         q66Ol77N4QXRpoelzhaVKCwODDqbk+/Sv+MQar0oabmwrEMLN3gYxx5nDb3/1WePKMcY
+         XhCeSY3zlAajogvVFhtDxVnQ1Y+Z+gPUAjDcs=
+Subject: Re: [PATCH 3/3] lib: enable lzo-compressed kernels
+From: Andreas Robinson <andr345@gmail.com>
+To: "H. Peter Anvin" <hpa@zytor.com>
+Cc: Alain Knaff <alain@knaff.lu>, linux-kernel@vger.kernel.org
+In-Reply-To: <1238593252-3435-1-git-send-email-andr345@gmail.com>
+References: <1238593252-3435-1-git-send-email-andr345@gmail.com>
 Content-Type: text/plain
-Date: Wed, 01 Apr 2009 12:23:15 -0700
-Message-Id: <1238613795.4250.333.camel@haakon2.linux-iscsi.org>
+Date: Wed, 01 Apr 2009 21:29:18 +0200
+Message-Id: <1238614158.10514.42.camel@andreas-desktop>
 Mime-Version: 1.0
-X-Mailer: Evolution 2.22.3.1 
+X-Mailer: Evolution 2.24.3 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Greetings All,
-
-This patch changes core_scsi3_pr_seq_non_holder() to allow 'Registrants only'
-reservations to allow multiple writers from the reservation holder, and all registered
-I_T Nexuses.  Previously, only 'All Registrants' reservations where allowed
-to to have multiple writers because each registration in a 'All Registrants' reservation is
-considered the reservation holder.
-
-This patch allows an I_T nexus to write who is NOT the reservation holder, but does have
-a valid registration.
-
-These patches are made against lio-core-2.6.git/master and tested on
-v2.6.29 x86 32-bit HVM using sg_persist from sg3_utils.  The lio-core-2.6.git tree
-can be found at: 
-
-http://git.kernel.org/?p=linux/kernel/git/nab/lio-core-2.6.git;a=summary
-
-Here is what it looks like from the initiator side with /dev/sde and /dev/sdf representing
-the same IBLOCK exported storage object across two different I_T nexuses:
-
-[3:0:0:0]    disk    iqn.2003-01.org.linux-iscsi.target.i686:sn.cff3eedbd2fd,t,0x1  /dev/sde
-[4:0:0:0]    disk    iqn.2003-01.org.linux-iscsi.target.i686:sn.e475ed6fcdd0,t,0x1  /dev/sdf
-
-*) Register and and create a 'Write Exclusive, Registrants Only' reservation for /dev/sde
-
-initiator# sg_persist --out --register-ignore --param-sark=0x1234abcd -Y -v /dev/sde
-    inquiry cdb: 12 00 00 00 24 00
-  LIO-ORG  IBLOCK  3.0
-  Peripheral device type: disk
-    Persistent Reservation Out cmd: 5f 06 00 00 00 00 00 00 18 00
-PR out: command (Register and ignore existing key) successful
-initiator# sg_persist --out --reserve --param-rk=0x1234abcd --prout-type=5 -v /dev/sde
-    inquiry cdb: 12 00 00 00 24 00
-  LIO-ORG  IBLOCK  3.0
-  Peripheral device type: disk
-    Persistent Reservation Out cmd: 5f 01 05 00 00 00 00 00 18 00
-PR out: command (Reserve) successful
-
-*) Attempt write on a unregistered I_T nexus (fails with RESERVATION CONFLICT):
-
-initiator# dd if=/dev/zero of=/dev/sdf bs=2048 count=1
-1+0 records in
-1+0 records out
-2048 bytes (2.0 kB) copied, 4.4217e-05 seconds, 46.3 MB/s
-
-[ 1160.287946] sd 4:0:0:0: reservation conflict
-[ 1160.287971] sd 4:0:0:0: [sdf] Result: hostbyte=DID_OK driverbyte=DRIVER_OK,SUGGEST_OK
-[ 1160.287989] end_request: I/O error, dev sdf, sector 0
-[ 1160.288115] Buffer I/O error on device sdf, logical block 0
-[ 1160.288183] lost page write due to I/O error on sdf
-
-*) Create a registration on /dev/sdf, while /dev/sde is still holding the reservation.
-
-initiator# sg_persist --out --register-ignore --param-sark=0x4567ffff -Y -v /dev/sdf
-    inquiry cdb: 12 00 00 00 24 00
-  LIO-ORG  IBLOCK  3.0
-  Peripheral device type: disk
-    Persistent Reservation Out cmd: 5f 06 00 00 00 00 00 00 18 00
-PR out: command (Register and ignore existing key) successful
-
-*) A Write now succeeds after /dev/sdf has been registered successfully.
-
-initiator# dd if=/dev/zero of=/dev/sdf bs=2048 count=1
-1+0 records in
-1+0 records out
-2048 bytes (2.0 kB) copied, 3.9031e-05 seconds, 52.5 MB/s
-
-*) From the Target side:
-
-SPC-3 PR [iSCSI] Service Action: REGISTER_AND_IGNORE_EXISTING_KEY Initiator Node: iqn.1993-08.org.debian:01:2dadf92d0ef
-SPC-3 PR [iSCSI] for ALL TCM Subsystem iblock Object Target Port(s)
-SPC-3 PR [iSCSI] SA Res Key: 0x000000001234abcd PRgeneration: 0x00000000
-SPC-3 PR [iSCSI] Service Action: RESERVE created new reservation holder TYPE: Write Exclusive Access, Registrants Only ALL_TG_PT: 1
-SPC-3 PR [iSCSI] RESERVE Node: iqn.1993-08.org.debian:01:2dadf92d0ef
-WRITE Conflict for unregistered nexus iqn.1993-08.org.debian:01:2dadf92d0ef CDB: 0x2a to Write Exclusive Access, Registrants Only reservation
-SPC-3 PR [iSCSI] Service Action: REGISTER_AND_IGNORE_EXISTING_KEY Initiator Node: iqn.1993-08.org.debian:01:2dadf92d0ef
-SPC-3 PR [iSCSI] for ALL TCM Subsystem iblock Object Target Port(s)
-SPC-3 PR [iSCSI] SA Res Key: 0x000000004567ffff PRgeneration: 0x00000001
-
-Signed-off-by: Nicholas A. Bellinger <nab@linux-iscsi.org>
----
- drivers/lio-core/target_core_pr.c |   28 +++++++++++++++-------------
- 1 files changed, 15 insertions(+), 13 deletions(-)
-
-diff --git a/drivers/lio-core/target_core_pr.c b/drivers/lio-core/target_core_pr.c
-index 9fe6da5..63e19ad 100644
---- a/drivers/lio-core/target_core_pr.c
-+++ b/drivers/lio-core/target_core_pr.c
-@@ -181,7 +181,7 @@ static int core_scsi3_pr_seq_non_holder(
- 	se_lun_t *se_lun = SE_LUN(cmd);
- 	int other_cdb = 0;
- 	int registered_nexus = 0, ret = 1; /* Conflict by default */
--	int all_reg = 0; /* ALL_REG */
-+	int all_reg = 0, reg_only = 0; /* ALL_REG, REG_ONLY */
- 	int we = 0; /* Write Exclusive */
- 	int legacy = 0; /* Act like a legacy device and return
- 			 * RESERVATION CONFLICT on some CDBs */
-@@ -205,6 +205,7 @@ static int core_scsi3_pr_seq_non_holder(
- 		/*
- 		 * Some commands are only allowed for registered I_T Nexuses.
- 		 */
-+		reg_only = 1;
- 		if (se_deve->deve_flags & DEF_PR_REGISTERED)
- 			registered_nexus = 1;
- 		break;
-@@ -349,21 +350,17 @@ static int core_scsi3_pr_seq_non_holder(
- 	 * Check if write exclusive initiator ports *NOT* holding the
- 	 * WRITE_EXCLUSIVE_* reservation.
- 	 */
--	if (we) {
-+	if ((we) && !(registered_nexus)) {
- 		if ((cmd->data_direction == SE_DIRECTION_WRITE) ||
- 		    (cmd->data_direction == SE_DIRECTION_BIDI)) {
- 			/*
- 			 * Conflict for write exclusive
- 			 */
--			printk(KERN_INFO "WRITE Conflict for %sregistered nexus"
-+			printk(KERN_INFO "%s Conflict for unregistered nexus"
- 				" %s CDB: 0x%02x to %s reservation\n",
--				(registered_nexus) ? "" : "un",
-+				transport_dump_cmd_direction(cmd),
- 				se_sess->se_node_acl->initiatorname, cdb[0],
- 				core_scsi3_pr_dump_type(pr_reg_type));
--			if (cdb[0] == PERSISTENT_RESERVE_OUT)
--				printk(KERN_INFO "WRITE Conflict was"
--					" PERSISTENT_RESERVE_OUT, Service"
--					" Action: 0x%02x\n", cdb[1] & 0x1f);
- 			return 1;
- 		} else {
- 			/*
-@@ -385,20 +382,25 @@ static int core_scsi3_pr_seq_non_holder(
- #endif
- 			return 0;
- 		}
--	} else if (all_reg) {
-+	} else if ((reg_only) || (all_reg)) {
- 		if (registered_nexus) {
- 			/*
--			 * For PR_*_ALL_REG reservation, treat all registered
--			 * nexuses as the reservation holder.
-+			 * For PR_*_REG_ONLY and PR_*_ALL_REG reservations,
-+			 * allow commands from registered nexuses.
- 			 */
-+#if 0
- 			printk(KERN_INFO "Allowing implict CDB: 0x%02x for %s"
- 				" reservation\n", cdb[0],
- 				core_scsi3_pr_dump_type(pr_reg_type));
-+#endif
- 			return 0;
- 		}
- 	}
--	printk(KERN_INFO "Conflict for CDB: 0x%2x for %s reservation\n",
--		cdb[0], core_scsi3_pr_dump_type(pr_reg_type));
-+	printk(KERN_INFO "%s Conflict for %sregistered nexus %s CDB: 0x%2x"
-+		" for %s reservation\n", transport_dump_cmd_direction(cmd),
-+		(registered_nexus) ? "" : "un",
-+		se_sess->se_node_acl->initiatorname, cdb[0],
-+		core_scsi3_pr_dump_type(pr_reg_type));
+Signed-off-by: Andreas Robinson <andr345@gmail.com>
+diff --git a/arch/x86/Kconfig b/arch/x86/Kconfig
+index 34bc3a8..3d1c2a6 100644
+--- a/arch/x86/Kconfig
++++ b/arch/x86/Kconfig
+@@ -40,6 +40,7 @@ config X86
+ 	select HAVE_GENERIC_DMA_COHERENT if X86_32
+ 	select HAVE_EFFICIENT_UNALIGNED_ACCESS
+ 	select USER_STACKTRACE_SUPPORT
++	select HAVE_KERNEL_LZO
+ 	select HAVE_KERNEL_GZIP
+ 	select HAVE_KERNEL_BZIP2
+ 	select HAVE_KERNEL_LZMA
+diff --git a/arch/x86/boot/compressed/Makefile b/arch/x86/boot/compressed/Makefile
+index 3ca4c19..561790b 100644
+--- a/arch/x86/boot/compressed/Makefile
++++ b/arch/x86/boot/compressed/Makefile
+@@ -4,7 +4,7 @@
+ # create a compressed vmlinux image from the original vmlinux
+ #
  
- 	return 1; /* Conflict by default */
- }
+-targets := vmlinux vmlinux.bin vmlinux.bin.gz vmlinux.bin.bz2 vmlinux.bin.lzma head_$(BITS).o misc.o piggy.o
++targets := vmlinux vmlinux.bin vmlinux.bin.lzo vmlinux.bin.gz vmlinux.bin.bz2 vmlinux.bin.lzma head_$(BITS).o misc.o piggy.o
+ 
+ KBUILD_CFLAGS := -m$(BITS) -D__KERNEL__ $(LINUX_INCLUDE) -O2
+ KBUILD_CFLAGS += -fno-strict-aliasing -fPIC
+@@ -45,6 +45,8 @@ $(obj)/vmlinux.bin.all: $(vmlinux.bin.all-y) FORCE
+ ifeq ($(CONFIG_X86_32),y)
+ 
+ ifdef CONFIG_RELOCATABLE
++$(obj)/vmlinux.bin.lzo: $(obj)/vmlinux.bin.all FORCE
++	$(call if_changed,lzop)
+ $(obj)/vmlinux.bin.gz: $(obj)/vmlinux.bin.all FORCE
+ 	$(call if_changed,gzip)
+ $(obj)/vmlinux.bin.bz2: $(obj)/vmlinux.bin.all FORCE
+@@ -52,6 +54,8 @@ $(obj)/vmlinux.bin.bz2: $(obj)/vmlinux.bin.all FORCE
+ $(obj)/vmlinux.bin.lzma: $(obj)/vmlinux.bin.all FORCE
+ 	$(call if_changed,lzma)
+ else
++$(obj)/vmlinux.bin.lzo: $(obj)/vmlinux.bin FORCE
++	$(call if_changed,lzop)
+ $(obj)/vmlinux.bin.gz: $(obj)/vmlinux.bin FORCE
+ 	$(call if_changed,gzip)
+ $(obj)/vmlinux.bin.bz2: $(obj)/vmlinux.bin FORCE
+@@ -63,6 +67,8 @@ LDFLAGS_piggy.o := -r --format binary --oformat elf32-i386 -T
+ 
+ else
+ 
++$(obj)/vmlinux.bin.lzo: $(obj)/vmlinux.bin FORCE
++	$(call if_changed,lzop)
+ $(obj)/vmlinux.bin.gz: $(obj)/vmlinux.bin FORCE
+ 	$(call if_changed,gzip)
+ $(obj)/vmlinux.bin.bz2: $(obj)/vmlinux.bin FORCE
+@@ -73,6 +79,7 @@ $(obj)/vmlinux.bin.lzma: $(obj)/vmlinux.bin FORCE
+ LDFLAGS_piggy.o := -r --format binary --oformat elf64-x86-64 -T
+ endif
+ 
++suffix_$(CONFIG_KERNEL_LZO)  = lzo
+ suffix_$(CONFIG_KERNEL_GZIP)  = gz
+ suffix_$(CONFIG_KERNEL_BZIP2) = bz2
+ suffix_$(CONFIG_KERNEL_LZMA)  = lzma
+diff --git a/arch/x86/boot/compressed/misc.c b/arch/x86/boot/compressed/misc.c
+index e45be73..a0fd406 100644
+--- a/arch/x86/boot/compressed/misc.c
++++ b/arch/x86/boot/compressed/misc.c
+@@ -150,6 +150,10 @@ static char *vidmem;
+ static int vidport;
+ static int lines, cols;
+ 
++#ifdef CONFIG_KERNEL_LZO
++#include "../../../../lib/decompress_unlzo.c"
++#endif
++
+ #ifdef CONFIG_KERNEL_GZIP
+ #include "../../../../lib/decompress_inflate.c"
+ #endif
+diff --git a/init/Kconfig b/init/Kconfig
+index 14c483d..c59e55d 100644
+--- a/init/Kconfig
++++ b/init/Kconfig
+@@ -101,6 +101,9 @@ config LOCALVERSION_AUTO
+ 
+ 	  which is done within the script "scripts/setlocalversion".)
+ 
++config HAVE_KERNEL_LZO
++	bool
++
+ config HAVE_KERNEL_GZIP
+ 	bool
+ 
+@@ -113,7 +116,7 @@ config HAVE_KERNEL_LZMA
+ choice
+ 	prompt "Kernel compression mode"
+ 	default KERNEL_GZIP
+-	depends on HAVE_KERNEL_GZIP || HAVE_KERNEL_BZIP2 || HAVE_KERNEL_LZMA
++	depends on HAVE_KERNEL_LZO || HAVE_KERNEL_GZIP || HAVE_KERNEL_BZIP2 || HAVE_KERNEL_LZMA
+ 	help
+ 	  The linux kernel is a kind of self-extracting executable.
+ 	  Several compression algorithms are available, which differ
+@@ -132,20 +135,29 @@ choice
+ 
+ 	  If in doubt, select 'gzip'
+ 
++config KERNEL_LZO
++	bool "LZO"
++	depends on HAVE_KERNEL_LZO
++	help
++	  Lempel Ziv Oberhumer compression. Its compression ratio is
++	  the poorest among the four choices; maximum compression yields
++	  roughly 7% larger kernels compared to gzip. However, decompression
++	  time is only 55 - 60% of that of gzip.
++
+ config KERNEL_GZIP
+ 	bool "Gzip"
+ 	depends on HAVE_KERNEL_GZIP
+ 	help
+ 	  The old and tried gzip compression. Its compression ratio is
+-	  the poorest among the 3 choices; however its speed (both
+-	  compression and decompression) is the fastest.
++	  worse than that of bzip2 and lzma; however compression and
++	  decompression are faster.
+ 
+ config KERNEL_BZIP2
+ 	bool "Bzip2"
+ 	depends on HAVE_KERNEL_BZIP2
+ 	help
+ 	  Its compression ratio and speed is intermediate.
+-	  Decompression speed is slowest among the three.  The kernel
++	  Decompression speed is slowest among the four.  The kernel
+ 	  size is about 10% smaller with bzip2, in comparison to gzip.
+ 	  Bzip2 uses a large amount of memory. For modern kernels you
+ 	  will need at least 8MB RAM or more for booting.
+@@ -155,9 +167,9 @@ config KERNEL_LZMA
+ 	depends on HAVE_KERNEL_LZMA
+ 	help
+ 	  The most recent compression algorithm.
+-	  Its ratio is best, decompression speed is between the other
+-	  two. Compression is slowest.	The kernel size is about 33%
+-	  smaller with LZMA in comparison to gzip.
++	  Its ratio is best, decompression speed is between gzip and bzip2
++	  Compression is slowest. The kernel size is about 33% smaller with
++	  LZMA compared to gzip.
+ 
+ endchoice
+ 
+diff --git a/scripts/Makefile.lib b/scripts/Makefile.lib
+index 9796195..f29037b 100644
+--- a/scripts/Makefile.lib
++++ b/scripts/Makefile.lib
+@@ -200,3 +200,11 @@ cmd_bzip2 = (bzip2 -9 < $< && $(size_append) $<) > $@ || (rm -f $@ ; false)
+ 
+ quiet_cmd_lzma = LZMA    $@
+ cmd_lzma = (lzma -9 -c $< && $(size_append) $<) >$@ || (rm -f $@ ; false)
++
++# Lzo
++# ---------------------------------------------------------------------------
++
++quiet_cmd_lzop = LZOP    $@
++cmd_lzop = (lzop -9 -c $< && $(size_append) $<) >$@ || (rm -f $@ ; false)
++
++
 -- 
-1.5.4.1
-
+1.5.6.3
 
 
