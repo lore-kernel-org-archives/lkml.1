@@ -1,159 +1,74 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753833AbZDBMmW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760115AbZDBMnR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753833AbZDBMmW (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 2 Apr 2009 08:42:22 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756661AbZDBMmL
+	id S1760115AbZDBMnR (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 2 Apr 2009 08:43:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756473AbZDBMm4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 2 Apr 2009 08:42:11 -0400
-Received: from mail-ew0-f165.google.com ([209.85.219.165]:35237 "EHLO
-	mail-ew0-f165.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754572AbZDBMmJ (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 2 Apr 2009 08:42:09 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
-         :cc:content-type:content-transfer-encoding;
-        b=fI+r76BiJC/MvZ1RD7vQQVMriXspK9dnErP6mr29/yJQgrldRL8W/hWCS+1uF0U8r1
-         NzG7JI0Wd1lmChu4IViBJZrj6ulhxMd1CPbc5K3YN/VUn04fOWdzE+WU2VpglVcVsVmf
-         NfApSHehmEmQILVs5WyLglGwFVTEq757p85lM=
+	Thu, 2 Apr 2009 08:42:56 -0400
+Received: from mx2.redhat.com ([66.187.237.31]:48445 "EHLO mx2.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754223AbZDBMmz (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 2 Apr 2009 08:42:55 -0400
+Message-ID: <49D4B2C0.5060906@redhat.com>
+Date: Thu, 02 Apr 2009 15:42:40 +0300
+From: Avi Kivity <avi@redhat.com>
+User-Agent: Thunderbird 2.0.0.21 (X11/20090320)
 MIME-Version: 1.0
-In-Reply-To: <49D45E42.3050502@suse.de>
-References: <49D45974.2060202@suse.de> <20090402063235.GB24846@Krystal>
-	 <49D45E42.3050502@suse.de>
-Date: Thu, 2 Apr 2009 21:42:05 +0900
-Message-ID: <91e0b5050904020542l6b38d7a6hab6d7ef8b4593425@mail.gmail.com>
-Subject: Re: [ltt-dev] [PATCH] nfs: add support for splice writes
-From: Masahiro Tamori <masahiro.tamori@gmail.com>
-To: Suresh Jayaraman <sjayaraman@suse.de>,
-       Mathieu Desnoyers <compudj@krystal.dyndns.org>
-Cc: linux-nfs@vger.kernel.org, ltt-dev@lists.casi.polymtl.ca,
-       Trond.Myklebust@netapp.com, LKML <linux-kernel@vger.kernel.org>,
-       linux-embedded@vger.kernel.org
-Content-Type: text/plain; charset=ISO-8859-1
+To: Gregory Haskins <ghaskins@novell.com>
+CC: Anthony Liguori <anthony@codemonkey.ws>, Andi Kleen <andi@firstfloor.org>,
+       linux-kernel@vger.kernel.org, agraf@suse.de, pmullaney@novell.com,
+       pmorreale@novell.com, rusty@rustcorp.com.au, netdev@vger.kernel.org,
+       kvm@vger.kernel.org
+Subject: Re: [RFC PATCH 00/17] virtual-bus
+References: <20090331184057.28333.77287.stgit@dev.haskins.net> <87ab71monw.fsf@basil.nowhere.org> <49D35825.3050001@novell.com> <20090401132340.GT11935@one.firstfloor.org> <49D37805.1060301@novell.com> <20090401170103.GU11935@one.firstfloor.org> <49D3B64F.6070703@codemonkey.ws> <49D3D7EE.4080202@novell.com> <49D46089.5040204@redhat.com> <49D497A1.4090900@novell.com> <49D4A4EB.8020105@redhat.com> <49D4AE0C.3000604@novell.com>
+In-Reply-To: <49D4AE0C.3000604@novell.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hello Suresh and Mathieu,
-
-2009/4/2 Suresh Jayaraman <sjayaraman@suse.de>:
-> Mathieu Desnoyers wrote:
->> * Suresh Jayaraman (sjayaraman@suse.de) wrote:
->>> This patch attempts to add splice writes support. In essence, it just
->>> calls generic_file_splice_write() after doing a little sanity check.
->>> This would allow LTTng users that are using NFS to store trace data.
->>> There could be more applications that could be benefitted too.
->>>
->>> I have tested this using the Jens' test program and have found no
->>> real issues. The test program is inlined below:
->>>
+Gregory Haskins wrote:
+> Avi Kivity wrote:
+>   
+>> Gregory Haskins wrote:
 >>
->> There is just a small checkpatch nit that I'll fix directly in place in
->> the LTTng tree.
+>>  
 >>
->> WARNING: %Ld/%Lu are not-standard C, use %lld/%llu
->> #93: FILE: fs/nfs/file.c:564:
->> +   dprintk("NFS splice_write(%s/%s, %lu@%Lu)\n",
->>
->> total: 0 errors, 1 warnings, 42 lines checked
->>
->
-> Yes, I noticed it. There are quite a few places in nfs code where we
-> happened to use that (that doesn't imply that it shouldn't be fixed), so
-> I thought it's OK.
->
->> That's great ! I'll pull it in the LTTng tree so my users can try it.
->> They currently cannot write LTTng traces to NFS mounts anyway.
->
-> Yes, please report the test results. Would appreciate it very much.
->
->
-> Thanks,
+>>     
+>>>> virtio is already non-kvm-specific (lguest uses it) and
+>>>> non-pci-specific (s390 uses it).
+>>>>     
+>>>>         
+>>> Ok, then to be more specific, I need it to be more generic than it
+>>> already is.  For instance, I need it to be able to integrate with
+>>> shm_signals.  
+>>>       
+>> Why?
+>>     
+> Well, shm_signals is what I designed to be the event mechanism for vbus
+> devices.  One of the design criteria of shm_signal is that it should
+> support a variety of environments, such as kvm, but also something like
+> userspace apps.  So I cannot make assumptions about things like "pci
+> interrupts", etc.
+>   
 
-Thank you for creating a patch !!
+virtio doesn't make these assumptions either.  The only difference I see 
+is that you separate notification from the ring structure.
 
-I tested it, and it works fine.
+> By your own words, the exit to userspace is "prohibitively expensive",
+> so that is either true or its not.  If its 2 microseconds, show me.
 
-My environment is following,
-LTTV 0.12.10
-LTTng 0.100
-LTT Control 0.65
-Kernles 2.6.29
+In user/test/x86/vmexit.c, change 'cpuid' to 'out %al, $0'; drop the 
+printf() in kvmctl.c's test_outb().
 
-LTTng version is old now, but the test is passed on ARM11 target.
+I get something closer to 4 microseconds, but that's on a two year old 
+machine;  It will be around two on Nehalems.
 
-Furthermore, I run the splice test and the test is passed too.
-The test code is copied from
-http://kzk9.net/blog/2007/05/splice2.html
-(Japanese page)
+My 'prohibitively expensive' is true only if you exit every packet.
 
-Thanks all people who commented this issue.
 
-Best regards,
-Masahiro Tamori
 
->
->>>
->>> diff --git a/fs/nfs/file.c b/fs/nfs/file.c
->>> index 90f292b..13d6a00 100644
->>> --- a/fs/nfs/file.c
->>> +++ b/fs/nfs/file.c
->>> @@ -47,6 +47,9 @@ static ssize_t nfs_file_splice_read(struct file *filp, loff_t *ppos,
->>>                   size_t count, unsigned int flags);
->>> static ssize_t nfs_file_read(struct kiocb *, const struct iovec *iov,
->>>               unsigned long nr_segs, loff_t pos);
->>> +static ssize_t nfs_file_splice_write(struct pipe_inode_info *pipe,
->>> +                  struct file *filp, loff_t *ppos,
->>> +                  size_t count, unsigned int flags);
->>> static ssize_t nfs_file_write(struct kiocb *, const struct iovec *iov,
->>>               unsigned long nr_segs, loff_t pos);
->>> static int nfs_file_flush(struct file *, fl_owner_t id);
->>> @@ -76,6 +79,7 @@ const struct file_operations nfs_file_operations = {
->>>   .lock      = nfs_lock,
->>>   .flock     = nfs_flock,
->>>   .splice_read  = nfs_file_splice_read,
->>> +  .splice_write  = nfs_file_splice_write,
->>>   .check_flags  = nfs_check_flags,
->>>   .setlease    = nfs_setlease,
->>> };
->>> @@ -550,6 +554,26 @@ out_swapfile:
->>>   goto out;
->>> }
->>>
->>> +static ssize_t nfs_file_splice_write(struct pipe_inode_info *pipe,
->>> +                 struct file *filp, loff_t *ppos,
->>> +                 size_t count, unsigned int flags)
->>> +{
->>> +  struct dentry *dentry = filp->f_path.dentry;
->>> +  struct inode *inode = dentry->d_inode;
->>> +
->>> +  dprintk("NFS splice_write(%s/%s, %lu@%Lu)\n",
->>> +      dentry->d_parent->d_name.name, dentry->d_name.name,
->>> +      (unsigned long) count, (unsigned long long) *ppos);
->>> +
->>> +  if (IS_SWAPFILE(inode)) {
->>> +      printk(KERN_INFO "NFS: attempt to write to active swap"
->>> +          "file!\n");
->>> +      return -EBUSY;
->>> +  }
->>> +
->>> +  return generic_file_splice_write(pipe, filp, ppos, count, flags);
->>> +}
->>> +
->>> static int do_getlk(struct file *filp, int cmd, struct file_lock *fl)
->>> {
->>>   struct inode *inode = filp->f_mapping->host;
->>>
->>
->
->
-> --
-> Suresh Jayaraman
->
-> _______________________________________________
-> ltt-dev mailing list
-> ltt-dev@lists.casi.polymtl.ca
-> http://lists.casi.polymtl.ca/cgi-bin/mailman/listinfo/ltt-dev
->
+-- 
+error compiling committee.c: too many arguments to function
+
