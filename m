@@ -1,53 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754452AbZDBMNn@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757171AbZDBMN5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754452AbZDBMNn (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 2 Apr 2009 08:13:43 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752585AbZDBMN3
+	id S1757171AbZDBMN5 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 2 Apr 2009 08:13:57 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755730AbZDBMNh
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 2 Apr 2009 08:13:29 -0400
-Received: from ozlabs.org ([203.10.76.45]:38902 "EHLO ozlabs.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751748AbZDBMN2 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 2 Apr 2009 08:13:28 -0400
-From: Rusty Russell <rusty@rustcorp.com.au>
-To: Gregory Haskins <ghaskins@novell.com>
-Subject: Re: [RFC PATCH 00/17] virtual-bus
-Date: Thu, 2 Apr 2009 22:43:19 +1030
-User-Agent: KMail/1.11.1 (Linux/2.6.27-11-generic; KDE/4.2.2; i686; ; )
-Cc: Avi Kivity <avi@redhat.com>, Herbert Xu <herbert@gondor.apana.org.au>,
-       anthony@codemonkey.ws, andi@firstfloor.org,
-       linux-kernel@vger.kernel.org, agraf@suse.de, pmullaney@novell.com,
-       pmorreale@novell.com, netdev@vger.kernel.org, kvm@vger.kernel.org
-References: <20090402085253.GA29932@gondor.apana.org.au> <49D487A6.407@redhat.com> <49D49C1F.6030306@novell.com>
-In-Reply-To: <49D49C1F.6030306@novell.com>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-15"
+	Thu, 2 Apr 2009 08:13:37 -0400
+Received: from mu-out-0910.google.com ([209.85.134.187]:5860 "EHLO
+	mu-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755254AbZDBMNf (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 2 Apr 2009 08:13:35 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=subject:from:to:cc:in-reply-to:references:content-type:date
+         :message-id:mime-version:x-mailer:content-transfer-encoding;
+        b=ITAS8CeHlcgY4/2Mt/yVDFG7IWeKy0lJRgZuMgvvHEmfQs08AcPuJX5Js43qHT0aFP
+         lnvfpO4hLBFdMulgQPdHhbP/cTFr1b7s98T3uYOZ8sm7aBAalyju1+MSRfRbnExLOjvU
+         tEjjpLPGtSNxUBDQm5Ss8NqoJ5usO3AW/YD94=
+Subject: Re: [PATCH 1/2] lib: add fast lzo decompressor
+From: Andreas Robinson <andr345@gmail.com>
+To: "H. Peter Anvin" <hpa@zytor.com>
+Cc: Alain Knaff <alain@knaff.lu>, linux-kernel@vger.kernel.org,
+       Arjan van de Ven <arjan@linux.intel.com>
+In-Reply-To: <49D3EDEA.4090803@zytor.com>
+References: <1238593252-3435-1-git-send-email-andr345@gmail.com>
+	 <1238593252-3435-2-git-send-email-andr345@gmail.com>
+	 <49D3927A.2050406@zytor.com> <1238613730.10514.35.camel@andreas-desktop>
+	 <49D3D4C0.1080506@zytor.com> <1238624827.15230.58.camel@andreas-desktop>
+	 <49D3EDEA.4090803@zytor.com>
+Content-Type: text/plain
+Date: Thu, 02 Apr 2009 14:13:26 +0200
+Message-Id: <1238674406.13249.24.camel@andreas-desktop>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.24.3 
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200904022243.21088.rusty@rustcorp.com.au>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thursday 02 April 2009 21:36:07 Gregory Haskins wrote:
-> You do not need to know when the packet is copied (which I currently
-> do).  You only need it for zero-copy (of which I would like to support,
-> but as I understand it there are problems with the reliability of proper
-> callback (i.e. skb->destructor).
+On Wed, 2009-04-01 at 15:42 -0700, H. Peter Anvin wrote:
+> I think if the cost is 40 ms once during boot on a slow platform, it's 
+> worth unifying the two codebases.  I am *not* saying that I don't think 
+> boot performance matters -- far be from it -- but I think this is 
+> probably worth the reliability and maintainability advantages of having 
+> a single piece of code if at all possible.
+> 
+> Of course, if you can figure out how to avoid that and still have the 
+> code clean, then that's another matter.
 
-But if you have a UP guest, there will *never* be another packet in the queue
-at this point, since it wasn't running.
+Alrighty. I will merge the two functions and if that turns out ugly, go
+with the safe one, and submit a new patchset. I'll be right back. :)
 
-As Avi said, you can do the processing in another thread and go back to the
-guest; lguest pre-virtio did a hacky "weak" wakeup to ensure the guest ran
-again before the thread did for exactly this kind of reason.
+Cheers,
+Andreas
 
-While Avi's point about a "powerful enough userspace API" is probably valid,
-I don't think it's going to happen.  It's almost certainly less code to put a
-virtio_net server in the kernel, than it is to create such a powerful
-interface (see vringfd & tap).  And that interface would have one user in
-practice.
-
-So, let's roll out a kernel virtio_net server.  Anyone?
-Rusty.
