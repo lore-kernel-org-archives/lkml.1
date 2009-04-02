@@ -1,160 +1,81 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S935382AbZDBGcx@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S935110AbZDBGd0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S935382AbZDBGcx (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 2 Apr 2009 02:32:53 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755296AbZDBGcl
+	id S935110AbZDBGd0 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 2 Apr 2009 02:33:26 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S935191AbZDBGdI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 2 Apr 2009 02:32:41 -0400
-Received: from tomts43.bellnexxia.net ([209.226.175.110]:57836 "EHLO
-	tomts43-srv.bellnexxia.net" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751780AbZDBGcj (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 2 Apr 2009 02:32:39 -0400
-X-IronPort-Anti-Spam-Filtered: true
-X-IronPort-Anti-Spam-Result: AmEFAEz000lMQW1W/2dsb2JhbACBUs0Wg30G
-Date: Thu, 2 Apr 2009 02:32:35 -0400
-From: Mathieu Desnoyers <compudj@krystal.dyndns.org>
-To: Suresh Jayaraman <sjayaraman@suse.de>
-Cc: Trond.Myklebust@netapp.com, linux-nfs@vger.kernel.org,
-       linux-embedded@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>,
-       ltt-dev@lists.casi.polymtl.ca
-Subject: Re: [PATCH] nfs: add support for splice writes
-Message-ID: <20090402063235.GB24846@Krystal>
-References: <49D45974.2060202@suse.de>
+	Thu, 2 Apr 2009 02:33:08 -0400
+Received: from hera.kernel.org ([140.211.167.34]:57830 "EHLO hera.kernel.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1755296AbZDBGdF (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 2 Apr 2009 02:33:05 -0400
+Subject: [PATCH 0/2][git-pull scsi-misc] SCSI firmware patches
+From: Jaswinder Singh Rajput <jaswinder@kernel.org>
+To: James Bottomley <James.Bottomley@HansenPartnership.com>,
+       scsi <linux-scsi@vger.kernel.org>, LKML <linux-kernel@vger.kernel.org>,
+       Jes Sorensen <jes@sgi.com>, Matthew Wilcox <matthew@wil.cx>,
+       David Woodhouse <dwmw2@infradead.org>
+Content-Type: text/plain
+Date: Thu, 02 Apr 2009 12:02:43 +0530
+Message-Id: <1238653963.4940.6.camel@ht.satnam>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+X-Mailer: Evolution 2.24.5 (2.24.5-1.fc10) 
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-In-Reply-To: <49D45974.2060202@suse.de>
-X-Editor: vi
-X-Info: http://krystal.dyndns.org:8080
-X-Operating-System: Linux/2.6.21.3-grsec (i686)
-X-Uptime: 02:31:55 up 33 days,  2:58,  1 user,  load average: 0.38, 0.42,
-	0.35
-User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-* Suresh Jayaraman (sjayaraman@suse.de) wrote:
-> This patch attempts to add splice writes support. In essence, it just
-> calls generic_file_splice_write() after doing a little sanity check.
-> This would allow LTTng users that are using NFS to store trace data.
-> There could be more applications that could be benefitted too.
-> 
-> I have tested this using the Jens' test program and have found no
-> real issues. The test program is inlined below:
-> 
+Hello James,
 
-There is just a small checkpatch nit that I'll fix directly in place in
-the LTTng tree.
+These SCSI firmware patches are from linux-next in working condition
+with ACKs:
+qla1280: use request_firmware:
+http://git.kernel.org/?p=linux/kernel/git/sfr/linux-next.git;a=commit;h=13bd5cd718e046e8bb9c1b43af4c57dbfb78d6e7
 
-WARNING: %Ld/%Lu are not-standard C, use %lld/%llu
-#93: FILE: fs/nfs/file.c:564:
-+	dprintk("NFS splice_write(%s/%s, %lu@%Lu)\n",
+advansys: use request_firmware:
+http://git.kernel.org/?p=linux/kernel/git/sfr/linux-next.git;a=commit;h=6e8dcf26cc2fe0672f01fe5b97374fc57ecd7f72
 
-total: 0 errors, 1 warnings, 42 lines checked
+No code is changed only following comments are changed:
+1. My email address
+2. License of advansys as suggested by Matthew Wilcox.
 
-Mathieu
+The following changes since commit becfd7588ce32c4a94ef8ecebafded161c72dcce:
+  Jean Delvare (1):
+        [SCSI] libiscsi: fix iscsi pool error path
 
-> /*
->  * splice-out.c: Splice stdout to file
->  */
-> #include <stdio.h>
-> #include <stdlib.h>
-> #include <unistd.h>
-> #include <fcntl.h>
-> 
-> #define SPLICE_SIZE (64*1024)
-> 
-> int main(int argc, char *argv[])
-> {
->         int fd;
-> 
->         if (argc < 2) {
->                 printf("%s: outfile\n", argv[0]);
->                 return 1;
->         }
-> 
->         fd = open(argv[1], O_WRONLY | O_CREAT | O_TRUNC, 0644);
->         if (fd < 0) {
->                 perror("open");
->                 return 1;
->         }
-> 
->         do {
->                 int ret = splice(STDIN_FILENO, NULL, fd, NULL, SPLICE_SIZE, 0);
-> 
->                 if (ret < 0) {
->                         perror("splice");
->                         break;
->                 } else if (ret < SPLICE_SIZE)
->                         break;
->         } while (1);
-> 
->         close(fd);
->         return 0;
-> }
-> 
-> Compile with -D _GNU_SOURCE and do something like:
-> 	echo "some stuff" | ./splice-out <outfile>
-> 
-> Signed-off-by: Suresh Jayaraman <sjayaraman@suse.de>
-> ---
->  fs/nfs/file.c |   24 ++++++++++++++++++++++++
->  1 files changed, 24 insertions(+), 0 deletions(-)
-> 
-> diff --git a/fs/nfs/file.c b/fs/nfs/file.c
-> index 90f292b..13d6a00 100644
-> --- a/fs/nfs/file.c
-> +++ b/fs/nfs/file.c
-> @@ -47,6 +47,9 @@ static ssize_t nfs_file_splice_read(struct file *filp, loff_t *ppos,
->  					size_t count, unsigned int flags);
->  static ssize_t nfs_file_read(struct kiocb *, const struct iovec *iov,
->  				unsigned long nr_segs, loff_t pos);
-> +static ssize_t nfs_file_splice_write(struct pipe_inode_info *pipe,
-> +					struct file *filp, loff_t *ppos,
-> +					size_t count, unsigned int flags);
->  static ssize_t nfs_file_write(struct kiocb *, const struct iovec *iov,
->  				unsigned long nr_segs, loff_t pos);
->  static int  nfs_file_flush(struct file *, fl_owner_t id);
-> @@ -76,6 +79,7 @@ const struct file_operations nfs_file_operations = {
->  	.lock		= nfs_lock,
->  	.flock		= nfs_flock,
->  	.splice_read	= nfs_file_splice_read,
-> +	.splice_write	= nfs_file_splice_write,
->  	.check_flags	= nfs_check_flags,
->  	.setlease	= nfs_setlease,
->  };
-> @@ -550,6 +554,26 @@ out_swapfile:
->  	goto out;
->  }
->  
-> +static ssize_t nfs_file_splice_write(struct pipe_inode_info *pipe,
-> +				     struct file *filp, loff_t *ppos,
-> +				     size_t count, unsigned int flags)
-> +{
-> +	struct dentry *dentry = filp->f_path.dentry;
-> +	struct inode *inode = dentry->d_inode;
-> +
-> +	dprintk("NFS splice_write(%s/%s, %lu@%Lu)\n",
-> +		dentry->d_parent->d_name.name, dentry->d_name.name,
-> +		(unsigned long) count, (unsigned long long) *ppos);
-> +
-> +	if (IS_SWAPFILE(inode)) {
-> +		printk(KERN_INFO "NFS: attempt to write to active swap"
-> +		       "file!\n");
-> +		return -EBUSY;
-> +	}
-> +
-> +	return generic_file_splice_write(pipe, filp, ppos, count, flags);
-> +}
-> +
->  static int do_getlk(struct file *filp, int cmd, struct file_lock *fl)
->  {
->  	struct inode *inode = filp->f_mapping->host;
-> 
+are available in the git repository at:
 
--- 
-Mathieu Desnoyers
-OpenPGP key fingerprint: 8CD5 52C3 8E3C 4140 715F  BA06 3F25 A8FE 3BAE 9A68
+  git://git.kernel.org/pub/scm/linux/kernel/git/jaswinder/scsi-misc-2.6.git master
+
+Jaswinder Singh Rajput (2):
+      qla1280: use request_firmware
+      advansys: use request_firmware
+
+ drivers/scsi/advansys.c            | 1731 ++---------------------------
+ drivers/scsi/ql1040_fw.h           | 2130 ------------------------------------
+ drivers/scsi/ql12160_fw.h          | 1811 ------------------------------
+ drivers/scsi/ql1280_fw.h           | 2048 ----------------------------------
+ drivers/scsi/qla1280.c             |  114 ++-
+ drivers/scsi/qla1280.h             |    6 +
+ firmware/Makefile                  |    4 +
+ firmware/WHENCE                    |   26 +
+ firmware/advansys/3550.bin.ihex    |  317 ++++++
+ firmware/advansys/38C0800.bin.ihex |  336 ++++++
+ firmware/advansys/38C1600.bin.ihex |  398 +++++++
+ firmware/advansys/mcode.bin.ihex   |  147 +++
+ firmware/qlogic/1040.bin.ihex      | 2111 +++++++++++++++++++++++++++++++++++
+ firmware/qlogic/12160.bin.ihex     | 1771 ++++++++++++++++++++++++++++++
+ firmware/qlogic/1280.bin.ihex      | 2008 +++++++++++++++++++++++++++++++++
+ 15 files changed, 7299 insertions(+), 7659 deletions(-)
+ delete mode 100644 drivers/scsi/ql1040_fw.h
+ delete mode 100644 drivers/scsi/ql12160_fw.h
+ delete mode 100644 drivers/scsi/ql1280_fw.h
+ create mode 100644 firmware/advansys/3550.bin.ihex
+ create mode 100644 firmware/advansys/38C0800.bin.ihex
+ create mode 100644 firmware/advansys/38C1600.bin.ihex
+ create mode 100644 firmware/advansys/mcode.bin.ihex
+ create mode 100644 firmware/qlogic/1040.bin.ihex
+ create mode 100644 firmware/qlogic/12160.bin.ihex
+ create mode 100644 firmware/qlogic/1280.bin.ihex
+
+
