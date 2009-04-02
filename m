@@ -1,69 +1,228 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761350AbZDBWQ5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764354AbZDBWSH@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761350AbZDBWQ5 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 2 Apr 2009 18:16:57 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753172AbZDBWQt
+	id S1764354AbZDBWSH (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 2 Apr 2009 18:18:07 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761619AbZDBWRz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 2 Apr 2009 18:16:49 -0400
-Received: from smtp.cs.aau.dk ([130.225.194.6]:53941 "EHLO smtp.cs.aau.dk"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750813AbZDBWQs (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 2 Apr 2009 18:16:48 -0400
-X-Greylist: delayed 965 seconds by postgrey-1.27 at vger.kernel.org; Thu, 02 Apr 2009 18:16:48 EDT
-Subject: Re: [Lguest] [PATCH 4/5] lguest: use KVM hypercalls
-From: Simon Holm =?ISO-8859-1?Q?Th=F8gersen?= <odie@cs.aau.dk>
-To: Rusty Russell <rusty@rustcorp.com.au>
-Cc: lguest@ozlabs.org, virtualization@lists.osdl.org,
-       Matias Zabaljauregui <zabaljaureguiatgmail.com@ozlabs.org>,
-       Ingo Molnar <mingo@redhat.com>, linux-kernel@vger.kernel.org
-In-Reply-To: <200903271022.38244.rusty@rustcorp.com.au>
-References: <200903271022.38244.rusty@rustcorp.com.au>
-Content-Type: text/plain; charset="UTF-8"
-Date: Thu, 02 Apr 2009 23:55:24 +0200
-Message-Id: <1238709324.5823.8.camel@odie.local>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.24.4 
-Content-Transfer-Encoding: 8bit
+	Thu, 2 Apr 2009 18:17:55 -0400
+Received: from g5t0008.atlanta.hp.com ([15.192.0.45]:9161 "EHLO
+	g5t0008.atlanta.hp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1760583AbZDBWRx (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 2 Apr 2009 18:17:53 -0400
+Subject: [PATCH] Add support for turning PCIe ECRC on or off
+To: linux-pci@vger.kernel.org
+From: Andrew Patterson <andrew.patterson@hp.com>
+Cc: linux-kernel@vger.kernel.org, jbarnes@virtuousgeek.org
+Date: Thu, 02 Apr 2009 16:17:51 -0600
+Message-ID: <20090402221751.11757.36392.stgit@bob.kio>
+User-Agent: StGit/0.14.3.347.g594a
+MIME-Version: 1.0
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-fre, 27 03 2009 kl. 10:22 +1030, skrev Rusty Russell:
-> From: Matias Zabaljauregui <zabaljauregui@gmail.com>
-> 
-> Impact: cleanup
-> 
-> This patch allow us to use KVM hypercalls
+Add support for turning PCIe ECRC on or off
 
-Something has broken in relation to this change. I'm not sure it is this
-change itself or one following, but I get the following error when using
-lguest:
+Adds support for PCI Express transaction layer end-to-end CRC checking
+(ECRC).  This patch will enable/disable ECRC checking by setting/clearing
+the ECRC Check Enable and/or ECRC Generation Enable bits for devices that
+support ECRC.
 
-lguest: unhandled trap 6 at 0x418726 (0x0)
+The ECRC setting is controlled by the "pcie_ecrc=" command-line option. If
+this option is not set or is set to 'default", the enable and generation
+bits are left in whatever state that firmware/BIOS sets them to.  The
+"off" setting turns them off, and the "on" option turns them on (if the
+device supports it).
 
-> +static bool is_hypercall(struct lg_cpu *cpu)
-> +{
-> +	u8 insn[3];
-> +
-> +	/* This must be the Guest kernel trying to do something.
-> +	 * The bottom two bits of the CS segment register are the privilege
-> +	 * level. */
-> +	if ((cpu->regs->cs & 3) != GUEST_PL)
-> +		return false;
-> +
-> +	/* Is it a vmcall? */
-> +	__lgread(cpu, insn, guest_pa(cpu, cpu->regs->eip), sizeof(insn));
+Signed-off-by: Andrew Patterson <andrew.patterson@hp.com>
+---
 
-I've put a printk for insn here that shows up twice. The first time insn
-holds the values below, and the second time it holds the values that are
-patched in by rewrite_hypercall.
-
-> +	return insn[0] == 0x0f && insn[1] == 0x01 && insn[2] == 0xc1;
-> +}
-
-I'll investigate further tomorrow, unless someone is already on top of
-this. My kernel is 2.6.29-07100-g833bb30 btw.
-
-
-Simon Holm Thøgersen
+diff --git a/Documentation/kernel-parameters.txt b/Documentation/kernel-parameters.txt
+index 1754fed..c346b55 100644
+--- a/Documentation/kernel-parameters.txt
++++ b/Documentation/kernel-parameters.txt
+@@ -1776,6 +1776,12 @@ and is between 256 and 4096 characters. It is defined in the file
+ 		force	Enable ASPM even on devices that claim not to support it.
+ 			WARNING: Forcing ASPM on may cause system lockups.
+ 
++	pcie_ecrc=	[PCI] Enable/disable PCIe ECRC (transaction layer
++			end-to-end CRC checking).
++			pcie_ecrc=default: Use BIOS/firmware settings.
++			pcie_ecrc=off: Turn ECRC off
++			pcie_ecrc=on: Turn ECRC on.
++
+ 	pcmv=		[HW,PCMCIA] BadgePAD 4
+ 
+ 	pd.		[PARIDE]
+diff --git a/drivers/pci/pcie/Kconfig b/drivers/pci/pcie/Kconfig
+index 5a0c6ad..d90f831 100644
+--- a/drivers/pci/pcie/Kconfig
++++ b/drivers/pci/pcie/Kconfig
+@@ -46,3 +46,15 @@ config PCIEASPM_DEBUG
+ 	help
+ 	  This enables PCI Express ASPM debug support. It will add per-device
+ 	  interface to control ASPM.
++
++#
++# PCI Express ECRC
++#
++config PCIEECRC
++	bool "PCI Express ECRC support"
++	depends on PCI
++	help
++	  Enables PCI Express ECRC (transaction layer end-to-end CRC
++	  checking)
++
++	  When in doubt, say N.
+diff --git a/drivers/pci/pcie/Makefile b/drivers/pci/pcie/Makefile
+index 11f6bb1..acef212 100644
+--- a/drivers/pci/pcie/Makefile
++++ b/drivers/pci/pcie/Makefile
+@@ -5,6 +5,9 @@
+ # Build PCI Express ASPM if needed
+ obj-$(CONFIG_PCIEASPM)		+= aspm.o
+ 
++# Build PCI Express ECRC if needed
++obj-$(CONFIG_PCIEECRC)		+= ecrc.o
++
+ pcieportdrv-y			:= portdrv_core.o portdrv_pci.o portdrv_bus.o
+ 
+ obj-$(CONFIG_PCIEPORTBUS)	+= pcieportdrv.o
+diff --git a/drivers/pci/pcie/ecrc.c b/drivers/pci/pcie/ecrc.c
+new file mode 100644
+index 0000000..eeb93df
+--- /dev/null
++++ b/drivers/pci/pcie/ecrc.c
+@@ -0,0 +1,94 @@
++/*
++ *    Enables/disables PCIe ECRC checking.
++ *
++ *    (C) Copyright 20009 Hewlett-Packard Development Company, L.P.
++ *    Andrew Patterson <andrew.patterson@hp.com>
++ *
++ *    This program is free software; you can redistribute it and/or modify
++ *    it under the terms of the GNU General Public License as published by
++ *    the Free Software Foundation; version 2 of the License.
++ *
++ *    This program is distributed in the hope that it will be useful,
++ *    but WITHOUT ANY WARRANTY; without even the implied warranty of
++ *    MERCHANTABILITY OR FITNESS FOR A PARTICULAR PURPOSE. See the GNU
++ *    General Public License for more details.
++ *
++ *    You should have received a copy of the GNU General Public License
++ *    along with this program; if not, write to the Free Software
++ *    Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA
++ *    02111-1307, USA.
++ *
++ */
++
++
++#include <linux/kernel.h>
++#include <linux/module.h>
++#include <linux/moduleparam.h>
++#include <linux/pci.h>
++#include <linux/pci_regs.h>
++#include <linux/errno.h>
++#include "../pci.h"
++
++#define ECRC_POLICY_DEFAULT 0		/* ECRC set by BIOS */
++#define ECRC_POLICY_OFF     1		/* ECRC off */
++#define ECRC_POLICY_ON      2		/* ECRC on */
++
++static int ecrc_policy = ECRC_POLICY_DEFAULT;
++
++static const char *ecrc_policy_str[] = {
++	[ECRC_POLICY_DEFAULT] = "default",
++	[ECRC_POLICY_OFF] = "off",
++	[ECRC_POLICY_ON] = "on"
++};
++
++/**
++ * pcie_set_ercr_checking - enable/disable PCIe ECRC checking
++ * @dev: the PCI device
++ *
++ * Returns 0 on success, or negative on failure.
++ */
++int pcie_set_ecrc_checking(struct pci_dev *dev)
++{
++	int pos;
++	u32 reg32;
++
++	if (!dev->is_pcie)
++		return -ENODEV;
++
++	/* Use firmware/BIOS setting if default */
++	if (ecrc_policy == ECRC_POLICY_DEFAULT)
++		return 0;
++
++	pos = pci_find_ext_capability(dev, PCI_EXT_CAP_ID_ERR);
++	if (!pos)
++		return -ENODEV;
++
++	pci_read_config_dword(dev, pos + PCI_ERR_CAP, &reg32);
++	if (ecrc_policy == ECRC_POLICY_OFF) {
++		reg32 &= ~(PCI_ERR_CAP_ECRC_GENE | PCI_ERR_CAP_ECRC_CHKE);
++	} else if (ecrc_policy == ECRC_POLICY_ON) {
++		if (reg32 & PCI_ERR_CAP_ECRC_GENC)
++			reg32 |= PCI_ERR_CAP_ECRC_GENE;
++		if (reg32 & PCI_ERR_CAP_ECRC_CHKC)
++			reg32 |= PCI_ERR_CAP_ECRC_CHKE;
++	}
++	pci_write_config_dword(dev, pos + PCI_ERR_CAP, reg32);
++	return 0;
++}
++EXPORT_SYMBOL_GPL(pcie_set_ecrc_checking);
++
++static int __init pcie_ecrc_get_policy(char *str)
++{
++	int i;
++
++	for (i = 0; i < ARRAY_SIZE(ecrc_policy_str); i++)
++		if (!strncmp(str, ecrc_policy_str[i],
++			     strlen(ecrc_policy_str[i])))
++			break;
++	if (i >= ARRAY_SIZE(ecrc_policy_str))
++		return 0;
++
++	ecrc_policy = i;
++	return 1;
++}
++__setup("pcie_ecrc=", pcie_ecrc_get_policy);
+diff --git a/drivers/pci/probe.c b/drivers/pci/probe.c
+index e2f3dd0..e2b0ab5 100644
+--- a/drivers/pci/probe.c
++++ b/drivers/pci/probe.c
+@@ -984,6 +984,9 @@ static void pci_init_capabilities(struct pci_dev *dev)
+ 
+ 	/* Single Root I/O Virtualization */
+ 	pci_iov_init(dev);
++
++	/* PCIe ECRC */
++	pcie_set_ecrc_checking(dev);
+ }
+ 
+ void pci_device_add(struct pci_dev *dev, struct pci_bus *bus)
+diff --git a/include/linux/pci.h b/include/linux/pci.h
+index 507552d..080afd8 100644
+--- a/include/linux/pci.h
++++ b/include/linux/pci.h
+@@ -879,6 +879,15 @@ static inline int pcie_aspm_enabled(void)
+ extern int pcie_aspm_enabled(void);
+ #endif
+ 
++#ifndef CONFIG_PCIEECRC
++static inline int pcie_set_ecrc_checking(struct pci_dev *dev)
++{
++	return 0;
++}
++#else
++extern int pcie_set_ecrc_checking(struct pci_dev *dev);
++#endif
++
+ #define pci_enable_msi(pdev)	pci_enable_msi_block(pdev, 1)
+ 
+ #ifdef CONFIG_HT_IRQ
 
