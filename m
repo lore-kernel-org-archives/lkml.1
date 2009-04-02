@@ -1,62 +1,120 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932634AbZDBGlv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764978AbZDBGmd@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932634AbZDBGlv (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 2 Apr 2009 02:41:51 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752155AbZDBGlm
+	id S1764978AbZDBGmd (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 2 Apr 2009 02:42:33 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752401AbZDBGmW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 2 Apr 2009 02:41:42 -0400
-Received: from cn.fujitsu.com ([222.73.24.84]:62928 "EHLO song.cn.fujitsu.com"
-	rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org with ESMTP
-	id S1750975AbZDBGlm (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 2 Apr 2009 02:41:42 -0400
-Message-ID: <49D45DAC.2060508@cn.fujitsu.com>
-Date: Thu, 02 Apr 2009 14:39:40 +0800
-From: Gui Jianfeng <guijianfeng@cn.fujitsu.com>
-User-Agent: Thunderbird 2.0.0.5 (Windows/20070716)
+	Thu, 2 Apr 2009 02:42:22 -0400
+Received: from victor.provo.novell.com ([137.65.250.26]:50755 "EHLO
+	victor.provo.novell.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750975AbZDBGmU (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 2 Apr 2009 02:42:20 -0400
+Message-ID: <49D45E42.3050502@suse.de>
+Date: Thu, 02 Apr 2009 12:12:10 +0530
+From: Suresh Jayaraman <sjayaraman@suse.de>
+User-Agent: Thunderbird 2.0.0.19 (X11/20081227)
 MIME-Version: 1.0
-To: Vivek Goyal <vgoyal@redhat.com>
-CC: nauman@google.com, dpshah@google.com, lizf@cn.fujitsu.com,
-       mikew@google.com, fchecconi@gmail.com, paolo.valente@unimore.it,
-       jens.axboe@oracle.com, ryov@valinux.co.jp, fernando@intellilink.co.jp,
-       s-uchida@ap.jp.nec.com, taka@valinux.co.jp, arozansk@redhat.com,
-       jmoyer@redhat.com, oz-kernel@redhat.com, dhaval@linux.vnet.ibm.com,
-       balbir@linux.vnet.ibm.com, linux-kernel@vger.kernel.org,
-       containers@lists.linux-foundation.org, akpm@linux-foundation.org,
-       menage@google.com, peterz@infradead.org
-Subject: Re: [RFC] IO Controller
-References: <1236823015-4183-1-git-send-email-vgoyal@redhat.com>
-In-Reply-To: <1236823015-4183-1-git-send-email-vgoyal@redhat.com>
+To: Mathieu Desnoyers <compudj@krystal.dyndns.org>
+CC: Trond.Myklebust@netapp.com, linux-nfs@vger.kernel.org,
+       linux-embedded@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>,
+       ltt-dev@lists.casi.polymtl.ca
+Subject: Re: [PATCH] nfs: add support for splice writes
+References: <49D45974.2060202@suse.de> <20090402063235.GB24846@Krystal>
+In-Reply-To: <20090402063235.GB24846@Krystal>
+X-Enigmail-Version: 0.95.7
 Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Vivek Goyal wrote:
-> Hi All,
+Mathieu Desnoyers wrote:
+> * Suresh Jayaraman (sjayaraman@suse.de) wrote:
+>> This patch attempts to add splice writes support. In essence, it just
+>> calls generic_file_splice_write() after doing a little sanity check.
+>> This would allow LTTng users that are using NFS to store trace data.
+>> There could be more applications that could be benefitted too.
+>>
+>> I have tested this using the Jens' test program and have found no
+>> real issues. The test program is inlined below:
+>>
 > 
-> Here is another posting for IO controller patches. Last time I had posted
-> RFC patches for an IO controller which did bio control per cgroup.
+> There is just a small checkpatch nit that I'll fix directly in place in
+> the LTTng tree.
 > 
-> http://lkml.org/lkml/2008/11/6/227
+> WARNING: %Ld/%Lu are not-standard C, use %lld/%llu
+> #93: FILE: fs/nfs/file.c:564:
+> +	dprintk("NFS splice_write(%s/%s, %lu@%Lu)\n",
 > 
-> One of the takeaway from the discussion in this thread was that let us
-> implement a common layer which contains the proportional weight scheduling
-> code which can be shared by all the IO schedulers.
+> total: 0 errors, 1 warnings, 42 lines checked
 > 
-  
-  Hi Vivek,
 
-  I did some tests on my *old* i386 box(with two concurrent dd running), and notice 
-  that IO Controller doesn't work fine in such situation. But it can work perfectly 
-  in my *new* x86 box. I dig into this problem, and i guess the major reason is that
-  my *old* i386 box is too slow, it can't ensure two running ioqs are always backlogged.
-  If that is the case, I happens to have a thought. when an ioq uses up it time slice, 
-  we don't expire it immediately. May be we can give a piece of bonus time for idling 
-  to wait new requests if this ioq's finish time and its ancestor's finish time are all 
-  much smaller than other entities in each corresponding service tree.
+Yes, I noticed it. There are quite a few places in nfs code where we
+happened to use that (that doesn't imply that it shouldn't be fixed), so
+I thought it's OK.
+
+> That's great ! I'll pull it in the LTTng tree so my users can try it.
+> They currently cannot write LTTng traces to NFS mounts anyway.
+
+Yes, please report the test results. Would appreciate it very much.
+
+
+Thanks,
+
+>>
+>> diff --git a/fs/nfs/file.c b/fs/nfs/file.c
+>> index 90f292b..13d6a00 100644
+>> --- a/fs/nfs/file.c
+>> +++ b/fs/nfs/file.c
+>> @@ -47,6 +47,9 @@ static ssize_t nfs_file_splice_read(struct file *filp, loff_t *ppos,
+>>  					size_t count, unsigned int flags);
+>>  static ssize_t nfs_file_read(struct kiocb *, const struct iovec *iov,
+>>  				unsigned long nr_segs, loff_t pos);
+>> +static ssize_t nfs_file_splice_write(struct pipe_inode_info *pipe,
+>> +					struct file *filp, loff_t *ppos,
+>> +					size_t count, unsigned int flags);
+>>  static ssize_t nfs_file_write(struct kiocb *, const struct iovec *iov,
+>>  				unsigned long nr_segs, loff_t pos);
+>>  static int  nfs_file_flush(struct file *, fl_owner_t id);
+>> @@ -76,6 +79,7 @@ const struct file_operations nfs_file_operations = {
+>>  	.lock		= nfs_lock,
+>>  	.flock		= nfs_flock,
+>>  	.splice_read	= nfs_file_splice_read,
+>> +	.splice_write	= nfs_file_splice_write,
+>>  	.check_flags	= nfs_check_flags,
+>>  	.setlease	= nfs_setlease,
+>>  };
+>> @@ -550,6 +554,26 @@ out_swapfile:
+>>  	goto out;
+>>  }
+>>  
+>> +static ssize_t nfs_file_splice_write(struct pipe_inode_info *pipe,
+>> +				     struct file *filp, loff_t *ppos,
+>> +				     size_t count, unsigned int flags)
+>> +{
+>> +	struct dentry *dentry = filp->f_path.dentry;
+>> +	struct inode *inode = dentry->d_inode;
+>> +
+>> +	dprintk("NFS splice_write(%s/%s, %lu@%Lu)\n",
+>> +		dentry->d_parent->d_name.name, dentry->d_name.name,
+>> +		(unsigned long) count, (unsigned long long) *ppos);
+>> +
+>> +	if (IS_SWAPFILE(inode)) {
+>> +		printk(KERN_INFO "NFS: attempt to write to active swap"
+>> +		       "file!\n");
+>> +		return -EBUSY;
+>> +	}
+>> +
+>> +	return generic_file_splice_write(pipe, filp, ppos, count, flags);
+>> +}
+>> +
+>>  static int do_getlk(struct file *filp, int cmd, struct file_lock *fl)
+>>  {
+>>  	struct inode *inode = filp->f_mapping->host;
+>>
+> 
+
 
 -- 
-Regards
-Gui Jianfeng
-
+Suresh Jayaraman
