@@ -1,59 +1,85 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932236AbZDBUIU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933499AbZDBUIf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932236AbZDBUIU (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 2 Apr 2009 16:08:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755381AbZDBUIF
+	id S933499AbZDBUIf (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 2 Apr 2009 16:08:35 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932926AbZDBUIT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 2 Apr 2009 16:08:05 -0400
-Received: from rv-out-0506.google.com ([209.85.198.231]:56855 "EHLO
-	rv-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756218AbZDBUID (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 2 Apr 2009 16:08:03 -0400
+	Thu, 2 Apr 2009 16:08:19 -0400
+Received: from mx2.redhat.com ([66.187.237.31]:38225 "EHLO mx2.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S932914AbZDBUIS (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 2 Apr 2009 16:08:18 -0400
+Message-ID: <49D51A82.8090908@redhat.com>
+Date: Thu, 02 Apr 2009 16:05:22 -0400
+From: Rik van Riel <riel@redhat.com>
+User-Agent: Thunderbird 2.0.0.21 (X11/20090320)
 MIME-Version: 1.0
-In-Reply-To: <alpine.DEB.1.10.0904021134560.28893@asgard.lang.hm>
-References: <200903311452.05210.info@gnebu.es> <49D2A5AB.1090704@ursus.ath.cx> 
-	<20090401015010.GB4529@mit.edu> <20090401052050.GA20456@sucs.org> 
-	<20090401151219.GA12285@srcf.ucam.org> <20090401173521.GA15423@mit.edu> 
-	<20090401174336.GA14726@srcf.ucam.org> <alpine.DEB.1.10.0904021116500.28893@asgard.lang.hm> 
-	<20090402182925.GA4502@srcf.ucam.org> <alpine.DEB.1.10.0904021134560.28893@asgard.lang.hm>
-Date: Thu, 2 Apr 2009 13:07:46 -0700
-Message-ID: <2c0942db0904021307w2c311dc2s9bf31c9ed3c1e6ba@mail.gmail.com>
-Subject: Re: Ext4 and the "30 second window of death"
-From: Ray Lee <ray-lk@madrabbit.org>
-To: david@lang.hm
-Cc: Matthew Garrett <mjg59@srcf.ucam.org>, Theodore Tso <tytso@mit.edu>,
-       Sitsofe Wheeler <sitsofe@yahoo.com>,
-       "Andreas T.Auer" <andreas.t.auer_lkml_73537@ursus.ath.cx>,
-       Alberto Gonzalez <info@gnebu.es>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Content-Type: text/plain; charset=UTF-8
+To: Nick Piggin <nickpiggin@yahoo.com.au>
+CC: Martin Schwidefsky <schwidefsky@de.ibm.com>,
+       Rusty Russell <rusty@rustcorp.com.au>,
+       virtualization@lists.linux-foundation.org, linux-mm@kvack.org,
+       linux-kernel@vger.kernel.org, virtualization@lists.osdl.org,
+       akpm@osdl.org, frankeh@watson.ibm.com, hugh@veritas.com
+Subject: Re: [patch 0/6] Guest page hinting version 7.
+References: <20090327150905.819861420@de.ibm.com> <20090402175249.3c4a6d59@skybase> <49D50CB7.2050705@redhat.com> <200904030622.30935.nickpiggin@yahoo.com.au>
+In-Reply-To: <200904030622.30935.nickpiggin@yahoo.com.au>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Apr 2, 2009 at 11:44 AM,  <david@lang.hm> wrote:
-> let's not talk a database here, let's talk something simpler, like a POP3
-> mail client (even though I strongly favor IMAP ;-)
+Nick Piggin wrote:
+> On Friday 03 April 2009 06:06:31 Rik van Riel wrote:
+>   
+>> Ballooning has a simpler mechanism, but relies on an
+>> as-of-yet undiscovered policy.
+>>
+>> Having experienced a zillion VM corner cases over the
+>> last decade and a bit, I think I prefer a complex mechanism
+>> over complex (or worse, unknown!) policy any day.
+>>     
 >
-> it wants to have the message saved before it deletes it from the server.
->
-> how should it try to do this?
->
-> the only portable method is to fsync the file after it's written and before
-> sending the delete to the server.
->
-> so your mail client _should_ issue fsync calls.
+> I disagree with it being so clear cut. Volatile pagecache policy is completely
+> out of the control of the Linux VM. Wheras ballooning does have to make some
+> tradeoff between guests, but the actual reclaim will be driven by the guests.
+> Neither way is perfect, but it's not like the hypervisor reclaim is foolproof
+> against making a bad tradeoff between guests.
+>   
+I guess we could try to figure out a simple and robust policy
+for ballooning.  If we can come up with a policy which nobody
+can shoot holes in by just discussing it, it may be worth
+implementing and benchmarking.
 
-That's just not the case. Every POP fetcher I've seen offers an option
-to leave seen messages on the server for some period measured in days.
-Setting it to one day means that the data will eventually get flushed
-by the time the message is deleted.
+Maybe something based on the host passing memory pressure
+on to the guests, and the guests having their own memory
+pressure push back to the host.
 
-So, no, the mail client does not have to issue fsync()s at all. (If
-dirty data can hang around unwritten for 24 hours, I'd argue that's a
-misfeature of the filesystem or kernel.)
+I'l start by telling you the best auto-ballooning policy idea
+I have come up with so far, and the (major?) hole in it.
 
-Alternately, a client could fetch once every half hour at which point
-the cost of an fsync is amortized over all the fetched messages.
+Basically, the host needs the memory pressure notification,
+where the VM will notify the guests when memory is running
+low (and something could soon be swapped).  At that point,
+each guest which receives the signal will try to free some
+memory and return it to the host.
+
+Each guest can have the reverse in its own pageout code.
+Once memory pressure grows to a certain point (eg. when
+the guest is about to swap something out), it could reclaim
+a few pages from the host.
+
+If all the guests behave themselves, this could work.
+
+However, even with just reasonably behaving guests,
+differences between the VMs in each guest could lead
+to unbalanced reclaiming, penalizing better behaving
+guests.
+
+If one guest is behaving badly, it could really impact
+the other guests.
+
+Can you think of improvements to this idea?
+
+Can you think of another balloon policy that does
+not have nasty corner cases?
