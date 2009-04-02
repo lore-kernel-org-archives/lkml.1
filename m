@@ -1,147 +1,151 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760829AbZDBPuS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761986AbZDBPul@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760829AbZDBPuS (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 2 Apr 2009 11:50:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755012AbZDBPt5
+	id S1761986AbZDBPul (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 2 Apr 2009 11:50:41 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758794AbZDBPuG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 2 Apr 2009 11:49:57 -0400
-Received: from mx2.redhat.com ([66.187.237.31]:43689 "EHLO mx2.redhat.com"
+	Thu, 2 Apr 2009 11:50:06 -0400
+Received: from mx2.redhat.com ([66.187.237.31]:43694 "EHLO mx2.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752549AbZDBPtz (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 2 Apr 2009 11:49:55 -0400
-Message-ID: <49D4DE82.5020306@redhat.com>
-Date: Thu, 02 Apr 2009 18:49:22 +0300
-From: Avi Kivity <avi@redhat.com>
+	id S1751268AbZDBPt6 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 2 Apr 2009 11:49:58 -0400
+Message-ID: <49D4DE6C.9040807@redhat.com>
+Date: Thu, 02 Apr 2009 11:49:00 -0400
+From: Masami Hiramatsu <mhiramat@redhat.com>
 User-Agent: Thunderbird 2.0.0.21 (X11/20090320)
 MIME-Version: 1.0
-To: Gregory Haskins <ghaskins@novell.com>
-CC: Patrick Mullaney <pmullaney@novell.com>, anthony@codemonkey.ws,
-       andi@firstfloor.org, herbert@gondor.apana.org.au,
-       Peter Morreale <PMorreale@novell.com>, rusty@rustcorp.com.au,
-       agraf@suse.de, kvm@vger.kernel.org, linux-kernel@vger.kernel.org,
-       netdev@vger.kernel.org
-Subject: Re: [RFC PATCH 00/17] virtual-bus
-References: <49D469D2020000A100045FA1@lucius.provo.novell.com> <49D473EA020000C700056627@lucius.provo.novell.com> <49D473EA020000C700056627@lucius.provo.novell.com> <49D4CB38.5030205@redhat.com> <49D4DA54.3090401@novell.com>
-In-Reply-To: <49D4DA54.3090401@novell.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+To: Andi Kleen <andi@firstfloor.org>, kvm@vger.kernel.org
+CC: Ingo Molnar <mingo@elte.hu>, Arnaldo Carvalho de Melo <acme@redhat.com>,
+       Steven Rostedt <rostedt@goodmis.org>,
+       Ananth N Mavinakayanahalli <ananth@in.ibm.com>,
+       Frederic Weisbecker <fweisbec@gmail.com>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       systemtap-ml <systemtap@sources.redhat.com>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Jim Keniston <jkenisto@us.ibm.com>
+Subject: Re: [PATCH -tip 0/4 V3] tracing: kprobe-based event tracer
+References: <49CC08A2.5030602@redhat.com> <20090401133654.GB18677@elte.hu> <49D37584.50208@redhat.com> <873acsm8qp.fsf@basil.nowhere.org> <49D3D3B4.4060702@redhat.com> <20090401221540.GX11935@one.firstfloor.org> <49D3F713.1000502@redhat.com> <20090402073636.GZ11935@one.firstfloor.org>
+In-Reply-To: <20090402073636.GZ11935@one.firstfloor.org>
+X-Enigmail-Version: 0.95.7
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Gregory Haskins wrote:
->> vbus (if I understand it right) is a whole package of things:
+Andi Kleen wrote:
+> On Wed, Apr 01, 2009 at 07:21:55PM -0400, Masami Hiramatsu wrote:
+>> Andi Kleen wrote:
+>>> On Wed, Apr 01, 2009 at 04:51:00PM -0400, Masami Hiramatsu wrote:
+>>>> Andi Kleen wrote:
+>>>>> Masami Hiramatsu <mhiramat@redhat.com> writes:
+>>>>>> I agreed. Fortunately, Jim Keniston and I wrote an x86 instruction
+>>>>>> decoder :-) which has been made originally for uprobe andd kprobes
+>>>>>> jump-optimizer.
+>>>>>>
+>>>>>> https://www.redhat.com/archives/utrace-devel/2009-March/msg00031.html
+>>>>> An alternative would be to adapt the x86 interpreter in KVM.
+>>>>> I thought for some time that that one should be available in 
+>>>>> a more generic form in a library.
+>>>> As far as I can see, KVM's instruction emulator is incomplete
+>>> That's fine for you -- you only care about a subset of instructions
+>>> anyways, don't you?
+>> Actually, (in my case) I just need to decode non-FPU instructions,
+> 
+> What does it have to do with the FPU?  I don't think the KVM
+> one is aimed at those either.
+
+Nothing, at least in kernel :). However, as I said before,
+uprobe developers want to use this decoder for decoding
+FPU instructions. Fortunately, this decoder can cover
+those instructions too.
+
+>> because I'd like to check whether kprobe is on the instruction
+>> boundary.
 >>
->> - a way to enumerate, discover, and manage devices
->>     
->
-> Yes
->   
->> That part duplicates PCI
->>     
->
-> Yes, but the important thing to point out is it doesn't *replace* PCI. 
-> It simply an alternative.
->   
+>> However, KVM's insn decoder can't decode some elemental
+>> instructions, and instruction flags are incorrect.
+> 
+> What flags?  EFLAGS? 
 
-Does it offer substantial benefits over PCI?  If not, it's just extra code.
+No, KVM's decoder has instruction classification flags for
+each instructions, and some of those flags are not correct.
 
-Note that virtio is not tied to PCI, so "vbus is generic" doesn't count.
+>> I had written instruction decoder based on it, but the result
+>> was so awful!
+> 
+> What were the problems?
 
->> and it would be pretty hard to convince me we need to move to
->> something new
->>     
->
-> But thats just it.  You don't *need* to move.  The two can coexist side
-> by side peacefully.  "vbus" just ends up being another device that may
-> or may not be present, and that may or may not have devices on it.  In
-> fact, during all this testing I was booting my guest with "eth0" as
-> virtio-net, and "eth1" as venet.  The both worked totally fine and
-> harmoniously.  The guest simply discovers if vbus is supported via a
-> cpuid feature bit and dynamically adds it if present.
->   
+It couldn't decode kernel binary correctly and found many bugs...
 
-I meant, move the development effort, testing, installed base, Windows 
-drivers.
+https://www.redhat.com/archives/utrace-devel/2009-March/msg00013.html
 
->   
->> .  virtio-pci (a) works,
->>     
-> And it will continue to work
->   
+On the other hand, this decoder already verified that the result
+is same as objdump's output.
 
-So why add something new?
-
->   
->> (b) works on Windows.
->>     
->
-> virtio will continue to work on windows, as well.  And if one of my
-> customers wants vbus support on windows and is willing to pay us to
-> develop it, we can support *it* there as well.
->   
-
-I don't want to develop and support both virtio and vbus.  And I 
-certainly don't want to depend on your customers.
-
->> - a different way of doing interrupts
->>     
-> Yeah, but this is ok.  And I am not against doing that mod we talked
-> about earlier where I replace dynirq with a pci shim to represent the
-> vbus.  Question about that: does userspace support emulation of MSI
-> interrupts?  
-
-Yes, this is new.  See the interrupt routing stuff I mentioned.  It's 
-probably only in kvm.git, not even in 2.6.30.
-
-> I would probably prefer it if I could keep the vbus IRQ (or
-> IRQs when I support MQ) from being shared.  It seems registering the
-> vbus as an MSI device would be more conducive to avoiding this.
->   
-
-I still think you want one MSI per device rather than one MSI per vbus, 
-to avoid scaling problems on large guest.  After Herbert's let loose on 
-the code, one MSI per queue.
+https://www.redhat.com/archives/utrace-devel/2009-March/msg00031.html
 
 
->> - a different ring layout, and splitting notifications from the ring
->>     
-> Again, virtio will continue to work.  And if we cannot find a way to
-> collapse virtio and ioq together in a way that everyone agrees on, there
-> is no harm in having two.  I have no problem saying I will maintain
-> IOQ.  There is plenty of precedent for multiple ways to do the same thing.
->   
+> Did you report the problems to the KVM maintainers?
 
-IMO we should just steal whatever makes ioq better, and credit you in 
-some file no one reads.  We get backwards compatibility, Windows 
-support, continuity, etc.
+No, sorry, because I wrote a patch just referring KVM decoder.
+I didn't use KVM decoder code itself.
+I guess KVM uses their decoder only for emulating a
+limited number of instructions. In that case, it will be OK for KVM.
 
->> I don't see the huge win here
->>
->> - placing the host part in the host kernel
->>
->> Nothing vbus-specific here.
->>     
->
-> Well, it depends on what you want.  Do you want a implementation that is
-> virtio-net, kvm, and pci specific while being hardcoded in?
 
-No.  virtio is already not kvm or pci specific.  Definitely all the pci 
-emulation parts will remain in user space.
+> I still think it would be better to have a single good
+> decoder than a multitude of different ones tailored to specific
+> cases. 
 
->   What
-> happens when someone wants to access it but doesnt support pci?  What if
-> something like lguest wants to use it too?  What if you want
-> virtio-block next?  This is one extreme.
->   
+Sure, why not? I agreed we'd better have a single decoder in the end.
+However, I think KVM decoder is too big and complex (and tailored?)
+to start with...
+So, IMHO, we'd better have a "transition period" to clarify
+demands from user components, to discuss how we can integrate it.
 
-It works out well on the guest side, so it can work on the host side.  
-We have virtio bindings for pci, s390, and of course lguest.  virtio 
-itself is agnostic to all of these.  The main difference from vbus is 
-that it's guest-only, but could easily be extended to the host side if 
-we break down and do things in the kernel.
+>> So soon, I had to rewrite it based on Intel's manual entirely :-(
+> 
+> Ok then perhaps KVM could benefit from your work too?
+
+If their purpose is covering all instructions, Yes.
+
+>>> do nothing. I looked at it some time ago for doing instruction
+>>> length checking for some application, but that application
+>>> then disappeared. The main obstacle with making it a library 
+>>> is that some KVM specific dependencies have crept in that would
+>>> need to be abstracted again, but I don't think it would need a lot of 
+>>> effort,
+>> Sorry, but I don't think so. Current KVM's decoder is much more
+>> focusing on preparing instructions emulation. It requires
+>> vcpu setup, fetching operators and so on. I think it needs to
+>> diet their code (or well splitting from emulator).
+> 
+> the vcpu stuff can be all dummies. If you look at the original
+> Xen version of it before it forked it was better isolated there.
+> The other stuff that crept in in the KVM version could be also
+> fixed.
+> 
+> 
+>> Anyway, I don't stick with my decoder. If they can provide more
+>> generic interfaces, I'd be happy to use it. :-)
+> 
+> I suspect "they" would need some help.
+
+Sure, I agreed.
+
+KVM developers, I'll cross-post our x86 instruction decoder to
+KVM-ML. If you are interested in, please comment on it :)
+
+Thank you,
 
 
 -- 
-error compiling committee.c: too many arguments to function
+Masami Hiramatsu
+
+Software Engineer
+Hitachi Computer Products (America) Inc.
+Software Solutions Division
+
+e-mail: mhiramat@redhat.com
 
