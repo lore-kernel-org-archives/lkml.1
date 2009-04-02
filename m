@@ -1,38 +1,44 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764077AbZDBQSs@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763452AbZDBQTE@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764077AbZDBQSs (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 2 Apr 2009 12:18:48 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756124AbZDBQSj
+	id S1763452AbZDBQTE (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 2 Apr 2009 12:19:04 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760217AbZDBQSn
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 2 Apr 2009 12:18:39 -0400
-Received: from mga12.intel.com ([143.182.124.36]:35267 "EHLO
-	azsmga102.ch.intel.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1751749AbZDBQSi (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 2 Apr 2009 12:18:38 -0400
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.39,314,1235980800"; 
-   d="scan'208";a="127136227"
-Date: Thu, 2 Apr 2009 09:18:35 -0700
-From: Matthew Wilcox <willy@linux.intel.com>
-To: Sergei Shtylyov <sshtylyov@ru.mvista.com>
-Cc: linux-ide@vger.kernel.org, linux-kernel@vger.kernel.org,
-       jgarzik@redhat.com, David Woodhouse <David.Woodhouse@intel.com>
-Subject: Re: [PATCH 3/5] ata: Add TRIM infrastructure
-Message-ID: <20090402161835.GN2661@linux.intel.com>
-References: <1238683047-13588-1-git-send-email-willy@linux.intel.com> <1238683047-13588-2-git-send-email-willy@linux.intel.com> <1238683047-13588-3-git-send-email-willy@linux.intel.com> <49D4DFFB.8070201@ru.mvista.com>
+	Thu, 2 Apr 2009 12:18:43 -0400
+Received: from gw.goop.org ([64.81.55.164]:48350 "EHLO mail.goop.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1761715AbZDBQSm (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 2 Apr 2009 12:18:42 -0400
+Message-ID: <49D4E55F.8010406@goop.org>
+Date: Thu, 02 Apr 2009 09:18:39 -0700
+From: Jeremy Fitzhardinge <jeremy@goop.org>
+User-Agent: Thunderbird 2.0.0.21 (X11/20090320)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <49D4DFFB.8070201@ru.mvista.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+To: Martin Schwidefsky <schwidefsky@de.ibm.com>
+CC: Nick Piggin <nickpiggin@yahoo.com.au>, akpm@osdl.org,
+       frankeh@watson.ibm.com, virtualization@lists.osdl.org, riel@redhat.com,
+       linux-kernel@vger.kernel.org, virtualization@lists.linux-foundation.org,
+       linux-mm@kvack.org, hugh@veritas.com
+Subject: Re: [patch 0/6] Guest page hinting version 7.
+References: <20090327150905.819861420@de.ibm.com>	<200903281705.29798.rusty@rustcorp.com.au>	<20090329162336.7c0700e9@skybase>	<200904022232.02185.nickpiggin@yahoo.com.au> <20090402175249.3c4a6d59@skybase>
+In-Reply-To: <20090402175249.3c4a6d59@skybase>
+X-Enigmail-Version: 0.95.6
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Apr 02, 2009 at 07:55:39PM +0400, Sergei Shtylyov wrote:
->    I wonder where to read about the word 169 and commnand 0x06... what's 
-> it all about?
+Martin Schwidefsky wrote:
+>> I still think this needs much more justification.
+>>     
+>  
+> Ok, I can understand that. We probably need a KVM based version to show
+> that benefits exist on non-s390 hardware as well.
+>   
 
-It's in d2015r1-ATAATAPI_Command_Set_-_2_ACS-2.pdf which can be found on
-the t13 website.
+BTW, there was a presentation at the most recent Xen summit which makes 
+use of CMM ("Satori: Enlightened Page Sharing", 
+http://www.xen.org/files/xensummit_oracle09/Satori.pdf).
+
+    J
