@@ -1,77 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933557AbZDBATU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933998AbZDBAUp@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933557AbZDBATU (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 1 Apr 2009 20:19:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758150AbZDBATB
+	id S933998AbZDBAUp (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 1 Apr 2009 20:20:45 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758540AbZDBAUf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 1 Apr 2009 20:19:01 -0400
-Received: from www.tglx.de ([62.245.132.106]:32850 "EHLO www.tglx.de"
+	Wed, 1 Apr 2009 20:20:35 -0400
+Received: from ozlabs.org ([203.10.76.45]:56903 "EHLO ozlabs.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1758103AbZDBATA (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 1 Apr 2009 20:19:00 -0400
-Date: Thu, 2 Apr 2009 02:17:43 +0200 (CEST)
-From: Thomas Gleixner <tglx@linutronix.de>
-To: LKML <linux-kernel@vger.kernel.org>
-cc: rt-users <linux-rt-users@vger.kernel.org>, Ingo Molnar <mingo@elte.hu>,
-       Steven Rostedt <rostedt@goodmis.org>,
-       Peter Zijlstra <peterz@infradead.org>, Carsten Emde <ce@ceag.ch>,
-       Clark Williams <williams@redhat.com>,
-       Frank Rowand <frank.rowand@am.sony.com>,
-       Robin Gareus <robin@gareus.org>, Gregory Haskins <ghaskins@novell.com>,
-       Philippe Reynes <philippe.reynes@isismpp.fr>,
-       Fernando Lopez-Lezcano <nando@ccrma.Stanford.EDU>,
-       Will Schmidt <will_schmidt@vnet.ibm.com>
-Subject: [Announce] 2.6.29-rt2
-In-Reply-To: <alpine.LFD.2.00.0903252154040.3397@localhost.localdomain>
-Message-ID: <alpine.LFD.2.00.0904020155320.12916@localhost.localdomain>
-References: <alpine.LFD.2.00.0902112332370.415@localhost.localdomain> <alpine.LFD.2.00.0902122353050.16972@localhost.localdomain> <alpine.LFD.2.00.0902231854360.3523@localhost.localdomain> <alpine.LFD.2.00.0902241849230.3523@localhost.localdomain>
- <alpine.LFD.2.00.0902241856480.9135@localhost.localdomain> <alpine.LFD.2.00.0903122013230.29264@localhost.localdomain> <alpine.LFD.2.00.0903200014320.29264@localhost.localdomain> <alpine.LFD.2.00.0903201832590.29264@localhost.localdomain>
- <alpine.LFD.2.00.0903231723090.29264@localhost.localdomain> <alpine.LFD.2.00.0903252154040.3397@localhost.localdomain>
-User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
+	id S1758150AbZDBAUe (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 1 Apr 2009 20:20:34 -0400
+From: Rusty Russell <rusty@rustcorp.com.au>
+To: Tejun Heo <tj@kernel.org>
+Subject: Re: [GIT RFC] percpu: use dynamic percpu allocator as the default percpu allocator
+Date: Thu, 2 Apr 2009 10:50:28 +1030
+User-Agent: KMail/1.11.1 (Linux/2.6.27-11-generic; KDE/4.2.2; i686; ; )
+Cc: Martin Schwidefsky <schwidefsky@de.ibm.com>, Ingo Molnar <mingo@elte.hu>,
+       tglx@linutronix.de, x86@kernel.org, linux-kernel@vger.kernel.org,
+       hpa@zytor.com, Paul Mundt <lethal@linux-sh.org>, rmk@arm.linux.org.uk,
+       starvik@axis.com, ralf@linux-mips.org, davem@davemloft.net,
+       cooloney@kernel.org, kyle@mcmartin.ca, matthew@wil.cx,
+       grundler@parisc-linux.org, takata@linux-m32r.org,
+       benh@kernel.crashing.org, rth@twiddle.net, ink@jurassic.park.msu.ru,
+       heiko.carstens@de.ibm.com
+References: <1236671631-9305-1-git-send-email-tj@kernel.org> <20090401101054.0a4b187d@skybase> <49D3231D.2040403@kernel.org>
+In-Reply-To: <49D3231D.2040403@kernel.org>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200904021050.30070.rusty@rustcorp.com.au>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-We are pleased to announce the next update to our new preempt-rt
-series.
- 
-      - fix a fork/exit bug in the signal per task cache (/me puts on
-        a huge brown paper bag - Thanks to Phillipe Reynes and Will
-        Schmidt for reporting and testing)
+On Wednesday 01 April 2009 18:47:33 Tejun Heo wrote:
+> Martin Schwidefsky wrote:
+> > Is the goal to use the same access macros for both dynamically and
+> > statically allocated percpu variables? That would make the proposed
+> > solution impractical.
+> 
+> Yeah, it's one of the goals so that we don't have to have two sets of
+> APIs (e.g. the fast percpu_*() accessors).
 
-      - fix a group scheduling migration accounting bug (decoded with
-        and fixed by Peter Zijlstra - reported by Robin Gareus)
+There's a weaker, but still useful, subset of this goal: to allow the
+ptr versions to access any var (ie. you can do "DEFINE_PER_CPU(int, foo);
+... some_func(&foo)) yet still have the get_cpu_var() be the optimized
+actual-variable versions.
 
-      - tlb gather rework by Peter Zijlstra - Thanks Peter !
+Don't know that the distinction is *useful* here tho...
+Rusty.
 
-      - the usual fixlets
-
-The tlb rework might be incomplete on some of the uncountable
-incarnations of PowerPC and ARM platforms, so look out for wreckage
-and keep the usual tools (fire-extinguishers, brooms, buckets etc.)
-handy.
-
-Download locations:
-
-    http://rt.et.redhat.com/download/
-    http://www.kernel.org/pub/linux/kernel/projects/rt/
- 
-Information on the RT patch can be found at:
-
-    http://rt.wiki.kernel.org/index.php/Main_Page
-
-to build the 2.6.29-rt2 tree, the following patches should be
-applied:
-
-    http://www.kernel.org/pub/linux/kernel/v2.6/linux-2.6.29.tar.bz2
-    http://www.kernel.org/pub/linux/kernel/projects/rt/patch-2.6.29-rt2.bz2
-
-The broken out patches are also available at the same download
-locations.
-
-Enjoy !
-
-       tglx
 
