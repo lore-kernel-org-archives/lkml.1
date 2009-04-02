@@ -1,54 +1,90 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934196AbZDBAcB@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758604AbZDBAjg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934196AbZDBAcB (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 1 Apr 2009 20:32:01 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760495AbZDBAbs
+	id S1758604AbZDBAjg (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 1 Apr 2009 20:39:36 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753327AbZDBAjX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 1 Apr 2009 20:31:48 -0400
-Received: from yx-out-2324.google.com ([74.125.44.30]:60803 "EHLO
-	yx-out-2324.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757055AbZDBAbr (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 1 Apr 2009 20:31:47 -0400
-Message-ID: <49D4076D.4010500@codemonkey.ws>
-Date: Wed, 01 Apr 2009 19:31:41 -0500
-From: Anthony Liguori <anthony@codemonkey.ws>
+	Wed, 1 Apr 2009 20:39:23 -0400
+Received: from srv5.dvmed.net ([207.36.208.214]:52692 "EHLO mail.dvmed.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752758AbZDBAjX (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 1 Apr 2009 20:39:23 -0400
+Message-ID: <49D4092D.5050503@garzik.org>
+Date: Wed, 01 Apr 2009 20:39:09 -0400
+From: Jeff Garzik <jeff@garzik.org>
 User-Agent: Thunderbird 2.0.0.21 (X11/20090320)
 MIME-Version: 1.0
-To: Izik Eidus <ieidus@redhat.com>
-CC: Andrea Arcangeli <aarcange@redhat.com>, linux-kernel@vger.kernel.org,
-       kvm@vger.kernel.org, linux-mm@kvack.org, avi@redhat.com,
-       chrisw@redhat.com, riel@redhat.com, jeremy@goop.org,
-       mtosatti@redhat.com, hugh@veritas.com, corbet@lwn.net, yaniv@redhat.com,
-       dmonakhov@openvz.org
-Subject: Re: [PATCH 4/4] add ksm kernel shared memory driver.
-References: <1238457560-7613-5-git-send-email-ieidus@redhat.com> <49D17C04.9070307@codemonkey.ws> <49D20B63.8020709@redhat.com> <49D21B33.4070406@codemonkey.ws> <20090331142533.GR9137@random.random> <49D22A9D.4050403@codemonkey.ws> <20090331150218.GS9137@random.random> <49D23224.9000903@codemonkey.ws> <20090331151845.GT9137@random.random> <49D23CD1.9090208@codemonkey.ws> <20090331162525.GU9137@random.random> <49D24A02.6070000@codemonkey.ws> <49D3F088.50600@redhat.com>
-In-Reply-To: <49D3F088.50600@redhat.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+To: Boaz Harrosh <bharrosh@panasas.com>
+CC: Avishay Traeger <avishay@gmail.com>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       linux-fsdevel <linux-fsdevel@vger.kernel.org>,
+       open-osd <osd-dev@open-osd.org>, Evgeniy Polyakov <zbr@ioremap.net>,
+       James Bottomley <James.Bottomley@HansenPartnership.com>,
+       linux-kernel <linux-kernel@vger.kernel.org>,
+       FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
+Subject: Re: [PATCHSET 0/8 version 4] exofs for kernel 2.6.30
+References: <49C1331D.1080805@panasas.com> <49D332A0.5080107@garzik.org> <49D34E33.5060700@panasas.com>
+In-Reply-To: <49D34E33.5060700@panasas.com>
+Content-Type: text/plain; charset=UTF-8; format=flowed
 Content-Transfer-Encoding: 7bit
+X-Spam-Score: -3.6 (---)
+X-Spam-Report: SpamAssassin version 3.2.5 on srv5.dvmed.net summary:
+	Content analysis details:   (-3.6 points, 5.0 required)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Izik Eidus wrote:
-> Anthony, the biggest problem about madvice() is that it is a real 
-> system call api, i wouldnt want in that stage of ksm commit into api 
-> changes of linux...
->
-> The ioctl itself is restricting, madvice is much more...,
->
-> Can we draft this issue to after ksm is merged, and after all the big 
-> new fetures that we want to add to ksm will be merge....
-> (then the api would be much more stable, and we will be able to ask 
-> ppl in the list about changing of api, but for new driver that it yet 
-> to be merged, it is kind of overkill to add api to linux)
->
-> What do you think?
+Boaz Harrosh wrote:
+> On 04/01/2009 12:23 PM, Jeff Garzik wrote:
+>> Boaz Harrosh wrote:
+>>> If anyone wants to actually run this code and test it
+>>> then please start reading at:
+>>>     http://open-osd.org
+>>> You will need to checkout the out-of-tree git (below) for the user-mode utilities.
+>>> Also the exofs.txt file in patch 7/8 should help
+>>
+>> hum...  trying to play with this.  If you want exofs to go upstream, I 
+>> think you should have a release tarball containing the user-mode utils 
+>> posted somewhere.  Would make life a lot easier, both on early adopters 
+>> and also on distribution packagers.
+>>
+>> 	Jeff
+> 
+> You are absolutely right, once 2.6.30 will be out there will not be a need
+> to compile Kernel modules.
+> 
+> About the binary package. I must admit I'm a total novice. What do I need to do?
 
-You can't change ABIs after something is merged or you break userspace.  
-So you need to figure out the right ABI first.
+All you need on your end is a sane setup for installation, including 
+building of shared libraries and installing necessary headers for 
+userland programs.
 
-Regards,
+Each individual distribution can easily package your exofs-utils into a 
+deb or RPM.
 
-Anthony Liguori
+Some of my projects have to do this.  Here is one way, the highly 
+standardized GNU autotools.
+
+Take a look at autogen.sh, configure.ac, Makefile.am, 
+include/Makefile.am and lib/Makefile.am from 
+git://git.kernel.org/pub/scm/daemon/distsrv/chunkd.git
+
+That demonstrates how to handle building and installing a shared 
+library, header files and programs.
+
+A lot of people dislike GNU autotools, but it's main benefit here is 
+that Debian/Red Hat/Novell/Canonical/etc. are well-versed in creating 
+.deb or .rpm from GNU autotools builds.  It makes integration into a 
+Linux distribution much easier.
+
+
+> BTW:
+>   Source tar balls are available from the gitweb GUI by pressing on the
+>   "snapshot" link next to any commit. I should link to it from the WiKi
+
+Oh yeah, I forgot about that.
+
+	Jeff
+
+
 
