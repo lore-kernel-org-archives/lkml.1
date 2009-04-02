@@ -1,61 +1,47 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S935327AbZDBJ73@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1765557AbZDBKCu@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S935327AbZDBJ73 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 2 Apr 2009 05:59:29 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756044AbZDBJ7Q
+	id S1765557AbZDBKCu (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 2 Apr 2009 06:02:50 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755881AbZDBKCh
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 2 Apr 2009 05:59:16 -0400
-Received: from bilbo.ozlabs.org ([203.10.76.25]:54636 "EHLO bilbo.ozlabs.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751437AbZDBJ7P (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 2 Apr 2009 05:59:15 -0400
+	Thu, 2 Apr 2009 06:02:37 -0400
+Received: from rhun.apana.org.au ([64.62.148.172]:53492 "EHLO
+	arnor.apana.org.au" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1755361AbZDBKCg (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 2 Apr 2009 06:02:36 -0400
+Date: Thu, 2 Apr 2009 18:02:23 +0800
+From: Herbert Xu <herbert@gondor.apana.org.au>
+To: Larry Finger <Larry.Finger@lwfinger.net>
+Cc: davem@davemloft.net, linux-kernel@vger.kernel.org, netdev@vger.kernel.org,
+       oliver@neukum.org
+Subject: Re: [PATCH 1/2 V3] kaweth: Fix locking to be SMP-safe
+Message-ID: <20090402100223.GA30905@gondor.apana.org.au>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
-Message-ID: <18900.35934.799877.893556@cargo.ozlabs.ibm.com>
-Date: Thu, 2 Apr 2009 20:58:54 +1100
-From: Paul Mackerras <paulus@samba.org>
-To: Peter Zijlstra <a.p.zijlstra@chello.nl>
-Cc: Ingo Molnar <mingo@elte.hu>, linux-kernel@vger.kernel.org,
-       Mike Galbraith <efault@gmx.de>, Arjan van de Ven <arjan@infradead.org>,
-       Wu Fengguang <fengguang.wu@intel.com>
-Subject: Re: [PATCH 2/9] perf_counter: fix update_userpage()
-In-Reply-To: <1238664979.8530.5723.camel@twins>
-References: <20090328194359.426029037@chello.nl>
-	<20090328194929.546464621@chello.nl>
-	<18894.49084.341238.775487@cargo.ozlabs.ibm.com>
-	<1238662238.8530.5622.camel@twins>
-	<18900.33346.375497.2714@cargo.ozlabs.ibm.com>
-	<1238664979.8530.5723.camel@twins>
-X-Mailer: VM 8.0.9 under Emacs 22.2.1 (i486-pc-linux-gnu)
+Content-Disposition: inline
+In-Reply-To: <49d3881d.7EinO6dA2s6BnVTa%Larry.Finger@lwfinger.net>
+Organization: Core
+X-Newsgroups: apana.lists.os.linux.kernel,apana.lists.os.linux.netdev
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Peter Zijlstra writes:
-
-> > Good point.  This should work, though:
-> > 
-> > 	do {
-> > 		seq = pc->lock;
-> > 		barrier();
-> > 		value = read_pmc(pc->index) + pc->offset;
-> > 		barrier();
-> > 	} while (pc->lock != seq);
-> > 	return value;
+Larry Finger <Larry.Finger@lwfinger.net> wrote:
+>
+> @@ -796,7 +795,7 @@ static int kaweth_start_xmit(struct sk_b
 > 
-> I don't think you need the first barrier(), all you need to avoid is it
-> reusing the first pc->lock read, so one should suffice.
+>        int res;
+> 
+> -       spin_lock(&kaweth->device_lock);
+> +       spin_lock_irq(&kaweth->device_lock);
 
-I need it to make sure that the compiler doesn't put the load of
-pc->index or pc->offset before the first load of pc->lock.  The second
-barrier is needed to make sure the compiler puts the second load of
-pc->lock after the loads of pc->index and pc->offset.  So I think I do
-need to barrier()s (but only compiler barriers, not cpu memory
-barriers).
+Should be irqsave unless you don't expect to be called via netpoll.
 
-> Also, you need to handle the !pc->index case.
-
-Hmmm, yeah.  I claim that read_pmc(0) always returns 0. :)
-
-Paul.
+Cheers,
+-- 
+Visit Openswan at http://www.openswan.org/
+Email: Herbert Xu ~{PmV>HI~} <herbert@gondor.apana.org.au>
+Home Page: http://gondor.apana.org.au/~herbert/
+PGP Key: http://gondor.apana.org.au/~herbert/pubkey.txt
