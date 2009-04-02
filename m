@@ -1,44 +1,94 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761290AbZDBCFj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934246AbZDBCNA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761290AbZDBCFj (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 1 Apr 2009 22:05:39 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758146AbZDBCF0
+	id S934246AbZDBCNA (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 1 Apr 2009 22:13:00 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754040AbZDBCMu
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 1 Apr 2009 22:05:26 -0400
-Received: from srv5.dvmed.net ([207.36.208.214]:38257 "EHLO mail.dvmed.net"
+	Wed, 1 Apr 2009 22:12:50 -0400
+Received: from mx2.mail.elte.hu ([157.181.151.9]:54324 "EHLO mx2.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756207AbZDBCFZ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 1 Apr 2009 22:05:25 -0400
-Message-ID: <49D41D5C.7070601@garzik.org>
-Date: Wed, 01 Apr 2009 22:05:16 -0400
-From: Jeff Garzik <jeff@garzik.org>
-User-Agent: Thunderbird 2.0.0.21 (X11/20090320)
+	id S1752558AbZDBCMt (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 1 Apr 2009 22:12:49 -0400
+Date: Thu, 2 Apr 2009 04:10:24 +0200
+From: Ingo Molnar <mingo@elte.hu>
+To: Matthew Wilcox <matthew@wil.cx>
+Cc: Linus Torvalds <torvalds@linux-foundation.org>,
+       Christoph Lameter <cl@linux.com>, Tejun Heo <tj@kernel.org>,
+       Martin Schwidefsky <schwidefsky@de.ibm.com>, rusty@rustcorp.com.au,
+       tglx@linutronix.de, x86@kernel.org, linux-kernel@vger.kernel.org,
+       hpa@zytor.com, Paul Mundt <lethal@linux-sh.org>, rmk@arm.linux.org.uk,
+       starvik@axis.com, ralf@linux-mips.org, davem@davemloft.net,
+       cooloney@kernel.org, kyle@mcmartin.ca, grundler@parisc-linux.org,
+       takata@linux-m32r.org, benh@kernel.crashing.org, rth@twiddle.net,
+       ink@jurassic.park.msu.ru, heiko.carstens@de.ibm.com,
+       Nick Piggin <npiggin@suse.de>, Peter Zijlstra <a.p.zijlstra@chello.nl>
+Subject: Re: [PATCH UPDATED] percpu: use dynamic percpu allocator as the
+	default percpu allocator
+Message-ID: <20090402021024.GA26446@elte.hu>
+References: <alpine.DEB.1.10.0903301049060.13333@qirst.com> <alpine.DEB.1.10.0903311208110.17960@qirst.com> <49D2B209.9060000@kernel.org> <alpine.DEB.1.10.0904010948120.7643@qirst.com> <20090401154913.GA31435@elte.hu> <alpine.DEB.1.10.0904011404240.29839@qirst.com> <20090401190113.GA734@elte.hu> <alpine.LFD.2.00.0904011235160.4130@localhost.localdomain> <20090401223241.GA28168@elte.hu> <20090401225754.GN8014@parisc-linux.org>
 MIME-Version: 1.0
-To: LKML <linux-kernel@vger.kernel.org>, linux-scsi@vger.kernel.org
-CC: linux-fsdevel@vger.kernel.org, axboe@kernel.dk,
-       Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: [PATCH] osdblk: a Linux block device for OSD objects
-References: <20090402015455.GA14087@havoc.gtf.org>
-In-Reply-To: <20090402015455.GA14087@havoc.gtf.org>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
-X-Spam-Score: -4.4 (----)
-X-Spam-Report: SpamAssassin version 3.2.5 on srv5.dvmed.net summary:
-	Content analysis details:   (-4.4 points, 5.0 required)
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20090401225754.GN8014@parisc-linux.org>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Jeff Garzik wrote:
-> As I promised in older exofs threads, here is a client for libosd
-> _other_ than exofs.  This block driver exports a single OSD object
-> as a Linux block device.
 
-It should be noted that the first handful of functions are duplicates of 
-fs/exofs/osd.c; an obvious consolidation is in order.
+* Matthew Wilcox <matthew@wil.cx> wrote:
 
-	Jeff
+> On Thu, Apr 02, 2009 at 12:32:41AM +0200, Ingo Molnar wrote:
+> > And free_percpu(NULL) does this:
+> > 
+> > void free_percpu(void *ptr)
+> > {
+> >         void *addr = __pcpu_ptr_to_addr(ptr);
+> >         struct pcpu_chunk *chunk;
+> >         unsigned long flags;
+> >         int off;
+> > 
+> >         if (!ptr)
+> >                 return;
+> 
+> Why don't we rewrite this as:
+> 
+> -	void *addr = __pcpu_ptr_to_addr(ptr);
+> +	void *addr;
+> ...
+> 	if (!ptr)
+> 		return;
+> 	addr = __pcpu_ptr_to_addr(ptr);
+> 
+> if kfree(NULL) is really that important, we should avoid doing this
+> extra work, not just rely on the variable being cache-hot.
 
+Yes, of course we can fix that, the NULL fastpath needs no access to 
+anything but the call parameter.
 
+Note that my argument was different though: that assumptions about 
+variable correlation are very hard to track and validate, and that 
+IMHO we should be using __read_mostly generously (we know _that_ 
+attribute with a rather high likelyhood), and we should group the 
+remaining variables together, starting at a cacheline aligned 
+address.
 
+A sub-argument was that the boundary between global variables from 
+different .o files should perhaps not be 'merged' together (on SMP), 
+because the sharing effects are not maintainable: an example of 
+badness is the sb_lock false cacheline sharing that Christoph's 
+patch triggered (randomly).
 
+A sub-sub argument was that perhaps we should not split .data and 
+.bss variables into separate sections - it doubles the chance of 
+false cacheline sharing and spreads the cacheline footprint.
+
+	Ingo
