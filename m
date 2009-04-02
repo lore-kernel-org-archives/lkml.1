@@ -1,100 +1,196 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932669AbZDBSLl@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932314AbZDBSLX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932669AbZDBSLl (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 2 Apr 2009 14:11:41 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1765346AbZDBSKy
+	id S932314AbZDBSLX (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 2 Apr 2009 14:11:23 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1764161AbZDBSK4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 2 Apr 2009 14:10:54 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:57484 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1765785AbZDBSKv (ORCPT
+	Thu, 2 Apr 2009 14:10:56 -0400
+Received: from victor.provo.novell.com ([137.65.250.26]:42897 "EHLO
+	victor.provo.novell.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1764980AbZDBSKw (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 2 Apr 2009 14:10:51 -0400
-Date: Thu, 2 Apr 2009 11:08:24 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Dave Hansen <dave@linux.vnet.ibm.com>
-Cc: npiggin@suse.de, linux-kernel@vger.kernel.org,
-       linux-fsdevel@vger.kernel.org
-Subject: Re: [patch 1/2] fs: mnt_want_write speedup
-Message-Id: <20090402110824.e0c1ec72.akpm@linux-foundation.org>
-In-Reply-To: <1236809477.30142.83.camel@nimitz>
-References: <20090310143718.GB15977@wotan.suse.de>
-	<1236809477.30142.83.camel@nimitz>
-X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Thu, 2 Apr 2009 14:10:52 -0400
+Message-ID: <49D50032.30907@novell.com>
+Date: Thu, 02 Apr 2009 14:13:06 -0400
+From: Gregory Haskins <ghaskins@novell.com>
+User-Agent: Thunderbird 2.0.0.19 (X11/20081227)
+MIME-Version: 1.0
+To: Ben Hutchings <bhutchings@solarflare.com>
+CC: linux-kernel@vger.kernel.org, agraf@suse.de, pmullaney@novell.com,
+       pmorreale@novell.com, anthony@codemonkey.ws, rusty@rustcorp.com.au,
+       netdev@vger.kernel.org, kvm@vger.kernel.org
+Subject: Re: [RFC PATCH 02/17] vbus: add virtual-bus definitions
+References: <20090331184057.28333.77287.stgit@dev.haskins.net>	 <20090331184257.28333.64028.stgit@dev.haskins.net> <1238688376.3202.10.camel@achroite>
+In-Reply-To: <1238688376.3202.10.camel@achroite>
+X-Enigmail-Version: 0.95.7
+OpenPGP: id=D8195319
+Content-Type: multipart/signed; micalg=pgp-sha1;
+ protocol="application/pgp-signature";
+ boundary="------------enig2FE8B9968696887F6C42FB35"
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 11 Mar 2009 15:11:17 -0700
-Dave Hansen <dave@linux.vnet.ibm.com> wrote:
+This is an OpenPGP/MIME signed message (RFC 2440 and 3156)
+--------------enig2FE8B9968696887F6C42FB35
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: quoted-printable
 
-> I'm feeling a bit better about these, although I am still honestly quite
-> afraid of the barriers.  I also didn't like all the #ifdefs much, but
-> here's some help on that.
+Hi Ben
 
-Do we need the ifdefs at all?
+Ben Hutchings wrote:
+> On Tue, 2009-03-31 at 14:42 -0400, Gregory Haskins wrote:
+> [...]
+>  =20
+>> +Create a device instance
+>> +------------------------
+>> +
+>> +Devices are instantiated by again utilizing the /config/vbus configfs=
+ area.
+>> +At first you may suspect that devices are created as subordinate obje=
+cts of a
+>> +bus/container instance, but you would be mistaken.
+>>    =20
+>
+> This is kind of patronising; why don't you simply lay out how things
+> _do_ work?
+>  =20
 
-> How about this on top of what you have as a bit of a cleanup?  It gets
-> rid of all the new #ifdefs in .c files?
-> 
-> Did I miss the use of get_mnt_writers_ptr()?  I don't think I actually
-> saw it used anywhere in this pair of patches, so I've stolen it.  I
-> think gcc should compile all this new stuff down to be basically the
-> same as you had before.  The one thing I'm not horribly sure of is the
-> "out_free_devname:" label.  It shouldn't be reachable in the !SMP case. 
-> 
-> I could also consolidate the header #ifdefs into a single one if you
-> think that looks better.
-> 
-> This is just compile tested, btw.  
-> 
-> ---
-> 
->  linux-2.6.git-dave/fs/namespace.c        |   35 ++++++-------------------------
->  linux-2.6.git-dave/include/linux/mount.h |   30 ++++++++++++++++++++++++--
->  2 files changed, 35 insertions(+), 30 deletions(-)
-> 
-> diff -puN include/linux/mount.h~move-ifdefs-take2 include/linux/mount.h
-> --- linux-2.6.git/include/linux/mount.h~move-ifdefs-take2	2009-03-11 15:01:10.000000000 -0700
-> +++ linux-2.6.git-dave/include/linux/mount.h	2009-03-11 15:02:01.000000000 -0700
-> @@ -71,15 +71,41 @@ struct vfsmount {
->  #endif
->  };
->  
-> -static inline int *get_mnt_writers_ptr(struct vfsmount *mnt)
-> +static inline int *get_mnt_writers_ptr_cpu(struct vfsmount *mnt,
-> +					   int cpu)
->  {
->  #ifdef CONFIG_SMP
-> -	return mnt->mnt_writers;
-> +	return per_cpu_ptr(mnt->mnt_writers, cpu);
->  #else
->  	return &mnt->mnt_writers;
->  #endif
->  }
->  
-> +static inline int *get_mnt_writers_ptr(struct vfsmount *mnt)
-> +{
-> +	return get_mnt_writers_ptr_cpu(mnt, smp_processor_id());
-> +}
-> +
-> +static inline int alloc_mnt_writers(struct vfsmount *mnt)
-> +{
-> +#ifdef CONFIG_SMP
-> +	mnt->mnt_writers = alloc_percpu(int);
-> +	if (!mnt->mnt_writers)
-> +		return -ENOMEM;
-> +#else
-> +	mnt->mnt_writers = 0;
-> +#endif
-> +	return 0;
-> +}
+Ya, point taken.  I think that was written really to myself, because my
+first design *had* the device as a subordinate object.  Then I realized
+later that I didn't like that design :)
 
-If the CONFIG_SMP=n code is just removed, the percpu code should dtrt
-with CONFIG_SMP=n.  There is the additional pointer indirection though,
-I guess.  Do we do it often enough to be concerned about the cost?
+I will fix this.
+
+>  =20
+>>  Devices are actually
+>> +root-level objects in vbus specifically to allow greater flexibility =
+in the
+>> +association of a device.  For instance, it may be desirable to have a=
+ single
+>> +device that spans multiple VMs (consider an ethernet switch, or a sha=
+red disk
+>> +for a cluster).  Therefore, device lifecycles are managed by creating=
+/deleting
+>> +objects in /config/vbus/devices.
+>> +
+>> +Note: Creating a device instance is actually a two step process:  We =
+need to
+>> +give the device instance a unique name, and we also need to give it a=
+ specific
+>> +device type.  It is hard to express both parameters using standard fi=
+lesystem
+>> +operations like mkdir, so the design decision was made to require per=
+forming
+>> +the operation in two steps.
+>>    =20
+>
+> How about exposing a subdir for each device class under
+> /config/vbus/devices/ and allowing device creation only within those?
+> Two-stage construction is a pain for both users and implementors.
+>
+>  =20
+I am not sure I follow.  It sounds like you are suggesting exactly what
+I do today.
+
+> [...]
+>  =20
+>> +At this point, we are ready to roll.  Pid 4382 has access to a virtua=
+l-bus
+>> +namespace with one device, id=3D0.  Its type is:
+>> +
+>> +# cat /sys/vbus/instances/beb4df8f-7483-4028-b3f7-767512e2a18c/device=
+s/0/type
+>> +virtual-ethernet
+>> +
+>> +"virtual-ethernet"?  Why is it not "venet-tap"?  Device-classes are a=
+llowed to
+>>    =20
+
+I think I worded this awkwardly.  A device-class creates a
+device-instance.  A device-instance registers one or more interfaces.=20
+There are device types (of which I would classify both the device-class
+and its instantiated device object as the same "type"), and there are
+interface types.  The interface types may overlap across different
+device types, as demonstrated below.  I will update the doc to be more
+clear, here (assuming I didn't muddle it up even more ;)
+
+>> +register their interfaces under an id that is not required to be the =
+same as
+>> +their deviceclass.  This supports device polymorphism.   For instance=
+,
+>> +consider that an interface "virtual-ethernet" may provide basic 802.x=
+ packet
+>> +exchange.  However, we could have various implementations of a device=
+ that
+>> +supports the 802.x interface, while having various implementations be=
+hind
+>> +them.
+>>    =20
+> [...]
+>
+> It seems to me that your "device-classes" correspond to drivers and
+> "interfaces" correspond to device classes in the LDM.
+I don't think that is quite right, but I might be missing your point.=20
+All of these objects exist on the "backend", of which there isnt a
+specific precedent with LDM to express.  Normally in LDM, you would have
+some kind of physical device object in the hardware (say a SATA disk),
+and an LDM "block device" that represents it in software.  So we call
+the LDM model for that disk a "device" but really its like a proxy or a
+software representative of the actual device itself.  And I am not
+knocking this designation, as I think it makes a lot of sense.
+
+However, what I will point out is that what we are creating here in vbus
+is more akin to the SATA disk itself, not the LDM "block device"
+representation of the device.   There was no really great existing way
+to express this type of object, which is why I had to create a new
+namespace in sysfs.
+
+To dig down into this a little further, the device and interface are
+inextricably linked in a relationship very close to this "physical
+device" concept.  Therefore the "driver" portion of LDM that you
+referenced w.r.t. the device-class doesnt even enter the picture here
+(that would actually be up in the guest or userspace, actually.=20
+Discussed below).
+
+As an example, consider a e1000 network card.  The PCI-ID and REV for
+the e1000 card and the associated ABI are like its "interface".  Whereas
+if its a physical card plugged into a physical pci slot, or its an
+emulated e1000 inside qemu-kvm are like its device-instance.  In theory,
+I can substitute either device-instance transparently with any driver
+that understands the ABI associated with the e1000 PCI-ID
+interchangeably (assuming all the plumbing is there, etc).  Its the same
+deal here.  Taking a little creative license here to use that example in
+terms of vbus concepts, I would have a device-class type =3D
+"physical-e1000-card", and another "qemu-e1000-model".  I could
+instantiate either one of those and they would ultimately register an
+interface of type "e1000".
+
+So where traditional LDM starts to play here is actually on the other
+side (e.g. the guest).  So the host has this vbus context with our
+"e1000" interface registered on it.  When the guest loads, it would
+create an LDM "device" object for the e1000, as well as a driver
+instance if one was present.  From here, things would look more like
+normal LDM concepts that we are used to.
+
+HTH
+
+-Greg
 
 
+
+--------------enig2FE8B9968696887F6C42FB35
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: OpenPGP digital signature
+Content-Disposition: attachment; filename="signature.asc"
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v2.0.9 (GNU/Linux)
+Comment: Using GnuPG with SUSE - http://enigmail.mozdev.org
+
+iEYEARECAAYFAknVADIACgkQlOSOBdgZUxk/5QCfW0O7VCxRCz1CLwvnOqOFxuSg
+fTIAoIs7Yj0zdLWifpJvNzmrW6sLOHUj
+=e450
+-----END PGP SIGNATURE-----
+
+--------------enig2FE8B9968696887F6C42FB35--
