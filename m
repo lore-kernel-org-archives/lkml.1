@@ -1,79 +1,41 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757509AbZDBSps@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762854AbZDBSs6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757509AbZDBSps (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 2 Apr 2009 14:45:48 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753548AbZDBSpi
+	id S1762854AbZDBSs6 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 2 Apr 2009 14:48:58 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752993AbZDBSss
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 2 Apr 2009 14:45:38 -0400
-Received: from mx3.mail.elte.hu ([157.181.1.138]:36565 "EHLO mx3.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750923AbZDBSph (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 2 Apr 2009 14:45:37 -0400
-Date: Thu, 2 Apr 2009 20:45:14 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: markus.t.metzger@intel.com
-Cc: tglx@linutronix.de, hpa@zytor.com, markus.t.metzger@gmail.com,
-       roland@redhat.com, eranian@googlemail.com, oleg@redhat.com,
-       juan.villacis@intel.com, ak@linux.jf.intel.com,
-       linux-kernel@vger.kernel.org
-Subject: Re: [patch 01/18] x86, bts: fix race when bts tracer is removed
-Message-ID: <20090402184514.GC843@elte.hu>
-References: <20090402145455.597376000@intel.com> <20090402145702.669790000@intel.com>
+	Thu, 2 Apr 2009 14:48:48 -0400
+Received: from zeniv.linux.org.uk ([195.92.253.2]:42405 "EHLO
+	ZenIV.linux.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751291AbZDBSsr (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 2 Apr 2009 14:48:47 -0400
+Date: Thu, 2 Apr 2009 19:48:44 +0100
+From: Al Viro <viro@ZenIV.linux.org.uk>
+To: Nick Piggin <npiggin@suse.de>
+Cc: Dave Hansen <dave@linux.vnet.ibm.com>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       linux-fsdevel@vger.kernel.org,
+       Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: [patch 1/2] fs: mnt_want_write speedup
+Message-ID: <20090402184844.GA2080@ZenIV.linux.org.uk>
+References: <20090310143718.GB15977@wotan.suse.de> <1236809477.30142.83.camel@nimitz> <20090312041334.GB1893@wotan.suse.de> <1237403623.8286.196.camel@nimitz> <20090402182210.GB17175@wotan.suse.de> <20090402184305.GI28946@ZenIV.linux.org.uk>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20090402145702.669790000@intel.com>
+In-Reply-To: <20090402184305.GI28946@ZenIV.linux.org.uk>
 User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Thu, Apr 02, 2009 at 07:43:05PM +0100, Al Viro wrote:
 
-* markus.t.metzger@intel.com <markus.t.metzger@intel.com> wrote:
+> FWIW, I'm not sure that this optimization is valid.  We might eventually
+> want to go for "don't allow any new writers, remount r/o when existing
+> ones expire" functionality, so nested mnt_want_write() might eventually
+> be allowed to fail.
 
-> +static inline void ds_take_timestamp(struct ds_context *context,
-> +				     enum bts_qualifier qualifier,
-> +				     struct task_struct *task)
-> +{
-> +	struct bts_tracer *tracer = context->bts_master;
-> +	barrier();
-
-why the barrier()?
-
-> +
-> +	if (tracer && (tracer->flags & BTS_TIMESTAMPS)) {
-> +		struct bts_struct ts = {
-> +			.qualifier = qualifier,
-> +			.variant.timestamp.jiffies = jiffies_64,
-> +			.variant.timestamp.pid = task->pid
-> +		};
-> +		bts_write(tracer, &ts);
-> +	}
-
-Why do we have .variant.timestamp.pid ? A PID is not a timestamp. It 
-might be .event.jiffies and .event.pid perhaps.
-
-Also, the whole function could be cleaned up by:
-
- 1) returning early if !tracer || !(tracer->flags & BTS_TIMESTAMPS).
-
- 2) Doing a cleaner initialization - something like:
-
-struct bts_struct ts = {
-	.qualifier		= qualifier,
-	.variant.event.jiffies	= jiffies_64,
-	.variant.event.pid	= task->pid
-};
-
-Also, raw use of jiffies_64 is buggy and racy. Why does this use 
-jiffies to begin with - why not some finer grained time?
-
-	Ingo
+BTW, I think that 1/2 as of Mar 10 is worth merging.  There's an interesting
+question, though - do we want mnt_writers int or long?  On 64bit boxen it
+can get serious...
