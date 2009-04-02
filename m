@@ -1,66 +1,77 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761833AbZDBANs@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933557AbZDBATU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761833AbZDBANs (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 1 Apr 2009 20:13:48 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759975AbZDBANd
+	id S933557AbZDBATU (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 1 Apr 2009 20:19:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758150AbZDBATB
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 1 Apr 2009 20:13:33 -0400
-Received: from ti-out-0910.google.com ([209.85.142.184]:17499 "EHLO
-	ti-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756693AbZDBANb (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 1 Apr 2009 20:13:31 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:user-agent:mime-version:to:cc:subject
-         :references:in-reply-to:x-enigmail-version:content-type
-         :content-transfer-encoding;
-        b=p1amqANv0+Jc8O1epbpTT5+3pgy8C6C0hE87Uw9Zjp89uY8MpsxlNFyj8vNXmlYz87
-         QsSo0RoRtIln6vc3mrV8uHQpsfVnuXR0R8zkY/0sk1K+FlSY+kN6XBeVz6bTKqXk1zFv
-         JX9a+RZssdMUhGm7G/UlfwbYisi4wUKN6Tq+Q=
-Message-ID: <49D40323.2020406@gmail.com>
-Date: Thu, 02 Apr 2009 09:13:23 +0900
-From: Tejun Heo <htejun@gmail.com>
-User-Agent: Thunderbird 2.0.0.19 (X11/20081227)
+	Wed, 1 Apr 2009 20:19:01 -0400
+Received: from www.tglx.de ([62.245.132.106]:32850 "EHLO www.tglx.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1758103AbZDBATA (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 1 Apr 2009 20:19:00 -0400
+Date: Thu, 2 Apr 2009 02:17:43 +0200 (CEST)
+From: Thomas Gleixner <tglx@linutronix.de>
+To: LKML <linux-kernel@vger.kernel.org>
+cc: rt-users <linux-rt-users@vger.kernel.org>, Ingo Molnar <mingo@elte.hu>,
+       Steven Rostedt <rostedt@goodmis.org>,
+       Peter Zijlstra <peterz@infradead.org>, Carsten Emde <ce@ceag.ch>,
+       Clark Williams <williams@redhat.com>,
+       Frank Rowand <frank.rowand@am.sony.com>,
+       Robin Gareus <robin@gareus.org>, Gregory Haskins <ghaskins@novell.com>,
+       Philippe Reynes <philippe.reynes@isismpp.fr>,
+       Fernando Lopez-Lezcano <nando@ccrma.Stanford.EDU>,
+       Will Schmidt <will_schmidt@vnet.ibm.com>
+Subject: [Announce] 2.6.29-rt2
+In-Reply-To: <alpine.LFD.2.00.0903252154040.3397@localhost.localdomain>
+Message-ID: <alpine.LFD.2.00.0904020155320.12916@localhost.localdomain>
+References: <alpine.LFD.2.00.0902112332370.415@localhost.localdomain> <alpine.LFD.2.00.0902122353050.16972@localhost.localdomain> <alpine.LFD.2.00.0902231854360.3523@localhost.localdomain> <alpine.LFD.2.00.0902241849230.3523@localhost.localdomain>
+ <alpine.LFD.2.00.0902241856480.9135@localhost.localdomain> <alpine.LFD.2.00.0903122013230.29264@localhost.localdomain> <alpine.LFD.2.00.0903200014320.29264@localhost.localdomain> <alpine.LFD.2.00.0903201832590.29264@localhost.localdomain>
+ <alpine.LFD.2.00.0903231723090.29264@localhost.localdomain> <alpine.LFD.2.00.0903252154040.3397@localhost.localdomain>
+User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
 MIME-Version: 1.0
-To: Eric Dumazet <dada1@cosmosbay.com>
-CC: Ingo Molnar <mingo@elte.hu>, Jeremy Fitzhardinge <jeremy@goop.org>,
-       linux kernel <linux-kernel@vger.kernel.org>,
-       Linux Netdev List <netdev@vger.kernel.org>,
-       Joe Perches <joe@perches.com>, Rusty Russell <rusty@rustcorp.com.au>
-Subject: Re: [RFC] percpu: convert SNMP mibs to new infra
-References: <49D32212.80607@cosmosbay.com> <49D32DC2.9010003@goop.org> <49D33E80.70802@cosmosbay.com> <20090401161218.GB3859@elte.hu> <49D3A0C2.9000403@cosmosbay.com> <49D3B61F.8010507@cosmosbay.com>
-In-Reply-To: <49D3B61F.8010507@cosmosbay.com>
-X-Enigmail-Version: 0.95.7
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hello, Eric, Ingo.
+We are pleased to announce the next update to our new preempt-rt
+series.
+ 
+      - fix a fork/exit bug in the signal per task cache (/me puts on
+        a huge brown paper bag - Thanks to Phillipe Reynes and Will
+        Schmidt for reporting and testing)
 
-Eric Dumazet wrote:
-> diff --git a/arch/x86/include/asm/percpu.h b/arch/x86/include/asm/percpu.h
-> index aee103b..6b82f6b 100644
-> --- a/arch/x86/include/asm/percpu.h
-> +++ b/arch/x86/include/asm/percpu.h
-> @@ -135,6 +135,9 @@ do {							\
->  #define percpu_read(var)	percpu_from_op("mov", per_cpu__##var)
->  #define percpu_write(var, val)	percpu_to_op("mov", per_cpu__##var, val)
->  #define percpu_add(var, val)	percpu_to_op("add", per_cpu__##var, val)
-> +#define indir_percpu_add(var, val)	percpu_to_op("add", *(var), val)
-> +#define indir_percpu_inc(var)       percpu_to_op("add", *(var), 1)
-> +#define indir_percpu_dec(var)       percpu_to_op("add", *(var), -1)
->  #define percpu_sub(var, val)	percpu_to_op("sub", per_cpu__##var, val)
->  #define percpu_and(var, val)	percpu_to_op("and", per_cpu__##var, val)
->  #define percpu_or(var, val)	percpu_to_op("or", per_cpu__##var, val)
+      - fix a group scheduling migration accounting bug (decoded with
+        and fixed by Peter Zijlstra - reported by Robin Gareus)
 
-The final goal is to unify static and dynamic accesses but we aren't
-there yet, so, for the time being, we'll need some interim solutions.
-I would prefer percpu_ptr_add() tho.
+      - tlb gather rework by Peter Zijlstra - Thanks Peter !
 
-Thanks.
+      - the usual fixlets
 
--- 
-tejun
+The tlb rework might be incomplete on some of the uncountable
+incarnations of PowerPC and ARM platforms, so look out for wreckage
+and keep the usual tools (fire-extinguishers, brooms, buckets etc.)
+handy.
+
+Download locations:
+
+    http://rt.et.redhat.com/download/
+    http://www.kernel.org/pub/linux/kernel/projects/rt/
+ 
+Information on the RT patch can be found at:
+
+    http://rt.wiki.kernel.org/index.php/Main_Page
+
+to build the 2.6.29-rt2 tree, the following patches should be
+applied:
+
+    http://www.kernel.org/pub/linux/kernel/v2.6/linux-2.6.29.tar.bz2
+    http://www.kernel.org/pub/linux/kernel/projects/rt/patch-2.6.29-rt2.bz2
+
+The broken out patches are also available at the same download
+locations.
+
+Enjoy !
+
+       tglx
+
