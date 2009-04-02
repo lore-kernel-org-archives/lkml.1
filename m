@@ -1,41 +1,45 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760143AbZDBOlu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760878AbZDBOmm@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760143AbZDBOlu (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 2 Apr 2009 10:41:50 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752972AbZDBOlk
+	id S1760878AbZDBOmm (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 2 Apr 2009 10:42:42 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759876AbZDBOmQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 2 Apr 2009 10:41:40 -0400
-Received: from mx2.redhat.com ([66.187.237.31]:43496 "EHLO mx2.redhat.com"
+	Thu, 2 Apr 2009 10:42:16 -0400
+Received: from mx2.redhat.com ([66.187.237.31]:43518 "EHLO mx2.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752060AbZDBOlj (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 2 Apr 2009 10:41:39 -0400
-Date: Thu, 2 Apr 2009 16:41:18 +0200
-From: Andrea Arcangeli <aarcange@redhat.com>
-To: Chris Wright <chrisw@redhat.com>
-Cc: Anthony Liguori <anthony@codemonkey.ws>, Izik Eidus <ieidus@redhat.com>,
-       linux-kernel@vger.kernel.org, kvm@vger.kernel.org, linux-mm@kvack.org,
-       avi@redhat.com, riel@redhat.com, jeremy@goop.org, mtosatti@redhat.com,
-       hugh@veritas.com, corbet@lwn.net, yaniv@redhat.com,
-       dmonakhov@openvz.org
-Subject: Re: [PATCH 5/4] update ksm userspace interfaces
-Message-ID: <20090402144118.GH9137@random.random>
-References: <49D22A9D.4050403@codemonkey.ws> <20090331150218.GS9137@random.random> <49D23224.9000903@codemonkey.ws> <20090331151845.GT9137@random.random> <49D23CD1.9090208@codemonkey.ws> <20090331162525.GU9137@random.random> <49D24A02.6070000@codemonkey.ws> <20090402012215.GE1117@x200.localdomain> <49D424AF.3090806@codemonkey.ws> <20090402053114.GF1117@x200.localdomain>
+	id S1759345AbZDBOmO (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 2 Apr 2009 10:42:14 -0400
+Message-ID: <49D4CEB1.9020001@redhat.com>
+Date: Thu, 02 Apr 2009 17:41:53 +0300
+From: Avi Kivity <avi@redhat.com>
+User-Agent: Thunderbird 2.0.0.21 (X11/20090320)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090402053114.GF1117@x200.localdomain>
+To: Gregory Haskins <ghaskins@novell.com>
+CC: Anthony Liguori <anthony@codemonkey.ws>, Andi Kleen <andi@firstfloor.org>,
+       linux-kernel@vger.kernel.org, agraf@suse.de, pmullaney@novell.com,
+       pmorreale@novell.com, rusty@rustcorp.com.au, netdev@vger.kernel.org,
+       kvm@vger.kernel.org
+Subject: Re: [RFC PATCH 00/17] virtual-bus
+References: <20090331184057.28333.77287.stgit@dev.haskins.net> <87ab71monw.fsf@basil.nowhere.org> <49D35825.3050001@novell.com> <20090401132340.GT11935@one.firstfloor.org> <49D37805.1060301@novell.com> <20090401170103.GU11935@one.firstfloor.org> <49D3B64F.6070703@codemonkey.ws> <49D3D7EE.4080202@novell.com> <49D46089.5040204@redhat.com> <49D497A1.4090900@novell.com> <49D4A4EB.8020105@redhat.com> <49D4AE0C.3000604@novell.com> <49D4B2C0.5060906@redhat.com> <49D4B594.6080703@novell.com> <49D4B8B4.4020003@redhat.com> <49D4BF70.1060301@novell.com> <49D4C191.2070502@redhat.com> <49D4CAA7.3020004@novell.com> <49D4CC61.6010105@redhat.com>
+In-Reply-To: <49D4CC61.6010105@redhat.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Apr 01, 2009 at 10:31:14PM -0700, Chris Wright wrote:
->   - register only ATM, can add MADV_UNSHAREABLE to allow an app to proactively
->     unregister, but need a cleanup when ->mm goes away via exit/exec
+Avi Kivity wrote:
+>
+> The alternative is to get a notification from the stack that the 
+> packet is done processing.  Either an skb destructor in the kernel, or 
+> my new API that everyone is not rushing out to implement.
 
-The unregister cleanup must happen at the vma level (with unregister
-when vma goes away or is overwritten) for this to provide sane madvise
-semantics (not just in exit/exec, but in unmap/mmap too). Otherwise
-this is all but madvise. Basically we need a chunk of code in core VM
-when KSM=y/m, even if we keep returning -EINVAL when KSM=n (for
-backwards compatibility, -ENOSYS not). Example, vma must be split in
-two if you MAP_SHARABLE only part of it etc...
+btw, my new api is
+
+
+   io_submit(..., nr, ...): submit nr packets
+   io_getevents(): complete nr packets
+
+-- 
+error compiling committee.c: too many arguments to function
+
