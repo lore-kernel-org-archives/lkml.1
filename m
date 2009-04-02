@@ -1,141 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760933AbZDBOtc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760179AbZDBOtw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760933AbZDBOtc (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 2 Apr 2009 10:49:32 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760015AbZDBOsy
+	id S1760179AbZDBOtw (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 2 Apr 2009 10:49:52 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760775AbZDBOth
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 2 Apr 2009 10:48:54 -0400
-Received: from ottawa-hs-64-26-147-143.d-ip.magma.ca ([64.26.147.143]:38951
-	"EHLO gonzo.int.wil.cx" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1759031AbZDBOsv (ORCPT
+	Thu, 2 Apr 2009 10:49:37 -0400
+Received: from rv-out-0506.google.com ([209.85.198.233]:26310 "EHLO
+	rv-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1760533AbZDBOtg (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 2 Apr 2009 10:48:51 -0400
-X-Greylist: delayed 681 seconds by postgrey-1.27 at vger.kernel.org; Thu, 02 Apr 2009 10:48:51 EDT
-From: Matthew Wilcox <willy@linux.intel.com>
-To: linux-ide@vger.kernel.org, linux-kernel@vger.kernel.org,
-       jgarzik@redhat.com
-Cc: Matthew Wilcox <matthew@wil.cx>, Matthew Wilcox <willy@linux.intel.com>
-Subject: [PATCH 1/5] Block: Discard may need to allocate pages
-Date: Thu,  2 Apr 2009 10:37:23 -0400
-Message-Id: <1238683047-13588-1-git-send-email-willy@linux.intel.com>
-X-Mailer: git-send-email 1.6.2.1
+	Thu, 2 Apr 2009 10:49:36 -0400
+Message-ID: <49D4D075.9010702@codemonkey.ws>
+Date: Thu, 02 Apr 2009 09:49:25 -0500
+From: Anthony Liguori <anthony@codemonkey.ws>
+User-Agent: Thunderbird 2.0.0.21 (X11/20090320)
+MIME-Version: 1.0
+To: Avi Kivity <avi@redhat.com>
+CC: Gregory Haskins <ghaskins@novell.com>, Andi Kleen <andi@firstfloor.org>,
+       linux-kernel@vger.kernel.org, agraf@suse.de, pmullaney@novell.com,
+       pmorreale@novell.com, rusty@rustcorp.com.au, netdev@vger.kernel.org,
+       kvm@vger.kernel.org
+Subject: Re: [RFC PATCH 00/17] virtual-bus
+References: <20090331184057.28333.77287.stgit@dev.haskins.net> <87ab71monw.fsf@basil.nowhere.org> <49D35825.3050001@novell.com> <20090401132340.GT11935@one.firstfloor.org> <49D37805.1060301@novell.com> <20090401170103.GU11935@one.firstfloor.org> <49D3B64F.6070703@codemonkey.ws> <49D3D7EE.4080202@novell.com> <49D46089.5040204@redhat.com> <49D497A1.4090900@novell.com> <49D4A4EB.8020105@redhat.com> <49D4AE0C.3000604@novell.com> <49D4B2C0.5060906@redhat.com> <49D4B594.6080703@novell.com> <49D4B8B4.4020003@redhat.com> <49D4BF70.1060301@novell.com> <49D4C191.2070502@redhat.com> <49D4CAA7.3020004@novell.com> <49D4CC61.6010105@redhat.com> <49D4CEB1.9020001@redhat.com>
+In-Reply-To: <49D4CEB1.9020001@redhat.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Matthew Wilcox <matthew@wil.cx>
+Avi Kivity wrote:
+> Avi Kivity wrote:
+>>
+>> The alternative is to get a notification from the stack that the 
+>> packet is done processing.  Either an skb destructor in the kernel, 
+>> or my new API that everyone is not rushing out to implement.
+>
+> btw, my new api is
+>
+>
+>   io_submit(..., nr, ...): submit nr packets
+>   io_getevents(): complete nr packets
 
-SCSI and ATA both need to send data to the device.  In order to do this,
-the BIO must be allocated with room for a page to be added, and the bio
-needs to be passed to the discard prep function.  We also need to free
-the page attached to the BIO before we free it.
+I don't think we even need that to end this debate.  I'm convinced we 
+have a bug somewhere.  Even disabling TX mitigation, I see a ping 
+latency of around 300ns whereas it's only 50ns on the host.  This defies 
+logic so I'm now looking to isolate why that is.
 
-init_request_from_bio() is not currently called from a context which
-forbids sleeping, and to make sure it stays that way (so we don't have
-to use GFP_ATOMIC), add a might_sleep() to it.
+Regards,
 
-Signed-off-by: Matthew Wilcox <willy@linux.intel.com>
----
- block/blk-barrier.c       |    4 +++-
- block/blk-core.c          |    4 +++-
- block/ioctl.c             |    4 +++-
- drivers/mtd/mtd_blkdevs.c |    2 +-
- include/linux/blkdev.h    |    3 ++-
- 5 files changed, 12 insertions(+), 5 deletions(-)
-
-diff --git a/block/blk-barrier.c b/block/blk-barrier.c
-index f7dae57..82a3035 100644
---- a/block/blk-barrier.c
-+++ b/block/blk-barrier.c
-@@ -356,6 +356,8 @@ static void blkdev_discard_end_io(struct bio *bio, int err)
- 		clear_bit(BIO_UPTODATE, &bio->bi_flags);
- 	}
- 
-+	if (bio_has_data(bio))
-+		__free_page(bio_page(bio));
- 	bio_put(bio);
- }
- 
-@@ -387,7 +389,7 @@ int blkdev_issue_discard(struct block_device *bdev,
- 		return -EOPNOTSUPP;
- 
- 	while (nr_sects && !ret) {
--		bio = bio_alloc(gfp_mask, 0);
-+		bio = bio_alloc(gfp_mask, 1);
- 		if (!bio)
- 			return -ENOMEM;
- 
-diff --git a/block/blk-core.c b/block/blk-core.c
-index 996ed90..7899761 100644
---- a/block/blk-core.c
-+++ b/block/blk-core.c
-@@ -1095,6 +1095,8 @@ EXPORT_SYMBOL(blk_put_request);
- 
- void init_request_from_bio(struct request *req, struct bio *bio)
- {
-+	might_sleep();
-+
- 	req->cpu = bio->bi_comp_cpu;
- 	req->cmd_type = REQ_TYPE_FS;
- 
-@@ -1118,7 +1120,7 @@ void init_request_from_bio(struct request *req, struct bio *bio)
- 		req->cmd_flags |= REQ_DISCARD;
- 		if (bio_barrier(bio))
- 			req->cmd_flags |= REQ_SOFTBARRIER;
--		req->q->prepare_discard_fn(req->q, req);
-+		req->q->prepare_discard_fn(req->q, req, bio);
- 	} else if (unlikely(bio_barrier(bio)))
- 		req->cmd_flags |= (REQ_HARDBARRIER | REQ_NOMERGE);
- 
-diff --git a/block/ioctl.c b/block/ioctl.c
-index 0f22e62..088a9ba 100644
---- a/block/ioctl.c
-+++ b/block/ioctl.c
-@@ -145,7 +145,7 @@ static int blk_ioctl_discard(struct block_device *bdev, uint64_t start,
- 		DECLARE_COMPLETION_ONSTACK(wait);
- 		struct bio *bio;
- 
--		bio = bio_alloc(GFP_KERNEL, 0);
-+		bio = bio_alloc(GFP_KERNEL, 1);
- 		if (!bio)
- 			return -ENOMEM;
- 
-@@ -170,6 +170,8 @@ static int blk_ioctl_discard(struct block_device *bdev, uint64_t start,
- 			ret = -EOPNOTSUPP;
- 		else if (!bio_flagged(bio, BIO_UPTODATE))
- 			ret = -EIO;
-+		if (bio_has_data(bio))
-+			__free_page(bio_page(bio));
- 		bio_put(bio);
- 	}
- 	return ret;
-diff --git a/drivers/mtd/mtd_blkdevs.c b/drivers/mtd/mtd_blkdevs.c
-index 1409f01..2b6ed4b 100644
---- a/drivers/mtd/mtd_blkdevs.c
-+++ b/drivers/mtd/mtd_blkdevs.c
-@@ -33,7 +33,7 @@ struct mtd_blkcore_priv {
- };
- 
- static int blktrans_discard_request(struct request_queue *q,
--				    struct request *req)
-+				    struct request *req, struct bio *bio)
- {
- 	req->cmd_type = REQ_TYPE_LINUX_BLOCK;
- 	req->cmd[0] = REQ_LB_OP_DISCARD;
-diff --git a/include/linux/blkdev.h b/include/linux/blkdev.h
-index 465d6ba..9d9bd7b 100644
---- a/include/linux/blkdev.h
-+++ b/include/linux/blkdev.h
-@@ -260,7 +260,8 @@ typedef void (request_fn_proc) (struct request_queue *q);
- typedef int (make_request_fn) (struct request_queue *q, struct bio *bio);
- typedef int (prep_rq_fn) (struct request_queue *, struct request *);
- typedef void (unplug_fn) (struct request_queue *);
--typedef int (prepare_discard_fn) (struct request_queue *, struct request *);
-+typedef int (prepare_discard_fn) (struct request_queue *, struct request *,
-+							struct bio *bio);
- 
- struct bio_vec;
- struct bvec_merge_data {
--- 
-1.6.2.1
+Anthony Liguori
 
