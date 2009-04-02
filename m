@@ -1,68 +1,168 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760180AbZDBOce@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759553AbZDBOd0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760180AbZDBOce (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 2 Apr 2009 10:32:34 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758050AbZDBOcW
+	id S1759553AbZDBOd0 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 2 Apr 2009 10:33:26 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757637AbZDBOdR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 2 Apr 2009 10:32:22 -0400
-Received: from mx2.redhat.com ([66.187.237.31]:38181 "EHLO mx2.redhat.com"
+	Thu, 2 Apr 2009 10:33:17 -0400
+Received: from hera.kernel.org ([140.211.167.34]:49165 "EHLO hera.kernel.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1758011AbZDBOcV (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 2 Apr 2009 10:32:21 -0400
-Message-ID: <49D4CC61.6010105@redhat.com>
-Date: Thu, 02 Apr 2009 17:32:01 +0300
-From: Avi Kivity <avi@redhat.com>
-User-Agent: Thunderbird 2.0.0.21 (X11/20090320)
-MIME-Version: 1.0
-To: Gregory Haskins <ghaskins@novell.com>
-CC: Anthony Liguori <anthony@codemonkey.ws>, Andi Kleen <andi@firstfloor.org>,
-       linux-kernel@vger.kernel.org, agraf@suse.de, pmullaney@novell.com,
-       pmorreale@novell.com, rusty@rustcorp.com.au, netdev@vger.kernel.org,
-       kvm@vger.kernel.org
-Subject: Re: [RFC PATCH 00/17] virtual-bus
-References: <20090331184057.28333.77287.stgit@dev.haskins.net> <87ab71monw.fsf@basil.nowhere.org> <49D35825.3050001@novell.com> <20090401132340.GT11935@one.firstfloor.org> <49D37805.1060301@novell.com> <20090401170103.GU11935@one.firstfloor.org> <49D3B64F.6070703@codemonkey.ws> <49D3D7EE.4080202@novell.com> <49D46089.5040204@redhat.com> <49D497A1.4090900@novell.com> <49D4A4EB.8020105@redhat.com> <49D4AE0C.3000604@novell.com> <49D4B2C0.5060906@redhat.com> <49D4B594.6080703@novell.com> <49D4B8B4.4020003@redhat.com> <49D4BF70.1060301@novell.com> <49D4C191.2070502@redhat.com> <49D4CAA7.3020004@novell.com>
-In-Reply-To: <49D4CAA7.3020004@novell.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+	id S1752233AbZDBOdQ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 2 Apr 2009 10:33:16 -0400
+Subject: Re: [tip:irq/genirq] genirq: do not execute DEBUG_SHIRQ when irq
+ setup failed
+From: Jaswinder Singh Rajput <jaswinder@kernel.org>
+To: mingo@redhat.com, hpa@zytor.com, linux-kernel@vger.kernel.org,
+       henrix@sapo.pt, tglx@linutronix.de
+Cc: linux-tip-commits@vger.kernel.org
+In-Reply-To: <tip-ba71604fad348656071a2a76eef9a67dab85a773@git.kernel.org>
+References: <20090401170635.GA4392@hades.domain.com>
+	 <tip-ba71604fad348656071a2a76eef9a67dab85a773@git.kernel.org>
+Content-Type: text/plain
+Date: Thu, 02 Apr 2009 20:02:27 +0530
+Message-Id: <1238682747.3099.16.camel@ht.satnam>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.24.5 (2.24.5-1.fc10) 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Gregory Haskins wrote:
->> If you have a request-response workload with the wire idle and latency
->> critical, then there's no problem having an exit per packet because
->> (a) there aren't that many packets and (b) the guest isn't doing any
->> batching, so guest overhead will swamp the hypervisor overhead.
->>     
-> Right, so the trick is to use an algorithm that adapts here.  Batching
-> solves the first case, but not the second.  The bidir napi thing solves
-> both, but it does assume you have ample host processing power to run the
-> algorithm concurrently.  This may or may not be suitable to all
-> applications, I admit.
->   
+On Thu, 2009-04-02 at 14:03 +0000, Luis Henriques wrote:
+> Commit-ID:  ba71604fad348656071a2a76eef9a67dab85a773
+> Gitweb:     http://git.kernel.org/tip/ba71604fad348656071a2a76eef9a67dab85a773
+> Author:     Luis Henriques <henrix@sapo.pt>
+> AuthorDate: Wed, 1 Apr 2009 18:06:35 +0100
+> Committer:  Thomas Gleixner <tglx@linutronix.de>
+> CommitDate: Thu, 2 Apr 2009 16:02:39 +0200
+> 
+> genirq: do not execute DEBUG_SHIRQ when irq setup failed
+> 
+> When requesting an IRQ, the DEBUG_SHIRQ code executes a fake IRQ just to make
+> sure the driver is ready to receive an IRQ immediately.  The problem was that
+> this fake IRQ was being executed even if interrupt line failed to be allocated
+> by __setup_irq.
+> 
+> Signed-off-by: Luis Henriques <henrix@sapo.pt>
+> LKML-Reference: <20090401170635.GA4392@hades.domain.com>
+> Signed-off-by: Thomas Gleixner <tglx@linutronix.de>
+> 
+> 
+> ---
+>  kernel/irq/manage.c |    2 +-
+>  1 files changed, 1 insertions(+), 1 deletions(-)
+> 
+> diff --git a/kernel/irq/manage.c b/kernel/irq/manage.c
+> index 1516ab7..beeb7d1 100644
+> --- a/kernel/irq/manage.c
+> +++ b/kernel/irq/manage.c
+> @@ -768,7 +768,7 @@ int request_irq(unsigned int irq, irq_handler_t handler,
+>  		kfree(action);
+>  
+>  #ifdef CONFIG_DEBUG_SHIRQ
+> -	if (irqflags & IRQF_SHARED) {
+> +	if (!retval & (irqflags & IRQF_SHARED)) {
+>  		/*
+>  		 * It's a shared IRQ -- the driver ought to be prepared for it
+>  		 * to happen immediately, so let's make sure....
 
-The alternative is to get a notification from the stack that the packet 
-is done processing.  Either an skb destructor in the kernel, or my new 
-API that everyone is not rushing out to implement.
+What is this ?
 
->>> Right now its way way way worse than 2us.  In fact, at my last reading
->>> this was more like 3060us (3125-65).  So shorten that 3125 to 67 (while
->>> maintaining line-rate) and I will be impressed.  Heck, shorten it to
->>> 80us and I will be impressed.
->>>   
->>>       
->> The 3060us thing is a timer, not cpu time.
->>     
-> Agreed, but its still "state of the art" from an observer perspective. 
-> The reason "why", though easily explainable, is inconsequential to most
-> people.  FWIW, I have seen virtio-net do a much more respectable 350us
-> on an older version, so I know there is plenty of room for improvement.
->   
+There is no retval:
 
-All I want is the notification, and the timer is headed into the nearest 
-landfill.
+http://git.kernel.org/?p=linux/kernel/git/x86/linux-2.6-tip.git;a=blob;f=kernel/irq/manage.c;h=a3eb7baf1e46f2c735edb4cc44e0386cfbc4989e;hb=HEAD
 
+*/
+696 static struct irqaction *__free_irq(unsigned int irq, void *dev_id)
+697 {
+698         struct irq_desc *desc = irq_to_desc(irq);
+699         struct irqaction *action, **action_ptr;
+700         struct task_struct *irqthread;
+701         unsigned long flags;
+702 
+703         WARN(in_interrupt(), "Trying to free IRQ %
+d from IRQ context!\n", irq);
+704 
+705         if (!desc)
+706                 return NULL;
+707 
+708         spin_lock_irqsave(&desc->lock, flags);
+709 
+710         /*
+711
+         * There can be multiple actions per IRQ descriptor, find the right
+712          * one based on the dev_id:
+713          */
+714         action_ptr = &desc->action;
+715         for (;;) {
+716                 action = *action_ptr;
+717 
+718                 if (!action) {
+719                         WARN(1, "Trying to free already-free IRQ %d
+\n", irq);
+720                         spin_unlock_irqrestore(&desc->lock, flags);
+721 
+722                         return NULL;
+723                 }
+724 
+725                 if (action->dev_id == dev_id)
+726                         break;
+727                 action_ptr = &action->next;
+728         }
+729 
+730         /* Found it - now remove it from the list of entries: */
+731         *action_ptr = action->next;
+732 
+733         /* Currently used only by UML, might disappear one day: */
+734 #ifdef CONFIG_IRQ_RELEASE_METHOD
+735         if (desc->chip->release)
+736                 desc->chip->release(irq, dev_id);
+737 #endif
+738 
+739         /* If this was the last handler, shut down the IRQ line: */
+740         if (!desc->action) {
+741                 desc->status |= IRQ_DISABLED;
+742                 if (desc->chip->shutdown)
+743                         desc->chip->shutdown(irq);
+744                 else
+745                         desc->chip->disable(irq);
+746         }
+747 
+748         irqthread = action->thread;
+749         action->thread = NULL;
+750 
+751         spin_unlock_irqrestore(&desc->lock, flags);
+752 
+753         unregister_handler_proc(irq, action);
+754 
+755         /* Make sure it's not being used on another CPU: */
+756         synchronize_irq(irq);
+757 
+758         if (irqthread) {
+759                 if (!test_bit(IRQTF_DIED, &action->thread_flags))
+760                         kthread_stop(irqthread);
+761                 put_task_struct(irqthread);
+762         }
+763 
+764 #ifdef CONFIG_DEBUG_SHIRQ
+765         /*
+766
+         * It's a shared IRQ -- the driver ought to be prepared for an IRQ
+767
+         * event to happen even now it's being freed, so let's make sure that
+768          * is so by doing an extra call to the handler ....
+769          *
+770
+         * ( We do this after actually deregistering it, to make sure that a
+771          *   'real' IRQ doesn't run in * parallel with our fake. )
+772          */
+773         if (action->flags & IRQF_SHARED) {
+774                 local_irq_save(flags);
+775                 action->handler(irq, dev_id);
+776                 local_irq_restore(flags);
+777         }
+778 #endif
+779         return action;
+780 }
 
--- 
-error compiling committee.c: too many arguments to function
 
