@@ -1,69 +1,115 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763759AbZDBPls@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763408AbZDBPnP@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763759AbZDBPls (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 2 Apr 2009 11:41:48 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753865AbZDBPlf
+	id S1763408AbZDBPnP (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 2 Apr 2009 11:43:15 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752063AbZDBPm6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 2 Apr 2009 11:41:35 -0400
-Received: from THUNK.ORG ([69.25.196.29]:57983 "EHLO thunker.thunk.org"
+	Thu, 2 Apr 2009 11:42:58 -0400
+Received: from hera.kernel.org ([140.211.167.34]:38224 "EHLO hera.kernel.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752533AbZDBPle (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 2 Apr 2009 11:41:34 -0400
-Date: Thu, 2 Apr 2009 11:41:23 -0400
-From: Theodore Tso <tytso@mit.edu>
-To: Thiemo Nagel <thiemo.nagel@ph.tum.de>
-Cc: Alexander Beregalov <a.beregalov@gmail.com>,
-       Jens Axboe <jens.axboe@oracle.com>, linux-ext4@vger.kernel.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: 2.6.29-git: cannot mount ext4/loop
-Message-ID: <20090402154123.GG10642@mit.edu>
-Mail-Followup-To: Theodore Tso <tytso@mit.edu>,
-	Thiemo Nagel <thiemo.nagel@ph.tum.de>,
-	Alexander Beregalov <a.beregalov@gmail.com>,
-	Jens Axboe <jens.axboe@oracle.com>, linux-ext4@vger.kernel.org,
-	linux-kernel@vger.kernel.org
-References: <a4423d670904011423x4174a81cj901bc140944412ea@mail.gmail.com> <20090401225351.GA22621@orion> <20090402055356.GC10642@mit.edu> <a4423d670904020042x6b76715du48a15e988a05019d@mail.gmail.com> <a4423d670904020439m621990bch9482d19f0e48e7d2@mail.gmail.com> <a4423d670904020547s72972089t3c135a92af6751d4@mail.gmail.com> <49D4BDF2.2070102@ph.tum.de> <20090402145436.GF10642@mit.edu> <49D4D74F.1020904@ph.tum.de>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <49D4D74F.1020904@ph.tum.de>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-SA-Exim-Connect-IP: <locally generated>
-X-SA-Exim-Mail-From: tytso@mit.edu
-X-SA-Exim-Scanned: No (on thunker.thunk.org); SAEximRunCond expanded to false
+	id S1751268AbZDBPm5 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 2 Apr 2009 11:42:57 -0400
+Subject: Re: [tip:irq/genirq] genirq: do not execute DEBUG_SHIRQ when irq
+ setup failed
+From: Jaswinder Singh Rajput <jaswinder@kernel.org>
+To: Thomas Gleixner <tglx@linutronix.de>
+Cc: mingo@redhat.com, hpa@zytor.com, linux-kernel@vger.kernel.org,
+       henrix@sapo.pt, linux-tip-commits@vger.kernel.org
+In-Reply-To: <alpine.LFD.2.00.0904021718230.12916@localhost.localdomain>
+References: <20090401170635.GA4392@hades.domain.com>
+	 <tip-ba71604fad348656071a2a76eef9a67dab85a773@git.kernel.org>
+	 <1238682747.3099.16.camel@ht.satnam>
+	 <alpine.LFD.2.00.0904021718230.12916@localhost.localdomain>
+Content-Type: text/plain
+Date: Thu, 02 Apr 2009 21:11:44 +0530
+Message-Id: <1238686904.3099.22.camel@ht.satnam>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.24.5 (2.24.5-1.fc10) 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Apr 02, 2009 at 05:18:39PM +0200, Thiemo Nagel wrote:
-> Theodore Tso wrote:
->> On Thu, Apr 02, 2009 at 03:30:26PM +0200, Thiemo Nagel wrote:
->>> When I added the block range checks, initially I was assuming that
->>> when EXTENTS_FL is not set, the inode->i_data *always* contains
->>> references to further blocks.  Ted showed me wrong and added the condition
->>>
->>> 	ISREG() || ISDIR() || ( ISLNK() && !is_fast_symlink() )
->>>
->>> before that assumption can be made.  But maybe we need some further
->>> restraints?
->>
->> It's a endian-problem; we're missing le32_to_cpu() in that patch.
->> Sparc is big-endian. 
->
-> Sorry for that.
+On Thu, 2009-04-02 at 17:21 +0200, Thomas Gleixner wrote:
+> On Thu, 2 Apr 2009, Jaswinder Singh Rajput wrote:
+> > On Thu, 2009-04-02 at 14:03 +0000, Luis Henriques wrote:
+> > > Commit-ID:  ba71604fad348656071a2a76eef9a67dab85a773
+> > > Gitweb:     http://git.kernel.org/tip/ba71604fad348656071a2a76eef9a67dab85a773
+> > > Author:     Luis Henriques <henrix@sapo.pt>
+> > > AuthorDate: Wed, 1 Apr 2009 18:06:35 +0100
+> > > Committer:  Thomas Gleixner <tglx@linutronix.de>
+> > > CommitDate: Thu, 2 Apr 2009 16:02:39 +0200
+> > > 
+> > > genirq: do not execute DEBUG_SHIRQ when irq setup failed
+> > > 
+> > > When requesting an IRQ, the DEBUG_SHIRQ code executes a fake IRQ just to make
+> > > sure the driver is ready to receive an IRQ immediately.  The problem was that
+> > > this fake IRQ was being executed even if interrupt line failed to be allocated
+> > > by __setup_irq.
+> > > 
+> > > Signed-off-by: Luis Henriques <henrix@sapo.pt>
+> > > LKML-Reference: <20090401170635.GA4392@hades.domain.com>
+> > > Signed-off-by: Thomas Gleixner <tglx@linutronix.de>
+> > > 
+> > > 
+> > > ---
+> > >  kernel/irq/manage.c |    2 +-
+> > >  1 files changed, 1 insertions(+), 1 deletions(-)
+> > > 
+> > > diff --git a/kernel/irq/manage.c b/kernel/irq/manage.c
+> > > index 1516ab7..beeb7d1 100644
+> > > --- a/kernel/irq/manage.c
+> > > +++ b/kernel/irq/manage.c
+> > > @@ -768,7 +768,7 @@ int request_irq(unsigned int irq, irq_handler_t handler,
+> > >  		kfree(action);
+> > >  
+> > >  #ifdef CONFIG_DEBUG_SHIRQ
+> > > -	if (irqflags & IRQF_SHARED) {
+> > > +	if (!retval & (irqflags & IRQF_SHARED)) {
+> > >  		/*
+> > >  		 * It's a shared IRQ -- the driver ought to be prepared for it
+> > >  		 * to happen immediately, so let's make sure....
+> > 
+> > What is this ?
+> 
+> You looking at the wrong place.
+>  
+> > There is no retval:
+> > 
+> > http://git.kernel.org/?p=linux/kernel/git/x86/linux-2.6-tip.git;a=blob;f=kernel/irq/manage.c;h=a3eb7baf1e46f2c735edb4cc44e0386cfbc4989e;hb=HEAD
+> 
+> Care to read patches you want to comment on carefully _BEFORE_ you
+> start yelling at people and sending useless copies of the wrong
+> function around the world.
+> 
+> The patch is perfectly fine and already applied.
+> 
 
-Could you also fix the types?  bref should have a type of __le32, not
-unsigned int, and when you pass in the reference to
-__ext4_check_blockref(), there was an inappropriate cast to unsigned
-int which hid kernel's natural type checking to catch these sorts of
-problems.
+Yes, I know somehow you applied it. When you will merge this branch with
+-tip/master then you will understand what I am saying.
 
-I haven't had time yet to check your other patches; could you also
-take a quick scan to make sure we have all of the byte-swapping calls
-needed for proper big-endian checking, that we're using the correct
-__le32 types and not doing any casts?  I should have caught this when
-I did my review of your patches, so this is also partially my fault.
+Even function name is changed from:
 
-Many thanks,
+713 int request_irq(unsigned int irq, irq_handler_t handler,
+714
+                unsigned long irqflags, const char *devname, void *dev_id)
+715 {
+716         struct irqaction *action;
+717         struct irq_desc *desc;
+718         int retval;
 
-						- Ted
+to:
+
+857 int request_threaded_irq(unsigned int irq, irq_handler_t handler,
+858
+                         irq_handler_t thread_fn, unsigned long irqflags,
+859                          const char *devname, void *dev_id)
+860 {
+861         struct irqaction *action;
+862         struct irq_desc *desc;
+863         int retval;
+
+
+--
+JSR
+
