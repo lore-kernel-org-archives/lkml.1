@@ -1,82 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757314AbZDBLhu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758159AbZDBLjj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757314AbZDBLhu (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 2 Apr 2009 07:37:50 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755319AbZDBLhj
+	id S1758159AbZDBLjj (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 2 Apr 2009 07:39:39 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757244AbZDBLj3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 2 Apr 2009 07:37:39 -0400
-Received: from silver.sucs.swan.ac.uk ([137.44.10.1]:40495 "EHLO
-	silver.sucs.swan.ac.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756017AbZDBLhi (ORCPT
+	Thu, 2 Apr 2009 07:39:29 -0400
+Received: from ey-out-2122.google.com ([74.125.78.26]:45939 "EHLO
+	ey-out-2122.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755972AbZDBLj2 convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 2 Apr 2009 07:37:38 -0400
-Date: Thu, 2 Apr 2009 12:37:31 +0100
-From: Sitsofe Wheeler <sitsofe@yahoo.com>
-To: Theodore Tso <tytso@mit.edu>, Matthew Garrett <mjg59@srcf.ucam.org>,
-       "Andreas T.Auer" <andreas.t.auer_lkml_73537@ursus.ath.cx>,
-       Alberto Gonzalez <info@gnebu.es>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: Ext4 and the "30 second window of death"
-Message-ID: <20090402113731.GB24532@sucs.org>
-References: <200903291224.21380.info@gnebu.es> <200903311452.05210.info@gnebu.es> <20090331134547.GJ13356@mit.edu> <200904010002.47077.info@gnebu.es> <49D2A5AB.1090704@ursus.ath.cx> <20090401015010.GB4529@mit.edu> <20090401052050.GA20456@sucs.org> <20090401151219.GA12285@srcf.ucam.org> <20090401173521.GA15423@mit.edu>
+	Thu, 2 Apr 2009 07:39:28 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
+         :content-type:content-transfer-encoding;
+        b=KMBe48Zj6uUYxtmNM43FYAdVJz65NX1dJaYEgDi2szO1Z6xNJLmaKfJZ2ivY3nrzbj
+         DFeD8O/vVNXw+RU+uKzhZLjyahAivYxHPGifIBgvWFOZ+Jy675DplKB5s60iCqwNH6gH
+         uVIA/wBjwB1pYY7XiGsAejuzx2SojMbvBxjy4=
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090401173521.GA15423@mit.edu>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+In-Reply-To: <a4423d670904020042x6b76715du48a15e988a05019d@mail.gmail.com>
+References: <a4423d670904011423x4174a81cj901bc140944412ea@mail.gmail.com>
+	 <20090401225351.GA22621@orion> <20090402055356.GC10642@mit.edu>
+	 <a4423d670904020042x6b76715du48a15e988a05019d@mail.gmail.com>
+Date: Thu, 2 Apr 2009 15:39:25 +0400
+Message-ID: <a4423d670904020439m621990bch9482d19f0e48e7d2@mail.gmail.com>
+Subject: Re: 2.6.29-git: cannot mount ext4/loop
+From: Alexander Beregalov <a.beregalov@gmail.com>
+To: Theodore Tso <tytso@mit.edu>, Jens Axboe <jens.axboe@oracle.com>,
+       linux-ext4@vger.kernel.org, linux-kernel@vger.kernel.org
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Apr 01, 2009 at 01:35:21PM -0400, Theodore Tso wrote:
-> On Wed, Apr 01, 2009 at 04:12:21PM +0100, Matthew Garrett wrote:
-> > On Wed, Apr 01, 2009 at 06:20:50AM +0100, Sitsofe Wheeler wrote:
-> > 
-> > > Just out of curiosity, when laptop mode is happening is there a
-> > > guarantee that writes to other files won't be reordered to before the
-> > > fsync? 
-> > 
-> > laptop-mode does two things - tweak the dirty page semantics slightly 
-> > (not in an interestingly relevant way) and call sys_sync() a few seconds 
-> > after something hits disk rather than cache. In contrast to Ted's 
-> > suggestion that laptop-mode reduces data integrity, it actually enhances 
-> > it by opportunistically ensuring that data hits disk. It's the 
-> > lengthening of the commit intervals that usually accompanies it that 
-> > increases the risk of data loss.
-> 
-> It *can* reduce data integrity; it really depends on how it's tuned
-> and what scenario you're talking about.  To the extent that it uses
-> sys_sync(), it could help in some cases as well, since filesystems
-> that do delayed allocation will wake up when the commit interval
-> fires, and then force out all writes to the disk, yes.  But before the
-> commit interval, there is an increased risk of data loss --- which the
-> user requested.
+2009/4/2 Alexander Beregalov <a.beregalov@gmail.com>:
+> 2009/4/2 Theodore Tso <tytso@mit.edu>:
+>> On Thu, Apr 02, 2009 at 02:53:51AM +0400, Alexander Beregalov wrote:
+>>> On Thu, Apr 02, 2009 at 01:23:28AM +0400, Alexander Beregalov wrote:
+>>> > Hi Theodore, Jens
+>>> >
+>>> > kernel is 2.6.29-07099-g8b53ef3
+>>> >
+>>> > Mount failed:
+>>> >
+>>> > EXT4-fs: barriers enabled
+>>> > kjournald2 starting: pid 1867, dev loop0:8, commit interval 5 seconds
+>>> > EXT4-fs error (device loop0): ext4_iget: block reference 2703228928 >=
+>>> > max (524288) in inode #2, offset=0
+>>> > EXT4-fs: get root inode failed
+>>> > EXT4-fs (device loop0): mount failed
+>>
+>> I don't get this failure in a Linux 2.6 kernel based off of 5d80f8e5
+>> with the )now upstream) ext4 patches merged in.  I'm guessing sometime
+>> between v2.6.29-3652-g5d80f8e and 2.6.29-07099-g8b53ef3 a regression
+>> was introduced into the loop driver?
+>
+> It is sparc host again.
+> 2.6.29-06608-g15f7176 worked fine.
+> There was one commit to loop.c:
+> 53d66608 (loop: add ioctl to resize a loop device)
+> and ext4 git pull.
+>
+> I wil try to revert it and probably bisect.
 
-That's fair enough and always seemed to be part of the bargain (let the
-disk spin down for longer but risk losing 30 seconds of non-synced
-recent data in a crash). The result shouldn't be corruption though.
-
-> The other subtlety comes if we add fsync() suppression to laptop mode
-> --- which is something that Bart Samwel is very interested in doing
-> and I talked to him at FOSDEM about this.  As Jeff Garzik recently
-> pointed out, however, if we let the system reorder writes across
-> fsync() boundaries, or if we combine two writes to the same block
-> separated by an fsync(), and the system crashes in the middle of
-> pushing all of these blocks out to the disk, we can end up trashing
-> the consistency guarantees of a database such as mysql or postgres.
-> It's a good point, but it only applies if we add fsync() suppression
-> to laptop mode --- which we haven't done yet.
-
-eek.
-
-If this goes in it needs to come with scary warnings so a distro doesn't
-enable it by default (think of all those sqlite database that are
-springing up). I know my system is crummy, all of this is only concerned
-with if the system crashes uncontrollably (which it shouldn't do) and I
-don't do things that would make it safer (like mount with sync) because
-I like the speed but there's a risk limit. I don't want to increase my
-chances of corruption (as opposed to "just" loss of non recent data) to
-be too high...
-
--- 
-Sitsofe | http://sucs.org/~sits/
+Revert 53d66608 does not help.
+Bisecting...
