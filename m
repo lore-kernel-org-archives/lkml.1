@@ -1,29 +1,30 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763136AbZDBRZo@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934480AbZDBR0h@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763136AbZDBRZo (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 2 Apr 2009 13:25:44 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934150AbZDBRYc
+	id S934480AbZDBR0h (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 2 Apr 2009 13:26:37 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1764126AbZDBRYk
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 2 Apr 2009 13:24:32 -0400
-Received: from mx2.redhat.com ([66.187.237.31]:43041 "EHLO mx2.redhat.com"
+	Thu, 2 Apr 2009 13:24:40 -0400
+Received: from mx2.redhat.com ([66.187.237.31]:43053 "EHLO mx2.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S934040AbZDBRY1 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 2 Apr 2009 13:24:27 -0400
-Message-ID: <49D4F4DA.5070207@redhat.com>
-Date: Thu, 02 Apr 2009 13:24:42 -0400
+	id S1764524AbZDBRYh (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 2 Apr 2009 13:24:37 -0400
+Message-ID: <49D4F4E9.2030809@redhat.com>
+Date: Thu, 02 Apr 2009 13:24:57 -0400
 From: Masami Hiramatsu <mhiramat@redhat.com>
 User-Agent: Thunderbird 2.0.0.21 (X11/20090320)
 MIME-Version: 1.0
-To: Harvey Harrison <harvey.harrison@gmail.com>, Ingo Molnar <mingo@elte.hu>,
-       Thomas Gleixner <tglx@linutronix.de>, Jan Blunck <jblunck@suse.de>
-CC: Frederic Weisbecker <fweisbec@gmail.com>,
-       Steven Rostedt <rostedt@goodmis.org>,
+To: Ingo Molnar <mingo@elte.hu>,
        Ananth N Mavinakayanahalli <ananth@in.ibm.com>,
+       Jim Keniston <jkenisto@us.ibm.com>
+CC: LKML <linux-kernel@vger.kernel.org>,
+       systemtap-ml <systemtap@sources.redhat.com>, kvm@vger.kernel.org,
+       Andi Kleen <andi@firstfloor.org>,
        Andrew Morton <akpm@linux-foundation.org>,
-       Andi Kleen <andi@firstfloor.org>, Jim Keniston <jkenisto@us.ibm.com>,
-       systemtap-ml <systemtap@sources.redhat.com>,
-       LKML <linux-kernel@vger.kernel.org>, kvm@vger.kernel.org
-Subject: [PATCH -tip 1/6 V4] x86: fix kernel_trap_sp()
+       Arnaldo Carvalho de Melo <acme@redhat.com>,
+       Steven Rostedt <rostedt@goodmis.org>,
+       Frederic Weisbecker <fweisbec@gmail.com>
+Subject: [PATCH -tip 4/6 V4] x86: kprobes checks safeness of insertion address.
 X-Enigmail-Version: 0.95.7
 Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
@@ -31,41 +32,102 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Use &regs->sp instead of regs for getting the top of stack in kernel mode.
-(on x86-64, regs->sp always points the top of stack)
+Ensure safeness of inserting kprobes by checking whether the specified
+address is at the first byte of a instruction. This is done by decoding
+probed function from its head to the probe point.
 
 Signed-off-by: Masami Hiramatsu <mhiramat@redhat.com>
-Cc: Harvey Harrison <harvey.harrison@gmail.com>
+Cc: Ananth N Mavinakayanahalli <ananth@in.ibm.com>
+Cc: Jim Keniston <jkenisto@us.ibm.com>
 Cc: Ingo Molnar <mingo@elte.hu>
-Cc: Thomas Gleixner <tglx@linutronix.de>
-Cc: Jan Blunck <jblunck@suse.de>
 ---
 
- arch/x86/include/asm/ptrace.h |    4 ++--
- 1 files changed, 2 insertions(+), 2 deletions(-)
+ arch/x86/kernel/kprobes.c |   51 +++++++++++++++++++++++++++++++++++++++++++++
+ 1 files changed, 51 insertions(+), 0 deletions(-)
 
 
-diff --git a/arch/x86/include/asm/ptrace.h b/arch/x86/include/asm/ptrace.h
-index e304b66..aed0894 100644
---- a/arch/x86/include/asm/ptrace.h
-+++ b/arch/x86/include/asm/ptrace.h
-@@ -187,14 +187,14 @@ static inline int v8086_mode(struct pt_regs *regs)
+diff --git a/arch/x86/kernel/kprobes.c b/arch/x86/kernel/kprobes.c
+index 7b5169d..39c79cc 100644
+--- a/arch/x86/kernel/kprobes.c
++++ b/arch/x86/kernel/kprobes.c
+@@ -48,12 +48,14 @@
+ #include <linux/preempt.h>
+ #include <linux/module.h>
+ #include <linux/kdebug.h>
++#include <linux/kallsyms.h>
 
+ #include <asm/cacheflush.h>
+ #include <asm/desc.h>
+ #include <asm/pgtable.h>
+ #include <asm/uaccess.h>
+ #include <asm/alternative.h>
++#include <asm/insn.h>
+
+ void jprobe_return_end(void);
+
+@@ -244,6 +246,53 @@ retry:
+ 	}
+ }
+
++/* Recover original instruction */
++static int recover_probed_instruction(kprobe_opcode_t *buf, unsigned long addr)
++{
++	struct kprobe *kp;
++	kp = get_kprobe((void *)addr);
++	if (!kp)
++		return -EINVAL;
++
++	/* Don't use p->ainsn.insn; which will be modified by fix_riprel */
++	memcpy(buf, kp->addr, MAX_INSN_SIZE * sizeof(kprobe_opcode_t));
++	buf[0] = kp->opcode;
++	return 0;
++}
++
++/* Dummy buffers for lookup_symbol_attrs */
++static char __dummy_buf[KSYM_NAME_LEN];
++
++/* Check whether the address can be probed */
++static int __kprobes can_probe(unsigned long paddr)
++{
++	int ret;
++	unsigned long addr, offset = 0;
++	struct insn insn;
++	kprobe_opcode_t buf[MAX_INSN_SIZE];
++
++	/* Lookup symbol including addr */
++	if (!kallsyms_lookup(paddr, NULL, &offset, NULL, __dummy_buf))
++		return 0;
++
++	/* Decode instructions */
++	addr = paddr - offset;
++	while (addr < paddr) {
++		insn_init_kernel(&insn, (void *)addr);
++		insn_get_opcode(&insn);
++		if (OPCODE1(&insn) == BREAKPOINT_INSTRUCTION) {
++			ret = recover_probed_instruction(buf, addr);
++			if (ret)
++				return 0;
++			insn_init_kernel(&insn, buf);
++		}
++		insn_get_length(&insn);
++		addr += insn.length;
++	}
++
++	return (addr == paddr);
++}
++
  /*
-  * X86_32 CPUs don't save ss and esp if the CPU is already in kernel mode
-- * when it traps.  So regs will be the current sp.
-+ * when it traps.  So &regs->sp will be the current sp.
-  *
-  * This is valid only for kernel mode traps.
+  * Returns non-zero if opcode modifies the interrupt flag.
   */
- static inline unsigned long kernel_trap_sp(struct pt_regs *regs)
+@@ -359,6 +408,8 @@ static void __kprobes arch_copy_kprobe(struct kprobe *p)
+
+ int __kprobes arch_prepare_kprobe(struct kprobe *p)
  {
- #ifdef CONFIG_X86_32
--	return (unsigned long)regs;
-+	return (unsigned long)&regs->sp;
- #else
- 	return regs->sp;
- #endif
++	if (!can_probe((unsigned long)p->addr))
++		return -EILSEQ;
+ 	/* insn: must be on special executable page on x86. */
+ 	p->ainsn.insn = get_insn_slot();
+ 	if (!p->ainsn.insn)
 -- 
 Masami Hiramatsu
 
