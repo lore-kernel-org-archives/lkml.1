@@ -1,59 +1,94 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759741AbZDBLsp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751458AbZDBLyE@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759741AbZDBLsp (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 2 Apr 2009 07:48:45 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758577AbZDBLs2
+	id S1751458AbZDBLyE (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 2 Apr 2009 07:54:04 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750974AbZDBLxw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 2 Apr 2009 07:48:28 -0400
-Received: from mx2.redhat.com ([66.187.237.31]:44938 "EHLO mx2.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756068AbZDBLs0 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 2 Apr 2009 07:48:26 -0400
-Message-ID: <49D4A5FB.1020601@redhat.com>
-Date: Thu, 02 Apr 2009 14:48:11 +0300
-From: Avi Kivity <avi@redhat.com>
-User-Agent: Thunderbird 2.0.0.21 (X11/20090320)
+	Thu, 2 Apr 2009 07:53:52 -0400
+Received: from wf-out-1314.google.com ([209.85.200.168]:47612 "EHLO
+	wf-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750801AbZDBLxv (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 2 Apr 2009 07:53:51 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
+         :cc:content-type:content-transfer-encoding;
+        b=JWIMF18xJtLrhSkGDyrxvG3Cg4Z4JGseENALBhE5ehd0PGRynOPO8wmVviEEhEIVay
+         DzEFPjy8kmqeSB5D7tnV2K8jlXATENYKQu7zrzVOwj4ePqn92+Vs/msaxlYJZzB/I6XX
+         cIRlMaMzh8yKoekV0xyiYcDIxIgqKyhTKIAhA=
 MIME-Version: 1.0
-To: Gregory Haskins <ghaskins@novell.com>
-CC: Herbert Xu <herbert@gondor.apana.org.au>, anthony@codemonkey.ws,
-       andi@firstfloor.org, linux-kernel@vger.kernel.org, agraf@suse.de,
-       pmullaney@novell.com, pmorreale@novell.com, rusty@rustcorp.com.au,
-       netdev@vger.kernel.org, kvm@vger.kernel.org
-Subject: Re: [RFC PATCH 00/17] virtual-bus
-References: <20090402085253.GA29932@gondor.apana.org.au> <49D47F11.6070400@redhat.com> <49D49986.3060303@novell.com>
-In-Reply-To: <49D49986.3060303@novell.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+In-Reply-To: <1238670826.8530.5837.camel@twins>
+References: <a6b9f31a0904010758r23767adco16ea4ee45d7e158e@mail.gmail.com>
+	 <1238670826.8530.5837.camel@twins>
+Date: Thu, 2 Apr 2009 20:53:49 +0900
+Message-ID: <a6b9f31a0904020453o2b3177b7p99bcf332131e2f5b@mail.gmail.com>
+Subject: Re: [RFC] Improving scheduler for asymmetric multi-core processor in 
+	Google's summer of code
+From: Hitoshi Mitake <h.mitake@gmail.com>
+To: Peter Zijlstra <peterz@infradead.org>,
+       Amithash Prasad <amithash@gmail.com>
+Cc: linux-kernel@vger.kernel.org, cpufreq@vger.kernel.org
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Gregory Haskins wrote:
-
-  
-
->> There is no choice.  Exiting from the guest to the kernel to userspace
->> is prohibitively expensive, you can't do that on every packet.
+On Thu, Apr 2, 2009 at 20:13, Peter Zijlstra <peterz@infradead.org> wrote:
+> On Wed, 2009-04-01 at 23:58 +0900, Hitoshi Mitake wrote:
+>> Hi,
 >>
->>     
+>> I found an interesting problem, scheduling on Asymmetric multi-core processor.
+>>
+>> According to this paper,
+>>
+>> http://portal.acm.org/citation.cfm?id=1362694&dl=GUIDE&coll=GUIDE&CFID=28487975&CFTOKEN=68150071
+>>
+>> taking performance asymmetry into consideration on multi-core CPUs can
+>> improve scheduler performance.
+>> (And I think discarding this could have bad consequences.)
+>>
+>> So I have a question:
+>> Is the current scheduler of Linux aware of possible performance
+>> asymmetry of the cores?
 >
-> Now you are making my point ;)  This is part of the cost of your
-> signaling path, and it directly adds to your latency time.   
+> It does not.
+>
+>> By performance asymmetry I mean a case where different cores run on
+>> different frequencies.
+>>
+>> If something tackling this issue is not implemented yet,
+>> I would like to work on that as a project of Google's summer of code.
+>
+> Have at it.
+>
+> Its a rather delicate business though and should also include scaling
+> balancing decisions based on time taken by IRQs and RT tasks as well as
+> incorporate feedback from the cpu. The latter includes things like
+> cpufreq, but also effective work done by threads on a core.
+>
+> Its been on my todo list for quite a while, but haven't managed to get
+> something robust together.
+>
 
-It adds a microsecond.  The kvm overhead of putting things in userspace 
-is low enough, I don't know why people keep mentioning it.  The problem 
-is the kernel/user networking interfaces.
+Amithash and Peter,
 
-> You can't
-> buffer packets here if the guest is only going to send one and wait for
-> a response and expect that to perform well.  And this is precisely what
-> drove me to look at avoiding going back to userspace in the first place.
->   
+I evaluated the performance of Linux on ASMP.
+I made web page to describe this:
+http://www.dcl.info.waseda.ac.jp/~mitake/asmp/
+because I want to use some pictures for easy to read.
+(Sorry for my broken English! I'm Japanese and not good at English.)
 
-We're not buffering any packets.  What we lack is a way to tell the 
-guest that we're done processing all packets in the ring (IOW, re-enable 
-notifications).
+And it seems that there's no problem at least on my evaluation.
+So I can't define problem clearly now. I pass this year's
+GSoC.(Deadline is coming soon.)
 
--- 
-error compiling committee.c: too many arguments to function
+But I'll continue to research ASMP as a private project.
+As Peter told, this is delicate business.
+For example, this may be more difficult problem when realtime task exists.
+(Setting frequency low may be fatal for deadline of RT tasks.)
 
+Thanks a lot!
+
+Hitoshi
