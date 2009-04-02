@@ -1,201 +1,501 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758140AbZDBU4s@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760159AbZDBU50@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758140AbZDBU4s (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 2 Apr 2009 16:56:48 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756344AbZDBU4k
+	id S1760159AbZDBU50 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 2 Apr 2009 16:57:26 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756381AbZDBU5S
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 2 Apr 2009 16:56:40 -0400
-Received: from mail.crca.org.au ([67.207.131.56]:54532 "EHLO crca.org.au"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755666AbZDBU4j (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 2 Apr 2009 16:56:39 -0400
-X-Bogosity: Ham, spamicity=0.000000
-Subject: Re: [PATCH 1/2] lib: add fast lzo decompressor
-From: Nigel Cunningham <ncunningham@crca.org.au>
-To: Andreas Robinson <andr345@gmail.com>
-Cc: Arjan van de Ven <arjan@linux.intel.com>, "H. Peter Anvin" <hpa@zytor.com>,
-       Alain Knaff <alain@knaff.lu>, linux-kernel@vger.kernel.org
-In-Reply-To: <1238675410.13249.42.camel@andreas-desktop>
-References: <1238593252-3435-1-git-send-email-andr345@gmail.com>
-	 <1238593252-3435-2-git-send-email-andr345@gmail.com>
-	 <49D3927A.2050406@zytor.com> <1238613730.10514.35.camel@andreas-desktop>
-	 <49D3D4C0.1080506@zytor.com> <1238624827.15230.58.camel@andreas-desktop>
-	 <49D3EDEA.4090803@zytor.com>  <49D3F4A3.1040609@linux.intel.com>
-	 <1238629202.9027.111.camel@nigel-laptop>
-	 <1238675410.13249.42.camel@andreas-desktop>
-Content-Type: text/plain
-Organization: Christian Reformed Churches of Australia
-Date: Fri, 03 Apr 2009 07:59:29 +1100
-Message-Id: <1238705969.10479.8.camel@nigel-laptop>
+	Thu, 2 Apr 2009 16:57:18 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:36089 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1756344AbZDBU5Q (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 2 Apr 2009 16:57:16 -0400
+Date: Thu, 2 Apr 2009 13:47:38 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Jiri Pirko <jpirko@redhat.com>
+Cc: kosaki.motohiro@jp.fujitsu.com, oleg@redhat.com,
+       linux-kernel@vger.kernel.org, hugh@veritas.com, linux-mm@kvack.org
+Subject: Re: [PATCH for -mm] getrusage: fill ru_maxrss value
+Message-Id: <20090402134738.43d87cb7.akpm@linux-foundation.org>
+In-Reply-To: <20090106104839.78eb07d1@psychotron.englab.brq.redhat.com>
+References: <20081230201052.128B.KOSAKI.MOTOHIRO@jp.fujitsu.com>
+	<20081231110816.5f80e265@psychotron.englab.brq.redhat.com>
+	<20081231213705.1293.KOSAKI.MOTOHIRO@jp.fujitsu.com>
+	<20090103175913.GA21180@redhat.com>
+	<2f11576a0901031313u791d7dcex94b927cc56026e40@mail.gmail.com>
+	<20090105163204.3ec9ff10@psychotron.englab.brq.redhat.com>
+	<20090105141313.a4abd475.akpm@linux-foundation.org>
+	<20090106104839.78eb07d1@psychotron.englab.brq.redhat.com>
+X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
 Mime-Version: 1.0
-X-Mailer: Evolution 2.24.3 
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi.
+On Tue, 6 Jan 2009 10:48:39 +0100
+Jiri Pirko <jpirko@redhat.com> wrote:
 
-On Thu, 2009-04-02 at 14:30 +0200, Andreas Robinson wrote:
-> On Thu, 2009-04-02 at 10:40 +1100, Nigel Cunningham wrote:
-> > Sorry to jump in with a tangential issue, but I just noticed the
-> > thread
-> > and it reminded me of an issue :)
+> On Mon, 5 Jan 2009 14:13:13 -0800
+> Andrew Morton <akpm@linux-foundation.org> wrote:
+> 
+> > On Mon, 5 Jan 2009 16:32:04 +0100
+> > Jiri Pirko <jpirko@redhat.com> wrote:
 > > 
-> > Should the lzo code used via cryptoapi (I believe it's the same stuff)
-> > be SMP safe? I've tried to use it work TuxOnIce and get image corruption
-> > (test kernel is 64 bit). The same code works fine if I tell it to use
-> > LZF (which comes with TuxOnIce), no compression or, IIRC, work single
-> > threaded.
+> > > Changelog
+> > > v2 -> v3
+> > >   - in k_getrusage() use (inherited) sig->maxrss value in case of
+> > >     RUSAGE_THREAD
+> > 
+> > The patch which you sent was mysteriously truncated - the kernel/sys.c hunk
+> > is partly missing.  So I took that bit from the earlier version of the patch.
+> Sorry for this. I should probably toss this Claws into the garbage can :/
+> > 
+> > Please check that the below is still identical to your version 3.
+> Nope - the tail is different. - Sending the patch again. Please use
+> the changelog text from previous send.
+> Thanks Andrew and again sorry for problems.
 > 
-> Do you compress or decompress data through the crypto API?
 > 
-> Neither function modifies the input data and there are no static or
-> global variables in use, so there shouldn't be a problem there.
-> 
-> They do however modify the destination length argument.
-> 
-> But most importantly, each compressor thread needs a private work buffer
-> allocated through lzo_init() in crypto/lzo.c. So, if you use the crypto
-> API to compress and share the crypto_tfm struct among threads, that
-> would explain your breakage.
 
-I use cryptoapi, and have per-cpu struct crypto_comps and per-cpu
-buffers for output. As I said, it works fine if I use LZF (all I'm doing
-is changing the name of the algorithm passed to crypto_alloc_comp. Here
-are the relevant data structures, the initialisation routine and the
-routines for reading and writing one page.
+I have a note here that this patch needs acks, but I didn't note who
+from.
 
-Regards,
+Someone ack it :)
 
-Nigel
 
-struct cpu_context {
-        u8 *page_buffer;
-        struct crypto_comp *transform;
-        unsigned int len;
-        char *buffer_start;
-};
+From: Jiri Pirko <jpirko@redhat.com>
 
-static DEFINE_PER_CPU(struct cpu_context, contexts);
+Make ->ru_maxrss value in struct rusage filled accordingly to rss hiwater
+mark.  This struct is filled as a parameter to getrusage syscall. 
+->ru_maxrss value is set to KBs which is the way it is done in BSD
+systems.  /usr/bin/time (gnu time) application converts ->ru_maxrss to KBs
+which seems to be incorrect behavior.  Maintainer of this util was
+notified by me with the patch which corrects it and cc'ed.
 
-static int toi_compress_crypto_prepare(void)
+To make this happen we extend struct signal_struct by two fields.  The
+first one is ->maxrss which we use to store rss hiwater of the task.  The
+second one is ->cmaxrss which we use to store highest rss hiwater of all
+task childs.  These values are used in k_getrusage() to actually fill
+->ru_maxrss.  k_getrusage() uses current rss hiwater value directly if mm
+struct exists.
+
+Note:
+exec() clear mm->hiwater_rss, but doesn't clear sig->maxrss.
+it is intetionally behavior. *BSD getrusage have exec() inheriting.
+
+Test progmam and test case
+===========================
+
+getrusage.c
+====
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+#include <sys/types.h>
+#include <sys/time.h>
+#include <sys/resource.h>
+#include <sys/types.h>
+#include <sys/wait.h>
+#include <unistd.h>
+#include <signal.h>
+
+static void consume(int mega)
 {
-        int cpu;
+	size_t sz = mega * 1024 * 1024;
+	void *ptr;
 
-        if (!*toi_compressor_name) {
-                printk(KERN_INFO "TuxOnIce: Compression enabled but no "
-                                "compressor name set.\n");
-                return 1;
-        }
-
-        for_each_online_cpu(cpu) {
-                struct cpu_context *this = &per_cpu(contexts, cpu);
-                this->transform = crypto_alloc_comp(toi_compressor_name, 0, 0);
-                if (IS_ERR(this->transform)) {
-                        printk(KERN_INFO "TuxOnIce: Failed to initialise the "
-                                        "%s compression transform.\n",
-                                        toi_compressor_name);
-                        this->transform = NULL;
-                        return 1;
-                }
-
-                this->page_buffer =
-                        (char *) toi_get_zeroed_page(16, TOI_ATOMIC_GFP);
-
-                if (!this->page_buffer) {
-                        printk(KERN_ERR
-                          "Failed to allocate a page buffer for TuxOnIce "
-                          "encryption driver.\n");
-                        return -ENOMEM;
-                }
-        }
-
-        return 0;
+	ptr = malloc(sz);
+	memset(ptr, 0, sz);
+	usleep(1);  /* BSD rusage statics need to sleep 1 tick */
 }
 
-static int toi_compress_write_page(unsigned long index,
-                struct page *buffer_page, unsigned int buf_size)
+static void show_rusage(char *prefix)
 {
-        int ret, cpu = smp_processor_id();
-        struct cpu_context *ctx = &per_cpu(contexts, cpu);
+	int err, err2;
+	struct rusage rusage_self;
+	struct rusage rusage_children;
 
-        if (!ctx->transform)
-                return next_driver->write_page(index, buffer_page, buf_size);
+	printf("%s: ", prefix);
+	err = getrusage(RUSAGE_SELF, &rusage_self);
+	if (!err)
+		printf("self %ld ", rusage_self.ru_maxrss);
+	err2 = getrusage(RUSAGE_CHILDREN, &rusage_children);
+	if (!err2)
+		printf("children %ld ", rusage_children.ru_maxrss);
 
-        ctx->buffer_start = kmap(buffer_page);
-
-        ctx->len = buf_size;
-
-        ret = crypto_comp_compress(ctx->transform,
-                        ctx->buffer_start, buf_size,
-                        ctx->page_buffer, &ctx->len);
-
-        kunmap(buffer_page);
-
-        if (ret) {
-                printk(KERN_INFO "Compression failed.\n");
-                return ret;
-        }
-
-        mutex_lock(&stats_lock);
-        toi_compress_bytes_in += buf_size;
-        toi_compress_bytes_out += ctx->len;
-        mutex_unlock(&stats_lock);
-
-        if (ctx->len < buf_size) /* some compression */
-                return next_driver->write_page(index,
-                                virt_to_page(ctx->page_buffer),
-                                ctx->len);
-        else
-                return next_driver->write_page(index, buffer_page, buf_size);
+	printf("\n");
 }
 
-static int toi_compress_read_page(unsigned long *index,
-                struct page *buffer_page, unsigned int *buf_size)
+int main(int argc, char** argv)
 {
-        int ret, cpu = smp_processor_id();
-        unsigned int len;
-        unsigned int outlen = PAGE_SIZE;
-        char *buffer_start;
-        struct cpu_context *ctx = &per_cpu(contexts, cpu);
+	int status;
+	int c;
+	int need_sleep_before_wait = 0;
+	int consume_large_memory_at_first = 0;
+	int create_child_at_first = 0;
+	int sigign = 0;
+	int create_child_before_exec = 0;
+	int after_fork_test = 0;
 
-        if (!ctx->transform)
-                return next_driver->read_page(index, buffer_page, buf_size);
+	while ((c = getopt(argc, argv, "ceflsz")) != -1) {
+		switch (c) {
+		case 'c':
+			create_child_at_first = 1;
+			break;
+		case 'e':
+			create_child_before_exec = 1;
+			break;
+		case 'f':
+			after_fork_test = 1;
+			break;
+		case 'l':
+			consume_large_memory_at_first = 1;
+			break;
+		case 's':
+			sigign = 1;
+			break;
+		case 'z':
+			need_sleep_before_wait = 1;
+			break;
+		default:
+			break;
+		}
+	}
 
-        /*
-         * All our reads must be synchronous - we can't decompress
-         * data that hasn't been read yet.
-         */
+	if (consume_large_memory_at_first)
+		consume(100);
 
-        *buf_size = PAGE_SIZE;
+	if (create_child_at_first)
+		system("./child -q");
 
-        ret = next_driver->read_page(index, buffer_page, &len);
+	if (sigign)
+		signal(SIGCHLD, SIG_IGN);
 
-        /* Error or uncompressed data */
-        if (ret || len == PAGE_SIZE)
-                return ret;
+	if (fork()) {
+		usleep(1);
+		if (need_sleep_before_wait)
+			sleep(3); /* children become zombie */
+		show_rusage("pre_wait");
+		wait(&status);
+		show_rusage("post_wait");
+	} else {
+		usleep(1);
+		show_rusage("fork");
 
-        buffer_start = kmap(buffer_page);
-        memcpy(ctx->page_buffer, buffer_start, len);
-        ret = crypto_comp_decompress(
-                        ctx->transform,
-                        ctx->page_buffer,
-                        len, buffer_start, &outlen);
-        if (ret)
-                abort_hibernate(TOI_FAILED_IO,
-                        "Compress_read returned %d.\n", ret);
-        else if (outlen != PAGE_SIZE) {
-                abort_hibernate(TOI_FAILED_IO,
-                        "Decompression yielded %d bytes instead of %ld.\n",
-                        outlen, PAGE_SIZE);
-                printk(KERN_ERR "Decompression yielded %d bytes instead of "
-                                "%ld.\n", outlen, PAGE_SIZE);
-                ret = -EIO;
-                *buf_size = outlen;
-        }
-        kunmap(buffer_page);
-        return ret;
+		if (after_fork_test) {
+			consume(30);
+			show_rusage("fork2");
+		}
+		if (create_child_before_exec) {
+			system("./child -lq");
+			usleep(1);
+			show_rusage("fork3");
+		}
+
+		execl("./child", "child", 0);
+		exit(0);
+	}
+
+	return 0;
 }
 
+child.c
+====
+#include <sys/types.h>
+#include <unistd.h>
+#include <sys/types.h>
+#include <sys/wait.h>
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+#include <sys/types.h>
+#include <sys/time.h>
+#include <sys/resource.h>
+
+static void consume(int mega)
+{
+	size_t sz = mega * 1024 * 1024;
+	void *ptr;
+
+	ptr = malloc(sz);
+	memset(ptr, 0, sz);
+	usleep(1);  /* BSD rusage statics need to sleep 1 tick */
+}
+
+static void show_rusage(char *prefix)
+{
+	int err, err2;
+	struct rusage rusage_self;
+	struct rusage rusage_children;
+
+	printf("%s: ", prefix);
+	err = getrusage(RUSAGE_SELF, &rusage_self);
+	if (!err)
+		printf("self %ld ", rusage_self.ru_maxrss);
+	err2 = getrusage(RUSAGE_CHILDREN, &rusage_children);
+	if (!err2)
+		printf("children %ld ", rusage_children.ru_maxrss);
+
+	printf("\n");
+
+}
+
+int main(int argc, char** argv)
+{
+	int status;
+	int c;
+	int silent = 0;
+	int light_weight = 0;
+
+	while ((c = getopt(argc, argv, "lq")) != -1) {
+		switch (c) {
+		case 'l':
+			light_weight = 1;
+			break;
+		case 'q':
+			silent = 1;
+			break;
+		default:
+			break;
+		}
+	}
+
+	if (!silent)
+		show_rusage("exec");
+
+	if (fork()) {
+		if (light_weight)
+			consume(400);
+		else
+			consume(700);
+		wait(&status);
+	} else {
+		if (light_weight)
+			consume(600);
+		else
+			consume(900);
+
+		exit(0);
+	}
+
+	return 0;
+}
+
+testcase
+========
+
+1. inherit fork?
+
+   test way:
+   	% ./getrusage -lc
+
+   bsd result:
+   	fork line is "fork: self 0 children 0".
+
+   	-> rusage sholdn't be inherit by fork.
+	   (both RUSAGE_SELF and RUSAGE_CHILDREN)
+
+2. inherit exec?
+
+   test way:
+   	% ./getrusage -lce
+
+   bsd result:
+   	fork3: self 103204 children 60000
+	exec: self 103204 children 60000
+
+   	fork3 and exec line are the same.
+
+   	-> rusage shold be inherit by exec.
+	   (both RUSAGE_SELF and RUSAGE_CHILDREN)
+
+3. getrusage(RUSAGE_CHILDREN) collect grandchild statics?
+
+   test way:
+   	% ./getrusage
+
+   bsd result:
+   	post_wait line is about "post_wait: self 0 children 90000".
+
+	-> RUSAGE_CHILDREN can collect grandchild.
+
+4. zombie, but not waited children collect or not?
+
+   test way:
+   	% ./getrusage -z
+
+   bsd result:
+   	pre_wait line is "pre_wait: self 0 children 0".
+
+	-> zombie child process (not waited-for child process)
+	   isn't accounted.
+
+5. SIG_IGN collect or not
+
+   test way:
+   	% ./getrusage -s
+
+   bsd result:
+   	post_wait line is "post_wait: self 0 children 0".
+
+	-> if SIGCHLD is ignored, children isn't accounted.
+
+6. fork and malloc
+   test way:
+   	% ./getrusage -lcf
+
+   bsd result:
+   	fork line is "fork: self 0 children 0".
+   	fork2 line is about "fork: self 130000 children 0".
+
+   	-> rusage sholdn't be inherit by fork.
+	   (both RUSAGE_SELF and RUSAGE_CHILDREN)
+	   but additional memory cunsumption cause right
+	   maxrss calculation.
+
+Signed-off-by: Jiri Pirko <jpirko@redhat.com>
+Signed-off-by: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
+Cc: Oleg Nesterov <oleg@redhat.com>
+Cc: Hugh Dickins <hugh@veritas.com>
+Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
+---
+
+ fs/exec.c             |    7 +++++++
+ include/linux/sched.h |    1 +
+ kernel/exit.c         |   10 ++++++++++
+ kernel/fork.c         |    1 +
+ kernel/sys.c          |   17 +++++++++++++++++
+ 5 files changed, 36 insertions(+)
+
+diff -puN fs/exec.c~getrusage-fill-ru_maxrss-value fs/exec.c
+--- a/fs/exec.c~getrusage-fill-ru_maxrss-value
++++ a/fs/exec.c
+@@ -871,6 +871,13 @@ static int de_thread(struct task_struct 
+ 	sig->notify_count = 0;
+ 
+ no_thread_group:
++	if (current->mm) {
++		unsigned long hiwater_rss = get_mm_hiwater_rss(current->mm);
++
++		if (sig->maxrss < hiwater_rss)
++			sig->maxrss = hiwater_rss;
++	}
++
+ 	exit_itimers(sig);
+ 	flush_itimer_signals();
+ 
+diff -puN include/linux/sched.h~getrusage-fill-ru_maxrss-value include/linux/sched.h
+--- a/include/linux/sched.h~getrusage-fill-ru_maxrss-value
++++ a/include/linux/sched.h
+@@ -588,6 +588,7 @@ struct signal_struct {
+ 	unsigned long nvcsw, nivcsw, cnvcsw, cnivcsw;
+ 	unsigned long min_flt, maj_flt, cmin_flt, cmaj_flt;
+ 	unsigned long inblock, oublock, cinblock, coublock;
++	unsigned long maxrss, cmaxrss;
+ 	struct task_io_accounting ioac;
+ 
+ 	/*
+diff -puN kernel/exit.c~getrusage-fill-ru_maxrss-value kernel/exit.c
+--- a/kernel/exit.c~getrusage-fill-ru_maxrss-value
++++ a/kernel/exit.c
+@@ -1056,6 +1056,12 @@ NORET_TYPE void do_exit(long code)
+ 	if (group_dead) {
+ 		hrtimer_cancel(&tsk->signal->real_timer);
+ 		exit_itimers(tsk->signal);
++		if (tsk->mm) {
++			unsigned long hiwater_rss = get_mm_hiwater_rss(tsk->mm);
++
++			if (tsk->signal->maxrss < hiwater_rss)
++				tsk->signal->maxrss = hiwater_rss;
++		}
+ 	}
+ 	acct_collect(code, group_dead);
+ 	if (group_dead)
+@@ -1301,6 +1307,7 @@ static int wait_task_zombie(struct task_
+ 		struct signal_struct *psig;
+ 		struct signal_struct *sig;
+ 		struct task_cputime cputime;
++		unsigned long maxrss;
+ 
+ 		/*
+ 		 * The resource counters for the group leader are in its
+@@ -1352,6 +1359,9 @@ static int wait_task_zombie(struct task_
+ 		psig->coublock +=
+ 			task_io_get_oublock(p) +
+ 			sig->oublock + sig->coublock;
++		maxrss = max(sig->maxrss, sig->cmaxrss);
++		if (psig->cmaxrss < maxrss)
++			psig->cmaxrss = maxrss;
+ 		task_io_accounting_add(&psig->ioac, &p->ioac);
+ 		task_io_accounting_add(&psig->ioac, &sig->ioac);
+ 		spin_unlock_irq(&p->parent->sighand->siglock);
+diff -puN kernel/fork.c~getrusage-fill-ru_maxrss-value kernel/fork.c
+--- a/kernel/fork.c~getrusage-fill-ru_maxrss-value
++++ a/kernel/fork.c
+@@ -862,6 +862,7 @@ static int copy_signal(unsigned long clo
+ 	sig->nvcsw = sig->nivcsw = sig->cnvcsw = sig->cnivcsw = 0;
+ 	sig->min_flt = sig->maj_flt = sig->cmin_flt = sig->cmaj_flt = 0;
+ 	sig->inblock = sig->oublock = sig->cinblock = sig->coublock = 0;
++	sig->maxrss = sig->cmaxrss = 0;
+ 	task_io_accounting_init(&sig->ioac);
+ 	sig->sum_sched_runtime = 0;
+ 	taskstats_tgid_init(sig);
+diff -puN kernel/sys.c~getrusage-fill-ru_maxrss-value kernel/sys.c
+--- a/kernel/sys.c~getrusage-fill-ru_maxrss-value
++++ a/kernel/sys.c
+@@ -1618,6 +1618,7 @@ static void k_getrusage(struct task_stru
+ 	unsigned long flags;
+ 	cputime_t utime, stime;
+ 	struct task_cputime cputime;
++	unsigned long maxrss = 0;
+ 
+ 	memset((char *) r, 0, sizeof *r);
+ 	utime = stime = cputime_zero;
+@@ -1626,6 +1627,7 @@ static void k_getrusage(struct task_stru
+ 		utime = task_utime(current);
+ 		stime = task_stime(current);
+ 		accumulate_thread_rusage(p, r);
++		maxrss = p->signal->maxrss;
+ 		goto out;
+ 	}
+ 
+@@ -1643,6 +1645,7 @@ static void k_getrusage(struct task_stru
+ 			r->ru_majflt = p->signal->cmaj_flt;
+ 			r->ru_inblock = p->signal->cinblock;
+ 			r->ru_oublock = p->signal->coublock;
++			maxrss = p->signal->cmaxrss;
+ 
+ 			if (who == RUSAGE_CHILDREN)
+ 				break;
+@@ -1657,6 +1660,8 @@ static void k_getrusage(struct task_stru
+ 			r->ru_majflt += p->signal->maj_flt;
+ 			r->ru_inblock += p->signal->inblock;
+ 			r->ru_oublock += p->signal->oublock;
++			if (maxrss < p->signal->maxrss)
++				maxrss = p->signal->maxrss;
+ 			t = p;
+ 			do {
+ 				accumulate_thread_rusage(t, r);
+@@ -1672,6 +1677,18 @@ static void k_getrusage(struct task_stru
+ out:
+ 	cputime_to_timeval(utime, &r->ru_utime);
+ 	cputime_to_timeval(stime, &r->ru_stime);
++
++	if (who != RUSAGE_CHILDREN) {
++		struct mm_struct *mm = get_task_mm(p);
++		if (mm) {
++			unsigned long hiwater_rss = get_mm_hiwater_rss(mm);
++
++			if (maxrss < hiwater_rss)
++				maxrss = hiwater_rss;
++			mmput(mm);
++		}
++	}
++	r->ru_maxrss = maxrss * (PAGE_SIZE / 1024); /* convert pages to KBs */
+ }
+ 
+ int getrusage(struct task_struct *p, int who, struct rusage __user *ru)
+_
 
