@@ -1,57 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757961AbZDBN5K@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758373AbZDBOAN@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757961AbZDBN5K (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 2 Apr 2009 09:57:10 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757452AbZDBN4y
+	id S1758373AbZDBOAN (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 2 Apr 2009 10:00:13 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757613AbZDBN76
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 2 Apr 2009 09:56:54 -0400
-Received: from bombadil.infradead.org ([18.85.46.34]:34050 "EHLO
-	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756357AbZDBN4x (ORCPT
+	Thu, 2 Apr 2009 09:59:58 -0400
+Received: from smtp.ultrahosting.com ([74.213.174.254]:59282 "EHLO
+	smtp.ultrahosting.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757500AbZDBN75 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 2 Apr 2009 09:56:53 -0400
-Date: Thu, 2 Apr 2009 09:56:40 -0400
-From: Kyle McMartin <kyle@mcmartin.ca>
-To: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>
-Cc: Kyle McMartin <kyle@infradead.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Kyle McMartin <kyle@mcmartin.ca>,
-       Alessandro Zummo <alessandro.zummo@towertech.it>,
-       linux-m68k@vger.kernel.org, rtc-linux@googlegroups.com,
-       linux-parisc@vger.kernel.org,
-       Linux Kernel Development <linux-kernel@vger.kernel.org>,
-       Linux/PPC Development <linuxppc-dev@ozlabs.org>,
-       Paul Mundt <lethal@linux-sh.org>, Dann Frazier <dannf@dannf.org>
-Subject: Re: [PATCH 0/7] Generic RTC class driver
-Message-ID: <20090402135640.GA14159@bombadil.infradead.org>
-References: <1236605183-22718-1-git-send-email-Geert.Uytterhoeven@sonycom.com> <alpine.LRH.2.00.0903111134270.1040@vixen.sonytel.be> <20090311154505.GB5448@bombadil.infradead.org> <alpine.LRH.2.00.0903111825040.1040@vixen.sonytel.be> <20090313042543.GA3907@bombadil.infradead.org> <alpine.LRH.2.00.0904021141080.30882@vixen.sonytel.be>
+	Thu, 2 Apr 2009 09:59:57 -0400
+Date: Thu, 2 Apr 2009 09:53:31 -0400 (EDT)
+From: Christoph Lameter <cl@linux.com>
+X-X-Sender: cl@qirst.com
+To: Ingo Molnar <mingo@elte.hu>
+cc: Linus Torvalds <torvalds@linux-foundation.org>, Tejun Heo <tj@kernel.org>,
+       Martin Schwidefsky <schwidefsky@de.ibm.com>, rusty@rustcorp.com.au,
+       tglx@linutronix.de, x86@kernel.org, linux-kernel@vger.kernel.org,
+       hpa@zytor.com, Paul Mundt <lethal@linux-sh.org>, rmk@arm.linux.org.uk,
+       starvik@axis.com, ralf@linux-mips.org, davem@davemloft.net,
+       cooloney@kernel.org, kyle@mcmartin.ca, matthew@wil.cx,
+       grundler@parisc-linux.org, takata@linux-m32r.org,
+       benh@kernel.crashing.org, rth@twiddle.net, ink@jurassic.park.msu.ru,
+       heiko.carstens@de.ibm.com, Nick Piggin <npiggin@suse.de>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>
+Subject: Re: [PATCH UPDATED] percpu: use dynamic percpu allocator as the
+ default percpu allocator
+In-Reply-To: <20090402034223.GA25791@elte.hu>
+Message-ID: <alpine.DEB.1.10.0904020948570.31756@qirst.com>
+References: <alpine.DEB.1.10.0903301049060.13333@qirst.com> <alpine.DEB.1.10.0903311208110.17960@qirst.com> <49D2B209.9060000@kernel.org> <alpine.DEB.1.10.0904010948120.7643@qirst.com> <20090401154913.GA31435@elte.hu> <alpine.DEB.1.10.0904011404240.29839@qirst.com>
+ <20090401190113.GA734@elte.hu> <alpine.LFD.2.00.0904011235160.4130@localhost.localdomain> <20090401223241.GA28168@elte.hu> <alpine.DEB.1.10.0904012216370.32656@qirst.com> <20090402034223.GA25791@elte.hu>
+User-Agent: Alpine 1.10 (DEB 962 2008-03-14)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <alpine.LRH.2.00.0904021141080.30882@vixen.sonytel.be>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Apr 02, 2009 at 11:42:02AM +0200, Geert Uytterhoeven wrote:
-> On Fri, 13 Mar 2009, Kyle McMartin wrote:
-> > On Wed, Mar 11, 2009 at 06:26:12PM +0100, Geert Uytterhoeven wrote:
-> > > On Wed, 11 Mar 2009, Kyle McMartin wrote:
-> > > > On Wed, Mar 11, 2009 at 11:36:02AM +0100, Geert Uytterhoeven wrote:
-> > > > > Is it OK for you to take it through your PA-RISC tree?
-> > > > > If yes, I can resend the patch series with the collected acks.
-> > > > 
-> > I've pulled it and pushed it back out, I'll submit it when the merge
-> > window opens.
-> 
-> Apparently the first half went it through akpm. Will you take care of the
-> remaining commits?
-> 
+On Thu, 2 Apr 2009, Ingo Molnar wrote:
 
-Yup, I updated the rtc-parisc branch last night, I'll push it along to
-Linus this morning.
+> to quote an earlier part of my mail:
+>
+> > > We encourage kfree(NULL) and it triggers commonly in the kernel
+> > > today [on distro kernels we checked it can trigger once per
+> > > syscall!] - so i think we should consider free_percpu(NULL) a
+> > > possibly common pattern too. (even though today it's likely
+> > > _not_ common at all.)
+>
+> I specifically mentioned that it is not at all common now.
 
-Thanks again, Geert.
+What is this? Nonsense day? Consider it a common pattern although its
+likely not common at all? April fools day?
 
-cheers, Kyle
+> But there's no reason why an object shutdown fastpath with an
+> optional percpu buffer (say for debug statistics, not enabled by
+> default) couldnt look like this:
+>
+> 	percpu_free(NULL);
+>
+> We actually have such patterns of kfree(ptr) use, where the _common_
+> case in a fastpath is kfree(NULL).
+
+Speculation. A shutdown fastpath? The percpu allocation and free
+operations are expensive and deal with teardown and setup of virtual
+mappings. Those paths are *not* optimized for fastpath use. kfree is
+different.
+
+
