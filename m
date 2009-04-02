@@ -1,92 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S935405AbZDBJSp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1765653AbZDBJWM@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S935405AbZDBJSp (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 2 Apr 2009 05:18:45 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932804AbZDBJSZ
+	id S1765653AbZDBJWM (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 2 Apr 2009 05:22:12 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754424AbZDBJV4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 2 Apr 2009 05:18:25 -0400
-Received: from courier.cs.helsinki.fi ([128.214.9.1]:40409 "EHLO
-	mail.cs.helsinki.fi" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1764981AbZDBJSX (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 2 Apr 2009 05:18:23 -0400
-Date: Thu, 2 Apr 2009 12:18:20 +0300 (EEST)
-From: "=?ISO-8859-1?Q?Ilpo_J=E4rvinen?=" <ilpo.jarvinen@helsinki.fi>
-X-X-Sender: ijjarvin@wrl-59.cs.helsinki.fi
-To: David Miller <davem@davemloft.net>
-cc: Markus Trippelsdorf <markus@trippelsdorf.de>,
-       Netdev <netdev@vger.kernel.org>, LKML <linux-kernel@vger.kernel.org>,
-       Uwe Bugla <uwe.bugla@gmx.de>
-Subject: [PATCH 2/2] tcp: miscounts due to tcp_fragment pcount reset
-In-Reply-To: <Pine.LNX.4.64.0904021212310.30150@wrl-59.cs.helsinki.fi>
-Message-ID: <Pine.LNX.4.64.0904021216170.30150@wrl-59.cs.helsinki.fi>
-References: <20090327211202.GA10014@gentoox2.trippelsdorf.de>
- <Pine.LNX.4.64.0903280031080.5904@wrl-59.cs.helsinki.fi>
- <20090328045056.GA2394@gentoox2.trippelsdorf.de>
- <Pine.LNX.4.64.0903280930440.6696@wrl-59.cs.helsinki.fi>
- <20090328095514.GA2599@gentoox2.trippelsdorf.de>
- <Pine.LNX.4.64.0903301155150.30150@wrl-59.cs.helsinki.fi>
- <20090330164035.GA2652@gentoox2.trippelsdorf.de>
- <Pine.LNX.4.64.0903302137100.29272@wrl-59.cs.helsinki.fi>
- <20090331071018.GA2641@gentoox2.trippelsdorf.de>
- <Pine.LNX.4.64.0903311205070.30150@wrl-59.cs.helsinki.fi>
- <20090331184959.GA2725@gentoox2.trippelsdorf.de>
- <Pine.LNX.4.64.0904011352470.30150@wrl-59.cs.helsinki.fi>
- <Pine.LNX.4.64.0904021212310.30150@wrl-59.cs.helsinki.fi>
+	Thu, 2 Apr 2009 05:21:56 -0400
+Received: from bilbo.ozlabs.org ([203.10.76.25]:55506 "EHLO bilbo.ozlabs.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752445AbZDBJVz (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 2 Apr 2009 05:21:55 -0400
 MIME-Version: 1.0
-Content-Type: MULTIPART/MIXED; BOUNDARY="-696208474-588721039-1238663900=:30150"
+Content-Type: text/plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
+Message-ID: <18900.33695.919419.831813@cargo.ozlabs.ibm.com>
+Date: Thu, 2 Apr 2009 20:21:35 +1100
+From: Paul Mackerras <paulus@samba.org>
+To: Peter Zijlstra <peterz@infradead.org>
+Cc: Ingo Molnar <mingo@elte.hu>, linux-kernel@vger.kernel.org,
+       Mike Galbraith <efault@gmx.de>, Arjan van de Ven <arjan@infradead.org>,
+       Wu Fengguang <fengguang.wu@intel.com>
+Subject: Re: [PATCH 2/9] perf_counter: fix update_userpage()
+In-Reply-To: <1238662858.8530.5648.camel@twins>
+References: <20090328194359.426029037@chello.nl>
+	<20090328194929.546464621@chello.nl>
+	<18894.49084.341238.775487@cargo.ozlabs.ibm.com>
+	<1238662238.8530.5622.camel@twins>
+	<1238662858.8530.5648.camel@twins>
+X-Mailer: VM 8.0.9 under Emacs 22.2.1 (i486-pc-linux-gnu)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-  This message is in MIME format.  The first part should be readable text,
-  while the remaining parts are likely unreadable without MIME-aware tools.
+Peter Zijlstra writes:
 
----696208474-588721039-1238663900=:30150
-Content-Type: TEXT/PLAIN; charset=ISO-8859-1
-Content-Transfer-Encoding: 8BIT
+> The below might work:
+> 
+>   u32 seq;
+>   s64 count;
+> 
+> again:
+>   seq = pc->lock;
+> 
+>   if (unlikely(seq & 1)) {
 
+I don't believe we can ever see this condition, since pc->lock is
+updated in the kernel either at interrupt level on the cpu this task
+is running on, or in the kernel in the context of this task.  So this
+userspace code can never run in the middle of the kernel updating
+things.
 
-It seems that trivial reset of pcount to one was not sufficient
-in tcp_retransmit_skb. Multiple counters experience a positive
-miscount when skb's pcount gets lowered without the necessary
-adjustments (depending on skb's sacked bits which exactly), at
-worst a packets_out miscount can crash at RTO if the write queue
-is empty!
-
-Triggering this requires mss change, so bidir tcp or mtu probe or
-like.
-
-Signed-off-by: Ilpo Järvinen <ilpo.jarvinen@helsinki.fi>
-Reported-by: Markus Trippelsdorf <markus@trippelsdorf.de>
-Tested-by: Uwe Bugla <uwe.bugla@gmx.de>
----
-
-Markus probably tested this as well though I didn't hear any reports back 
-yet.
-
- net/ipv4/tcp_output.c |    7 ++++++-
- 1 files changed, 6 insertions(+), 1 deletions(-)
-
-diff --git a/net/ipv4/tcp_output.c b/net/ipv4/tcp_output.c
-index f1db89b..53300fa 100644
---- a/net/ipv4/tcp_output.c
-+++ b/net/ipv4/tcp_output.c
-@@ -1893,7 +1893,12 @@ int tcp_retransmit_skb(struct sock *sk, struct sk_buff *skb)
- 		if (tcp_fragment(sk, skb, cur_mss, cur_mss))
- 			return -ENOMEM; /* We'll try again later. */
- 	} else {
--		tcp_init_tso_segs(sk, skb, cur_mss);
-+		int oldpcount = tcp_skb_pcount(skb);
-+
-+		if (unlikely(oldpcount > 1)) {
-+			tcp_init_tso_segs(sk, skb, cur_mss);
-+			tcp_adjust_pcount(sk, skb, oldpcount - tcp_skb_pcount(skb));
-+		}
- 	}
- 
- 	tcp_retrans_try_collapse(sk, skb, cur_mss);
--- 
-1.5.2.2
-
----696208474-588721039-1238663900=:30150--
+Paul.
