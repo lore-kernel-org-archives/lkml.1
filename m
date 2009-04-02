@@ -1,55 +1,46 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S935770AbZDBLGf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S935841AbZDBLIB@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S935770AbZDBLGf (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 2 Apr 2009 07:06:35 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S935676AbZDBLGA
+	id S935841AbZDBLIB (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 2 Apr 2009 07:08:01 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S935197AbZDBLHu
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 2 Apr 2009 07:06:00 -0400
-Received: from tichy.grunau.be ([85.131.189.73]:53689 "EHLO tichy.grunau.be"
+	Thu, 2 Apr 2009 07:07:50 -0400
+Received: from sh.osrg.net ([192.16.179.4]:50109 "EHLO sh.osrg.net"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S935706AbZDBLF7 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 2 Apr 2009 07:05:59 -0400
-Date: Thu, 2 Apr 2009 13:05:32 +0200
-From: Janne Grunau <j@jannau.net>
-To: Lennart Sorensen <lsorense@csclub.uwaterloo.ca>
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Theodore Tso <tytso@mit.edu>, David Rees <drees76@gmail.com>,
-       Jesper Krogh <jesper@krogh.cc>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: Linux 2.6.29
-Message-ID: <20090402110532.GA5132@aniel>
-References: <20090325183011.GN32307@mit.edu> <alpine.LFD.2.00.0903251139260.3032@localhost.localdomain> <20090325220530.GR32307@mit.edu> <alpine.LFD.2.00.0903251622420.3032@localhost.localdomain> <20090326171148.9bf8f1ec.akpm@linux-foundation.org> <alpine.LFD.2.00.0903261723250.3994@localhost.localdomain> <20090326174704.cd36bf7b.akpm@linux-foundation.org> <alpine.LFD.2.00.0903261752110.3994@localhost.localdomain> <20090326182519.d576d703.akpm@linux-foundation.org> <20090401210337.GB3797@csclub.uwaterloo.ca>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090401210337.GB3797@csclub.uwaterloo.ca>
-User-Agent: Mutt/1.5.19 (2009-01-05)
+	id S934810AbZDBLHt (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 2 Apr 2009 07:07:49 -0400
+Date: Thu, 2 Apr 2009 20:06:26 +0900
+To: joerg.roedel@amd.com
+Cc: shemminger@vyatta.com, davej@redhat.com, tglx@linuxtronix.de,
+       mingo@redhat.com, hpa@zytor.com, linux-kernel@vger.kernel.org,
+       x86@kernel.org
+Subject: Re: [Bug 487894] New: sky2 0000:06:00.0: DMA-API: device driver
+	frees DMA memory with different size
+From: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
+In-Reply-To: <20090402105415.GD21083@amd.com>
+References: <20090401172708.GA11941@redhat.com>
+	<20090401110245.4d1ddf72@nehalam>
+	<20090402105415.GD21083@amd.com>
+Mime-Version: 1.0
+Content-Type: Text/Plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
+Message-Id: <20090402200634I.fujita.tomonori@lab.ntt.co.jp>
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-3.0 (sh.osrg.net [192.16.179.4]); Thu, 02 Apr 2009 20:06:27 +0900 (JST)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Apr 01, 2009 at 05:03:38PM -0400, Lennart Sorensen wrote:
-> On Thu, Mar 26, 2009 at 06:25:19PM -0700, Andrew Morton wrote:
-> > The JBD journal is a massive designed-in contention point.  It's why
-> > for several years I've been telling anyone who will listen that we need
-> > a new fs.  Hopefully our response to all these problems will soon be
-> > "did you try btrfs?".
+On Thu, 2 Apr 2009 12:54:15 +0200
+Joerg Roedel <joerg.roedel@amd.com> wrote:
+
+> On Wed, Apr 01, 2009 at 11:02:45AM -0700, Stephen Hemminger wrote:
+> > 
+> > The sky2 driver uses pci_unmap_len and pci_unmap_len_set which on 32 bit
+> > platforms are meaningless so they are stubbed out. 
+> > Basically, DMA-API checks are wrong/bogus to enforce on 32bit x86 as is.
 > 
-> Oh I look forward to the day when it will be safe to convert my mythtv
-> box from ext3 to btrfs.
+> As far as I know the VT-d driver is available on 32 bit x86 too. So this should
+> not always be a nop.
 
-You could convert it to xfs now. xfs is probably the file system with
-the lowest complaints usage ratio within the mythyv community.
-Using distinct discs for system and recording storage helps too.
+VT-d is available on only x86_64.
 
-> Current kernels just have too much IO latency
-> with ext3 it seems.
-
-MythTV calls fsync every few seconds on ongoing recordings to prevent
-stalls due to large cache writebacks on ext3.
-
-cheers
-
-Janne
-(MythTV developer)
