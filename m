@@ -1,45 +1,72 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933914AbZDBUQl@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933662AbZDBUSb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933914AbZDBUQl (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 2 Apr 2009 16:16:41 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761972AbZDBUQc
+	id S933662AbZDBUSb (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 2 Apr 2009 16:18:31 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932241AbZDBUSW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 2 Apr 2009 16:16:32 -0400
-Received: from mx2.redhat.com ([66.187.237.31]:41153 "EHLO mx2.redhat.com"
+	Thu, 2 Apr 2009 16:18:22 -0400
+Received: from mx2.redhat.com ([66.187.237.31]:41210 "EHLO mx2.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1759087AbZDBUQc (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 2 Apr 2009 16:16:32 -0400
-Message-ID: <49D51CA9.6090601@redhat.com>
-Date: Thu, 02 Apr 2009 16:14:33 -0400
-From: Rik van Riel <riel@redhat.com>
-User-Agent: Thunderbird 2.0.0.21 (X11/20090320)
-MIME-Version: 1.0
-To: Jeremy Fitzhardinge <jeremy@goop.org>
-CC: Martin Schwidefsky <schwidefsky@de.ibm.com>, akpm@osdl.org,
-       Nick Piggin <nickpiggin@yahoo.com.au>, frankeh@watson.ibm.com,
-       virtualization@lists.osdl.org, linux-kernel@vger.kernel.org,
-       virtualization@lists.linux-foundation.org, linux-mm@kvack.org,
-       hugh@veritas.com, Xen-devel <xen-devel@lists.xensource.com>
-Subject: Re: [patch 0/6] Guest page hinting version 7.
-References: <20090327150905.819861420@de.ibm.com>	<200903281705.29798.rusty@rustcorp.com.au>	<20090329162336.7c0700e9@skybase>	<200904022232.02185.nickpiggin@yahoo.com.au>	<20090402175249.3c4a6d59@skybase> <49D50CB7.2050705@redhat.com> <49D518E9.1090001@goop.org>
-In-Reply-To: <49D518E9.1090001@goop.org>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+	id S1763131AbZDBUSV (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 2 Apr 2009 16:18:21 -0400
+Date: Thu, 2 Apr 2009 15:16:21 -0500
+From: Clark Williams <williams@redhat.com>
+To: =?ISO-8859-1?B?RnLpZOlyaWM=?= Weisbecker <fweisbec@gmail.com>
+Cc: Jon Masters <jcm@jonmasters.org>, LKML <linux-kernel@vger.kernel.org>,
+       Jon Masters <jcm@redhat.com>, Thomas Gleixner <tglx@linutronix.de>,
+       Steven Rostedt <rostedt@goodmis.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       "Luis Claudio R. Goncalves" <lgoncalv@redhat.com>
+Subject: Re: [PATCH 1/2] SMI Detector: a simple module for detecting System
+  Management Interrupts
+Message-ID: <20090402151621.171a95c9@torg>
+In-Reply-To: <c62985530904021205t2030c81o3d6439ab6a3a5e1e@mail.gmail.com>
+References: <1238691005-25286-1-git-send-email-jcm@jonmasters.org>
+	<1238691005-25286-2-git-send-email-jcm@jonmasters.org>
+	<c62985530904021205t2030c81o3d6439ab6a3a5e1e@mail.gmail.com>
+Organization: Red Hat, Inc
+Mime-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
+Content-Transfer-Encoding: 8bit
+X-MIME-Autoconverted: from base64 to 8bit by alpha.home.local id n32KIYqu017107
 
-Jeremy Fitzhardinge wrote:
-> The more complex host policy decisions of how to balance overall 
-> memory use system-wide are much in the same for both mechanisms.
-Not at all.  Page hinting is just an optimization to host swapping, where
-IO can be avoided on many of the pages that hit the end of the LRU.
+-----BEGIN PGP SIGNED MESSAGE-----
+Hash: SHA1
 
-No decisions have to be made at all about balancing memory use
-between guests, it just happens through regular host LRU aging.
+On Thu, 2 Apr 2009 21:05:26 +0200
+Frédéric Weisbecker <fweisbec@gmail.com> wrote:
 
-Automatic ballooning requires that something on the host figures
-out how much memory each guest needs and sizes the guests
-appropriately.  All the proposed policies for that which I have
-seen have some nasty corner cases or are simply very limited
-in scope.
+
+> > +#if 1
+> > +       val = simple_strtol(buffer, NULL, 10);
+> > +#else
+> > +       if (strict_strtol(buffer, 10, &val))
+> > +               return -EINVAL;
+> > +#endif
+> 
+> 
+> 
+> So I guess the #else statement can disappear? :-)
+> 
+> 
+
+Ugh, don't blame Jon for that. I was trying to get rid of some
+checkpatch warnings and was experimenting with strict vs. simple
+strtol. 
+
+I'll clean that up in the next iteration. Or Jon can and will then
+abuse me :)
+
+Clark
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v2.0.9 (GNU/Linux)
+
+iEYEARECAAYFAknVHRoACgkQHyuj/+TTEp0ndwCfe4ZeEsdflVY3udv9ukk7wKVQ
+OycAn1Nl1OQr7nPUxPp3rln5SYVE4Bcn
+=kZRN
+-----END PGP SIGNATURE-----
+ÿôèº{.nÇ+‰·Ÿ®‰­†+%ŠËÿ±éİ¶¥Šwÿº{.nÇ+‰·¥Š{±şG«éÿŠ{ayºÊ‡Ú™ë,j­¢f£¢·hšïêÿ‘êçz_è®(­éšŠİ¢j"ú¶m§ÿÿ¾«şG«éÿ¢¸?™¨è­Ú&£ø§~á¶iO•æ¬z·švØ^¶m§ÿÿÃÿ¶ìÿ¢¸?–I¥
