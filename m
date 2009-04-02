@@ -1,73 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761603AbZDBTMI@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764753AbZDBTM1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761603AbZDBTMI (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 2 Apr 2009 15:12:08 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754271AbZDBTLz
+	id S1764753AbZDBTM1 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 2 Apr 2009 15:12:27 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762711AbZDBTMF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 2 Apr 2009 15:11:55 -0400
-Received: from extu-mxob-2.symantec.com ([216.10.194.135]:60210 "EHLO
-	extu-mxob-2.symantec.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753718AbZDBTLy (ORCPT
+	Thu, 2 Apr 2009 15:12:05 -0400
+Received: from [213.79.90.228] ([213.79.90.228]:2790 "EHLO
+	buildserver.ru.mvista.com" rhost-flags-FAIL-FAIL-OK-FAIL)
+	by vger.kernel.org with ESMTP id S1759598AbZDBTMD (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 2 Apr 2009 15:11:54 -0400
-Date: Thu, 2 Apr 2009 20:10:55 +0100 (BST)
-From: Hugh Dickins <hugh@veritas.com>
-X-X-Sender: hugh@blonde.anvils
-To: Chris Friesen <cfriesen@nortel.com>
-cc: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>,
-       Michael Ellerman <michael@ellerman.id.au>, linuxppc-dev@ozlabs.org,
-       linux-kernel@vger.kernel.org,
-       Benjamin Herrenschmidt <benh@kernel.crashing.org>, peterz@infradead.org,
-       akpm@linux-foundation.org
-Subject: Re: Resend: /proc/<pid>/maps offset output broken in 2.6.29
-In-Reply-To: <49D4FB89.4070101@nortel.com>
-Message-ID: <Pine.LNX.4.64.0904021938270.25731@blonde.anvils>
-References: <49CA8501.1000000@nortel.com>  <49D3F662.4050100@nortel.com>
- <1238659491.9041.133.camel@localhost> <Pine.LNX.4.64.0904021324070.16207@blonde.anvils>
- <49D4FB89.4070101@nortel.com>
+	Thu, 2 Apr 2009 15:12:03 -0400
+Date: Thu, 2 Apr 2009 23:11:59 +0400
+From: Anton Vorontsov <avorontsov@ru.mvista.com>
+To: Timur Tabi <timur@freescale.com>
+Cc: Marcel Ziswiler <marcel@ziswiler.com>, linux-kernel@vger.kernel.org,
+       linuxppc-dev@ozlabs.org
+Subject: Re: [PATCH] QE USB Host Integration for MPC832x
+Message-ID: <20090402191159.GA14626@oksana.dev.rtsoft.ru>
+Reply-To: avorontsov@ru.mvista.com
+References: <1238622396-9768-1-git-send-email-marcel@ziswiler.com> <20090402183357.GA29050@oksana.dev.rtsoft.ru> <20090402183631.GA6699@oksana.dev.rtsoft.ru> <49D5071D.50001@freescale.com>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=utf8
+Content-Disposition: inline
+In-Reply-To: <49D5071D.50001@freescale.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 2 Apr 2009, Chris Friesen wrote:
-> Hugh Dickins wrote:
-> > > > f7feb000-f7fec000 rw-p f7feb000 00:00 0
-> > > > ffe6d000-ffe82000 rw-p ffffffeb000 00:00 0      [stack]
+On Thu, Apr 02, 2009 at 01:42:37PM -0500, Timur Tabi wrote:
+> Anton Vorontsov wrote:
 > 
-> > Chris isn't the first to be concerned by that: there's a patch in
-> > -mm which just shows 0 instead of anon vm_pgoff in /proc/<pid>/maps
-> > output.  That patch is on akpm's list for 2.6.30 merge, but I think
-> > hasn't gone to Linus yet: expect it in a later batch.
+> > Oh, I was wrong. fsl_qe_udc driver uses mpc8360 compatible for
+> > matching, so you can't remove it. :-/
 > 
-> Alternately, what about just making the offset for the stack match the
-> starting address of the VMA?
+> Ugh, that's a bug in the driver then.
 
-The rmap code for locating anonymous pages, even after the vma has
-been moved meanwhile, depends on vma->vm_pgoff.  There is no point
-in making that more complicated for this.
+Yes, but that depends on what chip was the first one? MPC8323 or
+MPC8360?
 
-For display purposes only?  Well, yes, we could have done that,
-but why bother?  It wouldn't be adding any information, and
-might raise a question of identifying "the" stack to do that to.
+> My understanding is that the only MPC8323 QE microcode update is the one
+> for UART.  If there are any updates to any other QE devices for standard
+> functionality, I'm not aware of any.
 
-> That way it would look the same as other anonymous areas,
+I found them:
 
-The stack will be looking the same as other anonymous areas:
-they'll all be showing 00000000 there.
+http://www.freescale.com/files/netcomm/software/app_software/microcode/QERAMPTCH.zip?fpsp=1
 
-This is a cosmetic matter, not worth more than a couple of lines of
-code: I suggested masking off the high bits in the display, but when
-KAMEZAWA-san suggested just showing 0, it was hard to argue against
-his brutal simplicity.
+File is qe_usb3-8323_Rev11.c
 
-> and as a bonus would look the same as previous releases.
-> Arguably, /proc/<pid>/maps should count as userspace-visible API.
-
-Consider this change a fix: it used to show 00000000 before 2.6.7.
-
-See http://lkml.org/lkml/2009/1/13/331 for one of the threads
-on the subject - but you've not tempted me to reopen it!
-
-Hugh
+-- 
+Anton Vorontsov
+email: cbouatmailru@gmail.com
+irc://irc.freenode.net/bd2
