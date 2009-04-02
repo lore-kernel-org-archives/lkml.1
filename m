@@ -1,63 +1,85 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763318AbZDBP7M@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760686AbZDBQCo@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763318AbZDBP7M (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 2 Apr 2009 11:59:12 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761036AbZDBP6v
+	id S1760686AbZDBQCo (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 2 Apr 2009 12:02:44 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752784AbZDBQCe
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 2 Apr 2009 11:58:51 -0400
-Received: from mx2.redhat.com ([66.187.237.31]:37596 "EHLO mx2.redhat.com"
+	Thu, 2 Apr 2009 12:02:34 -0400
+Received: from e5.ny.us.ibm.com ([32.97.182.145]:58826 "EHLO e5.ny.us.ibm.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1763075AbZDBP6t (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 2 Apr 2009 11:58:49 -0400
-Message-ID: <49D4E072.2060003@redhat.com>
-Date: Thu, 02 Apr 2009 18:57:38 +0300
-From: Avi Kivity <avi@redhat.com>
-User-Agent: Thunderbird 2.0.0.21 (X11/20090320)
-MIME-Version: 1.0
-To: Herbert Xu <herbert@gondor.apana.org.au>
-CC: Gregory Haskins <ghaskins@novell.com>,
-       Rusty Russell <rusty@rustcorp.com.au>, anthony@codemonkey.ws,
-       andi@firstfloor.org, linux-kernel@vger.kernel.org, agraf@suse.de,
-       pmullaney@novell.com, pmorreale@novell.com, netdev@vger.kernel.org,
-       kvm@vger.kernel.org, Ingo Molnar <mingo@elte.hu>
-Subject: Re: [RFC PATCH 00/17] virtual-bus
-References: <20090402085253.GA29932@gondor.apana.org.au> <49D487A6.407@redhat.com> <49D49C1F.6030306@novell.com> <200904022243.21088.rusty@rustcorp.com.au> <49D4B4A3.5070008@novell.com> <49D4B87D.2000202@redhat.com> <20090402145018.GA816@gondor.apana.org.au> <49D4D301.2090209@redhat.com> <20090402154041.GA1774@gondor.apana.org.au>
-In-Reply-To: <20090402154041.GA1774@gondor.apana.org.au>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+	id S1751805AbZDBQCc (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 2 Apr 2009 12:02:32 -0400
+Subject: Re: [Announce] 2.6.29-rt2
+From: Will Schmidt <will_schmidt@vnet.ibm.com>
+Reply-To: will_schmidt@vnet.ibm.com
+To: Thomas Gleixner <tglx@linutronix.de>
+Cc: LKML <linux-kernel@vger.kernel.org>,
+       rt-users <linux-rt-users@vger.kernel.org>, Ingo Molnar <mingo@elte.hu>,
+       Steven Rostedt <rostedt@goodmis.org>,
+       Peter Zijlstra <peterz@infradead.org>, Carsten Emde <ce@ceag.ch>,
+       Clark Williams <williams@redhat.com>,
+       Frank Rowand <frank.rowand@am.sony.com>,
+       Robin Gareus <robin@gareus.org>, Gregory Haskins <ghaskins@novell.com>,
+       Philippe Reynes <philippe.reynes@isismpp.fr>,
+       Fernando Lopez-Lezcano <nando@ccrma.Stanford.EDU>
+In-Reply-To: <alpine.LFD.2.00.0904020155320.12916@localhost.localdomain>
+References: <alpine.LFD.2.00.0902112332370.415@localhost.localdomain>
+	 <alpine.LFD.2.00.0902122353050.16972@localhost.localdomain>
+	 <alpine.LFD.2.00.0902231854360.3523@localhost.localdomain>
+	 <alpine.LFD.2.00.0902241849230.3523@localhost.localdomain>
+	 <alpine.LFD.2.00.0902241856480.9135@localhost.localdomain>
+	 <alpine.LFD.2.00.0903122013230.29264@localhost.localdomain>
+	 <alpine.LFD.2.00.0903200014320.29264@localhost.localdomain>
+	 <alpine.LFD.2.00.0903201832590.29264@localhost.localdomain>
+	 <alpine.LFD.2.00.0903231723090.29264@localhost.localdomain>
+	 <alpine.LFD.2.00.0903252154040.3397@localhost.localdomain>
+	 <alpine.LFD.2.00.0904020155320.12916@localhost.localdomain>
+Content-Type: text/plain
+Organization: IBM
+Date: Thu, 02 Apr 2009 11:02:25 -0500
+Message-Id: <1238688145.8813.16.camel@lexx>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.22.3.1 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Herbert Xu wrote:
-> On Thu, Apr 02, 2009 at 06:00:17PM +0300, Avi Kivity wrote:
->   
->> Good point - if we rely on having excess cores in the host, large guest  
->> scalability will drop.
->>     
->
-> Going back to TX mitigation, I wonder if we could avoid it altogether
-> by having a "wakeup" mechanism that does not involve a vmexit.  We
-> have two cases:
->
-> 1) UP, or rather guest runs on the same core/hyperthread as the
-> backend.  This is the easy one, the guest simply sets a marker
-> in shared memory and keeps going until its time is up.  Then the
-> backend takes over, and uses a marker for notification too.
->
-> The markers need to be interpreted by the scheduler so that it
-> knows the guest/backend is runnable, respectively.
->   
+On Thu, 2009-04-02 at 02:17 +0200, Thomas Gleixner wrote:
+> We are pleased to announce the next update to our new preempt-rt
+> series.
+> 
+>       - fix a fork/exit bug in the signal per task cache (/me puts on
+>         a huge brown paper bag - Thanks to Phillipe Reynes and Will
+>         Schmidt for reporting and testing)
+> 
+>       - fix a group scheduling migration accounting bug (decoded with
+>         and fixed by Peter Zijlstra - reported by Robin Gareus)
+> 
+>       - tlb gather rework by Peter Zijlstra - Thanks Peter !
+> 
+>       - the usual fixlets
+> 
+> The tlb rework might be incomplete on some of the uncountable
+> incarnations of PowerPC and ARM platforms, so look out for wreckage
+> and keep the usual tools (fire-extinguishers, brooms, buckets etc.)
+> handy.
 
-Let's look at this first.
+I can confirm that the tlb rework does appear to be missing some parts
+for Power.  (Using 2.6.29-rt3 on pseries ppc64)
 
-What if the guest sends N packets, then does some expensive computation 
-(say the guest scheduler switches from the benchmark process to 
-evolution).  So now we have the marker set at packet N, but the host 
-will not see it until the guest timeslice is up?
+arch/powerpc/kernel/built-in.o:(.toc1+0x4d0): undefined reference to
+`per_cpu__ppc64_tlb_batch'
+<...>
+mm/built-in.o:(.toc1+0xed0): more undefined references to
+`per_cpu__ppc64_tlb_batch' follow
 
-I think I totally misunderstood you.  Can you repeat in smaller words?
+Not clear to me if this is just missing a "DEFINE_PER_CPU_LOCKED" to
+replace the removed "DEFINE_PER_CPU", (similar to the prior RT patches),
+or if the tlb rework is more involved.   So, I will patiently remain
+tuned in.  :-)
 
--- 
-error compiling committee.c: too many arguments to function
+Thanks, 
+-Will
+
 
