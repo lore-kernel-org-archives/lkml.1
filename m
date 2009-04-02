@@ -1,49 +1,79 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761201AbZDBSlk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764370AbZDBSmu@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761201AbZDBSlk (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 2 Apr 2009 14:41:40 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752207AbZDBSlb
+	id S1764370AbZDBSmu (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 2 Apr 2009 14:42:50 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751291AbZDBSml
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 2 Apr 2009 14:41:31 -0400
-Received: from mx2.mail.elte.hu ([157.181.151.9]:34082 "EHLO mx2.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751291AbZDBSla (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 2 Apr 2009 14:41:30 -0400
-Date: Thu, 2 Apr 2009 20:40:43 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: markus.t.metzger@intel.com, Andrew Morton <akpm@linux-foundation.org>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>
-Cc: tglx@linutronix.de, hpa@zytor.com, markus.t.metzger@gmail.com,
-       roland@redhat.com, eranian@googlemail.com, oleg@redhat.com,
-       juan.villacis@intel.com, ak@linux.jf.intel.com,
+	Thu, 2 Apr 2009 14:42:41 -0400
+Received: from bombadil.infradead.org ([18.85.46.34]:42383 "EHLO
+	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751096AbZDBSmk (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 2 Apr 2009 14:42:40 -0400
+Subject: Re: [PATCH 5/6] perf_counter: add more context information
+From: Peter Zijlstra <a.p.zijlstra@chello.nl>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: Paul Mackerras <paulus@samba.org>,
+       Corey Ashford <cjashfor@linux.vnet.ibm.com>,
        linux-kernel@vger.kernel.org
-Subject: Re: [patch 03/18] x86, ptrace, bts: defer branch trace stopping
-Message-ID: <20090402184043.GB843@elte.hu>
-References: <20090402145455.597376000@intel.com> <20090402145707.003976000@intel.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090402145707.003976000@intel.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+In-Reply-To: <20090402183417.GA843@elte.hu>
+References: <20090402091158.291810516@chello.nl>
+	 <20090402091319.493101305@chello.nl> <20090402113643.GF10828@elte.hu>
+	 <1238672889.8530.5908.camel@twins> <20090402181849.GD6340@elte.hu>
+	 <1238696998.5133.44.camel@laptop>  <20090402183417.GA843@elte.hu>
+Content-Type: text/plain
+Date: Thu, 02 Apr 2009 20:42:35 +0200
+Message-Id: <1238697755.5133.62.camel@laptop>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.26.0 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Thu, 2009-04-02 at 20:34 +0200, Ingo Molnar wrote:
+> * Peter Zijlstra <a.p.zijlstra@chello.nl> wrote:
+> 
+> > On Thu, 2009-04-02 at 20:18 +0200, Ingo Molnar wrote:
+> > > * Peter Zijlstra <a.p.zijlstra@chello.nl> wrote:
+> > > 
+> > > > On Thu, 2009-04-02 at 13:36 +0200, Ingo Molnar wrote:
+> > > > 
+> > > > > > -#define MAX_STACK_DEPTH		255
+> > > > > > +#define MAX_STACK_DEPTH		254
+> > > > > >  
+> > > > > >  struct perf_callchain_entry {
+> > > > > > -	u64	nr;
+> > > > > > +	u32	nr, hv, kernel, user;
+> > > > > >  	u64	ip[MAX_STACK_DEPTH];
+> > > > > >  };
+> > > > 
+> > > > Oh, and Paul suggested using u16s right after I send it out. So 
+> > > > I'll either send an update or send a incremental in case you 
+> > > > already applied it.
+> > > 
+> > > yes, that's probably a good idea. Although u8 might be even better - 
+> > > do we ever want to do more than 256 deep stack vectors? Even those 
+> > > would take quite some time to construct and pass down.
+> > 
+> > We'd have to pad it with 4 more bytes to remain u64 aligned,
+> 
+> ok, indeed.
+> 
+> > [...] also, why restrict ourselves. That MAX_STACK_DEPTH limit is 
+> > trivially fixable if indeed someone finds its insufficient.
+> 
+> well .. think about it: walking more than 256 stack frames for every 
+> IRQ event? Getting backtraces like:
+> 
+>  <func_0+0x123>
+...
+>  <func_269+0x123>
+> 
+> does that make much sense _per event_? How do you visualize it?
 
-* markus.t.metzger@intel.com <markus.t.metzger@intel.com> wrote:
+You can use it to calculate aggregate times. Eg. attribute the time
+spend in func_0 to func_1 to func_2 etc. And use a tree view based on
+these call-chains, allowing you to drill-down -- which is basically what
+the sysprof GUI does.
 
->  include/linux/mm.h       |    3 	2 +	1 -	0 !
->  mm/mlock.c               |   13 	6 +	7 -	0 !
-
-the mm bits look good to me but need an Ack from akpm, peterz or 
-other MM developers.
-
-	Ingo
