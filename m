@@ -1,335 +1,221 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934104AbZDBHMZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764298AbZDBHNU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934104AbZDBHMZ (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 2 Apr 2009 03:12:25 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753546AbZDBHMQ
+	id S1764298AbZDBHNU (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 2 Apr 2009 03:13:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760829AbZDBHND
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 2 Apr 2009 03:12:16 -0400
-Received: from courier.cs.helsinki.fi ([128.214.9.1]:59199 "EHLO
-	mail.cs.helsinki.fi" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752215AbZDBHMP (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 2 Apr 2009 03:12:15 -0400
-Subject: Re: + page-owner-tracking.patch added to -mm tree
-From: Pekka Enberg <penberg@cs.helsinki.fi>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: Mel Gorman <mel@csn.ul.ie>, Jason Baron <jbaron@redhat.com>,
-       Eduard - Gabriel Munteanu <eduard.munteanu@linux360.ro>,
-       linux-kernel@vger.kernel.org, mm-commits@vger.kernel.org,
-       alexn@dsv.su.se, akpm@linux-foundation.org, alexn@telia.com,
-       apw@shadowen.org, cl@linux-foundation.org, haveblue@us.ibm.com,
-       kamezawa.hiroyu@jp.fujitu.com, Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       Steven Rostedt <rostedt@goodmis.org>,
-       "Fr?d?ric Weisbecker" <fweisbec@gmail.com>
-In-Reply-To: <20090401152251.GB23390@elte.hu>
-References: <200903312321.n2VNLAMI006236@imap1.linux-foundation.org>
-	 <20090401111540.GC15442@elte.hu> <20090401125506.GA6406@csn.ul.ie>
-	 <20090401131713.GQ12966@elte.hu> <20090401133220.GB6406@csn.ul.ie>
-	 <20090401134917.GC18677@elte.hu> <1238597398.23857.11.camel@penberg-laptop>
-	 <20090401152251.GB23390@elte.hu>
-Date: Thu, 02 Apr 2009 10:12:11 +0300
-Message-Id: <1238656331.26286.17.camel@penberg-laptop>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
+	Thu, 2 Apr 2009 03:13:03 -0400
+Received: from gw.goop.org ([64.81.55.164]:45260 "EHLO mail.goop.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1759915AbZDBHMs (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 2 Apr 2009 03:12:48 -0400
+Message-ID: <49D4656C.20009@goop.org>
+Date: Thu, 02 Apr 2009 00:12:44 -0700
+From: Jeremy Fitzhardinge <jeremy@goop.org>
+User-Agent: Thunderbird 2.0.0.21 (X11/20090320)
+MIME-Version: 1.0
+To: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
+CC: x86@kernel.org, mingo@elte.hu, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] swiotlb updates for Xen dom0
+References: <1238539935-4295-1-git-send-email-jeremy@goop.org> <20090402152918I.fujita.tomonori@lab.ntt.co.jp>
+In-Reply-To: <20090402152918I.fujita.tomonori@lab.ntt.co.jp>
+X-Enigmail-Version: 0.95.6
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
-X-Mailer: Evolution 2.22.3.1 
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 2009-04-01 at 17:22 +0200, Ingo Molnar wrote:
-> > +kmemtrace_print_page_alloc_user(struct trace_iterator *iter,
-> > +				struct kmemtrace_page_alloc_entry *entry)
-> > +{
-> > +	struct kmemtrace_user_event_page_alloc *ev_alloc;
-> > +	struct trace_seq *s = &iter->seq;
-> > +	struct kmemtrace_user_event *ev;
-> > +
-> > +	ev = trace_seq_reserve(s, sizeof(*ev));
-> > +	if (!ev)
-> > +		return TRACE_TYPE_PARTIAL_LINE;
-> > +
-> > +	ev->event_id		= KMEMTRACE_USER_PAGE_ALLOC;
-> > +	ev->type_id		= entry->type_id;
-> > +	ev->event_size		= sizeof(*ev) + sizeof(*ev_alloc);
-> > +	ev->cpu			= iter->cpu;
-> > +	ev->timestamp		= iter->ts;
-> > +	ev->call_site		= 0ULL;	/* FIXME */
-> > +	ev->ptr			= 0ULL;	/* FIXME */
-> 
-> Here we could call save_stack_trace(), in a way like this, to save 
-> up to 8 entries of the allocation back-trace:
+FUJITA Tomonori wrote:
+> On Tue, 31 Mar 2009 15:52:06 -0700
+> Jeremy Fitzhardinge <jeremy@goop.org> wrote:
+>
+>   
+>> This series adds Xen support to x86 swiotlb.  This is mostly a matter of
+>> adding some Xen code into the existing hooks in pci-swiotlb_64.c:
+>>   - swiotlb_alloc_boot
+>>   - swiotlb_arch_range_needs_mapping
+>>   - swiotlb_phys_to_bus/bus_to_phys
+>>
+>> These hooks are conditional on xen_pv_domain(), which compiles to a
+>> constant 0 when CONFIG_XEN is not enabled (and is a simple variable
+>> read when it is).
+>>
+>> All the Xen-specific code is in xen-iommu.c.
+>>
+>> This series is just the patches which touch lib/swiotlb.c or
+>> pci-swiotlb_64.c.  You can see them with more context in:
+>>    git://git.kernel.org/pub/scm/linux/kernel/git/jeremy/xen.git for-linus/xen/dom0/swiotlb
+>>
+>> Thanks,
+>> 	J
+>>
+>>  arch/x86/kernel/pci-swiotlb_64.c |   31 ++++++++++++++++-
+>>  arch/x86/xen/Kconfig             |    1 
+>>  drivers/pci/xen-iommu.c          |   68 ++++++++++++++++++++++++++++++++++++---
+>>  include/xen/swiotlb.h            |   38 +++++++++++++++++++++
+>>  lib/swiotlb.c                    |    3 +
+>>  5 files changed, 133 insertions(+), 8 deletions(-)
+>>     
+>
+> This patchset looks ugly.
+>
+> You add 'if we are Xen, we do A. We do B if not' code into 6 functions
+> though pic-swiotlb_64.c has only 8 functions. In addition, 5 of 8
+> functions were added for Xen.
+>
+> Why can't you have something like arch/x86/xen/pci-swiotlb.c, which
+> works as arch/x86/kernel/pci-swiotlb_64.c? That should be much
+> cleaner.
+>   
 
-The example code compiled as-is so here's an updated patch! :-) We
-should probably do stack traces for _all_ events like you suggested but
-that's a bigger ABI change so I did it only for the new page allocation
-event.
+Sure.  Something like this? (Applied on top of the rest of the series, 
+after kernel/pci-swiotlb_64.c => pci_swiotlb.c)   It leaves one if(xen) 
+in the init function, but its consistent with the other clauses setting 
+swiotlb=1.
 
-			Pekka
+My only concern with this scheme is that if there's ever a non-Xen x86 
+user who wants to override these functions, we'll need to move them back 
+out into a common file because its not possible to have two overriding 
+definitions for a weak function (one hopes that the linker will warn if 
+that arises).
 
-diff --git a/include/trace/kmemtrace.h b/include/trace/kmemtrace.h
-index 28ee69f..c71f28b 100644
---- a/include/trace/kmemtrace.h
-+++ b/include/trace/kmemtrace.h
-@@ -20,6 +20,10 @@ static inline void kmemtrace_init(void)
- }
- #endif
+    J
+
+Subject: [PATCH] xen/swiotlb: move all Xen-specific swiotlb operations to separate file
+
+Most of these functions are no-ops on non-Xen systems, so we can fall
+back to the default functions if CONFIG_XEN is not defined.
+
+Signed-off-by: Jeremy Fitzhardinge <jeremy.fitzhardinge@citrix.com>
+
+diff --git a/arch/x86/kernel/pci-swiotlb.c b/arch/x86/kernel/pci-swiotlb.c
+index ead556f..2d8dd35 100644
+--- a/arch/x86/kernel/pci-swiotlb.c
++++ b/arch/x86/kernel/pci-swiotlb.c
+@@ -12,54 +12,9 @@
+ #include <asm/dma.h>
  
-+DECLARE_TRACE(alloc_pages,
-+	      TP_PROTO(gfp_t gfp_mask, int order),
-+	      TP_ARGS(gfp_mask, order));
-+
- DECLARE_TRACE(kmalloc,
- 	      TP_PROTO(unsigned long call_site,
- 		      const void *ptr,
-diff --git a/kernel/trace/kmemtrace.c b/kernel/trace/kmemtrace.c
-index 5011f4d..527198b 100644
---- a/kernel/trace/kmemtrace.c
-+++ b/kernel/trace/kmemtrace.c
-@@ -6,6 +6,7 @@
-  * Copyright (C) 2008 Frederic Weisbecker <fweisbec@gmail.com>
-  */
+ #include <xen/swiotlb.h>
+-#include <asm/xen/hypervisor.h>
  
-+#include <linux/stacktrace.h>
- #include <linux/tracepoint.h>
- #include <linux/seq_file.h>
- #include <linux/debugfs.h>
-@@ -34,6 +35,28 @@ static struct tracer_flags kmem_tracer_flags = {
- static struct trace_array *kmemtrace_array;
+ int swiotlb __read_mostly;
  
- /* Trace allocations */
-+static void kmemtrace_alloc_pages(gfp_t gfp_mask, int order)
-+{
-+	struct trace_array *tr = kmemtrace_array;
-+	struct kmemtrace_page_alloc_entry *entry;
-+	struct ring_buffer_event *event;
-+
-+	event = ring_buffer_lock_reserve(tr->buffer, sizeof(*entry));
-+	if (!event)
-+		return;
-+	entry	= ring_buffer_event_data(event);
-+	tracing_generic_entry_update(&entry->ent, 0, 0);
-+
-+	entry->ent.type		= TRACE_KMEM_PAGE_ALLOC;
-+	entry->type_id		= KMEMTRACE_TYPE_PAGES,
-+	entry->gfp_mask		= gfp_mask;
-+	entry->order		= order;
-+
-+	ring_buffer_unlock_commit(tr->buffer, event);
-+
-+	trace_wake_up();
-+}
-+
- static inline void kmemtrace_alloc(enum kmemtrace_type_id type_id,
- 				   unsigned long call_site,
- 				   const void *ptr,
-@@ -147,6 +170,10 @@ static int kmemtrace_start_probes(void)
+-void * __init swiotlb_alloc_boot(size_t size, unsigned long nslabs)
+-{
+-	void *ret = alloc_bootmem_low_pages(size);
+-
+-	if (ret && xen_pv_domain())
+-		xen_swiotlb_fixup(ret, size, nslabs);
+-
+-	return ret;
+-}
+-
+-void *swiotlb_alloc(unsigned order, unsigned long nslabs)
+-{
+-	void *ret = (void *)__get_free_pages(GFP_DMA | __GFP_NOWARN, order);
+-
+-	if (ret && xen_pv_domain())
+-		xen_swiotlb_fixup(ret, 1u << order, nslabs);
+-
+-	return ret;
+-}
+-
+-dma_addr_t swiotlb_phys_to_bus(struct device *hwdev, phys_addr_t paddr)
+-{
+-	if (xen_pv_domain())
+-		return xen_phys_to_bus(paddr);
+-
+-	return paddr;
+-}
+-
+-phys_addr_t swiotlb_bus_to_phys(dma_addr_t baddr)
+-{
+-	if (xen_pv_domain())
+-		return xen_bus_to_phys(baddr);
+-
+-	return baddr;
+-}
+-
+-int swiotlb_arch_range_needs_mapping(phys_addr_t paddr, size_t size)
+-{
+-	if (xen_pv_domain())
+-		return xen_range_needs_mapping(paddr, size);
+-
+-	return 0;
+-}
+-
+ static void *x86_swiotlb_alloc_coherent(struct device *hwdev, size_t size,
+ 					dma_addr_t *dma_handle, gfp_t flags)
  {
- 	int err;
- 
-+	err = register_trace_alloc_pages(kmemtrace_alloc_pages);
-+	if (err)
-+		return err;
+diff --git a/arch/x86/xen/Makefile b/arch/x86/xen/Makefile
+index 639965a..b021e72 100644
+--- a/arch/x86/xen/Makefile
++++ b/arch/x86/xen/Makefile
+@@ -12,4 +12,4 @@ obj-y		:= enlighten.o setup.o multicalls.o mmu.o irq.o \
+ obj-$(CONFIG_SMP)		+= smp.o spinlock.o
+ obj-$(CONFIG_XEN_DEBUG_FS)	+= debugfs.o
+ obj-$(CONFIG_XEN_DOM0)		+= vga.o apic.o
+-obj-$(CONFIG_XEN_DOM0_PCI)	+= pci.o
+\ No newline at end of file
++obj-$(CONFIG_XEN_DOM0_PCI)	+= pci.o pci-swiotlb.o
+\ No newline at end of file
+diff --git a/arch/x86/xen/pci-swiotlb.c b/arch/x86/xen/pci-swiotlb.c
+new file mode 100644
+index 0000000..82b2291
+--- /dev/null
++++ b/arch/x86/xen/pci-swiotlb.c
+@@ -0,0 +1,51 @@
++#include <linux/bootmem.h>
++#include <linux/gfp.h>
 +
- 	err = register_trace_kmalloc(kmemtrace_kmalloc);
- 	if (err)
- 		return err;
-@@ -214,8 +241,9 @@ static void kmemtrace_headers(struct seq_file *s)
-  * plus the origin CPU, since reordering occurs in-kernel now.
-  */
- 
--#define KMEMTRACE_USER_ALLOC	0
--#define KMEMTRACE_USER_FREE	1
-+#define KMEMTRACE_USER_ALLOC		0
-+#define KMEMTRACE_USER_FREE		1
-+#define KMEMTRACE_USER_PAGE_ALLOC	2
- 
- struct kmemtrace_user_event {
- 	u8			event_id;
-@@ -227,6 +255,14 @@ struct kmemtrace_user_event {
- 	unsigned long		ptr;
- };
- 
-+#define NR_ENTRIES			8
++#include <xen/swiotlb.h>
++#include <asm/xen/hypervisor.h>
 +
-+struct kmemtrace_user_event_page_alloc {
-+	unsigned		gfp_mask;
-+	int			order;
-+	unsigned long		entries[NR_ENTRIES];
-+};
++/* 
++ * This file defines overrides for weak functions with default
++ * implementations in lib/swiotlb.c.
++ */
 +
- struct kmemtrace_user_event_alloc {
- 	size_t			bytes_req;
- 	size_t			bytes_alloc;
-@@ -235,6 +271,44 @@ struct kmemtrace_user_event_alloc {
- };
- 
- static enum print_line_t
-+kmemtrace_print_page_alloc_user(struct trace_iterator *iter,
-+				struct kmemtrace_page_alloc_entry *entry)
++void * __init swiotlb_alloc_boot(size_t size, unsigned long nslabs)
 +{
-+	struct kmemtrace_user_event_page_alloc *ev_alloc;
-+	struct trace_seq *s = &iter->seq;
-+	struct kmemtrace_user_event *ev;
-+	struct stack_trace trace;
++	void *ret = alloc_bootmem_low_pages(size);
 +
-+	ev = trace_seq_reserve(s, sizeof(*ev));
-+	if (!ev)
-+		return TRACE_TYPE_PARTIAL_LINE;
++	if (ret && xen_pv_domain())
++		xen_swiotlb_fixup(ret, size, nslabs);
 +
-+	ev->event_id		= KMEMTRACE_USER_PAGE_ALLOC;
-+	ev->type_id		= entry->type_id;
-+	ev->event_size		= sizeof(*ev) + sizeof(*ev_alloc);
-+	ev->cpu			= iter->cpu;
-+	ev->timestamp		= iter->ts;
-+	ev->call_site		= 0ULL;	/* FIXME */
-+	ev->ptr			= 0ULL;	/* FIXME */
-+
-+	ev_alloc = trace_seq_reserve(s, sizeof(*ev_alloc));
-+	if (!ev_alloc)
-+		return TRACE_TYPE_PARTIAL_LINE;
-+
-+	ev_alloc->gfp_mask	= entry->gfp_mask;
-+	ev_alloc->order		= entry->order;
-+
-+	trace.nr_entries        = 0;
-+	trace.max_entries       = NR_ENTRIES;
-+	trace.entries           = ev_alloc->entries;
-+	trace.skip              = 2;
-+
-+	save_stack_trace(&trace);
-+
-+	return TRACE_TYPE_HANDLED;
++	return ret;
 +}
 +
-+static enum print_line_t
- kmemtrace_print_alloc_user(struct trace_iterator *iter,
- 			   struct kmemtrace_alloc_entry *entry)
- {
-@@ -288,7 +362,49 @@ kmemtrace_print_free_user(struct trace_iterator *iter,
- 	return TRACE_TYPE_HANDLED;
- }
- 
--/* The two other following provide a more minimalistic output */
-+/* The three other following provide a more minimalistic output */
-+static enum print_line_t
-+kmemtrace_print_page_alloc_compress(struct trace_iterator *iter,
-+				    struct kmemtrace_page_alloc_entry *entry)
++void *swiotlb_alloc(unsigned order, unsigned long nslabs)
 +{
-+	struct trace_seq *s = &iter->seq;
-+	int ret;
-+
-+	/* Alloc entry */
-+	ret = trace_seq_printf(s, "  +      ");
-+	if (!ret)
-+		return TRACE_TYPE_PARTIAL_LINE;
-+
-+	/* Type */
-+	switch (entry->type_id) {
-+	case KMEMTRACE_TYPE_PAGES:
-+		ret = trace_seq_printf(s, "P   ");
-+		break;
-+	default:
-+		ret = trace_seq_printf(s, "?   ");
-+	}
-+
-+	if (!ret)
-+		return TRACE_TYPE_PARTIAL_LINE;
-+
-+	/* Flags
-+	 * TODO: would be better to see the name of the GFP flag names
-+	 */
-+	ret = trace_seq_printf(s, "%08x   ", entry->gfp_mask);
-+	if (!ret)
-+		return TRACE_TYPE_PARTIAL_LINE;
-+
-+	/* Node */
-+	ret = trace_seq_printf(s, "%4d   ", entry->order);
-+	if (!ret)
-+		return TRACE_TYPE_PARTIAL_LINE;
-+
-+	if (!trace_seq_printf(s, "\n"))
-+		return TRACE_TYPE_PARTIAL_LINE;
-+
-+	return TRACE_TYPE_HANDLED;
++	/* Never called on x86.  Warn, just in case. */
++	WARN_ON(1);
++	return NULL;
 +}
 +
- static enum print_line_t
- kmemtrace_print_alloc_compress(struct trace_iterator *iter,
- 					struct kmemtrace_alloc_entry *entry)
-@@ -418,6 +534,16 @@ static enum print_line_t kmemtrace_print_line(struct trace_iterator *iter)
- 	struct trace_entry *entry = iter->ent;
- 
- 	switch (entry->type) {
-+	case TRACE_KMEM_PAGE_ALLOC: {
-+		struct kmemtrace_page_alloc_entry *field;
++dma_addr_t swiotlb_phys_to_bus(struct device *hwdev, phys_addr_t paddr)
++{
++	if (xen_pv_domain())
++		return xen_phys_to_bus(paddr);
 +
-+		trace_assign_type(field, entry);
-+		if (kmem_tracer_flags.val & TRACE_KMEM_OPT_MINIMAL)
-+			return kmemtrace_print_page_alloc_compress(iter, field);
-+		else
-+			return kmemtrace_print_page_alloc_user(iter, field);
-+	}
++	return paddr;
++}
 +
- 	case TRACE_KMEM_ALLOC: {
- 		struct kmemtrace_alloc_entry *field;
- 
-diff --git a/kernel/trace/trace.h b/kernel/trace/trace.h
-index cbc168f..3b1bfa5 100644
---- a/kernel/trace/trace.h
-+++ b/kernel/trace/trace.h
-@@ -35,6 +35,7 @@ enum trace_type {
- 	TRACE_SYSCALL_EXIT,
- 	TRACE_KMEM_ALLOC,
- 	TRACE_KMEM_FREE,
-+	TRACE_KMEM_PAGE_ALLOC,
- 	TRACE_POWER,
- 	TRACE_BLK,
- 
-@@ -188,6 +189,13 @@ enum kmemtrace_type_id {
- 	KMEMTRACE_TYPE_PAGES,		/* __get_free_pages() and friends. */
- };
- 
-+struct kmemtrace_page_alloc_entry {
-+	struct trace_entry	ent;
-+	enum kmemtrace_type_id	type_id;
-+	gfp_t			gfp_mask;
-+	int			order;
-+};
++phys_addr_t swiotlb_bus_to_phys(dma_addr_t baddr)
++{
++	if (xen_pv_domain())
++		return xen_bus_to_phys(baddr);
 +
- struct kmemtrace_alloc_entry {
- 	struct trace_entry	ent;
- 	enum kmemtrace_type_id type_id;
-@@ -328,6 +336,8 @@ extern void __ftrace_bad_type(void);
- 			  TRACE_GRAPH_RET);		\
- 		IF_ASSIGN(var, ent, struct hw_branch_entry, TRACE_HW_BRANCHES);\
- 		IF_ASSIGN(var, ent, struct trace_power, TRACE_POWER); \
-+		IF_ASSIGN(var, ent, struct kmemtrace_page_alloc_entry,	\
-+			  TRACE_KMEM_PAGE_ALLOC);	\
- 		IF_ASSIGN(var, ent, struct kmemtrace_alloc_entry,	\
- 			  TRACE_KMEM_ALLOC);	\
- 		IF_ASSIGN(var, ent, struct kmemtrace_free_entry,	\
-diff --git a/mm/page_alloc.c b/mm/page_alloc.c
-index a3803ea..f939800 100644
---- a/mm/page_alloc.c
-+++ b/mm/page_alloc.c
-@@ -1479,6 +1479,8 @@ __alloc_pages_internal(gfp_t gfp_mask, unsigned int order,
- 	unsigned long did_some_progress;
- 	unsigned long pages_reclaimed = 0;
- 
-+	trace_alloc_pages(gfp_mask, order);
++	return baddr;
++}
 +
- 	lockdep_trace_alloc(gfp_mask);
- 
- 	might_sleep_if(wait);
-@@ -1676,6 +1678,8 @@ got_pg:
- 	return page;
- }
- EXPORT_SYMBOL(__alloc_pages_internal);
-+DEFINE_TRACE(alloc_pages);
-+EXPORT_TRACEPOINT_SYMBOL(alloc_pages);
- 
- /*
-  * Common helper functions.
++int swiotlb_arch_range_needs_mapping(phys_addr_t paddr, size_t size)
++{
++	if (xen_pv_domain())
++		return xen_range_needs_mapping(paddr, size);
++
++	return 0;
++}
 
 
