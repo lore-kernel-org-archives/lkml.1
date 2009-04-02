@@ -1,228 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764354AbZDBWSH@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764825AbZDBWZa@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764354AbZDBWSH (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 2 Apr 2009 18:18:07 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761619AbZDBWRz
+	id S1764825AbZDBWZa (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 2 Apr 2009 18:25:30 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759974AbZDBWZP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 2 Apr 2009 18:17:55 -0400
-Received: from g5t0008.atlanta.hp.com ([15.192.0.45]:9161 "EHLO
-	g5t0008.atlanta.hp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1760583AbZDBWRx (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 2 Apr 2009 18:17:53 -0400
-Subject: [PATCH] Add support for turning PCIe ECRC on or off
-To: linux-pci@vger.kernel.org
-From: Andrew Patterson <andrew.patterson@hp.com>
-Cc: linux-kernel@vger.kernel.org, jbarnes@virtuousgeek.org
-Date: Thu, 02 Apr 2009 16:17:51 -0600
-Message-ID: <20090402221751.11757.36392.stgit@bob.kio>
-User-Agent: StGit/0.14.3.347.g594a
+	Thu, 2 Apr 2009 18:25:15 -0400
+Received: from mx3.mail.elte.hu ([157.181.1.138]:59504 "EHLO mx3.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1759731AbZDBWZO (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 2 Apr 2009 18:25:14 -0400
+Date: Fri, 3 Apr 2009 00:23:59 +0200
+From: Ingo Molnar <mingo@elte.hu>
+To: Jack Steiner <steiner@sgi.com>
+Cc: Andrew Morton <akpm@linux-foundation.org>, rusty@rustcorp.com.au,
+       sfr@canb.auug.org.au, linux-kernel@vger.kernel.org, stable@kernel.org
+Subject: Re: [PATCH] - Updated: Fix slab corruption caused by
+	alloc_cpumask_var_node()
+Message-ID: <20090402222359.GE9239@elte.hu>
+References: <20090402212751.GA11495@sgi.com> <20090402143932.79a15852.akpm@linux-foundation.org> <20090402220900.GA15129@sgi.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20090402220900.GA15129@sgi.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.5
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Add support for turning PCIe ECRC on or off
 
-Adds support for PCI Express transaction layer end-to-end CRC checking
-(ECRC).  This patch will enable/disable ECRC checking by setting/clearing
-the ECRC Check Enable and/or ECRC Generation Enable bits for devices that
-support ECRC.
+* Jack Steiner <steiner@sgi.com> wrote:
 
-The ECRC setting is controlled by the "pcie_ecrc=" command-line option. If
-this option is not set or is set to 'default", the enable and generation
-bits are left in whatever state that firmware/BIOS sets them to.  The
-"off" setting turns them off, and the "on" option turns them on (if the
-device supports it).
+> Fix slab corruption caused by alloc_cpumask_var_node() overwriting
+> the tail end of an off-stack cpumask.
+> 
+> The function zeros out cpumask bits beyond the last possible cpu.
+> The starting point for zeroing should be the beginning
+> of the mask offset by a byte count derived from the number
+> of possible cpus. The offset was calculated in bits instead of bytes.
+> This resulted in overwriting the end of the cpumask.
+> 
+> 
+> v2.6.29 is also affected by this bug.
+> 
+> 
+> Signed-off-by: Jack Steiner <steiner@sgi.com>
+> Acked-by: Mike Travis <travis.sgi.com>
+> Acked-by: Ingo Molnar <mingo@elte.hu>
 
-Signed-off-by: Andrew Patterson <andrew.patterson@hp.com>
----
+In the future you can add:
 
-diff --git a/Documentation/kernel-parameters.txt b/Documentation/kernel-parameters.txt
-index 1754fed..c346b55 100644
---- a/Documentation/kernel-parameters.txt
-+++ b/Documentation/kernel-parameters.txt
-@@ -1776,6 +1776,12 @@ and is between 256 and 4096 characters. It is defined in the file
- 		force	Enable ASPM even on devices that claim not to support it.
- 			WARNING: Forcing ASPM on may cause system lockups.
- 
-+	pcie_ecrc=	[PCI] Enable/disable PCIe ECRC (transaction layer
-+			end-to-end CRC checking).
-+			pcie_ecrc=default: Use BIOS/firmware settings.
-+			pcie_ecrc=off: Turn ECRC off
-+			pcie_ecrc=on: Turn ECRC on.
-+
- 	pcmv=		[HW,PCMCIA] BadgePAD 4
- 
- 	pd.		[PARIDE]
-diff --git a/drivers/pci/pcie/Kconfig b/drivers/pci/pcie/Kconfig
-index 5a0c6ad..d90f831 100644
---- a/drivers/pci/pcie/Kconfig
-+++ b/drivers/pci/pcie/Kconfig
-@@ -46,3 +46,15 @@ config PCIEASPM_DEBUG
- 	help
- 	  This enables PCI Express ASPM debug support. It will add per-device
- 	  interface to control ASPM.
-+
-+#
-+# PCI Express ECRC
-+#
-+config PCIEECRC
-+	bool "PCI Express ECRC support"
-+	depends on PCI
-+	help
-+	  Enables PCI Express ECRC (transaction layer end-to-end CRC
-+	  checking)
-+
-+	  When in doubt, say N.
-diff --git a/drivers/pci/pcie/Makefile b/drivers/pci/pcie/Makefile
-index 11f6bb1..acef212 100644
---- a/drivers/pci/pcie/Makefile
-+++ b/drivers/pci/pcie/Makefile
-@@ -5,6 +5,9 @@
- # Build PCI Express ASPM if needed
- obj-$(CONFIG_PCIEASPM)		+= aspm.o
- 
-+# Build PCI Express ECRC if needed
-+obj-$(CONFIG_PCIEECRC)		+= ecrc.o
-+
- pcieportdrv-y			:= portdrv_core.o portdrv_pci.o portdrv_bus.o
- 
- obj-$(CONFIG_PCIEPORTBUS)	+= pcieportdrv.o
-diff --git a/drivers/pci/pcie/ecrc.c b/drivers/pci/pcie/ecrc.c
-new file mode 100644
-index 0000000..eeb93df
---- /dev/null
-+++ b/drivers/pci/pcie/ecrc.c
-@@ -0,0 +1,94 @@
-+/*
-+ *    Enables/disables PCIe ECRC checking.
-+ *
-+ *    (C) Copyright 20009 Hewlett-Packard Development Company, L.P.
-+ *    Andrew Patterson <andrew.patterson@hp.com>
-+ *
-+ *    This program is free software; you can redistribute it and/or modify
-+ *    it under the terms of the GNU General Public License as published by
-+ *    the Free Software Foundation; version 2 of the License.
-+ *
-+ *    This program is distributed in the hope that it will be useful,
-+ *    but WITHOUT ANY WARRANTY; without even the implied warranty of
-+ *    MERCHANTABILITY OR FITNESS FOR A PARTICULAR PURPOSE. See the GNU
-+ *    General Public License for more details.
-+ *
-+ *    You should have received a copy of the GNU General Public License
-+ *    along with this program; if not, write to the Free Software
-+ *    Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA
-+ *    02111-1307, USA.
-+ *
-+ */
-+
-+
-+#include <linux/kernel.h>
-+#include <linux/module.h>
-+#include <linux/moduleparam.h>
-+#include <linux/pci.h>
-+#include <linux/pci_regs.h>
-+#include <linux/errno.h>
-+#include "../pci.h"
-+
-+#define ECRC_POLICY_DEFAULT 0		/* ECRC set by BIOS */
-+#define ECRC_POLICY_OFF     1		/* ECRC off */
-+#define ECRC_POLICY_ON      2		/* ECRC on */
-+
-+static int ecrc_policy = ECRC_POLICY_DEFAULT;
-+
-+static const char *ecrc_policy_str[] = {
-+	[ECRC_POLICY_DEFAULT] = "default",
-+	[ECRC_POLICY_OFF] = "off",
-+	[ECRC_POLICY_ON] = "on"
-+};
-+
-+/**
-+ * pcie_set_ercr_checking - enable/disable PCIe ECRC checking
-+ * @dev: the PCI device
-+ *
-+ * Returns 0 on success, or negative on failure.
-+ */
-+int pcie_set_ecrc_checking(struct pci_dev *dev)
-+{
-+	int pos;
-+	u32 reg32;
-+
-+	if (!dev->is_pcie)
-+		return -ENODEV;
-+
-+	/* Use firmware/BIOS setting if default */
-+	if (ecrc_policy == ECRC_POLICY_DEFAULT)
-+		return 0;
-+
-+	pos = pci_find_ext_capability(dev, PCI_EXT_CAP_ID_ERR);
-+	if (!pos)
-+		return -ENODEV;
-+
-+	pci_read_config_dword(dev, pos + PCI_ERR_CAP, &reg32);
-+	if (ecrc_policy == ECRC_POLICY_OFF) {
-+		reg32 &= ~(PCI_ERR_CAP_ECRC_GENE | PCI_ERR_CAP_ECRC_CHKE);
-+	} else if (ecrc_policy == ECRC_POLICY_ON) {
-+		if (reg32 & PCI_ERR_CAP_ECRC_GENC)
-+			reg32 |= PCI_ERR_CAP_ECRC_GENE;
-+		if (reg32 & PCI_ERR_CAP_ECRC_CHKC)
-+			reg32 |= PCI_ERR_CAP_ECRC_CHKE;
-+	}
-+	pci_write_config_dword(dev, pos + PCI_ERR_CAP, reg32);
-+	return 0;
-+}
-+EXPORT_SYMBOL_GPL(pcie_set_ecrc_checking);
-+
-+static int __init pcie_ecrc_get_policy(char *str)
-+{
-+	int i;
-+
-+	for (i = 0; i < ARRAY_SIZE(ecrc_policy_str); i++)
-+		if (!strncmp(str, ecrc_policy_str[i],
-+			     strlen(ecrc_policy_str[i])))
-+			break;
-+	if (i >= ARRAY_SIZE(ecrc_policy_str))
-+		return 0;
-+
-+	ecrc_policy = i;
-+	return 1;
-+}
-+__setup("pcie_ecrc=", pcie_ecrc_get_policy);
-diff --git a/drivers/pci/probe.c b/drivers/pci/probe.c
-index e2f3dd0..e2b0ab5 100644
---- a/drivers/pci/probe.c
-+++ b/drivers/pci/probe.c
-@@ -984,6 +984,9 @@ static void pci_init_capabilities(struct pci_dev *dev)
- 
- 	/* Single Root I/O Virtualization */
- 	pci_iov_init(dev);
-+
-+	/* PCIe ECRC */
-+	pcie_set_ecrc_checking(dev);
- }
- 
- void pci_device_add(struct pci_dev *dev, struct pci_bus *bus)
-diff --git a/include/linux/pci.h b/include/linux/pci.h
-index 507552d..080afd8 100644
---- a/include/linux/pci.h
-+++ b/include/linux/pci.h
-@@ -879,6 +879,15 @@ static inline int pcie_aspm_enabled(void)
- extern int pcie_aspm_enabled(void);
- #endif
- 
-+#ifndef CONFIG_PCIEECRC
-+static inline int pcie_set_ecrc_checking(struct pci_dev *dev)
-+{
-+	return 0;
-+}
-+#else
-+extern int pcie_set_ecrc_checking(struct pci_dev *dev);
-+#endif
-+
- #define pci_enable_msi(pdev)	pci_enable_msi_block(pdev, 1)
- 
- #ifdef CONFIG_HT_IRQ
+  Cc: <stable@kernel.org>
 
+to the signoff/ack section of the changlog in such cases - then the 
+-stable folks will notice the commit automatically.
+
+Thanks,
+
+	Ingo
