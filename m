@@ -1,94 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755328AbZDBNB0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753897AbZDBNGh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755328AbZDBNB0 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 2 Apr 2009 09:01:26 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751917AbZDBNBL
+	id S1753897AbZDBNGh (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 2 Apr 2009 09:06:37 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751550AbZDBNG2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 2 Apr 2009 09:01:11 -0400
-Received: from victor.provo.novell.com ([137.65.250.26]:47833 "EHLO
-	victor.provo.novell.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751155AbZDBNBJ (ORCPT
+	Thu, 2 Apr 2009 09:06:28 -0400
+Received: from moutng.kundenserver.de ([212.227.126.177]:57760 "EHLO
+	moutng.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750843AbZDBNG1 convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 2 Apr 2009 09:01:09 -0400
-Message-ID: <49D4B799.5080902@novell.com>
-Date: Thu, 02 Apr 2009 09:03:21 -0400
-From: Gregory Haskins <ghaskins@novell.com>
-User-Agent: Thunderbird 2.0.0.19 (X11/20081227)
+	Thu, 2 Apr 2009 09:06:27 -0400
+From: Arnd Bergmann <arnd@arndb.de>
+To: Roland McGrath <roland@redhat.com>
+Subject: Re: [RFC] asm-generic/{unistd,types,posix_types}.h for new arch
+Date: Thu, 2 Apr 2009 15:06:12 +0200
+User-Agent: KMail/1.9.9
+Cc: "H. Peter Anvin" <hpa@zytor.com>, Will Newton <will.newton@gmail.com>,
+       Geert Uytterhoeven <geert.uytterhoeven@gmail.com>,
+       michal.simek@petalogix.com,
+       Linux Kernel list <linux-kernel@vger.kernel.org>,
+       linux-arch@vger.kernel.org, linux-api@vger.kernel.org,
+       Chen Liqin <liqin.chen@sunplusct.com>
+References: <49D071A8.4010703@petalogix.com> <49D3DABA.2050001@zytor.com> <20090401213219.7B324FC3AB@magilla.sf.frob.com>
+In-Reply-To: <20090401213219.7B324FC3AB@magilla.sf.frob.com>
+X-Face: I@=L^?./?$U,EK.)V[4*>`zSqm0>65YtkOe>TFD'!aw?7OVv#~5xd\s,[~w]-J!)|%=]>=?utf-8?q?+=0A=09=7EohchhkRGW=3F=7C6=5FqTmkd=5Ft=3FLZC=23Q-=60=2E=60Y=2Ea=5E?=
+ =?utf-8?q?3zb?=)
+ =?utf-8?q?+U-JVN=5DWT=25cw=23=5BYo0=267C=26bL12wWGlZi=0A=09=7EJ=3B=5Cwg?=
+ =?utf-8?q?=3B3zRnz?=,J"CT_)=\H'1/{?SR7GDu?WIopm.HaBG=QYj"NZD_[zrM\Gip^U
 MIME-Version: 1.0
-To: Avi Kivity <avi@redhat.com>
-CC: Herbert Xu <herbert@gondor.apana.org.au>, anthony@codemonkey.ws,
-       andi@firstfloor.org, linux-kernel@vger.kernel.org, agraf@suse.de,
-       pmullaney@novell.com, pmorreale@novell.com, rusty@rustcorp.com.au,
-       netdev@vger.kernel.org, kvm@vger.kernel.org,
-       Mark McLoughlin <markmc@redhat.com>
-Subject: Re: [RFC PATCH 00/17] virtual-bus
-References: <20090402085253.GA29932@gondor.apana.org.au> <49D47F11.6070400@redhat.com> <20090402091639.GA30126@gondor.apana.org.au> <49D484F5.2000400@redhat.com> <20090402092936.GA30333@gondor.apana.org.au> <49D487A6.407@redhat.com> <49D49C1F.6030306@novell.com> <49D4A89E.5090407@redhat.com> <49D4AFF7.1050603@novell.com> <49D4B308.2030007@redhat.com>
-In-Reply-To: <49D4B308.2030007@redhat.com>
-X-Enigmail-Version: 0.95.7
-OpenPGP: id=D8195319
-Content-Type: multipart/signed; micalg=pgp-sha1;
- protocol="application/pgp-signature";
- boundary="------------enig3E461C1D46F841D9242FA7BF"
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 8BIT
+Content-Disposition: inline
+Message-Id: <200904021506.13942.arnd@arndb.de>
+X-Provags-ID: V01U2FsdGVkX1/z8EzcR7WeqpfYsTA5XHW5lsMi6553oZhDBzq
+ FKo8peYkCaD5Rqn2uBHFGzMLevmNdWXDXZFGAkLobweQ/bpjQQ
+ MQKuCBbWmPILvyKWnYQvw==
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This is an OpenPGP/MIME signed message (RFC 2440 and 3156)
---------------enig3E461C1D46F841D9242FA7BF
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: quoted-printable
+On Wednesday 01 April 2009, Roland McGrath wrote:
+> > Actually, gcc does have the _LP64 and __SIZEOF_POINTER__ macros (as well 
+> > as __CHAR_BIT__), although I don't know how far back it does have that. 
+> >      If it has been with us for long enough it might be possible to 
+> > switch over to using panarch macros.
 
-Avi Kivity wrote:
-> Gregory Haskins wrote:
->
-> =20
->
->>> It's more of a "schedule and forget" which I think brings you the
->>> win.  The host disables notifications and schedules the actual tx wor=
-k
->>> (rx from the host's perspective).  So now the guest and host continue=
+For user space, we also need to consider non-gcc compilers that could have
+a different set of macros. As long as we don't start relying on any new
+ones besides those we already use (__x86_64__, __s390x__, __powerpc64__,
+__mips64, __arch64__), we at least don't break anything accidentally.
 
->>> producing and consuming packets in parallel.  So long as the guest is=
+> Worst case the oldest compilers had <limits.h> and 
+> "#if ULONG_MAX == 0xffffffffUL", though I wouldn't like
+> myself to be using a setup where <limits.h> got pulled in.
 
->>> faster (due to the host being throttled?), notifications continue to
->>> be disabled.
->>>    =20
->> Yep, when the "producer::consumer" ratio is > 1, we mitigate
->> signaling. When its < 1, we signal roughly once per packet.
->>
->> =20
->>> If you changed your rx_isr() to process the packets immediately
->>> instead of scheduling, I think throughput would drop dramatically.
->>>    =20
->> Right, that is the point. :) This is that "soft asic" thing I was
->> talking about yesterday.
->>  =20
->
-> But all that has nothing to do with where the code lives, in the
-> kernel or userspace.
+That would of course work with non-gcc, but we are really not allowed
+to pull in <limits.h> from places like <types.h> where it would be needed
+then.
 
-Agreed, but note Ive already stated that some of my boost is likely from
-in-kernel, while others are unrelated design elements such as the
-"soft-asic" approach (you guys dont read my 10 page emails, do you? ;).=20
-I don't deny that some of my ideas could be used in userspace as well
-(Credit if used would be appreciated :).
-
--Greg
-
-
-
---------------enig3E461C1D46F841D9242FA7BF
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: OpenPGP digital signature
-Content-Disposition: attachment; filename="signature.asc"
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v2.0.9 (GNU/Linux)
-Comment: Using GnuPG with SUSE - http://enigmail.mozdev.org
-
-iEYEARECAAYFAknUt5oACgkQlOSOBdgZUxliawCdFchYctOROPBKauBNeWWe/YEz
-G4kAn2VLxCLuOxSYPW+WSjcixskQS2Jh
-=VVVL
------END PGP SIGNATURE-----
-
---------------enig3E461C1D46F841D9242FA7BF--
+	Arnd <><
