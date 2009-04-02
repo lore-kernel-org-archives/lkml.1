@@ -1,79 +1,113 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760307AbZDBMrV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760207AbZDBMsp@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760307AbZDBMrV (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 2 Apr 2009 08:47:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752874AbZDBMrK
+	id S1760207AbZDBMsp (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 2 Apr 2009 08:48:45 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753610AbZDBMsc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 2 Apr 2009 08:47:10 -0400
-Received: from mail-ew0-f165.google.com ([209.85.219.165]:51758 "EHLO
-	mail-ew0-f165.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752861AbZDBMrI convert rfc822-to-8bit (ORCPT
+	Thu, 2 Apr 2009 08:48:32 -0400
+Received: from victor.provo.novell.com ([137.65.250.26]:45017 "EHLO
+	victor.provo.novell.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752649AbZDBMsc (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 2 Apr 2009 08:47:08 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
-         :content-type:content-transfer-encoding;
-        b=UKdGhexEfXxKsOxdgYTHL9WS8e5zbJRChZG0Xc0SB38AXHRX7yKGaAmNF+1H7IXR0j
-         vUEEwNchl052Bp+c8GSVgPRNvgjGXXPMdq5WjzHLfYuDxsVI1uxdtZHr4F4sCfpGF+z/
-         lCu7bI/lAxIsyqlxNHuLSutRBZtzWVDNOoY/E=
+	Thu, 2 Apr 2009 08:48:32 -0400
+Message-ID: <49D4B4A3.5070008@novell.com>
+Date: Thu, 02 Apr 2009 08:50:43 -0400
+From: Gregory Haskins <ghaskins@novell.com>
+User-Agent: Thunderbird 2.0.0.19 (X11/20081227)
 MIME-Version: 1.0
-In-Reply-To: <a4423d670904020439m621990bch9482d19f0e48e7d2@mail.gmail.com>
-References: <a4423d670904011423x4174a81cj901bc140944412ea@mail.gmail.com>
-	 <20090401225351.GA22621@orion> <20090402055356.GC10642@mit.edu>
-	 <a4423d670904020042x6b76715du48a15e988a05019d@mail.gmail.com>
-	 <a4423d670904020439m621990bch9482d19f0e48e7d2@mail.gmail.com>
-Date: Thu, 2 Apr 2009 16:47:06 +0400
-Message-ID: <a4423d670904020547s72972089t3c135a92af6751d4@mail.gmail.com>
-Subject: Re: 2.6.29-git: cannot mount ext4/loop
-From: Alexander Beregalov <a.beregalov@gmail.com>
-To: Theodore Tso <tytso@mit.edu>, Jens Axboe <jens.axboe@oracle.com>,
-       linux-ext4@vger.kernel.org, linux-kernel@vger.kernel.org,
-       Thiemo Nagel <thiemo.nagel@ph.tum.de>
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8BIT
+To: Rusty Russell <rusty@rustcorp.com.au>
+CC: Avi Kivity <avi@redhat.com>, Herbert Xu <herbert@gondor.apana.org.au>,
+       anthony@codemonkey.ws, andi@firstfloor.org,
+       linux-kernel@vger.kernel.org, agraf@suse.de, pmullaney@novell.com,
+       pmorreale@novell.com, netdev@vger.kernel.org, kvm@vger.kernel.org
+Subject: Re: [RFC PATCH 00/17] virtual-bus
+References: <20090402085253.GA29932@gondor.apana.org.au> <49D487A6.407@redhat.com> <49D49C1F.6030306@novell.com> <200904022243.21088.rusty@rustcorp.com.au>
+In-Reply-To: <200904022243.21088.rusty@rustcorp.com.au>
+X-Enigmail-Version: 0.95.7
+OpenPGP: id=D8195319
+Content-Type: multipart/signed; micalg=pgp-sha1;
+ protocol="application/pgp-signature";
+ boundary="------------enig9185F14DE1ADD1C335B6DE94"
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-2009/4/2 Alexander Beregalov <a.beregalov@gmail.com>:
-> 2009/4/2 Alexander Beregalov <a.beregalov@gmail.com>:
->> 2009/4/2 Theodore Tso <tytso@mit.edu>:
->>> On Thu, Apr 02, 2009 at 02:53:51AM +0400, Alexander Beregalov wrote:
->>>> On Thu, Apr 02, 2009 at 01:23:28AM +0400, Alexander Beregalov wrote:
->>>> > Hi Theodore, Jens
->>>> >
->>>> > kernel is 2.6.29-07099-g8b53ef3
->>>> >
->>>> > Mount failed:
->>>> >
->>>> > EXT4-fs: barriers enabled
->>>> > kjournald2 starting: pid 1867, dev loop0:8, commit interval 5 seconds
->>>> > EXT4-fs error (device loop0): ext4_iget: block reference 2703228928 >=
->>>> > max (524288) in inode #2, offset=0
->>>> > EXT4-fs: get root inode failed
->>>> > EXT4-fs (device loop0): mount failed
->>>
->>> I don't get this failure in a Linux 2.6 kernel based off of 5d80f8e5
->>> with the )now upstream) ext4 patches merged in.  I'm guessing sometime
->>> between v2.6.29-3652-g5d80f8e and 2.6.29-07099-g8b53ef3 a regression
->>> was introduced into the loop driver?
->>
->> It is sparc host again.
->> 2.6.29-06608-g15f7176 worked fine.
->> There was one commit to loop.c:
->> 53d66608 (loop: add ioctl to resize a loop device)
->> and ext4 git pull.
->>
->> I wil try to revert it and probably bisect.
+This is an OpenPGP/MIME signed message (RFC 2440 and 3156)
+--------------enig9185F14DE1ADD1C335B6DE94
+Content-Type: text/plain; charset=iso-8859-15
+Content-Transfer-Encoding: quoted-printable
+
+Rusty Russell wrote:
+> On Thursday 02 April 2009 21:36:07 Gregory Haskins wrote:
+>  =20
+>> You do not need to know when the packet is copied (which I currently
+>> do).  You only need it for zero-copy (of which I would like to support=
+,
+>> but as I understand it there are problems with the reliability of prop=
+er
+>> callback (i.e. skb->destructor).
+>>    =20
 >
-> Revert 53d66608 does not help.
-> Bisecting...
+> But if you have a UP guest,
 
-Done.
-fe2c8191faa29d7a09f4962198f6dfab973ceec4 is first bad commit
-commit fe2c8191faa29d7a09f4962198f6dfab973ceec4
-Author: Thiemo Nagel <thiemo.nagel@ph.tum.de>
-Date:   Tue Mar 31 08:36:10 2009 -0400
+I assume you mean UP host ;)
 
-    ext4: add checks of block references for non-extent inodes
+>  there will *never* be another packet in the queue
+> at this point, since it wasn't running.
+>  =20
+Yep, and I'll be the first to admit that my design only looks forward.=20
+Its for high speed links and multi-core cpus, etc.  If you have a
+uniprocessor host, the throughput would likely start to suffer with my
+current strategy.  You could probably reclaim some of that throughput
+(but trading latency) by doing as you are suggesting with the deferred
+initial signalling.  However, it is still a tradeoff to account for the
+lower-end rig.  I could certainly put a heuristic/timer on the
+guest->host to mitigate this as well, but this is not my target use case
+anyway so I am not sure it is worth it.
+
+
+> As Avi said, you can do the processing in another thread and go back to=
+ the
+> guest; lguest pre-virtio did a hacky "weak" wakeup to ensure the guest =
+ran
+> again before the thread did for exactly this kind of reason.
+>
+> While Avi's point about a "powerful enough userspace API" is probably v=
+alid,
+> I don't think it's going to happen.  It's almost certainly less code to=
+ put a
+> virtio_net server in the kernel, than it is to create such a powerful
+> interface (see vringfd & tap).  And that interface would have one user =
+in
+> practice.
+>
+> So, let's roll out a kernel virtio_net server.  Anyone?
+>  =20
+Hmm..well I was hoping to be able to work with you guys to make my
+proposal fit this role.  If there is no interest in that, I hope that my
+infrastructure itself may still be considered for merging (in *some*
+tree, not -kvm per se) as I would prefer to not maintain it out of tree
+if it can be avoided.  I think people will find that the new logic
+touches very few existing kernel lines at all, and can be completely
+disabled with config options so it should be relatively inconsequential
+to those that do not care.
+
+-Greg
+
+
+
+--------------enig9185F14DE1ADD1C335B6DE94
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: OpenPGP digital signature
+Content-Disposition: attachment; filename="signature.asc"
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v2.0.9 (GNU/Linux)
+Comment: Using GnuPG with SUSE - http://enigmail.mozdev.org
+
+iEUEARECAAYFAknUtKMACgkQlOSOBdgZUxkpgQCfW0N3n4OMfZpkQYjwCnD5XTo+
+iloAl1blBgGiJv0/dx6Elp2ImW2Y0+0=
+=6JhY
+-----END PGP SIGNATURE-----
+
+--------------enig9185F14DE1ADD1C335B6DE94--
