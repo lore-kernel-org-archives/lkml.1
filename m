@@ -1,369 +1,211 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1765291AbZDBXOi@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759531AbZDBXQe@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1765291AbZDBXOi (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 2 Apr 2009 19:14:38 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758486AbZDBXOP
+	id S1759531AbZDBXQe (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 2 Apr 2009 19:16:34 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756237AbZDBXQ0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 2 Apr 2009 19:14:15 -0400
-Received: from mu-out-0910.google.com ([209.85.134.191]:9696 "EHLO
-	mu-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755168AbZDBXOL (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 2 Apr 2009 19:14:11 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=from:to:subject:date:user-agent:cc:references:in-reply-to
-         :mime-version:content-disposition:message-id:content-type
-         :content-transfer-encoding;
-        b=feNf/ajNBKQ5Q0YALI+cL4p34+F+YVvlV0Tbr79bMosEDhqg+xRMKWlvWov9QInoQ7
-         Te72xLE6BqEWjRJs3+Fidll9Y/SNQuL7cmLE8bUZfoem2KQeQU5D0wxP7jzjYDcSYtQb
-         ZywrEgymLmzxgEN7rmdbO5B+yAChaCcCDX7rU=
-From: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
-To: Borislav Petkov <petkovbb@googlemail.com>
-Subject: Re: [PATCH 2/3] ide-cd: cleanup cdrom_decode_status
-Date: Fri, 3 Apr 2009 01:08:39 +0200
-User-Agent: KMail/1.11.1 (Linux/2.6.29-next-20090401; KDE/4.2.1; i686; ; )
-Cc: linux-kernel@vger.kernel.org, linux-ide@vger.kernel.org
-References: <1238655519-10074-2-git-send-email-petkovbb@gmail.com>
-In-Reply-To: <1238655519-10074-2-git-send-email-petkovbb@gmail.com>
+	Thu, 2 Apr 2009 19:16:26 -0400
+Received: from sous-sol.org ([216.99.217.87]:47618 "EHLO sequoia.sous-sol.org"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1755168AbZDBXQZ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 2 Apr 2009 19:16:25 -0400
+Date: Thu, 2 Apr 2009 16:13:35 -0700
+From: Chris Wright <chrisw@sous-sol.org>
+To: linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
+       torvalds@linux-foundation.org, stable@kernel.org
+Subject: Linux 2.6.29.1
+Message-ID: <20090402231335.GI18394@sequoia.sous-sol.org>
 MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Message-Id: <200904030108.39927.bzolnier@gmail.com>
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thursday 02 April 2009, Borislav Petkov wrote:
-> - have (almost) equal handling of commands based solely on sense_key
+We (the -stable team) are announcing the release of the 2.6.29.1 kernel.
 
-I'm having a VERY hard time trying to review this patch because at
-the same time that codepaths were merged if()s were replaced by switch()
-which in turn resulted in change of intendation... on top of that
-the patch description is very vague about this part of the changes...
+There's many bugfixes all over the tree, but this should specifically
+fix the networking issues people had w/ 2.6.29.  As usual, you're
+encouraged to upgrade.  For details see the changelog and diffstat
+below.
 
-We're dealing with tricky error recovery code here and it is very easy
-for subtle bugs to slip in => it is very important to have the changes
-easily reviewable by as many people as possible.
+I'll be replying to this message with a copy of the patch between
+2.6.29 and 2.6.29.1.
 
-Sorry but this part is "almost" good and needs to be re-done.
+The updated 2.6.26.y git tree can be found at:
+	git://git.kernel.org/pub/scm/linux/kernel/git/stable/linux-2.6.29.y.git
+and can be browsed at the normal kernel.org git web browser:
+	http://git.kernel.org/?p=linux/kernel/git/stable/linux-2.6.29.y.git;a=summary
 
-> - carve out an ide_cd_breathe()-helper for fs write requests
+thanks,
+-chris
 
-This may be as well done in a pre-patch to not hold this change back
-and make the main change more readable.
+---------
 
-> - make code more readable
-> 
-> There should be no functional change resulting from this patch.
-> 
-> Signed-off-by: Borislav Petkov <petkovbb@gmail.com>
-> ---
->  drivers/ide/ide-cd.c |  238 ++++++++++++++++++++++---------------------------
->  1 files changed, 107 insertions(+), 131 deletions(-)
-> 
-> diff --git a/drivers/ide/ide-cd.c b/drivers/ide/ide-cd.c
-> index a4afd90..8387dbf 100644
-> --- a/drivers/ide/ide-cd.c
-> +++ b/drivers/ide/ide-cd.c
-> @@ -266,6 +266,38 @@ static void ide_cd_complete_failed_rq(ide_drive_t *drive, struct request *rq)
->  }
->  
->  /*
-> + * Allow the drive 5 seconds to recover; some devices will return NOT_READY
-> + * while flushing data from cache
-> + */
-> +static int ide_cd_breathe(ide_drive_t *drive, struct request *rq)
-> +{
-> +
-> +	struct cdrom_info *info = drive->driver_data;
-> +
-> +	if (!rq->errors)
-> +		info->write_timeout = jiffies +	ATAPI_WAIT_WRITE_BUSY;
-> +
-> +	rq->errors = 1;
-> +
-> +	if (time_after(jiffies, info->write_timeout))
-> +		return 1;
-> +	else {
-> +		struct request_queue *q = drive->queue;
-> +		unsigned long flags;
-> +
-> +		/*
-> +		 * take a breather relying on the unplug timer to kick us again
-> +		 */
-> +
-> +		spin_lock_irqsave(q->queue_lock, flags);
-> +		blk_plug_device(q);
-> +		spin_unlock_irqrestore(q->queue_lock, flags);
-> +
-> +		return 0;
-> +	}
-> +}
-> +
-> +/*
->   * Returns:
->   * 0: if the request should be continued.
->   * 1: if the request will be going through error recovery.
-> @@ -275,14 +307,15 @@ static int cdrom_decode_status(ide_drive_t *drive, u8 stat)
->  {
->  	ide_hwif_t *hwif = drive->hwif;
->  	struct request *rq = hwif->rq;
-> -	int err, sense_key;
-> +	int err, sense_key, do_end_request;
->  
->  	/* get the IDE error register */
->  	err = ide_read_error(drive);
->  	sense_key = err >> 4;
->  
-> -	ide_debug_log(IDE_DBG_RQ, "cmd[0]: 0x%x, rq->cmd_type: 0x%x, err: 0x%x",
-> -				  rq->cmd[0], rq->cmd_type, err);
-> +	ide_debug_log(IDE_DBG_RQ, "cmd: 0x%x, rq->cmd_type: 0x%x, err: 0x%x, "
-> +				  "stat 0x%x",
-> +				  rq->cmd[0], rq->cmd_type, err, stat);
->  
->  	if (blk_sense_request(rq)) {
->  		/*
-> @@ -292,151 +325,93 @@ static int cdrom_decode_status(ide_drive_t *drive, u8 stat)
->  		 */
->  		rq->cmd_flags |= REQ_FAILED;
->  		return 2;
-> -	} else if (blk_pc_request(rq) || rq->cmd_type == REQ_TYPE_ATA_PC) {
-> -		/* All other functions, except for READ. */
-> +	}
->  
-> -		/*
-> -		 * if we have an error, pass back CHECK_CONDITION as the
-> -		 * scsi status byte
-> -		 */
-> -		if (blk_pc_request(rq) && !rq->errors)
-> -			rq->errors = SAM_STAT_CHECK_CONDITION;
-> +	/* if we got an error, pass CHECK_CONDITION as the scsi status byte */
-> +	if (blk_pc_request(rq) && !rq->errors)
-> +		rq->errors = SAM_STAT_CHECK_CONDITION;
->  
-> -		/* check for tray open */
-> -		if (sense_key == NOT_READY) {
-> -			cdrom_saw_media_change(drive);
-> -		} else if (sense_key == UNIT_ATTENTION) {
-> -			/* check for media change */
-> +	if (blk_noretry_request(rq))
-> +			do_end_request = 1;
-> +
-> +	switch (sense_key) {
-> +	case NOT_READY:
-> +		if (blk_fs_request(rq) && (rq_data_dir(rq) == WRITE)) {
-> +			if (!ide_cd_breathe(drive, rq))
-> +				return 1;
-> +		} else {
->  			cdrom_saw_media_change(drive);
-> -			return 0;
-> -		} else if (sense_key == ILLEGAL_REQUEST &&
-> -			   rq->cmd[0] == GPCMD_START_STOP_UNIT) {
-> -			/*
-> -			 * Don't print error message for this condition--
-> -			 * SFF8090i indicates that 5/24/00 is the correct
-> -			 * response to a request to close the tray if the
-> -			 * drive doesn't have that capability.
-> -			 * cdrom_log_sense() knows this!
-> -			 */
-> -		} else if (!(rq->cmd_flags & REQ_QUIET)) {
-> -			/* otherwise, print an error */
-> -			ide_dump_status(drive, "packet command error", stat);
-> +			printk(KERN_ERR PFX "%s: tray open\n", drive->name);
->  		}
-> +		do_end_request = 1;
-> +		break;
->  
-> -		rq->cmd_flags |= REQ_FAILED;
-> +	case UNIT_ATTENTION:
-> +		cdrom_saw_media_change(drive);
-> +		if (blk_pc_request(rq) || rq->cmd_type == REQ_TYPE_ATA_PC)
-> +			return 0;
-> +		break;
->  
-> +	case ILLEGAL_REQUEST:
-> +	case DATA_PROTECT:
->  		/*
-> -		 * instead of playing games with moving completions around,
-> -		 * remove failed request completely and end it when the
-> -		 * request sense has completed
-> +		 * Don't print error message for this condition since SFF8090i
-> +		 * indicates that 5/24/00 is the correct response to a request
-> +		 * to close the tray if the drive doesn't have that capability.
-> +		 *
-> +		 * cdrom_log_sense() knows this!
->  		 */
-> -		goto end_request;
-> -
-> -	} else if (blk_fs_request(rq)) {
-> -		int do_end_request = 0;
-> -
-> -		/* handle errors from READ and WRITE requests */
-> -
-> -		if (blk_noretry_request(rq))
-> +		if (rq->cmd[0] != GPCMD_START_STOP_UNIT) {
-> +			ide_dump_status(drive, "command error", stat);
->  			do_end_request = 1;
-> +		}
-> +		break;
->  
-> -		if (sense_key == NOT_READY) {
-> -			/* tray open */
-> -			if (rq_data_dir(rq) == READ) {
-> -				cdrom_saw_media_change(drive);
-> -
-> -				/* fail the request */
-> -				printk(KERN_ERR PFX "%s: tray open\n",
-> -						drive->name);
-> -				do_end_request = 1;
-> -			} else {
-> -				struct cdrom_info *info = drive->driver_data;
-> +	case MEDIUM_ERROR:
-> +		/*
-> +		 * No point in re-trying a zillion times on a bad sector. If we
-> +		 * got here the error is not correctable.
-> +		 */
-> +		ide_dump_status(drive, "media error (bad sector)", stat);
-> +		do_end_request = 1;
-> +		break;
->  
-> -				/*
-> -				 * Allow the drive 5 seconds to recover, some
-> -				 * devices will return this error while flushing
-> -				 * data from cache.
-> -				 */
-> -				if (!rq->errors)
-> -					info->write_timeout = jiffies +
-> -							ATAPI_WAIT_WRITE_BUSY;
-> -				rq->errors = 1;
-> -				if (time_after(jiffies, info->write_timeout))
-> -					do_end_request = 1;
-> -				else {
-> -					struct request_queue *q = drive->queue;
-> -					unsigned long flags;
-> -
-> -					/*
-> -					 * take a breather relying on the unplug
-> -					 * timer to kick us again
-> -					 */
-> -					spin_lock_irqsave(q->queue_lock, flags);
-> -					blk_plug_device(q);
-> -					spin_unlock_irqrestore(q->queue_lock, flags);
-> -
-> -					return 1;
-> -				}
-> -			}
-> -		} else if (sense_key == UNIT_ATTENTION) {
-> -			/* media change */
-> -			cdrom_saw_media_change(drive);
-> +	case BLANK_CHECK:
-> +		/* disk appears blank ?? */
-> +		ide_dump_status(drive, "media error (blank)", stat);
-> +		do_end_request = 1;
-> +		break;
->  
-> -			/*
-> -			 * Arrange to retry the request but be sure to give up
-> -			 * if we've retried too many times.
-> -			 */
-> -			if (++rq->errors > ERROR_MAX)
-> -				do_end_request = 1;
-> -		} else if (sense_key == ILLEGAL_REQUEST ||
-> -			   sense_key == DATA_PROTECT) {
-> -			/*
-> -			 * No point in retrying after an illegal request or data
-> -			 * protect error.
-> -			 */
-> -			ide_dump_status(drive, "command error", stat);
-> -			do_end_request = 1;
-> -		} else if (sense_key == MEDIUM_ERROR) {
-> -			/*
-> -			 * No point in re-trying a zillion times on a bad
-> -			 * sector. If we got here the error is not correctable.
-> -			 */
-> -			ide_dump_status(drive, "media error (bad sector)",
-> -					stat);
-> -			do_end_request = 1;
-> -		} else if (sense_key == BLANK_CHECK) {
-> -			/* disk appears blank ?? */
-> -			ide_dump_status(drive, "media error (blank)", stat);
-> -			do_end_request = 1;
-> -		} else if ((err & ~ATA_ABORTED) != 0) {
-> +	default:
-> +		if (err & ~ATA_ABORTED) {
->  			/* go to the default handler for other errors */
->  			ide_error(drive, "cdrom_decode_status", stat);
->  			return 1;
-> -		} else if ((++rq->errors > ERROR_MAX)) {
-> -			/* we've racked up too many retries, abort */
-> -			do_end_request = 1;
->  		}
->  
-> -		/*
-> -		 * End a request through request sense analysis when we have
-> -		 * sense data. We need this in order to perform end of media
-> -		 * processing.
-> -		 */
-> -		if (do_end_request)
-> -			goto end_request;
-> +		if (!(rq->cmd_flags & REQ_QUIET)) {
-> +			ide_dump_status(drive, "command error", stat);
-> +			blk_dump_rq_flags(rq, PFX "failing rq");
-> +		}
-> +		do_end_request = 1;
-> +		break;
-> +	}
->  
-> -		/*
-> -		 * If we got a CHECK_CONDITION status, queue
-> -		 * a request sense command.
-> -		 */
-> -		if (stat & ATA_ERR)
-> -			cdrom_queue_request_sense(drive, NULL, NULL);
-> -		return 1;
-> -	} else {
-> -		blk_dump_rq_flags(rq, PFX "bad rq");
-> -		return 2;
-> +	/* we've racked up too many retries, abort */
-> +	if (++rq->errors > ERROR_MAX)
-> +		do_end_request = 1;
-> +
-> +	if (do_end_request) {
-> +		rq->cmd_flags |= REQ_FAILED;
-> +		goto end_request;
->  	}
->  
-> +	/* If we got a CHECK_CONDITION status, queue a request sense command. */
-> +	if (stat & ATA_ERR)
-> +		cdrom_queue_request_sense(drive, NULL, NULL);
-> +
-> +	return 1;
-> +
->  end_request:
->  	if (stat & ATA_ERR) {
->  		struct request_queue *q = drive->queue;
-> @@ -614,14 +589,15 @@ static ide_startstop_t cdrom_newpc_intr(ide_drive_t *drive)
->  	struct request *rq = hwif->rq;
->  	ide_expiry_t *expiry = NULL;
->  	int dma_error = 0, dma, thislen, uptodate = 0;
-> -	int write = (rq_data_dir(rq) == WRITE) ? 1 : 0, rc, nsectors;
-> +	int write, uninitialized_var(rc), nsectors;
+ Makefile                                 |    2 -
+ arch/arm/include/asm/elf.h               |    1 
+ arch/arm/kernel/module.c                 |    9 +++++
+ arch/arm/mach-iop13xx/pci.c              |    5 ++-
+ arch/arm/mach-omap2/mmc-twl4030.c        |    1 
+ arch/arm/mm/mmu.c                        |    2 -
+ arch/sparc/include/asm/tlb_64.h          |    4 +-
+ arch/sparc/kernel/nmi.c                  |   23 +++++++++++++
+ arch/sparc/kernel/smp_64.c               |    4 +-
+ arch/x86/kernel/check.c                  |    6 +--
+ arch/x86/kernel/cpu/mtrr/generic.c       |   51 ++++++++++++++++++-------------
+ arch/x86/kernel/ptrace.c                 |    3 -
+ arch/x86/kernel/tlb_uv.c                 |    3 +
+ arch/x86/kvm/paging_tmpl.h               |    2 -
+ arch/x86/kvm/svm.c                       |   41 +++++++++++++++++-------
+ arch/x86/kvm/vmx.c                       |    2 -
+ arch/x86/lguest/boot.c                   |   10 +++++-
+ arch/x86/mm/pat.c                        |    5 +--
+ arch/x86/pci/i386.c                      |    3 +
+ drivers/char/raw.c                       |    1 
+ drivers/lguest/page_tables.c             |    4 +-
+ drivers/media/dvb/firewire/firedtv-avc.c |    6 +++
+ drivers/media/video/v4l2-common.c        |    8 ++--
+ drivers/net/dnet.c                       |    1 
+ drivers/net/wireless/ath5k/base.c        |   22 +++++++++----
+ drivers/net/wireless/ath5k/base.h        |    2 -
+ drivers/net/wireless/ath9k/recv.c        |    7 +++-
+ drivers/net/wireless/ath9k/xmit.c        |    2 -
+ drivers/net/wireless/b43/xmit.c          |    2 -
+ drivers/scsi/arm/cumana_2.c              |    2 -
+ drivers/usb/core/message.c               |    3 +
+ drivers/usb/core/quirks.c                |    4 ++
+ drivers/usb/core/sysfs.c                 |    4 +-
+ drivers/usb/gadget/f_rndis.c             |    2 -
+ drivers/usb/host/ehci-q.c                |   32 +++++++++++++++++++
+ drivers/usb/host/ehci.h                  |    3 +
+ drivers/usb/storage/cypress_atacb.c      |   15 ++++-----
+ drivers/usb/storage/scsiglue.c           |    6 +++
+ drivers/video/pxafb.c                    |   14 ++++++++
+ fs/cifs/CHANGES                          |    3 +
+ fs/cifs/cifssmb.c                        |    6 ++-
+ fs/cifs/connect.c                        |    2 -
+ fs/fuse/file.c                           |    3 +
+ include/linux/mm.h                       |   15 +++++++--
+ include/linux/usb/quirks.h               |    3 +
+ mm/memory.c                              |    6 ++-
+ net/bridge/br_if.c                       |    1 
+ net/core/dev.c                           |    9 +----
+ net/ipv4/udp.c                           |    6 +++
+ net/ipv6/ip6_input.c                     |    4 --
+ net/netfilter/nf_conntrack_proto_tcp.c   |    3 +
+ net/wireless/reg.c                       |   23 ++++++++++---
+ net/xfrm/xfrm_state.c                    |    2 -
+ 53 files changed, 296 insertions(+), 107 deletions(-)
 
-Why is uninitialized_var() here now?
+Alan Cox (3):
+      ARM: cumana: Fix a long standing bogon
+      ARM: fix leak in iop13xx/pci
+      ARM: twl4030 - leak fix
 
->  	int sense = blk_sense_request(rq);
->  	unsigned int timeout;
->  	u16 len;
->  	u8 ireason, stat;
->  
-> -	ide_debug_log(IDE_DBG_PC, "cmd[0]: 0x%x, write: 0x%x",
-> -				  rq->cmd[0], write);
-> +	write = (rq_data_dir(rq) == WRITE) ? 1 : 0;
-> 
-> +	ide_debug_log(IDE_DBG_PC, "cmd: 0x%x, write: 0x%x", rq->cmd[0], write);
->  
->  	/* check for errors */
->  	dma = drive->dma;
+Alan Stern (3):
+      USB: EHCI: add software retry for transaction errors
+      USB: usb-storage: increase max_sectors for tape drives
+      USB: add quirk to avoid config and interface strings
+
+Andre Przywara (1):
+      KVM: SVM: set accessed bit for VMCB segment selectors
+
+Andreas Herrmann (1):
+      x86: mtrr: don't modify RdDram/WrDram bits of fixed MTRRs
+
+Avi Kivity (1):
+      KVM: VMX: Don't allow uninhibited access to EFER on i386
+
+Beat Michel Liechti (1):
+      DVB: firedtv: FireDTV S2 problems with tuning solved
+
+Boaz Harrosh (1):
+      USB: fix USB_STORAGE_CYPRESS_ATACB
+
+Bob Copeland (3):
+      ath5k: use spin_lock_irqsave for beacon lock
+      ath5k: disable MIB interrupts
+      ath5k: warn and correct rate for unknown hw rate indexes
+
+Chris Wright (1):
+      Linux 2.6.29.1
+
+Chuck Ebbert (1):
+      xfrm: spin_lock() should be spin_unlock() in xfrm_state.c
+
+Dan Carpenter (2):
+      fuse: fix fuse_file_lseek returning with lock held
+      Add a missing unlock_kernel() in raw_open()
+
+Daniel Silverstone (1):
+      ARM: 5428/1: Module relocation update for R_ARM_V4BX
+
+David Brownell (1):
+      USB: gadget: fix rndis regression
+
+David S. Miller (3):
+      sparc64: Fix MM refcount check in smp_flush_tlb_pending().
+      sparc64: Flush TLB before releasing pages.
+      sparc64: Fix reset hangs on Niagara systems.
+
+Eric Miao (1):
+      ARM: pxa: fix overlay being un-necessarily initialized on pxa25x
+
+Geert Uytterhoeven (1):
+      dnet: drivers/net/dnet.c needs <linux/io.h>
+
+Hans Verkuil (1):
+      V4L: v4l2-common: remove incorrect MODULE test
+
+Herbert Xu (1):
+      GRO: Disable GRO on legacy netif_rx path
+
+Jeff Layton (1):
+      cifs: fix buffer format byte on NT Rename/hardlink
+
+Jesper Nilsson (1):
+      ipv6: Plug sk_buff leak in ipv6_rcv (net/ipv6/ip6_input.c)
+
+Joerg Roedel (1):
+      KVM: MMU: Fix another largepage memory leak
+
+Lorenzo Nava (1):
+      b43: fix b43_plcp_get_bitrate_idx_ofdm return type
+
+Luis R. Rodriguez (4):
+      ath9k: downgrade xmit queue full message to xmit debug
+      ath9k: fix dma mapping leak of rx buffer upon rmmod
+      cfg80211: force last_request to be set for OLD_REG if regdom is EU
+      cfg80211: fix incorrect assumption on last_request for 11d
+
+Mark H. Weaver (1):
+      netfilter: nf_conntrack_tcp: fix unaligned memory access in tcp_sack
+
+Mikael Pettersson (1):
+      ARM: 5435/1: fix compile warning in sanity_check_meminfo()
+
+Pallipadi, Venkatesh (2):
+      x86, PAT, PCI: Change vma prot in pci_mmap to reflect inherited prot
+      VM, x86, PAT: Change is_linear_pfn_mapping to not use vm_pgoff
+
+Rusty Russell (3):
+      x86, uv: fix cpumask iterator in uv_bau_init()
+      lguest: wire up pte_update/pte_update_defer
+      lguest: fix spurious BUG_ON() on invalid guest stack.
+
+Stephen Hemminger (1):
+      bridge: bad error handling when adding invalid ether address
+
+Steve French (1):
+      CIFS: Fix memory overwrite when saving nativeFileSystem field during mount
+
+Vitaly Mayatskikh (1):
+      udp: Wrong locking code in udp seq_file infrastructure
+
+Yinghai Lu (1):
+      x86: fix 64k corruption-check
+
+xiyou.wangcong@gmail.com (1):
+      x86: ptrace, bts: fix an unreachable statement
+
