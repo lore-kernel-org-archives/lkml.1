@@ -1,37 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S935368AbZDBJQP@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S935430AbZDBJQo@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S935368AbZDBJQP (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 2 Apr 2009 05:16:15 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933527AbZDBJNV
+	id S935430AbZDBJQo (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 2 Apr 2009 05:16:44 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934950AbZDBJN5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 2 Apr 2009 05:13:21 -0400
-Received: from hera.kernel.org ([140.211.167.34]:57784 "EHLO hera.kernel.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S933441AbZDBJNU (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 2 Apr 2009 05:13:20 -0400
-Message-ID: <49D481A4.1040908@kernel.org>
-Date: Thu, 02 Apr 2009 18:13:08 +0900
-From: Tejun Heo <tj@kernel.org>
-User-Agent: Thunderbird 2.0.0.19 (X11/20081227)
-MIME-Version: 1.0
-To: Boaz Harrosh <bharrosh@panasas.com>
-CC: axboe@kernel.dk, linux-kernel@vger.kernel.org,
-       fujita.tomonori@lab.ntt.co.jp
-Subject: Re: [PATCH 05/17] bio: cleanup rw usage
-References: <1238593472-30360-1-git-send-email-tj@kernel.org> <1238593472-30360-6-git-send-email-tj@kernel.org> <49D47925.5050307@panasas.com> <49D47F3F.7000105@kernel.org> <49D4805C.70400@panasas.com>
-In-Reply-To: <49D4805C.70400@panasas.com>
-X-Enigmail-Version: 0.95.7
-Content-Type: text/plain; charset=UTF-8
+	Thu, 2 Apr 2009 05:13:57 -0400
+Received: from bombadil.infradead.org ([18.85.46.34]:59173 "EHLO
+	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S934862AbZDBJN4 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 2 Apr 2009 05:13:56 -0400
+Subject: Re: [PATCH 13/15] perf_counter: provide generic callchain bits
+From: Peter Zijlstra <peterz@infradead.org>
+To: Paul Mackerras <paulus@samba.org>
+Cc: Corey Ashford <cjashfor@linux.vnet.ibm.com>, Ingo Molnar <mingo@elte.hu>,
+       linux-kernel@vger.kernel.org
+In-Reply-To: <18900.33013.359312.694434@cargo.ozlabs.ibm.com>
+References: <20090330170701.856843742@chello.nl>
+	 <20090330171024.254266860@chello.nl>
+	 <18897.46177.528910.51044@cargo.ozlabs.ibm.com>
+	 <1238481552.28248.1384.camel@twins> <49D1C544.7020403@linux.vnet.ibm.com>
+	 <18897.56973.324304.995540@cargo.ozlabs.ibm.com>
+	 <1238508032.8530.278.camel@twins>
+	 <18898.58399.957182.181124@drongo.ozlabs.ibm.com>
+	 <1238572744.8530.2541.camel@twins> <49D3F7E4.7010308@linux.vnet.ibm.com>
+	 <1238654631.8530.5361.camel@twins> <1238658096.8530.5480.camel@twins>
+	 <18900.33013.359312.694434@cargo.ozlabs.ibm.com>
+Content-Type: text/plain
 Content-Transfer-Encoding: 7bit
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Thu, 02 Apr 2009 09:13:11 +0000 (UTC)
+Date: Thu, 02 Apr 2009 11:14:51 +0200
+Message-Id: <1238663691.8530.5678.camel@twins>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.26.0 
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Boaz Harrosh wrote:
-> I'll do it, no problems. Would you push it with your patchset?
+On Thu, 2009-04-02 at 20:10 +1100, Paul Mackerras wrote:
+> Peter Zijlstra writes:
+> 
+> > Hmm, another idea:
+> > 
+> > struct perf_callchain_entry {
+> >   __u32 total, hv, kernel, user;
+> 
+> That should work - and they could be u16's in fact.
 
-Sure thing.
-
--- 
-tejun
+Gah, I just send it out with u32. But yes, will change.
