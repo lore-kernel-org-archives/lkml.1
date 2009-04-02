@@ -1,260 +1,127 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762162AbZDBO7H@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762039AbZDBO6n@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762162AbZDBO7H (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 2 Apr 2009 10:59:07 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760961AbZDBO5T
+	id S1762039AbZDBO6n (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 2 Apr 2009 10:58:43 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761276AbZDBO5S
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 2 Apr 2009 10:57:19 -0400
-Received: from mga02.intel.com ([134.134.136.20]:60878 "EHLO mga02.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1760303AbZDBO5S (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
 	Thu, 2 Apr 2009 10:57:18 -0400
-Content-Type: multipart/mixed; boundary="===============0933880323=="
+Received: from mga03.intel.com ([143.182.124.21]:52235 "EHLO mga03.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1760989AbZDBO5R (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 2 Apr 2009 10:57:17 -0400
+Content-Type: multipart/mixed; boundary="===============0508950418=="
 MIME-Version: 1.0
 X-ExtLoop1: 1
 X-IronPort-AV: E=Sophos;i="4.39,314,1235980800"; 
-   d="scan'208";a="503019893"
-Message-Id: <20090402145711.328748000@intel.com>
+   d="scan'208";a="127093752"
+Message-Id: <20090402145709.422226000@intel.com>
 References: <20090402145455.597376000@intel.com>
 User-Agent: quilt/0.46-1
-Date: Thu, 02 Apr 2009 16:55:00 +0200
+Date: Thu, 02 Apr 2009 16:54:59 +0200
 From: markus.t.metzger@intel.com
 To: mingo@elte.hu, tglx@linutronix.de, hpa@zytor.com
 Cc: markus.t.metzger@gmail.com, roland@redhat.com, eranian@googlemail.com,
        oleg@redhat.com, juan.villacis@intel.com, ak@linux.jf.intel.com,
        linux-kernel@vger.kernel.org,
        Markus Metzger <markus.t.metzger@intel.com>
-Subject: [patch 05/18] x86, bts: fix race between per-task and per-cpu branch tracing
+Subject: [patch 04/18] x86, bts: wait until traced task has been scheduled out
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---===============0933880323==
+--===============0508950418==
 MIME-Version: 1.0
-Content-Disposition: inline; filename=tip.master.ds.get_tracer.patch
+Content-Disposition: inline; filename=tip.master.ds.wait_task_inactive.patch
 
-Per-task branch tracing installs a debug store context with the traced
-task. This immediately results in the branch trace control bits to be
-cleared for the next context switch of that task, if not set before.
+In order to stop branch tracing for a running task, we need to first
+clear the branch tracing control bits before we may free the tracing
+buffer.
+If the traced task is running, the cpu might still trace that task
+after the branch trace control bits have cleared.
 
-Either per-cpu or per-task tracing are allowed at the same time.
-
-An active per-cpu tracing would be disabled even if the per-task tracing
-request is rejected and the task debug store context removed.
+Wait until the traced task has been scheduled out before proceeding.
 
 
-Check the tracing type (per-cpu or per-task) before installing a task
-debug store context.
+A similar problem affects the task debug store context. We first remove
+the context, then we need to wait until the task has been scheduled
+out before we can free the context memory.
 
+
+Reviewed-by: Oleg Nesterov <oleg@redhat.com>
 Signed-off-by: Markus Metzger <markus.t.metzger@intel.com>
 ---
- arch/x86/kernel/ds.c |   78 	46 +	32 -	0 !
- 1 file changed, 46 insertions(+), 32 deletions(-)
+ arch/x86/kernel/ds.c |   40 	40 +	0 -	0 !
+ 1 file changed, 40 insertions(+)
 
 Index: b/arch/x86/kernel/ds.c
 ===================================================================
 --- a/arch/x86/kernel/ds.c
 +++ b/arch/x86/kernel/ds.c
-@@ -193,12 +193,28 @@ static DEFINE_SPINLOCK(ds_lock);
-  */
- static atomic_t tracers = ATOMIC_INIT(0);
+@@ -250,6 +250,40 @@ static DEFINE_PER_CPU(struct ds_context 
+ #define system_context per_cpu(system_context_array, smp_processor_id())
  
--static inline void get_tracer(struct task_struct *task)
-+static inline int get_tracer(struct task_struct *task)
- {
--	if (task)
-+	int error;
+ 
++/*
++ * Wait for the traced task to unschedule.
++ *
++ * This guarantees that the bts trace configuration has been
++ * synchronized with the cpu executing the task.
++ */
++static void wait_to_unschedule(struct task_struct *task)
++{
++	unsigned long nvcsw;
++	unsigned long nivcsw;
 +
-+	spin_lock_irq(&ds_lock);
++	if (!task)
++		return;
 +
-+	if (task) {
-+		error = -EPERM;
-+		if (atomic_read(&tracers) < 0)
-+			goto out;
- 		atomic_inc(&tracers);
--	else
-+	} else {
-+		error = -EPERM;
-+		if (atomic_read(&tracers) > 0)
-+			goto out;
- 		atomic_dec(&tracers);
++	if (task == current)
++		return;
++
++	nvcsw  = task->nvcsw;
++	nivcsw = task->nivcsw;
++	for (;;) {
++		if (!task_is_running(task))
++			break;
++		/*
++		 * The switch count is incremented before the actual
++		 * context switch. We thus wait for two switches to be
++		 * sure at least one completed.
++		 */
++		if ((task->nvcsw - nvcsw) > 1)
++			break;
++		if ((task->nivcsw - nivcsw) > 1)
++			break;
 +	}
++}
 +
-+	error = 0;
-+out:
-+	spin_unlock_irq(&ds_lock);
-+	return error;
- }
- 
- static inline void put_tracer(struct task_struct *task)
-@@ -209,14 +225,6 @@ static inline void put_tracer(struct tas
- 		atomic_inc(&tracers);
- }
- 
--static inline int check_tracer(struct task_struct *task)
--{
--	return task ?
--		(atomic_read(&tracers) >= 0) :
--		(atomic_read(&tracers) <= 0);
--}
--
--
- /*
-  * The DS context is either attached to a thread or to a cpu:
-  * - in the former case, the thread_struct contains a pointer to the
-@@ -707,6 +715,10 @@ struct bts_tracer *ds_request_bts(struct
- 	if (ovfl)
- 		goto out;
- 
-+	error = get_tracer(task);
-+	if (error < 0)
-+		goto out;
-+
- 	/*
- 	 * Per-cpu tracing is typically requested using smp_call_function().
- 	 * We must not sleep.
-@@ -714,7 +726,7 @@ struct bts_tracer *ds_request_bts(struct
- 	error = -ENOMEM;
- 	tracer = kzalloc(sizeof(*tracer), GFP_ATOMIC);
- 	if (!tracer)
--		goto out;
-+		goto out_put_tracer;
- 	tracer->ovfl = ovfl;
- 
- 	error = ds_request(&tracer->ds, &tracer->trace.ds,
-@@ -726,13 +738,8 @@ struct bts_tracer *ds_request_bts(struct
- 	spin_lock_irqsave(&ds_lock, irq);
- 
- 	error = -EPERM;
--	if (!check_tracer(task))
--		goto out_unlock;
--	get_tracer(task);
--
--	error = -EPERM;
- 	if (tracer->ds.context->bts_master)
--		goto out_put_tracer;
-+		goto out_unlock;
- 	tracer->ds.context->bts_master = tracer;
- 
- 	spin_unlock_irqrestore(&ds_lock, irq);
-@@ -746,13 +753,13 @@ struct bts_tracer *ds_request_bts(struct
- 
- 	return tracer;
- 
-- out_put_tracer:
--	put_tracer(task);
-  out_unlock:
- 	spin_unlock_irqrestore(&ds_lock, irq);
- 	ds_put_context(tracer->ds.context);
-  out_tracer:
- 	kfree(tracer);
-+ out_put_tracer:
-+	put_tracer(task);
-  out:
- 	return ERR_PTR(error);
- }
-@@ -771,6 +778,10 @@ struct pebs_tracer *ds_request_pebs(stru
- 	if (ovfl)
- 		goto out;
- 
-+	error = get_tracer(task);
-+	if (error < 0)
-+		goto out;
-+
- 	/*
- 	 * Per-cpu tracing is typically requested using smp_call_function().
- 	 * We must not sleep.
-@@ -778,7 +789,7 @@ struct pebs_tracer *ds_request_pebs(stru
- 	error = -ENOMEM;
- 	tracer = kzalloc(sizeof(*tracer), GFP_ATOMIC);
- 	if (!tracer)
--		goto out;
-+		goto out_put_tracer;
- 	tracer->ovfl = ovfl;
- 
- 	error = ds_request(&tracer->ds, &tracer->trace.ds,
-@@ -789,13 +800,8 @@ struct pebs_tracer *ds_request_pebs(stru
- 	spin_lock_irqsave(&ds_lock, irq);
- 
- 	error = -EPERM;
--	if (!check_tracer(task))
--		goto out_unlock;
--	get_tracer(task);
--
--	error = -EPERM;
- 	if (tracer->ds.context->pebs_master)
--		goto out_put_tracer;
-+		goto out_unlock;
- 	tracer->ds.context->pebs_master = tracer;
- 
- 	spin_unlock_irqrestore(&ds_lock, irq);
-@@ -805,32 +811,36 @@ struct pebs_tracer *ds_request_pebs(stru
- 
- 	return tracer;
- 
-- out_put_tracer:
--	put_tracer(task);
-  out_unlock:
- 	spin_unlock_irqrestore(&ds_lock, irq);
- 	ds_put_context(tracer->ds.context);
-  out_tracer:
- 	kfree(tracer);
-+ out_put_tracer:
-+	put_tracer(task);
-  out:
- 	return ERR_PTR(error);
- }
- 
- void ds_release_bts(struct bts_tracer *tracer)
+ static inline struct ds_context *ds_get_context(struct task_struct *task)
  {
-+	struct task_struct *task;
-+
- 	if (!tracer)
- 		return;
+ 	struct ds_context **p_context =
+@@ -321,6 +355,9 @@ static inline void ds_put_context(struct
  
-+	task = tracer->ds.context->task;
-+
- 	ds_suspend_bts(tracer);
+ 	spin_unlock_irqrestore(&ds_lock, irq);
  
++	/* The context might still be in use for context switching. */
++	wait_to_unschedule(context->task);
++
+ 	kfree(context);
+ }
+ 
+@@ -789,6 +826,9 @@ void ds_release_bts(struct bts_tracer *t
  	WARN_ON_ONCE(tracer->ds.context->bts_master != tracer);
  	tracer->ds.context->bts_master = NULL;
  
- 	/* Make sure tracing stopped and the tracer is not in use. */
--	wait_to_unschedule(tracer->ds.context->task);
-+	wait_to_unschedule(task);
- 
--	put_tracer(tracer->ds.context->task);
- 	ds_put_context(tracer->ds.context);
-+	put_tracer(task);
- 
- 	kfree(tracer);
- }
-@@ -886,16 +896,20 @@ void ds_resume_bts(struct bts_tracer *tr
- 
- void ds_release_pebs(struct pebs_tracer *tracer)
- {
-+	struct task_struct *task;
++	/* Make sure tracing stopped and the tracer is not in use. */
++	wait_to_unschedule(tracer->ds.context->task);
 +
- 	if (!tracer)
- 		return;
- 
-+	task = tracer->ds.context->task;
-+
- 	ds_suspend_pebs(tracer);
- 
- 	WARN_ON_ONCE(tracer->ds.context->pebs_master != tracer);
- 	tracer->ds.context->pebs_master = NULL;
- 
--	put_tracer(tracer->ds.context->task);
+ 	put_tracer(tracer->ds.context->task);
  	ds_put_context(tracer->ds.context);
-+	put_tracer(task);
  
- 	kfree(tracer);
- }
 
 -- 
 
---===============0933880323==
+--===============0508950418==
 Content-Type: text/plain; charset="utf-8"
 MIME-Version: 1.0
 Content-Transfer-Encoding: quoted-printable
@@ -275,4 +142,4 @@ the sole use of the intended recipient(s). Any review or distribution
 by others is strictly prohibited. If you are not the intended
 recipient, please contact the sender and delete all copies.
 
---===============0933880323==--
+--===============0508950418==--
