@@ -1,70 +1,135 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934576AbZDBKfp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934831AbZDBKpL@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934576AbZDBKfp (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 2 Apr 2009 06:35:45 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757246AbZDBKff
+	id S934831AbZDBKpL (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 2 Apr 2009 06:45:11 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762829AbZDBKot
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 2 Apr 2009 06:35:35 -0400
-Received: from viefep11-int.chello.at ([62.179.121.31]:38355 "EHLO
-	viefep11-int.chello.at" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756821AbZDBKff (ORCPT
+	Thu, 2 Apr 2009 06:44:49 -0400
+Received: from victor.provo.novell.com ([137.65.250.26]:55106 "EHLO
+	victor.provo.novell.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757246AbZDBKor (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 2 Apr 2009 06:35:35 -0400
-X-SourceIP: 213.93.53.227
-Subject: Re: [PATCH 2/9] perf_counter: fix update_userpage()
-From: Peter Zijlstra <a.p.zijlstra@chello.nl>
-To: Paul Mackerras <paulus@samba.org>
-Cc: Ingo Molnar <mingo@elte.hu>, linux-kernel@vger.kernel.org,
-       Mike Galbraith <efault@gmx.de>, Arjan van de Ven <arjan@infradead.org>,
-       Wu Fengguang <fengguang.wu@intel.com>
-In-Reply-To: <18900.35934.799877.893556@cargo.ozlabs.ibm.com>
-References: <20090328194359.426029037@chello.nl>
-	 <20090328194929.546464621@chello.nl>
-	 <18894.49084.341238.775487@cargo.ozlabs.ibm.com>
-	 <1238662238.8530.5622.camel@twins>
-	 <18900.33346.375497.2714@cargo.ozlabs.ibm.com>
-	 <1238664979.8530.5723.camel@twins>
-	 <18900.35934.799877.893556@cargo.ozlabs.ibm.com>
-Content-Type: text/plain
-Date: Thu, 02 Apr 2009 12:36:27 +0200
-Message-Id: <1238668587.8530.5793.camel@twins>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.26.0 
-Content-Transfer-Encoding: 7bit
+	Thu, 2 Apr 2009 06:44:47 -0400
+Message-ID: <49D497A1.4090900@novell.com>
+Date: Thu, 02 Apr 2009 06:46:57 -0400
+From: Gregory Haskins <ghaskins@novell.com>
+User-Agent: Thunderbird 2.0.0.19 (X11/20081227)
+MIME-Version: 1.0
+To: Avi Kivity <avi@redhat.com>
+CC: Anthony Liguori <anthony@codemonkey.ws>, Andi Kleen <andi@firstfloor.org>,
+       linux-kernel@vger.kernel.org, agraf@suse.de, pmullaney@novell.com,
+       pmorreale@novell.com, rusty@rustcorp.com.au, netdev@vger.kernel.org,
+       kvm@vger.kernel.org
+Subject: Re: [RFC PATCH 00/17] virtual-bus
+References: <20090331184057.28333.77287.stgit@dev.haskins.net> <87ab71monw.fsf@basil.nowhere.org> <49D35825.3050001@novell.com> <20090401132340.GT11935@one.firstfloor.org> <49D37805.1060301@novell.com> <20090401170103.GU11935@one.firstfloor.org> <49D3B64F.6070703@codemonkey.ws> <49D3D7EE.4080202@novell.com> <49D46089.5040204@redhat.com>
+In-Reply-To: <49D46089.5040204@redhat.com>
+X-Enigmail-Version: 0.95.7
+OpenPGP: id=D8195319
+Content-Type: multipart/signed; micalg=pgp-sha1;
+ protocol="application/pgp-signature";
+ boundary="------------enigC0794BE13A6673D09C06C56B"
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 2009-04-02 at 20:58 +1100, Paul Mackerras wrote:
-> Peter Zijlstra writes:
-> 
-> > > Good point.  This should work, though:
-> > > 
-> > > 	do {
-> > > 		seq = pc->lock;
-> > > 		barrier();
-> > > 		value = read_pmc(pc->index) + pc->offset;
-> > > 		barrier();
-> > > 	} while (pc->lock != seq);
-> > > 	return value;
-> > 
-> > I don't think you need the first barrier(), all you need to avoid is it
-> > reusing the first pc->lock read, so one should suffice.
-> 
-> I need it to make sure that the compiler doesn't put the load of
-> pc->index or pc->offset before the first load of pc->lock.  The second
-> barrier is needed to make sure the compiler puts the second load of
-> pc->lock after the loads of pc->index and pc->offset.  So I think I do
-> need to barrier()s (but only compiler barriers, not cpu memory
-> barriers).
+This is an OpenPGP/MIME signed message (RFC 2440 and 3156)
+--------------enigC0794BE13A6673D09C06C56B
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: quoted-printable
 
-Ah, you're right indeed.
+Avi Kivity wrote:
+> Gregory Haskins wrote:
+>>
+>>
+>> I think there is a slight disconnect here.  This is *exactly* what I a=
+m
+>> trying to do.  You can of course do this many ways, and I am not denyi=
+ng
+>> it could be done a different way than the path I have chosen.  One
+>> extreme would be to just slam a virtio-net specific chunk of code
+>> directly into kvm on the host.  Another extreme would be to build a
+>> generic framework into Linux for declaring arbitrary IO types,
+>> integrating it with kvm (as well as other environments such as lguest,=
 
-> > Also, you need to handle the !pc->index case.
-> 
-> Hmmm, yeah.  I claim that read_pmc(0) always returns 0. :)
+>> userspace, etc), and building a virtio-net model on top of that.
+>>
+>> So in case it is not obvious at this point, I have gone with the latte=
+r
+>> approach.  I wanted to make sure it wasn't kvm specific or something
+>> like pci specific so it had the broadest applicability to a range of
+>> environments.  So that is why the design is the way it is.  I understa=
+nd
+>> that this approach is technically "harder/more-complex" than the "slam=
 
-Hehe :-)
+>> virtio-net into kvm" approach, but I've already done that work.  All w=
+e
+>> need to do now is agree on the details ;)
+>>
+>>  =20
+>
+> virtio is already non-kvm-specific (lguest uses it) and
+> non-pci-specific (s390 uses it).
 
-Ok, updated that patch.
+Ok, then to be more specific, I need it to be more generic than it
+already is.  For instance, I need it to be able to integrate with
+shm_signals.  If we can do that without breaking the existing ABI, that
+would be great!  Last I looked, it was somewhat entwined here so I didnt
+try...but I admit that I didnt try that hard since I already had the IOQ
+library ready to go.
 
+>
+>>> That said, I don't think we're bound today by the fact that we're in
+>>> userspace.
+>>>    =20
+>> You will *always* be bound by the fact that you are in userspace.  Its=
+
+>> purely a question of "how much" and "does anyone care".    Right now,
+>> the anwer is "a lot (roughly 45x slower)" and "at least Greg's custome=
+rs
+>> do".  I have no doubt that this can and will change/improve in the
+>> future.  But it will always be true that no matter how much userspace
+>> improves, the kernel based solution will always be faster.  Its simple=
+
+>> physics.  I'm cutting out the middleman to ultimately reach the same
+>> destination as the userspace path, so userspace can never be equal.
+>>  =20
+>
+> If you have a good exit mitigation scheme you can cut exits by a
+> factor of 100; so the userspace exit costs are cut by the same
+> factor.  If you have good copyless networking APIs you can cut the
+> cost of copies to zero (well, to the cost of get_user_pages_fast(),
+> but a kernel solution needs that too).
+
+"exit mitigation' schemes are for bandwidth, not latency.  For latency
+it all comes down to how fast you can signal in both directions.  If
+someone is going to do a stand-alone request-reply, its generally always
+going to be at least one hypercall and one rx-interrupt.  So your speed
+will be governed by your signal path, not your buffer bandwidth.
+
+What Ive done is shown that you can use techniques other than buffering
+the head of the queue to do exit mitigation for bandwidth, while still
+maintaining a very short signaling path for latency.  And I also argue
+that the latter will always be optimal in the kernel, though I know by
+which degree is still TBD.  Anthony thinks he can make the difference
+negligible, and I would love to see it but am skeptical.
+
+-Greg
+
+
+
+
+--------------enigC0794BE13A6673D09C06C56B
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: OpenPGP digital signature
+Content-Disposition: attachment; filename="signature.asc"
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v2.0.9 (GNU/Linux)
+Comment: Using GnuPG with SUSE - http://enigmail.mozdev.org
+
+iEYEARECAAYFAknUl6IACgkQlOSOBdgZUxkZRACdEdkCZboECmDSqpnPpzbQ+e14
+3HQAn3UDVPgUqIIAqFO7Yykk7wimIwqd
+=DdVe
+-----END PGP SIGNATURE-----
+
+--------------enigC0794BE13A6673D09C06C56B--
