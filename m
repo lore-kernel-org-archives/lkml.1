@@ -1,15 +1,15 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934985AbZDBHEs@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S935152AbZDBHFU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934985AbZDBHEs (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 2 Apr 2009 03:04:48 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762926AbZDBHD0
+	id S935152AbZDBHFU (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 2 Apr 2009 03:05:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762349AbZDBHD1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 2 Apr 2009 03:03:26 -0400
-Received: from sous-sol.org ([216.99.217.87]:49086 "EHLO sequoia.sous-sol.org"
+	Thu, 2 Apr 2009 03:03:27 -0400
+Received: from sous-sol.org ([216.99.217.87]:49088 "EHLO sequoia.sous-sol.org"
 	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1751539AbZDBHDZ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 2 Apr 2009 03:03:25 -0400
-Date: Wed, 1 Apr 2009 23:57:53 -0700
+	id S1751539AbZDBHD0 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 2 Apr 2009 03:03:26 -0400
+Date: Wed, 1 Apr 2009 23:57:40 -0700
 From: Chris Wright <chrisw@sous-sol.org>
 To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: "Theodore Ts'o" <tytso@mit.edu>, Zwane Mwaikambo <zwane@arm.linux.org.uk>,
@@ -22,8 +22,9 @@ Cc: "Theodore Ts'o" <tytso@mit.edu>, Zwane Mwaikambo <zwane@arm.linux.org.uk>,
        Chuck Wolber <chuckw@quantumlinux.com>, akpm@linux-foundation.org,
        torvalds@linux-foundation.org, Willy Tarreau <w@1wt.eu>,
        Rodrigo Rubira Branco <rbranco@la.checkpoint.com>, davem@davemloft.net
-Subject: [PATCH 47/45] sparc64: Flush TLB before releasing pages.
-Message-ID: <20090402065753.GC18394@sequoia.sous-sol.org>
+Subject: [PATCH 46/45] sparc64: Fix MM refcount check in
+	smp_flush_tlb_pending().
+Message-ID: <20090402065740.GB18394@sequoia.sous-sol.org>
 References: <20090331231045.719396245@sous-sol.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
@@ -39,36 +40,66 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 From: David S. Miller <davem@davemloft.net>
 
-[ Upstream commit a552a42cfa91ab653128dff89a70c8dde7fed042 ]
+[ Upstream commit f9384d41c02408dd404aa64d66d0ef38adcf6479 ]
 
-tlb_flush_mmu() needs to flush pending TLB entries before
-processing the mmu_gather ->pages list.
+As explained by Benjamin Herrenschmidt:
 
-Noticed by Benjamin Herrenschmidt.
+> CPU 0 is running the context, task->mm == task->active_mm == your
+> context. The CPU is in userspace happily churning things.
+>
+> CPU 1 used to run it, not anymore, it's now running fancyfsd which
+> is a kernel thread, but current->active_mm still points to that
+> same context.
+>
+> Because there's only one "real" user, mm_users is 1 (but mm_count is
+> elevated, it's just that the presence on CPU 1 as active_mm has no
+> effect on mm_count().
+>
+> At this point, fancyfsd decides to invalidate a mapping currently mapped
+> by that context, for example because a networked file has changed
+> remotely or something like that, using unmap_mapping_ranges().
+>
+> So CPU 1 goes into the zapping code, which eventually ends up calling
+> flush_tlb_pending(). Your test will succeed, as current->active_mm is
+> indeed the target mm for the flush, and mm_users is indeed 1. So you
+> will -not- send an IPI to the other CPU, and CPU 0 will continue happily
+> accessing the pages that should have been unmapped.
+
+To fix this problem, check ->mm instead of ->active_mm, and this
+means:
+
+> So if you test current->mm, you effectively account for mm_users == 1,
+> so the only way the mm can be active on another processor is as a lazy
+> mm for a kernel thread. So your test should work properly as long
+> as you don't have a HW that will do speculative TLB reloads into the
+> TLB on that other CPU (and even if you do, you flush-on-switch-in should
+> get rid of any crap here).
+
+And therefore we should be OK.
 
 Signed-off-by: David S. Miller <davem@davemloft.net>
 Signed-off-by: Chris Wright <chrisw@sous-sol.org>
 ---
- arch/sparc/include/asm/tlb_64.h |    4 ++--
+ arch/sparc/kernel/smp_64.c |    4 ++--
  1 file changed, 2 insertions(+), 2 deletions(-)
 
---- a/arch/sparc/include/asm/tlb_64.h
-+++ b/arch/sparc/include/asm/tlb_64.h
-@@ -58,6 +58,8 @@ static inline struct mmu_gather *tlb_gat
- static inline void tlb_flush_mmu(struct mmu_gather *mp)
- {
- 	if (mp->need_flush) {
-+		if (!mp->fullmm)
-+			flush_tlb_pending();
- 		free_pages_and_swap_cache(mp->pages, mp->pages_nr);
- 		mp->pages_nr = 0;
- 		mp->need_flush = 0;
-@@ -78,8 +80,6 @@ static inline void tlb_finish_mmu(struct
+--- a/arch/sparc/kernel/smp_64.c
++++ b/arch/sparc/kernel/smp_64.c
+@@ -1031,7 +1031,7 @@ void smp_fetch_global_regs(void)
+  *    If the address space is non-shared (ie. mm->count == 1) we avoid
+  *    cross calls when we want to flush the currently running process's
+  *    tlb state.  This is done by clearing all cpu bits except the current
+- *    processor's in current->active_mm->cpu_vm_mask and performing the
++ *    processor's in current->mm->cpu_vm_mask and performing the
+  *    flush locally only.  This will force any subsequent cpus which run
+  *    this task to flush the context from the local tlb if the process
+  *    migrates to another cpu (again).
+@@ -1074,7 +1074,7 @@ void smp_flush_tlb_pending(struct mm_str
+ 	u32 ctx = CTX_HWBITS(mm->context);
+ 	int cpu = get_cpu();
  
- 	if (mp->fullmm)
- 		mp->fullmm = 0;
--	else
--		flush_tlb_pending();
- 
- 	/* keep the page table cache within bounds */
- 	check_pgt_cache();
+-	if (mm == current->active_mm && atomic_read(&mm->mm_users) == 1)
++	if (mm == current->mm && atomic_read(&mm->mm_users) == 1)
+ 		mm->cpu_vm_mask = cpumask_of_cpu(cpu);
+ 	else
+ 		smp_cross_call_masked(&xcall_flush_tlb_pending,
