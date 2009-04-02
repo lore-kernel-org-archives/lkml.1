@@ -1,83 +1,37 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762887AbZDBPz2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761479AbZDBP52@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762887AbZDBPz2 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 2 Apr 2009 11:55:28 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753659AbZDBPzN
+	id S1761479AbZDBP52 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 2 Apr 2009 11:57:28 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753417AbZDBP5R
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 2 Apr 2009 11:55:13 -0400
-Received: from h155.mvista.com ([63.81.120.155]:9468 "EHLO imap.sh.mvista.com"
-	rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1751527AbZDBPzL (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 2 Apr 2009 11:55:11 -0400
-Message-ID: <49D4DFFB.8070201@ru.mvista.com>
-Date: Thu, 02 Apr 2009 19:55:39 +0400
-From: Sergei Shtylyov <sshtylyov@ru.mvista.com>
-Organization: MontaVista Software Inc.
-User-Agent: Mozilla/5.0 (X11; U; Linux i686; rv:1.7.2) Gecko/20040803
-X-Accept-Language: ru, en-us, en-gb
+	Thu, 2 Apr 2009 11:57:17 -0400
+Received: from mx2.redhat.com ([66.187.237.31]:37557 "EHLO mx2.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751268AbZDBP5R (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 2 Apr 2009 11:57:17 -0400
+Date: Thu, 2 Apr 2009 08:56:33 -0700
+From: Chris Wright <chrisw@redhat.com>
+To: Izik Eidus <ieidus@redhat.com>
+Cc: Chris Wright <chrisw@redhat.com>, Anthony Liguori <anthony@codemonkey.ws>,
+       Andrea Arcangeli <aarcange@redhat.com>, linux-kernel@vger.kernel.org,
+       kvm@vger.kernel.org, linux-mm@kvack.org, avi@redhat.com,
+       riel@redhat.com, jeremy@goop.org, mtosatti@redhat.com, hugh@veritas.com,
+       corbet@lwn.net, dmonakhov@openvz.org
+Subject: Re: [PATCH 5/4] update ksm userspace interfaces
+Message-ID: <20090402155633.GD10392@x200.localdomain>
+References: <20090331150218.GS9137@random.random> <49D23224.9000903@codemonkey.ws> <20090331151845.GT9137@random.random> <49D23CD1.9090208@codemonkey.ws> <20090331162525.GU9137@random.random> <49D24A02.6070000@codemonkey.ws> <20090402012215.GE1117@x200.localdomain> <49D424AF.3090806@codemonkey.ws> <20090402053114.GF1117@x200.localdomain> <49D4BE64.8020508@redhat.com>
 MIME-Version: 1.0
-To: Matthew Wilcox <willy@linux.intel.com>
-Cc: linux-ide@vger.kernel.org, linux-kernel@vger.kernel.org,
-       jgarzik@redhat.com, David Woodhouse <David.Woodhouse@intel.com>
-Subject: Re: [PATCH 3/5] ata: Add TRIM infrastructure
-References: <1238683047-13588-1-git-send-email-willy@linux.intel.com> <1238683047-13588-2-git-send-email-willy@linux.intel.com> <1238683047-13588-3-git-send-email-willy@linux.intel.com>
-In-Reply-To: <1238683047-13588-3-git-send-email-willy@linux.intel.com>
-Content-Type: text/plain; charset=us-ascii; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <49D4BE64.8020508@redhat.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Matthew Wilcox wrote:
+* Izik Eidus (ieidus@redhat.com) wrote:
+> Is this what we want?
 
-> This is common code shared between the IDE and libata implementations
+How about baby steps...
 
-> Signed-off-by: David Woodhouse <David.Woodhouse@intel.com>
-> Signed-off-by: Matthew Wilcox <willy@linux.intel.com>
-
-[...]
-
-> diff --git a/include/linux/ata.h b/include/linux/ata.h
-> index 6617c9f..cb79b7a 100644
-> --- a/include/linux/ata.h
-> +++ b/include/linux/ata.h
-> @@ -29,6 +29,8 @@
->  #ifndef __LINUX_ATA_H__
->  #define __LINUX_ATA_H__
->  
-> +#include <linux/kernel.h>
-> +#include <linux/string.h>
->  #include <linux/types.h>
->  #include <asm/byteorder.h>
->  
-> @@ -91,6 +93,7 @@ enum {
->  	ATA_ID_CFA_POWER	= 160,
->  	ATA_ID_CFA_KEY_MGMT	= 162,
->  	ATA_ID_CFA_MODES	= 163,
-> +	ATA_ID_DATA_SET_MGMT	= 169,
->  	ATA_ID_ROT_SPEED	= 217,
->  	ATA_ID_PIO4		= (1 << 1),
->  
-> @@ -248,6 +251,7 @@ enum {
->  	ATA_CMD_SMART		= 0xB0,
->  	ATA_CMD_MEDIA_LOCK	= 0xDE,
->  	ATA_CMD_MEDIA_UNLOCK	= 0xDF,
-> +	ATA_CMD_DSM		= 0x06,
->  	/* marked obsolete in the ATA/ATAPI-7 spec */
->  	ATA_CMD_RESTORE		= 0x10,
->  
-> @@ -321,6 +325,9 @@ enum {
->  	ATA_SMART_READ_VALUES	= 0xD0,
->  	ATA_SMART_READ_THRESHOLDS = 0xD1,
->  
-> +	/* feature values for Data Set Management */
-> +	ATA_DSM_TRIM		= 0x01,
-> +
->  	/* password used in LBA Mid / LBA High for executing SMART commands */
->  	ATA_SMART_LBAM_PASS	= 0x4F,
->  	ATA_SMART_LBAH_PASS	= 0xC2,
-
-    I wonder where to read about the word 169 and commnand 0x06... what's it 
-all about?
-
-WBR, Sergei
+admit that ioctl to control plane is better done via sysfs?
