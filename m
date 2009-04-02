@@ -1,60 +1,90 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759364AbZDBOOU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759869AbZDBOPA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759364AbZDBOOU (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 2 Apr 2009 10:14:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757436AbZDBOOA
+	id S1759869AbZDBOPA (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 2 Apr 2009 10:15:00 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757961AbZDBOOt
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 2 Apr 2009 10:14:00 -0400
-Received: from rhun.apana.org.au ([64.62.148.172]:46266 "EHLO
-	arnor.apana.org.au" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1757344AbZDBON7 (ORCPT
+	Thu, 2 Apr 2009 10:14:49 -0400
+Received: from mailgw.nyc.medallion.com ([63.68.220.242]:1138 "EHLO
+	mailgw.nyc.medallion.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756209AbZDBOOr convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 2 Apr 2009 10:13:59 -0400
-Date: Thu, 2 Apr 2009 22:13:42 +0800
-From: Herbert Xu <herbert@gondor.apana.org.au>
-To: David Miller <davem@davemloft.net>
-Cc: dada1@cosmosbay.com, jarkao2@gmail.com, vernux@us.ibm.com,
-       netdev@vger.kernel.org, linux-kernel@vger.kernel.org,
-       linux-rt-users@vger.kernel.org
-Subject: Re: High contention on the sk_buff_head.lock
-Message-ID: <20090402141342.GA377@gondor.apana.org.au>
+	Thu, 2 Apr 2009 10:14:47 -0400
+X-MimeOLE: Produced By Microsoft MimeOLE V6.00.3790.4325
+Content-class: urn:content-classes:message
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090323.013749.122944803.davem@davemloft.net>
-Organization: Core
-X-Newsgroups: apana.lists.os.linux.kernel,apana.lists.os.linux.netdev
-User-Agent: Mutt/1.5.18 (2008-05-17)
+Content-Type: text/plain;
+	charset="us-ascii"
+Content-Transfer-Encoding: 8BIT
+Subject: RE: [Scst-devel] [Iscsitarget-devel] ISCSI-SCST	performance (with also IET and STGT data)
+Date: Thu, 2 Apr 2009 10:14:45 -0400
+Message-ID: <E2BB8074E5500C42984D980D4BD78EF9029E3D15@MFG-NYC-EXCH2.mfg.prv>
+In-Reply-To: <E2BB8074E5500C42984D980D4BD78EF9029E3D14@MFG-NYC-EXCH2.mfg.prv>
+X-MS-Has-Attach: 
+X-MS-TNEF-Correlator: 
+Thread-Topic: [Scst-devel] [Iscsitarget-devel] ISCSI-SCST	performance (with also IET and STGT data)
+Thread-Index: AcmzccVXprZxray5RuGN9SHeXbCCpAAKSY+wAACEwzA=
+References: <49D10256.8030307@vlnb.net>	<e2e108260903301106y2b750c23kfab978567f3de3a0@mail.gmail.com>	<49D11096.3070804@vlnb.net>	<e2e108260903301153x38e86097vd29c47507da2879f@mail.gmail.com>	<49D254E4.8050806@vlnb.net>	<E2BB8074E5500C42984D980D4BD78EF9029E3D0B@MFG-NYC-EXCH2.mfg.prv>	<e2e108260903312329u118a54bfn3107fdca4b3e2b1d@mail.gmail.com>	<FA7F6940-CD5C-4460-9777-2F7AE3657B8E@gmail.com>	<1238617423.3318.82.camel@mulgrave.int.hansenpartnership.com> <49D46B8B.5000708@vlnb.net> <49D47F28.3060409@vlnb.net> <E2BB8074E5500C42984D980D4BD78EF9029E3D14@MFG-NYC-EXCH2.mfg.prv>
+From: "Ross S. W. Walker" <RWalker@medallion.com>
+Importance: normal
+To: "Vladislav Bolkhovitin" <vst@vlnb.net>,
+       "James Bottomley" <James.Bottomley@HansenPartnership.com>
+Cc: <linux-scsi@vger.kernel.org>,
+       "iSCSI Enterprise Target Developer List" 
+	<iscsitarget-devel@lists.sourceforge.net>,
+       <linux-kernel@vger.kernel.org>, "Ross Walker" <rswwalker@gmail.com>,
+       "scst-devel" <scst-devel@lists.sourceforge.net>, <stgt@vger.kernel.org>
+X-OriginalArrivalTime: 02 Apr 2009 14:14:45.0370 (UTC) FILETIME=[5FB4EDA0:01C9B39D]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-David Miller <davem@davemloft.net> wrote:
-> From: Eric Dumazet <dada1@cosmosbay.com>
-> Date: Mon, 23 Mar 2009 09:32:39 +0100
+Ross S. W. Walker wrote:
+> Vladislav Bolkhovitin wrote:
+> > Vladislav Bolkhovitin, on 04/02/2009 11:38 AM wrote:
+> > > James Bottomley, on 04/02/2009 12:23 AM wrote:
+> > >> 
+> > >> SCST explicitly fiddles with the io context to get this to happen.  It
+> > >> has a hack to block to export alloc_io_context:
+> > >>
+> > >> http://marc.info/?t=122893564800003
+> > > 
+> > > Correct, although I wouldn't call it "fiddle", rather "grouping" ;)
 > 
->> I dont understand, doesnt it defeat the ticket spinlock thing and fairness ?
->> 
->> Thread doing __qdisc_run() already owns the __QDISC_STATE_RUNNING bit.
+> Call it what you like,
 > 
-> Right.
+> Vladislav Bolkhovitin wrote:
+> > Ross S. W. Walker, on 03/30/2009 10:33 PM wrote:
+> > 
+> > I would be interested in knowing how your code defeats CFQ's extremely
+> > high latency? Does your code reach into the io scheduler too? If not,
+> > some code hints would be great.
 > 
-> Remember, the way this is designed is that if there is a busy
-> cpu taking packets out of the queue and putting them into the
-> device then other cpus will simply add to the queue and immediately
-> return.  This effectively keeps the queue running there processing
-> all the new work that other cpus are adding to the qdisc.
-> 
-> Those other cpus make these decisions by looking at that
-> __QDISC_STATE_RUNNING bit, which the queue runner grabs before
-> it does any work.
 
-Come on guys, if this lock is a problem. go out and buy a proper
-NIC that supports multiequeue TX!
+The above quoting was wrong, for accuracy, it should have read:
 
-Cheers,
--- 
-Visit Openswan at http://www.openswan.org/
-Email: Herbert Xu ~{PmV>HI~} <herbert@gondor.apana.org.au>
-Home Page: http://gondor.apana.org.au/~herbert/
-PGP Key: http://gondor.apana.org.au/~herbert/pubkey.txt
+Vladislav Bolkhovitin wrote:
+> Ross S. W. Walker, on 03/30/2009 10:33 PM wrote:
+> > 
+> > I would be interested in knowing how your code defeats CFQ's extremely
+> > high latency? Does your code reach into the io scheduler too? If not,
+> > some code hints would be great.
+> 
+> Hmm, CFQ doesn't have any extra processing latency, especially 
+> "extremely", hence there is nothing to defeat. If it had, how could it 
+> been chosen as the default?
+
+Just so there is no misunderstanding who said what here.
+
+-Ross
+
+______________________________________________________________________
+This e-mail, and any attachments thereto, is intended only for use by
+the addressee(s) named herein and may contain legally privileged
+and/or confidential information. If you are not the intended recipient
+of this e-mail, you are hereby notified that any dissemination,
+distribution or copying of this e-mail, and any attachments thereto,
+is strictly prohibited. If you have received this e-mail in error,
+please immediately notify the sender and permanently delete the
+original and any copy or printout thereof.
+
