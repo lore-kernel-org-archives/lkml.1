@@ -1,15 +1,15 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752063AbZDBMF3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757476AbZDBMGH@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752063AbZDBMF3 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 2 Apr 2009 08:05:29 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755649AbZDBMEs
+	id S1757476AbZDBMGH (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 2 Apr 2009 08:06:07 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756657AbZDBMFP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 2 Apr 2009 08:04:48 -0400
-Received: from hera.kernel.org ([140.211.167.34]:51762 "EHLO hera.kernel.org"
+	Thu, 2 Apr 2009 08:05:15 -0400
+Received: from hera.kernel.org ([140.211.167.34]:42375 "EHLO hera.kernel.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755505AbZDBMEr (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 2 Apr 2009 08:04:47 -0400
-Date: Thu, 2 Apr 2009 12:04:08 GMT
+	id S1756627AbZDBMFN (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 2 Apr 2009 08:05:13 -0400
+Date: Thu, 2 Apr 2009 12:03:47 GMT
 From: Peter Zijlstra <a.p.zijlstra@chello.nl>
 To: linux-tip-commits@vger.kernel.org
 Cc: linux-kernel@vger.kernel.org, paulus@samba.org, hpa@zytor.com,
@@ -18,127 +18,83 @@ Cc: linux-kernel@vger.kernel.org, paulus@samba.org, hpa@zytor.com,
 Reply-To: mingo@redhat.com, hpa@zytor.com, paulus@samba.org,
        linux-kernel@vger.kernel.org, a.p.zijlstra@chello.nl,
        tglx@linutronix.de, cjashfor@linux.vnet.ibm.com, mingo@elte.hu
-In-Reply-To: <20090402091319.493101305@chello.nl>
-References: <20090402091319.493101305@chello.nl>
-Subject: [tip:perfcounters/core] perf_counter: add more context information
-Message-ID: <tip-13c47e37b33167d9784ffbb2c921f65279665dd7@git.kernel.org>
-Git-Commit-ID: 13c47e37b33167d9784ffbb2c921f65279665dd7
+In-Reply-To: <20090402091319.323309784@chello.nl>
+References: <20090402091319.323309784@chello.nl>
+Subject: [tip:perfcounters/core] perf_counter: per event wakeups
+Message-ID: <tip-b202978dae5fce00d19480360f165a181be19704@git.kernel.org>
+Git-Commit-ID: b202978dae5fce00d19480360f165a181be19704
 X-Mailer: tip-git-log-daemon
 MIME-Version: 1.0
 Content-Type: text/plain; charset=UTF-8
 Content-Disposition: inline
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Thu, 02 Apr 2009 12:04:10 +0000 (UTC)
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Thu, 02 Apr 2009 12:03:49 +0000 (UTC)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Commit-ID:  13c47e37b33167d9784ffbb2c921f65279665dd7
-Gitweb:     http://git.kernel.org/tip/13c47e37b33167d9784ffbb2c921f65279665dd7
+Commit-ID:  b202978dae5fce00d19480360f165a181be19704
+Gitweb:     http://git.kernel.org/tip/b202978dae5fce00d19480360f165a181be19704
 Author:     Peter Zijlstra <a.p.zijlstra@chello.nl>
-AuthorDate: Thu, 2 Apr 2009 11:12:03 +0200
+AuthorDate: Thu, 2 Apr 2009 11:12:01 +0200
 Committer:  Ingo Molnar <mingo@elte.hu>
-CommitDate: Thu, 2 Apr 2009 13:53:00 +0200
+CommitDate: Thu, 2 Apr 2009 13:52:59 +0200
 
-perf_counter: add more context information
+perf_counter: per event wakeups
 
-Put in counts to tell which ips belong to what context.
-
-  -----
-   | |  hv
-   | --
-nr | |  kernel
-   | --
-   | |  user
-  -----
+By request, provide a way to request a wakeup every 'n' events instead
+of every page of output.
 
 Signed-off-by: Peter Zijlstra <a.p.zijlstra@chello.nl>
 Cc: Paul Mackerras <paulus@samba.org>
 Cc: Corey Ashford <cjashfor@linux.vnet.ibm.com>
-LKML-Reference: <20090402091319.493101305@chello.nl>
+LKML-Reference: <20090402091319.323309784@chello.nl>
 Signed-off-by: Ingo Molnar <mingo@elte.hu>
 
 
 ---
- arch/x86/kernel/cpu/perf_counter.c |    9 +++++++++
- include/linux/perf_counter.h       |    4 ++--
- kernel/perf_counter.c              |    2 +-
- 3 files changed, 12 insertions(+), 3 deletions(-)
+ include/linux/perf_counter.h |    3 ++-
+ kernel/perf_counter.c        |   10 +++++++++-
+ 2 files changed, 11 insertions(+), 2 deletions(-)
 
-diff --git a/arch/x86/kernel/cpu/perf_counter.c b/arch/x86/kernel/cpu/perf_counter.c
-index 2a946a1..c74e20d 100644
---- a/arch/x86/kernel/cpu/perf_counter.c
-+++ b/arch/x86/kernel/cpu/perf_counter.c
-@@ -1088,6 +1088,7 @@ perf_callchain_kernel(struct pt_regs *regs, struct perf_callchain_entry *entry)
- {
- 	unsigned long bp;
- 	char *stack;
-+	int nr = entry->nr;
- 
- 	callchain_store(entry, instruction_pointer(regs));
- 
-@@ -1099,6 +1100,8 @@ perf_callchain_kernel(struct pt_regs *regs, struct perf_callchain_entry *entry)
- #endif
- 
- 	dump_trace(NULL, regs, (void *)stack, bp, &backtrace_ops, entry);
-+
-+	entry->kernel = entry->nr - nr;
- }
- 
- 
-@@ -1128,6 +1131,7 @@ perf_callchain_user(struct pt_regs *regs, struct perf_callchain_entry *entry)
- {
- 	struct stack_frame frame;
- 	const void __user *fp;
-+	int nr = entry->nr;
- 
- 	regs = (struct pt_regs *)current->thread.sp0 - 1;
- 	fp   = (void __user *)regs->bp;
-@@ -1147,6 +1151,8 @@ perf_callchain_user(struct pt_regs *regs, struct perf_callchain_entry *entry)
- 		callchain_store(entry, frame.return_address);
- 		fp = frame.next_fp;
- 	}
-+
-+	entry->user = entry->nr - nr;
- }
- 
- static void
-@@ -1182,6 +1188,9 @@ struct perf_callchain_entry *perf_callchain(struct pt_regs *regs)
- 		entry = &__get_cpu_var(irq_entry);
- 
- 	entry->nr = 0;
-+	entry->hv = 0;
-+	entry->kernel = 0;
-+	entry->user = 0;
- 
- 	perf_do_callchain(regs, entry);
- 
 diff --git a/include/linux/perf_counter.h b/include/linux/perf_counter.h
-index 5428ba1..90cce0c 100644
+index 06a6fba..5428ba1 100644
 --- a/include/linux/perf_counter.h
 +++ b/include/linux/perf_counter.h
-@@ -513,10 +513,10 @@ extern void perf_counter_mmap(unsigned long addr, unsigned long len,
- extern void perf_counter_munmap(unsigned long addr, unsigned long len,
- 				unsigned long pgoff, struct file *file);
+@@ -145,7 +145,7 @@ struct perf_counter_hw_event {
+ 				__reserved_1   : 53;
  
--#define MAX_STACK_DEPTH		255
-+#define MAX_STACK_DEPTH		254
+ 	__u32			extra_config_len;
+-	__u32			__reserved_4;
++	__u32			wakeup_events;	/* wakeup every n events */
  
- struct perf_callchain_entry {
--	u64	nr;
-+	u32	nr, hv, kernel, user;
- 	u64	ip[MAX_STACK_DEPTH];
+ 	__u64			__reserved_2;
+ 	__u64			__reserved_3;
+@@ -321,6 +321,7 @@ struct perf_mmap_data {
+ 	int				nr_pages;
+ 	atomic_t			wakeup;
+ 	atomic_t			head;
++	atomic_t			events;
+ 	struct perf_counter_mmap_page   *user_page;
+ 	void 				*data_pages[0];
  };
- 
 diff --git a/kernel/perf_counter.c b/kernel/perf_counter.c
-index 9bcab10..f105a6e 100644
+index 995063d..9bcab10 100644
 --- a/kernel/perf_counter.c
 +++ b/kernel/perf_counter.c
-@@ -1819,7 +1819,7 @@ void perf_counter_output(struct perf_counter *counter,
- 		callchain = perf_callchain(regs);
+@@ -1760,7 +1760,15 @@ static void perf_output_copy(struct perf_output_handle *handle,
  
- 		if (callchain) {
--			callchain_size = (1 + callchain->nr) * sizeof(u64);
-+			callchain_size = (2 + callchain->nr) * sizeof(u64);
- 
- 			header.type |= __PERF_EVENT_CALLCHAIN;
- 			header.size += callchain_size;
+ static void perf_output_end(struct perf_output_handle *handle)
+ {
+-	if (handle->wakeup)
++	int wakeup_events = handle->counter->hw_event.wakeup_events;
++
++	if (wakeup_events) {
++		int events = atomic_inc_return(&handle->data->events);
++		if (events >= wakeup_events) {
++			atomic_sub(wakeup_events, &handle->data->events);
++			__perf_output_wakeup(handle);
++		}
++	} else if (handle->wakeup)
+ 		__perf_output_wakeup(handle);
+ 	rcu_read_unlock();
+ }
