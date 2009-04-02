@@ -1,64 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762172AbZDBJDV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933436AbZDBJDq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762172AbZDBJDV (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 2 Apr 2009 05:03:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763748AbZDBJCu
+	id S933436AbZDBJDq (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 2 Apr 2009 05:03:46 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762926AbZDBJDK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 2 Apr 2009 05:02:50 -0400
-Received: from mx2.redhat.com ([66.187.237.31]:44971 "EHLO mx2.redhat.com"
+	Thu, 2 Apr 2009 05:03:10 -0400
+Received: from hera.kernel.org ([140.211.167.34]:47325 "EHLO hera.kernel.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S932868AbZDBJCr (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 2 Apr 2009 05:02:47 -0400
-Message-ID: <49D47F11.6070400@redhat.com>
-Date: Thu, 02 Apr 2009 12:02:09 +0300
-From: Avi Kivity <avi@redhat.com>
-User-Agent: Thunderbird 2.0.0.21 (X11/20090320)
+	id S933705AbZDBJDI (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 2 Apr 2009 05:03:08 -0400
+Message-ID: <49D47F3F.7000105@kernel.org>
+Date: Thu, 02 Apr 2009 18:02:55 +0900
+From: Tejun Heo <tj@kernel.org>
+User-Agent: Thunderbird 2.0.0.19 (X11/20081227)
 MIME-Version: 1.0
-To: Herbert Xu <herbert@gondor.apana.org.au>
-CC: ghaskins@novell.com, anthony@codemonkey.ws, andi@firstfloor.org,
-       linux-kernel@vger.kernel.org, agraf@suse.de, pmullaney@novell.com,
-       pmorreale@novell.com, rusty@rustcorp.com.au, netdev@vger.kernel.org,
-       kvm@vger.kernel.org
-Subject: Re: [RFC PATCH 00/17] virtual-bus
-References: <20090402085253.GA29932@gondor.apana.org.au>
-In-Reply-To: <20090402085253.GA29932@gondor.apana.org.au>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+To: Boaz Harrosh <bharrosh@panasas.com>
+CC: axboe@kernel.dk, linux-kernel@vger.kernel.org,
+       fujita.tomonori@lab.ntt.co.jp
+Subject: Re: [PATCH 05/17] bio: cleanup rw usage
+References: <1238593472-30360-1-git-send-email-tj@kernel.org> <1238593472-30360-6-git-send-email-tj@kernel.org> <49D47925.5050307@panasas.com>
+In-Reply-To: <49D47925.5050307@panasas.com>
+X-Enigmail-Version: 0.95.7
+Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 7bit
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Thu, 02 Apr 2009 09:02:59 +0000 (UTC)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Herbert Xu wrote:
-> Avi Kivity <avi@redhat.com> wrote:
->   
->> virtio is already non-kvm-specific (lguest uses it) and non-pci-specific 
->> (s390 uses it).
->>     
->
-> I think Greg's work shows that putting the backend in the kernel
-> can dramatically reduce the cost of a single guest->host transaction.
-> I'm sure the same thing would work for virtio too.
->   
+Boaz Harrosh wrote:
+> On 04/01/2009 04:44 PM, Tejun Heo wrote:
+>> Impact: cleanup
+>>
+>> bio confusingly uses @write_to_vm and @reading for data directions,
+>> both of which mean the opposite of the usual block/bio convention of
+>> using READ and WRITE w.r.t. IO devices.  The only place where the
+>> inversion is necessary is when caling get_user_pages_fast() in
+>> bio_copy_user_iov() as the gup uses the VM convention of read/write
+>> w.r.t. VM.
+>>
+>> This patch converts all bio functions to use READ/WRITE rw parameter
+>> and let the one place where inversion is necessary to rw == READ.
+>>
+> 
+> Hi one more nit picking just if you are at it. If you want
+> I can do the work and send it to you so you can squash it into this patch.
+> See bellow
+> 
+>> +	if (rw == WRITE)
+>> +		bio->bi_rw |= 1 << BIO_RW;
+> 
+> can we pleas have an inline that does that? Like bio_set_dir()?
+> and change all users. You will be surprised how many there are.
+> 
+> It gives me an hart attack every time I have to write yet another
+> one.
 
-Virtio suffers because we've had no notification of when a packet is 
-actually submitted.  With the notification, the only difference should 
-be in the cost of a kernel->user switch, which is nowhere nearly as 
-dramatic.
+Things like this are actually what I'm trying to clean up.  If you
+look at the whole series, at the end, there remains only one place
+which sets the flag in the blk/bio map paths and all users of
+blk_rq_map_*() interface couldn't care less about the flag because
+they provide only the necessary information through strictly defined
+API.
 
->> If you have a good exit mitigation scheme you can cut exits by a factor 
->> of 100; so the userspace exit costs are cut by the same factor.  If you 
->> have good copyless networking APIs you can cut the cost of copies to 
->> zero (well, to the cost of get_user_pages_fast(), but a kernel solution 
->> needs that too).
->>     
->
-> Given the choice of having to mitigate or not having the problem
-> in the first place, guess what I would prefer :)
->   
-
-There is no choice.  Exiting from the guest to the kernel to userspace 
-is prohibitively expensive, you can't do that on every packet.
+Thanks.
 
 -- 
-error compiling committee.c: too many arguments to function
-
+tejun
