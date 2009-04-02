@@ -1,88 +1,101 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757139AbZDBNk5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757408AbZDBNqW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757139AbZDBNk5 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 2 Apr 2009 09:40:57 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752060AbZDBNkt
+	id S1757408AbZDBNqW (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 2 Apr 2009 09:46:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754399AbZDBNqO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 2 Apr 2009 09:40:49 -0400
-Received: from mlbe2k1.cs.myharris.net ([137.237.90.88]:46894 "EHLO
-	mlbe2k1.cs.myharris.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751327AbZDBNks (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 2 Apr 2009 09:40:48 -0400
-X-Greylist: delayed 1209 seconds by postgrey-1.27 at vger.kernel.org; Thu, 02 Apr 2009 09:40:48 EDT
-Message-ID: <49D4BB9F.8050903@harris.com>
-Date: Thu, 02 Apr 2009 09:20:31 -0400
-From: "Steven A. Falco" <sfalco@harris.com>
-User-Agent: Thunderbird 2.0.0.9 (X11/20071031)
+	Thu, 2 Apr 2009 09:46:14 -0400
+Received: from mx2.redhat.com ([66.187.237.31]:54427 "EHLO mx2.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754133AbZDBNqN (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 2 Apr 2009 09:46:13 -0400
+Message-ID: <49D4C191.2070502@redhat.com>
+Date: Thu, 02 Apr 2009 16:45:53 +0300
+From: Avi Kivity <avi@redhat.com>
+User-Agent: Thunderbird 2.0.0.21 (X11/20090320)
 MIME-Version: 1.0
-To: linux-kernel@vger.kernel.org, hjk@linutronix.de,
-       "Herrera-Bendezu, Luis" <lherrera@harris.com>
-CC: "linuxppc-dev@ozlabs.org" <linuxppc-dev@ozlabs.org>
-Subject: Re: UIO: uio_mem does not handle devices above 4 GB address
-Content-Type: text/plain; charset=UTF-8
+To: Gregory Haskins <ghaskins@novell.com>
+CC: Anthony Liguori <anthony@codemonkey.ws>, Andi Kleen <andi@firstfloor.org>,
+       linux-kernel@vger.kernel.org, agraf@suse.de, pmullaney@novell.com,
+       pmorreale@novell.com, rusty@rustcorp.com.au, netdev@vger.kernel.org,
+       kvm@vger.kernel.org
+Subject: Re: [RFC PATCH 00/17] virtual-bus
+References: <20090331184057.28333.77287.stgit@dev.haskins.net> <87ab71monw.fsf@basil.nowhere.org> <49D35825.3050001@novell.com> <20090401132340.GT11935@one.firstfloor.org> <49D37805.1060301@novell.com> <20090401170103.GU11935@one.firstfloor.org> <49D3B64F.6070703@codemonkey.ws> <49D3D7EE.4080202@novell.com> <49D46089.5040204@redhat.com> <49D497A1.4090900@novell.com> <49D4A4EB.8020105@redhat.com> <49D4AE0C.3000604@novell.com> <49D4B2C0.5060906@redhat.com> <49D4B594.6080703@novell.com> <49D4B8B4.4020003@redhat.com> <49D4BF70.1060301@novell.com>
+In-Reply-To: <49D4BF70.1060301@novell.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
-X-OriginalArrivalTime: 02 Apr 2009 13:20:32.0835 (UTC) FILETIME=[CD0B7930:01C9B395]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> On Wed, Apr 01, 2009 at 01:20:49PM -0400, Herrera-Bendezu, Luis wrote:
-> >> I am working on a PPC440EPx board with some FPGAs located at
-> >> addresses above 4 GB
+Gregory Haskins wrote:
+> Avi Kivity wrote:
+>   
+>> Gregory Haskins wrote:
+>>     
+>>> Avi Kivity wrote:
+>>>  
+>>>       
+>>>> My 'prohibitively expensive' is true only if you exit every packet.
+>>>>
+>>>>
+>>>>     
+>>>>         
+>>> Understood, but yet you need to do this if you want something like iSCSI
+>>> READ transactions to have as low-latency as possible.
+>>>   
+>>>       
+>> Dunno, two microseconds is too much?  The wire imposes much more.
+>>
+>>     
+>
+> No, but thats not what we are talking about.  You said signaling on
+> every packet is prohibitively expensive.  I am saying signaling on every
+> packet is required for decent latency.  So is it prohibitively expensive
+> or not?
+>   
 
-Cc'ing the PPC list, since they have the most experience with this
-CPU, and may have some useful insights.  The topic is "UIO on the
-PPC440EPx - 36-bit physical addresses".
+We're heading dangerously into the word-game area.  Let's not do that.
 
-The PPC440EPx uses 36-bit addressing but is a 32-bit processor.
-*All* peripherals are above the first 4 GB - that cannot be changed
-if you use this CPU chip.
+If you have a high throughput workload with many packets per seconds 
+then an exit per packet (whether to userspace or to the kernel) is 
+expensive.  So you do exit mitigation.  Latency is not important since 
+the packets are going to sit in the output queue anyway.
 
-In general, the solution is to use "struct resource" to carry physical
-addresses and sizes.  The basic type is:
+If you have a request-response workload with the wire idle and latency 
+critical, then there's no problem having an exit per packet because (a) 
+there aren't that many packets and (b) the guest isn't doing any 
+batching, so guest overhead will swamp the hypervisor overhead.
 
-#ifdef CONFIG_PHYS_ADDR_T_64BIT
-typedef u64 phys_addr_t;
-#else
-typedef u32 phys_addr_t;
-#endif
+If you have a low latency request-response workload mixed with a high 
+throughput workload, then you aren't going to get low latency since your 
+low latency packets will sit on the queue behind the high throughput 
+packets.  You can fix that with multiqueue and then you're back to one 
+of the scenarios above.
 
-and for this processor, we use u64 rather than u32.
+> I think most would agree that adding 2us is not bad, but so far that is
+> an unproven theory that the IO path in question only adds 2us.   And we
+> are not just looking at the rate at which we can enter and exit the
+> guest...we need the whole path...from the PIO kick to the dev_xmit() on
+> the egress hardware, to the ingress and rx-injection.  This includes any
+> and all penalties associated with the path, even if they are imposed by
+> something like the design of tun-tap.
+>   
 
-So, if we want to make UIO usable on this class of CPU, we might
-replace:
+Correct, we need to look at the whole path.  That's why the wishing well 
+is clogged with my 'give me a better userspace interface' emails.
 
-struct uio_mem {
-	unsigned long		addr;
-	unsigned long		size;
-	int			memtype;
-	void __iomem		*internal_addr;
-	struct uio_map		*map;
-};
+> Right now its way way way worse than 2us.  In fact, at my last reading
+> this was more like 3060us (3125-65).  So shorten that 3125 to 67 (while
+> maintaining line-rate) and I will be impressed.  Heck, shorten it to
+> 80us and I will be impressed.
+>   
 
-with:
+The 3060us thing is a timer, not cpu time.  We aren't starting a JVM for 
+each packet.  We could remove it given a notification API, or 
+duplicating the sched-and-forget thing, like Rusty did with lguest or 
+Mark with qemu.
 
-struct uio_mem {
-	phys_addr_t		addr;
-	phys_addr_t		size;
-	int			memtype;
-	void __iomem		*internal_addr;
-	struct uio_map		*map;
-};
-
-A few other changes would be needed.  We'd have to use something
-other than
-
-	return sprintf(buf, "0x%lx\n", mem->addr);
-
-because the format would be incorrect for a u64.  Also, I believe
-we would get warnings in uio_vma_fault().  However, the phys_addr
-is really only applicable to UIO_MEM_PHYS, so perhaps we want a
-union of phys_addr_t and unsigned long for addr and size?
-
-Anyway, this is a real problem for the PPC440EPx, that board 
-designers cannot work around.
-
-	Steve
+-- 
+error compiling committee.c: too many arguments to function
 
