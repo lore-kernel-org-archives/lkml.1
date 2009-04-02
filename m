@@ -1,93 +1,110 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1765329AbZDBSQx@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1765257AbZDBSSj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1765329AbZDBSQx (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 2 Apr 2009 14:16:53 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759732AbZDBSQn
+	id S1765257AbZDBSSj (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 2 Apr 2009 14:18:39 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751262AbZDBSS2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 2 Apr 2009 14:16:43 -0400
-Received: from mx2.mail.elte.hu ([157.181.151.9]:50770 "EHLO mx2.mail.elte.hu"
+	Thu, 2 Apr 2009 14:18:28 -0400
+Received: from mx2.redhat.com ([66.187.237.31]:52060 "EHLO mx2.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755323AbZDBSQn (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 2 Apr 2009 14:16:43 -0400
-Date: Thu, 2 Apr 2009 20:16:29 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: Peter Zijlstra <a.p.zijlstra@chello.nl>
-Cc: Paul Mackerras <paulus@samba.org>,
-       Corey Ashford <cjashfor@linux.vnet.ibm.com>,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 5/6] perf_counter: add more context information
-Message-ID: <20090402181629.GC6340@elte.hu>
-References: <20090402091158.291810516@chello.nl> <20090402091319.493101305@chello.nl> <20090402113643.GF10828@elte.hu> <1238672770.8530.5901.camel@twins>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1238672770.8530.5901.camel@twins>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+	id S1751125AbZDBSS1 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 2 Apr 2009 14:18:27 -0400
+Organization: Red Hat UK Ltd. Registered Address: Red Hat UK Ltd, Amberley
+	Place, 107-111 Peascod Street, Windsor, Berkshire, SI4 1TE, United
+	Kingdom.
+	Registered in England and Wales under Company Registration No. 3798903
+From: David Howells <dhowells@redhat.com>
+In-Reply-To: <20090402165505.GA21859@infradead.org>
+References: <20090402165505.GA21859@infradead.org> <200904030100.05741.nickpiggin@yahoo.com.au> <200904030232.59355.nickpiggin@yahoo.com.au> <20090402163712.GA25177@infradead.org> <200904030347.21470.nickpiggin@yahoo.com.au>
+To: Christoph Hellwig <hch@infradead.org>
+Cc: dhowells@redhat.com, Nick Piggin <nickpiggin@yahoo.com.au>,
+       viro@zeniv.linux.org.uk, nfsv4@linux-nfs.org,
+       linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org
+Subject: Re: [PATCH 22/43] CacheFiles: Add a hook to write a single page of data to an inode [ver #46]
+Date: Thu, 02 Apr 2009 19:18:11 +0100
+Message-ID: <29524.1238696291@redhat.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Christoph Hellwig <hch@infradead.org> wrote:
 
-* Peter Zijlstra <a.p.zijlstra@chello.nl> wrote:
-
-> On Thu, 2009-04-02 at 13:36 +0200, Ingo Molnar wrote:
-> > * Peter Zijlstra <a.p.zijlstra@chello.nl> wrote:
-> > 
-> > > Put in counts to tell which ips belong to what context.
-> > > 
-> > >   -----
-> > >    | |  hv
-> > >    | --
-> > > nr | |  kernel
-> > >    | --
-> > >    | |  user
-> > >   -----
-> > 
-> > btw., i have an observation about the format:
-> > 
-> > > -#define MAX_STACK_DEPTH		255
-> > > +#define MAX_STACK_DEPTH		254
-> > >  
-> > >  struct perf_callchain_entry {
-> > > -	u64	nr;
-> > > +	u32	nr, hv, kernel, user;
-> > >  	u64	ip[MAX_STACK_DEPTH];
-> > >  };
-> > 
-> > For the special case of signal notifications, if the signal is 
-> > delivered immediately to the same task that raised it (pid=0), the 
-> > call chain is actually a still meaningful one: it is the stack that 
-> > is below the currently executing signal handler context.
-> > 
-> > Wouldnt it make sense to record the full stack frame for that 
-> > case, to allow walking/unwinding of the stack? Or can user-space 
-> > do that just fine, based on its own signal context?
+> > I don't think "write_one_page" sounds like a particularly good new
+> > API addition.
 > 
-> I think it can do that just fine or even better than we can -- 
-> userspace having access to a full dwarf2 unwinder and such.
+> I also thing it's not a nice one.  I still haven't seen a really good
+> explanation of why it can't just use plain ->write
 
-eventually we'll have one in the kernel too, but yeah, user-space 
-can do this better. It will have precise details about the runtime 
-environment.
+So, I can apply the attached patch.  It opens a file each time it wants to
+write a page and then closes it again, but it's the best way to avoid the
+ENFILE problem.  I'm benchmarking it at the moment.
 
-And any async mechanism has no chance to do anything useful with 
-stack frame info anyway - that stack frame might be long gone.
-
-> > We are going to hard-code the "call-chain is a series of IPs, 
-> > nothing else" model, and i'd like to make sure it's future-proof
-> > :)
-> 
-> I think it should be, function return addresses are the primary 
-> piece of information here.
-
-ok - good - just wanted to make sure :)
-
-	Ingo
+David
+---
+diff --git a/fs/cachefiles/rdwr.c b/fs/cachefiles/rdwr.c
+index 84bb8b7..a69787e 100644
+--- a/fs/cachefiles/rdwr.c
++++ b/fs/cachefiles/rdwr.c
+@@ -9,6 +9,8 @@
+  * 2 of the Licence, or (at your option) any later version.
+  */
+ 
++#include <linux/mount.h>
++#include <linux/file.h>
+ #include "internal.h"
+ 
+ /*
+@@ -796,7 +798,11 @@ int cachefiles_allocate_pages(struct fscache_retrieval *op,
+ int cachefiles_write_page(struct fscache_storage *op, struct page *page)
+ {
+ 	struct cachefiles_object *object;
+-	struct address_space *mapping;
++	struct cachefiles_cache *cache;
++	mm_segment_t old_fs;
++	struct file *file;
++	loff_t pos;
++	void *data;
+ 	int ret;
+ 
+ 	ASSERT(op != NULL);
+@@ -814,13 +820,33 @@ int cachefiles_write_page(struct fscache_storage *op, struct page *page)
+ 
+ 	ASSERT(S_ISREG(object->backer->d_inode->i_mode));
+ 
+-	/* copy the page to ext3 and let it store it in its own time */
+-	mapping = object->backer->d_inode->i_mapping;
+-	ret = -EIO;
+-	if (mapping->a_ops->write_one_page) {
+-		ret = mapping->a_ops->write_one_page(mapping, page->index,
+-						     page);
+-		_debug("write_one_page -> %d", ret);
++	cache = container_of(object->fscache.cache,
++			     struct cachefiles_cache, cache);
++
++	/* write the page to the backing filesystem and let it store it in its
++	 * own time */
++	dget(object->backer);
++	mntget(cache->mnt);
++	file = dentry_open(object->backer, cache->mnt, O_RDWR,
++			   cache->cache_cred);
++	if (IS_ERR(file)) {
++		ret = PTR_ERR(file);
++	} else {
++		ret = -EIO;
++		if (file->f_op->write) {
++			pos = (loff_t) page->index << PAGE_SHIFT;
++			data = kmap(page);
++			old_fs = get_fs();
++			set_fs(KERNEL_DS);
++			ret = file->f_op->write(
++				file, (const void __user *) data, PAGE_SIZE,
++				&pos);
++			set_fs(old_fs);
++			kunmap(page);
++			if (ret != PAGE_SIZE)
++				ret = -EIO;
++		}
++		fput(file);
+ 	}
+ 
+ 	if (ret < 0) {
