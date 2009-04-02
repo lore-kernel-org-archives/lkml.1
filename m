@@ -1,90 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753629AbZDBELY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753995AbZDBEPn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753629AbZDBELY (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 2 Apr 2009 00:11:24 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751901AbZDBELE
+	id S1753995AbZDBEPn (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 2 Apr 2009 00:15:43 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750921AbZDBEPd
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 2 Apr 2009 00:11:04 -0400
-Received: from hera.kernel.org ([140.211.167.34]:52978 "EHLO hera.kernel.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752513AbZDBELA (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 2 Apr 2009 00:11:00 -0400
-Date: Thu, 2 Apr 2009 04:09:41 GMT
-From: Yinghai Lu <yinghai@kernel.org>
-To: linux-tip-commits@vger.kernel.org
-Cc: linux-kernel@vger.kernel.org, hpa@zytor.com, mingo@redhat.com,
-       yinghai@kernel.org, davem@davemloft.net, tj@kernel.org,
-       tglx@linutronix.de, mingo@elte.hu
-Reply-To: mingo@redhat.com, hpa@zytor.com, linux-kernel@vger.kernel.org,
-       yinghai@kernel.org, davem@davemloft.net, tj@kernel.org,
-       tglx@linutronix.de, mingo@elte.hu
-In-Reply-To: <49D31770.9090502@kernel.org>
-References: <49D31770.9090502@kernel.org>
-Subject: [tip:x86/urgent] x86: remove duplicated code with pcpu_need_numa()
-Message-ID: <tip-3de46fda4c104deef17ec70f85361f5c6b84ce0e@git.kernel.org>
-Git-Commit-ID: 3de46fda4c104deef17ec70f85361f5c6b84ce0e
-X-Mailer: tip-git-log-daemon
-MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Disposition: inline
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Thu, 02 Apr 2009 04:09:43 +0000 (UTC)
+	Thu, 2 Apr 2009 00:15:33 -0400
+Received: from vms173007pub.verizon.net ([206.46.173.7]:64450 "EHLO
+	vms173007pub.verizon.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750825AbZDBEPc (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 2 Apr 2009 00:15:32 -0400
+Date: Thu, 02 Apr 2009 00:15:20 -0400 (EDT)
+From: Len Brown <lenb@kernel.org>
+X-X-Sender: lenb@localhost.localdomain
+To: "H. Peter Anvin" <hpa@zytor.com>
+Cc: Linus Torvalds <torvalds@linux-foundation.org>,
+       "Michael K. Johnson" <johnsonm@rpath.com>,
+       Justin Forbes <jmforbes@linuxtx.org>,
+       Jordan Hargrave <Jordan_Hargrave@dell.com>, Ingo Molnar <mingo@elte.hu>,
+       Thomas Gleixner <tglx@linutronix.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       linux-acpi@vger.kernel.org
+Subject: Re: [GIT PULL] x86 setup BIOS workarounds
+In-reply-to: <200904011640.n31GeD0m008691@voreg.hos.anvin.org>
+Message-id: <alpine.LFD.2.00.0904012357050.4657@localhost.localdomain>
+References: <200904011640.n31GeD0m008691@voreg.hos.anvin.org>
+User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
+MIME-version: 1.0
+Content-type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Commit-ID:  3de46fda4c104deef17ec70f85361f5c6b84ce0e
-Gitweb:     http://git.kernel.org/tip/3de46fda4c104deef17ec70f85361f5c6b84ce0e
-Author:     Yinghai Lu <yinghai@kernel.org>
-AuthorDate: Wed, 1 Apr 2009 00:27:44 -0700
-Committer:  Ingo Molnar <mingo@elte.hu>
-CommitDate: Thu, 2 Apr 2009 06:08:05 +0200
 
-x86: remove duplicated code with pcpu_need_numa()
-
-Impact: clean up
-
-those code pcpu_need_numa(), should be removed.
-
-Signed-off-by: Yinghai Lu <yinghai@kernel.org>
-Acked-by: Tejun Heo <tj@kernel.org>
-Acked-by: David Miller <davem@davemloft.net>
-LKML-Reference: <49D31770.9090502@kernel.org>
-Signed-off-by: Ingo Molnar <mingo@elte.hu>
+> +		/* ACPI 3.0 added the extended flags support.  If bit 0
+> +		   in the extended flags is zero, we're supposed to simply
+> +		   ignore the entry -- a backwards incompatible change! */
+> +		if (size > 20 && !(buf.ext_flags & 1))
+> +			continue;
 
 
----
- arch/x86/kernel/setup_percpu.c |   14 --------------
- 1 files changed, 0 insertions(+), 14 deletions(-)
+At the risk of rushing to the defense of the ACPI spec...
 
-diff --git a/arch/x86/kernel/setup_percpu.c b/arch/x86/kernel/setup_percpu.c
-index 876b127..3a97a4c 100644
---- a/arch/x86/kernel/setup_percpu.c
-+++ b/arch/x86/kernel/setup_percpu.c
-@@ -153,7 +153,6 @@ static struct page * __init pcpur_get_page(unsigned int cpu, int pageno)
- static ssize_t __init setup_pcpu_remap(size_t static_size)
- {
- 	static struct vm_struct vm;
--	pg_data_t *last;
- 	size_t ptrs_size, dyn_size;
- 	unsigned int cpu;
- 	ssize_t ret;
-@@ -165,19 +164,6 @@ static ssize_t __init setup_pcpu_remap(size_t static_size)
- 	if (!cpu_has_pse || !pcpu_need_numa())
- 		return -EINVAL;
- 
--	last = NULL;
--	for_each_possible_cpu(cpu) {
--		int node = early_cpu_to_node(cpu);
--
--		if (node_online(node) && NODE_DATA(node) &&
--		    last && last != NODE_DATA(node))
--			goto proceed;
--
--		last = NODE_DATA(node);
--	}
--	return -EINVAL;
--
--proceed:
- 	/*
- 	 * Currently supports only single page.  Supporting multiple
- 	 * pages won't be too difficult if it ever becomes necessary.
+This does not look like a backwards incompatible change to me.
+
+In ACPI 2.0, size of 20 is always returned, and it would
+be a Linux bug if we examined the undefined values after byte 19.
+
+In ACPI 3.0, byte 20 is now defined.  So if the BIOS returns
+a size >= 21, we are permitted to examine byte 20.
+
+So I agree with the test above, but I do not agree with the comment.
+
+thanks,
+Len Brown, Intel Open Source Technology Center
+
