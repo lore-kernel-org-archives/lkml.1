@@ -1,96 +1,101 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934088AbZDBKxW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S935221AbZDBKyU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934088AbZDBKxW (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 2 Apr 2009 06:53:22 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753979AbZDBKw7
+	id S935221AbZDBKyU (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 2 Apr 2009 06:54:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753979AbZDBKyF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 2 Apr 2009 06:52:59 -0400
-Received: from victor.provo.novell.com ([137.65.250.26]:42748 "EHLO
-	victor.provo.novell.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751002AbZDBKw6 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 2 Apr 2009 06:52:58 -0400
-Message-ID: <49D49986.3060303@novell.com>
-Date: Thu, 02 Apr 2009 06:55:02 -0400
-From: Gregory Haskins <ghaskins@novell.com>
-User-Agent: Thunderbird 2.0.0.19 (X11/20081227)
+	Thu, 2 Apr 2009 06:54:05 -0400
+Received: from tx2ehsobe002.messaging.microsoft.com ([65.55.88.12]:34401 "EHLO
+	TX2EHSOBE004.bigfish.com" rhost-flags-OK-OK-OK-FAIL)
+	by vger.kernel.org with ESMTP id S1752445AbZDBKyB convert rfc822-to-8bit
+	(ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 2 Apr 2009 06:54:01 -0400
+X-BigFish: VPS-33(z34a4jz1432R98dR936eQ1805M936fK10d1Izz1202hzzz32i6bh43j)
+X-FB-SS: 5,
+X-WSS-ID: 0KHGZLG-04-0T5-01
+Date: Thu, 2 Apr 2009 12:54:15 +0200
+From: Joerg Roedel <joerg.roedel@amd.com>
+To: Stephen Hemminger <shemminger@vyatta.com>
+CC: Dave Jones <davej@redhat.com>, <tglx@linuxtronix.de>, <mingo@redhat.com>,
+       <hpa@zytor.com>, <linux-kernel@vger.kernel.org>, <x86@kernel.org>
+Subject: Re: [Bug 487894] New: sky2 0000:06:00.0: DMA-API: device driver
+	frees DMA memory with different size
+Message-ID: <20090402105415.GD21083@amd.com>
+References: <20090401172708.GA11941@redhat.com> <20090401110245.4d1ddf72@nehalam>
 MIME-Version: 1.0
-To: Avi Kivity <avi@redhat.com>
-CC: Herbert Xu <herbert@gondor.apana.org.au>, anthony@codemonkey.ws,
-       andi@firstfloor.org, linux-kernel@vger.kernel.org, agraf@suse.de,
-       pmullaney@novell.com, pmorreale@novell.com, rusty@rustcorp.com.au,
-       netdev@vger.kernel.org, kvm@vger.kernel.org
-Subject: Re: [RFC PATCH 00/17] virtual-bus
-References: <20090402085253.GA29932@gondor.apana.org.au> <49D47F11.6070400@redhat.com>
-In-Reply-To: <49D47F11.6070400@redhat.com>
-X-Enigmail-Version: 0.95.7
-OpenPGP: id=D8195319
-Content-Type: multipart/signed; micalg=pgp-sha1;
- protocol="application/pgp-signature";
- boundary="------------enig9EC615CCDBFFD2F0EE2BE6AE"
+Content-Type: text/plain; charset="iso-8859-1"
+Content-Disposition: inline
+In-Reply-To: <20090401110245.4d1ddf72@nehalam>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+Content-Transfer-Encoding: 8BIT
+X-OriginalArrivalTime: 02 Apr 2009 10:53:42.0177 (UTC) FILETIME=[497BC110:01C9B381]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This is an OpenPGP/MIME signed message (RFC 2440 and 3156)
---------------enig9EC615CCDBFFD2F0EE2BE6AE
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: quoted-printable
+On Wed, Apr 01, 2009 at 11:02:45AM -0700, Stephen Hemminger wrote:
+> 
+> The sky2 driver uses pci_unmap_len and pci_unmap_len_set which on 32 bit
+> platforms are meaningless so they are stubbed out. 
+> Basically, DMA-API checks are wrong/bogus to enforce on 32bit x86 as is.
 
-Avi Kivity wrote:
-> Herbert Xu wrote:
->> Avi Kivity <avi@redhat.com> wrote:
->> =20
->>> virtio is already non-kvm-specific (lguest uses it) and
->>> non-pci-specific (s390 uses it).
->>>    =20
->>
->> I think Greg's work shows that putting the backend in the kernel
->> can dramatically reduce the cost of a single guest->host transaction.
->> I'm sure the same thing would work for virtio too.
->>  =20
->
-> Virtio suffers because we've had no notification of when a packet is
-> actually submitted.  With the notification, the only difference should
-> be in the cost of a kernel->user switch, which is nowhere nearly as
-> dramatic.
->
->>> If you have a good exit mitigation scheme you can cut exits by a
->>> factor of 100; so the userspace exit costs are cut by the same
->>> factor.  If you have good copyless networking APIs you can cut the
->>> cost of copies to zero (well, to the cost of get_user_pages_fast(),
->>> but a kernel solution needs that too).
->>>    =20
->>
->> Given the choice of having to mitigate or not having the problem
->> in the first place, guess what I would prefer :)
->>  =20
->
-> There is no choice.  Exiting from the guest to the kernel to userspace
-> is prohibitively expensive, you can't do that on every packet.
->
+As far as I know the VT-d driver is available on 32 bit x86 too. So this should
+not always be a nop.
+The other question is why pci_unmap_* functions are not defined as a nop too
+and call dma_unmap_* instead? This looks inconsisent to me.
 
-Now you are making my point ;)  This is part of the cost of your
-signaling path, and it directly adds to your latency time.   You can't
-buffer packets here if the guest is only going to send one and wait for
-a response and expect that to perform well.  And this is precisely what
-drove me to look at avoiding going back to userspace in the first place.
+> ========================================================
+> Unstub pci_unmap macros if doing DMA-API checks
+> 
+> If doing device driver DMA-API tests then need to keep track of address/length
+> even on 32-bit x86 where the information is not normally needed.
+> 
+> Signed-off-by: Stephen Hemminger <shemminger@vyatta.com>
+> 
+> 
+> --- a/arch/x86/include/asm/pci_32.h	2009-04-01 10:52:07.117504355 -0700
+> +++ b/arch/x86/include/asm/pci_32.h	2009-04-01 10:56:02.249066174 -0700
+> @@ -17,16 +17,25 @@ struct pci_dev;
+>   */
+>  #define PCI_DMA_BUS_IS_PHYS	(1)
+>  
+> +#ifdef CONFIG_DMA_API_DEBUG
+> +/* keep real values */
+> +#define DECLARE_PCI_UNMAP_ADDR(ADDR_NAME)	dma_addr_t ADDR_NAME;
+> +#define DECLARE_PCI_UNMAP_LEN(LEN_NAME)		__u32 LEN_NAME;
+> +#define pci_unmap_addr(PTR, ADDR_NAME)		((PTR)->ADDR_NAME)
+> +#define pci_unmap_addr_set(PTR, ADDR_NAME, VAL)	(((PTR)->ADDR_NAME) = (VAL))
+> +#define pci_unmap_len(PTR, LEN_NAME)		((PTR)->LEN_NAME)
+> +#define pci_unmap_len_set(PTR, LEN_NAME, VAL)	(((PTR)->LEN_NAME) = (VAL))
+> +#else
+>  /* pci_unmap_{page,single} is a nop so... */
+>  #define DECLARE_PCI_UNMAP_ADDR(ADDR_NAME)	dma_addr_t ADDR_NAME[0];
+> -#define DECLARE_PCI_UNMAP_LEN(LEN_NAME)	unsigned LEN_NAME[0];
+> -#define pci_unmap_addr(PTR, ADDR_NAME)	sizeof((PTR)->ADDR_NAME)
+> +#define DECLARE_PCI_UNMAP_LEN(LEN_NAME)		__u32 LEN_NAME[0];
+> +#define pci_unmap_addr(PTR, ADDR_NAME)		sizeof((PTR)->ADDR_NAME)
+>  #define pci_unmap_addr_set(PTR, ADDR_NAME, VAL) \
+>  	do { break; } while (pci_unmap_addr(PTR, ADDR_NAME))
+>  #define pci_unmap_len(PTR, LEN_NAME)		sizeof((PTR)->LEN_NAME)
+>  #define pci_unmap_len_set(PTR, LEN_NAME, VAL) \
+>  	do { break; } while (pci_unmap_len(PTR, LEN_NAME))
+> -
+> +#endif
 
--Greg
+I think we need another solution which takes into account that there might be
+VT-d enabled and which defines the pci_unmap_* functions also as a nop when it
+is not. I suggest to make a CONFIG option for these functions nit being a nop
+and let DMA_API_DEBUG select it on x86. So we get proper checking for drivers
+on 32bit x86 too which helps other architectures where these drivers can be
+used.
 
+	Joerg
 
---------------enig9EC615CCDBFFD2F0EE2BE6AE
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: OpenPGP digital signature
-Content-Disposition: attachment; filename="signature.asc"
+-- 
+           | Advanced Micro Devices GmbH
+ Operating | Karl-Hammerschmidt-Str. 34, 85609 Dornach bei München
+ System    | 
+ Research  | Geschäftsführer: Jochen Polster, Thomas M. McCoy, Giuliano Meroni
+ Center    | Sitz: Dornach, Gemeinde Aschheim, Landkreis München
+           | Registergericht München, HRB Nr. 43632
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v2.0.9 (GNU/Linux)
-Comment: Using GnuPG with SUSE - http://enigmail.mozdev.org
-
-iEUEARECAAYFAknUmYYACgkQlOSOBdgZUxmMgACeLMlND6zrunICKdEh8eYYNWT5
-lWYAlRQdVZmljPb7HjZ6FFmCSDqapa4=
-=mTtV
------END PGP SIGNATURE-----
-
---------------enig9EC615CCDBFFD2F0EE2BE6AE--
