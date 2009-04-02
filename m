@@ -1,67 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762837AbZDBThl@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933655AbZDBTiB@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762837AbZDBThl (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 2 Apr 2009 15:37:41 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759666AbZDBTgi
+	id S933655AbZDBTiB (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 2 Apr 2009 15:38:01 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762090AbZDBTgn
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 2 Apr 2009 15:36:38 -0400
-Received: from mail-bw0-f169.google.com ([209.85.218.169]:44079 "EHLO
-	mail-bw0-f169.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1759794AbZDBTgf (ORCPT
+	Thu, 2 Apr 2009 15:36:43 -0400
+Received: from mail-fx0-f158.google.com ([209.85.220.158]:46047 "EHLO
+	mail-fx0-f158.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1761155AbZDBTgk (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 2 Apr 2009 15:36:35 -0400
+	Thu, 2 Apr 2009 15:36:40 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
         h=from:to:subject:date:user-agent:cc:references:in-reply-to
-         :mime-version:content-disposition:message-id:content-type
-         :content-transfer-encoding;
-        b=IXIidVm0d1bYWcyCFdGnHNuXwQ4tCHCNOwhTJGbduEuY+Lf4iLDqs0NCWd7ujapf4R
-         X5BoGB7vF2y09D2ZXDUm30rLVj6ibcsYjGX6H6+fSwO4AAJLzWWkBXX34rxXXzUKVplJ
-         F5tcv+23czS1ZfZFnO5mtlF3257cjH6c8necA=
+         :mime-version:content-type:content-transfer-encoding
+         :content-disposition:message-id;
+        b=kp2HqGfvk/OgoZ9tZHfE01ANGLjerVskrYfZMU30Fm2QeFXppEeCUbIJi2+G1slbEg
+         iL4iaMBtJUmssggDSnt4h9SNTVl0686GiA4/WlHEnyY80le3TMxbklnqBlBRLJ6UxcDm
+         G1Cq0CbqvCsbPnsR9vgoua+0JuJFWIZJhPFs8=
 From: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
-To: Geert Uytterhoeven <geert@linux-m68k.org>
-Subject: Re: [PATCH] ide: falconide/q40ide - Use __ide_mm_{in,out}sw() for data transfer
-Date: Thu, 2 Apr 2009 20:50:51 +0200
+To: Grant Grundler <grundler@google.com>
+Subject: Re: [PATCH] tx4939ide: remove wmb()
+Date: Thu, 2 Apr 2009 21:18:52 +0200
 User-Agent: KMail/1.11.1 (Linux/2.6.29-next-20090401; KDE/4.2.1; i686; ; )
-Cc: linux-ide@vger.kernel.org,
-       Linux Kernel Development <linux-kernel@vger.kernel.org>,
-       "Linux/m68k" <linux-m68k@vger.kernel.org>
-References: <Pine.LNX.4.64.0904012243060.29342@anakin>
-In-Reply-To: <Pine.LNX.4.64.0904012243060.29342@anakin>
+Cc: Atsushi Nemoto <anemo@mba.ocn.ne.jp>, linux-ide@vger.kernel.org,
+       linux-mips@linux-mips.org, linux-kernel@vger.kernel.org
+References: <1238516136-15852-1-git-send-email-anemo@mba.ocn.ne.jp> <da824cf30903310936p75469518j9bb28421b1ee81b8@mail.gmail.com>
+In-Reply-To: <da824cf30903310936p75469518j9bb28421b1ee81b8@mail.gmail.com>
 MIME-Version: 1.0
-Content-Disposition: inline
-Message-Id: <200904022050.52002.bzolnier@gmail.com>
 Content-Type: text/plain;
-  charset="iso-8859-1"
+  charset="utf-8"
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200904022118.52909.bzolnier@gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wednesday 01 April 2009, Geert Uytterhoeven wrote:
-> Both of commits f94116aeec7a299640dd692128e1d22178affa8d ("ide: cleanup
-> <asm-m68k/ide.h>") and 15a453a955f89f6545118770c669b52e925368bd ("ide: include
-> <asm/ide.h> only when needed") break falconide:
+On Tuesday 31 March 2009, Grant Grundler wrote:
+> On Tue, Mar 31, 2009 at 9:15 AM, Atsushi Nemoto <anemo@mba.ocn.ne.jp> wrote:
+> > * define CHECK_DMA_MASK
+> > * remove use of wmb()
+> >
+> > Suggested-by: Grant Grundler <grundler@google.com>
 > 
-> | Uniform Multi-Platform E-IDE driver
-> | ide: Falcon IDE controller
-> | Probing IDE interface ide0...
-> | hda: Sarge m68k, ATA DISK drive
-> | ide0 at 0xfff00000 on irq 15 (serialized)
-> | ide-gd driver 1.18
-> | hda: max request size: 128KiB
-> | hda: 2118816 sectors (1084 MB) w/256KiB Cache, CHS=2102/16/63
-> |  hda:<4>hda: lost interrupt
+> Thank you for the attribution!
 > 
-> This happens because falconide relies on {in,out}sw() being redefined in
-> <asm/ide.h>, as included by <linux/ide.h>, which is no longer the case.
-> Use __ide_mm_{in,out}sw() from <asm/ide.h> instead, just like
-> ide_{in,out}put_data() do.
+> But I think proper header would be:
+>     Reported-by: Grant Grundler <grundler@google.com>
 > 
-> The same problem seems to exist in q40ide.
-> 
-> Signed-off-by: Geert Uytterhoeven <geert@linux-m68k.org>
+> But in this case, since i've looked at the code and am under the
+> illusion I understand it, I'm comfortable with:
+>     Reviewed-by: Grant Grundler <grundler@google.com>
 
-applied
-
-Many thanks for fixing this issue and the IRQF_SHARED one!
+Well, you can have both! ;)
