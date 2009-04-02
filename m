@@ -1,75 +1,118 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757192AbZDBPdf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762794AbZDBPdJ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757192AbZDBPdf (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 2 Apr 2009 11:33:35 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762618AbZDBPdJ
-	(ORCPT <rfc822;linux-kernel-outgoing>);
+	id S1762794AbZDBPdJ (ORCPT <rfc822;w@1wt.eu>);
 	Thu, 2 Apr 2009 11:33:09 -0400
-Received: from smtp105.mail.mud.yahoo.com ([209.191.85.215]:31289 "HELO
-	smtp105.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1756860AbZDBPdH (ORCPT
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760967AbZDBPcm
+	(ORCPT <rfc822;linux-kernel-outgoing>);
+	Thu, 2 Apr 2009 11:32:42 -0400
+Received: from out1.smtp.messagingengine.com ([66.111.4.25]:44597 "EHLO
+	out1.smtp.messagingengine.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1760790AbZDBPck (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 2 Apr 2009 11:33:07 -0400
-DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
-  s=s1024; d=yahoo.com.au;
-  h=Received:X-YMail-OSG:X-Yahoo-Newman-Property:From:To:Subject:Date:User-Agent:Cc:References:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Content-Disposition:Message-Id;
-  b=fe15mEFV8WXHZ3C66V5iMtCkRwC4n40tVmqciLMnHD57IXWmw39IBIa9o2/hysdsW0Cazy9QrUWfxEoiYvmMGQ2ARzZbV0XxLANIUy0h4JhM+tZ9c44r5/BMMNIO5b01GXw1U5mZgzcwx4bRYxsjZCH0pWQPqOl5hMw7p8Q43Do=  ;
-X-YMail-OSG: ePbXAlwVM1mGnx8mwTB5bUlxhxip3ylQKYj23N9BfmCHnG0YmZGuUWgYMJRvsPoBUj7WvFq8gBap8RgpI6nSOwrU23MPkUYABXT5eDFAP2mVtKRRhZRS1cUp9fjFPxsamiKmtanJy3_ULiXF1KjgT_k91Cq9S659CawFjPhDa7Q9rHZemOquKCllrNY9sjGBBf6Rbgo1jXklirPVwVmVkcLCCqTUX8JRh8gVFWr.aKL4IYIxvLrr52_t_YciimdYkHzz7Lppz0inAFflZB3YHZu.Buu1OAJ7fqKyFRvQn_XT3od2Kq.Q0nVxAf.27vWGpb2jA2v15WTZxkDrXxLR4nJ3GQ--
-X-Yahoo-Newman-Property: ymail-3
-From: Nick Piggin <nickpiggin@yahoo.com.au>
-To: David Howells <dhowells@redhat.com>
-Subject: Re: [PATCH 22/43] CacheFiles: Add a hook to write a single page of data to an inode [ver #46]
-Date: Fri, 3 Apr 2009 02:32:58 +1100
-User-Agent: KMail/1.9.51 (KDE/4.0.4; ; )
-Cc: hch@infradead.org, viro@zeniv.linux.org.uk, nfsv4@linux-nfs.org,
-       linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org
-References: <200904030100.05741.nickpiggin@yahoo.com.au> <20090401230515.28177.73948.stgit@warthog.procyon.org.uk> <5564.1238684153@redhat.com>
-In-Reply-To: <5564.1238684153@redhat.com>
+	Thu, 2 Apr 2009 11:32:40 -0400
+X-Sasl-enc: c4Y8YiiZLgkORe8TUryMxw1MjtH6az5+cG1S/QGaFM7i 1238686358
+Message-ID: <49D4DA86.5020307@imap.cc>
+Date: Thu, 02 Apr 2009 17:32:22 +0200
+From: Tilman Schmidt <tilman@imap.cc>
+User-Agent: Thunderbird 2.0.0.19 (X11/20081227)
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="utf-8"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200904030232.59355.nickpiggin@yahoo.com.au>
+To: Peter Zijlstra <peterz@infradead.org>
+CC: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@tglx.de>,
+       linux-usb@vger.kernel.org
+Subject: Re: Help: tasklet blocked for >8msec - USB mouse related
+References: <49CCFEBA.6060009@imap.cc>  <49D24A32.9070103@imap.cc> <1238665439.8530.5740.camel@twins>
+In-Reply-To: <1238665439.8530.5740.camel@twins>
+X-Enigmail-Version: 0.95.7
+Content-Type: multipart/signed; micalg=pgp-sha1;
+ protocol="application/pgp-signature";
+ boundary="------------enig3CDB2C308BF5B19DBBEDC9AF"
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Friday 03 April 2009 01:55:53 David Howells wrote:
-> Nick Piggin <nickpiggin@yahoo.com.au> wrote:
-> 
-> > > Hook the Ext2 and Ext3 operations to the generic implementation.
-> > 
-> > Is this really worthwhile?
-> 
-> I seem to remember being told that I'm not allowed to call such directly (by
-> Christoph Hellwig perhaps?), and that I should add an address space op to do
-> this.
+This is an OpenPGP/MIME signed message (RFC 2440 and 3156)
+--------------enig3CDB2C308BF5B19DBBEDC9AF
+Content-Type: text/plain; charset=ISO-8859-15
+Content-Transfer-Encoding: quoted-printable
 
-Hmm, I guess not all filesystems define write_begin/write_end. But if you
-only need to use ones that do define them?
+[CCing linux-usb as I had started another thread there already]
 
->
-> > What do you do that write_begin/write_end doesn't?
-> 
-> This code calls write_begin() and write_end().
+On Thu, 02 Apr 2009 11:43:59 +0200, Peter Zijlstra wrote:
+> On Tue, 2009-03-31 at 18:52 +0200, Tilman Schmidt wrote:
 
-Yes, you framed the changelog as introducing this new callback because it
-allows a highly optimised code that takes advantage of page aligned write.
-So I went on a tangent thinking you were going to use it later to avoid
-the data copy or something.
+>>> A user of the Gigaset base driver (drivers/isdn/gigaset/bas-gigaset.c=
+)
+>>> reports his connection being dropped exactly every 30 seconds.
+>>> Analysis of his dmesg indicates that when the error occurs, both the
+>>> tasklets read_iso_tasklet and write_iso_tasklet handling the B channe=
+l
+>>> data stream (125 USB isochronous packets per second in each direction=
+)
+>>> are at the same time not executed for an entire inter-packet interval=
+,
+>>> ie. 8 msecs.
+>> The user did a bit of ellimination work, and it turned out that if
+>> he disconnected his Logitech Laser Mouse from its USB port and
+>> connected it to the PS2 port instead, the regular blockages ceased.
+>=20
+> Looks like the USB driver holds off interrupts for a long-long time.
 
- 
-> write_begin() and write_end() don't actually update the target page, and don't
-> so the osync stuff.
-> 
-> My code assumed file can be passed as NULL to write_begin() and write_end().
-> If file is, however, necessary then the backing fs can do something different.
-> cachefiles doesn't know.
+Well, not quite. The sequence of events is this:
+- two isochronous read URBs are queued
+- completion handler is called for the first one
+- schedules tasklet for bottom half processing of received data
+- submits another URB so that there are again two URBs queued
+- 8 ms later, completion handler is called again for the next URB
+- notices previous URB hasn't been processed (ie. tasklet hasn't run)
+- bitches
+And the same, mutatis mutandis, for the sending direction.
 
-You are knowingly squashing together fscache and the backing filesystem if
-you do something like introduce a flag like PG_owner_priv_2 and disallow the
-backing filesystem from reusing it. So at which point you don't have to keep
-up illusions about being totally filesystem agnostic.
+So interrupts seem to be delivered fine, it's just the tasklets that are
+held off.
 
-Many filesystems don't need the file argument to write_begin/write_end.
+> Another possible source might be SMIs -- and there's nothing much you
+> can do about those except bitch to Gigabyte.
+>=20
+> But really, relying on <10ms execution latency on mainline is almost
+> asking for it -- in general we do better, but there are a few sore
+> spots.
+
+Interestingly, I never encountered that sort of problem while developing
+the driver, on a lowly 700 MHz P3 with kernels around 2.6.11, and the onl=
+y
+problem report I ever received in that area until now was from a user who=
+
+ran an IDE disk in PIO mode, and whose problems vanished once he switched=
+
+that to DMA mode.
+
+So what do you propose? Queue more URBs, so that I can tolerate waiting
+longer for bottom half processing to kick in? How much time will I have
+to be able to tolerate?
+
+Thanks,
+Tilman
+
+--=20
+Tilman Schmidt                    E-Mail: tilman@imap.cc
+Bonn, Germany
+Diese Nachricht besteht zu 100% aus wiederverwerteten Bits.
+Unge=F6ffnet mindestens haltbar bis: (siehe R=FCckseite)
+
+
+--------------enig3CDB2C308BF5B19DBBEDC9AF
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: OpenPGP digital signature
+Content-Disposition: attachment; filename="signature.asc"
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v2.0.4-svn0 (GNU/Linux)
+Comment: Using GnuPG with SUSE - http://enigmail.mozdev.org
+
+iD8DBQFJ1NqTQ3+did9BuFsRAvBhAJ0RePSh38NsPkgIp8Au/wdeMYb2PACfW3EP
+jMDcCa455XkOgG64wI//TA8=
+=3ITJ
+-----END PGP SIGNATURE-----
+
+--------------enig3CDB2C308BF5B19DBBEDC9AF--
