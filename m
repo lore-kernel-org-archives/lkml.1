@@ -1,126 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932529AbZDBQuY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932717AbZDBQuz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932529AbZDBQuY (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 2 Apr 2009 12:50:24 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1764136AbZDBQso
+	id S932717AbZDBQuz (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 2 Apr 2009 12:50:55 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932506AbZDBQuI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 2 Apr 2009 12:48:44 -0400
-Received: from mx2.redhat.com ([66.187.237.31]:38558 "EHLO mx2.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S932283AbZDBQsn (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 2 Apr 2009 12:48:43 -0400
-Organization: Red Hat UK Ltd. Registered Address: Red Hat UK Ltd, Amberley
-	Place, 107-111 Peascod Street, Windsor, Berkshire, SI4 1TE, United
-	Kingdom.
-	Registered in England and Wales under Company Registration No. 3798903
-From: David Howells <dhowells@redhat.com>
-In-Reply-To: <200904030315.03606.nickpiggin@yahoo.com.au>
-References: <200904030315.03606.nickpiggin@yahoo.com.au> <200904030225.16372.nickpiggin@yahoo.com.au> <5198.1238682972@redhat.com> <6362.1238687462@redhat.com>
-To: Nick Piggin <nickpiggin@yahoo.com.au>
-Cc: dhowells@redhat.com, viro@zeniv.linux.org.uk, nfsv4@linux-nfs.org,
-       linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org
-Subject: What I mean by a 'netfs' when dealing with FS-Cache
-Date: Thu, 02 Apr 2009 17:48:38 +0100
-Message-ID: <7008.1238690918@redhat.com>
+	Thu, 2 Apr 2009 12:50:08 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:45582 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S932404AbZDBQuF (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 2 Apr 2009 12:50:05 -0400
+Date: Thu, 2 Apr 2009 09:46:14 -0700 (PDT)
+From: Linus Torvalds <torvalds@linux-foundation.org>
+X-X-Sender: torvalds@localhost.localdomain
+To: David Rees <drees76@gmail.com>
+cc: Andrew Morton <akpm@linux-foundation.org>, Janne Grunau <j@jannau.net>,
+       Lennart Sorensen <lsorense@csclub.uwaterloo.ca>,
+       Theodore Tso <tytso@mit.edu>, Jesper Krogh <jesper@krogh.cc>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: Linux 2.6.29
+In-Reply-To: <72dbd3150904020933y515c7185p5726323c430c339b@mail.gmail.com>
+Message-ID: <alpine.LFD.2.00.0904020942181.4130@localhost.localdomain>
+References: <20090325183011.GN32307@mit.edu> <alpine.LFD.2.00.0903251622420.3032@localhost.localdomain>  <20090326171148.9bf8f1ec.akpm@linux-foundation.org> <alpine.LFD.2.00.0903261723250.3994@localhost.localdomain>  <20090326174704.cd36bf7b.akpm@linux-foundation.org>
+ <alpine.LFD.2.00.0903261752110.3994@localhost.localdomain>  <20090326182519.d576d703.akpm@linux-foundation.org> <20090401210337.GB3797@csclub.uwaterloo.ca>  <20090402110532.GA5132@aniel> <20090402090912.cac200bb.akpm@linux-foundation.org>
+ <72dbd3150904020933y515c7185p5726323c430c339b@mail.gmail.com>
+User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-I think I see the problem.  I think you're misunderstanding what I mean by
-netfs.
 
-Note that when I say 'netfs' I don't necessarily _mean_ it has to be a network
-fs.  It could be NFS, AFS, CIFS, but it might also be ISO9660.  Look at these
-two diagrams (taken from the docs added by patch 07):
+On Thu, 2 Apr 2009, David Rees wrote:
+> 
+> MythTV actually uses fdatasync, not fsync (or at least that's what it
+> did last time I looked at the source).  Not sure how the behavior of
+> fdatasync compares to sync_file_range.
 
-	+---------+
-	|         |                        +--------------+
-	|   NFS   |--+                     |              |
-	|         |  |                 +-->|   CacheFS    |
-	+---------+  |   +----------+  |   |  /dev/hda5   |
-	             |   |          |  |   +--------------+
-	+---------+  +-->|          |  |
-	|         |      |          |--+
-	|   AFS   |----->| FS-Cache |
-	|         |      |          |--+
-	+---------+  +-->|          |  |
-	             |   |          |  |   +--------------+
-	+---------+  |   +----------+  |   |              |
-	|         |  |                 +-->|  CacheFiles  |
-	|  ISOFS  |--+                     |  /var/cache  |
-	|         |                        +--------------+
-	+---------+
+fdatasync() _waits_ for the data to hit the disk.
 
-NFS, AFS and ISOFS in this diagram all fill the roll of 'netfs'.  CacheFS
-(cache on blockdev) and CacheFiles (cache on filesystem) fill the roll of
-'backingfs'.
+sync_file_range() just starts writeout.
 
-And:
+It _can_ do more - you can also ask for it to wait for previous write-out 
+in order to start _new_ writeout, or wait for the result, but you wouldn't 
+want to, not for something like this.
 
-	+---------+
-	|         |
-	| Server  |
-	|         |
-	+---------+
-	     |                  NETWORK
-	~~~~~|~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-	     |
-	     |           +----------+
-	     V           |          |
-	+---------+      |          |
-	|         |      |          |
-	|   NFS   |----->| FS-Cache |
-	|         |      |          |--+
-	+---------+      |          |  |   +--------------+   +--------------+
-	     |           |          |  |   |              |   |              |
-	     V           +----------+  +-->|  CacheFiles  |-->|  Ext3        |
-	+---------+                        |  /var/cache  |   |  /dev/sda6   |
-	|         |                        +--------------+   +--------------+
-	|   VFS   |                                ^                     ^
-	|         |                                |                     |
-	+---------+                                +--------------+      |
-	     |                  KERNEL SPACE                      |      |
-	~~~~~|~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~|~~~~~~|~~~~
-	     |                  USER SPACE                        |      |
-	     V                                                    |      |
-	+---------+                                           +--------------+
-	|         |                                           |              |
-	| Process |                                           | cachefilesd  |
-	|         |                                           |              |
-	+---------+                                           +--------------+
+sync_file_range() is really a much nicer interface, and is a more extended 
+fdatasync() that actually matches what the kernel does internally.
 
+You can think of fdatasync(fd) as a 
 
-FS-Cache tracks pages from the 'netfs' because it may want to keep metadata on
-them (such as where in the backingfs the pages are to be stored).  In many
-ways, PG_fscache is equivalent of PG_mappedtodisk.  You could think of it as
-PG_mappedtocache if you like.
+	sync_file_range(fd, 0, ~0ull,
+		SYNC_FILE_RANGE_WAIT_BEFORE | SYNC_FILE_RANGE_WRITE | SYNC_FILE_RANGE_WAIT_AFTER);
 
-The procedure for the netfs to use the cache on a page is that it calls one
-of:
+and then you see why fdatasync is such a horrible interface.
 
-	fscache_read_or_alloc_page()
-	fscache_read_or_alloc_pages()
-	fscache_alloc_page()
-
-to either read pages from the cache or reserve space in the cache into which
-the page can be written.
-
-Then, the netfs calls:
-
-	fscache_write_page()
-
-to write pages back to the cache as often as it likes.  This may only be
-called if read/alloc has been called first, and is permitted, inside the
-caching backend (eg CacheFiles), to cache metadata about the read/alloc.
-
-Finally, to polish off, the netfs calls:
-
-	fscache_uncache_page()
-
-to tell FS-Cache to release any metadata it might hold on that page.
-
-As I've been saying, I want to be able to make iso9660 be a client of FS-Cache
-- ie: fill the roll of a netfs.
-
-David
+		Linus
