@@ -1,77 +1,41 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764896AbZDBAaO@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933845AbZDBAam@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764896AbZDBAaO (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 1 Apr 2009 20:30:14 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757055AbZDBA3v
+	id S933845AbZDBAam (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 1 Apr 2009 20:30:42 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759357AbZDBAa1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 1 Apr 2009 20:29:51 -0400
-Received: from yx-out-2324.google.com ([74.125.44.29]:56497 "EHLO
-	yx-out-2324.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755992AbZDBA3u (ORCPT
+	Wed, 1 Apr 2009 20:30:27 -0400
+Received: from rv-out-0506.google.com ([209.85.198.239]:9151 "EHLO
+	rv-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757055AbZDBAaZ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 1 Apr 2009 20:29:50 -0400
-Message-ID: <49D406F8.40606@codemonkey.ws>
-Date: Wed, 01 Apr 2009 19:29:44 -0500
-From: Anthony Liguori <anthony@codemonkey.ws>
-User-Agent: Thunderbird 2.0.0.21 (X11/20090320)
+	Wed, 1 Apr 2009 20:30:25 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
+         :cc:content-type:content-transfer-encoding;
+        b=smGR/2u3iNUVREzroJDPeS+bDMjHuLITEg0eYuU9G0oNxezZfXVVXcXlSawV+4GHph
+         u/dVs7ojz2fqI+Axm+m6bkTkHAkB1sSW9laVtAEzgKbsf2mQ/DRPxKpz3QADkSc3XMEf
+         2CABqL8CqkNMFIa7AcEDIow6U+PJyjxOYsORk=
 MIME-Version: 1.0
-To: Gregory Haskins <ghaskins@novell.com>
-CC: Andi Kleen <andi@firstfloor.org>, linux-kernel@vger.kernel.org,
-       agraf@suse.de, pmullaney@novell.com, pmorreale@novell.com,
-       rusty@rustcorp.com.au, netdev@vger.kernel.org, kvm@vger.kernel.org
-Subject: Re: [RFC PATCH 00/17] virtual-bus
-References: <20090331184057.28333.77287.stgit@dev.haskins.net> <87ab71monw.fsf@basil.nowhere.org> <49D35825.3050001@novell.com> <20090401132340.GT11935@one.firstfloor.org> <49D37805.1060301@novell.com> <20090401170103.GU11935@one.firstfloor.org> <49D3B64F.6070703@codemonkey.ws> <49D3D7EE.4080202@novell.com>
-In-Reply-To: <49D3D7EE.4080202@novell.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+In-Reply-To: <9b1675090903312219q5f6df0cbwef86cbdafe035667@mail.gmail.com>
+References: <9b1675090903291904g7eca965eydb1aa3f852a1b91c@mail.gmail.com>
+	 <200903301357.17076.alistair@devzero.co.uk>
+	 <9b1675090903300826s2ce361e5s1134e13507b0399@mail.gmail.com>
+	 <200903301944.30030.alistair@devzero.co.uk>
+	 <9b1675090903302211q5703af7fo33f45c93e5db34f0@mail.gmail.com>
+	 <9b1675090903312219q5f6df0cbwef86cbdafe035667@mail.gmail.com>
+Date: Wed, 1 Apr 2009 18:30:22 -0600
+Message-ID: <9b1675090904011730t38f637b3n55a3a44aeb0b07e@mail.gmail.com>
+Subject: Re: 2.6.29 on MacBook 2,1 fails to reboot
+From: "Trenton D. Adams" <trenton.d.adams@gmail.com>
+To: Alistair John Strachan <alistair@devzero.co.uk>
+Cc: "Morten P.D. Stevens" <mstevens@win-professional.com>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Gregory Haskins wrote:
-> Anthony Liguori wrote:
->   
-> I think there is a slight disconnect here.  This is *exactly* what I am
-> trying to do. 
-
-If it were exactly what you were trying to do, you would have posted a 
-virtio-net in-kernel backend implementation instead of a whole new 
-paravirtual IO framework ;-)
-
->> That said, I don't think we're bound today by the fact that we're in
->> userspace.
->>     
-> You will *always* be bound by the fact that you are in userspace.
-
-Again, let's talk numbers.  A heavy-weight exit is 1us slower than a 
-light weight exit.  Ideally, you're taking < 1 exit per packet because 
-you're batching notifications.  If you're ping latency on bare metal 
-compared to vbus is 39us to 65us, then all other things being equally, 
-the cost imposed by doing what your doing in userspace would make the 
-latency be 66us taking your latency from 166% of native to 169% of 
-native.  That's not a huge difference and I'm sure you'll agree there 
-are a lot of opportunities to improve that even further.
-
-And you didn't mention whether your latency tests are based on ping or 
-something more sophisticated as ping will be a pathological case that 
-doesn't allow any notification batching.
-
-> I agree that the "does anyone care" part of the equation will approach
-> zero as the latency difference shrinks across some threshold (probably
-> the single microsecond range), but I will believe that is even possible
-> when I see it ;)
->   
-
-Note the other hat we have to where is not just virtualization developer 
-but Linux developer.  If there are bad userspace interfaces for IO that 
-impose artificial restrictions, then we need to identify those and fix them.
-
-Regards,
-
-Anthony Liguori
-
-> Regards,
-> -Greg
->
->   
-
+Morton, did you see this one fly by?
