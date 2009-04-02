@@ -1,61 +1,82 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932437AbZDBQsY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756492AbZDBQsu@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932437AbZDBQsY (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 2 Apr 2009 12:48:24 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1765912AbZDBQrE
+	id S1756492AbZDBQsu (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 2 Apr 2009 12:48:50 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932081AbZDBQrW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 2 Apr 2009 12:47:04 -0400
-Received: from hera.kernel.org ([140.211.167.34]:59572 "EHLO hera.kernel.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S932075AbZDBQrC (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 2 Apr 2009 12:47:02 -0400
-Subject: Re: [tip:irq/genirq] genirq: do not execute DEBUG_SHIRQ when irq
- setup failed
-From: Jaswinder Singh Rajput <jaswinder@kernel.org>
-To: Thomas Gleixner <tglx@linutronix.de>
-Cc: mingo@redhat.com, hpa@zytor.com, linux-kernel@vger.kernel.org,
-       henrix@sapo.pt, linux-tip-commits@vger.kernel.org
-In-Reply-To: <alpine.LFD.2.00.0904021831470.12916@localhost.localdomain>
-References: <20090401170635.GA4392@hades.domain.com>
-	 <tip-ba71604fad348656071a2a76eef9a67dab85a773@git.kernel.org>
-	 <1238682747.3099.16.camel@ht.satnam>
-	 <alpine.LFD.2.00.0904021718230.12916@localhost.localdomain>
-	 <1238686904.3099.22.camel@ht.satnam>
-	 <alpine.LFD.2.00.0904021753020.12916@localhost.localdomain>
-	 <1238689216.3099.34.camel@ht.satnam>
-	 <alpine.LFD.2.00.0904021831470.12916@localhost.localdomain>
+	Thu, 2 Apr 2009 12:47:22 -0400
+Received: from g5t0006.atlanta.hp.com ([15.192.0.43]:39687 "EHLO
+	g5t0006.atlanta.hp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1765958AbZDBQrV (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 2 Apr 2009 12:47:21 -0400
+Subject: [PATCH]  Define a UNIQUE value for AS_UNEVICTABLE flag
+From: Lee Schermerhorn <Lee.Schermerhorn@hp.com>
+To: linux-kernel <linux-kernel@vger.kernel.org>, stable <stable@kernel.org>
+Cc: Andrew Morton <akpm@linux-foundation.org>, Rik van Riel <riel@redhat.com>,
+       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
+       David Howells <dhowells@redhat.com>
 Content-Type: text/plain
-Date: Thu, 02 Apr 2009 22:15:19 +0530
-Message-Id: <1238690719.3099.37.camel@ht.satnam>
+Organization: HP/OSLO
+Date: Thu, 02 Apr 2009 12:47:15 -0400
+Message-Id: <1238690835.7359.16.camel@lts-notebook>
 Mime-Version: 1.0
-X-Mailer: Evolution 2.24.5 (2.24.5-1.fc10) 
+X-Mailer: Evolution 2.22.3.1 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 2009-04-02 at 18:38 +0200, Thomas Gleixner wrote:
-> On Thu, 2 Apr 2009, Jaswinder Singh Rajput wrote:
-> > 
-> > I am dead sure, you really need some good manners and need to learn many
-> > things.
-> 
-> Ok. Now it's definitly enough.
-> 
-> You started yelling at the patch submitter 
+[PATCH] Define UNIQUE value of AS_UNEVICTABLE
 
-I do not yell at patch submitter, I yell at you. Like you always do on
-anothers without any reason.
+Needed in 2.6.28, 2.6.29, ...
 
-> in an unfriendly and
+A new "address_space flag"--AS_MM_ALL_LOCKS--was defined to use the next
+available AS flag while the Unevictable LRU was under development.  The
+Unevictable LRU was using the same flag and "no one" noticed.  Current 
+mainline, since 2.6.28, has same value for two symbolic flag names.
 
-unfriendly, do you know what is the meaning of friendly ?
+So, define a unique flag value for AS_UNEVICTABLE--up close to the other
+flags, [at the cost of an additional #ifdef] so we'll notice next time.
+Note that #ifdef is not actually required, if we don't mind having the 
+unused flag value defined.
 
+Replace #defines with an enum.
 
+Signed-off-by: Lee Schermerhorn <lee.schermerhorn@hp.com>
 
-> The question arises who needs manners and who needs to learn things.
-> 
+ include/linux/pagemap.h |   12 ++++++++----
+ 1 files changed, 8 insertions(+), 4 deletions(-)
 
------>	tglx
+Index: linux-2.6.29/include/linux/pagemap.h
+===================================================================
+--- linux-2.6.29.orig/include/linux/pagemap.h	2009-03-23 19:12:14.000000000 -0400
++++ linux-2.6.29/include/linux/pagemap.h	2009-04-02 11:56:27.000000000 -0400
+@@ -18,9 +18,14 @@
+  * Bits in mapping->flags.  The lower __GFP_BITS_SHIFT bits are the page
+  * allocation mode flags.
+  */
+-#define	AS_EIO		(__GFP_BITS_SHIFT + 0)	/* IO error on async write */
+-#define AS_ENOSPC	(__GFP_BITS_SHIFT + 1)	/* ENOSPC on async write */
+-#define AS_MM_ALL_LOCKS	(__GFP_BITS_SHIFT + 2)	/* under mm_take_all_locks() */
++enum mapping_flags {
++	AS_EIO		= __GFP_BITS_SHIFT + 0,	/* IO error on async write */
++	AS_ENOSPC	= __GFP_BITS_SHIFT + 1,	/* ENOSPC on async write */
++	AS_MM_ALL_LOCKS	= __GFP_BITS_SHIFT + 2,	/* under mm_take_all_locks() */
++#ifdef CONFIG_UNEVICTABLE_LRU
++	AS_UNEVICTABLE	= __GFP_BITS_SHIFT + 3,	/* e.g., ramdisk, SHM_LOCK */
++#endif
++};
+ 
+ static inline void mapping_set_error(struct address_space *mapping, int error)
+ {
+@@ -33,7 +38,6 @@ static inline void mapping_set_error(str
+ }
+ 
+ #ifdef CONFIG_UNEVICTABLE_LRU
+-#define AS_UNEVICTABLE	(__GFP_BITS_SHIFT + 2)	/* e.g., ramdisk, SHM_LOCK */
+ 
+ static inline void mapping_set_unevictable(struct address_space *mapping)
+ {
 
 
