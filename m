@@ -1,53 +1,40 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1766000AbZDBRSR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763328AbZDBRTl@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1766000AbZDBRSR (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 2 Apr 2009 13:18:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932367AbZDBRRs
+	id S1763328AbZDBRTl (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 2 Apr 2009 13:19:41 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758573AbZDBRTb
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 2 Apr 2009 13:17:48 -0400
-Received: from rhun.apana.org.au ([64.62.148.172]:38341 "EHLO
-	arnor.apana.org.au" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1765414AbZDBRRq (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 2 Apr 2009 13:17:46 -0400
-Date: Fri, 3 Apr 2009 01:17:27 +0800
-From: Herbert Xu <herbert@gondor.apana.org.au>
-To: Avi Kivity <avi@redhat.com>
-Cc: Gregory Haskins <ghaskins@novell.com>,
-       Rusty Russell <rusty@rustcorp.com.au>, anthony@codemonkey.ws,
-       andi@firstfloor.org, linux-kernel@vger.kernel.org, agraf@suse.de,
-       pmullaney@novell.com, pmorreale@novell.com, netdev@vger.kernel.org,
-       kvm@vger.kernel.org, Ingo Molnar <mingo@elte.hu>
-Subject: Re: [RFC PATCH 00/17] virtual-bus
-Message-ID: <20090402171727.GA3127@gondor.apana.org.au>
-References: <200904022243.21088.rusty@rustcorp.com.au> <49D4B4A3.5070008@novell.com> <49D4B87D.2000202@redhat.com> <20090402145018.GA816@gondor.apana.org.au> <49D4D301.2090209@redhat.com> <20090402154041.GA1774@gondor.apana.org.au> <49D4E072.2060003@redhat.com> <20090402160941.GB2173@gondor.apana.org.au> <49D4EDBD.3050900@redhat.com> <20090402170610.GA3001@gondor.apana.org.au>
+	Thu, 2 Apr 2009 13:19:31 -0400
+Received: from relay3.ptmail.sapo.pt ([212.55.154.23]:41172 "HELO sapo.pt"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with SMTP
+	id S1752316AbZDBRTb (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 2 Apr 2009 13:19:31 -0400
+X-AntiVirus: PTMail-AV 0.3-0.92.0
+Date: Thu, 2 Apr 2009 18:16:48 +0100
+From: Luis Henriques <henrix@sapo.pt>
+To: Jaswinder Singh Rajput <jaswinder@kernel.org>
+Cc: Thomas Gleixner <tglx@linutronix.de>, mingo@redhat.com, hpa@zytor.com,
+       linux-kernel@vger.kernel.org, linux-tip-commits@vger.kernel.org
+Subject: Re: [tip:irq/genirq] genirq: do not execute DEBUG_SHIRQ when irq
+	setup failed
+Message-ID: <20090402171648.GA4079@hades.domain.com>
+References: <20090401170635.GA4392@hades.domain.com> <tip-ba71604fad348656071a2a76eef9a67dab85a773@git.kernel.org> <1238682747.3099.16.camel@ht.satnam> <alpine.LFD.2.00.0904021718230.12916@localhost.localdomain> <1238686904.3099.22.camel@ht.satnam> <alpine.LFD.2.00.0904021753020.12916@localhost.localdomain> <1238689216.3099.34.camel@ht.satnam> <alpine.LFD.2.00.0904021831470.12916@localhost.localdomain> <1238690719.3099.37.camel@ht.satnam>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20090402170610.GA3001@gondor.apana.org.au>
+In-Reply-To: <1238690719.3099.37.camel@ht.satnam>
 User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Apr 03, 2009 at 01:06:10AM +0800, Herbert Xu wrote:
->
-> That only happens if the guest immediately does some CPU-intensive
-> computation 3ms and assuming its timeslice lasts that long.
-> 
-> In any case, the same thing will happen right now if the host or
-> some other guest on the same CPU hogs the CPU for 3ms.
+Uau!  I have never seen such a trivial patch (although first version of it was
+stupidly buggy!) causing this kind of discussions! :-)
 
-Even better, look at the packet's TOS.  If it's marked for low-
-latency then vmexit immediately.  Otherwise continue.
+Anyway, I believe the tech-related part of the initial question has been solved
+(sorry for taking so long to read/reply).  With respect to the non-tech-part...
+I'm out :-)
 
-In the backend you'd just set the marker in shared memory.
+--
+Luis Henriques
 
-Of course invert this for the host => guest direction.
-
-Cheers,
--- 
-Visit Openswan at http://www.openswan.org/
-Email: Herbert Xu ~{PmV>HI~} <herbert@gondor.apana.org.au>
-Home Page: http://gondor.apana.org.au/~herbert/
-PGP Key: http://gondor.apana.org.au/~herbert/pubkey.txt
