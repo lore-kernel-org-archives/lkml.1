@@ -1,132 +1,211 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1765466AbZDBJ4f@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934634AbZDBJ5F@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1765466AbZDBJ4f (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 2 Apr 2009 05:56:35 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757495AbZDBJ40
+	id S934634AbZDBJ5F (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 2 Apr 2009 05:57:05 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761657AbZDBJ4r
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 2 Apr 2009 05:56:26 -0400
-Received: from mail-ew0-f165.google.com ([209.85.219.165]:44644 "EHLO
-	mail-ew0-f165.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755976AbZDBJ4Z convert rfc822-to-8bit (ORCPT
+	Thu, 2 Apr 2009 05:56:47 -0400
+Received: from gw-ca.panasas.com ([209.116.51.66]:18344 "EHLO
+	laguna.int.panasas.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1757834AbZDBJ4q (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 2 Apr 2009 05:56:25 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
-         :cc:content-type:content-transfer-encoding;
-        b=umFjn3JBQ9tMKIkG1OPsroCpzz7xEWAual3UQ3DjPZKnzTDu2KwgU6C8X8GM8etYyp
-         zjULfE10uKlL+Qv50E+a9qfpzLnvpJdlw7FynUo58P93XdZpL37RuJZbj6nf2lBag1AY
-         vmDyQOEhibMqkJZzcHQyK/Vec5FMEn1IitmLg=
+	Thu, 2 Apr 2009 05:56:46 -0400
+Message-ID: <49D48B5E.9060708@panasas.com>
+Date: Thu, 02 Apr 2009 12:54:38 +0300
+From: Boaz Harrosh <bharrosh@panasas.com>
+User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1b3pre) Gecko/20090315 Remi/3.0-0.b2.fc10.remi Thunderbird/3.0b2
 MIME-Version: 1.0
-In-Reply-To: <1236851912.5090.93.camel@laptop>
-References: <8c5a844a0903110255q45b7cdf4u1453ce40d495ee2c@mail.gmail.com>
-	 <1236851912.5090.93.camel@laptop>
-Date: Thu, 2 Apr 2009 12:56:22 +0300
-Message-ID: <8c5a844a0904020256r3e073d01o1991e5111127ce42@mail.gmail.com>
-Subject: Re: [PATCH 1/2] mm: use list.h for vma list
-From: Daniel Lowengrub <lowdanie@gmail.com>
-To: Peter Zijlstra <a.p.zijlstra@chello.nl>
-Cc: linux-mm@kvack.org, linux-kernel@vger.kernel.org,
-       Nick Piggin <nickpiggin@yahoo.com.au>, Ingo Molnar <mingo@elte.hu>,
-       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 8BIT
+To: Tejun Heo <tj@kernel.org>
+CC: axboe@kernel.dk, linux-kernel@vger.kernel.org,
+       fujita.tomonori@lab.ntt.co.jp,
+       James Bottomley <James.Bottomley@hansenpartnership.com>
+Subject: Re: [PATCH 08/17] bio: reimplement bio_copy_user_iov()
+References: <1238593472-30360-1-git-send-email-tj@kernel.org> <1238593472-30360-9-git-send-email-tj@kernel.org> <49D38D4B.7020701@panasas.com> <49D3FF7F.2070505@kernel.org> <49D47653.90507@panasas.com> <49D47E7B.3030209@kernel.org>
+In-Reply-To: <49D47E7B.3030209@kernel.org>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
+X-OriginalArrivalTime: 02 Apr 2009 09:56:40.0534 (UTC) FILETIME=[52067760:01C9B379]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-I've been thinking for a while about the best way to implement Nick's
-suggestions.  Specifically, how to implement vma_next without all the
-extra conditions.  The main problem is that for vma_next to return a
-vma and not a list_head it has to be know if vma->vm_list.next is
-inside a vma or a mm so that it can call list_entry on it.
+On 04/02/2009 11:59 AM, Tejun Heo wrote:
+> Hello, Boaz.
+> 
 
-In the current code, something like next=vma->next runs the risk of
-having next=NULL so the next pointer is usually used in a if statement
-like:
-vm_area_struct *next=vma->next;
-if(next&&<check stuff with next>){<do stuff to next>}
+Hi Tejun
 
-What I want to do is to make vma_next return a list_head - without
-calling list_entry, and a seperate function vma_entry return the
-entry.  This way, vma_entry would be a simple wrapper for
-vma->vm_list.next.  Then the above code snippet would read:
-vm_area_struct *next;
-list_head next_list =vma_next(vma);
-if(in_list(mm, next_list) && next=vma_entry(next_list) && <check stuff
-with next>)
-{<do stuff to next>}
+> Boaz Harrosh wrote:
 
-where in_list checks if next_list==mm->mm_vmas.
-Or there could be a function called check_next which would do the
-first two checks together so that we'd be able to write:
+>> So now that we got gup out of the way, will you go directly to bvecs?
+> 
+> As said before, I don't think exposing bio at the driver interface is
+> a good idea copy or not.  For internal implementation, if there's
+> enough benefit, yeah.
+> 
 
-vm_area_struct *next;
-if(check_next(vma, next) && <check stuff with next>){<do stuff to next>}
+I want to draw your attention, to something you might be forgetting
+sorry not to make it clearer before.
 
-This does away with the redundant conditions that bothered Nick - the
-check for the end of the list in vma_entry which returns NULL, and
-then the check for next==NULL in the if statements.
+There is no users for blk_rq_map_kern_sgl(), and no need for any such 
+driver interface.
 
-This would lead to further optimizations based on the fact that we
-could now pass around list_heads instead of vma's and only call
-vma_entry after verifying that the list_head is really in the list and
-not the mm_vmas list_head.  This verification would be done in the
-places that the current code checks for vma==NULL - as in the example
-above.
+This is because there is a pending patchest done by TOMO, which is
+in it's 4th incarnation by now, which removes the very last users
+of scsi_execute_async() and it's use of sgl. together with all that
+mess at scsi_lib.c. Removing scsi_execute_async() will remove the only
+potential user of blk_rq_map_kern_sgl(). So it can be killed at birth.
 
-What do you think?
-Daniel
+The pachset was tested and debugged by all scsi ULD maintainers
+and is in very stable state. I hope it can make it into 2.6.30
+but for sure it will make it into 2.6.31, which is the time frame
+we are talking about.
 
+James any chance this patchset can make 2.6.30?
 
-On Thu, Mar 12, 2009 at 12:58 PM, Peter Zijlstra <a.p.zijlstra@chello.nl> wrote:
->
-> On Wed, 2009-03-11 at 11:55 +0200, Daniel Lowengrub wrote:
-> > Use the linked list defined list.h for the list of vmas that's stored
-> > in the mm_struct structure.  Wrapper functions "vma_next" and
-> > "vma_prev" are also implemented.  Functions that operate on more than
-> > one vma are now given a list of vmas as input.
-> >
-> > Signed-off-by: Daniel Lowengrub
->
-> While this is the approach I've taken for a patch I'm working on, a
-> better solution has come up if you keep the RB tree (I don't).
->
-> It is, however, even more invasive than the this one ;-)
->
-> Wolfram has been working on implementing a threaded RB-tree. This means
-> rb_prev() and rb_next() will be O(1) operations, so you could simply use
-> those to iterate the vmas.
->
-> The only draw-back is that each and every RB-tree user in the kernel
-> needs to be adapted because its not quite possible to maintain the
-> current API.
->
-> I was planning to help Wolfram do that, but I'm utterly swamped atm. :-(
->
-> What needs to be done is introduce rb_left(), rb_right() and rb_node()
-> helpers that for now look like:
->
-> static inline struct rb_node *rb_left(struct rb_node *n)
-> {
->        return n->rb_left;
-> }
->
-> static inline struct rb_node *rb_right(struct rb_node *n)
-> {
->        return n->rb_right;
-> }
->
-> static inline struct rb_node *rb_node(struct rb_node *n)
-> {
->        return n;
-> }
->
-> We need these because the left and right child pointers will be
-> over-loaded with threading information.
->
-> After that we can flip the implementation of the RB-tree.
->
->
->
->
+Please note that the important historical users of scsi_execute_async()
+sg.c and sr.c don't use it already in 2.6.28-29, and the last bugs of that
+change, where wrinkled out.
+
+Are there currently in your patchset any other users of blk_rq_map_kern_sgl()?
+
+>>> Frankly, for copy paths, I don't think all this matters at all.  If
+>>> each request is small, other overheads will dominate.  For large
+>>> requests, copying to and from sgl isn't something worth worrying
+>>> about.
+>> It is. Again, I tested that. Each new allocation in the order of
+>> the number of pages in a request adds 3-5% on a RAM I/O
+> 
+> Sure, if you do things against ram, anything will show up.  Do you
+> have something more realistic?
+> 
+
+Reads from some SSDs/FLASH is just as fast as RAM. Battery backup RAM
+is very common. Pete Wyckoff reached speeds over RDMA which come close
+to RAM.
+
+>> And it adds a point of failure. The less the better.
+> 
+> That is not the only measure.  Things are always traded off using
+> multiple evaluation metrics.  The same goes with the _NO_ allocation
+> thing.
+> 
+
+>>> I do agree using bvec as internal page carrier would be nicer (sans
+>>> having to implement stuff manually) but I'm not convinced whether
+>>> it'll be worth the added code.
+>> We can reach a point where there is no intermediate dynamic alloctions
+>> and no point of failures, but for the allocation of the final bio+biovec.
+> 
+> There is no need to obsess about no point of failure.  Obsessing about
+> single evaluation metric is a nice and fast way toward a mess.
+> 
+
+I agree completely. "no mess" - first priority, "no point of failure"
+- far behind second. "Lots of work" - not considered
+
+Is there no way we can reach both?
+
+>> And that "implement stuff manually" will also enable internal bio
+>> code cleanups since now biovec is that much smarter.
+>>
+>> <snip> 
+
+> 
+> Under enough memory pressure, Non-fs IOs are gonna fail somewhere
+> along the line.  If you don't like that, use mempool backed allocation
+> or preallocated data structures.  
+
+bio's and bvects do that, no?
+
+> Also, I believe it is generally
+> considered better to fail IO than oopsing.  :-P
+> 
+
+I agree, exactly my point, eliminate any extra allocation is the
+best way for that.
+
+>>> Yeah, high order allocations fail more easily as time passes.  But
+>>> low order (1 maybe 2) allocations aren't too bad.
+>> No, we are not talking about 1 or 2. Today since Jens put the scatterlist
+>> chaining we can have lots and lots of them chained together. At the time
+>> Jens said that bio had the chaining option for a long time, only scatterlists
+>> limit the size of the request.
+> 
+> Alright, let's than chain bios but let's please do it inside bio
+> proper.
+> 
+
+Yes, I completely agree. This can/should be internal bio business.
+Doing it this way will also add robustness to other users of bio
+like filesystems raid-engines and staking drivers.
+
+Thanks that would be ideal.
+
+>> If it matters we can make bio_kmalloc() use vmalloc() for bvecs if it
+>>> goes over PAGE_SIZE but again given that nobody reported the
+>> No that is a regression, vmaloc is an order of a magnitude slower then
+>> just plain BIO chaining
+> 
+> It all depends on how frequent those multiple allocations will be.
+> 
+
+When they come they come in groups. I'm talking about steady stream
+of these that come for minutes. think any streaming application
+like backup or plain cp of very large files, video prepossessing, ...
+I know, at Panasas we have only these stuff.
+
+>> spurious
+>>> GFP_DMA in bounce_gfp which triggers frenzy OOM killing spree for
+>>> large SG_IOs, I don't think this matters all that much.
+>>>
+>> This BUG was only for HW, ie ata. But for stuff like iscsi FB sas
+>> they did fine.
+> 
+> The bug was for all controllers which couldn't do 64bit DMA on 64bit
+> machines.
+> 
+>> The fact of the matter is that people, me included, run in systems
+>> with very large request for a while now, large like 4096 pages which
+>> is 16 chained bios. Do you want to allocate that with vmalloc?
+> 
+> The patchset was written the way it's written because I couldn't see
+> any pressing performance requirement for the current existing users.
+> Optimizing for SG_IO against memory is simply not a good idea.
+> 
+> If you have in-kernel users which often require large transfers, sure,
+> chaining bio would be better.  Still, let's do it _inside_ bio.  Would
+> your use case be happy with something like blk_rq_map_kern_bvec(rq,
+> bvec) which can append to rq?  If we convert internal implementation
+> over to bvec, blk_rq_map_kern_sg() can be sg->bvec converting wrapper
+> around blk_rq_map_kern_bvec().
+> 
+
+See above I answered that. No need for blk_rq_map_kern_bvec() nor
+blk_rq_map_kern_sg(), currently. OSD absolutely needs the direct
+use of bios via the fs route, and the other users are going out
+fast.
+
+And yes bio chaining at the bio level is a dream come true
+for me, and it drops 3 items off my todo list.
+Thanks
+
+>> I love your cleanups, and your courage, which I don't have.
+> 
+> Thanks a lot but it's not like the code and Jens are scary monsters I
+> need to slay, so I don't think I'm being particularly courageous.  :-)
+> 
+>> I want to help in any way I can. If you need just tell me what, and
+>> I'll be glad to try or test anything. This is fun I like to work and
+>> think on these things
+> 
+> Great, your reviews are comments are very helpful, so please keep them
+> coming.  :-)
+> 
+> Jens, Tomo, what do you guys think?
+> 
+> Thanks.
+> 
+
+Thank you
+Boaz
