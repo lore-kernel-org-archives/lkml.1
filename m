@@ -1,40 +1,106 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763328AbZDBRTl@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1765431AbZDBRUN@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763328AbZDBRTl (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 2 Apr 2009 13:19:41 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758573AbZDBRTb
+	id S1765431AbZDBRUN (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 2 Apr 2009 13:20:13 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1764537AbZDBRTy
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 2 Apr 2009 13:19:31 -0400
-Received: from relay3.ptmail.sapo.pt ([212.55.154.23]:41172 "HELO sapo.pt"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with SMTP
-	id S1752316AbZDBRTb (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 2 Apr 2009 13:19:31 -0400
-X-AntiVirus: PTMail-AV 0.3-0.92.0
-Date: Thu, 2 Apr 2009 18:16:48 +0100
-From: Luis Henriques <henrix@sapo.pt>
-To: Jaswinder Singh Rajput <jaswinder@kernel.org>
-Cc: Thomas Gleixner <tglx@linutronix.de>, mingo@redhat.com, hpa@zytor.com,
-       linux-kernel@vger.kernel.org, linux-tip-commits@vger.kernel.org
-Subject: Re: [tip:irq/genirq] genirq: do not execute DEBUG_SHIRQ when irq
-	setup failed
-Message-ID: <20090402171648.GA4079@hades.domain.com>
-References: <20090401170635.GA4392@hades.domain.com> <tip-ba71604fad348656071a2a76eef9a67dab85a773@git.kernel.org> <1238682747.3099.16.camel@ht.satnam> <alpine.LFD.2.00.0904021718230.12916@localhost.localdomain> <1238686904.3099.22.camel@ht.satnam> <alpine.LFD.2.00.0904021753020.12916@localhost.localdomain> <1238689216.3099.34.camel@ht.satnam> <alpine.LFD.2.00.0904021831470.12916@localhost.localdomain> <1238690719.3099.37.camel@ht.satnam>
+	Thu, 2 Apr 2009 13:19:54 -0400
+Received: from mailgw.nyc.medallion.com ([63.68.220.242]:1712 "EHLO
+	mailgw.nyc.medallion.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1761640AbZDBRTw convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 2 Apr 2009 13:19:52 -0400
+X-MimeOLE: Produced By Microsoft MimeOLE V6.00.3790.4325
+Content-class: urn:content-classes:message
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1238690719.3099.37.camel@ht.satnam>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+Content-Type: text/plain;
+	charset="us-ascii"
+Content-Transfer-Encoding: 8BIT
+Subject: RE: [Scst-devel] [Iscsitarget-devel] ISCSI-SCST	performance (with also IET and STGT data)
+Date: Thu, 2 Apr 2009 13:19:49 -0400
+Message-ID: <E2BB8074E5500C42984D980D4BD78EF9029E3D17@MFG-NYC-EXCH2.mfg.prv>
+In-Reply-To: <49D4DB7A.2030004@vlnb.net>
+X-MS-Has-Attach: 
+X-MS-TNEF-Correlator: 
+Thread-Topic: [Scst-devel] [Iscsitarget-devel] ISCSI-SCST	performance (with also IET and STGT data)
+Thread-Index: AcmzqM9pHhmsqLMxRVuEBcdy0sdMAwABxpkA
+References: <49D10256.8030307@vlnb.net>	<e2e108260903301106y2b750c23kfab978567f3de3a0@mail.gmail.com>	<49D11096.3070804@vlnb.net>	<e2e108260903301153x38e86097vd29c47507da2879f@mail.gmail.com>	<49D254E4.8050806@vlnb.net>	<E2BB8074E5500C42984D980D4BD78EF9029E3D0B@MFG-NYC-EXCH2.mfg.prv>	<e2e108260903312329u118a54bfn3107fdca4b3e2b1d@mail.gmail.com>	<FA7F6940-CD5C-4460-9777-2F7AE3657B8E@gmail.com>	<1238617423.3318.82.camel@mulgrave.int.hansenpartnership.com>	<49D46B8B.5000708@vlnb.net> <49D47F28.3060409@vlnb.net> <E2BB8074E5500C42984D980D4BD78EF9029E3D14@MFG-NYC-EXCH2.mfg.prv> <49D4DB7A.2030004@vlnb.net>
+From: "Ross S. W. Walker" <RWalker@medallion.com>
+Importance: normal
+To: "Vladislav Bolkhovitin" <vst@vlnb.net>
+Cc: "James Bottomley" <James.Bottomley@HansenPartnership.com>,
+       <linux-scsi@vger.kernel.org>,
+       "iSCSI Enterprise Target Developer List" 
+	<iscsitarget-devel@lists.sourceforge.net>,
+       <linux-kernel@vger.kernel.org>, "Ross Walker" <rswwalker@gmail.com>,
+       <stgt@vger.kernel.org>, "scst-devel" <scst-devel@lists.sourceforge.net>
+X-OriginalArrivalTime: 02 Apr 2009 17:19:49.0547 (UTC) FILETIME=[3A4FDFB0:01C9B3B7]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Uau!  I have never seen such a trivial patch (although first version of it was
-stupidly buggy!) causing this kind of discussions! :-)
+Vladislav Bolkhovitin wrote:
+> 
+> Think what you want and do what you want. You can even filter out all 
+> e-mails from me, that's your right. But:
+> 
+> 1. As I wrote grouping threads into a single IO context doesn't explain 
+> all the performance difference and finding out reasons for other's 
+> performance problems isn't something I can afford at the moment.
 
-Anyway, I believe the tech-related part of the initial question has been solved
-(sorry for taking so long to read/reply).  With respect to the non-tech-part...
-I'm out :-)
+No, not all the performance, but a substantial part of it, enough
+so to say IET has a real performance issue when using CFQ scheduler.
 
---
-Luis Henriques
+> 2. CFQ doesn't have any processing latency and has never had. Learn to 
+> understand what are your writing about and how to correctly express 
+> yourself at first. You asked about that latency and I replied that there 
+> is nothing to defeat.
+
+CFQ pauses briefly before switching I/O contexts in order to make sure
+it is giving as much bandwidth to a context before moving on. This is
+documented. With a single I/O stream, or random I/O it won't be
+noticeable, but for interleaved sequential I/O across multiple threads
+with different I/O contexts it can be significant.
+
+Not that Wikipedia is authorative: http://en.wikipedia.org/wiki/CFQ
+
+It's right in the first paragraph:
+
+"... While CFQ does not do explicit anticipatory IO scheduling, it
+achieves the same effect of having good aggregate throughput for the
+system as a whole, by allowing a process queue to idle at the end of
+synchronous IO thereby "anticipating" further close IO from that
+process. ..."
+
+You can also check out the LXR:
+
+This one in 2.6.18 kernels (RHEL) show a pause of HZ/10
+
+http://lxr.linux.no/linux+v2.6.18/block/cfq-iosched.c#L30
+
+So given a 10ms time slice, that would equate to ~1ms, in later
+kernels it's defined as HZ/5 which can equate to ~2ms. These ms
+delays can be an eternity for sequential I/O patterns.
+
+> 3. SCST doesn't have any hooks into CFQ and not going to have in the 
+> considerable future.
+
+True, SCST doesn't have any hooks into CFQ, but your code modifies
+block/blk-ioc.c to export the alloc_io_context(), which by default
+is a private function, to allow your kernel based threads to set
+their I/O contexts to the same group, therefore avoiding the delay
+CFQ imposes on the switching of the I/O contexts between these
+threads.
+
+-Ross
+
+______________________________________________________________________
+This e-mail, and any attachments thereto, is intended only for use by
+the addressee(s) named herein and may contain legally privileged
+and/or confidential information. If you are not the intended recipient
+of this e-mail, you are hereby notified that any dissemination,
+distribution or copying of this e-mail, and any attachments thereto,
+is strictly prohibited. If you have received this e-mail in error,
+please immediately notify the sender and permanently delete the
+original and any copy or printout thereof.
 
