@@ -1,98 +1,213 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753761AbZDBIFg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757154AbZDBIIp@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753761AbZDBIFg (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 2 Apr 2009 04:05:36 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755539AbZDBIFF
+	id S1757154AbZDBIIp (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 2 Apr 2009 04:08:45 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754903AbZDBIIU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 2 Apr 2009 04:05:05 -0400
-Received: from bilbo.ozlabs.org ([203.10.76.25]:40064 "EHLO bilbo.ozlabs.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751844AbZDBIEy (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 2 Apr 2009 04:04:54 -0400
-Subject: Re: Resend: /proc/<pid>/maps offset output broken in 2.6.29
-From: Michael Ellerman <michael@ellerman.id.au>
-Reply-To: michael@ellerman.id.au
-To: Chris Friesen <cfriesen@nortel.com>
-Cc: linuxppc-dev@ozlabs.org, linux-kernel@vger.kernel.org,
-       Benjamin Herrenschmidt <benh@kernel.crashing.org>, peterz@infradead.org
-In-Reply-To: <49D3F662.4050100@nortel.com>
-References: <49CA8501.1000000@nortel.com>  <49D3F662.4050100@nortel.com>
-Content-Type: multipart/signed; micalg="pgp-sha1"; protocol="application/pgp-signature"; boundary="=-I+icw2neIXGY79VojC/v"
-Date: Thu, 02 Apr 2009 19:04:51 +1100
-Message-Id: <1238659491.9041.133.camel@localhost>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.24.3 
+	Thu, 2 Apr 2009 04:08:20 -0400
+Received: from gw1.cosmosbay.com ([212.99.114.194]:38982 "EHLO
+	gw1.cosmosbay.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753463AbZDBIIO convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 2 Apr 2009 04:08:14 -0400
+Message-ID: <49D4724C.7010200@cosmosbay.com>
+Date: Thu, 02 Apr 2009 10:07:40 +0200
+From: Eric Dumazet <dada1@cosmosbay.com>
+User-Agent: Thunderbird 2.0.0.21 (Windows/20090302)
+MIME-Version: 1.0
+To: Ingo Molnar <mingo@elte.hu>
+CC: Tejun Heo <htejun@gmail.com>, Jeremy Fitzhardinge <jeremy@goop.org>,
+       linux kernel <linux-kernel@vger.kernel.org>,
+       Linux Netdev List <netdev@vger.kernel.org>,
+       Rusty Russell <rusty@rustcorp.com.au>
+Subject: [PATCH] percpu: convert SNMP mibs to new infra
+References: <49D32212.80607@cosmosbay.com> <49D32DC2.9010003@goop.org> <49D33E80.70802@cosmosbay.com> <20090401161218.GB3859@elte.hu> <49D3A0C2.9000403@cosmosbay.com> <49D3B61F.8010507@cosmosbay.com> <49D40323.2020406@gmail.com> <20090402040537.GB30442@elte.hu>
+In-Reply-To: <20090402040537.GB30442@elte.hu>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 8BIT
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-1.6 (gw1.cosmosbay.com [0.0.0.0]); Thu, 02 Apr 2009 10:07:41 +0200 (CEST)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Ingo Molnar a écrit :
+> * Tejun Heo <htejun@gmail.com> wrote:
+> 
+>> Hello, Eric, Ingo.
+>>
+>> Eric Dumazet wrote:
+>>> diff --git a/arch/x86/include/asm/percpu.h b/arch/x86/include/asm/percpu.h
+>>> index aee103b..6b82f6b 100644
+>>> --- a/arch/x86/include/asm/percpu.h
+>>> +++ b/arch/x86/include/asm/percpu.h
+>>> @@ -135,6 +135,9 @@ do {							\
+>>>  #define percpu_read(var)	percpu_from_op("mov", per_cpu__##var)
+>>>  #define percpu_write(var, val)	percpu_to_op("mov", per_cpu__##var, val)
+>>>  #define percpu_add(var, val)	percpu_to_op("add", per_cpu__##var, val)
+>>> +#define indir_percpu_add(var, val)	percpu_to_op("add", *(var), val)
+>>> +#define indir_percpu_inc(var)       percpu_to_op("add", *(var), 1)
+>>> +#define indir_percpu_dec(var)       percpu_to_op("add", *(var), -1)
+>>>  #define percpu_sub(var, val)	percpu_to_op("sub", per_cpu__##var, val)
+>>>  #define percpu_and(var, val)	percpu_to_op("and", per_cpu__##var, val)
+>>>  #define percpu_or(var, val)	percpu_to_op("or", per_cpu__##var, val)
+>> The final goal is to unify static and dynamic accesses but we 
+>> aren't there yet, so, for the time being, we'll need some interim 
+>> solutions. I would prefer percpu_ptr_add() tho.
+> 
+> Yep, that's the standard naming scheme for new APIs: generic to 
+> specific, left to right.
+> 
 
---=-I+icw2neIXGY79VojC/v
-Content-Type: text/plain
-Content-Transfer-Encoding: quoted-printable
+Here is a second version of the patch, with percpu_ptr_xxx convention,
+and more polished form (snmp_mib_free() was forgoten in previous RFC)
 
-On Wed, 2009-04-01 at 17:18 -0600, Chris Friesen wrote:
-> Resending due to lack of response to original post.
+Thank you all
 
-Hi Chris,
+[PATCH] percpu: convert SNMP mibs to new infra
 
-You'll probably get a more useful response on lkml. You CC'ed
-linux-kernel-owner originally :)
+Some arches can use percpu infrastructure for safe changes to mibs.
+(percpu_add() is safe against preemption and interrupts), but
+we want the real thing (a single instruction), not an emulation.
 
-> I was validating some code dealing with /proc/<pid>/maps on 2.6.29 and=20
-> was surprised when it failed.  It turns out that at least on my ppc64 G5=20
-> machine the offset value for the last entry is strange--it shows up as a=20
-> 64-bit value even though the process itself is only 32-bit.
->=20
-> This behaviour also shows up in 2.6.25, but doesn't in 2.6.14.  I=20
-> haven't yet tested anything else in between.
->=20
-> [cfriesen@localhost cfriesen]$ cat /proc/self/maps
-> 00100000-00103000 r-xp 00100000 00:00 0         [vdso]
-> 0fe70000-0ffbf000 r-xp 00000000 08:03 4312393   /lib/tls/libc-2.3.3.so
-> 0ffbf000-0ffc0000 ---p 0014f000 08:03 4312393   /lib/tls/libc-2.3.3.so
-> 0ffc0000-0ffc2000 r--p 00150000 08:03 4312393   /lib/tls/libc-2.3.3.so
-> 0ffc2000-0ffc6000 rwxp 00152000 08:03 4312393   /lib/tls/libc-2.3.3.so
-> 0ffc6000-0ffc8000 rwxp 0ffc6000 00:00 0
-> 0ffd0000-0ffec000 r-xp 00000000 08:03 4309011   /lib/ld-2.3.3.so
-> 0fff0000-0fff1000 r--p 00020000 08:03 4309011   /lib/ld-2.3.3.so
-> 0fff1000-0fff2000 rwxp 00021000 08:03 4309011   /lib/ld-2.3.3.so
-> 10000000-10004000 r-xp 00000000 08:03 917536    /bin/cat
-> 10013000-10015000 rwxp 00003000 08:03 917536    /bin/cat
-> 10015000-10036000 rwxp 10015000 00:00 0         [heap]
-> f7deb000-f7feb000 r--p 00000000 08:03 2560322=20
-> /usr/lib/locale/locale-archive
-> f7feb000-f7fec000 rw-p f7feb000 00:00 0
-> ffe6d000-ffe82000 rw-p ffffffeb000 00:00 0      [stack]
->=20
-> I'm at a loss to explain what's going on here.  Anyone got any ideas?
+On arches still using an emulation, its better to keep the two views
+per mib and preemption disable/enable
 
-It looks like for vmas that don't have a vm_file (like the stack),
-vm_pgoff is basically "internal use" - and so can be > 32 bit.
+This shrinks size of mibs by 50%, but also shrinks vmlinux text size
+(minimum IPV4 config)
 
-cheers
+$ size vmlinux.old vmlinux.new
+   text    data     bss     dec     hex filename
+4308458  561092 1728512 6598062  64adae vmlinux.old
+4303834  561092 1728512 6593438  649b9e vmlinux.new
 
---=20
-Michael Ellerman
-OzLabs, IBM Australia Development Lab
 
-wwweb: http://michael.ellerman.id.au
-phone: +61 2 6212 1183 (tie line 70 21183)
 
-We do not inherit the earth from our ancestors,
-we borrow it from our children. - S.M.A.R.T Person
+Signed-off-by: Eric Dumazet <dada1@cosmosbay.com>
+---
+ arch/x86/include/asm/percpu.h |    3 +++
+ include/net/snmp.h            |   27 ++++++++++++++++++++++-----
+ net/ipv4/af_inet.c            |   31 ++++++++++++++++++-------------
+ 3 files changed, 43 insertions(+), 18 deletions(-)
 
---=-I+icw2neIXGY79VojC/v
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: This is a digitally signed message part
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.9 (GNU/Linux)
-
-iEYEABECAAYFAknUcaMACgkQdSjSd0sB4dJJYQCgrRkkIns+Z9ItdYousO0ZelHL
-Sa0An0F3llkZt02vP5ebaDfzWctATmzX
-=gyl+
------END PGP SIGNATURE-----
-
---=-I+icw2neIXGY79VojC/v--
+diff --git a/arch/x86/include/asm/percpu.h b/arch/x86/include/asm/percpu.h
+index aee103b..f8081e4 100644
+--- a/arch/x86/include/asm/percpu.h
++++ b/arch/x86/include/asm/percpu.h
+@@ -135,6 +135,9 @@ do {							\
+ #define percpu_read(var)	percpu_from_op("mov", per_cpu__##var)
+ #define percpu_write(var, val)	percpu_to_op("mov", per_cpu__##var, val)
+ #define percpu_add(var, val)	percpu_to_op("add", per_cpu__##var, val)
++#define percpu_ptr_add(var, val)	percpu_to_op("add", *(var), val)
++#define percpu_ptr_inc(var)       percpu_ptr_add(var, 1)
++#define percpu_ptr_dec(var)       percpu_ptr_add(var, -1)
+ #define percpu_sub(var, val)	percpu_to_op("sub", per_cpu__##var, val)
+ #define percpu_and(var, val)	percpu_to_op("and", per_cpu__##var, val)
+ #define percpu_or(var, val)	percpu_to_op("or", per_cpu__##var, val)
+diff --git a/include/net/snmp.h b/include/net/snmp.h
+index 57c9362..1ba584b 100644
+--- a/include/net/snmp.h
++++ b/include/net/snmp.h
+@@ -123,15 +123,31 @@ struct linux_xfrm_mib {
+ };
+ 
+ /* 
+- * FIXME: On x86 and some other CPUs the split into user and softirq parts
++ * On x86 and some other CPUs the split into user and softirq parts
+  * is not needed because addl $1,memory is atomic against interrupts (but 
+- * atomic_inc would be overkill because of the lock cycles). Wants new 
+- * nonlocked_atomic_inc() primitives -AK
++ * atomic_inc would be overkill because of the lock cycles).
+  */ 
++#ifdef CONFIG_X86
++# define SNMP_ARRAY_SZ 1
++#else
++# define SNMP_ARRAY_SZ 2
++#endif
++
+ #define DEFINE_SNMP_STAT(type, name)	\
+-	__typeof__(type) *name[2]
++	__typeof__(type) *name[SNMP_ARRAY_SZ]
+ #define DECLARE_SNMP_STAT(type, name)	\
+-	extern __typeof__(type) *name[2]
++	extern __typeof__(type) *name[SNMP_ARRAY_SZ]
++
++#if SNMP_ARRAY_SZ == 1
++#define SNMP_INC_STATS(mib, field)	percpu_ptr_inc(&mib[0]->mibs[field])
++#define SNMP_INC_STATS_BH(mib, field)	SNMP_INC_STATS(mib, field)
++#define SNMP_INC_STATS_USER(mib, field) SNMP_INC_STATS(mib, field)
++#define SNMP_DEC_STATS(mib, field)	percpu_ptr_dec(&mib[0]->mibs[field])
++#define SNMP_ADD_STATS_BH(mib, field, addend) 	\
++				percpu_ptr_add(&mib[0]->mibs[field], addend)
++#define SNMP_ADD_STATS_USER(mib, field, addend) 	\
++				percpu_ptr_add(&mib[0]->mibs[field], addend)
++#else
+ 
+ #define SNMP_STAT_BHPTR(name)	(name[0])
+ #define SNMP_STAT_USRPTR(name)	(name[1])
+@@ -160,5 +176,6 @@ struct linux_xfrm_mib {
+ 		per_cpu_ptr(mib[1], get_cpu())->mibs[field] += addend; \
+ 		put_cpu(); \
+ 	} while (0)
++#endif
+ 
+ #endif
+diff --git a/net/ipv4/af_inet.c b/net/ipv4/af_inet.c
+index 7f03373..4df3a76 100644
+--- a/net/ipv4/af_inet.c
++++ b/net/ipv4/af_inet.c
+@@ -1366,36 +1366,41 @@ unsigned long snmp_fold_field(void *mib[], int offt)
+ 
+ 	for_each_possible_cpu(i) {
+ 		res += *(((unsigned long *) per_cpu_ptr(mib[0], i)) + offt);
++#if SNMP_ARRAY_SZ == 2
+ 		res += *(((unsigned long *) per_cpu_ptr(mib[1], i)) + offt);
++#endif
+ 	}
+ 	return res;
+ }
+ EXPORT_SYMBOL_GPL(snmp_fold_field);
+ 
+-int snmp_mib_init(void *ptr[2], size_t mibsize)
++int snmp_mib_init(void *ptr[SNMP_ARRAY_SZ], size_t mibsize)
+ {
+ 	BUG_ON(ptr == NULL);
+ 	ptr[0] = __alloc_percpu(mibsize, __alignof__(unsigned long long));
+ 	if (!ptr[0])
+-		goto err0;
++		return -ENOMEM;
++#if SNMP_ARRAY_SZ == 2
+ 	ptr[1] = __alloc_percpu(mibsize, __alignof__(unsigned long long));
+-	if (!ptr[1])
+-		goto err1;
++	if (!ptr[1]) {
++		free_percpu(ptr[0]);
++		ptr[0] = NULL;
++		return -ENOMEM;
++	}
++#endif
+ 	return 0;
+-err1:
+-	free_percpu(ptr[0]);
+-	ptr[0] = NULL;
+-err0:
+-	return -ENOMEM;
+ }
+ EXPORT_SYMBOL_GPL(snmp_mib_init);
+ 
+-void snmp_mib_free(void *ptr[2])
++void snmp_mib_free(void *ptr[SNMP_ARRAY_SZ])
+ {
++	int i;
++
+ 	BUG_ON(ptr == NULL);
+-	free_percpu(ptr[0]);
+-	free_percpu(ptr[1]);
+-	ptr[0] = ptr[1] = NULL;
++	for (i = 0 ; i < SNMP_ARRAY_SZ; i++) {
++		free_percpu(ptr[i]);
++		ptr[i] = NULL;
++	}
+ }
+ EXPORT_SYMBOL_GPL(snmp_mib_free);
+ 
 
