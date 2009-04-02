@@ -1,108 +1,141 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760644AbZDBOtQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760933AbZDBOtc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760644AbZDBOtQ (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 2 Apr 2009 10:49:16 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760220AbZDBOsx
+	id S1760933AbZDBOtc (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 2 Apr 2009 10:49:32 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760015AbZDBOsy
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 2 Apr 2009 10:48:53 -0400
-Received: from ottawa-hs-64-26-147-143.d-ip.magma.ca ([64.26.147.143]:38952
+	Thu, 2 Apr 2009 10:48:54 -0400
+Received: from ottawa-hs-64-26-147-143.d-ip.magma.ca ([64.26.147.143]:38951
 	"EHLO gonzo.int.wil.cx" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1760045AbZDBOsv (ORCPT
+	with ESMTP id S1759031AbZDBOsv (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
 	Thu, 2 Apr 2009 10:48:51 -0400
+X-Greylist: delayed 681 seconds by postgrey-1.27 at vger.kernel.org; Thu, 02 Apr 2009 10:48:51 EDT
 From: Matthew Wilcox <willy@linux.intel.com>
 To: linux-ide@vger.kernel.org, linux-kernel@vger.kernel.org,
        jgarzik@redhat.com
-Cc: Matthew Wilcox <willy@linux.intel.com>
-Subject: [PATCH 5/5] libata: Add support for TRIM
-Date: Thu,  2 Apr 2009 10:37:27 -0400
-Message-Id: <1238683047-13588-5-git-send-email-willy@linux.intel.com>
+Cc: Matthew Wilcox <matthew@wil.cx>, Matthew Wilcox <willy@linux.intel.com>
+Subject: [PATCH 1/5] Block: Discard may need to allocate pages
+Date: Thu,  2 Apr 2009 10:37:23 -0400
+Message-Id: <1238683047-13588-1-git-send-email-willy@linux.intel.com>
 X-Mailer: git-send-email 1.6.2.1
-In-Reply-To: <1238683047-13588-4-git-send-email-willy@linux.intel.com>
-References: <1238683047-13588-1-git-send-email-willy@linux.intel.com>
- <1238683047-13588-2-git-send-email-willy@linux.intel.com>
- <1238683047-13588-3-git-send-email-willy@linux.intel.com>
- <1238683047-13588-4-git-send-email-willy@linux.intel.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+From: Matthew Wilcox <matthew@wil.cx>
+
+SCSI and ATA both need to send data to the device.  In order to do this,
+the BIO must be allocated with room for a page to be added, and the bio
+needs to be passed to the discard prep function.  We also need to free
+the page attached to the BIO before we free it.
+
+init_request_from_bio() is not currently called from a context which
+forbids sleeping, and to make sure it stays that way (so we don't have
+to use GFP_ATOMIC), add a might_sleep() to it.
+
 Signed-off-by: Matthew Wilcox <willy@linux.intel.com>
 ---
- drivers/ata/libata-scsi.c |   46 +++++++++++++++++++++++++++++++++++++++++++++
- 1 files changed, 46 insertions(+), 0 deletions(-)
+ block/blk-barrier.c       |    4 +++-
+ block/blk-core.c          |    4 +++-
+ block/ioctl.c             |    4 +++-
+ drivers/mtd/mtd_blkdevs.c |    2 +-
+ include/linux/blkdev.h    |    3 ++-
+ 5 files changed, 12 insertions(+), 5 deletions(-)
 
-diff --git a/drivers/ata/libata-scsi.c b/drivers/ata/libata-scsi.c
-index b9747fa..d4c8b8b 100644
---- a/drivers/ata/libata-scsi.c
-+++ b/drivers/ata/libata-scsi.c
-@@ -1029,6 +1029,46 @@ static void ata_gen_ata_sense(struct ata_queued_cmd *qc)
- 	desc[11] = block;
- }
- 
-+static int ata_discard_fn(struct request_queue *q, struct request *req,
-+							struct bio *bio)
-+{
-+	unsigned size;
-+	struct page *page = alloc_page(GFP_KERNEL);
-+	if (!page)
-+		goto error;
-+
-+	size = ata_set_lba_range_entries(page_address(page), PAGE_SIZE / 8,
-+					bio->bi_sector, bio_sectors(bio));
-+	bio->bi_size = 0;
-+	if (bio_add_pc_page(q, bio, page, size, 0) < size)
-+		goto free_page;
-+
-+	req->cmd_type = REQ_TYPE_BLOCK_PC;
-+	req->cmd_len = 16;
-+	req->cmd[0] = ATA_16;
-+	req->cmd[1] = (6 << 1) | 1;		/* dma, 48-bit */
-+	req->cmd[2] = 0x6;			/* length, direction */
-+	req->cmd[3] = 0;			/* feature high */
-+	req->cmd[4] = ATA_DSM_TRIM;		/* feature low */
-+	req->cmd[5] = (size / 512) >> 8;	/* nsect high */
-+	req->cmd[6] = size / 512;		/* nsect low */
-+	req->cmd[7] = 0;			/* lba */
-+	req->cmd[8] = 0;			/* lba */
-+	req->cmd[9] = 0;			/* lba */
-+	req->cmd[10] = 0;			/* lba */
-+	req->cmd[11] = 0;			/* lba */
-+	req->cmd[12] = 0;			/* lba */
-+	req->cmd[13] = ATA_LBA;			/* device */
-+	req->cmd[14] = ATA_CMD_DSM;		/* command */
-+	req->cmd[15] = 0;			/* control */
-+
-+	return 0;
-+ free_page:
-+	__free_page(page);
-+ error:
-+	return -ENOMEM;
-+}
-+
- static void ata_scsi_sdev_config(struct scsi_device *sdev)
- {
- 	sdev->use_10_for_rw = 1;
-@@ -1077,6 +1117,9 @@ static int ata_scsi_dev_config(struct scsi_device *sdev,
- 	/* configure max sectors */
- 	blk_queue_max_sectors(sdev->request_queue, dev->max_sectors);
- 
-+	if (ata_id_has_trim(dev->id))
-+		blk_queue_set_discard(sdev->request_queue, ata_discard_fn);
-+
- 	if (dev->class == ATA_DEV_ATAPI) {
- 		struct request_queue *q = sdev->request_queue;
- 		void *buf;
-@@ -2385,6 +2428,9 @@ static unsigned int ata_scsiop_read_cap(struct ata_scsi_args *args, u8 *rbuf)
- 		/* sector size */
- 		rbuf[10] = ATA_SECT_SIZE >> 8;
- 		rbuf[11] = ATA_SECT_SIZE & 0xff;
-+
-+		if (ata_id_has_trim(args->id))
-+			rbuf[14] = 0x80;
+diff --git a/block/blk-barrier.c b/block/blk-barrier.c
+index f7dae57..82a3035 100644
+--- a/block/blk-barrier.c
++++ b/block/blk-barrier.c
+@@ -356,6 +356,8 @@ static void blkdev_discard_end_io(struct bio *bio, int err)
+ 		clear_bit(BIO_UPTODATE, &bio->bi_flags);
  	}
  
- 	return 0;
++	if (bio_has_data(bio))
++		__free_page(bio_page(bio));
+ 	bio_put(bio);
+ }
+ 
+@@ -387,7 +389,7 @@ int blkdev_issue_discard(struct block_device *bdev,
+ 		return -EOPNOTSUPP;
+ 
+ 	while (nr_sects && !ret) {
+-		bio = bio_alloc(gfp_mask, 0);
++		bio = bio_alloc(gfp_mask, 1);
+ 		if (!bio)
+ 			return -ENOMEM;
+ 
+diff --git a/block/blk-core.c b/block/blk-core.c
+index 996ed90..7899761 100644
+--- a/block/blk-core.c
++++ b/block/blk-core.c
+@@ -1095,6 +1095,8 @@ EXPORT_SYMBOL(blk_put_request);
+ 
+ void init_request_from_bio(struct request *req, struct bio *bio)
+ {
++	might_sleep();
++
+ 	req->cpu = bio->bi_comp_cpu;
+ 	req->cmd_type = REQ_TYPE_FS;
+ 
+@@ -1118,7 +1120,7 @@ void init_request_from_bio(struct request *req, struct bio *bio)
+ 		req->cmd_flags |= REQ_DISCARD;
+ 		if (bio_barrier(bio))
+ 			req->cmd_flags |= REQ_SOFTBARRIER;
+-		req->q->prepare_discard_fn(req->q, req);
++		req->q->prepare_discard_fn(req->q, req, bio);
+ 	} else if (unlikely(bio_barrier(bio)))
+ 		req->cmd_flags |= (REQ_HARDBARRIER | REQ_NOMERGE);
+ 
+diff --git a/block/ioctl.c b/block/ioctl.c
+index 0f22e62..088a9ba 100644
+--- a/block/ioctl.c
++++ b/block/ioctl.c
+@@ -145,7 +145,7 @@ static int blk_ioctl_discard(struct block_device *bdev, uint64_t start,
+ 		DECLARE_COMPLETION_ONSTACK(wait);
+ 		struct bio *bio;
+ 
+-		bio = bio_alloc(GFP_KERNEL, 0);
++		bio = bio_alloc(GFP_KERNEL, 1);
+ 		if (!bio)
+ 			return -ENOMEM;
+ 
+@@ -170,6 +170,8 @@ static int blk_ioctl_discard(struct block_device *bdev, uint64_t start,
+ 			ret = -EOPNOTSUPP;
+ 		else if (!bio_flagged(bio, BIO_UPTODATE))
+ 			ret = -EIO;
++		if (bio_has_data(bio))
++			__free_page(bio_page(bio));
+ 		bio_put(bio);
+ 	}
+ 	return ret;
+diff --git a/drivers/mtd/mtd_blkdevs.c b/drivers/mtd/mtd_blkdevs.c
+index 1409f01..2b6ed4b 100644
+--- a/drivers/mtd/mtd_blkdevs.c
++++ b/drivers/mtd/mtd_blkdevs.c
+@@ -33,7 +33,7 @@ struct mtd_blkcore_priv {
+ };
+ 
+ static int blktrans_discard_request(struct request_queue *q,
+-				    struct request *req)
++				    struct request *req, struct bio *bio)
+ {
+ 	req->cmd_type = REQ_TYPE_LINUX_BLOCK;
+ 	req->cmd[0] = REQ_LB_OP_DISCARD;
+diff --git a/include/linux/blkdev.h b/include/linux/blkdev.h
+index 465d6ba..9d9bd7b 100644
+--- a/include/linux/blkdev.h
++++ b/include/linux/blkdev.h
+@@ -260,7 +260,8 @@ typedef void (request_fn_proc) (struct request_queue *q);
+ typedef int (make_request_fn) (struct request_queue *q, struct bio *bio);
+ typedef int (prep_rq_fn) (struct request_queue *, struct request *);
+ typedef void (unplug_fn) (struct request_queue *);
+-typedef int (prepare_discard_fn) (struct request_queue *, struct request *);
++typedef int (prepare_discard_fn) (struct request_queue *, struct request *,
++							struct bio *bio);
+ 
+ struct bio_vec;
+ struct bvec_merge_data {
 -- 
 1.6.2.1
 
