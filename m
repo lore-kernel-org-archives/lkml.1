@@ -1,126 +1,255 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764326AbZDBPFv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762456AbZDBPEG@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764326AbZDBPFv (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 2 Apr 2009 11:05:51 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762251AbZDBO67
+	id S1762456AbZDBPEG (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 2 Apr 2009 11:04:06 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761028AbZDBO5r
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 2 Apr 2009 10:58:59 -0400
-Received: from ottawa-hs-64-26-147-143.d-ip.magma.ca ([64.26.147.143]:41822
-	"EHLO gonzo.int.wil.cx" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1762198AbZDBO64 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 2 Apr 2009 10:58:56 -0400
-From: Matthew Wilcox <willy@linux.intel.com>
-To: linux-ide@vger.kernel.org, linux-kernel@vger.kernel.org,
-       jgarzik@redhat.com
-Cc: Matthew Wilcox <willy@linux.intel.com>,
-       David Woodhouse <David.Woodhouse@intel.com>
-Subject: [PATCH 3/5] ata: Add TRIM infrastructure
-Date: Thu,  2 Apr 2009 10:37:25 -0400
-Message-Id: <1238683047-13588-3-git-send-email-willy@linux.intel.com>
-X-Mailer: git-send-email 1.6.2.1
-In-Reply-To: <1238683047-13588-2-git-send-email-willy@linux.intel.com>
-References: <1238683047-13588-1-git-send-email-willy@linux.intel.com>
- <1238683047-13588-2-git-send-email-willy@linux.intel.com>
+	Thu, 2 Apr 2009 10:57:47 -0400
+Received: from mga01.intel.com ([192.55.52.88]:57531 "EHLO mga01.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1761451AbZDBO5p (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 2 Apr 2009 10:57:45 -0400
+Content-Type: multipart/mixed; boundary="===============0269707722=="
+MIME-Version: 1.0
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.39,314,1235980800"; 
+   d="scan'208";a="678191068"
+Message-Id: <20090402145737.055056000@intel.com>
+References: <20090402145455.597376000@intel.com>
+User-Agent: quilt/0.46-1
+Date: Thu, 02 Apr 2009 16:55:13 +0200
+From: markus.t.metzger@intel.com
+To: mingo@elte.hu, tglx@linutronix.de, hpa@zytor.com
+Cc: markus.t.metzger@gmail.com, roland@redhat.com, eranian@googlemail.com,
+       oleg@redhat.com, juan.villacis@intel.com, ak@linux.jf.intel.com,
+       linux-kernel@vger.kernel.org,
+       Markus Metzger <markus.t.metzger@intel.com>
+Subject: [patch 18/18] x86, ds: support Core i7
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This is common code shared between the IDE and libata implementations
+--===============0269707722==
+MIME-Version: 1.0
+Content-Disposition: inline; filename=tip.master.ds.i7.patch
 
-Signed-off-by: David Woodhouse <David.Woodhouse@intel.com>
-Signed-off-by: Matthew Wilcox <willy@linux.intel.com>
+Add debug store support for Core i7.
+
+Core i7 adds a reset value for each performance counter and a new
+PEBS record format.
+
+
+Signed-off-by: Markus Metzger <markus.t.metzger@intel.com>
 ---
- include/linux/ata.h |   41 +++++++++++++++++++++++++++++++++++++++++
- 1 files changed, 41 insertions(+), 0 deletions(-)
+ arch/x86/include/asm/ds.h |   12 	9 +	3 -	0 !
+ arch/x86/kernel/ds.c      |   69 	62 +	7 -	0 !
+ 2 files changed, 71 insertions(+), 10 deletions(-)
 
-diff --git a/include/linux/ata.h b/include/linux/ata.h
-index 6617c9f..cb79b7a 100644
---- a/include/linux/ata.h
-+++ b/include/linux/ata.h
-@@ -29,6 +29,8 @@
- #ifndef __LINUX_ATA_H__
- #define __LINUX_ATA_H__
+Index: b/arch/x86/include/asm/ds.h
+===================================================================
+--- a/arch/x86/include/asm/ds.h
++++ b/arch/x86/include/asm/ds.h
+@@ -235,8 +235,12 @@ struct bts_trace {
+ struct pebs_trace {
+ 	struct ds_trace ds;
  
-+#include <linux/kernel.h>
-+#include <linux/string.h>
- #include <linux/types.h>
- #include <asm/byteorder.h>
- 
-@@ -91,6 +93,7 @@ enum {
- 	ATA_ID_CFA_POWER	= 160,
- 	ATA_ID_CFA_KEY_MGMT	= 162,
- 	ATA_ID_CFA_MODES	= 163,
-+	ATA_ID_DATA_SET_MGMT	= 169,
- 	ATA_ID_ROT_SPEED	= 217,
- 	ATA_ID_PIO4		= (1 << 1),
- 
-@@ -248,6 +251,7 @@ enum {
- 	ATA_CMD_SMART		= 0xB0,
- 	ATA_CMD_MEDIA_LOCK	= 0xDE,
- 	ATA_CMD_MEDIA_UNLOCK	= 0xDF,
-+	ATA_CMD_DSM		= 0x06,
- 	/* marked obsolete in the ATA/ATAPI-7 spec */
- 	ATA_CMD_RESTORE		= 0x10,
- 
-@@ -321,6 +325,9 @@ enum {
- 	ATA_SMART_READ_VALUES	= 0xD0,
- 	ATA_SMART_READ_THRESHOLDS = 0xD1,
- 
-+	/* feature values for Data Set Management */
-+	ATA_DSM_TRIM		= 0x01,
+-	/* the PEBS reset value */
+-	unsigned long long reset_value;
++	/* the number of valid counters in the below array */
++	unsigned int counters;
 +
- 	/* password used in LBA Mid / LBA High for executing SMART commands */
- 	ATA_SMART_LBAM_PASS	= 0x4F,
- 	ATA_SMART_LBAH_PASS	= 0xC2,
-@@ -723,6 +730,14 @@ static inline int ata_id_has_unload(const u16 *id)
++#define MAX_PEBS_COUNTERS 4
++	/* the counter reset value */
++	unsigned long long counter_reset[MAX_PEBS_COUNTERS];
+ };
+ 
+ 
+@@ -271,9 +275,11 @@ extern int ds_reset_pebs(struct pebs_tra
+  * Returns 0 on success; -Eerrno on error
+  *
+  * tracer: the tracer handle returned from ds_request_pebs()
++ * counter: the index of the counter
+  * value: the new counter reset value
+  */
+-extern int ds_set_pebs_reset(struct pebs_tracer *tracer, u64 value);
++extern int ds_set_pebs_reset(struct pebs_tracer *tracer,
++			     unsigned int counter, u64 value);
+ 
+ /*
+  * Initialization
+Index: b/arch/x86/kernel/ds.c
+===================================================================
+--- a/arch/x86/kernel/ds.c
++++ b/arch/x86/kernel/ds.c
+@@ -43,6 +43,9 @@ struct ds_configuration {
+ 	/* The size of a BTS/PEBS record in bytes: */
+ 	unsigned char		sizeof_rec[2];
+ 
++	/* The number of pebs counter reset values in the DS structure. */
++	unsigned char		nr_counter_reset;
++
+ 	/* Control bit-masks indexed by enum ds_feature: */
+ 	unsigned long		ctl[dsf_ctl_max];
+ };
+@@ -50,7 +53,7 @@ static struct ds_configuration ds_cfg __
+ 
+ 
+ /* Maximal size of a DS configuration: */
+-#define MAX_SIZEOF_DS		(12 * 8)
++#define MAX_SIZEOF_DS		0x80
+ 
+ /* Maximal size of a BTS record: */
+ #define MAX_SIZEOF_BTS		(3 * 8)
+@@ -58,6 +61,12 @@ static struct ds_configuration ds_cfg __
+ /* BTS and PEBS buffer alignment: */
+ #define DS_ALIGNMENT		(1 << 3)
+ 
++/* Number of buffer pointers in DS: */
++#define NUM_DS_PTR_FIELDS	8
++
++/* Size of a pebs reset value in DS: */
++#define PEBS_RESET_FIELD_SIZE	8
++
+ /* Mask of control bits in the DS MSR register: */
+ #define BTS_CONTROL				  \
+ 	( ds_cfg.ctl[dsf_bts]			| \
+@@ -1187,9 +1196,12 @@ const struct pebs_trace *ds_read_pebs(st
+ 		return NULL;
+ 
+ 	ds_read_config(tracer->ds.context, &tracer->trace.ds, ds_pebs);
+-	tracer->trace.reset_value =
+-		*(u64 *)(tracer->ds.context->ds +
+-			 (ds_cfg.sizeof_ptr_field * 8));
++
++	tracer->trace.counters = ds_cfg.nr_counter_reset;
++	memcpy(tracer->trace.counter_reset,
++	       tracer->ds.context->ds +
++	       (NUM_DS_PTR_FIELDS * ds_cfg.sizeof_ptr_field),
++	       ds_cfg.nr_counter_reset * PEBS_RESET_FIELD_SIZE);
+ 
+ 	return &tracer->trace;
+ }
+@@ -1220,13 +1232,18 @@ int ds_reset_pebs(struct pebs_tracer *tr
  	return 0;
  }
  
-+static inline int ata_id_has_trim(const u16 *id)
-+{
-+	if (ata_id_major_version(id) >= 7 &&
-+	    (id[ATA_ID_DATA_SET_MGMT] & 1))
-+		return 1;
-+	return 0;
-+}
-+
- static inline int ata_id_current_chs_valid(const u16 *id)
+-int ds_set_pebs_reset(struct pebs_tracer *tracer, u64 value)
++int ds_set_pebs_reset(struct pebs_tracer *tracer,
++		      unsigned int counter, u64 value)
  {
- 	/* For ATA-1 devices, if the INITIALIZE DEVICE PARAMETERS command
-@@ -863,6 +878,32 @@ static inline void ata_id_to_hd_driveid(u16 *id)
- #endif
- }
+ 	if (!tracer)
+ 		return -EINVAL;
  
-+/*
-+ * Write up to 'max' LBA Range Entries to the buffer that will cover the
-+ * extent from sector to sector + count.  This is used for TRIM and for
-+ * ADD LBA(S) TO NV CACHE PINNED SET.
-+ */
-+static inline unsigned ata_set_lba_range_entries(void *_buffer, unsigned max,
-+						u64 sector, unsigned long count)
-+{
-+	__le64 *buffer = _buffer;
-+	unsigned i = 0;
++	if (ds_cfg.nr_counter_reset < counter)
++		return -EINVAL;
 +
-+	while (i < max) {
-+		u64 entry = sector |
-+			((u64)(count > 0xffff ? 0xffff : count) << 48);
-+		buffer[i++] = __cpu_to_le64(entry);
-+		if (count <= 0xffff)
+ 	*(u64 *)(tracer->ds.context->ds +
+-		 (ds_cfg.sizeof_ptr_field * 8)) = value;
++		 (NUM_DS_PTR_FIELDS * ds_cfg.sizeof_ptr_field) +
++		 (counter * PEBS_RESET_FIELD_SIZE)) = value;
+ 
+ 	return 0;
+ }
+@@ -1236,16 +1253,26 @@ static const struct ds_configuration ds_
+ 	.ctl[dsf_bts]		= (1 << 2) | (1 << 3),
+ 	.ctl[dsf_bts_kernel]	= (1 << 5),
+ 	.ctl[dsf_bts_user]	= (1 << 6),
++	.nr_counter_reset	= 1,
+ };
+ static const struct ds_configuration ds_cfg_pentium_m = {
+ 	.name = "Pentium M",
+ 	.ctl[dsf_bts]		= (1 << 6) | (1 << 7),
++	.nr_counter_reset	= 1,
+ };
+ static const struct ds_configuration ds_cfg_core2_atom = {
+ 	.name = "Core 2/Atom",
+ 	.ctl[dsf_bts]		= (1 << 6) | (1 << 7),
+ 	.ctl[dsf_bts_kernel]	= (1 << 9),
+ 	.ctl[dsf_bts_user]	= (1 << 10),
++	.nr_counter_reset	= 1,
++};
++static const struct ds_configuration ds_cfg_core_i7 = {
++	.name = "Core i7",
++	.ctl[dsf_bts]		= (1 << 6) | (1 << 7),
++	.ctl[dsf_bts_kernel]	= (1 << 9),
++	.ctl[dsf_bts_user]	= (1 << 10),
++	.nr_counter_reset	= 4,
+ };
+ 
+ static void
+@@ -1262,6 +1289,32 @@ ds_configure(const struct ds_configurati
+ 	nr_pebs_fields = 18;
+ #endif
+ 
++	/*
++	 * Starting with version 2, architectural performance
++	 * monitoring supports a format specifier.
++	 */
++	if ((cpuid_eax(0xa) & 0xff) > 1) {
++		unsigned long perf_capabilities, format;
++
++		rdmsrl(MSR_IA32_PERF_CAPABILITIES, perf_capabilities);
++
++		format = (perf_capabilities >> 8) & 0xf;
++
++		switch (format) {
++		case 0:
++			nr_pebs_fields = 18;
 +			break;
-+		count -= 0xffff;
-+		sector += 0xffff;
++		case 1:
++			nr_pebs_fields = 22;
++			break;
++		default:
++			printk(KERN_INFO
++			       "[ds] unknown PEBS format: %lu\n", format);
++			nr_pebs_fields = 0;
++			break;
++		}
 +	}
 +
-+	max = ALIGN(i * 8, 512);
-+	memset(buffer + i, 0, max - i * 8);
-+	return max;
-+}
-+
- static inline int is_multi_taskfile(struct ata_taskfile *tf)
- {
- 	return (tf->command == ATA_CMD_READ_MULTI) ||
--- 
-1.6.2.1
+ 	memset(&ds_cfg, 0, sizeof(ds_cfg));
+ 	ds_cfg = *cfg;
+ 
+@@ -1285,7 +1338,7 @@ ds_configure(const struct ds_configurati
+ 	printk("bts/pebs record: %u/%u bytes\n",
+ 	       ds_cfg.sizeof_rec[ds_bts], ds_cfg.sizeof_rec[ds_pebs]);
+ 
+-	WARN_ON(MAX_SIZEOF_DS < (12 * ds_cfg.sizeof_ptr_field));
++	WARN_ON(MAX_PEBS_COUNTERS < ds_cfg.nr_counter_reset);
+ }
+ 
+ void __cpuinit ds_init_intel(struct cpuinfo_x86 *c)
+@@ -1307,6 +1360,8 @@ void __cpuinit ds_init_intel(struct cpui
+ 			ds_configure(&ds_cfg_core2_atom, c);
+ 			break;
+ 		case 0x1a: /* Core i7 */
++			ds_configure(&ds_cfg_core_i7, c);
++			break;
+ 		default:
+ 			/* Sorry, don't know about them. */
+ 			break;
 
+-- 
+
+--===============0269707722==
+Content-Type: text/plain; charset="utf-8"
+MIME-Version: 1.0
+Content-Transfer-Encoding: quoted-printable
+Content-Disposition: inline
+
+---------------------------------------------------------------------
+Intel GmbH
+Dornacher Strasse 1
+85622 Feldkirchen/Muenchen Germany
+Sitz der Gesellschaft: Feldkirchen bei Muenchen
+Geschaeftsfuehrer: Douglas Lusk, Peter Gleissner, Hannes Schwaderer
+Registergericht: Muenchen HRB 47456 Ust.-IdNr.
+VAT Registration No.: DE129385895
+Citibank Frankfurt (BLZ 502 109 00) 600119052
+
+This e-mail and any attachments may contain confidential material for
+the sole use of the intended recipient(s). Any review or distribution
+by others is strictly prohibited. If you are not the intended
+recipient, please contact the sender and delete all copies.
+
+--===============0269707722==--
