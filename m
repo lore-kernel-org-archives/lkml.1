@@ -1,60 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932717AbZDBQuz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932765AbZDBQv0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932717AbZDBQuz (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 2 Apr 2009 12:50:55 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932506AbZDBQuI
+	id S932765AbZDBQv0 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 2 Apr 2009 12:51:26 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932566AbZDBQub
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 2 Apr 2009 12:50:08 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:45582 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S932404AbZDBQuF (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 2 Apr 2009 12:50:05 -0400
-Date: Thu, 2 Apr 2009 09:46:14 -0700 (PDT)
-From: Linus Torvalds <torvalds@linux-foundation.org>
-X-X-Sender: torvalds@localhost.localdomain
-To: David Rees <drees76@gmail.com>
-cc: Andrew Morton <akpm@linux-foundation.org>, Janne Grunau <j@jannau.net>,
-       Lennart Sorensen <lsorense@csclub.uwaterloo.ca>,
-       Theodore Tso <tytso@mit.edu>, Jesper Krogh <jesper@krogh.cc>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: Linux 2.6.29
-In-Reply-To: <72dbd3150904020933y515c7185p5726323c430c339b@mail.gmail.com>
-Message-ID: <alpine.LFD.2.00.0904020942181.4130@localhost.localdomain>
-References: <20090325183011.GN32307@mit.edu> <alpine.LFD.2.00.0903251622420.3032@localhost.localdomain>  <20090326171148.9bf8f1ec.akpm@linux-foundation.org> <alpine.LFD.2.00.0903261723250.3994@localhost.localdomain>  <20090326174704.cd36bf7b.akpm@linux-foundation.org>
- <alpine.LFD.2.00.0903261752110.3994@localhost.localdomain>  <20090326182519.d576d703.akpm@linux-foundation.org> <20090401210337.GB3797@csclub.uwaterloo.ca>  <20090402110532.GA5132@aniel> <20090402090912.cac200bb.akpm@linux-foundation.org>
- <72dbd3150904020933y515c7185p5726323c430c339b@mail.gmail.com>
-User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
+	Thu, 2 Apr 2009 12:50:31 -0400
+Received: from cantor.suse.de ([195.135.220.2]:54980 "EHLO mx1.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S932555AbZDBQu3 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 2 Apr 2009 12:50:29 -0400
+Date: Thu, 2 Apr 2009 18:50:24 +0200
+From: Jan Kara <jack@suse.cz>
+To: Alexander Larsson <alexl@redhat.com>
+Cc: eparis@redhat.com, linux-kernel@vger.kernel.org
+Subject: Re: Issues with using fanotify for a filesystem indexer
+Message-ID: <20090402165023.GG3010@duck.suse.cz>
+References: <1238158043.23703.20.camel@fatty> <20090402145457.GA17275@atrey.karlin.mff.cuni.cz> <1238689744.5704.1.camel@localhost.localdomain>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1238689744.5704.1.camel@localhost.localdomain>
+User-Agent: Mutt/1.5.17 (2007-11-01)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-
-On Thu, 2 Apr 2009, David Rees wrote:
+On Thu 02-04-09 18:29:04, Alexander Larsson wrote:
+> On Thu, 2009-04-02 at 16:54 +0200, Jan Kara wrote:
 > 
-> MythTV actually uses fdatasync, not fsync (or at least that's what it
-> did last time I looked at the source).  Not sure how the behavior of
-> fdatasync compares to sync_file_range.
+> >   Some time ago I was trying to solve a similar problem and I've come up
+> > with a solution which I've called recursive mtime. The general idea is
+> > that with each directory, kernel additionally keeps a flag and a
+> > timestamp. When a directory is modified, we do:
+> >   dir = changed dir;
+> >   while dir has flag set do
+> >     update timestamp to current time
+> >     clear flag
+> >     dir = parent dir
+> > 
+> >   When a file is modified, you just start with a parent directory of
+> > that file. With this scheme, you are able to find reasonably quickly
+> > (without looking at unchanged directories) what has changed since
+> > you've looked last time (you look for timestamps newer than the time
+> > when you started last scan and you set flags as you go). Also the scheme
+> > is quite cheap to maintain and has no problems with overflowing event
+> > queues etc. (observe that the scheme works perfectly fine for several
+> > independent scanners in parallel). As a bonus, if you store the flag +
+> > timestamp persistently on disk, you can use this scheme to speedup things
+> > like rsync.
+> >   What gets nasty (but solvable) are hardlinks and bind mounts. I was
+> > writing a library to handle these last summer but then had to work on
+> > something else and didn't get back to it yet.
+> 
+> Another potential issue with this is that every change bubbles up to the
+> top, modifying the recursive mtime of that. This will become very
+> contented, and may imply a partial serialization of fs activity, which
+> is kinda costly.
+  Not every change - only the first change bubbles to the top, clearing the
+flag on its way. Then next change stops bubbling up as soon as it reaches
+a directory with the flag cleared. So no contention happen - we update flag
++ timestamp only at most once per scan of the directory by indexer (or
+someone else interested in recursive mtime) => once per a few minutes on
+average system.
 
-fdatasync() _waits_ for the data to hit the disk.
-
-sync_file_range() just starts writeout.
-
-It _can_ do more - you can also ask for it to wait for previous write-out 
-in order to start _new_ writeout, or wait for the result, but you wouldn't 
-want to, not for something like this.
-
-sync_file_range() is really a much nicer interface, and is a more extended 
-fdatasync() that actually matches what the kernel does internally.
-
-You can think of fdatasync(fd) as a 
-
-	sync_file_range(fd, 0, ~0ull,
-		SYNC_FILE_RANGE_WAIT_BEFORE | SYNC_FILE_RANGE_WRITE | SYNC_FILE_RANGE_WAIT_AFTER);
-
-and then you see why fdatasync is such a horrible interface.
-
-		Linus
+									Honza
+-- 
+Jan Kara <jack@suse.cz>
+SUSE Labs, CR
