@@ -1,64 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757547AbZDBEnf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756490AbZDBEoT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757547AbZDBEnf (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 2 Apr 2009 00:43:35 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754359AbZDBEnI
+	id S1756490AbZDBEoT (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 2 Apr 2009 00:44:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753708AbZDBEoD
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 2 Apr 2009 00:43:08 -0400
-Received: from blaine.gmane.org ([80.91.229.8]:36550 "EHLO hugh.gmane.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752738AbZDBEnG (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 2 Apr 2009 00:43:06 -0400
-From: Miles Bader <miles@gnu.org>
-To: David Howells 
-	<public-dhowells-H+wXaHxf7aLQT0dZR+AlfA@hugh.gmane.org>
-Cc: Linus Torvalds 
-	<public-torvalds-de/tnXTf+JLsfHDXvbKv3WD2FQJk+8+b@hugh.gmane.org>,
-       Trond Myklebust 
-	<public-Trond.Myklebust-HgOvQuBEEgTQT0dZR+AlfA@hugh.gmane.org>,
-       public-linux-nfs-u79uwXL29TY76Z2rM5mHXA@hugh.gmane.org,
-       Linux Kernel Mailing List 
-	<public-linux-kernel-u79uwXL29TY76Z2rM5mHXA@hugh.gmane.org>
-Subject: Re: [GIT PULL] Please pull the first batch of NFS client changes (and cachefs merge)...
-References: <alpine.LFD.2.00.0904010935000.4130@localhost.localdomain>
-	<1238522824.6577.5.camel@heimdal.trondhjem.org>
-	<19756.1238606665@redhat.com>
-Reply-To: Miles Bader <miles@gnu.org>
-System-Type: x86_64-unknown-linux-gnu
-Blat: Foop
-Date: Thu, 02 Apr 2009 13:33:40 +0900
-In-Reply-To: <19756.1238606665@redhat.com> (David Howells's message of "Wed,
-	01 Apr 2009 18:24:25 +0100")
-Message-ID: <buoprfv8yjf.fsf@dhlpc061.dev.necel.com>
+	Thu, 2 Apr 2009 00:44:03 -0400
+Received: from fgwmail7.fujitsu.co.jp ([192.51.44.37]:48730 "EHLO
+	fgwmail7.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752646AbZDBEoB (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 2 Apr 2009 00:44:01 -0400
+Message-ID: <49D44285.9070808@jp.fujitsu.com>
+Date: Thu, 02 Apr 2009 13:43:49 +0900
+From: Hidetoshi Seto <seto.hidetoshi@jp.fujitsu.com>
+User-Agent: Thunderbird 2.0.0.21 (Windows/20090302)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-X-TMDA-Confirmed: Thu, 02 Apr 2009 06:42:59 +0200
+To: Ingo Molnar <mingo@elte.hu>
+CC: "H. Peter Anvin" <hpa@zytor.com>, Thomas Gleixner <tglx@linutronix.de>,
+       linux-kernel@vger.kernel.org, Andi Kleen <ak@linux.intel.com>
+Subject: Re: [PATCH -tip 1/3] x86, mce: Add mce_threshold option for intel
+ cmci
+References: <49CB3F24.8040804@jp.fujitsu.com> <20090328120825.GB14464@elte.hu> <49D183B0.6060306@jp.fujitsu.com> <20090401150711.GA20037@elte.hu>
+In-Reply-To: <20090401150711.GA20037@elte.hu>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Ingo Molnar wrote:
+> * Hidetoshi Seto <seto.hidetoshi@jp.fujitsu.com> wrote:
+> 
+>> Hi Ingo,
+>>
+>> Sorry, could you drop patch 1/3 and 3/3 from your -tip tree? Andi 
+>> and I discussed some and agreed disabling CMCI need to be done in 
+>> different way (at least parameter name).
+> 
+> Could you please send a patch that changes the parameter name?
 
+Got it.
+I'm going to post three patches from now, heading two for revert
+and last one for re-implement.
 
-
-David Howells <dhowells-H+wXaHxf7aLQT0dZR+AlfA@public.gmane.org> writes:
->> What the hell is that "cf-" and "fsc-" prefix?
->
-> One editor with many files open all of the same base name (namei.c, proc.c,
-> security.c, xattr.c, page.c for example).
-
-If it's emacs, try enabling `uniquify', e.g.:
-
-   M-x load-library RET uniquify RET
-   M-x customize-variable RET uniquify-buffer-name-style RET
-
-It will name your buffers nicely incorporating enough of the leading
-path to make them unique.
-
-[I like the `post-forward' style myself...]
-
--Miles
-
--- 
-Inhumanity, n. One of the signal and characteristic qualities of humanity.
-
+Thanks,
+H.Seto
 
