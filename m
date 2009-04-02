@@ -1,71 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1765624AbZDBTtl@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1765398AbZDBTvj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1765624AbZDBTtl (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 2 Apr 2009 15:49:41 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756492AbZDBTtb
+	id S1765398AbZDBTvj (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 2 Apr 2009 15:51:39 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757603AbZDBTv3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 2 Apr 2009 15:49:31 -0400
-Received: from swampdragon.chaosbits.net ([90.184.90.115]:20825 "EHLO
-	swampdragon.chaosbits.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753548AbZDBTta (ORCPT
+	Thu, 2 Apr 2009 15:51:29 -0400
+Received: from mail-fx0-f158.google.com ([209.85.220.158]:40469 "EHLO
+	mail-fx0-f158.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755772AbZDBTv2 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 2 Apr 2009 15:49:30 -0400
-Date: Thu, 2 Apr 2009 21:49:27 +0200 (CEST)
-From: Jesper Juhl <jj@chaosbits.net>
-To: Chris Wright <chrisw@redhat.com>
-cc: Izik Eidus <ieidus@redhat.com>, linux-kernel@vger.kernel.org,
-       kvm@vger.kernel.org, linux-mm@kvack.org, avi@redhat.com,
-       aarcange@redhat.com, riel@redhat.com, jeremy@goop.org,
-       mtosatti@redhat.com, hugh@veritas.com, corbet@lwn.net, yaniv@redhat.com,
-       dmonakhov@openvz.org
-Subject: Re: [PATCH 0/4] ksm - dynamic page sharing driver for linux
-In-Reply-To: <20090402193920.GF10392@x200.localdomain>
-Message-ID: <alpine.LNX.2.00.0904022147450.4265@swampdragon.chaosbits.net>
-References: <1238457560-7613-1-git-send-email-ieidus@redhat.com> <alpine.LNX.2.00.0904022114040.4265@swampdragon.chaosbits.net> <20090402193920.GF10392@x200.localdomain>
-User-Agent: Alpine 2.00 (LNX 1167 2008-08-23)
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Thu, 2 Apr 2009 15:51:28 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=subject:from:to:cc:in-reply-to:references:content-type:date
+         :message-id:mime-version:x-mailer:content-transfer-encoding;
+        b=MziiHvEiI746Ud7sQQMruH5Tn6pM23aGZladOsnwvBH1O6C3VsGHvW+yBvXL9WD/Ca
+         Ldej/gBoTb+PW0LPweSLpoTvV8h3K4E3ID6ouSSvIFrDwG8fJoQMPShIS99XZvkB9aeT
+         faEuhKl2KzrS5172dPIxr13WLWc0BrUQbnRKU=
+Subject: Re: Atheros Linux wireless support - ramifications of reverse
+ engineering  alien technology
+From: Maxim Levitsky <maximlevitsky@gmail.com>
+To: "Luis R. Rodriguez" <lrodriguez@atheros.com>
+Cc: linux-wireless <linux-wireless@vger.kernel.org>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       "ath9k-devel@lists.ath9k.org" <ath9k-devel@venema.h4ckr.net>
+In-Reply-To: <43e72e890904011147p5e22eaeejac3fddd2b9cddcfc@mail.gmail.com>
+References: <43e72e890904011147p5e22eaeejac3fddd2b9cddcfc@mail.gmail.com>
+Content-Type: text/plain
+Date: Thu, 02 Apr 2009 22:51:19 +0300
+Message-Id: <1238701879.9847.2.camel@maxim-laptop>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.24.3 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 2 Apr 2009, Chris Wright wrote:
+On Wed, 2009-04-01 at 11:47 -0700, Luis R. Rodriguez wrote:
+> Fellow Linux wireless hackers,
 
-> * Jesper Juhl (jj@chaosbits.net) wrote:
-> > Do you rely only on the checksum or do you actually compare pages to check 
-> > they are 100% identical before sharing?
-> 
-> Checksum has absolutely nothing to do w/ finding if two pages match.
-> It's only used as a heuristic to suggest whether a single page has
-> changed.  If that page is changing we won't bother trying to find a
-> match for it.  Here's an example of the life of a page w.r.t checksum.
-> 
-> 1. checksum = uninitialized
-> 2. first time page is found, checksum it (checksum = A).
->    if checksum has changed (uninitialize != A) don't go any further w/ that page
-> 3. next time page is found, checksum it (checksum = B).
->    if checksum has change (A != B) don't go any further w/ that page
-> 4. next time page is found, checksum it (checksum = B).
->    if checksum has changed (B == B)...it hasn't, continue processing the
->    page
-> 
-> later if a match is found in the tree (which is sorted by _contents_,
-> i.e. memcmp) we'll attempt to merge the pages which at it's very core
-> does:
-> 
-> 	if (pages_identical(oldpage, newpage))
-> 		ret = replace_page(vma, oldpage, newpage, orig_pte, newprot);
-> 
-> pages_identical?  you guessed it...just does:
-> 
-> 	r = memcmp(addr1, addr2, PAGE_SIZE)
-> 
+I have just three words:
 
-Thank you for that explanation, it set my mind at ease :-)
+This is not funny.
 
+I understand that this is a april fool joke, but given the usual hostile
+treatment we linux users receive from companies, this isn't funny.
 
--- 
-Jesper Juhl <jj@chaosbits.net>             http://www.chaosbits.net/
-Plain text mails only, please      http://www.expita.com/nomime.html
-Don't top-post  http://www.catb.org/~esr/jargon/html/T/top-post.html
+Maxim
 
