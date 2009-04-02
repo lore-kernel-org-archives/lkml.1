@@ -1,152 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759547AbZDBODY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760165AbZDBOEV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759547AbZDBODY (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 2 Apr 2009 10:03:24 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757414AbZDBODF
+	id S1760165AbZDBOEV (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 2 Apr 2009 10:04:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756245AbZDBOEJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 2 Apr 2009 10:03:05 -0400
-Received: from victor.provo.novell.com ([137.65.250.26]:35859 "EHLO
-	victor.provo.novell.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752222AbZDBODB (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 2 Apr 2009 10:03:01 -0400
-Message-ID: <49D4C619.30404@novell.com>
-Date: Thu, 02 Apr 2009 10:05:13 -0400
-From: Gregory Haskins <ghaskins@novell.com>
-User-Agent: Thunderbird 2.0.0.19 (X11/20081227)
+	Thu, 2 Apr 2009 10:04:09 -0400
+Received: from hera.kernel.org ([140.211.167.34]:55406 "EHLO hera.kernel.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754133AbZDBOEF (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 2 Apr 2009 10:04:05 -0400
+Date: Thu, 2 Apr 2009 14:03:30 GMT
+From: Luis Henriques <henrix@sapo.pt>
+To: linux-tip-commits@vger.kernel.org
+Cc: linux-kernel@vger.kernel.org, hpa@zytor.com, mingo@redhat.com,
+       henrix@sapo.pt, tglx@linutronix.de
+Reply-To: mingo@redhat.com, hpa@zytor.com, linux-kernel@vger.kernel.org,
+       henrix@sapo.pt, tglx@linutronix.de
+In-Reply-To: <20090401170635.GA4392@hades.domain.com>
+References: <20090401170635.GA4392@hades.domain.com>
+Subject: [tip:irq/genirq] genirq: do not execute DEBUG_SHIRQ when irq setup failed
+Message-ID: <tip-ba71604fad348656071a2a76eef9a67dab85a773@git.kernel.org>
+Git-Commit-ID: ba71604fad348656071a2a76eef9a67dab85a773
+X-Mailer: tip-git-log-daemon
 MIME-Version: 1.0
-To: Avi Kivity <avi@redhat.com>
-CC: Rusty Russell <rusty@rustcorp.com.au>,
-       Herbert Xu <herbert@gondor.apana.org.au>, anthony@codemonkey.ws,
-       andi@firstfloor.org, linux-kernel@vger.kernel.org, agraf@suse.de,
-       pmullaney@novell.com, pmorreale@novell.com, netdev@vger.kernel.org,
-       kvm@vger.kernel.org
-Subject: Re: [RFC PATCH 00/17] virtual-bus
-References: <20090402085253.GA29932@gondor.apana.org.au> <49D487A6.407@redhat.com> <49D49C1F.6030306@novell.com> <200904022243.21088.rusty@rustcorp.com.au> <49D4B4A3.5070008@novell.com> <49D4B87D.2000202@redhat.com> <49D4BBFA.2040106@novell.com> <49D4BD50.4070402@redhat.com>
-In-Reply-To: <49D4BD50.4070402@redhat.com>
-X-Enigmail-Version: 0.95.7
-OpenPGP: id=D8195319
-Content-Type: multipart/signed; micalg=pgp-sha1;
- protocol="application/pgp-signature";
- boundary="------------enig15944E94B338D67A0EF2D94A"
+Content-Type: text/plain; charset=UTF-8
+Content-Disposition: inline
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Thu, 02 Apr 2009 14:03:33 +0000 (UTC)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This is an OpenPGP/MIME signed message (RFC 2440 and 3156)
---------------enig15944E94B338D67A0EF2D94A
-Content-Type: text/plain; charset=ISO-8859-15
-Content-Transfer-Encoding: quoted-printable
+Commit-ID:  ba71604fad348656071a2a76eef9a67dab85a773
+Gitweb:     http://git.kernel.org/tip/ba71604fad348656071a2a76eef9a67dab85a773
+Author:     Luis Henriques <henrix@sapo.pt>
+AuthorDate: Wed, 1 Apr 2009 18:06:35 +0100
+Committer:  Thomas Gleixner <tglx@linutronix.de>
+CommitDate: Thu, 2 Apr 2009 16:02:39 +0200
 
-Avi Kivity wrote:
-> Gregory Haskins wrote:
->> Avi Kivity wrote:
->> =20
->>> Gregory Haskins wrote:
->>>   =20
->>>> Rusty Russell wrote:
->>>> =20
->>>>     =20
->>>>> On Thursday 02 April 2009 21:36:07 Gregory Haskins wrote:
->>>>>            =20
->>>>>> You do not need to know when the packet is copied (which I current=
-ly
->>>>>> do).  You only need it for zero-copy (of which I would like to
->>>>>> support,
->>>>>> but as I understand it there are problems with the reliability of
->>>>>> proper
->>>>>> callback (i.e. skb->destructor).
->>>>>>                    =20
->>>>> But if you have a UP guest,
->>>>>            =20
->>>> I assume you mean UP host ;)
->>>>
->>>>        =20
->>> I think Rusty did mean a UP guest, and without schedule-and-forget.
->>>    =20
->> That doesnt make sense to me, tho.  All the testing I did was a UP
->> guest, actually.  Why would I be constrained to run without the
->> scheduling unless the host was also UP?
->>  =20
->
-> You aren't constrained.  And your numbers show it works.
->
->>>
->>> The problem is that we already have virtio guest drivers going severa=
-l
->>> kernel versions back, as well as Windows drivers.  We can't keep
->>> changing the infrastructure under people's feet.
->>>    =20
->>
->> Well, IIUC the virtio code itself declares the ABI as unstable, so the=
-re
->> technically *is* an out if we really wanted one.  But I certainly
->> understand the desire to not change this ABI if at all possible, and
->> thus the resistance here.
->>  =20
->
-> virtio is a stable ABI.
+genirq: do not execute DEBUG_SHIRQ when irq setup failed
 
-Dang!  Scratch that.
->
->> However, theres still the possibility we can make this work in an ABI
->> friendly way with cap-bits, or other such features.  For instance, the=
+When requesting an IRQ, the DEBUG_SHIRQ code executes a fake IRQ just to make
+sure the driver is ready to receive an IRQ immediately.  The problem was that
+this fake IRQ was being executed even if interrupt line failed to be allocated
+by __setup_irq.
 
->> virtio-net driver could register both with pci and vbus-proxy and
->> instantiate a device with a slightly different ops structure for each =
-or
->> something.  Alternatively we could write a host-side shim to expose vb=
-us
->> devices as pci devices or something like that.
->>  =20
->
-> Sounds complicated...
-
-Well, the first solution would be relatively trivial...at least on the
-guest side.  All the other infrastructure is done and included in the
-series I sent out.  The changes to the virtio-net driver on the guest
-itself would be minimal.  The bigger effort would be converting
-venet-tap to use virtio-ring instead of IOQ.  But this would arguably be
-less work than starting a virtio-net backend module from scratch because
-you would have to not only code up the entire virtio-net backend, but
-also all the pci emulation and irq routing stuff that is required (and
-is already done by the vbus infrastructure).  Here all the major pieces
-are in place, just the xmit and rx routines need to be converted to
-virtio-isms.
-
-For the second option, I agree.  Its probably too nasty and it would be
-better if there was just either a virtio-net to kvm-host hack, or a more
-pci oriented version of a vbus-like framework.
-
-That said, there is certainly nothing wrong with having an alternate
-option.  There is plenty of precedent for having different drivers for
-different subsystems, etc, even if there is overlap.  Heck, even KVM has
-realtek, e1000, and virtio-net, etc.  Would our kvm community be willing
-to work with me to get these patches merged?  I am perfectly willing to
-maintain them.  That said, the general infrastructure should probably
-not live in -kvm (perhaps -tip, -mm, or -next, etc is more
-appropriate).  So a good plan might be to shoot for the core going into
-a more general upstream tree.  When/if that happens, then the kvm
-community could consider the kvm specific parts, etc.  I realize this is
-all pending review acceptance by everyone involved...
-
--Greg
+Signed-off-by: Luis Henriques <henrix@sapo.pt>
+LKML-Reference: <20090401170635.GA4392@hades.domain.com>
+Signed-off-by: Thomas Gleixner <tglx@linutronix.de>
 
 
+---
+ kernel/irq/manage.c |    2 +-
+ 1 files changed, 1 insertions(+), 1 deletions(-)
 
-
---------------enig15944E94B338D67A0EF2D94A
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: OpenPGP digital signature
-Content-Disposition: attachment; filename="signature.asc"
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v2.0.9 (GNU/Linux)
-Comment: Using GnuPG with SUSE - http://enigmail.mozdev.org
-
-iEYEARECAAYFAknUxhkACgkQlOSOBdgZUxnOfACferMtM7V42GsgLSRd6pbmswN5
-5nsAni1sbzmd0sK47ROR9zHg0rqBF7Yb
-=COVL
------END PGP SIGNATURE-----
-
---------------enig15944E94B338D67A0EF2D94A--
+diff --git a/kernel/irq/manage.c b/kernel/irq/manage.c
+index 1516ab7..beeb7d1 100644
+--- a/kernel/irq/manage.c
++++ b/kernel/irq/manage.c
+@@ -768,7 +768,7 @@ int request_irq(unsigned int irq, irq_handler_t handler,
+ 		kfree(action);
+ 
+ #ifdef CONFIG_DEBUG_SHIRQ
+-	if (irqflags & IRQF_SHARED) {
++	if (!retval & (irqflags & IRQF_SHARED)) {
+ 		/*
+ 		 * It's a shared IRQ -- the driver ought to be prepared for it
+ 		 * to happen immediately, so let's make sure....
