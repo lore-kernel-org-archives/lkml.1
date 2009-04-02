@@ -1,79 +1,92 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764349AbZDBQTj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760029AbZDBQVV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764349AbZDBQTj (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 2 Apr 2009 12:19:39 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758780AbZDBQT1
+	id S1760029AbZDBQVV (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 2 Apr 2009 12:21:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759532AbZDBQVJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 2 Apr 2009 12:19:27 -0400
-Received: from mx2.redhat.com ([66.187.237.31]:56964 "EHLO mx2.redhat.com"
+	Thu, 2 Apr 2009 12:21:09 -0400
+Received: from hera.kernel.org ([140.211.167.34]:41369 "EHLO hera.kernel.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753001AbZDBQT0 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 2 Apr 2009 12:19:26 -0400
-Message-ID: <49D4E583.4080505@redhat.com>
-Date: Thu, 02 Apr 2009 19:19:15 +0300
-From: Avi Kivity <avi@redhat.com>
-User-Agent: Thunderbird 2.0.0.21 (X11/20090320)
-MIME-Version: 1.0
-To: Anthony Liguori <anthony@codemonkey.ws>
-CC: Gregory Haskins <ghaskins@novell.com>, Andi Kleen <andi@firstfloor.org>,
-       linux-kernel@vger.kernel.org, agraf@suse.de, pmullaney@novell.com,
-       pmorreale@novell.com, rusty@rustcorp.com.au, netdev@vger.kernel.org,
-       kvm@vger.kernel.org
-Subject: Re: [RFC PATCH 00/17] virtual-bus
-References: <20090331184057.28333.77287.stgit@dev.haskins.net> <87ab71monw.fsf@basil.nowhere.org> <49D35825.3050001@novell.com> <20090401132340.GT11935@one.firstfloor.org> <49D37805.1060301@novell.com> <20090401170103.GU11935@one.firstfloor.org> <49D3B64F.6070703@codemonkey.ws> <49D3D7EE.4080202@novell.com> <49D46089.5040204@redhat.com> <49D497A1.4090900@novell.com> <49D4A4EB.8020105@redhat.com> <49D4AE0C.3000604@novell.com> <49D4B2C0.5060906@redhat.com> <49D4B594.6080703@novell.com> <49D4B8B4.4020003@redhat.com> <49D4BF70.1060301@novell.com> <49D4C191.2070502@redhat.com> <49D4CAA7.3020004@novell.com> <49D4CC61.6010105@redhat.com> <49D4CEB1.9020001@redhat.com> <49D4D075.9010702@codemonkey.ws> <49D4E33F.5000303@codemonkey.ws>
-In-Reply-To: <49D4E33F.5000303@codemonkey.ws>
-Content-Type: text/plain; charset=UTF-8; format=flowed
+	id S1753865AbZDBQVH (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 2 Apr 2009 12:21:07 -0400
+Subject: Re: [tip:irq/genirq] genirq: do not execute DEBUG_SHIRQ when irq
+ setup failed
+From: Jaswinder Singh Rajput <jaswinder@kernel.org>
+To: Thomas Gleixner <tglx@linutronix.de>
+Cc: mingo@redhat.com, hpa@zytor.com, linux-kernel@vger.kernel.org,
+       henrix@sapo.pt, linux-tip-commits@vger.kernel.org
+In-Reply-To: <alpine.LFD.2.00.0904021753020.12916@localhost.localdomain>
+References: <20090401170635.GA4392@hades.domain.com>
+	 <tip-ba71604fad348656071a2a76eef9a67dab85a773@git.kernel.org>
+	 <1238682747.3099.16.camel@ht.satnam>
+	 <alpine.LFD.2.00.0904021718230.12916@localhost.localdomain>
+	 <1238686904.3099.22.camel@ht.satnam>
+	 <alpine.LFD.2.00.0904021753020.12916@localhost.localdomain>
+Content-Type: text/plain
+Date: Thu, 02 Apr 2009 21:50:16 +0530
+Message-Id: <1238689216.3099.34.camel@ht.satnam>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.24.5 (2.24.5-1.fc10) 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Anthony Liguori wrote:
->> I don't think we even need that to end this debate.  I'm convinced we 
->> have a bug somewhere.  Even disabling TX mitigation, I see a ping 
->> latency of around 300ns whereas it's only 50ns on the host.  This 
->> defies logic so I'm now looking to isolate why that is.
->
-> I'm down to 90us.  Obviously, s/ns/us/g above.  The exec.c changes 
-> were the big winner... I hate qemu sometimes.
->
->
-
-What, this:
-
-> diff --git a/qemu/exec.c b/qemu/exec.c
-> index 67f3fa3..1331022 100644
-> --- a/qemu/exec.c
-> +++ b/qemu/exec.c
-> @@ -3268,6 +3268,10 @@ uint32_t ldl_phys(target_phys_addr_t addr)
->      unsigned long pd;
->      PhysPageDesc *p;
+On Thu, 2009-04-02 at 18:08 +0200, Thomas Gleixner wrote:
+> On Thu, 2 Apr 2009, Jaswinder Singh Rajput wrote:
+> > > > >  #ifdef CONFIG_DEBUG_SHIRQ
+> > > > > -	if (irqflags & IRQF_SHARED) {
+> > > > > +	if (!retval & (irqflags & IRQF_SHARED)) {
+> > > > >  		/*
+> > > > >  		 * It's a shared IRQ -- the driver ought to be prepared for it
+> > > > >  		 * to happen immediately, so let's make sure....
+> > > > 
+> > > > What is this ?
+> > > 
+> > > You looking at the wrong place.
+> > >  
+> > > > There is no retval:
+> > > > 
+> > > > http://git.kernel.org/?p=linux/kernel/git/x86/linux-2.6-tip.git;a=blob;f=kernel/irq/manage.c;h=a3eb7baf1e46f2c735edb4cc44e0386cfbc4989e;hb=HEAD
+> > > 
+> > > Care to read patches you want to comment on carefully _BEFORE_ you
+> > > start yelling at people and sending useless copies of the wrong
+> > > function around the world.
+> > > 
+> > > The patch is perfectly fine and already applied.
+> > > 
+> > 
+> > Yes, I know somehow you applied it. When you will merge this branch with
+> > -tip/master then you will understand what I am saying.
+> 
+> Jaswinder. I really start to get annoyed. 
+> 
+> That patch applies fine on master as well.
 >  
-> +#if 1
-> +    return ldl_p(phys_ram_base + addr);
-> +#endif
-> +
->      p = phys_page_find(addr >> TARGET_PAGE_BITS);
->      if (!p) {
->          pd = IO_MEM_UNASSIGNED;
-> @@ -3300,6 +3304,10 @@ uint64_t ldq_phys(target_phys_addr_t addr)
->      unsigned long pd;
->      PhysPageDesc *p;
->  
-> +#if 1
-> +    return ldq_p(phys_ram_base + addr);
-> +#endif
-> +
->      p = phys_page_find(addr >> TARGET_PAGE_BITS);
->      if (!p) {
->          pd = IO_MEM_UNASSIGNED;
+> > Even function name is changed from:
+> >
+> > 713 int request_irq(unsigned int irq, irq_handler_t handler,
+> > 
+> > 857 int request_threaded_irq(unsigned int irq, irq_handler_t handler,
+> 
+> And why is this fcking relevant ? 
+> 
 
-The way I read it, it will run only run slowly once per page, then 
-settle to a cache miss per page.
+I am dead sure, you really need some good manners and need to learn many
+things.
 
-Regardless, it makes a memslot model even more attractive.
+> Take the patch and try to apply it. It applies perfectly fine on
+> tip/master. And it is still _CORRECT_ there.
+> 
+> If you don't know how to read a patch and don't know the code it
+> applies to then taking it and applying it is the minimum you could do
+> before wasting everybodys time.
+> 
+> Stop this nonsense before I get really grumpy,
+> 
 
+That's the only thing you can do.
 
--- 
-error compiling committee.c: too many arguments to function
+--
+JSR
 
