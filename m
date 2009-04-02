@@ -1,68 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934010AbZDBSaK@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933940AbZDBSaj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934010AbZDBSaK (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 2 Apr 2009 14:30:10 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933481AbZDBS3p
+	id S933940AbZDBSaj (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 2 Apr 2009 14:30:39 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933106AbZDBSaH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 2 Apr 2009 14:29:45 -0400
-Received: from cavan.codon.org.uk ([93.93.128.6]:48750 "EHLO
-	vavatch.codon.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1764548AbZDBS3o (ORCPT
+	Thu, 2 Apr 2009 14:30:07 -0400
+Received: from casper.infradead.org ([85.118.1.10]:57123 "EHLO
+	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S933966AbZDBSaF (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 2 Apr 2009 14:29:44 -0400
-Date: Thu, 2 Apr 2009 19:29:27 +0100
-From: Matthew Garrett <mjg59@srcf.ucam.org>
-To: david@lang.hm
-Cc: Theodore Tso <tytso@mit.edu>, Sitsofe Wheeler <sitsofe@yahoo.com>,
-       "Andreas T.Auer" <andreas.t.auer_lkml_73537@ursus.ath.cx>,
-       Alberto Gonzalez <info@gnebu.es>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: Ext4 and the "30 second window of death"
-Message-ID: <20090402182925.GA4502@srcf.ucam.org>
-References: <200903311452.05210.info@gnebu.es> <20090331134547.GJ13356@mit.edu> <200904010002.47077.info@gnebu.es> <49D2A5AB.1090704@ursus.ath.cx> <20090401015010.GB4529@mit.edu> <20090401052050.GA20456@sucs.org> <20090401151219.GA12285@srcf.ucam.org> <20090401173521.GA15423@mit.edu> <20090401174336.GA14726@srcf.ucam.org> <alpine.DEB.1.10.0904021116500.28893@asgard.lang.hm>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <alpine.DEB.1.10.0904021116500.28893@asgard.lang.hm>
-User-Agent: Mutt/1.5.12-2006-07-14
-X-SA-Exim-Connect-IP: <locally generated>
-X-SA-Exim-Mail-From: mjg59@codon.org.uk
-X-SA-Exim-Scanned: No (on vavatch.codon.org.uk); SAEximRunCond expanded to false
+	Thu, 2 Apr 2009 14:30:05 -0400
+Subject: Re: [PATCH 5/6] perf_counter: add more context information
+From: Peter Zijlstra <a.p.zijlstra@chello.nl>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: Paul Mackerras <paulus@samba.org>,
+       Corey Ashford <cjashfor@linux.vnet.ibm.com>,
+       linux-kernel@vger.kernel.org
+In-Reply-To: <20090402181849.GD6340@elte.hu>
+References: <20090402091158.291810516@chello.nl>
+	 <20090402091319.493101305@chello.nl> <20090402113643.GF10828@elte.hu>
+	 <1238672889.8530.5908.camel@twins>  <20090402181849.GD6340@elte.hu>
+Content-Type: text/plain
+Date: Thu, 02 Apr 2009 20:29:58 +0200
+Message-Id: <1238696998.5133.44.camel@laptop>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.26.0 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Apr 02, 2009 at 11:22:48AM -0700, david@lang.hm wrote:
-> On Wed, 1 Apr 2009, Matthew Garrett wrote:
-> >laptop-mode is something that makes sense as a default behaviour under a
-> >lot of circumstances. Adding fsync() suppression means it's utterly
-> >impossible to use it in that way. An additional mode would be perfectly
-> >reasonable, as long as it's made clear that it's really a request for
-> >data to be discarded at some point. The current mode isn't.
+On Thu, 2009-04-02 at 20:18 +0200, Ingo Molnar wrote:
+> * Peter Zijlstra <a.p.zijlstra@chello.nl> wrote:
 > 
-> this issue seems pretty straightforward to me
+> > On Thu, 2009-04-02 at 13:36 +0200, Ingo Molnar wrote:
+> > 
+> > > > -#define MAX_STACK_DEPTH		255
+> > > > +#define MAX_STACK_DEPTH		254
+> > > >  
+> > > >  struct perf_callchain_entry {
+> > > > -	u64	nr;
+> > > > +	u32	nr, hv, kernel, user;
+> > > >  	u64	ip[MAX_STACK_DEPTH];
+> > > >  };
+> > 
+> > Oh, and Paul suggested using u16s right after I send it out. So 
+> > I'll either send an update or send a incremental in case you 
+> > already applied it.
 > 
-> the apps do fsync (and similar) to the degree that they think their data 
-> is important (potentially with config options if they acknowlege that 
-> their data isn't _always_ that important)
-> 
-> the system allows the admin to override the application and say "I'm 
-> willing to loose up to X seconds of data for other benifits"
->
-> if this can work cleanly (with the ordering issue that was identified, 
-> which may involve having multiple versions of the metadata cached) it 
-> seems like a very clean interface.
+> yes, that's probably a good idea. Although u8 might be even better - 
+> do we ever want to do more than 256 deep stack vectors? Even those 
+> would take quite some time to construct and pass down.
 
-It does, but it's a different interface to the current one with a 
-different aim and a different set of tradeoffs. The current behaviour of 
-laptop-mode is that fsync() results in things hitting disk. The only 
-configurability of laptop-mode is how long it then waits to flush out 
-everything else as well.
+We'd have to pad it with 4 more bytes to remain u64 aligned, also, why
+restrict ourselves. That MAX_STACK_DEPTH limit is trivially fixable if
+indeed someone finds its insufficient.
 
-The solution to "fsync() causes disk spinups" isn't "ignore fsync()". 
-It's "ensure that applications only use fsync() when they really need 
-it", which requires us to also be able to say "fsync() should not be 
-required to ensure that events occur in order".
 
--- 
-Matthew Garrett | mjg59@srcf.ucam.org
+
