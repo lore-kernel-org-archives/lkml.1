@@ -1,55 +1,74 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764753AbZDBTM1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764335AbZDBTOc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764753AbZDBTM1 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 2 Apr 2009 15:12:27 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762711AbZDBTMF
+	id S1764335AbZDBTOc (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 2 Apr 2009 15:14:32 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754271AbZDBTOX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 2 Apr 2009 15:12:05 -0400
-Received: from [213.79.90.228] ([213.79.90.228]:2790 "EHLO
-	buildserver.ru.mvista.com" rhost-flags-FAIL-FAIL-OK-FAIL)
-	by vger.kernel.org with ESMTP id S1759598AbZDBTMD (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 2 Apr 2009 15:12:03 -0400
-Date: Thu, 2 Apr 2009 23:11:59 +0400
-From: Anton Vorontsov <avorontsov@ru.mvista.com>
-To: Timur Tabi <timur@freescale.com>
-Cc: Marcel Ziswiler <marcel@ziswiler.com>, linux-kernel@vger.kernel.org,
-       linuxppc-dev@ozlabs.org
-Subject: Re: [PATCH] QE USB Host Integration for MPC832x
-Message-ID: <20090402191159.GA14626@oksana.dev.rtsoft.ru>
-Reply-To: avorontsov@ru.mvista.com
-References: <1238622396-9768-1-git-send-email-marcel@ziswiler.com> <20090402183357.GA29050@oksana.dev.rtsoft.ru> <20090402183631.GA6699@oksana.dev.rtsoft.ru> <49D5071D.50001@freescale.com>
+	Thu, 2 Apr 2009 15:14:23 -0400
+Received: from mx2.redhat.com ([66.187.237.31]:58919 "EHLO mx2.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753718AbZDBTOX (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 2 Apr 2009 15:14:23 -0400
+Message-ID: <49D50E4E.20103@redhat.com>
+Date: Thu, 02 Apr 2009 22:13:18 +0300
+From: Avi Kivity <avi@redhat.com>
+User-Agent: Thunderbird 2.0.0.21 (X11/20090320)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf8
-Content-Disposition: inline
-In-Reply-To: <49D5071D.50001@freescale.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+To: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
+CC: Andrew Morton <akpm@linux-foundation.org>,
+       Lee Schermerhorn <Lee.Schermerhorn@hp.com>,
+       linux-kernel <linux-kernel@vger.kernel.org>, stable <stable@kernel.org>,
+       Rik van Riel <riel@redhat.com>, David Howells <dhowells@redhat.com>
+Subject: Re: [PATCH] Define a UNIQUE value for AS_UNEVICTABLE flag
+References: <1238690835.7359.16.camel@lts-notebook>	 <20090402095315.1098b6c3.akpm@linux-foundation.org> <2f11576a0904021102r19165d89le45563b438621e08@mail.gmail.com>
+In-Reply-To: <2f11576a0904021102r19165d89le45563b438621e08@mail.gmail.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Apr 02, 2009 at 01:42:37PM -0500, Timur Tabi wrote:
-> Anton Vorontsov wrote:
-> 
-> > Oh, I was wrong. fsl_qe_udc driver uses mpc8360 compatible for
-> > matching, so you can't remove it. :-/
-> 
-> Ugh, that's a bug in the driver then.
+KOSAKI Motohiro wrote:
+> (cc to Avi)
+>
+>   
+>>> [PATCH] Define UNIQUE value of AS_UNEVICTABLE
+>>>
+>>> Needed in 2.6.28, 2.6.29, ...
+>>>
+>>> A new "address_space flag"--AS_MM_ALL_LOCKS--was defined to use the next
+>>> available AS flag while the Unevictable LRU was under development.  The
+>>> Unevictable LRU was using the same flag and "no one" noticed.  Current
+>>> mainline, since 2.6.28, has same value for two symbolic flag names.
+>>>       
+>> argh.
+>>
+>> What are the user-observable effects of the bug, and why didn't anyone
+>> notice it until now?
+>>     
+>
+> AS_MM_ALL_LOCKS is used by mmu_notifier. it mean it is used by only kvm.
+> In the other hand,  AS_UNEVICTABLE mean unevictable shmem or ramfs.
+>
+> Then, if shmem opend process use ioctl(KVM_CREATE_VM), unevictable
+> flag on the shmem accidentally turn off.
+> but, fortunatelly, In modern desktop environment, only KVM control
+> program use above ioctl. then, we can assume this doesn't use shmem
+> and ramfs.
+>
+> Am I missing anything?
+>   
 
-Yes, but that depends on what chip was the first one? MPC8323 or
-MPC8360?
+Qemu, the main kvm user, indeed doesn't use shm or ramfs.  However it is 
+not inconceivable that one day it will, as a way to share memory among 
+guests.
 
-> My understanding is that the only MPC8323 QE microcode update is the one
-> for UART.  If there are any updates to any other QE devices for standard
-> functionality, I'm not aware of any.
+It isn't surprising that no bug was observed, but let's fix it.
 
-I found them:
-
-http://www.freescale.com/files/netcomm/software/app_software/microcode/QERAMPTCH.zip?fpsp=1
-
-File is qe_usb3-8323_Rev11.c
+(If hugetlbfs is considered unevictable, then qemu can trigger this bug 
+today)
 
 -- 
-Anton Vorontsov
-email: cbouatmailru@gmail.com
-irc://irc.freenode.net/bd2
+I have a truly marvellous patch that fixes the bug which this
+signature is too narrow to contain.
+
