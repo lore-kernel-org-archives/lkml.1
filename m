@@ -1,61 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762952AbZDBUev@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1765863AbZDBUhY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762952AbZDBUev (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 2 Apr 2009 16:34:51 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756669AbZDBUem
+	id S1765863AbZDBUhY (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 2 Apr 2009 16:37:24 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756331AbZDBUhG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 2 Apr 2009 16:34:42 -0400
-Received: from gw.goop.org ([64.81.55.164]:50714 "EHLO mail.goop.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751147AbZDBUem (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 2 Apr 2009 16:34:42 -0400
-Message-ID: <49D5215D.6050503@goop.org>
-Date: Thu, 02 Apr 2009 13:34:37 -0700
-From: Jeremy Fitzhardinge <jeremy@goop.org>
-User-Agent: Thunderbird 2.0.0.21 (X11/20090320)
-MIME-Version: 1.0
-To: Rik van Riel <riel@redhat.com>
-CC: Martin Schwidefsky <schwidefsky@de.ibm.com>, akpm@osdl.org,
-       Nick Piggin <nickpiggin@yahoo.com.au>, frankeh@watson.ibm.com,
-       virtualization@lists.osdl.org, linux-kernel@vger.kernel.org,
-       virtualization@lists.linux-foundation.org, linux-mm@kvack.org,
-       hugh@veritas.com, Xen-devel <xen-devel@lists.xensource.com>
-Subject: Re: [patch 0/6] Guest page hinting version 7.
-References: <20090327150905.819861420@de.ibm.com>	<200903281705.29798.rusty@rustcorp.com.au>	<20090329162336.7c0700e9@skybase>	<200904022232.02185.nickpiggin@yahoo.com.au>	<20090402175249.3c4a6d59@skybase> <49D50CB7.2050705@redhat.com> <49D518E9.1090001@goop.org> <49D51CA9.6090601@redhat.com>
-In-Reply-To: <49D51CA9.6090601@redhat.com>
-X-Enigmail-Version: 0.95.6
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+	Thu, 2 Apr 2009 16:37:06 -0400
+Received: from mail-fx0-f158.google.com ([209.85.220.158]:59319 "EHLO
+	mail-fx0-f158.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751147AbZDBUhE (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 2 Apr 2009 16:37:04 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=subject:from:to:cc:in-reply-to:references:content-type:date
+         :message-id:mime-version:x-mailer:content-transfer-encoding;
+        b=qEu0641PMWbe0wuihvZStm9wZO7u8TOnrbqtKHamUi1uMMKV5TE/K5GA8a48V0BAsI
+         ZN1GXQg76je4qDGmzGJ8IhCaQGC5tIY/105dhzV9uR3RogksXJCxrhWjNfaq3DI+jln4
+         /WoA4OpASWGsxkGYrB/rShmo2s0En77o9ifgs=
+Subject: Re: Atheros Linux wireless support - ramifications of reverse
+ engineering alien technology
+From: Maxim Levitsky <maximlevitsky@gmail.com>
+To: Larry Finger <Larry.Finger@lwfinger.net>
+Cc: "Luis R. Rodriguez" <lrodriguez@atheros.com>,
+       linux-wireless <linux-wireless@vger.kernel.org>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       "ath9k-devel@lists.ath9k.org" <ath9k-devel@venema.h4ckr.net>
+In-Reply-To: <49D519CF.5000507@lwfinger.net>
+References: <43e72e890904011147p5e22eaeejac3fddd2b9cddcfc@mail.gmail.com>
+	 <1238701879.9847.2.camel@maxim-laptop>  <49D519CF.5000507@lwfinger.net>
+Content-Type: text/plain
+Date: Thu, 02 Apr 2009 23:36:55 +0300
+Message-Id: <1238704615.9847.6.camel@maxim-laptop>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.24.3 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Rik van Riel wrote:
-> Jeremy Fitzhardinge wrote:
->> The more complex host policy decisions of how to balance overall 
->> memory use system-wide are much in the same for both mechanisms.
-> Not at all.  Page hinting is just an optimization to host swapping, where
-> IO can be avoided on many of the pages that hit the end of the LRU.
->
-> No decisions have to be made at all about balancing memory use
-> between guests, it just happens through regular host LRU aging.
+On Thu, 2009-04-02 at 15:02 -0500, Larry Finger wrote:
+> Maxim Levitsky wrote:
+> > On Wed, 2009-04-01 at 11:47 -0700, Luis R. Rodriguez wrote:
+> >> Fellow Linux wireless hackers,
+> > 
+> > I have just three words:
+> > 
+> > This is not funny.
+> 
+> No sense of humor, and cannot count.
 
-When the host pages out a page belonging to guest A, then its making a 
-policy decision on how large guest A should be compared to B.  If the 
-policy is a global LRU on all guest pages, then that's still a policy on 
-guest sizes: the target size is a function of its working set, assuming 
-that the working set is well modelled by LRU.  I imagine that if the 
-guest and host are both managing their pages with an LRU-like algorithm 
-you'll get some nasty interactions, which page hinting tries to alleviate.
 
-> Automatic ballooning requires that something on the host figures
-> out how much memory each guest needs and sizes the guests
-> appropriately.  All the proposed policies for that which I have
-> seen have some nasty corner cases or are simply very limited
-> in scope.
+I don't want to start arguing with you, but I still think that 
+April posts about something evil that is about to done for linux aren't
+funny, just think for example about tomtom case , I also thought that
+this was a April fool joke, but it appears that it isn't.
 
-Well, you could apply something equivalent to a global LRU: ask for more 
-pages from guests who have the most unused pages.  (I'm not saying that 
-its necessarily a useful policy.)
+And speaking of counting I just meant "This isn't funny" and is three
+words.
 
-    J
+Maxim
+
