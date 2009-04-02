@@ -1,76 +1,107 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933097AbZDBQxF@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933645AbZDBQyy@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933097AbZDBQxF (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 2 Apr 2009 12:53:05 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932714AbZDBQvV
+	id S933645AbZDBQyy (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 2 Apr 2009 12:54:54 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932563AbZDBQxy
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 2 Apr 2009 12:51:21 -0400
-Received: from mga10.intel.com ([192.55.52.92]:6758 "EHLO
-	fmsmga102.fm.intel.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S932740AbZDBQvT (ORCPT
+	Thu, 2 Apr 2009 12:53:54 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:57759 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1765822AbZDBQxw (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 2 Apr 2009 12:51:19 -0400
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.39,314,1235980800"; 
-   d="scan'208";a="678230239"
-Date: Thu, 2 Apr 2009 09:51:17 -0700
-From: Matthew Wilcox <willy@linux.intel.com>
-To: Sergei Shtylyov <sshtylyov@ru.mvista.com>
-Cc: linux-ide@vger.kernel.org, linux-kernel@vger.kernel.org,
-       jgarzik@redhat.com, David Woodhouse <David.Woodhouse@intel.com>,
-       Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
-Subject: Re: [PATCH 4/5] ide: Add support for TRIM
-Message-ID: <20090402165117.GQ2661@linux.intel.com>
-References: <1238683047-13588-1-git-send-email-willy@linux.intel.com> <1238683047-13588-2-git-send-email-willy@linux.intel.com> <1238683047-13588-3-git-send-email-willy@linux.intel.com> <1238683047-13588-4-git-send-email-willy@linux.intel.com> <49D4E0C3.7080808@ru.mvista.com> <20090402162846.GO2661@linux.intel.com> <49D4E9EB.80207@ru.mvista.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <49D4E9EB.80207@ru.mvista.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+	Thu, 2 Apr 2009 12:53:52 -0400
+Date: Thu, 2 Apr 2009 09:45:22 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Akinobu Mita <akinobu.mita@gmail.com>
+Cc: Alexander Beregalov <a.beregalov@gmail.com>,
+       "linux-next@vger.kernel.org" <linux-next@vger.kernel.org>,
+       LKML <linux-kernel@vger.kernel.org>, linux-arch@vger.kernel.org,
+       "David S. Miller" <davem@davemloft.net>,
+       Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+       Paul Mackerras <paulus@samba.org>,
+       Martin Schwidefsky <schwidefsky@de.ibm.com>,
+       Heiko Carstens <heiko.carstens@de.ibm.com>,
+       Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@redhat.com>,
+       "H. Peter Anvin" <hpa@zytor.com>
+Subject: Re: [PATCH] build fix for generic debug pagealloc
+Message-Id: <20090402094522.b29004c8.akpm@linux-foundation.org>
+In-Reply-To: <20090402163145.GA28728@localhost.localdomain>
+References: <a4423d670904020421k7395e11dwe70d4223cb817e0a@mail.gmail.com>
+	<20090402163145.GA28728@localhost.localdomain>
+X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.5; x86_64-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Apr 02, 2009 at 08:38:03PM +0400, Sergei Shtylyov wrote:
-> Hello.
->>>> +	task->tf_flags   = IDE_TFLAG_LBA48 | IDE_TFLAG_OUT_HOB |
->>>> +			   IDE_TFLAG_OUT_TF | IDE_TFLAG_OUT_DEVICE |
+On Fri, 3 Apr 2009 01:31:52 +0900 Akinobu Mita <akinobu.mita@gmail.com> wrote:
+
+> > mm/debug-pagealloc.c: In function 'set_page_poison':
+> > mm/debug-pagealloc.c:8: error: 'struct page' has no member named 'debug_flags'
+> > mm/debug-pagealloc.c: In function 'clear_page_poison':
+> > mm/debug-pagealloc.c:13: error: 'struct page' has no member named 'debug_flags'
+> > mm/debug-pagealloc.c: In function 'page_poison':
+> > mm/debug-pagealloc.c:18: error: 'struct page' has no member named 'debug_flags'
+> > mm/debug-pagealloc.c: At top level:
+> > mm/debug-pagealloc.c:120: error: redefinition of 'kernel_map_pages'
+> > include/linux/mm.h:1278: error: previous definition of
+> > 'kernel_map_pages' was here
+> > mm/debug-pagealloc.c: In function 'kernel_map_pages':
+> > mm/debug-pagealloc.c:122: error: 'debug_pagealloc_enabled' undeclared
+> > (first use in this function)
+> 
+> This patch fixes build failure with generic debug pagealloc:
+> 
+>  - debug_flags should be in struct page
+>  - define DEBUG_PAGEALLOC config option for all architectures
 >
->>>   The last 3 flags are going to be obsoleted too...
+> ...
 >
->> So if I remove them today, the command will still work?
->
->     s/obsoleted/renamed and moved to another other field/ -- I'm going to 
-> submit a patchset refactoring 'struct ide_cmd and 'struct ide-taskfile' 
-> at last...
+>  	bool "Debug access to per_cpu maps"
+>  	depends on DEBUG_KERNEL
+> diff --git a/include/linux/mm_types.h b/include/linux/mm_types.h
+> index ddadb4d..0e80e26 100644
+> --- a/include/linux/mm_types.h
+> +++ b/include/linux/mm_types.h
+> @@ -95,6 +95,9 @@ struct page {
+>  	void *virtual;			/* Kernel virtual address (NULL if
+>  					   not kmapped, ie. highmem) */
+>  #endif /* WANT_PAGE_VIRTUAL */
+> +#ifdef CONFIG_WANT_PAGE_DEBUG_FLAGS
+> +	unsigned long debug_flags;	/* Use atomic bitops on this */
+> +#endif
+>  };
+>  
+>  /*
+> @@ -175,9 +178,6 @@ struct vm_area_struct {
+>  #ifdef CONFIG_NUMA
+>  	struct mempolicy *vm_policy;	/* NUMA policy for the VMA */
+>  #endif
+> -#ifdef CONFIG_WANT_PAGE_DEBUG_FLAGS
+> -	unsigned long debug_flags;	/* Use atomic bitops on this */
+> -#endif
+>  };
 
-Since I'm coding to today's kernel, not to a patch which doesn't exist
-yet, taking them out won't work very well.
+dammit.
 
-I've not been paying much attention to drivers/ide, so I've no idea
-whether the following patch works.  It does at least compile:
+>  struct core_thread {
+> diff --git a/mm/Kconfig.debug b/mm/Kconfig.debug
+> index c8d62d4..bb01e29 100644
+> --- a/mm/Kconfig.debug
+> +++ b/mm/Kconfig.debug
+> @@ -1,3 +1,12 @@
+> +config DEBUG_PAGEALLOC
+> +	bool "Debug page memory allocations"
+> +	depends on DEBUG_KERNEL && ARCH_SUPPORTS_DEBUG_PAGEALLOC
+> +	depends on !HIBERNATION || !PPC && !SPARC
+> +	---help---
+> +	  Unmap pages from the kernel linear mapping after free_pages().
+> +	  This results in a large slowdown, but helps to find certain types
+> +	  of memory corruptions.
+> +
 
-+++ b/drivers/ide/ide-disk.c
-@@ -407,7 +407,7 @@ static void idedisk_prepare_flush(struct request_queue *q, s
- static int idedisk_prepare_discard(struct request_queue *q, struct request *rq,
-                                                        struct bio *bio)
- {
--       ide_task_t *task;
-+       struct ide_cmd *task;
-        unsigned size;
-        struct page *page = alloc_page(GFP_KERNEL);
-        if (!page)
-@@ -432,8 +432,8 @@ static int idedisk_prepare_discard(struct request_queue *q, 
- 
-        task->tf_flags   = IDE_TFLAG_LBA48 | IDE_TFLAG_OUT_HOB |
-                           IDE_TFLAG_OUT_TF | IDE_TFLAG_OUT_DEVICE |
--                          IDE_TFLAG_DYN;
--       task->data_phase = TASKFILE_OUT_DMA;
-+                          IDE_TFLAG_DYN | IDE_TFLAG_WRITE;
-+       task->protocol = ATA_PROT_DMA;
- 
-        rq->cmd_type = REQ_TYPE_ATA_TASKFILE;
-        rq->special = task;
-
-If I've understood 0dfb991c6943c810175376b58d1c29cfe532541b correctly,
-this should be equivalent.  Bart?
+I guess this is why it wasn't discovered in my compile testing.  It's
+quite regrettable that `make allmodconfig' didn't enable the feature. 
+That's what allmodconfig is for.
