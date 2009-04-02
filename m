@@ -1,66 +1,83 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932162AbZDBRwB@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1765983AbZDBRxk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932162AbZDBRwB (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 2 Apr 2009 13:52:01 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756122AbZDBRvv
+	id S1765983AbZDBRxk (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 2 Apr 2009 13:53:40 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754760AbZDBRxa
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 2 Apr 2009 13:51:51 -0400
-Received: from metis.ext.pengutronix.de ([92.198.50.35]:54432 "EHLO
-	metis.ext.pengutronix.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751238AbZDBRvu (ORCPT
+	Thu, 2 Apr 2009 13:53:30 -0400
+Received: from zrtps0kp.nortel.com ([47.140.192.56]:41261 "EHLO
+	zrtps0kp.nortel.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754093AbZDBRx3 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 2 Apr 2009 13:51:50 -0400
-Date: Thu, 2 Apr 2009 19:51:48 +0200
-From: Uwe =?iso-8859-1?Q?Kleine-K=F6nig?= 
-	<u.kleine-koenig@pengutronix.de>
-To: linux-kernel@vger.kernel.org
-Cc: Grazvydas Ignotas <notasas@gmail.com>,
-       Pierre Ossman <drzeus-mmc@drzeus.cx>,
-       David Brownell <dbrownell@users.sourceforge.net>,
-       Tony Lindgren <tony@atomide.com>,
-       Russell King <rmk+kernel@arm.linux.org.uk>,
-       Paul Walmsley <paul@pwsan.com>,
-       Jarkko Lavinen <jarkko.lavinen@nokia.com>,
-       Hiroshi DOYU <Hiroshi.DOYU@nokia.com>,
-       Kyungmin Park <kyungmin.park@samsung.com>,
-       Carlos Eduardo Aguiar <carlos.aguiar@indt.org.br>,
-       Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: [PATCH] make mmci-omap using platform_driver_probe
-Message-ID: <20090402175148.GA29544@pengutronix.de>
-References: <200903280927.32786.david-b@pacbell.net> <1238694461-29501-1-git-send-email-u.kleine-koenig@pengutronix.de>
+	Thu, 2 Apr 2009 13:53:29 -0400
+Message-ID: <49D4FB89.4070101@nortel.com>
+Date: Thu, 02 Apr 2009 11:53:13 -0600
+From: "Chris Friesen" <cfriesen@nortel.com>
+User-Agent: Thunderbird 2.0.0.21 (X11/20090302)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <1238694461-29501-1-git-send-email-u.kleine-koenig@pengutronix.de>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-SA-Exim-Connect-IP: 2001:6f8:1178:2:215:17ff:fe12:23b0
-X-SA-Exim-Mail-From: ukl@pengutronix.de
-X-SA-Exim-Scanned: No (on metis.ext.pengutronix.de); SAEximRunCond expanded to false
-X-PTX-Original-Recipient: linux-kernel@vger.kernel.org
+To: Hugh Dickins <hugh@veritas.com>
+CC: Michael Ellerman <michael@ellerman.id.au>, linuxppc-dev@ozlabs.org,
+       linux-kernel@vger.kernel.org,
+       Benjamin Herrenschmidt <benh@kernel.crashing.org>, peterz@infradead.org,
+       akpm@linux-foundation.org
+Subject: Re: Resend: /proc/<pid>/maps offset output broken in 2.6.29
+References: <49CA8501.1000000@nortel.com>  <49D3F662.4050100@nortel.com> <1238659491.9041.133.camel@localhost> <Pine.LNX.4.64.0904021324070.16207@blonde.anvils>
+In-Reply-To: <Pine.LNX.4.64.0904021324070.16207@blonde.anvils>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
+X-OriginalArrivalTime: 02 Apr 2009 17:53:15.0663 (UTC) FILETIME=[E60CE1F0:01C9B3BB]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hello,
-
-Ups, sorry, I got the In-Reply-To wrong.  This should have been a reply
-to <1238196439-16535-27-git-send-email-u.kleine-koenig@pengutronix.de>.
-
-Best regards
-Uwe
-
-On Thu, Apr 02, 2009 at 07:47:41PM +0200, Uwe Kleine-König wrote:
-> A pointer to mmc_omap_probe which lives in .init.text is passed to the
-> core via platform_driver_register and so the kernel might oops if probe
-> is called after the init code is discarded.
+Hugh Dickins wrote:
+> On Thu, 2 Apr 2009, Michael Ellerman wrote:
+>> On Wed, 2009-04-01 at 17:18 -0600, Chris Friesen wrote:
+>>> Resending due to lack of response to original post.
+>> Hi Chris,
+>>
+>> You'll probably get a more useful response on lkml. You CC'ed
+>> linux-kernel-owner originally :)
 > 
-> As requested by David Brownell platform_driver_probe is used instead of
-> moving the probe function to .devinit.text.  This saves some memory, but
-> might have the downside that a device being registered after the call to
-> mmc_omap_init but before the init sections are discarded will not be
-> bound anymore to the driver.
+> Thanks.
 
--- 
-Pengutronix e.K.                              | Uwe Kleine-König            |
-Industrial Linux Solutions                    | http://www.pengutronix.de/  |
+Thanks from me too.  (Oops.)
+
+>>> I was validating some code dealing with /proc/<pid>/maps on 2.6.29 and 
+>>> was surprised when it failed.  It turns out that at least on my ppc64 G5 
+>>> machine the offset value for the last entry is strange--it shows up as a 
+>>> 64-bit value even though the process itself is only 32-bit.
+>>>
+>>> This behaviour also shows up in 2.6.25, but doesn't in 2.6.14.  I 
+>>> haven't yet tested anything else in between.
+>>>
+>>> [cfriesen@localhost cfriesen]$ cat /proc/self/maps
+>>> 00100000-00103000 r-xp 00100000 00:00 0         [vdso]
+>>> 0fe70000-0ffbf000 r-xp 00000000 08:03 4312393   /lib/tls/libc-2.3.3.so
+>>> 0ffbf000-0ffc0000 ---p 0014f000 08:03 4312393   /lib/tls/libc-2.3.3.so
+>>> 0ffc0000-0ffc2000 r--p 00150000 08:03 4312393   /lib/tls/libc-2.3.3.so
+>>> 0ffc2000-0ffc6000 rwxp 00152000 08:03 4312393   /lib/tls/libc-2.3.3.so
+>>> 0ffc6000-0ffc8000 rwxp 0ffc6000 00:00 0
+>>> 0ffd0000-0ffec000 r-xp 00000000 08:03 4309011   /lib/ld-2.3.3.so
+>>> 0fff0000-0fff1000 r--p 00020000 08:03 4309011   /lib/ld-2.3.3.so
+>>> 0fff1000-0fff2000 rwxp 00021000 08:03 4309011   /lib/ld-2.3.3.so
+>>> 10000000-10004000 r-xp 00000000 08:03 917536    /bin/cat
+>>> 10013000-10015000 rwxp 00003000 08:03 917536    /bin/cat
+>>> 10015000-10036000 rwxp 10015000 00:00 0         [heap]
+>>> f7deb000-f7feb000 r--p 00000000 08:03 2560322 
+>>> /usr/lib/locale/locale-archive
+>>> f7feb000-f7fec000 rw-p f7feb000 00:00 0
+>>> ffe6d000-ffe82000 rw-p ffffffeb000 00:00 0      [stack]
+
+> Chris isn't the first to be concerned by that: there's a patch in
+> -mm which just shows 0 instead of anon vm_pgoff in /proc/<pid>/maps
+> output.  That patch is on akpm's list for 2.6.30 merge, but I think
+> hasn't gone to Linus yet: expect it in a later batch.
+
+Alternately, what about just making the offset for the stack match the 
+starting address of the VMA?  That way it would look the same as other 
+anonymous areas, and as a bonus would look the same as previous 
+releases.  Arguably, /proc/<pid>/maps should count as userspace-visible API.
+
+Chris
+
