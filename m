@@ -1,44 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934971AbZDBGBE@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S935063AbZDBGB2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934971AbZDBGBE (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 2 Apr 2009 02:01:04 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754424AbZDBGAq
+	id S935063AbZDBGB2 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 2 Apr 2009 02:01:28 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934930AbZDBGBE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 2 Apr 2009 02:00:46 -0400
-Received: from sous-sol.org ([216.99.217.87]:40827 "EHLO sequoia.sous-sol.org"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1751612AbZDBGAp (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 2 Apr 2009 02:00:45 -0400
-Date: Wed, 1 Apr 2009 23:00:24 -0700
-From: Chris Wright <chrisw@sous-sol.org>
-To: Gregory Haskins <ghaskins@novell.com>
-Cc: Chris Wright <chrisw@sous-sol.org>,
-       Anthony Liguori <anthony@codemonkey.ws>,
-       Andi Kleen <andi@firstfloor.org>, linux-kernel@vger.kernel.org,
-       agraf@suse.de, pmullaney@novell.com, pmorreale@novell.com,
-       rusty@rustcorp.com.au, netdev@vger.kernel.org, kvm@vger.kernel.org
-Subject: Re: [RFC PATCH 00/17] virtual-bus
-Message-ID: <20090402060024.GY18394@sequoia.sous-sol.org>
-References: <87ab71monw.fsf@basil.nowhere.org> <49D35825.3050001@novell.com> <20090401132340.GT11935@one.firstfloor.org> <49D37805.1060301@novell.com> <20090401170103.GU11935@one.firstfloor.org> <49D3B64F.6070703@codemonkey.ws> <20090401204039.GR18394@sequoia.sous-sol.org> <49D3D88E.3090009@novell.com> <20090401212830.GT18394@sequoia.sous-sol.org> <49D3E649.7000906@novell.com>
+	Thu, 2 Apr 2009 02:01:04 -0400
+Received: from mail-fx0-f158.google.com ([209.85.220.158]:37464 "EHLO
+	mail-fx0-f158.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S934722AbZDBGBA convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 2 Apr 2009 02:01:00 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=googlemail.com; s=gamma;
+        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
+         :cc:content-type:content-transfer-encoding;
+        b=KXzH/dyfdA9DiVsc+y8Dr7dYf/lstgtwIYSG4WUhuaAazKvNS0u/d5gPhEqX/Jr49P
+         6gOdVlZJbj2zCCN3qPgCbZC6K5YIQ+yldqYgvDL2VvbE9gs7QmW/6/IjRsKxDZgkP5v/
+         VzJ8ckAb+sXP7nB5baHm4b55E7BcmgOckOjNw=
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <49D3E649.7000906@novell.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+In-Reply-To: <20090402055906.GH1117@x200.localdomain>
+References: <20090331150218.GS9137@random.random>
+	 <20090331151845.GT9137@random.random> <49D23CD1.9090208@codemonkey.ws>
+	 <20090331162525.GU9137@random.random> <49D24A02.6070000@codemonkey.ws>
+	 <20090402012215.GE1117@x200.localdomain>
+	 <49D424AF.3090806@codemonkey.ws>
+	 <20090402054816.GG1117@x200.localdomain>
+	 <36ca99e90904012257j5f5e6e2co673ff2433d49b7b9@mail.gmail.com>
+	 <20090402055906.GH1117@x200.localdomain>
+Date: Thu, 2 Apr 2009 08:00:56 +0200
+Message-ID: <36ca99e90904012300s57c9f030xa70f028216c3da2a@mail.gmail.com>
+Subject: Re: [PATCH 4/4 alternative userspace] add ksm kernel shared memory 
+	driver
+From: Bert Wesarg <bert.wesarg@googlemail.com>
+To: Chris Wright <chrisw@redhat.com>
+Cc: Anthony Liguori <anthony@codemonkey.ws>,
+       Andrea Arcangeli <aarcange@redhat.com>, Izik Eidus <ieidus@redhat.com>,
+       linux-kernel@vger.kernel.org, kvm@vger.kernel.org, linux-mm@kvack.org,
+       avi@redhat.com, riel@redhat.com, jeremy@goop.org, mtosatti@redhat.com,
+       hugh@veritas.com, corbet@lwn.net, dmonakhov@openvz.org
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-* Gregory Haskins (ghaskins@novell.com) wrote:
-
-<snip nice list>
-
-> I cant think of more examples right now, but I will update this list
-> if/when I come up with more.  I hope that satisfactorily answered your
-> question, though!
-
-Yes, that helps, thanks.
-
-There's still the simple issue of guest/host interface widening w/ kernel
-resident backend where a plain ol' bug (good that you thought about the
-isolation) can take out more than single guest.  Always the balance... ;-)
+On Thu, Apr 2, 2009 at 07:59, Chris Wright <chrisw@redhat.com> wrote:
+> * Bert Wesarg (bert.wesarg@googlemail.com) wrote:
+>> > Unregister a shareable memory region (not currently implemented):
+>                                          ^^^^^^^^^^^^^^^^^^^^^^^^^
+>> > madvise(void *addr, size_t len, MADV_UNSHAREABLE)
+>> I can't find a definition for MADV_UNSHAREABLE!
+>
+> It's not there ;-)
+>
+Thanks ;-)
