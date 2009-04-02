@@ -1,66 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933258AbZDBSyb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932290AbZDBS5A@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933258AbZDBSyb (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 2 Apr 2009 14:54:31 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932071AbZDBSyT
+	id S932290AbZDBS5A (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 2 Apr 2009 14:57:00 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755698AbZDBS4u
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 2 Apr 2009 14:54:19 -0400
-Received: from mail-qy0-f118.google.com ([209.85.221.118]:48986 "EHLO
-	mail-qy0-f118.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1762654AbZDBSyS convert rfc822-to-8bit (ORCPT
+	Thu, 2 Apr 2009 14:56:50 -0400
+Received: from smtp118.mail.mud.yahoo.com ([209.191.84.167]:38695 "HELO
+	smtp118.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1754784AbZDBS4u (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 2 Apr 2009 14:54:18 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
-         :cc:content-type:content-transfer-encoding;
-        b=CQQugwrdHzgAoGCAfYNdhRQ8tDxGcxYn8P8pgL0dnTX7cXWBacruQE9KjWXyM5wxX5
-         WlXGZH6Vz4vY1XOD/rzL/I2Lx91Uz0Oscv2wAzQChLXXoyPCrex7ak1qOduFrhltvIX1
-         R2J+AEOqygLwbe0bQaEFmnUjVQrQ39rdtWW9k=
-MIME-Version: 1.0
-In-Reply-To: <20090402094247.9d7ac19f.akpm@linux-foundation.org>
-References: <20090325183011.GN32307@mit.edu> <20090326171148.9bf8f1ec.akpm@linux-foundation.org> 
-	<alpine.LFD.2.00.0903261723250.3994@localhost.localdomain> 
-	<20090326174704.cd36bf7b.akpm@linux-foundation.org> <alpine.LFD.2.00.0903261752110.3994@localhost.localdomain> 
-	<20090326182519.d576d703.akpm@linux-foundation.org> <20090401210337.GB3797@csclub.uwaterloo.ca> 
-	<20090402110532.GA5132@aniel> <72dbd3150904020929w46c6dc0bs4028c49dd8fa8c56@mail.gmail.com> 
-	<20090402094247.9d7ac19f.akpm@linux-foundation.org>
-Date: Thu, 2 Apr 2009 11:52:24 -0700
-Message-ID: <72dbd3150904021152l5cbb576aodf312b50a824bbb2@mail.gmail.com>
-Subject: Re: Linux 2.6.29
-From: David Rees <drees76@gmail.com>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: Janne Grunau <j@jannau.net>,
-       Lennart Sorensen <lsorense@csclub.uwaterloo.ca>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Theodore Tso <tytso@mit.edu>, Jesper Krogh <jesper@krogh.cc>,
+	Thu, 2 Apr 2009 14:56:50 -0400
+DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
+  s=s1024; d=yahoo.com.au;
+  h=Received:X-YMail-OSG:X-Yahoo-Newman-Property:From:To:Subject:Date:User-Agent:Cc:References:In-Reply-To:MIME-Version:Content-Disposition:Message-Id:Content-Type:Content-Transfer-Encoding;
+  b=54LS5DAcsYUmi/QDfrryaOMjkeiGQq/sEwa1JkWYpAhcng5sBXFAvpkhk8vVF1GeN6BZdKJ0CaI9ktQPrkT55G6my8BHQbicKq66UDLIf42avJ8d/dHXi+/lmyh8CmGMsWLUGiwut2yKJotPUqMNJ7O4WpIYoHB5eG9s2O4zUVY=  ;
+X-YMail-OSG: rhetpdYVM1kyOLT4BsuWafQs78tk.GEjIfBBuud25MqfW9zyWRoTqRaBPMj1Jp8Thgseqz7LzZVnCCi2YwU4DqJMzzqtpMER7QY9QULy4RxD3gaHcPBXL.b8vsYzrXo6pNIgKrgMEzlWYq87hvSuRC.rNz6x_oPxjrmTpC46Z8t.0Sui96L.1GtnCOYGfIkd9hN08VpKqHJngNlm947xRf4Am_HmjCUNeN14bpLEZTQgPiBlDu.PufrJpZpIoPmqX4N9Emv2Ej.imfqdbenYmZXQZ5hTSU.SrQ6luj9gtHTCInBZR8U5
+X-Yahoo-Newman-Property: ymail-3
+From: Nick Piggin <nickpiggin@yahoo.com.au>
+To: Matthew Garrett <mjg59@srcf.ucam.org>
+Subject: Re: Ext4 and the "30 second window of death"
+Date: Fri, 3 Apr 2009 05:56:40 +1100
+User-Agent: KMail/1.9.51 (KDE/4.0.4; ; )
+Cc: david@lang.hm, Theodore Tso <tytso@mit.edu>,
+       Sitsofe Wheeler <sitsofe@yahoo.com>,
+       "Andreas T.Auer" <andreas.t.auer_lkml_73537@ursus.ath.cx>,
+       Alberto Gonzalez <info@gnebu.es>,
        Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 8BIT
+References: <200903291224.21380.info@gnebu.es> <200904030535.00335.nickpiggin@yahoo.com.au> <20090402183834.GB4773@srcf.ucam.org>
+In-Reply-To: <20090402183834.GB4773@srcf.ucam.org>
+MIME-Version: 1.0
+Content-Disposition: inline
+Message-Id: <200904030556.41270.nickpiggin@yahoo.com.au>
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Apr 2, 2009 at 9:42 AM, Andrew Morton <akpm@linux-foundation.org> wrote:
-> For any filesystem it is quite sensible for an application to manage
-> the amount of dirty memory which the kernel is holding on its behalf,
-> and based upon the application's knowledge of its future access
-> patterns.
->
-> But MythTV did it the wrong way.
->
-> A suitable design for the streaming might be, every 4MB:
->
-> - run sync_file_range(SYNC_FILE_RANGE_WRITE) to get the 4MB underway
->  to the disk
->
-> - run fadvise(POSIX_FADV_DONTNEED) against the previous 4MB to
->  discard it from pagecache.
+On Friday 03 April 2009 05:38:34 Matthew Garrett wrote:
+> On Fri, Apr 03, 2009 at 05:34:59AM +1100, Nick Piggin wrote:
+> 
+> > Shouldn't applications have a mode to avoid spinning up the disk if it is
+> > so important?
+> 
+> They do. It's called "Don't use fsync() unless your data needs to be on 
+> disk". I'm not sure why you'd ever want an application to be in anything 
+> but this mode.
+> 
 
-Yep, you're right.  sync_file_range is perfect for what MythTV wants to do.
+Well you might decide you are willing to sacrifice timely storage of
+logs, or reducing backups in your editor or something. But obviously
+the kernel can't decide which of those fsyncs is safe to omit (or
+turn into a barrier) while staying within the advertised semantics of
+the app. Application obviously can.
 
-Though there are cases where MythTV can read data it wrote out not too
-long ago, for example, when commercial flagging, so
-fadvise(POSIX_FADV_DONTNEED) may not be warranted.
-
--Dave
