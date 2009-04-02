@@ -1,83 +1,110 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763641AbZDBPDn@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763288AbZDBPEa@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763641AbZDBPDn (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 2 Apr 2009 11:03:43 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760303AbZDBO5o
+	id S1763288AbZDBPEa (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 2 Apr 2009 11:04:30 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761864AbZDBO6N
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 2 Apr 2009 10:57:44 -0400
-Received: from mga02.intel.com ([134.134.136.20]:17702 "EHLO mga02.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1761553AbZDBO5n (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 2 Apr 2009 10:57:43 -0400
-Content-Type: multipart/mixed; boundary="===============1434699581=="
+	Thu, 2 Apr 2009 10:58:13 -0400
+Received: from caramon.arm.linux.org.uk ([78.32.30.218]:42955 "EHLO
+	caramon.arm.linux.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1761806AbZDBO6L (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 2 Apr 2009 10:58:11 -0400
+Date: Thu, 2 Apr 2009 15:57:53 +0100
+From: Russell King <rmk+lkml@arm.linux.org.uk>
+To: Greg Kroah-Hartman <gregkh@suse.de>, Ming Lei <tom.leiming@gmail.com>
+Cc: Linux Kernel List <linux-kernel@vger.kernel.org>
+Subject: Re: Commit 7a192ec is build breaking
+Message-ID: <20090402145753.GA11106@flint.arm.linux.org.uk>
+References: <20090328140049.GA4344@flint.arm.linux.org.uk>
 MIME-Version: 1.0
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.39,314,1235980800"; 
-   d="scan'208";a="399764777"
-Message-Id: <20090402145734.407880000@intel.com>
-References: <20090402145455.597376000@intel.com>
-User-Agent: quilt/0.46-1
-Date: Thu, 02 Apr 2009 16:55:12 +0200
-From: markus.t.metzger@intel.com
-To: mingo@elte.hu, tglx@linutronix.de, hpa@zytor.com
-Cc: markus.t.metzger@gmail.com, roland@redhat.com, eranian@googlemail.com,
-       oleg@redhat.com, juan.villacis@intel.com, ak@linux.jf.intel.com,
-       linux-kernel@vger.kernel.org,
-       Markus Metzger <markus.t.metzger@intel.com>
-Subject: [patch 17/18] x86, ds: fix bad ds_reset_pebs()
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20090328140049.GA4344@flint.arm.linux.org.uk>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---===============1434699581==
-MIME-Version: 1.0
-Content-Disposition: inline; filename=tip.master.ds.reset_pebs.patch
+Ping?
 
-Ds_reset_pebs() passed the wrong qualifier to a shared function resulting
-in a reset of bts, rather than pebs.
-
-
-Reported-by: Stephane Eranian <eranian@googlemail.com>
-Signed-off-by: Markus Metzger <markus.t.metzger@intel.com>
----
- arch/x86/kernel/ds.c |    2 	1 +	1 -	0 !
- 1 file changed, 1 insertion(+), 1 deletion(-)
-
-Index: b/arch/x86/kernel/ds.c
-===================================================================
---- a/arch/x86/kernel/ds.c
-+++ b/arch/x86/kernel/ds.c
-@@ -1214,7 +1214,7 @@ int ds_reset_pebs(struct pebs_tracer *tr
- 
- 	tracer->trace.ds.top = tracer->trace.ds.begin;
- 
--	ds_set(tracer->ds.context->ds, ds_bts, ds_index,
-+	ds_set(tracer->ds.context->ds, ds_pebs, ds_index,
- 	       (unsigned long)tracer->trace.ds.top);
- 
- 	return 0;
+On Sat, Mar 28, 2009 at 02:00:49PM +0000, Russell King wrote:
+> The commit:
+> 
+>     platform driver: fix incorrect use of 'platform_bus_type' with 'struct device_driver'
+> 
+> contains this:
+> 
+> -static int __exit pxa2xx_flash_remove(struct device *dev)
+> +static int __exit pxa2xx_flash_remove(struct platform_device *dev)
+> ...
+> -       .remove         = __exit_p(pxa2xx_flash_remove),
+> +       .remove         = __devexit_p(pxa2xx_flash_remove),
+> 
+> which leads to the following build error:
+> 
+> `pxa2xx_flash_remove' referenced in section `.data' of drivers/built-in.o: defined in discarded section `.exit.text' of drivers/built-in.o
+> 
+> This is not the only instance of it in this patch - all __exit_p's
+> touched by this patch have been converted to __devexit_p's without
+> regard to the original function.
+> 
+> Let's revert this change and, if we are going to convert functions
+> to be __devexit/__devinit, lets have that as a _separate_ patch doing
+> just that change.
+> 
+> Signed-off-by: Russell King <rmk+kernel@arm.linux.org.uk>
+> ---
+>  arch/mips/basler/excite/excite_iodev.c |    2 +-
+>  drivers/mtd/maps/pxa2xx-flash.c        |    2 +-
+>  drivers/mtd/nand/excite_nandflash.c    |    3 +--
+>  3 files changed, 3 insertions(+), 4 deletions(-)
+> 
+> diff --git a/arch/mips/basler/excite/excite_iodev.c b/arch/mips/basler/excite/excite_iodev.c
+> index dfbfd7e..2ab56ea 100644
+> --- a/arch/mips/basler/excite/excite_iodev.c
+> +++ b/arch/mips/basler/excite/excite_iodev.c
+> @@ -71,7 +71,7 @@ static struct platform_driver iodev_driver = {
+>  		.owner		= THIS_MODULE,
+>  	},
+>  	.probe		= iodev_probe,
+> -	.remove		= __devexit_p(iodev_remove),
+> +	.remove		= __exit_p(iodev_remove),
+>  };
+>  
+>  
+> diff --git a/drivers/mtd/maps/pxa2xx-flash.c b/drivers/mtd/maps/pxa2xx-flash.c
+> index e9026cb..bf933a9 100644
+> --- a/drivers/mtd/maps/pxa2xx-flash.c
+> +++ b/drivers/mtd/maps/pxa2xx-flash.c
+> @@ -177,7 +177,7 @@ static struct platform_driver pxa2xx_flash_driver = {
+>  		.owner		= THIS_MODULE,
+>  	},
+>  	.probe		= pxa2xx_flash_probe,
+> -	.remove		= __devexit_p(pxa2xx_flash_remove),
+> +	.remove		= __exit_p(pxa2xx_flash_remove),
+>  	.suspend	= pxa2xx_flash_suspend,
+>  	.resume		= pxa2xx_flash_resume,
+>  	.shutdown	= pxa2xx_flash_shutdown,
+> diff --git a/drivers/mtd/nand/excite_nandflash.c b/drivers/mtd/nand/excite_nandflash.c
+> index 72446fb..630b4d6 100644
+> --- a/drivers/mtd/nand/excite_nandflash.c
+> +++ b/drivers/mtd/nand/excite_nandflash.c
+> @@ -224,7 +224,7 @@ static struct platform_driver excite_nand_driver = {
+>  		.owner		= THIS_MODULE,
+>  	},
+>  	.probe = excite_nand_probe,
+> -	.remove = __devexit_p(excite_nand_remove)
+> +	.remove = __exit_p(excite_nand_remove)
+>  };
+>  
+>  static int __init excite_nand_init(void)
+> 
+> 
+> -- 
+> Russell King
 
 -- 
-
---===============1434699581==
-Content-Type: text/plain; charset="utf-8"
-MIME-Version: 1.0
-Content-Transfer-Encoding: quoted-printable
-Content-Disposition: inline
-
----------------------------------------------------------------------
-Intel GmbH
-Dornacher Strasse 1
-85622 Feldkirchen/Muenchen Germany
-Sitz der Gesellschaft: Feldkirchen bei Muenchen
-Geschaeftsfuehrer: Douglas Lusk, Peter Gleissner, Hannes Schwaderer
-Registergericht: Muenchen HRB 47456 Ust.-IdNr.
-VAT Registration No.: DE129385895
-Citibank Frankfurt (BLZ 502 109 00) 600119052
-
-This e-mail and any attachments may contain confidential material for
-the sole use of the intended recipient(s). Any review or distribution
-by others is strictly prohibited. If you are not the intended
-recipient, please contact the sender and delete all copies.
-
---===============1434699581==--
+Russell King
+ Linux kernel    2.6 ARM Linux   - http://www.arm.linux.org.uk/
+ maintainer of:
