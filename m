@@ -1,49 +1,73 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763411AbZDBTaj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763246AbZDBTgs@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763411AbZDBTaj (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 2 Apr 2009 15:30:39 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933356AbZDBTaU
+	id S1763246AbZDBTgs (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 2 Apr 2009 15:36:48 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751550AbZDBTgb
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 2 Apr 2009 15:30:20 -0400
-Received: from extu-mxob-2.symantec.com ([216.10.194.135]:34283 "EHLO
-	extu-mxob-2.symantec.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1762846AbZDBTaT (ORCPT
+	Thu, 2 Apr 2009 15:36:31 -0400
+Received: from qw-out-2122.google.com ([74.125.92.25]:34894 "EHLO
+	qw-out-2122.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751019AbZDBTgb (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 2 Apr 2009 15:30:19 -0400
-Date: Thu, 2 Apr 2009 20:27:21 +0100 (BST)
-From: Hugh Dickins <hugh@veritas.com>
-X-X-Sender: hugh@blonde.anvils
-To: Martin Schwidefsky <schwidefsky@de.ibm.com>
-cc: Nick Piggin <nickpiggin@yahoo.com.au>,
-       Rusty Russell <rusty@rustcorp.com.au>,
-       virtualization@lists.linux-foundation.org, linux-mm@kvack.org,
-       linux-kernel@vger.kernel.org, virtualization@lists.osdl.org,
-       akpm@osdl.org, frankeh@watson.ibm.com, riel@redhat.com
-Subject: Re: [patch 0/6] Guest page hinting version 7.
-In-Reply-To: <20090402175249.3c4a6d59@skybase>
-Message-ID: <Pine.LNX.4.64.0904022016180.29625@blonde.anvils>
-References: <20090327150905.819861420@de.ibm.com> <200903281705.29798.rusty@rustcorp.com.au>
- <20090329162336.7c0700e9@skybase> <200904022232.02185.nickpiggin@yahoo.com.au>
- <20090402175249.3c4a6d59@skybase>
+	Thu, 2 Apr 2009 15:36:31 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
+         :content-type:content-transfer-encoding;
+        b=spuDZVjgqgTOxUoIn9ePGjITww8ENcdsbVptoPeGAgRtIEiJG6Ok45q7bxTeU31mpY
+         HJt6WTU2AzRS5OII8YGmVwwvEcZG+hKSphSyPmpe716rOKRgtZ1tPFXsB7/gz/mQbDXr
+         r+P6V/ZzKaAvSMW9GxBkkZzeSMF053vkhqrXA=
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+In-Reply-To: <6c62e9d84a16902aebba9438b4e299d9.squirrel@localhost>
+References: <159a870e0904020702q3c528b8u77cebf834d607e3f@mail.gmail.com>
+	 <6c62e9d84a16902aebba9438b4e299d9.squirrel@localhost>
+Date: Thu, 2 Apr 2009 16:36:28 -0300
+Message-ID: <159a870e0904021236m6ef4444eh66ec42e34aa24291@mail.gmail.com>
+Subject: Re: RAID performance / tuning?
+From: Tiago Freire <tiago.freire@gmail.com>
+To: linux-kernel@vger.kernel.org
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 2 Apr 2009, Martin Schwidefsky wrote:
-> On Thu, 2 Apr 2009 22:32:00 +1100
-> Nick Piggin <nickpiggin@yahoo.com.au> wrote:
-> 
-> > I still think this needs much more justification.
->  
-> Ok, I can understand that. We probably need a KVM based version to show
-> that benefits exist on non-s390 hardware as well.
+I would like to believe this is not the case with Intel ICH9R...
 
-That would indeed help your cause enormously (I think I made the same
-point last time).  All these complex transitions, added to benefit only
-an architecture to which few developers have access, asks for trouble -
-we mm hackers already get caught out often enough by your
-too-well-camouflaged page_test_dirty().
+Anyway, I want to make sure I have done everything possible to speed
+up my 6-disk RAID.
+Scheduling concurernt IO may not have a best single solution, I know,
+but is the kernel 'perfect' in the sense of giving the RAID / SATA
+subsystems all the cpu cycles it needs to perform best (with the
+lowest possible latency)? Or do we have some knobs to tune the kernel?
 
-Hugh
+
+On Thu, Apr 2, 2009 at 2:41 PM,  <david.hagood@gmail.com> wrote:
+>
+>> Why is it that software RAID on current systems still gets less
+>> performance than hardware counterparts?
+>
+> Part of it can be crappy disk interfaces: I was running software raid with
+> 2 SATA-SIL cards, and would frequently be disk-bound with the CPU still
+> largely idle.
+>
+> The cards were incapable of talking to more than one drive at a time. They
+> didn't support command queuing on the drives.
+>
+> As a result, the system would set up a stripe, queue up the writes, then
+> have to wait as each write for EACH DISK in the 7 disk array was carried
+> out.
+>
+> On a good hardware RAID controller, the disks can be written in parallel,
+> and the controller will support command queuing - so disk writes can be
+> run in parallel, and the writes themselves can be better optimized by the
+> disks.
+>
+>
+>
+
+
+
+-- 
+-----
+Tiago Mikhael Pastorello Freire a.k.a. Brazilian Joe
