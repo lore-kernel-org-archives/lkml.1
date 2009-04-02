@@ -1,54 +1,135 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764101AbZDBRb2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932407AbZDBRdw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764101AbZDBRb2 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 2 Apr 2009 13:31:28 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760686AbZDBRbO
+	id S932407AbZDBRdw (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 2 Apr 2009 13:33:52 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760410AbZDBRdl
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 2 Apr 2009 13:31:14 -0400
-Received: from smtp116.mail.mud.yahoo.com ([209.191.84.165]:36230 "HELO
-	smtp116.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1757244AbZDBRbM (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 2 Apr 2009 13:31:12 -0400
-DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
-  s=s1024; d=yahoo.com.au;
-  h=Received:X-YMail-OSG:X-Yahoo-Newman-Property:From:To:Subject:Date:User-Agent:Cc:References:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Content-Disposition:Message-Id;
-  b=BHVmz14rpaHcRyWW/4ZpztK9kw4zsHir2P2M4cmcBik7m6qlQe8g6c5EbNVke/WrmgjhNKIEv5ikH8+KlPkOb+z/5QWM+n5um08x/yWB3xzecU7xyQFH+rose6CEOBXsdgUuIMzRYM83OVkHogcoX0U2aJUm74CbXnXEF4bdesM=  ;
-X-YMail-OSG: UzgPPm4VM1l6KIYLb2RlXrkZJTItcEvH4DD1V4m03ybp_uOAqjFYaxAGoidDTC7fm16GbdVAfC1kDuLAgel6JXcLO9sSTZJ0T2yZzYmUJGuLOJJn4gSSUFv7cgnuhgciTq7gwJ2yLSooWx3CCjEJ6FnvKze9uVWGkmGkGToBSHUMSRi8is.9E_ibV.CUeZujwQmxGBRtoLuyahFilEcGu.VzZ8rctDvS51yIbCMCT.sKwZGr.FPAZfhlj4MDcDAtIztrfo1H3PKDT722g2rhmiG_Tov68JpysXB50OXGjjA6AbzQjtcQv5U..9nImIOVtJTEh5_wyAQb41VJ11Cb1nW6qw--
-X-Yahoo-Newman-Property: ymail-3
-From: Nick Piggin <nickpiggin@yahoo.com.au>
-To: David Howells <dhowells@redhat.com>
-Subject: Re: [PATCH 06/43] FS-Cache: Recruit a couple of page flags for cache management [ver #46]
-Date: Fri, 3 Apr 2009 04:31:03 +1100
-User-Agent: KMail/1.9.51 (KDE/4.0.4; ; )
-Cc: viro@zeniv.linux.org.uk, nfsv4@linux-nfs.org, linux-kernel@vger.kernel.org,
-       linux-fsdevel@vger.kernel.org
-References: <200904030353.17713.nickpiggin@yahoo.com.au> <200904030315.03606.nickpiggin@yahoo.com.au> <7249.1238692155@redhat.com>
-In-Reply-To: <7249.1238692155@redhat.com>
+	Thu, 2 Apr 2009 13:33:41 -0400
+Received: from mx2.mail.elte.hu ([157.181.151.9]:49732 "EHLO mx2.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1759494AbZDBRdk (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 2 Apr 2009 13:33:40 -0400
+Date: Thu, 2 Apr 2009 19:32:57 +0200
+From: Ingo Molnar <mingo@elte.hu>
+To: Jaswinder Singh Rajput <jaswinder@kernel.org>
+Cc: Thomas Gleixner <tglx@linutronix.de>, mingo@redhat.com, hpa@zytor.com,
+       linux-kernel@vger.kernel.org, henrix@sapo.pt,
+       linux-tip-commits@vger.kernel.org
+Subject: Re: [tip:irq/genirq] genirq: do not execute DEBUG_SHIRQ when irq
+	setup failed
+Message-ID: <20090402173257.GA3755@elte.hu>
+References: <20090401170635.GA4392@hades.domain.com> <tip-ba71604fad348656071a2a76eef9a67dab85a773@git.kernel.org> <1238682747.3099.16.camel@ht.satnam> <alpine.LFD.2.00.0904021718230.12916@localhost.localdomain> <1238686904.3099.22.camel@ht.satnam> <alpine.LFD.2.00.0904021753020.12916@localhost.localdomain> <1238689216.3099.34.camel@ht.satnam>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="utf-8"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Message-Id: <200904030431.04079.nickpiggin@yahoo.com.au>
+In-Reply-To: <1238689216.3099.34.camel@ht.satnam>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Friday 03 April 2009 04:09:15 David Howells wrote:
-> Nick Piggin <nickpiggin@yahoo.com.au> wrote:
-> 
-> > Comments about PG_private still stand.
-> 
-> Replies about PG_private still stand.
-> 
-> It's owned by fs/buffer.c, and if the 'netfs' uses that, then PG_private is
-> not available.
 
-Well in theory I still think it would be cleanest to modify buffer to
-play more nicely with it. But maybe that ends up being harder to
-distinguish the 3 cases of attached metadata on the page. I don't know,
-you haven't posted any isofs code so either way it is inappropriate to
-use up this extra page flag here.
+Jaswinder,
 
-Is isofs cache worth a page flag?
+Let me transcribe what happened:
+
+* Jaswinder Singh Rajput <jaswinder@kernel.org> wrote:
+
+> On Thu, 2009-04-02 at 18:08 +0200, Thomas Gleixner wrote:
+> > On Thu, 2 Apr 2009, Jaswinder Singh Rajput wrote:
+> > > > > >  #ifdef CONFIG_DEBUG_SHIRQ
+> > > > > > -	if (irqflags & IRQF_SHARED) {
+> > > > > > +	if (!retval & (irqflags & IRQF_SHARED)) {
+> > > > > >  		/*
+> > > > > >  		 * It's a shared IRQ -- the driver ought to be prepared for it
+> > > > > >  		 * to happen immediately, so let's make sure....
+> > > > > 
+> > > > > What is this ?
+
+[ Jaswinder misunderstands a patch and asks a rather stupid question 
+  in a demanding tone and does not go into any level of detail why 
+  he thinks the patch is wrong. Just a single look into the source 
+  code file in question would have shown him his mistake. ]
+
+> > > > 
+> > > > You looking at the wrong place.
+
+[ Thomas, the genirq maintainer, points out Jaswinder's error 
+  calmly. ]
+
+> > > >  
+> > > > > There is no retval:
+> > > > > 
+> > > > > http://git.kernel.org/?p=linux/kernel/git/x86/linux-2.6-tip.git;a=blob;f=kernel/irq/manage.c;h=a3eb7baf1e46f2c735edb4cc44e0386cfbc4989e;hb=HEAD
+> > > > 
+> > > > Care to read patches you want to comment on carefully _BEFORE_ you
+> > > > start yelling at people and sending useless copies of the wrong
+> > > > function around the world.
+> > > > 
+> > > > The patch is perfectly fine and already applied.
+
+[ Thomas also asks Jaswinder to think things through before wasting 
+  other people's time. ]
+
+> > > > 
+> > > 
+> > > Yes, I know somehow you applied it. When you will merge this branch with
+> > > -tip/master then you will understand what I am saying.
+
+[ Jaswinder is being difficult: he writes that Thomas "somehow"
+  applied the patch - ignoring the fact that Thomas is the 
+  maintainer of this code.
+
+  Jaswinder is also suggesting in a condescending tone that Thomas
+  does not understand the issue - while the code is perfectly fine 
+  and it is Jaswinder who is trivially wrong.
+
+  Wasting more of Thomas's time. ]
+
+> > Jaswinder. I really start to get annoyed. 
+> > 
+
+[ Thomas, understandably, being into the 4th mail of a thread that 
+  should not have happened at all, is getting annoyed. ]
+
+> > That patch applies fine on master as well.
+
+[ Thomas points out another mistake in Jaswinder's argument. ]
+
+> > > Even function name is changed from:
+> > >
+> > > 713 int request_irq(unsigned int irq, irq_handler_t handler,
+> > > 
+> > > 857 int request_threaded_irq(unsigned int irq, irq_handler_t handler,
+
+[ Jaswinder shows evidence of even more stupidity: he points out to 
+  Thomas that a function changed its name, forgetting two things: 
+  that 1) it is irrelevant and 2) Thomas did the rename in question. ]
+
+> > 
+> > And why is this fcking relevant ? 
+
+[ Thomas is really annoyed at Jaswinder writing wrong, 
+  irrelevant, time wasting mails without showing any sign of 
+  understanding the issues and without admitting fault. ]
+
+> > 
+> 
+> I am dead sure, you really need some good manners and need to 
+> learn many things.
+
+[ Jaswinder, still not admitting his fault, compounds his mistakes
+  by being even more condescending. ]
+
+Jaswinder, this is really not an acceptable pattern of behavior on 
+lkml.
+
+	Ingo
