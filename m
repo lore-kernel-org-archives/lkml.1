@@ -1,81 +1,167 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761652AbZDBPvs@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763444AbZDBPw7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761652AbZDBPvs (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 2 Apr 2009 11:51:48 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762575AbZDBPvc
+	id S1763444AbZDBPw7 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 2 Apr 2009 11:52:59 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760281AbZDBPwt
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 2 Apr 2009 11:51:32 -0400
-Received: from smtp114.mail.mud.yahoo.com ([209.191.84.67]:22362 "HELO
-	smtp114.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1762384AbZDBPva (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 2 Apr 2009 11:51:30 -0400
-DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
-  s=s1024; d=yahoo.com.au;
-  h=Received:X-YMail-OSG:X-Yahoo-Newman-Property:From:To:Subject:Date:User-Agent:Cc:References:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Content-Disposition:Message-Id;
-  b=TqxMIm1Nj1nsvivPkjAut8CxWYYvVQ4bhnKifGFg4YV1jrv/t2BwDl0Ucs0vVBB/XAfqEBp1lpd70UVWVVXMiwMGFn2LoMFzHpqtlX9MJ7hRYjyCTbvOGKNptkLMUOYm/KeVYabLVCa8/UaPxnhbRQWPRrCaBiyLkyAQ4NclRi8=  ;
-X-YMail-OSG: nM166ycVM1n_.qXW4xFOdfNDFB.GewUNW..YsluUklV4Zpf35_.DfFRlSB4fOsR2z.GBQE3pHi.My3stUkMxeQzQpkIXudfpp8ZLrhmH15gpC6Wq9RjBh8fJIJJWfVAsssptWepPiDMQZmKedFXyXWyRYsMdza7yCclz5dkDWZpY6HC6ZEKJBrK9c19RErcKdKdSiCjJIjqP4ywiM1q5SjFonaWw_erkkfVd3Yb.f62Hy4mecsVUs6Uyf9WSaiJiCbi0aGrDdWBADPtkML8KrweOir9YPNXx1ePDti3pIk2jB.QD3lmd
-X-Yahoo-Newman-Property: ymail-3
-From: Nick Piggin <nickpiggin@yahoo.com.au>
-To: Jan Kara <jack@suse.cz>
-Subject: Re: ftruncate-mmap: pages are lost after writing to mmaped file.
-Date: Fri, 3 Apr 2009 02:51:20 +1100
-User-Agent: KMail/1.9.51 (KDE/4.0.4; ; )
-Cc: Ying Han <yinghan@google.com>, "Martin J. Bligh" <mbligh@mbligh.org>,
-       linux-ext4@vger.kernel.org,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       "linux-kernel" <linux-kernel@vger.kernel.org>,
-       "linux-mm" <linux-mm@kvack.org>, guichaz@gmail.com,
-       Alex Khesin <alexk@google.com>, Mike Waychison <mikew@google.com>,
-       Rohit Seth <rohitseth@google.com>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>
-References: <604427e00903181244w360c5519k9179d5c3e5cd6ab3@mail.gmail.com> <200904022224.31060.nickpiggin@yahoo.com.au> <20090402113400.GC3010@duck.suse.cz>
-In-Reply-To: <20090402113400.GC3010@duck.suse.cz>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
+	Thu, 2 Apr 2009 11:52:49 -0400
+Received: from hera.kernel.org ([140.211.167.34]:41345 "EHLO hera.kernel.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1760222AbZDBPwt (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 2 Apr 2009 11:52:49 -0400
+Subject: Re: [PATCH v2 1/2] sched: Nominate idle load balancer from a
+ semi-idle package.
+From: Jaswinder Singh Rajput <jaswinder@kernel.org>
+To: Gautham R Shenoy <ego@in.ibm.com>
+Cc: Ingo Molnar <mingo@elte.hu>, Peter Zijlstra <a.p.zijlstra@chello.nl>,
+       Vaidyanathan Srinivasan <svaidy@linux.vnet.ibm.com>,
+       linux-kernel@vger.kernel.org, Suresh Siddha <suresh.b.siddha@intel.com>,
+       Balbir Singh <balbir@in.ibm.com>, Andi Kleen <andi@firstfloor.org>,
+       Randy Dunlap <randy.dunlap@oracle.com>
+In-Reply-To: <20090402123829.14569.67639.stgit@sofia.in.ibm.com>
+References: <20090402123607.14569.33649.stgit@sofia.in.ibm.com>
+	 <20090402123829.14569.67639.stgit@sofia.in.ibm.com>
+Content-Type: text/plain
+Date: Thu, 02 Apr 2009 21:22:11 +0530
+Message-Id: <1238687531.3099.30.camel@ht.satnam>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.24.5 (2.24.5-1.fc10) 
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200904030251.22197.nickpiggin@yahoo.com.au>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thursday 02 April 2009 22:34:01 Jan Kara wrote:
-> On Thu 02-04-09 22:24:29, Nick Piggin wrote:
-> > On Thursday 02 April 2009 09:36:13 Ying Han wrote:
-> > > Hi Jan:
-> > >     I feel that the problem you saw is kind of differnt than mine. As
-> > > you mentioned that you saw the PageError() message, which i don't see
-> > > it on my system. I tried you patch(based on 2.6.21) on my system and
-> > > it runs ok for 2 days, Still, since i don't see the same error message
-> > > as you saw, i am not convineced this is the root cause at least for
-> > > our problem. I am still looking into it.
-> > >     So, are you seeing the PageError() every time the problem happened?
-> > 
-> > So I asked if you could test with my workaround of taking truncate_mutex
-> > at the start of ext2_get_blocks, and report back. I never heard of any
-> > response after that.
-> > 
-> > To reiterate: I was able to reproduce a problem with ext2 (I was testing
-> > on brd to get IO rates high enough to reproduce it quite frequently).
-> > I think I narrowed the problem down to block allocation or inode block
-> > tree corruption because I was unable to reproduce it with that hack in
-> > place.
->   Nick, what load did you use for reproduction? I'll try to reproduce it
-> here so that I can debug ext2...
+Here are some minor issues:
 
-OK, I set up the filesystem like this:
+On Thu, 2009-04-02 at 18:08 +0530, Gautham R Shenoy wrote:
+> Currently the nomination of idle-load balancer is done by choosing the first
+> idle cpu in the nohz.cpu_mask. This may not be power-efficient, since
+> such an idle cpu could come from a completely idle core/package thereby
+> preventing the whole core/package from being in a low-power state.
+> 
+> For eg, consider a quad-core dual package system. The cpu numbering need
+> not be sequential and can something like [0, 2, 4, 6] and [1, 3, 5, 7].
+> With sched_mc/smt_power_savings and the power-aware IRQ balance, we try to keep
+> as fewer Packages/Cores active. But the current idle load balancer logic
+> goes against this by choosing the first_cpu in the nohz.cpu_mask and not
+> taking the system topology into consideration.
+> 
+> Improve the algorithm to nominate the idle load balancer from a semi idle
+> cores/packages thereby increasing the probability of the cores/packages being
+> in deeper sleep states for longer duration.
+> 
+> The algorithm is activated only when sched_mc/smt_power_savings != 0.
+> 
+> Signed-off-by: Gautham R Shenoy <ego@in.ibm.com>
+> ---
+> 
+>  kernel/sched.c |  109 +++++++++++++++++++++++++++++++++++++++++++++++++++-----
+>  1 files changed, 100 insertions(+), 9 deletions(-)
+> 
+> diff --git a/kernel/sched.c b/kernel/sched.c
+> index 706517c..4fc1ec0 100644
+> --- a/kernel/sched.c
+> +++ b/kernel/sched.c
+> @@ -4283,10 +4283,108 @@ static void active_load_balance(struct rq *busiest_rq, int busiest_cpu)
+>  static struct {
+>  	atomic_t load_balancer;
+>  	cpumask_var_t cpu_mask;
+> +	cpumask_var_t tmpmask;
 
-modprobe rd rd_size=$[3*1024*1024]   #almost fill memory so we reclaim buffers
-dd if=/dev/zero of=/dev/ram0 bs=4k   #prefill brd so we don't get alloc deadlock
-mkfs.ext2 -b1024 /dev/ram0           #1K buffers
+Can you find some better name than tmpmask.
 
-Test is basically unmodified except I use 64MB files, and start 8 of them
-at once to (8 core system, so improve chances of hitting the bug). Although I
-do see it with only 1 running it takes longer to trigger.
+>  } nohz ____cacheline_aligned = {
+>  	.load_balancer = ATOMIC_INIT(-1),
+>  };
+>  
+> +#if defined(CONFIG_SCHED_MC) || defined(CONFIG_SCHED_SMT)
+> +/**
 
-I also run a loop doing 'sync ; echo 3 > /proc/sys/vm/drop_caches' but I don't
-know if that really helps speed up reproducing it. It is quite random to hit,
-but I was able to hit it IIRC in under a minute with that setup.
+^^^^^^
+This comment is not valid and even Randy send patches to fix these
+comments and also shared the error messages because of these comments by
+your earlier patches. Replace it with /*
+
+> + * lowest_flag_domain: Returns the lowest sched_domain
+> + * that has the given flag set for a particular cpu.
+> + * @cpu: The cpu whose lowest level of sched domain is to
+> + * be returned.
+> + *
+> + * @flag: The flag to check for the lowest sched_domain
+> + * for the given cpu
+> + */
+> +static inline struct sched_domain *lowest_flag_domain(int cpu, int flag)
+> +{
+> +	struct sched_domain *sd;
+> +
+> +	for_each_domain(cpu, sd)
+> +		if (sd && (sd->flags & flag))
+> +			break;
+> +
+> +	return sd;
+> +}
+> +
+> +/**
+
+Ditto.
+
+> + * for_each_flag_domain: Iterates over all the scheduler domains
+> + * for a given cpu that has the 'flag' set, starting from
+> + * the lowest to the highest.
+> + * @cpu: The cpu whose domains we're iterating over.
+> + * @sd: variable holding the value of the power_savings_sd
+> + * for cpu
+
+This can be come in one line:
+
++ * @sd: variable holding the value of the power_savings_sd for cpu
+
+> + */
+> +#define for_each_flag_domain(cpu, sd, flag) \
+> +	for (sd = lowest_flag_domain(cpu, flag); \
+> +		(sd && (sd->flags & flag)); sd = sd->parent)
+> +
+> +static inline int is_semi_idle_group(struct sched_group *ilb_group)
+> +{
+> +	cpumask_and(nohz.tmpmask, nohz.cpu_mask, sched_group_cpus(ilb_group));
+> +
+> +	/*
+> +	 * A sched_group is semi-idle when it has atleast one busy cpu
+> +	 * and atleast one idle cpu.
+> +	 */
+> +	if (!(cpumask_empty(nohz.tmpmask) ||
+> +		cpumask_equal(nohz.tmpmask, sched_group_cpus(ilb_group))))
+> +		return 1;
+> +
+> +	return 0;
+> +}
+> +/**
+
+Ditto.
+
+> + * find_new_ilb: Finds or nominates a new idle load balancer.
+> + * @cpu: The cpu which is nominating a new idle_load_balancer.
+> + *
+> + * This algorithm picks the idle load balancer such that it belongs to a
+> + * semi-idle powersavings sched_domain. The idea is to try and avoid
+> + * completely idle packages/cores just for the purpose of idle load balancing
+> + * when there are other idle cpu's which are better suited for that job.
+> + */
+> +static int find_new_ilb(int cpu)
+> +{
+> +	struct sched_domain *sd;
+> +	struct sched_group *ilb_group;
+> +
+> +	/*
+> +	 * Optimization for the case when there is no idle cpu or
+> +	 * only 1 idle cpu to choose from.
+> +	 */
+> +	if (cpumask_weight(nohz.cpu_mask) < 2)
+> +		goto out_done;
+> +
+
+We can simply avoid these gotos.
+
+--
+JSR
+
