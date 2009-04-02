@@ -1,201 +1,74 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763452AbZDBTxO@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932535AbZDBTxa@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763452AbZDBTxO (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 2 Apr 2009 15:53:14 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758111AbZDBTwx
+	id S932535AbZDBTxa (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 2 Apr 2009 15:53:30 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763755AbZDBTw6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 2 Apr 2009 15:52:53 -0400
-Received: from hera.kernel.org ([140.211.167.34]:59095 "EHLO hera.kernel.org"
+	Thu, 2 Apr 2009 15:52:58 -0400
+Received: from cantor.suse.de ([195.135.220.2]:33498 "EHLO mx1.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1757843AbZDBTww (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 2 Apr 2009 15:52:52 -0400
-Subject: Re: [PATCH net-next] myri_sbus: use request_firmware
-From: Jaswinder Singh Rajput <jaswinder@kernel.org>
-To: David Miller <davem@davemloft.net>
-Cc: netdev <netdev@vger.kernel.org>, LKML <linux-kernel@vger.kernel.org>,
-       David Woodhouse <dwmw2@infradead.org>
-In-Reply-To: <1238701097.3099.82.camel@ht.satnam>
-References: <1238701097.3099.82.camel@ht.satnam>
-Content-Type: text/plain
-Date: Fri, 03 Apr 2009 01:22:40 +0530
-Message-Id: <1238701960.3099.87.camel@ht.satnam>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.24.5 (2.24.5-1.fc10) 
-Content-Transfer-Encoding: 7bit
+	id S1762132AbZDBTw5 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 2 Apr 2009 15:52:57 -0400
+Date: Thu, 2 Apr 2009 21:52:53 +0200
+From: Jan Kara <jack@suse.cz>
+To: Alexander Larsson <alexl@redhat.com>
+Cc: eparis@redhat.com, linux-kernel@vger.kernel.org
+Subject: Re: Issues with using fanotify for a filesystem indexer
+Message-ID: <20090402195253.GH3010@duck.suse.cz>
+References: <1238158043.23703.20.camel@fatty> <20090402145457.GA17275@atrey.karlin.mff.cuni.cz> <1238689744.5704.1.camel@localhost.localdomain> <20090402165023.GG3010@duck.suse.cz> <1238692537.5704.6.camel@localhost.localdomain>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1238692537.5704.6.camel@localhost.localdomain>
+User-Agent: Mutt/1.5.17 (2007-11-01)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 2009-04-03 at 01:09 +0530, Jaswinder Singh Rajput wrote:
-> Hello David,
+On Thu 02-04-09 19:15:37, Alexander Larsson wrote:
+> On Thu, 2009-04-02 at 18:50 +0200, Jan Kara wrote:
+> > On Thu 02-04-09 18:29:04, Alexander Larsson wrote:
+> > > Another potential issue with this is that every change bubbles up to the
+> > > top, modifying the recursive mtime of that. This will become very
+> > > contented, and may imply a partial serialization of fs activity, which
+> > > is kinda costly.
+> >   Not every change - only the first change bubbles to the top, clearing the
+> > flag on its way. Then next change stops bubbling up as soon as it reaches
+> > a directory with the flag cleared. So no contention happen - we update flag
+> > + timestamp only at most once per scan of the directory by indexer (or
+> > someone else interested in recursive mtime) => once per a few minutes on
+> > average system.
 > 
-> I do not have any machine to test this patch. If you find any issues
-> then let me know.
-> 
-> Thanks,
-> 
-> From: Jaswinder Singh Rajput <jaswinderrajput@gmail.com>
-> Subject: [PATCH] myri_sbus: use request_firmware
-> 
-> ---
-> Firmware blob looks like this...
-> 
->         __be16 lanai4_data_size
->         unsigned char lanai4_code[]
-> 
-> Signed-off-by: Jaswinder Singh Rajput <jaswinderrajput@gmail.com>
+> Ah, I see. The indexer sets the flag. 
+> I see some issues. First of all, writing the flag/mtime to disk seems
+> like a bad idea. It'll cause a lot of writing when the indexer recurses
+> throught the filesystem, similar to atimes. But, if you're not
+  There's some cost but it's not nearly as bad as with atimes. Indexer only
+has to change flags on directories in whose subtree something has changed -
+so we modify only directories (atime is modified for all files +
+directories) and we even modify only a small fraction of them because only
+a small amount of them has changed and thus has the flag reset.
+  Similarly a write to a file can cause some additional modifications to
+above directories as we traverse up the tree but again, there aren't going
+to be many of those since most of the time quickly hit a directory with a
+flag reset. Now I understand this is a handwaving and one does not believe
+it until he tries it on his machine if it is really a noticable slowdown or
+not ;)
+  Also I'm not saying it's a perfect fit for things like desktop indexing
+because as you said, it's desirable to rescan the system every few minutes
+while I was rather aiming at usecases where either the rescan is done only
+once per few hours (rsync, updatedb) or where files change only
+exceptionally (e.g.  KDE/GNOME watching desktop config files). But still I
+don't think it's completely insane to try something like that...
 
-It seems LKML rejected this email because of big size, so CC LKML after
-deleting firmware blob:
+> persisting the flag/mtime then you need to keep all the dentries with
+> the flag set in memory, which has resource use risks similar to
+> unbounded event queues.
+  Ah, true - I have implemented just the persistent case and have not
+thought too much about the non-persistent one. You're right that it won't
+work because we'd pin memory.
 
-From: Jaswinder Singh Rajput <jaswinderrajput@gmail.com>
-Subject: [PATCH] myri_sbus: use request_firmware
-
-Firmware blob looks like this...
-
-        __be16 lanai4_data_size
-        unsigned char lanai4_code[]
-
-Signed-off-by: Jaswinder Singh Rajput <jaswinderrajput@gmail.com>
----
- drivers/net/myri_code.h         | 5006 ---------------------------------------
- drivers/net/myri_sbus.c         |   37 +-
- firmware/Makefile               |    1 +
- firmware/WHENCE                 |   10 +
- firmware/myricom/lanai.bin.ihex | 4771 +++++++++++++++++++++++++++++++++++++
- 5 files changed, 4812 insertions(+), 5013 deletions(-)
- delete mode 100644 drivers/net/myri_code.h
- create mode 100644 firmware/myricom/lanai.bin.ihex
-
-diff --git a/drivers/net/myri_sbus.c b/drivers/net/myri_sbus.c
-index 08534c0..9a802ad 100644
---- a/drivers/net/myri_sbus.c
-+++ b/drivers/net/myri_sbus.c
-@@ -25,6 +25,7 @@ static char version[] =
- #include <linux/dma-mapping.h>
- #include <linux/of.h>
- #include <linux/of_device.h>
-+#include <linux/firmware.h>
- 
- #include <net/dst.h>
- #include <net/arp.h>
-@@ -43,7 +44,6 @@ static char version[] =
- #include <asm/irq.h>
- 
- #include "myri_sbus.h"
--#include "myri_code.h"
- 
- /* #define DEBUG_DETECT */
- /* #define DEBUG_IRQ */
-@@ -81,6 +81,9 @@ static char version[] =
- #define DHDR(x)
- #endif
- 
-+/* Firmware name */
-+#define FWNAME		"myricom/lanai.bin"
-+
- static void myri_reset_off(void __iomem *lp, void __iomem *cregs)
- {
- 	/* Clear IRQ mask. */
-@@ -171,10 +174,11 @@ static int myri_do_handshake(struct myri_eth *mp)
- 
- static int __devinit myri_load_lanai(struct myri_eth *mp)
- {
-+	const struct firmware	*fw;
- 	struct net_device	*dev = mp->dev;
- 	struct myri_shmem __iomem *shmem = mp->shmem;
- 	void __iomem		*rptr;
--	int 			i;
-+	int 			i, lanai4_data_size;
- 
- 	myri_disable_irq(mp->lregs, mp->cregs);
- 	myri_reset_on(mp->cregs);
-@@ -186,13 +190,27 @@ static int __devinit myri_load_lanai(struct myri_eth *mp)
- 	if (mp->eeprom.cpuvers >= CPUVERS_3_0)
- 		sbus_writel(mp->eeprom.cval, mp->lregs + LANAI_CVAL);
- 
-+	i = request_firmware(&fw, FWNAME, &mp->myri_op->dev);
-+	if (i) {
-+		printk(KERN_ERR "Failed to load image \"%s\" err %d\n",
-+		       FWNAME, i);
-+		return i;
-+	}
-+	if (fw->size < 2) {
-+		printk(KERN_ERR "Bogus length %zu in image \"%s\"\n",
-+		       fw->size, FWNAME);
-+		release_firmware(fw);
-+		return -EINVAL;
-+	}
-+	lanai4_data_size = fw->data[0] << 8 | fw->data[1];
-+
- 	/* Load executable code. */
--	for (i = 0; i < sizeof(lanai4_code); i++)
--		sbus_writeb(lanai4_code[i], rptr + (lanai4_code_off * 2) + i);
-+	for (i = 2; i < fw->size; i++)
-+		sbus_writeb(fw->data[i], rptr++);
- 
- 	/* Load data segment. */
--	for (i = 0; i < sizeof(lanai4_data); i++)
--		sbus_writeb(lanai4_data[i], rptr + (lanai4_data_off * 2) + i);
-+	for (i = 0; i < lanai4_data_size; i++)
-+		sbus_writeb(0, rptr++);
- 
- 	/* Set device address. */
- 	sbus_writeb(0, &shmem->addr[0]);
-@@ -228,6 +246,7 @@ static int __devinit myri_load_lanai(struct myri_eth *mp)
- 	if (mp->eeprom.cpuvers == CPUVERS_4_0)
- 		sbus_writel(0, mp->lregs + LANAI_VERS);
- 
-+	release_firmware(fw);
- 	return i;
- }
- 
-@@ -1078,7 +1097,10 @@ static int __devinit myri_sbus_probe(struct of_device *op, const struct of_devic
- 
- 	/* Load code onto the LANai. */
- 	DET(("Loading LANAI firmware\n"));
--	myri_load_lanai(mp);
-+	if (myri_load_lanai(mp)) {
-+		printk(KERN_ERR "MyriCOM: Cannot Load LANAI firmware.\n");
-+		goto err_free_irq;
-+	}
- 
- 	if (register_netdev(dev)) {
- 		printk("MyriCOM: Cannot register device.\n");
-@@ -1159,3 +1181,4 @@ module_init(myri_sbus_init);
- module_exit(myri_sbus_exit);
- 
- MODULE_LICENSE("GPL");
-+MODULE_FIRMWARE(FWNAME);
-diff --git a/firmware/Makefile b/firmware/Makefile
-index baf5ae4..e6c0fd1 100644
---- a/firmware/Makefile
-+++ b/firmware/Makefile
-@@ -40,6 +40,7 @@ fw-shipped-$(CONFIG_CHELSIO_T3) += cxgb3/t3b_psram-1.1.0.bin \
- fw-shipped-$(CONFIG_DVB_TTUSB_BUDGET) += ttusb-budget/dspbootcode.bin
- fw-shipped-$(CONFIG_E100) += e100/d101m_ucode.bin e100/d101s_ucode.bin \
- 			     e100/d102e_ucode.bin
-+fw-shipped-$(CONFIG_MYRI_SBUS) += myricom/lanai.bin
- fw-shipped-$(CONFIG_PCMCIA_SMC91C92) += ositech/Xilinx7OD.bin
- fw-shipped-$(CONFIG_SMCTR) += tr_smctr.bin
- fw-shipped-$(CONFIG_SND_KORG1212) += korg/k1212.dsp
-diff --git a/firmware/WHENCE b/firmware/WHENCE
-index 3814d7d..1b340c1 100644
---- a/firmware/WHENCE
-+++ b/firmware/WHENCE
-@@ -543,3 +543,13 @@ Licence: Allegedly GPL, but no source visible. Marked:
- Found in hex form in kernel source.
- 
- --------------------------------------------------------------------------
-+
-+Driver: MYRI_SBUS - MyriCOM Gigabit Ethernet
-+
-+File: myricom/lanai.bin
-+
-+Licence: Unknown
-+
-+Found in hex form in kernel source.
-+
-+--------------------------------------------------------------------------
-
-
+									Honza
+-- 
+Jan Kara <jack@suse.cz>
+SUSE Labs, CR
