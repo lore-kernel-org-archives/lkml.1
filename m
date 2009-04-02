@@ -1,83 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934352AbZDBHjV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758959AbZDBHjj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934352AbZDBHjV (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 2 Apr 2009 03:39:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758486AbZDBHjE
+	id S1758959AbZDBHjj (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 2 Apr 2009 03:39:39 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762636AbZDBHjF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 2 Apr 2009 03:39:04 -0400
-Received: from moutng.kundenserver.de ([212.227.126.188]:58890 "EHLO
-	moutng.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756500AbZDBHjB (ORCPT
+	Thu, 2 Apr 2009 03:39:05 -0400
+Received: from mtagate1.de.ibm.com ([195.212.17.161]:45648 "EHLO
+	mtagate1.de.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1758031AbZDBHjD (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 2 Apr 2009 03:39:01 -0400
-Message-ID: <49D46B8B.5000708@vlnb.net>
-Date: Thu, 02 Apr 2009 11:38:51 +0400
-From: Vladislav Bolkhovitin <vst@vlnb.net>
-User-Agent: Thunderbird 2.0.0.21 (X11/20090320)
-MIME-Version: 1.0
-To: James Bottomley <James.Bottomley@HansenPartnership.com>
-CC: Ross Walker <rswwalker@gmail.com>,
-       "linux-scsi@vger.kernel.org" <linux-scsi@vger.kernel.org>,
-       iSCSI Enterprise Target Developer List 
-	<iscsitarget-devel@lists.sourceforge.net>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       "Ross S. W. Walker" <RWalker@medallion.com>,
-       scst-devel <scst-devel@lists.sourceforge.net>,
-       "stgt@vger.kernel.org" <stgt@vger.kernel.org>,
-       Bart Van Assche <bart.vanassche@gmail.com>
-Subject: Re: [Scst-devel] [Iscsitarget-devel] ISCSI-SCST	performance (with
- also IET and STGT data)
-References: <49D10256.8030307@vlnb.net>	<e2e108260903301106y2b750c23kfab978567f3de3a0@mail.gmail.com>	<49D11096.3070804@vlnb.net>	<e2e108260903301153x38e86097vd29c47507da2879f@mail.gmail.com>	<49D254E4.8050806@vlnb.net>	<E2BB8074E5500C42984D980D4BD78EF9029E3D0B@MFG-NYC-EXCH2.mfg.prv>	<e2e108260903312329u118a54bfn3107fdca4b3e2b1d@mail.gmail.com>	<FA7F6940-CD5C-4460-9777-2F7AE3657B8E@gmail.com> <1238617423.3318.82.camel@mulgrave.int.hansenpartnership.com>
-In-Reply-To: <1238617423.3318.82.camel@mulgrave.int.hansenpartnership.com>
-Content-Type: text/plain; charset=us-ascii; format=flowed
+	Thu, 2 Apr 2009 03:39:03 -0400
+Date: Thu, 2 Apr 2009 09:38:52 +0200
+From: Martin Schwidefsky <schwidefsky@de.ibm.com>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: linux-mm@kvack.org, linux-kernel@vger.kernel.org, cotte@de.ibm.com,
+       npiggin@suse.de, jaredeh@gmail.com
+Subject: Re: [PATCH] do_xip_mapping_read: fix length calculation
+Message-ID: <20090402093852.30bbf3e9@skybase>
+In-Reply-To: <20090401141700.f5ef3c08.akpm@linux-foundation.org>
+References: <20090331153223.74b177bd@skybase>
+	<20090401141700.f5ef3c08.akpm@linux-foundation.org>
+Organization: IBM Corporation
+X-Mailer: Claws Mail 3.7.1 (GTK+ 2.14.7; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-X-Provags-ID: V01U2FsdGVkX19BzbBzI/HYzjyA2qwdEQvkGOG1tUJnlgh5em2
- +3XbPz0nBuXfl833aIuhERJKOXIPVPfEI+6w74q93H45fKKR9N
- urtrnWnbZiF/iujCTtN/g==
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-James Bottomley, on 04/02/2009 12:23 AM wrote:
-> On Wed, 2009-04-01 at 08:20 -0400, Ross Walker wrote:
->> On Apr 1, 2009, at 2:29 AM, Bart Van Assche <bart.vanassche@gmail.com>  
->> wrote:
->>
->>> On Tue, Mar 31, 2009 at 8:43 PM, Ross S. W. Walker
->>> <RWalker@medallion.com> wrote:
->>>> IET just needs to fix how it does it workload with CFQ which
->>>> somehow SCST has overcome. Of course SCST tweaks the Linux kernel to
->>>> gain some extra speed.
->>> I'm not familiar with the implementation details of CFQ, but I know
->>> that one of the changes between SCST 1.0.0 and SCST 1.0.1 is that the
->>> default number of kernel threads of the scst_vdisk kernel module has
->>> been increased to 5. Could this explain the performance difference
->>> between SCST and IET for FILEIO and BLOCKIO ?
->> Thank for the update. IET has used 8 threads per target for ages now,  
->> I don't think it is that.
->>
->> It may be how the I/O threads are forked in SCST that causes them to  
->> be in the same I/O context with each other.
->>
->> I'm pretty sure implementing a version of the patch that was used for  
->> the dump command (found on the LKML) will fix this.
->>
->> But thanks goes to Vlad for pointing this dificiency out so we can fix  
->> it to help make IET even better.
+On Wed, 1 Apr 2009 14:17:00 -0700
+Andrew Morton <akpm@linux-foundation.org> wrote:
+
+> On Tue, 31 Mar 2009 15:32:23 +0200
+> Martin Schwidefsky <schwidefsky@de.ibm.com> wrote:
+>
+> Please get into the habit of adding Cc: <stable@kernel.org> to the
+> changelogs?
+
+Ok, I've made me a sticky note and attached it to my monitor. Perhaps
+that will help me to remember .. 
+
+> I believe I personally am pretty good at picking up stable things, but
+> other patch-mergers are quite unreliable.  We all need as much help as
+> we can get on this, because things are falling through cracks.
+
+Ok, makes sense. Better safe than sorry.
+ 
+> > With this bug fix the commit 0e4a9b59282914fe057ab17027f55123964bc2e2
+> > "ext2/xip: refuse to change xip flag during remount with busy inodes"
+> > can be removed again.
 > 
-> SCST explicitly fiddles with the io context to get this to happen.  It
-> has a hack to block to export alloc_io_context:
-> 
-> http://marc.info/?t=122893564800003
+> OK, please send a standalone patch to do this at an appropriate time. 
+> I guess that this second patch won't be needed in -stable.
+ 
+The revert should be done either with the bug fix or after the bug fix
+hit mainline. Guess I just create the patch and send it.
 
-Correct, although I wouldn't call it "fiddle", rather "grouping" ;)
+-- 
+blue skies,
+   Martin.
 
-But that's not the only reason for good performance. Particularly, it 
-can't explain Bart's tmpfs results from the previous message, where the 
-majority of I/O done to/from RAM without any I/O scheduler involved. (Or 
-does I/O scheduler also involved with tmpfs?) Bart has 4GB RAM, if I 
-remember correctly, i.e. the test data set was 25% of RAM.
-
-Thanks,
-Vlad
+"Reality continues to ruin my life." - Calvin.
 
