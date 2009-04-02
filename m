@@ -1,49 +1,134 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S935223AbZDBGUr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S935323AbZDBGWM@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S935223AbZDBGUr (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 2 Apr 2009 02:20:47 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934915AbZDBGUQ
+	id S935323AbZDBGWM (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 2 Apr 2009 02:22:12 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763212AbZDBGVx
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 2 Apr 2009 02:20:16 -0400
-Received: from cn.fujitsu.com ([222.73.24.84]:50938 "EHLO song.cn.fujitsu.com"
-	rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org with ESMTP
-	id S933578AbZDBGUP (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 2 Apr 2009 02:20:15 -0400
-Message-ID: <49D458B1.5000703@cn.fujitsu.com>
-Date: Thu, 02 Apr 2009 14:18:25 +0800
-From: Lai Jiangshan <laijs@cn.fujitsu.com>
-User-Agent: Thunderbird 2.0.0.6 (Windows/20070728)
+	Thu, 2 Apr 2009 02:21:53 -0400
+Received: from victor.provo.novell.com ([137.65.250.26]:37444 "EHLO
+	victor.provo.novell.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755825AbZDBGVw (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 2 Apr 2009 02:21:52 -0400
+Message-ID: <49D45974.2060202@suse.de>
+Date: Thu, 02 Apr 2009 11:51:40 +0530
+From: Suresh Jayaraman <sjayaraman@suse.de>
+User-Agent: Thunderbird 2.0.0.19 (X11/20081227)
 MIME-Version: 1.0
-To: Steven Rostedt <srostedt@redhat.com>
-CC: Ingo Molnar <mingo@elte.hu>, LKML <linux-kernel@vger.kernel.org>,
-       Frederic Weisbecker <fweisbec@gmail.com>
-Subject: [PATCH] tracing: mark get_parent_ip() notrace
-Content-Type: text/plain; charset=UTF-8
+To: Trond.Myklebust@netapp.com
+CC: linux-nfs@vger.kernel.org, mathieu.desnoyers@polymtl.ca,
+       linux-embedded@vger.kernel.org, compudj@krystal.dyndns.org,
+       LKML <linux-kernel@vger.kernel.org>, ltt-dev@lists.casi.polymtl.ca
+Subject: [PATCH] nfs: add support for splice writes
+X-Enigmail-Version: 0.95.7
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+This patch attempts to add splice writes support. In essence, it just
+calls generic_file_splice_write() after doing a little sanity check.
+This would allow LTTng users that are using NFS to store trace data.
+There could be more applications that could be benefitted too.
 
-Impact: remove redundancy tracing log
+I have tested this using the Jens' test program and have found no
+real issues. The test program is inlined below:
 
-When tracer is "function" or "function_graph", too much
-"get_parent_ip" are recorded in ring_buffer.
+/*
+ * splice-out.c: Splice stdout to file
+ */
+#include <stdio.h>
+#include <stdlib.h>
+#include <unistd.h>
+#include <fcntl.h>
 
-Signed-off-by: Lai Jiangshan <laijs@cn.fujitsu.com>
+#define SPLICE_SIZE (64*1024)
+
+int main(int argc, char *argv[])
+{
+        int fd;
+
+        if (argc < 2) {
+                printf("%s: outfile\n", argv[0]);
+                return 1;
+        }
+
+        fd = open(argv[1], O_WRONLY | O_CREAT | O_TRUNC, 0644);
+        if (fd < 0) {
+                perror("open");
+                return 1;
+        }
+
+        do {
+                int ret = splice(STDIN_FILENO, NULL, fd, NULL, SPLICE_SIZE, 0);
+
+                if (ret < 0) {
+                        perror("splice");
+                        break;
+                } else if (ret < SPLICE_SIZE)
+                        break;
+        } while (1);
+
+        close(fd);
+        return 0;
+}
+
+Compile with -D _GNU_SOURCE and do something like:
+	echo "some stuff" | ./splice-out <outfile>
+
+Signed-off-by: Suresh Jayaraman <sjayaraman@suse.de>
 ---
-diff --git a/kernel/sched.c b/kernel/sched.c
-index 706517c..a0ec10c 100644
---- a/kernel/sched.c
-+++ b/kernel/sched.c
-@@ -4860,7 +4860,7 @@ void scheduler_tick(void)
- #endif
+ fs/nfs/file.c |   24 ++++++++++++++++++++++++
+ 1 files changed, 24 insertions(+), 0 deletions(-)
+
+diff --git a/fs/nfs/file.c b/fs/nfs/file.c
+index 90f292b..13d6a00 100644
+--- a/fs/nfs/file.c
++++ b/fs/nfs/file.c
+@@ -47,6 +47,9 @@ static ssize_t nfs_file_splice_read(struct file *filp, loff_t *ppos,
+ 					size_t count, unsigned int flags);
+ static ssize_t nfs_file_read(struct kiocb *, const struct iovec *iov,
+ 				unsigned long nr_segs, loff_t pos);
++static ssize_t nfs_file_splice_write(struct pipe_inode_info *pipe,
++					struct file *filp, loff_t *ppos,
++					size_t count, unsigned int flags);
+ static ssize_t nfs_file_write(struct kiocb *, const struct iovec *iov,
+ 				unsigned long nr_segs, loff_t pos);
+ static int  nfs_file_flush(struct file *, fl_owner_t id);
+@@ -76,6 +79,7 @@ const struct file_operations nfs_file_operations = {
+ 	.lock		= nfs_lock,
+ 	.flock		= nfs_flock,
+ 	.splice_read	= nfs_file_splice_read,
++	.splice_write	= nfs_file_splice_write,
+ 	.check_flags	= nfs_check_flags,
+ 	.setlease	= nfs_setlease,
+ };
+@@ -550,6 +554,26 @@ out_swapfile:
+ 	goto out;
  }
  
--unsigned long get_parent_ip(unsigned long addr)
-+notrace unsigned long get_parent_ip(unsigned long addr)
++static ssize_t nfs_file_splice_write(struct pipe_inode_info *pipe,
++				     struct file *filp, loff_t *ppos,
++				     size_t count, unsigned int flags)
++{
++	struct dentry *dentry = filp->f_path.dentry;
++	struct inode *inode = dentry->d_inode;
++
++	dprintk("NFS splice_write(%s/%s, %lu@%Lu)\n",
++		dentry->d_parent->d_name.name, dentry->d_name.name,
++		(unsigned long) count, (unsigned long long) *ppos);
++
++	if (IS_SWAPFILE(inode)) {
++		printk(KERN_INFO "NFS: attempt to write to active swap"
++		       "file!\n");
++		return -EBUSY;
++	}
++
++	return generic_file_splice_write(pipe, filp, ppos, count, flags);
++}
++
+ static int do_getlk(struct file *filp, int cmd, struct file_lock *fl)
  {
- 	if (in_lock_functions(addr)) {
- 		addr = CALLER_ADDR2;
-
+ 	struct inode *inode = filp->f_mapping->host;
 
