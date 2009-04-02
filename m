@@ -1,28 +1,26 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758339AbZDBNIn@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757345AbZDBNMr@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758339AbZDBNIn (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 2 Apr 2009 09:08:43 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758212AbZDBNIb
+	id S1757345AbZDBNMr (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 2 Apr 2009 09:12:47 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753309AbZDBNMj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 2 Apr 2009 09:08:31 -0400
-Received: from hrndva-omtalb.mail.rr.com ([71.74.56.124]:50423 "EHLO
+	Thu, 2 Apr 2009 09:12:39 -0400
+Received: from hrndva-omtalb.mail.rr.com ([71.74.56.123]:54953 "EHLO
 	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757718AbZDBNIY (ORCPT
+	with ESMTP id S1752233AbZDBNMi (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 2 Apr 2009 09:08:24 -0400
-Date: Thu, 2 Apr 2009 09:08:20 -0400 (EDT)
+	Thu, 2 Apr 2009 09:12:38 -0400
+Date: Thu, 2 Apr 2009 09:12:36 -0400 (EDT)
 From: Steven Rostedt <rostedt@goodmis.org>
 X-X-Sender: rostedt@gandalf.stny.rr.com
-To: Andrew Morton <akpm@linux-foundation.org>
-cc: linux-kernel@vger.kernel.org, Ingo Molnar <mingo@elte.hu>,
-       Thomas Gleixner <tglx@linutronix.de>,
-       Peter Zijlstra <peterz@infradead.org>, Tom Zanussi <tzanussi@gmail.com>,
-       Frederic Weisbecker <fweisbec@gmail.com>,
-       Steven Rostedt <srostedt@redhat.com>
-Subject: Re: [PATCH 3/4] ring-buffer: add ring_buffer_discard_commit
-In-Reply-To: <20090401224814.a1c533ba.akpm@linux-foundation.org>
-Message-ID: <alpine.DEB.2.00.0904020905020.30963@gandalf.stny.rr.com>
-References: <20090402052721.013878388@goodmis.org> <20090402053522.594497414@goodmis.org> <20090401224814.a1c533ba.akpm@linux-foundation.org>
+To: Tom Zanussi <tzanussi@gmail.com>
+cc: linux-kernel <linux-kernel@vger.kernel.org>, Ingo Molnar <mingo@elte.hu>,
+       fweisbec@gmail.com
+Subject: Re: [PATCH] tracing/filters: protect current event filter users from
+ filter removal
+In-Reply-To: <1238653727.6655.61.camel@bookworm>
+Message-ID: <alpine.DEB.2.00.0904020910040.30963@gandalf.stny.rr.com>
+References: <1238653727.6655.61.camel@bookworm>
 User-Agent: Alpine 2.00 (DEB 1167 2008-08-23)
 MIME-Version: 1.0
 Content-Type: TEXT/PLAIN; charset=US-ASCII
@@ -31,81 +29,118 @@ List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-On Wed, 1 Apr 2009, Andrew Morton wrote:
+On Thu, 2 Apr 2009, Tom Zanussi wrote:
 
-> On Thu, 02 Apr 2009 01:27:24 -0400 Steven Rostedt <rostedt@goodmis.org> wrote:
+> This patch allows event filters to be removed even if tracing is active.
 > 
-> > From: Steven Rostedt <srostedt@redhat.com>
-> > 
-> > The ring_buffer_discard_commit is similar to ring_buffer_event_discard
-> > but it can only be done on an event that has yet to be commited.
-> > Unpredictable results can happen otherwise.
-> > 
-> > The main difference between ring_buffer_discard_commit and
-> > ring_buffer_event_discard is that ring_buffer_discard_commit will try
-> > to free the data in the ring buffer if nothing has addded data
-> > after the reserved event. If something did, then it acts almost the
-> > same as ring_buffer_event_discard followed by a
-> > ring_buffer_unlock_commit.
-> > 
-> > Note, either ring_buffer_commit_discard and ring_buffer_unlock_commit
-> > can be called on an event, not both.
-> > 
-> > This commit also exports both discard functions to be usable by
-> > GPL modules.
-> > 
-> > ...
-> >
-> > +/*
-> > + * ring_buffer_event_discard can discard any event in the ring buffer.
-> > + *   it is up to the caller to protect against a reader from
-> > + *   consuming it or a writer from wrapping and replacing it.
-> > + *
-> > + * No external protection is needed if this is called before
-> > + * the event is commited. But in that case it would be better to
-> > + * use ring_buffer_discard_commit.
-> > + *
-> > + * Note, if an event that has not been committed is discarded
-> > + * with ring_buffer_event_discard, it must still be committed.
-> > + */
-> >  void ring_buffer_event_discard(struct ring_buffer_event *event);
-> >  
-> > ...
-> >
-> >  /**
-> > + * ring_buffer_event_discard - discard any event in the ring buffer
-> > + * @event: the event to discard
-> > + *
-> > + * Sometimes a event that is in the ring buffer needs to be ignored.
-> > + * This function lets the user discard an event in the ring buffer
-> > + * and then that event will not be read later.
-> > + *
-> > + * Note, it is up to the user to be careful with this, and protect
-> > + * against races. If the user discards an event that has been consumed
-> > + * it is possible that it could corrupt the ring buffer.
-> > + */
-> > +void ring_buffer_event_discard(struct ring_buffer_event *event)
-> > +{
-> > +	event->type = RINGBUF_TYPE_PADDING;
-> > +	/* time delta must be non zero */
-> > +	if (!event->time_delta)
-> > +		event->time_delta = 1;
-> > +}
-> > +EXPORT_SYMBOL_GPL(ring_buffer_event_discard);
+> Signed-off-by: Tom Zanussi <tzanussi@gmail.com>
 > 
-> Seems a bit cumbersome to document the interface partly in the .h file
-> and partly in the .c file?
+> ---
+>  kernel/trace/trace.h                |    9 +++++++--
+>  kernel/trace/trace_events_filter.c  |   15 +++++++++------
+>  kernel/trace/trace_events_stage_3.h |    3 +--
+>  3 files changed, 17 insertions(+), 10 deletions(-)
 > 
-> Doing all of it in the .c file would be typical.
+> diff --git a/kernel/trace/trace.h b/kernel/trace/trace.h
+> index 9dcbc97..6bd728f 100644
+> --- a/kernel/trace/trace.h
+> +++ b/kernel/trace/trace.h
+> @@ -847,7 +847,7 @@ extern int filter_parse(char **pbuf, struct filter_pred *pred);
+>  extern int filter_add_pred(struct ftrace_event_call *call,
+>  			   struct filter_pred *pred);
+>  extern void filter_free_preds(struct ftrace_event_call *call);
+> -extern int filter_match_preds(struct ftrace_event_call *call, void *rec);
+> +extern int filter_match_preds(struct filter_pred **preds, void *rec);
+>  extern void filter_free_subsystem_preds(struct event_subsystem *system);
+>  extern int filter_add_subsystem_pred(struct event_subsystem *system,
+>  				     struct filter_pred *pred);
+> @@ -856,8 +856,13 @@ static inline void
+>  filter_check_discard(struct ftrace_event_call *call, void *rec,
+>  		     struct ring_buffer_event *event)
+>  {
+> -	if (unlikely(call->preds) && !filter_match_preds(call, rec))
+> +	struct filter_pred **preds;
+> +
+> +	rcu_read_lock();
+> +	preds = rcu_dereference(call->preds);
+> +	if (unlikely(preds) && !filter_match_preds(preds, rec))
+>  		ring_buffer_event_discard(event);
+> +	rcu_read_unlock();
+>  }
 
-I thought the full documentation was in the .c file. I actually added the 
-.h documentation because I was afraid that developers would just look at 
-the header file and pick the wrong option. The kernel-doc documentation is 
-for the C file. The .h file was a quick reference for those that wanted to 
-know which function they needed. Since the two are similar, I wanted to 
-make it clear what the differences were both in the .c and .h files.
+This looks dangerous, since we do trace rcu_read_lock/unlock.
 
-It would even remind me on which to use ;-)
+>  
+>  #define __common_field(type, item)					\
+> diff --git a/kernel/trace/trace_events_filter.c b/kernel/trace/trace_events_filter.c
+> index 470ad94..f7f8469 100644
+> --- a/kernel/trace/trace_events_filter.c
+> +++ b/kernel/trace/trace_events_filter.c
+> @@ -83,14 +83,14 @@ static int filter_pred_string(struct filter_pred *pred, void *event)
+>  }
+>  
+>  /* return 1 if event matches, 0 otherwise (discard) */
+> -int filter_match_preds(struct ftrace_event_call *call, void *rec)
+> +int filter_match_preds(struct filter_pred **preds, void *rec)
+>  {
+>  	int i, matched, and_failed = 0;
+>  	struct filter_pred *pred;
+>  
+>  	for (i = 0; i < MAX_FILTER_PRED; i++) {
+> -		if (call->preds[i]) {
+> -			pred = call->preds[i];
+> +		if (preds[i]) {
+> +			pred = preds[i];
+>  			if (and_failed && !pred->or)
+>  				continue;
+>  			matched = pred->fn(pred, rec);
+> @@ -162,13 +162,16 @@ void filter_free_pred(struct filter_pred *pred)
+>  
+>  void filter_free_preds(struct ftrace_event_call *call)
+>  {
+> +	struct filter_pred **preds;
+>  	int i;
+>  
+>  	if (call->preds) {
+> +		preds = call->preds;
+> +		rcu_assign_pointer(call->preds, NULL);
+> +		synchronize_rcu();
+
+We get the same effect if you just have preemption disabled instead of 
+the rcu_read_lock/unlock and call synchronize_sched() here instead.
+
+This would make it a bit safer in the tracing.
 
 -- Steve
 
+
+
+>  		for (i = 0; i < MAX_FILTER_PRED; i++)
+> -			filter_free_pred(call->preds[i]);
+> -		kfree(call->preds);
+> -		call->preds = NULL;
+> +			filter_free_pred(preds[i]);
+> +		kfree(preds);
+>  	}
+>  }
+>  
+> diff --git a/kernel/trace/trace_events_stage_3.h b/kernel/trace/trace_events_stage_3.h
+> index 9d2fa78..cca3843 100644
+> --- a/kernel/trace/trace_events_stage_3.h
+> +++ b/kernel/trace/trace_events_stage_3.h
+> @@ -222,8 +222,7 @@ static void ftrace_raw_event_##call(proto)				\
+>  									\
+>  	assign;								\
+>  									\
+> -	if (call->preds && !filter_match_preds(call, entry))		\
+> -		ring_buffer_event_discard(event);			\
+> +	filter_check_discard(call, entry, event);			\
+>  									\
+>  	trace_nowake_buffer_unlock_commit(event, irq_flags, pc);	\
+>  									\
+> -- 
+> 1.5.6.3
+> 
+> 
+> 
+> 
