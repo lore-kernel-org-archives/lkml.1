@@ -1,91 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763498AbZDBQGn@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761927AbZDBQJ3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763498AbZDBQGn (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 2 Apr 2009 12:06:43 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753377AbZDBQG0
+	id S1761927AbZDBQJ3 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 2 Apr 2009 12:09:29 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751749AbZDBQJU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 2 Apr 2009 12:06:26 -0400
-Received: from smarthost01.mail.zen.net.uk ([212.23.3.140]:46453 "EHLO
-	smarthost01.mail.zen.net.uk" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1752063AbZDBQGZ (ORCPT
+	Thu, 2 Apr 2009 12:09:20 -0400
+Received: from cam-admin0.cambridge.arm.com ([193.131.176.58]:37987 "EHLO
+	cam-admin0.cambridge.arm.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1755868AbZDBQJT (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 2 Apr 2009 12:06:25 -0400
-Subject: Re: [RFC PATCH 02/17] vbus: add virtual-bus definitions
-From: Ben Hutchings <bhutchings@solarflare.com>
-To: Gregory Haskins <ghaskins@novell.com>
-Cc: linux-kernel@vger.kernel.org, agraf@suse.de, pmullaney@novell.com,
-       pmorreale@novell.com, anthony@codemonkey.ws, rusty@rustcorp.com.au,
-       netdev@vger.kernel.org, kvm@vger.kernel.org
-In-Reply-To: <20090331184257.28333.64028.stgit@dev.haskins.net>
-References: <20090331184057.28333.77287.stgit@dev.haskins.net>
-	 <20090331184257.28333.64028.stgit@dev.haskins.net>
+	Thu, 2 Apr 2009 12:09:19 -0400
+Subject: Re: linux-next: Tree for March 30: [BUG] kmemleak page fault
+From: Catalin Marinas <catalin.marinas@arm.com>
+To: Matthias Kaehlcke <matthias@kaehlcke.net>
+Cc: Stephen Rothwell <sfr@canb.auug.org.au>, linux-next@vger.kernel.org,
+       LKML <linux-kernel@vger.kernel.org>
+In-Reply-To: <20090401095207.GH8877@traven>
+References: <20090330200145.8d0da09b.sfr@canb.auug.org.au>
+	 <20090330122437.GA4784@traven>
+	 <1238578208.14550.4.camel@pc1117.cambridge.arm.com>
+	 <20090401095207.GH8877@traven>
 Content-Type: text/plain
-Organization: Solarflare Communications
-Date: Thu, 02 Apr 2009 17:06:16 +0100
-Message-Id: <1238688376.3202.10.camel@achroite>
+Organization: ARM Ltd
+Date: Thu, 02 Apr 2009 17:08:35 +0100
+Message-Id: <1238688515.28457.120.camel@pc1117.cambridge.arm.com>
 Mime-Version: 1.0
-X-Mailer: Evolution 2.22.1 (2.22.1-2.fc9) 
+X-Mailer: Evolution 2.22.3.1 
 Content-Transfer-Encoding: 7bit
-X-Originating-Smarthost01-IP: [82.69.137.158]
+X-OriginalArrivalTime: 02 Apr 2009 16:09:09.0398 (UTC) FILETIME=[5AFC7B60:01C9B3AD]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 2009-03-31 at 14:42 -0400, Gregory Haskins wrote:
-[...]
-> +Create a device instance
-> +------------------------
-> +
-> +Devices are instantiated by again utilizing the /config/vbus configfs area.
-> +At first you may suspect that devices are created as subordinate objects of a
-> +bus/container instance, but you would be mistaken.
+On Wed, 2009-04-01 at 11:52 +0200, Matthias Kaehlcke wrote:
+> El Wed, Apr 01, 2009 at 10:30:08AM +0100 Catalin Marinas ha dit:
+> 
+> > On Mon, 2009-03-30 at 14:24 +0200, Matthias Kaehlcke wrote:
+> > > linux-next 20090330 causes the following page fault on an edb9302
+> > > (ARM) like board:
+> > [...]
+> > > the fault is reproducible and happens some seconds after having
+> > > finished the boot process. please tell me if you need more information
+> > > (like the .config, ...) in order to track this down
+> > 
+> > Yes, the .config would be useful. I'm mainly interested in which slab
+> > allocator you are using. I'm testing kmemleak mainly on ARM and haven't
+> > seen any issues.
+> 
+> attached is the .config for linux-next 20090401, which should be
+> roughly the same than the 20090330 one.
+> 
+> some hours ago i booted the board with 20090401 and the page fault
+> didn't happen
 
-This is kind of patronising; why don't you simply lay out how things
-_do_ work?
-
->  Devices are actually
-> +root-level objects in vbus specifically to allow greater flexibility in the
-> +association of a device.  For instance, it may be desirable to have a single
-> +device that spans multiple VMs (consider an ethernet switch, or a shared disk
-> +for a cluster).  Therefore, device lifecycles are managed by creating/deleting
-> +objects in /config/vbus/devices.
-> +
-> +Note: Creating a device instance is actually a two step process:  We need to
-> +give the device instance a unique name, and we also need to give it a specific
-> +device type.  It is hard to express both parameters using standard filesystem
-> +operations like mkdir, so the design decision was made to require performing
-> +the operation in two steps.
-
-How about exposing a subdir for each device class under
-/config/vbus/devices/ and allowing device creation only within those?
-Two-stage construction is a pain for both users and implementors.
-
-[...]
-> +At this point, we are ready to roll.  Pid 4382 has access to a virtual-bus
-> +namespace with one device, id=0.  Its type is:
-> +
-> +# cat /sys/vbus/instances/beb4df8f-7483-4028-b3f7-767512e2a18c/devices/0/type
-> +virtual-ethernet
-> +
-> +"virtual-ethernet"?  Why is it not "venet-tap"?  Device-classes are allowed to
-> +register their interfaces under an id that is not required to be the same as
-> +their deviceclass.  This supports device polymorphism.   For instance,
-> +consider that an interface "virtual-ethernet" may provide basic 802.x packet
-> +exchange.  However, we could have various implementations of a device that
-> +supports the 802.x interface, while having various implementations behind
-> +them.
-[...]
-
-It seems to me that your "device-classes" correspond to drivers and
-"interfaces" correspond to device classes in the LDM.  To avoid
-confusion, I think the vbus terminology should be made consistent with
-LDM.  And certainly these should not both be called simply "type" in the
-configfs/sysfs interface.
-
-Ben.
+Do you still get this fault with the latest linux-next? I can't
+reproduce it on my ARM platform (I tried it with the latest mainline
+kernel as well).
 
 -- 
-Ben Hutchings, Senior Software Engineer, Solarflare Communications
-Not speaking for my employer; that's the marketing department's job.
-They asked us to note that Solarflare product names are trademarked.
+Catalin
 
