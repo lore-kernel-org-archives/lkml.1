@@ -1,57 +1,100 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764502AbZDBSKy@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932669AbZDBSLl@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764502AbZDBSKy (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 2 Apr 2009 14:10:54 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755202AbZDBSKo
+	id S932669AbZDBSLl (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 2 Apr 2009 14:11:41 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1765346AbZDBSKy
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 2 Apr 2009 14:10:44 -0400
-Received: from mx3.mail.elte.hu ([157.181.1.138]:37481 "EHLO mx3.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1758486AbZDBSKo (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 2 Apr 2009 14:10:44 -0400
-Date: Thu, 2 Apr 2009 20:10:26 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: Peter Zijlstra <a.p.zijlstra@chello.nl>
-Cc: Paul Mackerras <paulus@samba.org>,
-       Corey Ashford <cjashfor@linux.vnet.ibm.com>,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 2/6] RFC perf_counter: singleshot support
-Message-ID: <20090402181026.GA6340@elte.hu>
-References: <20090402091158.291810516@chello.nl> <20090402091319.257773792@chello.nl> <1238674691.8530.5948.camel@twins>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1238674691.8530.5948.camel@twins>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+	Thu, 2 Apr 2009 14:10:54 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:57484 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1765785AbZDBSKv (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 2 Apr 2009 14:10:51 -0400
+Date: Thu, 2 Apr 2009 11:08:24 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Dave Hansen <dave@linux.vnet.ibm.com>
+Cc: npiggin@suse.de, linux-kernel@vger.kernel.org,
+       linux-fsdevel@vger.kernel.org
+Subject: Re: [patch 1/2] fs: mnt_want_write speedup
+Message-Id: <20090402110824.e0c1ec72.akpm@linux-foundation.org>
+In-Reply-To: <1236809477.30142.83.camel@nimitz>
+References: <20090310143718.GB15977@wotan.suse.de>
+	<1236809477.30142.83.camel@nimitz>
+X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Wed, 11 Mar 2009 15:11:17 -0700
+Dave Hansen <dave@linux.vnet.ibm.com> wrote:
 
-* Peter Zijlstra <a.p.zijlstra@chello.nl> wrote:
+> I'm feeling a bit better about these, although I am still honestly quite
+> afraid of the barriers.  I also didn't like all the #ifdefs much, but
+> here's some help on that.
 
-> OK, so I just remembered the sigio thing mentioned by Paul a while 
-> back.
+Do we need the ifdefs at all?
+
+> How about this on top of what you have as a bit of a cleanup?  It gets
+> rid of all the new #ifdefs in .c files?
 > 
-> and this should do I suppose...
-
-> @@ -1561,6 +1578,7 @@ void perf_counter_wakeup(struct perf_cou
->  	rcu_read_unlock();
+> Did I miss the use of get_mnt_writers_ptr()?  I don't think I actually
+> saw it used anywhere in this pair of patches, so I've stolen it.  I
+> think gcc should compile all this new stuff down to be basically the
+> same as you had before.  The one thing I'm not horribly sure of is the
+> "out_free_devname:" label.  It shouldn't be reachable in the !SMP case. 
+> 
+> I could also consolidate the header #ifdefs into a single one if you
+> think that looks better.
+> 
+> This is just compile tested, btw.  
+> 
+> ---
+> 
+>  linux-2.6.git-dave/fs/namespace.c        |   35 ++++++-------------------------
+>  linux-2.6.git-dave/include/linux/mount.h |   30 ++++++++++++++++++++++++--
+>  2 files changed, 35 insertions(+), 30 deletions(-)
+> 
+> diff -puN include/linux/mount.h~move-ifdefs-take2 include/linux/mount.h
+> --- linux-2.6.git/include/linux/mount.h~move-ifdefs-take2	2009-03-11 15:01:10.000000000 -0700
+> +++ linux-2.6.git-dave/include/linux/mount.h	2009-03-11 15:02:01.000000000 -0700
+> @@ -71,15 +71,41 @@ struct vfsmount {
+>  #endif
+>  };
 >  
->  	wake_up_all(&counter->waitq);
-> +	kill_fasync(&counter->fasync, SIGIO, POLL_IN);
+> -static inline int *get_mnt_writers_ptr(struct vfsmount *mnt)
+> +static inline int *get_mnt_writers_ptr_cpu(struct vfsmount *mnt,
+> +					   int cpu)
+>  {
+>  #ifdef CONFIG_SMP
+> -	return mnt->mnt_writers;
+> +	return per_cpu_ptr(mnt->mnt_writers, cpu);
+>  #else
+>  	return &mnt->mnt_writers;
+>  #endif
+>  }
+>  
+> +static inline int *get_mnt_writers_ptr(struct vfsmount *mnt)
+> +{
+> +	return get_mnt_writers_ptr_cpu(mnt, smp_processor_id());
+> +}
+> +
+> +static inline int alloc_mnt_writers(struct vfsmount *mnt)
+> +{
+> +#ifdef CONFIG_SMP
+> +	mnt->mnt_writers = alloc_percpu(int);
+> +	if (!mnt->mnt_writers)
+> +		return -ENOMEM;
+> +#else
+> +	mnt->mnt_writers = 0;
+> +#endif
+> +	return 0;
+> +}
 
-ah, yes.
+If the CONFIG_SMP=n code is just removed, the percpu code should dtrt
+with CONFIG_SMP=n.  There is the additional pointer indirection though,
+I guess.  Do we do it often enough to be concerned about the cost?
 
-Do we even need the explicit signo method this way? The SIGIO target 
-is configurable via fcntl(F_SETSIG), right?
 
-	Ingo
