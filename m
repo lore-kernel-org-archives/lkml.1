@@ -1,91 +1,149 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763788AbZDBBmU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758665AbZDBBuH@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763788AbZDBBmU (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 1 Apr 2009 21:42:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752870AbZDBBmK
+	id S1758665AbZDBBuH (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 1 Apr 2009 21:50:07 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755101AbZDBBty
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 1 Apr 2009 21:42:10 -0400
-Received: from smtp1.kolej.mff.cuni.cz ([78.128.192.10]:55497 "EHLO
-	smtp1.kolej.mff.cuni.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751062AbZDBBmJ (ORCPT
-	<RFC822;linux-kernel@vger.kernel.org>);
-	Wed, 1 Apr 2009 21:42:09 -0400
-X-Greylist: delayed 11133 seconds by postgrey-1.27 at vger.kernel.org; Wed, 01 Apr 2009 21:42:09 EDT
-X-Envelope-From: santiago@crfreenet.org
-Date: Thu, 2 Apr 2009 00:42:44 +0200
-From: Ondrej Zajicek <santiago@crfreenet.org>
-To: Michal Januszewski <spock@gentoo.org>
-Cc: linux-kernel@vger.kernel.org, linux-fbdev-devel@lists.sourceforge.net
-Subject: Re: [Linux-fbdev-devel] [PATCH] s3fb: fix color component length
-	for pseudocolor modes
-Message-ID: <20090401224243.GD4085@localhost>
-References: <20090330221104.GD6993@spock.one.pl>
+	Wed, 1 Apr 2009 21:49:54 -0400
+Received: from hera.kernel.org ([140.211.167.34]:49892 "EHLO hera.kernel.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754324AbZDBBty (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 1 Apr 2009 21:49:54 -0400
+Message-ID: <49D419E8.2080603@kernel.org>
+Date: Thu, 02 Apr 2009 10:50:32 +0900
+From: Tejun Heo <tj@kernel.org>
+User-Agent: Thunderbird 2.0.0.19 (X11/20081227)
 MIME-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha1;
-	protocol="application/pgp-signature"; boundary="oj4kGyHlBMXGt3Le"
-Content-Disposition: inline
-In-Reply-To: <20090330221104.GD6993@spock.one.pl>
-X-Operating-System: Debian GNU/Linux 4.0 (Etch)
-User-Agent: Mutt/1.5.18 (2008-05-17)
+To: Niel Lambrechts <niel.lambrechts@gmail.com>
+CC: "linux.kernel" <linux-kernel@vger.kernel.org>
+Subject: Re: 2.6.29 regression: ATA bus errors on resume
+References: <ckpL0-3TE-3@gated-at.bofh.it> <ckpL0-3TE-5@gated-at.bofh.it> <ckpL0-3TE-7@gated-at.bofh.it> <ckpL0-3TE-9@gated-at.bofh.it> <ckpL0-3TE-11@gated-at.bofh.it> <ckpL0-3TE-1@gated-at.bofh.it> <cllvN-2Gf-1@gated-at.bofh.it> <49D0D788.6070405@gmail.com>
+In-Reply-To: <49D0D788.6070405@gmail.com>
+X-Enigmail-Version: 0.95.7
+Content-Type: multipart/mixed;
+ boundary="------------020900040005020103080208"
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Thu, 02 Apr 2009 01:49:50 +0000 (UTC)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+This is a multi-part message in MIME format.
+--------------020900040005020103080208
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
 
---oj4kGyHlBMXGt3Le
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+Hello,
 
-On Tue, Mar 31, 2009 at 12:11:04AM +0200, Michal Januszewski wrote:
-> s3fb incorrectly sets the length of the color fields to 6 bits
-> for PSEUDOCOLOR modes, even though 8 or 4 bits are used per pixel.
-> Fix this by setting the length to 8 or 4, respectively.
->=20
-> Signed-off-by: Michal Januszewski <spock@gentoo.org>
+Sorry about the delay.
 
-Acked-by: Ondrej Zajicek <santiago@crfreenet.org>
+Niel Lambrechts wrote:
+> I think I should be able to reproduce when actively using X with 2.6.29,
+> and I have an external disk where I could backup to / boot from if the
+> corruption became a problem.
+> 
+> These issues are keeping me from 2.6.29 so I'll gladly help where I can,
+> if you can please provide me the patches and the .config settings that
+> may be required?
 
-> ---
-> diff --git a/drivers/video/s3fb.c b/drivers/video/s3fb.c
-> index 4dcec48..c3fad34 100644
-> --- a/drivers/video/s3fb.c
-> +++ b/drivers/video/s3fb.c
-> @@ -45,11 +45,11 @@ struct s3fb_info {
->  static const struct svga_fb_format s3fb_formats[] =3D {
->  	{ 0,  {0, 6, 0},  {0, 6, 0},  {0, 6, 0}, {0, 0, 0}, 0,
->  		FB_TYPE_TEXT, FB_AUX_TEXT_SVGA_STEP4,	FB_VISUAL_PSEUDOCOLOR, 8, 16},
-> -	{ 4,  {0, 6, 0},  {0, 6, 0},  {0, 6, 0}, {0, 0, 0}, 0,
-> +	{ 4,  {0, 4, 0},  {0, 4, 0},  {0, 4, 0}, {0, 0, 0}, 0,
->  		FB_TYPE_PACKED_PIXELS, 0,		FB_VISUAL_PSEUDOCOLOR, 8, 16},
-> -	{ 4,  {0, 6, 0},  {0, 6, 0},  {0, 6, 0}, {0, 0, 0}, 1,
-> +	{ 4,  {0, 4, 0},  {0, 4, 0},  {0, 4, 0}, {0, 0, 0}, 1,
->  		FB_TYPE_INTERLEAVED_PLANES, 1,		FB_VISUAL_PSEUDOCOLOR, 8, 16},
-> -	{ 8,  {0, 6, 0},  {0, 6, 0},  {0, 6, 0}, {0, 0, 0}, 0,
-> +	{ 8,  {0, 8, 0},  {0, 8, 0},  {0, 8, 0}, {0, 0, 0}, 0,
->  		FB_TYPE_PACKED_PIXELS, 0,		FB_VISUAL_PSEUDOCOLOR, 4, 8},
->  	{16,  {10, 5, 0}, {5, 5, 0},  {0, 5, 0}, {0, 0, 0}, 0,
->  		FB_TYPE_PACKED_PIXELS, 0,		FB_VISUAL_TRUECOLOR, 2, 4},
->=20
+Attached is the debug patch.  Please reproduce the problem with the
+patch applied and post full kernel log.
 
---=20
-Elen sila lumenn' omentielvo
+Thanks.
 
-Ondrej 'SanTiago' Zajicek (email: santiago@crfreenet.org)
-OpenPGP encrypted e-mails preferred (KeyID 0x11DEADC3, wwwkeys.pgp.net)
-"To err is human -- to blame it on a computer is even more so."
+-- 
+tejun
 
---oj4kGyHlBMXGt3Le
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: Digital signature
-Content-Disposition: inline
+--------------020900040005020103080208
+Content-Type: text/x-patch;
+ name="libata-eh-debug.patch"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline;
+ filename="libata-eh-debug.patch"
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.9 (GNU/Linux)
+diff --git a/drivers/ata/libata-eh.c b/drivers/ata/libata-eh.c
+index 0183131..1597874 100644
+--- a/drivers/ata/libata-eh.c
++++ b/drivers/ata/libata-eh.c
+@@ -1274,7 +1274,7 @@ void ata_eh_about_to_do(struct ata_link *link, struct ata_device *dev,
+ {
+ 	struct ata_port *ap = link->ap;
+ 	struct ata_eh_info *ehi = &link->eh_info;
+-	struct ata_eh_context *ehc = &link->eh_context;
++	//struct ata_eh_context *ehc = &link->eh_context;
+ 	unsigned long flags;
+ 
+ 	spin_lock_irqsave(ap->lock, flags);
+@@ -1284,7 +1284,7 @@ void ata_eh_about_to_do(struct ata_link *link, struct ata_device *dev,
+ 	/* About to take EH action, set RECOVERED.  Ignore actions on
+ 	 * slave links as master will do them again.
+ 	 */
+-	if (!(ehc->i.flags & ATA_EHI_QUIET) && link != ap->slave_link)
++	if (/*!(ehc->i.flags & ATA_EHI_QUIET) && */link != ap->slave_link)
+ 		ap->pflags |= ATA_PFLAG_RECOVERED;
+ 
+ 	spin_unlock_irqrestore(ap->lock, flags);
+@@ -2017,8 +2017,13 @@ static void ata_eh_link_autopsy(struct ata_link *link)
+ 
+ 		/* determine whether the command is worth retrying */
+ 		if (!(qc->err_mask & AC_ERR_INVALID) &&
+-		    ((qc->flags & ATA_QCFLAG_IO) || qc->err_mask != AC_ERR_DEV))
++		    ((qc->flags & ATA_QCFLAG_IO) || qc->err_mask != AC_ERR_DEV)) {
++			ata_dev_printk(qc->dev, KERN_INFO,
++				       "XXX setting retry on qc%d\n", tag);
+ 			qc->flags |= ATA_QCFLAG_RETRY;
++		} else
++			ata_dev_printk(qc->dev, KERN_INFO,
++				       "XXX no retry for qc%d\n", tag);
+ 
+ 		/* accumulate error info */
+ 		ehc->i.dev = qc->dev;
+@@ -2126,8 +2131,8 @@ static void ata_eh_link_report(struct ata_link *link)
+ 	char tries_buf[6];
+ 	int tag, nr_failed = 0;
+ 
+-	if (ehc->i.flags & ATA_EHI_QUIET)
+-		return;
++	/*if (ehc->i.flags & ATA_EHI_QUIET)
++		return;*/
+ 
+ 	desc = NULL;
+ 	if (ehc->i.desc[0] != '\0')
+@@ -2147,8 +2152,8 @@ static void ata_eh_link_report(struct ata_link *link)
+ 		nr_failed++;
+ 	}
+ 
+-	if (!nr_failed && !ehc->i.err_mask)
+-		return;
++	/*if (!nr_failed && !ehc->i.err_mask)
++		return;*/
+ 
+ 	frozen = "";
+ 	if (ap->pflags & ATA_PFLAG_FROZEN)
+@@ -3350,16 +3355,23 @@ void ata_eh_finish(struct ata_port *ap)
+ 			 * generate sense data in this function,
+ 			 * considering both err_mask and tf.
+ 			 */
+-			if (qc->flags & ATA_QCFLAG_RETRY)
++			if (qc->flags & ATA_QCFLAG_RETRY) {
++				ata_dev_printk(qc->dev, KERN_INFO, "XXX retrying qc%d, retries=%d\n",
++					       tag, qc->scsicmd->retries);
+ 				ata_eh_qc_retry(qc);
+-			else
++			} else {
++				ata_dev_printk(qc->dev, KERN_INFO, "XXX terminating qc%d\n", tag);
+ 				ata_eh_qc_complete(qc);
++			}
+ 		} else {
+ 			if (qc->flags & ATA_QCFLAG_SENSE_VALID) {
++				ata_dev_printk(qc->dev, KERN_INFO, "XXX terminating qc%d (SENSE), retries=%d\n",
++					       tag, qc->scsicmd->retries);
+ 				ata_eh_qc_complete(qc);
+ 			} else {
+ 				/* feed zero TF to sense generation */
+ 				memset(&qc->result_tf, 0, sizeof(qc->result_tf));
++				ata_dev_printk(qc->dev, KERN_INFO, "XXX retrying qc%d (bogus SENSE)\n", tag);
+ 				ata_eh_qc_retry(qc);
+ 			}
+ 		}
 
-iEYEARECAAYFAknT7eMACgkQw1GB2RHercMFTgCfcblD2S+5L+hJlqsHDo++j95w
-0gYAniLObB3GXgl6BJdQes+MwYx+bvLc
-=ro40
------END PGP SIGNATURE-----
-
---oj4kGyHlBMXGt3Le--
+--------------020900040005020103080208--
