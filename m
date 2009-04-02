@@ -1,58 +1,41 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760165AbZDBOga@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760143AbZDBOlu@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760165AbZDBOga (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 2 Apr 2009 10:36:30 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756742AbZDBOgT
+	id S1760143AbZDBOlu (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 2 Apr 2009 10:41:50 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752972AbZDBOlk
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 2 Apr 2009 10:36:19 -0400
-Received: from mx2.redhat.com ([66.187.237.31]:43916 "EHLO mx2.redhat.com"
+	Thu, 2 Apr 2009 10:41:40 -0400
+Received: from mx2.redhat.com ([66.187.237.31]:43496 "EHLO mx2.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756209AbZDBOgS (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 2 Apr 2009 10:36:18 -0400
-Organization: Red Hat UK Ltd. Registered Address: Red Hat UK Ltd, Amberley
-	Place, 107-111 Peascod Street, Windsor, Berkshire, SI4 1TE, United
-	Kingdom.
-	Registered in England and Wales under Company Registration No. 3798903
-From: David Howells <dhowells@redhat.com>
-In-Reply-To: <200904030055.26668.nickpiggin@yahoo.com.au>
-References: <200904030055.26668.nickpiggin@yahoo.com.au> <20090401230321.28177.12010.stgit@warthog.procyon.org.uk> <20090401230352.28177.65878.stgit@warthog.procyon.org.uk>
-To: Nick Piggin <nickpiggin@yahoo.com.au>
-Cc: dhowells@redhat.com, viro@zeniv.linux.org.uk, nfsv4@linux-nfs.org,
-       linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org
-Subject: Re: [PATCH 06/43] FS-Cache: Recruit a couple of page flags for cache management [ver #46]
-Date: Thu, 02 Apr 2009 15:36:12 +0100
-Message-ID: <5198.1238682972@redhat.com>
+	id S1752060AbZDBOlj (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 2 Apr 2009 10:41:39 -0400
+Date: Thu, 2 Apr 2009 16:41:18 +0200
+From: Andrea Arcangeli <aarcange@redhat.com>
+To: Chris Wright <chrisw@redhat.com>
+Cc: Anthony Liguori <anthony@codemonkey.ws>, Izik Eidus <ieidus@redhat.com>,
+       linux-kernel@vger.kernel.org, kvm@vger.kernel.org, linux-mm@kvack.org,
+       avi@redhat.com, riel@redhat.com, jeremy@goop.org, mtosatti@redhat.com,
+       hugh@veritas.com, corbet@lwn.net, yaniv@redhat.com,
+       dmonakhov@openvz.org
+Subject: Re: [PATCH 5/4] update ksm userspace interfaces
+Message-ID: <20090402144118.GH9137@random.random>
+References: <49D22A9D.4050403@codemonkey.ws> <20090331150218.GS9137@random.random> <49D23224.9000903@codemonkey.ws> <20090331151845.GT9137@random.random> <49D23CD1.9090208@codemonkey.ws> <20090331162525.GU9137@random.random> <49D24A02.6070000@codemonkey.ws> <20090402012215.GE1117@x200.localdomain> <49D424AF.3090806@codemonkey.ws> <20090402053114.GF1117@x200.localdomain>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20090402053114.GF1117@x200.localdomain>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Nick Piggin <nickpiggin@yahoo.com.au> wrote:
+On Wed, Apr 01, 2009 at 10:31:14PM -0700, Chris Wright wrote:
+>   - register only ATM, can add MADV_UNSHAREABLE to allow an app to proactively
+>     unregister, but need a cleanup when ->mm goes away via exit/exec
 
-> 1) PG_mappedtodisk is basically PG_owner_priv_2. Please alias that and
-> use it? Then at least we're down to 1 extra flag.
-> 2) Why do you need another PG_private?  PG_private for pagecache means
-> that it should call into the filesystem when it needs to handle fs data
-> attached to the page, right? So PG_private_2 doesn't really make sense
-> in that respect.
-
-Won't that either break fs/buffer.c and fs/mpage.c or preclude the use of
-FS-Cache with block-based filesystems that use the standard buffer wangling
-routines?
-
-As I've previously stated, I want to be able to make ISO9660 use FS-Cache.
-That rules out use of PG_mappedtodisk and PG_private for anything FS-Cache
-related.
-
-We can actually reclaim PG_private, I think.  There are patches to do that.
-At the very least, we can probably reclaim the std buffering code's use of it.
-
-If anything, avoiding the need for PG_fscache_write is probably easier - just
-more memory intensive and slower.  I could build a second radix tree for each
-inode that kept track of which pages from that inode FS-Cache knows about, and
-use the status bits in that node to keep track of what pages are being written
-out to the cache.
-
-We still need a way of triggering the page invalidation callbacks for in-use
-pages, however.  PG_private, as I've said, is not currently a viable option.
-
-David
+The unregister cleanup must happen at the vma level (with unregister
+when vma goes away or is overwritten) for this to provide sane madvise
+semantics (not just in exit/exec, but in unmap/mmap too). Otherwise
+this is all but madvise. Basically we need a chunk of code in core VM
+when KSM=y/m, even if we keep returning -EINVAL when KSM=n (for
+backwards compatibility, -ENOSYS not). Example, vma must be split in
+two if you MAP_SHARABLE only part of it etc...
