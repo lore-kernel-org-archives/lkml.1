@@ -1,77 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756905AbZDBM02@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757705AbZDBM0n@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756905AbZDBM02 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 2 Apr 2009 08:26:28 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753347AbZDBM0T
+	id S1757705AbZDBM0n (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 2 Apr 2009 08:26:43 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756186AbZDBM0c
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 2 Apr 2009 08:26:19 -0400
-Received: from ey-out-2122.google.com ([74.125.78.27]:56513 "EHLO
-	ey-out-2122.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752942AbZDBM0S (ORCPT
+	Thu, 2 Apr 2009 08:26:32 -0400
+Received: from mail-ew0-f165.google.com ([209.85.219.165]:53317 "EHLO
+	mail-ew0-f165.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757383AbZDBM0a (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 2 Apr 2009 08:26:18 -0400
+	Thu, 2 Apr 2009 08:26:30 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:references:mime-version
-         :content-type:content-disposition:in-reply-to:user-agent;
-        b=CkyU6vbTEWgrakZ0D+6ghEjNFt8fdDrL4GNzLjq1ZhXnkzTHYN9Ry15Em8jhN0CTjV
-         jJilYUiafbNbzQu8YiQDJ7sGznwlGFBpQ16GDC7sF+hK7VcbgpTjOy7OVtDwzVB7Ukbt
-         ijVYgC9Tuy680pfcfZSA97sv8WOSTVl7Uqus0=
+        h=sender:date:from:to:cc:subject:message-id:reply-to:references
+         :mime-version:content-type:content-disposition:in-reply-to:x-pgp-key
+         :user-agent;
+        b=wh/b9+JVFOlD+pnfQHJJ+Od4D0Daer8ndLbHUe/PxRP1abY5IF22WlyNIs5TybAkBQ
+         62bAfzchpWsbD63HFoDi/R/PEdQ/kSE8n96u8z9w/X2lmj/xnxCc1nMtAVdceU0DIgdX
+         KS0nprssDeosn3fazQwpqW6Tzk/wJU9pn2+aQ=
 Date: Thu, 2 Apr 2009 14:26:13 +0200
-From: Frederic Weisbecker <fweisbec@gmail.com>
-To: Lai Jiangshan <laijs@cn.fujitsu.com>
-Cc: Steven Rostedt <srostedt@redhat.com>, Ingo Molnar <mingo@elte.hu>,
-       LKML <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH] tracing: mark get_parent_ip() notrace
-Message-ID: <20090402122612.GB5965@nowhere>
-References: <49D458B1.5000703@cn.fujitsu.com>
+From: Michal Januszewski <spock@gentoo.org>
+To: Krzysztof Helt <krzysztof.h1@poczta.fm>
+Cc: linux-kernel@vger.kernel.org, linux-fbdev-devel@lists.sourceforge.net
+Subject: [PATCH] vga16fb: fix color component length for pseudocolor modes
+Message-ID: <20090402122613.GA16899@tria>
+Reply-To: spock@gentoo.org
+References: <20090330220523.GA6993@spock.one.pl> <20090401185856.44d89699.krzysztof.h1@poczta.fm>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=utf-8
 Content-Disposition: inline
-In-Reply-To: <49D458B1.5000703@cn.fujitsu.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+In-Reply-To: <20090401185856.44d89699.krzysztof.h1@poczta.fm>
+X-PGP-Key: http://dev.gentoo.org/~spock/spock.gpg
+User-Agent: Mutt/1.5.19 (2009-01-05)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Apr 02, 2009 at 02:18:25PM +0800, Lai Jiangshan wrote:
-> 
-> Impact: remove redundancy tracing log
-> 
-> When tracer is "function" or "function_graph", too much
-> "get_parent_ip" are recorded in ring_buffer.
+vga16fb incorrectly sets the length of the color fields to 6 or 2 bits
+for PSEUDOCOLOR modes, for which either 8 or 4 bits are used per pixel.
+Fix this by setting the length to 8 or 4, respectively.
 
-
-Thanks, indeed this get_parent_ip was a bit harrassing
-in the traces, though I still don't understand why it is
-called so often.
-
-Anyway, tracing it seems to me not useful.
-
-Acked-by: Frederic Weisbecker <fweisbec@gmail.com>
-
-
+Signed-off-by: Michal Januszewski <spock@gentoo.org>
+---
+diff --git a/drivers/video/vga16fb.c b/drivers/video/vga16fb.c
+index 5b29389..8f1eb7f 100644
+--- a/drivers/video/vga16fb.c
++++ b/drivers/video/vga16fb.c
+@@ -506,7 +506,7 @@ static int vga16fb_check_var(struct fb_var_screeninfo *var,
+ 	var->red.offset = var->green.offset = var->blue.offset = 
+ 	var->transp.offset = 0;
+ 	var->red.length = var->green.length = var->blue.length =
+-		(par->isVGA) ? 6 : 2;
++		(par->isVGA) ? 8 : 4;
+ 	var->transp.length = 0;
+ 	var->activate = FB_ACTIVATE_NOW;
+ 	var->height = -1;
+@@ -1324,7 +1324,7 @@ static int __init vga16fb_probe(struct platform_device *dev)
+ 	par->palette_blanked = 0;
+ 	par->vesa_blanked = 0;
  
-> Signed-off-by: Lai Jiangshan <laijs@cn.fujitsu.com>
-> ---
-> diff --git a/kernel/sched.c b/kernel/sched.c
-> index 706517c..a0ec10c 100644
-> --- a/kernel/sched.c
-> +++ b/kernel/sched.c
-> @@ -4860,7 +4860,7 @@ void scheduler_tick(void)
->  #endif
->  }
->  
-> -unsigned long get_parent_ip(unsigned long addr)
-> +notrace unsigned long get_parent_ip(unsigned long addr)
->  {
->  	if (in_lock_functions(addr)) {
->  		addr = CALLER_ADDR2;
-> 
-> 
-> --
-> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
-> Please read the FAQ at  http://www.tux.org/lkml/
-
+-	i = par->isVGA? 6 : 2;
++	i = par->isVGA? 8 : 4;
+ 	
+ 	vga16fb_defined.red.length   = i;
+ 	vga16fb_defined.green.length = i;
