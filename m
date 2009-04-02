@@ -1,154 +1,83 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763277AbZDBPBz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759842AbZDBPCz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763277AbZDBPBz (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 2 Apr 2009 11:01:55 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761342AbZDBO5f
+	id S1759842AbZDBPCz (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 2 Apr 2009 11:02:55 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761291AbZDBO5k
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 2 Apr 2009 10:57:35 -0400
-Received: from mga02.intel.com ([134.134.136.20]:17664 "EHLO mga02.intel.com"
+	Thu, 2 Apr 2009 10:57:40 -0400
+Received: from mga02.intel.com ([134.134.136.20]:17693 "EHLO mga02.intel.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1761530AbZDBO5d (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 2 Apr 2009 10:57:33 -0400
-Content-Type: multipart/mixed; boundary="===============0574496242=="
+	id S1761479AbZDBO5i (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 2 Apr 2009 10:57:38 -0400
+Content-Type: multipart/mixed; boundary="===============0039842450=="
 MIME-Version: 1.0
 X-ExtLoop1: 1
 X-IronPort-AV: E=Sophos;i="4.39,314,1235980800"; 
-   d="scan'208";a="399764710"
-Message-Id: <20090402145726.223198000@intel.com>
+   d="scan'208";a="399764743"
+Message-Id: <20090402145728.179163000@intel.com>
 References: <20090402145455.597376000@intel.com>
 User-Agent: quilt/0.46-1
-Date: Thu, 02 Apr 2009 16:55:08 +0200
+Date: Thu, 02 Apr 2009 16:55:09 +0200
 From: markus.t.metzger@intel.com
 To: mingo@elte.hu, tglx@linutronix.de, hpa@zytor.com
 Cc: markus.t.metzger@gmail.com, roland@redhat.com, eranian@googlemail.com,
        oleg@redhat.com, juan.villacis@intel.com, ak@linux.jf.intel.com,
        linux-kernel@vger.kernel.org,
        Markus Metzger <markus.t.metzger@intel.com>
-Subject: [patch 13/18] x86, ds: add leakage warning
+Subject: [patch 14/18] x86, ds: use single debug store cpu configuration
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---===============0574496242==
+--===============0039842450==
 MIME-Version: 1.0
-Content-Disposition: inline; filename=tip.master.ds.warn_on_exit.patch
+Content-Disposition: inline; filename=tip.master.ds.single_configuration.patch
 
-Add a warning in case a debug store context is not removed before
-the task it is attached to is freed.
-
-Remove the old warning at thread exit. It is too early.
+Use a single configuration for all cpus.
 
 
+Reported-by: Ingo Molnar <mingo@elte.hu>
 Signed-off-by: Markus Metzger <markus.t.metzger@intel.com>
 ---
- arch/x86/include/asm/ds.h        |    8 	6 +	2 -	0 !
- arch/x86/include/asm/processor.h |    2 	1 +	1 -	0 !
- arch/x86/kernel/ds.c             |    4 	0 +	4 -	0 !
- arch/x86/kernel/process.c        |    5 	3 +	2 -	0 !
- 4 files changed, 10 insertions(+), 9 deletions(-)
+ arch/x86/kernel/ds.c |    9 	6 +	3 -	0 !
+ 1 file changed, 6 insertions(+), 3 deletions(-)
 
 Index: b/arch/x86/kernel/ds.c
 ===================================================================
 --- a/arch/x86/kernel/ds.c
 +++ b/arch/x86/kernel/ds.c
-@@ -1380,10 +1380,6 @@ void ds_copy_thread(struct task_struct *
- 	tsk->thread.ds_ctx = NULL;
+@@ -46,9 +46,8 @@ struct ds_configuration {
+ 	/* Control bit-masks indexed by enum ds_feature: */
+ 	unsigned long		ctl[dsf_ctl_max];
+ };
+-static DEFINE_PER_CPU(struct ds_configuration, ds_cfg_array);
++static struct ds_configuration ds_cfg __read_mostly;
+ 
+-#define ds_cfg per_cpu(ds_cfg_array, smp_processor_id())
+ 
+ /* Maximal size of a DS configuration: */
+ #define MAX_SIZEOF_DS		(12 * 8)
+@@ -1291,11 +1290,15 @@ ds_configure(const struct ds_configurati
+ 	printk("bts/pebs record: %u/%u bytes\n",
+ 	       ds_cfg.sizeof_rec[ds_bts], ds_cfg.sizeof_rec[ds_pebs]);
+ 
+-	WARN_ON_ONCE(MAX_SIZEOF_DS < (12 * ds_cfg.sizeof_ptr_field));
++	WARN_ON(MAX_SIZEOF_DS < (12 * ds_cfg.sizeof_ptr_field));
  }
  
--void ds_exit_thread(struct task_struct *tsk)
--{
--}
--
- static __init int ds_selftest(void)
+ void __cpuinit ds_init_intel(struct cpuinfo_x86 *c)
  {
- 	if (ds_cfg.sizeof_rec[ds_bts]) {
-Index: b/arch/x86/include/asm/ds.h
-===================================================================
---- a/arch/x86/include/asm/ds.h
-+++ b/arch/x86/include/asm/ds.h
-@@ -23,6 +23,7 @@
- #define _ASM_X86_DS_H
- 
- 
-+#include <linux/sched.h>
- #include <linux/types.h>
- #include <linux/init.h>
- #include <linux/err.h>
-@@ -289,7 +290,10 @@ extern void ds_switch_to(struct task_str
-  * Task clone/init and cleanup work
-  */
- extern void ds_copy_thread(struct task_struct *tsk, struct task_struct *father);
--extern void ds_exit_thread(struct task_struct *tsk);
-+static inline void ds_warn_leak(struct task_struct *tsk)
-+{
-+	WARN(tsk->thread.ds_ctx, "leaking DS context\n");
-+}
- 
- #else /* CONFIG_X86_DS */
- 
-@@ -299,7 +303,7 @@ static inline void ds_switch_to(struct t
- 				struct task_struct *next) {}
- static inline void ds_copy_thread(struct task_struct *tsk,
- 				  struct task_struct *father) {}
--static inline void ds_exit_thread(struct task_struct *tsk) {}
-+static inline void ds_warn_leak(struct task_struct *tsk) {}
- 
- #endif /* CONFIG_X86_DS */
- #endif /* _ASM_X86_DS_H */
-Index: b/arch/x86/kernel/process.c
-===================================================================
---- a/arch/x86/kernel/process.c
-+++ b/arch/x86/kernel/process.c
-@@ -14,6 +14,7 @@
- #include <asm/idle.h>
- #include <asm/uaccess.h>
- #include <asm/i387.h>
-+#include <asm/ds.h>
- 
- unsigned long idle_halt;
- EXPORT_SYMBOL(idle_halt);
-@@ -45,6 +46,8 @@ void free_thread_xstate(struct task_stru
- 		kmem_cache_free(task_xstate_cachep, tsk->thread.xstate);
- 		tsk->thread.xstate = NULL;
- 	}
++	/* Only configure the first cpu. Others are identical. */
++	if (ds_cfg.name)
++		return;
 +
-+	ds_warn_leak(tsk);
- }
- 
- void free_thread_info(struct thread_info *ti)
-@@ -82,8 +85,6 @@ void exit_thread(void)
- 		t->io_bitmap_max = 0;
- 		put_cpu();
- 	}
--
--	ds_exit_thread(current);
- }
- 
- void flush_thread(void)
-Index: b/arch/x86/include/asm/processor.h
-===================================================================
---- a/arch/x86/include/asm/processor.h
-+++ b/arch/x86/include/asm/processor.h
-@@ -6,6 +6,7 @@
- /* Forward declaration, a strange C thing */
- struct task_struct;
- struct mm_struct;
-+struct ds_context;
- 
- #include <asm/vm86.h>
- #include <asm/math_emu.h>
-@@ -21,7 +22,6 @@ struct mm_struct;
- #include <asm/msr.h>
- #include <asm/desc_defs.h>
- #include <asm/nops.h>
--#include <asm/ds.h>
- 
- #include <linux/personality.h>
- #include <linux/cpumask.h>
+ 	switch (c->x86) {
+ 	case 0x6:
+ 		switch (c->x86_model) {
 
 -- 
 
---===============0574496242==
+--===============0039842450==
 Content-Type: text/plain; charset="utf-8"
 MIME-Version: 1.0
 Content-Transfer-Encoding: quoted-printable
@@ -169,4 +98,4 @@ the sole use of the intended recipient(s). Any review or distribution
 by others is strictly prohibited. If you are not the intended
 recipient, please contact the sender and delete all copies.
 
---===============0574496242==--
+--===============0039842450==--
