@@ -1,49 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S935430AbZDBJQo@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S935545AbZDBJRt@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S935430AbZDBJQo (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 2 Apr 2009 05:16:44 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934950AbZDBJN5
+	id S935545AbZDBJRt (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 2 Apr 2009 05:17:49 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S935109AbZDBJRE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 2 Apr 2009 05:13:57 -0400
-Received: from bombadil.infradead.org ([18.85.46.34]:59173 "EHLO
-	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S934862AbZDBJN4 (ORCPT
+	Thu, 2 Apr 2009 05:17:04 -0400
+Received: from rhun.apana.org.au ([64.62.148.172]:58580 "EHLO
+	arnor.apana.org.au" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S935512AbZDBJRA (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 2 Apr 2009 05:13:56 -0400
-Subject: Re: [PATCH 13/15] perf_counter: provide generic callchain bits
-From: Peter Zijlstra <peterz@infradead.org>
-To: Paul Mackerras <paulus@samba.org>
-Cc: Corey Ashford <cjashfor@linux.vnet.ibm.com>, Ingo Molnar <mingo@elte.hu>,
-       linux-kernel@vger.kernel.org
-In-Reply-To: <18900.33013.359312.694434@cargo.ozlabs.ibm.com>
-References: <20090330170701.856843742@chello.nl>
-	 <20090330171024.254266860@chello.nl>
-	 <18897.46177.528910.51044@cargo.ozlabs.ibm.com>
-	 <1238481552.28248.1384.camel@twins> <49D1C544.7020403@linux.vnet.ibm.com>
-	 <18897.56973.324304.995540@cargo.ozlabs.ibm.com>
-	 <1238508032.8530.278.camel@twins>
-	 <18898.58399.957182.181124@drongo.ozlabs.ibm.com>
-	 <1238572744.8530.2541.camel@twins> <49D3F7E4.7010308@linux.vnet.ibm.com>
-	 <1238654631.8530.5361.camel@twins> <1238658096.8530.5480.camel@twins>
-	 <18900.33013.359312.694434@cargo.ozlabs.ibm.com>
-Content-Type: text/plain
-Content-Transfer-Encoding: 7bit
-Date: Thu, 02 Apr 2009 11:14:51 +0200
-Message-Id: <1238663691.8530.5678.camel@twins>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.26.0 
+	Thu, 2 Apr 2009 05:17:00 -0400
+Date: Thu, 2 Apr 2009 17:16:39 +0800
+From: Herbert Xu <herbert@gondor.apana.org.au>
+To: Avi Kivity <avi@redhat.com>
+Cc: ghaskins@novell.com, anthony@codemonkey.ws, andi@firstfloor.org,
+       linux-kernel@vger.kernel.org, agraf@suse.de, pmullaney@novell.com,
+       pmorreale@novell.com, rusty@rustcorp.com.au, netdev@vger.kernel.org,
+       kvm@vger.kernel.org
+Subject: Re: [RFC PATCH 00/17] virtual-bus
+Message-ID: <20090402091639.GA30126@gondor.apana.org.au>
+References: <20090402085253.GA29932@gondor.apana.org.au> <49D47F11.6070400@redhat.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <49D47F11.6070400@redhat.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 2009-04-02 at 20:10 +1100, Paul Mackerras wrote:
-> Peter Zijlstra writes:
-> 
-> > Hmm, another idea:
-> > 
-> > struct perf_callchain_entry {
-> >   __u32 total, hv, kernel, user;
-> 
-> That should work - and they could be u16's in fact.
+On Thu, Apr 02, 2009 at 12:02:09PM +0300, Avi Kivity wrote:
+>
+> There is no choice.  Exiting from the guest to the kernel to userspace  
+> is prohibitively expensive, you can't do that on every packet.
 
-Gah, I just send it out with u32. But yes, will change.
+I was referring to the bit between the kernel and userspace.
+
+In any case, I just looked at the virtio mitigation code again
+and I am completely baffled at why we need it.  Look at Greg's
+code or the netback/netfront notification, why do we need this
+completely artificial mitigation when the ring itself provides
+a natural way of stemming the flow?
+
+Cheers,
+-- 
+Visit Openswan at http://www.openswan.org/
+Email: Herbert Xu ~{PmV>HI~} <herbert@gondor.apana.org.au>
+Home Page: http://gondor.apana.org.au/~herbert/
+PGP Key: http://gondor.apana.org.au/~herbert/pubkey.txt
