@@ -1,58 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934627AbZDBR1y@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764101AbZDBRb2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934627AbZDBR1y (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 2 Apr 2009 13:27:54 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934549AbZDBR0z
+	id S1764101AbZDBRb2 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 2 Apr 2009 13:31:28 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760686AbZDBRbO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 2 Apr 2009 13:26:55 -0400
-Received: from atrey.karlin.mff.cuni.cz ([195.113.26.193]:38285 "EHLO
-	atrey.karlin.mff.cuni.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S934608AbZDBR0y (ORCPT
+	Thu, 2 Apr 2009 13:31:14 -0400
+Received: from smtp116.mail.mud.yahoo.com ([209.191.84.165]:36230 "HELO
+	smtp116.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1757244AbZDBRbM (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 2 Apr 2009 13:26:54 -0400
-Date: Thu, 2 Apr 2009 19:26:52 +0200
-From: Jan Kara <jack@suse.cz>
-To: Nick Piggin <nickpiggin@yahoo.com.au>
-Cc: Christoph Hellwig <hch@infradead.org>, David Howells <dhowells@redhat.com>,
-       viro@zeniv.linux.org.uk, nfsv4@linux-nfs.org,
-       linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org
-Subject: Re: [PATCH 22/43] CacheFiles: Add a hook to write a single page of data to an inode [ver #46]
-Message-ID: <20090402172652.GE17275@atrey.karlin.mff.cuni.cz>
-References: <200904030100.05741.nickpiggin@yahoo.com.au> <200904030347.21470.nickpiggin@yahoo.com.au> <20090402165505.GA21859@infradead.org> <200904030407.55471.nickpiggin@yahoo.com.au>
+	Thu, 2 Apr 2009 13:31:12 -0400
+DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
+  s=s1024; d=yahoo.com.au;
+  h=Received:X-YMail-OSG:X-Yahoo-Newman-Property:From:To:Subject:Date:User-Agent:Cc:References:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Content-Disposition:Message-Id;
+  b=BHVmz14rpaHcRyWW/4ZpztK9kw4zsHir2P2M4cmcBik7m6qlQe8g6c5EbNVke/WrmgjhNKIEv5ikH8+KlPkOb+z/5QWM+n5um08x/yWB3xzecU7xyQFH+rose6CEOBXsdgUuIMzRYM83OVkHogcoX0U2aJUm74CbXnXEF4bdesM=  ;
+X-YMail-OSG: UzgPPm4VM1l6KIYLb2RlXrkZJTItcEvH4DD1V4m03ybp_uOAqjFYaxAGoidDTC7fm16GbdVAfC1kDuLAgel6JXcLO9sSTZJ0T2yZzYmUJGuLOJJn4gSSUFv7cgnuhgciTq7gwJ2yLSooWx3CCjEJ6FnvKze9uVWGkmGkGToBSHUMSRi8is.9E_ibV.CUeZujwQmxGBRtoLuyahFilEcGu.VzZ8rctDvS51yIbCMCT.sKwZGr.FPAZfhlj4MDcDAtIztrfo1H3PKDT722g2rhmiG_Tov68JpysXB50OXGjjA6AbzQjtcQv5U..9nImIOVtJTEh5_wyAQb41VJ11Cb1nW6qw--
+X-Yahoo-Newman-Property: ymail-3
+From: Nick Piggin <nickpiggin@yahoo.com.au>
+To: David Howells <dhowells@redhat.com>
+Subject: Re: [PATCH 06/43] FS-Cache: Recruit a couple of page flags for cache management [ver #46]
+Date: Fri, 3 Apr 2009 04:31:03 +1100
+User-Agent: KMail/1.9.51 (KDE/4.0.4; ; )
+Cc: viro@zeniv.linux.org.uk, nfsv4@linux-nfs.org, linux-kernel@vger.kernel.org,
+       linux-fsdevel@vger.kernel.org
+References: <200904030353.17713.nickpiggin@yahoo.com.au> <200904030315.03606.nickpiggin@yahoo.com.au> <7249.1238692155@redhat.com>
+In-Reply-To: <7249.1238692155@redhat.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain;
+  charset="utf-8"
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <200904030407.55471.nickpiggin@yahoo.com.au>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+Message-Id: <200904030431.04079.nickpiggin@yahoo.com.au>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> On Friday 03 April 2009 03:55:05 Christoph Hellwig wrote:
-> > On Fri, Apr 03, 2009 at 03:47:20AM +1100, Nick Piggin wrote:
-> > > Well they now are quite well filesystem defined. We no longer take
-> > > the page lock before calling them. Not saying it's perfect, but if
-> > > the backing fs is just using a known subset of ones that work
-> > > (like loop does).
-> > 
-> > The page lock doesn't matter.  What matters is locks protecting the
-> > io.  Like the XFS iolock or cluster locks in the cluster filesystems,
-> > and you will get silent data corruption that way.
+On Friday 03 April 2009 04:09:15 David Howells wrote:
+> Nick Piggin <nickpiggin@yahoo.com.au> wrote:
 > 
-> Hmm, I can see i_mutex being a problem, but can't see how a filesystem
-> takes any other locks down that chain?
-  Yes, i_mutex is one problem. Then filesystems may take other locks
-in their ->aio_write callbacks - as Christoph mentioned, for example
-OCFS2 has to do some network messaging to synchronize nodes in the
-cluster accessing the file. I could imagine some clever filesystem doing
-more clever locking than just one i_mutex covering the whole file...
+> > Comments about PG_private still stand.
+> 
+> Replies about PG_private still stand.
+> 
+> It's owned by fs/buffer.c, and if the 'netfs' uses that, then PG_private is
+> not available.
 
-> Naturally a random in-kernel user misses other important things, so yes
-> a simple write sounds like the best option.
-  Definitely. IMO it's hard to get the locking right without calling
-->aio_write callback.
+Well in theory I still think it would be cleanest to modify buffer to
+play more nicely with it. But maybe that ends up being harder to
+distinguish the 3 cases of attached metadata on the page. I don't know,
+you haven't posted any isofs code so either way it is inappropriate to
+use up this extra page flag here.
 
-									Honza
--- 
-Jan Kara <jack@suse.cz>
-SuSE CR Labs
+Is isofs cache worth a page flag?
