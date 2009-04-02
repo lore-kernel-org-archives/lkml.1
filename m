@@ -1,42 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932271AbZDBRRx@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1766000AbZDBRSR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932271AbZDBRRx (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 2 Apr 2009 13:17:53 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759557AbZDBRRj
+	id S1766000AbZDBRSR (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 2 Apr 2009 13:18:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932367AbZDBRRs
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 2 Apr 2009 13:17:39 -0400
-Received: from mx2.redhat.com ([66.187.237.31]:59312 "EHLO mx2.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1757404AbZDBRRj (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 2 Apr 2009 13:17:39 -0400
-Message-ID: <49D4F32F.5040109@redhat.com>
-Date: Thu, 02 Apr 2009 13:17:35 -0400
-From: Rik van Riel <riel@redhat.com>
-User-Agent: Thunderbird 2.0.0.21 (X11/20090320)
+	Thu, 2 Apr 2009 13:17:48 -0400
+Received: from rhun.apana.org.au ([64.62.148.172]:38341 "EHLO
+	arnor.apana.org.au" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1765414AbZDBRRq (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 2 Apr 2009 13:17:46 -0400
+Date: Fri, 3 Apr 2009 01:17:27 +0800
+From: Herbert Xu <herbert@gondor.apana.org.au>
+To: Avi Kivity <avi@redhat.com>
+Cc: Gregory Haskins <ghaskins@novell.com>,
+       Rusty Russell <rusty@rustcorp.com.au>, anthony@codemonkey.ws,
+       andi@firstfloor.org, linux-kernel@vger.kernel.org, agraf@suse.de,
+       pmullaney@novell.com, pmorreale@novell.com, netdev@vger.kernel.org,
+       kvm@vger.kernel.org, Ingo Molnar <mingo@elte.hu>
+Subject: Re: [RFC PATCH 00/17] virtual-bus
+Message-ID: <20090402171727.GA3127@gondor.apana.org.au>
+References: <200904022243.21088.rusty@rustcorp.com.au> <49D4B4A3.5070008@novell.com> <49D4B87D.2000202@redhat.com> <20090402145018.GA816@gondor.apana.org.au> <49D4D301.2090209@redhat.com> <20090402154041.GA1774@gondor.apana.org.au> <49D4E072.2060003@redhat.com> <20090402160941.GB2173@gondor.apana.org.au> <49D4EDBD.3050900@redhat.com> <20090402170610.GA3001@gondor.apana.org.au>
 MIME-Version: 1.0
-To: David Howells <dhowells@redhat.com>
-CC: viro@ZenIV.linux.org.uk, nfsv4@linux-nfs.org, linux-kernel@vger.kernel.org,
-       linux-fsdevel@vger.kernel.org
-Subject: Re: [PATCH 05/43] FS-Cache: Release page->private after failed readahead
- [ver #46]
-References: <20090401230321.28177.12010.stgit@warthog.procyon.org.uk> <20090401230347.28177.28093.stgit@warthog.procyon.org.uk>
-In-Reply-To: <20090401230347.28177.28093.stgit@warthog.procyon.org.uk>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20090402170610.GA3001@gondor.apana.org.au>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-David Howells wrote:
-> The attached patch causes read_cache_pages() to release page-private data on a
-> page for which add_to_page_cache() fails or the filler function fails. This
-> permits pages with caching references associated with them to be cleaned up.
+On Fri, Apr 03, 2009 at 01:06:10AM +0800, Herbert Xu wrote:
 >
-> The invalidatepage() address space op is called (indirectly) to do the honours.
->
-> Signed-off-by: David Howells <dhowells@redhat.com>
-> Acked-by: Steve Dickson <steved@redhat.com>
-> Acked-by: Trond Myklebust <Trond.Myklebust@netapp.com>
->   
-Acked-by: Rik van Riel <riel@redhat.com>
+> That only happens if the guest immediately does some CPU-intensive
+> computation 3ms and assuming its timeslice lasts that long.
+> 
+> In any case, the same thing will happen right now if the host or
+> some other guest on the same CPU hogs the CPU for 3ms.
 
+Even better, look at the packet's TOS.  If it's marked for low-
+latency then vmexit immediately.  Otherwise continue.
+
+In the backend you'd just set the marker in shared memory.
+
+Of course invert this for the host => guest direction.
+
+Cheers,
+-- 
+Visit Openswan at http://www.openswan.org/
+Email: Herbert Xu ~{PmV>HI~} <herbert@gondor.apana.org.au>
+Home Page: http://gondor.apana.org.au/~herbert/
+PGP Key: http://gondor.apana.org.au/~herbert/pubkey.txt
