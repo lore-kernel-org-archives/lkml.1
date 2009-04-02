@@ -1,97 +1,162 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761478AbZDBO6C@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761569AbZDBO5o@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761478AbZDBO6C (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 2 Apr 2009 10:58:02 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760330AbZDBO5N
+	id S1761569AbZDBO5o (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 2 Apr 2009 10:57:44 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760493AbZDBO5K
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 2 Apr 2009 10:57:13 -0400
-Received: from mga11.intel.com ([192.55.52.93]:37716 "EHLO mga11.intel.com"
+	Thu, 2 Apr 2009 10:57:10 -0400
+Received: from mga01.intel.com ([192.55.52.88]:49002 "EHLO mga01.intel.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1760889AbZDBO5M (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 2 Apr 2009 10:57:12 -0400
-Content-Type: multipart/mixed; boundary="===============0929572262=="
+	id S1757345AbZDBO5J (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 2 Apr 2009 10:57:09 -0400
+Content-Type: multipart/mixed; boundary="===============1957286944=="
 MIME-Version: 1.0
 X-ExtLoop1: 1
 X-IronPort-AV: E=Sophos;i="4.39,314,1235980800"; 
-   d="scan'208";a="678190767"
-Message-Id: <20090402145704.465495000@intel.com>
+   d="scan'208";a="444385896"
+Message-Id: <20090402145702.669790000@intel.com>
 References: <20090402145455.597376000@intel.com>
 User-Agent: quilt/0.46-1
-Date: Thu, 02 Apr 2009 16:54:57 +0200
+Date: Thu, 02 Apr 2009 16:54:56 +0200
 From: markus.t.metzger@intel.com
 To: mingo@elte.hu, tglx@linutronix.de, hpa@zytor.com
 Cc: markus.t.metzger@gmail.com, roland@redhat.com, eranian@googlemail.com,
        oleg@redhat.com, juan.villacis@intel.com, ak@linux.jf.intel.com,
        linux-kernel@vger.kernel.org,
        Markus Metzger <markus.t.metzger@intel.com>
-Subject: [patch 02/18] sched: add task_is_running() fucntion to sched.h
+Subject: [patch 01/18] x86, bts: fix race when bts tracer is removed
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---===============0929572262==
+--===============1957286944==
 MIME-Version: 1.0
-Content-Disposition: inline; filename=tip.master.sched.task_running.patch
+Content-Disposition: inline; filename=tip.master.ds.tracing_flags.patch
 
-Add a function to query whether a task is currently running on any cpu.
+When the bts tracer is removed while the traced task is running,
+the write to clear the bts tracer pointer races with context switch code.
+
+Read the tracer once during a context switch.
 
 
+When a new tracer is installed, the bts tracer is set in the ds context
+before the tracer is initialized in order to claim the context for that
+tracer.
+This may result in write accesses using an uninitialized trace configuration
+when scheduling timestamps have been requested.
+
+Store active tracing flags separately and only set active flags after
+the tracing configuration has been initialized.
+
+
+Reviewed-by: Oleg Nesterov <oleg@redhat.com>
 Signed-off-by: Markus Metzger <markus.t.metzger@intel.com>
-
 ---
- include/linux/sched.h |    5 	5 +	0 -	0 !
- kernel/sched.c        |   16 	16 +	0 -	0 !
- 2 files changed, 21 insertions(+)
+ arch/x86/kernel/ds.c |   48 	29 +	19 -	0 !
+ 1 file changed, 29 insertions(+), 19 deletions(-)
 
-Index: b/include/linux/sched.h
+Index: b/arch/x86/kernel/ds.c
 ===================================================================
---- a/include/linux/sched.h
-+++ b/include/linux/sched.h
-@@ -1988,8 +1988,13 @@ extern void set_task_comm(struct task_st
- extern char *get_task_comm(char *to, struct task_struct *tsk);
+--- a/arch/x86/kernel/ds.c
++++ b/arch/x86/kernel/ds.c
+@@ -89,6 +89,9 @@ struct bts_tracer {
  
- #ifdef CONFIG_SMP
-+extern int task_is_running(struct task_struct *p);
- extern unsigned long wait_task_inactive(struct task_struct *, long match_state);
- #else
-+static inline int task_is_running(struct task_struct *p)
-+{
-+	return p == current;
-+}
- static inline unsigned long wait_task_inactive(struct task_struct *p,
- 					       long match_state)
- {
-Index: b/kernel/sched.c
-===================================================================
---- a/kernel/sched.c
-+++ b/kernel/sched.c
-@@ -1933,6 +1933,22 @@ migrate_task(struct task_struct *p, int 
+ 	/* Buffer overflow notification function: */
+ 	bts_ovfl_callback_t	ovfl;
++
++	/* Active flags affecting trace collection. */
++	unsigned int		flags;
+ };
+ 
+ struct pebs_tracer {
+@@ -799,6 +802,8 @@ void ds_suspend_bts(struct bts_tracer *t
+ 	if (!tracer)
+ 		return;
+ 
++	tracer->flags = 0;
++
+ 	task = tracer->ds.context->task;
+ 
+ 	if (!task || (task == current))
+@@ -820,6 +825,8 @@ void ds_resume_bts(struct bts_tracer *tr
+ 	if (!tracer)
+ 		return;
+ 
++	tracer->flags = tracer->trace.ds.flags;
++
+ 	task = tracer->ds.context->task;
+ 
+ 	control = ds_cfg.ctl[dsf_bts];
+@@ -1037,6 +1044,23 @@ void __cpuinit ds_init_intel(struct cpui
+ 	}
  }
  
- /*
-+ * Is the task currently running on any cpu?
-+ */
-+int task_is_running(struct task_struct *p)
++static inline void ds_take_timestamp(struct ds_context *context,
++				     enum bts_qualifier qualifier,
++				     struct task_struct *task)
 +{
-+	struct rq *rq;
-+	unsigned long flags;
-+	int running;
++	struct bts_tracer *tracer = context->bts_master;
++	barrier();
 +
-+	rq = task_rq_lock(p, &flags);
-+	running = task_running(rq, p);
-+	task_rq_unlock(rq, &flags);
-+
-+	return running;
++	if (tracer && (tracer->flags & BTS_TIMESTAMPS)) {
++		struct bts_struct ts = {
++			.qualifier = qualifier,
++			.variant.timestamp.jiffies = jiffies_64,
++			.variant.timestamp.pid = task->pid
++		};
++		bts_write(tracer, &ts);
++	}
 +}
 +
-+/*
-  * wait_task_inactive - wait for a thread to unschedule.
-  *
-  * If @match_state is nonzero, it's the @p->state value just checked and
+ /*
+  * Change the DS configuration from tracing prev to tracing next.
+  */
+@@ -1044,36 +1068,22 @@ void ds_switch_to(struct task_struct *pr
+ {
+ 	struct ds_context *prev_ctx = prev->thread.ds_ctx;
+ 	struct ds_context *next_ctx = next->thread.ds_ctx;
++	unsigned long debugctlmsr = next->thread.debugctlmsr;
++	barrier();
+ 
+ 	if (prev_ctx) {
+ 		update_debugctlmsr(0);
+ 
+-		if (prev_ctx->bts_master &&
+-		    (prev_ctx->bts_master->trace.ds.flags & BTS_TIMESTAMPS)) {
+-			struct bts_struct ts = {
+-				.qualifier = bts_task_departs,
+-				.variant.timestamp.jiffies = jiffies_64,
+-				.variant.timestamp.pid = prev->pid
+-			};
+-			bts_write(prev_ctx->bts_master, &ts);
+-		}
++		ds_take_timestamp(prev_ctx, bts_task_departs, prev);
+ 	}
+ 
+ 	if (next_ctx) {
+-		if (next_ctx->bts_master &&
+-		    (next_ctx->bts_master->trace.ds.flags & BTS_TIMESTAMPS)) {
+-			struct bts_struct ts = {
+-				.qualifier = bts_task_arrives,
+-				.variant.timestamp.jiffies = jiffies_64,
+-				.variant.timestamp.pid = next->pid
+-			};
+-			bts_write(next_ctx->bts_master, &ts);
+-		}
++		ds_take_timestamp(next_ctx, bts_task_arrives, next);
+ 
+ 		wrmsrl(MSR_IA32_DS_AREA, (unsigned long)next_ctx->ds);
+ 	}
+ 
+-	update_debugctlmsr(next->thread.debugctlmsr);
++	update_debugctlmsr(debugctlmsr);
+ }
+ 
+ void ds_copy_thread(struct task_struct *tsk, struct task_struct *father)
 
 -- 
 
---===============0929572262==
+--===============1957286944==
 Content-Type: text/plain; charset="utf-8"
 MIME-Version: 1.0
 Content-Transfer-Encoding: quoted-printable
@@ -112,4 +177,4 @@ the sole use of the intended recipient(s). Any review or distribution
 by others is strictly prohibited. If you are not the intended
 recipient, please contact the sender and delete all copies.
 
---===============0929572262==--
+--===============1957286944==--
