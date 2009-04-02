@@ -1,187 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763591AbZDBWhc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1765446AbZDBWhy@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763591AbZDBWhc (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 2 Apr 2009 18:37:32 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760211AbZDBWgw
+	id S1765446AbZDBWhy (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 2 Apr 2009 18:37:54 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762077AbZDBWhF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 2 Apr 2009 18:36:52 -0400
-Received: from a-sasl-fastnet.sasl.smtp.pobox.com ([207.106.133.19]:43616 "EHLO
-	sasl.smtp.pobox.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755575AbZDBWgu convert rfc822-to-8bit (ORCPT
+	Thu, 2 Apr 2009 18:37:05 -0400
+Received: from out1.smtp.messagingengine.com ([66.111.4.25]:51648 "EHLO
+	out1.smtp.messagingengine.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1761596AbZDBWhD (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 2 Apr 2009 18:36:50 -0400
-From: Junio C Hamano <gitster@pobox.com>
-To: git@vger.kernel.org
-Subject: [ANNOUNCE] GIT 1.6.2.2
-Date: Thu, 02 Apr 2009 15:36:38 -0700
-Message-ID: <7vab6yel8p.fsf@gitster.siamese.dyndns.org>
-User-Agent: Gnus/5.110006 (No Gnus v0.6) Emacs/21.4 (gnu/linux)
+	Thu, 2 Apr 2009 18:37:03 -0400
+Date: Fri, 3 Apr 2009 09:36:59 +1100
+From: Bron Gondwana <brong@fastmail.fm>
+To: david@lang.hm
+Cc: Matthew Garrett <mjg59@srcf.ucam.org>, Theodore Tso <tytso@mit.edu>,
+       Sitsofe Wheeler <sitsofe@yahoo.com>,
+       "Andreas T.Auer" <andreas.t.auer_lkml_73537@ursus.ath.cx>,
+       Alberto Gonzalez <info@gnebu.es>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: Ext4 and the "30 second window of death"
+Message-ID: <20090402223659.GC6898@brong.net>
+References: <200904010002.47077.info@gnebu.es> <49D2A5AB.1090704@ursus.ath.cx> <20090401015010.GB4529@mit.edu> <20090401052050.GA20456@sucs.org> <20090401151219.GA12285@srcf.ucam.org> <20090401173521.GA15423@mit.edu> <20090401174336.GA14726@srcf.ucam.org> <alpine.DEB.1.10.0904021116500.28893@asgard.lang.hm> <20090402182925.GA4502@srcf.ucam.org> <alpine.DEB.1.10.0904021134560.28893@asgard.lang.hm>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Transfer-Encoding: 8BIT
-X-Pobox-Relay-ID: BFC61340-1FD6-11DE-944B-BB14ECB1AA3C-77302942!a-sasl-fastnet.pobox.com
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <alpine.DEB.1.10.0904021134560.28893@asgard.lang.hm>
+Organization: brong.net
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-The latest maintenance release GIT 1.6.2.2 is available at the
-usual places:
+On Thu, Apr 02, 2009 at 11:44:20AM -0700, david@lang.hm wrote:
+> let's not talk a database here, let's talk something simpler, like a POP3 
+> mail client (even though I strongly favor IMAP ;-)
+>
+> it wants to have the message saved before it deletes it from the server.
+>
+> how should it try to do this?
+>
+> the only portable method is to fsync the file after it's written and  
+> before sending the delete to the server.
+>
+> so your mail client _should_ issue fsync calls.
+>
+> however, some (many, most??) users would probably be willing to loose a  
+> little e-mail to gain a significant increase in battery life on their  
+> laptops.
 
-  http://www.kernel.org/pub/software/scm/git/
+Obviously it should do a spamminess test.  If the sender is in your
+addressbook/whitelist then fsync it, otherwise if it looks spammy,
+don't bother.
 
-  git-1.6.2.2.tar.{gz,bz2}			(source tarball)
-  git-htmldocs-1.6.2.2.tar.{gz,bz2}		(preformatted docs)
-  git-manpages-1.6.2.2.tar.{gz,bz2}		(preformatted docs)
+Seriously, there's no way of telling which emails are the really
+important job offer/flight confirmation/invitation from that really
+cute girl you met that one time...
 
-The RPM binary packages for a few architectures are found in:
+... lots of data is like that.  It's usually not important except
+when it really, really is - and the average user don't want to be
+babysitting every single decision about importance.
 
-  RPMS/$arch/git-*-1.6.2.2-1.fc9.$arch.rpm	(RPM)
+  "Your email program wants to spin up the disk to store a message,
+   confirm or deny"
 
-Mostly documentation updates with a few bugfixes.
-
-----------------------------------------------------------------
-
-GIT v1.6.2.2 Release Notes
-==========================
-
-Fixes since v1.6.2.1
---------------------
-
-* A longstanding confusing description of what --pickaxe option of
-  git-diff does has been clarified in the documentation.
-
-* "git-blame -S" did not quite work near the commits that were given
-  on the command line correctly.
-
-* "git diff --pickaxe-regexp" did not count overlapping matches
-  correctly.
-
-* "git diff" did not feed files in work-tree representation to external
-  diff and textconv.
-
-* "git-fetch" in a repository that was not cloned from anywhere said
-  it cannot find 'origin', which was hard to understand for new people.
-
-* "git-format-patch --numbered-files --stdout" did not have to die of
-  incompatible options; it now simply ignores --numbered-files as no files
-  are produced anyway.
-
-* "git-ls-files --deleted" did not work well with GIT_DIR&GIT_WORK_TREE.
-
-* "git-read-tree A B C..." without -m option has been broken for a long
-  time.
-
-* git-send-email ignored --in-reply-to when --no-thread was given.
-
-* 'git-submodule add' did not tolerate extra slashes and ./ in the path it
-  accepted from the command line; it now is more lenient.
-
-* git-svn misbehaved when the project contained a path that began with
-  two dashes.
-
-* import-zips script (in contrib) did not compute the common directory
-  prefix correctly.
-
-* miscompilation of negated enum constants by old gcc (2.9) affected the
-  codepaths to spawn subprocesses.
-
-Many small documentation updates are included as well.
-
-----------------------------------------------------------------
-
-Changes since v1.6.2.1 are as follows:
-
-Allan Caffee (1):
-      Documentation: update graph api example.
-
-Brandon Casey (1):
-      git-branch: display "was sha1" on branch deletion rather than just "sha1"
-
-Carlo Marcelo Arenas Belon (1):
-      documentation: update cvsimport description of "-r" for recent clone
-
-Daniel Barkalow (1):
-      Give error when no remote is configured
-
-Daniel Cheng (aka SDiZ) (1):
-      Fix bash completion in path with spaces
-
-David Aguilar (1):
-      everyday: use the dashless form of git-init
-
-David J. Mellor (12):
-      Documentation: minor grammatical fixes in git-archive.txt.
-      Documentation: reword the "Description" section of git-bisect.txt.
-      Documentation: minor grammatical fixes in git-blame.txt.
-      Documentation: minor grammatical fixes in git-branch.txt.
-      Documentation: reworded the "Description" section of git-bisect.txt.
-      Documentation: reword example text in git-bisect.txt.
-      Documentation: remove some uses of the passive voice in git-bisect.txt
-      Documentation: minor grammatical fixes and rewording in git-bundle.txt
-      Documentation: minor grammatical fixes in git-cat-file.txt
-      Documentation: minor grammatical fixes in git-check-attr.txt
-      Documentation: minor grammatical fix in git-check-ref-format.txt
-      Documentation: Remove spurious uses of "you" in git-bisect.txt.
-
-Emil Sit (1):
-      test-lib: Clean up comments and Makefile.
-
-Eric Wong (1):
-      git-svn: fix ls-tree usage with dash-prefixed paths
-
-Holger Weiß (1):
-      Documentation: Remove an odd "instead"
-
-Jeff King (3):
-      doc: clarify how -S works
-      ls-files: require worktree when --deleted is given
-      fix portability problem with IS_RUN_COMMAND_ERR
-
-Johannes Schindelin (4):
-      rsync transport: allow local paths, and fix tests
-      Smudge the files fed to external diff and textconv
-      import-zips: fix thinko
-      mailmap: resurrect lower-casing of email addresses
-
-Johannes Sixt (2):
-      Propagate --exec-path setting to external commands via GIT_EXEC_PATH
-      diff --no-index: Do not generate patch output if other output is requested
-
-Junio C Hamano (6):
-      read-tree A B C: do not create a bogus index and do not segfault
-      Remove total confusion from git-fetch and git-push
-      blame: read custom grafts given by -S before calling setup_revisions()
-      Update draft release notes to 1.6.2.2
-      Update draft release notes to 1.6.2.2
-      GIT 1.6.2.2
-
-Linus Torvalds (1):
-      close_sha1_file(): make it easier to diagnose errors
-
-Michael J Gruber (2):
-      git submodule: Add test cases for git submodule add
-      git submodule: Fix adding of submodules at paths with ./, .. and //
-
-Nico -telmich- Schottelius (1):
-      git-tag(1): add hint about commit messages
-
-Nicolas Pitre (1):
-      avoid possible overflow in delta size filtering computation
-
-René Scharfe (3):
-      diffcore-pickaxe: use memmem()
-      optimize compat/ memmem()
-      pickaxe: count regex matches only once
-
-Shawn O. Pearce (1):
-      Increase the size of the die/warning buffer to avoid truncation
-
-Stephen Boyd (1):
-      format-patch: --numbered-files and --stdout aren't mutually exclusive
-
-Thomas Rast (4):
-      send-email: respect in-reply-to regardless of threading
-      send-email: test --no-thread --in-reply-to combination
-      Documentation: format-patch --root clarifications
-      bash completion: only show 'log --merge' if merging
-
+Bron.
