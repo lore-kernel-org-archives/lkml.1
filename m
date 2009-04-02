@@ -1,73 +1,71 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760453AbZDBWJT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764753AbZDBWJh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760453AbZDBWJT (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 2 Apr 2009 18:09:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757694AbZDBWJG
+	id S1764753AbZDBWJh (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 2 Apr 2009 18:09:37 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762005AbZDBWJ0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 2 Apr 2009 18:09:06 -0400
-Received: from relay2.sgi.com ([192.48.179.30]:45806 "EHLO relay.sgi.com"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1755878AbZDBWJF (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 2 Apr 2009 18:09:05 -0400
-Date: Thu, 2 Apr 2009 17:09:01 -0500
-From: Jack Steiner <steiner@sgi.com>
-To: Andrew Morton <akpm@linux-foundation.org>, mingo@elte.hu,
-       rusty@rustcorp.com.au, sfr@canb.auug.org.au
-Cc: linux-kernel@vger.kernel.org, stable@kernel.org
-Subject: Re: [PATCH] - Updated: Fix slab corruption caused by alloc_cpumask_var_node()
-Message-ID: <20090402220900.GA15129@sgi.com>
-References: <20090402212751.GA11495@sgi.com> <20090402143932.79a15852.akpm@linux-foundation.org>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090402143932.79a15852.akpm@linux-foundation.org>
-User-Agent: Mutt/1.4.2.2i
+	Thu, 2 Apr 2009 18:09:26 -0400
+Received: from srv5.dvmed.net ([207.36.208.214]:51459 "EHLO mail.dvmed.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1758952AbZDBWJZ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 2 Apr 2009 18:09:25 -0400
+Message-ID: <49D53787.9060503@garzik.org>
+Date: Thu, 02 Apr 2009 18:09:11 -0400
+From: Jeff Garzik <jeff@garzik.org>
+User-Agent: Thunderbird 2.0.0.21 (X11/20090320)
+MIME-Version: 1.0
+To: Linus Torvalds <torvalds@linux-foundation.org>
+CC: Andrew Morton <akpm@linux-foundation.org>, David Rees <drees76@gmail.com>,
+       Janne Grunau <j@jannau.net>,
+       Lennart Sorensen <lsorense@csclub.uwaterloo.ca>,
+       Theodore Tso <tytso@mit.edu>, Jesper Krogh <jesper@krogh.cc>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: Linux 2.6.29
+References: <20090325183011.GN32307@mit.edu> <20090325220530.GR32307@mit.edu> <alpine.LFD.2.00.0903251622420.3032@localhost.localdomain> <20090326171148.9bf8f1ec.akpm@linux-foundation.org> <alpine.LFD.2.00.0903261723250.3994@localhost.localdomain> <20090326174704.cd36bf7b.akpm@linux-foundation.org> <alpine.LFD.2.00.0903261752110.3994@localhost.localdomain> <20090326182519.d576d703.akpm@linux-foundation.org> <20090401210337.GB3797@csclub.uwaterloo.ca> <20090402110532.GA5132@aniel> <72dbd3150904020929w46c6dc0bs4028c49dd8fa8c56@mail.gmail.com> <20090402094247.9d7ac19f.akpm@linux-foundation.org> <alpine.LFD.2.00.0904020947310.4130@localhost.localdomain> <alpine.LFD.2.00.0904020959490.4130@localhost.localdomain>
+In-Reply-To: <alpine.LFD.2.00.0904020959490.4130@localhost.localdomain>
+Content-Type: text/plain; charset=US-ASCII; format=flowed
+Content-Transfer-Encoding: 7bit
+X-Spam-Score: -4.4 (----)
+X-Spam-Report: SpamAssassin version 3.2.5 on srv5.dvmed.net summary:
+	Content analysis details:   (-4.4 points, 5.0 required)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Fix slab corruption caused by alloc_cpumask_var_node() overwriting
-the tail end of an off-stack cpumask.
+Linus Torvalds wrote:
+> 
+> On Thu, 2 Apr 2009, Linus Torvalds wrote:
+>> On Thu, 2 Apr 2009, Andrew Morton wrote:
+>>> A suitable design for the streaming might be, every 4MB:
+>>>
+>>> - run sync_file_range(SYNC_FILE_RANGE_WRITE) to get the 4MB underway
+>>>   to the disk
+>>>
+>>> - run fadvise(POSIX_FADV_DONTNEED) against the previous 4MB to
+>>>   discard it from pagecache.
+>> Here's an example. I call it "overwrite.c" for obvious reasons.
+> 
+> Oh, except my example doesn't do the fadvise. Instead, I make sure to 
+> throttle the writes and the old range with
+> 
+> 	SYNC_FILE_RANGE_WAIT_BEFORE|SYNC_FILE_RANGE_WRITE|SYNC_FILE_RANGE_WAIT_AFTER
+> 
+> which makes sure that the old pages are easily dropped by the VM - and 
+> they will be, since they end up always being on the cold list.
 
-The function zeros out cpumask bits beyond the last possible cpu.
-The starting point for zeroing should be the beginning
-of the mask offset by a byte count derived from the number
-of possible cpus. The offset was calculated in bits instead of bytes.
-This resulted in overwriting the end of the cpumask.
+Dumb VM question, then:  I understand the logic behind the 
+write-throttling part (some of my own userland code does something 
+similar), but,
+
+Does this imply adding fadvise to your overwrite.c example is (a) not 
+noticable, (b) potentially less efficient, (c) potentially more efficient?
+
+Or IOW, does fadvise purely put pages on the cold list as your 
+sync_file_range incantation does, or something different?
+
+Thanks,
+
+	Jeff, who is already using sync_file_range in
+	some server-esque userland projects
 
 
-v2.6.29 is also affected by this bug.
-
-
-Signed-off-by: Jack Steiner <steiner@sgi.com>
-Acked-by: Mike Travis <travis.sgi.com>
-Acked-by: Ingo Molnar <mingo@elte.hu>
-
-
----
-
-Corrruption was found in latest linux-next (4/1)
-	v2.6.29-12081-g421a9f3
-
-
-
- lib/cpumask.c |    4 ++--
- 1 file changed, 2 insertions(+), 2 deletions(-)
-
-Index: linux/lib/cpumask.c
-===================================================================
---- linux.orig/lib/cpumask.c	2009-04-02 15:30:05.000000000 -0500
-+++ linux/lib/cpumask.c	2009-04-02 15:57:44.000000000 -0500
-@@ -109,10 +109,10 @@ bool alloc_cpumask_var_node(cpumask_var_
- #endif
- 	/* FIXME: Bandaid to save us from old primitives which go to NR_CPUS. */
- 	if (*mask) {
-+		unsigned char *ptr = (unsigned char *)cpumask_bits(*mask);
- 		unsigned int tail;
- 		tail = BITS_TO_LONGS(NR_CPUS - nr_cpumask_bits) * sizeof(long);
--		memset(cpumask_bits(*mask) + cpumask_size() - tail,
--		       0, tail);
-+		memset(ptr + cpumask_size() - tail, 0, tail);
- 	}
- 
- 	return *mask != NULL;
