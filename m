@@ -1,137 +1,77 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758965AbZDBMUh@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756905AbZDBM02@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758965AbZDBMUh (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 2 Apr 2009 08:20:37 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753490AbZDBMUY
+	id S1756905AbZDBM02 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 2 Apr 2009 08:26:28 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753347AbZDBM0T
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 2 Apr 2009 08:20:24 -0400
-Received: from victor.provo.novell.com ([137.65.250.26]:43685 "EHLO
-	victor.provo.novell.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751327AbZDBMUX (ORCPT
+	Thu, 2 Apr 2009 08:26:19 -0400
+Received: from ey-out-2122.google.com ([74.125.78.27]:56513 "EHLO
+	ey-out-2122.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752942AbZDBM0S (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 2 Apr 2009 08:20:23 -0400
-Message-ID: <49D4AE0C.3000604@novell.com>
-Date: Thu, 02 Apr 2009 08:22:36 -0400
-From: Gregory Haskins <ghaskins@novell.com>
-User-Agent: Thunderbird 2.0.0.19 (X11/20081227)
+	Thu, 2 Apr 2009 08:26:18 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:to:cc:subject:message-id:references:mime-version
+         :content-type:content-disposition:in-reply-to:user-agent;
+        b=CkyU6vbTEWgrakZ0D+6ghEjNFt8fdDrL4GNzLjq1ZhXnkzTHYN9Ry15Em8jhN0CTjV
+         jJilYUiafbNbzQu8YiQDJ7sGznwlGFBpQ16GDC7sF+hK7VcbgpTjOy7OVtDwzVB7Ukbt
+         ijVYgC9Tuy680pfcfZSA97sv8WOSTVl7Uqus0=
+Date: Thu, 2 Apr 2009 14:26:13 +0200
+From: Frederic Weisbecker <fweisbec@gmail.com>
+To: Lai Jiangshan <laijs@cn.fujitsu.com>
+Cc: Steven Rostedt <srostedt@redhat.com>, Ingo Molnar <mingo@elte.hu>,
+       LKML <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH] tracing: mark get_parent_ip() notrace
+Message-ID: <20090402122612.GB5965@nowhere>
+References: <49D458B1.5000703@cn.fujitsu.com>
 MIME-Version: 1.0
-To: Avi Kivity <avi@redhat.com>
-CC: Anthony Liguori <anthony@codemonkey.ws>, Andi Kleen <andi@firstfloor.org>,
-       linux-kernel@vger.kernel.org, agraf@suse.de, pmullaney@novell.com,
-       pmorreale@novell.com, rusty@rustcorp.com.au, netdev@vger.kernel.org,
-       kvm@vger.kernel.org
-Subject: Re: [RFC PATCH 00/17] virtual-bus
-References: <20090331184057.28333.77287.stgit@dev.haskins.net> <87ab71monw.fsf@basil.nowhere.org> <49D35825.3050001@novell.com> <20090401132340.GT11935@one.firstfloor.org> <49D37805.1060301@novell.com> <20090401170103.GU11935@one.firstfloor.org> <49D3B64F.6070703@codemonkey.ws> <49D3D7EE.4080202@novell.com> <49D46089.5040204@redhat.com> <49D497A1.4090900@novell.com> <49D4A4EB.8020105@redhat.com>
-In-Reply-To: <49D4A4EB.8020105@redhat.com>
-X-Enigmail-Version: 0.95.7
-OpenPGP: id=D8195319
-Content-Type: multipart/signed; micalg=pgp-sha1;
- protocol="application/pgp-signature";
- boundary="------------enig39D72AAAE9FDDAD5CCB6C67B"
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <49D458B1.5000703@cn.fujitsu.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This is an OpenPGP/MIME signed message (RFC 2440 and 3156)
---------------enig39D72AAAE9FDDAD5CCB6C67B
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: quoted-printable
-
-Avi Kivity wrote:
-> Gregory Haskins wrote:
->
-> =20
->
->>> virtio is already non-kvm-specific (lguest uses it) and
->>> non-pci-specific (s390 uses it).
->>>    =20
->>
->> Ok, then to be more specific, I need it to be more generic than it
->> already is.  For instance, I need it to be able to integrate with
->> shm_signals. =20
->
-> Why?
-Well, shm_signals is what I designed to be the event mechanism for vbus
-devices.  One of the design criteria of shm_signal is that it should
-support a variety of environments, such as kvm, but also something like
-userspace apps.  So I cannot make assumptions about things like "pci
-interrupts", etc.
-
-So if I want to use it in vbus, virtio-ring has to be able to use them,
-as opposed to what it does today. Part of this would be a natural fit
-for the "kick()" callback in virtio, but there are other problems.  For
-one, virtio-ring (IIUC) does its own event-masking directly in the
-virtio metadata.  However, really I want the higher layer ring-overlay
-to do its masking in terms of the lower-layered shm_signal in order to
-work the way I envision this stuff.  If you look at the IOQ
-implementation, this is exactly what it does.
-
-To be clear, and Ive stated this in the past: venet is just an example
-of this generic, in-kernel concept.  We plan on doing much much more
-with all this.  One of the things we are working on is have userspace
-clients be able to access this too, with an ultimately goal of
-supporting things like having guest-userspace doing bypass, rdma, etc.=20
-We are not there yet, though...only the kvm-host to guest kernel is
-currently functional and is thus the working example.
-
-I totally "get" the attraction to doing things in userspace.  Its
-contained, naturally isolated, easily supports migration, etc.  Its also
-a penalty.  Bare-metal userspace apps have a direct path to the kernel
-IO.  I want to give guest the same advantage.  Some people will care
-more about things like migration than performance, and that is fine.=20
-But others will certainly care more about performance, and that is what
-we are trying to address.
-
->
-> =20
->
->>> If you have a good exit mitigation scheme you can cut exits by a
->>> factor of 100; so the userspace exit costs are cut by the same
->>> factor.  If you have good copyless networking APIs you can cut the
->>> cost of copies to zero (well, to the cost of get_user_pages_fast(),
->>> but a kernel solution needs that too).
->>>    =20
->>
->> "exit mitigation' schemes are for bandwidth, not latency.  For latency=
-
->> it all comes down to how fast you can signal in both directions.  If
->> someone is going to do a stand-alone request-reply, its generally alwa=
-ys
->> going to be at least one hypercall and one rx-interrupt.  So your spee=
-d
->> will be governed by your signal path, not your buffer bandwidth.
->>  =20
->
-> The userspace path is longer by 2 microseconds (for two additional
-> heavyweight exits) and a few syscalls.  I don't think that's worthy of
-> putting all the code in the kernel.
-
-By your own words, the exit to userspace is "prohibitively expensive",
-so that is either true or its not.  If its 2 microseconds, show me.  We
-need the rtt time to go from a "kick" PIO all the way to queue a packet
-on the egress hardware and return.  That is going to define your
-latency.  If you can do this such that you can do something like ICMP
-ping in 65us (or anything close to a few dozen microseconds of this),
-I'll shut-up about how much I think the current path sucks ;)  Even so,
-I still propose the concept of a frame-work for in-kernel devices for
-all the other reasons I mentioned above.
-
--Greg
+On Thu, Apr 02, 2009 at 02:18:25PM +0800, Lai Jiangshan wrote:
+> 
+> Impact: remove redundancy tracing log
+> 
+> When tracer is "function" or "function_graph", too much
+> "get_parent_ip" are recorded in ring_buffer.
 
 
+Thanks, indeed this get_parent_ip was a bit harrassing
+in the traces, though I still don't understand why it is
+called so often.
 
---------------enig39D72AAAE9FDDAD5CCB6C67B
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: OpenPGP digital signature
-Content-Disposition: attachment; filename="signature.asc"
+Anyway, tracing it seems to me not useful.
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v2.0.9 (GNU/Linux)
-Comment: Using GnuPG with SUSE - http://enigmail.mozdev.org
+Acked-by: Frederic Weisbecker <fweisbec@gmail.com>
 
-iEYEARECAAYFAknUrgwACgkQlOSOBdgZUxlgywCfYH26CpOH15CL/QEhTIGOYPvx
-VsoAn2khGouR2P0u62Tu3sLWt3SyXWao
-=V/SV
------END PGP SIGNATURE-----
 
---------------enig39D72AAAE9FDDAD5CCB6C67B--
+ 
+> Signed-off-by: Lai Jiangshan <laijs@cn.fujitsu.com>
+> ---
+> diff --git a/kernel/sched.c b/kernel/sched.c
+> index 706517c..a0ec10c 100644
+> --- a/kernel/sched.c
+> +++ b/kernel/sched.c
+> @@ -4860,7 +4860,7 @@ void scheduler_tick(void)
+>  #endif
+>  }
+>  
+> -unsigned long get_parent_ip(unsigned long addr)
+> +notrace unsigned long get_parent_ip(unsigned long addr)
+>  {
+>  	if (in_lock_functions(addr)) {
+>  		addr = CALLER_ADDR2;
+> 
+> 
+> --
+> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> Please read the FAQ at  http://www.tux.org/lkml/
+
