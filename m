@@ -1,53 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758959AbZDBFFA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757547AbZDBFJh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758959AbZDBFFA (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 2 Apr 2009 01:05:00 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751599AbZDBFEr
+	id S1757547AbZDBFJh (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 2 Apr 2009 01:09:37 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750874AbZDBFJ2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 2 Apr 2009 01:04:47 -0400
-Received: from ozlabs.org ([203.10.76.45]:39735 "EHLO ozlabs.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750986AbZDBFEq (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 2 Apr 2009 01:04:46 -0400
-From: Rusty Russell <rusty@rustcorp.com.au>
-To: Eric Dumazet <dada1@cosmosbay.com>
-Subject: Re: [RFC] percpu: convert SNMP mibs to new infra
-Date: Thu, 2 Apr 2009 15:34:33 +1030
-User-Agent: KMail/1.11.1 (Linux/2.6.27-11-generic; KDE/4.2.2; i686; ; )
-Cc: Ingo Molnar <mingo@elte.hu>, Jeremy Fitzhardinge <jeremy@goop.org>,
-       Tejun Heo <htejun@gmail.com>,
-       linux kernel <linux-kernel@vger.kernel.org>,
-       Linux Netdev List <netdev@vger.kernel.org>,
-       Joe Perches <joe@perches.com>
-References: <49D32212.80607@cosmosbay.com> <49D3A0C2.9000403@cosmosbay.com> <49D3B61F.8010507@cosmosbay.com>
-In-Reply-To: <49D3B61F.8010507@cosmosbay.com>
+	Thu, 2 Apr 2009 01:09:28 -0400
+Received: from e28smtp08.in.ibm.com ([59.145.155.8]:55149 "EHLO
+	e28smtp08.in.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750807AbZDBFJ1 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 2 Apr 2009 01:09:27 -0400
+Date: Thu, 2 Apr 2009 10:39:19 +0530
+From: Arun R Bharadwaj <arun@linux.vnet.ibm.com>
+To: Andi Kleen <andi@firstfloor.org>
+Cc: linux-kernel@vger.kernel.org, linux-pm@lists.linux-foundation.org,
+       a.p.zijlstra@chello.nl, ego@in.ibm.com, tglx@linutronix.de,
+       mingo@elte.hu, venkatesh.pallipadi@intel.com, vatsa@linux.vnet.ibm.com,
+       arjan@infradead.org, svaidy@linux.vnet.ibm.com,
+       Arun Bharadwaj <arun@linux.vnet.ibm.com>
+Subject: Re: [v4 RFC PATCH 1/4] timers: Framework for identifying pinned
+	timers
+Message-ID: <20090402050919.GA8813@linux.vnet.ibm.com>
+Reply-To: arun@linux.vnet.ibm.com
+References: <20090401113128.GA22478@linux.vnet.ibm.com> <20090401113258.GB22478@linux.vnet.ibm.com> <20090401114146.GS11935@one.firstfloor.org>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=iso-8859-1
 Content-Disposition: inline
-Message-Id: <200904021534.34084.rusty@rustcorp.com.au>
+In-Reply-To: <20090401114146.GS11935@one.firstfloor.org>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thursday 02 April 2009 05:14:47 Eric Dumazet wrote:
-> Here is a preliminary patch for SNMP mibs that seems to work well on x86_32
+* Andi Kleen <andi@firstfloor.org> [2009-04-01 13:41:46]:
+
+> On Wed, Apr 01, 2009 at 05:02:58PM +0530, Arun R Bharadwaj wrote:
+> > * Arun R Bharadwaj <arun@linux.vnet.ibm.com> [2009-04-01 17:01:28]:
+> > 
+> > This patch creates a new framework for identifying cpu-pinned timers
+> > and hrtimers.
+> > 
+> > 
+> > This framework is needed because pinned timers are expected to fire on
+> > the same CPU on which they are queued. So it is essential to identify
+> > these and not migrate them, in case there are any.
 > 
-> [RFC] percpu: convert SNMP mibs to new infra
+> How would that interact with add_timer_on()? You currently only
+> support the current CPU, don't you?
+> 
+> e.g. the new tip x86 machine check polling code relies on add_timer_on
+> staying on that CPU.
+>
 
-OK, I have a whole heap of "convert to dynamic per-cpu" patches waiting in
-the wings too, once Tejun's conversion is complete.
+Pinned timers are directly related to add_timer_on().
+So I assume that whatever timer is queued using add_timer_on() is
+supposed to be a pinned timer.
+Currently, we can stay on one CPU and still queue a pinned timer on
+some other CPU. We can mark those timers as 'pinned' to that
+particular CPU.
 
-Also, what is optimal depends on the arch: we had a long discussion on this
-(it's what local_t was supposed to do, with cpu_local_inc() etc: see
-Subject: local_add_return 2008-12-16 thread).
+--arun
 
-eg. on S/390, atomic_inc is a win over the two-counter version.  On Sparc,
-two-counter wins.  On x86, inc wins (obviously).
-
-But efforts to create a single primitive have been problematic: maybe
-open-coding it like this is the Right Thing.
-
-Cheers,
-Rusty.
+> -Andi
+> 
+> -- 
+> ak@linux.intel.com -- Speaking for myself only.
