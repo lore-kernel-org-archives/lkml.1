@@ -1,75 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933905AbZDBQ4b@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933927AbZDBQzw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933905AbZDBQ4b (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 2 Apr 2009 12:56:31 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758139AbZDBQ4P
+	id S933927AbZDBQzw (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 2 Apr 2009 12:55:52 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933022AbZDBQzM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 2 Apr 2009 12:56:15 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:43579 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1760794AbZDBQ4O (ORCPT
+	Thu, 2 Apr 2009 12:55:12 -0400
+Received: from bombadil.infradead.org ([18.85.46.34]:40810 "EHLO
+	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1765582AbZDBQzK (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 2 Apr 2009 12:56:14 -0400
-Date: Thu, 2 Apr 2009 09:51:39 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: David Rees <drees76@gmail.com>
-Cc: Janne Grunau <j@jannau.net>,
-       Lennart Sorensen <lsorense@csclub.uwaterloo.ca>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Theodore Tso <tytso@mit.edu>, Jesper Krogh <jesper@krogh.cc>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: Linux 2.6.29
-Message-Id: <20090402095139.c2ff4f06.akpm@linux-foundation.org>
-In-Reply-To: <72dbd3150904020933y515c7185p5726323c430c339b@mail.gmail.com>
-References: <20090325183011.GN32307@mit.edu>
-	<alpine.LFD.2.00.0903251622420.3032@localhost.localdomain>
-	<20090326171148.9bf8f1ec.akpm@linux-foundation.org>
-	<alpine.LFD.2.00.0903261723250.3994@localhost.localdomain>
-	<20090326174704.cd36bf7b.akpm@linux-foundation.org>
-	<alpine.LFD.2.00.0903261752110.3994@localhost.localdomain>
-	<20090326182519.d576d703.akpm@linux-foundation.org>
-	<20090401210337.GB3797@csclub.uwaterloo.ca>
-	<20090402110532.GA5132@aniel>
-	<20090402090912.cac200bb.akpm@linux-foundation.org>
-	<72dbd3150904020933y515c7185p5726323c430c339b@mail.gmail.com>
-X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.5; x86_64-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Thu, 2 Apr 2009 12:55:10 -0400
+Date: Thu, 2 Apr 2009 12:55:05 -0400
+From: Christoph Hellwig <hch@infradead.org>
+To: Nick Piggin <nickpiggin@yahoo.com.au>
+Cc: Christoph Hellwig <hch@infradead.org>, David Howells <dhowells@redhat.com>,
+       viro@zeniv.linux.org.uk, nfsv4@linux-nfs.org,
+       linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org
+Subject: Re: [PATCH 22/43] CacheFiles: Add a hook to write a single page of
+	data to an inode [ver #46]
+Message-ID: <20090402165505.GA21859@infradead.org>
+References: <200904030100.05741.nickpiggin@yahoo.com.au> <200904030232.59355.nickpiggin@yahoo.com.au> <20090402163712.GA25177@infradead.org> <200904030347.21470.nickpiggin@yahoo.com.au>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <200904030347.21470.nickpiggin@yahoo.com.au>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-SRS-Rewrite: SMTP reverse-path rewritten from <hch@infradead.org> by bombadil.infradead.org
+	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 2 Apr 2009 09:33:44 -0700 David Rees <drees76@gmail.com> wrote:
+On Fri, Apr 03, 2009 at 03:47:20AM +1100, Nick Piggin wrote:
+> Well they now are quite well filesystem defined. We no longer take
+> the page lock before calling them. Not saying it's perfect, but if
+> the backing fs is just using a known subset of ones that work
+> (like loop does).
 
-> On Thu, Apr 2, 2009 at 9:09 AM, Andrew Morton <akpm@linux-foundation.org> wrote:
-> > On Thu, 2 Apr 2009 13:05:32 +0200 Janne Grunau <j@jannau.net> wrote:
-> >> MythTV calls fsync every few seconds on ongoing recordings to prevent
-> >> stalls due to large cache writebacks on ext3.
-> >
-> > It should use sync_file_range(SYNC_FILE_RANGE_WRITE). __That will
-> >
-> > - have minimum latency. __It tries to avoid blocking at all.
-> > - avoid writing metadata
-> > - avoid syncing other unrelated files within ext3
-> > - avoid waiting for the ext3 commit to complete.
-> 
-> MythTV actually uses fdatasync, not fsync (or at least that's what it
-> did last time I looked at the source).  Not sure how the behavior of
-> fdatasync compares to sync_file_range.
+The page lock doesn't matter.  What matters is locks protecting the
+io.  Like the XFS iolock or cluster locks in the cluster filesystems,
+and you will get silent data corruption that way.
 
-fdatasync() will still trigger the bad ext3 behaviour.
+I would have sworn loop was fixed by now as gfs people were seeing
+these issues and submitting patches, but it looks like we never sorted
+this out upstream.
 
-> Either way - forcing the data to be synced to disk a couple times
-> every second is a hack and causes fragmentation in filesystems without
-> delayed allocation.  Fragmentation really goes up if you are recording
-> multiple shows at once.
+> Probably yes. But it seems like it should have more discussion IMO
+> (unless it has already been had and I missed it).
 
-The file layout issue is unrelated to the frequency of fdatasync() -
-the block allocation is done at the time of write().
+This came up plenty of times.
 
-ext3 _should_ handle this case fairly well nowadays - I thought we fixed that.
-However it would probably benefit from having the size of the block reservation
-window increased - use ioctl(EXT3_IOC_SETRSVSZ).  That way, each file gets a
-decent-sized hunk of disk "reserved" for its ongoing appending.  Other
-files won't come in and intermingle their blocks with it.
+> I don't think "write_one_page" sounds like a particularly good new
+> API addition.
+
+I also thing it's not a nice one.  I still haven't seen a really good
+explanation of why it can't just use plain ->write
+
