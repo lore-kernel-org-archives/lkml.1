@@ -1,181 +1,114 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761057AbZDBGw2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756678AbZDBG7D@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761057AbZDBGw2 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 2 Apr 2009 02:52:28 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752848AbZDBGwQ
+	id S1756678AbZDBG7D (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 2 Apr 2009 02:59:03 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753099AbZDBG6s
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 2 Apr 2009 02:52:16 -0400
-Received: from hera.kernel.org ([140.211.167.34]:45313 "EHLO hera.kernel.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752012AbZDBGwN (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 2 Apr 2009 02:52:13 -0400
-Message-ID: <49D46096.1040701@kernel.org>
-Date: Thu, 02 Apr 2009 15:52:06 +0900
-From: Tejun Heo <tj@kernel.org>
-User-Agent: Thunderbird 2.0.0.19 (X11/20081227)
-MIME-Version: 1.0
-To: Niel Lambrechts <niel.lambrechts@gmail.com>
-CC: "linux.kernel" <linux-kernel@vger.kernel.org>
-Subject: Re: 2.6.29 regression: ATA bus errors on resume
-References: <ckpL0-3TE-3@gated-at.bofh.it> <ckpL0-3TE-5@gated-at.bofh.it> <ckpL0-3TE-7@gated-at.bofh.it> <ckpL0-3TE-9@gated-at.bofh.it> <ckpL0-3TE-11@gated-at.bofh.it> <ckpL0-3TE-1@gated-at.bofh.it> <cllvN-2Gf-1@gated-at.bofh.it> <49D0D788.6070405@gmail.com> <49D419E8.2080603@kernel.org> <49D4591B.3070807@gmail.com>
-In-Reply-To: <49D4591B.3070807@gmail.com>
-X-Enigmail-Version: 0.95.7
-Content-Type: multipart/mixed;
- boundary="------------000906040507040004080207"
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Thu, 02 Apr 2009 06:52:10 +0000 (UTC)
+	Thu, 2 Apr 2009 02:58:48 -0400
+Received: from mail-bw0-f169.google.com ([209.85.218.169]:58300 "EHLO
+	mail-bw0-f169.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752545AbZDBG6r (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 2 Apr 2009 02:58:47 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=googlemail.com; s=gamma;
+        h=from:to:cc:subject:date:message-id:x-mailer;
+        b=bOt0ur3jeiv5YVlgW0t+XaGlmywrH6TSot2Bnzb1JSiHKz98MjzDzbrVr7YRbsv3vL
+         ++wgZ1QxdT+6bCaRy0+J4EcWgf9yG7N5DQzzxfcpJMJZ9zcKY45Udb4IZN+9yFOypcAh
+         4Sa+lLOFP/uCO+dsqwj6sTDxiDxn+N9SXYOC8=
+From: Borislav Petkov <petkovbb@googlemail.com>
+To: <bzolnier@gmail.com>
+Cc: linux-kernel@vger.kernel.org, linux-ide@vger.kernel.org
+Subject: [PATCH 1/3] ide-cd: move status checking into the IRQ handler
+Date: Thu,  2 Apr 2009 08:58:37 +0200
+Message-Id: <1238655519-10074-1-git-send-email-petkovbb@gmail.com>
+X-Mailer: git-send-email 1.6.2.1
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This is a multi-part message in MIME format.
---------------000906040507040004080207
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
+There should be no functional change resulting from this patch.
 
-Niel Lambrechts wrote:
->> Attached is the debug patch.  Please reproduce the problem with the
->> patch applied and post full kernel log.
->>   
-> Hi there,
-> 
-> Here is the output, it took 2 attempts to reproduce the EXT4 corruption
-> (clean with errors).
+Signed-off-by: Borislav Petkov <petkovbb@gmail.com>
+---
+ drivers/ide/ide-cd.c |   38 ++++++++++++++++----------------------
+ 1 files changed, 16 insertions(+), 22 deletions(-)
 
-Strange.  Maybe IO commands are getting through while the sdev is
-still in quiesce state?  Can you please repeat the test with the
-attached patch?
-
-Thanks.
-
--- 
-tejun
-
---------------000906040507040004080207
-Content-Type: text/x-patch;
- name="libata-eh-debug-1.patch"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline;
- filename="libata-eh-debug-1.patch"
-
-diff --git a/drivers/ata/libata-eh.c b/drivers/ata/libata-eh.c
-index 0183131..87f5f4e 100644
---- a/drivers/ata/libata-eh.c
-+++ b/drivers/ata/libata-eh.c
-@@ -1274,7 +1274,7 @@ void ata_eh_about_to_do(struct ata_link *link, struct ata_device *dev,
+diff --git a/drivers/ide/ide-cd.c b/drivers/ide/ide-cd.c
+index 35729a4..a4afd90 100644
+--- a/drivers/ide/ide-cd.c
++++ b/drivers/ide/ide-cd.c
+@@ -271,29 +271,18 @@ static void ide_cd_complete_failed_rq(ide_drive_t *drive, struct request *rq)
+  * 1: if the request will be going through error recovery.
+  * 2: if the request should be ended.
+  */
+-static int cdrom_decode_status(ide_drive_t *drive, int good_stat, int *stat_ret)
++static int cdrom_decode_status(ide_drive_t *drive, u8 stat)
  {
- 	struct ata_port *ap = link->ap;
- 	struct ata_eh_info *ehi = &link->eh_info;
--	struct ata_eh_context *ehc = &link->eh_context;
-+	//struct ata_eh_context *ehc = &link->eh_context;
- 	unsigned long flags;
+ 	ide_hwif_t *hwif = drive->hwif;
+ 	struct request *rq = hwif->rq;
+-	int stat, err, sense_key;
+-
+-	/* check for errors */
+-	stat = hwif->tp_ops->read_status(hwif);
+-
+-	if (stat_ret)
+-		*stat_ret = stat;
+-
+-	if (OK_STAT(stat, good_stat, BAD_R_STAT))
+-		return 0;
++	int err, sense_key;
  
- 	spin_lock_irqsave(ap->lock, flags);
-@@ -1284,7 +1284,7 @@ void ata_eh_about_to_do(struct ata_link *link, struct ata_device *dev,
- 	/* About to take EH action, set RECOVERED.  Ignore actions on
- 	 * slave links as master will do them again.
- 	 */
--	if (!(ehc->i.flags & ATA_EHI_QUIET) && link != ap->slave_link)
-+	if (/*!(ehc->i.flags & ATA_EHI_QUIET) && */link != ap->slave_link)
- 		ap->pflags |= ATA_PFLAG_RECOVERED;
+ 	/* get the IDE error register */
+ 	err = ide_read_error(drive);
+ 	sense_key = err >> 4;
  
- 	spin_unlock_irqrestore(ap->lock, flags);
-@@ -2017,8 +2017,13 @@ static void ata_eh_link_autopsy(struct ata_link *link)
+-	ide_debug_log(IDE_DBG_RQ, "stat: 0x%x, good_stat: 0x%x, cmd[0]: 0x%x, "
+-				  "rq->cmd_type: 0x%x, err: 0x%x",
+-				  stat, good_stat, rq->cmd[0], rq->cmd_type,
+-				  err);
++	ide_debug_log(IDE_DBG_RQ, "cmd[0]: 0x%x, rq->cmd_type: 0x%x, err: 0x%x",
++				  rq->cmd[0], rq->cmd_type, err);
  
- 		/* determine whether the command is worth retrying */
- 		if (!(qc->err_mask & AC_ERR_INVALID) &&
--		    ((qc->flags & ATA_QCFLAG_IO) || qc->err_mask != AC_ERR_DEV))
-+		    ((qc->flags & ATA_QCFLAG_IO) || qc->err_mask != AC_ERR_DEV)) {
-+			ata_dev_printk(qc->dev, KERN_INFO,
-+				       "XXX setting retry on qc%d\n", tag);
- 			qc->flags |= ATA_QCFLAG_RETRY;
-+		} else
-+			ata_dev_printk(qc->dev, KERN_INFO,
-+				       "XXX no retry for qc%d\n", tag);
+ 	if (blk_sense_request(rq)) {
+ 		/*
+@@ -624,12 +613,12 @@ static ide_startstop_t cdrom_newpc_intr(ide_drive_t *drive)
+ 	struct ide_cmd *cmd = &hwif->cmd;
+ 	struct request *rq = hwif->rq;
+ 	ide_expiry_t *expiry = NULL;
+-	int dma_error = 0, dma, stat, thislen, uptodate = 0;
++	int dma_error = 0, dma, thislen, uptodate = 0;
+ 	int write = (rq_data_dir(rq) == WRITE) ? 1 : 0, rc, nsectors;
+ 	int sense = blk_sense_request(rq);
+ 	unsigned int timeout;
+ 	u16 len;
+-	u8 ireason;
++	u8 ireason, stat;
  
- 		/* accumulate error info */
- 		ehc->i.dev = qc->dev;
-@@ -2126,8 +2131,8 @@ static void ata_eh_link_report(struct ata_link *link)
- 	char tries_buf[6];
- 	int tag, nr_failed = 0;
- 
--	if (ehc->i.flags & ATA_EHI_QUIET)
--		return;
-+	/*if (ehc->i.flags & ATA_EHI_QUIET)
-+		return;*/
- 
- 	desc = NULL;
- 	if (ehc->i.desc[0] != '\0')
-@@ -2147,8 +2152,8 @@ static void ata_eh_link_report(struct ata_link *link)
- 		nr_failed++;
- 	}
- 
--	if (!nr_failed && !ehc->i.err_mask)
--		return;
-+	/*if (!nr_failed && !ehc->i.err_mask)
-+		return;*/
- 
- 	frozen = "";
- 	if (ap->pflags & ATA_PFLAG_FROZEN)
-@@ -3350,16 +3355,23 @@ void ata_eh_finish(struct ata_port *ap)
- 			 * generate sense data in this function,
- 			 * considering both err_mask and tf.
- 			 */
--			if (qc->flags & ATA_QCFLAG_RETRY)
-+			if (qc->flags & ATA_QCFLAG_RETRY) {
-+				ata_dev_printk(qc->dev, KERN_INFO, "XXX retrying qc%d, retries=%d allowed=%d\n",
-+					       tag, qc->scsicmd->retries, qc->scsicmd->allowed);
- 				ata_eh_qc_retry(qc);
--			else
-+			} else {
-+				ata_dev_printk(qc->dev, KERN_INFO, "XXX terminating qc%d\n", tag);
- 				ata_eh_qc_complete(qc);
-+			}
- 		} else {
- 			if (qc->flags & ATA_QCFLAG_SENSE_VALID) {
-+				ata_dev_printk(qc->dev, KERN_INFO, "XXX terminating qc%d (SENSE), retries=%d\n",
-+					       tag, qc->scsicmd->retries);
- 				ata_eh_qc_complete(qc);
- 			} else {
- 				/* feed zero TF to sense generation */
- 				memset(&qc->result_tf, 0, sizeof(qc->result_tf));
-+				ata_dev_printk(qc->dev, KERN_INFO, "XXX retrying qc%d (bogus SENSE)\n", tag);
- 				ata_eh_qc_retry(qc);
- 			}
- 		}
-diff --git a/drivers/scsi/scsi_error.c b/drivers/scsi/scsi_error.c
-index 0c2c73b..608bacd 100644
---- a/drivers/scsi/scsi_error.c
-+++ b/drivers/scsi/scsi_error.c
-@@ -1569,13 +1569,16 @@ void scsi_eh_flush_done_q(struct list_head *done_q)
- 
- 	list_for_each_entry_safe(scmd, next, done_q, eh_entry) {
- 		list_del_init(&scmd->eh_entry);
-+		printk("XXX scsi_eh_flush_done_q: online=%d(%d) noretry=%d retries=%d allowed=%d\n",
-+		       scsi_device_online(scmd->device), scmd->device->sdev_state,
-+		       scsi_noretry_cmd(scmd), scmd->retries, scmd->allowed);
- 		if (scsi_device_online(scmd->device) &&
- 		    !scsi_noretry_cmd(scmd) &&
- 		    (++scmd->retries <= scmd->allowed)) {
--			SCSI_LOG_ERROR_RECOVERY(3, printk("%s: flush"
-+			/*SCSI_LOG_ERROR_RECOVERY(3, */printk("%s: flush"
- 							  " retry cmd: %p\n",
- 							  current->comm,
--							  scmd));
-+							      scmd)/*)*/;
- 				scsi_queue_insert(scmd, SCSI_MLQUEUE_EH_RETRY);
- 		} else {
- 			/*
-@@ -1585,9 +1588,9 @@ void scsi_eh_flush_done_q(struct list_head *done_q)
- 			 */
- 			if (!scmd->result)
- 				scmd->result |= (DRIVER_TIMEOUT << 24);
--			SCSI_LOG_ERROR_RECOVERY(3, printk("%s: flush finish"
-+			/*SCSI_LOG_ERROR_RECOVERY(3,*/ printk("%s: flush finish"
- 							" cmd: %p\n",
--							current->comm, scmd));
-+							      current->comm, scmd)/*)*/;
- 			scsi_finish_command(scmd);
+ 	ide_debug_log(IDE_DBG_PC, "cmd[0]: 0x%x, write: 0x%x",
+ 				  rq->cmd[0], write);
+@@ -648,11 +637,16 @@ static ide_startstop_t cdrom_newpc_intr(ide_drive_t *drive)
  		}
  	}
+ 
+-	rc = cdrom_decode_status(drive, 0, &stat);
+-	if (rc) {
+-		if (rc == 2)
+-			goto out_end;
+-		return ide_stopped;
++	/* check status */
++	stat = hwif->tp_ops->read_status(hwif);
++
++	if (!OK_STAT(stat, 0, BAD_R_STAT)) {
++		rc = cdrom_decode_status(drive, stat);
++		if (rc) {
++			if (rc == 2)
++				goto out_end;
++			return ide_stopped;
++		}
+ 	}
+ 
+ 	/* using dma, transfer is complete now */
+-- 
+1.6.2.1
 
---------------000906040507040004080207--
