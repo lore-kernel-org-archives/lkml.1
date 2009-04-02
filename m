@@ -1,67 +1,78 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757547AbZDBFJh@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756904AbZDBFUF@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757547AbZDBFJh (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 2 Apr 2009 01:09:37 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750874AbZDBFJ2
+	id S1756904AbZDBFUF (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 2 Apr 2009 01:20:05 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751526AbZDBFTt
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 2 Apr 2009 01:09:28 -0400
-Received: from e28smtp08.in.ibm.com ([59.145.155.8]:55149 "EHLO
-	e28smtp08.in.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750807AbZDBFJ1 (ORCPT
+	Thu, 2 Apr 2009 01:19:49 -0400
+Received: from gw1.cosmosbay.com ([212.99.114.194]:43671 "EHLO
+	gw1.cosmosbay.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751002AbZDBFTs convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 2 Apr 2009 01:09:27 -0400
-Date: Thu, 2 Apr 2009 10:39:19 +0530
-From: Arun R Bharadwaj <arun@linux.vnet.ibm.com>
-To: Andi Kleen <andi@firstfloor.org>
-Cc: linux-kernel@vger.kernel.org, linux-pm@lists.linux-foundation.org,
-       a.p.zijlstra@chello.nl, ego@in.ibm.com, tglx@linutronix.de,
-       mingo@elte.hu, venkatesh.pallipadi@intel.com, vatsa@linux.vnet.ibm.com,
-       arjan@infradead.org, svaidy@linux.vnet.ibm.com,
-       Arun Bharadwaj <arun@linux.vnet.ibm.com>
-Subject: Re: [v4 RFC PATCH 1/4] timers: Framework for identifying pinned
-	timers
-Message-ID: <20090402050919.GA8813@linux.vnet.ibm.com>
-Reply-To: arun@linux.vnet.ibm.com
-References: <20090401113128.GA22478@linux.vnet.ibm.com> <20090401113258.GB22478@linux.vnet.ibm.com> <20090401114146.GS11935@one.firstfloor.org>
+	Thu, 2 Apr 2009 01:19:48 -0400
+Message-ID: <49D44AD7.8010305@cosmosbay.com>
+Date: Thu, 02 Apr 2009 07:19:19 +0200
+From: Eric Dumazet <dada1@cosmosbay.com>
+User-Agent: Thunderbird 2.0.0.21 (Windows/20090302)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-Content-Disposition: inline
-In-Reply-To: <20090401114146.GS11935@one.firstfloor.org>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+To: Rusty Russell <rusty@rustcorp.com.au>
+CC: Ingo Molnar <mingo@elte.hu>, Jeremy Fitzhardinge <jeremy@goop.org>,
+       Tejun Heo <htejun@gmail.com>,
+       linux kernel <linux-kernel@vger.kernel.org>,
+       Linux Netdev List <netdev@vger.kernel.org>,
+       Joe Perches <joe@perches.com>
+Subject: Re: [RFC] percpu: convert SNMP mibs to new infra
+References: <49D32212.80607@cosmosbay.com> <49D3A0C2.9000403@cosmosbay.com> <49D3B61F.8010507@cosmosbay.com> <200904021534.34084.rusty@rustcorp.com.au>
+In-Reply-To: <200904021534.34084.rusty@rustcorp.com.au>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 8BIT
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-1.6 (gw1.cosmosbay.com [0.0.0.0]); Thu, 02 Apr 2009 07:19:21 +0200 (CEST)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-* Andi Kleen <andi@firstfloor.org> [2009-04-01 13:41:46]:
-
-> On Wed, Apr 01, 2009 at 05:02:58PM +0530, Arun R Bharadwaj wrote:
-> > * Arun R Bharadwaj <arun@linux.vnet.ibm.com> [2009-04-01 17:01:28]:
-> > 
-> > This patch creates a new framework for identifying cpu-pinned timers
-> > and hrtimers.
-> > 
-> > 
-> > This framework is needed because pinned timers are expected to fire on
-> > the same CPU on which they are queued. So it is essential to identify
-> > these and not migrate them, in case there are any.
+Rusty Russell a écrit :
+> On Thursday 02 April 2009 05:14:47 Eric Dumazet wrote:
+>> Here is a preliminary patch for SNMP mibs that seems to work well on x86_32
+>>
+>> [RFC] percpu: convert SNMP mibs to new infra
 > 
-> How would that interact with add_timer_on()? You currently only
-> support the current CPU, don't you?
+> OK, I have a whole heap of "convert to dynamic per-cpu" patches waiting in
+> the wings too, once Tejun's conversion is complete.
 > 
-> e.g. the new tip x86 machine check polling code relies on add_timer_on
-> staying on that CPU.
->
-
-Pinned timers are directly related to add_timer_on().
-So I assume that whatever timer is queued using add_timer_on() is
-supposed to be a pinned timer.
-Currently, we can stay on one CPU and still queue a pinned timer on
-some other CPU. We can mark those timers as 'pinned' to that
-particular CPU.
-
---arun
-
-> -Andi
+> Also, what is optimal depends on the arch: we had a long discussion on this
+> (it's what local_t was supposed to do, with cpu_local_inc() etc: see
+> Subject: local_add_return 2008-12-16 thread).
 > 
-> -- 
-> ak@linux.intel.com -- Speaking for myself only.
+> eg. on S/390, atomic_inc is a win over the two-counter version.  On Sparc,
+> two-counter wins.  On x86, inc wins (obviously).
+> 
+> But efforts to create a single primitive have been problematic: maybe
+> open-coding it like this is the Right Thing.
+> 
+
+I tried to find a generic CONFIG_ define that would annonce that an arche
+has a fast percpu_add() implementation. (faster than __raw_get_cpu_var,
+for example, when we already are in a preempt disabled section)
+
+Any idea ?
+
+
+For example, net/ipv4/route.c has :
+
+static DEFINE_PER_CPU(struct rt_cache_stat, rt_cache_stat);
+#define RT_CACHE_STAT_INC(field) \
+        (__raw_get_cpu_var(rt_cache_stat).field++)
+
+We could use percpu_add(rt_cache_stat.field, 1) instead, only if percpu_add()
+is not the generic one.
+
+#define __percpu_generic_to_op(var, val, op)                            \
+do {                                                                    \
+        get_cpu_var(var) op val;                                        \
+        put_cpu_var(var);                                               \
+} while (0)
+#ifndef percpu_add
+# define percpu_add(var, val)           __percpu_generic_to_op(var, (val), +=)
+#endif
+
