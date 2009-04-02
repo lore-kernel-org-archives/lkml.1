@@ -1,44 +1,107 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761759AbZDBRzz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761767AbZDBR5T@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761759AbZDBRzz (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 2 Apr 2009 13:55:55 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752316AbZDBRzo
+	id S1761767AbZDBR5T (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 2 Apr 2009 13:57:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759193AbZDBR5L
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 2 Apr 2009 13:55:44 -0400
-Received: from mga05.intel.com ([192.55.52.89]:46051 "EHLO
-	fmsmga101.fm.intel.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1751402AbZDBRzo (ORCPT
+	Thu, 2 Apr 2009 13:57:11 -0400
+Received: from e28smtp06.in.ibm.com ([59.145.155.6]:39180 "EHLO
+	e28smtp06.in.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755643AbZDBR5K (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 2 Apr 2009 13:55:44 -0400
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.39,315,1235980800"; 
-   d="scan'208";a="444450379"
-Date: Thu, 2 Apr 2009 10:55:40 -0700
-From: Matthew Wilcox <willy@linux.intel.com>
-To: Mark Lord <liml@rtr.ca>
-Cc: linux-ide@vger.kernel.org, linux-kernel@vger.kernel.org,
-       jgarzik@redhat.com, David Woodhouse <David.Woodhouse@intel.com>
-Subject: Re: [PATCH 5/5] libata: Add support for TRIM
-Message-ID: <20090402175539.GR2661@linux.intel.com>
-References: <1238683047-13588-1-git-send-email-willy@linux.intel.com> <1238683047-13588-2-git-send-email-willy@linux.intel.com> <1238683047-13588-3-git-send-email-willy@linux.intel.com> <1238683047-13588-4-git-send-email-willy@linux.intel.com> <1238683047-13588-5-git-send-email-willy@linux.intel.com> <49D4F3C1.3070200@rtr.ca>
+	Thu, 2 Apr 2009 13:57:10 -0400
+Date: Thu, 2 Apr 2009 23:26:24 +0530
+From: Gautham R Shenoy <ego@in.ibm.com>
+To: Randy Dunlap <randy.dunlap@oracle.com>
+Cc: lkml <linux-kernel@vger.kernel.org>,
+       torvalds <torvalds@linux-foundation.org>,
+       akpm <akpm@linux-foundation.org>, mingo@elte.hu
+Subject: Re: [PATCH] sched: fix errors in struct & function comments
+Message-ID: <20090402175624.GB22030@in.ibm.com>
+Reply-To: ego@in.ibm.com
+References: <20090328215247.daaad3f3.randy.dunlap@oracle.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <49D4F3C1.3070200@rtr.ca>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+In-Reply-To: <20090328215247.daaad3f3.randy.dunlap@oracle.com>
+User-Agent: Mutt/1.5.17 (2007-11-01)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Apr 02, 2009 at 01:20:01PM -0400, Mark Lord wrote:
-> Now we just need an implementation of ata_discard_fn()
-> that issues the CFA ERASE SECTORS command instead of TRIM
-> when speaking to a CFA device.
+On Sat, Mar 28, 2009 at 09:52:47PM -0700, Randy Dunlap wrote:
+> From: Randy Dunlap <randy.dunlap@oracle.com>
+> 
+> Fix kernel-doc errors in sched.c:  the structs don't have
+> kernel-doc notation and the short function description needs to
+> be one line only.
 
-Yes, should be quite straightforward.  The only minor wrinkle I can see
-is that CFA ERASE SECTORS only allows you to erase up to 256 sectors at a
-time.  I think Dave's infrastructure for Discard lets us handle that ...
+Sorry, that's my fault.
 
-> Ah, life is good!
+Didn't know about the kernel-doc notation for structs.
+Thanks Randy for fixing this.
 
-Isn't it though?
+> 
+> Error(kernel/sched.c:3197): cannot understand prototype: 'struct sd_lb_stats '
+> Error(kernel/sched.c:3228): cannot understand prototype: 'struct sg_lb_stats '
+> Error(kernel/sched.c:3375): duplicate section name 'Description'
+> 
+> Signed-off-by: Randy Dunlap <randy.dunlap@oracle.com>
+> cc: Ingo Molnar <mingo@elte.hu>
+> ---
+>  kernel/sched.c |   15 ++++++++-------
+>  1 file changed, 8 insertions(+), 7 deletions(-)
+> 
+> --- linux-2.6.29-git4.orig/kernel/sched.c
+> +++ linux-2.6.29-git4/kernel/sched.c
+> @@ -3190,7 +3190,7 @@ static int move_one_task(struct rq *this
+>  	return 0;
+>  }
+>  /********** Helpers for find_busiest_group ************************/
+> -/**
+> +/*
+>   * sd_lb_stats - Structure to store the statistics of a sched_domain
+>   * 		during load balancing.
+>   */
+> @@ -3222,7 +3222,7 @@ struct sd_lb_stats {
+>  #endif
+>  };
+> 
+> -/**
+> +/*
+>   * sg_lb_stats - stats of a sched_group required for load_balancing
+>   */
+>  struct sg_lb_stats {
+> @@ -3360,16 +3360,17 @@ static inline void update_sd_power_savin
+>  }
+> 
+>  /**
+> - * check_power_save_busiest_group - Check if we have potential to perform
+> - *	some power-savings balance. If yes, set the busiest group to be
+> - *	the least loaded group in the sched_domain, so that it's CPUs can
+> - *	be put to idle.
+> - *
+> + * check_power_save_busiest_group - see if there is potential for some power-savings balance
+>   * @sds: Variable containing the statistics of the sched_domain
+>   *	under consideration.
+>   * @this_cpu: Cpu at which we're currently performing load-balancing.
+>   * @imbalance: Variable to store the imbalance.
+>   *
+> + * Description:
+> + * Check if we have potential to perform some power-savings balance.
+> + * If yes, set the busiest group to be the least loaded group in the
+> + * sched_domain, so that it's CPUs can be put to idle.
+> + *
+>   * Returns 1 if there is potential to perform power-savings balance.
+>   * Else returns 0.
+>   */
+> --
+> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> Please read the FAQ at  http://www.tux.org/lkml/
+> 
+
+-- 
+Thanks and Regards
+gautham
