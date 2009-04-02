@@ -1,44 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761011AbZDBRlV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764470AbZDBRly@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761011AbZDBRlV (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 2 Apr 2009 13:41:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755558AbZDBRlE
+	id S1764470AbZDBRly (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 2 Apr 2009 13:41:54 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755363AbZDBRlo
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 2 Apr 2009 13:41:04 -0400
-Received: from mx2.redhat.com ([66.187.237.31]:52168 "EHLO mx2.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753417AbZDBRlC (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 2 Apr 2009 13:41:02 -0400
-Organization: Red Hat UK Ltd. Registered Address: Red Hat UK Ltd, Amberley
-	Place, 107-111 Peascod Street, Windsor, Berkshire, SI4 1TE, United
-	Kingdom.
-	Registered in England and Wales under Company Registration No. 3798903
-From: David Howells <dhowells@redhat.com>
-In-Reply-To: <200904030431.04079.nickpiggin@yahoo.com.au>
-References: <200904030431.04079.nickpiggin@yahoo.com.au> <200904030353.17713.nickpiggin@yahoo.com.au> <200904030315.03606.nickpiggin@yahoo.com.au> <7249.1238692155@redhat.com>
-To: Nick Piggin <nickpiggin@yahoo.com.au>
-Cc: dhowells@redhat.com, viro@zeniv.linux.org.uk, nfsv4@linux-nfs.org,
-       linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org
-Subject: Re: [PATCH 06/43] FS-Cache: Recruit a couple of page flags for cache management [ver #46]
-Date: Thu, 02 Apr 2009 18:40:57 +0100
-Message-ID: <7516.1238694057@redhat.com>
+	Thu, 2 Apr 2009 13:41:44 -0400
+Received: from mail-gx0-f160.google.com ([209.85.217.160]:49334 "EHLO
+	mail-gx0-f160.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755558AbZDBRln (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 2 Apr 2009 13:41:43 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:in-reply-to:references:date:subject:from:to:cc
+         :user-agent:mime-version:content-type:content-transfer-encoding
+         :x-priority:importance;
+        b=PI8OAPQA9dikQRW5Hu3sK4GxVdQC2NWkPvqJojjfkOByMz643VjujzI5vt1cNyphkw
+         DhNDULY3fHI2w2ShgQLSBBMP5zXif+64JrqiTzzCMjJbElrNmSuoXvE/Wyfz0ovDUg1M
+         64rjQh//1qJqCLBsfbdEht5//x2rt1PeS3cgU=
+Message-ID: <6c62e9d84a16902aebba9438b4e299d9.squirrel@localhost>
+In-Reply-To: <159a870e0904020702q3c528b8u77cebf834d607e3f@mail.gmail.com>
+References: <159a870e0904020702q3c528b8u77cebf834d607e3f@mail.gmail.com>
+Date: Thu, 2 Apr 2009 12:41:37 -0500 (CDT)
+Subject: Re: RAID performance / tuning?
+From: david.hagood@gmail.com
+To: "Tiago Freire" <tiago.freire@gmail.com>
+Cc: linux-kernel@vger.kernel.org
+User-Agent: SquirrelMail/1.4.15
+MIME-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7BIT
+X-Priority: 3 (Normal)
+Importance: Normal
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Nick Piggin <nickpiggin@yahoo.com.au> wrote:
 
-> Well in theory I still think it would be cleanest to modify buffer to
-> play more nicely with it. But maybe that ends up being harder to
-> distinguish the 3 cases of attached metadata on the page. I don't know,
-> you haven't posted any isofs code so either way it is inappropriate to
-> use up this extra page flag here.
-> 
-> Is isofs cache worth a page flag?
+> Why is it that software RAID on current systems still gets less
+> performance than hardware counterparts?
 
-Well, isofs was something I wanted at the time.
+Part of it can be crappy disk interfaces: I was running software raid with
+2 SATA-SIL cards, and would frequently be disk-bound with the CPU still
+largely idle.
 
-Besides, as I said NFS uses PG_private for its own purposes, and entangling
-the two wasn't the most fun I've had.  Trond didn't like it either.
+The cards were incapable of talking to more than one drive at a time. They
+didn't support command queuing on the drives.
 
-David
+As a result, the system would set up a stripe, queue up the writes, then
+have to wait as each write for EACH DISK in the 7 disk array was carried
+out.
+
+On a good hardware RAID controller, the disks can be written in parallel,
+and the controller will support command queuing - so disk writes can be
+run in parallel, and the writes themselves can be better optimized by the
+disks.
+
+
