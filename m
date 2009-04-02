@@ -1,58 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933927AbZDBQzw@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761876AbZDBQ5m@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933927AbZDBQzw (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 2 Apr 2009 12:55:52 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933022AbZDBQzM
+	id S1761876AbZDBQ5m (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 2 Apr 2009 12:57:42 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755363AbZDBQ5a
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 2 Apr 2009 12:55:12 -0400
-Received: from bombadil.infradead.org ([18.85.46.34]:40810 "EHLO
-	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1765582AbZDBQzK (ORCPT
+	Thu, 2 Apr 2009 12:57:30 -0400
+Received: from khc.piap.pl ([195.187.100.11]:51297 "EHLO khc.piap.pl"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1757192AbZDBQ52 convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 2 Apr 2009 12:55:10 -0400
-Date: Thu, 2 Apr 2009 12:55:05 -0400
-From: Christoph Hellwig <hch@infradead.org>
-To: Nick Piggin <nickpiggin@yahoo.com.au>
-Cc: Christoph Hellwig <hch@infradead.org>, David Howells <dhowells@redhat.com>,
-       viro@zeniv.linux.org.uk, nfsv4@linux-nfs.org,
-       linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org
-Subject: Re: [PATCH 22/43] CacheFiles: Add a hook to write a single page of
-	data to an inode [ver #46]
-Message-ID: <20090402165505.GA21859@infradead.org>
-References: <200904030100.05741.nickpiggin@yahoo.com.au> <200904030232.59355.nickpiggin@yahoo.com.au> <20090402163712.GA25177@infradead.org> <200904030347.21470.nickpiggin@yahoo.com.au>
+	Thu, 2 Apr 2009 12:57:28 -0400
+To: David Brownell <david-b@pacbell.net>
+Cc: lkml <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH] fix RTC-CMOS message, now with SOB
+References: <m3vdpnvvzt.fsf@intrepid.localdomain>
+From: Krzysztof Halasa <khc@pm.waw.pl>
+Date: Thu, 02 Apr 2009 18:57:23 +0200
+In-Reply-To: <m3vdpnvvzt.fsf@intrepid.localdomain> (Krzysztof Halasa's message of "Thu\, 02 Apr 2009 18\:52\:22 +0200")
+Message-ID: <m3r60bvvrg.fsf@intrepid.localdomain>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <200904030347.21470.nickpiggin@yahoo.com.au>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-SRS-Rewrite: SMTP reverse-path rewritten from <hch@infradead.org> by bombadil.infradead.org
-	See http://www.infradead.org/rpr.html
+Content-Type: text/plain; charset=iso-8859-2
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Apr 03, 2009 at 03:47:20AM +1100, Nick Piggin wrote:
-> Well they now are quite well filesystem defined. We no longer take
-> the page lock before calling them. Not saying it's perfect, but if
-> the backing fs is just using a known subset of ones that work
-> (like loop does).
+With no IRQ available/defined, RTC-CMOS driver prints something like:
+	rtc0: alarms up to one no, y3k, 114 bytes nvram
+                              ^^^^
+I guess the following is a bit easier to understand:
+	rtc0: no alarms, y3k, 114 bytes nvram
 
-The page lock doesn't matter.  What matters is locks protecting the
-io.  Like the XFS iolock or cluster locks in the cluster filesystems,
-and you will get silent data corruption that way.
+Signed-off-by: Krzysztof Ha³asa <khc@pm.waw.pl>
 
-I would have sworn loop was fixed by now as gfs people were seeing
-these issues and submitting patches, but it looks like we never sorted
-this out upstream.
-
-> Probably yes. But it seems like it should have more discussion IMO
-> (unless it has already been had and I missed it).
-
-This came up plenty of times.
-
-> I don't think "write_one_page" sounds like a particularly good new
-> API addition.
-
-I also thing it's not a nice one.  I still haven't seen a really good
-explanation of why it can't just use plain ->write
-
+--- a/drivers/rtc/rtc-cmos.c
++++ b/drivers/rtc/rtc-cmos.c
+@@ -794,17 +794,15 @@ cmos_do_probe(struct device *dev, struct resource *ports, int rtc_irq)
+ 		goto cleanup2;
+ 	}
+ 
+-	pr_info("%s: alarms up to one %s%s, %zd bytes nvram%s\n",
+-			cmos_rtc.rtc->dev.bus_id,
+-			is_valid_irq(rtc_irq)
+-				?  (cmos_rtc.mon_alrm
+-					? "year"
+-					: (cmos_rtc.day_alrm
+-						? "month" : "day"))
+-				: "no",
+-			cmos_rtc.century ? ", y3k" : "",
+-			nvram.size,
+-			is_hpet_enabled() ? ", hpet irqs" : "");
++	pr_info("%s: %s%s, %zd bytes nvram%s\n",
++		cmos_rtc.rtc->dev.bus_id,
++		!is_valid_irq(rtc_irq) ? "no alarms" :
++		cmos_rtc.mon_alrm ? "alarms up to one year" :
++		cmos_rtc.day_alrm ? "alarms up to one month" :
++		"alarms up to one day",
++		cmos_rtc.century ? ", y3k" : "",
++		nvram.size,
++		is_hpet_enabled() ? ", hpet irqs" : "");
+ 
+ 	return 0;
+ 
+-- 
+Krzysztof Halasa
