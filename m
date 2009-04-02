@@ -1,63 +1,39 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763325AbZDBRIl@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1765648AbZDBRJf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763325AbZDBRIl (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 2 Apr 2009 13:08:41 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1765648AbZDBRIQ
+	id S1765648AbZDBRJf (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 2 Apr 2009 13:09:35 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758243AbZDBRJU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 2 Apr 2009 13:08:16 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:45869 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1764800AbZDBRIO (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 2 Apr 2009 13:08:14 -0400
-Date: Thu, 2 Apr 2009 10:04:29 -0700 (PDT)
-From: Linus Torvalds <torvalds@linux-foundation.org>
-X-X-Sender: torvalds@localhost.localdomain
-To: Andrew Morton <akpm@linux-foundation.org>
-cc: David Rees <drees76@gmail.com>, Janne Grunau <j@jannau.net>,
-       Lennart Sorensen <lsorense@csclub.uwaterloo.ca>,
-       Theodore Tso <tytso@mit.edu>, Jesper Krogh <jesper@krogh.cc>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: Linux 2.6.29
-In-Reply-To: <alpine.LFD.2.00.0904020947310.4130@localhost.localdomain>
-Message-ID: <alpine.LFD.2.00.0904020959490.4130@localhost.localdomain>
-References: <20090325183011.GN32307@mit.edu> <20090325220530.GR32307@mit.edu> <alpine.LFD.2.00.0903251622420.3032@localhost.localdomain> <20090326171148.9bf8f1ec.akpm@linux-foundation.org> <alpine.LFD.2.00.0903261723250.3994@localhost.localdomain>
- <20090326174704.cd36bf7b.akpm@linux-foundation.org> <alpine.LFD.2.00.0903261752110.3994@localhost.localdomain> <20090326182519.d576d703.akpm@linux-foundation.org> <20090401210337.GB3797@csclub.uwaterloo.ca> <20090402110532.GA5132@aniel>
- <72dbd3150904020929w46c6dc0bs4028c49dd8fa8c56@mail.gmail.com> <20090402094247.9d7ac19f.akpm@linux-foundation.org> <alpine.LFD.2.00.0904020947310.4130@localhost.localdomain>
-User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Thu, 2 Apr 2009 13:09:20 -0400
+Received: from mx2.redhat.com ([66.187.237.31]:35970 "EHLO mx2.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753841AbZDBRJT (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 2 Apr 2009 13:09:19 -0400
+Organization: Red Hat UK Ltd. Registered Address: Red Hat UK Ltd, Amberley
+	Place, 107-111 Peascod Street, Windsor, Berkshire, SI4 1TE, United
+	Kingdom.
+	Registered in England and Wales under Company Registration No. 3798903
+From: David Howells <dhowells@redhat.com>
+In-Reply-To: <200904030353.17713.nickpiggin@yahoo.com.au>
+References: <200904030353.17713.nickpiggin@yahoo.com.au> <200904030225.16372.nickpiggin@yahoo.com.au> <6362.1238687462@redhat.com> <200904030315.03606.nickpiggin@yahoo.com.au>
+To: Nick Piggin <nickpiggin@yahoo.com.au>
+Cc: dhowells@redhat.com, viro@zeniv.linux.org.uk, nfsv4@linux-nfs.org,
+       linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org
+Subject: Re: [PATCH 06/43] FS-Cache: Recruit a couple of page flags for cache management [ver #46]
+Date: Thu, 02 Apr 2009 18:09:15 +0100
+Message-ID: <7249.1238692155@redhat.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Nick Piggin <nickpiggin@yahoo.com.au> wrote:
 
+> Comments about PG_private still stand.
 
-On Thu, 2 Apr 2009, Linus Torvalds wrote:
-> 
-> On Thu, 2 Apr 2009, Andrew Morton wrote:
-> > 
-> > A suitable design for the streaming might be, every 4MB:
-> > 
-> > - run sync_file_range(SYNC_FILE_RANGE_WRITE) to get the 4MB underway
-> >   to the disk
-> > 
-> > - run fadvise(POSIX_FADV_DONTNEED) against the previous 4MB to
-> >   discard it from pagecache.
-> 
-> Here's an example. I call it "overwrite.c" for obvious reasons.
+Replies about PG_private still stand.
 
-Oh, except my example doesn't do the fadvise. Instead, I make sure to 
-throttle the writes and the old range with
+It's owned by fs/buffer.c, and if the 'netfs' uses that, then PG_private is
+not available.  Though, as I said, fs/buffer.c could be broken of its control
+of the bit.
 
-	SYNC_FILE_RANGE_WAIT_BEFORE|SYNC_FILE_RANGE_WRITE|SYNC_FILE_RANGE_WAIT_AFTER
-
-which makes sure that the old pages are easily dropped by the VM - and 
-they will be, since they end up always being on the cold list.
-
-I _wanted_ to add a SYNC_FILE_RANGE_DROP but I never bothered because this 
-particular load it didn't matter. The system was perfectly usable while 
-overwriting even huge disks because there was never more than 8MB of dirty 
-data in flight in the IO queues at any time.
-
-		Linus
+David
