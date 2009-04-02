@@ -1,109 +1,363 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760777AbZDBGrs@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934550AbZDBGtw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760777AbZDBGrs (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 2 Apr 2009 02:47:48 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755595AbZDBGri
+	id S934550AbZDBGtw (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 2 Apr 2009 02:49:52 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752211AbZDBGtl
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 2 Apr 2009 02:47:38 -0400
-Received: from casper.infradead.org ([85.118.1.10]:46827 "EHLO
-	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755381AbZDBGrh (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 2 Apr 2009 02:47:37 -0400
-Subject: Re: [PATCH] sched_rt: fix overload bug on rt group scheduling
-From: Peter Zijlstra <peterz@infradead.org>
-To: Gregory Haskins <ghaskins@novell.com>
-Cc: Ingo Molnar <mingo@elte.hu>, Steven Rostedt <rostedt@goodmis.org>,
-       LKML <linux-kernel@vger.kernel.org>,
-       Thomas Gleixner <tglx@linutronix.de>
-In-Reply-To: <49D40DBF.8030507@novell.com>
-References: <1238604015.8530.3666.camel@twins> <49D40DBF.8030507@novell.com>
+	Thu, 2 Apr 2009 02:49:41 -0400
+Received: from hera.kernel.org ([140.211.167.34]:60639 "EHLO hera.kernel.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752011AbZDBGtk (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 2 Apr 2009 02:49:40 -0400
+Subject: Re: [PATCH 1/2 scsi-misc] qla1280: use request_firmware
+From: Jaswinder Singh Rajput <jaswinder@kernel.org>
+To: James Bottomley <James.Bottomley@HansenPartnership.com>
+Cc: scsi <linux-scsi@vger.kernel.org>, LKML <linux-kernel@vger.kernel.org>,
+       Jes Sorensen <jes@sgi.com>, David Woodhouse <dwmw2@infradead.org>
+In-Reply-To: <1238654083.4940.8.camel@ht.satnam>
+References: <1238654083.4940.8.camel@ht.satnam>
 Content-Type: text/plain
-Content-Transfer-Encoding: 7bit
-Date: Thu, 02 Apr 2009 08:48:21 +0200
-Message-Id: <1238654901.8530.5373.camel@twins>
+Date: Thu, 02 Apr 2009 12:19:19 +0530
+Message-Id: <1238654959.4940.12.camel@ht.satnam>
 Mime-Version: 1.0
-X-Mailer: Evolution 2.26.0 
+X-Mailer: Evolution 2.24.5 (2.24.5-1.fc10) 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 2009-04-01 at 20:58 -0400, Gregory Haskins wrote:
-> Hi Peter,
+On Thu, 2009-04-02 at 12:05 +0530, Jaswinder Singh Rajput wrote:
+> Firmware blob is little endian looks like this...
+>         unsigned char  Version1
+>         unsigned char  Version2
+>         unsigned char  Version3
+>         unsigned char  Padding
+>         unsigned short start_address
+>         unsigned short data
 > 
-> Peter Zijlstra wrote:
-> > Fixes an easily triggerable BUG() when setting process affinities.
-> >
-> > Make sure to count the number of migratable tasks in the same place:
-> > the root rt_rq. Otherwise the number doesn't make sense and we'll hit
-> > the BUG in set_cpus_allowed_rt().
-> >
-> > Also, make sure we only count tasks, not groups (this is probably
-> > already taken care of by the fact that rt_se->nr_cpus_allowed will be 0
-> > for groups, but be more explicit)
-> >
-> > Signed-off-by: Peter Zijlstra <a.p.zijlstra@chello.nl>
-> > Tested-by: Thomas Gleixner <tglx@linutronix.de>
-> > CC: stable@kernel.org
-> > ---
-> >  kernel/sched_rt.c |   16 +++++++++++++++-
-> >  1 files changed, 15 insertions(+), 1 deletions(-)
-> >
-> > diff --git a/kernel/sched_rt.c b/kernel/sched_rt.c
-> > index de4469a..c1ee8dc 100644
-> > --- a/kernel/sched_rt.c
-> > +++ b/kernel/sched_rt.c
-> > @@ -10,6 +10,8 @@ static inline struct task_struct *rt_task_of(struct sched_rt_entity *rt_se)
-> >  
-> >  #ifdef CONFIG_RT_GROUP_SCHED
-> >  
-> > +#define rt_entity_is_task(rt_se) (!(rt_se)->my_q)
-> > +
-> >  static inline struct rq *rq_of_rt_rq(struct rt_rq *rt_rq)
-> >  {
-> >  	return rt_rq->rq;
-> > @@ -22,6 +24,8 @@ static inline struct rt_rq *rt_rq_of_se(struct sched_rt_entity *rt_se)
-> >  
-> >  #else /* CONFIG_RT_GROUP_SCHED */
-> >  
-> > +#define rt_entity_is_task(rt_se) (1)
-> > +
-> >  static inline struct rq *rq_of_rt_rq(struct rt_rq *rt_rq)
-> >  {
-> >  	return container_of(rt_rq, struct rq, rt);
-> > @@ -73,7 +77,7 @@ static inline void rt_clear_overload(struct rq *rq)
-> >  
-> >  static void update_rt_migration(struct rt_rq *rt_rq)
-> >  {
-> > -	if (rt_rq->rt_nr_migratory && (rt_rq->rt_nr_running > 1)) {
-> > +	if (rt_rq->rt_nr_migratory > 1) {
-> >   
-> 
-> The rest of the patch is making sense to me, but I am a little concerned
-> about this change.
-> 
-> The original logic was designed to catch the condition when you might
-> have a non-migratory task running, and a migratory task queued.   This
-> would mean nr_running == 2, and nr_migratory == 1, which is eligible for
-> overload handling.  (Of course, the opposite could be true..the
-> migratory is running and the non-migratory is queued...we cannot discern
-> the difference here and we go into overload anyway.  This is just
-> suboptimal but functionally correct).
-> 
-> What can happen now is you could have that above condition but we will
-> not go into overload unless there is at least two migratory tasks
-> queued.  This will undoubtedly allow a potential scheduling latency on
-> task #2.
-> 
-> I think we really need to qualify overload on both running > 1 and at
-> least one migratory task.  Is there a way to get this state, even if by
-> other means?
+> Signed-off-by: Jaswinder Singh Rajput <jaswinderrajput@gmail.com>
 
-Ah, yes, I missed that bit. I ripped out the rt_nr_running because I 1)
-didn't think of this, and 2) rt_nr_running is accounted per rt_rq, not
-per-cpu, so it doesn't match.
+It seems LKML is rejected old email because of big size. so I am CC LKML
+after deleting firmware blobs:
 
-Since rt_nr_running is also used in a per rt_rq setting, changing that
-isn't possible and we'd need to introduce another per-cpu variant is you
-want to re-instate this.
+From: Jaswinder Singh Rajput <jaswinderrajput@gmail.com>
+Date: Thu, 2 Apr 2009 11:13:17 +0530
+Subject: [PATCH] qla1280: use request_firmware
+
+Firmware blob is little endian looks like this...
+        unsigned char  Version1
+        unsigned char  Version2
+        unsigned char  Version3
+        unsigned char  Padding
+        unsigned short start_address
+	unsigned short data
+
+Signed-off-by: Jaswinder Singh Rajput <jaswinderrajput@gmail.com>
+---
+ drivers/scsi/ql1040_fw.h       | 2130 ----------------------------------------
+ drivers/scsi/ql12160_fw.h      | 1811 ----------------------------------
+ drivers/scsi/ql1280_fw.h       | 2048 --------------------------------------
+ drivers/scsi/qla1280.c         |  114 ++-
+ drivers/scsi/qla1280.h         |    6 +
+ firmware/Makefile              |    2 +
+ firmware/WHENCE                |   13 +
+ firmware/qlogic/1040.bin.ihex  | 2111 +++++++++++++++++++++++++++++++++++++++
+ firmware/qlogic/12160.bin.ihex | 1771 +++++++++++++++++++++++++++++++++
+ firmware/qlogic/1280.bin.ihex  | 2008 +++++++++++++++++++++++++++++++++++++
+ 10 files changed, 5985 insertions(+), 6029 deletions(-)
+ delete mode 100644 drivers/scsi/ql1040_fw.h
+ delete mode 100644 drivers/scsi/ql12160_fw.h
+ delete mode 100644 drivers/scsi/ql1280_fw.h
+ create mode 100644 firmware/qlogic/1040.bin.ihex
+ create mode 100644 firmware/qlogic/12160.bin.ihex
+ create mode 100644 firmware/qlogic/1280.bin.ihex
+
+diff --git a/drivers/scsi/qla1280.c b/drivers/scsi/qla1280.c
+index df09820..351b56c 100644
+--- a/drivers/scsi/qla1280.c
++++ b/drivers/scsi/qla1280.c
+@@ -348,6 +348,7 @@
+ #include <linux/interrupt.h>
+ #include <linux/init.h>
+ #include <linux/dma-mapping.h>
++#include <linux/firmware.h>
+ 
+ #include <asm/io.h>
+ #include <asm/irq.h>
+@@ -384,11 +385,7 @@
+ #define	MEMORY_MAPPED_IO	1
+ #endif
+ 
+-#define UNIQUE_FW_NAME
+ #include "qla1280.h"
+-#include "ql12160_fw.h"		/* ISP RISC codes */
+-#include "ql1280_fw.h"
+-#include "ql1040_fw.h"
+ 
+ #ifndef BITS_PER_LONG
+ #error "BITS_PER_LONG not defined!"
+@@ -541,10 +538,7 @@ __setup("qla1280=", qla1280_setup);
+ struct qla_boards {
+ 	unsigned char name[9];	/* Board ID String */
+ 	int numPorts;		/* Number of SCSI ports */
+-	unsigned short *fwcode;	/* pointer to FW array         */
+-	unsigned short *fwlen;	/* number of words in array    */
+-	unsigned short *fwstart;	/* start address for F/W       */
+-	unsigned char *fwver;	/* Ptr to F/W version array    */
++	char *fwname;		/* firmware name        */
+ };
+ 
+ /* NOTE: the last argument in each entry is used to index ql1280_board_tbl */
+@@ -567,19 +561,13 @@ MODULE_DEVICE_TABLE(pci, qla1280_pci_tbl);
+ 
+ static struct qla_boards ql1280_board_tbl[] = {
+ 	/* Name ,  Number of ports, FW details */
+-	{"QLA12160", 2, &fw12160i_code01[0], &fw12160i_length01,
+-	 &fw12160i_addr01, &fw12160i_version_str[0]},
+-	{"QLA1040", 1, &risc_code01[0], &risc_code_length01,
+-	 &risc_code_addr01, &firmware_version[0]},
+-	{"QLA1080", 1, &fw1280ei_code01[0], &fw1280ei_length01,
+-	 &fw1280ei_addr01, &fw1280ei_version_str[0]},
+-	{"QLA1240", 2, &fw1280ei_code01[0], &fw1280ei_length01,
+-	 &fw1280ei_addr01, &fw1280ei_version_str[0]},
+-	{"QLA1280", 2, &fw1280ei_code01[0], &fw1280ei_length01,
+-	 &fw1280ei_addr01, &fw1280ei_version_str[0]},
+-	{"QLA10160", 1, &fw12160i_code01[0], &fw12160i_length01,
+-	 &fw12160i_addr01, &fw12160i_version_str[0]},
+-	{"        ", 0}
++	{"QLA12160",	2, "qlogic/12160.bin"},
++	{"QLA1040",	1, "qlogic/1040.bin"},
++	{"QLA1080",	1, "qlogic/1280.bin"},
++	{"QLA1240",	2, "qlogic/1280.bin"},
++	{"QLA1280",	2, "qlogic/1280.bin"},
++	{"QLA10160",	1, "qlogic/12160.bin"},
++	{"        ",	0, "   "},
+ };
+ 
+ static int qla1280_verbose = 1;
+@@ -704,7 +692,7 @@ qla1280_info(struct Scsi_Host *host)
+ 	sprintf (bp,
+ 		 "QLogic %s PCI to SCSI Host Adapter\n"
+ 		 "       Firmware version: %2d.%02d.%02d, Driver version %s",
+-		 &bdp->name[0], bdp->fwver[0], bdp->fwver[1], bdp->fwver[2],
++		 &bdp->name[0], ha->fwver1, ha->fwver2, ha->fwver3,
+ 		 QLA1280_VERSION);
+ 	return bp;
+ }
+@@ -1648,36 +1636,60 @@ qla1280_chip_diag(struct scsi_qla_host *ha)
+ static int
+ qla1280_load_firmware_pio(struct scsi_qla_host *ha)
+ {
+-	uint16_t risc_address, *risc_code_address, risc_code_size;
++	const struct firmware *fw;
++	const __le16 *fw_data;
++	uint16_t risc_address, risc_code_size;
+ 	uint16_t mb[MAILBOX_REGISTER_COUNT], i;
+ 	int err;
+ 
++	err = request_firmware(&fw, ql1280_board_tbl[ha->devnum].fwname,
++			       &ha->pdev->dev);
++	if (err) {
++		printk(KERN_ERR "Failed to load image \"%s\" err %d\n",
++		       ql1280_board_tbl[ha->devnum].fwname, err);
++		return err;
++	}
++	if ((fw->size % 2) || (fw->size < 6)) {
++		printk(KERN_ERR "Bogus length %zu in image \"%s\"\n",
++		       fw->size, ql1280_board_tbl[ha->devnum].fwname);
++		err = -EINVAL;
++		goto out;
++	}
++	ha->fwver1 = fw->data[0];
++	ha->fwver2 = fw->data[1];
++	ha->fwver3 = fw->data[2];
++	fw_data = (const __le16 *)&fw->data[0];
++	ha->fwstart = __le16_to_cpu(fw_data[2]);
++
+ 	/* Load RISC code. */
+-	risc_address = *ql1280_board_tbl[ha->devnum].fwstart;
+-	risc_code_address = ql1280_board_tbl[ha->devnum].fwcode;
+-	risc_code_size = *ql1280_board_tbl[ha->devnum].fwlen;
++	risc_address = ha->fwstart;
++	fw_data = (const __le16 *)&fw->data[4];
++	risc_code_size = (fw->size - 6) / 2;
+ 
+ 	for (i = 0; i < risc_code_size; i++) {
+ 		mb[0] = MBC_WRITE_RAM_WORD;
+ 		mb[1] = risc_address + i;
+-		mb[2] = risc_code_address[i];
++		mb[2] = __le16_to_cpu(fw_data[i]);
+ 
+ 		err = qla1280_mailbox_command(ha, BIT_0 | BIT_1 | BIT_2, mb);
+ 		if (err) {
+ 			printk(KERN_ERR "scsi(%li): Failed to load firmware\n",
+ 					ha->host_no);
+-			return err;
++			goto out;
+ 		}
+ 	}
+-
+-	return 0;
++out:
++	release_firmware(fw);
++	return err;
+ }
+ 
+ #define DUMP_IT_BACK 0		/* for debug of RISC loading */
+ static int
+ qla1280_load_firmware_dma(struct scsi_qla_host *ha)
+ {
+-	uint16_t risc_address, *risc_code_address, risc_code_size;
++	const struct firmware *fw;
++	const __le16 *fw_data;
++	uint16_t risc_address, risc_code_size;
+ 	uint16_t mb[MAILBOX_REGISTER_COUNT], cnt;
+ 	int err = 0, num, i;
+ #if DUMP_IT_BACK
+@@ -1689,10 +1701,29 @@ qla1280_load_firmware_dma(struct scsi_qla_host *ha)
+ 		return -ENOMEM;
+ #endif
+ 
++	err = request_firmware(&fw, ql1280_board_tbl[ha->devnum].fwname,
++			       &ha->pdev->dev);
++	if (err) {
++		printk(KERN_ERR "Failed to load image \"%s\" err %d\n",
++		       ql1280_board_tbl[ha->devnum].fwname, err);
++		return err;
++	}
++	if ((fw->size % 2) || (fw->size < 6)) {
++		printk(KERN_ERR "Bogus length %zu in image \"%s\"\n",
++		       fw->size, ql1280_board_tbl[ha->devnum].fwname);
++		err = -EINVAL;
++		goto out;
++	}
++	ha->fwver1 = fw->data[0];
++	ha->fwver2 = fw->data[1];
++	ha->fwver3 = fw->data[2];
++	fw_data = (const __le16 *)&fw->data[0];
++	ha->fwstart = __le16_to_cpu(fw_data[2]);
++
+ 	/* Load RISC code. */
+-	risc_address = *ql1280_board_tbl[ha->devnum].fwstart;
+-	risc_code_address = ql1280_board_tbl[ha->devnum].fwcode;
+-	risc_code_size = *ql1280_board_tbl[ha->devnum].fwlen;
++	risc_address = ha->fwstart;
++	fw_data = (const __le16 *)&fw->data[4];
++	risc_code_size = (fw->size - 6) / 2;
+ 
+ 	dprintk(1, "%s: DMA RISC code (%i) words\n",
+ 			__func__, risc_code_size);
+@@ -1708,10 +1739,9 @@ qla1280_load_firmware_dma(struct scsi_qla_host *ha)
+ 
+ 		dprintk(2, "qla1280_setup_chip:  loading risc @ =(0x%p),"
+ 			"%d,%d(0x%x)\n",
+-			risc_code_address, cnt, num, risc_address);
++			fw_data, cnt, num, risc_address);
+ 		for(i = 0; i < cnt; i++)
+-			((__le16 *)ha->request_ring)[i] =
+-				cpu_to_le16(risc_code_address[i]);
++			((__le16 *)ha->request_ring)[i] = fw_data[i];
+ 
+ 		mb[0] = MBC_LOAD_RAM;
+ 		mb[1] = risc_address;
+@@ -1763,7 +1793,7 @@ qla1280_load_firmware_dma(struct scsi_qla_host *ha)
+ #endif
+ 		risc_address += cnt;
+ 		risc_code_size = risc_code_size - cnt;
+-		risc_code_address = risc_code_address + cnt;
++		fw_data = fw_data + cnt;
+ 		num++;
+ 	}
+ 
+@@ -1771,6 +1801,7 @@ qla1280_load_firmware_dma(struct scsi_qla_host *ha)
+ #if DUMP_IT_BACK
+ 	pci_free_consistent(ha->pdev, 8000, tbuf, p_tbuf);
+ #endif
++	release_firmware(fw);
+ 	return err;
+ }
+ 
+@@ -1786,7 +1817,7 @@ qla1280_start_firmware(struct scsi_qla_host *ha)
+ 	/* Verify checksum of loaded RISC code. */
+ 	mb[0] = MBC_VERIFY_CHECKSUM;
+ 	/* mb[1] = ql12_risc_code_addr01; */
+-	mb[1] = *ql1280_board_tbl[ha->devnum].fwstart;
++	mb[1] = ha->fwstart;
+ 	err = qla1280_mailbox_command(ha, BIT_1 | BIT_0, mb);
+ 	if (err) {
+ 		printk(KERN_ERR "scsi(%li): RISC checksum failed.\n", ha->host_no);
+@@ -1796,7 +1827,7 @@ qla1280_start_firmware(struct scsi_qla_host *ha)
+ 	/* Start firmware execution. */
+ 	dprintk(1, "%s: start firmware running.\n", __func__);
+ 	mb[0] = MBC_EXECUTE_FIRMWARE;
+-	mb[1] = *ql1280_board_tbl[ha->devnum].fwstart;
++	mb[1] = ha->fwstart;
+ 	err = qla1280_mailbox_command(ha, BIT_1 | BIT_0, &mb[0]);
+ 	if (err) {
+ 		printk(KERN_ERR "scsi(%li): Failed to start firmware\n",
+@@ -4450,6 +4481,9 @@ module_exit(qla1280_exit);
+ MODULE_AUTHOR("Qlogic & Jes Sorensen");
+ MODULE_DESCRIPTION("Qlogic ISP SCSI (qla1x80/qla1x160) driver");
+ MODULE_LICENSE("GPL");
++MODULE_FIRMWARE("qlogic/1040.bin");
++MODULE_FIRMWARE("qlogic/1280.bin");
++MODULE_FIRMWARE("qlogic/12160.bin");
+ MODULE_VERSION(QLA1280_VERSION);
+ 
+ /*
+diff --git a/drivers/scsi/qla1280.h b/drivers/scsi/qla1280.h
+index ff2c363..d7c44b8 100644
+--- a/drivers/scsi/qla1280.h
++++ b/drivers/scsi/qla1280.h
+@@ -1069,6 +1069,12 @@ struct scsi_qla_host {
+ 
+ 	struct nvram nvram;
+ 	int nvram_valid;
++
++	/* Firmware Info */
++	unsigned short fwstart; /* start address for F/W   */
++	unsigned char fwver1;   /* F/W version first char  */
++	unsigned char fwver2;   /* F/W version second char */
++	unsigned char fwver3;   /* F/W version third char  */
+ };
+ 
+ #endif /* _QLA1280_H */
+diff --git a/firmware/Makefile b/firmware/Makefile
+index c6af61b..d2ab866 100644
+--- a/firmware/Makefile
++++ b/firmware/Makefile
+@@ -39,6 +39,8 @@ fw-shipped-$(CONFIG_CHELSIO_T3) += cxgb3/t3b_psram-1.1.0.bin \
+ fw-shipped-$(CONFIG_DVB_TTUSB_BUDGET) += ttusb-budget/dspbootcode.bin
+ fw-shipped-$(CONFIG_E100) += e100/d101m_ucode.bin e100/d101s_ucode.bin \
+ 			     e100/d102e_ucode.bin
++fw-shipped-$(CONFIG_SCSI_QLOGIC_1280) += qlogic/1040.bin qlogic/1280.bin \
++					 qlogic/12160.bin
+ fw-shipped-$(CONFIG_SMCTR) += tr_smctr.bin
+ fw-shipped-$(CONFIG_SND_KORG1212) += korg/k1212.dsp
+ fw-shipped-$(CONFIG_SND_MAESTRO3) += ess/maestro3_assp_kernel.fw \
+diff --git a/firmware/WHENCE b/firmware/WHENCE
+index 00b6e3c..77a2cf3 100644
+--- a/firmware/WHENCE
++++ b/firmware/WHENCE
+@@ -45,6 +45,19 @@ Found alsa-firmware package in hex form, with the following comment:
+ 
+ --------------------------------------------------------------------------
+ 
++Driver: SCSI_QLOGIC_1280 - Qlogic QLA 1240/1x80/1x160 SCSI support
++
++File: qlogic/1040.bin
++File: qlogic/1280.bin
++File: qlogic/12160.bin
++
++Licence: Allegedly GPLv2+, but no source visible. Marked:
++
++                   QLOGIC LINUX SOFTWARE
++  QLogic ISP1280/ device driver for Linux 2.2.x and 2.4.x
++  Copyright (C) 2001 Qlogic Corporation (www.qlogic.com)
++
++--------------------------------------------------------------------------
+ Driver: smctr -- SMC ISA/MCA Token Ring adapter
+ 
+ File: tr_smctr.bin
+
 
