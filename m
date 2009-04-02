@@ -1,250 +1,177 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933563AbZDBXs6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1765683AbZDBXwW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933563AbZDBXs6 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 2 Apr 2009 19:48:58 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759830AbZDBXsp
+	id S1765683AbZDBXwW (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 2 Apr 2009 19:52:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759229AbZDBXwI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 2 Apr 2009 19:48:45 -0400
-Received: from mail-ew0-f165.google.com ([209.85.219.165]:36262 "EHLO
-	mail-ew0-f165.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1759039AbZDBXsn (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 2 Apr 2009 19:48:43 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:references:mime-version
-         :content-type:content-disposition:in-reply-to:user-agent;
-        b=UdxXhW/2yxPcst+itfXZf6sCH8NBLih89tQBXZh778STMcCW+VIkKJFmz92j3hIMQc
-         vIO2Vx7wnAjn+VZtjjeXISS4ve9dIL02/IuzoSFTVv3TvRsvbtuEk1myWJb4g4UE6qRf
-         KV7ipgmPmfy11BXdeSZIxKG6TVCMbE20X95pc=
-Date: Fri, 3 Apr 2009 01:48:36 +0200
-From: Frederic Weisbecker <fweisbec@gmail.com>
-To: Masami Hiramatsu <mhiramat@redhat.com>
-Cc: Ingo Molnar <mingo@elte.hu>,
-       Ananth N Mavinakayanahalli <ananth@in.ibm.com>,
-       Steven Rostedt <rostedt@goodmis.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Andi Kleen <andi@firstfloor.org>,
-       Arnaldo Carvalho de Melo <acme@redhat.com>,
-       Jim Keniston <jkenisto@us.ibm.com>,
-       systemtap-ml <systemtap@sources.redhat.com>,
-       LKML <linux-kernel@vger.kernel.org>, kvm@vger.kernel.org
-Subject: Re: [PATCH -tip 2/6 V4] x86: add arch-dep register and stack
-	access API to ptrace
-Message-ID: <20090402234835.GA6112@nowhere>
-References: <49D4F4DF.1040605@redhat.com>
+	Thu, 2 Apr 2009 19:52:08 -0400
+Received: from cantor2.suse.de ([195.135.220.15]:52766 "EHLO mx2.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1757067AbZDBXwE (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 2 Apr 2009 19:52:04 -0400
+From: Neil Brown <neilb@suse.de>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Date: Fri, 3 Apr 2009 10:51:59 +1100
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <49D4F4DF.1040605@redhat.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+Content-Transfer-Encoding: 7bit
+Message-ID: <18901.20383.185576.306972@notabene.brown>
+Cc: linux-raid@vger.kernel.org, linux-kernel@vger.kernel.org
+Cc: Alasdair G Kergon <agk@redhat.com>,
+       Dan Williams <dan.j.williams@intel.com>,
+       Andre Noll <maan@systemlinux.org>,
+       Atsushi SAKAI <sakaia@jp.fujitsu.com>, Christoph Hellwig <hch@lst.de>,
+       Martin K "." Petersen <martin.petersen@oracle.com>
+Subject: PULL REQUEST: md patches for 2.6.30 merge window
+X-Mailer: VM 7.19 under Emacs 21.4.1
+X-face: [Gw_3E*Gng}4rRrKRYotwlE?.2|**#s9D<ml'fY1Vw+@XfR[fRCsUoP?K6bt3YD\ui5Fh?f
+	LONpR';(ql)VM_TQ/<l_^D3~B:z$\YC7gUCuC=sYm/80G=$tt"98mr8(l))QzVKCk$6~gldn~*FK9x
+	8`;pM{3S8679sP+MbP,72<3_PIH-$I&iaiIb|hV1d%cYg))BmI)AZ
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Apr 02, 2009 at 01:24:47PM -0400, Masami Hiramatsu wrote:
-> Add following APIs for accessing registers and stack entries from pt_regs.
-> - query_register_offset(const char *name)
->    Query the offset of "name" register.
-> 
-> - query_register_name(unsigned offset)
->    Query the name of register by its offset.
-> 
-> - get_register(struct pt_regs *regs, unsigned offset)
->    Get the value of a register by its offset.
-> 
-> - valid_stack_address(struct pt_regs *regs, unsigned long addr)
->    Check the address is in the stack.
-> 
-> - get_stack_nth(struct pt_regs *reg, unsigned nth)
->    Get Nth entry of the stack. (N >= 0)
-> 
-> - get_argument_nth(struct pt_regs *reg, unsigned nth)
->    Get Nth argument at function call. (N >= 0)
-> 
-> Signed-off-by: Masami Hiramatsu <mhiramat@redhat.com>
-> Cc: Steven Rostedt <rostedt@goodmis.org>
-> Cc: Ananth N Mavinakayanahalli <ananth@in.ibm.com>
-> Cc: Ingo Molnar <mingo@elte.hu>
-> Cc: Frederic Weisbecker <fweisbec@gmail.com>
-> ---
-> 
->  arch/x86/include/asm/ptrace.h |   66 +++++++++++++++++++++++++++++++++++++++++
->  arch/x86/kernel/ptrace.c      |   59 +++++++++++++++++++++++++++++++++++++
->  2 files changed, 125 insertions(+), 0 deletions(-)
-> 
-> 
-> diff --git a/arch/x86/include/asm/ptrace.h b/arch/x86/include/asm/ptrace.h
-> index aed0894..44773b8 100644
-> --- a/arch/x86/include/asm/ptrace.h
-> +++ b/arch/x86/include/asm/ptrace.h
-> @@ -7,6 +7,7 @@
-> 
->  #ifdef __KERNEL__
->  #include <asm/segment.h>
-> +#include <asm/page_types.h>
->  #endif
-> 
->  #ifndef __ASSEMBLY__
-> @@ -215,6 +216,71 @@ static inline unsigned long user_stack_pointer(struct pt_regs *regs)
->  	return regs->sp;
->  }
-> 
-> +/* Query offset/name of register from its name/offset */
-> +extern int query_register_offset(const char *name);
-> +extern const char *query_register_name(unsigned offset);
-> +#define MAX_REG_OFFSET (offsetof(struct pt_regs, sp))
-> +
-> +/* Get register value from its offset */
-> +static inline unsigned long get_register(struct pt_regs *regs, unsigned offset)
-> +{
-> +	if (unlikely(offset > MAX_REG_OFFSET))
-> +		return 0;
-> +	return *(unsigned long *)((unsigned long)regs + offset);
-> +}
-> +
-> +/* Check the address in the stack */
-> +static inline int valid_stack_address(struct pt_regs *regs, unsigned long addr)
-> +{
-> +	return ((addr & ~(THREAD_SIZE - 1))  ==
-> +		(kernel_trap_sp(regs) & ~(THREAD_SIZE - 1)));
-> +}
-> +
-> +/* Get Nth entry of the stack */
-> +static inline unsigned long get_stack_nth(struct pt_regs *regs, unsigned n)
-> +{
-> +	unsigned long *addr = (unsigned long *)kernel_trap_sp(regs);
-> +	addr += n;
-> +	if (valid_stack_address(regs, (unsigned long)addr))
-> +		return *addr;
-> +	else
-> +		return 0;
-> +}
-> +
-> +/* Get Nth argument at function call */
-> +static inline unsigned long get_argument_nth(struct pt_regs *regs, unsigned n)
-> +{
-> +#ifdef CONFIG_X86_32
-> +#define NR_REGPARMS 3
-> +	if (n < NR_REGPARMS) {
-> +		switch (n) {
-> +		case 0: return regs->ax;
-> +		case 1: return regs->dx;
-> +		case 2: return regs->cx;
-> +		}
-> +		return 0;
-> +#else /* CONFIG_X86_64 */
-> +#define NR_REGPARMS 6
-> +	if (n < NR_REGPARMS) {
-> +		switch (n) {
-> +		case 0: return regs->di;
-> +		case 1: return regs->si;
-> +		case 2: return regs->dx;
-> +		case 3: return regs->cx;
-> +		case 4: return regs->r8;
-> +		case 5: return regs->r9;
-> +		}
-> +		return 0;
-> +#endif
-> +	} else {
-> +		/*
-> +		 * The typical case: arg n is on the stack.
-> +		 * (Note: stack[0] = return address, so skip it)
-> +		 */
-> +		return get_stack_nth(regs, 1 + n - NR_REGPARMS);
-> +	}
-> +}
-> +
->  /*
->   * These are defined as per linux/ptrace.h, which see.
->   */
-> diff --git a/arch/x86/kernel/ptrace.c b/arch/x86/kernel/ptrace.c
-> index 5c6e463..8d65dcb 100644
-> --- a/arch/x86/kernel/ptrace.c
-> +++ b/arch/x86/kernel/ptrace.c
-> @@ -46,6 +46,65 @@ enum x86_regset {
->  	REGSET_IOPERM32,
->  };
-> 
-> +struct pt_regs_offset {
-> +	const char *name;
-> +	int offset;
-> +};
-> +
-> +#define REG_OFFSET(r) offsetof(struct pt_regs, r)
-> +#define REG_OFFSET_NAME(r) {.name = #r, .offset = REG_OFFSET(r)}
-> +#define REG_OFFSET_END {.name = NULL, .offset = 0}
-> +
-> +static struct pt_regs_offset regoffset_table[] = {
-> +#ifdef CONFIG_X86_64
-> +	REG_OFFSET_NAME(r15),
-> +	REG_OFFSET_NAME(r14),
-> +	REG_OFFSET_NAME(r13),
-> +	REG_OFFSET_NAME(r12),
-> +	REG_OFFSET_NAME(r11),
-> +	REG_OFFSET_NAME(r10),
-> +	REG_OFFSET_NAME(r9),
-> +	REG_OFFSET_NAME(r8),
-> +#endif
-> +	REG_OFFSET_NAME(bx),
-> +	REG_OFFSET_NAME(cx),
-> +	REG_OFFSET_NAME(dx),
-> +	REG_OFFSET_NAME(si),
-> +	REG_OFFSET_NAME(di),
-> +	REG_OFFSET_NAME(bp),
-> +	REG_OFFSET_NAME(ax),
-> +#ifdef CONFIG_X86_32
-> +	REG_OFFSET_NAME(ds),
-> +	REG_OFFSET_NAME(es),
-> +	REG_OFFSET_NAME(fs),
-> +	REG_OFFSET_NAME(gs),
-> +#endif
-> +	REG_OFFSET_NAME(orig_ax),
-> +	REG_OFFSET_NAME(ip),
-> +	REG_OFFSET_NAME(cs),
+
+Hi Linus,
+ please pull my md development tree as described below.
+
+ Highlights (for me) are:
+   moving .h file from include/linux to driver/md from Christoph.
+     I'm already loving the fact that e.g. raid5.h is in the same
+     directory as raid5.c :-)
+   more options for reshaping arrays including raid5->raid6 and back,
+     reducing the number of drives in an array and changing the chunksize.   
+
+  There is lots of other stuff, bug fixes and other feature
+  enhancements.
+  A small change to md/Makefile touches 'dm' as well, hence Cc to
+  Alasdair.
+
+Thanks,
+NeilBrown
+   
 
 
+The following changes since commit 8e0ee43bc2c3e19db56a4adaa9a9b04ce885cd84:
+  Linus Torvalds (1):
+        Linux 2.6.29
 
-You seem to have also forgotten ss here.
+are available in the git repository at:
 
+  git://neil.brown.name/md for-linus
 
+Andre Noll (3):
+      md: Make mddev->size sector-based.
+      md: Represent raid device size in sectors.
+      md: raid5 run(): Fix max_degraded for raid level 4.
 
-> +	REG_OFFSET_NAME(flags),
-> +	REG_OFFSET_NAME(sp),
-> +	REG_OFFSET_END,
-> +};
-> +
-> +int query_register_offset(const char *name)
-> +{
-> +	struct pt_regs_offset *roff = regoffset_table;
-> +	for (roff = regoffset_table; roff->name != NULL; roff++)
-> +		if (!strcmp(roff->name, name))
-> +			return (unsigned)roff->offset;
+Atsushi SAKAI (1):
+      md: fix typo in FSF address
 
+Christoph Hellwig (3):
+      md: stop defining MAJOR_NR
+      cleanup drivers/md/Makefile
+      md: move headers out of include/linux/raid/
 
+Dan Williams (4):
+      md: add 'size' as a personality method
+      md: centralize ->array_sectors modifications
+      md: 'array_size' sysfs attribute
+      md/raid6: move raid6 data processing to raid6_pq.ko
 
-Tiny thing here: could you set the full (unsigned int) cast?
+Martin K. Petersen (1):
+      MD data integrity support
 
+NeilBrown (41):
+      md: Fix is_mddev_idle test (again).
+      md: Allow write-intent bitmaps to have chunksize < PAGE_SIZE
+      md: never clear bit from the write-intent bitmap when the array is degraded.
+      md: write bitmap information to devices that are undergoing recovery.
+      md: move LEVEL_* definition from md_k.h to md_u.h
+      md: move most content from md.h to md_k.h
+      md: move lots of #include lines out of .h files and into .c
+      md: move md_k.h from include/linux/raid/ to drivers/md/
+      md: occasionally checkpoint drive recovery to reduce duplicate effort after a crash
+      md: be more consistent about setting WriteMostly flag when adding a drive to an array
+      md/raid5: simplify interface for init_stripe and get_active_stripe
+      md/raid5: change raid5_compute_sector and stripe_to_pdidx to take a 'previous' argument
+      md/raid6: remove expectation that Q device is immediately after P device.
+      md/raid5: simplify raid5_compute_sector interface
+      md/raid5: Add support for new layouts for raid5 and raid6.
+      md/raid5: finish support for DDF/raid6
+      md: make sure new_level, new_chunksize, new_layout always have sensible values.
+      md/raid5: refactor raid5 "run"
+      md: md_unregister_thread should cope with being passed NULL
+      md: enable suspend/resume of md devices.
+      md: add ->takeover method to support changing the personality managing an array
+      md: add ->takeover method for raid5 to be able to take over raid1
+      md/raid5: allow layout/chunksize to be changed on an active 2-drive raid5.
+      md: add takeover support for raid4 -> raid5 conversion.
+      md: add takeover support for converting raid6 back into raid5
+      md/raid5: drop qd_idx from r6_state
+      md/raid5: enhance raid5_size to work correctly with negative delta_disks
+      md: add explicit method to signal the end of a reshape.
+      md/raid5: change reshape-progress measurement to cope with reshaping backwards.
+      md: allow number of drives in raid5 to be reduced
+      Documentation/md.txt update
+      md/raid5: clearly differentiate 'before' and 'after' stripes during reshape.
+      md/raid5: prepare for allowing reshape to change chunksize.
+      md/raid5: prepare for allowing reshape to change layout
+      md/raid5: reshape using largest of old and new chunk size
+      md/raid5: allow layout and chunksize to be changed on active array.
+      md: don't display meaningless values in sysfs files resync_start and sync_speed
+      md/raid5: be more careful about write ordering when reshaping.
+      md: remove CONFIG_MD_RAID_RESHAPE config option.
+      md/raid5: minor code cleanups in make_request.
+      md/raid5 revise rules for when to update metadata during reshape
 
-
-> +	return -EINVAL;
-> +}
-> +
-> +const char *query_register_name(unsigned offset)
-> +{
-> +	struct pt_regs_offset *roff = regoffset_table;
-> +	for (roff = regoffset_table; roff->name != NULL; roff++)
-> +		if (roff->offset == offset)
-> +			return roff->name;
-> +	return NULL;
-> +}
-> +
->  /*
->   * does not yet catch signals sent when the child dies.
->   * in exit.c or in signal.c.
-
-
-All in one it looks good!
-
-Frederic.
-
+ Documentation/md.txt                           |   37 +-
+ crypto/xor.c                                   |    2 +-
+ drivers/md/Kconfig                             |   31 +-
+ drivers/md/Makefile                            |   16 +-
+ drivers/md/bitmap.c                            |   49 +-
+ {include/linux/raid => drivers/md}/bitmap.h    |    0
+ drivers/md/faulty.c                            |   19 +-
+ drivers/md/linear.c                            |   25 +-
+ {include/linux/raid => drivers/md}/linear.h    |    2 -
+ drivers/md/md.c                                |  615 ++++++++---
+ include/linux/raid/md_k.h => drivers/md/md.h   |   66 +-
+ drivers/md/mktables.c                          |   14 +-
+ drivers/md/multipath.c                         |   17 +-
+ {include/linux/raid => drivers/md}/multipath.h |    2 -
+ drivers/md/raid0.c                             |   66 +-
+ {include/linux/raid => drivers/md}/raid0.h     |    2 -
+ drivers/md/raid1.c                             |   35 +-
+ {include/linux/raid => drivers/md}/raid1.h     |    2 -
+ drivers/md/raid10.c                            |   42 +-
+ {include/linux/raid => drivers/md}/raid10.h    |    2 -
+ drivers/md/raid5.c                             | 1494 +++++++++++++++++-------
+ {include/linux/raid => drivers/md}/raid5.h     |  110 ++-
+ drivers/md/raid6algos.c                        |   21 +-
+ drivers/md/raid6altivec.uc                     |    4 +-
+ drivers/md/raid6int.uc                         |    4 +-
+ drivers/md/raid6mmx.c                          |    4 +-
+ drivers/md/raid6recov.c                        |   13 +-
+ drivers/md/raid6sse1.c                         |    4 +-
+ drivers/md/raid6sse2.c                         |    4 +-
+ drivers/md/raid6test/Makefile                  |    2 +-
+ drivers/md/raid6test/test.c                    |    2 +-
+ drivers/md/raid6x86.h                          |    2 +-
+ fs/compat_ioctl.c                              |    2 +-
+ include/linux/raid/md.h                        |   81 --
+ include/linux/raid/md_u.h                      |   35 +
+ drivers/md/raid6.h => include/linux/raid/pq.h  |   28 +-
+ include/linux/raid/xor.h                       |    2 -
+ init/do_mounts.h                               |    1 +
+ init/do_mounts_md.c                            |    5 +-
+ 39 files changed, 2002 insertions(+), 860 deletions(-)
+ rename {include/linux/raid => drivers/md}/bitmap.h (100%)
+ rename {include/linux/raid => drivers/md}/linear.h (95%)
+ rename include/linux/raid/md_k.h => drivers/md/md.h (83%)
+ rename {include/linux/raid => drivers/md}/multipath.h (96%)
+ rename {include/linux/raid => drivers/md}/raid0.h (96%)
+ rename {include/linux/raid => drivers/md}/raid1.h (99%)
+ rename {include/linux/raid => drivers/md}/raid10.h (99%)
+ rename {include/linux/raid => drivers/md}/raid5.h (81%)
+ delete mode 100644 include/linux/raid/md.h
+ rename drivers/md/raid6.h => include/linux/raid/pq.h (86%)
