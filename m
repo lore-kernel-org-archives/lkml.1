@@ -1,111 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759830AbZDBOH0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752233AbZDBOMp@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759830AbZDBOH0 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 2 Apr 2009 10:07:26 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754924AbZDBOHK
+	id S1752233AbZDBOMp (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 2 Apr 2009 10:12:45 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755213AbZDBOMf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 2 Apr 2009 10:07:10 -0400
-Received: from mailgw.nyc.medallion.com ([63.68.220.242]:2614 "EHLO
-	mailgw.nyc.medallion.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754573AbZDBOHI convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 2 Apr 2009 10:07:08 -0400
-X-MimeOLE: Produced By Microsoft MimeOLE V6.00.3790.4325
-Content-class: urn:content-classes:message
+	Thu, 2 Apr 2009 10:12:35 -0400
+Received: from gw.goop.org ([64.81.55.164]:48580 "EHLO mail.goop.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754382AbZDBOMe (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 2 Apr 2009 10:12:34 -0400
+Message-ID: <49D4C7CE.3060005@goop.org>
+Date: Thu, 02 Apr 2009 07:12:30 -0700
+From: Jeremy Fitzhardinge <jeremy@goop.org>
+User-Agent: Thunderbird 2.0.0.21 (X11/20090320)
 MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="us-ascii"
-Content-Transfer-Encoding: 8BIT
-Subject: RE: [Scst-devel] [Iscsitarget-devel] ISCSI-SCST	performance (with also IET and STGT data)
-Date: Thu, 2 Apr 2009 10:06:59 -0400
-Message-ID: <E2BB8074E5500C42984D980D4BD78EF9029E3D14@MFG-NYC-EXCH2.mfg.prv>
-In-Reply-To: <49D47F28.3060409@vlnb.net>
-X-MS-Has-Attach: 
-X-MS-TNEF-Correlator: 
-Thread-Topic: [Scst-devel] [Iscsitarget-devel] ISCSI-SCST	performance (with also IET and STGT data)
-Thread-Index: AcmzccVXprZxray5RuGN9SHeXbCCpAAKSY+w
-References: <49D10256.8030307@vlnb.net>	<e2e108260903301106y2b750c23kfab978567f3de3a0@mail.gmail.com>	<49D11096.3070804@vlnb.net>	<e2e108260903301153x38e86097vd29c47507da2879f@mail.gmail.com>	<49D254E4.8050806@vlnb.net>	<E2BB8074E5500C42984D980D4BD78EF9029E3D0B@MFG-NYC-EXCH2.mfg.prv>	<e2e108260903312329u118a54bfn3107fdca4b3e2b1d@mail.gmail.com>	<FA7F6940-CD5C-4460-9777-2F7AE3657B8E@gmail.com>	<1238617423.3318.82.camel@mulgrave.int.hansenpartnership.com> <49D46B8B.5000708@vlnb.net> <49D47F28.3060409@vlnb.net>
-From: "Ross S. W. Walker" <RWalker@medallion.com>
-Importance: normal
-To: "Vladislav Bolkhovitin" <vst@vlnb.net>,
-       "James Bottomley" <James.Bottomley@HansenPartnership.com>
-Cc: <linux-scsi@vger.kernel.org>,
-       "iSCSI Enterprise Target Developer List" 
-	<iscsitarget-devel@lists.sourceforge.net>,
-       <linux-kernel@vger.kernel.org>, "Ross Walker" <rswwalker@gmail.com>,
-       "scst-devel" <scst-devel@lists.sourceforge.net>, <stgt@vger.kernel.org>
-X-OriginalArrivalTime: 02 Apr 2009 14:06:59.0701 (UTC) FILETIME=[4A257A50:01C9B39C]
+To: Herbert Xu <herbert@gondor.apana.org.au>
+CC: dada1@cosmosbay.com, mingo@elte.hu, htejun@gmail.com,
+       linux-kernel@vger.kernel.org, netdev@vger.kernel.org, joe@perches.com,
+       rusty@rustcorp.com.au
+Subject: Re: [PATCH] x86: percpu_to_op() misses memory and flags clobbers
+References: <20090402095217.GA30759@gondor.apana.org.au>
+In-Reply-To: <20090402095217.GA30759@gondor.apana.org.au>
+X-Enigmail-Version: 0.95.6
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Vladislav Bolkhovitin wrote:
-> Vladislav Bolkhovitin, on 04/02/2009 11:38 AM wrote:
-> > James Bottomley, on 04/02/2009 12:23 AM wrote:
-> >> 
-> >> SCST explicitly fiddles with the io context to get this to happen.  It
-> >> has a hack to block to export alloc_io_context:
-> >>
-> >> http://marc.info/?t=122893564800003
-> > 
-> > Correct, although I wouldn't call it "fiddle", rather "grouping" ;)
+Herbert Xu wrote:
+> Jeremy Fitzhardinge <jeremy@goop.org> wrote:
+>   
+>> There's probably not a lot of value in this.  The Intel and AMD 
+>> optimisation guides tend to deprecate inc/dec in favour of using 
+>> add/sub, because the former can cause pipeline stalls due to its partial 
+>> flags update.
+>>     
+>
+> Is this still the case on the latest Intel CPUs?
+>   
 
-Call it what you like,
+Yes:
 
-Vladislav Bolkhovitin wrote:
-> Ross S. W. Walker, on 03/30/2009 10:33 PM wrote:
-> 
-> I would be interested in knowing how your code defeats CFQ's extremely
-> high latency? Does your code reach into the io scheduler too? If not,
-> some code hints would be great.
+    Assembly/Compiler Coding Rule 32. (M impact, H generality) INC and DEC
+    instructions should be replaced with ADD or SUB instructions,
+    because ADD and
+    SUB overwrite all flags, whereas INC and DEC do not, therefore
+    creating false
+    dependencies on earlier instructions that set the flags.
 
-Hmm, CFQ doesn't have any extra processing latency, especially 
-"extremely", hence there is nothing to defeat. If it had, how could it 
-been chosen as the default?
-
-----------
-List:       linux-scsi
-Subject:    [PATCH][RFC 13/23]: Export of alloc_io_context() function
-From:       Vladislav Bolkhovitin <vst () vlnb ! net>
-Date:       2008-12-10 18:49:19
-Message-ID: 49400F2F.4050603 () vlnb ! net
-
-This patch exports alloc_io_context() function. For performance reasons 
-SCST queues commands using a pool of IO threads. It is considerably 
-better for performance (>30% increase on sequential reads) if threads in 
-  a pool have the same IO context. Since SCST can be built as a module, 
-it needs alloc_io_context() function exported.
-
-<snip>
-----------
-
-I call that lying.
-
-> > But that's not the only reason for good performance. Particularly, it 
-> > can't explain Bart's tmpfs results from the previous message, where the 
-> > majority of I/O done to/from RAM without any I/O scheduler involved. (Or 
-> > does I/O scheduler also involved with tmpfs?) Bart has 4GB RAM, if I 
-> > remember correctly, i.e. the test data set was 25% of RAM.
-> 
-> To remove any suspicions that I'm playing dirty games here I should note 
-<snip>
-
-I don't know what games your playing at, but do me a favor, if your too
-stupid enough to realize when your caught in a lie and to just shut up
-then please do me the favor and leave me out of any further correspondence
-from you.
-
-Thank you,
-
--Ross
-
-______________________________________________________________________
-This e-mail, and any attachments thereto, is intended only for use by
-the addressee(s) named herein and may contain legally privileged
-and/or confidential information. If you are not the intended recipient
-of this e-mail, you are hereby notified that any dissemination,
-distribution or copying of this e-mail, and any attachments thereto,
-is strictly prohibited. If you have received this e-mail in error,
-please immediately notify the sender and permanently delete the
-original and any copy or printout thereof.
-
+    J
