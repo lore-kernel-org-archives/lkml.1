@@ -1,246 +1,46 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751262AbZDBQ0g@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764007AbZDBQ1i@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751262AbZDBQ0g (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 2 Apr 2009 12:26:36 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753701AbZDBQ01
+	id S1764007AbZDBQ1i (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 2 Apr 2009 12:27:38 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756124AbZDBQ10
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 2 Apr 2009 12:26:27 -0400
-Received: from relay2.sgi.com ([192.48.179.30]:45209 "EHLO relay.sgi.com"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1752337AbZDBQ00 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 2 Apr 2009 12:26:26 -0400
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       LKML <linux-kernel@vger.kernel.org>, xfs mailing list <xfs@oss.sgi.com>,
-       Felix Blyakher <felixb@sgi.com>
-Message-Id: <BD6F95C9-2F2D-49A3-979C-25018E62E416@sgi.com>
-From: Felix Blyakher <felixb@sgi.com>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-In-Reply-To: <20090331053013.7642414167108@attica.americas.sgi.com>
-Content-Type: text/plain; charset=US-ASCII; format=flowed; delsp=yes
-Content-Transfer-Encoding: 7bit
-Mime-Version: 1.0 (Apple Message framework v926)
-Subject: Re: [GIT PULL] XFS update for 2.6.30
-Date: Thu, 2 Apr 2009 11:26:23 -0500
-References: <20090331053013.7642414167108@attica.americas.sgi.com>
-X-Mailer: Apple Mail (2.926)
+	Thu, 2 Apr 2009 12:27:26 -0400
+Received: from rhun.apana.org.au ([64.62.148.172]:57932 "EHLO
+	arnor.apana.org.au" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1753865AbZDBQ1Z (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 2 Apr 2009 12:27:25 -0400
+Date: Fri, 3 Apr 2009 00:06:25 +0800
+From: Herbert Xu <herbert@gondor.apana.org.au>
+To: Avi Kivity <avi@redhat.com>
+Cc: Gregory Haskins <ghaskins@novell.com>,
+       Patrick Mullaney <pmullaney@novell.com>, anthony@codemonkey.ws,
+       andi@firstfloor.org, Peter Morreale <PMorreale@novell.com>,
+       rusty@rustcorp.com.au, agraf@suse.de, kvm@vger.kernel.org,
+       linux-kernel@vger.kernel.org, netdev@vger.kernel.org
+Subject: Re: [RFC PATCH 00/17] virtual-bus
+Message-ID: <20090402160625.GA2173@gondor.apana.org.au>
+References: <49D469D2020000A100045FA1@lucius.provo.novell.com> <49D473EA020000C700056627@lucius.provo.novell.com> <49D473EA020000C700056627@lucius.provo.novell.com> <49D4CB38.5030205@redhat.com> <49D4DA54.3090401@novell.com> <49D4DE82.5020306@redhat.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <49D4DE82.5020306@redhat.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Linus,
+On Thu, Apr 02, 2009 at 06:49:22PM +0300, Avi Kivity wrote:
+>
+> I still think you want one MSI per device rather than one MSI per vbus,  
+> to avoid scaling problems on large guest.  After Herbert's let loose on  
+> the code, one MSI per queue.
 
-Were there any problems pulling from the xfs repository?
+Yes, one MSI per TX queue, and one per RX queue :)
 
-Thanks,
-Felix
-
-On Mar 31, 2009, at 12:30 AM, Felix Blyakher wrote:
-
-> The following changes since commit  
-> 15f7176eb1cccec0a332541285ee752b935c1c85:
->  Linus Torvalds (1):
->        Merge git://git.kernel.org/.../davem/net-2.6
->
-> are available in the git repository at:
->
->  git://oss.sgi.com/xfs/xfs for-linus
->
-> Christoph Hellwig (39):
->      xfs: fix dentry aliasing issues in open_by_handle
->      xfs: use mnt_want_write in compat_attrmulti ioctl
->      xfs: add a separate lock class for the per-mount list of dquots
->      xfs: lockdep annotations for xfs_dqlock2
->      xfs: add a lock class for group/project dquots
->      xfs: fix bad_features2 fixups for the root filesystem
->      xfs: sanity check attr fork size
->      xfs: cleanup error handling in xfs_mountfs:
->      xfs: make sure to free the real-time inodes in the mount error  
-> path
->      xfs: tiny cleanup for xfs_link
->      xfs: remove unused XFS_MOUNT_ILOCK/XFS_MOUNT_IUNLOCK
->      xfs: factor out attr fork reset handling
->      xfs: merge xfs_inode_flush into xfs_fs_write_inode
->      xfs: cleanup xfs_find_handle
->      xfs: remove the unused XFS_QMOPT_DQLOCK flag
->      xfs: remove iclog calculation special cases
->      xfs: remove superflous inobt macros
->      xfs: remove uchar_t/ushort_t/uint_t/ulong_t types
->      xfs: merge xfs_mkdir into xfs_create
->      xfs: remove XFS_QM_LOCK/XFS_QM_UNLOCK/XFS_QM_HOLD/XFS_QM_RELE
->      xfs: use mutex_is_locked in XFS_DQ_IS_LOCKED
->      xfs: sanitize qh_lock wrappers
->      xfs: get rid of indirections in the quotaops implementation
->      xfs: fix error handling in xfs_log_mount
->      xfs: reject swapext ioctl on swapfiles
->      xfs: prevent kernel crash due to corrupted inode log format
->      xfs: prevent lockdep false positive in xfs_iget_cache_miss
->      xfs: only issues a cache flush on unmount if barriers are enabled
->      xfs: cleanup log unmount handling
->      xfs: remove another leftover of the old inode log item format
->      xfs: cleanup xlog_recover_do_trans
->      xfs: cleanup xlog_bread
->      xfs: kill vn_atime_* helpers.
->      xfs: kill VN_BAD
->      xfs: kill mutex_t typedef
->      xfs: kill ino64 mount option
->      xfs: remove m_litino
->      xfs: remove m_attroffset
->      xfs: cleanup uuid handling
->
-> Dave Chinner (3):
->      Long btree pointers are still 64 bit on disk
->      xfs: Check buffer lengths in log recovery
->      xfs: factor out code to find the longest free extent in the AG
->
-> Eric Sandeen (3):
->      [XFS] Remove the rest of the macro-to-function indirections.
->      [XFS] remove always-true #ifndef HAVE_FORMAT32 tests
->      don't reallocate sxp variable passed into xfs_swapext
->
-> Felix Blyakher (25):
->      Merge branch 'master' of git+ssh://oss.sgi.com/oss/git/xfs/xfs
->      [XFS] Warn on transaction in flight on read-only remount
->      Merge branch 'master' of git://git.kernel.org/.../torvalds/ 
-> linux-2.6
->      Merge branch 'master' of git://git.kernel.org/.../torvalds/ 
-> linux-2.6
->      Merge branch 'master' of git://git.kernel.org/.../torvalds/ 
-> linux-2.6
->      xfs: Update maintainers
->      Merge branch 'master' of git://git.kernel.org/.../torvalds/ 
-> linux-2.6
->      Merge branch 'master' of git://git.kernel.org/pub/scm/fs/xfs/xfs
->      Merge branch 'master' of git://git.kernel.org/pub/scm/fs/xfs/xfs
->      Merge branch 'master' of git://git.kernel.org/.../torvalds/ 
-> linux-2.6
->      Merge branch 'master' of git://git.kernel.org/pub/scm/fs/xfs/xfs
->      Merge branch 'master' of git://git.kernel.org/.../torvalds/ 
-> linux-2.6
->      Revert "[XFS] use scalable vmap API"
->      Revert "[XFS] remove old vmap cache"
->      Merge branch 'master' of git://git.kernel.org/.../torvalds/ 
-> linux-2.6
->      Merge branch 'master' of git://git.kernel.org/.../torvalds/ 
-> linux-2.6
->      Merge branch 'master' of git://git.kernel.org/.../torvalds/ 
-> linux-2.6
->      Fix xfs debug build breakage by pushing xfs_error.h after
->      Merge branch 'master' of git://git.kernel.org/.../torvalds/ 
-> linux-2.6
->      Merge branch 'master' of git://git.kernel.org/pub/scm/fs/xfs/xfs
->      Merge branch 'master' of git://git.kernel.org/.../torvalds/ 
-> linux-2.6
->      xfs: increase the maximum number of supported ACL entries
->      Merge branch 'master' of git://git.kernel.org/.../torvalds/ 
-> linux-2.6
->      Merge branch 'master' of git://git.kernel.org/pub/scm/fs/xfs/xfs
->      Revert "xfs: increase the maximum number of supported ACL  
-> entries"
->
-> Hannes Eder (3):
->      xfs: move declaration to header file
->      xfs: make symbols static
->      xfs: include header files for prototypes
->
-> Hisashi Hifumi (1):
->      xfs: pagecache usage optimization
->
-> Josef 'Jeff' Sipek (1):
->      xfs: cleanup error handling in xfs_swap_extents
->
-> Lachlan McIlroy (6):
->      [XFS] Update maintainers
->      Merge git://git.kernel.org/.../torvalds/linux-2.6
->      Merge branch 'for-linus' of git+ssh://git.melbourne.sgi.com/git/ 
-> xfs
->      Merge branch 'master' of git://git.kernel.org/.../torvalds/ 
-> linux-2.6
->      Merge git://git.kernel.org/.../torvalds/linux-2.6
->      Merge branch 'master' of git://git.kernel.org/pub/scm/fs/xfs/xfs
->
-> Malcolm Parsons (1):
->      xfs: fix various typos
->
-> Nick Piggin (2):
->      [XFS] remove old vmap cache
->      [XFS] use scalable vmap API
->
-> MAINTAINERS                     |    3 +-
-> fs/xfs/Makefile                 |    1 +
-> fs/xfs/linux-2.6/mutex.h        |   25 ---
-> fs/xfs/linux-2.6/xfs_aops.c     |    1 +
-> fs/xfs/linux-2.6/xfs_ioctl.c    |  117 +++++-------
-> fs/xfs/linux-2.6/xfs_iops.c     |   33 +---
-> fs/xfs/linux-2.6/xfs_linux.h    |   13 +--
-> fs/xfs/linux-2.6/xfs_quotaops.c |  157 +++++++++++++++
-> fs/xfs/linux-2.6/xfs_super.c    |  137 +++++---------
-> fs/xfs/linux-2.6/xfs_super.h    |    1 +
-> fs/xfs/linux-2.6/xfs_sync.h     |    1 +
-> fs/xfs/linux-2.6/xfs_vnode.h    |   32 ---
-> fs/xfs/quota/xfs_dquot.c        |   28 ++--
-> fs/xfs/quota/xfs_dquot.h        |   18 +--
-> fs/xfs/quota/xfs_qm.c           |  212 ++++++---------------
-> fs/xfs/quota/xfs_qm.h           |   26 ++--
-> fs/xfs/quota/xfs_qm_bhv.c       |    1 -
-> fs/xfs/quota/xfs_qm_syscalls.c  |  190 +-----------------
-> fs/xfs/quota/xfs_quota_priv.h   |   38 ++---
-> fs/xfs/quota/xfs_trans_dquot.c  |   16 +-
-> fs/xfs/support/debug.c          |    1 +
-> fs/xfs/support/uuid.c           |   71 -------
-> fs/xfs/support/uuid.h           |    4 -
-> fs/xfs/xfs_ag.h                 |    4 +-
-> fs/xfs/xfs_alloc.c              |   26 ++-
-> fs/xfs/xfs_alloc.h              |    6 +
-> fs/xfs/xfs_attr_leaf.c          |   58 +++---
-> fs/xfs/xfs_bmap.c               |   76 +++++---
-> fs/xfs/xfs_bmap.h               |    6 +-
-> fs/xfs/xfs_btree.c              |    4 +-
-> fs/xfs/xfs_btree.h              |    2 +-
-> fs/xfs/xfs_da_btree.c           |    2 +-
-> fs/xfs/xfs_da_btree.h           |    9 +-
-> fs/xfs/xfs_dfrag.c              |   68 +++----
-> fs/xfs/xfs_dinode.h             |    4 +-
-> fs/xfs/xfs_dir2.c               |    2 -
-> fs/xfs/xfs_dir2_block.c         |    7 +-
-> fs/xfs/xfs_dir2_data.h          |    2 +-
-> fs/xfs/xfs_dir2_leaf.c          |   17 +--
-> fs/xfs/xfs_dir2_node.c          |    2 +-
-> fs/xfs/xfs_dir2_sf.c            |   13 +--
-> fs/xfs/xfs_extfree_item.h       |    6 -
-> fs/xfs/xfs_filestream.c         |    9 +-
-> fs/xfs/xfs_fsops.c              |    2 +-
-> fs/xfs/xfs_ialloc.c             |   12 +-
-> fs/xfs/xfs_ialloc_btree.c       |    2 +-
-> fs/xfs/xfs_ialloc_btree.h       |   22 +--
-> fs/xfs/xfs_inode.h              |    2 +-
-> fs/xfs/xfs_inode_item.h         |    2 -
-> fs/xfs/xfs_iomap.h              |    2 +-
-> fs/xfs/xfs_itable.c             |    9 +-
-> fs/xfs/xfs_log.c                |   67 ++-----
-> fs/xfs/xfs_log.h                |    3 +-
-> fs/xfs/xfs_log_priv.h           |    3 +-
-> fs/xfs/xfs_log_recover.c        |  308 +++++++++++++++++-------------
-> fs/xfs/xfs_mount.c              |  253 ++++++++++++++-----------
-> fs/xfs/xfs_mount.h              |   19 +--
-> fs/xfs/xfs_qmops.c              |    1 -
-> fs/xfs/xfs_quota.h              |    3 +-
-> fs/xfs/xfs_rtalloc.c            |   10 +
-> fs/xfs/xfs_rtalloc.h            |    8 +-
-> fs/xfs/xfs_trans.h              |   24 ++--
-> fs/xfs/xfs_trans_ail.c          |    4 +-
-> fs/xfs/xfs_trans_item.c         |    2 +-
-> fs/xfs/xfs_trans_space.h        |    2 +-
-> fs/xfs/xfs_types.h              |    8 -
-> fs/xfs/xfs_utils.c              |    2 +-
-> fs/xfs/xfs_vnodeops.c           |  408 ++++++++ 
-> +------------------------------
-> fs/xfs/xfs_vnodeops.h           |    3 -
-> 69 files changed, 1031 insertions(+), 1599 deletions(-)
-> delete mode 100644 fs/xfs/linux-2.6/mutex.h
-> create mode 100644 fs/xfs/linux-2.6/xfs_quotaops.c
->
-> _______________________________________________
-> xfs mailing list
-> xfs@oss.sgi.com
-> http://oss.sgi.com/mailman/listinfo/xfs
-
+Cheers,
+-- 
+Visit Openswan at http://www.openswan.org/
+Email: Herbert Xu ~{PmV>HI~} <herbert@gondor.apana.org.au>
+Home Page: http://gondor.apana.org.au/~herbert/
+PGP Key: http://gondor.apana.org.au/~herbert/pubkey.txt
