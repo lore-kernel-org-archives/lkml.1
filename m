@@ -1,60 +1,99 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933940AbZDBSaj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760712AbZDBSdK@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933940AbZDBSaj (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 2 Apr 2009 14:30:39 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933106AbZDBSaH
+	id S1760712AbZDBSdK (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 2 Apr 2009 14:33:10 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753377AbZDBSc4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 2 Apr 2009 14:30:07 -0400
-Received: from casper.infradead.org ([85.118.1.10]:57123 "EHLO
-	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S933966AbZDBSaF (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 2 Apr 2009 14:30:05 -0400
-Subject: Re: [PATCH 5/6] perf_counter: add more context information
-From: Peter Zijlstra <a.p.zijlstra@chello.nl>
+	Thu, 2 Apr 2009 14:32:56 -0400
+Received: from hera.kernel.org ([140.211.167.34]:53331 "EHLO hera.kernel.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753216AbZDBScz (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 2 Apr 2009 14:32:55 -0400
+Subject: Re: [tip:perfcounters/core] perf_counter: kerneltop: update to new
+ ABI
+From: Jaswinder Singh Rajput <jaswinder@kernel.org>
 To: Ingo Molnar <mingo@elte.hu>
-Cc: Paul Mackerras <paulus@samba.org>,
-       Corey Ashford <cjashfor@linux.vnet.ibm.com>,
-       linux-kernel@vger.kernel.org
-In-Reply-To: <20090402181849.GD6340@elte.hu>
-References: <20090402091158.291810516@chello.nl>
-	 <20090402091319.493101305@chello.nl> <20090402113643.GF10828@elte.hu>
-	 <1238672889.8530.5908.camel@twins>  <20090402181849.GD6340@elte.hu>
+Cc: mingo@redhat.com, hpa@zytor.com, paulus@samba.org,
+       linux-kernel@vger.kernel.org, a.p.zijlstra@chello.nl,
+       tglx@linutronix.de, cjashfor@linux.vnet.ibm.com,
+       linux-tip-commits@vger.kernel.org
+In-Reply-To: <1238696579.3099.50.camel@ht.satnam>
+References: <20090402091319.407283141@chello.nl>
+	 <tip-373b153677f26a263ef297d77a5e045a31f6486c@git.kernel.org>
+	 <1238679305.3099.11.camel@ht.satnam> <1238680772.3099.13.camel@ht.satnam>
+	 <20090402181144.GB6340@elte.hu>  <1238696579.3099.50.camel@ht.satnam>
 Content-Type: text/plain
-Date: Thu, 02 Apr 2009 20:29:58 +0200
-Message-Id: <1238696998.5133.44.camel@laptop>
+Date: Fri, 03 Apr 2009 00:02:01 +0530
+Message-Id: <1238697121.3099.54.camel@ht.satnam>
 Mime-Version: 1.0
-X-Mailer: Evolution 2.26.0 
+X-Mailer: Evolution 2.24.5 (2.24.5-1.fc10) 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 2009-04-02 at 20:18 +0200, Ingo Molnar wrote:
-> * Peter Zijlstra <a.p.zijlstra@chello.nl> wrote:
-> 
-> > On Thu, 2009-04-02 at 13:36 +0200, Ingo Molnar wrote:
+On Thu, 2009-04-02 at 23:52 +0530, Jaswinder Singh Rajput wrote:
+> On Thu, 2009-04-02 at 20:11 +0200, Ingo Molnar wrote:
+> > * Jaswinder Singh Rajput <jaswinder@kernel.org> wrote:
 > > 
-> > > > -#define MAX_STACK_DEPTH		255
-> > > > +#define MAX_STACK_DEPTH		254
-> > > >  
-> > > >  struct perf_callchain_entry {
-> > > > -	u64	nr;
-> > > > +	u32	nr, hv, kernel, user;
-> > > >  	u64	ip[MAX_STACK_DEPTH];
-> > > >  };
+> > > On Thu, 2009-04-02 at 19:05 +0530, Jaswinder Singh Rajput wrote:
+> > > > On Thu, 2009-04-02 at 12:03 +0000, Peter Zijlstra wrote:
+> > > > > Commit-ID:  373b153677f26a263ef297d77a5e045a31f6486c
+> > > > > Gitweb:     http://git.kernel.org/tip/373b153677f26a263ef297d77a5e045a31f6486c
+> > > > > Author:     Peter Zijlstra <a.p.zijlstra@chello.nl>
+> > > > > AuthorDate: Thu, 2 Apr 2009 11:12:02 +0200
+> > > > > Committer:  Ingo Molnar <mingo@elte.hu>
+> > > > > CommitDate: Thu, 2 Apr 2009 13:53:00 +0200
+> > > > > 
+> > > > > perf_counter: kerneltop: update to new ABI
+> > > > > 
+> > > > > Update to reflect the new record_type ABI changes.
+> > > > > 
+> > > > 
+> > > > perfstat is still having many issues:
+> > > > 
+> > > > 1. 0:6: bus-cycles is not valid for AMD, so it fails
+> > > > 
+> > > > 2. ./perfstat -e 0:1,0:2,0:3,0:4,0:5,0:6 ls
+> > > > can be replaced by ./perfstat -e 0:* ls
+> > > > 
+> > > > 3. Similarly ./perfstat -e 1:1,1:2,1:3,1:4,1:5,1:6 ls
+> > > > can be replaced by ./perfstat -e 1:* ls
+> > > > 
+> > > > 4. All events can be replaced by ./perfstat -e * ls
+> > > > 
+> > > 
+> > > 5. This command is invalid:
+> > >   Sample output:
+> > > 
+> > >    $ ./perfstat -e 1 -e 3 -e 5 ls -lR /usr/include/ >/dev/null
 > > 
-> > Oh, and Paul suggested using u16s right after I send it out. So 
-> > I'll either send an update or send a incremental in case you 
-> > already applied it.
+> > yes, this should be fixed in perfstat: '-e 1' should be accepted as 
+> > '-e 0:1'. Patches welcome.
+> > 
 > 
-> yes, that's probably a good idea. Although u8 might be even better - 
-> do we ever want to do more than 256 deep stack vectors? Even those 
-> would take quite some time to construct and pass down.
 
-We'd have to pad it with 4 more bytes to remain u64 aligned, also, why
-restrict ourselves. That MAX_STACK_DEPTH limit is trivially fixable if
-indeed someone finds its insufficient.
+Better I will show in pictorial way to avoid any confusion:
 
+> if you treat '-e 1' as 'e 0:1' then how you will treat '-e 1:1' ?
+> 
 
+'-e 1' ---> '-e 0:1'
+
+  ?    ---> '-e 1:1'
+
+> I think 'e 1:*' is better option to select all software events and '-e
+> 0:*' for all hardware events.
+> 
+
+'-e 0:*' ---> select all hardware events.
+'-e 1:*' ---> select all software events.
+
+> Or '-e 1' will treat as both '-e 0:1,1:1'
+> 
+
+'-e 1' ---> '-e 0:1,1:0'
+
+--
+JSR
 
