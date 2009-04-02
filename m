@@ -1,39 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1765648AbZDBRJf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759824AbZDBRQP@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1765648AbZDBRJf (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 2 Apr 2009 13:09:35 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758243AbZDBRJU
+	id S1759824AbZDBRQP (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 2 Apr 2009 13:16:15 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754962AbZDBRP6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 2 Apr 2009 13:09:20 -0400
-Received: from mx2.redhat.com ([66.187.237.31]:35970 "EHLO mx2.redhat.com"
+	Thu, 2 Apr 2009 13:15:58 -0400
+Received: from mx2.redhat.com ([66.187.237.31]:59266 "EHLO mx2.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753841AbZDBRJT (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 2 Apr 2009 13:09:19 -0400
-Organization: Red Hat UK Ltd. Registered Address: Red Hat UK Ltd, Amberley
-	Place, 107-111 Peascod Street, Windsor, Berkshire, SI4 1TE, United
-	Kingdom.
-	Registered in England and Wales under Company Registration No. 3798903
-From: David Howells <dhowells@redhat.com>
-In-Reply-To: <200904030353.17713.nickpiggin@yahoo.com.au>
-References: <200904030353.17713.nickpiggin@yahoo.com.au> <200904030225.16372.nickpiggin@yahoo.com.au> <6362.1238687462@redhat.com> <200904030315.03606.nickpiggin@yahoo.com.au>
-To: Nick Piggin <nickpiggin@yahoo.com.au>
-Cc: dhowells@redhat.com, viro@zeniv.linux.org.uk, nfsv4@linux-nfs.org,
-       linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org
-Subject: Re: [PATCH 06/43] FS-Cache: Recruit a couple of page flags for cache management [ver #46]
-Date: Thu, 02 Apr 2009 18:09:15 +0100
-Message-ID: <7249.1238692155@redhat.com>
+	id S1753420AbZDBRP6 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 2 Apr 2009 13:15:58 -0400
+Subject: Re: Issues with using fanotify for a filesystem indexer
+From: Alexander Larsson <alexl@redhat.com>
+To: Jan Kara <jack@suse.cz>
+Cc: eparis@redhat.com, linux-kernel@vger.kernel.org
+In-Reply-To: <20090402165023.GG3010@duck.suse.cz>
+References: <1238158043.23703.20.camel@fatty>
+	 <20090402145457.GA17275@atrey.karlin.mff.cuni.cz>
+	 <1238689744.5704.1.camel@localhost.localdomain>
+	 <20090402165023.GG3010@duck.suse.cz>
+Content-Type: text/plain
+Organization: Red Hat
+Date: Thu, 02 Apr 2009 19:15:37 +0200
+Message-Id: <1238692537.5704.6.camel@localhost.localdomain>
+Mime-Version: 1.0
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Nick Piggin <nickpiggin@yahoo.com.au> wrote:
+On Thu, 2009-04-02 at 18:50 +0200, Jan Kara wrote:
+> On Thu 02-04-09 18:29:04, Alexander Larsson wrote:
+> > Another potential issue with this is that every change bubbles up to the
+> > top, modifying the recursive mtime of that. This will become very
+> > contented, and may imply a partial serialization of fs activity, which
+> > is kinda costly.
+>   Not every change - only the first change bubbles to the top, clearing the
+> flag on its way. Then next change stops bubbling up as soon as it reaches
+> a directory with the flag cleared. So no contention happen - we update flag
+> + timestamp only at most once per scan of the directory by indexer (or
+> someone else interested in recursive mtime) => once per a few minutes on
+> average system.
 
-> Comments about PG_private still stand.
+Ah, I see. The indexer sets the flag. 
+I see some issues. First of all, writing the flag/mtime to disk seems
+like a bad idea. It'll cause a lot of writing when the indexer recurses
+throught the filesystem, similar to atimes. But, if you're not
+persisting the flag/mtime then you need to keep all the dentries with
+the flag set in memory, which has resource use risks similar to
+unbounded event queues.
 
-Replies about PG_private still stand.
 
-It's owned by fs/buffer.c, and if the 'netfs' uses that, then PG_private is
-not available.  Though, as I said, fs/buffer.c could be broken of its control
-of the bit.
-
-David
