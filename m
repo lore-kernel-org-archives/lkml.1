@@ -1,177 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1765683AbZDBXwW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758044AbZDBX7G@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1765683AbZDBXwW (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 2 Apr 2009 19:52:22 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759229AbZDBXwI
+	id S1758044AbZDBX7G (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 2 Apr 2009 19:59:06 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754442AbZDBX6x
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 2 Apr 2009 19:52:08 -0400
-Received: from cantor2.suse.de ([195.135.220.15]:52766 "EHLO mx2.suse.de"
+	Thu, 2 Apr 2009 19:58:53 -0400
+Received: from cmpxchg.org ([85.214.51.133]:58070 "EHLO cmpxchg.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1757067AbZDBXwE (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 2 Apr 2009 19:52:04 -0400
-From: Neil Brown <neilb@suse.de>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Date: Fri, 3 Apr 2009 10:51:59 +1100
-MIME-Version: 1.0
+	id S1754077AbZDBX6x (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 2 Apr 2009 19:58:53 -0400
+Date: Fri, 3 Apr 2009 01:56:46 +0200
+From: Johannes Weiner <hannes@cmpxchg.org>
+To: Thomas Gleixner <tglx@linutronix.de>
+Cc: Peter Zijlstra <peterz@infradead.org>, Sam Ravnborg <sam@ravnborg.org>,
+       LKML <linux-kernel@vger.kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>, Ingo Molnar <mingo@elte.hu>
+Subject: Re: [PATCH] kbuild: work around distcc/icecc madness
+Message-ID: <20090402235646.GA9052@cmpxchg.org>
+References: <alpine.LFD.2.00.0903192121300.29264@localhost.localdomain> <1237551797.24626.96.camel@twins> <alpine.LFD.2.00.0903201658140.29264@localhost.localdomain> <1237576568.4667.34.camel@laptop> <alpine.LFD.2.00.0903202240370.29264@localhost.localdomain>
+Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
-Message-ID: <18901.20383.185576.306972@notabene.brown>
-Cc: linux-raid@vger.kernel.org, linux-kernel@vger.kernel.org
-Cc: Alasdair G Kergon <agk@redhat.com>,
-       Dan Williams <dan.j.williams@intel.com>,
-       Andre Noll <maan@systemlinux.org>,
-       Atsushi SAKAI <sakaia@jp.fujitsu.com>, Christoph Hellwig <hch@lst.de>,
-       Martin K "." Petersen <martin.petersen@oracle.com>
-Subject: PULL REQUEST: md patches for 2.6.30 merge window
-X-Mailer: VM 7.19 under Emacs 21.4.1
-X-face: [Gw_3E*Gng}4rRrKRYotwlE?.2|**#s9D<ml'fY1Vw+@XfR[fRCsUoP?K6bt3YD\ui5Fh?f
-	LONpR';(ql)VM_TQ/<l_^D3~B:z$\YC7gUCuC=sYm/80G=$tt"98mr8(l))QzVKCk$6~gldn~*FK9x
-	8`;pM{3S8679sP+MbP,72<3_PIH-$I&iaiIb|hV1d%cYg))BmI)AZ
+Content-Disposition: inline
+In-Reply-To: <alpine.LFD.2.00.0903202240370.29264@localhost.localdomain>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Fri, Mar 20, 2009 at 10:57:38PM +0100, Thomas Gleixner wrote:
+> On Fri, 20 Mar 2009, Peter Zijlstra wrote:
+> > > Changing from distcc to gcc will start a full rebuild on linus tree as
+> > > well.
+> > 
+> > I just tried:
+> > 
+> > root@twins:/mnt/build/linux-2.6# /mnt/md0/cross/bin/x86_64-linux-gcc --version
+> > x86_64-linux-gcc (GCC) 4.3.1 20080510 (prerelease)
+> > Copyright (C) 2008 Free Software Foundation, Inc.
+> > This is free software; see the source for copying conditions.  There is NO
+> > warranty; not even for MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
+> > 
+> > root@twins:/mnt/build/linux-2.6# gcc --version
+> > gcc (Ubuntu 4.3.2-1ubuntu12) 4.3.2
+> > Copyright (C) 2008 Free Software Foundation, Inc.
+> > This is free software; see the source for copying conditions.  There is NO
+> > warranty; not even for MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
+> > 
+> > The build with the distcc x86_64-linux-gcc compiler and the install
+> > using the host compiler works just fine on Linus' tree.
+> 
+> Hmm, I went through all the Makefile changes and we do not touch those
+> bits at all.
+> 
+> Can you check whether builddir/scripts/mod/.empty.o.cmd has
+> -DCONFIG_AS_CFI in the command line ?
+> 
+> Can you check that file after you built -tip (w/o my patch) and after
+> your make install started to rebuild the tree ?
 
-Hi Linus,
- please pull my md development tree as described below.
+Perhaps 'make V=2 install' can also help figuring out why the targets
+are rebuilt?
 
- Highlights (for me) are:
-   moving .h file from include/linux to driver/md from Christoph.
-     I'm already loving the fact that e.g. raid5.h is in the same
-     directory as raid5.c :-)
-   more options for reshaping arrays including raid5->raid6 and back,
-     reducing the number of drives in an array and changing the chunksize.   
-
-  There is lots of other stuff, bug fixes and other feature
-  enhancements.
-  A small change to md/Makefile touches 'dm' as well, hence Cc to
-  Alasdair.
-
-Thanks,
-NeilBrown
-   
-
-
-The following changes since commit 8e0ee43bc2c3e19db56a4adaa9a9b04ce885cd84:
-  Linus Torvalds (1):
-        Linux 2.6.29
-
-are available in the git repository at:
-
-  git://neil.brown.name/md for-linus
-
-Andre Noll (3):
-      md: Make mddev->size sector-based.
-      md: Represent raid device size in sectors.
-      md: raid5 run(): Fix max_degraded for raid level 4.
-
-Atsushi SAKAI (1):
-      md: fix typo in FSF address
-
-Christoph Hellwig (3):
-      md: stop defining MAJOR_NR
-      cleanup drivers/md/Makefile
-      md: move headers out of include/linux/raid/
-
-Dan Williams (4):
-      md: add 'size' as a personality method
-      md: centralize ->array_sectors modifications
-      md: 'array_size' sysfs attribute
-      md/raid6: move raid6 data processing to raid6_pq.ko
-
-Martin K. Petersen (1):
-      MD data integrity support
-
-NeilBrown (41):
-      md: Fix is_mddev_idle test (again).
-      md: Allow write-intent bitmaps to have chunksize < PAGE_SIZE
-      md: never clear bit from the write-intent bitmap when the array is degraded.
-      md: write bitmap information to devices that are undergoing recovery.
-      md: move LEVEL_* definition from md_k.h to md_u.h
-      md: move most content from md.h to md_k.h
-      md: move lots of #include lines out of .h files and into .c
-      md: move md_k.h from include/linux/raid/ to drivers/md/
-      md: occasionally checkpoint drive recovery to reduce duplicate effort after a crash
-      md: be more consistent about setting WriteMostly flag when adding a drive to an array
-      md/raid5: simplify interface for init_stripe and get_active_stripe
-      md/raid5: change raid5_compute_sector and stripe_to_pdidx to take a 'previous' argument
-      md/raid6: remove expectation that Q device is immediately after P device.
-      md/raid5: simplify raid5_compute_sector interface
-      md/raid5: Add support for new layouts for raid5 and raid6.
-      md/raid5: finish support for DDF/raid6
-      md: make sure new_level, new_chunksize, new_layout always have sensible values.
-      md/raid5: refactor raid5 "run"
-      md: md_unregister_thread should cope with being passed NULL
-      md: enable suspend/resume of md devices.
-      md: add ->takeover method to support changing the personality managing an array
-      md: add ->takeover method for raid5 to be able to take over raid1
-      md/raid5: allow layout/chunksize to be changed on an active 2-drive raid5.
-      md: add takeover support for raid4 -> raid5 conversion.
-      md: add takeover support for converting raid6 back into raid5
-      md/raid5: drop qd_idx from r6_state
-      md/raid5: enhance raid5_size to work correctly with negative delta_disks
-      md: add explicit method to signal the end of a reshape.
-      md/raid5: change reshape-progress measurement to cope with reshaping backwards.
-      md: allow number of drives in raid5 to be reduced
-      Documentation/md.txt update
-      md/raid5: clearly differentiate 'before' and 'after' stripes during reshape.
-      md/raid5: prepare for allowing reshape to change chunksize.
-      md/raid5: prepare for allowing reshape to change layout
-      md/raid5: reshape using largest of old and new chunk size
-      md/raid5: allow layout and chunksize to be changed on active array.
-      md: don't display meaningless values in sysfs files resync_start and sync_speed
-      md/raid5: be more careful about write ordering when reshaping.
-      md: remove CONFIG_MD_RAID_RESHAPE config option.
-      md/raid5: minor code cleanups in make_request.
-      md/raid5 revise rules for when to update metadata during reshape
-
- Documentation/md.txt                           |   37 +-
- crypto/xor.c                                   |    2 +-
- drivers/md/Kconfig                             |   31 +-
- drivers/md/Makefile                            |   16 +-
- drivers/md/bitmap.c                            |   49 +-
- {include/linux/raid => drivers/md}/bitmap.h    |    0
- drivers/md/faulty.c                            |   19 +-
- drivers/md/linear.c                            |   25 +-
- {include/linux/raid => drivers/md}/linear.h    |    2 -
- drivers/md/md.c                                |  615 ++++++++---
- include/linux/raid/md_k.h => drivers/md/md.h   |   66 +-
- drivers/md/mktables.c                          |   14 +-
- drivers/md/multipath.c                         |   17 +-
- {include/linux/raid => drivers/md}/multipath.h |    2 -
- drivers/md/raid0.c                             |   66 +-
- {include/linux/raid => drivers/md}/raid0.h     |    2 -
- drivers/md/raid1.c                             |   35 +-
- {include/linux/raid => drivers/md}/raid1.h     |    2 -
- drivers/md/raid10.c                            |   42 +-
- {include/linux/raid => drivers/md}/raid10.h    |    2 -
- drivers/md/raid5.c                             | 1494 +++++++++++++++++-------
- {include/linux/raid => drivers/md}/raid5.h     |  110 ++-
- drivers/md/raid6algos.c                        |   21 +-
- drivers/md/raid6altivec.uc                     |    4 +-
- drivers/md/raid6int.uc                         |    4 +-
- drivers/md/raid6mmx.c                          |    4 +-
- drivers/md/raid6recov.c                        |   13 +-
- drivers/md/raid6sse1.c                         |    4 +-
- drivers/md/raid6sse2.c                         |    4 +-
- drivers/md/raid6test/Makefile                  |    2 +-
- drivers/md/raid6test/test.c                    |    2 +-
- drivers/md/raid6x86.h                          |    2 +-
- fs/compat_ioctl.c                              |    2 +-
- include/linux/raid/md.h                        |   81 --
- include/linux/raid/md_u.h                      |   35 +
- drivers/md/raid6.h => include/linux/raid/pq.h  |   28 +-
- include/linux/raid/xor.h                       |    2 -
- init/do_mounts.h                               |    1 +
- init/do_mounts_md.c                            |    5 +-
- 39 files changed, 2002 insertions(+), 860 deletions(-)
- rename {include/linux/raid => drivers/md}/bitmap.h (100%)
- rename {include/linux/raid => drivers/md}/linear.h (95%)
- rename include/linux/raid/md_k.h => drivers/md/md.h (83%)
- rename {include/linux/raid => drivers/md}/multipath.h (96%)
- rename {include/linux/raid => drivers/md}/raid0.h (96%)
- rename {include/linux/raid => drivers/md}/raid1.h (99%)
- rename {include/linux/raid => drivers/md}/raid10.h (99%)
- rename {include/linux/raid => drivers/md}/raid5.h (81%)
- delete mode 100644 include/linux/raid/md.h
- rename drivers/md/raid6.h => include/linux/raid/pq.h (86%)
+HTH, Hannes
