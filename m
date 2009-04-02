@@ -1,126 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933089AbZDBTZG@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762077AbZDBT2W@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933089AbZDBTZG (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 2 Apr 2009 15:25:06 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759794AbZDBTYx
+	id S1762077AbZDBT2W (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 2 Apr 2009 15:28:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755381AbZDBT2N
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 2 Apr 2009 15:24:53 -0400
-Received: from mx2.redhat.com ([66.187.237.31]:38670 "EHLO mx2.redhat.com"
+	Thu, 2 Apr 2009 15:28:13 -0400
+Received: from mx2.mail.elte.hu ([157.181.151.9]:51528 "EHLO mx2.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754760AbZDBTYw (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 2 Apr 2009 15:24:52 -0400
-Date: Thu, 2 Apr 2009 20:23:58 +0100
-From: Alasdair G Kergon <agk@redhat.com>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: dm-devel@redhat.com, linux-kernel@vger.kernel.org,
-       Kiyoshi Ueda <k-ueda@ct.jp.nec.com>, Cheng Renquan <crquan@gmail.com>,
-       Johannes Weiner <hannes@cmpxchg.org>,
-       Jonathan Brassow <jbrassow@redhat.com>,
-       Heinz Mauelshagen <heinzm@redhat.com>,
-       "Jun'ichi Nomura" <j-nomura@ce.jp.nec.com>,
-       Mike Snitzer <snitzer@redhat.com>,
-       Mikulas Patocka <mpatocka@redhat.com>, Neil Brown <neilb@suse.de>,
-       Milan Broz <mbroz@redhat.com>
-Subject: [git pull] device-mapper changes for 2.6.30
-Message-ID: <20090402192358.GL5098@agk.fab.redhat.com>
-Mail-Followup-To: Linus Torvalds <torvalds@linux-foundation.org>,
-	dm-devel@redhat.com, linux-kernel@vger.kernel.org,
-	Kiyoshi Ueda <k-ueda@ct.jp.nec.com>,
-	Cheng Renquan <crquan@gmail.com>,
-	Johannes Weiner <hannes@cmpxchg.org>,
-	Jonathan Brassow <jbrassow@redhat.com>,
-	Heinz Mauelshagen <heinzm@redhat.com>,
-	Jun'ichi Nomura <j-nomura@ce.jp.nec.com>,
-	Mike Snitzer <snitzer@redhat.com>,
-	Mikulas Patocka <mpatocka@redhat.com>, Neil Brown <neilb@suse.de>,
-	Milan Broz <mbroz@redhat.com>
-Mime-Version: 1.0
+	id S1755274AbZDBT2M (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 2 Apr 2009 15:28:12 -0400
+Date: Thu, 2 Apr 2009 21:27:55 +0200
+From: Ingo Molnar <mingo@elte.hu>
+To: markus.t.metzger@intel.com
+Cc: tglx@linutronix.de, hpa@zytor.com, markus.t.metzger@gmail.com,
+       roland@redhat.com, eranian@googlemail.com, oleg@redhat.com,
+       juan.villacis@intel.com, ak@linux.jf.intel.com,
+       linux-kernel@vger.kernel.org
+Subject: Re: [patch 13/18] x86, ds: add leakage warning
+Message-ID: <20090402192755.GD2455@elte.hu>
+References: <20090402145455.597376000@intel.com> <20090402145726.223198000@intel.com>
+MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-User-Agent: Mutt/1.4.1i
-Organization: Red Hat UK Ltd. Registered in England and Wales, number 03798903. Registered Office: Amberley Place, 107-111 Peascod Street, Windsor, Berkshire, SL4 1TE.
+In-Reply-To: <20090402145726.223198000@intel.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Please pull from:
 
-  master.kernel.org:/pub/scm/linux/kernel/git/agk/linux-2.6-dm.git master
+* markus.t.metzger@intel.com <markus.t.metzger@intel.com> wrote:
 
-to get the following device-mapper changes for 2.6.30
+> +static inline void ds_warn_leak(struct task_struct *tsk)
+> +{
+> +	WARN(tsk->thread.ds_ctx, "leaking DS context\n");
+> +}
 
-Alasdair G Kergon (1):
-      dm table: fix upgrade mode race
+> +	ds_warn_leak(tsk);
 
-Cheng Renquan (2):
-      dm target: use module refcount directly
-      dm target: remove struct tt_internal
+since we normally expect X86_DS enabled i'd suggest this 
+simplification: always have thread.ds_ctx around so the WARN_ON can 
+go there unconditionally. (it wont trigger in the !DS case)
 
-Johannes Weiner (1):
-      dm crypt: use kzfree
+>  struct task_struct;
+>  struct mm_struct;
+> +struct ds_context;
 
-Jonathan Brassow (12):
-      dm exception store: separate type from instance
-      dm raid1: add is_remote_recovering hook for clusters
-      dm exception store: introduce registry
-      dm exception store: move dm_target pointer
-      dm exception store: move chunk_fields
-      dm exception store: move cow pointer
-      dm snapshot: remove dm_snap header use
-      dm snapshot: remove dm_snap header
-      dm snapshot: use DMEMIT macro for status
-      dm snapshot: move ctr parsing to exception store
-      dm snapshot: move status to exception store
-      dm snapshot: persistent fix dtr cleanup
+why is this needed in processor.h?
 
-Jun'ichi Nomura (1):
-      dm: path selector use module refcount directly
+ds.h should be split into ds_types.h and ds_api.h, with the pure 
+data type definitions in ds_types.h. processor.h (which needs to 
+know about the DS context type) then includes ds_types.h - which
+is a lightweight header.
 
-Mike Snitzer (2):
-      dm log: use standard kernel module refcount
-      dm log: remove struct dm_dirty_log_internal
+Actual DS using facilities also disable ds_api.h.
 
-Mikulas Patocka (17):
-      dm: preserve bi_io_vec when resubmitting bios
-      dm raid1: switch read_record from kmalloc to slab to save memory
-      dm io: make sync_io uninterruptible
-      dm snapshot: refactor __find_pending_exception
-      dm snapshot: avoid dropping lock in __find_pending_exception
-      dm snapshot: avoid having two exceptions for the same chunk
-      dm: bio list add bio_list_add_head
-      dm: remove unnecessary work queue type field
-      dm: remove unnecessary work queue context field
-      dm: remove unnecessary struct dm_wq_req
-      dm: rename __split_bio
-      dm: move bio_io_error into __split_and_process_bio
-      dm: merge __flush_deferred_io into caller
-      dm: allow uninterruptible wait for pending io
-      dm: merge pushback and deferred bio lists
-      dm: move wait queue declaration
-      dm: set queue ordered mode
+This keeps data types nicely separated from methods and inlines.
 
- drivers/md/dm-bio-list.h        |   10 +
- drivers/md/dm-bio-record.h      |   26 +++
- drivers/md/dm-crypt.c           |    6 +-
- drivers/md/dm-exception-store.c |  252 +++++++++++++++++++++++++
- drivers/md/dm-exception-store.h |   58 +++++-
- drivers/md/dm-io.c              |    5 +-
- drivers/md/dm-log.c             |   75 ++------
- drivers/md/dm-path-selector.c   |   21 +--
- drivers/md/dm-raid1.c           |   50 +++++-
- drivers/md/dm-snap-persistent.c |  153 +++++++++++-----
- drivers/md/dm-snap-transient.c  |   86 +++++++--
- drivers/md/dm-snap.c            |  384 ++++++++++++++++++++-------------------
- drivers/md/dm-snap.h            |  105 -----------
- drivers/md/dm-table.c           |   26 ++--
- drivers/md/dm-target.c          |  104 +++--------
- drivers/md/dm.c                 |  134 +++++---------
- drivers/md/dm.h                 |    2 +-
- include/linux/device-mapper.h   |    3 +
- include/linux/dm-dirty-log.h    |   13 ++
- 19 files changed, 893 insertions(+), 620 deletions(-)
- delete mode 100644 drivers/md/dm-snap.h
-
-Alasdair
--- 
-agk@redhat.com
+	Ingo
