@@ -1,67 +1,129 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934165AbZDBUSz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933887AbZDBUWW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934165AbZDBUSz (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 2 Apr 2009 16:18:55 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933180AbZDBUSj
+	id S933887AbZDBUWW (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 2 Apr 2009 16:22:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759087AbZDBUWM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 2 Apr 2009 16:18:39 -0400
-Received: from gw1.cosmosbay.com ([212.99.114.194]:50960 "EHLO
-	gw1.cosmosbay.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S932241AbZDBUSi convert rfc822-to-8bit (ORCPT
+	Thu, 2 Apr 2009 16:22:12 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:39853 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1754296AbZDBUWL (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 2 Apr 2009 16:18:38 -0400
-Message-ID: <49D51D86.9030906@cosmosbay.com>
-Date: Thu, 02 Apr 2009 22:18:14 +0200
-From: Eric Dumazet <dada1@cosmosbay.com>
-User-Agent: Thunderbird 2.0.0.21 (Windows/20090302)
-MIME-Version: 1.0
-To: Ingo Molnar <mingo@elte.hu>
-CC: linux-kernel@vger.kernel.org, netdev@vger.kernel.org,
-       netfilter@vger.kernel.org, "David S. Miller" <davem@davemloft.net>,
-       Patrick McHardy <kaber@trash.net>,
-       Rusty Russell <rusty@rustcorp.com.au>, coreteam@netfilter.org
-Subject: Re: [netfilter bug] BUG: using smp_processor_id() in preemptible
- [00000000] code: ssh/9115, caller is ipt_do_table+0xc8/0x559
-References: <20090402200128.GA21805@elte.hu>
-In-Reply-To: <20090402200128.GA21805@elte.hu>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 8BIT
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-1.6 (gw1.cosmosbay.com [0.0.0.0]); Thu, 02 Apr 2009 22:18:15 +0200 (CEST)
+	Thu, 2 Apr 2009 16:22:11 -0400
+Date: Thu, 2 Apr 2009 13:18:16 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+Cc: hugh@veritas.com, mikew@google.com, linux-kernel@vger.kernel.org,
+       linux-mm@kvack.org, yinghan@google.com
+Subject: Re: [RFC][PATCH] don't show pgoff of vma if vma is pure ANON (was
+ Re: mmotm 2009-01-12-16-53 uploaded)
+Message-Id: <20090402131816.54724d4e.akpm@linux-foundation.org>
+In-Reply-To: <20090115114312.e42a0dba.kamezawa.hiroyu@jp.fujitsu.com>
+References: <200901130053.n0D0rhev023334@imap1.linux-foundation.org>
+	<20090113181317.48e910af.kamezawa.hiroyu@jp.fujitsu.com>
+	<496CC9D8.6040909@google.com>
+	<20090114162245.923c4caf.kamezawa.hiroyu@jp.fujitsu.com>
+	<Pine.LNX.4.64.0901141349410.5465@blonde.anvils>
+	<20090115114312.e42a0dba.kamezawa.hiroyu@jp.fujitsu.com>
+X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Ingo Molnar a écrit :
-> Not sure whether this bug has been reported before (a quick subject 
-> search on netdev and lkml suggests that it's not):
+On Thu, 15 Jan 2009 11:43:12 +0900
+KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com> wrote:
+
+> On Wed, 14 Jan 2009 14:08:35 +0000 (GMT)
+> Hugh Dickins <hugh@veritas.com> wrote:
 > 
-> i switched over -tip to latest -git an hour ago (it was on a v2.6.29 
-> base before that), and one of my testboxes started emitting lots of 
-> these warnings:
+> > On Wed, 14 Jan 2009, KAMEZAWA Hiroyuki wrote:
+> > > Hmm, is this brutal ?
+> > > 
+> > > ==
+> > > Recently, it's argued that what proc/pid/maps shows is ugly when a
+> > > 32bit binary runs on 64bit host.
+> > > 
+> > > /proc/pid/maps outputs vma's pgoff member but vma->pgoff is of no use
+> > > information is the vma is for ANON.
+> > > By this patch, /proc/pid/maps shows just 0 if no file backing store.
+> > > 
+> > > Signed-off-by: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+> > > ---
+> > 
+> > Brutal, but sensible enough: revert to how things looked before
+> > we ever starting putting vm_pgoff to work on anonymous areas.
+> > 
+> > I slightly regret losing that visible clue to whether an anonymous
+> > vma has ever been mremap moved.  But have I ever actually used that
+> > info?  No, never.
+> > 
+> > I presume you test !vma->vm_file so the lines fit in, fair enough.
+> > But I think you'll find checkpatch.pl protests at "(!vma->vm_file)?"
+> > 
+> > I dislike its decisions on the punctuation of the ternary operator
+> > - perhaps even more than Andrew dislikes the operator itself!
+> > Do we write a space before a question mark? no: nor before a colon;
+> > but I also dislike getting into checkpatch.pl arguments!
+> > 
+> > While you're there, I'd also be inclined to make task_nommu.c
+> > use the same loff_t cast as task_mmu.c is using.
+> > 
+> Ok, I'll try to update to reasonable style.
+> 
 
+afaik this update never happened?
 
-Hi Ingo
+Here's what I have at present:
 
-David put into its tree fix for that a few hours ago
+From: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
 
-commit fa9a86ddc8ecd2830a5e773facc250f110300ae7
+Recently, it's argued that what proc/pid/maps shows is ugly when a 32bit
+binary runs on 64bit host.
 
-(netfilter: iptables: lock free counters) forgot to disable BH
-in arpt_do_table(), ipt_do_table() and  ip6t_do_table()
+/proc/pid/maps outputs vma's pgoff member but vma->pgoff is of no use
+information is the vma is for ANON.  With this patch, /proc/pid/maps shows
+just 0 if no file backing store.
 
-Use rcu_read_lock_bh() instead of rcu_read_lock() cures the problem.
+[akpm@linux-foundation.org: coding-style fixes]
+Signed-off-by: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+Cc: Mike Waychison <mikew@google.com>
+Reported-by: Ying Han <yinghan@google.com>
+Cc: Hugh Dickins <hugh@veritas.com>
+Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
+---
 
-Reported-and-bisected-by: Roman Mindalev <r000n@r000n.net>
-Signed-off-by: Eric Dumazet <dada1@cosmosbay.com>
-Acked-by: Patrick McHardy <kaber@trash.net>
-Acked-by: Stephen Hemminger <shemminger@vyatta.com>
-Signed-off-by: David S. Miller <davem@davemloft.net>
+ fs/proc/task_mmu.c   |    3 ++-
+ fs/proc/task_nommu.c |    3 ++-
+ 2 files changed, 4 insertions(+), 2 deletions(-)
 
-
-Should be pushed to Linus in next round
-
-Thank you
-
-http://git2.kernel.org/?p=linux/kernel/git/davem/net-2.6.git;a=commitdiff;h=fa9a86ddc8ecd2830a5e773facc250f110300ae7
-
+diff -puN fs/proc/task_mmu.c~proc-pid-maps-dont-show-pgoff-of-pure-anon-vmas fs/proc/task_mmu.c
+--- a/fs/proc/task_mmu.c~proc-pid-maps-dont-show-pgoff-of-pure-anon-vmas
++++ a/fs/proc/task_mmu.c
+@@ -220,7 +220,8 @@ static void show_map_vma(struct seq_file
+ 			flags & VM_WRITE ? 'w' : '-',
+ 			flags & VM_EXEC ? 'x' : '-',
+ 			flags & VM_MAYSHARE ? 's' : 'p',
+-			((loff_t)vma->vm_pgoff) << PAGE_SHIFT,
++			(!vma->vm_file) ? 0 :
++				((loff_t)vma->vm_pgoff) << PAGE_SHIFT,
+ 			MAJOR(dev), MINOR(dev), ino, &len);
+ 
+ 	/*
+diff -puN fs/proc/task_nommu.c~proc-pid-maps-dont-show-pgoff-of-pure-anon-vmas fs/proc/task_nommu.c
+--- a/fs/proc/task_nommu.c~proc-pid-maps-dont-show-pgoff-of-pure-anon-vmas
++++ a/fs/proc/task_nommu.c
+@@ -143,7 +143,8 @@ static int nommu_vma_show(struct seq_fil
+ 		   flags & VM_WRITE ? 'w' : '-',
+ 		   flags & VM_EXEC ? 'x' : '-',
+ 		   flags & VM_MAYSHARE ? flags & VM_SHARED ? 'S' : 's' : 'p',
+-		   (unsigned long long) vma->vm_pgoff << PAGE_SHIFT,
++		   (!vma->vm_file) ? 0 :
++			(unsigned long long) vma->vm_pgoff << PAGE_SHIFT,
+ 		   MAJOR(dev), MINOR(dev), ino, &len);
+ 
+ 	if (file) {
+_
 
