@@ -1,195 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759553AbZDBMjU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760073AbZDBMkd@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759553AbZDBMjU (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 2 Apr 2009 08:39:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759748AbZDBMir
+	id S1760073AbZDBMkd (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 2 Apr 2009 08:40:33 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755649AbZDBMkX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 2 Apr 2009 08:38:47 -0400
-Received: from e23smtp07.au.ibm.com ([202.81.31.140]:44038 "EHLO
-	e23smtp07.au.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1759663AbZDBMiq (ORCPT
+	Thu, 2 Apr 2009 08:40:23 -0400
+Received: from moutng.kundenserver.de ([212.227.126.188]:57573 "EHLO
+	moutng.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754185AbZDBMkW (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 2 Apr 2009 08:38:46 -0400
-From: Gautham R Shenoy <ego@in.ibm.com>
-Subject: [PATCH v2 1/2] sched: Nominate idle load balancer from a semi-idle
-	package.
-To: "Ingo Molnar" <mingo@elte.hu>, Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       Vaidyanathan Srinivasan <svaidy@linux.vnet.ibm.com>
-Cc: linux-kernel@vger.kernel.org, Suresh Siddha <suresh.b.siddha@intel.com>,
-       "Balbir Singh" <balbir@in.ibm.com>, Andi Kleen <andi@firstfloor.org>,
-       Gautham R Shenoy <ego@in.ibm.com>
-Date: Thu, 02 Apr 2009 18:08:29 +0530
-Message-ID: <20090402123829.14569.67639.stgit@sofia.in.ibm.com>
-In-Reply-To: <20090402123607.14569.33649.stgit@sofia.in.ibm.com>
-References: <20090402123607.14569.33649.stgit@sofia.in.ibm.com>
-User-Agent: StGIT/0.14.2
+	Thu, 2 Apr 2009 08:40:22 -0400
+From: Arnd Bergmann <arnd@arndb.de>
+To: Harry Ciao <qingtao.cao@windriver.com>
+Subject: Re: [v0 PATCH 2/5] EDAC: Add CPC925 driver source file
+Date: Thu, 2 Apr 2009 14:40:16 +0200
+User-Agent: KMail/1.9.9
+Cc: norsk5@yahoo.com, linux-kernel@vger.kernel.org,
+       bluesmoke-devel@lists.sourceforge.net, linuxppc-dev@ozlabs.org
+References: <1238652440-9224-1-git-send-email-qingtao.cao@windriver.com> <1238652440-9224-2-git-send-email-qingtao.cao@windriver.com> <1238652440-9224-3-git-send-email-qingtao.cao@windriver.com>
+In-Reply-To: <1238652440-9224-3-git-send-email-qingtao.cao@windriver.com>
+X-Face: I@=L^?./?$U,EK.)V[4*>`zSqm0>65YtkOe>TFD'!aw?7OVv#~5xd\s,[~w]-J!)|%=]>=?utf-8?q?+=0A=09=7EohchhkRGW=3F=7C6=5FqTmkd=5Ft=3FLZC=23Q-=60=2E=60Y=2Ea=5E?=
+ =?utf-8?q?3zb?=)
+ =?utf-8?q?+U-JVN=5DWT=25cw=23=5BYo0=267C=26bL12wWGlZi=0A=09=7EJ=3B=5Cwg?=
+ =?utf-8?q?=3B3zRnz?=,J"CT_)=\H'1/{?SR7GDu?WIopm.HaBG=QYj"NZD_[zrM\Gip^U
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
+Content-Type: text/plain;
+  charset="iso-8859-15"
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200904021440.17366.arnd@arndb.de>
+X-Provags-ID: V01U2FsdGVkX1+rPAlLIgmL4JAqX2gC0JnAEjMcHHGHuBfncaO
+ VQkpKSFAIli+z6jm0jK2ZfeTxvgcu7COI0qSC+wKdcl+vQO4xF
+ 1AYfGbj09izP/60DiVjsQ==
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Currently the nomination of idle-load balancer is done by choosing the first
-idle cpu in the nohz.cpu_mask. This may not be power-efficient, since
-such an idle cpu could come from a completely idle core/package thereby
-preventing the whole core/package from being in a low-power state.
+On Thursday 02 April 2009, Harry Ciao wrote:
+> Introduce IBM CPC925 EDAC driver source file, which makes use of error
+> detections on the IBM CPC925 Bridge and Memory Controller.
+> 
+> Signed-off-by: Harry Ciao <qingtao.cao@windriver.com>
 
-For eg, consider a quad-core dual package system. The cpu numbering need
-not be sequential and can something like [0, 2, 4, 6] and [1, 3, 5, 7].
-With sched_mc/smt_power_savings and the power-aware IRQ balance, we try to keep
-as fewer Packages/Cores active. But the current idle load balancer logic
-goes against this by choosing the first_cpu in the nohz.cpu_mask and not
-taking the system topology into consideration.
+On a very brief review, the driver looks good to me, but please
+post the full series to the linuxppc-dev@ozlabs.org mailing list
+as well, because that is likely to have more people that will
+comment on it.
 
-Improve the algorithm to nominate the idle load balancer from a semi idle
-cores/packages thereby increasing the probability of the cores/packages being
-in deeper sleep states for longer duration.
+The first three patches of your series should be merged into
+a single one, because none of them has any signficance by itself.
+You may also consider moving the contents of the header file
+into the main driver, because it does not actually act as an
+interface.
 
-The algorithm is activated only when sched_mc/smt_power_savings != 0.
-
-Signed-off-by: Gautham R Shenoy <ego@in.ibm.com>
----
-
- kernel/sched.c |  109 +++++++++++++++++++++++++++++++++++++++++++++++++++-----
- 1 files changed, 100 insertions(+), 9 deletions(-)
-
-diff --git a/kernel/sched.c b/kernel/sched.c
-index 706517c..4fc1ec0 100644
---- a/kernel/sched.c
-+++ b/kernel/sched.c
-@@ -4283,10 +4283,108 @@ static void active_load_balance(struct rq *busiest_rq, int busiest_cpu)
- static struct {
- 	atomic_t load_balancer;
- 	cpumask_var_t cpu_mask;
-+	cpumask_var_t tmpmask;
- } nohz ____cacheline_aligned = {
- 	.load_balancer = ATOMIC_INIT(-1),
- };
- 
-+#if defined(CONFIG_SCHED_MC) || defined(CONFIG_SCHED_SMT)
-+/**
-+ * lowest_flag_domain: Returns the lowest sched_domain
-+ * that has the given flag set for a particular cpu.
-+ * @cpu: The cpu whose lowest level of sched domain is to
-+ * be returned.
-+ *
-+ * @flag: The flag to check for the lowest sched_domain
-+ * for the given cpu
-+ */
-+static inline struct sched_domain *lowest_flag_domain(int cpu, int flag)
-+{
-+	struct sched_domain *sd;
-+
-+	for_each_domain(cpu, sd)
-+		if (sd && (sd->flags & flag))
-+			break;
-+
-+	return sd;
-+}
-+
-+/**
-+ * for_each_flag_domain: Iterates over all the scheduler domains
-+ * for a given cpu that has the 'flag' set, starting from
-+ * the lowest to the highest.
-+ * @cpu: The cpu whose domains we're iterating over.
-+ * @sd: variable holding the value of the power_savings_sd
-+ * for cpu
-+ */
-+#define for_each_flag_domain(cpu, sd, flag) \
-+	for (sd = lowest_flag_domain(cpu, flag); \
-+		(sd && (sd->flags & flag)); sd = sd->parent)
-+
-+static inline int is_semi_idle_group(struct sched_group *ilb_group)
-+{
-+	cpumask_and(nohz.tmpmask, nohz.cpu_mask, sched_group_cpus(ilb_group));
-+
-+	/*
-+	 * A sched_group is semi-idle when it has atleast one busy cpu
-+	 * and atleast one idle cpu.
-+	 */
-+	if (!(cpumask_empty(nohz.tmpmask) ||
-+		cpumask_equal(nohz.tmpmask, sched_group_cpus(ilb_group))))
-+		return 1;
-+
-+	return 0;
-+}
-+/**
-+ * find_new_ilb: Finds or nominates a new idle load balancer.
-+ * @cpu: The cpu which is nominating a new idle_load_balancer.
-+ *
-+ * This algorithm picks the idle load balancer such that it belongs to a
-+ * semi-idle powersavings sched_domain. The idea is to try and avoid
-+ * completely idle packages/cores just for the purpose of idle load balancing
-+ * when there are other idle cpu's which are better suited for that job.
-+ */
-+static int find_new_ilb(int cpu)
-+{
-+	struct sched_domain *sd;
-+	struct sched_group *ilb_group;
-+
-+	/*
-+	 * Optimization for the case when there is no idle cpu or
-+	 * only 1 idle cpu to choose from.
-+	 */
-+	if (cpumask_weight(nohz.cpu_mask) < 2)
-+		goto out_done;
-+
-+	/*
-+	 * Have idle load balancer selection from semi-idle packages only
-+	 * when power-aware load balancing is enabled
-+	 */
-+	if (!(sched_smt_power_savings || sched_mc_power_savings))
-+		goto out_done;
-+
-+	for_each_flag_domain(cpu, sd, SD_POWERSAVINGS_BALANCE) {
-+		ilb_group = sd->groups;
-+
-+		do {
-+			if (is_semi_idle_group(ilb_group))
-+				return cpumask_first(nohz.tmpmask);
-+
-+			ilb_group = ilb_group->next;
-+
-+		} while (ilb_group != sd->groups);
-+	}
-+
-+out_done:
-+	return cpumask_first(nohz.cpu_mask);
-+}
-+#else /*  (CONFIG_SCHED_MC || CONFIG_SCHED_SMT) */
-+static inline int find_new_ilb(int call_cpu)
-+{
-+	return first_cpu(nohz.cpu_mask);
-+}
-+#endif
-+
- /*
-  * This routine will try to nominate the ilb (idle load balancing)
-  * owner among the cpus whose ticks are stopped. ilb owner will do the idle
-@@ -4511,15 +4609,7 @@ static inline void trigger_load_balance(struct rq *rq, int cpu)
- 		}
- 
- 		if (atomic_read(&nohz.load_balancer) == -1) {
--			/*
--			 * simple selection for now: Nominate the
--			 * first cpu in the nohz list to be the next
--			 * ilb owner.
--			 *
--			 * TBD: Traverse the sched domains and nominate
--			 * the nearest cpu in the nohz.cpu_mask.
--			 */
--			int ilb = cpumask_first(nohz.cpu_mask);
-+			int ilb = find_new_ilb(cpu);
- 
- 			if (ilb < nr_cpu_ids)
- 				resched_cpu(ilb);
-@@ -9046,6 +9136,7 @@ void __init sched_init(void)
- #ifdef CONFIG_SMP
- #ifdef CONFIG_NO_HZ
- 	alloc_bootmem_cpumask_var(&nohz.cpu_mask);
-+	alloc_bootmem_cpumask_var(&nohz.tmpmask);
- #endif
- 	alloc_bootmem_cpumask_var(&cpu_isolated_map);
- #endif /* SMP */
-
+	Arnd <><
