@@ -1,77 +1,126 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932783AbZDBTWr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933089AbZDBTZG@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932783AbZDBTWr (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 2 Apr 2009 15:22:47 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932535AbZDBTWa
+	id S933089AbZDBTZG (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 2 Apr 2009 15:25:06 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759794AbZDBTYx
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 2 Apr 2009 15:22:30 -0400
-Received: from swampdragon.chaosbits.net ([90.184.90.115]:20408 "EHLO
-	swampdragon.chaosbits.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S932715AbZDBTW3 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 2 Apr 2009 15:22:29 -0400
-Date: Thu, 2 Apr 2009 21:22:26 +0200 (CEST)
-From: Jesper Juhl <jj@chaosbits.net>
-To: Izik Eidus <ieidus@redhat.com>
-cc: linux-kernel@vger.kernel.org, kvm@vger.kernel.org, linux-mm@kvack.org,
-       avi@redhat.com, aarcange@redhat.com, chrisw@redhat.com, riel@redhat.com,
-       jeremy@goop.org, mtosatti@redhat.com, hugh@veritas.com, corbet@lwn.net,
-       yaniv@redhat.com, dmonakhov@openvz.org
-Subject: Re: [PATCH 0/4] ksm - dynamic page sharing driver for linux
-In-Reply-To: <1238457560-7613-1-git-send-email-ieidus@redhat.com>
-Message-ID: <alpine.LNX.2.00.0904022114040.4265@swampdragon.chaosbits.net>
-References: <1238457560-7613-1-git-send-email-ieidus@redhat.com>
-User-Agent: Alpine 2.00 (LNX 1167 2008-08-23)
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Thu, 2 Apr 2009 15:24:53 -0400
+Received: from mx2.redhat.com ([66.187.237.31]:38670 "EHLO mx2.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754760AbZDBTYw (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 2 Apr 2009 15:24:52 -0400
+Date: Thu, 2 Apr 2009 20:23:58 +0100
+From: Alasdair G Kergon <agk@redhat.com>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: dm-devel@redhat.com, linux-kernel@vger.kernel.org,
+       Kiyoshi Ueda <k-ueda@ct.jp.nec.com>, Cheng Renquan <crquan@gmail.com>,
+       Johannes Weiner <hannes@cmpxchg.org>,
+       Jonathan Brassow <jbrassow@redhat.com>,
+       Heinz Mauelshagen <heinzm@redhat.com>,
+       "Jun'ichi Nomura" <j-nomura@ce.jp.nec.com>,
+       Mike Snitzer <snitzer@redhat.com>,
+       Mikulas Patocka <mpatocka@redhat.com>, Neil Brown <neilb@suse.de>,
+       Milan Broz <mbroz@redhat.com>
+Subject: [git pull] device-mapper changes for 2.6.30
+Message-ID: <20090402192358.GL5098@agk.fab.redhat.com>
+Mail-Followup-To: Linus Torvalds <torvalds@linux-foundation.org>,
+	dm-devel@redhat.com, linux-kernel@vger.kernel.org,
+	Kiyoshi Ueda <k-ueda@ct.jp.nec.com>,
+	Cheng Renquan <crquan@gmail.com>,
+	Johannes Weiner <hannes@cmpxchg.org>,
+	Jonathan Brassow <jbrassow@redhat.com>,
+	Heinz Mauelshagen <heinzm@redhat.com>,
+	Jun'ichi Nomura <j-nomura@ce.jp.nec.com>,
+	Mike Snitzer <snitzer@redhat.com>,
+	Mikulas Patocka <mpatocka@redhat.com>, Neil Brown <neilb@suse.de>,
+	Milan Broz <mbroz@redhat.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+User-Agent: Mutt/1.4.1i
+Organization: Red Hat UK Ltd. Registered in England and Wales, number 03798903. Registered Office: Amberley Place, 107-111 Peascod Street, Windsor, Berkshire, SL4 1TE.
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
+Please pull from:
 
-On Tue, 31 Mar 2009, Izik Eidus wrote:
+  master.kernel.org:/pub/scm/linux/kernel/git/agk/linux-2.6-dm.git master
 
-> KSM is a linux driver that allows dynamicly sharing identical memory
-> pages between one or more processes.
-> 
-> Unlike tradtional page sharing that is made at the allocation of the
-> memory, ksm do it dynamicly after the memory was created.
-> Memory is periodically scanned; identical pages are identified and
-> merged.
-> The sharing is unnoticeable by the process that use this memory.
-> (the shared pages are marked as readonly, and in case of write
-> do_wp_page() take care to create new copy of the page)
-> 
-> To find identical pages ksm use algorithm that is split into three
-> primery levels:
-> 
-> 1) Ksm will start scan the memory and will calculate checksum for each
->    page that is registred to be scanned.
->    (In the first round of the scanning, ksm would only calculate
->     this checksum for all the pages)
-> 
+to get the following device-mapper changes for 2.6.30
 
-One question;
+Alasdair G Kergon (1):
+      dm table: fix upgrade mode race
 
-Calcolating a checksum is a fine way to find pages that are "likely to be 
-identical", but there is no guarantee that two pages with the same 
-checksum really are identical - there *will* be checksum collisions 
-eventually. So, I really hope that your implementation actually checks 
-that two pages that it find that have identical checksums really are 100% 
-identical by comparing them bit by bit before throwing one away.
-If you rely only on a checksum then eventually a user will get bitten by a 
-checksum collision and, in the best case, something will crash, and in the 
-worst case, data will silently be corrupted.
+Cheng Renquan (2):
+      dm target: use module refcount directly
+      dm target: remove struct tt_internal
 
-Do you rely only on the checksum or do you actually compare pages to check 
-they are 100% identical before sharing?
+Johannes Weiner (1):
+      dm crypt: use kzfree
 
-I must admit that I have not read through the patch to find the answer, I 
-just read your description and became concerned.
+Jonathan Brassow (12):
+      dm exception store: separate type from instance
+      dm raid1: add is_remote_recovering hook for clusters
+      dm exception store: introduce registry
+      dm exception store: move dm_target pointer
+      dm exception store: move chunk_fields
+      dm exception store: move cow pointer
+      dm snapshot: remove dm_snap header use
+      dm snapshot: remove dm_snap header
+      dm snapshot: use DMEMIT macro for status
+      dm snapshot: move ctr parsing to exception store
+      dm snapshot: move status to exception store
+      dm snapshot: persistent fix dtr cleanup
 
+Jun'ichi Nomura (1):
+      dm: path selector use module refcount directly
+
+Mike Snitzer (2):
+      dm log: use standard kernel module refcount
+      dm log: remove struct dm_dirty_log_internal
+
+Mikulas Patocka (17):
+      dm: preserve bi_io_vec when resubmitting bios
+      dm raid1: switch read_record from kmalloc to slab to save memory
+      dm io: make sync_io uninterruptible
+      dm snapshot: refactor __find_pending_exception
+      dm snapshot: avoid dropping lock in __find_pending_exception
+      dm snapshot: avoid having two exceptions for the same chunk
+      dm: bio list add bio_list_add_head
+      dm: remove unnecessary work queue type field
+      dm: remove unnecessary work queue context field
+      dm: remove unnecessary struct dm_wq_req
+      dm: rename __split_bio
+      dm: move bio_io_error into __split_and_process_bio
+      dm: merge __flush_deferred_io into caller
+      dm: allow uninterruptible wait for pending io
+      dm: merge pushback and deferred bio lists
+      dm: move wait queue declaration
+      dm: set queue ordered mode
+
+ drivers/md/dm-bio-list.h        |   10 +
+ drivers/md/dm-bio-record.h      |   26 +++
+ drivers/md/dm-crypt.c           |    6 +-
+ drivers/md/dm-exception-store.c |  252 +++++++++++++++++++++++++
+ drivers/md/dm-exception-store.h |   58 +++++-
+ drivers/md/dm-io.c              |    5 +-
+ drivers/md/dm-log.c             |   75 ++------
+ drivers/md/dm-path-selector.c   |   21 +--
+ drivers/md/dm-raid1.c           |   50 +++++-
+ drivers/md/dm-snap-persistent.c |  153 +++++++++++-----
+ drivers/md/dm-snap-transient.c  |   86 +++++++--
+ drivers/md/dm-snap.c            |  384 ++++++++++++++++++++-------------------
+ drivers/md/dm-snap.h            |  105 -----------
+ drivers/md/dm-table.c           |   26 ++--
+ drivers/md/dm-target.c          |  104 +++--------
+ drivers/md/dm.c                 |  134 +++++---------
+ drivers/md/dm.h                 |    2 +-
+ include/linux/device-mapper.h   |    3 +
+ include/linux/dm-dirty-log.h    |   13 ++
+ 19 files changed, 893 insertions(+), 620 deletions(-)
+ delete mode 100644 drivers/md/dm-snap.h
+
+Alasdair
 -- 
-Jesper Juhl <jj@chaosbits.net>             http://www.chaosbits.net/
-Plain text mails only, please      http://www.expita.com/nomime.html
-Don't top-post  http://www.catb.org/~esr/jargon/html/T/top-post.html
-
+agk@redhat.com
