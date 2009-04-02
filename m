@@ -1,107 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1765454AbZDBRF3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932414AbZDBRFp@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1765454AbZDBRF3 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 2 Apr 2009 13:05:29 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752316AbZDBRFN
+	id S932414AbZDBRFp (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 2 Apr 2009 13:05:45 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760294AbZDBRFP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
+	Thu, 2 Apr 2009 13:05:15 -0400
+Received: from mx2.redhat.com ([66.187.237.31]:35880 "EHLO mx2.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752403AbZDBRFN (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
 	Thu, 2 Apr 2009 13:05:13 -0400
-Received: from hamlet.e18.physik.tu-muenchen.de ([129.187.154.223]:45629 "EHLO
-	hamlet.e18.physik.tu-muenchen.de" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751125AbZDBRFM (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 2 Apr 2009 13:05:12 -0400
-Message-ID: <49D4F044.1040306@ph.tum.de>
-Date: Thu, 02 Apr 2009 19:05:08 +0200
-From: Thiemo Nagel <thiemo.nagel@ph.tum.de>
-User-Agent: Thunderbird 2.0.0.21 (X11/20090302)
-MIME-Version: 1.0
-To: Theodore Tso <tytso@mit.edu>, Alexander Beregalov <a.beregalov@gmail.com>,
-       Jens Axboe <jens.axboe@oracle.com>, linux-ext4@vger.kernel.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: 2.6.29-git: cannot mount ext4/loop
-References: <a4423d670904011423x4174a81cj901bc140944412ea@mail.gmail.com> <20090401225351.GA22621@orion> <20090402055356.GC10642@mit.edu> <a4423d670904020042x6b76715du48a15e988a05019d@mail.gmail.com> <a4423d670904020439m621990bch9482d19f0e48e7d2@mail.gmail.com> <a4423d670904020547s72972089t3c135a92af6751d4@mail.gmail.com> <49D4BDF2.2070102@ph.tum.de> <20090402145436.GF10642@mit.edu> <49D4D74F.1020904@ph.tum.de> <20090402154123.GG10642@mit.edu>
-In-Reply-To: <20090402154123.GG10642@mit.edu>
-Content-Type: multipart/mixed;
- boundary="------------030109030304090003010304"
+Organization: Red Hat UK Ltd. Registered Address: Red Hat UK Ltd, Amberley
+	Place, 107-111 Peascod Street, Windsor, Berkshire, SI4 1TE, United
+	Kingdom.
+	Registered in England and Wales under Company Registration No. 3798903
+From: David Howells <dhowells@redhat.com>
+In-Reply-To: <200904030335.13439.nickpiggin@yahoo.com.au>
+References: <200904030335.13439.nickpiggin@yahoo.com.au> <200904030237.25893.nickpiggin@yahoo.com.au> <20090401230520.28177.61387.stgit@warthog.procyon.org.uk> <6638.1238688892@redhat.com>
+To: Nick Piggin <nickpiggin@yahoo.com.au>
+Cc: dhowells@redhat.com, viro@zeniv.linux.org.uk, nfsv4@linux-nfs.org,
+       linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org
+Subject: Re: [PATCH 23/43] CacheFiles: Permit the page lock state to be monitored [ver #46]
+Date: Thu, 02 Apr 2009 18:05:07 +0100
+Message-ID: <7156.1238691907@redhat.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This is a multi-part message in MIME format.
---------------030109030304090003010304
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+Nick Piggin <nickpiggin@yahoo.com.au> wrote:
 
-Theodore Tso wrote:
-> On Thu, Apr 02, 2009 at 05:18:39PM +0200, Thiemo Nagel wrote:
->> Theodore Tso wrote:
->>> On Thu, Apr 02, 2009 at 03:30:26PM +0200, Thiemo Nagel wrote:
->>>> When I added the block range checks, initially I was assuming that
->>>> when EXTENTS_FL is not set, the inode->i_data *always* contains
->>>> references to further blocks.  Ted showed me wrong and added the condition
->>>>
->>>> 	ISREG() || ISDIR() || ( ISLNK() && !is_fast_symlink() )
->>>>
->>>> before that assumption can be made.  But maybe we need some further
->>>> restraints?
->>> It's a endian-problem; we're missing le32_to_cpu() in that patch.
->>> Sparc is big-endian. 
->> Sorry for that.
-> 
-> Could you also fix the types?  bref should have a type of __le32, not
-> unsigned int, and when you pass in the reference to
-> __ext4_check_blockref(), there was an inappropriate cast to unsigned
-> int which hid kernel's natural type checking to catch these sorts of
-> problems.
+> Presumably: at the point where data is needed.
 
-So I was really asking for things to go wrong...  :-(
-I hope the attached patch handles conversion and types in the right way. 
-  It's compile-tested only, the current ext4 tree crashes my machine.
+But the point where the data is needed is where filemap.c is waiting on a
+netfs page.  Maybe the sync_page() aop can deal with it
 
-Kind regards,
+There's also the problem of recording and pinning the backing page I'm waiting
+for.  Currently I can do that by hooking the monitor block into the page
+unlock watching list.  If I don't do that, I have to use up yet more memory to
+track those some other way.  It's not impossible, but I'd like to keep memory
+usage down.
 
-Thiemo
+> Or do you actually have numbers showing a problem if you just read the pages
+> then copy them?
 
---------------030109030304090003010304
-Content-Type: text/plain;
- name="le32_fix"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline;
- filename="le32_fix"
+I did, years ago.  It wasn't particularly good, but
+fscache_read_or_alloc_pages() was completely synchronous.
 
-diff --git a/fs/ext4/inode.c b/fs/ext4/inode.c
-index 98e289a..849e099 100644
---- a/fs/ext4/inode.c
-+++ b/fs/ext4/inode.c
-@@ -372,16 +372,16 @@ static int ext4_block_to_path(struct inode *inode,
- }
- 
- static int __ext4_check_blockref(const char *function, struct inode *inode,
--				 unsigned int *p, unsigned int max) {
-+				 __le32 *p, unsigned int max) {
- 
- 	unsigned int maxblocks = ext4_blocks_count(EXT4_SB(inode->i_sb)->s_es);
--	unsigned int *bref = p;
-+	__le32 *bref = p;
- 	while (bref < p+max) {
--		if (unlikely(*bref >= maxblocks)) {
-+		if (unlikely(le32_to_cpu(*bref) >= maxblocks)) {
- 			ext4_error(inode->i_sb, function,
- 				   "block reference %u >= max (%u) "
- 				   "in inode #%lu, offset=%d",
--				   *bref, maxblocks,
-+				   le32_to_cpu(*bref), maxblocks,
- 				   inode->i_ino, (int)(bref-p));
-  			return -EIO;
-  		}
-@@ -392,7 +392,7 @@ static int __ext4_check_blockref(const char *function, struct inode *inode,
- 
- 
- #define ext4_check_indirect_blockref(inode, bh)                         \
--        __ext4_check_blockref(__func__, inode, (__le32 *)(bh)->b_data,  \
-+        __ext4_check_blockref(__func__, inode, (bh)->b_data,            \
- 			      EXT4_ADDR_PER_BLOCK((inode)->i_sb))
- 
- #define ext4_check_inode_blockref(inode)                                \
+> If there is a problem, then why doesn't fscache_read_or_alloc_pages caller
+> do the work itself, then you get as many threads as you have indivisible
+> work units, so completing some part of the request before another wouldn't
+> gain you anything anyway...
 
---------------030109030304090003010304--
+(1) Trond stipulated FS-Cache had to be asynchronous, and it is, as far as I
+    can make it.  I still have to invoke bmap() synchronously, though, to find
+    out whether I have a page in the cache to read:-/
+
+(2) You lose the advantage of being able to process what you've got whilst the
+    disk is fetching stuff in the background.
+
+David
