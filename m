@@ -1,79 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933094AbZDBXih@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932929AbZDBXjK@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933094AbZDBXih (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 2 Apr 2009 19:38:37 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1765463AbZDBXiZ
+	id S932929AbZDBXjK (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 2 Apr 2009 19:39:10 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1764651AbZDBXiw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 2 Apr 2009 19:38:25 -0400
-Received: from thunk.org ([69.25.196.29]:42519 "EHLO thunker.thunk.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1765895AbZDBXiX (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 2 Apr 2009 19:38:23 -0400
-Date: Thu, 2 Apr 2009 19:38:06 -0400
-From: Theodore Tso <tytso@mit.edu>
-To: "Andreas T.Auer" <andreas.t.auer_lkml_73537@ursus.ath.cx>
-Cc: Ray Lee <ray-lk@madrabbit.org>, david@lang.hm,
-       Matthew Garrett <mjg59@srcf.ucam.org>,
-       Sitsofe Wheeler <sitsofe@yahoo.com>, Alberto Gonzalez <info@gnebu.es>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: Ext4 and the "30 second window of death"
-Message-ID: <20090402233806.GG9870@mit.edu>
-Mail-Followup-To: Theodore Tso <tytso@mit.edu>,
-	"Andreas T.Auer" <andreas.t.auer_lkml_73537@ursus.ath.cx>,
-	Ray Lee <ray-lk@madrabbit.org>, david@lang.hm,
-	Matthew Garrett <mjg59@srcf.ucam.org>,
-	Sitsofe Wheeler <sitsofe@yahoo.com>,
-	Alberto Gonzalez <info@gnebu.es>,
-	Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-References: <20090401015010.GB4529@mit.edu> <20090401052050.GA20456@sucs.org> <20090401151219.GA12285@srcf.ucam.org> <20090401173521.GA15423@mit.edu> <20090401174336.GA14726@srcf.ucam.org> <alpine.DEB.1.10.0904021116500.28893@asgard.lang.hm> <20090402182925.GA4502@srcf.ucam.org> <alpine.DEB.1.10.0904021134560.28893@asgard.lang.hm> <2c0942db0904021307w2c311dc2s9bf31c9ed3c1e6ba@mail.gmail.com> <49D5273B.60806@ursus.ath.cx>
+	Thu, 2 Apr 2009 19:38:52 -0400
+Received: from rv-out-0506.google.com ([209.85.198.229]:18792 "EHLO
+	rv-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1765141AbZDBXiu (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 2 Apr 2009 19:38:50 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=sender:date:from:to:cc:subject:message-id:mime-version:content-type
+         :content-disposition:user-agent;
+        b=j0Apvj50FQ+z+nNkHUtOTUNcVDGVxzc4Jd/i/E0eGxg0x7wW8U+UwuPd4aQXq5wrAV
+         xwzxUuAwf6AJasFFFFQ9l+gO5yCAeXXuE47fi2p+w+L8dNprjEtLzAAsPEtC2bkOd6Hv
+         RT1eolY+j4a8DkW5cqxYeHoPEXaQxnON4s0Vw=
+Date: Thu, 2 Apr 2009 17:38:46 -0600
+From: Latchesar Ionkov <lucho@ionkov.net>
+To: v9fs-developer@lists.sourceforge.net
+Cc: linux-kernel@vger.kernel.org
+Subject: [PATCH] net/9p: return error when p9_client_stat fails
+Message-ID: <20090402233846.GC7842@mallorn>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <49D5273B.60806@ursus.ath.cx>
 User-Agent: Mutt/1.5.18 (2008-05-17)
-X-SA-Exim-Connect-IP: <locally generated>
-X-SA-Exim-Mail-From: tytso@mit.edu
-X-SA-Exim-Scanned: No (on thunker.thunk.org); SAEximRunCond expanded to false
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Apr 02, 2009 at 10:59:39PM +0200, Andreas T.Auer wrote:
-> 
-> Yes, but a lot of users (and I assume >90% of POP3 users) don't use this
-> option.
-> 
+p9_client_stat function doesn't return correct value if it fails.
+p9_client_stat should return ERR_PTR of the error value when it fails.
+Instead, it always returns a value to the allocated p9_wstat struct even
+when it is not populated correctly.
 
-Sometimes, the filesystem isn't the best place to solve all problems.  
+This patch makes p9_client_stat to handle failure correctly.
 
-What's been frustrating about this whole controversy is this implicit
-assumptions that users and applications should never change, and the
-filesystem should magically accomodate and Do The Right Thing.
-
-If you're *never* going want to risk ever losing mail, then fine,
-fsync() it to disk before you send the POP3 DELETE command.  If you
-don't like the performance delay, or the battery consumption
-implications, tough.  I'm fresh out of magic pixie dust.
-
-If the application is smarter about not deleting the messages from the
-POP spool, then you can afford not to fsync().  But (oh, horrors!) it
-might involve making the application smarter, and playing a
-synchronization game between the local POP spool and IMAP.  It's more
-efficient to do this with IMAP, but there are POP clients that do this.
-
-If you are a mail client developer, and the user says, "I want the
-advantages of IMAP, but I refuse to switch to an ISP that provides
-IMAP; you must give me *all* the advantages IMAP even though I'm using
-POP3", you'd probably tell the user, "Yes, and do you want a pony,
-too?"
-
-The problem is, this is what the application programmers are telling
-the filesystem developers.  They refuse to change their programs; and
-the features they want are sometimes mutually contradictory, or at
-least result in a overconstrained problem --- and then they throw the
-whole mess at the filesystem developers' feet and say, "you fix it!"
-
-I'm not saying the filesystems are blameless, but give us a little
-slack, guys; we NEED some help from the application developers here.
-
-      	    	      	       		   	      - Ted
+Signed-off-by: Latchesar Ionkov <lucho@ionkov.net>
+diff --git a/net/9p/client.c b/net/9p/client.c
+index f5634b5..6235528 100644
+--- a/net/9p/client.c
++++ b/net/9p/client.c
+@@ -1208,10 +1208,14 @@ struct p9_wstat *p9_client_stat(struct p9_fid *fid)
+ 		ret->name, ret->uid, ret->gid, ret->muid, ret->extension,
+ 		ret->n_uid, ret->n_gid, ret->n_muid);
+ 
++	p9_free_req(clnt, req);
++	return ret;
++
+ free_and_error:
+ 	p9_free_req(clnt, req);
+ error:
+-	return ret;
++	kfree(ret);
++	return ERR_PTR(err);
+ }
+ EXPORT_SYMBOL(p9_client_stat);
+ 
