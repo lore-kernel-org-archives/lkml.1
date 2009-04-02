@@ -1,110 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761560AbZDBPgs@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763658AbZDBPhn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761560AbZDBPgs (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 2 Apr 2009 11:36:48 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751268AbZDBPgh
+	id S1763658AbZDBPhn (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 2 Apr 2009 11:37:43 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753572AbZDBPhd
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 2 Apr 2009 11:36:37 -0400
-Received: from moutng.kundenserver.de ([212.227.126.188]:63894 "EHLO
-	moutng.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751147AbZDBPgf (ORCPT
+	Thu, 2 Apr 2009 11:37:33 -0400
+Received: from smtp115.mail.mud.yahoo.com ([209.191.84.164]:29810 "HELO
+	smtp115.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1751653AbZDBPhc (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 2 Apr 2009 11:36:35 -0400
-Message-ID: <49D4DB7A.2030004@vlnb.net>
-Date: Thu, 02 Apr 2009 19:36:26 +0400
-From: Vladislav Bolkhovitin <vst@vlnb.net>
-User-Agent: Thunderbird 2.0.0.21 (X11/20090320)
+	Thu, 2 Apr 2009 11:37:32 -0400
+DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
+  s=s1024; d=yahoo.com.au;
+  h=Received:X-YMail-OSG:X-Yahoo-Newman-Property:From:To:Subject:Date:User-Agent:Cc:References:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Content-Disposition:Message-Id;
+  b=sEXILLhWyt+gXOkl9MBOaJCjvw7gPR87ClJpeMpKzk76BKqICZBkTEp2BMo/dCNImg9F591bAYUS07P25LkBZDOzk3JT5fPpPE9o9h+hqlI7+8B3TaIf2dPZ/P7xz81S+HW4djRE0z1m0A7Fi2TBh/n7cmR0z+18/Gl+SiMSVmk=  ;
+X-YMail-OSG: ON56LdQVM1kxSlySI3l_yDEKUNhU8pig7rAagkEcMzvQbwrEcc.4zV13X3kokeq3aoh58E6YVG2na7FmpaYZyfW_KWRa59cedGGfDakrwJPOEZVKCm9Y9j8baM3yXMgrf8MCsw4mW2Zb5Nu9sROz92gLd2uda0hvxS5aICXl2Z3wSo4tuTsjc8WgMxfqBIKALuqCufB_EoJw3GDSJBuHYspu7cELQV1w1eE4D62tIGRnC7wFY0q4Cu0oSGp8bFLggSnNiaLlCV0fvbnmMfbhisaQGuzkSpUQBfiXwQNPpDCZFoNpSd7l
+X-Yahoo-Newman-Property: ymail-3
+From: Nick Piggin <nickpiggin@yahoo.com.au>
+To: David Howells <dhowells@redhat.com>
+Subject: Re: [PATCH 23/43] CacheFiles: Permit the page lock state to be monitored [ver #46]
+Date: Fri, 3 Apr 2009 02:37:25 +1100
+User-Agent: KMail/1.9.51 (KDE/4.0.4; ; )
+Cc: viro@zeniv.linux.org.uk, nfsv4@linux-nfs.org, linux-kernel@vger.kernel.org,
+       linux-fsdevel@vger.kernel.org
+References: <20090401230321.28177.12010.stgit@warthog.procyon.org.uk> <20090401230520.28177.61387.stgit@warthog.procyon.org.uk>
+In-Reply-To: <20090401230520.28177.61387.stgit@warthog.procyon.org.uk>
 MIME-Version: 1.0
-To: "Ross S. W. Walker" <RWalker@medallion.com>
-CC: James Bottomley <James.Bottomley@HansenPartnership.com>,
-       linux-scsi@vger.kernel.org,
-       iSCSI Enterprise Target Developer List 
-	<iscsitarget-devel@lists.sourceforge.net>,
-       linux-kernel@vger.kernel.org, Ross Walker <rswwalker@gmail.com>,
-       stgt@vger.kernel.org, scst-devel <scst-devel@lists.sourceforge.net>
-Subject: Re: [Scst-devel] [Iscsitarget-devel] ISCSI-SCST	performance (with
- also IET and STGT data)
-References: <49D10256.8030307@vlnb.net>	<e2e108260903301106y2b750c23kfab978567f3de3a0@mail.gmail.com>	<49D11096.3070804@vlnb.net>	<e2e108260903301153x38e86097vd29c47507da2879f@mail.gmail.com>	<49D254E4.8050806@vlnb.net>	<E2BB8074E5500C42984D980D4BD78EF9029E3D0B@MFG-NYC-EXCH2.mfg.prv>	<e2e108260903312329u118a54bfn3107fdca4b3e2b1d@mail.gmail.com>	<FA7F6940-CD5C-4460-9777-2F7AE3657B8E@gmail.com>	<1238617423.3318.82.camel@mulgrave.int.hansenpartnership.com>	<49D46B8B.5000708@vlnb.net> <49D47F28.3060409@vlnb.net> <E2BB8074E5500C42984D980D4BD78EF9029E3D14@MFG-NYC-EXCH2.mfg.prv>
-In-Reply-To: <E2BB8074E5500C42984D980D4BD78EF9029E3D14@MFG-NYC-EXCH2.mfg.prv>
-Content-Type: text/plain; charset=us-ascii; format=flowed
+Content-Type: text/plain;
+  charset="utf-8"
 Content-Transfer-Encoding: 7bit
-X-Provags-ID: V01U2FsdGVkX18Cd/uU96Ofl4Aa9NEsBBTkJQWjb0Zzr+jgu+u
- Y49jxiCqp/WrcLXTeEYqyDlV33lciPss7+DYDzNKZ64WOoOHHw
- v7eRu3KnCJmMM5oG7vsbQ==
+Content-Disposition: inline
+Message-Id: <200904030237.25893.nickpiggin@yahoo.com.au>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Ross S. W. Walker, on 04/02/2009 06:06 PM wrote:
-> Vladislav Bolkhovitin wrote:
->> Vladislav Bolkhovitin, on 04/02/2009 11:38 AM wrote:
->>> James Bottomley, on 04/02/2009 12:23 AM wrote:
->>>> SCST explicitly fiddles with the io context to get this to happen.  It
->>>> has a hack to block to export alloc_io_context:
->>>>
->>>> http://marc.info/?t=122893564800003
->>> Correct, although I wouldn't call it "fiddle", rather "grouping" ;)
+On Thursday 02 April 2009 10:05:20 David Howells wrote:
+> Add a function to install a monitor on the page lock waitqueue for a particular
+> page, thus allowing the page being unlocked to be detected.
 > 
-> Call it what you like,
-> 
-> Vladislav Bolkhovitin wrote:
->> Ross S. W. Walker, on 03/30/2009 10:33 PM wrote:
->>
->> I would be interested in knowing how your code defeats CFQ's extremely
->> high latency? Does your code reach into the io scheduler too? If not,
->> some code hints would be great.
-> 
-> Hmm, CFQ doesn't have any extra processing latency, especially 
-> "extremely", hence there is nothing to defeat. If it had, how could it 
-> been chosen as the default?
-> 
-> ----------
-> List:       linux-scsi
-> Subject:    [PATCH][RFC 13/23]: Export of alloc_io_context() function
-> From:       Vladislav Bolkhovitin <vst () vlnb ! net>
-> Date:       2008-12-10 18:49:19
-> Message-ID: 49400F2F.4050603 () vlnb ! net
-> 
-> This patch exports alloc_io_context() function. For performance reasons 
-> SCST queues commands using a pool of IO threads. It is considerably 
-> better for performance (>30% increase on sequential reads) if threads in 
->   a pool have the same IO context. Since SCST can be built as a module, 
-> it needs alloc_io_context() function exported.
-> 
-> <snip>
-> ----------
-> 
-> I call that lying.
-> 
->>> But that's not the only reason for good performance. Particularly, it 
->>> can't explain Bart's tmpfs results from the previous message, where the 
->>> majority of I/O done to/from RAM without any I/O scheduler involved. (Or 
->>> does I/O scheduler also involved with tmpfs?) Bart has 4GB RAM, if I 
->>> remember correctly, i.e. the test data set was 25% of RAM.
->> To remove any suspicions that I'm playing dirty games here I should note 
-> <snip>
-> 
-> I don't know what games your playing at, but do me a favor, if your too
-> stupid enough to realize when your caught in a lie and to just shut up
-> then please do me the favor and leave me out of any further correspondence
-> from you.
+> This is used by CacheFiles to detect read completion on a page in the backing
+> filesystem so that it can then copy the data to the waiting netfs page.
 
-Think what you want and do what you want. You can even filter out all 
-e-mails from me, that's your right. But:
+I prefer to nack this because it is exporting details of the page
+locking mechanism. unlock_page is very heavyweight in large part
+because of the memory barriers and cacheline required to check the
+waitqueue. I have patches to avoid all that if the page lock is
+not contended.
 
-1. As I wrote grouping threads into a single IO context doesn't explain 
-all the performance difference and finding out reasons for other's 
-performance problems isn't something I can afford at the moment.
-
-2. CFQ doesn't have any processing latency and has never had. Learn to 
-understand what are your writing about and how to correctly express 
-yourself at first. You asked about that latency and I replied that there 
-is nothing to defeat.
-
-3. SCST doesn't have any hooks into CFQ and not going to have in the 
-considerable future.
-
-> Thank you,
-> 
-> -Ross
-
+What's wrong with using wait_on_page_locked, like everyone else does?
