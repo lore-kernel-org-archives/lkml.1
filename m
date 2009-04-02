@@ -1,67 +1,92 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764825AbZDBWZa@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762114AbZDBWd3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764825AbZDBWZa (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 2 Apr 2009 18:25:30 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759974AbZDBWZP
+	id S1762114AbZDBWd3 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 2 Apr 2009 18:33:29 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758607AbZDBWdU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 2 Apr 2009 18:25:15 -0400
-Received: from mx3.mail.elte.hu ([157.181.1.138]:59504 "EHLO mx3.mail.elte.hu"
+	Thu, 2 Apr 2009 18:33:20 -0400
+Received: from e6.ny.us.ibm.com ([32.97.182.146]:37525 "EHLO e6.ny.us.ibm.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1759731AbZDBWZO (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 2 Apr 2009 18:25:14 -0400
-Date: Fri, 3 Apr 2009 00:23:59 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: Jack Steiner <steiner@sgi.com>
-Cc: Andrew Morton <akpm@linux-foundation.org>, rusty@rustcorp.com.au,
-       sfr@canb.auug.org.au, linux-kernel@vger.kernel.org, stable@kernel.org
-Subject: Re: [PATCH] - Updated: Fix slab corruption caused by
-	alloc_cpumask_var_node()
-Message-ID: <20090402222359.GE9239@elte.hu>
-References: <20090402212751.GA11495@sgi.com> <20090402143932.79a15852.akpm@linux-foundation.org> <20090402220900.GA15129@sgi.com>
+	id S1756163AbZDBWdT (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 2 Apr 2009 18:33:19 -0400
+Message-ID: <49D53D2B.30108@linux.vnet.ibm.com>
+Date: Thu, 02 Apr 2009 15:33:15 -0700
+From: Corey Ashford <cjashfor@linux.vnet.ibm.com>
+User-Agent: Thunderbird 2.0.0.21 (Windows/20090302)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090402220900.GA15129@sgi.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.5
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+To: Peter Zijlstra <a.p.zijlstra@chello.nl>
+CC: Ingo Molnar <mingo@elte.hu>, Paul Mackerras <paulus@samba.org>,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 1/6] perf_counter: move the event overflow output bits
+ to record_type
+References: <20090402091158.291810516@chello.nl> <20090402091319.151921176@chello.nl>
+In-Reply-To: <20090402091319.151921176@chello.nl>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-* Jack Steiner <steiner@sgi.com> wrote:
-
-> Fix slab corruption caused by alloc_cpumask_var_node() overwriting
-> the tail end of an off-stack cpumask.
+Peter Zijlstra wrote:
+> Per suggestion from Paul, move the event overflow bits to record_type
+> and sanitize the enums a bit.
 > 
-> The function zeros out cpumask bits beyond the last possible cpu.
-> The starting point for zeroing should be the beginning
-> of the mask offset by a byte count derived from the number
-> of possible cpus. The offset was calculated in bits instead of bytes.
-> This resulted in overwriting the end of the cpumask.
+> Breaks the ABI -- again ;-)
 > 
-> 
-> v2.6.29 is also affected by this bug.
-> 
-> 
-> Signed-off-by: Jack Steiner <steiner@sgi.com>
-> Acked-by: Mike Travis <travis.sgi.com>
-> Acked-by: Ingo Molnar <mingo@elte.hu>
+[snip]
 
-In the future you can add:
+With this patch, the definitions look like this now:
 
-  Cc: <stable@kernel.org>
+[snip]
+/*
+  * Bits that can be set in hw_event.record_type to request information
+  * in the overflow packets.
+  */
+enum perf_counter_record_format {
+         PERF_RECORD_IP          = 1U << 0,
+         PERF_RECORD_TID         = 1U << 1,
+         PERF_RECORD_GROUP       = 1U << 2,
+         PERF_RECORD_CALLCHAIN   = 1U << 3,
+};
 
-to the signoff/ack section of the changlog in such cases - then the 
--stable folks will notice the commit automatically.
+[snip]
+enum perf_event_type {
 
-Thanks,
+         PERF_EVENT_MMAP                 = 1,
+         PERF_EVENT_MUNMAP               = 2,
 
-	Ingo
+         /*
+          * Half the event type space is reserved for the counter overflow
+          * bitfields, as found in hw_event.record_type.
+          *
+          * These events will have types of the form:
+          *   PERF_EVENT_COUNTER_OVERFLOW { | __PERF_EVENT_* } *
+          */
+         PERF_EVENT_COUNTER_OVERFLOW     = 1UL << 31,
+         __PERF_EVENT_IP                 = PERF_RECORD_IP,
+         __PERF_EVENT_TID                = PERF_RECORD_TID,
+         __PERF_EVENT_GROUP              = PERF_RECORD_GROUP,
+         __PERF_EVENT_CALLCHAIN          = PERF_RECORD_CALLCHAIN,
+};
+[snip]
+
+
+Unless I'm misreading something here, there's overlap in the enum values 
+of perf_event_type enum. PERF_EVENT_MMAP has the same value as 
+__PERF_EVENT_IP, and PERF_EVENT_MUNMAP has the same value as 
+__PERF_EVENT_TID.
+
+Are these lower bits being reused when PERF_EVENT_COUNTER_OVERFLOW is 
+OR'd in, which would imply that PERF_EVENT_MMAP and PERF_EVENT_MUNMAP 
+are mutually exclusive with all of the PERF_EVENT_COUNTER_OVERFLOW values.
+
+Actually, I don't really understand the purpose of the PERF_EVENT_MMAP 
+and PERF_EVENT_MUNMAP bits. My hazy understanding is that they are used 
+for finding the file, function and line number at overflow interrupt 
+time, but it's unclear to me what that has to do with mmap.  I'll go 
+back and try to find the relevant patch notes again.
+
+- Corey
+
+
+
