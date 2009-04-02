@@ -1,94 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1765791AbZDBRsA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764373AbZDBRvh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1765791AbZDBRsA (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 2 Apr 2009 13:48:00 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752215AbZDBRrv
+	id S1764373AbZDBRvh (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 2 Apr 2009 13:51:37 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751238AbZDBRv0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 2 Apr 2009 13:47:51 -0400
-Received: from metis.ext.pengutronix.de ([92.198.50.35]:37150 "EHLO
-	metis.ext.pengutronix.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751217AbZDBRru (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 2 Apr 2009 13:47:50 -0400
-From: =?utf-8?q?Uwe=20Kleine-K=C3=B6nig?= 
-	<u.kleine-koenig@pengutronix.de>
-To: linux-kernel@vger.kernel.org
-Cc: Grazvydas Ignotas <notasas@gmail.com>,
-       Pierre Ossman <drzeus-mmc@drzeus.cx>,
-       David Brownell <dbrownell@users.sourceforge.net>,
-       Tony Lindgren <tony@atomide.com>,
-       Russell King <rmk+kernel@arm.linux.org.uk>,
-       Paul Walmsley <paul@pwsan.com>,
-       Jarkko Lavinen <jarkko.lavinen@nokia.com>,
-       Hiroshi DOYU <Hiroshi.DOYU@nokia.com>,
-       Kyungmin Park <kyungmin.park@samsung.com>,
-       Carlos Eduardo Aguiar <carlos.aguiar@indt.org.br>,
-       Andrew Morton <akpm@linux-foundation.org>
-Subject: [PATCH] make mmci-omap using platform_driver_probe
-Date: Thu,  2 Apr 2009 19:47:41 +0200
-Message-Id: <1238694461-29501-1-git-send-email-u.kleine-koenig@pengutronix.de>
-X-Mailer: git-send-email 1.6.2.1
-In-Reply-To: <200903280927.32786.david-b@pacbell.net>
-References: <200903280927.32786.david-b@pacbell.net>
-To: linux-kernel@vger.kernel.org
+	Thu, 2 Apr 2009 13:51:26 -0400
+Received: from e3.ny.us.ibm.com ([32.97.182.143]:50034 "EHLO e3.ny.us.ibm.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750919AbZDBRvZ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 2 Apr 2009 13:51:25 -0400
+In-Reply-To: <200903311015.29222.Martin@Lichtvoll.de>
+To: Martin Steigerwald <Martin@Lichtvoll.de>
+Cc: info@linuxfoundation.org, info@fsf.org, linux-fsdevel@vger.kernel.org,
+       linux-kernel@vger.kernel.org, office@fsfeurope.org
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Transfer-Encoding: 8bit
-X-SA-Exim-Connect-IP: 2001:6f8:1178:2:215:17ff:fe12:23b0
-X-SA-Exim-Mail-From: ukl@pengutronix.de
-X-SA-Exim-Scanned: No (on metis.ext.pengutronix.de); SAEximRunCond expanded to false
-X-PTX-Original-Recipient: linux-kernel@vger.kernel.org
+Subject: Re: Replacing VFAT as filesystem on removeable media
+X-Mailer: Lotus Notes Release 7.0 HF277 June 21, 2006
+Message-ID: <OFF614A035.0DA52102-ON8825758C.00613C94-8825758C.006215D5@us.ibm.com>
+From: Bryan Henderson <hbryan@us.ibm.com>
+Date: Thu, 2 Apr 2009 10:51:21 -0700
+X-MIMETrack: Serialize by Router on D01ML604/01/M/IBM(Release 8.5|December 05, 2008) at
+ 04/02/2009 13:51:21,
+	Serialize complete at 04/02/2009 13:51:21
+Content-Type: text/plain; charset="US-ASCII"
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-A pointer to mmc_omap_probe which lives in .init.text is passed to the
-core via platform_driver_register and so the kernel might oops if probe
-is called after the init code is discarded.
-
-As requested by David Brownell platform_driver_probe is used instead of
-moving the probe function to .devinit.text.  This saves some memory, but
-might have the downside that a device being registered after the call to
-mmc_omap_init but before the init sections are discarded will not be
-bound anymore to the driver.
-
-Signed-off-by: Uwe Kleine-König <u.kleine-koenig@pengutronix.de>
-Cc: Grazvydas Ignotas <notasas@gmail.com>
-Cc: Pierre Ossman <drzeus-mmc@drzeus.cx>
-Cc: David Brownell <dbrownell@users.sourceforge.net>
-Cc: Tony Lindgren <tony@atomide.com>
-Cc: Russell King <rmk+kernel@arm.linux.org.uk>
-Cc: Paul Walmsley <paul@pwsan.com>
-Cc: Jarkko Lavinen <jarkko.lavinen@nokia.com>
-Cc: Hiroshi DOYU <Hiroshi.DOYU@nokia.com>
-Cc: Kyungmin Park <kyungmin.park@samsung.com>
-Cc: Carlos Eduardo Aguiar <carlos.aguiar@indt.org.br>
-Cc: Andrew Morton <akpm@linux-foundation.org>
-
----
- drivers/mmc/host/omap.c |    3 +--
- 1 files changed, 1 insertions(+), 2 deletions(-)
-
-diff --git a/drivers/mmc/host/omap.c b/drivers/mmc/host/omap.c
-index 67d7b7f..004080e 100644
---- a/drivers/mmc/host/omap.c
-+++ b/drivers/mmc/host/omap.c
-@@ -1601,7 +1601,6 @@ static int mmc_omap_resume(struct platform_device *pdev)
- #endif
+> Now as TomTom appears to have surrendered to Microsoft and Microsoft 
+seems 
+> to have accepted this deal probably in order to not find out that their 
+> patents are void, I think replacing VFAT as standard cross platform 
+> filesystem on removeable media would be an even better idea than before 
+> [1].
  
- static struct platform_driver mmc_omap_driver = {
--	.probe		= mmc_omap_probe,
- 	.remove		= mmc_omap_remove,
- 	.suspend	= mmc_omap_suspend,
- 	.resume		= mmc_omap_resume,
-@@ -1613,7 +1612,7 @@ static struct platform_driver mmc_omap_driver = {
- 
- static int __init mmc_omap_init(void)
- {
--	return platform_driver_register(&mmc_omap_driver);
-+	return platform_driver_probe(&mmc_omap_driver, mmc_omap_probe);
- }
- 
- static void __exit mmc_omap_exit(void)
--- 
-tg: (5d80f8e..) t/platsection/mmc_omap_driver (depends on: linus/master)
+> [1] 
+> 
+http://www.h-online.com/open/TomTom-Microsoft-settle-patent-dispute--/news/112964
+
+How do you mean "replace"?
+
+VFAT's standardness today comes from the fact that virtually every 
+personal computer in the world today and for the foreseeable future is 
+able to read and write VFAT.  Do you envision some other filesystem format 
+achieving that status?
+
+--
+Bryan Henderson                     IBM Almaden Research Center
+San Jose CA                         Storage Systems
+
