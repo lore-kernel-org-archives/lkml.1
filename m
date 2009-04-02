@@ -1,211 +1,1386 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934634AbZDBJ5F@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934088AbZDBJ5i@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934634AbZDBJ5F (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 2 Apr 2009 05:57:05 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761657AbZDBJ4r
+	id S934088AbZDBJ5i (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 2 Apr 2009 05:57:38 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S935174AbZDBJ5K
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 2 Apr 2009 05:56:47 -0400
-Received: from gw-ca.panasas.com ([209.116.51.66]:18344 "EHLO
-	laguna.int.panasas.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1757834AbZDBJ4q (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 2 Apr 2009 05:56:46 -0400
-Message-ID: <49D48B5E.9060708@panasas.com>
-Date: Thu, 02 Apr 2009 12:54:38 +0300
-From: Boaz Harrosh <bharrosh@panasas.com>
-User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1b3pre) Gecko/20090315 Remi/3.0-0.b2.fc10.remi Thunderbird/3.0b2
-MIME-Version: 1.0
-To: Tejun Heo <tj@kernel.org>
-CC: axboe@kernel.dk, linux-kernel@vger.kernel.org,
-       fujita.tomonori@lab.ntt.co.jp,
-       James Bottomley <James.Bottomley@hansenpartnership.com>
-Subject: Re: [PATCH 08/17] bio: reimplement bio_copy_user_iov()
-References: <1238593472-30360-1-git-send-email-tj@kernel.org> <1238593472-30360-9-git-send-email-tj@kernel.org> <49D38D4B.7020701@panasas.com> <49D3FF7F.2070505@kernel.org> <49D47653.90507@panasas.com> <49D47E7B.3030209@kernel.org>
-In-Reply-To: <49D47E7B.3030209@kernel.org>
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
-X-OriginalArrivalTime: 02 Apr 2009 09:56:40.0534 (UTC) FILETIME=[52067760:01C9B379]
+	Thu, 2 Apr 2009 05:57:10 -0400
+Received: from comal.ext.ti.com ([198.47.26.152]:54376 "EHLO comal.ext.ti.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S935083AbZDBJ45 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 2 Apr 2009 05:56:57 -0400
+From: Purushotam Kumar <purushotam@ti.com>
+To: davinci-linux-open-source@linux.davincidsp.com,
+       linux-kernel@vger.kernel.org, drzeus-mmc@drzeus.cx, purushotam@ti.com
+Subject: [PATCH 1/1] DaVinci: MMC: V4: MMC/SD controller driver for DaVinci family.
+Date: Thu,  2 Apr 2009 15:26:36 +0530
+Message-Id: <1238666196-29979-1-git-send-email-purushotam@ti.com>
+X-Mailer: git-send-email 1.6.0.3
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 04/02/2009 11:59 AM, Tejun Heo wrote:
-> Hello, Boaz.
-> 
+From: Purshotam Kumar <purushotam@ti.com>
 
-Hi Tejun
+This patch adds support for MMC/SD controller driver for DaVinci family SoC.
+This patch will work for SoC like DM6446 and DM355. SoC like DM365 and
+DA830 also has same controller with small variations and could supported/added
+easily by using this version of patch. It means that this version of patch
+could be used for all SoC which has been derived from DaVinci family.
 
-> Boaz Harrosh wrote:
+This patch has been generated against latest 2.6.29 mainline kernel. This patch
+will not compile currently because it depends notably on the EDMA utilities and
+chip/board setup, that will come at some point through the ARM tree. Please use
+currently DaVinci GIT tree for EDMA utilities and chip/board setup etc.
 
->> So now that we got gup out of the way, will you go directly to bvecs?
-> 
-> As said before, I don't think exposing bio at the driver interface is
-> a good idea copy or not.  For internal implementation, if there's
-> enough benefit, yeah.
-> 
+Many thanks to David Brownell (david-b@pacbell.net) for his all support.
 
-I want to draw your attention, to something you might be forgetting
-sorry not to make it clearer before.
+This updated patch incorporates most of review comments given by 
+Pierre Ossman. Many thanks for Pierre Ossman for reviewing.
 
-There is no users for blk_rq_map_kern_sgl(), and no need for any such 
-driver interface.
+Signed-off-by: Purshotam Kumar <purushotam@ti.com>
+Acked-by: David Brownell <dbrownell@users.sourceforge.net>
+---
+ arch/arm/mach-davinci/include/mach/mmc.h |   25 +
+ drivers/mmc/host/Kconfig                 |    8 +
+ drivers/mmc/host/Makefile                |    1 +
+ drivers/mmc/host/davinci_mmc.c           | 1264 ++++++++++++++++++++++++++++++
+ 4 files changed, 1298 insertions(+), 0 deletions(-)
+ create mode 100644 arch/arm/mach-davinci/include/mach/mmc.h
+ create mode 100644 drivers/mmc/host/davinci_mmc.c
 
-This is because there is a pending patchest done by TOMO, which is
-in it's 4th incarnation by now, which removes the very last users
-of scsi_execute_async() and it's use of sgl. together with all that
-mess at scsi_lib.c. Removing scsi_execute_async() will remove the only
-potential user of blk_rq_map_kern_sgl(). So it can be killed at birth.
+diff --git a/arch/arm/mach-davinci/include/mach/mmc.h b/arch/arm/mach-davinci/include/mach/mmc.h
+new file mode 100644
+index 0000000..8fee158
+--- /dev/null
++++ b/arch/arm/mach-davinci/include/mach/mmc.h
+@@ -0,0 +1,25 @@
++/*
++ *  Board-specific MMC configuration
++ */
++
++#ifndef _DAVINCI_MMC_H
++#define _DAVINCI_MMC_H
++
++#include <linux/types.h>
++#include <linux/mmc/host.h>
++
++struct davinci_mmc_config {
++	/* get_cd()/get_wp() may sleep */
++	int (*get_cd)(int module);
++	int (*get_ro)(int module);
++	/* wires == 0 is equivalent to wires == 4 (4-bit parallel) */
++	u8 wires;
++
++	u32 max_freq;
++
++	/* any additional host capabilities: OR'd in to mmc->f_caps */
++	u32 caps;
++};
++void davinci_setup_mmc(int module, struct davinci_mmc_config *config);
++
++#endif
+diff --git a/drivers/mmc/host/Kconfig b/drivers/mmc/host/Kconfig
+index 99d4b28..311d00f 100644
+--- a/drivers/mmc/host/Kconfig
++++ b/drivers/mmc/host/Kconfig
+@@ -171,6 +171,14 @@ config MMC_TIFM_SD
+           To compile this driver as a module, choose M here: the
+ 	  module will be called tifm_sd.
+ 
++config MMC_DAVINCI
++        tristate "TI DAVINCI Multimedia Card Interface support"
++        depends on ARCH_DAVINCI
++        help
++          This selects the TI DAVINCI Multimedia card Interface.
++          If you have an DAVINCI board with a Multimedia Card slot,
++          say Y or M here.  If unsure, say N.
++
+ config MMC_SPI
+ 	tristate "MMC/SD/SDIO over SPI"
+ 	depends on SPI_MASTER && !HIGHMEM && HAS_DMA
+diff --git a/drivers/mmc/host/Makefile b/drivers/mmc/host/Makefile
+index dedec55..6bc91b1 100644
+--- a/drivers/mmc/host/Makefile
++++ b/drivers/mmc/host/Makefile
+@@ -20,6 +20,7 @@ obj-$(CONFIG_MMC_OMAP_HS)	+= omap_hsmmc.o
+ obj-$(CONFIG_MMC_AT91)		+= at91_mci.o
+ obj-$(CONFIG_MMC_ATMELMCI)	+= atmel-mci.o
+ obj-$(CONFIG_MMC_TIFM_SD)	+= tifm_sd.o
++obj-$(CONFIG_MMC_DAVINCI)       += davinci_mmc.o
+ obj-$(CONFIG_MMC_SPI)		+= mmc_spi.o
+ ifeq ($(CONFIG_OF),y)
+ obj-$(CONFIG_MMC_SPI)		+= of_mmc_spi.o
+diff --git a/drivers/mmc/host/davinci_mmc.c b/drivers/mmc/host/davinci_mmc.c
+new file mode 100644
+index 0000000..eac74ff
+--- /dev/null
++++ b/drivers/mmc/host/davinci_mmc.c
+@@ -0,0 +1,1264 @@
++/*
++ * davinci_mmc.c - TI DaVinci MMC/SD/SDIO driver
++ *
++ * Copyright (C) 2006 Texas Instruments.
++ *       Original author: Purushotam Kumar
++ * Copyright (C) 2009 David Brownell
++ *
++ * This program is free software; you can redistribute it and/or modify
++ * it under the terms of the GNU General Public License as published by
++ * the Free Software Foundation; either version 2 of the License, or
++ * (at your option) any later version.
++ *
++ * This program is distributed in the hope that it will be useful,
++ * but WITHOUT ANY WARRANTY; without even the implied warranty of
++ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
++ * GNU General Public License for more details.
++ *
++ * You should have received a copy of the GNU General Public License
++ * along with this program; if not, write to the Free Software
++ * Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
++ */
++
++#include <linux/module.h>
++#include <linux/ioport.h>
++#include <linux/platform_device.h>
++#include <linux/clk.h>
++#include <linux/err.h>
++#include <linux/mmc/host.h>
++#include <linux/io.h>
++#include <linux/irq.h>
++#include <linux/delay.h>
++#include <linux/dma-mapping.h>
++#include <linux/mmc/mmc.h>
++
++#include <mach/mmc.h>
++#include <mach/edma.h>
++
++/*
++ * Register Definitions
++ */
++#define DAVINCI_MMCCTL       0x00 /* Control Register                  */
++#define DAVINCI_MMCCLK       0x04 /* Memory Clock Control Register     */
++#define DAVINCI_MMCST0       0x08 /* Status Register 0                 */
++#define DAVINCI_MMCST1       0x0C /* Status Register 1                 */
++#define DAVINCI_MMCIM        0x10 /* Interrupt Mask Register           */
++#define DAVINCI_MMCTOR       0x14 /* Response Time-Out Register        */
++#define DAVINCI_MMCTOD       0x18 /* Data Read Time-Out Register       */
++#define DAVINCI_MMCBLEN      0x1C /* Block Length Register             */
++#define DAVINCI_MMCNBLK      0x20 /* Number of Blocks Register         */
++#define DAVINCI_MMCNBLC      0x24 /* Number of Blocks Counter Register */
++#define DAVINCI_MMCDRR       0x28 /* Data Receive Register             */
++#define DAVINCI_MMCDXR       0x2C /* Data Transmit Register            */
++#define DAVINCI_MMCCMD       0x30 /* Command Register                  */
++#define DAVINCI_MMCARGHL     0x34 /* Argument Register                 */
++#define DAVINCI_MMCRSP01     0x38 /* Response Register 0 and 1         */
++#define DAVINCI_MMCRSP23     0x3C /* Response Register 0 and 1         */
++#define DAVINCI_MMCRSP45     0x40 /* Response Register 0 and 1         */
++#define DAVINCI_MMCRSP67     0x44 /* Response Register 0 and 1         */
++#define DAVINCI_MMCDRSP      0x48 /* Data Response Register            */
++#define DAVINCI_MMCETOK      0x4C
++#define DAVINCI_MMCCIDX      0x50 /* Command Index Register            */
++#define DAVINCI_MMCCKC       0x54
++#define DAVINCI_MMCTORC      0x58
++#define DAVINCI_MMCTODC      0x5C
++#define DAVINCI_MMCBLNC      0x60
++#define DAVINCI_SDIOCTL      0x64
++#define DAVINCI_SDIOST0      0x68
++#define DAVINCI_SDIOEN       0x6C
++#define DAVINCI_SDIOST       0x70
++#define DAVINCI_MMCFIFOCTL   0x74 /* FIFO Control Register             */
++
++/* DAVINCI_MMCCTL definitions */
++#define MMCCTL_DATRST         (1 << 0)
++#define MMCCTL_CMDRST         (1 << 1)
++#define MMCCTL_WIDTH_4_BIT    (1 << 2)
++#define MMCCTL_DATEG_DISABLED (0 << 6)
++#define MMCCTL_DATEG_RISING   (1 << 6)
++#define MMCCTL_DATEG_FALLING  (2 << 6)
++#define MMCCTL_DATEG_BOTH     (3 << 6)
++#define MMCCTL_PERMDR_LE      (0 << 9)
++#define MMCCTL_PERMDR_BE      (1 << 9)
++#define MMCCTL_PERMDX_LE      (0 << 10)
++#define MMCCTL_PERMDX_BE      (1 << 10)
++
++/* DAVINCI_MMCCLK definitions */
++#define MMCCLK_CLKEN          (1 << 8)
++#define MMCCLK_CLKRT_MASK     (0xFF << 0)
++
++/* IRQ bit definitions, for DAVINCI_MMCST0 and DAVINCI_MMCIM */
++#define MMCST0_DATDNE         BIT(0)	/* data done */
++#define MMCST0_BSYDNE         BIT(1)	/* busy done */
++#define MMCST0_RSPDNE         BIT(2)	/* command done */
++#define MMCST0_TOUTRD         BIT(3)	/* data read timeout */
++#define MMCST0_TOUTRS         BIT(4)	/* command response timeout */
++#define MMCST0_CRCWR          BIT(5)	/* data write CRC error */
++#define MMCST0_CRCRD          BIT(6)	/* data read CRC error */
++#define MMCST0_CRCRS          BIT(7)	/* command response CRC error */
++#define MMCST0_DXRDY          BIT(9)	/* data transmit ready (fifo empty) */
++#define MMCST0_DRRDY          BIT(10)	/* data receive ready (data in fifo)*/
++#define MMCST0_DATED          BIT(11)	/* DAT3 edge detect */
++#define MMCST0_TRNDNE         BIT(12)	/* transfer done */
++
++/* DAVINCI_MMCST1 definitions */
++#define MMCST1_BUSY           (1 << 0)
++
++/* DAVINCI_MMCCMD definitions */
++#define MMCCMD_CMD_MASK       (0x3F << 0)
++#define MMCCMD_PPLEN          (1 << 7)
++#define MMCCMD_BSYEXP         (1 << 8)
++#define MMCCMD_RSPFMT_MASK    (3 << 9)
++#define MMCCMD_RSPFMT_NONE    (0 << 9)
++#define MMCCMD_RSPFMT_R1456   (1 << 9)
++#define MMCCMD_RSPFMT_R2      (2 << 9)
++#define MMCCMD_RSPFMT_R3      (3 << 9)
++#define MMCCMD_DTRW           (1 << 11)
++#define MMCCMD_STRMTP         (1 << 12)
++#define MMCCMD_WDATX          (1 << 13)
++#define MMCCMD_INITCK         (1 << 14)
++#define MMCCMD_DCLR           (1 << 15)
++#define MMCCMD_DMATRIG        (1 << 16)
++
++/* DAVINCI_MMCFIFOCTL definitions */
++#define MMCFIFOCTL_FIFORST    (1 << 0)
++#define MMCFIFOCTL_FIFODIR_WR (1 << 1)
++#define MMCFIFOCTL_FIFODIR_RD (0 << 1)
++#define MMCFIFOCTL_FIFOLEV    (1 << 2) /* 0 = 128 bits, 1 = 256 bits */
++#define MMCFIFOCTL_ACCWD_4    (0 << 3) /* access width of 4 bytes    */
++#define MMCFIFOCTL_ACCWD_3    (1 << 3) /* access width of 3 bytes    */
++#define MMCFIFOCTL_ACCWD_2    (2 << 3) /* access width of 2 bytes    */
++#define MMCFIFOCTL_ACCWD_1    (3 << 3) /* access width of 1 byte     */
++
++
++/* MMCSD Init clock in Hz in opendrain mode */
++#define MMCSD_INIT_CLOCK		200000
++
++/*
++ * One scatterlist dma "segment" is at most MAX_CCNT rw_threshold units,
++ * and we handle up to NR_SG segments.  MMC_BLOCK_BOUNCE kicks in only
++ * for drivers with max_hw_segs == 1, making the segments bigger (64KB)
++ * than the page or two that's otherwise typical.  NR_SG == 16 gives at
++ * least the same throughput boost, using EDMA transfer linkage instead
++ * of spending CPU time copying pages.
++ */
++#define MAX_CCNT	((1 << 16) - 1)
++
++#define NR_SG		16
++
++#define DAVINCI_MMC_FIFO_SIZE_BYTE 32
++static unsigned rw_threshold = 32;
++static unsigned ns_in_one_cycle = 1;
++module_param(rw_threshold, uint, S_IRUGO);
++MODULE_PARM_DESC(rw_threshold,
++		"Read/Write threshold, can be 16/32. Default = 32");
++
++static unsigned __initdata use_dma = 1;
++module_param(use_dma, uint, 0);
++MODULE_PARM_DESC(use_dma, "Whether to use DMA or not. Default = 1");
++
++struct mmc_davinci_host {
++	struct mmc_command *cmd;
++	struct mmc_data *data;
++	struct mmc_host *mmc;
++	struct clk *clk;
++	unsigned int mmc_input_clk;
++	void __iomem *base;
++	struct resource *mem_res;
++	int irq;
++	unsigned char bus_mode;
++
++#define DAVINCI_MMC_DATADIR_NONE	0
++#define DAVINCI_MMC_DATADIR_READ	1
++#define DAVINCI_MMC_DATADIR_WRITE	2
++	unsigned char data_dir;
++
++	/* buffer is used during PIO of one scatterlist segment, and
++	 * is updated along with buffer_bytes_left.  bytes_left applies
++	 * to all N blocks of the PIO transfer.
++	 */
++	u8 *buffer;
++	u32 buffer_bytes_left;
++	u32 bytes_left;
++
++	u8 rxdma, txdma;
++	bool use_dma;
++	bool do_dma;
++
++	/* Scatterlist DMA uses one or more parameter RAM entries:
++	 * the main one (associated with rxdma or txdma) plus zero or
++	 * more links.  The entries for a given transfer differ only
++	 * by memory buffer (address, length) and link field.
++	 */
++	struct edmacc_param	tx_template;
++	struct edmacc_param	rx_template;
++	unsigned		n_link;
++	u8			links[NR_SG - 1];
++
++	/* For PIO we walk scatterlists one segment at a time. */
++	unsigned int		sg_len;
++};
++
++
++/* PIO only */
++static void mmc_davinci_sg_to_buf(struct mmc_davinci_host *host)
++{
++	struct scatterlist *sg;
++	sg = host->data->sg;
++	host->buffer_bytes_left = sg_dma_len(sg);
++	host->buffer = sg_virt(sg);
++	if (host->buffer_bytes_left > host->bytes_left)
++		host->buffer_bytes_left = host->bytes_left;
++}
++
++static void davinci_fifo_data_trans(struct mmc_davinci_host *host,
++					unsigned int n)
++{
++	u8 *p;
++	unsigned int i;
++
++	if (host->buffer_bytes_left == 0) {
++		host->data->sg = sg_next(host->data->sg);
++		mmc_davinci_sg_to_buf(host);
++	}
++
++	p = host->buffer;
++	if (n > host->buffer_bytes_left)
++		n = host->buffer_bytes_left;
++	host->buffer_bytes_left -= n;
++	host->bytes_left -= n;
++
++	/* NOTE:  we never transfer more than rw_threshold bytes
++	 * to/from the fifo here; there's no I/O overlap.
++	 * This also assumes that access width( i.e. ACCWD) is 4 bytes
++	 */
++	if (host->data_dir == DAVINCI_MMC_DATADIR_WRITE) {
++		for (i = 0; i < (n >> 2); i++) {
++			writel(*((u32 *)p), host->base + DAVINCI_MMCDXR);
++			p = p + 4;
++		}
++		if (n & 3) {
++			iowrite8_rep(host->base + DAVINCI_MMCDXR, p, (n & 3));
++			p = p + (n & 3);
++		}
++	} else {
++		for (i = 0; i < (n >> 2); i++) {
++			*((u32 *)p) = readl(host->base + DAVINCI_MMCDRR);
++			p  = p + 4;
++		}
++		if (n & 3) {
++			ioread8_rep(host->base + DAVINCI_MMCDRR, p, (n & 3));
++			p = p + (n & 3);
++		}
++	}
++	host->buffer = p;
++}
++
++static void mmc_davinci_start_command(struct mmc_davinci_host *host,
++		struct mmc_command *cmd)
++{
++	u32 cmd_reg = 0;
++	u32 im_val;
++
++	dev_dbg(mmc_dev(host->mmc), "CMD%d, arg 0x%08x%s\n",
++		cmd->opcode, cmd->arg,
++		({ char *s;
++		switch (mmc_resp_type(cmd)) {
++		case MMC_RSP_R1:
++			s = ", R1/R5/R6/R7 response";
++			break;
++		case MMC_RSP_R1B:
++			s = ", R1b response";
++			break;
++		case MMC_RSP_R2:
++			s = ", R2 response";
++			break;
++		case MMC_RSP_R3:
++			s = ", R3/R4 response";
++			break;
++		default:
++			s = ", (R? response)";
++			break;
++		}; s; }));
++	host->cmd = cmd;
++
++	switch (mmc_resp_type(cmd)) {
++	case MMC_RSP_R1B:
++		/* There's some spec confusion about when R1B is
++		 * allowed, but if the card doesn't issue a BUSY
++		 * then it's harmless for us to allow it.
++		 */
++		cmd_reg |= MMCCMD_BSYEXP;
++		/* FALLTHROUGH */
++	case MMC_RSP_R1:		/* 48 bits, CRC */
++		cmd_reg |= MMCCMD_RSPFMT_R1456;
++		break;
++	case MMC_RSP_R2:		/* 136 bits, CRC */
++		cmd_reg |= MMCCMD_RSPFMT_R2;
++		break;
++	case MMC_RSP_R3:		/* 48 bits, no CRC */
++		cmd_reg |= MMCCMD_RSPFMT_R3;
++		break;
++	default:
++		cmd_reg |= MMCCMD_RSPFMT_NONE;
++		dev_dbg(mmc_dev(host->mmc), "unknown resp_type %04x\n",
++			mmc_resp_type(cmd));
++		break;
++	}
++
++	/* Set command index */
++	cmd_reg |= cmd->opcode;
++
++	/* Enable EDMA transfer triggers */
++	if (host->do_dma)
++		cmd_reg |= MMCCMD_DMATRIG;
++
++	/* Setting whether command involves data transfer or not */
++	if (cmd->data)
++		cmd_reg |= MMCCMD_WDATX;
++
++	/* Setting whether stream or block transfer */
++	if (cmd->flags & MMC_DATA_STREAM)
++		cmd_reg |= MMCCMD_STRMTP;
++
++	/* Setting whether data read or write */
++	if (host->data_dir == DAVINCI_MMC_DATADIR_WRITE)
++		cmd_reg |= MMCCMD_DTRW;
++
++	if (host->bus_mode == MMC_BUSMODE_PUSHPULL)
++		cmd_reg |= MMCCMD_PPLEN;
++
++	/* set Command timeout */
++	writel(0x1FFF, host->base + DAVINCI_MMCTOR);
++
++	/* Enable interrupt (calculate here, defer until FIFO is stuffed). */
++	im_val =  MMCST0_RSPDNE | MMCST0_CRCRS | MMCST0_TOUTRS;
++	if (host->data_dir == DAVINCI_MMC_DATADIR_WRITE) {
++		im_val |= MMCST0_DATDNE | MMCST0_CRCWR;
++
++		if (!host->do_dma)
++			im_val |= MMCST0_DXRDY;
++	} else if (host->data_dir == DAVINCI_MMC_DATADIR_READ) {
++		im_val |= MMCST0_DATDNE | MMCST0_CRCRD | MMCST0_TOUTRD;
++
++		if (!host->do_dma)
++			im_val |= MMCST0_DRRDY;
++	}
++
++	/*
++	 * Before non-DMA WRITE commands the controller needs priming:
++	 * FIFO should be populated with 32 bytes i.e. whatever is the FIFO size
++	 */
++	if (!host->do_dma && (host->data_dir == DAVINCI_MMC_DATADIR_WRITE) &&
++		((cmd->opcode == MMC_WRITE_BLOCK) ||
++		(cmd->opcode == MMC_WRITE_MULTIPLE_BLOCK)))
++		davinci_fifo_data_trans(host, DAVINCI_MMC_FIFO_SIZE_BYTE);
++
++	writel(cmd->arg, host->base + DAVINCI_MMCARGHL);
++	writel(cmd_reg,  host->base + DAVINCI_MMCCMD);
++	writel(im_val, host->base + DAVINCI_MMCIM);
++}
++
++/*----------------------------------------------------------------------*/
++
++/* DMA infrastructure */
++
++static void davinci_abort_dma(struct mmc_davinci_host *host)
++{
++	int sync_dev;
++
++	if (host->data_dir == DAVINCI_MMC_DATADIR_READ)
++		sync_dev = host->rxdma;
++	else
++		sync_dev = host->txdma;
++
++	edma_stop(sync_dev);
++	edma_clean_channel(sync_dev);
++}
++
++static void
++mmc_davinci_xfer_done(struct mmc_davinci_host *host, struct mmc_data *data);
++
++static void mmc_davinci_dma_cb(unsigned channel, u16 ch_status, void *data)
++{
++	if (DMA_COMPLETE != ch_status) {
++		struct mmc_davinci_host *host = data;
++
++		/* Currently means:  DMA Event Missed, or "null" transfer
++		 * request was seen.  In the future, TC errors (like bad
++		 * addresses) might be presented too.
++		 */
++		dev_warn(mmc_dev(host->mmc), "DMA %s error\n",
++			(host->data->flags & MMC_DATA_WRITE)
++				? "write" : "read");
++		host->data->error = -EIO;
++		mmc_davinci_xfer_done(host, host->data);
++	}
++}
++
++/* Set up tx or rx template, to be modified and updated later */
++static void __init mmc_davinci_dma_setup(struct mmc_davinci_host *host,
++		bool tx, struct edmacc_param *template)
++{
++	unsigned	sync_dev;
++	const u16	acnt = 4;
++	const u16	bcnt = rw_threshold >> 2;
++	const u16	ccnt = 0;
++	u32		src_port = 0;
++	u32		dst_port = 0;
++	s16		src_bidx, dst_bidx;
++	s16		src_cidx, dst_cidx;
++
++	/*
++	 * A-B Sync transfer:  each DMA request is for one "frame" of
++	 * rw_threshold bytes, broken into "acnt"-size chunks repeated
++	 * "bcnt" times.  Each segment needs "ccnt" such frames; since
++	 * we tell the block layer our mmc->max_seg_size limit, we can
++	 * trust (later) that it's within bounds.
++	 *
++	 * The FIFOs are read/written in 4-byte chunks (acnt == 4) and
++	 * EDMA will optimize memory operations to use larger bursts.
++	 */
++	if (tx) {
++		sync_dev = host->txdma;
++
++		/* src_prt, ccnt, and link to be set up later */
++		src_bidx = acnt;
++		src_cidx = acnt * bcnt;
++
++		dst_port = host->mem_res->start + DAVINCI_MMCDXR;
++		dst_bidx = 0;
++		dst_cidx = 0;
++	} else {
++		sync_dev = host->rxdma;
++
++		src_port = host->mem_res->start + DAVINCI_MMCDRR;
++		src_bidx = 0;
++		src_cidx = 0;
++
++		/* dst_prt, ccnt, and link to be set up later */
++		dst_bidx = acnt;
++		dst_cidx = acnt * bcnt;
++	}
++
++	/*
++	 * We can't use FIFO mode for the FIFOs because MMC FIFO addresses
++	 * are not 256-bit (32-byte) aligned.  So we use INCR, and the W8BIT
++	 * parameter is ignored.
++	 */
++	edma_set_src(sync_dev, src_port, INCR, W8BIT);
++	edma_set_dest(sync_dev, dst_port, INCR, W8BIT);
++
++	edma_set_src_index(sync_dev, src_bidx, src_cidx);
++	edma_set_dest_index(sync_dev, dst_bidx, dst_cidx);
++
++	edma_set_transfer_params(sync_dev, acnt, bcnt, ccnt, 8, ABSYNC);
++
++	edma_read_slot(sync_dev, template);
++
++	/* don't bother with irqs or chaining */
++	template->opt |= sync_dev << 12;
++}
++
++static void mmc_davinci_send_dma_request(struct mmc_davinci_host *host,
++		struct mmc_data *data)
++{
++	struct edmacc_param	*template;
++	int			channel, slot;
++	unsigned		link;
++	struct scatterlist	*sg;
++	unsigned		sg_len;
++	unsigned		bytes_left = host->bytes_left;
++	const unsigned		shift = (rw_threshold == 32) ? 5 : 4;
++
++	if (host->data_dir == DAVINCI_MMC_DATADIR_WRITE) {
++		template = &host->tx_template;
++		channel = host->txdma;
++	} else {
++		template = &host->rx_template;
++		channel = host->rxdma;
++	}
++
++	/* We know sg_len and ccnt will never be out of range because
++	 * we told the mmc layer which in turn tells the block layer
++	 * to ensure that it only hands us one scatterlist segment
++	 * per EDMA PARAM entry.  Update the PARAM
++	 * entries needed for each segment of this scatterlist.
++	 */
++	for (slot = channel, link = 0, sg = data->sg, sg_len = host->sg_len;
++			sg_len-- != 0 && bytes_left;
++			sg = sg_next(sg), slot = host->links[link++]) {
++		u32		buf = sg_dma_address(sg);
++		unsigned	count = sg_dma_len(sg);
++
++		template->link_bcntrld = sg_len
++				? (host->links[link] << 5)
++				: 0xffff;
++
++		if (count > bytes_left)
++			count = bytes_left;
++		bytes_left -= count;
++
++		if (host->data_dir == DAVINCI_MMC_DATADIR_WRITE)
++			template->src = buf;
++		else
++			template->dst = buf;
++		template->ccnt = count >> shift;
++
++		edma_write_slot(slot, template);
++	}
++
++	edma_start(channel);
++}
++
++static int mmc_davinci_start_dma_transfer(struct mmc_davinci_host *host,
++		struct mmc_data *data)
++{
++	int i;
++	int mask = rw_threshold - 1;
++
++	host->sg_len = dma_map_sg(mmc_dev(host->mmc), data->sg, data->sg_len,
++				((data->flags & MMC_DATA_WRITE)
++				? DMA_TO_DEVICE
++				: DMA_FROM_DEVICE));
++
++	/* no individual DMA segment should need a partial FIFO */
++	for (i = 0; i < host->sg_len; i++) {
++		if (sg_dma_len(data->sg + i) & mask) {
++			dma_unmap_sg(mmc_dev(host->mmc),
++					data->sg, data->sg_len,
++					(data->flags & MMC_DATA_WRITE)
++					? DMA_TO_DEVICE
++					: DMA_FROM_DEVICE);
++			return -1;
++		}
++	}
++
++	host->do_dma = 1;
++	mmc_davinci_send_dma_request(host, data);
++
++	return 0;
++}
++
++static void __init_or_module
++davinci_release_dma_channels(struct mmc_davinci_host *host)
++{
++	unsigned	i;
++
++	if (!host->use_dma)
++		return;
++
++	for (i = 0; i < host->n_link; i++)
++		edma_free_slot(host->links[i]);
++
++	edma_free_channel(host->txdma);
++	edma_free_channel(host->rxdma);
++}
++
++static int __init davinci_acquire_dma_channels(struct mmc_davinci_host *host)
++{
++	int r, i;
++
++	/* Acquire master DMA write channel */
++	r = edma_alloc_channel(host->txdma, mmc_davinci_dma_cb, host,
++			EVENTQ_DEFAULT);
++	if (r < 0) {
++		dev_warn(mmc_dev(host->mmc), "alloc %s channel err %d\n",
++				"tx", r);
++		return r;
++	}
++	mmc_davinci_dma_setup(host, true, &host->tx_template);
++
++	/* Acquire master DMA read channel */
++	r = edma_alloc_channel(host->rxdma, mmc_davinci_dma_cb, host,
++			EVENTQ_DEFAULT);
++	if (r < 0) {
++		dev_warn(mmc_dev(host->mmc), "alloc %s channel err %d\n",
++				"rx", r);
++		goto free_master_write;
++	}
++	mmc_davinci_dma_setup(host, false, &host->rx_template);
++
++	/* Allocate parameter RAM slots, which will later be bound to a
++	 * channel as needed to handle a scatterlist.
++	 */
++	for (i = 0; i < ARRAY_SIZE(host->links); i++) {
++		r = edma_alloc_slot(EDMA_SLOT_ANY);
++		if (r < 0) {
++			dev_dbg(mmc_dev(host->mmc), "dma PaRAM alloc --> %d\n",
++				r);
++			break;
++		}
++		host->links[i] = r;
++	}
++	host->n_link = i;
++
++	return 0;
++
++free_master_write:
++	edma_free_channel(host->txdma);
++
++	return r;
++}
++
++/*----------------------------------------------------------------------*/
++
++static void
++mmc_davinci_prepare_data(struct mmc_davinci_host *host, struct mmc_request *req)
++{
++	int fifo_lev = (rw_threshold == 32) ? MMCFIFOCTL_FIFOLEV : 0;
++	int timeout;
++	struct mmc_data *data = req->data;
++
++	host->data = data;
++	if (data == NULL) {
++		host->data_dir = DAVINCI_MMC_DATADIR_NONE;
++		writel(0, host->base + DAVINCI_MMCBLEN);
++		writel(0, host->base + DAVINCI_MMCNBLK);
++		return;
++	}
++
++	dev_dbg(mmc_dev(host->mmc), "%s %s, %d blocks of %d bytes\n",
++		(data->flags & MMC_DATA_STREAM) ? "stream" : "block",
++		(data->flags & MMC_DATA_WRITE) ? "write" : "read",
++		data->blocks, data->blksz);
++	dev_dbg(mmc_dev(host->mmc), "  DTO %d cycles + %d ns\n",
++		data->timeout_clks, data->timeout_ns);
++	timeout = data->timeout_clks + data->timeout_ns / ns_in_one_cycle;
++	if (timeout > 0xffff)
++		timeout = 0xffff;
++
++	writel(timeout, host->base + DAVINCI_MMCTOD);
++	writel(data->blocks, host->base + DAVINCI_MMCNBLK);
++	writel(data->blksz, host->base + DAVINCI_MMCBLEN);
++
++	/* Configure the FIFO */
++	switch (data->flags & MMC_DATA_WRITE) {
++	case MMC_DATA_WRITE:
++		host->data_dir = DAVINCI_MMC_DATADIR_WRITE;
++		writel(fifo_lev | MMCFIFOCTL_FIFODIR_WR | MMCFIFOCTL_FIFORST,
++			host->base + DAVINCI_MMCFIFOCTL);
++		writel(fifo_lev | MMCFIFOCTL_FIFODIR_WR,
++			host->base + DAVINCI_MMCFIFOCTL);
++		break;
++
++	default:
++		host->data_dir = DAVINCI_MMC_DATADIR_READ;
++		writel(fifo_lev | MMCFIFOCTL_FIFODIR_RD | MMCFIFOCTL_FIFORST,
++			host->base + DAVINCI_MMCFIFOCTL);
++		writel(fifo_lev | MMCFIFOCTL_FIFODIR_RD,
++			host->base + DAVINCI_MMCFIFOCTL);
++		break;
++	}
++
++	host->buffer = NULL;
++	host->bytes_left = data->blocks * data->blksz;
++
++	/* For now we try to use DMA whenever we won't need partial FIFO
++	 * reads or writes, either for the whole transfer (as tested here)
++	 * or for any individual scatterlist segment (tested when we call
++	 * start_dma_transfer).
++	 *
++	 * While we *could* change that, unusual block sizes are rarely
++	 * used.  The occasional fallback to PIO should't hurt.
++	 */
++	if (host->use_dma && (host->bytes_left & (rw_threshold - 1)) == 0
++			&& mmc_davinci_start_dma_transfer(host, data) == 0) {
++		/* zero this to ensure we take no PIO paths */
++		host->bytes_left = 0;
++	} else {
++		/* Revert to CPU Copy */
++		host->sg_len = data->sg_len;
++		mmc_davinci_sg_to_buf(host);
++	}
++}
++
++static void mmc_davinci_request(struct mmc_host *mmc, struct mmc_request *req)
++{
++	struct mmc_davinci_host *host = mmc_priv(mmc);
++	unsigned long timeout = jiffies + msecs_to_jiffies(900);
++	u32 mmcst1 = 0;
++
++	/* Card may still be sending BUSY after a previous operation,
++	 * typically some kind of write.  If so, we can't proceed yet.
++	 */
++	while (time_before(jiffies, timeout)) {
++		mmcst1  = readl(host->base + DAVINCI_MMCST1);
++		if (!(mmcst1 & MMCST1_BUSY))
++			break;
++		cpu_relax();
++	}
++	if (mmcst1 & MMCST1_BUSY) {
++		dev_err(mmc_dev(host->mmc), "still BUSY? bad ... \n");
++		req->cmd->error = -ETIMEDOUT;
++		mmc_request_done(mmc, req);
++		return;
++	}
++
++	host->do_dma = 0;
++	mmc_davinci_prepare_data(host, req);
++	mmc_davinci_start_command(host, req->cmd);
++}
++
++static unsigned int calculate_freq_for_card(struct mmc_davinci_host *host,
++	unsigned int mmc_req_freq)
++{
++	unsigned int mmc_freq = 0, cpu_arm_clk = 0, mmc_push_pull = 0;
++
++	cpu_arm_clk = host->mmc_input_clk;
++	if (mmc_req_freq && cpu_arm_clk > (2 * mmc_req_freq))
++		mmc_push_pull = ((unsigned int)cpu_arm_clk
++				/ (2 * mmc_req_freq)) - 1;
++	else
++		mmc_push_pull = 0;
++
++	mmc_freq = (unsigned int)cpu_arm_clk / (2 * (mmc_push_pull + 1));
++
++	if (mmc_freq > mmc_req_freq)
++		mmc_push_pull = mmc_push_pull + 1;
++
++	/* Convert ns to clock cycles */
++	if (mmc_req_freq < 400000)
++		ns_in_one_cycle = 1000000 / ((cpu_arm_clk
++					/ (2 * (mmc_push_pull + 1)))/1000);
++	else
++		ns_in_one_cycle = 1000000 / ((cpu_arm_clk
++					/ (2 * (mmc_push_pull + 1)))/1000000);
++
++	return mmc_push_pull;
++}
++
++static void mmc_davinci_set_ios(struct mmc_host *mmc, struct mmc_ios *ios)
++{
++	unsigned int open_drain_freq = 0, cpu_arm_clk = 0;
++	unsigned int mmc_push_pull_freq = 0;
++	struct mmc_davinci_host *host = mmc_priv(mmc);
++
++	cpu_arm_clk = host->mmc_input_clk;
++	dev_dbg(mmc_dev(host->mmc),
++		"clock %dHz busmode %d powermode %d Vdd %04x\n",
++		ios->clock, ios->bus_mode, ios->power_mode,
++		ios->vdd);
++	if (ios->bus_width == MMC_BUS_WIDTH_4) {
++		dev_dbg(mmc_dev(host->mmc), "Enabling 4 bit mode\n");
++		writel(readl(host->base + DAVINCI_MMCCTL) | MMCCTL_WIDTH_4_BIT,
++			host->base + DAVINCI_MMCCTL);
++	} else {
++		dev_dbg(mmc_dev(host->mmc), "Disabling 4 bit mode\n");
++		writel(readl(host->base + DAVINCI_MMCCTL) & ~MMCCTL_WIDTH_4_BIT,
++			host->base + DAVINCI_MMCCTL);
++	}
++
++	if (ios->bus_mode == MMC_BUSMODE_OPENDRAIN) {
++		u32 temp;
++
++		/* Ignoring the init clock value passed for fixing the inter
++		 * operability with different cards.
++		 */
++		open_drain_freq = ((unsigned int)cpu_arm_clk
++				/ (2 * MMCSD_INIT_CLOCK)) - 1;
++
++		if (open_drain_freq > 0xFF)
++			open_drain_freq = 0xFF;
++
++		temp = readl(host->base + DAVINCI_MMCCLK) & ~MMCCLK_CLKRT_MASK;
++		temp |= open_drain_freq;
++		writel(temp, host->base + DAVINCI_MMCCLK);
++
++		/* Convert ns to clock cycles */
++		ns_in_one_cycle = (1000000) / (MMCSD_INIT_CLOCK/1000);
++	} else {
++		u32 temp;
++		mmc_push_pull_freq = calculate_freq_for_card(host, ios->clock);
++
++		temp = readl(host->base + DAVINCI_MMCCLK) & ~MMCCLK_CLKEN;
++		writel(temp, host->base + DAVINCI_MMCCLK);
++
++		udelay(10);
++
++		temp = readl(host->base + DAVINCI_MMCCLK) & ~MMCCLK_CLKRT_MASK;
++		temp |= mmc_push_pull_freq;
++		writel(temp, host->base + DAVINCI_MMCCLK);
++
++		writel(temp | MMCCLK_CLKEN, host->base + DAVINCI_MMCCLK);
++
++		udelay(10);
++	}
++
++	host->bus_mode = ios->bus_mode;
++	if (ios->power_mode == MMC_POWER_UP) {
++		unsigned long timeout = jiffies + msecs_to_jiffies(50);
++		bool lose = true;
++
++		/* Send clock cycles, poll completion */
++		writel(0, host->base + DAVINCI_MMCARGHL);
++		writel(MMCCMD_INITCK, host->base + DAVINCI_MMCCMD);
++		while (time_before(jiffies, timeout)) {
++			u32 tmp = readl(host->base + DAVINCI_MMCST0);
++
++			if (tmp & MMCST0_RSPDNE) {
++				lose = false;
++				break;
++			}
++			cpu_relax();
++		}
++		if (lose)
++			dev_warn(mmc_dev(host->mmc), "powerup timeout\n");
++	}
++
++	/* FIXME on power OFF, reset things ... */
++}
++
++static void
++mmc_davinci_xfer_done(struct mmc_davinci_host *host, struct mmc_data *data)
++{
++	host->data = NULL;
++	host->data_dir = DAVINCI_MMC_DATADIR_NONE;
++
++	if (host->do_dma) {
++		davinci_abort_dma(host);
++
++		dma_unmap_sg(mmc_dev(host->mmc), data->sg, data->sg_len,
++			     (data->flags & MMC_DATA_WRITE)
++			     ? DMA_TO_DEVICE
++			     : DMA_FROM_DEVICE);
++		host->do_dma = false;
++	}
++
++	if (!data->stop || (host->cmd && host->cmd->error)) {
++		mmc_request_done(host->mmc, data->mrq);
++		writel(0, host->base + DAVINCI_MMCIM);
++	} else
++		mmc_davinci_start_command(host, data->stop);
++}
++
++static void mmc_davinci_cmd_done(struct mmc_davinci_host *host,
++				 struct mmc_command *cmd)
++{
++	host->cmd = NULL;
++
++	if (cmd->flags & MMC_RSP_PRESENT) {
++		if (cmd->flags & MMC_RSP_136) {
++			/* response type 2 */
++			cmd->resp[3] = readl(host->base + DAVINCI_MMCRSP01);
++			cmd->resp[2] = readl(host->base + DAVINCI_MMCRSP23);
++			cmd->resp[1] = readl(host->base + DAVINCI_MMCRSP45);
++			cmd->resp[0] = readl(host->base + DAVINCI_MMCRSP67);
++		} else {
++			/* response types 1, 1b, 3, 4, 5, 6 */
++			cmd->resp[0] = readl(host->base + DAVINCI_MMCRSP67);
++		}
++	}
++
++	if (host->data == NULL || cmd->error) {
++		if (cmd->error == -ETIMEDOUT)
++			cmd->mrq->cmd->retries = 0;
++		mmc_request_done(host->mmc, cmd->mrq);
++		writel(0, host->base + DAVINCI_MMCIM);
++	}
++}
++
++static void
++davinci_abort_data(struct mmc_davinci_host *host, struct mmc_data *data)
++{
++	u32 temp;
++
++	/* reset command and data state machines */
++	temp = readl(host->base + DAVINCI_MMCCTL);
++	writel(temp | MMCCTL_CMDRST | MMCCTL_DATRST,
++		host->base + DAVINCI_MMCCTL);
++
++	temp &= ~(MMCCTL_CMDRST | MMCCTL_DATRST);
++	udelay(10);
++	writel(temp, host->base + DAVINCI_MMCCTL);
++}
++
++static irqreturn_t mmc_davinci_irq(int irq, void *dev_id)
++{
++	struct mmc_davinci_host *host = (struct mmc_davinci_host *)dev_id;
++	unsigned int status, qstatus;
++	int end_command = 0;
++	int end_transfer = 0;
++	struct mmc_data *data = host->data;
++
++	if (host->cmd == NULL && host->data == NULL) {
++		status = readl(host->base + DAVINCI_MMCST0);
++		dev_dbg(mmc_dev(host->mmc),
++			"Spurious interrupt 0x%04x\n", status);
++		/* Disable the interrupt from mmcsd */
++		writel(0, host->base + DAVINCI_MMCIM);
++		return IRQ_NONE;
++	}
++
++	status = readl(host->base + DAVINCI_MMCST0);
++	qstatus = status;
++
++	/* handle FIFO first when using PIO for data.
++	 * bytes_left will decrease to zero as I/O progress and status will
++	 * read zero over iteration because this controller status
++	 * register(MMCST0) reports any status only once and it is cleared
++	 * by read. So, it is not unbouned loop even in the case of
++	 * non-dma.
++	 */
++	while (host->bytes_left && (status & (MMCST0_DXRDY | MMCST0_DRRDY))) {
++		davinci_fifo_data_trans(host, rw_threshold);
++		status = readl(host->base + DAVINCI_MMCST0);
++		if (!status)
++			break;
++		qstatus |= status;
++	}
++
++	if (qstatus & MMCST0_DATDNE) {
++		/* All blocks sent/received, and CRC checks passed */
++		if (data != NULL) {
++			if ((host->do_dma == 0) && (host->bytes_left > 0)) {
++				/* if datasize < rw_threshold
++				 * no RX ints are generated
++				 */
++				davinci_fifo_data_trans(host, host->bytes_left);
++			}
++			end_transfer = 1;
++			data->bytes_xfered = data->blocks * data->blksz;
++		} else {
++			dev_err(mmc_dev(host->mmc),
++					"DATDNE with no host->data\n");
++		}
++	}
++
++	if (qstatus & MMCST0_TOUTRD) {
++		/* Read data timeout */
++		data->error = -ETIMEDOUT;
++		end_transfer = 1;
++
++		dev_dbg(mmc_dev(host->mmc),
++			"read data timeout, status %x\n",
++			qstatus);
++
++		davinci_abort_data(host, data);
++	}
++
++	if (qstatus & (MMCST0_CRCWR | MMCST0_CRCRD)) {
++		/* Data CRC error */
++		data->error = -EILSEQ;
++		end_transfer = 1;
++
++		/* NOTE:  this controller uses CRCWR to report both CRC
++		 * errors and timeouts (on writes).  MMCDRSP values are
++		 * only weakly documented, but 0x9f was clearly a timeout
++		 * case and the two three-bit patterns in various SD specs
++		 * (101, 010) aren't part of it ...
++		 */
++		if (qstatus & MMCST0_CRCWR) {
++			u32 temp = readb(host->base + DAVINCI_MMCDRSP);
++
++			if (temp == 0x9f)
++				data->error = -ETIMEDOUT;
++		}
++		dev_dbg(mmc_dev(host->mmc), "data %s %s error\n",
++			(qstatus & MMCST0_CRCWR) ? "write" : "read",
++			(data->error == -ETIMEDOUT) ? "timeout" : "CRC");
++
++		davinci_abort_data(host, data);
++	}
++
++	if (qstatus & MMCST0_TOUTRS) {
++		/* Command timeout */
++		if (host->cmd) {
++			dev_dbg(mmc_dev(host->mmc),
++				"CMD%d timeout, status %x\n",
++				host->cmd->opcode, qstatus);
++			host->cmd->error = -ETIMEDOUT;
++			if (data) {
++				end_transfer = 1;
++				davinci_abort_data(host, data);
++			} else
++				end_command = 1;
++		}
++	}
++
++	if (qstatus & MMCST0_CRCRS) {
++		/* Command CRC error */
++		dev_dbg(mmc_dev(host->mmc), "Command CRC error\n");
++		if (host->cmd) {
++			host->cmd->error = -EILSEQ;
++			end_command = 1;
++		}
++	}
++
++	if (qstatus & MMCST0_RSPDNE) {
++		/* End of command phase */
++		end_command = (int) host->cmd;
++	}
++
++	if (end_command)
++		mmc_davinci_cmd_done(host, host->cmd);
++	if (end_transfer)
++		mmc_davinci_xfer_done(host, data);
++	return IRQ_HANDLED;
++}
++
++static int mmc_davinci_get_cd(struct mmc_host *mmc)
++{
++	struct platform_device *pdev = to_platform_device(mmc->parent);
++	struct davinci_mmc_config *config = pdev->dev.platform_data;
++
++	if (!config || !config->get_cd)
++		return -ENOSYS;
++	return config->get_cd(pdev->id);
++}
++
++static int mmc_davinci_get_ro(struct mmc_host *mmc)
++{
++	struct platform_device *pdev = to_platform_device(mmc->parent);
++	struct davinci_mmc_config *config = pdev->dev.platform_data;
++
++	if (!config || !config->get_ro)
++		return -ENOSYS;
++	return config->get_ro(pdev->id);
++}
++
++static struct mmc_host_ops mmc_davinci_ops = {
++	.request	= mmc_davinci_request,
++	.set_ios	= mmc_davinci_set_ios,
++	.get_cd		= mmc_davinci_get_cd,
++	.get_ro		= mmc_davinci_get_ro,
++};
++
++/*----------------------------------------------------------------------*/
++
++static void __init init_mmcsd_host(struct mmc_davinci_host *host)
++{
++	/* DAT line portion is diabled and in reset state */
++	writel(readl(host->base + DAVINCI_MMCCTL) | MMCCTL_DATRST,
++		host->base + DAVINCI_MMCCTL);
++
++	/* CMD line portion is diabled and in reset state */
++	writel(readl(host->base + DAVINCI_MMCCTL) | MMCCTL_CMDRST,
++		host->base + DAVINCI_MMCCTL);
++
++	udelay(10);
++
++	writel(0, host->base + DAVINCI_MMCCLK);
++	writel(MMCCLK_CLKEN, host->base + DAVINCI_MMCCLK);
++
++	writel(0x1FFF, host->base + DAVINCI_MMCTOR);
++	writel(0xFFFF, host->base + DAVINCI_MMCTOD);
++
++	writel(readl(host->base + DAVINCI_MMCCTL) & ~MMCCTL_DATRST,
++		host->base + DAVINCI_MMCCTL);
++	writel(readl(host->base + DAVINCI_MMCCTL) & ~MMCCTL_CMDRST,
++		host->base + DAVINCI_MMCCTL);
++
++	udelay(10);
++}
++
++static int __init davinci_mmcsd_probe(struct platform_device *pdev)
++{
++	struct davinci_mmc_config *pdata = pdev->dev.platform_data;
++	struct mmc_davinci_host *host = NULL;
++	struct mmc_host *mmc = NULL;
++	struct resource *r, *mem = NULL;
++	int ret = 0, irq = 0;
++	size_t mem_size;
++
++	/* REVISIT:  when we're fully converted, fail if pdata is NULL */
++
++	ret = -ENODEV;
++	r = platform_get_resource(pdev, IORESOURCE_MEM, 0);
++	irq = platform_get_irq(pdev, 0);
++	if (!r || irq == NO_IRQ)
++		goto out;
++
++	ret = -EBUSY;
++	mem_size = resource_size(r);
++	mem = request_mem_region(r->start, mem_size, pdev->name);
++	if (!mem)
++		goto out;
++
++	ret = -ENOMEM;
++	mmc = mmc_alloc_host(sizeof(struct mmc_davinci_host), &pdev->dev);
++	if (!mmc)
++		goto out;
++
++	host = mmc_priv(mmc);
++	host->mmc = mmc;	/* Important */
++
++	r = platform_get_resource(pdev, IORESOURCE_DMA, 0);
++	if (!r)
++		goto out;
++	host->rxdma = r->start;
++
++	r = platform_get_resource(pdev, IORESOURCE_DMA, 1);
++	if (!r)
++		goto out;
++	host->txdma = r->start;
++
++	host->mem_res = mem;
++	host->base = ioremap(mem->start, mem_size);
++	if (!host->base)
++		goto out;
++
++	ret = -ENXIO;
++	host->clk = clk_get(&pdev->dev, "MMCSDCLK");
++	if (IS_ERR(host->clk)) {
++		ret = PTR_ERR(host->clk);
++		goto out;
++	}
++	clk_enable(host->clk);
++	host->mmc_input_clk = clk_get_rate(host->clk);
++
++	init_mmcsd_host(host);
++
++	host->use_dma = use_dma;
++	host->irq = irq;
++
++	if (host->use_dma && davinci_acquire_dma_channels(host) != 0)
++		host->use_dma = 0;
++
++	/* REVISIT:  someday, support IRQ-driven card detection.  */
++	mmc->caps |= MMC_CAP_NEEDS_POLL;
++
++	if (!pdata || pdata->wires == 4 || pdata->wires == 0)
++		mmc->caps |= MMC_CAP_4_BIT_DATA;
++
++	mmc->ops = &mmc_davinci_ops;
++	mmc->f_min = 312500;
++	mmc->f_max = 25000000;
++	if (pdata && pdata->max_freq)
++		mmc->f_max = pdata->max_freq;
++	if (pdata && pdata->caps)
++		mmc->caps |= pdata->caps;
++	mmc->ocr_avail = MMC_VDD_32_33 | MMC_VDD_33_34;
++
++	/* With no iommu coalescing pages, each phys_seg is a hw_seg.
++	 * Each hw_seg uses one EDMA parameter RAM slot, always one
++	 * channel and then usually some linked slots.
++	 */
++	mmc->max_hw_segs	= 1 + host->n_link;
++	mmc->max_phys_segs	= mmc->max_hw_segs;
++
++	/* EDMA limit per hw segment (one or two MBytes) */
++	mmc->max_seg_size	= MAX_CCNT * rw_threshold;
++
++	/* MMC/SD controller limits for multiblock requests */
++	mmc->max_blk_size	= 4095;  /* BLEN is 12 bits */
++	mmc->max_blk_count	= 65535; /* NBLK is 16 bits */
++	mmc->max_req_size	= mmc->max_blk_size * mmc->max_blk_count;
++
++	dev_dbg(mmc_dev(host->mmc), "max_phys_segs=%d\n", mmc->max_phys_segs);
++	dev_dbg(mmc_dev(host->mmc), "max_hw_segs=%d\n", mmc->max_hw_segs);
++	dev_dbg(mmc_dev(host->mmc), "max_blk_size=%d\n", mmc->max_blk_size);
++	dev_dbg(mmc_dev(host->mmc), "max_req_size=%d\n", mmc->max_req_size);
++	dev_dbg(mmc_dev(host->mmc), "max_seg_size=%d\n", mmc->max_seg_size);
++
++	platform_set_drvdata(pdev, host);
++
++	ret = mmc_add_host(mmc);
++	if (ret < 0)
++		goto out;
++
++	ret = request_irq(irq, mmc_davinci_irq, 0, mmc_hostname(mmc), host);
++	if (ret)
++		goto out;
++
++	rename_region(mem, mmc_hostname(mmc));
++
++	dev_info(mmc_dev(host->mmc), "Using %s, %d-bit mode\n",
++		host->use_dma ? "DMA" : "PIO",
++		(mmc->caps & MMC_CAP_4_BIT_DATA) ? 4 : 1);
++
++	return 0;
++
++out:
++	if (host) {
++		davinci_release_dma_channels(host);
++
++		if (host->clk) {
++			clk_disable(host->clk);
++			clk_put(host->clk);
++		}
++
++		if (host->base)
++			iounmap(host->base);
++	}
++
++	if (mmc)
++		mmc_free_host(mmc);
++
++	if (mem)
++		release_resource(mem);
++
++	dev_dbg(&pdev->dev, "probe err %d\n", ret);
++
++	return ret;
++}
++
++static int __exit davinci_mmcsd_remove(struct platform_device *pdev)
++{
++	struct mmc_davinci_host *host = platform_get_drvdata(pdev);
++
++	platform_set_drvdata(pdev, NULL);
++	if (host) {
++		mmc_remove_host(host->mmc);
++		free_irq(host->irq, host);
++
++		davinci_release_dma_channels(host);
++
++		clk_disable(host->clk);
++		clk_put(host->clk);
++
++		iounmap(host->base);
++
++		release_resource(host->mem_res);
++
++		mmc_free_host(host->mmc);
++	}
++
++	return 0;
++}
++
++#ifdef CONFIG_PM
++static int davinci_mmcsd_suspend(struct platform_device *pdev, pm_message_t msg)
++{
++	struct mmc_davinci_host *host = platform_get_drvdata(pdev);
++
++	return mmc_suspend_host(host->mmc, msg);
++}
++
++static int davinci_mmcsd_resume(struct platform_device *pdev)
++{
++	struct mmc_davinci_host *host = platform_get_drvdata(pdev);
++
++	return mmc_resume_host(host->mmc);
++}
++#else
++#define davinci_mmcsd_suspend	NULL
++#define davinci_mmcsd_resume	NULL
++#endif
++
++static struct platform_driver davinci_mmcsd_driver = {
++	.driver		= {
++		.name	= "davinci_mmc",
++		.owner	= THIS_MODULE,
++	},
++	.remove		= __exit_p(davinci_mmcsd_remove),
++	.suspend	= davinci_mmcsd_suspend,
++	.resume		= davinci_mmcsd_resume,
++};
++
++static int __init davinci_mmcsd_init(void)
++{
++	return platform_driver_probe(&davinci_mmcsd_driver,
++				     davinci_mmcsd_probe);
++}
++module_init(davinci_mmcsd_init);
++
++static void __exit davinci_mmcsd_exit(void)
++{
++	platform_driver_unregister(&davinci_mmcsd_driver);
++}
++module_exit(davinci_mmcsd_exit);
++
++MODULE_AUTHOR("Texas Instruments India");
++MODULE_LICENSE("GPL");
++MODULE_DESCRIPTION("MMC/SD driver for Davinci MMC controller");
++
+-- 
+1.5.4.1
 
-The pachset was tested and debugged by all scsi ULD maintainers
-and is in very stable state. I hope it can make it into 2.6.30
-but for sure it will make it into 2.6.31, which is the time frame
-we are talking about.
-
-James any chance this patchset can make 2.6.30?
-
-Please note that the important historical users of scsi_execute_async()
-sg.c and sr.c don't use it already in 2.6.28-29, and the last bugs of that
-change, where wrinkled out.
-
-Are there currently in your patchset any other users of blk_rq_map_kern_sgl()?
-
->>> Frankly, for copy paths, I don't think all this matters at all.  If
->>> each request is small, other overheads will dominate.  For large
->>> requests, copying to and from sgl isn't something worth worrying
->>> about.
->> It is. Again, I tested that. Each new allocation in the order of
->> the number of pages in a request adds 3-5% on a RAM I/O
-> 
-> Sure, if you do things against ram, anything will show up.  Do you
-> have something more realistic?
-> 
-
-Reads from some SSDs/FLASH is just as fast as RAM. Battery backup RAM
-is very common. Pete Wyckoff reached speeds over RDMA which come close
-to RAM.
-
->> And it adds a point of failure. The less the better.
-> 
-> That is not the only measure.  Things are always traded off using
-> multiple evaluation metrics.  The same goes with the _NO_ allocation
-> thing.
-> 
-
->>> I do agree using bvec as internal page carrier would be nicer (sans
->>> having to implement stuff manually) but I'm not convinced whether
->>> it'll be worth the added code.
->> We can reach a point where there is no intermediate dynamic alloctions
->> and no point of failures, but for the allocation of the final bio+biovec.
-> 
-> There is no need to obsess about no point of failure.  Obsessing about
-> single evaluation metric is a nice and fast way toward a mess.
-> 
-
-I agree completely. "no mess" - first priority, "no point of failure"
-- far behind second. "Lots of work" - not considered
-
-Is there no way we can reach both?
-
->> And that "implement stuff manually" will also enable internal bio
->> code cleanups since now biovec is that much smarter.
->>
->> <snip> 
-
-> 
-> Under enough memory pressure, Non-fs IOs are gonna fail somewhere
-> along the line.  If you don't like that, use mempool backed allocation
-> or preallocated data structures.  
-
-bio's and bvects do that, no?
-
-> Also, I believe it is generally
-> considered better to fail IO than oopsing.  :-P
-> 
-
-I agree, exactly my point, eliminate any extra allocation is the
-best way for that.
-
->>> Yeah, high order allocations fail more easily as time passes.  But
->>> low order (1 maybe 2) allocations aren't too bad.
->> No, we are not talking about 1 or 2. Today since Jens put the scatterlist
->> chaining we can have lots and lots of them chained together. At the time
->> Jens said that bio had the chaining option for a long time, only scatterlists
->> limit the size of the request.
-> 
-> Alright, let's than chain bios but let's please do it inside bio
-> proper.
-> 
-
-Yes, I completely agree. This can/should be internal bio business.
-Doing it this way will also add robustness to other users of bio
-like filesystems raid-engines and staking drivers.
-
-Thanks that would be ideal.
-
->> If it matters we can make bio_kmalloc() use vmalloc() for bvecs if it
->>> goes over PAGE_SIZE but again given that nobody reported the
->> No that is a regression, vmaloc is an order of a magnitude slower then
->> just plain BIO chaining
-> 
-> It all depends on how frequent those multiple allocations will be.
-> 
-
-When they come they come in groups. I'm talking about steady stream
-of these that come for minutes. think any streaming application
-like backup or plain cp of very large files, video prepossessing, ...
-I know, at Panasas we have only these stuff.
-
->> spurious
->>> GFP_DMA in bounce_gfp which triggers frenzy OOM killing spree for
->>> large SG_IOs, I don't think this matters all that much.
->>>
->> This BUG was only for HW, ie ata. But for stuff like iscsi FB sas
->> they did fine.
-> 
-> The bug was for all controllers which couldn't do 64bit DMA on 64bit
-> machines.
-> 
->> The fact of the matter is that people, me included, run in systems
->> with very large request for a while now, large like 4096 pages which
->> is 16 chained bios. Do you want to allocate that with vmalloc?
-> 
-> The patchset was written the way it's written because I couldn't see
-> any pressing performance requirement for the current existing users.
-> Optimizing for SG_IO against memory is simply not a good idea.
-> 
-> If you have in-kernel users which often require large transfers, sure,
-> chaining bio would be better.  Still, let's do it _inside_ bio.  Would
-> your use case be happy with something like blk_rq_map_kern_bvec(rq,
-> bvec) which can append to rq?  If we convert internal implementation
-> over to bvec, blk_rq_map_kern_sg() can be sg->bvec converting wrapper
-> around blk_rq_map_kern_bvec().
-> 
-
-See above I answered that. No need for blk_rq_map_kern_bvec() nor
-blk_rq_map_kern_sg(), currently. OSD absolutely needs the direct
-use of bios via the fs route, and the other users are going out
-fast.
-
-And yes bio chaining at the bio level is a dream come true
-for me, and it drops 3 items off my todo list.
-Thanks
-
->> I love your cleanups, and your courage, which I don't have.
-> 
-> Thanks a lot but it's not like the code and Jens are scary monsters I
-> need to slay, so I don't think I'm being particularly courageous.  :-)
-> 
->> I want to help in any way I can. If you need just tell me what, and
->> I'll be glad to try or test anything. This is fun I like to work and
->> think on these things
-> 
-> Great, your reviews are comments are very helpful, so please keep them
-> coming.  :-)
-> 
-> Jens, Tomo, what do you guys think?
-> 
-> Thanks.
-> 
-
-Thank you
-Boaz
