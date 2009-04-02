@@ -1,44 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1765260AbZDBTU2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1765831AbZDBTUq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1765260AbZDBTU2 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 2 Apr 2009 15:20:28 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754002AbZDBTUL
+	id S1765831AbZDBTUq (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 2 Apr 2009 15:20:46 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1765441AbZDBTUU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 2 Apr 2009 15:20:11 -0400
-Received: from az33egw02.freescale.net ([192.88.158.103]:55384 "EHLO
-	az33egw02.freescale.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753940AbZDBTUJ (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 2 Apr 2009 15:20:09 -0400
-Message-ID: <49D50F37.7070201@freescale.com>
-Date: Thu, 02 Apr 2009 14:17:11 -0500
-From: Scott Wood <scottwood@freescale.com>
-User-Agent: Mozilla-Thunderbird 2.0.0.19 (X11/20090103)
-MIME-Version: 1.0
-To: avorontsov@ru.mvista.com
-CC: Timur Tabi <timur@freescale.com>, linuxppc-dev@ozlabs.org,
-       Marcel Ziswiler <marcel@ziswiler.com>, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] QE USB Host Integration for MPC832x
-References: <1238622396-9768-1-git-send-email-marcel@ziswiler.com>	<20090402183357.GA29050@oksana.dev.rtsoft.ru>	<20090402183631.GA6699@oksana.dev.rtsoft.ru>	<49D5071D.50001@freescale.com> <20090402191159.GA14626@oksana.dev.rtsoft.ru>
-In-Reply-To: <20090402191159.GA14626@oksana.dev.rtsoft.ru>
-Content-Type: text/plain; charset=UTF-8; format=flowed
+	Thu, 2 Apr 2009 15:20:20 -0400
+Received: from mail-out2.uio.no ([129.240.10.58]:53791 "EHLO mail-out2.uio.no"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1764980AbZDBTUT (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 2 Apr 2009 15:20:19 -0400
+Subject: Re: [PATCH 06/43] FS-Cache: Recruit a couple of page flags for
+ cache management [ver #46]
+From: Trond Myklebust <trond.myklebust@fys.uio.no>
+To: David Howells <dhowells@redhat.com>
+Cc: Nick Piggin <nickpiggin@yahoo.com.au>, viro@zeniv.linux.org.uk,
+       nfsv4@linux-nfs.org, linux-kernel@vger.kernel.org,
+       linux-fsdevel@vger.kernel.org
+In-Reply-To: <7516.1238694057@redhat.com>
+References: <200904030431.04079.nickpiggin@yahoo.com.au>
+	 <200904030353.17713.nickpiggin@yahoo.com.au>
+	 <200904030315.03606.nickpiggin@yahoo.com.au> <7249.1238692155@redhat.com>
+	 <7516.1238694057@redhat.com>
+Content-Type: text/plain
+Date: Thu, 02 Apr 2009 15:19:47 -0400
+Message-Id: <1238699987.16087.26.camel@heimdal.trondhjem.org>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.26.0 
 Content-Transfer-Encoding: 7bit
+X-UiO-Spam-info: not spam, SpamAssassin (score=-5.0, required=5.0, autolearn=disabled, UIO_MAIL_IS_INTERNAL=-5, uiobl=NO, uiouri=NO)
+X-UiO-Scanned: CFC2575891567119A52F276C988FE5EF4B860585
+X-UiO-SPAM-Test: remote_host: 71.227.91.12 spam_score: -49 maxlevel 200 minaction 2 bait 0 mail/h: 1 total 135 max/h 5 blacklist 0 greylist 0 ratelimit 0
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Anton Vorontsov wrote:
-> On Thu, Apr 02, 2009 at 01:42:37PM -0500, Timur Tabi wrote:
->> Anton Vorontsov wrote:
->>
->>> Oh, I was wrong. fsl_qe_udc driver uses mpc8360 compatible for
->>> matching, so you can't remove it. :-/
->> Ugh, that's a bug in the driver then.
+On Thu, 2009-04-02 at 18:40 +0100, David Howells wrote:
+> Nick Piggin <nickpiggin@yahoo.com.au> wrote:
 > 
-> Yes, but that depends on what chip was the first one? MPC8323 or
-> MPC8360?
+> > Well in theory I still think it would be cleanest to modify buffer to
+> > play more nicely with it. But maybe that ends up being harder to
+> > distinguish the 3 cases of attached metadata on the page. I don't know,
+> > you haven't posted any isofs code so either way it is inappropriate to
+> > use up this extra page flag here.
+> > 
+> > Is isofs cache worth a page flag?
+> 
+> Well, isofs was something I wanted at the time.
+> 
+> Besides, as I said NFS uses PG_private for its own purposes, and entangling
+> the two wasn't the most fun I've had.  Trond didn't like it either.
 
-Actually, it depends on which one we picked in the devtree binding 
-(assuming they're compatible both ways), which appears to be mpc8323.
+We use it for exactly the same purpose as everyone else: to signal that
+we need a callback to ->releasepage() if the VM wants to truncate the
+page.
 
--Scott
+Trond
+
