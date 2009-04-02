@@ -1,52 +1,38 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761855AbZDBCOV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934604AbZDBCOi@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761855AbZDBCOV (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 1 Apr 2009 22:14:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753918AbZDBCOM
+	id S934604AbZDBCOi (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 1 Apr 2009 22:14:38 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760274AbZDBCOO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 1 Apr 2009 22:14:12 -0400
-Received: from static-71-162-243-5.phlapa.fios.verizon.net ([71.162.243.5]:49088
-	"EHLO grelber.thyrsus.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752558AbZDBCOL (ORCPT
+	Wed, 1 Apr 2009 22:14:14 -0400
+Received: from smtp.ultrahosting.com ([74.213.174.254]:46914 "EHLO
+	smtp.ultrahosting.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1758654AbZDBCON (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 1 Apr 2009 22:14:11 -0400
-From: Rob Landley <rob@landley.net>
-Organization: Boundaries Unlimited
-To: Lennart Sorensen <lsorense@csclub.uwaterloo.ca>
-Subject: Re: make headers_install broken for ARCH=m68k in 2.6.29-rc7.
-Date: Wed, 1 Apr 2009 21:14:05 -0500
-User-Agent: KMail/1.9.10
-Cc: Geert Uytterhoeven <geert@linux-m68k.org>, Sam Ravnborg <sam@ravnborg.org>,
-       linux-kernel@vger.kernel.org, dwmw2@infradead.org
-References: <200903120437.03837.rob@landley.net> <10f740e80904011323t219063b0ife4db1677ca0d22b@mail.gmail.com> <20090401225916.GZ3795@csclub.uwaterloo.ca>
-In-Reply-To: <20090401225916.GZ3795@csclub.uwaterloo.ca>
+	Wed, 1 Apr 2009 22:14:13 -0400
+Date: Wed, 1 Apr 2009 22:09:35 -0400 (EDT)
+From: Christoph Lameter <cl@linux.com>
+X-X-Sender: cl@qirst.com
+To: ngupta@vflare.org
+cc: Andrew Morton <akpm@linux-foundation.org>, penberg@cs.helsinki.fi,
+       edt@aei.ca, linux-mm-cc@laptop.org, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 0/3] compressed in-memory swapping take5
+In-Reply-To: <49D400A5.20901@vflare.org>
+Message-ID: <alpine.DEB.1.10.0904012207110.32656@qirst.com>
+References: <49D0DBA2.20101@vflare.org> <20090401155743.685e2c1e.akpm@linux-foundation.org> <49D400A5.20901@vflare.org>
+User-Agent: Alpine 1.10 (DEB 962 2008-03-14)
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200904012114.07183.rob@landley.net>
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wednesday 01 April 2009 17:59:16 Lennart Sorensen wrote:
-> On Wed, Apr 01, 2009 at 10:23:06PM +0200, Geert Uytterhoeven wrote:
-> > It entered mainline just before v2.6.29 (after v2.6.29-rc8)?
-> > Or did you find a new problem?
->
-> No, I just didn't check yet.  I am still solving uclibc issues, so
-> 2.6.29-rc3 was still doing the job.
+On Thu, 2 Apr 2009, Nitin Gupta wrote:
 
-uClibc's working for me just fine.  Either grab the most recent build scripts 
-from http://impactlinux.com/hg/firmware or grab the prebuilt binaries from 
-http://impactlinux.com/fwl/downloads/snapshots/ (which has cross compilers, 
-root filesystem tarballs, and system images bootable by qemu).
+> Justification for this custom allocator is present in xvmalloc changelog
+> itself. It gives reason for not using SLUB and SLOB. During review
+> cycle, I never got any arguments against that justification.
 
-I haven't tested m68k yet because qemu doesn't support it (just coldfire), and 
-aranym hasn't got a serial console, but it did compile using the same build 
-scripts as all the other targets...
+The use of highmem is pretty unique. But that restrict the usefulness to
+32 bit processors with too much RAM.
 
-Rob
--- 
-GPLv3 is to GPLv2 what Attack of the Clones is to The Empire Strikes Back.
