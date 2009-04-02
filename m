@@ -1,66 +1,160 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S935257AbZDBGbB@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S935382AbZDBGcx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S935257AbZDBGbB (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 2 Apr 2009 02:31:01 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756587AbZDBGan
+	id S935382AbZDBGcx (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 2 Apr 2009 02:32:53 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755296AbZDBGcl
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 2 Apr 2009 02:30:43 -0400
-Received: from sh.osrg.net ([192.16.179.4]:42083 "EHLO sh.osrg.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755296AbZDBGam (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 2 Apr 2009 02:30:42 -0400
-Date: Thu, 2 Apr 2009 15:29:15 +0900
-To: jeremy@goop.org
-Cc: fujita.tomonori@lab.ntt.co.jp, x86@kernel.org, mingo@elte.hu,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] swiotlb updates for Xen dom0
-From: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
-In-Reply-To: <1238539935-4295-1-git-send-email-jeremy@goop.org>
-References: <1238539935-4295-1-git-send-email-jeremy@goop.org>
+	Thu, 2 Apr 2009 02:32:41 -0400
+Received: from tomts43.bellnexxia.net ([209.226.175.110]:57836 "EHLO
+	tomts43-srv.bellnexxia.net" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751780AbZDBGcj (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 2 Apr 2009 02:32:39 -0400
+X-IronPort-Anti-Spam-Filtered: true
+X-IronPort-Anti-Spam-Result: AmEFAEz000lMQW1W/2dsb2JhbACBUs0Wg30G
+Date: Thu, 2 Apr 2009 02:32:35 -0400
+From: Mathieu Desnoyers <compudj@krystal.dyndns.org>
+To: Suresh Jayaraman <sjayaraman@suse.de>
+Cc: Trond.Myklebust@netapp.com, linux-nfs@vger.kernel.org,
+       linux-embedded@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>,
+       ltt-dev@lists.casi.polymtl.ca
+Subject: Re: [PATCH] nfs: add support for splice writes
+Message-ID: <20090402063235.GB24846@Krystal>
+References: <49D45974.2060202@suse.de>
 Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
+Content-Type: text/plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
-Message-Id: <20090402152918I.fujita.tomonori@lab.ntt.co.jp>
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-3.0 (sh.osrg.net [192.16.179.4]); Thu, 02 Apr 2009 15:29:19 +0900 (JST)
+Content-Disposition: inline
+In-Reply-To: <49D45974.2060202@suse.de>
+X-Editor: vi
+X-Info: http://krystal.dyndns.org:8080
+X-Operating-System: Linux/2.6.21.3-grsec (i686)
+X-Uptime: 02:31:55 up 33 days,  2:58,  1 user,  load average: 0.38, 0.42,
+	0.35
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 31 Mar 2009 15:52:06 -0700
-Jeremy Fitzhardinge <jeremy@goop.org> wrote:
+* Suresh Jayaraman (sjayaraman@suse.de) wrote:
+> This patch attempts to add splice writes support. In essence, it just
+> calls generic_file_splice_write() after doing a little sanity check.
+> This would allow LTTng users that are using NFS to store trace data.
+> There could be more applications that could be benefitted too.
+> 
+> I have tested this using the Jens' test program and have found no
+> real issues. The test program is inlined below:
+> 
 
-> This series adds Xen support to x86 swiotlb.  This is mostly a matter of
-> adding some Xen code into the existing hooks in pci-swiotlb_64.c:
->   - swiotlb_alloc_boot
->   - swiotlb_arch_range_needs_mapping
->   - swiotlb_phys_to_bus/bus_to_phys
-> 
-> These hooks are conditional on xen_pv_domain(), which compiles to a
-> constant 0 when CONFIG_XEN is not enabled (and is a simple variable
-> read when it is).
-> 
-> All the Xen-specific code is in xen-iommu.c.
-> 
-> This series is just the patches which touch lib/swiotlb.c or
-> pci-swiotlb_64.c.  You can see them with more context in:
->    git://git.kernel.org/pub/scm/linux/kernel/git/jeremy/xen.git for-linus/xen/dom0/swiotlb
-> 
-> Thanks,
-> 	J
-> 
->  arch/x86/kernel/pci-swiotlb_64.c |   31 ++++++++++++++++-
->  arch/x86/xen/Kconfig             |    1 
->  drivers/pci/xen-iommu.c          |   68 ++++++++++++++++++++++++++++++++++++---
->  include/xen/swiotlb.h            |   38 +++++++++++++++++++++
->  lib/swiotlb.c                    |    3 +
->  5 files changed, 133 insertions(+), 8 deletions(-)
+There is just a small checkpatch nit that I'll fix directly in place in
+the LTTng tree.
 
-This patchset looks ugly.
+WARNING: %Ld/%Lu are not-standard C, use %lld/%llu
+#93: FILE: fs/nfs/file.c:564:
++	dprintk("NFS splice_write(%s/%s, %lu@%Lu)\n",
 
-You add 'if we are Xen, we do A. We do B if not' code into 6 functions
-though pic-swiotlb_64.c has only 8 functions. In addition, 5 of 8
-functions were added for Xen.
+total: 0 errors, 1 warnings, 42 lines checked
 
-Why can't you have something like arch/x86/xen/pci-swiotlb.c, which
-works as arch/x86/kernel/pci-swiotlb_64.c? That should be much
-cleaner.
+Mathieu
+
+> /*
+>  * splice-out.c: Splice stdout to file
+>  */
+> #include <stdio.h>
+> #include <stdlib.h>
+> #include <unistd.h>
+> #include <fcntl.h>
+> 
+> #define SPLICE_SIZE (64*1024)
+> 
+> int main(int argc, char *argv[])
+> {
+>         int fd;
+> 
+>         if (argc < 2) {
+>                 printf("%s: outfile\n", argv[0]);
+>                 return 1;
+>         }
+> 
+>         fd = open(argv[1], O_WRONLY | O_CREAT | O_TRUNC, 0644);
+>         if (fd < 0) {
+>                 perror("open");
+>                 return 1;
+>         }
+> 
+>         do {
+>                 int ret = splice(STDIN_FILENO, NULL, fd, NULL, SPLICE_SIZE, 0);
+> 
+>                 if (ret < 0) {
+>                         perror("splice");
+>                         break;
+>                 } else if (ret < SPLICE_SIZE)
+>                         break;
+>         } while (1);
+> 
+>         close(fd);
+>         return 0;
+> }
+> 
+> Compile with -D _GNU_SOURCE and do something like:
+> 	echo "some stuff" | ./splice-out <outfile>
+> 
+> Signed-off-by: Suresh Jayaraman <sjayaraman@suse.de>
+> ---
+>  fs/nfs/file.c |   24 ++++++++++++++++++++++++
+>  1 files changed, 24 insertions(+), 0 deletions(-)
+> 
+> diff --git a/fs/nfs/file.c b/fs/nfs/file.c
+> index 90f292b..13d6a00 100644
+> --- a/fs/nfs/file.c
+> +++ b/fs/nfs/file.c
+> @@ -47,6 +47,9 @@ static ssize_t nfs_file_splice_read(struct file *filp, loff_t *ppos,
+>  					size_t count, unsigned int flags);
+>  static ssize_t nfs_file_read(struct kiocb *, const struct iovec *iov,
+>  				unsigned long nr_segs, loff_t pos);
+> +static ssize_t nfs_file_splice_write(struct pipe_inode_info *pipe,
+> +					struct file *filp, loff_t *ppos,
+> +					size_t count, unsigned int flags);
+>  static ssize_t nfs_file_write(struct kiocb *, const struct iovec *iov,
+>  				unsigned long nr_segs, loff_t pos);
+>  static int  nfs_file_flush(struct file *, fl_owner_t id);
+> @@ -76,6 +79,7 @@ const struct file_operations nfs_file_operations = {
+>  	.lock		= nfs_lock,
+>  	.flock		= nfs_flock,
+>  	.splice_read	= nfs_file_splice_read,
+> +	.splice_write	= nfs_file_splice_write,
+>  	.check_flags	= nfs_check_flags,
+>  	.setlease	= nfs_setlease,
+>  };
+> @@ -550,6 +554,26 @@ out_swapfile:
+>  	goto out;
+>  }
+>  
+> +static ssize_t nfs_file_splice_write(struct pipe_inode_info *pipe,
+> +				     struct file *filp, loff_t *ppos,
+> +				     size_t count, unsigned int flags)
+> +{
+> +	struct dentry *dentry = filp->f_path.dentry;
+> +	struct inode *inode = dentry->d_inode;
+> +
+> +	dprintk("NFS splice_write(%s/%s, %lu@%Lu)\n",
+> +		dentry->d_parent->d_name.name, dentry->d_name.name,
+> +		(unsigned long) count, (unsigned long long) *ppos);
+> +
+> +	if (IS_SWAPFILE(inode)) {
+> +		printk(KERN_INFO "NFS: attempt to write to active swap"
+> +		       "file!\n");
+> +		return -EBUSY;
+> +	}
+> +
+> +	return generic_file_splice_write(pipe, filp, ppos, count, flags);
+> +}
+> +
+>  static int do_getlk(struct file *filp, int cmd, struct file_lock *fl)
+>  {
+>  	struct inode *inode = filp->f_mapping->host;
+> 
+
+-- 
+Mathieu Desnoyers
+OpenPGP key fingerprint: 8CD5 52C3 8E3C 4140 715F  BA06 3F25 A8FE 3BAE 9A68
