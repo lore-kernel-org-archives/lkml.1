@@ -1,105 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S935152AbZDBHFU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933960AbZDBHHa@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S935152AbZDBHFU (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 2 Apr 2009 03:05:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762349AbZDBHD1
+	id S933960AbZDBHHa (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 2 Apr 2009 03:07:30 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755361AbZDBHHQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 2 Apr 2009 03:03:27 -0400
-Received: from sous-sol.org ([216.99.217.87]:49088 "EHLO sequoia.sous-sol.org"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1751539AbZDBHD0 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 2 Apr 2009 03:03:26 -0400
-Date: Wed, 1 Apr 2009 23:57:40 -0700
-From: Chris Wright <chrisw@sous-sol.org>
-To: linux-kernel@vger.kernel.org, stable@kernel.org
-Cc: "Theodore Ts'o" <tytso@mit.edu>, Zwane Mwaikambo <zwane@arm.linux.org.uk>,
-       Eugene Teo <eteo@redhat.com>, Justin Forbes <jmforbes@linuxtx.org>,
-       Domenico Andreoli <cavokz@gmail.com>,
-       Chris Wedgwood <reviews@ml.cw.f00f.org>, Jake Edge <jake@lwn.net>,
-       Randy Dunlap <rdunlap@xenotime.net>,
-       Michael Krufky <mkrufky@linuxtv.org>, alan@lxorguk.ukuu.org.uk,
-       Chuck Ebbert <cebbert@redhat.com>, Dave Jones <davej@redhat.com>,
-       Chuck Wolber <chuckw@quantumlinux.com>, akpm@linux-foundation.org,
-       torvalds@linux-foundation.org, Willy Tarreau <w@1wt.eu>,
-       Rodrigo Rubira Branco <rbranco@la.checkpoint.com>, davem@davemloft.net
-Subject: [PATCH 46/45] sparc64: Fix MM refcount check in
-	smp_flush_tlb_pending().
-Message-ID: <20090402065740.GB18394@sequoia.sous-sol.org>
-References: <20090331231045.719396245@sous-sol.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090331231045.719396245@sous-sol.org>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+	Thu, 2 Apr 2009 03:07:16 -0400
+Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:34022
+	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
+	by vger.kernel.org with ESMTP id S1753686AbZDBHHP (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 2 Apr 2009 03:07:15 -0400
+Date: Thu, 02 Apr 2009 00:07:03 -0700 (PDT)
+Message-Id: <20090402.000703.108386433.davem@davemloft.net>
+To: tj@kernel.org
+Cc: linux-kernel@vger.kernel.org
+Subject: Re: More problems in setup_pcpu_remap()
+From: David Miller <davem@davemloft.net>
+In-Reply-To: <49D45364.2010703@kernel.org>
+References: <49D44251.4000606@kernel.org>
+	<20090401.215233.134215150.davem@davemloft.net>
+	<49D45364.2010703@kernel.org>
+X-Mailer: Mew version 6.1 on Emacs 22.1 / Mule 5.0 (SAKAKI)
+Mime-Version: 1.0
+Content-Type: Text/Plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
--stable review patch.  If anyone has any objections, please let us know.
----------------------
+From: Tejun Heo <tj@kernel.org>
+Date: Thu, 02 Apr 2009 14:55:48 +0900
 
-From: David S. Miller <davem@davemloft.net>
+> David Miller wrote:
+> > It would make more sense to carve up 2MB chunks into some-power-of-2
+> > pieces and use that as the unit size.
+> >
+> > You could retain the NUMA goals of this function, as well as the
+> > ability to be using 2MB pages in the TLBs.
+> 
+> Can you please elaborate a bit?
+> 
+> > And consider that if the dynamic allocation part of this code triggers
+> > even once, you'll end up eating twice as much VMALLOC space.
+> > 
+> > Using 2MB per cpu is just rediculious, and really not even necessary.
+> 
+> The focus at the moment is using large page for the first chunk to
+> reduce pressure on TLB, not necessarily actually using 2MB for each
+> unit.
 
-[ Upstream commit f9384d41c02408dd404aa64d66d0ef38adcf6479 ]
+You'll get better TLB hit rates with my suggestion.
 
-As explained by Benjamin Herrenschmidt:
+The idea is to carve up a 2MB page amongst consequetive cpus in
+the same NUMA node.
 
-> CPU 0 is running the context, task->mm == task->active_mm == your
-> context. The CPU is in userspace happily churning things.
->
-> CPU 1 used to run it, not anymore, it's now running fancyfsd which
-> is a kernel thread, but current->active_mm still points to that
-> same context.
->
-> Because there's only one "real" user, mm_users is 1 (but mm_count is
-> elevated, it's just that the presence on CPU 1 as active_mm has no
-> effect on mm_count().
->
-> At this point, fancyfsd decides to invalidate a mapping currently mapped
-> by that context, for example because a networked file has changed
-> remotely or something like that, using unmap_mapping_ranges().
->
-> So CPU 1 goes into the zapping code, which eventually ends up calling
-> flush_tlb_pending(). Your test will succeed, as current->active_mm is
-> indeed the target mm for the flush, and mm_users is indeed 1. So you
-> will -not- send an IPI to the other CPU, and CPU 0 will continue happily
-> accessing the pages that should have been unmapped.
+With hyperthreading these cpus will be sharing the TLB, so you'll
+get better TLB hit rates than the current code.
 
-To fix this problem, check ->mm instead of ->active_mm, and this
-means:
-
-> So if you test current->mm, you effectively account for mm_users == 1,
-> so the only way the mm can be active on another processor is as a lazy
-> mm for a kernel thread. So your test should work properly as long
-> as you don't have a HW that will do speculative TLB reloads into the
-> TLB on that other CPU (and even if you do, you flush-on-switch-in should
-> get rid of any crap here).
-
-And therefore we should be OK.
-
-Signed-off-by: David S. Miller <davem@davemloft.net>
-Signed-off-by: Chris Wright <chrisw@sous-sol.org>
----
- arch/sparc/kernel/smp_64.c |    4 ++--
- 1 file changed, 2 insertions(+), 2 deletions(-)
-
---- a/arch/sparc/kernel/smp_64.c
-+++ b/arch/sparc/kernel/smp_64.c
-@@ -1031,7 +1031,7 @@ void smp_fetch_global_regs(void)
-  *    If the address space is non-shared (ie. mm->count == 1) we avoid
-  *    cross calls when we want to flush the currently running process's
-  *    tlb state.  This is done by clearing all cpu bits except the current
-- *    processor's in current->active_mm->cpu_vm_mask and performing the
-+ *    processor's in current->mm->cpu_vm_mask and performing the
-  *    flush locally only.  This will force any subsequent cpus which run
-  *    this task to flush the context from the local tlb if the process
-  *    migrates to another cpu (again).
-@@ -1074,7 +1074,7 @@ void smp_flush_tlb_pending(struct mm_str
- 	u32 ctx = CTX_HWBITS(mm->context);
- 	int cpu = get_cpu();
- 
--	if (mm == current->active_mm && atomic_read(&mm->mm_users) == 1)
-+	if (mm == current->mm && atomic_read(&mm->mm_users) == 1)
- 		mm->cpu_vm_mask = cpumask_of_cpu(cpu);
- 	else
- 		smp_cross_call_masked(&xcall_flush_tlb_pending,
+I'm going to do something like this on sparc64.  This x86 code is
+severely demotivating me, so I'll stop looking at it now :-)
