@@ -1,56 +1,78 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1765918AbZDBJd4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1766012AbZDBJfh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1765918AbZDBJd4 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 2 Apr 2009 05:33:56 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755881AbZDBJdn
+	id S1766012AbZDBJfh (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 2 Apr 2009 05:35:37 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761566AbZDBJf2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 2 Apr 2009 05:33:43 -0400
-Received: from rhun.apana.org.au ([64.62.148.172]:33183 "EHLO
-	arnor.apana.org.au" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1753426AbZDBJdm (ORCPT
+	Thu, 2 Apr 2009 05:35:28 -0400
+Received: from viefep19-int.chello.at ([62.179.121.39]:20702 "EHLO
+	viefep19-int.chello.at" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755881AbZDBJf1 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 2 Apr 2009 05:33:42 -0400
-Date: Thu, 2 Apr 2009 17:33:24 +0800
-From: Herbert Xu <herbert@gondor.apana.org.au>
-To: Avi Kivity <avi@redhat.com>
-Cc: ghaskins@novell.com, anthony@codemonkey.ws, andi@firstfloor.org,
-       linux-kernel@vger.kernel.org, agraf@suse.de, pmullaney@novell.com,
-       pmorreale@novell.com, rusty@rustcorp.com.au, netdev@vger.kernel.org,
-       kvm@vger.kernel.org, Patrick Ohly <patrick.ohly@intel.com>,
-       "David S. Miller" <davem@davemloft.net>
-Subject: Re: [RFC PATCH 00/17] virtual-bus
-Message-ID: <20090402093324.GA30397@gondor.apana.org.au>
-References: <20090402085253.GA29932@gondor.apana.org.au> <49D47F11.6070400@redhat.com> <20090402091639.GA30126@gondor.apana.org.au> <49D484F5.2000400@redhat.com> <20090402092936.GA30333@gondor.apana.org.au>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090402092936.GA30333@gondor.apana.org.au>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+	Thu, 2 Apr 2009 05:35:27 -0400
+X-SourceIP: 213.93.53.227
+Subject: Re: [PATCH 2/9] perf_counter: fix update_userpage()
+From: Peter Zijlstra <a.p.zijlstra@chello.nl>
+To: Paul Mackerras <paulus@samba.org>
+Cc: Ingo Molnar <mingo@elte.hu>, linux-kernel@vger.kernel.org,
+       Mike Galbraith <efault@gmx.de>, Arjan van de Ven <arjan@infradead.org>,
+       Wu Fengguang <fengguang.wu@intel.com>
+In-Reply-To: <18900.33346.375497.2714@cargo.ozlabs.ibm.com>
+References: <20090328194359.426029037@chello.nl>
+	 <20090328194929.546464621@chello.nl>
+	 <18894.49084.341238.775487@cargo.ozlabs.ibm.com>
+	 <1238662238.8530.5622.camel@twins>
+	 <18900.33346.375497.2714@cargo.ozlabs.ibm.com>
+Content-Type: text/plain
+Date: Thu, 02 Apr 2009 11:36:19 +0200
+Message-Id: <1238664979.8530.5723.camel@twins>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.26.0 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Apr 02, 2009 at 05:29:36PM +0800, Herbert Xu wrote:
-> On Thu, Apr 02, 2009 at 12:27:17PM +0300, Avi Kivity wrote:
-> >
-> > If tap told us when the packets were actually transmitted, life would be  
-> > wonderful:
+On Thu, 2009-04-02 at 20:15 +1100, Paul Mackerras wrote:
+> Peter Zijlstra writes:
 > 
-> And why do we need this? Because we are in user space!
+> > > That means that we don't need any CPU memory barriers on either side.
+> > > All the kernel needs to do is to increment `lock' when it updates
+> > > things, and the user side can be:
+> > > 
+> > > 	do {
+> > > 		seq = pc->lock;
+> > > 		index = pc->index;
+> > > 		offset = pc->offset;
+> > > 		barrier();
+> > > 	} while (pc->lock != seq);
+> > > 
+> > > and all that's needed is a compiler barrier to stop the compiler from
+> > > optimizing too much.
+> > 
+> > Can this work at all?
+> > 
+> > I mean, user-space could get preempted/rescheduled after we read the
+> > mmap() data using that seqlock and before we actually did the read-pmc
+> > bit.
+> > 
+> > In that case, the counter can have changed underneath us and we're
+> > reading rubbish.
 > 
-> I'll continue to wait for your patch and numbers :)
+> Good point.  This should work, though:
+> 
+> 	do {
+> 		seq = pc->lock;
+> 		barrier();
+> 		value = read_pmc(pc->index) + pc->offset;
+> 		barrier();
+> 	} while (pc->lock != seq);
+> 	return value;
 
-And in case you're working on that patch, this might interest
-you.  Check out the netdev thread titled "TX time stamping".
-Now that we assign the tap skb with its own sk, these two scenarios
-are pretty much identical.
+I don't think you need the first barrier(), all you need to avoid is it
+reusing the first pc->lock read, so one should suffice.
 
-I also noitced despite davem's threats to revert the patch, it
-has now made Linus's tree :)
+Also, you need to handle the !pc->index case.
 
-Cheers,
--- 
-Visit Openswan at http://www.openswan.org/
-Email: Herbert Xu ~{PmV>HI~} <herbert@gondor.apana.org.au>
-Home Page: http://gondor.apana.org.au/~herbert/
-PGP Key: http://gondor.apana.org.au/~herbert/pubkey.txt
+But yeah.
+
