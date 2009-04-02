@@ -1,64 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751217AbZDBPlW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763759AbZDBPls@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751217AbZDBPlW (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 2 Apr 2009 11:41:22 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752533AbZDBPlE
+	id S1763759AbZDBPls (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 2 Apr 2009 11:41:48 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753865AbZDBPlf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 2 Apr 2009 11:41:04 -0400
-Received: from rhun.apana.org.au ([64.62.148.172]:40756 "EHLO
-	arnor.apana.org.au" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1752162AbZDBPlB (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 2 Apr 2009 11:41:01 -0400
-Date: Thu, 2 Apr 2009 23:40:41 +0800
-From: Herbert Xu <herbert@gondor.apana.org.au>
-To: Avi Kivity <avi@redhat.com>
-Cc: Gregory Haskins <ghaskins@novell.com>,
-       Rusty Russell <rusty@rustcorp.com.au>, anthony@codemonkey.ws,
-       andi@firstfloor.org, linux-kernel@vger.kernel.org, agraf@suse.de,
-       pmullaney@novell.com, pmorreale@novell.com, netdev@vger.kernel.org,
-       kvm@vger.kernel.org, Ingo Molnar <mingo@elte.hu>
-Subject: Re: [RFC PATCH 00/17] virtual-bus
-Message-ID: <20090402154041.GA1774@gondor.apana.org.au>
-References: <20090402085253.GA29932@gondor.apana.org.au> <49D487A6.407@redhat.com> <49D49C1F.6030306@novell.com> <200904022243.21088.rusty@rustcorp.com.au> <49D4B4A3.5070008@novell.com> <49D4B87D.2000202@redhat.com> <20090402145018.GA816@gondor.apana.org.au> <49D4D301.2090209@redhat.com>
+	Thu, 2 Apr 2009 11:41:35 -0400
+Received: from THUNK.ORG ([69.25.196.29]:57983 "EHLO thunker.thunk.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752533AbZDBPle (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 2 Apr 2009 11:41:34 -0400
+Date: Thu, 2 Apr 2009 11:41:23 -0400
+From: Theodore Tso <tytso@mit.edu>
+To: Thiemo Nagel <thiemo.nagel@ph.tum.de>
+Cc: Alexander Beregalov <a.beregalov@gmail.com>,
+       Jens Axboe <jens.axboe@oracle.com>, linux-ext4@vger.kernel.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: 2.6.29-git: cannot mount ext4/loop
+Message-ID: <20090402154123.GG10642@mit.edu>
+Mail-Followup-To: Theodore Tso <tytso@mit.edu>,
+	Thiemo Nagel <thiemo.nagel@ph.tum.de>,
+	Alexander Beregalov <a.beregalov@gmail.com>,
+	Jens Axboe <jens.axboe@oracle.com>, linux-ext4@vger.kernel.org,
+	linux-kernel@vger.kernel.org
+References: <a4423d670904011423x4174a81cj901bc140944412ea@mail.gmail.com> <20090401225351.GA22621@orion> <20090402055356.GC10642@mit.edu> <a4423d670904020042x6b76715du48a15e988a05019d@mail.gmail.com> <a4423d670904020439m621990bch9482d19f0e48e7d2@mail.gmail.com> <a4423d670904020547s72972089t3c135a92af6751d4@mail.gmail.com> <49D4BDF2.2070102@ph.tum.de> <20090402145436.GF10642@mit.edu> <49D4D74F.1020904@ph.tum.de>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <49D4D301.2090209@redhat.com>
+In-Reply-To: <49D4D74F.1020904@ph.tum.de>
 User-Agent: Mutt/1.5.18 (2008-05-17)
+X-SA-Exim-Connect-IP: <locally generated>
+X-SA-Exim-Mail-From: tytso@mit.edu
+X-SA-Exim-Scanned: No (on thunker.thunk.org); SAEximRunCond expanded to false
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Apr 02, 2009 at 06:00:17PM +0300, Avi Kivity wrote:
+On Thu, Apr 02, 2009 at 05:18:39PM +0200, Thiemo Nagel wrote:
+> Theodore Tso wrote:
+>> On Thu, Apr 02, 2009 at 03:30:26PM +0200, Thiemo Nagel wrote:
+>>> When I added the block range checks, initially I was assuming that
+>>> when EXTENTS_FL is not set, the inode->i_data *always* contains
+>>> references to further blocks.  Ted showed me wrong and added the condition
+>>>
+>>> 	ISREG() || ISDIR() || ( ISLNK() && !is_fast_symlink() )
+>>>
+>>> before that assumption can be made.  But maybe we need some further
+>>> restraints?
+>>
+>> It's a endian-problem; we're missing le32_to_cpu() in that patch.
+>> Sparc is big-endian. 
 >
-> Good point - if we rely on having excess cores in the host, large guest  
-> scalability will drop.
+> Sorry for that.
 
-Going back to TX mitigation, I wonder if we could avoid it altogether
-by having a "wakeup" mechanism that does not involve a vmexit.  We
-have two cases:
+Could you also fix the types?  bref should have a type of __le32, not
+unsigned int, and when you pass in the reference to
+__ext4_check_blockref(), there was an inappropriate cast to unsigned
+int which hid kernel's natural type checking to catch these sorts of
+problems.
 
-1) UP, or rather guest runs on the same core/hyperthread as the
-backend.  This is the easy one, the guest simply sets a marker
-in shared memory and keeps going until its time is up.  Then the
-backend takes over, and uses a marker for notification too.
+I haven't had time yet to check your other patches; could you also
+take a quick scan to make sure we have all of the byte-swapping calls
+needed for proper big-endian checking, that we're using the correct
+__le32 types and not doing any casts?  I should have caught this when
+I did my review of your patches, so this is also partially my fault.
 
-The markers need to be interpreted by the scheduler so that it
-knows the guest/backend is runnable, respectively.
+Many thanks,
 
-2) The guest and backend runs on two cores/hyperthreads.  We'll
-assume that they share caches as otherwise mitigation is the last
-thing to worry about.  We use the same marker mechanism as above.
-The only caveat is that if one core/hyperthread is idle, its
-idle thread needs to monitor the marker (this would be a separate
-per-core marker) to wake up the scheduler.
-
-CCing Ingo so that he can flame me if I'm totally off the mark.
-
-Cheers,
--- 
-Visit Openswan at http://www.openswan.org/
-Email: Herbert Xu ~{PmV>HI~} <herbert@gondor.apana.org.au>
-Home Page: http://gondor.apana.org.au/~herbert/
-PGP Key: http://gondor.apana.org.au/~herbert/pubkey.txt
+						- Ted
