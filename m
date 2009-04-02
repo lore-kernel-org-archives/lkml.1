@@ -1,80 +1,116 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1765989AbZDBXqm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933167AbZDBXrb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1765989AbZDBXqm (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 2 Apr 2009 19:46:42 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755202AbZDBXqd
+	id S933167AbZDBXrb (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 2 Apr 2009 19:47:31 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756249AbZDBXrT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 2 Apr 2009 19:46:33 -0400
-Received: from cavan.codon.org.uk ([93.93.128.6]:43809 "EHLO
-	vavatch.codon.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754694AbZDBXqc (ORCPT
+	Thu, 2 Apr 2009 19:47:19 -0400
+Received: from e34.co.us.ibm.com ([32.97.110.152]:47467 "EHLO
+	e34.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755202AbZDBXrS (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 2 Apr 2009 19:46:32 -0400
-Date: Fri, 3 Apr 2009 00:46:17 +0100
-From: Matthew Garrett <mjg59@srcf.ucam.org>
-To: david@lang.hm
-Cc: Theodore Tso <tytso@mit.edu>, Sitsofe Wheeler <sitsofe@yahoo.com>,
-       "Andreas T.Auer" <andreas.t.auer_lkml_73537@ursus.ath.cx>,
-       Alberto Gonzalez <info@gnebu.es>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: Ext4 and the "30 second window of death"
-Message-ID: <20090402234617.GB9538@srcf.ucam.org>
-References: <200904010002.47077.info@gnebu.es> <49D2A5AB.1090704@ursus.ath.cx> <20090401015010.GB4529@mit.edu> <20090401052050.GA20456@sucs.org> <20090401151219.GA12285@srcf.ucam.org> <20090401173521.GA15423@mit.edu> <20090401174336.GA14726@srcf.ucam.org> <alpine.DEB.1.10.0904021116500.28893@asgard.lang.hm> <20090402182925.GA4502@srcf.ucam.org> <alpine.DEB.1.10.0904021134560.28893@asgard.lang.hm>
+	Thu, 2 Apr 2009 19:47:18 -0400
+Date: Thu, 2 Apr 2009 18:47:14 -0500
+From: "Serge E. Hallyn" <serue@us.ibm.com>
+To: linux-security-module@vger.kernel.org
+Cc: lkml <linux-kernel@vger.kernel.org>, Andrew Morgan <morgan@kernel.org>,
+       James Morris <jmorris@namei.org>,
+       Casey Schaufler <casey@schaufler-ca.com>
+Subject: [PATCH] don't raise all privs on setuid-root file with fE set (v2)
+Message-ID: <20090402234714.GA2220@us.ibm.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <alpine.DEB.1.10.0904021134560.28893@asgard.lang.hm>
-User-Agent: Mutt/1.5.12-2006-07-14
-X-SA-Exim-Connect-IP: <locally generated>
-X-SA-Exim-Mail-From: mjg59@codon.org.uk
-X-SA-Exim-Scanned: No (on vavatch.codon.org.uk); SAEximRunCond expanded to false
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Apr 02, 2009 at 11:44:20AM -0700, david@lang.hm wrote:
-> On Thu, 2 Apr 2009, Matthew Garrett wrote:
-> >The solution to "fsync() causes disk spinups" isn't "ignore fsync()".
-> >It's "ensure that applications only use fsync() when they really need
-> >it", which requires us to also be able to say "fsync() should not be
-> >required to ensure that events occur in order".
-> 
-> ignore the issue of order on the local disk for the moment.
-> 
-> what should an application do to make sure it's data isn't lost?
+Distributions face a backward compatibility problem with starting to use
+file capabilities.  For instance, removing setuid root from ping and
+doing setcap cap_net_raw=pe means that booting with an older kernel
+or one compiled without file capabilities means ping won't work for
+non-root users.
 
-fsync().
+In order to replace the setuid root bit on a capability-unaware
+program, one has to set the effective, or legacy, file capability,
+which makes the capability effective immediately.  This patch
+uses the legacy bit as a queue to not automatically add full
+privilege to a setuid-root program.
 
-> however, some (many, most??) users would probably be willing to loose a 
-> little e-mail to gain a significant increase in battery life on their 
-> laptops.
+So, with this patch, an ordinary setuid-root program will run with
+privilege.  But if /bin/ping has both setuid-root and cap_net_raw in
+fP and fE, then ping (when run by non-root user) will not run
+with only cap_net_raw.
 
-Then they shouldn't use a mail client that fsync()s.
+Changelog:
+	Apr 2 2009: Print a message once when such a binary is loaded,
+		as per James Morris' suggestion.
+	Apr 2 2009: Fix the condition to only catch uid!=0 && euid==0.
 
-> today they have no choice (other than picking a mail client that doesn't 
-> try to protect it's local data)
-> 
-> with the proposed addition to laptop mode (delaying fsync until the disk 
-> is awake), the user (or more precisely the admin) gains the ability to 
-> define this trade-off rather than depending on the application developers 
-> all doing this right.
+Signed-off-by: Serge E. Hallyn <serue@us.ibm.com>
+Acked-by: Casey Schaufler <casey@schaufler-ca.com>
+---
+ security/commoncap.c |   32 ++++++++++++++++++++++++++++++++
+ 1 files changed, 32 insertions(+), 0 deletions(-)
 
-No. Ignoring fsync() makes it difficult for an application to 
-inappropriately spin up a disk - but it also makes it *impossible* for 
-an application to save data that it genuinely needs to. Doing this in 
-kernel means that you have no granularity. You ignore the inappropriate 
-fsync()s, but you also ignore the ones that are vitally important. I've 
-no objection to the kernel supporting this functionality, but it should 
-be /proc/sys/vm/fuck-my-data-harder rather than 
-/proc/sys/vm/laptop-mode.
-
-Power management is a tradeoff. Sometimes providing correct 
-functionality costs more than providing incorrect functionality. In 
-general we strive to carry on providing applications the behaviour they 
-expect even if it costs us more power - the alternative leads to users 
-disabling power management functionality because they can't trust it. 
-Throwing data away isn't an acceptable tradeoff for an extra three 
-minutes of battery life for most users.
-
+diff --git a/security/commoncap.c b/security/commoncap.c
+index 7cd61a5..97ac1f1 100644
+--- a/security/commoncap.c
++++ b/security/commoncap.c
+@@ -28,6 +28,28 @@
+ #include <linux/prctl.h>
+ #include <linux/securebits.h>
+ 
++/*
++ * If a non-root user executes a setuid-root binary in
++ * !secure(SECURE_NOROOT) mode, then we raise capabilities.
++ * However if fE is also set, then the intent is for only
++ * the file capabilities to be applied, and the setuid-root
++ * bit is left on either to change the uid (plausible) or
++ * to get full privilege on a kernel without file capabilities
++ * support.  So in that case we do not raise capabilities.
++ *
++ * Warn if that happens, once per boot.
++ */
++static void warn_setuid_and_fcaps_mixed(char *fname)
++{
++	static int warned;
++	if (!warned) {
++		printk(KERN_INFO "warning: `%s' has both setuid-root and"
++			" effective capabilities. Therefore not raising all"
++			" capabilities.\n", fname);
++		warned = 1;
++	}
++}
++
+ int cap_netlink_send(struct sock *sk, struct sk_buff *skb)
+ {
+ 	NETLINK_CB(skb).eff_cap = current_cap();
+@@ -464,6 +486,15 @@ int cap_bprm_set_creds(struct linux_binprm *bprm)
+ 
+ 	if (!issecure(SECURE_NOROOT)) {
+ 		/*
++		 * If the legacy file capability is set, then don't set privs
++		 * for a setuid root binary run by a non-root user.  Do set it
++		 * for a root user just to cause least surprise to an admin.
++		 */
++		if (effective && new->uid != 0 && new->euid == 0) {
++			warn_setuid_and_fcaps_mixed(bprm->filename);
++			goto skip;
++		}
++		/*
+ 		 * To support inheritance of root-permissions and suid-root
+ 		 * executables under compatibility mode, we override the
+ 		 * capability sets for the file.
+@@ -478,6 +509,7 @@ int cap_bprm_set_creds(struct linux_binprm *bprm)
+ 		if (new->euid == 0)
+ 			effective = true;
+ 	}
++skip:
+ 
+ 	/* Don't let someone trace a set[ug]id/setpcap binary with the revised
+ 	 * credentials unless they have the appropriate permit
 -- 
-Matthew Garrett | mjg59@srcf.ucam.org
+1.5.4.3
+
