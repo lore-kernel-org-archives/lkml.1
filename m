@@ -1,85 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764042AbZDBPDZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764147AbZDBPGR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764042AbZDBPDZ (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 2 Apr 2009 11:03:25 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761011AbZDBO5l
+	id S1764147AbZDBPGR (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 2 Apr 2009 11:06:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762955AbZDBPAg
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 2 Apr 2009 10:57:41 -0400
-Received: from mga01.intel.com ([192.55.52.88]:57531 "EHLO mga01.intel.com"
+	Thu, 2 Apr 2009 11:00:36 -0400
+Received: from mx2.redhat.com ([66.187.237.31]:53448 "EHLO mx2.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1761530AbZDBO5k (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 2 Apr 2009 10:57:40 -0400
-Content-Type: multipart/mixed; boundary="===============1877425519=="
+	id S1762950AbZDBPAe (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 2 Apr 2009 11:00:34 -0400
+Message-ID: <49D4D301.2090209@redhat.com>
+Date: Thu, 02 Apr 2009 18:00:17 +0300
+From: Avi Kivity <avi@redhat.com>
+User-Agent: Thunderbird 2.0.0.21 (X11/20090320)
 MIME-Version: 1.0
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.39,314,1235980800"; 
-   d="scan'208";a="444386167"
-Message-Id: <20090402145732.358606000@intel.com>
-References: <20090402145455.597376000@intel.com>
-User-Agent: quilt/0.46-1
-Date: Thu, 02 Apr 2009 16:55:11 +0200
-From: markus.t.metzger@intel.com
-To: mingo@elte.hu, tglx@linutronix.de, hpa@zytor.com
-Cc: markus.t.metzger@gmail.com, roland@redhat.com, eranian@googlemail.com,
-       oleg@redhat.com, juan.villacis@intel.com, ak@linux.jf.intel.com,
-       linux-kernel@vger.kernel.org,
-       Markus Metzger <markus.t.metzger@intel.com>
-Subject: [patch 16/18] x86, ds: dont use TIF_DEBUGCTLMSR
+To: Herbert Xu <herbert@gondor.apana.org.au>
+CC: Gregory Haskins <ghaskins@novell.com>,
+       Rusty Russell <rusty@rustcorp.com.au>, anthony@codemonkey.ws,
+       andi@firstfloor.org, linux-kernel@vger.kernel.org, agraf@suse.de,
+       pmullaney@novell.com, pmorreale@novell.com, netdev@vger.kernel.org,
+       kvm@vger.kernel.org
+Subject: Re: [RFC PATCH 00/17] virtual-bus
+References: <20090402085253.GA29932@gondor.apana.org.au> <49D487A6.407@redhat.com> <49D49C1F.6030306@novell.com> <200904022243.21088.rusty@rustcorp.com.au> <49D4B4A3.5070008@novell.com> <49D4B87D.2000202@redhat.com> <20090402145018.GA816@gondor.apana.org.au>
+In-Reply-To: <20090402145018.GA816@gondor.apana.org.au>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---===============1877425519==
-MIME-Version: 1.0
-Content-Disposition: inline; filename=tip.master.ds.tif_debugctlmsr.patch
+Herbert Xu wrote:
+> On Thu, Apr 02, 2009 at 04:07:09PM +0300, Avi Kivity wrote:
+>   
+>> I think Rusty did mean a UP guest, and without schedule-and-forget.
+>>     
+>
+> Going off on a tangent here, I don't really think it should matter
+> whether we're UP or SMP.  The ideal state is where we have the
+> same number of (virtual) TX queues as there are cores in the guest.
+> On the host side we need the backend to run at least on a core
+> that shares cache with the corresponding guest queue/core.  If
+> that happens to be the same core as the guest core then it should
+> work as well.
+>
+> IOW we should optimise it as if the host were UP.
+>   
 
-Debug store already uses TIF_DS_AREA_MSR to trigger debug store context
-switch handling. No need to use TIF_DEBUGCTLMSR, as well.
-
-
-Signed-off-by: Markus Metzger <markus.t.metzger@intel.com>
----
- arch/x86/kernel/ds.c |    5 	0 +	5 -	0 !
- 1 file changed, 5 deletions(-)
-
-Index: b/arch/x86/kernel/ds.c
-===================================================================
---- a/arch/x86/kernel/ds.c
-+++ b/arch/x86/kernel/ds.c
-@@ -953,11 +953,6 @@ static void update_task_debugctlmsr(stru
- 	get_cpu();
- 	if (task == current)
- 		update_debugctlmsr(debugctlmsr);
--
--	if (task->thread.debugctlmsr)
--		set_tsk_thread_flag(task, TIF_DEBUGCTLMSR);
--	else
--		clear_tsk_thread_flag(task, TIF_DEBUGCTLMSR);
- 	put_cpu();
- }
- 
+Good point - if we rely on having excess cores in the host, large guest 
+scalability will drop.
 
 -- 
+error compiling committee.c: too many arguments to function
 
---===============1877425519==
-Content-Type: text/plain; charset="utf-8"
-MIME-Version: 1.0
-Content-Transfer-Encoding: quoted-printable
-Content-Disposition: inline
-
----------------------------------------------------------------------
-Intel GmbH
-Dornacher Strasse 1
-85622 Feldkirchen/Muenchen Germany
-Sitz der Gesellschaft: Feldkirchen bei Muenchen
-Geschaeftsfuehrer: Douglas Lusk, Peter Gleissner, Hannes Schwaderer
-Registergericht: Muenchen HRB 47456 Ust.-IdNr.
-VAT Registration No.: DE129385895
-Citibank Frankfurt (BLZ 502 109 00) 600119052
-
-This e-mail and any attachments may contain confidential material for
-the sole use of the intended recipient(s). Any review or distribution
-by others is strictly prohibited. If you are not the intended
-recipient, please contact the sender and delete all copies.
-
---===============1877425519==--
