@@ -1,110 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763288AbZDBPEa@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762626AbZDBPFT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763288AbZDBPEa (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 2 Apr 2009 11:04:30 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761864AbZDBO6N
+	id S1762626AbZDBPFT (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 2 Apr 2009 11:05:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762243AbZDBO6y
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 2 Apr 2009 10:58:13 -0400
-Received: from caramon.arm.linux.org.uk ([78.32.30.218]:42955 "EHLO
-	caramon.arm.linux.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1761806AbZDBO6L (ORCPT
+	Thu, 2 Apr 2009 10:58:54 -0400
+Received: from ottawa-hs-64-26-147-143.d-ip.magma.ca ([64.26.147.143]:41821
+	"EHLO gonzo.int.wil.cx" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1762196AbZDBO6v (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 2 Apr 2009 10:58:11 -0400
-Date: Thu, 2 Apr 2009 15:57:53 +0100
-From: Russell King <rmk+lkml@arm.linux.org.uk>
-To: Greg Kroah-Hartman <gregkh@suse.de>, Ming Lei <tom.leiming@gmail.com>
-Cc: Linux Kernel List <linux-kernel@vger.kernel.org>
-Subject: Re: Commit 7a192ec is build breaking
-Message-ID: <20090402145753.GA11106@flint.arm.linux.org.uk>
-References: <20090328140049.GA4344@flint.arm.linux.org.uk>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090328140049.GA4344@flint.arm.linux.org.uk>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+	Thu, 2 Apr 2009 10:58:51 -0400
+From: Matthew Wilcox <willy@linux.intel.com>
+To: linux-ide@vger.kernel.org, linux-kernel@vger.kernel.org,
+       jgarzik@redhat.com
+Cc: David Woodhouse <dwmw2@infradead.org>,
+       David Woodhouse <David.Woodhouse@intel.com>,
+       Matthew Wilcox <willy@linux.intel.com>
+Subject: [PATCH 2/5] Make DISCARD_BARRIER and DISCARD_NOBARRIER writes instead of reads
+Date: Thu,  2 Apr 2009 10:37:24 -0400
+Message-Id: <1238683047-13588-2-git-send-email-willy@linux.intel.com>
+X-Mailer: git-send-email 1.6.2.1
+In-Reply-To: <1238683047-13588-1-git-send-email-willy@linux.intel.com>
+References: <1238683047-13588-1-git-send-email-willy@linux.intel.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Ping?
+From: David Woodhouse <dwmw2@infradead.org>
 
-On Sat, Mar 28, 2009 at 02:00:49PM +0000, Russell King wrote:
-> The commit:
-> 
->     platform driver: fix incorrect use of 'platform_bus_type' with 'struct device_driver'
-> 
-> contains this:
-> 
-> -static int __exit pxa2xx_flash_remove(struct device *dev)
-> +static int __exit pxa2xx_flash_remove(struct platform_device *dev)
-> ...
-> -       .remove         = __exit_p(pxa2xx_flash_remove),
-> +       .remove         = __devexit_p(pxa2xx_flash_remove),
-> 
-> which leads to the following build error:
-> 
-> `pxa2xx_flash_remove' referenced in section `.data' of drivers/built-in.o: defined in discarded section `.exit.text' of drivers/built-in.o
-> 
-> This is not the only instance of it in this patch - all __exit_p's
-> touched by this patch have been converted to __devexit_p's without
-> regard to the original function.
-> 
-> Let's revert this change and, if we are going to convert functions
-> to be __devexit/__devinit, lets have that as a _separate_ patch doing
-> just that change.
-> 
-> Signed-off-by: Russell King <rmk+kernel@arm.linux.org.uk>
-> ---
->  arch/mips/basler/excite/excite_iodev.c |    2 +-
->  drivers/mtd/maps/pxa2xx-flash.c        |    2 +-
->  drivers/mtd/nand/excite_nandflash.c    |    3 +--
->  3 files changed, 3 insertions(+), 4 deletions(-)
-> 
-> diff --git a/arch/mips/basler/excite/excite_iodev.c b/arch/mips/basler/excite/excite_iodev.c
-> index dfbfd7e..2ab56ea 100644
-> --- a/arch/mips/basler/excite/excite_iodev.c
-> +++ b/arch/mips/basler/excite/excite_iodev.c
-> @@ -71,7 +71,7 @@ static struct platform_driver iodev_driver = {
->  		.owner		= THIS_MODULE,
->  	},
->  	.probe		= iodev_probe,
-> -	.remove		= __devexit_p(iodev_remove),
-> +	.remove		= __exit_p(iodev_remove),
->  };
->  
->  
-> diff --git a/drivers/mtd/maps/pxa2xx-flash.c b/drivers/mtd/maps/pxa2xx-flash.c
-> index e9026cb..bf933a9 100644
-> --- a/drivers/mtd/maps/pxa2xx-flash.c
-> +++ b/drivers/mtd/maps/pxa2xx-flash.c
-> @@ -177,7 +177,7 @@ static struct platform_driver pxa2xx_flash_driver = {
->  		.owner		= THIS_MODULE,
->  	},
->  	.probe		= pxa2xx_flash_probe,
-> -	.remove		= __devexit_p(pxa2xx_flash_remove),
-> +	.remove		= __exit_p(pxa2xx_flash_remove),
->  	.suspend	= pxa2xx_flash_suspend,
->  	.resume		= pxa2xx_flash_resume,
->  	.shutdown	= pxa2xx_flash_shutdown,
-> diff --git a/drivers/mtd/nand/excite_nandflash.c b/drivers/mtd/nand/excite_nandflash.c
-> index 72446fb..630b4d6 100644
-> --- a/drivers/mtd/nand/excite_nandflash.c
-> +++ b/drivers/mtd/nand/excite_nandflash.c
-> @@ -224,7 +224,7 @@ static struct platform_driver excite_nand_driver = {
->  		.owner		= THIS_MODULE,
->  	},
->  	.probe = excite_nand_probe,
-> -	.remove = __devexit_p(excite_nand_remove)
-> +	.remove = __exit_p(excite_nand_remove)
->  };
->  
->  static int __init excite_nand_init(void)
-> 
-> 
-> -- 
-> Russell King
+The commands are conceptually writes, and in the case of IDE and SCSI
+commands actually are writes.  They were only reads because we thought
+that would interact better with the elevators.  Now the elevators know
+about discard requests, that advantage no longer exists.
 
+Signed-off-by: David Woodhouse <David.Woodhouse@intel.com>
+Signed-off-by: Matthew Wilcox <willy@linux.intel.com>
+---
+ include/linux/fs.h |    4 ++--
+ 1 files changed, 2 insertions(+), 2 deletions(-)
+
+diff --git a/include/linux/fs.h b/include/linux/fs.h
+index 61211ad..e5dc992 100644
+--- a/include/linux/fs.h
++++ b/include/linux/fs.h
+@@ -98,8 +98,8 @@ struct inodes_stat_t {
+ #define WRITE_SYNC	(WRITE | (1 << BIO_RW_SYNCIO) | (1 << BIO_RW_UNPLUG))
+ #define SWRITE_SYNC	(SWRITE | (1 << BIO_RW_SYNCIO) | (1 << BIO_RW_UNPLUG))
+ #define WRITE_BARRIER	(WRITE | (1 << BIO_RW_BARRIER))
+-#define DISCARD_NOBARRIER (1 << BIO_RW_DISCARD)
+-#define DISCARD_BARRIER ((1 << BIO_RW_DISCARD) | (1 << BIO_RW_BARRIER))
++#define DISCARD_NOBARRIER (WRITE | (1 << BIO_RW_DISCARD))
++#define DISCARD_BARRIER (DISCARD_NOBARRIER | (1 << BIO_RW_BARRIER))
+ 
+ #define SEL_IN		1
+ #define SEL_OUT		2
 -- 
-Russell King
- Linux kernel    2.6 ARM Linux   - http://www.arm.linux.org.uk/
- maintainer of:
+1.6.2.1
+
