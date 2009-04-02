@@ -1,93 +1,77 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933805AbZDBAY0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764896AbZDBAaO@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933805AbZDBAY0 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 1 Apr 2009 20:24:26 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756744AbZDBAYQ
+	id S1764896AbZDBAaO (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 1 Apr 2009 20:30:14 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757055AbZDBA3v
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 1 Apr 2009 20:24:16 -0400
-Received: from g1t0026.austin.hp.com ([15.216.28.33]:32698 "EHLO
-	g1t0026.austin.hp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755595AbZDBAYP (ORCPT
+	Wed, 1 Apr 2009 20:29:51 -0400
+Received: from yx-out-2324.google.com ([74.125.44.29]:56497 "EHLO
+	yx-out-2324.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755992AbZDBA3u (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 1 Apr 2009 20:24:15 -0400
-Date: Wed, 1 Apr 2009 18:24:12 -0600
-From: Alex Chiang <achiang@hp.com>
-To: Jesse Barnes <jbarnes@virtuousgeek.org>
-Cc: Linus Torvalds <torvalds@linux-foundation.org>,
-       linux-kernel@vger.kernel.org, linux-pci@vger.kernel.org
-Subject: Re: [git pull] PCI changes for 2.6.30
-Message-ID: <20090402002412.GB28975@ldl.fc.hp.com>
-References: <20090331121331.3673cf59@hobbes> <alpine.LFD.2.00.0904010957520.4130@localhost.localdomain> <20090401101309.67d0bea5@hobbes>
+	Wed, 1 Apr 2009 20:29:50 -0400
+Message-ID: <49D406F8.40606@codemonkey.ws>
+Date: Wed, 01 Apr 2009 19:29:44 -0500
+From: Anthony Liguori <anthony@codemonkey.ws>
+User-Agent: Thunderbird 2.0.0.21 (X11/20090320)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090401101309.67d0bea5@hobbes>
-User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
+To: Gregory Haskins <ghaskins@novell.com>
+CC: Andi Kleen <andi@firstfloor.org>, linux-kernel@vger.kernel.org,
+       agraf@suse.de, pmullaney@novell.com, pmorreale@novell.com,
+       rusty@rustcorp.com.au, netdev@vger.kernel.org, kvm@vger.kernel.org
+Subject: Re: [RFC PATCH 00/17] virtual-bus
+References: <20090331184057.28333.77287.stgit@dev.haskins.net> <87ab71monw.fsf@basil.nowhere.org> <49D35825.3050001@novell.com> <20090401132340.GT11935@one.firstfloor.org> <49D37805.1060301@novell.com> <20090401170103.GU11935@one.firstfloor.org> <49D3B64F.6070703@codemonkey.ws> <49D3D7EE.4080202@novell.com>
+In-Reply-To: <49D3D7EE.4080202@novell.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Linus,
+Gregory Haskins wrote:
+> Anthony Liguori wrote:
+>   
+> I think there is a slight disconnect here.  This is *exactly* what I am
+> trying to do. 
 
-* Jesse Barnes <jbarnes@virtuousgeek.org>:
-> On Wed, 1 Apr 2009 10:01:12 -0700 (PDT)
-> Linus Torvalds <torvalds@linux-foundation.org> wrote:
-> > On Tue, 31 Mar 2009, Jesse Barnes wrote:
-> > >
-> > > Please consider pulling my PCI tree from
-> > >   git://git.kernel.org/pub/scm/linux/kernel/git/jbarnes/pci-2.6
-> > > linux-next
-> > 
-> > This produces
-> > 
-> >   WARNING: drivers/built-in.o(.text+0x69a1): Section mismatch in
-> > reference from the function dev_rescan_store() to the
-> > function .devinit.text:pci_rescan_bus() The function
-> > dev_rescan_store() references the function __devinit
-> > pci_rescan_bus(). This is often because dev_rescan_store lacks a
-> > __devinit annotation or the annotation of pci_rescan_bus is wrong.
-> > 
-> > Hmm?
-> 
-> Arg how did I miss that?  Maybe the last build I did was missing
-> hotplug support or something... Anyway looking now (at first glance I
-> think pci_rescan_bus needs to drop __devinit).
+If it were exactly what you were trying to do, you would have posted a 
+virtio-net in-kernel backend implementation instead of a whole new 
+paravirtual IO framework ;-)
 
-This patch eliminates the warning in what I think is the correct
-manner.
+>> That said, I don't think we're bound today by the fact that we're in
+>> userspace.
+>>     
+> You will *always* be bound by the fact that you are in userspace.
 
-Thanks.
+Again, let's talk numbers.  A heavy-weight exit is 1us slower than a 
+light weight exit.  Ideally, you're taking < 1 exit per packet because 
+you're batching notifications.  If you're ping latency on bare metal 
+compared to vbus is 39us to 65us, then all other things being equally, 
+the cost imposed by doing what your doing in userspace would make the 
+latency be 66us taking your latency from 166% of native to 169% of 
+native.  That's not a huge difference and I'm sure you'll agree there 
+are a lot of opportunities to improve that even further.
 
-/ac
+And you didn't mention whether your latency tests are based on ping or 
+something more sophisticated as ping will be a pathological case that 
+doesn't allow any notification batching.
 
-From: Alex Chiang <achiang@hp.com>
+> I agree that the "does anyone care" part of the equation will approach
+> zero as the latency difference shrinks across some threshold (probably
+> the single microsecond range), but I will believe that is even possible
+> when I see it ;)
+>   
 
-PCI: annotate pci_rescan_bus as __ref, not __devinit
+Note the other hat we have to where is not just virtualization developer 
+but Linux developer.  If there are bad userspace interfaces for IO that 
+impose artificial restrictions, then we need to identify those and fix them.
 
-pci_rescan_bus was annotated as __devinit, which is wrong,
-because it will never be part of device initialization.
-Howevever, we can't simply drop the annotation, because then we
-get section warnings about calling pci_scan_child_bus (which is
-correctly marked as __devinit).
+Regards,
 
-pci_rescan_bus will only get built when CONFIG_HOTPLUG is set,
-meaning that __devinit is a nop, so we know that pci_scan_child_bus
-has not been freed.
+Anthony Liguori
 
-Annotate as __ref to silence modpost.
+> Regards,
+> -Greg
+>
+>   
 
-Signed-off-by: Alex Chiang <achiang@hp.com>
----
-diff --git a/drivers/pci/probe.c b/drivers/pci/probe.c
-index e2f3dd0..8eb50df 100644
---- a/drivers/pci/probe.c
-+++ b/drivers/pci/probe.c
-@@ -1220,7 +1220,7 @@ EXPORT_SYMBOL(pci_scan_bus_parented);
-  *
-  * Returns the max number of subordinate bus discovered.
-  */
--unsigned int __devinit pci_rescan_bus(struct pci_bus *bus)
-+unsigned int __ref pci_rescan_bus(struct pci_bus *bus)
- {
- 	unsigned int max;
- 	struct pci_dev *dev;
