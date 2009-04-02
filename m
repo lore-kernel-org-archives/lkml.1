@@ -1,44 +1,147 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759634AbZDBPtf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760829AbZDBPuS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759634AbZDBPtf (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 2 Apr 2009 11:49:35 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752549AbZDBPt0
+	id S1760829AbZDBPuS (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 2 Apr 2009 11:50:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755012AbZDBPt5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 2 Apr 2009 11:49:26 -0400
-Received: from fmmailgate01.web.de ([217.72.192.221]:39612 "EHLO
-	fmmailgate01.web.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751147AbZDBPtZ (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 2 Apr 2009 11:49:25 -0400
-From: Markus <M4rkusXXL@web.de>
-To: linux-kernel@vger.kernel.org
-Subject: Re: [Bug #12872] pwc mmap always fails with EAGAIN
-Date: Thu, 2 Apr 2009 17:49:21 +0200
-User-Agent: KMail/1.9.10
-Cc: Ingo Molnar <mingo@elte.hu>, Suresh Siddha <suresh.b.siddha@intel.com>,
-       Alan Cox <alan@lxorguk.ukuu.org.uk>, "Rafael J. Wysocki" <rjw@sisk.pl>,
-       Kernel Testers List <kernel-testers@vger.kernel.org>
-References: <GPBuLTara4J.A.3kH.TZTxJB@chimera> <200903222058.12924.M4rkusXXL@web.de> <20090322200521.GA5355@elte.hu>
-In-Reply-To: <20090322200521.GA5355@elte.hu>
+	Thu, 2 Apr 2009 11:49:57 -0400
+Received: from mx2.redhat.com ([66.187.237.31]:43689 "EHLO mx2.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752549AbZDBPtz (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 2 Apr 2009 11:49:55 -0400
+Message-ID: <49D4DE82.5020306@redhat.com>
+Date: Thu, 02 Apr 2009 18:49:22 +0300
+From: Avi Kivity <avi@redhat.com>
+User-Agent: Thunderbird 2.0.0.21 (X11/20090320)
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
+To: Gregory Haskins <ghaskins@novell.com>
+CC: Patrick Mullaney <pmullaney@novell.com>, anthony@codemonkey.ws,
+       andi@firstfloor.org, herbert@gondor.apana.org.au,
+       Peter Morreale <PMorreale@novell.com>, rusty@rustcorp.com.au,
+       agraf@suse.de, kvm@vger.kernel.org, linux-kernel@vger.kernel.org,
+       netdev@vger.kernel.org
+Subject: Re: [RFC PATCH 00/17] virtual-bus
+References: <49D469D2020000A100045FA1@lucius.provo.novell.com> <49D473EA020000C700056627@lucius.provo.novell.com> <49D473EA020000C700056627@lucius.provo.novell.com> <49D4CB38.5030205@redhat.com> <49D4DA54.3090401@novell.com>
+In-Reply-To: <49D4DA54.3090401@novell.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200904021749.22100.M4rkusXXL@web.de>
-X-Provags-ID: V01U2FsdGVkX19/rU1MBmTP5w2nwQ7CadSHm6iPpoUg47bo67uz
-	3Qmr8vwa9tBEeRBJJfmYjgHILq3/SHDXX0K/t4Cs6hfNTWo5VF
-	MY1cxAplc=
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> First thing to check would be whether the latest round of PAT fixes 
-> (not yet upstream) fix the problem:
+Gregory Haskins wrote:
+>> vbus (if I understand it right) is a whole package of things:
+>>
+>> - a way to enumerate, discover, and manage devices
+>>     
+>
+> Yes
+>   
+>> That part duplicates PCI
+>>     
+>
+> Yes, but the important thing to point out is it doesn't *replace* PCI. 
+> It simply an alternative.
+>   
 
-I checked 2.6.29 (the vanilla release) it still has this regression.
+Does it offer substantial benefits over PCI?  If not, it's just extra code.
 
-I also checked your "tip"-version and it works! (Built the kernel on 
-march the 25th. But got no time to test it... up to now...)
+Note that virtio is not tied to PCI, so "vbus is generic" doesn't count.
 
-Markus
+>> and it would be pretty hard to convince me we need to move to
+>> something new
+>>     
+>
+> But thats just it.  You don't *need* to move.  The two can coexist side
+> by side peacefully.  "vbus" just ends up being another device that may
+> or may not be present, and that may or may not have devices on it.  In
+> fact, during all this testing I was booting my guest with "eth0" as
+> virtio-net, and "eth1" as venet.  The both worked totally fine and
+> harmoniously.  The guest simply discovers if vbus is supported via a
+> cpuid feature bit and dynamically adds it if present.
+>   
+
+I meant, move the development effort, testing, installed base, Windows 
+drivers.
+
+>   
+>> .  virtio-pci (a) works,
+>>     
+> And it will continue to work
+>   
+
+So why add something new?
+
+>   
+>> (b) works on Windows.
+>>     
+>
+> virtio will continue to work on windows, as well.  And if one of my
+> customers wants vbus support on windows and is willing to pay us to
+> develop it, we can support *it* there as well.
+>   
+
+I don't want to develop and support both virtio and vbus.  And I 
+certainly don't want to depend on your customers.
+
+>> - a different way of doing interrupts
+>>     
+> Yeah, but this is ok.  And I am not against doing that mod we talked
+> about earlier where I replace dynirq with a pci shim to represent the
+> vbus.  Question about that: does userspace support emulation of MSI
+> interrupts?  
+
+Yes, this is new.  See the interrupt routing stuff I mentioned.  It's 
+probably only in kvm.git, not even in 2.6.30.
+
+> I would probably prefer it if I could keep the vbus IRQ (or
+> IRQs when I support MQ) from being shared.  It seems registering the
+> vbus as an MSI device would be more conducive to avoiding this.
+>   
+
+I still think you want one MSI per device rather than one MSI per vbus, 
+to avoid scaling problems on large guest.  After Herbert's let loose on 
+the code, one MSI per queue.
+
+
+>> - a different ring layout, and splitting notifications from the ring
+>>     
+> Again, virtio will continue to work.  And if we cannot find a way to
+> collapse virtio and ioq together in a way that everyone agrees on, there
+> is no harm in having two.  I have no problem saying I will maintain
+> IOQ.  There is plenty of precedent for multiple ways to do the same thing.
+>   
+
+IMO we should just steal whatever makes ioq better, and credit you in 
+some file no one reads.  We get backwards compatibility, Windows 
+support, continuity, etc.
+
+>> I don't see the huge win here
+>>
+>> - placing the host part in the host kernel
+>>
+>> Nothing vbus-specific here.
+>>     
+>
+> Well, it depends on what you want.  Do you want a implementation that is
+> virtio-net, kvm, and pci specific while being hardcoded in?
+
+No.  virtio is already not kvm or pci specific.  Definitely all the pci 
+emulation parts will remain in user space.
+
+>   What
+> happens when someone wants to access it but doesnt support pci?  What if
+> something like lguest wants to use it too?  What if you want
+> virtio-block next?  This is one extreme.
+>   
+
+It works out well on the guest side, so it can work on the host side.  
+We have virtio bindings for pci, s390, and of course lguest.  virtio 
+itself is agnostic to all of these.  The main difference from vbus is 
+that it's guest-only, but could easily be extended to the host side if 
+we break down and do things in the kernel.
+
+
+-- 
+error compiling committee.c: too many arguments to function
+
