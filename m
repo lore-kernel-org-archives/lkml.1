@@ -1,114 +1,98 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762008AbZDBBX5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763116AbZDBBYc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762008AbZDBBX5 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 1 Apr 2009 21:23:57 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753199AbZDBBXs
+	id S1763116AbZDBBYc (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 1 Apr 2009 21:24:32 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753638AbZDBBYT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 1 Apr 2009 21:23:48 -0400
-Received: from fgwmail6.fujitsu.co.jp ([192.51.44.36]:42935 "EHLO
-	fgwmail6.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752558AbZDBBXr (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 1 Apr 2009 21:23:47 -0400
-Message-ID: <49D4139C.9040207@jp.fujitsu.com>
-Date: Thu, 02 Apr 2009 10:23:40 +0900
-From: Kenji Kaneshige <kaneshige.kenji@jp.fujitsu.com>
-User-Agent: Thunderbird 2.0.0.21 (Windows/20090302)
+	Wed, 1 Apr 2009 21:24:19 -0400
+Received: from ozlabs.org ([203.10.76.45]:35149 "EHLO ozlabs.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753596AbZDBBYS (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 1 Apr 2009 21:24:18 -0400
+From: Rusty Russell <rusty@rustcorp.com.au>
+To: Gregory Haskins <ghaskins@novell.com>
+Subject: Re: [RFC PATCH 00/17] virtual-bus
+Date: Thu, 2 Apr 2009 11:54:13 +1030
+User-Agent: KMail/1.11.1 (Linux/2.6.27-11-generic; KDE/4.2.2; i686; ; )
+Cc: linux-kernel@vger.kernel.org, agraf@suse.de, pmullaney@novell.com,
+       pmorreale@novell.com, anthony@codemonkey.ws, netdev@vger.kernel.org,
+       kvm@vger.kernel.org
+References: <20090331184057.28333.77287.stgit@dev.haskins.net> <200904011638.45135.rusty@rustcorp.com.au> <49D3518B.1030403@novell.com>
+In-Reply-To: <49D3518B.1030403@novell.com>
 MIME-Version: 1.0
-To: Alex Chiang <achiang@hp.com>
-CC: jbarnes@virtuousgeek.org, linux-pci@vger.kernel.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: pci logical vs. physical hotplug
-References: <20090331210045.GD16311@ldl.fc.hp.com>
-In-Reply-To: <20090331210045.GD16311@ldl.fc.hp.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Type: text/plain;
+  charset="iso-8859-15"
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200904021154.14082.rusty@rustcorp.com.au>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Alex Chiang wrote:
-> * Kenji Kaneshige <kaneshige.kenji@jp.fujitsu.com>:
->> I confirmed this patch fix the kernel oops problem I reported.
->>
->> Reviewed-by: Kenji Kaneshige <kaneshige.kenji@jp.fujitsu.com>
->> Tested-by: Kenji Kaneshige <kaneshige.kenji@jp.fujitsu.com>
+On Wednesday 01 April 2009 22:05:39 Gregory Haskins wrote:
+> Rusty Russell wrote:
+> > I could dig through the code, but I'll ask directly: what heuristic do
+> > you use for notification prevention in your venet_tap driver?
 > 
-> Thank you for reviewing and testing.
-> 
->> By the way, /sys/bus/pci/slots/<slot> directory by acpiphp are
->> remaining even after the parent bridge/bus of the slots are
->> removed. At this point, acpiphp is working with struct pci_bus
->> for the already disabled pci bus. I guess some operation against
->> the files under /sys/bus/pci/slots/<slot> directory would cause
->> something problems. So I think we also need something mechanism
->> to unregister acpiphp slots when the parent bus is removed.
-> 
-> Yes, I've been thinking about this (and thank you for your other
-> mail confirming the issue).
-> 
+> I am not 100% sure I know what you mean with "notification prevention",
+> but let me take a stab at it.
 
-The pciehp (and probably also shpchp) doesn't have this problem because
-/sys/bus/pci/slots/<slot> directories are unregistered when the parent
-bridge of those slots is removed. This is done with PCI driver model.
-The acpiphp and pci_slot driver doesn't match the PCI driver model, so
-I think those drivers need something other notification mechanism of
-PCI device removal. I guess this kind of notification mechanism might
-already exist in the kernel to bind ACPI device and PCI device, though
-it's still just my guess.
+Good stab :)
 
-Please note that I'm not saying that pciehp doesn't have any problem
-about the interaction with logical hotplug mechanism. I think there
-are still remaining issues, and we need to solve them one by one.
+> I only signal back to the guest to reclaim its skbs every 10
+> packets, or if I drain the queue, whichever comes first (note to self:
+> make this # configurable).
 
-> The logical hotplug and physical hotplug don't play very nicely
-> with each other.
-> 
-> I think one of the core issues is that logical hotplug allows
-> function level granularity while physical hotplug is naturally
-> restricted to physical slot granularity, which includes an entire
-> hierarchy, from host bus down to function.
-> 
-> If a user uses logical hotplug to take out a piece of the tree,
-> what does that mean if it's part of the physical slot/device?
-> 
-> What should happen?
-> 
-> Take something like this:
-> 
-> [0000:2e-4f]----00.0-[0000:2f-4f]--+-02.0-[0000:30-3f]--+-00.0  Intel GigE
->                                    |                    \-00.1  Intel GigE
->                                    \-04.0-[0000:40-4f]--+-00.0  Intel GigE
->                                                         \-00.1  Intel GigE
-> 
-> Assume that this is a quad-port NIC with a bridge in it, and that
-> the physical slot is 0000:2e:00.0.
-> 
-> What should we do if the user does a logical hotplug on
-> 0000:2f:04.0 and has acpiphp loaded?
-> 
-> If acpiphp tries to do anything to 0000:40: we'll probably get an
-> oops.
-> 
-> But just because the user took out one piece of that tree doesn't
-> mean that we should disable the entire slot. If that was the
-> case, then he could just use the existing hotplug drivers.
-> 
-> I don't have a good answer for right now, other than, "don't try
-> to mix logical and physical hotplug". I'm open to any ideas that
-> you may have.
-> 
+Good stab, though I was referring to guest->host signals (I'll assume
+you use a similar scheme there).
 
-Physical hotplug is:
+You use a number of packets, qemu uses a timer (150usec), lguest uses a
+variable timer (starting at 500usec, dropping by 1 every time but increasing
+by 10 every time we get fewer packets than last time).
 
-	physical hot-add = physical power on + logical hot-add;
-	physical hot-removal = logical hot-removal + physical power off;
-
-In the above case, some pieces of logical hot-removal has already
-been done. So I think what acpiphp need to do is remaining pieces
-of logical hot-removal of tree and power off.
+So, if the guest sends two packets and stops, you'll hang indefinitely?
+That's why we use a timer, otherwise any mitigation scheme has this issue.
 
 Thanks,
-Kenji Kaneshige
+Rusty.
 
 
+> 
+> The nice part about this scheme is it significantly reduces the amount
+> of guest/host transitions, while still providing the lowest latency
+> response for single packets possible.  e.g. Send one packet, and you get
+> one hypercall, and one tx-complete interrupt as soon as it queues on the
+> hardware.  Send 100 packets, and you get one hypercall and 10
+> tx-complete interrupts as frequently as every tenth packet queues on the
+> hardware.  There is no timer governing the flow, etc.
+> 
+> Is that what you were asking?
+> 
+> > As you point out, 350-450 is possible, which is still bad, and it's at least
+> > partially caused by the exit to userspace and two system calls.  If virtio_net
+> > had a backend in the kernel, we'd be able to compare numbers properly.
+> >   
+> :)
+> 
+> But that is the whole point, isnt it?  I created vbus specifically as a
+> framework for putting things in the kernel, and that *is* one of the
+> major reasons it is faster than virtio-net...its not the difference in,
+> say, IOQs vs virtio-ring (though note I also think some of the
+> innovations we have added such as bi-dir napi are helping too, but these
+> are not "in-kernel" specific kinds of features and could probably help
+> the userspace version too).
+> 
+> I would be entirely happy if you guys accepted the general concept and
+> framework of vbus, and then worked with me to actually convert what I
+> have as "venet-tap" into essentially an in-kernel virtio-net.  I am not
+> specifically interested in creating a competing pv-net driver...I just
+> needed something to showcase the concepts and I didnt want to hack the
+> virtio-net infrastructure to do it until I had everyone's blessing. 
+> Note to maintainers: I *am* perfectly willing to maintain the venet
+> drivers if, for some reason, we decide that we want to keep them as
+> is.   Its just an ideal for me to collapse virtio-net and venet-tap
+> together, and I suspect our community would prefer this as well.
+> 
+> -Greg
+> 
+> 
