@@ -1,148 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762260AbZDBVVt@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764649AbZDBVYF@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762260AbZDBVVt (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 2 Apr 2009 17:21:49 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759606AbZDBVVl
+	id S1764649AbZDBVYF (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 2 Apr 2009 17:24:05 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756189AbZDBVXx
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 2 Apr 2009 17:21:41 -0400
-Received: from www84.your-server.de ([213.133.104.84]:48723 "EHLO
-	www84.your-server.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756189AbZDBVVj (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 2 Apr 2009 17:21:39 -0400
-Subject: Re: Detailed Stack Information Patch [1/3]
-From: Stefani Seibold <stefani@seibold.net>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       linux-kernel <linux-kernel@vger.kernel.org>,
-       linux-mm <linux-mm@kvack.org>, Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       Joerg Engel <joern@logfs.org>, Thomas Gleixner <tglx@linutronix.de>
-In-Reply-To: <20090401193135.GA12316@elte.hu>
-References: <1238511505.364.61.camel@matrix>
-	 <20090401193135.GA12316@elte.hu>
-Content-Type: text/plain
-Date: Thu, 02 Apr 2009 23:26:52 +0200
-Message-Id: <1238707612.3882.25.camel@matrix>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.24.5 
+	Thu, 2 Apr 2009 17:23:53 -0400
+Received: from bilbo.ozlabs.org ([203.10.76.25]:53309 "EHLO bilbo.ozlabs.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1755636AbZDBVXx (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 2 Apr 2009 17:23:53 -0400
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
-X-Authenticated-Sender: stefani@seibold.net
+Message-ID: <18901.11489.765420.408337@cargo.ozlabs.ibm.com>
+Date: Fri, 3 Apr 2009 08:23:45 +1100
+From: Paul Mackerras <paulus@samba.org>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: Peter Zijlstra <a.p.zijlstra@chello.nl>,
+       Corey Ashford <cjashfor@linux.vnet.ibm.com>,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 2/6] RFC perf_counter: singleshot support
+In-Reply-To: <20090402122616.GB24618@elte.hu>
+References: <20090402091158.291810516@chello.nl>
+	<20090402091319.257773792@chello.nl>
+	<20090402105151.GB10828@elte.hu>
+	<1238672893.8530.5909.camel@twins>
+	<20090402122616.GB24618@elte.hu>
+X-Mailer: VM 8.0.9 under Emacs 22.2.1 (i486-pc-linux-gnu)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Am Mittwoch, den 01.04.2009, 21:31 +0200 schrieb Ingo Molnar:
-> * Stefani Seibold <stefani@seibold.net> wrote:
-> 
-> > diff -u -N -r linux-2.6.29.orig/fs/exec.c linux-2.6.29/fs/exec.c
-> > --- linux-2.6.29.orig/fs/exec.c	2009-03-24 00:12:14.000000000 +0100
-> > +++ linux-2.6.29/fs/exec.c	2009-03-31 16:02:55.000000000 +0200
-> > @@ -1336,6 +1336,10 @@
-> >  	if (retval < 0)
-> >  		goto out;
-> >  
-> > +#ifdef CONFIG_PROC_STACK
-> > +	current->stack_start = current->mm->start_stack;
-> > +#endif
-> 
-> Ok. The 1/3 patch, the whole "display where the stack is" thing is 
-> obviously useful and we know that.
-> 
-> Today we display this:
-> 
->  earth4:~/tip> cat /proc/self/maps 
->  00110000-00111000 r-xp 00110000 00:00 0          [vdso]
->  0053e000-0055e000 r-xp 00000000 09:00 54591597   /lib/ld-2.9.so
->  .
->  .
->  .
->  bffc7000-bffdc000 rw-p bffeb000 00:00 0          [stack]
-> 
-> I was the one who added the [stack], [heap] and [vdso] annotations a 
-> few years ago and user-space developers liked it very much.
-> 
-> Tools parsing these files wont break [they dont care about the final 
-> column] - so there's no ABI worries and we can certainly do more 
-> here and enhance it.
-> 
-> You extend the above output with (in essence):
-> 
-> > +#ifdef CONFIG_PROC_STACK
-> > +static inline void task_show_stack_usage(struct seq_file *m,
-> > +						struct task_struct *p)
-> 
-> It would be better to put this into a fresh, related feature that 
-> went upstream recently:
-> 
->  spirit:~> cat /proc/self/stack
->  [<ffffffff8101c333>] save_stack_trace_tsk+0x26/0x43
->  .
->  .
->  .
-> That displays the kernel stack data - and we could display 
-> information about the user-stack data as well.
-> 
+Ingo Molnar writes:
 
-/proc/self/stack is a good place for a more detailed information,
-like the start address of the stack, the current usage and the highest
-used address.
+> Sure. One sidenote - the precision of sw clocks has dropped a bit 
+> lately:
+> 
+> aldebaran:~/linux/linux/Documentation/perf_counter> ./perfstat -e 
+> 1:0 -e 1:0 -e 1:0 -e 1:0 -e 1:0 sleep 1
+> 
+>  Performance counter stats for 'sleep':
+> 
+>        0.762664  cpu clock ticks      (msecs)
+>        0.761440  cpu clock ticks      (msecs)
+>        0.760977  cpu clock ticks      (msecs)
+>        0.760587  cpu clock ticks      (msecs)
+>        0.760287  cpu clock ticks      (msecs)
+> 
+>  Wall-clock time elapsed:  1003.139373 msecs
+> 
+> See that slight but noticeable skew? This used to work fine and we 
+> had the exact same value everywhere. Can we fix that while still 
+> keeping the code nice?
 
-> This #ifdef:
-> 
-> > +#ifdef CONFIG_STACK_GROWSUP
-> > +	cur_stack = base_page-(p->stack_start >> PAGE_SHIFT);
-> > +#else
-> > +	cur_stack = (p->stack_start >> PAGE_SHIFT)-base_page;
-> > +#endif
-> 
-> Should be hidden in a task_user_stack() inline helper.
-> 
+I suggest basing the software clock on counter->ctx->time_now, and
+make get_context_time use cpu_clock() always.  That way we will only
+call cpu_clock() once even if we have multiple cpu clock counters, and
+that will eliminate the skew as well as being more efficient.
 
-Yes, this is more readable.
-
-> Another thing is:
-> 
-> > @@ -240,6 +240,18 @@
-> >  				} else if (vma->vm_start <= mm->start_stack &&
-> >  					   vma->vm_end >= mm->start_stack) {
-> >  					name = "[stack]";
-> > +#ifdef CONFIG_PROC_STACK
-> > +				} else {
-> > +					unsigned long stack_start;
-> > +
-> > +					stack_start =
-> > +						((struct proc_maps_private *)
-> > +						 m->private)->task->stack_start;
-> > +
-> > +					if (vma->vm_start <= stack_start && 
-> > +					    vma->vm_end >= stack_start)
-> > +						name="[thread stack]";
-> > +#endif
-> 
-> This too should be unconditional IMO (it's useful, and 
-> ultra-embedded systems worried about kernel .text size can turn off 
-> CONFIG_PROC_FS anyway), _and_ i think we could do even better.
-> 
-
-The CONFIG_PROC_STACK thing was only for test. I prefer it as an "always
-on" feature.
-
-> How about extending /proc/X/maps with:
-> 
->  b7db9000-b7fb9000 r--p 00000000 09:00 50364418   /usr/lib/locale/locale-archive
->  b7fb9000-b7fbb000 rw-p b7fb9000 00:00 0 
->  bffc7000-bffdc000 rw-p bffeb000 00:00 0          [stack, usage: 1391 kB]
-> 
-> This is deterministically parseable, and meaningful-at-a-glance. 
-> Similarly for 'thread stack'.
-> 
-
-Good idea. Should i write a new patch for this or will be this your job?
-
-> This way we dont need any new files in /proc - that just increases 
-> the per task memory overhead.
-> 
-> What do you think?
-> 
-> 	Ingo
-
+Paul.
