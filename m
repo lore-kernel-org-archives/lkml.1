@@ -1,31 +1,31 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933467AbZDBG3F@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S935206AbZDBG3q@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933467AbZDBG3F (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 2 Apr 2009 02:29:05 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752730AbZDBG2w
+	id S935206AbZDBG3q (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 2 Apr 2009 02:29:46 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756757AbZDBG3f
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 2 Apr 2009 02:28:52 -0400
-Received: from yw-out-2324.google.com ([74.125.46.30]:52355 "EHLO
-	yw-out-2324.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751467AbZDBG2v (ORCPT
+	Thu, 2 Apr 2009 02:29:35 -0400
+Received: from an-out-0708.google.com ([209.85.132.241]:59967 "EHLO
+	an-out-0708.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755296AbZDBG3e (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 2 Apr 2009 02:28:51 -0400
+	Thu, 2 Apr 2009 02:29:34 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
         h=subject:from:to:cc:content-type:date:message-id:mime-version
          :x-mailer:content-transfer-encoding;
-        b=m7d662rh75xiOtWXlW4turTXJY2IW5cZbp/zoRVJyPO6bFZFXBKW2vK1LgmwYrqblh
-         zDP7WiPMTz0MFMXHFl9xWvJmu4mYWtWPLnRulxi+8BJ5t+sIjmZbKTojy5dsGkdx0jpQ
-         18FCjcfT8zjO58Jg+4m41Ywlt7qP5DyJjAvAs=
-Subject: [PATCH] tracing/filters: protect current event filter users from
- filter removal
+        b=h1t1RYInIS1S9cUYuh5N002wwLHy+63e9s60cBRfyP7tL5JWbmoxL8/2TqOfcaU857
+         nyWmpgpJ6/sSfPH5Y5WxnZoTTckPWHOPrJsRxkUheKzrVlvSu1Derx5ON9LU023bj+GL
+         d0otnUiLU/lYcXFsVev6nK5NjUNC4mtBLN5mw=
+Subject: [PATCH] tracing/filters: disallow concurrent/multiple
+ setting/enabling of filters
 From: Tom Zanussi <tzanussi@gmail.com>
 To: linux-kernel <linux-kernel@vger.kernel.org>
 Cc: Ingo Molnar <mingo@elte.hu>, Steven Rostedt <rostedt@goodmis.org>,
        fweisbec@gmail.com
 Content-Type: text/plain
-Date: Thu, 02 Apr 2009 01:28:47 -0500
-Message-Id: <1238653727.6655.61.camel@bookworm>
+Date: Thu, 02 Apr 2009 01:29:30 -0500
+Message-Id: <1238653770.6655.62.camel@bookworm>
 Mime-Version: 1.0
 X-Mailer: Evolution 2.24.1 
 Content-Transfer-Encoding: 7bit
@@ -33,100 +33,104 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This patch allows event filters to be removed even if tracing is active.
+This patch disallows setting/enabling or multiple concurrent setting
+and/or reading of event filters. 
 
 Signed-off-by: Tom Zanussi <tzanussi@gmail.com>
 
 ---
- kernel/trace/trace.h                |    9 +++++++--
- kernel/trace/trace_events_filter.c  |   15 +++++++++------
- kernel/trace/trace_events_stage_3.h |    3 +--
- 3 files changed, 17 insertions(+), 10 deletions(-)
+ kernel/trace/trace_events.c |   30 ++++++++++++++++++++++++++----
+ 1 files changed, 26 insertions(+), 4 deletions(-)
 
-diff --git a/kernel/trace/trace.h b/kernel/trace/trace.h
-index 9dcbc97..6bd728f 100644
---- a/kernel/trace/trace.h
-+++ b/kernel/trace/trace.h
-@@ -847,7 +847,7 @@ extern int filter_parse(char **pbuf, struct filter_pred *pred);
- extern int filter_add_pred(struct ftrace_event_call *call,
- 			   struct filter_pred *pred);
- extern void filter_free_preds(struct ftrace_event_call *call);
--extern int filter_match_preds(struct ftrace_event_call *call, void *rec);
-+extern int filter_match_preds(struct filter_pred **preds, void *rec);
- extern void filter_free_subsystem_preds(struct event_subsystem *system);
- extern int filter_add_subsystem_pred(struct event_subsystem *system,
- 				     struct filter_pred *pred);
-@@ -856,8 +856,13 @@ static inline void
- filter_check_discard(struct ftrace_event_call *call, void *rec,
- 		     struct ring_buffer_event *event)
- {
--	if (unlikely(call->preds) && !filter_match_preds(call, rec))
-+	struct filter_pred **preds;
+diff --git a/kernel/trace/trace_events.c b/kernel/trace/trace_events.c
+index be9299a..eb7ee65 100644
+--- a/kernel/trace/trace_events.c
++++ b/kernel/trace/trace_events.c
+@@ -481,7 +481,10 @@ event_filter_read(struct file *filp, char __user *ubuf, size_t cnt,
+ 
+ 	trace_seq_init(s);
+ 
++	mutex_lock(&event_mutex);
+ 	filter_print_preds(call->preds, s);
++	mutex_unlock(&event_mutex);
 +
-+	rcu_read_lock();
-+	preds = rcu_dereference(call->preds);
-+	if (unlikely(preds) && !filter_match_preds(preds, rec))
- 		ring_buffer_event_discard(event);
-+	rcu_read_unlock();
- }
+ 	r = simple_read_from_buffer(ubuf, cnt, ppos, s->buffer, s->len);
  
- #define __common_field(type, item)					\
-diff --git a/kernel/trace/trace_events_filter.c b/kernel/trace/trace_events_filter.c
-index 470ad94..f7f8469 100644
---- a/kernel/trace/trace_events_filter.c
-+++ b/kernel/trace/trace_events_filter.c
-@@ -83,14 +83,14 @@ static int filter_pred_string(struct filter_pred *pred, void *event)
- }
- 
- /* return 1 if event matches, 0 otherwise (discard) */
--int filter_match_preds(struct ftrace_event_call *call, void *rec)
-+int filter_match_preds(struct filter_pred **preds, void *rec)
- {
- 	int i, matched, and_failed = 0;
- 	struct filter_pred *pred;
- 
- 	for (i = 0; i < MAX_FILTER_PRED; i++) {
--		if (call->preds[i]) {
--			pred = call->preds[i];
-+		if (preds[i]) {
-+			pred = preds[i];
- 			if (and_failed && !pred->or)
- 				continue;
- 			matched = pred->fn(pred, rec);
-@@ -162,13 +162,16 @@ void filter_free_pred(struct filter_pred *pred)
- 
- void filter_free_preds(struct ftrace_event_call *call)
- {
-+	struct filter_pred **preds;
- 	int i;
- 
- 	if (call->preds) {
-+		preds = call->preds;
-+		rcu_assign_pointer(call->preds, NULL);
-+		synchronize_rcu();
- 		for (i = 0; i < MAX_FILTER_PRED; i++)
--			filter_free_pred(call->preds[i]);
--		kfree(call->preds);
--		call->preds = NULL;
-+			filter_free_pred(preds[i]);
-+		kfree(preds);
+ 	kfree(s);
+@@ -514,20 +517,28 @@ event_filter_write(struct file *filp, const char __user *ubuf, size_t cnt,
+ 		return err;
  	}
+ 
++	mutex_lock(&event_mutex);
+ 	if (pred->clear) {
+ 		filter_free_preds(call);
+ 		filter_free_pred(pred);
+-		return cnt;
++		err = cnt;
++		goto out;
+ 	}
+ 
+ 	if (filter_add_pred(call, pred)) {
+ 		filter_free_pred(pred);
+-		return -EINVAL;
++		err = -EINVAL;
++		goto out;
+ 	}
++	mutex_unlock(&event_mutex);
+ 
+ 	*ppos += cnt;
+ 
+ 	return cnt;
++
++out:
++	mutex_unlock(&event_mutex);
++	return err;
  }
  
-diff --git a/kernel/trace/trace_events_stage_3.h b/kernel/trace/trace_events_stage_3.h
-index 9d2fa78..cca3843 100644
---- a/kernel/trace/trace_events_stage_3.h
-+++ b/kernel/trace/trace_events_stage_3.h
-@@ -222,8 +222,7 @@ static void ftrace_raw_event_##call(proto)				\
- 									\
- 	assign;								\
- 									\
--	if (call->preds && !filter_match_preds(call, entry))		\
--		ring_buffer_event_discard(event);			\
-+	filter_check_discard(call, entry, event);			\
- 									\
- 	trace_nowake_buffer_unlock_commit(event, irq_flags, pc);	\
- 									\
+ static ssize_t
+@@ -547,7 +558,10 @@ subsystem_filter_read(struct file *filp, char __user *ubuf, size_t cnt,
+ 
+ 	trace_seq_init(s);
+ 
++	mutex_lock(&event_mutex);
+ 	filter_print_preds(system->preds, s);
++	mutex_unlock(&event_mutex);
++
+ 	r = simple_read_from_buffer(ubuf, cnt, ppos, s->buffer, s->len);
+ 
+ 	kfree(s);
+@@ -580,21 +594,29 @@ subsystem_filter_write(struct file *filp, const char __user *ubuf, size_t cnt,
+ 		return err;
+ 	}
+ 
++	mutex_lock(&event_mutex);
+ 	if (pred->clear) {
+ 		filter_free_subsystem_preds(system);
+ 		filter_free_pred(pred);
+-		return cnt;
++		err = cnt;
++		goto out;
+ 	}
+ 
+ 	if (filter_add_subsystem_pred(system, pred)) {
+ 		filter_free_subsystem_preds(system);
+ 		filter_free_pred(pred);
+-		return -EINVAL;
++		err = -EINVAL;
++		goto out;
+ 	}
++	mutex_unlock(&event_mutex);
+ 
+ 	*ppos += cnt;
+ 
+ 	return cnt;
++
++out:
++	mutex_unlock(&event_mutex);
++	return err;
+ }
+ 
+ static const struct seq_operations show_event_seq_ops = {
 -- 
 1.5.6.3
 
