@@ -1,21 +1,19 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934510AbZDBHD6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934882AbZDBHE2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934510AbZDBHD6 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 2 Apr 2009 03:03:58 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758155AbZDBHDY
+	id S934882AbZDBHE2 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 2 Apr 2009 03:04:28 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761371AbZDBHDY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
 	Thu, 2 Apr 2009 03:03:24 -0400
-Received: from sous-sol.org ([216.99.217.87]:49082 "EHLO sequoia.sous-sol.org"
+Received: from sous-sol.org ([216.99.217.87]:49081 "EHLO sequoia.sous-sol.org"
 	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1755898AbZDBHDW (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	id S1755469AbZDBHDW (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
 	Thu, 2 Apr 2009 03:03:22 -0400
-Date: Wed, 1 Apr 2009 23:58:05 -0700
+Date: Wed, 1 Apr 2009 23:58:15 -0700
 From: Chris Wright <chrisw@sous-sol.org>
-To: Chris Wright <chrisw@sous-sol.org>
-Cc: linux-kernel@vger.kernel.org, stable@kernel.org,
-       "Theodore Ts'o" <tytso@mit.edu>,
-       Zwane Mwaikambo <zwane@arm.linux.org.uk>, Eugene Teo <eteo@redhat.com>,
-       Justin Forbes <jmforbes@linuxtx.org>,
+To: linux-kernel@vger.kernel.org, stable@kernel.org
+Cc: "Theodore Ts'o" <tytso@mit.edu>, Zwane Mwaikambo <zwane@arm.linux.org.uk>,
+       Eugene Teo <eteo@redhat.com>, Justin Forbes <jmforbes@linuxtx.org>,
        Domenico Andreoli <cavokz@gmail.com>,
        Chris Wedgwood <reviews@ml.cw.f00f.org>, Jake Edge <jake@lwn.net>,
        Randy Dunlap <rdunlap@xenotime.net>,
@@ -23,9 +21,10 @@ Cc: linux-kernel@vger.kernel.org, stable@kernel.org,
        Chuck Ebbert <cebbert@redhat.com>, Dave Jones <davej@redhat.com>,
        Chuck Wolber <chuckw@quantumlinux.com>, akpm@linux-foundation.org,
        torvalds@linux-foundation.org, Willy Tarreau <w@1wt.eu>,
-       Rodrigo Rubira Branco <rbranco@la.checkpoint.com>, davem@davemloft.net
-Subject: [PATCH 48/45] sparc64: Fix reset hangs on Niagara systems.
-Message-ID: <20090402065805.GD18394@sequoia.sous-sol.org>
+       Rodrigo Rubira Branco <rbranco@la.checkpoint.com>, hverkuil@xs4all.nl,
+       g.liakhovetski@gmx.de, mchehab@redhat.com
+Subject: [PATCH 49/45] V4L: v4l2-common: remove incorrect MODULE test
+Message-ID: <20090402065815.GE18394@sequoia.sous-sol.org>
 References: <20090331231045.719396245@sous-sol.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
@@ -39,64 +38,59 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 -stable review patch.  If anyone has any objections, please let us know.
 ---------------------
 
-From: David S. Miller <davem@davemloft.net>
+From: Hans Verkuil <hverkuil@xs4all.nl>
 
-[ Upstream commit ffaba674090f287afe0c44fd8d978c64c03581a8 ]
+upstream commit: d64260d58865004c6354e024da3450fdd607ea07
 
-Hypervisor versions older than version 1.6.1 cannot handle
-leaving the profile counter overflow interrupt chirping
-when the system does a soft reset.
+v4l2-common doesn't have to be a module for it to call request_module().
+Just remove that test.
 
-So use a reboot notifier to shut off the NMI watchdog.
+Without this patch loading ivtv as a module while v4l2-common is compiled
+into the kernel will cause a delayed load of the i2c modules that ivtv
+needs since request_module is never called directly.
 
-Signed-off-by: David S. Miller <davem@davemloft.net>
+While it is nice to see the delayed load in action, it is not so nice in
+that ivtv fails to do a lot of necessary i2c initializations and will oops
+later on with a division-by-zero.
+
+Thanks to Mark Lord for reporting this and helping me figure out what was
+wrong.
+
+Thanks-to: Guennadi Liakhovetski <g.liakhovetski@gmx.de>
+Thanks-to: Mark Lord <lkml@rtr.ca>
+Signed-off-by: Hans Verkuil <hverkuil@xs4all.nl>
+Signed-off-by: Mauro Carvalho Chehab <mchehab@redhat.com>
+Signed-off-by: Michael Krufky <mkrufky@linuxtv.org>
 Signed-off-by: Chris Wright <chrisw@sous-sol.org>
 ---
- arch/sparc/kernel/nmi.c |   23 ++++++++++++++++++++++-
- 1 file changed, 22 insertions(+), 1 deletion(-)
+ drivers/media/video/v4l2-common.c |    8 ++++----
+ 1 file changed, 4 insertions(+), 4 deletions(-)
 
---- a/arch/sparc/kernel/nmi.c
-+++ b/arch/sparc/kernel/nmi.c
-@@ -13,6 +13,7 @@
- #include <linux/module.h>
- #include <linux/kprobes.h>
- #include <linux/kernel_stat.h>
-+#include <linux/reboot.h>
- #include <linux/slab.h>
- #include <linux/kdebug.h>
- #include <linux/delay.h>
-@@ -206,13 +207,33 @@ void nmi_adjust_hz(unsigned int new_hz)
- }
- EXPORT_SYMBOL_GPL(nmi_adjust_hz);
+--- a/drivers/media/video/v4l2-common.c
++++ b/drivers/media/video/v4l2-common.c
+@@ -910,10 +910,10 @@ struct v4l2_subdev *v4l2_i2c_new_subdev(
+ 	struct i2c_board_info info;
  
-+static int nmi_shutdown(struct notifier_block *nb, unsigned long cmd, void *p)
-+{
-+	on_each_cpu(stop_watchdog, NULL, 1);
-+	return 0;
-+}
+ 	BUG_ON(!dev);
+-#ifdef MODULE
 +
-+static struct notifier_block nmi_reboot_notifier = {
-+	.notifier_call = nmi_shutdown,
-+};
+ 	if (module_name)
+ 		request_module(module_name);
+-#endif
 +
- int __init nmi_init(void)
- {
-+	int err;
+ 	/* Setup the i2c board info with the device type and
+ 	   the device address. */
+ 	memset(&info, 0, sizeof(info));
+@@ -958,10 +958,10 @@ struct v4l2_subdev *v4l2_i2c_new_probed_
+ 	struct i2c_board_info info;
+ 
+ 	BUG_ON(!dev);
+-#ifdef MODULE
 +
- 	nmi_usable = 1;
- 
- 	on_each_cpu(start_watchdog, NULL, 1);
- 
--	return check_nmi_watchdog();
-+	err = check_nmi_watchdog();
-+	if (!err) {
-+		err = register_reboot_notifier(&nmi_reboot_notifier);
-+		if (err) {
-+			nmi_usable = 0;
-+			on_each_cpu(stop_watchdog, NULL, 1);
-+		}
-+	}
-+	return err;
- }
- 
- static int __init setup_nmi_watchdog(char *str)
+ 	if (module_name)
+ 		request_module(module_name);
+-#endif
++
+ 	/* Setup the i2c board info with the device type and
+ 	   the device address. */
+ 	memset(&info, 0, sizeof(info));
