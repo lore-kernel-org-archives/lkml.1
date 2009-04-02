@@ -1,62 +1,93 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932546AbZDBSPB@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1765329AbZDBSQx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932546AbZDBSPB (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 2 Apr 2009 14:15:01 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752533AbZDBSOv
+	id S1765329AbZDBSQx (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 2 Apr 2009 14:16:53 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759732AbZDBSQn
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 2 Apr 2009 14:14:51 -0400
-Received: from smtp110.mail.mud.yahoo.com ([209.191.85.220]:26926 "HELO
-	smtp110.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1759494AbZDBSOu (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 2 Apr 2009 14:14:50 -0400
-DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
-  s=s1024; d=yahoo.com.au;
-  h=Received:X-YMail-OSG:X-Yahoo-Newman-Property:From:To:Subject:Date:User-Agent:Cc:References:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Content-Disposition:Message-Id;
-  b=Dvb4jdJkxpbaIVwIOFF4Np2cjhvWdd3voLG0sNSbNtj9joLxaRIrsBFNIxt4HZ2QoLk1v3/om6kgaY9M+fYG9A3gXWHTLKw6yzNowYOytS0dLkCE3POpmSVef6Qzj7dxv+EzsNGCbWAjb8MGlYF8LmVbsZw4KjADv6cx4TW1RXc=  ;
-X-YMail-OSG: GzestpUVM1nWY4kSBhqtDwgm2SIjRzio2z9OAiZi.1TsrJf3MB.L9b0ZHGWYHYNjJzLlLg3ILo.bbgP8u_KbRrOMj2GepDzWNgag11e46xM5hY_UcwdU6BA0J3Z23_.xkn86zzSa_k3iK1sDuyKxUddad73KUoVRAut7.TC6jf1d_YX6.X0rRgXDq4wgMBCIU8WY6aQW2OxAlTDuChGgaNOTUt.qweTj7SROzGLF7sJFFxF911Qls752AnFhDFgo3yYFBBYODUBKSWk0gQ.N31YFwsQvOAtqL8uLhucmLwyXNfhPW96srkei8MlJYkKJTnKd1Wc0OYrRAPglxdR3c9uVbw--
-X-Yahoo-Newman-Property: ymail-3
-From: Nick Piggin <nickpiggin@yahoo.com.au>
-To: David Howells <dhowells@redhat.com>
-Subject: Re: [PATCH 06/43] FS-Cache: Recruit a couple of page flags for cache management [ver #46]
-Date: Fri, 3 Apr 2009 05:14:42 +1100
-User-Agent: KMail/1.9.51 (KDE/4.0.4; ; )
-Cc: viro@zeniv.linux.org.uk, nfsv4@linux-nfs.org, linux-kernel@vger.kernel.org,
-       linux-fsdevel@vger.kernel.org
-References: <200904030431.04079.nickpiggin@yahoo.com.au> <7249.1238692155@redhat.com> <7516.1238694057@redhat.com>
-In-Reply-To: <7516.1238694057@redhat.com>
+	Thu, 2 Apr 2009 14:16:43 -0400
+Received: from mx2.mail.elte.hu ([157.181.151.9]:50770 "EHLO mx2.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1755323AbZDBSQn (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 2 Apr 2009 14:16:43 -0400
+Date: Thu, 2 Apr 2009 20:16:29 +0200
+From: Ingo Molnar <mingo@elte.hu>
+To: Peter Zijlstra <a.p.zijlstra@chello.nl>
+Cc: Paul Mackerras <paulus@samba.org>,
+       Corey Ashford <cjashfor@linux.vnet.ibm.com>,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 5/6] perf_counter: add more context information
+Message-ID: <20090402181629.GC6340@elte.hu>
+References: <20090402091158.291810516@chello.nl> <20090402091319.493101305@chello.nl> <20090402113643.GF10828@elte.hu> <1238672770.8530.5901.camel@twins>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="utf-8"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Message-Id: <200904030514.42687.nickpiggin@yahoo.com.au>
+In-Reply-To: <1238672770.8530.5901.camel@twins>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Friday 03 April 2009 04:40:57 David Howells wrote:
-> Nick Piggin <nickpiggin@yahoo.com.au> wrote:
-> 
-> > Well in theory I still think it would be cleanest to modify buffer to
-> > play more nicely with it. But maybe that ends up being harder to
-> > distinguish the 3 cases of attached metadata on the page. I don't know,
-> > you haven't posted any isofs code so either way it is inappropriate to
-> > use up this extra page flag here.
+
+* Peter Zijlstra <a.p.zijlstra@chello.nl> wrote:
+
+> On Thu, 2009-04-02 at 13:36 +0200, Ingo Molnar wrote:
+> > * Peter Zijlstra <a.p.zijlstra@chello.nl> wrote:
 > > 
-> > Is isofs cache worth a page flag?
+> > > Put in counts to tell which ips belong to what context.
+> > > 
+> > >   -----
+> > >    | |  hv
+> > >    | --
+> > > nr | |  kernel
+> > >    | --
+> > >    | |  user
+> > >   -----
+> > 
+> > btw., i have an observation about the format:
+> > 
+> > > -#define MAX_STACK_DEPTH		255
+> > > +#define MAX_STACK_DEPTH		254
+> > >  
+> > >  struct perf_callchain_entry {
+> > > -	u64	nr;
+> > > +	u32	nr, hv, kernel, user;
+> > >  	u64	ip[MAX_STACK_DEPTH];
+> > >  };
+> > 
+> > For the special case of signal notifications, if the signal is 
+> > delivered immediately to the same task that raised it (pid=0), the 
+> > call chain is actually a still meaningful one: it is the stack that 
+> > is below the currently executing signal handler context.
+> > 
+> > Wouldnt it make sense to record the full stack frame for that 
+> > case, to allow walking/unwinding of the stack? Or can user-space 
+> > do that just fine, based on its own signal context?
 > 
-> Well, isofs was something I wanted at the time.
+> I think it can do that just fine or even better than we can -- 
+> userspace having access to a full dwarf2 unwinder and such.
 
-It can't be done with FUSE?
+eventually we'll have one in the kernel too, but yeah, user-space 
+can do this better. It will have precise details about the runtime 
+environment.
 
+And any async mechanism has no chance to do anything useful with 
+stack frame info anyway - that stack frame might be long gone.
 
-> Besides, as I said NFS uses PG_private for its own purposes, and entangling
-> the two wasn't the most fun I've had.  Trond didn't like it either.
+> > We are going to hard-code the "call-chain is a series of IPs, 
+> > nothing else" model, and i'd like to make sure it's future-proof
+> > :)
+> 
+> I think it should be, function return addresses are the primary 
+> piece of information here.
 
-IMO that is quite OK to make them go through the pain of that if it
-avoids resulting in a new page flag that is probably unusable to most
-other filesystems.
+ok - good - just wanted to make sure :)
 
-But... I guess I won't get hung up on it. If you avoid at least one of
-these flags it would be a good start.
+	Ingo
