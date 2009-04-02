@@ -1,29 +1,29 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933495AbZDBR0P@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934537AbZDBR04@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933495AbZDBR0P (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 2 Apr 2009 13:26:15 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934141AbZDBRYg
+	id S934537AbZDBR04 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 2 Apr 2009 13:26:56 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934178AbZDBRYw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 2 Apr 2009 13:24:36 -0400
-Received: from mx2.redhat.com ([66.187.237.31]:43046 "EHLO mx2.redhat.com"
+	Thu, 2 Apr 2009 13:24:52 -0400
+Received: from mx2.redhat.com ([66.187.237.31]:43081 "EHLO mx2.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1764524AbZDBRYc (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 2 Apr 2009 13:24:32 -0400
-Message-ID: <49D4F4E6.6060401@redhat.com>
-Date: Thu, 02 Apr 2009 13:24:54 -0400
+	id S934175AbZDBRYs (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 2 Apr 2009 13:24:48 -0400
+Message-ID: <49D4F4ED.6000906@redhat.com>
+Date: Thu, 02 Apr 2009 13:25:01 -0400
 From: Masami Hiramatsu <mhiramat@redhat.com>
 User-Agent: Thunderbird 2.0.0.21 (X11/20090320)
 MIME-Version: 1.0
-To: Jim Keniston <jkenisto@us.ibm.com>, Ingo Molnar <mingo@elte.hu>,
+To: Ingo Molnar <mingo@elte.hu>, Steven Rostedt <rostedt@goodmis.org>,
        Ananth N Mavinakayanahalli <ananth@in.ibm.com>,
-       Andi Kleen <andi@firstfloor.org>, kvm@vger.kernel.org
-CC: Steven Rostedt <rostedt@goodmis.org>,
-       Frederic Weisbecker <fweisbec@gmail.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
+       Frederic Weisbecker <fweisbec@gmail.com>
+CC: Jim Keniston <jkenisto@us.ibm.com>,
        Arnaldo Carvalho de Melo <acme@redhat.com>,
-       systemtap-ml <systemtap@sources.redhat.com>,
-       LKML <linux-kernel@vger.kernel.org>
-Subject: [PATCH -tip 3/6 V4] x86: instruction decorder API
+       Andi Kleen <andi@firstfloor.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       LKML <linux-kernel@vger.kernel.org>,
+       systemtap-ml <systemtap@sources.redhat.com>, kvm@vger.kernel.org
+Subject: [PATCH -tip 5/6 V4] tracing: kprobe-tracer plugin core
 X-Enigmail-Version: 0.95.7
 Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
@@ -31,42 +31,142 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Add x86 instruction decoder to arch-specific libraries. This decoder
-can decode all x86 instructions into prefix, opcode, modrm, sib,
-displacement and immediates. This can also show the length of
-instructions.
+Add kprobes based event tracer on ftrace.
 
-Signed-off-by: Jim Keniston <jkenisto@us.ibm.com>
+This tracer is similar to the events tracer which is based on Tracepoint
+infrastructure. Instead of Tracepoint, this tracer is based on kprobes(kprobe
+and kretprobe). It probes anywhere where kprobes can probe(this means, all
+functions body except for __kprobes functions).
+
+changes from v3:
+  - warn if the probe address is not an instruction boundary.
+
 Signed-off-by: Masami Hiramatsu <mhiramat@redhat.com>
+Cc: Steven Rostedt <rostedt@goodmis.org>
 Cc: Ananth N Mavinakayanahalli <ananth@in.ibm.com>
 Cc: Ingo Molnar <mingo@elte.hu>
-Cc: Andi Kleen <ak@linux.intel.com>
-Cc: kvm@vger.kernel.org
+Cc: Frederic Weisbecker <fweisbec@gmail.com>
 ---
 
- arch/x86/include/asm/insn.h |  130 +++++++++
- arch/x86/lib/Makefile       |    1
- arch/x86/lib/insn.c         |  627 +++++++++++++++++++++++++++++++++++++++++++
- 3 files changed, 758 insertions(+), 0 deletions(-)
- create mode 100644 arch/x86/include/asm/insn.h
- create mode 100644 arch/x86/lib/insn.c
+ Documentation/ftrace.txt    |   55 ++++++
+ kernel/trace/Kconfig        |    9 +
+ kernel/trace/Makefile       |    1
+ kernel/trace/trace_kprobe.c |  400 +++++++++++++++++++++++++++++++++++++++++++
+ 4 files changed, 465 insertions(+), 0 deletions(-)
+ create mode 100644 kernel/trace/trace_kprobe.c
 
 
-diff --git a/arch/x86/include/asm/insn.h b/arch/x86/include/asm/insn.h
+diff --git a/Documentation/ftrace.txt b/Documentation/ftrace.txt
+index fd9a3e6..fd0833b 100644
+--- a/Documentation/ftrace.txt
++++ b/Documentation/ftrace.txt
+@@ -1310,6 +1310,61 @@ dereference in a kernel module:
+ [...]
+
+
++kprobe-based event tracer
++---------------------------
++
++This tracer is similar to the events tracer which is based on Tracepoint
++infrastructure. Instead of Tracepoint, this tracer is based on kprobes(kprobe
++and kretprobe). It probes anywhere where kprobes can probe(this means, all
++functions body except for __kprobes functions).
++
++Unlike the function tracer, this tracer can probe instructions inside of
++kernel functions. It allows you to check which instruction has been executed.
++
++Unlike the Tracepoint based events tracer, this tracer can add new probe points
++on the fly.
++
++Similar to the events tracer, this tracer doesn't need to be activated via
++current_tracer, instead of that, just set probe points via
++/debug/tracing/kprobe_probes.
++
++Synopsis of kprobe_probes:
++  p SYMBOL[+offs|-offs]|MEMADDR	: set a probe
++  r SYMBOL[+0]				: set a return probe
++
++E.g.
++  echo p sys_open > /debug/tracing/kprobe_probes
++
++ This sets a kprobe on the top of sys_open() function.
++
++  echo r sys_open >> /debug/tracing/kprobe_probes
++
++ This sets a kretprobe on the return point of sys_open() function.
++
++  echo > /debug/tracing/kprobe_probes
++
++ This clears all probe points. and you can see the traced information via
++/debug/tracing/trace.
++
++  cat /debug/tracing/trace
++# tracer: nop
++#
++#           TASK-PID    CPU#    TIMESTAMP  FUNCTION
++#              | |       |          |         |
++           <...>-5117  [003]   416.481638: sys_open: @sys_open+0
++           <...>-5117  [003]   416.481662: syscall_call: <-sys_open+0
++           <...>-5117  [003]   416.481739: sys_open: @sys_open+0
++           <...>-5117  [003]   416.481762: sysenter_do_call: <-sys_open+0
++           <...>-5117  [003]   416.481818: sys_open: @sys_open+0
++           <...>-5117  [003]   416.481842: sysenter_do_call: <-sys_open+0
++           <...>-5117  [003]   416.481882: sys_open: @sys_open+0
++           <...>-5117  [003]   416.481905: sysenter_do_call: <-sys_open+0
++
++ @SYMBOL means that kernel hits a probe, and <-SYMBOL means kernel returns
++from SYMBOL(e.g. "sysenter_do_call: <-sys_open+0" means kernel returns from
++sys_open to sysenter_do_call).
++
++
+ function graph tracer
+ ---------------------------
+
+diff --git a/kernel/trace/Kconfig b/kernel/trace/Kconfig
+index 8a4d729..becd8ed 100644
+--- a/kernel/trace/Kconfig
++++ b/kernel/trace/Kconfig
+@@ -357,6 +357,15 @@ config BLK_DEV_IO_TRACE
+
+ 	  If unsure, say N.
+
++config KPROBE_TRACER
++	depends on KPROBES
++	depends on X86
++	bool "Trace kprobes"
++	select TRACING
++	help
++	  This tracer probes everywhere where kprobes can probe it, and
++	  records various registers and memories specified by user.
++
+ config DYNAMIC_FTRACE
+ 	bool "enable/disable ftrace tracepoints dynamically"
+ 	depends on FUNCTION_TRACER
+diff --git a/kernel/trace/Makefile b/kernel/trace/Makefile
+index 2630f51..f39a26b 100644
+--- a/kernel/trace/Makefile
++++ b/kernel/trace/Makefile
+@@ -46,5 +46,6 @@ obj-$(CONFIG_EVENT_TRACER) += trace_export.o
+ obj-$(CONFIG_FTRACE_SYSCALLS) += trace_syscalls.o
+ obj-$(CONFIG_EVENT_PROFILE) += trace_event_profile.o
+ obj-$(CONFIG_EVENT_TRACER) += trace_events_filter.o
++obj-$(CONFIG_KPROBE_TRACER) += trace_kprobe.o
+
+ libftrace-y := ftrace.o
+diff --git a/kernel/trace/trace_kprobe.c b/kernel/trace/trace_kprobe.c
 new file mode 100644
-index 0000000..488001f
+index 0000000..8263b5f
 --- /dev/null
-+++ b/arch/x86/include/asm/insn.h
-@@ -0,0 +1,130 @@
-+#ifndef _ASM_X86_INSN_H
-+#define _ASM_X86_INSN_H
++++ b/kernel/trace/trace_kprobe.c
+@@ -0,0 +1,400 @@
 +/*
-+ * x86 instruction analysis
++ * kprobe based kernel tracer
++ *
++ * Created by Masami Hiramatsu <mhiramat@redhat.com>
 + *
 + * This program is free software; you can redistribute it and/or modify
-+ * it under the terms of the GNU General Public License as published by
-+ * the Free Software Foundation; either version 2 of the License, or
-+ * (at your option) any later version.
++ * it under the terms of the GNU General Public License version 2 as
++ * published by the Free Software Foundation.
 + *
 + * This program is distributed in the hope that it will be useful,
 + * but WITHOUT ANY WARRANTY; without even the implied warranty of
@@ -75,764 +175,390 @@ index 0000000..488001f
 + *
 + * You should have received a copy of the GNU General Public License
 + * along with this program; if not, write to the Free Software
-+ * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
-+ *
-+ * Copyright (C) IBM Corporation, 2009
++ * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 + */
 +
-+#include <linux/types.h>
-+
-+/* legacy instruction prefixes */
-+#define X86_PFX_OPNDSZ	0x1	/* 0x66 */
-+#define X86_PFX_ADDRSZ	0x2	/* 0x67 */
-+#define X86_PFX_CS	0x4	/* 0x2E */
-+#define X86_PFX_DS	0x8	/* 0x3E */
-+#define X86_PFX_ES	0x10	/* 0x26 */
-+#define X86_PFX_FS	0x20	/* 0x64 */
-+#define X86_PFX_GS	0x40	/* 0x65 */
-+#define X86_PFX_SS	0x80	/* 0x36 */
-+#define X86_PFX_LOCK	0x100	/* 0xF0 */
-+#define X86_PFX_REPE	0x200	/* 0xF3 */
-+#define X86_PFX_REPNE	0x400	/* 0xF2 */
-+/* REX prefix */
-+#define X86_PFX_REX	0x800	/* 0x4X */
-+/* REX prefix dissected */
-+#define X86_PFX_REX_BASE 0x1000
-+#define X86_PFX_REXB	0x1000	/* 0x41 bit */
-+#define X86_PFX_REXX	0x2000	/* 0x42 bit */
-+#define X86_PFX_REXR	0x4000	/* 0x44 bit */
-+#define X86_PFX_REXW	0x8000	/* 0x48 bit */
-+
-+struct insn_field {
-+	union {
-+		s32 value;
-+		u8 bytes[4];
-+	};
-+	bool got;	/* true if we've run insn_get_xxx() for this field */
-+	u8 nbytes;
-+};
-+
-+struct insn {
-+	struct insn_field prefixes;	/* prefixes.value is a bitmap */
-+	struct insn_field opcode;	/*
-+					 * opcode.bytes[0]: opcode1
-+					 * opcode.bytes[1]: opcode2
-+					 * opcode.bytes[2]: opcode3
-+					 */
-+	struct insn_field modrm;
-+	struct insn_field sib;
-+	struct insn_field displacement;
-+	union {
-+		struct insn_field immediate;
-+		struct insn_field moffset1;	/* for 64bit MOV */
-+		struct insn_field immediate1;	/* for 64bit imm or off16/32 */
-+	};
-+	union {
-+		struct insn_field moffset2;	/* for 64bit MOV */
-+		struct insn_field immediate2;	/* for 64bit imm or seg16 */
-+	};
-+
-+	u8 opnd_bytes;
-+	u8 addr_bytes;
-+	u8 length;
-+	bool x86_64;
-+
-+	const u8 *kaddr;	/* kernel address of insn (copy) to analyze */
-+	const u8 *next_byte;
-+};
-+
-+#define OPCODE1(insn) ((insn)->opcode.bytes[0])
-+#define OPCODE2(insn) ((insn)->opcode.bytes[1])
-+#define OPCODE3(insn) ((insn)->opcode.bytes[2])
-+
-+#define MODRM_MOD(insn) (((insn)->modrm.value & 0xc0) >> 6)
-+#define MODRM_REG(insn) (((insn)->modrm.value & 0x38) >> 3)
-+#define MODRM_RM(insn) ((insn)->modrm.value & 0x07)
-+
-+#define SIB_SCALE(insn) (((insn)->sib.value & 0xc0) >> 6)
-+#define SIB_INDEX(insn) (((insn)->sib.value & 0x38) >> 3)
-+#define SIB_BASE(insn) ((insn)->sib.value & 0x07)
-+
-+#define MOFFSET64(insn)	(((u64)((insn)->moffset2.value) << 32) | \
-+			  (u32)((insn)->moffset1.value))
-+
-+#define IMMEDIATE64(insn)	(((u64)((insn)->immediate2.value) << 32) | \
-+				  (u32)((insn)->immediate1.value))
-+
-+extern void insn_init(struct insn *insn, const u8 *kaddr, bool x86_64);
-+extern void insn_get_prefixes(struct insn *insn);
-+extern void insn_get_opcode(struct insn *insn);
-+extern void insn_get_modrm(struct insn *insn);
-+extern void insn_get_sib(struct insn *insn);
-+extern void insn_get_displacement(struct insn *insn);
-+extern void insn_get_immediate(struct insn *insn);
-+extern void insn_get_length(struct insn *insn);
-+
-+#ifdef CONFIG_X86_64
-+/* Init insn for kernel text */
-+#define insn_init_kernel(insn, kaddr) insn_init(insn, kaddr, 1)
-+extern bool insn_rip_relative(struct insn *insn);
-+
-+#else /* CONFIG_X86_32 */
-+
-+#define insn_init_kernel(insn, kaddr) insn_init(insn, kaddr, 0)
-+static inline bool insn_rip_relative(struct insn *insn)
-+{
-+	return false;
-+}
-+#endif
-+
-+static inline bool insn_field_exists(const struct insn_field *field)
-+{
-+	return (field->nbytes > 0);
-+}
-+
-+#endif /* _ASM_X86_INSN_H */
-diff --git a/arch/x86/lib/Makefile b/arch/x86/lib/Makefile
-index 55e11aa..0f81979 100644
---- a/arch/x86/lib/Makefile
-+++ b/arch/x86/lib/Makefile
-@@ -8,6 +8,7 @@ lib-y := delay.o
- lib-y += thunk_$(BITS).o
- lib-y += usercopy_$(BITS).o getuser.o putuser.o
- lib-y += memcpy_$(BITS).o
-+lib-y += insn.o
-
- ifeq ($(CONFIG_X86_32),y)
-         lib-y += checksum_32.o
-diff --git a/arch/x86/lib/insn.c b/arch/x86/lib/insn.c
-new file mode 100644
-index 0000000..f5b13b0
---- /dev/null
-+++ b/arch/x86/lib/insn.c
-@@ -0,0 +1,627 @@
-+/*
-+ * x86 instruction analysis
-+ *
-+ * This program is free software; you can redistribute it and/or modify
-+ * it under the terms of the GNU General Public License as published by
-+ * the Free Software Foundation; either version 2 of the License, or
-+ * (at your option) any later version.
-+ *
-+ * This program is distributed in the hope that it will be useful,
-+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
-+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-+ * GNU General Public License for more details.
-+ *
-+ * You should have received a copy of the GNU General Public License
-+ * along with this program; if not, write to the Free Software
-+ * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
-+ *
-+ * Copyright (C) IBM Corporation, 2002, 2004, 2009
-+ */
-+
-+#include <linux/string.h>
 +#include <linux/module.h>
-+#include <asm/insn.h>
++#include <linux/uaccess.h>
++#include <linux/kprobes.h>
++#include <linux/seq_file.h>
++#include <linux/slab.h>
++#include <linux/smp.h>
++#include <linux/debugfs.h>
++#include <linux/types.h>
++#include <linux/string.h>
++#include <linux/ctype.h>
 +
-+#undef W
-+#define W(row, b0, b1, b2, b3, b4, b5, b6, b7, b8, b9, ba, bb, bc, bd, be, bf)\
-+	(((b0##UL << 0x0)|(b1##UL << 0x1)|(b2##UL << 0x2)|(b3##UL << 0x3) |   \
-+	  (b4##UL << 0x4)|(b5##UL << 0x5)|(b6##UL << 0x6)|(b7##UL << 0x7) |   \
-+	  (b8##UL << 0x8)|(b9##UL << 0x9)|(ba##UL << 0xa)|(bb##UL << 0xb) |   \
-+	  (bc##UL << 0xc)|(bd##UL << 0xd)|(be##UL << 0xe)|(bf##UL << 0xf))    \
-+	 << (row % 32))
++#include <linux/ftrace.h>
++#include "trace.h"
 +
 +/**
-+ * insn_init() - initialize struct insn
-+ * @insn:	&struct insn to be initialized
-+ * @kaddr:	address (in kernel memory) of instruction (or copy thereof)
-+ * @x86_64:	true for 64-bit kernel or 64-bit app
++ * kprobe_trace_core
 + */
-+void insn_init(struct insn *insn, const u8 *kaddr, bool x86_64)
++#define TRACE_MAXARGS 6
++
++struct trace_probe {
++	struct list_head	list;
++	union {
++		struct kprobe		kp;
++		struct kretprobe	rp;
++	};
++	const char		*symbol;	/* symbol name */
++};
++
++static void kprobe_trace_record(unsigned long ip, struct trace_probe *tp,
++				struct pt_regs *regs);
++
++static int kprobe_trace_func(struct kprobe *kp, struct pt_regs *regs)
 +{
-+	memset(insn, 0, sizeof(*insn));
-+	insn->kaddr = kaddr;
-+	insn->next_byte = kaddr;
-+	insn->x86_64 = x86_64;
-+	insn->opnd_bytes = 4;
-+	if (x86_64)
-+		insn->addr_bytes = 8;
++	struct trace_probe *tp = container_of(kp, struct trace_probe, kp);
++
++	kprobe_trace_record(instruction_pointer(regs), tp, regs);
++	return 0;
++}
++
++static int kretprobe_trace_func(struct kretprobe_instance *ri,
++				struct pt_regs *regs)
++{
++	struct trace_probe *tp = container_of(ri->rp, struct trace_probe, rp);
++
++	kprobe_trace_record((unsigned long)ri->ret_addr, tp, regs);
++	return 0;
++}
++
++static int probe_is_return(struct trace_probe *tp)
++{
++	return (tp->rp.handler == kretprobe_trace_func);
++}
++
++static const char *probe_symbol(struct trace_probe *tp)
++{
++	return tp->symbol ? tp->symbol : "unknown";
++}
++
++static long probe_offset(struct trace_probe *tp)
++{
++	return (probe_is_return(tp)) ? tp->rp.kp.offset : tp->kp.offset;
++}
++
++static void *probe_address(struct trace_probe *tp)
++{
++	return (probe_is_return(tp)) ? tp->rp.kp.addr : tp->kp.addr;
++}
++
++
++static DEFINE_MUTEX(probe_lock);
++static LIST_HEAD(probe_list);
++
++static struct trace_probe *alloc_trace_probe(const char *symbol)
++{
++	struct trace_probe *tp;
++
++	tp = kzalloc(sizeof(struct trace_probe), GFP_KERNEL);
++	if (!tp)
++		return ERR_PTR(-ENOMEM);
++
++	if (symbol) {
++		tp->symbol = kstrdup(symbol, GFP_KERNEL);
++		if (!tp->symbol) {
++			kfree(tp);
++			return ERR_PTR(-ENOMEM);
++		}
++	}
++
++	INIT_LIST_HEAD(&tp->list);
++	return tp;
++}
++
++static void free_trace_probe(struct trace_probe *tp)
++{
++	kfree(tp->symbol);
++	kfree(tp);
++}
++
++static int register_trace_probe(struct trace_probe *tp)
++{
++	int ret;
++
++	mutex_lock(&probe_lock);
++	list_add_tail(&tp->list, &probe_list);
++
++	if (probe_is_return(tp))
++		ret = register_kretprobe(&tp->rp);
 +	else
-+		insn->addr_bytes = 4;
-+}
-+EXPORT_SYMBOL_GPL(insn_init);
++		ret = register_kprobe(&tp->kp);
 +
-+/**
-+ * insn_get_prefixes - scan x86 instruction prefix bytes
-+ * @insn:	&struct insn containing instruction
-+ *
-+ * Populates the @insn->prefixes bitmap, and updates @insn->next_byte
-+ * to point to the (first) opcode.  No effect if @insn->prefixes.got
-+ * is already true.
-+ */
-+void insn_get_prefixes(struct insn *insn)
-+{
-+	u32 pfx;
-+	struct insn_field *prefixes = &insn->prefixes;
-+	if (prefixes->got)
-+		return;
-+	for (;; insn->next_byte++, prefixes->nbytes++) {
-+		u8 b = *(insn->next_byte);
-+#ifdef CONFIG_X86_64
-+		if ((b & 0xf0) == 0x40 && insn->x86_64) {
-+			prefixes->value |= X86_PFX_REX;
-+			prefixes->value |= (b & 0x0f) * X86_PFX_REX_BASE;
-+			/* REX prefix is always last. */
-+			insn->next_byte++;
-+			prefixes->nbytes++;
-+			break;
++	if (ret) {
++		pr_warning("Could not insert probe(%d)\n", ret);
++		if (ret == -EILSEQ) {
++			pr_warning("Probing address(0x%p) is not an "
++				   "instruction boundary.\n",
++				   probe_address(tp));
++			ret = -EINVAL;
 +		}
-+#endif
-+		switch (b) {
-+		case 0x26:
-+			pfx = X86_PFX_ES;
-+			break;
-+		case 0x2E:
-+			pfx = X86_PFX_CS;
-+			break;
-+		case 0x36:
-+			pfx = X86_PFX_SS;
-+			break;
-+		case 0x3E:
-+			pfx = X86_PFX_DS;
-+			break;
-+		case 0x64:
-+			pfx = X86_PFX_FS;
-+			break;
-+		case 0x65:
-+			pfx = X86_PFX_GS;
-+			break;
-+		case 0x66:
-+			pfx = X86_PFX_OPNDSZ;
-+			break;
-+		case 0x67:
-+			pfx = X86_PFX_ADDRSZ;
-+			break;
-+		case 0xF0:
-+			pfx = X86_PFX_LOCK;
-+			break;
-+		case 0xF2:
-+			pfx = X86_PFX_REPNE;
-+			break;
-+		case 0xF3:
-+			pfx = X86_PFX_REPE;
-+			break;
-+		default:
-+			pfx = 0x0;
-+			break;
-+		}
-+		if (!pfx)
-+			break;
-+		prefixes->value |= pfx;
++		list_del(&tp->list);
 +	}
-+	if (prefixes->value & X86_PFX_OPNDSZ) {
-+		/* oprand size switches 2/4 */
-+		insn->opnd_bytes ^= 6;
-+	}
-+	if (prefixes->value & X86_PFX_ADDRSZ) {
-+		/* address size switches 2/4 or 4/8 */
-+#ifdef CONFIG_X86_64
-+		if (insn->x86_64)
-+			insn->addr_bytes ^= 12;
-+		else
-+#endif
-+			insn->addr_bytes ^= 6;
-+	}
-+#ifdef CONFIG_X86_64
-+	if (prefixes->value & X86_PFX_REXW)
-+		insn->opnd_bytes = 8;
-+#endif
-+	prefixes->got = true;
++	mutex_unlock(&probe_lock);
++	return ret;
 +}
-+EXPORT_SYMBOL_GPL(insn_get_prefixes);
 +
-+/**
-+ * insn_get_opcode - collect opcode(s)
-+ * @insn:	&struct insn containing instruction
-+ *
-+ * Populates @insn->opcode1 (and @insn->opcode2, if it's a 2-byte opcode)
-+ * and updates @insn->next_byte to point past the opcode byte(s).
-+ * If necessary, first collects any preceding (prefix) bytes.
-+ * Sets @insn->opcode.value = opcode1.  No effect if @insn->opcode.got
-+ * is already true.
-+ */
-+void insn_get_opcode(struct insn *insn)
++static void unregister_trace_probe(struct trace_probe *tp)
 +{
-+	struct insn_field *opcode = &insn->opcode;
-+	if (opcode->got)
-+		return;
-+	if (!insn->prefixes.got)
-+		insn_get_prefixes(insn);
-+	OPCODE1(insn) = *insn->next_byte++;
-+	if (OPCODE1(insn) == 0x0f) {
-+		OPCODE2(insn) = *insn->next_byte++;
-+		if (OPCODE2(insn) == 0x38 || OPCODE2(insn) == 0x3a) {
-+			OPCODE3(insn) = *insn->next_byte++;
-+			opcode->nbytes = 3;
-+		} else
-+			opcode->nbytes = 2;
-+	} else
-+		opcode->nbytes = 1;
-+	opcode->got = true;
++	if (probe_is_return(tp))
++		unregister_kretprobe(&tp->rp);
++	else
++		unregister_kprobe(&tp->kp);
++	list_del(&tp->list);
 +}
-+EXPORT_SYMBOL_GPL(insn_get_opcode);
 +
-+const u32 onebyte_has_modrm[256 / 32] = {
-+	/*      0  1  2  3  4  5  6  7  8  9  a  b  c  d  e  f          */
-+	/*      -----------------------------------------------         */
-+	W(0x00, 1, 1, 1, 1, 0, 0, 0, 0, 1, 1, 1, 1, 0, 0, 0, 0) | /* 0f */
-+	W(0x10, 1, 1, 1, 1, 0, 0, 0, 0, 1, 1, 1, 1, 0, 0, 0, 0) , /* 1f */
-+	W(0x20, 1, 1, 1, 1, 0, 0, 0, 0, 1, 1, 1, 1, 0, 0, 0, 0) | /* 2f */
-+	W(0x30, 1, 1, 1, 1, 0, 0, 0, 0, 1, 1, 1, 1, 0, 0, 0, 0) , /* 3f */
-+	W(0x40, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0) | /* 4f */
-+	W(0x50, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0) , /* 5f */
-+	W(0x60, 0, 0, 1, 1, 0, 0, 0, 0, 0, 1, 0, 1, 0, 0, 0, 0) | /* 6f */
-+	W(0x70, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0) , /* 7f */
-+	W(0x80, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1) | /* 8f */
-+	W(0x90, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0) , /* 9f */
-+	W(0xa0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0) | /* af */
-+	W(0xb0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0) , /* bf */
-+	W(0xc0, 1, 1, 0, 0, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0) | /* cf */
-+	W(0xd0, 1, 1, 1, 1, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 1, 1) , /* df */
-+	W(0xe0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0) | /* ef */
-+	W(0xf0, 0, 0, 0, 0, 0, 0, 1, 1, 0, 0, 0, 0, 0, 0, 1, 1)   /* ff */
-+	/*      -----------------------------------------------         */
-+	/*      0  1  2  3  4  5  6  7  8  9  a  b  c  d  e  f          */
-+};
-+
-+const u32 twobyte_has_modrm[256 / 32] = {
-+	/*      0  1  2  3  4  5  6  7  8  9  a  b  c  d  e  f          */
-+	/*      -----------------------------------------------         */
-+	W(0x00, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 1) | /* 0f */
-+	W(0x10, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1) , /* 1f */
-+	W(0x20, 1, 1, 1, 1, 1, 0, 1, 0, 1, 1, 1, 1, 1, 1, 1, 1) | /* 2f */
-+	W(0x30, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0) , /* 3f */
-+	W(0x40, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1) | /* 4f */
-+	W(0x50, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1) , /* 5f */
-+	W(0x60, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1) | /* 6f */
-+	W(0x70, 1, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0, 0, 1, 1, 1, 1) , /* 7f */
-+	W(0x80, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0) | /* 8f */
-+	W(0x90, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1) , /* 9f */
-+	W(0xa0, 0, 0, 0, 1, 1, 1, 1, 1, 0, 0, 0, 1, 1, 1, 1, 1) | /* af */
-+	W(0xb0, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 1, 1, 1, 1, 1, 1) , /* bf */
-+	W(0xc0, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0) | /* cf */
-+	W(0xd0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1) , /* df */
-+	W(0xe0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1) | /* ef */
-+	W(0xf0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0)   /* ff */
-+	/*      -----------------------------------------------         */
-+	/*      0  1  2  3  4  5  6  7  8  9  a  b  c  d  e  f          */
-+};
-+
-+#ifdef CONFIG_X86_64
-+const u32 onebyte_force_64[256 / 32] = {
-+	/*      0  1  2  3  4  5  6  7  8  9  a  b  c  d  e  f          */
-+	/*      -----------------------------------------------         */
-+	W(0x00, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0) | /* 0f */
-+	W(0x10, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0) , /* 1f */
-+	W(0x20, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0) | /* 2f */
-+	W(0x30, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0) , /* 3f */
-+	W(0x40, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0) | /* 4f */
-+	W(0x50, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1) , /* 5f */
-+	W(0x60, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 1, 0, 0, 0, 0, 0) | /* 6f */
-+	W(0x70, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1) , /* 7f */
-+	W(0x80, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1) | /* 8f */
-+	W(0x90, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0) , /* 9f */
-+	W(0xa0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0) | /* af */
-+	W(0xb0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0) , /* bf */
-+	W(0xc0, 0, 0, 1, 1, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0) | /* cf */
-+	W(0xd0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0) , /* df */
-+	W(0xe0, 1, 1, 1, 1, 0, 0, 0, 0, 1, 1, 0, 1, 0, 0, 0, 0) | /* ef */
-+	W(0xf0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0)   /* ff */
-+	/*      -----------------------------------------------         */
-+	/*      0  1  2  3  4  5  6  7  8  9  a  b  c  d  e  f          */
-+};
-+
-+/* force 64 or default 64 bits operand opcodes */
-+static bool __operand_64(struct insn *insn)
++static int create_trace_probe(int argc, char **argv)
 +{
-+	u8 reg = MODRM_REG(insn);
-+	if (insn->opcode.nbytes == 1) {
-+		if (test_bit(OPCODE1(insn),
-+			     (const unsigned long *) onebyte_force_64) ||
-+		    (OPCODE1(insn) == 0xff &&
-+		     (reg == 2 || reg == 4 || reg == 6)))
-+			return true;
-+	}
-+	return false;
-+}
-+#endif
-+
-+/**
-+ * insn_get_modrm - collect ModRM byte, if any
-+ * @insn:	&struct insn containing instruction
-+ *
-+ * Populates @insn->modrm and updates @insn->next_byte to point past the
-+ * ModRM byte, if any.  If necessary, first collects the preceding bytes
-+ * (prefixes and opcode(s)).  No effect if @insn->modrm.got is already true.
-+ */
-+void insn_get_modrm(struct insn *insn)
-+{
-+	struct insn_field *modrm = &insn->modrm;
-+	if (modrm->got)
-+		return;
-+	if (!insn->opcode.got)
-+		insn_get_opcode(insn);
-+	switch (insn->opcode.nbytes) {
-+	case 1:
-+		modrm->nbytes = test_bit(OPCODE1(insn),
-+				(const unsigned long *) onebyte_has_modrm);
-+		break;
-+	case 2:
-+		modrm->nbytes = test_bit(OPCODE2(insn),
-+				(const unsigned long *) twobyte_has_modrm);
-+		break;
-+	case 3:
-+		/* Three bytes opcodes always have modrm */
-+		modrm->nbytes = 1;
-+		break;
-+	}
-+	if (modrm->nbytes)
-+		modrm->value = *(insn->next_byte++);
-+
-+#ifdef CONFIG_X86_64
-+	if (insn->x86_64 && __operand_64(insn))
-+		insn->opnd_bytes = 8;
-+#endif
-+	modrm->got = true;
-+}
-+EXPORT_SYMBOL_GPL(insn_get_modrm);
-+
-+#ifdef CONFIG_X86_64
-+/**
-+ * insn_rip_relative() - Does instruction use RIP-relative addressing mode?
-+ * @insn:	&struct insn containing instruction
-+ *
-+ * If necessary, first collects the instruction up to and including the
-+ * ModRM byte.  No effect if @insn->x86_64 is false.
-+ */
-+bool insn_rip_relative(struct insn *insn)
-+{
-+	struct insn_field *modrm = &insn->modrm;
-+
-+	if (!insn->x86_64)
-+		return false;
-+	if (!modrm->got)
-+		insn_get_modrm(insn);
 +	/*
-+	 * For rip-relative instructions, the mod field (top 2 bits)
-+	 * is zero and the r/m field (bottom 3 bits) is 0x5.
++	 * Argument syntax:
++	 *  - Add kprobe: p SYMBOL[+OFFS|-OFFS]|ADDRESS
++	 *  - Add kretprobe: r SYMBOL[+0]
 +	 */
-+	return (insn_field_exists(modrm) && (modrm->value & 0xc7) == 0x5);
-+}
-+EXPORT_SYMBOL_GPL(insn_rip_relative);
-+#endif
++	struct trace_probe *tp;
++	struct kprobe *kp;
++	char *tmp;
++	int ret = 0;
++	int is_return = 0;
++	char *symbol = NULL;
++	long offset = 0;
++	void *addr = NULL;
 +
-+/**
-+ *
-+ * insn_get_sib() - Get the SIB byte of instruction
-+ * @insn:	&struct insn containing instruction
-+ *
-+ * If necessary, first collects the instruction up to and including the
-+ * ModRM byte.
-+ */
-+void insn_get_sib(struct insn *insn)
-+{
-+	if (insn->sib.got)
-+		return;
-+	if (!insn->modrm.got)
-+		insn_get_modrm(insn);
-+	if (insn->modrm.nbytes)
-+		if (insn->addr_bytes != 2 &&
-+		    MODRM_MOD(insn) != 3 && MODRM_RM(insn) == 4) {
-+			insn->sib.value = *(insn->next_byte++);
-+			insn->sib.nbytes = 1;
++	if (argc < 2)
++		return -EINVAL;
++
++	if (argv[0][0] == 'p')
++		is_return = 0;
++	else if (argv[0][0] == 'r')
++		is_return = 1;
++	else
++		return -EINVAL;
++
++	if (isdigit(argv[1][0])) {
++		if (is_return)
++			return -EINVAL;
++		/* an address specified */
++		ret = strict_strtoul(&argv[0][2], 0, (unsigned long *)&addr);
++		if (ret)
++			return ret;
++	} else {
++		/* a symbol specified */
++		symbol = argv[1];
++		/* TODO: support .init module functions */
++		tmp = strchr(symbol, '+');
++		if (!tmp)
++			tmp = strchr(symbol, '-');
++
++		if (tmp) {
++			/* skip sign because strict_strtol doesn't accept '+' */
++			ret = strict_strtol(tmp + 1, 0, &offset);
++			if (ret)
++				return ret;
++			if (*tmp == '-')
++				offset = -offset;
++			*tmp = '\0';
 +		}
-+	insn->sib.got = true;
++		if (offset && is_return)
++			return -EINVAL;
++	}
++
++	/* setup a probe */
++	tp = alloc_trace_probe(symbol);
++	if (IS_ERR(tp))
++		return PTR_ERR(tp);
++
++	if (is_return) {
++		kp = &tp->rp.kp;
++		tp->rp.handler = kretprobe_trace_func;
++	} else {
++		kp = &tp->kp;
++		tp->kp.pre_handler = kprobe_trace_func;
++	}
++
++	if (tp->symbol) {
++		/* TODO: check offset is collect by using insn_decoder */
++		kp->symbol_name = tp->symbol;
++		kp->offset = offset;
++	} else
++		kp->addr = addr;
++
++	ret = register_trace_probe(tp);
++	if (ret)
++		goto error;
++	return 0;
++
++error:
++	free_trace_probe(tp);
++	return ret;
 +}
-+EXPORT_SYMBOL_GPL(insn_get_sib);
 +
-+#define get_next(t, insn)			\
-+	({t r; r = *(t*)insn->next_byte; insn->next_byte += sizeof(t); r; })
-+
-+/**
-+ *
-+ * insn_get_displacement() - Get the displacement of instruction
-+ * @insn:	&struct insn containing instruction
-+ *
-+ * If necessary, first collects the instruction up to and including the
-+ * SIB byte.
-+ * Displacement value is sign-expanded.
-+ */
-+void insn_get_displacement(struct insn *insn)
++static void cleanup_all_probes(void)
 +{
-+	u8 mod;
-+	if (insn->displacement.got)
-+		return;
-+	if (!insn->sib.got)
-+		insn_get_sib(insn);
-+	if (insn->modrm.nbytes) {
-+		/*
-+		 * Interpreting the modrm byte:
-+		 * mod = 00 - no displacement fields (exceptions below)
-+		 * mod = 01 - 1-byte displacement field
-+		 * mod = 10 - displacement field is 4 bytes, or 2 bytes if
-+		 * 	address size = 2 (0x67 prefix in 32-bit mode)
-+		 * mod = 11 - no memory operand
-+		 *
-+		 * If address size = 2...
-+		 * mod = 00, r/m = 110 - displacement field is 2 bytes
-+		 *
-+		 * If address size != 2...
-+		 * mod != 11, r/m = 100 - SIB byte exists
-+		 * mod = 00, SIB base = 101 - displacement field is 4 bytes
-+		 * mod = 00, r/m = 101 - rip-relative addressing, displacement
-+		 * 	field is 4 bytes
-+		 */
-+		mod = MODRM_MOD(insn);
-+		if (mod == 3)
++	struct trace_probe *tp;
++	mutex_lock(&probe_lock);
++	/* TODO: Use batch unregistration */
++	while (!list_empty(&probe_list)) {
++		tp = list_entry(probe_list.next, struct trace_probe, list);
++		unregister_trace_probe(tp);
++		free_trace_probe(tp);
++	}
++	mutex_unlock(&probe_lock);
++}
++
++
++/* Probes listing interfaces */
++static void *probes_seq_start(struct seq_file *m, loff_t *pos)
++{
++	mutex_lock(&probe_lock);
++	return seq_list_start(&probe_list, *pos);
++}
++
++static void *probes_seq_next(struct seq_file *m, void *v, loff_t *pos)
++{
++	return seq_list_next(v, &probe_list, pos);
++}
++
++static void probes_seq_stop(struct seq_file *m, void *v)
++{
++	mutex_unlock(&probe_lock);
++}
++
++static int probes_seq_show(struct seq_file *m, void *v)
++{
++	struct trace_probe *tp = v;
++
++	if (tp == NULL)
++		return 0;
++
++	if (tp->symbol)
++		seq_printf(m, "%c %s%+ld\n",
++			probe_is_return(tp) ? 'r' : 'p',
++			probe_symbol(tp), probe_offset(tp));
++	else
++		seq_printf(m, "%c 0x%p\n",
++			probe_is_return(tp) ? 'r' : 'p',
++			probe_address(tp));
++	return 0;
++}
++
++static const struct seq_operations probes_seq_op = {
++	.start  = probes_seq_start,
++	.next   = probes_seq_next,
++	.stop   = probes_seq_stop,
++	.show   = probes_seq_show
++};
++
++static int probes_open(struct inode *inode, struct file *file)
++{
++	if ((file->f_mode & FMODE_WRITE) &&
++	    !(file->f_flags & O_APPEND))
++		cleanup_all_probes();
++
++	return seq_open(file, &probes_seq_op);
++}
++
++
++#define WRITE_BUFSIZE 128
++
++ssize_t probes_write(struct file *file, const char __user *buffer,
++		     size_t count, loff_t *ppos)
++{
++	char *kbuf, *tmp;
++	char **argv = NULL;
++	int argc = 0;
++	int ret;
++	size_t done;
++	size_t size;
++
++	if (!count || count < 0)
++		return 0;
++
++	kbuf = kmalloc(WRITE_BUFSIZE, GFP_KERNEL);
++	if (!kbuf)
++		return -ENOMEM;
++
++	ret = done = 0;
++	do {
++		size = count - done;
++		if (size > WRITE_BUFSIZE)
++			size = WRITE_BUFSIZE;
++		if (copy_from_user(kbuf, buffer + done, size)) {
++			ret = -EFAULT;
 +			goto out;
-+		if (mod == 1) {
-+			insn->displacement.value = *((s8 *)insn->next_byte++);
-+			insn->displacement.nbytes = 1;
-+		} else if (insn->addr_bytes == 2) {
-+			if ((mod == 0 && MODRM_RM(insn) == 6) || mod == 2) {
-+				insn->displacement.value = get_next(s16, insn);
-+				insn->displacement.nbytes = 2;
-+			}
-+		} else {
-+			if ((mod == 0 && MODRM_RM(insn) == 5) || mod == 2 ||
-+			    (mod == 0 && SIB_BASE(insn) == 5)) {
-+				insn->displacement.value = get_next(s32, insn);
-+				insn->displacement.nbytes = 4;
-+			}
 +		}
-+	}
++		kbuf[size] = '\0';
++		tmp = strchr(kbuf, '\n');
++		if (!tmp) {
++			pr_warning("Line length is too long: "
++				   "Should be less than %d.", WRITE_BUFSIZE);
++			ret = -EINVAL;
++			goto out;
++		}
++		*tmp = '\0';
++		size = tmp - kbuf + 1;
++		done += size;
++
++		argv = argv_split(GFP_KERNEL, kbuf, &argc);
++		if (!argv) {
++			ret = -ENOMEM;
++			goto out;
++		}
++
++		if (argc)
++			ret = create_trace_probe(argc, argv);
++
++		argv_free(argv);
++		if (ret < 0)
++			goto out;
++
++	} while (done < count);
++	ret = done;
 +out:
-+	insn->displacement.got = true;
++	kfree(kbuf);
++	return ret;
 +}
-+EXPORT_SYMBOL_GPL(insn_get_displacement);
 +
-+const u32 onebyte_has_immb[256 / 32] = {
-+	/*      0  1  2  3  4  5  6  7  8  9  a  b  c  d  e  f          */
-+	/*      -----------------------------------------------         */
-+	W(0x00, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0) | /* 0f */
-+	W(0x10, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0) , /* 1f */
-+	W(0x20, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0) | /* 2f */
-+	W(0x30, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0) , /* 3f */
-+	W(0x40, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0) | /* 4f */
-+	W(0x50, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0) , /* 5f */
-+	W(0x60, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 0, 0, 0, 0) | /* 6f */
-+	W(0x70, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1) , /* 7f */
-+	W(0x80, 1, 0, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0) | /* 8f */
-+	W(0x90, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0) , /* 9f */
-+	W(0xa0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0) | /* af */
-+	W(0xb0, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0) , /* bf */
-+	W(0xc0, 1, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 1, 0, 0) | /* cf */
-+	W(0xd0, 0, 0, 0, 0, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0) , /* df */
-+	W(0xe0, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 0, 1, 0, 0, 0, 0) | /* ef */
-+	W(0xf0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0)   /* ff */
-+	/*      -----------------------------------------------         */
-+	/*      0  1  2  3  4  5  6  7  8  9  a  b  c  d  e  f          */
++static const struct file_operations kprobe_points_ops = {
++	.owner          = THIS_MODULE,
++	.open           = probes_open,
++	.read           = seq_read,
++	.llseek         = seq_lseek,
++	.release        = seq_release,
++	.write		= probes_write,
 +};
 +
-+const u32 onebyte_has_imm[256 / 32] = {
-+	/*      0  1  2  3  4  5  6  7  8  9  a  b  c  d  e  f          */
-+	/*      -----------------------------------------------         */
-+	W(0x00, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0) | /* 0f */
-+	W(0x10, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0) , /* 1f */
-+	W(0x20, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0) | /* 2f */
-+	W(0x30, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0) , /* 3f */
-+	W(0x40, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0) | /* 4f */
-+	W(0x50, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0) , /* 5f */
-+	W(0x60, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 0, 0, 0, 0, 0, 0) | /* 6f */
-+	W(0x70, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0) , /* 7f */
-+	W(0x80, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0) | /* 8f */
-+	W(0x90, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0) , /* 9f */
-+	W(0xa0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0) | /* af */
-+	W(0xb0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0) , /* bf */
-+	W(0xc0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0) | /* cf */
-+	W(0xd0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0) , /* df */
-+	W(0xe0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 0, 0, 0, 0, 0, 0) | /* ef */
-+	W(0xf0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0)   /* ff */
-+	/*      -----------------------------------------------         */
-+	/*      0  1  2  3  4  5  6  7  8  9  a  b  c  d  e  f          */
-+};
-+
-+/* Decode moffset16/32/64 */
-+static void __get_moffset(struct insn *insn)
++/* event recording functions */
++static void kprobe_trace_record(unsigned long ip, struct trace_probe *tp,
++				struct pt_regs *regs)
 +{
-+	switch (insn->addr_bytes) {
-+	case 2:
-+		insn->moffset1.value = get_next(s16, insn);
-+		insn->moffset1.nbytes = 2;
-+		break;
-+	case 4:
-+		insn->moffset1.value = get_next(s32, insn);
-+		insn->moffset1.nbytes = 4;
-+		break;
-+	case 8:
-+		insn->moffset1.value = get_next(s32, insn);
-+		insn->moffset1.nbytes = 4;
-+		insn->moffset2.value = get_next(s32, insn);
-+		insn->moffset2.nbytes = 4;
-+		break;
-+	}
-+	insn->moffset1.got = insn->moffset2.got = true;
++	__trace_bprintk(ip, "%s%s%+ld\n",
++			probe_is_return(tp) ? "<-" : "@",
++			probe_symbol(tp), probe_offset(tp));
 +}
 +
-+/* Decode imm(Iz) */
-+static void __get_imm(struct insn *insn)
++/* Make a debugfs interface for controling probe points */
++static __init int init_kprobe_trace(void)
 +{
-+	switch (insn->opnd_bytes) {
-+	case 2:
-+		insn->immediate.value = get_next(s16, insn);
-+		insn->immediate.nbytes = 2;
-+		break;
-+	case 4:
-+	case 8:
-+		insn->immediate.value = get_next(s32, insn);
-+		insn->immediate.nbytes = 4;
-+		break;
-+	}
-+}
++	struct dentry *d_tracer;
++	struct dentry *entry;
 +
-+/* Decode imm64(Iv) */
-+static void __get_imm64(struct insn *insn)
-+{
-+	switch (insn->opnd_bytes) {
-+	case 2:
-+		insn->immediate1.value = get_next(s16, insn);
-+		insn->immediate1.nbytes = 2;
-+		break;
-+	case 4:
-+		insn->immediate1.value = get_next(s32, insn);
-+		insn->immediate1.nbytes = 4;
-+		break;
-+	case 8:
-+		insn->immediate1.value = get_next(s32, insn);
-+		insn->immediate1.nbytes = 4;
-+		insn->immediate2.value = get_next(s32, insn);
-+		insn->immediate2.nbytes = 4;
-+		break;
-+	}
-+	insn->immediate1.got = insn->immediate2.got = true;
-+}
++	d_tracer = tracing_init_dentry();
++	if (!d_tracer)
++		return 0;
 +
-+/* Decode ptr16:16/32(AP) */
-+static void __get_immptr(struct insn *insn)
-+{
-+	switch (insn->opnd_bytes) {
-+	case 2:
-+		insn->immediate1.value = get_next(s16, insn);
-+		insn->immediate1.nbytes = 2;
-+		break;
-+	case 4:
-+		insn->immediate1.value = get_next(s32, insn);
-+		insn->immediate1.nbytes = 4;
-+		break;
-+	case 8:
-+		/* ptr16:64 is not supported (no segment) */
-+		WARN_ON(1);
-+		return;
-+	}
-+	insn->immediate2.value = get_next(u16, insn);
-+	insn->immediate2.nbytes = 2;
-+	insn->immediate1.got = insn->immediate2.got = true;
-+}
++	entry = debugfs_create_file("kprobe_probes", 0644, d_tracer,
++				    NULL, &kprobe_points_ops);
 +
-+/**
-+ *
-+ * insn_get_immediate() - Get the immediates of instruction
-+ * @insn:	&struct insn containing instruction
-+ *
-+ * If necessary, first collects the instruction up to and including the
-+ * displacement bytes.
-+ * Basically, most of immediates are sign-expanded. Unsigned-value can be
-+ * get by bit masking with ((1 << (nbytes * 8)) - 1)
-+ */
-+void insn_get_immediate(struct insn *insn)
-+{
-+	u8 opcode;
-+	if (insn->immediate.got)
-+		return;
-+	if (!insn->displacement.got)
-+		insn_get_displacement(insn);
-+	if (insn->opcode.nbytes == 1) {
-+		opcode = OPCODE1(insn);
-+		if (opcode >= 0xa0 && opcode <= 0xa3) { /* direct moffset mov */
-+			__get_moffset(insn);
-+		} else if (test_bit(opcode,
-+				    (const unsigned long *)onebyte_has_immb) ||
-+			   (opcode == 0xf6 && MODRM_REG(insn) == 0)) {
-+			insn->immediate.value = get_next(s8, insn);
-+			insn->immediate.nbytes = 1;
-+		} else if (test_bit(opcode,
-+				    (const unsigned long *)onebyte_has_imm) ||
-+			   (opcode == 0xf7 && MODRM_REG(insn) == 0)) {
-+			__get_imm(insn);
-+		} else if (0xb8 <= opcode && opcode <= 0xbf /* mov immv */) {
-+			__get_imm64(insn);
-+		} else if (opcode == 0xea /* jmp far seg:offs */) {
-+			__get_immptr(insn);
-+		} else if (opcode == 0xc2 /* retn immw */ ||
-+			   opcode == 0xca /* retf immw */) {
-+			insn->immediate.value = get_next(u16, insn);
-+			insn->immediate.nbytes = 2;
-+		} else if (opcode == 0xc8 /* enter immw, immb */) {
-+			insn->immediate1.value = get_next(u16, insn);
-+			insn->immediate1.nbytes = 2;
-+			insn->immediate2.value = get_next(u8, insn);
-+			insn->immediate2.nbytes = 1;
-+		}
-+	} else if (insn->opcode.nbytes == 2) {
-+		opcode = OPCODE2(insn);
-+		if ((opcode & 0xf0) == 0x80 /* Jcc imm32 */) {
-+			__get_imm(insn);
-+		} else
-+			switch (opcode) {
-+			case 0x70: /* pshuf* %1, %2, immb */
-+			case 0x71: /* Group12 %1, immb */
-+			case 0x72: /* Group13 %1, immb */
-+			case 0x73: /* Group14 %1, immb */
-+			case 0xa4: /* shld %1, %2, immb */
-+			case 0xac: /* shrd %1, %2, immb */
-+			case 0xba: /* Group8 %1, immb */
-+			case 0xc2: /* cmpps %1, %2, immb */
-+			case 0xc4: /* pinsw %1, %2, immb */
-+			case 0xc5: /* pextrw %1, %2, immb */
-+			case 0xc6: /* shufps/d %1, %2, immb */
-+				insn->immediate.value = get_next(u8, insn);
-+				insn->immediate.nbytes = 1;
-+			default:
-+				break;
-+			}
-+	} else if (OPCODE3(insn) == 0x0f /* pailgnr %1, %2, immb */) {
-+		insn->immediate.value = get_next(u8, insn);
-+		insn->immediate.nbytes = 1;
-+	}
-+	insn->immediate.got = true;
++	if (!entry)
++		pr_warning("Could not create debugfs "
++			   "'kprobe_probess' entry\n");
++	return 0;
 +}
-+EXPORT_SYMBOL_GPL(insn_get_immediate);
++fs_initcall(init_kprobe_trace);
 +
-+/**
-+ *
-+ * insn_get_length() - Get the length of instruction
-+ * @insn:	&struct insn containing instruction
-+ *
-+ * If necessary, first collects the instruction up to and including the
-+ * immediates bytes.
-+ */
-+void insn_get_length(struct insn *insn)
-+{
-+	if (insn->length)
-+		return;
-+	if (!insn->immediate.got)
-+		insn_get_immediate(insn);
-+	insn->length = (u8)((unsigned long)insn->next_byte
-+			    - (unsigned long)insn->kaddr);
-+}
-+EXPORT_SYMBOL_GPL(insn_get_length);
 -- 
 Masami Hiramatsu
 
