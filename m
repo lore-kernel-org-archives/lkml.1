@@ -1,81 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755097AbZDBLXa@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754616AbZDBLYt@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755097AbZDBLXa (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 2 Apr 2009 07:23:30 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752234AbZDBLXN
+	id S1754616AbZDBLYt (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 2 Apr 2009 07:24:49 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751602AbZDBLYj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 2 Apr 2009 07:23:13 -0400
-Received: from mx2.mail.elte.hu ([157.181.151.9]:53224 "EHLO mx2.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751907AbZDBLXL (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 2 Apr 2009 07:23:11 -0400
-Date: Thu, 2 Apr 2009 13:22:29 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: Jean Delvare <khali@linux-fr.org>
-Cc: LKML <linux-kernel@vger.kernel.org>,
+	Thu, 2 Apr 2009 07:24:39 -0400
+Received: from smtp106.mail.mud.yahoo.com ([209.191.85.216]:21300 "HELO
+	smtp106.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1751043AbZDBLYi (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 2 Apr 2009 07:24:38 -0400
+DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
+  s=s1024; d=yahoo.com.au;
+  h=Received:X-YMail-OSG:X-Yahoo-Newman-Property:From:To:Subject:Date:User-Agent:Cc:References:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Content-Disposition:Message-Id;
+  b=ejGoPE+0opTZLR7xxA2jzddTOJinowMFksMaKZngUVokLWAg7qklXIBJNmn1ugxadAtC70VdUYoixOab1skSqAySYUAJndM2JxmBPm/sWGB1y6MBSLFhL5KxJSl70N16spuTY/bwV+Wv5WWIWFcZ9X2idmsbeKLBKdaWbyNACrI=  ;
+X-YMail-OSG: gTvnNfwVM1nz.Qh7BIjBIEC0eVZVIZhdfTXT4SMfj07wqPRw3sB.NmAAtQ1oe9AznWKeA5cUKW2TVapsGwMlPIAJJfDfRphKjXzdIAU5Mbl6thg1WaA11au9.9hUR747dyC8pOpm0_O9Y500eI8wK7GOJgRZGJCOcF4_zeNo.aboBD4JtpgTomI3YD.x2kA7fqWaRsBix732Yj2w8dwSspqSkwVG.63N61LIyQN0wB1tYGnSCAXIjEE0GpphDlKlXe9asqBmY9vFXcKtXrT5repMIv.g7dyfRKbmTaw99akGMS6Ewvkq
+X-Yahoo-Newman-Property: ymail-3
+From: Nick Piggin <nickpiggin@yahoo.com.au>
+To: Ying Han <yinghan@google.com>
+Subject: Re: ftruncate-mmap: pages are lost after writing to mmaped file.
+Date: Thu, 2 Apr 2009 22:24:29 +1100
+User-Agent: KMail/1.9.51 (KDE/4.0.4; ; )
+Cc: Jan Kara <jack@suse.cz>, "Martin J. Bligh" <mbligh@mbligh.org>,
+       linux-ext4@vger.kernel.org,
+       Linus Torvalds <torvalds@linux-foundation.org>,
        Andrew Morton <akpm@linux-foundation.org>,
-       David Howells <dhowells@redhat.com>, Oleg Nesterov <oleg@tv-sign.ru>,
-       Marcin Slusarz <marcin.slusarz@gmail.com>
-Subject: Re: [PATCH] Add to_delayed_work helper function
-Message-ID: <20090402112229.GC10828@elte.hu>
-References: <20090402131137.0b268f9a@hyperion.delvare>
+       "linux-kernel" <linux-kernel@vger.kernel.org>,
+       "linux-mm" <linux-mm@kvack.org>, guichaz@gmail.com,
+       Alex Khesin <alexk@google.com>, Mike Waychison <mikew@google.com>,
+       Rohit Seth <rohitseth@google.com>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>
+References: <604427e00903181244w360c5519k9179d5c3e5cd6ab3@mail.gmail.com> <20090324173511.GJ23439@duck.suse.cz> <604427e00904011536i6332a239pe21786cc4c8b3025@mail.gmail.com>
+In-Reply-To: <604427e00904011536i6332a239pe21786cc4c8b3025@mail.gmail.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <20090402131137.0b268f9a@hyperion.delvare>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+Message-Id: <200904022224.31060.nickpiggin@yahoo.com.au>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Thursday 02 April 2009 09:36:13 Ying Han wrote:
+> Hi Jan:
+>     I feel that the problem you saw is kind of differnt than mine. As
+> you mentioned that you saw the PageError() message, which i don't see
+> it on my system. I tried you patch(based on 2.6.21) on my system and
+> it runs ok for 2 days, Still, since i don't see the same error message
+> as you saw, i am not convineced this is the root cause at least for
+> our problem. I am still looking into it.
+>     So, are you seeing the PageError() every time the problem happened?
 
-* Jean Delvare <khali@linux-fr.org> wrote:
+So I asked if you could test with my workaround of taking truncate_mutex
+at the start of ext2_get_blocks, and report back. I never heard of any
+response after that.
 
-> It is a fairly common operation to have a pointer to a work and to
-> need a pointer to the delayed work it is contained in. In particular,
-> all delayed works which want to rearm themselves will have to do that.
-> So it would seem fair to offer a helper function for this operation.
-> 
-> Signed-off-by: Jean Delvare <khali@linux-fr.org>
-> Acked-by: Ingo Molnar <mingo@elte.hu>
-> ---
-> Patch updated to include new users. It would be nice to have this patch
-> merged soon so that I no longer have to update it. Andrew?
+To reiterate: I was able to reproduce a problem with ext2 (I was testing
+on brd to get IO rates high enough to reproduce it quite frequently).
+I think I narrowed the problem down to block allocation or inode block
+tree corruption because I was unable to reproduce it with that hack in
+place.
 
-Andrew, iff it's comprehensively build-tested then this should go 
-into .30 from -mm, right?
-
-Because this:
-
->  arch/powerpc/kernel/vio.c                               |    2 +-
->  drivers/crypto/hifn_795x.c                              |    2 +-
->  drivers/input/mouse/hgpk.c                              |    2 +-
->  drivers/net/dm9000.c                                    |    2 +-
->  drivers/net/mlx4/en_netdev.c                            |    2 +-
->  drivers/net/mlx4/en_rx.c                                |    2 +-
->  drivers/net/mlx4/sense.c                                |    2 +-
->  drivers/net/phy/phy.c                                   |    3 +--
->  drivers/s390/scsi/zfcp_fc.c                             |    2 +-
->  drivers/staging/rtl8187se/ieee80211/ieee80211_softmac.c |    8 ++++----
->  drivers/staging/rtl8187se/r8180_core.c                  |    8 ++++----
->  drivers/staging/rtl8187se/r8180_dm.c                    |    6 +++---
->  drivers/usb/wusbcore/devconnect.c                       |    2 +-
->  include/linux/workqueue.h                               |    5 +++++
->  mm/slab.c                                               |    3 +--
->  15 files changed, 27 insertions(+), 24 deletions(-)
-
-... will be painful to port across another cycle.
-
-( and it's pointless to delay as well, this is an obvious cleanup 
-  well in line with how we use to_*() container constructs elsewhere 
-  in the driver frameworks. )
-
-	Ingo
