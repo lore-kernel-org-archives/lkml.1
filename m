@@ -1,59 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758159AbZDBNgY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758758AbZDBNgh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758159AbZDBNgY (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 2 Apr 2009 09:36:24 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755675AbZDBNgE
+	id S1758758AbZDBNgh (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 2 Apr 2009 09:36:37 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756504AbZDBNgG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 2 Apr 2009 09:36:04 -0400
-Received: from hera.kernel.org ([140.211.167.34]:42641 "EHLO hera.kernel.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754959AbZDBNgB (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 2 Apr 2009 09:36:01 -0400
-Subject: Re: [tip:perfcounters/core] perf_counter: kerneltop: update to new
- ABI
-From: Jaswinder Singh Rajput <jaswinder@kernel.org>
-To: mingo@redhat.com, hpa@zytor.com, paulus@samba.org,
-       linux-kernel@vger.kernel.org, a.p.zijlstra@chello.nl,
-       tglx@linutronix.de, cjashfor@linux.vnet.ibm.com, mingo@elte.hu
-Cc: linux-tip-commits@vger.kernel.org
-In-Reply-To: <tip-373b153677f26a263ef297d77a5e045a31f6486c@git.kernel.org>
-References: <20090402091319.407283141@chello.nl>
-	 <tip-373b153677f26a263ef297d77a5e045a31f6486c@git.kernel.org>
+	Thu, 2 Apr 2009 09:36:06 -0400
+Received: from bedivere.hansenpartnership.com ([66.63.167.143]:37466 "EHLO
+	bedivere.hansenpartnership.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1755626AbZDBNgF (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 2 Apr 2009 09:36:05 -0400
+Subject: Re: [PATCH 4/5] bfa: Brocade BFA FC SCSI driver (makefile)
+From: James Bottomley <James.Bottomley@HansenPartnership.com>
+To: Krishna Gudipati <kgudipat@brocade.com>
+Cc: huangj@brocade.com, linux-kernel@vger.kernel.org,
+       linux-scsi@vger.kernel.org, nkattang@brocade.com, rvadivel@brocade.com,
+       vravindr@brocade.com
+In-Reply-To: <200904020335.n323ZJVh004287@blc-10-2.brocade.com>
+References: <200904020335.n323ZJVh004287@blc-10-2.brocade.com>
 Content-Type: text/plain
-Date: Thu, 02 Apr 2009 19:05:05 +0530
-Message-Id: <1238679305.3099.11.camel@ht.satnam>
+Date: Thu, 02 Apr 2009 08:36:01 -0500
+Message-Id: <1238679361.3383.4.camel@mulgrave.int.hansenpartnership.com>
 Mime-Version: 1.0
-X-Mailer: Evolution 2.24.5 (2.24.5-1.fc10) 
+X-Mailer: Evolution 2.22.3.1 (2.22.3.1-1.fc9) 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 2009-04-02 at 12:03 +0000, Peter Zijlstra wrote:
-> Commit-ID:  373b153677f26a263ef297d77a5e045a31f6486c
-> Gitweb:     http://git.kernel.org/tip/373b153677f26a263ef297d77a5e045a31f6486c
-> Author:     Peter Zijlstra <a.p.zijlstra@chello.nl>
-> AuthorDate: Thu, 2 Apr 2009 11:12:02 +0200
-> Committer:  Ingo Molnar <mingo@elte.hu>
-> CommitDate: Thu, 2 Apr 2009 13:53:00 +0200
+On Wed, 2009-04-01 at 20:35 -0700, Krishna Gudipati wrote:
+> From: Krishna Chaitanya Gudipati <kgudipat@brocade.com>
 > 
-> perf_counter: kerneltop: update to new ABI
+> This patch contains Makefile and Kconfig file for scsi and bfa.Fixed
+> the code review comments from previous submission.
 > 
-> Update to reflect the new record_type ABI changes.
+> Signed-off-by: Krishna Chaitanya Gudipati <kgudipat@brocade.com>
+> ---
+>  Kconfig      |    9 +++++++++
+>  Makefile     |    1 +
+>  bfa/Makefile |   27 +++++++++++++++++++++++++++
+>  3 files changed, 37 insertions(+)
 > 
+> diff -urpN orig/drivers/scsi/Kconfig patch/drivers/scsi/Kconfig
+> --- orig/drivers/scsi/Kconfig	2009-04-01 20:08:49.271161000 -0700
+> +++ patch/drivers/scsi/Kconfig	2009-04-01 20:08:44.003822000 -0700
+> @@ -1797,6 +1797,15 @@ config SCSI_SRP
+>  	  To compile this driver as a module, choose M here: the
+>  	  module will be called libsrp.
+>  
+> +config SCSI_BFA_FC
+> +	tristate "Brocade BFA Fibre Channel Support"
+> +	depends on PCI && SCSI
+> +	help
+> +	  This bfa driver supports all Brocade PCIe Fibre Channel host adapters.
+> +
+> +	  To compile this driver as a module, choose M here. The module will
+> +	  be called bfa.
+> +
 
-perfstat is still having many issues:
+You're still not using the FC transport class to export common sysfs FC
+information or to help make your driver smaller.  I thought you were
+going to fix this after this was noted in your first submission to
+linux-scsi on 24 September?
 
-1. 0:6: bus-cycles is not valid for AMD, so it fails
+James
 
-2. ./perfstat -e 0:1,0:2,0:3,0:4,0:5,0:6 ls
-can be replaced by ./perfstat -e 0:* ls
-
-3. Similarly ./perfstat -e 1:1,1:2,1:3,1:4,1:5,1:6 ls
-can be replaced by ./perfstat -e 1:* ls
-
-4. All events can be replaced by ./perfstat -e * ls
-
---
-JSR
 
