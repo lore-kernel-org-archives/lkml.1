@@ -1,91 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764735AbZDBJCt@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762172AbZDBJDV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764735AbZDBJCt (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 2 Apr 2009 05:02:49 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753761AbZDBJCi
+	id S1762172AbZDBJDV (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 2 Apr 2009 05:03:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763748AbZDBJCu
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 2 Apr 2009 05:02:38 -0400
-Received: from moutng.kundenserver.de ([212.227.126.186]:63214 "EHLO
-	moutng.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752858AbZDBJCg (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 2 Apr 2009 05:02:36 -0400
-Message-ID: <49D47F28.3060409@vlnb.net>
-Date: Thu, 02 Apr 2009 13:02:32 +0400
-From: Vladislav Bolkhovitin <vst@vlnb.net>
+	Thu, 2 Apr 2009 05:02:50 -0400
+Received: from mx2.redhat.com ([66.187.237.31]:44971 "EHLO mx2.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S932868AbZDBJCr (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 2 Apr 2009 05:02:47 -0400
+Message-ID: <49D47F11.6070400@redhat.com>
+Date: Thu, 02 Apr 2009 12:02:09 +0300
+From: Avi Kivity <avi@redhat.com>
 User-Agent: Thunderbird 2.0.0.21 (X11/20090320)
 MIME-Version: 1.0
-To: James Bottomley <James.Bottomley@HansenPartnership.com>
-CC: "linux-scsi@vger.kernel.org" <linux-scsi@vger.kernel.org>,
-       iSCSI Enterprise Target Developer List 
-	<iscsitarget-devel@lists.sourceforge.net>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       Ross Walker <rswwalker@gmail.com>,
-       "Ross S. W. Walker" <RWalker@medallion.com>,
-       scst-devel <scst-devel@lists.sourceforge.net>,
-       "stgt@vger.kernel.org" <stgt@vger.kernel.org>
-Subject: Re: [Scst-devel] [Iscsitarget-devel] ISCSI-SCST	performance (with
- also IET and STGT data)
-References: <49D10256.8030307@vlnb.net>	<e2e108260903301106y2b750c23kfab978567f3de3a0@mail.gmail.com>	<49D11096.3070804@vlnb.net>	<e2e108260903301153x38e86097vd29c47507da2879f@mail.gmail.com>	<49D254E4.8050806@vlnb.net>	<E2BB8074E5500C42984D980D4BD78EF9029E3D0B@MFG-NYC-EXCH2.mfg.prv>	<e2e108260903312329u118a54bfn3107fdca4b3e2b1d@mail.gmail.com>	<FA7F6940-CD5C-4460-9777-2F7AE3657B8E@gmail.com>	<1238617423.3318.82.camel@mulgrave.int.hansenpartnership.com> <49D46B8B.5000708@vlnb.net>
-In-Reply-To: <49D46B8B.5000708@vlnb.net>
-Content-Type: text/plain; charset=us-ascii; format=flowed
+To: Herbert Xu <herbert@gondor.apana.org.au>
+CC: ghaskins@novell.com, anthony@codemonkey.ws, andi@firstfloor.org,
+       linux-kernel@vger.kernel.org, agraf@suse.de, pmullaney@novell.com,
+       pmorreale@novell.com, rusty@rustcorp.com.au, netdev@vger.kernel.org,
+       kvm@vger.kernel.org
+Subject: Re: [RFC PATCH 00/17] virtual-bus
+References: <20090402085253.GA29932@gondor.apana.org.au>
+In-Reply-To: <20090402085253.GA29932@gondor.apana.org.au>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
-X-Provags-ID: V01U2FsdGVkX19VCQ0HP3twyHEtOTIV4faFQXyQHx3LT9ADwfQ
- 5OQQP9puFbkNixz9Bm1ba7e1k9gPBdk7ycKHlfYcpXkCTaykTS
- 7vc3KbMcLTNVbGXCC1b6A==
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Vladislav Bolkhovitin, on 04/02/2009 11:38 AM wrote:
-> James Bottomley, on 04/02/2009 12:23 AM wrote:
->> On Wed, 2009-04-01 at 08:20 -0400, Ross Walker wrote:
->>> On Apr 1, 2009, at 2:29 AM, Bart Van Assche <bart.vanassche@gmail.com>  
->>> wrote:
->>>
->>>> On Tue, Mar 31, 2009 at 8:43 PM, Ross S. W. Walker
->>>> <RWalker@medallion.com> wrote:
->>>>> IET just needs to fix how it does it workload with CFQ which
->>>>> somehow SCST has overcome. Of course SCST tweaks the Linux kernel to
->>>>> gain some extra speed.
->>>> I'm not familiar with the implementation details of CFQ, but I know
->>>> that one of the changes between SCST 1.0.0 and SCST 1.0.1 is that the
->>>> default number of kernel threads of the scst_vdisk kernel module has
->>>> been increased to 5. Could this explain the performance difference
->>>> between SCST and IET for FILEIO and BLOCKIO ?
->>> Thank for the update. IET has used 8 threads per target for ages now,  
->>> I don't think it is that.
->>>
->>> It may be how the I/O threads are forked in SCST that causes them to  
->>> be in the same I/O context with each other.
->>>
->>> I'm pretty sure implementing a version of the patch that was used for  
->>> the dump command (found on the LKML) will fix this.
->>>
->>> But thanks goes to Vlad for pointing this dificiency out so we can fix  
->>> it to help make IET even better.
->> SCST explicitly fiddles with the io context to get this to happen.  It
->> has a hack to block to export alloc_io_context:
->>
->> http://marc.info/?t=122893564800003
-> 
-> Correct, although I wouldn't call it "fiddle", rather "grouping" ;)
-> 
-> But that's not the only reason for good performance. Particularly, it 
-> can't explain Bart's tmpfs results from the previous message, where the 
-> majority of I/O done to/from RAM without any I/O scheduler involved. (Or 
-> does I/O scheduler also involved with tmpfs?) Bart has 4GB RAM, if I 
-> remember correctly, i.e. the test data set was 25% of RAM.
+Herbert Xu wrote:
+> Avi Kivity <avi@redhat.com> wrote:
+>   
+>> virtio is already non-kvm-specific (lguest uses it) and non-pci-specific 
+>> (s390 uses it).
+>>     
+>
+> I think Greg's work shows that putting the backend in the kernel
+> can dramatically reduce the cost of a single guest->host transaction.
+> I'm sure the same thing would work for virtio too.
+>   
 
-To remove any suspicions that I'm playing dirty games here I should note 
-that in many cases I can't say what exactly is responsible for good SCST 
-performance. I can say only something like "good design and 
-implementation", but, I guess, it wouldn't be counted too much. 
-SCST/iSCSI-SCST from the very beginning were designed and made with the 
-best performance in mind and that has brought the result. Sorry, but at 
-the moment I can't afford doing any "why it's so good?" kinds of 
-investigations, because I have a lot more important things to do, like 
-SCST procfs -> sysfs interface conversion.
+Virtio suffers because we've had no notification of when a packet is 
+actually submitted.  With the notification, the only difference should 
+be in the cost of a kernel->user switch, which is nowhere nearly as 
+dramatic.
 
-Thanks,
-Vlad
+>> If you have a good exit mitigation scheme you can cut exits by a factor 
+>> of 100; so the userspace exit costs are cut by the same factor.  If you 
+>> have good copyless networking APIs you can cut the cost of copies to 
+>> zero (well, to the cost of get_user_pages_fast(), but a kernel solution 
+>> needs that too).
+>>     
+>
+> Given the choice of having to mitigate or not having the problem
+> in the first place, guess what I would prefer :)
+>   
+
+There is no choice.  Exiting from the guest to the kernel to userspace 
+is prohibitively expensive, you can't do that on every packet.
+
+-- 
+error compiling committee.c: too many arguments to function
+
