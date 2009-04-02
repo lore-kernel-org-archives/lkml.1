@@ -1,118 +1,110 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762794AbZDBPdJ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761560AbZDBPgs@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762794AbZDBPdJ (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 2 Apr 2009 11:33:09 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760967AbZDBPcm
+	id S1761560AbZDBPgs (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 2 Apr 2009 11:36:48 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751268AbZDBPgh
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 2 Apr 2009 11:32:42 -0400
-Received: from out1.smtp.messagingengine.com ([66.111.4.25]:44597 "EHLO
-	out1.smtp.messagingengine.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1760790AbZDBPck (ORCPT
+	Thu, 2 Apr 2009 11:36:37 -0400
+Received: from moutng.kundenserver.de ([212.227.126.188]:63894 "EHLO
+	moutng.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751147AbZDBPgf (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 2 Apr 2009 11:32:40 -0400
-X-Sasl-enc: c4Y8YiiZLgkORe8TUryMxw1MjtH6az5+cG1S/QGaFM7i 1238686358
-Message-ID: <49D4DA86.5020307@imap.cc>
-Date: Thu, 02 Apr 2009 17:32:22 +0200
-From: Tilman Schmidt <tilman@imap.cc>
-User-Agent: Thunderbird 2.0.0.19 (X11/20081227)
+	Thu, 2 Apr 2009 11:36:35 -0400
+Message-ID: <49D4DB7A.2030004@vlnb.net>
+Date: Thu, 02 Apr 2009 19:36:26 +0400
+From: Vladislav Bolkhovitin <vst@vlnb.net>
+User-Agent: Thunderbird 2.0.0.21 (X11/20090320)
 MIME-Version: 1.0
-To: Peter Zijlstra <peterz@infradead.org>
-CC: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@tglx.de>,
-       linux-usb@vger.kernel.org
-Subject: Re: Help: tasklet blocked for >8msec - USB mouse related
-References: <49CCFEBA.6060009@imap.cc>  <49D24A32.9070103@imap.cc> <1238665439.8530.5740.camel@twins>
-In-Reply-To: <1238665439.8530.5740.camel@twins>
-X-Enigmail-Version: 0.95.7
-Content-Type: multipart/signed; micalg=pgp-sha1;
- protocol="application/pgp-signature";
- boundary="------------enig3CDB2C308BF5B19DBBEDC9AF"
+To: "Ross S. W. Walker" <RWalker@medallion.com>
+CC: James Bottomley <James.Bottomley@HansenPartnership.com>,
+       linux-scsi@vger.kernel.org,
+       iSCSI Enterprise Target Developer List 
+	<iscsitarget-devel@lists.sourceforge.net>,
+       linux-kernel@vger.kernel.org, Ross Walker <rswwalker@gmail.com>,
+       stgt@vger.kernel.org, scst-devel <scst-devel@lists.sourceforge.net>
+Subject: Re: [Scst-devel] [Iscsitarget-devel] ISCSI-SCST	performance (with
+ also IET and STGT data)
+References: <49D10256.8030307@vlnb.net>	<e2e108260903301106y2b750c23kfab978567f3de3a0@mail.gmail.com>	<49D11096.3070804@vlnb.net>	<e2e108260903301153x38e86097vd29c47507da2879f@mail.gmail.com>	<49D254E4.8050806@vlnb.net>	<E2BB8074E5500C42984D980D4BD78EF9029E3D0B@MFG-NYC-EXCH2.mfg.prv>	<e2e108260903312329u118a54bfn3107fdca4b3e2b1d@mail.gmail.com>	<FA7F6940-CD5C-4460-9777-2F7AE3657B8E@gmail.com>	<1238617423.3318.82.camel@mulgrave.int.hansenpartnership.com>	<49D46B8B.5000708@vlnb.net> <49D47F28.3060409@vlnb.net> <E2BB8074E5500C42984D980D4BD78EF9029E3D14@MFG-NYC-EXCH2.mfg.prv>
+In-Reply-To: <E2BB8074E5500C42984D980D4BD78EF9029E3D14@MFG-NYC-EXCH2.mfg.prv>
+Content-Type: text/plain; charset=us-ascii; format=flowed
+Content-Transfer-Encoding: 7bit
+X-Provags-ID: V01U2FsdGVkX18Cd/uU96Ofl4Aa9NEsBBTkJQWjb0Zzr+jgu+u
+ Y49jxiCqp/WrcLXTeEYqyDlV33lciPss7+DYDzNKZ64WOoOHHw
+ v7eRu3KnCJmMM5oG7vsbQ==
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This is an OpenPGP/MIME signed message (RFC 2440 and 3156)
---------------enig3CDB2C308BF5B19DBBEDC9AF
-Content-Type: text/plain; charset=ISO-8859-15
-Content-Transfer-Encoding: quoted-printable
+Ross S. W. Walker, on 04/02/2009 06:06 PM wrote:
+> Vladislav Bolkhovitin wrote:
+>> Vladislav Bolkhovitin, on 04/02/2009 11:38 AM wrote:
+>>> James Bottomley, on 04/02/2009 12:23 AM wrote:
+>>>> SCST explicitly fiddles with the io context to get this to happen.  It
+>>>> has a hack to block to export alloc_io_context:
+>>>>
+>>>> http://marc.info/?t=122893564800003
+>>> Correct, although I wouldn't call it "fiddle", rather "grouping" ;)
+> 
+> Call it what you like,
+> 
+> Vladislav Bolkhovitin wrote:
+>> Ross S. W. Walker, on 03/30/2009 10:33 PM wrote:
+>>
+>> I would be interested in knowing how your code defeats CFQ's extremely
+>> high latency? Does your code reach into the io scheduler too? If not,
+>> some code hints would be great.
+> 
+> Hmm, CFQ doesn't have any extra processing latency, especially 
+> "extremely", hence there is nothing to defeat. If it had, how could it 
+> been chosen as the default?
+> 
+> ----------
+> List:       linux-scsi
+> Subject:    [PATCH][RFC 13/23]: Export of alloc_io_context() function
+> From:       Vladislav Bolkhovitin <vst () vlnb ! net>
+> Date:       2008-12-10 18:49:19
+> Message-ID: 49400F2F.4050603 () vlnb ! net
+> 
+> This patch exports alloc_io_context() function. For performance reasons 
+> SCST queues commands using a pool of IO threads. It is considerably 
+> better for performance (>30% increase on sequential reads) if threads in 
+>   a pool have the same IO context. Since SCST can be built as a module, 
+> it needs alloc_io_context() function exported.
+> 
+> <snip>
+> ----------
+> 
+> I call that lying.
+> 
+>>> But that's not the only reason for good performance. Particularly, it 
+>>> can't explain Bart's tmpfs results from the previous message, where the 
+>>> majority of I/O done to/from RAM without any I/O scheduler involved. (Or 
+>>> does I/O scheduler also involved with tmpfs?) Bart has 4GB RAM, if I 
+>>> remember correctly, i.e. the test data set was 25% of RAM.
+>> To remove any suspicions that I'm playing dirty games here I should note 
+> <snip>
+> 
+> I don't know what games your playing at, but do me a favor, if your too
+> stupid enough to realize when your caught in a lie and to just shut up
+> then please do me the favor and leave me out of any further correspondence
+> from you.
 
-[CCing linux-usb as I had started another thread there already]
+Think what you want and do what you want. You can even filter out all 
+e-mails from me, that's your right. But:
 
-On Thu, 02 Apr 2009 11:43:59 +0200, Peter Zijlstra wrote:
-> On Tue, 2009-03-31 at 18:52 +0200, Tilman Schmidt wrote:
+1. As I wrote grouping threads into a single IO context doesn't explain 
+all the performance difference and finding out reasons for other's 
+performance problems isn't something I can afford at the moment.
 
->>> A user of the Gigaset base driver (drivers/isdn/gigaset/bas-gigaset.c=
-)
->>> reports his connection being dropped exactly every 30 seconds.
->>> Analysis of his dmesg indicates that when the error occurs, both the
->>> tasklets read_iso_tasklet and write_iso_tasklet handling the B channe=
-l
->>> data stream (125 USB isochronous packets per second in each direction=
-)
->>> are at the same time not executed for an entire inter-packet interval=
-,
->>> ie. 8 msecs.
->> The user did a bit of ellimination work, and it turned out that if
->> he disconnected his Logitech Laser Mouse from its USB port and
->> connected it to the PS2 port instead, the regular blockages ceased.
->=20
-> Looks like the USB driver holds off interrupts for a long-long time.
+2. CFQ doesn't have any processing latency and has never had. Learn to 
+understand what are your writing about and how to correctly express 
+yourself at first. You asked about that latency and I replied that there 
+is nothing to defeat.
 
-Well, not quite. The sequence of events is this:
-- two isochronous read URBs are queued
-- completion handler is called for the first one
-- schedules tasklet for bottom half processing of received data
-- submits another URB so that there are again two URBs queued
-- 8 ms later, completion handler is called again for the next URB
-- notices previous URB hasn't been processed (ie. tasklet hasn't run)
-- bitches
-And the same, mutatis mutandis, for the sending direction.
+3. SCST doesn't have any hooks into CFQ and not going to have in the 
+considerable future.
 
-So interrupts seem to be delivered fine, it's just the tasklets that are
-held off.
+> Thank you,
+> 
+> -Ross
 
-> Another possible source might be SMIs -- and there's nothing much you
-> can do about those except bitch to Gigabyte.
->=20
-> But really, relying on <10ms execution latency on mainline is almost
-> asking for it -- in general we do better, but there are a few sore
-> spots.
-
-Interestingly, I never encountered that sort of problem while developing
-the driver, on a lowly 700 MHz P3 with kernels around 2.6.11, and the onl=
-y
-problem report I ever received in that area until now was from a user who=
-
-ran an IDE disk in PIO mode, and whose problems vanished once he switched=
-
-that to DMA mode.
-
-So what do you propose? Queue more URBs, so that I can tolerate waiting
-longer for bottom half processing to kick in? How much time will I have
-to be able to tolerate?
-
-Thanks,
-Tilman
-
---=20
-Tilman Schmidt                    E-Mail: tilman@imap.cc
-Bonn, Germany
-Diese Nachricht besteht zu 100% aus wiederverwerteten Bits.
-Unge=F6ffnet mindestens haltbar bis: (siehe R=FCckseite)
-
-
---------------enig3CDB2C308BF5B19DBBEDC9AF
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: OpenPGP digital signature
-Content-Disposition: attachment; filename="signature.asc"
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v2.0.4-svn0 (GNU/Linux)
-Comment: Using GnuPG with SUSE - http://enigmail.mozdev.org
-
-iD8DBQFJ1NqTQ3+did9BuFsRAvBhAJ0RePSh38NsPkgIp8Au/wdeMYb2PACfW3EP
-jMDcCa455XkOgG64wI//TA8=
-=3ITJ
------END PGP SIGNATURE-----
-
---------------enig3CDB2C308BF5B19DBBEDC9AF--
