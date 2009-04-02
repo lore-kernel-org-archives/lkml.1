@@ -1,392 +1,349 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762226AbZDBSeU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764893AbZDBSel@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762226AbZDBSeU (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 2 Apr 2009 14:34:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755742AbZDBSeH
+	id S1764893AbZDBSel (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 2 Apr 2009 14:34:41 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758240AbZDBSe0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 2 Apr 2009 14:34:07 -0400
-Received: from [213.79.90.228] ([213.79.90.228]:2720 "EHLO
-	buildserver.ru.mvista.com" rhost-flags-FAIL-FAIL-OK-FAIL)
-	by vger.kernel.org with ESMTP id S1754828AbZDBSeE (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 2 Apr 2009 14:34:04 -0400
-Date: Thu, 2 Apr 2009 22:33:57 +0400
-From: Anton Vorontsov <avorontsov@ru.mvista.com>
-To: Marcel Ziswiler <marcel@ziswiler.com>
-Cc: linux-kernel@vger.kernel.org, Timur Tabi <timur@freescale.com>,
-       linuxppc-dev@ozlabs.org
-Subject: Re: [PATCH] QE USB Host Integration for MPC832x
-Message-ID: <20090402183357.GA29050@oksana.dev.rtsoft.ru>
-Reply-To: avorontsov@ru.mvista.com
-References: <1238622396-9768-1-git-send-email-marcel@ziswiler.com>
+	Thu, 2 Apr 2009 14:34:26 -0400
+Received: from mx3.mail.elte.hu ([157.181.1.138]:36579 "EHLO mx3.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1755742AbZDBSeY (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 2 Apr 2009 14:34:24 -0400
+Date: Thu, 2 Apr 2009 20:34:17 +0200
+From: Ingo Molnar <mingo@elte.hu>
+To: Peter Zijlstra <a.p.zijlstra@chello.nl>
+Cc: Paul Mackerras <paulus@samba.org>,
+       Corey Ashford <cjashfor@linux.vnet.ibm.com>,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 5/6] perf_counter: add more context information
+Message-ID: <20090402183417.GA843@elte.hu>
+References: <20090402091158.291810516@chello.nl> <20090402091319.493101305@chello.nl> <20090402113643.GF10828@elte.hu> <1238672889.8530.5908.camel@twins> <20090402181849.GD6340@elte.hu> <1238696998.5133.44.camel@laptop>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf8
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <1238622396-9768-1-git-send-email-marcel@ziswiler.com>
+In-Reply-To: <1238696998.5133.44.camel@laptop>
 User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.5
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-[ Cc'ing linuxppc-dev and Timur Tabi ]
 
-On Wed, Apr 01, 2009 at 11:46:36PM +0200, Marcel Ziswiler wrote:
-> Open issues:
-> - MPC832x_MDS seems to lie about BCSR12_USMODE bit.
-> - How to use qe_setbrg() with an external clock pin? Hard-coded for now.
-> - How to properly allocate USB pram on MPC832x as standard layout won't work.
-> - Detects USB device plugged in but then hangs.
+* Peter Zijlstra <a.p.zijlstra@chello.nl> wrote:
+
+> On Thu, 2009-04-02 at 20:18 +0200, Ingo Molnar wrote:
+> > * Peter Zijlstra <a.p.zijlstra@chello.nl> wrote:
+> > 
+> > > On Thu, 2009-04-02 at 13:36 +0200, Ingo Molnar wrote:
+> > > 
+> > > > > -#define MAX_STACK_DEPTH		255
+> > > > > +#define MAX_STACK_DEPTH		254
+> > > > >  
+> > > > >  struct perf_callchain_entry {
+> > > > > -	u64	nr;
+> > > > > +	u32	nr, hv, kernel, user;
+> > > > >  	u64	ip[MAX_STACK_DEPTH];
+> > > > >  };
+> > > 
+> > > Oh, and Paul suggested using u16s right after I send it out. So 
+> > > I'll either send an update or send a incremental in case you 
+> > > already applied it.
+> > 
+> > yes, that's probably a good idea. Although u8 might be even better - 
+> > do we ever want to do more than 256 deep stack vectors? Even those 
+> > would take quite some time to construct and pass down.
 > 
-> Please CC me personally when answering/commenting my posting, thanks.
+> We'd have to pad it with 4 more bytes to remain u64 aligned,
 
-Wow, considering erratas, I'm quite surprised that QE USB works on
-MPC832x. Well, I see that the USB hangs after all... Does it "work"
-with QE microcode update or bare MPC832x can "work" too?
+ok, indeed.
 
-FWIW, I don't see any USB microcode updates on Freescale site
-(http://opensource.freescale.com/firmware/), but I recalling some
-QE USB firmwares in FSL BSPs...
+> [...] also, why restrict ourselves. That MAX_STACK_DEPTH limit is 
+> trivially fixable if indeed someone finds its insufficient.
 
-Some comments down below.
+well .. think about it: walking more than 256 stack frames for every 
+IRQ event? Getting backtraces like:
 
-> Signed-off-by: Marcel Ziswiler <marcel@ziswiler.com>
-> ---
->  arch/powerpc/boot/dts/mpc832x_mds.dts           |   74 ++++-
->  arch/powerpc/configs/83xx/mpc832x_mds_defconfig |  361 ++++++++++++-----------
->  arch/powerpc/platforms/83xx/Kconfig             |    1 +
->  arch/powerpc/platforms/83xx/mpc832x_mds.c       |   66 ++++
->  arch/powerpc/sysdev/qe_lib/qe.c                 |   10 +-
->  drivers/usb/host/fhci-hcd.c                     |    9 +
->  6 files changed, 336 insertions(+), 185 deletions(-)
-> 
-> diff --git a/arch/powerpc/boot/dts/mpc832x_mds.dts b/arch/powerpc/boot/dts/mpc832x_mds.dts
-> index 57c595b..f306edf 100644
-> --- a/arch/powerpc/boot/dts/mpc832x_mds.dts
-> +++ b/arch/powerpc/boot/dts/mpc832x_mds.dts
-> @@ -59,9 +59,36 @@
->  		reg = <0x00000000 0x08000000>;
->  	};
->  
-> -	bcsr@f8000000 {
-> -		compatible = "fsl,mpc8323mds-bcsr";
-> -		reg = <0xf8000000 0x8000>;
-> +	localbus@e0005000 {
-> +		#address-cells = <2>;
-> +		#size-cells = <1>;
-> +		compatible = "fsl,mpc8323-localbus", "fsl,pq2pro-localbus",
-> +			     "simple-bus";
-> +		reg = <0xe0005000 0xd8>;
-> +		ranges = <0 0 0xfe000000 0x02000000
-> +		          1 0 0xf8000000 0x00008000>;
-> +
-> +		flash@0,0 {
-> +			compatible = "cfi-flash";
-> +			reg = <0 0 0x2000000>;
-> +			bank-width = <2>;
-> +			device-width = <1>;
-> +		};
-> +
-> +		bcsr@1,0 {
-> +			#address-cells = <1>;
-> +			#size-cells = <1>;
-> + 			compatible = "fsl,mpc8323mds-bcsr";
-> +			reg = <1 0 0x8000>;
-> +			ranges = <0 1 0 0x8000>;
-> +
-> +			bcsr12: gpio-controller@c {
-> +				#gpio-cells = <2>;
-> +				compatible = "fsl,mpc8323mds-bcsr-gpio";
-> +				reg = <0xc 1>;
-> +				gpio-controller;
-> +			};
-> +		};
->  	};
->  
->  	soc8323@e0000000 {
-> @@ -238,6 +265,14 @@
->  			};
->  
->  		};
-> +
-> +		qe_pio_a: gpio-controller@1400 {
-> +			#gpio-cells = <2>;
-> +			compatible = "fsl,mpc8360-qe-pario-bank",
+ <func_0+0x123>
+ <func_1+0x123>
+ <func_2+0x123>
+ <func_3+0x123>
+ <func_4+0x123>
+ <func_5+0x123>
+ <func_6+0x123>
+ <func_7+0x123>
+ <func_8+0x123>
+ <func_9+0x123>
+ <func_10+0x123>
+ <func_11+0x123>
+ <func_12+0x123>
+ <func_13+0x123>
+ <func_14+0x123>
+ <func_15+0x123>
+ <func_16+0x123>
+ <func_17+0x123>
+ <func_18+0x123>
+ <func_19+0x123>
+ <func_20+0x123>
+ <func_21+0x123>
+ <func_22+0x123>
+ <func_23+0x123>
+ <func_24+0x123>
+ <func_25+0x123>
+ <func_26+0x123>
+ <func_27+0x123>
+ <func_28+0x123>
+ <func_29+0x123>
+ <func_30+0x123>
+ <func_31+0x123>
+ <func_32+0x123>
+ <func_33+0x123>
+ <func_34+0x123>
+ <func_35+0x123>
+ <func_36+0x123>
+ <func_37+0x123>
+ <func_38+0x123>
+ <func_39+0x123>
+ <func_40+0x123>
+ <func_41+0x123>
+ <func_42+0x123>
+ <func_43+0x123>
+ <func_44+0x123>
+ <func_45+0x123>
+ <func_46+0x123>
+ <func_47+0x123>
+ <func_48+0x123>
+ <func_49+0x123>
+ <func_50+0x123>
+ <func_51+0x123>
+ <func_52+0x123>
+ <func_53+0x123>
+ <func_54+0x123>
+ <func_55+0x123>
+ <func_56+0x123>
+ <func_57+0x123>
+ <func_58+0x123>
+ <func_59+0x123>
+ <func_60+0x123>
+ <func_61+0x123>
+ <func_62+0x123>
+ <func_63+0x123>
+ <func_64+0x123>
+ <func_65+0x123>
+ <func_66+0x123>
+ <func_67+0x123>
+ <func_68+0x123>
+ <func_69+0x123>
+ <func_70+0x123>
+ <func_71+0x123>
+ <func_72+0x123>
+ <func_73+0x123>
+ <func_74+0x123>
+ <func_75+0x123>
+ <func_76+0x123>
+ <func_77+0x123>
+ <func_78+0x123>
+ <func_79+0x123>
+ <func_80+0x123>
+ <func_81+0x123>
+ <func_82+0x123>
+ <func_83+0x123>
+ <func_84+0x123>
+ <func_85+0x123>
+ <func_86+0x123>
+ <func_87+0x123>
+ <func_88+0x123>
+ <func_89+0x123>
+ <func_90+0x123>
+ <func_91+0x123>
+ <func_92+0x123>
+ <func_93+0x123>
+ <func_94+0x123>
+ <func_95+0x123>
+ <func_96+0x123>
+ <func_97+0x123>
+ <func_98+0x123>
+ <func_99+0x123>
+ <func_100+0x123>
+ <func_101+0x123>
+ <func_102+0x123>
+ <func_103+0x123>
+ <func_104+0x123>
+ <func_105+0x123>
+ <func_106+0x123>
+ <func_107+0x123>
+ <func_108+0x123>
+ <func_109+0x123>
+ <func_110+0x123>
+ <func_111+0x123>
+ <func_112+0x123>
+ <func_113+0x123>
+ <func_114+0x123>
+ <func_115+0x123>
+ <func_116+0x123>
+ <func_117+0x123>
+ <func_118+0x123>
+ <func_119+0x123>
+ <func_120+0x123>
+ <func_121+0x123>
+ <func_122+0x123>
+ <func_123+0x123>
+ <func_124+0x123>
+ <func_125+0x123>
+ <func_126+0x123>
+ <func_127+0x123>
+ <func_128+0x123>
+ <func_129+0x123>
+ <func_130+0x123>
+ <func_131+0x123>
+ <func_132+0x123>
+ <func_133+0x123>
+ <func_134+0x123>
+ <func_135+0x123>
+ <func_136+0x123>
+ <func_137+0x123>
+ <func_138+0x123>
+ <func_139+0x123>
+ <func_140+0x123>
+ <func_141+0x123>
+ <func_142+0x123>
+ <func_143+0x123>
+ <func_144+0x123>
+ <func_145+0x123>
+ <func_146+0x123>
+ <func_147+0x123>
+ <func_148+0x123>
+ <func_149+0x123>
+ <func_150+0x123>
+ <func_151+0x123>
+ <func_152+0x123>
+ <func_153+0x123>
+ <func_154+0x123>
+ <func_155+0x123>
+ <func_156+0x123>
+ <func_157+0x123>
+ <func_158+0x123>
+ <func_159+0x123>
+ <func_160+0x123>
+ <func_161+0x123>
+ <func_162+0x123>
+ <func_163+0x123>
+ <func_164+0x123>
+ <func_165+0x123>
+ <func_166+0x123>
+ <func_167+0x123>
+ <func_168+0x123>
+ <func_169+0x123>
+ <func_170+0x123>
+ <func_171+0x123>
+ <func_172+0x123>
+ <func_173+0x123>
+ <func_174+0x123>
+ <func_175+0x123>
+ <func_176+0x123>
+ <func_177+0x123>
+ <func_178+0x123>
+ <func_179+0x123>
+ <func_180+0x123>
+ <func_181+0x123>
+ <func_182+0x123>
+ <func_183+0x123>
+ <func_184+0x123>
+ <func_185+0x123>
+ <func_186+0x123>
+ <func_187+0x123>
+ <func_188+0x123>
+ <func_189+0x123>
+ <func_190+0x123>
+ <func_191+0x123>
+ <func_192+0x123>
+ <func_193+0x123>
+ <func_194+0x123>
+ <func_195+0x123>
+ <func_196+0x123>
+ <func_197+0x123>
+ <func_198+0x123>
+ <func_199+0x123>
+ <func_200+0x123>
+ <func_201+0x123>
+ <func_202+0x123>
+ <func_203+0x123>
+ <func_204+0x123>
+ <func_205+0x123>
+ <func_206+0x123>
+ <func_207+0x123>
+ <func_208+0x123>
+ <func_209+0x123>
+ <func_210+0x123>
+ <func_211+0x123>
+ <func_212+0x123>
+ <func_213+0x123>
+ <func_214+0x123>
+ <func_215+0x123>
+ <func_216+0x123>
+ <func_217+0x123>
+ <func_218+0x123>
+ <func_219+0x123>
+ <func_220+0x123>
+ <func_221+0x123>
+ <func_222+0x123>
+ <func_223+0x123>
+ <func_224+0x123>
+ <func_225+0x123>
+ <func_226+0x123>
+ <func_227+0x123>
+ <func_228+0x123>
+ <func_229+0x123>
+ <func_230+0x123>
+ <func_231+0x123>
+ <func_232+0x123>
+ <func_233+0x123>
+ <func_234+0x123>
+ <func_235+0x123>
+ <func_236+0x123>
+ <func_237+0x123>
+ <func_238+0x123>
+ <func_239+0x123>
+ <func_240+0x123>
+ <func_241+0x123>
+ <func_242+0x123>
+ <func_243+0x123>
+ <func_244+0x123>
+ <func_245+0x123>
+ <func_246+0x123>
+ <func_247+0x123>
+ <func_248+0x123>
+ <func_249+0x123>
+ <func_250+0x123>
+ <func_251+0x123>
+ <func_252+0x123>
+ <func_253+0x123>
+ <func_254+0x123>
+ <func_255+0x123>
+ <func_256+0x123>
+ <func_257+0x123>
+ <func_258+0x123>
+ <func_259+0x123>
+ <func_260+0x123>
+ <func_261+0x123>
+ <func_262+0x123>
+ <func_263+0x123>
+ <func_264+0x123>
+ <func_265+0x123>
+ <func_266+0x123>
+ <func_267+0x123>
+ <func_268+0x123>
+ <func_269+0x123>
 
-fsl,mpc8360-qe-pario-bank doesn't fit here, just delete it.
+does that make much sense _per event_? How do you visualize it?
 
-> +				     "fsl,mpc8323-qe-pario-bank";
-> +			reg = <0x1400 0x18>;
-> +			gpio-controller;
-> +		};
->  	};
->  
->  	qe@e0100000 {
-> @@ -282,11 +317,25 @@
->  		};
->  
->  		usb@6c0 {
-> -			compatible = "qe_udc";
-> -			reg = <0x6c0 0x40 0x8b00 0x100>;
-> -			interrupts = <11>;
-> +			compatible = "fsl,mpc8360-qe-usb",
+But yeah ... i could imagine some user-space craziness and since we 
+want to align to u64 i guess that pretty much settles it to u16.
 
-Ditto. No need for mpc8360 compatible.
-
-> +				     "fsl,mpc8323-qe-usb";
-> +			/* QUICC Engine Parameter RAM Base Addresses (Suggested
-> +			   Value for User Configuration) Table 19-2 page 778 */
-> +			reg = <0x6c0 0x40 0x700 0x100>;
-> +			interrupts = <11>; /* Encoding the Interrupt Vector
-> +					      Table 18-12 page 760 */
->  			interrupt-parent = <&qeic>;
-> -			mode = "slave";
-> +			/* Clock Source Options - Internal Clock Generators
-> +			   Table 20-2 page 804 */
-> +			fsl,fullspeed-clock = "brg10";
-> +			fsl,lowspeed-clock = "brg10";
-> +			gpios = <&qe_pio_a  8 0   /* USBOE */
-> +				 &qe_pio_a  1 0   /* USBTXP */
-> +				 &qe_pio_a  0 0   /* USBTXN */
-> +				 &qe_pio_a  4 0   /* USBRXP */
-> +				 &qe_pio_a  5 0   /* USBRXN */
-> +				 &bcsr12    5 0   /* SPEED */
-> +				 &bcsr12    4 1>; /* POWER */
->  		};
->  
->  		enet0: ucc@2200 {
-> @@ -335,7 +384,6 @@
->  			pio-handle = < &pio5 >;
->  		};
->  
-> -
->  		mdio@2320 {
->  			#address-cells = <1>;
->  			#size-cells = <0>;
-> @@ -366,6 +414,16 @@
->  			interrupts = <32 0x8 33 0x8>; //high:32 low:33
->  			interrupt-parent = <&ipic>;
->  		};
-> +
-> +		timer@440 {
-> +			compatible = "fsl,mpc8323-qe-gtm",
-> +				     "fsl,qe-gtm", "fsl,gtm";
-> +			reg = <0x440 0x40>;
-> +			interrupts = <12 13 14 15>;
-> +			interrupt-parent = <&qeic>;
-> +			/* filled by u-boot */
-> +			clock-frequency = <0>;
-> +		};
->  	};
->  
->  	pci0: pci@e0008500 {
-
-[...defconfig changes snipped..]
-
-> diff --git a/arch/powerpc/platforms/83xx/Kconfig b/arch/powerpc/platforms/83xx/Kconfig
-> index 83c664a..68a2aeb 100644
-> --- a/arch/powerpc/platforms/83xx/Kconfig
-> +++ b/arch/powerpc/platforms/83xx/Kconfig
-> @@ -20,6 +20,7 @@ config MPC832x_MDS
->  	bool "Freescale MPC832x MDS"
->  	select DEFAULT_UIMAGE
->  	select PPC_MPC832x
-> +	select FSL_LBC
-
-Unless you use UPM NAND driver you don't need this.
-
->  	help
->  	  This option enables support for the MPC832x MDS evaluation board.
->  
-> diff --git a/arch/powerpc/platforms/83xx/mpc832x_mds.c b/arch/powerpc/platforms/83xx/mpc832x_mds.c
-> index ec0b401..e9baae5 100644
-> --- a/arch/powerpc/platforms/83xx/mpc832x_mds.c
-> +++ b/arch/powerpc/platforms/83xx/mpc832x_mds.c
-> @@ -12,6 +12,7 @@
->  
->  #include <linux/stddef.h>
->  #include <linux/kernel.h>
-> +#include <linux/compiler.h>
->  #include <linux/init.h>
->  #include <linux/errno.h>
->  #include <linux/reboot.h>
-> @@ -37,6 +38,7 @@
->  #include <asm/udbg.h>
->  #include <sysdev/fsl_soc.h>
->  #include <sysdev/fsl_pci.h>
-> +#include <sysdev/simple_gpio.h>
->  #include <asm/qe.h>
->  #include <asm/qe_ic.h>
->  
-> @@ -86,6 +88,16 @@ static void __init mpc832x_sys_setup_arch(void)
->  
->  		for (np = NULL; (np = of_find_node_by_name(np, "ucc")) != NULL;)
->  			par_io_of_config(np);
-> +#ifdef CONFIG_QE_USB
-> +		/* Must fixup Par IO before QE GPIO chips are registered. */
-> +		par_io_config_pin(0,  8, 1, 0, 3, 0);   /* PA8 for USBOE */
-> +		par_io_config_pin(0,  1, 1, 0, 3, 0);   /* PA1 for USBTP */
-> +		par_io_config_pin(0,  0, 1, 0, 3, 0);   /* PA0 for USBTN */
-> +		par_io_config_pin(0,  6, 2, 0, 3, 0);   /* PA6 for USBRXD */
-> +		par_io_config_pin(0,  4, 2, 1, 3, 0);   /* PA4 for USBRP */
-> +		par_io_config_pin(0,  5, 2, 1, 3, 0);   /* PA5 for USBRN */
-> +		par_io_config_pin(0, 14, 2, 0, 1, 0);   /* PA14 for BRG10/CLK11*/
-> +#endif /* CONFIG_QE_USB */
->  	}
->  
->  	if ((np = of_find_compatible_node(NULL, "network", "ucc_geth"))
-> @@ -119,6 +131,60 @@ static int __init mpc832x_declare_of_platform_devices(void)
->  }
->  machine_device_initcall(mpc832x_mds, mpc832x_declare_of_platform_devices);
->  
-> +#ifdef CONFIG_QE_USB
-> +static int __init mpc832x_usb_cfg(void)
-> +{
-> +	u8 __iomem *bcsr;
-> +	struct device_node *np;
-> +	const char *mode;
-> +	int ret = 0;
-> +
-> +	np = of_find_compatible_node(NULL, NULL, "fsl,mpc8323mds-bcsr");
-> +	if (!np)
-> +		return -ENODEV;
-> +
-> +	bcsr = of_iomap(np, 0);
-> +	of_node_put(np);
-> +	if (!bcsr)
-> +		return -ENOMEM;
-> +
-> +	np = of_find_compatible_node(NULL, NULL, "fsl,mpc8323-qe-usb");
-> +	if (!np) {
-> +		ret = -ENODEV;
-> +		goto err;
-> +	}
-> +
-> +#define BCSR12_USBMASK	0x0f
-> +#define BCSR12_nUSBEN	0x08 /* 1 - Disable, 0 - Enable			*/
-> +#define BCSR12_USBSPEED	0x04 /* 1 - Full, 0 - Low			*/
-> +#define BCSR12_USBMODE	0x02 /* 1 - Host, 0 - Function			*/
-> +#define BCSR12_nUSBVCC	0x01 /* 1 - gets VBUS, 0 - supplies VBUS 	*/
-> +
-> +	clrsetbits_8(&bcsr[12], BCSR12_USBMASK, BCSR12_USBSPEED);
-> +
-> +	mode = of_get_property(np, "mode", NULL);
-> +	if (mode && !strcmp(mode, "peripheral")) {
-> +		setbits8(&bcsr[12], BCSR12_nUSBVCC);
-> +		qe_usb_clock_set(QE_CLK21, 48000000);
-
-I see that the actual USB clock input is BRG10, while here you
-specify CLK21...
-
-> +	} else {
-> +//Userguide lies about this!
-> +//		setbits8(&bcsr[12], BCSR12_USBMODE);
-
-Please use canonical comments, i.e.
-
-/*
- * Userguide lies about this!
- * setbits8(&bcsr[12], BCSR12_USBMODE);
- */
-
-> +		/*
-> +		 * The BCSR GPIOs are used to control power and
-> +		 * speed of the USB transceiver. This is needed for
-> +		 * the USB Host only.
-> +		 */
-> +		simple_gpiochip_init("fsl,mpc8323mds-bcsr-gpio");
-> +	}
-> +
-> +	of_node_put(np);
-> +err:
-> +	iounmap(bcsr);
-> +	return ret;
-> +}
-> +machine_arch_initcall(mpc832x_mds, mpc832x_usb_cfg);
-> +#endif /* CONFIG_QE_USB */
-> +
->  static void __init mpc832x_sys_init_IRQ(void)
->  {
->  	struct device_node *np;
-> diff --git a/arch/powerpc/sysdev/qe_lib/qe.c b/arch/powerpc/sysdev/qe_lib/qe.c
-> index 01bce37..3342f77 100644
-> --- a/arch/powerpc/sysdev/qe_lib/qe.c
-> +++ b/arch/powerpc/sysdev/qe_lib/qe.c
-> @@ -200,7 +200,11 @@ int qe_setbrg(enum qe_clock brg, unsigned int rate, unsigned int multiplier)
->  	if ((brg < QE_BRG1) || (brg > QE_BRG16))
->  		return -EINVAL;
->  
-> -	divisor = qe_get_brg_clk() / (rate * multiplier);
-> +#define USB_CLOCK      48000000
-> +	if(brg == QE_BRG10) 
-> +		divisor = USB_CLOCK / (rate * multiplier);
-> +	else
-> +		divisor = qe_get_brg_clk() / (rate * multiplier);
-[...]
-> +#define BRGC_EXTC_CLK11 0x00004000
-> +	if(brg == QE_BRG10)
-> +		tempval |= BRGC_EXTC_CLK11;
-> +
->  	out_be32(&qe_immr->brg.brgc[brg - QE_BRG1], tempval);
-
-Yes, these two changes don't look good, but I'm not sure how to
-make them better. Maybe Timur would suggest.
-
->  	return 0;
-> diff --git a/drivers/usb/host/fhci-hcd.c b/drivers/usb/host/fhci-hcd.c
-> index ba622cc..ba26d19 100644
-> --- a/drivers/usb/host/fhci-hcd.c
-> +++ b/drivers/usb/host/fhci-hcd.c
-> @@ -620,12 +620,21 @@ static int __devinit of_fhci_probe(struct of_device *ofdev,
->  		goto err_pram;
->  	}
->  
-> +#ifdef CONFIG_MPC832x_MDS
-> +	pram_addr = qe_muram_alloc(FHCI_PRAM_SIZE, 64);
-> +#else
->  	pram_addr = cpm_muram_alloc_fixed(iprop[2], FHCI_PRAM_SIZE);
-> +#endif
-
-Default (0x8b00) pram location doesn't work on MPC832x? Let's look
-into reference manual...
-
-  "As the default values are not in the first 16KB memory space of
-  the Multi-user RAM, the user has to modify the page addresses
-  using the assign page host command as part of the initialization
-  process."
-
-Hm.. So MPC832x has only 16 KB of muram. :-/
-
-I just checked on MPC8360 board: dynamic allocation + assign page
-works here. So, please don't introduce the #ifdefs, just replace
-the fixed allocations with dynamic.
-
-Ah, and don't use "qe_muram_alloc", use cpm_ prefix (qe_ and cpm_
-muram functions are identical).
-
->  	if (IS_ERR_VALUE(pram_addr)) {
->  		dev_err(dev, "failed to allocate usb pram\n");
->  		ret = -ENOMEM;
->  		goto err_pram;
->  	}
-> +#ifdef CONFIG_MPC832x_MDS
-
-And simply remove this #ifdef.
-
-> +	/* Section 19.3.1.1.1 Assign page Command */
-
-Please remove this comment. Section "19.3.1.1.1" may point
-to some completely unrelated stuff if we look into RM for
-another processor.
-
-> +	qe_issue_cmd(QE_ASSIGN_PAGE_TO_DEVICE, QE_CR_SUBBLOCK_USB,
-> +		     QE_CR_PROTOCOL_UNSPECIFIED, pram_addr);
-> +#endif
->  	fhci->pram = cpm_muram_addr(pram_addr);
-
-
-Thanks,
-
--- 
-Anton Vorontsov
-email: cbouatmailru@gmail.com
-irc://irc.freenode.net/bd2
+	Ingo
