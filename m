@@ -1,41 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933845AbZDBAam@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934196AbZDBAcB@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933845AbZDBAam (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 1 Apr 2009 20:30:42 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759357AbZDBAa1
+	id S934196AbZDBAcB (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 1 Apr 2009 20:32:01 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760495AbZDBAbs
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 1 Apr 2009 20:30:27 -0400
-Received: from rv-out-0506.google.com ([209.85.198.239]:9151 "EHLO
-	rv-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757055AbZDBAaZ (ORCPT
+	Wed, 1 Apr 2009 20:31:48 -0400
+Received: from yx-out-2324.google.com ([74.125.44.30]:60803 "EHLO
+	yx-out-2324.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757055AbZDBAbr (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 1 Apr 2009 20:30:25 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
-         :cc:content-type:content-transfer-encoding;
-        b=smGR/2u3iNUVREzroJDPeS+bDMjHuLITEg0eYuU9G0oNxezZfXVVXcXlSawV+4GHph
-         u/dVs7ojz2fqI+Axm+m6bkTkHAkB1sSW9laVtAEzgKbsf2mQ/DRPxKpz3QADkSc3XMEf
-         2CABqL8CqkNMFIa7AcEDIow6U+PJyjxOYsORk=
+	Wed, 1 Apr 2009 20:31:47 -0400
+Message-ID: <49D4076D.4010500@codemonkey.ws>
+Date: Wed, 01 Apr 2009 19:31:41 -0500
+From: Anthony Liguori <anthony@codemonkey.ws>
+User-Agent: Thunderbird 2.0.0.21 (X11/20090320)
 MIME-Version: 1.0
-In-Reply-To: <9b1675090903312219q5f6df0cbwef86cbdafe035667@mail.gmail.com>
-References: <9b1675090903291904g7eca965eydb1aa3f852a1b91c@mail.gmail.com>
-	 <200903301357.17076.alistair@devzero.co.uk>
-	 <9b1675090903300826s2ce361e5s1134e13507b0399@mail.gmail.com>
-	 <200903301944.30030.alistair@devzero.co.uk>
-	 <9b1675090903302211q5703af7fo33f45c93e5db34f0@mail.gmail.com>
-	 <9b1675090903312219q5f6df0cbwef86cbdafe035667@mail.gmail.com>
-Date: Wed, 1 Apr 2009 18:30:22 -0600
-Message-ID: <9b1675090904011730t38f637b3n55a3a44aeb0b07e@mail.gmail.com>
-Subject: Re: 2.6.29 on MacBook 2,1 fails to reboot
-From: "Trenton D. Adams" <trenton.d.adams@gmail.com>
-To: Alistair John Strachan <alistair@devzero.co.uk>
-Cc: "Morten P.D. Stevens" <mstevens@win-professional.com>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Content-Type: text/plain; charset=ISO-8859-1
+To: Izik Eidus <ieidus@redhat.com>
+CC: Andrea Arcangeli <aarcange@redhat.com>, linux-kernel@vger.kernel.org,
+       kvm@vger.kernel.org, linux-mm@kvack.org, avi@redhat.com,
+       chrisw@redhat.com, riel@redhat.com, jeremy@goop.org,
+       mtosatti@redhat.com, hugh@veritas.com, corbet@lwn.net, yaniv@redhat.com,
+       dmonakhov@openvz.org
+Subject: Re: [PATCH 4/4] add ksm kernel shared memory driver.
+References: <1238457560-7613-5-git-send-email-ieidus@redhat.com> <49D17C04.9070307@codemonkey.ws> <49D20B63.8020709@redhat.com> <49D21B33.4070406@codemonkey.ws> <20090331142533.GR9137@random.random> <49D22A9D.4050403@codemonkey.ws> <20090331150218.GS9137@random.random> <49D23224.9000903@codemonkey.ws> <20090331151845.GT9137@random.random> <49D23CD1.9090208@codemonkey.ws> <20090331162525.GU9137@random.random> <49D24A02.6070000@codemonkey.ws> <49D3F088.50600@redhat.com>
+In-Reply-To: <49D3F088.50600@redhat.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Morton, did you see this one fly by?
+Izik Eidus wrote:
+> Anthony, the biggest problem about madvice() is that it is a real 
+> system call api, i wouldnt want in that stage of ksm commit into api 
+> changes of linux...
+>
+> The ioctl itself is restricting, madvice is much more...,
+>
+> Can we draft this issue to after ksm is merged, and after all the big 
+> new fetures that we want to add to ksm will be merge....
+> (then the api would be much more stable, and we will be able to ask 
+> ppl in the list about changing of api, but for new driver that it yet 
+> to be merged, it is kind of overkill to add api to linux)
+>
+> What do you think?
+
+You can't change ABIs after something is merged or you break userspace.  
+So you need to figure out the right ABI first.
+
+Regards,
+
+Anthony Liguori
+
