@@ -1,57 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1765356AbZDBDch@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932323AbZDBDeN@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1765356AbZDBDch (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 1 Apr 2009 23:32:37 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762184AbZDBDc1
+	id S932323AbZDBDeN (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 1 Apr 2009 23:34:13 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753410AbZDBDdy
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 1 Apr 2009 23:32:27 -0400
-Received: from mail-ew0-f165.google.com ([209.85.219.165]:65262 "EHLO
-	mail-ew0-f165.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753487AbZDBDcZ (ORCPT
+	Wed, 1 Apr 2009 23:33:54 -0400
+Received: from smtp.ultrahosting.com ([74.213.174.254]:40635 "EHLO
+	smtp.ultrahosting.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1761423AbZDBDdv (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 1 Apr 2009 23:32:25 -0400
+	Wed, 1 Apr 2009 23:33:51 -0400
+Date: Wed, 1 Apr 2009 23:28:44 -0400 (EDT)
+From: Christoph Lameter <cl@linux.com>
+X-X-Sender: cl@qirst.com
+To: Ingo Molnar <mingo@elte.hu>
+cc: Matthew Wilcox <matthew@wil.cx>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Tejun Heo <tj@kernel.org>, Martin Schwidefsky <schwidefsky@de.ibm.com>,
+       rusty@rustcorp.com.au, tglx@linutronix.de, x86@kernel.org,
+       linux-kernel@vger.kernel.org, hpa@zytor.com,
+       Paul Mundt <lethal@linux-sh.org>, rmk@arm.linux.org.uk,
+       starvik@axis.com, ralf@linux-mips.org, davem@davemloft.net,
+       cooloney@kernel.org, kyle@mcmartin.ca, grundler@parisc-linux.org,
+       takata@linux-m32r.org, benh@kernel.crashing.org, rth@twiddle.net,
+       ink@jurassic.park.msu.ru, heiko.carstens@de.ibm.com,
+       Nick Piggin <npiggin@suse.de>, Peter Zijlstra <a.p.zijlstra@chello.nl>
+Subject: Re: [PATCH UPDATED] percpu: use dynamic percpu allocator as the
+ default percpu allocator
+In-Reply-To: <20090402032506.GC21545@elte.hu>
+Message-ID: <alpine.DEB.1.10.0904012324580.20118@qirst.com>
+References: <49D2B209.9060000@kernel.org> <alpine.DEB.1.10.0904010948120.7643@qirst.com> <20090401154913.GA31435@elte.hu> <alpine.DEB.1.10.0904011404240.29839@qirst.com> <20090401190113.GA734@elte.hu> <alpine.LFD.2.00.0904011235160.4130@localhost.localdomain>
+ <20090401223241.GA28168@elte.hu> <20090401225754.GN8014@parisc-linux.org> <20090402021024.GA26446@elte.hu> <alpine.DEB.1.10.0904012219300.32656@qirst.com> <20090402032506.GC21545@elte.hu>
+User-Agent: Alpine 1.10 (DEB 962 2008-03-14)
 MIME-Version: 1.0
-In-Reply-To: <alpine.DEB.1.10.0904012207110.32656@qirst.com>
-References: <49D0DBA2.20101@vflare.org>
-	 <20090401155743.685e2c1e.akpm@linux-foundation.org>
-	 <49D400A5.20901@vflare.org>
-	 <alpine.DEB.1.10.0904012207110.32656@qirst.com>
-Date: Thu, 2 Apr 2009 09:02:22 +0530
-Message-ID: <d760cf2d0904012032v4b49ccb3gec64c32d4ba4f13f@mail.gmail.com>
-Subject: Re: [PATCH 0/3] compressed in-memory swapping take5
-From: Nitin Gupta <ngupta@vflare.org>
-To: Christoph Lameter <cl@linux.com>
-Cc: Andrew Morton <akpm@linux-foundation.org>, penberg@cs.helsinki.fi,
-       edt@aei.ca, linux-mm-cc@laptop.org, linux-kernel@vger.kernel.org
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Apr 2, 2009 at 7:39 AM, Christoph Lameter <cl@linux.com> wrote:
-> On Thu, 2 Apr 2009, Nitin Gupta wrote:
->
->> Justification for this custom allocator is present in xvmalloc changelog
->> itself. It gives reason for not using SLUB and SLOB. During review
->> cycle, I never got any arguments against that justification.
->
-> The use of highmem is pretty unique. But that restrict the usefulness to
-> 32 bit processors with too much RAM.
->
->
+On Thu, 2 Apr 2009, Ingo Molnar wrote:
 
-I would again like to mention that apart from highmem, xvmalloc is O(1)
-and is very memory efficient too. Sometime in future I hope to present
-it as replacement for funny SLOB allocator. For this I will require lot of
-data which is another major work....
+> You didnt really answer to my suggestion(s) though. You only stated
+> that:
+>
+>    "problem XYZ is something normal that comes with the cpu caching
+>     schemes. As long as there is no significant impact on
+>     performance weare fine with it."
+>
+> Which i'd proffer is true for any given value of XYZ ;-)
 
-For now, I will rename xvmalloc to rzmalloc and move it to
-drivers/block/ramzswap. As for data to justify ramzswap inclusion
--- its going to be hard. It just 'feels' lot more responsive with compression
-but not sure how to quantify this. Maybe I will get some data
-by next release.
+Nope. If XYZ is a significant performance issue then we are not fine with
+XYZ. __read_mostly was introduced to deal with signficant false aliasing
+issues.
 
-Thanks to you all for your reviews and suggestions.
+False aliasing can be set to occur anytime you place two variables in the
+same cacheline. That is by design in the current cacheline schemes. One
+would not place a variable in a separate cacheline without good
+reason.
 
-Nitin
+
+
+
+
