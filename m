@@ -1,93 +1,416 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763971AbZDBQpp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762846AbZDBQqZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763971AbZDBQpp (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 2 Apr 2009 12:45:45 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750919AbZDBQp3
+	id S1762846AbZDBQqZ (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 2 Apr 2009 12:46:25 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763342AbZDBQpo
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 2 Apr 2009 12:45:29 -0400
-Received: from exprod7og111.obsmtp.com ([64.18.2.175]:57910 "HELO
-	exprod7og111.obsmtp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with SMTP id S1761421AbZDBQp0 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 2 Apr 2009 12:45:26 -0400
-X-Greylist: delayed 1193 seconds by postgrey-1.27 at vger.kernel.org; Thu, 02 Apr 2009 12:45:25 EDT
-Subject: mutex_lock_slowpath warning using mxser tty driver (input/output
- error)
-From: Christophe Lermytte <christophe.lermytte@thomson.net>
-To: linux-kernel@vger.kernel.org
-Content-Type: text/plain
-Content-Transfer-Encoding: 7bit
-Date: Thu, 02 Apr 2009 18:26:05 +0200
-Message-Id: <1238689565.14822.99.camel@thom>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.26.0 
-X-OriginalArrivalTime: 02 Apr 2009 16:25:21.0594 (UTC) FILETIME=[9E75D1A0:01C9B3AF]
+	Thu, 2 Apr 2009 12:45:44 -0400
+Received: from mx3.mail.elte.hu ([157.181.1.138]:33737 "EHLO mx3.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1763867AbZDBQpm (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 2 Apr 2009 12:45:42 -0400
+Date: Thu, 2 Apr 2009 18:45:24 +0200
+From: Ingo Molnar <mingo@elte.hu>
+To: Stanislaw Gruszka <sgruszka@redhat.com>,
+       Thomas Gleixner <tglx@linutronix.de>, Oleg Nesterov <oleg@redhat.com>
+Cc: linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 1/2] itimers: merge ITIMER_VIRT and ITIMER_PROF common
+	code
+Message-ID: <20090402164524.GB7385@elte.hu>
+References: <20090402141146.0ede3c2a@dhcp-lab-109.englab.brq.redhat.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20090402141146.0ede3c2a@dhcp-lab-109.englab.brq.redhat.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.5
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi all,
 
-I have upgraded one of my automated test setups from 2.6.27 to 2.6.29. I
-now have issues with using a Moxa multiport serial device, where I had
-none before :-)
+(added more Cc:s)
 
-> MOXA Smartio/Industio family driver version 2.0.4
-> mxser 0000:03:02.0: found MOXA C168H/PCI series board (BusNo=3,
-DevNo=2)
-> mxser 0000:03:02.0: PCI INT A -> GSI 18 (level, low) -> IRQ 18
-> mxser: max. baud rate = 921600 bps
+* Stanislaw Gruszka <sgruszka@redhat.com> wrote:
 
-When I cat /dev/setup3 (which is a symlink to /dev/ttyMI3), which is
-connected to a device that outputs data (tried it with one @ 115200bps
-and one @ 9600bps), I get the following kernel trace:
-
-------------[ cut here ]------------
-WARNING: at kernel/mutex.c:135 __mutex_lock_slowpath+0x50/0x211()
-Hardware name: OptiPlex 755                 
-Modules linked in: i915 drm i2c_algo_bit ipv6 8021q dummy fuse arc4 ecb
-snd_hda_codec_analog snd_hda_intel snd_hda_codec rtl8187 mac80211 usbhid
-i2c_i801 snd_pcm serio_raw eeprom_93cx6 iTCO_wdt i2c_core
-iTCO_vendor_support cfg80211 snd_timer snd snd_page_alloc rtc_cmos
-rtc_core intel_agp agpgart mxser ppdev thermal uhci_hcd sg rtc_lib
-parport_pc processor parport button thermal_sys dcdbas
-Pid: 0, comm: swapper Not tainted 2.6.29-autodistro-r4 #1
-Call Trace:
-[<c0127479>] warn_slowpath+0x74/0x8a
-[<c016bb1a>] ? get_page_from_freelist+0xc1/0x3c6
-[<c04e0093>] ? usb_hcd_submit_urb+0x88d/0x95b
-[<c05d2d41>] ? _spin_lock+0x8/0xb
-[<c0187063>] ? cache_alloc_refill+0x19f/0x499
-[<c05d1b63>] __mutex_lock_slowpath+0x50/0x211
-[<c05d1d36>] mutex_lock+0x12/0x15
-[<c026d677>] echo_set_canon_col+0x14/0x37
-[<c026e478>] n_tty_receive_buf+0x2f3/0xe0c
-[<c05d2d41>] ? _spin_lock+0x8/0xb
-[<c0187063>] ? cache_alloc_refill+0x19f/0x499
-[<c05d2e5e>] ? _spin_lock_irqsave+0x28/0x2f
-[<c012f01d>] ? lock_timer_base+0x1f/0x3e
-[<c0118b2d>] ? default_spin_lock_flags+0x8/0xb
-[<c0118b2d>] ? default_spin_lock_flags+0x8/0xb
-[<c02710ed>] flush_to_ldisc+0xe9/0x159
-[<c027119e>] tty_flip_buffer_push+0x41/0x51
-[<f842e5f5>] mxser_receive_chars+0x237/0x246 [mxser]
-[<f842fac5>] mxser_interrupt+0x18e/0x228 [mxser]
-[<c015ac54>] handle_IRQ_event+0x2a/0x5a
-[<c015c11a>] handle_fasteoi_irq+0x7b/0xb4
-[<c015c09f>] ? handle_fasteoi_irq+0x0/0xb4
-<IRQ>  [<c0103527>] ? common_interrupt+0x27/0x2c
-[<c0108131>] ? mwait_idle+0x4c/0x5b
-[<c0101a5b>] ? cpu_idle+0x59/0x6d
-[<c05ce807>] ? start_secondary+0x19f/0x1a4
----[ end trace 433a17e91cdf059a ]---
-
-After I break the cat, subsequent cat's result in:
-
-cat /dev/setup3 
-cat: /dev/setup3: Input/output error
-
-I'm not a kernel expert, so if you have any pointers or ways to provide
-more information, don't hesitate to ask.
-
-Regards,
-Christophe L.
+> Both cpu itimers have same data flow in the few places, this patch make
+> unification of code related with VIRT and PROF itimers.
+> 
+> Signed-off-by: Stanislaw Gruszka <sgruszka@redhat.com>
+> ---
+>  include/linux/sched.h     |    6 +-
+>  kernel/fork.c             |    8 +-
+>  kernel/itimer.c           |  136 +++++++++++++++++++--------------------------
+>  kernel/posix-cpu-timers.c |   81 ++++++++++++++-------------
+>  4 files changed, 107 insertions(+), 124 deletions(-)
+> 
+> diff --git a/include/linux/sched.h b/include/linux/sched.h
+> index 29df637..b4c19c2 100644
+> --- a/include/linux/sched.h
+> +++ b/include/linux/sched.h
+> @@ -440,6 +440,8 @@ struct pacct_struct {
+>  	unsigned long		ac_minflt, ac_majflt;
+>  };
+>  
+> +enum itimer_number {IT_VIRT = 0, IT_PROF = 1};
+> +
+>  /**
+>   * struct task_cputime - collected CPU time counts
+>   * @utime:		time spent in user mode, in &cputime_t units
+> @@ -526,8 +528,8 @@ struct signal_struct {
+>  	ktime_t it_real_incr;
+>  
+>  	/* ITIMER_PROF and ITIMER_VIRTUAL timers for the process */
+> -	cputime_t it_prof_expires, it_virt_expires;
+> -	cputime_t it_prof_incr, it_virt_incr;
+> +	cputime_t it_expires[2];
+> +	cputime_t it_incr[2];
+>  
+>  	/*
+>  	 * Thread group totals for process CPU timers.
+> diff --git a/kernel/fork.c b/kernel/fork.c
+> index 47c1584..6c7044a 100644
+> --- a/kernel/fork.c
+> +++ b/kernel/fork.c
+> @@ -803,10 +803,10 @@ static void posix_cpu_timers_init_group(struct signal_struct *sig)
+>  	thread_group_cputime_init(sig);
+>  
+>  	/* Expiration times and increments. */
+> -	sig->it_virt_expires = cputime_zero;
+> -	sig->it_virt_incr = cputime_zero;
+> -	sig->it_prof_expires = cputime_zero;
+> -	sig->it_prof_incr = cputime_zero;
+> +	sig->it_expires[IT_VIRT] = cputime_zero;
+> +	sig->it_expires[IT_PROF] = cputime_zero;
+> +	sig->it_incr[IT_VIRT] = cputime_zero;
+> +	sig->it_incr[IT_PROF] = cputime_zero;
+>  
+>  	/* Cached expiration times. */
+>  	sig->cputime_expires.prof_exp = cputime_zero;
+> diff --git a/kernel/itimer.c b/kernel/itimer.c
+> index 58762f7..ec64fea 100644
+> --- a/kernel/itimer.c
+> +++ b/kernel/itimer.c
+> @@ -41,10 +41,34 @@ static struct timeval itimer_get_remtime(struct hrtimer *timer)
+>  	return ktime_to_timeval(rem);
+>  }
+>  
+> +static void get_cpu_itimer(struct task_struct *tsk, enum itimer_number i,
+> +			   struct itimerval *value)
+> +{
+> +	cputime_t cval, cinterval;
+> +
+> +	spin_lock_irq(&tsk->sighand->siglock);
+> +	cval = tsk->signal->it_expires[i];
+> +	cinterval = tsk->signal->it_incr[i];
+> +	if (!cputime_eq(cval, cputime_zero)) {
+> +		struct task_cputime cputime;
+> +		cputime_t utime;
+> +
+> +		thread_group_cputimer(tsk, &cputime);
+> +		utime = cputime.utime;
+> +		if (cputime_le(cval, utime)) { /* about to fire */
+> +			cval = jiffies_to_cputime(1);
+> +		} else {
+> +			cval = cputime_sub(cval, utime);
+> +		}
+> +	}
+> +	spin_unlock_irq(&tsk->sighand->siglock);
+> +	cputime_to_timeval(cval, &value->it_value);
+> +	cputime_to_timeval(cinterval, &value->it_interval);
+> +}
+> +
+>  int do_getitimer(int which, struct itimerval *value)
+>  {
+>  	struct task_struct *tsk = current;
+> -	cputime_t cinterval, cval;
+>  
+>  	switch (which) {
+>  	case ITIMER_REAL:
+> @@ -55,44 +79,10 @@ int do_getitimer(int which, struct itimerval *value)
+>  		spin_unlock_irq(&tsk->sighand->siglock);
+>  		break;
+>  	case ITIMER_VIRTUAL:
+> -		spin_lock_irq(&tsk->sighand->siglock);
+> -		cval = tsk->signal->it_virt_expires;
+> -		cinterval = tsk->signal->it_virt_incr;
+> -		if (!cputime_eq(cval, cputime_zero)) {
+> -			struct task_cputime cputime;
+> -			cputime_t utime;
+> -
+> -			thread_group_cputimer(tsk, &cputime);
+> -			utime = cputime.utime;
+> -			if (cputime_le(cval, utime)) { /* about to fire */
+> -				cval = jiffies_to_cputime(1);
+> -			} else {
+> -				cval = cputime_sub(cval, utime);
+> -			}
+> -		}
+> -		spin_unlock_irq(&tsk->sighand->siglock);
+> -		cputime_to_timeval(cval, &value->it_value);
+> -		cputime_to_timeval(cinterval, &value->it_interval);
+> +		get_cpu_itimer(tsk, IT_VIRT, value);
+>  		break;
+>  	case ITIMER_PROF:
+> -		spin_lock_irq(&tsk->sighand->siglock);
+> -		cval = tsk->signal->it_prof_expires;
+> -		cinterval = tsk->signal->it_prof_incr;
+> -		if (!cputime_eq(cval, cputime_zero)) {
+> -			struct task_cputime times;
+> -			cputime_t ptime;
+> -
+> -			thread_group_cputimer(tsk, &times);
+> -			ptime = cputime_add(times.utime, times.stime);
+> -			if (cputime_le(cval, ptime)) { /* about to fire */
+> -				cval = jiffies_to_cputime(1);
+> -			} else {
+> -				cval = cputime_sub(cval, ptime);
+> -			}
+> -		}
+> -		spin_unlock_irq(&tsk->sighand->siglock);
+> -		cputime_to_timeval(cval, &value->it_value);
+> -		cputime_to_timeval(cinterval, &value->it_interval);
+> +		get_cpu_itimer(tsk, IT_PROF, value);
+>  		break;
+>  	default:
+>  		return(-EINVAL);
+> @@ -128,6 +118,35 @@ enum hrtimer_restart it_real_fn(struct hrtimer *timer)
+>  	return HRTIMER_NORESTART;
+>  }
+>  
+> +static void set_cpu_itimer(struct task_struct *tsk, enum itimer_number i,
+> +			   struct itimerval *value, struct itimerval *ovalue)
+> +{
+> +	cputime_t cval, cinterval, nval, ninterval;
+> +
+> +	nval = timeval_to_cputime(&value->it_value);
+> +	ninterval = timeval_to_cputime(&value->it_interval);
+> +
+> +	spin_lock_irq(&tsk->sighand->siglock);
+> +
+> +	cval = tsk->signal->it_expires[i];
+> +	cinterval = tsk->signal->it_incr[i];
+> +	if (!cputime_eq(cval, cputime_zero) ||
+> +	    !cputime_eq(nval, cputime_zero)) {
+> +		if (cputime_gt(nval, cputime_zero))
+> +			nval = cputime_add(nval, jiffies_to_cputime(1));
+> +		set_process_cpu_timer(tsk, i, &nval, &cval);
+> +	}
+> +	tsk->signal->it_expires[i] = nval;
+> +	tsk->signal->it_incr[i] = ninterval;
+> +
+> +	spin_unlock_irq(&tsk->sighand->siglock);
+> +
+> +	if (ovalue) {
+> +		cputime_to_timeval(cval, &ovalue->it_value);
+> +		cputime_to_timeval(cinterval, &ovalue->it_interval);
+> +	}
+> +}
+> +
+>  /*
+>   * Returns true if the timeval is in canonical form
+>   */
+> @@ -139,7 +158,6 @@ int do_setitimer(int which, struct itimerval *value, struct itimerval *ovalue)
+>  	struct task_struct *tsk = current;
+>  	struct hrtimer *timer;
+>  	ktime_t expires;
+> -	cputime_t cval, cinterval, nval, ninterval;
+>  
+>  	/*
+>  	 * Validate the timevals in value.
+> @@ -174,48 +192,10 @@ again:
+>  		spin_unlock_irq(&tsk->sighand->siglock);
+>  		break;
+>  	case ITIMER_VIRTUAL:
+> -		nval = timeval_to_cputime(&value->it_value);
+> -		ninterval = timeval_to_cputime(&value->it_interval);
+> -		spin_lock_irq(&tsk->sighand->siglock);
+> -		cval = tsk->signal->it_virt_expires;
+> -		cinterval = tsk->signal->it_virt_incr;
+> -		if (!cputime_eq(cval, cputime_zero) ||
+> -		    !cputime_eq(nval, cputime_zero)) {
+> -			if (cputime_gt(nval, cputime_zero))
+> -				nval = cputime_add(nval,
+> -						   jiffies_to_cputime(1));
+> -			set_process_cpu_timer(tsk, CPUCLOCK_VIRT,
+> -					      &nval, &cval);
+> -		}
+> -		tsk->signal->it_virt_expires = nval;
+> -		tsk->signal->it_virt_incr = ninterval;
+> -		spin_unlock_irq(&tsk->sighand->siglock);
+> -		if (ovalue) {
+> -			cputime_to_timeval(cval, &ovalue->it_value);
+> -			cputime_to_timeval(cinterval, &ovalue->it_interval);
+> -		}
+> +		set_cpu_itimer(tsk, IT_VIRT, value, ovalue);
+>  		break;
+>  	case ITIMER_PROF:
+> -		nval = timeval_to_cputime(&value->it_value);
+> -		ninterval = timeval_to_cputime(&value->it_interval);
+> -		spin_lock_irq(&tsk->sighand->siglock);
+> -		cval = tsk->signal->it_prof_expires;
+> -		cinterval = tsk->signal->it_prof_incr;
+> -		if (!cputime_eq(cval, cputime_zero) ||
+> -		    !cputime_eq(nval, cputime_zero)) {
+> -			if (cputime_gt(nval, cputime_zero))
+> -				nval = cputime_add(nval,
+> -						   jiffies_to_cputime(1));
+> -			set_process_cpu_timer(tsk, CPUCLOCK_PROF,
+> -					      &nval, &cval);
+> -		}
+> -		tsk->signal->it_prof_expires = nval;
+> -		tsk->signal->it_prof_incr = ninterval;
+> -		spin_unlock_irq(&tsk->sighand->siglock);
+> -		if (ovalue) {
+> -			cputime_to_timeval(cval, &ovalue->it_value);
+> -			cputime_to_timeval(cinterval, &ovalue->it_interval);
+> -		}
+> +		set_cpu_itimer(tsk, IT_PROF, value, ovalue);
+>  		break;
+>  	default:
+>  		return -EINVAL;
+> diff --git a/kernel/posix-cpu-timers.c b/kernel/posix-cpu-timers.c
+> index 8e5d9a6..76e125c 100644
+> --- a/kernel/posix-cpu-timers.c
+> +++ b/kernel/posix-cpu-timers.c
+> @@ -17,8 +17,8 @@ void update_rlimit_cpu(unsigned long rlim_new)
+>  	cputime_t cputime;
+>  
+>  	cputime = secs_to_cputime(rlim_new);
+> -	if (cputime_eq(current->signal->it_prof_expires, cputime_zero) ||
+> -	    cputime_lt(current->signal->it_prof_expires, cputime)) {
+> +	if (cputime_eq(current->signal->it_expires[IT_PROF], cputime_zero) ||
+> +	    cputime_lt(current->signal->it_expires[IT_PROF], cputime)) {
+>  		spin_lock_irq(&current->sighand->siglock);
+>  		set_process_cpu_timer(current, CPUCLOCK_PROF, &cputime, NULL);
+>  		spin_unlock_irq(&current->sighand->siglock);
+> @@ -619,18 +619,18 @@ static void arm_timer(struct k_itimer *timer, union cpu_time_count now)
+>  			default:
+>  				BUG();
+>  			case CPUCLOCK_VIRT:
+> -				if (!cputime_eq(p->signal->it_virt_expires,
+> +				if (!cputime_eq(p->signal->it_expires[IT_VIRT],
+>  						cputime_zero) &&
+> -				    cputime_lt(p->signal->it_virt_expires,
+> +				    cputime_lt(p->signal->it_expires[IT_VIRT],
+>  					       timer->it.cpu.expires.cpu))
+>  					break;
+>  				p->signal->cputime_expires.virt_exp =
+>  					timer->it.cpu.expires.cpu;
+>  				break;
+>  			case CPUCLOCK_PROF:
+> -				if (!cputime_eq(p->signal->it_prof_expires,
+> +				if (!cputime_eq(p->signal->it_expires[IT_PROF],
+>  						cputime_zero) &&
+> -				    cputime_lt(p->signal->it_prof_expires,
+> +				    cputime_lt(p->signal->it_expires[IT_PROF],
+>  					       timer->it.cpu.expires.cpu))
+>  					break;
+>  				i = p->signal->rlim[RLIMIT_CPU].rlim_cur;
+> @@ -1069,6 +1069,36 @@ static void stop_process_timers(struct task_struct *tsk)
+>  	spin_unlock_irqrestore(&cputimer->lock, flags);
+>  }
+>  
+> +static cputime_t check_cpu_itimer(struct task_struct *tsk, enum itimer_number i,
+> +				  cputime_t expires, cputime_t cur_time)
+> +{
+> +	struct signal_struct *const sig = tsk->signal;
+> +
+> +	if (cputime_eq(sig->it_expires[i], cputime_zero))
+> +		return expires;
+> +
+> +	if (cputime_ge(cur_time, sig->it_expires[i])) {
+> +		int signo;
+> +
+> +		sig->it_expires[i] = sig->it_incr[i];
+> +		if (!cputime_eq(sig->it_expires[i], cputime_zero)) {
+> +			sig->it_expires[i] = cputime_add(sig->it_expires[i],
+> +							 cur_time);
+> +		}
+> +
+> +		signo = (i == IT_VIRT) ? SIGVTALRM : SIGPROF;
+> +		__group_send_sig_info(signo, SEND_SIG_PRIV, tsk);
+> +	}
+> +
+> +	if (!cputime_eq(sig->it_expires[i], cputime_zero) &&
+> +	    (cputime_eq(expires, cputime_zero) ||
+> +	     cputime_lt(sig->it_expires[i], expires))) {
+> +		expires = sig->it_expires[i];
+> +	}
+> +
+> +	return expires;
+> +}
+> +
+>  /*
+>   * Check for any per-thread CPU timers that have fired and move them
+>   * off the tsk->*_timers list onto the firing list.  Per-thread timers
+> @@ -1088,10 +1118,10 @@ static void check_process_timers(struct task_struct *tsk,
+>  	 * Don't sample the current process CPU clocks if there are no timers.
+>  	 */
+>  	if (list_empty(&timers[CPUCLOCK_PROF]) &&
+> -	    cputime_eq(sig->it_prof_expires, cputime_zero) &&
+> +	    cputime_eq(sig->it_expires[IT_PROF], cputime_zero) &&
+>  	    sig->rlim[RLIMIT_CPU].rlim_cur == RLIM_INFINITY &&
+>  	    list_empty(&timers[CPUCLOCK_VIRT]) &&
+> -	    cputime_eq(sig->it_virt_expires, cputime_zero) &&
+> +	    cputime_eq(sig->it_expires[IT_VIRT], cputime_zero) &&
+>  	    list_empty(&timers[CPUCLOCK_SCHED])) {
+>  		stop_process_timers(tsk);
+>  		return;
+> @@ -1151,38 +1181,9 @@ static void check_process_timers(struct task_struct *tsk,
+>  	/*
+>  	 * Check for the special case process timers.
+>  	 */
+> -	if (!cputime_eq(sig->it_prof_expires, cputime_zero)) {
+> -		if (cputime_ge(ptime, sig->it_prof_expires)) {
+> -			/* ITIMER_PROF fires and reloads.  */
+> -			sig->it_prof_expires = sig->it_prof_incr;
+> -			if (!cputime_eq(sig->it_prof_expires, cputime_zero)) {
+> -				sig->it_prof_expires = cputime_add(
+> -					sig->it_prof_expires, ptime);
+> -			}
+> -			__group_send_sig_info(SIGPROF, SEND_SIG_PRIV, tsk);
+> -		}
+> -		if (!cputime_eq(sig->it_prof_expires, cputime_zero) &&
+> -		    (cputime_eq(prof_expires, cputime_zero) ||
+> -		     cputime_lt(sig->it_prof_expires, prof_expires))) {
+> -			prof_expires = sig->it_prof_expires;
+> -		}
+> -	}
+> -	if (!cputime_eq(sig->it_virt_expires, cputime_zero)) {
+> -		if (cputime_ge(utime, sig->it_virt_expires)) {
+> -			/* ITIMER_VIRTUAL fires and reloads.  */
+> -			sig->it_virt_expires = sig->it_virt_incr;
+> -			if (!cputime_eq(sig->it_virt_expires, cputime_zero)) {
+> -				sig->it_virt_expires = cputime_add(
+> -					sig->it_virt_expires, utime);
+> -			}
+> -			__group_send_sig_info(SIGVTALRM, SEND_SIG_PRIV, tsk);
+> -		}
+> -		if (!cputime_eq(sig->it_virt_expires, cputime_zero) &&
+> -		    (cputime_eq(virt_expires, cputime_zero) ||
+> -		     cputime_lt(sig->it_virt_expires, virt_expires))) {
+> -			virt_expires = sig->it_virt_expires;
+> -		}
+> -	}
+> +	prof_expires = check_cpu_itimer(tsk, IT_PROF, prof_expires, ptime);
+> +	virt_expires = check_cpu_itimer(tsk, IT_VIRT, virt_expires, utime);
+> +
+>  	if (sig->rlim[RLIMIT_CPU].rlim_cur != RLIM_INFINITY) {
+>  		unsigned long psecs = cputime_to_secs(ptime);
+>  		cputime_t x;
+> -- 
+> 1.6.0.6
+> 
+> --
+> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> Please read the FAQ at  http://www.tux.org/lkml/
