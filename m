@@ -1,336 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763375AbZDBPBi@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762575AbZDBPBU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763375AbZDBPBi (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 2 Apr 2009 11:01:38 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760918AbZDBO5e
+	id S1762575AbZDBPBU (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 2 Apr 2009 11:01:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761437AbZDBO53
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 2 Apr 2009 10:57:34 -0400
-Received: from mga11.intel.com ([192.55.52.93]:26611 "EHLO mga11.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1761156AbZDBO53 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
 	Thu, 2 Apr 2009 10:57:29 -0400
-Content-Type: multipart/mixed; boundary="===============0561151462=="
+Received: from rhun.apana.org.au ([64.62.148.172]:57607 "EHLO
+	arnor.apana.org.au" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1760680AbZDBO51 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 2 Apr 2009 10:57:27 -0400
+Date: Thu, 2 Apr 2009 22:50:18 +0800
+From: Herbert Xu <herbert@gondor.apana.org.au>
+To: Avi Kivity <avi@redhat.com>
+Cc: Gregory Haskins <ghaskins@novell.com>,
+       Rusty Russell <rusty@rustcorp.com.au>, anthony@codemonkey.ws,
+       andi@firstfloor.org, linux-kernel@vger.kernel.org, agraf@suse.de,
+       pmullaney@novell.com, pmorreale@novell.com, netdev@vger.kernel.org,
+       kvm@vger.kernel.org
+Subject: Re: [RFC PATCH 00/17] virtual-bus
+Message-ID: <20090402145018.GA816@gondor.apana.org.au>
+References: <20090402085253.GA29932@gondor.apana.org.au> <49D487A6.407@redhat.com> <49D49C1F.6030306@novell.com> <200904022243.21088.rusty@rustcorp.com.au> <49D4B4A3.5070008@novell.com> <49D4B87D.2000202@redhat.com>
 MIME-Version: 1.0
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.39,314,1235980800"; 
-   d="scan'208";a="444386067"
-Message-Id: <20090402145722.638192000@intel.com>
-References: <20090402145455.597376000@intel.com>
-User-Agent: quilt/0.46-1
-Date: Thu, 02 Apr 2009 16:55:06 +0200
-From: markus.t.metzger@intel.com
-To: mingo@elte.hu, tglx@linutronix.de, hpa@zytor.com
-Cc: markus.t.metzger@gmail.com, roland@redhat.com, eranian@googlemail.com,
-       oleg@redhat.com, juan.villacis@intel.com, ak@linux.jf.intel.com,
-       linux-kernel@vger.kernel.org,
-       Markus Metzger <markus.t.metzger@intel.com>
-Subject: [patch 11/18] x86, ds: selftest each cpu
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <49D4B87D.2000202@redhat.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---===============0561151462==
-MIME-Version: 1.0
-Content-Disposition: inline; filename=tip.master.ds_selftest.for_each_cpu.patch
+On Thu, Apr 02, 2009 at 04:07:09PM +0300, Avi Kivity wrote:
+>
+> I think Rusty did mean a UP guest, and without schedule-and-forget.
 
-Perform debug store selftests on each cpu.
+Going off on a tangent here, I don't really think it should matter
+whether we're UP or SMP.  The ideal state is where we have the
+same number of (virtual) TX queues as there are cores in the guest.
+On the host side we need the backend to run at least on a core
+that shares cache with the corresponding guest queue/core.  If
+that happens to be the same core as the guest core then it should
+work as well.
 
-Cover both the normal and the _noirq variant of the debug store interface.
+IOW we should optimise it as if the host were UP.
 
+> The problem is that we already have virtio guest drivers going several  
+> kernel versions back, as well as Windows drivers.  We can't keep  
+> changing the infrastructure under people's feet.
 
-Signed-off-by: Markus Metzger <markus.t.metzger@intel.com>
----
- arch/x86/kernel/ds_selftest.c |  186 	137 +	49 -	0 !
- 1 file changed, 137 insertions(+), 49 deletions(-)
+Yes I agree that changing the guest-side driver is a no-no.  However,
+we should be able to achieve what's shown here without modifying the
+guest-side.
 
-Index: b/arch/x86/kernel/ds_selftest.c
-===================================================================
---- a/arch/x86/kernel/ds_selftest.c
-+++ b/arch/x86/kernel/ds_selftest.c
-@@ -11,13 +11,21 @@
- #include <linux/kernel.h>
- #include <linux/string.h>
- #include <linux/smp.h>
-+#include <linux/cpu.h>
- 
- #include <asm/ds.h>
- 
- 
--#define BUFFER_SIZE 1021 /* Intentionally chose an odd size. */
-+#define BUFFER_SIZE 521 /* Intentionally chose an odd size. */
- 
- 
-+struct ds_selftest_bts_conf {
-+	struct bts_tracer *tracer;
-+	int error;
-+	int (*suspend)(struct bts_tracer *);
-+	int (*resume)(struct bts_tracer *);
-+};
-+
- static int ds_selftest_bts_consistency(const struct bts_trace *trace)
- {
- 	int error = 0;
-@@ -125,36 +133,32 @@ static int ds_selftest_bts_read(struct b
- 	return 0;
- }
- 
--int ds_selftest_bts(void)
-+static void ds_selftest_bts_cpu(void *arg)
- {
-+	struct ds_selftest_bts_conf *conf = arg;
- 	const struct bts_trace *trace;
--	struct bts_tracer *tracer;
--	int error = 0;
- 	void *top;
--	unsigned char buffer[BUFFER_SIZE];
- 
--	printk(KERN_INFO "[ds] bts selftest...");
--
--	tracer = ds_request_bts_cpu(smp_processor_id(), buffer, BUFFER_SIZE,
--				    NULL, (size_t)-1, BTS_KERNEL);
--	if (IS_ERR(tracer)) {
--		error = PTR_ERR(tracer);
--		tracer = NULL;
-+	if (IS_ERR(conf->tracer)) {
-+		conf->error = PTR_ERR(conf->tracer);
-+		conf->tracer = NULL;
- 
- 		printk(KERN_CONT
--		       "initialization failed (err: %d)...", error);
--		goto out;
-+		       "initialization failed (err: %d)...", conf->error);
-+		return;
- 	}
- 
--	/* The return should already give us enough trace. */
--	ds_suspend_bts(tracer);
-+	/* We should meanwhile have enough trace. */
-+	conf->error = conf->suspend(conf->tracer);
-+	if (conf->error < 0)
-+		return;
- 
- 	/* Let's see if we can access the trace. */
--	trace = ds_read_bts(tracer);
-+	trace = ds_read_bts(conf->tracer);
- 
--	error = ds_selftest_bts_consistency(trace);
--	if (error < 0)
--		goto out;
-+	conf->error = ds_selftest_bts_consistency(trace);
-+	if (conf->error < 0)
-+		return;
- 
- 	/* If everything went well, we should have a few trace entries. */
- 	if (trace->ds.top == trace->ds.begin) {
-@@ -168,10 +172,11 @@ int ds_selftest_bts(void)
- 	}
- 
- 	/* Let's try to read the trace we collected. */
--	error = ds_selftest_bts_read(tracer, trace,
-+	conf->error =
-+		ds_selftest_bts_read(conf->tracer, trace,
- 				     trace->ds.begin, trace->ds.top);
--	if (error < 0)
--		goto out;
-+	if (conf->error < 0)
-+		return;
- 
- 	/*
- 	 * Let's read the trace again.
-@@ -179,26 +184,31 @@ int ds_selftest_bts(void)
- 	 */
- 	top = trace->ds.top;
- 
--	trace = ds_read_bts(tracer);
--	error = ds_selftest_bts_consistency(trace);
--	if (error < 0)
--		goto out;
-+	trace = ds_read_bts(conf->tracer);
-+	conf->error = ds_selftest_bts_consistency(trace);
-+	if (conf->error < 0)
-+		return;
- 
- 	if (top != trace->ds.top) {
- 		printk(KERN_CONT "suspend not working...");
--		error = -1;
--		goto out;
-+		conf->error = -1;
-+		return;
- 	}
- 
- 	/* Let's collect some more trace - see if resume is working. */
--	ds_resume_bts(tracer);
--	ds_suspend_bts(tracer);
--
--	trace = ds_read_bts(tracer);
--
--	error = ds_selftest_bts_consistency(trace);
--	if (error < 0)
--		goto out;
-+	conf->error = conf->resume(conf->tracer);
-+	if (conf->error < 0)
-+		return;
-+
-+	conf->error = conf->suspend(conf->tracer);
-+	if (conf->error < 0)
-+		return;
-+
-+	trace = ds_read_bts(conf->tracer);
-+
-+	conf->error = ds_selftest_bts_consistency(trace);
-+	if (conf->error < 0)
-+		return;
- 
- 	if (trace->ds.top == top) {
- 		/*
-@@ -210,35 +220,113 @@ int ds_selftest_bts(void)
- 		printk(KERN_CONT
- 		       "no resume progress/overflow...");
- 
--		error = ds_selftest_bts_read(tracer, trace,
-+		conf->error =
-+			ds_selftest_bts_read(conf->tracer, trace,
- 					     trace->ds.begin, trace->ds.end);
- 	} else if (trace->ds.top < top) {
- 		/*
- 		 * We had a buffer overflow - the entire buffer should
- 		 * contain trace records.
- 		 */
--		error = ds_selftest_bts_read(tracer, trace,
-+		conf->error =
-+			ds_selftest_bts_read(conf->tracer, trace,
- 					     trace->ds.begin, trace->ds.end);
- 	} else {
- 		/*
- 		 * It is quite likely that the buffer did not overflow.
- 		 * Let's just check the delta trace.
- 		 */
--		error = ds_selftest_bts_read(tracer, trace,
--					     top, trace->ds.top);
-+		conf->error =
-+			ds_selftest_bts_read(conf->tracer, trace, top,
-+					     trace->ds.top);
- 	}
--	if (error < 0)
--		goto out;
-+	if (conf->error < 0)
-+		return;
- 
--	error = 0;
-+	conf->error = 0;
-+}
- 
--	/* The final test: release the tracer while tracing is suspended. */
-- out:
--	ds_release_bts(tracer);
-+static int ds_suspend_bts_wrap(struct bts_tracer *tracer)
-+{
-+	ds_suspend_bts(tracer);
-+	return 0;
-+}
- 
--	printk(KERN_CONT "%s.\n", (error ? "failed" : "passed"));
-+static int ds_resume_bts_wrap(struct bts_tracer *tracer)
-+{
-+	ds_resume_bts(tracer);
-+	return 0;
-+}
- 
--	return error;
-+static void ds_release_bts_noirq_wrap(void *tracer)
-+{
-+	(void)ds_release_bts_noirq(tracer);
-+}
-+
-+static int ds_selftest_bts_bad_release_noirq(int cpu,
-+					     struct bts_tracer *tracer)
-+{
-+	int error = -EPERM;
-+
-+	/* Try to release the tracer on the wrong cpu. */
-+	get_cpu();
-+	if (cpu != smp_processor_id()) {
-+		error = ds_release_bts_noirq(tracer);
-+		if (error != -EPERM)
-+			printk(KERN_CONT "release on wrong cpu...");
-+	}
-+	put_cpu();
-+
-+	return error ? 0 : -1;
-+}
-+
-+int ds_selftest_bts(void)
-+{
-+	struct ds_selftest_bts_conf conf;
-+	unsigned char buffer[BUFFER_SIZE];
-+	int cpu;
-+
-+	printk(KERN_INFO "[ds] bts selftest...");
-+	conf.error = 0;
-+
-+	get_online_cpus();
-+	for_each_online_cpu(cpu) {
-+		conf.suspend = ds_suspend_bts_wrap;
-+		conf.resume = ds_resume_bts_wrap;
-+		conf.tracer =
-+			ds_request_bts_cpu(cpu, buffer, BUFFER_SIZE,
-+					   NULL, (size_t)-1, BTS_KERNEL);
-+		ds_selftest_bts_cpu(&conf);
-+		ds_release_bts(conf.tracer);
-+		if (conf.error < 0)
-+			goto out;
-+
-+		conf.suspend = ds_suspend_bts_noirq;
-+		conf.resume = ds_resume_bts_noirq;
-+		conf.tracer =
-+			ds_request_bts_cpu(cpu, buffer, BUFFER_SIZE,
-+					   NULL, (size_t)-1, BTS_KERNEL);
-+		smp_call_function_single(cpu, ds_selftest_bts_cpu, &conf, 1);
-+		if (conf.error >= 0) {
-+			conf.error =
-+				ds_selftest_bts_bad_release_noirq(cpu,
-+								  conf.tracer);
-+			/* We must not release the tracer twice. */
-+			if (conf.error < 0)
-+				conf.tracer = NULL;
-+		}
-+		smp_call_function_single(cpu, ds_release_bts_noirq_wrap,
-+					 conf.tracer, 1);
-+		if (conf.error < 0)
-+			goto out;
-+	}
-+
-+	conf.error = 0;
-+ out:
-+	put_online_cpus();
-+	printk(KERN_CONT "%s.\n", (conf.error ? "failed" : "passed"));
-+
-+	return conf.error;
- }
- 
- int ds_selftest_pebs(void)
-
+Cheers,
 -- 
-
---===============0561151462==
-Content-Type: text/plain; charset="utf-8"
-MIME-Version: 1.0
-Content-Transfer-Encoding: quoted-printable
-Content-Disposition: inline
-
----------------------------------------------------------------------
-Intel GmbH
-Dornacher Strasse 1
-85622 Feldkirchen/Muenchen Germany
-Sitz der Gesellschaft: Feldkirchen bei Muenchen
-Geschaeftsfuehrer: Douglas Lusk, Peter Gleissner, Hannes Schwaderer
-Registergericht: Muenchen HRB 47456 Ust.-IdNr.
-VAT Registration No.: DE129385895
-Citibank Frankfurt (BLZ 502 109 00) 600119052
-
-This e-mail and any attachments may contain confidential material for
-the sole use of the intended recipient(s). Any review or distribution
-by others is strictly prohibited. If you are not the intended
-recipient, please contact the sender and delete all copies.
-
---===============0561151462==--
+Visit Openswan at http://www.openswan.org/
+Email: Herbert Xu ~{PmV>HI~} <herbert@gondor.apana.org.au>
+Home Page: http://gondor.apana.org.au/~herbert/
+PGP Key: http://gondor.apana.org.au/~herbert/pubkey.txt
