@@ -1,84 +1,80 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932831AbZDBSYV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1765236AbZDBS30@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932831AbZDBSYV (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 2 Apr 2009 14:24:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933587AbZDBSX5
+	id S1765236AbZDBS30 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 2 Apr 2009 14:29:26 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759806AbZDBS3M
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 2 Apr 2009 14:23:57 -0400
-Received: from hera.kernel.org ([140.211.167.34]:52864 "EHLO hera.kernel.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S932167AbZDBSX4 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 2 Apr 2009 14:23:56 -0400
-Subject: Re: [tip:perfcounters/core] perf_counter: kerneltop: update to new
- ABI
-From: Jaswinder Singh Rajput <jaswinder@kernel.org>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: mingo@redhat.com, hpa@zytor.com, paulus@samba.org,
-       linux-kernel@vger.kernel.org, a.p.zijlstra@chello.nl,
-       tglx@linutronix.de, cjashfor@linux.vnet.ibm.com,
-       linux-tip-commits@vger.kernel.org
-In-Reply-To: <20090402181144.GB6340@elte.hu>
-References: <20090402091319.407283141@chello.nl>
-	 <tip-373b153677f26a263ef297d77a5e045a31f6486c@git.kernel.org>
-	 <1238679305.3099.11.camel@ht.satnam> <1238680772.3099.13.camel@ht.satnam>
-	 <20090402181144.GB6340@elte.hu>
-Content-Type: text/plain
-Date: Thu, 02 Apr 2009 23:52:59 +0530
-Message-Id: <1238696579.3099.50.camel@ht.satnam>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.24.5 (2.24.5-1.fc10) 
-Content-Transfer-Encoding: 7bit
+	Thu, 2 Apr 2009 14:29:12 -0400
+Received: from mail-ew0-f165.google.com ([209.85.219.165]:55990 "EHLO
+	mail-ew0-f165.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755649AbZDBS3J convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 2 Apr 2009 14:29:09 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
+         :cc:content-type:content-transfer-encoding;
+        b=j53d4qpO04M3r/sCKomicw3IPQMG094YHpNo+Zs5oBmNtPCZUrCUog6toUs8jyNa0I
+         VzoKXC5ksA4yOq7MpbkXhPOgyb9j7PoPSYJ9iqO3oPDT6rBHeP7p5lNe/uCZ85+Tshrd
+         qsUhhNSaKO0m2G+03ZMI3FHQTasdHUrciANOU=
+MIME-Version: 1.0
+In-Reply-To: <49D4F044.1040306@ph.tum.de>
+References: <a4423d670904011423x4174a81cj901bc140944412ea@mail.gmail.com>
+	 <20090402055356.GC10642@mit.edu>
+	 <a4423d670904020042x6b76715du48a15e988a05019d@mail.gmail.com>
+	 <a4423d670904020439m621990bch9482d19f0e48e7d2@mail.gmail.com>
+	 <a4423d670904020547s72972089t3c135a92af6751d4@mail.gmail.com>
+	 <49D4BDF2.2070102@ph.tum.de> <20090402145436.GF10642@mit.edu>
+	 <49D4D74F.1020904@ph.tum.de> <20090402154123.GG10642@mit.edu>
+	 <49D4F044.1040306@ph.tum.de>
+Date: Thu, 2 Apr 2009 22:29:05 +0400
+Message-ID: <a4423d670904021129s61ee55bfh584dbe7bc4322929@mail.gmail.com>
+Subject: Re: 2.6.29-git: cannot mount ext4/loop
+From: Alexander Beregalov <a.beregalov@gmail.com>
+To: Thiemo Nagel <thiemo.nagel@ph.tum.de>
+Cc: Theodore Tso <tytso@mit.edu>, Jens Axboe <jens.axboe@oracle.com>,
+       linux-ext4@vger.kernel.org, linux-kernel@vger.kernel.org
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 2009-04-02 at 20:11 +0200, Ingo Molnar wrote:
-> * Jaswinder Singh Rajput <jaswinder@kernel.org> wrote:
-> 
-> > On Thu, 2009-04-02 at 19:05 +0530, Jaswinder Singh Rajput wrote:
-> > > On Thu, 2009-04-02 at 12:03 +0000, Peter Zijlstra wrote:
-> > > > Commit-ID:  373b153677f26a263ef297d77a5e045a31f6486c
-> > > > Gitweb:     http://git.kernel.org/tip/373b153677f26a263ef297d77a5e045a31f6486c
-> > > > Author:     Peter Zijlstra <a.p.zijlstra@chello.nl>
-> > > > AuthorDate: Thu, 2 Apr 2009 11:12:02 +0200
-> > > > Committer:  Ingo Molnar <mingo@elte.hu>
-> > > > CommitDate: Thu, 2 Apr 2009 13:53:00 +0200
-> > > > 
-> > > > perf_counter: kerneltop: update to new ABI
-> > > > 
-> > > > Update to reflect the new record_type ABI changes.
-> > > > 
-> > > 
-> > > perfstat is still having many issues:
-> > > 
-> > > 1. 0:6: bus-cycles is not valid for AMD, so it fails
-> > > 
-> > > 2. ./perfstat -e 0:1,0:2,0:3,0:4,0:5,0:6 ls
-> > > can be replaced by ./perfstat -e 0:* ls
-> > > 
-> > > 3. Similarly ./perfstat -e 1:1,1:2,1:3,1:4,1:5,1:6 ls
-> > > can be replaced by ./perfstat -e 1:* ls
-> > > 
-> > > 4. All events can be replaced by ./perfstat -e * ls
-> > > 
-> > 
-> > 5. This command is invalid:
-> >   Sample output:
-> > 
-> >    $ ./perfstat -e 1 -e 3 -e 5 ls -lR /usr/include/ >/dev/null
-> 
-> yes, this should be fixed in perfstat: '-e 1' should be accepted as 
-> '-e 0:1'. Patches welcome.
-> 
+2009/4/2 Thiemo Nagel <thiemo.nagel@ph.tum.de>:
+> Theodore Tso wrote:
+>>
+>> On Thu, Apr 02, 2009 at 05:18:39PM +0200, Thiemo Nagel wrote:
+>>>
+>>> Theodore Tso wrote:
+>>>>
+>>>> On Thu, Apr 02, 2009 at 03:30:26PM +0200, Thiemo Nagel wrote:
+>>>>>
+>>>>> When I added the block range checks, initially I was assuming that
+>>>>> when EXTENTS_FL is not set, the inode->i_data *always* contains
+>>>>> references to further blocks.  Ted showed me wrong and added the
+>>>>> condition
+>>>>>
+>>>>>        ISREG() || ISDIR() || ( ISLNK() && !is_fast_symlink() )
+>>>>>
+>>>>> before that assumption can be made.  But maybe we need some further
+>>>>> restraints?
+>>>>
+>>>> It's a endian-problem; we're missing le32_to_cpu() in that patch.
+>>>> Sparc is big-endian.
+>>>
+>>> Sorry for that.
+>>
+>> Could you also fix the types?  bref should have a type of __le32, not
+>> unsigned int, and when you pass in the reference to
+>> __ext4_check_blockref(), there was an inappropriate cast to unsigned
+>> int which hid kernel's natural type checking to catch these sorts of
+>> problems.
+>
+> So I was really asking for things to go wrong...  :-(
+> I hope the attached patch handles conversion and types in the right way.
+>  It's compile-tested only, the current ext4 tree crashes my machine.
 
-if you treat '-e 1' as 'e 0:1' then how you will treat '-e 1:1' ?
+It works fine, thanks.
 
-I think 'e 1:*' is better option to select all software events and '-e
-0:*' for all hardware events.
-
-Or '-e 1' will treat as both '-e 0:1,1:1'
-
---
-JSR
-
-
+Reported-by: Alexander Beregalov <a.beregalov@gmail.com>
+Tested-by: Alexander Beregalov <a.beregalov@gmail.com>
