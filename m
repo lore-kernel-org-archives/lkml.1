@@ -1,57 +1,83 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760506AbZDBMwk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755328AbZDBNB0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760506AbZDBMwk (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 2 Apr 2009 08:52:40 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756518AbZDBMw1
+	id S1755328AbZDBNB0 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 2 Apr 2009 09:01:26 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751917AbZDBNBL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 2 Apr 2009 08:52:27 -0400
-Received: from victor.provo.novell.com ([137.65.250.26]:45243 "EHLO
+	Thu, 2 Apr 2009 09:01:11 -0400
+Received: from victor.provo.novell.com ([137.65.250.26]:47833 "EHLO
 	victor.provo.novell.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753374AbZDBMw0 (ORCPT
+	with ESMTP id S1751155AbZDBNBJ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 2 Apr 2009 08:52:26 -0400
-Message-ID: <49D4B594.6080703@novell.com>
-Date: Thu, 02 Apr 2009 08:54:44 -0400
+	Thu, 2 Apr 2009 09:01:09 -0400
+Message-ID: <49D4B799.5080902@novell.com>
+Date: Thu, 02 Apr 2009 09:03:21 -0400
 From: Gregory Haskins <ghaskins@novell.com>
 User-Agent: Thunderbird 2.0.0.19 (X11/20081227)
 MIME-Version: 1.0
 To: Avi Kivity <avi@redhat.com>
-CC: Anthony Liguori <anthony@codemonkey.ws>, Andi Kleen <andi@firstfloor.org>,
-       linux-kernel@vger.kernel.org, agraf@suse.de, pmullaney@novell.com,
-       pmorreale@novell.com, rusty@rustcorp.com.au, netdev@vger.kernel.org,
-       kvm@vger.kernel.org
+CC: Herbert Xu <herbert@gondor.apana.org.au>, anthony@codemonkey.ws,
+       andi@firstfloor.org, linux-kernel@vger.kernel.org, agraf@suse.de,
+       pmullaney@novell.com, pmorreale@novell.com, rusty@rustcorp.com.au,
+       netdev@vger.kernel.org, kvm@vger.kernel.org,
+       Mark McLoughlin <markmc@redhat.com>
 Subject: Re: [RFC PATCH 00/17] virtual-bus
-References: <20090331184057.28333.77287.stgit@dev.haskins.net> <87ab71monw.fsf@basil.nowhere.org> <49D35825.3050001@novell.com> <20090401132340.GT11935@one.firstfloor.org> <49D37805.1060301@novell.com> <20090401170103.GU11935@one.firstfloor.org> <49D3B64F.6070703@codemonkey.ws> <49D3D7EE.4080202@novell.com> <49D46089.5040204@redhat.com> <49D497A1.4090900@novell.com> <49D4A4EB.8020105@redhat.com> <49D4AE0C.3000604@novell.com> <49D4B2C0.5060906@redhat.com>
-In-Reply-To: <49D4B2C0.5060906@redhat.com>
+References: <20090402085253.GA29932@gondor.apana.org.au> <49D47F11.6070400@redhat.com> <20090402091639.GA30126@gondor.apana.org.au> <49D484F5.2000400@redhat.com> <20090402092936.GA30333@gondor.apana.org.au> <49D487A6.407@redhat.com> <49D49C1F.6030306@novell.com> <49D4A89E.5090407@redhat.com> <49D4AFF7.1050603@novell.com> <49D4B308.2030007@redhat.com>
+In-Reply-To: <49D4B308.2030007@redhat.com>
 X-Enigmail-Version: 0.95.7
 OpenPGP: id=D8195319
 Content-Type: multipart/signed; micalg=pgp-sha1;
  protocol="application/pgp-signature";
- boundary="------------enig18F179FA9E4ABDD3019C67C7"
+ boundary="------------enig3E461C1D46F841D9242FA7BF"
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 This is an OpenPGP/MIME signed message (RFC 2440 and 3156)
---------------enig18F179FA9E4ABDD3019C67C7
+--------------enig3E461C1D46F841D9242FA7BF
 Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: quoted-printable
 
 Avi Kivity wrote:
+> Gregory Haskins wrote:
 >
+> =20
 >
-> My 'prohibitively expensive' is true only if you exit every packet.
->
->
+>>> It's more of a "schedule and forget" which I think brings you the
+>>> win.  The host disables notifications and schedules the actual tx wor=
+k
+>>> (rx from the host's perspective).  So now the guest and host continue=
 
-Understood, but yet you need to do this if you want something like iSCSI
-READ transactions to have as low-latency as possible.
+>>> producing and consuming packets in parallel.  So long as the guest is=
+
+>>> faster (due to the host being throttled?), notifications continue to
+>>> be disabled.
+>>>    =20
+>> Yep, when the "producer::consumer" ratio is > 1, we mitigate
+>> signaling. When its < 1, we signal roughly once per packet.
+>>
+>> =20
+>>> If you changed your rx_isr() to process the packets immediately
+>>> instead of scheduling, I think throughput would drop dramatically.
+>>>    =20
+>> Right, that is the point. :) This is that "soft asic" thing I was
+>> talking about yesterday.
+>>  =20
+>
+> But all that has nothing to do with where the code lives, in the
+> kernel or userspace.
+
+Agreed, but note Ive already stated that some of my boost is likely from
+in-kernel, while others are unrelated design elements such as the
+"soft-asic" approach (you guys dont read my 10 page emails, do you? ;).=20
+I don't deny that some of my ideas could be used in userspace as well
+(Credit if used would be appreciated :).
 
 -Greg
 
 
 
---------------enig18F179FA9E4ABDD3019C67C7
+--------------enig3E461C1D46F841D9242FA7BF
 Content-Type: application/pgp-signature; name="signature.asc"
 Content-Description: OpenPGP digital signature
 Content-Disposition: attachment; filename="signature.asc"
@@ -60,9 +86,9 @@ Content-Disposition: attachment; filename="signature.asc"
 Version: GnuPG v2.0.9 (GNU/Linux)
 Comment: Using GnuPG with SUSE - http://enigmail.mozdev.org
 
-iEYEARECAAYFAknUtZQACgkQlOSOBdgZUxk7fACeKEOKjQ0GkJx71C1DAPlbamWg
-fkIAnAsWOmX65hcniuEECUeQirGFFR2p
-=/EvJ
+iEYEARECAAYFAknUt5oACgkQlOSOBdgZUxliawCdFchYctOROPBKauBNeWWe/YEz
+G4kAn2VLxCLuOxSYPW+WSjcixskQS2Jh
+=VVVL
 -----END PGP SIGNATURE-----
 
---------------enig18F179FA9E4ABDD3019C67C7--
+--------------enig3E461C1D46F841D9242FA7BF--
