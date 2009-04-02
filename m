@@ -1,26 +1,28 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757345AbZDBNMr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755000AbZDBNSr@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757345AbZDBNMr (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 2 Apr 2009 09:12:47 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753309AbZDBNMj
+	id S1755000AbZDBNSr (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 2 Apr 2009 09:18:47 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751917AbZDBNSi
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 2 Apr 2009 09:12:39 -0400
-Received: from hrndva-omtalb.mail.rr.com ([71.74.56.123]:54953 "EHLO
+	Thu, 2 Apr 2009 09:18:38 -0400
+Received: from hrndva-omtalb.mail.rr.com ([71.74.56.122]:52343 "EHLO
 	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752233AbZDBNMi (ORCPT
+	with ESMTP id S1751792AbZDBNSh (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 2 Apr 2009 09:12:38 -0400
-Date: Thu, 2 Apr 2009 09:12:36 -0400 (EDT)
+	Thu, 2 Apr 2009 09:18:37 -0400
+Date: Thu, 2 Apr 2009 09:18:35 -0400 (EDT)
 From: Steven Rostedt <rostedt@goodmis.org>
 X-X-Sender: rostedt@gandalf.stny.rr.com
-To: Tom Zanussi <tzanussi@gmail.com>
-cc: linux-kernel <linux-kernel@vger.kernel.org>, Ingo Molnar <mingo@elte.hu>,
-       fweisbec@gmail.com
-Subject: Re: [PATCH] tracing/filters: protect current event filter users from
- filter removal
-In-Reply-To: <1238653727.6655.61.camel@bookworm>
-Message-ID: <alpine.DEB.2.00.0904020910040.30963@gandalf.stny.rr.com>
-References: <1238653727.6655.61.camel@bookworm>
+To: Maneesh Soni <maneesh@in.ibm.com>
+cc: LKML <linux-kernel@vger.kernel.org>, Ingo Molnar <mingo@elte.hu>,
+       Frederic Weisbecker <fweisbec@gmail.com>,
+       Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: [PATCH][GIT PULL] tracing/wakeup: move access to wakeup_cpu into
+ spinlock
+In-Reply-To: <20090402060249.GH4620@in.ibm.com>
+Message-ID: <alpine.DEB.2.00.0904020915280.30963@gandalf.stny.rr.com>
+References: <20090326122806.GA4188@in.ibm.com> <20090326132739.GB5960@nowhere> <alpine.DEB.2.00.0903260949340.17665@gandalf.stny.rr.com> <alpine.DEB.2.00.0903261032070.17665@gandalf.stny.rr.com> <20090327084144.GA23318@in.ibm.com> <20090327124532.GA9963@in.ibm.com>
+ <alpine.DEB.2.00.0904011939170.30963@gandalf.stny.rr.com> <20090402060249.GH4620@in.ibm.com>
 User-Agent: Alpine 2.00 (DEB 1167 2008-08-23)
 MIME-Version: 1.0
 Content-Type: TEXT/PLAIN; charset=US-ASCII
@@ -29,118 +31,92 @@ List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-On Thu, 2 Apr 2009, Tom Zanussi wrote:
+On Thu, 2 Apr 2009, Maneesh Soni wrote:
 
-> This patch allows event filters to be removed even if tracing is active.
+> On Wed, Apr 01, 2009 at 07:42:58PM -0400, Steven Rostedt wrote:
 > 
-> Signed-off-by: Tom Zanussi <tzanussi@gmail.com>
+> ....
 > 
-> ---
->  kernel/trace/trace.h                |    9 +++++++--
->  kernel/trace/trace_events_filter.c  |   15 +++++++++------
->  kernel/trace/trace_events_stage_3.h |    3 +--
->  3 files changed, 17 insertions(+), 10 deletions(-)
+> > 
+> > 
+> > 
+> > Hi Maneesh,
+> > 
+> > Could you try this patch and see if it keeps your system from crashing?
+> > 
+> > Thanks,
+> > 
+> > -- Steve
+> > 
+> > diff --git a/arch/x86/kernel/entry_64.S b/arch/x86/kernel/entry_64.S
+> > index a331ec3..dbf3f8f 100644
+> > --- a/arch/x86/kernel/entry_64.S
+> > +++ b/arch/x86/kernel/entry_64.S
+> > @@ -917,10 +917,15 @@ retint_careful:
+> >  	TRACE_IRQS_ON
+> >  	ENABLE_INTERRUPTS(CLBR_NONE)
+> >  	pushq %rdi
+> > -	CFI_ADJUST_CFA_OFFSET	8
+> > +	pushq %rbp
+> > +	call  1f
+> > +1:	mov  %rsp, %rbp
+> > +	CFI_ADJUST_CFA_OFFSET	24
+> >  	call  schedule
+> > +	addq $8, %rsp /* skip call */
+> > +	popq %rbp
+> >  	popq %rdi
+> > -	CFI_ADJUST_CFA_OFFSET	-8
+> > +	CFI_ADJUST_CFA_OFFSET	-24
+> >  	GET_THREAD_INFO(%rcx)
+> >  	DISABLE_INTERRUPTS(CLBR_NONE)
+> >  	TRACE_IRQS_OFF
 > 
-> diff --git a/kernel/trace/trace.h b/kernel/trace/trace.h
-> index 9dcbc97..6bd728f 100644
-> --- a/kernel/trace/trace.h
-> +++ b/kernel/trace/trace.h
-> @@ -847,7 +847,7 @@ extern int filter_parse(char **pbuf, struct filter_pred *pred);
->  extern int filter_add_pred(struct ftrace_event_call *call,
->  			   struct filter_pred *pred);
->  extern void filter_free_preds(struct ftrace_event_call *call);
-> -extern int filter_match_preds(struct ftrace_event_call *call, void *rec);
-> +extern int filter_match_preds(struct filter_pred **preds, void *rec);
->  extern void filter_free_subsystem_preds(struct event_subsystem *system);
->  extern int filter_add_subsystem_pred(struct event_subsystem *system,
->  				     struct filter_pred *pred);
-> @@ -856,8 +856,13 @@ static inline void
->  filter_check_discard(struct ftrace_event_call *call, void *rec,
->  		     struct ring_buffer_event *event)
->  {
-> -	if (unlikely(call->preds) && !filter_match_preds(call, rec))
-> +	struct filter_pred **preds;
-> +
-> +	rcu_read_lock();
-> +	preds = rcu_dereference(call->preds);
-> +	if (unlikely(preds) && !filter_match_preds(preds, rec))
->  		ring_buffer_event_discard(event);
-> +	rcu_read_unlock();
->  }
+> 
+> 
+> Hi Steve
+> 
+> I tried the above patch but similar oops again
 
-This looks dangerous, since we do trace rcu_read_lock/unlock.
+Thanks, that helps a lot.
 
->  
->  #define __common_field(type, item)					\
-> diff --git a/kernel/trace/trace_events_filter.c b/kernel/trace/trace_events_filter.c
-> index 470ad94..f7f8469 100644
-> --- a/kernel/trace/trace_events_filter.c
-> +++ b/kernel/trace/trace_events_filter.c
-> @@ -83,14 +83,14 @@ static int filter_pred_string(struct filter_pred *pred, void *event)
->  }
->  
->  /* return 1 if event matches, 0 otherwise (discard) */
-> -int filter_match_preds(struct ftrace_event_call *call, void *rec)
-> +int filter_match_preds(struct filter_pred **preds, void *rec)
->  {
->  	int i, matched, and_failed = 0;
->  	struct filter_pred *pred;
->  
->  	for (i = 0; i < MAX_FILTER_PRED; i++) {
-> -		if (call->preds[i]) {
-> -			pred = call->preds[i];
-> +		if (preds[i]) {
-> +			pred = preds[i];
->  			if (and_failed && !pred->or)
->  				continue;
->  			matched = pred->fn(pred, rec);
-> @@ -162,13 +162,16 @@ void filter_free_pred(struct filter_pred *pred)
->  
->  void filter_free_preds(struct ftrace_event_call *call)
->  {
-> +	struct filter_pred **preds;
->  	int i;
->  
->  	if (call->preds) {
-> +		preds = call->preds;
-> +		rcu_assign_pointer(call->preds, NULL);
-> +		synchronize_rcu();
+> 
+> BUG: unable to handle kernel NULL pointer dereference at 0000000000000008
+> IP: [<ffffffff80292349>] probe_wakeup_sched_switch+0x11f/0x1e8
+> PGD 0 
+> Oops: 0000 [#1] SMP 
+> last sysfs file: /sys/devices/pci0000:01/0000:01:01.1/irq
+> CPU 3 
+> Modules linked in: autofs4 hidp rfcomm l2cap bluetooth iptable_filter ip_tables ip6t_REJECT xt_tcpudp ip6table_filter ip6_tables x_tables ipv6 dm_mirror dm_region_hash dm_log dm_multipath scsi_dh dm_mod sbs sbshc battery ac parport_pc lp parport sg sr_mod ide_cd_mod cdrom serio_raw acpi_memhotplug button tg3 libphy i2c_piix4 i2c_core pcspkr usb_storage uhci_hcd ohci_hcd ehci_hcd aacraid sd_mod scsi_mod ext3 jbd
+> Pid: 16589, comm: sshd Not tainted 2.6.29-tip-test #3 eserver xSeries 366-[88632RA]-
+> RIP: 0010:[<ffffffff80292349>]  [<ffffffff80292349>] probe_wakeup_sched_switch+0x11f/0x1e8
+> RSP: 0018:ffff8801da1b5e90  EFLAGS: 00010046
+> RAX: 0000000000000000 RBX: 0000000000000000 RCX: 0000000000000046
+> RDX: 0000000000000000 RSI: ffffffff8020bf85 RDI: ffffffff80d6f460
+> RBP: ffff8801da1b5ed0 R08: 0000000000000000 R09: 0000000100000003
+> R10: ffff8801da1b5ed0 R11: ffff88022d152078 R12: 0000000000000046
+> R13: ffff88022f352040 R14: 0000000000000000 R15: 0000000000000003
+> FS:  00007f748364d710(0000) GS:ffff880028155000(0000) knlGS:0000000000000000
+> CS:  0010 DS: 0000 ES: 0000 CR0: 000000008005003b
+> CR2: 0000000000000008 CR3: 00000001cfd8e000 CR4: 00000000000006e0
+> DR0: 0000000000000000 DR1: 0000000000000000 DR2: 0000000000000000
+> DR3: ffffffff80d91980 DR6: 00000000ffff0ff0 DR7: 0000000000000600
+> Process sshd (pid: 16589, threadinfo ffff8801da1b4000, task ffff88022d152040)
+> Stack:
+>  ffff88022d152040 ffff88022d152040 ffff880028162960 ffff880224d79810
+>  ffff880028167d00 00007fff8b6c7190 0000000000000005 00007fff8b6c7190
+>  ffff8801da1b5f70 ffffffff805210b7 ffff8802295b8558 0000000000000001
+> Call Trace:
+>  [<ffffffff805210b7>] schedule+0x82f/0xb39
+>  [<ffffffff802d95a4>] ? sys_write+0x72/0x8d
+>  [<ffffffff8020bf85>] sysret_careful+0xd/0x10
 
-We get the same effect if you just have preemption disabled instead of 
-the rcu_read_lock/unlock and call synchronize_sched() here instead.
+This is what I was afraid of. Your other crashes were intret_careful, 
+now we are hitting sysret_careful. I'm going to pull out all references to 
+CALLER_ADDR2. The above patch was simply me manually putting in a call 
+frame in intret_careful. But this is unreliable, any caller from an 
+interrupt (or syscall) to schedule will cause an error. I'm not sure we 
+need the CALLER_ADDR2 anyway.
 
-This would make it a bit safer in the tracing.
+Thanks!
 
 -- Steve
-
-
-
->  		for (i = 0; i < MAX_FILTER_PRED; i++)
-> -			filter_free_pred(call->preds[i]);
-> -		kfree(call->preds);
-> -		call->preds = NULL;
-> +			filter_free_pred(preds[i]);
-> +		kfree(preds);
->  	}
->  }
->  
-> diff --git a/kernel/trace/trace_events_stage_3.h b/kernel/trace/trace_events_stage_3.h
-> index 9d2fa78..cca3843 100644
-> --- a/kernel/trace/trace_events_stage_3.h
-> +++ b/kernel/trace/trace_events_stage_3.h
-> @@ -222,8 +222,7 @@ static void ftrace_raw_event_##call(proto)				\
->  									\
->  	assign;								\
->  									\
-> -	if (call->preds && !filter_match_preds(call, entry))		\
-> -		ring_buffer_event_discard(event);			\
-> +	filter_check_discard(call, entry, event);			\
->  									\
->  	trace_nowake_buffer_unlock_commit(event, irq_flags, pc);	\
->  									\
-> -- 
-> 1.5.6.3
-> 
-> 
-> 
-> 
