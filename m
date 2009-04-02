@@ -1,60 +1,77 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755575AbZDBTXK@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932783AbZDBTWr@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755575AbZDBTXK (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 2 Apr 2009 15:23:10 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932733AbZDBTWj
+	id S932783AbZDBTWr (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 2 Apr 2009 15:22:47 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932535AbZDBTWa
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 2 Apr 2009 15:22:39 -0400
-Received: from smtp116.mail.mud.yahoo.com ([209.191.84.165]:43346 "HELO
-	smtp116.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S932806AbZDBTWi (ORCPT
+	Thu, 2 Apr 2009 15:22:30 -0400
+Received: from swampdragon.chaosbits.net ([90.184.90.115]:20408 "EHLO
+	swampdragon.chaosbits.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S932715AbZDBTW3 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 2 Apr 2009 15:22:38 -0400
-DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
-  s=s1024; d=yahoo.com.au;
-  h=Received:X-YMail-OSG:X-Yahoo-Newman-Property:From:To:Subject:Date:User-Agent:Cc:References:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Content-Disposition:Message-Id;
-  b=eyBT10hSAXDm+sfCi/ODAasusgeY08fXPJtSJhtA5NAmmaV0PrJyDe3g59BtZYYTOvaJYcQae6t1Evc5PzcrQt28OI2Va+dJE5vbIp1hzDEJEF9Rt/YdzYzfY2uMQolI4HjWXDELBmDkSHt3k0buKDJRazhpIb+94rTfYDtU0Vk=  ;
-X-YMail-OSG: y2o0qdsVM1kcd.H5KtJzgGA1fi25zduauOSIpj8vT4VKO5Zm3luApkD18okv9r9iUBnZO1l1vXEteMGhdWhb67Y71Tth3dB_uslCni.Yz5H7WmIzB6NrWvTWSFo6t_OiRDxDou74QW.IUi7J2nD8BB.W8QnwgW0FFSKTcVp_8EqnygHr5ScOOQMK9olU_YAL58ut0xp2MCkuXtUXzxeUN.d9.MqKAM045m3EqB9muToZJQfcUoTt6lJsW0En846FeUmzQfeST2AAww_4BmvgExGlcQEt1BS.J_MAdwIaJKJMfXDUDXRt
-X-Yahoo-Newman-Property: ymail-3
-From: Nick Piggin <nickpiggin@yahoo.com.au>
-To: Rik van Riel <riel@redhat.com>
-Subject: Re: [patch 0/6] Guest page hinting version 7.
-Date: Fri, 3 Apr 2009 06:22:29 +1100
-User-Agent: KMail/1.9.51 (KDE/4.0.4; ; )
-Cc: Martin Schwidefsky <schwidefsky@de.ibm.com>,
-       Rusty Russell <rusty@rustcorp.com.au>,
-       virtualization@lists.linux-foundation.org, linux-mm@kvack.org,
-       linux-kernel@vger.kernel.org, virtualization@lists.osdl.org,
-       akpm@osdl.org, frankeh@watson.ibm.com, hugh@veritas.com
-References: <20090327150905.819861420@de.ibm.com> <20090402175249.3c4a6d59@skybase> <49D50CB7.2050705@redhat.com>
-In-Reply-To: <49D50CB7.2050705@redhat.com>
+	Thu, 2 Apr 2009 15:22:29 -0400
+Date: Thu, 2 Apr 2009 21:22:26 +0200 (CEST)
+From: Jesper Juhl <jj@chaosbits.net>
+To: Izik Eidus <ieidus@redhat.com>
+cc: linux-kernel@vger.kernel.org, kvm@vger.kernel.org, linux-mm@kvack.org,
+       avi@redhat.com, aarcange@redhat.com, chrisw@redhat.com, riel@redhat.com,
+       jeremy@goop.org, mtosatti@redhat.com, hugh@veritas.com, corbet@lwn.net,
+       yaniv@redhat.com, dmonakhov@openvz.org
+Subject: Re: [PATCH 0/4] ksm - dynamic page sharing driver for linux
+In-Reply-To: <1238457560-7613-1-git-send-email-ieidus@redhat.com>
+Message-ID: <alpine.LNX.2.00.0904022114040.4265@swampdragon.chaosbits.net>
+References: <1238457560-7613-1-git-send-email-ieidus@redhat.com>
+User-Agent: Alpine 2.00 (LNX 1167 2008-08-23)
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200904030622.30935.nickpiggin@yahoo.com.au>
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Friday 03 April 2009 06:06:31 Rik van Riel wrote:
-> Martin Schwidefsky wrote:
-> > The benefits are the same but the algorithmic complexity is reduced.
-> > The patch to the memory management has complexity in itself but from a
-> > 1000 feet standpoint guest page hinting is simpler, no? 
-> Page hinting has a complex, but well understood, mechanism
-> and simple policy.
-> 
-> Ballooning has a simpler mechanism, but relies on an
-> as-of-yet undiscovered policy.
-> 
-> Having experienced a zillion VM corner cases over the
-> last decade and a bit, I think I prefer a complex mechanism
-> over complex (or worse, unknown!) policy any day.
+Hi,
 
-I disagree with it being so clear cut. Volatile pagecache policy is completely
-out of the control of the Linux VM. Wheras ballooning does have to make some
-tradeoff between guests, but the actual reclaim will be driven by the guests.
-Neither way is perfect, but it's not like the hypervisor reclaim is foolproof
-against making a bad tradeoff between guests.
+On Tue, 31 Mar 2009, Izik Eidus wrote:
+
+> KSM is a linux driver that allows dynamicly sharing identical memory
+> pages between one or more processes.
+> 
+> Unlike tradtional page sharing that is made at the allocation of the
+> memory, ksm do it dynamicly after the memory was created.
+> Memory is periodically scanned; identical pages are identified and
+> merged.
+> The sharing is unnoticeable by the process that use this memory.
+> (the shared pages are marked as readonly, and in case of write
+> do_wp_page() take care to create new copy of the page)
+> 
+> To find identical pages ksm use algorithm that is split into three
+> primery levels:
+> 
+> 1) Ksm will start scan the memory and will calculate checksum for each
+>    page that is registred to be scanned.
+>    (In the first round of the scanning, ksm would only calculate
+>     this checksum for all the pages)
+> 
+
+One question;
+
+Calcolating a checksum is a fine way to find pages that are "likely to be 
+identical", but there is no guarantee that two pages with the same 
+checksum really are identical - there *will* be checksum collisions 
+eventually. So, I really hope that your implementation actually checks 
+that two pages that it find that have identical checksums really are 100% 
+identical by comparing them bit by bit before throwing one away.
+If you rely only on a checksum then eventually a user will get bitten by a 
+checksum collision and, in the best case, something will crash, and in the 
+worst case, data will silently be corrupted.
+
+Do you rely only on the checksum or do you actually compare pages to check 
+they are 100% identical before sharing?
+
+I must admit that I have not read through the patch to find the answer, I 
+just read your description and became concerned.
+
+-- 
+Jesper Juhl <jj@chaosbits.net>             http://www.chaosbits.net/
+Plain text mails only, please      http://www.expita.com/nomime.html
+Don't top-post  http://www.catb.org/~esr/jargon/html/T/top-post.html
+
