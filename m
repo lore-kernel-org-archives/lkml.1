@@ -1,57 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763366AbZDBQNM@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752199AbZDBQPN@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763366AbZDBQNM (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 2 Apr 2009 12:13:12 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754686AbZDBQM5
+	id S1752199AbZDBQPN (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 2 Apr 2009 12:15:13 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759644AbZDBQO5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 2 Apr 2009 12:12:57 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:51656 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751730AbZDBQM4 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 2 Apr 2009 12:12:56 -0400
-Date: Thu, 2 Apr 2009 09:09:12 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Janne Grunau <j@jannau.net>
-Cc: Lennart Sorensen <lsorense@csclub.uwaterloo.ca>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Theodore Tso <tytso@mit.edu>, David Rees <drees76@gmail.com>,
-       Jesper Krogh <jesper@krogh.cc>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: Linux 2.6.29
-Message-Id: <20090402090912.cac200bb.akpm@linux-foundation.org>
-In-Reply-To: <20090402110532.GA5132@aniel>
-References: <20090325183011.GN32307@mit.edu>
-	<alpine.LFD.2.00.0903251139260.3032@localhost.localdomain>
-	<20090325220530.GR32307@mit.edu>
-	<alpine.LFD.2.00.0903251622420.3032@localhost.localdomain>
-	<20090326171148.9bf8f1ec.akpm@linux-foundation.org>
-	<alpine.LFD.2.00.0903261723250.3994@localhost.localdomain>
-	<20090326174704.cd36bf7b.akpm@linux-foundation.org>
-	<alpine.LFD.2.00.0903261752110.3994@localhost.localdomain>
-	<20090326182519.d576d703.akpm@linux-foundation.org>
-	<20090401210337.GB3797@csclub.uwaterloo.ca>
-	<20090402110532.GA5132@aniel>
-X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.5; x86_64-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Thu, 2 Apr 2009 12:14:57 -0400
+Received: from mx2.redhat.com ([66.187.237.31]:51109 "EHLO mx2.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751730AbZDBQO4 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 2 Apr 2009 12:14:56 -0400
+Organization: Red Hat UK Ltd. Registered Address: Red Hat UK Ltd, Amberley
+	Place, 107-111 Peascod Street, Windsor, Berkshire, SI4 1TE, United
+	Kingdom.
+	Registered in England and Wales under Company Registration No. 3798903
+From: David Howells <dhowells@redhat.com>
+In-Reply-To: <200904030237.25893.nickpiggin@yahoo.com.au>
+References: <200904030237.25893.nickpiggin@yahoo.com.au> <20090401230321.28177.12010.stgit@warthog.procyon.org.uk> <20090401230520.28177.61387.stgit@warthog.procyon.org.uk>
+To: Nick Piggin <nickpiggin@yahoo.com.au>
+Cc: dhowells@redhat.com, viro@zeniv.linux.org.uk, nfsv4@linux-nfs.org,
+       linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org
+Subject: Re: [PATCH 23/43] CacheFiles: Permit the page lock state to be monitored [ver #46]
+Date: Thu, 02 Apr 2009 17:14:52 +0100
+Message-ID: <6638.1238688892@redhat.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 2 Apr 2009 13:05:32 +0200 Janne Grunau <j@jannau.net> wrote:
+Nick Piggin <nickpiggin@yahoo.com.au> wrote:
 
-> MythTV calls fsync every few seconds on ongoing recordings to prevent
-> stalls due to large cache writebacks on ext3.
+> I prefer to nack this because it is exporting details of the page
+> locking mechanism. unlock_page is very heavyweight in large part
+> because of the memory barriers and cacheline required to check the
+> waitqueue. I have patches to avoid all that if the page lock is
+> not contended.
+> 
+> What's wrong with using wait_on_page_locked, like everyone else does?
 
-It should use sync_file_range(SYNC_FILE_RANGE_WRITE).  That will
+When fscache_read_or_alloc_pages() is called from, say, nfs_readpages(), and is
+given a few hundred pages to readahead from the cache, who does the
+wait_on_page_locked() on each of the _backing_ fs's pages?
 
-- have minimum latency.  It tries to avoid blocking at all.
+The way I've arranged things to work is for the backing fs pages to be copied
+to the netfs pages and released in the order they're read from the disk.
 
-- avoid writing metadata
+There's a small pool of threads that processes the pages.  I don't want to have
+to create a thread for each readpages(), and I don't want readpages() to have
+to wait for all the requests it makes.
 
-- avoid syncing other unrelated files within ext3
+Ideally, I'd like to ask the backing fs to read directly into netfs pages, but
+that's not particularly feasible at the moment.
 
-- avoid waiting for the ext3 commit to complete.
-
+David
