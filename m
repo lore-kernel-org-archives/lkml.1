@@ -1,62 +1,74 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756220AbZDBLeY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756186AbZDBLhB@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756220AbZDBLeY (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 2 Apr 2009 07:34:24 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753472AbZDBLeH
+	id S1756186AbZDBLhB (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 2 Apr 2009 07:37:01 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752069AbZDBLgv
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 2 Apr 2009 07:34:07 -0400
-Received: from cantor.suse.de ([195.135.220.2]:43349 "EHLO mx1.suse.de"
+	Thu, 2 Apr 2009 07:36:51 -0400
+Received: from mx3.mail.elte.hu ([157.181.1.138]:36361 "EHLO mx3.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752222AbZDBLeF (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 2 Apr 2009 07:34:05 -0400
-Date: Thu, 2 Apr 2009 13:34:01 +0200
-From: Jan Kara <jack@suse.cz>
-To: Nick Piggin <nickpiggin@yahoo.com.au>
-Cc: Ying Han <yinghan@google.com>, "Martin J. Bligh" <mbligh@mbligh.org>,
-       linux-ext4@vger.kernel.org,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       linux-kernel <linux-kernel@vger.kernel.org>,
-       linux-mm <linux-mm@kvack.org>, guichaz@gmail.com,
-       Alex Khesin <alexk@google.com>, Mike Waychison <mikew@google.com>,
-       Rohit Seth <rohitseth@google.com>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>
-Subject: Re: ftruncate-mmap: pages are lost after writing to mmaped file.
-Message-ID: <20090402113400.GC3010@duck.suse.cz>
-References: <604427e00903181244w360c5519k9179d5c3e5cd6ab3@mail.gmail.com> <20090324173511.GJ23439@duck.suse.cz> <604427e00904011536i6332a239pe21786cc4c8b3025@mail.gmail.com> <200904022224.31060.nickpiggin@yahoo.com.au>
+	id S1751218AbZDBLgv (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 2 Apr 2009 07:36:51 -0400
+Date: Thu, 2 Apr 2009 13:36:43 +0200
+From: Ingo Molnar <mingo@elte.hu>
+To: Peter Zijlstra <a.p.zijlstra@chello.nl>
+Cc: Paul Mackerras <paulus@samba.org>,
+       Corey Ashford <cjashfor@linux.vnet.ibm.com>,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 5/6] perf_counter: add more context information
+Message-ID: <20090402113643.GF10828@elte.hu>
+References: <20090402091158.291810516@chello.nl> <20090402091319.493101305@chello.nl>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <200904022224.31060.nickpiggin@yahoo.com.au>
-User-Agent: Mutt/1.5.17 (2007-11-01)
+In-Reply-To: <20090402091319.493101305@chello.nl>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.5
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu 02-04-09 22:24:29, Nick Piggin wrote:
-> On Thursday 02 April 2009 09:36:13 Ying Han wrote:
-> > Hi Jan:
-> >     I feel that the problem you saw is kind of differnt than mine. As
-> > you mentioned that you saw the PageError() message, which i don't see
-> > it on my system. I tried you patch(based on 2.6.21) on my system and
-> > it runs ok for 2 days, Still, since i don't see the same error message
-> > as you saw, i am not convineced this is the root cause at least for
-> > our problem. I am still looking into it.
-> >     So, are you seeing the PageError() every time the problem happened?
-> 
-> So I asked if you could test with my workaround of taking truncate_mutex
-> at the start of ext2_get_blocks, and report back. I never heard of any
-> response after that.
-> 
-> To reiterate: I was able to reproduce a problem with ext2 (I was testing
-> on brd to get IO rates high enough to reproduce it quite frequently).
-> I think I narrowed the problem down to block allocation or inode block
-> tree corruption because I was unable to reproduce it with that hack in
-> place.
-  Nick, what load did you use for reproduction? I'll try to reproduce it
-here so that I can debug ext2...
 
-								Honza
--- 
-Jan Kara <jack@suse.cz>
-SUSE Labs, CR
+* Peter Zijlstra <a.p.zijlstra@chello.nl> wrote:
+
+> Put in counts to tell which ips belong to what context.
+> 
+>   -----
+>    | |  hv
+>    | --
+> nr | |  kernel
+>    | --
+>    | |  user
+>   -----
+
+btw., i have an observation about the format:
+
+> -#define MAX_STACK_DEPTH		255
+> +#define MAX_STACK_DEPTH		254
+>  
+>  struct perf_callchain_entry {
+> -	u64	nr;
+> +	u32	nr, hv, kernel, user;
+>  	u64	ip[MAX_STACK_DEPTH];
+>  };
+
+For the special case of signal notifications, if the signal is 
+delivered immediately to the same task that raised it (pid=0), the 
+call chain is actually a still meaningful one: it is the stack that 
+is below the currently executing signal handler context.
+
+Wouldnt it make sense to record the full stack frame for that case, 
+to allow walking/unwinding of the stack? Or can user-space do that 
+just fine, based on its own signal context?
+
+We are going to hard-code the "call-chain is a series of IPs, 
+nothing else" model, and i'd like to make sure it's future-proof :)
+
+	Ingo
