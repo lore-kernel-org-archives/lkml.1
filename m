@@ -1,43 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761558AbZDBSgu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751262AbZDBShm@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761558AbZDBSgu (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 2 Apr 2009 14:36:50 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761350AbZDBSgf
+	id S1751262AbZDBShm (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 2 Apr 2009 14:37:42 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757588AbZDBSh3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 2 Apr 2009 14:36:35 -0400
-Received: from [213.79.90.228] ([213.79.90.228]:2735 "EHLO
-	buildserver.ru.mvista.com" rhost-flags-FAIL-FAIL-OK-FAIL)
-	by vger.kernel.org with ESMTP id S1761361AbZDBSgd (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 2 Apr 2009 14:36:33 -0400
-Date: Thu, 2 Apr 2009 22:36:31 +0400
-From: Anton Vorontsov <avorontsov@ru.mvista.com>
-To: Marcel Ziswiler <marcel@ziswiler.com>
-Cc: linux-kernel@vger.kernel.org, Timur Tabi <timur@freescale.com>,
-       linuxppc-dev@ozlabs.org
-Subject: Re: [PATCH] QE USB Host Integration for MPC832x
-Message-ID: <20090402183631.GA6699@oksana.dev.rtsoft.ru>
-Reply-To: avorontsov@ru.mvista.com
-References: <1238622396-9768-1-git-send-email-marcel@ziswiler.com> <20090402183357.GA29050@oksana.dev.rtsoft.ru>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=utf8
-Content-Disposition: inline
-In-Reply-To: <20090402183357.GA29050@oksana.dev.rtsoft.ru>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+	Thu, 2 Apr 2009 14:37:29 -0400
+Received: from e8.ny.us.ibm.com ([32.97.182.138]:44820 "EHLO e8.ny.us.ibm.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1756524AbZDBSh2 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 2 Apr 2009 14:37:28 -0400
+Subject: Re: [patch 1/2] fs: mnt_want_write speedup
+From: Dave Hansen <dave@linux.vnet.ibm.com>
+To: Nick Piggin <npiggin@suse.de>
+Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       linux-fsdevel@vger.kernel.org,
+       Andrew Morton <akpm@linux-foundation.org>
+In-Reply-To: <20090402182210.GB17175@wotan.suse.de>
+References: <20090310143718.GB15977@wotan.suse.de>
+	 <1236809477.30142.83.camel@nimitz> <20090312041334.GB1893@wotan.suse.de>
+	 <1237403623.8286.196.camel@nimitz>  <20090402182210.GB17175@wotan.suse.de>
+Content-Type: text/plain
+Date: Thu, 02 Apr 2009 11:37:20 -0700
+Message-Id: <1238697440.8846.46.camel@nimitz>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.22.3.1 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Apr 02, 2009 at 10:33:57PM +0400, Anton Vorontsov wrote:
-[...]
-> > +			compatible = "fsl,mpc8360-qe-usb",
+On Thu, 2009-04-02 at 20:22 +0200, Nick Piggin wrote:
+> On Wed, Mar 18, 2009 at 12:13:43PM -0700, Dave Hansen wrote:
+> > On Thu, 2009-03-12 at 05:13 +0100, Nick Piggin wrote: 
+> > > On Wed, Mar 11, 2009 at 03:11:17PM -0700, Dave Hansen wrote:
+> > > > I'm feeling a bit better about these, although I am still honestly quite
+> > > > afraid of the barriers.  I also didn't like all the #ifdefs much, but
+> > > > here's some help on that.
+> > > 
+> > > FWIW, we have this in suse kernels because page fault performance was
+> > > so bad compared with SLES10. mnt_want_write & co was I think the 2nd
+> > > biggest offender for file backed mappings (after pvops). I think we're
+> > > around parity again even with pvops.
+> > 
+> > Page faults themselves?  Which path was that from?
 > 
-> Ditto. No need for mpc8360 compatible.
+> Yes. file_update_time.
 
-Oh, I was wrong. fsl_qe_udc driver uses mpc8360 compatible for
-matching, so you can't remove it. :-/
+We should be able to use your mnt_clone_write() optimization separate
+from the mnt_want_write() speedup here, right?  
 
--- 
-Anton Vorontsov
-email: cbouatmailru@gmail.com
-irc://irc.freenode.net/bd2
+-- Dave
+
