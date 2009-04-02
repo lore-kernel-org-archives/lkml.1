@@ -1,167 +1,154 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S935923AbZDBLT1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S935975AbZDBLU3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S935923AbZDBLT1 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 2 Apr 2009 07:19:27 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932597AbZDBLTQ
+	id S935975AbZDBLU3 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 2 Apr 2009 07:20:29 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932597AbZDBLUM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 2 Apr 2009 07:19:16 -0400
-Received: from victor.provo.novell.com ([137.65.250.26]:55236 "EHLO
-	victor.provo.novell.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1763082AbZDBLTO (ORCPT
+	Thu, 2 Apr 2009 07:20:12 -0400
+Received: from smtp105.mail.mud.yahoo.com ([209.191.85.215]:47411 "HELO
+	smtp105.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1759064AbZDBLUK (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 2 Apr 2009 07:19:14 -0400
-Message-ID: <49D49FB6.3000101@novell.com>
-Date: Thu, 02 Apr 2009 07:21:26 -0400
-From: Gregory Haskins <ghaskins@novell.com>
-User-Agent: Thunderbird 2.0.0.19 (X11/20081227)
-MIME-Version: 1.0
+	Thu, 2 Apr 2009 07:20:10 -0400
+DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
+  s=s1024; d=yahoo.com.au;
+  h=Received:X-YMail-OSG:X-Yahoo-Newman-Property:From:To:Subject:Date:User-Agent:Cc:References:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Content-Disposition:Message-Id;
+  b=12sCDMdRMg0RChQZrbm3dXCzsVmndjs5U0r0PIdmEtsERo+ZGwinZt8WvIpaBDrLyrvOkFxPFTGvqDtNxhCaHrrvQ5WvbXjry0lOkfYMVDTAZvGS8ay0W63pY45g5jylAWn47ziR9+5008OwRIid/LHpgXUWKtwnKL4slIq0HcQ=  ;
+X-YMail-OSG: 21PRi58VM1mieY6xj9Wt0qt5ksrRu8wmwQ5gDpsBxZ6KvyTjJCLZM4vRhGho1P7ByEFYY07tCdky78MSJOWV7iXDit_trosiaGJ4ofuQOP2G6lm9Odu6ZBpGiVrF_YGKicN4lJ_iCk7fj.knOWBlH1xg_1VBWpaX2okDnfMDTSiUNBBE7oyA1aIWqvyjGAIXH9EMcQEYPvw0SYSQy3EHWLL5UZpL8KekrY_CB1LcB0LPjM33WYDM50tM6FaRoAW0veN54hc_hurEiWnSrF0HEOg8xavywE69p77xWogXZ9PMsNdMokFYoM6PzyDab4p0fOTkmZ8u8FJ9YNlYGnRS
+X-Yahoo-Newman-Property: ymail-3
+From: Nick Piggin <nickpiggin@yahoo.com.au>
 To: Peter Zijlstra <peterz@infradead.org>
-CC: Ingo Molnar <mingo@elte.hu>, Steven Rostedt <rostedt@goodmis.org>,
-       LKML <linux-kernel@vger.kernel.org>,
-       Thomas Gleixner <tglx@linutronix.de>
-Subject: Re: [PATCH] sched_rt: fix overload bug on rt group scheduling
-References: <1238604015.8530.3666.camel@twins> <49D40DBF.8030507@novell.com> <1238654901.8530.5373.camel@twins>
-In-Reply-To: <1238654901.8530.5373.camel@twins>
-X-Enigmail-Version: 0.95.7
-OpenPGP: id=D8195319
-Content-Type: multipart/signed; micalg=pgp-sha1;
- protocol="application/pgp-signature";
- boundary="------------enig0BBED9FBAC05E15BA912EA88"
+Subject: Re: [RFC] x86: gup_fast() batch limit (was: DRM lock ordering fix series)
+Date: Thu, 2 Apr 2009 22:19:52 +1100
+User-Agent: KMail/1.9.51 (KDE/4.0.4; ; )
+Cc: Brice Goglin <Brice.Goglin@inria.fr>, Eric Anholt <eric@anholt.net>,
+       Andi Kleen <andi@firstfloor.org>, linux-kernel@vger.kernel.org,
+       dri-devel@lists.sourceforge.net
+References: <1238017510-26784-1-git-send-email-eric@anholt.net> <1238242929.4039.706.camel@laptop> <1238244374.4039.743.camel@laptop>
+In-Reply-To: <1238244374.4039.743.camel@laptop>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="utf-8"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200904022219.53949.nickpiggin@yahoo.com.au>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This is an OpenPGP/MIME signed message (RFC 2440 and 3156)
---------------enig0BBED9FBAC05E15BA912EA88
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: quoted-printable
-
-Peter Zijlstra wrote:
-> On Wed, 2009-04-01 at 20:58 -0400, Gregory Haskins wrote:
->  =20
->> Hi Peter,
->>
->> Peter Zijlstra wrote:
->>    =20
->>> Fixes an easily triggerable BUG() when setting process affinities.
->>>
->>> Make sure to count the number of migratable tasks in the same place:
->>> the root rt_rq. Otherwise the number doesn't make sense and we'll hit=
-
->>> the BUG in set_cpus_allowed_rt().
->>>
->>> Also, make sure we only count tasks, not groups (this is probably
->>> already taken care of by the fact that rt_se->nr_cpus_allowed will be=
- 0
->>> for groups, but be more explicit)
->>>
->>> Signed-off-by: Peter Zijlstra <a.p.zijlstra@chello.nl>
->>> Tested-by: Thomas Gleixner <tglx@linutronix.de>
->>> CC: stable@kernel.org
->>> ---
->>>  kernel/sched_rt.c |   16 +++++++++++++++-
->>>  1 files changed, 15 insertions(+), 1 deletions(-)
->>>
->>> diff --git a/kernel/sched_rt.c b/kernel/sched_rt.c
->>> index de4469a..c1ee8dc 100644
->>> --- a/kernel/sched_rt.c
->>> +++ b/kernel/sched_rt.c
->>> @@ -10,6 +10,8 @@ static inline struct task_struct *rt_task_of(struct=
- sched_rt_entity *rt_se)
->>> =20
->>>  #ifdef CONFIG_RT_GROUP_SCHED
->>> =20
->>> +#define rt_entity_is_task(rt_se) (!(rt_se)->my_q)
->>> +
->>>  static inline struct rq *rq_of_rt_rq(struct rt_rq *rt_rq)
->>>  {
->>>  	return rt_rq->rq;
->>> @@ -22,6 +24,8 @@ static inline struct rt_rq *rt_rq_of_se(struct sche=
-d_rt_entity *rt_se)
->>> =20
->>>  #else /* CONFIG_RT_GROUP_SCHED */
->>> =20
->>> +#define rt_entity_is_task(rt_se) (1)
->>> +
->>>  static inline struct rq *rq_of_rt_rq(struct rt_rq *rt_rq)
->>>  {
->>>  	return container_of(rt_rq, struct rq, rt);
->>> @@ -73,7 +77,7 @@ static inline void rt_clear_overload(struct rq *rq)=
-
->>> =20
->>>  static void update_rt_migration(struct rt_rq *rt_rq)
->>>  {
->>> -	if (rt_rq->rt_nr_migratory && (rt_rq->rt_nr_running > 1)) {
->>> +	if (rt_rq->rt_nr_migratory > 1) {
->>>  =20
->>>      =20
->> The rest of the patch is making sense to me, but I am a little concern=
-ed
->> about this change.
->>
->> The original logic was designed to catch the condition when you might
->> have a non-migratory task running, and a migratory task queued.   This=
-
->> would mean nr_running =3D=3D 2, and nr_migratory =3D=3D 1, which is el=
-igible for
->> overload handling.  (Of course, the opposite could be true..the
->> migratory is running and the non-migratory is queued...we cannot disce=
-rn
->> the difference here and we go into overload anyway.  This is just
->> suboptimal but functionally correct).
->>
->> What can happen now is you could have that above condition but we will=
-
->> not go into overload unless there is at least two migratory tasks
->> queued.  This will undoubtedly allow a potential scheduling latency on=
-
->> task #2.
->>
->> I think we really need to qualify overload on both running > 1 and at
->> least one migratory task.  Is there a way to get this state, even if b=
-y
->> other means?
->>    =20
+On Saturday 28 March 2009 23:46:14 Peter Zijlstra wrote:
+> On Sat, 2009-03-28 at 13:22 +0100, Peter Zijlstra wrote:
+> > I'm not really trusting my brain today, but something like the below
+> > should work I think.
+> >
+> > Nick, any thoughts?
+> >
+> > Not-Signed-off-by: Peter Zijlstra <a.p.zijlstra@chello.nl>
+> > ---
+> >  arch/x86/mm/gup.c |   24 +++++++++++++++++++++---
+> >  1 files changed, 21 insertions(+), 3 deletions(-)
+> >
+> > diff --git a/arch/x86/mm/gup.c b/arch/x86/mm/gup.c
+> > index be54176..4ded5c3 100644
+> > --- a/arch/x86/mm/gup.c
+> > +++ b/arch/x86/mm/gup.c
+> > @@ -11,6 +11,8 @@
+> >
+> >  #include <asm/pgtable.h>
+> >
+> > +#define GUP_BATCH	32
+> > +
+> >  static inline pte_t gup_get_pte(pte_t *ptep)
+> >  {
+> >  #ifndef CONFIG_X86_PAE
+> > @@ -91,7 +93,8 @@ static noinline int gup_pte_range(pmd_t pmd, unsigned
+> > long addr, get_page(page);
+> >  		pages[*nr] = page;
+> >  		(*nr)++;
+> > -
+> > +		if (*nr > GUP_BATCH)
+> > +			break;
+> >  	} while (ptep++, addr += PAGE_SIZE, addr != end);
+> >  	pte_unmap(ptep - 1);
+> >
+> > @@ -157,6 +160,8 @@ static int gup_pmd_range(pud_t pud, unsigned long
+> > addr, unsigned long end, if (!gup_pte_range(pmd, addr, next, write,
+> > pages, nr))
+> >  				return 0;
+> >  		}
+> > +		if (*nr > GUP_BATCH)
+> > +			break;
+> >  	} while (pmdp++, addr = next, addr != end);
+> >
+> >  	return 1;
+> > @@ -214,6 +219,8 @@ static int gup_pud_range(pgd_t pgd, unsigned long
+> > addr, unsigned long end, if (!gup_pmd_range(pud, addr, next, write,
+> > pages, nr))
+> >  				return 0;
+> >  		}
+> > +		if (*nr > GUP_BATCH)
+> > +			break;
+> >  	} while (pudp++, addr = next, addr != end);
+> >
+> >  	return 1;
+> > @@ -226,7 +233,7 @@ int get_user_pages_fast(unsigned long start, int
+> > nr_pages, int write, unsigned long addr, len, end;
+> >  	unsigned long next;
+> >  	pgd_t *pgdp;
+> > -	int nr = 0;
+> > +	int batch = 0, nr = 0;
+> >
+> >  	start &= PAGE_MASK;
+> >  	addr = start;
+> > @@ -254,6 +261,7 @@ int get_user_pages_fast(unsigned long start, int
+> > nr_pages, int write, * (which we do on x86, with the above PAE
+> > exception), we can follow the * address down to the the page and take a
+> > ref on it.
+> >  	 */
+> > +again:
+> >  	local_irq_disable();
+> >  	pgdp = pgd_offset(mm, addr);
+> >  	do {
+> > @@ -262,11 +270,21 @@ int get_user_pages_fast(unsigned long start, int
+> > nr_pages, int write, next = pgd_addr_end(addr, end);
+> >  		if (pgd_none(pgd))
+> >  			goto slow;
+> > -		if (!gup_pud_range(pgd, addr, next, write, pages, &nr))
+> > +		if (!gup_pud_range(pgd, addr, next, write, pages, &batch))
+> >  			goto slow;
+> > +		if (batch > GUP_BATCH) {
+> > +			local_irq_enable();
+> > +			addr += batch << PAGE_SHIFT;
+> > +			nr += batch;
+> > +			batch = 0;
+> > +			if (addr != end)
+> > +				goto again;
+> > +		}
+> >  	} while (pgdp++, addr = next, addr != end);
+> >  	local_irq_enable();
+> >
+> > +	nr += batch;
+> > +
+> >  	VM_BUG_ON(nr != (end - start) >> PAGE_SHIFT);
+> >  	return nr;
 >
-> Ah, yes, I missed that bit. I ripped out the rt_nr_running because I 1)=
-
-> didn't think of this, and 2) rt_nr_running is accounted per rt_rq, not
-> per-cpu, so it doesn't match.
+> Would also need the following bit:
 >
-> Since rt_nr_running is also used in a per rt_rq setting, changing that
-> isn't possible and we'd need to introduce another per-cpu variant is yo=
-u
-> want to re-instate this.
->  =20
-Yeah, I actually don't care if its literally a nr_running stat
-reinstated, or some other way to restore "correctness" ;)
-
-Double bonus if you can solve that problem I mentioned above where I
-can't tell if its really eligible for overload in all cases (but goes
-into overload anyway to be conservative).  I had been thinking of doing
-something like subtracting the nr_migration number when a migratory task
-is put on the cpu.  But this is kind of messy because you need to handle
-all the places that can manipulate nr_migratory to make sure it doesnt
-break.
-
-Thanks Peter!
--Greg
+> @@ -274,6 +292,7 @@ int get_user_pages_fast(unsigned long start, int
+> nr_pages, int write, int ret;
+>
+>  slow:
+> +		nr += batch;
+>  		local_irq_enable();
+>  slow_irqon:
+>  		/* Try to get the remaining pages with get_user_pages */
 
 
+Yeah something like this would be fine (and welcome). And we can
+remove the XXX comment in there too. I would suggest 64 being a
+reasonable value simply because that's what direct IO does.
 
+Implementation-wise, why not just break "len" into chunks in the
+top level function rather than add branches all down the call
+chain?
 
---------------enig0BBED9FBAC05E15BA912EA88
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: OpenPGP digital signature
-Content-Disposition: attachment; filename="signature.asc"
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v2.0.9 (GNU/Linux)
-Comment: Using GnuPG with SUSE - http://enigmail.mozdev.org
-
-iEYEARECAAYFAknUn7YACgkQlOSOBdgZUxkHpQCePp7XipTNSnc1h5T4UpSdJZ4g
-PZoAn1mHlKZZJY7IBj234YaUA5hDk5GZ
-=YOcf
------END PGP SIGNATURE-----
-
---------------enig0BBED9FBAC05E15BA912EA88--
