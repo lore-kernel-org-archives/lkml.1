@@ -1,58 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753107AbZDBL5W@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754728AbZDBL74@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753107AbZDBL5W (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 2 Apr 2009 07:57:22 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751327AbZDBL5M
+	id S1754728AbZDBL74 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 2 Apr 2009 07:59:56 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751602AbZDBL7m
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 2 Apr 2009 07:57:12 -0400
-Received: from miranda.se.axis.com ([193.13.178.8]:34960 "EHLO
-	miranda.se.axis.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751218AbZDBL5L (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 2 Apr 2009 07:57:11 -0400
-Date: Thu, 2 Apr 2009 13:57:02 +0200
-From: Jesper Nilsson <Jesper.Nilsson@axis.com>
-To: Stoyan Gaydarov <stoyboyker@gmail.com>
-Cc: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       Mikael Starvik <mikael.starvik@axis.com>,
-       dev-etrax <dev-etrax@axis.com>
-Subject: Re: [PATCH 15/25] [cris] BUG to BUG_ON changes
-Message-ID: <20090402115702.GR31562@axis.com>
-References: <1236661850-8237-7-git-send-email-stoyboyker@gmail.com> <1236661850-8237-8-git-send-email-stoyboyker@gmail.com> <1236661850-8237-9-git-send-email-stoyboyker@gmail.com> <1236661850-8237-10-git-send-email-stoyboyker@gmail.com> <1236661850-8237-11-git-send-email-stoyboyker@gmail.com> <1236661850-8237-12-git-send-email-stoyboyker@gmail.com> <1236661850-8237-13-git-send-email-stoyboyker@gmail.com> <1236661850-8237-14-git-send-email-stoyboyker@gmail.com> <1236661850-8237-15-git-send-email-stoyboyker@gmail.com> <1236661850-8237-16-git-send-email-stoyboyker@gmail.com>
+	Thu, 2 Apr 2009 07:59:42 -0400
+Received: from mx2.redhat.com ([66.187.237.31]:56609 "EHLO mx2.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751062AbZDBL7l (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 2 Apr 2009 07:59:41 -0400
+Message-ID: <49D4A89E.5090407@redhat.com>
+Date: Thu, 02 Apr 2009 14:59:26 +0300
+From: Avi Kivity <avi@redhat.com>
+User-Agent: Thunderbird 2.0.0.21 (X11/20090320)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1236661850-8237-16-git-send-email-stoyboyker@gmail.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+To: Gregory Haskins <ghaskins@novell.com>
+CC: Herbert Xu <herbert@gondor.apana.org.au>, anthony@codemonkey.ws,
+       andi@firstfloor.org, linux-kernel@vger.kernel.org, agraf@suse.de,
+       pmullaney@novell.com, pmorreale@novell.com, rusty@rustcorp.com.au,
+       netdev@vger.kernel.org, kvm@vger.kernel.org,
+       Mark McLoughlin <markmc@redhat.com>
+Subject: Re: [RFC PATCH 00/17] virtual-bus
+References: <20090402085253.GA29932@gondor.apana.org.au> <49D47F11.6070400@redhat.com> <20090402091639.GA30126@gondor.apana.org.au> <49D484F5.2000400@redhat.com> <20090402092936.GA30333@gondor.apana.org.au> <49D487A6.407@redhat.com> <49D49C1F.6030306@novell.com>
+In-Reply-To: <49D49C1F.6030306@novell.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Mar 10, 2009 at 06:10:40AM +0100, Stoyan Gaydarov wrote:
-> Signed-off-by: Stoyan Gaydarov <stoyboyker@gmail.com>
-> ---
->  arch/cris/mm/init.c |    3 +--
->  1 files changed, 1 insertions(+), 2 deletions(-)
-> 
-> diff --git a/arch/cris/mm/init.c b/arch/cris/mm/init.c
-> index 2fdd212..514f46a 100644
-> --- a/arch/cris/mm/init.c
-> +++ b/arch/cris/mm/init.c
-> @@ -25,8 +25,7 @@ mem_init(void)
->  	int codesize, reservedpages, datasize, initsize;
->  	unsigned long tmp;
->  
-> -	if(!mem_map)
-> -		BUG();
-> +	BUG_ON(!mem_map);
->  
->  	/* max/min_low_pfn was set by setup.c
->  	 * now we just copy it to some other necessary places...
-> -- 
-> 1.6.1.3
+Gregory Haskins wrote:
 
-Thanks, adding it to the CRIS tree.
+  
 
-/^JN - Jesper Nilsson
+>> Why does a kernel solution not need to know when a packet is transmitted?
+>>
+>>     
+>
+> You do not need to know when the packet is copied (which I currently
+> do).  You only need it for zero-copy (of which I would like to support,
+> but as I understand it there are problems with the reliability of proper
+> callback (i.e. skb->destructor).
+>
+> Its "fire and forget" :)
+>   
+
+It's more of a "schedule and forget" which I think brings you the win.  
+The host disables notifications and schedules the actual tx work (rx 
+from the host's perspective).  So now the guest and host continue 
+producing and consuming packets in parallel.  So long as the guest is 
+faster (due to the host being throttled?), notifications continue to be 
+disabled.
+
+If you changed your rx_isr() to process the packets immediately instead 
+of scheduling, I think throughput would drop dramatically.
+
+Mark had a similar change for virtio.  Mark?
+
 -- 
-               Jesper Nilsson -- jesper.nilsson@axis.com
+error compiling committee.c: too many arguments to function
+
