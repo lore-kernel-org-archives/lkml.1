@@ -1,135 +1,114 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934831AbZDBKpL@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763643AbZDBKwU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934831AbZDBKpL (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 2 Apr 2009 06:45:11 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762829AbZDBKot
+	id S1763643AbZDBKwU (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 2 Apr 2009 06:52:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751002AbZDBKwH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 2 Apr 2009 06:44:49 -0400
-Received: from victor.provo.novell.com ([137.65.250.26]:55106 "EHLO
-	victor.provo.novell.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757246AbZDBKor (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 2 Apr 2009 06:44:47 -0400
-Message-ID: <49D497A1.4090900@novell.com>
-Date: Thu, 02 Apr 2009 06:46:57 -0400
-From: Gregory Haskins <ghaskins@novell.com>
-User-Agent: Thunderbird 2.0.0.19 (X11/20081227)
+	Thu, 2 Apr 2009 06:52:07 -0400
+Received: from mx2.mail.elte.hu ([157.181.151.9]:35539 "EHLO mx2.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752445AbZDBKwG (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 2 Apr 2009 06:52:06 -0400
+Date: Thu, 2 Apr 2009 12:51:51 +0200
+From: Ingo Molnar <mingo@elte.hu>
+To: Peter Zijlstra <a.p.zijlstra@chello.nl>
+Cc: Paul Mackerras <paulus@samba.org>,
+       Corey Ashford <cjashfor@linux.vnet.ibm.com>,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 2/6] RFC perf_counter: singleshot support
+Message-ID: <20090402105151.GB10828@elte.hu>
+References: <20090402091158.291810516@chello.nl> <20090402091319.257773792@chello.nl>
 MIME-Version: 1.0
-To: Avi Kivity <avi@redhat.com>
-CC: Anthony Liguori <anthony@codemonkey.ws>, Andi Kleen <andi@firstfloor.org>,
-       linux-kernel@vger.kernel.org, agraf@suse.de, pmullaney@novell.com,
-       pmorreale@novell.com, rusty@rustcorp.com.au, netdev@vger.kernel.org,
-       kvm@vger.kernel.org
-Subject: Re: [RFC PATCH 00/17] virtual-bus
-References: <20090331184057.28333.77287.stgit@dev.haskins.net> <87ab71monw.fsf@basil.nowhere.org> <49D35825.3050001@novell.com> <20090401132340.GT11935@one.firstfloor.org> <49D37805.1060301@novell.com> <20090401170103.GU11935@one.firstfloor.org> <49D3B64F.6070703@codemonkey.ws> <49D3D7EE.4080202@novell.com> <49D46089.5040204@redhat.com>
-In-Reply-To: <49D46089.5040204@redhat.com>
-X-Enigmail-Version: 0.95.7
-OpenPGP: id=D8195319
-Content-Type: multipart/signed; micalg=pgp-sha1;
- protocol="application/pgp-signature";
- boundary="------------enigC0794BE13A6673D09C06C56B"
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20090402091319.257773792@chello.nl>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This is an OpenPGP/MIME signed message (RFC 2440 and 3156)
---------------enigC0794BE13A6673D09C06C56B
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: quoted-printable
 
-Avi Kivity wrote:
-> Gregory Haskins wrote:
->>
->>
->> I think there is a slight disconnect here.  This is *exactly* what I a=
-m
->> trying to do.  You can of course do this many ways, and I am not denyi=
-ng
->> it could be done a different way than the path I have chosen.  One
->> extreme would be to just slam a virtio-net specific chunk of code
->> directly into kvm on the host.  Another extreme would be to build a
->> generic framework into Linux for declaring arbitrary IO types,
->> integrating it with kvm (as well as other environments such as lguest,=
+* Peter Zijlstra <a.p.zijlstra@chello.nl> wrote:
 
->> userspace, etc), and building a virtio-net model on top of that.
->>
->> So in case it is not obvious at this point, I have gone with the latte=
-r
->> approach.  I wanted to make sure it wasn't kvm specific or something
->> like pci specific so it had the broadest applicability to a range of
->> environments.  So that is why the design is the way it is.  I understa=
-nd
->> that this approach is technically "harder/more-complex" than the "slam=
+> By request, provide a way for counters to disable themselves and 
+> signal at the first counter overflow.
+> 
+> This isn't complete, we really want pending work to be done ASAP 
+> after queueing it. My preferred method would be a self-IPI, that 
+> would ensure we run the code in a usable context right after the 
+> current (IRQ-off, NMI) context is done.
 
->> virtio-net into kvm" approach, but I've already done that work.  All w=
-e
->> need to do now is agree on the details ;)
->>
->>  =20
->
-> virtio is already non-kvm-specific (lguest uses it) and
-> non-pci-specific (s390 uses it).
+Hm. I do think self-IPIs can be fragile but the more work we do in 
+NMI context the more compelling of a case can be made for a 
+self-IPI. So no big arguments against that.
 
-Ok, then to be more specific, I need it to be more generic than it
-already is.  For instance, I need it to be able to integrate with
-shm_signals.  If we can do that without breaking the existing ABI, that
-would be great!  Last I looked, it was somewhat entwined here so I didnt
-try...but I admit that I didnt try that hard since I already had the IOQ
-library ready to go.
+Regarding single-shot - i think the code you posted fails to do the 
+single-shot aspect: the counter does not stop, to wait for the 
+signal handler to get its act together.
 
->
->>> That said, I don't think we're bound today by the fact that we're in
->>> userspace.
->>>    =20
->> You will *always* be bound by the fact that you are in userspace.  Its=
+So i'd suggest to separate the two concepts: add signal support and 
+single-shot via two attributes. User-space might decide to use 
+single-shot if it does not want to deal with queued signals or lost 
+events due to not processing the previous signal fast enough.
 
->> purely a question of "how much" and "does anyone care".    Right now,
->> the anwer is "a lot (roughly 45x slower)" and "at least Greg's custome=
-rs
->> do".  I have no doubt that this can and will change/improve in the
->> future.  But it will always be true that no matter how much userspace
->> improves, the kernel based solution will always be faster.  Its simple=
+Also, user-space might want to use single-shot _without_ signals 
+perhaps.
 
->> physics.  I'm cutting out the middleman to ultimately reach the same
->> destination as the userspace path, so userspace can never be equal.
->>  =20
->
-> If you have a good exit mitigation scheme you can cut exits by a
-> factor of 100; so the userspace exit costs are cut by the same
-> factor.  If you have good copyless networking APIs you can cut the
-> cost of copies to zero (well, to the cost of get_user_pages_fast(),
-> but a kernel solution needs that too).
+And that brings up that user-space might want to generate N events 
+and stop then, reliably. I.e. single-shot is a specific form of a 
+"trigger limit".
 
-"exit mitigation' schemes are for bandwidth, not latency.  For latency
-it all comes down to how fast you can signal in both directions.  If
-someone is going to do a stand-alone request-reply, its generally always
-going to be at least one hypercall and one rx-interrupt.  So your speed
-will be governed by your signal path, not your buffer bandwidth.
+Plus the question comes up: dont we need an ioctl to let user-space 
+refill/re-enable the trigger limit?
 
-What Ive done is shown that you can use techniques other than buffering
-the head of the queue to do exit mitigation for bandwidth, while still
-maintaining a very short signaling path for latency.  And I also argue
-that the latter will always be optimal in the kernel, though I know by
-which degree is still TBD.  Anthony thinks he can make the difference
-negligible, and I would love to see it but am skeptical.
+That is an issue for the signal case as well: we stop the counter 
+... what restarts it? Does the signal handler have to close the 
+counter and re-create it just to get the next single-shot event?
 
--Greg
+So i think we need 3 separate things:
 
+ - the ability to set a signal attribute of the counter (during 
+   creation) via a (signo,tid) pair. 
 
+   Semantics:
 
+    - it can be a regular signal (signo < 32),
+      or an RT/queued signal (signo >= 32).
 
---------------enigC0794BE13A6673D09C06C56B
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: OpenPGP digital signature
-Content-Disposition: attachment; filename="signature.asc"
+    - It may be sent to the task that generated the event (tid == 0), 
+      or it may be sent to a specific task (tid > 0),
+      or it may be sent to a task group (tid < 0).
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v2.0.9 (GNU/Linux)
-Comment: Using GnuPG with SUSE - http://enigmail.mozdev.org
+ - 'event limit' attribute: the ability to pause new events after N 
+   events. This limit auto-decrements on each event.
+   limit==1 is the special case for single-shot.
 
-iEYEARECAAYFAknUl6IACgkQlOSOBdgZUxkZRACdEdkCZboECmDSqpnPpzbQ+e14
-3HQAn3UDVPgUqIIAqFO7Yykk7wimIwqd
-=DdVe
------END PGP SIGNATURE-----
+ - new ioctl method to refill the limit, when user-space is ready to 
+   receive new events. A special-case of this is when a signal 
+   handler calls ioctl(refill_limit, 1) in the single-shot case - 
+   this re-enables events after the signal has been handled.
 
---------------enigC0794BE13A6673D09C06C56B--
+Another observation: i think perf_counter_output() needs to depend 
+on whether the counter is signalling, not on the single-shot-ness of 
+the counter.
+
+A completely valid use of this would be for user-space to create an 
+mmap() buffer of 1024 events, then set the limit to 1024, and wait 
+for the 1024 events to happen - process them and close the counter. 
+Without any signalling.
+
+Basically the 'limit' allows counter events to be used as a tracer 
+in essence. So i think it's a nice touch of the whole scheme, and it 
+should be decoupled from the signal attribute.
+
+Hm?
+
+	Ingo
