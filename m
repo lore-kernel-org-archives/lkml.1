@@ -1,86 +1,138 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757345AbZDBO1d@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759592AbZDBO3m@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757345AbZDBO1d (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 2 Apr 2009 10:27:33 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754186AbZDBO1V
+	id S1759592AbZDBO3m (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 2 Apr 2009 10:29:42 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754399AbZDBO3c
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 2 Apr 2009 10:27:21 -0400
-Received: from mx2.redhat.com ([66.187.237.31]:46803 "EHLO mx2.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753162AbZDBO1U (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 2 Apr 2009 10:27:20 -0400
-Message-ID: <49D4CB38.5030205@redhat.com>
-Date: Thu, 02 Apr 2009 17:27:04 +0300
-From: Avi Kivity <avi@redhat.com>
-User-Agent: Thunderbird 2.0.0.21 (X11/20090320)
+	Thu, 2 Apr 2009 10:29:32 -0400
+Received: from relay2.sgi.com ([192.48.179.30]:43201 "EHLO relay.sgi.com"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1752327AbZDBO3b (ORCPT
+	<rfc822;@relay.corp.sgi.com:linux-kernel@vger.kernel.org>);
+	Thu, 2 Apr 2009 10:29:31 -0400
+Message-ID: <49D4CBA0.40408@sgi.com>
+Date: Fri, 03 Apr 2009 01:28:48 +1100
+From: Greg Banks <gnb@sgi.com>
+Reply-To: Greg Banks <gnb@fmeh.org>
+Organization: File Serving Technologies ; Silicon Graphics Inc.
+User-Agent: Thunderbird 1.5.0.12 (X11/20060911)
 MIME-Version: 1.0
-To: Patrick Mullaney <pmullaney@novell.com>
-CC: anthony@codemonkey.ws, andi@firstfloor.org, herbert@gondor.apana.org.au,
-       Gregory Haskins <GHaskins@novell.com>,
-       Peter Morreale <PMorreale@novell.com>, rusty@rustcorp.com.au,
-       agraf@suse.de, kvm@vger.kernel.org, linux-kernel@vger.kernel.org,
-       netdev@vger.kernel.org
-Subject: Re: [RFC PATCH 00/17] virtual-bus
-References: <49D469D2020000A100045FA1@lucius.provo.novell.com> <49D473EA020000C700056627@lucius.provo.novell.com> <49D473EA020000C700056627@lucius.provo.novell.com>
-In-Reply-To: <49D473EA020000C700056627@lucius.provo.novell.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+To: NFS list <linux-nfs@vger.kernel.org>,
+       Linux Filesystem list <linux-fsdevel@vger.kernel.org>,
+       XFS OSS list <xfs@oss.sgi.com>,
+       Linux kernel list <linux-kernel@vger.kernel.org>
+Subject: [ANNOUNCE] Filesystem test tools open-sourced by SGI
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Patrick Mullaney wrote:
-> On Thu, 2009-04-02 at 16:27 +0300, Avi Kivity wrote:
->
->   
->> virtio is a stable ABI.
->>
->>     
->>> However, theres still the possibility we can make this work in an ABI
->>> friendly way with cap-bits, or other such features.  For instance, the
->>> virtio-net driver could register both with pci and vbus-proxy and
->>> instantiate a device with a slightly different ops structure for each or
->>> something.  Alternatively we could write a host-side shim to expose vbus
->>> devices as pci devices or something like that.
->>>   
->>>       
->> Sounds complicated...
->>
->>     
->
-> IMO, it doesn't sound anymore complicated than making virtio support the
-> concepts already provided by vbus/venet-tap driver. Isn't there already
-> precedent for alternative approaches co-existing and having the users
-> decide which is the most appropriate for their use case? Switching
-> drivers in order to improve latency for a certain class of applications
-> would seem like something latency sensitive users would be more than
-> willing to do. I'd like to point out 2 things. Greg has offered help
-> in moving virtio into the vbus infrastructure. The vbus infrastructure
-> is a large part of what is being proposed here.
->   
+G'day,
 
-vbus (if I understand it right) is a whole package of things:
+SGI is releasing to the Open Source community a number of internal
+SGI testing and debugging tools for NFS.  Some of these tools are
+also applicable to filesystems in general.
 
-- a way to enumerate, discover, and manage devices
+These tools are being released under the GNU General Public License
+(GPL) version 2, in the hope that the Linux filesystem development
+community may find them useful.  They are provided as-is, without any
+support.  Please do not contact SGI for support on any of these tools.
 
-That part duplicates PCI and it would be pretty hard to convince me we 
-need to move to something new.  virtio-pci (a) works, (b) works on Windows.
+Some of these tools are unfinished.  Others rely on build
+infrastructure in internal SGI trees which cannot be released.
+The tools are provided as tarball snapshots of internal SGI source
+control trees; for a number of technical reasons it is not possible
+to provide access to those trees or to create external repositories.
 
-- a different way of doing interrupts
+The tools are available for download now at
 
-Again, the need to paravirtualize kills this on Windows (I think).
+http://oss.sgi.com/projects/nfs/testtools/
 
-- a different ring layout, and splitting notifications from the ring
+A brief description of each tool follows.
 
-I don't see the huge win here
+Checkstream
+-----------
 
-- placing the host part in the host kernel
+Simple data corruption testing utilities based on the concept of
+generating a stream of small self-contained records which can be
+decoded in a way which makes certain common data corruption modes
+automatically diagnosable.  Has been useful for automated testing of
+NFS, XFS, and CXFS in SGI.
 
-Nothing vbus-specific here.
+Weber
+-----
 
-Switching drivers is unfortunately not easy on Linux as you need a new 
-kernel; it's easier on Windows once you have the drivers written.
+Test load generator for NFS.  Uses multiple threads, multiple sockets
+and multiple IP addresses to simulate loads from many machines,
+thus enabling testing of NFS server setups with larger client counts
+than can be tested with physical infrastructure (or Virtual Machine
+clients).  Has been useful in automated NFS testing and as a pinpoint
+NFS load generator tool for performance development.
+
+NFS PMDA
+--------
+
+PCP Data Agent for extended NFS server statistics.  Exports to PCP
+the new statistics (measuring per-client and per-server performance)
+which are provided by SGI's EnhancedNFS kernel patches.
+
+Samba PMDA
+----------
+
+PCP Data Agent for extended Samba server statistics.  Exports to
+PCP the additional statistics (measuring per-client and per-server
+performance) which are provided by SGI's patches to Samba.
+
+Ddnfs
+-----
+
+Filesystem load generation program designed to simulate the IO
+load placed on an XFS filesystem by the NFS server in response
+to certain NFS loads.  Intended for use in XFS automated testing,
+to test performance and correctness of certain XFS functionality
+not otherwise exercised by the existing XFS test suite, but never
+integrated into XFSQA.
+
+Pmapload
+--------
+
+Test suite for the portmap and rpcbind programs (which are
+NFS infrastructure components based on code open-sourced by Sun
+Microsystems and used by every Unix and Linux).  Developed by SGI to
+test changes imported into those programs from newer Sun source code
+during the NFS on IPv6 work for Irix several years ago.
+
+RPC Exerciser
+-------------
+
+Test suite for the userspace RPC infrastructure libraries, (which
+are NFS infrastructure components based on code open-sourced by Sun
+Microsystems and used by every Unix and Linux).  Developed by SGI to
+test changes imported into those libraries from newer Sun source code
+during the NFS on IPv6 work for Irix several years ago.
+
+Testfs
+------
+
+Linux kernel module which provides an in-memory filesystem which
+forgets all data written to it.  Also can be configured to simulate
+timing behaviour on reads and writes.  This is useful for NFS
+performance testing without a fast disk subsystem.
+
+StReplay
+--------
+
+Program which reads the system call trace of another program (obtained
+using the widely available strace utility) and replays the IO pattern.
+This was intended to be used for automated NFS and XFS testing and
+for NFS and XFS problem diagnosis, but was never completed as the
+author transferred to another team.  Could be the basis for a very
+useful filesystem test tool.
+
 
 -- 
-error compiling committee.c: too many arguments to function
+Greg Banks, P.Engineer, SGI Australian Software Group.
+the brightly coloured sporks of revolution.
+I don't speak for SGI.
 
