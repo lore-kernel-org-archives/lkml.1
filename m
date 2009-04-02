@@ -1,70 +1,88 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759960AbZDBD1o@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762140AbZDBD3R@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759960AbZDBD1o (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 1 Apr 2009 23:27:44 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753194AbZDBD1d
+	id S1762140AbZDBD3R (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 1 Apr 2009 23:29:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753194AbZDBD3C
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 1 Apr 2009 23:27:33 -0400
-Received: from mx2.mail.elte.hu ([157.181.151.9]:59179 "EHLO mx2.mail.elte.hu"
+	Wed, 1 Apr 2009 23:29:02 -0400
+Received: from sh.osrg.net ([192.16.179.4]:34178 "EHLO sh.osrg.net"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752152AbZDBD1c (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 1 Apr 2009 23:27:32 -0400
-Date: Thu, 2 Apr 2009 05:25:06 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: Christoph Lameter <cl@linux.com>
-Cc: Matthew Wilcox <matthew@wil.cx>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Tejun Heo <tj@kernel.org>, Martin Schwidefsky <schwidefsky@de.ibm.com>,
-       rusty@rustcorp.com.au, tglx@linutronix.de, x86@kernel.org,
-       linux-kernel@vger.kernel.org, hpa@zytor.com,
-       Paul Mundt <lethal@linux-sh.org>, rmk@arm.linux.org.uk,
-       starvik@axis.com, ralf@linux-mips.org, davem@davemloft.net,
-       cooloney@kernel.org, kyle@mcmartin.ca, grundler@parisc-linux.org,
-       takata@linux-m32r.org, benh@kernel.crashing.org, rth@twiddle.net,
-       ink@jurassic.park.msu.ru, heiko.carstens@de.ibm.com,
-       Nick Piggin <npiggin@suse.de>, Peter Zijlstra <a.p.zijlstra@chello.nl>
-Subject: Re: [PATCH UPDATED] percpu: use dynamic percpu allocator as the
-	default percpu allocator
-Message-ID: <20090402032506.GC21545@elte.hu>
-References: <49D2B209.9060000@kernel.org> <alpine.DEB.1.10.0904010948120.7643@qirst.com> <20090401154913.GA31435@elte.hu> <alpine.DEB.1.10.0904011404240.29839@qirst.com> <20090401190113.GA734@elte.hu> <alpine.LFD.2.00.0904011235160.4130@localhost.localdomain> <20090401223241.GA28168@elte.hu> <20090401225754.GN8014@parisc-linux.org> <20090402021024.GA26446@elte.hu> <alpine.DEB.1.10.0904012219300.32656@qirst.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <alpine.DEB.1.10.0904012219300.32656@qirst.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+	id S1752152AbZDBD3A (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 1 Apr 2009 23:29:00 -0400
+Date: Thu, 2 Apr 2009 12:28:12 +0900
+To: lizf@cn.fujitsu.com
+Cc: mingo@elte.hu, jens.axboe@oracle.com, acme@redhat.com, rostedt@goodmis.org,
+       fweisbec@gmail.com, fujita.tomonori@lab.ntt.co.jp,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] blktrace: fix pdu_len when tracing packet command
+ requests
+From: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
+In-Reply-To: <49D42036.5010102@cn.fujitsu.com>
+References: <49D42036.5010102@cn.fujitsu.com>
+Mime-Version: 1.0
+Content-Type: Text/Plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
+Message-Id: <20090402122807K.fujita.tomonori@lab.ntt.co.jp>
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-3.0 (sh.osrg.net [192.16.179.4]); Thu, 02 Apr 2009 12:28:12 +0900 (JST)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Thu, 02 Apr 2009 10:17:26 +0800
+Li Zefan <lizf@cn.fujitsu.com> wrote:
 
-* Christoph Lameter <cl@linux.com> wrote:
-
-> > A sub-sub argument was that perhaps we should not split .data 
-> > and .bss variables into separate sections - it doubles the 
-> > chance of false cacheline sharing and spreads the cacheline 
-> > footprint.
+> This bug has been here since 2.6.26.
 > 
-> False cacheline sharing is something normal that comes with the 
-> cpu caching schemes. As long as there is no significant impact on 
-> performance we are fine with it. Extensive measures to avoid false 
-> cacheline sharing on unimportant variables increases the cache 
-> footprint of code.
+> =======
+> 
+> Since commit d7e3c3249ef23b4617393c69fe464765b4ff1645 ("block: add
+> large command support"), struct request->cmd has been changed from
+> unsinged char cmd[BLK_MAX_CDB] to unsigned char *cmd.
+> 
+> Signed-off-by: Li Zefan <lizf@cn.fujitsu.com>
+> ---
+>  kernel/trace/blktrace.c |    2 +-
+>  1 files changed, 1 insertions(+), 1 deletions(-)
+> 
+> diff --git a/kernel/trace/blktrace.c b/kernel/trace/blktrace.c
+> index fd1ff49..bafb8d3 100644
+> --- a/kernel/trace/blktrace.c
+> +++ b/kernel/trace/blktrace.c
+> @@ -642,7 +642,7 @@ static void blk_add_trace_rq(struct request_queue *q, struct request *rq,
+>  	if (blk_pc_request(rq)) {
+>  		what |= BLK_TC_ACT(BLK_TC_PC);
+>  		__blk_add_trace(bt, 0, rq->data_len, rw, what, rq->errors,
+> -				sizeof(rq->cmd), rq->cmd);
+> +				max_t(int, rq->cmd_len, BLK_MAX_CDB), rq->cmd);
+>  	} else  {
+>  		what |= BLK_TC_ACT(BLK_TC_FS);
+>  		__blk_add_trace(bt, rq->hard_sector, rq->hard_nr_sectors << 9,
+> -- 
 
-You didnt really answer to my suggestion(s) though. You only stated 
-that:
+The patch works however it would be cleaner to simply use cmd_len?
 
-   "problem XYZ is something normal that comes with the cpu caching 
-    schemes. As long as there is no significant impact on 
-    performance weare fine with it."
-
-Which i'd proffer is true for any given value of XYZ ;-)
-
-	Ingo
+diff --git a/block/blk-core.c b/block/blk-core.c
+index 996ed90..54765d7 100644
+--- a/block/blk-core.c
++++ b/block/blk-core.c
+@@ -132,6 +132,7 @@ void blk_rq_init(struct request_queue *q, struct request *rq)
+ 	INIT_HLIST_NODE(&rq->hash);
+ 	RB_CLEAR_NODE(&rq->rb_node);
+ 	rq->cmd = rq->__cmd;
++	rq->cmd_len = BLK_MAX_CDB;
+ 	rq->tag = -1;
+ 	rq->ref_count = 1;
+ }
+diff --git a/block/blktrace.c b/block/blktrace.c
+index 028120a..90b9ca4 100644
+--- a/block/blktrace.c
++++ b/block/blktrace.c
+@@ -583,7 +583,7 @@ static void blk_add_trace_rq(struct request_queue *q, struct request *rq,
+ 	if (blk_pc_request(rq)) {
+ 		what |= BLK_TC_ACT(BLK_TC_PC);
+ 		__blk_add_trace(bt, 0, rq->data_len, rw, what, rq->errors,
+-				sizeof(rq->cmd), rq->cmd);
++				rq->cmd_len, rq->cmd);
+ 	} else  {
+ 		what |= BLK_TC_ACT(BLK_TC_FS);
+ 		__blk_add_trace(bt, rq->hard_sector, rq->hard_nr_sectors << 9,
