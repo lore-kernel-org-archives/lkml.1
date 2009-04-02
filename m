@@ -1,47 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763071AbZDBWNf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761350AbZDBWQ5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763071AbZDBWNf (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 2 Apr 2009 18:13:35 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756776AbZDBWN1
+	id S1761350AbZDBWQ5 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 2 Apr 2009 18:16:57 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753172AbZDBWQt
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 2 Apr 2009 18:13:27 -0400
-Received: from srv5.dvmed.net ([207.36.208.214]:33641 "EHLO mail.dvmed.net"
+	Thu, 2 Apr 2009 18:16:49 -0400
+Received: from smtp.cs.aau.dk ([130.225.194.6]:53941 "EHLO smtp.cs.aau.dk"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755878AbZDBWN0 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 2 Apr 2009 18:13:26 -0400
-Message-ID: <49D5387B.2080200@garzik.org>
-Date: Thu, 02 Apr 2009 18:13:15 -0400
-From: Jeff Garzik <jeff@garzik.org>
-User-Agent: Thunderbird 2.0.0.21 (X11/20090320)
-MIME-Version: 1.0
-To: Andrew Morton <akpm@linux-foundation.org>
-CC: David Rees <drees76@gmail.com>, Janne Grunau <j@jannau.net>,
-       Lennart Sorensen <lsorense@csclub.uwaterloo.ca>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Theodore Tso <tytso@mit.edu>, Jesper Krogh <jesper@krogh.cc>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: Linux 2.6.29
-References: <20090325183011.GN32307@mit.edu>	<alpine.LFD.2.00.0903251622420.3032@localhost.localdomain>	<20090326171148.9bf8f1ec.akpm@linux-foundation.org>	<alpine.LFD.2.00.0903261723250.3994@localhost.localdomain>	<20090326174704.cd36bf7b.akpm@linux-foundation.org>	<alpine.LFD.2.00.0903261752110.3994@localhost.localdomain>	<20090326182519.d576d703.akpm@linux-foundation.org>	<20090401210337.GB3797@csclub.uwaterloo.ca>	<20090402110532.GA5132@aniel>	<20090402090912.cac200bb.akpm@linux-foundation.org>	<72dbd3150904020933y515c7185p5726323c430c339b@mail.gmail.com> <20090402095139.c2ff4f06.akpm@linux-foundation.org>
-In-Reply-To: <20090402095139.c2ff4f06.akpm@linux-foundation.org>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
-X-Spam-Score: -4.4 (----)
-X-Spam-Report: SpamAssassin version 3.2.5 on srv5.dvmed.net summary:
-	Content analysis details:   (-4.4 points, 5.0 required)
+	id S1750813AbZDBWQs (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 2 Apr 2009 18:16:48 -0400
+X-Greylist: delayed 965 seconds by postgrey-1.27 at vger.kernel.org; Thu, 02 Apr 2009 18:16:48 EDT
+Subject: Re: [Lguest] [PATCH 4/5] lguest: use KVM hypercalls
+From: Simon Holm =?ISO-8859-1?Q?Th=F8gersen?= <odie@cs.aau.dk>
+To: Rusty Russell <rusty@rustcorp.com.au>
+Cc: lguest@ozlabs.org, virtualization@lists.osdl.org,
+       Matias Zabaljauregui <zabaljaureguiatgmail.com@ozlabs.org>,
+       Ingo Molnar <mingo@redhat.com>, linux-kernel@vger.kernel.org
+In-Reply-To: <200903271022.38244.rusty@rustcorp.com.au>
+References: <200903271022.38244.rusty@rustcorp.com.au>
+Content-Type: text/plain; charset="UTF-8"
+Date: Thu, 02 Apr 2009 23:55:24 +0200
+Message-Id: <1238709324.5823.8.camel@odie.local>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.24.4 
+Content-Transfer-Encoding: 8bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Andrew Morton wrote:
-> ext3 _should_ handle this case fairly well nowadays - I thought we fixed that.
-> However it would probably benefit from having the size of the block reservation
-> window increased - use ioctl(EXT3_IOC_SETRSVSZ).  That way, each file gets a
-> decent-sized hunk of disk "reserved" for its ongoing appending.  Other
-> files won't come in and intermingle their blocks with it.
+fre, 27 03 2009 kl. 10:22 +1030, skrev Rusty Russell:
+> From: Matias Zabaljauregui <zabaljauregui@gmail.com>
+> 
+> Impact: cleanup
+> 
+> This patch allow us to use KVM hypercalls
 
-How big of a chore would it be, to use this code to implement 
-i_op->fallocate() for ext3, I wonder?
+Something has broken in relation to this change. I'm not sure it is this
+change itself or one following, but I get the following error when using
+lguest:
 
-	Jeff
+lguest: unhandled trap 6 at 0x418726 (0x0)
 
+> +static bool is_hypercall(struct lg_cpu *cpu)
+> +{
+> +	u8 insn[3];
+> +
+> +	/* This must be the Guest kernel trying to do something.
+> +	 * The bottom two bits of the CS segment register are the privilege
+> +	 * level. */
+> +	if ((cpu->regs->cs & 3) != GUEST_PL)
+> +		return false;
+> +
+> +	/* Is it a vmcall? */
+> +	__lgread(cpu, insn, guest_pa(cpu, cpu->regs->eip), sizeof(insn));
+
+I've put a printk for insn here that shows up twice. The first time insn
+holds the values below, and the second time it holds the values that are
+patched in by rewrite_hypercall.
+
+> +	return insn[0] == 0x0f && insn[1] == 0x01 && insn[2] == 0xc1;
+> +}
+
+I'll investigate further tomorrow, unless someone is already on top of
+this. My kernel is 2.6.29-07100-g833bb30 btw.
+
+
+Simon Holm Thøgersen
 
