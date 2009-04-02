@@ -1,56 +1,159 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760073AbZDBMkd@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753833AbZDBMmW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760073AbZDBMkd (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 2 Apr 2009 08:40:33 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755649AbZDBMkX
+	id S1753833AbZDBMmW (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 2 Apr 2009 08:42:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756661AbZDBMmL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 2 Apr 2009 08:40:23 -0400
-Received: from moutng.kundenserver.de ([212.227.126.188]:57573 "EHLO
-	moutng.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754185AbZDBMkW (ORCPT
+	Thu, 2 Apr 2009 08:42:11 -0400
+Received: from mail-ew0-f165.google.com ([209.85.219.165]:35237 "EHLO
+	mail-ew0-f165.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754572AbZDBMmJ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 2 Apr 2009 08:40:22 -0400
-From: Arnd Bergmann <arnd@arndb.de>
-To: Harry Ciao <qingtao.cao@windriver.com>
-Subject: Re: [v0 PATCH 2/5] EDAC: Add CPC925 driver source file
-Date: Thu, 2 Apr 2009 14:40:16 +0200
-User-Agent: KMail/1.9.9
-Cc: norsk5@yahoo.com, linux-kernel@vger.kernel.org,
-       bluesmoke-devel@lists.sourceforge.net, linuxppc-dev@ozlabs.org
-References: <1238652440-9224-1-git-send-email-qingtao.cao@windriver.com> <1238652440-9224-2-git-send-email-qingtao.cao@windriver.com> <1238652440-9224-3-git-send-email-qingtao.cao@windriver.com>
-In-Reply-To: <1238652440-9224-3-git-send-email-qingtao.cao@windriver.com>
-X-Face: I@=L^?./?$U,EK.)V[4*>`zSqm0>65YtkOe>TFD'!aw?7OVv#~5xd\s,[~w]-J!)|%=]>=?utf-8?q?+=0A=09=7EohchhkRGW=3F=7C6=5FqTmkd=5Ft=3FLZC=23Q-=60=2E=60Y=2Ea=5E?=
- =?utf-8?q?3zb?=)
- =?utf-8?q?+U-JVN=5DWT=25cw=23=5BYo0=267C=26bL12wWGlZi=0A=09=7EJ=3B=5Cwg?=
- =?utf-8?q?=3B3zRnz?=,J"CT_)=\H'1/{?SR7GDu?WIopm.HaBG=QYj"NZD_[zrM\Gip^U
+	Thu, 2 Apr 2009 08:42:09 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
+         :cc:content-type:content-transfer-encoding;
+        b=fI+r76BiJC/MvZ1RD7vQQVMriXspK9dnErP6mr29/yJQgrldRL8W/hWCS+1uF0U8r1
+         NzG7JI0Wd1lmChu4IViBJZrj6ulhxMd1CPbc5K3YN/VUn04fOWdzE+WU2VpglVcVsVmf
+         NfApSHehmEmQILVs5WyLglGwFVTEq757p85lM=
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-15"
+In-Reply-To: <49D45E42.3050502@suse.de>
+References: <49D45974.2060202@suse.de> <20090402063235.GB24846@Krystal>
+	 <49D45E42.3050502@suse.de>
+Date: Thu, 2 Apr 2009 21:42:05 +0900
+Message-ID: <91e0b5050904020542l6b38d7a6hab6d7ef8b4593425@mail.gmail.com>
+Subject: Re: [ltt-dev] [PATCH] nfs: add support for splice writes
+From: Masahiro Tamori <masahiro.tamori@gmail.com>
+To: Suresh Jayaraman <sjayaraman@suse.de>,
+       Mathieu Desnoyers <compudj@krystal.dyndns.org>
+Cc: linux-nfs@vger.kernel.org, ltt-dev@lists.casi.polymtl.ca,
+       Trond.Myklebust@netapp.com, LKML <linux-kernel@vger.kernel.org>,
+       linux-embedded@vger.kernel.org
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200904021440.17366.arnd@arndb.de>
-X-Provags-ID: V01U2FsdGVkX1+rPAlLIgmL4JAqX2gC0JnAEjMcHHGHuBfncaO
- VQkpKSFAIli+z6jm0jK2ZfeTxvgcu7COI0qSC+wKdcl+vQO4xF
- 1AYfGbj09izP/60DiVjsQ==
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thursday 02 April 2009, Harry Ciao wrote:
-> Introduce IBM CPC925 EDAC driver source file, which makes use of error
-> detections on the IBM CPC925 Bridge and Memory Controller.
-> 
-> Signed-off-by: Harry Ciao <qingtao.cao@windriver.com>
+Hello Suresh and Mathieu,
 
-On a very brief review, the driver looks good to me, but please
-post the full series to the linuxppc-dev@ozlabs.org mailing list
-as well, because that is likely to have more people that will
-comment on it.
+2009/4/2 Suresh Jayaraman <sjayaraman@suse.de>:
+> Mathieu Desnoyers wrote:
+>> * Suresh Jayaraman (sjayaraman@suse.de) wrote:
+>>> This patch attempts to add splice writes support. In essence, it just
+>>> calls generic_file_splice_write() after doing a little sanity check.
+>>> This would allow LTTng users that are using NFS to store trace data.
+>>> There could be more applications that could be benefitted too.
+>>>
+>>> I have tested this using the Jens' test program and have found no
+>>> real issues. The test program is inlined below:
+>>>
+>>
+>> There is just a small checkpatch nit that I'll fix directly in place in
+>> the LTTng tree.
+>>
+>> WARNING: %Ld/%Lu are not-standard C, use %lld/%llu
+>> #93: FILE: fs/nfs/file.c:564:
+>> +   dprintk("NFS splice_write(%s/%s, %lu@%Lu)\n",
+>>
+>> total: 0 errors, 1 warnings, 42 lines checked
+>>
+>
+> Yes, I noticed it. There are quite a few places in nfs code where we
+> happened to use that (that doesn't imply that it shouldn't be fixed), so
+> I thought it's OK.
+>
+>> That's great ! I'll pull it in the LTTng tree so my users can try it.
+>> They currently cannot write LTTng traces to NFS mounts anyway.
+>
+> Yes, please report the test results. Would appreciate it very much.
+>
+>
+> Thanks,
 
-The first three patches of your series should be merged into
-a single one, because none of them has any signficance by itself.
-You may also consider moving the contents of the header file
-into the main driver, because it does not actually act as an
-interface.
+Thank you for creating a patch !!
 
-	Arnd <><
+I tested it, and it works fine.
+
+My environment is following,
+LTTV 0.12.10
+LTTng 0.100
+LTT Control 0.65
+Kernles 2.6.29
+
+LTTng version is old now, but the test is passed on ARM11 target.
+
+Furthermore, I run the splice test and the test is passed too.
+The test code is copied from
+http://kzk9.net/blog/2007/05/splice2.html
+(Japanese page)
+
+Thanks all people who commented this issue.
+
+Best regards,
+Masahiro Tamori
+
+>
+>>>
+>>> diff --git a/fs/nfs/file.c b/fs/nfs/file.c
+>>> index 90f292b..13d6a00 100644
+>>> --- a/fs/nfs/file.c
+>>> +++ b/fs/nfs/file.c
+>>> @@ -47,6 +47,9 @@ static ssize_t nfs_file_splice_read(struct file *filp, loff_t *ppos,
+>>>                   size_t count, unsigned int flags);
+>>> static ssize_t nfs_file_read(struct kiocb *, const struct iovec *iov,
+>>>               unsigned long nr_segs, loff_t pos);
+>>> +static ssize_t nfs_file_splice_write(struct pipe_inode_info *pipe,
+>>> +                  struct file *filp, loff_t *ppos,
+>>> +                  size_t count, unsigned int flags);
+>>> static ssize_t nfs_file_write(struct kiocb *, const struct iovec *iov,
+>>>               unsigned long nr_segs, loff_t pos);
+>>> static int nfs_file_flush(struct file *, fl_owner_t id);
+>>> @@ -76,6 +79,7 @@ const struct file_operations nfs_file_operations = {
+>>>   .lock      = nfs_lock,
+>>>   .flock     = nfs_flock,
+>>>   .splice_read  = nfs_file_splice_read,
+>>> +  .splice_write  = nfs_file_splice_write,
+>>>   .check_flags  = nfs_check_flags,
+>>>   .setlease    = nfs_setlease,
+>>> };
+>>> @@ -550,6 +554,26 @@ out_swapfile:
+>>>   goto out;
+>>> }
+>>>
+>>> +static ssize_t nfs_file_splice_write(struct pipe_inode_info *pipe,
+>>> +                 struct file *filp, loff_t *ppos,
+>>> +                 size_t count, unsigned int flags)
+>>> +{
+>>> +  struct dentry *dentry = filp->f_path.dentry;
+>>> +  struct inode *inode = dentry->d_inode;
+>>> +
+>>> +  dprintk("NFS splice_write(%s/%s, %lu@%Lu)\n",
+>>> +      dentry->d_parent->d_name.name, dentry->d_name.name,
+>>> +      (unsigned long) count, (unsigned long long) *ppos);
+>>> +
+>>> +  if (IS_SWAPFILE(inode)) {
+>>> +      printk(KERN_INFO "NFS: attempt to write to active swap"
+>>> +          "file!\n");
+>>> +      return -EBUSY;
+>>> +  }
+>>> +
+>>> +  return generic_file_splice_write(pipe, filp, ppos, count, flags);
+>>> +}
+>>> +
+>>> static int do_getlk(struct file *filp, int cmd, struct file_lock *fl)
+>>> {
+>>>   struct inode *inode = filp->f_mapping->host;
+>>>
+>>
+>
+>
+> --
+> Suresh Jayaraman
+>
+> _______________________________________________
+> ltt-dev mailing list
+> ltt-dev@lists.casi.polymtl.ca
+> http://lists.casi.polymtl.ca/cgi-bin/mailman/listinfo/ltt-dev
+>
