@@ -1,82 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756492AbZDBQsu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1765047AbZDBQtX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756492AbZDBQsu (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 2 Apr 2009 12:48:50 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932081AbZDBQrW
+	id S1765047AbZDBQtX (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 2 Apr 2009 12:49:23 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932142AbZDBQra
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 2 Apr 2009 12:47:22 -0400
-Received: from g5t0006.atlanta.hp.com ([15.192.0.43]:39687 "EHLO
-	g5t0006.atlanta.hp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1765958AbZDBQrV (ORCPT
+	Thu, 2 Apr 2009 12:47:30 -0400
+Received: from smtp102.mail.mud.yahoo.com ([209.191.85.212]:45325 "HELO
+	smtp102.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1761421AbZDBQr2 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 2 Apr 2009 12:47:21 -0400
-Subject: [PATCH]  Define a UNIQUE value for AS_UNEVICTABLE flag
-From: Lee Schermerhorn <Lee.Schermerhorn@hp.com>
-To: linux-kernel <linux-kernel@vger.kernel.org>, stable <stable@kernel.org>
-Cc: Andrew Morton <akpm@linux-foundation.org>, Rik van Riel <riel@redhat.com>,
-       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
-       David Howells <dhowells@redhat.com>
-Content-Type: text/plain
-Organization: HP/OSLO
-Date: Thu, 02 Apr 2009 12:47:15 -0400
-Message-Id: <1238690835.7359.16.camel@lts-notebook>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.22.3.1 
+	Thu, 2 Apr 2009 12:47:28 -0400
+DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
+  s=s1024; d=yahoo.com.au;
+  h=Received:X-YMail-OSG:X-Yahoo-Newman-Property:From:To:Subject:Date:User-Agent:Cc:References:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Content-Disposition:Message-Id;
+  b=yJB6eCcH3u1XeL/3xHqVhdehYRmvlbzhWWT4PmpQBcyehSqpEMQuKsi/0aFaNor+fz1YFPuEbgaN2XogJwzLUtcr9xhGaE9OykcY8r9dhnuD7mA09PcSCTUyBjkjwHjnaGZOKA6+6Q7/OSWcu5OIs2cMqfvKHxxCqHhAKkD1bEA=  ;
+X-YMail-OSG: xBvUmz8VM1lhlWGqGe_mr57KJmiFYaVr3xDZSkxfAa_KgOCnqmt.Gk8Q5m._EY_LrSgQQrm1lCw5KN_JkBo0Z7.IpKiy0uv73wQUEGxvy3xFJDgaFz9KMKO7MK489y5dB.C2W4rxWfQ2haTnE_y5QZoKTvSGhHeVIrr_f6PSOLvjB4KDoIBRNm9ISXt2yrDhjW6UqV1PiFlUdcduF4J5Srl5.2GzFHMoYAvcJAuT7H33vYWZKXSoERjs5nkNYS2FxQsubA7VTzyq2X0fnyrET99wGeRhoYHoaA2ns4GeohBgLSD1Xxri
+X-Yahoo-Newman-Property: ymail-3
+From: Nick Piggin <nickpiggin@yahoo.com.au>
+To: Christoph Hellwig <hch@infradead.org>
+Subject: Re: [PATCH 22/43] CacheFiles: Add a hook to write a single page of data to an inode [ver #46]
+Date: Fri, 3 Apr 2009 03:47:20 +1100
+User-Agent: KMail/1.9.51 (KDE/4.0.4; ; )
+Cc: David Howells <dhowells@redhat.com>, viro@zeniv.linux.org.uk,
+       nfsv4@linux-nfs.org, linux-kernel@vger.kernel.org,
+       linux-fsdevel@vger.kernel.org
+References: <200904030100.05741.nickpiggin@yahoo.com.au> <200904030232.59355.nickpiggin@yahoo.com.au> <20090402163712.GA25177@infradead.org>
+In-Reply-To: <20090402163712.GA25177@infradead.org>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200904030347.21470.nickpiggin@yahoo.com.au>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-[PATCH] Define UNIQUE value of AS_UNEVICTABLE
+On Friday 03 April 2009 03:37:12 Christoph Hellwig wrote:
+> On Fri, Apr 03, 2009 at 02:32:58AM +1100, Nick Piggin wrote:
+> > Hmm, I guess not all filesystems define write_begin/write_end. But if you
+> > only need to use ones that do define them?
+> 
+> No.  write_begin/write_end are simply callbacks for the write helpers,
+> and locking for them is entirely filesystem-defined.  E.g. xfs and the
+> cluster filesystems require additional locks taken first, and some
+> network filesystems require inode revalidations first.
 
-Needed in 2.6.28, 2.6.29, ...
-
-A new "address_space flag"--AS_MM_ALL_LOCKS--was defined to use the next
-available AS flag while the Unevictable LRU was under development.  The
-Unevictable LRU was using the same flag and "no one" noticed.  Current 
-mainline, since 2.6.28, has same value for two symbolic flag names.
-
-So, define a unique flag value for AS_UNEVICTABLE--up close to the other
-flags, [at the cost of an additional #ifdef] so we'll notice next time.
-Note that #ifdef is not actually required, if we don't mind having the 
-unused flag value defined.
-
-Replace #defines with an enum.
-
-Signed-off-by: Lee Schermerhorn <lee.schermerhorn@hp.com>
-
- include/linux/pagemap.h |   12 ++++++++----
- 1 files changed, 8 insertions(+), 4 deletions(-)
-
-Index: linux-2.6.29/include/linux/pagemap.h
-===================================================================
---- linux-2.6.29.orig/include/linux/pagemap.h	2009-03-23 19:12:14.000000000 -0400
-+++ linux-2.6.29/include/linux/pagemap.h	2009-04-02 11:56:27.000000000 -0400
-@@ -18,9 +18,14 @@
-  * Bits in mapping->flags.  The lower __GFP_BITS_SHIFT bits are the page
-  * allocation mode flags.
-  */
--#define	AS_EIO		(__GFP_BITS_SHIFT + 0)	/* IO error on async write */
--#define AS_ENOSPC	(__GFP_BITS_SHIFT + 1)	/* ENOSPC on async write */
--#define AS_MM_ALL_LOCKS	(__GFP_BITS_SHIFT + 2)	/* under mm_take_all_locks() */
-+enum mapping_flags {
-+	AS_EIO		= __GFP_BITS_SHIFT + 0,	/* IO error on async write */
-+	AS_ENOSPC	= __GFP_BITS_SHIFT + 1,	/* ENOSPC on async write */
-+	AS_MM_ALL_LOCKS	= __GFP_BITS_SHIFT + 2,	/* under mm_take_all_locks() */
-+#ifdef CONFIG_UNEVICTABLE_LRU
-+	AS_UNEVICTABLE	= __GFP_BITS_SHIFT + 3,	/* e.g., ramdisk, SHM_LOCK */
-+#endif
-+};
- 
- static inline void mapping_set_error(struct address_space *mapping, int error)
- {
-@@ -33,7 +38,6 @@ static inline void mapping_set_error(str
- }
- 
- #ifdef CONFIG_UNEVICTABLE_LRU
--#define AS_UNEVICTABLE	(__GFP_BITS_SHIFT + 2)	/* e.g., ramdisk, SHM_LOCK */
- 
- static inline void mapping_set_unevictable(struct address_space *mapping)
- {
+Well they now are quite well filesystem defined. We no longer take
+the page lock before calling them. Not saying it's perfect, but if
+the backing fs is just using a known subset of ones that work
+(like loop does).
 
 
+> They really should be taken out of the address_space_operations and
+> passed as callbacks to generic_file_aio_write & co.
+
+Probably yes. But it seems like it should have more discussion IMO
+(unless it has already been had and I missed it).
+
+I don't think "write_one_page" sounds like a particularly good new
+API addition.
+
+In the meantime, I would prefer cachefs use writebegin/end and it can
+be converted to a new API with everyone else rather than having to
+rush a new API in with it.
