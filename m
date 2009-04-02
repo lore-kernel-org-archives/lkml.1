@@ -1,62 +1,91 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1765863AbZDBUhY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757059AbZDBUhn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1765863AbZDBUhY (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 2 Apr 2009 16:37:24 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756331AbZDBUhG
+	id S1757059AbZDBUhn (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 2 Apr 2009 16:37:43 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932288AbZDBUhW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 2 Apr 2009 16:37:06 -0400
-Received: from mail-fx0-f158.google.com ([209.85.220.158]:59319 "EHLO
-	mail-fx0-f158.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751147AbZDBUhE (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 2 Apr 2009 16:37:04 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=subject:from:to:cc:in-reply-to:references:content-type:date
-         :message-id:mime-version:x-mailer:content-transfer-encoding;
-        b=qEu0641PMWbe0wuihvZStm9wZO7u8TOnrbqtKHamUi1uMMKV5TE/K5GA8a48V0BAsI
-         ZN1GXQg76je4qDGmzGJ8IhCaQGC5tIY/105dhzV9uR3RogksXJCxrhWjNfaq3DI+jln4
-         /WoA4OpASWGsxkGYrB/rShmo2s0En77o9ifgs=
-Subject: Re: Atheros Linux wireless support - ramifications of reverse
- engineering alien technology
-From: Maxim Levitsky <maximlevitsky@gmail.com>
-To: Larry Finger <Larry.Finger@lwfinger.net>
-Cc: "Luis R. Rodriguez" <lrodriguez@atheros.com>,
-       linux-wireless <linux-wireless@vger.kernel.org>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       "ath9k-devel@lists.ath9k.org" <ath9k-devel@venema.h4ckr.net>
-In-Reply-To: <49D519CF.5000507@lwfinger.net>
-References: <43e72e890904011147p5e22eaeejac3fddd2b9cddcfc@mail.gmail.com>
-	 <1238701879.9847.2.camel@maxim-laptop>  <49D519CF.5000507@lwfinger.net>
-Content-Type: text/plain
-Date: Thu, 02 Apr 2009 23:36:55 +0300
-Message-Id: <1238704615.9847.6.camel@maxim-laptop>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.24.3 
-Content-Transfer-Encoding: 7bit
+	Thu, 2 Apr 2009 16:37:22 -0400
+Received: from mga01.intel.com ([192.55.52.88]:59528 "EHLO mga01.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1765316AbZDBUhV (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 2 Apr 2009 16:37:21 -0400
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.39,315,1235980800"; 
+   d="scan'208";a="678294010"
+Message-Id: <20090402203420.734872000@intel.com>
+User-Agent: quilt/0.46-1
+Date: Thu, 02 Apr 2009 13:34:20 -0700
+From: fenghua.yu@intel.com
+To: Ingo Molnar <mingo@elte.hu>, David Woodhouse <dwmw2@infradead.org>,
+       Suresh Siddha <suresh.b.siddha@intel.com>,
+       Andrew Lutomirski <amluto@gmail.com>,
+       Jesse Barnes <jbarnes@virtuousgeek.org>,
+       Kyle McMartin <kyle@redhat.com>, Yinghai Lu <yinghai@kernel.org>
+Cc: LKML <linux-kernel@vger.kernel.org>,
+       IOMMU <iommu@lists.linux-foundation.org>
+Subject: Re: [patch 0/4] Intel IOMMU Supspend/Resume Support
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 2009-04-02 at 15:02 -0500, Larry Finger wrote:
-> Maxim Levitsky wrote:
-> > On Wed, 2009-04-01 at 11:47 -0700, Luis R. Rodriguez wrote:
-> >> Fellow Linux wireless hackers,
-> > 
-> > I have just three words:
-> > 
-> > This is not funny.
-> 
-> No sense of humor, and cannot count.
+>> Current Intel IOMMU does not support suspend and resume. In S3 event, kernel
+> crashes when DMAR or interrupt remapping is running.
+>>
+>> The attached patch set implements the suspend and resume feature for Intel
+>> IOMMU. It hooks to kernel suspend and resume interface. When suspend happens, itsaves necessary hardware registers. When resume happens, it restores the
+>> registers and restarts IOMMU.
+>>
+>> This patch set can be applied on the tip tree. 
+>  
+> Looks good to me, apart from the fact that your #4 patch actually needs
+>to come before #1. Shall I apply it to my iommu-2.6.git tree or let Ingo
+>take it? If the latter, 
+>
+>Acked-by: David Woodhouse <David.Woodhouse@intel.com>
+>Acked-by: David Woodhouse <David.Woodhouse@intel.com>
+>Acked-by: David Woodhouse <David.Woodhouse@intel.com>
+>Acked-by: David Woodhouse <David.Woodhouse@intel.com>
+>
+>(if you look carefully, you'll see those are in order 4, 1, 2, 3)
+>
+>Have we tested this on IA64?
+
+IA64 platforms don't support suspend/resume. The original 4 patches can be
+compiled and run on IA64. Only problem is the sysdev interface iommu is
+installed but not used.
+
+On the top of the 4 patches, you can apply the following small patch for IA64.
+With this small patch, IA64 kernel won't build IOMMU suspend/resume code at all.
 
 
-I don't want to start arguing with you, but I still think that 
-April posts about something evil that is about to done for linux aren't
-funny, just think for example about tomtom case , I also thought that
-this was a April fool joke, but it appears that it isn't.
+Signed-off-by: Fenghua Yu <fenghua.yu@intel.com>
 
-And speaking of counting I just meant "This isn't funny" and is three
-words.
+---
 
-Maxim
+ intel-iommu.c |    4 ++--
+ 1 files changed, 2 insertions(+), 2 deletions(-)
+
+diff --git a/drivers/pci/intel-iommu.c b/drivers/pci/intel-iommu.c
+index 5066668..2d9be1d 100644
+--- a/drivers/pci/intel-iommu.c
++++ b/drivers/pci/intel-iommu.c
+@@ -2564,7 +2564,7 @@ static void __init init_no_remapping_devices(void)
+ 	}
+ }
+ 
+-#ifdef CONFIG_PM
++#ifdef CONFIG_SUSPEND
+ static int init_iommu_hw(void)
+ {
+ 	struct dmar_drhd_unit *drhd;
+@@ -2702,7 +2702,7 @@ static int __init init_iommu_sysfs(void)
+ }
+ 
+ #else
+-static init __init init_iommu_sysfs(void)
++static int __init init_iommu_sysfs(void)
+ {
+ 	return 0;
+ }
+-- 
 
