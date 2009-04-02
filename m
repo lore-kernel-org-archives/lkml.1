@@ -1,51 +1,40 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1765996AbZDBRGp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932688AbZDBRHK@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1765996AbZDBRGp (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 2 Apr 2009 13:06:45 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760294AbZDBRGc
+	id S932688AbZDBRHK (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 2 Apr 2009 13:07:10 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932245AbZDBRGq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 2 Apr 2009 13:06:32 -0400
-Received: from rhun.apana.org.au ([64.62.148.172]:42463 "EHLO
-	arnor.apana.org.au" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1760140AbZDBRGb (ORCPT
+	Thu, 2 Apr 2009 13:06:46 -0400
+Received: from mx2.redhat.com ([66.187.237.31]:35919 "EHLO mx2.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S932218AbZDBRGp convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 2 Apr 2009 13:06:31 -0400
-Date: Fri, 3 Apr 2009 01:06:10 +0800
-From: Herbert Xu <herbert@gondor.apana.org.au>
-To: Avi Kivity <avi@redhat.com>
-Cc: Gregory Haskins <ghaskins@novell.com>,
-       Rusty Russell <rusty@rustcorp.com.au>, anthony@codemonkey.ws,
-       andi@firstfloor.org, linux-kernel@vger.kernel.org, agraf@suse.de,
-       pmullaney@novell.com, pmorreale@novell.com, netdev@vger.kernel.org,
-       kvm@vger.kernel.org, Ingo Molnar <mingo@elte.hu>
-Subject: Re: [RFC PATCH 00/17] virtual-bus
-Message-ID: <20090402170610.GA3001@gondor.apana.org.au>
-References: <49D49C1F.6030306@novell.com> <200904022243.21088.rusty@rustcorp.com.au> <49D4B4A3.5070008@novell.com> <49D4B87D.2000202@redhat.com> <20090402145018.GA816@gondor.apana.org.au> <49D4D301.2090209@redhat.com> <20090402154041.GA1774@gondor.apana.org.au> <49D4E072.2060003@redhat.com> <20090402160941.GB2173@gondor.apana.org.au> <49D4EDBD.3050900@redhat.com>
+	Thu, 2 Apr 2009 13:06:45 -0400
+Organization: Red Hat UK Ltd. Registered Address: Red Hat UK Ltd, Amberley
+	Place, 107-111 Peascod Street, Windsor, Berkshire, SI4 1TE, United
+	Kingdom.
+	Registered in England and Wales under Company Registration No. 3798903
+From: David Howells <dhowells@redhat.com>
+In-Reply-To: <7008.1238690918@redhat.com>
+References: <7008.1238690918@redhat.com> <200904030315.03606.nickpiggin@yahoo.com.au> <200904030225.16372.nickpiggin@yahoo.com.au> <5198.1238682972@redhat.com> <6362.1238687462@redhat.com>
+Cc: dhowells@redhat.com, Nick Piggin <nickpiggin@yahoo.com.au>,
+       viro@zeniv.linux.org.uk, nfsv4@linux-nfs.org,
+       linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org
+Subject: Re: What I mean by a 'netfs' when dealing with FS-Cache
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <49D4EDBD.3050900@redhat.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+Content-Type: text/plain; charset=iso-8859-1
+Content-Transfer-Encoding: 8BIT
+Date: Thu, 02 Apr 2009 18:06:40 +0100
+Message-ID: <7207.1238692000@redhat.com>
+To: unlisted-recipients:; (no To-header on input)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Apr 02, 2009 at 07:54:21PM +0300, Avi Kivity wrote:
->
-> 3ms latency for ping?
->
-> (ping will always be scheduled immediately when the reply arrives if I  
-> understand cfs, so guest load won't delay it)
+David Howells <dhowells@redhat.com> wrote:
 
-That only happens if the guest immediately does some CPU-intensive
-computation 3ms and assuming its timeslice lasts that long.
+> NFS, AFS and ISOFS in this diagram all fill the roll of 'netfs'.
 
-In any case, the same thing will happen right now if the host or
-some other guest on the same CPU hogs the CPU for 3ms.
+Make that 'role', not 'roll'.  Or 'rôle' if you prefer.
 
-Cheers,
--- 
-Visit Openswan at http://www.openswan.org/
-Email: Herbert Xu ~{PmV>HI~} <herbert@gondor.apana.org.au>
-Home Page: http://gondor.apana.org.au/~herbert/
-PGP Key: http://gondor.apana.org.au/~herbert/pubkey.txt
+David
