@@ -1,67 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933980AbZDBTjm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764797AbZDBTmV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933980AbZDBTjm (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 2 Apr 2009 15:39:42 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763501AbZDBTja
+	id S1764797AbZDBTmV (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 2 Apr 2009 15:42:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759087AbZDBTmI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 2 Apr 2009 15:39:30 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:48608 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1759666AbZDBTj3 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 2 Apr 2009 15:39:29 -0400
-Date: Thu, 2 Apr 2009 12:31:15 -0700 (PDT)
-From: Linus Torvalds <torvalds@linux-foundation.org>
-X-X-Sender: torvalds@localhost.localdomain
-To: Len Brown <lenb@kernel.org>
-cc: "H. Peter Anvin" <hpa@zytor.com>,
-       "Michael K. Johnson" <johnsonm@rpath.com>,
-       Justin Forbes <jmforbes@linuxtx.org>,
-       Jordan Hargrave <Jordan_Hargrave@dell.com>, Ingo Molnar <mingo@elte.hu>,
-       Thomas Gleixner <tglx@linutronix.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       linux-acpi@vger.kernel.org
-Subject: Re: [GIT PULL] x86 setup BIOS workarounds
-In-Reply-To: <alpine.LFD.2.00.0904020017480.4657@localhost.localdomain>
-Message-ID: <alpine.LFD.2.00.0904021227060.4130@localhost.localdomain>
-References: <200904011640.n31GeD0m008691@voreg.hos.anvin.org> <alpine.LFD.2.00.0904011115210.4130@localhost.localdomain> <alpine.LFD.2.00.0904020017480.4657@localhost.localdomain>
-User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
+	Thu, 2 Apr 2009 15:42:08 -0400
+Received: from mx2.redhat.com ([66.187.237.31]:52031 "EHLO mx2.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1756089AbZDBTmF (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 2 Apr 2009 15:42:05 -0400
+Date: Thu, 2 Apr 2009 12:39:20 -0700
+From: Chris Wright <chrisw@redhat.com>
+To: Jesper Juhl <jj@chaosbits.net>
+Cc: Izik Eidus <ieidus@redhat.com>, linux-kernel@vger.kernel.org,
+       kvm@vger.kernel.org, linux-mm@kvack.org, avi@redhat.com,
+       aarcange@redhat.com, chrisw@redhat.com, riel@redhat.com,
+       jeremy@goop.org, mtosatti@redhat.com, hugh@veritas.com, corbet@lwn.net,
+       yaniv@redhat.com, dmonakhov@openvz.org
+Subject: Re: [PATCH 0/4] ksm - dynamic page sharing driver for linux
+Message-ID: <20090402193920.GF10392@x200.localdomain>
+References: <1238457560-7613-1-git-send-email-ieidus@redhat.com> <alpine.LNX.2.00.0904022114040.4265@swampdragon.chaosbits.net>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <alpine.LNX.2.00.0904022114040.4265@swampdragon.chaosbits.net>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+* Jesper Juhl (jj@chaosbits.net) wrote:
+> Do you rely only on the checksum or do you actually compare pages to check 
+> they are 100% identical before sharing?
 
+Checksum has absolutely nothing to do w/ finding if two pages match.
+It's only used as a heuristic to suggest whether a single page has
+changed.  If that page is changing we won't bother trying to find a
+match for it.  Here's an example of the life of a page w.r.t checksum.
 
-On Thu, 2 Apr 2009, Len Brown wrote:
-> 
-> Yes, this expects old BIOS to always return 20.
+1. checksum = uninitialized
+2. first time page is found, checksum it (checksum = A).
+   if checksum has changed (uninitialize != A) don't go any further w/ that page
+3. next time page is found, checksum it (checksum = B).
+   if checksum has change (A != B) don't go any further w/ that page
+4. next time page is found, checksum it (checksum = B).
+   if checksum has changed (B == B)...it hasn't, continue processing the
+   page
 
-Do you have any reason to expect that all BIOS'es are bug-free in this 
-area? 
+later if a match is found in the tree (which is sorted by _contents_,
+i.e. memcmp) we'll attempt to merge the pages which at it's very core
+does:
 
-That would be a first.
+	if (pages_identical(oldpage, newpage))
+		ret = replace_page(vma, oldpage, newpage, orig_pte, newprot);
 
-We already check for other error cases where the BIOS didn't do the right 
-thing in other ways in its e820 routine, or clobbered the wrogn registers 
-or whatever. Why would you expect that the return value would always be 
-ok?
+pages_identical?  you guessed it...just does:
 
-> No, it does not expect old BIOS to have any particular value
-> in buf.ext_flags -- since that is examined only for size > 20.
+	r = memcmp(addr1, addr2, PAGE_SIZE)
 
-The point is, that expectation that the BIOS returns 20 seems very 
-unreasonable. BIOS writers tend to have been on pain medication for so 
-long that they can hardly remember their own name, much less actually make 
-sure they follow all the documentation.
-
-Now, if Windows has actually _depended_ on the right return value since 
-Win95, that would be a good, strong argument.
-
-Because that's the only case where we can pretty much depend on BIOS 
-writers get things right - if Windows doesn't boot when they get it wrong. 
-As far as I can tell, that has always been the only real quality assurance 
-for most BIOS'es.
-
-			Linus
+thanks,
+-chris
