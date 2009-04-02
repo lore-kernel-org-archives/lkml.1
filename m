@@ -1,58 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933599AbZDBQyZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933739AbZDBQza@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933599AbZDBQyZ (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 2 Apr 2009 12:54:25 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933496AbZDBQxd
+	id S933739AbZDBQza (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 2 Apr 2009 12:55:30 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932329AbZDBQyO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 2 Apr 2009 12:53:33 -0400
-Received: from smtp119.mail.mud.yahoo.com ([209.191.84.76]:29502 "HELO
-	smtp119.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S933284AbZDBQxc (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 2 Apr 2009 12:53:32 -0400
-DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
-  s=s1024; d=yahoo.com.au;
-  h=Received:X-YMail-OSG:X-Yahoo-Newman-Property:From:To:Subject:Date:User-Agent:Cc:References:In-Reply-To:MIME-Version:Content-Disposition:Message-Id:Content-Type:Content-Transfer-Encoding;
-  b=tbHLgAy3Wtq9ughsi5L63QnOt+n2kgVLf9BEb9dt/3Fjqq2/L4079hJMxSt8iukjOpyX1LC7xUwBYU5my5GzJ/WflUXx1QuqnJDZNfCBttVyxldOK/MuKtQrxpPsKSWZX+32YzSkIs1FsdkXPidalMLhuVB6U1TgXNSJbfL7/O8=  ;
-X-YMail-OSG: wmpY3a0VM1m7A5a9Ffj3GvldfjpYzg1RrIem3cXRJPObBqbA.QzTSCgOUcqP56R_XXsY.it43uDQq75qkVfotpOCCBV3jCLzgiUhHbKu4YYzmPUpYA_Tlr0H3S6qSmnf11Rjxz2WGSkRQSa5t4QmAU68gJpzon.o71kP2yOedg0m.DwL9SbC2QJvb_R3HL.obeZBOKhx4KzDdia2epcltHkJmk6rU5O2fEppTxVOc1tPv9bAPZ8Z0INs5uqHnKKiqzBSmXzHHLB6BHfMeUzXs50H1lg2eF91afOKGQhUHxwWrv7MIVwo1ddiGeckeGQIOGNovEpc0iogUuvmxRKMuZCaYw--
-X-Yahoo-Newman-Property: ymail-3
-From: Nick Piggin <nickpiggin@yahoo.com.au>
-To: David Howells <dhowells@redhat.com>
-Subject: Re: [PATCH 06/43] FS-Cache: Recruit a couple of page flags for cache management [ver #46]
-Date: Fri, 3 Apr 2009 03:53:17 +1100
-User-Agent: KMail/1.9.51 (KDE/4.0.4; ; )
-Cc: viro@zeniv.linux.org.uk, nfsv4@linux-nfs.org, linux-kernel@vger.kernel.org,
-       linux-fsdevel@vger.kernel.org
-References: <200904030225.16372.nickpiggin@yahoo.com.au> <6362.1238687462@redhat.com> <200904030315.03606.nickpiggin@yahoo.com.au>
-In-Reply-To: <200904030315.03606.nickpiggin@yahoo.com.au>
+	Thu, 2 Apr 2009 12:54:14 -0400
+Received: from mx2.redhat.com ([66.187.237.31]:36373 "EHLO mx2.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S933537AbZDBQyL (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 2 Apr 2009 12:54:11 -0400
+Message-ID: <49D4EDBD.3050900@redhat.com>
+Date: Thu, 02 Apr 2009 19:54:21 +0300
+From: Avi Kivity <avi@redhat.com>
+User-Agent: Thunderbird 2.0.0.21 (X11/20090320)
 MIME-Version: 1.0
-Content-Disposition: inline
-Message-Id: <200904030353.17713.nickpiggin@yahoo.com.au>
-Content-Type: text/plain;
-  charset="utf-8"
+To: Herbert Xu <herbert@gondor.apana.org.au>
+CC: Gregory Haskins <ghaskins@novell.com>,
+       Rusty Russell <rusty@rustcorp.com.au>, anthony@codemonkey.ws,
+       andi@firstfloor.org, linux-kernel@vger.kernel.org, agraf@suse.de,
+       pmullaney@novell.com, pmorreale@novell.com, netdev@vger.kernel.org,
+       kvm@vger.kernel.org, Ingo Molnar <mingo@elte.hu>
+Subject: Re: [RFC PATCH 00/17] virtual-bus
+References: <20090402085253.GA29932@gondor.apana.org.au> <49D487A6.407@redhat.com> <49D49C1F.6030306@novell.com> <200904022243.21088.rusty@rustcorp.com.au> <49D4B4A3.5070008@novell.com> <49D4B87D.2000202@redhat.com> <20090402145018.GA816@gondor.apana.org.au> <49D4D301.2090209@redhat.com> <20090402154041.GA1774@gondor.apana.org.au> <49D4E072.2060003@redhat.com> <20090402160941.GB2173@gondor.apana.org.au>
+In-Reply-To: <20090402160941.GB2173@gondor.apana.org.au>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Friday 03 April 2009 03:15:02 Nick Piggin wrote:
-> On Friday 03 April 2009 02:51:02 David Howells wrote:
-> > Nick Piggin <nickpiggin@yahoo.com.au> wrote:
+Herbert Xu wrote:
+> On Thu, Apr 02, 2009 at 06:57:38PM +0300, Avi Kivity wrote:
+>   
+>> What if the guest sends N packets, then does some expensive computation  
+>> (say the guest scheduler switches from the benchmark process to  
+>> evolution).  So now we have the marker set at packet N, but the host  
+>> will not see it until the guest timeslice is up?
+>>     
+>
+> Well that's fine.  The guest will use up the remainder of its
+> timeslice.  After all we only have one core/hyperthread here so
+> this is no different than if the packets were held up higher up
+> in the guest kernel and the guest decided to do some computation.
+>
+>   
 
-> > > Possibly you can't reuse mappedtodisk....
-> > 
-> > PG_mappedtodisk has a very specific meaning to fs/buffer.c and fs/mpage.c.  I
-> > can't also easily make it mean that a page is backed by the cache.  A page can
-> > be cached and not mapped to disk.
-> 
-> You have 2 types of pagecache pages you are dealing with here, right? The
-> netfs and the backingfs pages. From what you write above, am I to take it
-> that you need to know whether a backingfs page is "backed by the cache"?
-> WTF for? And what cache is it backed by if it is the backing store?
+3ms latency for ping?
 
-Ah, sorry you want isofs to be cached by another backing store. All
-this talk of netfs confused me. Yes that's fair enough and could
-put PG_mappedtodisk out of reach. OTOH, is isofs important? Enough
-that it can't be done with fuse or something?
+(ping will always be scheduled immediately when the reply arrives if I 
+understand cfs, so guest load won't delay it)
 
-Comments about PG_private still stand.
+-- 
+I have a truly marvellous patch that fixes the bug which this
+signature is too narrow to contain.
+
