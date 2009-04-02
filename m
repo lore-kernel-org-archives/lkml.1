@@ -1,171 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761808AbZDBXhV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932678AbZDBXhp@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761808AbZDBXhV (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 2 Apr 2009 19:37:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758513AbZDBXgo
+	id S932678AbZDBXhp (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 2 Apr 2009 19:37:45 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932497AbZDBXhB
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 2 Apr 2009 19:36:44 -0400
-Received: from cantor.suse.de ([195.135.220.2]:39582 "EHLO mx1.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756249AbZDBXgn (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 2 Apr 2009 19:36:43 -0400
-From: Jan Kara <jack@suse.cz>
-To: linux-ext4@vger.kernel.org
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       LKML <linux-kernel@vger.kernel.org>, Jan Kara <jack@suse.cz>,
-       Ying Han <yinghan@google.com>, Nick Piggin <nickpiggin@yahoo.com.au>
-Subject: [PATCH] ext2: Fix data corruption for racing writes
-Date: Fri,  3 Apr 2009 01:36:38 +0200
-Message-Id: <1238715399-22172-1-git-send-email-jack@suse.cz>
-X-Mailer: git-send-email 1.6.0.2
-In-Reply-To: <n>
-References: <n>
+	Thu, 2 Apr 2009 19:37:01 -0400
+Received: from mail-qy0-f118.google.com ([209.85.221.118]:59030 "EHLO
+	mail-qy0-f118.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S932418AbZDBXg7 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 2 Apr 2009 19:36:59 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=subject:from:to:cc:in-reply-to:references:content-type:date
+         :message-id:mime-version:x-mailer:content-transfer-encoding;
+        b=WQyMX3N4YaukglV4IVUW8oF9NwHcfyHxDsFBuo9BV5f5yNhh0JcPRDQNjUBYuMYcFP
+         5ByYVkGyWp7JoQ/vaKC6yARyYIYGl1iGBTxGlC7uDSc0BRkc0S+bo5RzAsBFbK62+b6l
+         5A+y66PkpRhX5wexb3a7b9I1/GfQpegUx5wJw=
+Subject: Re: [Lguest] [PATCH 4/5] lguest: use KVM hypercalls
+From: Matias Zabaljauregui <zabaljauregui@gmail.com>
+To: Simon Holm =?ISO-8859-1?Q?Th=F8gersen?= <odie@cs.aau.dk>
+Cc: Rusty Russell <rusty@rustcorp.com.au>, virtualization@lists.osdl.org,
+       lguest@ozlabs.org, Ingo Molnar <mingo@redhat.com>,
+       linux-kernel@vger.kernel.org,
+       Matias Zabaljauregui <zabaljaureguiatgmail.com@ozlabs.org>
+In-Reply-To: <1238709324.5823.8.camel@odie.local>
+References: <200903271022.38244.rusty@rustcorp.com.au>
+	 <1238709324.5823.8.camel@odie.local>
+Content-Type: text/plain; charset="UTF-8"
+Date: Thu, 02 Apr 2009 20:37:28 -0300
+Message-Id: <1238715448.29787.6.camel@zetabook>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.24.3 
+Content-Transfer-Encoding: 8bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-If two writers allocating blocks to file race with each other (e.g. because
-writepages races with ordinary write or two writepages race with each other),
-ext2_getblock() can be called on the same inode in parallel.  Before we are
-going to allocate new blocks, we have to recheck the block chain we have
-obtained so far without holding truncate_mutex. Otherwise we could overwrite
-the indirect block pointer set by the other writer leading to data loss.
+On Thu, 2009-04-02 at 23:55 +0200, Simon Holm Thøgersen wrote:
+> fre, 27 03 2009 kl. 10:22 +1030, skrev Rusty Russell:
+> > From: Matias Zabaljauregui <zabaljauregui@gmail.com>
+> > 
+> > Impact: cleanup
+> > 
+> > This patch allow us to use KVM hypercalls
+> 
+> Something has broken in relation to this change. I'm not sure it is this
+> change itself or one following, but I get the following error when using
+> lguest:
+> 
+> lguest: unhandled trap 6 at 0x418726 (0x0)
 
-The below test program by Ying is able to reproduce the data loss with ext2
-on in BRD in a few minutes if the machine is under memory pressure:
 
-long kMemSize  = 50 << 20;
-int kPageSize = 4096;
+Hi, could you please attach your config? 
+are you using the same kernel for guest and host?
 
-int main(int argc, char **argv) {
-	int status;
-	int count = 0;
-	int i;
-	char *fname = "/mnt/test.mmap";
-	char *mem;
-	unlink(fname);
-	int fd = open(fname, O_CREAT | O_EXCL | O_RDWR, 0600);
-	status = ftruncate(fd, kMemSize);
-	mem = mmap(0, kMemSize, PROT_READ | PROT_WRITE, MAP_SHARED, fd, 0);
-	// Fill the memory with 1s.
-	memset(mem, 1, kMemSize);
-	sleep(2);
-	for (i = 0; i < kMemSize; i++) {
-		int byte_good = mem[i] != 0;
-		if (!byte_good && ((i % kPageSize) == 0)) {
-			//printf("%d ", i / kPageSize);
-			count++;
-		}
-	}
-	munmap(mem, kMemSize);
-	close(fd);
-	unlink(fname);
+I just tested it with 2.6.29-07100-g833bb30  and works OK for me.
 
-	if (count > 0) {
-		printf("Running %d bad page\n", count);
-		return 1;
-	}
-	return 0;
-}
-
-CC: Ying Han <yinghan@google.com>
-CC: Nick Piggin <nickpiggin@yahoo.com.au>
-Signed-off-by: Jan Kara <jack@suse.cz>
----
- fs/ext2/inode.c |   44 +++++++++++++++++++++++++++++++++-----------
- 1 files changed, 33 insertions(+), 11 deletions(-)
-
-diff --git a/fs/ext2/inode.c b/fs/ext2/inode.c
-index b43b955..acf6788 100644
---- a/fs/ext2/inode.c
-+++ b/fs/ext2/inode.c
-@@ -590,9 +590,8 @@ static int ext2_get_blocks(struct inode *inode,
- 
- 	if (depth == 0)
- 		return (err);
--reread:
--	partial = ext2_get_branch(inode, depth, offsets, chain, &err);
- 
-+	partial = ext2_get_branch(inode, depth, offsets, chain, &err);
- 	/* Simplest case - block found, no allocation needed */
- 	if (!partial) {
- 		first_block = le32_to_cpu(chain[depth - 1].key);
-@@ -602,15 +601,16 @@ reread:
- 		while (count < maxblocks && count <= blocks_to_boundary) {
- 			ext2_fsblk_t blk;
- 
--			if (!verify_chain(chain, partial)) {
-+			if (!verify_chain(chain, chain + depth - 1)) {
- 				/*
- 				 * Indirect block might be removed by
- 				 * truncate while we were reading it.
- 				 * Handling of that case: forget what we've
- 				 * got now, go to reread.
- 				 */
-+				err = -EAGAIN;
- 				count = 0;
--				goto changed;
-+				break;
- 			}
- 			blk = le32_to_cpu(*(chain[depth-1].p + count));
- 			if (blk == first_block + count)
-@@ -618,7 +618,8 @@ reread:
- 			else
- 				break;
- 		}
--		goto got_it;
-+		if (err != -EAGAIN)
-+			goto got_it;
- 	}
- 
- 	/* Next simple case - plain lookup or failed read of indirect block */
-@@ -626,6 +627,33 @@ reread:
- 		goto cleanup;
- 
- 	mutex_lock(&ei->truncate_mutex);
-+	/*
-+	 * If the indirect block is missing while we are reading
-+	 * the chain(ext3_get_branch() returns -EAGAIN err), or
-+	 * if the chain has been changed after we grab the semaphore,
-+	 * (either because another process truncated this branch, or
-+	 * another get_block allocated this branch) re-grab the chain to see if
-+	 * the request block has been allocated or not.
-+	 *
-+	 * Since we already block the truncate/other get_block
-+	 * at this point, we will have the current copy of the chain when we
-+	 * splice the branch into the tree.
-+	 */
-+	if (err == -EAGAIN || !verify_chain(chain, partial)) {
-+		while (partial > chain) {
-+			brelse(partial->bh);
-+			partial--;
-+		}
-+		partial = ext2_get_branch(inode, depth, offsets, chain, &err);
-+		if (!partial) {
-+			count++;
-+			mutex_unlock(&ei->truncate_mutex);
-+			if (err)
-+				goto cleanup;
-+			clear_buffer_new(bh_result);
-+			goto got_it;
-+		}
-+	}
- 
- 	/*
- 	 * Okay, we need to do block allocation.  Lazily initialize the block
-@@ -683,12 +711,6 @@ cleanup:
- 		partial--;
- 	}
- 	return err;
--changed:
--	while (partial > chain) {
--		brelse(partial->bh);
--		partial--;
--	}
--	goto reread;
- }
- 
- int ext2_get_block(struct inode *inode, sector_t iblock, struct buffer_head *bh_result, int create)
--- 
-1.6.0.2
+thanks
+Matias
 
