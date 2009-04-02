@@ -1,60 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1765752AbZDBTaR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763411AbZDBTaj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1765752AbZDBTaR (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 2 Apr 2009 15:30:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755706AbZDBT37
+	id S1763411AbZDBTaj (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 2 Apr 2009 15:30:39 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933356AbZDBTaU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 2 Apr 2009 15:29:59 -0400
-Received: from mx2.mail.elte.hu ([157.181.151.9]:43419 "EHLO mx2.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754392AbZDBT36 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 2 Apr 2009 15:29:58 -0400
-Date: Thu, 2 Apr 2009 21:29:42 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: markus.t.metzger@intel.com
-Cc: tglx@linutronix.de, hpa@zytor.com, markus.t.metzger@gmail.com,
-       roland@redhat.com, eranian@googlemail.com, oleg@redhat.com,
-       juan.villacis@intel.com, ak@linux.jf.intel.com,
-       linux-kernel@vger.kernel.org
-Subject: Re: [patch 14/18] x86, ds: use single debug store cpu configuration
-Message-ID: <20090402192942.GE2455@elte.hu>
-References: <20090402145455.597376000@intel.com> <20090402145728.179163000@intel.com>
+	Thu, 2 Apr 2009 15:30:20 -0400
+Received: from extu-mxob-2.symantec.com ([216.10.194.135]:34283 "EHLO
+	extu-mxob-2.symantec.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1762846AbZDBTaT (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 2 Apr 2009 15:30:19 -0400
+Date: Thu, 2 Apr 2009 20:27:21 +0100 (BST)
+From: Hugh Dickins <hugh@veritas.com>
+X-X-Sender: hugh@blonde.anvils
+To: Martin Schwidefsky <schwidefsky@de.ibm.com>
+cc: Nick Piggin <nickpiggin@yahoo.com.au>,
+       Rusty Russell <rusty@rustcorp.com.au>,
+       virtualization@lists.linux-foundation.org, linux-mm@kvack.org,
+       linux-kernel@vger.kernel.org, virtualization@lists.osdl.org,
+       akpm@osdl.org, frankeh@watson.ibm.com, riel@redhat.com
+Subject: Re: [patch 0/6] Guest page hinting version 7.
+In-Reply-To: <20090402175249.3c4a6d59@skybase>
+Message-ID: <Pine.LNX.4.64.0904022016180.29625@blonde.anvils>
+References: <20090327150905.819861420@de.ibm.com> <200903281705.29798.rusty@rustcorp.com.au>
+ <20090329162336.7c0700e9@skybase> <200904022232.02185.nickpiggin@yahoo.com.au>
+ <20090402175249.3c4a6d59@skybase>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090402145728.179163000@intel.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-* markus.t.metzger@intel.com <markus.t.metzger@intel.com> wrote:
-
-> Use a single configuration for all cpus.
+On Thu, 2 Apr 2009, Martin Schwidefsky wrote:
+> On Thu, 2 Apr 2009 22:32:00 +1100
+> Nick Piggin <nickpiggin@yahoo.com.au> wrote:
 > 
-
-> @@ -1291,11 +1290,15 @@ ds_configure(const struct ds_configurati
->  	printk("bts/pebs record: %u/%u bytes\n",
->  	       ds_cfg.sizeof_rec[ds_bts], ds_cfg.sizeof_rec[ds_pebs]);
+> > I still think this needs much more justification.
 >  
-> -	WARN_ON_ONCE(MAX_SIZEOF_DS < (12 * ds_cfg.sizeof_ptr_field));
-> +	WARN_ON(MAX_SIZEOF_DS < (12 * ds_cfg.sizeof_ptr_field));
+> Ok, I can understand that. We probably need a KVM based version to show
+> that benefits exist on non-s390 hardware as well.
 
-Why this change?
+That would indeed help your cause enormously (I think I made the same
+point last time).  All these complex transitions, added to benefit only
+an architecture to which few developers have access, asks for trouble -
+we mm hackers already get caught out often enough by your
+too-well-camouflaged page_test_dirty().
 
-Firstly, it was not declared in the changelog which is a no-no. 
-
-Secondly, this is a bad change: we are more than content to have a 
-single such warning bootup - not dozens of it (on some large 
-system).
-
-	Ingo
+Hugh
