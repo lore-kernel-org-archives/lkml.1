@@ -1,112 +1,187 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763342AbZDBWhH@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763591AbZDBWhc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763342AbZDBWhH (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 2 Apr 2009 18:37:07 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755856AbZDBWgv
+	id S1763591AbZDBWhc (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 2 Apr 2009 18:37:32 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760211AbZDBWgw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 2 Apr 2009 18:36:51 -0400
-Received: from mx2.mail.elte.hu ([157.181.151.9]:42483 "EHLO mx2.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753172AbZDBWgu (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 2 Apr 2009 18:36:52 -0400
+Received: from a-sasl-fastnet.sasl.smtp.pobox.com ([207.106.133.19]:43616 "EHLO
+	sasl.smtp.pobox.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755575AbZDBWgu convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
 	Thu, 2 Apr 2009 18:36:50 -0400
-Date: Fri, 3 Apr 2009 00:36:05 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>,
-       Andrew Morton <akpm@linux-foundation.org>
-Cc: linux-kernel@vger.kernel.org, niv@us.ibm.com, dvhltc@us.ibm.com,
-       dhowells@redhat.com, lethal@linux-sh.org, kernel@wantstofly.org,
-       matthew@wil.cx
-Subject: Re: [PATCH] v3 RCU: the bloatwatch edition
-Message-ID: <20090402223605.GB19007@elte.hu>
-References: <20090203183426.GA14409@linux.vnet.ibm.com> <20090329203118.GA14005@linux.vnet.ibm.com>
+From: Junio C Hamano <gitster@pobox.com>
+To: git@vger.kernel.org
+Subject: [ANNOUNCE] GIT 1.6.2.2
+Date: Thu, 02 Apr 2009 15:36:38 -0700
+Message-ID: <7vab6yel8p.fsf@gitster.siamese.dyndns.org>
+User-Agent: Gnus/5.110006 (No Gnus v0.6) Emacs/21.4 (gnu/linux)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090329203118.GA14005@linux.vnet.ibm.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+Content-Type: text/plain; charset=utf-8
+Content-Transfer-Encoding: 8BIT
+X-Pobox-Relay-ID: BFC61340-1FD6-11DE-944B-BB14ECB1AA3C-77302942!a-sasl-fastnet.pobox.com
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+The latest maintenance release GIT 1.6.2.2 is available at the
+usual places:
 
-* Paul E. McKenney <paulmck@linux.vnet.ibm.com> wrote:
+  http://www.kernel.org/pub/software/scm/git/
 
-> This patch is a version of RCU designed for (!SMP && EMBEDDED) 
-> provided as a proof of concept of a small-footprint RCU 
-> implementation. In particular, the implementation of 
-> synchronize_rcu() is extremely lightweight and high performance.  
-> It passes rcutorture testing in each of the four relevant 
-> configurations (combinations of NO_HZ and PREEMPT) on x86.  This 
-> saves about 900 bytes compared to Classic RCU, and a couple 
-> kilobytes compared to Hierarchical RCU:
-> 
-> 	CONFIG_CLASSIC_RCU:
-> 
-> 	   text	   data	    bss	    dec	    hex	filename
-> 	    363	     12	     24	    399	    18f	kernel/rcupdate.o
-> 	   1237	     64	    124	   1425	    591	kernel/rcuclassic.o
-> 				   1824 Total
-> 
-> 	CONFIG_TREE_RCU:
-> 
-> 	   text	   data	    bss	    dec	    hex	filename
-> 	    363	     12	     24	    399	    18f	kernel/rcupdate.o
-> 	   2344	    240	    184	   2768	    ad0	kernel/rcutree.o
-> 				   3167 Total
-> 
-> 	CONFIG_TINY_RCU:
-> 
-> 	   text	   data	    bss	    dec	    hex	filename
-> 	    294	     12	     24	    330	    14a	kernel/rcupdate.o
-> 	    563	     36	      0	    599	    257	kernel/rcutiny.o
-> 				    929 Total
-> 
-> 
-> Changes from v2 (http://lkml.org/lkml/2009/2/3/333) include:
-> 
-> o	Fix whitespace issues.
-> 
-> o	Change short-circuit "||" operator to instead be "+" in order to
-> 	fix performance bug noted by "kraai" on LWN.
-> 
-> 		(http://lwn.net/Articles/324348/)
-> 
-> Changes from v1 (http://lkml.org/lkml/2009/1/13/440) include:
-> 
-> o	This version depends on EMBEDDED as well as !SMP, as suggested
-> 	by Ingo.
-> 
-> o	Updated rcu_needs_cpu() to unconditionally return zero,
-> 	permitting the CPU to enter dynticks-idle mode at any time.
-> 	This works because callbacks can be invoked upon entry to
-> 	dynticks-idle mode.
-> 
-> o	I am now OK with this being included, based on a poll at the
-> 	Kernel Miniconf at linux.conf.au, where about ten people said
-> 	that they cared about saving 900 bytes on single-CPU systems.
-> 
-> o	Applies to both mainline and tip/core/rcu.
+  git-1.6.2.2.tar.{gz,bz2}			(source tarball)
+  git-htmldocs-1.6.2.2.tar.{gz,bz2}		(preformatted docs)
+  git-manpages-1.6.2.2.tar.{gz,bz2}		(preformatted docs)
 
-Andrew, what do you think?
+The RPM binary packages for a few architectures are found in:
 
-A worry is yet another RCU variant - we already have 3.
+  RPMS/$arch/git-*-1.6.2.2-1.fc9.$arch.rpm	(RPM)
 
-A trick we could use would be to put it into Documentation/rcu/, 
-linked in via some clever Makefile magic and only usable if a 
-ultra-embedded developer does a build with something like 
-CONFIG_RCU_TINY=y. That way there's no real maintenance and testing 
-overhead.
+Mostly documentation updates with a few bugfixes.
 
-It _does_ have documentation value beyond the ~900 bytes: it's the 
-simplest and smallest possible still-working UP RCU implementation 
-so it would be easy to teach RCU concepts via that, gradually.
+----------------------------------------------------------------
 
-	Ingo
+GIT v1.6.2.2 Release Notes
+==========================
+
+Fixes since v1.6.2.1
+--------------------
+
+* A longstanding confusing description of what --pickaxe option of
+  git-diff does has been clarified in the documentation.
+
+* "git-blame -S" did not quite work near the commits that were given
+  on the command line correctly.
+
+* "git diff --pickaxe-regexp" did not count overlapping matches
+  correctly.
+
+* "git diff" did not feed files in work-tree representation to external
+  diff and textconv.
+
+* "git-fetch" in a repository that was not cloned from anywhere said
+  it cannot find 'origin', which was hard to understand for new people.
+
+* "git-format-patch --numbered-files --stdout" did not have to die of
+  incompatible options; it now simply ignores --numbered-files as no files
+  are produced anyway.
+
+* "git-ls-files --deleted" did not work well with GIT_DIR&GIT_WORK_TREE.
+
+* "git-read-tree A B C..." without -m option has been broken for a long
+  time.
+
+* git-send-email ignored --in-reply-to when --no-thread was given.
+
+* 'git-submodule add' did not tolerate extra slashes and ./ in the path it
+  accepted from the command line; it now is more lenient.
+
+* git-svn misbehaved when the project contained a path that began with
+  two dashes.
+
+* import-zips script (in contrib) did not compute the common directory
+  prefix correctly.
+
+* miscompilation of negated enum constants by old gcc (2.9) affected the
+  codepaths to spawn subprocesses.
+
+Many small documentation updates are included as well.
+
+----------------------------------------------------------------
+
+Changes since v1.6.2.1 are as follows:
+
+Allan Caffee (1):
+      Documentation: update graph api example.
+
+Brandon Casey (1):
+      git-branch: display "was sha1" on branch deletion rather than just "sha1"
+
+Carlo Marcelo Arenas Belon (1):
+      documentation: update cvsimport description of "-r" for recent clone
+
+Daniel Barkalow (1):
+      Give error when no remote is configured
+
+Daniel Cheng (aka SDiZ) (1):
+      Fix bash completion in path with spaces
+
+David Aguilar (1):
+      everyday: use the dashless form of git-init
+
+David J. Mellor (12):
+      Documentation: minor grammatical fixes in git-archive.txt.
+      Documentation: reword the "Description" section of git-bisect.txt.
+      Documentation: minor grammatical fixes in git-blame.txt.
+      Documentation: minor grammatical fixes in git-branch.txt.
+      Documentation: reworded the "Description" section of git-bisect.txt.
+      Documentation: reword example text in git-bisect.txt.
+      Documentation: remove some uses of the passive voice in git-bisect.txt
+      Documentation: minor grammatical fixes and rewording in git-bundle.txt
+      Documentation: minor grammatical fixes in git-cat-file.txt
+      Documentation: minor grammatical fixes in git-check-attr.txt
+      Documentation: minor grammatical fix in git-check-ref-format.txt
+      Documentation: Remove spurious uses of "you" in git-bisect.txt.
+
+Emil Sit (1):
+      test-lib: Clean up comments and Makefile.
+
+Eric Wong (1):
+      git-svn: fix ls-tree usage with dash-prefixed paths
+
+Holger Weiß (1):
+      Documentation: Remove an odd "instead"
+
+Jeff King (3):
+      doc: clarify how -S works
+      ls-files: require worktree when --deleted is given
+      fix portability problem with IS_RUN_COMMAND_ERR
+
+Johannes Schindelin (4):
+      rsync transport: allow local paths, and fix tests
+      Smudge the files fed to external diff and textconv
+      import-zips: fix thinko
+      mailmap: resurrect lower-casing of email addresses
+
+Johannes Sixt (2):
+      Propagate --exec-path setting to external commands via GIT_EXEC_PATH
+      diff --no-index: Do not generate patch output if other output is requested
+
+Junio C Hamano (6):
+      read-tree A B C: do not create a bogus index and do not segfault
+      Remove total confusion from git-fetch and git-push
+      blame: read custom grafts given by -S before calling setup_revisions()
+      Update draft release notes to 1.6.2.2
+      Update draft release notes to 1.6.2.2
+      GIT 1.6.2.2
+
+Linus Torvalds (1):
+      close_sha1_file(): make it easier to diagnose errors
+
+Michael J Gruber (2):
+      git submodule: Add test cases for git submodule add
+      git submodule: Fix adding of submodules at paths with ./, .. and //
+
+Nico -telmich- Schottelius (1):
+      git-tag(1): add hint about commit messages
+
+Nicolas Pitre (1):
+      avoid possible overflow in delta size filtering computation
+
+René Scharfe (3):
+      diffcore-pickaxe: use memmem()
+      optimize compat/ memmem()
+      pickaxe: count regex matches only once
+
+Shawn O. Pearce (1):
+      Increase the size of the die/warning buffer to avoid truncation
+
+Stephen Boyd (1):
+      format-patch: --numbered-files and --stdout aren't mutually exclusive
+
+Thomas Rast (4):
+      send-email: respect in-reply-to regardless of threading
+      send-email: test --no-thread --in-reply-to combination
+      Documentation: format-patch --root clarifications
+      bash completion: only show 'log --merge' if merging
+
