@@ -1,79 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762406AbZDBCgt@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758144AbZDBCnD@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762406AbZDBCgt (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 1 Apr 2009 22:36:49 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753327AbZDBCgi
+	id S1758144AbZDBCnD (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 1 Apr 2009 22:43:03 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753327AbZDBCmw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 1 Apr 2009 22:36:38 -0400
-Received: from yw-out-2324.google.com ([74.125.46.28]:62288 "EHLO
-	yw-out-2324.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750913AbZDBCgh (ORCPT
+	Wed, 1 Apr 2009 22:42:52 -0400
+Received: from hrndva-omtalb.mail.rr.com ([71.74.56.125]:42443 "EHLO
+	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751018AbZDBCmv (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 1 Apr 2009 22:36:37 -0400
-Message-ID: <49D424AF.3090806@codemonkey.ws>
-Date: Wed, 01 Apr 2009 21:36:31 -0500
-From: Anthony Liguori <anthony@codemonkey.ws>
-User-Agent: Thunderbird 2.0.0.21 (X11/20090320)
+	Wed, 1 Apr 2009 22:42:51 -0400
+Date: Wed, 1 Apr 2009 22:42:46 -0400 (EDT)
+From: Steven Rostedt <rostedt@goodmis.org>
+X-X-Sender: rostedt@gandalf.stny.rr.com
+To: Ingo Molnar <mingo@elte.hu>
+cc: mingo@redhat.com, hpa@zytor.com, linux-kernel@vger.kernel.org,
+       fweisbec@gmail.com, tglx@linutronix.de,
+       Johannes Berg <johannes@sipsolutions.net>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Greg KH <gregkh@suse.de>, linux-tip-commits@vger.kernel.org,
+       stable@kernel.org
+Subject: Re: [tip:tracing/syscalls] tracing/core: fix early free of
+ cpumasks
+In-Reply-To: <20090402015531.GA12489@elte.hu>
+Message-ID: <alpine.DEB.2.00.0904012203250.30963@gandalf.stny.rr.com>
+References: <1237164303-11476-1-git-send-email-fweisbec@gmail.com> <tip-2fc1dfbe17e7705c55b7a99da995fa565e26f151@git.kernel.org> <20090402011232.GA32066@goodmis.org> <20090402015531.GA12489@elte.hu>
+User-Agent: Alpine 2.00 (DEB 1167 2008-08-23)
 MIME-Version: 1.0
-To: Chris Wright <chrisw@redhat.com>
-CC: Andrea Arcangeli <aarcange@redhat.com>, Izik Eidus <ieidus@redhat.com>,
-       linux-kernel@vger.kernel.org, kvm@vger.kernel.org, linux-mm@kvack.org,
-       avi@redhat.com, riel@redhat.com, jeremy@goop.org, mtosatti@redhat.com,
-       hugh@veritas.com, corbet@lwn.net, yaniv@redhat.com,
-       dmonakhov@openvz.org
-Subject: Re: [PATCH 4/4] add ksm kernel shared memory driver.
-References: <49D20B63.8020709@redhat.com> <49D21B33.4070406@codemonkey.ws> <20090331142533.GR9137@random.random> <49D22A9D.4050403@codemonkey.ws> <20090331150218.GS9137@random.random> <49D23224.9000903@codemonkey.ws> <20090331151845.GT9137@random.random> <49D23CD1.9090208@codemonkey.ws> <20090331162525.GU9137@random.random> <49D24A02.6070000@codemonkey.ws> <20090402012215.GE1117@x200.localdomain>
-In-Reply-To: <20090402012215.GE1117@x200.localdomain>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Chris Wright wrote:
-> * Anthony Liguori (anthony@codemonkey.ws) wrote:
->   
->> The ioctl() interface is quite bad for what you're doing.  You're  
->> telling the kernel extra information about a VA range in userspace.   
->> That's what madvise is for.  You're tweaking simple read/write values of  
->> kernel infrastructure.  That's what sysfs is for.
->>     
->
-> I agree re: sysfs (brought it up myself before).  As far as madvise vs.
-> ioctl, the one thing that comes from the ioctl is fops->release to
-> automagically unregister memory on exit.
 
-This is precisely why ioctl() is a bad interface.  fops->release isn't 
-tied to the process but rather tied to the open file.  The file can stay 
-open long after the process exits either by a fork()'d child inheriting 
-the file descriptor or through something more sinister like SCM_RIGHTS.
+On Thu, 2 Apr 2009, Ingo Molnar wrote:
 
-In fact, a common mistake is to leak file descriptors by not closing 
-them when exec()'ing a process.  Instead of just delaying a close, if 
-you rely on this behavior to unregister memory regions, you could 
-potentially have badness happen in the kernel if ksm attempted to access 
-an invalid memory region.
+> 
+> * Steven Rostedt <rostedt@goodmis.org> wrote:
+> 
+> > This never made it into 2.6.29, nor do I see it yet in mainline.
+> > 
+> > This can cause unpredictable results with ftrace. We are freeing a 
+> > cpu mask that will be later used.
+> 
+> Yes ... but CONFIG_OFFSTACK is only possible as a debug option right 
+> now. So it's far less serious of an issue, it needs 2-3 unlikely 
+> features to be combined.
 
-So you absolutely have to automatically unregister regions in something 
-other than the fops->release handler based on something that's tied to 
-the pid's life cycle.
+And unfortunately for Johannes, he must have had all those features 
+configured :-/  He spent pretty much the entire day trying to figure out 
+why ftrace was broken.
 
-Using an interface like madvise() would force the issue to be dealt with 
-properly from the start :-)
+-- Steve
 
-I'm often afraid of what sort of bugs we'd uncover in kvm if we passed 
-the fds around via SCM_RIGHTS and started poking around :-/
-
-Regards,
-
-Anthony Liguori
-
-
->   This needs to be handled
-> anyway if some -p pid is added to add a process after it's running,
-> so less weight there.
->
-> thanks,
-> -chris
->   
-
+> 
+> The fix looks simple enough, so once the tracing tree is upstream, 
+> we can forward it to -stable.
+> 
+> 	Ingo
+> 
