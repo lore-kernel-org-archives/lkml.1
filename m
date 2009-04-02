@@ -1,65 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S935683AbZDBJn1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S935743AbZDBJny@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S935683AbZDBJn1 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 2 Apr 2009 05:43:27 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761024AbZDBJnI
+	id S935743AbZDBJny (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 2 Apr 2009 05:43:54 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S935376AbZDBJnK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 2 Apr 2009 05:43:08 -0400
-Received: from bombadil.infradead.org ([18.85.46.34]:56719 "EHLO
-	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751757AbZDBJnE (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 2 Apr 2009 05:43:04 -0400
-Subject: Re: Help: tasklet blocked for >8msec - USB mouse related
-From: Peter Zijlstra <peterz@infradead.org>
-To: Tilman Schmidt <tilman@imap.cc>
-Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@tglx.de>
-In-Reply-To: <49D24A32.9070103@imap.cc>
-References: <49CCFEBA.6060009@imap.cc>  <49D24A32.9070103@imap.cc>
-Content-Type: text/plain
-Content-Transfer-Encoding: 7bit
-Date: Thu, 02 Apr 2009 11:43:59 +0200
-Message-Id: <1238665439.8530.5740.camel@twins>
+	Thu, 2 Apr 2009 05:43:10 -0400
+Received: from cantor2.suse.de ([195.135.220.15]:53384 "EHLO mx2.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1755310AbZDBJnH (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 2 Apr 2009 05:43:07 -0400
+Date: Thu, 2 Apr 2009 11:43:05 +0200
+From: Nick Piggin <npiggin@suse.de>
+To: Al Viro <viro@ZenIV.linux.org.uk>
+Cc: linux-fsdevel@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: Re: [rfc] scale dcache locking
+Message-ID: <20090402094305.GE22256@wotan.suse.de>
+References: <20090329155539.275927173@nick.local0.net> <20090401142312.GD28946@ZenIV.linux.org.uk>
 Mime-Version: 1.0
-X-Mailer: Evolution 2.26.0 
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20090401142312.GD28946@ZenIV.linux.org.uk>
+User-Agent: Mutt/1.5.9i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 2009-03-31 at 18:52 +0200, Tilman Schmidt wrote:
-> /me wrote:
-> > A user of the Gigaset base driver (drivers/isdn/gigaset/bas-gigaset.c)
-> > reports his connection being dropped exactly every 30 seconds.
-> > Analysis of his dmesg indicates that when the error occurs, both the
-> > tasklets read_iso_tasklet and write_iso_tasklet handling the B channel
-> > data stream (125 USB isochronous packets per second in each direction)
-> > are at the same time not executed for an entire inter-packet interval,
-> > ie. 8 msecs.
+On Wed, Apr 01, 2009 at 03:23:12PM +0100, Al Viro wrote:
+> On Mon, Mar 30, 2009 at 02:55:39AM +1100, npiggin@suse.de wrote:
+> > This is my sketch for improving dcache locking scalability. So far I've
+> > only really been looking at core code to get an idea of how it might look,
+> > so most configurable functionality is broken (and unfortunately it might
+> > well be something in there which will cause a fundamental problem for me).
 > 
-> The user did a bit of ellimination work, and it turned out that if
-> he disconnected his Logitech Laser Mouse from its USB port and
-> connected it to the PS2 port instead, the regular blockages ceased.
-> 
-> So we have a workaround, but no explanation.
-> 
-> This is on Debian Lenny with a 2.6.26 kernel. The user claims newer
-> kernels don't boot on his machine. Btw, he also reports that the
-> ISDN connection breaks each time he hotplugs any USB device, but
-> so far has failed to produce a syslog excerpt for that. (sigh)
-> The Motherboard is a Gigabyte GA-EP45T-EXTREME, advertised as
-> "Designed for overclocking enthusiasts with overwhelming
-> overclocking experience", which lets me fear the worst ...
+> Umm...  Some of that makes obvious sense per se, some...  In particular,
+> all of a sudden we get contention between multiple dput() on the same
+> dentry, which is dirt-common for directory ones.
 
-Looks like the USB driver holds off interrupts for a long-long time. But
-afaik that's not the only troublesome spot in mainline.
+Yes that's true but I'm hoping lock hold times on d_lock aren't
+too long, in which case the major cost should remain just the
+cacheline contention.
 
-One way to test this would be using the threaded interrupt patches
-Thomas posted, along with the USB driver conversion.
+Hmm, I wanted to avoid the atomic because it tends to be covered
+by d_lock a lot of the time anyway so avoiding the extra locked op,
+and also makes concurrency a bit easier to think about.
 
-Another possible source might be SMIs -- and there's nothing much you
-can do about those except bitch to Gigabyte.
+In worst case, I guess we need to reintroduce atomic refcount or
+have another lock for it...
 
-But really, relying on <10ms execution latency on mainline is almost
-asking for it -- in general we do better, but there are a few sore
-spots.
