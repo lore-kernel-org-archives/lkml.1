@@ -1,52 +1,40 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761888AbZDBSnf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932830AbZDBSn4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761888AbZDBSnf (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 2 Apr 2009 14:43:35 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1765624AbZDBSnL
+	id S932830AbZDBSn4 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 2 Apr 2009 14:43:56 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932210AbZDBSnS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 2 Apr 2009 14:43:11 -0400
-Received: from zeniv.linux.org.uk ([195.92.253.2]:35669 "EHLO
-	ZenIV.linux.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S932125AbZDBSnK (ORCPT
+	Thu, 2 Apr 2009 14:43:18 -0400
+Received: from earthlight.etchedpixels.co.uk ([81.2.110.250]:60309 "EHLO
+	www.etchedpixels.co.uk" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1765815AbZDBSnR (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 2 Apr 2009 14:43:10 -0400
-Date: Thu, 2 Apr 2009 19:43:05 +0100
-From: Al Viro <viro@ZenIV.linux.org.uk>
-To: Nick Piggin <npiggin@suse.de>
-Cc: Dave Hansen <dave@linux.vnet.ibm.com>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       linux-fsdevel@vger.kernel.org,
-       Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: [patch 1/2] fs: mnt_want_write speedup
-Message-ID: <20090402184305.GI28946@ZenIV.linux.org.uk>
-References: <20090310143718.GB15977@wotan.suse.de> <1236809477.30142.83.camel@nimitz> <20090312041334.GB1893@wotan.suse.de> <1237403623.8286.196.camel@nimitz> <20090402182210.GB17175@wotan.suse.de>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090402182210.GB17175@wotan.suse.de>
-User-Agent: Mutt/1.5.17 (2007-11-01)
+	Thu, 2 Apr 2009 14:43:17 -0400
+Date: Thu, 2 Apr 2009 19:44:01 +0100
+From: Alan Cox <alan@lxorguk.ukuu.org.uk>
+To: Peter Zijlstra <peterz@infradead.org>
+Cc: Christophe Lermytte <christophe.lermytte@thomson.net>,
+       linux-kernel@vger.kernel.org, Jiri Slaby <jirislaby@gmail.com>
+Subject: Re: mutex_lock_slowpath warning using mxser tty driver
+ (input/output error)
+Message-ID: <20090402194401.154bbc36@lxorguk.ukuu.org.uk>
+In-Reply-To: <1238696349.5133.25.camel@laptop>
+References: <1238689565.14822.99.camel@thom>
+	<1238696349.5133.25.camel@laptop>
+X-Mailer: Claws Mail 3.7.0 (GTK+ 2.14.7; x86_64-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Apr 02, 2009 at 08:22:10PM +0200, Nick Piggin wrote:
-> On Wed, Mar 18, 2009 at 12:13:43PM -0700, Dave Hansen wrote:
-> > On Thu, 2009-03-12 at 05:13 +0100, Nick Piggin wrote: 
-> > > On Wed, Mar 11, 2009 at 03:11:17PM -0700, Dave Hansen wrote:
-> > > > I'm feeling a bit better about these, although I am still honestly quite
-> > > > afraid of the barriers.  I also didn't like all the #ifdefs much, but
-> > > > here's some help on that.
-> > > 
-> > > FWIW, we have this in suse kernels because page fault performance was
-> > > so bad compared with SLES10. mnt_want_write & co was I think the 2nd
-> > > biggest offender for file backed mappings (after pvops). I think we're
-> > > around parity again even with pvops.
-> > 
-> > Page faults themselves?  Which path was that from?
+> It appears to want to lock a mutex in interrupt context, something
+> that's a definite no-no.
 > 
-> Yes. file_update_time.
+> CCed the folks who might know a thing or two about the driver.
 
-FWIW, I'm not sure that this optimization is valid.  We might eventually
-want to go for "don't allow any new writers, remount r/o when existing
-ones expire" functionality, so nested mnt_want_write() might eventually
-be allowed to fail.
+Moxa is not a USB driver so the USB trace at the end makes no sense at
+all.
+
+Alan
