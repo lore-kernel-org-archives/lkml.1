@@ -1,44 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932363AbZDBSxA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932880AbZDBSxZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932363AbZDBSxA (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 2 Apr 2009 14:53:00 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760886AbZDBSwq
+	id S932880AbZDBSxZ (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 2 Apr 2009 14:53:25 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932268AbZDBSwz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 2 Apr 2009 14:52:46 -0400
-Received: from mx2.redhat.com ([66.187.237.31]:38755 "EHLO mx2.redhat.com"
+	Thu, 2 Apr 2009 14:52:55 -0400
+Received: from hera.kernel.org ([140.211.167.34]:59787 "EHLO hera.kernel.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750890AbZDBSwp (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 2 Apr 2009 14:52:45 -0400
-Message-ID: <49D5097B.7020802@redhat.com>
-Date: Thu, 02 Apr 2009 14:52:43 -0400
-From: Rik van Riel <riel@redhat.com>
-User-Agent: Thunderbird 2.0.0.21 (X11/20090320)
-MIME-Version: 1.0
-To: David Howells <dhowells@redhat.com>
-CC: viro@ZenIV.linux.org.uk, nfsv4@linux-nfs.org, linux-kernel@vger.kernel.org,
-       linux-fsdevel@vger.kernel.org
-Subject: Re: [PATCH 21/43] CacheFiles: Be consistent about the use of mapping
- vs	file->f_mapping in Ext3 [ver #46]
-References: <20090401230321.28177.12010.stgit@warthog.procyon.org.uk> <20090401230510.28177.98253.stgit@warthog.procyon.org.uk>
-In-Reply-To: <20090401230510.28177.98253.stgit@warthog.procyon.org.uk>
-Content-Type: text/plain; charset=UTF-8; format=flowed
+	id S932423AbZDBSwx (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 2 Apr 2009 14:52:53 -0400
+Subject: Re: [tip:perfcounters/core] perf_counter: kerneltop: update to new
+ ABI
+From: Jaswinder Singh Rajput <jaswinder@kernel.org>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: mingo@redhat.com, hpa@zytor.com, paulus@samba.org,
+       linux-kernel@vger.kernel.org, a.p.zijlstra@chello.nl,
+       tglx@linutronix.de, cjashfor@linux.vnet.ibm.com,
+       linux-tip-commits@vger.kernel.org
+In-Reply-To: <20090402182833.GA32407@elte.hu>
+References: <20090402091319.407283141@chello.nl>
+	 <tip-373b153677f26a263ef297d77a5e045a31f6486c@git.kernel.org>
+	 <1238679305.3099.11.camel@ht.satnam> <1238680772.3099.13.camel@ht.satnam>
+	 <20090402181144.GB6340@elte.hu> <1238696579.3099.50.camel@ht.satnam>
+	 <20090402182833.GA32407@elte.hu>
+Content-Type: text/plain
+Date: Fri, 03 Apr 2009 00:21:58 +0530
+Message-Id: <1238698318.3099.62.camel@ht.satnam>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.24.5 (2.24.5-1.fc10) 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-David Howells wrote:
-> Change all the usages of file->f_mapping in ext3_*write_end() functions to use
-> the mapping argument directly.  This has two consequences:
->
->  (*) Consistency.  Without this patch sometimes one is used and sometimes the
->      other is.
->
->  (*) A NULL file pointer can be passed.  This feature is then made use of by
->      the generic hook in the next patch, which is used by CacheFiles to write
->      pages to a file without setting up a file struct.
->
-> Signed-off-by: David Howells <dhowells@redhat.com>
-> Acked-by: Steve Dickson <steved@redhat.com>
-> Acked-by: Trond Myklebust <Trond.Myklebust@netapp.com>
-Acked-by: Rik van Riel <riel@redhat.com>
+On Thu, 2009-04-02 at 20:28 +0200, Ingo Molnar wrote:
+> * Jaswinder Singh Rajput <jaswinder@kernel.org> wrote:
+> 
+> > On Thu, 2009-04-02 at 20:11 +0200, Ingo Molnar wrote:
+> > > * Jaswinder Singh Rajput <jaswinder@kernel.org> wrote:
+> > > 
+> > > > On Thu, 2009-04-02 at 19:05 +0530, Jaswinder Singh Rajput wrote:
+> > > > > On Thu, 2009-04-02 at 12:03 +0000, Peter Zijlstra wrote:
+> > > > > > Commit-ID:  373b153677f26a263ef297d77a5e045a31f6486c
+> > > > > > Gitweb:     http://git.kernel.org/tip/373b153677f26a263ef297d77a5e045a31f6486c
+> > > > > > Author:     Peter Zijlstra <a.p.zijlstra@chello.nl>
+> > > > > > AuthorDate: Thu, 2 Apr 2009 11:12:02 +0200
+> > > > > > Committer:  Ingo Molnar <mingo@elte.hu>
+> > > > > > CommitDate: Thu, 2 Apr 2009 13:53:00 +0200
+> > > > > > 
+> > > > > > perf_counter: kerneltop: update to new ABI
+> > > > > > 
+> > > > > > Update to reflect the new record_type ABI changes.
+> > > > > > 
+> > > > > 
+> > > > > perfstat is still having many issues:
+> > > > > 
+> > > > > 1. 0:6: bus-cycles is not valid for AMD, so it fails
+> > > > > 
+
+This is the major issue.
+
+bus-cycles is not valid for AMD and it returns error. And I am not able
+to find any relevant event for AMD.
+
+How can we suppress this error on AMD Box.
+
+--
+JSR
+
