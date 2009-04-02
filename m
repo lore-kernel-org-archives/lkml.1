@@ -1,74 +1,78 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932535AbZDBTxa@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1765648AbZDBT6r@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932535AbZDBTxa (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 2 Apr 2009 15:53:30 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763755AbZDBTw6
+	id S1765648AbZDBT6r (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 2 Apr 2009 15:58:47 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754759AbZDBT6i
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 2 Apr 2009 15:52:58 -0400
-Received: from cantor.suse.de ([195.135.220.2]:33498 "EHLO mx1.suse.de"
+	Thu, 2 Apr 2009 15:58:38 -0400
+Received: from gw.goop.org ([64.81.55.164]:47623 "EHLO mail.goop.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1762132AbZDBTw5 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 2 Apr 2009 15:52:57 -0400
-Date: Thu, 2 Apr 2009 21:52:53 +0200
-From: Jan Kara <jack@suse.cz>
-To: Alexander Larsson <alexl@redhat.com>
-Cc: eparis@redhat.com, linux-kernel@vger.kernel.org
-Subject: Re: Issues with using fanotify for a filesystem indexer
-Message-ID: <20090402195253.GH3010@duck.suse.cz>
-References: <1238158043.23703.20.camel@fatty> <20090402145457.GA17275@atrey.karlin.mff.cuni.cz> <1238689744.5704.1.camel@localhost.localdomain> <20090402165023.GG3010@duck.suse.cz> <1238692537.5704.6.camel@localhost.localdomain>
+	id S1753718AbZDBT6i (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 2 Apr 2009 15:58:38 -0400
+Message-ID: <49D518E9.1090001@goop.org>
+Date: Thu, 02 Apr 2009 12:58:33 -0700
+From: Jeremy Fitzhardinge <jeremy@goop.org>
+User-Agent: Thunderbird 2.0.0.21 (X11/20090320)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1238692537.5704.6.camel@localhost.localdomain>
-User-Agent: Mutt/1.5.17 (2007-11-01)
+To: Rik van Riel <riel@redhat.com>
+CC: Martin Schwidefsky <schwidefsky@de.ibm.com>, akpm@osdl.org,
+       Nick Piggin <nickpiggin@yahoo.com.au>, frankeh@watson.ibm.com,
+       virtualization@lists.osdl.org, linux-kernel@vger.kernel.org,
+       virtualization@lists.linux-foundation.org, linux-mm@kvack.org,
+       hugh@veritas.com, Xen-devel <xen-devel@lists.xensource.com>
+Subject: Re: [patch 0/6] Guest page hinting version 7.
+References: <20090327150905.819861420@de.ibm.com>	<200903281705.29798.rusty@rustcorp.com.au>	<20090329162336.7c0700e9@skybase>	<200904022232.02185.nickpiggin@yahoo.com.au>	<20090402175249.3c4a6d59@skybase> <49D50CB7.2050705@redhat.com>
+In-Reply-To: <49D50CB7.2050705@redhat.com>
+X-Enigmail-Version: 0.95.6
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu 02-04-09 19:15:37, Alexander Larsson wrote:
-> On Thu, 2009-04-02 at 18:50 +0200, Jan Kara wrote:
-> > On Thu 02-04-09 18:29:04, Alexander Larsson wrote:
-> > > Another potential issue with this is that every change bubbles up to the
-> > > top, modifying the recursive mtime of that. This will become very
-> > > contented, and may imply a partial serialization of fs activity, which
-> > > is kinda costly.
-> >   Not every change - only the first change bubbles to the top, clearing the
-> > flag on its way. Then next change stops bubbling up as soon as it reaches
-> > a directory with the flag cleared. So no contention happen - we update flag
-> > + timestamp only at most once per scan of the directory by indexer (or
-> > someone else interested in recursive mtime) => once per a few minutes on
-> > average system.
-> 
-> Ah, I see. The indexer sets the flag. 
-> I see some issues. First of all, writing the flag/mtime to disk seems
-> like a bad idea. It'll cause a lot of writing when the indexer recurses
-> throught the filesystem, similar to atimes. But, if you're not
-  There's some cost but it's not nearly as bad as with atimes. Indexer only
-has to change flags on directories in whose subtree something has changed -
-so we modify only directories (atime is modified for all files +
-directories) and we even modify only a small fraction of them because only
-a small amount of them has changed and thus has the flag reset.
-  Similarly a write to a file can cause some additional modifications to
-above directories as we traverse up the tree but again, there aren't going
-to be many of those since most of the time quickly hit a directory with a
-flag reset. Now I understand this is a handwaving and one does not believe
-it until he tries it on his machine if it is really a noticable slowdown or
-not ;)
-  Also I'm not saying it's a perfect fit for things like desktop indexing
-because as you said, it's desirable to rescan the system every few minutes
-while I was rather aiming at usecases where either the rescan is done only
-once per few hours (rsync, updatedb) or where files change only
-exceptionally (e.g.  KDE/GNOME watching desktop config files). But still I
-don't think it's completely insane to try something like that...
+Rik van Riel wrote:
+> Page hinting has a complex, but well understood, mechanism
+> and simple policy.
+>   
 
-> persisting the flag/mtime then you need to keep all the dentries with
-> the flag set in memory, which has resource use risks similar to
-> unbounded event queues.
-  Ah, true - I have implemented just the persistent case and have not
-thought too much about the non-persistent one. You're right that it won't
-work because we'd pin memory.
+For the guest perhaps, and yes, it does push the problem out to the 
+host.  But that doesn't make solving a performance problem any easier if 
+you end up in a mess.
 
-									Honza
--- 
-Jan Kara <jack@suse.cz>
-SUSE Labs, CR
+> Ballooning has a simpler mechanism, but relies on an
+> as-of-yet undiscovered policy.
+>   
+(I'm talking about Xen ballooning here; I know KVM ballooning works 
+differently.)
+
+Yes and no.  If you want to be able to shrink the guest very 
+aggressively, then you need to be very careful about not shrinking too 
+much for its current and near-future needs.  But you'll get into an 
+equivalently bad state with page hinting if the host decides to swap out 
+and discard lots of persistent guest pages.
+
+When the host demands memory from the guest, the simple caseballooning 
+is analogous to page hinting:
+
+    * give up free pages == mark pages unused
+    * give up clean pages == mark pages volatile
+    * cause pressure to release some memory == host swapping
+
+The flipside is how guests can ask for memory if their needs increase 
+again.  Page-hinting is fault-driven, so the guest may stall while the 
+host sorts out some memory to back the guests pages.  Ballooning 
+requires the guest to explicitly ask for memory, and that could be done 
+in advance if it notices the pool of easily-freed pages is shrinking 
+rapidly (though I guess it could be done on demand as well, but we don't 
+have hooks for that).
+
+But of course, there are other approaches people are playing with, like 
+Dan Magenheimer's transcendental memory, which is a pool of 
+hypervisor-owned and managed pages which guests can use via a copy 
+interface, as a second-chance page discard cache, fast swap, etc.  Such 
+mechanisms may be easier on both the guest complexity and policy fronts.
+
+The more complex host policy decisions of how to balance overall memory 
+use system-wide are much in the same for both mechanisms.
+
+    J
