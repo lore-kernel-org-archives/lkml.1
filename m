@@ -1,62 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754728AbZDBL74@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755494AbZDBMAZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754728AbZDBL74 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 2 Apr 2009 07:59:56 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751602AbZDBL7m
+	id S1755494AbZDBMAZ (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 2 Apr 2009 08:00:25 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753220AbZDBL7q
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 2 Apr 2009 07:59:42 -0400
-Received: from mx2.redhat.com ([66.187.237.31]:56609 "EHLO mx2.redhat.com"
+	Thu, 2 Apr 2009 07:59:46 -0400
+Received: from mx2.redhat.com ([66.187.237.31]:56610 "EHLO mx2.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751062AbZDBL7l (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 2 Apr 2009 07:59:41 -0400
-Message-ID: <49D4A89E.5090407@redhat.com>
-Date: Thu, 02 Apr 2009 14:59:26 +0300
-From: Avi Kivity <avi@redhat.com>
-User-Agent: Thunderbird 2.0.0.21 (X11/20090320)
-MIME-Version: 1.0
-To: Gregory Haskins <ghaskins@novell.com>
-CC: Herbert Xu <herbert@gondor.apana.org.au>, anthony@codemonkey.ws,
-       andi@firstfloor.org, linux-kernel@vger.kernel.org, agraf@suse.de,
-       pmullaney@novell.com, pmorreale@novell.com, rusty@rustcorp.com.au,
-       netdev@vger.kernel.org, kvm@vger.kernel.org,
-       Mark McLoughlin <markmc@redhat.com>
-Subject: Re: [RFC PATCH 00/17] virtual-bus
-References: <20090402085253.GA29932@gondor.apana.org.au> <49D47F11.6070400@redhat.com> <20090402091639.GA30126@gondor.apana.org.au> <49D484F5.2000400@redhat.com> <20090402092936.GA30333@gondor.apana.org.au> <49D487A6.407@redhat.com> <49D49C1F.6030306@novell.com>
-In-Reply-To: <49D49C1F.6030306@novell.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+	id S1752373AbZDBL7n (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 2 Apr 2009 07:59:43 -0400
+Date: Thu, 2 Apr 2009 07:58:58 -0400
+From: Jeff Layton <jlayton@redhat.com>
+To: Andi Kleen <andi@firstfloor.org>
+Cc: akpm@linux-foundation.org, linux-kernel@vger.kernel.org,
+       linux-fsdevel@vger.kernel.org, fengguang.wu@intel.com
+Subject: Re: [PATCH] writeback: guard against jiffies wraparound on
+ inode->dirtied_when checks (try #3)
+Message-ID: <20090402075858.028216c2@barsoom.rdu.redhat.com>
+In-Reply-To: <20090401221224.GW11935@one.firstfloor.org>
+References: <1238607475-8203-1-git-send-email-jlayton@redhat.com>
+	<87y6ukktu9.fsf@basil.nowhere.org>
+	<20090401172630.31c6ac7c@tleilax.poochiereds.net>
+	<20090401221224.GW11935@one.firstfloor.org>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Gregory Haskins wrote:
+On Thu, 2 Apr 2009 00:12:24 +0200
+Andi Kleen <andi@firstfloor.org> wrote:
 
-  
+> On Wed, Apr 01, 2009 at 05:26:30PM -0400, Jeff Layton wrote:
+> > One possibility might be a new debugging option. We could add
+> > replacement time_after() and time_before() macros that also check
+> > whether the difference in times is beyond a certain threshold
+> > (maybe a day or week or so), and pop a printk or otherwise record
+> > info about it when one is detected?
+> 
+> Makes sense. However it might be hard to get people to run kernels
+> with heavy debugging options for that long.
+> 
 
->> Why does a kernel solution not need to know when a packet is transmitted?
->>
->>     
->
-> You do not need to know when the packet is copied (which I currently
-> do).  You only need it for zero-copy (of which I would like to support,
-> but as I understand it there are problems with the reliability of proper
-> callback (i.e. skb->destructor).
->
-> Its "fire and forget" :)
->   
+Good point. That would limit the usefulness. I also worry that these
+macros get used in sensitive places that might not be conducive to
+printk's. Plus, we'd have to worry about ratelimiting them since they
+could potentially pop often once you did hit the issue.
 
-It's more of a "schedule and forget" which I think brings you the win.  
-The host disables notifications and schedules the actual tx work (rx 
-from the host's perspective).  So now the guest and host continue 
-producing and consuming packets in parallel.  So long as the guest is 
-faster (due to the host being throttled?), notifications continue to be 
-disabled.
-
-If you changed your rx_isr() to process the packets immediately instead 
-of scheduling, I think throughput would drop dramatically.
-
-Mark had a similar change for virtio.  Mark?
+I'm not sure there's much we can do other than good old-fashioned
+review. Identifying places where jiffies-based timestamps might live a
+long time is ultimately going to come down to understanding how they're
+used in the code.
 
 -- 
-error compiling committee.c: too many arguments to function
-
+Jeff Layton <jlayton@redhat.com>
