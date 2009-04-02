@@ -1,54 +1,71 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763003AbZDBVSP@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763643AbZDBVS3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763003AbZDBVSP (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 2 Apr 2009 17:18:15 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756189AbZDBVR6
+	id S1763643AbZDBVS3 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 2 Apr 2009 17:18:29 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760154AbZDBVSD
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 2 Apr 2009 17:17:58 -0400
-Received: from matrixpower.ru ([195.178.208.66]:34777 "EHLO tservice.net.ru"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754093AbZDBVR5 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 2 Apr 2009 17:17:57 -0400
-Date: Fri, 3 Apr 2009 01:17:54 +0400
-From: Evgeniy Polyakov <zbr@ioremap.net>
-To: Alexander Beregalov <a.beregalov@gmail.com>
-Cc: Greg Kroah-Hartman <gregkh@suse.de>, LKML <linux-kernel@vger.kernel.org>,
-       "linux-next@vger.kernel.org" <linux-next@vger.kernel.org>
-Subject: Re: [PATCH] Staging: pohmelfs: should include fs_struct.h
-Message-ID: <20090402211754.GA7479@ioremap.net>
-References: <a4423d670904020437q446f7c62xa209822f10573c28@mail.gmail.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <a4423d670904020437q446f7c62xa209822f10573c28@mail.gmail.com>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+	Thu, 2 Apr 2009 17:18:03 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:42622 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1761719AbZDBVSB (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 2 Apr 2009 17:18:01 -0400
+Date: Thu, 2 Apr 2009 14:14:45 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Hiroshi Shimamoto <h-shimamoto@ct.jp.nec.com>
+Cc: minyard@acm.org, linux-kernel@vger.kernel.org,
+       openipmi-developer@lists.sourceforge.net
+Subject: Re: [PATCH 4/5] IPMI: Add console oops catcher
+Message-Id: <20090402141445.3a7a6504.akpm@linux-foundation.org>
+In-Reply-To: <49ADC559.7040705@ct.jp.nec.com>
+References: <20090303152123.GD7777@minyard.local>
+	<20090303132046.a8975963.akpm@linux-foundation.org>
+	<49ADC559.7040705@ct.jp.nec.com>
+X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Alexander.
+On Tue, 03 Mar 2009 16:03:37 -0800
+Hiroshi Shimamoto <h-shimamoto@ct.jp.nec.com> wrote:
 
-On Thu, Apr 02, 2009 at 03:37:10PM +0400, Alexander Beregalov (a.beregalov@gmail.com) wrote:
-> drivers/staging/pohmelfs/path_entry.c: In function
-> 'pohmelfs_construct_path_string':
-> drivers/staging/pohmelfs/path_entry.c:48: error: dereferencing pointer
-> to incomplete type
-> drivers/staging/pohmelfs/path_entry.c:49: error: dereferencing pointer
-> to incomplete type
-> drivers/staging/pohmelfs/path_entry.c:50: error: dereferencing pointer
-> to incomplete type
-> drivers/staging/pohmelfs/path_entry.c: In function 'pohmelfs_path_length':
-> drivers/staging/pohmelfs/path_entry.c:95: error: dereferencing pointer
-> to incomplete type
-> drivers/staging/pohmelfs/path_entry.c:96: error: dereferencing pointer
-> to incomplete type
-> drivers/staging/pohmelfs/path_entry.c:97: error: dereferencing pointer
-> to incomplete type
+> ...
+> > This reader is unable to determine what the mystery preempt_disable()
+> > is here for.  It needs a comment, please.
 > 
-> Signed-off-by: Alexander Beregalov <a.beregalov@gmail.com>
+> I cannot recall why it's here. So a comment is really needed.
+> This preempt_disable() may not be needed.
+> 
+> > What happens if two CPUs oops at the same time (which is fairly common)?
+> 
+> ...
+>
+> OK. I'll look at this.
+> 
+> > It would be prudent to have a timeout in this loop.  The machine has
+> > crashed and subsystems and hardware and memory are in an unknown and
+> > possibly bad state.
+> 
+> Right.
+>
+> ...
+> 
+> > This looks like we're abusing the "unblank" method.
+> > 
+> > If you think that the console subsystem is missing some capability
+> > which this driver needs then please do prefer to fix the console
+> > subsystem, rather than awkwardly making things fit.
+> 
+> OK. Will take a look about this point.
+> 
 
-Looks good. Ack.
-Greg please queue it for inclusion.
+None of this happened.
 
--- 
-	Evgeniy Polyakov
+It makes me reluctant to merge that patches as they stand, because then
+it all gets forgotten about, whereas holding the patches back will
+remind us that updates are needed.
+
+
