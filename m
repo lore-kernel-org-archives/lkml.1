@@ -1,53 +1,43 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762576AbZDBSge@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761558AbZDBSgu@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762576AbZDBSge (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 2 Apr 2009 14:36:34 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753639AbZDBSgU
+	id S1761558AbZDBSgu (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 2 Apr 2009 14:36:50 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761350AbZDBSgf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 2 Apr 2009 14:36:20 -0400
-Received: from hrndva-omtalb.mail.rr.com ([71.74.56.123]:33306 "EHLO
-	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753984AbZDBSgU (ORCPT
+	Thu, 2 Apr 2009 14:36:35 -0400
+Received: from [213.79.90.228] ([213.79.90.228]:2735 "EHLO
+	buildserver.ru.mvista.com" rhost-flags-FAIL-FAIL-OK-FAIL)
+	by vger.kernel.org with ESMTP id S1761361AbZDBSgd (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 2 Apr 2009 14:36:20 -0400
-Date: Thu, 02 Apr 2009 13:36:10 -0500
-From: Larry Finger <Larry.Finger@lwfinger.net>
-To: rpurdie@rpsys.net
-Cc: linux-kernel@vger.kernel.org, linux-wireless@vger.kernel.org
-Subject: [PATCH] leds: Increase trigger name maximum size
-Message-ID: <49d5059a.f3z10uf0HvyIItSz%Larry.Finger@lwfinger.net>
-User-Agent: Heirloom mailx 12.2 01/07/07
+	Thu, 2 Apr 2009 14:36:33 -0400
+Date: Thu, 2 Apr 2009 22:36:31 +0400
+From: Anton Vorontsov <avorontsov@ru.mvista.com>
+To: Marcel Ziswiler <marcel@ziswiler.com>
+Cc: linux-kernel@vger.kernel.org, Timur Tabi <timur@freescale.com>,
+       linuxppc-dev@ozlabs.org
+Subject: Re: [PATCH] QE USB Host Integration for MPC832x
+Message-ID: <20090402183631.GA6699@oksana.dev.rtsoft.ru>
+Reply-To: avorontsov@ru.mvista.com
+References: <1238622396-9768-1-git-send-email-marcel@ziswiler.com> <20090402183357.GA29050@oksana.dev.rtsoft.ru>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=utf8
+Content-Disposition: inline
+In-Reply-To: <20090402183357.GA29050@oksana.dev.rtsoft.ru>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On my HP dv2815 laptop, the total length of the triggers for my b43legacy
-wireless device exceeds the maximum value of 50 defined in
-include/linux/leds.h. As a result, the list is garbled.
+On Thu, Apr 02, 2009 at 10:33:57PM +0400, Anton Vorontsov wrote:
+[...]
+> > +			compatible = "fsl,mpc8360-qe-usb",
+> 
+> Ditto. No need for mpc8360 compatible.
 
-Signed-off-by: Larry Finger <Larry.Finger@lwfinger.net>
----
+Oh, I was wrong. fsl_qe_udc driver uses mpc8360 compatible for
+matching, so you can't remove it. :-/
 
-Richard,
-
-This is 2.6.31 material.
-
-Larry
----
-
-Index: wireless-testing/include/linux/leds.h
-===================================================================
---- wireless-testing.orig/include/linux/leds.h
-+++ wireless-testing/include/linux/leds.h
-@@ -74,7 +74,7 @@ extern void led_classdev_resume(struct l
-  */
- #ifdef CONFIG_LEDS_TRIGGERS
- 
--#define TRIG_NAME_MAX 50
-+#define TRIG_NAME_MAX 70
- 
- struct led_trigger {
- 	/* Trigger Properties */
+-- 
+Anton Vorontsov
+email: cbouatmailru@gmail.com
+irc://irc.freenode.net/bd2
