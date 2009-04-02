@@ -1,93 +1,73 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934792AbZDBDnw@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934333AbZDBDog@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934792AbZDBDnw (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 1 Apr 2009 23:43:52 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933866AbZDBDn0
+	id S934333AbZDBDog (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 1 Apr 2009 23:44:36 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933045AbZDBDoX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 1 Apr 2009 23:43:26 -0400
-Received: from cn.fujitsu.com ([222.73.24.84]:63169 "EHLO song.cn.fujitsu.com"
-	rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org with ESMTP
-	id S933184AbZDBDnZ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 1 Apr 2009 23:43:25 -0400
-Message-ID: <49D43476.7010102@cn.fujitsu.com>
-Date: Thu, 02 Apr 2009 11:43:50 +0800
-From: Li Zefan <lizf@cn.fujitsu.com>
-User-Agent: Thunderbird 2.0.0.9 (X11/20071115)
+	Wed, 1 Apr 2009 23:44:23 -0400
+Received: from rv-out-0506.google.com ([209.85.198.239]:28151 "EHLO
+	rv-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1764164AbZDBDoV (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 1 Apr 2009 23:44:21 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:to:cc:subject:message-id:references:mime-version
+         :content-type:content-disposition:in-reply-to:user-agent;
+        b=nw42xbgI3A3rHiDim6eAmmwu7+FAKUzijOs7/VrvlZ86CjKDu91oGIDy24YBJAH+My
+         sRcbC20oOvFXR7z45ZAHTasr/uDuz0Rp2idC63u91nn+Q+7iuUcl2I4vgr29fNMC5tSS
+         IxKCjG1Z+3AnFZrzQbBaSYRBIvaDTxe3jthtg=
+Date: Thu, 2 Apr 2009 12:44:14 +0900
+From: Akinobu Mita <akinobu.mita@gmail.com>
+To: Kumar Gala <galak@kernel.crashing.org>
+Cc: Linus Torvalds <torvalds@osdl.org>, linux-kernel@vger.kernel.org,
+       linuxppc-dev@ozlabs.org
+Subject: Re: [PATCH] Fix highmem build failure
+Message-ID: <20090402034414.GA22836@localhost.localdomain>
+References: <1238621611-4844-1-git-send-email-galak@kernel.crashing.org>
 MIME-Version: 1.0
-To: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
-CC: mingo@elte.hu, jens.axboe@oracle.com, acme@redhat.com, rostedt@goodmis.org,
-       fweisbec@gmail.com, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] blktrace: fix pdu_len when tracing packet command requests
-References: <49D42036.5010102@cn.fujitsu.com> <20090402122807K.fujita.tomonori@lab.ntt.co.jp>
-In-Reply-To: <20090402122807K.fujita.tomonori@lab.ntt.co.jp>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1238621611-4844-1-git-send-email-galak@kernel.crashing.org>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-FUJITA Tomonori wrote:
-> On Thu, 02 Apr 2009 10:17:26 +0800
-> Li Zefan <lizf@cn.fujitsu.com> wrote:
+On Wed, Apr 01, 2009 at 04:33:31PM -0500, Kumar Gala wrote:
+> The following commit breaks PPC builds with CONFIG_HIGHMEM=y
 > 
->> This bug has been here since 2.6.26.
->>
->> =======
->>
->> Since commit d7e3c3249ef23b4617393c69fe464765b4ff1645 ("block: add
->> large command support"), struct request->cmd has been changed from
->> unsinged char cmd[BLK_MAX_CDB] to unsigned char *cmd.
->>
->> Signed-off-by: Li Zefan <lizf@cn.fujitsu.com>
->> ---
->>  kernel/trace/blktrace.c |    2 +-
->>  1 files changed, 1 insertions(+), 1 deletions(-)
->>
->> diff --git a/kernel/trace/blktrace.c b/kernel/trace/blktrace.c
->> index fd1ff49..bafb8d3 100644
->> --- a/kernel/trace/blktrace.c
->> +++ b/kernel/trace/blktrace.c
->> @@ -642,7 +642,7 @@ static void blk_add_trace_rq(struct request_queue *q, struct request *rq,
->>  	if (blk_pc_request(rq)) {
->>  		what |= BLK_TC_ACT(BLK_TC_PC);
->>  		__blk_add_trace(bt, 0, rq->data_len, rw, what, rq->errors,
->> -				sizeof(rq->cmd), rq->cmd);
->> +				max_t(int, rq->cmd_len, BLK_MAX_CDB), rq->cmd);
->>  	} else  {
->>  		what |= BLK_TC_ACT(BLK_TC_FS);
->>  		__blk_add_trace(bt, rq->hard_sector, rq->hard_nr_sectors << 9,
->> -- 
+> commit f4112de6b679d84bd9b9681c7504be7bdfb7c7d5
+> Author: Akinobu Mita <akinobu.mita@gmail.com>
+> Date:   Tue Mar 31 15:23:25 2009 -0700
 > 
-> The patch works however it would be cleaner to simply use cmd_len?
+>     mm: introduce debug_kmap_atomic
 > 
 
-Right! This looks better, thanks.
+Thanks.
+But the definition of debug_kmap_atomic() needs to be outside of
+ifdef CONFIG_HIGHMEM. Because debug_kmap_atomic() is used without
+CONFIG_HIGHMEM by kmap_atomic_prot_pfn() in arch/x86/mm/iomap_32.c
 
-> diff --git a/block/blk-core.c b/block/blk-core.c
-> index 996ed90..54765d7 100644
-> --- a/block/blk-core.c
-> +++ b/block/blk-core.c
-> @@ -132,6 +132,7 @@ void blk_rq_init(struct request_queue *q, struct request *rq)
->  	INIT_HLIST_NODE(&rq->hash);
->  	RB_CLEAR_NODE(&rq->rb_node);
->  	rq->cmd = rq->__cmd;
-> +	rq->cmd_len = BLK_MAX_CDB;
->  	rq->tag = -1;
->  	rq->ref_count = 1;
->  }
-> diff --git a/block/blktrace.c b/block/blktrace.c
-> index 028120a..90b9ca4 100644
-> --- a/block/blktrace.c
-> +++ b/block/blktrace.c
-> @@ -583,7 +583,7 @@ static void blk_add_trace_rq(struct request_queue *q, struct request *rq,
->  	if (blk_pc_request(rq)) {
->  		what |= BLK_TC_ACT(BLK_TC_PC);
->  		__blk_add_trace(bt, 0, rq->data_len, rw, what, rq->errors,
-> -				sizeof(rq->cmd), rq->cmd);
-> +				rq->cmd_len, rq->cmd);
->  	} else  {
->  		what |= BLK_TC_ACT(BLK_TC_FS);
->  		__blk_add_trace(bt, rq->hard_sector, rq->hard_nr_sectors << 9,
-> 
-> 
-
+> --- a/include/linux/highmem.h
+> +++ b/include/linux/highmem.h
+> @@ -20,6 +20,19 @@ static inline void flush_kernel_dcache_page(struct page *page)
+>  #endif
+>  
+>  #ifdef CONFIG_HIGHMEM
+> +#include <asm/kmap_types.h>
+> +
+> +#if defined(CONFIG_DEBUG_HIGHMEM) && defined(CONFIG_TRACE_IRQFLAGS_SUPPORT)
+> +
+> +void debug_kmap_atomic(enum km_type type);
+> +
+> +#else
+> +
+> +static inline void debug_kmap_atomic(enum km_type type)
+> +{
+> +}
+> +
+> +#endif
+>  
+>  #include <asm/highmem.h>
+>  
