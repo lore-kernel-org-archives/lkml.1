@@ -1,56 +1,73 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934722AbZDBFyW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934809AbZDBF4M@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934722AbZDBFyW (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 2 Apr 2009 01:54:22 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759571AbZDBFyH
+	id S934809AbZDBF4M (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 2 Apr 2009 01:56:12 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754281AbZDBFzz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 2 Apr 2009 01:54:07 -0400
-Received: from THUNK.ORG ([69.25.196.29]:56254 "EHLO thunker.thunk.org"
+	Thu, 2 Apr 2009 01:55:55 -0400
+Received: from hera.kernel.org ([140.211.167.34]:37519 "EHLO hera.kernel.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752542AbZDBFyF (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 2 Apr 2009 01:54:05 -0400
-Date: Thu, 2 Apr 2009 01:53:56 -0400
-From: Theodore Tso <tytso@mit.edu>
-To: Alexander Beregalov <a.beregalov@gmail.com>
-Cc: Jens Axboe <jens.axboe@oracle.com>, linux-ext4@vger.kernel.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: 2.6.29-git: cannot mount ext4/loop
-Message-ID: <20090402055356.GC10642@mit.edu>
-Mail-Followup-To: Theodore Tso <tytso@mit.edu>,
-	Alexander Beregalov <a.beregalov@gmail.com>,
-	Jens Axboe <jens.axboe@oracle.com>, linux-ext4@vger.kernel.org,
-	linux-kernel@vger.kernel.org
-References: <a4423d670904011423x4174a81cj901bc140944412ea@mail.gmail.com> <20090401225351.GA22621@orion>
+	id S1751612AbZDBFzy (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 2 Apr 2009 01:55:54 -0400
+Message-ID: <49D45364.2010703@kernel.org>
+Date: Thu, 02 Apr 2009 14:55:48 +0900
+From: Tejun Heo <tj@kernel.org>
+User-Agent: Thunderbird 2.0.0.19 (X11/20081227)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090401225351.GA22621@orion>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-SA-Exim-Connect-IP: <locally generated>
-X-SA-Exim-Mail-From: tytso@mit.edu
-X-SA-Exim-Scanned: No (on thunker.thunk.org); SAEximRunCond expanded to false
+To: David Miller <davem@davemloft.net>
+CC: linux-kernel@vger.kernel.org
+Subject: Re: More problems in setup_pcpu_remap()
+References: <20090401.213112.96144152.davem@davemloft.net>	<49D44251.4000606@kernel.org> <20090401.215233.134215150.davem@davemloft.net>
+In-Reply-To: <20090401.215233.134215150.davem@davemloft.net>
+X-Enigmail-Version: 0.95.7
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Thu, 02 Apr 2009 05:55:52 +0000 (UTC)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Apr 02, 2009 at 02:53:51AM +0400, Alexander Beregalov wrote:
-> On Thu, Apr 02, 2009 at 01:23:28AM +0400, Alexander Beregalov wrote:
-> > Hi Theodore, Jens
-> > 
-> > kernel is 2.6.29-07099-g8b53ef3
-> > 
-> > Mount failed:
-> > 
-> > EXT4-fs: barriers enabled
-> > kjournald2 starting: pid 1867, dev loop0:8, commit interval 5 seconds
-> > EXT4-fs error (device loop0): ext4_iget: block reference 2703228928 >=
-> > max (524288) in inode #2, offset=0
-> > EXT4-fs: get root inode failed
-> > EXT4-fs (device loop0): mount failed
+Hello, David.
 
-I don't get this failure in a Linux 2.6 kernel based off of 5d80f8e5
-with the )now upstream) ext4 patches merged in.  I'm guessing sometime
-between v2.6.29-3652-g5d80f8e and 2.6.29-07099-g8b53ef3 a regression
-was introduced into the loop driver?
+David Miller wrote:
+>> I guess we'll have to put a cap on how high possible cpus can be for
+>> remap allocator.  e.g. if single chunk size is over 20% of the whole
+>> vmalloc area, don't use remap.  Does anyone have a good random %
+>> number on mind?
+> 
+> I would suggest instead to rethink what this code is doing.
 
-						- Ted
+Actually, I've been looking at the numbers and I'm not sure if the
+concern is valid.  On x86_32, the practical number of maximum
+processors would be around 16 so it will end up 32M, which isn't nice
+and it would probably a good idea to introduce a parameter to select
+which allocator to use but still it's far from consuming all the VM
+area.  On x86_64, the vmalloc area is obscenely large at 2^45, ie 32
+terabytes.  Even with 4096 processors, single chunk is measly 0.02%.
+
+If it's a problem for other archs or extreme x86_32 configurations, we
+
+can add some safety measures but in general I don't think it is a
+problem.
+
+> It would make more sense to carve up 2MB chunks into some-power-of-2
+> pieces and use that as the unit size.
+>
+> You could retain the NUMA goals of this function, as well as the
+> ability to be using 2MB pages in the TLBs.
+
+Can you please elaborate a bit?
+
+> And consider that if the dynamic allocation part of this code triggers
+> even once, you'll end up eating twice as much VMALLOC space.
+> 
+> Using 2MB per cpu is just rediculious, and really not even necessary.
+
+The focus at the moment is using large page for the first chunk to
+reduce pressure on TLB, not necessarily actually using 2MB for each
+unit.
+
+Thanks.
+
+-- 
+tejun
