@@ -1,92 +1,75 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760029AbZDBQVV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764780AbZDBQWY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760029AbZDBQVV (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 2 Apr 2009 12:21:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759532AbZDBQVJ
+	id S1764780AbZDBQWY (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 2 Apr 2009 12:22:24 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759660AbZDBQWP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 2 Apr 2009 12:21:09 -0400
-Received: from hera.kernel.org ([140.211.167.34]:41369 "EHLO hera.kernel.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753865AbZDBQVH (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 2 Apr 2009 12:21:07 -0400
-Subject: Re: [tip:irq/genirq] genirq: do not execute DEBUG_SHIRQ when irq
- setup failed
-From: Jaswinder Singh Rajput <jaswinder@kernel.org>
-To: Thomas Gleixner <tglx@linutronix.de>
-Cc: mingo@redhat.com, hpa@zytor.com, linux-kernel@vger.kernel.org,
-       henrix@sapo.pt, linux-tip-commits@vger.kernel.org
-In-Reply-To: <alpine.LFD.2.00.0904021753020.12916@localhost.localdomain>
-References: <20090401170635.GA4392@hades.domain.com>
-	 <tip-ba71604fad348656071a2a76eef9a67dab85a773@git.kernel.org>
-	 <1238682747.3099.16.camel@ht.satnam>
-	 <alpine.LFD.2.00.0904021718230.12916@localhost.localdomain>
-	 <1238686904.3099.22.camel@ht.satnam>
-	 <alpine.LFD.2.00.0904021753020.12916@localhost.localdomain>
-Content-Type: text/plain
-Date: Thu, 02 Apr 2009 21:50:16 +0530
-Message-Id: <1238689216.3099.34.camel@ht.satnam>
+	Thu, 2 Apr 2009 12:22:15 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:43788 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1758619AbZDBQWO (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 2 Apr 2009 12:22:14 -0400
+Date: Thu, 2 Apr 2009 09:17:35 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: Jean Delvare <khali@linux-fr.org>, LKML <linux-kernel@vger.kernel.org>,
+       David Howells <dhowells@redhat.com>, Oleg Nesterov <oleg@tv-sign.ru>,
+       Marcin Slusarz <marcin.slusarz@gmail.com>
+Subject: Re: [PATCH] Add to_delayed_work helper function
+Message-Id: <20090402091735.cb54c330.akpm@linux-foundation.org>
+In-Reply-To: <20090402112229.GC10828@elte.hu>
+References: <20090402131137.0b268f9a@hyperion.delvare>
+	<20090402112229.GC10828@elte.hu>
+X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.5; x86_64-redhat-linux-gnu)
 Mime-Version: 1.0
-X-Mailer: Evolution 2.24.5 (2.24.5-1.fc10) 
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 2009-04-02 at 18:08 +0200, Thomas Gleixner wrote:
-> On Thu, 2 Apr 2009, Jaswinder Singh Rajput wrote:
-> > > > >  #ifdef CONFIG_DEBUG_SHIRQ
-> > > > > -	if (irqflags & IRQF_SHARED) {
-> > > > > +	if (!retval & (irqflags & IRQF_SHARED)) {
-> > > > >  		/*
-> > > > >  		 * It's a shared IRQ -- the driver ought to be prepared for it
-> > > > >  		 * to happen immediately, so let's make sure....
-> > > > 
-> > > > What is this ?
-> > > 
-> > > You looking at the wrong place.
-> > >  
-> > > > There is no retval:
-> > > > 
-> > > > http://git.kernel.org/?p=linux/kernel/git/x86/linux-2.6-tip.git;a=blob;f=kernel/irq/manage.c;h=a3eb7baf1e46f2c735edb4cc44e0386cfbc4989e;hb=HEAD
-> > > 
-> > > Care to read patches you want to comment on carefully _BEFORE_ you
-> > > start yelling at people and sending useless copies of the wrong
-> > > function around the world.
-> > > 
-> > > The patch is perfectly fine and already applied.
-> > > 
+On Thu, 2 Apr 2009 13:22:29 +0200 Ingo Molnar <mingo@elte.hu> wrote:
+
+> 
+> * Jean Delvare <khali@linux-fr.org> wrote:
+> 
+> > It is a fairly common operation to have a pointer to a work and to
+> > need a pointer to the delayed work it is contained in. In particular,
+> > all delayed works which want to rearm themselves will have to do that.
+> > So it would seem fair to offer a helper function for this operation.
 > > 
-> > Yes, I know somehow you applied it. When you will merge this branch with
-> > -tip/master then you will understand what I am saying.
+> > Signed-off-by: Jean Delvare <khali@linux-fr.org>
+> > Acked-by: Ingo Molnar <mingo@elte.hu>
+> > ---
+> > Patch updated to include new users. It would be nice to have this patch
+> > merged soon so that I no longer have to update it. Andrew?
 > 
-> Jaswinder. I really start to get annoyed. 
-> 
-> That patch applies fine on master as well.
->  
-> > Even function name is changed from:
-> >
-> > 713 int request_irq(unsigned int irq, irq_handler_t handler,
-> > 
-> > 857 int request_threaded_irq(unsigned int irq, irq_handler_t handler,
-> 
-> And why is this fcking relevant ? 
-> 
+> Andrew, iff it's comprehensively build-tested then this should go 
+> into .30 from -mm, right?
 
-I am dead sure, you really need some good manners and need to learn many
-things.
+yup, probably in batch #2, probably today.
 
-> Take the patch and try to apply it. It applies perfectly fine on
-> tip/master. And it is still _CORRECT_ there.
+> Because this:
 > 
-> If you don't know how to read a patch and don't know the code it
-> applies to then taking it and applying it is the minimum you could do
-> before wasting everybodys time.
+> >  arch/powerpc/kernel/vio.c                               |    2 +-
+> >  drivers/crypto/hifn_795x.c                              |    2 +-
+> >  drivers/input/mouse/hgpk.c                              |    2 +-
+> >  drivers/net/dm9000.c                                    |    2 +-
+> >  drivers/net/mlx4/en_netdev.c                            |    2 +-
+> >  drivers/net/mlx4/en_rx.c                                |    2 +-
+> >  drivers/net/mlx4/sense.c                                |    2 +-
+> >  drivers/net/phy/phy.c                                   |    3 +--
+> >  drivers/s390/scsi/zfcp_fc.c                             |    2 +-
+> >  drivers/staging/rtl8187se/ieee80211/ieee80211_softmac.c |    8 ++++----
+> >  drivers/staging/rtl8187se/r8180_core.c                  |    8 ++++----
+> >  drivers/staging/rtl8187se/r8180_dm.c                    |    6 +++---
+> >  drivers/usb/wusbcore/devconnect.c                       |    2 +-
+> >  include/linux/workqueue.h                               |    5 +++++
+> >  mm/slab.c                                               |    3 +--
+> >  15 files changed, 27 insertions(+), 24 deletions(-)
 > 
-> Stop this nonsense before I get really grumpy,
-> 
+> ... will be painful to port across another cycle.
 
-That's the only thing you can do.
-
---
-JSR
+Not too bad - I've been sitting on #1 for a month.
 
