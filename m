@@ -1,55 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764881AbZDBSBp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761596AbZDBSCx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764881AbZDBSBp (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 2 Apr 2009 14:01:45 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759494AbZDBSBg
+	id S1761596AbZDBSCx (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 2 Apr 2009 14:02:53 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754093AbZDBSCo
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 2 Apr 2009 14:01:36 -0400
-Received: from mx3.mail.elte.hu ([157.181.1.138]:48118 "EHLO mx3.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751904AbZDBSBf (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 2 Apr 2009 14:01:35 -0400
-Date: Thu, 2 Apr 2009 20:01:05 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: Jaswinder Singh Rajput <jaswinder@kernel.org>
-Cc: Thomas Gleixner <tglx@linutronix.de>, mingo@redhat.com, hpa@zytor.com,
-       linux-kernel@vger.kernel.org, henrix@sapo.pt,
-       linux-tip-commits@vger.kernel.org
-Subject: Re: [tip:irq/genirq] genirq: do not execute DEBUG_SHIRQ when irq
-	setup failed
-Message-ID: <20090402180105.GA29159@elte.hu>
-References: <20090401170635.GA4392@hades.domain.com> <tip-ba71604fad348656071a2a76eef9a67dab85a773@git.kernel.org> <1238682747.3099.16.camel@ht.satnam> <alpine.LFD.2.00.0904021718230.12916@localhost.localdomain> <1238686904.3099.22.camel@ht.satnam> <alpine.LFD.2.00.0904021753020.12916@localhost.localdomain> <1238689216.3099.34.camel@ht.satnam> <20090402173257.GA3755@elte.hu> <1238694361.3099.42.camel@ht.satnam>
+	Thu, 2 Apr 2009 14:02:44 -0400
+Received: from wf-out-1314.google.com ([209.85.200.172]:46017 "EHLO
+	wf-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750919AbZDBSCo convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 2 Apr 2009 14:02:44 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:sender:in-reply-to:references:date
+         :x-google-sender-auth:message-id:subject:from:to:cc:content-type
+         :content-transfer-encoding;
+        b=irlqrvgoE/9i78q84ZcODIH0RveUgvvj0mHSk1R9oc664Rbztob63L6rgZEZCKdy1z
+         dV+jADvfqE6iPAu/3eo+W4ujkil2PsbmRlurd48LNmbNnKjF/Tl9UZ6jiKhvFDeTG7p/
+         pWZLrZVnjdk4oy3Oh7IWV0gd7aPZlH58FfS24=
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1238694361.3099.42.camel@ht.satnam>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.5
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+In-Reply-To: <20090402095315.1098b6c3.akpm@linux-foundation.org>
+References: <1238690835.7359.16.camel@lts-notebook>
+	 <20090402095315.1098b6c3.akpm@linux-foundation.org>
+Date: Fri, 3 Apr 2009 03:02:41 +0900
+X-Google-Sender-Auth: 1f6577e31b4732cd
+Message-ID: <2f11576a0904021102r19165d89le45563b438621e08@mail.gmail.com>
+Subject: Re: [PATCH] Define a UNIQUE value for AS_UNEVICTABLE flag
+From: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: Lee Schermerhorn <Lee.Schermerhorn@hp.com>,
+       linux-kernel <linux-kernel@vger.kernel.org>, stable <stable@kernel.org>,
+       Rik van Riel <riel@redhat.com>, David Howells <dhowells@redhat.com>,
+       Avi Kivity <avi@redhat.com>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+(cc to Avi)
 
-* Jaswinder Singh Rajput <jaswinder@kernel.org> wrote:
+>> [PATCH] Define UNIQUE value of AS_UNEVICTABLE
+>>
+>> Needed in 2.6.28, 2.6.29, ...
+>>
+>> A new "address_space flag"--AS_MM_ALL_LOCKS--was defined to use the next
+>> available AS flag while the Unevictable LRU was under development.  The
+>> Unevictable LRU was using the same flag and "no one" noticed.  Current
+>> mainline, since 2.6.28, has same value for two symbolic flag names.
+>
+> argh.
+>
+> What are the user-observable effects of the bug, and why didn't anyone
+> notice it until now?
 
-> Ingo,
-> 
-> > Jaswinder, this is really not an acceptable pattern of behavior 
-> > on lkml.
-> 
-> Check last 50 emails from him. He is treating others like his 
-> slaves and use bad words.
+AS_MM_ALL_LOCKS is used by mmu_notifier. it mean it is used by only kvm.
+In the other hand,  AS_UNEVICTABLE mean unevictable shmem or ramfs.
 
-If you have a problem with someone you should take that to private 
-mail or elsewhere. This is a mailing list for technical discussions 
-and the technical content of your mails here was wrong and incorrect 
-at every level.
+Then, if shmem opend process use ioctl(KVM_CREATE_VM), unevictable
+flag on the shmem accidentally turn off.
+but, fortunatelly, In modern desktop environment, only KVM control
+program use above ioctl. then, we can assume this doesn't use shmem
+and ramfs.
 
-	Ingo
+Am I missing anything?
