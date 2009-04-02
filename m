@@ -1,294 +1,284 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S935226AbZDBJPL@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S935278AbZDBJPs@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S935226AbZDBJPL (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 2 Apr 2009 05:15:11 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763526AbZDBJM4
+	id S935278AbZDBJPs (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 2 Apr 2009 05:15:48 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762168AbZDBJM5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 2 Apr 2009 05:12:56 -0400
-Received: from casper.infradead.org ([85.118.1.10]:57844 "EHLO
+	Thu, 2 Apr 2009 05:12:57 -0400
+Received: from casper.infradead.org ([85.118.1.10]:57846 "EHLO
 	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757319AbZDBJMx (ORCPT
+	with ESMTP id S1753370AbZDBJMx (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
 	Thu, 2 Apr 2009 05:12:53 -0400
-Message-Id: <20090402091319.257773792@chello.nl>
+Message-Id: <20090402091319.151921176@chello.nl>
 References: <20090402091158.291810516@chello.nl>
 User-Agent: quilt/0.46-1
-Date: Thu, 02 Apr 2009 11:12:00 +0200
+Date: Thu, 02 Apr 2009 11:11:59 +0200
 From: Peter Zijlstra <a.p.zijlstra@chello.nl>
 To: Ingo Molnar <mingo@elte.hu>
 Cc: Paul Mackerras <paulus@samba.org>,
        Corey Ashford <cjashfor@linux.vnet.ibm.com>,
        linux-kernel@vger.kernel.org, Peter Zijlstra <a.p.zijlstra@chello.nl>
-Subject: [PATCH 2/6] RFC perf_counter: singleshot support
-Content-Disposition: inline; filename=perf_counter-singleshot.patch
+Subject: [PATCH 1/6] perf_counter: move the event overflow output bits to record_type
+Content-Disposition: inline; filename=perf_counter-record_type.patch
 X-Bad-Reply: References but no 'Re:' in Subject.
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-By request, provide a way for counters to disable themselves and signal
-at the first counter overflow.
+Per suggestion from Paul, move the event overflow bits to record_type
+and sanitize the enums a bit.
 
-This isn't complete, we really want pending work to be done ASAP after
-queueing it. My preferred method would be a self-IPI, that would ensure
-we run the code in a usable context right after the current (IRQ-off,
-NMI) context is done.
+Breaks the ABI -- again ;-)
 
 Signed-off-by: Peter Zijlstra <a.p.zijlstra@chello.nl>
 ---
- arch/powerpc/kernel/perf_counter.c |    2 
- arch/x86/kernel/cpu/perf_counter.c |    2 
- include/linux/perf_counter.h       |   21 +++++---
- kernel/perf_counter.c              |   94 ++++++++++++++++++++++++++++---------
- 4 files changed, 89 insertions(+), 30 deletions(-)
+ include/linux/perf_counter.h |   50 ++++++++++++---------
+ kernel/perf_counter.c        |   99 ++++++++++++++++---------------------------
+ 2 files changed, 67 insertions(+), 82 deletions(-)
 
-Index: linux-2.6/arch/powerpc/kernel/perf_counter.c
-===================================================================
---- linux-2.6.orig/arch/powerpc/kernel/perf_counter.c
-+++ linux-2.6/arch/powerpc/kernel/perf_counter.c
-@@ -732,7 +732,7 @@ static void record_and_restart(struct pe
- 	 * Finally record data if requested.
- 	 */
- 	if (record)
--		perf_counter_output(counter, 1, regs);
-+		perf_counter_overflow(counter, 1, regs);
- }
- 
- /*
-Index: linux-2.6/arch/x86/kernel/cpu/perf_counter.c
-===================================================================
---- linux-2.6.orig/arch/x86/kernel/cpu/perf_counter.c
-+++ linux-2.6/arch/x86/kernel/cpu/perf_counter.c
-@@ -800,7 +800,7 @@ again:
- 			continue;
- 
- 		perf_save_and_restart(counter);
--		perf_counter_output(counter, nmi, regs);
-+		perf_counter_overflow(counter, nmi, regs);
- 	}
- 
- 	hw_perf_ack_status(ack);
 Index: linux-2.6/include/linux/perf_counter.h
 ===================================================================
 --- linux-2.6.orig/include/linux/perf_counter.h
 +++ linux-2.6/include/linux/perf_counter.h
-@@ -141,13 +141,19 @@ struct perf_counter_hw_event {
+@@ -73,15 +73,6 @@ enum sw_event_ids {
+ 	PERF_SW_EVENTS_MAX		= 7,
+ };
+ 
+-/*
+- * IRQ-notification data record type:
+- */
+-enum perf_counter_record_type {
+-	PERF_RECORD_SIMPLE		= 0,
+-	PERF_RECORD_IRQ			= 1,
+-	PERF_RECORD_GROUP		= 2,
+-};
+-
+ #define __PERF_COUNTER_MASK(name) 			\
+ 	(((1ULL << PERF_COUNTER_##name##_BITS) - 1) <<	\
+ 	 PERF_COUNTER_##name##_SHIFT)
+@@ -103,6 +94,17 @@ enum perf_counter_record_type {
+ #define PERF_COUNTER_EVENT_MASK		__PERF_COUNTER_MASK(EVENT)
+ 
+ /*
++ * Bits that can be set in hw_event.record_type to request information
++ * in the overflow packets.
++ */
++enum perf_counter_record_format {
++	PERF_RECORD_IP		= 1U << 0,
++	PERF_RECORD_TID		= 1U << 1,
++	PERF_RECORD_GROUP	= 1U << 2,
++	PERF_RECORD_CALLCHAIN	= 1U << 3,
++};
++
++/*
+  * Bits that can be set in hw_event.read_format to request that
+  * reads on the counter should return the indicated quantities,
+  * in increasing order of bit value, after the counter value.
+@@ -125,8 +127,8 @@ struct perf_counter_hw_event {
+ 	__u64			config;
+ 
+ 	__u64			irq_period;
+-	__u64			record_type;
+-	__u64			read_format;
++	__u32			record_type;
++	__u32			read_format;
+ 
+ 	__u64			disabled       :  1, /* off by default        */
+ 				nmi	       :  1, /* NMI sampling          */
+@@ -137,12 +139,10 @@ struct perf_counter_hw_event {
+ 				exclude_kernel :  1, /* ditto kernel          */
+ 				exclude_hv     :  1, /* ditto hypervisor      */
  				exclude_idle   :  1, /* don't count when idle */
+-				include_tid    :  1, /* include the tid       */
  				mmap           :  1, /* include mmap data     */
  				munmap         :  1, /* include munmap data   */
-+				singleshot     :  1, /* singleshot overflow   */
+-				callchain      :  1, /* add callchain data    */
  
--				__reserved_1   : 53;
-+				__reserved_1   : 52;
+-				__reserved_1   : 51;
++				__reserved_1   : 53;
  
  	__u32			extra_config_len;
  	__u32			__reserved_4;
+@@ -212,15 +212,21 @@ struct perf_event_header {
  
--	__u64			__reserved_2;
+ enum perf_event_type {
+ 
+-	PERF_EVENT_GROUP	= 1,
++	PERF_EVENT_MMAP			= 1,
++	PERF_EVENT_MUNMAP		= 2,
+ 
+-	PERF_EVENT_MMAP		= 2,
+-	PERF_EVENT_MUNMAP	= 3,
+-
+-	PERF_EVENT_OVERFLOW	= 1UL << 31,
+-	__PERF_EVENT_IP		= 1UL << 30,
+-	__PERF_EVENT_TID	= 1UL << 29,
+-	__PERF_EVENT_CALLCHAIN  = 1UL << 28,
 +	/*
-+	 * Singleshot signal information.
++	 * Half the event type space is reserved for the counter overflow
++	 * bitfields, as found in hw_event.record_type.
++	 *
++	 * These events will have types of the form:
++	 *   PERF_EVENT_COUNTER_OVERFLOW { | __PERF_EVENT_* } *
 +	 */
-+	__u32			signal_nr;
-+	__u32			signal_tid;
-+
- 	__u64			__reserved_3;
++	PERF_EVENT_COUNTER_OVERFLOW	= 1UL << 31,
++	__PERF_EVENT_IP			= PERF_RECORD_IP,
++	__PERF_EVENT_TID		= PERF_RECORD_TID,
++	__PERF_EVENT_GROUP		= PERF_RECORD_GROUP,
++	__PERF_EVENT_CALLCHAIN  	= PERF_RECORD_CALLCHAIN,
  };
  
-@@ -325,8 +331,9 @@ struct perf_mmap_data {
- 	void 				*data_pages[0];
- };
- 
--struct perf_wakeup_entry {
--	struct perf_wakeup_entry *next;
-+struct perf_pending_entry {
-+	struct perf_pending_entry *next;
-+	void (*func)(struct perf_pending_entry *);
- };
- 
- /**
-@@ -404,7 +411,7 @@ struct perf_counter {
- 	/* poll related */
- 	wait_queue_head_t		waitq;
- 	/* optional: for NMIs */
--	struct perf_wakeup_entry	wakeup;
-+	struct perf_pending_entry	pending;
- 
- 	void (*destroy)(struct perf_counter *);
- 	struct rcu_head			rcu_head;
-@@ -493,8 +500,8 @@ extern int hw_perf_group_sched_in(struct
- 	       struct perf_counter_context *ctx, int cpu);
- extern void perf_counter_update_userpage(struct perf_counter *counter);
- 
--extern void perf_counter_output(struct perf_counter *counter,
--				int nmi, struct pt_regs *regs);
-+extern void perf_counter_overflow(struct perf_counter *counter,
-+				  int nmi, struct pt_regs *regs);
- /*
-  * Return 1 for a software counter, 0 for a hardware counter
-  */
+ #ifdef __KERNEL__
 Index: linux-2.6/kernel/perf_counter.c
 ===================================================================
 --- linux-2.6.orig/kernel/perf_counter.c
 +++ linux-2.6/kernel/perf_counter.c
-@@ -1563,6 +1563,14 @@ void perf_counter_wakeup(struct perf_cou
- 	wake_up_all(&counter->waitq);
+@@ -1765,27 +1765,34 @@ static void perf_output_end(struct perf_
+ 	rcu_read_unlock();
  }
  
-+static void perf_pending_wakeup(struct perf_pending_entry *entry)
-+{
-+	struct perf_counter *counter = container_of(entry,
-+			struct perf_counter, pending);
-+
-+	perf_counter_wakeup(counter);
-+}
-+
- /*
-  * Pending wakeups
-  *
-@@ -1572,45 +1580,47 @@ void perf_counter_wakeup(struct perf_cou
-  * single linked list and use cmpxchg() to add entries lockless.
-  */
- 
--#define PENDING_TAIL ((struct perf_wakeup_entry *)-1UL)
-+#define PENDING_TAIL ((struct perf_pending_entry *)-1UL)
- 
--static DEFINE_PER_CPU(struct perf_wakeup_entry *, perf_wakeup_head) = {
-+static DEFINE_PER_CPU(struct perf_pending_entry *, perf_pending_head) = {
- 	PENDING_TAIL,
- };
- 
--static void perf_pending_queue(struct perf_counter *counter)
-+static void perf_pending_queue(struct perf_pending_entry *entry,
-+			       void (*func)(struct perf_pending_entry *))
+-static void perf_output_simple(struct perf_counter *counter,
+-			       int nmi, struct pt_regs *regs)
++void perf_counter_output(struct perf_counter *counter,
++			 int nmi, struct pt_regs *regs)
  {
--	struct perf_wakeup_entry **head;
--	struct perf_wakeup_entry *prev, *next;
-+	struct perf_pending_entry **head;
+ 	int ret;
++	u64 record_type = counter->hw_event.record_type;
+ 	struct perf_output_handle handle;
+ 	struct perf_event_header header;
+ 	u64 ip;
+ 	struct {
+ 		u32 pid, tid;
+ 	} tid_entry;
++	struct {
++		u64 event;
++		u64 counter;
++	} group_entry;
+ 	struct perf_callchain_entry *callchain = NULL;
+ 	int callchain_size = 0;
  
--	if (cmpxchg(&counter->wakeup.next, NULL, PENDING_TAIL) != NULL)
-+	if (cmpxchg(&entry->next, NULL, PENDING_TAIL) != NULL)
- 		return;
+ 	header.type = PERF_EVENT_OVERFLOW;
+ 	header.size = sizeof(header);
  
--	head = &get_cpu_var(perf_wakeup_head);
-+	entry->func = func;
-+
-+	head = &get_cpu_var(perf_pending_head);
+-	ip = instruction_pointer(regs);
+-	header.type |= __PERF_EVENT_IP;
+-	header.size += sizeof(ip);
++	if (record_type & PERF_RECORD_IP) {
++		ip = instruction_pointer(regs);
++		header.type |= __PERF_EVENT_IP;
++		header.size += sizeof(ip);
++	}
  
- 	do {
--		prev = counter->wakeup.next = *head;
--		next = &counter->wakeup;
--	} while (cmpxchg(head, prev, next) != prev);
-+		entry->next = *head;
-+	} while (cmpxchg(head, entry->next, entry) != entry->next);
- 
- 	set_perf_counter_pending();
- 
--	put_cpu_var(perf_wakeup_head);
-+	put_cpu_var(perf_pending_head);
- }
- 
- static int __perf_pending_run(void)
- {
--	struct perf_wakeup_entry *list;
-+	struct perf_pending_entry *list;
- 	int nr = 0;
- 
--	list = xchg(&__get_cpu_var(perf_wakeup_head), PENDING_TAIL);
-+	list = xchg(&__get_cpu_var(perf_pending_head), PENDING_TAIL);
- 	while (list != PENDING_TAIL) {
--		struct perf_counter *counter = container_of(list,
--				struct perf_counter, wakeup);
-+		void (*func)(struct perf_pending_entry *);
-+		struct perf_pending_entry *entry = list;
- 
- 		list = list->next;
- 
--		counter->wakeup.next = NULL;
-+		entry->next = NULL;
-+		func = entry->func;
- 		/*
- 		 * Ensure we observe the unqueue before we issue the wakeup,
- 		 * so that we won't be waiting forever.
-@@ -1618,7 +1628,7 @@ static int __perf_pending_run(void)
- 		 */
- 		smp_wmb();
- 
--		perf_counter_wakeup(counter);
-+		func(entry);
- 		nr++;
+-	if (counter->hw_event.include_tid) {
++	if (record_type & PERF_RECORD_TID) {
+ 		/* namespace issues */
+ 		tid_entry.pid = current->group_leader->pid;
+ 		tid_entry.tid = current->pid;
+@@ -1794,7 +1801,13 @@ static void perf_output_simple(struct pe
+ 		header.size += sizeof(tid_entry);
  	}
  
-@@ -1640,7 +1650,7 @@ static inline int perf_not_pending(struc
- 	 * so that we do not miss the wakeup. -- see perf_pending_handle()
- 	 */
- 	smp_rmb();
--	return counter->wakeup.next == NULL;
-+	return counter->pending.next == NULL;
- }
+-	if (counter->hw_event.callchain) {
++	if (record_type & PERF_RECORD_GROUP) {
++		header.type |= __PERF_EVENT_GROUP;
++		header.size += sizeof(u64) +
++			counter->nr_siblings * sizeof(group_entry);
++	}
++
++	if (record_type & PERF_RECORD_CALLCHAIN) {
+ 		callchain = perf_callchain(regs);
  
- static void perf_pending_sync(struct perf_counter *counter)
-@@ -1679,9 +1689,10 @@ struct perf_output_handle {
+ 		if (callchain) {
+@@ -1810,69 +1823,35 @@ static void perf_output_simple(struct pe
+ 		return;
  
- static inline void __perf_output_wakeup(struct perf_output_handle *handle)
- {
--	if (handle->nmi)
--		perf_pending_queue(handle->counter);
--	else
-+	if (handle->nmi) {
-+		perf_pending_queue(&handle->counter->pending,
-+				   perf_pending_wakeup);
-+	} else
- 		perf_counter_wakeup(handle->counter);
- }
+ 	perf_output_put(&handle, header);
+-	perf_output_put(&handle, ip);
  
-@@ -1999,6 +2010,47 @@ void perf_counter_munmap(unsigned long a
+-	if (counter->hw_event.include_tid)
+-		perf_output_put(&handle, tid_entry);
++	if (record_type & PERF_RECORD_IP)
++		perf_output_put(&handle, ip);
+ 
+-	if (callchain)
+-		perf_output_copy(&handle, callchain, callchain_size);
+-
+-	perf_output_end(&handle);
+-}
+-
+-static void perf_output_group(struct perf_counter *counter, int nmi)
+-{
+-	struct perf_output_handle handle;
+-	struct perf_event_header header;
+-	struct perf_counter *leader, *sub;
+-	unsigned int size;
+-	struct {
+-		u64 event;
+-		u64 counter;
+-	} entry;
+-	int ret;
+-
+-	size = sizeof(header) + counter->nr_siblings * sizeof(entry);
++	if (record_type & PERF_RECORD_TID)
++		perf_output_put(&handle, tid_entry);
+ 
+-	ret = perf_output_begin(&handle, counter, size, nmi);
+-	if (ret)
+-		return;
++	if (record_type & PERF_RECORD_GROUP) {
++		struct perf_counter *leader, *sub;
++		u64 nr = counter->nr_siblings;
+ 
+-	header.type = PERF_EVENT_GROUP;
+-	header.size = size;
++		perf_output_put(&handle, nr);
+ 
+-	perf_output_put(&handle, header);
++		leader = counter->group_leader;
++		list_for_each_entry(sub, &leader->sibling_list, list_entry) {
++			if (sub != counter)
++				sub->hw_ops->read(sub);
+ 
+-	leader = counter->group_leader;
+-	list_for_each_entry(sub, &leader->sibling_list, list_entry) {
+-		if (sub != counter)
+-			sub->hw_ops->read(sub);
++			group_entry.event = sub->hw_event.config;
++			group_entry.counter = atomic64_read(&sub->count);
+ 
+-		entry.event = sub->hw_event.config;
+-		entry.counter = atomic64_read(&sub->count);
+-
+-		perf_output_put(&handle, entry);
++			perf_output_put(&handle, group_entry);
++		}
+ 	}
+ 
+-	perf_output_end(&handle);
+-}
+-
+-void perf_counter_output(struct perf_counter *counter,
+-			 int nmi, struct pt_regs *regs)
+-{
+-	switch (counter->hw_event.record_type) {
+-	case PERF_RECORD_SIMPLE:
+-		return;
+-
+-	case PERF_RECORD_IRQ:
+-		perf_output_simple(counter, nmi, regs);
+-		break;
++	if (callchain)
++		perf_output_copy(&handle, callchain, callchain_size);
+ 
+-	case PERF_RECORD_GROUP:
+-		perf_output_group(counter, nmi);
+-		break;
+-	}
++	perf_output_end(&handle);
  }
  
  /*
-+ * Generic counter overflow handling.
-+ */
-+
-+void perf_counter_singleshot(struct perf_counter *counter)
-+{
-+	struct pid *pid;
-+
-+	perf_counter_disable(counter);
-+
-+	rcu_read_lock();
-+	pid = find_vpid(counter->hw_event.signal_tid);
-+	if (pid)
-+		kill_pid(pid, counter->hw_event.signal_nr, 1);
-+	rcu_read_unlock();
-+}
-+
-+void perf_pending_singleshot(struct perf_pending_entry *entry)
-+{
-+	struct perf_counter *counter = container_of(entry,
-+			struct perf_counter, pending);
-+
-+	perf_counter_singleshot(counter);
-+}
-+
-+void perf_counter_overflow(struct perf_counter *counter,
-+			   int nmi, struct pt_regs *regs)
-+{
-+	if (counter->hw_event.singleshot) {
-+		if (nmi) {
-+			perf_pending_queue(&counter->pending,
-+					   perf_pending_singleshot);
-+		} else
-+			perf_counter_singleshot(counter);
-+
-+		return;
-+	}
-+
-+	perf_counter_output(counter, nmi, regs);
-+}
-+
-+/*
-  * Generic software counter infrastructure
-  */
- 
 
 -- 
 
