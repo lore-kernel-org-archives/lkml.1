@@ -1,61 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934254AbZDBBzt@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934191AbZDBB5V@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934254AbZDBBzt (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 1 Apr 2009 21:55:49 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756272AbZDBBzk
+	id S934191AbZDBB5V (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 1 Apr 2009 21:57:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757060AbZDBB5L
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 1 Apr 2009 21:55:40 -0400
-Received: from hera.kernel.org ([140.211.167.34]:41331 "EHLO hera.kernel.org"
+	Wed, 1 Apr 2009 21:57:11 -0400
+Received: from mx2.mail.elte.hu ([157.181.151.9]:47304 "EHLO mx2.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755764AbZDBBzj (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 1 Apr 2009 21:55:39 -0400
-Message-ID: <49D41ABC.7070603@kernel.org>
-Date: Thu, 02 Apr 2009 10:54:04 +0900
-From: Tejun Heo <tj@kernel.org>
-User-Agent: Thunderbird 2.0.0.19 (X11/20081227)
+	id S1755716AbZDBB5K (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 1 Apr 2009 21:57:10 -0400
+Date: Thu, 2 Apr 2009 03:55:31 +0200
+From: Ingo Molnar <mingo@elte.hu>
+To: Steven Rostedt <rostedt@goodmis.org>
+Cc: mingo@redhat.com, hpa@zytor.com, linux-kernel@vger.kernel.org,
+       fweisbec@gmail.com, tglx@linutronix.de,
+       Johannes Berg <johannes@sipsolutions.net>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Greg KH <gregkh@suse.de>, linux-tip-commits@vger.kernel.org,
+       stable@kernel.org
+Subject: Re: [tip:tracing/syscalls] tracing/core: fix early free of cpumasks
+Message-ID: <20090402015531.GA12489@elte.hu>
+References: <1237164303-11476-1-git-send-email-fweisbec@gmail.com> <tip-2fc1dfbe17e7705c55b7a99da995fa565e26f151@git.kernel.org> <20090402011232.GA32066@goodmis.org>
 MIME-Version: 1.0
-To: Martin Schwidefsky <schwidefsky@de.ibm.com>
-CC: David Miller <davem@davemloft.net>, mingo@elte.hu, rusty@rustcorp.com.au,
-       tglx@linutronix.de, x86@kernel.org, linux-kernel@vger.kernel.org,
-       hpa@zytor.com, lethal@linux-sh.org, rmk@arm.linux.org.uk,
-       starvik@axis.com, ralf@linux-mips.org, cooloney@kernel.org,
-       kyle@mcmartin.ca, matthew@wil.cx, grundler@parisc-linux.org,
-       takata@linux-m32r.org, benh@kernel.crashing.org, rth@twiddle.net,
-       ink@jurassic.park.msu.ru, heiko.carstens@de.ibm.com
-Subject: Re: [GIT RFC] percpu: use dynamic percpu allocator as the default
- percpu allocator
-References: <20090401101054.0a4b187d@skybase>	<49D3231D.2040403@kernel.org>	<20090401103257.12c2517e@skybase>	<20090401.013702.66171229.davem@davemloft.net>	<20090401104737.22c8c66c@skybase>	<49D32AE5.70709@kernel.org> <20090401110846.0536df11@skybase>
-In-Reply-To: <20090401110846.0536df11@skybase>
-X-Enigmail-Version: 0.95.7
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Thu, 02 Apr 2009 01:53:26 +0000 (UTC)
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20090402011232.GA32066@goodmis.org>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hello,
 
-Martin Schwidefsky wrote:
->> Also, there is no guarantee that the offset from dynamic allocator
->> will fall in the same 4G.  There is reserve mechanism for static ones
->> for archs which need it but for dynamic ones, the offset can be any
->> value.
+* Steven Rostedt <rostedt@goodmis.org> wrote:
+
+> This never made it into 2.6.29, nor do I see it yet in mainline.
 > 
-> If we map the modules with a 4GB distance to the main kernel image then
-> we don't have to worry about the offsets anymore. The compiler could
-> just use LARL to get the address of the static per-cpu variables and
-> SHIFT_PERCPU_PTR could be a RELOC_HIDE.
+> This can cause unpredictable results with ftrace. We are freeing a 
+> cpu mask that will be later used.
 
-Ah... okay.  Great.  No more GOTENT trick for static ones and for
-dynamic ones the compiler will generate indirection.
+Yes ... but CONFIG_OFFSTACK is only possible as a debug option right 
+now. So it's far less serious of an issue, it needs 2-3 unlikely 
+features to be combined.
 
-> It just that the remapping we need to do is sooo icky ..
+The fix looks simple enough, so once the tracing tree is upstream, 
+we can forward it to -stable.
 
-Fingers and toes crossed.  It would improve general percpu access
-performance too.
-
-Thanks.
-
--- 
-tejun
+	Ingo
