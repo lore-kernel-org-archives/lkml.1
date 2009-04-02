@@ -1,55 +1,91 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762295AbZDBQEb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763498AbZDBQGn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762295AbZDBQEb (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 2 Apr 2009 12:04:31 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756603AbZDBQEV
+	id S1763498AbZDBQGn (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 2 Apr 2009 12:06:43 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753377AbZDBQG0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 2 Apr 2009 12:04:21 -0400
-Received: from miranda.se.axis.com ([193.13.178.8]:43276 "EHLO
-	miranda.se.axis.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755323AbZDBQEU (ORCPT
+	Thu, 2 Apr 2009 12:06:26 -0400
+Received: from smarthost01.mail.zen.net.uk ([212.23.3.140]:46453 "EHLO
+	smarthost01.mail.zen.net.uk" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1752063AbZDBQGZ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 2 Apr 2009 12:04:20 -0400
-Date: Thu, 2 Apr 2009 18:03:44 +0200
-From: Jesper Nilsson <Jesper.Nilsson@axis.com>
-To: Rusty Russell <rusty@rustcorp.com.au>
-Cc: Mikael Starvik <mikael.starvik@axis.com>, dev-etrax <dev-etrax@axis.com>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       "mingo@redhat.com" <mingo@redhat.com>,
-       "travis@sgi.com" <travis@sgi.com>
-Subject: Re: [PULL] cpumask updates for cris
-Message-ID: <20090402160343.GX31562@axis.com>
-References: <200903161444.15684.rusty@rustcorp.com.au>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <200903161444.15684.rusty@rustcorp.com.au>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+	Thu, 2 Apr 2009 12:06:25 -0400
+Subject: Re: [RFC PATCH 02/17] vbus: add virtual-bus definitions
+From: Ben Hutchings <bhutchings@solarflare.com>
+To: Gregory Haskins <ghaskins@novell.com>
+Cc: linux-kernel@vger.kernel.org, agraf@suse.de, pmullaney@novell.com,
+       pmorreale@novell.com, anthony@codemonkey.ws, rusty@rustcorp.com.au,
+       netdev@vger.kernel.org, kvm@vger.kernel.org
+In-Reply-To: <20090331184257.28333.64028.stgit@dev.haskins.net>
+References: <20090331184057.28333.77287.stgit@dev.haskins.net>
+	 <20090331184257.28333.64028.stgit@dev.haskins.net>
+Content-Type: text/plain
+Organization: Solarflare Communications
+Date: Thu, 02 Apr 2009 17:06:16 +0100
+Message-Id: <1238688376.3202.10.camel@achroite>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.22.1 (2.22.1-2.fc9) 
+Content-Transfer-Encoding: 7bit
+X-Originating-Smarthost01-IP: [82.69.137.158]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Mar 16, 2009 at 05:14:15AM +0100, Rusty Russell wrote:
-> The following changes since commit 5bee17f18b595937e6beafeee5197868a3f74a06:
->   Kyle McMartin (1):
->         parisc: sba_iommu: fix build bug when CONFIG_PARISC_AGP=y
-> 
-> are available in the git repository at:
-> 
->   ssh://master.kernel.org/home/ftp/pub/scm/linux/kernel/git/rusty/linux-2.6-cpumask-for-cris.git master
-> 
-> Rusty Russell (3):
->       cpumask: prepare for iterators to only go to nr_cpu_ids/nr_cpumask_bits.: cris
->       cpumask: Use accessors code.: cris
->       cpumask: use mm_cpumask() wrapper: cris
-> 
->  arch/cris/arch-v32/kernel/smp.c |   10 +++++-----
->  arch/cris/arch-v32/mm/tlb.c     |    2 +-
->  arch/cris/kernel/setup.c        |    2 +-
->  3 files changed, 7 insertions(+), 7 deletions(-)
+On Tue, 2009-03-31 at 14:42 -0400, Gregory Haskins wrote:
+[...]
+> +Create a device instance
+> +------------------------
+> +
+> +Devices are instantiated by again utilizing the /config/vbus configfs area.
+> +At first you may suspect that devices are created as subordinate objects of a
+> +bus/container instance, but you would be mistaken.
 
-Thanks, I've pulled this into the CRIS tree.
+This is kind of patronising; why don't you simply lay out how things
+_do_ work?
 
-/^JN - Jesper Nilsson
+>  Devices are actually
+> +root-level objects in vbus specifically to allow greater flexibility in the
+> +association of a device.  For instance, it may be desirable to have a single
+> +device that spans multiple VMs (consider an ethernet switch, or a shared disk
+> +for a cluster).  Therefore, device lifecycles are managed by creating/deleting
+> +objects in /config/vbus/devices.
+> +
+> +Note: Creating a device instance is actually a two step process:  We need to
+> +give the device instance a unique name, and we also need to give it a specific
+> +device type.  It is hard to express both parameters using standard filesystem
+> +operations like mkdir, so the design decision was made to require performing
+> +the operation in two steps.
+
+How about exposing a subdir for each device class under
+/config/vbus/devices/ and allowing device creation only within those?
+Two-stage construction is a pain for both users and implementors.
+
+[...]
+> +At this point, we are ready to roll.  Pid 4382 has access to a virtual-bus
+> +namespace with one device, id=0.  Its type is:
+> +
+> +# cat /sys/vbus/instances/beb4df8f-7483-4028-b3f7-767512e2a18c/devices/0/type
+> +virtual-ethernet
+> +
+> +"virtual-ethernet"?  Why is it not "venet-tap"?  Device-classes are allowed to
+> +register their interfaces under an id that is not required to be the same as
+> +their deviceclass.  This supports device polymorphism.   For instance,
+> +consider that an interface "virtual-ethernet" may provide basic 802.x packet
+> +exchange.  However, we could have various implementations of a device that
+> +supports the 802.x interface, while having various implementations behind
+> +them.
+[...]
+
+It seems to me that your "device-classes" correspond to drivers and
+"interfaces" correspond to device classes in the LDM.  To avoid
+confusion, I think the vbus terminology should be made consistent with
+LDM.  And certainly these should not both be called simply "type" in the
+configfs/sysfs interface.
+
+Ben.
+
 -- 
-               Jesper Nilsson -- jesper.nilsson@axis.com
+Ben Hutchings, Senior Software Engineer, Solarflare Communications
+Not speaking for my employer; that's the marketing department's job.
+They asked us to note that Solarflare product names are trademarked.
+
