@@ -1,71 +1,73 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763643AbZDBVS3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763136AbZDBVUn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763643AbZDBVS3 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 2 Apr 2009 17:18:29 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760154AbZDBVSD
+	id S1763136AbZDBVUn (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 2 Apr 2009 17:20:43 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754245AbZDBVUf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 2 Apr 2009 17:18:03 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:42622 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1761719AbZDBVSB (ORCPT
+	Thu, 2 Apr 2009 17:20:35 -0400
+Received: from www84.your-server.de ([213.133.104.84]:48600 "EHLO
+	www84.your-server.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751876AbZDBVUe (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 2 Apr 2009 17:18:01 -0400
-Date: Thu, 2 Apr 2009 14:14:45 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Hiroshi Shimamoto <h-shimamoto@ct.jp.nec.com>
-Cc: minyard@acm.org, linux-kernel@vger.kernel.org,
-       openipmi-developer@lists.sourceforge.net
-Subject: Re: [PATCH 4/5] IPMI: Add console oops catcher
-Message-Id: <20090402141445.3a7a6504.akpm@linux-foundation.org>
-In-Reply-To: <49ADC559.7040705@ct.jp.nec.com>
-References: <20090303152123.GD7777@minyard.local>
-	<20090303132046.a8975963.akpm@linux-foundation.org>
-	<49ADC559.7040705@ct.jp.nec.com>
-X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
+	Thu, 2 Apr 2009 17:20:34 -0400
+Subject: Re: Detailed Stack Information Patch [2/3]
+From: Stefani Seibold <stefani@seibold.net>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+       linux-kernel <linux-kernel@vger.kernel.org>,
+       linux-mm <linux-mm@kvack.org>, Peter Zijlstra <a.p.zijlstra@chello.nl>,
+       Joerg Engel <joern@logfs.org>
+In-Reply-To: <20090401193639.GB12316@elte.hu>
+References: <1238511507.364.62.camel@matrix>
+	 <20090401193639.GB12316@elte.hu>
+Content-Type: text/plain
+Date: Thu, 02 Apr 2009 23:25:47 +0200
+Message-Id: <1238707547.3882.24.camel@matrix>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+X-Mailer: Evolution 2.24.5 
 Content-Transfer-Encoding: 7bit
+X-Authenticated-Sender: stefani@seibold.net
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 03 Mar 2009 16:03:37 -0800
-Hiroshi Shimamoto <h-shimamoto@ct.jp.nec.com> wrote:
-
-> ...
-> > This reader is unable to determine what the mystery preempt_disable()
-> > is here for.  It needs a comment, please.
+Am Mittwoch, den 01.04.2009, 21:36 +0200 schrieb Ingo Molnar:
+> * Stefani Seibold <stefani@seibold.net> wrote:
 > 
-> I cannot recall why it's here. So a comment is really needed.
-> This preempt_disable() may not be needed.
+> > +config PROC_STACK_MONITOR
+> > + 	default y
+> > +	depends on PROC_STACK
+> > +	bool "Enable /proc/stackmon detailed stack monitoring"
+> > + 	help
+> > +	  This enables detailed monitoring of process and thread stack
+> > +	  utilization via the /proc/stackmon interface.
+> > +	  Disabling these interfaces will reduce the size of the kernel by
+> > +	  approximately 2kb.
 > 
-> > What happens if two CPUs oops at the same time (which is fairly common)?
-> 
-> ...
->
-> OK. I'll look at this.
-> 
-> > It would be prudent to have a timeout in this loop.  The machine has
-> > crashed and subsystems and hardware and memory are in an unknown and
-> > possibly bad state.
-> 
-> Right.
->
-> ...
-> 
-> > This looks like we're abusing the "unblank" method.
-> > 
-> > If you think that the console subsystem is missing some capability
-> > which this driver needs then please do prefer to fix the console
-> > subsystem, rather than awkwardly making things fit.
-> 
-> OK. Will take a look about this point.
+> Hm, i'm not convinced about this one. Stupid question: what's wrong 
+> with ulimit -s?
 > 
 
-None of this happened.
+To tell a long story short, you are right. After a quick investigation
+of the glibc 2.9 library i figure out that this is also the default
+stack size of a thread started with pthread_create().
 
-It makes me reluctant to merge that patches as they stand, because then
-it all gets forgotten about, whereas holding the patches back will
-remind us that updates are needed.
+> Also, if for some reason you dont want to (or cannot) enforce a 
+> system-wide stack size ulimit, or it has some limitation that makes 
+> it impractical for you - if we add what i suggested to the 
+> /proc/*/maps files, your user-space watchdog daemon could scan those 
+> periodically and report any excesses and zap the culprit ... right?
+
+I think a user space daemon will be the a good way if the /proc/*/maps
+or /proc/*/stack will provide the following information:
+
+- start address of the stack
+- current address of the stack pointer
+- highest used address in the stack
+
+> 
+> 	Ingo
+
+Stefani
 
 
