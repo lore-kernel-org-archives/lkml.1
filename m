@@ -1,27 +1,30 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933662AbZDBRYQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934135AbZDBRYq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933662AbZDBRYQ (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 2 Apr 2009 13:24:16 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761153AbZDBRXu
+	id S934135AbZDBRYq (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 2 Apr 2009 13:24:46 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933086AbZDBRYW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 2 Apr 2009 13:23:50 -0400
-Received: from mx2.redhat.com ([66.187.237.31]:42955 "EHLO mx2.redhat.com"
+	Thu, 2 Apr 2009 13:24:22 -0400
+Received: from mx2.redhat.com ([66.187.237.31]:43027 "EHLO mx2.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1758416AbZDBRXt (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 2 Apr 2009 13:23:49 -0400
-Message-ID: <49D4F4B5.9040107@redhat.com>
-Date: Thu, 02 Apr 2009 13:24:05 -0400
+	id S1761986AbZDBRYU (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 2 Apr 2009 13:24:20 -0400
+Message-ID: <49D4F4DF.1040605@redhat.com>
+Date: Thu, 02 Apr 2009 13:24:47 -0400
 From: Masami Hiramatsu <mhiramat@redhat.com>
 User-Agent: Thunderbird 2.0.0.21 (X11/20090320)
 MIME-Version: 1.0
 To: Ingo Molnar <mingo@elte.hu>, Frederic Weisbecker <fweisbec@gmail.com>,
-       Steven Rostedt <rostedt@goodmis.org>,
        Ananth N Mavinakayanahalli <ananth@in.ibm.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Andi Kleen <andi@firstfloor.org>, Jim Keniston <jkenisto@us.ibm.com>
-CC: kvm@vger.kernel.org, systemtap-ml <systemtap@sources.redhat.com>,
-       LKML <linux-kernel@vger.kernel.org>
-Subject: [PATCH -tip 0/6 V4] tracing: kprobe-based event tracer
+       Steven Rostedt <rostedt@goodmis.org>
+CC: Andrew Morton <akpm@linux-foundation.org>,
+       Andi Kleen <andi@firstfloor.org>,
+       Arnaldo Carvalho de Melo <acme@redhat.com>,
+       Jim Keniston <jkenisto@us.ibm.com>,
+       systemtap-ml <systemtap@sources.redhat.com>,
+       LKML <linux-kernel@vger.kernel.org>, kvm@vger.kernel.org
+Subject: [PATCH -tip 2/6 V4] x86: add arch-dep register and stack access API
+ to ptrace
 X-Enigmail-Version: 0.95.7
 Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
@@ -29,125 +32,191 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
+Add following APIs for accessing registers and stack entries from pt_regs.
+- query_register_offset(const char *name)
+   Query the offset of "name" register.
 
-Here are the patches of kprobe-based event tracer for x86, version 4.
+- query_register_name(unsigned offset)
+   Query the name of register by its offset.
 
-This version supports only x86(-32/-64) (If someone is interested in
-porting this to other architectures, he just needs to port
-kprobes/kretprobes and ptrace enhancement[PATCH 2/6]).
+- get_register(struct pt_regs *regs, unsigned offset)
+   Get the value of a register by its offset.
 
-I added x86 insn decoder on this version. It might be better
-integrated with KVM's decoder, and kprobes x86 code should be
-rewritten with it.
+- valid_stack_address(struct pt_regs *regs, unsigned long addr)
+   Check the address is in the stack.
 
+- get_stack_nth(struct pt_regs *reg, unsigned nth)
+   Get Nth entry of the stack. (N >= 0)
 
-This can be applied on the linux-2.6-tip tree.
+- get_argument_nth(struct pt_regs *reg, unsigned nth)
+   Get Nth argument at function call. (N >= 0)
 
-This patchset includes following changes:
-- Fix kernel_trap_sp() on x86 according to systemtap runtime. [1/6]
-- Add arch-dep register and stack fetching functions [2/6]
-- Add x86 instruction decoder [3/6]
-- Check insertion point safety in kprobe [4/6]
-- Add kprobe-tracer plugin [5/6]
-- Support fetching various status (register/stack/memory/etc.) [6/6]
+Signed-off-by: Masami Hiramatsu <mhiramat@redhat.com>
+Cc: Steven Rostedt <rostedt@goodmis.org>
+Cc: Ananth N Mavinakayanahalli <ananth@in.ibm.com>
+Cc: Ingo Molnar <mingo@elte.hu>
+Cc: Frederic Weisbecker <fweisbec@gmail.com>
+---
 
-Done items:
-- Add kernel_trap_sp() and fetch_*() on other archs.
-- Support name-based register fetching (ax, bx, and so on)
-- Support indirect memory fetch from registers etc.
-- Check insertion point safety by using instruction decoder.
-
-Future items:
-- .init function tracing support.
-- Support primitive types(long, ulong, int, uint, etc) for args.
+ arch/x86/include/asm/ptrace.h |   66 +++++++++++++++++++++++++++++++++++++++++
+ arch/x86/kernel/ptrace.c      |   59 +++++++++++++++++++++++++++++++++++++
+ 2 files changed, 125 insertions(+), 0 deletions(-)
 
 
-kprobe-based event tracer
----------------------------
+diff --git a/arch/x86/include/asm/ptrace.h b/arch/x86/include/asm/ptrace.h
+index aed0894..44773b8 100644
+--- a/arch/x86/include/asm/ptrace.h
++++ b/arch/x86/include/asm/ptrace.h
+@@ -7,6 +7,7 @@
 
-This tracer is similar to the events tracer which is based on Tracepoint
-infrastructure. Instead of Tracepoint, this tracer is based on kprobes(kprobe
-and kretprobe). It probes anywhere where kprobes can probe(this means, all
-functions body except for __kprobes functions).
+ #ifdef __KERNEL__
+ #include <asm/segment.h>
++#include <asm/page_types.h>
+ #endif
 
-Unlike the function tracer, this tracer can probe instructions inside of
-kernel functions. It allows you to check which instruction has been executed.
+ #ifndef __ASSEMBLY__
+@@ -215,6 +216,71 @@ static inline unsigned long user_stack_pointer(struct pt_regs *regs)
+ 	return regs->sp;
+ }
 
-Unlike the Tracepoint based events tracer, this tracer can add new probe points
-on the fly.
++/* Query offset/name of register from its name/offset */
++extern int query_register_offset(const char *name);
++extern const char *query_register_name(unsigned offset);
++#define MAX_REG_OFFSET (offsetof(struct pt_regs, sp))
++
++/* Get register value from its offset */
++static inline unsigned long get_register(struct pt_regs *regs, unsigned offset)
++{
++	if (unlikely(offset > MAX_REG_OFFSET))
++		return 0;
++	return *(unsigned long *)((unsigned long)regs + offset);
++}
++
++/* Check the address in the stack */
++static inline int valid_stack_address(struct pt_regs *regs, unsigned long addr)
++{
++	return ((addr & ~(THREAD_SIZE - 1))  ==
++		(kernel_trap_sp(regs) & ~(THREAD_SIZE - 1)));
++}
++
++/* Get Nth entry of the stack */
++static inline unsigned long get_stack_nth(struct pt_regs *regs, unsigned n)
++{
++	unsigned long *addr = (unsigned long *)kernel_trap_sp(regs);
++	addr += n;
++	if (valid_stack_address(regs, (unsigned long)addr))
++		return *addr;
++	else
++		return 0;
++}
++
++/* Get Nth argument at function call */
++static inline unsigned long get_argument_nth(struct pt_regs *regs, unsigned n)
++{
++#ifdef CONFIG_X86_32
++#define NR_REGPARMS 3
++	if (n < NR_REGPARMS) {
++		switch (n) {
++		case 0: return regs->ax;
++		case 1: return regs->dx;
++		case 2: return regs->cx;
++		}
++		return 0;
++#else /* CONFIG_X86_64 */
++#define NR_REGPARMS 6
++	if (n < NR_REGPARMS) {
++		switch (n) {
++		case 0: return regs->di;
++		case 1: return regs->si;
++		case 2: return regs->dx;
++		case 3: return regs->cx;
++		case 4: return regs->r8;
++		case 5: return regs->r9;
++		}
++		return 0;
++#endif
++	} else {
++		/*
++		 * The typical case: arg n is on the stack.
++		 * (Note: stack[0] = return address, so skip it)
++		 */
++		return get_stack_nth(regs, 1 + n - NR_REGPARMS);
++	}
++}
++
+ /*
+  * These are defined as per linux/ptrace.h, which see.
+  */
+diff --git a/arch/x86/kernel/ptrace.c b/arch/x86/kernel/ptrace.c
+index 5c6e463..8d65dcb 100644
+--- a/arch/x86/kernel/ptrace.c
++++ b/arch/x86/kernel/ptrace.c
+@@ -46,6 +46,65 @@ enum x86_regset {
+ 	REGSET_IOPERM32,
+ };
 
-Similar to the events tracer, this tracer doesn't need to be activated via
-current_tracer, instead of that, just set probe points via
-/debug/tracing/kprobe_probes.
-
-Synopsis of kprobe_probes:
-  p SYMBOL[+offs|-offs]|MEMADDR [FETCHARGS]     : set a probe
-  r SYMBOL[+0] [FETCHARGS]                      : set a return probe
-
- FETCHARGS:
-  %REG  : Fetch register REG
-  sN    : Fetch Nth entry of stack (N >= 0)
-  @ADDR : Fetch memory at ADDR (ADDR should be in kernel)
-  @SYM[+|-offs] : Fetch memory at SYM +|- offs (SYM should be a data symbol)
-  aN    : Fetch function argument. (N >= 0)(*)
-  rv    : Fetch return value.(**)
-  ra    : Fetch return address.(**)
-  +|-offs(FETCHARG) : fetch memory at FETCHARG +|- offs address.(***)
-
-  (*) aN may not correct on asmlinkaged functions and at the middle of
-      function body.
-  (**) only for return probe.
-  (***) this is useful for fetching a field of data structures.
-
-E.g.
-  echo p do_sys_open a0 a1 a2 a3 > /debug/tracing/kprobe_probes
-
- This sets a kprobe on the top of do_sys_open() function with recording
-1st to 4th arguments.
-
-  echo r do_sys_open rv rp >> /debug/tracing/kprobe_probes
-
- This sets a kretprobe on the return point of do_sys_open() function with
-recording return value and return address.
-
-  echo > /debug/tracing/kprobe_probes
-
- This clears all probe points. and you can see the traced information via
-/debug/tracing/trace.
-
-  cat /debug/tracing/trace
-# tracer: nop
-#
-#           TASK-PID    CPU#    TIMESTAMP  FUNCTION
-#              | |       |          |         |
-           <...>-2376  [001]   262.389131: do_sys_open: @do_sys_open+0 0xffffff9c 0x98db83e 0x8880 0x0
-           <...>-2376  [001]   262.391166: sys_open: <-do_sys_open+0 0x5 0xc06e8ebb
-           <...>-2376  [001]   264.384876: do_sys_open: @do_sys_open+0 0xffffff9c 0x98db83e 0x8880 0x0
-           <...>-2376  [001]   264.386880: sys_open: <-do_sys_open+0 0x5 0xc06e8ebb
-           <...>-2084  [001]   265.380330: do_sys_open: @do_sys_open+0 0xffffff9c 0x804be3e 0x0 0x1b6
-           <...>-2084  [001]   265.380399: sys_open: <-do_sys_open+0 0x3 0xc06e8ebb
-
- @SYMBOL means that kernel hits a probe, and <-SYMBOL means kernel returns
-from SYMBOL(e.g. "sys_open: <-do_sys_open+0" means kernel returns from
-do_sys_open to sys_open).
-
-
- Documentation/ftrace.txt      |   70 ++++
- arch/x86/include/asm/insn.h   |  130 +++++++
- arch/x86/include/asm/ptrace.h |   70 ++++-
- arch/x86/kernel/kprobes.c     |   51 +++
- arch/x86/kernel/ptrace.c      |   59 +++
- arch/x86/lib/Makefile         |    1 +
- arch/x86/lib/insn.c           |  627 ++++++++++++++++++++++++++++++++
- kernel/trace/Kconfig          |    9 +
- kernel/trace/Makefile         |    1 +
- kernel/trace/trace_kprobe.c   |  789 +++++++++++++++++++++++++++++++++++++++++
- 10 files changed, 1805 insertions(+), 2 deletions(-)
-
-Thank you,
-
-
++struct pt_regs_offset {
++	const char *name;
++	int offset;
++};
++
++#define REG_OFFSET(r) offsetof(struct pt_regs, r)
++#define REG_OFFSET_NAME(r) {.name = #r, .offset = REG_OFFSET(r)}
++#define REG_OFFSET_END {.name = NULL, .offset = 0}
++
++static struct pt_regs_offset regoffset_table[] = {
++#ifdef CONFIG_X86_64
++	REG_OFFSET_NAME(r15),
++	REG_OFFSET_NAME(r14),
++	REG_OFFSET_NAME(r13),
++	REG_OFFSET_NAME(r12),
++	REG_OFFSET_NAME(r11),
++	REG_OFFSET_NAME(r10),
++	REG_OFFSET_NAME(r9),
++	REG_OFFSET_NAME(r8),
++#endif
++	REG_OFFSET_NAME(bx),
++	REG_OFFSET_NAME(cx),
++	REG_OFFSET_NAME(dx),
++	REG_OFFSET_NAME(si),
++	REG_OFFSET_NAME(di),
++	REG_OFFSET_NAME(bp),
++	REG_OFFSET_NAME(ax),
++#ifdef CONFIG_X86_32
++	REG_OFFSET_NAME(ds),
++	REG_OFFSET_NAME(es),
++	REG_OFFSET_NAME(fs),
++	REG_OFFSET_NAME(gs),
++#endif
++	REG_OFFSET_NAME(orig_ax),
++	REG_OFFSET_NAME(ip),
++	REG_OFFSET_NAME(cs),
++	REG_OFFSET_NAME(flags),
++	REG_OFFSET_NAME(sp),
++	REG_OFFSET_END,
++};
++
++int query_register_offset(const char *name)
++{
++	struct pt_regs_offset *roff = regoffset_table;
++	for (roff = regoffset_table; roff->name != NULL; roff++)
++		if (!strcmp(roff->name, name))
++			return (unsigned)roff->offset;
++	return -EINVAL;
++}
++
++const char *query_register_name(unsigned offset)
++{
++	struct pt_regs_offset *roff = regoffset_table;
++	for (roff = regoffset_table; roff->name != NULL; roff++)
++		if (roff->offset == offset)
++			return roff->name;
++	return NULL;
++}
++
+ /*
+  * does not yet catch signals sent when the child dies.
+  * in exit.c or in signal.c.
 -- 
 Masami Hiramatsu
 
@@ -156,6 +225,4 @@ Hitachi Computer Products (America) Inc.
 Software Solutions Division
 
 e-mail: mhiramat@redhat.com
-
-
 
