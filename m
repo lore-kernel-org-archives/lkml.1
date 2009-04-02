@@ -1,64 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759395AbZDBVmk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762756AbZDBVmy@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759395AbZDBVmk (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 2 Apr 2009 17:42:40 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753623AbZDBVma
+	id S1762756AbZDBVmy (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 2 Apr 2009 17:42:54 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759974AbZDBVmi
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 2 Apr 2009 17:42:30 -0400
-Received: from thunk.org ([69.25.196.29]:44767 "EHLO thunker.thunk.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752363AbZDBVma (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 2 Apr 2009 17:42:30 -0400
-Date: Thu, 2 Apr 2009 17:42:17 -0400
-From: Theodore Tso <tytso@mit.edu>
-To: David Rees <drees76@gmail.com>
-Cc: Janne Grunau <j@jannau.net>,
-       Lennart Sorensen <lsorense@csclub.uwaterloo.ca>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Jesper Krogh <jesper@krogh.cc>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: Linux 2.6.29
-Message-ID: <20090402214217.GL10642@mit.edu>
-Mail-Followup-To: Theodore Tso <tytso@mit.edu>,
-	David Rees <drees76@gmail.com>, Janne Grunau <j@jannau.net>,
-	Lennart Sorensen <lsorense@csclub.uwaterloo.ca>,
-	Andrew Morton <akpm@linux-foundation.org>,
-	Linus Torvalds <torvalds@linux-foundation.org>,
-	Jesper Krogh <jesper@krogh.cc>,
-	Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-References: <20090325220530.GR32307@mit.edu> <alpine.LFD.2.00.0903251622420.3032@localhost.localdomain> <20090326171148.9bf8f1ec.akpm@linux-foundation.org> <alpine.LFD.2.00.0903261723250.3994@localhost.localdomain> <20090326174704.cd36bf7b.akpm@linux-foundation.org> <alpine.LFD.2.00.0903261752110.3994@localhost.localdomain> <20090326182519.d576d703.akpm@linux-foundation.org> <20090401210337.GB3797@csclub.uwaterloo.ca> <20090402110532.GA5132@aniel> <72dbd3150904020929w46c6dc0bs4028c49dd8fa8c56@mail.gmail.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <72dbd3150904020929w46c6dc0bs4028c49dd8fa8c56@mail.gmail.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-SA-Exim-Connect-IP: <locally generated>
-X-SA-Exim-Mail-From: tytso@mit.edu
-X-SA-Exim-Scanned: No (on thunker.thunk.org); SAEximRunCond expanded to false
+	Thu, 2 Apr 2009 17:42:38 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:54430 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1759683AbZDBVmh (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 2 Apr 2009 17:42:37 -0400
+Date: Thu, 2 Apr 2009 14:39:32 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Jack Steiner <steiner@sgi.com>
+Cc: mingo@elte.hu, rusty@rustcorp.com.au, sfr@canb.auug.org.au,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] - Fix slab corruption caused by
+ alloc_cpumask_var_node()
+Message-Id: <20090402143932.79a15852.akpm@linux-foundation.org>
+In-Reply-To: <20090402212751.GA11495@sgi.com>
+References: <20090402212751.GA11495@sgi.com>
+X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Apr 02, 2009 at 09:29:59AM -0700, David Rees wrote:
-> On Thu, Apr 2, 2009 at 4:05 AM, Janne Grunau <j@jannau.net> wrote:
-> >> Current kernels just have too much IO latency
-> >> with ext3 it seems.
-> >
-> > MythTV calls fsync every few seconds on ongoing recordings to prevent
-> > stalls due to large cache writebacks on ext3.
-> 
-> Personally that is also one of my MythTV pet peeves.  A hack added to
-> MythTV to work around a crappy ext3 latency bug that also causes these
-> large files to get heavily fragmented.  That and the fact that yo have
-> to patch MythTV to eliminate those forced fdatasyncs - there is no
-> knob to turn it off if you're running MythTV on a filesystem which
-> doesn't suffer from ext3's data=ordered fsync stalls.
+On Thu, 2 Apr 2009 16:27:51 -0500
+Jack Steiner <steiner@sgi.com> wrote:
 
-So use XFS or ext4, and use fallocate() to get the disk blocks
-allocated ahead of time.  That completely avoids the fragmentation
-problem, altogether.  If you are using ext3 on a dedicated MythTV box,
-I would certainly advise mounting with data=writeback, which will also
-avoid the latency bug.
+> Fix for slab corruption caused by alloc_cpumask_var_node() overwriting
+> the tail end of an off-stack cpumask.
 
-					- Ted
+changelog is crappy.
+
+> --- linux.orig/lib/cpumask.c	2009-04-02 15:30:05.000000000 -0500
+> +++ linux/lib/cpumask.c	2009-04-02 15:57:44.000000000 -0500
+> @@ -109,10 +109,10 @@ bool alloc_cpumask_var_node(cpumask_var_
+>  #endif
+>  	/* FIXME: Bandaid to save us from old primitives which go to NR_CPUS. */
+>  	if (*mask) {
+> +		unsigned char *ptr = (unsigned char *)cpumask_bits(*mask);
+>  		unsigned int tail;
+>  		tail = BITS_TO_LONGS(NR_CPUS - nr_cpumask_bits) * sizeof(long);
+> -		memset(cpumask_bits(*mask) + cpumask_size() - tail,
+> -		       0, tail);
+> +		memset(ptr + cpumask_size() - tail, 0, tail);
+>  	}
+>  
+
+It appears that the bug is that cpumask_bits() returns an `unsigned
+long *', except the pointer arithmetic in there is designed to operate
+on char*/void*/etc, correct?
+
+This fix is needed in 2.6.29 as well, correct?
