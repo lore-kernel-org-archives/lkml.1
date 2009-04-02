@@ -1,91 +1,125 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932975AbZDBSUB@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932809AbZDBSW0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932975AbZDBSUB (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 2 Apr 2009 14:20:01 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932824AbZDBSTU
+	id S932809AbZDBSW0 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 2 Apr 2009 14:22:26 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760905AbZDBSWP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 2 Apr 2009 14:19:20 -0400
-Received: from casper.infradead.org ([85.118.1.10]:34890 "EHLO
-	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S932642AbZDBSTT (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 2 Apr 2009 14:19:19 -0400
-Subject: Re: mutex_lock_slowpath warning using mxser tty driver
- (input/output error)
-From: Peter Zijlstra <peterz@infradead.org>
-To: Christophe Lermytte <christophe.lermytte@thomson.net>
-Cc: linux-kernel@vger.kernel.org, Alan Cox <alan@lxorguk.ukuu.org.uk>,
-       Jiri Slaby <jirislaby@gmail.com>
-In-Reply-To: <1238689565.14822.99.camel@thom>
-References: <1238689565.14822.99.camel@thom>
-Content-Type: text/plain
-Date: Thu, 02 Apr 2009 20:19:09 +0200
-Message-Id: <1238696349.5133.25.camel@laptop>
+	Thu, 2 Apr 2009 14:22:15 -0400
+Received: from cantor.suse.de ([195.135.220.2]:58620 "EHLO mx1.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1760029AbZDBSWO (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 2 Apr 2009 14:22:14 -0400
+Date: Thu, 2 Apr 2009 20:22:10 +0200
+From: Nick Piggin <npiggin@suse.de>
+To: Dave Hansen <dave@linux.vnet.ibm.com>
+Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       linux-fsdevel@vger.kernel.org,
+       Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: [patch 1/2] fs: mnt_want_write speedup
+Message-ID: <20090402182210.GB17175@wotan.suse.de>
+References: <20090310143718.GB15977@wotan.suse.de> <1236809477.30142.83.camel@nimitz> <20090312041334.GB1893@wotan.suse.de> <1237403623.8286.196.camel@nimitz>
 Mime-Version: 1.0
-X-Mailer: Evolution 2.26.0 
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1237403623.8286.196.camel@nimitz>
+User-Agent: Mutt/1.5.9i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 2009-04-02 at 18:26 +0200, Christophe Lermytte wrote:
-> Hi all,
+On Wed, Mar 18, 2009 at 12:13:43PM -0700, Dave Hansen wrote:
+> On Thu, 2009-03-12 at 05:13 +0100, Nick Piggin wrote: 
+> > On Wed, Mar 11, 2009 at 03:11:17PM -0700, Dave Hansen wrote:
+> > > I'm feeling a bit better about these, although I am still honestly quite
+> > > afraid of the barriers.  I also didn't like all the #ifdefs much, but
+> > > here's some help on that.
+> > 
+> > FWIW, we have this in suse kernels because page fault performance was
+> > so bad compared with SLES10. mnt_want_write & co was I think the 2nd
+> > biggest offender for file backed mappings (after pvops). I think we're
+> > around parity again even with pvops.
 > 
-> I have upgraded one of my automated test setups from 2.6.27 to 2.6.29. I
-> now have issues with using a Moxa multiport serial device, where I had
-> none before :-)
-> 
-> > MOXA Smartio/Industio family driver version 2.0.4
-> > mxser 0000:03:02.0: found MOXA C168H/PCI series board (BusNo=3,
-> DevNo=2)
-> > mxser 0000:03:02.0: PCI INT A -> GSI 18 (level, low) -> IRQ 18
-> > mxser: max. baud rate = 921600 bps
-> 
-> When I cat /dev/setup3 (which is a symlink to /dev/ttyMI3), which is
-> connected to a device that outputs data (tried it with one @ 115200bps
-> and one @ 9600bps), I get the following kernel trace:
-> 
-> ------------[ cut here ]------------
-> WARNING: at kernel/mutex.c:135 __mutex_lock_slowpath+0x50/0x211()
-> Hardware name: OptiPlex 755                 
-> Modules linked in: i915 drm i2c_algo_bit ipv6 8021q dummy fuse arc4 ecb
-> snd_hda_codec_analog snd_hda_intel snd_hda_codec rtl8187 mac80211 usbhid
-> i2c_i801 snd_pcm serio_raw eeprom_93cx6 iTCO_wdt i2c_core
-> iTCO_vendor_support cfg80211 snd_timer snd snd_page_alloc rtc_cmos
-> rtc_core intel_agp agpgart mxser ppdev thermal uhci_hcd sg rtc_lib
-> parport_pc processor parport button thermal_sys dcdbas
-> Pid: 0, comm: swapper Not tainted 2.6.29-autodistro-r4 #1
-> Call Trace:
-> [<c0127479>] warn_slowpath+0x74/0x8a
-> [<c016bb1a>] ? get_page_from_freelist+0xc1/0x3c6
-> [<c04e0093>] ? usb_hcd_submit_urb+0x88d/0x95b
-> [<c05d2d41>] ? _spin_lock+0x8/0xb
-> [<c0187063>] ? cache_alloc_refill+0x19f/0x499
-> [<c05d1b63>] __mutex_lock_slowpath+0x50/0x211
-> [<c05d1d36>] mutex_lock+0x12/0x15
-> [<c026d677>] echo_set_canon_col+0x14/0x37
-> [<c026e478>] n_tty_receive_buf+0x2f3/0xe0c
-> [<c05d2d41>] ? _spin_lock+0x8/0xb
-> [<c0187063>] ? cache_alloc_refill+0x19f/0x499
-> [<c05d2e5e>] ? _spin_lock_irqsave+0x28/0x2f
-> [<c012f01d>] ? lock_timer_base+0x1f/0x3e
-> [<c0118b2d>] ? default_spin_lock_flags+0x8/0xb
-> [<c0118b2d>] ? default_spin_lock_flags+0x8/0xb
-> [<c02710ed>] flush_to_ldisc+0xe9/0x159
-> [<c027119e>] tty_flip_buffer_push+0x41/0x51
-> [<f842e5f5>] mxser_receive_chars+0x237/0x246 [mxser]
-> [<f842fac5>] mxser_interrupt+0x18e/0x228 [mxser]
-> [<c015ac54>] handle_IRQ_event+0x2a/0x5a
-> [<c015c11a>] handle_fasteoi_irq+0x7b/0xb4
-> [<c015c09f>] ? handle_fasteoi_irq+0x0/0xb4
-> <IRQ>  [<c0103527>] ? common_interrupt+0x27/0x2c
-> [<c0108131>] ? mwait_idle+0x4c/0x5b
-> [<c0101a5b>] ? cpu_idle+0x59/0x6d
-> [<c05ce807>] ? start_secondary+0x19f/0x1a4
-> ---[ end trace 433a17e91cdf059a ]---
+> Page faults themselves?  Which path was that from?
 
-It appears to want to lock a mutex in interrupt context, something
-that's a definite no-no.
+Yes. file_update_time.
 
-CCed the folks who might know a thing or two about the driver.
+ 
+> > Basically I think we have to improve this one way or another in mainline
+> > too. Is there any way to make you feel better about the barriers? More
+> > comments?
+> > 
+> > mnt_make_readonly()                    mnt_want_write()
+> > 1. mnt_flags |= MNT_WRITE_HOLD         A. mnt_writers[x]++
+> > 2. smp_mb()                            B. smp_mb()
+> > 3. count += mnt_writers[0]             C. while (mnt_flags & MNT_WRITE_HOLD) ;
+> >    ...                                 D. smp_rmb()
+> >    count += mnt_writers[N]             E. if (mnt_flags & MNT_READONLY)
+> > 4. if (count == 0)                     F.    mnt_writers[x]-- /* fail */
+> > 5.     mnt_flags |= MNT_READONLY       G. else /* success */
+> > 6. else /* fail */
+> > 7. smp_wmb()
+> > 8. mnt_flags &= ~MNT_WRITE_HOLD
+> > 
+> > * 2 ensures that 1 is visible before 3 is loaded
+> > * B ensures that A is visible before C is loaded
+> > * Therefore, either count != 0 at 4, or C will loop (or both)
+> > * If count == 0
+> >   * (make_readonly success)
+> >   * C will loop until 8
+> >   * D ensures E is not loaded until loop ends
+> >   * 7 ensures 5 is visible before 8 is
+> >   * Therefore E will find MNT_READONLY (want_write fail)
+> > * If C does not loop
+> >   * 4 will find count != 0 (make_readonly fail)
+> >   * Therefore 5 is not executed.
+> >   * Therefore E will not find MNT_READONLY (want_write success)
+> > * If count != 0 and C loops
+> >   * (make_readonly fail)
+> >   * 5 will not be executed
+> >   * Therefore E will not find MNT_READONLY (want_write success)
+> 
+> It is great to spell it out like that.  But, honestly, I think the code
+> and comments that are there are probably better than looking at an out
+> of line description like that.  
+
+Well I think the above gives a higher confidence of correctness
+than the code and comments posted (at least, until the reader
+workss through similar steps themselves). At least if you don't
+like it, then it could just go int othe patch changelog.
+
+ 
+> > I don't know if that helps (I should reference which statements rely
+> > on which). I think it shows that either one or the other only must
+> > succeed.
+> > 
+> > It does not illustrate how the loop in the want_write side prevents
+> > the sumation from getting confused by decrementing count on a different
+> > CPU than it was incremented, but I've commented that case in the code
+> > fairly well I think.
+> 
+> I think you mentioned a seqlock being a possibility here.  That would
+> slot in as a replacement for MNT_WRITE_HOLD, right?  mnt_make_readonly()
+> takes a seq_write, mnt_want_write() takes a seq_read and doesn't
+> consider MNT_READONLY valid until it gets a clear read of it.  It would
+> internalize all the barriers into the seqlock implementation except for
+> the mnt_writers[]-related ones.
+> 
+> As for mnt_writers, you'd need an smp_rmb() in mnt_make_readonly()
+> before reading the counters and an smp_wmb() after writing the counter
+> in mnt_want_write().
+> 
+> Is see that those are effectively consolidated down in your version into
+> a single smp_mb() at both call sites when combined with the
+> MNT_WRITE_HOLD barriers.
+> 
+> If we can get this down to two explicit calls to the barrier functions
+> that paired and very clear, I think I'd be much more OK with it.
+
+seqlock as I said doesn't get its barriers quite right for having
+stores in the read protected section. I was musing the possibility,
+but I think it ends up being less clear if you just end up having
+to a) look at seqlock implementation, b) work out it is insufficnet,
+c) add barriers to make up for it. May as well just open code it
+here with sufficient comment to justify correctness (which I think
+I have come up with).
 
