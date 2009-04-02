@@ -1,49 +1,46 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S935743AbZDBJny@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S935799AbZDBJo1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S935743AbZDBJny (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 2 Apr 2009 05:43:54 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S935376AbZDBJnK
+	id S935799AbZDBJo1 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 2 Apr 2009 05:44:27 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S935376AbZDBJoL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 2 Apr 2009 05:43:10 -0400
-Received: from cantor2.suse.de ([195.135.220.15]:53384 "EHLO mx2.suse.de"
+	Thu, 2 Apr 2009 05:44:11 -0400
+Received: from mx2.redhat.com ([66.187.237.31]:53299 "EHLO mx2.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755310AbZDBJnH (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 2 Apr 2009 05:43:07 -0400
-Date: Thu, 2 Apr 2009 11:43:05 +0200
-From: Nick Piggin <npiggin@suse.de>
-To: Al Viro <viro@ZenIV.linux.org.uk>
-Cc: linux-fsdevel@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: Re: [rfc] scale dcache locking
-Message-ID: <20090402094305.GE22256@wotan.suse.de>
-References: <20090329155539.275927173@nick.local0.net> <20090401142312.GD28946@ZenIV.linux.org.uk>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090401142312.GD28946@ZenIV.linux.org.uk>
-User-Agent: Mutt/1.5.9i
+	id S934805AbZDBJoH (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 2 Apr 2009 05:44:07 -0400
+Message-ID: <49D488DA.8060005@redhat.com>
+Date: Thu, 02 Apr 2009 12:43:54 +0300
+From: Avi Kivity <avi@redhat.com>
+User-Agent: Thunderbird 2.0.0.21 (X11/20090320)
+MIME-Version: 1.0
+To: Herbert Xu <herbert@gondor.apana.org.au>
+CC: ghaskins@novell.com, anthony@codemonkey.ws, andi@firstfloor.org,
+       linux-kernel@vger.kernel.org, agraf@suse.de, pmullaney@novell.com,
+       pmorreale@novell.com, rusty@rustcorp.com.au, netdev@vger.kernel.org,
+       kvm@vger.kernel.org
+Subject: Re: [RFC PATCH 00/17] virtual-bus
+References: <20090402085253.GA29932@gondor.apana.org.au> <49D47F11.6070400@redhat.com> <20090402091639.GA30126@gondor.apana.org.au> <49D484F5.2000400@redhat.com> <20090402092936.GA30333@gondor.apana.org.au> <49D487A6.407@redhat.com> <20090402094147.GA30586@gondor.apana.org.au>
+In-Reply-To: <20090402094147.GA30586@gondor.apana.org.au>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Apr 01, 2009 at 03:23:12PM +0100, Al Viro wrote:
-> On Mon, Mar 30, 2009 at 02:55:39AM +1100, npiggin@suse.de wrote:
-> > This is my sketch for improving dcache locking scalability. So far I've
-> > only really been looking at core code to get an idea of how it might look,
-> > so most configurable functionality is broken (and unfortunately it might
-> > well be something in there which will cause a fundamental problem for me).
-> 
-> Umm...  Some of that makes obvious sense per se, some...  In particular,
-> all of a sudden we get contention between multiple dput() on the same
-> dentry, which is dirt-common for directory ones.
+Herbert Xu wrote:
+> On Thu, Apr 02, 2009 at 12:38:46PM +0300, Avi Kivity wrote:
+>   
+>> Why does a kernel solution not need to know when a packet is transmitted?
+>>     
+>
+> Because you can install your own destructor?
+>   
 
-Yes that's true but I'm hoping lock hold times on d_lock aren't
-too long, in which case the major cost should remain just the
-cacheline contention.
+So we're back to "the problem is with the kernel->user interface, not 
+userspace being cursed into slowness".
 
-Hmm, I wanted to avoid the atomic because it tends to be covered
-by d_lock a lot of the time anyway so avoiding the extra locked op,
-and also makes concurrency a bit easier to think about.
 
-In worst case, I guess we need to reintroduce atomic refcount or
-have another lock for it...
+-- 
+error compiling committee.c: too many arguments to function
 
