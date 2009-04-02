@@ -1,80 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S935596AbZDBLEs@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S935687AbZDBLGP@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S935596AbZDBLEs (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 2 Apr 2009 07:04:48 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933520AbZDBLEI
+	id S935687AbZDBLGP (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 2 Apr 2009 07:06:15 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934729AbZDBLFy
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 2 Apr 2009 07:04:08 -0400
-Received: from victor.provo.novell.com ([137.65.250.26]:42872 "EHLO
-	victor.provo.novell.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753979AbZDBLD6 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 2 Apr 2009 07:03:58 -0400
-Message-ID: <49D49C1F.6030306@novell.com>
-Date: Thu, 02 Apr 2009 07:06:07 -0400
-From: Gregory Haskins <ghaskins@novell.com>
-User-Agent: Thunderbird 2.0.0.19 (X11/20081227)
+	Thu, 2 Apr 2009 07:05:54 -0400
+Received: from smtp.movial.fi ([62.236.91.34]:40403 "EHLO smtp.movial.fi"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S932579AbZDBLFx (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 2 Apr 2009 07:05:53 -0400
+Message-ID: <49D49C0F.3000707@movial.com>
+Date: Thu, 02 Apr 2009 14:05:51 +0300
+From: Dmitri Vorobiev <dmitri.vorobiev@movial.com>
+Organization: Movial Creative Technologies
+User-Agent: Icedove 1.5.0.14eol (X11/20090105)
 MIME-Version: 1.0
-To: Avi Kivity <avi@redhat.com>
-CC: Herbert Xu <herbert@gondor.apana.org.au>, anthony@codemonkey.ws,
-       andi@firstfloor.org, linux-kernel@vger.kernel.org, agraf@suse.de,
-       pmullaney@novell.com, pmorreale@novell.com, rusty@rustcorp.com.au,
-       netdev@vger.kernel.org, kvm@vger.kernel.org
-Subject: Re: [RFC PATCH 00/17] virtual-bus
-References: <20090402085253.GA29932@gondor.apana.org.au> <49D47F11.6070400@redhat.com> <20090402091639.GA30126@gondor.apana.org.au> <49D484F5.2000400@redhat.com> <20090402092936.GA30333@gondor.apana.org.au> <49D487A6.407@redhat.com>
-In-Reply-To: <49D487A6.407@redhat.com>
-X-Enigmail-Version: 0.95.7
-OpenPGP: id=D8195319
-Content-Type: multipart/signed; micalg=pgp-sha1;
- protocol="application/pgp-signature";
- boundary="------------enig9803AE3409749F9CCEB49D91"
+CC: LKML <linux-kernel@vger.kernel.org>
+Subject: Re: strange code in include/linux/kernel_stat.h
+References: <49CCA5DF.6040804@movial.com>
+In-Reply-To: <49CCA5DF.6040804@movial.com>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
+To: unlisted-recipients:; (no To-header on input)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This is an OpenPGP/MIME signed message (RFC 2440 and 3156)
---------------enig9803AE3409749F9CCEB49D91
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: quoted-printable
+Dmitri Vorobiev wrote:
+> Hi,
+> 
+> Depending on whether the CONFIG_GENERIC_HARDIRQS option is enabled or not, the header file include/linux/kernel_stat.h defines the following two entities:
+> 
+> - the macro kstat_irqs_this_cpu for the case when CONFIG_GENERIC_HARDIRQS is set:
+> 
+> #define kstat_irqs_this_cpu(DESC) \
+>         ((DESC)->kstat_irqs[smp_processor_id()])
+> 
+> - another macro with the same name as the macro above but for the case CONFIG_GENERIC_HARDIRQS is not set:
+> 
+> #define kstat_irqs_this_cpu(irq) \
+>         (kstat_this_cpu.irqs[irq])
+> 
+> Apparently, it is assumed that the types for the macro argument are different, and depend on the value of CONFIG_GENERIC_HARDIRQS. Is this intentional?
+> 
 
-Avi Kivity wrote:
-> Herbert Xu wrote:
->> On Thu, Apr 02, 2009 at 12:27:17PM +0300, Avi Kivity wrote:
->> =20
->>> If tap told us when the packets were actually transmitted, life
->>> would be  wonderful:
->>>    =20
->>
->> And why do we need this? Because we are in user space!
->>
->>  =20
->
-> Why does a kernel solution not need to know when a packet is transmitte=
-d?
->
+I still would like to know what's going on there. Anyone knowledgeable out there, please?
 
-You do not need to know when the packet is copied (which I currently
-do).  You only need it for zero-copy (of which I would like to support,
-but as I understand it there are problems with the reliability of proper
-callback (i.e. skb->destructor).
+Dmitri 
 
-Its "fire and forget" :)
+> Thanks,
+> Dmitri
+> 
+> --
+> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> Please read the FAQ at  http://www.tux.org/lkml/
 
--Greg
-
-
---------------enig9803AE3409749F9CCEB49D91
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: OpenPGP digital signature
-Content-Disposition: attachment; filename="signature.asc"
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v2.0.9 (GNU/Linux)
-Comment: Using GnuPG with SUSE - http://enigmail.mozdev.org
-
-iEYEARECAAYFAknUnB8ACgkQlOSOBdgZUxmsGwCfT3fimLl0+bnt3+Sma8FpZ92+
-GEwAnim4V3RObdYhVUCcYWJlm8SG6dFQ
-=iwKi
------END PGP SIGNATURE-----
-
---------------enig9803AE3409749F9CCEB49D91--
