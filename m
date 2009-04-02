@@ -1,125 +1,73 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932809AbZDBSW0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932686AbZDBSXZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932809AbZDBSW0 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 2 Apr 2009 14:22:26 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760905AbZDBSWP
+	id S932686AbZDBSXZ (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 2 Apr 2009 14:23:25 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759557AbZDBSXQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 2 Apr 2009 14:22:15 -0400
-Received: from cantor.suse.de ([195.135.220.2]:58620 "EHLO mx1.suse.de"
+	Thu, 2 Apr 2009 14:23:16 -0400
+Received: from mail.lang.hm ([64.81.33.126]:56233 "EHLO bifrost.lang.hm"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1760029AbZDBSWO (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 2 Apr 2009 14:22:14 -0400
-Date: Thu, 2 Apr 2009 20:22:10 +0200
-From: Nick Piggin <npiggin@suse.de>
-To: Dave Hansen <dave@linux.vnet.ibm.com>
-Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       linux-fsdevel@vger.kernel.org,
-       Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: [patch 1/2] fs: mnt_want_write speedup
-Message-ID: <20090402182210.GB17175@wotan.suse.de>
-References: <20090310143718.GB15977@wotan.suse.de> <1236809477.30142.83.camel@nimitz> <20090312041334.GB1893@wotan.suse.de> <1237403623.8286.196.camel@nimitz>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1237403623.8286.196.camel@nimitz>
-User-Agent: Mutt/1.5.9i
+	id S1750919AbZDBSXO (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 2 Apr 2009 14:23:14 -0400
+Date: Thu, 2 Apr 2009 11:22:48 -0700 (PDT)
+From: david@lang.hm
+X-X-Sender: dlang@asgard.lang.hm
+To: Matthew Garrett <mjg59@srcf.ucam.org>
+cc: Theodore Tso <tytso@mit.edu>, Sitsofe Wheeler <sitsofe@yahoo.com>,
+       "Andreas T.Auer" <andreas.t.auer_lkml_73537@ursus.ath.cx>,
+       Alberto Gonzalez <info@gnebu.es>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: Ext4 and the "30 second window of death"
+In-Reply-To: <20090401174336.GA14726@srcf.ucam.org>
+Message-ID: <alpine.DEB.1.10.0904021116500.28893@asgard.lang.hm>
+References: <200903291224.21380.info@gnebu.es> <200903311452.05210.info@gnebu.es> <20090331134547.GJ13356@mit.edu> <200904010002.47077.info@gnebu.es> <49D2A5AB.1090704@ursus.ath.cx> <20090401015010.GB4529@mit.edu> <20090401052050.GA20456@sucs.org>
+ <20090401151219.GA12285@srcf.ucam.org> <20090401173521.GA15423@mit.edu> <20090401174336.GA14726@srcf.ucam.org>
+User-Agent: Alpine 1.10 (DEB 962 2008-03-14)
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII; format=flowed
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Mar 18, 2009 at 12:13:43PM -0700, Dave Hansen wrote:
-> On Thu, 2009-03-12 at 05:13 +0100, Nick Piggin wrote: 
-> > On Wed, Mar 11, 2009 at 03:11:17PM -0700, Dave Hansen wrote:
-> > > I'm feeling a bit better about these, although I am still honestly quite
-> > > afraid of the barriers.  I also didn't like all the #ifdefs much, but
-> > > here's some help on that.
-> > 
-> > FWIW, we have this in suse kernels because page fault performance was
-> > so bad compared with SLES10. mnt_want_write & co was I think the 2nd
-> > biggest offender for file backed mappings (after pvops). I think we're
-> > around parity again even with pvops.
-> 
-> Page faults themselves?  Which path was that from?
+On Wed, 1 Apr 2009, Matthew Garrett wrote:
 
-Yes. file_update_time.
+>> The other subtlety comes if we add fsync() suppression to laptop mode
+>> --- which is something that Bart Samwel is very interested in doing
+>> and I talked to him at FOSDEM about this.  As Jeff Garzik recently
+>> pointed out, however, if we let the system reorder writes across
+>> fsync() boundaries, or if we combine two writes to the same block
+>> separated by an fsync(), and the system crashes in the middle of
+>> pushing all of these blocks out to the disk, we can end up trashing
+>> the consistency guarantees of a database such as mysql or postgres.
+>> It's a good point, but it only applies if we add fsync() suppression
+>> to laptop mode --- which we haven't done yet.
+>
+> I've got absolutely no idea why anyone would want fsync() to stop
+> meaning "Put my data on the disk please". laptop-mode isn't intended to
+> reduce data integrity - it's intended to batch disk write-outs such that
+> there's a lower risk of needing to perform further write-outs in future.
+> It makes sense for applications which really desperately want
+> information on disk to fsync() (for instance, saving a file in
+> OpenOffice).
+>
+> laptop-mode is something that makes sense as a default behaviour under a
+> lot of circumstances. Adding fsync() suppression means it's utterly
+> impossible to use it in that way. An additional mode would be perfectly
+> reasonable, as long as it's made clear that it's really a request for
+> data to be discarded at some point. The current mode isn't.
 
- 
-> > Basically I think we have to improve this one way or another in mainline
-> > too. Is there any way to make you feel better about the barriers? More
-> > comments?
-> > 
-> > mnt_make_readonly()                    mnt_want_write()
-> > 1. mnt_flags |= MNT_WRITE_HOLD         A. mnt_writers[x]++
-> > 2. smp_mb()                            B. smp_mb()
-> > 3. count += mnt_writers[0]             C. while (mnt_flags & MNT_WRITE_HOLD) ;
-> >    ...                                 D. smp_rmb()
-> >    count += mnt_writers[N]             E. if (mnt_flags & MNT_READONLY)
-> > 4. if (count == 0)                     F.    mnt_writers[x]-- /* fail */
-> > 5.     mnt_flags |= MNT_READONLY       G. else /* success */
-> > 6. else /* fail */
-> > 7. smp_wmb()
-> > 8. mnt_flags &= ~MNT_WRITE_HOLD
-> > 
-> > * 2 ensures that 1 is visible before 3 is loaded
-> > * B ensures that A is visible before C is loaded
-> > * Therefore, either count != 0 at 4, or C will loop (or both)
-> > * If count == 0
-> >   * (make_readonly success)
-> >   * C will loop until 8
-> >   * D ensures E is not loaded until loop ends
-> >   * 7 ensures 5 is visible before 8 is
-> >   * Therefore E will find MNT_READONLY (want_write fail)
-> > * If C does not loop
-> >   * 4 will find count != 0 (make_readonly fail)
-> >   * Therefore 5 is not executed.
-> >   * Therefore E will not find MNT_READONLY (want_write success)
-> > * If count != 0 and C loops
-> >   * (make_readonly fail)
-> >   * 5 will not be executed
-> >   * Therefore E will not find MNT_READONLY (want_write success)
-> 
-> It is great to spell it out like that.  But, honestly, I think the code
-> and comments that are there are probably better than looking at an out
-> of line description like that.  
+this issue seems pretty straightforward to me
 
-Well I think the above gives a higher confidence of correctness
-than the code and comments posted (at least, until the reader
-workss through similar steps themselves). At least if you don't
-like it, then it could just go int othe patch changelog.
+the apps do fsync (and similar) to the degree that they think their data 
+is important (potentially with config options if they acknowlege that 
+their data isn't _always_ that important)
 
- 
-> > I don't know if that helps (I should reference which statements rely
-> > on which). I think it shows that either one or the other only must
-> > succeed.
-> > 
-> > It does not illustrate how the loop in the want_write side prevents
-> > the sumation from getting confused by decrementing count on a different
-> > CPU than it was incremented, but I've commented that case in the code
-> > fairly well I think.
-> 
-> I think you mentioned a seqlock being a possibility here.  That would
-> slot in as a replacement for MNT_WRITE_HOLD, right?  mnt_make_readonly()
-> takes a seq_write, mnt_want_write() takes a seq_read and doesn't
-> consider MNT_READONLY valid until it gets a clear read of it.  It would
-> internalize all the barriers into the seqlock implementation except for
-> the mnt_writers[]-related ones.
-> 
-> As for mnt_writers, you'd need an smp_rmb() in mnt_make_readonly()
-> before reading the counters and an smp_wmb() after writing the counter
-> in mnt_want_write().
-> 
-> Is see that those are effectively consolidated down in your version into
-> a single smp_mb() at both call sites when combined with the
-> MNT_WRITE_HOLD barriers.
-> 
-> If we can get this down to two explicit calls to the barrier functions
-> that paired and very clear, I think I'd be much more OK with it.
+the system allows the admin to override the application and say "I'm 
+willing to loose up to X seconds of data for other benifits"
 
-seqlock as I said doesn't get its barriers quite right for having
-stores in the read protected section. I was musing the possibility,
-but I think it ends up being less clear if you just end up having
-to a) look at seqlock implementation, b) work out it is insufficnet,
-c) add barriers to make up for it. May as well just open code it
-here with sufficient comment to justify correctness (which I think
-I have come up with).
+if this can work cleanly (with the ordering issue that was identified, 
+which may involve having multiple versions of the metadata cached) it 
+seems like a very clean interface.
+
+David Lang
 
