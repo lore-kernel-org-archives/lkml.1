@@ -1,89 +1,47 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759025AbZDBLr0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759294AbZDBLrn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759025AbZDBLr0 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 2 Apr 2009 07:47:26 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755564AbZDBLrO
+	id S1759294AbZDBLrn (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 2 Apr 2009 07:47:43 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758593AbZDBLrR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 2 Apr 2009 07:47:14 -0400
-Received: from cantor.suse.de ([195.135.220.2]:43615 "EHLO mx1.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752991AbZDBLrM (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 2 Apr 2009 07:47:12 -0400
-Date: Thu, 2 Apr 2009 13:47:09 +0200
-From: Jan Kara <jack@suse.cz>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: LKML <linux-kernel@vger.kernel.org>, linux-fsdevel@vger.kernel.org
-Subject: [PULL REQUEST] UDF changes for 2.6.30
-Message-ID: <20090402114708.GD3010@duck.suse.cz>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-User-Agent: Mutt/1.5.17 (2007-11-01)
+	Thu, 2 Apr 2009 07:47:17 -0400
+Received: from viefep18-int.chello.at ([62.179.121.38]:63278 "EHLO
+	viefep18-int.chello.at" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755242AbZDBLrP (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 2 Apr 2009 07:47:15 -0400
+X-SourceIP: 213.93.53.227
+Subject: Re: [PATCH 5/6] perf_counter: add more context information
+From: Peter Zijlstra <a.p.zijlstra@chello.nl>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: Paul Mackerras <paulus@samba.org>,
+       Corey Ashford <cjashfor@linux.vnet.ibm.com>,
+       linux-kernel@vger.kernel.org
+In-Reply-To: <20090402113643.GF10828@elte.hu>
+References: <20090402091158.291810516@chello.nl>
+	 <20090402091319.493101305@chello.nl>  <20090402113643.GF10828@elte.hu>
+Content-Type: text/plain
+Date: Thu, 02 Apr 2009 13:48:09 +0200
+Message-Id: <1238672889.8530.5908.camel@twins>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.26.0 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-  Hello Linus,
+On Thu, 2009-04-02 at 13:36 +0200, Ingo Molnar wrote:
 
-  could you please pull from
+> > -#define MAX_STACK_DEPTH		255
+> > +#define MAX_STACK_DEPTH		254
+> >  
+> >  struct perf_callchain_entry {
+> > -	u64	nr;
+> > +	u32	nr, hv, kernel, user;
+> >  	u64	ip[MAX_STACK_DEPTH];
+> >  };
 
-git://git.kernel.org/pub/scm/linux/kernel/git/jack/linux-udf-2.6.git for_linus
+Oh, and Paul suggested using u16s right after I send it out. So I'll
+either send an update or send a incremental in case you already applied
+it.
 
-  to get:
-
-Clemens Ladisch (2):
-      udf: fix novrs mount option
-      udf: use hardware sector size
-
-Coly Li (1):
-      udf: return f_fsid for statfs(2)
-
-Jan Kara (6):
-      udf: fix sparse warnings:
-      udf: Add checks to not underflow sector_t
-      udf: Fix oops when invalid character in filename occurs
-      udf: Some type fixes and cleanups
-      udf: Try anchor in block 256 first
-      udf: Don't write integrity descriptor too often
-
-Marcin Slusarz (4):
-      udf: reduce stack usage of udf_load_pvoldesc
-      udf: reduce stack usage of udf_get_filename
-      udf: implement mode and dmode mounting options
-      udf: fix default mode and dmode options handling
-
-Pekka Enberg (2):
-      Remove struct typedefs from fs/udf/ecma_167.h et al.
-      Fix the udf code not to pass structs on stack where possible.
-
-roel kluin (1):
-      udf: unsigned last[i] cannot be less than 0
-
-The diffstat is
-
- Documentation/filesystems/udf.txt |    2 +
- fs/udf/balloc.c                   |  150 ++++-----
- fs/udf/dir.c                      |   14 +-
- fs/udf/directory.c                |   38 ++--
- fs/udf/ecma_167.h                 |  416 +++++++++++++-------------
- fs/udf/ialloc.c                   |    9 +-
- fs/udf/inode.c                    |  213 +++++++-------
- fs/udf/misc.c                     |   29 +-
- fs/udf/namei.c                    |   86 +++---
- fs/udf/osta_udf.h                 |   22 +-
- fs/udf/partition.c                |    2 +-
- fs/udf/super.c                    |  605 +++++++++++++++++++------------------
- fs/udf/truncate.c                 |   44 ++--
- fs/udf/udf_i.h                    |    6 +-
- fs/udf/udf_sb.h                   |    9 +-
- fs/udf/udfdecl.h                  |   57 +++--
- fs/udf/udfend.h                   |   28 +-
- fs/udf/udftime.c                  |    6 +-
- fs/udf/unicode.c                  |   62 +++--
- 19 files changed, 930 insertions(+), 868 deletions(-)
-
-							Thanks
-								Honza
----
-Jan Kara <jack@suse.cz>
-SUSE Labs, CR
