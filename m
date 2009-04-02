@@ -1,15 +1,15 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934882AbZDBHE2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934985AbZDBHEs@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934882AbZDBHE2 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 2 Apr 2009 03:04:28 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761371AbZDBHDY
+	id S934985AbZDBHEs (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 2 Apr 2009 03:04:48 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762926AbZDBHD0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 2 Apr 2009 03:03:24 -0400
-Received: from sous-sol.org ([216.99.217.87]:49081 "EHLO sequoia.sous-sol.org"
+	Thu, 2 Apr 2009 03:03:26 -0400
+Received: from sous-sol.org ([216.99.217.87]:49086 "EHLO sequoia.sous-sol.org"
 	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1755469AbZDBHDW (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 2 Apr 2009 03:03:22 -0400
-Date: Wed, 1 Apr 2009 23:58:15 -0700
+	id S1751539AbZDBHDZ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 2 Apr 2009 03:03:25 -0400
+Date: Wed, 1 Apr 2009 23:57:53 -0700
 From: Chris Wright <chrisw@sous-sol.org>
 To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: "Theodore Ts'o" <tytso@mit.edu>, Zwane Mwaikambo <zwane@arm.linux.org.uk>,
@@ -21,10 +21,9 @@ Cc: "Theodore Ts'o" <tytso@mit.edu>, Zwane Mwaikambo <zwane@arm.linux.org.uk>,
        Chuck Ebbert <cebbert@redhat.com>, Dave Jones <davej@redhat.com>,
        Chuck Wolber <chuckw@quantumlinux.com>, akpm@linux-foundation.org,
        torvalds@linux-foundation.org, Willy Tarreau <w@1wt.eu>,
-       Rodrigo Rubira Branco <rbranco@la.checkpoint.com>, hverkuil@xs4all.nl,
-       g.liakhovetski@gmx.de, mchehab@redhat.com
-Subject: [PATCH 49/45] V4L: v4l2-common: remove incorrect MODULE test
-Message-ID: <20090402065815.GE18394@sequoia.sous-sol.org>
+       Rodrigo Rubira Branco <rbranco@la.checkpoint.com>, davem@davemloft.net
+Subject: [PATCH 47/45] sparc64: Flush TLB before releasing pages.
+Message-ID: <20090402065753.GC18394@sequoia.sous-sol.org>
 References: <20090331231045.719396245@sous-sol.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
@@ -38,59 +37,38 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 -stable review patch.  If anyone has any objections, please let us know.
 ---------------------
 
-From: Hans Verkuil <hverkuil@xs4all.nl>
+From: David S. Miller <davem@davemloft.net>
 
-upstream commit: d64260d58865004c6354e024da3450fdd607ea07
+[ Upstream commit a552a42cfa91ab653128dff89a70c8dde7fed042 ]
 
-v4l2-common doesn't have to be a module for it to call request_module().
-Just remove that test.
+tlb_flush_mmu() needs to flush pending TLB entries before
+processing the mmu_gather ->pages list.
 
-Without this patch loading ivtv as a module while v4l2-common is compiled
-into the kernel will cause a delayed load of the i2c modules that ivtv
-needs since request_module is never called directly.
+Noticed by Benjamin Herrenschmidt.
 
-While it is nice to see the delayed load in action, it is not so nice in
-that ivtv fails to do a lot of necessary i2c initializations and will oops
-later on with a division-by-zero.
-
-Thanks to Mark Lord for reporting this and helping me figure out what was
-wrong.
-
-Thanks-to: Guennadi Liakhovetski <g.liakhovetski@gmx.de>
-Thanks-to: Mark Lord <lkml@rtr.ca>
-Signed-off-by: Hans Verkuil <hverkuil@xs4all.nl>
-Signed-off-by: Mauro Carvalho Chehab <mchehab@redhat.com>
-Signed-off-by: Michael Krufky <mkrufky@linuxtv.org>
+Signed-off-by: David S. Miller <davem@davemloft.net>
 Signed-off-by: Chris Wright <chrisw@sous-sol.org>
 ---
- drivers/media/video/v4l2-common.c |    8 ++++----
- 1 file changed, 4 insertions(+), 4 deletions(-)
+ arch/sparc/include/asm/tlb_64.h |    4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
 
---- a/drivers/media/video/v4l2-common.c
-+++ b/drivers/media/video/v4l2-common.c
-@@ -910,10 +910,10 @@ struct v4l2_subdev *v4l2_i2c_new_subdev(
- 	struct i2c_board_info info;
+--- a/arch/sparc/include/asm/tlb_64.h
++++ b/arch/sparc/include/asm/tlb_64.h
+@@ -58,6 +58,8 @@ static inline struct mmu_gather *tlb_gat
+ static inline void tlb_flush_mmu(struct mmu_gather *mp)
+ {
+ 	if (mp->need_flush) {
++		if (!mp->fullmm)
++			flush_tlb_pending();
+ 		free_pages_and_swap_cache(mp->pages, mp->pages_nr);
+ 		mp->pages_nr = 0;
+ 		mp->need_flush = 0;
+@@ -78,8 +80,6 @@ static inline void tlb_finish_mmu(struct
  
- 	BUG_ON(!dev);
--#ifdef MODULE
-+
- 	if (module_name)
- 		request_module(module_name);
--#endif
-+
- 	/* Setup the i2c board info with the device type and
- 	   the device address. */
- 	memset(&info, 0, sizeof(info));
-@@ -958,10 +958,10 @@ struct v4l2_subdev *v4l2_i2c_new_probed_
- 	struct i2c_board_info info;
+ 	if (mp->fullmm)
+ 		mp->fullmm = 0;
+-	else
+-		flush_tlb_pending();
  
- 	BUG_ON(!dev);
--#ifdef MODULE
-+
- 	if (module_name)
- 		request_module(module_name);
--#endif
-+
- 	/* Setup the i2c board info with the device type and
- 	   the device address. */
- 	memset(&info, 0, sizeof(info));
+ 	/* keep the page table cache within bounds */
+ 	check_pgt_cache();
