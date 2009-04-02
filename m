@@ -1,134 +1,71 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S935323AbZDBGWM@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S935370AbZDBGXQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S935323AbZDBGWM (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 2 Apr 2009 02:22:12 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763212AbZDBGVx
+	id S935370AbZDBGXQ (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 2 Apr 2009 02:23:16 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761309AbZDBGW5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 2 Apr 2009 02:21:53 -0400
-Received: from victor.provo.novell.com ([137.65.250.26]:37444 "EHLO
-	victor.provo.novell.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755825AbZDBGVw (ORCPT
+	Thu, 2 Apr 2009 02:22:57 -0400
+Received: from yx-out-2324.google.com ([74.125.44.29]:20478 "EHLO
+	yx-out-2324.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756587AbZDBGW4 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 2 Apr 2009 02:21:52 -0400
-Message-ID: <49D45974.2060202@suse.de>
-Date: Thu, 02 Apr 2009 11:51:40 +0530
-From: Suresh Jayaraman <sjayaraman@suse.de>
-User-Agent: Thunderbird 2.0.0.19 (X11/20081227)
-MIME-Version: 1.0
-To: Trond.Myklebust@netapp.com
-CC: linux-nfs@vger.kernel.org, mathieu.desnoyers@polymtl.ca,
-       linux-embedded@vger.kernel.org, compudj@krystal.dyndns.org,
-       LKML <linux-kernel@vger.kernel.org>, ltt-dev@lists.casi.polymtl.ca
-Subject: [PATCH] nfs: add support for splice writes
-X-Enigmail-Version: 0.95.7
-Content-Type: text/plain; charset=ISO-8859-1
+	Thu, 2 Apr 2009 02:22:56 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=subject:from:to:cc:in-reply-to:references:content-type:date
+         :message-id:mime-version:x-mailer:content-transfer-encoding;
+        b=GSjgM0h6O11PNhSS5lvw8ATdXQ9kP+A+/0PYpXU+dejgWv1rvcvLIEJohXFtmXFvDa
+         OQamnkOOA8NpsgNVBmPGlFfcYA/Yz466JYBjg3fCixkrshlWN6yRktLKi2lWJmby/SHr
+         xHsZ5Mixywj/Q9xncgZQiBSNm2AbmQVJp3ld4=
+Subject: Re: [PATCH] tracing/filters: allow event filters to be set only
+ when not tracing
+From: Tom Zanussi <tzanussi@gmail.com>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: linux-kernel <linux-kernel@vger.kernel.org>,
+       Steven Rostedt <rostedt@goodmis.org>, fweisbec@gmail.com
+In-Reply-To: <20090401122408.GG12966@elte.hu>
+References: <1238390546.6368.65.camel@bookworm>
+	 <20090401122408.GG12966@elte.hu>
+Content-Type: text/plain
+Date: Thu, 02 Apr 2009 01:22:51 -0500
+Message-Id: <1238653371.6655.48.camel@bookworm>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.24.1 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This patch attempts to add splice writes support. In essence, it just
-calls generic_file_splice_write() after doing a little sanity check.
-This would allow LTTng users that are using NFS to store trace data.
-There could be more applications that could be benefitted too.
+On Wed, 2009-04-01 at 14:24 +0200, Ingo Molnar wrote:
+> * Tom Zanussi <tzanussi@gmail.com> wrote:
+> 
+> > This patch adds code allowing the event filter to be set only if 
+> > there's no active tracing going on.
+> 
+> > --- a/kernel/trace/trace_events.c
+> > +++ b/kernel/trace/trace_events.c
+> > @@ -498,6 +498,9 @@ event_filter_write(struct file *filp, const char __user *ubuf, size_t cnt,
+> >  	struct filter_pred *pred;
+> >  	int err;
+> >  
+> > +	if (tracing_is_enabled() && (!tracer_is_nop() || call->enabled))
+> > +		return -EBUSY;
+> 
+> hm, but it would be the normal use-case to set filters on the fly. 
+> To experiment around with them and shape them until the output is 
+> just right. Having to turn the tracer on/off during that seems quite 
+> counterproductive to that use-case.
+> 
 
-I have tested this using the Jens' test program and have found no
-real issues. The test program is inlined below:
+I didn't see anything that could be used to temporarily disable tracing
+(tracing_stop() and tracing_start() are 'quick' versions that mostly
+just disable recording), so did it this way to avoid adding any overhead
+to the filter-checking code.
 
-/*
- * splice-out.c: Splice stdout to file
- */
-#include <stdio.h>
-#include <stdlib.h>
-#include <unistd.h>
-#include <fcntl.h>
+But anyway, I'll post a new patch shortly that uses rcu and does allow
+the filters to be set on the fly.
 
-#define SPLICE_SIZE (64*1024)
+Tom
 
-int main(int argc, char *argv[])
-{
-        int fd;
-
-        if (argc < 2) {
-                printf("%s: outfile\n", argv[0]);
-                return 1;
-        }
-
-        fd = open(argv[1], O_WRONLY | O_CREAT | O_TRUNC, 0644);
-        if (fd < 0) {
-                perror("open");
-                return 1;
-        }
-
-        do {
-                int ret = splice(STDIN_FILENO, NULL, fd, NULL, SPLICE_SIZE, 0);
-
-                if (ret < 0) {
-                        perror("splice");
-                        break;
-                } else if (ret < SPLICE_SIZE)
-                        break;
-        } while (1);
-
-        close(fd);
-        return 0;
-}
-
-Compile with -D _GNU_SOURCE and do something like:
-	echo "some stuff" | ./splice-out <outfile>
-
-Signed-off-by: Suresh Jayaraman <sjayaraman@suse.de>
----
- fs/nfs/file.c |   24 ++++++++++++++++++++++++
- 1 files changed, 24 insertions(+), 0 deletions(-)
-
-diff --git a/fs/nfs/file.c b/fs/nfs/file.c
-index 90f292b..13d6a00 100644
---- a/fs/nfs/file.c
-+++ b/fs/nfs/file.c
-@@ -47,6 +47,9 @@ static ssize_t nfs_file_splice_read(struct file *filp, loff_t *ppos,
- 					size_t count, unsigned int flags);
- static ssize_t nfs_file_read(struct kiocb *, const struct iovec *iov,
- 				unsigned long nr_segs, loff_t pos);
-+static ssize_t nfs_file_splice_write(struct pipe_inode_info *pipe,
-+					struct file *filp, loff_t *ppos,
-+					size_t count, unsigned int flags);
- static ssize_t nfs_file_write(struct kiocb *, const struct iovec *iov,
- 				unsigned long nr_segs, loff_t pos);
- static int  nfs_file_flush(struct file *, fl_owner_t id);
-@@ -76,6 +79,7 @@ const struct file_operations nfs_file_operations = {
- 	.lock		= nfs_lock,
- 	.flock		= nfs_flock,
- 	.splice_read	= nfs_file_splice_read,
-+	.splice_write	= nfs_file_splice_write,
- 	.check_flags	= nfs_check_flags,
- 	.setlease	= nfs_setlease,
- };
-@@ -550,6 +554,26 @@ out_swapfile:
- 	goto out;
- }
- 
-+static ssize_t nfs_file_splice_write(struct pipe_inode_info *pipe,
-+				     struct file *filp, loff_t *ppos,
-+				     size_t count, unsigned int flags)
-+{
-+	struct dentry *dentry = filp->f_path.dentry;
-+	struct inode *inode = dentry->d_inode;
-+
-+	dprintk("NFS splice_write(%s/%s, %lu@%Lu)\n",
-+		dentry->d_parent->d_name.name, dentry->d_name.name,
-+		(unsigned long) count, (unsigned long long) *ppos);
-+
-+	if (IS_SWAPFILE(inode)) {
-+		printk(KERN_INFO "NFS: attempt to write to active swap"
-+		       "file!\n");
-+		return -EBUSY;
-+	}
-+
-+	return generic_file_splice_write(pipe, filp, ppos, count, flags);
-+}
-+
- static int do_getlk(struct file *filp, int cmd, struct file_lock *fl)
- {
- 	struct inode *inode = filp->f_mapping->host;
+> 	Ingo
 
