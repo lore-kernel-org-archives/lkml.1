@@ -1,67 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934228AbZDCOx2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755447AbZDCOxx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934228AbZDCOx2 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 3 Apr 2009 10:53:28 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756811AbZDCOqV
+	id S1755447AbZDCOxx (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 3 Apr 2009 10:53:53 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932745AbZDCOqW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 3 Apr 2009 10:46:21 -0400
-Received: from mga09.intel.com ([134.134.136.24]:54031 "EHLO mga09.intel.com"
+	Fri, 3 Apr 2009 10:46:22 -0400
+Received: from mga09.intel.com ([134.134.136.24]:46720 "EHLO mga09.intel.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S932788AbZDCOqK (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 3 Apr 2009 10:46:10 -0400
-Content-Type: multipart/mixed; boundary="===============0810507704=="
+	id S932793AbZDCOqL (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 3 Apr 2009 10:46:11 -0400
+Content-Type: multipart/mixed; boundary="===============1460837903=="
 MIME-Version: 1.0
 X-ExtLoop1: 1
 X-IronPort-AV: E=Sophos;i="4.39,319,1235980800"; 
-   d="scan'208";a="503328379"
-Message-Id: <20090403144604.256645000@intel.com>
+   d="scan'208";a="503328384"
+Message-Id: <20090403144605.206510000@intel.com>
 References: <20090403144332.799740000@intel.com>
 User-Agent: quilt/0.46-1
-Date: Fri, 03 Apr 2009 16:43:49 +0200
+Date: Fri, 03 Apr 2009 16:43:50 +0200
 From: markus.t.metzger@intel.com
 To: mingo@elte.hu, tglx@linutronix.de, hpa@zytor.com
 Cc: markus.t.metzger@gmail.com, roland@redhat.com, eranian@googlemail.com,
        oleg@redhat.com, juan.villacis@intel.com, ak@linux.jf.intel.com,
        linux-kernel@vger.kernel.org,
        Markus Metzger <markus.t.metzger@intel.com>
-Subject: [patch 17/20] x86, ds: dont use TIF_DEBUGCTLMSR
+Subject: [patch 18/20] x86, ds: fix bad ds_reset_pebs()
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---===============0810507704==
+--===============1460837903==
 MIME-Version: 1.0
-Content-Disposition: inline; filename=tip.master.ds.tif_debugctlmsr.patch
+Content-Disposition: inline; filename=tip.master.ds.reset_pebs.patch
 
-Debug store already uses TIF_DS_AREA_MSR to trigger debug store context
-switch handling. No need to use TIF_DEBUGCTLMSR, as well.
+Ds_reset_pebs() passed the wrong qualifier to a shared function resulting
+in a reset of bts, rather than pebs.
 
 
+Reported-by: Stephane Eranian <eranian@googlemail.com>
 Signed-off-by: Markus Metzger <markus.t.metzger@intel.com>
 ---
- arch/x86/kernel/ds.c |    5 	0 +	5 -	0 !
- 1 file changed, 5 deletions(-)
+ arch/x86/kernel/ds.c |    2 	1 +	1 -	0 !
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
 Index: b/arch/x86/kernel/ds.c
 ===================================================================
 --- a/arch/x86/kernel/ds.c
 +++ b/arch/x86/kernel/ds.c
-@@ -925,11 +925,6 @@ static void update_task_debugctlmsr(stru
- 	get_cpu();
- 	if (task == current)
- 		update_debugctlmsr(debugctlmsr);
--
--	if (task->thread.debugctlmsr)
--		set_tsk_thread_flag(task, TIF_DEBUGCTLMSR);
--	else
--		clear_tsk_thread_flag(task, TIF_DEBUGCTLMSR);
- 	put_cpu();
- }
+@@ -1186,7 +1186,7 @@ int ds_reset_pebs(struct pebs_tracer *tr
  
+ 	tracer->trace.ds.top = tracer->trace.ds.begin;
+ 
+-	ds_set(tracer->ds.context->ds, ds_bts, ds_index,
++	ds_set(tracer->ds.context->ds, ds_pebs, ds_index,
+ 	       (unsigned long)tracer->trace.ds.top);
+ 
+ 	return 0;
 
 -- 
 
---===============0810507704==
+--===============1460837903==
 Content-Type: text/plain; charset="utf-8"
 MIME-Version: 1.0
 Content-Transfer-Encoding: quoted-printable
@@ -82,4 +80,4 @@ the sole use of the intended recipient(s). Any review or distribution
 by others is strictly prohibited. If you are not the intended
 recipient, please contact the sender and delete all copies.
 
---===============0810507704==--
+--===============1460837903==--
