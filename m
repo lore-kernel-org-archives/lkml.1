@@ -1,25 +1,28 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759158AbZDCHB1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759902AbZDCHBk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759158AbZDCHB1 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 3 Apr 2009 03:01:27 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752590AbZDCHBM
+	id S1759902AbZDCHBk (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 3 Apr 2009 03:01:40 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753888AbZDCHBN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 3 Apr 2009 03:01:12 -0400
-Received: from thunk.org ([69.25.196.29]:36441 "EHLO thunker.thunk.org"
+	Fri, 3 Apr 2009 03:01:13 -0400
+Received: from thunk.org ([69.25.196.29]:36445 "EHLO thunker.thunk.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750949AbZDCHBL (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	id S1750830AbZDCHBL (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
 	Fri, 3 Apr 2009 03:01:11 -0400
 From: "Theodore Ts'o" <tytso@mit.edu>
 To: torvalds@linuxfoundation.org
 Cc: Linux Kernel Developers List <linux-kernel@vger.kernel.org>,
        Ext4 Developers List <linux-ext4@vger.kernel.org>,
        "Theodore Ts'o" <tytso@mit.edu>
-Subject: [PATCH 1/4] block_write_full_page: Use synchronous writes for WBC_SYNC_ALL writebacks
-Date: Fri,  3 Apr 2009 03:01:04 -0400
-Message-Id: <1238742067-30814-2-git-send-email-tytso@mit.edu>
+Subject: [PATCH 4/4] ext3: Add replace-on-rename hueristics for data=writeback mode
+Date: Fri,  3 Apr 2009 03:01:07 -0400
+Message-Id: <1238742067-30814-5-git-send-email-tytso@mit.edu>
 X-Mailer: git-send-email 1.5.6.3
-In-Reply-To: <1238742067-30814-1-git-send-email-tytso@mit.edu>
+In-Reply-To: <1238742067-30814-4-git-send-email-tytso@mit.edu>
 References: <1238742067-30814-1-git-send-email-tytso@mit.edu>
+ <1238742067-30814-2-git-send-email-tytso@mit.edu>
+ <1238742067-30814-3-git-send-email-tytso@mit.edu>
+ <1238742067-30814-4-git-send-email-tytso@mit.edu>
 X-SA-Exim-Connect-IP: <locally generated>
 X-SA-Exim-Mail-From: tytso@mit.edu
 X-SA-Exim-Scanned: No (on thunker.thunk.org); SAEximRunCond expanded to false
@@ -27,46 +30,47 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-When doing synchronous writes because wbc->sync_mode is set to
-WBC_SYNC_ALL, send the write request using WRITE_SYNC, so that we
-don't unduly block system calls such as fsync().
+In data=writeback mode, start an asynchronous flush when renaming a
+file on top of an already-existing file.  This lowers the probability
+of data loss in the case of applications that attempt to replace a
+file via using rename().
 
 Signed-off-by: "Theodore Ts'o" <tytso@mit.edu>
-Acked-by: Jan Kara <jack@suse.cz>
 ---
- fs/buffer.c |    5 +++--
- 1 files changed, 3 insertions(+), 2 deletions(-)
+ fs/ext3/namei.c |    6 +++++-
+ 1 files changed, 5 insertions(+), 1 deletions(-)
 
-diff --git a/fs/buffer.c b/fs/buffer.c
-index 891e1c7..e7ebd95 100644
---- a/fs/buffer.c
-+++ b/fs/buffer.c
-@@ -1714,6 +1714,7 @@ static int __block_write_full_page(struct inode *inode, struct page *page,
- 	struct buffer_head *bh, *head;
- 	const unsigned blocksize = 1 << inode->i_blkbits;
- 	int nr_underway = 0;
-+	int write_op = (wbc->sync_mode == WB_SYNC_ALL ? WRITE_SYNC : WRITE);
+diff --git a/fs/ext3/namei.c b/fs/ext3/namei.c
+index 4db4ffa..ab98a66 100644
+--- a/fs/ext3/namei.c
++++ b/fs/ext3/namei.c
+@@ -2265,7 +2265,7 @@ static int ext3_rename (struct inode * old_dir, struct dentry *old_dentry,
+ 	struct inode * old_inode, * new_inode;
+ 	struct buffer_head * old_bh, * new_bh, * dir_bh;
+ 	struct ext3_dir_entry_2 * old_de, * new_de;
+-	int retval;
++	int retval, flush_file = 0;
  
- 	BUG_ON(!PageLocked(page));
+ 	old_bh = new_bh = dir_bh = NULL;
  
-@@ -1805,7 +1806,7 @@ static int __block_write_full_page(struct inode *inode, struct page *page,
- 	do {
- 		struct buffer_head *next = bh->b_this_page;
- 		if (buffer_async_write(bh)) {
--			submit_bh(WRITE, bh);
-+			submit_bh(write_op, bh);
- 			nr_underway++;
- 		}
- 		bh = next;
-@@ -1859,7 +1860,7 @@ recover:
- 		struct buffer_head *next = bh->b_this_page;
- 		if (buffer_async_write(bh)) {
- 			clear_buffer_dirty(bh);
--			submit_bh(WRITE, bh);
-+			submit_bh(write_op, bh);
- 			nr_underway++;
- 		}
- 		bh = next;
+@@ -2401,6 +2401,8 @@ static int ext3_rename (struct inode * old_dir, struct dentry *old_dentry,
+ 		ext3_mark_inode_dirty(handle, new_inode);
+ 		if (!new_inode->i_nlink)
+ 			ext3_orphan_add(handle, new_inode);
++		if (ext3_should_writeback_data(new_inode))
++			flush_file = 1;
+ 	}
+ 	retval = 0;
+ 
+@@ -2409,6 +2411,8 @@ end_rename:
+ 	brelse (old_bh);
+ 	brelse (new_bh);
+ 	ext3_journal_stop(handle);
++	if (retval == 0 && flush_file)
++		filemap_flush(old_inode->i_mapping);
+ 	return retval;
+ }
+ 
 -- 
 1.5.6.3
 
