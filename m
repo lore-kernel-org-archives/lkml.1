@@ -1,108 +1,106 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756212AbZDCKJb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761347AbZDCKOW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756212AbZDCKJb (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 3 Apr 2009 06:09:31 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753787AbZDCKJW
+	id S1761347AbZDCKOW (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 3 Apr 2009 06:14:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755260AbZDCKOJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 3 Apr 2009 06:09:22 -0400
-Received: from mail.windriver.com ([147.11.1.11]:38005 "EHLO mail.wrs.com"
+	Fri, 3 Apr 2009 06:14:09 -0400
+Received: from srv5.dvmed.net ([207.36.208.214]:36687 "EHLO mail.dvmed.net"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752934AbZDCKJV (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 3 Apr 2009 06:09:21 -0400
-Message-ID: <49D5DF93.8020101@windriver.com>
-Date: Fri, 03 Apr 2009 18:06:11 +0800
-From: Harry Ciao <qingtao.cao@windriver.com>
-Reply-To: qingtao.cao@windriver.com
-Organization: Wind River, CDC
-User-Agent: Thunderbird 2.0.0.21 (X11/20090318)
+	id S1753787AbZDCKOH (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 3 Apr 2009 06:14:07 -0400
+Message-ID: <49D5E16A.80104@garzik.org>
+Date: Fri, 03 Apr 2009 06:14:02 -0400
+From: Jeff Garzik <jeff@garzik.org>
+User-Agent: Thunderbird 2.0.0.21 (X11/20090320)
 MIME-Version: 1.0
-To: michael@ellerman.id.au
-CC: norsk5@yahoo.com, bluesmoke-devel@lists.sourceforge.net,
-       linuxppc-dev@ozlabs.org, linux-kernel@vger.kernel.org
-Subject: Re: [v1 PATCH 3/3] EDAC: CPC925 MC platform device setup
-References: <1238739044-19926-1-git-send-email-qingtao.cao@windriver.com>	 <1238739044-19926-2-git-send-email-qingtao.cao@windriver.com> <1238741478.6802.44.camel@localhost>
-In-Reply-To: <1238741478.6802.44.camel@localhost>
-Content-Type: text/plain; charset=GB2312
-Content-Transfer-Encoding: 8bit
-X-OriginalArrivalTime: 03 Apr 2009 10:08:52.0744 (UTC) FILETIME=[30DE9880:01C9B444]
+To: James Bottomley <James.Bottomley@HansenPartnership.com>
+CC: LKML <linux-kernel@vger.kernel.org>, linux-scsi@vger.kernel.org,
+       linux-fsdevel@vger.kernel.org, axboe@kernel.dk,
+       Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: [PATCH] osdblk: a Linux block device for OSD objects
+References: <20090402015455.GA14087@havoc.gtf.org> <1238722324.13399.25.camel@mulgrave.int.hansenpartnership.com>
+In-Reply-To: <1238722324.13399.25.camel@mulgrave.int.hansenpartnership.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
+X-Spam-Score: -4.4 (----)
+X-Spam-Report: SpamAssassin version 3.2.5 on srv5.dvmed.net summary:
+	Content analysis details:   (-4.4 points, 5.0 required)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Michael Ellerman Ð´µÀ:
-> On Fri, 2009-04-03 at 14:10 +0800, Harry Ciao wrote:
->   
->> Setup a platform device for the CPC925 Memory Controller during system
->> booting up, against which CPC925 MC EDAC driver would be matched.
->>
->> Signed-off-by: Harry Ciao <qingtao.cao@windriver.com>
->> ---
->>  arch/powerpc/platforms/maple/setup.c |   47 ++++++++++++++++++++++++++++++++++
->>  1 files changed, 47 insertions(+), 0 deletions(-)
->>
->> diff --git a/arch/powerpc/platforms/maple/setup.c b/arch/powerpc/platforms/maple/setup.c
->> index bfd60e4..ca8a3ff 100644
->> --- a/arch/powerpc/platforms/maple/setup.c
->> +++ b/arch/powerpc/platforms/maple/setup.c
->> @@ -335,3 +335,50 @@ define_machine(maple) {
->>  	.progress		= maple_progress,
->>  	.power_save		= power4_idle,
->>  };
+James Bottomley wrote:
+>> +   1) Map a Linux block device to an existing OSD object.
 >> +
->> +#ifdef CONFIG_EDAC
->> +#define CPC925_MC_START		0xf8000000
->> +#define CPC925_MC_END		0xf8ffffff /* sizeof 16MB */
->> +/* Register a platform device for CPC925 memory controller */
->> +static int __init maple_cpc925_edac_setup(void)
+>> +      In this example, we will use partition id 1234, object id 5678,
+>> +      OSD device /dev/osd1.
+>> +
+>> +      $ echo "1234 5678 /dev/osd1" > /sys/class/osdblk/add
+>> +
+>> +
+>> +   2) List all active blkdev<->object mappings.
+>> +
+>> +      In this example, we have performed step #1 twice, creating two blkdevs,
+>> +      mapped to two separate OSD objects.
+>> +
+>> +      $ cat /sys/class/osdblk/list
+>> +      0 174 1234 5678 /dev/osd1
+>> +      1 179 1994 897123 /dev/osd0
+> 
+> This is a slight violation of the one piece of data per sysfs file
+> rule ... might it not be better as a file named <partid>-<objid> linking
+> to the osd device location in sysfs?
+
+Yeah...   I leaned more towards a consolidated table, as it was 
+elegantly implemented in just a few lines of code, including locking :)
+
+
+>> +      The columns, in order, are:
+>> +      - blkdev unique id
+>> +      - blkdev assigned major
+>> +      - OSD object partition id
+>> +      - OSD object id
+>> +      - OSD device
+>> +
+>> +
+>> +   3) Remove an active blkdev<->object mapping.
+>> +
+
+
+>> +	unsigned long		obj_id;
+>> +	char			osd_path[0];
+>> +};
+>> +
+>> +static struct class *class_osdblk;		/* /sys/class/osdblk */
+>> +static struct mutex ctl_mutex;	/* Serialize open/close/setup/teardown */
+>> +static struct osdblk_device *osdblk_devs[OSDBLK_MAX_DEVS];
+> 
+> Might it not be better to do this as a linked list on the private dev
+> structure instead?  This only works if you have one entry
+> in /sys/class/osdblock per device because now you have a device private
+> pointer to hang it off
+
+converted to list
+
+
+
+>> +static int osdblk_get_free_req(struct osdblk_device *osdev)
 >> +{
->> +	struct platform_device *pdev;
->> +	struct device_node *np = NULL;
->> +	struct resource r;
+>> +	int i;
 >> +
->> +	np = of_find_node_by_name(NULL, "hostbridge");
->>     
->
-> This is way too generic IMHO. You're going to match on any node called
-> "hostbridge" on any 64-bit powerpc machine, there's a good chance there
-> are other firmwares out there with such a node, or will be in the
-> future.
->
-> Is there no compatible or model property you can look for, so you're at
-> least somewhat confident you're actually looking at a CPC925?
->
-> If not this should be a machine_initcall() for Maple only.
->
->   
->> +	if (of_address_to_resource(np, 0, &r)) {
->> +		/*
->> +		 * of_address_to_resource() would get the #address-cells
->> +		 * and #size-cells properties for a node from its parent.
->> +		 * On Maple 64bit target hostbridge parent node has specified
->> +		 * both of these two properties to be 2. However, the actual
->> +		 * "cell" value for host bridge node is 1. Since we can't
->> +		 * fix this firmware-generated DTB, we have to setup a
->> +		 * resource structure manually.
->> +		 */
->> +		memset(&r, 0, sizeof(r));
->> +		r.start = CPC925_MC_START;
->> +		r.end = CPC925_MC_END;
->> +		r.name = "hostbridge";
->> +		r.flags = IORESOURCE_MEM;
->>     
->
-> We do have fixups for bogus firmware including maple, look in
-> prom_init.c:fixup_device_tree_maple(). Although that's for actual
-> firmware, not a DTB.
->
-> cheers
->
->   
-Hi Michael,
+>> +	for (i = 0; i < OSDBLK_MAX_REQ; i++) {
+>> +		if (!osdev->req[i].rq)
+>> +			return i;
+>> +	}
+> 
+> Rather than using a static list of outstanding requests, I think you
+> could probably use the block tag handling infrastructure for all of this
 
-Thanks a lot for your comments! I can see it would be much better than
-mine. Next whole week I will be on vacation, I will give some serious
-thoughts about your ideas and improve my patch in v2 after I come back.
+converted to use blk-tag.c gadgetry
 
-Best regards,
+Thanks for the review!
 
-Harry
+	Jeff
+
+
