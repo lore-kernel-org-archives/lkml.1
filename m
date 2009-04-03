@@ -1,26 +1,28 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932806AbZDCQdR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932803AbZDCQiU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932806AbZDCQdR (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 3 Apr 2009 12:33:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1764152AbZDCQc5
+	id S932803AbZDCQiU (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 3 Apr 2009 12:38:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755479AbZDCQiG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 3 Apr 2009 12:32:57 -0400
-Received: from mx3.mail.elte.hu ([157.181.1.138]:35768 "EHLO mx3.mail.elte.hu"
+	Fri, 3 Apr 2009 12:38:06 -0400
+Received: from mx3.mail.elte.hu ([157.181.1.138]:55329 "EHLO mx3.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1764155AbZDCQc5 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 3 Apr 2009 12:32:57 -0400
-Date: Fri, 3 Apr 2009 18:32:48 +0200
+	id S1755254AbZDCQiE (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 3 Apr 2009 12:38:04 -0400
+Date: Fri, 3 Apr 2009 18:37:55 +0200
 From: Ingo Molnar <mingo@elte.hu>
-To: Peter Zijlstra <a.p.zijlstra@chello.nl>
-Cc: Corey Ashford <cjashfor@linux.vnet.ibm.com>, linux-kernel@vger.kernel.org,
-       Paul Mackerras <paulus@samba.org>
-Subject: Re: perf_counter: request for three more sample data options
-Message-ID: <20090403163248.GA21669@elte.hu>
-References: <49D56A7E.80908@linux.vnet.ibm.com> <1238742064.798.8.camel@twins> <49D5B9E7.1020400@linux.vnet.ibm.com> <1238745077.798.17.camel@twins>
+To: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
+Cc: Tom Zanussi <tzanussi@gmail.com>,
+       linux-kernel <linux-kernel@vger.kernel.org>,
+       Steven Rostedt <rostedt@goodmis.org>, fweisbec@gmail.com
+Subject: Re: [PATCH] tracing/filters: allow event filters to be set only
+	when not tracing
+Message-ID: <20090403163755.GA3047@elte.hu>
+References: <1238390546.6368.65.camel@bookworm> <20090401122408.GG12966@elte.hu> <1238653371.6655.48.camel@bookworm> <20090403135956.GD8875@elte.hu> <20090403162642.GB6968@linux.vnet.ibm.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <1238745077.798.17.camel@twins>
+In-Reply-To: <20090403162642.GB6968@linux.vnet.ibm.com>
 User-Agent: Mutt/1.5.18 (2008-05-17)
 X-ELTE-VirusStatus: clean
 X-ELTE-SpamScore: -1.5
@@ -35,45 +37,61 @@ List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-* Peter Zijlstra <a.p.zijlstra@chello.nl> wrote:
+* Paul E. McKenney <paulmck@linux.vnet.ibm.com> wrote:
 
-> On Fri, 2009-04-03 at 00:25 -0700, Corey Ashford wrote:
-> 
-> > >> I am guessing the only difficult thing here would be obtaining the 
-> > >> current time from an IRQ, especially NMI handler.  Is this difficult?
-> > > 
-> > > Yes, quite :-) I'll have to see what we can do there -- we could do a
-> > > best effort thing with little to no guarantees I think.
-> > > 
+> On Fri, Apr 03, 2009 at 03:59:56PM +0200, Ingo Molnar wrote:
 > > 
-> > Best effort would be fine, I think.  I would assume that means 
-> > that 99.9% of the time, you'll get a correct timestamp, and the 
-> > rest are rubbish?  Or would there be a way to detect when you're 
-> > not able to give a correct timestamp and in that case replace 
-> > the timestamp field with a special sentinel, like all hex f's?
+> > * Tom Zanussi <tzanussi@gmail.com> wrote:
+> > 
+> > > On Wed, 2009-04-01 at 14:24 +0200, Ingo Molnar wrote:
+> > > > * Tom Zanussi <tzanussi@gmail.com> wrote:
+> > > > 
+> > > > > This patch adds code allowing the event filter to be set only if 
+> > > > > there's no active tracing going on.
+> > > > 
+> > > > > --- a/kernel/trace/trace_events.c
+> > > > > +++ b/kernel/trace/trace_events.c
+> > > > > @@ -498,6 +498,9 @@ event_filter_write(struct file *filp, const char __user *ubuf, size_t cnt,
+> > > > >  	struct filter_pred *pred;
+> > > > >  	int err;
+> > > > >  
+> > > > > +	if (tracing_is_enabled() && (!tracer_is_nop() || call->enabled))
+> > > > > +		return -EBUSY;
+> > > > 
+> > > > hm, but it would be the normal use-case to set filters on the fly. 
+> > > > To experiment around with them and shape them until the output is 
+> > > > just right. Having to turn the tracer on/off during that seems quite 
+> > > > counterproductive to that use-case.
+> > > > 
+> > > 
+> > > I didn't see anything that could be used to temporarily disable 
+> > > tracing (tracing_stop() and tracing_start() are 'quick' versions 
+> > > that mostly just disable recording), so did it this way to avoid 
+> > > adding any overhead to the filter-checking code.
+> > > 
+> > > But anyway, I'll post a new patch shortly that uses rcu and does 
+> > > allow the filters to be set on the fly.
+> > 
+> > that's a very intelligent way to do it!
+> > 
+> > There's a theoretical problem though: what if we put a filtered 
+> > tracepoint into the RCU code? Especially if that tracepoint is in 
+> > the common function-tracer callback affecting all kernel functions. 
+> > I've Cc:-ed Paul. I think the quiescent state logic should handle 
+> > this just fine, but i'm not 100% sure.
 > 
-> What I was thinking of was re-using some of the cpu_clock() 
-> infrastructure. That provides us with a jiffy based GTOD sample, 
-> cpu_clock() then uses TSC and a few filters to compute a current 
-> timestamp.
+> Disclaimer: I don't claim to fully understand the code.  I do not see any
+> problems tracing the quiescent-state logic.  However, it appears to me
+> that you don't get to set tracepoints in the idle loop for rcuclassic,
+> rcutree, and rcutiny.
 > 
-> I was thinking about cutting back those filters and thus trusting 
-> the TSC more -- which on x86 can do any random odd thing. So 
-> provided the TSC is not doing funny the results will be ok-ish.
-> 
-> This does mean however, that its not possible to know when its 
-> gone bad.
+> My kneejerk reaction is "why would anyone want to trace the idle 
+> loop?"
 
-Note that on latest mainline and on Nehalem CPUs that filter is 
-being cut back already. So there's an opt-in mechanism to trust 
-sched_clock() some more.
+heh :-)
 
-> Also, cpu_clock() can only provide monotonicity per-cpu, if a 
-> value read on one cpu is compared to a value read on another cpu, 
-> there can be a drift of at most 1-2 jiffies.
-
-That should be a good start i think. If it causes any measurable 
-jitter then the performance monitoring community is probably going 
-to be the first one to notice! ;-) So there's good synergy IMO.
+Idle enter/exit events are useful to tune power use for example. The 
+more events we have there, the more we prevent the CPU from slowly 
+going into deep sleep mode.
 
 	Ingo
