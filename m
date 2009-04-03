@@ -1,67 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934078AbZDCS0D@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S935643AbZDCS1e@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934078AbZDCS0D (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 3 Apr 2009 14:26:03 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757241AbZDCSZw
+	id S935643AbZDCS1e (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 3 Apr 2009 14:27:34 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756578AbZDCS1X
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 3 Apr 2009 14:25:52 -0400
-Received: from e34.co.us.ibm.com ([32.97.110.152]:42065 "EHLO
-	e34.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753029AbZDCSZv (ORCPT
+	Fri, 3 Apr 2009 14:27:23 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:45430 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1753029AbZDCS1X (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 3 Apr 2009 14:25:51 -0400
-Message-ID: <49D654AB.4030207@linux.vnet.ibm.com>
-Date: Fri, 03 Apr 2009 11:25:47 -0700
-From: Corey Ashford <cjashfor@linux.vnet.ibm.com>
-User-Agent: Thunderbird 2.0.0.21 (Windows/20090302)
+	Fri, 3 Apr 2009 14:27:23 -0400
+Date: Fri, 3 Apr 2009 11:24:50 -0700 (PDT)
+From: Linus Torvalds <torvalds@linux-foundation.org>
+X-X-Sender: torvalds@localhost.localdomain
+To: "Theodore Ts'o" <tytso@mit.edu>, Jens Axboe <jens.axboe@oracle.com>
+cc: Linux Kernel Developers List <linux-kernel@vger.kernel.org>,
+       Ext4 Developers List <linux-ext4@vger.kernel.org>
+Subject: Re: [GIT PULL] Ext3 latency fixes
+In-Reply-To: <1238742067-30814-1-git-send-email-tytso@mit.edu>
+Message-ID: <alpine.LFD.2.00.0904031110420.19690@localhost.localdomain>
+References: <1238742067-30814-1-git-send-email-tytso@mit.edu>
+User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
 MIME-Version: 1.0
-To: Peter Zijlstra <a.p.zijlstra@chello.nl>
-CC: Ingo Molnar <mingo@elte.hu>, Paul Mackerras <paulus@samba.org>,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 5/6] perf_counter: add more context information
-References: <20090402091158.291810516@chello.nl> <20090402091319.493101305@chello.nl> <1238763023.798.27.camel@twins>
-In-Reply-To: <1238763023.798.27.camel@twins>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-Peter Zijlstra wrote:
-> On Thu, 2009-04-02 at 11:12 +0200, Peter Zijlstra wrote:
->> plain text document attachment (perf_counter_callchain_context.patch)
->> Put in counts to tell which ips belong to what context.
->>
->>   -----
->>    | |  hv
->>    | --
->> nr | |  kernel
->>    | --
->>    | |  user
->>   -----
+
+On Fri, 3 Apr 2009, Theodore Ts'o wrote:
 > 
-> Right, just realized that PERF_RECORD_IP needs something similar if one
-> if not able to derive the context from the IP itself..
+> Please pull from:
 > 
-Three individual bits would suffice, or you could use a two-bit code -
-00 = user
-01 = kernel
-10 = hypervisor
-11 = reserved (or perhaps unknown)
+> git://git.kernel.org/pub/scm/linux/kernel/git/tytso/ext4.git ext3-latency-fixes
 
-Unfortunately, because of alignment, it would need to take up another 64 
-bit word, wouldn't it?  Too bad you cannot sneak the bits into the IP in 
-a machine independent way.
+Thanks, pulled. I'll be interested to see how it feels. Will report back 
+after I've rebuild and gone through a few more emails.
 
-And since you probably need a separate word, that effectively doubles 
-the amount of space taken up by IP samples (if we add a "no event 
-header" option).  Should we add another bit in the record_type field - 
-PERF_RECORD_IP_LEVEL (or similar) so that user-space apps don't have to 
-get this if they don't need it?
+One thing I started wondering about in your changes to start using 
+WRITE_SYNC is that I'm getting closer to thinking that we did the whole 
+WRITE-vs-WRITE_SYNC thing the wrong way around.
 
-Regards,
+Now, it's clearly true that non-synchronous writes are hopefully always 
+the common case, so in that sense it makes sense to think of "WRITE" as 
+the default non-critical case, and then make the (fewer) WRITE_SYNC cases 
+be the special case.
 
-- Corey
+But at the same time, I now suspect that we could actually have solved 
+this problem more easily by just doing things the other way around: make 
+the default "WRITE" be the high-priority one (to match "READ"), and then 
+just explicitly marking the data writes with "WRITE_ASYNC".
 
+Why? Because I think that with all the writes sprinkled around in random 
+places, it's probably _easier_ to find the bulk writes that cause the 
+biggest issues, and just fix _those_ to be WRITE_ASYNC. They may be bulk, 
+they may be the common case, but they also tend to be the case where we 
+write with generic routines (eg the whole "do_writepages()" thing).
 
+So the VFS layer tends to already do much of the bulk writeout, and maybe 
+we would have been better off just changing those to ASYNC and leaving any 
+more specialized cases as the SYNC case? That would have avoided a lot of 
+this effort at the filesystem level. We'd just assume that the default 
+filesystem-specific writes tend to all be SYNC.
+
+Comments?
+
+		Linus
