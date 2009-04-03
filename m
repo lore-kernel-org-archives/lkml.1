@@ -1,119 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762494AbZDCNRZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762952AbZDCN0M@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762494AbZDCNRZ (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 3 Apr 2009 09:17:25 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757929AbZDCNRF
+	id S1762952AbZDCN0M (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 3 Apr 2009 09:26:12 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751559AbZDCNZz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 3 Apr 2009 09:17:05 -0400
-Received: from mail-bw0-f169.google.com ([209.85.218.169]:50098 "EHLO
-	mail-bw0-f169.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753060AbZDCNRC convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 3 Apr 2009 09:17:02 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
-         :cc:content-type:content-transfer-encoding;
-        b=KsNitbB0IEODL70JqOJ+kQkf0inZLOzao4VJ4EXZf1YUTt2l0r020T4q87GVfnmcek
-         awNW+b16pDsLpv5pRQiS6+D9Tohm4iCNXlUezR64AHxx13oAU3iQFYblSCHG2J6fb17F
-         MuolS+HD34uv4tRVM3ObnhLmaZtIP91bcxTVY=
-MIME-Version: 1.0
-In-Reply-To: <20090403122654.GA19451@elte.hu>
-References: <49D4F4B5.9040107@redhat.com> <20090403112639.GC31399@elte.hu>
-	 <49D5F80B.7000305@redhat.com> <20090403121202.GI31399@elte.hu>
-	 <49D5FE42.5080100@redhat.com> <20090403122654.GA19451@elte.hu>
-Date: Fri, 3 Apr 2009 15:16:58 +0200
-Message-ID: <19f34abd0904030616v56d66a11u7ee6054502f2922@mail.gmail.com>
-Subject: Re: [PATCH -tip 0/6 V4] tracing: kprobe-based event tracer
-From: Vegard Nossum <vegard.nossum@gmail.com>
+	Fri, 3 Apr 2009 09:25:55 -0400
+Received: from mx2.netapp.com ([216.240.18.37]:20513 "EHLO mx2.netapp.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751394AbZDCNZy (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 3 Apr 2009 09:25:54 -0400
+X-IronPort-AV: E=Sophos;i="4.39,319,1235980800"; 
+   d="scan'208";a="149691785"
+Subject: Re: [PATCH] nfs: fix nfs_parse_mount_options() double kfree()
+From: Trond Myklebust <Trond.Myklebust@netapp.com>
 To: Ingo Molnar <mingo@elte.hu>
-Cc: Avi Kivity <avi@redhat.com>, Masami Hiramatsu <mhiramat@redhat.com>,
-       "H. Peter Anvin" <hpa@zytor.com>,
-       Frederic Weisbecker <fweisbec@gmail.com>,
-       Steven Rostedt <rostedt@goodmis.org>,
-       Ananth N Mavinakayanahalli <ananth@in.ibm.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Andi Kleen <andi@firstfloor.org>, Jim Keniston <jkenisto@us.ibm.com>,
-       kvm@vger.kernel.org, systemtap-ml <systemtap@sources.redhat.com>,
-       LKML <linux-kernel@vger.kernel.org>, Pekka Paalanen <pq@iki.fi>
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8BIT
+Cc: Tom Talpey <tmtalpey@gmail.com>, Pekka Enberg <penberg@cs.helsinki.fi>,
+       Yinghai Lu <yinghai@kernel.org>, David Miller <davem@davemloft.net>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       chuck.lever@oracle.com
+In-Reply-To: <20090403130724.GA26365@elte.hu>
+References: <86802c440904021512o2405ffa2gcbe057b9f81d5a46@mail.gmail.com>
+	 <20090402222106.GC9239@elte.hu> <49D56415.1080402@kernel.org>
+	 <84144f020904022252v2dbc18f5o35cc9737bf6d146d@mail.gmail.com>
+	 <20090403071638.GB14498@elte.hu>
+	 <49d5fe00.86c3f10a.0641.ffffbbdd@mx.google.com>
+	 <20090403130724.GA26365@elte.hu>
+Content-Type: text/plain
+Content-Transfer-Encoding: 7bit
+Organization: NetApp
+Date: Fri, 03 Apr 2009 09:25:48 -0400
+Message-Id: <1238765148.7815.2.camel@heimdal.trondhjem.org>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.26.0 
+X-OriginalArrivalTime: 03 Apr 2009 13:25:52.0002 (UTC) FILETIME=[B5B23E20:01C9B45F]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-2009/4/3 Ingo Molnar <mingo@elte.hu>:
->
-> * Avi Kivity <avi@redhat.com> wrote:
->
->> Ingo Molnar wrote:
->>>> kvm has three requirements not needed by kprobes:
->>>> - it wants to execute instructions, not just decode them, including
->>>>   generating faults where appropriate
->>>> - it is performance critical
->>>> - it needs to support 16-bit, 32-bit, and 64-bit instructions simultaneously
->>>>
->>>> If an arch/x86/ decoder/emulator gives me these I'll gladly switch
->>>> to it.  x86_emulate.c is high on my list of most disliked code.
->>>>
->>>
->>> Well, this has to be driven from the KVM side as the kprobes use
->>> will only be for decoding so if it's modified from the kprobes
->>> side the KVM-only functionality might regress.
->>>
->>> So ... we can do the library decoder for kprobes purposes, and
->>> someone versed in the KVM emulator can then combine the two.
->>
->> Problem is, anyone versed in the kvm emulator will want to run as
->> far away from this work as possible.
->
-> Are you suggesting that the KVM emulator should never have been
-> merged in the first place? ;-)
->
-> Anyway, we'll make sure the kprobes/library decoder is as clean as
-> possible - so it ought to be hackable and extensible without the
-> risk of permanent brain damage. Mmiotrace and kmemcheck has decoding
-> smarts too, and i think the sw-breakpoint injection code of KGDB
-> could use it as well - so there's broader utility in all this.
+On Fri, 2009-04-03 at 15:07 +0200, Ingo Molnar wrote:
+> * Tom Talpey <tmtalpey@gmail.com> wrote:
+> 
+> > At 03:16 AM 4/3/2009, Ingo Molnar wrote:
+> > >
+> > >Impact: fix crash
+> > >
+> > >Yinghai Lu reported the following crash:
+> > 
+> > This has to have been a merge problem, I moved a single kfree() 
+> > down a few lines in order to use the pointer in a second context. 
+> > With the moved line, it had been running successfully in Trond's 
+> > tree and linux-next for several weeks.
+> 
+> Maybe the tree got rebased and that introduced this merge artifact? 
 
-(Sorry in advance for jumping in -- my post may be irrelevant)
-
-For the record, kmemcheck requirements for an instruction decoder are these:
-
-For any instruction with memory operands, we need to know which are
-the operands (so for movl %eax, (%ebx) we need to combine the
-instruction with a struct pt_regs to get the actual address
-dereferenced, i.e. the contents of %ebx), and their sizes (for movzbl,
-the source operand is 8 bits, destination operand is 32 bits). For
-things like movsb, we need to be able to get both %esi and %edi.
-
-mmiotrace additionally needs to know what the actual values
-read/written were, for instructions that read/write to memory (again,
-combined with a struct pt_regs).
-
-Maybe this doesn't really say much, since this is what a generic
-instruction decoder would be able to do anyway. But kmemcheck and
-mmiotrace both have very special-purpose decoders. I don't really know
-what other decoders look like, but what I would wish for is this: Some
-macros for iterating the operands, where each operand has a type (e.g.
-input (for reads), output (for writes), target (for jumps), immediate
-address, immediate value, etc.), a size (in bits), and a way to
-evaluate the operand. So eval(op, regs) for op=%eax, it will return
-regs->eax; for op=4(%eax), it will return regs->eax + 4; for op=4 it
-will return 4, etc.
-
-Both kmemcheck and mmiotrace could gain SMP support with instruction
-emulation, though it is strictly not necessary. In that case, though,
-we would not want to emulate fault handling, etc. (i.e. the fault
-should always be generated by the CPU itself).
-
-Please do put me on Cc for future discussions, though.
-
-
-Vegard
+No, but the linux-next tree also contained cachefs, which hasn't been
+merged yet. Let's keep an eye out when it does...
 
 -- 
-"The animistic metaphor of the bug that maliciously sneaked in while
-the programmer was not looking is intellectually dishonest as it
-disguises that the error is the programmer's own creation."
-	-- E. W. Dijkstra, EWD1036
+Trond Myklebust
+Linux NFS client maintainer
+
+NetApp
+Trond.Myklebust@netapp.com
+www.netapp.com
