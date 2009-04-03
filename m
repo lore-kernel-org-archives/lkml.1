@@ -1,141 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933622AbZDCPk1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932815AbZDCPmT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933622AbZDCPk1 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 3 Apr 2009 11:40:27 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756056AbZDCPkN
+	id S932815AbZDCPmT (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 3 Apr 2009 11:42:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757905AbZDCPmI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 3 Apr 2009 11:40:13 -0400
-Received: from wa4ehsobe005.messaging.microsoft.com ([216.32.181.15]:18577
-	"EHLO WA4EHSOBE006.bigfish.com" rhost-flags-OK-OK-OK-FAIL)
-	by vger.kernel.org with ESMTP id S1755024AbZDCPkL (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 3 Apr 2009 11:40:11 -0400
-X-BigFish: VPS-11(zz936eQ4015Mzz1202hzzz32i6bh43j63h)
-X-Spam-TCS-SCL: 2:0
-X-FB-SS: 5,
-X-WSS-ID: 0KHJ7IK-01-G2Y-01
-Date: Fri, 3 Apr 2009 18:07:21 +0200
-From: Andreas Herrmann <andreas.herrmann3@amd.com>
-To: Ingo Molnar <mingo@elte.hu>
-CC: Mark Langsdorf <mark.langsdorf@amd.com>, "H. Peter Anvin" <hpa@zytor.com>,
-       Ingo Molnar <mingo@redhat.com>, Thomas Gleixner <tglx@linutronix.de>,
-       linux-kernel@vger.kernel.org
-Subject: [PATCH] [PATCH] x86: cacheinfo: fix build error in cache_disable
-Message-ID: <20090403160721.GC6466@alberich.amd.com>
-References: <20090402100756.GN5740@alberich.amd.com> <20090402103008.GA10828@elte.hu>
+	Fri, 3 Apr 2009 11:42:08 -0400
+Received: from rtr.ca ([76.10.145.34]:36765 "EHLO mail.rtr.ca"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1756016AbZDCPmH (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 3 Apr 2009 11:42:07 -0400
+Message-ID: <49D62E4C.2010001@rtr.ca>
+Date: Fri, 03 Apr 2009 11:42:04 -0400
+From: Mark Lord <lkml@rtr.ca>
+Organization: Real-Time Remedies Inc.
+User-Agent: Thunderbird 2.0.0.21 (X11/20090318)
 MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Disposition: inline
-In-Reply-To: <20090402103008.GA10828@elte.hu>
-User-Agent: Mutt/1.5.16 (2007-06-09)
-X-OriginalArrivalTime: 03 Apr 2009 15:39:59.0109 (UTC) FILETIME=[72255350:01C9B472]
+To: Lennart Sorensen <lsorense@csclub.uwaterloo.ca>
+Cc: Andrew Morton <akpm@linux-foundation.org>, torvalds@linux-foundation.org,
+       tytso@mit.edu, drees76@gmail.com, jesper@krogh.cc,
+       linux-kernel@vger.kernel.org
+Subject: Re: Linux 2.6.29
+References: <alpine.LFD.2.00.0903251622420.3032@localhost.localdomain> <20090326171148.9bf8f1ec.akpm@linux-foundation.org> <alpine.LFD.2.00.0903261723250.3994@localhost.localdomain> <20090326174704.cd36bf7b.akpm@linux-foundation.org> <alpine.LFD.2.00.0903261752110.3994@localhost.localdomain> <20090326182519.d576d703.akpm@linux-foundation.org> <20090401210337.GB3797@csclub.uwaterloo.ca> <20090401143622.b1885643.akpm@linux-foundation.org> <20090401225737.GC3797@csclub.uwaterloo.ca> <49D6214A.9030204@rtr.ca> <20090403151648.GJ3795@csclub.uwaterloo.ca>
+In-Reply-To: <20090403151648.GJ3795@csclub.uwaterloo.ca>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Impact: fix build error
-
-Commit 45ca863 (x86, cpu: conform L3 Cache Index Disable to Linux standard)
-introduced following build error with CONFIG_K8_NB=n
-  ...
-  arch/x86/mm/built-in.o:(.bss+0x5c0): multiple definition of `k8_northbridges'
-  arch/x86/kernel/built-in.o:(.bss+0x18c8): first defined here
-  ...
-
-The patch deactivates cache_disable functionality for kernels with
-CONFIG_K8_NB=n.
-
-Signed-off-by: Andreas Herrmann <andreas.herrmann3@amd.com>
----
- arch/x86/include/asm/k8.h             |    4 ----
- arch/x86/kernel/cpu/intel_cacheinfo.c |   19 ++++++++++++++++---
- 2 files changed, 16 insertions(+), 7 deletions(-)
-
-The real fix would be to enable cache index disable functionality also
-for kernels with CONFIG_K8_NB=n but I don't have time to provide such
-a patch today.
-
-Ingo, please either apply this (compile tested) patch or revert Mark's
-patch to avoid further blocking of tip/x86/cpu branch.
+Lennart Sorensen wrote:
+> On Fri, Apr 03, 2009 at 10:46:34AM -0400, Mark Lord wrote:
+>> My Myth box here was running 2.6.18 when originally set up,
+>> and even back then it still took *minutes* to delete large files.
+>> So that part hasn't really changed much in the interim.
+>>
+>> Because of the multi-minute deletes, the distro shutdown scripts
+>> would fails, and power off the box while it was still writing
+>> to the drives.  Ouch.
+>>
+>> That system has had XFS on it for the past year and a half now,
+>> and for Myth, there's no reason not to use XFS.  It's great!
+> 
+> Mythtv has a 'slow delete' option that I believe works by slowly
+> truncating the file.  Seems they believe that ext3 is bad at handling
+> large file deletes, so they try to spread out the pain.  I don't remember
+> if that option is on by default or not.  I turned it off.
+..
 
 
-Thanks,
+That option doesn't make much difference for the shutdown failure.
+And with XFS there's no need for it, so I now have it "off".
 
-Andreas
-
-
-diff --git a/arch/x86/include/asm/k8.h b/arch/x86/include/asm/k8.h
-index 0d619c3..54c8cc5 100644
---- a/arch/x86/include/asm/k8.h
-+++ b/arch/x86/include/asm/k8.h
-@@ -6,11 +6,7 @@
- extern struct pci_device_id k8_nb_ids[];
- 
- extern int early_is_k8_nb(u32 value);
--#ifdef CONFIG_K8_NB
- extern struct pci_dev **k8_northbridges;
--#else
--struct pci_dev **k8_northbridges;
--#endif
- extern int num_k8_northbridges;
- extern int cache_k8_northbridges(void);
- extern void k8_flush_garts(void);
-diff --git a/arch/x86/kernel/cpu/intel_cacheinfo.c b/arch/x86/kernel/cpu/intel_cacheinfo.c
-index 6f4d2a3..63e4468 100644
---- a/arch/x86/kernel/cpu/intel_cacheinfo.c
-+++ b/arch/x86/kernel/cpu/intel_cacheinfo.c
-@@ -640,14 +640,23 @@ static ssize_t show_##file_name						\
- 	return sprintf (buf, "%lu\n", (unsigned long)this_leaf->object + val); \
- }
- 
-+#ifndef CONFIG_K8_NB
-+struct pci_dev **k8_northbridges = NULL;
-+#endif
-+
- static ssize_t show_cache_disable(struct _cpuid4_info *this_leaf, char *buf,
- 		 unsigned int index)
- {
- 	int cpu = cpumask_first(to_cpumask(this_leaf->shared_cpu_map));
- 	int node = cpu_to_node(cpu);
--	struct pci_dev *dev = k8_northbridges[node];
-+	struct pci_dev *dev;
- 	unsigned int reg = 0;
- 
-+	if (!k8_northbridges)
-+		return -EINVAL;
-+
-+	dev = k8_northbridges[node];
-+
- 	if (!this_leaf->can_disable)
- 		return -EINVAL;
- 
-@@ -668,10 +677,15 @@ store_cache_disable(struct _cpuid4_info *this_leaf, const char *buf,
- {
- 	int cpu = cpumask_first(to_cpumask(this_leaf->shared_cpu_map));
- 	int node = cpu_to_node(cpu);
--	struct pci_dev *dev = k8_northbridges[node];
-+	struct pci_dev *dev;
- 	unsigned long val = 0;
- 	unsigned int scrubber = 0;
- 
-+	if (!k8_northbridges)
-+		return -EINVAL;
-+
-+	dev = k8_northbridges[node];
-+
- 	if (!this_leaf->can_disable)
- 		return -EINVAL;
- 
-@@ -786,7 +800,6 @@ static struct _cache_attr cache_disable_0 = __ATTR(cache_disable_0, 0644,
- static struct _cache_attr cache_disable_1 = __ATTR(cache_disable_1, 0644,
- 		 show_cache_disable_1, store_cache_disable_1);
- 
--
- static struct attribute * default_attrs[] = {
- 	&type.attr,
- 	&level.attr,
--- 
-1.6.2
-
-
+Cheers
 
