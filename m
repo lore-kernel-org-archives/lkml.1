@@ -1,104 +1,75 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756971AbZDCDJK@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756282AbZDCDNj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756971AbZDCDJK (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 2 Apr 2009 23:09:10 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753631AbZDCDI4
+	id S1756282AbZDCDNj (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 2 Apr 2009 23:13:39 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753940AbZDCDNb
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 2 Apr 2009 23:08:56 -0400
-Received: from mail.lang.hm ([64.81.33.126]:56727 "EHLO bifrost.lang.hm"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753411AbZDCDI4 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 2 Apr 2009 23:08:56 -0400
-Date: Thu, 2 Apr 2009 20:08:36 -0700 (PDT)
-From: david@lang.hm
-X-X-Sender: dlang@asgard.lang.hm
-To: Matthew Garrett <mjg59@srcf.ucam.org>
-cc: Theodore Tso <tytso@mit.edu>, Sitsofe Wheeler <sitsofe@yahoo.com>,
-       "Andreas T.Auer" <andreas.t.auer_lkml_73537@ursus.ath.cx>,
-       Alberto Gonzalez <info@gnebu.es>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: Ext4 and the "30 second window of death"
-In-Reply-To: <20090403013603.GA10886@srcf.ucam.org>
-Message-ID: <alpine.DEB.1.10.0904021954080.30587@asgard.lang.hm>
-References: <20090401174336.GA14726@srcf.ucam.org> <alpine.DEB.1.10.0904021116500.28893@asgard.lang.hm> <20090402182925.GA4502@srcf.ucam.org> <alpine.DEB.1.10.0904021134560.28893@asgard.lang.hm> <20090402234617.GB9538@srcf.ucam.org>
- <alpine.DEB.1.10.0904021753410.28893@asgard.lang.hm> <20090403010600.GA10545@srcf.ucam.org> <alpine.DEB.1.10.0904021810180.28893@asgard.lang.hm> <20090403011953.GA10777@srcf.ucam.org> <alpine.DEB.1.10.0904021821120.28893@asgard.lang.hm>
- <20090403013603.GA10886@srcf.ucam.org>
-User-Agent: Alpine 1.10 (DEB 962 2008-03-14)
+	Thu, 2 Apr 2009 23:13:31 -0400
+Received: from rv-out-0506.google.com ([209.85.198.224]:37143 "EHLO
+	rv-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753866AbZDCDNa convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 2 Apr 2009 23:13:30 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
+         :cc:content-type:content-transfer-encoding;
+        b=x856+0DYJg148xyDfFi63SflFwvZre9doj95FBB1A70vKZwng/vLMqYgsneZIBmjNn
+         QmhJCpfIqLUUwlqC9aPgHvhp1bSciBS3VdVzGP7e3/ofShiukSR47nFoLqK1/3Se/ZZX
+         PAwcThHkX0TKsTYHSLil2WyI/DGeo1gtiEMLU=
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII; format=flowed
+In-Reply-To: <72dbd3150904021958q7795dc62keb54d1fbfaa6abc7@mail.gmail.com>
+References: <49CCCB0A.6070701@nokia.com>
+	 <alpine.DEB.2.01.0904021706330.6162@bogon.housecafe.de>
+	 <9b1675090904021724t2fb0a671uc10d8e7bcba0bc5c@mail.gmail.com>
+	 <9b1675090904021728y35776377u327f2266d06e2f29@mail.gmail.com>
+	 <72dbd3150904021855v440f46a7oc21a7ed28fbfcb13@mail.gmail.com>
+	 <9b1675090904021905o7e0cec64lfe4a5372777908b6@mail.gmail.com>
+	 <72dbd3150904021919g5405ee40p100eacb085024941@mail.gmail.com>
+	 <9b1675090904021928k5a9948f9l8d93b6cbd5531720@mail.gmail.com>
+	 <72dbd3150904021958q7795dc62keb54d1fbfaa6abc7@mail.gmail.com>
+Date: Thu, 2 Apr 2009 21:13:28 -0600
+Message-ID: <9b1675090904022013t6c892b9bo91eab0fd7091bfbe@mail.gmail.com>
+Subject: Re: EXT4-ish "fixes" in UBIFS
+From: "Trenton D. Adams" <trenton.d.adams@gmail.com>
+To: David Rees <drees76@gmail.com>
+Cc: Christian Kujau <lists@nerdbynature.de>,
+       Artem Bityutskiy <Artem.Bityutskiy@nokia.com>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 3 Apr 2009, Matthew Garrett wrote:
-
-> On Thu, Apr 02, 2009 at 06:24:28PM -0700, david@lang.hm wrote:
->> On Fri, 3 Apr 2009, Matthew Garrett wrote:
->>> No it wouldn't. The kernel would be implementing an adminstrator's
->>> choice about whether fsync() is important or not. That's something that
->>> would affect the mail client, but it's hardly a decision based on the
->>> mail client. Sucks to be that user if they do anything involving mysql.
->>
->> in the case of laptops, in 99+% of the cases the user and the
->> administrator are the same person. in the other cases that's something the
->> user should take up with the administrator, because the administrator can
->> do a lot of things to the system that will affect the safety of their data
->> (including loading a kernel that turns fsync into a noop, but more likely
->> involving enabling or disabling write caches on disks)
+On Thu, Apr 2, 2009 at 8:58 PM, David Rees <drees76@gmail.com> wrote:
+> On Thu, Apr 2, 2009 at 7:28 PM, Trenton D. Adams
+>> That's the odd thing, I was setting them to 2 and 1.  I was just
+>> looking at the 2.6.29 code, and it should have made a difference.  I
+>> don't know what version of the kernel I was using at the time.  And,
+>> I'm not sure if I had the 1M fsync tests in place at the time either,
+>> to be sure about what I was testing.  It could be that I wasn't being
+>> very scientific about it at the time.  Thanks though, that setting
+>> makes a huge difference.
 >
-> Well, yes, the administrator could hate the user. They could achieve the
-> same affect by just LD_PRELOADING something that stubbed out fsync() and
-> inserted random data into every other write(). We generally trust that
-> admins won't do that.
-
-then trust the admins to make a reasonable decision for or with the user 
-on this as well.
-
->>> Benchmarks please.
->>
->> if spinning down a drive saves so little power that it wouldn't make a
->> significant difference to battery lift to leave it on, why does anyone
->> bother to spin the drive down?
+> Well, it depends on how much memory you have.  Keep in mind that those
+> are percentages - so if you have 2GB RAM, that's the same as setting
+> it to 40MB and 20MB respectively - both are a lot larger than the 1M
+> you were setting the dirty*bytes vm knobs to.
 >
-> There's various circumstances in which it's beneficial. The difference
-> between an optimal algorithm for typical use and an optimal algorithm
-> for typical use where there's an fsync() every 5 minutes isn't actually
-> that great.
+> I've got a problematic server with 8GB RAM.  Even if set both to 1,
+> that's 80MB and the crappy disks I have in it will often only write
+> 10-20MB/s or less due to the seekiness of the workload.  That means
+> delays of 5-10 seconds worst case which isn't fun.
+>
+> -Dave
+>
 
-mixing some sub-threads a bit to combine thoughts
-
-you object to calling something like this 'laptop mode'
-
-Ted's statements about laptop mode indicate that he believes that it 
-delays writes for a configurable time rather than accelerating writes.
-
-what would you think of something like the following
-
-at the block device level an option called something like "delay_writes"
-
-delays writes (including fsync) up to the configurable number of seconds.
-
-if an fsync or barrier is issued the block driver figures out what pages 
-would be written by that fsync/barrier, puts them in it's queue (but 
-doesn't start the write), puts a barrier in it's queue following the pages 
-and marks the pages COW.
-
-if the timeout expires (or the drive spins up for other reasons) and the 
-pages have not been modified, they get written and released by the block 
-driver (which should take them out of COW mode).
-
-if the pages get written to prior to the write taking place, COW kicks in 
-and new pages are allocated for the changes. since the device driver 
-already has those pages queued the filesystem just ends up with the copied 
-pages and continues operation. when the drive finally gets spun up, the 
-queued pages get written prior to anything else (preserving order in case 
-of a crash)
-
-doing this could cost memory (as there may be multiple copies of something 
-queued), so it may be worth having some trigger that if more than X pages 
-are queued by the block driver, it should go ahead and spin up the drive 
-to write them.
-
-thoughts?
-
-David Lang
+Yeah, I just finished doing the calculation. :P  40M is what I'm
+seeing.  Yeah, that sounds like the same as my problem.  Even setting
+it to 10M dirty_bytes has a very serious latency problem.  I'm glad
+that option was added, because 1M works much better.  I'll have to
+change my shell script to dynamically tune on that.  Because under
+normal load, I want the 40M+ of queueing.  It's just when things get
+really heavy, and stuff starts getting flushed, that this problem
+starts happening.
