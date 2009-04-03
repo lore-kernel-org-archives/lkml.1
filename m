@@ -1,69 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933911AbZDCPOx@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933755AbZDCPPX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933911AbZDCPOx (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 3 Apr 2009 11:14:53 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755701AbZDCPOm
+	id S933755AbZDCPPX (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 3 Apr 2009 11:15:23 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932867AbZDCPO6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 3 Apr 2009 11:14:42 -0400
-Received: from rtr.ca ([76.10.145.34]:46985 "EHLO mail.rtr.ca"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756340AbZDCPOl (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 3 Apr 2009 11:14:41 -0400
-Message-ID: <49D627DF.6090501@rtr.ca>
-Date: Fri, 03 Apr 2009 11:14:39 -0400
-From: Mark Lord <lkml@rtr.ca>
-Organization: Real-Time Remedies Inc.
-User-Agent: Thunderbird 2.0.0.21 (X11/20090318)
-MIME-Version: 1.0
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: Andrew Morton <akpm@linux-foundation.org>, David Rees <drees76@gmail.com>,
-       Janne Grunau <j@jannau.net>,
-       Lennart Sorensen <lsorense@csclub.uwaterloo.ca>,
-       Theodore Tso <tytso@mit.edu>, Jesper Krogh <jesper@krogh.cc>,
+	Fri, 3 Apr 2009 11:14:58 -0400
+Received: from caffeine.csclub.uwaterloo.ca ([129.97.134.17]:43631 "EHLO
+	caffeine.csclub.uwaterloo.ca" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S932669AbZDCPO5 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 3 Apr 2009 11:14:57 -0400
+Date: Fri, 3 Apr 2009 11:14:55 -0400
+To: Mark Lord <lkml@rtr.ca>
+Cc: Jens Axboe <jens.axboe@oracle.com>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Ingo Molnar <mingo@elte.hu>, Andrew Morton <akpm@linux-foundation.org>,
+       tytso@mit.edu, drees76@gmail.com, jesper@krogh.cc,
        Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
 Subject: Re: Linux 2.6.29
-References: <20090325183011.GN32307@mit.edu> <20090325220530.GR32307@mit.edu> <alpine.LFD.2.00.0903251622420.3032@localhost.localdomain> <20090326171148.9bf8f1ec.akpm@linux-foundation.org> <alpine.LFD.2.00.0903261723250.3994@localhost.localdomain> <20090326174704.cd36bf7b.akpm@linux-foundation.org> <alpine.LFD.2.00.0903261752110.3994@localhost.localdomain> <20090326182519.d576d703.akpm@linux-foundation.org> <20090401210337.GB3797@csclub.uwaterloo.ca> <20090402110532.GA5132@aniel> <72dbd3150904020929w46c6dc0bs4028c49dd8fa8c56@mail.gmail.com> <20090402094247.9d7ac19f.akpm@linux-foundation.org> <alpine.LFD.2.00.0904020947310.4130@localhost.localdomain> <alpine.LFD.2.00.0904020959490.4130@localhost.localdomain>
-In-Reply-To: <alpine.LFD.2.00.0904020959490.4130@localhost.localdomain>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 7bit
+Message-ID: <20090403151455.GI3795@csclub.uwaterloo.ca>
+References: <alpine.LFD.2.00.0903261752110.3994@localhost.localdomain> <20090326182519.d576d703.akpm@linux-foundation.org> <20090401210337.GB3797@csclub.uwaterloo.ca> <20090401143622.b1885643.akpm@linux-foundation.org> <20090402010044.GA16092@elte.hu> <20090403040649.GF3795@csclub.uwaterloo.ca> <alpine.LFD.2.00.0904022112260.4130@localhost.localdomain> <20090403072507.GO5178@kernel.dk> <20090403142129.GH3795@csclub.uwaterloo.ca> <49D625A0.1030202@rtr.ca>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <49D625A0.1030202@rtr.ca>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+From: lsorense@csclub.uwaterloo.ca (Lennart Sorensen)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Linus Torvalds wrote:
-> 
-> On Thu, 2 Apr 2009, Linus Torvalds wrote:
->> On Thu, 2 Apr 2009, Andrew Morton wrote:
->>> A suitable design for the streaming might be, every 4MB:
->>>
->>> - run sync_file_range(SYNC_FILE_RANGE_WRITE) to get the 4MB underway
->>>   to the disk
->>>
->>> - run fadvise(POSIX_FADV_DONTNEED) against the previous 4MB to
->>>   discard it from pagecache.
->> Here's an example. I call it "overwrite.c" for obvious reasons.
-> 
-> Oh, except my example doesn't do the fadvise. Instead, I make sure to 
-> throttle the writes and the old range with
-> 
-> 	SYNC_FILE_RANGE_WAIT_BEFORE|SYNC_FILE_RANGE_WRITE|SYNC_FILE_RANGE_WAIT_AFTER
-> 
-> which makes sure that the old pages are easily dropped by the VM - and 
-> they will be, since they end up always being on the cold list.
-> 
-> I _wanted_ to add a SYNC_FILE_RANGE_DROP but I never bothered because this 
-> particular load it didn't matter. The system was perfectly usable while 
-> overwriting even huge disks because there was never more than 8MB of dirty 
-> data in flight in the IO queues at any time.
-..
+On Fri, Apr 03, 2009 at 11:05:04AM -0400, Mark Lord wrote:
+> I wonder if the problem with your system is really a Myth/driver issue?
 
-Note that for mythtv, this may not be the best behaviour.
+Could be.  That is the point of the box after all.
 
-A common use scenario is "watching live TV", a few minutes behind
-real-time so that the commercial-skipping can work its magic.
+> Curiously, I have a HVR-1600 card here, and when recording analog TV with
+> it the disk lights are on constantly.  The problem with it turns out to
+> be mythbackend doing fsync() calls ten times a second.
 
-In that scenario, those pages are going to be needed again
-within a short while, and it might be useful to keep them around.
+But why would anticipatory help that?
 
-But then Myth itself could probably decide whether to discard them
-or not, not based upon that kind of knowledge.
+> My other tuner cards don't have this problem.
+>
+> So perhaps the PVR-500 triggers the same buggy behaviour as the HVR-1600?
+> To work around it here, I decided to use a preload library that replaces
+> the frequent fsync() calls with a more moderated behaviour:
+>
+>   http://rtr.ca/hvr1600/libfsync.tar.gz
+>
+> Grab that file and try it out.  Instructions are included within.
+> Report back again and let us know if it makes any difference.
+
+I can have a try at that.  I will see how cfq behaves with that installed.
+
+> Someday I may try and chase down the exact bug that causes mythbackend
+> to go fsyncing berserk like that, but for now this workaround is fine.
+
+Well if it is the real cause of the bad behaviour then it would certainly
+be good to track down.
+
+-- 
+Len Sorensen
