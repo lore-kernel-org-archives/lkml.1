@@ -1,77 +1,83 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932283AbZDCPLq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932709AbZDCPMY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932283AbZDCPLq (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 3 Apr 2009 11:11:46 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753655AbZDCPLi
+	id S932709AbZDCPMY (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 3 Apr 2009 11:12:24 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761453AbZDCPL6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 3 Apr 2009 11:11:38 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:44186 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751302AbZDCPLh (ORCPT
+	Fri, 3 Apr 2009 11:11:58 -0400
+Received: from e28smtp02.in.ibm.com ([59.145.155.2]:36450 "EHLO
+	e28smtp02.in.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1759951AbZDCPL4 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 3 Apr 2009 11:11:37 -0400
-Date: Fri, 3 Apr 2009 08:07:19 -0700 (PDT)
-From: Linus Torvalds <torvalds@linux-foundation.org>
-X-X-Sender: torvalds@localhost.localdomain
-To: Chris Mason <chris.mason@oracle.com>
-cc: Jeff Garzik <jeff@garzik.org>, Andrew Morton <akpm@linux-foundation.org>,
-       David Rees <drees76@gmail.com>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: Linux 2.6.29
-In-Reply-To: <1238758370.32764.5.camel@think.oraclecorp.com>
-Message-ID: <alpine.LFD.2.00.0904030804160.4130@localhost.localdomain>
-References: <1238758370.32764.5.camel@think.oraclecorp.com>
-User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
+	Fri, 3 Apr 2009 11:11:56 -0400
+Date: Fri, 3 Apr 2009 20:41:43 +0530
+From: Gautham R Shenoy <ego@in.ibm.com>
+To: Andi Kleen <andi@firstfloor.org>
+Cc: Ingo Molnar <mingo@elte.hu>, Peter Zijlstra <a.p.zijlstra@chello.nl>,
+       Vaidyanathan Srinivasan <svaidy@linux.vnet.ibm.com>,
+       linux-kernel@vger.kernel.org, Suresh Siddha <suresh.b.siddha@intel.com>,
+       Balbir Singh <balbir@in.ibm.com>
+Subject: Re: [PATCH v2 1/2] sched: Nominate idle load balancer from a
+	semi-idle package.
+Message-ID: <20090403151143.GA7641@in.ibm.com>
+Reply-To: ego@in.ibm.com
+References: <20090402123607.14569.33649.stgit@sofia.in.ibm.com> <20090402123829.14569.67639.stgit@sofia.in.ibm.com> <87hc16kyk5.fsf@basil.nowhere.org>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <87hc16kyk5.fsf@basil.nowhere.org>
+User-Agent: Mutt/1.5.17 (2007-11-01)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Hi Andi,
 
-
-On Fri, 3 Apr 2009, Chris Mason wrote:
-
-> On Thu, 2009-04-02 at 20:34 -0700, Linus Torvalds wrote:
-> > 
-> > Well, one rather simple explanation is that if you hadn't been doing lots 
-> > of writes, then the background garbage collection on the Intel SSD gets 
-> > ahead of the game, and gives you lots of bursty nice write bandwidth due 
-> > to having a nicely compacted and pre-erased blocks.
-> > 
-> > Then, after lots of writing, all the pre-erased blocks are gone, and you 
-> > are down to a steady state where it needs to GC and erase blocks to make 
-> > room for new writes.
-> > 
-> > So that part doesn't suprise me per se. The Intel SSD's definitely 
-> > flucutate a bit timing-wise (but I love how they never degenerate to the 
-> > "ooh, that _really_ sucks" case that the other SSD's and the rotational 
-> > media I've seen does when you do random writes).
-> > 
+Thanks for the review.
+On Fri, Apr 03, 2009 at 09:04:42AM +0200, Andi Kleen wrote:
+> Gautham R Shenoy <ego@in.ibm.com> writes:
+> >
+> > Improve the algorithm to nominate the idle load balancer from a semi idle
+> > cores/packages thereby increasing the probability of the cores/packages being
+> > in deeper sleep states for longer duration.
 > 
-> 23MB/s seems a bit low though, I'd try with O_DIRECT.  ext3 doesn't do
-> writepages, and the ssd may be very sensitive to smaller writes (what
-> brand?)
-
-I didn't realize that Jeff had a non-Intel SSD. 
-
-THAT sure explains the huge drop-off. I do see Intel SSD's fluctuating 
-too, but the Intel ones tend to be _fairly_ stable.
-
-> > The fact that it also happens for the regular disk does imply that it's 
-> > not the _only_ thing going on, though.
+> The basic patch looks good.
 > 
-> Jeff if you blktrace it I can make up a seekwatcher graph.  My bet is
-> that pdflush is stuck writing the indirect blocks, and doing a ton of
-> seeks.
+> In theory you could also look for a nearby nohz balancer in the end
+> to optimize traffic on the interconnect of a larger NUMA system, 
+> but it's probably not worth it.
+
+The algorithm does this already, since it starts off with it's own
+sched_group in the power-aware sched_domain, and moves to it's
+sibling-groups. The sibling groups are linked in the order of
+their proximity.
 > 
-> You could change the overwrite program to also do sync_file_range on the
-> block device ;)
+> >
+> > The algorithm is activated only when sched_mc/smt_power_savings != 0.
+> 
+> But it seems to me that this check could be dropped and doing it
+> unconditionally, because idle balancing doesn't need much memory
+> bandwith or cpu power, so always putting it nearby is good.
 
-Actually, that won't help. 'sync_file_range()' works only on the virtually 
-indexed page cache, and I think ext3 uses "struct buffer_head *" for all 
-it's metadata updates (due to how JBD works). So sync_file_range() will do 
-nothing at all to the metadata, regardless of what mapping you execute it 
-on.
+Well, right now, a new idle load balancer is nominated when the current
+idle load balancer picks up a task. At this point, if the user is
+concerned about performance as opposed to energy savings, we wouldn't
+want to iterate over the domain hierarchy to find the best idle load
+balancer, would we ? Because that might cause latency in running the job
+that is queued on our runqueue.
 
-			Linus
+Actually this can be optimized. We can have the current idle-load
+balancer nominate the ilb as the first_cpu(nohz._cpu_mask). And this
+idle load balancer at the end of the sched_tick can see if there's a
+more power-efficient idle load balancer.
+
+Let me see if this gives any benefit over the patches that I've posted.
+> 
+> -Ani
+> 
+> -- 
+> ak@linux.intel.com -- Speaking for myself only.
+
+-- 
+Thanks and Regards
+gautham
