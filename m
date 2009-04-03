@@ -1,126 +1,95 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933433AbZDCOsh@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752197AbZDCOs6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933433AbZDCOsh (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 3 Apr 2009 10:48:37 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932747AbZDCOqF
+	id S1752197AbZDCOs6 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 3 Apr 2009 10:48:58 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932636AbZDCOqG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 3 Apr 2009 10:46:05 -0400
-Received: from mga09.intel.com ([134.134.136.24]:17417 "EHLO mga09.intel.com"
+	Fri, 3 Apr 2009 10:46:06 -0400
+Received: from mga09.intel.com ([134.134.136.24]:17348 "EHLO mga09.intel.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S932741AbZDCOqA (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	id S932610AbZDCOqA (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
 	Fri, 3 Apr 2009 10:46:00 -0400
-Content-Type: multipart/mixed; boundary="===============0756186246=="
+Content-Type: multipart/mixed; boundary="===============0225869921=="
 MIME-Version: 1.0
 X-ExtLoop1: 1
 X-IronPort-AV: E=Sophos;i="4.39,319,1235980800"; 
-   d="scan'208";a="503328314"
-Message-Id: <20090403144553.773216000@intel.com>
+   d="scan'208";a="503328322"
+Message-Id: <20090403144554.738772000@intel.com>
 References: <20090403144332.799740000@intel.com>
 User-Agent: quilt/0.46-1
-Date: Fri, 03 Apr 2009 16:43:38 +0200
+Date: Fri, 03 Apr 2009 16:43:39 +0200
 From: markus.t.metzger@intel.com
 To: mingo@elte.hu, tglx@linutronix.de, hpa@zytor.com
 Cc: markus.t.metzger@gmail.com, roland@redhat.com, eranian@googlemail.com,
        oleg@redhat.com, juan.villacis@intel.com, ak@linux.jf.intel.com,
        linux-kernel@vger.kernel.org,
        Markus Metzger <markus.t.metzger@intel.com>
-Subject: [patch 06/20] x86, bts: use trace_clock_global() for timestamps
+Subject: [patch 07/20] x86, debugctlmsr: add _on_cpu variants to debugctlmsr functions
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---===============0756186246==
+--===============0225869921==
 MIME-Version: 1.0
-Content-Disposition: inline; filename=tip.master.bts.cpu_clock.patch
+Content-Disposition: inline; filename=tip.master.update_debugctlmsr_on_cpu.patch
 
-Rename the bts_struct timestamp field to event.
-
-Use trace_clock_global() for time measurement.
+Add functions to get and set the debugctlmsr on different cpus.
 
 
-Reported-by: Ingo Molnar <mingo@elte.hu>
 Signed-off-by: Markus Metzger <markus.t.metzger@intel.com>
 ---
- arch/x86/include/asm/ds.h |    4 	2 +	2 -	0 !
- arch/x86/kernel/ds.c      |   17 	9 +	8 -	0 !
- 2 files changed, 11 insertions(+), 10 deletions(-)
+ arch/x86/include/asm/processor.h |   27 	27 +	0 -	0 !
+ 1 file changed, 27 insertions(+)
 
-Index: b/arch/x86/include/asm/ds.h
+Index: b/arch/x86/include/asm/processor.h
 ===================================================================
---- a/arch/x86/include/asm/ds.h
-+++ b/arch/x86/include/asm/ds.h
-@@ -170,9 +170,9 @@ struct bts_struct {
- 		} lbr;
- 		/* BTS_TASK_ARRIVES or BTS_TASK_DEPARTS */
- 		struct {
--			__u64 jiffies;
-+			__u64 clock;
- 			pid_t pid;
--		} timestamp;
-+		} event;
- 	} variant;
- };
- 
-Index: b/arch/x86/kernel/ds.c
-===================================================================
---- a/arch/x86/kernel/ds.c
-+++ b/arch/x86/kernel/ds.c
-@@ -25,6 +25,7 @@
- #include <linux/sched.h>
- #include <linux/slab.h>
- #include <linux/mm.h>
-+#include <linux/trace_clock.h>
- 
- #include <asm/ds.h>
- 
-@@ -471,7 +472,7 @@ enum bts_field {
- 	bts_flags,
- 
- 	bts_qual		= bts_from,
--	bts_jiffies		= bts_to,
-+	bts_clock		= bts_to,
- 	bts_pid			= bts_flags,
- 
- 	bts_qual_mask		= (bts_qual_max - 1),
-@@ -517,8 +518,8 @@ bts_read(struct bts_tracer *tracer, cons
- 	memset(out, 0, sizeof(*out));
- 	if ((bts_get(at, bts_qual) & ~bts_qual_mask) == bts_escape) {
- 		out->qualifier = (bts_get(at, bts_qual) & bts_qual_mask);
--		out->variant.timestamp.jiffies = bts_get(at, bts_jiffies);
--		out->variant.timestamp.pid = bts_get(at, bts_pid);
-+		out->variant.event.clock = bts_get(at, bts_clock);
-+		out->variant.event.pid = bts_get(at, bts_pid);
- 	} else {
- 		out->qualifier = bts_branch;
- 		out->variant.lbr.from = bts_get(at, bts_from);
-@@ -555,8 +556,8 @@ static int bts_write(struct bts_tracer *
- 	case bts_task_arrives:
- 	case bts_task_departs:
- 		bts_set(raw, bts_qual, (bts_escape | in->qualifier));
--		bts_set(raw, bts_jiffies, in->variant.timestamp.jiffies);
--		bts_set(raw, bts_pid, in->variant.timestamp.pid);
-+		bts_set(raw, bts_clock, in->variant.event.clock);
-+		bts_set(raw, bts_pid, in->variant.event.pid);
- 		break;
- 	default:
- 		return -EINVAL;
-@@ -1083,9 +1084,9 @@ static inline void ds_take_timestamp(str
- 		return;
- 
- 	memset(&ts, 0, sizeof(ts));
--	ts.qualifier			= qualifier;
--	ts.variant.timestamp.jiffies	= jiffies_64;
--	ts.variant.timestamp.pid	= task->pid;
-+	ts.qualifier		= qualifier;
-+	ts.variant.event.clock	= trace_clock_global();
-+	ts.variant.event.pid	= task->pid;
- 
- 	bts_write(tracer, &ts);
+--- a/arch/x86/include/asm/processor.h
++++ b/arch/x86/include/asm/processor.h
+@@ -781,6 +781,21 @@ static inline unsigned long get_debugctl
+     return debugctlmsr;
  }
+ 
++static inline unsigned long get_debugctlmsr_on_cpu(int cpu)
++{
++	u64 debugctlmsr = 0;
++	u32 val1, val2;
++
++#ifndef CONFIG_X86_DEBUGCTLMSR
++	if (boot_cpu_data.x86 < 6)
++		return 0;
++#endif
++	rdmsr_on_cpu(cpu, MSR_IA32_DEBUGCTLMSR, &val1, &val2);
++	debugctlmsr = val1 | ((u64)val2 << 32);
++
++	return debugctlmsr;
++}
++
+ static inline void update_debugctlmsr(unsigned long debugctlmsr)
+ {
+ #ifndef CONFIG_X86_DEBUGCTLMSR
+@@ -790,6 +805,18 @@ static inline void update_debugctlmsr(un
+ 	wrmsrl(MSR_IA32_DEBUGCTLMSR, debugctlmsr);
+ }
+ 
++static inline void update_debugctlmsr_on_cpu(int cpu,
++					     unsigned long debugctlmsr)
++{
++#ifndef CONFIG_X86_DEBUGCTLMSR
++	if (boot_cpu_data.x86 < 6)
++		return;
++#endif
++	wrmsr_on_cpu(cpu, MSR_IA32_DEBUGCTLMSR,
++		     (u32)((u64)debugctlmsr),
++		     (u32)((u64)debugctlmsr >> 32));
++}
++
+ /*
+  * from system description table in BIOS. Mostly for MCA use, but
+  * others may find it useful:
 
 -- 
 
---===============0756186246==
+--===============0225869921==
 Content-Type: text/plain; charset="utf-8"
 MIME-Version: 1.0
 Content-Transfer-Encoding: quoted-printable
@@ -141,4 +110,4 @@ the sole use of the intended recipient(s). Any review or distribution
 by others is strictly prohibited. If you are not the intended
 recipient, please contact the sender and delete all copies.
 
---===============0756186246==--
+--===============0225869921==--
