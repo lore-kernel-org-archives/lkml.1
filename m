@@ -1,70 +1,74 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760723AbZDCGrX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760768AbZDCGri@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760723AbZDCGrX (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 3 Apr 2009 02:47:23 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759267AbZDCGrO
+	id S1760768AbZDCGri (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 3 Apr 2009 02:47:38 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759064AbZDCGr1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 3 Apr 2009 02:47:14 -0400
-Received: from pfepa.post.tele.dk ([195.41.46.235]:38604 "EHLO
-	pfepa.post.tele.dk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1759223AbZDCGrN (ORCPT
+	Fri, 3 Apr 2009 02:47:27 -0400
+Received: from mail-bw0-f169.google.com ([209.85.218.169]:43167 "EHLO
+	mail-bw0-f169.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1760623AbZDCGr0 convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 3 Apr 2009 02:47:13 -0400
-Date: Fri, 3 Apr 2009 08:49:16 +0200
-From: Sam Ravnborg <sam@ravnborg.org>
-To: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Harry Ciao <qingtao.cao@windriver.com>
-Cc: git-commits-head@vger.kernel.org
-Subject: Re: edac: AMD8111 driver Kconfig & Makefile
-Message-ID: <20090403064916.GB13075@uranus.ravnborg.org>
-References: <200904030503.n3353NJ2003427@hera.kernel.org>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	Fri, 3 Apr 2009 02:47:26 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=from:to:subject:date:user-agent:cc:references:in-reply-to
+         :mime-version:content-type:content-transfer-encoding
+         :content-disposition:message-id;
+        b=u3A107DkdFEx55StAPnzS3EOWGzo9rUwWjoFrVlG9fpKiAzV74Y9ADU0kEVBhay3hz
+         nUbJRGr0P1AuMTsdRMphcJMXbd+/NXAZkB/UXFN40EqPRAugl+Ou1NdU/bfGjr0wygPI
+         lwZcp8/MT6jGpmxVtRm45vHFbjGcGsJCUOado=
+From: Arkadiusz Miskiewicz <a.miskiewicz@gmail.com>
+To: Chris Wright <chrisw@sous-sol.org>
+Subject: Re: 2.6.29 git, resume from ram broken on thinkpad
+Date: Fri, 3 Apr 2009 08:47:19 +0200
+User-Agent: KMail/1.11.2 (Linux/2.6.29; KDE/4.2.2; x86_64; ; )
+Cc: "Rafael J. Wysocki" <rjw@sisk.pl>, Ingo Molnar <mingo@elte.hu>,
+       linux-kernel@vger.kernel.org, Mike Travis <travis@sgi.com>,
+       Jeremy Fitzhardinge <jeremy@xensource.com>,
+       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
+       Venkatesh Pallipadi <venkatesh.pallipadi@intel.com>,
+       virtualization@lists.osdl.org, xen-devel@lists.xensource.com,
+       Yinghai Lu <yhlu.kernel@gmail.com>
+References: <200904011155.20751.a.miskiewicz@gmail.com> <200904030222.57469.a.miskiewicz@gmail.com> <20090403003523.GK18394@sequoia.sous-sol.org>
+In-Reply-To: <20090403003523.GK18394@sequoia.sous-sol.org>
+MIME-Version: 1.0
+Content-Type: Text/Plain;
+  charset="utf-8"
+Content-Transfer-Encoding: 8BIT
 Content-Disposition: inline
-In-Reply-To: <200904030503.n3353NJ2003427@hera.kernel.org>
-User-Agent: Mutt/1.4.2.1i
+Message-Id: <200904030847.19674.a.miskiewicz@gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Apr 03, 2009 at 05:03:23AM +0000, Linux Kernel Mailing List wrote:
-> Gitweb:     http://git.kernel.org/linus/58b4ce6f2422cf9eff50368462c204f1d95b7341
-> Commit:     58b4ce6f2422cf9eff50368462c204f1d95b7341
-> Parent:     e8765584156daef3e0ccd63dfa12466a8b75613d
-> Author:     Harry Ciao <qingtao.cao@windriver.com>
-> AuthorDate: Thu Apr 2 16:58:51 2009 -0700
-> Committer:  Linus Torvalds <torvalds@linux-foundation.org>
-> CommitDate: Thu Apr 2 19:05:04 2009 -0700
-> 
->     edac: AMD8111 driver Kconfig & Makefile
->     
->     Introduce Kconfig and Makefile options for AMD8111 EDAC driver.
->     
->     Signed-off-by: Harry Ciao <qingtao.cao@windriver.com>
->     Cc: Doug Thompson <norsk5@yahoo.com>
->     Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
->     Signed-off-by: Linus Torvalds <torvalds@linux-foundation.org>
-> ---
->  drivers/edac/Kconfig |    7 +++++++
->  1 files changed, 7 insertions(+), 0 deletions(-)
-> 
-> diff --git a/drivers/edac/Kconfig b/drivers/edac/Kconfig
-> index 865cb7b..e5f5c5a 100644
-> --- a/drivers/edac/Kconfig
-> +++ b/drivers/edac/Kconfig
-> @@ -197,4 +197,11 @@ config EDAC_AMD8131
->  	  Support for error detection and correction on the
->  	  AMD8131 HyperTransport PCI-X Tunnel chip.
->  
-> +config EDAC_AMD8111
-> +	tristate "AMD8111 HyperTransport I/O Hub"
-> +	depends on EDAC_MM_EDAC && PCI
-> +	help
-> +	  Support for error detection and correction on the
-> +	  AMD8111 HyperTransport I/O Hub chip.
-> +
->  endif # EDAC
+On Friday 03 of April 2009, Chris Wright wrote:
+> * Arkadiusz Miskiewicz (a.miskiewicz@gmail.com) wrote:
+> > What about 9ea09af3bd3090e8349ca2899ca2011bd94cda85 ?
+> >
+> > stop_machine: introduce stop_machine_create/destroy.
+>
+> That is later fixed in a0e280e0f33f6c859a235fb69a875ed8f3420388.
+>
+> Can you please verify if 2.6.29 works for you? 
 
-Was the changes to the Makefile lost somehow?
+I think that the guilty part is 
+CONFIG_CC_STACKPROTECTOR_ALL=y
+CONFIG_CC_STACKPROTECTOR=y
 
-	Sam
+Disabling stackprotector makes problem go away (and my build of final 2.6.29 
+had it disabled while later builds got it enabled at some moment).
+
+(gcc 4.3.3 here)
+
+> Your bisects are all
+> going way back to 2.6.29-rc1.
+>
+> thanks,
+> -chris
+
+
+-- 
+Arkadiusz Miśkiewicz        PLD/Linux Team
+arekm / maven.pl            http://ftp.pld-linux.org/
+
