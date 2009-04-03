@@ -1,100 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932922AbZDCRQU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761333AbZDCRWt@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932922AbZDCRQU (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 3 Apr 2009 13:16:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759323AbZDCRQI
+	id S1761333AbZDCRWt (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 3 Apr 2009 13:22:49 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757805AbZDCRWi
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 3 Apr 2009 13:16:08 -0400
-Received: from hera.kernel.org ([140.211.167.34]:42112 "EHLO hera.kernel.org"
+	Fri, 3 Apr 2009 13:22:38 -0400
+Received: from www.tglx.de ([62.245.132.106]:57591 "EHLO www.tglx.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1757717AbZDCRQG (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 3 Apr 2009 13:16:06 -0400
-Date: Fri, 3 Apr 2009 17:15:34 GMT
-From: Yinghai Lu <yinghai@kernel.org>
-To: linux-tip-commits@vger.kernel.org
-Cc: linux-kernel@vger.kernel.org, hpa@zytor.com, mingo@redhat.com,
-       yinghai@kernel.org, rusty@rustcorp.com.au, tglx@linutronix.de,
-       mingo@elte.hu
-Reply-To: mingo@redhat.com, hpa@zytor.com, linux-kernel@vger.kernel.org,
-       yinghai@kernel.org, rusty@rustcorp.com.au, tglx@linutronix.de,
-       mingo@elte.hu
-In-Reply-To: <49D18FF0.50707@kernel.org>
-References: <49D18FF0.50707@kernel.org>
-Subject: [tip:irq/urgent] irq: fix cpumask memory leak on offstack cpumask kernels
-Message-ID: <tip-9756b15e1b58453a6fd54b85c1ad8515209e10bb@git.kernel.org>
-Git-Commit-ID: 9756b15e1b58453a6fd54b85c1ad8515209e10bb
-X-Mailer: tip-git-log-daemon
+	id S1755689AbZDCRWh (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 3 Apr 2009 13:22:37 -0400
+Date: Fri, 3 Apr 2009 19:21:46 +0200 (CEST)
+From: Thomas Gleixner <tglx@linutronix.de>
+To: LKML <linux-kernel@vger.kernel.org>
+cc: rt-users <linux-rt-users@vger.kernel.org>, Ingo Molnar <mingo@elte.hu>,
+       Steven Rostedt <rostedt@goodmis.org>,
+       Peter Zijlstra <peterz@infradead.org>, Carsten Emde <ce@ceag.ch>,
+       Clark Williams <williams@redhat.com>,
+       Frank Rowand <frank.rowand@am.sony.com>,
+       Robin Gareus <robin@gareus.org>, Gregory Haskins <ghaskins@novell.com>,
+       Philippe Reynes <philippe.reynes@isismpp.fr>,
+       Fernando Lopez-Lezcano <nando@ccrma.Stanford.EDU>,
+       Will Schmidt <will_schmidt@vnet.ibm.com>
+Subject: [Announce] 2.6.29.1-rt4
+In-Reply-To: <alpine.LFD.2.00.0904020155320.12916@localhost.localdomain>
+Message-ID: <alpine.LFD.2.00.0904031918090.12916@localhost.localdomain>
+References: <alpine.LFD.2.00.0902112332370.415@localhost.localdomain> <alpine.LFD.2.00.0902122353050.16972@localhost.localdomain> <alpine.LFD.2.00.0902231854360.3523@localhost.localdomain> <alpine.LFD.2.00.0902241849230.3523@localhost.localdomain>
+ <alpine.LFD.2.00.0902241856480.9135@localhost.localdomain> <alpine.LFD.2.00.0903122013230.29264@localhost.localdomain> <alpine.LFD.2.00.0903200014320.29264@localhost.localdomain> <alpine.LFD.2.00.0903201832590.29264@localhost.localdomain>
+ <alpine.LFD.2.00.0903231723090.29264@localhost.localdomain> <alpine.LFD.2.00.0903252154040.3397@localhost.localdomain> <alpine.LFD.2.00.0904020155320.12916@localhost.localdomain>
+User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Disposition: inline
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Fri, 03 Apr 2009 17:15:36 +0000 (UTC)
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Commit-ID:  9756b15e1b58453a6fd54b85c1ad8515209e10bb
-Gitweb:     http://git.kernel.org/tip/9756b15e1b58453a6fd54b85c1ad8515209e10bb
-Author:     Yinghai Lu <yinghai@kernel.org>
-AuthorDate: Mon, 30 Mar 2009 20:37:20 -0700
-Committer:  Ingo Molnar <mingo@elte.hu>
-CommitDate: Fri, 3 Apr 2009 19:14:44 +0200
+We are pleased to announce the next update to our new preempt-rt
+series.
+  
+	- rebased to 2.6.29.1
 
-irq: fix cpumask memory leak on offstack cpumask kernels
+	- powerpc64 tlb rework fix by Peter
 
-Need to free the old cpumask for affinity and pending_mask.
-
-Signed-off-by: Yinghai Lu <yinghai@kernel.org>
-Acked-by: Rusty Russell <rusty@rustcorp.com.au>
-LKML-Reference: <49D18FF0.50707@kernel.org>
-Signed-off-by: Ingo Molnar <mingo@elte.hu>
-
-
----
- include/linux/irq.h       |   14 ++++++++++++++
- kernel/irq/numa_migrate.c |    1 +
- 2 files changed, 15 insertions(+), 0 deletions(-)
-
-diff --git a/include/linux/irq.h b/include/linux/irq.h
-index 974890b..99d147e 100644
---- a/include/linux/irq.h
-+++ b/include/linux/irq.h
-@@ -482,6 +482,16 @@ static inline void init_copy_desc_masks(struct irq_desc *old_desc,
- #endif
- }
+Download locations:
  
-+static inline void free_desc_masks(struct irq_desc *old_desc,
-+				   struct irq_desc *new_desc)
-+{
-+	free_cpumask_var(old_desc->affinity);
-+
-+#ifdef CONFIG_GENERIC_PENDING_IRQ
-+	free_cpumask_var(old_desc->pending_mask);
-+#endif
-+}
-+
- #else /* !CONFIG_SMP */
+     http://rt.et.redhat.com/download/
+     http://www.kernel.org/pub/linux/kernel/projects/rt/
+  
+Information on the RT patch can be found at:
  
- static inline bool init_alloc_desc_masks(struct irq_desc *desc, int cpu,
-@@ -495,6 +505,10 @@ static inline void init_copy_desc_masks(struct irq_desc *old_desc,
- {
- }
+     http://rt.wiki.kernel.org/index.php/Main_Page
  
-+static inline void free_desc_masks(struct irq_desc *old_desc,
-+				   struct irq_desc *new_desc)
-+{
-+}
- #endif	/* CONFIG_SMP */
+to build the 2.6.29.1-rt4 tree, the following patches should be
+applied:
  
- #endif /* _LINUX_IRQ_H */
-diff --git a/kernel/irq/numa_migrate.c b/kernel/irq/numa_migrate.c
-index 243d612..44bbdcb 100644
---- a/kernel/irq/numa_migrate.c
-+++ b/kernel/irq/numa_migrate.c
-@@ -54,6 +54,7 @@ static bool init_copy_one_irq_desc(int irq, struct irq_desc *old_desc,
- static void free_one_irq_desc(struct irq_desc *old_desc, struct irq_desc *desc)
- {
- 	free_kstat_irqs(old_desc, desc);
-+	free_desc_masks(old_desc, desc);
- 	arch_free_chip_data(old_desc, desc);
- }
+     http://www.kernel.org/pub/linux/kernel/v2.6/linux-2.6.29.1.tar.bz2
+     http://www.kernel.org/pub/linux/kernel/projects/rt/patch-2.6.29.1-rt4.bz2
  
+The broken out patches are also available at the same download
+locations.
+ 
+Enjoy !
+
+       tglx
+
