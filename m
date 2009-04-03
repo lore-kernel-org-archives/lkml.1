@@ -1,73 +1,72 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762921AbZDCKbj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760394AbZDCKei@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762921AbZDCKbj (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 3 Apr 2009 06:31:39 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757906AbZDCKb0
+	id S1760394AbZDCKei (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 3 Apr 2009 06:34:38 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756756AbZDCKeZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 3 Apr 2009 06:31:26 -0400
-Received: from outbound-sin.frontbridge.com ([207.46.51.80]:19107 "EHLO
-	SG2EHSOBE004.bigfish.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1761488AbZDCKbY convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 3 Apr 2009 06:31:24 -0400
-X-BigFish: VPS-27(zz1432R98dR1805M936fKzz1202hzzz32i6bh61h)
-X-Spam-TCS-SCL: 0:0
-X-WSS-ID: 0KHIT7W-02-JMT-01
-Date: Fri, 3 Apr 2009 12:58:32 +0200
-From: Andreas Herrmann <andreas.herrmann3@amd.com>
-To: Ingo Molnar <mingo@elte.hu>
-CC: Mark Langsdorf <mark.langsdorf@amd.com>, "H. Peter Anvin" <hpa@zytor.com>,
-       Ingo Molnar <mingo@redhat.com>, Thomas Gleixner <tglx@linutronix.de>,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] x86: cacheinfo: complete L2/L3 Cache and TLB
-	associativity field definitions
-Message-ID: <20090403105832.GB6466@alberich.amd.com>
-References: <20090402100756.GN5740@alberich.amd.com> <20090402103008.GA10828@elte.hu>
+	Fri, 3 Apr 2009 06:34:25 -0400
+Received: from pmx1.sophos.com ([213.31.172.16]:38089 "EHLO pmx1.sophos.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1755042AbZDCKeX (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 3 Apr 2009 06:34:23 -0400
+X-Greylist: delayed 635 seconds by postgrey-1.27 at vger.kernel.org; Fri, 03 Apr 2009 06:34:23 EDT
+From: Tvrtko Ursulin <tvrtko.ursulin@sophos.com>
+Organization: Sophos Plc
+To: "Tvrtko A. Ursulin" <tvrtko@ursulin.net>
+Subject: Re: [Regression in 2.6.29] forcedeth doesn't work after resume from hibernation (was: Re: Resume after hibernation regression in 2.6.29)
+Date: Fri, 3 Apr 2009 10:23:38 +0000
+User-Agent: KMail/1.9.10
+Cc: "Rafael J. Wysocki" <rjw@sisk.pl>, Pavel Machek <pavel@ucw.cz>,
+       "linux-pm@lists.linux-foundation.org" 
+	<linux-pm@lists.linux-foundation.org>,
+       kernel list <linux-kernel@vger.kernel.org>,
+       Tobias Diedrich <ranma+kernel@tdiedrich.de>,
+       Ayaz Abdulla <aabdulla@nvidia.com>,
+       "netdev@vger.kernel.org" <netdev@vger.kernel.org>,
+       Ed Swierk <eswierk@arastra.com>, Arthur Jones <ajones@riverbed.com>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       "David S. Miller" <davem@davemloft.net>, stable@kernel.org
+References: <200903261920.32173.tvrtko@ursulin.net> <200903272109.21259.rjw@sisk.pl> <200903290903.57911.tvrtko@ursulin.net>
+In-Reply-To: <200903290903.57911.tvrtko@ursulin.net>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="iso-8859-1"
+Message-Id: <200904031123.40390.tvrtko.ursulin@sophos.com>
+X-MIMETrack: Itemize by SMTP Server on Mercury/Servers/Sophos(Release 7.0.3|September 26, 2007) at
+ 03/04/2009 11:23:45,
+	Serialize by Router on Mercury/Servers/Sophos(Release 7.0.3|September 26, 2007) at
+ 03/04/2009 11:23:45,
+	Serialize complete at 03/04/2009 11:23:45
+X-TNEFEvaluated: 1
+Content-Transfer-Encoding: 7bit
+Content-Type: text/plain;
+  charset="iso-8859-1"
 Content-Disposition: inline
-In-Reply-To: <20090402103008.GA10828@elte.hu>
-User-Agent: Mutt/1.5.16 (2007-06-09)
-X-OriginalArrivalTime: 03 Apr 2009 10:31:09.0879 (UTC) FILETIME=[4DDD3470:01C9B447]
-Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Apr 02, 2009 at 12:30:08PM +0200, Ingo Molnar wrote:
-> 
-> * Andreas Herrmann <andreas.herrmann3@amd.com> wrote:
-> 
-> > Impact: complete cache information for AMD CPUs
-> > 
-> > See "CPUID Specification" (AMD Publication #: 25481, Rev. 2.28, April 2008)
-> > 
-> > Signed-off-by: Andreas Herrmann <andreas.herrmann3@amd.com>
-> > ---
-> >  arch/x86/kernel/cpu/intel_cacheinfo.c |   16 ++++++++++++----
-> >  1 files changed, 12 insertions(+), 4 deletions(-)
-> > 
-> > Please apply.
-> 
-> Hm, the x86/cpu topic is marked broken and blocked by another AMD 
-> patch from Mark Langsdorf:
-> 
->  45ca863: x86, cpu: conform L3 Cache Index Disable to Linux standards
+On Sunday 29 March 2009 09:03:57 Tvrtko A. Ursulin wrote:
+> On Friday 27 March 2009 20:09:20 Rafael J. Wysocki wrote:
+> > I was able to reproduce the problem and identify the commit that broke
+> > the resume of forcedeth, which turned out to be:
+> >
+> > commit cb52deba12f27af90a46d2f8667a64888118a888
+> > Author: Ed Swierk <eswierk@arastra.com>
+> > Date:   Mon Dec 1 12:24:43 2008 +0000
+> >
+> >     forcedeth: power down phy when interface is down
+> >
+> >     Signed-off-by: Ed Swierk <eswierk@arastra.com>
+> >     Tested-by: Arthur Jones <ajones@riverbed.com>
+> >     Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
+> >     Signed-off-by: David S. Miller <davem@davemloft.net>
+> >
+> > Since I have no slightest idea of what this commit is supposed to
+> > achieve, I can only ask for reverting it.  It reverts cleanly, BTW.
+>
+> Reverting this fixes it for me as well.
+>
+> Thanks for your effort!
 
-Oops, wasn't aware that you had applied this patch and I couldn't find
-it in tip/master. Now I know why.
+Would reverting this be a -stable material?
 
-The code seems broken. Defining k8_northbridges in a header file is the
-wrong thing to do. I'll look at it.
-
-
-Andreas
-
--- 
-Operating | Advanced Micro Devices GmbH
-  System  | Karl-Hammerschmidt-Str. 34, 85609 Dornach b. München, Germany
- Research | Geschäftsführer: Jochen Polster, Thomas M. McCoy, Giuliano Meroni
-  Center  | Sitz: Dornach, Gemeinde Aschheim, Landkreis München
-  (OSRC)  | Registergericht München, HRB Nr. 43632
-
-
+Tvrtko
