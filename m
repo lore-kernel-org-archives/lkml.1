@@ -1,73 +1,39 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S935966AbZDCSBu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S936037AbZDCSDe@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S935966AbZDCSBu (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 3 Apr 2009 14:01:50 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S935836AbZDCSBL
+	id S936037AbZDCSDe (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 3 Apr 2009 14:03:34 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933787AbZDCSDU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 3 Apr 2009 14:01:11 -0400
-Received: from brick.kernel.dk ([93.163.65.50]:52629 "EHLO kernel.dk"
+	Fri, 3 Apr 2009 14:03:20 -0400
+Received: from brick.kernel.dk ([93.163.65.50]:49004 "EHLO kernel.dk"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S935812AbZDCSBJ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 3 Apr 2009 14:01:09 -0400
-Date: Fri, 3 Apr 2009 20:01:06 +0200
+	id S933603AbZDCSDT (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 3 Apr 2009 14:03:19 -0400
+Date: Fri, 3 Apr 2009 20:03:17 +0200
 From: Jens Axboe <jens.axboe@oracle.com>
-To: Christof Schmitt <christof.schmitt@de.ibm.com>
-Cc: James Bottomley <James.Bottomley@HansenPartnership.com>,
-       linux-kernel@vger.kernel.org, linux-scsi@vger.kernel.org,
-       Hannes Reinecke <hare@suse.de>
-Subject: Re: [PATCH] block: fix intermittent dm timeout based oops
-Message-ID: <20090403180106.GA5178@kernel.dk>
-References: <20090324071730.53D7118C7A2@pentland.suse.de> <20090403143208.GA10005@schmichrtp.de.ibm.com>
+To: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>
+Cc: linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org,
+       cbe-oss-dev@ozlabs.org
+Subject: Re: [PATCH] ps3vram: Replace mutex by spinlock + list
+Message-ID: <20090403180317.GB5178@kernel.dk>
+References: <1238763938-7076-1-git-send-email-Geert.Uytterhoeven@sonycom.com> <1238763938-7076-2-git-send-email-Geert.Uytterhoeven@sonycom.com> <1238763938-7076-3-git-send-email-Geert.Uytterhoeven@sonycom.com> <1238763938-7076-4-git-send-email-Geert.Uytterhoeven@sonycom.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20090403143208.GA10005@schmichrtp.de.ibm.com>
+In-Reply-To: <1238763938-7076-4-git-send-email-Geert.Uytterhoeven@sonycom.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Apr 03 2009, Christof Schmitt wrote:
-> On Tue, Mar 24, 2009 at 08:17:30AM +0100, Hannes Reinecke wrote:
-> > Very rarely under stress testing of dm, oopses are occuring as
-> > something tampers with an old stack frame.  This has been traced back
-> > to blk_abort_queue() leaving a timeout_list pointing to the stack.
-> > The reason is that sometimes blk_abort_request() won't delete the
-> > timer (if the request is marked as complete but before the timer has
-> > been removed, a small race window).  Fix this by splicing back from
-> > the ususally empty list to the q->timeout_list.
-> > 
-> > Signed-off-by: Hannes Reinecke <hare@suse.de>
-> > ---
-> >  block/blk-timeout.c |    6 ++++++
-> >  1 files changed, 6 insertions(+), 0 deletions(-)
-> > 
-> > diff --git a/block/blk-timeout.c b/block/blk-timeout.c
-> > index bbbdc4b..6213123 100644
-> > --- a/block/blk-timeout.c
-> > +++ b/block/blk-timeout.c
-> > @@ -224,6 +224,12 @@ void blk_abort_queue(struct request_queue *q)
-> >  	list_for_each_entry_safe(rq, tmp, &list, timeout_list)
-> >  		blk_abort_request(rq);
-> > 
-> > +	/*
-> > +	 * Occasionally, blk_abort_request() will return without
-> > +	 * deleting the element from the list
-> > +	 */
-> > +	list_splice(&list, &q->timeout_list);
-> > +
-> >  	spin_unlock_irqrestore(q->queue_lock, flags);
-> > 
-> >  }
-> > -- 
-> > 1.5.3.2
+On Fri, Apr 03 2009, Geert Uytterhoeven wrote:
+> Remove the mutex serializing access to the cache.
+> Instead, queue up new requests on a list if the driver is busy.
 > 
-> I just noticed that this fix is not upstream yet and i have seen test
-> cases hitting this problem.
-> 
-> Jens, are you going to included this patch, or should this go through
-> the SCSI tree?
+> This improves sequential write performance by ca. 2%.
 
-I will include it, and CC stable as well.
+Great, precisely the method I wanted to see there! I've added your three
+patches, thanks Geert.
+
 
 -- 
 Jens Axboe
