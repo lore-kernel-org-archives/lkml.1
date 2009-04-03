@@ -1,126 +1,37 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764304AbZDCMxj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762546AbZDCMze@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764304AbZDCMxj (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 3 Apr 2009 08:53:39 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763596AbZDCMxS
+	id S1762546AbZDCMze (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 3 Apr 2009 08:55:34 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751320AbZDCMz0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 3 Apr 2009 08:53:18 -0400
-Received: from mx2.mail.elte.hu ([157.181.151.9]:42909 "EHLO mx2.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1763436AbZDCMxR (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 3 Apr 2009 08:53:17 -0400
-Date: Fri, 3 Apr 2009 14:52:50 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: Jens Axboe <jens.axboe@oracle.com>
-Cc: Li Zefan <lizf@cn.fujitsu.com>, Arnaldo Carvalho de Melo <acme@redhat.com>,
-       "Alan D. Brunelle" <alan.brunelle@hp.com>,
-       LKML <linux-kernel@vger.kernel.org>,
-       Steven Rostedt <rostedt@goodmis.org>,
-       Carl Henrik Lunde <chlunde@ping.uio.no>
-Subject: Re: [PATCH] blktrace: fix a bug in blk_msg_write()
-Message-ID: <20090403125250.GB19451@elte.hu>
-References: <49D5BB56.7000807@cn.fujitsu.com> <20090403111741.GB31399@elte.hu> <20090403122714.GT5178@kernel.dk>
+	Fri, 3 Apr 2009 08:55:26 -0400
+Received: from hrndva-commlb.mail.rr.com ([71.74.57.8]:36646 "EHLO
+	hrndva-commlb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751182AbZDCMz0 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 3 Apr 2009 08:55:26 -0400
+Message-Id: <7hp5m9$clsc8s@rrcs-agw-02b.hrndva.rr.com>
+X-Mailer: Openwave WebEngine, version 2.8.17 (webedge20-101-1107-20041027)
+From: Siemens Online Promo <wrobinson@rrbiznet.com>
+Reply-To: siemens13@btinternet.com
+Organization: Siemens Online Promo
+To: <info@co.uk>
+Subject: Mrs. Joan Bill
+Date: Fri, 3 Apr 2009 7:55:23 -0500
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090403122714.GT5178@kernel.dk>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+Content-Type: text/plain; charset=iso-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Your email ID has been awarded 750,000,00 GBP in our recent Siemens draw,Contact this office with your full information as given below:
 
-* Jens Axboe <jens.axboe@oracle.com> wrote:
+Name:.....
+Country:.....
+Sex:....
+Age: ....
+Address:.....
 
-> On Fri, Apr 03 2009, Ingo Molnar wrote:
-> > 
-> > * Li Zefan <lizf@cn.fujitsu.com> wrote:
-> > 
-> > > This is another long-standing bug.
-> > >
-> > > ================
-> > >
-> > >
-> > >  (console 1)
-> > >  # echo -n 'a' > /sys/kernel/debug/block/sda/msg
-> > >  (console 2)
-> > >  # blktrace -d /dev/sda -a pc -o - | blkparse -i -
-> > >   8,0    0        0     0.000000000     0  m   N a??????????????????@??????
-> > >
-> > > We should terminate the msg buffer with '\0'.
-> > >
-> > > Signed-off-by: Li Zefan <lizf@cn.fujitsu.com>
-> > > ---
-> > >  kernel/trace/blktrace.c |    5 +++--
-> > >  1 files changed, 3 insertions(+), 2 deletions(-)
-> > >
-> > > diff --git a/kernel/trace/blktrace.c b/kernel/trace/blktrace.c
-> > > index c0ef70d..2bf341f 100644
-> > > --- a/kernel/trace/blktrace.c
-> > > +++ b/kernel/trace/blktrace.c
-> > > @@ -327,10 +327,10 @@ static ssize_t blk_msg_write(struct file *filp, const char __user *buffer,
-> > >  	char *msg;
-> > >  	struct blk_trace *bt;
-> > >
-> > > -	if (count > BLK_TN_MAX_MSG)
-> > > +	if (count >= BLK_TN_MAX_MSG)
-> > >  		return -EINVAL;
-> > >
-> > > -	msg = kmalloc(count, GFP_KERNEL);
-> > > +	msg = kmalloc(count + 1, GFP_KERNEL);
-> > >  	if (msg == NULL)
-> > >  		return -ENOMEM;
-> > >
-> > > @@ -338,6 +338,7 @@ static ssize_t blk_msg_write(struct file *filp, const char __user *buffer,
-> > >  		kfree(msg);
-> > >  		return -EFAULT;
-> > >  	}
-> > > +	msg[count] = '\0';
-> > >
-> > >  	bt = filp->private_data;
-> > >  	__trace_note_message(bt, "%s", msg);
-> > 
-> > Nice fix!
-> > 
-> > Jens, do you ack this and should i add a Cc: <stable@kernel.org>
-> > backporting tag?
-> > 
-> > This fix applies fine to v2.6.29 after:
-> > 
-> >    sed 's/kernel\/trace\/blktrace.c/block\/blktrace.c'
-> 
-> This is identical to the following patch from Carl Henrik Lunde, which
-> he just ported to -tip. It has existed before, as a patch to 2.6.29-git,
-> but was unfortunately dropped.
-> 
-> So is this a coincidence? If not, Carl Henrik Lunde should be credited.
-> 
-> >From f116bce73e04d01614fd28ea678e0953cc321155 Mon Sep 17 00:00:00 2001
-> From: Carl Henrik Lunde <chlunde@ping.uio.no>
-> Date: Wed, 25 Mar 2009 14:23:16 +0100
-> Subject: [PATCH] blktrace: NUL-terminate user space messages
-> 
-> Make sure messages from user space are NUL-terminated strings,
-> otherwise we could dump random memory to the block trace file.
-> Additionally, I've limited the message to BLK_TN_MAX_MSG-1 characters,
-> because the last character would be stripped by vscnprintf anyway.
-> 
-> Signed-off-by: Carl Henrik Lunde <chlunde@ping.uio.no>
-
-Sure, i've picked up Carl's version of the fix instead, it dates 
-back to early February!
-
-( Li Zefan's fix was a tiny notch cleaner - i picked that cleanup up
-  on top of Carl's patch separately. )
-
-Thanks,
-
-	Ingo
+Regards,
+Mrs. Joan Bill
