@@ -1,102 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S936139AbZDCTGF@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933883AbZDCTNi@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S936139AbZDCTGF (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 3 Apr 2009 15:06:05 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932609AbZDCTFw
+	id S933883AbZDCTNi (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 3 Apr 2009 15:13:38 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757271AbZDCTN1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 3 Apr 2009 15:05:52 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:48224 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1757479AbZDCTFv (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 3 Apr 2009 15:05:51 -0400
-Date: Fri, 3 Apr 2009 12:02:54 -0700 (PDT)
-From: Linus Torvalds <torvalds@linux-foundation.org>
-X-X-Sender: torvalds@localhost.localdomain
-To: "Theodore Ts'o" <tytso@mit.edu>, Jens Axboe <jens.axboe@oracle.com>
-cc: Linux Kernel Developers List <linux-kernel@vger.kernel.org>,
+	Fri, 3 Apr 2009 15:13:27 -0400
+Received: from THUNK.ORG ([69.25.196.29]:45511 "EHLO thunker.thunk.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1755616AbZDCTN0 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 3 Apr 2009 15:13:26 -0400
+Date: Fri, 3 Apr 2009 15:13:15 -0400
+From: Theodore Tso <tytso@mit.edu>
+To: Jens Axboe <jens.axboe@oracle.com>
+Cc: Linus Torvalds <torvalds@linux-foundation.org>,
+       Linux Kernel Developers List <linux-kernel@vger.kernel.org>,
        Ext4 Developers List <linux-ext4@vger.kernel.org>
 Subject: Re: [GIT PULL] Ext3 latency fixes
-In-Reply-To: <alpine.LFD.2.00.0904031110420.19690@localhost.localdomain>
-Message-ID: <alpine.LFD.2.00.0904031150190.4015@localhost.localdomain>
-References: <1238742067-30814-1-git-send-email-tytso@mit.edu> <alpine.LFD.2.00.0904031110420.19690@localhost.localdomain>
-User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
+Message-ID: <20090403191315.GB11661@mit.edu>
+Mail-Followup-To: Theodore Tso <tytso@mit.edu>,
+	Jens Axboe <jens.axboe@oracle.com>,
+	Linus Torvalds <torvalds@linux-foundation.org>,
+	Linux Kernel Developers List <linux-kernel@vger.kernel.org>,
+	Ext4 Developers List <linux-ext4@vger.kernel.org>
+References: <1238742067-30814-1-git-send-email-tytso@mit.edu> <alpine.LFD.2.00.0904031110420.19690@localhost.localdomain> <20090403184729.GC5178@kernel.dk>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20090403184729.GC5178@kernel.dk>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-SA-Exim-Connect-IP: <locally generated>
+X-SA-Exim-Mail-From: tytso@mit.edu
+X-SA-Exim-Scanned: No (on thunker.thunk.org); SAEximRunCond expanded to false
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-
-On Fri, 3 Apr 2009, Linus Torvalds wrote:
-
+On Fri, Apr 03, 2009 at 08:47:29PM +0200, Jens Axboe wrote:
 > 
-> 
-> On Fri, 3 Apr 2009, Theodore Ts'o wrote:
-> > 
-> > Please pull from:
-> > 
-> > git://git.kernel.org/pub/scm/linux/kernel/git/tytso/ext4.git ext3-latency-fixes
-> 
-> Thanks, pulled. I'll be interested to see how it feels. Will report back 
-> after I've rebuild and gone through a few more emails.
+> I have one question, didn't see this series before... Ted, what kind of
+> tests did you run with this and on what? 
 
-Hmm.
+Well, I've been using it in my default kernel for about a month, and
+I've noticed any massive performance issues.  (4GB X61s, with an SSD
+as my primary drive and a 5400 rpm disk as my secondary drive).  I
+also did testing on my crash and burn machine N270 ATOM netbook, 512
+MB memory, 5400rpm drive.
 
-The "overwrite" behavior may well be better, but it was smooth enough 
-beforehand too (never having more than ~8MB dirty). The "create big file 
-and sync" workload causes huge fsync pauses, though. IOW, try with
+Most of my testing has been on the fsync latency issue plus my
+standard filesystem regression for stability (dbench, fsx, etc.)  I
+have not done an exhaustive series of performance tests, so you bring
+up a good point.
 
-	while :
-	do
-		time sh -c "dd if=/dev/zero of=bigfile bs=8M count=256 ; sync"
-	done
+> Currently one has to be careful with WRITE_SYNC, as it also implies
+> an immediate unplug of the device.
 
-and even really small fsync's end up being at the end of all that 
-unrelated activity, and you see things like
+Yeah, I can definitely see how this could be problematic.  What I
+really wanted was to separate out the priority of "things which cause
+the user to wait and fume" from "things that are just being dumped out
+to disk in the background".  Unplugging the device is definitely *not*
+a good thing here, and you're right, it would be better if we fixed
+the relatively few places in the code which use WRITE_SYNC to unplug
+the queue after all of the writes are submitted.
 
-    fsync(7)                                = 0 <32.756308>
-
-(that was my "switch email folders with update" test case, the full trace 
-for that file descriptor is
-
-    open("/home/torvalds/mail/git-list", O_RDWR) = 7 <0.000010>
-    fstatfs(7, {f_type="EXT2_SUPER_MAGIC", f_bsize=4096, f_blocks=19230104, f_bfree=13853292, f_bavail=12876440, f_files=4890624
-    flock(7, LOCK_EX)                       = 0 <0.000009>
-    fstat(7, {st_mode=S_IFREG|0600, st_size=54231534, ...}) = 0 <0.000005>
-    lseek(7, 0, SEEK_SET)                   = 0 <0.000006>
-    write(7, "From MAILER-DAEMON Fri Apr  3 11:"..., 554) = 554 <0.000012>
-    lseek(7, 54202529, SEEK_SET)            = 54202529 <0.000007>
-    read(7, "From torvalds@linux-foundation.or"..., 66) = 66 <0.000008>
-    lseek(7, 54202595, SEEK_SET)            = 54202595 <0.000006>
-    read(7, "Return-Path: <git-owner@vger.kern"..., 2915) = 2915 <0.000007>
-    lseek(7, 54202529, SEEK_SET)            = 54202529 <0.000005>
-    write(7, "From torvalds@linux-foundation.or"..., 2981) = 2981 <0.000009>
-    ftruncate(7, 54231534)                  = 0 <0.000008>
-    fsync(7)                                = 0 <32.756308>
-    close(7)                                = 0 <0.000006>
-
-so it had done just a few kB of writes, but because it ended up behind
-the humongous backlog of 'bigfile' it didn't much help.
-
-Also, it's maybe worth noting that you don't actually need a 2GB file to 
-trigger this behavior. Change that "count=256" into a "count=16", and you 
-now have a simulation of just writing 128MB at a time, with a "sync" in 
-between to make sure it hits the disk.  It makes the pauses smaller, but 
-they are still several seconds.
-
-(That, btw, is probably more the kind of thing I see when doign a "yum 
-update". I assume a package manager would do exactly that kind of "unpack 
-files and sync" in a loop).
-
-Btw, I assume this same thing holds true for ext4 too? Because it shows 
-how two different "sync" operations interact, and one kills the 
-performance of the other one. So as long as there is a _single_ fsync() 
-user, you're fine. It's when you get more than one...
-
-Again, I have that Intel SSD that should do pretty reliably 40+MB/s even 
-with really nasty write patterns, so I do need several hundred megs to 
-really see painful pauses. On a slower disk you'd need much less).
-
-			Linus
+    	  						- Ted
