@@ -1,59 +1,39 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S936359AbZDCUe0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S936783AbZDCUeo@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S936359AbZDCUe0 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 3 Apr 2009 16:34:26 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754976AbZDCUeP
+	id S936783AbZDCUeo (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 3 Apr 2009 16:34:44 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S936505AbZDCUeV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 3 Apr 2009 16:34:15 -0400
-Received: from cantor.suse.de ([195.135.220.2]:57113 "EHLO mx1.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753682AbZDCUeP (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 3 Apr 2009 16:34:15 -0400
-Date: Fri, 3 Apr 2009 13:34:12 -0700
-From: Mark Fasheh <mfasheh@suse.com>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: linux-kernel@vger.kernel.org, ocfs2-devel@oss.oracle.com,
-       Joel Becker <joel.becker@oracle.com>,
-       Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: [git patches] Ocfs2 updates for 2.6.30
-Message-ID: <20090403203412.GD14571@wotan.suse.de>
-Reply-To: Mark Fasheh <mfasheh@suse.com>
-References: <20090403184605.GC14571@wotan.suse.de> <alpine.LFD.2.00.0904031208490.4015@localhost.localdomain> <alpine.LFD.2.00.0904031214260.4015@localhost.localdomain>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <alpine.LFD.2.00.0904031214260.4015@localhost.localdomain>
-Organization: SUSE Labs, Novell, Inc
-User-Agent: Mutt/1.5.9i
+	Fri, 3 Apr 2009 16:34:21 -0400
+Received: from hrndva-omtalb.mail.rr.com ([71.74.56.123]:37033 "EHLO
+	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S936138AbZDCUeU (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 3 Apr 2009 16:34:20 -0400
+Date: Fri, 3 Apr 2009 16:34:12 -0400 (EDT)
+From: Steven Rostedt <rostedt@goodmis.org>
+X-X-Sender: rostedt@gandalf.stny.rr.com
+To: Huang Weiyi <weiyi.huang@gmail.com>
+cc: LKML <linux-kernel@vger.kernel.org>, Ingo Molnar <mingo@elte.hu>
+Subject: Re: [PATCH 3/3] tracing, x86: remove duplicated #include
+In-Reply-To: <1238503291-2532-1-git-send-email-weiyi.huang@gmail.com>
+Message-ID: <alpine.DEB.2.00.0904031634000.21481@gandalf.stny.rr.com>
+References: <1238503291-2532-1-git-send-email-weiyi.huang@gmail.com>
+User-Agent: Alpine 2.00 (DEB 1167 2008-08-23)
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Apr 03, 2009 at 12:17:35PM -0700, Linus Torvalds wrote:
-> > Are they likely? Probably not. But that's not the point. The point is that 
-> > you barely had time to compile that thing, much less give it any testing.
+
+On Tue, 31 Mar 2009, Huang Weiyi wrote:
+
+> Remove duplicated #include in arch/x86/kernel/ftrace.c.
 > 
-> Gaah. I pulled it anyway. Today, I just can't find it in me to care about 
-> ocfs2 testing.
+> Signed-off-by: Huang Weiyi <weiyi.huang@gmail.com>
 
-Heh, thanks I guess :)
+Thanks, applied.
 
+-- Steve
 
-> But please - keep this in mind. Even if the commit is old, when you rebase 
-> it, you really do move it into a whole new world order. And yes, it 
-> _usually_ works just fine. 
-> 
-> But to make sure, please do spend some time after setting up the tree to 
-> make sure that what I get really is something that you know is what I want 
-> to get.
-
-Point taken. Actually, the pre-rebased branch would have merged fine too, so
-I really just rebased because of old habit, which isn't a good reason,
-obviously.
-
-Next time, I'll rebase early enough so that we can get a reasonable amount
-of testing in.
-	--Mark
-
---
-Mark Fasheh
