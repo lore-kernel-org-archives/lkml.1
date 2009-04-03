@@ -1,58 +1,107 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758906AbZDCBlx@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760597AbZDCBmV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758906AbZDCBlx (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 2 Apr 2009 21:41:53 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751027AbZDCBlp
+	id S1760597AbZDCBmV (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 2 Apr 2009 21:42:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751027AbZDCBmJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 2 Apr 2009 21:41:45 -0400
-Received: from mga03.intel.com ([143.182.124.21]:21504 "EHLO mga03.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750825AbZDCBlp (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 2 Apr 2009 21:41:45 -0400
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.39,316,1235980800"; 
-   d="scan'208";a="127339491"
-Subject: paravirtops kernel and HVM guests
-From: Nitin A Kamble <nitin.a.kamble@intel.com>
-To: Jeremy Fitzhardinge <jeremy@goop.org>
-Cc: Xen-devel <xen-devel@lists.xensource.com>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-In-Reply-To: <49C18487.1020703@goop.org>
-References: <49C148AF.5050601@goop.org> <49C16411.2040705@redhat.com>
-	 <49C1665A.4080707@goop.org> <49C16A48.4090303@redhat.com>
-	 <49C17230.20109@goop.org> <49C17880.7080109@redhat.com>
-	 <49C17BD8.6050609@goop.org> <49C17E22.9040807@redhat.com>
-	 <49C18487.1020703@goop.org>
-Content-Type: text/plain
-Date: Thu, 02 Apr 2009 18:41:41 -0800
-Message-Id: <1238726501.6208.6.camel@mukti.sc.intel.com>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.24.5 (2.24.5-1.fc10) 
-Content-Transfer-Encoding: 7bit
+	Thu, 2 Apr 2009 21:42:09 -0400
+Received: from zeniv.linux.org.uk ([195.92.253.2]:56961 "EHLO
+	ZenIV.linux.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750825AbZDCBmI (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 2 Apr 2009 21:42:08 -0400
+Date: Fri, 3 Apr 2009 02:42:05 +0100
+From: Al Viro <viro@ZenIV.linux.org.uk>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: linux-kernel@vger.kernel.org
+Subject: [git pull] more VFS stuff
+Message-ID: <20090403014205.GR28946@ZenIV.linux.org.uk>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+User-Agent: Mutt/1.5.17 (2007-11-01)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Jeremy,
-  I was trying the latest bits from your paravirtops tree with
-xen-unstable. Dom0 is booting fine in Fedora 10 environment. I am seeing
-page fault handing error while trying to create an HVM guest. 
-Is anybody working on the HVM support on top of paravirtops kernel?
+Mostly fs_struct fixes.  Please, pull from
+git://git.kernel.org/pub/scm/linux/kernel/git/viro/vfs-2.6.git/ for-linus
 
-privcmd_fault: vma=ffff880068081210 7f7cb7cfe000-7f7cb7dfe000, pgoff=0,
-uv=00007f7cb7cfe000, ptep=(null) 0000000000000000
-Pid: 4253, comm: qemu-dm Not tainted 2.6.29-rc8-tip #6
-Call Trace:
- [<ffffffff814357bf>] privcmd_fault+0x59/0x67
- [<ffffffff810d34ce>] __do_fault+0x50/0x349
- [<ffffffff8102912d>] ? __raw_callee_save_xen_pud_val+0x11/0x1e
- [<ffffffff810d5659>] handle_mm_fault+0x2e2/0x6e9
- [<ffffffff8102b9c2>] ? check_events+0x12/0x20
- [<ffffffff8102b9af>] ? xen_restore_fl_direct_end+0x0/0x1
- [<ffffffff816ba9ba>] ? _spin_unlock_irqrestore+0x38/0x3d
- [<ffffffff816bcee9>] do_page_fault+0x2a5/0x2bc
- [<ffffffff816bad45>] page_fault+0x25/0x30
+Shortlog:
+Al Viro (12):
+      Kill unsharing fs_struct in __set_personality()
+      Get rid of bumping fs_struct refcount in pivot_root(2)
+      Take fs_struct handling to new file (fs/fs_struct.c)
+      New locking/refcounting for fs_struct
+      check_unsafe_exec() doesn't care about signal handlers sharing
+      New helper - current_umask()
+      Get rid of indirect include of fs_struct.h
+      Don't mess with descriptor table in load_elf_binary()
+      Trim includes in binfmt_elf
+      Don't crap into descriptor table in binfmt_som
+      Trim includes of fdtable.h
+      Cleanup after commit 585d3bc06f4ca57f975a5a1f698f65a45ea66225
 
-Thanks & Regards,
-Nitin
+Dmitri Vorobiev (1):
+      Remove two unneeded exports and make two symbols static in fs/mpage.c
+
+Diffstat:
+ arch/cris/kernel/process.c                |    1 -
+ arch/powerpc/platforms/cell/spufs/inode.c |    2 +-
+ drivers/char/tty_audit.c                  |    2 -
+ drivers/char/tty_ldisc.c                  |    1 -
+ fs/Makefile                               |    2 +-
+ fs/binfmt_elf.c                           |   22 +----
+ fs/binfmt_som.c                           |    7 -
+ fs/block_dev.c                            |    1 +
+ fs/btrfs/acl.c                            |    2 +-
+ fs/btrfs/ioctl.c                          |    2 +-
+ fs/buffer.c                               |    1 -
+ fs/cifs/dir.c                             |    4 +-
+ fs/cifs/inode.c                           |    4 +-
+ fs/compat.c                               |   16 +++-
+ fs/dcache.c                               |    2 +-
+ fs/exec.c                                 |   35 +++++--
+ fs/ext2/acl.c                             |    2 +-
+ fs/ext3/acl.c                             |    2 +-
+ fs/ext4/acl.c                             |    2 +-
+ fs/fat/inode.c                            |    2 +-
+ fs/fs_struct.c                            |  177 +++++++++++++++++++++++++++++
+ fs/generic_acl.c                          |    2 +-
+ fs/gfs2/acl.c                             |    2 +-
+ fs/hfsplus/options.c                      |    2 +-
+ fs/hpfs/super.c                           |    2 +-
+ fs/internal.h                             |    8 +-
+ fs/jffs2/acl.c                            |    2 +-
+ fs/jfs/acl.c                              |    2 +-
+ fs/mpage.c                                |   13 ++-
+ fs/namei.c                                |   14 +--
+ fs/namespace.c                            |   61 +----------
+ fs/nfs/nfs3proc.c                         |    6 +-
+ fs/nfs/nfs4proc.c                         |    2 +-
+ fs/nfsd/nfssvc.c                          |    7 +-
+ fs/ocfs2/acl.c                            |    2 +-
+ fs/omfs/inode.c                           |    2 +-
+ fs/open.c                                 |    1 +
+ fs/proc/base.c                            |    1 +
+ fs/proc/task_nommu.c                      |    3 +-
+ fs/reiserfs/xattr_acl.c                   |    2 +-
+ fs/xfs/linux-2.6/xfs_iops.c               |    4 +-
+ include/linux/buffer_head.h               |   12 --
+ include/linux/fs.h                        |   14 +++
+ include/linux/fs_struct.h                 |   10 +-
+ include/linux/mnt_namespace.h             |    2 +
+ include/linux/mpage.h                     |   10 --
+ include/linux/nsproxy.h                   |    1 +
+ include/linux/sched.h                     |    3 +-
+ init/do_mounts.c                          |    1 +
+ ipc/mqueue.c                              |    2 +-
+ kernel/auditsc.c                          |    1 +
+ kernel/exec_domain.c                      |   23 +----
+ kernel/exit.c                             |   32 +-----
+ kernel/fork.c                             |   63 +++++------
+ kernel/sys.c                              |    1 +
+ net/unix/af_unix.c                        |    2 +-
+ security/tomoyo/realpath.c                |    1 +
+ 57 files changed, 337 insertions(+), 268 deletions(-)
 
