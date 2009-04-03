@@ -1,64 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S936222AbZDCSbB@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S936521AbZDCScQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S936222AbZDCSbB (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 3 Apr 2009 14:31:01 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S936080AbZDCSap
+	id S936521AbZDCScQ (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 3 Apr 2009 14:32:16 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S935061AbZDCSb6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 3 Apr 2009 14:30:45 -0400
-Received: from charlotte.tuxdriver.com ([70.61.120.58]:58014 "EHLO
-	smtp.tuxdriver.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S936101AbZDCSao (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 3 Apr 2009 14:30:44 -0400
-Date: Fri, 3 Apr 2009 14:27:25 -0400
-From: "John W. Linville" <linville@tuxdriver.com>
-To: linux-wireless@vger.kernel.org
-Cc: netdev@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: Linux wireless mini-summit -- Berlin, June 2009
-Message-ID: <20090403182724.GA7364@tuxdriver.com>
+	Fri, 3 Apr 2009 14:31:58 -0400
+Received: from gw.goop.org ([64.81.55.164]:56309 "EHLO mail.goop.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S933940AbZDCSb5 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 3 Apr 2009 14:31:57 -0400
+Message-ID: <49D65619.8000708@goop.org>
+Date: Fri, 03 Apr 2009 11:31:53 -0700
+From: Jeremy Fitzhardinge <jeremy@goop.org>
+User-Agent: Thunderbird 2.0.0.21 (X11/20090320)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-User-Agent: Mutt/1.5.18 (2008-05-17)
+To: Ingo Molnar <mingo@elte.hu>
+CC: the arch/x86 maintainers <x86@kernel.org>,
+       Xen-devel <xen-devel@lists.xensource.com>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       "H. Peter Anvin" <hpa@zytor.com>
+Subject: Re: [Xen-devel] Re: [GIT PULL] Xen for 2.6.30 #2
+References: <49D1209A.9000800@goop.org> <49D25A42.7060300@goop.org> <20090331185541.GA17807@elte.hu> <49D2713D.6090401@goop.org> <20090403173623.GB6295@elte.hu>
+In-Reply-To: <20090403173623.GB6295@elte.hu>
+X-Enigmail-Version: 0.95.6
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Greetings,
+Ingo Molnar wrote:
+> Yes, but once dom0 goes in your incentive to fix the native kernel 
+> performance drain we accumulated along the years of paravirt layers 
+> will be strongly weakened, right? :)
 
-As you may know, we are planning on having a wireless summit meeting
-in Berlin, Germany this June.  This meeting is in cooperation with
-the Fedora FUDCon event, which will be accomodating us under the
-guise of a "hackfest".  This event also overlaps (and co-locates)
-with LinuxTag 2009.  Details are available here:
+Not at all.  There's a pile of performance work that needs to be done, 
+both native and Xen.  I've been addressing it in an ad-hoc, time-sliced 
+way so far, but I haven't had the chance to concentrate on it as I'd 
+like to.  Once I get all the basic stuff off my plate I'll be able to 
+actually focus.
 
-	https://fedoraproject.org/wiki/FUDCon:Berlin_2009
+Besides, its not really the sort of "incentive" that I respond to; I 
+find it demotivating because it carries the presumption that I won't do 
+"the right thing" without some element of coercion.  It's not like I 
+don't already do a fair amount of generally beneficial kernel work.  If 
+you think I should direct my attention in one direction over another, 
+I'm happy to take suggestions.
 
-FUDCon's are typically self-organizing under the BarCamp model.
-However, I have secured a promise that we will be allocated space
-for 1-2 dozen people on at least Friday 26 June and Saturday 27 June
-for our wireless event.  I personally encourage everyone not only to
-attend LinuxTag but also to participate in the rest of FUDCon!
-
-So, here I open the floor for discussion of agenda items for our
-wireless meeting/hackfest.  What do we think is important to discuss
-face-to-face this year?  What isn't getting done?  What is getting
-done wrong?  What do we need that we didn't realize last year?
-
-Also, please consider making some sort of prepared presentation.
-Especially welcome would be topics that are accessible to those
-outside of the core wireless developer group, such as current
-projects on enhancing IBSS support, extended power savings, or any
-other user-visible topic.  I'll be happy to take such proposals in
-private email or you can post them as part of this thread.
-
-Hopefully this gets the discussion started...please comment!
-
-John
-
-P.S.  We are also planning a meeting in Portland this September for
-those unable or unwilling to travel outside of North America for
-whatever reason -- stay tuned.
--- 
-John W. Linville		Someday the world will need a hero, and you
-linville@tuxdriver.com			might be all we have.  Be ready.
+    J
