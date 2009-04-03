@@ -1,49 +1,71 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934720AbZDCPRc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934451AbZDCPSU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934720AbZDCPRc (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 3 Apr 2009 11:17:32 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934338AbZDCPQx
+	id S934451AbZDCPSU (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 3 Apr 2009 11:18:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1764848AbZDCPSA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 3 Apr 2009 11:16:53 -0400
-Received: from caffeine.csclub.uwaterloo.ca ([129.97.134.17]:58841 "EHLO
-	caffeine.csclub.uwaterloo.ca" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S932650AbZDCPQv (ORCPT
+	Fri, 3 Apr 2009 11:18:00 -0400
+Received: from mga02.intel.com ([134.134.136.20]:18839 "EHLO mga02.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1755896AbZDCPR7 convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 3 Apr 2009 11:16:51 -0400
-Date: Fri, 3 Apr 2009 11:16:48 -0400
-To: Mark Lord <lkml@rtr.ca>
-Cc: Andrew Morton <akpm@linux-foundation.org>, torvalds@linux-foundation.org,
-       tytso@mit.edu, drees76@gmail.com, jesper@krogh.cc,
-       linux-kernel@vger.kernel.org
-Subject: Re: Linux 2.6.29
-Message-ID: <20090403151648.GJ3795@csclub.uwaterloo.ca>
-References: <alpine.LFD.2.00.0903251622420.3032@localhost.localdomain> <20090326171148.9bf8f1ec.akpm@linux-foundation.org> <alpine.LFD.2.00.0903261723250.3994@localhost.localdomain> <20090326174704.cd36bf7b.akpm@linux-foundation.org> <alpine.LFD.2.00.0903261752110.3994@localhost.localdomain> <20090326182519.d576d703.akpm@linux-foundation.org> <20090401210337.GB3797@csclub.uwaterloo.ca> <20090401143622.b1885643.akpm@linux-foundation.org> <20090401225737.GC3797@csclub.uwaterloo.ca> <49D6214A.9030204@rtr.ca>
+	Fri, 3 Apr 2009 11:17:59 -0400
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.39,320,1235980800"; 
+   d="scan'208";a="400095009"
+From: "Sosnowski, Maciej" <maciej.sosnowski@intel.com>
+To: Brice Goglin <Brice.Goglin@inria.fr>
+CC: "Andrew J. Gallatin" <gallatin@myri.com>,
+       LKML <linux-kernel@vger.kernel.org>
+Date: Fri, 3 Apr 2009 16:17:38 +0100
+Subject: RE: [RFC] ioat-dca: force I/OAT DCA when disabled in BIOS
+Thread-Topic: [RFC] ioat-dca: force I/OAT DCA when disabled in BIOS
+Thread-Index: Acmxgiq81nLAvvqTSfmuC6tujfraIQC7J3cQ
+Message-ID: <129600E5E5FB004392DDC3FB599660D7910371D7@irsmsx504.ger.corp.intel.com>
+References: <49D13FB1.9090701@inria.fr>
+In-Reply-To: <49D13FB1.9090701@inria.fr>
+Accept-Language: en-US
+Content-Language: en-US
+X-MS-Has-Attach: 
+X-MS-TNEF-Correlator: 
+acceptlanguage: en-US
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 8BIT
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <49D6214A.9030204@rtr.ca>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-From: lsorense@csclub.uwaterloo.ca (Lennart Sorensen)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Apr 03, 2009 at 10:46:34AM -0400, Mark Lord wrote:
-> My Myth box here was running 2.6.18 when originally set up,
-> and even back then it still took *minutes* to delete large files.
-> So that part hasn't really changed much in the interim.
->
-> Because of the multi-minute deletes, the distro shutdown scripts
-> would fails, and power off the box while it was still writing
-> to the drives.  Ouch.
->
-> That system has had XFS on it for the past year and a half now,
-> and for Myth, there's no reason not to use XFS.  It's great!
+Brice Goglin wrote:
+> Some machines (for instance Dell Poweredge servers) disable I/OAT DCA
+> support in the BIOS without any way to reenable it.
+> DCA may actually be enabled manually it in the processors' MSR and in
+> upstream bridge registers. We have been doing this with a hacky userspace
+> program, but we feel that the ioatdma driver may actually take care of it.
+> 
+> Here's a patch doing so, if the ioat_dca_force module parameter is set
+> to 1 on load.
+> 
+> There are some things to improve:
+> * Which pcidev should actually get DCA enabled? The patch below looks for
+>   Intel upstream bridges. Do we need a check for pdev->is_pcie ? Or maybe
+>   even look at pdev->pcie_type? It looks like the pcidev that need to be
+>   configured on my machines are PCI_EXP_TYPE_ROOT_PORT, but I am not sure
+>   it actually matters. Some Intel people will probably know how to fix this.
+> * Any better name for #defin'ing bit #6 at offset 0x64 in the config-space
+>   of these bridges?
+> 
+> Signed-off-by: Brice Goglin <Brice.Goglin@inria.fr>
+> Signed-off-by: Andrew Gallatin <gallatin@myri.com>
+> 
 
-Mythtv has a 'slow delete' option that I believe works by slowly
-truncating the file.  Seems they believe that ext3 is bad at handling
-large file deletes, so they try to spread out the pain.  I don't remember
-if that option is on by default or not.  I turned it off.
+Hi Brice,
 
--- 
-Len Sorensen
+While this patch should work for some platforms (with I/OAT devices of IDs: 0x1a38, 0x360b, 0x65ff) it is not a platform generic solution.
+Generally enabling DCA, like this dca_force() routine does, requires other settings including the tag_map which should be set by BIOS.
+Thus it should be BIOS responsibility to prepare the whole required configuration for DCA.
+For these reasons we don't want to include this solution in the ioatdma driver.
+Please continue to use the userspace application instead.
+
+Regards,
+Maciej
