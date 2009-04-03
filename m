@@ -1,166 +1,111 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763698AbZDCNhA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763298AbZDCNiu@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763698AbZDCNhA (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 3 Apr 2009 09:37:00 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753434AbZDCNgq
+	id S1763298AbZDCNiu (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 3 Apr 2009 09:38:50 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755291AbZDCNim
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 3 Apr 2009 09:36:46 -0400
-Received: from mx2.redhat.com ([66.187.237.31]:51910 "EHLO mx2.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750971AbZDCNgo (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 3 Apr 2009 09:36:44 -0400
-Message-ID: <49D61100.5010202@redhat.com>
-Date: Fri, 03 Apr 2009 16:37:04 +0300
-From: Avi Kivity <avi@redhat.com>
-User-Agent: Thunderbird 2.0.0.21 (X11/20090320)
+	Fri, 3 Apr 2009 09:38:42 -0400
+Received: from vervifontaine.sonytel.be ([80.88.33.193]:38641 "EHLO
+	pophost.sonytel.be" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1753434AbZDCNil (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 3 Apr 2009 09:38:41 -0400
+Date: Fri, 3 Apr 2009 15:38:37 +0200 (CEST)
+From: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>
+To: Sam Ravnborg <sam@ravnborg.org>
+cc: Linux Frame Buffer Device Development 
+	<linux-fbdev-devel@lists.sourceforge.net>,
+       Krzysztof Helt <krzysztof.h1@wp.pl>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       James Simmons <jsimmons@infradead.org>,
+       Linux Kernel Development <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH] fbdev: move logo externs to header file
+In-Reply-To: <20090403123143.GA15598@uranus.ravnborg.org>
+Message-ID: <alpine.LRH.2.00.0904031537250.32353@vixen.sonytel.be>
+References: <alpine.LRH.2.00.0904031157550.32353@vixen.sonytel.be> <20090403123143.GA15598@uranus.ravnborg.org>
+User-Agent: Alpine 2.00 (LRH 1167 2008-08-23)
 MIME-Version: 1.0
-To: Gregory Haskins <ghaskins@novell.com>
-CC: Anthony Liguori <anthony@codemonkey.ws>, Andi Kleen <andi@firstfloor.org>,
-       linux-kernel@vger.kernel.org, agraf@suse.de, pmullaney@novell.com,
-       pmorreale@novell.com, rusty@rustcorp.com.au, netdev@vger.kernel.org,
-       kvm@vger.kernel.org
-Subject: Re: [RFC PATCH 00/17] virtual-bus
-References: <20090331184057.28333.77287.stgit@dev.haskins.net> <87ab71monw.fsf@basil.nowhere.org> <49D35825.3050001@novell.com> <20090401132340.GT11935@one.firstfloor.org> <49D37805.1060301@novell.com> <20090401170103.GU11935@one.firstfloor.org> <49D3B64F.6070703@codemonkey.ws> <49D3D7EE.4080202@novell.com> <49D46089.5040204@redhat.com> <49D497A1.4090900@novell.com> <49D4A4EB.8020105@redhat.com> <49D4AE0C.3000604@novell.com> <49D4B2C0.5060906@redhat.com> <49D4B594.6080703@novell.com> <49D4B8B4.4020003@redhat.com> <49D4BF70.1060301@novell.com> <49D4C191.2070502@redhat.com> <49D4CAA7.3020004@novell.com> <49D4CC61.6010105@redhat.com> <49D4CEB1.9020001@redhat.com> <49D4D075.9010702@codemonkey.ws> <49D4E33F.5000303@codemonkey.ws> <49D5FAFD.1010102@novell.com> <49D5FDF9.7090602@redhat.com> <49D60B91.6010503@novell.com>
-In-Reply-To: <49D60B91.6010503@novell.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: TEXT/PLAIN; charset=ISO-8859-15
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Gregory Haskins wrote:
-> Avi Kivity wrote:
->   
->> Gregory Haskins wrote:
->>     
->>> So again, I am proposing for consideration of accepting my work (either
->>> in its current form, or something we agree on after the normal review
->>> process) not only on the basis of the future development of the
->>> platform, but also to keep current components in their running to their
->>> full potential.  I will again point out that the code is almost
->>> completely off to the side, can be completely disabled with config
->>> options, and I will maintain it.  Therefore the only real impact is to
->>> people who care to even try it, and to me.
->>>   
->>>       
->> Your work is a whole stack.  Let's look at the constituents.
->>
->> - a new virtual bus for enumerating devices.
->>
->> Sorry, I still don't see the point.  It will just make writing drivers
->> more difficult.  The only advantage I've heard from you is that it
->> gets rid of the gunk.  Well, we still have to support the gunk for
->> non-pv devices so the gunk is basically free.  The clean version is
->> expensive since we need to port it to all guests and implement
->> exciting features like hotplug.
->>     
-> My real objection to PCI is fast-path related.  I don't object, per se,
-> to using PCI for discovery and hotplug.  If you use PCI just for these
-> types of things, but then allow fastpath to use more hypercall oriented
-> primitives, then I would agree with you.  We can leave PCI emulation in
-> user-space, and we get it for free, and things are relatively tidy.
->   
+On Fri, 3 Apr 2009, Sam Ravnborg wrote:
+> On Fri, Apr 03, 2009 at 01:45:40PM +0200, Geert Uytterhoeven wrote:
+> > Now we have __initconst, we can finally move the external declarations for the
+> > various Linux logo structures to <linux/linux_logo.h>.
+> > 
+> > Signed-off-by: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>
+> > Acked-By: James Simmons <jsimmons@infradead.org>
+> > ---
+> > James' ack dates back to the previous submission (way to long ago), when the
+> > logos were still __initdata, which caused failures on some platforms with some
+> > toolchain versions.
+> > 
+> > Note: you have to remove the generated logos, as they're not automatically
+> > regenerated if scripts/pnmtologo.c changes.
+> 
+> Something like this to fix that bug?
 
-PCI has very little to do with the fast path (nothing, if we use MSI).
+Yep, after s/pnmtlogo/pnmtologo/g
+(it cannot work as-is, as there's one place where you did spell `pnmtologo'
+ correctly ;-)
 
-> Its once you start requiring that we stay ABI compatible with something
-> like the existing virtio-net in x86 KVM where I think it starts to get
-> ugly when you try to move it into the kernel.  So that is what I had a
-> real objection to.  I think as long as we are not talking about trying
-> to make something like that work, its a much more viable prospect.
->   
+Acked-by: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>
 
-I don't see why the fast path of virtio-net would be bad.  Can you 
-elaborate?
+> Untested as I'm busy atm.
+> 
+> 	Sam
+> 
+> diff --git a/drivers/video/logo/Makefile b/drivers/video/logo/Makefile
+> index b91251d..6a26982 100644
+> --- a/drivers/video/logo/Makefile
+> +++ b/drivers/video/logo/Makefile
+> @@ -37,22 +37,24 @@ extra-y += $(call logo-cfiles,_clut224,ppm)
+>  # Gray 256
+>  extra-y += $(call logo-cfiles,_gray256,pgm)
+>  
+> +pnmtlogo := scripts/pnmtologo
+> +
+>  # Create commands like "pnmtologo -t mono -n logo_mac_mono -o ..."
+>  quiet_cmd_logo = LOGO    $@
+> -	cmd_logo = scripts/pnmtologo \
+> +	cmd_logo = $(pnmtologo) \
+>  			-t $(patsubst $*_%,%,$(notdir $(basename $<))) \
+>  			-n $(notdir $(basename $<)) -o $@ $<
+>  
+> -$(obj)/%_mono.c: $(src)/%_mono.pbm FORCE
+> +$(obj)/%_mono.c: $(src)/%_mono.pbm $(pnmtlogo) FORCE
+>  	$(call if_changed,logo)
+>  
+> -$(obj)/%_vga16.c: $(src)/%_vga16.ppm FORCE
+> +$(obj)/%_vga16.c: $(src)/%_vga16.ppm $(pnmtlogo) FORCE
+>  	$(call if_changed,logo)
+>  
+> -$(obj)/%_clut224.c: $(src)/%_clut224.ppm FORCE
+> +$(obj)/%_clut224.c: $(src)/%_clut224.ppm $(pnmtlogo) FORCE
+>  	$(call if_changed,logo)
+>  
+> -$(obj)/%_gray256.c: $(src)/%_gray256.pgm FORCE
+> +$(obj)/%_gray256.c: $(src)/%_gray256.pgm $(pnmtlogo) FORCE
+>  	$(call if_changed,logo)
+>  
+>  # Files generated that shall be removed upon make clean
 
-Obviously all the pci glue stays in userspace.
+With kind regards,
 
-> So what I propose is the following: 
->
-> 1) The core vbus design stays the same (or close to it)
->   
+Geert Uytterhoeven
+Software Architect
 
-Sorry, I still don't see what advantage this has over PCI, and how you 
-deal with the disadvantages.
+Sony Techsoft Centre Europe
+The Corporate Village � Da Vincilaan 7-D1 � B-1935 Zaventem � Belgium
 
-> 2) the vbus-proxy and kvm-guest patch go away
-> 3) the kvm-host patch changes to work with coordination from the
-> userspace-pci emulation for things like MSI routing
-> 4) qemu will know to create some MSI shim 1:1 with whatever it
-> instantiates on the bus (and can communicate changes
->   
+Phone:    +32 (0)2 700 8453
+Fax:      +32 (0)2 700 8622
+E-mail:   Geert.Uytterhoeven@sonycom.com
+Internet: http://www.sony-europe.com/
 
-Don't userstand.  What's this MSI shim?
-
-> 5) any drivers that are written for these new PCI-IDs that might be
-> present are allowed to use a hypercall ABI to talk after they have been
-> probed for that ID (e.g. they are not limited to PIO or MMIO BAR type
-> access methods).
->   
-
-The way we'd to it with virtio is to add a feature bit that say "you can 
-hypercall here instead of pio".  This way old drivers continue to work.
-
-Note that nothing prevents us from trapping pio in the kernel (in fact, 
-we do) and forwarding it to the device.  It shouldn't be any slower than 
-hypercalls.
-
-> Once I get here, I might have greater clarity to see how hard it would
-> make to emulate fast path components as well.  It might be easier than I
-> think.
->
-> This is all off the cuff so it might need some fine tuning before its
-> actually workable.
->
-> Does that sound reasonable?
->   
-
-The vbus part (I assume you mean device enumeration) worries me.  I 
-don't think you've yet set down what its advantages are.  Being pure and 
-clean doesn't count, unless you rip out PCI from all existing installed 
-hardware and from Windows.
-
->> - finer-grained point-to-point communication abstractions
->>
->> Where virtio has ring+signalling together, you layer the two.  For
->> networking, it doesn't matter.  For other applications, it may be
->> helpful, perhaps you have something in mind.
->>     
->
-> Yeah, actually.  Thanks for bringing that up.
->
-> So the reason why signaling and the ring are distinct constructs in the
-> design is to facilitate constructs other than rings.  For instance,
-> there may be some models where having a flat shared page is better than
-> a ring.  A ring will naturally preserve all values in flight, where as a
-> flat shared page would not (last update is always current).  There are
-> some algorithms where a previously posted value is obsoleted by an
-> update, and therefore rings are inherently bad for this update model. 
-> And as we know, there are plenty of algorithms where a ring works
-> perfectly.  So I wanted that flexibility to be able to express both.
->   
-
-I agree that there is significant potential here.
-
-> One of the things I have in mind for the flat page model is that RT vcpu
-> priority thing.  Another thing I am thinking of is coming up with a PV
-> LAPIC type replacement (where we can avoid doing the EOI trap by having
-> the PICs state shared).
->   
-
-You keep falling into the paravirtualize the entire universe trap.  If 
-you look deep down, you can see Jeremy struggling in there trying to 
-bring dom0 support to Linux/Xen.
-
-The lapic is a huge ball of gunk but ripping it out is a monumental job 
-with no substantial benefits.  We can at much lower effort avoid the EOI 
-trap by paravirtualizing that small bit of ugliness.  Sure the result 
-isn't a pure and clean room implementation.  It's a band aid.  But I'll 
-take a 50-line band aid over a 3000-line implementation split across 
-guest and host, which only works with Linux.
-
-
--- 
-I have a truly marvellous patch that fixes the bug which this
-signature is too narrow to contain.
-
+A division of Sony Europe (Belgium) N.V.
+VAT BE 0413.825.160 � RPR Brussels
+Fortis � BIC GEBABEBB � IBAN BE41293037680010
