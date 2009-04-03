@@ -1,107 +1,74 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932774AbZDCPa0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933093AbZDCPb3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932774AbZDCPa0 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 3 Apr 2009 11:30:26 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762004AbZDCPaJ
+	id S933093AbZDCPb3 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 3 Apr 2009 11:31:29 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760619AbZDCPbP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 3 Apr 2009 11:30:09 -0400
-Received: from e4.ny.us.ibm.com ([32.97.182.144]:35720 "EHLO e4.ny.us.ibm.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1758299AbZDCPaH (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 3 Apr 2009 11:30:07 -0400
-Subject: Re: [Announce] 2.6.29-rt2
-From: Will Schmidt <will_schmidt@vnet.ibm.com>
-Reply-To: will_schmidt@vnet.ibm.com
-To: Peter Zijlstra <peterz@infradead.org>
-Cc: Thomas Gleixner <tglx@linutronix.de>, LKML <linux-kernel@vger.kernel.org>,
-       rt-users <linux-rt-users@vger.kernel.org>, Ingo Molnar <mingo@elte.hu>,
-       Steven Rostedt <rostedt@goodmis.org>, Carsten Emde <ce@ceag.ch>,
-       Clark Williams <williams@redhat.com>,
-       Frank Rowand <frank.rowand@am.sony.com>,
-       Robin Gareus <robin@gareus.org>, Gregory Haskins <ghaskins@novell.com>,
-       Philippe Reynes <philippe.reynes@isismpp.fr>,
-       Fernando Lopez-Lezcano <nando@ccrma.Stanford.EDU>
-In-Reply-To: <1238751793.798.22.camel@twins>
-References: <alpine.LFD.2.00.0902112332370.415@localhost.localdomain>
-	 <alpine.LFD.2.00.0902122353050.16972@localhost.localdomain>
-	 <alpine.LFD.2.00.0902231854360.3523@localhost.localdomain>
-	 <alpine.LFD.2.00.0902241849230.3523@localhost.localdomain>
-	 <alpine.LFD.2.00.0902241856480.9135@localhost.localdomain>
-	 <alpine.LFD.2.00.0903122013230.29264@localhost.localdomain>
-	 <alpine.LFD.2.00.0903200014320.29264@localhost.localdomain>
-	 <alpine.LFD.2.00.0903201832590.29264@localhost.localdomain>
-	 <alpine.LFD.2.00.0903231723090.29264@localhost.localdomain>
-	 <alpine.LFD.2.00.0903252154040.3397@localhost.localdomain>
-	 <alpine.LFD.2.00.0904020155320.12916@localhost.localdomain>
-	 <1238688145.8813.16.camel@lexx>
-	 <alpine.LFD.2.00.0904021842050.12916@localhost.localdomain>
-	 <1238693053.8813.27.camel@lexx>  <1238751793.798.22.camel@twins>
-Content-Type: text/plain
-Organization: IBM
-Date: Fri, 03 Apr 2009 10:30:04 -0500
-Message-Id: <1238772604.8813.28.camel@lexx>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.22.3.1 
-Content-Transfer-Encoding: 7bit
+	Fri, 3 Apr 2009 11:31:15 -0400
+Received: from mail-qy0-f118.google.com ([209.85.221.118]:52687 "EHLO
+	mail-qy0-f118.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755646AbZDCPbO convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 3 Apr 2009 11:31:14 -0400
+MIME-Version: 1.0
+In-Reply-To: <200903272109.21259.rjw@sisk.pl>
+References: <200903261920.32173.tvrtko@ursulin.net>
+	 <200903270801.46712.tvrtko@ursulin.net>
+	 <200903271255.36429.rjw@sisk.pl> <200903272109.21259.rjw@sisk.pl>
+Date: Fri, 3 Apr 2009 08:24:12 -0700
+Message-ID: <9ae48b020904030824o1f94831asb60f979b3e489a8b@mail.gmail.com>
+Subject: Re: [Regression in 2.6.29] forcedeth doesn't work after resume from 
+	hibernation (was: Re: Resume after hibernation regression in 2.6.29)
+From: Ed Swierk <eswierk@aristanetworks.com>
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: "Tvrtko A. Ursulin" <tvrtko@ursulin.net>, Pavel Machek <pavel@ucw.cz>,
+       linux-pm <linux-pm@lists.linux-foundation.org>,
+       kernel list <linux-kernel@vger.kernel.org>,
+       Tobias Diedrich <ranma+kernel@tdiedrich.de>,
+       Ayaz Abdulla <aabdulla@nvidia.com>, netdev <netdev@vger.kernel.org>,
+       Arthur Jones <ajones@riverbed.com>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       "David S. Miller" <davem@davemloft.net>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 2009-04-03 at 11:43 +0200, Peter Zijlstra wrote:
-> On Thu, 2009-04-02 at 12:24 -0500, Will Schmidt wrote:
-> 
-> > > --------
-> > > 
-> > > Index: linux-2.6-tip/arch/powerpc/mm/tlb_hash64.c
-> > > ===================================================================
-> > > --- linux-2.6-tip.orig/arch/powerpc/mm/tlb_hash64.c
-> > > +++ linux-2.6-tip/arch/powerpc/mm/tlb_hash64.c
-> > > @@ -32,6 +32,8 @@
-> > >  #include <asm/bug.h>
-> > >  #include <asm/machdep.h>
-> > > 
-> > > +DEFINE_PER_CPU(struct ppc64_tlb_batch, ppc64_tlb_batch);
-> > > +
-> > >  /*
-> > >   * A linux PTE was changed and the corresponding hash table entry
-> > >   * neesd to be flushed. This function will either perform the flush
-> 
-> Will, could you see if the below makes your splat go away?
+On Fri, Mar 27, 2009 at 1:09 PM, Rafael J. Wysocki <rjw@sisk.pl> wrote:
+> I was able to reproduce the problem and identify the commit that broke the
+> resume of forcedeth, which turned out to be:
+>
+> commit cb52deba12f27af90a46d2f8667a64888118a888
+> Author: Ed Swierk <eswierk@arastra.com>
+> Date:   Mon Dec 1 12:24:43 2008 +0000
+>
+>    forcedeth: power down phy when interface is down
+>
+>    Signed-off-by: Ed Swierk <eswierk@arastra.com>
+>    Tested-by: Arthur Jones <ajones@riverbed.com>
+>    Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
+>    Signed-off-by: David S. Miller <davem@davemloft.net>
+>
+> Since I have no slightest idea of what this commit is supposed to achieve,
+> I can only ask for reverting it.  It reverts cleanly, BTW.
 
-It does..   booted clean on a power6 blade with this patch applied.
-Thanks.  :-)
+The change causes forcedeth to bring down the physical link when an
+interface goes down; leaving it up causes the switch at the other end
+to think the port is still active, with potentially random speed and
+duplex parameters.
 
--Will
+It's possible that the forcedeth driver needs to reset autonegotiation
+after bringing it up the link again.
 
+Can you please try this on a 2.6.29 kernel that's exhibiting the
+symptoms you describe, after resuming the machine from hibernation:
 
-> 
-> diff --git a/arch/powerpc/include/asm/tlb.h b/arch/powerpc/include/asm/tlb.h
-> index ec82dac..3ddc8f6 100644
-> --- a/arch/powerpc/include/asm/tlb.h
-> +++ b/arch/powerpc/include/asm/tlb.h
-> @@ -38,6 +38,8 @@ struct arch_mmu_gather {
->  	struct pte_freelist_batch *batch;
->  };
-> 
-> +#define ARCH_MMU_GATHER_INIT (struct arch_mmu_gather){ .batch = NULL, }
-> +
->  #if !defined(CONFIG_PPC_STD_MMU)
-> 
->  #define tlb_flush(tlb)			flush_tlb_mm((tlb)->mm)
-> diff --git a/include/asm-generic/tlb.h b/include/asm-generic/tlb.h
-> index 7f2167e..50a09de 100644
-> --- a/include/asm-generic/tlb.h
-> +++ b/include/asm-generic/tlb.h
-> @@ -71,6 +71,10 @@ tlb_gather_mmu(struct mmu_gather *tlb, struct mm_struct *mm, unsigned int full_m
->  		tlb->nr = ~0U;
-> 
->  	tlb->fullmm = full_mm_flush;
-> +
-> +#ifdef HAVE_ARCH_MMU_GATHER
-> +	tlb->arch = ARCH_MMU_GATHER_INIT;
-> +#endif
->  }
-> 
->  static inline void
-> 
+  ethtool -s eth1 autoneg off speed 100 duplex full
+  ethtool -s eth1 autoneg on
 
+This should reset autonegotiation manually and bring the link. Let me
+know how it goes.
+
+Thanks,
+--Ed
