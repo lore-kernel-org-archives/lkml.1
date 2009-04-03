@@ -1,15 +1,15 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764010AbZDCKhx@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762692AbZDCKi0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764010AbZDCKhx (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 3 Apr 2009 06:37:53 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763663AbZDCKgz
+	id S1762692AbZDCKi0 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 3 Apr 2009 06:38:26 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763869AbZDCKhM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 3 Apr 2009 06:36:55 -0400
-Received: from hera.kernel.org ([140.211.167.34]:42879 "EHLO hera.kernel.org"
+	Fri, 3 Apr 2009 06:37:12 -0400
+Received: from hera.kernel.org ([140.211.167.34]:42901 "EHLO hera.kernel.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1763052AbZDCKgx (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 3 Apr 2009 06:36:53 -0400
-Date: Fri, 3 Apr 2009 10:36:13 GMT
+	id S1763846AbZDCKhI (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 3 Apr 2009 06:37:08 -0400
+Date: Fri, 3 Apr 2009 10:36:23 GMT
 From: Ingo Molnar <mingo@elte.hu>
 To: linux-tip-commits@vger.kernel.org
 Cc: linux-kernel@vger.kernel.org, hpa@zytor.com, mingo@redhat.com,
@@ -20,35 +20,32 @@ Reply-To: mingo@redhat.com, hpa@zytor.com, linux-kernel@vger.kernel.org,
        mingo@elte.hu
 In-Reply-To: <1237898630.25315.83.camel@penberg-laptop>
 References: <1237898630.25315.83.camel@penberg-laptop>
-Subject: [tip:tracing/kmemtrace-v2] kmemtrace, rcu: fix rcu_tree_trace.c data structure dependencies
-Message-ID: <tip-6258c4fb59e77d748f7efc2c137ad420372edd07@git.kernel.org>
-Git-Commit-ID: 6258c4fb59e77d748f7efc2c137ad420372edd07
+Subject: [tip:tracing/kmemtrace-v2] kmemtrace, rcu: fix rcupreempt.c data structure dependencies
+Message-ID: <tip-a979241c532f07c201fe94e0a632107268f02578@git.kernel.org>
+Git-Commit-ID: a979241c532f07c201fe94e0a632107268f02578
 X-Mailer: tip-git-log-daemon
 MIME-Version: 1.0
 Content-Type: text/plain; charset=UTF-8
 Content-Disposition: inline
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Fri, 03 Apr 2009 10:36:15 +0000 (UTC)
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Fri, 03 Apr 2009 10:36:25 +0000 (UTC)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Commit-ID:  6258c4fb59e77d748f7efc2c137ad420372edd07
-Gitweb:     http://git.kernel.org/tip/6258c4fb59e77d748f7efc2c137ad420372edd07
+Commit-ID:  a979241c532f07c201fe94e0a632107268f02578
+Gitweb:     http://git.kernel.org/tip/a979241c532f07c201fe94e0a632107268f02578
 Author:     Ingo Molnar <mingo@elte.hu>
 AuthorDate: Wed, 25 Mar 2009 16:42:24 +0100
 Committer:  Ingo Molnar <mingo@elte.hu>
-CommitDate: Fri, 3 Apr 2009 12:23:03 +0200
+CommitDate: Fri, 3 Apr 2009 12:23:04 +0200
 
-kmemtrace, rcu: fix rcu_tree_trace.c data structure dependencies
+kmemtrace, rcu: fix rcupreempt.c data structure dependencies
 
 Impact: cleanup
 
-We want to remove rcutree internals from the public rcutree.h file for
-upcoming kmemtrace changes - but kernel/rcutree_trace.c depends on them.
-
-Introduce kernel/rcutree.h for internal definitions. (Probably all
-the other data types from include/linux/rcutree.h could be
-moved here too - except rcu_data.)
+We want to remove percpu.h from rcupreempt.h, but if we do that
+the percpu primitives there wont build anymore. Move them to the
+.c file instead.
 
 Cc: Pekka Enberg <penberg@cs.helsinki.fi>
 Cc: Eduard - Gabriel Munteanu <eduard.munteanu@linux360.ro>
@@ -58,57 +55,149 @@ Signed-off-by: Ingo Molnar <mingo@elte.hu>
 
 
 ---
- kernel/rcutree.c       |    8 ++++----
- kernel/rcutree.h       |   10 ++++++++++
- kernel/rcutree_trace.c |    2 ++
- 3 files changed, 16 insertions(+), 4 deletions(-)
+ include/linux/rcupreempt.h |   51 +++++++------------------------------------
+ kernel/rcupreempt.c        |   48 +++++++++++++++++++++++++++++++++++++---
+ 2 files changed, 53 insertions(+), 46 deletions(-)
 
-diff --git a/kernel/rcutree.c b/kernel/rcutree.c
-index a2015ed..7f32669 100644
---- a/kernel/rcutree.c
-+++ b/kernel/rcutree.c
-@@ -72,11 +72,11 @@ EXPORT_SYMBOL_GPL(rcu_lock_map);
- 	.n_force_qs_ngp = 0, \
- }
+diff --git a/include/linux/rcupreempt.h b/include/linux/rcupreempt.h
+index 74304b4..3eb8fdd 100644
+--- a/include/linux/rcupreempt.h
++++ b/include/linux/rcupreempt.h
+@@ -40,30 +40,15 @@
+ #include <linux/cpumask.h>
+ #include <linux/seqlock.h>
  
--static struct rcu_state rcu_state = RCU_STATE_INITIALIZER(rcu_state);
--static DEFINE_PER_CPU(struct rcu_data, rcu_data);
-+struct rcu_state rcu_state = RCU_STATE_INITIALIZER(rcu_state);
-+DEFINE_PER_CPU(struct rcu_data, rcu_data);
- 
--static struct rcu_state rcu_bh_state = RCU_STATE_INITIALIZER(rcu_bh_state);
--static DEFINE_PER_CPU(struct rcu_data, rcu_bh_data);
-+struct rcu_state rcu_bh_state = RCU_STATE_INITIALIZER(rcu_bh_state);
-+DEFINE_PER_CPU(struct rcu_data, rcu_bh_data);
+-struct rcu_dyntick_sched {
+-	int dynticks;
+-	int dynticks_snap;
+-	int sched_qs;
+-	int sched_qs_snap;
+-	int sched_dynticks_snap;
+-};
+-
+-DECLARE_PER_CPU(struct rcu_dyntick_sched, rcu_dyntick_sched);
+-
+-static inline void rcu_qsctr_inc(int cpu)
+-{
+-	struct rcu_dyntick_sched *rdssp = &per_cpu(rcu_dyntick_sched, cpu);
+-
+-	rdssp->sched_qs++;
+-}
+-#define rcu_bh_qsctr_inc(cpu)
++extern void rcu_qsctr_inc(int cpu);
++static inline void rcu_bh_qsctr_inc(int cpu) { }
  
  /*
-  * Increment the quiescent state counter.
-diff --git a/kernel/rcutree.h b/kernel/rcutree.h
-new file mode 100644
-index 0000000..5e872bb
---- /dev/null
-+++ b/kernel/rcutree.h
-@@ -0,0 +1,10 @@
-+
-+/*
-+ * RCU implementation internal declarations:
-+ */
-+extern struct rcu_state rcu_state;
-+DECLARE_PER_CPU(struct rcu_data, rcu_data);
-+
-+extern struct rcu_state rcu_bh_state;
-+DECLARE_PER_CPU(struct rcu_data, rcu_bh_data);
-+
-diff --git a/kernel/rcutree_trace.c b/kernel/rcutree_trace.c
-index d6db3e8..4ee954f 100644
---- a/kernel/rcutree_trace.c
-+++ b/kernel/rcutree_trace.c
-@@ -43,6 +43,8 @@
- #include <linux/debugfs.h>
- #include <linux/seq_file.h>
+  * Someone might want to pass call_rcu_bh as a function pointer.
+  * So this needs to just be a rename and not a macro function.
+  *  (no parentheses)
+  */
+-#define call_rcu_bh	 	call_rcu
++#define call_rcu_bh		call_rcu
  
-+#include "rcutree.h"
+ /**
+  * call_rcu_sched - Queue RCU callback for invocation after sched grace period.
+@@ -117,30 +102,12 @@ extern struct rcupreempt_trace *rcupreempt_trace_cpu(int cpu);
+ struct softirq_action;
+ 
+ #ifdef CONFIG_NO_HZ
+-
+-static inline void rcu_enter_nohz(void)
+-{
+-	static DEFINE_RATELIMIT_STATE(rs, 10 * HZ, 1);
+-
+-	smp_mb(); /* CPUs seeing ++ must see prior RCU read-side crit sects */
+-	__get_cpu_var(rcu_dyntick_sched).dynticks++;
+-	WARN_ON_RATELIMIT(__get_cpu_var(rcu_dyntick_sched).dynticks & 0x1, &rs);
+-}
+-
+-static inline void rcu_exit_nohz(void)
+-{
+-	static DEFINE_RATELIMIT_STATE(rs, 10 * HZ, 1);
+-
+-	__get_cpu_var(rcu_dyntick_sched).dynticks++;
+-	smp_mb(); /* CPUs seeing ++ must see later RCU read-side crit sects */
+-	WARN_ON_RATELIMIT(!(__get_cpu_var(rcu_dyntick_sched).dynticks & 0x1),
+-				&rs);
+-}
+-
+-#else /* CONFIG_NO_HZ */
+-#define rcu_enter_nohz()	do { } while (0)
+-#define rcu_exit_nohz()		do { } while (0)
+-#endif /* CONFIG_NO_HZ */
++extern void rcu_enter_nohz(void);
++extern void rcu_exit_nohz(void);
++#else
++# define rcu_enter_nohz()	do { } while (0)
++# define rcu_exit_nohz()	do { } while (0)
++#endif
+ 
+ /*
+  * A context switch is a grace period for rcupreempt synchronize_rcu()
+diff --git a/kernel/rcupreempt.c b/kernel/rcupreempt.c
+index 5d59e85..ce97a4d 100644
+--- a/kernel/rcupreempt.c
++++ b/kernel/rcupreempt.c
+@@ -147,7 +147,51 @@ struct rcu_ctrlblk {
+ 	wait_queue_head_t sched_wq;	/* Place for rcu_sched to sleep. */
+ };
+ 
++struct rcu_dyntick_sched {
++	int dynticks;
++	int dynticks_snap;
++	int sched_qs;
++	int sched_qs_snap;
++	int sched_dynticks_snap;
++};
 +
- static void print_one_rcu_data(struct seq_file *m, struct rcu_data *rdp)
- {
- 	if (!rdp->beenonline)
++static DEFINE_PER_CPU_SHARED_ALIGNED(struct rcu_dyntick_sched, rcu_dyntick_sched) = {
++	.dynticks = 1,
++};
++
++void rcu_qsctr_inc(int cpu)
++{
++	struct rcu_dyntick_sched *rdssp = &per_cpu(rcu_dyntick_sched, cpu);
++
++	rdssp->sched_qs++;
++}
++
++#ifdef CONFIG_NO_HZ
++
++void rcu_enter_nohz(void)
++{
++	static DEFINE_RATELIMIT_STATE(rs, 10 * HZ, 1);
++
++	smp_mb(); /* CPUs seeing ++ must see prior RCU read-side crit sects */
++	__get_cpu_var(rcu_dyntick_sched).dynticks++;
++	WARN_ON_RATELIMIT(__get_cpu_var(rcu_dyntick_sched).dynticks & 0x1, &rs);
++}
++
++void rcu_exit_nohz(void)
++{
++	static DEFINE_RATELIMIT_STATE(rs, 10 * HZ, 1);
++
++	__get_cpu_var(rcu_dyntick_sched).dynticks++;
++	smp_mb(); /* CPUs seeing ++ must see later RCU read-side crit sects */
++	WARN_ON_RATELIMIT(!(__get_cpu_var(rcu_dyntick_sched).dynticks & 0x1),
++				&rs);
++}
++
++#endif /* CONFIG_NO_HZ */
++
++
+ static DEFINE_PER_CPU(struct rcu_data, rcu_data);
++
+ static struct rcu_ctrlblk rcu_ctrlblk = {
+ 	.fliplock = __SPIN_LOCK_UNLOCKED(rcu_ctrlblk.fliplock),
+ 	.completed = 0,
+@@ -427,10 +471,6 @@ static void __rcu_advance_callbacks(struct rcu_data *rdp)
+ 	}
+ }
+ 
+-DEFINE_PER_CPU_SHARED_ALIGNED(struct rcu_dyntick_sched, rcu_dyntick_sched) = {
+-	.dynticks = 1,
+-};
+-
+ #ifdef CONFIG_NO_HZ
+ static DEFINE_PER_CPU(int, rcu_update_flag);
+ 
