@@ -1,69 +1,89 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S935643AbZDCS1e@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S935867AbZDCSak@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S935643AbZDCS1e (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 3 Apr 2009 14:27:34 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756578AbZDCS1X
+	id S935867AbZDCSak (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 3 Apr 2009 14:30:40 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761398AbZDCSa0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 3 Apr 2009 14:27:23 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:45430 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1753029AbZDCS1X (ORCPT
+	Fri, 3 Apr 2009 14:30:26 -0400
+Received: from victor.provo.novell.com ([137.65.250.26]:59370 "EHLO
+	victor.provo.novell.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1758833AbZDCSaZ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 3 Apr 2009 14:27:23 -0400
-Date: Fri, 3 Apr 2009 11:24:50 -0700 (PDT)
-From: Linus Torvalds <torvalds@linux-foundation.org>
-X-X-Sender: torvalds@localhost.localdomain
-To: "Theodore Ts'o" <tytso@mit.edu>, Jens Axboe <jens.axboe@oracle.com>
-cc: Linux Kernel Developers List <linux-kernel@vger.kernel.org>,
-       Ext4 Developers List <linux-ext4@vger.kernel.org>
-Subject: Re: [GIT PULL] Ext3 latency fixes
-In-Reply-To: <1238742067-30814-1-git-send-email-tytso@mit.edu>
-Message-ID: <alpine.LFD.2.00.0904031110420.19690@localhost.localdomain>
-References: <1238742067-30814-1-git-send-email-tytso@mit.edu>
-User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
+	Fri, 3 Apr 2009 14:30:25 -0400
+Message-ID: <49D65647.2000502@novell.com>
+Date: Fri, 03 Apr 2009 14:32:39 -0400
+From: Gregory Haskins <ghaskins@novell.com>
+User-Agent: Thunderbird 2.0.0.19 (X11/20081227)
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+To: Chris Wright <chrisw@sous-sol.org>
+CC: Avi Kivity <avi@redhat.com>, Patrick Mullaney <pmullaney@novell.com>,
+       anthony@codemonkey.ws, andi@firstfloor.org, herbert@gondor.apana.org.au,
+       Peter Morreale <PMorreale@novell.com>, rusty@rustcorp.com.au,
+       agraf@suse.de, kvm@vger.kernel.org, linux-kernel@vger.kernel.org,
+       netdev@vger.kernel.org
+Subject: Re: [RFC PATCH 00/17] virtual-bus
+References: <49D469D2020000A100045FA1@lucius.provo.novell.com> <49D473EA020000C700056627@lucius.provo.novell.com> <49D473EA020000C700056627@lucius.provo.novell.com> <49D4CB38.5030205@redhat.com> <49D4DA54.3090401@novell.com> <49D4DE82.5020306@redhat.com> <49D4F97F.6040507@novell.com> <49D5F669.1070502@redhat.com> <49D6240B.4080809@novell.com> <20090403170920.GM18394@sequoia.sous-sol.org>
+In-Reply-To: <20090403170920.GM18394@sequoia.sous-sol.org>
+X-Enigmail-Version: 0.95.7
+OpenPGP: id=D8195319
+Content-Type: multipart/signed; micalg=pgp-sha1;
+ protocol="application/pgp-signature";
+ boundary="------------enig3053C0255016E2D5F75A9B91"
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+This is an OpenPGP/MIME signed message (RFC 2440 and 3156)
+--------------enig3053C0255016E2D5F75A9B91
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: quoted-printable
+
+Chris Wright wrote:
+> * Gregory Haskins (ghaskins@novell.com) wrote:
+>  =20
+>> Let me ask you this:  If you had a clean slate and were designing a
+>> hypervisor and a guest OS from scratch:  What would you make the bus
+>> look like?
+>>    =20
+>
+> Well, virtio did have a relatively clean slate. And PCI (as _one_
+> transport option) is what it looks like.  It's not the only transport
+> (as Avi already mentioned it works for s390, for example).
+>  =20
+
+Got it.  Thanks.
+
+> BTW, from my brief look at vbus, it seems pretty similar to xenbus.
+>  =20
+
+If you are referring to the guest side interface, it was actually
+inspired by lguest's bus (I forget what Rusty called it now, though). =20
+I think I actually declared that in the original patch series I put out
+1.5 years ago, but I might have inadvertently omitted that on this
+go-round.
+
+I think XenBus is more of an event channel infrastructure, isn't it?=20
+But in any case, I think the nature of getting PV drivers into a guest
+is relatively similar, so I wouldn't be surprised if there were
+parallels in quite a few of the implementations.  In fact, I chose a
+generic name like "vbus" in hopes that it could be used across different
+hypervisors. :)
+
+-Greg
 
 
-On Fri, 3 Apr 2009, Theodore Ts'o wrote:
-> 
-> Please pull from:
-> 
-> git://git.kernel.org/pub/scm/linux/kernel/git/tytso/ext4.git ext3-latency-fixes
+--------------enig3053C0255016E2D5F75A9B91
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: OpenPGP digital signature
+Content-Disposition: attachment; filename="signature.asc"
 
-Thanks, pulled. I'll be interested to see how it feels. Will report back 
-after I've rebuild and gone through a few more emails.
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v2.0.9 (GNU/Linux)
+Comment: Using GnuPG with SUSE - http://enigmail.mozdev.org
 
-One thing I started wondering about in your changes to start using 
-WRITE_SYNC is that I'm getting closer to thinking that we did the whole 
-WRITE-vs-WRITE_SYNC thing the wrong way around.
+iEYEARECAAYFAknWVkgACgkQlOSOBdgZUxnBbwCbBExc8PDzX/IbW7luRoaFEccu
+sMQAn3Z2oH5rv4HGfJ2dtaoIjrCkBTB9
+=7VEH
+-----END PGP SIGNATURE-----
 
-Now, it's clearly true that non-synchronous writes are hopefully always 
-the common case, so in that sense it makes sense to think of "WRITE" as 
-the default non-critical case, and then make the (fewer) WRITE_SYNC cases 
-be the special case.
-
-But at the same time, I now suspect that we could actually have solved 
-this problem more easily by just doing things the other way around: make 
-the default "WRITE" be the high-priority one (to match "READ"), and then 
-just explicitly marking the data writes with "WRITE_ASYNC".
-
-Why? Because I think that with all the writes sprinkled around in random 
-places, it's probably _easier_ to find the bulk writes that cause the 
-biggest issues, and just fix _those_ to be WRITE_ASYNC. They may be bulk, 
-they may be the common case, but they also tend to be the case where we 
-write with generic routines (eg the whole "do_writepages()" thing).
-
-So the VFS layer tends to already do much of the bulk writeout, and maybe 
-we would have been better off just changing those to ASYNC and leaving any 
-more specialized cases as the SYNC case? That would have avoided a lot of 
-this effort at the filesystem level. We'd just assume that the default 
-filesystem-specific writes tend to all be SYNC.
-
-Comments?
-
-		Linus
+--------------enig3053C0255016E2D5F75A9B91--
