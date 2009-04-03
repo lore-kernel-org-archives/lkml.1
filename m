@@ -1,30 +1,32 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763634AbZDCOPs@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764524AbZDCOUs@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763634AbZDCOPs (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 3 Apr 2009 10:15:48 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751563AbZDCOPi
+	id S1764524AbZDCOUs (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 3 Apr 2009 10:20:48 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753655AbZDCOUg
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 3 Apr 2009 10:15:38 -0400
-Received: from mx2.mail.elte.hu ([157.181.151.9]:39869 "EHLO mx2.mail.elte.hu"
+	Fri, 3 Apr 2009 10:20:36 -0400
+Received: from mx3.mail.elte.hu ([157.181.1.138]:50554 "EHLO mx3.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751394AbZDCOPh (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 3 Apr 2009 10:15:37 -0400
-Date: Fri, 3 Apr 2009 16:15:01 +0200
+	id S1751563AbZDCOUf (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 3 Apr 2009 10:20:35 -0400
+Date: Fri, 3 Apr 2009 16:17:43 +0200
 From: Ingo Molnar <mingo@elte.hu>
-To: Stephen Rothwell <sfr@canb.auug.org.au>
-Cc: Kyle McMartin <kyle@mcmartin.ca>, Thomas Gleixner <tglx@linutronix.de>,
-       "H. Peter Anvin" <hpa@zytor.com>, linux-next@vger.kernel.org,
-       Helge Deller <deller@gmx.de>, linux-parisc@vger.kernel.org,
-       Uwe Kleine-Koenig <u.kleine-koenig@pengutronix.de>,
-       Steven Rostedt <srostedt@redhat.com>, linux-kernel@vger.kernel.org
-Subject: Re: linux-next: manual merge of the tracing tree with the parisc
-	tree
-Message-ID: <20090403141501.GE8875@elte.hu>
-References: <20090401113740.7f425e02.sfr@canb.auug.org.au> <20090401175033.GE1443@bombadil.infradead.org> <20090402223205.e4ab7b5e.sfr@canb.auug.org.au>
+To: Eduard - Gabriel Munteanu <eduard.munteanu@linux360.ro>
+Cc: Pekka Enberg <penberg@cs.helsinki.fi>, Mel Gorman <mel@csn.ul.ie>,
+       Jason Baron <jbaron@redhat.com>, linux-kernel@vger.kernel.org,
+       mm-commits@vger.kernel.org, alexn@dsv.su.se, akpm@linux-foundation.org,
+       alexn@telia.com, apw@shadowen.org, cl@linux-foundation.org,
+       haveblue@us.ibm.com, kamezawa.hiroyu@jp.fujitu.com,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>,
+       Steven Rostedt <rostedt@goodmis.org>,
+       Fr?d?ric Weisbecker <fweisbec@gmail.com>
+Subject: Re: + page-owner-tracking.patch added to -mm tree
+Message-ID: <20090403141743.GF8875@elte.hu>
+References: <200903312321.n2VNLAMI006236@imap1.linux-foundation.org> <20090401111540.GC15442@elte.hu> <20090401125506.GA6406@csn.ul.ie> <20090401131713.GQ12966@elte.hu> <20090401133220.GB6406@csn.ul.ie> <20090401134917.GC18677@elte.hu> <1238597398.23857.11.camel@penberg-laptop> <20090401152251.GB23390@elte.hu> <1238656331.26286.17.camel@penberg-laptop> <20090403042131.GA15669@localhost>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20090402223205.e4ab7b5e.sfr@canb.auug.org.au>
+In-Reply-To: <20090403042131.GA15669@localhost>
 User-Agent: Mutt/1.5.18 (2008-05-17)
 X-ELTE-VirusStatus: clean
 X-ELTE-SpamScore: -1.5
@@ -39,130 +41,18 @@ List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-* Stephen Rothwell <sfr@canb.auug.org.au> wrote:
+* Eduard - Gabriel Munteanu <eduard.munteanu@linux360.ro> wrote:
 
-> Hi Kyle,
+> One thing I'm not sure about this patch is whether it manages to 
+> record an allocation only once, i.e. does it log a single event 
+> when/if the slab allocator requests pages? Some time ago I sent a 
+> patch adding GFP_NOTRACE to gfp.h, but was rejected. Maybe this 
+> could be a way out of the mess.
 > 
-> On Wed, 1 Apr 2009 13:50:34 -0400 Kyle McMartin <kyle@mcmartin.ca> wrote:
-> >
-> > What's the optimal way to sort out multiple branches in this 
-> > tree? Apparently Andrew is cross with me because the rtc-parisc 
-> > branch didn't get picked up... Should I put a list of branches 
-> > in my kernel.org public_html or something?
-> 
-> I am not quite sure what you are getting at.  If you have multiple 
-> trees (or branches in a tree), I can merge them separately into 
-> linux-next - just tell me what they are.
+> (GFP_NOTRACE would also allow us to log "backend" allocations 
+> easily and treat them separately, for the record, or simply filter 
+> them out.)
 
-One solution, when there are lots of branches, is what we use in the 
--tip tree to auto-integrate the auto-*-next output branches.
-
-It works like this:
-
-For each output auto-*-next tree (there's 19 at the moment) there's 
-a special file under the tip:tip/.tip/auto-branches/ directory.
-
-Say the auto-tracing-next tree is represented via a list of topic 
-branches in .tip/auto-branches/auto-tracing-next:
-
-    tracing/core
-    tracing/urgent
-    tracing/ftrace
-    tracing/mmiotrace
-    tracing/sysprof
-    tracing/nmisafe
-    tracing/stack-tracer
-    tracing/fastboot
-    tracing/markers
-    tracing/ring-buffer
-    tracing/pipe
-    tracing/tracepoints
-    tracing/core-v2
-    tracing/fastboot-v2
-    tracing/core-v3
-    tracing/function-return-tracer
-    tracing/branch-tracer
-    
-    # dont know yet:
-    # tracing/dump-tracer
-    
-    tracing/options
-    tracing/profiling
-    tracing/power-tracer
-    tracing/powerpc
-
-    # broken right now:
-    # tracing/hw-branch-tracing
-
-    tracing/function-graph-tracer
-    tracing/blktrace
-    tracing/graph-tracer
-    tracing/docs
-    tracing/kmemtrace
-    tracing/kmemtrace2
-    tracing/printk
-    tracing/doc
-    tracing/syscalls
-    tracing/syscalls
-    tracing/filters
-    tracing/tasks
-    tracing/kprobes
-    tracing/hw-breakpoints
-    tracing/blktrace-v2
-    tracing/kmemtrace-v2
-
-When things are quiet and there are no known regressions, i type:
-
-  tip-integrate auto-tracing-next
-
-and soon afterwards a new tree comes out. I dont have to do any 
-manual integration, it's all automated, including the cached 
-resolution of conflicts. If a new conflict comes up i get a shell 
-prompt, fix the conflict, commit it and the integration continues.
-
-If i'm happy with the end result i push it out.
-
-As you can see it above, branches can be annotated and commented 
-out. For example this branch:
-
-    # broken right now:
-    #tracing/hw-branch-tracing
-
-was causing boot crashes so we excluded it from the 
-auto-tracing-next output and linux-next wont crash due to these 
-known and under-development problems.
-
-Another branch:
-
-    # dont know yet:
-    # tracing/dump-tracer
-
-Is holding commits i'm not sure we want to push upstream yet, so we 
-dont push it into linux-next. (linux-next is meant for items that 
-are intended for the next cycle.)
-
-There's a similar list of topics for the other integration trees:
-
- auto-core-next         auto-latest                     auto-stackprotector-next
- auto-cpus4096-next     auto-oprofile-next              auto-timers-next
- auto-fastboot-next     auto-perfcounters-next          auto-tracing-next
- auto-generic-ipi-next  auto-rt-next                    auto-warnings-next
- auto-genirq-next       auto-safe-poison-pointers-next  auto-x86-next
- auto-iommu-next        auto-sched-next
- auto-kmemcheck-next    auto-sparseirq-next
-
-Over 100 topic branches are active typically just before the merge 
-window - they go down to below 10 after the merge window. So there's 
-a constant ebb and flow in topic activity.
-
-We also have a "tip-integrate-all" script that runs through all the 
--next branches and integrates them.
-
-These tools can be found under the -tip:.tip/bin/ directory - 
-there's currently 68 utility scripts there currently, to solve 
-various probems all around integration tree maintenance, problems 
-which are often not solved by the base Git toolset adequately.
-
-Hope this helps,
+makes a lot of sense IMO to annotate these via a GFP flag.
 
 	Ingo
