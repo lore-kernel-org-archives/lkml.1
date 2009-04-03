@@ -1,46 +1,72 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932844AbZDCPfq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933789AbZDCPgm@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932844AbZDCPfq (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 3 Apr 2009 11:35:46 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759046AbZDCPfg
+	id S933789AbZDCPgm (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 3 Apr 2009 11:36:42 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1764297AbZDCPga
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 3 Apr 2009 11:35:36 -0400
-Received: from earthlight.etchedpixels.co.uk ([81.2.110.250]:39468 "EHLO
-	www.etchedpixels.co.uk" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1759701AbZDCPfg (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 3 Apr 2009 11:35:36 -0400
-Date: Fri, 3 Apr 2009 16:35:34 +0100
-From: Alan Cox <alan@lxorguk.ukuu.org.uk>
-To: Andi Kleen <andi@firstfloor.org>
-Cc: torvalds@linux-foundation.org, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] LANANA: Change of management and resync
-Message-ID: <20090403163534.4853af86@lxorguk.ukuu.org.uk>
-In-Reply-To: <874ox5lps1.fsf@basil.nowhere.org>
-References: <20090403135051.19177.23019.stgit@localhost.localdomain>
-	<874ox5lps1.fsf@basil.nowhere.org>
-X-Mailer: Claws Mail 3.7.0 (GTK+ 2.14.7; x86_64-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Fri, 3 Apr 2009 11:36:30 -0400
+Received: from mx3.mail.elte.hu ([157.181.1.138]:49268 "EHLO mx3.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1758041AbZDCPg3 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 3 Apr 2009 11:36:29 -0400
+Date: Fri, 3 Apr 2009 17:36:17 +0200
+From: Ingo Molnar <mingo@elte.hu>
+To: markus.t.metzger@intel.com
+Cc: tglx@linutronix.de, hpa@zytor.com, markus.t.metzger@gmail.com,
+       roland@redhat.com, eranian@googlemail.com, oleg@redhat.com,
+       juan.villacis@intel.com, ak@linux.jf.intel.com,
+       linux-kernel@vger.kernel.org
+Subject: Re: [patch 00/20] x86, ptrace, bts, hw-branch-tracer: fixes and
+	cleanups
+Message-ID: <20090403153617.GA15166@elte.hu>
+References: <20090403144332.799740000@intel.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20090403144332.799740000@intel.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.5
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 03 Apr 2009 17:29:02 +0200
-Andi Kleen <andi@firstfloor.org> wrote:
 
-> Alan Cox <alan@lxorguk.ukuu.org.uk> writes:
+* markus.t.metzger@intel.com <markus.t.metzger@intel.com> wrote:
+
+> Patches 1-5 fix races with context switching code when the branch 
+> traced task is currently running.
 > 
-> > @@ -340,7 +345,7 @@ Your cooperation is appreciated.
-> >  		 14 = /dev/touchscreen/ucb1x00  UCB 1x00 touchscreen
-> >  		 15 = /dev/touchscreen/mk712	MK712 touchscreen
-> >  		128 = /dev/beep		Fancy beep device
-> > -		129 = /dev/modreq	Kernel module load request {2.6}
-> > +		129 = 
+> In the worst case, this might cause context switch code to access 
+> freed memory or the tracing hardware to continue tracing into a 
+> freed buffer. Both might crash the kernel.
 > 
-> You drop a lot of entries like this. Was that intended?
+> The first 4 patches apply to .29 using the below preparation 
+> patch.
+> 
+> The remaining patches fix bugs in the context of per-cpu tracing 
+> (i.e. hw-branch-tracer) and pebs, add more selftest code, and do 
+> some cleanups.
 
-Yes - those are ones that were obsolete well before 2.6. I left the
-blanks in so it is clear where the gaps are for re-use.
+Thanks - this looks pretty acceptable. Latest -git changed a lot of 
+code in the same area (-mm bits went upstream), creating a lot of 
+conflicts.
 
+To not prolongue this any longer (20 patches are difficult enough 
+already to handle) i picked up your patches and resolved the 
+conflicts in situ - mind having a look at the resulting 
+tip:tracing/hw-branch-tracing branch - does the end result look sane 
+to you?
+
+It would also be nice to address Peter's feedback about the mm.h 
+detail and the locked-pages API - but we can do that on top.
+
+Thanks,
+
+	Ingo
