@@ -1,132 +1,259 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756465AbZDCAN3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761451AbZDCAPy@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756465AbZDCAN3 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 2 Apr 2009 20:13:29 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756374AbZDCANU
+	id S1761451AbZDCAPy (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 2 Apr 2009 20:15:54 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755899AbZDCAPm
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 2 Apr 2009 20:13:20 -0400
-Received: from smtp-out.google.com ([216.239.45.13]:46344 "EHLO
-	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755899AbZDCANT (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 2 Apr 2009 20:13:19 -0400
-DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
-	h=mime-version:in-reply-to:references:date:message-id:subject:from:to:
-	cc:content-type:content-transfer-encoding:x-system-of-record;
-	b=PTwdoQn5E8xIYzIgLmBZWu8hN+qvmcD5kDGRkWAMz1juH8goysfG9kyePMtzUq1Ka
-	tjXJXYiX9g29Fcsj5/t+g==
-MIME-Version: 1.0
-In-Reply-To: <200904022224.31060.nickpiggin@yahoo.com.au>
-References: <604427e00903181244w360c5519k9179d5c3e5cd6ab3@mail.gmail.com>
-	 <20090324173511.GJ23439@duck.suse.cz>
-	 <604427e00904011536i6332a239pe21786cc4c8b3025@mail.gmail.com>
-	 <200904022224.31060.nickpiggin@yahoo.com.au>
-Date: Thu, 2 Apr 2009 17:13:13 -0700
-Message-ID: <604427e00904021713j8b8101dk1cd5154790790193@mail.gmail.com>
-Subject: Re: ftruncate-mmap: pages are lost after writing to mmaped file.
-From: Ying Han <yinghan@google.com>
-To: Nick Piggin <nickpiggin@yahoo.com.au>
-Cc: Jan Kara <jack@suse.cz>, "Martin J. Bligh" <mbligh@mbligh.org>,
-       linux-ext4@vger.kernel.org,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       linux-kernel <linux-kernel@vger.kernel.org>,
-       linux-mm <linux-mm@kvack.org>, guichaz@gmail.com,
-       Alex Khesin <alexk@google.com>, Mike Waychison <mikew@google.com>,
-       Rohit Seth <rohitseth@google.com>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
-X-System-Of-Record: true
+	Thu, 2 Apr 2009 20:15:42 -0400
+Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:48034
+	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
+	by vger.kernel.org with ESMTP id S1753844AbZDCAPk convert rfc822-to-8bit
+	(ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 2 Apr 2009 20:15:40 -0400
+Date: Thu, 02 Apr 2009 17:15:29 -0700 (PDT)
+Message-Id: <20090402.171529.174800359.davem@davemloft.net>
+To: torvalds@linux-foundation.org
+CC: akpm@linux-foundation.org, netdev@vger.kernel.org,
+       linux-kernel@vger.kernel.org
+Subject: [GIT]: Networking
+From: David Miller <davem@davemloft.net>
+X-Mailer: Mew version 6.1 on Emacs 22.1 / Mule 5.0 (SAKAKI)
+Mime-Version: 1.0
+Content-Type: Text/Plain; charset=iso-8859-1
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Apr 2, 2009 at 4:24 AM, Nick Piggin <nickpiggin@yahoo.com.au> wrote:
-> On Thursday 02 April 2009 09:36:13 Ying Han wrote:
->> Hi Jan:
->>     I feel that the problem you saw is kind of differnt than mine. As
->> you mentioned that you saw the PageError() message, which i don't see
->> it on my system. I tried you patch(based on 2.6.21) on my system and
->> it runs ok for 2 days, Still, since i don't see the same error message
->> as you saw, i am not convineced this is the root cause at least for
->> our problem. I am still looking into it.
->>     So, are you seeing the PageError() every time the problem happened?
->
-> So I asked if you could test with my workaround of taking truncate_mutex
-> at the start of ext2_get_blocks, and report back. I never heard of any
-> response after that.
 
-I applied the change and still get the same issue, unless i didn't do
-the right thing, here
-is the patch i applied, which put the truncate_mutex at the beginning
-of ext2_get_blocks.
+Several fixes and small cures, including:
 
-diff --git a/fs/ext2/inode.c b/fs/ext2/inode.c
-index 384fc0d..94cf773 100644
---- a/fs/ext2/inode.c
-+++ b/fs/ext2/inode.c
-@@ -586,10 +586,13 @@ static int ext2_get_blocks(struct inode *inode,
- 	int count = 0;
- 	ext2_fsblk_t first_block = 0;
+1) Need BH disabling in netfilter RCU sequences, fix from
+   Eric Dumazet.  This hit quite a few folks.
 
-+	mutex_lock(&ei->truncate_mutex);
- 	depth = ext2_block_to_path(inode,iblock,offsets,&blocks_to_boundary);
+2) ixgb/igb bug fixes from the Intel folks via Jeff Kirsher.
 
--	if (depth == 0)
-+	if (depth == 0) {
-+		mutex_unlock(&ei->truncate_mutex);
- 		return (err);
-+	}
- reread:
- 	partial = ext2_get_branch(inode, depth, offsets, chain, &err);
+3) RDS bug fixes from Andy Grover, including one for the build
+   failures on some 32-bit systems.
 
-@@ -625,7 +628,7 @@ reread:
- 	if (!create || err == -EIO)
- 		goto cleanup;
+4) TCP packet counting bug fix from Ilpo Järvinen.
 
--	mutex_lock(&ei->truncate_mutex);
+5) HSO bug fixes and device ID additions from Jan Dumon.
 
- 	/*
- 	 * Okay, we need to do block allocation.  Lazily initialize the block
-@@ -651,7 +654,7 @@ reread:
- 				offsets + (partial - chain), partial);
+6) New VXGE driver from Ramkrishna Vepa.
 
- 	if (err) {
--		mutex_unlock(&ei->truncate_mutex);
- 		goto cleanup;
- 	}
+7) Three request_firmware driver conversions from Jaswinder Singh
+   Rajput.
 
-@@ -662,13 +665,13 @@ reread:
- 		err = ext2_clear_xip_target (inode,
- 			le32_to_cpu(chain[depth-1].key));
- 		if (err) {
--			mutex_unlock(&ei->truncate_mutex);
- 			goto cleanup;
- 		}
- 	}
+Please pull, thanks a lot!
 
- 	ext2_splice_branch(inode, iblock, partial, indirect_blks, count);
--	mutex_unlock(&ei->truncate_mutex);
- 	set_buffer_new(bh_result);
- got_it:
- 	map_bh(bh_result, inode->i_sb, le32_to_cpu(chain[depth-1].key));
-@@ -678,6 +681,7 @@ got_it:
- 	/* Clean up and exit */
- 	partial = chain + depth - 1;	/* the whole chain */
- cleanup:
-+	mutex_unlock(&ei->truncate_mutex);
- 	while (partial > chain) {
- 		brelse(partial->bh);
- 		partial--;
+The following changes since commit 833bb3046b6cb320e775ea2160ddca87d53260d5:
+  Alexey Dobriyan (1):
+        serial: fixup /proc/tty/driver/serial after proc_fops conversion
 
---Ying
+are available in the git repository at:
 
->
-> To reiterate: I was able to reproduce a problem with ext2 (I was testing
-> on brd to get IO rates high enough to reproduce it quite frequently).
-> I think I narrowed the problem down to block allocation or inode block
-> tree corruption because I was unable to reproduce it with that hack in
-> place.
->
->
+  master.kernel.org:/pub/scm/linux/kernel/git/davem/net-2.6.git master
+
+Alan Carvalho de Assis (1):
+      i.MX31: Fixing cs89x0 network building to i.MX31ADS
+
+Alexander Duyck (6):
+      igb: add support for x2 link width configurations
+      igb: set num_rx/tx_queues to 0 when queues are freed
+      igb: increase delay for copper link setup
+      igb: cleanup igb loopback path
+      ixgbe: fix build when DEBUG is defined
+      ixgbe: refactor tx buffer processing to use skb_dma_map/unmap
+
+Andy Grover (3):
+      RDS: Fix m_rs_lock deadlock
+      RDS: Rewrite connection cleanup, fixing oops on rmmod
+      RDS: Use spinlock to protect 64b value update on 32b archs
+
+Anton Vorontsov (2):
+      ucc_geth: Pass proper device to DMA routines, otherwise oops happens
+      fsl_pq_mdio: Revive UCC MDIO support
+
+Atsushi Nemoto (1):
+      tc35815: Fix build error if NAPI enabled
+
+Ben Hutchings (1):
+      sfc: Call netif_napi_add() before registering our interrupt handler
+
+David S. Miller (1):
+      Merge branch 'master' of git://git.kernel.org/.../jaswinder/net-next-2.6
+
+Don Skidmore (3):
+      ixgbe: Fix ethtool output with advertised mode.
+      ixgbe: feature - driver to default with FC on.
+      ixgbe: fix ethtool -A|a behavior
+
+Eric Dumazet (1):
+      netfilter: use rcu_read_bh() in ipt_do_table()
+
+Grant Likely (2):
+      net/fec_mpc52xx: fix BUG on missing dma_ops
+      net/fec_mpc52xx: Don't dereference phy_device if it is NULL
+
+Heiko Carstens (1):
+      ETHOC: fix build breakage on s390
+
+Henk Stegeman (1):
+      net/fec_mpc52xx: Migrate to net_device_ops.
+
+Huang Weiyi (2):
+      dnet: remove unused #include <version.h>
+      glge: remove unused #include <version.h>
+
+Ilpo Järvinen (2):
+      tcp: add helper for counter tweaking due mid-wq change
+      tcp: miscounts due to tcp_fragment pcount reset
+
+Jan Dumon (3):
+      hso: add Vendor/Product ID's for new devices
+      hso: fix for crash when unplugging the device
+      hso: fix for the 'invalid frame length' messages
+
+Jaswinder Singh Rajput (3):
+      yam: use request_firmware
+      3C359: use request_firmware
+      smc91c92_cs: use request_firmware
+
+Karsten Wiese (1):
+      r8169: reset IntrStatus after chip reset
+
+Kumar Gala (2):
+      gianfar: Remove unused header
+      ucc_geth: Remove unused header
+
+Larry Finger (1):
+      kaweth: Fix locking to be SMP-safe
+
+Mallikarjuna R Chilakala (2):
+      ixgbe: Patch to fix driver panic while freeing up tx & rx resources
+      ixgbe: Fix potential memory leak/driver panic issue while setting up Tx & Rx ring parameters
+
+PJ Waskiewicz (2):
+      ixgbe: Fix DCB netlink layer for 82599 to enable Priority Flow Control
+      ixgbe: Fix 82598 MSI-X allocation on systems with more than 8 CPU cores
+
+Rafael J. Wysocki (1):
+      net/igb: Fix kexec with igb (rev. 3)
+
+Rami Rosen (1):
+      ipv4: remove unused parameter from tcp_recv_urg().
+
+Ramkrishna Vepa (9):
+      Neterion: Driver help file
+      Neterion: New driver: Update Maintainer list
+      Neterion: New driver: register set - vxge-reg.h
+      Neterion: New driver: Hardware init & configuration
+      Neterion: New driver: Traffic & alarm handler
+      Neterion: New driver: Main entry points
+      Neterion: New driver: Ethtool related
+      Neterion: New driver: Driver version
+      Neterion: New driver: Kconfig and Makefile
+
+Segher Boessenkool (1):
+      fsl_pq_mdio: Fix compile failure
+
+Stephen Hemminger (1):
+      net: allow multiple dev per napi with GRO
+
+Wei Yongjun (1):
+      core: remove pointless conditional before kfree()
+
+ Documentation/networking/vxge.txt       |  100 +
+ MAINTAINERS                             |    7 +-
+ drivers/net/Kconfig                     |   19 +-
+ drivers/net/Makefile                    |    1 +
+ drivers/net/dnet.c                      |    1 -
+ drivers/net/fec_mpc52xx.c               |   77 +-
+ drivers/net/fsl_pq_mdio.c               |    3 +-
+ drivers/net/gianfar.h                   |    1 -
+ drivers/net/hamradio/yam.c              |   64 +-
+ drivers/net/hamradio/yam1200.h          |  343 --
+ drivers/net/hamradio/yam9600.h          |  343 --
+ drivers/net/igb/e1000_phy.c             |    7 +-
+ drivers/net/igb/igb_ethtool.c           |   14 +-
+ drivers/net/igb/igb_main.c              |   54 +-
+ drivers/net/ixgbe/ixgbe_82598.c         |    3 +-
+ drivers/net/ixgbe/ixgbe_common.c        |    3 +-
+ drivers/net/ixgbe/ixgbe_common.h        |    9 +-
+ drivers/net/ixgbe/ixgbe_dcb_nl.c        |    6 +-
+ drivers/net/ixgbe/ixgbe_ethtool.c       |  129 +-
+ drivers/net/ixgbe/ixgbe_main.c          |  110 +-
+ drivers/net/ixgbe/ixgbe_type.h          |    1 +
+ drivers/net/pcmcia/ositech.h            |  358 ---
+ drivers/net/pcmcia/smc91c92_cs.c        |   44 +-
+ drivers/net/qlge/qlge_ethtool.c         |    1 -
+ drivers/net/r8169.c                     |    5 +-
+ drivers/net/sfc/efx.c                   |    7 +-
+ drivers/net/tc35815.c                   |    2 +-
+ drivers/net/tokenring/3c359.c           |   63 +-
+ drivers/net/tokenring/3c359.h           |    3 +
+ drivers/net/tokenring/3c359_microcode.h | 1581 ----------
+ drivers/net/ucc_geth.c                  |   22 +-
+ drivers/net/ucc_geth.h                  |    4 +-
+ drivers/net/ucc_geth_ethtool.c          |    1 -
+ drivers/net/usb/hso.c                   |   40 +-
+ drivers/net/usb/kaweth.c                |    7 +-
+ drivers/net/vxge/Makefile               |    7 +
+ drivers/net/vxge/vxge-config.c          | 5264 +++++++++++++++++++++++++++++++
+ drivers/net/vxge/vxge-config.h          | 2259 +++++++++++++
+ drivers/net/vxge/vxge-ethtool.c         | 1148 +++++++
+ drivers/net/vxge/vxge-ethtool.h         |   67 +
+ drivers/net/vxge/vxge-main.c            | 4502 ++++++++++++++++++++++++++
+ drivers/net/vxge/vxge-main.h            |  557 ++++
+ drivers/net/vxge/vxge-reg.h             | 4608 +++++++++++++++++++++++++++
+ drivers/net/vxge/vxge-traffic.c         | 2528 +++++++++++++++
+ drivers/net/vxge/vxge-traffic.h         | 2409 ++++++++++++++
+ drivers/net/vxge/vxge-version.h         |   23 +
+ firmware/3com/3C359.bin.ihex            | 1573 +++++++++
+ firmware/Makefile                       |    3 +
+ firmware/WHENCE                         |   50 +
+ firmware/ositech/Xilinx7OD.bin.ihex     |  177 ++
+ firmware/yam/1200.bin.ihex              |  342 ++
+ firmware/yam/9600.bin.ihex              |  342 ++
+ include/net/tcp.h                       |   15 -
+ net/core/dev.c                          |    5 +-
+ net/core/ethtool.c                      |    3 +-
+ net/ipv4/netfilter/arp_tables.c         |    4 +-
+ net/ipv4/netfilter/ip_tables.c          |    4 +-
+ net/ipv4/tcp.c                          |    5 +-
+ net/ipv4/tcp_output.c                   |   73 +-
+ net/ipv6/netfilter/ip6_tables.c         |    4 +-
+ net/rds/ib.c                            |    5 +-
+ net/rds/ib.h                            |   28 +-
+ net/rds/ib_cm.c                         |   43 +-
+ net/rds/ib_rdma.c                       |   43 +-
+ net/rds/ib_recv.c                       |   37 +-
+ net/rds/iw.c                            |    5 +-
+ net/rds/iw.h                            |   28 +-
+ net/rds/iw_cm.c                         |   44 +-
+ net/rds/iw_rdma.c                       |   44 +-
+ net/rds/iw_recv.c                       |   37 +-
+ net/rds/rds.h                           |    4 +
+ net/rds/send.c                          |    6 +-
+ 72 files changed, 26689 insertions(+), 3040 deletions(-)
+ create mode 100644 Documentation/networking/vxge.txt
+ delete mode 100644 drivers/net/hamradio/yam1200.h
+ delete mode 100644 drivers/net/hamradio/yam9600.h
+ delete mode 100644 drivers/net/pcmcia/ositech.h
+ delete mode 100644 drivers/net/tokenring/3c359_microcode.h
+ create mode 100644 drivers/net/vxge/Makefile
+ create mode 100644 drivers/net/vxge/vxge-config.c
+ create mode 100644 drivers/net/vxge/vxge-config.h
+ create mode 100644 drivers/net/vxge/vxge-ethtool.c
+ create mode 100644 drivers/net/vxge/vxge-ethtool.h
+ create mode 100644 drivers/net/vxge/vxge-main.c
+ create mode 100644 drivers/net/vxge/vxge-main.h
+ create mode 100644 drivers/net/vxge/vxge-reg.h
+ create mode 100644 drivers/net/vxge/vxge-traffic.c
+ create mode 100644 drivers/net/vxge/vxge-traffic.h
+ create mode 100644 drivers/net/vxge/vxge-version.h
+ create mode 100644 firmware/3com/3C359.bin.ihex
+ create mode 100644 firmware/ositech/Xilinx7OD.bin.ihex
+ create mode 100644 firmware/yam/1200.bin.ihex
+ create mode 100644 firmware/yam/9600.bin.ihex
