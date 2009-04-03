@@ -1,71 +1,77 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932479AbZDCOdu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932593AbZDCOf7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932479AbZDCOdu (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 3 Apr 2009 10:33:50 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1765509AbZDCOd2
+	id S932593AbZDCOf7 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 3 Apr 2009 10:35:59 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755442AbZDCOfs
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 3 Apr 2009 10:33:28 -0400
-Received: from casper.infradead.org ([85.118.1.10]:45700 "EHLO
-	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S932143AbZDCOd1 (ORCPT
+	Fri, 3 Apr 2009 10:35:48 -0400
+Received: from bedivere.hansenpartnership.com ([66.63.167.143]:34108 "EHLO
+	bedivere.hansenpartnership.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1756612AbZDCOfs (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 3 Apr 2009 10:33:27 -0400
-Subject: Re: [PATCH] make inotify event handles use GFP_NOFS
-From: Peter Zijlstra <peterz@infradead.org>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: Eric Paris <eparis@redhat.com>, linux-kernel@vger.kernel.org,
-       mingo@elte.hu, balbir@linux.vnet.ibm.com, linux-fsdevel@vger.kernel.org,
-       aviro@redhat.com
-In-Reply-To: <1238448816.4073.265.camel@laptop>
-References: <1237400852.26799.16.camel@localhost.localdomain>
-	 <20090330142610.4b94935d.akpm@linux-foundation.org>
-	 <1238448816.4073.265.camel@laptop>
+	Fri, 3 Apr 2009 10:35:48 -0400
+Subject: Re: [PATCH] block: fix intermittent dm timeout based oops
+From: James Bottomley <James.Bottomley@HansenPartnership.com>
+To: Christof Schmitt <christof.schmitt@de.ibm.com>
+Cc: Jens Axboe <jens.axboe@oracle.com>, linux-kernel@vger.kernel.org,
+       linux-scsi@vger.kernel.org, Hannes Reinecke <hare@suse.de>
+In-Reply-To: <20090403143208.GA10005@schmichrtp.de.ibm.com>
+References: <20090324071730.53D7118C7A2@pentland.suse.de>
+	 <20090403143208.GA10005@schmichrtp.de.ibm.com>
 Content-Type: text/plain
-Content-Transfer-Encoding: 7bit
-Date: Fri, 03 Apr 2009 16:34:00 +0200
-Message-Id: <1238769240.798.110.camel@twins>
+Date: Fri, 03 Apr 2009 09:35:45 -0500
+Message-Id: <1238769345.3359.15.camel@mulgrave.int.hansenpartnership.com>
 Mime-Version: 1.0
-X-Mailer: Evolution 2.26.0 
+X-Mailer: Evolution 2.22.3.1 (2.22.3.1-1.fc9) 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 2009-03-30 at 23:33 +0200, Peter Zijlstra wrote:
-> On Mon, 2009-03-30 at 14:26 -0700, Andrew Morton wrote:
-> > On Wed, 18 Mar 2009 14:27:32 -0400
-> > Eric Paris <eparis@redhat.com> wrote:
+On Fri, 2009-04-03 at 16:32 +0200, Christof Schmitt wrote:
+> On Tue, Mar 24, 2009 at 08:17:30AM +0100, Hannes Reinecke wrote:
+> > Very rarely under stress testing of dm, oopses are occuring as
+> > something tampers with an old stack frame.  This has been traced back
+> > to blk_abort_queue() leaving a timeout_list pointing to the stack.
+> > The reason is that sometimes blk_abort_request() won't delete the
+> > timer (if the request is marked as complete but before the timer has
+> > been removed, a small race window).  Fix this by splicing back from
+> > the ususally empty list to the q->timeout_list.
 > > 
-> > > I think this is a bandaide to shut up lockdep.  I could either figure
-> > > out lockdep classes and figure out how to reclassify inotify locks since
-> > > I believe Nick is correct when he says inotify watches pin the inode in
-> > > core so memory pressure can't evict it.
+> > Signed-off-by: Hannes Reinecke <hare@suse.de>
+> > ---
+> >  block/blk-timeout.c |    6 ++++++
+> >  1 files changed, 6 insertions(+), 0 deletions(-)
 > > 
-> > It's pretty sad to degrading the strength of the memory allocation just
-> > to squish a lockdep report.
+> > diff --git a/block/blk-timeout.c b/block/blk-timeout.c
+> > index bbbdc4b..6213123 100644
+> > --- a/block/blk-timeout.c
+> > +++ b/block/blk-timeout.c
+> > @@ -224,6 +224,12 @@ void blk_abort_queue(struct request_queue *q)
+> >  	list_for_each_entry_safe(rq, tmp, &list, timeout_list)
+> >  		blk_abort_request(rq);
+> > 
+> > +	/*
+> > +	 * Occasionally, blk_abort_request() will return without
+> > +	 * deleting the element from the list
+> > +	 */
+> > +	list_splice(&list, &q->timeout_list);
+> > +
+> >  	spin_unlock_irqrestore(q->queue_lock, flags);
+> > 
+> >  }
+> > -- 
+> > 1.5.3.2
 > 
-> Yeah, I agree, its the wrong thing to do. lockdep annotations really
-> aren't that hard -- also, you could also talk me through it.
+> I just noticed that this fix is not upstream yet and i have seen test
+> cases hitting this problem.
+> 
+> Jens, are you going to included this patch, or should this go through
+> the SCSI tree?
 
-static struct lock_class_key inotify_mutex_free;
+It's a block patch, so it goes through the block tree ... it also needs
+backporting to stable.
 
-
-     /*
-      * here the inotify mutex gets moved to a different
-      * data structure with different locking semantics while
-      * holding inotify_mutex.
-      */
-     lock_set_class(&foo->inotify_mutex.dep_map, "inotify_mutex_free",
-                     &inotify_mutex_free, 0, _THIS_IP_);
+James
 
 
-Or when done without holding the inotify_mutex
-
-
-     /*
-      * here the inotify mutex gets moved to a different
-      * data structure with different locking semantics.
-      */
-     lockdep_set_class(&foo->inotify_mutex, &inotify_mutex_free);
-
-
-Is all there should be to it.
