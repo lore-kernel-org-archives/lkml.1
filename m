@@ -1,98 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760120AbZDCGqq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760723AbZDCGrX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760120AbZDCGqq (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 3 Apr 2009 02:46:46 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759267AbZDCGqg
+	id S1760723AbZDCGrX (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 3 Apr 2009 02:47:23 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759267AbZDCGrO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 3 Apr 2009 02:46:36 -0400
-Received: from mga11.intel.com ([192.55.52.93]:25397 "EHLO mga11.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1759253AbZDCGqf convert rfc822-to-8bit (ORCPT
+	Fri, 3 Apr 2009 02:47:14 -0400
+Received: from pfepa.post.tele.dk ([195.41.46.235]:38604 "EHLO
+	pfepa.post.tele.dk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1759223AbZDCGrN (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 3 Apr 2009 02:46:35 -0400
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.39,318,1235980800"; 
-   d="scan'208";a="444631622"
-From: "Metzger, Markus T" <markus.t.metzger@intel.com>
-To: Ingo Molnar <mingo@elte.hu>
-CC: "tglx@linutronix.de" <tglx@linutronix.de>, "hpa@zytor.com" <hpa@zytor.com>,
-       "markus.t.metzger@gmail.com" <markus.t.metzger@gmail.com>,
-       "roland@redhat.com" <roland@redhat.com>,
-       "eranian@googlemail.com" <eranian@googlemail.com>,
-       "oleg@redhat.com" <oleg@redhat.com>,
-       "Villacis, Juan" <juan.villacis@intel.com>,
-       "ak@linux.jf.intel.com" <ak@linux.jf.intel.com>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
-Date: Fri, 3 Apr 2009 07:46:30 +0100
-Subject: RE: [patch 14/18] x86, ds: use single debug store cpu configuration
-Thread-Topic: [patch 14/18] x86, ds: use single debug store cpu configuration
-Thread-Index: AcmzyW+ucrsn5EjYRGSqkaDWMZu0dAAXejrw
-Message-ID: <928CFBE8E7CB0040959E56B4EA41A77E9271806D@irsmsx504.ger.corp.intel.com>
-References: <20090402145455.597376000@intel.com>
- <20090402145728.179163000@intel.com> <20090402192942.GE2455@elte.hu>
-In-Reply-To: <20090402192942.GE2455@elte.hu>
-Accept-Language: en-US
-Content-Language: en-US
-X-MS-Has-Attach: 
-X-MS-TNEF-Correlator: 
-acceptlanguage: en-US
-Content-Type: text/plain; charset="us-ascii"
-MIME-Version: 1.0
-Content-Transfer-Encoding: 8BIT
+	Fri, 3 Apr 2009 02:47:13 -0400
+Date: Fri, 3 Apr 2009 08:49:16 +0200
+From: Sam Ravnborg <sam@ravnborg.org>
+To: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Harry Ciao <qingtao.cao@windriver.com>
+Cc: git-commits-head@vger.kernel.org
+Subject: Re: edac: AMD8111 driver Kconfig & Makefile
+Message-ID: <20090403064916.GB13075@uranus.ravnborg.org>
+References: <200904030503.n3353NJ2003427@hera.kernel.org>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <200904030503.n3353NJ2003427@hera.kernel.org>
+User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
->-----Original Message-----
->From: Ingo Molnar [mailto:mingo@elte.hu]
->Sent: Thursday, April 02, 2009 9:30 PM
->To: Metzger, Markus T
->Cc: tglx@linutronix.de; hpa@zytor.com; markus.t.metzger@gmail.com; roland@redhat.com;
->eranian@googlemail.com; oleg@redhat.com; Villacis, Juan; ak@linux.jf.intel.com; linux-
->kernel@vger.kernel.org
->Subject: Re: [patch 14/18] x86, ds: use single debug store cpu configuration
->
->
->* markus.t.metzger@intel.com <markus.t.metzger@intel.com> wrote:
->
->> Use a single configuration for all cpus.
->>
->
->> @@ -1291,11 +1290,15 @@ ds_configure(const struct ds_configurati
->>  	printk("bts/pebs record: %u/%u bytes\n",
->>  	       ds_cfg.sizeof_rec[ds_bts], ds_cfg.sizeof_rec[ds_pebs]);
->>
->> -	WARN_ON_ONCE(MAX_SIZEOF_DS < (12 * ds_cfg.sizeof_ptr_field));
->> +	WARN_ON(MAX_SIZEOF_DS < (12 * ds_cfg.sizeof_ptr_field));
->
->Why this change?
+On Fri, Apr 03, 2009 at 05:03:23AM +0000, Linux Kernel Mailing List wrote:
+> Gitweb:     http://git.kernel.org/linus/58b4ce6f2422cf9eff50368462c204f1d95b7341
+> Commit:     58b4ce6f2422cf9eff50368462c204f1d95b7341
+> Parent:     e8765584156daef3e0ccd63dfa12466a8b75613d
+> Author:     Harry Ciao <qingtao.cao@windriver.com>
+> AuthorDate: Thu Apr 2 16:58:51 2009 -0700
+> Committer:  Linus Torvalds <torvalds@linux-foundation.org>
+> CommitDate: Thu Apr 2 19:05:04 2009 -0700
+> 
+>     edac: AMD8111 driver Kconfig & Makefile
+>     
+>     Introduce Kconfig and Makefile options for AMD8111 EDAC driver.
+>     
+>     Signed-off-by: Harry Ciao <qingtao.cao@windriver.com>
+>     Cc: Doug Thompson <norsk5@yahoo.com>
+>     Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
+>     Signed-off-by: Linus Torvalds <torvalds@linux-foundation.org>
+> ---
+>  drivers/edac/Kconfig |    7 +++++++
+>  1 files changed, 7 insertions(+), 0 deletions(-)
+> 
+> diff --git a/drivers/edac/Kconfig b/drivers/edac/Kconfig
+> index 865cb7b..e5f5c5a 100644
+> --- a/drivers/edac/Kconfig
+> +++ b/drivers/edac/Kconfig
+> @@ -197,4 +197,11 @@ config EDAC_AMD8131
+>  	  Support for error detection and correction on the
+>  	  AMD8131 HyperTransport PCI-X Tunnel chip.
+>  
+> +config EDAC_AMD8111
+> +	tristate "AMD8111 HyperTransport I/O Hub"
+> +	depends on EDAC_MM_EDAC && PCI
+> +	help
+> +	  Support for error detection and correction on the
+> +	  AMD8111 HyperTransport I/O Hub chip.
+> +
+>  endif # EDAC
 
-The function is only called once, now - for the boot cpu.
-The _ONCE is a nop. I thought its better to remove it, since it became redundant.
+Was the changes to the Makefile lost somehow?
 
-regards,
-markus.
-
->
->Firstly, it was not declared in the changelog which is a no-no.
->
->Secondly, this is a bad change: we are more than content to have a
->single such warning bootup - not dozens of it (on some large
->system).
->
->	Ingo
----------------------------------------------------------------------
-Intel GmbH
-Dornacher Strasse 1
-85622 Feldkirchen/Muenchen Germany
-Sitz der Gesellschaft: Feldkirchen bei Muenchen
-Geschaeftsfuehrer: Douglas Lusk, Peter Gleissner, Hannes Schwaderer
-Registergericht: Muenchen HRB 47456 Ust.-IdNr.
-VAT Registration No.: DE129385895
-Citibank Frankfurt (BLZ 502 109 00) 600119052
-
-This e-mail and any attachments may contain confidential material for
-the sole use of the intended recipient(s). Any review or distribution
-by others is strictly prohibited. If you are not the intended
-recipient, please contact the sender and delete all copies.
-
+	Sam
