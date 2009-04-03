@@ -1,86 +1,78 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761620AbZDCI1Z@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761654AbZDCI2k@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761620AbZDCI1Z (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 3 Apr 2009 04:27:25 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759845AbZDCI1I
+	id S1761654AbZDCI2k (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 3 Apr 2009 04:28:40 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758920AbZDCI2X
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 3 Apr 2009 04:27:08 -0400
-Received: from smtp119.sbc.mail.sp1.yahoo.com ([69.147.64.92]:25665 "HELO
-	smtp119.sbc.mail.sp1.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1759755AbZDCI1G (ORCPT
+	Fri, 3 Apr 2009 04:28:23 -0400
+Received: from mondschein.lichtvoll.de ([194.150.191.11]:57316 "EHLO
+	mail.lichtvoll.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755662AbZDCI2V (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 3 Apr 2009 04:27:06 -0400
-X-YMail-OSG: SCEJLysVM1lvAFVjijANd0gujYsakRNReAocIrOyIL2cER4IC62yT36Vzxgf5TCcav3fDG8ui2.9373rt4nNuJbIZmz9ub2fsDJ.WleNgpCnzUwtQ.AZpvg5ZwChQ1HaLdHr65yHc2eN6ntPpmD_1N.m6T6mBmovTKS0IyH3.k5y985ofLAMuy_ZNN9M9TyRm97lcoTFLAl0ek2n3hdjoPZA9QIRlBdEZpi.DIrtQdiW_ZYvm3hhs8iEFvzCzH86vS9gycphwfNbjqwhk2xlJ3lFP0opHINKd.tbktx9By0lsGSCXmdGE_c0twgptloE5zFnBjF6LLrMdhkWLAkZ2iE-
-X-Yahoo-Newman-Property: ymail-3
-Subject: [PATCH] [LIO-Target/ConfigFS]: Add lio_target_port_check_link()
-From: "Nicholas A. Bellinger" <nab@linux-iscsi.org>
-To: LKML <linux-kernel@vger.kernel.org>,
-       Linux-fsdevel <linux-fsdevel@vger.kernel.org>,
-       linux-scsi <linux-scsi@vger.kernel.org>
-Cc: Joel Becker <joel.becker@oracle.com>,
-       Andrew Morton <akpm@linux-foundation.org>
-Content-Type: text/plain
-Date: Fri, 03 Apr 2009 01:26:57 -0700
-Message-Id: <1238747217.4250.451.camel@haakon2.linux-iscsi.org>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.22.3.1 
+	Fri, 3 Apr 2009 04:28:21 -0400
+From: Martin Steigerwald <Martin@lichtvoll.de>
+To: Bryan Henderson <hbryan@us.ibm.com>
+Subject: Re: Replacing VFAT as filesystem on removeable media
+Date: Fri, 3 Apr 2009 10:28:56 +0200
+User-Agent: KMail/1.9.9
+Cc: linux-fsdevel@vger.kernel.org, linux-kernel@vger.kernel.org
+References: <OFF614A035.0DA52102-ON8825758C.00613C94-8825758C.006215D5@us.ibm.com> (sfid-20090403_102506_091012_8ECF2D52)
+In-Reply-To: <OFF614A035.0DA52102-ON8825758C.00613C94-8825758C.006215D5@us.ibm.com>
+MIME-Version: 1.0
+Content-Type: multipart/signed;
+  boundary="nextPart1289101.ojZNLKxO7T";
+  protocol="application/pgp-signature";
+  micalg=pgp-sha1
 Content-Transfer-Encoding: 7bit
+Message-Id: <200904031029.03581.Martin@lichtvoll.de>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Greetings all,
+--nextPart1289101.ojZNLKxO7T
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: quoted-printable
+Content-Disposition: inline
 
-This patch adds struct configfs_item_operations->check_link() for
-lio_target_port_item_ops that allows existing LIO-Target Port Logical Unit
-ACL to prevent an unlink(2) from a exported target_core_mod/ConfigFS
-Linux storage object at:
+Am Donnerstag 02 April 2009 schrieb Bryan Henderson:
+> > Now as TomTom appears to have surrendered to Microsoft and Microsoft
+>
+> seems
+>
+> > to have accepted this deal probably in order to not find out that
+> > their patents are void, I think replacing VFAT as standard cross
+> > platform filesystem on removeable media would be an even better idea
+> > than before [1].
+> >
+> > [1]
+>
+> http://www.h-online.com/open/TomTom-Microsoft-settle-patent-dispute--/n
+>ews/112964
+>
+> How do you mean "replace"?
+>
+> VFAT's standardness today comes from the fact that virtually every
+> personal computer in the world today and for the foreseeable future is
+> able to read and write VFAT.  Do you envision some other filesystem
+> format achieving that status?
 
-/sys/kernel/config/target/iscsi/$TARGET_IQN/$TPGT/lun/$LUN/$PORT
+That was my (possibly crazy) idea yes. ;)
 
-when iSCSI Initiator LUN ACLs exist to LIO-Target/ConfigFS storage
-objects in:
+=2D-=20
+Martin 'Helios' Steigerwald - http://www.Lichtvoll.de
+GPG: 03B0 0D6C 0040 0710 4AFA  B82F 991B EAAC A599 84C7
 
-/sys/kernel/config/target/iscsi/$IQN/$TPGT/acl/$INITIATOR_IQN/$LUN
+--nextPart1289101.ojZNLKxO7T
+Content-Type: application/pgp-signature; name=signature.asc 
+Content-Description: This is a digitally signed message part.
 
-These patches are made against lio-core-2.6.git/master and tested on
-v2.6.29 x86 32-bit HVM.  The lio-core-2.6.git tree can be found at: 
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.9 (GNU/Linux)
 
-http://git.kernel.org/?p=linux/kernel/git/nab/lio-core-2.6.git;a=summary
+iEYEABECAAYFAknVyMgACgkQmRvqrKWZhMfPugCffLgAWkbxMl4AZhyuNm8bohld
+nD8Anjf8E/IgCQffFBQJiuVFfd624pAw
+=Pb6m
+-----END PGP SIGNATURE-----
 
-Signed-off-by: Nicholas A. Bellinger <nab@linux-iscsi.org>
----
- drivers/lio-core/iscsi_target_configfs.c |    8 ++++++++
- 1 files changed, 8 insertions(+), 0 deletions(-)
-
-diff --git a/drivers/lio-core/iscsi_target_configfs.c b/drivers/lio-core/iscsi_target_configfs.c
-index dc6ef88..acaa436 100644
---- a/drivers/lio-core/iscsi_target_configfs.c
-+++ b/drivers/lio-core/iscsi_target_configfs.c
-@@ -523,6 +523,13 @@ out:
- 	return(ret);
- }
- 
-+static int lio_target_port_check_link(struct config_item *lun_ci)
-+{
-+	se_lun_t *lun = container_of(to_config_group(lun_ci), se_lun_t, lun_group);
-+
-+	return atomic_read(&lun->lun_acl_count) ? -EACCES : 0;
-+}
-+
- static int lio_target_port_unlink (struct config_item *lun_ci, struct config_item *se_dev_ci)
- {
- 	iscsi_portal_group_t *tpg;
-@@ -568,6 +575,7 @@ static struct configfs_item_operations lio_target_port_item_ops = {
- 	.show_attribute		= lio_target_port_show,
- 	.store_attribute	= lio_target_port_store,
- 	.allow_link		= lio_target_port_link,
-+	.check_link		= lio_target_port_check_link,
- 	.drop_link		= lio_target_port_unlink,
- };
- 
--- 
-1.5.4.1
-
-
-
+--nextPart1289101.ojZNLKxO7T--
