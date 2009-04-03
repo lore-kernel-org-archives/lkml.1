@@ -1,72 +1,46 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1765426AbZDCNHg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1765542AbZDCNH5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1765426AbZDCNHg (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 3 Apr 2009 09:07:36 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763711AbZDCNFr
+	id S1765542AbZDCNH5 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 3 Apr 2009 09:07:57 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1764782AbZDCNF7
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 3 Apr 2009 09:05:47 -0400
-Received: from mx2.redhat.com ([66.187.237.31]:46336 "EHLO mx2.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1763393AbZDCNFq (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 3 Apr 2009 09:05:46 -0400
-Date: Fri, 3 Apr 2009 14:59:03 +0200
-From: Stanislaw Gruszka <sgruszka@redhat.com>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: Thomas Gleixner <tglx@linutronix.de>, Oleg Nesterov <oleg@redhat.com>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 0/2] itimers: periodic timers fixes
-Message-ID: <20090403145903.3f4fadd4@dhcp-lab-109.englab.brq.redhat.com>
-In-Reply-To: <20090402165753.GA12793@elte.hu>
-References: <20090402141135.655d1b2b@dhcp-lab-109.englab.brq.redhat.com>
-	<20090402165753.GA12793@elte.hu>
-Organization: RedHat
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Fri, 3 Apr 2009 09:05:59 -0400
+Received: from rhun.apana.org.au ([64.62.148.172]:53866 "EHLO
+	arnor.apana.org.au" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1764686AbZDCNF5 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 3 Apr 2009 09:05:57 -0400
+Date: Fri, 3 Apr 2009 21:05:36 +0800
+From: Herbert Xu <herbert@gondor.apana.org.au>
+To: Avi Kivity <avi@redhat.com>
+Cc: Gerd Hoffmann <kraxel@redhat.com>, ghaskins@novell.com,
+       anthony@codemonkey.ws, andi@firstfloor.org,
+       linux-kernel@vger.kernel.org, agraf@suse.de, pmullaney@novell.com,
+       pmorreale@novell.com, rusty@rustcorp.com.au, netdev@vger.kernel.org,
+       kvm@vger.kernel.org
+Subject: Re: [RFC PATCH 00/17] virtual-bus
+Message-ID: <20090403130536.GA11137@gondor.apana.org.au>
+References: <20090402085253.GA29932@gondor.apana.org.au> <49D47F11.6070400@redhat.com> <49D5EBE1.8030200@redhat.com> <49D5ED11.2000800@redhat.com> <20090403111242.GA10200@gondor.apana.org.au> <49D5F6FC.5090401@redhat.com> <20090403114828.GA10465@gondor.apana.org.au> <49D5F8DA.20400@redhat.com> <20090403115546.GA10575@gondor.apana.org.au> <49D5FACE.3010302@redhat.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <49D5FACE.3010302@redhat.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 2 Apr 2009 18:57:53 +0200
-Ingo Molnar <mingo@elte.hu> wrote:
-
-> Converting those to GTOD sampling instead of jiffies sampling is a 
-> worthwile change IMO and a good concept.
-> 
-> The unificaton of ITIMER_PROF and ITIMER_VIRT is a nice observation 
-> and a good patch.
-> 
-> The second one, changing all the sampling from cputime to ktime_t is 
-> nicely done too:
-> 
-> We could do more though, there's still a bit of cputime legacies 
-> around:
-> 
-> +	cputime_t cval, nval;
-> 
-> Couldnt all of that go over into the ktime_t space as well, phasing 
-> out cputime logic from the itimer code?
+On Fri, Apr 03, 2009 at 03:02:22PM +0300, Avi Kivity wrote:
 >
-> The user ABI is struct timeval based, so there's no need to have 
-> cputime anywhere. The scheduler does nanoseconds accurate stats so 
-> it can be connected up there too.
+> But it flushes the tap device, the packet still has to go through the  
+> bridge + real interface?
 
-Removing cputime stuff from itimers has probably only sense when
-utime, stime and related fields in task_struct would be represented
-as ktime or u64 variable in nanoseconds accurate. This mean a lot of
-work. I'm not sure if is worth to do in the meaning that as result we
-get better (faster and perhaps smaller) code. 
+Which under normal circumstances should occur before netif_rx_ni
+returns.
 
-I was thinking about removing cputime as whole, make utime and stime
-64 bit variables and account them in nanoseconds resolution. Remove
-sum_exec_runtime from struct task_cputime and related CPUCLOCK_SCHED
-code as duplicate of nanosecond accounted stime and CPUCLOCK_PROF code.
-But that were too intrusive changes for me with unknown performance
-impact.
-
-My primary goal is to improve periodic itimers accuracy (see 
-https://bugzilla.redhat.com/show_bug.cgi?id=441134), these patches
-are just enough to achieve the goal.
-
-Cheers
-Stanislaw Gruszka
+Cheers,
+-- 
+Visit Openswan at http://www.openswan.org/
+Email: Herbert Xu ~{PmV>HI~} <herbert@gondor.apana.org.au>
+Home Page: http://gondor.apana.org.au/~herbert/
+PGP Key: http://gondor.apana.org.au/~herbert/pubkey.txt
