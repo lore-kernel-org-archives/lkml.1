@@ -1,202 +1,75 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1765843AbZDCO7y@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934430AbZDCPAa@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1765843AbZDCO7y (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 3 Apr 2009 10:59:54 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1764652AbZDCO7n
+	id S934430AbZDCPAa (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 3 Apr 2009 11:00:30 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933625AbZDCO7z
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 3 Apr 2009 10:59:43 -0400
-Received: from e23smtp08.au.ibm.com ([202.81.31.141]:52665 "EHLO
-	e23smtp08.au.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757704AbZDCO7l (ORCPT
+	Fri, 3 Apr 2009 10:59:55 -0400
+Received: from viefep17-int.chello.at ([62.179.121.37]:38608 "EHLO
+	viefep17-int.chello.at" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S934777AbZDCO7x (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 3 Apr 2009 10:59:41 -0400
-Date: Fri, 3 Apr 2009 20:29:24 +0530
-From: Gautham R Shenoy <ego@in.ibm.com>
-To: Jaswinder Singh Rajput <jaswinder@kernel.org>
-Cc: Ingo Molnar <mingo@elte.hu>, Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       Vaidyanathan Srinivasan <svaidy@linux.vnet.ibm.com>,
-       linux-kernel@vger.kernel.org, Suresh Siddha <suresh.b.siddha@intel.com>,
-       Balbir Singh <balbir@in.ibm.com>, Andi Kleen <andi@firstfloor.org>,
-       Randy Dunlap <randy.dunlap@oracle.com>
-Subject: Re: [PATCH v2 1/2] sched: Nominate idle load balancer from a
-	semi-idle package.
-Message-ID: <20090403145924.GB9563@in.ibm.com>
-Reply-To: ego@in.ibm.com
-References: <20090402123607.14569.33649.stgit@sofia.in.ibm.com> <20090402123829.14569.67639.stgit@sofia.in.ibm.com> <1238687531.3099.30.camel@ht.satnam>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1238687531.3099.30.camel@ht.satnam>
-User-Agent: Mutt/1.5.17 (2007-11-01)
+	Fri, 3 Apr 2009 10:59:53 -0400
+X-SourceIP: 213.93.53.227
+Subject: Re: [patch 03/20] x86, ptrace, bts: defer branch trace stopping
+From: Peter Zijlstra <a.p.zijlstra@chello.nl>
+To: markus.t.metzger@intel.com
+Cc: mingo@elte.hu, tglx@linutronix.de, hpa@zytor.com,
+       markus.t.metzger@gmail.com, roland@redhat.com, eranian@googlemail.com,
+       oleg@redhat.com, juan.villacis@intel.com, ak@linux.jf.intel.com,
+       linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>
+In-Reply-To: <20090403144550.712401000@intel.com>
+References: <20090403144332.799740000@intel.com>
+	 <20090403144550.712401000@intel.com>
+Content-Type: text/plain
+Date: Fri, 03 Apr 2009 17:00:52 +0200
+Message-Id: <1238770852.798.146.camel@twins>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.26.0 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Jaswinder,
-Thanks for the review. Comments interspersed.
+On Fri, 2009-04-03 at 16:43 +0200, markus.t.metzger@intel.com wrote:
+> Index: b/include/linux/mm.h
+> ===================================================================
+> --- a/include/linux/mm.h
+> +++ b/include/linux/mm.h
+> @@ -13,6 +13,7 @@
+>  #include <linux/prio_tree.h>
+>  #include <linux/debug_locks.h>
+>  #include <linux/mm_types.h>
+> +#include <linux/sched.h>
+
+Why do we need that new include?
+
+>  struct mempolicy;
+>  struct anon_vma;
+> @@ -1318,6 +1319,6 @@ void vmemmap_populate_print_last(void);
+>  
+>  extern void *alloc_locked_buffer(size_t size);
+>  extern void free_locked_buffer(void *buffer, size_t size);
+> -extern void release_locked_buffer(void *buffer, size_t size);
+> +extern void refund_locked_buffer_memory(struct mm_struct *mm, size_t size);
+
+that's a pointer to a struct, so it doesn't need a fully qualified type.
+
+Also, I can't say I like the name, what about something like:
+
+void account_locked_buffer(struct mm_struct *mm, long pages)
+{
+	down_write(&mm->mmap_sem);
+
+	mm->total_vm += pages;
+	mm->locked_vm += pages;
+
+	up_write(&mm->mmap_sem);
+}
+
+but looking more closely at that alloc_locked_buffer() stuff, I really
+hate it, who in his right mind does a multi-page kmalloc() -- that's
+crazy.
 
 
-On Thu, Apr 02, 2009 at 09:22:11PM +0530, Jaswinder Singh Rajput wrote:
-> Here are some minor issues:
-> > diff --git a/kernel/sched.c b/kernel/sched.c
-> > index 706517c..4fc1ec0 100644
-> > --- a/kernel/sched.c
-> > +++ b/kernel/sched.c
-> > @@ -4283,10 +4283,108 @@ static void active_load_balance(struct rq *busiest_rq, int busiest_cpu)
-> >  static struct {
-> >  	atomic_t load_balancer;
-> >  	cpumask_var_t cpu_mask;
-> > +	cpumask_var_t tmpmask;
-> 
-> Can you find some better name than tmpmask.
 
-Sure, I'll think of it. The cpumask is required to store some
-intermediate results when we compute the idle_loadbalancer. Any
-suggestions ?
-
-> 
-> >  } nohz ____cacheline_aligned = {
-> >  	.load_balancer = ATOMIC_INIT(-1),
-> >  };
-> >  
-> > +#if defined(CONFIG_SCHED_MC) || defined(CONFIG_SCHED_SMT)
-> > +/**
-> 
-> ^^^^^^
-> This comment is not valid and even Randy send patches to fix these
-> comments and also shared the error messages because of these comments by
-> your earlier patches. Replace it with /*
-
-I think you're referring to this: http://lkml.org/lkml/2009/3/29/7
-I had missed this patch. Thanks for pointing it out.
-
-I think Randy's patch was addressing the issue of structs
-not requiring a /** style comments. But in this case,
-it's a function, and hence needs kernel-doc style notation. Or am I
-missing something here ? Point about the single-line
-short function description is well taken.
-
-> 
-> > + * lowest_flag_domain: Returns the lowest sched_domain
-> > + * that has the given flag set for a particular cpu.
-> > + * @cpu: The cpu whose lowest level of sched domain is to
-> > + * be returned.
-> > + *
-> > + * @flag: The flag to check for the lowest sched_domain
-> > + * for the given cpu
-> > + */
-> > +static inline struct sched_domain *lowest_flag_domain(int cpu, int flag)
-> > +{
-> > +	struct sched_domain *sd;
-> > +
-> > +	for_each_domain(cpu, sd)
-> > +		if (sd && (sd->flags & flag))
-> > +			break;
-> > +
-> > +	return sd;
-> > +}
-> > +
-> > +/**
-> 
-> Ditto.
-> 
-
-Ditto :-)
-
-> > + * for_each_flag_domain: Iterates over all the scheduler domains
-> > + * for a given cpu that has the 'flag' set, starting from
-> > + * the lowest to the highest.
-> > + * @cpu: The cpu whose domains we're iterating over.
-> > + * @sd: variable holding the value of the power_savings_sd
-> > + * for cpu
-> 
-> This can be come in one line:
-Agreed. Will correct this.
-
-> 
-> + * @sd: variable holding the value of the power_savings_sd for cpu
-> 
-> > + */
-> > +#define for_each_flag_domain(cpu, sd, flag) \
-> > +	for (sd = lowest_flag_domain(cpu, flag); \
-> > +		(sd && (sd->flags & flag)); sd = sd->parent)
-> > +
-> > +static inline int is_semi_idle_group(struct sched_group *ilb_group)
-> > +{
-> > +	cpumask_and(nohz.tmpmask, nohz.cpu_mask, sched_group_cpus(ilb_group));
-> > +
-> > +	/*
-> > +	 * A sched_group is semi-idle when it has atleast one busy cpu
-> > +	 * and atleast one idle cpu.
-> > +	 */
-> > +	if (!(cpumask_empty(nohz.tmpmask) ||
-> > +		cpumask_equal(nohz.tmpmask, sched_group_cpus(ilb_group))))
-> > +		return 1;
-> > +
-> > +	return 0;
-> > +}
-> > +/**
-> 
-> Ditto.
-> 
-
-Ditto!
-> > + * find_new_ilb: Finds or nominates a new idle load balancer.
-> > + * @cpu: The cpu which is nominating a new idle_load_balancer.
-> > + *
-> > + * This algorithm picks the idle load balancer such that it belongs to a
-> > + * semi-idle powersavings sched_domain. The idea is to try and avoid
-> > + * completely idle packages/cores just for the purpose of idle load balancing
-> > + * when there are other idle cpu's which are better suited for that job.
-> > + */
-> > +static int find_new_ilb(int cpu)
-> > +{
-> > +	struct sched_domain *sd;
-> > +	struct sched_group *ilb_group;
-> > +
-> > +	/*
-> > +	 * Optimization for the case when there is no idle cpu or
-> > +	 * only 1 idle cpu to choose from.
-> > +	 */
-> > +	if (cpumask_weight(nohz.cpu_mask) < 2)
-> > +		goto out_done;
-> > +
-> 
-> We can simply avoid these gotos.
-
-Not really! When we don't have any idle cpu or have only one idle cpu,
-it doesn't make sense to walk the domain-hierarchy to find the idle load
-balancer. In the former case, there is none. In the latter case, there's
-only one.
-
-But to verify what effect this optimization might have,
-I ran kernbench on a large box (112 CPUS) and here
-are the results.
-
------------------------------------------------
-make -j$i       patch              patch
-                without gotos      with gotos
------------------------------------------------
-1               1230.87 s         1195.95 s
-2                850.51 s          596.45 s
-4                368.91 s          310.49 s
-6                255.61 s          216.31 s
-8                201.94 s          167.89 s
-10               168.95 s          138.30 s
-12               151.64 s          123.14 s
-14               135.98 s          108.72 s
-28                86.09 s           70.92 s
-56                61.11 s           55.52 s
-112               49.30 s           47.23 s
-------------------------------------------------
-
-Clearly, the patch with gotos gives us a better score than the one
-without.
-
-> 
-> --
-> JSR
-
--- 
-Thanks and Regards
-gautham
