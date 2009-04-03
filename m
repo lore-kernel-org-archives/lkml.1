@@ -1,49 +1,40 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932518AbZDCQno@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933250AbZDCQpw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932518AbZDCQno (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 3 Apr 2009 12:43:44 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755646AbZDCQne
+	id S933250AbZDCQpw (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 3 Apr 2009 12:45:52 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756200AbZDCQpn
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 3 Apr 2009 12:43:34 -0400
-Received: from hrndva-omtalb.mail.rr.com ([71.74.56.125]:61943 "EHLO
-	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755479AbZDCQnd (ORCPT
+	Fri, 3 Apr 2009 12:45:43 -0400
+Received: from fxip-0047f.externet.hu ([88.209.222.127]:60574 "EHLO
+	pomaz-ex.szeredi.hu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755646AbZDCQpm (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 3 Apr 2009 12:43:33 -0400
-Date: Fri, 3 Apr 2009 12:43:15 -0400 (EDT)
-From: Steven Rostedt <rostedt@goodmis.org>
-X-X-Sender: rostedt@gandalf.stny.rr.com
-To: Ingo Molnar <mingo@elte.hu>
-cc: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>,
-       Tom Zanussi <tzanussi@gmail.com>,
-       linux-kernel <linux-kernel@vger.kernel.org>, fweisbec@gmail.com
-Subject: Re: [PATCH] tracing/filters: allow event filters to be set only when
- not tracing
-In-Reply-To: <20090403163755.GA3047@elte.hu>
-Message-ID: <alpine.DEB.2.00.0904031241280.21481@gandalf.stny.rr.com>
-References: <1238390546.6368.65.camel@bookworm> <20090401122408.GG12966@elte.hu> <1238653371.6655.48.camel@bookworm> <20090403135956.GD8875@elte.hu> <20090403162642.GB6968@linux.vnet.ibm.com> <20090403163755.GA3047@elte.hu>
-User-Agent: Alpine 2.00 (DEB 1167 2008-08-23)
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Fri, 3 Apr 2009 12:45:42 -0400
+To: torvalds@linux-foundation.org
+Cc: akpm@linux-foundation.org, linux-kernel@vger.kernel.org
+Subject: [git pull] fuse updates for 2.6.30
+Message-Id: <E1LpmWQ-0001NO-Q9@pomaz-ex.szeredi.hu>
+From: Miklos Szeredi <miklos@szeredi.hu>
+Date: Fri, 03 Apr 2009 18:45:38 +0200
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Linus,
 
-On Fri, 3 Apr 2009, Ingo Molnar wrote:
-> > 
-> > My kneejerk reaction is "why would anyone want to trace the idle 
-> > loop?"
-> 
-> heh :-)
-> 
-> Idle enter/exit events are useful to tune power use for example. The 
-> more events we have there, the more we prevent the CPU from slowly 
-> going into deep sleep mode.
+Please pull these fuse updates for 2.6.30 from:
 
-I can say I use it a lot. I'm still needing a way to set the function pid 
-recorder to 0 since the conversion to the pid structure. There are times 
-I only want to trace the interrupts that happen in the idle loop.
+  git://git.kernel.org/pub/scm/linux/kernel/git/mszeredi/fuse.git for-linus
 
--- Steve
+Thanks,
+Miklos
 
+---
+Miklos Szeredi (2):
+      fuse: allow kernel to access "direct_io" files
+      fuse: allow private mappings of "direct_io" files
+
+---
+ fs/fuse/dir.c  |    1 +
+ fs/fuse/file.c |   54 +++++++++++++++++++++++++++++++++++++++++-------------
+ 2 files changed, 42 insertions(+), 13 deletions(-)
