@@ -1,79 +1,99 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933759AbZDCVBK@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761594AbZDCVCT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933759AbZDCVBK (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 3 Apr 2009 17:01:10 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753245AbZDCVAz
+	id S1761594AbZDCVCT (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 3 Apr 2009 17:02:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756868AbZDCVCC
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 3 Apr 2009 17:00:55 -0400
-Received: from relay3.sgi.com ([192.48.156.57]:55987 "EHLO relay.sgi.com"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1751515AbZDCVAy (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 3 Apr 2009 17:00:54 -0400
-Date: Fri, 3 Apr 2009 16:01:17 -0500
-From: Cliff Wickman <cpw@sgi.com>
-To: Yinghai Lu <yhlu.kernel@gmail.com>
-Cc: Brice Goglin <Brice.Goglin@inria.fr>, Chris Worley <worleys@gmail.com>,
-       linux-kernel@vger.kernel.org
-Subject: Re: Off topic: Numactl "distance" wrong
-Message-ID: <20090403210117.GA14582@sgi.com>
-References: <f3177b9e0904031302p8aef826u1874a8b9d9af0840@mail.gmail.com> <49D66E83.5070606@inria.fr> <86802c440904031349v31f84f8anf082db7505e60387@mail.gmail.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <86802c440904031349v31f84f8anf082db7505e60387@mail.gmail.com>
-User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
+	Fri, 3 Apr 2009 17:02:02 -0400
+Received: from rcsinet12.oracle.com ([148.87.113.124]:61949 "EHLO
+	rgminet12.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751515AbZDCVCA (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 3 Apr 2009 17:02:00 -0400
+Subject: Re: [GIT PULL] Ext3 latency fixes
+From: Chris Mason <chris.mason@oracle.com>
+To: Jens Axboe <jens.axboe@oracle.com>
+Cc: Linus Torvalds <torvalds@linux-foundation.org>,
+       "Theodore Ts'o" <tytso@mit.edu>,
+       Linux Kernel Developers List <linux-kernel@vger.kernel.org>,
+       Ext4 Developers List <linux-ext4@vger.kernel.org>
+In-Reply-To: <20090403184729.GC5178@kernel.dk>
+References: <1238742067-30814-1-git-send-email-tytso@mit.edu>
+	 <alpine.LFD.2.00.0904031110420.19690@localhost.localdomain>
+	 <20090403184729.GC5178@kernel.dk>
+Content-Type: text/plain
+Date: Fri, 03 Apr 2009 17:01:04 -0400
+Message-Id: <1238792464.24082.32.camel@think.oraclecorp.com>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.24.1 
+Content-Transfer-Encoding: 7bit
+X-Source-IP: acsmt702.oracle.com [141.146.40.80]
+X-Auth-Type: Internal IP
+X-CT-RefId: str=0001.0A09020A.49D67915.0247:SCFMA4539814,ss=1,fgs=0
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Apr 03, 2009 at 01:49:27PM -0700, Yinghai Lu wrote:
-> On Fri, Apr 3, 2009 at 1:16 PM, Brice Goglin <Brice.Goglin@inria.fr> wrote:
-> > Chris Worley wrote:
-> >> Sorry for an off topic, but I'm hoping somebody can point me in the
-> >> right direction of where to direct this question...
-> >>
-> >> I have an Opteron system where I've seen the HW diagrams, and each of
-> >> 4 sockets is directly connected (HT) to two other sockets, and two HT
-> >> hops away from a third (i.e. a simple square topology, no X in the
-> >> middle).
-> >>
-> >> Yet, "numactl --hardware" shows but one hop to each socket:
-> >>
-> >> # numactl --hardware
-> >> ...
-> >> node   0   1   2   3
-> >>   0:  10  20  20  20
-> >>   1:  20  10  20  20
-> >>   2:  20  20  10  20
-> >>   3:  20  20  20  10
-> >>
-> >> I know this is wrong.
-> >>
-> >> Who would be the right person (or list) to talk about this?
-
-numactl and libnuma are discussed on
-linux-numa@vger.kernel.org
-
-> >>
-> >
-> > IIRC, the motherboard/BIOS is supposed to report numa distances through
-> > the PXM ACPI method. But I have never seen any opteron box do it
-> > properly. So you just get 10 for "local" and 20 for "remote". Some
-> > Itanium machines however report actual distances.
+On Fri, 2009-04-03 at 20:47 +0200, Jens Axboe wrote:
+> On Fri, Apr 03 2009, Linus Torvalds wrote:
+> > 
+> > 
+> > On Fri, 3 Apr 2009, Theodore Ts'o wrote:
+> > > 
+> > > Please pull from:
+> > > 
+> > > git://git.kernel.org/pub/scm/linux/kernel/git/tytso/ext4.git ext3-latency-fixes
+> > 
+> > Thanks, pulled. I'll be interested to see how it feels. Will report back 
+> > after I've rebuild and gone through a few more emails.
 > 
-> for x86 64 bit, we are copying SLIT table and save another copy.
+> I have one question, didn't see this series before... Ted, what kind of
+> tests did you run with this and on what? Currently one has to be careful
+> with WRITE_SYNC, as it also implies an immediate unplug of the device.
+> So not only does it flag the priority as sync, it'll also kick things
+> off immediately. We had a nasty regression in performance in a few
+> revisions of the kernel due to this, sqlite performance was basically 4
+> times as bad as before we did WRITE_SYNC in sync_dirty_buffer(). So I'd
+> be curious what kind of testing was done with the patch series before
+> submitting it.
 > 
-> could provide one /sys interface to make user could modify it...
-> 
-> YH
-> --
-> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
-> Please read the FAQ at  http://www.tux.org/lkml/
 
--- 
-Cliff Wickman
-Silicon Graphics, Inc.
-cpw@sgi.com
-(651) 683-3824
+I had run a few tests against this...the assumption was that since ext3
+doesn't have writepages I should be able to easily show using WRITE_SYNC
+made for fewer merges and lower performance.  But, the write cache on my
+array happily ate the smaller requests and came out just as fast.
+
+So, your sqlite example made me think of something different:
+
+mkfs.ext3 /dev/sdb
+mount /dev/sdb /mnt
+cd /mnt
+tar xf /local/linux-2.6.tar
+sync
+sync
+sync
+echo 3 > /proc/sys/vm/drop_caches
+
+# step one, start an O_SYNC writer to trigger lots of WRITE_SYNC
+# this 32GB file is big enough that my drive can't finish it before the
+# tar is done.
+dd if=/dev/zero of=/mnt/foo bs=1M count=32000 oflag=sync &
+
+# step two, time how long it takes to read the linux-2.6 dir
+# from above
+time tar cf /dev/zero /mnt/linux-2.6 &
+wait %2
+kill %1
+
+/local/linux-2.6.tar is a full kernel tree after compiling with
+debuginfo turned on and including the mercurial history files.  It has
+2.2GB of files.  The goal here is to time how long it takes to read the
+big directory tree in the face of a writer doing constant WRITE_SYNC
+writes.  Time to read the directory tree:
+
+With Ted's ext3 patches: 8m2s
+Plain 2.6.29:            4m9s
+
+-chris
+
+
