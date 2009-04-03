@@ -1,111 +1,114 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759003AbZDCB1S@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760410AbZDCB1q@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759003AbZDCB1S (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 2 Apr 2009 21:27:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755186AbZDCB1J
+	id S1760410AbZDCB1q (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 2 Apr 2009 21:27:46 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755186AbZDCB1g
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 2 Apr 2009 21:27:09 -0400
-Received: from fgwmail6.fujitsu.co.jp ([192.51.44.36]:53512 "EHLO
-	fgwmail6.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754146AbZDCB1I (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 2 Apr 2009 21:27:08 -0400
-Date: Fri, 3 Apr 2009 10:25:34 +0900
-From: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: hugh@veritas.com, mikew@google.com, linux-kernel@vger.kernel.org,
-       linux-mm@kvack.org, yinghan@google.com
-Subject: [PATCH] proc pid maps dont show pgoff of pure anon vmas style fix
- (WasRe: [RFC][PATCH] don't show pgoff of vma if vma is pure ANON (was Re:
- mmotm 2009-01-12-16-53 uploaded)
-Message-Id: <20090403102534.1d1e22de.kamezawa.hiroyu@jp.fujitsu.com>
-In-Reply-To: <20090402131816.54724d4e.akpm@linux-foundation.org>
-References: <200901130053.n0D0rhev023334@imap1.linux-foundation.org>
-	<20090113181317.48e910af.kamezawa.hiroyu@jp.fujitsu.com>
-	<496CC9D8.6040909@google.com>
-	<20090114162245.923c4caf.kamezawa.hiroyu@jp.fujitsu.com>
-	<Pine.LNX.4.64.0901141349410.5465@blonde.anvils>
-	<20090115114312.e42a0dba.kamezawa.hiroyu@jp.fujitsu.com>
-	<20090402131816.54724d4e.akpm@linux-foundation.org>
-Organization: FUJITSU Co. LTD.
-X-Mailer: Sylpheed 2.5.0 (GTK+ 2.10.14; i686-pc-mingw32)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Thu, 2 Apr 2009 21:27:36 -0400
+Received: from e9.ny.us.ibm.com ([32.97.182.139]:50604 "EHLO e9.ny.us.ibm.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754140AbZDCB1f (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 2 Apr 2009 21:27:35 -0400
+Date: Thu, 2 Apr 2009 18:27:33 -0700
+From: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
+To: Arjan van de Ven <arjan@infradead.org>
+Cc: Eric Dumazet <dada1@cosmosbay.com>, dipankar@in.ibm.com,
+       linux-input@vger.kernel.org, dmitry.torokhov@gmail.com,
+       linux-kernel@vger.kernel.org
+Subject: Re: Question about usage of RCU in the input layer
+Message-ID: <20090403012733.GA26871@linux.vnet.ibm.com>
+Reply-To: paulmck@linux.vnet.ibm.com
+References: <20090321215109.717a3f12@infradead.org> <20090322051822.GG7148@linux.vnet.ibm.com> <20090321225318.5b25f0a7@infradead.org> <20090322165324.GH7148@linux.vnet.ibm.com> <20090322124632.5d5d6266@infradead.org> <20090322205212.GI7148@linux.vnet.ibm.com> <20090322154433.1b2cb1b1@infradead.org> <20090322230331.GM7148@linux.vnet.ibm.com> <20090322161637.056a43c5@infradead.org> <20090323012737.GO7148@linux.vnet.ibm.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20090323012737.GO7148@linux.vnet.ibm.com>
+User-Agent: Mutt/1.5.15+20070412 (2007-04-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-I wrote this on mmotm-Mar23 as 2.6.29-rc8-mm1. Is this ok ?
-==
-From: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+On Sun, Mar 22, 2009 at 06:27:37PM -0700, Paul E. McKenney wrote:
+> On Sun, Mar 22, 2009 at 04:16:37PM -0700, Arjan van de Ven wrote:
+> > On Sun, 22 Mar 2009 16:03:31 -0700
+> > "Paul E. McKenney" <paulmck@linux.vnet.ibm.com> wrote:
 
-Fix condig style of proc-pid-maps-dont-show-pgoff-of-pure-anon-vmas.patch
+[ . . . ]
 
-Signed-off-by: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+> > > But in any case, I will see what I can do about speeding up
+> > > synchronize_rcu().  I will likely start with TREE_RCU, and I may need
+> > > some sort of indication that boot is in progress.
+> > 
+> > system_state == SYSTEM_BOOTING is not a very elegant test but it works
+> 
+> Fair enough...  This would be until init, correct?
+
+Here is a first attempt.  The idea is to accelerate grace-period
+detection when all but one of the CPUs is in nohz state by checking
+for nohz CPUs immediately upon starting a grace period, instead of
+waiting for three jiffies in that case.  Lightly tested.
+
+Not for inclusion.
+
+Signed-off-by: Paul E. McKenney <paulmck@linux.vnet.ibm.com>
 ---
- fs/proc/task_mmu.c   |    5 +++--
- fs/proc/task_nommu.c |    5 +++--
- 2 files changed, 6 insertions(+), 4 deletions(-)
 
-Index: mmotm-2.6.29-rc8-mm1/fs/proc/task_mmu.c
-===================================================================
---- mmotm-2.6.29-rc8-mm1.orig/fs/proc/task_mmu.c
-+++ mmotm-2.6.29-rc8-mm1/fs/proc/task_mmu.c
-@@ -204,6 +204,7 @@ static void show_map_vma(struct seq_file
- 	struct file *file = vma->vm_file;
- 	int flags = vma->vm_flags;
- 	unsigned long ino = 0;
-+	unsigned long long pgoff = 0;
- 	dev_t dev = 0;
- 	int len;
+diff --git a/kernel/rcutree.c b/kernel/rcutree.c
+index 97ce315..77ce937 100644
+--- a/kernel/rcutree.c
++++ b/kernel/rcutree.c
+@@ -373,7 +373,26 @@ static int rcu_implicit_dynticks_qs(struct rcu_data *rdp)
+ 	return rcu_implicit_offline_qs(rdp);
+ }
  
-@@ -211,6 +212,7 @@ static void show_map_vma(struct seq_file
- 		struct inode *inode = vma->vm_file->f_path.dentry->d_inode;
- 		dev = inode->i_sb->s_dev;
- 		ino = inode->i_ino;
-+		pgoff = ((loff_t)vma->vm_pgoff) << PAGE_SHIFT;
+-#endif /* #ifdef CONFIG_SMP */
++/*
++ * If almost all the other CPUs are in dyntick-idle mode, invoke
++ * force_quiescent_state() in order to make the RCU grace period
++ * happen more quickly.  The main purpose is to speed up boot
++ * on multiprocessor machines with CONFIG_NO_HZ.
++ */
++static void accelerate_almost_idle(struct rcu_state *rsp)
++{
++	if (cpumask_weight(cpu_online_mask) -
++	    cpumask_weight(nohz_cpu_mask) <= 1)
++		force_quiescent_state(rsp, 0);
++}
++
++#else /* #ifdef CONFIG_SMP */
++
++static void accelerate_almost_idle(struct rcu_state *rsp)
++{
++}
++
++#endif /* #else #ifdef CONFIG_SMP */
+ 
+ #else /* #ifdef CONFIG_NO_HZ */
+ 
+@@ -407,6 +426,10 @@ static int rcu_implicit_dynticks_qs(struct rcu_data *rdp)
+ 
+ #endif /* #ifdef CONFIG_SMP */
+ 
++static void accelerate_almost_idle(struct rcu_state *rsp)
++{
++}
++
+ #endif /* #else #ifdef CONFIG_NO_HZ */
+ 
+ #ifdef CONFIG_RCU_CPU_STALL_DETECTOR
+@@ -577,6 +600,7 @@ rcu_start_gp(struct rcu_state *rsp, unsigned long flags)
+ 		rnp->qsmask = rnp->qsmaskinit;
+ 		rsp->signaled = RCU_SIGNAL_INIT; /* force_quiescent_state OK. */
+ 		spin_unlock_irqrestore(&rnp->lock, flags);
++		accelerate_almost_idle(rsp);
+ 		return;
  	}
  
- 	seq_printf(m, "%08lx-%08lx %c%c%c%c %08llx %02x:%02x %lu %n",
-@@ -220,8 +222,7 @@ static void show_map_vma(struct seq_file
- 			flags & VM_WRITE ? 'w' : '-',
- 			flags & VM_EXEC ? 'x' : '-',
- 			flags & VM_MAYSHARE ? 's' : 'p',
--			(!vma->vm_file) ? 0 :
--				((loff_t)vma->vm_pgoff) << PAGE_SHIFT,
-+			pgoff,
- 			MAJOR(dev), MINOR(dev), ino, &len);
+@@ -627,6 +651,7 @@ rcu_start_gp(struct rcu_state *rsp, unsigned long flags)
  
- 	/*
-Index: mmotm-2.6.29-rc8-mm1/fs/proc/task_nommu.c
-===================================================================
---- mmotm-2.6.29-rc8-mm1.orig/fs/proc/task_nommu.c
-+++ mmotm-2.6.29-rc8-mm1/fs/proc/task_nommu.c
-@@ -125,6 +125,7 @@ static int nommu_vma_show(struct seq_fil
- 	struct file *file;
- 	dev_t dev = 0;
- 	int flags, len;
-+	unsigned long long pgoff = 0;
+ 	rsp->signaled = RCU_SIGNAL_INIT; /* force_quiescent_state now OK. */
+ 	spin_unlock_irqrestore(&rsp->onofflock, flags);
++	accelerate_almost_idle(rsp);
+ }
  
- 	flags = vma->vm_flags;
- 	file = vma->vm_file;
-@@ -133,6 +134,7 @@ static int nommu_vma_show(struct seq_fil
- 		struct inode *inode = vma->vm_file->f_path.dentry->d_inode;
- 		dev = inode->i_sb->s_dev;
- 		ino = inode->i_ino;
-+		pgoff = (loff_t)vma->pg_off << PAGE_SHIFT;
- 	}
- 
- 	seq_printf(m,
-@@ -143,8 +145,7 @@ static int nommu_vma_show(struct seq_fil
- 		   flags & VM_WRITE ? 'w' : '-',
- 		   flags & VM_EXEC ? 'x' : '-',
- 		   flags & VM_MAYSHARE ? flags & VM_SHARED ? 'S' : 's' : 'p',
--		   (!vma->vm_file) ? 0 :
--			(unsigned long long) vma->vm_pgoff << PAGE_SHIFT,
-+		   pgoff,
- 		   MAJOR(dev), MINOR(dev), ino, &len);
- 
- 	if (file) {
-
+ /*
