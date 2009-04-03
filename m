@@ -1,74 +1,74 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S935865AbZDCSBU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S935966AbZDCSBu@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S935865AbZDCSBU (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 3 Apr 2009 14:01:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S935696AbZDCSAv
+	id S935966AbZDCSBu (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 3 Apr 2009 14:01:50 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S935836AbZDCSBL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 3 Apr 2009 14:00:51 -0400
-Received: from e35.co.us.ibm.com ([32.97.110.153]:45977 "EHLO
-	e35.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S935688AbZDCSAu (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 3 Apr 2009 14:00:50 -0400
-Subject: Re: [PATCH -tip 0/6 V4] tracing: kprobe-based event tracer
-From: Jim Keniston <jkenisto@us.ibm.com>
-To: Masami Hiramatsu <mhiramat@redhat.com>
-Cc: Ingo Molnar <mingo@elte.hu>, Avi Kivity <avi@redhat.com>,
-       "H. Peter Anvin" <hpa@zytor.com>,
-       Frederic Weisbecker <fweisbec@gmail.com>,
-       Steven Rostedt <rostedt@goodmis.org>,
-       Ananth N Mavinakayanahalli <ananth@in.ibm.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Andi Kleen <andi@firstfloor.org>, kvm@vger.kernel.org,
-       systemtap-ml <systemtap@sources.redhat.com>,
-       LKML <linux-kernel@vger.kernel.org>,
-       Vegard Nossum <vegard.nossum@gmail.com>
-In-Reply-To: <49D63F70.7040308@redhat.com>
-References: <49D4F4B5.9040107@redhat.com> <20090403112639.GC31399@elte.hu>
-	 <49D5F80B.7000305@redhat.com> <49D61B56.9020408@redhat.com>
-	 <20090403142325.GA14932@elte.hu>  <49D63F70.7040308@redhat.com>
-Content-Type: text/plain
-Date: Fri, 03 Apr 2009 10:59:55 -0700
-Message-Id: <1238781595.3568.32.camel@dyn9047018139.beaverton.ibm.com>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.22.3.1 (2.22.3.1-1.fc9) 
-Content-Transfer-Encoding: 7bit
+	Fri, 3 Apr 2009 14:01:11 -0400
+Received: from brick.kernel.dk ([93.163.65.50]:52629 "EHLO kernel.dk"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S935812AbZDCSBJ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 3 Apr 2009 14:01:09 -0400
+Date: Fri, 3 Apr 2009 20:01:06 +0200
+From: Jens Axboe <jens.axboe@oracle.com>
+To: Christof Schmitt <christof.schmitt@de.ibm.com>
+Cc: James Bottomley <James.Bottomley@HansenPartnership.com>,
+       linux-kernel@vger.kernel.org, linux-scsi@vger.kernel.org,
+       Hannes Reinecke <hare@suse.de>
+Subject: Re: [PATCH] block: fix intermittent dm timeout based oops
+Message-ID: <20090403180106.GA5178@kernel.dk>
+References: <20090324071730.53D7118C7A2@pentland.suse.de> <20090403143208.GA10005@schmichrtp.de.ibm.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20090403143208.GA10005@schmichrtp.de.ibm.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 2009-04-03 at 12:55 -0400, Masami Hiramatsu wrote:
-> Ingo Molnar wrote:
-> > * Masami Hiramatsu <mhiramat@redhat.com> wrote:
+On Fri, Apr 03 2009, Christof Schmitt wrote:
+> On Tue, Mar 24, 2009 at 08:17:30AM +0100, Hannes Reinecke wrote:
+> > Very rarely under stress testing of dm, oopses are occuring as
+> > something tampers with an old stack frame.  This has been traced back
+> > to blk_abort_queue() leaving a timeout_list pointing to the stack.
+> > The reason is that sometimes blk_abort_request() won't delete the
+> > timer (if the request is marked as complete but before the timer has
+> > been removed, a small race window).  Fix this by splicing back from
+> > the ususally empty list to the q->timeout_list.
 > > 
-> >> Hmm, I'd like to know actually kvm aims to emulate all kinds of 
-> >> instructions. If so, I might find some bugs in x86_emulate.c. 
-> >> However, I don't know all bugs. To find all of them, we have to 
-> >> port x86_emulate.c to user-space, decode binaries with it, and 
-> >> compare its output with another decoder, as Jim had done with 
-> >> insn.c.
-> >>
-> >> https://www.redhat.com/archives/utrace-devel/2009-March/msg00031.html
+> > Signed-off-by: Hannes Reinecke <hare@suse.de>
+> > ---
+> >  block/blk-timeout.c |    6 ++++++
+> >  1 files changed, 6 insertions(+), 0 deletions(-)
 > > 
-> > btw., i'd suggest we put a build time check for this into the kernel 
-> > version as well. For example to decode the vmlinux via objdump, run 
-> > it through your decoder as well and compare the results. Put under a 
-> > CONFIG_DEBUG_X86_DECODER_TEST kind of (deault-off) build-time 
-> > self-test.
+> > diff --git a/block/blk-timeout.c b/block/blk-timeout.c
+> > index bbbdc4b..6213123 100644
+> > --- a/block/blk-timeout.c
+> > +++ b/block/blk-timeout.c
+> > @@ -224,6 +224,12 @@ void blk_abort_queue(struct request_queue *q)
+> >  	list_for_each_entry_safe(rq, tmp, &list, timeout_list)
+> >  		blk_abort_request(rq);
 > > 
-> > This would ensure that the kernel we are running is fully supported 
-> > by the decoder - even as GCC/GAS starts using new instructions, etc. 
+> > +	/*
+> > +	 * Occasionally, blk_abort_request() will return without
+> > +	 * deleting the element from the list
+> > +	 */
+> > +	list_splice(&list, &q->timeout_list);
+> > +
+> >  	spin_unlock_irqrestore(q->queue_lock, flags);
 > > 
-> > How does this sound to you?
+> >  }
+> > -- 
+> > 1.5.3.2
 > 
-> Thanks! That is a good idea.
-> Jim, would you think you can port your script into kernel tree?
-...
+> I just noticed that this fix is not upstream yet and i have seen test
+> cases hitting this problem.
+> 
+> Jens, are you going to included this patch, or should this go through
+> the SCSI tree?
 
-I'd be happy to do what's needed to make it happen, and maintain it in
-the face of x86 changes.  The script itself is practically nothing (~100
-lines of awk and C), but what I don't know about the kernel build is a
-lot, so I'd need some help from a kernel-build expert.
+I will include it, and CC stable as well.
 
-Jim
+-- 
+Jens Axboe
 
