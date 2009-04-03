@@ -1,93 +1,72 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1750991AbZDCHAU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759158AbZDCHB1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1750991AbZDCHAU (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 3 Apr 2009 03:00:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750949AbZDCHAG
+	id S1759158AbZDCHB1 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 3 Apr 2009 03:01:27 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752590AbZDCHBM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 3 Apr 2009 03:00:06 -0400
-Received: from viefep18-int.chello.at ([62.179.121.38]:36409 "EHLO
-	viefep18-int.chello.at" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750830AbZDCHAF (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 3 Apr 2009 03:00:05 -0400
-X-SourceIP: 213.93.53.227
-Subject: Re: perf_counter: request for three more sample data options
-From: Peter Zijlstra <a.p.zijlstra@chello.nl>
-To: Corey Ashford <cjashfor@linux.vnet.ibm.com>
-Cc: Ingo Molnar <mingo@elte.hu>, linux-kernel@vger.kernel.org,
-       Paul Mackerras <paulus@samba.org>
-In-Reply-To: <49D56A7E.80908@linux.vnet.ibm.com>
-References: <49D56A7E.80908@linux.vnet.ibm.com>
-Content-Type: text/plain
-Date: Fri, 03 Apr 2009 09:01:04 +0200
-Message-Id: <1238742064.798.8.camel@twins>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.26.0 
-Content-Transfer-Encoding: 7bit
+	Fri, 3 Apr 2009 03:01:12 -0400
+Received: from thunk.org ([69.25.196.29]:36441 "EHLO thunker.thunk.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750949AbZDCHBL (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 3 Apr 2009 03:01:11 -0400
+From: "Theodore Ts'o" <tytso@mit.edu>
+To: torvalds@linuxfoundation.org
+Cc: Linux Kernel Developers List <linux-kernel@vger.kernel.org>,
+       Ext4 Developers List <linux-ext4@vger.kernel.org>,
+       "Theodore Ts'o" <tytso@mit.edu>
+Subject: [PATCH 1/4] block_write_full_page: Use synchronous writes for WBC_SYNC_ALL writebacks
+Date: Fri,  3 Apr 2009 03:01:04 -0400
+Message-Id: <1238742067-30814-2-git-send-email-tytso@mit.edu>
+X-Mailer: git-send-email 1.5.6.3
+In-Reply-To: <1238742067-30814-1-git-send-email-tytso@mit.edu>
+References: <1238742067-30814-1-git-send-email-tytso@mit.edu>
+X-SA-Exim-Connect-IP: <locally generated>
+X-SA-Exim-Mail-From: tytso@mit.edu
+X-SA-Exim-Scanned: No (on thunker.thunk.org); SAEximRunCond expanded to false
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 2009-04-02 at 18:46 -0700, Corey Ashford wrote:
-> Currently, perf_counter has the ability to record the following on event 
-> counter overflow:
-> 
-> Instruction Pointer
-> Call chain
-> Group counter values
-> Thread id
-> 
-> To give perf_counter similar capabilities to perfmon2's default sampling 
->   module, I'd like the following additional sample data to be added.
-> 
-> Time stamp
+When doing synchronous writes because wbc->sync_mode is set to
+WBC_SYNC_ALL, send the write request using WRITE_SYNC, so that we
+don't unduly block system calls such as fsync().
+
+Signed-off-by: "Theodore Ts'o" <tytso@mit.edu>
+Acked-by: Jan Kara <jack@suse.cz>
+---
+ fs/buffer.c |    5 +++--
+ 1 files changed, 3 insertions(+), 2 deletions(-)
+
+diff --git a/fs/buffer.c b/fs/buffer.c
+index 891e1c7..e7ebd95 100644
+--- a/fs/buffer.c
++++ b/fs/buffer.c
+@@ -1714,6 +1714,7 @@ static int __block_write_full_page(struct inode *inode, struct page *page,
+ 	struct buffer_head *bh, *head;
+ 	const unsigned blocksize = 1 << inode->i_blkbits;
+ 	int nr_underway = 0;
++	int write_op = (wbc->sync_mode == WB_SYNC_ALL ? WRITE_SYNC : WRITE);
  
-Rather hard actually, to provide a decent timestamp from NMI context.
-
-> CPU number
-
-Could do I guess.
-
-> Thread Group Id
-
-As in the process id? PERF_RECORD_TID already provides that.
-
-> I'd suggest the following
-> 
-> enum perf_counter_record_format {
->          PERF_RECORD_IP          = 1U << 0,
->          PERF_RECORD_TID         = 1U << 1,
->          PERF_RECORD_TGID        = 1U << 2,
-> -        PERF_RECORD_GROUP       = 1U << 2,
-> +        PERF_RECORD_GROUP       = 1U << 3,
-> -        PERF_RECORD_CALLCHAIN   = 1U << 3,
-> +        PERF_RECORD_CALLCHAIN   = 1U << 4,
-> +        PERF_RECORD_CPU_ID      = 1U << 5,
-> +        PERF_RECORD_TIMESTAMP   = 1U << 6,
-> };
-> 
-> And of course the obvious changes to perf_event_type.
-> 
-> I would expect that CPU ID would be 32 bits, and the timestamp to be the 
-> 64-bit current time.  TGID is the same size as TID.
-
-Right, so PREF_RECORD_TID provides:
-
- { u32 pid, tid; }
-
-PERF_RECORD_TIMESTAMP would provide something like:
-
- { u64 time; }
-
-and per our u64 alignment rule, PERF_RECORD_CPU would provide
-
- { u64 cpuid; }
-
-unless you can think of anything else to stuff in there?
-
-> I am guessing the only difficult thing here would be obtaining the 
-> current time from an IRQ, especially NMI handler.  Is this difficult?
-
-Yes, quite :-) I'll have to see what we can do there -- we could do a
-best effort thing with little to no guarantees I think.
+ 	BUG_ON(!PageLocked(page));
+ 
+@@ -1805,7 +1806,7 @@ static int __block_write_full_page(struct inode *inode, struct page *page,
+ 	do {
+ 		struct buffer_head *next = bh->b_this_page;
+ 		if (buffer_async_write(bh)) {
+-			submit_bh(WRITE, bh);
++			submit_bh(write_op, bh);
+ 			nr_underway++;
+ 		}
+ 		bh = next;
+@@ -1859,7 +1860,7 @@ recover:
+ 		struct buffer_head *next = bh->b_this_page;
+ 		if (buffer_async_write(bh)) {
+ 			clear_buffer_dirty(bh);
+-			submit_bh(WRITE, bh);
++			submit_bh(write_op, bh);
+ 			nr_underway++;
+ 		}
+ 		bh = next;
+-- 
+1.5.6.3
 
