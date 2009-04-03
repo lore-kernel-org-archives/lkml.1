@@ -1,294 +1,166 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762983AbZDCNdy@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763698AbZDCNhA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762983AbZDCNdy (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 3 Apr 2009 09:33:54 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751559AbZDCNdo
+	id S1763698AbZDCNhA (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 3 Apr 2009 09:37:00 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753434AbZDCNgq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 3 Apr 2009 09:33:44 -0400
-Received: from relay1.sgi.com ([192.48.179.29]:42775 "EHLO relay.sgi.com"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1750971AbZDCNdn (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 3 Apr 2009 09:33:43 -0400
-To: linux-kernel@vger.kernel.org
-Subject: [PATCH] x86: UV BAU and nodes with no memory
-Cc: mingo@elte.hu
-Message-Id: <E1LpjX3-00007N-12@eag09.americas.sgi.com>
-From: Cliff Wickman <cpw@sgi.com>
-Date: Fri, 03 Apr 2009 08:34:05 -0500
+	Fri, 3 Apr 2009 09:36:46 -0400
+Received: from mx2.redhat.com ([66.187.237.31]:51910 "EHLO mx2.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750971AbZDCNgo (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 3 Apr 2009 09:36:44 -0400
+Message-ID: <49D61100.5010202@redhat.com>
+Date: Fri, 03 Apr 2009 16:37:04 +0300
+From: Avi Kivity <avi@redhat.com>
+User-Agent: Thunderbird 2.0.0.21 (X11/20090320)
+MIME-Version: 1.0
+To: Gregory Haskins <ghaskins@novell.com>
+CC: Anthony Liguori <anthony@codemonkey.ws>, Andi Kleen <andi@firstfloor.org>,
+       linux-kernel@vger.kernel.org, agraf@suse.de, pmullaney@novell.com,
+       pmorreale@novell.com, rusty@rustcorp.com.au, netdev@vger.kernel.org,
+       kvm@vger.kernel.org
+Subject: Re: [RFC PATCH 00/17] virtual-bus
+References: <20090331184057.28333.77287.stgit@dev.haskins.net> <87ab71monw.fsf@basil.nowhere.org> <49D35825.3050001@novell.com> <20090401132340.GT11935@one.firstfloor.org> <49D37805.1060301@novell.com> <20090401170103.GU11935@one.firstfloor.org> <49D3B64F.6070703@codemonkey.ws> <49D3D7EE.4080202@novell.com> <49D46089.5040204@redhat.com> <49D497A1.4090900@novell.com> <49D4A4EB.8020105@redhat.com> <49D4AE0C.3000604@novell.com> <49D4B2C0.5060906@redhat.com> <49D4B594.6080703@novell.com> <49D4B8B4.4020003@redhat.com> <49D4BF70.1060301@novell.com> <49D4C191.2070502@redhat.com> <49D4CAA7.3020004@novell.com> <49D4CC61.6010105@redhat.com> <49D4CEB1.9020001@redhat.com> <49D4D075.9010702@codemonkey.ws> <49D4E33F.5000303@codemonkey.ws> <49D5FAFD.1010102@novell.com> <49D5FDF9.7090602@redhat.com> <49D60B91.6010503@novell.com>
+In-Reply-To: <49D60B91.6010503@novell.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Gregory Haskins wrote:
+> Avi Kivity wrote:
+>   
+>> Gregory Haskins wrote:
+>>     
+>>> So again, I am proposing for consideration of accepting my work (either
+>>> in its current form, or something we agree on after the normal review
+>>> process) not only on the basis of the future development of the
+>>> platform, but also to keep current components in their running to their
+>>> full potential.  I will again point out that the code is almost
+>>> completely off to the side, can be completely disabled with config
+>>> options, and I will maintain it.  Therefore the only real impact is to
+>>> people who care to even try it, and to me.
+>>>   
+>>>       
+>> Your work is a whole stack.  Let's look at the constituents.
+>>
+>> - a new virtual bus for enumerating devices.
+>>
+>> Sorry, I still don't see the point.  It will just make writing drivers
+>> more difficult.  The only advantage I've heard from you is that it
+>> gets rid of the gunk.  Well, we still have to support the gunk for
+>> non-pv devices so the gunk is basically free.  The clean version is
+>> expensive since we need to port it to all guests and implement
+>> exciting features like hotplug.
+>>     
+> My real objection to PCI is fast-path related.  I don't object, per se,
+> to using PCI for discovery and hotplug.  If you use PCI just for these
+> types of things, but then allow fastpath to use more hypercall oriented
+> primitives, then I would agree with you.  We can leave PCI emulation in
+> user-space, and we get it for free, and things are relatively tidy.
+>   
 
-From: Cliff Wickman <cpw@sgi.com>
+PCI has very little to do with the fast path (nothing, if we use MSI).
 
-This patch fixes BAU initialization for systems containing
-nodes with no memory and for systems with non-consecutive
-node numbers.
+> Its once you start requiring that we stay ABI compatible with something
+> like the existing virtio-net in x86 KVM where I think it starts to get
+> ugly when you try to move it into the kernel.  So that is what I had a
+> real objection to.  I think as long as we are not talking about trying
+> to make something like that work, its a much more viable prospect.
+>   
 
-Fixes and clarifies situations where pnode should be used instead
-of node id.
+I don't see why the fast path of virtio-net would be bad.  Can you 
+elaborate?
 
-Tested on the UV hardware simulator.
+Obviously all the pci glue stays in userspace.
 
-Diffed against 2.6.29
+> So what I propose is the following: 
+>
+> 1) The core vbus design stays the same (or close to it)
+>   
 
-Signed-off-by: Cliff Wickman <cpw@sgi.com>
+Sorry, I still don't see what advantage this has over PCI, and how you 
+deal with the disadvantages.
 
----
- arch/x86/kernel/tlb_uv.c |  108 ++++++++++++++++++++++++++---------------------
- 1 file changed, 61 insertions(+), 47 deletions(-)
+> 2) the vbus-proxy and kvm-guest patch go away
+> 3) the kvm-host patch changes to work with coordination from the
+> userspace-pci emulation for things like MSI routing
+> 4) qemu will know to create some MSI shim 1:1 with whatever it
+> instantiates on the bus (and can communicate changes
+>   
 
-Index: linux/arch/x86/kernel/tlb_uv.c
-===================================================================
---- linux.orig/arch/x86/kernel/tlb_uv.c
-+++ linux/arch/x86/kernel/tlb_uv.c
-@@ -32,6 +32,34 @@ static DEFINE_PER_CPU(struct ptc_stats, 
- static DEFINE_PER_CPU(struct bau_control, bau_control);
- 
- /*
-+ * Determine the first node on a blade.
-+ */
-+static int __init blade_to_first_node(int blade)
-+{
-+	int node, b;
-+
-+	for_each_online_node(node) {
-+		b = uv_node_to_blade_id(node);
-+		if (blade == b)
-+			return node;
-+	}
-+	BUG();
-+}
-+
-+/*
-+ * Determine the apicid of the first cpu on a blade.
-+ */
-+static int __init blade_to_first_apicid(int blade)
-+{
-+	int cpu;
-+
-+	for_each_present_cpu(cpu)
-+		if (blade == uv_cpu_to_blade_id(cpu))
-+			return per_cpu(x86_cpu_to_apicid, cpu);
-+	return -1;
-+}
-+
-+/*
-  * Free a software acknowledge hardware resource by clearing its Pending
-  * bit. This will return a reply to the sender.
-  * If the message has timed out, a reply has already been sent by the
-@@ -67,7 +95,7 @@ static void uv_bau_process_message(struc
- 	msp = __get_cpu_var(bau_control).msg_statuses + msg_slot;
- 	cpu = uv_blade_processor_id();
- 	msg->number_of_cpus =
--	    uv_blade_nr_online_cpus(uv_node_to_blade_id(numa_node_id()));
-+		uv_blade_nr_online_cpus(uv_node_to_blade_id(numa_node_id()));
- 	this_cpu_mask = 1UL << cpu;
- 	if (msp->seen_by.bits & this_cpu_mask)
- 		return;
-@@ -215,14 +243,14 @@ static int uv_wait_completion(struct bau
-  * Returns @flush_mask if some remote flushing remains to be done. The
-  * mask will have some bits still set.
-  */
--const struct cpumask *uv_flush_send_and_wait(int cpu, int this_blade,
-+const struct cpumask *uv_flush_send_and_wait(int cpu, int this_pnode,
- 					     struct bau_desc *bau_desc,
- 					     struct cpumask *flush_mask)
- {
- 	int completion_status = 0;
- 	int right_shift;
- 	int tries = 0;
--	int blade;
-+	int pnode;
- 	int bit;
- 	unsigned long mmr_offset;
- 	unsigned long index;
-@@ -265,8 +293,8 @@ const struct cpumask *uv_flush_send_and_
- 	 * use the IPI method of shootdown on them.
- 	 */
- 	for_each_cpu(bit, flush_mask) {
--		blade = uv_cpu_to_blade_id(bit);
--		if (blade == this_blade)
-+		pnode = uv_cpu_to_pnode(bit);
-+		if (pnode == this_pnode)
- 			continue;
- 		cpumask_clear_cpu(bit, flush_mask);
- 	}
-@@ -309,16 +337,16 @@ const struct cpumask *uv_flush_tlb_other
- 	struct cpumask *flush_mask = __get_cpu_var(uv_flush_tlb_mask);
- 	int i;
- 	int bit;
--	int blade;
-+	int pnode;
- 	int uv_cpu;
--	int this_blade;
-+	int this_pnode;
- 	int locals = 0;
- 	struct bau_desc *bau_desc;
- 
- 	cpumask_andnot(flush_mask, cpumask, cpumask_of(cpu));
- 
- 	uv_cpu = uv_blade_processor_id();
--	this_blade = uv_numa_blade_id();
-+	this_pnode = uv_hub_info->pnode;
- 	bau_desc = __get_cpu_var(bau_control).descriptor_base;
- 	bau_desc += UV_ITEMS_PER_DESCRIPTOR * uv_cpu;
- 
-@@ -326,13 +354,13 @@ const struct cpumask *uv_flush_tlb_other
- 
- 	i = 0;
- 	for_each_cpu(bit, flush_mask) {
--		blade = uv_cpu_to_blade_id(bit);
--		BUG_ON(blade > (UV_DISTRIBUTION_SIZE - 1));
--		if (blade == this_blade) {
-+		pnode = uv_cpu_to_pnode(bit);
-+		BUG_ON(pnode > (UV_DISTRIBUTION_SIZE - 1));
-+		if (pnode == this_pnode) {
- 			locals++;
- 			continue;
- 		}
--		bau_node_set(blade, &bau_desc->distribution);
-+		bau_node_set(pnode, &bau_desc->distribution);
- 		i++;
- 	}
- 	if (i == 0) {
-@@ -350,7 +378,7 @@ const struct cpumask *uv_flush_tlb_other
- 	bau_desc->payload.address = va;
- 	bau_desc->payload.sending_cpu = cpu;
- 
--	return uv_flush_send_and_wait(uv_cpu, this_blade, bau_desc, flush_mask);
-+	return uv_flush_send_and_wait(uv_cpu, this_pnode, bau_desc, flush_mask);
- }
- 
- /*
-@@ -482,8 +510,7 @@ static int uv_ptc_seq_show(struct seq_fi
- 			   stat->requestee, stat->onetlb, stat->alltlb,
- 			   stat->s_retry, stat->d_retry, stat->ptc_i);
- 		seq_printf(file, "%lx %ld %ld %ld %ld %ld %ld\n",
--			   uv_read_global_mmr64(uv_blade_to_pnode
--					(uv_cpu_to_blade_id(cpu)),
-+			   uv_read_global_mmr64(uv_cpu_to_pnode(cpu),
- 					UVH_LB_BAU_INTD_SOFTWARE_ACKNOWLEDGE),
- 			   stat->sflush, stat->dflush,
- 			   stat->retriesok, stat->nomsg,
-@@ -617,16 +644,18 @@ static struct bau_control * __init uv_ta
-  * finish the initialization of the per-blade control structures
-  */
- static void __init
--uv_table_bases_finish(int blade, int node, int cur_cpu,
-+uv_table_bases_finish(int blade,
- 		      struct bau_control *bau_tablesp,
- 		      struct bau_desc *adp)
- {
- 	struct bau_control *bcp;
--	int i;
-+	int cpu;
- 
--	for (i = cur_cpu; i < cur_cpu + uv_blade_nr_possible_cpus(blade); i++) {
--		bcp = (struct bau_control *)&per_cpu(bau_control, i);
-+	for_each_present_cpu(cpu) {
-+		if (blade != uv_cpu_to_blade_id(cpu))
-+			continue;
- 
-+		bcp = (struct bau_control *)&per_cpu(bau_control, cpu);
- 		bcp->bau_msg_head	= bau_tablesp->va_queue_first;
- 		bcp->va_queue_first	= bau_tablesp->va_queue_first;
- 		bcp->va_queue_last	= bau_tablesp->va_queue_last;
-@@ -649,8 +678,7 @@ uv_activation_descriptor_init(int node, 
- 	struct bau_desc *adp;
- 	struct bau_desc *ad2;
- 
--	adp = (struct bau_desc *)
--	    kmalloc_node(16384, GFP_KERNEL, node);
-+	adp = (struct bau_desc *)kmalloc_node(16384, GFP_KERNEL, node);
- 	BUG_ON(!adp);
- 
- 	pa = __pa((unsigned long)adp);
-@@ -667,8 +695,7 @@ uv_activation_descriptor_init(int node, 
- 	for (i = 0, ad2 = adp; i < UV_ACTIVATION_DESCRIPTOR_SIZE; i++, ad2++) {
- 		memset(ad2, 0, sizeof(struct bau_desc));
- 		ad2->header.sw_ack_flag = 1;
--		ad2->header.base_dest_nodeid =
--		    uv_blade_to_pnode(uv_cpu_to_blade_id(0));
-+		ad2->header.base_dest_nodeid = uv_cpu_to_pnode(0);
- 		ad2->header.command = UV_NET_ENDPOINT_INTD;
- 		ad2->header.int_both = 1;
- 		/*
-@@ -715,8 +742,9 @@ uv_payload_queue_init(int node, int pnod
- /*
-  * Initialization of each UV blade's structures
-  */
--static int __init uv_init_blade(int blade, int node, int cur_cpu)
-+static int __init uv_init_blade(int blade)
- {
-+	int node;
- 	int pnode;
- 	unsigned long pa;
- 	unsigned long apicid;
-@@ -724,16 +752,17 @@ static int __init uv_init_blade(int blad
- 	struct bau_payload_queue_entry *pqp;
- 	struct bau_control *bau_tablesp;
- 
-+	node = blade_to_first_node(blade);
- 	bau_tablesp = uv_table_bases_init(blade, node);
- 	pnode = uv_blade_to_pnode(blade);
- 	adp = uv_activation_descriptor_init(node, pnode);
- 	pqp = uv_payload_queue_init(node, pnode, bau_tablesp);
--	uv_table_bases_finish(blade, node, cur_cpu, bau_tablesp, adp);
-+	uv_table_bases_finish(blade, bau_tablesp, adp);
- 	/*
- 	 * the below initialization can't be in firmware because the
- 	 * messaging IRQ will be determined by the OS
- 	 */
--	apicid = per_cpu(x86_cpu_to_apicid, cur_cpu);
-+	apicid = blade_to_first_apicid(blade);
- 	pa = uv_read_global_mmr64(pnode, UVH_BAU_DATA_CONFIG);
- 	if ((pa & 0xff) != UV_BAU_MESSAGE) {
- 		uv_write_global_mmr64(pnode, UVH_BAU_DATA_CONFIG,
-@@ -748,9 +777,7 @@ static int __init uv_init_blade(int blad
- static int __init uv_bau_init(void)
- {
- 	int blade;
--	int node;
- 	int nblades;
--	int last_blade;
- 	int cur_cpu;
- 
- 	if (!is_uv_system())
-@@ -763,29 +790,16 @@ static int __init uv_bau_init(void)
- 	uv_bau_retry_limit = 1;
- 	uv_nshift = uv_hub_info->n_val;
- 	uv_mmask = (1UL << uv_hub_info->n_val) - 1;
--	nblades = 0;
--	last_blade = -1;
--	cur_cpu = 0;
--	for_each_online_node(node) {
--		blade = uv_node_to_blade_id(node);
--		if (blade == last_blade)
--			continue;
--		last_blade = blade;
--		nblades++;
--	}
-+	nblades = uv_num_possible_blades();
-+
- 	uv_bau_table_bases = (struct bau_control **)
- 	    kmalloc(nblades * sizeof(struct bau_control *), GFP_KERNEL);
- 	BUG_ON(!uv_bau_table_bases);
- 
--	last_blade = -1;
--	for_each_online_node(node) {
--		blade = uv_node_to_blade_id(node);
--		if (blade == last_blade)
--			continue;
--		last_blade = blade;
--		uv_init_blade(blade, node, cur_cpu);
--		cur_cpu += uv_blade_nr_possible_cpus(blade);
--	}
-+	for (blade = 0; blade < nblades; blade++)
-+		if (uv_blade_nr_possible_cpus(blade))
-+			uv_init_blade(blade);
-+
- 	alloc_intr_gate(UV_BAU_MESSAGE, uv_bau_message_intr1);
- 	uv_enable_timeouts();
- 
+Don't userstand.  What's this MSI shim?
+
+> 5) any drivers that are written for these new PCI-IDs that might be
+> present are allowed to use a hypercall ABI to talk after they have been
+> probed for that ID (e.g. they are not limited to PIO or MMIO BAR type
+> access methods).
+>   
+
+The way we'd to it with virtio is to add a feature bit that say "you can 
+hypercall here instead of pio".  This way old drivers continue to work.
+
+Note that nothing prevents us from trapping pio in the kernel (in fact, 
+we do) and forwarding it to the device.  It shouldn't be any slower than 
+hypercalls.
+
+> Once I get here, I might have greater clarity to see how hard it would
+> make to emulate fast path components as well.  It might be easier than I
+> think.
+>
+> This is all off the cuff so it might need some fine tuning before its
+> actually workable.
+>
+> Does that sound reasonable?
+>   
+
+The vbus part (I assume you mean device enumeration) worries me.  I 
+don't think you've yet set down what its advantages are.  Being pure and 
+clean doesn't count, unless you rip out PCI from all existing installed 
+hardware and from Windows.
+
+>> - finer-grained point-to-point communication abstractions
+>>
+>> Where virtio has ring+signalling together, you layer the two.  For
+>> networking, it doesn't matter.  For other applications, it may be
+>> helpful, perhaps you have something in mind.
+>>     
+>
+> Yeah, actually.  Thanks for bringing that up.
+>
+> So the reason why signaling and the ring are distinct constructs in the
+> design is to facilitate constructs other than rings.  For instance,
+> there may be some models where having a flat shared page is better than
+> a ring.  A ring will naturally preserve all values in flight, where as a
+> flat shared page would not (last update is always current).  There are
+> some algorithms where a previously posted value is obsoleted by an
+> update, and therefore rings are inherently bad for this update model. 
+> And as we know, there are plenty of algorithms where a ring works
+> perfectly.  So I wanted that flexibility to be able to express both.
+>   
+
+I agree that there is significant potential here.
+
+> One of the things I have in mind for the flat page model is that RT vcpu
+> priority thing.  Another thing I am thinking of is coming up with a PV
+> LAPIC type replacement (where we can avoid doing the EOI trap by having
+> the PICs state shared).
+>   
+
+You keep falling into the paravirtualize the entire universe trap.  If 
+you look deep down, you can see Jeremy struggling in there trying to 
+bring dom0 support to Linux/Xen.
+
+The lapic is a huge ball of gunk but ripping it out is a monumental job 
+with no substantial benefits.  We can at much lower effort avoid the EOI 
+trap by paravirtualizing that small bit of ugliness.  Sure the result 
+isn't a pure and clean room implementation.  It's a band aid.  But I'll 
+take a 50-line band aid over a 3000-line implementation split across 
+guest and host, which only works with Linux.
+
+
+-- 
+I have a truly marvellous patch that fixes the bug which this
+signature is too narrow to contain.
+
