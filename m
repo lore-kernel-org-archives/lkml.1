@@ -1,72 +1,71 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S936561AbZDCWKg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762181AbZDCWQD@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S936561AbZDCWKg (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 3 Apr 2009 18:10:36 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756980AbZDCWK0
+	id S1762181AbZDCWQD (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 3 Apr 2009 18:16:03 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757324AbZDCWPv
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 3 Apr 2009 18:10:26 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:51437 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1754128AbZDCWK0 (ORCPT
+	Fri, 3 Apr 2009 18:15:51 -0400
+Received: from rv-out-0506.google.com ([209.85.198.229]:9285 "EHLO
+	rv-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756886AbZDCWPv convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 3 Apr 2009 18:10:26 -0400
-Date: Fri, 3 Apr 2009 15:06:29 -0700 (PDT)
-From: Linus Torvalds <torvalds@linux-foundation.org>
-X-X-Sender: torvalds@localhost.localdomain
-To: Jeff Garzik <jeff@garzik.org>
-cc: Chris Mason <chris.mason@oracle.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       David Rees <drees76@gmail.com>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: Linux 2.6.29
-In-Reply-To: <49D68431.30703@garzik.org>
-Message-ID: <alpine.LFD.2.00.0904031452290.7007@localhost.localdomain>
-References: <1238758370.32764.5.camel@think.oraclecorp.com> <alpine.LFD.2.00.0904030804160.4130@localhost.localdomain> <49D66C0E.5090301@garzik.org> <alpine.LFD.2.00.0904031309500.4015@localhost.localdomain> <49D68431.30703@garzik.org>
-User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
+	Fri, 3 Apr 2009 18:15:51 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
+         :cc:content-type:content-transfer-encoding;
+        b=nlIWJBlqM+zHuvy7FQtoERKbuNhr7BdXd2/Pl/QVpn3U1c2kC5ItwuFQ/Y5mWeExn7
+         inFBPRzRMsO5rZLGB/2wjxfDIGDRa/kD7Vb+PFht7CxRyzwJArzRVYCMNwTZk3lLR8oa
+         Q3bI9slTcNj0UsBCX4Kc5Zs+p/Zn/eKXUI2Ag=
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+In-Reply-To: <87r609jtc2.fsf@basil.nowhere.org>
+References: <f3177b9e0904031302p8aef826u1874a8b9d9af0840@mail.gmail.com>
+	 <87vdpljuqi.fsf@basil.nowhere.org>
+	 <alpine.DEB.2.00.0904031438540.3646@chino.kir.corp.google.com>
+	 <86802c440904031448yc6d499ckd9cb969ce136f477@mail.gmail.com>
+	 <87r609jtc2.fsf@basil.nowhere.org>
+Date: Fri, 3 Apr 2009 15:15:48 -0700
+Message-ID: <86802c440904031515u22bd2362n884337729282c6c1@mail.gmail.com>
+Subject: Re: Off topic: Numactl "distance" wrong
+From: Yinghai Lu <yhlu.kernel@gmail.com>
+To: Andi Kleen <andi@firstfloor.org>
+Cc: David Rientjes <rientjes@google.com>, Chris Worley <worleys@gmail.com>,
+       linux-kernel@vger.kernel.org
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-
-On Fri, 3 Apr 2009, Jeff Garzik wrote:
+On Fri, Apr 3, 2009 at 2:55 PM, Andi Kleen <andi@firstfloor.org> wrote:
+> Yinghai Lu <yhlu.kernel@gmail.com> writes:
 >
-> Since I am hacking on osdblk currently, I was too slack to code up a test.
-> This is what bonnie++ says, at least...
+>> On Fri, Apr 3, 2009 at 2:43 PM, David Rientjes <rientjes@google.com> wrote:
+>>>
+>>> Yinghai, can you elaborate on exactly what type of interface you can
+>>> imagine for modifying the distance for nodes through sysfs?  It seems like
+>>> you'd have to report the entire physical topology in one write, for which
+>>> we currently don't have an interface for beyond pxms, instead of per-node
+>>> distances to remote nodes.
+>>
+>> acpi_numa_slit_init() in srat_64.c will have one copy (called
+>> acpi_slit) of SLIT, if there is SLIT from ACPI.
+>>
+>> so if numa is enabled, could expose that acpi_slit via sysfs for the
+>> user to update it.
+>
+> That's not enough. You would need to redo all the zone fallback tables
+> in the VM that are initialized based on topology, do new scheduler
+> topologies and all kind of other stuff.
+>
+> Besides I don't know any user space software which actually does anything
+> with the distances. The kernel does, but for it it doesn't make much difference
+> on smaller systems.
 
-Afaik, bonnie does it all in the page cache, and only tests random reads 
-(in the "random seek" test), not random writes.
+how the cpu and memory hotplug works when it could change kind of topology?
+sched: wonder if arch_reinit_sched_domains() is used to
+rebuild_sched_domains() it will call node_distance()
 
-> But I guess seeks are not very helpful on an SSD :)  Any pre-built random
-> write tests out there?
+or ACPI asl code could update SLIT table , and let os use slit table.
 
-"fio" does well:
-
-	http://git.kernel.dk/?p=fio.git;a=summary
-
-and I think it comes with a few example files. Here's the random write 
-file that Jens suggested, and that works pretty well..
-
-It first creates a 2GB file to do the IO on, then does random 4k writes to 
-it with O_DIRECT.
-
-If your SSD does badly at it, you'll just want to kill it, but it shows 
-you how many MB/s it's doing (or, in the sucky case, how many kB/s).
-
-		Linus
-
----
-[global]
-filename=testfile
-size=2g
-create_fsync=1
-overwrite=1
-
-[randwrites]
-# make rw= 'randread' for random reads, 'read' for reads, etc
-rw=randwrite
-bs=4k
-direct=1
-
+YH
