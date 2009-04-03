@@ -1,83 +1,92 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S936543AbZDCQPm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S936583AbZDCQQM@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S936543AbZDCQPm (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 3 Apr 2009 12:15:42 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S935201AbZDCP7N
+	id S936583AbZDCQQM (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 3 Apr 2009 12:16:12 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S935290AbZDCP7m
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 3 Apr 2009 11:59:13 -0400
-Received: from cantor2.suse.de ([195.135.220.15]:47868 "EHLO mx2.suse.de"
+	Fri, 3 Apr 2009 11:59:42 -0400
+Received: from mx3.mail.elte.hu ([157.181.1.138]:57696 "EHLO mx3.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S935200AbZDCP7L (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 3 Apr 2009 11:59:11 -0400
-Date: Fri, 3 Apr 2009 08:57:04 -0700
-From: Greg KH <gregkh@suse.de>
-To: Matthew Garrett <mjg59@srcf.ucam.org>
-Cc: linux-kernel@vger.kernel.org
-Subject: Re: qcserial comes up in unhelpful custom mode?
-Message-ID: <20090403155704.GA26189@suse.de>
-References: <20090401203726.GA17485@srcf.ucam.org> <20090403025654.GA20146@suse.de> <20090403135719.GD19774@srcf.ucam.org> <20090403150301.GA25846@suse.de> <20090403151232.GA21657@srcf.ucam.org>
+	id S935263AbZDCP7l (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 3 Apr 2009 11:59:41 -0400
+Date: Fri, 3 Apr 2009 17:59:20 +0200
+From: Ingo Molnar <mingo@elte.hu>
+To: Andreas Herrmann <andreas.herrmann3@amd.com>
+Cc: Mark Langsdorf <mark.langsdorf@amd.com>, "H. Peter Anvin" <hpa@zytor.com>,
+       Ingo Molnar <mingo@redhat.com>, Thomas Gleixner <tglx@linutronix.de>,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] [PATCH] x86: cacheinfo: fix build error in
+	cache_disable
+Message-ID: <20090403155920.GA18237@elte.hu>
+References: <20090402100756.GN5740@alberich.amd.com> <20090402103008.GA10828@elte.hu> <20090403160721.GC6466@alberich.amd.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20090403151232.GA21657@srcf.ucam.org>
-User-Agent: Mutt/1.5.19 (2009-01-05)
+In-Reply-To: <20090403160721.GC6466@alberich.amd.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Apr 03, 2009 at 04:12:32PM +0100, Matthew Garrett wrote:
-> On Fri, Apr 03, 2009 at 08:03:01AM -0700, Greg KH wrote:
-> > On Fri, Apr 03, 2009 at 02:57:19PM +0100, Matthew Garrett wrote:
-> > > So it's a driver that's useless without a closed source firmware loader, 
-> > > either in the form of a Linux userspace application that can't be 
-> > > distributed or in the form of Windows?
-> > 
-> > Hm, I originally thought that as well, but I have a laptop here that
-> > doesn't seem to need the firmware code at all (I deleted it and rebooted
-> > from poweroff and everything worked fine.)
-> > 
-> > So it seems it depends on the hardware platform.
+
+* Andreas Herrmann <andreas.herrmann3@amd.com> wrote:
+
+> Impact: fix build error
 > 
-> Hmm. What's the USB ID of that one?
-
-USB_DEVICE(0x05c6, 0x9211);
-
-> > > I thought we'd decided that drivers weren't going to be merged in that
-> > > case (poulsbow, the original 3945 driver)
-> > 
-> > We have lots of drivers that rely on firmware that is not in the kernel
-> > to work properly, I see this as just the same thing.
+> Commit 45ca863 (x86, cpu: conform L3 Cache Index Disable to Linux standard)
+> introduced following build error with CONFIG_K8_NB=n
+>   ...
+>   arch/x86/mm/built-in.o:(.bss+0x5c0): multiple definition of `k8_northbridges'
+>   arch/x86/kernel/built-in.o:(.bss+0x18c8): first defined here
+>   ...
 > 
-> It's not that it relies on firmware - I can get my hands on the firmware 
-> easily enough. The issue is that I have no way of loading it without 
-> using non-free code, which I think puts it in the same category as 
-> Poulsbo and ipw3945 rather than, say, b43.
-
-No, both of those are quite different, they interact with the closed
-source bits directly from the kernel, which isn't allowed.  This just
-needs the firmware loaded into the device to work at all, much like an
-"empty" b43 device would be.
-
-> > And again, I have been assured that the code is going to be distributed
-> > soon, and that others are already using the driver successfully.
+> The patch deactivates cache_disable functionality for kernels with
+> CONFIG_K8_NB=n.
 > 
-> Everything I've been able to find suggests that the only people using it 
-> are booting Windows first, so your one seems to be the oddity. On the 
-> other hand, I'm kind of surprised that we're merging drivers on the 
-> promise that code to use them will be available "soon". It seems to end 
-> up giving the vendor credit that they don't deserve as yet.
+> Signed-off-by: Andreas Herrmann <andreas.herrmann3@amd.com>
+> ---
+>  arch/x86/include/asm/k8.h             |    4 ----
+>  arch/x86/kernel/cpu/intel_cacheinfo.c |   19 ++++++++++++++++---
+>  2 files changed, 16 insertions(+), 7 deletions(-)
+> 
+> The real fix would be to enable cache index disable functionality also
+> for kernels with CONFIG_K8_NB=n but I don't have time to provide such
+> a patch today.
+> 
+> Ingo, please either apply this (compile tested) patch or revert Mark's
+> patch to avoid further blocking of tip/x86/cpu branch.
+> 
+> 
+> Thanks,
+> 
+> Andreas
+> 
+> 
+> diff --git a/arch/x86/include/asm/k8.h b/arch/x86/include/asm/k8.h
+> index 0d619c3..54c8cc5 100644
+> --- a/arch/x86/include/asm/k8.h
+> +++ b/arch/x86/include/asm/k8.h
+> @@ -6,11 +6,7 @@
+>  extern struct pci_device_id k8_nb_ids[];
+>  
+>  extern int early_is_k8_nb(u32 value);
+> -#ifdef CONFIG_K8_NB
+>  extern struct pci_dev **k8_northbridges;
+> -#else
+> -struct pci_dev **k8_northbridges;
+> -#endif
 
-As I did not realize the hardware was shipping yet (my machine is a
-pre-production unit), I thought the firmware issue would be resolved by
-the time shipments happened.
+hm, what's wrong with the node_to_k8_dev() suggestion i made?
 
-We want manufacturers to ship early and often, this was just doing that.
+That would be a pretty clean interface, private to k8.c - and it 
+would map a 'return NULL' inline function in the !CONFIG_K8_NB case.
 
-Oh, and it was not giving the vendor any credit at all, their original
-driver was one of the worse things I had seen in a long time (200 or so
-lines, over 300 checkpatch errors, a new record.)  I rewrote it from
-scratch because of the mess involved.
-
-thanks,
-
-greg k-h
+	Ingo
