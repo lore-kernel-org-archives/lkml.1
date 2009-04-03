@@ -1,48 +1,75 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753787AbZDCJ7T@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760680AbZDCKEc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753787AbZDCJ7T (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 3 Apr 2009 05:59:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754779AbZDCJ67
+	id S1760680AbZDCKEc (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 3 Apr 2009 06:04:32 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757021AbZDCKET
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 3 Apr 2009 05:58:59 -0400
-Received: from srv5.dvmed.net ([207.36.208.214]:32857 "EHLO mail.dvmed.net"
+	Fri, 3 Apr 2009 06:04:19 -0400
+Received: from mummy.ncsc.mil ([144.51.88.129]:37660 "EHLO mummy.ncsc.mil"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754592AbZDCJ67 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 3 Apr 2009 05:58:59 -0400
-Message-ID: <49D5DDDE.9090407@garzik.org>
-Date: Fri, 03 Apr 2009 05:58:54 -0400
-From: Jeff Garzik <jeff@garzik.org>
-User-Agent: Thunderbird 2.0.0.21 (X11/20090320)
-MIME-Version: 1.0
-To: Jens Axboe <jens.axboe@oracle.com>
-CC: LKML <linux-kernel@vger.kernel.org>, linux-scsi@vger.kernel.org,
-       linux-fsdevel@vger.kernel.org,
-       Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: [PATCH] osdblk: a Linux block device for OSD objects
-References: <20090402015455.GA14087@havoc.gtf.org> <20090403094909.GQ5178@kernel.dk>
-In-Reply-To: <20090403094909.GQ5178@kernel.dk>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+	id S1756662AbZDCKES (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 3 Apr 2009 06:04:18 -0400
+Subject: Re: [PATCH 08/14] NFSv4: Add label recommended attribute and NFSv4
+ flags
+From: "David P. Quigley" <dpquigl@tycho.nsa.gov>
+To: James Morris <jmorris@namei.org>
+Cc: hch@infradead.org, viro@zeniv.linux.org.uk, casey@schaufler-ca.com,
+       sds@tycho.nsa.gov, "Matthew N. Dodd" <matthew.dodd@sparta.com>,
+       trond.myklebust@fys.uio.no, bfields@fieldses.org,
+       linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org,
+       linux-security-module@vger.kernel.org, selinux@tycho.nsa.gov,
+       labeled-nfs@linux-nfs.org
+In-Reply-To: <alpine.LRH.2.00.0904031921320.11240@tundra.namei.org>
+References: <1227733394-1114-1-git-send-email-dpquigl@tycho.nsa.gov>
+	 <1227733394-1114-9-git-send-email-dpquigl@tycho.nsa.gov>
+	 <alpine.LRH.2.00.0904031921320.11240@tundra.namei.org>
+Content-Type: text/plain
+Organization: National Security Agency
+Date: Fri, 03 Apr 2009 05:59:30 -0400
+Message-Id: <1238752770.7541.58.camel@moss-terrapins.epoch.ncsc.mil>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.24.5 (2.24.5-1.fc10) 
 Content-Transfer-Encoding: 7bit
-X-Spam-Score: -4.4 (----)
-X-Spam-Report: SpamAssassin version 3.2.5 on srv5.dvmed.net summary:
-	Content analysis details:   (-4.4 points, 5.0 required)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Jens Axboe wrote:
-> This wont work, GFP_NOIO inside the queue lock. You are also only
-> cloning the front bio, what happens if you have > 1 bio on the request?
-> You seem to dequeue the request and complete all of it, regardless of
-> whether bio->bi_size == blk_rq_bytes(rq). I'm assuming you have to clone
-> because of how the osd_req_{read,write} works, so I'd suggest storing
-> the byte size in your osdblk_request and only completing that in
-> osdblk_end_request(). Then do a rq_for_each_bio() look in there, and
-> only dequeue if you manage to start an osd request for each of them,
-> THEN moving on to the next request.
+On Fri, 2009-04-03 at 19:31 +1100, James Morris wrote:
+> On Wed, 26 Nov 2008, David P. Quigley wrote:
+> 
+> > diff --git a/include/linux/nfs4.h b/include/linux/nfs4.h
+> > index ea03667..144eacf 100644
+> > --- a/include/linux/nfs4.h
+> > +++ b/include/linux/nfs4.h
+> > @@ -21,6 +21,7 @@
+> >  #define NFS4_FHSIZE		128
+> >  #define NFS4_MAXPATHLEN		PATH_MAX
+> >  #define NFS4_MAXNAMLEN		NAME_MAX
+> > +#define NFS4_MAXLABELLEN	4096
+> 
+> I can't recall if this has been discussed before, but why is the label 
+> length limited to this value?
+> 
+> SELinux on-disk labels can be up to 64KB in size (XATTR_SIZE_MAX), and I'd 
+> like to ensure that we don't end up with an unnecessary disk vs. network 
+> label size incompatibility.
+> 
+> While it seems unlikely that SELinux (and other forms of MAC) security 
+> labels would currently exceed 4K, we don't know how SELinux might be 
+> extended in the future, and should avoid limiting label flexibility 
+> beyond existing constraints.
+> 
+> 
+> - James
 
-Thanks for the review.  Will fix...
+We tried to change this to be dynamically allocated based on what was
+coming off of the wire but we ran into a problem that it required us to
+do allocations where they really shouldn't be done in the rpc/nfsv4
+code. Trond suggested to make this static and that if someone really
+needed more than a page for their label that something was horrifically
+wrong. I'm tempted to agree with him on this but there are people trying
+to send contexts with an MLS component with every other compartment set
+which tend to be really large. 
 
-	Jeff
-
+Dave 
 
