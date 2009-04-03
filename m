@@ -1,108 +1,71 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S935438AbZDCTfA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1765760AbZDCTr4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S935438AbZDCTfA (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 3 Apr 2009 15:35:00 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757889AbZDCTeu
+	id S1765760AbZDCTr4 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 3 Apr 2009 15:47:56 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753322AbZDCTrp
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 3 Apr 2009 15:34:50 -0400
-Received: from acsinet11.oracle.com ([141.146.126.233]:41946 "EHLO
-	acsinet11.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753002AbZDCTet (ORCPT
+	Fri, 3 Apr 2009 15:47:45 -0400
+Received: from g4t0016.houston.hp.com ([15.201.24.19]:11379 "EHLO
+	g4t0016.houston.hp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753002AbZDCTrp (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 3 Apr 2009 15:34:49 -0400
-Subject: [GIT PULL] Btrfs updates for 2.6.30-rc (batch #2)
-From: Chris Mason <chris.mason@oracle.com>
-To: linux-kernel <linux-kernel@vger.kernel.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>
+	Fri, 3 Apr 2009 15:47:45 -0400
+Subject: Re: [PATCH] Add support for turning PCIe ECRC on or off
+From: Andrew Patterson <andrew.patterson@hp.com>
+To: Andi Kleen <andi@firstfloor.org>
+Cc: linux-pci@vger.kernel.org, linux-kernel@vger.kernel.org,
+       jbarnes@virtuousgeek.org
+In-Reply-To: <87ljqikz0w.fsf@basil.nowhere.org>
+References: <20090402221751.11757.36392.stgit@bob.kio>
+	 <87ljqikz0w.fsf@basil.nowhere.org>
 Content-Type: text/plain
-Date: Fri, 03 Apr 2009 15:32:58 -0400
-Message-Id: <1238787179.24082.7.camel@think.oraclecorp.com>
+Date: Fri, 03 Apr 2009 19:47:37 +0000
+Message-Id: <1238788057.19984.126.camel@grinch>
 Mime-Version: 1.0
-X-Mailer: Evolution 2.24.1 
+X-Mailer: Evolution 2.24.3 
 Content-Transfer-Encoding: 7bit
-X-Source-IP: acsmt703.oracle.com [141.146.40.81]
-X-Auth-Type: Internal IP
-X-CT-RefId: str=0001.0A09020A.49D6648C.0098:SCFMA4539814,ss=1,fgs=0
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hello everyone,
+On Fri, 2009-04-03 at 08:54 +0200, Andi Kleen wrote:
+> Andrew Patterson <andrew.patterson@hp.com> writes:
+> 
+> > Add support for turning PCIe ECRC on or off
+> >
+> > Adds support for PCI Express transaction layer end-to-end CRC checking
+> > (ECRC).  This patch will enable/disable ECRC checking by setting/clearing
+> > the ECRC Check Enable and/or ECRC Generation Enable bits for devices that
+> > support ECRC.
+> >
+> > The ECRC setting is controlled by the "pcie_ecrc=" command-line option. If
+> > this option is not set or is set to 'default", the enable and generation
+> > bits are left in whatever state that firmware/BIOS sets them to.  The
+> > "off" setting turns them off, and the "on" option turns them on (if the
+> > device supports it).
+> 
+> Can you please expand a little bit on your motvation? Why does the kernel
+> need to set that over the firmware?
 
-This is the second batch of btrfs updates for the merge window, which
-includes an assortment of optimizations, fixes, cleanups and small
-features.
+My main motivation is to turn this on for systems that support ECRC but
+don't currently have it turned on.  I think that turning this on or off
+provides a possible tradeoff of increased data integrity over some sort
+of performance penalty (hardware no longer has to calculate ECRC data,
+and packet length is smaller due to lack of ECRC fields).
 
->From a performance point of view, synchronous writes get a big boost by
-making sure we unplug instead of letting kblockd do it for us, and Josef
-got rid of two more mutexes from the allocator.
+>  And why does it need to be a boot
+> parameter vs some sysfs file?
 
-mount -o ssd is much faster in multi-process workloads, and it does a
-better job of preventing free space fragmentation as well.
+It could be either.  I thought about doing both actually, but decided it
+probably wasn't worth it. One possible advantage of doing sysfs is that
+you could turn it on or off selectively for each root bridge. The
+advantage of doing it at boot is that we could turn it off/on very early
+for balky hardware.
 
-Linus, you'll find these changes in the master branch of:
-
-git://git.kernel.org/pub/scm/linux/kernel/git/mason/btrfs-unstable.git
-
-Amit Gud (1):
-      Btrfs: fix race in worker_loop
-
-Chris Mason (5):
-      Btrfs: keep processing bios for a given bdev if our proc is batching
-      Btrfs: unplug in the async bio submission threads
-      Btrfs: break up btrfs_search_slot into smaller pieces
-      Btrfs: Optimize locking in btrfs_next_leaf()
-      Btrfs: rework allocation clustering
-
-Dan Carpenter (2):
-      Btrfs: remove dead code
-      Btrfs: remove dead code
-
-Eric Paris (1):
-      Btrfs: introduce btrfs_show_options
-
-Heiko Carstens (1):
-      Btrfs: fix __ucmpdi2 compile bug on 32 bit builds
-
-Jim Owens (1):
-      Btrfs: remove unused ftrace include
-
-Josef Bacik (4):
-      Btrfs: free space cache cleanups
-      Btrfs: clean up find_free_extent
-      Btrfs: kill the block group alloc mutex
-      Btrfs: kill the pinned_mutex
-
-Sage Weil (2):
-      Btrfs: notreelog mount option
-      Btrfs: add flushoncommit mount option
-
-Shen Feng (1):
-      Btrfs: free inode struct when btrfs_new_inode fails
-
-Stoyan Gaydarov (1):
-      Btrfs: BUG to BUG_ON changes
-
-Wu Fengguang (1):
-      Btrfs: fix typos in comments
-
- fs/btrfs/async-thread.c     |    7
- fs/btrfs/ctree.c            |  312 ++++++++++++++++---------
- fs/btrfs/ctree.h            |   84 ++++--
- fs/btrfs/delayed-ref.c      |    1
- fs/btrfs/disk-io.c          |    8
- fs/btrfs/extent-tree.c      |  398 ++++++++++++++++-----------------
- fs/btrfs/extent_io.c        |   16 -
- fs/btrfs/extent_map.c       |    1
- fs/btrfs/free-space-cache.c |  530 +++++++++++++++++++++++++++++++-------------
- fs/btrfs/free-space-cache.h |   44 +++
- fs/btrfs/inode.c            |    5
- fs/btrfs/locking.c          |    4
- fs/btrfs/super.c            |   54 ++++
- fs/btrfs/transaction.c      |    7
- fs/btrfs/tree-log.c         |   12
- fs/btrfs/volumes.c          |   41 +++
- fs/btrfs/volumes.h          |    2
- 17 files changed, 982 insertions(+), 544 deletions(-)
-
+> 
+> -Andi
+> 
+-- 
+Andrew Patterson
+Hewlett-Packard
 
