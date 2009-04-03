@@ -1,68 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934460AbZDCOzL@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934505AbZDCOzn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934460AbZDCOzL (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 3 Apr 2009 10:55:11 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932759AbZDCOqj
+	id S934505AbZDCOzn (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 3 Apr 2009 10:55:43 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933044AbZDCOrY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 3 Apr 2009 10:46:39 -0400
-Received: from rtr.ca ([76.10.145.34]:58908 "EHLO mail.rtr.ca"
+	Fri, 3 Apr 2009 10:47:24 -0400
+Received: from mx3.mail.elte.hu ([157.181.1.138]:51532 "EHLO mx3.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S932873AbZDCOqi (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 3 Apr 2009 10:46:38 -0400
-Message-ID: <49D6214A.9030204@rtr.ca>
-Date: Fri, 03 Apr 2009 10:46:34 -0400
-From: Mark Lord <lkml@rtr.ca>
-Organization: Real-Time Remedies Inc.
-User-Agent: Thunderbird 2.0.0.21 (X11/20090318)
+	id S932967AbZDCOrW (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 3 Apr 2009 10:47:22 -0400
+Date: Fri, 3 Apr 2009 16:43:44 +0200
+From: Ingo Molnar <mingo@elte.hu>
+To: Pekka Enberg <penberg@cs.helsinki.fi>,
+       Vegard Nossum <vegard.nossum@gmail.com>
+Cc: Eduard - Gabriel Munteanu <eduard.munteanu@linux360.ro>,
+       Mel Gorman <mel@csn.ul.ie>, Jason Baron <jbaron@redhat.com>,
+       linux-kernel@vger.kernel.org, mm-commits@vger.kernel.org,
+       alexn@dsv.su.se, akpm@linux-foundation.org, alexn@telia.com,
+       apw@shadowen.org, cl@linux-foundation.org, haveblue@us.ibm.com,
+       kamezawa.hiroyu@jp.fujitu.com, Peter Zijlstra <a.p.zijlstra@chello.nl>,
+       Steven Rostedt <rostedt@goodmis.org>,
+       Fr?d?ric Weisbecker <fweisbec@gmail.com>
+Subject: Re: + page-owner-tracking.patch added to -mm tree
+Message-ID: <20090403144344.GA9643@elte.hu>
+References: <20090401125506.GA6406@csn.ul.ie> <20090401131713.GQ12966@elte.hu> <20090401133220.GB6406@csn.ul.ie> <20090401134917.GC18677@elte.hu> <1238597398.23857.11.camel@penberg-laptop> <20090401152251.GB23390@elte.hu> <1238656331.26286.17.camel@penberg-laptop> <20090403042131.GA15669@localhost> <20090403141743.GF8875@elte.hu> <49D61F09.2080808@cs.helsinki.fi>
 MIME-Version: 1.0
-To: Lennart Sorensen <lsorense@csclub.uwaterloo.ca>
-Cc: Andrew Morton <akpm@linux-foundation.org>, torvalds@linux-foundation.org,
-       tytso@mit.edu, drees76@gmail.com, jesper@krogh.cc,
-       linux-kernel@vger.kernel.org
-Subject: Re: Linux 2.6.29
-References: <alpine.LFD.2.00.0903251139260.3032@localhost.localdomain> <20090325220530.GR32307@mit.edu> <alpine.LFD.2.00.0903251622420.3032@localhost.localdomain> <20090326171148.9bf8f1ec.akpm@linux-foundation.org> <alpine.LFD.2.00.0903261723250.3994@localhost.localdomain> <20090326174704.cd36bf7b.akpm@linux-foundation.org> <alpine.LFD.2.00.0903261752110.3994@localhost.localdomain> <20090326182519.d576d703.akpm@linux-foundation.org> <20090401210337.GB3797@csclub.uwaterloo.ca> <20090401143622.b1885643.akpm@linux-foundation.org> <20090401225737.GC3797@csclub.uwaterloo.ca>
-In-Reply-To: <20090401225737.GC3797@csclub.uwaterloo.ca>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <49D61F09.2080808@cs.helsinki.fi>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Lennart Sorensen wrote:
-> On Wed, Apr 01, 2009 at 02:36:22PM -0700, Andrew Morton wrote:
->> Back in 2002ish I did a *lot* of work on IO latency, reads-vs-writes,
->> etc, etc (but not fsync - for practical purposes it's unfixable on
->> ext3-ordered)
+
+* Pekka Enberg <penberg@cs.helsinki.fi> wrote:
+
+> Ingo Molnar wrote:
+>> * Eduard - Gabriel Munteanu <eduard.munteanu@linux360.ro> wrote:
 >>
->> Performance was pretty good.  From some of the descriptions I'm seeing
->> get tossed around lately, I suspect that it has regressed.
+>>> One thing I'm not sure about this patch is whether it manages to  
+>>> record an allocation only once, i.e. does it log a single event  
+>>> when/if the slab allocator requests pages? Some time ago I sent a  
+>>> patch adding GFP_NOTRACE to gfp.h, but was rejected. Maybe this  
+>>> could be a way out of the mess.
+>>>
+>>> (GFP_NOTRACE would also allow us to log "backend" allocations easily 
+>>> and treat them separately, for the record, or simply filter them 
+>>> out.)
 >>
->> It would be useful/interesting if people were to rerun some of these
->> tests with `echo anticipatory > /sys/block/sda/queue/scheduler'.
->>
->> Or with linux-2.5.60 :(
-> 
-> Well 2.6.18 seems to keep popping up as the last kernel with "sane"
-> behaviour, at least in terms of not causing huge delays under many
-> workloads.  I currently run 2.6.26, although that could be updated as
-> soon as I get around to figuring out why lirc isn't working for me when
-> I move past 2.6.26.
-> 
-> I could certainly try changing the scheduler on my mythtv box and seeing
-> if that makes any difference to the behaviour.  It is pretty darn obvious
-> whether it is responsive or not when starting to play back a video.
-..
+>> makes a lot of sense IMO to annotate these via a GFP flag.
+>
+> Yup, make sense. I think I rejected the patch (did I?) because I 
+> wanted to fix the slub/slab mess differently but here it makes 
+> perfect sense.
 
-My Myth box here was running 2.6.18 when originally set up,
-and even back then it still took *minutes* to delete large files.
-So that part hasn't really changed much in the interim.
+I'm wondering how much could be shared with the kmemcheck's 
+internal-allocation annotations. There's some overlap (although not 
+a full match) i suspect?
 
-Because of the multi-minute deletes, the distro shutdown scripts
-would fails, and power off the box while it was still writing
-to the drives.  Ouch.
-
-That system has had XFS on it for the past year and a half now,
-and for Myth, there's no reason not to use XFS.  It's great!
-
-Cheers
-
+	Ingo
