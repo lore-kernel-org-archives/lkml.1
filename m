@@ -1,68 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764403AbZDCLsf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1765322AbZDCLtK@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764403AbZDCLsf (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 3 Apr 2009 07:48:35 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762185AbZDCLsZ
+	id S1765322AbZDCLtK (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 3 Apr 2009 07:49:10 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762331AbZDCLss
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 3 Apr 2009 07:48:25 -0400
-Received: from mail.crca.org.au ([67.207.131.56]:45470 "EHLO crca.org.au"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1762012AbZDCLsY (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 3 Apr 2009 07:48:24 -0400
-X-Bogosity: Ham, spamicity=0.000000
-Subject: Re: [PATCH 1/2] lib: add fast lzo decompressor
-From: Nigel Cunningham <ncunningham@crca.org.au>
-To: Andreas Robinson <andr345@gmail.com>
-Cc: Arjan van de Ven <arjan@linux.intel.com>, "H. Peter Anvin" <hpa@zytor.com>,
-       Alain Knaff <alain@knaff.lu>, linux-kernel@vger.kernel.org
-In-Reply-To: <1238756060.11839.19.camel@andreas-desktop>
-References: <1238593252-3435-1-git-send-email-andr345@gmail.com>
-	 <1238593252-3435-2-git-send-email-andr345@gmail.com>
-	 <49D3927A.2050406@zytor.com> <1238613730.10514.35.camel@andreas-desktop>
-	 <49D3D4C0.1080506@zytor.com> <1238624827.15230.58.camel@andreas-desktop>
-	 <49D3EDEA.4090803@zytor.com>  <49D3F4A3.1040609@linux.intel.com>
-	 <1238629202.9027.111.camel@nigel-laptop>
-	 <1238675410.13249.42.camel@andreas-desktop>
-	 <1238705969.10479.8.camel@nigel-laptop>
-	 <1238756060.11839.19.camel@andreas-desktop>
-Content-Type: text/plain
-Organization: Christian Reformed Churches of Australia
-Date: Fri, 03 Apr 2009 22:48:14 +1100
-Message-Id: <1238759294.9692.49.camel@nigel-laptop>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.24.3 
-Content-Transfer-Encoding: 7bit
+	Fri, 3 Apr 2009 07:48:48 -0400
+Received: from rhun.apana.org.au ([64.62.148.172]:47231 "EHLO
+	arnor.apana.org.au" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1762074AbZDCLsq (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 3 Apr 2009 07:48:46 -0400
+Date: Fri, 3 Apr 2009 19:48:28 +0800
+From: Herbert Xu <herbert@gondor.apana.org.au>
+To: Avi Kivity <avi@redhat.com>
+Cc: Gerd Hoffmann <kraxel@redhat.com>, ghaskins@novell.com,
+       anthony@codemonkey.ws, andi@firstfloor.org,
+       linux-kernel@vger.kernel.org, agraf@suse.de, pmullaney@novell.com,
+       pmorreale@novell.com, rusty@rustcorp.com.au, netdev@vger.kernel.org,
+       kvm@vger.kernel.org
+Subject: Re: [RFC PATCH 00/17] virtual-bus
+Message-ID: <20090403114828.GA10465@gondor.apana.org.au>
+References: <20090402085253.GA29932@gondor.apana.org.au> <49D47F11.6070400@redhat.com> <49D5EBE1.8030200@redhat.com> <49D5ED11.2000800@redhat.com> <20090403111242.GA10200@gondor.apana.org.au> <49D5F6FC.5090401@redhat.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <49D5F6FC.5090401@redhat.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi.
+On Fri, Apr 03, 2009 at 02:46:04PM +0300, Avi Kivity wrote:
+>
+> The host writes the packet to tap, at which point it is consumed from  
+> its point of view.  The host would like to mention that if there was an  
+> API to notify it when the packet was actually consumed, then it would  
+> gladly use it.  Bonus points if this involves not copying the packet.
 
-On Fri, 2009-04-03 at 12:54 +0200, Andreas Robinson wrote:
-> The LZO compressor can produce more bytes than it consumes but here the
-> output buffer is the same size as the input.
-> This macro in linux/lzo.h defines how big the buffer needs to be:
-> #define lzo1x_worst_compress(x) ((x) + ((x) / 16) + 64 + 3)
+We're using write(2) for this, no? That should invoke netif_rx_ni
+which blocks until the packet is "processed", which usually means
+that it's placed on the NIC's hardware queue.
 
-Okay. Am I right in thinking (from staring at the code) that the
-compression algo just assumes it has an output buffer big enough? (I
-don't see it checking out_len, only writing to it). If that's the case,
-I guess I need to (ideally) persuade the cryptoapi guys to extend the
-api so you can find out how big an output buffer is needed for a
-particular compression algorithm - or learn how they've already done
-that (though it doesn't look like it to me).
-
-> If there are multiple threads perhaps they clobber each other's output
-> buffers?
-
-Nope. The output buffers you see here are fed to the next part of the
-pipeline (the block I/O code), which combines them (under a mutex) into
-a stream of |index|size|data|index|size|data... so that we don't have to
-worry at all about which processor compressed (or decompresses data
-later). As I said earlier, it's worked fine with LZF - or no compression
-- for years. It's just LZO that causes me problems.
-
-Thanks!
-
-Nigel
-
+Cheers,
+-- 
+Visit Openswan at http://www.openswan.org/
+Email: Herbert Xu ~{PmV>HI~} <herbert@gondor.apana.org.au>
+Home Page: http://gondor.apana.org.au/~herbert/
+PGP Key: http://gondor.apana.org.au/~herbert/pubkey.txt
