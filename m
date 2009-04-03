@@ -1,89 +1,238 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763103AbZDCX23@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760656AbZDCX33@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763103AbZDCX23 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 3 Apr 2009 19:28:29 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756107AbZDCX2U
+	id S1760656AbZDCX33 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 3 Apr 2009 19:29:29 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758604AbZDCX3Q
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 3 Apr 2009 19:28:20 -0400
-Received: from mail.crca.org.au ([67.207.131.56]:57518 "EHLO crca.org.au"
+	Fri, 3 Apr 2009 19:29:16 -0400
+Received: from mx2.redhat.com ([66.187.237.31]:47381 "EHLO mx2.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753002AbZDCX2T (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 3 Apr 2009 19:28:19 -0400
-X-Bogosity: Ham, spamicity=0.000000
-Subject: Re: [PATCH 1/2] lib: add fast lzo decompressor
-From: Nigel Cunningham <ncunningham@crca.org.au>
-To: Andreas Robinson <andr345@gmail.com>
-Cc: Arjan van de Ven <arjan@linux.intel.com>, "H. Peter Anvin" <hpa@zytor.com>,
-       Alain Knaff <alain@knaff.lu>, linux-kernel@vger.kernel.org
-In-Reply-To: <1238763183.13099.19.camel@andreas-desktop>
-References: <1238593252-3435-1-git-send-email-andr345@gmail.com>
-	 <1238593252-3435-2-git-send-email-andr345@gmail.com>
-	 <49D3927A.2050406@zytor.com> <1238613730.10514.35.camel@andreas-desktop>
-	 <49D3D4C0.1080506@zytor.com> <1238624827.15230.58.camel@andreas-desktop>
-	 <49D3EDEA.4090803@zytor.com>  <49D3F4A3.1040609@linux.intel.com>
-	 <1238629202.9027.111.camel@nigel-laptop>
-	 <1238675410.13249.42.camel@andreas-desktop>
-	 <1238705969.10479.8.camel@nigel-laptop>
-	 <1238756060.11839.19.camel@andreas-desktop>
-	 <1238759294.9692.49.camel@nigel-laptop>
-	 <1238763183.13099.19.camel@andreas-desktop>
-Content-Type: text/plain
-Organization: Christian Reformed Churches of Australia
-Date: Sat, 04 Apr 2009 10:28:11 +1100
-Message-Id: <1238801291.6802.3.camel@nigel-laptop>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.24.3 
+	id S1753636AbZDCX3P (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 3 Apr 2009 19:29:15 -0400
+Message-ID: <49D69BCF.4080808@redhat.com>
+Date: Fri, 03 Apr 2009 19:29:19 -0400
+From: Masami Hiramatsu <mhiramat@redhat.com>
+User-Agent: Thunderbird 2.0.0.21 (X11/20090320)
+MIME-Version: 1.0
+To: Roland McGrath <roland@redhat.com>, Ingo Molnar <mingo@elte.hu>
+CC: Frederic Weisbecker <fweisbec@gmail.com>,
+       Ananth N Mavinakayanahalli <ananth@in.ibm.com>,
+       Steven Rostedt <rostedt@goodmis.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Andi Kleen <andi@firstfloor.org>,
+       Arnaldo Carvalho de Melo <acme@redhat.com>,
+       Jim Keniston <jkenisto@us.ibm.com>,
+       systemtap-ml <systemtap@sources.redhat.com>,
+       LKML <linux-kernel@vger.kernel.org>, kvm@vger.kernel.org
+Subject: [PATCH -tip 2/6 V4.2] x86: add arch-dep register and stack access
+ API to ptrace
+References: <49D4F4DF.1040605@redhat.com>	<20090402234835.GA6112@nowhere>	<49D6331D.6000505@redhat.com> <20090403202004.3A2B1FC3AB@magilla.sf.frob.com> <49D680D0.1090701@redhat.com>
+In-Reply-To: <49D680D0.1090701@redhat.com>
+X-Enigmail-Version: 0.95.7
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi.
+Add following APIs for accessing registers and stack entries from pt_regs.
+- query_register_offset(const char *name)
+   Query the offset of "name" register.
 
-On Fri, 2009-04-03 at 14:53 +0200, Andreas Robinson wrote: 
-> On Fri, 2009-04-03 at 22:48 +1100, Nigel Cunningham wrote:
-> 
-> > Okay. Am I right in thinking (from staring at the code) that the
-> > compression algo just assumes it has an output buffer big enough? (I
-> > don't see it checking out_len, only writing to it).
-> 
-> I came to that conclusion too. And it is not just LZO that needs a
-> bigger buffer. Non-compressed blocks in deflate streams occupy 4 bytes
-> more than the original, according to RFC 1951 section 3.2.4.
-> 
-> >  If that's the case,
-> > I guess I need to (ideally) persuade the cryptoapi guys to extend the
-> > api so you can find out how big an output buffer is needed for a
-> > particular compression algorithm - or learn how they've already done
-> > that (though it doesn't look like it to me).
-> 
-> I can not see anything to that effect either.
-> 
-> > > If there are multiple threads perhaps they clobber each other's output
-> > > buffers?
-> > 
-> > Nope. The output buffers you see here are fed to the next part of the
-> > pipeline (the block I/O code), which combines them (under a mutex) into
-> > a stream of |index|size|data|index|size|data... so that we don't have to
-> > worry at all about which processor compressed (or decompresses data
-> > later). As I said earlier, it's worked fine with LZF - or no compression
-> > - for years. It's just LZO that causes me problems.
-> > 
-> > Thanks!
-> > 
-> > Nigel
-> > 
-> I'm glad I was able to help!
+- query_register_name(unsigned offset)
+   Query the name of register by its offset.
 
-Vmalloc'ing a 2 * PAGE_SIZE buffer seems to have done the trick - I've
-done a couple of cycles with no problems and slightly better throughput
-than LZF. A couple of tests in a row of just compressing data using
-first LZO then LZF gave 260MB/s vs 230MB/s throughput respectively.
-Doing real writes slows things down so that the difference is only about
-10MB/s (I only have a 53MB/s SATA HDD), but that's still better than a
-poke in the eye!
+- get_register(struct pt_regs *regs, unsigned offset)
+   Get the value of a register by its offset.
 
-Thanks!
+- valid_stack_address(struct pt_regs *regs, unsigned long addr)
+   Check the address is in the stack.
 
-Nigel
+- get_stack_nth(struct pt_regs *reg, unsigned nth)
+   Get Nth entry of the stack. (N >= 0)
+
+- get_argument_nth(struct pt_regs *reg, unsigned nth)
+   Get Nth argument at function call. (N >= 0)
+
+changes from v4.1:
+ - make regoffset_table constant.
+ - remove needless local variable initialization in query_register_*.
+
+Signed-off-by: Masami Hiramatsu <mhiramat@redhat.com>
+Cc: Steven Rostedt <rostedt@goodmis.org>
+Cc: Ananth N Mavinakayanahalli <ananth@in.ibm.com>
+Cc: Ingo Molnar <mingo@elte.hu>
+Cc: Frederic Weisbecker <fweisbec@gmail.com>
+Cc: Roland McGrath <roland@redhat.com>
+---
+
+ arch/x86/include/asm/ptrace.h |   66 +++++++++++++++++++++++++++++++++++++++++
+ arch/x86/kernel/ptrace.c      |   60 +++++++++++++++++++++++++++++++++++++
+ 2 files changed, 126 insertions(+), 0 deletions(-)
+
+
+diff --git a/arch/x86/include/asm/ptrace.h b/arch/x86/include/asm/ptrace.h
+index aed0894..51e5844 100644
+--- a/arch/x86/include/asm/ptrace.h
++++ b/arch/x86/include/asm/ptrace.h
+@@ -7,6 +7,7 @@
+
+ #ifdef __KERNEL__
+ #include <asm/segment.h>
++#include <asm/page_types.h>
+ #endif
+
+ #ifndef __ASSEMBLY__
+@@ -215,6 +216,71 @@ static inline unsigned long user_stack_pointer(struct pt_regs *regs)
+ 	return regs->sp;
+ }
+
++/* Query offset/name of register from its name/offset */
++extern int query_register_offset(const char *name);
++extern const char *query_register_name(unsigned offset);
++#define MAX_REG_OFFSET (offsetof(struct pt_regs, ss))
++
++/* Get register value from its offset */
++static inline unsigned long get_register(struct pt_regs *regs, unsigned offset)
++{
++	if (unlikely(offset > MAX_REG_OFFSET))
++		return 0;
++	return *(unsigned long *)((unsigned long)regs + offset);
++}
++
++/* Check the address in the stack */
++static inline int valid_stack_address(struct pt_regs *regs, unsigned long addr)
++{
++	return ((addr & ~(THREAD_SIZE - 1))  ==
++		(kernel_trap_sp(regs) & ~(THREAD_SIZE - 1)));
++}
++
++/* Get Nth entry of the stack */
++static inline unsigned long get_stack_nth(struct pt_regs *regs, unsigned n)
++{
++	unsigned long *addr = (unsigned long *)kernel_trap_sp(regs);
++	addr += n;
++	if (valid_stack_address(regs, (unsigned long)addr))
++		return *addr;
++	else
++		return 0;
++}
++
++/* Get Nth argument at function call */
++static inline unsigned long get_argument_nth(struct pt_regs *regs, unsigned n)
++{
++#ifdef CONFIG_X86_32
++#define NR_REGPARMS 3
++	if (n < NR_REGPARMS) {
++		switch (n) {
++		case 0: return regs->ax;
++		case 1: return regs->dx;
++		case 2: return regs->cx;
++		}
++		return 0;
++#else /* CONFIG_X86_64 */
++#define NR_REGPARMS 6
++	if (n < NR_REGPARMS) {
++		switch (n) {
++		case 0: return regs->di;
++		case 1: return regs->si;
++		case 2: return regs->dx;
++		case 3: return regs->cx;
++		case 4: return regs->r8;
++		case 5: return regs->r9;
++		}
++		return 0;
++#endif
++	} else {
++		/*
++		 * The typical case: arg n is on the stack.
++		 * (Note: stack[0] = return address, so skip it)
++		 */
++		return get_stack_nth(regs, 1 + n - NR_REGPARMS);
++	}
++}
++
+ /*
+  * These are defined as per linux/ptrace.h, which see.
+  */
+diff --git a/arch/x86/kernel/ptrace.c b/arch/x86/kernel/ptrace.c
+index fe9345c..8a8af27 100644
+--- a/arch/x86/kernel/ptrace.c
++++ b/arch/x86/kernel/ptrace.c
+@@ -46,6 +46,66 @@ enum x86_regset {
+ 	REGSET_IOPERM32,
+ };
+
++struct pt_regs_offset {
++	const char *name;
++	int offset;
++};
++
++#define REG_OFFSET(r) offsetof(struct pt_regs, r)
++#define REG_OFFSET_NAME(r) {.name = #r, .offset = REG_OFFSET(r)}
++#define REG_OFFSET_END {.name = NULL, .offset = 0}
++
++static const struct pt_regs_offset regoffset_table[] = {
++#ifdef CONFIG_X86_64
++	REG_OFFSET_NAME(r15),
++	REG_OFFSET_NAME(r14),
++	REG_OFFSET_NAME(r13),
++	REG_OFFSET_NAME(r12),
++	REG_OFFSET_NAME(r11),
++	REG_OFFSET_NAME(r10),
++	REG_OFFSET_NAME(r9),
++	REG_OFFSET_NAME(r8),
++#endif
++	REG_OFFSET_NAME(bx),
++	REG_OFFSET_NAME(cx),
++	REG_OFFSET_NAME(dx),
++	REG_OFFSET_NAME(si),
++	REG_OFFSET_NAME(di),
++	REG_OFFSET_NAME(bp),
++	REG_OFFSET_NAME(ax),
++#ifdef CONFIG_X86_32
++	REG_OFFSET_NAME(ds),
++	REG_OFFSET_NAME(es),
++	REG_OFFSET_NAME(fs),
++	REG_OFFSET_NAME(gs),
++#endif
++	REG_OFFSET_NAME(orig_ax),
++	REG_OFFSET_NAME(ip),
++	REG_OFFSET_NAME(cs),
++	REG_OFFSET_NAME(flags),
++	REG_OFFSET_NAME(sp),
++	REG_OFFSET_NAME(ss),
++	REG_OFFSET_END,
++};
++
++int query_register_offset(const char *name)
++{
++	const struct pt_regs_offset *roff;
++	for (roff = regoffset_table; roff->name != NULL; roff++)
++		if (!strcmp(roff->name, name))
++			return roff->offset;
++	return -EINVAL;
++}
++
++const char *query_register_name(unsigned offset)
++{
++	const struct pt_regs_offset *roff;
++	for (roff = regoffset_table; roff->name != NULL; roff++)
++		if (roff->offset == offset)
++			return roff->name;
++	return NULL;
++}
++
+ /*
+  * does not yet catch signals sent when the child dies.
+  * in exit.c or in signal.c.
+
+-- 
+Masami Hiramatsu
+
+Software Engineer
+Hitachi Computer Products (America) Inc.
+Software Solutions Division
+
+e-mail: mhiramat@redhat.com
 
