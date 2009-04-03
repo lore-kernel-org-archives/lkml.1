@@ -1,345 +1,358 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S936953AbZDCWkJ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S936952AbZDCWrJ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S936953AbZDCWkJ (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 3 Apr 2009 18:40:09 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758171AbZDCWj4
+	id S936952AbZDCWrJ (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 3 Apr 2009 18:47:09 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755390AbZDCWqz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 3 Apr 2009 18:39:56 -0400
-Received: from hera.kernel.org ([140.211.167.34]:42343 "EHLO hera.kernel.org"
+	Fri, 3 Apr 2009 18:46:55 -0400
+Received: from mx3.mail.elte.hu ([157.181.1.138]:32867 "EHLO mx3.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1757712AbZDCWjz (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 3 Apr 2009 18:39:55 -0400
-Message-ID: <49D6900B.2020107@kernel.org>
-Date: Fri, 03 Apr 2009 15:39:07 -0700
-From: Yinghai Lu <yinghai@kernel.org>
-User-Agent: Thunderbird 2.0.0.19 (X11/20081227)
+	id S1753017AbZDCWqy (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 3 Apr 2009 18:46:54 -0400
+Date: Sat, 4 Apr 2009 00:46:40 +0200
+From: Ingo Molnar <mingo@elte.hu>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
+       Thomas Gleixner <tglx@linutronix.de>, "H. Peter Anvin" <hpa@zytor.com>
+Subject: [GIT PULL] x86 fixes
+Message-ID: <20090403224640.GA28595@elte.hu>
 MIME-Version: 1.0
-To: Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
-       "H. Peter Anvin" <hpa@zytor.com>,
-       Andrew Morton <akpm@linux-foundation.org>
-CC: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       Rusty Russell <rusty@rustcorp.com.au>,
-       "Eric W. Biederman" <ebiederm@xmission.com>
-Subject: [PATCH 2/2] irq: only update affinity in chip set_affinity()
-References: <49D68FBC.7010602@kernel.org>
-In-Reply-To: <49D68FBC.7010602@kernel.org>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.5
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Linus,
 
-Impact: keep affinity consistent
+Please pull the latest x86-fixes-for-linus git tree from:
 
-irq_set_affinity() and move_masked_irq() try to assign affinity
-before calling chip set_affinity(). some archs are assigning again in set_affinity
-again.
+   git://git.kernel.org/pub/scm/linux/kernel/git/tip/linux-2.6-tip.git x86-fixes-for-linus
 
-something like:
-cpumask_cpy(desc->affinity, mask);
-desc->chip->set_affinity(mask);
+ Thanks,
 
-in the failing path, affinity should not be touched.
+	Ingo
 
-also set_extra_move_desc() ( called by set_affinity)  will rely on the old
-affinity to decide if need to move irq_desc to different node when logical
-flat apic mode is used.
+------------------>
+Akinobu Mita (1):
+      x86, mm: fix misuse of debug_kmap_atomic
 
-So try remove those assignment, and make some missed arch to assign affinity
-in their set_affinity.
+Andrew Morton (1):
+      x86: fix is_io_mapping_possible() build warning on i386 allnoconfig
 
-Signed-off-by: Yinghai Lu <yinghai@kernel.org>
+H. Peter Anvin (1):
+      x86, setup: compile with -DDISABLE_BRANCH_PROFILING
 
---
- arch/alpha/kernel/sys_dp264.c         |    6 ++++--
- arch/alpha/kernel/sys_titan.c         |    3 ++-
- arch/arm/common/gic.c                 |    1 +
- arch/cris/arch-v32/kernel/irq.c       |    1 +
- arch/ia64/kernel/iosapic.c            |    3 +++
- arch/ia64/sn/kernel/irq.c             |    3 +++
- arch/mips/cavium-octeon/octeon-irq.c  |    6 ++++++
- arch/mips/sibyte/bcm1480/irq.c        |    2 ++
- arch/mips/sibyte/sb1250/irq.c         |    2 ++
- arch/powerpc/platforms/pseries/xics.c |    5 +++++
- arch/powerpc/sysdev/mpic.c            |    2 ++
- arch/sparc/kernel/irq_64.c            |    7 +++++++
- drivers/xen/events.c                  |    2 ++
- kernel/irq/manage.c                   |    6 ++----
- kernel/irq/migration.c                |    8 +++-----
- 15 files changed, 45 insertions(+), 12 deletions(-)
+Hiroshi Shimamoto (1):
+      x86: signal: check sas_ss_size instead of sas_ss_flags()
 
-Index: linux-2.6/arch/alpha/kernel/sys_dp264.c
-===================================================================
---- linux-2.6.orig/arch/alpha/kernel/sys_dp264.c
-+++ linux-2.6/arch/alpha/kernel/sys_dp264.c
-@@ -178,7 +178,8 @@ cpu_set_irq_affinity(unsigned int irq, c
+Ingo Molnar (1):
+      x86, mtrr: remove debug message
+
+Joerg Roedel (1):
+      x86/dma: unify definition of pci_unmap_addr* and pci_unmap_len macros
+
+Joseph Cihula (1):
+      x86: disable stack-protector for __restore_processor_state()
+
+Tejun Heo (1):
+      x86,percpu: fix inverted NUMA test in setup_pcpu_remap()
+
+Yinghai Lu (1):
+      x86: remove duplicated code with pcpu_need_numa()
+
+
+ arch/x86/boot/Makefile             |    3 ++-
+ arch/x86/boot/compressed/Makefile  |    1 +
+ arch/x86/include/asm/pci.h         |   36 ++++++++++++++++++++++++++++++++----
+ arch/x86/include/asm/pci_32.h      |   34 ----------------------------------
+ arch/x86/include/asm/pci_64.h      |   22 ----------------------
+ arch/x86/kernel/cpu/mtrr/generic.c |    3 ---
+ arch/x86/kernel/setup_percpu.c     |   16 +---------------
+ arch/x86/kernel/signal.c           |    2 +-
+ arch/x86/mm/highmem_32.c           |    1 -
+ arch/x86/mm/iomap_32.c             |    4 ++--
+ arch/x86/power/Makefile            |    5 +++++
+ 11 files changed, 44 insertions(+), 83 deletions(-)
+ delete mode 100644 arch/x86/include/asm/pci_32.h
+
+diff --git a/arch/x86/boot/Makefile b/arch/x86/boot/Makefile
+index fb737ce..6633b6e 100644
+--- a/arch/x86/boot/Makefile
++++ b/arch/x86/boot/Makefile
+@@ -57,6 +57,7 @@ $(obj)/cpustr.h: $(obj)/mkcpustr FORCE
+ # How to compile the 16-bit code.  Note we always compile for -march=i386,
+ # that way we can complain to the user if the CPU is insufficient.
+ KBUILD_CFLAGS	:= $(LINUXINCLUDE) -g -Os -D_SETUP -D__KERNEL__ \
++		   -DDISABLE_BRANCH_PROFILING \
+ 		   -Wall -Wstrict-prototypes \
+ 		   -march=i386 -mregparm=3 \
+ 		   -include $(srctree)/$(src)/code16gcc.h \
+@@ -66,7 +67,7 @@ KBUILD_CFLAGS	:= $(LINUXINCLUDE) -g -Os -D_SETUP -D__KERNEL__ \
+ 			$(call cc-option, -fno-unit-at-a-time)) \
+ 		   $(call cc-option, -fno-stack-protector) \
+ 		   $(call cc-option, -mpreferred-stack-boundary=2)
+-KBUILD_CFLAGS +=   $(call cc-option,-m32)
++KBUILD_CFLAGS	+= $(call cc-option, -m32)
+ KBUILD_AFLAGS	:= $(KBUILD_CFLAGS) -D__ASSEMBLY__
  
- static void
- dp264_set_affinity(unsigned int irq, const struct cpumask *affinity)
--{ 
-+{
-+	cpumask_copy(irq_desc[irq].affinity, affinity);
- 	spin_lock(&dp264_irq_lock);
- 	cpu_set_irq_affinity(irq, *affinity);
- 	tsunami_update_irq_hw(cached_irq_mask);
-@@ -187,7 +188,8 @@ dp264_set_affinity(unsigned int irq, con
+ $(obj)/bzImage: asflags-y  := $(SVGA_MODE)
+diff --git a/arch/x86/boot/compressed/Makefile b/arch/x86/boot/compressed/Makefile
+index 3ca4c19..65551c9 100644
+--- a/arch/x86/boot/compressed/Makefile
++++ b/arch/x86/boot/compressed/Makefile
+@@ -8,6 +8,7 @@ targets := vmlinux vmlinux.bin vmlinux.bin.gz vmlinux.bin.bz2 vmlinux.bin.lzma h
  
- static void
- clipper_set_affinity(unsigned int irq, const struct cpumask *affinity)
--{ 
-+{
-+	cpumask_copy(irq_desc[irq].affinity, affinity);
- 	spin_lock(&dp264_irq_lock);
- 	cpu_set_irq_affinity(irq - 16, *affinity);
- 	tsunami_update_irq_hw(cached_irq_mask);
-Index: linux-2.6/arch/alpha/kernel/sys_titan.c
-===================================================================
---- linux-2.6.orig/arch/alpha/kernel/sys_titan.c
-+++ linux-2.6/arch/alpha/kernel/sys_titan.c
-@@ -159,7 +159,8 @@ titan_cpu_set_irq_affinity(unsigned int
+ KBUILD_CFLAGS := -m$(BITS) -D__KERNEL__ $(LINUX_INCLUDE) -O2
+ KBUILD_CFLAGS += -fno-strict-aliasing -fPIC
++KBUILD_CFLAGS += -DDISABLE_BRANCH_PROFILING
+ cflags-$(CONFIG_X86_64) := -mcmodel=small
+ KBUILD_CFLAGS += $(cflags-y)
+ KBUILD_CFLAGS += $(call cc-option,-ffreestanding)
+diff --git a/arch/x86/include/asm/pci.h b/arch/x86/include/asm/pci.h
+index a0301bf..e545ea0 100644
+--- a/arch/x86/include/asm/pci.h
++++ b/arch/x86/include/asm/pci.h
+@@ -89,12 +89,40 @@ extern void pci_iommu_alloc(void);
+ /* MSI arch hook */
+ #define arch_setup_msi_irqs arch_setup_msi_irqs
  
- static void
- titan_set_irq_affinity(unsigned int irq, const struct cpumask *affinity)
--{ 
-+{
-+	cpumask_copy(irq_desc[irq].affinity, affinity);
- 	spin_lock(&titan_irq_lock);
- 	titan_cpu_set_irq_affinity(irq - 16, *affinity);
- 	titan_update_irq_hw(titan_cached_irq_mask);
-Index: linux-2.6/arch/arm/common/gic.c
-===================================================================
---- linux-2.6.orig/arch/arm/common/gic.c
-+++ linux-2.6/arch/arm/common/gic.c
-@@ -118,6 +118,7 @@ static void gic_set_cpu(unsigned int irq
- 
- 	spin_lock(&irq_controller_lock);
- 	irq_desc[irq].cpu = cpu;
-+	cpumask_copy(irq_desc[irq].affinity, mask_val);
- 	val = readl(reg) & ~(0xff << shift);
- 	val |= 1 << (cpu + shift);
- 	writel(val, reg);
-Index: linux-2.6/arch/cris/arch-v32/kernel/irq.c
-===================================================================
---- linux-2.6.orig/arch/cris/arch-v32/kernel/irq.c
-+++ linux-2.6/arch/cris/arch-v32/kernel/irq.c
-@@ -330,6 +330,7 @@ void set_affinity_crisv32_irq(unsigned i
- 	unsigned long flags;
- 	spin_lock_irqsave(&irq_lock, flags);
- 	irq_allocations[irq - FIRST_IRQ].mask = *dest;
-+	cpumask_copy(irq_desc[j].affinity, dest);
- 	spin_unlock_irqrestore(&irq_lock, flags);
- }
- 
-Index: linux-2.6/arch/ia64/kernel/iosapic.c
-===================================================================
---- linux-2.6.orig/arch/ia64/kernel/iosapic.c
-+++ linux-2.6/arch/ia64/kernel/iosapic.c
-@@ -338,6 +338,7 @@ iosapic_set_affinity(unsigned int irq, c
- 	int redir = (irq & IA64_IRQ_REDIRECTED) ? 1 : 0;
- 	struct iosapic_rte_info *rte;
- 	struct iosapic *iosapic;
-+	irq_desc_t *idesc = irq_desc + irq;
- 
- 	irq &= (~IA64_IRQ_REDIRECTED);
- 
-@@ -353,6 +354,8 @@ iosapic_set_affinity(unsigned int irq, c
- 	if (!iosapic_intr_info[irq].count)
- 		return;			/* not an IOSAPIC interrupt */
- 
-+	cpumask_copy(desc->affinity, mask);
+-#endif  /* __KERNEL__ */
++#define PCI_DMA_BUS_IS_PHYS (dma_ops->is_phys)
 +
- 	set_irq_affinity_info(irq, dest, redir);
- 
- 	/* dest contains both id and eid */
-Index: linux-2.6/arch/ia64/sn/kernel/irq.c
-===================================================================
---- linux-2.6.orig/arch/ia64/sn/kernel/irq.c
-+++ linux-2.6/arch/ia64/sn/kernel/irq.c
-@@ -232,6 +232,9 @@ static void sn_set_affinity_irq(unsigned
- 	struct sn_irq_info *sn_irq_info, *sn_irq_info_safe;
- 	nasid_t nasid;
- 	int slice;
-+	struct irq_desc *desc = irq_to_desc(irq);
++#if defined(CONFIG_X86_64) || defined(CONFIG_DMA_API_DEBUG)
 +
-+	cpumask_copy(desc->affinity, mask);
++#define DECLARE_PCI_UNMAP_ADDR(ADDR_NAME)       \
++	        dma_addr_t ADDR_NAME;
++#define DECLARE_PCI_UNMAP_LEN(LEN_NAME)         \
++	        __u32 LEN_NAME;
++#define pci_unmap_addr(PTR, ADDR_NAME)                  \
++	        ((PTR)->ADDR_NAME)
++#define pci_unmap_addr_set(PTR, ADDR_NAME, VAL)         \
++	        (((PTR)->ADDR_NAME) = (VAL))
++#define pci_unmap_len(PTR, LEN_NAME)                    \
++	        ((PTR)->LEN_NAME)
++#define pci_unmap_len_set(PTR, LEN_NAME, VAL)           \
++	        (((PTR)->LEN_NAME) = (VAL))
  
- 	nasid = cpuid_to_nasid(cpumask_first(mask));
- 	slice = cpuid_to_slice(cpumask_first(mask));
-Index: linux-2.6/arch/mips/cavium-octeon/octeon-irq.c
-===================================================================
---- linux-2.6.orig/arch/mips/cavium-octeon/octeon-irq.c
-+++ linux-2.6/arch/mips/cavium-octeon/octeon-irq.c
-@@ -181,6 +181,9 @@ static void octeon_irq_ciu0_set_affinity
- {
- 	int cpu;
- 	int bit = irq - OCTEON_IRQ_WORKQ0;	/* Bit 0-63 of EN0 */
-+	irq_desc_t *desc = irq_desc + irq;
-+
-+	cpumask_copy(desc->affinity, dest);
- 
- 	write_lock(&octeon_irq_ciu0_rwlock);
- 	for_each_online_cpu(cpu) {
-@@ -296,6 +299,9 @@ static void octeon_irq_ciu1_set_affinity
- {
- 	int cpu;
- 	int bit = irq - OCTEON_IRQ_WDOG0;	/* Bit 0-63 of EN1 */
-+	irq_desc_t *desc = irq_desc + irq;
-+
-+	cpumask_copy(desc->affinity, dest);
- 
- 	write_lock(&octeon_irq_ciu1_rwlock);
- 	for_each_online_cpu(cpu) {
-Index: linux-2.6/arch/mips/sibyte/bcm1480/irq.c
-===================================================================
---- linux-2.6.orig/arch/mips/sibyte/bcm1480/irq.c
-+++ linux-2.6/arch/mips/sibyte/bcm1480/irq.c
-@@ -123,6 +123,8 @@ static void bcm1480_set_affinity(unsigne
- 	}
- 	i = cpumask_first(mask);
- 
-+	cpumask_copy(desc->affinity, mask);
-+
- 	/* Convert logical CPU to physical CPU */
- 	cpu = cpu_logical_map(i);
- 
-Index: linux-2.6/arch/mips/sibyte/sb1250/irq.c
-===================================================================
---- linux-2.6.orig/arch/mips/sibyte/sb1250/irq.c
-+++ linux-2.6/arch/mips/sibyte/sb1250/irq.c
-@@ -117,6 +117,8 @@ static void sb1250_set_affinity(unsigned
- 		return;
- 	}
- 
-+	cpumask_copy(desc->affinity, mask);
-+
- 	/* Convert logical CPU to physical CPU */
- 	cpu = cpu_logical_map(i);
- 
-Index: linux-2.6/arch/powerpc/platforms/pseries/xics.c
-===================================================================
---- linux-2.6.orig/arch/powerpc/platforms/pseries/xics.c
-+++ linux-2.6/arch/powerpc/platforms/pseries/xics.c
-@@ -339,6 +339,7 @@ static void xics_set_affinity(unsigned i
- 	int status;
- 	int xics_status[2];
- 	int irq_server;
-+	struct irq_desc *desc;
- 
- 	irq = (unsigned int)irq_map[virq].hwirq;
- 	if (irq == XICS_IPI || irq == XICS_IRQ_SPURIOUS)
-@@ -374,6 +375,10 @@ static void xics_set_affinity(unsigned i
- 			__func__, irq, status);
- 		return;
- 	}
-+
-+	desc = get_irq_desc(virq);
-+
-+	cpumask_copy(desc->affinity, cpumask);
- }
- 
- static struct irq_chip xics_pic_direct = {
-Index: linux-2.6/arch/powerpc/sysdev/mpic.c
-===================================================================
---- linux-2.6.orig/arch/powerpc/sysdev/mpic.c
-+++ linux-2.6/arch/powerpc/sysdev/mpic.c
-@@ -811,7 +811,9 @@ void mpic_set_affinity(unsigned int irq,
- {
- 	struct mpic *mpic = mpic_from_irq(irq);
- 	unsigned int src = mpic_irq_to_hw(irq);
-+	struct irq_desc *desc = get_irq_desc(irq);
- 
-+	cpumask_copy(desc->affinity, cpumask);
- 	if (mpic->flags & MPIC_SINGLE_DEST_CPU) {
- 		int cpuid = irq_choose_cpu(irq);
- 
-Index: linux-2.6/arch/sparc/kernel/irq_64.c
-===================================================================
---- linux-2.6.orig/arch/sparc/kernel/irq_64.c
-+++ linux-2.6/arch/sparc/kernel/irq_64.c
-@@ -321,6 +321,9 @@ static void sun4u_irq_enable(unsigned in
- static void sun4u_set_affinity(unsigned int virt_irq,
- 			       const struct cpumask *mask)
- {
-+	struct irq_desc *desc = irq_desc + virt_irq;
-+
-+	cpumask_copy(desc->affinity, mask);
- 	sun4u_irq_enable(virt_irq);
- }
- 
-@@ -382,8 +385,10 @@ static void sun4v_set_affinity(unsigned
- {
- 	unsigned int ino = virt_irq_table[virt_irq].dev_ino;
- 	unsigned long cpuid = irq_choose_cpu(virt_irq);
-+	struct irq_desc *desc = irq_desc + virt_irq;
- 	int err;
- 
-+	cpumask_copy(desc->affinity, mask);
- 	err = sun4v_intr_settarget(ino, cpuid);
- 	if (err != HV_EOK)
- 		printk(KERN_ERR "sun4v_intr_settarget(%x,%lu): "
-@@ -449,8 +454,10 @@ static void sun4v_virt_set_affinity(unsi
- 				    const struct cpumask *mask)
- {
- 	unsigned long cpuid, dev_handle, dev_ino;
-+	struct irq_desc *desc = irq_desc + virt_irq;
- 	int err;
- 
-+	cpumask_copy(desc->affinity, mask);
- 	cpuid = irq_choose_cpu(virt_irq);
- 
- 	dev_handle = virt_irq_table[virt_irq].dev_handle;
-Index: linux-2.6/drivers/xen/events.c
-===================================================================
---- linux-2.6.orig/drivers/xen/events.c
-+++ linux-2.6/drivers/xen/events.c
-@@ -713,6 +713,8 @@ static void rebind_irq_to_cpu(unsigned i
- static void set_affinity_irq(unsigned irq, const struct cpumask *dest)
- {
- 	unsigned tcpu = cpumask_first(dest);
-+
-+	cpumask_copy(irq_to_desc(irq)->affinity, mask);
- 	rebind_irq_to_cpu(irq, tcpu);
- }
- 
-Index: linux-2.6/kernel/irq/manage.c
-===================================================================
---- linux-2.6.orig/kernel/irq/manage.c
-+++ linux-2.6/kernel/irq/manage.c
-@@ -109,15 +109,13 @@ int irq_set_affinity(unsigned int irq, c
- 	spin_lock_irqsave(&desc->lock, flags);
- 
- #ifdef CONFIG_GENERIC_PENDING_IRQ
--	if (desc->status & IRQ_MOVE_PCNTXT || desc->status & IRQ_DISABLED) {
--		cpumask_copy(desc->affinity, cpumask);
-+	if (desc->status & IRQ_MOVE_PCNTXT || desc->status & IRQ_DISABLED)
- 		desc->chip->set_affinity(irq, cpumask);
--	} else {
-+	else {
- 		desc->status |= IRQ_MOVE_PENDING;
- 		cpumask_copy(desc->pending_mask, cpumask);
- 	}
+-#ifdef CONFIG_X86_32
+-# include "pci_32.h"
  #else
--	cpumask_copy(desc->affinity, cpumask);
- 	desc->chip->set_affinity(irq, cpumask);
- #endif
- 	irq_set_thread_affinity(desc, cpumask);
-Index: linux-2.6/kernel/irq/migration.c
-===================================================================
---- linux-2.6.orig/kernel/irq/migration.c
-+++ linux-2.6/kernel/irq/migration.c
-@@ -39,11 +39,9 @@ void move_masked_irq(int irq)
- 	 * masking the irqs.
- 	 */
- 	if (likely(cpumask_any_and(desc->pending_mask, cpu_online_mask)
--		   < nr_cpu_ids)) {
--		cpumask_and(desc->affinity,
--			    desc->pending_mask, cpu_online_mask);
--		desc->chip->set_affinity(irq, desc->affinity);
--	}
-+		   < nr_cpu_ids))
-+		desc->chip->set_affinity(irq, desc->pending_mask);
+-# include "pci_64.h"
 +
- 	cpumask_clear(desc->pending_mask);
- }
++#define DECLARE_PCI_UNMAP_ADDR(ADDR_NAME)       dma_addr_t ADDR_NAME[0];
++#define DECLARE_PCI_UNMAP_LEN(LEN_NAME) unsigned LEN_NAME[0];
++#define pci_unmap_addr(PTR, ADDR_NAME)  sizeof((PTR)->ADDR_NAME)
++#define pci_unmap_addr_set(PTR, ADDR_NAME, VAL) \
++	        do { break; } while (pci_unmap_addr(PTR, ADDR_NAME))
++#define pci_unmap_len(PTR, LEN_NAME)            sizeof((PTR)->LEN_NAME)
++#define pci_unmap_len_set(PTR, LEN_NAME, VAL) \
++	        do { break; } while (pci_unmap_len(PTR, LEN_NAME))
++
++#endif
++
++#endif  /* __KERNEL__ */
++
++#ifdef CONFIG_X86_64
++#include "pci_64.h"
+ #endif
  
+ /* implement the pci_ DMA API in terms of the generic device dma_ one */
+diff --git a/arch/x86/include/asm/pci_32.h b/arch/x86/include/asm/pci_32.h
+deleted file mode 100644
+index 6f1213a..0000000
+--- a/arch/x86/include/asm/pci_32.h
++++ /dev/null
+@@ -1,34 +0,0 @@
+-#ifndef _ASM_X86_PCI_32_H
+-#define _ASM_X86_PCI_32_H
+-
+-
+-#ifdef __KERNEL__
+-
+-
+-/* Dynamic DMA mapping stuff.
+- * i386 has everything mapped statically.
+- */
+-
+-struct pci_dev;
+-
+-/* The PCI address space does equal the physical memory
+- * address space.  The networking and block device layers use
+- * this boolean for bounce buffer decisions.
+- */
+-#define PCI_DMA_BUS_IS_PHYS	(1)
+-
+-/* pci_unmap_{page,single} is a nop so... */
+-#define DECLARE_PCI_UNMAP_ADDR(ADDR_NAME)	dma_addr_t ADDR_NAME[0];
+-#define DECLARE_PCI_UNMAP_LEN(LEN_NAME)	unsigned LEN_NAME[0];
+-#define pci_unmap_addr(PTR, ADDR_NAME)	sizeof((PTR)->ADDR_NAME)
+-#define pci_unmap_addr_set(PTR, ADDR_NAME, VAL) \
+-	do { break; } while (pci_unmap_addr(PTR, ADDR_NAME))
+-#define pci_unmap_len(PTR, LEN_NAME)		sizeof((PTR)->LEN_NAME)
+-#define pci_unmap_len_set(PTR, LEN_NAME, VAL) \
+-	do { break; } while (pci_unmap_len(PTR, LEN_NAME))
+-
+-
+-#endif /* __KERNEL__ */
+-
+-
+-#endif /* _ASM_X86_PCI_32_H */
+diff --git a/arch/x86/include/asm/pci_64.h b/arch/x86/include/asm/pci_64.h
+index 4da2079..ae5e40f 100644
+--- a/arch/x86/include/asm/pci_64.h
++++ b/arch/x86/include/asm/pci_64.h
+@@ -24,28 +24,6 @@ extern int (*pci_config_write)(int seg, int bus, int dev, int fn,
+ 
+ extern void dma32_reserve_bootmem(void);
+ 
+-/* The PCI address space does equal the physical memory
+- * address space.  The networking and block device layers use
+- * this boolean for bounce buffer decisions
+- *
+- * On AMD64 it mostly equals, but we set it to zero if a hardware
+- * IOMMU (gart) of sotware IOMMU (swiotlb) is available.
+- */
+-#define PCI_DMA_BUS_IS_PHYS (dma_ops->is_phys)
+-
+-#define DECLARE_PCI_UNMAP_ADDR(ADDR_NAME)	\
+-	dma_addr_t ADDR_NAME;
+-#define DECLARE_PCI_UNMAP_LEN(LEN_NAME)		\
+-	__u32 LEN_NAME;
+-#define pci_unmap_addr(PTR, ADDR_NAME)			\
+-	((PTR)->ADDR_NAME)
+-#define pci_unmap_addr_set(PTR, ADDR_NAME, VAL)		\
+-	(((PTR)->ADDR_NAME) = (VAL))
+-#define pci_unmap_len(PTR, LEN_NAME)			\
+-	((PTR)->LEN_NAME)
+-#define pci_unmap_len_set(PTR, LEN_NAME, VAL)		\
+-	(((PTR)->LEN_NAME) = (VAL))
+-
+ #endif /* __KERNEL__ */
+ 
+ #endif /* _ASM_X86_PCI_64_H */
+diff --git a/arch/x86/kernel/cpu/mtrr/generic.c b/arch/x86/kernel/cpu/mtrr/generic.c
+index 37f28fc..0b776c0 100644
+--- a/arch/x86/kernel/cpu/mtrr/generic.c
++++ b/arch/x86/kernel/cpu/mtrr/generic.c
+@@ -462,9 +462,6 @@ static void generic_get_mtrr(unsigned int reg, unsigned long *base,
+ 	*base = base_hi << (32 - PAGE_SHIFT) | base_lo >> PAGE_SHIFT;
+ 	*type = base_lo & 0xff;
+ 
+-	printk(KERN_DEBUG "  get_mtrr: cpu%d reg%02d base=%010lx size=%010lx %s\n",
+-			cpu, reg, *base, *size,
+-			mtrr_attrib_to_str(*type & 0xff));
+ out_put_cpu:
+ 	put_cpu();
+ }
+diff --git a/arch/x86/kernel/setup_percpu.c b/arch/x86/kernel/setup_percpu.c
+index 400331b..3a97a4c 100644
+--- a/arch/x86/kernel/setup_percpu.c
++++ b/arch/x86/kernel/setup_percpu.c
+@@ -153,7 +153,6 @@ static struct page * __init pcpur_get_page(unsigned int cpu, int pageno)
+ static ssize_t __init setup_pcpu_remap(size_t static_size)
+ {
+ 	static struct vm_struct vm;
+-	pg_data_t *last;
+ 	size_t ptrs_size, dyn_size;
+ 	unsigned int cpu;
+ 	ssize_t ret;
+@@ -162,22 +161,9 @@ static ssize_t __init setup_pcpu_remap(size_t static_size)
+ 	 * If large page isn't supported, there's no benefit in doing
+ 	 * this.  Also, on non-NUMA, embedding is better.
+ 	 */
+-	if (!cpu_has_pse || pcpu_need_numa())
++	if (!cpu_has_pse || !pcpu_need_numa())
+ 		return -EINVAL;
+ 
+-	last = NULL;
+-	for_each_possible_cpu(cpu) {
+-		int node = early_cpu_to_node(cpu);
+-
+-		if (node_online(node) && NODE_DATA(node) &&
+-		    last && last != NODE_DATA(node))
+-			goto proceed;
+-
+-		last = NODE_DATA(node);
+-	}
+-	return -EINVAL;
+-
+-proceed:
+ 	/*
+ 	 * Currently supports only single page.  Supporting multiple
+ 	 * pages won't be too difficult if it ever becomes necessary.
+diff --git a/arch/x86/kernel/signal.c b/arch/x86/kernel/signal.c
+index dfcc74a..1442516 100644
+--- a/arch/x86/kernel/signal.c
++++ b/arch/x86/kernel/signal.c
+@@ -221,7 +221,7 @@ get_sigframe(struct k_sigaction *ka, struct pt_regs *regs, size_t frame_size,
+ 	if (!onsigstack) {
+ 		/* This is the X/Open sanctioned signal stack switching.  */
+ 		if (ka->sa.sa_flags & SA_ONSTACK) {
+-			if (sas_ss_flags(sp) == 0)
++			if (current->sas_ss_size)
+ 				sp = current->sas_ss_sp + current->sas_ss_size;
+ 		} else {
+ #ifdef CONFIG_X86_32
+diff --git a/arch/x86/mm/highmem_32.c b/arch/x86/mm/highmem_32.c
+index 5bc5d16..8126e8d 100644
+--- a/arch/x86/mm/highmem_32.c
++++ b/arch/x86/mm/highmem_32.c
+@@ -40,7 +40,6 @@ void *kmap_atomic_prot(struct page *page, enum km_type type, pgprot_t prot)
+ 
+ 	debug_kmap_atomic(type);
+ 
+-	debug_kmap_atomic(type);
+ 	idx = type + KM_TYPE_NR*smp_processor_id();
+ 	vaddr = __fix_to_virt(FIX_KMAP_BEGIN + idx);
+ 	BUG_ON(!pte_none(*(kmap_pte-idx)));
+diff --git a/arch/x86/mm/iomap_32.c b/arch/x86/mm/iomap_32.c
+index bff0c90..8056545 100644
+--- a/arch/x86/mm/iomap_32.c
++++ b/arch/x86/mm/iomap_32.c
+@@ -23,7 +23,7 @@
+ 
+ int is_io_mapping_possible(resource_size_t base, unsigned long size)
+ {
+-#ifndef CONFIG_X86_PAE
++#if !defined(CONFIG_X86_PAE) && defined(CONFIG_PHYS_ADDR_T_64BIT)
+ 	/* There is no way to map greater than 1 << 32 address without PAE */
+ 	if (base + size > 0x100000000ULL)
+ 		return 0;
+@@ -39,6 +39,7 @@ void *kmap_atomic_prot_pfn(unsigned long pfn, enum km_type type, pgprot_t prot)
+ 
+ 	pagefault_disable();
+ 
++	debug_kmap_atomic(type);
+ 	idx = type + KM_TYPE_NR * smp_processor_id();
+ 	vaddr = __fix_to_virt(FIX_KMAP_BEGIN + idx);
+ 	set_pte(kmap_pte - idx, pfn_pte(pfn, prot));
+@@ -72,7 +73,6 @@ iounmap_atomic(void *kvaddr, enum km_type type)
+ 	unsigned long vaddr = (unsigned long) kvaddr & PAGE_MASK;
+ 	enum fixed_addresses idx = type + KM_TYPE_NR*smp_processor_id();
+ 
+-	debug_kmap_atomic(type);
+ 	/*
+ 	 * Force other mappings to Oops if they'll try to access this pte
+ 	 * without first remap it.  Keeping stale mappings around is a bad idea
+diff --git a/arch/x86/power/Makefile b/arch/x86/power/Makefile
+index 9ff4d5b..58b32db 100644
+--- a/arch/x86/power/Makefile
++++ b/arch/x86/power/Makefile
+@@ -1,2 +1,7 @@
++# __restore_processor_state() restores %gs after S3 resume and so should not
++# itself be stack-protected
++nostackp := $(call cc-option, -fno-stack-protector)
++CFLAGS_cpu_$(BITS).o	:= $(nostackp)
++
+ obj-$(CONFIG_PM_SLEEP)		+= cpu_$(BITS).o
+ obj-$(CONFIG_HIBERNATION)	+= hibernate_$(BITS).o hibernate_asm_$(BITS).o
