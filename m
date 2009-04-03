@@ -1,54 +1,46 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S936056AbZDCVnx@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761065AbZDCVoT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S936056AbZDCVnx (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 3 Apr 2009 17:43:53 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758293AbZDCVnn
+	id S1761065AbZDCVoT (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 3 Apr 2009 17:44:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S935894AbZDCVnv
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 3 Apr 2009 17:43:43 -0400
-Received: from smtp-out.google.com ([216.239.33.17]:18961 "EHLO
-	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757631AbZDCVnm (ORCPT
+	Fri, 3 Apr 2009 17:43:51 -0400
+Received: from rv-out-0506.google.com ([209.85.198.232]:8655 "EHLO
+	rv-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S935331AbZDCVnu (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 3 Apr 2009 17:43:42 -0400
-DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
-	h=date:from:x-x-sender:to:cc:subject:in-reply-to:message-id:
-	references:user-agent:mime-version:content-type:x-system-of-record;
-	b=CRy5TeE1z7lbk9pSMllv9/IgOi42Uzlfweo+ScTS6c8jS8d7DL8WmjE/wnLgWa7lz
-	ybi3lIKQhS2KBOIRqOeMA==
-Date: Fri, 3 Apr 2009 14:43:32 -0700 (PDT)
-From: David Rientjes <rientjes@google.com>
-X-X-Sender: rientjes@chino.kir.corp.google.com
-To: Andi Kleen <andi@firstfloor.org>
-cc: Chris Worley <worleys@gmail.com>, Yinghai Lu <yhlu.kernel@gmail.com>,
-       linux-kernel@vger.kernel.org
-Subject: Re: Off topic: Numactl "distance" wrong
-In-Reply-To: <87vdpljuqi.fsf@basil.nowhere.org>
-Message-ID: <alpine.DEB.2.00.0904031438540.3646@chino.kir.corp.google.com>
-References: <f3177b9e0904031302p8aef826u1874a8b9d9af0840@mail.gmail.com> <87vdpljuqi.fsf@basil.nowhere.org>
-User-Agent: Alpine 2.00 (DEB 1167 2008-08-23)
+	Fri, 3 Apr 2009 17:43:50 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
+         :cc:content-type:content-transfer-encoding;
+        b=rbTKsCY2RAMAyeEzcsDPbzjtqZRLBduH8NF1YSXxofw520jFCkTmxUoXCQaOWR2HTP
+         tWCefgbnzwjYA/S3zrUXFPHSZ4RhrLqLcNsHZP9vDreTH9rHN2I7dhzJwYo4iieBb7Lj
+         zAKAzspr9M5aWAZoOvRFyco4jqP5VEy7JtYJA=
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-X-System-Of-Record: true
+In-Reply-To: <20090403210117.GA14582@sgi.com>
+References: <f3177b9e0904031302p8aef826u1874a8b9d9af0840@mail.gmail.com>
+	 <49D66E83.5070606@inria.fr>
+	 <86802c440904031349v31f84f8anf082db7505e60387@mail.gmail.com>
+	 <20090403210117.GA14582@sgi.com>
+Date: Fri, 3 Apr 2009 14:43:47 -0700
+Message-ID: <86802c440904031443g313d0c71i1751c7c5b4b9caf9@mail.gmail.com>
+Subject: Re: Off topic: Numactl "distance" wrong
+From: Yinghai Lu <yhlu.kernel@gmail.com>
+To: Cliff Wickman <cpw@sgi.com>
+Cc: Brice Goglin <Brice.Goglin@inria.fr>, Chris Worley <worleys@gmail.com>,
+       linux-kernel@vger.kernel.org
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 3 Apr 2009, Andi Kleen wrote:
+http://tracker.coreboot.org/trac/coreboot/browser/trunk/coreboot-v2/src/northbridge/amd/amdk8/amdk8_acpi.c
+acpi_fill_slit()
+could tell you how to generate slit according to hops on AMD opteron system.
 
-> > Who would be the right person (or list) to talk about this?
-> 
-> Your BIOS vendor whose code reported the wrong values. Not that it matters
-> really on small systems.
-> 
+then you could use /sys interface ( later ) to update acpi_slit in the kernel.
+later __node_distance could get correct distance.
 
-The numactl --hardware values are coming directly from the sysfs per-node 
-distance interface, so this may not be a result of erroneous BIOS data but 
-rather the lack of a SLIT to describe the physical topology better.  When 
-we lack a SLIT, nodes are simply given these remote distances of 20 
-because their ids differ.
-
-Yinghai, can you elaborate on exactly what type of interface you can 
-imagine for modifying the distance for nodes through sysfs?  It seems like 
-you'd have to report the entire physical topology in one write, for which 
-we currently don't have an interface for beyond pxms, instead of per-node 
-distances to remote nodes.
+YH
