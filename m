@@ -1,67 +1,78 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754291AbZDCCZJ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756248AbZDCC0S@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754291AbZDCCZJ (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 2 Apr 2009 22:25:09 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751864AbZDCCY5
+	id S1756248AbZDCC0S (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 2 Apr 2009 22:26:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752069AbZDCC0G
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 2 Apr 2009 22:24:57 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:52486 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751043AbZDCCY4 (ORCPT
+	Thu, 2 Apr 2009 22:26:06 -0400
+Received: from wf-out-1314.google.com ([209.85.200.171]:60596 "EHLO
+	wf-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751043AbZDCC0D convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 2 Apr 2009 22:24:56 -0400
-Date: Thu, 2 Apr 2009 19:16:08 -0700 (PDT)
-From: Linus Torvalds <torvalds@linux-foundation.org>
-X-X-Sender: torvalds@localhost.localdomain
-To: Jeff Garzik <jeff@garzik.org>
-cc: Andrew Morton <akpm@linux-foundation.org>, David Rees <drees76@gmail.com>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: Linux 2.6.29
-In-Reply-To: <49D56DF6.5020300@garzik.org>
-Message-ID: <alpine.LFD.2.00.0904021910380.4130@localhost.localdomain>
-References: <20090325183011.GN32307@mit.edu> <20090325220530.GR32307@mit.edu> <alpine.LFD.2.00.0903251622420.3032@localhost.localdomain> <20090326171148.9bf8f1ec.akpm@linux-foundation.org> <alpine.LFD.2.00.0903261723250.3994@localhost.localdomain>
- <20090326174704.cd36bf7b.akpm@linux-foundation.org> <alpine.LFD.2.00.0903261752110.3994@localhost.localdomain> <20090326182519.d576d703.akpm@linux-foundation.org> <20090401210337.GB3797@csclub.uwaterloo.ca> <20090402110532.GA5132@aniel>
- <72dbd3150904020929w46c6dc0bs4028c49dd8fa8c56@mail.gmail.com> <20090402094247.9d7ac19f.akpm@linux-foundation.org> <alpine.LFD.2.00.0904020947310.4130@localhost.localdomain> <alpine.LFD.2.00.0904020959490.4130@localhost.localdomain> <49D53787.9060503@garzik.org>
- <alpine.LFD.2.00.0904021516540.4130@localhost.localdomain> <49D56DF6.5020300@garzik.org>
-User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
+	Thu, 2 Apr 2009 22:26:03 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
+         :cc:content-type:content-transfer-encoding;
+        b=HHDDPnvAxWsHUbPlzHm6L9PnMCnti8qT6qtl7QPCt+s9CVIrBO1iWRQ9vfBDKxL7Io
+         73IeD7uG3CQGQmJ7wN2MYJO2fdfSEYftLWB9SMUnluCdIBWbAteatBXLk3PY1cnWaXKa
+         aFfzao8S+6iv5CJsoKoncXH7Gq0VRA6breOOU=
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+In-Reply-To: <72dbd3150904021855v440f46a7oc21a7ed28fbfcb13@mail.gmail.com>
+References: <49CCCB0A.6070701@nokia.com>
+	 <alpine.DEB.2.01.0904021706330.6162@bogon.housecafe.de>
+	 <9b1675090904021724t2fb0a671uc10d8e7bcba0bc5c@mail.gmail.com>
+	 <9b1675090904021728y35776377u327f2266d06e2f29@mail.gmail.com>
+	 <72dbd3150904021855v440f46a7oc21a7ed28fbfcb13@mail.gmail.com>
+Date: Thu, 2 Apr 2009 20:26:01 -0600
+Message-ID: <9b1675090904021926o4a404c3ajf623b1560f919289@mail.gmail.com>
+Subject: Re: EXT4-ish "fixes" in UBIFS
+From: "Trenton D. Adams" <trenton.d.adams@gmail.com>
+To: David Rees <drees76@gmail.com>
+Cc: Christian Kujau <lists@nerdbynature.de>,
+       Artem Bityutskiy <Artem.Bityutskiy@nokia.com>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Thu, Apr 2, 2009 at 7:55 PM, David Rees <drees76@gmail.com> wrote:
+> On Thu, Apr 2, 2009 at 5:28 PM, Trenton D. Adams
+> <trenton.d.adams@gmail.com> wrote:
+>> On Thu, Apr 2, 2009 at 6:24 PM, Trenton D. Adams
+>> <trenton.d.adams@gmail.com> wrote:
+>>> Yes, mounting "-o sync" does improve ext3 performance.  It sucks
+>>> though, because I do want quick writes.  And mounting with sync option
+>>> slows down to disk io speeds.  In my case, that's between 20 and 23
+>>> megabytes per second *big frown, quivering lip, and tears in my eyes*.
+>>> :P
+>>>
+>>
+>> Oh, I should have clarified.  It improves performance under heavy
+>> load.  Under normal load, mounting without sync is fine.  What I tend
+>> to do is mount with "remount,rw,sync" when heavy load is starting.
+>> Then my system goes slowly, but latency is good.  Then, when it's all
+>> done (say a big compile, or job, or whatever), I remount without sync
+>> again.
+>>
+>> I'm thinking of writing a script that monitors performance, and
+>> remounts as needed, lol.  WHAT A HACK. hehe.
+>
+> All you're doing here is implementing the lowering of dirty data
+> limits in the VM dynamically based on how long fsyncs take.
+>
+> Linus outlined this specific strategy as "the ideal siutation"
+> somewhere in the depths of "That filesystem thread".
+>
+> Look at the new in 2.6.29 dirty*bytes parameters in
+> Documentation/sysctl/vm.txt for more info.  By lowering those values,
+> you can effectively turn normal writes into synchronous writes which
+> will greatly reduce latency of fsync under heavy write load.
 
-
-On Thu, 2 Apr 2009, Jeff Garzik wrote:
-> 
-> The most interesting thing I found:  the SSD does 80 MB/s for the first ~1 GB
-> or so, then slows down dramatically.  After ~2GB, it is down to 32 MB/s.
-> After ~4GB, it reaches a steady speed around 23 MB/s.
-
-Are you sure that isn't an effect of double and triple indirect blocks 
-etc? The metadata updates get more complex for the deeper indirect blocks.
-
-Or just our page cache lookup? Maybe our radix tree thing hits something 
-stupid. Although it sure shouldn't be _that_ noticeable.
-
-> There is a similar performance fall-off for the Seagate, but much less
-> pronounced:
-> 	After 1GB:	52 MB/s
-> 	After 2GB:	44 MB/s
-> 	After 3GB:	steady state
-
-That would seem to indicate that it's something else than the disk speed. 
-
-> There appears to be a small increase in system time with "-f" (use fadvise),
-> but I'm guessing time(1) does not really give a good picture of overall system
-> time used, when you include background VM activity.
-
-It would also be good to just compare it to something like
-
-	time sh -c "dd + sync"
-
-(Which in my experience tends to fluctuate much more than the steady state 
-thing, so I suspect you'd need to do a few runs to make sure the numbers 
-are stable).
-
-			Linus
+WOW, that makes a huge difference.  If I set it to 100M, I get the
+10-15 second delay I was talking about.  But, if I set it to 1M, I get
+0.3 to 0.4 second delay on a 1M fsync.  That is way better.  Perhaps I
+should auto-tune based on that parameter then.  Although I do agree
+with Linus that it sucks to do userland auto-tuning. :P
