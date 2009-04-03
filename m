@@ -1,83 +1,89 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S935582AbZDCRnf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934964AbZDCRpZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S935582AbZDCRnf (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 3 Apr 2009 13:43:35 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1765319AbZDCRnV
+	id S934964AbZDCRpZ (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 3 Apr 2009 13:45:25 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758937AbZDCRpI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 3 Apr 2009 13:43:21 -0400
-Received: from fe1.instantservice.com ([66.150.11.104]:21191 "EHLO
-	mx1.instantservice.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1760475AbZDCRnU (ORCPT
+	Fri, 3 Apr 2009 13:45:08 -0400
+Received: from mail-fx0-f158.google.com ([209.85.220.158]:61112 "EHLO
+	mail-fx0-f158.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1760153AbZDCRpG (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 3 Apr 2009 13:43:20 -0400
-X-Greylist: delayed 589 seconds by postgrey-1.27 at vger.kernel.org; Fri, 03 Apr 2009 13:43:19 EDT
-Date: Fri, 3 Apr 2009 10:33:27 -0700 (PDT)
-From: Sun Microsystems Sales Support <sun-sales-support@sun.com>
-Reply-To: Sun Microsystems Sales Support <sun-sales-support@sun.com>
-To: "David P. Quigley" <dpquigl@tycho.nsa.gov>
-Cc: casey@schaufler-ca.com, sds@tycho.nsa.gov, matthew.dodd@sparta.com,
-       linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org,
-       linux-security-module@vger.kernel.org, selinux@tycho.nsa.gov,
-       labeled-nfs@linux-nfs.org
-Message-ID: <24068406.2060451238780007952.JavaMail.root@ms1b.instantservice.com>
-Subject: RE: Re: [PATCH 08/14] NFSv4: Add label recommended attribute and
- NFSv4 flags (#6127-130006249-0129)
-MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Fri, 3 Apr 2009 13:45:06 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=googlemail.com; s=gamma;
+        h=subject:from:to:cc:in-reply-to:references:content-type:date
+         :message-id:mime-version:x-mailer:content-transfer-encoding;
+        b=B1bq/zSfdPbtGp3fnvsa3Z1aw/JQJ98UGhMUxzaZJzEEZQh2ZHWQVG+OZCO6GyN+1u
+         z+nzj/O/W2+G2nX9FEPGTsOPv7sXHGZGXqmuL8ho6DoXOrTSEL0rqACzXlbr7taFWfa/
+         dIOTPG+ENHkVKGWY+TCGyCXGx1f9V2sjtthHU=
+Subject: Re: [patch 00/20] x86, ptrace, bts, hw-branch-tracer: fixes and
+	cleanups
+From: Markus Metzger <markus.t.metzger@googlemail.com>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: markus.t.metzger@intel.com, tglx@linutronix.de, hpa@zytor.com,
+       roland@redhat.com, eranian@googlemail.com, oleg@redhat.com,
+       juan.villacis@intel.com, ak@linux.jf.intel.com,
+       linux-kernel@vger.kernel.org
+In-Reply-To: <20090403153617.GA15166@elte.hu>
+References: <20090403144332.799740000@intel.com>
+	 <20090403153617.GA15166@elte.hu>
+Content-Type: text/plain; charset=UTF-8
+Date: Fri, 03 Apr 2009 19:44:53 +0200
+Message-Id: <1238780693.6224.5.camel@raistlin>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.22.3.1
+Content-Transfer-Encoding: 8bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-
-
------Original Message-----
-From: David P. Quigley (dpquigl@tycho.nsa.gov)
-Sent: Apr 3, 2009 8:32:49 AM
-Subject: Re: [PATCH 08/14] NFSv4: Add label recommended attribute and NFSv4 flags
-
-On Fri, 2009-04-03 at 22:43 +1100, James Morris wrote:
-> On Fri, 3 Apr 2009, David P. Quigley wrote:
+On Fri, 2009-04-03 at 17:36 +0200, Ingo Molnar wrote: 
+> * markus.t.metzger@intel.com <markus.t.metzger@intel.com> wrote:
 > 
-> > We tried to change this to be dynamically allocated based on what was
-> > coming off of the wire but we ran into a problem that it required us to
-> > do allocations where they really shouldn't be done in the rpc/nfsv4
-> > code. Trond suggested to make this static and that if someone really
-> > needed more than a page for their label that something was horrifically
-> > wrong. I'm tempted to agree with him on this but there are people trying
-> > to send contexts with an MLS component with every other compartment set
-> > which tend to be really large. 
+> > Patches 1-5 fix races with context switching code when the branch 
+> > traced task is currently running.
+> > 
+> > In the worst case, this might cause context switch code to access 
+> > freed memory or the tracing hardware to continue tracing into a 
+> > freed buffer. Both might crash the kernel.
+> > 
+> > The first 4 patches apply to .29 using the below preparation 
+> > patch.
+> > 
+> > The remaining patches fix bugs in the context of per-cpu tracing 
+> > (i.e. hw-branch-tracer) and pebs, add more selftest code, and do 
+> > some cleanups.
 > 
-> Well, future labels might include cryptographic information, for example.
-This report relates to a message you sent with the following header fields:
-
-Message - ID: 134806025
-From: dpquigl@tycho.nsa.gov
-Subject: Re: [PATCH 08/14] NFSv4: Add label recommended attribute and NFSv4 flags
-
-
-Your message cannot be delivered to the following recipients:
-
-Recipient Address:  Lawrence.Bowers@sun.com 
-Reason:  This address is no longer available
-
+> Thanks - this looks pretty acceptable. Latest -git changed a lot of 
+> code in the same area (-mm bits went upstream), creating a lot of 
+> conflicts.
 > 
+> To not prolongue this any longer (20 patches are difficult enough 
+> already to handle) i picked up your patches and resolved the 
+> conflicts in situ - mind having a look at the resulting 
+> tip:tracing/hw-branch-tracing branch - does the end result look sane 
+> to you?
 
-<removing people from the CC who probably don't care about this>
+Thanks,
 
-Could you expand on why this might be needed or what applications would
-use this? It's unclear to me what sort of crypto information would be in
-a context. I know the ecryptfs guys were trying to make crypto decisions
-based on SELinux context in some cases but I never heard of wanting to
-put that kind of information into the context.
+The branch tracing bits in tip/tracing/hw-branch-tracing look good.
+The kernel boots (after changes, see below) and my tests pass.
 
-Dave
+A defconfig build fails with a compile error, though:
+In file included from net/core/skbuff.c:68:
+include/trace/skb.h:7: error: expected ‘)’ before ‘(’ token
+.....
+
+Changing TP~ to TP_~ (as in tip/master) seems to do the trick.
 
 
---
-This message was distributed to subscribers of the selinux mailing list.
-If you no longer wish to subscribe, send mail to majordomo@tycho.nsa.gov with
-the words "unsubscribe selinux" without quotes as the message.
+> It would also be nice to address Peter's feedback about the mm.h 
+> detail and the locked-pages API - but we can do that on top.
 
+I will address them, though not immediately (vacation).
+
+
+thanks and regards,
+markus.
 
