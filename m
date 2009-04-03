@@ -1,83 +1,166 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762288AbZDCJu0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762807AbZDCJvm@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762288AbZDCJu0 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 3 Apr 2009 05:50:26 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755764AbZDCJuH
+	id S1762807AbZDCJvm (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 3 Apr 2009 05:51:42 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755813AbZDCJvd
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 3 Apr 2009 05:50:07 -0400
-Received: from mu-out-0910.google.com ([209.85.134.184]:64851 "EHLO
-	mu-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755719AbZDCJuE (ORCPT
+	Fri, 3 Apr 2009 05:51:33 -0400
+Received: from bohort.kerlabs.com ([62.160.40.57]:58797 "EHLO
+	bohort.kerlabs.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753047AbZDCJvc (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 3 Apr 2009 05:50:04 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=subject:from:to:cc:in-reply-to:references:content-type:date
-         :message-id:mime-version:x-mailer:content-transfer-encoding;
-        b=Xhno1IgeEDfdDJeiwt50vwoTKnUQ7Q/nZ25w0T+Ew4L+vG8g4taj6503KZWxmuDJwk
-         qfMbmuww2I6+P05mqm5s8JAN6UcDr39nVqt5GI9qYC5IIFMGH1KN2OP/QsSg8G/O+IWa
-         aAf07Ua3UovcuTfGP5xnikZuXJKYCbO9gHFh0=
-Subject: Re: [PATCH 1/2] lib: add fast lzo decompressor
-From: Andreas Robinson <andr345@gmail.com>
-To: John Stoffel <john@stoffel.org>
-Cc: "H. Peter Anvin" <hpa@zytor.com>, Alain Knaff <alain@knaff.lu>,
-       linux-kernel@vger.kernel.org
-In-Reply-To: <18900.52255.798522.393088@stoffel.org>
-References: <1238593252-3435-1-git-send-email-andr345@gmail.com>
-	 <1238593252-3435-2-git-send-email-andr345@gmail.com>
-	 <49D3927A.2050406@zytor.com> <1238613730.10514.35.camel@andreas-desktop>
-	 <18900.52255.798522.393088@stoffel.org>
-Content-Type: text/plain
-Date: Fri, 03 Apr 2009 11:49:56 +0200
-Message-Id: <1238752196.8118.185.camel@andreas-desktop>
+	Fri, 3 Apr 2009 05:51:32 -0400
+Date: Fri, 3 Apr 2009 11:51:28 +0200
+From: Louis Rilling <Louis.Rilling@kerlabs.com>
+To: "Nicholas A. Bellinger" <nab@linux-iscsi.org>
+Cc: LKML <linux-kernel@vger.kernel.org>,
+       Linux-fsdevel <linux-fsdevel@vger.kernel.org>,
+       linux-scsi <linux-scsi@vger.kernel.org>,
+       Joel Becker <joel.becker@oracle.com>,
+       Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: [PATCH] [ConfigFS]: Add struct
+	configfs_item_operations->check_link()
+Message-ID: <20090403095128.GE32106@hawkmoon.kerlabs.com>
+Reply-To: Louis.Rilling@kerlabs.com
+Mail-Followup-To: "Nicholas A. Bellinger" <nab@linux-iscsi.org>,
+	LKML <linux-kernel@vger.kernel.org>,
+	Linux-fsdevel <linux-fsdevel@vger.kernel.org>,
+	linux-scsi <linux-scsi@vger.kernel.org>,
+	Joel Becker <joel.becker@oracle.com>,
+	Andrew Morton <akpm@linux-foundation.org>
+References: <1238747107.4250.448.camel@haakon2.linux-iscsi.org>
 Mime-Version: 1.0
-X-Mailer: Evolution 2.24.3 
-Content-Transfer-Encoding: 7bit
+Content-Type: multipart/signed; micalg=pgp-sha1; protocol="application/pgp-signature"; boundary="=_bohort-6500-1238752280-0001-2"
+Content-Disposition: inline
+In-Reply-To: <1238747107.4250.448.camel@haakon2.linux-iscsi.org>
+User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 2009-04-02 at 10:30 -0400, John Stoffel wrote:
-> >>>>> "Andreas" == Andreas Robinson <andr345@gmail.com> writes:
-> 
-> Andreas> On Wed, 2009-04-01 at 09:12 -0700, H. Peter Anvin wrote:
-> >> OK, I'm more than a bit nervous about that, especially since we're
-> >> trying to make the decompression functions more generic.
-> 
-> Andreas> Perhaps the system can default to the safe decompressor for
-> Andreas> normal use and choose the fast one if STATIC is defined or
-> Andreas> when system_state == SYSTEM_BOOTING?
-> 
-> So how do you prove that data is trusted?
+This is a MIME-formatted message.  If you see this text it means that your
+E-mail software does not support MIME-formatted messages.
 
-The kernel and initramfs images are implicitly trusted, but that is not
-unique to this implementation. None of the decompressors check the data
-e.g by comparing checksums, AFAICT.
+--=_bohort-6500-1238752280-0001-2
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-> What happens on buffer overflow?
+Hi,
 
-The overflow is detected and an error is returned to the caller ... or
-the kernel just committed suicide by overwriting itself. *cough*.
+On 03/04/09  1:25 -0700, Nicholas A. Bellinger wrote:
+> Hi Joel and co,
+>=20
+> This patch adds struct configfs_item_operations->check_link() and
+> changes fs/configfs/symlink.c:configfs_unlink() so that
+> when (*check_link) is present, an ConfigFS unlink will fail, based upon
+> input by said symlinked struct config_item *parent_item.
+>=20
+> If a non zero return is returned from (*check_link), said non zero value =
+is
+> expected to use include/asm-generic/errno* values, and the failure is ret=
+urned
+> to userspace via the unlink(2) system call.
+>=20
+> Please consider this patch for v2.6.30.  It requires no changes to existi=
+ng consumers
+> of ConfigFS like fs/ocfs2, and I have tested it with running LIO-Target v=
+3.0 code.
+>=20
+> Many thanks for your most valuable of time,
 
-Ok, I will put back the checks that actually prevents output overruns.
-It is still faster, but could no longer crash the system directly.
+I can't judge the actual need for that since I don't really know your useca=
+se
+(I've seen the second patch). However check_link() without target_item as
+parameter looks a bit restrictive for no valuable reason.
 
-There would remain a 3-byte overflow at the end of the output buffer, by
-design. However, it can be managed to never be a problem.
+See inline for a concern about the error returned.
+Other than that, the patch looks ok.
 
->   I don't think that a 20% speedup on decompression, with a
-> possibility of borking the boot completely is worth it.  Or are you
-> suggesting that people pre-test their initramfs images with this
-> compressor before deciding to boot from it?
+Louis
 
-The compressor (lzop) has been around for a long while so it's probably
-ok.
+>=20
+> --nab
+>=20
+> Signed-off-by: Nicholas A. Bellinger <nab@linux-iscsi.org>
+> ---
+>  fs/configfs/symlink.c    |   13 +++++++++++++
+>  include/linux/configfs.h |    1 +
+>  2 files changed, 14 insertions(+), 0 deletions(-)
+>=20
+> diff --git a/fs/configfs/symlink.c b/fs/configfs/symlink.c
+> index 932a92b..a5dede6 100644
+> --- a/fs/configfs/symlink.c
+> +++ b/fs/configfs/symlink.c
+> @@ -202,6 +202,19 @@ int configfs_unlink(struct inode *dir, struct dentry=
+ *dentry)
+>  	parent_item =3D configfs_get_config_item(dentry->d_parent);
+>  	type =3D parent_item->ci_type;
+> =20
+> +	/*
+> +	 * See if the underlying struct config_item has dependent
+> +	 * symlinks, and should return -EACCES here.
+> +	 */
 
-In case I broke the decompressor the best I can offer is more testing.
-In its present form it unpacks a 5 MB initramfs without errors. Does it
-need to be tested with more data? In that case, do you have any
-suggestions?
+I think that -EPERM is more natural than -EACCES. check_link() actually che=
+cks
+that the operation is permitted.
 
-Thanks,
-Andreas
+> +	if (type && type->ct_item_ops &&
+> +	    type->ct_item_ops->check_link) {
+> +		ret =3D type->ct_item_ops->check_link(parent_item);
+> +		if (ret !=3D 0) {
+> +			config_item_put(parent_item);
+> +			goto out;
+> +		}
+> +	}
+> +
+>  	spin_lock(&configfs_dirent_lock);
+>  	list_del_init(&sd->s_sibling);
+>  	spin_unlock(&configfs_dirent_lock);
+> diff --git a/include/linux/configfs.h b/include/linux/configfs.h
+> index 7f62777..b026f16 100644
+> --- a/include/linux/configfs.h
+> +++ b/include/linux/configfs.h
+> @@ -226,6 +226,7 @@ struct configfs_item_operations {
+>  	ssize_t	(*show_attribute)(struct config_item *, struct configfs_attribu=
+te *,char *);
+>  	ssize_t	(*store_attribute)(struct config_item *,struct configfs_attribu=
+te *,const char *, size_t);
+>  	int (*allow_link)(struct config_item *src, struct config_item *target);
+> +	int (*check_link)(struct config_item *src);
+>  	int (*drop_link)(struct config_item *src, struct config_item *target);
+>  };
+> =20
+> --=20
+> 1.5.4.1
+>=20
+>=20
+>=20
+> --
+> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> Please read the FAQ at  http://www.tux.org/lkml/
 
+--=20
+Dr Louis Rilling			Kerlabs
+Skype: louis.rilling			Batiment Germanium
+Phone: (+33|0) 6 80 89 08 23		80 avenue des Buttes de Coesmes
+http://www.kerlabs.com/			35700 Rennes
+
+--=_bohort-6500-1238752280-0001-2
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Transfer-Encoding: 7bit
+Content-Description: Digital signature
+Content-Disposition: inline
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.6 (GNU/Linux)
+
+iD8DBQFJ1dwgVKcRuvQ9Q1QRAr2pAJ4ptuh4seE57ozpAZ8F4f/tdNXcVgCfVgzr
+MD/pqYRm6dvr061pgwMzaJ0=
+=rCd0
+-----END PGP SIGNATURE-----
+
+--=_bohort-6500-1238752280-0001-2--
