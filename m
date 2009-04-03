@@ -1,50 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756471AbZDCD4M@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752536AbZDCEGo@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756471AbZDCD4M (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 2 Apr 2009 23:56:12 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754073AbZDCDz5
+	id S1752536AbZDCEGo (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 3 Apr 2009 00:06:44 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750818AbZDCEGe
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 2 Apr 2009 23:55:57 -0400
-Received: from 195-5-179-86.altanusprivatemedia.com ([195.5.179.86]:46765 "EHLO
-	mx86.hsxx-research.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1754035AbZDCDz4 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 2 Apr 2009 23:55:56 -0400
-X-Greylist: delayed 1703 seconds by postgrey-1.27 at vger.kernel.org; Thu, 02 Apr 2009 23:55:56 EDT
-MIME-Version: 1.0
-From: "Alex" <Alex@Geld-Regen.info>
-User-Agent: Microsoft-Entourage/10.1.4.030702.0
-X-BounceID: 708bf6bf7f0f46c495996b838e616a5e
-Subject: Geldregen=?UTF-8?Q?=20f=C3=BCr=20?=Dich
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: 8bit
-Message-ID: <khi9lz.o8e1z2@localhost>
+	Fri, 3 Apr 2009 00:06:34 -0400
+Received: from e3.ny.us.ibm.com ([32.97.182.143]:60562 "EHLO e3.ny.us.ibm.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750707AbZDCEGd (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 3 Apr 2009 00:06:33 -0400
+Date: Thu, 2 Apr 2009 21:06:25 -0700
+From: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
 To: linux-kernel@vger.kernel.org
-Date: Fri,  3 Apr 2009 05:27:35 +0200 (CEST)
+Cc: mingo@elte.hu, akpm@linux-foundation.org, dipankar@in.ibm.com,
+       niv@us.ibm.com, manfred@colorfullife.com, peterz@infradead.org
+Subject: [PATCH] make treercu be default
+Message-ID: <20090403040625.GA9473@linux.vnet.ibm.com>
+Reply-To: paulmck@linux.vnet.ibm.com
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+User-Agent: Mutt/1.5.15+20070412 (2007-04-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hallo,
+Given that I have not gotten any complaints or bug reports on treercu
+recently, this patch makes it be the default.  There are a number of
+other defconfig files that explicitly call out CLASSIC_RCU, but which
+have comment headers saying not to edit them.  Probably holdovers from
+one of the flavors of "make config", but...
 
-ich arbeite als Managerin in einem Kasino und möchte Dich kostenlos spielen lassen. Wie das geht?
+Signed-off-by: Paul E. McKenney <paulmck@linux.vnet.ibm.com>
+---
 
-Hier erfährst Du mehr:
-http://www.Geld-Regen.info/
+ Kconfig |    2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
-Probiere es aus, Du bekommst 3.200 Euro geschenkt.
-
-Deine Vorteile:
-- Kein Verlust.
-- Keine Abzocke, kein Spam, kein Betrug.
-- Risikoloses Geldverdienen.
-- Heute noch beginnen.
-
-
-Trau Dich.
-
-Liebe Grüße,
-Deine Alexandra
-
-
-
+diff -urpNa -X dontdiff linux-2.6.29/init/Kconfig linux-2.6.29-trd/init/Kconfig
+--- linux-2.6.29/init/Kconfig	2009-03-23 16:12:14.000000000 -0700
++++ linux-2.6.29-trd/init/Kconfig	2009-04-02 20:46:53.000000000 -0700
+@@ -242,7 +242,7 @@ menu "RCU Subsystem"
+ 
+ choice
+ 	prompt "RCU Implementation"
+-	default CLASSIC_RCU
++	default TREE_RCU
+ 
+ config CLASSIC_RCU
+ 	bool "Classic RCU"
