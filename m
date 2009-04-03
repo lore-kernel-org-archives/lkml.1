@@ -1,37 +1,45 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1765875AbZDCNyA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764975AbZDCN5h@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1765875AbZDCNyA (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 3 Apr 2009 09:54:00 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1765269AbZDCNxp
+	id S1764975AbZDCN5h (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 3 Apr 2009 09:57:37 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753254AbZDCN5Z
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 3 Apr 2009 09:53:45 -0400
-Received: from mx2.redhat.com ([66.187.237.31]:54100 "EHLO mx2.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1765282AbZDCNxo (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 3 Apr 2009 09:53:44 -0400
-Organization: Red Hat UK Ltd. Registered Address: Red Hat UK Ltd, Amberley
-	Place, 107-111 Peascod Street, Windsor, Berkshire, SI4 1TE, United
-	Kingdom.
-	Registered in England and Wales under Company Registration No. 3798903
-From: David Howells <dhowells@redhat.com>
-In-Reply-To: <20090403135007.GB31907@infradead.org>
-References: <20090403135007.GB31907@infradead.org> <20090403094138.9510.80681.stgit@warthog.procyon.org.uk> <20090403094143.9510.80474.stgit@warthog.procyon.org.uk>
-To: Christoph Hellwig <hch@infradead.org>
-Cc: dhowells@redhat.com, nickpiggin@yahoo.com.au, nfsv4@linux-nfs.org,
-       linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org
-Subject: Re: [PATCH 2/4] CacheFiles: Revert the addition of write_one_page()
-Date: Fri, 03 Apr 2009 14:53:29 +0100
-Message-ID: <10983.1238766809@redhat.com>
+	Fri, 3 Apr 2009 09:57:25 -0400
+Received: from cavan.codon.org.uk ([93.93.128.6]:46363 "EHLO
+	vavatch.codon.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752467AbZDCN5Z (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 3 Apr 2009 09:57:25 -0400
+Date: Fri, 3 Apr 2009 14:57:19 +0100
+From: Matthew Garrett <mjg59@srcf.ucam.org>
+To: Greg KH <gregkh@suse.de>
+Cc: linux-kernel@vger.kernel.org
+Subject: Re: qcserial comes up in unhelpful custom mode?
+Message-ID: <20090403135719.GD19774@srcf.ucam.org>
+References: <20090401203726.GA17485@srcf.ucam.org> <20090403025654.GA20146@suse.de>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20090403025654.GA20146@suse.de>
+User-Agent: Mutt/1.5.12-2006-07-14
+X-SA-Exim-Connect-IP: <locally generated>
+X-SA-Exim-Mail-From: mjg59@codon.org.uk
+X-SA-Exim-Scanned: No (on vavatch.codon.org.uk); SAEximRunCond expanded to false
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Christoph Hellwig <hch@infradead.org> wrote:
+On Thu, Apr 02, 2009 at 07:56:54PM -0700, Greg KH wrote:
 
-> Note that in the patch series going into mainline eventually this should
-> not be a separate patch but the new ops should never be introduced.
+> But, I have heard reports of people dual-booting with other operating
+> systems and then successfully using the device under Linux with the
+> qcserial driver, so that is one solution for some users.
 
-Yes, probably, but this makes it easier for people to see what I'm proposing
-to change.
+So it's a driver that's useless without a closed source firmware loader, 
+either in the form of a Linux userspace application that can't be 
+distributed or in the form of Windows? I thought we'd decided that 
+drivers weren't going to be merged in that case (poulsbow, the original 
+3945 driver)
 
-David
+-- 
+Matthew Garrett | mjg59@srcf.ucam.org
