@@ -1,58 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S935068AbZDCRbV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S935109AbZDCReb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S935068AbZDCRbV (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 3 Apr 2009 13:31:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759822AbZDCRbL
+	id S935109AbZDCReb (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 3 Apr 2009 13:34:31 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756559AbZDCReV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 3 Apr 2009 13:31:11 -0400
-Received: from mx3.mail.elte.hu ([157.181.1.138]:45962 "EHLO mx3.mail.elte.hu"
+	Fri, 3 Apr 2009 13:34:21 -0400
+Received: from hera.kernel.org ([140.211.167.34]:52323 "EHLO hera.kernel.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1757356AbZDCRbK (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 3 Apr 2009 13:31:10 -0400
-Date: Fri, 3 Apr 2009 19:30:59 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: Joseph Cihula <joseph.cihula@intel.com>, Tejun Heo <tj@kernel.org>
-Cc: linux-kernel@vger.kernel.org, arjan@linux.intel.com
-Subject: Re: [PATCH] x86: disable stack-protector for
-	__restore_processor_state()
-Message-ID: <20090403173059.GO19982@elte.hu>
-References: <49D13385.5060900@intel.com>
+	id S1753592AbZDCReU (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 3 Apr 2009 13:34:20 -0400
+Date: Fri, 3 Apr 2009 17:33:32 GMT
+From: Russ Anderson <rja@sgi.com>
+To: linux-tip-commits@vger.kernel.org
+Cc: linux-kernel@vger.kernel.org, rja@sgi.com, hpa@zytor.com, mingo@redhat.com,
+       tglx@linutronix.de, mingo@elte.hu
+Reply-To: mingo@redhat.com, hpa@zytor.com, rja@sgi.com,
+       linux-kernel@vger.kernel.org, tglx@linutronix.de, mingo@elte.hu
+In-Reply-To: <20090330225240.GA22776@sgi.com>
+References: <20090330225240.GA22776@sgi.com>
+Subject: [tip:x86/uv] x86, UV: system table in bios accessed after unmap
+Message-ID: <tip-1a544e659cbfce178395e9a090a47d1907d0cfa8@git.kernel.org>
+Git-Commit-ID: 1a544e659cbfce178395e9a090a47d1907d0cfa8
+X-Mailer: tip-git-log-daemon
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=UTF-8
 Content-Disposition: inline
-In-Reply-To: <49D13385.5060900@intel.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.5
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Fri, 03 Apr 2009 17:33:34 +0000 (UTC)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Commit-ID:  1a544e659cbfce178395e9a090a47d1907d0cfa8
+Gitweb:     http://git.kernel.org/tip/1a544e659cbfce178395e9a090a47d1907d0cfa8
+Author:     Russ Anderson <rja@sgi.com>
+AuthorDate: Mon, 30 Mar 2009 17:52:40 -0500
+Committer:  Ingo Molnar <mingo@elte.hu>
+CommitDate: Fri, 3 Apr 2009 19:25:57 +0200
 
-* Joseph Cihula <joseph.cihula@intel.com> wrote:
+x86, UV: system table in bios accessed after unmap
 
-> The __restore_processor_state() fn restores %gs on resume from S3.  
-> As such, it cannot be protected by the stack-protector guard since 
-> %gs will not be correct on function entry.
->
-> There are only a few other fns in this file and it should not 
-> negatively impact kernel security that they will also have the 
-> stack-protector guard removed (and so it's not worth moving them 
-> to another file).
->
-> Without this change, S3 resume on a kernel built with 
-> CONFIG_CC_STACKPROTECTOR_ALL=y will fail.
->
-> Signed-off-by:  Joseph Cihula <joseph.cihula@intel.com>
+Use the copy of UV system table in kernel memory, not the one in
+bios after unmapping.
 
-ah ... very nice!
+Signed-off-by: Russ Anderson <rja@sgi.com>
+LKML-Reference: <20090330225240.GA22776@sgi.com>
+Signed-off-by: Ingo Molnar <mingo@elte.hu>
 
-applied to tip:x86/urgent, thanks Joseph!
 
-	Ingo
+---
+ arch/x86/kernel/bios_uv.c |    3 ++-
+ 1 files changed, 2 insertions(+), 1 deletions(-)
+
+diff --git a/arch/x86/kernel/bios_uv.c b/arch/x86/kernel/bios_uv.c
+index f638827..63a88e1 100644
+--- a/arch/x86/kernel/bios_uv.c
++++ b/arch/x86/kernel/bios_uv.c
+@@ -182,7 +182,8 @@ void uv_bios_init(void)
+ 	memcpy(&uv_systab, tab, sizeof(struct uv_systab));
+ 	iounmap(tab);
+ 
+-	printk(KERN_INFO "EFI UV System Table Revision %d\n", tab->revision);
++	printk(KERN_INFO "EFI UV System Table Revision %d\n",
++					uv_systab.revision);
+ }
+ #else	/* !CONFIG_EFI */
+ 
