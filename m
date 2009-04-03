@@ -1,75 +1,71 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760680AbZDCKEc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762216AbZDCKEp@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760680AbZDCKEc (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 3 Apr 2009 06:04:32 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757021AbZDCKET
+	id S1762216AbZDCKEp (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 3 Apr 2009 06:04:45 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759870AbZDCKEb
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 3 Apr 2009 06:04:19 -0400
-Received: from mummy.ncsc.mil ([144.51.88.129]:37660 "EHLO mummy.ncsc.mil"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756662AbZDCKES (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 3 Apr 2009 06:04:18 -0400
-Subject: Re: [PATCH 08/14] NFSv4: Add label recommended attribute and NFSv4
- flags
-From: "David P. Quigley" <dpquigl@tycho.nsa.gov>
-To: James Morris <jmorris@namei.org>
-Cc: hch@infradead.org, viro@zeniv.linux.org.uk, casey@schaufler-ca.com,
-       sds@tycho.nsa.gov, "Matthew N. Dodd" <matthew.dodd@sparta.com>,
-       trond.myklebust@fys.uio.no, bfields@fieldses.org,
-       linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org,
-       linux-security-module@vger.kernel.org, selinux@tycho.nsa.gov,
-       labeled-nfs@linux-nfs.org
-In-Reply-To: <alpine.LRH.2.00.0904031921320.11240@tundra.namei.org>
-References: <1227733394-1114-1-git-send-email-dpquigl@tycho.nsa.gov>
-	 <1227733394-1114-9-git-send-email-dpquigl@tycho.nsa.gov>
-	 <alpine.LRH.2.00.0904031921320.11240@tundra.namei.org>
+	Fri, 3 Apr 2009 06:04:31 -0400
+Received: from casper.infradead.org ([85.118.1.10]:55529 "EHLO
+	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1761170AbZDCKE3 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 3 Apr 2009 06:04:29 -0400
+Subject: Re: [patch/rfc 2.6.29 1/2] MTD: driver model updates
+From: David Woodhouse <dwmw2@infradead.org>
+To: David Brownell <david-b@pacbell.net>
+Cc: Linux MTD <linux-mtd@lists.infradead.org>,
+       LKML <linux-kernel@vger.kernel.org>, Kay Sievers <kay.sievers@vrfy.org>
+In-Reply-To: <200903260042.42091.david-b@pacbell.net>
+References: <200903260042.42091.david-b@pacbell.net>
 Content-Type: text/plain
-Organization: National Security Agency
-Date: Fri, 03 Apr 2009 05:59:30 -0400
-Message-Id: <1238752770.7541.58.camel@moss-terrapins.epoch.ncsc.mil>
+Date: Fri, 03 Apr 2009 11:04:22 +0100
+Message-Id: <1238753062.3711.109.camel@macbook.infradead.org>
 Mime-Version: 1.0
-X-Mailer: Evolution 2.24.5 (2.24.5-1.fc10) 
+X-Mailer: Evolution 2.26.0 (2.26.0-1.fc11) 
 Content-Transfer-Encoding: 7bit
+X-SRS-Rewrite: SMTP reverse-path rewritten from <dwmw2@infradead.org> by casper.infradead.org
+	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 2009-04-03 at 19:31 +1100, James Morris wrote:
-> On Wed, 26 Nov 2008, David P. Quigley wrote:
+On Thu, 2009-03-26 at 00:42 -0700, David Brownell wrote:
 > 
-> > diff --git a/include/linux/nfs4.h b/include/linux/nfs4.h
-> > index ea03667..144eacf 100644
-> > --- a/include/linux/nfs4.h
-> > +++ b/include/linux/nfs4.h
-> > @@ -21,6 +21,7 @@
-> >  #define NFS4_FHSIZE		128
-> >  #define NFS4_MAXPATHLEN		PATH_MAX
-> >  #define NFS4_MAXNAMLEN		NAME_MAX
-> > +#define NFS4_MAXLABELLEN	4096
-> 
-> I can't recall if this has been discussed before, but why is the label 
-> length limited to this value?
-> 
-> SELinux on-disk labels can be up to 64KB in size (XATTR_SIZE_MAX), and I'd 
-> like to ensure that we don't end up with an unnecessary disk vs. network 
-> label size incompatibility.
-> 
-> While it seems unlikely that SELinux (and other forms of MAC) security 
-> labels would currently exceed 4K, we don't know how SELinux might be 
-> extended in the future, and should avoid limiting label flexibility 
-> beyond existing constraints.
-> 
-> 
-> - James
+> @@ -343,6 +343,11 @@ static struct mtd_part *add_one_partitio
+>         slave->mtd.name = part->name;
+>         slave->mtd.owner = master->owner;
+>  
+> +       /* NOTE:  we don't arrange MTDs as a tree; it'd be error-prone
+> +        * to have the same data be in two different partitions.
+> +        */
+> +       slave->mtd.dev.parent = master->dev.parent;
 
-We tried to change this to be dynamically allocated based on what was
-coming off of the wire but we ran into a problem that it required us to
-do allocations where they really shouldn't be done in the rpc/nfsv4
-code. Trond suggested to make this static and that if someone really
-needed more than a page for their label that something was horrifically
-wrong. I'm tempted to agree with him on this but there are people trying
-to send contexts with an MLS component with every other compartment set
-which tend to be really large. 
+Can you elaborate on that? I think we _do_ want to arrange partitions as
+sub-devices of the master, don't we? And I'd rather not change the way
+they appear at a later date; I'd prefer them to be that way from the
+beginning.
 
-Dave 
+>         slave->mtd.read = part_read;
+>         slave->mtd.write = part_write;
+>  
+> @@ -493,7 +498,9 @@ out_register:
+>   * This function, given a master MTD object and a partition table, creates
+>   * and registers slave MTD objects which are bound to the master according to
+>   * the partition definitions.
+> - * (Q: should we register the master MTD object as well?)
+> + *
+> + * We don't register the master, or expect the caller to have done so,
+> + * for reasons of data integrity.
+>   */
+
+Again, can you elaborate?
+
+A lot of devices do just that. Where you have a partition table of some
+kind that's actually stored on the flash, that might be the only way to
+access it.
+
+I really don't like the way our partitioning works at the moment.
+
+-- 
+dwmw2
 
