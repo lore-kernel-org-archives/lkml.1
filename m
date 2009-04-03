@@ -1,171 +1,98 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760150AbZDCGqV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760120AbZDCGqq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760150AbZDCGqV (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 3 Apr 2009 02:46:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755340AbZDCGqM
+	id S1760120AbZDCGqq (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 3 Apr 2009 02:46:46 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759267AbZDCGqg
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 3 Apr 2009 02:46:12 -0400
-Received: from smtprelay03.ispgateway.de ([80.67.18.15]:47802 "EHLO
-	smtprelay03.ispgateway.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750930AbZDCGqL (ORCPT
+	Fri, 3 Apr 2009 02:46:36 -0400
+Received: from mga11.intel.com ([192.55.52.93]:25397 "EHLO mga11.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1759253AbZDCGqf convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 3 Apr 2009 02:46:11 -0400
-Message-ID: <49D5B0B3.2040405@ladisch.de>
-Date: Fri, 03 Apr 2009 08:46:11 +0200
-From: Clemens Ladisch <clemens@ladisch.de>
-User-Agent: Thunderbird 2.0.0.21 (Windows/20090302)
+	Fri, 3 Apr 2009 02:46:35 -0400
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.39,318,1235980800"; 
+   d="scan'208";a="444631622"
+From: "Metzger, Markus T" <markus.t.metzger@intel.com>
+To: Ingo Molnar <mingo@elte.hu>
+CC: "tglx@linutronix.de" <tglx@linutronix.de>, "hpa@zytor.com" <hpa@zytor.com>,
+       "markus.t.metzger@gmail.com" <markus.t.metzger@gmail.com>,
+       "roland@redhat.com" <roland@redhat.com>,
+       "eranian@googlemail.com" <eranian@googlemail.com>,
+       "oleg@redhat.com" <oleg@redhat.com>,
+       "Villacis, Juan" <juan.villacis@intel.com>,
+       "ak@linux.jf.intel.com" <ak@linux.jf.intel.com>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
+Date: Fri, 3 Apr 2009 07:46:30 +0100
+Subject: RE: [patch 14/18] x86, ds: use single debug store cpu configuration
+Thread-Topic: [patch 14/18] x86, ds: use single debug store cpu configuration
+Thread-Index: AcmzyW+ucrsn5EjYRGSqkaDWMZu0dAAXejrw
+Message-ID: <928CFBE8E7CB0040959E56B4EA41A77E9271806D@irsmsx504.ger.corp.intel.com>
+References: <20090402145455.597376000@intel.com>
+ <20090402145728.179163000@intel.com> <20090402192942.GE2455@elte.hu>
+In-Reply-To: <20090402192942.GE2455@elte.hu>
+Accept-Language: en-US
+Content-Language: en-US
+X-MS-Has-Attach: 
+X-MS-TNEF-Correlator: 
+acceptlanguage: en-US
+Content-Type: text/plain; charset="us-ascii"
 MIME-Version: 1.0
-To: Ira Snyder <iws@ovro.caltech.edu>
-CC: Alan Cox <alan@lxorguk.ukuu.org.uk>, Andrey Borzenkov <arvidjaar@mail.ru>,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] firmware: speed up request_firmware()
-References: <20090128180446.GB31107@ovro.caltech.edu> <E1LSFhF-0002OC-00.arvidjaar-mail-ru@mx5.mail.ru> <20090128194534.457d58cd@lxorguk.ukuu.org.uk> <20090128203421.GC31107@ovro.caltech.edu>
-In-Reply-To: <20090128203421.GC31107@ovro.caltech.edu>
-Content-Type: text/plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
-X-Df-Sender: linux-kernel@cl.domainfactory-kunde.de
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Ira Snyder wrote:
-> I didn't want to change an existing kernel interface, so I just made
-> the easiest change that worked for me.
+>-----Original Message-----
+>From: Ingo Molnar [mailto:mingo@elte.hu]
+>Sent: Thursday, April 02, 2009 9:30 PM
+>To: Metzger, Markus T
+>Cc: tglx@linutronix.de; hpa@zytor.com; markus.t.metzger@gmail.com; roland@redhat.com;
+>eranian@googlemail.com; oleg@redhat.com; Villacis, Juan; ak@linux.jf.intel.com; linux-
+>kernel@vger.kernel.org
+>Subject: Re: [patch 14/18] x86, ds: use single debug store cpu configuration
+>
+>
+>* markus.t.metzger@intel.com <markus.t.metzger@intel.com> wrote:
+>
+>> Use a single configuration for all cpus.
+>>
+>
+>> @@ -1291,11 +1290,15 @@ ds_configure(const struct ds_configurati
+>>  	printk("bts/pebs record: %u/%u bytes\n",
+>>  	       ds_cfg.sizeof_rec[ds_bts], ds_cfg.sizeof_rec[ds_pebs]);
+>>
+>> -	WARN_ON_ONCE(MAX_SIZEOF_DS < (12 * ds_cfg.sizeof_ptr_field));
+>> +	WARN_ON(MAX_SIZEOF_DS < (12 * ds_cfg.sizeof_ptr_field));
+>
+>Why this change?
 
-Well, userspace does know the actual size of the image, so I see no
-reason why it shouldn't be able to tell the kernel about it beforehand.
+The function is only called once, now - for the boot cpu.
+The _ONCE is a nop. I thought its better to remove it, since it became redundant.
 
-> I'd be happy to test patches anyone comes up with.
+regards,
+markus.
 
-=====
+>
+>Firstly, it was not declared in the changelog which is a no-no.
+>
+>Secondly, this is a bad change: we are more than content to have a
+>single such warning bootup - not dozens of it (on some large
+>system).
+>
+>	Ingo
+---------------------------------------------------------------------
+Intel GmbH
+Dornacher Strasse 1
+85622 Feldkirchen/Muenchen Germany
+Sitz der Gesellschaft: Feldkirchen bei Muenchen
+Geschaeftsfuehrer: Douglas Lusk, Peter Gleissner, Hannes Schwaderer
+Registergericht: Muenchen HRB 47456 Ust.-IdNr.
+VAT Registration No.: DE129385895
+Citibank Frankfurt (BLZ 502 109 00) 600119052
 
-This adds a data_size attribute to the firmware loading device so that
-userspace can tell us about the firmware image size.  This allows us to
-preallocate the buffer with the final size, thus avoiding reallocating
-the buffer for every page of data as it comes in.
+This e-mail and any attachments may contain confidential material for
+the sole use of the intended recipient(s). Any review or distribution
+by others is strictly prohibited. If you are not the intended
+recipient, please contact the sender and delete all copies.
 
-Signed-off-by: Clemens Ladisch <clemens@ladisch.de>
-
---- linux-2.6.orig/Documentation/firmware_class/README
-+++ linux-2.6/Documentation/firmware_class/README
-@@ -21,7 +21,7 @@
-  kernel(driver): calls request_firmware(&fw_entry, $FIRMWARE, device)
- 
-  userspace:
-- 	- /sys/class/firmware/xxx/{loading,data} appear.
-+ 	- /sys/class/firmware/xxx/{loading,data,data_size} appear.
- 	- hotplug gets called with a firmware identifier in $FIRMWARE
- 	  and the usual hotplug environment.
- 		- hotplug: echo 1 > /sys/class/firmware/xxx/loading
-@@ -29,11 +29,13 @@
-  kernel: Discard any previous partial load.
- 
-  userspace:
-+		- hotplug: echo ... > /sys/class/firmware/xxx/data_size
- 		- hotplug: cat appropriate_firmware_image > \
- 					/sys/class/firmware/xxx/data
- 
-- kernel: grows a buffer in PAGE_SIZE increments to hold the image as it
--	 comes in.
-+ kernel: Copies the firmware image into a buffer of the specified size.
-+	 If the image is larger, the buffer automatically grows in
-+	 PAGE_SIZE increments.
- 
-  userspace:
- 		- hotplug: echo 0 > /sys/class/firmware/xxx/loading
-@@ -60,6 +62,9 @@
- 
- 	HOTPLUG_FW_DIR=/usr/lib/hotplug/firmware/
- 
-+	if [ -e /sys/$DEVPATH/data_size ]; then
-+		stat -c %s $HOTPLUG_FW_DIR/$FIRMWARE > /sys/$DEVPATH/data_size
-+	fi
- 	echo 1 > /sys/$DEVPATH/loading
- 	cat $HOTPLUG_FW_DIR/$FIRMWARE > /sysfs/$DEVPATH/data
- 	echo 0 > /sys/$DEVPATH/loading
-@@ -73,6 +78,9 @@
-  - firmware_data_read() and firmware_loading_show() are just provided
-    for testing and completeness, they are not called in normal use.
- 
-+ - /sys/class/firmware/xxx/data_size is optional for compatibility with
-+   older kernels.
-+
-  - There is also /sys/class/firmware/timeout which holds a timeout in
-    seconds for the whole load operation.
- 
---- linux-2.6.orig/Documentation/firmware_class/hotplug-script
-+++ linux-2.6/Documentation/firmware_class/hotplug-script
-@@ -6,6 +6,9 @@
- 
- HOTPLUG_FW_DIR=/usr/lib/hotplug/firmware/
- 
-+if [ -e /sys/$DEVPATH/data_size ]; then
-+	stat -c %s $HOTPLUG_FW_DIR/$FIRMWARE > /sys/$DEVPATH/data_size
-+fi
- echo 1 > /sys/$DEVPATH/loading
- cat $HOTPLUG_FW_DIR/$FIRMWARE > /sys/$DEVPATH/data
- echo 0 > /sys/$DEVPATH/loading
---- linux-2.6.orig/drivers/base/firmware_class.c
-+++ linux-2.6/drivers/base/firmware_class.c
-@@ -46,6 +46,7 @@ struct firmware_priv {
- 	struct firmware *fw;
- 	unsigned long status;
- 	int alloc_size;
-+	int size_hint;
- 	struct timer_list timeout;
- };
- 
-@@ -114,6 +115,32 @@ static struct class firmware_class = {
- 	.dev_release	= fw_dev_release,
- };
- 
-+static ssize_t firmware_data_size_show(struct device *dev,
-+				       struct device_attribute *attr, char *buf)
-+{
-+	struct firmware_priv *fw_priv = dev_get_drvdata(dev);
-+
-+	return sprintf(buf, "%d\n", fw_priv->size_hint);
-+}
-+
-+static ssize_t firmware_data_size_store(struct device *dev,
-+					struct device_attribute *attr,
-+					const char *buf, size_t count)
-+{
-+	struct firmware_priv *fw_priv = dev_get_drvdata(dev);
-+	long value;
-+	int err;
-+
-+	err = strict_strtol(buf, 10, &value);
-+	if (err)
-+		return err;
-+	fw_priv->size_hint = value;
-+	return count;
-+}
-+
-+static DEVICE_ATTR(data_size, 0644,
-+		   firmware_data_size_show, firmware_data_size_store);
-+
- static ssize_t firmware_loading_show(struct device *dev,
- 				     struct device_attribute *attr, char *buf)
- {
-@@ -207,6 +234,7 @@ fw_realloc_buffer(struct firmware_priv *
- 	if (min_size <= fw_priv->alloc_size)
- 		return 0;
- 
-+	min_size = max(min_size, fw_priv->size_hint);
- 	new_size = ALIGN(min_size, PAGE_SIZE);
- 	new_data = vmalloc(new_size);
- 	if (!new_data) {
-@@ -359,6 +387,12 @@ static int fw_setup_device(struct firmwa
- 		goto error_unreg;
- 	}
- 
-+	retval = device_create_file(f_dev, &dev_attr_data_size);
-+	if (retval) {
-+		dev_err(device, "%s: device_create_file failed\n", __func__);
-+		goto error_unreg;
-+	}
-+
- 	retval = device_create_file(f_dev, &dev_attr_loading);
- 	if (retval) {
- 		dev_err(device, "%s: device_create_file failed\n", __func__);
