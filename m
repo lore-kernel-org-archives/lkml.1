@@ -1,92 +1,124 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758904AbZDCGOF@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759446AbZDCGXr@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758904AbZDCGOF (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 3 Apr 2009 02:14:05 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755274AbZDCGNj
+	id S1759446AbZDCGXr (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 3 Apr 2009 02:23:47 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753730AbZDCGXh
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 3 Apr 2009 02:13:39 -0400
-Received: from mail.windriver.com ([147.11.1.11]:34353 "EHLO mail.wrs.com"
+	Fri, 3 Apr 2009 02:23:37 -0400
+Received: from mga11.intel.com ([192.55.52.93]:62012 "EHLO mga11.intel.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1759423AbZDCGNi (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 3 Apr 2009 02:13:38 -0400
-From: Harry Ciao <qingtao.cao@windriver.com>
-To: norsk5@yahoo.com, bluesmoke-devel@lists.sourceforge.net,
-       linuxppc-dev@ozlabs.org
-Cc: linux-kernel@vger.kernel.org
-Subject: [v1 PATCH 3/3] EDAC: CPC925 MC platform device setup
-Date: Fri,  3 Apr 2009 14:10:44 +0800
-Message-Id: <1238739044-19926-2-git-send-email-qingtao.cao@windriver.com>
-X-Mailer: git-send-email 1.5.6.2
-In-Reply-To: <1238739044-19926-1-git-send-email-qingtao.cao@windriver.com>
-References: <1238739044-19926-1-git-send-email-qingtao.cao@windriver.com>
-X-OriginalArrivalTime: 03 Apr 2009 06:13:24.0883 (UTC) FILETIME=[4C021630:01C9B423]
+	id S1751590AbZDCGXh convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 3 Apr 2009 02:23:37 -0400
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.39,318,1235980800"; 
+   d="scan'208";a="678411580"
+From: "Metzger, Markus T" <markus.t.metzger@intel.com>
+To: Ingo Molnar <mingo@elte.hu>
+CC: "tglx@linutronix.de" <tglx@linutronix.de>, "hpa@zytor.com" <hpa@zytor.com>,
+       "markus.t.metzger@gmail.com" <markus.t.metzger@gmail.com>,
+       "roland@redhat.com" <roland@redhat.com>,
+       "eranian@googlemail.com" <eranian@googlemail.com>,
+       "oleg@redhat.com" <oleg@redhat.com>,
+       "Villacis, Juan" <juan.villacis@intel.com>,
+       "ak@linux.jf.intel.com" <ak@linux.jf.intel.com>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
+Date: Fri, 3 Apr 2009 07:19:56 +0100
+Subject: RE: [patch 01/18] x86, bts: fix race when bts tracer is removed
+Thread-Topic: [patch 01/18] x86, bts: fix race when bts tracer is removed
+Thread-Index: AcmzwzWaOsx60ovwSfmp6ywNDZWSaQAYHckg
+Message-ID: <928CFBE8E7CB0040959E56B4EA41A77E9271804B@irsmsx504.ger.corp.intel.com>
+References: <20090402145455.597376000@intel.com>
+ <20090402145702.669790000@intel.com> <20090402184514.GC843@elte.hu>
+In-Reply-To: <20090402184514.GC843@elte.hu>
+Accept-Language: en-US
+Content-Language: en-US
+X-MS-Has-Attach: 
+X-MS-TNEF-Correlator: 
+acceptlanguage: en-US
+Content-Type: text/plain; charset="us-ascii"
+MIME-Version: 1.0
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Setup a platform device for the CPC925 Memory Controller during system
-booting up, against which CPC925 MC EDAC driver would be matched.
+>-----Original Message-----
+>From: Ingo Molnar [mailto:mingo@elte.hu]
+>Sent: Thursday, April 02, 2009 8:45 PM
+>To: Metzger, Markus T
+>Cc: tglx@linutronix.de; hpa@zytor.com; markus.t.metzger@gmail.com; roland@redhat.com;
+>eranian@googlemail.com; oleg@redhat.com; Villacis, Juan; ak@linux.jf.intel.com; linux-
+>kernel@vger.kernel.org
+>Subject: Re: [patch 01/18] x86, bts: fix race when bts tracer is removed
+>
+>
+>* markus.t.metzger@intel.com <markus.t.metzger@intel.com> wrote:
+>
+>> +static inline void ds_take_timestamp(struct ds_context *context,
+>> +				     enum bts_qualifier qualifier,
+>> +				     struct task_struct *task)
+>> +{
+>> +	struct bts_tracer *tracer = context->bts_master;
+>> +	barrier();
+>
+>why the barrier()?
 
-Signed-off-by: Harry Ciao <qingtao.cao@windriver.com>
----
- arch/powerpc/platforms/maple/setup.c |   47 ++++++++++++++++++++++++++++++++++
- 1 files changed, 47 insertions(+), 0 deletions(-)
+See http://lkml.org/lkml/2009/3/31/544
 
-diff --git a/arch/powerpc/platforms/maple/setup.c b/arch/powerpc/platforms/maple/setup.c
-index bfd60e4..ca8a3ff 100644
---- a/arch/powerpc/platforms/maple/setup.c
-+++ b/arch/powerpc/platforms/maple/setup.c
-@@ -335,3 +335,50 @@ define_machine(maple) {
- 	.progress		= maple_progress,
- 	.power_save		= power4_idle,
- };
-+
-+#ifdef CONFIG_EDAC
-+#define CPC925_MC_START		0xf8000000
-+#define CPC925_MC_END		0xf8ffffff /* sizeof 16MB */
-+/* Register a platform device for CPC925 memory controller */
-+static int __init maple_cpc925_edac_setup(void)
-+{
-+	struct platform_device *pdev;
-+	struct device_node *np = NULL;
-+	struct resource r;
-+
-+	np = of_find_node_by_name(NULL, "hostbridge");
-+	if (!np) {
-+		printk(KERN_ERR "%s: Unable to find hostbridge node\n",
-+			__func__);
-+		return -ENODEV;
-+	}
-+
-+	if (of_address_to_resource(np, 0, &r)) {
-+		/*
-+		 * of_address_to_resource() would get the #address-cells
-+		 * and #size-cells properties for a node from its parent.
-+		 * On Maple 64bit target hostbridge parent node has specified
-+		 * both of these two properties to be 2. However, the actual
-+		 * "cell" value for host bridge node is 1. Since we can't
-+		 * fix this firmware-generated DTB, we have to setup a
-+		 * resource structure manually.
-+		 */
-+		memset(&r, 0, sizeof(r));
-+		r.start = CPC925_MC_START;
-+		r.end = CPC925_MC_END;
-+		r.name = "hostbridge";
-+		r.flags = IORESOURCE_MEM;
-+	}
-+
-+	of_node_put(np);
-+
-+	pdev = platform_device_register_simple("cpc925_edac", 0, &r, 1);
-+	if (IS_ERR(pdev))
-+		return PTR_ERR(pdev);
-+
-+	printk(KERN_INFO "%s: CPC925 platform device created\n", __func__);
-+
-+	return 0;
-+}
-+arch_initcall(maple_cpc925_edac_setup);
-+#endif
--- 
-1.5.6.2
+Oleg: "In theory, we need barrier() after reading ->bts_master.
+
+(actually, I did see the bug reports when the compiler read the pointer
+ twice with the code like above)."
+
+
+>> +
+>> +	if (tracer && (tracer->flags & BTS_TIMESTAMPS)) {
+>> +		struct bts_struct ts = {
+>> +			.qualifier = qualifier,
+>> +			.variant.timestamp.jiffies = jiffies_64,
+>> +			.variant.timestamp.pid = task->pid
+>> +		};
+>> +		bts_write(tracer, &ts);
+>> +	}
+>
+>Why do we have .variant.timestamp.pid ? A PID is not a timestamp. It
+>might be .event.jiffies and .event.pid perhaps.
+
+OK.
+
+
+>Also, the whole function could be cleaned up by:
+>
+> 1) returning early if !tracer || !(tracer->flags & BTS_TIMESTAMPS).
+>
+> 2) Doing a cleaner initialization - something like:
+>
+>struct bts_struct ts = {
+>	.qualifier		= qualifier,
+>	.variant.event.jiffies	= jiffies_64,
+>	.variant.event.pid	= task->pid
+>};
+>
+>Also, raw use of jiffies_64 is buggy and racy. Why does this use
+>jiffies to begin with - why not some finer grained time?
+
+What would be a good time to use?
+
+thanks,
+markus.
+---------------------------------------------------------------------
+Intel GmbH
+Dornacher Strasse 1
+85622 Feldkirchen/Muenchen Germany
+Sitz der Gesellschaft: Feldkirchen bei Muenchen
+Geschaeftsfuehrer: Douglas Lusk, Peter Gleissner, Hannes Schwaderer
+Registergericht: Muenchen HRB 47456 Ust.-IdNr.
+VAT Registration No.: DE129385895
+Citibank Frankfurt (BLZ 502 109 00) 600119052
+
+This e-mail and any attachments may contain confidential material for
+the sole use of the intended recipient(s). Any review or distribution
+by others is strictly prohibited. If you are not the intended
+recipient, please contact the sender and delete all copies.
 
