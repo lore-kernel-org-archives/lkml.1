@@ -1,24 +1,24 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933089AbZDCQDI@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S935580AbZDCQCm@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933089AbZDCQDI (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 3 Apr 2009 12:03:08 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934579AbZDCP4E
+	id S935580AbZDCQCm (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 3 Apr 2009 12:02:42 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934540AbZDCP4A
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 3 Apr 2009 11:56:04 -0400
-Received: from mx2.redhat.com ([66.187.237.31]:56556 "EHLO mx2.redhat.com"
+	Fri, 3 Apr 2009 11:56:00 -0400
+Received: from mx2.redhat.com ([66.187.237.31]:56552 "EHLO mx2.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S934503AbZDCPz5 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 3 Apr 2009 11:55:57 -0400
+	id S934352AbZDCPzw (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 3 Apr 2009 11:55:52 -0400
 Organization: Red Hat UK Ltd. Registered Address: Red Hat UK Ltd, Amberley
 	Place, 107-111 Peascod Street, Windsor, Berkshire, SI4 1TE, United
 	Kingdom.
 	Registered in England and Wales under Company Registration No. 3798903
 From: David Howells <dhowells@redhat.com>
-Subject: [PATCH 15/41] FS-Cache: Add netfs registration [ver #48]
+Subject: [PATCH 14/41] FS-Cache: Provide a slab for cookie allocation [ver #48]
 To: linux-kernel@vger.kernel.org
 Cc: dhowells@redhat.com, nfsv4@linux-nfs.org, linux-fsdevel@vger.kernel.org
-Date: Fri, 03 Apr 2009 16:55:53 +0100
-Message-ID: <20090403155553.28714.28144.stgit@warthog.procyon.org.uk>
+Date: Fri, 03 Apr 2009 16:55:48 +0100
+Message-ID: <20090403155548.28714.55124.stgit@warthog.procyon.org.uk>
 In-Reply-To: <20090403155436.28714.23368.stgit@warthog.procyon.org.uk>
 References: <20090403155436.28714.23368.stgit@warthog.procyon.org.uk>
 User-Agent: StGIT/0.14.3
@@ -29,17 +29,11 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Add functions to register and unregister a network filesystem or other client
-of the FS-Cache service.  This allocates and releases the cookie representing
-the top-level index for a netfs, and makes it available to the netfs.
+Provide a slab from which can be allocated the FS-Cache cookies that will be
+presented to the netfs.
 
-If the FS-Cache facility is disabled, then the calls are optimised away at
-compile time.
-
-Note that whilst this patch may appear to work with FS-Cache enabled and a
-netfs attempting to use it, it will leak the cookie it allocates for the netfs
-as fscache_relinquish_cookie() is implemented in a later patch.  This will
-cause the slab code to emit a warning when the module is removed.
+Also provide a slab constructor and a function to recursively discard a cookie
+and its ancestor chain.
 
 Signed-off-by: David Howells <dhowells@redhat.com>
 Acked-by: Steve Dickson <steved@redhat.com>
@@ -48,42 +42,41 @@ Acked-by: Al Viro <viro@zeniv.linux.org.uk>
 Tested-by: Daire Byrne <Daire.Byrne@framestore.com>
 ---
 
- fs/fscache/Makefile     |    3 +
- fs/fscache/netfs.c      |  103 +++++++++++++++++++++++++++++++++++++++++++++++
- include/linux/fscache.h |    9 ++++
- 3 files changed, 113 insertions(+), 2 deletions(-)
- create mode 100644 fs/fscache/netfs.c
+ fs/fscache/Makefile   |    1 +
+ fs/fscache/cookie.c   |   56 +++++++++++++++++++++++++++++++++++++++++++++++++
+ fs/fscache/internal.h |    8 +++++++
+ fs/fscache/main.c     |   15 +++++++++++++
+ 4 files changed, 80 insertions(+), 0 deletions(-)
+ create mode 100644 fs/fscache/cookie.c
 
 
 diff --git a/fs/fscache/Makefile b/fs/fscache/Makefile
-index f88ac17..ecf6946 100644
+index 556708b..f88ac17 100644
 --- a/fs/fscache/Makefile
 +++ b/fs/fscache/Makefile
-@@ -6,7 +6,8 @@ fscache-y := \
- 	cache.o \
- 	cookie.o \
- 	fsdef.o \
--	main.o
-+	main.o \
-+	netfs.o
+@@ -4,6 +4,7 @@
  
- fscache-$(CONFIG_PROC_FS) += proc.o
- fscache-$(CONFIG_FSCACHE_STATS) += stats.o
-diff --git a/fs/fscache/netfs.c b/fs/fscache/netfs.c
+ fscache-y := \
+ 	cache.o \
++	cookie.o \
+ 	fsdef.o \
+ 	main.o
+ 
+diff --git a/fs/fscache/cookie.c b/fs/fscache/cookie.c
 new file mode 100644
-index 0000000..e028b8e
+index 0000000..47fd75b
 --- /dev/null
-+++ b/fs/fscache/netfs.c
-@@ -0,0 +1,103 @@
-+/* FS-Cache netfs (client) registration
++++ b/fs/fscache/cookie.c
+@@ -0,0 +1,56 @@
++/* netfs cookie management
 + *
-+ * Copyright (C) 2008 Red Hat, Inc. All Rights Reserved.
++ * Copyright (C) 2004-2007 Red Hat, Inc. All Rights Reserved.
 + * Written by David Howells (dhowells@redhat.com)
 + *
 + * This program is free software; you can redistribute it and/or
-+ * modify it under the terms of the GNU General Public Licence
++ * modify it under the terms of the GNU General Public License
 + * as published by the Free Software Foundation; either version
-+ * 2 of the Licence, or (at your option) any later version.
++ * 2 of the License, or (at your option) any later version.
 + */
 +
 +#define FSCACHE_DEBUG_LEVEL COOKIE
@@ -91,125 +84,103 @@ index 0000000..e028b8e
 +#include <linux/slab.h>
 +#include "internal.h"
 +
-+static LIST_HEAD(fscache_netfs_list);
++struct kmem_cache *fscache_cookie_jar;
 +
 +/*
-+ * register a network filesystem for caching
++ * initialise an cookie jar slab element prior to any use
 + */
-+int __fscache_register_netfs(struct fscache_netfs *netfs)
++void fscache_cookie_init_once(void *_cookie)
 +{
-+	struct fscache_netfs *ptr;
-+	int ret;
++	struct fscache_cookie *cookie = _cookie;
 +
-+	_enter("{%s}", netfs->name);
-+
-+	INIT_LIST_HEAD(&netfs->link);
-+
-+	/* allocate a cookie for the primary index */
-+	netfs->primary_index =
-+		kmem_cache_zalloc(fscache_cookie_jar, GFP_KERNEL);
-+
-+	if (!netfs->primary_index) {
-+		_leave(" = -ENOMEM");
-+		return -ENOMEM;
-+	}
-+
-+	/* initialise the primary index cookie */
-+	atomic_set(&netfs->primary_index->usage, 1);
-+	atomic_set(&netfs->primary_index->n_children, 0);
-+
-+	netfs->primary_index->def		= &fscache_fsdef_netfs_def;
-+	netfs->primary_index->parent		= &fscache_fsdef_index;
-+	netfs->primary_index->netfs_data	= netfs;
-+
-+	atomic_inc(&netfs->primary_index->parent->usage);
-+	atomic_inc(&netfs->primary_index->parent->n_children);
-+
-+	spin_lock_init(&netfs->primary_index->lock);
-+	INIT_HLIST_HEAD(&netfs->primary_index->backing_objects);
-+
-+	/* check the netfs type is not already present */
-+	down_write(&fscache_addremove_sem);
-+
-+	ret = -EEXIST;
-+	list_for_each_entry(ptr, &fscache_netfs_list, link) {
-+		if (strcmp(ptr->name, netfs->name) == 0)
-+			goto already_registered;
-+	}
-+
-+	list_add(&netfs->link, &fscache_netfs_list);
-+	ret = 0;
-+
-+	printk(KERN_NOTICE "FS-Cache: Netfs '%s' registered for caching\n",
-+	       netfs->name);
-+
-+already_registered:
-+	up_write(&fscache_addremove_sem);
-+
-+	if (ret < 0) {
-+		netfs->primary_index->parent = NULL;
-+		__fscache_cookie_put(netfs->primary_index);
-+		netfs->primary_index = NULL;
-+	}
-+
-+	_leave(" = %d", ret);
-+	return ret;
++	memset(cookie, 0, sizeof(*cookie));
++	spin_lock_init(&cookie->lock);
++	INIT_HLIST_HEAD(&cookie->backing_objects);
 +}
-+EXPORT_SYMBOL(__fscache_register_netfs);
 +
 +/*
-+ * unregister a network filesystem from the cache
-+ * - all cookies must have been released first
++ * destroy a cookie
 + */
-+void __fscache_unregister_netfs(struct fscache_netfs *netfs)
++void __fscache_cookie_put(struct fscache_cookie *cookie)
 +{
-+	_enter("{%s.%u}", netfs->name, netfs->version);
++	struct fscache_cookie *parent;
 +
-+	down_write(&fscache_addremove_sem);
++	_enter("%p", cookie);
 +
-+	list_del(&netfs->link);
-+	fscache_relinquish_cookie(netfs->primary_index, 0);
++	for (;;) {
++		_debug("FREE COOKIE %p", cookie);
++		parent = cookie->parent;
++		BUG_ON(!hlist_empty(&cookie->backing_objects));
++		kmem_cache_free(fscache_cookie_jar, cookie);
 +
-+	up_write(&fscache_addremove_sem);
++		if (!parent)
++			break;
 +
-+	printk(KERN_NOTICE "FS-Cache: Netfs '%s' unregistered from caching\n",
-+	       netfs->name);
++		cookie = parent;
++		BUG_ON(atomic_read(&cookie->usage) <= 0);
++		if (!atomic_dec_and_test(&cookie->usage))
++			break;
++	}
 +
 +	_leave("");
 +}
-+EXPORT_SYMBOL(__fscache_unregister_netfs);
-diff --git a/include/linux/fscache.h b/include/linux/fscache.h
-index 9584c09..b195c2e 100644
---- a/include/linux/fscache.h
-+++ b/include/linux/fscache.h
-@@ -173,6 +173,8 @@ struct fscache_netfs {
-  * - these are undefined symbols when FS-Cache is not configured and the
-  *   optimiser takes care of not using them
+diff --git a/fs/fscache/internal.h b/fs/fscache/internal.h
+index 0a2069a..4c6ba56 100644
+--- a/fs/fscache/internal.h
++++ b/fs/fscache/internal.h
+@@ -37,6 +37,14 @@ extern struct fscache_cache *fscache_select_cache_for_object(
+ 	struct fscache_cookie *);
+ 
+ /*
++ * fsc-cookie.c
++ */
++extern struct kmem_cache *fscache_cookie_jar;
++
++extern void fscache_cookie_init_once(void *);
++extern void __fscache_cookie_put(struct fscache_cookie *);
++
++/*
+  * fsc-fsdef.c
   */
-+extern int __fscache_register_netfs(struct fscache_netfs *);
-+extern void __fscache_unregister_netfs(struct fscache_netfs *);
- extern struct fscache_cache_tag *__fscache_lookup_cache_tag(const char *);
- extern void __fscache_release_cache_tag(struct fscache_cache_tag *);
+ extern struct fscache_cookie fscache_fsdef_index;
+diff --git a/fs/fscache/main.c b/fs/fscache/main.c
+index c2f3e63..48b79d2 100644
+--- a/fs/fscache/main.c
++++ b/fs/fscache/main.c
+@@ -56,6 +56,18 @@ static int __init fscache_init(void)
+ 	if (ret < 0)
+ 		goto error_proc;
  
-@@ -188,7 +190,10 @@ extern void __fscache_release_cache_tag(struct fscache_cache_tag *);
- static inline
- int fscache_register_netfs(struct fscache_netfs *netfs)
- {
--	return 0;
-+	if (fscache_available())
-+		return __fscache_register_netfs(netfs);
-+	else
-+		return 0;
- }
++	fscache_cookie_jar = kmem_cache_create("fscache_cookie_jar",
++					       sizeof(struct fscache_cookie),
++					       0,
++					       0,
++					       fscache_cookie_init_once);
++	if (!fscache_cookie_jar) {
++		printk(KERN_NOTICE
++		       "FS-Cache: Failed to allocate a cookie jar\n");
++		ret = -ENOMEM;
++		goto error_cookie_jar;
++	}
++
+ 	fscache_root = kobject_create_and_add("fscache", kernel_kobj);
+ 	if (!fscache_root)
+ 		goto error_kobj;
+@@ -64,6 +76,8 @@ static int __init fscache_init(void)
+ 	return 0;
  
- /**
-@@ -205,6 +210,8 @@ int fscache_register_netfs(struct fscache_netfs *netfs)
- static inline
- void fscache_unregister_netfs(struct fscache_netfs *netfs)
- {
-+	if (fscache_available())
-+		__fscache_unregister_netfs(netfs);
- }
+ error_kobj:
++	kmem_cache_destroy(fscache_cookie_jar);
++error_cookie_jar:
+ 	fscache_proc_cleanup();
+ error_proc:
+ 	slow_work_unregister_user();
+@@ -81,6 +95,7 @@ static void __exit fscache_exit(void)
+ 	_enter("");
  
- /**
+ 	kobject_put(fscache_root);
++	kmem_cache_destroy(fscache_cookie_jar);
+ 	fscache_proc_cleanup();
+ 	slow_work_unregister_user();
+ 	printk(KERN_NOTICE "FS-Cache: Unloaded\n");
 
