@@ -1,27 +1,22 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760842AbZDCHB4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761085AbZDCHCX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760842AbZDCHB4 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 3 Apr 2009 03:01:56 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755796AbZDCHBP
+	id S1761085AbZDCHCX (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 3 Apr 2009 03:02:23 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754593AbZDCHBR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 3 Apr 2009 03:01:15 -0400
-Received: from thunk.org ([69.25.196.29]:36438 "EHLO thunker.thunk.org"
+	Fri, 3 Apr 2009 03:01:17 -0400
+Received: from thunk.org ([69.25.196.29]:36442 "EHLO thunker.thunk.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751327AbZDCHBL (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	id S1751271AbZDCHBL (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
 	Fri, 3 Apr 2009 03:01:11 -0400
 From: "Theodore Ts'o" <tytso@mit.edu>
 To: torvalds@linuxfoundation.org
 Cc: Linux Kernel Developers List <linux-kernel@vger.kernel.org>,
-       Ext4 Developers List <linux-ext4@vger.kernel.org>,
-       "Theodore Ts'o" <tytso@mit.edu>
-Subject: [PATCH 3/4] ext3: Add replace-on-truncate hueristics for data=writeback mode
-Date: Fri,  3 Apr 2009 03:01:06 -0400
-Message-Id: <1238742067-30814-4-git-send-email-tytso@mit.edu>
+       Ext4 Developers List <linux-ext4@vger.kernel.org>
+Subject: [GIT PULL] Ext3 latency fixes
+Date: Fri,  3 Apr 2009 03:01:03 -0400
+Message-Id: <1238742067-30814-1-git-send-email-tytso@mit.edu>
 X-Mailer: git-send-email 1.5.6.3
-In-Reply-To: <1238742067-30814-3-git-send-email-tytso@mit.edu>
-References: <1238742067-30814-1-git-send-email-tytso@mit.edu>
- <1238742067-30814-2-git-send-email-tytso@mit.edu>
- <1238742067-30814-3-git-send-email-tytso@mit.edu>
 X-SA-Exim-Connect-IP: <locally generated>
 X-SA-Exim-Mail-From: tytso@mit.edu
 X-SA-Exim-Scanned: No (on thunker.thunk.org); SAEximRunCond expanded to false
@@ -29,59 +24,92 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-In data=writeback mode, start an asynchronous flush when closing a
-file which had been previously truncated down to zero.  This lowers
-the probability of data loss in the case of applications that attempt
-to replace a file using truncate.
+Hi Linus, 
 
-Signed-off-by: "Theodore Ts'o" <tytso@mit.edu>
----
+Please pull from:
+
+git://git.kernel.org/pub/scm/linux/kernel/git/tytso/ext4.git ext3-latency-fixes
+
+I posted these patches a while back, and with your "overwrite.c" test
+case, I decided to see how they did.  The results were spectacular
+enough (see below) that I've decided to request that they be included
+in 2.6.30.  I've posted the critical patches below for review before,
+and Jan Kara has acked them, and there have been no complaints about
+them.
+
+I've also added two patches which add replace-via-truncate and
+replace-via-rename workarounds to ext3's data=writeback mode.  They
+only change the behavior in the (currently non-default) data=writeback
+mode.
+
+The benchmark which I used was Linus's overwrite.c as the background
+workload, and my fsync-tester as the foreground tester.  The
+fsync-tester writes a megabyte to a file and then times how long it
+takes to fsync that file, and then sleeps a second before repeating.
+
+Using an unpatched 2.6.29, fsync-tester shows the following times:
+
+fsync time: 3.4732
+fsync time: 2.4338
+fsync time: 5.9496
+fsync time: 6.2402
+fsync time: 4.3375
+fsync time: 6.3283
+fsync time: 3.6930
+fsync time: 3.1848
+fsync time: 3.3231
+
+The final report of overwrite.c is:
+
+       1.984 GB written in 82.75 (24 MB/s)           
+
+With these patches applied, the fsync-tester times are:
+
+fsync time: 1.4538
+fsync time: 1.6328
+fsync time: 1.4632
+fsync time: 1.4550
+fsync time: 0.2932
+fsync time: 1.6986
+fsync time: 0.3787
+fsync time: 1.3380
+fsync time: 1.8145
+fsync time: 0.4050
+fsync time: 1.3880
+
+... and the final report of overwrite.c is:
+
+       1.984 GB written in 93.77 (21 MB/s)           
+
+By having the fsync-related I/O fixed to be posted using WRITE_SYNC,
+instead of WRITE, it prioritizes the fsync-related I/O so that it gets
+done ahead of the streaming write.  This does slow down the background
+write process, but it speeds up the worst-case fsync() latency from
+6.2 seconds to 1.8 seconds.  (Measurements done on a 5400 rpm laptop
+drive.)
+
+All aside from the benchmark improvements, if the writes are coming
+from fsync(), they really are synchronous operations, and they should
+be marked that way just from a correctness point of view.
+
+	       		 	       	    - Ted
+
+Theodore Ts'o (4):
+      block_write_full_page: Use synchronous writes for WBC_SYNC_ALL writebacks
+      ext3: Use WRITE_SYNC for commits which are caused by fsync()
+      ext3: Add replace-on-truncate hueristics for data=writeback mode
+      ext3: Add replace-on-rename hueristics for data=writeback mode
+
+ fs/buffer.c             |    5 +++--
  fs/ext3/file.c          |    4 ++++
  fs/ext3/inode.c         |    3 +++
+ fs/ext3/namei.c         |    6 +++++-
+ fs/jbd/commit.c         |   23 +++++++++++++++--------
+ fs/jbd/transaction.c    |    2 ++
  include/linux/ext3_fs.h |    1 +
- 3 files changed, 8 insertions(+), 0 deletions(-)
+ include/linux/jbd.h     |    5 +++++
+ 8 files changed, 38 insertions(+), 11 deletions(-)
 
-diff --git a/fs/ext3/file.c b/fs/ext3/file.c
-index 3be1e06..4a04cbb 100644
---- a/fs/ext3/file.c
-+++ b/fs/ext3/file.c
-@@ -33,6 +33,10 @@
-  */
- static int ext3_release_file (struct inode * inode, struct file * filp)
- {
-+	if (EXT3_I(inode)->i_state & EXT3_STATE_FLUSH_ON_CLOSE) {
-+		filemap_flush(inode->i_mapping);
-+		EXT3_I(inode)->i_state &= ~EXT3_STATE_FLUSH_ON_CLOSE;
-+	}
- 	/* if we are the last writer on the inode, drop the block reservation */
- 	if ((filp->f_mode & FMODE_WRITE) &&
- 			(atomic_read(&inode->i_writecount) == 1))
-diff --git a/fs/ext3/inode.c b/fs/ext3/inode.c
-index 5fa453b..0f5bca0 100644
---- a/fs/ext3/inode.c
-+++ b/fs/ext3/inode.c
-@@ -2346,6 +2346,9 @@ void ext3_truncate(struct inode *inode)
- 	if (!ext3_can_truncate(inode))
- 		return;
- 
-+	if (inode->i_size == 0 && ext3_should_writeback_data(inode))
-+		ei->i_state |= EXT3_STATE_FLUSH_ON_CLOSE;
-+
- 	/*
- 	 * We have to lock the EOF page here, because lock_page() nests
- 	 * outside journal_start().
-diff --git a/include/linux/ext3_fs.h b/include/linux/ext3_fs.h
-index dd495b8..d2630c5 100644
---- a/include/linux/ext3_fs.h
-+++ b/include/linux/ext3_fs.h
-@@ -208,6 +208,7 @@ static inline __u32 ext3_mask_flags(umode_t mode, __u32 flags)
- #define EXT3_STATE_JDATA		0x00000001 /* journaled data exists */
- #define EXT3_STATE_NEW			0x00000002 /* inode is newly created */
- #define EXT3_STATE_XATTR		0x00000004 /* has in-inode xattrs */
-+#define EXT3_STATE_FLUSH_ON_CLOSE	0x00000008
- 
- /* Used to pass group descriptor data when online resize is done */
- struct ext3_new_group_input {
--- 
-1.5.6.3
+
+
 
