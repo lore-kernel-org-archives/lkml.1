@@ -1,61 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761488AbZDCIdg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760829AbZDCIff@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761488AbZDCIdg (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 3 Apr 2009 04:33:36 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755303AbZDCIdS
+	id S1760829AbZDCIff (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 3 Apr 2009 04:35:35 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752780AbZDCIfR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 3 Apr 2009 04:33:18 -0400
-Received: from tundra.namei.org ([65.99.196.166]:3829 "EHLO tundra.namei.org"
+	Fri, 3 Apr 2009 04:35:17 -0400
+Received: from srv5.dvmed.net ([207.36.208.214]:34693 "EHLO mail.dvmed.net"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751683AbZDCIdQ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 3 Apr 2009 04:33:16 -0400
-Date: Fri, 3 Apr 2009 19:31:03 +1100 (EST)
-From: James Morris <jmorris@namei.org>
-To: "David P. Quigley" <dpquigl@tycho.nsa.gov>
-cc: hch@infradead.org, viro@zeniv.linux.org.uk, casey@schaufler-ca.com,
-       sds@tycho.nsa.gov, "Matthew N. Dodd" <matthew.dodd@sparta.com>,
-       trond.myklebust@fys.uio.no, bfields@fieldses.org,
-       linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org,
-       linux-security-module@vger.kernel.org, selinux@tycho.nsa.gov,
-       labeled-nfs@linux-nfs.org
-Subject: Re: [PATCH 08/14] NFSv4: Add label recommended attribute and NFSv4
- flags
-In-Reply-To: <1227733394-1114-9-git-send-email-dpquigl@tycho.nsa.gov>
-Message-ID: <alpine.LRH.2.00.0904031921320.11240@tundra.namei.org>
-References: <1227733394-1114-1-git-send-email-dpquigl@tycho.nsa.gov> <1227733394-1114-9-git-send-email-dpquigl@tycho.nsa.gov>
-User-Agent: Alpine 2.00 (LRH 1167 2008-08-23)
+	id S1751406AbZDCIfQ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 3 Apr 2009 04:35:16 -0400
+Message-ID: <49D5CA3E.6020400@garzik.org>
+Date: Fri, 03 Apr 2009 04:35:10 -0400
+From: Jeff Garzik <jeff@garzik.org>
+User-Agent: Thunderbird 2.0.0.21 (X11/20090320)
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+To: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+CC: Linus Torvalds <torvalds@linux-foundation.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       David Rees <drees76@gmail.com>
+Subject: Re: Linux 2.6.29
+References: <20090325183011.GN32307@mit.edu> <20090325220530.GR32307@mit.edu> <alpine.LFD.2.00.0903251622420.3032@localhost.localdomain> <20090326171148.9bf8f1ec.akpm@linux-foundation.org> <alpine.LFD.2.00.0903261723250.3994@localhost.localdomain> <20090326174704.cd36bf7b.akpm@linux-foundation.org> <alpine.LFD.2.00.0903261752110.3994@localhost.localdomain> <20090326182519.d576d703.akpm@linux-foundation.org> <20090401210337.GB3797@csclub.uwaterloo.ca> <20090402110532.GA5132@aniel> <72dbd3150904020929w46c6dc0bs4028c49dd8fa8c56@mail.gmail.com> <20090402094247.9d7ac19f.akpm@linux-foundation.org> <alpine.LFD.2.00.0904020947310.4130@localhost.localdomain> <alpine.LFD.2.00.0904020959490.4130@localhost.localdomain> <49D53787.9060503@garzik.org> <alpine.LFD.2.00.0904021516540.4130@localhost.localdomain> <49D56DF6.5020300@garzik.org> <alpine.LFD.2.00.0904021910380.4130@localhost.localdomain> <49D5C972.8000903@garzik.org>
+In-Reply-To: <49D5C972.8000903@garzik.org>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
+X-Spam-Score: -4.4 (----)
+X-Spam-Report: SpamAssassin version 3.2.5 on srv5.dvmed.net summary:
+	Content analysis details:   (-4.4 points, 5.0 required)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 26 Nov 2008, David P. Quigley wrote:
+Jeff Garzik wrote:
+> Attached are some additional tests using sync_file_range, dd, an SSD and 
+> a normal SATA disk.  The test program -- overwrite.c -- is unchanged 
+> from my last posting, basically the same as Linus's except with 
+> posix_fadvise()
 
-> diff --git a/include/linux/nfs4.h b/include/linux/nfs4.h
-> index ea03667..144eacf 100644
-> --- a/include/linux/nfs4.h
-> +++ b/include/linux/nfs4.h
-> @@ -21,6 +21,7 @@
->  #define NFS4_FHSIZE		128
->  #define NFS4_MAXPATHLEN		PATH_MAX
->  #define NFS4_MAXNAMLEN		NAME_MAX
-> +#define NFS4_MAXLABELLEN	4096
+Oh, and, as run-test.sh shows, these tests were done with the file 
+pre-allocated and sync'd to disk.
 
-I can't recall if this has been discussed before, but why is the label 
-length limited to this value?
+The dd and overwrite invocations that follow the first dd invocation do 
+/not/ require the fs to allocate new blocks.
 
-SELinux on-disk labels can be up to 64KB in size (XATTR_SIZE_MAX), and I'd 
-like to ensure that we don't end up with an unnecessary disk vs. network 
-label size incompatibility.
-
-While it seems unlikely that SELinux (and other forms of MAC) security 
-labels would currently exceed 4K, we don't know how SELinux might be 
-extended in the future, and should avoid limiting label flexibility 
-beyond existing constraints.
+	Jeff
 
 
-- James
--- 
-James Morris
-<jmorris@namei.org>
+
