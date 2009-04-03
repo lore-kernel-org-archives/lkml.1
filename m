@@ -1,78 +1,73 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932427AbZDCOA2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1765650AbZDCODX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932427AbZDCOA2 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 3 Apr 2009 10:00:28 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757086AbZDCOAM
+	id S1765650AbZDCODX (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 3 Apr 2009 10:03:23 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757086AbZDCODN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 3 Apr 2009 10:00:12 -0400
-Received: from mx2.mail.elte.hu ([157.181.151.9]:57063 "EHLO mx2.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756945AbZDCOAL (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 3 Apr 2009 10:00:11 -0400
-Date: Fri, 3 Apr 2009 15:59:56 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: Tom Zanussi <tzanussi@gmail.com>, "Paul E. McKenney" <paulmck@us.ibm.com>
-Cc: linux-kernel <linux-kernel@vger.kernel.org>,
-       Steven Rostedt <rostedt@goodmis.org>, fweisbec@gmail.com
-Subject: Re: [PATCH] tracing/filters: allow event filters to be set only
-	when not tracing
-Message-ID: <20090403135956.GD8875@elte.hu>
-References: <1238390546.6368.65.camel@bookworm> <20090401122408.GG12966@elte.hu> <1238653371.6655.48.camel@bookworm>
+	Fri, 3 Apr 2009 10:03:13 -0400
+Received: from mail-gx0-f160.google.com ([209.85.217.160]:48239 "EHLO
+	mail-gx0-f160.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750971AbZDCODM (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 3 Apr 2009 10:03:12 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=googlemail.com; s=gamma;
+        h=mime-version:reply-to:in-reply-to:references:date:message-id
+         :subject:from:to:cc:content-type:content-transfer-encoding;
+        b=FDXF/DTAWjkohJFV/eNdt4J2hqcvYD26nblF8rumG+7snHInMVQzUja/Z0E6bJQy8F
+         LsgODLNY9+wVDeOZ8757Y/Aa0W/8AKkUDc5YlA83106/ZfHClQK6xkx95USsVsPEVZNT
+         zrgGRTiZlHkKwdw86wfNceI1LaVapKdoJ42Vg=
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1238653371.6655.48.camel@bookworm>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+Reply-To: petkovbb@gmail.com
+In-Reply-To: <200904031241.44597.bzolnier@gmail.com>
+References: <1238655519-10074-2-git-send-email-petkovbb@gmail.com>
+	 <200904030108.39927.bzolnier@gmail.com>
+	 <20090403045803.GA3732@liondog.tnic>
+	 <200904031241.44597.bzolnier@gmail.com>
+Date: Fri, 3 Apr 2009 16:03:08 +0200
+Message-ID: <9ea470500904030703k9285e0eye5487f825df77e6@mail.gmail.com>
+Subject: Re: [PATCH 2/3] ide-cd: cleanup cdrom_decode_status
+From: Borislav Petkov <petkovbb@googlemail.com>
+To: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
+Cc: linux-kernel@vger.kernel.org, linux-ide@vger.kernel.org
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Fri, Apr 3, 2009 at 12:41 PM, Bartlomiej Zolnierkiewicz
+<bzolnier@gmail.com> wrote:
+> On Friday 03 April 2009, Borislav Petkov wrote:
+>> Hi,
+>>
+>> On Fri, Apr 03, 2009 at 01:08:39AM +0200, Bartlomiej Zolnierkiewicz wrote:
+>> > On Thursday 02 April 2009, Borislav Petkov wrote:
+>> > > - have (almost) equal handling of commands based solely on sense_key
+>> >
+>> > I'm having a VERY hard time trying to review this patch because at
+>> > the same time that codepaths were merged if()s were replaced by switch()
+>> > which in turn resulted in change of intendation... on top of that
+>> > the patch description is very vague about this part of the changes...
+>>
+>> I completely and exactly understand what you are saying :), I thought so
+>> too when I looked at the diffs yesterday. Well, if it's any consolation, the
+>> patches've been tested so they seem to work :). Anyway, split version coming
+>> up...
+>
+> The split version looks exactly the same except ide_cd_breathe() change
+> when it comes to the main part.
+>
+> Did you send the wrong version by any chance?
 
-* Tom Zanussi <tzanussi@gmail.com> wrote:
+No, but I can't split those changes anymore logically. The switch-case handles
+the differentiation based on the sense_key and as such cannot be broken down
+anymore without doing some weird stuff and possibly introducing more bugs and
+breaking bisectability. Completely hypothetically: wouldn't a before-after
+juxtaposition of the change make reviewing more easier, for example you
+apply the patch on a different branch and compare the before and the after
+version?
 
-> On Wed, 2009-04-01 at 14:24 +0200, Ingo Molnar wrote:
-> > * Tom Zanussi <tzanussi@gmail.com> wrote:
-> > 
-> > > This patch adds code allowing the event filter to be set only if 
-> > > there's no active tracing going on.
-> > 
-> > > --- a/kernel/trace/trace_events.c
-> > > +++ b/kernel/trace/trace_events.c
-> > > @@ -498,6 +498,9 @@ event_filter_write(struct file *filp, const char __user *ubuf, size_t cnt,
-> > >  	struct filter_pred *pred;
-> > >  	int err;
-> > >  
-> > > +	if (tracing_is_enabled() && (!tracer_is_nop() || call->enabled))
-> > > +		return -EBUSY;
-> > 
-> > hm, but it would be the normal use-case to set filters on the fly. 
-> > To experiment around with them and shape them until the output is 
-> > just right. Having to turn the tracer on/off during that seems quite 
-> > counterproductive to that use-case.
-> > 
-> 
-> I didn't see anything that could be used to temporarily disable 
-> tracing (tracing_stop() and tracing_start() are 'quick' versions 
-> that mostly just disable recording), so did it this way to avoid 
-> adding any overhead to the filter-checking code.
-> 
-> But anyway, I'll post a new patch shortly that uses rcu and does 
-> allow the filters to be set on the fly.
-
-that's a very intelligent way to do it!
-
-There's a theoretical problem though: what if we put a filtered 
-tracepoint into the RCU code? Especially if that tracepoint is in 
-the common function-tracer callback affecting all kernel functions. 
-I've Cc:-ed Paul. I think the quiescent state logic should handle 
-this just fine, but i'm not 100% sure.
-
-	Ingo
+-- 
+Regards/Gruss,
+Boris
