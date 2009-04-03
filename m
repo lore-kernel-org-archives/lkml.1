@@ -1,48 +1,101 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760829AbZDCIff@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761332AbZDCIgc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760829AbZDCIff (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 3 Apr 2009 04:35:35 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752780AbZDCIfR
+	id S1761332AbZDCIgc (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 3 Apr 2009 04:36:32 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752780AbZDCIgS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 3 Apr 2009 04:35:17 -0400
-Received: from srv5.dvmed.net ([207.36.208.214]:34693 "EHLO mail.dvmed.net"
+	Fri, 3 Apr 2009 04:36:18 -0400
+Received: from mga03.intel.com ([143.182.124.21]:59630 "EHLO mga03.intel.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751406AbZDCIfQ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 3 Apr 2009 04:35:16 -0400
-Message-ID: <49D5CA3E.6020400@garzik.org>
-Date: Fri, 03 Apr 2009 04:35:10 -0400
-From: Jeff Garzik <jeff@garzik.org>
-User-Agent: Thunderbird 2.0.0.21 (X11/20090320)
+	id S1751406AbZDCIgQ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 3 Apr 2009 04:36:16 -0400
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.39,318,1235980800"; 
+   d="scan'208";a="127448339"
+Date: Fri, 3 Apr 2009 16:35:59 +0800
+From: Wu Fengguang <fengguang.wu@intel.com>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: Ying Han <yinghan@google.com>, linux-mm@kvack.org,
+       linux-kernel@vger.kernel.org, mingo@elte.hu, mikew@google.com,
+       rientjes@google.com, rohitseth@google.com, hugh@veritas.com,
+       a.p.zijlstra@chello.nl, hpa@zytor.com, edwintorok@gmail.com,
+       lee.schermerhorn@hp.com, npiggin@suse.de
+Subject: [PATCH v2] vfs: fix find_lock_page_retry() return value parsing
+Message-ID: <20090403083559.GB6084@localhost>
+References: <604427e00812051140s67b2a89dm35806c3ee3b6ed7a@mail.gmail.com> <20090331150046.16539218.akpm@linux-foundation.org> <20090403082230.GA6084@localhost>
 MIME-Version: 1.0
-To: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-CC: Linus Torvalds <torvalds@linux-foundation.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       David Rees <drees76@gmail.com>
-Subject: Re: Linux 2.6.29
-References: <20090325183011.GN32307@mit.edu> <20090325220530.GR32307@mit.edu> <alpine.LFD.2.00.0903251622420.3032@localhost.localdomain> <20090326171148.9bf8f1ec.akpm@linux-foundation.org> <alpine.LFD.2.00.0903261723250.3994@localhost.localdomain> <20090326174704.cd36bf7b.akpm@linux-foundation.org> <alpine.LFD.2.00.0903261752110.3994@localhost.localdomain> <20090326182519.d576d703.akpm@linux-foundation.org> <20090401210337.GB3797@csclub.uwaterloo.ca> <20090402110532.GA5132@aniel> <72dbd3150904020929w46c6dc0bs4028c49dd8fa8c56@mail.gmail.com> <20090402094247.9d7ac19f.akpm@linux-foundation.org> <alpine.LFD.2.00.0904020947310.4130@localhost.localdomain> <alpine.LFD.2.00.0904020959490.4130@localhost.localdomain> <49D53787.9060503@garzik.org> <alpine.LFD.2.00.0904021516540.4130@localhost.localdomain> <49D56DF6.5020300@garzik.org> <alpine.LFD.2.00.0904021910380.4130@localhost.localdomain> <49D5C972.8000903@garzik.org>
-In-Reply-To: <49D5C972.8000903@garzik.org>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
-X-Spam-Score: -4.4 (----)
-X-Spam-Report: SpamAssassin version 3.2.5 on srv5.dvmed.net summary:
-	Content analysis details:   (-4.4 points, 5.0 required)
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20090403082230.GA6084@localhost>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Jeff Garzik wrote:
-> Attached are some additional tests using sync_file_range, dd, an SSD and 
-> a normal SATA disk.  The test program -- overwrite.c -- is unchanged 
-> from my last posting, basically the same as Linus's except with 
-> posix_fadvise()
+find_lock_page_retry() won't touch the *ppage value when returning
+VM_FAULT_RETRY. This is fine except for the case
 
-Oh, and, as run-test.sh shows, these tests were done with the file 
-pre-allocated and sync'd to disk.
+        if (VM_RandomReadHint())
+                goto no_cached_page;
 
-The dd and overwrite invocations that follow the first dd invocation do 
-/not/ require the fs to allocate new blocks.
+where the 'page' could be undefined after calling find_lock_page_retry().
 
-	Jeff
+Fix it by checking the VM_FAULT_RETRY case first. Also do this for the
+other two find_lock_page_retry() invocations for the sake of consistency.
 
+Cc: Ying Han <yinghan@google.com>
+Signed-off-by: Wu Fengguang <fengguang.wu@intel.com>
+---
+ mm/filemap.c |   14 +++++++-------
+ 1 file changed, 7 insertions(+), 7 deletions(-)
 
-
+--- mm.orig/mm/filemap.c
++++ mm/mm/filemap.c
+@@ -759,7 +759,7 @@ EXPORT_SYMBOL(find_lock_page);
+  * @retry: 1 indicate caller tolerate a retry.
+  *
+  * If retry flag is on, and page is already locked by someone else, return
+- * a hint of retry.
++ * a hint of retry and leave *ppage untouched.
+  *
+  * Return *ppage==NULL if page is not in pagecache. Otherwise return *ppage
+  * points to the page in the pagecache with ret=VM_FAULT_RETRY indicate a
+@@ -1575,10 +1575,10 @@ retry_find_nopage:
+ 							   vmf->pgoff, 1);
+ 			retry_ret = find_lock_page_retry(mapping, vmf->pgoff,
+ 						vma, &page, retry_flag);
+-			if (!page)
+-				goto no_cached_page;
+ 			if (retry_ret == VM_FAULT_RETRY)
+ 				return retry_ret;
++			if (!page)
++				goto no_cached_page;
+ 		}
+ 		if (PageReadahead(page)) {
+ 			page_cache_async_readahead(mapping, ra, file, page,
+@@ -1617,10 +1617,10 @@ retry_find_nopage:
+ 		}
+ 		retry_ret = find_lock_page_retry(mapping, vmf->pgoff,
+ 				vma, &page, retry_flag);
+-		if (!page)
+-			goto no_cached_page;
+ 		if (retry_ret == VM_FAULT_RETRY)
+ 			return retry_ret;
++		if (!page)
++			goto no_cached_page;
+ 	}
+ 
+ 	if (!did_readaround)
+@@ -1672,10 +1672,10 @@ no_cached_page:
+ 
+ 		retry_ret = find_lock_page_retry(mapping, vmf->pgoff,
+ 					vma, &page, retry_flag);
++		if (retry_ret == VM_FAULT_RETRY)
++			return retry_ret;
+ 		if (!page)
+ 			goto retry_find_nopage;
+-		else if (retry_ret == VM_FAULT_RETRY)
+-			return retry_ret;
+ 		else
+ 			goto retry_page_update;
+ 	}
