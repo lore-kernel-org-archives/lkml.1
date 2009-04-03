@@ -1,177 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761459AbZDCHCk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760132AbZDCHCz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761459AbZDCHCk (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 3 Apr 2009 03:02:40 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756756AbZDCHBT
+	id S1760132AbZDCHCz (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 3 Apr 2009 03:02:55 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761304AbZDCHCF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 3 Apr 2009 03:01:19 -0400
-Received: from thunk.org ([69.25.196.29]:36446 "EHLO thunker.thunk.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751334AbZDCHBL (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 3 Apr 2009 03:01:11 -0400
-From: "Theodore Ts'o" <tytso@mit.edu>
-To: torvalds@linuxfoundation.org
-Cc: Linux Kernel Developers List <linux-kernel@vger.kernel.org>,
-       Ext4 Developers List <linux-ext4@vger.kernel.org>,
-       "Theodore Ts'o" <tytso@mit.edu>
-Subject: [PATCH 2/4] ext3: Use WRITE_SYNC for commits which are caused by fsync()
-Date: Fri,  3 Apr 2009 03:01:05 -0400
-Message-Id: <1238742067-30814-3-git-send-email-tytso@mit.edu>
-X-Mailer: git-send-email 1.5.6.3
-In-Reply-To: <1238742067-30814-2-git-send-email-tytso@mit.edu>
-References: <1238742067-30814-1-git-send-email-tytso@mit.edu>
- <1238742067-30814-2-git-send-email-tytso@mit.edu>
-X-SA-Exim-Connect-IP: <locally generated>
-X-SA-Exim-Mail-From: tytso@mit.edu
-X-SA-Exim-Scanned: No (on thunker.thunk.org); SAEximRunCond expanded to false
+	Fri, 3 Apr 2009 03:02:05 -0400
+Received: from smtp.nokia.com ([192.100.122.230]:50461 "EHLO
+	mgw-mx03.nokia.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1761125AbZDCHCD (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 3 Apr 2009 03:02:03 -0400
+Subject: Re: [PATCH] MTD: nandsim should delete its partitions on module
+ unload
+From: Artem Bityutskiy <dedekind@infradead.org>
+Reply-To: dedekind@infradead.org
+To: Kevin Cernekee <kpc.mtd@gmail.com>
+Cc: dwmw2@infradead.org, linux-mtd@lists.infradead.org,
+       linux-kernel@vger.kernel.org
+In-Reply-To: <a95a62fe0904021632l14ddb299l7818f2f2d32c20ac@mail.gmail.com>
+References: <a95a62fe0904021632l14ddb299l7818f2f2d32c20ac@mail.gmail.com>
+Content-Type: text/plain; charset="UTF-8"
+Date: Fri, 03 Apr 2009 10:01:10 +0300
+Message-Id: <1238742070.20906.97.camel@localhost.localdomain>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.24.5 (2.24.5-1.fc10) 
+Content-Transfer-Encoding: 8bit
+X-OriginalArrivalTime: 03 Apr 2009 07:01:12.0161 (UTC) FILETIME=[F909FD10:01C9B429]
+X-Nokia-AV: Clean
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-If a commit is triggered by fsync(), set a flag indicating the journal
-blocks associated with the transaction should be flushed out using
-WRITE_SYNC.
+On Thu, 2009-04-02 at 16:32 -0700, Kevin Cernekee wrote:
+> Signed-off-by: Kevin Cernekee <kpc.mtd@gmail.com>
+> ---
+>  drivers/mtd/nand/nandsim.c |    1 +
+>  1 files changed, 1 insertions(+), 0 deletions(-)
+> 
+> diff --git a/drivers/mtd/nand/nandsim.c b/drivers/mtd/nand/nandsim.c
+> index cd0711b..f4fda9b 100644
+> --- a/drivers/mtd/nand/nandsim.c
+> +++ b/drivers/mtd/nand/nandsim.c
+> @@ -2349,6 +2349,7 @@ static void __exit ns_cleanup_module(void)
+>  	struct nandsim *ns = (struct nandsim *)(((struct nand_chip
+> *)nsmtd->priv)->priv);
+The patch is line-wrapped.
 
-Signed-off-by: "Theodore Ts'o" <tytso@mit.edu>
-Acked-by: Jan Kara <jack@suse.cz>
----
- fs/jbd/commit.c      |   23 +++++++++++++++--------
- fs/jbd/transaction.c |    2 ++
- include/linux/jbd.h  |    5 +++++
- 3 files changed, 22 insertions(+), 8 deletions(-)
+>  	int i;
+> 
+> +	del_mtd_partitions(nsmtd);
+>  	free_nandsim(ns);    /* Free nandsim private resources */
+>  	nand_release(nsmtd); /* Unregister driver */
+>  	for (i = 0;i < ARRAY_SIZE(ns->partitions); ++i)
 
-diff --git a/fs/jbd/commit.c b/fs/jbd/commit.c
-index 3fbffb1..f8077b9 100644
---- a/fs/jbd/commit.c
-+++ b/fs/jbd/commit.c
-@@ -20,6 +20,7 @@
- #include <linux/slab.h>
- #include <linux/mm.h>
- #include <linux/pagemap.h>
-+#include <linux/bio.h>
- 
- /*
-  * Default IO end handler for temporary BJ_IO buffer_heads.
-@@ -171,14 +172,15 @@ static int journal_write_commit_record(journal_t *journal,
- 	return (ret == -EIO);
- }
- 
--static void journal_do_submit_data(struct buffer_head **wbuf, int bufs)
-+static void journal_do_submit_data(struct buffer_head **wbuf, int bufs,
-+				   int write_op)
- {
- 	int i;
- 
- 	for (i = 0; i < bufs; i++) {
- 		wbuf[i]->b_end_io = end_buffer_write_sync;
- 		/* We use-up our safety reference in submit_bh() */
--		submit_bh(WRITE, wbuf[i]);
-+		submit_bh(write_op, wbuf[i]);
- 	}
- }
- 
-@@ -186,7 +188,8 @@ static void journal_do_submit_data(struct buffer_head **wbuf, int bufs)
-  *  Submit all the data buffers to disk
-  */
- static int journal_submit_data_buffers(journal_t *journal,
--				transaction_t *commit_transaction)
-+				       transaction_t *commit_transaction,
-+				       int write_op)
- {
- 	struct journal_head *jh;
- 	struct buffer_head *bh;
-@@ -225,7 +228,7 @@ write_out_data:
- 				BUFFER_TRACE(bh, "needs blocking lock");
- 				spin_unlock(&journal->j_list_lock);
- 				/* Write out all data to prevent deadlocks */
--				journal_do_submit_data(wbuf, bufs);
-+				journal_do_submit_data(wbuf, bufs, write_op);
- 				bufs = 0;
- 				lock_buffer(bh);
- 				spin_lock(&journal->j_list_lock);
-@@ -256,7 +259,7 @@ write_out_data:
- 			jbd_unlock_bh_state(bh);
- 			if (bufs == journal->j_wbufsize) {
- 				spin_unlock(&journal->j_list_lock);
--				journal_do_submit_data(wbuf, bufs);
-+				journal_do_submit_data(wbuf, bufs, write_op);
- 				bufs = 0;
- 				goto write_out_data;
- 			}
-@@ -286,7 +289,7 @@ write_out_data:
- 		}
- 	}
- 	spin_unlock(&journal->j_list_lock);
--	journal_do_submit_data(wbuf, bufs);
-+	journal_do_submit_data(wbuf, bufs, write_op);
- 
- 	return err;
- }
-@@ -315,6 +318,7 @@ void journal_commit_transaction(journal_t *journal)
- 	int first_tag = 0;
- 	int tag_flag;
- 	int i;
-+	int write_op = WRITE;
- 
- 	/*
- 	 * First job: lock down the current transaction and wait for
-@@ -347,6 +351,8 @@ void journal_commit_transaction(journal_t *journal)
- 	spin_lock(&journal->j_state_lock);
- 	commit_transaction->t_state = T_LOCKED;
- 
-+	if (commit_transaction->t_synchronous_commit)
-+		write_op = WRITE_SYNC;
- 	spin_lock(&commit_transaction->t_handle_lock);
- 	while (commit_transaction->t_updates) {
- 		DEFINE_WAIT(wait);
-@@ -431,7 +437,8 @@ void journal_commit_transaction(journal_t *journal)
- 	 * Now start flushing things to disk, in the order they appear
- 	 * on the transaction lists.  Data blocks go first.
- 	 */
--	err = journal_submit_data_buffers(journal, commit_transaction);
-+	err = journal_submit_data_buffers(journal, commit_transaction,
-+					  write_op);
- 
- 	/*
- 	 * Wait for all previously submitted IO to complete.
-@@ -660,7 +667,7 @@ start_journal_io:
- 				clear_buffer_dirty(bh);
- 				set_buffer_uptodate(bh);
- 				bh->b_end_io = journal_end_buffer_io_sync;
--				submit_bh(WRITE, bh);
-+				submit_bh(write_op, bh);
- 			}
- 			cond_resched();
- 
-diff --git a/fs/jbd/transaction.c b/fs/jbd/transaction.c
-index e6a1174..ed886e6 100644
---- a/fs/jbd/transaction.c
-+++ b/fs/jbd/transaction.c
-@@ -1440,6 +1440,8 @@ int journal_stop(handle_t *handle)
- 		}
- 	}
- 
-+	if (handle->h_sync)
-+		transaction->t_synchronous_commit = 1;
- 	current->journal_info = NULL;
- 	spin_lock(&journal->j_state_lock);
- 	spin_lock(&transaction->t_handle_lock);
-diff --git a/include/linux/jbd.h b/include/linux/jbd.h
-index 64246dc..2c69431 100644
---- a/include/linux/jbd.h
-+++ b/include/linux/jbd.h
-@@ -552,6 +552,11 @@ struct transaction_s
- 	 */
- 	int t_handle_count;
- 
-+	/*
-+	 * This transaction is being forced and some process is
-+	 * waiting for it to finish.
-+	 */
-+	int t_synchronous_commit:1;
- };
- 
- /**
 -- 
-1.5.6.3
+Best regards,
+Artem Bityutskiy (Битюцкий Артём)
 
