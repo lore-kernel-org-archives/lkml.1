@@ -1,92 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756165AbZDCE6Z@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757602AbZDCFDP@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756165AbZDCE6Z (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 3 Apr 2009 00:58:25 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753635AbZDCE6N
+	id S1757602AbZDCFDP (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 3 Apr 2009 01:03:15 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757281AbZDCFC4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 3 Apr 2009 00:58:13 -0400
-Received: from mail-bw0-f169.google.com ([209.85.218.169]:58298 "EHLO
-	mail-bw0-f169.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753162AbZDCE6L (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 3 Apr 2009 00:58:11 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=googlemail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:reply-to:mail-followup-to
-         :references:mime-version:content-type:content-disposition
-         :in-reply-to:user-agent;
-        b=mMe2+p2hV9w74INjDwBZoSI725VJf91XPyAtxl8XwzaBqpBuJ49yMQAgImR3NlvZSi
-         ufZMUeXkzhBoFOdwvio31uzEAw0Z1EnORhnkK8VxHHsmXEyNNrfanH0nWg+t9eVpx90+
-         mjERagFybwEN2uGEpPgLmbt/8X6PPUawZ8+Vg=
-Date: Fri, 3 Apr 2009 06:58:03 +0200
-From: Borislav Petkov <petkovbb@googlemail.com>
-To: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
-Cc: linux-kernel@vger.kernel.org, linux-ide@vger.kernel.org
-Subject: Re: [PATCH 2/3] ide-cd: cleanup cdrom_decode_status
-Message-ID: <20090403045803.GA3732@liondog.tnic>
-Reply-To: petkovbb@gmail.com
-Mail-Followup-To: petkovbb@gmail.com,
-	Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>,
-	linux-kernel@vger.kernel.org, linux-ide@vger.kernel.org
-References: <1238655519-10074-2-git-send-email-petkovbb@gmail.com> <200904030108.39927.bzolnier@gmail.com>
+	Fri, 3 Apr 2009 01:02:56 -0400
+Received: from thunk.org ([69.25.196.29]:51346 "EHLO thunker.thunk.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1757270AbZDCFCz (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 3 Apr 2009 01:02:55 -0400
+Date: Fri, 3 Apr 2009 01:02:46 -0400
+From: Theodore Tso <tytso@mit.edu>
+To: David Rees <drees76@gmail.com>
+Cc: "Trenton D. Adams" <trenton.d.adams@gmail.com>,
+       Christian Kujau <lists@nerdbynature.de>,
+       Artem Bityutskiy <Artem.Bityutskiy@nokia.com>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: EXT4-ish "fixes" in UBIFS
+Message-ID: <20090403050246.GM9870@mit.edu>
+Mail-Followup-To: Theodore Tso <tytso@mit.edu>,
+	David Rees <drees76@gmail.com>,
+	"Trenton D. Adams" <trenton.d.adams@gmail.com>,
+	Christian Kujau <lists@nerdbynature.de>,
+	Artem Bityutskiy <Artem.Bityutskiy@nokia.com>,
+	Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+References: <49CCCB0A.6070701@nokia.com> <alpine.DEB.2.01.0904021706330.6162@bogon.housecafe.de> <9b1675090904021724t2fb0a671uc10d8e7bcba0bc5c@mail.gmail.com> <9b1675090904021728y35776377u327f2266d06e2f29@mail.gmail.com> <72dbd3150904021855v440f46a7oc21a7ed28fbfcb13@mail.gmail.com> <9b1675090904021905o7e0cec64lfe4a5372777908b6@mail.gmail.com> <72dbd3150904021919g5405ee40p100eacb085024941@mail.gmail.com> <9b1675090904021928k5a9948f9l8d93b6cbd5531720@mail.gmail.com> <72dbd3150904021958q7795dc62keb54d1fbfaa6abc7@mail.gmail.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <200904030108.39927.bzolnier@gmail.com>
+In-Reply-To: <72dbd3150904021958q7795dc62keb54d1fbfaa6abc7@mail.gmail.com>
 User-Agent: Mutt/1.5.18 (2008-05-17)
+X-SA-Exim-Connect-IP: <locally generated>
+X-SA-Exim-Mail-From: tytso@mit.edu
+X-SA-Exim-Scanned: No (on thunker.thunk.org); SAEximRunCond expanded to false
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
-
-On Fri, Apr 03, 2009 at 01:08:39AM +0200, Bartlomiej Zolnierkiewicz wrote:
-> On Thursday 02 April 2009, Borislav Petkov wrote:
-> > - have (almost) equal handling of commands based solely on sense_key
+On Thu, Apr 02, 2009 at 07:58:17PM -0700, David Rees wrote:
 > 
-> I'm having a VERY hard time trying to review this patch because at
-> the same time that codepaths were merged if()s were replaced by switch()
-> which in turn resulted in change of intendation... on top of that
-> the patch description is very vague about this part of the changes...
-
-I completely and exactly understand what you are saying :), I thought so
-too when I looked at the diffs yesterday. Well, if it's any consolation, the
-patches've been tested so they seem to work :). Anyway, split version coming
-up...
-
-> We're dealing with tricky error recovery code here and it is very easy
-> for subtle bugs to slip in => it is very important to have the changes
-> easily reviewable by as many people as possible.
-
-..
-
-> > @@ -614,14 +589,15 @@ static ide_startstop_t cdrom_newpc_intr(ide_drive_t *drive)
-> >  	struct request *rq = hwif->rq;
-> >  	ide_expiry_t *expiry = NULL;
-> >  	int dma_error = 0, dma, thislen, uptodate = 0;
-> > -	int write = (rq_data_dir(rq) == WRITE) ? 1 : 0, rc, nsectors;
-> > +	int write, uninitialized_var(rc), nsectors;
+> I've got a problematic server with 8GB RAM.  Even if set both to 1,
+> that's 80MB and the crappy disks I have in it will often only write
+> 10-20MB/s or less due to the seekiness of the workload.  That means
+> delays of 5-10 seconds worst case which isn't fun.
 > 
-> Why is uninitialized_var() here now?
 
-because gcc is whining that it might be uninitialized although I've
-doublechecked all codepaths returning a valid error. It is there to shut
-up this warning, actually.
+Well, one solution is data=writeback.  If you're confident your server
+isn't going to randomly crash (i.e., it's on a UPS, and you're not
+running unstable video drivers), that might be a solution.  It has
+tradeoffs, though.
 
-> >  	int sense = blk_sense_request(rq);
-> >  	unsigned int timeout;
-> >  	u16 len;
-> >  	u8 ireason, stat;
-> >  
-> > -	ide_debug_log(IDE_DBG_PC, "cmd[0]: 0x%x, write: 0x%x",
-> > -				  rq->cmd[0], write);
-> > +	write = (rq_data_dir(rq) == WRITE) ? 1 : 0;
-> > 
-> > +	ide_debug_log(IDE_DBG_PC, "cmd: 0x%x, write: 0x%x", rq->cmd[0], write);
-> >  
-> >  	/* check for errors */
-> >  	dma = drive->dma;
+One thing which I'll probably implement is some patches to ext3 so
+that when it's in data=writeback mode, it will use the same
+replace-via-rename and replace-via-truncate hueristics that I added in
+ext4 so that it will start an aysnchronous writeout on the rename() or
+close() w/ truncate().  That should avoid existing files getting
+corrupted when they are replaced right before the system crashes.  
 
--- 
-Regards/Gruss,
-    Boris.
+People will still be better off moving to ext4, but for people who
+aren't quite confident in ext4's stability yet and who want to stick
+with ext3, maybe it's a good short-term solution.  Maybe
+data=writeback with the rename hueristic would be a better default
+than data=ordered for ext3.
+
+						- Ted
