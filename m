@@ -1,44 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761846AbZDCKQq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760368AbZDCK2T@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761846AbZDCKQq (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 3 Apr 2009 06:16:46 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756657AbZDCKQg
+	id S1760368AbZDCK2T (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 3 Apr 2009 06:28:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756756AbZDCK2A
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 3 Apr 2009 06:16:36 -0400
-Received: from mx2.redhat.com ([66.187.237.31]:44406 "EHLO mx2.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755714AbZDCKQf (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 3 Apr 2009 06:16:35 -0400
-Message-ID: <49D5E1EE.6030707@redhat.com>
-Date: Fri, 03 Apr 2009 12:16:14 +0200
-From: Gerd Hoffmann <kraxel@redhat.com>
-User-Agent: Thunderbird 2.0.0.21 (X11/20090320)
+	Fri, 3 Apr 2009 06:28:00 -0400
+Received: from cn.fujitsu.com ([222.73.24.84]:64087 "EHLO song.cn.fujitsu.com"
+	rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org with ESMTP
+	id S1754892AbZDCK2A (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 3 Apr 2009 06:28:00 -0400
+Message-ID: <49D5E3EE.70201@cn.fujitsu.com>
+Date: Fri, 03 Apr 2009 18:24:46 +0800
+From: Zhaolei <zhaolei@cn.fujitsu.com>
+User-Agent: Thunderbird 2.0.0.6 (Windows/20070728)
 MIME-Version: 1.0
-To: Izik Eidus <ieidus@redhat.com>
-CC: Chris Wright <chrisw@redhat.com>, Anthony Liguori <anthony@codemonkey.ws>,
-       Andrea Arcangeli <aarcange@redhat.com>, linux-kernel@vger.kernel.org,
-       kvm@vger.kernel.org, linux-mm@kvack.org, avi@redhat.com,
-       riel@redhat.com, jeremy@goop.org, mtosatti@redhat.com, hugh@veritas.com,
-       corbet@lwn.net, yaniv@redhat.com, dmonakhov@openvz.org
-Subject: Re: [PATCH 5/4] update ksm userspace interfaces
-References: <20090331142533.GR9137@random.random> <49D22A9D.4050403@codemonkey.ws> <20090331150218.GS9137@random.random> <49D23224.9000903@codemonkey.ws> <20090331151845.GT9137@random.random> <49D23CD1.9090208@codemonkey.ws> <20090331162525.GU9137@random.random> <49D24A02.6070000@codemonkey.ws> <20090402012215.GE1117@x200.localdomain> <49D424AF.3090806@codemonkey.ws> <20090402053114.GF1117@x200.localdomain> <49D4BE64.8020508@redhat.com>
-In-Reply-To: <49D4BE64.8020508@redhat.com>
-Content-Type: text/plain; charset=ISO-8859-1
+To: "Steven Rostedt ;" <rostedt@goodmis.org>
+CC: linux-kernel@vger.kernel.org
+Subject: [PATCH 1/2] ftrace: Correct a text align for event format output
+Content-Type: text/plain; charset=GB2312
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Izik Eidus wrote:
-> The main problem that ksm will face when removing the fd interface is:
-> right now when you register memory into ksm, you open fd, and then ksm
-> do get_task_mm(), we will do mmput when the file will be closed
+If we cat debugfs/tracing/events/ftrace/bprint/format, we'll see:
+name: bprint
+ID: 6
+format:
+	field:unsigned char common_type;	offset:0;	size:1;
+	field:unsigned char common_flags;	offset:1;	size:1;
+	field:unsigned char common_preempt_count;	offset:2;	size:1;
+	field:int common_pid;	offset:4;	size:4;
+	field:int common_tgid;	offset:8;	size:4;
 
-Did you test whenever it really cleans up in case you "kill -9 qemu"?
+	field:unsigned long ip;	offset:12;	size:4;
+	field:char * fmt;	offset:16;	size:4;
+	field: char buf;	offset:20;	size:0;
 
-I recently did something simliar with the result that the extra
-reference hold on mm_struct prevented the process memory from being
-zapped ...
+print fmt: "%08lx (%d) fmt:%p %s"
 
-cheers,
-  Gerd
+There is a redundant blank before char buf, and it need to be deleted.
+
+Signed-off-by: Zhao Lei <zhaolei@cn.fujitsu.com>
+---
+ kernel/trace/trace_export.c |    2 +-
+ 1 files changed, 1 insertions(+), 1 deletions(-)
+
+diff --git a/kernel/trace/trace_export.c b/kernel/trace/trace_export.c
+index 4d9952d..07a22c3 100644
+--- a/kernel/trace/trace_export.c
++++ b/kernel/trace/trace_export.c
+@@ -40,7 +40,7 @@
+ 
+ #undef TRACE_FIELD_ZERO_CHAR
+ #define TRACE_FIELD_ZERO_CHAR(item)					\
+-	ret = trace_seq_printf(s, "\tfield: char " #item ";\t"		\
++	ret = trace_seq_printf(s, "\tfield:char " #item ";\t"		\
+ 			       "offset:%u;\tsize:0;\n",			\
+ 			       (unsigned int)offsetof(typeof(field), item)); \
+ 	if (!ret)							\
+-- 
+1.5.5.3
+
+
