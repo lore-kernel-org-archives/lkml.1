@@ -1,45 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759812AbZDCGx7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761324AbZDCGyw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759812AbZDCGx7 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 3 Apr 2009 02:53:59 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755889AbZDCGxv
+	id S1761324AbZDCGyw (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 3 Apr 2009 02:54:52 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753183AbZDCGyn
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 3 Apr 2009 02:53:51 -0400
-Received: from smtp.nokia.com ([192.100.105.134]:52158 "EHLO
-	mgw-mx09.nokia.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753183AbZDCGxu (ORCPT
+	Fri, 3 Apr 2009 02:54:43 -0400
+Received: from one.firstfloor.org ([213.235.205.2]:56050 "EHLO
+	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751590AbZDCGym (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 3 Apr 2009 02:53:50 -0400
-Message-ID: <49D5B26A.3040703@nokia.com>
-Date: Fri, 03 Apr 2009 09:53:30 +0300
-From: Artem Bityutskiy <Artem.Bityutskiy@nokia.com>
-Reply-To: Artem.Bityutskiy@nokia.com
-Organization: Nokia OYJ
-User-Agent: Thunderbird 2.0.0.21 (X11/20090320)
+	Fri, 3 Apr 2009 02:54:42 -0400
+To: Andrew Patterson <andrew.patterson@hp.com>
+Cc: linux-pci@vger.kernel.org, linux-kernel@vger.kernel.org,
+       jbarnes@virtuousgeek.org
+Subject: Re: [PATCH] Add support for turning PCIe ECRC on or off
+From: Andi Kleen <andi@firstfloor.org>
+References: <20090402221751.11757.36392.stgit@bob.kio>
+Date: Fri, 03 Apr 2009 08:54:39 +0200
+In-Reply-To: <20090402221751.11757.36392.stgit@bob.kio> (Andrew Patterson's message of "Thu, 02 Apr 2009 16:17:51 -0600")
+Message-ID: <87ljqikz0w.fsf@basil.nowhere.org>
+User-Agent: Gnus/5.1008 (Gnus v5.10.8) Emacs/22.3 (gnu/linux)
 MIME-Version: 1.0
-To: ext Christian Kujau <lists@nerdbynature.de>
-CC: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: EXT4-ish "fixes" in UBIFS
-References: <49CCCB0A.6070701@nokia.com> <alpine.DEB.2.01.0904021706330.6162@bogon.housecafe.de>
-In-Reply-To: <alpine.DEB.2.01.0904021706330.6162@bogon.housecafe.de>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 8bit
-X-OriginalArrivalTime: 03 Apr 2009 06:53:32.0495 (UTC) FILETIME=[E70E85F0:01C9B428]
-X-Nokia-AV: Clean
+Content-Type: text/plain; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-ext Christian Kujau wrote:
-> On Fri, 27 Mar 2009, Artem Bityutskiy wrote:
->> They just say - this is file-system bug, it is fixed in
->> ext4 now, just fix the bug in UBIFS.
-> 
-> Would *mounting* the filesystem with "-o sync" help? This way no 
-> filesystem "fixes" are needed and userland would not have to be rewritten.
+Andrew Patterson <andrew.patterson@hp.com> writes:
 
-It would, but the overall FS performance would suffer a lot too.
+> Add support for turning PCIe ECRC on or off
+>
+> Adds support for PCI Express transaction layer end-to-end CRC checking
+> (ECRC).  This patch will enable/disable ECRC checking by setting/clearing
+> the ECRC Check Enable and/or ECRC Generation Enable bits for devices that
+> support ECRC.
+>
+> The ECRC setting is controlled by the "pcie_ecrc=" command-line option. If
+> this option is not set or is set to 'default", the enable and generation
+> bits are left in whatever state that firmware/BIOS sets them to.  The
+> "off" setting turns them off, and the "on" option turns them on (if the
+> device supports it).
+
+Can you please expand a little bit on your motvation? Why does the kernel
+need to set that over the firmware? And why does it need to be a boot
+parameter vs some sysfs file?
+
+-Andi
 
 -- 
-Best Regards,
-Artem Bityutskiy (Артём Битюцкий)
+ak@linux.intel.com -- Speaking for myself only.
