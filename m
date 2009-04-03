@@ -1,82 +1,74 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762133AbZDCIUh@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758021AbZDCIXF@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762133AbZDCIUh (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 3 Apr 2009 04:20:37 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752934AbZDCIUX
+	id S1758021AbZDCIXF (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 3 Apr 2009 04:23:05 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752934AbZDCIWs
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 3 Apr 2009 04:20:23 -0400
-Received: from fgwmail7.fujitsu.co.jp ([192.51.44.37]:36439 "EHLO
-	fgwmail7.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752277AbZDCIUW (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 3 Apr 2009 04:20:22 -0400
-Date: Fri, 3 Apr 2009 17:18:44 +0900
-From: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-To: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-Cc: "linux-mm@kvack.org" <linux-mm@kvack.org>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       "balbir@linux.vnet.ibm.com" <balbir@linux.vnet.ibm.com>,
-       "kosaki.motohiro@jp.fujitsu.com" <kosaki.motohiro@jp.fujitsu.com>
-Subject: [RFC][PATCH 9/9] more event filter depend on priority
-Message-Id: <20090403171844.fb92308a.kamezawa.hiroyu@jp.fujitsu.com>
-In-Reply-To: <20090403170835.a2d6cbc3.kamezawa.hiroyu@jp.fujitsu.com>
-References: <20090403170835.a2d6cbc3.kamezawa.hiroyu@jp.fujitsu.com>
-Organization: FUJITSU Co. LTD.
-X-Mailer: Sylpheed 2.5.0 (GTK+ 2.10.14; i686-pc-mingw32)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Fri, 3 Apr 2009 04:22:48 -0400
+Received: from mga03.intel.com ([143.182.124.21]:12286 "EHLO mga03.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751683AbZDCIWr (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 3 Apr 2009 04:22:47 -0400
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.39,318,1235980800"; 
+   d="scan'208";a="127445256"
+Date: Fri, 3 Apr 2009 16:22:30 +0800
+From: Wu Fengguang <fengguang.wu@intel.com>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: Ying Han <yinghan@google.com>, linux-mm@kvack.org,
+       linux-kernel@vger.kernel.org, mingo@elte.hu, mikew@google.com,
+       rientjes@google.com, rohitseth@google.com, hugh@veritas.com,
+       a.p.zijlstra@chello.nl, hpa@zytor.com, edwintorok@gmail.com,
+       lee.schermerhorn@hp.com, npiggin@suse.de
+Subject: [PATCH] vfs: fix find_lock_page_retry() return value parsing
+Message-ID: <20090403082230.GA6084@localhost>
+References: <604427e00812051140s67b2a89dm35806c3ee3b6ed7a@mail.gmail.com> <20090331150046.16539218.akpm@linux-foundation.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20090331150046.16539218.akpm@linux-foundation.org>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-I'll revisit this one before v3...
+find_lock_page_retry() won't touch the *ppage value when returning
+VM_FAULT_RETRY. This is fine except for the case
 
-==
-From: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-Reduce softlimit update ratio depends on its priority(usage).
+        if (VM_RandomReadHint())
+                goto no_cached_page;
 
-After this.
-  if priority=0,1 -> check once in 1024 page-in/out
-  if priority=2,3 -> check once in 2048 page-in/out
-  ...
-  if priority=10,11 -> check once in 32k page-in/out
+where the 'page' could be undefined after calling find_lock_page_retry().
 
-(Note: this is called only when the usage exceeds soft limit)
+Fix it by checking the VM_FAULT_RETRY case first.
 
-Signed-off-by: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+Cc: Ying Han <yinghan@google.com>
+Signed-off-by: Wu Fengguang <fengguang.wu@intel.com>
 ---
- mm/memcontrol.c |    8 ++++++--
- 1 file changed, 6 insertions(+), 2 deletions(-)
+ mm/filemap.c |    6 +++---
+ 1 file changed, 3 insertions(+), 3 deletions(-)
 
-Index: softlimit-test2/mm/memcontrol.c
-===================================================================
---- softlimit-test2.orig/mm/memcontrol.c
-+++ softlimit-test2/mm/memcontrol.c
-@@ -940,7 +940,7 @@ static void record_last_oom(struct mem_c
- 	mem_cgroup_walk_tree(mem, NULL, record_last_oom_cb);
- }
+--- mm.orig/mm/filemap.c
++++ mm/mm/filemap.c
+@@ -759,7 +759,7 @@ EXPORT_SYMBOL(find_lock_page);
+  * @retry: 1 indicate caller tolerate a retry.
+  *
+  * If retry flag is on, and page is already locked by someone else, return
+- * a hint of retry.
++ * a hint of retry and leave *ppage untouched.
+  *
+  * Return *ppage==NULL if page is not in pagecache. Otherwise return *ppage
+  * points to the page in the pagecache with ret=VM_FAULT_RETRY indicate a
+@@ -1672,10 +1672,10 @@ no_cached_page:
  
--#define SOFTLIMIT_EVENTS_THRESH (1024) /* 1024 times of page-in/out */
-+#define SOFTLIMIT_EVENTS_THRESH (512) /* 512 times of page-in/out */
- /*
-  * Returns true if sum of page-in/page-out events since last check is
-  * over SOFTLIMIT_EVENT_THRESH. (counter is per-cpu.)
-@@ -950,11 +950,15 @@ static bool mem_cgroup_soft_limit_check(
- 	bool ret = false;
- 	int cpu = get_cpu();
- 	s64 val;
-+	int thresh;
- 	struct mem_cgroup_stat_cpu *cpustat;
- 
- 	cpustat = &mem->stat.cpustat[cpu];
- 	val = __mem_cgroup_stat_read_local(cpustat, MEM_CGROUP_STAT_EVENTS);
--	if (unlikely(val > SOFTLIMIT_EVENTS_THRESH)) {
-+	/* If usage is big, this check can be rough */
-+	thresh = SOFTLIMIT_EVENTS_THRESH;
-+	thresh <<= ((mem->soft_limit_priority >> 1) + 1);
-+	if (unlikely(val > thresh)) {
- 		__mem_cgroup_stat_reset_safe(cpustat, MEM_CGROUP_STAT_EVENTS);
- 		ret = true;
+ 		retry_ret = find_lock_page_retry(mapping, vmf->pgoff,
+ 					vma, &page, retry_flag);
++		if (retry_ret == VM_FAULT_RETRY)
++			return retry_ret;
+ 		if (!page)
+ 			goto retry_find_nopage;
+-		else if (retry_ret == VM_FAULT_RETRY)
+-			return retry_ret;
+ 		else
+ 			goto retry_page_update;
  	}
-
