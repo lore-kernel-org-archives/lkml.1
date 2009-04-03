@@ -1,49 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1765322AbZDCLtK@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1765426AbZDCLtb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1765322AbZDCLtK (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 3 Apr 2009 07:49:10 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762331AbZDCLss
+	id S1765426AbZDCLtb (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 3 Apr 2009 07:49:31 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1765345AbZDCLtN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 3 Apr 2009 07:48:48 -0400
-Received: from rhun.apana.org.au ([64.62.148.172]:47231 "EHLO
-	arnor.apana.org.au" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1762074AbZDCLsq (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 3 Apr 2009 07:48:46 -0400
-Date: Fri, 3 Apr 2009 19:48:28 +0800
-From: Herbert Xu <herbert@gondor.apana.org.au>
-To: Avi Kivity <avi@redhat.com>
-Cc: Gerd Hoffmann <kraxel@redhat.com>, ghaskins@novell.com,
-       anthony@codemonkey.ws, andi@firstfloor.org,
-       linux-kernel@vger.kernel.org, agraf@suse.de, pmullaney@novell.com,
-       pmorreale@novell.com, rusty@rustcorp.com.au, netdev@vger.kernel.org,
-       kvm@vger.kernel.org
-Subject: Re: [RFC PATCH 00/17] virtual-bus
-Message-ID: <20090403114828.GA10465@gondor.apana.org.au>
-References: <20090402085253.GA29932@gondor.apana.org.au> <49D47F11.6070400@redhat.com> <49D5EBE1.8030200@redhat.com> <49D5ED11.2000800@redhat.com> <20090403111242.GA10200@gondor.apana.org.au> <49D5F6FC.5090401@redhat.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <49D5F6FC.5090401@redhat.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+	Fri, 3 Apr 2009 07:49:13 -0400
+Received: from sh.osrg.net ([192.16.179.4]:39850 "EHLO sh.osrg.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1765328AbZDCLtM (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 3 Apr 2009 07:49:12 -0400
+Date: Fri, 3 Apr 2009 20:49:03 +0900
+To: Jens.Axboe@oracle.com
+Cc: linux-kernel@vger.kernel.org
+Subject: [PATCH] block: fix SG_IO to return a proper error value
+From: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
+Mime-Version: 1.0
+Content-Type: Text/Plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
+Message-Id: <20090403204911X.fujita.tomonori@lab.ntt.co.jp>
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-3.0 (sh.osrg.net [192.16.179.4]); Fri, 03 Apr 2009 20:49:03 +0900 (JST)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Apr 03, 2009 at 02:46:04PM +0300, Avi Kivity wrote:
->
-> The host writes the packet to tap, at which point it is consumed from  
-> its point of view.  The host would like to mention that if there was an  
-> API to notify it when the packet was actually consumed, then it would  
-> gladly use it.  Bonus points if this involves not copying the packet.
+blk_rq_unmap_user() returns -EFAULT if a program passes an invalid
+address to kernel. SG_IO path needs to pass the returned value to user
+space instead of ignoring it.
 
-We're using write(2) for this, no? That should invoke netif_rx_ni
-which blocks until the packet is "processed", which usually means
-that it's placed on the NIC's hardware queue.
+Signed-off-by: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
+---
+ block/scsi_ioctl.c |    6 ++++--
+ 1 files changed, 4 insertions(+), 2 deletions(-)
 
-Cheers,
+diff --git a/block/scsi_ioctl.c b/block/scsi_ioctl.c
+index 626ee27..84b7f87 100644
+--- a/block/scsi_ioctl.c
++++ b/block/scsi_ioctl.c
+@@ -217,7 +217,7 @@ static int blk_fill_sghdr_rq(struct request_queue *q, struct request *rq,
+ static int blk_complete_sghdr_rq(struct request *rq, struct sg_io_hdr *hdr,
+ 				 struct bio *bio)
+ {
+-	int ret = 0;
++	int r, ret = 0;
+ 
+ 	/*
+ 	 * fill in all the output members
+@@ -242,7 +242,9 @@ static int blk_complete_sghdr_rq(struct request *rq, struct sg_io_hdr *hdr,
+ 			ret = -EFAULT;
+ 	}
+ 
+-	blk_rq_unmap_user(bio);
++	r = blk_rq_unmap_user(bio);
++	if (!ret)
++		ret = r;
+ 	blk_put_request(rq);
+ 
+ 	return ret;
 -- 
-Visit Openswan at http://www.openswan.org/
-Email: Herbert Xu ~{PmV>HI~} <herbert@gondor.apana.org.au>
-Home Page: http://gondor.apana.org.au/~herbert/
-PGP Key: http://gondor.apana.org.au/~herbert/pubkey.txt
+1.6.0.6
+
