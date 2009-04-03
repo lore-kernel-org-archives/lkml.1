@@ -1,45 +1,102 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934968AbZDCTFV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S936139AbZDCTGF@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934968AbZDCTFV (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 3 Apr 2009 15:05:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757479AbZDCTFH
+	id S936139AbZDCTGF (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 3 Apr 2009 15:06:05 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932609AbZDCTFw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 3 Apr 2009 15:05:07 -0400
-Received: from bee.hiwaay.net ([216.180.54.11]:42881 "EHLO bee.hiwaay.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756578AbZDCTFG (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 3 Apr 2009 15:05:06 -0400
-X-Greylist: delayed 672 seconds by postgrey-1.27 at vger.kernel.org; Fri, 03 Apr 2009 15:05:05 EDT
-Date: Fri, 3 Apr 2009 13:53:50 -0500
-From: Chris Adams <cmadams@hiwaay.net>
-To: linux-kernel@vger.kernel.org
-Subject: Re: EXT4-ish "fixes" in UBIFS
-Message-ID: <20090403185350.GA866071@hiwaay.net>
-References: <cmFiD-8uc-9@gated-at.bofh.it> <cmFss-ft-15@gated-at.bofh.it> <cmFsu-ft-23@gated-at.bofh.it> <cmGRt-2hq-7@gated-at.bofh.it> <cmH1b-2K0-11@gated-at.bofh.it> <cmHkz-3d3-5@gated-at.bofh.it> <cmHkA-3d3-7@gated-at.bofh.it> <cmHND-3Oz-5@gated-at.bofh.it> <cmJPm-7hd-5@gated-at.bofh.it> <cmJZ1-7ul-7@gated-at.bofh.it>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090403063059.GO9870@mit.edu>
-User-Agent: Mutt/1.4i
+	Fri, 3 Apr 2009 15:05:52 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:48224 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1757479AbZDCTFv (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 3 Apr 2009 15:05:51 -0400
+Date: Fri, 3 Apr 2009 12:02:54 -0700 (PDT)
+From: Linus Torvalds <torvalds@linux-foundation.org>
+X-X-Sender: torvalds@localhost.localdomain
+To: "Theodore Ts'o" <tytso@mit.edu>, Jens Axboe <jens.axboe@oracle.com>
+cc: Linux Kernel Developers List <linux-kernel@vger.kernel.org>,
+       Ext4 Developers List <linux-ext4@vger.kernel.org>
+Subject: Re: [GIT PULL] Ext3 latency fixes
+In-Reply-To: <alpine.LFD.2.00.0904031110420.19690@localhost.localdomain>
+Message-ID: <alpine.LFD.2.00.0904031150190.4015@localhost.localdomain>
+References: <1238742067-30814-1-git-send-email-tytso@mit.edu> <alpine.LFD.2.00.0904031110420.19690@localhost.localdomain>
+User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Once upon a time, Theodore Tso  <tytso@mit.edu> said:
->On Thu, Apr 02, 2009 at 11:15:29PM -0600, Trenton D. Adams wrote:
->> 
->> tdamac ~ # mount -t ext3 -o data=writeback,remount,rw /dev/s/sys /
->> mount: / not mounted already, or bad option
->> 
->> Does it have to be done on initial mount?
->
->Yes, which means you have to use the rootflags boot command-line
->option.
 
-Can't you also set this in the superblock options (e.g. "tune2fs -o
-+journal_data_writeback" /dev/sda1)?
 
--- 
-Chris Adams <cmadams@hiwaay.net>
-Systems and Network Administrator - HiWAAY Internet Services
-I don't speak for anybody but myself - that's enough trouble.
+On Fri, 3 Apr 2009, Linus Torvalds wrote:
+
+> 
+> 
+> On Fri, 3 Apr 2009, Theodore Ts'o wrote:
+> > 
+> > Please pull from:
+> > 
+> > git://git.kernel.org/pub/scm/linux/kernel/git/tytso/ext4.git ext3-latency-fixes
+> 
+> Thanks, pulled. I'll be interested to see how it feels. Will report back 
+> after I've rebuild and gone through a few more emails.
+
+Hmm.
+
+The "overwrite" behavior may well be better, but it was smooth enough 
+beforehand too (never having more than ~8MB dirty). The "create big file 
+and sync" workload causes huge fsync pauses, though. IOW, try with
+
+	while :
+	do
+		time sh -c "dd if=/dev/zero of=bigfile bs=8M count=256 ; sync"
+	done
+
+and even really small fsync's end up being at the end of all that 
+unrelated activity, and you see things like
+
+    fsync(7)                                = 0 <32.756308>
+
+(that was my "switch email folders with update" test case, the full trace 
+for that file descriptor is
+
+    open("/home/torvalds/mail/git-list", O_RDWR) = 7 <0.000010>
+    fstatfs(7, {f_type="EXT2_SUPER_MAGIC", f_bsize=4096, f_blocks=19230104, f_bfree=13853292, f_bavail=12876440, f_files=4890624
+    flock(7, LOCK_EX)                       = 0 <0.000009>
+    fstat(7, {st_mode=S_IFREG|0600, st_size=54231534, ...}) = 0 <0.000005>
+    lseek(7, 0, SEEK_SET)                   = 0 <0.000006>
+    write(7, "From MAILER-DAEMON Fri Apr  3 11:"..., 554) = 554 <0.000012>
+    lseek(7, 54202529, SEEK_SET)            = 54202529 <0.000007>
+    read(7, "From torvalds@linux-foundation.or"..., 66) = 66 <0.000008>
+    lseek(7, 54202595, SEEK_SET)            = 54202595 <0.000006>
+    read(7, "Return-Path: <git-owner@vger.kern"..., 2915) = 2915 <0.000007>
+    lseek(7, 54202529, SEEK_SET)            = 54202529 <0.000005>
+    write(7, "From torvalds@linux-foundation.or"..., 2981) = 2981 <0.000009>
+    ftruncate(7, 54231534)                  = 0 <0.000008>
+    fsync(7)                                = 0 <32.756308>
+    close(7)                                = 0 <0.000006>
+
+so it had done just a few kB of writes, but because it ended up behind
+the humongous backlog of 'bigfile' it didn't much help.
+
+Also, it's maybe worth noting that you don't actually need a 2GB file to 
+trigger this behavior. Change that "count=256" into a "count=16", and you 
+now have a simulation of just writing 128MB at a time, with a "sync" in 
+between to make sure it hits the disk.  It makes the pauses smaller, but 
+they are still several seconds.
+
+(That, btw, is probably more the kind of thing I see when doign a "yum 
+update". I assume a package manager would do exactly that kind of "unpack 
+files and sync" in a loop).
+
+Btw, I assume this same thing holds true for ext4 too? Because it shows 
+how two different "sync" operations interact, and one kills the 
+performance of the other one. So as long as there is a _single_ fsync() 
+user, you're fine. It's when you get more than one...
+
+Again, I have that Intel SSD that should do pretty reliably 40+MB/s even 
+with really nasty write patterns, so I do need several hundred megs to 
+really see painful pauses. On a slower disk you'd need much less).
+
+			Linus
