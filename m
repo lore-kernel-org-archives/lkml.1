@@ -1,96 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764006AbZDCLEV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762534AbZDCLIm@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764006AbZDCLEV (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 3 Apr 2009 07:04:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763241AbZDCLEI
+	id S1762534AbZDCLIm (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 3 Apr 2009 07:08:42 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761088AbZDCLIb
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 3 Apr 2009 07:04:08 -0400
-Received: from fms-01.valinux.co.jp ([210.128.90.1]:48606 "EHLO
-	mail.valinux.co.jp" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1761937AbZDCLEG (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 3 Apr 2009 07:04:06 -0400
-Date: Fri, 03 Apr 2009 20:04:04 +0900 (JST)
-Message-Id: <20090403.200404.112612279.ryov@valinux.co.jp>
-To: linux-kernel@vger.kernel.org, dm-devel@redhat.com,
-       containers@lists.linux-foundation.org,
-       virtualization@lists.linux-foundation.org,
-       xen-devel@lists.xensource.com, centos@centos.org
-Subject: dm-ioband RPM packages
-From: Ryo Tsuruta <ryov@valinux.co.jp>
-X-Mailer: Mew version 5.2.52 on Emacs 22.1 / Mule 5.0 (SAKAKI)
-Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
+	Fri, 3 Apr 2009 07:08:31 -0400
+Received: from mx2.redhat.com ([66.187.237.31]:54288 "EHLO mx2.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1758904AbZDCLIa (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 3 Apr 2009 07:08:30 -0400
+Message-ID: <49D5EE1F.4060009@redhat.com>
+Date: Fri, 03 Apr 2009 13:08:15 +0200
+From: Gerd Hoffmann <kraxel@redhat.com>
+User-Agent: Thunderbird 2.0.0.21 (X11/20090320)
+MIME-Version: 1.0
+To: Izik Eidus <ieidus@redhat.com>
+CC: Chris Wright <chrisw@redhat.com>, Anthony Liguori <anthony@codemonkey.ws>,
+       Andrea Arcangeli <aarcange@redhat.com>, linux-kernel@vger.kernel.org,
+       kvm@vger.kernel.org, linux-mm@kvack.org, avi@redhat.com,
+       riel@redhat.com, jeremy@goop.org, mtosatti@redhat.com, hugh@veritas.com,
+       corbet@lwn.net, yaniv@redhat.com, dmonakhov@openvz.org
+Subject: Re: [PATCH 5/4] update ksm userspace interfaces
+References: <20090331142533.GR9137@random.random> <49D22A9D.4050403@codemonkey.ws> <20090331150218.GS9137@random.random> <49D23224.9000903@codemonkey.ws> <20090331151845.GT9137@random.random> <49D23CD1.9090208@codemonkey.ws> <20090331162525.GU9137@random.random> <49D24A02.6070000@codemonkey.ws> <20090402012215.GE1117@x200.localdomain> <49D424AF.3090806@codemonkey.ws> <20090402053114.GF1117@x200.localdomain> <49D4BE64.8020508@redhat.com> <49D5E1EE.6030707@redhat.com> <49D5E9B5.1020101@redhat.com>
+In-Reply-To: <49D5E9B5.1020101@redhat.com>
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi all,
+Izik Eidus wrote:
+> Gerd Hoffmann wrote:
+>> Did you test whenever it really cleans up in case you "kill -9 qemu"?
+>>
+>> I recently did something simliar with the result that the extra
+>> reference hold on mm_struct prevented the process memory from being
+>> zapped ...
+>>
+>> cheers,
+>>   Gerd
+>>   
+> Did you use mmput() after you called get_task_mm() ???
+> get_task_mm() do nothing beside atomic_inc(&mm->mm_users);
 
-This is a good news for LVM users, especially for RHEL and CentOS
-users. You can control I/O bandwidth of your disks easily without
-hassle, because I've made RPM binary packages of dm-ioband and
-dm-ioband-config available at
-  http://people.valinux.co.jp/~ryov/dm-ioband/binary.html
+mmput() call was in ->release() callback, ->release() in turn never was
+called because the kernel didn't zap the mappings because of the
+reference ...
 
-The RPM binary packages are for Red Hat Enterprise Linux 5.x and
-CentOS 5.x. They were tested on CentOS 5.3 and will also work on other
-5.x versions.
+The driver *also* created mappings which ksmctl doesn't, so it could be
+you don't run into this issue.
 
-Please refer to the on-line manual at
-  http://people.valinux.co.jp/~ryov/dm-ioband/manual/index.html
-or the README file which is installed into
-  /usr/share/doc/dm-ioband-VERSION
-for usage information. 
-
-The dm-ioband-config package provides a configuration file and an init
-script to make it easy to assign bandwidth to LVM logical volumes. The
-merits of using this are the followings:
-
-  - I'm sure you can use this script without any efforts since most of
-    modern Linux distributions already make filesystems on LVM logical
-    volumes.
-  - You can enable and disable dm-ioband anytime you want. No need to
-    modify any configuration files which refer to the logical volumes,
-    because enabling/disabling dm-ioband doesn't make any changes to
-    device names and numbers.
-  - You can apply dm-ioband to a root device even if it is already
-    mounted.
-
-The following diagram shows how dm-ioband is applied to the existing
-logical volumes.
-
-                          run "service ioband start"
-                                    ===>
-   -------------------------------       -------------------------------    
-  |   LogVol00    |    LogVol01   |     |   LogVol00    |    LogVol01   |     
-  |  (dm-linear)  |  (dm-linear)  |     |  (dm-ioband)  |  (dm-ioband)  | 
-  |-------------------------------|     |-------------------------------|
-  |           VolGroup00          |     | LogVol00-orig | LogVol01-orig |
-   -------------------------------      |  (dm-linear)  |  (dm-linear)  |
-                                        |-------------------------------|
-                                        |          VolGroup00           |
-                                         -------------------------------
-                                    <===
-                          run "service ioband stop"
-
-Thanks for the device mapper infrastructure, any device mapper modules
-can be dynamically pushed into kernel or replaced with other modules
-anytime.
-
-Please refer to the README file at
-  http://people.valinux.co.jp/~ryov/dm-ioband-config/README.txt
-or which is installed into
-  /usr/share/doc/dm-ioband-config-VERSION
-for usage information. 
-
-Any comments and suggestions are welcome!
-
-Thanks,
-Ryo Tsuruta
-
-dm-ioband is an IO controller which provides disk bandwidth control to
-Linux. It can controls bandwidth on a per partition, per user, per
-process basis and so on. If you use dm-ioband in a virtual machine
-environment, you can control bandwidth on a per virtual machine basis.
+cheers,
+  Gerd
