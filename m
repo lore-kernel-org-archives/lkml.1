@@ -1,107 +1,237 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933552AbZDCOyW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934365AbZDCOyk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933552AbZDCOyW (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 3 Apr 2009 10:54:22 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1765881AbZDCOqX
+	id S934365AbZDCOyk (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 3 Apr 2009 10:54:40 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932831AbZDCOqZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 3 Apr 2009 10:46:23 -0400
+	Fri, 3 Apr 2009 10:46:25 -0400
 Received: from mga09.intel.com ([134.134.136.24]:46720 "EHLO mga09.intel.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S932708AbZDCOqM (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 3 Apr 2009 10:46:12 -0400
-Content-Type: multipart/mixed; boundary="===============1064607013=="
+	id S932362AbZDCOqN (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 3 Apr 2009 10:46:13 -0400
+Content-Type: multipart/mixed; boundary="===============0350126233=="
 MIME-Version: 1.0
 X-ExtLoop1: 1
 X-IronPort-AV: E=Sophos;i="4.39,319,1235980800"; 
-   d="scan'208";a="503328389"
-Message-Id: <20090403144606.139137000@intel.com>
+   d="scan'208";a="503328396"
+Message-Id: <20090403144607.088997000@intel.com>
 References: <20090403144332.799740000@intel.com>
 User-Agent: quilt/0.46-1
-Date: Fri, 03 Apr 2009 16:43:51 +0200
+Date: Fri, 03 Apr 2009 16:43:52 +0200
 From: markus.t.metzger@intel.com
 To: mingo@elte.hu, tglx@linutronix.de, hpa@zytor.com
 Cc: markus.t.metzger@gmail.com, roland@redhat.com, eranian@googlemail.com,
        oleg@redhat.com, juan.villacis@intel.com, ak@linux.jf.intel.com,
        linux-kernel@vger.kernel.org,
        Markus Metzger <markus.t.metzger@intel.com>
-Subject: [patch 19/20] x86, ds: allow small debug store buffers
+Subject: [patch 20/20] x86, ds: support Core i7
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---===============1064607013==
+--===============0350126233==
 MIME-Version: 1.0
-Content-Disposition: inline; filename=tip.master.ds.small_buffers.patch
+Content-Disposition: inline; filename=tip.master.ds.i7.patch
 
-Check the buffer size more precisely to allow buffers for exactly one element
-provided the base address is already properly aligned.
+Add debug store support for Core i7.
 
-Add a debug store selftest.
+Core i7 adds a reset value for each performance counter and a new
+PEBS record format.
 
 
-Reported-by: Stephane Eranian <eranian@googlemail.com>
 Signed-off-by: Markus Metzger <markus.t.metzger@intel.com>
 ---
- arch/x86/kernel/ds.c          |    9 	7 +	2 -	0 !
- arch/x86/kernel/ds_selftest.c |    6 	3 +	3 -	0 !
- 2 files changed, 10 insertions(+), 5 deletions(-)
+ arch/x86/include/asm/ds.h |   12 	9 +	3 -	0 !
+ arch/x86/kernel/ds.c      |   69 	62 +	7 -	0 !
+ 2 files changed, 71 insertions(+), 10 deletions(-)
 
+Index: b/arch/x86/include/asm/ds.h
+===================================================================
+--- a/arch/x86/include/asm/ds.h
++++ b/arch/x86/include/asm/ds.h
+@@ -234,8 +234,12 @@ struct bts_trace {
+ struct pebs_trace {
+ 	struct ds_trace ds;
+ 
+-	/* the PEBS reset value */
+-	unsigned long long reset_value;
++	/* the number of valid counters in the below array */
++	unsigned int counters;
++
++#define MAX_PEBS_COUNTERS 4
++	/* the counter reset value */
++	unsigned long long counter_reset[MAX_PEBS_COUNTERS];
+ };
+ 
+ 
+@@ -270,9 +274,11 @@ extern int ds_reset_pebs(struct pebs_tra
+  * Returns 0 on success; -Eerrno on error
+  *
+  * tracer: the tracer handle returned from ds_request_pebs()
++ * counter: the index of the counter
+  * value: the new counter reset value
+  */
+-extern int ds_set_pebs_reset(struct pebs_tracer *tracer, u64 value);
++extern int ds_set_pebs_reset(struct pebs_tracer *tracer,
++			     unsigned int counter, u64 value);
+ 
+ /*
+  * Initialization
 Index: b/arch/x86/kernel/ds.c
 ===================================================================
 --- a/arch/x86/kernel/ds.c
 +++ b/arch/x86/kernel/ds.c
-@@ -656,6 +656,7 @@ static int ds_request(struct ds_tracer *
- {
- 	struct ds_context *context;
- 	int error;
-+	size_t req_size;
+@@ -44,6 +44,9 @@ struct ds_configuration {
+ 	/* The size of a BTS/PEBS record in bytes: */
+ 	unsigned char		sizeof_rec[2];
  
- 	error = -EOPNOTSUPP;
- 	if (!ds_cfg.sizeof_rec[qual])
-@@ -665,9 +666,13 @@ static int ds_request(struct ds_tracer *
- 	if (!base)
- 		goto out;
- 
--	/* We need space for alignment adjustments in ds_init_ds_trace(). */
-+	req_size = ds_cfg.sizeof_rec[qual];
-+	/* We might need space for alignment adjustments. */
-+	if (!IS_ALIGNED((unsigned long)base, DS_ALIGNMENT))
-+		req_size += DS_ALIGNMENT;
++	/* The number of pebs counter reset values in the DS structure. */
++	unsigned char		nr_counter_reset;
 +
- 	error = -EINVAL;
--	if (size < (DS_ALIGNMENT + ds_cfg.sizeof_rec[qual]))
-+	if (size < req_size)
- 		goto out;
- 
- 	if (th != (size_t)-1) {
-Index: b/arch/x86/kernel/ds_selftest.c
-===================================================================
---- a/arch/x86/kernel/ds_selftest.c
-+++ b/arch/x86/kernel/ds_selftest.c
-@@ -16,8 +16,8 @@
- #include <asm/ds.h>
+ 	/* Control bit-masks indexed by enum ds_feature: */
+ 	unsigned long		ctl[dsf_ctl_max];
+ };
+@@ -51,7 +54,7 @@ static struct ds_configuration ds_cfg __
  
  
--#define BUFFER_SIZE	521 /* Intentionally chose an odd size. */
--
-+#define BUFFER_SIZE		521	/* Intentionally chose an odd size. */
-+#define SMALL_BUFFER_SIZE	24	/* A single bts entry. */
+ /* Maximal size of a DS configuration: */
+-#define MAX_SIZEOF_DS		(12 * 8)
++#define MAX_SIZEOF_DS		0x80
  
- struct ds_selftest_bts_conf {
- 	struct bts_tracer *tracer;
-@@ -381,7 +381,7 @@ int ds_selftest_bts(void)
- 	conf.suspend = ds_suspend_bts_noirq;
- 	conf.resume = ds_resume_bts_noirq;
- 	conf.tracer =
--		ds_request_bts_task(current, buffer, BUFFER_SIZE,
-+		ds_request_bts_task(current, buffer, SMALL_BUFFER_SIZE,
- 				   NULL, (size_t)-1, BTS_KERNEL);
- 	local_irq_save(irq);
- 	ds_selftest_bts_cpu(&conf);
+ /* Maximal size of a BTS record: */
+ #define MAX_SIZEOF_BTS		(3 * 8)
+@@ -59,6 +62,12 @@ static struct ds_configuration ds_cfg __
+ /* BTS and PEBS buffer alignment: */
+ #define DS_ALIGNMENT		(1 << 3)
+ 
++/* Number of buffer pointers in DS: */
++#define NUM_DS_PTR_FIELDS	8
++
++/* Size of a pebs reset value in DS: */
++#define PEBS_RESET_FIELD_SIZE	8
++
+ /* Mask of control bits in the DS MSR register: */
+ #define BTS_CONTROL				  \
+ 	( ds_cfg.ctl[dsf_bts]			| \
+@@ -1164,9 +1173,12 @@ const struct pebs_trace *ds_read_pebs(st
+ 		return NULL;
+ 
+ 	ds_read_config(tracer->ds.context, &tracer->trace.ds, ds_pebs);
+-	tracer->trace.reset_value =
+-		*(u64 *)(tracer->ds.context->ds +
+-			 (ds_cfg.sizeof_ptr_field * 8));
++
++	tracer->trace.counters = ds_cfg.nr_counter_reset;
++	memcpy(tracer->trace.counter_reset,
++	       tracer->ds.context->ds +
++	       (NUM_DS_PTR_FIELDS * ds_cfg.sizeof_ptr_field),
++	       ds_cfg.nr_counter_reset * PEBS_RESET_FIELD_SIZE);
+ 
+ 	return &tracer->trace;
+ }
+@@ -1197,13 +1209,18 @@ int ds_reset_pebs(struct pebs_tracer *tr
+ 	return 0;
+ }
+ 
+-int ds_set_pebs_reset(struct pebs_tracer *tracer, u64 value)
++int ds_set_pebs_reset(struct pebs_tracer *tracer,
++		      unsigned int counter, u64 value)
+ {
+ 	if (!tracer)
+ 		return -EINVAL;
+ 
++	if (ds_cfg.nr_counter_reset < counter)
++		return -EINVAL;
++
+ 	*(u64 *)(tracer->ds.context->ds +
+-		 (ds_cfg.sizeof_ptr_field * 8)) = value;
++		 (NUM_DS_PTR_FIELDS * ds_cfg.sizeof_ptr_field) +
++		 (counter * PEBS_RESET_FIELD_SIZE)) = value;
+ 
+ 	return 0;
+ }
+@@ -1213,16 +1230,26 @@ static const struct ds_configuration ds_
+ 	.ctl[dsf_bts]		= (1 << 2) | (1 << 3),
+ 	.ctl[dsf_bts_kernel]	= (1 << 5),
+ 	.ctl[dsf_bts_user]	= (1 << 6),
++	.nr_counter_reset	= 1,
+ };
+ static const struct ds_configuration ds_cfg_pentium_m = {
+ 	.name = "Pentium M",
+ 	.ctl[dsf_bts]		= (1 << 6) | (1 << 7),
++	.nr_counter_reset	= 1,
+ };
+ static const struct ds_configuration ds_cfg_core2_atom = {
+ 	.name = "Core 2/Atom",
+ 	.ctl[dsf_bts]		= (1 << 6) | (1 << 7),
+ 	.ctl[dsf_bts_kernel]	= (1 << 9),
+ 	.ctl[dsf_bts_user]	= (1 << 10),
++	.nr_counter_reset	= 1,
++};
++static const struct ds_configuration ds_cfg_core_i7 = {
++	.name = "Core i7",
++	.ctl[dsf_bts]		= (1 << 6) | (1 << 7),
++	.ctl[dsf_bts_kernel]	= (1 << 9),
++	.ctl[dsf_bts_user]	= (1 << 10),
++	.nr_counter_reset	= 4,
+ };
+ 
+ static void
+@@ -1239,6 +1266,32 @@ ds_configure(const struct ds_configurati
+ 	nr_pebs_fields = 18;
+ #endif
+ 
++	/*
++	 * Starting with version 2, architectural performance
++	 * monitoring supports a format specifier.
++	 */
++	if ((cpuid_eax(0xa) & 0xff) > 1) {
++		unsigned long perf_capabilities, format;
++
++		rdmsrl(MSR_IA32_PERF_CAPABILITIES, perf_capabilities);
++
++		format = (perf_capabilities >> 8) & 0xf;
++
++		switch (format) {
++		case 0:
++			nr_pebs_fields = 18;
++			break;
++		case 1:
++			nr_pebs_fields = 22;
++			break;
++		default:
++			printk(KERN_INFO
++			       "[ds] unknown PEBS format: %lu\n", format);
++			nr_pebs_fields = 0;
++			break;
++		}
++	}
++
+ 	memset(&ds_cfg, 0, sizeof(ds_cfg));
+ 	ds_cfg = *cfg;
+ 
+@@ -1262,7 +1315,7 @@ ds_configure(const struct ds_configurati
+ 	printk("bts/pebs record: %u/%u bytes\n",
+ 	       ds_cfg.sizeof_rec[ds_bts], ds_cfg.sizeof_rec[ds_pebs]);
+ 
+-	WARN_ON_ONCE(MAX_SIZEOF_DS < (12 * ds_cfg.sizeof_ptr_field));
++	WARN_ON_ONCE(MAX_PEBS_COUNTERS < ds_cfg.nr_counter_reset);
+ }
+ 
+ void __cpuinit ds_init_intel(struct cpuinfo_x86 *c)
+@@ -1284,6 +1337,8 @@ void __cpuinit ds_init_intel(struct cpui
+ 			ds_configure(&ds_cfg_core2_atom, c);
+ 			break;
+ 		case 0x1a: /* Core i7 */
++			ds_configure(&ds_cfg_core_i7, c);
++			break;
+ 		default:
+ 			/* Sorry, don't know about them. */
+ 			break;
 
 -- 
 
---===============1064607013==
+--===============0350126233==
 Content-Type: text/plain; charset="utf-8"
 MIME-Version: 1.0
 Content-Transfer-Encoding: quoted-printable
@@ -122,4 +252,4 @@ the sole use of the intended recipient(s). Any review or distribution
 by others is strictly prohibited. If you are not the intended
 recipient, please contact the sender and delete all copies.
 
---===============1064607013==--
+--===============0350126233==--
