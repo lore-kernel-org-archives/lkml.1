@@ -1,71 +1,108 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762216AbZDCKEp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756212AbZDCKJb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762216AbZDCKEp (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 3 Apr 2009 06:04:45 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759870AbZDCKEb
+	id S1756212AbZDCKJb (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 3 Apr 2009 06:09:31 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753787AbZDCKJW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 3 Apr 2009 06:04:31 -0400
-Received: from casper.infradead.org ([85.118.1.10]:55529 "EHLO
-	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1761170AbZDCKE3 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 3 Apr 2009 06:04:29 -0400
-Subject: Re: [patch/rfc 2.6.29 1/2] MTD: driver model updates
-From: David Woodhouse <dwmw2@infradead.org>
-To: David Brownell <david-b@pacbell.net>
-Cc: Linux MTD <linux-mtd@lists.infradead.org>,
-       LKML <linux-kernel@vger.kernel.org>, Kay Sievers <kay.sievers@vrfy.org>
-In-Reply-To: <200903260042.42091.david-b@pacbell.net>
-References: <200903260042.42091.david-b@pacbell.net>
-Content-Type: text/plain
-Date: Fri, 03 Apr 2009 11:04:22 +0100
-Message-Id: <1238753062.3711.109.camel@macbook.infradead.org>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.26.0 (2.26.0-1.fc11) 
-Content-Transfer-Encoding: 7bit
-X-SRS-Rewrite: SMTP reverse-path rewritten from <dwmw2@infradead.org> by casper.infradead.org
-	See http://www.infradead.org/rpr.html
+	Fri, 3 Apr 2009 06:09:22 -0400
+Received: from mail.windriver.com ([147.11.1.11]:38005 "EHLO mail.wrs.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752934AbZDCKJV (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 3 Apr 2009 06:09:21 -0400
+Message-ID: <49D5DF93.8020101@windriver.com>
+Date: Fri, 03 Apr 2009 18:06:11 +0800
+From: Harry Ciao <qingtao.cao@windriver.com>
+Reply-To: qingtao.cao@windriver.com
+Organization: Wind River, CDC
+User-Agent: Thunderbird 2.0.0.21 (X11/20090318)
+MIME-Version: 1.0
+To: michael@ellerman.id.au
+CC: norsk5@yahoo.com, bluesmoke-devel@lists.sourceforge.net,
+       linuxppc-dev@ozlabs.org, linux-kernel@vger.kernel.org
+Subject: Re: [v1 PATCH 3/3] EDAC: CPC925 MC platform device setup
+References: <1238739044-19926-1-git-send-email-qingtao.cao@windriver.com>	 <1238739044-19926-2-git-send-email-qingtao.cao@windriver.com> <1238741478.6802.44.camel@localhost>
+In-Reply-To: <1238741478.6802.44.camel@localhost>
+Content-Type: text/plain; charset=GB2312
+Content-Transfer-Encoding: 8bit
+X-OriginalArrivalTime: 03 Apr 2009 10:08:52.0744 (UTC) FILETIME=[30DE9880:01C9B444]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 2009-03-26 at 00:42 -0700, David Brownell wrote:
-> 
-> @@ -343,6 +343,11 @@ static struct mtd_part *add_one_partitio
->         slave->mtd.name = part->name;
->         slave->mtd.owner = master->owner;
->  
-> +       /* NOTE:  we don't arrange MTDs as a tree; it'd be error-prone
-> +        * to have the same data be in two different partitions.
-> +        */
-> +       slave->mtd.dev.parent = master->dev.parent;
+Michael Ellerman Ð´µÀ:
+> On Fri, 2009-04-03 at 14:10 +0800, Harry Ciao wrote:
+>   
+>> Setup a platform device for the CPC925 Memory Controller during system
+>> booting up, against which CPC925 MC EDAC driver would be matched.
+>>
+>> Signed-off-by: Harry Ciao <qingtao.cao@windriver.com>
+>> ---
+>>  arch/powerpc/platforms/maple/setup.c |   47 ++++++++++++++++++++++++++++++++++
+>>  1 files changed, 47 insertions(+), 0 deletions(-)
+>>
+>> diff --git a/arch/powerpc/platforms/maple/setup.c b/arch/powerpc/platforms/maple/setup.c
+>> index bfd60e4..ca8a3ff 100644
+>> --- a/arch/powerpc/platforms/maple/setup.c
+>> +++ b/arch/powerpc/platforms/maple/setup.c
+>> @@ -335,3 +335,50 @@ define_machine(maple) {
+>>  	.progress		= maple_progress,
+>>  	.power_save		= power4_idle,
+>>  };
+>> +
+>> +#ifdef CONFIG_EDAC
+>> +#define CPC925_MC_START		0xf8000000
+>> +#define CPC925_MC_END		0xf8ffffff /* sizeof 16MB */
+>> +/* Register a platform device for CPC925 memory controller */
+>> +static int __init maple_cpc925_edac_setup(void)
+>> +{
+>> +	struct platform_device *pdev;
+>> +	struct device_node *np = NULL;
+>> +	struct resource r;
+>> +
+>> +	np = of_find_node_by_name(NULL, "hostbridge");
+>>     
+>
+> This is way too generic IMHO. You're going to match on any node called
+> "hostbridge" on any 64-bit powerpc machine, there's a good chance there
+> are other firmwares out there with such a node, or will be in the
+> future.
+>
+> Is there no compatible or model property you can look for, so you're at
+> least somewhat confident you're actually looking at a CPC925?
+>
+> If not this should be a machine_initcall() for Maple only.
+>
+>   
+>> +	if (of_address_to_resource(np, 0, &r)) {
+>> +		/*
+>> +		 * of_address_to_resource() would get the #address-cells
+>> +		 * and #size-cells properties for a node from its parent.
+>> +		 * On Maple 64bit target hostbridge parent node has specified
+>> +		 * both of these two properties to be 2. However, the actual
+>> +		 * "cell" value for host bridge node is 1. Since we can't
+>> +		 * fix this firmware-generated DTB, we have to setup a
+>> +		 * resource structure manually.
+>> +		 */
+>> +		memset(&r, 0, sizeof(r));
+>> +		r.start = CPC925_MC_START;
+>> +		r.end = CPC925_MC_END;
+>> +		r.name = "hostbridge";
+>> +		r.flags = IORESOURCE_MEM;
+>>     
+>
+> We do have fixups for bogus firmware including maple, look in
+> prom_init.c:fixup_device_tree_maple(). Although that's for actual
+> firmware, not a DTB.
+>
+> cheers
+>
+>   
+Hi Michael,
 
-Can you elaborate on that? I think we _do_ want to arrange partitions as
-sub-devices of the master, don't we? And I'd rather not change the way
-they appear at a later date; I'd prefer them to be that way from the
-beginning.
+Thanks a lot for your comments! I can see it would be much better than
+mine. Next whole week I will be on vacation, I will give some serious
+thoughts about your ideas and improve my patch in v2 after I come back.
 
->         slave->mtd.read = part_read;
->         slave->mtd.write = part_write;
->  
-> @@ -493,7 +498,9 @@ out_register:
->   * This function, given a master MTD object and a partition table, creates
->   * and registers slave MTD objects which are bound to the master according to
->   * the partition definitions.
-> - * (Q: should we register the master MTD object as well?)
-> + *
-> + * We don't register the master, or expect the caller to have done so,
-> + * for reasons of data integrity.
->   */
+Best regards,
 
-Again, can you elaborate?
-
-A lot of devices do just that. Where you have a partition table of some
-kind that's actually stored on the flash, that might be the only way to
-access it.
-
-I really don't like the way our partitioning works at the moment.
-
--- 
-dwmw2
-
+Harry
