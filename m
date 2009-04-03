@@ -1,65 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760368AbZDCK2T@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761469AbZDCK3Z@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760368AbZDCK2T (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 3 Apr 2009 06:28:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756756AbZDCK2A
+	id S1761469AbZDCK3Z (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 3 Apr 2009 06:29:25 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755764AbZDCK3P
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 3 Apr 2009 06:28:00 -0400
-Received: from cn.fujitsu.com ([222.73.24.84]:64087 "EHLO song.cn.fujitsu.com"
-	rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org with ESMTP
-	id S1754892AbZDCK2A (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 3 Apr 2009 06:28:00 -0400
-Message-ID: <49D5E3EE.70201@cn.fujitsu.com>
-Date: Fri, 03 Apr 2009 18:24:46 +0800
-From: Zhaolei <zhaolei@cn.fujitsu.com>
-User-Agent: Thunderbird 2.0.0.6 (Windows/20070728)
+	Fri, 3 Apr 2009 06:29:15 -0400
+Received: from www.tglx.de ([62.245.132.106]:43068 "EHLO www.tglx.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754892AbZDCK3O (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 3 Apr 2009 06:29:14 -0400
+Date: Fri, 3 Apr 2009 12:27:30 +0200 (CEST)
+From: Thomas Gleixner <tglx@linutronix.de>
+To: Remy Bohmer <linux@bohmer.net>
+cc: Steven Rostedt <rostedt@goodmis.org>, Ingo Molnar <mingo@elte.hu>,
+       LKML <linux-kernel@vger.kernel.org>,
+       linux-rt-users <linux-rt-users@vger.kernel.org>
+Subject: Re: System deadlock on 2.6.24-rt20
+In-Reply-To: <3efb10970904030248t39a13176led25b9dc7ff9383c@mail.gmail.com>
+Message-ID: <alpine.LFD.2.00.0904031226500.12916@localhost.localdomain>
+References: <3efb10970904030248t39a13176led25b9dc7ff9383c@mail.gmail.com>
+User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
 MIME-Version: 1.0
-To: "Steven Rostedt ;" <rostedt@goodmis.org>
-CC: linux-kernel@vger.kernel.org
-Subject: [PATCH 1/2] ftrace: Correct a text align for event format output
-Content-Type: text/plain; charset=GB2312
-Content-Transfer-Encoding: 7bit
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-If we cat debugfs/tracing/events/ftrace/bprint/format, we'll see:
-name: bprint
-ID: 6
-format:
-	field:unsigned char common_type;	offset:0;	size:1;
-	field:unsigned char common_flags;	offset:1;	size:1;
-	field:unsigned char common_preempt_count;	offset:2;	size:1;
-	field:int common_pid;	offset:4;	size:4;
-	field:int common_tgid;	offset:8;	size:4;
+On Fri, 3 Apr 2009, Remy Bohmer wrote:
 
-	field:unsigned long ip;	offset:12;	size:4;
-	field:char * fmt;	offset:16;	size:4;
-	field: char buf;	offset:20;	size:0;
+> Hello All,
+> 
+> We encountered a nasty system lockup on an X86 system running
+> 2.6.24.7-rt20. (Intel Core2Duo system)
+> What happens is that the system freezes completely after some time.
+> After a lot of testing we are now able to reproduce this problem
+> within 5 minutes of testing.
+> 
+> The backtrace was not printed to the serial terminal, but when we
+> accidentally used the VGA
+> terminal the backtrace was there. So we used/hacked the earlyprintk
+> mechanism to get the logging out.
+> 
+> Does anybody recognise these backtraces? And if so, is there a fix for
+> it already?
 
-print fmt: "%08lx (%d) fmt:%p %s"
+http://www.kernel.org/pub/linux/kernel/projects/rt/patch-2.6.24.7-rt27.bz2
 
-There is a redundant blank before char buf, and it need to be deleted.
+Thanks,
 
-Signed-off-by: Zhao Lei <zhaolei@cn.fujitsu.com>
----
- kernel/trace/trace_export.c |    2 +-
- 1 files changed, 1 insertions(+), 1 deletions(-)
-
-diff --git a/kernel/trace/trace_export.c b/kernel/trace/trace_export.c
-index 4d9952d..07a22c3 100644
---- a/kernel/trace/trace_export.c
-+++ b/kernel/trace/trace_export.c
-@@ -40,7 +40,7 @@
- 
- #undef TRACE_FIELD_ZERO_CHAR
- #define TRACE_FIELD_ZERO_CHAR(item)					\
--	ret = trace_seq_printf(s, "\tfield: char " #item ";\t"		\
-+	ret = trace_seq_printf(s, "\tfield:char " #item ";\t"		\
- 			       "offset:%u;\tsize:0;\n",			\
- 			       (unsigned int)offsetof(typeof(field), item)); \
- 	if (!ret)							\
--- 
-1.5.5.3
-
-
+	tglx
