@@ -1,53 +1,45 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S936757AbZDCUSO@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S936834AbZDCUUt@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S936757AbZDCUSO (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 3 Apr 2009 16:18:14 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760611AbZDCUR4
+	id S936834AbZDCUUt (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 3 Apr 2009 16:20:49 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759523AbZDCUUk
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 3 Apr 2009 16:17:56 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:34511 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1757182AbZDCUR4 (ORCPT
+	Fri, 3 Apr 2009 16:20:40 -0400
+Received: from qw-out-2122.google.com ([74.125.92.27]:10767 "EHLO
+	qw-out-2122.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1759316AbZDCUUj (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 3 Apr 2009 16:17:56 -0400
-Date: Fri, 3 Apr 2009 13:14:00 -0700 (PDT)
-From: Linus Torvalds <torvalds@linux-foundation.org>
-X-X-Sender: torvalds@localhost.localdomain
-To: Jeff Garzik <jeff@garzik.org>
-cc: Chris Mason <chris.mason@oracle.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       David Rees <drees76@gmail.com>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: Linux 2.6.29
-In-Reply-To: <49D66C0E.5090301@garzik.org>
-Message-ID: <alpine.LFD.2.00.0904031309500.4015@localhost.localdomain>
-References: <1238758370.32764.5.camel@think.oraclecorp.com> <alpine.LFD.2.00.0904030804160.4130@localhost.localdomain> <49D66C0E.5090301@garzik.org>
-User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
+	Fri, 3 Apr 2009 16:20:39 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
+         :cc:content-type:content-transfer-encoding;
+        b=G1IMSL4L/X+wbXYZ/voi3gmVA5Sw2CrL0Rn5i/Dcf+PDppl6Vr8pMgoIs9yIEgq1bb
+         KM83LR/QR6p+9goTeLrrNDNBUawDml+IwW7g3aie4SOnxmh7GUQ5O5gXX/PLugACiUJY
+         l1l4CBphneGAkgRPtodfRwYtLSCBT4RojGTIs=
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+In-Reply-To: <49D5B351.5040601@nokia.com>
+References: <a95a62fe0904021632l14ddb299l7818f2f2d32c20ac@mail.gmail.com>
+	 <49D5B351.5040601@nokia.com>
+Date: Fri, 3 Apr 2009 13:20:37 -0700
+Message-ID: <a95a62fe0904031320i2ce699ffm7aa94bce0a049bdd@mail.gmail.com>
+Subject: Re: [PATCH] MTD: nandsim should delete its partitions on module 
+	unload
+From: Kevin Cernekee <kpc.mtd@gmail.com>
+To: Adrian Hunter <adrian.hunter@nokia.com>
+Cc: "dwmw2@infradead.org" <dwmw2@infradead.org>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       "linux-mtd@lists.infradead.org" <linux-mtd@lists.infradead.org>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Thu, Apr 2, 2009 at 11:57 PM, Adrian Hunter <adrian.hunter@nokia.com> wrote:
+> Doesn't nand_release() already do that?
 
+Yes.  The problem I was seeing (attempt to reregister mtd* sysfs
+entries) was caused by something else.  I retract the patch.
 
-On Fri, 3 Apr 2009, Jeff Garzik wrote:
->
-> Yeah, it's a no-name SSD.
-> 
-> I've attached 'hdparm -I' in case anyone is curious.  It's from newegg.com, so
-> nothing NDA'd or sekrit.
-
-Hmm. Does it do ok on the "random write" test? There's a few non-intel 
-controllers that are fine - apparently the newer samsung ones, and the one 
-from Indilinx.
-
-But I _think_ G.SKILL uses those horribly broken JMicron controllers. 
-Judging by your performance numbers, it's the slightly fancier double 
-controller version (ie basically an internal RAID0 of two identical 
-JMicron controllers, each handling half of the flash chips).
-
-Try a random write test. If it's the JMicron controllers, performance will 
-plummet to a few tens of kilobytes per second.
-
-			Linus
+Thanks.
