@@ -1,96 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S936389AbZDCU0a@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S936302AbZDCU11@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S936389AbZDCU0a (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 3 Apr 2009 16:26:30 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759328AbZDCU0S
+	id S936302AbZDCU11 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 3 Apr 2009 16:27:27 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758105AbZDCU1S
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 3 Apr 2009 16:26:18 -0400
-Received: from ogre.sisk.pl ([217.79.144.158]:35879 "EHLO ogre.sisk.pl"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1758946AbZDCU0R (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 3 Apr 2009 16:26:17 -0400
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-To: "Tvrtko A. Ursulin" <tvrtko@ursulin.net>
-Subject: Re: [Regression in 2.6.29] forcedeth doesn't work after resume from hibernation (was: Re: Resume after hibernation regression in 2.6.29)
-Date: Fri, 3 Apr 2009 22:26:20 +0200
-User-Agent: KMail/1.11.1 (Linux/2.6.29-rjw; KDE/4.2.1; x86_64; ; )
-Cc: Ed Swierk <eswierk@aristanetworks.com>, Pavel Machek <pavel@ucw.cz>,
-       "linux-pm" <linux-pm@lists.linux-foundation.org>,
-       kernel list <linux-kernel@vger.kernel.org>,
-       Tobias Diedrich <ranma+kernel@tdiedrich.de>,
-       Ayaz Abdulla <aabdulla@nvidia.com>, netdev <netdev@vger.kernel.org>,
-       Arthur Jones <ajones@riverbed.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       "David S. Miller" <davem@davemloft.net>
-References: <200903261920.32173.tvrtko@ursulin.net> <9ae48b020904030824o1f94831asb60f979b3e489a8b@mail.gmail.com> <1238780473.19305.3.camel@localhost.localdomain>
-In-Reply-To: <1238780473.19305.3.camel@localhost.localdomain>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-2"
-Content-Transfer-Encoding: 7bit
+	Fri, 3 Apr 2009 16:27:18 -0400
+Received: from relay3.sgi.com ([192.48.156.57]:60241 "EHLO relay.sgi.com"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1753846AbZDCU1R (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 3 Apr 2009 16:27:17 -0400
+Date: Fri, 3 Apr 2009 15:27:07 -0500
+From: Jack Steiner <steiner@sgi.com>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: linux-tip-commits@vger.kernel.org, linux-kernel@vger.kernel.org,
+       hpa@zytor.com, mingo@redhat.com, tglx@linutronix.de
+Subject: Re: [tip:x86/uv] x86, UV: Fix for nodes with memory and no cpus
+Message-ID: <20090403202707.GA30764@sgi.com>
+References: <20090330140111.GA18461@sgi.com> <tip-6a891a24e4d0056c365a90ff2d71c38fd366b0d0@git.kernel.org> <20090403200538.GA11301@elte.hu>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Message-Id: <200904032226.21420.rjw@sisk.pl>
+In-Reply-To: <20090403200538.GA11301@elte.hu>
+User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Friday 03 April 2009, Ed Swierk wrote:
-> On Fri, 2009-04-03 at 08:24 -0700, Ed Swierk wrote:
-> > On Fri, Mar 27, 2009 at 1:09 PM, Rafael J. Wysocki <rjw@sisk.pl> wrote:
-> > > I was able to reproduce the problem and identify the commit that broke the
-> > > resume of forcedeth, which turned out to be:
-> > >
-> > > commit cb52deba12f27af90a46d2f8667a64888118a888
-> > > Author: Ed Swierk <eswierk@arastra.com>
-> > > Date:   Mon Dec 1 12:24:43 2008 +0000
-> > >
-> > >    forcedeth: power down phy when interface is down
-> > >
-> > >    Signed-off-by: Ed Swierk <eswierk@arastra.com>
-> > >    Tested-by: Arthur Jones <ajones@riverbed.com>
-> > >    Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
-> > >    Signed-off-by: David S. Miller <davem@davemloft.net>
-> > >
-> > > Since I have no slightest idea of what this commit is supposed to achieve,
-> > > I can only ask for reverting it.  It reverts cleanly, BTW.
-> > 
-> > The change causes forcedeth to bring down the physical link when an
-> > interface goes down; leaving it up causes the switch at the other end
-> > to think the port is still active, with potentially random speed and
-> > duplex parameters.
-> > 
-> > It's possible that the forcedeth driver needs to reset autonegotiation
-> > after bringing it up the link again.
-> > 
-> > Can you please try this on a 2.6.29 kernel that's exhibiting the
-> > symptoms you describe, after resuming the machine from hibernation:
-> > 
-> >   ethtool -s eth1 autoneg off speed 100 duplex full
-> >   ethtool -s eth1 autoneg on
-> > 
-> > This should reset autonegotiation manually and bring the link. Let me
-> > know how it goes.
+On Fri, Apr 03, 2009 at 10:05:38PM +0200, Ingo Molnar wrote:
 > 
-> Also please try this patch; it fixes the problem on my test system (a
-> DFI board with an nVidia MCP55).
+> * Jack Steiner <steiner@sgi.com> wrote:
 > 
-> Signed-off-by: Ed Swierk <eswierk@aristanetworks.com>
-> --
-> --- linux-2.6.29.x86_64/drivers/net/forcedeth.c.orig	2009-03-23 16:12:14.000000000 -0700
-> +++ linux-2.6.29.x86_64/drivers/net/forcedeth.c	2009-04-03 10:11:26.839614710 -0700
-> @@ -5995,6 +5995,9 @@
->  	for (i = 0;i <= np->register_size/sizeof(u32); i++)
->  		writel(np->saved_config_space[i], base+i*sizeof(u32));
->  
-> +	/* restore phy state, including autoneg */
-> +	phy_init(dev);
-> +
->  	netif_device_attach(dev);
->  	if (netif_running(dev)) {
->  		rc = nv_open(dev);
+> > Commit-ID:  6a891a24e4d0056c365a90ff2d71c38fd366b0d0
+> > Gitweb:     http://git.kernel.org/tip/6a891a24e4d0056c365a90ff2d71c38fd366b0d0
+> > Author:     Jack Steiner <steiner@sgi.com>
+> > AuthorDate: Mon, 30 Mar 2009 09:01:11 -0500
+> > Committer:  Ingo Molnar <mingo@elte.hu>
+> > CommitDate: Fri, 3 Apr 2009 19:49:58 +0200
+> > 
+> > x86, UV: Fix for nodes with memory and no cpus
+> 
+> Hm, there's a build failure regression here:
+> 
+> arch/x86/kernel/apic/x2apic_uv_x.c: In function ???uv_system_init???:
+> arch/x86/kernel/apic/x2apic_uv_x.c:641: error: implicit declaration of function ???node_start_pfn???
 
-Tvrtko, can you test it, please?  I'll be away from my NVidia box during the
-next couple of days.
+What was the config? Looks like node_start_pfn() is not defined for non-NUMA?
+If your config was non-NUMA, I'll make UV depend on NUMA.
 
-Thanks,
-Rafael
+
+--- jack
