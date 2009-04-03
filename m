@@ -1,75 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S937264AbZDCUoi@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S935126AbZDCUtl@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S937264AbZDCUoi (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 3 Apr 2009 16:44:38 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S937099AbZDCUoZ
+	id S935126AbZDCUtl (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 3 Apr 2009 16:49:41 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757712AbZDCUtb
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 3 Apr 2009 16:44:25 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:41069 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S937248AbZDCUoY (ORCPT
+	Fri, 3 Apr 2009 16:49:31 -0400
+Received: from rv-out-0506.google.com ([209.85.198.239]:2009 "EHLO
+	rv-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756339AbZDCUta (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 3 Apr 2009 16:44:24 -0400
-Date: Fri, 3 Apr 2009 13:41:54 -0700 (PDT)
-From: Linus Torvalds <torvalds@linux-foundation.org>
-X-X-Sender: torvalds@localhost.localdomain
-To: "Theodore Ts'o" <tytso@mit.edu>, Jens Axboe <jens.axboe@oracle.com>
-cc: Linux Kernel Developers List <linux-kernel@vger.kernel.org>,
-       Ext4 Developers List <linux-ext4@vger.kernel.org>
-Subject: Re: [GIT PULL] Ext3 latency fixes
-In-Reply-To: <alpine.LFD.2.00.0904031150190.4015@localhost.localdomain>
-Message-ID: <alpine.LFD.2.00.0904031329410.7007@localhost.localdomain>
-References: <1238742067-30814-1-git-send-email-tytso@mit.edu> <alpine.LFD.2.00.0904031110420.19690@localhost.localdomain> <alpine.LFD.2.00.0904031150190.4015@localhost.localdomain>
-User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
+	Fri, 3 Apr 2009 16:49:30 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
+         :cc:content-type:content-transfer-encoding;
+        b=IiVxyIL6iEYuv+ISnOKLSjkIw0IESX+SfxxETFLEgwDKU/hkrPfbpLW0gPQ14b58eL
+         aNsCgPNPvkpa93TkSiGcLur4U1igqAaH7PISK8f7miqvc+tqUOcL356lheYVFQs0piKp
+         YO44lUyw10u/xXsi4ROmmdtC8powQj0b5j1yc=
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+In-Reply-To: <49D66E83.5070606@inria.fr>
+References: <f3177b9e0904031302p8aef826u1874a8b9d9af0840@mail.gmail.com>
+	 <49D66E83.5070606@inria.fr>
+Date: Fri, 3 Apr 2009 13:49:27 -0700
+Message-ID: <86802c440904031349v31f84f8anf082db7505e60387@mail.gmail.com>
+Subject: Re: Off topic: Numactl "distance" wrong
+From: Yinghai Lu <yhlu.kernel@gmail.com>
+To: Brice Goglin <Brice.Goglin@inria.fr>
+Cc: Chris Worley <worleys@gmail.com>, linux-kernel@vger.kernel.org
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Fri, Apr 3, 2009 at 1:16 PM, Brice Goglin <Brice.Goglin@inria.fr> wrote:
+> Chris Worley wrote:
+>> Sorry for an off topic, but I'm hoping somebody can point me in the
+>> right direction of where to direct this question...
+>>
+>> I have an Opteron system where I've seen the HW diagrams, and each of
+>> 4 sockets is directly connected (HT) to two other sockets, and two HT
+>> hops away from a third (i.e. a simple square topology, no X in the
+>> middle).
+>>
+>> Yet, "numactl --hardware" shows but one hop to each socket:
+>>
+>> # numactl --hardware
+>> ...
+>> node   0   1   2   3
+>>   0:  10  20  20  20
+>>   1:  20  10  20  20
+>>   2:  20  20  10  20
+>>   3:  20  20  20  10
+>>
+>> I know this is wrong.
+>>
+>> Who would be the right person (or list) to talk about this?
+>>
+>
+> IIRC, the motherboard/BIOS is supposed to report numa distances through
+> the PXM ACPI method. But I have never seen any opteron box do it
+> properly. So you just get 10 for "local" and 20 for "remote". Some
+> Itanium machines however report actual distances.
 
+for x86 64 bit, we are copying SLIT table and save another copy.
 
-On Fri, 3 Apr 2009, Linus Torvalds wrote:
-> 
-> The "overwrite" behavior may well be better, but it was smooth enough 
-> beforehand too (never having more than ~8MB dirty). The "create big file 
-> and sync" workload causes huge fsync pauses, though. IOW, try with
-> 
-> 	while :
-> 	do
-> 		time sh -c "dd if=/dev/zero of=bigfile bs=8M count=256 ; sync"
-> 	done
-> 
-> and even really small fsync's end up being at the end of all that 
-> unrelated activity, and you see things like
-> 
->     fsync(7)                                = 0 <32.756308>
+could provide one /sys interface to make user could modify it...
 
-Hmm. So I decided to try with "data=writeback" to see if it really makes 
-that big of a difference. It does help, but I still easily trigger 
-multi-second pauses:
-
-   fsync(4)                                = 0 <2.447926>
-   fsync(4)                                = 0 <4.275472>
-   fsync(4)                                = 0 <3.731948>
-   fsync(4)                                = 0 <4.020839>
-   fsync(6)                                = 0 <3.482735>
-   fsync(6)                                = 0 <5.819923>
-
-even though the system _should_ be able to write back the 'bigfile' 
-datablocks without any ordering constraint on the fsync.
-
-So at a guess, it now avoids some nasty journal writing ordering issue 
-where it has to wait for the previous transaction, and it's probably now 
-purely an IO ordering issue.
-
-This is all with your ext3 work, btw. But I also added "rm bigfile" at the 
-end of the loop (so that it shouldn't trigge any "write out bigfile early" 
-logic), and that didn't seem to make any difference. 
-
-Are we perhaps ending up doing those regular 'bigfile' writes as 
-WRITE_SYNC, just because of the global "sync()" call? That's probably a 
-bad idea. A "sync" is about pure throughput. It's not about latency like 
-"fsync()" is.
-
-		Linus
+YH
