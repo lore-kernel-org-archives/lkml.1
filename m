@@ -1,58 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760782AbZDCIv3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760425AbZDCIzb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760782AbZDCIv3 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 3 Apr 2009 04:51:29 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751683AbZDCIvT
+	id S1760425AbZDCIzb (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 3 Apr 2009 04:55:31 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753441AbZDCIzW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 3 Apr 2009 04:51:19 -0400
-Received: from bilbo.ozlabs.org ([203.10.76.25]:57806 "EHLO bilbo.ozlabs.org"
+	Fri, 3 Apr 2009 04:55:22 -0400
+Received: from mga03.intel.com ([143.182.124.21]:9729 "EHLO mga03.intel.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751406AbZDCIvS (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 3 Apr 2009 04:51:18 -0400
+	id S1752608AbZDCIzV (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 3 Apr 2009 04:55:21 -0400
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.39,318,1235980800"; 
+   d="scan'208";a="127452424"
+Date: Fri, 3 Apr 2009 16:55:03 +0800
+From: Wu Fengguang <fengguang.wu@intel.com>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: Ying Han <yinghan@google.com>, linux-mm@kvack.org,
+       linux-kernel@vger.kernel.org, mingo@elte.hu, mikew@google.com,
+       rientjes@google.com, rohitseth@google.com, hugh@veritas.com,
+       a.p.zijlstra@chello.nl, hpa@zytor.com, edwintorok@gmail.com,
+       lee.schermerhorn@hp.com, npiggin@suse.de
+Subject: [PATCH] vfs: reduce page fault retry code
+Message-ID: <20090403085503.GC6084@localhost>
+References: <604427e00812051140s67b2a89dm35806c3ee3b6ed7a@mail.gmail.com> <20090331150046.16539218.akpm@linux-foundation.org> <20090403082230.GA6084@localhost> <20090403083559.GB6084@localhost>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
-Message-ID: <18901.52735.579687.568717@cargo.ozlabs.ibm.com>
-Date: Fri, 3 Apr 2009 19:51:11 +1100
-From: Paul Mackerras <paulus@samba.org>
-To: Peter Zijlstra <a.p.zijlstra@chello.nl>
-Cc: Corey Ashford <cjashfor@linux.vnet.ibm.com>, Ingo Molnar <mingo@elte.hu>,
-       linux-kernel@vger.kernel.org
-Subject: Re: perf_counter: request for three more sample data options
-In-Reply-To: <1238745077.798.17.camel@twins>
-References: <49D56A7E.80908@linux.vnet.ibm.com>
-	<1238742064.798.8.camel@twins>
-	<49D5B9E7.1020400@linux.vnet.ibm.com>
-	<1238745077.798.17.camel@twins>
-X-Mailer: VM 8.0.9 under Emacs 22.2.1 (i486-pc-linux-gnu)
+Content-Disposition: inline
+In-Reply-To: <20090403083559.GB6084@localhost>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Peter Zijlstra writes:
+find_lock_page_retry() works the same way as find_lock_page()
+when retry_flag=0. And their return value handling shall work
+(almost) in the same way, or it will already be a bug.
 
-> What I was thinking of was re-using some of the cpu_clock()
-> infrastructure. That provides us with a jiffy based GTOD sample,
-> cpu_clock() then uses TSC and a few filters to compute a current
-> timestamp.
-> 
-> I was thinking about cutting back those filters and thus trusting the
-> TSC more -- which on x86 can do any random odd thing. So provided the
-> TSC is not doing funny the results will be ok-ish.
-> 
-> This does mean however, that its not possible to know when its gone bad.
+So the !retry_flag special casing can be eliminated.
 
-I would expect that perfmon would be just reading the TSC and
-recording that.  If you can read the TSC and do some correction then
-we're ahead. :)
+Cc: Ying Han <yinghan@google.com>
+Signed-off-by: Wu Fengguang <fengguang.wu@intel.com>
+---
+ mm/filemap.c |    7 -------
+ 1 file changed, 7 deletions(-)
 
-> The question to Paul is, does the powerpc sched_clock() call work in NMI
-> -- or hard irq disable -- context?
-
-Yes - timekeeping is one area where us powerpc guys can be smug. :)
-We have a per-core, 64-bit timebase register which counts at a
-constant frequency and is synchronized across all cores.  So
-sched_clock works in any context on powerpc - all it does is read the
-timebase and do some simple integer arithmetic on it.
-
-Paul.
+--- mm.orig/mm/filemap.c
++++ mm/mm/filemap.c
+@@ -1663,13 +1663,6 @@ no_cached_page:
+ 	 * meantime, we'll just come back here and read it again.
+ 	 */
+ 	if (error >= 0) {
+-		/*
+-		 * If caller cannot tolerate a retry in the ->fault path
+-		 * go back to check the page again.
+-		 */
+-		if (!retry_flag)
+-			goto retry_find;
+-
+ 		retry_ret = find_lock_page_retry(mapping, vmf->pgoff,
+ 					vma, &page, retry_flag);
+ 		if (retry_ret == VM_FAULT_RETRY)
