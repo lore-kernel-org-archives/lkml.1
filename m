@@ -1,60 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S937128AbZDCVzo@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S937154AbZDCV5m@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S937128AbZDCVzo (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 3 Apr 2009 17:55:44 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S936823AbZDCVzP
+	id S937154AbZDCV5m (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 3 Apr 2009 17:57:42 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757773AbZDCV5f
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 3 Apr 2009 17:55:15 -0400
-Received: from one.firstfloor.org ([213.235.205.2]:41825 "EHLO
-	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1763806AbZDCVzO (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 3 Apr 2009 17:55:14 -0400
-To: Yinghai Lu <yhlu.kernel@gmail.com>
-Cc: David Rientjes <rientjes@google.com>, Chris Worley <worleys@gmail.com>,
-       linux-kernel@vger.kernel.org
-Subject: Re: Off topic: Numactl "distance" wrong
-From: Andi Kleen <andi@firstfloor.org>
-References: <f3177b9e0904031302p8aef826u1874a8b9d9af0840@mail.gmail.com>
-	<87vdpljuqi.fsf@basil.nowhere.org>
-	<alpine.DEB.2.00.0904031438540.3646@chino.kir.corp.google.com>
-	<86802c440904031448yc6d499ckd9cb969ce136f477@mail.gmail.com>
-Date: Fri, 03 Apr 2009 23:55:09 +0200
-In-Reply-To: <86802c440904031448yc6d499ckd9cb969ce136f477@mail.gmail.com> (Yinghai Lu's message of "Fri, 3 Apr 2009 14:48:31 -0700")
-Message-ID: <87r609jtc2.fsf@basil.nowhere.org>
-User-Agent: Gnus/5.1008 (Gnus v5.10.8) Emacs/22.3 (gnu/linux)
+	Fri, 3 Apr 2009 17:57:35 -0400
+Received: from srv5.dvmed.net ([207.36.208.214]:44346 "EHLO mail.dvmed.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754391AbZDCV5f (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 3 Apr 2009 17:57:35 -0400
+Message-ID: <49D68631.4030706@garzik.org>
+Date: Fri, 03 Apr 2009 17:57:05 -0400
+From: Jeff Garzik <jeff@garzik.org>
+User-Agent: Thunderbird 2.0.0.21 (X11/20090320)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-Content-Transfer-Encoding: 8bit
+To: Janne Grunau <j@jannau.net>
+CC: Mark Lord <lkml@rtr.ca>, Lennart Sorensen <lsorense@csclub.uwaterloo.ca>,
+       Jens Axboe <jens.axboe@oracle.com>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Ingo Molnar <mingo@elte.hu>, Andrew Morton <akpm@linux-foundation.org>,
+       tytso@mit.edu, drees76@gmail.com, jesper@krogh.cc,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: Linux 2.6.29
+References: <20090326182519.d576d703.akpm@linux-foundation.org> <20090401210337.GB3797@csclub.uwaterloo.ca> <20090401143622.b1885643.akpm@linux-foundation.org> <20090402010044.GA16092@elte.hu> <20090403040649.GF3795@csclub.uwaterloo.ca> <alpine.LFD.2.00.0904022112260.4130@localhost.localdomain> <20090403072507.GO5178@kernel.dk> <20090403142129.GH3795@csclub.uwaterloo.ca> <49D625A0.1030202@rtr.ca> <49D66A40.5020503@garzik.org> <20090403212847.GC25887@aniel>
+In-Reply-To: <20090403212847.GC25887@aniel>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
+X-Spam-Score: -4.4 (----)
+X-Spam-Report: SpamAssassin version 3.2.5 on srv5.dvmed.net summary:
+	Content analysis details:   (-4.4 points, 5.0 required)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Yinghai Lu <yhlu.kernel@gmail.com> writes:
-
-> On Fri, Apr 3, 2009 at 2:43 PM, David Rientjes <rientjes@google.com> wrote:
+Janne Grunau wrote:
+> On Fri, Apr 03, 2009 at 03:57:52PM -0400, Jeff Garzik wrote:
+>> Mark Lord wrote:
+>>> Grab that file and try it out.  Instructions are included within.
+>>> Report back again and let us know if it makes any difference.
+>>>
+>>> Someday I may try and chase down the exact bug that causes mythbackend
+>>> to go fsyncing berserk like that, but for now this workaround is fine.
+> 
+> that sounds if it indeed syncs every 100ms instead of once per second
+> over the whole recording. It's inteneded behaviour for the first 64K.
+> 
+>> mythtv/libs/libmythtv/ThreadedFileWriter.cpp is a good place to start 
+>> (Sync method... uses fdatasync if available, fsync if not).
 >>
->> Yinghai, can you elaborate on exactly what type of interface you can
->> imagine for modifying the distance for nodes through sysfs?  It seems like
->> you'd have to report the entire physical topology in one write, for which
->> we currently don't have an interface for beyond pxms, instead of per-node
->> distances to remote nodes.
->
-> acpi_numa_slit_init() in srat_64.c will have one copy (called
-> acpi_slit) of SLIT, if there is SLIT from ACPI.
->
-> so if numa is enabled, could expose that acpi_slit via sysfs for the
-> user to update it.
+>> mythtv is definitely a candidate for sync_file_range() style output, IMO.
 
-That's not enough. You would need to redo all the zone fallback tables
-in the VM that are initialized based on topology, do new scheduler
-topologies and all kind of other stuff.
+> yeah, I'm on it.
 
-Besides I don't know any user space software which actually does anything
-with the distances. The kernel does, but for it it doesn't make much difference
-on smaller systems.
+Just curious, does MythTV need fsync(), or merely to tell the kernel to 
+begin asynchronously writing data to storage?
 
--Andi
+sync_file_range(..., SYNC_FILE_RANGE_WRITE) might be enough, if you do 
+not need to actually wait for completion.
 
--- 
-ak@linux.intel.com -- Speaking for myself only.
+This may be the case, if the idea behind MythTV's fsync(2) is simply to 
+prevent the kernel from building up a huge amount of dirty pages in the 
+pagecache [which, in turn, produces bursty write-out behavior].
+
+	Jeff
+
+
