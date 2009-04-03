@@ -1,62 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753220AbZDCCp1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756454AbZDCCpn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753220AbZDCCp1 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 2 Apr 2009 22:45:27 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752715AbZDCCpL
+	id S1756454AbZDCCpn (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 2 Apr 2009 22:45:43 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756824AbZDCCpb
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 2 Apr 2009 22:45:11 -0400
-Received: from vms173019pub.verizon.net ([206.46.173.19]:43253 "EHLO
-	vms173019pub.verizon.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752069AbZDCCpK (ORCPT
+	Thu, 2 Apr 2009 22:45:31 -0400
+Received: from moutng.kundenserver.de ([212.227.126.177]:56392 "EHLO
+	moutng.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756751AbZDCCp1 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 2 Apr 2009 22:45:10 -0400
-Date: Thu, 02 Apr 2009 22:44:57 -0400 (EDT)
-From: Len Brown <lenb@kernel.org>
-X-X-Sender: lenb@localhost.localdomain
-To: Sam Ravnborg <sam@ravnborg.org>
-Cc: Rusty Russell <rusty@rustcorp.com.au>,
-       Stephen Rothwell <sfr@canb.auug.org.au>,
-       yakui_zhao <yakui.zhao@intel.com>,
-       "linux-acpi@vger.kernel.org" <linux-acpi@vger.kernel.org>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH] acpi: simplify module_param namespace
-In-reply-to: <20090402212625.GA8502@uranus.ravnborg.org>
-Message-id: <alpine.LFD.2.00.0904022243420.9182@localhost.localdomain>
-References: <200903071328.28113.rusty@rustcorp.com.au>
- <200903110927.12792.rusty@rustcorp.com.au>
- <20090311145124.696b2448.sfr@canb.auug.org.au>
- <200903120907.20055.rusty@rustcorp.com.au>
- <alpine.LFD.2.00.0904021659190.4660@localhost.localdomain>
- <20090402212625.GA8502@uranus.ravnborg.org>
-User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
-MIME-version: 1.0
-Content-type: TEXT/PLAIN; charset=US-ASCII
+	Thu, 2 Apr 2009 22:45:27 -0400
+Date: Thu, 2 Apr 2009 19:45:24 -0700 (PDT)
+From: Christian Kujau <lists@nerdbynature.de>
+To: Theodore Tso <tytso@mit.edu>
+cc: Artem Bityutskiy <Artem.Bityutskiy@nokia.com>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: EXT4-ish "fixes" in UBIFS
+In-Reply-To: <20090403020525.GI9870@mit.edu>
+Message-ID: <alpine.DEB.2.01.0904021938560.6162@bogon.housecafe.de>
+References: <49CCCB0A.6070701@nokia.com> <alpine.DEB.2.01.0904021706330.6162@bogon.housecafe.de> <20090403020525.GI9870@mit.edu>
+User-Agent: Alpine 2.01 (DEB 1184 2008-12-16)
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+X-Provags-ID: V01U2FsdGVkX18UGK10hHDJmQQei/8iYJdBM2yiT5yaFSsy1ZQ
+ St/XP+6IgTEaAD1W6OhlbGJ1ef2Q1jfkMDlsR6goLIrv4nB9IM
+ nHa3QpgV7u2kH0DgEt4XQ==
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 2 Apr 2009, Sam Ravnborg wrote:
+On Thu, 2 Apr 2009, Theodore Tso wrote:
+> It will, but you might not like the performance....  the reason why
+> it's there is that some users might want the particular tradeoff, but
+> it probably wouldn't make a good default.
 
-> > +
-> > +processor-objs	+= processor_core.o processor_throttling.o \
-> > +				processor_idle.o processor_thermal.o
-> > +ifdef CONFIG_CPU_FREQ
-> > +processor-objs	+= processor_perflib.o
-> > +endif
-> 
-> It would be nicer to do:
-> processor-y := processor_core.o processor_throttling.o
-> processor-y += processor_idle.o processor_thermal.o
-> processor-$(CONFIG_CPU_FREQ) += processor_perflib.o
-> 
-> Assuming processor-objs was not assinged before in this file.
-> 
-> 	Sam
+Thanks for confirming this. Yes, I know about the performance impact, but 
+perhaps it's feasible for some setups.
 
-Can-do.
-In Rusty's defense, these lines were in his patch simply because he moved 
-them.
+Christian.
 
-thanks,
-Len Brown, Intel Open Source Technology Center
+PS: I was curious *how* bad the impact was and so I tried generating a
+    477 MB tarball, first on an async, then on an sync mounted partition:
 
+   /dev/md0 /mnt/md0 ext4 rw,noatime,barrier=1,data=ordered
+   $ time tar -cf /mnt/md0/test.tar /usr
+   real	1m36.615s
+
+   /dev/md0 /mnt/md0 ext4 rw,sync,noatime,barrier=1,data=ordered
+   $ time tar -cf /mnt/md0/test.tar /usr
+   real	5m23.793s
+
+-- 
+Bruce Schneier does not get kidney stones. He gets Rosetta Stones.
