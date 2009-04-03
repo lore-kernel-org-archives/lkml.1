@@ -1,74 +1,97 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758021AbZDCIXF@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761345AbZDCIZj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758021AbZDCIXF (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 3 Apr 2009 04:23:05 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752934AbZDCIWs
+	id S1761345AbZDCIZj (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 3 Apr 2009 04:25:39 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751683AbZDCIZU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 3 Apr 2009 04:22:48 -0400
-Received: from mga03.intel.com ([143.182.124.21]:12286 "EHLO mga03.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751683AbZDCIWr (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 3 Apr 2009 04:22:47 -0400
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.39,318,1235980800"; 
-   d="scan'208";a="127445256"
-Date: Fri, 3 Apr 2009 16:22:30 +0800
-From: Wu Fengguang <fengguang.wu@intel.com>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: Ying Han <yinghan@google.com>, linux-mm@kvack.org,
-       linux-kernel@vger.kernel.org, mingo@elte.hu, mikew@google.com,
-       rientjes@google.com, rohitseth@google.com, hugh@veritas.com,
-       a.p.zijlstra@chello.nl, hpa@zytor.com, edwintorok@gmail.com,
-       lee.schermerhorn@hp.com, npiggin@suse.de
-Subject: [PATCH] vfs: fix find_lock_page_retry() return value parsing
-Message-ID: <20090403082230.GA6084@localhost>
-References: <604427e00812051140s67b2a89dm35806c3ee3b6ed7a@mail.gmail.com> <20090331150046.16539218.akpm@linux-foundation.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090331150046.16539218.akpm@linux-foundation.org>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+	Fri, 3 Apr 2009 04:25:20 -0400
+Received: from smtp124.sbc.mail.sp1.yahoo.com ([69.147.64.97]:30326 "HELO
+	smtp124.sbc.mail.sp1.yahoo.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1752934AbZDCIZS (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 3 Apr 2009 04:25:18 -0400
+X-YMail-OSG: 49TzX7cVM1mGcTh02KD4dXg7RhIZnhGq6OnG.NG.yC6Gj.v4YJoT.kMSPqdYb19iwp28oK4YwYTQf.KfsdhKE3HX8F9WgQC_S3WiPSEC5q_xiwXKeDN8Yl8O_mcu1vNq0TPRWuxdZWhBokD6csPiIXMVaZ0ORLq8OZi2YBgpldNZHIRaXgK56tVQV9_Y9hiKEWcygIYgi1_0ICqNAvf_lV3YlC4ob6TuHrAC6OW5JaJc.Z0XUcAPEp4HcTGv1KfbvMaOGsZPVAc2P4ieqMhDWVQUw_7k2hX5YHk.o6OhUeEKxXHdc8bndvX9G0w8_rJ9Gon1s0zG.N2kB23pV1GjjQpFEFqcXuZCYzo2fvyhrp4-
+X-Yahoo-Newman-Property: ymail-3
+Subject: [PATCH] [ConfigFS]: Add struct
+	configfs_item_operations->check_link()
+From: "Nicholas A. Bellinger" <nab@linux-iscsi.org>
+To: LKML <linux-kernel@vger.kernel.org>,
+       Linux-fsdevel <linux-fsdevel@vger.kernel.org>,
+       linux-scsi <linux-scsi@vger.kernel.org>
+Cc: Joel Becker <joel.becker@oracle.com>,
+       Andrew Morton <akpm@linux-foundation.org>
+Content-Type: text/plain
+Date: Fri, 03 Apr 2009 01:25:07 -0700
+Message-Id: <1238747107.4250.448.camel@haakon2.linux-iscsi.org>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.22.3.1 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-find_lock_page_retry() won't touch the *ppage value when returning
-VM_FAULT_RETRY. This is fine except for the case
+Hi Joel and co,
 
-        if (VM_RandomReadHint())
-                goto no_cached_page;
+This patch adds struct configfs_item_operations->check_link() and
+changes fs/configfs/symlink.c:configfs_unlink() so that
+when (*check_link) is present, an ConfigFS unlink will fail, based upon
+input by said symlinked struct config_item *parent_item.
 
-where the 'page' could be undefined after calling find_lock_page_retry().
+If a non zero return is returned from (*check_link), said non zero value is
+expected to use include/asm-generic/errno* values, and the failure is returned
+to userspace via the unlink(2) system call.
 
-Fix it by checking the VM_FAULT_RETRY case first.
+Please consider this patch for v2.6.30.  It requires no changes to existing consumers
+of ConfigFS like fs/ocfs2, and I have tested it with running LIO-Target v3.0 code.
 
-Cc: Ying Han <yinghan@google.com>
-Signed-off-by: Wu Fengguang <fengguang.wu@intel.com>
+Many thanks for your most valuable of time,
+
+--nab
+
+Signed-off-by: Nicholas A. Bellinger <nab@linux-iscsi.org>
 ---
- mm/filemap.c |    6 +++---
- 1 file changed, 3 insertions(+), 3 deletions(-)
+ fs/configfs/symlink.c    |   13 +++++++++++++
+ include/linux/configfs.h |    1 +
+ 2 files changed, 14 insertions(+), 0 deletions(-)
 
---- mm.orig/mm/filemap.c
-+++ mm/mm/filemap.c
-@@ -759,7 +759,7 @@ EXPORT_SYMBOL(find_lock_page);
-  * @retry: 1 indicate caller tolerate a retry.
-  *
-  * If retry flag is on, and page is already locked by someone else, return
-- * a hint of retry.
-+ * a hint of retry and leave *ppage untouched.
-  *
-  * Return *ppage==NULL if page is not in pagecache. Otherwise return *ppage
-  * points to the page in the pagecache with ret=VM_FAULT_RETRY indicate a
-@@ -1672,10 +1672,10 @@ no_cached_page:
+diff --git a/fs/configfs/symlink.c b/fs/configfs/symlink.c
+index 932a92b..a5dede6 100644
+--- a/fs/configfs/symlink.c
++++ b/fs/configfs/symlink.c
+@@ -202,6 +202,19 @@ int configfs_unlink(struct inode *dir, struct dentry *dentry)
+ 	parent_item = configfs_get_config_item(dentry->d_parent);
+ 	type = parent_item->ci_type;
  
- 		retry_ret = find_lock_page_retry(mapping, vmf->pgoff,
- 					vma, &page, retry_flag);
-+		if (retry_ret == VM_FAULT_RETRY)
-+			return retry_ret;
- 		if (!page)
- 			goto retry_find_nopage;
--		else if (retry_ret == VM_FAULT_RETRY)
--			return retry_ret;
- 		else
- 			goto retry_page_update;
- 	}
++	/*
++	 * See if the underlying struct config_item has dependent
++	 * symlinks, and should return -EACCES here.
++	 */
++	if (type && type->ct_item_ops &&
++	    type->ct_item_ops->check_link) {
++		ret = type->ct_item_ops->check_link(parent_item);
++		if (ret != 0) {
++			config_item_put(parent_item);
++			goto out;
++		}
++	}
++
+ 	spin_lock(&configfs_dirent_lock);
+ 	list_del_init(&sd->s_sibling);
+ 	spin_unlock(&configfs_dirent_lock);
+diff --git a/include/linux/configfs.h b/include/linux/configfs.h
+index 7f62777..b026f16 100644
+--- a/include/linux/configfs.h
++++ b/include/linux/configfs.h
+@@ -226,6 +226,7 @@ struct configfs_item_operations {
+ 	ssize_t	(*show_attribute)(struct config_item *, struct configfs_attribute *,char *);
+ 	ssize_t	(*store_attribute)(struct config_item *,struct configfs_attribute *,const char *, size_t);
+ 	int (*allow_link)(struct config_item *src, struct config_item *target);
++	int (*check_link)(struct config_item *src);
+ 	int (*drop_link)(struct config_item *src, struct config_item *target);
+ };
+ 
+-- 
+1.5.4.1
+
+
+
