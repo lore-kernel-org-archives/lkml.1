@@ -1,70 +1,100 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933883AbZDCRNx@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932922AbZDCRQU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933883AbZDCRNx (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 3 Apr 2009 13:13:53 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759323AbZDCRNo
+	id S932922AbZDCRQU (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 3 Apr 2009 13:16:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759323AbZDCRQI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 3 Apr 2009 13:13:44 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:46751 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1760559AbZDCRNn (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 3 Apr 2009 13:13:43 -0400
-Date: Fri, 3 Apr 2009 10:02:15 -0700 (PDT)
-From: Linus Torvalds <torvalds@linux-foundation.org>
-X-X-Sender: torvalds@localhost.localdomain
-To: Felix Blyakher <felixb@sgi.com>,
-       Lachlan McIlroy <lachlan@redback.melbourne.sgi.com>
-cc: Andrew Morton <akpm@linux-foundation.org>,
-       LKML <linux-kernel@vger.kernel.org>, xfs mailing list <xfs@oss.sgi.com>
-Subject: Re: [GIT PULL] XFS update for 2.6.30
-In-Reply-To: <alpine.LFD.2.00.0904030952220.4130@localhost.localdomain>
-Message-ID: <alpine.LFD.2.00.0904030954030.4130@localhost.localdomain>
-References: <20090331053013.7642414167108@attica.americas.sgi.com> <BD6F95C9-2F2D-49A3-979C-25018E62E416@sgi.com> <alpine.LFD.2.00.0904030952220.4130@localhost.localdomain>
-User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
+	Fri, 3 Apr 2009 13:16:08 -0400
+Received: from hera.kernel.org ([140.211.167.34]:42112 "EHLO hera.kernel.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1757717AbZDCRQG (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 3 Apr 2009 13:16:06 -0400
+Date: Fri, 3 Apr 2009 17:15:34 GMT
+From: Yinghai Lu <yinghai@kernel.org>
+To: linux-tip-commits@vger.kernel.org
+Cc: linux-kernel@vger.kernel.org, hpa@zytor.com, mingo@redhat.com,
+       yinghai@kernel.org, rusty@rustcorp.com.au, tglx@linutronix.de,
+       mingo@elte.hu
+Reply-To: mingo@redhat.com, hpa@zytor.com, linux-kernel@vger.kernel.org,
+       yinghai@kernel.org, rusty@rustcorp.com.au, tglx@linutronix.de,
+       mingo@elte.hu
+In-Reply-To: <49D18FF0.50707@kernel.org>
+References: <49D18FF0.50707@kernel.org>
+Subject: [tip:irq/urgent] irq: fix cpumask memory leak on offstack cpumask kernels
+Message-ID: <tip-9756b15e1b58453a6fd54b85c1ad8515209e10bb@git.kernel.org>
+Git-Commit-ID: 9756b15e1b58453a6fd54b85c1ad8515209e10bb
+X-Mailer: tip-git-log-daemon
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=UTF-8
+Content-Disposition: inline
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Fri, 03 Apr 2009 17:15:36 +0000 (UTC)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Commit-ID:  9756b15e1b58453a6fd54b85c1ad8515209e10bb
+Gitweb:     http://git.kernel.org/tip/9756b15e1b58453a6fd54b85c1ad8515209e10bb
+Author:     Yinghai Lu <yinghai@kernel.org>
+AuthorDate: Mon, 30 Mar 2009 20:37:20 -0700
+Committer:  Ingo Molnar <mingo@elte.hu>
+CommitDate: Fri, 3 Apr 2009 19:14:44 +0200
+
+irq: fix cpumask memory leak on offstack cpumask kernels
+
+Need to free the old cpumask for affinity and pending_mask.
+
+Signed-off-by: Yinghai Lu <yinghai@kernel.org>
+Acked-by: Rusty Russell <rusty@rustcorp.com.au>
+LKML-Reference: <49D18FF0.50707@kernel.org>
+Signed-off-by: Ingo Molnar <mingo@elte.hu>
 
 
-On Fri, 3 Apr 2009, Linus Torvalds wrote:
+---
+ include/linux/irq.h       |   14 ++++++++++++++
+ kernel/irq/numa_migrate.c |    1 +
+ 2 files changed, 15 insertions(+), 0 deletions(-)
 
-> 
-> 
-> On Thu, 2 Apr 2009, Felix Blyakher wrote:
-> > 
-> > Were there any problems pulling from the xfs repository?
-> 
-> Sorry, no - just too much email, too many trees to look at, too many 
-> people to argue with.
-> 
-> Pulled.
-
-Side note - I almost unpulled afterwards. 
-
-You've done several apparently totally useless pulls from my tree at 
-random points. 
-
-Daily "keep up-to-date with Linus' tree" pulls are _strongly_ discouraged 
-(read: if this continues, I'll just stop pulling from you), because it 
-makes the history totally unreadable after-the-fact. It has some direct 
-technical downsides (it makes it much harder to run "git bisect" and see 
-what is going on), but apart from those direct downsides it just makes it 
-much harder for me - or anybody else who wants to get an overview of what 
-happened - to visualize things when history is messy.
-
-Instead of having a clear nice line of development that says "this is what 
-happened to XFS", those merges have basically mixed up all your changes 
-with all the random _other_ changes in the tree. 
-
-In other words, having those extra merges makes the graphical tools almost 
-useless for getting some kind of "what happened" overview. 
-
-I realize that an occasional back-merge may be required to resolve big 
-conflicts early, but they really have to be pretty big and immediate for 
-it to be a win. 
-
-			Linus
+diff --git a/include/linux/irq.h b/include/linux/irq.h
+index 974890b..99d147e 100644
+--- a/include/linux/irq.h
++++ b/include/linux/irq.h
+@@ -482,6 +482,16 @@ static inline void init_copy_desc_masks(struct irq_desc *old_desc,
+ #endif
+ }
+ 
++static inline void free_desc_masks(struct irq_desc *old_desc,
++				   struct irq_desc *new_desc)
++{
++	free_cpumask_var(old_desc->affinity);
++
++#ifdef CONFIG_GENERIC_PENDING_IRQ
++	free_cpumask_var(old_desc->pending_mask);
++#endif
++}
++
+ #else /* !CONFIG_SMP */
+ 
+ static inline bool init_alloc_desc_masks(struct irq_desc *desc, int cpu,
+@@ -495,6 +505,10 @@ static inline void init_copy_desc_masks(struct irq_desc *old_desc,
+ {
+ }
+ 
++static inline void free_desc_masks(struct irq_desc *old_desc,
++				   struct irq_desc *new_desc)
++{
++}
+ #endif	/* CONFIG_SMP */
+ 
+ #endif /* _LINUX_IRQ_H */
+diff --git a/kernel/irq/numa_migrate.c b/kernel/irq/numa_migrate.c
+index 243d612..44bbdcb 100644
+--- a/kernel/irq/numa_migrate.c
++++ b/kernel/irq/numa_migrate.c
+@@ -54,6 +54,7 @@ static bool init_copy_one_irq_desc(int irq, struct irq_desc *old_desc,
+ static void free_one_irq_desc(struct irq_desc *old_desc, struct irq_desc *desc)
+ {
+ 	free_kstat_irqs(old_desc, desc);
++	free_desc_masks(old_desc, desc);
+ 	arch_free_chip_data(old_desc, desc);
+ }
+ 
