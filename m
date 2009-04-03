@@ -1,148 +1,87 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S935405AbZDCSqV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934515AbZDCSro@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S935405AbZDCSqV (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 3 Apr 2009 14:46:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756028AbZDCSqJ
+	id S934515AbZDCSro (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 3 Apr 2009 14:47:44 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759367AbZDCSrc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 3 Apr 2009 14:46:09 -0400
-Received: from cantor.suse.de ([195.135.220.2]:54000 "EHLO mx1.suse.de"
+	Fri, 3 Apr 2009 14:47:32 -0400
+Received: from brick.kernel.dk ([93.163.65.50]:36859 "EHLO kernel.dk"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753029AbZDCSqI (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 3 Apr 2009 14:46:08 -0400
-Date: Fri, 3 Apr 2009 11:46:05 -0700
-From: Mark Fasheh <mfasheh@suse.com>
+	id S1753029AbZDCSrc (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 3 Apr 2009 14:47:32 -0400
+Date: Fri, 3 Apr 2009 20:47:29 +0200
+From: Jens Axboe <jens.axboe@oracle.com>
 To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: linux-kernel@vger.kernel.org, ocfs2-devel@oss.oracle.com,
-       Joel Becker <joel.becker@oracle.com>,
-       Andrew Morton <akpm@linux-foundation.org>
-Subject: [git patches] Ocfs2 updates for 2.6.30
-Message-ID: <20090403184605.GC14571@wotan.suse.de>
-Reply-To: Mark Fasheh <mfasheh@suse.com>
-Mime-Version: 1.0
+Cc: "Theodore Ts'o" <tytso@mit.edu>,
+       Linux Kernel Developers List <linux-kernel@vger.kernel.org>,
+       Ext4 Developers List <linux-ext4@vger.kernel.org>
+Subject: Re: [GIT PULL] Ext3 latency fixes
+Message-ID: <20090403184729.GC5178@kernel.dk>
+References: <1238742067-30814-1-git-send-email-tytso@mit.edu> <alpine.LFD.2.00.0904031110420.19690@localhost.localdomain>
+MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Organization: SUSE Labs, Novell, Inc
-User-Agent: Mutt/1.5.9i
+In-Reply-To: <alpine.LFD.2.00.0904031110420.19690@localhost.localdomain>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Linus,
+On Fri, Apr 03 2009, Linus Torvalds wrote:
+> 
+> 
+> On Fri, 3 Apr 2009, Theodore Ts'o wrote:
+> > 
+> > Please pull from:
+> > 
+> > git://git.kernel.org/pub/scm/linux/kernel/git/tytso/ext4.git ext3-latency-fixes
+> 
+> Thanks, pulled. I'll be interested to see how it feels. Will report back 
+> after I've rebuild and gone through a few more emails.
 
-	Here is the Ocfs2 changes for this merge window. I sent all these
-patches out to the list a couple weeks ago. Original mail is attached.
+I have one question, didn't see this series before... Ted, what kind of
+tests did you run with this and on what? Currently one has to be careful
+with WRITE_SYNC, as it also implies an immediate unplug of the device.
+So not only does it flag the priority as sync, it'll also kick things
+off immediately. We had a nasty regression in performance in a few
+revisions of the kernel due to this, sqlite performance was basically 4
+times as bad as before we did WRITE_SYNC in sync_dirty_buffer(). So I'd
+be curious what kind of testing was done with the patch series before
+submitting it.
 
+We should probably just dump the unplug bit from WRITE_SYNC and make
+sure we do those explicitly after submission instead.
 
-Please pull from 'upstream-linus' branch of
-git://git.kernel.org/pub/scm/linux/kernel/git/mfasheh/ocfs2.git upstream-linus
+> One thing I started wondering about in your changes to start using 
+> WRITE_SYNC is that I'm getting closer to thinking that we did the whole 
+> WRITE-vs-WRITE_SYNC thing the wrong way around.
+> 
+> Now, it's clearly true that non-synchronous writes are hopefully always 
+> the common case, so in that sense it makes sense to think of "WRITE" as 
+> the default non-critical case, and then make the (fewer) WRITE_SYNC cases 
+> be the special case.
+> 
+> But at the same time, I now suspect that we could actually have solved 
+> this problem more easily by just doing things the other way around: make 
+> the default "WRITE" be the high-priority one (to match "READ"), and then 
+> just explicitly marking the data writes with "WRITE_ASYNC".
+> 
+> Why? Because I think that with all the writes sprinkled around in random 
+> places, it's probably _easier_ to find the bulk writes that cause the 
+> biggest issues, and just fix _those_ to be WRITE_ASYNC. They may be bulk, 
+> they may be the common case, but they also tend to be the case where we 
+> write with generic routines (eg the whole "do_writepages()" thing).
+> 
+> So the VFS layer tends to already do much of the bulk writeout, and maybe 
+> we would have been better off just changing those to ASYNC and leaving any 
+> more specialized cases as the SYNC case? That would have avoided a lot of 
+> this effort at the filesystem level. We'd just assume that the default 
+> filesystem-specific writes tend to all be SYNC.
 
-to receive the following updates:
+Makes some sense, but we have to be really careful with SYNC writes.
+It's important that it really be things that are immediately waited upon
+and not "important" writes, since otherwise it'll wreak havoc with the
+responsiveness of our reads.
 
- fs/ocfs2/alloc.c               |   57 +
- fs/ocfs2/alloc.h               |    3 +
- fs/ocfs2/aops.c                |   23 +-
- fs/ocfs2/cluster/heartbeat.c   |   96 ++-
- fs/ocfs2/cluster/heartbeat.h   |    3 +-
- fs/ocfs2/cluster/nodemanager.c |    9 +-
- fs/ocfs2/dir.c                 | 2806 ++++++++++++++++++++++++++++++++++++++--
- fs/ocfs2/dir.h                 |   57 +-
- fs/ocfs2/dlm/dlmcommon.h       |   58 +-
- fs/ocfs2/dlm/dlmdebug.c        |   87 +-
- fs/ocfs2/dlm/dlmdomain.c       |   29 +-
- fs/ocfs2/dlm/dlmmaster.c       |  387 +++---
- fs/ocfs2/dlm/dlmthread.c       |   20 +-
- fs/ocfs2/dlmglue.c             |   46 +
- fs/ocfs2/dlmglue.h             |    2 +
- fs/ocfs2/export.c              |   84 ++-
- fs/ocfs2/inode.c               |   48 +-
- fs/ocfs2/inode.h               |    5 +
- fs/ocfs2/journal.c             |  173 +++-
- fs/ocfs2/journal.h             |   77 +-
- fs/ocfs2/localalloc.c          |   86 --
- fs/ocfs2/namei.c               |  250 ++--
- fs/ocfs2/ocfs2.h               |   76 +-
- fs/ocfs2/ocfs2_fs.h            |  136 ++-
- fs/ocfs2/ocfs2_lockid.h        |    4 +
- fs/ocfs2/suballoc.c            |  254 ++++-
- fs/ocfs2/suballoc.h            |    4 +
- fs/ocfs2/super.c               |  188 +++
- fs/ocfs2/xattr.c               |    8 +-
- fs/ocfs2/xattr.h               |    2 +-
- 30 files changed, 4389 insertions(+), 689 deletions(-)
+-- 
+Jens Axboe
 
-Hisashi Hifumi (1):
-      ocfs2: Pagecache usage optimization on ocfs2
-
-Mark Fasheh (9):
-      ocfs2: Introduce dir lookup helper struct
-      ocfs2: Add a name indexed b-tree to directory inodes
-      ocfs2: Store dir index records inline
-      ocfs2: Introduce dir free space list
-      ocfs2: Increase max links count
-      ocfs2: Add total entry count to dx_root_block
-      ocfs2: Enable indexed directories
-      ocfs2: re-order ocfs2_empty_dir checks
-      ocfs2: fix leaf start calculation in ocfs2_dx_dir_rebalance()
-
-Srinivas Eeda (1):
-      ocfs2: recover orphans in offline slots during recovery and mount
-
-Sunil Mushran (17):
-      ocfs2/hb: Expose the list of heartbeating nodes via debugfs
-      ocfs2: Move struct recovery_map to a header file
-      ocfs2: Expose the file system state via debugfs
-      ocfs2: Remove debugfs file local_alloc_stats
-      ocfs2/dlm: Encapsulate adding and removing of mle from dlm->master_list
-      ocfs2/dlm: Clean up struct dlm_lock_name
-      ocfs2/dlm: Refactor dlm_clean_master_list()
-      ocfs2/dlm: Create and destroy the dlm->master_hash
-      ocfs2/dlm: Activate dlm->master_hash for master list entries
-      ocfs2/dlm: Indent dlm_cleanup_master_list()
-      ocfs2/dlm: Track number of mles
-      ocfs2/dlm: Improve lockres counts
-      ocfs2/dlm: dlm_set_lockres_owner() and dlm_change_lockres_owner() inlined
-      ocfs2/dlm: Show the number of lockres/mles in dlm_state
-      ocfs2/dlm: Remove struct dlm_lock_name in struct dlm_master_list_entry
-      ocfs2/dlm: Do not purge lockres that is being migrated dlm_purge_lockres()
-      ocfs2/dlm: Tweak mle_state output
-
-Tao Ma (3):
-      ocfs2: Optimize inode allocation by remembering last group
-      ocfs2: Allocate inode groups from global_bitmap.
-      ocfs2: Optimize inode group allocation by recording last used group.
-
-wengang wang (1):
-      ocfs2: fix rare stale inode errors when exporting via nfs
-
-
-Hi,
-
-	The following patches comprise the bulk of Ocfs2 updates for the
-2.6.30 merge window. Aside from larger, more involved fixes, we're adding
-the following features, which I will describe in the order their patches are
-mailed.
-
-	Sunil's exported some more state to our debugfs files, and
-consolidated some other aspects of our debugfs infrastructure. This will
-further aid us in debugging Ocfs2 issues.
-
-	By leveraging our very flexible b-tree code, I was able to add
-support for directory indexing. Indexed directories in Ocfs2 look like
-regular directories, except they have an additional btree with records
-indexed by name hash. This design means we get to keep the existing
-POSIX-ness of our directory code, but operations like lookup get the
-increased performance of a simple btree lookup.
-
-	Tao's contribution this cycle comes in the form of inode allocation
-optimizations. These involved the usual heuristics - try to allocate inodes
-close to their parent directory, remember which allocation group was
-previously visited, etc. The resulting code yielded a 10x improvement on
-some cold-cache stat workloads.
-
-	Finally, Sunil has turned the fs/ocfs2/dlm mastery list into a hash
-table. This fixes some performance issues we had seen on large clusters with
-very active mastery (typically, lots of unlinks, renames and creates).
-	--Mark
-
---
-Mark Fasheh
