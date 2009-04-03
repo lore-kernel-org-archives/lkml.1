@@ -1,74 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933093AbZDCPb3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933694AbZDCPdf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933093AbZDCPb3 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 3 Apr 2009 11:31:29 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760619AbZDCPbP
+	id S933694AbZDCPdf (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 3 Apr 2009 11:33:35 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758921AbZDCPd0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 3 Apr 2009 11:31:15 -0400
-Received: from mail-qy0-f118.google.com ([209.85.221.118]:52687 "EHLO
-	mail-qy0-f118.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755646AbZDCPbO convert rfc822-to-8bit (ORCPT
+	Fri, 3 Apr 2009 11:33:26 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:38640 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1757848AbZDCPdZ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 3 Apr 2009 11:31:14 -0400
+	Fri, 3 Apr 2009 11:33:25 -0400
+Date: Fri, 3 Apr 2009 08:28:32 -0700 (PDT)
+From: Linus Torvalds <torvalds@linux-foundation.org>
+X-X-Sender: torvalds@localhost.localdomain
+To: Mark Lord <lkml@rtr.ca>
+cc: Andrew Morton <akpm@linux-foundation.org>, David Rees <drees76@gmail.com>,
+       Janne Grunau <j@jannau.net>,
+       Lennart Sorensen <lsorense@csclub.uwaterloo.ca>,
+       Theodore Tso <tytso@mit.edu>, Jesper Krogh <jesper@krogh.cc>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: Linux 2.6.29
+In-Reply-To: <49D627DF.6090501@rtr.ca>
+Message-ID: <alpine.LFD.2.00.0904030823140.4130@localhost.localdomain>
+References: <20090325183011.GN32307@mit.edu> <20090325220530.GR32307@mit.edu> <alpine.LFD.2.00.0903251622420.3032@localhost.localdomain> <20090326171148.9bf8f1ec.akpm@linux-foundation.org> <alpine.LFD.2.00.0903261723250.3994@localhost.localdomain>
+ <20090326174704.cd36bf7b.akpm@linux-foundation.org> <alpine.LFD.2.00.0903261752110.3994@localhost.localdomain> <20090326182519.d576d703.akpm@linux-foundation.org> <20090401210337.GB3797@csclub.uwaterloo.ca> <20090402110532.GA5132@aniel>
+ <72dbd3150904020929w46c6dc0bs4028c49dd8fa8c56@mail.gmail.com> <20090402094247.9d7ac19f.akpm@linux-foundation.org> <alpine.LFD.2.00.0904020947310.4130@localhost.localdomain> <alpine.LFD.2.00.0904020959490.4130@localhost.localdomain>
+ <49D627DF.6090501@rtr.ca>
+User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
 MIME-Version: 1.0
-In-Reply-To: <200903272109.21259.rjw@sisk.pl>
-References: <200903261920.32173.tvrtko@ursulin.net>
-	 <200903270801.46712.tvrtko@ursulin.net>
-	 <200903271255.36429.rjw@sisk.pl> <200903272109.21259.rjw@sisk.pl>
-Date: Fri, 3 Apr 2009 08:24:12 -0700
-Message-ID: <9ae48b020904030824o1f94831asb60f979b3e489a8b@mail.gmail.com>
-Subject: Re: [Regression in 2.6.29] forcedeth doesn't work after resume from 
-	hibernation (was: Re: Resume after hibernation regression in 2.6.29)
-From: Ed Swierk <eswierk@aristanetworks.com>
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: "Tvrtko A. Ursulin" <tvrtko@ursulin.net>, Pavel Machek <pavel@ucw.cz>,
-       linux-pm <linux-pm@lists.linux-foundation.org>,
-       kernel list <linux-kernel@vger.kernel.org>,
-       Tobias Diedrich <ranma+kernel@tdiedrich.de>,
-       Ayaz Abdulla <aabdulla@nvidia.com>, netdev <netdev@vger.kernel.org>,
-       Arthur Jones <ajones@riverbed.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       "David S. Miller" <davem@davemloft.net>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 8BIT
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Mar 27, 2009 at 1:09 PM, Rafael J. Wysocki <rjw@sisk.pl> wrote:
-> I was able to reproduce the problem and identify the commit that broke the
-> resume of forcedeth, which turned out to be:
->
-> commit cb52deba12f27af90a46d2f8667a64888118a888
-> Author: Ed Swierk <eswierk@arastra.com>
-> Date:   Mon Dec 1 12:24:43 2008 +0000
->
->    forcedeth: power down phy when interface is down
->
->    Signed-off-by: Ed Swierk <eswierk@arastra.com>
->    Tested-by: Arthur Jones <ajones@riverbed.com>
->    Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
->    Signed-off-by: David S. Miller <davem@davemloft.net>
->
-> Since I have no slightest idea of what this commit is supposed to achieve,
-> I can only ask for reverting it.  It reverts cleanly, BTW.
 
-The change causes forcedeth to bring down the physical link when an
-interface goes down; leaving it up causes the switch at the other end
-to think the port is still active, with potentially random speed and
-duplex parameters.
 
-It's possible that the forcedeth driver needs to reset autonegotiation
-after bringing it up the link again.
+On Fri, 3 Apr 2009, Mark Lord wrote:
+> 
+> Note that for mythtv, this may not be the best behaviour.
+> 
+> A common use scenario is "watching live TV", a few minutes behind
+> real-time so that the commercial-skipping can work its magic.
+> 
+> In that scenario, those pages are going to be needed again
+> within a short while, and it might be useful to keep them around.
+> 
+> But then Myth itself could probably decide whether to discard them
+> or not, not based upon that kind of knowledge.
 
-Can you please try this on a 2.6.29 kernel that's exhibiting the
-symptoms you describe, after resuming the machine from hibernation:
+Yes. I suspect that Myth could do heuristics like "when watching live TV, 
+do drop-behind about 30s after the currently showing stream". That still 
+allows for replay, but older stuff you've watched really likely isn't all 
+that interesting and migth be worth dropping in order to make room for 
+more data.
 
-  ethtool -s eth1 autoneg off speed 100 duplex full
-  ethtool -s eth1 autoneg on
+And you can use posix_fadvise() for that, since it's now no longer 
+connected with "wait for background IO to complete" at all.
 
-This should reset autonegotiation manually and bring the link. Let me
-know how it goes.
+The reason for wanting "SYNC_FILE_RANGE_DROP" was simply that I was doing 
+the "wait after write" anyway, and thinking I wanted to get rid of the 
+pages while I was already handling them. But that was for an app where I 
+_new_ the data was uninteresting as soon as it was on disk. Doing a secure 
+delete is different from recording video ;)
 
-Thanks,
---Ed
+				Linus
