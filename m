@@ -1,59 +1,127 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764568AbZDCKkH@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763391AbZDCKkh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764568AbZDCKkH (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 3 Apr 2009 06:40:07 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763994AbZDCKiS
+	id S1763391AbZDCKkh (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 3 Apr 2009 06:40:37 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1764031AbZDCKiV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
+	Fri, 3 Apr 2009 06:38:21 -0400
+Received: from hera.kernel.org ([140.211.167.34]:42982 "EHLO hera.kernel.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1763870AbZDCKiS (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
 	Fri, 3 Apr 2009 06:38:18 -0400
-Received: from ey-out-2122.google.com ([74.125.78.26]:27669 "EHLO
-	ey-out-2122.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1762943AbZDCKiQ (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 3 Apr 2009 06:38:16 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=from:to:subject:date:user-agent:cc:references:in-reply-to
-         :mime-version:content-disposition:message-id:content-type
-         :content-transfer-encoding;
-        b=cv2v8lWG/fhkevgXZoIu9kf5twSo6hBjWILPp/B3gyJonp/AdfgqW3eFmZUR116R9c
-         jLDmWouxz6LKj0IpmNuVPc82+qYhdBJVpU6yBgBTfpAXQBOjSWhTNzQ/i6YV/eEqNMLI
-         PX5iOkgaR+VY6NQM2KNewtbKcGWwSJ+z2DIb8=
-From: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
-To: petkovbb@gmail.com
-Subject: Re: [PATCH 2/3] ide-cd: cleanup cdrom_decode_status
-Date: Fri, 3 Apr 2009 12:41:44 +0200
-User-Agent: KMail/1.11.1 (Linux/2.6.29-next-20090403; KDE/4.2.1; i686; ; )
-Cc: linux-kernel@vger.kernel.org, linux-ide@vger.kernel.org
-References: <1238655519-10074-2-git-send-email-petkovbb@gmail.com> <200904030108.39927.bzolnier@gmail.com> <20090403045803.GA3732@liondog.tnic>
-In-Reply-To: <20090403045803.GA3732@liondog.tnic>
+Date: Fri, 3 Apr 2009 10:37:29 GMT
+From: Pekka Enberg <penberg@cs.helsinki.fi>
+To: linux-tip-commits@vger.kernel.org
+Cc: linux-kernel@vger.kernel.org, hpa@zytor.com, mingo@redhat.com,
+       penberg@cs.helsinki.fi, eduard.munteanu@linux360.ro, tglx@linutronix.de,
+       mingo@elte.hu
+Reply-To: mingo@redhat.com, hpa@zytor.com, linux-kernel@vger.kernel.org,
+       penberg@cs.helsinki.fi, eduard.munteanu@linux360.ro, tglx@linutronix.de,
+       mingo@elte.hu
+In-Reply-To: <1237971957.30175.18.camel@penberg-laptop>
+References: <1237971957.30175.18.camel@penberg-laptop>
+Subject: [tip:tracing/kmemtrace-v2] kmemtrace: trace kfree() calls with NULL or zero-length objects
+Message-ID: <tip-2121db74ba0fd2259f0e2265511684fadda9ac49@git.kernel.org>
+Git-Commit-ID: 2121db74ba0fd2259f0e2265511684fadda9ac49
+X-Mailer: tip-git-log-daemon
 MIME-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
 Content-Disposition: inline
-Message-Id: <200904031241.44597.bzolnier@gmail.com>
-Content-Type: text/plain;
-  charset="utf-8"
-Content-Transfer-Encoding: 7bit
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Fri, 03 Apr 2009 10:37:31 +0000 (UTC)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Friday 03 April 2009, Borislav Petkov wrote:
-> Hi,
-> 
-> On Fri, Apr 03, 2009 at 01:08:39AM +0200, Bartlomiej Zolnierkiewicz wrote:
-> > On Thursday 02 April 2009, Borislav Petkov wrote:
-> > > - have (almost) equal handling of commands based solely on sense_key
-> > 
-> > I'm having a VERY hard time trying to review this patch because at
-> > the same time that codepaths were merged if()s were replaced by switch()
-> > which in turn resulted in change of intendation... on top of that
-> > the patch description is very vague about this part of the changes...
-> 
-> I completely and exactly understand what you are saying :), I thought so
-> too when I looked at the diffs yesterday. Well, if it's any consolation, the
-> patches've been tested so they seem to work :). Anyway, split version coming
-> up...
+Commit-ID:  2121db74ba0fd2259f0e2265511684fadda9ac49
+Gitweb:     http://git.kernel.org/tip/2121db74ba0fd2259f0e2265511684fadda9ac49
+Author:     Pekka Enberg <penberg@cs.helsinki.fi>
+AuthorDate: Wed, 25 Mar 2009 11:05:57 +0200
+Committer:  Ingo Molnar <mingo@elte.hu>
+CommitDate: Fri, 3 Apr 2009 12:23:10 +0200
 
-The split version looks exactly the same except ide_cd_breathe() change
-when it comes to the main part.
+kmemtrace: trace kfree() calls with NULL or zero-length objects
 
-Did you send the wrong version by any chance?
+Impact: also output kfree(NULL) entries
+
+This patch moves the trace_kfree() calls before the ZERO_OR_NULL_PTR
+check so that we can trace call-sites that call kfree() with NULL many
+times which might be an indication of a bug.
+
+Signed-off-by: Pekka Enberg <penberg@cs.helsinki.fi>
+Cc: Eduard - Gabriel Munteanu <eduard.munteanu@linux360.ro>
+LKML-Reference: <1237971957.30175.18.camel@penberg-laptop>
+Signed-off-by: Ingo Molnar <mingo@elte.hu>
+
+
+---
+ mm/slab.c |    4 ++--
+ mm/slob.c |    4 ++--
+ mm/slub.c |    4 ++--
+ 3 files changed, 6 insertions(+), 6 deletions(-)
+
+diff --git a/mm/slab.c b/mm/slab.c
+index fa00fd6..b584002 100644
+--- a/mm/slab.c
++++ b/mm/slab.c
+@@ -3773,6 +3773,8 @@ void kfree(const void *objp)
+ 	struct kmem_cache *c;
+ 	unsigned long flags;
+ 
++	trace_kfree(_RET_IP_, objp);
++
+ 	if (unlikely(ZERO_OR_NULL_PTR(objp)))
+ 		return;
+ 	local_irq_save(flags);
+@@ -3782,8 +3784,6 @@ void kfree(const void *objp)
+ 	debug_check_no_obj_freed(objp, obj_size(c));
+ 	__cache_free(c, (void *)objp);
+ 	local_irq_restore(flags);
+-
+-	trace_kfree(_RET_IP_, objp);
+ }
+ EXPORT_SYMBOL(kfree);
+ 
+diff --git a/mm/slob.c b/mm/slob.c
+index 0000358..a2d4ab3 100644
+--- a/mm/slob.c
++++ b/mm/slob.c
+@@ -514,6 +514,8 @@ void kfree(const void *block)
+ {
+ 	struct slob_page *sp;
+ 
++	trace_kfree(_RET_IP_, block);
++
+ 	if (unlikely(ZERO_OR_NULL_PTR(block)))
+ 		return;
+ 
+@@ -524,8 +526,6 @@ void kfree(const void *block)
+ 		slob_free(m, *m + align);
+ 	} else
+ 		put_page(&sp->page);
+-
+-	trace_kfree(_RET_IP_, block);
+ }
+ EXPORT_SYMBOL(kfree);
+ 
+diff --git a/mm/slub.c b/mm/slub.c
+index a98078b..7ab54ec 100644
+--- a/mm/slub.c
++++ b/mm/slub.c
+@@ -2792,6 +2792,8 @@ void kfree(const void *x)
+ 	struct page *page;
+ 	void *object = (void *)x;
+ 
++	trace_kfree(_RET_IP_, x);
++
+ 	if (unlikely(ZERO_OR_NULL_PTR(x)))
+ 		return;
+ 
+@@ -2802,8 +2804,6 @@ void kfree(const void *x)
+ 		return;
+ 	}
+ 	slab_free(page->slab, page, object, _RET_IP_);
+-
+-	trace_kfree(_RET_IP_, x);
+ }
+ EXPORT_SYMBOL(kfree);
+ 
