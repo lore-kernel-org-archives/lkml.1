@@ -1,259 +1,123 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761451AbZDCAPy@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761690AbZDCAXU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761451AbZDCAPy (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 2 Apr 2009 20:15:54 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755899AbZDCAPm
+	id S1761690AbZDCAXU (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 2 Apr 2009 20:23:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752412AbZDCAXG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 2 Apr 2009 20:15:42 -0400
-Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:48034
-	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
-	by vger.kernel.org with ESMTP id S1753844AbZDCAPk convert rfc822-to-8bit
-	(ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 2 Apr 2009 20:15:40 -0400
-Date: Thu, 02 Apr 2009 17:15:29 -0700 (PDT)
-Message-Id: <20090402.171529.174800359.davem@davemloft.net>
-To: torvalds@linux-foundation.org
-CC: akpm@linux-foundation.org, netdev@vger.kernel.org,
-       linux-kernel@vger.kernel.org
-Subject: [GIT]: Networking
-From: David Miller <davem@davemloft.net>
-X-Mailer: Mew version 6.1 on Emacs 22.1 / Mule 5.0 (SAKAKI)
-Mime-Version: 1.0
-Content-Type: Text/Plain; charset=iso-8859-1
+	Thu, 2 Apr 2009 20:23:06 -0400
+Received: from mail-bw0-f169.google.com ([209.85.218.169]:50508 "EHLO
+	mail-bw0-f169.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751132AbZDCAXF convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 2 Apr 2009 20:23:05 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=from:to:subject:date:user-agent:cc:references:in-reply-to
+         :mime-version:content-type:content-transfer-encoding
+         :content-disposition:message-id;
+        b=nWZw2+/vnVrpowDUO7wTDvIK+EAtN7dk9Ss8vPBWfWM2ete5DJG/kSMxWVcxTBpSIm
+         N/csuEWaMGos3Czfx4mIzK5vtNHEXxzfcbrVD/Gb37lX0Hdiogyqk7+A//WAnNSanGho
+         wIxbzwvKz411IwQQftRfyvS1FJzw9HQyGhohA=
+From: Arkadiusz Miskiewicz <a.miskiewicz@gmail.com>
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Subject: Re: 2.6.29 git, resume from ram broken on thinkpad
+Date: Fri, 3 Apr 2009 02:22:56 +0200
+User-Agent: KMail/1.11.2 (Linux/2.6.29; KDE/4.2.2; x86_64; ; )
+Cc: Ingo Molnar <mingo@elte.hu>, Chris Wright <chrisw@sous-sol.org>,
+       linux-kernel@vger.kernel.org, Mike Travis <travis@sgi.com>,
+       Jeremy Fitzhardinge <jeremy@xensource.com>,
+       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
+       Venkatesh Pallipadi <venkatesh.pallipadi@intel.com>,
+       virtualization@lists.osdl.org, xen-devel@lists.xensource.com,
+       Yinghai Lu <yhlu.kernel@gmail.com>
+References: <200904011155.20751.a.miskiewicz@gmail.com> <20090402210451.GA4076@elte.hu> <200904022328.02088.rjw@sisk.pl>
+In-Reply-To: <200904022328.02088.rjw@sisk.pl>
+MIME-Version: 1.0
+Content-Type: Text/Plain;
+  charset="utf-8"
 Content-Transfer-Encoding: 8BIT
+Content-Disposition: inline
+Message-Id: <200904030222.57469.a.miskiewicz@gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Thursday 02 of April 2009, Rafael J. Wysocki wrote:
+> On Thursday 02 April 2009, Ingo Molnar wrote:
+> > * Rafael J. Wysocki <rjw@sisk.pl> wrote:
+> > > On Thursday 02 April 2009, Chris Wright wrote:
+> > > > * Rafael J. Wysocki (rjw@sisk.pl) wrote:
+> > > > > Sorry for the misunderstanding, I thought the breakage might be
+> > > > > introduced between 15f7176eb1cccec0a332541285ee752b935c1c85 and
+> > > > > 0a0c5168df270a50e3518e4f12bddb31f8f5f38f, so I thought it would be
+> > > > > a good idea to verify if 0a0c5168df270a50e3518e4f12bddb31f8f5f38f
+> > > > > fails too.
+> > > >
+> > > > Ah, sure.  It fails too (both test_suspend=mem and regular
+> > > > suspend/resume).
+> > >
+> > > Having looked at the commit the Arek's bisect turned up I don't
+> > > think it's likely to have caused this problem to appear.
+> > >
+> > > It seems that the regression had been introduced before the PM and
+> > > PCI updates went it, so I bet it's one of the x86 changes.  Ingo,
+> > > are there any commits obviously worth testing?
+> >
+> > i lost context - a list/range of commits to check would be nice.
+>
+> So far we know that d54b3538b0bfb31351d02d1669d4a978d2abfc5f is good
+> (according to Arek) and 0a0c5168df270a50e3518e4f12bddb31f8f5f38f (that
+> doesn't introduce functional changes) is already bad (according to Chris).
 
-Several fixes and small cures, including:
+What about 9ea09af3bd3090e8349ca2899ca2011bd94cda85 ?
 
-1) Need BH disabling in netfilter RCU sequences, fix from
-   Eric Dumazet.  This hit quite a few folks.
+stop_machine: introduce stop_machine_create/destroy.
 
-2) ixgb/igb bug fixes from the Intel folks via Jeff Kirsher.
+git bisect start
+# bad: [14a959101e166abd4165f5a53db5f3dbe4e16fb9] Blackfin arch: add sdh support for bf518f-ezbrd
+git bisect bad 14a959101e166abd4165f5a53db5f3dbe4e16fb9
+# good: [29881c4502ba05f46bc12ae8053d4e08d7e2615c] Revert "CRED: Fix regression in cap_capable() as shown up by sys_faccessat() [ver #2]"
+git bisect good 29881c4502ba05f46bc12ae8053d4e08d7e2615c
+# good: [7a1fcd5f5130f173b5e824135735ec58f245563e] Merge git://git.kernel.org/pub/scm/linux/kernel/git/davem/sparc-2.6
+git bisect good 7a1fcd5f5130f173b5e824135735ec58f245563e
+# bad: [40d7ee5d162203b40b5f4fbb312ab016edddb97f] Merge git://git.kernel.org/pub/scm/linux/kernel/git/gregkh/driver-core-2.6
+git bisect bad 40d7ee5d162203b40b5f4fbb312ab016edddb97f
+# bad: [7ec7fb394298c212c30e063c57e0aa895efe9439] samples: mark {static|__init|__exit} for {init|exit} functions
+git bisect bad 7ec7fb394298c212c30e063c57e0aa895efe9439
+# bad: [8e128ce3318a147903c893de1891f6c2306f8a61] Merge branch 'for-next' of git://git.o-hand.com/linux-mfd
+git bisect bad 8e128ce3318a147903c893de1891f6c2306f8a61
+# good: [c58bd34d00e04df9a0691732086cf8102b20d907] Merge branch 'i2c-next' of git://aeryn.fluff.org.uk/bjdooks/linux
+git bisect good c58bd34d00e04df9a0691732086cf8102b20d907
+# good: [0931a4c6dbfab03f2bfd22a9170130f7b155d53a] mfd: dm355evm msp430 driver
+git bisect good 0931a4c6dbfab03f2bfd22a9170130f7b155d53a
+# good: [0578c3b4d44c34e499e1fd5916ed6c63635b25cf] Merge branch 'core-fixes-for-linus' of git://git.kernel.org/pub/scm/linux/kernel/git/tip/linux-2.6-tip
+git bisect good 0578c3b4d44c34e499e1fd5916ed6c63635b25cf
+# bad: [9ea09af3bd3090e8349ca2899ca2011bd94cda85] stop_machine: introduce stop_machine_create/destroy.
+git bisect bad 9ea09af3bd3090e8349ca2899ca2011bd94cda85
+# good: [d1e99d7ae4e6bbd1ebb5e81ecd3af2b8793efee0] module: fix warning of unused function when !CONFIG_PROC_FS
+git bisect good d1e99d7ae4e6bbd1ebb5e81ecd3af2b8793efee0
+# good: [c298be74492bece102f3379d14015638f1fd1fac] parisc: fix module loading failure of large kernel modules
+git bisect good c298be74492bece102f3379d14015638f1fd1fac
+# good: [c298be74492bece102f3379d14015638f1fd1fac] parisc: fix module loading failure of large kernel modules
+git bisect good c298be74492bece102f3379d14015638f1fd1fac
+# good: [c298be74492bece102f3379d14015638f1fd1fac] parisc: fix module loading failure of large kernel modules
+git bisect good c298be74492bece102f3379d14015638f1fd1fac
 
-3) RDS bug fixes from Andy Grover, including one for the build
-   failures on some 32-bit systems.
 
-4) TCP packet counting bug fix from Ilpo J‰rvinen.
+Unfortunately reverting
+9ea09af3bd3090e8349ca2899ca2011bd94cda85
+a0e280e0f33f6c859a235fb69a875ed8f3420388
+9e01892c4234070bbcf3a9f582514c8b91464375
+from master didn't help. 
 
-5) HSO bug fixes and device ID additions from Jan Dumon.
+Two separate bugs, git bisect led me nowhere again or something else?
 
-6) New VXGE driver from Ramkrishna Vepa.
+>
+> Thanks,
+> Rafael
 
-7) Three request_firmware driver conversions from Jaswinder Singh
-   Rajput.
 
-Please pull, thanks a lot!
+-- 
+Arkadiusz Mi≈õkiewicz        PLD/Linux Team
+arekm / maven.pl            http://ftp.pld-linux.org/
 
-The following changes since commit 833bb3046b6cb320e775ea2160ddca87d53260d5:
-  Alexey Dobriyan (1):
-        serial: fixup /proc/tty/driver/serial after proc_fops conversion
-
-are available in the git repository at:
-
-  master.kernel.org:/pub/scm/linux/kernel/git/davem/net-2.6.git master
-
-Alan Carvalho de Assis (1):
-      i.MX31: Fixing cs89x0 network building to i.MX31ADS
-
-Alexander Duyck (6):
-      igb: add support for x2 link width configurations
-      igb: set num_rx/tx_queues to 0 when queues are freed
-      igb: increase delay for copper link setup
-      igb: cleanup igb loopback path
-      ixgbe: fix build when DEBUG is defined
-      ixgbe: refactor tx buffer processing to use skb_dma_map/unmap
-
-Andy Grover (3):
-      RDS: Fix m_rs_lock deadlock
-      RDS: Rewrite connection cleanup, fixing oops on rmmod
-      RDS: Use spinlock to protect 64b value update on 32b archs
-
-Anton Vorontsov (2):
-      ucc_geth: Pass proper device to DMA routines, otherwise oops happens
-      fsl_pq_mdio: Revive UCC MDIO support
-
-Atsushi Nemoto (1):
-      tc35815: Fix build error if NAPI enabled
-
-Ben Hutchings (1):
-      sfc: Call netif_napi_add() before registering our interrupt handler
-
-David S. Miller (1):
-      Merge branch 'master' of git://git.kernel.org/.../jaswinder/net-next-2.6
-
-Don Skidmore (3):
-      ixgbe: Fix ethtool output with advertised mode.
-      ixgbe: feature - driver to default with FC on.
-      ixgbe: fix ethtool -A|a behavior
-
-Eric Dumazet (1):
-      netfilter: use rcu_read_bh() in ipt_do_table()
-
-Grant Likely (2):
-      net/fec_mpc52xx: fix BUG on missing dma_ops
-      net/fec_mpc52xx: Don't dereference phy_device if it is NULL
-
-Heiko Carstens (1):
-      ETHOC: fix build breakage on s390
-
-Henk Stegeman (1):
-      net/fec_mpc52xx: Migrate to net_device_ops.
-
-Huang Weiyi (2):
-      dnet: remove unused #include <version.h>
-      glge: remove unused #include <version.h>
-
-Ilpo J‰rvinen (2):
-      tcp: add helper for counter tweaking due mid-wq change
-      tcp: miscounts due to tcp_fragment pcount reset
-
-Jan Dumon (3):
-      hso: add Vendor/Product ID's for new devices
-      hso: fix for crash when unplugging the device
-      hso: fix for the 'invalid frame length' messages
-
-Jaswinder Singh Rajput (3):
-      yam: use request_firmware
-      3C359: use request_firmware
-      smc91c92_cs: use request_firmware
-
-Karsten Wiese (1):
-      r8169: reset IntrStatus after chip reset
-
-Kumar Gala (2):
-      gianfar: Remove unused header
-      ucc_geth: Remove unused header
-
-Larry Finger (1):
-      kaweth: Fix locking to be SMP-safe
-
-Mallikarjuna R Chilakala (2):
-      ixgbe: Patch to fix driver panic while freeing up tx & rx resources
-      ixgbe: Fix potential memory leak/driver panic issue while setting up Tx & Rx ring parameters
-
-PJ Waskiewicz (2):
-      ixgbe: Fix DCB netlink layer for 82599 to enable Priority Flow Control
-      ixgbe: Fix 82598 MSI-X allocation on systems with more than 8 CPU cores
-
-Rafael J. Wysocki (1):
-      net/igb: Fix kexec with igb (rev. 3)
-
-Rami Rosen (1):
-      ipv4: remove unused parameter from tcp_recv_urg().
-
-Ramkrishna Vepa (9):
-      Neterion: Driver help file
-      Neterion: New driver: Update Maintainer list
-      Neterion: New driver: register set - vxge-reg.h
-      Neterion: New driver: Hardware init & configuration
-      Neterion: New driver: Traffic & alarm handler
-      Neterion: New driver: Main entry points
-      Neterion: New driver: Ethtool related
-      Neterion: New driver: Driver version
-      Neterion: New driver: Kconfig and Makefile
-
-Segher Boessenkool (1):
-      fsl_pq_mdio: Fix compile failure
-
-Stephen Hemminger (1):
-      net: allow multiple dev per napi with GRO
-
-Wei Yongjun (1):
-      core: remove pointless conditional before kfree()
-
- Documentation/networking/vxge.txt       |  100 +
- MAINTAINERS                             |    7 +-
- drivers/net/Kconfig                     |   19 +-
- drivers/net/Makefile                    |    1 +
- drivers/net/dnet.c                      |    1 -
- drivers/net/fec_mpc52xx.c               |   77 +-
- drivers/net/fsl_pq_mdio.c               |    3 +-
- drivers/net/gianfar.h                   |    1 -
- drivers/net/hamradio/yam.c              |   64 +-
- drivers/net/hamradio/yam1200.h          |  343 --
- drivers/net/hamradio/yam9600.h          |  343 --
- drivers/net/igb/e1000_phy.c             |    7 +-
- drivers/net/igb/igb_ethtool.c           |   14 +-
- drivers/net/igb/igb_main.c              |   54 +-
- drivers/net/ixgbe/ixgbe_82598.c         |    3 +-
- drivers/net/ixgbe/ixgbe_common.c        |    3 +-
- drivers/net/ixgbe/ixgbe_common.h        |    9 +-
- drivers/net/ixgbe/ixgbe_dcb_nl.c        |    6 +-
- drivers/net/ixgbe/ixgbe_ethtool.c       |  129 +-
- drivers/net/ixgbe/ixgbe_main.c          |  110 +-
- drivers/net/ixgbe/ixgbe_type.h          |    1 +
- drivers/net/pcmcia/ositech.h            |  358 ---
- drivers/net/pcmcia/smc91c92_cs.c        |   44 +-
- drivers/net/qlge/qlge_ethtool.c         |    1 -
- drivers/net/r8169.c                     |    5 +-
- drivers/net/sfc/efx.c                   |    7 +-
- drivers/net/tc35815.c                   |    2 +-
- drivers/net/tokenring/3c359.c           |   63 +-
- drivers/net/tokenring/3c359.h           |    3 +
- drivers/net/tokenring/3c359_microcode.h | 1581 ----------
- drivers/net/ucc_geth.c                  |   22 +-
- drivers/net/ucc_geth.h                  |    4 +-
- drivers/net/ucc_geth_ethtool.c          |    1 -
- drivers/net/usb/hso.c                   |   40 +-
- drivers/net/usb/kaweth.c                |    7 +-
- drivers/net/vxge/Makefile               |    7 +
- drivers/net/vxge/vxge-config.c          | 5264 +++++++++++++++++++++++++++++++
- drivers/net/vxge/vxge-config.h          | 2259 +++++++++++++
- drivers/net/vxge/vxge-ethtool.c         | 1148 +++++++
- drivers/net/vxge/vxge-ethtool.h         |   67 +
- drivers/net/vxge/vxge-main.c            | 4502 ++++++++++++++++++++++++++
- drivers/net/vxge/vxge-main.h            |  557 ++++
- drivers/net/vxge/vxge-reg.h             | 4608 +++++++++++++++++++++++++++
- drivers/net/vxge/vxge-traffic.c         | 2528 +++++++++++++++
- drivers/net/vxge/vxge-traffic.h         | 2409 ++++++++++++++
- drivers/net/vxge/vxge-version.h         |   23 +
- firmware/3com/3C359.bin.ihex            | 1573 +++++++++
- firmware/Makefile                       |    3 +
- firmware/WHENCE                         |   50 +
- firmware/ositech/Xilinx7OD.bin.ihex     |  177 ++
- firmware/yam/1200.bin.ihex              |  342 ++
- firmware/yam/9600.bin.ihex              |  342 ++
- include/net/tcp.h                       |   15 -
- net/core/dev.c                          |    5 +-
- net/core/ethtool.c                      |    3 +-
- net/ipv4/netfilter/arp_tables.c         |    4 +-
- net/ipv4/netfilter/ip_tables.c          |    4 +-
- net/ipv4/tcp.c                          |    5 +-
- net/ipv4/tcp_output.c                   |   73 +-
- net/ipv6/netfilter/ip6_tables.c         |    4 +-
- net/rds/ib.c                            |    5 +-
- net/rds/ib.h                            |   28 +-
- net/rds/ib_cm.c                         |   43 +-
- net/rds/ib_rdma.c                       |   43 +-
- net/rds/ib_recv.c                       |   37 +-
- net/rds/iw.c                            |    5 +-
- net/rds/iw.h                            |   28 +-
- net/rds/iw_cm.c                         |   44 +-
- net/rds/iw_rdma.c                       |   44 +-
- net/rds/iw_recv.c                       |   37 +-
- net/rds/rds.h                           |    4 +
- net/rds/send.c                          |    6 +-
- 72 files changed, 26689 insertions(+), 3040 deletions(-)
- create mode 100644 Documentation/networking/vxge.txt
- delete mode 100644 drivers/net/hamradio/yam1200.h
- delete mode 100644 drivers/net/hamradio/yam9600.h
- delete mode 100644 drivers/net/pcmcia/ositech.h
- delete mode 100644 drivers/net/tokenring/3c359_microcode.h
- create mode 100644 drivers/net/vxge/Makefile
- create mode 100644 drivers/net/vxge/vxge-config.c
- create mode 100644 drivers/net/vxge/vxge-config.h
- create mode 100644 drivers/net/vxge/vxge-ethtool.c
- create mode 100644 drivers/net/vxge/vxge-ethtool.h
- create mode 100644 drivers/net/vxge/vxge-main.c
- create mode 100644 drivers/net/vxge/vxge-main.h
- create mode 100644 drivers/net/vxge/vxge-reg.h
- create mode 100644 drivers/net/vxge/vxge-traffic.c
- create mode 100644 drivers/net/vxge/vxge-traffic.h
- create mode 100644 drivers/net/vxge/vxge-version.h
- create mode 100644 firmware/3com/3C359.bin.ihex
- create mode 100644 firmware/ositech/Xilinx7OD.bin.ihex
- create mode 100644 firmware/yam/1200.bin.ihex
- create mode 100644 firmware/yam/9600.bin.ihex
