@@ -1,60 +1,239 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757021AbZDCJd3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758771AbZDCJjP@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757021AbZDCJd3 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 3 Apr 2009 05:33:29 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753441AbZDCJdU
+	id S1758771AbZDCJjP (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 3 Apr 2009 05:39:15 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754544AbZDCJiy
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 3 Apr 2009 05:33:20 -0400
-Received: from cantor.suse.de ([195.135.220.2]:34605 "EHLO mx1.suse.de"
+	Fri, 3 Apr 2009 05:38:54 -0400
+Received: from srv5.dvmed.net ([207.36.208.214]:36575 "EHLO mail.dvmed.net"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752608AbZDCJdT (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 3 Apr 2009 05:33:19 -0400
-Date: Fri, 3 Apr 2009 11:33:16 +0200
-From: Jan Kara <jack@suse.cz>
-To: Alexander Larsson <alexl@redhat.com>
-Cc: eparis@redhat.com, linux-kernel@vger.kernel.org
-Subject: Re: Issues with using fanotify for a filesystem indexer
-Message-ID: <20090403093316.GA18569@duck.suse.cz>
-References: <1238158043.23703.20.camel@fatty> <20090402145457.GA17275@atrey.karlin.mff.cuni.cz> <1238689744.5704.1.camel@localhost.localdomain> <20090402165023.GG3010@duck.suse.cz> <1238692537.5704.6.camel@localhost.localdomain> <20090402195253.GH3010@duck.suse.cz> <1238741043.31635.2.camel@fatty>
+	id S1751893AbZDCJix (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 3 Apr 2009 05:38:53 -0400
+Message-ID: <49D5D921.6080904@garzik.org>
+Date: Fri, 03 Apr 2009 05:38:41 -0400
+From: Jeff Garzik <jeff@garzik.org>
+User-Agent: Thunderbird 2.0.0.21 (X11/20090320)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1238741043.31635.2.camel@fatty>
-User-Agent: Mutt/1.5.17 (2007-11-01)
+To: Boaz Harrosh <bharrosh@panasas.com>
+CC: open-osd mailing-list <osd-dev@open-osd.org>,
+       LKML <linux-kernel@vger.kernel.org>, linux-scsi@vger.kernel.org,
+       linux-fsdevel@vger.kernel.org, axboe@kernel.dk,
+       Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: [PATCH] osdblk: a Linux block device for OSD objects
+References: <20090402015455.GA14087@havoc.gtf.org> <49D4AF12.40708@panasas.com>
+In-Reply-To: <49D4AF12.40708@panasas.com>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 7bit
+X-Spam-Score: -4.4 (----)
+X-Spam-Report: SpamAssassin version 3.2.5 on srv5.dvmed.net summary:
+	Content analysis details:   (-4.4 points, 5.0 required)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri 03-04-09 08:44:03, Alexander Larsson wrote:
-> On Thu, 2009-04-02 at 21:52 +0200, Jan Kara wrote:
-> > On Thu 02-04-09 19:15:37, Alexander Larsson wrote:
-> > > Ah, I see. The indexer sets the flag. 
-> > > I see some issues. First of all, writing the flag/mtime to disk seems
-> > > like a bad idea. It'll cause a lot of writing when the indexer recurses
-> > > throught the filesystem, similar to atimes. But, if you're not
-> >
-> >   There's some cost but it's not nearly as bad as with atimes. 
-> True, its not as bad as atimes. But it still does some writes, and
-> writes seem to affect i/o performance more than low prio reads from the
-> indexer. I'm very wary about the background indexer process disturbing
-> the foreground processes. This is one of the main problems with current
-> indexers.
-  I agree - that's why I have beagle turned off on my system ;)
+Boaz Harrosh wrote:
+> I have taken that to my heart and will submit patches for that, next week.
+> Including a complimentary patch to this driver. These changes are only
+> intended for 2.6.31 though.
 
-> > > persisting the flag/mtime then you need to keep all the dentries with
-> > > the flag set in memory, which has resource use risks similar to
-> > > unbounded event queues.
-> >   Ah, true - I have implemented just the persistent case and have not
-> > thought too much about the non-persistent one. You're right that it won't
-> > work because we'd pin memory.
+Consolidation of common code should occur after osdblk is in one of: 
+open-osd.git, scsi-misc.git, or linux-2.6.git.
+
+That way, the code movement can be consolidated into a single changeset, 
+touching exofs, osdblk and libosd all at the same time...
+	-exofs code
+	-osdblk code
+	+libosd code
+
+
+> I also want to add a small utility that can manage objects, create, size,
+> remove, and mount as a complimentary wrapper for this driver is "osdblk"
+> a good name for such utility?
+
+osdblk intentionally maintains -zero- metadata on its own.  Therefore, 
+this utility you propose can be completely generic.  You could call it 
+"osdobjutil", because it need not be tied to the osdblk driver.
+
+The osdblk driver needs the following from the utility:
+
+- create object of specified size
+
+- delete object
+
+and optionally:
+- resize object to new size
+
+There is no need for a mount operation, because this is handled through 
+class_osdblk_add()
+
+
+>> +static int osdblk_get_obj_size(struct osdblk_device *osdev, u64 *size_out)
+>> +{
+>> +	struct osd_request *or;
+>> +	struct osd_attr attr;
+>> +	int ret;
+>> +
+>> +	osd_make_credential(osdev->obj_cred, &osdev->obj);
+>> +
 > 
-> So, where do you persist the flag/time? Is there some availible space in
-> the inode for it on ext3/4?
-  Yes, there's enough space in ext3/ext4 inode. I've already talked about
-it with Ted and other fs developers at Plumbers Conf. and they weren't
-opposed to such change.
+> -	osd_make_credential(osdev->obj_cred, &osdev->obj);
+> see below
 
-									Honza
--- 
-Jan Kara <jack@suse.cz>
-SUSE Labs, CR
+fixed
+
+
+>> +static void osdblk_osd_complete(struct osd_request *or, void *private)
+>> +{
+>> +	struct osdblk_request *orq = private;
+>> +	struct osd_sense_info osi;
+>> +	int ret = osd_req_decode_sense(or, &osi);
+>> +
+>> +	if (ret)
+>> +		ret = -EIO;
+>> +
+>> +	osd_end_request(or);
+>> +	osdblk_end_request(orq->osdev, orq, ret);
+> 
+> should be reversed, very bad things will happen otherwise
+> 
+> +	osdblk_end_request(orq->osdev, orq, ret);
+> +	osd_end_request(or);
+
+Perhaps you are confusing two different 'struct request' in use?
+
+	- struct request, passed to osdblk for execution
+	- struct request, used by libosd to pass commands
+
+The object lifetime of the struct request stored in 'orq' is longer than 
+the lifetime of the osd_request:
+
+	1) block layer passes 'rq' to osdblk
+	2) osdblk creates new 'or', passes 'or' to libosd
+	3) libosd calls osdblk completion function
+	4) osdblk completes 'or'
+	5) osdblk completes 'rq'
+
+As you can see, the object lifetime of 'or' is entirely within 'rq'.
+
+
+>> +		orq = &osdev->req[rq_idx];
+>> +		orq->tag = rq_idx;
+>> +		orq->rq = rq;
+>> +		orq->bio = bio;
+>> +		orq->osdev = osdev;
+>> +
+>> +		blkdev_dequeue_request(rq);
+>> +
+>> +		osd_make_credential(orq->cred, &osdev->obj);
+> 
+> -		osd_make_credential(orq->cred, &osdev->obj);
+> 
+> Don't do this here do it once on mount. The creds, once we define
+> the credential-manager protocol will have to be acquired at the begging.
+> (See below)
+> 
+> At much later stage, the credential-manager API will be able to callback
+> credentials and clients will need to reacquire them, or on credentials error
+> returns from I/O.
+
+fixed
+
+
+>> +
+>> +		or = osd_start_request(osdev->osd, GFP_NOIO);
+>> +		if (!or) {
+>> +			blk_requeue_request(q, rq);
+>> +			bio_put(bio);
+>> +			break;
+>> +		}
+>> +
+>> +		if (do_write)
+>> +			osd_req_write(or, &osdev->obj, bio,
+>> +				      rq->sector * 512ULL);
+>> +		else
+>> +			osd_req_read(or, &osdev->obj, bio,
+>> +				     rq->sector * 512ULL);
+>> +
+>> +		if (osd_async_op(or, osdblk_osd_complete, orq, orq->cred)) {
+>> +			/* FIXME: leak OSD request 'or' ? */
+> 
+> yes a leak
+> 
+>> +			blk_requeue_request(q, rq);
+> 	
+> +			or->request = NULL;
+
+already fixed, long before writing this email :)
+
+
+>> +			bio_put(bio);
+>> +		}
+>> +	}
+>> +}
+>> +
+>> +static void osdblk_free_disk(struct osdblk_device *osdev)
+>> +{
+>> +	struct gendisk *disk = osdev->disk;
+>> +
+>> +	if (!disk)
+>> +		return;
+>> +
+>> +	if (disk->flags & GENHD_FL_UP)
+>> +		del_gendisk(disk);
+>> +	if (disk->queue)
+>> +		blk_cleanup_queue(disk->queue);
+>> +	put_disk(disk);
+>> +}
+>> +
+>> +static int osdblk_init_disk(struct osdblk_device *osdev)
+>> +{
+>> +	struct gendisk *disk;
+>> +	struct request_queue *q;
+>> +	int rc;
+>> +	u64 obj_size = 0;
+>> +
+> 
+> +	osd_make_credential(osdev->obj_cred, &osdev->obj);
+> 
+> Later, when credential-manager is used, this will get expensive and sleepy
+> possibly going on the network and back.
+
+fixed
+
+
+>> +	if (idx == OSDBLK_MAX_DEVS) {
+>> +		rc = -ENOSPC;
+>> +		goto err_out;
+>> +	}
+>> +
+>> +	if (sscanf(buf, "%lu %lu %s", &osdev->part_id, &osdev->obj_id,
+> 
+> -	if (sscanf(buf, "%lu %lu %s", &osdev->part_id, &osdev->obj_id,
+> +	if (sscanf(buf, "%llu %llu %s", &osdev->obj.partition, &osdev->obj.id,
+> 
+>> +		   osdev->osd_path) != 3) {
+>> +		rc = -EINVAL;
+>> +		goto err_out_slot;
+>> +	}
+>> +
+>> +	osdev->obj.partition = osdev->part_id;
+>> +	osdev->obj.id = osdev->obj_id;
+> 
+> -	osdev->obj.partition = osdev->part_id;
+> -	osdev->obj.id = osdev->obj_id;
+> 
+> osdev->obj_id, and osdev->part_id can be removed.
+
+done
+
+
+> What can I say, great stuff.
+> 
+> OSD is a very clean API, that makes whole subsystems look trivial.
+
+I appreciate it, thanks for the review.
+
+	Jeff
+
+
+
