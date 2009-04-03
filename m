@@ -1,49 +1,100 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S935254AbZDCUke@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S936974AbZDCUkw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S935254AbZDCUke (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 3 Apr 2009 16:40:34 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S936873AbZDCUjr
+	id S936974AbZDCUkw (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 3 Apr 2009 16:40:52 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S936890AbZDCUjv
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 3 Apr 2009 16:39:47 -0400
-Received: from relay1.sgi.com ([192.48.179.29]:42330 "EHLO relay.sgi.com"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S936832AbZDCUjp (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 3 Apr 2009 16:39:45 -0400
-Date: Fri, 3 Apr 2009 15:39:42 -0500
-From: Jack Steiner <steiner@sgi.com>
-To: mingo@elte.hu, tglx@linutronix.de
-Cc: linux-kernel@vger.kernel.org
-Subject: [PATCH] - Add Kconfig dependency on NUMA for UV systems
-Message-ID: <20090403203942.GA20137@sgi.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-User-Agent: Mutt/1.4.2.2i
+	Fri, 3 Apr 2009 16:39:51 -0400
+Received: from e4.ny.us.ibm.com ([32.97.182.144]:58603 "EHLO e4.ny.us.ibm.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S936889AbZDCUju (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 3 Apr 2009 16:39:50 -0400
+From: Darren Hart <dvhltc@us.ibm.com>
+Subject: [tip PATCH v7 2/9] RFC: futex: futex_top_waiter()
+To: linux-kernel@vger.kernel.org
+Cc: Thomas Gleixner <tglx@linutronix.de>, Sripathi Kodi <sripathik@in.ibm.com>,
+       Peter Zijlstra <peterz@infradead.org>,
+       John Stultz <johnstul@us.ibm.com>, Steven Rostedt <rostedt@goodmis.org>,
+       Dinakar Guniguntala <dino@in.ibm.com>,
+       Ulrich Drepper <drepper@redhat.com>, Eric Dumazet <dada1@cosmosbay.com>,
+       Ingo Molnar <mingo@elte.hu>, Jakub Jelinek <jakub@redhat.com>,
+       Darren Hart <dvhltc@us.ibm.com>, Thomas Gleixner <tglx@linutronix.de>,
+       Sripathi Kodi <sripathik@in.ibm.com>,
+       Peter Zijlstra <peterz@infradead.org>,
+       John Stultz <johnstul@us.ibm.com>, Steven Rostedt <rostedt@goodmis.org>,
+       Dinakar Guniguntala <dino@in.ibm.com>,
+       Ulrich Drepper <drepper@redhat.com>, Eric Dumazet <dada1@cosmosbay.com>,
+       Ingo Molnar <mingo@elte.hu>, Jakub Jelinek <jakub@redhat.com>
+Date: Fri, 03 Apr 2009 13:39:42 -0700
+Message-ID: <20090403203942.9772.25875.stgit@Aeon>
+In-Reply-To: <20090403203832.9772.21410.stgit@Aeon>
+References: <20090403203832.9772.21410.stgit@Aeon>
+User-Agent: StGIT/0.14.2
+MIME-Version: 1.0
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Add Kconfig dependency on NUMA for enabling UV. Although it might
-be possible to configure non-NUMA UV systems, they are unsupported
-and not interesting. Much of the infrastructure for UV requires
-NUMA support.
+Improve legibility by wrapping finding the top waiter in a function.  This
+will be used by the follow-on patches for enabling requeue pi.
 
-Signed-off-by: Jack Steiner <steiner@sgi.com>
+Changelog:
+V7: -Minor kernel doc comment update
+V6: -Shortened function length after review from tglx
+    -Corrected kernel-doc formatting
+V4: -Simplified logic in the hb loop
+    -Return the futex_q as the task can be had from there if needed
+    -Updated comments and dropped the -safe iterator per review from tglx
+V3: -Comment linewidth cleanup
+V1: -Initial version
 
-
+Signed-off-by: Darren Hart <dvhltc@us.ibm.com>
+Reviewed-by: Steven Rostedt <srostedt@redhat.com>
+Cc: Thomas Gleixner <tglx@linutronix.de>
+Cc: Sripathi Kodi <sripathik@in.ibm.com>
+Cc: Peter Zijlstra <peterz@infradead.org>
+Cc: John Stultz <johnstul@us.ibm.com>
+Cc: Steven Rostedt <rostedt@goodmis.org>
+Cc: Dinakar Guniguntala <dino@in.ibm.com>
+Cc: Ulrich Drepper <drepper@redhat.com>
+Cc: Eric Dumazet <dada1@cosmosbay.com>
+Cc: Ingo Molnar <mingo@elte.hu>
+Cc: Jakub Jelinek <jakub@redhat.com>
 ---
- arch/x86/Kconfig |    1 +
- 1 file changed, 1 insertion(+)
 
-Index: linux/arch/x86/Kconfig
-===================================================================
---- linux.orig/arch/x86/Kconfig	2009-04-03 08:38:00.000000000 -0500
-+++ linux/arch/x86/Kconfig	2009-04-03 15:30:24.000000000 -0500
-@@ -357,6 +357,7 @@ config X86_UV
- 	bool "SGI Ultraviolet"
- 	depends on X86_64
- 	depends on X86_EXTENDED_PLATFORM
-+	depends on NUMA
- 	select X86_X2APIC
- 	---help---
- 	  This option is needed in order to support SGI Ultraviolet systems.
+ kernel/futex.c |   19 +++++++++++++++++++
+ 1 files changed, 19 insertions(+), 0 deletions(-)
+
+diff --git a/kernel/futex.c b/kernel/futex.c
+index d1d3e67..a13369d 100644
+--- a/kernel/futex.c
++++ b/kernel/futex.c
+@@ -276,6 +276,25 @@ void put_futex_key(int fshared, union futex_key *key)
+ 	drop_futex_key_refs(key);
+ }
+ 
++/**
++ * futex_top_waiter() - Return the highest priority waiter on a futex
++ * @hb:     the hash bucket the futex_q's reside in
++ * @key:    the futex key (to distinguish it from other futex futex_q's)
++ *
++ * Must be called with the hb lock held.
++ */
++static struct futex_q *futex_top_waiter(struct futex_hash_bucket *hb,
++					union futex_key *key)
++{
++	struct futex_q *this;
++
++	plist_for_each_entry(this, &hb->chain, list) {
++		if (match_futex(&this->key, key))
++			return this;
++	}
++	return NULL;
++}
++
+ static u32 cmpxchg_futex_value_locked(u32 __user *uaddr, u32 uval, u32 newval)
+ {
+ 	u32 curval;
+
