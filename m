@@ -1,87 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753156AbZDCFzV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758951AbZDCGAv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753156AbZDCFzV (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 3 Apr 2009 01:55:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751762AbZDCFzG
+	id S1758951AbZDCGAv (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 3 Apr 2009 02:00:51 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753083AbZDCGAk
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 3 Apr 2009 01:55:06 -0400
-Received: from mail.windriver.com ([147.11.1.11]:64305 "EHLO mail.wrs.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751590AbZDCFzF (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 3 Apr 2009 01:55:05 -0400
-Message-ID: <49D5A381.3080108@windriver.com>
-Date: Fri, 03 Apr 2009 13:49:53 +0800
-From: Harry Ciao <qingtao.cao@windriver.com>
-Reply-To: qingtao.cao@windriver.com
-Organization: Wind River, CDC
-User-Agent: Thunderbird 2.0.0.21 (X11/20090318)
+	Fri, 3 Apr 2009 02:00:40 -0400
+Received: from yw-out-2324.google.com ([74.125.46.28]:37404 "EHLO
+	yw-out-2324.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751590AbZDCGAj (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 3 Apr 2009 02:00:39 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
+         :cc:content-type:content-transfer-encoding;
+        b=u8gG3GY7Gx0+/QrqB+//H+3i0yWXbJDNDBMqeNehTnh0jIN50amDgIYyBcZVSkd1RX
+         ss+tfLnpgFlvPTp7U2bDGPj7Sra2deaiPjf82WgS8al7NXhGBpf+bs40J88zVQ2gDS+X
+         UfUzjQQP61KHV7v9VIuURTqcWohoYMfDTjViE=
 MIME-Version: 1.0
-To: qingtao.cao@windriver.com
-CC: Arnd Bergmann <arnd@arndb.de>, norsk5@yahoo.com,
-       linux-kernel@vger.kernel.org, bluesmoke-devel@lists.sourceforge.net,
-       linuxppc-dev@ozlabs.org
-Subject: Re: [v0 PATCH 5/5] EDAC: CPC925 MC platform device setup
-References: <1238652440-9224-1-git-send-email-qingtao.cao@windriver.com> <1238652440-9224-5-git-send-email-qingtao.cao@windriver.com> <1238652440-9224-6-git-send-email-qingtao.cao@windriver.com> <200904021436.44822.arnd@arndb.de> <49D57FBA.3090508@windriver.com>
-In-Reply-To: <49D57FBA.3090508@windriver.com>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 8bit
-X-OriginalArrivalTime: 03 Apr 2009 05:53:32.0355 (UTC) FILETIME=[8534C130:01C9B420]
+In-Reply-To: <alpine.LRH.2.00.0902191415220.14749@vixen.sonytel.be>
+References: <1234972402-24298-1-git-send-email-Geert.Uytterhoeven@sonycom.com>
+	 <1234972402-24298-2-git-send-email-Geert.Uytterhoeven@sonycom.com>
+	 <1234972402-24298-3-git-send-email-Geert.Uytterhoeven@sonycom.com>
+	 <1234972402-24298-4-git-send-email-Geert.Uytterhoeven@sonycom.com>
+	 <1234972402-24298-5-git-send-email-Geert.Uytterhoeven@sonycom.com>
+	 <1234972402-24298-6-git-send-email-Geert.Uytterhoeven@sonycom.com>
+	 <6934efce0902181624q57f3423dm50cda218781e4399@mail.gmail.com>
+	 <alpine.LRH.2.00.0902191415220.14749@vixen.sonytel.be>
+Date: Thu, 2 Apr 2009 23:00:36 -0700
+Message-ID: <6934efce0904022300if85bc59ue2945dc1674902c1@mail.gmail.com>
+Subject: Re: [PATCH 5/5] squashfs: Make SquashFS 4 use the new pcomp crypto 
+	interface
+From: Jared Hulbert <jaredeh@gmail.com>
+To: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>
+Cc: Herbert Xu <herbert@gondor.apana.org.au>, linux-crypto@vger.kernel.org,
+       linux-kernel@vger.kernel.org,
+       Phillip Lougher <phillip@lougher.demon.co.uk>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Harry Ciao 写道:
-> Arnd Bergmann 写道:
->> On Thursday 02 April 2009, Harry Ciao wrote:
->>  
->>> +#ifdef CONFIG_EDAC
->>> +#define CPC925_MC_START                0xf8000000
->>> +#define CPC925_MC_END          0xf8ffffff /* sizeof 16MB */
->>> +/* Register a platform device for CPC925 memory controller */
->>> +static int __init maple_cpc925_edac_setup(void)
->>>     
->>
->> It's not good to have these encoded as magic numbers.
->> Can't you find the addresses in the device tree? Maybe it's
->> even possible to make this an of_platform_driver if you
->> find a good node to bind to.
->>
->> Does the driver also work on a G5 Mac, or is it limited
->> to the maple platform?
->>
->>     Arnd <><
->>
->>  
-Hi Arnd,
+Sorry I just saw this email.  My kernel hacking time has been rudely
+interrupted by other important work.
 
-I forgot to mention that so far I have tested this CPC925 driver on the 
-Maple platform, I have no G5 Mac to test with.
-CPC925 is specific to the PowerPC 970 family of processors, but I don't 
-think Maple is the only platform that ever use PowerPC 970 
-processors(that is why this driver should depend on PP64, rather than 
-PPC_MAPLE).
+> How's AXFS going?
 
-Thanks,
+It's doing pretty well, we just haven't had time to push hard enough
+to get it out.  It's been fairly stable for us for a while.
 
-Harry
+Now I'm anxious to get it more widely tested.  I've got two vexing bug
+reports.  1) a mips consumer platform where the main app can't operate
+in XIP, but everything else can.  2) Just yesterday we found Android
+APK's don't like to be XIP.  These look more like flaws in the
+filemap_xip.c than AXFS bugs.  Fortunately there was bug fix that went
+out just a couple days ago.  I'm hoping it will fix our problems.
 
-> Hi Arnd,
->
-> I did try to get resource information from its DTB node first, the 
-> "hostbridge" node do can be found successfully, however, 
-> unfortunately, as I put in the notes in that function, the 
-> #address-cells and #size-cells specified by its parent node are both 
-> 2, but the cell number used in its "reg" property is actually 1, as
->
-> reg = <0xf8000000 0x1000000>;
->
-> which will make of_address_to_resource() failed with -EINVAL; that's 
-> why I have to set it up from scratch manually.
->
-> Cheers,
->
-> Harry
->
->
->
+We've automated a great deal of the busy work associated with testing
+and deploying it, so now I just need to find a couple days a week for
+a few weeks.
 
+Our flagship customer went a different direction, so it's been hard to
+justify time to work on it.
+
+> BTW, you probably want to read the full patch series, including the
+> introduction :-)
+
+Yes, I saw that shortly after I clicked "send". :)
