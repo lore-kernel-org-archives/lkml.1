@@ -1,239 +1,74 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758771AbZDCJjP@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760680AbZDCJkx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758771AbZDCJjP (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 3 Apr 2009 05:39:15 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754544AbZDCJiy
+	id S1760680AbZDCJkx (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 3 Apr 2009 05:40:53 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755274AbZDCJkn
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 3 Apr 2009 05:38:54 -0400
-Received: from srv5.dvmed.net ([207.36.208.214]:36575 "EHLO mail.dvmed.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751893AbZDCJix (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 3 Apr 2009 05:38:53 -0400
-Message-ID: <49D5D921.6080904@garzik.org>
-Date: Fri, 03 Apr 2009 05:38:41 -0400
-From: Jeff Garzik <jeff@garzik.org>
-User-Agent: Thunderbird 2.0.0.21 (X11/20090320)
-MIME-Version: 1.0
-To: Boaz Harrosh <bharrosh@panasas.com>
-CC: open-osd mailing-list <osd-dev@open-osd.org>,
-       LKML <linux-kernel@vger.kernel.org>, linux-scsi@vger.kernel.org,
-       linux-fsdevel@vger.kernel.org, axboe@kernel.dk,
-       Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: [PATCH] osdblk: a Linux block device for OSD objects
-References: <20090402015455.GA14087@havoc.gtf.org> <49D4AF12.40708@panasas.com>
-In-Reply-To: <49D4AF12.40708@panasas.com>
-Content-Type: text/plain; charset=UTF-8; format=flowed
+	Fri, 3 Apr 2009 05:40:43 -0400
+Received: from zone0.gcu-squad.org ([212.85.147.21]:12362 "EHLO
+	services.gcu-squad.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753441AbZDCJkl (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 3 Apr 2009 05:40:41 -0400
+Date: Fri, 3 Apr 2009 11:40:11 +0200
+From: Jean Delvare <khali@linux-fr.org>
+To: Len Brown <lenb@kernel.org>
+Cc: Luca Tettamanti <kronos.it@gmail.com>, Hans de Goede <hdegoede@redhat.com>,
+       linux-kernel@vger.kernel.org, Matthew Garrett <mjg@redhat.com>,
+       Thomas Renninger <trenn@suse.de>, linux-acpi@vger.kernel.org,
+       Pavel Machek <pavel@ucw.cz>
+Subject: Re: [PATCH] ACPI: add "auto" to acpi_enforce_resources
+Message-ID: <20090403114011.2ab21051@hyperion.delvare>
+In-Reply-To: <alpine.LFD.2.00.0904021858460.9182@localhost.localdomain>
+References: <20090204142015.GB3923@srcf.ucam.org>
+	<20090210145716.105ab58b@hyperion.delvare>
+	<20090210140829.GA25397@srcf.ucam.org>
+	<49919E08.5050002@redhat.com>
+	<20090210172408.400cacee@hyperion.delvare>
+	<20090227132740.GF1482@ucw.cz>
+	<68676e00903240539i119b6d26j516ee131d4cd6781@mail.gmail.com>
+	<49C8DE51.2010103@redhat.com>
+	<20090329201617.GA10303@dreamland.darkstar.lan>
+	<20090329225501.0c1771f1@hyperion.delvare>
+	<20090329220127.GA12822@dreamland.darkstar.lan>
+	<alpine.LFD.2.00.0904021858460.9182@localhost.localdomain>
+X-Mailer: Claws Mail 3.5.0 (GTK+ 2.14.4; x86_64-suse-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-X-Spam-Score: -4.4 (----)
-X-Spam-Report: SpamAssassin version 3.2.5 on srv5.dvmed.net summary:
-	Content analysis details:   (-4.4 points, 5.0 required)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Boaz Harrosh wrote:
-> I have taken that to my heart and will submit patches for that, next week.
-> Including a complimentary patch to this driver. These changes are only
-> intended for 2.6.31 though.
-
-Consolidation of common code should occur after osdblk is in one of: 
-open-osd.git, scsi-misc.git, or linux-2.6.git.
-
-That way, the code movement can be consolidated into a single changeset, 
-touching exofs, osdblk and libosd all at the same time...
-	-exofs code
-	-osdblk code
-	+libosd code
-
-
-> I also want to add a small utility that can manage objects, create, size,
-> remove, and mount as a complimentary wrapper for this driver is "osdblk"
-> a good name for such utility?
-
-osdblk intentionally maintains -zero- metadata on its own.  Therefore, 
-this utility you propose can be completely generic.  You could call it 
-"osdobjutil", because it need not be tied to the osdblk driver.
-
-The osdblk driver needs the following from the utility:
-
-- create object of specified size
-
-- delete object
-
-and optionally:
-- resize object to new size
-
-There is no need for a mount operation, because this is handled through 
-class_osdblk_add()
-
-
->> +static int osdblk_get_obj_size(struct osdblk_device *osdev, u64 *size_out)
->> +{
->> +	struct osd_request *or;
->> +	struct osd_attr attr;
->> +	int ret;
->> +
->> +	osd_make_credential(osdev->obj_cred, &osdev->obj);
->> +
+On Thu, 02 Apr 2009 18:59:11 -0400 (EDT), Len Brown wrote:
+> From 7e90560c50f754d65884e251e94c1efa2a4b5784 Mon Sep 17 00:00:00 2001
+> From: Luca Tettamanti <kronos.it@gmail.com>
+> Date: Mon, 30 Mar 2009 00:01:27 +0200
+> Subject: [PATCH] ACPI: acpi_enforce_resource=strict by default
+> X-Patchwork-Hint: ignore
 > 
-> -	osd_make_credential(osdev->obj_cred, &osdev->obj);
-> see below
-
-fixed
-
-
->> +static void osdblk_osd_complete(struct osd_request *or, void *private)
->> +{
->> +	struct osdblk_request *orq = private;
->> +	struct osd_sense_info osi;
->> +	int ret = osd_req_decode_sense(or, &osi);
->> +
->> +	if (ret)
->> +		ret = -EIO;
->> +
->> +	osd_end_request(or);
->> +	osdblk_end_request(orq->osdev, orq, ret);
+> Enforce strict resource checking - disallowing access by native
+> drivers to IO ports and memory regions claimed by ACPI firmware.
 > 
-> should be reversed, very bad things will happen otherwise
+> The patch is mainly aimed to block native hwmon drivers from touching
+> monitoring chips that ACPI thinks it own.
 > 
-> +	osdblk_end_request(orq->osdev, orq, ret);
-> +	osd_end_request(or);
-
-Perhaps you are confusing two different 'struct request' in use?
-
-	- struct request, passed to osdblk for execution
-	- struct request, used by libosd to pass commands
-
-The object lifetime of the struct request stored in 'orq' is longer than 
-the lifetime of the osd_request:
-
-	1) block layer passes 'rq' to osdblk
-	2) osdblk creates new 'or', passes 'or' to libosd
-	3) libosd calls osdblk completion function
-	4) osdblk completes 'or'
-	5) osdblk completes 'rq'
-
-As you can see, the object lifetime of 'or' is entirely within 'rq'.
-
-
->> +		orq = &osdev->req[rq_idx];
->> +		orq->tag = rq_idx;
->> +		orq->rq = rq;
->> +		orq->bio = bio;
->> +		orq->osdev = osdev;
->> +
->> +		blkdev_dequeue_request(rq);
->> +
->> +		osd_make_credential(orq->cred, &osdev->obj);
+> If this causes a regression, boot with "acpi_enforce_resources=lax"
+> which was the previous default.
 > 
-> -		osd_make_credential(orq->cred, &osdev->obj);
+> http://bugzilla.kernel.org/show_bug.cgi?id=12376
+> http://bugzilla.kernel.org/show_bug.cgi?id=12541
 > 
-> Don't do this here do it once on mount. The creds, once we define
-> the credential-manager protocol will have to be acquired at the begging.
-> (See below)
+> Signed-off-by: Luca Tettamanti <kronos.it@gmail.com>
+> Acked-by: Pavel Machek <pavel@suse.cz>
+> Acked-by: Jean Delvare <khali@linux-fr.org>
+> Signed-off-by: Len Brown <len.brown@intel.com>
+> ---
 > 
-> At much later stage, the credential-manager API will be able to callback
-> credentials and clients will need to reacquire them, or on credentials error
-> returns from I/O.
+> as applied.
 
-fixed
+Thanks Len! I'll look into pushing Luca's atk0110 driver upstream later
+today (but it's a busy day at work...)
 
-
->> +
->> +		or = osd_start_request(osdev->osd, GFP_NOIO);
->> +		if (!or) {
->> +			blk_requeue_request(q, rq);
->> +			bio_put(bio);
->> +			break;
->> +		}
->> +
->> +		if (do_write)
->> +			osd_req_write(or, &osdev->obj, bio,
->> +				      rq->sector * 512ULL);
->> +		else
->> +			osd_req_read(or, &osdev->obj, bio,
->> +				     rq->sector * 512ULL);
->> +
->> +		if (osd_async_op(or, osdblk_osd_complete, orq, orq->cred)) {
->> +			/* FIXME: leak OSD request 'or' ? */
-> 
-> yes a leak
-> 
->> +			blk_requeue_request(q, rq);
-> 	
-> +			or->request = NULL;
-
-already fixed, long before writing this email :)
-
-
->> +			bio_put(bio);
->> +		}
->> +	}
->> +}
->> +
->> +static void osdblk_free_disk(struct osdblk_device *osdev)
->> +{
->> +	struct gendisk *disk = osdev->disk;
->> +
->> +	if (!disk)
->> +		return;
->> +
->> +	if (disk->flags & GENHD_FL_UP)
->> +		del_gendisk(disk);
->> +	if (disk->queue)
->> +		blk_cleanup_queue(disk->queue);
->> +	put_disk(disk);
->> +}
->> +
->> +static int osdblk_init_disk(struct osdblk_device *osdev)
->> +{
->> +	struct gendisk *disk;
->> +	struct request_queue *q;
->> +	int rc;
->> +	u64 obj_size = 0;
->> +
-> 
-> +	osd_make_credential(osdev->obj_cred, &osdev->obj);
-> 
-> Later, when credential-manager is used, this will get expensive and sleepy
-> possibly going on the network and back.
-
-fixed
-
-
->> +	if (idx == OSDBLK_MAX_DEVS) {
->> +		rc = -ENOSPC;
->> +		goto err_out;
->> +	}
->> +
->> +	if (sscanf(buf, "%lu %lu %s", &osdev->part_id, &osdev->obj_id,
-> 
-> -	if (sscanf(buf, "%lu %lu %s", &osdev->part_id, &osdev->obj_id,
-> +	if (sscanf(buf, "%llu %llu %s", &osdev->obj.partition, &osdev->obj.id,
-> 
->> +		   osdev->osd_path) != 3) {
->> +		rc = -EINVAL;
->> +		goto err_out_slot;
->> +	}
->> +
->> +	osdev->obj.partition = osdev->part_id;
->> +	osdev->obj.id = osdev->obj_id;
-> 
-> -	osdev->obj.partition = osdev->part_id;
-> -	osdev->obj.id = osdev->obj_id;
-> 
-> osdev->obj_id, and osdev->part_id can be removed.
-
-done
-
-
-> What can I say, great stuff.
-> 
-> OSD is a very clean API, that makes whole subsystems look trivial.
-
-I appreciate it, thanks for the review.
-
-	Jeff
-
-
-
+-- 
+Jean Delvare
