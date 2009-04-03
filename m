@@ -1,33 +1,36 @@
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763345AbZDCL0V (ORCPT <rfc822;list-kernel77@spinics.net>);
-	Fri, 3 Apr 2009 07:26:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757680AbZDCL0H
+	id S932532AbZDCXN6 (ORCPT <rfc822;list-kernel77@spinics.net>);
+	Fri, 3 Apr 2009 19:13:58 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756115AbZDCXNr
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 3 Apr 2009 07:26:07 -0400
-Received: from hrndva-commlb.mail.rr.com ([71.74.57.9]:34440 "EHLO
-	hrndva-commlb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754390AbZDCL0F (ORCPT
+	Fri, 3 Apr 2009 19:13:47 -0400
+Received: from n1b.bullet.mail.ac4.yahoo.com ([76.13.13.71]:26299 "HELO
+	n1b.bullet.mail.ac4.yahoo.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1756559AbZDCXNr (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 3 Apr 2009 07:26:05 -0400
-Message-Id: <7h9gbp$cniq3l@rrcs-agw-01b.hrndva.rr.com>
-X-Mailer: Openwave WebEngine, version 2.8.17 (webedge20-101-1107-20041027)
-From: British Tobacco Comapany <wrobinson@rrbiznet.com>
-Reply-To: pauladams00@btinternet.com
-To: <info@org>
-Subject: Tobacco Promo
-Date: Fri, 3 Apr 2009 6:26:03 -0500
+	Fri, 3 Apr 2009 19:13:47 -0400
+X-Greylist: delayed 389 seconds by postgrey-1.27 at vger.kernel.org; Fri, 03 Apr 2009 19:13:46 EDT
+X-Yahoo-Newman-Property: ymail-3
+X-Yahoo-Newman-Id: 10965.22328.bm@omp107.mail.ac4.yahoo.com
+DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
+  s=s1024; d=yahoo.com;
+  h=Message-ID:Date:From:Subject:To:MIME-Version:Content-Type;
+  b=t87FUmxtypCJOnL5qNEFWW7NMF4x2tBlJpqJrqofFbRPPjroVs8xCffeI9EAvIooo8dOfqwkpEoW3s1GzVvzBPomr6uS/mAaU1o2nIuFqVADLxdeTRbOP36TAQcGjU4Cb18upgNdilgJQLdVGCdstaBRj9ynr7ow6R7PfAMYXUE=;
+Message-ID: <658532.29834.qm@web59411.mail.ac4.yahoo.com>
+Date: Fri, 3 Apr 2009 16:07:15 -0700 (PDT)
+From: nilufar_rostami@yahoo.com
+Subject: Yahoo! Auto Response
+To: linux-kernel@vger.kernel.org
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-Content-Transfer-Encoding: 8bit
+Content-Type: text/plain; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-You have been awarded the sum of £1,000.000.00 GBP in our tobacco award, get back to us asap
 
-Names:............
-Address:..............
-Country:.................
-Age:..........
-Sex:..............
-Phone/cellphone........
+Salam va ba tashakor az shoma
+ma baraye site khoobe shoma yek tarikh va taghvim ziba dorost kardim ke omidvarim az ma in hediye naghabel ra bepazirid . lotfan be in adress morajeh konid.
+http://abzar.info/mix/
+
+lotfan nazaretoon ra begid .. mer30
+
