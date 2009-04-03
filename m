@@ -1,48 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762487AbZDCLNY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763677AbZDCLQq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762487AbZDCLNY (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 3 Apr 2009 07:13:24 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758912AbZDCLNH
+	id S1763677AbZDCLQq (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 3 Apr 2009 07:16:46 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759663AbZDCLQh
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 3 Apr 2009 07:13:07 -0400
-Received: from rhun.apana.org.au ([64.62.148.172]:59138 "EHLO
-	arnor.apana.org.au" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1756420AbZDCLNG (ORCPT
+	Fri, 3 Apr 2009 07:16:37 -0400
+Received: from mail-qy0-f118.google.com ([209.85.221.118]:49606 "EHLO
+	mail-qy0-f118.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757680AbZDCLQg (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 3 Apr 2009 07:13:06 -0400
-Date: Fri, 3 Apr 2009 19:12:42 +0800
-From: Herbert Xu <herbert@gondor.apana.org.au>
-To: Avi Kivity <avi@redhat.com>
-Cc: Gerd Hoffmann <kraxel@redhat.com>, ghaskins@novell.com,
-       anthony@codemonkey.ws, andi@firstfloor.org,
-       linux-kernel@vger.kernel.org, agraf@suse.de, pmullaney@novell.com,
-       pmorreale@novell.com, rusty@rustcorp.com.au, netdev@vger.kernel.org,
-       kvm@vger.kernel.org
-Subject: Re: [RFC PATCH 00/17] virtual-bus
-Message-ID: <20090403111242.GA10200@gondor.apana.org.au>
-References: <20090402085253.GA29932@gondor.apana.org.au> <49D47F11.6070400@redhat.com> <49D5EBE1.8030200@redhat.com> <49D5ED11.2000800@redhat.com>
+	Fri, 3 Apr 2009 07:16:36 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:to:subject:message-id:mime-version:content-type
+         :content-disposition:user-agent;
+        b=QKzme6s55zWS/2wz9gbLsEmZGLNyaocn7envBwq/gstSj/M9HFuaIsTAPa8205ir7+
+         aJCD5SMOkrW/CG4T4+1RyR8GfjpnbCsgANbrkH1C73TNZ+Bymssv1dsMDkF8ipSW6OJi
+         iK6GbykCqXTHLWFdBWMzZTuOOBecE0FT5idy0=
+Date: Fri, 3 Apr 2009 15:16:21 +0400
+From: Alexander Beregalov <a.beregalov@gmail.com>
+To: dtor@mail.ru, linux-input@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: [PATCH] input: hp_sdc_rtc should depend on serio
+Message-ID: <20090403111621.GA29023@orion>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <49D5ED11.2000800@redhat.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+User-Agent: Mutt/1.5.19 (2009-01-05)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Apr 03, 2009 at 02:03:45PM +0300, Avi Kivity wrote:
->
-> If the host is able to consume a request immediately, and the guest is  
-> not able to batch requests, this breaks down.  And that is the current  
-> situation.
+Fix this build error when CONFIG_SERIO is not set
+hp_sdc_rtc.c:691: undefined reference to `hp_sdc_request_timer_irq'
+and so on..
 
-Hang on, why is the host consuming the request immediately? It
-has to write the packet to tap, which then calls netif_rx_ni so
-it should actually go all the way, no?
+"select should be used with care. select will force
+a symbol to a value without visiting the dependencies."
 
-Cheers,
--- 
-Visit Openswan at http://www.openswan.org/
-Email: Herbert Xu ~{PmV>HI~} <herbert@gondor.apana.org.au>
-Home Page: http://gondor.apana.org.au/~herbert/
-PGP Key: http://gondor.apana.org.au/~herbert/pubkey.txt
+Signed-off-by: Alexander Beregalov <a.beregalov@gmail.com>
+---
+
+ drivers/input/misc/Kconfig |    1 +
+ 1 files changed, 1 insertions(+), 0 deletions(-)
+
+diff --git a/drivers/input/misc/Kconfig b/drivers/input/misc/Kconfig
+index 203abac..ae5d7dc 100644
+--- a/drivers/input/misc/Kconfig
++++ b/drivers/input/misc/Kconfig
+@@ -215,6 +215,7 @@ config INPUT_SGI_BTNS
+ config HP_SDC_RTC
+ 	tristate "HP SDC Real Time Clock"
+ 	depends on GSC || HP300
++	select SERIO
+ 	select HP_SDC
+ 	help
+ 	  Say Y here if you want to support the built-in real time clock
