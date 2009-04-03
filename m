@@ -1,101 +1,83 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761652AbZDCJtb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762288AbZDCJu0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761652AbZDCJtb (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 3 Apr 2009 05:49:31 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755813AbZDCJtO
+	id S1762288AbZDCJu0 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 3 Apr 2009 05:50:26 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755764AbZDCJuH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 3 Apr 2009 05:49:14 -0400
-Received: from brick.kernel.dk ([93.163.65.50]:60552 "EHLO kernel.dk"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1760594AbZDCJtM (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 3 Apr 2009 05:49:12 -0400
-Date: Fri, 3 Apr 2009 11:49:09 +0200
-From: Jens Axboe <jens.axboe@oracle.com>
-To: Jeff Garzik <jeff@garzik.org>
-Cc: LKML <linux-kernel@vger.kernel.org>, linux-scsi@vger.kernel.org,
-       linux-fsdevel@vger.kernel.org,
-       Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: [PATCH] osdblk: a Linux block device for OSD objects
-Message-ID: <20090403094909.GQ5178@kernel.dk>
-References: <20090402015455.GA14087@havoc.gtf.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090402015455.GA14087@havoc.gtf.org>
+	Fri, 3 Apr 2009 05:50:07 -0400
+Received: from mu-out-0910.google.com ([209.85.134.184]:64851 "EHLO
+	mu-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755719AbZDCJuE (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 3 Apr 2009 05:50:04 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=subject:from:to:cc:in-reply-to:references:content-type:date
+         :message-id:mime-version:x-mailer:content-transfer-encoding;
+        b=Xhno1IgeEDfdDJeiwt50vwoTKnUQ7Q/nZ25w0T+Ew4L+vG8g4taj6503KZWxmuDJwk
+         qfMbmuww2I6+P05mqm5s8JAN6UcDr39nVqt5GI9qYC5IIFMGH1KN2OP/QsSg8G/O+IWa
+         aAf07Ua3UovcuTfGP5xnikZuXJKYCbO9gHFh0=
+Subject: Re: [PATCH 1/2] lib: add fast lzo decompressor
+From: Andreas Robinson <andr345@gmail.com>
+To: John Stoffel <john@stoffel.org>
+Cc: "H. Peter Anvin" <hpa@zytor.com>, Alain Knaff <alain@knaff.lu>,
+       linux-kernel@vger.kernel.org
+In-Reply-To: <18900.52255.798522.393088@stoffel.org>
+References: <1238593252-3435-1-git-send-email-andr345@gmail.com>
+	 <1238593252-3435-2-git-send-email-andr345@gmail.com>
+	 <49D3927A.2050406@zytor.com> <1238613730.10514.35.camel@andreas-desktop>
+	 <18900.52255.798522.393088@stoffel.org>
+Content-Type: text/plain
+Date: Fri, 03 Apr 2009 11:49:56 +0200
+Message-Id: <1238752196.8118.185.camel@andreas-desktop>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.24.3 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Apr 01 2009, Jeff Garzik wrote:
+On Thu, 2009-04-02 at 10:30 -0400, John Stoffel wrote:
+> >>>>> "Andreas" == Andreas Robinson <andr345@gmail.com> writes:
 > 
-> As I promised in older exofs threads, here is a client for libosd
-> _other_ than exofs.  This block driver exports a single OSD object
-> as a Linux block device.
+> Andreas> On Wed, 2009-04-01 at 09:12 -0700, H. Peter Anvin wrote:
+> >> OK, I'm more than a bit nervous about that, especially since we're
+> >> trying to make the decompression functions more generic.
 > 
-> See the comment block at the top of the driver for usage instructions.
+> Andreas> Perhaps the system can default to the safe decompressor for
+> Andreas> normal use and choose the fast one if STATIC is defined or
+> Andreas> when system_state == SYSTEM_BOOTING?
 > 
-> 
-> 
-> +static void osdblk_end_request(struct osdblk_device *osdev,
-> +			       struct osdblk_request *orq,
-> +			       int error)
-> +{
-> +	struct request *rq = orq->rq;
-> +	int rc;
-> +
-> +	/* complete request, at block layer */
-> +	rc = __blk_end_request(rq, error, blk_rq_bytes(rq));
-> +
-> +	/* clear request slot for use */
-> +	osdev->req[orq->tag].rq = NULL;
-> +
-> +	/* restart queue, if necessary */
-> +	blk_start_queue(osdev->q);
-> +}
-> +
-> +static void osdblk_osd_complete(struct osd_request *or, void *private)
-> +{
-> +	struct osdblk_request *orq = private;
-> +	struct osd_sense_info osi;
-> +	int ret = osd_req_decode_sense(or, &osi);
-> +
-> +	if (ret)
-> +		ret = -EIO;
-> +
-> +	osd_end_request(or);
-> +	osdblk_end_request(orq->osdev, orq, ret);
-> +}
-> +
-> +static void osdblk_rq_fn(struct request_queue *q)
-> +{
-> +	struct osdblk_device *osdev = q->queuedata;
-> +	struct request *rq;
-> +	struct osdblk_request *orq;
-> +	struct osd_request *or;
-> +	struct bio *bio;
-> +	int rq_idx, do_write;
-> +
-> +	while (1) {
-> +		rq = elv_next_request(q);
-> +		if (!rq)
-> +			break;
-> +
-> +		do_write = (rq_data_dir(rq) == WRITE);
-> +
-> +		bio = bio_clone(rq->bio, GFP_NOIO);
-> +		if (!bio)
-> +			break;
+> So how do you prove that data is trusted?
 
-This wont work, GFP_NOIO inside the queue lock. You are also only
-cloning the front bio, what happens if you have > 1 bio on the request?
-You seem to dequeue the request and complete all of it, regardless of
-whether bio->bi_size == blk_rq_bytes(rq). I'm assuming you have to clone
-because of how the osd_req_{read,write} works, so I'd suggest storing
-the byte size in your osdblk_request and only completing that in
-osdblk_end_request(). Then do a rq_for_each_bio() look in there, and
-only dequeue if you manage to start an osd request for each of them,
-THEN moving on to the next request.
+The kernel and initramfs images are implicitly trusted, but that is not
+unique to this implementation. None of the decompressors check the data
+e.g by comparing checksums, AFAICT.
 
--- 
-Jens Axboe
+> What happens on buffer overflow?
+
+The overflow is detected and an error is returned to the caller ... or
+the kernel just committed suicide by overwriting itself. *cough*.
+
+Ok, I will put back the checks that actually prevents output overruns.
+It is still faster, but could no longer crash the system directly.
+
+There would remain a 3-byte overflow at the end of the output buffer, by
+design. However, it can be managed to never be a problem.
+
+>   I don't think that a 20% speedup on decompression, with a
+> possibility of borking the boot completely is worth it.  Or are you
+> suggesting that people pre-test their initramfs images with this
+> compressor before deciding to boot from it?
+
+The compressor (lzop) has been around for a long while so it's probably
+ok.
+
+In case I broke the decompressor the best I can offer is more testing.
+In its present form it unpacks a 5 MB initramfs without errors. Does it
+need to be tested with more data? In that case, do you have any
+suggestions?
+
+Thanks,
+Andreas
 
