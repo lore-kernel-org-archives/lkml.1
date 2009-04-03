@@ -1,77 +1,40 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932593AbZDCOf7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932669AbZDCOgY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932593AbZDCOf7 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 3 Apr 2009 10:35:59 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755442AbZDCOfs
+	id S932669AbZDCOgY (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 3 Apr 2009 10:36:24 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932554AbZDCOgJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 3 Apr 2009 10:35:48 -0400
-Received: from bedivere.hansenpartnership.com ([66.63.167.143]:34108 "EHLO
-	bedivere.hansenpartnership.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1756612AbZDCOfs (ORCPT
+	Fri, 3 Apr 2009 10:36:09 -0400
+Received: from connect-ua-210.dg.net.ua ([213.186.218.210]:33078 "EHLO
+	mail.connect.com.ua" rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org
+	with ESMTP id S932245AbZDCOgI (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 3 Apr 2009 10:35:48 -0400
-Subject: Re: [PATCH] block: fix intermittent dm timeout based oops
-From: James Bottomley <James.Bottomley@HansenPartnership.com>
-To: Christof Schmitt <christof.schmitt@de.ibm.com>
-Cc: Jens Axboe <jens.axboe@oracle.com>, linux-kernel@vger.kernel.org,
-       linux-scsi@vger.kernel.org, Hannes Reinecke <hare@suse.de>
-In-Reply-To: <20090403143208.GA10005@schmichrtp.de.ibm.com>
-References: <20090324071730.53D7118C7A2@pentland.suse.de>
-	 <20090403143208.GA10005@schmichrtp.de.ibm.com>
-Content-Type: text/plain
-Date: Fri, 03 Apr 2009 09:35:45 -0500
-Message-Id: <1238769345.3359.15.camel@mulgrave.int.hansenpartnership.com>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.22.3.1 (2.22.3.1-1.fc9) 
-Content-Transfer-Encoding: 7bit
+	Fri, 3 Apr 2009 10:36:08 -0400
+To: linux-kernel@vger.kernel.org
+Subject: =?UTF-8?B?0J7Qu9C10LrRgdCw0L3QtNGAIMKgC8KgC8KgIOKZpcKgC8KgC9Ch0LXRgNCz?=  =?UTF-8?B?adC50L7QstC40Ycg0L7RhtGW0L3QuNCyINCS0LDRiNGDINGE0L7RgtC+0LM=?=  =?UTF-8?B?0YDQsNGE0ZbRjg==?=
+Date: Fri, 3 Apr 2009 17:36:03 +0300
+From: =?UTF-8?B?0JrQvtC80LDQvdC00LAgQ29ubmVjdC51YQ==?= 
+	<donotreply@connect.com.ua>
+Reply-to: Connect <donotreply@connect.com.ua>
+Message-ID: <13af0b9e8d29d21264e5c86d3a5035fb@localhost.localdomain>
+X-Priority: 3
+X-Mailer: PHPMailer (phpmailer.sourceforge.net) [version 2.0.0 rc1]
+MIME-Version: 1.0
+Content-Transfer-Encoding: 8bit
+Content-Type: text/plain; charset="UTF-8"
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 2009-04-03 at 16:32 +0200, Christof Schmitt wrote:
-> On Tue, Mar 24, 2009 at 08:17:30AM +0100, Hannes Reinecke wrote:
-> > Very rarely under stress testing of dm, oopses are occuring as
-> > something tampers with an old stack frame.  This has been traced back
-> > to blk_abort_queue() leaving a timeout_list pointing to the stack.
-> > The reason is that sometimes blk_abort_request() won't delete the
-> > timer (if the request is marked as complete but before the timer has
-> > been removed, a small race window).  Fix this by splicing back from
-> > the ususally empty list to the q->timeout_list.
-> > 
-> > Signed-off-by: Hannes Reinecke <hare@suse.de>
-> > ---
-> >  block/blk-timeout.c |    6 ++++++
-> >  1 files changed, 6 insertions(+), 0 deletions(-)
-> > 
-> > diff --git a/block/blk-timeout.c b/block/blk-timeout.c
-> > index bbbdc4b..6213123 100644
-> > --- a/block/blk-timeout.c
-> > +++ b/block/blk-timeout.c
-> > @@ -224,6 +224,12 @@ void blk_abort_queue(struct request_queue *q)
-> >  	list_for_each_entry_safe(rq, tmp, &list, timeout_list)
-> >  		blk_abort_request(rq);
-> > 
-> > +	/*
-> > +	 * Occasionally, blk_abort_request() will return without
-> > +	 * deleting the element from the list
-> > +	 */
-> > +	list_splice(&list, &q->timeout_list);
-> > +
-> >  	spin_unlock_irqrestore(q->queue_lock, flags);
-> > 
-> >  }
-> > -- 
-> > 1.5.3.2
-> 
-> I just noticed that this fix is not upstream yet and i have seen test
-> cases hitting this problem.
-> 
-> Jens, are you going to included this patch, or should this go through
-> the SCSI tree?
+Владимир,
 
-It's a block patch, so it goes through the block tree ... it also needs
-backporting to stable.
+Олександр     ♥  Сергiйович оцінив Вашу фотографію на 10.
+Подивитись всі оцінки можно на сторінці:
+http://connect.ua/v2/ranking?stats
 
-James
+Команда Connect.ua
 
+--
+Ви можете налаштувати параметри повідомлень
+http://connect.ua/v2/settings?notifications
 
