@@ -1,25 +1,25 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S935763AbZDCQEc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S935795AbZDCQE7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S935763AbZDCQEc (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 3 Apr 2009 12:04:32 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934569AbZDCP4Y
+	id S935795AbZDCQE7 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 3 Apr 2009 12:04:59 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934841AbZDCP4b
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 3 Apr 2009 11:56:24 -0400
-Received: from mx2.redhat.com ([66.187.237.31]:56568 "EHLO mx2.redhat.com"
+	Fri, 3 Apr 2009 11:56:31 -0400
+Received: from mx2.redhat.com ([66.187.237.31]:56571 "EHLO mx2.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1760441AbZDCP4P (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 3 Apr 2009 11:56:15 -0400
+	id S934736AbZDCP4V (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 3 Apr 2009 11:56:21 -0400
 Organization: Red Hat UK Ltd. Registered Address: Red Hat UK Ltd, Amberley
 	Place, 107-111 Peascod Street, Windsor, Berkshire, SI4 1TE, United
 	Kingdom.
 	Registered in England and Wales under Company Registration No. 3798903
 From: David Howells <dhowells@redhat.com>
-Subject: [PATCH 18/41] FS-Cache: Implement the cookie management part of the
-	netfs API [ver #48]
+Subject: [PATCH 19/41] FS-Cache: Add and document asynchronous operation
+	handling [ver #48]
 To: linux-kernel@vger.kernel.org
 Cc: dhowells@redhat.com, nfsv4@linux-nfs.org, linux-fsdevel@vger.kernel.org
-Date: Fri, 03 Apr 2009 16:56:09 +0100
-Message-ID: <20090403155609.28714.74230.stgit@warthog.procyon.org.uk>
+Date: Fri, 03 Apr 2009 16:56:14 +0100
+Message-ID: <20090403155614.28714.2611.stgit@warthog.procyon.org.uk>
 In-Reply-To: <20090403155436.28714.23368.stgit@warthog.procyon.org.uk>
 References: <20090403155436.28714.23368.stgit@warthog.procyon.org.uk>
 User-Agent: StGIT/0.14.3
@@ -30,47 +30,213 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Implement the cookie management part of the FS-Cache netfs client API.  The
-documentation and API header file were added in a previous patch.
+Add and document asynchronous operation handling for use by FS-Cache's data
+storage and retrieval routines.
 
-This patch implements the following three functions:
+The following documentation is added to:
 
- (1) fscache_acquire_cookie().
+	Documentation/filesystems/caching/operations.txt
 
-     Acquire a cookie to represent an object to the netfs.  If the object in
-     question is a non-index object, then that object and its parent indices
-     will be created on disk at this point if they don't already exist.  Index
-     creation is deferred because an index may reside in multiple caches.
 
- (2) fscache_relinquish_cookie().
+		       ================================
+		       ASYNCHRONOUS OPERATIONS HANDLING
+		       ================================
 
-     Retire or release a cookie previously acquired.  At this point, the
-     object on disk may be destroyed.
+========
+OVERVIEW
+========
 
- (3) fscache_update_cookie().
+FS-Cache has an asynchronous operations handling facility that it uses for its
+data storage and retrieval routines.  Its operations are represented by
+fscache_operation structs, though these are usually embedded into some other
+structure.
 
-     Update the in-cache representation of a cookie.  This is used to update
-     the auxiliary data for coherency management purposes.
+This facility is available to and expected to be be used by the cache backends,
+and FS-Cache will create operations and pass them off to the appropriate cache
+backend for completion.
 
-With this patch it is possible to have a netfs instruct a cache backend to
-look up, validate and create metadata on disk and to destroy it again.
-The ability to actually store and retrieve data in the objects so created is
-added in later patches.
+To make use of this facility, <linux/fscache-cache.h> should be #included.
 
-Note that these functions will never return an error.  _All_ errors are
-handled internally to FS-Cache.
 
-The worst that can happen is that fscache_acquire_cookie() may return a NULL
-pointer - which is considered a negative cookie pointer and can be passed back
-to any function that takes a cookie without harm.  A negative cookie pointer
-merely suppresses caching at that level.
+===============================
+OPERATION RECORD INITIALISATION
+===============================
 
-The stub in linux/fscache.h will detect inline the negative cookie pointer and
-abort the operation as fast as possible.  This means that the compiler doesn't
-have to set up for a call in that case.
+An operation is recorded in an fscache_operation struct:
 
-See the documentation in Documentation/filesystems/caching/netfs-api.txt for
-more information.
+	struct fscache_operation {
+		union {
+			struct work_struct fast_work;
+			struct slow_work slow_work;
+		};
+		unsigned long		flags;
+		fscache_operation_processor_t processor;
+		...
+	};
+
+Someone wanting to issue an operation should allocate something with this
+struct embedded in it.  They should initialise it by calling:
+
+	void fscache_operation_init(struct fscache_operation *op,
+				    fscache_operation_release_t release);
+
+with the operation to be initialised and the release function to use.
+
+The op->flags parameter should be set to indicate the CPU time provision and
+the exclusivity (see the Parameters section).
+
+The op->fast_work, op->slow_work and op->processor flags should be set as
+appropriate for the CPU time provision (see the Parameters section).
+
+FSCACHE_OP_WAITING may be set in op->flags prior to each submission of the
+operation and waited for afterwards.
+
+
+==========
+PARAMETERS
+==========
+
+There are a number of parameters that can be set in the operation record's flag
+parameter.  There are three options for the provision of CPU time in these
+operations:
+
+ (1) The operation may be done synchronously (FSCACHE_OP_MYTHREAD).  A thread
+     may decide it wants to handle an operation itself without deferring it to
+     another thread.
+
+     This is, for example, used in read operations for calling readpages() on
+     the backing filesystem in CacheFiles.  Although readpages() does an
+     asynchronous data fetch, the determination of whether pages exist is done
+     synchronously - and the netfs does not proceed until this has been
+     determined.
+
+     If this option is to be used, FSCACHE_OP_WAITING must be set in op->flags
+     before submitting the operation, and the operating thread must wait for it
+     to be cleared before proceeding:
+
+		wait_on_bit(&op->flags, FSCACHE_OP_WAITING,
+			    fscache_wait_bit, TASK_UNINTERRUPTIBLE);
+
+
+ (2) The operation may be fast asynchronous (FSCACHE_OP_FAST), in which case it
+     will be given to keventd to process.  Such an operation is not permitted
+     to sleep on I/O.
+
+     This is, for example, used by CacheFiles to copy data from a backing fs
+     page to a netfs page after the backing fs has read the page in.
+
+     If this option is used, op->fast_work and op->processor must be
+     initialised before submitting the operation:
+
+		INIT_WORK(&op->fast_work, do_some_work);
+
+
+ (3) The operation may be slow asynchronous (FSCACHE_OP_SLOW), in which case it
+     will be given to the slow work facility to process.  Such an operation is
+     permitted to sleep on I/O.
+
+     This is, for example, used by FS-Cache to handle background writes of
+     pages that have just been fetched from a remote server.
+
+     If this option is used, op->slow_work and op->processor must be
+     initialised before submitting the operation:
+
+		fscache_operation_init_slow(op, processor)
+
+
+Furthermore, operations may be one of two types:
+
+ (1) Exclusive (FSCACHE_OP_EXCLUSIVE).  Operations of this type may not run in
+     conjunction with any other operation on the object being operated upon.
+
+     An example of this is the attribute change operation, in which the file
+     being written to may need truncation.
+
+ (2) Shareable.  Operations of this type may be running simultaneously.  It's
+     up to the operation implementation to prevent interference between other
+     operations running at the same time.
+
+
+=========
+PROCEDURE
+=========
+
+Operations are used through the following procedure:
+
+ (1) The submitting thread must allocate the operation and initialise it
+     itself.  Normally this would be part of a more specific structure with the
+     generic op embedded within.
+
+ (2) The submitting thread must then submit the operation for processing using
+     one of the following two functions:
+
+	int fscache_submit_op(struct fscache_object *object,
+			      struct fscache_operation *op);
+
+	int fscache_submit_exclusive_op(struct fscache_object *object,
+					struct fscache_operation *op);
+
+     The first function should be used to submit non-exclusive ops and the
+     second to submit exclusive ones.  The caller must still set the
+     FSCACHE_OP_EXCLUSIVE flag.
+
+     If successful, both functions will assign the operation to the specified
+     object and return 0.  -ENOBUFS will be returned if the object specified is
+     permanently unavailable.
+
+     The operation manager will defer operations on an object that is still
+     undergoing lookup or creation.  The operation will also be deferred if an
+     operation of conflicting exclusivity is in progress on the object.
+
+     If the operation is asynchronous, the manager will retain a reference to
+     it, so the caller should put their reference to it by passing it to:
+
+	void fscache_put_operation(struct fscache_operation *op);
+
+ (3) If the submitting thread wants to do the work itself, and has marked the
+     operation with FSCACHE_OP_MYTHREAD, then it should monitor
+     FSCACHE_OP_WAITING as described above and check the state of the object if
+     necessary (the object might have died whilst the thread was waiting).
+
+     When it has finished doing its processing, it should call
+     fscache_put_operation() on it.
+
+ (4) The operation holds an effective lock upon the object, preventing other
+     exclusive ops conflicting until it is released.  The operation can be
+     enqueued for further immediate asynchronous processing by adjusting the
+     CPU time provisioning option if necessary, eg:
+
+	op->flags &= ~FSCACHE_OP_TYPE;
+	op->flags |= ~FSCACHE_OP_FAST;
+
+     and calling:
+
+	void fscache_enqueue_operation(struct fscache_operation *op)
+
+     This can be used to allow other things to have use of the worker thread
+     pools.
+
+
+=====================
+ASYNCHRONOUS CALLBACK
+=====================
+
+When used in asynchronous mode, the worker thread pool will invoke the
+processor method with a pointer to the operation.  This should then get at the
+container struct by using container_of():
+
+	static void fscache_write_op(struct fscache_operation *_op)
+	{
+		struct fscache_storage *op =
+			container_of(_op, struct fscache_storage, op);
+	...
+	}
+
+The caller holds a reference on the operation, and will invoke
+fscache_put_operation() when the processor function returns.  The processor
+function is at liberty to call fscache_enqueue_operation() or to take extra
+references.
+
 
 Signed-off-by: David Howells <dhowells@redhat.com>
 Acked-by: Steve Dickson <steved@redhat.com>
@@ -79,526 +245,744 @@ Acked-by: Al Viro <viro@zeniv.linux.org.uk>
 Tested-by: Daire Byrne <Daire.Byrne@framestore.com>
 ---
 
- fs/fscache/cookie.c     |  444 +++++++++++++++++++++++++++++++++++++++++++++++
- include/linux/fscache.h |   16 ++
- 2 files changed, 459 insertions(+), 1 deletions(-)
+ Documentation/filesystems/caching/operations.txt |  213 ++++++++++
+ fs/fscache/Makefile                              |    3 
+ fs/fscache/cache.c                               |    2 
+ fs/fscache/internal.h                            |    8 
+ fs/fscache/operation.c                           |  459 ++++++++++++++++++++++
+ 5 files changed, 682 insertions(+), 3 deletions(-)
+ create mode 100644 Documentation/filesystems/caching/operations.txt
+ create mode 100644 fs/fscache/operation.c
 
 
-diff --git a/fs/fscache/cookie.c b/fs/fscache/cookie.c
-index 47fd75b..72fd18f 100644
---- a/fs/fscache/cookie.c
-+++ b/fs/fscache/cookie.c
-@@ -7,6 +7,9 @@
-  * modify it under the terms of the GNU General Public License
-  * as published by the Free Software Foundation; either version
-  * 2 of the License, or (at your option) any later version.
-+ *
-+ * See Documentation/filesystems/caching/netfs-api.txt for more information on
-+ * the netfs API.
-  */
- 
- #define FSCACHE_DEBUG_LEVEL COOKIE
-@@ -16,6 +19,14 @@
- 
- struct kmem_cache *fscache_cookie_jar;
- 
-+static atomic_t fscache_object_debug_id = ATOMIC_INIT(0);
+diff --git a/Documentation/filesystems/caching/operations.txt b/Documentation/filesystems/caching/operations.txt
+new file mode 100644
+index 0000000..b6b070c
+--- /dev/null
++++ b/Documentation/filesystems/caching/operations.txt
+@@ -0,0 +1,213 @@
++		       ================================
++		       ASYNCHRONOUS OPERATIONS HANDLING
++		       ================================
 +
-+static int fscache_acquire_non_index_cookie(struct fscache_cookie *cookie);
-+static int fscache_alloc_object(struct fscache_cache *cache,
-+				struct fscache_cookie *cookie);
-+static int fscache_attach_object(struct fscache_cookie *cookie,
-+				 struct fscache_object *object);
++By: David Howells <dhowells@redhat.com>
 +
- /*
-  * initialise an cookie jar slab element prior to any use
-  */
-@@ -29,6 +40,439 @@ void fscache_cookie_init_once(void *_cookie)
- }
- 
- /*
-+ * request a cookie to represent an object (index, datafile, xattr, etc)
-+ * - parent specifies the parent object
-+ *   - the top level index cookie for each netfs is stored in the fscache_netfs
-+ *     struct upon registration
-+ * - def points to the definition
-+ * - the netfs_data will be passed to the functions pointed to in *def
-+ * - all attached caches will be searched to see if they contain this object
-+ * - index objects aren't stored on disk until there's a dependent file that
-+ *   needs storing
-+ * - other objects are stored in a selected cache immediately, and all the
-+ *   indices forming the path to it are instantiated if necessary
-+ * - we never let on to the netfs about errors
-+ *   - we may set a negative cookie pointer, but that's okay
-+ */
-+struct fscache_cookie *__fscache_acquire_cookie(
-+	struct fscache_cookie *parent,
-+	const struct fscache_cookie_def *def,
-+	void *netfs_data)
-+{
-+	struct fscache_cookie *cookie;
++Contents:
 +
-+	BUG_ON(!def);
++ (*) Overview.
 +
-+	_enter("{%s},{%s},%p",
-+	       parent ? (char *) parent->def->name : "<no-parent>",
-+	       def->name, netfs_data);
++ (*) Operation record initialisation.
 +
-+	fscache_stat(&fscache_n_acquires);
++ (*) Parameters.
 +
-+	/* if there's no parent cookie, then we don't create one here either */
-+	if (!parent) {
-+		fscache_stat(&fscache_n_acquires_null);
-+		_leave(" [no parent]");
-+		return NULL;
-+	}
++ (*) Procedure.
 +
-+	/* validate the definition */
-+	BUG_ON(!def->get_key);
-+	BUG_ON(!def->name[0]);
++ (*) Asynchronous callback.
 +
-+	BUG_ON(def->type == FSCACHE_COOKIE_TYPE_INDEX &&
-+	       parent->def->type != FSCACHE_COOKIE_TYPE_INDEX);
 +
-+	/* allocate and initialise a cookie */
-+	cookie = kmem_cache_alloc(fscache_cookie_jar, GFP_KERNEL);
-+	if (!cookie) {
-+		fscache_stat(&fscache_n_acquires_oom);
-+		_leave(" [ENOMEM]");
-+		return NULL;
-+	}
++========
++OVERVIEW
++========
 +
-+	atomic_set(&cookie->usage, 1);
-+	atomic_set(&cookie->n_children, 0);
++FS-Cache has an asynchronous operations handling facility that it uses for its
++data storage and retrieval routines.  Its operations are represented by
++fscache_operation structs, though these are usually embedded into some other
++structure.
 +
-+	atomic_inc(&parent->usage);
-+	atomic_inc(&parent->n_children);
++This facility is available to and expected to be be used by the cache backends,
++and FS-Cache will create operations and pass them off to the appropriate cache
++backend for completion.
 +
-+	cookie->def		= def;
-+	cookie->parent		= parent;
-+	cookie->netfs_data	= netfs_data;
-+	cookie->flags		= 0;
++To make use of this facility, <linux/fscache-cache.h> should be #included.
 +
-+	INIT_RADIX_TREE(&cookie->stores, GFP_NOFS);
 +
-+	switch (cookie->def->type) {
-+	case FSCACHE_COOKIE_TYPE_INDEX:
-+		fscache_stat(&fscache_n_cookie_index);
-+		break;
-+	case FSCACHE_COOKIE_TYPE_DATAFILE:
-+		fscache_stat(&fscache_n_cookie_data);
-+		break;
-+	default:
-+		fscache_stat(&fscache_n_cookie_special);
-+		break;
-+	}
++===============================
++OPERATION RECORD INITIALISATION
++===============================
 +
-+	/* if the object is an index then we need do nothing more here - we
-+	 * create indices on disk when we need them as an index may exist in
-+	 * multiple caches */
-+	if (cookie->def->type != FSCACHE_COOKIE_TYPE_INDEX) {
-+		if (fscache_acquire_non_index_cookie(cookie) < 0) {
-+			atomic_dec(&parent->n_children);
-+			__fscache_cookie_put(cookie);
-+			fscache_stat(&fscache_n_acquires_nobufs);
-+			_leave(" = NULL");
-+			return NULL;
-+		}
-+	}
++An operation is recorded in an fscache_operation struct:
 +
-+	fscache_stat(&fscache_n_acquires_ok);
-+	_leave(" = %p", cookie);
-+	return cookie;
-+}
-+EXPORT_SYMBOL(__fscache_acquire_cookie);
++	struct fscache_operation {
++		union {
++			struct work_struct fast_work;
++			struct slow_work slow_work;
++		};
++		unsigned long		flags;
++		fscache_operation_processor_t processor;
++		...
++	};
 +
-+/*
-+ * acquire a non-index cookie
-+ * - this must make sure the index chain is instantiated and instantiate the
-+ *   object representation too
-+ */
-+static int fscache_acquire_non_index_cookie(struct fscache_cookie *cookie)
-+{
-+	struct fscache_object *object;
-+	struct fscache_cache *cache;
-+	uint64_t i_size;
-+	int ret;
++Someone wanting to issue an operation should allocate something with this
++struct embedded in it.  They should initialise it by calling:
 +
-+	_enter("");
++	void fscache_operation_init(struct fscache_operation *op,
++				    fscache_operation_release_t release);
 +
-+	cookie->flags = 1 << FSCACHE_COOKIE_UNAVAILABLE;
++with the operation to be initialised and the release function to use.
 +
-+	/* now we need to see whether the backing objects for this cookie yet
-+	 * exist, if not there'll be nothing to search */
-+	down_read(&fscache_addremove_sem);
++The op->flags parameter should be set to indicate the CPU time provision and
++the exclusivity (see the Parameters section).
 +
-+	if (list_empty(&fscache_cache_list)) {
-+		up_read(&fscache_addremove_sem);
-+		_leave(" = 0 [no caches]");
-+		return 0;
-+	}
++The op->fast_work, op->slow_work and op->processor flags should be set as
++appropriate for the CPU time provision (see the Parameters section).
 +
-+	/* select a cache in which to store the object */
-+	cache = fscache_select_cache_for_object(cookie->parent);
-+	if (!cache) {
-+		up_read(&fscache_addremove_sem);
-+		fscache_stat(&fscache_n_acquires_no_cache);
-+		_leave(" = -ENOMEDIUM [no cache]");
-+		return -ENOMEDIUM;
-+	}
++FSCACHE_OP_WAITING may be set in op->flags prior to each submission of the
++operation and waited for afterwards.
 +
-+	_debug("cache %s", cache->tag->name);
 +
-+	cookie->flags =
-+		(1 << FSCACHE_COOKIE_LOOKING_UP) |
-+		(1 << FSCACHE_COOKIE_CREATING) |
-+		(1 << FSCACHE_COOKIE_NO_DATA_YET);
++==========
++PARAMETERS
++==========
 +
-+	/* ask the cache to allocate objects for this cookie and its parent
-+	 * chain */
-+	ret = fscache_alloc_object(cache, cookie);
-+	if (ret < 0) {
-+		up_read(&fscache_addremove_sem);
-+		_leave(" = %d", ret);
-+		return ret;
-+	}
++There are a number of parameters that can be set in the operation record's flag
++parameter.  There are three options for the provision of CPU time in these
++operations:
 +
-+	/* pass on how big the object we're caching is supposed to be */
-+	cookie->def->get_attr(cookie->netfs_data, &i_size);
++ (1) The operation may be done synchronously (FSCACHE_OP_MYTHREAD).  A thread
++     may decide it wants to handle an operation itself without deferring it to
++     another thread.
 +
-+	spin_lock(&cookie->lock);
-+	if (hlist_empty(&cookie->backing_objects)) {
-+		spin_unlock(&cookie->lock);
-+		goto unavailable;
-+	}
++     This is, for example, used in read operations for calling readpages() on
++     the backing filesystem in CacheFiles.  Although readpages() does an
++     asynchronous data fetch, the determination of whether pages exist is done
++     synchronously - and the netfs does not proceed until this has been
++     determined.
 +
-+	object = hlist_entry(cookie->backing_objects.first,
-+			     struct fscache_object, cookie_link);
++     If this option is to be used, FSCACHE_OP_WAITING must be set in op->flags
++     before submitting the operation, and the operating thread must wait for it
++     to be cleared before proceeding:
 +
-+	fscache_set_store_limit(object, i_size);
-+
-+	/* initiate the process of looking up all the objects in the chain
-+	 * (done by fscache_initialise_object()) */
-+	fscache_enqueue_object(object);
-+
-+	spin_unlock(&cookie->lock);
-+
-+	/* we may be required to wait for lookup to complete at this point */
-+	if (!fscache_defer_lookup) {
-+		_debug("non-deferred lookup %p", &cookie->flags);
-+		wait_on_bit(&cookie->flags, FSCACHE_COOKIE_LOOKING_UP,
++		wait_on_bit(&op->flags, FSCACHE_OP_WAITING,
 +			    fscache_wait_bit, TASK_UNINTERRUPTIBLE);
-+		_debug("complete");
-+		if (test_bit(FSCACHE_COOKIE_UNAVAILABLE, &cookie->flags))
-+			goto unavailable;
++
++
++ (2) The operation may be fast asynchronous (FSCACHE_OP_FAST), in which case it
++     will be given to keventd to process.  Such an operation is not permitted
++     to sleep on I/O.
++
++     This is, for example, used by CacheFiles to copy data from a backing fs
++     page to a netfs page after the backing fs has read the page in.
++
++     If this option is used, op->fast_work and op->processor must be
++     initialised before submitting the operation:
++
++		INIT_WORK(&op->fast_work, do_some_work);
++
++
++ (3) The operation may be slow asynchronous (FSCACHE_OP_SLOW), in which case it
++     will be given to the slow work facility to process.  Such an operation is
++     permitted to sleep on I/O.
++
++     This is, for example, used by FS-Cache to handle background writes of
++     pages that have just been fetched from a remote server.
++
++     If this option is used, op->slow_work and op->processor must be
++     initialised before submitting the operation:
++
++		fscache_operation_init_slow(op, processor)
++
++
++Furthermore, operations may be one of two types:
++
++ (1) Exclusive (FSCACHE_OP_EXCLUSIVE).  Operations of this type may not run in
++     conjunction with any other operation on the object being operated upon.
++
++     An example of this is the attribute change operation, in which the file
++     being written to may need truncation.
++
++ (2) Shareable.  Operations of this type may be running simultaneously.  It's
++     up to the operation implementation to prevent interference between other
++     operations running at the same time.
++
++
++=========
++PROCEDURE
++=========
++
++Operations are used through the following procedure:
++
++ (1) The submitting thread must allocate the operation and initialise it
++     itself.  Normally this would be part of a more specific structure with the
++     generic op embedded within.
++
++ (2) The submitting thread must then submit the operation for processing using
++     one of the following two functions:
++
++	int fscache_submit_op(struct fscache_object *object,
++			      struct fscache_operation *op);
++
++	int fscache_submit_exclusive_op(struct fscache_object *object,
++					struct fscache_operation *op);
++
++     The first function should be used to submit non-exclusive ops and the
++     second to submit exclusive ones.  The caller must still set the
++     FSCACHE_OP_EXCLUSIVE flag.
++
++     If successful, both functions will assign the operation to the specified
++     object and return 0.  -ENOBUFS will be returned if the object specified is
++     permanently unavailable.
++
++     The operation manager will defer operations on an object that is still
++     undergoing lookup or creation.  The operation will also be deferred if an
++     operation of conflicting exclusivity is in progress on the object.
++
++     If the operation is asynchronous, the manager will retain a reference to
++     it, so the caller should put their reference to it by passing it to:
++
++	void fscache_put_operation(struct fscache_operation *op);
++
++ (3) If the submitting thread wants to do the work itself, and has marked the
++     operation with FSCACHE_OP_MYTHREAD, then it should monitor
++     FSCACHE_OP_WAITING as described above and check the state of the object if
++     necessary (the object might have died whilst the thread was waiting).
++
++     When it has finished doing its processing, it should call
++     fscache_put_operation() on it.
++
++ (4) The operation holds an effective lock upon the object, preventing other
++     exclusive ops conflicting until it is released.  The operation can be
++     enqueued for further immediate asynchronous processing by adjusting the
++     CPU time provisioning option if necessary, eg:
++
++	op->flags &= ~FSCACHE_OP_TYPE;
++	op->flags |= ~FSCACHE_OP_FAST;
++
++     and calling:
++
++	void fscache_enqueue_operation(struct fscache_operation *op)
++
++     This can be used to allow other things to have use of the worker thread
++     pools.
++
++
++=====================
++ASYNCHRONOUS CALLBACK
++=====================
++
++When used in asynchronous mode, the worker thread pool will invoke the
++processor method with a pointer to the operation.  This should then get at the
++container struct by using container_of():
++
++	static void fscache_write_op(struct fscache_operation *_op)
++	{
++		struct fscache_storage *op =
++			container_of(_op, struct fscache_storage, op);
++	...
 +	}
 +
-+	up_read(&fscache_addremove_sem);
-+	_leave(" = 0 [deferred]");
-+	return 0;
-+
-+unavailable:
-+	up_read(&fscache_addremove_sem);
-+	_leave(" = -ENOBUFS");
-+	return -ENOBUFS;
-+}
-+
-+/*
-+ * recursively allocate cache object records for a cookie/cache combination
-+ * - caller must be holding the addremove sem
++The caller holds a reference on the operation, and will invoke
++fscache_put_operation() when the processor function returns.  The processor
++function is at liberty to call fscache_enqueue_operation() or to take extra
++references.
+diff --git a/fs/fscache/Makefile b/fs/fscache/Makefile
+index 4420ac6..6f82da2 100644
+--- a/fs/fscache/Makefile
++++ b/fs/fscache/Makefile
+@@ -8,7 +8,8 @@ fscache-y := \
+ 	fsdef.o \
+ 	main.o \
+ 	netfs.o \
+-	object.o
++	object.o \
++	operation.o
+ 
+ fscache-$(CONFIG_PROC_FS) += proc.o
+ fscache-$(CONFIG_FSCACHE_STATS) += stats.o
+diff --git a/fs/fscache/cache.c b/fs/fscache/cache.c
+index 355172f..e21985b 100644
+--- a/fs/fscache/cache.c
++++ b/fs/fscache/cache.c
+@@ -194,7 +194,7 @@ void fscache_init_cache(struct fscache_cache *cache,
+ 	vsnprintf(cache->identifier, sizeof(cache->identifier), idfmt, va);
+ 	va_end(va);
+ 
+-	INIT_WORK(&cache->op_gc, NULL);
++	INIT_WORK(&cache->op_gc, fscache_operation_gc);
+ 	INIT_LIST_HEAD(&cache->link);
+ 	INIT_LIST_HEAD(&cache->object_list);
+ 	INIT_LIST_HEAD(&cache->op_gc_list);
+diff --git a/fs/fscache/internal.h b/fs/fscache/internal.h
+index 529f4de..014a830 100644
+--- a/fs/fscache/internal.h
++++ b/fs/fscache/internal.h
+@@ -95,7 +95,13 @@ extern void fscache_enqueue_object(struct fscache_object *);
+ /*
+  * fsc-operation.c
+  */
+-#define fscache_start_operations(obj) BUG()
++extern int fscache_submit_exclusive_op(struct fscache_object *,
++				       struct fscache_operation *);
++extern int fscache_submit_op(struct fscache_object *,
++			     struct fscache_operation *);
++extern void fscache_abort_object(struct fscache_object *);
++extern void fscache_start_operations(struct fscache_object *);
++extern void fscache_operation_gc(struct work_struct *);
+ 
+ /*
+  * fsc-proc.c
+diff --git a/fs/fscache/operation.c b/fs/fscache/operation.c
+new file mode 100644
+index 0000000..e7f8d53
+--- /dev/null
++++ b/fs/fscache/operation.c
+@@ -0,0 +1,459 @@
++/* FS-Cache worker operation management routines
++ *
++ * Copyright (C) 2008 Red Hat, Inc. All Rights Reserved.
++ * Written by David Howells (dhowells@redhat.com)
++ *
++ * This program is free software; you can redistribute it and/or
++ * modify it under the terms of the GNU General Public License
++ * as published by the Free Software Foundation; either version
++ * 2 of the License, or (at your option) any later version.
++ *
++ * See Documentation/filesystems/caching/operations.txt
 + */
-+static int fscache_alloc_object(struct fscache_cache *cache,
-+				struct fscache_cookie *cookie)
-+{
-+	struct fscache_object *object;
-+	struct hlist_node *_n;
-+	int ret;
 +
-+	_enter("%p,%p{%s}", cache, cookie, cookie->def->name);
++#define FSCACHE_DEBUG_LEVEL OPERATION
++#include <linux/module.h>
++#include "internal.h"
 +
-+	spin_lock(&cookie->lock);
-+	hlist_for_each_entry(object, _n, &cookie->backing_objects,
-+			     cookie_link) {
-+		if (object->cache == cache)
-+			goto object_already_extant;
-+	}
-+	spin_unlock(&cookie->lock);
++atomic_t fscache_op_debug_id;
++EXPORT_SYMBOL(fscache_op_debug_id);
 +
-+	/* ask the cache to allocate an object (we may end up with duplicate
-+	 * objects at this stage, but we sort that out later) */
-+	object = cache->ops->alloc_object(cache, cookie);
-+	if (IS_ERR(object)) {
-+		fscache_stat(&fscache_n_object_no_alloc);
-+		ret = PTR_ERR(object);
-+		goto error;
-+	}
-+
-+	fscache_stat(&fscache_n_object_alloc);
-+
-+	object->debug_id = atomic_inc_return(&fscache_object_debug_id);
-+
-+	_debug("ALLOC OBJ%x: %s {%lx}",
-+	       object->debug_id, cookie->def->name, object->events);
-+
-+	ret = fscache_alloc_object(cache, cookie->parent);
-+	if (ret < 0)
-+		goto error_put;
-+
-+	/* only attach if we managed to allocate all we needed, otherwise
-+	 * discard the object we just allocated and instead use the one
-+	 * attached to the cookie */
-+	if (fscache_attach_object(cookie, object) < 0)
-+		cache->ops->put_object(object);
-+
-+	_leave(" = 0");
-+	return 0;
-+
-+object_already_extant:
-+	ret = -ENOBUFS;
-+	if (object->state >= FSCACHE_OBJECT_DYING) {
-+		spin_unlock(&cookie->lock);
-+		goto error;
-+	}
-+	spin_unlock(&cookie->lock);
-+	_leave(" = 0 [found]");
-+	return 0;
-+
-+error_put:
-+	cache->ops->put_object(object);
-+error:
-+	_leave(" = %d", ret);
-+	return ret;
-+}
-+
-+/*
-+ * attach a cache object to a cookie
++/**
++ * fscache_enqueue_operation - Enqueue an operation for processing
++ * @op: The operation to enqueue
++ *
++ * Enqueue an operation for processing by the FS-Cache thread pool.
++ *
++ * This will get its own ref on the object.
 + */
-+static int fscache_attach_object(struct fscache_cookie *cookie,
-+				 struct fscache_object *object)
++void fscache_enqueue_operation(struct fscache_operation *op)
 +{
-+	struct fscache_object *p;
-+	struct fscache_cache *cache = object->cache;
-+	struct hlist_node *_n;
-+	int ret;
++	_enter("{OBJ%x OP%x,%u}",
++	       op->object->debug_id, op->debug_id, atomic_read(&op->usage));
 +
-+	_enter("{%s},{OBJ%x}", cookie->def->name, object->debug_id);
++	ASSERT(op->processor != NULL);
++	ASSERTCMP(op->object->state, >=, FSCACHE_OBJECT_AVAILABLE);
++	ASSERTCMP(atomic_read(&op->usage), >, 0);
 +
-+	spin_lock(&cookie->lock);
-+
-+	/* there may be multiple initial creations of this object, but we only
-+	 * want one */
-+	ret = -EEXIST;
-+	hlist_for_each_entry(p, _n, &cookie->backing_objects, cookie_link) {
-+		if (p->cache == object->cache) {
-+			if (p->state >= FSCACHE_OBJECT_DYING)
-+				ret = -ENOBUFS;
-+			goto cant_attach_object;
-+		}
-+	}
-+
-+	/* pin the parent object */
-+	spin_lock_nested(&cookie->parent->lock, 1);
-+	hlist_for_each_entry(p, _n, &cookie->parent->backing_objects,
-+			     cookie_link) {
-+		if (p->cache == object->cache) {
-+			if (p->state >= FSCACHE_OBJECT_DYING) {
-+				ret = -ENOBUFS;
-+				spin_unlock(&cookie->parent->lock);
-+				goto cant_attach_object;
-+			}
-+			object->parent = p;
-+			spin_lock(&p->lock);
-+			p->n_children++;
-+			spin_unlock(&p->lock);
++	if (list_empty(&op->pend_link)) {
++		switch (op->flags & FSCACHE_OP_TYPE) {
++		case FSCACHE_OP_FAST:
++			_debug("queue fast");
++			atomic_inc(&op->usage);
++			if (!schedule_work(&op->fast_work))
++				fscache_put_operation(op);
++			break;
++		case FSCACHE_OP_SLOW:
++			_debug("queue slow");
++			slow_work_enqueue(&op->slow_work);
++			break;
++		case FSCACHE_OP_MYTHREAD:
++			_debug("queue for caller's attention");
++			break;
++		default:
++			printk(KERN_ERR "FS-Cache: Unexpected op type %lx",
++			       op->flags);
++			BUG();
 +			break;
 +		}
++		fscache_stat(&fscache_n_op_enqueue);
 +	}
-+	spin_unlock(&cookie->parent->lock);
++}
++EXPORT_SYMBOL(fscache_enqueue_operation);
 +
-+	/* attach to the cache's object list */
-+	if (list_empty(&object->cache_link)) {
-+		spin_lock(&cache->object_list_lock);
-+		list_add(&object->cache_link, &cache->object_list);
-+		spin_unlock(&cache->object_list_lock);
-+	}
-+
-+	/* attach to the cookie */
-+	object->cookie = cookie;
-+	atomic_inc(&cookie->usage);
-+	hlist_add_head(&object->cookie_link, &cookie->backing_objects);
-+	ret = 0;
-+
-+cant_attach_object:
-+	spin_unlock(&cookie->lock);
-+	_leave(" = %d", ret);
-+	return ret;
++/*
++ * start an op running
++ */
++static void fscache_run_op(struct fscache_object *object,
++			   struct fscache_operation *op)
++{
++	object->n_in_progress++;
++	if (test_and_clear_bit(FSCACHE_OP_WAITING, &op->flags))
++		wake_up_bit(&op->flags, FSCACHE_OP_WAITING);
++	if (op->processor)
++		fscache_enqueue_operation(op);
++	fscache_stat(&fscache_n_op_run);
 +}
 +
 +/*
-+ * update the index entries backing a cookie
++ * submit an exclusive operation for an object
++ * - other ops are excluded from running simultaneously with this one
++ * - this gets any extra refs it needs on an op
 + */
-+void __fscache_update_cookie(struct fscache_cookie *cookie)
++int fscache_submit_exclusive_op(struct fscache_object *object,
++				struct fscache_operation *op)
 +{
-+	struct fscache_object *object;
-+	struct hlist_node *_p;
++	int ret;
 +
-+	fscache_stat(&fscache_n_updates);
++	_enter("{OBJ%x OP%x},", object->debug_id, op->debug_id);
 +
-+	if (!cookie) {
-+		fscache_stat(&fscache_n_updates_null);
-+		_leave(" [no cookie]");
-+		return;
-+	}
++	spin_lock(&object->lock);
++	ASSERTCMP(object->n_ops, >=, object->n_in_progress);
++	ASSERTCMP(object->n_ops, >=, object->n_exclusive);
 +
-+	_enter("{%s}", cookie->def->name);
++	ret = -ENOBUFS;
++	if (fscache_object_is_active(object)) {
++		op->object = object;
++		object->n_ops++;
++		object->n_exclusive++;	/* reads and writes must wait */
 +
-+	BUG_ON(!cookie->def->get_aux);
++		if (object->n_ops > 0) {
++			atomic_inc(&op->usage);
++			list_add_tail(&op->pend_link, &object->pending_ops);
++			fscache_stat(&fscache_n_op_pend);
++		} else if (!list_empty(&object->pending_ops)) {
++			atomic_inc(&op->usage);
++			list_add_tail(&op->pend_link, &object->pending_ops);
++			fscache_stat(&fscache_n_op_pend);
++			fscache_start_operations(object);
++		} else {
++			ASSERTCMP(object->n_in_progress, ==, 0);
++			fscache_run_op(object, op);
++		}
 +
-+	spin_lock(&cookie->lock);
-+
-+	/* update the index entry on disk in each cache backing this cookie */
-+	hlist_for_each_entry(object, _p,
-+			     &cookie->backing_objects, cookie_link) {
-+		fscache_raise_event(object, FSCACHE_OBJECT_EV_UPDATE);
-+	}
-+
-+	spin_unlock(&cookie->lock);
-+	_leave("");
-+}
-+EXPORT_SYMBOL(__fscache_update_cookie);
-+
-+/*
-+ * release a cookie back to the cache
-+ * - the object will be marked as recyclable on disk if retire is true
-+ * - all dependents of this cookie must have already been unregistered
-+ *   (indices/files/pages)
-+ */
-+void __fscache_relinquish_cookie(struct fscache_cookie *cookie, int retire)
-+{
-+	struct fscache_cache *cache;
-+	struct fscache_object *object;
-+	unsigned long event;
-+
-+	fscache_stat(&fscache_n_relinquishes);
-+
-+	if (!cookie) {
-+		fscache_stat(&fscache_n_relinquishes_null);
-+		_leave(" [no cookie]");
-+		return;
-+	}
-+
-+	_enter("%p{%s,%p},%d",
-+	       cookie, cookie->def->name, cookie->netfs_data, retire);
-+
-+	if (atomic_read(&cookie->n_children) != 0) {
-+		printk(KERN_ERR "FS-Cache: Cookie '%s' still has children\n",
-+		       cookie->def->name);
++		/* need to issue a new write op after this */
++		clear_bit(FSCACHE_OBJECT_PENDING_WRITE, &object->flags);
++		ret = 0;
++	} else if (object->state == FSCACHE_OBJECT_CREATING) {
++		op->object = object;
++		object->n_ops++;
++		object->n_exclusive++;	/* reads and writes must wait */
++		atomic_inc(&op->usage);
++		list_add_tail(&op->pend_link, &object->pending_ops);
++		fscache_stat(&fscache_n_op_pend);
++		ret = 0;
++	} else {
++		/* not allowed to submit ops in any other state */
 +		BUG();
 +	}
 +
-+	/* wait for the cookie to finish being instantiated (or to fail) */
-+	if (test_bit(FSCACHE_COOKIE_CREATING, &cookie->flags)) {
-+		fscache_stat(&fscache_n_relinquishes_waitcrt);
-+		wait_on_bit(&cookie->flags, FSCACHE_COOKIE_CREATING,
-+			    fscache_wait_bit, TASK_UNINTERRUPTIBLE);
++	spin_unlock(&object->lock);
++	return ret;
++}
++
++/*
++ * report an unexpected submission
++ */
++static void fscache_report_unexpected_submission(struct fscache_object *object,
++						 struct fscache_operation *op,
++						 unsigned long ostate)
++{
++	static bool once_only;
++	struct fscache_operation *p;
++	unsigned n;
++
++	if (once_only)
++		return;
++	once_only = true;
++
++	kdebug("unexpected submission OP%x [OBJ%x %s]",
++	       op->debug_id, object->debug_id,
++	       fscache_object_states[object->state]);
++	kdebug("objstate=%s [%s]",
++	       fscache_object_states[object->state],
++	       fscache_object_states[ostate]);
++	kdebug("objflags=%lx", object->flags);
++	kdebug("objevent=%lx [%lx]", object->events, object->event_mask);
++	kdebug("ops=%u inp=%u exc=%u",
++	       object->n_ops, object->n_in_progress, object->n_exclusive);
++
++	if (!list_empty(&object->pending_ops)) {
++		n = 0;
++		list_for_each_entry(p, &object->pending_ops, pend_link) {
++			ASSERTCMP(p->object, ==, object);
++			kdebug("%p %p", op->processor, op->release);
++			n++;
++		}
++
++		kdebug("n=%u", n);
 +	}
 +
-+	event = retire ? FSCACHE_OBJECT_EV_RETIRE : FSCACHE_OBJECT_EV_RELEASE;
++	dump_stack();
++}
 +
-+	/* detach pointers back to the netfs */
-+	spin_lock(&cookie->lock);
++/*
++ * submit an operation for an object
++ * - objects may be submitted only in the following states:
++ *   - during object creation (write ops may be submitted)
++ *   - whilst the object is active
++ *   - after an I/O error incurred in one of the two above states (op rejected)
++ * - this gets any extra refs it needs on an op
++ */
++int fscache_submit_op(struct fscache_object *object,
++		      struct fscache_operation *op)
++{
++	unsigned long ostate;
++	int ret;
 +
-+	cookie->netfs_data	= NULL;
-+	cookie->def		= NULL;
++	_enter("{OBJ%x OP%x},{%u}",
++	       object->debug_id, op->debug_id, atomic_read(&op->usage));
 +
-+	/* break links with all the active objects */
-+	while (!hlist_empty(&cookie->backing_objects)) {
-+		object = hlist_entry(cookie->backing_objects.first,
-+				     struct fscache_object,
-+				     cookie_link);
++	ASSERTCMP(atomic_read(&op->usage), >, 0);
 +
-+		_debug("RELEASE OBJ%x", object->debug_id);
++	spin_lock(&object->lock);
++	ASSERTCMP(object->n_ops, >=, object->n_in_progress);
++	ASSERTCMP(object->n_ops, >=, object->n_exclusive);
 +
-+		/* detach each cache object from the object cookie */
-+		spin_lock(&object->lock);
-+		hlist_del_init(&object->cookie_link);
++	ostate = object->state;
++	smp_rmb();
++
++	if (fscache_object_is_active(object)) {
++		op->object = object;
++		object->n_ops++;
++
++		if (object->n_exclusive > 0) {
++			atomic_inc(&op->usage);
++			list_add_tail(&op->pend_link, &object->pending_ops);
++			fscache_stat(&fscache_n_op_pend);
++		} else if (!list_empty(&object->pending_ops)) {
++			atomic_inc(&op->usage);
++			list_add_tail(&op->pend_link, &object->pending_ops);
++			fscache_stat(&fscache_n_op_pend);
++			fscache_start_operations(object);
++		} else {
++			ASSERTCMP(object->n_exclusive, ==, 0);
++			fscache_run_op(object, op);
++		}
++		ret = 0;
++	} else if (object->state == FSCACHE_OBJECT_CREATING) {
++		op->object = object;
++		object->n_ops++;
++		atomic_inc(&op->usage);
++		list_add_tail(&op->pend_link, &object->pending_ops);
++		fscache_stat(&fscache_n_op_pend);
++		ret = 0;
++	} else if (!test_bit(FSCACHE_IOERROR, &object->cache->flags)) {
++		fscache_report_unexpected_submission(object, op, ostate);
++		ASSERT(!fscache_object_is_active(object));
++		ret = -ENOBUFS;
++	} else {
++		ret = -ENOBUFS;
++	}
++
++	spin_unlock(&object->lock);
++	return ret;
++}
++
++/*
++ * queue an object for withdrawal on error, aborting all following asynchronous
++ * operations
++ */
++void fscache_abort_object(struct fscache_object *object)
++{
++	_enter("{OBJ%x}", object->debug_id);
++
++	fscache_raise_event(object, FSCACHE_OBJECT_EV_ERROR);
++}
++
++/*
++ * jump start the operation processing on an object
++ * - caller must hold object->lock
++ */
++void fscache_start_operations(struct fscache_object *object)
++{
++	struct fscache_operation *op;
++	bool stop = false;
++
++	while (!list_empty(&object->pending_ops) && !stop) {
++		op = list_entry(object->pending_ops.next,
++				struct fscache_operation, pend_link);
++
++		if (test_bit(FSCACHE_OP_EXCLUSIVE, &op->flags)) {
++			if (object->n_in_progress > 0)
++				break;
++			stop = true;
++		}
++		list_del_init(&op->pend_link);
++		object->n_in_progress++;
++
++		if (test_and_clear_bit(FSCACHE_OP_WAITING, &op->flags))
++			wake_up_bit(&op->flags, FSCACHE_OP_WAITING);
++		if (op->processor)
++			fscache_enqueue_operation(op);
++
++		/* the pending queue was holding a ref on the object */
++		fscache_put_operation(op);
++	}
++
++	ASSERTCMP(object->n_in_progress, <=, object->n_ops);
++
++	_debug("woke %d ops on OBJ%x",
++	       object->n_in_progress, object->debug_id);
++}
++
++/*
++ * release an operation
++ * - queues pending ops if this is the last in-progress op
++ */
++void fscache_put_operation(struct fscache_operation *op)
++{
++	struct fscache_object *object;
++	struct fscache_cache *cache;
++
++	_enter("{OBJ%x OP%x,%d}",
++	       op->object->debug_id, op->debug_id, atomic_read(&op->usage));
++
++	ASSERTCMP(atomic_read(&op->usage), >, 0);
++
++	if (!atomic_dec_and_test(&op->usage))
++		return;
++
++	_debug("PUT OP");
++	if (test_and_set_bit(FSCACHE_OP_DEAD, &op->flags))
++		BUG();
++
++	fscache_stat(&fscache_n_op_release);
++
++	if (op->release) {
++		op->release(op);
++		op->release = NULL;
++	}
++
++	object = op->object;
++
++	/* now... we may get called with the object spinlock held, so we
++	 * complete the cleanup here only if we can immediately acquire the
++	 * lock, and defer it otherwise */
++	if (!spin_trylock(&object->lock)) {
++		_debug("defer put");
++		fscache_stat(&fscache_n_op_deferred_release);
 +
 +		cache = object->cache;
-+		object->cookie = NULL;
-+		fscache_raise_event(object, event);
++		spin_lock(&cache->op_gc_list_lock);
++		list_add_tail(&op->pend_link, &cache->op_gc_list);
++		spin_unlock(&cache->op_gc_list_lock);
++		schedule_work(&cache->op_gc);
++		_leave(" [defer]");
++		return;
++	}
++
++	if (test_bit(FSCACHE_OP_EXCLUSIVE, &op->flags)) {
++		ASSERTCMP(object->n_exclusive, >, 0);
++		object->n_exclusive--;
++	}
++
++	ASSERTCMP(object->n_in_progress, >, 0);
++	object->n_in_progress--;
++	if (object->n_in_progress == 0)
++		fscache_start_operations(object);
++
++	ASSERTCMP(object->n_ops, >, 0);
++	object->n_ops--;
++	if (object->n_ops == 0)
++		fscache_raise_event(object, FSCACHE_OBJECT_EV_CLEARED);
++
++	spin_unlock(&object->lock);
++
++	kfree(op);
++	_leave(" [done]");
++}
++EXPORT_SYMBOL(fscache_put_operation);
++
++/*
++ * garbage collect operations that have had their release deferred
++ */
++void fscache_operation_gc(struct work_struct *work)
++{
++	struct fscache_operation *op;
++	struct fscache_object *object;
++	struct fscache_cache *cache =
++		container_of(work, struct fscache_cache, op_gc);
++	int count = 0;
++
++	_enter("");
++
++	do {
++		spin_lock(&cache->op_gc_list_lock);
++		if (list_empty(&cache->op_gc_list)) {
++			spin_unlock(&cache->op_gc_list_lock);
++			break;
++		}
++
++		op = list_entry(cache->op_gc_list.next,
++				struct fscache_operation, pend_link);
++		list_del(&op->pend_link);
++		spin_unlock(&cache->op_gc_list_lock);
++
++		object = op->object;
++
++		_debug("GC DEFERRED REL OBJ%x OP%x",
++		       object->debug_id, op->debug_id);
++		fscache_stat(&fscache_n_op_gc);
++
++		ASSERTCMP(atomic_read(&op->usage), ==, 0);
++
++		spin_lock(&object->lock);
++		if (test_bit(FSCACHE_OP_EXCLUSIVE, &op->flags)) {
++			ASSERTCMP(object->n_exclusive, >, 0);
++			object->n_exclusive--;
++		}
++
++		ASSERTCMP(object->n_in_progress, >, 0);
++		object->n_in_progress--;
++		if (object->n_in_progress == 0)
++			fscache_start_operations(object);
++
++		ASSERTCMP(object->n_ops, >, 0);
++		object->n_ops--;
++		if (object->n_ops == 0)
++			fscache_raise_event(object, FSCACHE_OBJECT_EV_CLEARED);
++
 +		spin_unlock(&object->lock);
 +
-+		if (atomic_dec_and_test(&cookie->usage))
-+			/* the cookie refcount shouldn't be reduced to 0 yet */
-+			BUG();
-+	}
++	} while (count++ < 20);
 +
-+	spin_unlock(&cookie->lock);
-+
-+	if (cookie->parent) {
-+		ASSERTCMP(atomic_read(&cookie->parent->usage), >, 0);
-+		ASSERTCMP(atomic_read(&cookie->parent->n_children), >, 0);
-+		atomic_dec(&cookie->parent->n_children);
-+	}
-+
-+	/* finally dispose of the cookie */
-+	ASSERTCMP(atomic_read(&cookie->usage), >, 0);
-+	fscache_cookie_put(cookie);
++	if (!list_empty(&cache->op_gc_list))
++		schedule_work(&cache->op_gc);
 +
 +	_leave("");
 +}
-+EXPORT_SYMBOL(__fscache_relinquish_cookie);
 +
 +/*
-  * destroy a cookie
-  */
- void __fscache_cookie_put(struct fscache_cookie *cookie)
-diff --git a/include/linux/fscache.h b/include/linux/fscache.h
-index b195c2e..245b486 100644
---- a/include/linux/fscache.h
-+++ b/include/linux/fscache.h
-@@ -178,6 +178,13 @@ extern void __fscache_unregister_netfs(struct fscache_netfs *);
- extern struct fscache_cache_tag *__fscache_lookup_cache_tag(const char *);
- extern void __fscache_release_cache_tag(struct fscache_cache_tag *);
- 
-+extern struct fscache_cookie *__fscache_acquire_cookie(
-+	struct fscache_cookie *,
-+	const struct fscache_cookie_def *,
-+	void *);
-+extern void __fscache_relinquish_cookie(struct fscache_cookie *, int);
-+extern void __fscache_update_cookie(struct fscache_cookie *);
++ * allow the slow work item processor to get a ref on an operation
++ */
++static int fscache_op_get_ref(struct slow_work *work)
++{
++	struct fscache_operation *op =
++		container_of(work, struct fscache_operation, slow_work);
 +
- /**
-  * fscache_register_netfs - Register a filesystem as desiring caching services
-  * @netfs: The description of the filesystem
-@@ -269,7 +276,10 @@ struct fscache_cookie *fscache_acquire_cookie(
- 	const struct fscache_cookie_def *def,
- 	void *netfs_data)
- {
--	return NULL;
-+	if (fscache_cookie_valid(parent))
-+		return __fscache_acquire_cookie(parent, def, netfs_data);
-+	else
-+		return NULL;
- }
- 
- /**
-@@ -287,6 +297,8 @@ struct fscache_cookie *fscache_acquire_cookie(
- static inline
- void fscache_relinquish_cookie(struct fscache_cookie *cookie, int retire)
- {
-+	if (fscache_cookie_valid(cookie))
-+		__fscache_relinquish_cookie(cookie, retire);
- }
- 
- /**
-@@ -302,6 +314,8 @@ void fscache_relinquish_cookie(struct fscache_cookie *cookie, int retire)
- static inline
- void fscache_update_cookie(struct fscache_cookie *cookie)
- {
-+	if (fscache_cookie_valid(cookie))
-+		__fscache_update_cookie(cookie);
- }
- 
- /**
++	atomic_inc(&op->usage);
++	return 0;
++}
++
++/*
++ * allow the slow work item processor to discard a ref on an operation
++ */
++static void fscache_op_put_ref(struct slow_work *work)
++{
++	struct fscache_operation *op =
++		container_of(work, struct fscache_operation, slow_work);
++
++	fscache_put_operation(op);
++}
++
++/*
++ * execute an operation using the slow thread pool to provide processing context
++ * - the caller holds a ref to this object, so we don't need to hold one
++ */
++static void fscache_op_execute(struct slow_work *work)
++{
++	struct fscache_operation *op =
++		container_of(work, struct fscache_operation, slow_work);
++	unsigned long start;
++
++	_enter("{OBJ%x OP%x,%d}",
++	       op->object->debug_id, op->debug_id, atomic_read(&op->usage));
++
++	ASSERT(op->processor != NULL);
++	start = jiffies;
++	op->processor(op);
++	fscache_hist(fscache_ops_histogram, start);
++
++	_leave("");
++}
++
++const struct slow_work_ops fscache_op_slow_work_ops = {
++	.get_ref	= fscache_op_get_ref,
++	.put_ref	= fscache_op_put_ref,
++	.execute	= fscache_op_execute,
++};
 
