@@ -1,66 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S936602AbZDCV3W@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760426AbZDCVd4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S936602AbZDCV3W (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 3 Apr 2009 17:29:22 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758868AbZDCV3N
+	id S1760426AbZDCVd4 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 3 Apr 2009 17:33:56 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757805AbZDCVdp
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 3 Apr 2009 17:29:13 -0400
-Received: from tichy.grunau.be ([85.131.189.73]:51885 "EHLO tichy.grunau.be"
+	Fri, 3 Apr 2009 17:33:45 -0400
+Received: from mx2.redhat.com ([66.187.237.31]:51083 "EHLO mx2.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1758491AbZDCV3N (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 3 Apr 2009 17:29:13 -0400
-Date: Fri, 3 Apr 2009 23:28:47 +0200
-From: Janne Grunau <j@jannau.net>
-To: Jeff Garzik <jeff@garzik.org>
-Cc: Mark Lord <lkml@rtr.ca>, Lennart Sorensen <lsorense@csclub.uwaterloo.ca>,
-       Jens Axboe <jens.axboe@oracle.com>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Ingo Molnar <mingo@elte.hu>, Andrew Morton <akpm@linux-foundation.org>,
-       tytso@mit.edu, drees76@gmail.com, jesper@krogh.cc,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: Linux 2.6.29
-Message-ID: <20090403212847.GC25887@aniel>
-References: <20090326182519.d576d703.akpm@linux-foundation.org> <20090401210337.GB3797@csclub.uwaterloo.ca> <20090401143622.b1885643.akpm@linux-foundation.org> <20090402010044.GA16092@elte.hu> <20090403040649.GF3795@csclub.uwaterloo.ca> <alpine.LFD.2.00.0904022112260.4130@localhost.localdomain> <20090403072507.GO5178@kernel.dk> <20090403142129.GH3795@csclub.uwaterloo.ca> <49D625A0.1030202@rtr.ca> <49D66A40.5020503@garzik.org>
+	id S1757386AbZDCVdo (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 3 Apr 2009 17:33:44 -0400
+Message-ID: <49D680D0.1090701@redhat.com>
+Date: Fri, 03 Apr 2009 17:34:08 -0400
+From: Masami Hiramatsu <mhiramat@redhat.com>
+User-Agent: Thunderbird 2.0.0.21 (X11/20090320)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <49D66A40.5020503@garzik.org>
-User-Agent: Mutt/1.5.19 (2009-01-05)
+To: Roland McGrath <roland@redhat.com>
+CC: Frederic Weisbecker <fweisbec@gmail.com>, Ingo Molnar <mingo@elte.hu>,
+       Ananth N Mavinakayanahalli <ananth@in.ibm.com>,
+       Steven Rostedt <rostedt@goodmis.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Andi Kleen <andi@firstfloor.org>,
+       Arnaldo Carvalho de Melo <acme@redhat.com>,
+       Jim Keniston <jkenisto@us.ibm.com>,
+       systemtap-ml <systemtap@sources.redhat.com>,
+       LKML <linux-kernel@vger.kernel.org>, kvm@vger.kernel.org
+Subject: Re: [PATCH -tip 2/6 V4.1] x86: add arch-dep register and stack access
+  API to ptrace
+References: <49D4F4DF.1040605@redhat.com>	<20090402234835.GA6112@nowhere>	<49D6331D.6000505@redhat.com> <20090403202004.3A2B1FC3AB@magilla.sf.frob.com>
+In-Reply-To: <20090403202004.3A2B1FC3AB@magilla.sf.frob.com>
+X-Enigmail-Version: 0.95.7
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Apr 03, 2009 at 03:57:52PM -0400, Jeff Garzik wrote:
-> Mark Lord wrote:
-> > 
-> > I wonder if the problem with your system is really a Myth/driver issue?
-> > 
-> > Curiously, I have a HVR-1600 card here, and when recording analog TV with
-> > it the disk lights are on constantly.  The problem with it turns out to
-> > be mythbackend doing fsync() calls ten times a second.
-> > 
-> > My other tuner cards don't have this problem.
-> > 
-> > So perhaps the PVR-500 triggers the same buggy behaviour as the HVR-1600?
-> > To work around it here, I decided to use a preload library that replaces
-> > the frequent fsync() calls with a more moderated behaviour:
-> > 
-> >   http://rtr.ca/hvr1600/libfsync.tar.gz
-> > 
-> > Grab that file and try it out.  Instructions are included within.
-> > Report back again and let us know if it makes any difference.
-> > 
-> > Someday I may try and chase down the exact bug that causes mythbackend
-> > to go fsyncing berserk like that, but for now this workaround is fine.
-
-that sounds if it indeed syncs every 100ms instead of once per second
-over the whole recording. It's inteneded behaviour for the first 64K.
-
-> mythtv/libs/libmythtv/ThreadedFileWriter.cpp is a good place to start 
-> (Sync method... uses fdatasync if available, fsync if not).
+Roland McGrath wrote:
+>> +static struct pt_regs_offset regoffset_table[] = {
 > 
-> mythtv is definitely a candidate for sync_file_range() style output, IMO.
+>          ^ const
 
-yeah, I'm on it.
+Oops, exactly.
+Perhaps, I need to update insn.c to make bitmap tables
+"static const" too.
 
-Janne
+Thank you,
+
+-- 
+Masami Hiramatsu
+
+Software Engineer
+Hitachi Computer Products (America) Inc.
+Software Solutions Division
+
+e-mail: mhiramat@redhat.com
+
