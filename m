@@ -1,148 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763615AbZDCMh4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763967AbZDCMjd@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763615AbZDCMh4 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 3 Apr 2009 08:37:56 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752759AbZDCMhq
+	id S1763967AbZDCMjd (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 3 Apr 2009 08:39:33 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755291AbZDCMjY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 3 Apr 2009 08:37:46 -0400
-Received: from casper.infradead.org ([85.118.1.10]:43028 "EHLO
-	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754549AbZDCMhp (ORCPT
+	Fri, 3 Apr 2009 08:39:24 -0400
+Received: from atrey.karlin.mff.cuni.cz ([195.113.26.193]:54070 "EHLO
+	atrey.karlin.mff.cuni.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752759AbZDCMjX (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 3 Apr 2009 08:37:45 -0400
-Subject: Re: [patch 4/4] Intel IOMMU Suspend/Resume Support - Code Clean Up
-From: David Woodhouse <dwmw2@infradead.org>
-To: Fenghua Yu <fenghua.yu@intel.com>
-Cc: Ingo Molnar <mingo@elte.hu>, Suresh Siddha <suresh.b.siddha@intel.com>,
-       Andrew Lutomirski <amluto@gmail.com>,
-       Jesse Barnes <jbarnes@virtuousgeek.org>,
-       Kyle McMartin <kyle@redhat.com>, Yinghai Lu <yinghai@kernel.org>,
-       LKML <linux-kernel@vger.kernel.org>,
-       IOMMU <iommu@lists.linux-foundation.org>
-In-Reply-To: <20090327212321.520992000@intel.com>>
-References: <20090327212241.234500000@intel.com> >
-	  <20090327212321.520992000@intel.com>>
-Content-Type: text/plain
-Date: Fri, 03 Apr 2009 13:37:17 +0100
-Message-Id: <1238762237.3494.13.camel@macbook.infradead.org>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.26.0 (2.26.0-1.fc11) 
-Content-Transfer-Encoding: 7bit
-X-SRS-Rewrite: SMTP reverse-path rewritten from <dwmw2@infradead.org> by casper.infradead.org
-	See http://www.infradead.org/rpr.html
+	Fri, 3 Apr 2009 08:39:23 -0400
+Date: Fri, 3 Apr 2009 14:39:14 +0200
+From: Pavel Machek <pavel@ucw.cz>
+To: Theodore Tso <tytso@mit.edu>, Matthew Garrett <mjg59@srcf.ucam.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       David Rees <drees76@gmail.com>, Jesper Krogh <jesper@krogh.cc>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: Linux 2.6.29
+Message-ID: <20090403123914.GA1391@ucw.cz>
+References: <alpine.LFD.2.00.0903251139260.3032@localhost.localdomain> <20090325220530.GR32307@mit.edu> <alpine.LFD.2.00.0903251622420.3032@localhost.localdomain> <20090326171148.9bf8f1ec.akpm@linux-foundation.org> <alpine.LFD.2.00.0903261723250.3994@localhost.localdomain> <20090326174704.cd36bf7b.akpm@linux-foundation.org> <alpine.LFD.2.00.0903261752110.3994@localhost.localdomain> <20090327032301.GN6239@mit.edu> <20090327034705.GA16888@srcf.ucam.org> <20090327051338.GP6239@mit.edu>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20090327051338.GP6239@mit.edu>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 2009-03-27 at 14:22 -0700, Fenghua Yu wrote:
-> plain text document attachment (iommu_sr_4.patch)
-> A new macro list_for_each_entry_selected_do() is defined for linked list.
-> iommu uses this macro to have concise and more readable code.
+Hi!
+
+> > I'm utterly and screamingly bored of this "Blame userspace" attitude. 
 > 
-> It's defined as generic code. Hopefully it could be used in other places.
-> 
-> Signed-off-by: Fenghua Yu <fenghua.yu@intel.com>
+> I'm not blaming userspace.  I'm blaming ourselves, for implementing an
+> attractive nuisance, and not realizing that we had implemented an
+> attractive nuisance; which years later, is also responsible for these
+> latency problems, both with and without fsync() ---- *and* which have
+> also traied people into believing that fsync() is always expensive,
+> and must be avoided at all costs --- which had not previously been
+> true!
 
-This is overkill, surely? It would be easier to do...
+Well... fsync is quite expensive. If your disk is down, it costs 3+
+and 3J+. If your disk is up, it will only take 20msec+.
 
-#define for_each_active_iommu(i, drhd)					\
-	list_for_each_entry(drhd, &dmar_drhd_units, list)		\
-		if (i=drhd->iommu, !drhd->ignored)
+OTOH the rename trick on ext3 costs approximately nothing...
 
-#define for_each_iommu(i, drhd)						\
-	list_for_each_entry(drhd, &dmar_drhd_units, list)		\
-		if (i=drhd->iommu, 1)
+Imagine those desktops where they want windows layout
+preserved. Having 30 second old layout is acceptable, loosing layout
+altogether is not. If you add fsync to the window manager, user will
+see those 3seconds+ delays, unless window manager gets multithreaded.
 
-Or if you really want to avoid it eating a stray 'else' then
-
-#define for_each_active_iommu(i, drhd)					\
-	list_for_each_entry(drhd, &dmar_drhd_units, list)		\
-		if (i=drhd->iommu, drhd->ignored) {} else
-
-#define for_each_iommu(i, drhd)						\
-	list_for_each_entry(drhd, &dmar_drhd_units, list)		\
-		if (i=drhd->iommu, 0) {} else
-
-
-> ---
-> 
->  include/linux/dmar.h |    8 ++++++++
->  include/linux/list.h |   42 ++++++++++++++++++++++++++++++++++++++++++
->  2 files changed, 50 insertions(+)
-> 
-> diff --git a/include/linux/dmar.h b/include/linux/dmar.h
-> index 2f34274..146d54b 100644
-> --- a/include/linux/dmar.h
-> +++ b/include/linux/dmar.h
-> @@ -44,6 +44,14 @@ extern struct list_head dmar_drhd_units;
->  #define for_each_drhd_unit(drhd) \
->  	list_for_each_entry(drhd, &dmar_drhd_units, list)
->  
-> +#define for_each_active_iommu(i, drhd)					\
-> +	list_for_each_entry_selected_do(drhd, &dmar_drhd_units, list,	\
-> +				!drhd->ignored, {i = drhd->iommu; })
-> +
-> +#define for_each_iommu(i, drhd)						\
-> +	list_for_each_entry_selected_do(drhd, &dmar_drhd_units, list,	\
-> +				1, {i = drhd->iommu; })
-> +
->  extern int dmar_table_init(void);
->  extern int dmar_dev_scope_init(void);
->  
-> diff --git a/include/linux/list.h b/include/linux/list.h
-> index 969f6e9..6580f43 100644
-> --- a/include/linux/list.h
-> +++ b/include/linux/list.h
-> @@ -530,6 +530,48 @@ static inline void list_splice_tail_init(struct list_head *list,
->  	     &pos->member != (head); 					\
->  	     pos = n, n = list_entry(n->member.prev, typeof(*n), member))
->  
-> +/**
-> + * list_first_entry_selected - get the first selected element from a list
-> + * @pos:	the type * to use as a loop cursor.
-> + * @head:	the head for your list.
-> + * @member:	the name of the list_struct within the struct.
-> + * @selector:	the selector to select the first entry.
-> + */
-> +#define list_first_entry_selected(pos, head, member, selector)		  \
-> +	pos = list_entry((head)->next, typeof(*pos), member),		  \
-> +	pos = ({while (!(selector) && (&pos->member != (head)))		  \
-> +		pos = list_entry(pos->member.next, typeof(*pos), member); \
-> +		pos; })
-> +
-> +/**
-> + * list_next_entry_selected - get the next selected element from a list
-> + * @pos:	the type * to use as a loop cursor.
-> + * @head:	the head for your list.
-> + * @member:	the name of the list_struct within the struct.
-> + * @selector:	the selector to select the next entry.
-> + */
-> +#define list_next_entry_selected(pos, head, member, selector)		  \
-> +	pos = list_entry(pos->member.next, typeof(*pos), member),	  \
-> +	pos = ({while (!(selector) && (&pos->member != (head)))		  \
-> +		pos = list_entry(pos->member.next, typeof(*pos), member); \
-> +		pos; })
-> +
-> +/**
-> + * list_for_each_entry_selected_do - iterate over list of given type and
-> + * selected entries. Do something on each selected entry.
-> + * @pos:	the type * to use as a loop cursor.
-> + * @head:	the head for your list.
-> + * @member:	the name of the list_struct within the struct.
-> + * @selector:	the selector to select entries.
-> + * @to_do:	things to do on each selected entry.
-> + */
-> +#define list_for_each_entry_selected_do(pos, head, member, selector, to_do) \
-> +	for (list_first_entry_selected(pos, head, member, selector),	    \
-> +		({if (&pos->member != (head)) to_do});			    \
-> +		prefetch(pos->member.next), &pos->member != (head);	    \
-> +		list_next_entry_selected(pos, head, member, selector),	    \
-> +		({if (&pos->member != (head)) to_do}))
-> +
->  /*
->   * Double linked lists with a single pointer list head.
->   * Mostly useful for hash tables where the two pointer list head is
-> 
+								Pavel
 -- 
-dwmw2
-
+(english) http://www.livejournal.com/~pavelmachek
+(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
