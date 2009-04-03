@@ -1,258 +1,87 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755428AbZDCCI1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753729AbZDCCU3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755428AbZDCCI1 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 2 Apr 2009 22:08:27 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750991AbZDCCIS
+	id S1753729AbZDCCU3 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 2 Apr 2009 22:20:29 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751698AbZDCCUS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 2 Apr 2009 22:08:18 -0400
-Received: from fgwmail5.fujitsu.co.jp ([192.51.44.35]:60272 "EHLO
-	fgwmail5.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750695AbZDCCIQ (ORCPT
+	Thu, 2 Apr 2009 22:20:18 -0400
+Received: from yw-out-2324.google.com ([74.125.46.28]:52175 "EHLO
+	yw-out-2324.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751158AbZDCCUP convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 2 Apr 2009 22:08:16 -0400
-Message-ID: <49D56F87.9030104@jp.fujitsu.com>
-Date: Fri, 03 Apr 2009 11:08:07 +0900
-From: Kenji Kaneshige <kaneshige.kenji@jp.fujitsu.com>
-User-Agent: Thunderbird 2.0.0.21 (Windows/20090302)
+	Thu, 2 Apr 2009 22:20:15 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
+         :cc:content-type:content-transfer-encoding;
+        b=jDCIkfgC1f9NVBVxm4hFGfgEtygoyhNBL4QWZ0WKLgnB7fe8qUCe0alSKpDWO87veI
+         4/yKE0AzsKFPoZd3mAz68nGVlilNpbnd161IpLaBeG8j/O6kcWm4dBQTb29Nvua5oDm1
+         +GlvcFyvRsRofNquZjKAfnCLR07ne2Q73kcXQ=
 MIME-Version: 1.0
-To: Andrew Patterson <andrew.patterson@hp.com>
-CC: linux-pci@vger.kernel.org, linux-kernel@vger.kernel.org,
-       jbarnes@virtuousgeek.org
-Subject: Re: [PATCH] Add support for turning PCIe ECRC on or off
-References: <20090402221751.11757.36392.stgit@bob.kio>
-In-Reply-To: <20090402221751.11757.36392.stgit@bob.kio>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+In-Reply-To: <9b1675090904021905o7e0cec64lfe4a5372777908b6@mail.gmail.com>
+References: <49CCCB0A.6070701@nokia.com> <alpine.DEB.2.01.0904021706330.6162@bogon.housecafe.de> 
+	<9b1675090904021724t2fb0a671uc10d8e7bcba0bc5c@mail.gmail.com> 
+	<9b1675090904021728y35776377u327f2266d06e2f29@mail.gmail.com> 
+	<72dbd3150904021855v440f46a7oc21a7ed28fbfcb13@mail.gmail.com> 
+	<9b1675090904021905o7e0cec64lfe4a5372777908b6@mail.gmail.com>
+Date: Thu, 2 Apr 2009 19:19:58 -0700
+Message-ID: <72dbd3150904021919g5405ee40p100eacb085024941@mail.gmail.com>
+Subject: Re: EXT4-ish "fixes" in UBIFS
+From: David Rees <drees76@gmail.com>
+To: "Trenton D. Adams" <trenton.d.adams@gmail.com>
+Cc: Christian Kujau <lists@nerdbynature.de>,
+       Artem Bityutskiy <Artem.Bityutskiy@nokia.com>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Andrew Patterson wrote:
-> Add support for turning PCIe ECRC on or off
-> 
-> Adds support for PCI Express transaction layer end-to-end CRC checking
-> (ECRC).  This patch will enable/disable ECRC checking by setting/clearing
-> the ECRC Check Enable and/or ECRC Generation Enable bits for devices that
-> support ECRC.
-> 
-> The ECRC setting is controlled by the "pcie_ecrc=" command-line option. If
-> this option is not set or is set to 'default", the enable and generation
-> bits are left in whatever state that firmware/BIOS sets them to.  The
-> "off" setting turns them off, and the "on" option turns them on (if the
-> device supports it).
-> 
-> Signed-off-by: Andrew Patterson <andrew.patterson@hp.com>
-> ---
-> 
-> diff --git a/Documentation/kernel-parameters.txt b/Documentation/kernel-parameters.txt
-> index 1754fed..c346b55 100644
-> --- a/Documentation/kernel-parameters.txt
-> +++ b/Documentation/kernel-parameters.txt
-> @@ -1776,6 +1776,12 @@ and is between 256 and 4096 characters. It is defined in the file
->  		force	Enable ASPM even on devices that claim not to support it.
->  			WARNING: Forcing ASPM on may cause system lockups.
->  
-> +	pcie_ecrc=	[PCI] Enable/disable PCIe ECRC (transaction layer
-> +			end-to-end CRC checking).
-> +			pcie_ecrc=default: Use BIOS/firmware settings.
-> +			pcie_ecrc=off: Turn ECRC off
-> +			pcie_ecrc=on: Turn ECRC on.
-> +
->  	pcmv=		[HW,PCMCIA] BadgePAD 4
->  
->  	pd.		[PARIDE]
-> diff --git a/drivers/pci/pcie/Kconfig b/drivers/pci/pcie/Kconfig
-> index 5a0c6ad..d90f831 100644
-> --- a/drivers/pci/pcie/Kconfig
-> +++ b/drivers/pci/pcie/Kconfig
-> @@ -46,3 +46,15 @@ config PCIEASPM_DEBUG
->  	help
->  	  This enables PCI Express ASPM debug support. It will add per-device
->  	  interface to control ASPM.
-> +
-> +#
-> +# PCI Express ECRC
-> +#
-> +config PCIEECRC
-> +	bool "PCI Express ECRC support"
-> +	depends on PCI
-> +	help
-> +	  Enables PCI Express ECRC (transaction layer end-to-end CRC
-> +	  checking)
-> +
-> +	  When in doubt, say N.
-> diff --git a/drivers/pci/pcie/Makefile b/drivers/pci/pcie/Makefile
-> index 11f6bb1..acef212 100644
-> --- a/drivers/pci/pcie/Makefile
-> +++ b/drivers/pci/pcie/Makefile
-> @@ -5,6 +5,9 @@
->  # Build PCI Express ASPM if needed
->  obj-$(CONFIG_PCIEASPM)		+= aspm.o
->  
-> +# Build PCI Express ECRC if needed
-> +obj-$(CONFIG_PCIEECRC)		+= ecrc.o
-> +
->  pcieportdrv-y			:= portdrv_core.o portdrv_pci.o portdrv_bus.o
->  
->  obj-$(CONFIG_PCIEPORTBUS)	+= pcieportdrv.o
-> diff --git a/drivers/pci/pcie/ecrc.c b/drivers/pci/pcie/ecrc.c
-> new file mode 100644
-> index 0000000..eeb93df
-> --- /dev/null
-> +++ b/drivers/pci/pcie/ecrc.c
-> @@ -0,0 +1,94 @@
-> +/*
-> + *    Enables/disables PCIe ECRC checking.
-> + *
-> + *    (C) Copyright 20009 Hewlett-Packard Development Company, L.P.
-> + *    Andrew Patterson <andrew.patterson@hp.com>
-> + *
-> + *    This program is free software; you can redistribute it and/or modify
-> + *    it under the terms of the GNU General Public License as published by
-> + *    the Free Software Foundation; version 2 of the License.
-> + *
-> + *    This program is distributed in the hope that it will be useful,
-> + *    but WITHOUT ANY WARRANTY; without even the implied warranty of
-> + *    MERCHANTABILITY OR FITNESS FOR A PARTICULAR PURPOSE. See the GNU
-> + *    General Public License for more details.
-> + *
-> + *    You should have received a copy of the GNU General Public License
-> + *    along with this program; if not, write to the Free Software
-> + *    Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA
-> + *    02111-1307, USA.
-> + *
-> + */
-> +
-> +
-> +#include <linux/kernel.h>
-> +#include <linux/module.h>
-> +#include <linux/moduleparam.h>
-> +#include <linux/pci.h>
-> +#include <linux/pci_regs.h>
-> +#include <linux/errno.h>
-> +#include "../pci.h"
-> +
-> +#define ECRC_POLICY_DEFAULT 0		/* ECRC set by BIOS */
-> +#define ECRC_POLICY_OFF     1		/* ECRC off */
-> +#define ECRC_POLICY_ON      2		/* ECRC on */
-> +
-> +static int ecrc_policy = ECRC_POLICY_DEFAULT;
-> +
-> +static const char *ecrc_policy_str[] = {
-> +	[ECRC_POLICY_DEFAULT] = "default",
-> +	[ECRC_POLICY_OFF] = "off",
-> +	[ECRC_POLICY_ON] = "on"
-> +};
-> +
-> +/**
-> + * pcie_set_ercr_checking - enable/disable PCIe ECRC checking
-> + * @dev: the PCI device
-> + *
-> + * Returns 0 on success, or negative on failure.
-> + */
-> +int pcie_set_ecrc_checking(struct pci_dev *dev)
-> +{
-> +	int pos;
-> +	u32 reg32;
-> +
-> +	if (!dev->is_pcie)
-> +		return -ENODEV;
-> +
-> +	/* Use firmware/BIOS setting if default */
-> +	if (ecrc_policy == ECRC_POLICY_DEFAULT)
-> +		return 0;
-> +
-> +	pos = pci_find_ext_capability(dev, PCI_EXT_CAP_ID_ERR);
-> +	if (!pos)
-> +		return -ENODEV;
-> +
-> +	pci_read_config_dword(dev, pos + PCI_ERR_CAP, &reg32);
-> +	if (ecrc_policy == ECRC_POLICY_OFF) {
-> +		reg32 &= ~(PCI_ERR_CAP_ECRC_GENE | PCI_ERR_CAP_ECRC_CHKE);
-> +	} else if (ecrc_policy == ECRC_POLICY_ON) {
-> +		if (reg32 & PCI_ERR_CAP_ECRC_GENC)
-> +			reg32 |= PCI_ERR_CAP_ECRC_GENE;
-> +		if (reg32 & PCI_ERR_CAP_ECRC_CHKC)
-> +			reg32 |= PCI_ERR_CAP_ECRC_CHKE;
-> +	}
-> +	pci_write_config_dword(dev, pos + PCI_ERR_CAP, reg32);
-> +	return 0;
-> +}
-> +EXPORT_SYMBOL_GPL(pcie_set_ecrc_checking);
+On Thu, Apr 2, 2009 at 7:05 PM, Trenton D. Adams
+<trenton.d.adams@gmail.com> wrote:
+> On Thu, Apr 2, 2009 at 7:55 PM, David Rees <drees76@gmail.com> wrote:
+>> On Thu, Apr 2, 2009 at 5:28 PM, Trenton D. Adams
+>> <trenton.d.adams@gmail.com> wrote:
+>>> Oh, I should have clarified.  It improves performance under heavy
+>>> load.  Under normal load, mounting without sync is fine.  What I tend
+>>> to do is mount with "remount,rw,sync" when heavy load is starting.
+>>> Then my system goes slowly, but latency is good.  Then, when it's all
+>>> done (say a big compile, or job, or whatever), I remount without sync
+>>> again.
+>>>
+>>> I'm thinking of writing a script that monitors performance, and
+>>> remounts as needed, lol.  WHAT A HACK. hehe.
+>>
+>> All you're doing here is implementing the lowering of dirty data
+>> limits in the VM dynamically based on how long fsyncs take.
+>>
+>> Linus outlined this specific strategy as "the ideal siutation"
+>> somewhere in the depths of "That filesystem thread".
+>
+> I thought he said it was a HORRIBLE solution. :D  I recall him
+> slamming Andrew over it.  Unless you're referring to the kernel
+> actually doing it on the fly.
 
-I think this EXPORT_SYMBOL_GPL() is redundant.
+Yes - you are correct - doing it in userspace isn't the best place to
+put it - but if you can do it there, the same ideas could then be
+pushed into the kernel and further enhanced.
 
-By the way, I have the following question and comment, though I'm not
-familiar with ECRC at all.
+>> Look at the new in 2.6.29 dirty*bytes parameters in
+>> Documentation/sysctl/vm.txt for more info.  By lowering those values,
+>> you can effectively turn normal writes into synchronous writes which
+>> will greatly reduce latency of fsync under heavy write load.
+>>
+>> In previous kernels you can tweak dirty_ratio and
+>> dirty_background_ratio, but they don't have the granularity of the new
+>> knobs.  Although if you are talking about just remounting in sync
+>> mode, they may work for you at least as a proof of concept. ;-)
+>
+> dirty_ratio and dirty_background never really had any affect for me.
+> I'll look into the other parameters.  Waiting for the checkout again,
+> as I am currently under a heavy rsync load (*rolls eyes*).
 
-- This patch seems to change PCI Express Advanced Error capabilities
-  and Control Register. Can we do it without requesting control over
-  PCI Express Advanced Error reporting?
+How low have you set them?  Try setting them to 2 and 1 respectively.
+It cuts down fsync latencies by a significant amount in my experience.
 
-- What about implementing ECRC on/off feature as one of the feature
-  of existing AER driver.
-
-Thanks,
-Kenji Kaneshige
-
-
-
-> +
-> +static int __init pcie_ecrc_get_policy(char *str)
-> +{
-> +	int i;
-> +
-> +	for (i = 0; i < ARRAY_SIZE(ecrc_policy_str); i++)
-> +		if (!strncmp(str, ecrc_policy_str[i],
-> +			     strlen(ecrc_policy_str[i])))
-> +			break;
-> +	if (i >= ARRAY_SIZE(ecrc_policy_str))
-> +		return 0;
-> +
-> +	ecrc_policy = i;
-> +	return 1;
-> +}
-> +__setup("pcie_ecrc=", pcie_ecrc_get_policy);
-> diff --git a/drivers/pci/probe.c b/drivers/pci/probe.c
-> index e2f3dd0..e2b0ab5 100644
-> --- a/drivers/pci/probe.c
-> +++ b/drivers/pci/probe.c
-> @@ -984,6 +984,9 @@ static void pci_init_capabilities(struct pci_dev *dev)
->  
->  	/* Single Root I/O Virtualization */
->  	pci_iov_init(dev);
-> +
-> +	/* PCIe ECRC */
-> +	pcie_set_ecrc_checking(dev);
->  }
->  
->  void pci_device_add(struct pci_dev *dev, struct pci_bus *bus)
-> diff --git a/include/linux/pci.h b/include/linux/pci.h
-> index 507552d..080afd8 100644
-> --- a/include/linux/pci.h
-> +++ b/include/linux/pci.h
-> @@ -879,6 +879,15 @@ static inline int pcie_aspm_enabled(void)
->  extern int pcie_aspm_enabled(void);
->  #endif
->  
-> +#ifndef CONFIG_PCIEECRC
-> +static inline int pcie_set_ecrc_checking(struct pci_dev *dev)
-> +{
-> +	return 0;
-> +}
-> +#else
-> +extern int pcie_set_ecrc_checking(struct pci_dev *dev);
-> +#endif
-> +
->  #define pci_enable_msi(pdev)	pci_enable_msi_block(pdev, 1)
->  
->  #ifdef CONFIG_HT_IRQ
-> 
-> --
-> To unsubscribe from this list: send the line "unsubscribe linux-pci" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
-> 
-> 
-
-
+-Dave
