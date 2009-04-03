@@ -1,184 +1,77 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934046AbZDCOwJ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933762AbZDCOwf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934046AbZDCOwJ (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 3 Apr 2009 10:52:09 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1765917AbZDCOqS
+	id S933762AbZDCOwf (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 3 Apr 2009 10:52:35 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1765968AbZDCOqT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 3 Apr 2009 10:46:18 -0400
+	Fri, 3 Apr 2009 10:46:19 -0400
 Received: from mga09.intel.com ([134.134.136.24]:2422 "EHLO mga09.intel.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1765886AbZDCOqH (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 3 Apr 2009 10:46:07 -0400
-Content-Type: multipart/mixed; boundary="===============0388129146=="
+	id S932672AbZDCOqI (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 3 Apr 2009 10:46:08 -0400
+Content-Type: multipart/mixed; boundary="===============2093286272=="
 MIME-Version: 1.0
 X-ExtLoop1: 1
 X-IronPort-AV: E=Sophos;i="4.39,319,1235980800"; 
-   d="scan'208";a="503328367"
-Message-Id: <20090403144601.254472000@intel.com>
+   d="scan'208";a="503328372"
+Message-Id: <20090403144602.191165000@intel.com>
 References: <20090403144332.799740000@intel.com>
 User-Agent: quilt/0.46-1
-Date: Fri, 03 Apr 2009 16:43:46 +0200
+Date: Fri, 03 Apr 2009 16:43:47 +0200
 From: markus.t.metzger@intel.com
 To: mingo@elte.hu, tglx@linutronix.de, hpa@zytor.com
 Cc: markus.t.metzger@gmail.com, roland@redhat.com, eranian@googlemail.com,
        oleg@redhat.com, juan.villacis@intel.com, ak@linux.jf.intel.com,
        linux-kernel@vger.kernel.org,
        Markus Metzger <markus.t.metzger@intel.com>
-Subject: [patch 14/20] x86, ds: add leakage warning
+Subject: [patch 15/20] x86, ds: use single debug store cpu configuration
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---===============0388129146==
+--===============2093286272==
 MIME-Version: 1.0
-Content-Disposition: inline; filename=tip.master.ds.warn_on_exit.patch
+Content-Disposition: inline; filename=tip.master.ds.single_configuration.patch
 
-Add a warning in case a debug store context is not removed before
-the task it is attached to is freed.
-
-Remove the old warning at thread exit. It is too early.
-
-Declare the debug store context field in thread_struct unconditionally.
-
-Remove ds_copy_thread() and ds_exit_thread() and do the work directly
-in process*.c.
+Use a single configuration for all cpus.
 
 
+Reported-by: Ingo Molnar <mingo@elte.hu>
 Signed-off-by: Markus Metzger <markus.t.metzger@intel.com>
 ---
- arch/x86/include/asm/ds.h        |    9 	0 +	9 -	0 !
- arch/x86/include/asm/processor.h |    4 	1 +	3 -	0 !
- arch/x86/kernel/ds.c             |   10 	0 +	10 -	0 !
- arch/x86/kernel/process.c        |    5 	3 +	2 -	0 !
- arch/x86/kernel/process_32.c     |    3 	2 +	1 -	0 !
- arch/x86/kernel/process_64.c     |    3 	2 +	1 -	0 !
- 6 files changed, 8 insertions(+), 26 deletions(-)
+ arch/x86/kernel/ds.c |    7 	5 +	2 -	0 !
+ 1 file changed, 5 insertions(+), 2 deletions(-)
 
 Index: b/arch/x86/kernel/ds.c
 ===================================================================
 --- a/arch/x86/kernel/ds.c
 +++ b/arch/x86/kernel/ds.c
-@@ -1352,16 +1352,6 @@ void ds_switch_to(struct task_struct *pr
- 	update_debugctlmsr(debugctlmsr);
- }
- 
--void ds_copy_thread(struct task_struct *tsk, struct task_struct *father)
--{
--	clear_tsk_thread_flag(tsk, TIF_DS_AREA_MSR);
--	tsk->thread.ds_ctx = NULL;
--}
--
--void ds_exit_thread(struct task_struct *tsk)
--{
--}
--
- static __init int ds_selftest(void)
- {
- 	if (ds_cfg.sizeof_rec[ds_bts]) {
-Index: b/arch/x86/include/asm/ds.h
-===================================================================
---- a/arch/x86/include/asm/ds.h
-+++ b/arch/x86/include/asm/ds.h
-@@ -285,21 +285,12 @@ extern void __cpuinit ds_init_intel(stru
-  */
- extern void ds_switch_to(struct task_struct *prev, struct task_struct *next);
- 
--/*
-- * Task clone/init and cleanup work
-- */
--extern void ds_copy_thread(struct task_struct *tsk, struct task_struct *father);
--extern void ds_exit_thread(struct task_struct *tsk);
--
- #else /* CONFIG_X86_DS */
- 
- struct cpuinfo_x86;
- static inline void __cpuinit ds_init_intel(struct cpuinfo_x86 *ignored) {}
- static inline void ds_switch_to(struct task_struct *prev,
- 				struct task_struct *next) {}
--static inline void ds_copy_thread(struct task_struct *tsk,
--				  struct task_struct *father) {}
--static inline void ds_exit_thread(struct task_struct *tsk) {}
- 
- #endif /* CONFIG_X86_DS */
- #endif /* _ASM_X86_DS_H */
-Index: b/arch/x86/kernel/process.c
-===================================================================
---- a/arch/x86/kernel/process.c
-+++ b/arch/x86/kernel/process.c
-@@ -14,6 +14,7 @@
- #include <asm/idle.h>
- #include <asm/uaccess.h>
- #include <asm/i387.h>
-+#include <asm/ds.h>
- 
- unsigned long idle_halt;
- EXPORT_SYMBOL(idle_halt);
-@@ -45,6 +46,8 @@ void free_thread_xstate(struct task_stru
- 		kmem_cache_free(task_xstate_cachep, tsk->thread.xstate);
- 		tsk->thread.xstate = NULL;
- 	}
-+
-+	WARN(tsk->thread.ds_ctx, "leaking DS context\n");
- }
- 
- void free_thread_info(struct thread_info *ti)
-@@ -82,8 +85,6 @@ void exit_thread(void)
- 		t->io_bitmap_max = 0;
- 		put_cpu();
- 	}
--
--	ds_exit_thread(current);
- }
- 
- void flush_thread(void)
-Index: b/arch/x86/include/asm/processor.h
-===================================================================
---- a/arch/x86/include/asm/processor.h
-+++ b/arch/x86/include/asm/processor.h
-@@ -451,10 +451,8 @@ struct thread_struct {
- 	unsigned		io_bitmap_max;
- /* MSR_IA32_DEBUGCTLMSR value to switch in if TIF_DEBUGCTLMSR is set.  */
- 	unsigned long	debugctlmsr;
--#ifdef CONFIG_X86_DS
--/* Debug Store context; see include/asm-x86/ds.h; goes into MSR_IA32_DS_AREA */
-+	/* Debug Store context; see asm/ds.h */
- 	struct ds_context	*ds_ctx;
--#endif /* CONFIG_X86_DS */
+@@ -47,9 +47,8 @@ struct ds_configuration {
+ 	/* Control bit-masks indexed by enum ds_feature: */
+ 	unsigned long		ctl[dsf_ctl_max];
  };
+-static DEFINE_PER_CPU(struct ds_configuration, ds_cfg_array);
++static struct ds_configuration ds_cfg __read_mostly;
  
- static inline unsigned long native_get_debugreg(int regno)
-Index: b/arch/x86/kernel/process_32.c
-===================================================================
---- a/arch/x86/kernel/process_32.c
-+++ b/arch/x86/kernel/process_32.c
-@@ -290,7 +290,8 @@ int copy_thread(int nr, unsigned long cl
- 		p->thread.io_bitmap_max = 0;
- 	}
+-#define ds_cfg per_cpu(ds_cfg_array, smp_processor_id())
  
--	ds_copy_thread(p, current);
-+	clear_tsk_thread_flag(p, TIF_DS_AREA_MSR);
-+	p->thread.ds_ctx = NULL;
+ /* Maximal size of a DS configuration: */
+ #define MAX_SIZEOF_DS		(12 * 8)
+@@ -1268,6 +1267,10 @@ ds_configure(const struct ds_configurati
  
- 	clear_tsk_thread_flag(p, TIF_DEBUGCTLMSR);
- 	p->thread.debugctlmsr = 0;
-Index: b/arch/x86/kernel/process_64.c
-===================================================================
---- a/arch/x86/kernel/process_64.c
-+++ b/arch/x86/kernel/process_64.c
-@@ -335,7 +335,8 @@ int copy_thread(int nr, unsigned long cl
- 			goto out;
- 	}
- 
--	ds_copy_thread(p, me);
-+	clear_tsk_thread_flag(p, TIF_DS_AREA_MSR);
-+	p->thread.ds_ctx = NULL;
- 
- 	clear_tsk_thread_flag(p, TIF_DEBUGCTLMSR);
- 	p->thread.debugctlmsr = 0;
+ void __cpuinit ds_init_intel(struct cpuinfo_x86 *c)
+ {
++	/* Only configure the first cpu. Others are identical. */
++	if (ds_cfg.name)
++		return;
++
+ 	switch (c->x86) {
+ 	case 0x6:
+ 		switch (c->x86_model) {
 
 -- 
 
---===============0388129146==
+--===============2093286272==
 Content-Type: text/plain; charset="utf-8"
 MIME-Version: 1.0
 Content-Transfer-Encoding: quoted-printable
@@ -199,4 +92,4 @@ the sole use of the intended recipient(s). Any review or distribution
 by others is strictly prohibited. If you are not the intended
 recipient, please contact the sender and delete all copies.
 
---===============0388129146==--
+--===============2093286272==--
