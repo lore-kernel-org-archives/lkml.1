@@ -1,68 +1,83 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759067AbZDCMwm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763549AbZDCMxX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759067AbZDCMwm (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 3 Apr 2009 08:52:42 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755221AbZDCMwb
+	id S1763549AbZDCMxX (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 3 Apr 2009 08:53:23 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755467AbZDCMxN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 3 Apr 2009 08:52:31 -0400
-Received: from hera.kernel.org ([140.211.167.34]:49037 "EHLO hera.kernel.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755050AbZDCMwa (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 3 Apr 2009 08:52:30 -0400
-Date: Fri, 3 Apr 2009 12:51:41 GMT
-From: Li Zefan <lizf@cn.fujitsu.com>
-To: linux-tip-commits@vger.kernel.org
-Cc: linux-kernel@vger.kernel.org, acme@redhat.com, hpa@zytor.com,
-       mingo@redhat.com, lizf@cn.fujitsu.com, alan.brunelle@hp.com,
-       jens.axboe@oracle.com, tglx@linutronix.de, mingo@elte.hu
-Reply-To: mingo@redhat.com, hpa@zytor.com, acme@redhat.com,
-       linux-kernel@vger.kernel.org, lizf@cn.fujitsu.com, alan.brunelle@hp.com,
-       jens.axboe@oracle.com, tglx@linutronix.de, mingo@elte.hu
-In-Reply-To: <49D5BB56.7000807@cn.fujitsu.com>
-References: <49D5BB56.7000807@cn.fujitsu.com>
-Subject: [tip:tracing/blktrace-v2] blktrace: small cleanup in blk_msg_write()
-Message-ID: <tip-7635b03adf3d7b84da7649b81efa91e6ebf11b85@git.kernel.org>
-Git-Commit-ID: 7635b03adf3d7b84da7649b81efa91e6ebf11b85
-X-Mailer: tip-git-log-daemon
-MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Disposition: inline
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Fri, 03 Apr 2009 12:51:43 +0000 (UTC)
+	Fri, 3 Apr 2009 08:53:13 -0400
+Received: from mu-out-0910.google.com ([209.85.134.186]:24358 "EHLO
+	mu-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755201AbZDCMxL (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 3 Apr 2009 08:53:11 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=subject:from:to:cc:in-reply-to:references:content-type:date
+         :message-id:mime-version:x-mailer:content-transfer-encoding;
+        b=ExeWYGalinOw4PkwAC2lkvlSpL2hFCnERnB+nlYumX3j/N5N4IzQOtxxZJCCf7fedR
+         Bqx389Yy3m83L9zdzsyWJkmMMn/sylF8dbYxL1cXcuX7x8h567oj5ipg34CZ2mEDeFev
+         Ygt7U0uqvhOfz+upBzlNSYhMD/1FGcMhG23qs=
+Subject: Re: [PATCH 1/2] lib: add fast lzo decompressor
+From: Andreas Robinson <andr345@gmail.com>
+To: Nigel Cunningham <ncunningham@crca.org.au>
+Cc: Arjan van de Ven <arjan@linux.intel.com>, "H. Peter Anvin" <hpa@zytor.com>,
+       Alain Knaff <alain@knaff.lu>, linux-kernel@vger.kernel.org
+In-Reply-To: <1238759294.9692.49.camel@nigel-laptop>
+References: <1238593252-3435-1-git-send-email-andr345@gmail.com>
+	 <1238593252-3435-2-git-send-email-andr345@gmail.com>
+	 <49D3927A.2050406@zytor.com> <1238613730.10514.35.camel@andreas-desktop>
+	 <49D3D4C0.1080506@zytor.com> <1238624827.15230.58.camel@andreas-desktop>
+	 <49D3EDEA.4090803@zytor.com>  <49D3F4A3.1040609@linux.intel.com>
+	 <1238629202.9027.111.camel@nigel-laptop>
+	 <1238675410.13249.42.camel@andreas-desktop>
+	 <1238705969.10479.8.camel@nigel-laptop>
+	 <1238756060.11839.19.camel@andreas-desktop>
+	 <1238759294.9692.49.camel@nigel-laptop>
+Content-Type: text/plain
+Date: Fri, 03 Apr 2009 14:53:03 +0200
+Message-Id: <1238763183.13099.19.camel@andreas-desktop>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.24.3 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Commit-ID:  7635b03adf3d7b84da7649b81efa91e6ebf11b85
-Gitweb:     http://git.kernel.org/tip/7635b03adf3d7b84da7649b81efa91e6ebf11b85
-Author:     Li Zefan <lizf@cn.fujitsu.com>
-AuthorDate: Fri, 3 Apr 2009 15:31:34 +0800
-Committer:  Ingo Molnar <mingo@elte.hu>
-CommitDate: Fri, 3 Apr 2009 14:48:11 +0200
+On Fri, 2009-04-03 at 22:48 +1100, Nigel Cunningham wrote:
 
-blktrace: small cleanup in blk_msg_write()
+> Okay. Am I right in thinking (from staring at the code) that the
+> compression algo just assumes it has an output buffer big enough? (I
+> don't see it checking out_len, only writing to it).
 
-Signed-off-by: Li Zefan <lizf@cn.fujitsu.com>
-Cc: Arnaldo Carvalho de Melo <acme@redhat.com>
-Cc: "Alan D. Brunelle" <alan.brunelle@hp.com>
-Cc: Jens Axboe <jens.axboe@oracle.com>
-LKML-Reference: <49D5BB56.7000807@cn.fujitsu.com>
-Signed-off-by: Ingo Molnar <mingo@elte.hu>
+I came to that conclusion too. And it is not just LZO that needs a
+bigger buffer. Non-compressed blocks in deflate streams occupy 4 bytes
+more than the original, according to RFC 1951 section 3.2.4.
+
+>  If that's the case,
+> I guess I need to (ideally) persuade the cryptoapi guys to extend the
+> api so you can find out how big an output buffer is needed for a
+> particular compression algorithm - or learn how they've already done
+> that (though it doesn't look like it to me).
+
+I can not see anything to that effect either.
+
+> > If there are multiple threads perhaps they clobber each other's output
+> > buffers?
+> 
+> Nope. The output buffers you see here are fed to the next part of the
+> pipeline (the block I/O code), which combines them (under a mutex) into
+> a stream of |index|size|data|index|size|data... so that we don't have to
+> worry at all about which processor compressed (or decompresses data
+> later). As I said earlier, it's worked fine with LZF - or no compression
+> - for years. It's just LZO that causes me problems.
+> 
+> Thanks!
+> 
+> Nigel
+> 
+I'm glad I was able to help!
+
+Cheers,
+Andreas
 
 
----
- kernel/trace/blktrace.c |    2 +-
- 1 files changed, 1 insertions(+), 1 deletions(-)
-
-diff --git a/kernel/trace/blktrace.c b/kernel/trace/blktrace.c
-index a400b86..73d7860 100644
---- a/kernel/trace/blktrace.c
-+++ b/kernel/trace/blktrace.c
-@@ -327,7 +327,7 @@ static ssize_t blk_msg_write(struct file *filp, const char __user *buffer,
- 	char *msg;
- 	struct blk_trace *bt;
- 
--	if (count > BLK_TN_MAX_MSG - 1)
-+	if (count >= BLK_TN_MAX_MSG)
- 		return -EINVAL;
- 
- 	msg = kmalloc(count + 1, GFP_KERNEL);
