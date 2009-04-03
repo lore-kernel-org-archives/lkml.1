@@ -1,81 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763121AbZDCAjB@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761469AbZDCAld@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763121AbZDCAjB (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 2 Apr 2009 20:39:01 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762352AbZDCAip
+	id S1761469AbZDCAld (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 2 Apr 2009 20:41:33 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752005AbZDCAlZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 2 Apr 2009 20:38:45 -0400
-Received: from ti-out-0910.google.com ([209.85.142.184]:19547 "EHLO
-	ti-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1761924AbZDCAin (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 2 Apr 2009 20:38:43 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:user-agent:mime-version:to:cc:subject
-         :references:in-reply-to:x-enigmail-version:content-type
-         :content-transfer-encoding;
-        b=P4hxfjXgfnkOMKDGkWgGpfyKE6rV8sphXHwBrqEuvMuArMNh9zaqcOHz9qMZV6wm7j
-         nW7Rf+F8J3dZtDXPZ1l7Kk/th17cBTrUoWBVobKaGSH/b9VUk82GGydk8KDRSkD6Koj/
-         Jr7CPpm/dP4JjWThvT5De+ii9TMeMb9mTEcyw=
-Message-ID: <49D55ABA.3030502@gmail.com>
-Date: Fri, 03 Apr 2009 09:39:22 +0900
-From: Tejun Heo <htejun@gmail.com>
-User-Agent: Thunderbird 2.0.0.19 (X11/20081227)
-MIME-Version: 1.0
-To: Eric Dumazet <dada1@cosmosbay.com>
-CC: Ingo Molnar <mingo@elte.hu>, Jeremy Fitzhardinge <jeremy@goop.org>,
-       linux kernel <linux-kernel@vger.kernel.org>,
-       Linux Netdev List <netdev@vger.kernel.org>,
-       Rusty Russell <rusty@rustcorp.com.au>
-Subject: Re: [PATCH] percpu: convert SNMP mibs to new infra
-References: <49D32212.80607@cosmosbay.com> <49D32DC2.9010003@goop.org> <49D33E80.70802@cosmosbay.com> <20090401161218.GB3859@elte.hu> <49D3A0C2.9000403@cosmosbay.com> <49D3B61F.8010507@cosmosbay.com> <49D40323.2020406@gmail.com> <20090402040537.GB30442@elte.hu> <49D4724C.7010200@cosmosbay.com>
-In-Reply-To: <49D4724C.7010200@cosmosbay.com>
-X-Enigmail-Version: 0.95.7
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+	Thu, 2 Apr 2009 20:41:25 -0400
+Received: from cmpxchg.org ([85.214.51.133]:51331 "EHLO cmpxchg.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751019AbZDCAlY (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 2 Apr 2009 20:41:24 -0400
+Date: Fri, 3 Apr 2009 02:39:26 +0200
+From: Johannes Weiner <hannes@cmpxchg.org>
+To: Thomas Gleixner <tglx@linutronix.de>
+Cc: Peter Zijlstra <peterz@infradead.org>, Sam Ravnborg <sam@ravnborg.org>,
+       LKML <linux-kernel@vger.kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>, Ingo Molnar <mingo@elte.hu>
+Subject: Re: [PATCH] kbuild: work around distcc/icecc madness
+Message-ID: <20090403003926.GA11444@cmpxchg.org>
+References: <alpine.LFD.2.00.0903192121300.29264@localhost.localdomain> <1237551797.24626.96.camel@twins> <alpine.LFD.2.00.0903201658140.29264@localhost.localdomain> <1237576568.4667.34.camel@laptop> <alpine.LFD.2.00.0903202240370.29264@localhost.localdomain> <20090402235646.GA9052@cmpxchg.org>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20090402235646.GA9052@cmpxchg.org>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Eric Dumazet wrote:
-...
->  #define percpu_read(var)	percpu_from_op("mov", per_cpu__##var)
->  #define percpu_write(var, val)	percpu_to_op("mov", per_cpu__##var, val)
->  #define percpu_add(var, val)	percpu_to_op("add", per_cpu__##var, val)
-> +#define percpu_ptr_add(var, val)	percpu_to_op("add", *(var), val)
-> +#define percpu_ptr_inc(var)       percpu_ptr_add(var, 1)
-> +#define percpu_ptr_dec(var)       percpu_ptr_add(var, -1)
->  #define percpu_sub(var, val)	percpu_to_op("sub", per_cpu__##var, val)
->  #define percpu_and(var, val)	percpu_to_op("and", per_cpu__##var, val)
->  #define percpu_or(var, val)	percpu_to_op("or", per_cpu__##var, val)
+On Fri, Apr 03, 2009 at 01:56:46AM +0200, Johannes Weiner wrote:
+> On Fri, Mar 20, 2009 at 10:57:38PM +0100, Thomas Gleixner wrote:
+> > On Fri, 20 Mar 2009, Peter Zijlstra wrote:
+> > > > Changing from distcc to gcc will start a full rebuild on linus tree as
+> > > > well.
+> > > 
+> > > I just tried:
+> > > 
+> > > root@twins:/mnt/build/linux-2.6# /mnt/md0/cross/bin/x86_64-linux-gcc --version
+> > > x86_64-linux-gcc (GCC) 4.3.1 20080510 (prerelease)
+> > > Copyright (C) 2008 Free Software Foundation, Inc.
+> > > This is free software; see the source for copying conditions.  There is NO
+> > > warranty; not even for MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
+> > > 
+> > > root@twins:/mnt/build/linux-2.6# gcc --version
+> > > gcc (Ubuntu 4.3.2-1ubuntu12) 4.3.2
+> > > Copyright (C) 2008 Free Software Foundation, Inc.
+> > > This is free software; see the source for copying conditions.  There is NO
+> > > warranty; not even for MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
+> > > 
+> > > The build with the distcc x86_64-linux-gcc compiler and the install
+> > > using the host compiler works just fine on Linus' tree.
+> > 
+> > Hmm, I went through all the Makefile changes and we do not touch those
+> > bits at all.
+> > 
+> > Can you check whether builddir/scripts/mod/.empty.o.cmd has
+> > -DCONFIG_AS_CFI in the command line ?
+> > 
+> > Can you check that file after you built -tip (w/o my patch) and after
+> > your make install started to rebuild the tree ?
+> 
+> Perhaps 'make V=2 install' can also help figuring out why the targets
+> are rebuilt?
 
-x86 part looks fine to me.
-
-> diff --git a/include/net/snmp.h b/include/net/snmp.h
-> index 57c9362..1ba584b 100644
-> --- a/include/net/snmp.h
-> +++ b/include/net/snmp.h
-> @@ -123,15 +123,31 @@ struct linux_xfrm_mib {
->  };
->  
->  /* 
-> - * FIXME: On x86 and some other CPUs the split into user and softirq parts
-> + * On x86 and some other CPUs the split into user and softirq parts
->   * is not needed because addl $1,memory is atomic against interrupts (but 
-> - * atomic_inc would be overkill because of the lock cycles). Wants new 
-> - * nonlocked_atomic_inc() primitives -AK
-> + * atomic_inc would be overkill because of the lock cycles).
->   */ 
-> +#ifdef CONFIG_X86
-> +# define SNMP_ARRAY_SZ 1
-> +#else
-> +# define SNMP_ARRAY_SZ 2
-> +#endif
-
-This is quite hacky but, well, for the time being...
-
-Thanks.
-
--- 
-tejun
+Sheesh, please ignore.
