@@ -1,54 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755013AbZDDF4a@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753348AbZDDF4I@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755013AbZDDF4a (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 4 Apr 2009 01:56:30 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754394AbZDDFz6
+	id S1753348AbZDDF4I (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 4 Apr 2009 01:56:08 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752390AbZDDFzx
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 4 Apr 2009 01:55:58 -0400
-Received: from smtp116.mail.mud.yahoo.com ([209.191.84.165]:46836 "HELO
+	Sat, 4 Apr 2009 01:55:53 -0400
+Received: from smtp116.mail.mud.yahoo.com ([209.191.84.165]:46832 "HELO
 	smtp116.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1753516AbZDDFz4 (ORCPT
+	by vger.kernel.org with SMTP id S1751621AbZDDFzw (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 4 Apr 2009 01:55:56 -0400
+	Sat, 4 Apr 2009 01:55:52 -0400
 DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
   s=s1024; d=yahoo.com.au;
-  h=Received:X-YMail-OSG:X-Yahoo-Newman-Property:From:To:Subject:Date:User-Agent:Cc:References:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Content-Disposition:Message-Id;
-  b=4y3QpGrgO0tAHR8Dxp7jhWy2SzvXLZyUt9IdwbC4Jbt09tLAAtTQ11qy3t/+uceJlbmNccfhQrMJJOjw7UWaiNBiy1ocX+LFoqgPQbJ0Ywdr3si6G5euexngRJnESuTaVtPMARoMusBwm94+Wwt6ywNbWg+3NhoZf8eh1GmtgX8=  ;
-X-YMail-OSG: QaxW9L4VM1kfWuMlg21UFIJvgmgavJq0E2WBLtuYqQLSnItvL9HbCeR_4Glvi24v3JxvwEe1ZPdw3hj5Db4Wky5DK1GK6vYVOKPpVUDuq3K0Ft_NMHDezNn5fNYq1iHHIyncWhGExX2.HczdWRRzCdAReCKG4NxjKq_9fs0jmXSPfaeJHW5JqxaMo23MeYtimiOSkVFRN4Ufv9LIwddXZ8MbUyfn95AEHp1ZSTd_Q0ziQUh_BaJtpAWlgkIlQKqqhmd5G4P3jrLKfAAY5XNpN12B5xoKjfFSvOGZh69EAJpFAm9WjYA.k.Zrwr9lhfFgxzsrsc6EbwM_gYEJSfV.E4R1Mg--
+  h=Received:X-YMail-OSG:X-Yahoo-Newman-Property:From:To:Subject:Date:User-Agent:Cc:References:In-Reply-To:MIME-Version:Content-Disposition:Message-Id:Content-Type:Content-Transfer-Encoding;
+  b=SattMTwrjHIcc6I0cBSLD/wqjBtvMRQfJHaEooQxeUTN5u8NLf6kytvnqA2lnMj1BNfSCnxyuJrxLr97hF4qZv0up14FZxK6lQUYrpJGj5JAYN79j9pNZoRp8lKHlEYpyk44woNCTO74Jc1CJKRyGSt2M1xmhJbW6aHkCSFXTCc=  ;
+X-YMail-OSG: Khgcih0VM1kWHTYdtr_oCLFz3NmKt2n4zcwBTiEafLTz1bhdsUAQeYnMM0wDF1AEwq1imt5cmL90nz.aIqy175nLx7uJW.iycGK5xqsE.SVIa9RmQI5cfyxSMZHdT9RTv2XlUUSNbUXo0fB7LeTVarxcBLWwUTi7D5CJGJd561MaxyLDWcs7LzDK2TQUoM5rZTnsr9N4gnm9pW59sRywnHGLDgc3AFSB2_ps77CX8JjkMSvVQfI_DgrfBLob4Ep8p3neVeOzM1swvXQn.LMa4icjlOzihLhGS5f3nKa9xy6ZNlVw3jZy
 X-Yahoo-Newman-Property: ymail-3
 From: Nick Piggin <nickpiggin@yahoo.com.au>
-To: David Howells <dhowells@redhat.com>
-Subject: Re: [PATCH 2/4] CacheFiles: Revert the addition of write_one_page()
-Date: Sat, 4 Apr 2009 16:55:42 +1100
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Subject: Re: Linux 2.6.29
+Date: Fri, 3 Apr 2009 16:05:20 +1100
 User-Agent: KMail/1.9.51 (KDE/4.0.4; ; )
-Cc: Christoph Hellwig <hch@infradead.org>, nfsv4@linux-nfs.org,
-       linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org
-References: <20090403135007.GB31907@infradead.org> <20090403094143.9510.80474.stgit@warthog.procyon.org.uk> <10983.1238766809@redhat.com>
-In-Reply-To: <10983.1238766809@redhat.com>
+Cc: Jeff Garzik <jeff@garzik.org>, Andrew Morton <akpm@linux-foundation.org>,
+       David Rees <drees76@gmail.com>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+References: <20090325183011.GN32307@mit.edu> <49D56DF6.5020300@garzik.org> <alpine.LFD.2.00.0904021910380.4130@localhost.localdomain>
+In-Reply-To: <alpine.LFD.2.00.0904021910380.4130@localhost.localdomain>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="utf-8"
-Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-Message-Id: <200904041655.43360.nickpiggin@yahoo.com.au>
+Message-Id: <200904031605.20832.nickpiggin@yahoo.com.au>
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Saturday 04 April 2009 00:53:29 David Howells wrote:
-> Christoph Hellwig <hch@infradead.org> wrote:
+On Friday 03 April 2009 13:16:08 Linus Torvalds wrote:
 > 
-> > Note that in the patch series going into mainline eventually this should
-> > not be a separate patch but the new ops should never be introduced.
+> On Thu, 2 Apr 2009, Jeff Garzik wrote:
+> > 
+> > The most interesting thing I found:  the SSD does 80 MB/s for the first ~1 GB
+> > or so, then slows down dramatically.  After ~2GB, it is down to 32 MB/s.
+> > After ~4GB, it reaches a steady speed around 23 MB/s.
 > 
-> Yes, probably, but this makes it easier for people to see what I'm proposing
-> to change.
+> Are you sure that isn't an effect of double and triple indirect blocks 
+> etc? The metadata updates get more complex for the deeper indirect blocks.
+> 
+> Or just our page cache lookup? Maybe our radix tree thing hits something 
+> stupid. Although it sure shouldn't be _that_ noticeable.
 
-Definitely yes please. kmap resources are not infinite but there is obviously
-a proper kmap allocator so long as you only kmap one page at a time, then
-others will just block waiting for more. On sane platforms of course there
-is no penalty at all.
+Hmm, I don't know what you have in mind. page cache lookup should be
+several orders of magnitude faster than a disk can write the pages out?
 
-So this change is definitely required if you want to get this patchset in.
-The alternative is to come up with a new API and get that merged first, but
-I figure you don't want that kind of dependency.
+Dirty/writeout/clean cycle still has to lock the radix tree to change
+tags, but that's really not going to be significantly contended (nor
+does it synchronise with simple lookups).
