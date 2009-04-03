@@ -1,18 +1,18 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759446AbZDCGXr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759846AbZDCGYX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759446AbZDCGXr (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 3 Apr 2009 02:23:47 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753730AbZDCGXh
+	id S1759846AbZDCGYX (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 3 Apr 2009 02:24:23 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752616AbZDCGYN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 3 Apr 2009 02:23:37 -0400
-Received: from mga11.intel.com ([192.55.52.93]:62012 "EHLO mga11.intel.com"
+	Fri, 3 Apr 2009 02:24:13 -0400
+Received: from mga09.intel.com ([134.134.136.24]:13881 "EHLO mga09.intel.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751590AbZDCGXh convert rfc822-to-8bit (ORCPT
+	id S1751590AbZDCGYN convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 3 Apr 2009 02:23:37 -0400
+	Fri, 3 Apr 2009 02:24:13 -0400
 X-ExtLoop1: 1
 X-IronPort-AV: E=Sophos;i="4.39,318,1235980800"; 
-   d="scan'208";a="678411580"
+   d="scan'208";a="503242022"
 From: "Metzger, Markus T" <markus.t.metzger@intel.com>
 To: Ingo Molnar <mingo@elte.hu>
 CC: "tglx@linutronix.de" <tglx@linutronix.de>, "hpa@zytor.com" <hpa@zytor.com>,
@@ -23,14 +23,16 @@ CC: "tglx@linutronix.de" <tglx@linutronix.de>, "hpa@zytor.com" <hpa@zytor.com>,
        "Villacis, Juan" <juan.villacis@intel.com>,
        "ak@linux.jf.intel.com" <ak@linux.jf.intel.com>,
        "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
-Date: Fri, 3 Apr 2009 07:19:56 +0100
-Subject: RE: [patch 01/18] x86, bts: fix race when bts tracer is removed
-Thread-Topic: [patch 01/18] x86, bts: fix race when bts tracer is removed
-Thread-Index: AcmzwzWaOsx60ovwSfmp6ywNDZWSaQAYHckg
-Message-ID: <928CFBE8E7CB0040959E56B4EA41A77E9271804B@irsmsx504.ger.corp.intel.com>
+Date: Fri, 3 Apr 2009 07:22:27 +0100
+Subject: RE: [patch 04/18] x86, bts: wait until traced task has been
+	scheduled out
+Thread-Topic: [patch 04/18] x86, bts: wait until traced task has been
+	scheduled out
+Thread-Index: Acmzx7Z7MZTSkEP4SvOhJKY4RhnXpgAXIRig
+Message-ID: <928CFBE8E7CB0040959E56B4EA41A77E92718054@irsmsx504.ger.corp.intel.com>
 References: <20090402145455.597376000@intel.com>
- <20090402145702.669790000@intel.com> <20090402184514.GC843@elte.hu>
-In-Reply-To: <20090402184514.GC843@elte.hu>
+ <20090402145709.422226000@intel.com> <20090402191730.GD843@elte.hu>
+In-Reply-To: <20090402191730.GD843@elte.hu>
 Accept-Language: en-US
 Content-Language: en-US
 X-MS-Has-Attach: 
@@ -45,65 +47,68 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 >-----Original Message-----
 >From: Ingo Molnar [mailto:mingo@elte.hu]
->Sent: Thursday, April 02, 2009 8:45 PM
+>Sent: Thursday, April 02, 2009 9:18 PM
 >To: Metzger, Markus T
 >Cc: tglx@linutronix.de; hpa@zytor.com; markus.t.metzger@gmail.com; roland@redhat.com;
 >eranian@googlemail.com; oleg@redhat.com; Villacis, Juan; ak@linux.jf.intel.com; linux-
 >kernel@vger.kernel.org
->Subject: Re: [patch 01/18] x86, bts: fix race when bts tracer is removed
+>Subject: Re: [patch 04/18] x86, bts: wait until traced task has been scheduled out
 >
 >
 >* markus.t.metzger@intel.com <markus.t.metzger@intel.com> wrote:
 >
->> +static inline void ds_take_timestamp(struct ds_context *context,
->> +				     enum bts_qualifier qualifier,
->> +				     struct task_struct *task)
+>> In order to stop branch tracing for a running task, we need to
+>> first clear the branch tracing control bits before we may free the
+>> tracing buffer. If the traced task is running, the cpu might still
+>> trace that task after the branch trace control bits have cleared.
+>>
+>> Wait until the traced task has been scheduled out before
+>> proceeding.
+>>
+>> A similar problem affects the task debug store context. We first
+>> remove the context, then we need to wait until the task has been
+>> scheduled out before we can free the context memory.
+>>
+>>
+>> Reviewed-by: Oleg Nesterov <oleg@redhat.com>
+>> Signed-off-by: Markus Metzger <markus.t.metzger@intel.com>
+>> ---
+>>  arch/x86/kernel/ds.c |   40 	40 +	0 -	0 !
+>>  1 file changed, 40 insertions(+)
+>>
+>> Index: b/arch/x86/kernel/ds.c
+>> ===================================================================
+>> --- a/arch/x86/kernel/ds.c
+>> +++ b/arch/x86/kernel/ds.c
+>> @@ -250,6 +250,40 @@ static DEFINE_PER_CPU(struct ds_context
+>>  #define system_context per_cpu(system_context_array, smp_processor_id())
+>>
+>>
+>> +/*
+>> + * Wait for the traced task to unschedule.
+>> + *
+>> + * This guarantees that the bts trace configuration has been
+>> + * synchronized with the cpu executing the task.
+>> + */
+>> +static void wait_to_unschedule(struct task_struct *task)
 >> +{
->> +	struct bts_tracer *tracer = context->bts_master;
->> +	barrier();
 >
->why the barrier()?
-
-See http://lkml.org/lkml/2009/3/31/544
-
-Oleg: "In theory, we need barrier() after reading ->bts_master.
-
-(actually, I did see the bug reports when the compiler read the pointer
- twice with the code like above)."
-
-
->> +
->> +	if (tracer && (tracer->flags & BTS_TIMESTAMPS)) {
->> +		struct bts_struct ts = {
->> +			.qualifier = qualifier,
->> +			.variant.timestamp.jiffies = jiffies_64,
->> +			.variant.timestamp.pid = task->pid
->> +		};
->> +		bts_write(tracer, &ts);
->> +	}
+>this should be in sched.c and task_is_running() should not be
+>exported from there.
 >
->Why do we have .variant.timestamp.pid ? A PID is not a timestamp. It
->might be .event.jiffies and .event.pid perhaps.
+>I.e. your original patch which i objected to is probably the right
+>one, but should be named something like "task_wait_context_switch()"
+>- which signals its purpose: that it is to wait for the task to
+>context-switch at least once, so that its ptrace state is installed
+>(or deinstalled) for sure.
 
 OK.
 
+I'll move it to sched.c.
 
->Also, the whole function could be cleaned up by:
->
-> 1) returning early if !tracer || !(tracer->flags & BTS_TIMESTAMPS).
->
-> 2) Doing a cleaner initialization - something like:
->
->struct bts_struct ts = {
->	.qualifier		= qualifier,
->	.variant.event.jiffies	= jiffies_64,
->	.variant.event.pid	= task->pid
->};
->
->Also, raw use of jiffies_64 is buggy and racy. Why does this use
->jiffies to begin with - why not some finer grained time?
-
-What would be a good time to use?
+In that case, I would use task_running() without holding the rq lock, since we
+don't really care whether we read an old value or not.
+Would that be OK with you?
 
 thanks,
 markus.
