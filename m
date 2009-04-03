@@ -1,102 +1,169 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761764AbZDCIPB@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761442AbZDCIPo@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761764AbZDCIPB (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 3 Apr 2009 04:15:01 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759359AbZDCIOm
+	id S1761442AbZDCIPo (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 3 Apr 2009 04:15:44 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758307AbZDCIPW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 3 Apr 2009 04:14:42 -0400
-Received: from mo-p05-ob.rzone.de ([81.169.146.180]:62949 "EHLO
-	mo-p05-ob.rzone.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1761444AbZDCIOi (ORCPT
+	Fri, 3 Apr 2009 04:15:22 -0400
+Received: from fgwmail5.fujitsu.co.jp ([192.51.44.35]:47486 "EHLO
+	fgwmail5.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755648AbZDCIPT (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 3 Apr 2009 04:14:38 -0400
-X-RZG-AUTH: :LWIQcGC8af5qXkYNYt77sURZEFmV4M3TAgvB+Qeh4tE+44JfzNbXapXix8oF
-X-RZG-CLASS-ID: mo05
-Message-ID: <49D5C564.5030904@ursus.ath.cx>
-Date: Fri, 03 Apr 2009 10:14:28 +0200
-From: "Andreas T.Auer" <andreas.t.auer_lkml_73537@ursus.ath.cx>
-User-Agent: Mozilla-Thunderbird 2.0.0.19 (X11/20090103)
-MIME-Version: 1.0
-To: Theodore Tso <tytso@mit.edu>,
-       "Andreas T.Auer" <andreas.t.auer_lkml_73537@ursus.ath.cx>,
-       Ray Lee <ray-lk@madrabbit.org>, david@lang.hm,
-       Matthew Garrett <mjg59@srcf.ucam.org>,
-       Sitsofe Wheeler <sitsofe@yahoo.com>, Alberto Gonzalez <info@gnebu.es>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: Ext4 and the "30 second window of death"
-References: <20090401015010.GB4529@mit.edu> <20090401052050.GA20456@sucs.org> <20090401151219.GA12285@srcf.ucam.org> <20090401173521.GA15423@mit.edu> <20090401174336.GA14726@srcf.ucam.org> <alpine.DEB.1.10.0904021116500.28893@asgard.lang.hm> <20090402182925.GA4502@srcf.ucam.org> <alpine.DEB.1.10.0904021134560.28893@asgard.lang.hm> <2c0942db0904021307w2c311dc2s9bf31c9ed3c1e6ba@mail.gmail.com> <49D5273B.60806@ursus.ath.cx> <20090402233806.GG9870@mit.edu>
-In-Reply-To: <20090402233806.GG9870@mit.edu>
-Content-Type: text/plain; charset=ISO-8859-1
+	Fri, 3 Apr 2009 04:15:19 -0400
+Date: Fri, 3 Apr 2009 17:13:49 +0900
+From: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+To: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+Cc: "linux-mm@kvack.org" <linux-mm@kvack.org>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       "balbir@linux.vnet.ibm.com" <balbir@linux.vnet.ibm.com>,
+       "kosaki.motohiro@jp.fujitsu.com" <kosaki.motohiro@jp.fujitsu.com>
+Subject: [RFC][PATCH 5/9] add more hooks and check in lazy manner
+Message-Id: <20090403171349.aa598593.kamezawa.hiroyu@jp.fujitsu.com>
+In-Reply-To: <20090403170835.a2d6cbc3.kamezawa.hiroyu@jp.fujitsu.com>
+References: <20090403170835.a2d6cbc3.kamezawa.hiroyu@jp.fujitsu.com>
+Organization: FUJITSU Co. LTD.
+X-Mailer: Sylpheed 2.5.0 (GTK+ 2.10.14; i686-pc-mingw32)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+From: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
 
-On 03.04.2009 01:38 Theodore Tso wrote:
-> On Thu, Apr 02, 2009 at 10:59:39PM +0200, Andreas T.Auer wrote:
->> Yes, but a lot of users (and I assume >90% of POP3 users) don't use this
->> option.
->>
-> 
-> Sometimes, the filesystem isn't the best place to solve all problems.  
+Adds 2 more soft limit update hooks.
+ - uncharge
+ - write to memory.soft_limit_in_bytes file.
+And fixes issues under hierarchy. (This is the most complicated part...)
 
-Surely you cannot solve all problems in the filesystem. Especially the
-delay-spin-up vs. keep-all-important-recent-data problem simply can't be
-done by the filesystem. It can't be done by the application either,
-because it is the decision of the user, which data are important enough
-to do a spin-up. But it's not possible to tell the filesystem, which
-applications should spin-up at fsync(). And even within applications
-there are differences between the love-mail from the girl you met
-recently and the love-mail from that "russian girl", which isn't a girl,
-but just a bunch of fraudsters.
+Because ucharge() can be called under very busy spin_lock, all checks should be 
+done in lazy. We can use this lazy work to charge() part and make use of it.
 
-> What's been frustrating about this whole controversy is this implicit
-> assumptions that users and applications should never change, and the
-> filesystem should magically accomodate and Do The Right Thing.
+Signed-off-by: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+---
+ mm/memcontrol.c |   66 ++++++++++++++++++++++++++++++++++++++++++++++----------
+ 1 file changed, 55 insertions(+), 11 deletions(-)
 
-It's not that they should never change, it's that you can't expect them
-to change. There are just a few filesystems in the kernel and you need
-some level of competence to maintain the code or contribute to it. But
-you have no such filter in the application world, which is much much
-bigger than the controlled area of the kernel. The application can be
-crappy and would still have its users as long there is no better
-alternative for a special task. Even after the project is orphaned it
-still can be used by the users. I had such a tool to get the log data
-out of my PBX. It was orphaned long before and it had no alternative.
+Index: softlimit-test2/mm/memcontrol.c
+===================================================================
+--- softlimit-test2.orig/mm/memcontrol.c
++++ softlimit-test2/mm/memcontrol.c
+@@ -200,6 +200,8 @@ struct mem_cgroup {
+ #define SL_ANON (0)
+ #define SL_FILE (1)
+ 	atomic_t soft_limit_update;
++	struct work_struct soft_limit_work;
++
+ 	/*
+ 	 * statistics. This must be placed at the end of memcg.
+ 	 */
+@@ -989,6 +991,23 @@ static int mem_cgroup_soft_limit_prio(st
+ 	return __calc_soft_limit_prio(max_excess);
+ }
+ 
++static struct mem_cgroup *
++mem_cgroup_soft_limit_need_check(struct mem_cgroup *mem)
++{
++	struct res_counter *c = &mem->res;
++	unsigned long excess, prio;
++
++	do {
++		excess = res_counter_soft_limit_excess(c) >> PAGE_SHIFT;
++		prio = __calc_soft_limit_prio(excess);
++		mem = container_of(c, struct mem_cgroup, res);
++		if (mem->soft_limit_priority != prio)
++			return mem;
++		c = c->parent;
++	} while (c);
++	return NULL;
++}
++
+ static void __mem_cgroup_requeue(struct mem_cgroup *mem, int prio)
+ {
+ 	/* enqueue to softlimit queue */
+@@ -1028,18 +1047,36 @@ __mem_cgroup_update_soft_limit_cb(struct
+ 	return 0;
+ }
+ 
+-static void mem_cgroup_update_soft_limit(struct mem_cgroup *mem)
++static void mem_cgroup_update_soft_limit_work(struct work_struct *work)
+ {
+-	int priority;
++	struct mem_cgroup *mem;
++
++	mem = container_of(work, struct mem_cgroup, soft_limit_work);
++
++	mem_cgroup_walk_tree(mem, NULL, __mem_cgroup_update_soft_limit_cb);
++	atomic_set(&mem->soft_limit_update, 0);
++	css_put(&mem->css);
++}
++
++static void mem_cgroup_update_soft_limit_lazy(struct mem_cgroup *mem)
++{
++	int ret, priority;
++	struct mem_cgroup * root;
++
++	/*
++	 * check status change under hierarchy.
++	 */
++	root = mem_cgroup_soft_limit_need_check(mem);
++	if (!root)
++		return;
++
++	if (atomic_inc_return(&root->soft_limit_update) > 1)
++		return;
++	css_get(&root->css);
++	ret = schedule_work(&root->soft_limit_work);
++	if (!ret)
++		css_put(&root->css);
+ 
+-	/* check status change */
+-	priority = mem_cgroup_soft_limit_prio(mem);
+-	if (priority != mem->soft_limit_priority &&
+-	    atomic_inc_return(&mem->soft_limit_update) > 1) {
+-		mem_cgroup_walk_tree(mem, NULL,
+-				     __mem_cgroup_update_soft_limit_cb);
+-		atomic_set(&mem->soft_limit_update, 0);
+-	}
+ 	return;
+ }
+ 
+@@ -1145,7 +1182,7 @@ static int __mem_cgroup_try_charge(struc
+ 	}
+ 
+ 	if (soft_fail && mem_cgroup_soft_limit_check(mem))
+-		mem_cgroup_update_soft_limit(mem);
++		mem_cgroup_update_soft_limit_lazy(mem);
+ 
+ 	return 0;
+ nomem:
+@@ -1625,6 +1662,9 @@ __mem_cgroup_uncharge_common(struct page
+ 	mz = page_cgroup_zoneinfo(pc);
+ 	unlock_page_cgroup(pc);
+ 
++	if (mem->soft_limit_priority && mem_cgroup_soft_limit_check(mem))
++		mem_cgroup_update_soft_limit_lazy(mem);
++
+ 	/* at swapout, this memcg will be accessed to record to swap */
+ 	if (ctype != MEM_CGROUP_CHARGE_TYPE_SWAPOUT)
+ 		css_put(&mem->css);
+@@ -2163,6 +2203,9 @@ static int mem_cgroup_write(struct cgrou
+ 			ret = res_counter_set_soft_limit(&memcg->res, val);
+ 		else
+ 			ret = -EINVAL;
++		if (!ret)
++			mem_cgroup_update_soft_limit_lazy(memcg);
++
+ 		break;
+ 	default:
+ 		ret = -EINVAL; /* should be BUG() ? */
+@@ -2648,6 +2691,7 @@ mem_cgroup_create(struct cgroup_subsys *
+ 	INIT_LIST_HEAD(&mem->soft_limit_list[SL_ANON]);
+ 	INIT_LIST_HEAD(&mem->soft_limit_list[SL_FILE]);
+ 	spin_lock_init(&mem->reclaim_param_lock);
++	INIT_WORK(&mem->soft_limit_work, mem_cgroup_update_soft_limit_work);
+ 
+ 	if (parent)
+ 		mem->swappiness = get_swappiness(parent);
 
-> If you're *never* going want to risk ever losing mail, then fine,
-> fsync() it to disk before you send the POP3 DELETE command.
-
-The *user* wants his data safe, but the *application* has to decide
-whether or not to fsync(). Well, in case of a POP3 client fsync() should
-be common sense before a DELETE.
-
-> The problem is, this is what the application programmers are telling
-> the filesystem developers. They refuse to change their programs; and
-> the features they want are sometimes mutually contradictory, or at
-> least result in a overconstrained problem --- and then they throw the
-> whole mess at the filesystem developers' feet and say, "you fix it!"
-
-I think the users are complaining more than the application developers.
-If the application developers would complain for their piece of
-software, they would probably be smart enough to change their code using
-some new function calls (like barrier() or whatever). But the problem
-are the non-complaining developers that simply don't have a clue about
-all this.
-
-> I'm not saying the filesystems are blameless, but give us a little
-> slack, guys; we NEED some help from the application developers here.
-
-You have to find a _reasonable_ default integrity/performance trade-off
-for those applications that are not aware of the filesystem levels. "I
-just write out the data to disk with fprintf()."
-
-For laptop-mode a global reasonable default doesn't seem to exist, so a
-"perfect system" would have the possibility to tell the users, which
-applications triggered a spin-up and provide the users with methods to
-suppress/fine-tune the spin-up for the applications he wants to. The
-distros could pre-configure it to some reasonable defaults for each
-application.
-
-Andreas
