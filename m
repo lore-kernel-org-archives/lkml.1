@@ -1,89 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934453AbZDCR3W@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S935068AbZDCRbV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934453AbZDCR3W (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 3 Apr 2009 13:29:22 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933850AbZDCR3B
+	id S935068AbZDCRbV (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 3 Apr 2009 13:31:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759822AbZDCRbL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 3 Apr 2009 13:29:01 -0400
-Received: from e34.co.us.ibm.com ([32.97.110.152]:52435 "EHLO
-	e34.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1761167AbZDCR27 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 3 Apr 2009 13:28:59 -0400
-Subject: Re: [PATCH -tip 4/6 V4.1] x86: kprobes checks safeness of
-	insertion address.
-From: Jim Keniston <jkenisto@us.ibm.com>
-To: Masami Hiramatsu <mhiramat@redhat.com>
-Cc: ananth@in.ibm.com, Ingo Molnar <mingo@elte.hu>,
-       LKML <linux-kernel@vger.kernel.org>,
-       systemtap-ml <systemtap@sources.redhat.com>, kvm@vger.kernel.org,
-       Andi Kleen <andi@firstfloor.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Arnaldo Carvalho de Melo <acme@redhat.com>,
-       Steven Rostedt <rostedt@goodmis.org>,
-       Frederic Weisbecker <fweisbec@gmail.com>
-In-Reply-To: <49D63327.8020009@redhat.com>
-References: <49D4F4E9.2030809@redhat.com> <20090403051854.GA4846@in.ibm.com>
-	 <49D63327.8020009@redhat.com>
-Content-Type: text/plain
-Date: Fri, 03 Apr 2009 10:28:06 -0700
-Message-Id: <1238779686.3568.18.camel@dyn9047018139.beaverton.ibm.com>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.22.3.1 (2.22.3.1-1.fc9) 
-Content-Transfer-Encoding: 7bit
+	Fri, 3 Apr 2009 13:31:11 -0400
+Received: from mx3.mail.elte.hu ([157.181.1.138]:45962 "EHLO mx3.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1757356AbZDCRbK (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 3 Apr 2009 13:31:10 -0400
+Date: Fri, 3 Apr 2009 19:30:59 +0200
+From: Ingo Molnar <mingo@elte.hu>
+To: Joseph Cihula <joseph.cihula@intel.com>, Tejun Heo <tj@kernel.org>
+Cc: linux-kernel@vger.kernel.org, arjan@linux.intel.com
+Subject: Re: [PATCH] x86: disable stack-protector for
+	__restore_processor_state()
+Message-ID: <20090403173059.GO19982@elte.hu>
+References: <49D13385.5060900@intel.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <49D13385.5060900@intel.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.5
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 2009-04-03 at 12:02 -0400, Masami Hiramatsu wrote:
-> Ensure safeness of inserting kprobes by checking whether the specified
-> address is at the first byte of a instruction. This is done by decoding
-> probed function from its head to the probe point.
-> 
-> changes from v4:
->  - change a comment according to Ananth's suggestion.
-> 
-> Signed-off-by: Masami Hiramatsu <mhiramat@redhat.com>
-> Cc: Ananth N Mavinakayanahalli <ananth@in.ibm.com>
-> Cc: Jim Keniston <jkenisto@us.ibm.com>
-> Cc: Ingo Molnar <mingo@elte.hu>
-> ---
-> 
->  arch/x86/kernel/kprobes.c |   51 +++++++++++++++++++++++++++++++++++++++++++++
->  1 files changed, 51 insertions(+), 0 deletions(-)
-> 
-> 
-> diff --git a/arch/x86/kernel/kprobes.c b/arch/x86/kernel/kprobes.c
-...
-> 
-> +/* Recover original instruction */
 
-/* Recover the probed instruction at addr for further analysis. */
-See below.
+* Joseph Cihula <joseph.cihula@intel.com> wrote:
 
-> +static int recover_probed_instruction(kprobe_opcode_t *buf, unsigned long addr)
-> +{
-> +	struct kprobe *kp;
-> +	kp = get_kprobe((void *)addr);
-> +	if (!kp)
-> +		return -EINVAL;
-> +
-> +	/* Don't use p->ainsn.insn; which will be modified by fix_riprel */
+> The __restore_processor_state() fn restores %gs on resume from S3.  
+> As such, it cannot be protected by the stack-protector guard since 
+> %gs will not be correct on function entry.
+>
+> There are only a few other fns in this file and it should not 
+> negatively impact kernel security that they will also have the 
+> stack-protector guard removed (and so it's not worth moving them 
+> to another file).
+>
+> Without this change, S3 resume on a kernel built with 
+> CONFIG_CC_STACKPROTECTOR_ALL=y will fail.
+>
+> Signed-off-by:  Joseph Cihula <joseph.cihula@intel.com>
 
-fix_riprel doesn't affect the instruction's length, which is what
-concerns this patch.  But we want this function to be useful for
-unforeseen uses as well, so I like the code you have.  Just consider the
-suggested comment changes.
+ah ... very nice!
 
-	/*
-	 * Don't use p->ainsn.insn, which could be modified -- e.g.,
-	 * by fix_riprel().
-	 */
+applied to tip:x86/urgent, thanks Joseph!
 
-> +	memcpy(buf, kp->addr, MAX_INSN_SIZE * sizeof(kprobe_opcode_t));
-> +	buf[0] = kp->opcode;
-> +	return 0;
-> +}
-
-Jim Keniston
-
+	Ingo
