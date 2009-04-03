@@ -1,179 +1,166 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755441AbZDCIL4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761213AbZDCIMn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755441AbZDCIL4 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 3 Apr 2009 04:11:56 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760761AbZDCILk
+	id S1761213AbZDCIMn (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 3 Apr 2009 04:12:43 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753893AbZDCIM1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 3 Apr 2009 04:11:40 -0400
-Received: from brick.kernel.dk ([93.163.65.50]:57856 "EHLO kernel.dk"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1759869AbZDCILe (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 3 Apr 2009 04:11:34 -0400
-Date: Fri, 3 Apr 2009 10:11:31 +0200
-From: Jens Axboe <jens.axboe@oracle.com>
-To: Mikulas Patocka <mpatocka@redhat.com>
-Cc: device-mapper development <dm-devel@redhat.com>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       ak@linux.intel.com, "MASON, CHRISTOPHER" <CHRIS.MASON@oracle.com>
-Subject: Re: [dm-devel] Barriers still not passing on simple dm devices...
-Message-ID: <20090403081131.GP5178@kernel.dk>
-References: <20090324143034.GW27476@kernel.dk> <Pine.LNX.4.64.0903241033070.4088@hs20-bc2-1.build.redhat.com> <20090324150517.GX27476@kernel.dk> <Pine.LNX.4.64.0903251106520.27750@hs20-bc2-1.build.redhat.com> <20090325152751.GV27476@kernel.dk> <Pine.LNX.4.64.0903251825310.8027@hs20-bc2-1.build.redhat.com> <20090326084205.GG27476@kernel.dk> <Pine.LNX.4.64.0903302314500.6158@hs20-bc2-1.build.redhat.com> <20090331104933.GJ5178@kernel.dk> <Pine.LNX.4.64.0904021923040.19415@hs20-bc2-1.build.redhat.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <Pine.LNX.4.64.0904021923040.19415@hs20-bc2-1.build.redhat.com>
+	Fri, 3 Apr 2009 04:12:27 -0400
+Received: from fgwmail6.fujitsu.co.jp ([192.51.44.36]:41814 "EHLO
+	fgwmail6.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754623AbZDCIMZ (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 3 Apr 2009 04:12:25 -0400
+Date: Fri, 3 Apr 2009 17:10:54 +0900
+From: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+To: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+Cc: "linux-mm@kvack.org" <linux-mm@kvack.org>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       "balbir@linux.vnet.ibm.com" <balbir@linux.vnet.ibm.com>,
+       "kosaki.motohiro@jp.fujitsu.com" <kosaki.motohiro@jp.fujitsu.com>
+Subject: [RFC][PATCH 2/9]  soft limit framework for memcg.
+Message-Id: <20090403171054.5120aa91.kamezawa.hiroyu@jp.fujitsu.com>
+In-Reply-To: <20090403170835.a2d6cbc3.kamezawa.hiroyu@jp.fujitsu.com>
+References: <20090403170835.a2d6cbc3.kamezawa.hiroyu@jp.fujitsu.com>
+Organization: FUJITSU Co. LTD.
+X-Mailer: Sylpheed 2.5.0 (GTK+ 2.10.14; i686-pc-mingw32)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Apr 02 2009, Mikulas Patocka wrote:
-> 
-> 
-> On Tue, 31 Mar 2009, Jens Axboe wrote:
-> 
-> > On Mon, Mar 30 2009, Mikulas Patocka wrote:
-> > > On Thu, 26 Mar 2009, Jens Axboe wrote:
-> > > 
-> > > > On Wed, Mar 25 2009, Mikulas Patocka wrote:
-> > > >
-> > > > > > > So I think there should be flag (this device does/doesn't support data 
-> > > > > > > consistency) that the journaled filesystems can use to mark the disk dirty 
-> > > > > > > for fsck. And if you implement this flag, you can accept barriers always 
-> > > > > > > to all kind of devices regardless of whether they support consistency. You 
-> > > > > > > can then get rid of that -EOPNOTSUPP and simplify filesystem code because 
-> > > > > > > they'd no longer need two commit paths and a clumsy way to restart 
-> > > > > > > -EOPNOTSUPPed requests.
-> > > > > > 
-> > > > > > And my point is that this case isn't interesting, because most setups
-> > > > > > don't guarantee proper ordering.
-> > > > > 
-> > > > > If the ordering isn't guaranteed, the filesystem should know about it, and 
-> > > > > mark the partition for fsck. That's why I'm suggesting to use a flag for 
-> > > > > that. That flag could be also propagated up through md and dm.
-> > > > 
-> > > > We can do that, not a problem. The problem is that ordering is almost
-> > > > never preserved, SCSI does not use ordered tags because it hasn't
-> > > > verified that its error path doesn't reorder by mistake. So right now
-> > > > you can basically use 'false' as that flag.
-> > > 
-> > > There are three ordering guarantees:
-> > > 
-> > > 1. - nothing (for devices with write cache without cache control)
-> > > 
-> > > 2. - non-cached ordering: the sequence [submit req a, end req a, submit 
-> > > req b, end req b] will make the ordering. It is guaranteed that when the 
-> > > request ends successfully, it is on medium. This is what all the 
-> > > filesystems, md and dm assume about disks. This consistency model was used 
-> > > long way before barriers came in.
-> > > 
-> > > 3. - barrier ordering: ordering is done with barriers, [submit req a, end 
-> > > req a, submit req b, end req b] won't guarantee ordering of a and b, a 
-> > > barrier must be inserted.
-> > 
-> > Plus the barrier also allows [submit req a, submit req b] and still
-> > count on ordering if either one of them is a barrier. It doesn't have to
-> > be sync, like the (2).
-> > 
-> > > --- so you can make a two bitflags that differentiate these models. In 
-> > > current kernel, model (1) and (2) cannot be differentiated in any way. (3) 
-> > > can be differentiated only after a trial write and it won't guarantee that 
-> > > (3) will be valid further.
-> > 
-> > But what's the point? Basically no devices are naturally ordered by
-> > default. Either you need cache flushes, or you need to tell the device
-> > not to reorder on a per-command basis.
-> > 
-> > > > > The reasoning: "write barriers aren't supported => the device doesn't 
-> > > > > guarantee consistency" isn't valid.
-> > > > 
-> > > > It's valid in the sense that it's the only RELIABLE primitive we have.
-> > > > Are you really suggestion that we just assume any device is fully
-> > > > ordered, unless proven otherwise?
-> > > 
-> > > If someone implements "write barrier's aren't supported => run fsck", then 
-> > > a lot of systems start fscking needlessly (for example those using md or 
-> > > dm without write cache) and become inoperational for long time because of 
-> > > that. So no one can really implement this logic and filesystems don't run 
-> > > fsck at all when operated over a device that doesn't support ordering. So 
-> > > you get data corruption if you get crash on those devices.
-> > 
-> > Nobody is suggesting that, it's just not a feasible approach. But you
-> 
-> I am saying that the filesystem should run fsck if journaled filesystem is 
-> mounted on an unsafe device and crash happens.
-> 
-> > have to warn if you don't know whether it provides the ordering
-> > guarantee you expect to provide consistency and integrity.
-> 
-> The warning of missing barriers (or other actions) should be printed only 
-> if write cache is enabled. But there's no way how a filesystem on the top 
-> of several dm or md layers can find out if the disk is running with hdparm 
-> -w 0 or hdparm -w 1.
+From: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
 
-Right, you can't possibly now that. Hence we have to print the warning.
+Add minimal modification for soft limit to res_counter_charge() and memcontol.c
+Based on Balbir Singh <balbir@linux.vnet.ibm.com> 's work but most of
+features are removed. (dropped or moved to later patch.)
 
-> > > The barrier can be cancelled with -EOPNOTSUPP at any time. Andi Kleen 
-> > > submitted a patch that implements failing barriers for device mapper and 
-> > > he says that md-raid1 does the same thing.
-> > 
-> > You are right, if a device is reconfigured beneath you it may very well
-> > begin to return -EOPNOTSUPP much later. I didn't take that into account,
-> > I was considering only "plain" devices.
-> > 
-> > > Filesystems handle these randomly failed barriers but the downside is that 
-> > > they must not submit any request concurrently with the barrier. Also, that 
-> > > -EOPNOTSUPP restarting code is really crap, the request cannot be 
-> > > restarted from bi_end_io, so bi_end_io needs to handle to another thread 
-> > > for retry without barrier.
-> > 
-> > It can, but it requires you to operate at the request level. So for file
-> > systems that is problematic, it wont work of course. It would not be
-> > THAT hard to provide a helper to reissue the request. Not that pretty,
-> > but...
-> 
-> And it makes barriers useless for ordering.
-> 
-> The filesystem can't do [submit req a], [submit barrier req b], [submit 
-> req c] and assume that the requests will be ordered. If [b] fails with 
-> -EOPNOTSUPP, [a] and [c] could be already reordered and data corruption 
-> has already happened. Even if you catch [b]'s error and resubmit it as 
-> non-barrier request, it's too late.
-> 
-> So, as a result of this complication, all the existing filesystems send 
-> just one barrier request and do not try to overlay it with any other write 
-> requests.
-> 
-> So I'm wondering why Linux developers designed a barrier interface with 
-> complex specification, complex implementation and the interface is useless 
-> to provide any request ordering and it's no better than q->issue_flush_fn 
-> method or whatever was there beffore. Obviously, the whole barrier thing 
-> was designed by a person who never used it in a filesystem.
+This is for building a frame to implement soft limit handler in memcg.
+ - Checks soft limit status at every charge.
+ - Adds mem_cgroup_soft_limit_check() as a function to detect we need
+   check now or not.
+ - mem_cgroup_update_soft_limit() is a function for updates internal status
+   of soft limit controller of memcg.
+ - As an experimental, this has no hooks in uncharge path.
 
-That's not quite true, it was done in conjunction with file system
-people. At a certain level, we are restricted by what the hardware can
-actually do. It's certainly possible to make sure your storage stack can
-support barriers and be safe in that regard, but it's certainly also
-true that reconfiguring devices may void that guarantee. So it's not
-perfect, but it's the best we can do. The worst part is that it's
-virtually impossible to inform of such limitations.
+Changelog: v1 -> v2
+ - removed "update" from mem_cgroup_free() (revisit in later patch.)
 
-If we get rid of -EOPNOTSUPP and just warn in such cases, then you
-should never see -EOPNOTSUPP in the above sequence. You may not actually
-be safe, hence we print a warning. It'll also make the whole thing a lot
-less complex.
+Signed-off-by: Balbir Singh <balbir@linux.vnet.ibm.com>
+Signed-off-by: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+---
+ include/linux/res_counter.h |    3 ++-
+ kernel/res_counter.c        |   12 +++++++++++-
+ mm/memcontrol.c             |   19 +++++++++++++++++--
+ 3 files changed, 30 insertions(+), 4 deletions(-)
 
-And to wrap up with the history of barriers, there was NOTHING before.
-->issue_flush_fn is a later addition to just force a flush for fsync()
-and friends, the original implementation was just a data bio/bh with
-barrier semantics, providing no reordering before and after the data
-passed.
-
-Nobody was interested in barriers when they were done. Nobody. The fact
-that it's taken 6 years or so to actually emerge as a hot topic for data
-consistency should make that quite obvious. So the original
-implementation was basically a joint effort with Chris on the reiser
-side and EMC as the hw vendor and me doing the block implementation.
-
--- 
-Jens Axboe
+Index: softlimit-test2/include/linux/res_counter.h
+===================================================================
+--- softlimit-test2.orig/include/linux/res_counter.h
++++ softlimit-test2/include/linux/res_counter.h
+@@ -112,7 +112,8 @@ void res_counter_init(struct res_counter
+ int __must_check res_counter_charge_locked(struct res_counter *counter,
+ 		unsigned long val);
+ int __must_check res_counter_charge(struct res_counter *counter,
+-		unsigned long val, struct res_counter **limit_fail_at);
++		unsigned long val, struct res_counter **limit_fail_at,
++		bool *soft_limit_failure);
+ 
+ /*
+  * uncharge - tell that some portion of the resource is released
+Index: softlimit-test2/kernel/res_counter.c
+===================================================================
+--- softlimit-test2.orig/kernel/res_counter.c
++++ softlimit-test2/kernel/res_counter.c
+@@ -37,9 +37,11 @@ int res_counter_charge_locked(struct res
+ }
+ 
+ int res_counter_charge(struct res_counter *counter, unsigned long val,
+-			struct res_counter **limit_fail_at)
++			struct res_counter **limit_fail_at,
++			bool *soft_limit_failure)
+ {
+ 	int ret;
++	int soft_cnt = 0;
+ 	unsigned long flags;
+ 	struct res_counter *c, *u;
+ 
+@@ -48,6 +50,8 @@ int res_counter_charge(struct res_counte
+ 	for (c = counter; c != NULL; c = c->parent) {
+ 		spin_lock(&c->lock);
+ 		ret = res_counter_charge_locked(c, val);
++		if (!res_counter_soft_limit_check_locked(c))
++			soft_cnt += 1;
+ 		spin_unlock(&c->lock);
+ 		if (ret < 0) {
+ 			*limit_fail_at = c;
+@@ -55,6 +59,12 @@ int res_counter_charge(struct res_counte
+ 		}
+ 	}
+ 	ret = 0;
++	if (soft_limit_failure) {
++		if (!soft_cnt)
++			*soft_limit_failure = false;
++		else
++			*soft_limit_failure = true;
++	}
+ 	goto done;
+ undo:
+ 	for (u = counter; u != c; u = u->parent) {
+Index: softlimit-test2/mm/memcontrol.c
+===================================================================
+--- softlimit-test2.orig/mm/memcontrol.c
++++ softlimit-test2/mm/memcontrol.c
+@@ -897,6 +897,15 @@ static void record_last_oom(struct mem_c
+ 	mem_cgroup_walk_tree(mem, NULL, record_last_oom_cb);
+ }
+ 
++static bool mem_cgroup_soft_limit_check(struct mem_cgroup *mem)
++{
++	return false;
++}
++
++static void mem_cgroup_update_soft_limit(struct mem_cgroup *mem)
++{
++	return;
++}
+ 
+ /*
+  * Unlike exported interface, "oom" parameter is added. if oom==true,
+@@ -909,6 +918,7 @@ static int __mem_cgroup_try_charge(struc
+ 	struct mem_cgroup *mem, *mem_over_limit;
+ 	int nr_retries = MEM_CGROUP_RECLAIM_RETRIES;
+ 	struct res_counter *fail_res;
++	bool soft_fail;
+ 
+ 	if (unlikely(test_thread_flag(TIF_MEMDIE))) {
+ 		/* Don't account this! */
+@@ -938,12 +948,13 @@ static int __mem_cgroup_try_charge(struc
+ 		int ret;
+ 		bool noswap = false;
+ 
+-		ret = res_counter_charge(&mem->res, PAGE_SIZE, &fail_res);
++		ret = res_counter_charge(&mem->res, PAGE_SIZE, &fail_res,
++						&soft_fail);
+ 		if (likely(!ret)) {
+ 			if (!do_swap_account)
+ 				break;
+ 			ret = res_counter_charge(&mem->memsw, PAGE_SIZE,
+-							&fail_res);
++							&fail_res, NULL);
+ 			if (likely(!ret))
+ 				break;
+ 			/* mem+swap counter fails */
+@@ -985,6 +996,10 @@ static int __mem_cgroup_try_charge(struc
+ 			goto nomem;
+ 		}
+ 	}
++
++	if (soft_fail && mem_cgroup_soft_limit_check(mem))
++		mem_cgroup_update_soft_limit(mem);
++
+ 	return 0;
+ nomem:
+ 	css_put(&mem->css);
 
