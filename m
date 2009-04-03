@@ -1,48 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932283AbZDCPsP@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934849AbZDCPsc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932283AbZDCPsP (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 3 Apr 2009 11:48:15 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934338AbZDCPqQ
+	id S934849AbZDCPsc (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 3 Apr 2009 11:48:32 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934504AbZDCPrF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 3 Apr 2009 11:46:16 -0400
-Received: from rtr.ca ([76.10.145.34]:55242 "EHLO mail.rtr.ca"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S934257AbZDCPqP (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 3 Apr 2009 11:46:15 -0400
-Message-ID: <49D62F45.4000007@rtr.ca>
-Date: Fri, 03 Apr 2009 11:46:13 -0400
-From: Mark Lord <lkml@rtr.ca>
-Organization: Real-Time Remedies Inc.
-User-Agent: Thunderbird 2.0.0.21 (X11/20090318)
-MIME-Version: 1.0
-To: Lennart Sorensen <lsorense@csclub.uwaterloo.ca>
-Cc: Linus Torvalds <torvalds@linux-foundation.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       David Rees <drees76@gmail.com>, Janne Grunau <j@jannau.net>,
-       Theodore Tso <tytso@mit.edu>, Jesper Krogh <jesper@krogh.cc>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: Linux 2.6.29
-References: <20090326174704.cd36bf7b.akpm@linux-foundation.org> <alpine.LFD.2.00.0903261752110.3994@localhost.localdomain> <20090326182519.d576d703.akpm@linux-foundation.org> <20090401210337.GB3797@csclub.uwaterloo.ca> <20090402110532.GA5132@aniel> <72dbd3150904020929w46c6dc0bs4028c49dd8fa8c56@mail.gmail.com> <20090402094247.9d7ac19f.akpm@linux-foundation.org> <alpine.LFD.2.00.0904020947310.4130@localhost.localdomain> <alpine.LFD.2.00.0904020959490.4130@localhost.localdomain> <49D627DF.6090501@rtr.ca> <20090403151812.GK3795@csclub.uwaterloo.ca>
-In-Reply-To: <20090403151812.GK3795@csclub.uwaterloo.ca>
-Content-Type: text/plain; charset=UTF-8; format=flowed
+	Fri, 3 Apr 2009 11:47:05 -0400
+Received: from zone0.gcu-squad.org ([212.85.147.21]:20855 "EHLO
+	services.gcu-squad.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752220AbZDCPrB (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 3 Apr 2009 11:47:01 -0400
+Date: Fri, 3 Apr 2009 17:46:49 +0200
+From: Jean Delvare <khali@linux-fr.org>
+To: Greg Kroah-Hartman <gregkh@suse.de>
+Cc: linux-kernel@vger.kernel.org
+Subject: [PATCH] Staging: rtl8187se: Use to_delayed_work
+Message-ID: <20090403174649.42626ae6@hyperion.delvare>
+X-Mailer: Claws Mail 3.5.0 (GTK+ 2.14.4; x86_64-suse-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Lennart Sorensen wrote:
-> On Fri, Apr 03, 2009 at 11:14:39AM -0400, Mark Lord wrote:
->> Note that for mythtv, this may not be the best behaviour.
->>
->> A common use scenario is "watching live TV", a few minutes behind
->> real-time so that the commercial-skipping can work its magic.
-> 
-> Well I really never watch live TV.
-..
+Use the recently added to_delayed_work() helper function.
 
-A *true* myth dev!  (pretenders use LiveTV, *real* devs don't!)
+Signed-off-by: Jean Delvare <khali@linux-fr.org>
+---
+ drivers/staging/rtl8187se/r8180_dm.c |    6 +++---
+ 1 file changed, 3 insertions(+), 3 deletions(-)
 
-But mythcommflag also benefits from having the pages
-hang around for an extra short time.
+--- linux-2.6.30-rc0.orig/drivers/staging/rtl8187se/r8180_dm.c	2009-04-03 17:19:23.000000000 +0200
++++ linux-2.6.30-rc0/drivers/staging/rtl8187se/r8180_dm.c	2009-04-03 17:40:32.000000000 +0200
+@@ -132,7 +132,7 @@ void rtl8180_tx_pw_wq (struct work_struc
+ //      struct r8180_priv *priv = container_of(work, struct r8180_priv, watch_dog_wq);
+ //      struct ieee80211_device * ieee = (struct ieee80211_device*)
+ //                                             container_of(work, struct ieee80211_device, watch_dog_wq);
+-        struct delayed_work *dwork = container_of(work,struct delayed_work,work);
++	struct delayed_work *dwork = to_delayed_work(work);
+         struct ieee80211_device *ieee = container_of(dwork,struct ieee80211_device,tx_pw_wq);
+         struct net_device *dev = ieee->dev;
+ #else
+@@ -314,7 +314,7 @@ void rtl8180_hw_dig_wq (struct work_stru
+ //      struct r8180_priv *priv = container_of(work, struct r8180_priv, watch_dog_wq);
+ //      struct ieee80211_device * ieee = (struct ieee80211_device*)
+ //                                             container_of(work, struct ieee80211_device, watch_dog_wq);
+-        struct delayed_work *dwork = container_of(work,struct delayed_work,work);
++	struct delayed_work *dwork = to_delayed_work(work);
+         struct ieee80211_device *ieee = container_of(dwork,struct ieee80211_device,hw_dig_wq);
+         struct net_device *dev = ieee->dev;
+ #else
+@@ -1250,7 +1250,7 @@ SetInitialGain:
+ #if LINUX_VERSION_CODE >=KERNEL_VERSION(2,6,20)
+ void rtl8180_rate_adapter(struct work_struct * work)
+ {
+-	struct delayed_work *dwork = container_of(work,struct delayed_work,work);
++	struct delayed_work *dwork = to_delayed_work(work);
+         struct ieee80211_device *ieee = container_of(dwork,struct ieee80211_device,rate_adapter_wq);
+         struct net_device *dev = ieee->dev;
+ #else
 
-Cheers
+
+-- 
+Jean Delvare
