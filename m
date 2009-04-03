@@ -1,86 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763523AbZDCXpq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933589AbZDCXsp@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763523AbZDCXpq (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 3 Apr 2009 19:45:46 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759182AbZDCXpf
+	id S933589AbZDCXsp (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 3 Apr 2009 19:48:45 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760253AbZDCXsh
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 3 Apr 2009 19:45:35 -0400
-Received: from terminus.zytor.com ([198.137.202.10]:34796 "EHLO
-	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1758320AbZDCXpe (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 3 Apr 2009 19:45:34 -0400
-Message-ID: <49D69F39.4010101@zytor.com>
-Date: Fri, 03 Apr 2009 16:43:53 -0700
-From: "H. Peter Anvin" <hpa@zytor.com>
+	Fri, 3 Apr 2009 19:48:37 -0400
+Received: from srv5.dvmed.net ([207.36.208.214]:55292 "EHLO mail.dvmed.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1760167AbZDCXsg (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 3 Apr 2009 19:48:36 -0400
+Message-ID: <49D6A04B.2080104@garzik.org>
+Date: Fri, 03 Apr 2009 19:48:27 -0400
+From: Jeff Garzik <jeff@garzik.org>
 User-Agent: Thunderbird 2.0.0.21 (X11/20090320)
 MIME-Version: 1.0
-To: Masami Hiramatsu <mhiramat@redhat.com>
-CC: Jim Keniston <jkenisto@us.ibm.com>, Ingo Molnar <mingo@elte.hu>,
-       Ananth N Mavinakayanahalli <ananth@in.ibm.com>,
-       Andi Kleen <andi@firstfloor.org>, kvm@vger.kernel.org,
-       Steven Rostedt <rostedt@goodmis.org>,
-       Frederic Weisbecker <fweisbec@gmail.com>,
+To: Linus Torvalds <torvalds@linux-foundation.org>
+CC: Chris Mason <chris.mason@oracle.com>,
        Andrew Morton <akpm@linux-foundation.org>,
-       Arnaldo Carvalho de Melo <acme@redhat.com>,
-       systemtap-ml <systemtap@sources.redhat.com>,
-       LKML <linux-kernel@vger.kernel.org>,
-       Vegard Nossum <vegard.nossum@gmail.com>, Avi Kivity <avi@redhat.com>,
-       Roland McGrath <roland@redhat.com>
-Subject: Re: [PATCH -tip 3/6 V4.1] x86: instruction decorder API
-References: <49D4F4E6.6060401@redhat.com> <49D69BCA.8060506@redhat.com>
-In-Reply-To: <49D69BCA.8060506@redhat.com>
+       Jens Axboe <jens.axboe@oracle.com>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: Linux 2.6.29
+References: <1238758370.32764.5.camel@think.oraclecorp.com> <alpine.LFD.2.00.0904030804160.4130@localhost.localdomain> <49D66C0E.5090301@garzik.org> <alpine.LFD.2.00.0904031309500.4015@localhost.localdomain> <49D68431.30703@garzik.org> <alpine.LFD.2.00.0904031452290.7007@localhost.localdomain>
+In-Reply-To: <alpine.LFD.2.00.0904031452290.7007@localhost.localdomain>
 Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
+X-Spam-Score: -4.4 (----)
+X-Spam-Report: SpamAssassin version 3.2.5 on srv5.dvmed.net summary:
+	Content analysis details:   (-4.4 points, 5.0 required)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Masami Hiramatsu wrote:
-> Add x86 instruction decoder to arch-specific libraries. This decoder
-> can decode all x86 instructions into prefix, opcode, modrm, sib,
-> displacement and immediates. This can also show the length of
-> instructions.
+Linus Torvalds wrote:
+> "fio" does well:
 > 
-> changes from v4:
->  - make bitmap tables static.
+> 	http://git.kernel.dk/?p=fio.git;a=summary
 
-Hi Masami,
+Neat tool, Jens...
 
-On the surface the overall structure looks fine, but I have a couple of 
-concerns:
 
-1. is this meant to be able to decode userspace code or just kernel 
-code?  If it is supposed to be able to decode userspace code, is there a 
-reason you're not dealing with 16-bit or V86 mode code at all?  If not, 
-why are you including the 32-bit decoder in a 64-bit kernel (as well as 
-instructions which we're pretty much guaranteed to never use in the 
-kernel, such as ENTER.)
+> and I think it comes with a few example files. Here's the random write 
+> file that Jens suggested, and that works pretty well..
+> 
+> It first creates a 2GB file to do the IO on, then does random 4k writes to 
+> it with O_DIRECT.
+> 
+> If your SSD does badly at it, you'll just want to kill it, but it shows 
+> you how many MB/s it's doing (or, in the sucky case, how many kB/s).
 
-2. you're already not dealing with all existing three-byte opcode 
-spaces, nor with DREX or VEX encodings for upcoming processors.  This 
-doesn't matter so much for the kernel, but it does matter if this is 
-supposed to be used for user-space code.
 
-3. is there any need to deal with instruction set differences among 
-processors?  (Again, this depends on the usage model.)
+heh, so far, the SSD is poking along...
 
-4. you have a bunch of magic opcode constants all over the place.  This 
-means that as new instructions come in -- and they're going to be coming 
-in -- this is going to be hard to update.  It would be cleaner if we 
-could have an intermediate format that preprocesses down to all the 
-relevant tables and perhaps even some of the code rather than 
-open-coding everything in C.
+Jobs: 1 (f=1): [w] [2.5% done] [     0/   282 kb/s] [eta 02h:24m:59s]
 
-This matters... for example you have:
 
-+		} else if (opcode == 0xea /* jmp far seg:offs */) {
-+			__get_immptr(insn);
+Compared to the same job file, started at the same time, on the Seagate 
+500GB SATA:
 
-... but nothing similar for opcode 0x9a.  This is extremely hard to spot 
-with this kind of structure.
+Jobs: 1 (f=1): [w] [9.9% done] [     0/  1204 kb/s] [eta 26m:28s]
 
-The more data-driven we can make it (without bloating the code too much) 
-the better off we are, I believe.
+Regards,
 
-	-hpa
+	Jeff
+
+
+
