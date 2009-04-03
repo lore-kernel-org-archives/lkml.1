@@ -1,24 +1,24 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934737AbZDCP4f@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934956AbZDCP5M@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934737AbZDCP4f (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 3 Apr 2009 11:56:35 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932253AbZDCPyy
+	id S934956AbZDCP5M (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 3 Apr 2009 11:57:12 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932747AbZDCPzA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 3 Apr 2009 11:54:54 -0400
-Received: from mx2.redhat.com ([66.187.237.31]:32768 "EHLO mx2.redhat.com"
+	Fri, 3 Apr 2009 11:55:00 -0400
+Received: from mx2.redhat.com ([66.187.237.31]:32772 "EHLO mx2.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1765864AbZDCPyv (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 3 Apr 2009 11:54:51 -0400
+	id S1763130AbZDCPy4 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 3 Apr 2009 11:54:56 -0400
 Organization: Red Hat UK Ltd. Registered Address: Red Hat UK Ltd, Amberley
 	Place, 107-111 Peascod Street, Windsor, Berkshire, SI4 1TE, United
 	Kingdom.
 	Registered in England and Wales under Company Registration No. 3798903
 From: David Howells <dhowells@redhat.com>
-Subject: [PATCH 02/41] Make slow-work thread pool actually dynamic [ver #48]
+Subject: [PATCH 03/41] Make the slow work pool configurable [ver #48]
 To: linux-kernel@vger.kernel.org
 Cc: dhowells@redhat.com, nfsv4@linux-nfs.org, linux-fsdevel@vger.kernel.org
-Date: Fri, 03 Apr 2009 16:54:46 +0100
-Message-ID: <20090403155446.28714.85222.stgit@warthog.procyon.org.uk>
+Date: Fri, 03 Apr 2009 16:54:52 +0100
+Message-ID: <20090403155451.28714.50451.stgit@warthog.procyon.org.uk>
 In-Reply-To: <20090403155436.28714.23368.stgit@warthog.procyon.org.uk>
 References: <20090403155436.28714.23368.stgit@warthog.procyon.org.uk>
 User-Agent: StGIT/0.14.3
@@ -29,9 +29,25 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Make the slow-work thread pool actually dynamic in the number of threads it
-contains.  With this patch, it will both create additional threads when it has
-extra work to do, and cull excess threads that aren't doing anything.
+Make the slow work pool configurable through /proc/sys/kernel/slow-work.
+
+ (*) /proc/sys/kernel/slow-work/min-threads
+
+     The minimum number of threads that should be in the pool as long as it is
+     in use.  This may be anywhere between 2 and max-threads.
+
+ (*) /proc/sys/kernel/slow-work/max-threads
+
+     The maximum number of threads that should in the pool.  This may be
+     anywhere between min-threads and 255 or NR_CPUS * 2, whichever is greater.
+
+ (*) /proc/sys/kernel/slow-work/vslow-percentage
+
+     The percentage of active threads in the pool that may be used to execute
+     very slow work items.  This may be between 1 and 99.  The resultant number
+     is bounded to between 1 and one fewer than the number of active threads.
+     This ensures there is always at least one thread that can process very
+     slow work items, and always at least one thread that won't.
 
 Signed-off-by: David Howells <dhowells@redhat.com>
 Acked-by: Serge Hallyn <serue@us.ibm.com>
@@ -41,218 +57,218 @@ Acked-by: Al Viro <viro@zeniv.linux.org.uk>
 Tested-by: Daire Byrne <Daire.Byrne@framestore.com>
 ---
 
- kernel/slow-work.c |  138 ++++++++++++++++++++++++++++++++++++++++++++++++++++
- 1 files changed, 137 insertions(+), 1 deletions(-)
+ include/linux/slow-work.h |    5 ++
+ kernel/slow-work.c        |  118 ++++++++++++++++++++++++++++++++++++++++++++-
+ kernel/sysctl.c           |    9 +++
+ 3 files changed, 130 insertions(+), 2 deletions(-)
 
 
+diff --git a/include/linux/slow-work.h b/include/linux/slow-work.h
+index 4dd754a..8262809 100644
+--- a/include/linux/slow-work.h
++++ b/include/linux/slow-work.h
+@@ -14,6 +14,8 @@
+ 
+ #ifdef CONFIG_SLOW_WORK
+ 
++#include <linux/sysctl.h>
++
+ struct slow_work;
+ 
+ /*
+@@ -83,6 +85,9 @@ extern int slow_work_enqueue(struct slow_work *work);
+ extern int slow_work_register_user(void);
+ extern void slow_work_unregister_user(void);
+ 
++#ifdef CONFIG_SYSCTL
++extern ctl_table slow_work_sysctls[];
++#endif
+ 
+ #endif /* CONFIG_SLOW_WORK */
+ #endif /* _LINUX_SLOW_WORK_H */
 diff --git a/kernel/slow-work.c b/kernel/slow-work.c
-index 5a73927..454abb2 100644
+index 454abb2..3f65900 100644
 --- a/kernel/slow-work.c
 +++ b/kernel/slow-work.c
-@@ -16,6 +16,14 @@
+@@ -14,7 +14,6 @@
+ #include <linux/kthread.h>
+ #include <linux/freezer.h>
  #include <linux/wait.h>
- #include <asm/system.h>
+-#include <asm/system.h>
  
-+#define SLOW_WORK_CULL_TIMEOUT (5 * HZ)	/* cull threads 5s after running out of
-+					 * things to do */
-+#define SLOW_WORK_OOM_TIMEOUT (5 * HZ)	/* can't start new threads for 5s after
-+					 * OOM */
+ #define SLOW_WORK_CULL_TIMEOUT (5 * HZ)	/* cull threads 5s after running out of
+ 					 * things to do */
+@@ -24,6 +23,14 @@
+ static void slow_work_cull_timeout(unsigned long);
+ static void slow_work_oom_timeout(unsigned long);
+ 
++#ifdef CONFIG_SYSCTL
++static int slow_work_min_threads_sysctl(struct ctl_table *, int, struct file *,
++					void __user *, size_t *, loff_t *);
 +
-+static void slow_work_cull_timeout(unsigned long);
-+static void slow_work_oom_timeout(unsigned long);
++static int slow_work_max_threads_sysctl(struct ctl_table *, int , struct file *,
++					void __user *, size_t *, loff_t *);
++#endif
 +
  /*
   * The pool of threads has at least min threads in it as long as someone is
   * using the facility, and may have as many as max.
-@@ -29,6 +37,12 @@ static unsigned vslow_work_proportion = 50; /* % of threads that may process
+@@ -34,6 +41,51 @@ static unsigned slow_work_min_threads = 2;
+ static unsigned slow_work_max_threads = 4;
+ static unsigned vslow_work_proportion = 50; /* % of threads that may process
+ 					     * very slow work */
++
++#ifdef CONFIG_SYSCTL
++static const int slow_work_min_min_threads = 2;
++static int slow_work_max_max_threads = 255;
++static const int slow_work_min_vslow = 1;
++static const int slow_work_max_vslow = 99;
++
++ctl_table slow_work_sysctls[] = {
++	{
++		.ctl_name	= CTL_UNNUMBERED,
++		.procname	= "min-threads",
++		.data		= &slow_work_min_threads,
++		.maxlen		= sizeof(unsigned),
++		.mode		= 0644,
++		.proc_handler	= slow_work_min_threads_sysctl,
++		.extra1		= (void *) &slow_work_min_min_threads,
++		.extra2		= &slow_work_max_threads,
++	},
++	{
++		.ctl_name	= CTL_UNNUMBERED,
++		.procname	= "max-threads",
++		.data		= &slow_work_max_threads,
++		.maxlen		= sizeof(unsigned),
++		.mode		= 0644,
++		.proc_handler	= slow_work_max_threads_sysctl,
++		.extra1		= &slow_work_min_threads,
++		.extra2		= (void *) &slow_work_max_max_threads,
++	},
++	{
++		.ctl_name	= CTL_UNNUMBERED,
++		.procname	= "vslow-percentage",
++		.data		= &vslow_work_proportion,
++		.maxlen		= sizeof(unsigned),
++		.mode		= 0644,
++		.proc_handler	= &proc_dointvec_minmax,
++		.extra1		= (void *) &slow_work_min_vslow,
++		.extra2		= (void *) &slow_work_max_vslow,
++	},
++	{ .ctl_name = 0 }
++};
++#endif
++
++/*
++ * The active state of the thread pool
++ */
  static atomic_t slow_work_thread_count;
  static atomic_t vslow_work_executing_count;
  
-+static bool slow_work_may_not_start_new_thread;
-+static bool slow_work_cull; /* cull a thread due to lack of activity */
-+static DEFINE_TIMER(slow_work_cull_timer, slow_work_cull_timeout, 0, 0);
-+static DEFINE_TIMER(slow_work_oom_timer, slow_work_oom_timeout, 0, 0);
-+static struct slow_work slow_work_new_thread; /* new thread starter */
-+
- /*
-  * The queues of work items and the lock governing access to them.  These are
-  * shared between all the CPUs.  It doesn't make sense to have per-CPU queues
-@@ -89,6 +103,14 @@ static bool slow_work_execute(void)
- 
- 	vsmax = slow_work_calc_vsmax();
- 
-+	/* see if we can schedule a new thread to be started if we're not
-+	 * keeping up with the work */
-+	if (!waitqueue_active(&slow_work_thread_wq) &&
-+	    (!list_empty(&slow_work_queue) || !list_empty(&vslow_work_queue)) &&
-+	    atomic_read(&slow_work_thread_count) < slow_work_max_threads &&
-+	    !slow_work_may_not_start_new_thread)
-+		slow_work_enqueue(&slow_work_new_thread);
-+
- 	/* find something to execute */
- 	spin_lock_irq(&slow_work_queue_lock);
- 	if (!list_empty(&vslow_work_queue) &&
-@@ -243,6 +265,33 @@ cant_get_ref:
- EXPORT_SYMBOL(slow_work_enqueue);
- 
- /*
-+ * Worker thread culling algorithm
-+ */
-+static bool slow_work_cull_thread(void)
-+{
-+	unsigned long flags;
-+	bool do_cull = false;
-+
-+	spin_lock_irqsave(&slow_work_queue_lock, flags);
-+
-+	if (slow_work_cull) {
-+		slow_work_cull = false;
-+
-+		if (list_empty(&slow_work_queue) &&
-+		    list_empty(&vslow_work_queue) &&
-+		    atomic_read(&slow_work_thread_count) >
-+		    slow_work_min_threads) {
-+			mod_timer(&slow_work_cull_timer,
-+				  jiffies + SLOW_WORK_CULL_TIMEOUT);
-+			do_cull = true;
-+		}
-+	}
-+
-+	spin_unlock_irqrestore(&slow_work_queue_lock, flags);
-+	return do_cull;
-+}
-+
-+/*
-  * Determine if there is slow work available for dispatch
-  */
- static inline bool slow_work_available(int vsmax)
-@@ -273,7 +322,8 @@ static int slow_work_thread(void *_data)
- 				TASK_INTERRUPTIBLE);
- 		if (!freezing(current) &&
- 		    !slow_work_threads_should_exit &&
--		    !slow_work_available(vsmax))
-+		    !slow_work_available(vsmax) &&
-+		    !slow_work_cull)
- 			schedule();
- 		finish_wait(&slow_work_thread_wq, &wait);
- 
-@@ -285,11 +335,20 @@ static int slow_work_thread(void *_data)
- 
- 		if (slow_work_available(vsmax) && slow_work_execute()) {
- 			cond_resched();
-+			if (list_empty(&slow_work_queue) &&
-+			    list_empty(&vslow_work_queue) &&
-+			    atomic_read(&slow_work_thread_count) >
-+			    slow_work_min_threads)
-+				mod_timer(&slow_work_cull_timer,
-+					  jiffies + SLOW_WORK_CULL_TIMEOUT);
- 			continue;
- 		}
- 
- 		if (slow_work_threads_should_exit)
- 			break;
-+
-+		if (slow_work_cull && slow_work_cull_thread())
-+			break;
- 	}
- 
- 	if (atomic_dec_and_test(&slow_work_thread_count))
-@@ -297,6 +356,77 @@ static int slow_work_thread(void *_data)
- 	return 0;
+@@ -427,6 +479,64 @@ static void slow_work_oom_timeout(unsigned long data)
+ 	slow_work_may_not_start_new_thread = false;
  }
  
++#ifdef CONFIG_SYSCTL
 +/*
-+ * Handle thread cull timer expiration
++ * Handle adjustment of the minimum number of threads
 + */
-+static void slow_work_cull_timeout(unsigned long data)
++static int slow_work_min_threads_sysctl(struct ctl_table *table, int write,
++					struct file *filp, void __user *buffer,
++					size_t *lenp, loff_t *ppos)
 +{
-+	slow_work_cull = true;
-+	wake_up(&slow_work_thread_wq);
-+}
++	int ret = proc_dointvec_minmax(table, write, filp, buffer, lenp, ppos);
++	int n;
 +
-+/*
-+ * Get a reference on slow work thread starter
-+ */
-+static int slow_work_new_thread_get_ref(struct slow_work *work)
-+{
-+	return 0;
-+}
++	if (ret == 0) {
++		mutex_lock(&slow_work_user_lock);
++		if (slow_work_user_count > 0) {
++			/* see if we need to start or stop threads */
++			n = atomic_read(&slow_work_thread_count) -
++				slow_work_min_threads;
 +
-+/*
-+ * Drop a reference on slow work thread starter
-+ */
-+static void slow_work_new_thread_put_ref(struct slow_work *work)
-+{
-+}
-+
-+/*
-+ * Start a new slow work thread
-+ */
-+static void slow_work_new_thread_execute(struct slow_work *work)
-+{
-+	struct task_struct *p;
-+
-+	if (slow_work_threads_should_exit)
-+		return;
-+
-+	if (atomic_read(&slow_work_thread_count) >= slow_work_max_threads)
-+		return;
-+
-+	if (!mutex_trylock(&slow_work_user_lock))
-+		return;
-+
-+	slow_work_may_not_start_new_thread = true;
-+	atomic_inc(&slow_work_thread_count);
-+	p = kthread_run(slow_work_thread, NULL, "kslowd");
-+	if (IS_ERR(p)) {
-+		printk(KERN_DEBUG "Slow work thread pool: OOM\n");
-+		if (atomic_dec_and_test(&slow_work_thread_count))
-+			BUG(); /* we're running on a slow work thread... */
-+		mod_timer(&slow_work_oom_timer,
-+			  jiffies + SLOW_WORK_OOM_TIMEOUT);
-+	} else {
-+		/* ratelimit the starting of new threads */
-+		mod_timer(&slow_work_oom_timer, jiffies + 1);
++			if (n < 0 && !slow_work_may_not_start_new_thread)
++				slow_work_enqueue(&slow_work_new_thread);
++			else if (n > 0)
++				mod_timer(&slow_work_cull_timer,
++					  jiffies + SLOW_WORK_CULL_TIMEOUT);
++		}
++		mutex_unlock(&slow_work_user_lock);
 +	}
 +
-+	mutex_unlock(&slow_work_user_lock);
++	return ret;
 +}
-+
-+static const struct slow_work_ops slow_work_new_thread_ops = {
-+	.get_ref	= slow_work_new_thread_get_ref,
-+	.put_ref	= slow_work_new_thread_put_ref,
-+	.execute	= slow_work_new_thread_execute,
-+};
 +
 +/*
-+ * post-OOM new thread start suppression expiration
++ * Handle adjustment of the maximum number of threads
 + */
-+static void slow_work_oom_timeout(unsigned long data)
++static int slow_work_max_threads_sysctl(struct ctl_table *table, int write,
++					struct file *filp, void __user *buffer,
++					size_t *lenp, loff_t *ppos)
 +{
-+	slow_work_may_not_start_new_thread = false;
++	int ret = proc_dointvec_minmax(table, write, filp, buffer, lenp, ppos);
++	int n;
++
++	if (ret == 0) {
++		mutex_lock(&slow_work_user_lock);
++		if (slow_work_user_count > 0) {
++			/* see if we need to stop threads */
++			n = slow_work_max_threads -
++				atomic_read(&slow_work_thread_count);
++
++			if (n < 0)
++				mod_timer(&slow_work_cull_timer,
++					  jiffies + SLOW_WORK_CULL_TIMEOUT);
++		}
++		mutex_unlock(&slow_work_user_lock);
++	}
++
++	return ret;
 +}
++#endif /* CONFIG_SYSCTL */
 +
  /**
   * slow_work_register_user - Register a user of the facility
   *
-@@ -316,6 +446,10 @@ int slow_work_register_user(void)
- 		init_completion(&slow_work_last_thread_exited);
+@@ -516,8 +626,12 @@ static int __init init_slow_work(void)
+ {
+ 	unsigned nr_cpus = num_possible_cpus();
  
- 		slow_work_threads_should_exit = false;
-+		slow_work_init(&slow_work_new_thread,
-+			       &slow_work_new_thread_ops);
-+		slow_work_may_not_start_new_thread = false;
-+		slow_work_cull = false;
- 
- 		/* start the minimum number of threads */
- 		for (loop = 0; loop < slow_work_min_threads; loop++) {
-@@ -369,6 +503,8 @@ void slow_work_unregister_user(void)
- 		       " Shut down complete\n");
- 	}
- 
-+	del_timer_sync(&slow_work_cull_timer);
-+
- 	mutex_unlock(&slow_work_user_lock);
+-	if (nr_cpus > slow_work_max_threads)
++	if (slow_work_max_threads < nr_cpus)
+ 		slow_work_max_threads = nr_cpus;
++#ifdef CONFIG_SYSCTL
++	if (slow_work_max_max_threads < nr_cpus * 2)
++		slow_work_max_max_threads = nr_cpus * 2;
++#endif
+ 	return 0;
  }
- EXPORT_SYMBOL(slow_work_unregister_user);
+ 
+diff --git a/kernel/sysctl.c b/kernel/sysctl.c
+index 5ec4543..82350f8 100644
+--- a/kernel/sysctl.c
++++ b/kernel/sysctl.c
+@@ -48,6 +48,7 @@
+ #include <linux/acpi.h>
+ #include <linux/reboot.h>
+ #include <linux/ftrace.h>
++#include <linux/slow-work.h>
+ 
+ #include <asm/uaccess.h>
+ #include <asm/processor.h>
+@@ -897,6 +898,14 @@ static struct ctl_table kern_table[] = {
+ 		.proc_handler	= &scan_unevictable_handler,
+ 	},
+ #endif
++#ifdef CONFIG_SLOW_WORK
++	{
++		.ctl_name	= CTL_UNNUMBERED,
++		.procname	= "slow-work",
++		.mode		= 0555,
++		.child		= slow_work_sysctls,
++	},
++#endif
+ /*
+  * NOTE: do not add new entries to this table unless you have read
+  * Documentation/sysctl/ctl_unnumbered.txt
 
