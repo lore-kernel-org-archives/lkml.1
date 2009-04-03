@@ -1,24 +1,24 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S935455AbZDCQBw@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S935411AbZDCQB0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S935455AbZDCQBw (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 3 Apr 2009 12:01:52 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934416AbZDCPzz
+	id S935411AbZDCQB0 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 3 Apr 2009 12:01:26 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934229AbZDCPzt
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 3 Apr 2009 11:55:55 -0400
-Received: from mx2.redhat.com ([66.187.237.31]:56542 "EHLO mx2.redhat.com"
+	Fri, 3 Apr 2009 11:55:49 -0400
+Received: from mx2.redhat.com ([66.187.237.31]:56539 "EHLO mx2.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S933787AbZDCPzp (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 3 Apr 2009 11:55:45 -0400
+	id S933883AbZDCPzl (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 3 Apr 2009 11:55:41 -0400
 Organization: Red Hat UK Ltd. Registered Address: Red Hat UK Ltd, Amberley
 	Place, 107-111 Peascod Street, Windsor, Berkshire, SI4 1TE, United
 	Kingdom.
 	Registered in England and Wales under Company Registration No. 3798903
 From: David Howells <dhowells@redhat.com>
-Subject: [PATCH 12/41] FS-Cache: Add cache tag handling [ver #48]
+Subject: [PATCH 11/41] FS-Cache: Root index definition [ver #48]
 To: linux-kernel@vger.kernel.org
 Cc: dhowells@redhat.com, nfsv4@linux-nfs.org, linux-fsdevel@vger.kernel.org
-Date: Fri, 03 Apr 2009 16:55:38 +0100
-Message-ID: <20090403155538.28714.72207.stgit@warthog.procyon.org.uk>
+Date: Fri, 03 Apr 2009 16:55:33 +0100
+Message-ID: <20090403155533.28714.78451.stgit@warthog.procyon.org.uk>
 In-Reply-To: <20090403155436.28714.23368.stgit@warthog.procyon.org.uk>
 References: <20090403155436.28714.23368.stgit@warthog.procyon.org.uk>
 User-Agent: StGIT/0.14.3
@@ -29,13 +29,30 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Implement two features of FS-Cache:
+Add a description of the root index of the cache for later patches to make use
+of.
 
- (1) The ability to request and release cache tags - names by which a cache may
-     be known to a netfs, and thus selected for use.
+The root index is owned by FS-Cache itself.  When a netfs requests caching
+facilities, FS-Cache will, if one doesn't already exist, create an entry in
+the root index with the key being the name of the netfs ("AFS" for example),
+and the auxiliary data holding the index structure version supplied by the
+netfs:
 
- (2) An internal function by which a cache is selected by consulting the netfs,
-     if the netfs wishes to be consulted.
+				     FSDEF
+				       |
+				 +-----------+
+				 |           |
+				NFS         AFS
+			       [v=1]       [v=1]
+
+If an entry with the appropriate name does already exist, the version is
+compared.  If the version is different, the entire subtree from that entry
+will be discarded and a new entry created.
+
+The new entry will be an index, and a cookie referring to it will be passed to
+the netfs.  This is then the root handle by which the netfs accesses the
+cache.  It can create whatever objects it likes in that index, including
+further indices.
 
 Signed-off-by: David Howells <dhowells@redhat.com>
 Acked-by: Steve Dickson <steved@redhat.com>
@@ -44,35 +61,34 @@ Acked-by: Al Viro <viro@zeniv.linux.org.uk>
 Tested-by: Daire Byrne <Daire.Byrne@framestore.com>
 ---
 
- fs/fscache/Makefile     |    1 
- fs/fscache/cache.c      |  166 +++++++++++++++++++++++++++++++++++++++++++++++
- fs/fscache/internal.h   |   20 ++++++
- include/linux/fscache.h |    9 ++-
- 4 files changed, 195 insertions(+), 1 deletions(-)
- create mode 100644 fs/fscache/cache.c
+ fs/fscache/Makefile   |    1 
+ fs/fscache/fsdef.c    |  144 +++++++++++++++++++++++++++++++++++++++++++++++++
+ fs/fscache/internal.h |    6 ++
+ 3 files changed, 151 insertions(+), 0 deletions(-)
+ create mode 100644 fs/fscache/fsdef.c
 
 
 diff --git a/fs/fscache/Makefile b/fs/fscache/Makefile
-index bc1f3b9..556708b 100644
+index 1384823..bc1f3b9 100644
 --- a/fs/fscache/Makefile
 +++ b/fs/fscache/Makefile
 @@ -3,6 +3,7 @@
  #
  
  fscache-y := \
-+	cache.o \
- 	fsdef.o \
++	fsdef.o \
  	main.o
  
-diff --git a/fs/fscache/cache.c b/fs/fscache/cache.c
+ fscache-$(CONFIG_PROC_FS) += proc.o
+diff --git a/fs/fscache/fsdef.c b/fs/fscache/fsdef.c
 new file mode 100644
-index 0000000..1a28df3
+index 0000000..f5b4bae
 --- /dev/null
-+++ b/fs/fscache/cache.c
-@@ -0,0 +1,166 @@
-+/* FS-Cache cache handling
++++ b/fs/fscache/fsdef.c
+@@ -0,0 +1,144 @@
++/* Filesystem index definition
 + *
-+ * Copyright (C) 2007 Red Hat, Inc. All Rights Reserved.
++ * Copyright (C) 2004-2007 Red Hat, Inc. All Rights Reserved.
 + * Written by David Howells (dhowells@redhat.com)
 + *
 + * This program is free software; you can redistribute it and/or
@@ -83,229 +99,152 @@ index 0000000..1a28df3
 +
 +#define FSCACHE_DEBUG_LEVEL CACHE
 +#include <linux/module.h>
-+#include <linux/slab.h>
 +#include "internal.h"
 +
-+LIST_HEAD(fscache_cache_list);
-+DECLARE_RWSEM(fscache_addremove_sem);
++static uint16_t fscache_fsdef_netfs_get_key(const void *cookie_netfs_data,
++					    void *buffer, uint16_t bufmax);
 +
-+static LIST_HEAD(fscache_cache_tag_list);
++static uint16_t fscache_fsdef_netfs_get_aux(const void *cookie_netfs_data,
++					    void *buffer, uint16_t bufmax);
++
++static
++enum fscache_checkaux fscache_fsdef_netfs_check_aux(void *cookie_netfs_data,
++						    const void *data,
++						    uint16_t datalen);
 +
 +/*
-+ * look up a cache tag
++ * The root index is owned by FS-Cache itself.
++ *
++ * When a netfs requests caching facilities, FS-Cache will, if one doesn't
++ * already exist, create an entry in the root index with the key being the name
++ * of the netfs ("AFS" for example), and the auxiliary data holding the index
++ * structure version supplied by the netfs:
++ *
++ *				     FSDEF
++ *				       |
++ *				 +-----------+
++ *				 |           |
++ *				NFS         AFS
++ *			       [v=1]       [v=1]
++ *
++ * If an entry with the appropriate name does already exist, the version is
++ * compared.  If the version is different, the entire subtree from that entry
++ * will be discarded and a new entry created.
++ *
++ * The new entry will be an index, and a cookie referring to it will be passed
++ * to the netfs.  This is then the root handle by which the netfs accesses the
++ * cache.  It can create whatever objects it likes in that index, including
++ * further indices.
 + */
-+struct fscache_cache_tag *__fscache_lookup_cache_tag(const char *name)
++static struct fscache_cookie_def fscache_fsdef_index_def = {
++	.name		= ".FS-Cache",
++	.type		= FSCACHE_COOKIE_TYPE_INDEX,
++};
++
++struct fscache_cookie fscache_fsdef_index = {
++	.usage		= ATOMIC_INIT(1),
++	.lock		= __SPIN_LOCK_UNLOCKED(fscache_fsdef_index.lock),
++	.backing_objects = HLIST_HEAD_INIT,
++	.def		= &fscache_fsdef_index_def,
++};
++EXPORT_SYMBOL(fscache_fsdef_index);
++
++/*
++ * Definition of an entry in the root index.  Each entry is an index, keyed to
++ * a specific netfs and only applicable to a particular version of the index
++ * structure used by that netfs.
++ */
++struct fscache_cookie_def fscache_fsdef_netfs_def = {
++	.name		= "FSDEF.netfs",
++	.type		= FSCACHE_COOKIE_TYPE_INDEX,
++	.get_key	= fscache_fsdef_netfs_get_key,
++	.get_aux	= fscache_fsdef_netfs_get_aux,
++	.check_aux	= fscache_fsdef_netfs_check_aux,
++};
++
++/*
++ * get the key data for an FSDEF index record - this is the name of the netfs
++ * for which this entry is created
++ */
++static uint16_t fscache_fsdef_netfs_get_key(const void *cookie_netfs_data,
++					    void *buffer, uint16_t bufmax)
 +{
-+	struct fscache_cache_tag *tag, *xtag;
++	const struct fscache_netfs *netfs = cookie_netfs_data;
++	unsigned klen;
 +
-+	/* firstly check for the existence of the tag under read lock */
-+	down_read(&fscache_addremove_sem);
++	_enter("{%s.%u},", netfs->name, netfs->version);
 +
-+	list_for_each_entry(tag, &fscache_cache_tag_list, link) {
-+		if (strcmp(tag->name, name) == 0) {
-+			atomic_inc(&tag->usage);
-+			up_read(&fscache_addremove_sem);
-+			return tag;
-+		}
-+	}
++	klen = strlen(netfs->name);
++	if (klen > bufmax)
++		return 0;
 +
-+	up_read(&fscache_addremove_sem);
-+
-+	/* the tag does not exist - create a candidate */
-+	xtag = kzalloc(sizeof(*xtag) + strlen(name) + 1, GFP_KERNEL);
-+	if (!xtag)
-+		/* return a dummy tag if out of memory */
-+		return ERR_PTR(-ENOMEM);
-+
-+	atomic_set(&xtag->usage, 1);
-+	strcpy(xtag->name, name);
-+
-+	/* write lock, search again and add if still not present */
-+	down_write(&fscache_addremove_sem);
-+
-+	list_for_each_entry(tag, &fscache_cache_tag_list, link) {
-+		if (strcmp(tag->name, name) == 0) {
-+			atomic_inc(&tag->usage);
-+			up_write(&fscache_addremove_sem);
-+			kfree(xtag);
-+			return tag;
-+		}
-+	}
-+
-+	list_add_tail(&xtag->link, &fscache_cache_tag_list);
-+	up_write(&fscache_addremove_sem);
-+	return xtag;
++	memcpy(buffer, netfs->name, klen);
++	return klen;
 +}
 +
 +/*
-+ * release a reference to a cache tag
++ * get the auxiliary data for an FSDEF index record - this is the index
++ * structure version number of the netfs for which this version is created
 + */
-+void __fscache_release_cache_tag(struct fscache_cache_tag *tag)
++static uint16_t fscache_fsdef_netfs_get_aux(const void *cookie_netfs_data,
++					    void *buffer, uint16_t bufmax)
 +{
-+	if (tag != ERR_PTR(-ENOMEM)) {
-+		down_write(&fscache_addremove_sem);
++	const struct fscache_netfs *netfs = cookie_netfs_data;
++	unsigned dlen;
 +
-+		if (atomic_dec_and_test(&tag->usage))
-+			list_del_init(&tag->link);
-+		else
-+			tag = NULL;
++	_enter("{%s.%u},", netfs->name, netfs->version);
 +
-+		up_write(&fscache_addremove_sem);
++	dlen = sizeof(uint32_t);
++	if (dlen > bufmax)
++		return 0;
 +
-+		kfree(tag);
-+	}
++	memcpy(buffer, &netfs->version, dlen);
++	return dlen;
 +}
 +
 +/*
-+ * select a cache in which to store an object
-+ * - the cache addremove semaphore must be at least read-locked by the caller
-+ * - the object will never be an index
++ * check that the index structure version number stored in the auxiliary data
++ * matches the one the netfs gave us
 + */
-+struct fscache_cache *fscache_select_cache_for_object(
-+	struct fscache_cookie *cookie)
++static enum fscache_checkaux fscache_fsdef_netfs_check_aux(
++	void *cookie_netfs_data,
++	const void *data,
++	uint16_t datalen)
 +{
-+	struct fscache_cache_tag *tag;
-+	struct fscache_object *object;
-+	struct fscache_cache *cache;
++	struct fscache_netfs *netfs = cookie_netfs_data;
++	uint32_t version;
 +
-+	_enter("");
++	_enter("{%s},,%hu", netfs->name, datalen);
 +
-+	if (list_empty(&fscache_cache_list)) {
-+		_leave(" = NULL [no cache]");
-+		return NULL;
++	if (datalen != sizeof(version)) {
++		_leave(" = OBSOLETE [dl=%d v=%zu]", datalen, sizeof(version));
++		return FSCACHE_CHECKAUX_OBSOLETE;
 +	}
 +
-+	/* we check the parent to determine the cache to use */
-+	spin_lock(&cookie->lock);
-+
-+	/* the first in the parent's backing list should be the preferred
-+	 * cache */
-+	if (!hlist_empty(&cookie->backing_objects)) {
-+		object = hlist_entry(cookie->backing_objects.first,
-+				     struct fscache_object, cookie_link);
-+
-+		cache = object->cache;
-+		if (object->state >= FSCACHE_OBJECT_DYING ||
-+		    test_bit(FSCACHE_IOERROR, &cache->flags))
-+			cache = NULL;
-+
-+		spin_unlock(&cookie->lock);
-+		_leave(" = %p [parent]", cache);
-+		return cache;
++	memcpy(&version, data, sizeof(version));
++	if (version != netfs->version) {
++		_leave(" = OBSOLETE [ver=%x net=%x]", version, netfs->version);
++		return FSCACHE_CHECKAUX_OBSOLETE;
 +	}
 +
-+	/* the parent is unbacked */
-+	if (cookie->def->type != FSCACHE_COOKIE_TYPE_INDEX) {
-+		/* cookie not an index and is unbacked */
-+		spin_unlock(&cookie->lock);
-+		_leave(" = NULL [cookie ub,ni]");
-+		return NULL;
-+	}
-+
-+	spin_unlock(&cookie->lock);
-+
-+	if (!cookie->def->select_cache)
-+		goto no_preference;
-+
-+	/* ask the netfs for its preference */
-+	tag = cookie->def->select_cache(cookie->parent->netfs_data,
-+					cookie->netfs_data);
-+	if (!tag)
-+		goto no_preference;
-+
-+	if (tag == ERR_PTR(-ENOMEM)) {
-+		_leave(" = NULL [nomem tag]");
-+		return NULL;
-+	}
-+
-+	if (!tag->cache) {
-+		_leave(" = NULL [unbacked tag]");
-+		return NULL;
-+	}
-+
-+	if (test_bit(FSCACHE_IOERROR, &tag->cache->flags))
-+		return NULL;
-+
-+	_leave(" = %p [specific]", tag->cache);
-+	return tag->cache;
-+
-+no_preference:
-+	/* netfs has no preference - just select first cache */
-+	cache = list_entry(fscache_cache_list.next,
-+			   struct fscache_cache, link);
-+	_leave(" = %p [first]", cache);
-+	return cache;
++	_leave(" = OKAY");
++	return FSCACHE_CHECKAUX_OKAY;
 +}
 diff --git a/fs/fscache/internal.h b/fs/fscache/internal.h
-index 4113af8..0a2069a 100644
+index 16f9f1f..4113af8 100644
 --- a/fs/fscache/internal.h
 +++ b/fs/fscache/internal.h
-@@ -28,6 +28,15 @@
+@@ -28,6 +28,12 @@
  #define FSCACHE_MAX_THREADS	32
  
  /*
-+ * fsc-cache.c
++ * fsc-fsdef.c
 + */
-+extern struct list_head fscache_cache_list;
-+extern struct rw_semaphore fscache_addremove_sem;
-+
-+extern struct fscache_cache *fscache_select_cache_for_object(
-+	struct fscache_cookie *);
++extern struct fscache_cookie fscache_fsdef_index;
++extern struct fscache_cookie_def fscache_fsdef_netfs_def;
 +
 +/*
-  * fsc-fsdef.c
+  * fsc-histogram.c
   */
- extern struct fscache_cookie fscache_fsdef_index;
-@@ -168,6 +177,17 @@ extern const struct file_operations fscache_stats_fops;
- #define fscache_stat(stat) do {} while (0)
- #endif
- 
-+/*
-+ * raise an event on an object
-+ * - if the event is not masked for that object, then the object is
-+ *   queued for attention by the thread pool.
-+ */
-+static inline void fscache_raise_event(struct fscache_object *object,
-+				       unsigned event)
-+{
-+	BUG();  // TODO
-+}
-+
- /*****************************************************************************/
- /*
-  * debug tracing
-diff --git a/include/linux/fscache.h b/include/linux/fscache.h
-index feb3b0e..9584c09 100644
---- a/include/linux/fscache.h
-+++ b/include/linux/fscache.h
-@@ -173,6 +173,8 @@ struct fscache_netfs {
-  * - these are undefined symbols when FS-Cache is not configured and the
-  *   optimiser takes care of not using them
-  */
-+extern struct fscache_cache_tag *__fscache_lookup_cache_tag(const char *);
-+extern void __fscache_release_cache_tag(struct fscache_cache_tag *);
- 
- /**
-  * fscache_register_netfs - Register a filesystem as desiring caching services
-@@ -218,7 +220,10 @@ void fscache_unregister_netfs(struct fscache_netfs *netfs)
- static inline
- struct fscache_cache_tag *fscache_lookup_cache_tag(const char *name)
- {
--	return NULL;
-+	if (fscache_available())
-+		return __fscache_lookup_cache_tag(name);
-+	else
-+		return NULL;
- }
- 
- /**
-@@ -233,6 +238,8 @@ struct fscache_cache_tag *fscache_lookup_cache_tag(const char *name)
- static inline
- void fscache_release_cache_tag(struct fscache_cache_tag *tag)
- {
-+	if (fscache_available())
-+		__fscache_release_cache_tag(tag);
- }
- 
- /**
+ #ifdef CONFIG_FSCACHE_HISTOGRAM
 
