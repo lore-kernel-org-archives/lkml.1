@@ -1,248 +1,128 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1765996AbZDCN6Y@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932307AbZDCN6m@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1765996AbZDCN6Y (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 3 Apr 2009 09:58:24 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759228AbZDCN5s
+	id S932307AbZDCN6m (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 3 Apr 2009 09:58:42 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932111AbZDCN6H
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 3 Apr 2009 09:57:48 -0400
-Received: from mga03.intel.com ([143.182.124.21]:35741 "EHLO mga03.intel.com"
+	Fri, 3 Apr 2009 09:58:07 -0400
+Received: from mx2.mail.elte.hu ([157.181.151.9]:47809 "EHLO mx2.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1765663AbZDCN5q convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 3 Apr 2009 09:57:46 -0400
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.39,319,1235980800"; 
-   d="scan'208";a="127529304"
-From: "Pallipadi, Venkatesh" <venkatesh.pallipadi@intel.com>
-To: Alessandro Suardi <alessandro.suardi@gmail.com>
-CC: Arkadiusz Miskiewicz <a.miskiewicz@gmail.com>,
-       "Siddha, Suresh B" <suresh.b.siddha@intel.com>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       Jesse Barnes <jbarnes@virtuousgeek.org>
-Date: Fri, 3 Apr 2009 06:59:30 -0700
-Subject: RE: 2.6.29 git master and PAT problems
-Thread-Topic: 2.6.29 git master and PAT problems
-Thread-Index: Acm0QhZir57J0MHNSa6r5kAsiN6tJwAIWmlg
-Message-ID: <7E82351C108FA840AB1866AC776AEC4658074803@orsmsx505.amr.corp.intel.com>
-References: <200903302317.04515.a.miskiewicz@gmail.com>
-	 <200903302331.10995.a.miskiewicz@gmail.com>
-	 <1238449555.4529.1095.camel@localhost.localdomain>
-	 <200903310031.10335.a.miskiewicz@gmail.com>
-	 <20090331002815.GB10490@linux-os.sc.intel.com>
-	 <20090402004933.GE10490@linux-os.sc.intel.com>
- <5a4c581d0904030253v44294f1bo1c65e89a3db9ae9b@mail.gmail.com>
-In-Reply-To: <5a4c581d0904030253v44294f1bo1c65e89a3db9ae9b@mail.gmail.com>
-Accept-Language: en-US
-Content-Language: en-US
-X-MS-Has-Attach: 
-X-MS-TNEF-Correlator: 
-acceptlanguage: en-US
-Content-Type: text/plain; charset="iso-8859-1"
-Content-Transfer-Encoding: 8BIT
+	id S1765998AbZDCN6F (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 3 Apr 2009 09:58:05 -0400
+Date: Fri, 3 Apr 2009 15:57:36 +0200
+From: Ingo Molnar <mingo@elte.hu>
+To: Li Zefan <lizf@cn.fujitsu.com>, "Alan D. Brunelle" <alan.brunelle@hp.com>,
+       Steven Rostedt <rostedt@goodmis.org>
+Cc: Jens Axboe <jens.axboe@oracle.com>,
+       Arnaldo Carvalho de Melo <acme@redhat.com>,
+       Steven Rostedt <rostedt@goodmis.org>,
+       Frederic Weisbecker <fweisbec@gmail.com>,
+       FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>,
+       LKML <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH] blktrace: fix pdu_len when tracing packet command
+	requests
+Message-ID: <20090403135736.GC8875@elte.hu>
+References: <49D42036.5010102@cn.fujitsu.com> <49D4507E.2060602@cn.fujitsu.com>
 MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <49D4507E.2060602@cn.fujitsu.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
- 
 
->-----Original Message-----
->From: Alessandro Suardi [mailto:alessandro.suardi@gmail.com] 
->Sent: Friday, April 03, 2009 2:54 AM
->To: Pallipadi, Venkatesh
->Cc: Arkadiusz Miskiewicz; Siddha, Suresh B; 
->linux-kernel@vger.kernel.org; Jesse Barnes
->Subject: Re: 2.6.29 git master and PAT problems
->
->On Thu, Apr 2, 2009 at 2:49 AM, Pallipadi, Venkatesh
-><venkatesh.pallipadi@intel.com> wrote:
->> On Mon, Mar 30, 2009 at 05:28:15PM -0700, Pallipadi, Venkatesh wrote:
->>> On Mon, Mar 30, 2009 at 03:31:09PM -0700, Arkadiusz 
->Miskiewicz wrote:
->>> > On Monday 30 of March 2009, Pallipadi, Venkatesh wrote:
->>> >
->>> > More info follows. Now I've switched to
->>> > e1c502482853f84606928f5a2f2eb6da1993cda1 which contains 
->latest drm fixes and
->>> > now I get much lower numbers of PAT errors but still.
->>> >
->>> > > On Mon, 2009-03-30 at 14:31 -0700, Arkadiusz Miskiewicz wrote:
->>> > > > On Monday 30 of March 2009, Pallipadi, Venkatesh wrote:
->>> > > > > Patch here should get rid of these errors.
->>> > > > >
->>> > > > > http://marc.info/?l=linux-kernel&m=123788806506230&w=2
->>> > > > >
->>> > > > > The patch is in tip and on its way to upstream.
->>> > > >
->>> > > > The problem is that kernel I'm running already 
->contains this patch (it's
->>> > > > merged already). Other ideas?
->>> > > >
->>> > > > ratelimiting that error is good IMO anyway.
->>> > >
->>> > > Rate limiting will just work around the problem here. 
->Ideally we should
->>> > > never see these errors. So, it will be better if we can 
->narrow down on
->>> > > the bug resulting in these error messages.
->>> >
->>> > Of course it's better. I'm saying that when these 
->messages "fire" then it's
->>> > hard to do anything else on the system for a while until 
->these stop.
->>> >
->>> > > Can you please send me the output of
->>> > > # cat /debug/x86/pat_memtype_list
->>> > > with debugfs mounted.
->>> > > and
->>> > > # cat /proc/mtrr
->>> >
->>>
->>> There seems to be two different problems here.
->>> - We should not have that many single page ranges reserved. 
->That will cause a
->>> performance problem with drm even without the "freeing 
->invalid type" error.
->>> - "freeing invalid type" error itself. Seems to be caused 
->due to some
->>> unbalanced free along the drm path. We tried to find 
->anything obvious in the
->>> code that may be causing problem here. But, haven't found 
->anything so far.
->>> Will try to reproduce the problem internally and debug it further.
->>>
->>
->> OK. I think we have root caused the thinko that was resulting in
->> "freeing invalid type" error. Can you try the below test
->> patch. Patch is not final version and may need some cleanup.
->>
->> Signed-off-by: Venkatesh Pallipadi <venkatesh.pallipadi@intel.com>
->> Signed-off-by: Suresh Siddha <suresh.b.siddha@intel.com>
->>
->> diff --git a/arch/x86/mm/pat.c b/arch/x86/mm/pat.c
->> index 640339e..c161700 100644
->> --- a/arch/x86/mm/pat.c
->> +++ b/arch/x86/mm/pat.c
->> @@ -847,7 +847,8 @@ cleanup_ret:
->>  * can be for the entire vma (in which case size can be zero).
->>  */
->>  void untrack_pfn_vma(struct vm_area_struct *vma, unsigned long pfn,
->> -                       unsigned long size)
->> +                       unsigned long size,
->> +                       unsigned long vstart, unsigned long vend)
->>  {
->>        unsigned long i;
->>        resource_size_t paddr;
->> @@ -866,7 +867,7 @@ void untrack_pfn_vma(struct 
->vm_area_struct *vma, unsigned long pfn,
->>                return;
->>        }
->>
->> -       if (size != 0 && size != vma_size) {
->> +       if (size != 0) {
->>                /* free page by page, using pfn and size */
->>                paddr = (resource_size_t)pfn << PAGE_SHIFT;
->>                for (i = 0; i < size; i += PAGE_SIZE) {
->> @@ -874,9 +875,12 @@ void untrack_pfn_vma(struct 
->vm_area_struct *vma, unsigned long pfn,
->>                        free_pfn_range(paddr, PAGE_SIZE);
->>                }
->>        } else {
->> -               /* free entire vma, page by page, using the 
->pfn from pte */
->> -               for (i = 0; i < vma_size; i += PAGE_SIZE) {
->> -                       if (follow_phys(vma, vma_start + i, 
->0, &prot, &paddr))
->> +               /*
->> +                * free vma range from vstart to end, page by page
->> +                * using the pfn from pte
->> +                */
->> +               for (i = vstart; i < vend; i += PAGE_SIZE) {
->> +                       if (follow_phys(vma, i, 0, &prot, &paddr))
->>                                continue;
->>
->>                        free_pfn_range(paddr, PAGE_SIZE);
->> diff --git a/include/asm-generic/pgtable.h 
->b/include/asm-generic/pgtable.h
->> index 8e6d0ca..a325dc1 100644
->> --- a/include/asm-generic/pgtable.h
->> +++ b/include/asm-generic/pgtable.h
->> @@ -328,7 +328,8 @@ static inline int 
->track_pfn_vma_copy(struct vm_area_struct *vma)
->>  * can be for the entire vma (in which case size can be zero).
->>  */
->>  static inline void untrack_pfn_vma(struct vm_area_struct *vma,
->> -                                       unsigned long pfn, 
->unsigned long size)
->> +                               unsigned long pfn, unsigned 
->long size,
->> +                               unsigned long vstart, 
->unsigned long vend)
->>  {
->>  }
->>  #else
->> @@ -336,7 +337,8 @@ extern int track_pfn_vma_new(struct 
->vm_area_struct *vma, pgprot_t *prot,
->>                                unsigned long pfn, unsigned 
->long size);
->>  extern int track_pfn_vma_copy(struct vm_area_struct *vma);
->>  extern void untrack_pfn_vma(struct vm_area_struct *vma, 
->unsigned long pfn,
->> -                               unsigned long size);
->> +                               unsigned long size,
->> +                               unsigned long vstart, 
->unsigned long vend);
->>  #endif
->>
->>  #endif /* !__ASSEMBLY__ */
->> diff --git a/mm/memory.c b/mm/memory.c
->> index cf6873e..6e111c5 100644
->> --- a/mm/memory.c
->> +++ b/mm/memory.c
->> @@ -983,7 +983,7 @@ unsigned long unmap_vmas(struct 
->mmu_gather **tlbp,
->>                        *nr_accounted += (end - start) >> PAGE_SHIFT;
->>
->>                if (unlikely(is_pfn_mapping(vma)))
->> -                       untrack_pfn_vma(vma, 0, 0);
->> +                       untrack_pfn_vma(vma, 0, 0, start, end);
->>
->>                while (start != end) {
->>                        if (!tlb_start_valid) {
->> @@ -1537,7 +1537,7 @@ int vm_insert_pfn(struct 
->vm_area_struct *vma, unsigned long addr,
->>        ret = insert_pfn(vma, addr, pfn, pgprot);
->>
->>        if (ret)
->> -               untrack_pfn_vma(vma, pfn, PAGE_SIZE);
->> +               untrack_pfn_vma(vma, pfn, PAGE_SIZE, 0, 0);
->>
->>        return ret;
->>  }
->> @@ -1702,7 +1702,7 @@ int remap_pfn_range(struct 
->vm_area_struct *vma, unsigned long addr,
->>        } while (pgd++, addr = next, addr != end);
->>
->>        if (err)
->> -               untrack_pfn_vma(vma, pfn, PAGE_ALIGN(size));
->> +               untrack_pfn_vma(vma, pfn, PAGE_ALIGN(size), 0, 0);
->>
->>        return err;
->>  }
->
->2.6.29-git9 plus the above patch still doesn't fix my Dell 
->E6400 running
-> Fedora 10 x86_64:
+* Li Zefan <lizf@cn.fujitsu.com> wrote:
 
-The patch here should get rid of the below msgs.
-http://marc.info/?l=linux-kernel&m=123862741914199&w=2
+> Since commit d7e3c3249ef23b4617393c69fe464765b4ff1645 ("block: add
+> large command support"), struct request->cmd has been changed from
+> unsinged char cmd[BLK_MAX_CDB] to unsigned char *cmd.
+> 
+> v1 -> v2:
+> - make sure rq->cmd_len is always intialized, and then we can use
+>   rq->cmd_len instead of BLK_MAX_CDB.
 
-Can you please test and check whether that resolves the problems?
+Thanks. I've added a 'v2-by: FUJITA Tomonori' and the Ack from 
+Fujita-san as well to document the precise lineage of the fix.
 
-The patch inline in this mail above was a test patch to debug the
-another problem that only happens with recent X and that one we
-are still debugging. So you can ignore the above patch for now.
+Note: there's an important robustness and security issue to check 
+before we can apply this fully.
 
+variable-size records are always tricky and need a full audit of the 
+software stack.
+
+rq->cmd_len comes from sg device ioctls, and the sg command header 
+can have an arbitrary value for sg_io_v4::header_len. The only limit 
+in the block layer at the moment is that it must fit into a single 
+kmalloc() - and that - in theory - can be very large.
+
+So:
+
+1) the ftrace ring-buffer code has to be checked (does it work well 
+   with larger than 4K records). Steve .. how well will it work?
+
+2) and the user-space blktrace+blkparse code has to be checked for 
+   overflows and static sizes as well. Jens, Alan?
+
+   I had a quick look at the user-space code. It seems mostly fine. 
+   There appears to be one minor bug in blkrawverify.c:
+
+                        pdu_buf = malloc(bit->pdu_len);
+                        n = fread(pdu_buf, bit->pdu_len, 1, ifp);
+                        if (n == 0) {
+                                INC_BAD("bad pdu");
+
+   malloc() can return NULL under memory pressure - shouldnt we
+   check it for NULL instead of passing it to fread()?
+
+   Oh, there does seem to be a buffer-overflow problem in 
+   blkparse_fmt.c:
+
+   static char *dump_pdu(unsigned char *pdu_buf, int pdu_len)
+   {
+        static char p[4096];
+        int i, len;
+
+        if (!pdu_buf || !pdu_len)
+                return NULL;
+
+        for (len = 0, i = 0; i < pdu_len; i++) {
+                if (i)
+                        len += sprintf(p + len, " ");
+
+                len += sprintf(p + len, "%02x", pdu_buf[i]);
+   [...]
+
+   that p[4096] is a buffer-overflow if the pdu_len goes over 4096. 
+   This is a small potential security issue if we apply this patch. 
+   Should be changed to malloc(pdu_len) instead.
+
+   ( Relatively small because SG_IO ioctls are not normally allowed
+     to unprivileged users so generating intentionally large packets 
+     to exploit a sysadmin running blkparse seems like a stretch of 
+     a threat model. )
+
+Anyway, this needs to be fixed and fully audited, as we can 
+literally get a 128K packet traced here - even though the hardware 
+itself wont be able to do much with it - most packet commands are in 
+the few bytes range up to 16 bytes typically - but the blktrace 
+layer will forward it.
+
+Please double-check that blkparse is not surprised by the 
+(now-again-) variable length packet command output either.
+
+>From v2.6.26 on we only emitted the first 4/8 bytes depending on 
+bitness.
 
 Thanks,
-Venki
+
+	Ingo
