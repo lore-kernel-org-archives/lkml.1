@@ -1,77 +1,86 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762317AbZDCMPP@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763461AbZDCMPr@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762317AbZDCMPP (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 3 Apr 2009 08:15:15 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755221AbZDCMO7
+	id S1763461AbZDCMPr (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 3 Apr 2009 08:15:47 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762347AbZDCMPb
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 3 Apr 2009 08:14:59 -0400
-Received: from mx3.mail.elte.hu ([157.181.1.138]:38419 "EHLO mx3.mail.elte.hu"
+	Fri, 3 Apr 2009 08:15:31 -0400
+Received: from mx2.redhat.com ([66.187.237.31]:56988 "EHLO mx2.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754821AbZDCMO7 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 3 Apr 2009 08:14:59 -0400
-Date: Fri, 3 Apr 2009 14:14:34 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: Steven Rostedt <rostedt@goodmis.org>
-Cc: linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
-       Thomas Gleixner <tglx@linutronix.de>,
-       Peter Zijlstra <peterz@infradead.org>, Tom Zanussi <tzanussi@gmail.com>,
-       Frederic Weisbecker <fweisbec@gmail.com>
-Subject: Re: [PATCH 0/4] [GIT PULL] for tip/tracing/filters
-Message-ID: <20090403121434.GJ31399@elte.hu>
-References: <20090402052721.013878388@goodmis.org>
+	id S1755221AbZDCMP3 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 3 Apr 2009 08:15:29 -0400
+Message-ID: <49D5FDF9.7090602@redhat.com>
+Date: Fri, 03 Apr 2009 15:15:53 +0300
+From: Avi Kivity <avi@redhat.com>
+User-Agent: Thunderbird 2.0.0.21 (X11/20090320)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090402052721.013878388@goodmis.org>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+To: Gregory Haskins <ghaskins@novell.com>
+CC: Anthony Liguori <anthony@codemonkey.ws>, Andi Kleen <andi@firstfloor.org>,
+       linux-kernel@vger.kernel.org, agraf@suse.de, pmullaney@novell.com,
+       pmorreale@novell.com, rusty@rustcorp.com.au, netdev@vger.kernel.org,
+       kvm@vger.kernel.org
+Subject: Re: [RFC PATCH 00/17] virtual-bus
+References: <20090331184057.28333.77287.stgit@dev.haskins.net> <87ab71monw.fsf@basil.nowhere.org> <49D35825.3050001@novell.com> <20090401132340.GT11935@one.firstfloor.org> <49D37805.1060301@novell.com> <20090401170103.GU11935@one.firstfloor.org> <49D3B64F.6070703@codemonkey.ws> <49D3D7EE.4080202@novell.com> <49D46089.5040204@redhat.com> <49D497A1.4090900@novell.com> <49D4A4EB.8020105@redhat.com> <49D4AE0C.3000604@novell.com> <49D4B2C0.5060906@redhat.com> <49D4B594.6080703@novell.com> <49D4B8B4.4020003@redhat.com> <49D4BF70.1060301@novell.com> <49D4C191.2070502@redhat.com> <49D4CAA7.3020004@novell.com> <49D4CC61.6010105@redhat.com> <49D4CEB1.9020001@redhat.com> <49D4D075.9010702@codemonkey.ws> <49D4E33F.5000303@codemonkey.ws> <49D5FAFD.1010102@novell.com>
+In-Reply-To: <49D5FAFD.1010102@novell.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Gregory Haskins wrote:
+> So again, I am proposing for consideration of accepting my work (either
+> in its current form, or something we agree on after the normal review
+> process) not only on the basis of the future development of the
+> platform, but also to keep current components in their running to their
+> full potential.  I will again point out that the code is almost
+> completely off to the side, can be completely disabled with config
+> options, and I will maintain it.  Therefore the only real impact is to
+> people who care to even try it, and to me.
+>   
 
-* Steven Rostedt <rostedt@goodmis.org> wrote:
+Your work is a whole stack.  Let's look at the constituents.
 
-> 
-> Ingo,
-> 
-> Please pull the latest tip/tracing/filters tree, which can be found at:
-> 
->   git://git.kernel.org/pub/scm/linux/kernel/git/rostedt/linux-2.6-trace.git
-> tip/tracing/filters
-> 
-> 
-> Steven Rostedt (2):
->       ring-buffer: add ring_buffer_discard_commit
->       tracing/filters: use ring_buffer_discard_commit for discarded events
-> 
-> Tom Zanussi (2):
->       tracing/filters: add run-time field descriptions to TRACE_EVENT_FORMAT events
->       tracing/filters: add TRACE_EVENT_FORMAT_NOFILTER event macro
+- a new virtual bus for enumerating devices.
 
-I've cherry-picked them into tip/tracing/filters, and there are some 
-new build failures:
+Sorry, I still don't see the point.  It will just make writing drivers 
+more difficult.  The only advantage I've heard from you is that it gets 
+rid of the gunk.  Well, we still have to support the gunk for non-pv 
+devices so the gunk is basically free.  The clean version is expensive 
+since we need to port it to all guests and implement exciting features 
+like hotplug.
 
-(.text+0x40795): undefined reference to `event_context_switch'
-kernel/built-in.o: In function `probe_power_mark':
-trace_power.c:(.text+0x44fd7): undefined reference to `event_power'
-trace_power.c:(.text+0x44fe1): undefined reference to `event_power'
-trace_power.c:(.text+0x44fe6): undefined reference to 
-`filter_match_preds'
-kernel/built-in.o: In function `probe_power_end':
-trace_power.c:(.text+0x45064): undefined reference to `event_power'
-trace_power.c:(.text+0x4506e): undefined reference to `event_power'
-trace_power.c:(.text+0x45073): undefined reference to 
-`filter_match_preds'
-kernel/built-in.o: In function `kmemtrace_free':
+- finer-grained point-to-point communication abstractions
 
-so i've excluded it from tip/master for now.
+Where virtio has ring+signalling together, you layer the two.  For 
+networking, it doesn't matter.  For other applications, it may be 
+helpful, perhaps you have something in mind.
 
-	Ingo
+- your "bidirectional napi" model for the network device
+
+virtio implements exactly the same thing, except for the case of tx 
+mitigation, due to my (perhaps pig-headed) rejection of doing things in 
+a separate thread, and due to the total lack of sane APIs for packet 
+traffic.
+
+- a kernel implementation of the host networking device
+
+Given the continuous rejection (or rather, their continuous 
+non-adoption-and-implementation) of my ideas re zerocopy networking aio, 
+that seems like a pragmatic approach.  I wish it were otherwise.
+
+- a promise of more wonderful things yet to come
+
+Obviously I can't evaluate this.
+
+Did I miss anything?
+
+Right now my preferred course of action is to implement a prototype 
+userspace notification for networking.  Second choice is to move the 
+host virtio implementation into the kernel.  I simply don't see how the 
+rest of the stack is cost effective.
+
+-- 
+I have a truly marvellous patch that fixes the bug which this
+signature is too narrow to contain.
+
