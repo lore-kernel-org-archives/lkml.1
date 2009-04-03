@@ -1,245 +1,126 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1765846AbZDCOsS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933433AbZDCOsh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1765846AbZDCOsS (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 3 Apr 2009 10:48:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932707AbZDCOqE
+	id S933433AbZDCOsh (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 3 Apr 2009 10:48:37 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932747AbZDCOqF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 3 Apr 2009 10:46:04 -0400
-Received: from mga09.intel.com ([134.134.136.24]:17348 "EHLO mga09.intel.com"
+	Fri, 3 Apr 2009 10:46:05 -0400
+Received: from mga09.intel.com ([134.134.136.24]:17417 "EHLO mga09.intel.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S932482AbZDCOqA (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	id S932741AbZDCOqA (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
 	Fri, 3 Apr 2009 10:46:00 -0400
-Content-Type: multipart/mixed; boundary="===============0549536099=="
+Content-Type: multipart/mixed; boundary="===============0756186246=="
 MIME-Version: 1.0
 X-ExtLoop1: 1
 X-IronPort-AV: E=Sophos;i="4.39,319,1235980800"; 
-   d="scan'208";a="503328307"
-Message-Id: <20090403144552.856000000@intel.com>
+   d="scan'208";a="503328314"
+Message-Id: <20090403144553.773216000@intel.com>
 References: <20090403144332.799740000@intel.com>
 User-Agent: quilt/0.46-1
-Date: Fri, 03 Apr 2009 16:43:37 +0200
+Date: Fri, 03 Apr 2009 16:43:38 +0200
 From: markus.t.metzger@intel.com
 To: mingo@elte.hu, tglx@linutronix.de, hpa@zytor.com
 Cc: markus.t.metzger@gmail.com, roland@redhat.com, eranian@googlemail.com,
        oleg@redhat.com, juan.villacis@intel.com, ak@linux.jf.intel.com,
        linux-kernel@vger.kernel.org,
        Markus Metzger <markus.t.metzger@intel.com>
-Subject: [patch 05/20] x86, bts: fix race between per-task and per-cpu branch tracing
+Subject: [patch 06/20] x86, bts: use trace_clock_global() for timestamps
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---===============0549536099==
+--===============0756186246==
 MIME-Version: 1.0
-Content-Disposition: inline; filename=tip.master.ds.get_tracer.patch
+Content-Disposition: inline; filename=tip.master.bts.cpu_clock.patch
 
-Per-task branch tracing installs a debug store context with the traced
-task. This immediately results in the branch trace control bits to be
-cleared for the next context switch of that task, if not set before.
+Rename the bts_struct timestamp field to event.
 
-Either per-cpu or per-task tracing are allowed at the same time.
-
-An active per-cpu tracing would be disabled even if the per-task tracing
-request is rejected and the task debug store context removed.
+Use trace_clock_global() for time measurement.
 
 
-Check the tracing type (per-cpu or per-task) before installing a task
-debug store context.
-
+Reported-by: Ingo Molnar <mingo@elte.hu>
 Signed-off-by: Markus Metzger <markus.t.metzger@intel.com>
 ---
- arch/x86/kernel/ds.c |   72 	41 +	31 -	0 !
- 1 file changed, 41 insertions(+), 31 deletions(-)
+ arch/x86/include/asm/ds.h |    4 	2 +	2 -	0 !
+ arch/x86/kernel/ds.c      |   17 	9 +	8 -	0 !
+ 2 files changed, 11 insertions(+), 10 deletions(-)
 
+Index: b/arch/x86/include/asm/ds.h
+===================================================================
+--- a/arch/x86/include/asm/ds.h
++++ b/arch/x86/include/asm/ds.h
+@@ -170,9 +170,9 @@ struct bts_struct {
+ 		} lbr;
+ 		/* BTS_TASK_ARRIVES or BTS_TASK_DEPARTS */
+ 		struct {
+-			__u64 jiffies;
++			__u64 clock;
+ 			pid_t pid;
+-		} timestamp;
++		} event;
+ 	} variant;
+ };
+ 
 Index: b/arch/x86/kernel/ds.c
 ===================================================================
 --- a/arch/x86/kernel/ds.c
 +++ b/arch/x86/kernel/ds.c
-@@ -193,12 +193,28 @@ static DEFINE_SPINLOCK(ds_lock);
-  */
- static atomic_t tracers = ATOMIC_INIT(0);
+@@ -25,6 +25,7 @@
+ #include <linux/sched.h>
+ #include <linux/slab.h>
+ #include <linux/mm.h>
++#include <linux/trace_clock.h>
  
--static inline void get_tracer(struct task_struct *task)
-+static inline int get_tracer(struct task_struct *task)
- {
--	if (task)
-+	int error;
-+
-+	spin_lock_irq(&ds_lock);
-+
-+	if (task) {
-+		error = -EPERM;
-+		if (atomic_read(&tracers) < 0)
-+			goto out;
- 		atomic_inc(&tracers);
--	else
-+	} else {
-+		error = -EPERM;
-+		if (atomic_read(&tracers) > 0)
-+			goto out;
- 		atomic_dec(&tracers);
-+	}
-+
-+	error = 0;
-+out:
-+	spin_unlock_irq(&ds_lock);
-+	return error;
- }
+ #include <asm/ds.h>
  
- static inline void put_tracer(struct task_struct *task)
-@@ -209,14 +225,6 @@ static inline void put_tracer(struct tas
- 		atomic_inc(&tracers);
- }
+@@ -471,7 +472,7 @@ enum bts_field {
+ 	bts_flags,
  
--static inline int check_tracer(struct task_struct *task)
--{
--	return task ?
--		(atomic_read(&tracers) >= 0) :
--		(atomic_read(&tracers) <= 0);
--}
--
--
- /*
-  * The DS context is either attached to a thread or to a cpu:
-  * - in the former case, the thread_struct contains a pointer to the
-@@ -677,6 +685,10 @@ struct bts_tracer *ds_request_bts(struct
- 	if (ovfl)
- 		goto out;
+ 	bts_qual		= bts_from,
+-	bts_jiffies		= bts_to,
++	bts_clock		= bts_to,
+ 	bts_pid			= bts_flags,
  
-+	error = get_tracer(task);
-+	if (error < 0)
-+		goto out;
-+
- 	/*
- 	 * Per-cpu tracing is typically requested using smp_call_function().
- 	 * We must not sleep.
-@@ -684,7 +696,7 @@ struct bts_tracer *ds_request_bts(struct
- 	error = -ENOMEM;
- 	tracer = kzalloc(sizeof(*tracer), GFP_ATOMIC);
- 	if (!tracer)
--		goto out;
-+		goto out_put_tracer;
- 	tracer->ovfl = ovfl;
- 
- 	error = ds_request(&tracer->ds, &tracer->trace.ds,
-@@ -696,13 +708,8 @@ struct bts_tracer *ds_request_bts(struct
- 	spin_lock_irqsave(&ds_lock, irq);
- 
- 	error = -EPERM;
--	if (!check_tracer(task))
--		goto out_unlock;
--	get_tracer(task);
--
--	error = -EPERM;
- 	if (tracer->ds.context->bts_master)
--		goto out_put_tracer;
-+		goto out_unlock;
- 	tracer->ds.context->bts_master = tracer;
- 
- 	spin_unlock_irqrestore(&ds_lock, irq);
-@@ -716,13 +723,13 @@ struct bts_tracer *ds_request_bts(struct
- 
- 	return tracer;
- 
-- out_put_tracer:
--	put_tracer(task);
-  out_unlock:
- 	spin_unlock_irqrestore(&ds_lock, irq);
- 	ds_put_context(tracer->ds.context);
-  out_tracer:
- 	kfree(tracer);
-+ out_put_tracer:
-+	put_tracer(task);
-  out:
- 	return ERR_PTR(error);
- }
-@@ -741,6 +748,10 @@ struct pebs_tracer *ds_request_pebs(stru
- 	if (ovfl)
- 		goto out;
- 
-+	error = get_tracer(task);
-+	if (error < 0)
-+		goto out;
-+
- 	/*
- 	 * Per-cpu tracing is typically requested using smp_call_function().
- 	 * We must not sleep.
-@@ -748,7 +759,7 @@ struct pebs_tracer *ds_request_pebs(stru
- 	error = -ENOMEM;
- 	tracer = kzalloc(sizeof(*tracer), GFP_ATOMIC);
- 	if (!tracer)
--		goto out;
-+		goto out_put_tracer;
- 	tracer->ovfl = ovfl;
- 
- 	error = ds_request(&tracer->ds, &tracer->trace.ds,
-@@ -759,13 +770,8 @@ struct pebs_tracer *ds_request_pebs(stru
- 	spin_lock_irqsave(&ds_lock, irq);
- 
- 	error = -EPERM;
--	if (!check_tracer(task))
--		goto out_unlock;
--	get_tracer(task);
--
--	error = -EPERM;
- 	if (tracer->ds.context->pebs_master)
--		goto out_put_tracer;
-+		goto out_unlock;
- 	tracer->ds.context->pebs_master = tracer;
- 
- 	spin_unlock_irqrestore(&ds_lock, irq);
-@@ -775,13 +781,13 @@ struct pebs_tracer *ds_request_pebs(stru
- 
- 	return tracer;
- 
-- out_put_tracer:
--	put_tracer(task);
-  out_unlock:
- 	spin_unlock_irqrestore(&ds_lock, irq);
- 	ds_put_context(tracer->ds.context);
-  out_tracer:
- 	kfree(tracer);
-+ out_put_tracer:
-+	put_tracer(task);
-  out:
- 	return ERR_PTR(error);
- }
-@@ -804,8 +810,8 @@ void ds_release_bts(struct bts_tracer *t
- 	if (task && (task != current))
- 		wait_task_context_switch(task);
- 
--	put_tracer(task);
- 	ds_put_context(tracer->ds.context);
-+	put_tracer(task);
- 
- 	kfree(tracer);
- }
-@@ -861,16 +867,20 @@ void ds_resume_bts(struct bts_tracer *tr
- 
- void ds_release_pebs(struct pebs_tracer *tracer)
- {
-+	struct task_struct *task;
-+
- 	if (!tracer)
+ 	bts_qual_mask		= (bts_qual_max - 1),
+@@ -517,8 +518,8 @@ bts_read(struct bts_tracer *tracer, cons
+ 	memset(out, 0, sizeof(*out));
+ 	if ((bts_get(at, bts_qual) & ~bts_qual_mask) == bts_escape) {
+ 		out->qualifier = (bts_get(at, bts_qual) & bts_qual_mask);
+-		out->variant.timestamp.jiffies = bts_get(at, bts_jiffies);
+-		out->variant.timestamp.pid = bts_get(at, bts_pid);
++		out->variant.event.clock = bts_get(at, bts_clock);
++		out->variant.event.pid = bts_get(at, bts_pid);
+ 	} else {
+ 		out->qualifier = bts_branch;
+ 		out->variant.lbr.from = bts_get(at, bts_from);
+@@ -555,8 +556,8 @@ static int bts_write(struct bts_tracer *
+ 	case bts_task_arrives:
+ 	case bts_task_departs:
+ 		bts_set(raw, bts_qual, (bts_escape | in->qualifier));
+-		bts_set(raw, bts_jiffies, in->variant.timestamp.jiffies);
+-		bts_set(raw, bts_pid, in->variant.timestamp.pid);
++		bts_set(raw, bts_clock, in->variant.event.clock);
++		bts_set(raw, bts_pid, in->variant.event.pid);
+ 		break;
+ 	default:
+ 		return -EINVAL;
+@@ -1083,9 +1084,9 @@ static inline void ds_take_timestamp(str
  		return;
  
-+	task = tracer->ds.context->task;
-+
- 	ds_suspend_pebs(tracer);
+ 	memset(&ts, 0, sizeof(ts));
+-	ts.qualifier			= qualifier;
+-	ts.variant.timestamp.jiffies	= jiffies_64;
+-	ts.variant.timestamp.pid	= task->pid;
++	ts.qualifier		= qualifier;
++	ts.variant.event.clock	= trace_clock_global();
++	ts.variant.event.pid	= task->pid;
  
- 	WARN_ON_ONCE(tracer->ds.context->pebs_master != tracer);
- 	tracer->ds.context->pebs_master = NULL;
- 
--	put_tracer(tracer->ds.context->task);
- 	ds_put_context(tracer->ds.context);
-+	put_tracer(task);
- 
- 	kfree(tracer);
+ 	bts_write(tracer, &ts);
  }
 
 -- 
 
---===============0549536099==
+--===============0756186246==
 Content-Type: text/plain; charset="utf-8"
 MIME-Version: 1.0
 Content-Transfer-Encoding: quoted-printable
@@ -260,4 +141,4 @@ the sole use of the intended recipient(s). Any review or distribution
 by others is strictly prohibited. If you are not the intended
 recipient, please contact the sender and delete all copies.
 
---===============0549536099==--
+--===============0756186246==--
