@@ -1,255 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934365AbZDCOyk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934460AbZDCOzL@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934365AbZDCOyk (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 3 Apr 2009 10:54:40 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932831AbZDCOqZ
+	id S934460AbZDCOzL (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 3 Apr 2009 10:55:11 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932759AbZDCOqj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 3 Apr 2009 10:46:25 -0400
-Received: from mga09.intel.com ([134.134.136.24]:46720 "EHLO mga09.intel.com"
+	Fri, 3 Apr 2009 10:46:39 -0400
+Received: from rtr.ca ([76.10.145.34]:58908 "EHLO mail.rtr.ca"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S932362AbZDCOqN (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 3 Apr 2009 10:46:13 -0400
-Content-Type: multipart/mixed; boundary="===============0350126233=="
+	id S932873AbZDCOqi (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 3 Apr 2009 10:46:38 -0400
+Message-ID: <49D6214A.9030204@rtr.ca>
+Date: Fri, 03 Apr 2009 10:46:34 -0400
+From: Mark Lord <lkml@rtr.ca>
+Organization: Real-Time Remedies Inc.
+User-Agent: Thunderbird 2.0.0.21 (X11/20090318)
 MIME-Version: 1.0
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.39,319,1235980800"; 
-   d="scan'208";a="503328396"
-Message-Id: <20090403144607.088997000@intel.com>
-References: <20090403144332.799740000@intel.com>
-User-Agent: quilt/0.46-1
-Date: Fri, 03 Apr 2009 16:43:52 +0200
-From: markus.t.metzger@intel.com
-To: mingo@elte.hu, tglx@linutronix.de, hpa@zytor.com
-Cc: markus.t.metzger@gmail.com, roland@redhat.com, eranian@googlemail.com,
-       oleg@redhat.com, juan.villacis@intel.com, ak@linux.jf.intel.com,
-       linux-kernel@vger.kernel.org,
-       Markus Metzger <markus.t.metzger@intel.com>
-Subject: [patch 20/20] x86, ds: support Core i7
+To: Lennart Sorensen <lsorense@csclub.uwaterloo.ca>
+Cc: Andrew Morton <akpm@linux-foundation.org>, torvalds@linux-foundation.org,
+       tytso@mit.edu, drees76@gmail.com, jesper@krogh.cc,
+       linux-kernel@vger.kernel.org
+Subject: Re: Linux 2.6.29
+References: <alpine.LFD.2.00.0903251139260.3032@localhost.localdomain> <20090325220530.GR32307@mit.edu> <alpine.LFD.2.00.0903251622420.3032@localhost.localdomain> <20090326171148.9bf8f1ec.akpm@linux-foundation.org> <alpine.LFD.2.00.0903261723250.3994@localhost.localdomain> <20090326174704.cd36bf7b.akpm@linux-foundation.org> <alpine.LFD.2.00.0903261752110.3994@localhost.localdomain> <20090326182519.d576d703.akpm@linux-foundation.org> <20090401210337.GB3797@csclub.uwaterloo.ca> <20090401143622.b1885643.akpm@linux-foundation.org> <20090401225737.GC3797@csclub.uwaterloo.ca>
+In-Reply-To: <20090401225737.GC3797@csclub.uwaterloo.ca>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---===============0350126233==
-MIME-Version: 1.0
-Content-Disposition: inline; filename=tip.master.ds.i7.patch
+Lennart Sorensen wrote:
+> On Wed, Apr 01, 2009 at 02:36:22PM -0700, Andrew Morton wrote:
+>> Back in 2002ish I did a *lot* of work on IO latency, reads-vs-writes,
+>> etc, etc (but not fsync - for practical purposes it's unfixable on
+>> ext3-ordered)
+>>
+>> Performance was pretty good.  From some of the descriptions I'm seeing
+>> get tossed around lately, I suspect that it has regressed.
+>>
+>> It would be useful/interesting if people were to rerun some of these
+>> tests with `echo anticipatory > /sys/block/sda/queue/scheduler'.
+>>
+>> Or with linux-2.5.60 :(
+> 
+> Well 2.6.18 seems to keep popping up as the last kernel with "sane"
+> behaviour, at least in terms of not causing huge delays under many
+> workloads.  I currently run 2.6.26, although that could be updated as
+> soon as I get around to figuring out why lirc isn't working for me when
+> I move past 2.6.26.
+> 
+> I could certainly try changing the scheduler on my mythtv box and seeing
+> if that makes any difference to the behaviour.  It is pretty darn obvious
+> whether it is responsive or not when starting to play back a video.
+..
 
-Add debug store support for Core i7.
+My Myth box here was running 2.6.18 when originally set up,
+and even back then it still took *minutes* to delete large files.
+So that part hasn't really changed much in the interim.
 
-Core i7 adds a reset value for each performance counter and a new
-PEBS record format.
+Because of the multi-minute deletes, the distro shutdown scripts
+would fails, and power off the box while it was still writing
+to the drives.  Ouch.
 
+That system has had XFS on it for the past year and a half now,
+and for Myth, there's no reason not to use XFS.  It's great!
 
-Signed-off-by: Markus Metzger <markus.t.metzger@intel.com>
----
- arch/x86/include/asm/ds.h |   12 	9 +	3 -	0 !
- arch/x86/kernel/ds.c      |   69 	62 +	7 -	0 !
- 2 files changed, 71 insertions(+), 10 deletions(-)
+Cheers
 
-Index: b/arch/x86/include/asm/ds.h
-===================================================================
---- a/arch/x86/include/asm/ds.h
-+++ b/arch/x86/include/asm/ds.h
-@@ -234,8 +234,12 @@ struct bts_trace {
- struct pebs_trace {
- 	struct ds_trace ds;
- 
--	/* the PEBS reset value */
--	unsigned long long reset_value;
-+	/* the number of valid counters in the below array */
-+	unsigned int counters;
-+
-+#define MAX_PEBS_COUNTERS 4
-+	/* the counter reset value */
-+	unsigned long long counter_reset[MAX_PEBS_COUNTERS];
- };
- 
- 
-@@ -270,9 +274,11 @@ extern int ds_reset_pebs(struct pebs_tra
-  * Returns 0 on success; -Eerrno on error
-  *
-  * tracer: the tracer handle returned from ds_request_pebs()
-+ * counter: the index of the counter
-  * value: the new counter reset value
-  */
--extern int ds_set_pebs_reset(struct pebs_tracer *tracer, u64 value);
-+extern int ds_set_pebs_reset(struct pebs_tracer *tracer,
-+			     unsigned int counter, u64 value);
- 
- /*
-  * Initialization
-Index: b/arch/x86/kernel/ds.c
-===================================================================
---- a/arch/x86/kernel/ds.c
-+++ b/arch/x86/kernel/ds.c
-@@ -44,6 +44,9 @@ struct ds_configuration {
- 	/* The size of a BTS/PEBS record in bytes: */
- 	unsigned char		sizeof_rec[2];
- 
-+	/* The number of pebs counter reset values in the DS structure. */
-+	unsigned char		nr_counter_reset;
-+
- 	/* Control bit-masks indexed by enum ds_feature: */
- 	unsigned long		ctl[dsf_ctl_max];
- };
-@@ -51,7 +54,7 @@ static struct ds_configuration ds_cfg __
- 
- 
- /* Maximal size of a DS configuration: */
--#define MAX_SIZEOF_DS		(12 * 8)
-+#define MAX_SIZEOF_DS		0x80
- 
- /* Maximal size of a BTS record: */
- #define MAX_SIZEOF_BTS		(3 * 8)
-@@ -59,6 +62,12 @@ static struct ds_configuration ds_cfg __
- /* BTS and PEBS buffer alignment: */
- #define DS_ALIGNMENT		(1 << 3)
- 
-+/* Number of buffer pointers in DS: */
-+#define NUM_DS_PTR_FIELDS	8
-+
-+/* Size of a pebs reset value in DS: */
-+#define PEBS_RESET_FIELD_SIZE	8
-+
- /* Mask of control bits in the DS MSR register: */
- #define BTS_CONTROL				  \
- 	( ds_cfg.ctl[dsf_bts]			| \
-@@ -1164,9 +1173,12 @@ const struct pebs_trace *ds_read_pebs(st
- 		return NULL;
- 
- 	ds_read_config(tracer->ds.context, &tracer->trace.ds, ds_pebs);
--	tracer->trace.reset_value =
--		*(u64 *)(tracer->ds.context->ds +
--			 (ds_cfg.sizeof_ptr_field * 8));
-+
-+	tracer->trace.counters = ds_cfg.nr_counter_reset;
-+	memcpy(tracer->trace.counter_reset,
-+	       tracer->ds.context->ds +
-+	       (NUM_DS_PTR_FIELDS * ds_cfg.sizeof_ptr_field),
-+	       ds_cfg.nr_counter_reset * PEBS_RESET_FIELD_SIZE);
- 
- 	return &tracer->trace;
- }
-@@ -1197,13 +1209,18 @@ int ds_reset_pebs(struct pebs_tracer *tr
- 	return 0;
- }
- 
--int ds_set_pebs_reset(struct pebs_tracer *tracer, u64 value)
-+int ds_set_pebs_reset(struct pebs_tracer *tracer,
-+		      unsigned int counter, u64 value)
- {
- 	if (!tracer)
- 		return -EINVAL;
- 
-+	if (ds_cfg.nr_counter_reset < counter)
-+		return -EINVAL;
-+
- 	*(u64 *)(tracer->ds.context->ds +
--		 (ds_cfg.sizeof_ptr_field * 8)) = value;
-+		 (NUM_DS_PTR_FIELDS * ds_cfg.sizeof_ptr_field) +
-+		 (counter * PEBS_RESET_FIELD_SIZE)) = value;
- 
- 	return 0;
- }
-@@ -1213,16 +1230,26 @@ static const struct ds_configuration ds_
- 	.ctl[dsf_bts]		= (1 << 2) | (1 << 3),
- 	.ctl[dsf_bts_kernel]	= (1 << 5),
- 	.ctl[dsf_bts_user]	= (1 << 6),
-+	.nr_counter_reset	= 1,
- };
- static const struct ds_configuration ds_cfg_pentium_m = {
- 	.name = "Pentium M",
- 	.ctl[dsf_bts]		= (1 << 6) | (1 << 7),
-+	.nr_counter_reset	= 1,
- };
- static const struct ds_configuration ds_cfg_core2_atom = {
- 	.name = "Core 2/Atom",
- 	.ctl[dsf_bts]		= (1 << 6) | (1 << 7),
- 	.ctl[dsf_bts_kernel]	= (1 << 9),
- 	.ctl[dsf_bts_user]	= (1 << 10),
-+	.nr_counter_reset	= 1,
-+};
-+static const struct ds_configuration ds_cfg_core_i7 = {
-+	.name = "Core i7",
-+	.ctl[dsf_bts]		= (1 << 6) | (1 << 7),
-+	.ctl[dsf_bts_kernel]	= (1 << 9),
-+	.ctl[dsf_bts_user]	= (1 << 10),
-+	.nr_counter_reset	= 4,
- };
- 
- static void
-@@ -1239,6 +1266,32 @@ ds_configure(const struct ds_configurati
- 	nr_pebs_fields = 18;
- #endif
- 
-+	/*
-+	 * Starting with version 2, architectural performance
-+	 * monitoring supports a format specifier.
-+	 */
-+	if ((cpuid_eax(0xa) & 0xff) > 1) {
-+		unsigned long perf_capabilities, format;
-+
-+		rdmsrl(MSR_IA32_PERF_CAPABILITIES, perf_capabilities);
-+
-+		format = (perf_capabilities >> 8) & 0xf;
-+
-+		switch (format) {
-+		case 0:
-+			nr_pebs_fields = 18;
-+			break;
-+		case 1:
-+			nr_pebs_fields = 22;
-+			break;
-+		default:
-+			printk(KERN_INFO
-+			       "[ds] unknown PEBS format: %lu\n", format);
-+			nr_pebs_fields = 0;
-+			break;
-+		}
-+	}
-+
- 	memset(&ds_cfg, 0, sizeof(ds_cfg));
- 	ds_cfg = *cfg;
- 
-@@ -1262,7 +1315,7 @@ ds_configure(const struct ds_configurati
- 	printk("bts/pebs record: %u/%u bytes\n",
- 	       ds_cfg.sizeof_rec[ds_bts], ds_cfg.sizeof_rec[ds_pebs]);
- 
--	WARN_ON_ONCE(MAX_SIZEOF_DS < (12 * ds_cfg.sizeof_ptr_field));
-+	WARN_ON_ONCE(MAX_PEBS_COUNTERS < ds_cfg.nr_counter_reset);
- }
- 
- void __cpuinit ds_init_intel(struct cpuinfo_x86 *c)
-@@ -1284,6 +1337,8 @@ void __cpuinit ds_init_intel(struct cpui
- 			ds_configure(&ds_cfg_core2_atom, c);
- 			break;
- 		case 0x1a: /* Core i7 */
-+			ds_configure(&ds_cfg_core_i7, c);
-+			break;
- 		default:
- 			/* Sorry, don't know about them. */
- 			break;
-
--- 
-
---===============0350126233==
-Content-Type: text/plain; charset="utf-8"
-MIME-Version: 1.0
-Content-Transfer-Encoding: quoted-printable
-Content-Disposition: inline
-
----------------------------------------------------------------------
-Intel GmbH
-Dornacher Strasse 1
-85622 Feldkirchen/Muenchen Germany
-Sitz der Gesellschaft: Feldkirchen bei Muenchen
-Geschaeftsfuehrer: Douglas Lusk, Peter Gleissner, Hannes Schwaderer
-Registergericht: Muenchen HRB 47456 Ust.-IdNr.
-VAT Registration No.: DE129385895
-Citibank Frankfurt (BLZ 502 109 00) 600119052
-
-This e-mail and any attachments may contain confidential material for
-the sole use of the intended recipient(s). Any review or distribution
-by others is strictly prohibited. If you are not the intended
-recipient, please contact the sender and delete all copies.
-
---===============0350126233==--
