@@ -1,54 +1,73 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762534AbZDCLIm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763319AbZDCLJr@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762534AbZDCLIm (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 3 Apr 2009 07:08:42 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761088AbZDCLIb
+	id S1763319AbZDCLJr (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 3 Apr 2009 07:09:47 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758912AbZDCLJi
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 3 Apr 2009 07:08:31 -0400
-Received: from mx2.redhat.com ([66.187.237.31]:54288 "EHLO mx2.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1758904AbZDCLIa (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 3 Apr 2009 07:08:30 -0400
-Message-ID: <49D5EE1F.4060009@redhat.com>
-Date: Fri, 03 Apr 2009 13:08:15 +0200
-From: Gerd Hoffmann <kraxel@redhat.com>
-User-Agent: Thunderbird 2.0.0.21 (X11/20090320)
+	Fri, 3 Apr 2009 07:09:38 -0400
+Received: from silver.sucs.swan.ac.uk ([137.44.10.1]:35264 "EHLO
+	silver.sucs.swan.ac.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1758904AbZDCLJh (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 3 Apr 2009 07:09:37 -0400
+Date: Fri, 3 Apr 2009 12:09:21 +0100
+From: Sitsofe Wheeler <sitsofe@yahoo.com>
+To: Theodore Tso <tytso@mit.edu>, Matthew Garrett <mjg59@srcf.ucam.org>,
+       david@lang.hm,
+       "Andreas T.Auer" <andreas.t.auer_lkml_73537@ursus.ath.cx>,
+       Alberto Gonzalez <info@gnebu.es>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: Ext4 and the "30 second window of death"
+Message-ID: <20090403110921.GA12899@sucs.org>
+References: <20090402182925.GA4502@srcf.ucam.org> <alpine.DEB.1.10.0904021134560.28893@asgard.lang.hm> <20090402234617.GB9538@srcf.ucam.org> <alpine.DEB.1.10.0904021753410.28893@asgard.lang.hm> <20090403010600.GA10545@srcf.ucam.org> <alpine.DEB.1.10.0904021810180.28893@asgard.lang.hm> <20090403011953.GA10777@srcf.ucam.org> <alpine.DEB.1.10.0904021821120.28893@asgard.lang.hm> <20090403013603.GA10886@srcf.ucam.org> <20090403045414.GL9870@mit.edu>
 MIME-Version: 1.0
-To: Izik Eidus <ieidus@redhat.com>
-CC: Chris Wright <chrisw@redhat.com>, Anthony Liguori <anthony@codemonkey.ws>,
-       Andrea Arcangeli <aarcange@redhat.com>, linux-kernel@vger.kernel.org,
-       kvm@vger.kernel.org, linux-mm@kvack.org, avi@redhat.com,
-       riel@redhat.com, jeremy@goop.org, mtosatti@redhat.com, hugh@veritas.com,
-       corbet@lwn.net, yaniv@redhat.com, dmonakhov@openvz.org
-Subject: Re: [PATCH 5/4] update ksm userspace interfaces
-References: <20090331142533.GR9137@random.random> <49D22A9D.4050403@codemonkey.ws> <20090331150218.GS9137@random.random> <49D23224.9000903@codemonkey.ws> <20090331151845.GT9137@random.random> <49D23CD1.9090208@codemonkey.ws> <20090331162525.GU9137@random.random> <49D24A02.6070000@codemonkey.ws> <20090402012215.GE1117@x200.localdomain> <49D424AF.3090806@codemonkey.ws> <20090402053114.GF1117@x200.localdomain> <49D4BE64.8020508@redhat.com> <49D5E1EE.6030707@redhat.com> <49D5E9B5.1020101@redhat.com>
-In-Reply-To: <49D5E9B5.1020101@redhat.com>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20090403045414.GL9870@mit.edu>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Izik Eidus wrote:
-> Gerd Hoffmann wrote:
->> Did you test whenever it really cleans up in case you "kill -9 qemu"?
->>
->> I recently did something simliar with the result that the extra
->> reference hold on mm_struct prevented the process memory from being
->> zapped ...
->>
->> cheers,
->>   Gerd
->>   
-> Did you use mmput() after you called get_task_mm() ???
-> get_task_mm() do nothing beside atomic_inc(&mm->mm_users);
+On Fri, Apr 03, 2009 at 12:54:14AM -0400, Theodore Tso wrote:
+> On Fri, Apr 03, 2009 at 02:36:03AM +0100, Matthew Garrett wrote:
+> > 
+> > There's various circumstances in which it's beneficial. The difference 
+> > between an optimal algorithm for typical use and an optimal algorithm 
+> > for typical use where there's an fsync() every 5 minutes isn't actually 
+> > that great.
+> 
+> More to the point, if an application is insane enough to push 2.5
+> megabytes to disk every single time you click on a web page (this is
+> excluding the cache; I had my firefox cache pointed at /tmp when I did
 
-mmput() call was in ->release() callback, ->release() in turn never was
-called because the kernel didn't zap the mappings because of the
-reference ...
+I no longer know what is being debated here. Is it one or more of the
+following:
 
-The driver *also* created mappings which ksmctl doesn't, so it could be
-you don't run into this issue.
+a) Laptop mode (as it stands today).
+b) Laptop mode with fsync-nop.
+c) Apps that should be using fsync.
+d) Apps that should not using fsync.
+e) Apps writing to the disk too frequently.
+f) Apps writing to many files to the disk.
+g) Userland constraining kernel changes.
+h) Increasing battery life.
+i) "Acceptable" chance of new data loss after a crash.
+j) "Acceptable" chance of data corruption after a crash.
+k) Support for a new filesystem barrier() syscall to indicate the order
+that data has to be written.
 
-cheers,
-  Gerd
+Note some of the above points are in conflict with each other...
+
+> The annoying thing is the applications programmers aren't willing to
+> fix their d*mn applications, and instead heap all of the blame on the
+> filesystem.  I will be the first to admit that filesystem designers
+
+Isn't this the problem that other systems that place a high value on
+backwards compatibly face that the Linux kernel was not supposed to? If
+some piece of userland depends on every last bit of behaviour (whether
+it was intended/promised or not) then the only way anything can be
+changed is with massive effort expended on shims...
+
+-- 
+Sitsofe | http://sucs.org/~sits/
