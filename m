@@ -1,88 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934665AbZDCO5w@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932287AbZDCO7A@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934665AbZDCO5w (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 3 Apr 2009 10:57:52 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932124AbZDCO5h
+	id S932287AbZDCO7A (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 3 Apr 2009 10:59:00 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1764364AbZDCO6k
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 3 Apr 2009 10:57:37 -0400
-Received: from mx2.redhat.com ([66.187.237.31]:48651 "EHLO mx2.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1759543AbZDCO5g (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 3 Apr 2009 10:57:36 -0400
-References: <1237400852.26799.16.camel@localhost.localdomain> <20090330142610.4b94935d.akpm@linux-foundation.org> <1238448816.4073.265.camel@laptop> <1238769240.798.110.camel@twins>
-Message-Id: <7221C75B-22E1-44C0-B572-7ED5DB94A6BE@redhat.com>
-From: eparis@redhat.com
-To: Peter Zijlstra <peterz@infradead.org>
-In-Reply-To: <1238769240.798.110.camel@twins>
-Content-Type: text/plain;
-	charset=us-ascii;
-	format=flowed;
-	delsp=yes
+	Fri, 3 Apr 2009 10:58:40 -0400
+Received: from rv-out-0506.google.com ([209.85.198.227]:32847 "EHLO
+	rv-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755646AbZDCO6j (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 3 Apr 2009 10:58:39 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:user-agent:mime-version:to:subject
+         :x-enigmail-version:content-type:content-transfer-encoding;
+        b=bAoJ0xIBUdSSk+9UWhfSgPa7hA6jNnckav/YEmPSnbXaQQNZ0qCIX7CRdbydMjxXJo
+         8uJGchHLV8DxyzWBeI+U+q0hQt4uSQQPZOikRXQv0HnqOJAoIvwnHQxYMhWlAAg60WrY
+         KbzAsY79cMzk0xY6/Ycu106MBlH3QDplj9ag8=
+Message-ID: <49D62418.6080405@gmail.com>
+Date: Fri, 03 Apr 2009 07:58:32 -0700
+From: "Eugene T. Bordenkircher" <eugebo@gmail.com>
+User-Agent: Thunderbird 2.0.0.21 (X11/20090318)
+MIME-Version: 1.0
+To: linux-kernel@vger.kernel.org, linux-usb@vger.kernel.org
+Subject: Problem with f_rndis.c
+X-Enigmail-Version: 0.95.0
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
-Mime-Version: 1.0
-Subject: Re: [PATCH] make inotify event handles use GFP_NOFS
-Date: Fri, 3 Apr 2009 10:56:31 -0400 (EDT)
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       "mingo@elte.hu" <mingo@elte.hu>,
-       "balbir@linux.vnet.ibm.com" <balbir@linux.vnet.ibm.com>,
-       "linux-fsdevel@vger.kernel.org" <linux-fsdevel@vger.kernel.org>,
-       "aviro@redhat.com" <aviro@redhat.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+The following is an artifact in f_rndis.c that is present because of the USB
+gadget refactoring
 
+679         rndis_set_param_medium(rndis->config, NDIS_MEDIUM_802_3, 0);
+680         rndis_set_host_mac(rndis->config, rndis->ethaddr);
+681
+682 #if 0
+683 // FIXME
+684         if (rndis_set_param_vendor(rndis->config, vendorID,
+685                                 manufacturer))
+686                 goto fail0;
+687 #endif
+688
+689         /* NOTE:  all that is done without knowing or caring about
+690          * the network link ... which is unavailable to this code
+691          * until we're activated via set_alt().
 
+The bad news is that I'm hitting an oops because of it.
 
+Newer versions of the windows rndis driver never seem to call
+OID_GEN_VENDOR_DESCRIPTION so this isn't a problem.  However, older versions of
+XP SP2 and earlier machines still call this, and since the vendor string is
+never set in rndis_per_dev_params(rndis.c) the kernel ends up SEGV'ing by
+accessing the null pointer for the vendor string.
 
-On Apr 3, 2009, at 10:33 AM, Peter Zijlstra <peterz@infradead.org>  
-wrote:
+I played around with this for about 3-4 hours yesterday trying to get the
+vendorID and manufacturer in some reasonable manner, but could not find a way
+to backtrack to them.
 
-> On Mon, 2009-03-30 at 23:33 +0200, Peter Zijlstra wrote:
->> On Mon, 2009-03-30 at 14:26 -0700, Andrew Morton wrote:
->>> On Wed, 18 Mar 2009 14:27:32 -0400
->>> Eric Paris <eparis@redhat.com> wrote:
->>>
->>>> I think this is a bandaide to shut up lockdep.  I could either  
->>>> figure
->>>> out lockdep classes and figure out how to reclassify inotify  
->>>> locks since
->>>> I believe Nick is correct when he says inotify watches pin the  
->>>> inode in
->>>> core so memory pressure can't evict it.
->>>
->>> It's pretty sad to degrading the strength of the memory allocation  
->>> just
->>> to squish a lockdep report.
->>
->> Yeah, I agree, its the wrong thing to do. lockdep annotations really
->> aren't that hard -- also, you could also talk me through it.
->
-> static struct lock_class_key inotify_mutex_free;
->
->
->     /*
->      * here the inotify mutex gets moved to a different
->      * data structure with different locking semantics while
->      * holding inotify_mutex.
->      */
->     lock_set_class(&foo->inotify_mutex.dep_map, "inotify_mutex_free",
->                     &inotify_mutex_free, 0, _THIS_IP_);
->
->
-> Or when done without holding the inotify_mutex
->
->
->     /*
->      * here the inotify mutex gets moved to a different
->      * data structure with different locking semantics.
->      */
->     lockdep_set_class(&foo->inotify_mutex, &inotify_mutex_free);
->
->
-> Is all there should be to it.
+Any suggestions to help me fix it? or even better solutions? :) I have plenty
+of boxes that are oops'ing so I can test solutions as needed.
 
-Thanks I'll try to send something soon.
-
--Eric
+Eugene T. Bordenkircher
