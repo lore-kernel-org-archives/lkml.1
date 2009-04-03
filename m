@@ -1,39 +1,97 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763804AbZDCLRY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764069AbZDCLSW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763804AbZDCLRY (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 3 Apr 2009 07:17:24 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762452AbZDCLRJ
+	id S1764069AbZDCLSW (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 3 Apr 2009 07:18:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760357AbZDCLSI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 3 Apr 2009 07:17:09 -0400
-Received: from one.firstfloor.org ([213.235.205.2]:46343 "EHLO
-	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1761725AbZDCLRI (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 3 Apr 2009 07:17:08 -0400
-Date: Fri, 3 Apr 2009 13:18:54 +0200
-From: Andi Kleen <andi@firstfloor.org>
-To: Gerd Hoffmann <kraxel@redhat.com>
-Cc: Avi Kivity <avi@redhat.com>, Herbert Xu <herbert@gondor.apana.org.au>,
-       ghaskins@novell.com, anthony@codemonkey.ws, andi@firstfloor.org,
-       linux-kernel@vger.kernel.org, agraf@suse.de, pmullaney@novell.com,
-       pmorreale@novell.com, rusty@rustcorp.com.au, netdev@vger.kernel.org,
-       kvm@vger.kernel.org
-Subject: Re: [RFC PATCH 00/17] virtual-bus
-Message-ID: <20090403111854.GA11935@one.firstfloor.org>
-References: <20090402085253.GA29932@gondor.apana.org.au> <49D47F11.6070400@redhat.com> <49D5EBE1.8030200@redhat.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	Fri, 3 Apr 2009 07:18:08 -0400
+Received: from mx3.mail.elte.hu ([157.181.1.138]:50106 "EHLO mx3.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1759962AbZDCLSH (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 3 Apr 2009 07:18:07 -0400
+Date: Fri, 3 Apr 2009 13:17:41 +0200
+From: Ingo Molnar <mingo@elte.hu>
+To: Li Zefan <lizf@cn.fujitsu.com>
+Cc: Jens Axboe <jens.axboe@oracle.com>,
+       Arnaldo Carvalho de Melo <acme@redhat.com>,
+       "Alan D. Brunelle" <alan.brunelle@hp.com>,
+       LKML <linux-kernel@vger.kernel.org>,
+       Steven Rostedt <rostedt@goodmis.org>
+Subject: Re: [PATCH] blktrace: fix a bug in blk_msg_write()
+Message-ID: <20090403111741.GB31399@elte.hu>
+References: <49D5BB56.7000807@cn.fujitsu.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=utf-8
 Content-Disposition: inline
-In-Reply-To: <49D5EBE1.8030200@redhat.com>
-User-Agent: Mutt/1.4.2.1i
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <49D5BB56.7000807@cn.fujitsu.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> Check shared ring status when stuffing a request.  If there are requests
 
-That means you're bouncing cache lines all the time. Probably not a big
-issue on single socket but could be on larger systems.
+* Li Zefan <lizf@cn.fujitsu.com> wrote:
 
--Andi
+> This is another long-standing bug.
+> 
+> ================
+> 
+> 
+>  (console 1)
+>  # echo -n 'a' > /sys/kernel/debug/block/sda/msg
+>  (console 2)
+>  # blktrace -d /dev/sda -a pc -o - | blkparse -i -
+>   8,0    0        0     0.000000000     0  m   N a������@��
+> 
+> We should terminate the msg buffer with '\0'.
+> 
+> Signed-off-by: Li Zefan <lizf@cn.fujitsu.com>
+> ---
+>  kernel/trace/blktrace.c |    5 +++--
+>  1 files changed, 3 insertions(+), 2 deletions(-)
+> 
+> diff --git a/kernel/trace/blktrace.c b/kernel/trace/blktrace.c
+> index c0ef70d..2bf341f 100644
+> --- a/kernel/trace/blktrace.c
+> +++ b/kernel/trace/blktrace.c
+> @@ -327,10 +327,10 @@ static ssize_t blk_msg_write(struct file *filp, const char __user *buffer,
+>  	char *msg;
+>  	struct blk_trace *bt;
+>  
+> -	if (count > BLK_TN_MAX_MSG)
+> +	if (count >= BLK_TN_MAX_MSG)
+>  		return -EINVAL;
+>  
+> -	msg = kmalloc(count, GFP_KERNEL);
+> +	msg = kmalloc(count + 1, GFP_KERNEL);
+>  	if (msg == NULL)
+>  		return -ENOMEM;
+>  
+> @@ -338,6 +338,7 @@ static ssize_t blk_msg_write(struct file *filp, const char __user *buffer,
+>  		kfree(msg);
+>  		return -EFAULT;
+>  	}
+> +	msg[count] = '\0';
+>  
+>  	bt = filp->private_data;
+>  	__trace_note_message(bt, "%s", msg);
 
+Nice fix!
+
+Jens, do you ack this and should i add a Cc: <stable@kernel.org> 
+backporting tag?
+
+This fix applies fine to v2.6.29 after:
+
+   sed 's/kernel\/trace\/blktrace.c/block\/blktrace.c'
+
+	Ingo
