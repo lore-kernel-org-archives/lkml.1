@@ -1,77 +1,76 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934141AbZDCRer@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S935206AbZDCRfZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934141AbZDCRer (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 3 Apr 2009 13:34:47 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933847AbZDCReX
+	id S935206AbZDCRfZ (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 3 Apr 2009 13:35:25 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933847AbZDCRfA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 3 Apr 2009 13:34:23 -0400
-Received: from hera.kernel.org ([140.211.167.34]:52327 "EHLO hera.kernel.org"
+	Fri, 3 Apr 2009 13:35:00 -0400
+Received: from mx2.mail.elte.hu ([157.181.151.9]:33845 "EHLO mx2.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1765116AbZDCReW (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 3 Apr 2009 13:34:22 -0400
-Date: Fri, 3 Apr 2009 17:33:42 GMT
-From: Joseph Cihula <joseph.cihula@intel.com>
-To: linux-tip-commits@vger.kernel.org
-Cc: linux-kernel@vger.kernel.org, hpa@zytor.com, mingo@redhat.com,
-       arjan@linux.intel.com, tj@kernel.org, tglx@linutronix.de,
-       joseph.cihula@intel.com, mingo@elte.hu
-Reply-To: mingo@redhat.com, hpa@zytor.com, linux-kernel@vger.kernel.org,
-       arjan@linux.intel.com, tj@kernel.org, tglx@linutronix.de,
-       joseph.cihula@intel.com, mingo@elte.hu
-In-Reply-To: <49D13385.5060900@intel.com>
-References: <49D13385.5060900@intel.com>
-Subject: [tip:x86/urgent] x86: disable stack-protector for __restore_processor_state()
-Message-ID: <tip-1f23b77e09be10edb30eb03c1b03879083e3cc72@git.kernel.org>
-Git-Commit-ID: 1f23b77e09be10edb30eb03c1b03879083e3cc72
-X-Mailer: tip-git-log-daemon
+	id S1757356AbZDCRfA (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 3 Apr 2009 13:35:00 -0400
+Date: Fri, 3 Apr 2009 19:32:56 +0200
+From: Ingo Molnar <mingo@elte.hu>
+To: Arkadiusz Miskiewicz <a.miskiewicz@gmail.com>, Tejun Heo <tj@kernel.org>,
+       Arjan van de Ven <arjan@infradead.org>
+Cc: Chris Wright <chrisw@sous-sol.org>, "Rafael J. Wysocki" <rjw@sisk.pl>,
+       linux-kernel@vger.kernel.org, Mike Travis <travis@sgi.com>,
+       Jeremy Fitzhardinge <jeremy@xensource.com>,
+       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
+       Venkatesh Pallipadi <venkatesh.pallipadi@intel.com>,
+       virtualization@lists.osdl.org, xen-devel@lists.xensource.com,
+       Yinghai Lu <yhlu.kernel@gmail.com>
+Subject: Re: 2.6.29 git, resume from ram broken on thinkpad
+Message-ID: <20090403173256.GA6295@elte.hu>
+References: <200904011155.20751.a.miskiewicz@gmail.com> <200904030222.57469.a.miskiewicz@gmail.com> <20090403003523.GK18394@sequoia.sous-sol.org> <200904030847.19674.a.miskiewicz@gmail.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Fri, 03 Apr 2009 17:33:44 +0000 (UTC)
+In-Reply-To: <200904030847.19674.a.miskiewicz@gmail.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Commit-ID:  1f23b77e09be10edb30eb03c1b03879083e3cc72
-Gitweb:     http://git.kernel.org/tip/1f23b77e09be10edb30eb03c1b03879083e3cc72
-Author:     Joseph Cihula <joseph.cihula@intel.com>
-AuthorDate: Mon, 30 Mar 2009 14:03:01 -0700
-Committer:  Ingo Molnar <mingo@elte.hu>
-CommitDate: Fri, 3 Apr 2009 19:30:23 +0200
 
-x86: disable stack-protector for __restore_processor_state()
+* Arkadiusz Miskiewicz <a.miskiewicz@gmail.com> wrote:
 
-The __restore_processor_state() fn restores %gs on resume from S3.  As
-such, it cannot be protected by the stack-protector guard since %gs will
-not be correct on function entry.
+> On Friday 03 of April 2009, Chris Wright wrote:
+> > * Arkadiusz Miskiewicz (a.miskiewicz@gmail.com) wrote:
+> > > What about 9ea09af3bd3090e8349ca2899ca2011bd94cda85 ?
+> > >
+> > > stop_machine: introduce stop_machine_create/destroy.
+> >
+> > That is later fixed in a0e280e0f33f6c859a235fb69a875ed8f3420388.
+> >
+> > Can you please verify if 2.6.29 works for you? 
+> 
+> I think that the guilty part is 
+> CONFIG_CC_STACKPROTECTOR_ALL=y
+> CONFIG_CC_STACKPROTECTOR=y
 
-There are only a few other fns in this file and it should not negatively
-impact kernel security that they will also have the stack-protector
-guard removed (and so it's not worth moving them to another file).
+aha!!
 
-Without this change, S3 resume on a kernel built with
-CONFIG_CC_STACKPROTECTOR_ALL=y will fail.
+> Disabling stackprotector makes problem go away (and my build of 
+> final 2.6.29 had it disabled while later builds got it enabled at 
+> some moment).
 
-Signed-off-by: Joseph Cihula <joseph.cihula@intel.com>
-Cc: Arjan van de Ven <arjan@linux.intel.com>
-Cc: Tejun Heo <tj@kernel.org>
-LKML-Reference: <49D13385.5060900@intel.com>
-Signed-off-by: Ingo Molnar <mingo@elte.hu>
+Thanks a ton for that info. Could you try:
 
+   http://people.redhat.com/mingo/tip.git/README
 
----
- arch/x86/power/Makefile |    5 +++++
- 1 files changed, 5 insertions(+), 0 deletions(-)
+with stack-protector re-enabled please? This fix:
 
-diff --git a/arch/x86/power/Makefile b/arch/x86/power/Makefile
-index 9ff4d5b..58b32db 100644
---- a/arch/x86/power/Makefile
-+++ b/arch/x86/power/Makefile
-@@ -1,2 +1,7 @@
-+# __restore_processor_state() restores %gs after S3 resume and so should not
-+# itself be stack-protected
-+nostackp := $(call cc-option, -fno-stack-protector)
-+CFLAGS_cpu_$(BITS).o	:= $(nostackp)
-+
- obj-$(CONFIG_PM_SLEEP)		+= cpu_$(BITS).o
- obj-$(CONFIG_HIBERNATION)	+= hibernate_$(BITS).o hibernate_asm_$(BITS).o
+  1f23b77: x86: disable stack-protector for __restore_processor_state()
+
+might do the trick!
+
+	Ingo
