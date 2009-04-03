@@ -1,93 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757927AbZDCItd@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760782AbZDCIv3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757927AbZDCItd (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 3 Apr 2009 04:49:33 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752608AbZDCItV
+	id S1760782AbZDCIv3 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 3 Apr 2009 04:51:29 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751683AbZDCIvT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 3 Apr 2009 04:49:21 -0400
-Received: from mtagate8.de.ibm.com ([195.212.29.157]:38951 "EHLO
-	mtagate8.de.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751683AbZDCItT (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 3 Apr 2009 04:49:19 -0400
-Date: Fri, 3 Apr 2009 10:49:13 +0200
-From: Martin Schwidefsky <schwidefsky@de.ibm.com>
-To: Jeremy Fitzhardinge <jeremy@goop.org>
-Cc: Rik van Riel <riel@redhat.com>, akpm@osdl.org,
-       Nick Piggin <nickpiggin@yahoo.com.au>, frankeh@watson.ibm.com,
-       virtualization@lists.osdl.org, linux-kernel@vger.kernel.org,
-       virtualization@lists.linux-foundation.org, linux-mm@kvack.org,
-       hugh@veritas.com, Xen-devel <xen-devel@lists.xensource.com>
-Subject: Re: [patch 0/6] Guest page hinting version 7.
-Message-ID: <20090403104913.29c62082@skybase>
-In-Reply-To: <49D5215D.6050503@goop.org>
-References: <20090327150905.819861420@de.ibm.com>
-	<200903281705.29798.rusty@rustcorp.com.au>
-	<20090329162336.7c0700e9@skybase>
-	<200904022232.02185.nickpiggin@yahoo.com.au>
-	<20090402175249.3c4a6d59@skybase>
-	<49D50CB7.2050705@redhat.com>
-	<49D518E9.1090001@goop.org>
-	<49D51CA9.6090601@redhat.com>
-	<49D5215D.6050503@goop.org>
-Organization: IBM Corporation
-X-Mailer: Claws Mail 3.7.1 (GTK+ 2.14.7; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Fri, 3 Apr 2009 04:51:19 -0400
+Received: from bilbo.ozlabs.org ([203.10.76.25]:57806 "EHLO bilbo.ozlabs.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751406AbZDCIvS (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 3 Apr 2009 04:51:18 -0400
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
+Message-ID: <18901.52735.579687.568717@cargo.ozlabs.ibm.com>
+Date: Fri, 3 Apr 2009 19:51:11 +1100
+From: Paul Mackerras <paulus@samba.org>
+To: Peter Zijlstra <a.p.zijlstra@chello.nl>
+Cc: Corey Ashford <cjashfor@linux.vnet.ibm.com>, Ingo Molnar <mingo@elte.hu>,
+       linux-kernel@vger.kernel.org
+Subject: Re: perf_counter: request for three more sample data options
+In-Reply-To: <1238745077.798.17.camel@twins>
+References: <49D56A7E.80908@linux.vnet.ibm.com>
+	<1238742064.798.8.camel@twins>
+	<49D5B9E7.1020400@linux.vnet.ibm.com>
+	<1238745077.798.17.camel@twins>
+X-Mailer: VM 8.0.9 under Emacs 22.2.1 (i486-pc-linux-gnu)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 02 Apr 2009 13:34:37 -0700
-Jeremy Fitzhardinge <jeremy@goop.org> wrote:
+Peter Zijlstra writes:
 
-> Rik van Riel wrote:
-> > Jeremy Fitzhardinge wrote:
-> >> The more complex host policy decisions of how to balance overall 
-> >> memory use system-wide are much in the same for both mechanisms.
-> > Not at all.  Page hinting is just an optimization to host swapping, where
-> > IO can be avoided on many of the pages that hit the end of the LRU.
-> >
-> > No decisions have to be made at all about balancing memory use
-> > between guests, it just happens through regular host LRU aging.
+> What I was thinking of was re-using some of the cpu_clock()
+> infrastructure. That provides us with a jiffy based GTOD sample,
+> cpu_clock() then uses TSC and a few filters to compute a current
+> timestamp.
 > 
-> When the host pages out a page belonging to guest A, then its making a 
-> policy decision on how large guest A should be compared to B.  If the 
-> policy is a global LRU on all guest pages, then that's still a policy on 
-> guest sizes: the target size is a function of its working set, assuming 
-> that the working set is well modelled by LRU.  I imagine that if the 
-> guest and host are both managing their pages with an LRU-like algorithm 
-> you'll get some nasty interactions, which page hinting tries to alleviate.
-
-This is the basic idea of guest page hinting. Let the host memory
-manager make it decision based on the data it has. That includes page
-age determined with a global LRU list, page age determined with a
-per-guest LRU list, i/o rates of the guests, all kind of policy which
-guest should have how much memory. The page hinting comes into play
-AFTER the decision has been made which page to evict. Only then the host
-should look at the volatile vs. stable page state and decide what has
-to be done with the page. If it is volatile the host can throw the page
-away because the guest can recreate it with LESS effort. That is the
-optimization.
-
-> > Automatic ballooning requires that something on the host figures
-> > out how much memory each guest needs and sizes the guests
-> > appropriately.  All the proposed policies for that which I have
-> > seen have some nasty corner cases or are simply very limited
-> > in scope.
+> I was thinking about cutting back those filters and thus trusting the
+> TSC more -- which on x86 can do any random odd thing. So provided the
+> TSC is not doing funny the results will be ok-ish.
 > 
-> Well, you could apply something equivalent to a global LRU: ask for more 
-> pages from guests who have the most unused pages.  (I'm not saying that 
-> its necessarily a useful policy.)
+> This does mean however, that its not possible to know when its gone bad.
 
-But with page hinting you don't have to even ask. Just take the pages
-if you need them. The guest already told you that you can have them by
-setting the unused state.
+I would expect that perfmon would be just reading the TSC and
+recording that.  If you can read the TSC and do some correction then
+we're ahead. :)
 
--- 
-blue skies,
-   Martin.
+> The question to Paul is, does the powerpc sched_clock() call work in NMI
+> -- or hard irq disable -- context?
 
-"Reality continues to ruin my life." - Calvin.
+Yes - timekeeping is one area where us powerpc guys can be smug. :)
+We have a per-core, 64-bit timebase register which counts at a
+constant frequency and is synchronized across all cores.  So
+sched_clock works in any context on powerpc - all it does is read the
+timebase and do some simple integer arithmetic on it.
 
+Paul.
