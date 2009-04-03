@@ -1,70 +1,111 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S935526AbZDCUjG@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S936015AbZDCUjn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S935526AbZDCUjG (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 3 Apr 2009 16:39:06 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759201AbZDCUiw
+	id S936015AbZDCUjn (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 3 Apr 2009 16:39:43 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759201AbZDCUjd
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 3 Apr 2009 16:38:52 -0400
-Received: from ogre.sisk.pl ([217.79.144.158]:35923 "EHLO ogre.sisk.pl"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1759249AbZDCUiv (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 3 Apr 2009 16:38:51 -0400
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-To: Ingo Molnar <mingo@elte.hu>
-Subject: Re: [PATCH] build fix for generic debug pagealloc
-Date: Fri, 3 Apr 2009 22:38:53 +0200
-User-Agent: KMail/1.11.1 (Linux/2.6.29-rjw; KDE/4.2.1; x86_64; ; )
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       Akinobu Mita <akinobu.mita@gmail.com>,
-       Alexander Beregalov <a.beregalov@gmail.com>,
-       "linux-next@vger.kernel.org" <linux-next@vger.kernel.org>,
-       LKML <linux-kernel@vger.kernel.org>, linux-arch@vger.kernel.org,
-       "David S. Miller" <davem@davemloft.net>,
-       Benjamin Herrenschmidt <benh@kernel.crashing.org>,
-       Paul Mackerras <paulus@samba.org>,
-       Martin Schwidefsky <schwidefsky@de.ibm.com>,
-       Heiko Carstens <heiko.carstens@de.ibm.com>,
-       Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@redhat.com>,
-       "H. Peter Anvin" <hpa@zytor.com>
-References: <a4423d670904020421k7395e11dwe70d4223cb817e0a@mail.gmail.com> <20090402094522.b29004c8.akpm@linux-foundation.org> <20090403164450.GC3047@elte.hu>
-In-Reply-To: <20090403164450.GC3047@elte.hu>
+	Fri, 3 Apr 2009 16:39:33 -0400
+Received: from e35.co.us.ibm.com ([32.97.110.153]:35547 "EHLO
+	e35.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1759619AbZDCUjc (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 3 Apr 2009 16:39:32 -0400
+From: Darren Hart <dvhltc@us.ibm.com>
+Subject: [tip PATCH v7 0/9] RFC: futex: requeue pi implementation
+To: linux-kernel@vger.kernel.org
+Cc: Thomas Gleixner <tglx@linutronix.de>, Sripathi Kodi <sripathik@in.ibm.com>,
+       Peter Zijlstra <peterz@infradead.org>,
+       John Stultz <johnstul@us.ibm.com>, Steven Rostedt <rostedt@goodmis.org>,
+       Dinakar Guniguntala <dino@in.ibm.com>,
+       Ulrich Drepper <drepper@redhat.com>, Eric Dumazet <dada1@cosmosbay.com>,
+       Ingo Molnar <mingo@elte.hu>, Jakub Jelinek <jakub@redhat.com>
+Date: Fri, 03 Apr 2009 13:39:25 -0700
+Message-ID: <20090403203832.9772.21410.stgit@Aeon>
+User-Agent: StGIT/0.14.2
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
+Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200904032238.55438.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Friday 03 April 2009, Ingo Molnar wrote:
-> 
-> * Andrew Morton <akpm@linux-foundation.org> wrote:
-> 
-> > > +config DEBUG_PAGEALLOC
-> > > +	bool "Debug page memory allocations"
-> > > +	depends on DEBUG_KERNEL && ARCH_SUPPORTS_DEBUG_PAGEALLOC
-> > > +	depends on !HIBERNATION || !PPC && !SPARC
-> > > +	---help---
-> > > +	  Unmap pages from the kernel linear mapping after free_pages().
-> > > +	  This results in a large slowdown, but helps to find certain types
-> > > +	  of memory corruptions.
-> > > +
-> > 
-> > I guess this is why it wasn't discovered in my compile testing.  
-> > It's quite regrettable that `make allmodconfig' didn't enable the 
-> > feature. That's what allmodconfig is for.
-> 
-> Hm, i _do_ remember some hibernation magic fix from Rafael, in the 
-> area of debugalloc. Many months ago.
-> 
-> Rafael, is it supposed to work? If yes, i think we should unblock 
-> it.
+The following series is v7 of the requeue_pi patches against
+linux-2.6-tip/core/futexes.  The current futex implementation doesn't allow for
+requeueing of PI futexes, which leads to a thundering herd during
+pthread_cond_broadcasa()t (as opposed to a civilized priority ordered wakeup
+sequence).  The core of the problem is that the underlying rt_mutex cannot be
+left with waiters and no owner (which would break the PI logic).  This patch
+series updates the futex code to allow for requeueing from non-PI to PI futexes
+in support of PI aware pthread_cond_* calls along with some needful rt_mutex
+helper routines.  The credit for the conceptual design goes to Thomas Gleixner,
+while the bugs and other idiocies present in this implementation should be
+attributed to me.
 
-Yes, it is, at least on x86.
+New in V7:
+-refactored futex_wait_requeue_pi()
+-fixed pi_state handling for some corner cases in the wake-up path
+-fixed a wakeup race bug introduced by refactoring futex_wait_queue_me()
+-corrected a bug in futex_wait_requeue_pi() calling fixup_owner on the wrong
+ uaddr
+-rewrote finish_futex_lock_pi() as fixup_owner() with more intuitive logic
+-fixed a couple logic errors
+-cleaned up some comments and clarified some locking approaches
 
-ISTR using DEBUG_PAGEALLOC with hibernation quite some time ago already.
+This version has been tested with a rough raw futex syscall test case as well
+as with a preliminary glibc patch that updates the pthread_cond* calls to use
+the new syscalls and allow for the PI calls to take ownership of the rt_mutex
+inside the kernel (see the "glibc hacks for requeue_pi" at the end of this
+series).  With this patched glibc the LTP realtime/func/prio-wake test case has
+passes consistently[1] (whereas before it would fail 10% of the time).
+prio-wake tests the priority ordered wakeup of a pthread_cond_broadcast() using
+a PI mutex.  I have exercised the timeout and signal paths of
+futex_wait_requeue_pi() prior to requeue.  I am working to add more
+sophisticated tests to be able to exercise the post-requeue error paths as
+well.  Additionally, I'd like to add some fault-injection.
 
-Thanks,
-Rafael
+I'd really appreciate feedback on the implementation as well as any design
+critique.  Answers to the questions posed in the patch headers and code
+comments are particularly welcome.
+
+1. In the interest of full disclosure I should mention that I have seen an rare
+   hang of the prio-wake testcase.  Upon closer inspection I now believe this
+   to be due to a race inherent in the testcase, and not due to any flaw in the
+   kernel.
+
+Signed-off-by: Darren Hart <dvhltc@us.ibm.com>
+Cc: Thomas Gleixner <tglx@linutronix.de>
+Cc: Sripathi Kodi <sripathik@in.ibm.com>
+Cc: Peter Zijlstra <peterz@infradead.org>
+Cc: John Stultz <johnstul@us.ibm.com>
+Cc: Steven Rostedt <rostedt@goodmis.org>
+Cc: Dinakar Guniguntala <dino@in.ibm.com>
+Cc: Ulrich Drepper <drepper@redhat.com>
+Cc: Eric Dumazet <dada1@cosmosbay.com>
+Cc: Ingo Molnar <mingo@elte.hu>
+Cc: Jakub Jelinek <jakub@redhat.com>
+
+---
+
+Darren Hart (9):
+      RFC: futex: add requeue_pi calls
+      RFC: futex: add futex_wait_setup()
+      RFC: futex: Add requeue_futex() call
+      RFC: futex: Add FUTEX_HAS_TIMEOUT flag to restart.futex.flags
+      RFC: rt_mutex: add proxy lock routines
+      RFC: futex: fixup_owner()
+      RFC: futex: futex_lock_pi_atomic()
+      RFC: futex: futex_top_waiter()
+      RFC: futex: futex_wait_queue_me()
+
+
+ include/linux/futex.h       |    8 
+ include/linux/thread_info.h |    3 
+ kernel/futex.c              | 1179 +++++++++++++++++++++++++++++++++----------
+ kernel/rtmutex.c            |  240 +++++++--
+ kernel/rtmutex_common.h     |    8 
+ 5 files changed, 1103 insertions(+), 335 deletions(-)
+
+-- 
+Darren Hart
+IBM Linux Technology Center
+Real-Time Linux Team
