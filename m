@@ -1,83 +1,111 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762282AbZDCBYz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759003AbZDCB1S@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762282AbZDCBYz (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 2 Apr 2009 21:24:55 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754146AbZDCBYr
+	id S1759003AbZDCB1S (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 2 Apr 2009 21:27:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755186AbZDCB1J
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 2 Apr 2009 21:24:47 -0400
-Received: from mail.lang.hm ([64.81.33.126]:53930 "EHLO bifrost.lang.hm"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751019AbZDCBYq (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 2 Apr 2009 21:24:46 -0400
-Date: Thu, 2 Apr 2009 18:24:28 -0700 (PDT)
-From: david@lang.hm
-X-X-Sender: dlang@asgard.lang.hm
-To: Matthew Garrett <mjg59@srcf.ucam.org>
-cc: Theodore Tso <tytso@mit.edu>, Sitsofe Wheeler <sitsofe@yahoo.com>,
-       "Andreas T.Auer" <andreas.t.auer_lkml_73537@ursus.ath.cx>,
-       Alberto Gonzalez <info@gnebu.es>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: Ext4 and the "30 second window of death"
-In-Reply-To: <20090403011953.GA10777@srcf.ucam.org>
-Message-ID: <alpine.DEB.1.10.0904021821120.28893@asgard.lang.hm>
-References: <20090401151219.GA12285@srcf.ucam.org> <20090401173521.GA15423@mit.edu> <20090401174336.GA14726@srcf.ucam.org> <alpine.DEB.1.10.0904021116500.28893@asgard.lang.hm> <20090402182925.GA4502@srcf.ucam.org> <alpine.DEB.1.10.0904021134560.28893@asgard.lang.hm>
- <20090402234617.GB9538@srcf.ucam.org> <alpine.DEB.1.10.0904021753410.28893@asgard.lang.hm> <20090403010600.GA10545@srcf.ucam.org> <alpine.DEB.1.10.0904021810180.28893@asgard.lang.hm> <20090403011953.GA10777@srcf.ucam.org>
-User-Agent: Alpine 1.10 (DEB 962 2008-03-14)
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII; format=flowed
+	Thu, 2 Apr 2009 21:27:09 -0400
+Received: from fgwmail6.fujitsu.co.jp ([192.51.44.36]:53512 "EHLO
+	fgwmail6.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754146AbZDCB1I (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 2 Apr 2009 21:27:08 -0400
+Date: Fri, 3 Apr 2009 10:25:34 +0900
+From: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: hugh@veritas.com, mikew@google.com, linux-kernel@vger.kernel.org,
+       linux-mm@kvack.org, yinghan@google.com
+Subject: [PATCH] proc pid maps dont show pgoff of pure anon vmas style fix
+ (WasRe: [RFC][PATCH] don't show pgoff of vma if vma is pure ANON (was Re:
+ mmotm 2009-01-12-16-53 uploaded)
+Message-Id: <20090403102534.1d1e22de.kamezawa.hiroyu@jp.fujitsu.com>
+In-Reply-To: <20090402131816.54724d4e.akpm@linux-foundation.org>
+References: <200901130053.n0D0rhev023334@imap1.linux-foundation.org>
+	<20090113181317.48e910af.kamezawa.hiroyu@jp.fujitsu.com>
+	<496CC9D8.6040909@google.com>
+	<20090114162245.923c4caf.kamezawa.hiroyu@jp.fujitsu.com>
+	<Pine.LNX.4.64.0901141349410.5465@blonde.anvils>
+	<20090115114312.e42a0dba.kamezawa.hiroyu@jp.fujitsu.com>
+	<20090402131816.54724d4e.akpm@linux-foundation.org>
+Organization: FUJITSU Co. LTD.
+X-Mailer: Sylpheed 2.5.0 (GTK+ 2.10.14; i686-pc-mingw32)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 3 Apr 2009, Matthew Garrett wrote:
+I wrote this on mmotm-Mar23 as 2.6.29-rc8-mm1. Is this ok ?
+==
+From: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
 
-> On Thu, Apr 02, 2009 at 06:16:20PM -0700, david@lang.hm wrote:
->> On Fri, 3 Apr 2009, Matthew Garrett wrote:
->>
->>> On Thu, Apr 02, 2009 at 05:55:11PM -0700, david@lang.hm wrote:
->>>> On Fri, 3 Apr 2009, Matthew Garrett wrote:
->>>>> Then they shouldn't use a mail client that fsync()s.
->>>>
->>>> so they need to use one mail client when they want to have good battery
->>>> life and a different one when they are plugged in to power?
->>>
->>> They need to make a decision about whether they care about their mailbox
->>> being precisely in sync with their server or not, and either use a
->>> client that adapts appropriately or choose a client that behaves
->>> appropriately. It's certainly not the kernel's business.
->>
->> the kernel is not deciding this, the kernel would be implementing the
->> user's choice
->
-> No it wouldn't. The kernel would be implementing an adminstrator's
-> choice about whether fsync() is important or not. That's something that
-> would affect the mail client, but it's hardly a decision based on the
-> mail client. Sucks to be that user if they do anything involving mysql.
+Fix condig style of proc-pid-maps-dont-show-pgoff-of-pure-anon-vmas.patch
 
-in the case of laptops, in 99+% of the cases the user and the 
-administrator are the same person. in the other cases that's something the 
-user should take up with the administrator, because the administrator can 
-do a lot of things to the system that will affect the safety of their data 
-(including loading a kernel that turns fsync into a noop, but more likely 
-involving enabling or disabling write caches on disks)
+Signed-off-by: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+---
+ fs/proc/task_mmu.c   |    5 +++--
+ fs/proc/task_nommu.c |    5 +++--
+ 2 files changed, 6 insertions(+), 4 deletions(-)
 
->>> If you can demonstrate a real world use case where the hard drive
->>> (typically well under a watt of power consumption on modern systems)
->>> spindown policy will be affected sufficiently pathologically by a mail
->>> client that you lose an hour of battery life, then I'd rethink this. But
->>> mostly I'd conclude that this was an example of an inappropriate
->>> spindown policy.
->>
->> remember that the mail client was an example.
->>
->> you want another example, think of anything that uses sqlite (like the
->> firefox history stuff, although that was weakened drasticly due to the
->> ext3 problems).
->
-> Benchmarks please.
+Index: mmotm-2.6.29-rc8-mm1/fs/proc/task_mmu.c
+===================================================================
+--- mmotm-2.6.29-rc8-mm1.orig/fs/proc/task_mmu.c
++++ mmotm-2.6.29-rc8-mm1/fs/proc/task_mmu.c
+@@ -204,6 +204,7 @@ static void show_map_vma(struct seq_file
+ 	struct file *file = vma->vm_file;
+ 	int flags = vma->vm_flags;
+ 	unsigned long ino = 0;
++	unsigned long long pgoff = 0;
+ 	dev_t dev = 0;
+ 	int len;
+ 
+@@ -211,6 +212,7 @@ static void show_map_vma(struct seq_file
+ 		struct inode *inode = vma->vm_file->f_path.dentry->d_inode;
+ 		dev = inode->i_sb->s_dev;
+ 		ino = inode->i_ino;
++		pgoff = ((loff_t)vma->vm_pgoff) << PAGE_SHIFT;
+ 	}
+ 
+ 	seq_printf(m, "%08lx-%08lx %c%c%c%c %08llx %02x:%02x %lu %n",
+@@ -220,8 +222,7 @@ static void show_map_vma(struct seq_file
+ 			flags & VM_WRITE ? 'w' : '-',
+ 			flags & VM_EXEC ? 'x' : '-',
+ 			flags & VM_MAYSHARE ? 's' : 'p',
+-			(!vma->vm_file) ? 0 :
+-				((loff_t)vma->vm_pgoff) << PAGE_SHIFT,
++			pgoff,
+ 			MAJOR(dev), MINOR(dev), ino, &len);
+ 
+ 	/*
+Index: mmotm-2.6.29-rc8-mm1/fs/proc/task_nommu.c
+===================================================================
+--- mmotm-2.6.29-rc8-mm1.orig/fs/proc/task_nommu.c
++++ mmotm-2.6.29-rc8-mm1/fs/proc/task_nommu.c
+@@ -125,6 +125,7 @@ static int nommu_vma_show(struct seq_fil
+ 	struct file *file;
+ 	dev_t dev = 0;
+ 	int flags, len;
++	unsigned long long pgoff = 0;
+ 
+ 	flags = vma->vm_flags;
+ 	file = vma->vm_file;
+@@ -133,6 +134,7 @@ static int nommu_vma_show(struct seq_fil
+ 		struct inode *inode = vma->vm_file->f_path.dentry->d_inode;
+ 		dev = inode->i_sb->s_dev;
+ 		ino = inode->i_ino;
++		pgoff = (loff_t)vma->pg_off << PAGE_SHIFT;
+ 	}
+ 
+ 	seq_printf(m,
+@@ -143,8 +145,7 @@ static int nommu_vma_show(struct seq_fil
+ 		   flags & VM_WRITE ? 'w' : '-',
+ 		   flags & VM_EXEC ? 'x' : '-',
+ 		   flags & VM_MAYSHARE ? flags & VM_SHARED ? 'S' : 's' : 'p',
+-		   (!vma->vm_file) ? 0 :
+-			(unsigned long long) vma->vm_pgoff << PAGE_SHIFT,
++		   pgoff,
+ 		   MAJOR(dev), MINOR(dev), ino, &len);
+ 
+ 	if (file) {
 
-if spinning down a drive saves so little power that it wouldn't make a 
-significant difference to battery lift to leave it on, why does anyone 
-bother to spin the drive down?
-
-David Lang
