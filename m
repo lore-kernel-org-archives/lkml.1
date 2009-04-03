@@ -1,54 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762284AbZDCMYH@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764059AbZDCMZc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762284AbZDCMYH (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 3 Apr 2009 08:24:07 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752559AbZDCMXu
+	id S1764059AbZDCMZc (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 3 Apr 2009 08:25:32 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759127AbZDCMZO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 3 Apr 2009 08:23:50 -0400
-Received: from one.firstfloor.org ([213.235.205.2]:56373 "EHLO
-	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751388AbZDCMXu (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 3 Apr 2009 08:23:50 -0400
-Date: Fri, 3 Apr 2009 14:25:39 +0200
-From: Andi Kleen <andi@firstfloor.org>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: Avi Kivity <avi@redhat.com>, Masami Hiramatsu <mhiramat@redhat.com>,
-       "H. Peter Anvin" <hpa@zytor.com>,
-       Frederic Weisbecker <fweisbec@gmail.com>,
-       Steven Rostedt <rostedt@goodmis.org>,
-       Ananth N Mavinakayanahalli <ananth@in.ibm.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Andi Kleen <andi@firstfloor.org>, Jim Keniston <jkenisto@us.ibm.com>,
-       kvm@vger.kernel.org, systemtap-ml <systemtap@sources.redhat.com>,
-       LKML <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH -tip 0/6 V4] tracing: kprobe-based event tracer
-Message-ID: <20090403122539.GC11935@one.firstfloor.org>
-References: <49D4F4B5.9040107@redhat.com> <20090403112639.GC31399@elte.hu> <49D5F80B.7000305@redhat.com> <20090403121202.GI31399@elte.hu>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090403121202.GI31399@elte.hu>
-User-Agent: Mutt/1.4.2.1i
+	Fri, 3 Apr 2009 08:25:14 -0400
+Received: from mx2.redhat.com ([66.187.237.31]:55323 "EHLO mx2.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1755430AbZDCMZM (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 3 Apr 2009 08:25:12 -0400
+Message-ID: <49D60034.1010508@redhat.com>
+Date: Fri, 03 Apr 2009 15:25:24 +0300
+From: Avi Kivity <avi@redhat.com>
+User-Agent: Thunderbird 2.0.0.21 (X11/20090320)
+MIME-Version: 1.0
+To: Herbert Xu <herbert@gondor.apana.org.au>
+CC: Gregory Haskins <ghaskins@novell.com>,
+       Rusty Russell <rusty@rustcorp.com.au>, anthony@codemonkey.ws,
+       andi@firstfloor.org, linux-kernel@vger.kernel.org, agraf@suse.de,
+       pmullaney@novell.com, pmorreale@novell.com, netdev@vger.kernel.org,
+       kvm@vger.kernel.org, Ingo Molnar <mingo@elte.hu>
+Subject: Re: [RFC PATCH 00/17] virtual-bus
+References: <49D49C1F.6030306@novell.com> <200904022243.21088.rusty@rustcorp.com.au> <49D4B4A3.5070008@novell.com> <49D4B87D.2000202@redhat.com> <20090402145018.GA816@gondor.apana.org.au> <49D4D301.2090209@redhat.com> <20090402154041.GA1774@gondor.apana.org.au> <49D4E072.2060003@redhat.com> <20090402160941.GB2173@gondor.apana.org.au> <49D4EDBD.3050900@redhat.com> <20090402170610.GA3001@gondor.apana.org.au>
+In-Reply-To: <20090402170610.GA3001@gondor.apana.org.au>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> So ... we can do the library decoder for kprobes purposes, and 
-> someone versed in the KVM emulator can then combine the two.
+Herbert Xu wrote:
+> On Thu, Apr 02, 2009 at 07:54:21PM +0300, Avi Kivity wrote:
+>   
+>> 3ms latency for ping?
+>>
+>> (ping will always be scheduled immediately when the reply arrives if I  
+>> understand cfs, so guest load won't delay it)
+>>     
+>
+> That only happens if the guest immediately does some CPU-intensive
+> computation 3ms and assuming its timeslice lasts that long.
+>   
 
-The KVM (or rather Xen, that is where it comes from) decoder is already
-a "library decoder". That is it does nearly everything
-through callbacks, and if you don't want some functionality
-you can nop the callbacks. Nearly because some  some
-direct KVM references have crept in recently (e.g. to vcpus),
-but those could be probably removed again without too much effort.
-There are not many of them.
+ Note that this happens even if the computation is SCHED_BATCH.
 
-Also doing another interpreter is a lot of work and a lot of testing,
-so basing it on something that is already well tested is probably
-a good idea.
+> In any case, the same thing will happen right now if the host or
+> some other guest on the same CPU hogs the CPU for 3ms.
+>
+>   
 
--/dev/null/Andi
+If the host is overloaded, that's fair.  But millisecond latencies 
+without host contention is not a good result.
+
 -- 
-ak@linux.intel.com -- Speaking for myself only.
+I have a truly marvellous patch that fixes the bug which this
+signature is too narrow to contain.
+
