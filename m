@@ -1,87 +1,73 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753729AbZDCCU3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755950AbZDCCW7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753729AbZDCCU3 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 2 Apr 2009 22:20:29 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751698AbZDCCUS
+	id S1755950AbZDCCW7 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 2 Apr 2009 22:22:59 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751847AbZDCCWv
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 2 Apr 2009 22:20:18 -0400
-Received: from yw-out-2324.google.com ([74.125.46.28]:52175 "EHLO
-	yw-out-2324.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751158AbZDCCUP convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 2 Apr 2009 22:20:15 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
-         :cc:content-type:content-transfer-encoding;
-        b=jDCIkfgC1f9NVBVxm4hFGfgEtygoyhNBL4QWZ0WKLgnB7fe8qUCe0alSKpDWO87veI
-         4/yKE0AzsKFPoZd3mAz68nGVlilNpbnd161IpLaBeG8j/O6kcWm4dBQTb29Nvua5oDm1
-         +GlvcFyvRsRofNquZjKAfnCLR07ne2Q73kcXQ=
+	Thu, 2 Apr 2009 22:22:51 -0400
+Received: from mx2.redhat.com ([66.187.237.31]:56468 "EHLO mx2.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751043AbZDCCWu (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 2 Apr 2009 22:22:50 -0400
+Message-ID: <49D572E5.4040306@redhat.com>
+Date: Thu, 02 Apr 2009 22:22:29 -0400
+From: Ric Wheeler <rwheeler@redhat.com>
+User-Agent: Thunderbird 2.0.0.21 (X11/20090320)
 MIME-Version: 1.0
-In-Reply-To: <9b1675090904021905o7e0cec64lfe4a5372777908b6@mail.gmail.com>
-References: <49CCCB0A.6070701@nokia.com> <alpine.DEB.2.01.0904021706330.6162@bogon.housecafe.de> 
-	<9b1675090904021724t2fb0a671uc10d8e7bcba0bc5c@mail.gmail.com> 
-	<9b1675090904021728y35776377u327f2266d06e2f29@mail.gmail.com> 
-	<72dbd3150904021855v440f46a7oc21a7ed28fbfcb13@mail.gmail.com> 
-	<9b1675090904021905o7e0cec64lfe4a5372777908b6@mail.gmail.com>
-Date: Thu, 2 Apr 2009 19:19:58 -0700
-Message-ID: <72dbd3150904021919g5405ee40p100eacb085024941@mail.gmail.com>
-Subject: Re: EXT4-ish "fixes" in UBIFS
-From: David Rees <drees76@gmail.com>
-To: "Trenton D. Adams" <trenton.d.adams@gmail.com>
-Cc: Christian Kujau <lists@nerdbynature.de>,
-       Artem Bityutskiy <Artem.Bityutskiy@nokia.com>,
+To: Nick Piggin <nickpiggin@yahoo.com.au>
+CC: Matthew Garrett <mjg59@srcf.ucam.org>, david@lang.hm,
+       Theodore Tso <tytso@mit.edu>, Sitsofe Wheeler <sitsofe@yahoo.com>,
+       "Andreas T.Auer" <andreas.t.auer_lkml_73537@ursus.ath.cx>,
+       Alberto Gonzalez <info@gnebu.es>,
        Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 8BIT
+Subject: Re: Ext4 and the "30 second window of death"
+References: <200903291224.21380.info@gnebu.es> <200904030535.00335.nickpiggin@yahoo.com.au> <20090402183834.GB4773@srcf.ucam.org> <200904030556.41270.nickpiggin@yahoo.com.au>
+In-Reply-To: <200904030556.41270.nickpiggin@yahoo.com.au>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Apr 2, 2009 at 7:05 PM, Trenton D. Adams
-<trenton.d.adams@gmail.com> wrote:
-> On Thu, Apr 2, 2009 at 7:55 PM, David Rees <drees76@gmail.com> wrote:
->> On Thu, Apr 2, 2009 at 5:28 PM, Trenton D. Adams
->> <trenton.d.adams@gmail.com> wrote:
->>> Oh, I should have clarified.  It improves performance under heavy
->>> load.  Under normal load, mounting without sync is fine.  What I tend
->>> to do is mount with "remount,rw,sync" when heavy load is starting.
->>> Then my system goes slowly, but latency is good.  Then, when it's all
->>> done (say a big compile, or job, or whatever), I remount without sync
->>> again.
->>>
->>> I'm thinking of writing a script that monitors performance, and
->>> remounts as needed, lol.  WHAT A HACK. hehe.
+Nick Piggin wrote:
+> On Friday 03 April 2009 05:38:34 Matthew Garrett wrote:
+>   
+>> On Fri, Apr 03, 2009 at 05:34:59AM +1100, Nick Piggin wrote:
 >>
->> All you're doing here is implementing the lowering of dirty data
->> limits in the VM dynamically based on how long fsyncs take.
+>>     
+>>> Shouldn't applications have a mode to avoid spinning up the disk if it is
+>>> so important?
+>>>       
+>> They do. It's called "Don't use fsync() unless your data needs to be on 
+>> disk". I'm not sure why you'd ever want an application to be in anything 
+>> but this mode.
 >>
->> Linus outlined this specific strategy as "the ideal siutation"
->> somewhere in the depths of "That filesystem thread".
+>>     
 >
-> I thought he said it was a HORRIBLE solution. :D  I recall him
-> slamming Andrew over it.  Unless you're referring to the kernel
-> actually doing it on the fly.
-
-Yes - you are correct - doing it in userspace isn't the best place to
-put it - but if you can do it there, the same ideas could then be
-pushed into the kernel and further enhanced.
-
->> Look at the new in 2.6.29 dirty*bytes parameters in
->> Documentation/sysctl/vm.txt for more info.  By lowering those values,
->> you can effectively turn normal writes into synchronous writes which
->> will greatly reduce latency of fsync under heavy write load.
->>
->> In previous kernels you can tweak dirty_ratio and
->> dirty_background_ratio, but they don't have the granularity of the new
->> knobs.  Although if you are talking about just remounting in sync
->> mode, they may work for you at least as a proof of concept. ;-)
+> Well you might decide you are willing to sacrifice timely storage of
+> logs, or reducing backups in your editor or something. But obviously
+> the kernel can't decide which of those fsyncs is safe to omit (or
+> turn into a barrier) while staying within the advertised semantics of
+> the app. Application obviously can.
 >
-> dirty_ratio and dirty_background never really had any affect for me.
-> I'll look into the other parameters.  Waiting for the checkout again,
-> as I am currently under a heavy rsync load (*rolls eyes*).
+>   
+One thing that you can do at the application level is to try and batch 
+up your fsync() requests -  running one fsync (especially on the most 
+recently written file) can take down the earlier files with it.
 
-How low have you set them?  Try setting them to 2 and 1 respectively.
-It cuts down fsync latencies by a significant amount in my experience.
+Clearly, this does require some application level complexity, but you 
+get the same strong fsync() semantics that you are used to and can run 
+almost at non-fsync speeds if the batch size is large enough. Your 
+application should not acknowledge it has safely stored any of the files 
+locally until it has done an fsync on that particular file.
 
--Dave
+This technique would work great for an application like rsync, tar, etc. 
+For a mail client, you would see a benefit only when you were pulling 
+down batches of messages which clearly is a common case if you are still 
+reading this thread :-)
+
+The fs_mark program I wrote plays around with the various ways to do 
+this if someone is interested in playing around a bit,
+
+Ric
+
