@@ -1,145 +1,213 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934747AbZDCRYm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934841AbZDCRZs@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934747AbZDCRYm (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 3 Apr 2009 13:24:42 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759328AbZDCRYc
+	id S934841AbZDCRZs (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 3 Apr 2009 13:25:48 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1765641AbZDCRZi
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 3 Apr 2009 13:24:32 -0400
-Received: from smtp117.sbc.mail.sp1.yahoo.com ([69.147.64.90]:22872 "HELO
-	smtp117.sbc.mail.sp1.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1759234AbZDCRYb (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 3 Apr 2009 13:24:31 -0400
-DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
-  s=s1024; d=pacbell.net;
-  h=Received:X-YMail-OSG:X-Yahoo-Newman-Property:From:To:Subject:Date:User-Agent:Cc:References:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Content-Disposition:Message-Id;
-  b=mTqF0+54BjtNVgDOkQzabuZ6kixV4XM46mXXT10kF4VUla4VztUepeMWaB/BVyaBa9SIhjnMnS54WSLUS4M5Xpz/ap6i0xyCjgEOpI754LHxdElMnrERNkN/1Dv9upS7i4Xj2gWUlKnjY+tt+EAVRDM0U9HCl08ijy9/1QcHfgM=  ;
-X-YMail-OSG: .6XmSFIVM1maBMMUUMstAQvNAkpXf716maBinD_BIzYbkrp.052R_v_iYyZieQHgY5HthSF7q1M0qCZUYQ.6S.Mld5eVY.MzJnsEMkp0mJ6.Q0l06HVF9MKLBvfibDLhOcAX90hTSvE3UlcoA3X0dZvZ9SxHgKgKVQm67HGozFxbNgcsGu8o9TeTTVJZEj4N9wB67qHznH3u9a9Q7_ebkFo6aIoX1cPEwa0YvpbW7rNfv2iF6YEICZdRJj5nbheFPYUlw_kuMTa_4bxyr0_ZNtN6vEAJALRogRp3jQLK0Et6z7V90D.LvovYa6nnNRsKo732U3FSaSbmWfW0t245sQ--
-X-Yahoo-Newman-Property: ymail-3
-From: David Brownell <david-b@pacbell.net>
-To: David Woodhouse <dwmw2@infradead.org>
-Subject: Re: [patch/rfc 2.6.29 1/2] MTD: driver model updates
-Date: Fri, 3 Apr 2009 10:24:27 -0700
-User-Agent: KMail/1.9.10
-Cc: Linux MTD <linux-mtd@lists.infradead.org>,
-       LKML <linux-kernel@vger.kernel.org>, Kay Sievers <kay.sievers@vrfy.org>
-References: <200903260042.42091.david-b@pacbell.net> <1238753062.3711.109.camel@macbook.infradead.org>
-In-Reply-To: <1238753062.3711.109.camel@macbook.infradead.org>
+	Fri, 3 Apr 2009 13:25:38 -0400
+Received: from mx40.mail.ru ([94.100.176.54]:54509 "EHLO mx40.mail.ru"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1761506AbZDCRZh (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 3 Apr 2009 13:25:37 -0400
+From: Andrey Borzenkov <arvidjaar@mail.ru>
+To: Clemens Ladisch <clemens@ladisch.de>
+Subject: Re: [PATCH] firmware: speed up request_firmware()
+Date: Fri, 3 Apr 2009 21:25:24 +0400
+User-Agent: KMail/1.11.2 (Linux/2.6.29-1avb; KDE/4.2.2; i686; ; )
+Cc: Ira Snyder <iws@ovro.caltech.edu>, Alan Cox <alan@lxorguk.ukuu.org.uk>,
+       linux-kernel@vger.kernel.org
+References: <20090128180446.GB31107@ovro.caltech.edu> <20090128203421.GC31107@ovro.caltech.edu> <49D5B0B3.2040405@ladisch.de>
+In-Reply-To: <49D5B0B3.2040405@ladisch.de>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="us-ascii"
+Content-Type: multipart/signed;
+  boundary="nextPart1459720.xnBk3OXHsR";
+  protocol="application/pgp-signature";
+  micalg=pgp-sha1
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200904031024.27662.david-b@pacbell.net>
+Message-Id: <200904032125.28803.arvidjaar@mail.ru>
+X-Spam: Not detected
+X-Mras: Ok
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Friday 03 April 2009, David Woodhouse wrote:
-> On Thu, 2009-03-26 at 00:42 -0700, David Brownell wrote:
-> > 
-> > @@ -343,6 +343,11 @@ static struct mtd_part *add_one_partitio
-> >         slave->mtd.name = part->name;
-> >         slave->mtd.owner = master->owner;
-> >  
-> > +       /* NOTE:  we don't arrange MTDs as a tree; it'd be error-prone
-> > +        * to have the same data be in two different partitions.
-> > +        */
-> > +       slave->mtd.dev.parent = master->dev.parent;
-> 
-> Can you elaborate on that? I think we _do_ want to arrange partitions as
-> sub-devices of the master, don't we? 
+--nextPart1459720.xnBk3OXHsR
+Content-Type: text/plain;
+  charset="us-ascii"
+Content-Transfer-Encoding: quoted-printable
+Content-Disposition: inline
 
-They're part of a tree, and are subdevices of the physical flash
-node, so those partitions get nodes like:
+On Friday 03 of April 2009 10:46:11 Clemens Ladisch wrote:
+> Ira Snyder wrote:
+> > I didn't want to change an existing kernel interface, so I just
+> > made the easiest change that worked for me.
+>
+> Well, userspace does know the actual size of the image, so I see no
+> reason why it shouldn't be able to tell the kernel about it
+> beforehand.
+>
 
-	.../physical_flashdev
-		/block/mtdblock*
-		/mtd/mtd*
-		/mtd/mtd*ro
+Right; but it will need some time for user space to catch up.
 
-If that were "slave->mtd.dev.parent = &master->dev" instead
-(you could try it!), not only would most MTD drivers need to
-change to register that master->dev ("mtd0" here), but the
-tree would look something like (from memory):
+> > I'd be happy to test patches anyone comes up with.
+>
+> =3D=3D=3D=3D=3D
+>
+> This adds a data_size attribute to the firmware loading device so
+> that userspace can tell us about the firmware image size.  This
+> allows us to preallocate the buffer with the final size, thus
+> avoiding reallocating the buffer for every page of data as it comes
+> in.
+>
+> Signed-off-by: Clemens Ladisch <clemens@ladisch.de>
+>
+> --- linux-2.6.orig/Documentation/firmware_class/README
+> +++ linux-2.6/Documentation/firmware_class/README
+> @@ -21,7 +21,7 @@
+>   kernel(driver): calls request_firmware(&fw_entry, $FIRMWARE,
+> device)
+>
+>   userspace:
+> - 	- /sys/class/firmware/xxx/{loading,data} appear.
+> + 	- /sys/class/firmware/xxx/{loading,data,data_size} appear.
+>  	- hotplug gets called with a firmware identifier in $FIRMWARE
+>  	  and the usual hotplug environment.
+>  		- hotplug: echo 1 > /sys/class/firmware/xxx/loading
+> @@ -29,11 +29,13 @@
+>   kernel: Discard any previous partial load.
+>
+>   userspace:
+> +		- hotplug: echo ... > /sys/class/firmware/xxx/data_size
+>  		- hotplug: cat appropriate_firmware_image > \
+>  					/sys/class/firmware/xxx/data
+>
+> - kernel: grows a buffer in PAGE_SIZE increments to hold the image as
+> it -	 comes in.
+> + kernel: Copies the firmware image into a buffer of the specified
+> size. +	 If the image is larger, the buffer automatically grows in +=09
+> PAGE_SIZE increments.
+>
+>   userspace:
+>  		- hotplug: echo 0 > /sys/class/firmware/xxx/loading
+> @@ -60,6 +62,9 @@
+>
+>  	HOTPLUG_FW_DIR=3D/usr/lib/hotplug/firmware/
+>
+> +	if [ -e /sys/$DEVPATH/data_size ]; then
+> +		stat -c %s $HOTPLUG_FW_DIR/$FIRMWARE > /sys/$DEVPATH/data_size
+> +	fi
+>  	echo 1 > /sys/$DEVPATH/loading
+>  	cat $HOTPLUG_FW_DIR/$FIRMWARE > /sysfs/$DEVPATH/data
+>  	echo 0 > /sys/$DEVPATH/loading
+> @@ -73,6 +78,9 @@
+>   - firmware_data_read() and firmware_loading_show() are just
+> provided for testing and completeness, they are not called in normal
+> use.
+>
+> + - /sys/class/firmware/xxx/data_size is optional for compatibility
+> with +   older kernels.
+> +
+>   - There is also /sys/class/firmware/timeout which holds a timeout
+> in seconds for the whole load operation.
+>
+> --- linux-2.6.orig/Documentation/firmware_class/hotplug-script
+> +++ linux-2.6/Documentation/firmware_class/hotplug-script
+> @@ -6,6 +6,9 @@
+>
+>  HOTPLUG_FW_DIR=3D/usr/lib/hotplug/firmware/
+>
+> +if [ -e /sys/$DEVPATH/data_size ]; then
+> +	stat -c %s $HOTPLUG_FW_DIR/$FIRMWARE > /sys/$DEVPATH/data_size
+> +fi
+>  echo 1 > /sys/$DEVPATH/loading
+>  cat $HOTPLUG_FW_DIR/$FIRMWARE > /sys/$DEVPATH/data
+>  echo 0 > /sys/$DEVPATH/loading
+> --- linux-2.6.orig/drivers/base/firmware_class.c
+> +++ linux-2.6/drivers/base/firmware_class.c
+> @@ -46,6 +46,7 @@ struct firmware_priv {
+>  	struct firmware *fw;
+>  	unsigned long status;
+>  	int alloc_size;
+> +	int size_hint;
 
-	.../physical_flashdev
-		/block/mtdblock*
-		/mtd/mtd0
-			/mtd/mtd*
-			/mtd/mtd*ro
-		/mtd/mtd0ro
+Unsigned?
 
-which is at the very least ugly, confusing, counter-intuitive,
-and internally inconsistent (why do all the block nodes show
-up where you'd expect, but not all the MTD/chardev ones).
+>  	struct timer_list timeout;
+>  };
+>
+> @@ -114,6 +115,32 @@ static struct class firmware_class =3D {
+>  	.dev_release	=3D fw_dev_release,
+>  };
+>
+> +static ssize_t firmware_data_size_show(struct device *dev,
+> +				       struct device_attribute *attr, char *buf)
+> +{
+> +	struct firmware_priv *fw_priv =3D dev_get_drvdata(dev);
+> +
+> +	return sprintf(buf, "%d\n", fw_priv->size_hint);
+> +}
+> +
+
+Why would you need it? It is no importance once firmware had been=20
+loaded. I'd personally consider it as write-only.
+
+> +static ssize_t firmware_data_size_store(struct device *dev,
+> +					struct device_attribute *attr,
+> +					const char *buf, size_t count)
+> +{
+> +	struct firmware_priv *fw_priv =3D dev_get_drvdata(dev);
+> +	long value;
+> +	int err;
+> +
+> +	err =3D strict_strtol(buf, 10, &value);
+> +	if (err)
+> +		return err;
+> +	fw_priv->size_hint =3D value;
+
+Should not there be some protection against using silly large values?=20
+
+> +	return count;
+> +}
+> +
+> +static DEVICE_ATTR(data_size, 0644,
+> +		   firmware_data_size_show, firmware_data_size_store);
+> +
+>  static ssize_t firmware_loading_show(struct device *dev,
+>  				     struct device_attribute *attr, char *buf)
+>  {
+> @@ -207,6 +234,7 @@ fw_realloc_buffer(struct firmware_priv *
+>  	if (min_size <=3D fw_priv->alloc_size)
+>  		return 0;
+>
+> +	min_size =3D max(min_size, fw_priv->size_hint);
+>  	new_size =3D ALIGN(min_size, PAGE_SIZE);
+>  	new_data =3D vmalloc(new_size);
+>  	if (!new_data) {
+> @@ -359,6 +387,12 @@ static int fw_setup_device(struct firmwa
+>  		goto error_unreg;
+>  	}
+>
+> +	retval =3D device_create_file(f_dev, &dev_attr_data_size);
+> +	if (retval) {
+> +		dev_err(device, "%s: device_create_file failed\n", __func__);
+> +		goto error_unreg;
+> +	}
+> +
+>  	retval =3D device_create_file(f_dev, &dev_attr_loading);
+>  	if (retval) {
+>  		dev_err(device, "%s: device_create_file failed\n", __func__);
 
 
-> And I'd rather not change the way 
-> they appear at a later date; I'd prefer them to be that way from the
-> beginning.
+--nextPart1459720.xnBk3OXHsR
+Content-Type: application/pgp-signature; name=signature.asc 
+Content-Description: This is a digitally signed message part.
 
-Agreed.  The focus of this patch was getting a model that
-would evolve later ... attributes and tool support being
-the most apparent issues.
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.9 (GNU/Linux)
 
- 
-> >         slave->mtd.read = part_read;
-> >         slave->mtd.write = part_write;
-> >  
-> > @@ -493,7 +498,9 @@ out_register:
-> >   * This function, given a master MTD object and a partition table, creates
-> >   * and registers slave MTD objects which are bound to the master according to
-> >   * the partition definitions.
-> > - * (Q: should we register the master MTD object as well?)
-> > + *
-> > + * We don't register the master, or expect the caller to have done so,
-> > + * for reasons of data integrity.
-> >   */
-> 
-> Again, can you elaborate?
+iEYEABECAAYFAknWRogACgkQR6LMutpd94xmuQCdHyHzeAKKWDyn7kbUYweNTGxA
+yNoAnjH1I9H+/q8rjgp3UYz5awWdghXW
+=QCKS
+-----END PGP SIGNATURE-----
 
-Same point as above ... presuming an A to that long-standing Q.
-
-
-> A lot of devices do just that. Where you have a partition table of some
-> kind that's actually stored on the flash, that might be the only way to
-> access it.
-
-I happen never to have come across such a flash layout;
-that's presumably what "RedBoot" does (eCOS)?
-
-As I'm sure you're aware, MTDs don't need to be registered
-to be used.  There's no innate need to "do just that" just
-to support RedBoot-style internal partition tables.
-
-As a rule I've seen partitioning be provided by Linux, or
-cmdlinepart.  Systems using u-boot or proprietary loaders
-just "know" where they, their data, and the kernel are to
-be found; Linux tables either declare them as read-only
-partitions or, less often, only list writable parts of
-the flash chip.
-
-One way to model RedBoot tables that might be to have a
-partition table node "device_type" that's distinct from
-the MTD node type, even if it's still coupled to the
-same generic "mtd_info".  I'm not sure what to make of
-that technique, but it might be useful elsewhere in MTD.
-
-Another way to model RedBoot tables is ... just hide them.
-Don't expose an MTD with that data (or "just that data").
-Can Linux contine to operate if some tool modifies that
-partition data, or must it reboot?
-
-
-> I really don't like the way our partitioning works at the moment.
-
-Arguably fixing that would be a prerequisite to making
-stable driver model support ... which is part of the
-reason this was a "patch/RFC".  :)
-
-I will confess to trying to avoid opening the can of
-worms too far, and suspecting that parts of the MTD
-stack I've never needed would expose more issues.
-
-- Dave
+--nextPart1459720.xnBk3OXHsR--
