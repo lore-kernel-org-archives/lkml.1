@@ -1,46 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1765350AbZDCLwl@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759067AbZDCLx5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1765350AbZDCLwl (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 3 Apr 2009 07:52:41 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760943AbZDCLwa
+	id S1759067AbZDCLx5 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 3 Apr 2009 07:53:57 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754755AbZDCLxm
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 3 Apr 2009 07:52:30 -0400
-Received: from moutng.kundenserver.de ([212.227.126.188]:49783 "EHLO
-	moutng.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757341AbZDCLw3 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 3 Apr 2009 07:52:29 -0400
-From: Arnd Bergmann <arnd@arndb.de>
-To: Kevin Cernekee <kpc.mtd@gmail.com>
-Subject: Re: [PATCHv5] MTD: New ioctl calls for >4GiB device support
-Date: Fri, 3 Apr 2009 13:52:02 +0200
-User-Agent: KMail/1.9.9
-Cc: dwmw2@infradead.org, linux-kernel@vger.kernel.org,
-       linux-mtd@lists.infradead.org
-References: <a95a62fe0904021750m7fd01695q3724be49b66a82d@mail.gmail.com>
-In-Reply-To: <a95a62fe0904021750m7fd01695q3724be49b66a82d@mail.gmail.com>
-X-Face: I@=L^?./?$U,EK.)V[4*>`zSqm0>65YtkOe>TFD'!aw?7OVv#~5xd\s,[~w]-J!)|%=]>=?utf-8?q?+=0A=09=7EohchhkRGW=3F=7C6=5FqTmkd=5Ft=3FLZC=23Q-=60=2E=60Y=2Ea=5E?=
- =?utf-8?q?3zb?=)
- =?utf-8?q?+U-JVN=5DWT=25cw=23=5BYo0=267C=26bL12wWGlZi=0A=09=7EJ=3B=5Cwg?=
- =?utf-8?q?=3B3zRnz?=,J"CT_)=\H'1/{?SR7GDu?WIopm.HaBG=QYj"NZD_[zrM\Gip^U
+	Fri, 3 Apr 2009 07:53:42 -0400
+Received: from mx2.redhat.com ([66.187.237.31]:45523 "EHLO mx2.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754165AbZDCLxl (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 3 Apr 2009 07:53:41 -0400
+Message-ID: <49D5F8DA.20400@redhat.com>
+Date: Fri, 03 Apr 2009 14:54:02 +0300
+From: Avi Kivity <avi@redhat.com>
+User-Agent: Thunderbird 2.0.0.21 (X11/20090320)
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="utf-8"
+To: Herbert Xu <herbert@gondor.apana.org.au>
+CC: Gerd Hoffmann <kraxel@redhat.com>, ghaskins@novell.com,
+       anthony@codemonkey.ws, andi@firstfloor.org,
+       linux-kernel@vger.kernel.org, agraf@suse.de, pmullaney@novell.com,
+       pmorreale@novell.com, rusty@rustcorp.com.au, netdev@vger.kernel.org,
+       kvm@vger.kernel.org
+Subject: Re: [RFC PATCH 00/17] virtual-bus
+References: <20090402085253.GA29932@gondor.apana.org.au> <49D47F11.6070400@redhat.com> <49D5EBE1.8030200@redhat.com> <49D5ED11.2000800@redhat.com> <20090403111242.GA10200@gondor.apana.org.au> <49D5F6FC.5090401@redhat.com> <20090403114828.GA10465@gondor.apana.org.au>
+In-Reply-To: <20090403114828.GA10465@gondor.apana.org.au>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200904031352.03271.arnd@arndb.de>
-X-Provags-ID: V01U2FsdGVkX194O6gYrOmzZwKxP0ksDB/+WN+hQvmJ4GMqAbH
- w1OYiZ1XPieAB8jIYeDug40y/ckzLJZd3ZpAmTq7UJzH4vUxtU
- Mh9x7VQLa9jxpUja3fmyw==
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Friday 03 April 2009, Kevin Cernekee wrote:
-> 2) Use __u64 to store the MEMREADOOB64/MEMWRITEOOB64 user pointer, so
-> that no compat_ioctl handler is needed.
+Herbert Xu wrote:
+> On Fri, Apr 03, 2009 at 02:46:04PM +0300, Avi Kivity wrote:
+>   
+>> The host writes the packet to tap, at which point it is consumed from  
+>> its point of view.  The host would like to mention that if there was an  
+>> API to notify it when the packet was actually consumed, then it would  
+>> gladly use it.  Bonus points if this involves not copying the packet.
+>>     
+>
+> We're using write(2) for this, no? 
 
+Yes.
 
-Thanks for the change,
+> That should invoke netif_rx_ni
+> which blocks until the packet is "processed", which usually means
+> that it's placed on the NIC's hardware queue.
+>   
 
-Acked-by: Arnd Bergmann <arnd@arndb.de>
+It doesn't copy and queue the packet?  We use O_NONBLOCK and poll() so 
+we can tell when we can queue without blocking.
+
+-- 
+I have a truly marvellous patch that fixes the bug which this
+signature is too narrow to contain.
+
