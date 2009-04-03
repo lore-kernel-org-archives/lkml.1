@@ -1,186 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764809AbZDCKlw@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762860AbZDCKp6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764809AbZDCKlw (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 3 Apr 2009 06:41:52 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763597AbZDCKiq
+	id S1762860AbZDCKp6 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 3 Apr 2009 06:45:58 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751388AbZDCKps
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 3 Apr 2009 06:38:46 -0400
-Received: from hera.kernel.org ([140.211.167.34]:42996 "EHLO hera.kernel.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1764144AbZDCKio (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 3 Apr 2009 06:38:44 -0400
-Date: Fri, 3 Apr 2009 10:37:07 GMT
-From: Eduard - Gabriel Munteanu <eduard.munteanu@linux360.ro>
-To: linux-tip-commits@vger.kernel.org
-Cc: linux-kernel@vger.kernel.org, hpa@zytor.com, mingo@redhat.com,
-       eduard.munteanu@linux360.ro, tglx@linutronix.de, mingo@elte.hu
-Reply-To: mingo@redhat.com, hpa@zytor.com, linux-kernel@vger.kernel.org,
-       eduard.munteanu@linux360.ro, tglx@linutronix.de, mingo@elte.hu
-In-Reply-To: <161be9ca8a27b432c4a6ab79f47788c4521652ae.1237813499.git.eduard.munteanu@linux360.ro>
-References: <161be9ca8a27b432c4a6ab79f47788c4521652ae.1237813499.git.eduard.munteanu@linux360.ro>
-Subject: [tip:tracing/kmemtrace-v2] kmemtrace: restore original tracing data binary format, improve ABI
-Message-ID: <tip-42af9054c0eeed09ec58d13ec8bf52d225ebcfcc@git.kernel.org>
-Git-Commit-ID: 42af9054c0eeed09ec58d13ec8bf52d225ebcfcc
-X-Mailer: tip-git-log-daemon
-MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
+	Fri, 3 Apr 2009 06:45:48 -0400
+Received: from xi.wantstofly.org ([80.101.37.227]:50337 "EHLO
+	xi.wantstofly.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756890AbZDCKps (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 3 Apr 2009 06:45:48 -0400
+Date: Fri, 3 Apr 2009 12:45:45 +0200
+From: Lennert Buytenhek <kernel@wantstofly.org>
+To: Andi Kleen <andi@firstfloor.org>
+Cc: Andrew Morton <akpm@linux-foundation.org>, Ingo Molnar <mingo@elte.hu>,
+       paulmck@linux.vnet.ibm.com, linux-kernel@vger.kernel.org,
+       niv@us.ibm.com, dvhltc@us.ibm.com, dhowells@redhat.com,
+       lethal@linux-sh.org, matthew@wil.cx
+Subject: Re: [PATCH] v3 RCU: the bloatwatch edition
+Message-ID: <20090403104545.GI4738@xi.wantstofly.org>
+References: <20090203183426.GA14409@linux.vnet.ibm.com> <20090329203118.GA14005@linux.vnet.ibm.com> <20090402223605.GB19007@elte.hu> <20090402154444.b143efcf.akpm@linux-foundation.org> <87prfukz46.fsf@basil.nowhere.org>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Fri, 03 Apr 2009 10:37:10 +0000 (UTC)
+In-Reply-To: <87prfukz46.fsf@basil.nowhere.org>
+User-Agent: Mutt/1.4.2.2i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Commit-ID:  42af9054c0eeed09ec58d13ec8bf52d225ebcfcc
-Gitweb:     http://git.kernel.org/tip/42af9054c0eeed09ec58d13ec8bf52d225ebcfcc
-Author:     Eduard - Gabriel Munteanu <eduard.munteanu@linux360.ro>
-AuthorDate: Mon, 23 Mar 2009 15:12:26 +0200
-Committer:  Ingo Molnar <mingo@elte.hu>
-CommitDate: Fri, 3 Apr 2009 12:23:08 +0200
+On Fri, Apr 03, 2009 at 08:52:41AM +0200, Andi Kleen wrote:
 
-kmemtrace: restore original tracing data binary format, improve ABI
+> >> Andrew, what do you think?
+> >
+> > I'm really struggling to see how the 900-odd bytes saved justifies
+> > creating (yet another) variant of core kernel machinery.
+> 
+> Also it's unclear if anything special cased !SMP is worth it for the
+> future.  After all multi core or SMT is becoming more and more common
+> even in the embedded world.
 
-When kmemtrace was ported to ftrace, the marker strings were taken as
-an indication of how the traced data was being exposed to the userspace.
-However, the actual format had been binary, not text.
+At least for ARM, >99% of the dual core CPUs out there are non-SMP.
+(With one core typically running Linux and another core typically not
+running an OS at all: packet processing, DSP things, baseband stack,
+etc.  That second CPU core often doesn't even have an MMU.)  I don't
+think any SMP ARMs have been widely deployed yet.
 
-This restores the original binary format, while also adding an origin CPU
-field (since ftrace doesn't expose the data per-CPU to userspace), and
-re-adding the timestamp field. It also drops arch-independent field
-sizing where it didn't make sense, so pointers won't always be 64 bits
-wide like they used to.
-
-Signed-off-by: Eduard - Gabriel Munteanu <eduard.munteanu@linux360.ro>
-LKML-Reference: <161be9ca8a27b432c4a6ab79f47788c4521652ae.1237813499.git.eduard.munteanu@linux360.ro>
-Signed-off-by: Ingo Molnar <mingo@elte.hu>
-
-
----
- kernel/trace/kmemtrace.c |   82 ++++++++++++++++++++++++++++++++-------------
- 1 files changed, 58 insertions(+), 24 deletions(-)
-
-diff --git a/kernel/trace/kmemtrace.c b/kernel/trace/kmemtrace.c
-index ae259f0..d8c2d0c 100644
---- a/kernel/trace/kmemtrace.c
-+++ b/kernel/trace/kmemtrace.c
-@@ -208,47 +208,81 @@ static void kmemtrace_headers(struct seq_file *s)
- }
- 
- /*
-- * The two following functions give the original output from kmemtrace,
-- * or something close to....perhaps they need some missing things
-+ * The following functions give the original output from kmemtrace,
-+ * plus the origin CPU, since reordering occurs in-kernel now.
-  */
-+
-+#define KMEMTRACE_USER_ALLOC	0
-+#define KMEMTRACE_USER_FREE	1
-+
-+struct kmemtrace_user_event {
-+	u8		event_id;
-+	u8		type_id;
-+	u16		event_size;
-+	u32		cpu;
-+	u64		timestamp;
-+	unsigned long	call_site;
-+	unsigned long	ptr;
-+};
-+
-+struct kmemtrace_user_event_alloc {
-+	size_t		bytes_req;
-+	size_t		bytes_alloc;
-+	unsigned	gfp_flags;
-+	int		node;
-+};
-+
- static enum print_line_t
--kmemtrace_print_alloc_original(struct trace_iterator *iter,
--				struct kmemtrace_alloc_entry *entry)
-+kmemtrace_print_alloc_user(struct trace_iterator *iter,
-+			   struct kmemtrace_alloc_entry *entry)
- {
- 	struct trace_seq *s = &iter->seq;
--	int ret;
--
--	/* Taken from the old linux/kmemtrace.h */
--	ret = trace_seq_printf(s, "type_id %d call_site %lu ptr %lu "
--	  "bytes_req %lu bytes_alloc %lu gfp_flags %lu node %d\n",
--	   entry->type_id, entry->call_site, (unsigned long) entry->ptr,
--	   (unsigned long) entry->bytes_req, (unsigned long) entry->bytes_alloc,
--	   (unsigned long) entry->gfp_flags, entry->node);
-+	struct kmemtrace_user_event *ev;
-+	struct kmemtrace_user_event_alloc *ev_alloc;
- 
--	if (!ret)
-+	ev = trace_seq_reserve(s, sizeof(*ev));
-+	if (!ev)
-+		return TRACE_TYPE_PARTIAL_LINE;
-+	ev->event_id = KMEMTRACE_USER_ALLOC;
-+	ev->type_id = entry->type_id;
-+	ev->event_size = sizeof(*ev) + sizeof(*ev_alloc);
-+	ev->cpu = iter->cpu;
-+	ev->timestamp = iter->ts;
-+	ev->call_site = entry->call_site; 
-+	ev->ptr = (unsigned long) entry->ptr;
-+
-+	ev_alloc = trace_seq_reserve(s, sizeof(*ev_alloc));
-+	if (!ev_alloc)
- 		return TRACE_TYPE_PARTIAL_LINE;
-+	ev_alloc->bytes_req = entry->bytes_req;
-+	ev_alloc->bytes_alloc = entry->bytes_alloc;
-+	ev_alloc->gfp_flags = entry->gfp_flags;
-+	ev_alloc->node = entry->node;
- 
- 	return TRACE_TYPE_HANDLED;
- }
- 
- static enum print_line_t
--kmemtrace_print_free_original(struct trace_iterator *iter,
--				struct kmemtrace_free_entry *entry)
-+kmemtrace_print_free_user(struct trace_iterator *iter,
-+			  struct kmemtrace_free_entry *entry)
- {
- 	struct trace_seq *s = &iter->seq;
--	int ret;
-+	struct kmemtrace_user_event *ev;
- 
--	/* Taken from the old linux/kmemtrace.h */
--	ret = trace_seq_printf(s, "type_id %d call_site %lu ptr %lu\n",
--	   entry->type_id, entry->call_site, (unsigned long) entry->ptr);
--
--	if (!ret)
-+	ev = trace_seq_reserve(s, sizeof(*ev));
-+	if (!ev)
- 		return TRACE_TYPE_PARTIAL_LINE;
-+	ev->event_id = KMEMTRACE_USER_FREE;
-+	ev->type_id = entry->type_id;
-+	ev->event_size = sizeof(*ev);
-+	ev->cpu = iter->cpu;
-+	ev->timestamp = iter->ts;
-+	ev->call_site = entry->call_site; 
-+	ev->ptr = (unsigned long) entry->ptr;
- 
- 	return TRACE_TYPE_HANDLED;
- }
- 
--
- /* The two other following provide a more minimalistic output */
- static enum print_line_t
- kmemtrace_print_alloc_compress(struct trace_iterator *iter,
-@@ -385,7 +419,7 @@ static enum print_line_t kmemtrace_print_line(struct trace_iterator *iter)
- 		if (kmem_tracer_flags.val & TRACE_KMEM_OPT_MINIMAL)
- 			return kmemtrace_print_alloc_compress(iter, field);
- 		else
--			return kmemtrace_print_alloc_original(iter, field);
-+			return kmemtrace_print_alloc_user(iter, field);
- 	}
- 
- 	case TRACE_KMEM_FREE: {
-@@ -394,7 +428,7 @@ static enum print_line_t kmemtrace_print_line(struct trace_iterator *iter)
- 		if (kmem_tracer_flags.val & TRACE_KMEM_OPT_MINIMAL)
- 			return kmemtrace_print_free_compress(iter, field);
- 		else
--			return kmemtrace_print_free_original(iter, field);
-+			return kmemtrace_print_free_user(iter, field);
- 	}
- 
- 	default:
+Even if SMP ARM chips become widely available: the die area size of
+a chip alone pretty much tells you the cost of that chip, and in a
+world where every sub-mm^2 reduction in area matters a _lot_, I doubt
+ARM CPU manufacturers will start including second CPU cores in chips
+meant for things like cell phones, wireless access points and broadband
+routers (ARM CPUs tend to be highly application-specific) just because
+they can.
