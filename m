@@ -1,91 +1,153 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764916AbZDCLg3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764958AbZDCLh3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764916AbZDCLg3 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 3 Apr 2009 07:36:29 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762807AbZDCLgT
+	id S1764958AbZDCLh3 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 3 Apr 2009 07:37:29 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762026AbZDCLhR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 3 Apr 2009 07:36:19 -0400
-Received: from rcsinet11.oracle.com ([148.87.113.123]:34900 "EHLO
-	rgminet11.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1762012AbZDCLgS (ORCPT
+	Fri, 3 Apr 2009 07:37:17 -0400
+Received: from mga14.intel.com ([143.182.124.37]:24262 "EHLO mga14.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1761491AbZDCLhP convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 3 Apr 2009 07:36:18 -0400
-Subject: Re: Linux 2.6.29
-From: Chris Mason <chris.mason@oracle.com>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: Jeff Garzik <jeff@garzik.org>, Andrew Morton <akpm@linux-foundation.org>,
-       David Rees <drees76@gmail.com>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-In-Reply-To: <alpine.LFD.2.00.0904022030271.4130@localhost.localdomain>
-References: <20090325183011.GN32307@mit.edu>
-	 <20090325220530.GR32307@mit.edu>
-	 <alpine.LFD.2.00.0903251622420.3032@localhost.localdomain>
-	 <20090326171148.9bf8f1ec.akpm@linux-foundation.org>
-	 <alpine.LFD.2.00.0903261723250.3994@localhost.localdomain>
-	 <20090326174704.cd36bf7b.akpm@linux-foundation.org>
-	 <alpine.LFD.2.00.0903261752110.3994@localhost.localdomain>
-	 <20090326182519.d576d703.akpm@linux-foundation.org>
-	 <20090401210337.GB3797@csclub.uwaterloo.ca> <20090402110532.GA5132@aniel>
-	 <72dbd3150904020929w46c6dc0bs4028c49dd8fa8c56@mail.gmail.com>
-	 <20090402094247.9d7ac19f.akpm@linux-foundation.org>
-	 <alpine.LFD.2.00.0904020947310.4130@localhost.localdomain>
-	 <alpine.LFD.2.00.0904020959490.4130@localhost.localdomain>
-	 <49D53787.9060503@garzik.org>
-	 <alpine.LFD.2.00.0904021516540.4130@localhost.localdomain>
-	 <49D56DF6.5020300@garzik.org>
-	 <alpine.LFD.2.00.0904021910380.4130@localhost.localdomain>
-	 <49D57CF2.5020206@garzik.org>
-	 <alpine.LFD.2.00.0904022030271.4130@localhost.localdomain>
-Content-Type: text/plain
-Date: Fri, 03 Apr 2009 07:32:50 -0400
-Message-Id: <1238758370.32764.5.camel@think.oraclecorp.com>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.24.1 
-Content-Transfer-Encoding: 7bit
-X-Source-IP: acsmt706.oracle.com [141.146.40.84]
-X-Auth-Type: Internal IP
-X-CT-RefId: str=0001.0A090207.49D5F3E6.011A:SCFMA4539814,ss=1,fgs=0
+	Fri, 3 Apr 2009 07:37:15 -0400
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.39,319,1235980800"; 
+   d="scan'208";a="127490762"
+From: "Metzger, Markus T" <markus.t.metzger@intel.com>
+To: Ingo Molnar <mingo@elte.hu>
+CC: "tglx@linutronix.de" <tglx@linutronix.de>, "hpa@zytor.com" <hpa@zytor.com>,
+       "markus.t.metzger@gmail.com" <markus.t.metzger@gmail.com>,
+       "roland@redhat.com" <roland@redhat.com>,
+       "eranian@googlemail.com" <eranian@googlemail.com>,
+       "oleg@redhat.com" <oleg@redhat.com>,
+       "Villacis, Juan" <juan.villacis@intel.com>,
+       "ak@linux.jf.intel.com" <ak@linux.jf.intel.com>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
+Date: Fri, 3 Apr 2009 12:36:23 +0100
+Subject: RE: [patch 04/18] x86, bts: wait until traced task has been
+	scheduled out
+Thread-Topic: [patch 04/18] x86, bts: wait until traced task has been
+	scheduled out
+Thread-Index: Acm0T+LFnQ1IJgXAQrmcG8OA3isGQQAADtIA
+Message-ID: <928CFBE8E7CB0040959E56B4EA41A77E92718326@irsmsx504.ger.corp.intel.com>
+References: <20090402145455.597376000@intel.com>
+ <20090402145709.422226000@intel.com> <20090402191730.GD843@elte.hu>
+ <928CFBE8E7CB0040959E56B4EA41A77E92718054@irsmsx504.ger.corp.intel.com>
+ <20090403113219.GF31399@elte.hu>
+In-Reply-To: <20090403113219.GF31399@elte.hu>
+Accept-Language: en-US
+Content-Language: en-US
+X-MS-Has-Attach: 
+X-MS-TNEF-Correlator: 
+acceptlanguage: en-US
+Content-Type: text/plain; charset="us-ascii"
+MIME-Version: 1.0
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 2009-04-02 at 20:34 -0700, Linus Torvalds wrote:
-> 
-> On Thu, 2 Apr 2009, Jeff Garzik wrote:
-> > 
-> > I was really surprised the performance was so high at first, then fell off so
-> > dramatically, on the SSD here.
-> 
-> Well, one rather simple explanation is that if you hadn't been doing lots 
-> of writes, then the background garbage collection on the Intel SSD gets 
-> ahead of the game, and gives you lots of bursty nice write bandwidth due 
-> to having a nicely compacted and pre-erased blocks.
-> 
-> Then, after lots of writing, all the pre-erased blocks are gone, and you 
-> are down to a steady state where it needs to GC and erase blocks to make 
-> room for new writes.
-> 
-> So that part doesn't suprise me per se. The Intel SSD's definitely 
-> flucutate a bit timing-wise (but I love how they never degenerate to the 
-> "ooh, that _really_ sucks" case that the other SSD's and the rotational 
-> media I've seen does when you do random writes).
-> 
+>-----Original Message-----
+>From: Ingo Molnar [mailto:mingo@elte.hu]
+>Sent: Friday, April 03, 2009 1:32 PM
+>To: Metzger, Markus T
+>Cc: tglx@linutronix.de; hpa@zytor.com; markus.t.metzger@gmail.com; roland@redhat.com;
+>eranian@googlemail.com; oleg@redhat.com; Villacis, Juan; ak@linux.jf.intel.com; linux-
+>kernel@vger.kernel.org
+>Subject: Re: [patch 04/18] x86, bts: wait until traced task has been scheduled out
+>
+>
+>* Metzger, Markus T <markus.t.metzger@intel.com> wrote:
+>
+>> >-----Original Message-----
+>> >From: Ingo Molnar [mailto:mingo@elte.hu]
+>> >Sent: Thursday, April 02, 2009 9:18 PM
+>> >To: Metzger, Markus T
+>> >Cc: tglx@linutronix.de; hpa@zytor.com; markus.t.metzger@gmail.com; roland@redhat.com;
+>> >eranian@googlemail.com; oleg@redhat.com; Villacis, Juan; ak@linux.jf.intel.com; linux-
+>> >kernel@vger.kernel.org
+>> >Subject: Re: [patch 04/18] x86, bts: wait until traced task has been scheduled out
+>> >
+>> >
+>> >* markus.t.metzger@intel.com <markus.t.metzger@intel.com> wrote:
+>> >
+>> >> In order to stop branch tracing for a running task, we need to
+>> >> first clear the branch tracing control bits before we may free the
+>> >> tracing buffer. If the traced task is running, the cpu might still
+>> >> trace that task after the branch trace control bits have cleared.
+>> >>
+>> >> Wait until the traced task has been scheduled out before
+>> >> proceeding.
+>> >>
+>> >> A similar problem affects the task debug store context. We first
+>> >> remove the context, then we need to wait until the task has been
+>> >> scheduled out before we can free the context memory.
+>> >>
+>> >>
+>> >> Reviewed-by: Oleg Nesterov <oleg@redhat.com>
+>> >> Signed-off-by: Markus Metzger <markus.t.metzger@intel.com>
+>> >> ---
+>> >>  arch/x86/kernel/ds.c |   40 	40 +	0 -	0 !
+>> >>  1 file changed, 40 insertions(+)
+>> >>
+>> >> Index: b/arch/x86/kernel/ds.c
+>> >> ===================================================================
+>> >> --- a/arch/x86/kernel/ds.c
+>> >> +++ b/arch/x86/kernel/ds.c
+>> >> @@ -250,6 +250,40 @@ static DEFINE_PER_CPU(struct ds_context
+>> >>  #define system_context per_cpu(system_context_array, smp_processor_id())
+>> >>
+>> >>
+>> >> +/*
+>> >> + * Wait for the traced task to unschedule.
+>> >> + *
+>> >> + * This guarantees that the bts trace configuration has been
+>> >> + * synchronized with the cpu executing the task.
+>> >> + */
+>> >> +static void wait_to_unschedule(struct task_struct *task)
+>> >> +{
+>> >
+>> >this should be in sched.c and task_is_running() should not be
+>> >exported from there.
+>> >
+>> >I.e. your original patch which i objected to is probably the right
+>> >one, but should be named something like "task_wait_context_switch()"
+>> >- which signals its purpose: that it is to wait for the task to
+>> >context-switch at least once, so that its ptrace state is installed
+>> >(or deinstalled) for sure.
+>>
+>> OK.
+>>
+>> I'll move it to sched.c.
+>>
+>> In that case, I would use task_running() without holding the rq
+>> lock, since we don't really care whether we read an old value or
+>> not. Would that be OK with you?
+>
+>i'd have to see that in full context - reading non-locked results
+>can in essence result in stale old values being read out, regardless
+>of current reality. task_running() is normally used within the rq
+>lock.
 
-23MB/s seems a bit low though, I'd try with O_DIRECT.  ext3 doesn't do
-writepages, and the ssd may be very sensitive to smaller writes (what
-brand?)
+I need to take the rq lock, anyway, since rq->curr is switched
+before the context switch.
+I do not try to optimize and read without the rq-lock first, since
+its too likely that I have to repeat the read with lock held, anyway.
 
-> The fact that it also happens for the regular disk does imply that it's 
-> not the _only_ thing going on, though.
-> 
+regards,
+markus.
+---------------------------------------------------------------------
+Intel GmbH
+Dornacher Strasse 1
+85622 Feldkirchen/Muenchen Germany
+Sitz der Gesellschaft: Feldkirchen bei Muenchen
+Geschaeftsfuehrer: Douglas Lusk, Peter Gleissner, Hannes Schwaderer
+Registergericht: Muenchen HRB 47456 Ust.-IdNr.
+VAT Registration No.: DE129385895
+Citibank Frankfurt (BLZ 502 109 00) 600119052
 
-Jeff if you blktrace it I can make up a seekwatcher graph.  My bet is
-that pdflush is stuck writing the indirect blocks, and doing a ton of
-seeks.
-
-You could change the overwrite program to also do sync_file_range on the
-block device ;)
-
--chris
-
+This e-mail and any attachments may contain confidential material for
+the sole use of the intended recipient(s). Any review or distribution
+by others is strictly prohibited. If you are not the intended
+recipient, please contact the sender and delete all copies.
 
