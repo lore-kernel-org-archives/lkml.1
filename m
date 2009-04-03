@@ -1,87 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934515AbZDCSro@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S935279AbZDCSwy@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934515AbZDCSro (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 3 Apr 2009 14:47:44 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759367AbZDCSrc
+	id S935279AbZDCSwy (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 3 Apr 2009 14:52:54 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752283AbZDCSwo
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 3 Apr 2009 14:47:32 -0400
-Received: from brick.kernel.dk ([93.163.65.50]:36859 "EHLO kernel.dk"
+	Fri, 3 Apr 2009 14:52:44 -0400
+Received: from hera.kernel.org ([140.211.167.34]:46353 "EHLO hera.kernel.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753029AbZDCSrc (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 3 Apr 2009 14:47:32 -0400
-Date: Fri, 3 Apr 2009 20:47:29 +0200
-From: Jens Axboe <jens.axboe@oracle.com>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: "Theodore Ts'o" <tytso@mit.edu>,
-       Linux Kernel Developers List <linux-kernel@vger.kernel.org>,
-       Ext4 Developers List <linux-ext4@vger.kernel.org>
-Subject: Re: [GIT PULL] Ext3 latency fixes
-Message-ID: <20090403184729.GC5178@kernel.dk>
-References: <1238742067-30814-1-git-send-email-tytso@mit.edu> <alpine.LFD.2.00.0904031110420.19690@localhost.localdomain>
+	id S1751151AbZDCSwo (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 3 Apr 2009 14:52:44 -0400
+Message-ID: <49D65ADA.5040304@kernel.org>
+Date: Fri, 03 Apr 2009 11:52:10 -0700
+From: Yinghai Lu <yinghai@kernel.org>
+User-Agent: Thunderbird 2.0.0.19 (X11/20081227)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <alpine.LFD.2.00.0904031110420.19690@localhost.localdomain>
+To: Trond Myklebust <Trond.Myklebust@netapp.com>
+CC: Ingo Molnar <mingo@elte.hu>, Tom Talpey <tmtalpey@gmail.com>,
+       Pekka Enberg <penberg@cs.helsinki.fi>,
+       David Miller <davem@davemloft.net>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       chuck.lever@oracle.com
+Subject: Re: [PATCH] nfs: fix nfs_parse_mount_options() double kfree()
+References: <86802c440904021512o2405ffa2gcbe057b9f81d5a46@mail.gmail.com>	 <20090402222106.GC9239@elte.hu> <49D56415.1080402@kernel.org>	 <84144f020904022252v2dbc18f5o35cc9737bf6d146d@mail.gmail.com>	 <20090403071638.GB14498@elte.hu>	 <49d5fe00.86c3f10a.0641.ffffbbdd@mx.google.com>	 <20090403130724.GA26365@elte.hu> <1238765148.7815.2.camel@heimdal.trondhjem.org>
+In-Reply-To: <1238765148.7815.2.camel@heimdal.trondhjem.org>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Apr 03 2009, Linus Torvalds wrote:
+Trond Myklebust wrote:
+> On Fri, 2009-04-03 at 15:07 +0200, Ingo Molnar wrote:
+>> * Tom Talpey <tmtalpey@gmail.com> wrote:
+>>
+>>> At 03:16 AM 4/3/2009, Ingo Molnar wrote:
+>>>> Impact: fix crash
+>>>>
+>>>> Yinghai Lu reported the following crash:
+>>> This has to have been a merge problem, I moved a single kfree() 
+>>> down a few lines in order to use the pointer in a second context. 
+>>> With the moved line, it had been running successfully in Trond's 
+>>> tree and linux-next for several weeks.
+>> Maybe the tree got rebased and that introduced this merge artifact? 
 > 
-> 
-> On Fri, 3 Apr 2009, Theodore Ts'o wrote:
-> > 
-> > Please pull from:
-> > 
-> > git://git.kernel.org/pub/scm/linux/kernel/git/tytso/ext4.git ext3-latency-fixes
-> 
-> Thanks, pulled. I'll be interested to see how it feels. Will report back 
-> after I've rebuild and gone through a few more emails.
+> No, but the linux-next tree also contained cachefs, which hasn't been
+> merged yet. Let's keep an eye out when it does...
 
-I have one question, didn't see this series before... Ted, what kind of
-tests did you run with this and on what? Currently one has to be careful
-with WRITE_SYNC, as it also implies an immediate unplug of the device.
-So not only does it flag the priority as sync, it'll also kick things
-off immediately. We had a nasty regression in performance in a few
-revisions of the kernel due to this, sqlite performance was basically 4
-times as bad as before we did WRITE_SYNC in sync_dirty_buffer(). So I'd
-be curious what kind of testing was done with the patch series before
-submitting it.
+could be merging sequence.
 
-We should probably just dump the unplug bit from WRITE_SYNC and make
-sure we do those explicitly after submission instead.
-
-> One thing I started wondering about in your changes to start using 
-> WRITE_SYNC is that I'm getting closer to thinking that we did the whole 
-> WRITE-vs-WRITE_SYNC thing the wrong way around.
-> 
-> Now, it's clearly true that non-synchronous writes are hopefully always 
-> the common case, so in that sense it makes sense to think of "WRITE" as 
-> the default non-critical case, and then make the (fewer) WRITE_SYNC cases 
-> be the special case.
-> 
-> But at the same time, I now suspect that we could actually have solved 
-> this problem more easily by just doing things the other way around: make 
-> the default "WRITE" be the high-priority one (to match "READ"), and then 
-> just explicitly marking the data writes with "WRITE_ASYNC".
-> 
-> Why? Because I think that with all the writes sprinkled around in random 
-> places, it's probably _easier_ to find the bulk writes that cause the 
-> biggest issues, and just fix _those_ to be WRITE_ASYNC. They may be bulk, 
-> they may be the common case, but they also tend to be the case where we 
-> write with generic routines (eg the whole "do_writepages()" thing).
-> 
-> So the VFS layer tends to already do much of the bulk writeout, and maybe 
-> we would have been better off just changing those to ASYNC and leaving any 
-> more specialized cases as the SYNC case? That would have avoided a lot of 
-> this effort at the filesystem level. We'd just assume that the default 
-> filesystem-specific writes tend to all be SYNC.
-
-Makes some sense, but we have to be really careful with SYNC writes.
-It's important that it really be things that are immediately waited upon
-and not "important" writes, since otherwise it'll wreak havoc with the
-responsiveness of our reads.
-
--- 
-Jens Axboe
-
+YH
