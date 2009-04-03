@@ -1,97 +1,116 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764069AbZDCLSW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764251AbZDCLSk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764069AbZDCLSW (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 3 Apr 2009 07:18:22 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760357AbZDCLSI
+	id S1764251AbZDCLSk (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 3 Apr 2009 07:18:40 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763749AbZDCLSN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 3 Apr 2009 07:18:08 -0400
-Received: from mx3.mail.elte.hu ([157.181.1.138]:50106 "EHLO mx3.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1759962AbZDCLSH (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 3 Apr 2009 07:18:07 -0400
-Date: Fri, 3 Apr 2009 13:17:41 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: Li Zefan <lizf@cn.fujitsu.com>
-Cc: Jens Axboe <jens.axboe@oracle.com>,
-       Arnaldo Carvalho de Melo <acme@redhat.com>,
-       "Alan D. Brunelle" <alan.brunelle@hp.com>,
-       LKML <linux-kernel@vger.kernel.org>,
-       Steven Rostedt <rostedt@goodmis.org>
-Subject: Re: [PATCH] blktrace: fix a bug in blk_msg_write()
-Message-ID: <20090403111741.GB31399@elte.hu>
-References: <49D5BB56.7000807@cn.fujitsu.com>
+	Fri, 3 Apr 2009 07:18:13 -0400
+Received: from relay.parallels.com ([195.214.232.42]:35842 "EHLO
+	relay.parallels.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1762705AbZDCLSL (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 3 Apr 2009 07:18:11 -0400
+X-Greylist: delayed 458 seconds by postgrey-1.27 at vger.kernel.org; Fri, 03 Apr 2009 07:18:11 EDT
+From: "Denis V. Lunev" <den@openvz.org>
+To: <akpm@linux-foundation.org>
+CC: <linux-kernel@vger.kernel.org>, "Denis V. Lunev" <den@openvz.org>,
+       Eric Miao <ymiao3@marvell.com>, Russell King <rmk@arm.linux.org.uk>
+Subject: [PATCH 1/1] arm: KGDB support for PXA
+Date: Fri, 3 Apr 2009 15:09:41 +0400
+Message-ID: <1238756981-11905-1-git-send-email-den@openvz.org>
+X-Mailer: git-send-email 1.6.0.6
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <49D5BB56.7000807@cn.fujitsu.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+Content-Type: text/plain
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Actually, in order to support KGDB over serial console one must
+implement two callbacks for character polling. Clone them from
+8250 driver with a bit of tuning.
 
-* Li Zefan <lizf@cn.fujitsu.com> wrote:
+Checked on PXA300 own board.
 
-> This is another long-standing bug.
-> 
-> ================
-> 
-> 
->  (console 1)
->  # echo -n 'a' > /sys/kernel/debug/block/sda/msg
->  (console 2)
->  # blktrace -d /dev/sda -a pc -o - | blkparse -i -
->   8,0    0        0     0.000000000     0  m   N a������@��
-> 
-> We should terminate the msg buffer with '\0'.
-> 
-> Signed-off-by: Li Zefan <lizf@cn.fujitsu.com>
-> ---
->  kernel/trace/blktrace.c |    5 +++--
->  1 files changed, 3 insertions(+), 2 deletions(-)
-> 
-> diff --git a/kernel/trace/blktrace.c b/kernel/trace/blktrace.c
-> index c0ef70d..2bf341f 100644
-> --- a/kernel/trace/blktrace.c
-> +++ b/kernel/trace/blktrace.c
-> @@ -327,10 +327,10 @@ static ssize_t blk_msg_write(struct file *filp, const char __user *buffer,
->  	char *msg;
->  	struct blk_trace *bt;
->  
-> -	if (count > BLK_TN_MAX_MSG)
-> +	if (count >= BLK_TN_MAX_MSG)
->  		return -EINVAL;
->  
-> -	msg = kmalloc(count, GFP_KERNEL);
-> +	msg = kmalloc(count + 1, GFP_KERNEL);
->  	if (msg == NULL)
->  		return -ENOMEM;
->  
-> @@ -338,6 +338,7 @@ static ssize_t blk_msg_write(struct file *filp, const char __user *buffer,
->  		kfree(msg);
->  		return -EFAULT;
->  	}
-> +	msg[count] = '\0';
->  
->  	bt = filp->private_data;
->  	__trace_note_message(bt, "%s", msg);
+Signed-off-by: Denis V. Lunev <den@openvz.org>
+CC: Eric Miao <ymiao3@marvell.com>
+CC: Russell King <rmk@arm.linux.org.uk>
+---
+ drivers/serial/pxa.c |   55 ++++++++++++++++++++++++++++++++++++++++++++++++++
+ 1 files changed, 55 insertions(+), 0 deletions(-)
 
-Nice fix!
+diff --git a/drivers/serial/pxa.c b/drivers/serial/pxa.c
+index f6e3b86..9d4b27b 100644
+--- a/drivers/serial/pxa.c
++++ b/drivers/serial/pxa.c
+@@ -666,6 +666,57 @@ serial_pxa_console_write(struct console *co, const char *s, unsigned int count)
+ 	clk_disable(up->clk);
+ }
+ 
++#ifdef CONFIG_CONSOLE_POLL
++/*
++ * Console polling routines for writing and reading from the uart while
++ * in an interrupt or debug context.
++ */
++
++static int serial_pxa_get_poll_char(struct uart_port *port)
++{
++	struct uart_pxa_port *up = (struct uart_pxa_port *)port;
++	unsigned char lsr = serial_in(up, UART_LSR);
++
++	while (!(lsr & UART_LSR_DR))
++		lsr = serial_in(up, UART_LSR);
++
++	return serial_in(up, UART_RX);
++}
++
++
++static void serial_pxa_put_poll_char(struct uart_port *port,
++			 unsigned char c)
++{
++	unsigned int ier;
++	struct uart_pxa_port *up = (struct uart_pxa_port *)port;
++
++	/*
++	 *	First save the IER then disable the interrupts
++	 */
++	ier = serial_in(up, UART_IER);
++	serial_out(up, UART_IER, UART_IER_UUE);
++
++	wait_for_xmitr(up);
++	/*
++	 *	Send the character out.
++	 *	If a LF, also do CR...
++	 */
++	serial_out(up, UART_TX, c);
++	if (c == 10) {
++		wait_for_xmitr(up);
++		serial_out(up, UART_TX, 13);
++	}
++
++	/*
++	 *	Finally, wait for transmitter to become empty
++	 *	and restore the IER
++	 */
++	wait_for_xmitr(up);
++	serial_out(up, UART_IER, ier);
++}
++
++#endif /* CONFIG_CONSOLE_POLL */
++
+ static int __init
+ serial_pxa_console_setup(struct console *co, char *options)
+ {
+@@ -720,6 +771,10 @@ struct uart_ops serial_pxa_pops = {
+ 	.request_port	= serial_pxa_request_port,
+ 	.config_port	= serial_pxa_config_port,
+ 	.verify_port	= serial_pxa_verify_port,
++#ifdef CONFIG_CONSOLE_POLL
++	.poll_get_char = serial_pxa_get_poll_char,
++	.poll_put_char = serial_pxa_put_poll_char,
++#endif
+ };
+ 
+ static struct uart_driver serial_pxa_reg = {
+-- 
+1.6.0.6
 
-Jens, do you ack this and should i add a Cc: <stable@kernel.org> 
-backporting tag?
-
-This fix applies fine to v2.6.29 after:
-
-   sed 's/kernel\/trace\/blktrace.c/block\/blktrace.c'
-
-	Ingo
