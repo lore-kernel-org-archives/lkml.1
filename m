@@ -1,45 +1,73 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755980AbZDDQU1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755906AbZDDQYk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755980AbZDDQU1 (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 4 Apr 2009 12:20:27 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753649AbZDDQUN
+	id S1755906AbZDDQYk (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 4 Apr 2009 12:24:40 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752683AbZDDQYa
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 4 Apr 2009 12:20:13 -0400
-Received: from n28.bullet.mail.mud.yahoo.com ([68.142.206.223]:34724 "HELO
-	n28.bullet.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1753520AbZDDQUM (ORCPT
+	Sat, 4 Apr 2009 12:24:30 -0400
+Received: from cavan.codon.org.uk ([93.93.128.6]:53301 "EHLO
+	vavatch.codon.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752067AbZDDQY3 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 4 Apr 2009 12:20:12 -0400
-X-Yahoo-Newman-Id: 885210.95739.bm@omp408.mail.mud.yahoo.com
-DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
-  s=s1024; d=pacbell.net;
-  h=Received:X-Yahoo-Newman-Property:From:To:Subject:Date:User-Agent:Cc:References:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Content-Disposition:Message-Id;
-  b=grpmoi/WnQ9fVmCFT3I6Aakf4QWXtJ5tdER73jICqUAyibbWdDvcMu3s+d4Jl0NFbripD9iGLwENsdoL8FPyiNHwd0iOBuWXP8/ji8/0+NWFsMJyAB2aCSmkQGzseHrv91yz1EkfxOieOrXf3Q4FpWwNmxy25KptaA+Ak1DrJ2k=  ;
-X-Yahoo-Newman-Property: ymail-3
-From: David Brownell <david-b@pacbell.net>
-To: David Woodhouse <dwmw2@infradead.org>
-Subject: Re: [patch/rfc 2.6.29 1/2] MTD: driver model updates
-Date: Sat, 4 Apr 2009 09:20:06 -0700
-User-Agent: KMail/1.9.10
-Cc: Kevin Cernekee <kpc.mtd@gmail.com>, dedekind@infradead.org,
-       Linux MTD <linux-mtd@lists.infradead.org>, linux-kernel@vger.kernel.org
-References: <200903260042.42091.david-b@pacbell.net> <a95a62fe0904031300i82bdf42h5bc854a002e0091e@mail.gmail.com> <1238855797.4068.6.camel@macbook.infradead.org>
-In-Reply-To: <1238855797.4068.6.camel@macbook.infradead.org>
+	Sat, 4 Apr 2009 12:24:29 -0400
+Date: Sat, 4 Apr 2009 17:24:24 +0100
+From: Matthew Garrett <mjg59@srcf.ucam.org>
+To: Greg KH <gregkh@suse.de>
+Cc: linux-kernel@vger.kernel.org, linux-usb@vger.kernel.org, shurik@gwu.edu
+Subject: [PATCH] qcserial: Add extra device IDs
+Message-ID: <20090404162424.GA5799@srcf.ucam.org>
+References: <20090401203726.GA17485@srcf.ucam.org> <20090403025654.GA20146@suse.de> <20090403135719.GD19774@srcf.ucam.org> <20090403150301.GA25846@suse.de> <20090403151237.GA25994@suse.de> <20090403164551.GA23689@srcf.ucam.org> <20090404152731.GA5080@srcf.ucam.org>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="us-ascii"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Message-Id: <200904040920.06981.david-b@pacbell.net>
+In-Reply-To: <20090404152731.GA5080@srcf.ucam.org>
+User-Agent: Mutt/1.5.12-2006-07-14
+X-SA-Exim-Connect-IP: <locally generated>
+X-SA-Exim-Mail-From: mjg59@codon.org.uk
+X-SA-Exim-Scanned: No (on vavatch.codon.org.uk); SAEximRunCond expanded to false
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Saturday 04 April 2009, David Woodhouse wrote:
-> think I'm going to add a WARN_ON(&mtd->dev.parent) into the core code.
+Add a set of device IDs from the Windows drivers. These aren't complete 
+(there's a couple of cases where a QDL device is identified without the 
+associated modem being identified), but it's better than the current 
+situation.
 
-I hope you mean WARN_ON(!mtd->dev.parent) ... :)
+Signed-off-by: Matthew Garrett <mjg@redhat.com>
 
+diff --git a/drivers/usb/serial/qcserial.c b/drivers/usb/serial/qcserial.c
+index e6d6b0c..7528b8d 100644
+--- a/drivers/usb/serial/qcserial.c
++++ b/drivers/usb/serial/qcserial.c
+@@ -26,6 +26,27 @@ static struct usb_device_id id_table[] = {
+ 	{USB_DEVICE(0x05c6, 0x9212)},	/* Acer Gobi Modem Device */
+ 	{USB_DEVICE(0x03f0, 0x1f1d)},	/* HP un2400 Gobi Modem Device */
+ 	{USB_DEVICE(0x03f0, 0x201d)},	/* HP un2400 Gobi QDL Device */
++	{USB_DEVICE(0x04da, 0x250d)},	/* Panasonic Gobi Modem device */
++	{USB_DEVICE(0x04da, 0x250c)},	/* Panasonic Gobi QDL device */
++	{USB_DEVICE(0x413c, 0x8172)},	/* Dell Gobi Modem device */
++	{USB_DEVICE(0x413c, 0x8171)},	/* Dell Gobi QDL device */
++	{USB_DEVICE(0x1410, 0xa001)},	/* Novatel Gobi Modem device */
++	{USB_DEVICE(0x1410, 0xa008)},	/* Novatel Gobi QDL device */
++	{USB_DEVICE(0x0b05, 0x1776)},	/* Asus Gobi Modem device */
++	{USB_DEVICE(0x0b05, 0x1774)},	/* Asus Gobi QDL device */
++	{USB_DEVICE(0x19d2, 0xfff3)},	/* ONDA Gobi Modem device */
++	{USB_DEVICE(0x19d2, 0xfff2)},	/* ONDA Gobi QDL device */
++	{USB_DEVICE(0x1557, 0x0a80)},	/* OQO Gobi QDL device */
++	{USB_DEVICE(0x05c6, 0x9001)},   /* Generic Gobi Modem device */
++	{USB_DEVICE(0x05c6, 0x9002)},	/* Generic Gobi Modem device */
++	{USB_DEVICE(0x05c6, 0x9202)},	/* Generic Gobi Modem device */
++	{USB_DEVICE(0x05c6, 0x9203)},	/* Generic Gobi Modem device */
++	{USB_DEVICE(0x05c6, 0x9222)},	/* Generic Gobi Modem device */
++	{USB_DEVICE(0x05c6, 0x9008)},	/* Generic Gobi QDL device */
++	{USB_DEVICE(0x05c6, 0x9201)},	/* Generic Gobi QDL device */
++	{USB_DEVICE(0x05c6, 0x9221)},	/* Generic Gobi QDL device */
++	{USB_DEVICE(0x05c6, 0x9231)},	/* Generic Gobi QDL device */
++	{USB_DEVICE(0x1f45, 0x0001)},	/* Unknown Gobi QDL device */
+ 	{ }				/* Terminating entry */
+ };
+ MODULE_DEVICE_TABLE(usb, id_table);
 
-
-
+-- 
+Matthew Garrett | mjg59@srcf.ucam.org
