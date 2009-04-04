@@ -1,40 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754231AbZDDExj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756592AbZDDFGj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754231AbZDDExj (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 4 Apr 2009 00:53:39 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751476AbZDDEx3
+	id S1756592AbZDDFGj (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 4 Apr 2009 01:06:39 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751481AbZDDFG2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 4 Apr 2009 00:53:29 -0400
-Received: from cantor.suse.de ([195.135.220.2]:37158 "EHLO mx1.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750865AbZDDEx3 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 4 Apr 2009 00:53:29 -0400
-Date: Fri, 3 Apr 2009 21:36:28 -0700
-From: Greg KH <gregkh@suse.de>
-To: Alex Chiang <achiang@hp.com>
-Cc: kaneshige.kenji@jp.fujitsu.com,
-       linux-kernel <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH] sysfs: don't use global workqueue in
-	sysfs_schedule_callback()
-Message-ID: <20090404043627.GH6580@suse.de>
-References: <20090325211136.GC30098@ldl.fc.hp.com> <20090403205234.GH27230@ldl.fc.hp.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090403205234.GH27230@ldl.fc.hp.com>
-User-Agent: Mutt/1.5.19 (2009-01-05)
+	Sat, 4 Apr 2009 01:06:28 -0400
+Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:39490
+	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
+	by vger.kernel.org with ESMTP id S1751476AbZDDFG1 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 4 Apr 2009 01:06:27 -0400
+Date: Fri, 03 Apr 2009 22:06:16 -0700 (PDT)
+Message-Id: <20090403.220616.176801869.davem@davemloft.net>
+To: keyoor.khristi@gmail.com
+Cc: linux-kernel@vger.kernel.org, netdev@vger.kernel.org
+Subject: Re: Issue with netlink implementation
+From: David Miller <davem@davemloft.net>
+In-Reply-To: <6b4fbcea0904031424j4b1f5526ydd1d21307e511273@mail.gmail.com>
+References: <6b4fbcea0904030921j1b627d3ar37af13a0788706b4@mail.gmail.com>
+	<6b4fbcea0904031424j4b1f5526ydd1d21307e511273@mail.gmail.com>
+X-Mailer: Mew version 6.1 on Emacs 22.1 / Mule 5.0 (SAKAKI)
+Mime-Version: 1.0
+Content-Type: Text/Plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Apr 03, 2009 at 02:52:34PM -0600, Alex Chiang wrote:
-> Hi Greg,
+From: Keyoor Khristi <keyoor.khristi@gmail.com>
+Date: Sat, 4 Apr 2009 02:54:48 +0530
+
+You might want to ask networking questions on the networking
+developer list, netdev@vger.kernel.org, CC:'d
+
+Thank you.
+
+> Hi All,
 > 
-> You're probably still working through your email backlog, but
-> just wanted to make sure this patch didn't get lost.
-
-It's not lost, I'm digging through it all, and will get to it next week.
-
-thanks,
-
-greg k-h
+> We are facing an issue with netlink implementation. We are sending the
+> data from user space to kernel space. a kernel thread gets the data
+> from netlink socket (via skb_recv_datagram). After doing little bit
+> processing we give the skb to driver. driver sends the data and frees
+> the skb. Sometimes we observe that the writer thread in userspace gets
+> stuck writing a packet and doesnt come out. We traced the problem to
+> netlink_attachskb. When a packet is sent on the netlink socket
+> netlink_attachskb is called to add the skb to the queue. when there is
+> not enough space, the thread is added to nlk->wait queue and issues
+> schedule_timeout. it doesnt come out of it as no other thread awakens
+> it. It seems when the driver frees the skb, the data is freed and the
+> receive space is made available in the destructor but the thread
+> waiting is not awaken. This is causing the problem we're seeing.
+> I think the netlink implementation in af_netlink.c can be enhanced. In
+> netlink_attachskb, after invoking skb_set_owner_r we should change the
+> skb->destructor to point to newly added function netlink_rfree. When
+> skb is freed, netlink_rfree function can issue sock_rfree and awaken
+> the threads waiting on nlk->wait queue.
+> 
+> Please let me know what you think about it.
+> I'm not sure if i've sent the email to correct forum. If i should be
+> sending to another forum, please tell me.
+> 
+> Regards,
+> K
+> --
+> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> Please read the FAQ at  http://www.tux.org/lkml/
