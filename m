@@ -1,140 +1,119 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762825AbZDDBtY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S937210AbZDDBzZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762825AbZDDBtY (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 3 Apr 2009 21:49:24 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758135AbZDDBtO
+	id S937210AbZDDBzZ (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 3 Apr 2009 21:55:25 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761233AbZDDBzK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 3 Apr 2009 21:49:14 -0400
-Received: from vms173003pub.verizon.net ([206.46.173.3]:47777 "EHLO
-	vms173003pub.verizon.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753619AbZDDBtN (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 3 Apr 2009 21:49:13 -0400
-Date: Fri, 03 Apr 2009 21:49:07 -0400 (EDT)
-From: Len Brown <lenb@kernel.org>
-X-X-Sender: lenb@localhost.localdomain
-To: Witold Szczeponik <Witold.Szczeponik@gmx.net>
-Cc: linux-acpi@vger.kernel.org,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       bjorn.helgaas@hp.com, abelay@mit.edu, "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: [PATCH] PNPACPI: Enable PNPACPI _PSx Support, v3
-In-reply-to: <alpine.LFD.2.00.0904032132310.4655@localhost.localdomain>
-Message-id: <alpine.LFD.2.00.0904032147040.4655@localhost.localdomain>
-References: <49D101DA.50201@gmx.net>
- <alpine.LFD.2.00.0904032132310.4655@localhost.localdomain>
-User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
-MIME-version: 1.0
-Content-type: TEXT/PLAIN; charset=US-ASCII
+	Fri, 3 Apr 2009 21:55:10 -0400
+Received: from relay2.sgi.com ([192.48.179.30]:48096 "EHLO relay.sgi.com"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1758686AbZDDBzJ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 3 Apr 2009 21:55:09 -0400
+Cc: Linus Torvalds <torvalds@linux-foundation.org>,
+       Lachlan McIlroy <lachlan@sgi.com>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       LKML <linux-kernel@vger.kernel.org>, xfs mailing list <xfs@oss.sgi.com>
+Message-Id: <60503DAA-7DA4-467C-A21E-B02D61FA9390@sgi.com>
+From: Felix Blyakher <felixb@sgi.com>
+To: david@lang.hm
+In-Reply-To: <alpine.DEB.1.10.0904031818270.28893@asgard.lang.hm>
+Content-Type: text/plain; charset=US-ASCII; format=flowed; delsp=yes
+Content-Transfer-Encoding: 7bit
+Mime-Version: 1.0 (Apple Message framework v930.3)
+Subject: Re: [GIT PULL] XFS update for 2.6.30
+Date: Fri, 3 Apr 2009 20:54:55 -0500
+References: <20090331053013.7642414167108@attica.americas.sgi.com> <BD6F95C9-2F2D-49A3-979C-25018E62E416@sgi.com> <alpine.LFD.2.00.0904030952220.4130@localhost.localdomain> <alpine.LFD.2.00.0904030954030.4130@localhost.localdomain> <8A177E56-84E9-487E-930E-9C6805E17184@sgi.com> <alpine.DEB.1.10.0904031818270.28893@asgard.lang.hm>
+X-Mailer: Apple Mail (2.930.3)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
->From 6328a57401dc5f5cf9931738eb7268fcd8058c49 Mon Sep 17 00:00:00 2001
-From: Witold Szczeponik <Witold.Szczeponik@gmx.net>
-Date: Mon, 30 Mar 2009 19:31:06 +0200
-Subject: [PATCH] Enable PNPACPI _PSx Support, v3
-X-Patchwork-Hint: ignore
+On Apr 3, 2009, at 8:19 PM, david@lang.hm wrote:
 
-(This is an update to the patch presented earlier in
-http://lkml.org/lkml/2008/12/8/284, with new error handling.)
+> On Fri, 3 Apr 2009, Felix Blyakher wrote:
+>
+>> On Apr 3, 2009, at 12:02 PM, Linus Torvalds wrote:
+>>
+>>> On Fri, 3 Apr 2009, Linus Torvalds wrote:
+>>>> On Thu, 2 Apr 2009, Felix Blyakher wrote:
+>>>>> Were there any problems pulling from the xfs repository?
+>>>> Sorry, no - just too much email, too many trees to look at, too  
+>>>> many
+>>>> people to argue with.
+>>>> Pulled.
+>>> Side note - I almost unpulled afterwards.
+>>
+>> That was my concern, i.e. it's not pulled without explicit
+>> NAK. I knew about your possible concerns.
+>>
+>>> You've done several apparently totally useless pulls from my tree at
+>>> random points.
+>>
+>> Yes, I noticed that, and agree with all your points even
+>> before you brought them up.
+>> I already started talking to people to improve my process.
+>> The reason the intermediate pulls from your tree were done
+>> is to make sure that new xfs patches would not conflict
+>> with some other changes already in the mainline. That was
+>> part of the maintainer cheat sheet given to me, and I
+>> didn't realize the side effects of it.
+>> I probably can verify the possible conflicts without pushing
+>> the merges into the repository and reset the working tree to
+>> pre pull state.
+>
+> create a temporary branch and do the merge in that. then throw away  
+> the test branch and there is no harm to the main tree.
 
-This patch sets the power of PnP ACPI devices to D0 when they
-are activated and to D3 when they are disabled.  The latter is
-in correspondence with the ACPI 3.0 specification, whereas the
-former is added in order to be able to power up a device after
-it has been previously disabled (or when booting up a system).
-(As a consequence, the patch makes the PnP ACPI code more ACPI
-compliant.)
+That was suggested among other things by Ingo Molnar as well.
+I'm planing to follow this approach.
 
-Section 6.2.2 of the ACPI Specification (at least versions 1.0b
-and 3.0a) states: "Prior to running this control method [_DIS],
-the OS[PM] will have already put the device in the D3 state."
-Unfortunately, there is no clear statement as to when to put
-a device in the D0 state. :-( Therefore, the patch executes the
-method calls as _PS3/_DIS and _SRS/_PS0. What is clear: "If the
-device is disabled, _SRS enables the device at the specified
-resources." (From the ACPI 3.0a Specification.)
+Thanks,
+Felix
 
-The patch fixes a problem with some IBM ThinkPads (at least the
-600E and the 600X) where the serial ports have a dedicated
-power source that needs to be brought up before the serial port
-can be used.  Without this patch, the serial port is enabled
-but has no power. (In the past, the tpctl utility had to be
-utilized to turn on the power, but support for this feature
-stopped with version 5.9 as it did not support the more recent
-kernel versions.)
-
-The error handlers that handle any errors that can occur during
-the power up/power down phases return the error codes to the
-caller directly.  Comments welcome! :-)
-
-No regressions were observed on hardware that does not require
-this patch.
-
-The patch is applied against 2.6.27.x.
-
-Signed-off-by: Witold Szczeponik <Witold.Szczeponik@gmx.net>
-Acked-by: Zhao Yakui <yakui.zhao@intel.com>
-Signed-off-by: Len Brown <len.brown@intel.com>
----
-
-(not immediately clear what tree the orginal patch
-was based on top of, but here is what I checked-in
-on top of 2.6.29 -Len)
-
- drivers/pnp/pnpacpi/core.c |   23 ++++++++++++++++-------
- 1 files changed, 16 insertions(+), 7 deletions(-)
-
-diff --git a/drivers/pnp/pnpacpi/core.c b/drivers/pnp/pnpacpi/core.c
-index 2834846..9a3a682 100644
---- a/drivers/pnp/pnpacpi/core.c
-+++ b/drivers/pnp/pnpacpi/core.c
-@@ -83,7 +83,6 @@ static int pnpacpi_set_resources(struct pnp_dev *dev)
- 	acpi_handle handle = dev->data;
- 	struct acpi_buffer buffer;
- 	int ret;
--	acpi_status status;
- 
- 	pnp_dbg(&dev->dev, "set resources\n");
- 	ret = pnpacpi_build_resource_template(dev, &buffer);
-@@ -94,21 +93,31 @@ static int pnpacpi_set_resources(struct pnp_dev *dev)
- 		kfree(buffer.pointer);
- 		return ret;
- 	}
--	status = acpi_set_current_resources(handle, &buffer);
--	if (ACPI_FAILURE(status))
-+	if (ACPI_FAILURE(acpi_set_current_resources(handle, &buffer)))
- 		ret = -EINVAL;
-+	else if (acpi_bus_power_manageable(handle))
-+		ret = acpi_bus_set_power(handle, ACPI_STATE_D0);
- 	kfree(buffer.pointer);
- 	return ret;
- }
- 
- static int pnpacpi_disable_resources(struct pnp_dev *dev)
- {
--	acpi_status status;
-+	acpi_handle handle = dev->data;
-+	int ret;
-+
-+	dev_dbg(&dev->dev, "disable resources\n");
- 
- 	/* acpi_unregister_gsi(pnp_irq(dev, 0)); */
--	status = acpi_evaluate_object((acpi_handle) dev->data,
--				      "_DIS", NULL, NULL);
--	return ACPI_FAILURE(status) ? -ENODEV : 0;
-+	ret = 0;
-+	if (acpi_bus_power_manageable(handle)) {
-+		ret = acpi_bus_set_power(handle, ACPI_STATE_D3);
-+		if (ret)
-+			return ret;
-+	}
-+	if (ACPI_FAILURE(acpi_evaluate_object(handle, "_DIS", NULL, NULL)))
-+		ret = -ENODEV;
-+	return ret;
- }
- 
- #ifdef CONFIG_ACPI_SLEEP
--- 
-1.6.2.2.404.ge96f3
+>
+>
+> David Lang
+>
+>> At any rate, I'll find some way to manage that without
+>> cluttering the history with the merges.
+>> Any suggestions are welcome.
+>>
+>> Thanks,
+>> Felix
+>>
+>>> Daily "keep up-to-date with Linus' tree" pulls are _strongly_  
+>>> discouraged
+>>> (read: if this continues, I'll just stop pulling from you),  
+>>> because it
+>>> makes the history totally unreadable after-the-fact. It has some  
+>>> direct
+>>> technical downsides (it makes it much harder to run "git bisect"  
+>>> and see
+>>> what is going on), but apart from those direct downsides it just  
+>>> makes it
+>>> much harder for me - or anybody else who wants to get an overview  
+>>> of what
+>>> happened - to visualize things when history is messy.
+>>> Instead of having a clear nice line of development that says "this  
+>>> is what
+>>> happened to XFS", those merges have basically mixed up all your  
+>>> changes
+>>> with all the random _other_ changes in the tree.
+>>> In other words, having those extra merges makes the graphical  
+>>> tools almost
+>>> useless for getting some kind of "what happened" overview.
+>>> I realize that an occasional back-merge may be required to resolve  
+>>> big
+>>> conflicts early, but they really have to be pretty big and  
+>>> immediate for
+>>> it to be a win.
+>>>
+>>> 			Linus
+>>
+>> --
+>> To unsubscribe from this list: send the line "unsubscribe linux- 
+>> kernel" in
+>> the body of a message to majordomo@vger.kernel.org
+>> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+>> Please read the FAQ at  http://www.tux.org/lkml/
 
