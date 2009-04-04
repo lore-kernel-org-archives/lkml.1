@@ -1,64 +1,72 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755439AbZDDHlD@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756585AbZDDIEw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755439AbZDDHlD (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 4 Apr 2009 03:41:03 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753806AbZDDHkv
+	id S1756585AbZDDIEw (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 4 Apr 2009 04:04:52 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752758AbZDDIEc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 4 Apr 2009 03:40:51 -0400
-Received: from vms173003pub.verizon.net ([206.46.173.3]:31150 "EHLO
-	vms173003pub.verizon.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752620AbZDDHku (ORCPT
+	Sat, 4 Apr 2009 04:04:32 -0400
+Received: from mail-bw0-f169.google.com ([209.85.218.169]:45456 "EHLO
+	mail-bw0-f169.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752728AbZDDIE3 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 4 Apr 2009 03:40:50 -0400
-Date: Sat, 04 Apr 2009 03:40:45 -0400 (EDT)
-From: Len Brown <lenb@kernel.org>
-X-X-Sender: lenb@localhost.localdomain
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: Zhang Rui <rui.zhang@intel.com>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Adrian Bunk <bunk@kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Natalie Protasevich <protasnb@gmail.com>,
-       Kernel Testers List <kernel-testers@vger.kernel.org>,
-       Linux ACPI <linux-acpi@vger.kernel.org>
-Subject: Re: 2.6.29-rc6-git7: Reported regressions from 2.6.28
-In-reply-to: <200903072312.30158.rjw@sisk.pl>
-Message-id: <alpine.LFD.2.00.0904040339470.16220@localhost.localdomain>
-References: <KiHv0irKPzE.A.l3.hUarJB@chimera>
- <1236129688.32297.264.camel@rzhang-dt> <200903072312.30158.rjw@sisk.pl>
-User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
-MIME-version: 1.0
-Content-type: TEXT/PLAIN; charset=US-ASCII
+	Sat, 4 Apr 2009 04:04:29 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
+         :cc:content-type:content-transfer-encoding;
+        b=YZP7PKRB6+NEh9oBB6YBy/MELgnpGzUqq8DE8jcx3fn9689SFkJ5VJFYyn64I+OAcd
+         KHwiyaIuEfkVcJx1aSE/O/4UCvLIOyueTTPhfTPs6e/xRzRgaSaNe9NK18iPjj4/7pxE
+         Uu2zfjcSDAiRXnIVnfWEWenmFHO9xreitaHrw=
+MIME-Version: 1.0
+In-Reply-To: <49D4F2E1.7000507@vlnb.net>
+References: <49D10256.8030307@vlnb.net>
+	 <e2e108260904011314h1e0cf5c5wcdf210eee24d40d8@mail.gmail.com>
+	 <49D4F2E1.7000507@vlnb.net>
+Date: Sat, 4 Apr 2009 10:04:26 +0200
+Message-ID: <e2e108260904040104u37953ef7x74b8713dfcf3166a@mail.gmail.com>
+Subject: Re: [Scst-devel] ISCSI-SCST performance (with also IET and STGT data)
+From: Bart Van Assche <bart.vanassche@gmail.com>
+To: Vladislav Bolkhovitin <vst@vlnb.net>
+Cc: scst-devel <scst-devel@lists.sourceforge.net>,
+       linux-kernel@vger.kernel.org, linux-scsi@vger.kernel.org
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, 7 Mar 2009, Rafael J. Wysocki wrote:
+On Thu, Apr 2, 2009 at 7:16 PM, Vladislav Bolkhovitin <vst@vlnb.net> wrote:
+> Bart Van Assche, on 04/02/2009 12:14 AM wrote:
+>> I have repeated some of these performance tests for iSCSI over IPoIB
+>> (two DDR PCIe 1.0 ConnectX HCA's connected back to back). The results
+>> for the buffered I/O test with a block size of 512K (initiator)
+>> against a file of 1GB residing on a tmpfs filesystem on the target are
+>> as follows:
+>>
+>> write-test: iSCSI-SCST 243 MB/s; IET 192 MB/s.
+>> read-test: iSCSI-SCST 291 MB/s; IET 223 MB/s.
+>>
+>> And for a block size of 4 KB:
+>>
+>> write-test: iSCSI-SCST 43 MB/s; IET 42 MB/s.
+>> read-test: iSCSI-SCST 288 MB/s; IET 221 MB/s.
+>
+> Do you have any thoughts why writes are so bad? It shouldn't be so..
 
-> On Wednesday 04 March 2009, Zhang Rui wrote:
-> > On Wed, 2009-03-04 at 03:22 +0800, Rafael J. Wysocki wrote:
-> > 
-> > > Bug-Entry       : http://bugzilla.kernel.org/show_bug.cgi?id=12758
-> > > Subject         : ACPI exception with 2.6.29-rc6
-> > > Submitter       : Heinz Diehl <htd@fancy-poultry.org>
-> > > Date            : 2009-02-23 16:46 (9 days old)
-> > > References      : http://marc.info/?l=linux-kernel&m=123540758700861&w=4
-> > > 
-> > Handled by: Len Brown <len.brown@intel.com>
-> > Patch-available:
-> > http://bugzilla.kernel.org/attachment.cgi?id=20368&action=view
-> > 
-> > not sure if this patch is in len's tree or not.
-> 
-> Thanks, updated.
+By this time I have run the following variation of the 4 KB write test:
+* Target: iSCSI-SCST was exporting a 1 GB file residing on a tmpfs filesystem.
+* Initiator: two processes were writing 4 KB blocks as follows:
+dd if=/dev/zero of=/dev/sdb bs=4K seek=0 count=131072 oflag=sync &
+dd if=/dev/zero of=/dev/sdb bs=4K seek=131072 count=131072 oflag=sync &
 
+Results:
+* Each dd process on the initiator was writing at a speed of 37.8
+MB/s, or a combined writing speed of 75.6 MB/s.
+* CPU load on the initiator system during the test: 2.0.
+* According to /proc/interrupts, about 38000 mlx4-comp-0 interrupts
+were triggered per second.
 
-per the bug report, this shipped in 2.6.29-rc8:
+These results confirm that the initiator system was the bottleneck
+during the 4 KB write test, not the target system.
 
-commit 7b46ecd5fcebf381a7bde966db352d8fb1b8e944
-Author: Len Brown <len.brown@intel.com>
-Date:   Wed Feb 25 18:00:18 2009 -0500
-
-    Revert "ACPI: make some IO ports off-limits to AML"
-
+Bart.
