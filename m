@@ -1,44 +1,44 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752976AbZDDP1t@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754307AbZDDP2I@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752976AbZDDP1t (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 4 Apr 2009 11:27:49 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751603AbZDDP1g
+	id S1754307AbZDDP2I (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 4 Apr 2009 11:28:08 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751787AbZDDP1x
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 4 Apr 2009 11:27:36 -0400
-Received: from cavan.codon.org.uk ([93.93.128.6]:43681 "EHLO
-	vavatch.codon.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751453AbZDDP1g (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 4 Apr 2009 11:27:36 -0400
-Date: Sat, 4 Apr 2009 16:27:31 +0100
-From: Matthew Garrett <mjg59@srcf.ucam.org>
-To: Greg KH <gregkh@suse.de>
-Cc: linux-kernel@vger.kernel.org, linux-usb@vger.kernel.org, shurik@gwu.edu
-Subject: qcserial/gobi firmware loader
-Message-ID: <20090404152731.GA5080@srcf.ucam.org>
-References: <20090401203726.GA17485@srcf.ucam.org> <20090403025654.GA20146@suse.de> <20090403135719.GD19774@srcf.ucam.org> <20090403150301.GA25846@suse.de> <20090403151237.GA25994@suse.de> <20090403164551.GA23689@srcf.ucam.org>
+	Sat, 4 Apr 2009 11:27:53 -0400
+Received: from gw.goop.org ([64.81.55.164]:57832 "EHLO mail.goop.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752985AbZDDP1x (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 4 Apr 2009 11:27:53 -0400
+Message-ID: <49D77C76.2020505@goop.org>
+Date: Sat, 04 Apr 2009 08:27:50 -0700
+From: Jeremy Fitzhardinge <jeremy@goop.org>
+User-Agent: Thunderbird 2.0.0.21 (X11/20090320)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090403164551.GA23689@srcf.ucam.org>
-User-Agent: Mutt/1.5.12-2006-07-14
-X-SA-Exim-Connect-IP: <locally generated>
-X-SA-Exim-Mail-From: mjg59@codon.org.uk
-X-SA-Exim-Scanned: No (on vavatch.codon.org.uk); SAEximRunCond expanded to false
+To: We La <w.landgraf@yahoo.com>
+CC: linux-kernel@vger.kernel.org
+Subject: Re: regression : kernel error instead of automount mobile phone
+References: <843756.2736.qm@web112207.mail.gq1.yahoo.com>
+In-Reply-To: <843756.2736.qm@web112207.mail.gq1.yahoo.com>
+X-Enigmail-Version: 0.95.6
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-I've reimplemented Alexander's shell scripts for firmware loading in C 
-and added a udev rule to automatically trigger the loading[1]. Thanks to 
-Sergey's hint I've added checksumming support so it should work on other 
-firmwares as well. The firmware needs to be obtained somehow and then 
-put in /lib/firmware/gobi, but should then automatically load when the 
-device is ready.
+We La wrote:
+>  Message from syslogd@localhost at Tue Mar 31 21:50:22 2009 ...
+> localhost kernel: Code: 00 8b 45 f0 c7 86 9c 00 00 00 10 32 7e f8 89 86 90 00 00 00 8d 86 94 00 00 00 89 86 94 00 00 00 89 86 98 00 00 00 8b 02 8b 78 0c <0f> b6 47 03 83 e0 03 83 f8 03 75 06 80 7f 02 00 78 45 c7 45 dc 
+>
+>  Message from syslogd@localhost at Tue Mar 31 21:50:22 2009 ...
+> localhost kernel: EIP: [<f87e3f9f>] wdm_probe+0x17f/0x3f0 [cdc_wdm] SS:ESP 0068:e84c5dbc
+>
+> =====
+> Phone Sony-Ericson 
+> On connecting via USB, comes the error message above. Kernel 2.6.29.  With 2.6.26.2 (all oter things the same) no problem, it automounts and opens the window with the file list.
+>   
 
-You can download this at http://www.codon.org.uk/~mjg59/gobi_loader/
+Can you collect a full oops output?  If the machine is still alive after 
+the oops, you can get it with dmesg.
 
-[1] The firmware to be loaded depends on the user's network, so I can't 
-think of an especially clean way of doing this in kernel.
--- 
-Matthew Garrett | mjg59@srcf.ucam.org
+    J
