@@ -1,28 +1,26 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754886AbZDDPnH@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754630AbZDDPto@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754886AbZDDPnH (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 4 Apr 2009 11:43:07 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751501AbZDDPmv
+	id S1754630AbZDDPto (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 4 Apr 2009 11:49:44 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751805AbZDDPtd
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 4 Apr 2009 11:42:51 -0400
-Received: from hrndva-omtalb.mail.rr.com ([71.74.56.122]:44285 "EHLO
+	Sat, 4 Apr 2009 11:49:33 -0400
+Received: from hrndva-omtalb.mail.rr.com ([71.74.56.123]:34294 "EHLO
 	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754458AbZDDPmr (ORCPT
+	with ESMTP id S1750965AbZDDPtd (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 4 Apr 2009 11:42:47 -0400
-Date: Sat, 4 Apr 2009 11:42:43 -0400 (EDT)
+	Sat, 4 Apr 2009 11:49:33 -0400
+Date: Sat, 4 Apr 2009 11:49:30 -0400 (EDT)
 From: Steven Rostedt <rostedt@goodmis.org>
 X-X-Sender: rostedt@gandalf.stny.rr.com
 To: Tom Zanussi <tzanussi@gmail.com>
-cc: Ingo Molnar <mingo@elte.hu>, linux-kernel@vger.kernel.org,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Thomas Gleixner <tglx@linutronix.de>,
-       Peter Zijlstra <peterz@infradead.org>,
-       Frederic Weisbecker <fweisbec@gmail.com>
-Subject: Re: [PATCH 0/4] [GIT PULL] for tip/tracing/filters
-In-Reply-To: <1238827803.22495.16.camel@bookworm>
-Message-ID: <alpine.DEB.2.00.0904041140490.32083@gandalf.stny.rr.com>
-References: <20090402052721.013878388@goodmis.org>  <20090403121434.GJ31399@elte.hu>  <alpine.DEB.2.00.0904031035060.965@gandalf.stny.rr.com> <1238827803.22495.16.camel@bookworm>
+cc: Ingo Molnar <mingo@elte.hu>, "Paul E. McKenney" <paulmck@us.ibm.com>,
+       linux-kernel <linux-kernel@vger.kernel.org>, fweisbec@gmail.com
+Subject: Re: [PATCH] tracing/filters: allow event filters to be set only when
+ not tracing
+In-Reply-To: <1238830355.22495.55.camel@bookworm>
+Message-ID: <alpine.DEB.2.00.0904041143480.32083@gandalf.stny.rr.com>
+References: <1238390546.6368.65.camel@bookworm>  <20090401122408.GG12966@elte.hu> <1238653371.6655.48.camel@bookworm>  <20090403135956.GD8875@elte.hu>  <alpine.DEB.2.00.0904031010510.965@gandalf.stny.rr.com> <1238830355.22495.55.camel@bookworm>
 User-Agent: Alpine 2.00 (DEB 1167 2008-08-23)
 MIME-Version: 1.0
 Content-Type: TEXT/PLAIN; charset=US-ASCII
@@ -32,63 +30,65 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 
 On Sat, 4 Apr 2009, Tom Zanussi wrote:
-> On Fri, 2009-04-03 at 10:36 -0400, Steven Rostedt wrote:
 > 
-> I'm guessing the problem is that CONFIG_EVENT_TRACER wasn't selected but
-> should have been, because those tracers all now export events
-> (trace_event_types.h, included by trace_export.c).  I'm not sure this is
-> the right way to do it, but the patch below selects EVENT_TRACER if
-> TRACING is selected (a couple of the exported events belong to bprint
-> and print, which don't have a config option other than TRACING, so it
-> seems to belong there).
+> Hmm, after reading Paul's replies, it sounds like this approach might be
+> more trouble than it's worth.  Maybe going back to the idea of
+> temporarily stopping/starting tracing would be a better idea, but with a
+> little more heavyweight version of the current 'quick' tracing
+> start/stop (that would prevent entering the tracing functions (and ththe
+> filter_check_discard()).
+
+
+Actually, I forgot what the general problem we are avoiding here with the
+RCU locks. Could you explain that again. Just so that I can get a better
+idea without having to read between the lines of the previous messages in 
+this thread.
+
+
 > 
-> Signed-off-by: Tom Zanussi <tzanussi@gmail.com>
+> I was thinking it would be something like:
 > 
-> ---
->  kernel/trace/Kconfig |    3 ++-
->  1 files changed, 2 insertions(+), 1 deletions(-)
+> stop_tracing();
+> current_tracer->stop(); /* unregister tracepoints, etc */
 > 
-> diff --git a/kernel/trace/Kconfig b/kernel/trace/Kconfig
-> index 8a41360..a061746 100644
-> --- a/kernel/trace/Kconfig
-> +++ b/kernel/trace/Kconfig
-> @@ -56,6 +56,7 @@ config TRACING
->  	select TRACEPOINTS
->  	select NOP_TRACER
->  	select BINARY_PRINTF
-> +	select EVENT_TRACER
+> remove filter
+> 
+> current_tracer->start(); /* reregister tracepoints, etc */
+> start_tracing();
 
-Yeah, we can do this.
+This use to be the way start and stop worked, but I'm trying to
+make them more light weight. I've been wanting start/stop to be called
+by start_tracing() and stop_tracing() and those should be able to be 
+called in any context. But registering and unregistering tracepoints calls 
+mutexes, which can not be done in atomic context.
 
->  
->  #
->  # Minimum requirements an architecture has to meet for us to
-> @@ -177,7 +178,7 @@ config CONTEXT_SWITCH_TRACER
->  
->  config EVENT_TRACER
->  	bool "Trace various events in the kernel"
-> -	select TRACING
-> +	depends on TRACING
+There are still some tracers that have start/stop using sleeping code, but 
+in the long run I want the tracers start/stop functions to be light.
 
-This means we can only select EVENT_TRACER if something else has been 
-selected. Can't we keep the "select TRACING" here.
 
-That way, we could just select EVENT_TRACER, but if anything other 
-tracer is selected, we automatically get EVENT_TRACER.
+> 
+> The struct tracer comments suggest that the stop()/start()
+> ops are meant for pausing, I'd guess for things like this, but some of
+> the tracers don't implement them.
 
-The logic would be, if you pick any tracer you get the EVENT_TRACER.
-But you can still just ask for the EVENT_TRACER with no other tracer.
+Yeah, They should, but leaving out the start/stop functions, is just
+the tracers way of saying, I don't need to pause. :-/
+
+> 
+> For the events in the event tracer, it would be something like:
+> 
+> stop_tracing();
+> call->unregfunc(); /* unregister tracepoint */
+> 
+> remove filter
+> 
+> call->regfunc(); /* reregister tracepoint */
+> start_tracing();
+> 
+> If that makes sense, I can try it that way instead.
+> 
+
+I'll comment about this if I get that explanation of the problem again ;-)
 
 -- Steve
 
-
-
->  	help
->  	  This tracer hooks to various trace points in the kernel
->  	  allowing the user to pick and choose which trace point they
-> -- 
-> 1.5.6.3
-> 
-> 
-> 
-> 
