@@ -1,55 +1,85 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755825AbZDDQcJ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754886AbZDDQg1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755825AbZDDQcJ (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 4 Apr 2009 12:32:09 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754346AbZDDQb4
+	id S1754886AbZDDQg1 (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 4 Apr 2009 12:36:27 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753841AbZDDQgT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 4 Apr 2009 12:31:56 -0400
-Received: from e4.ny.us.ibm.com ([32.97.182.144]:36688 "EHLO e4.ny.us.ibm.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754262AbZDDQbz (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 4 Apr 2009 12:31:55 -0400
-Date: Sat, 4 Apr 2009 09:31:49 -0700
-From: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
-To: Josh Boyer <jwboyer@gmail.com>
-Cc: linux-kernel@vger.kernel.org, mingo@elte.hu, akpm@linux-foundation.org,
-       dipankar@in.ibm.com, niv@us.ibm.com, manfred@colorfullife.com,
-       peterz@infradead.org, lethal@linux-sh.org, kernel@wantstofly.org,
-       andi@firstfloor.org, kyle@mcmartin.ca, deller@gmx.de,
-       davem@davemloft.net, ralf@linux-mips.org, jes@sgi.com,
-       benh@kernel.crashing.org, paulus@samba.org, anton@samba.org
-Subject: Re: [PATCH -tip] Convert CONFIG_SMP=y powerpc defconfigs to
-	TREE_RCU.
-Message-ID: <20090404163149.GC6893@linux.vnet.ibm.com>
-Reply-To: paulmck@linux.vnet.ibm.com
-References: <3181463559098978317@unknownmsgid> <625fc13d0904040621g7b89cd2cq9681ce80635a65c4@mail.gmail.com>
+	Sat, 4 Apr 2009 12:36:19 -0400
+Received: from ti-out-0910.google.com ([209.85.142.191]:35301 "EHLO
+	ti-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753483AbZDDQgS (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 4 Apr 2009 12:36:18 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:to:cc:subject:message-id:references:mime-version
+         :content-type:content-disposition:in-reply-to:user-agent;
+        b=A+TaBZ5jhDRgyhdYWrZYGxzYuBRyqD8OJFEMvFrUslqDZ4aLvh/qiYeWW/HCkWHWBk
+         pCHdLx/4A2X+1OqiBS9a8P9wjHOZG4JWlWiBI2GMggBnNsLN0K+cSAEFyyo3m0VNhWJL
+         RRrhMV2NbEUaDm+maHA5Lw/I15JykO00DWbh0=
+Date: Sun, 5 Apr 2009 00:36:12 +0800
+From: =?utf-8?Q?Am=C3=A9rico?= Wang <xiyou.wangcong@gmail.com>
+To: Ming Lei <tom.leiming@gmail.com>
+Cc: Linux Kernel List <linux-kernel@vger.kernel.org>
+Subject: Re: [BUG 2.6.29] make install failed
+Message-ID: <20090404163612.GA17018@hack>
+References: <d82e647a0904040828n27af9173t7239b1822e6dc9ca@mail.gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <625fc13d0904040621g7b89cd2cq9681ce80635a65c4@mail.gmail.com>
-User-Agent: Mutt/1.5.15+20070412 (2007-04-11)
+In-Reply-To: <d82e647a0904040828n27af9173t7239b1822e6dc9ca@mail.gmail.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, Apr 04, 2009 at 09:21:58AM -0400, Josh Boyer wrote:
-> On Fri, Apr 3, 2009 at 8:27 PM, Paul E. McKenney
-> <paulmck@linux.vnet.ibm.com> wrote:
-> > From: Paul E. McKenney <paulmck@linux.vnet.ibm.com>
-> 
-> Why would one want to do this?  The commit log doesn't explain the
-> switch and why it's great.  Mostly because the commit log doesn't
-> exist.  (I'll stop channeling Andrew now)
+On Sat, Apr 04, 2009 at 11:28:05PM +0800, Ming Lei wrote:
+>commit 6bb597507f9839b1349878
+>
+>[lm@linux-lm linux-2.6]$ sudo make install
+>  CHK     include/linux/version.h
+>  CHK     include/linux/utsrelease.h
+>  UPD     include/linux/utsrelease.h
+>  SYMLINK include/asm -> include/asm-x86
+>  CALL    scripts/checksyscalls.sh
+>  CHK     include/linux/compile.h
+>  SKIPPED include/linux/compile.h
+>  CC      init/version.o
+>  LD      init/built-in.o
+>  CC      kernel/trace/trace.o
+>  LD      kernel/trace/built-in.o
+>  CC      kernel/module.o
+>  LD      kernel/built-in.o
+>
+>  LD      vmlinux.o
+>  MODPOST vmlinux.o
+>WARNING: modpost: Found 2 section mismatch(es).
+>To see full details build your kernel with:
+>'make CONFIG_DEBUG_SECTION_MISMATCH=y'
+>  GEN     .version
+>  CHK     include/linux/compile.h
+>  SKIPPED include/linux/compile.h
+>  LD      .tmp_vmlinux1
+>  KSYM    .tmp_kallsyms1.S
+>  AS      .tmp_kallsyms1.o
+>  LD      .tmp_vmlinux2
+>  KSYM    .tmp_kallsyms2.S
+>  AS      .tmp_kallsyms2.o
+>  LD      vmlinux
+>  SYSMAP  System.map
+>  SYSMAP  .tmp_System.map
+>sh /home/lm/git/linux-2.6/linux-2.6/arch/x86/boot/install.sh 2.6.29
+>arch/x86/boot/bzImage \
+>		System.map "/boot"
+>WARNING: Couldn't open directory /lib/modules/2.6.29: No such file or directory
+>FATAL: Could not open /lib/modules/2.6.29/modules.dep.temp for
+>writing: No such file or directory
+>No modules available for kernel "2.6.29".
+>mkinitrd failed
 
-Indeed, I am sure that I will get the hang the relevant git commands
-at some point, but clearly am not yet there.
+Probably you forgot to do 'make modules_install'?
 
-The thing that is great about this patch is that it is a step on
-the way to retiring Classic RCU entirely.
 
-> It also might be a good idea to CC the linuxppc-dev list for this
-> patch.  Or at least Kumar for the mpc86xx changes.
-
-Good point -- I will do so on the next version.
-
-							Thanx, Paul
+-- 
+Do what you love, f**k the rest! F**k the regulations!
+ 
