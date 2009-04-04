@@ -1,119 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S937210AbZDDBzZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932161AbZDDB5q@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S937210AbZDDBzZ (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 3 Apr 2009 21:55:25 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761233AbZDDBzK
+	id S932161AbZDDB5q (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 3 Apr 2009 21:57:46 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762198AbZDDB5g
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 3 Apr 2009 21:55:10 -0400
-Received: from relay2.sgi.com ([192.48.179.30]:48096 "EHLO relay.sgi.com"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1758686AbZDDBzJ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 3 Apr 2009 21:55:09 -0400
-Cc: Linus Torvalds <torvalds@linux-foundation.org>,
-       Lachlan McIlroy <lachlan@sgi.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       LKML <linux-kernel@vger.kernel.org>, xfs mailing list <xfs@oss.sgi.com>
-Message-Id: <60503DAA-7DA4-467C-A21E-B02D61FA9390@sgi.com>
-From: Felix Blyakher <felixb@sgi.com>
-To: david@lang.hm
-In-Reply-To: <alpine.DEB.1.10.0904031818270.28893@asgard.lang.hm>
-Content-Type: text/plain; charset=US-ASCII; format=flowed; delsp=yes
-Content-Transfer-Encoding: 7bit
-Mime-Version: 1.0 (Apple Message framework v930.3)
-Subject: Re: [GIT PULL] XFS update for 2.6.30
-Date: Fri, 3 Apr 2009 20:54:55 -0500
-References: <20090331053013.7642414167108@attica.americas.sgi.com> <BD6F95C9-2F2D-49A3-979C-25018E62E416@sgi.com> <alpine.LFD.2.00.0904030952220.4130@localhost.localdomain> <alpine.LFD.2.00.0904030954030.4130@localhost.localdomain> <8A177E56-84E9-487E-930E-9C6805E17184@sgi.com> <alpine.DEB.1.10.0904031818270.28893@asgard.lang.hm>
-X-Mailer: Apple Mail (2.930.3)
+	Fri, 3 Apr 2009 21:57:36 -0400
+Received: from az33egw02.freescale.net ([192.88.158.103]:64865 "EHLO
+	az33egw02.freescale.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754037AbZDDB5f (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 3 Apr 2009 21:57:35 -0400
+From: Becky Bruce <beckyb@kernel.crashing.org>
+To: linux-kernel@vger.kernel.org, mingo@elte.hu, jeremy@goop.org,
+       fujita.tomonori@lab.ntt.co.jp, ian.campbell@citrix.com
+Subject: [PATCH V2 0/7] swiotlb: changes for powerpc/highmem
+Date: Fri,  3 Apr 2009 20:56:42 -0500
+Message-Id: <1238810209-24499-1-git-send-email-beckyb@kernel.crashing.org>
+X-Mailer: git-send-email 1.5.6.6
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Apr 3, 2009, at 8:19 PM, david@lang.hm wrote:
+This is v2 of a series of fairly minor patches that get swiotlb
+working on 32-bit powerpc systems with HIGHMEM, plus some cleanup
+of the outdated comments in the code. I've made a couple of things
+weak that ppc needs to override, and have changed the prototypes
+for a couple of functions to include the hwdev pointer, which
+we need to ppc to convert bus addresses to and from phys/virt
+addresses. I've also fixed a build warning I've been seeing on
+ppc.
 
-> On Fri, 3 Apr 2009, Felix Blyakher wrote:
->
->> On Apr 3, 2009, at 12:02 PM, Linus Torvalds wrote:
->>
->>> On Fri, 3 Apr 2009, Linus Torvalds wrote:
->>>> On Thu, 2 Apr 2009, Felix Blyakher wrote:
->>>>> Were there any problems pulling from the xfs repository?
->>>> Sorry, no - just too much email, too many trees to look at, too  
->>>> many
->>>> people to argue with.
->>>> Pulled.
->>> Side note - I almost unpulled afterwards.
->>
->> That was my concern, i.e. it's not pulled without explicit
->> NAK. I knew about your possible concerns.
->>
->>> You've done several apparently totally useless pulls from my tree at
->>> random points.
->>
->> Yes, I noticed that, and agree with all your points even
->> before you brought them up.
->> I already started talking to people to improve my process.
->> The reason the intermediate pulls from your tree were done
->> is to make sure that new xfs patches would not conflict
->> with some other changes already in the mainline. That was
->> part of the maintainer cheat sheet given to me, and I
->> didn't realize the side effects of it.
->> I probably can verify the possible conflicts without pushing
->> the merges into the repository and reset the working tree to
->> pre pull state.
->
-> create a temporary branch and do the merge in that. then throw away  
-> the test branch and there is no harm to the main tree.
+In response to commentary on the previous series, I've also
+refactored the code a bit, altough I did this slightly
+differently than was suggested because I noticed we could use the
+new helper function in 2 places instead of one. I've reformatted
+a bit of code based on commentary as well.
 
-That was suggested among other things by Ingo Molnar as well.
-I'm planing to follow this approach.
+I have not tested this in any way on any non-ppc platforms,
+so commentary/testing from x86/ia64 folks is, once again,
+greatly appreciated.
 
-Thanks,
-Felix
+I'm going to be offline for the next week, but will respond to
+commentary as soon as I return.
 
->
->
-> David Lang
->
->> At any rate, I'll find some way to manage that without
->> cluttering the history with the merges.
->> Any suggestions are welcome.
->>
->> Thanks,
->> Felix
->>
->>> Daily "keep up-to-date with Linus' tree" pulls are _strongly_  
->>> discouraged
->>> (read: if this continues, I'll just stop pulling from you),  
->>> because it
->>> makes the history totally unreadable after-the-fact. It has some  
->>> direct
->>> technical downsides (it makes it much harder to run "git bisect"  
->>> and see
->>> what is going on), but apart from those direct downsides it just  
->>> makes it
->>> much harder for me - or anybody else who wants to get an overview  
->>> of what
->>> happened - to visualize things when history is messy.
->>> Instead of having a clear nice line of development that says "this  
->>> is what
->>> happened to XFS", those merges have basically mixed up all your  
->>> changes
->>> with all the random _other_ changes in the tree.
->>> In other words, having those extra merges makes the graphical  
->>> tools almost
->>> useless for getting some kind of "what happened" overview.
->>> I realize that an occasional back-merge may be required to resolve  
->>> big
->>> conflicts early, but they really have to be pretty big and  
->>> immediate for
->>> it to be a win.
->>>
->>> 			Linus
->>
->> --
->> To unsubscribe from this list: send the line "unsubscribe linux- 
->> kernel" in
->> the body of a message to majordomo@vger.kernel.org
->> More majordomo info at  http://vger.kernel.org/majordomo-info.html
->> Please read the FAQ at  http://www.tux.org/lkml/
+Cheers,
+Becky
+
+diffstat:
+arch/x86/kernel/pci-swiotlb.c |    2 +-
+include/linux/swiotlb.h       |    3 +-
+lib/swiotlb.c                 |  115 ++++++++++++++++++++++-------------------
+3 files changed, 64 insertions(+), 56 deletions(-)
 
