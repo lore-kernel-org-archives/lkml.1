@@ -1,217 +1,44 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754048AbZDDPVS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752976AbZDDP1t@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754048AbZDDPVS (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 4 Apr 2009 11:21:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751357AbZDDPVG
+	id S1752976AbZDDP1t (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 4 Apr 2009 11:27:49 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751603AbZDDP1g
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 4 Apr 2009 11:21:06 -0400
-Received: from mx2.redhat.com ([66.187.237.31]:33989 "EHLO mx2.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750780AbZDDPVD (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 4 Apr 2009 11:21:03 -0400
-Message-ID: <49D77AC3.3020207@redhat.com>
-Date: Sat, 04 Apr 2009 11:20:35 -0400
-From: Ric Wheeler <rwheeler@redhat.com>
-User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1b3pre) Gecko/20090324 Fedora/3.0-2.1.beta2.fc11 Thunderbird/3.0b2
+	Sat, 4 Apr 2009 11:27:36 -0400
+Received: from cavan.codon.org.uk ([93.93.128.6]:43681 "EHLO
+	vavatch.codon.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751453AbZDDP1g (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 4 Apr 2009 11:27:36 -0400
+Date: Sat, 4 Apr 2009 16:27:31 +0100
+From: Matthew Garrett <mjg59@srcf.ucam.org>
+To: Greg KH <gregkh@suse.de>
+Cc: linux-kernel@vger.kernel.org, linux-usb@vger.kernel.org, shurik@gwu.edu
+Subject: qcserial/gobi firmware loader
+Message-ID: <20090404152731.GA5080@srcf.ucam.org>
+References: <20090401203726.GA17485@srcf.ucam.org> <20090403025654.GA20146@suse.de> <20090403135719.GD19774@srcf.ucam.org> <20090403150301.GA25846@suse.de> <20090403151237.GA25994@suse.de> <20090403164551.GA23689@srcf.ucam.org>
 MIME-Version: 1.0
-To: Jens Axboe <jens.axboe@oracle.com>
-CC: Mikulas Patocka <mpatocka@redhat.com>,
-       device-mapper development <dm-devel@redhat.com>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       ak@linux.intel.com, "MASON, CHRISTOPHER" <CHRIS.MASON@oracle.com>
-Subject: Re: [dm-devel] Barriers still not passing on simple dm devices...
-References: <20090324143034.GW27476@kernel.dk> <Pine.LNX.4.64.0903241033070.4088@hs20-bc2-1.build.redhat.com> <20090324150517.GX27476@kernel.dk> <Pine.LNX.4.64.0903251106520.27750@hs20-bc2-1.build.redhat.com> <20090325152751.GV27476@kernel.dk> <Pine.LNX.4.64.0903251825310.8027@hs20-bc2-1.build.redhat.com> <20090326084205.GG27476@kernel.dk> <Pine.LNX.4.64.0903302314500.6158@hs20-bc2-1.build.redhat.com> <20090331104933.GJ5178@kernel.dk> <Pine.LNX.4.64.0904021923040.19415@hs20-bc2-1.build.redhat.com> <20090403081131.GP5178@kernel.dk>
-In-Reply-To: <20090403081131.GP5178@kernel.dk>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20090403164551.GA23689@srcf.ucam.org>
+User-Agent: Mutt/1.5.12-2006-07-14
+X-SA-Exim-Connect-IP: <locally generated>
+X-SA-Exim-Mail-From: mjg59@codon.org.uk
+X-SA-Exim-Scanned: No (on vavatch.codon.org.uk); SAEximRunCond expanded to false
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 04/03/2009 04:11 AM, Jens Axboe wrote:
-> On Thu, Apr 02 2009, Mikulas Patocka wrote:
->    
->> On Tue, 31 Mar 2009, Jens Axboe wrote:
->>
->>      
->>> On Mon, Mar 30 2009, Mikulas Patocka wrote:
->>>        
->>>> On Thu, 26 Mar 2009, Jens Axboe wrote:
->>>>
->>>>          
->>>>> On Wed, Mar 25 2009, Mikulas Patocka wrote:
->>>>>
->>>>>            
->>>>>>>> So I think there should be flag (this device does/doesn't support data
->>>>>>>> consistency) that the journaled filesystems can use to mark the disk dirty
->>>>>>>> for fsck. And if you implement this flag, you can accept barriers always
->>>>>>>> to all kind of devices regardless of whether they support consistency. You
->>>>>>>> can then get rid of that -EOPNOTSUPP and simplify filesystem code because
->>>>>>>> they'd no longer need two commit paths and a clumsy way to restart
->>>>>>>> -EOPNOTSUPPed requests.
->>>>>>>>                  
->>>>>>> And my point is that this case isn't interesting, because most setups
->>>>>>> don't guarantee proper ordering.
->>>>>>>                
->>>>>> If the ordering isn't guaranteed, the filesystem should know about it, and
->>>>>> mark the partition for fsck. That's why I'm suggesting to use a flag for
->>>>>> that. That flag could be also propagated up through md and dm.
->>>>>>              
->>>>> We can do that, not a problem. The problem is that ordering is almost
->>>>> never preserved, SCSI does not use ordered tags because it hasn't
->>>>> verified that its error path doesn't reorder by mistake. So right now
->>>>> you can basically use 'false' as that flag.
->>>>>            
->>>> There are three ordering guarantees:
->>>>
->>>> 1. - nothing (for devices with write cache without cache control)
->>>>
->>>> 2. - non-cached ordering: the sequence [submit req a, end req a, submit
->>>> req b, end req b] will make the ordering. It is guaranteed that when the
->>>> request ends successfully, it is on medium. This is what all the
->>>> filesystems, md and dm assume about disks. This consistency model was used
->>>> long way before barriers came in.
->>>>
->>>> 3. - barrier ordering: ordering is done with barriers, [submit req a, end
->>>> req a, submit req b, end req b] won't guarantee ordering of a and b, a
->>>> barrier must be inserted.
->>>>          
->>> Plus the barrier also allows [submit req a, submit req b] and still
->>> count on ordering if either one of them is a barrier. It doesn't have to
->>> be sync, like the (2).
->>>
->>>        
->>>> --- so you can make a two bitflags that differentiate these models. In
->>>> current kernel, model (1) and (2) cannot be differentiated in any way. (3)
->>>> can be differentiated only after a trial write and it won't guarantee that
->>>> (3) will be valid further.
->>>>          
->>> But what's the point? Basically no devices are naturally ordered by
->>> default. Either you need cache flushes, or you need to tell the device
->>> not to reorder on a per-command basis.
->>>
->>>        
->>>>>> The reasoning: "write barriers aren't supported =>  the device doesn't
->>>>>> guarantee consistency" isn't valid.
->>>>>>              
->>>>> It's valid in the sense that it's the only RELIABLE primitive we have.
->>>>> Are you really suggestion that we just assume any device is fully
->>>>> ordered, unless proven otherwise?
->>>>>            
->>>> If someone implements "write barrier's aren't supported =>  run fsck", then
->>>> a lot of systems start fscking needlessly (for example those using md or
->>>> dm without write cache) and become inoperational for long time because of
->>>> that. So no one can really implement this logic and filesystems don't run
->>>> fsck at all when operated over a device that doesn't support ordering. So
->>>> you get data corruption if you get crash on those devices.
->>>>          
->>> Nobody is suggesting that, it's just not a feasible approach. But you
->>>        
->> I am saying that the filesystem should run fsck if journaled filesystem is
->> mounted on an unsafe device and crash happens.
->>
->>      
->>> have to warn if you don't know whether it provides the ordering
->>> guarantee you expect to provide consistency and integrity.
->>>        
->> The warning of missing barriers (or other actions) should be printed only
->> if write cache is enabled. But there's no way how a filesystem on the top
->> of several dm or md layers can find out if the disk is running with hdparm
->> -w 0 or hdparm -w 1.
->>      
->
-> Right, you can't possibly now that. Hence we have to print the warning.
->
->    
->>>> The barrier can be cancelled with -EOPNOTSUPP at any time. Andi Kleen
->>>> submitted a patch that implements failing barriers for device mapper and
->>>> he says that md-raid1 does the same thing.
->>>>          
->>> You are right, if a device is reconfigured beneath you it may very well
->>> begin to return -EOPNOTSUPP much later. I didn't take that into account,
->>> I was considering only "plain" devices.
->>>
->>>        
->>>> Filesystems handle these randomly failed barriers but the downside is that
->>>> they must not submit any request concurrently with the barrier. Also, that
->>>> -EOPNOTSUPP restarting code is really crap, the request cannot be
->>>> restarted from bi_end_io, so bi_end_io needs to handle to another thread
->>>> for retry without barrier.
->>>>          
->>> It can, but it requires you to operate at the request level. So for file
->>> systems that is problematic, it wont work of course. It would not be
->>> THAT hard to provide a helper to reissue the request. Not that pretty,
->>> but...
->>>        
->> And it makes barriers useless for ordering.
->>
->> The filesystem can't do [submit req a], [submit barrier req b], [submit
->> req c] and assume that the requests will be ordered. If [b] fails with
->> -EOPNOTSUPP, [a] and [c] could be already reordered and data corruption
->> has already happened. Even if you catch [b]'s error and resubmit it as
->> non-barrier request, it's too late.
->>
->> So, as a result of this complication, all the existing filesystems send
->> just one barrier request and do not try to overlay it with any other write
->> requests.
->>
->> So I'm wondering why Linux developers designed a barrier interface with
->> complex specification, complex implementation and the interface is useless
->> to provide any request ordering and it's no better than q->issue_flush_fn
->> method or whatever was there beffore. Obviously, the whole barrier thing
->> was designed by a person who never used it in a filesystem.
->>      
->
-> That's not quite true, it was done in conjunction with file system
-> people. At a certain level, we are restricted by what the hardware can
-> actually do. It's certainly possible to make sure your storage stack can
-> support barriers and be safe in that regard, but it's certainly also
-> true that reconfiguring devices may void that guarantee. So it's not
-> perfect, but it's the best we can do. The worst part is that it's
-> virtually impossible to inform of such limitations.
->
-> If we get rid of -EOPNOTSUPP and just warn in such cases, then you
-> should never see -EOPNOTSUPP in the above sequence. You may not actually
-> be safe, hence we print a warning. It'll also make the whole thing a lot
-> less complex.
->
-> And to wrap up with the history of barriers, there was NOTHING before.
-> ->issue_flush_fn is a later addition to just force a flush for fsync()
-> and friends, the original implementation was just a data bio/bh with
-> barrier semantics, providing no reordering before and after the data
-> passed.
->
-> Nobody was interested in barriers when they were done. Nobody. The fact
-> that it's taken 6 years or so to actually emerge as a hot topic for data
-> consistency should make that quite obvious. So the original
-> implementation was basically a joint effort with Chris on the reiser
-> side and EMC as the hw vendor and me doing the block implementation.
->    
+I've reimplemented Alexander's shell scripts for firmware loading in C 
+and added a udev rule to automatically trigger the loading[1]. Thanks to 
+Sergey's hint I've added checksumming support so it should work on other 
+firmwares as well. The firmware needs to be obtained somehow and then 
+put in /lib/firmware/gobi, but should then automatically load when the 
+device is ready.
 
-And I will restate that back at EMC we tested the original barriers 
-(with reiserfs mostly, a bit on ext3 and ext2) and saw significant 
-reduction in file system integrity issues after power loss.
+You can download this at http://www.codon.org.uk/~mjg59/gobi_loader/
 
-The vantage point I had at EMC while testing and deploying the original 
-barrier work done by Jens and Chris was pretty unique - full ability to 
-do root cause failures of any component when really needed, a huge 
-installed base which could send information home on a regular basis 
-about crashes/fsck instances/etc and the ability (with customer 
-permission) to dial into any box and diagnose issues remotely. Not to 
-mention access to drive vendors to pressure them to make the flushes 
-more robust. The application was also able to validate that all 
-acknowledged writes were consistent.
-
-Barriers do work as we have them, but as others have mentioned, it is 
-not a "free" win - fsync will actually move your data safely out to 
-persistent storage for a huge percentage of real users (including every 
-ATA/S-ATA and SAS drive I was able to test).  The file systems I 
-monitored in production use without barriers were much less reliable.
-
-As others have noted, some storage does not need barriers or flushed 
-(high end arrays, drives with no volatile write cache) and some need it 
-but stink (low cost USB flash sticks?) so warning is a good thing to do...
-
-ric
-
-
+[1] The firmware to be loaded depends on the user's network, so I can't 
+think of an especially clean way of doing this in kernel.
+-- 
+Matthew Garrett | mjg59@srcf.ucam.org
