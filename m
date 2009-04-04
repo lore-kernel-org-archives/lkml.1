@@ -1,90 +1,78 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756754AbZDDSDW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756809AbZDDSDu@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756754AbZDDSDW (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 4 Apr 2009 14:03:22 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756405AbZDDSDI
+	id S1756809AbZDDSDu (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 4 Apr 2009 14:03:50 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754186AbZDDSDk
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 4 Apr 2009 14:03:08 -0400
-Received: from qw-out-2122.google.com ([74.125.92.27]:20850 "EHLO
-	qw-out-2122.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756372AbZDDSDH (ORCPT
+	Sat, 4 Apr 2009 14:03:40 -0400
+Received: from wf-out-1314.google.com ([209.85.200.175]:20183 "EHLO
+	wf-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755882AbZDDSDj (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 4 Apr 2009 14:03:07 -0400
+	Sat, 4 Apr 2009 14:03:39 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
-        h=mime-version:date:message-id:subject:from:to:cc:content-type
+        h=mime-version:date:message-id:subject:from:to:content-type
          :content-transfer-encoding;
-        b=BVo23CX8WToIl0rreunngfPRrjMKVx9V9yj6oz7FTHHFMLWv20EvIaVzB6Z7YqpCkB
-         RN8ay2/u2uyA/shKEitg6k3LFcEwO3QJ3bKAMY1PqCn6/+/c/lOyfxvnI/7GQiDYwR1l
-         8GCLVhgyIvU2uP1izxZAl8b6wN7twByo35s6c=
+        b=cz//P6FiWV6dxKmF/cR9r675UgVaeF1bfx2HQJbCtnX8AmIWJmcLFdRT14CcOtaFSG
+         ScSsnEkhU9CikZrO2oz5cK11qQHFego4fVw5oxJA7KgV8KjtZRVjGcCDmihUAvSOBEbL
+         GjN6wlBZ9EBNYb+4o0VByuWcGyG6keqIHsFfE=
 MIME-Version: 1.0
-Date: Sat, 4 Apr 2009 11:03:04 -0700
-Message-ID: <a95a62fe0904041103w7fb5a647h5b8469060ed70abc@mail.gmail.com>
-Subject: [PATCH] [MTD] sysfs support should not depend on CONFIG_PROC_FS
-From: Kevin Cernekee <kpc.mtd@gmail.com>
-To: David Woodhouse <dwmw2@infradead.org>,
-       David Brownell <david-b@pacbell.net>
-Cc: Linux MTD <linux-mtd@lists.infradead.org>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
-Content-Type: text/plain; charset=UTF-8
+Date: Sat, 4 Apr 2009 12:03:37 -0600
+Message-ID: <9b1675090904041103v477913a5of06fa5c10ebee05f@mail.gmail.com>
+Subject: IO latency - a special case
+From: "Trenton D. Adams" <trenton.d.adams@gmail.com>
+To: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Move the driver model init code out of the "#ifdef CONFIG_PROC_FS"
-block.
+Hi Guys,
 
-Tested with both values of CONFIG_PROC_FS .  Tested with CONFIG_MTD=m .
+I've been reading a few threads related to IO, such as the recent ext3
+fixes from Ted and such.  I didn't want to cloud that thread, so I'm
+starting a new one.
 
-Issue was reported here: http://lkml.org/lkml/2009/4/4/107
+Here's something I haven't reported yet, because I haven't been able
+to reproduce or identify in any reasonable way, but may be applicable
+to this thread.
 
-Signed-off-by: Kevin Cernekee <kpc.mtd@gmail.com>
----
- drivers/mtd/mtdcore.c |    9 ++++++---
- 1 files changed, 6 insertions(+), 3 deletions(-)
+I am seeing instances where my work load is nil, and I run a process,
+which normally does not do a lot of IO.  I get load averages of
+30-30-28, with a basic lockup for 10 minutes.  The only thing I can
+see that particular app doing is lots of quick IO, mostly reading,
+etc.  But, there was no other major workload at the time.  Also, one
+fix I have employed to reduce my latencies if I'm under heavy load, is
+to use "sync" mount option, or "dirty_bytes".  But, in this instance,
+they had absolutely NO AFFECT.  In addition, if I reboot the problem
+goes away, for awhile.  Swapping is not occurring when I check swap
+after my computer comes back.  So, it seems to me like this problem is
+somewhere primarily outside of the FS layer, or at least outside the
+FS layer TOO.
 
-diff --git a/drivers/mtd/mtdcore.c b/drivers/mtd/mtdcore.c
-index 89c1e5d..fdd6ae8 100644
---- a/drivers/mtd/mtdcore.c
-+++ b/drivers/mtd/mtdcore.c
-@@ -585,6 +585,8 @@ done:
-         return ((count < begin+len-off) ? count : begin+len-off);
- }
+FYI: dirty_bytes setting has a good affect for me "usually", but not
+in this case.
 
-+#endif /* CONFIG_PROC_FS */
-+
- /*====================================================================*/
- /* Init code */
+If the problem was with primarily ext3, why did I not see it in my
+2.6.17 kernel on my i686 gentoo Linux box?  Unless there were major
+changes to ext3 since then which caused it.  And believe me, I
+understand that this latency issue is soooo difficult to find.  Partly
+because I'm an idiot and didn't report it when I saw it two years ago.
+ If I had reported it then, then you guys would probably be in the
+right frame of mind, knowing what changes had just occurred, etc, etc.
 
-@@ -596,24 +598,25 @@ static int __init init_mtd(void)
- 		pr_err("Error creating mtd class.\n");
- 		return PTR_ERR(mtd_class);
- 	}
-+#ifdef CONFIG_PROC_FS
- 	if ((proc_mtd = create_proc_entry( "mtd", 0, NULL )))
- 		proc_mtd->read_proc = mtd_read_proc;
-+#endif /* CONFIG_PROC_FS */
- 	return 0;
- }
+If you want, I can give you an strace on the app I ran.  I'm pretty
+sure it was the one I ran when the problem was occuring. It's 47K
+though.  Hoever, it doesn't appear that any of the system calls took
+any significant amount of time, which seems odd to me, seeing the
+massive lockup.  And, as far as I know, an app can't cause that kind
+of load average of 30 lockup, only the kernel can.  Well, also perhaps
+a reniced and ioniced realtime process could.  Am I right in that?
 
- static void __exit cleanup_mtd(void)
- {
-+#ifdef CONFIG_PROC_FS
-         if (proc_mtd)
- 		remove_proc_entry( "mtd", NULL);
-+#endif /* CONFIG_PROC_FS */
- 	class_destroy(mtd_class);
- }
-
- module_init(init_mtd);
- module_exit(cleanup_mtd);
-
--#endif /* CONFIG_PROC_FS */
--
--
- MODULE_LICENSE("GPL");
- MODULE_AUTHOR("David Woodhouse <dwmw2@infradead.org>");
- MODULE_DESCRIPTION("Core MTD registration and access routines");
--- 
-1.5.6.3
+p.s.
+Right now, I switched to data=writeback mode.  I'm waiting to see if
+this particular problem comes back.  I know that overall latencies do
+decrease when using data=writeback.  And, being on a notebook, with a
+battery, that option is okay for me.
