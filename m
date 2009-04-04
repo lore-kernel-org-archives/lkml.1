@@ -1,95 +1,101 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762168AbZDDAWG@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S937232AbZDDAa7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762168AbZDDAWG (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 3 Apr 2009 20:22:06 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759565AbZDDAVy
+	id S937232AbZDDAa7 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 3 Apr 2009 20:30:59 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S936731AbZDDA2O
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 3 Apr 2009 20:21:54 -0400
-Received: from e7.ny.us.ibm.com ([32.97.182.137]:60852 "EHLO e7.ny.us.ibm.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751515AbZDDAVx (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 3 Apr 2009 20:21:53 -0400
-Message-ID: <49D6A81B.8030004@linux.vnet.ibm.com>
-Date: Fri, 03 Apr 2009 17:21:47 -0700
-From: Corey Ashford <cjashfor@linux.vnet.ibm.com>
-User-Agent: Thunderbird 2.0.0.21 (Windows/20090302)
-MIME-Version: 1.0
-To: Peter Zijlstra <a.p.zijlstra@chello.nl>
-CC: Ingo Molnar <mingo@elte.hu>, linux-kernel@vger.kernel.org,
-       Paul Mackerras <paulus@samba.org>, Mike Galbraith <efault@gmx.de>,
-       Arjan van de Ven <arjan@infradead.org>,
-       Wu Fengguang <fengguang.wu@intel.com>
-Subject: Re: [PATCH 6/6] perf_counter: kerneltop: output event support
-References: <20090325113021.781490788@chello.nl> <20090325113317.192910290@chello.nl>
-In-Reply-To: <20090325113317.192910290@chello.nl>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+	Fri, 3 Apr 2009 20:28:14 -0400
+Received: from hrndva-omtalb.mail.rr.com ([71.74.56.123]:54706 "EHLO
+	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S936617AbZDDA2L (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 3 Apr 2009 20:28:11 -0400
+Message-Id: <20090404002808.027821767@goodmis.org>
+References: <20090404002703.627460459@goodmis.org>
+User-Agent: quilt/0.46-1
+Date: Fri, 03 Apr 2009 20:27:04 -0400
+From: Steven Rostedt <rostedt@goodmis.org>
+To: linux-kernel@vger.kernel.org
+Cc: Ingo Molnar <mingo@elte.hu>, Andrew Morton <akpm@linux-foundation.org>,
+       Frederic Weisbecker <fweisbec@gmail.com>,
+       Steven Rostedt <srostedt@redhat.com>
+Subject: [PATCH 01/10] tracing: remove CALLER_ADDR2 from wakeup tracer
+Content-Disposition: inline; filename=0001-tracing-remove-CALLER_ADDR2-from-wakeup-tracer.patch
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-As I was stealing code from kerneltop today to use in the PAPI profiling 
-implementation, I ran across the code below:
+From: Steven Rostedt <srostedt@redhat.com>
 
-Peter Zijlstra wrote:
-> Teach kerneltop about the new output ABI.
-> 
-> XXX: anybody fancy integrating the PID/TID data into the output?
-> 
-> Bump the mmap_data pages a little because we bloated the output and
-> have to be more careful about overruns with structured data.
-> 
-> Signed-off-by: Peter Zijlstra <a.p.zijlstra@chello.nl>
-> ---
-[snip]
+Maneesh Soni was getting a crash when running the wakeup tracer.
+We debugged it down to the recording of the function with the
+CALLER_ADDR2 macro.  This is used to get the location of the caller
+to schedule.
 
-> 
-> @@ -1147,28 +1152,75 @@ static void mmap_read(struct mmap_data *
->  	unsigned int head = mmap_read_head(md);
->  	unsigned int old = md->prev;
->  	unsigned char *data = md->base + page_size;
-> +	int diff;
-> 
->  	gettimeofday(&this_read, NULL);
-> 
-> -	if (head - old > md->mask) {
-> +	/*
-> +	 * If we're further behind than half the buffer, there's a chance
-> +	 * the writer will bite our tail and screw up the events under us.
-> +	 *
-> +	 * If we somehow ended up ahead of the head, we got messed up.
-> +	 *
-> +	 * In either case, truncate and restart at head.
-> +	 */
-> +	diff = head - old;
-> +	if (diff > md->mask / 2 || diff < 0) {
->  		struct timeval iv;
->  		unsigned long msecs;
-> 
->  		timersub(&this_read, &last_read, &iv);
->  		msecs = iv.tv_sec*1000 + iv.tv_usec/1000;
-> 
-> -		fprintf(stderr, "WARNING: failed to keep up with mmap data.  Last read %lu msecs ago.\n", msecs);
-> +		fprintf(stderr, "WARNING: failed to keep up with mmap data."
-> +				"  Last read %lu msecs ago.\n", msecs);
-> 
-[snip]
+But the problem comes when schedule is called by assmebly. In the case
+that Maneesh had, retint_careful would call schedule. But retint_careful
+does not set up a proper frame pointer. CALLER_ADDR2 is defined as
+__builtin_return_address(2). This produces the following assembly in
+the wakeup tracer code.
 
-The test for diff < 0 looks incorrect to me.  This shouldn't be an 
-error, because it will frequently be the case that the head has wrapped 
-around back to the beginning of the mmap'd pages, while old is near the end.
+   mov    0x0(%rbp),%rcx  <--- get the frame pointer of the caller
+   mov    %r14d,%r8d
+   mov    0xf2de8e(%rip),%rdi
 
-What it needs to find out, I think, is if the modulo distance between 
-old and head is greater than 1/2 of the span of the mmap'd pages. 
-Here's a suggested change:
+   mov    0x8(%rcx),%rsi  <-- this is __builtin_return_address(1)
+   mov    0x28(%rdi,%rax,8),%rbx
 
--	diff = head - old;
-+	diff = (head - old) & md->mask;
--	if (diff > md->mask / 2 || diff < 0) {
-+	if (diff > md->mask / 2) {
+   mov    (%rcx),%rax  <-- get the frame pointer of the caller's caller
+   mov    %r12,%rcx
+   mov    0x8(%rax),%rdx <-- this is __builtin_return_address(2)
 
+At the reading of 0x8(%rax) Maneesh's machine would take a fault.
+The reason is that retint_careful did not set up the return address
+and the content of %rax here was zero.
 
-What do you think?
+To verify this, I sent Maneesh a patch to create a frame pointer
+in retint_careful. He ran the test again but this time he would take
+the same type of fault from sysret_careful. The retint_careful was no
+longer an issue, but there are other callers that still have issues.
 
-- Corey
+Instead of adding frame pointers for all callers to schedule (in possibly
+all archs), it is much safer to simply not use CALLER_ADDR2. This
+loses out on knowing what called schedule, but the function tracer
+will help there if needed.
 
+Reported-by: Maneesh Soni <maneesh@in.ibm.com>
+Signed-off-by: Steven Rostedt <srostedt@redhat.com>
+---
+ kernel/trace/trace_sched_wakeup.c |    8 +++++++-
+ 1 files changed, 7 insertions(+), 1 deletions(-)
+
+diff --git a/kernel/trace/trace_sched_wakeup.c b/kernel/trace/trace_sched_wakeup.c
+index 3c5ad6b..5bc00e8 100644
+--- a/kernel/trace/trace_sched_wakeup.c
++++ b/kernel/trace/trace_sched_wakeup.c
+@@ -154,7 +154,7 @@ probe_wakeup_sched_switch(struct rq *rq, struct task_struct *prev,
+ 	if (unlikely(!tracer_enabled || next != wakeup_task))
+ 		goto out_unlock;
+ 
+-	trace_function(wakeup_trace, CALLER_ADDR1, CALLER_ADDR2, flags, pc);
++	trace_function(wakeup_trace, CALLER_ADDR0, CALLER_ADDR1, flags, pc);
+ 	tracing_sched_switch_trace(wakeup_trace, prev, next, flags, pc);
+ 
+ 	/*
+@@ -257,6 +257,12 @@ probe_wakeup(struct rq *rq, struct task_struct *p, int success)
+ 	data = wakeup_trace->data[wakeup_cpu];
+ 	data->preempt_timestamp = ftrace_now(cpu);
+ 	tracing_sched_wakeup_trace(wakeup_trace, p, current, flags, pc);
++
++	/*
++	 * We must be careful in using CALLER_ADDR2. But since wake_up
++	 * is not called by an assembly function  (where as schedule is)
++	 * it should be safe to use it here.
++	 */
+ 	trace_function(wakeup_trace, CALLER_ADDR1, CALLER_ADDR2, flags, pc);
+ 
+ out_locked:
+-- 
+1.6.2.1
+
+-- 
