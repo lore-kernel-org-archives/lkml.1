@@ -1,159 +1,97 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755160AbZDDN5k@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754689AbZDDOIa@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755160AbZDDN5k (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 4 Apr 2009 09:57:40 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752949AbZDDN53
+	id S1754689AbZDDOIa (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 4 Apr 2009 10:08:30 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752972AbZDDOIU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 4 Apr 2009 09:57:29 -0400
-Received: from thunk.org ([69.25.196.29]:36622 "EHLO thunker.thunk.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752227AbZDDN52 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 4 Apr 2009 09:57:28 -0400
-Date: Sat, 4 Apr 2009 09:57:19 -0400
-From: Theodore Tso <tytso@mit.edu>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: Jens Axboe <jens.axboe@oracle.com>,
-       Linux Kernel Developers List <linux-kernel@vger.kernel.org>,
-       Ext4 Developers List <linux-ext4@vger.kernel.org>
-Subject: Re: [GIT PULL] Ext3 latency fixes
-Message-ID: <20090404135719.GA9812@mit.edu>
-Mail-Followup-To: Theodore Tso <tytso@mit.edu>,
-	Linus Torvalds <torvalds@linux-foundation.org>,
-	Jens Axboe <jens.axboe@oracle.com>,
-	Linux Kernel Developers List <linux-kernel@vger.kernel.org>,
-	Ext4 Developers List <linux-ext4@vger.kernel.org>
-References: <1238742067-30814-1-git-send-email-tytso@mit.edu> <alpine.LFD.2.00.0904031110420.19690@localhost.localdomain> <alpine.LFD.2.00.0904031150190.4015@localhost.localdomain> <alpine.LFD.2.00.0904031329410.7007@localhost.localdomain>
+	Sat, 4 Apr 2009 10:08:20 -0400
+Received: from fg-out-1718.google.com ([72.14.220.152]:56374 "EHLO
+	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752327AbZDDOIT (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 4 Apr 2009 10:08:19 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=sender:date:from:to:cc:subject:message-id:references:mime-version
+         :content-type:content-disposition:in-reply-to:user-agent;
+        b=kcIUqKirO4152uPUHK+2e2LyOAJM9FGOoU7P7jsmJoMZbsFr7mUzfr5AJrSS14m3eH
+         TmIDx5KLR4v1a7bWPRfrQz/1bykoyImhj18UtZtVujqtm8q+FodGJVYxZm3npxL/EXct
+         p0oLUfHEQIUiOGj/EBtHlFc/x5Mc46YzQic68=
+Date: Sat, 4 Apr 2009 17:08:52 +0300
+From: Eduard - Gabriel Munteanu <eduard.munteanu@linux360.ro>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: Pekka Enberg <penberg@cs.helsinki.fi>,
+       Vegard Nossum <vegard.nossum@gmail.com>, Mel Gorman <mel@csn.ul.ie>,
+       Jason Baron <jbaron@redhat.com>, linux-kernel@vger.kernel.org,
+       mm-commits@vger.kernel.org, alexn@dsv.su.se, akpm@linux-foundation.org,
+       alexn@telia.com, apw@shadowen.org, cl@linux-foundation.org,
+       haveblue@us.ibm.com, kamezawa.hiroyu@jp.fujitu.com,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>,
+       Steven Rostedt <rostedt@goodmis.org>,
+       Fr?d?ric Weisbecker <fweisbec@gmail.com>
+Subject: Re: + page-owner-tracking.patch added to -mm tree
+Message-ID: <20090404140852.GA5736@localhost>
+References: <20090401131713.GQ12966@elte.hu> <20090401133220.GB6406@csn.ul.ie> <20090401134917.GC18677@elte.hu> <1238597398.23857.11.camel@penberg-laptop> <20090401152251.GB23390@elte.hu> <1238656331.26286.17.camel@penberg-laptop> <20090403042131.GA15669@localhost> <20090403141743.GF8875@elte.hu> <49D61F09.2080808@cs.helsinki.fi> <20090403144344.GA9643@elte.hu>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <alpine.LFD.2.00.0904031329410.7007@localhost.localdomain>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-SA-Exim-Connect-IP: <locally generated>
-X-SA-Exim-Mail-From: tytso@mit.edu
-X-SA-Exim-Scanned: No (on thunker.thunk.org); SAEximRunCond expanded to false
+In-Reply-To: <20090403144344.GA9643@elte.hu>
+User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Apr 03, 2009 at 01:41:54PM -0700, Linus Torvalds wrote:
+On Fri, Apr 03, 2009 at 04:43:44PM +0200, Ingo Molnar wrote:
 > 
-> Hmm. So I decided to try with "data=writeback" to see if it really makes 
-> that big of a difference. It does help, but I still easily trigger 
-> multi-second pauses
+> * Pekka Enberg <penberg@cs.helsinki.fi> wrote:
+> 
+> > Ingo Molnar wrote:
+> >> * Eduard - Gabriel Munteanu <eduard.munteanu@linux360.ro> wrote:
+> >>
+> >>> One thing I'm not sure about this patch is whether it manages to  
+> >>> record an allocation only once, i.e. does it log a single event  
+> >>> when/if the slab allocator requests pages? Some time ago I sent a  
+> >>> patch adding GFP_NOTRACE to gfp.h, but was rejected. Maybe this  
+> >>> could be a way out of the mess.
+> >>>
+> >>> (GFP_NOTRACE would also allow us to log "backend" allocations easily 
+> >>> and treat them separately, for the record, or simply filter them 
+> >>> out.)
+> >>
+> >> makes a lot of sense IMO to annotate these via a GFP flag.
+> >
+> > Yup, make sense. I think I rejected the patch (did I?) because I 
+> > wanted to fix the slub/slab mess differently but here it makes 
+> > perfect sense.
 
-Using ext3 data=writeback, your "write big (2GB) file and sync" as the
-background workload, and fsync-tester, I was able to reduce the
-latency down to under 1 second...
+Uh, I don't remember exactly, not sure who did it.
 
-fsync time: 0.1717
-fsync time: 0.0205
-fsync time: 0.1814
-fsync time: 0.7408
-fsync time: 0.1955
-fsync time: 0.0327
-fsync time: 0.0456
-fsync time: 0.0563
+But to expand on the upside of doing it this way, we could expect to see
+something like...
 
-...by doing two things: (1) Applying the attached patch, which fixes
-one last critical place where we were using WRITE instead of
-WRITE_SYNC --- the commit record was being written by
-sync_dirty_buffer(), and this of _all_ places needs to use WRITE_SYNC,
-since it waits for the buffer to be written write after submitting the
-I/O, and (2) using the anticipatory I/O scheduler instead of the cfq
-I/O scheduler.
+xxxxx	CPU0	GFP_KERNEL			kmalloc
+xxxxx	CPU0	GFP_KERNEL | GFP_NOTRACE	__get_free_pages
+xxxxx	CPU0	GFP_KERNEL | GFP_NOTRACE	kmalloc
+xxxxx	CPU0	GFP_KERNEL			kmem_cache_alloc
 
-(1) brought things down from 2-3.5 seconds on my system to 1-2
-seconds, and (2) brought things down to what you see above.  I think
-what is going on with the cfq scheduler is that it's using time slices
-to make sure sync and async operations never completely starve each
-other out, and in this case we need to tune the I/O scheduling
-parameters so that for this workload, the synchronous operations don't
-end up getting impeded by the asynchronous writes caused by background
-"write big file and sync" task.
+So it's easy to see that allocations 2 and 3 are in fact part of the
+fourth. It will get confused by IRQs, preemption and sleeping while
+allocating, but we could use additional information (e.g. tracking
+returned ptr's) to eliminate some/many such confusions in userspace.
 
-In any case, Jens may want to look at this test case (ext3
-data=writeback, 'while : ; do time sh -c "dd if=/dev/zero of=bigfile
-bs=8M count=256 ; sync"; done', and fsync-tester) as a good way to see
-how cfq might be improved.
+> I'm wondering how much could be shared with the kmemcheck's 
+> internal-allocation annotations. There's some overlap (although not 
+> a full match) i suspect?
+> 
+> 	Ingo
 
-On another thread, it's been commented that there are still workloads
-for which people are quietly switching from CFQ to AS, and this is
-bad, because it causes us not to try to figure out why our default I/O
-scheduler still as these 1% of cases where people need to use another
-scheduler.  Well, here's one such case which is relatively easy to
-reproduce.
+I had already suggested this to Vegard some time ago. Basically,
+kmemcheck should hook to the same tracepoints. As far as I remember,
+kmemtrace gets more info out of the allocators, so this should suit
+kmemcheck as well. Though this would incur additional overhead for the
+latter due to the extra parameters being passed, but kmemcheck is slow
+anyway.
 
-> Are we perhaps ending up doing those regular 'bigfile' writes as 
-> WRITE_SYNC, just because of the global "sync()" call? That's probably a 
-> bad idea. A "sync" is about pure throughput. It's not about latency like 
-> "fsync()" is.
 
-Well, at least on my system where I did this round of testing (4gig
-X61s with a 5400 RPM laptop drive), most of the time we weren't
-writing the bigfile writes because of the sync, but because dd and
-pdflush processes was trying to flush out the dirty pages from the big
-write operation.  At the moment where "dd" completes and the "sync"
-command is executed, the fsync latency jumped up to about 4-5 seconds
-before this last round of changes.  After adding the attached patch
-and switching to the AS I/O scheduler, at the moment of the sync the
-fsync latency was just over a second (1.1 to 1.2 seconds).  The rest
-of the time we are averaging between a 1/4 and a 1/3 of a second, with
-rare fsync latency spikes up to about 3/4 of a second, as show at the
-beginning of this message.
-
-(Maybe on a system with a lot more memory, the dirty pages don't start
-getting flushed to disk until the sync command, but that's not what
-I'm seeing on my 4 gig laptop.)
-
-In answer to your question, "sync" does the writes in two passes;
-first it pushes out writes with wbc.sync_mode set to WB_SYNC_NONE, and
-then it calls the page writeback routines a second time with
-WB_SYNC_ALL.  So most of the writes should go out with WRITE, except
-that the page writeback routines aren't as aggressive about pushing
-out _all_ pages in WB_SYNC_NONE, so I believe some of the pages would
-still be written on the WB_SYNC_ALL, and thus would go out using
-WRITE_SYNc.  This is based on 2-3 month old memory of how things
-worked in the page-writeback routines, which is the last time I traced
-the very deep call trees involved in this area.  I'd have to run a
-blktrace experiment to see for sure how many of the writes were going
-out as WRITE vs. WRITE_SYNC in the case of the 'sync' command.
-
-In any case, I recommend you take the following attached patch, and
-then try out ext3 data=writeback with anticipatory I/O scheduler.
-Hopefully you'll be pleased with the results.
-
-							- Ted
-
->From 6d293d2aa42d43c120f113bde55f7b0d6f3f35ae Mon Sep 17 00:00:00 2001
-From: Theodore Ts'o <tytso@mit.edu>
-Date: Sat, 4 Apr 2009 09:17:38 -0400
-Subject: [PATCH] sync_dirty_buffer: Use WRITE_SYNC instead of WRITE
-
-The sync_dirty_buffer() function submits a buffer for write, and then
-synchronously waits for it.  It clearly should use WRITE_SYNC instead
-of WRITE.  This significantly reduces ext3's fsync() latency when
-there is a huge background task writing data asyncronously in the
-background, since ext3 uses sync_dirty_buffer() to write the commit
-block.
-
-Signed-off-by: "Theodore Ts'o" <tytso@mit.edu>
----
- fs/buffer.c |    2 +-
- 1 files changed, 1 insertions(+), 1 deletions(-)
-
-diff --git a/fs/buffer.c b/fs/buffer.c
-index 2ed4b68..78ed086 100644
---- a/fs/buffer.c
-+++ b/fs/buffer.c
-@@ -3038,7 +3038,7 @@ int sync_dirty_buffer(struct buffer_head *bh)
- 	if (test_clear_buffer_dirty(bh)) {
- 		get_bh(bh);
- 		bh->b_end_io = end_buffer_write_sync;
--		ret = submit_bh(WRITE, bh);
-+		ret = submit_bh(WRITE_SYNC, bh);
- 		wait_on_buffer(bh);
- 		if (buffer_eopnotsupp(bh)) {
- 			clear_buffer_eopnotsupp(bh);
--- 
-1.5.6.3
+	Eduard
 
