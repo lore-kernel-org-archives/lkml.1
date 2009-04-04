@@ -1,120 +1,75 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S937162AbZDDAi1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S936215AbZDDAmt@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S937162AbZDDAi1 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 3 Apr 2009 20:38:27 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762382AbZDDAiL
+	id S936215AbZDDAmt (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 3 Apr 2009 20:42:49 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760093AbZDDAmh
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 3 Apr 2009 20:38:11 -0400
-Received: from mx2.redhat.com ([66.187.237.31]:57457 "EHLO mx2.redhat.com"
+	Fri, 3 Apr 2009 20:42:37 -0400
+Received: from mx2.redhat.com ([66.187.237.31]:38959 "EHLO mx2.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1762686AbZDDAiF (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 3 Apr 2009 20:38:05 -0400
-Message-ID: <49D6ABD1.7040704@redhat.com>
-Date: Fri, 03 Apr 2009 20:37:37 -0400
-From: Masami Hiramatsu <mhiramat@redhat.com>
-User-Agent: Thunderbird 2.0.0.21 (X11/20090320)
+	id S1758963AbZDDAmg (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 3 Apr 2009 20:42:36 -0400
+Organization: Red Hat UK Ltd. Registered Address: Red Hat UK Ltd, Amberley
+	Place, 107-111 Peascod Street, Windsor, Berkshire, SI4 1TE, United
+	Kingdom.
+	Registered in England and Wales under Company Registration No. 3798903
+From: David Howells <dhowells@redhat.com>
+Subject: [PATCH] FS-Cache: Add MAINTAINERS record for FS-Cache and CacheFiles
+To: torvalds@osdl.org, joe@perches.com
+Cc: dhowells@redhat.com, steved@redhat.com, linux-cachefs@redhat.com,
+       linux-kernel@vger.kernel.org
+Date: Sat, 04 Apr 2009 01:40:56 +0100
+Message-ID: <20090404004056.1473.94222.stgit@warthog.procyon.org.uk>
+User-Agent: StGIT/0.14.3
 MIME-Version: 1.0
-To: "H. Peter Anvin" <hpa@zytor.com>, Jim Keniston <jkenisto@us.ibm.com>
-CC: Ingo Molnar <mingo@elte.hu>,
-       Ananth N Mavinakayanahalli <ananth@in.ibm.com>,
-       Andi Kleen <andi@firstfloor.org>, kvm@vger.kernel.org,
-       Steven Rostedt <rostedt@goodmis.org>,
-       Frederic Weisbecker <fweisbec@gmail.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Arnaldo Carvalho de Melo <acme@redhat.com>,
-       systemtap-ml <systemtap@sources.redhat.com>,
-       LKML <linux-kernel@vger.kernel.org>,
-       Vegard Nossum <vegard.nossum@gmail.com>, Avi Kivity <avi@redhat.com>,
-       Roland McGrath <roland@redhat.com>
-Subject: Re: [PATCH -tip 3/6 V4.1] x86: instruction decorder API
-References: <49D4F4E6.6060401@redhat.com> <49D69BCA.8060506@redhat.com> <49D69F39.4010101@zytor.com>
-In-Reply-To: <49D69F39.4010101@zytor.com>
-X-Enigmail-Version: 0.95.7
-Content-Type: text/plain; charset=ISO-8859-1
+Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Peter,
+Add MAINTAINERS record for FS-Cache and CacheFiles.
 
-H. Peter Anvin wrote:
-> Masami Hiramatsu wrote:
->> Add x86 instruction decoder to arch-specific libraries. This decoder
->> can decode all x86 instructions into prefix, opcode, modrm, sib,
->> displacement and immediates. This can also show the length of
->> instructions.
->>
->> changes from v4:
->>  - make bitmap tables static.
-> 
-> Hi Masami,
-> 
-> On the surface the overall structure looks fine, but I have a couple of 
-> concerns:
-> 
-> 1. is this meant to be able to decode userspace code or just kernel 
-> code?  If it is supposed to be able to decode userspace code, is there a 
-> reason you're not dealing with 16-bit or V86 mode code at all?  If not, 
-> why are you including the 32-bit decoder in a 64-bit kernel (as well as 
-> instructions which we're pretty much guaranteed to never use in the 
-> kernel, such as ENTER.)
+Signed-off-by: David Howells <dhowells@redhat.com>
+---
 
-Actually, this aims to decode both of user space and kernel code.
-At this point, it just needs to cover kernel code, because kprobes
-just want to decode kernel binary.
-However, this is just a starting point, uprobe developers want to
-use it to decode user-space code. In that case, it needs to be
-enhanced.
+ MAINTAINERS |   17 +++++++++++++++++
+ 1 files changed, 17 insertions(+), 0 deletions(-)
 
 
-> 2. you're already not dealing with all existing three-byte opcode 
-> spaces, nor with DREX or VEX encodings for upcoming processors.  This 
-> doesn't matter so much for the kernel, but it does matter if this is 
-> supposed to be used for user-space code.
-> 
-> 3. is there any need to deal with instruction set differences among 
-> processors?  (Again, this depends on the usage model.)
-
-Agreed. When it support decoding user-space code, it should
-support all kind of instructions.
-
-> 
-> 4. you have a bunch of magic opcode constants all over the place.  This 
-> means that as new instructions come in -- and they're going to be coming 
-> in -- this is going to be hard to update.  It would be cleaner if we 
-> could have an intermediate format that preprocesses down to all the 
-> relevant tables and perhaps even some of the code rather than 
-> open-coding everything in C.
-> 
-> This matters... for example you have:
-> 
-> +		} else if (opcode == 0xea /* jmp far seg:offs */) {
-> +			__get_immptr(insn);
-> 
-> ... but nothing similar for opcode 0x9a.  This is extremely hard to spot 
-> with this kind of structure.
-
-Oops, that should be a bug. Hmm, I think we'd better bit-flags tables
-for classifying opcodes.
-Jim, can your INAT idea help this situation?
-
-http://sources.redhat.com/ml/systemtap/2009-q2/msg00109.html
-
-> 
-> The more data-driven we can make it (without bloating the code too much) 
-> the better off we are, I believe.
-> 
-> 	-hpa
-
-Thank you for good advice!
-
--- 
-Masami Hiramatsu
-
-Software Engineer
-Hitachi Computer Products (America) Inc.
-Software Solutions Division
-
-e-mail: mhiramat@redhat.com
+diff --git a/MAINTAINERS b/MAINTAINERS
+index 6fe6f39..e56f9f3 100644
+--- a/MAINTAINERS
++++ b/MAINTAINERS
+@@ -1068,6 +1068,14 @@ W:	http://linuxtv.org
+ T:	git kernel.org:/pub/scm/linux/kernel/git/mchehab/linux-2.6.git
+ S:	Maintained
+ 
++CACHEFILES: FS-CACHE BACKEND FOR CACHING ON MOUNTED FILESYSTEMS
++P:	David Howells
++M:	dhowells@redhat.com
++L:	linux-cachefs@redhat.com
++S:	Supported
++F:	Documentation/filesystems/caching/cachefiles.txt
++F:	fs/cachefiles/
++
+ CAFE CMOS INTEGRATED CAMERA CONTROLLER DRIVER
+ P:	Jonathan Corbet
+ M:	corbet@lwn.net
+@@ -1873,6 +1881,15 @@ M:	rjw@sisk.pl
+ L:	linux-pm@lists.linux-foundation.org
+ S:	Supported
+ 
++FS-CACHE: LOCAL CACHING FOR NETWORK FILESYSTEMS
++P:	David Howells
++M:	dhowells@redhat.com
++L:	linux-cachefs@redhat.com
++S:	Supported
++F:	Documentation/filesystems/caching/
++F:	fs/fscache/
++F:	include/linux/fscache*.h
++
+ FTRACE
+ P:	Steven Rostedt
+ M:	rostedt@goodmis.org
 
