@@ -1,54 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754734AbZDDWKf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755196AbZDDWOf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754734AbZDDWKf (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 4 Apr 2009 18:10:35 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752599AbZDDWK0
+	id S1755196AbZDDWOf (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 4 Apr 2009 18:14:35 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752719AbZDDWOY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 4 Apr 2009 18:10:26 -0400
-Received: from ogre.sisk.pl ([217.79.144.158]:38492 "EHLO ogre.sisk.pl"
+	Sat, 4 Apr 2009 18:14:24 -0400
+Received: from mx2.redhat.com ([66.187.237.31]:55887 "EHLO mx2.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752234AbZDDWKZ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 4 Apr 2009 18:10:25 -0400
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-To: Frans Pop <elendil@planet.nl>
-Subject: Re: [RFC][PATCH] PM: Warn if interrupts are enabled during suspend-resume of sysdevs
-Date: Sun, 5 Apr 2009 00:10:26 +0200
-User-Agent: KMail/1.11.2 (Linux/2.6.29-rjw; KDE/4.2.2; x86_64; ; )
-Cc: lenb@kernel.org, linux-pm@lists.linux-foundation.org,
-       linux-kernel@vger.kernel.org, mingo@elte.hu
-References: <200904042323.19866.rjw@sisk.pl> <200904050003.33609.elendil@planet.nl>
-In-Reply-To: <200904050003.33609.elendil@planet.nl>
-MIME-Version: 1.0
-Content-Type: Text/Plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200904050010.26855.rjw@sisk.pl>
+	id S1752234AbZDDWOX (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 4 Apr 2009 18:14:23 -0400
+Organization: Red Hat UK Ltd. Registered Address: Red Hat UK Ltd, Amberley
+	Place, 107-111 Peascod Street, Windsor, Berkshire, SI4 1TE, United
+	Kingdom.
+	Registered in England and Wales under Company Registration No. 3798903
+From: David Howells <dhowells@redhat.com>
+In-Reply-To: <200904050122.42081.nickpiggin@yahoo.com.au>
+References: <200904050122.42081.nickpiggin@yahoo.com.au> <20090403155436.28714.23368.stgit@warthog.procyon.org.uk> <20090403155624.28714.87176.stgit@warthog.procyon.org.uk> <200904041709.31651.nickpiggin@yahoo.com.au>
+To: Nick Piggin <nickpiggin@yahoo.com.au>
+Cc: dhowells@redhat.com, Andrew Morton <akpm@linux-foundation.org>,
+       linux-kernel@vger.kernel.org, nfsv4@linux-nfs.org,
+       linux-fsdevel@vger.kernel.org
+Subject: Re: [PATCH 21/41] CacheFiles: Permit the page lock state to be monitored [ver #48]
+Date: Sat, 04 Apr 2009 23:13:33 +0100
+Message-ID: <951.1238883213@redhat.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sunday 05 April 2009, Frans Pop wrote:
-> > @@ -377,6 +381,9 @@ int sysdev_suspend(pm_message_t state)
-> >         if (ret)
-> >                 return ret;
-> >  
-> > +       WARN_ONCE(!irqs_disabled(),
-> > +               "Interrupts enabled while suspending system devices");
-> > +
-> 
-> Missing \n ?
-> 
-> > @@ -452,6 +465,9 @@ int sysdev_resume(void)
-> >  {
-> >         struct sysdev_class *cls;
-> >  
-> > +       WARN_ONCE(!irqs_disabled(),
-> > +               "Interrupts enabled while resuming system devices");
-> > +
-> 
-> Again.
+Nick Piggin <nickpiggin@yahoo.com.au> wrote:
 
-Yes, thank.
+> On Saturday 04 April 2009 17:09:31 Nick Piggin wrote:
+> > On Saturday 04 April 2009 02:56:24 David Howells wrote:
+> > > Add a function to install a monitor on the page lock waitqueue for a
+> > > particular page, thus allowing the page being unlocked to be detected.
+> > > 
+> > > This is used by CacheFiles to detect read completion on a page in the
+> > > backing filesystem so that it can then copy the data to the waiting
+> > > netfs page.
+> > 
+> > This is the only thing I'm still worried about in core code. The extra
+> > page flag (which is probably unusable for any other fs, due to its
+> > semantics) is an issue, but Andrew seemed like he was willing to spend
+> > *2* page flags on this, so I'm sure he's happy with 1.
+> 
+> Well that is to say it is not a such a bad concept to have...
 
-Rafael
+What is not such a bad concept to have?  Having an extra page flag?
+
+> actually we already have exactly this concept which is what should be used.
+> Ie. the filesystem's io completion handler.
+
+Which filesystem's I/O completion handler?
+
+David
