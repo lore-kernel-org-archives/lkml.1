@@ -1,425 +1,170 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755130AbZDDLcp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754833AbZDDMR1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755130AbZDDLcp (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 4 Apr 2009 07:32:45 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752521AbZDDLcb
+	id S1754833AbZDDMR1 (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 4 Apr 2009 08:17:27 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752016AbZDDMRM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 4 Apr 2009 07:32:31 -0400
-Received: from mx2.redhat.com ([66.187.237.31]:34532 "EHLO mx2.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752119AbZDDLc3 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 4 Apr 2009 07:32:29 -0400
-Organization: Red Hat UK Ltd. Registered Address: Red Hat UK Ltd, Amberley
-	Place, 107-111 Peascod Street, Windsor, Berkshire, SI4 1TE, United
-	Kingdom.
-	Registered in England and Wales under Company Registration No. 3798903
-From: David Howells <dhowells@redhat.com>
-In-Reply-To: <200904041709.31651.nickpiggin@yahoo.com.au>
-References: <200904041709.31651.nickpiggin@yahoo.com.au> <20090403155436.28714.23368.stgit@warthog.procyon.org.uk> <20090403155624.28714.87176.stgit@warthog.procyon.org.uk>
-To: Nick Piggin <nickpiggin@yahoo.com.au>
-Cc: dhowells@redhat.com, Andrew Morton <akpm@linux-foundation.org>,
-       linux-kernel@vger.kernel.org, nfsv4@linux-nfs.org,
-       linux-fsdevel@vger.kernel.org
-Subject: Re: [PATCH 21/41] CacheFiles: Permit the page lock state to be monitored [ver #48]
-Date: Sat, 04 Apr 2009 12:31:40 +0100
-Message-ID: <32240.1238844700@redhat.com>
+	Sat, 4 Apr 2009 08:17:12 -0400
+Received: from mail-bw0-f169.google.com ([209.85.218.169]:51222 "EHLO
+	mail-bw0-f169.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751914AbZDDMRK (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 4 Apr 2009 08:17:10 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=from:to:subject:date:user-agent:cc:references:in-reply-to
+         :mime-version:content-disposition:message-id:content-type
+         :content-transfer-encoding;
+        b=SU15kQ9kQ4JzaY3LGW9q9BsIaH/D/F8msNmtCkjQOtTwoKFot9EbBAKCZCcfFLEimx
+         tzwglzt418TCSIcbGCkRuMj9/MEAC2UBBxOpOSV8qEiG1spezlAwzgXxTCkVxPur1tlw
+         h9Ypc/9cfyiLzW2kL680HSDMiA45Pu6hkIjgo=
+From: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
+To: petkovbb@gmail.com
+Subject: Re: [PATCH 2/3] ide-cd: cleanup cdrom_decode_status
+Date: Sat, 4 Apr 2009 14:00:18 +0200
+User-Agent: KMail/1.11.1 (Linux/2.6.29-next-20090403; KDE/4.2.1; i686; ; )
+Cc: linux-kernel@vger.kernel.org, linux-ide@vger.kernel.org
+References: <1238655519-10074-2-git-send-email-petkovbb@gmail.com> <200904032139.38756.bzolnier@gmail.com> <20090404094054.GA20223@liondog.tnic>
+In-Reply-To: <20090404094054.GA20223@liondog.tnic>
+MIME-Version: 1.0
+Content-Disposition: inline
+Message-Id: <200904041400.18195.bzolnier@gmail.com>
+Content-Type: text/plain;
+  charset="utf-8"
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Nick Piggin <nickpiggin@yahoo.com.au> wrote:
 
-> I would really like to know exactly why it *has* to be asynchronous,
-> and see what the diff looks like between a simple synchronous design
-> and what you have here.
+Hi,
 
-Okay.  See attached patch.
+On Saturday 04 April 2009, Borislav Petkov wrote:
+> Hi,
+> 
+> > ...and this would make me spend a whole weekend trying to track down every
+> > little change in code's behavior I went ahead and re-did your patch splitting
+> > it on a more fine-grained logical changes (posted in separate patchset, while
+> > at it I also fixed REQ_QUIET handling for fs requests).
+> > 
+> > After that I did a diff between ide-cd.c.old_patch and ide-cd.c.new_patchset
+> > and besides some trivial differences I indeed found some subtle problems...
+> > 
+> > --- ide-cd.c.old_patch	2009-04-03 18:50:23.000000000 +0200
+> > +++ ide-cd.c.new_patchset	2009-04-03 21:12:02.000000000 +0200
+> > @@ -311,7 +311,7 @@
+> >  {
+> >  	ide_hwif_t *hwif = drive->hwif;
+> >  	struct request *rq = hwif->rq;
+> > -	int err, sense_key, do_end_request;
+> > +	int err, sense_key, do_end_request = 0;
+> >  
+> >  	/* get the IDE error register */
+> >  	err = ide_read_error(drive);
+> > @@ -331,90 +331,104 @@
+> >  		return 2;
+> >  	}
+> >  
+> > -	/* if we got an error, pass CHECK_CONDITION as the scsi status byte */
+> > +	/* if we got an error, pass CHECK_CONDITION as the SCSI status byte */
+> >  	if (blk_pc_request(rq) && !rq->errors)
+> >  		rq->errors = SAM_STAT_CHECK_CONDITION;
+> >  
+> >  	if (blk_noretry_request(rq))
+> > -			do_end_request = 1;
+> > +		do_end_request = 1;
+> >  
+> >  	switch (sense_key) {
+> >  	case NOT_READY:
+> > -		if (blk_fs_request(rq) && (rq_data_dir(rq) == WRITE)) {
+> > +		if (blk_fs_request(rq) == 0 || rq_data_dir(rq) == READ) {
+> > +			cdrom_saw_media_change(drive);
+> > +
+> > +			if (blk_fs_request(rq) &&
+> > +			    (rq->cmd_flags & REQ_QUIET) == 0)
+> > +				printk(KERN_ERR PFX "%s: tray open\n",
+> > +					drive->name);
+> > +		} else {
+> >  			if (ide_cd_breathe(drive, rq))
+> >  				return 1;
+> > -		} else {
+> > -			cdrom_saw_media_change(drive);
+> > -			printk(KERN_ERR PFX "%s: tray open\n", drive->name);
+> > 
+> > original code didn't spam logs for pc requests
+> 
+> but since we want to unify behavior I don't think we should handle
+> the rq verbosity cases differently based on rq type and remove that
+> blk_fs_request(rq) check instead. Also, you've inverted the logic for
 
-Three benchmarks, all with data preloaded into the cache, and all with all the
-data in memory on the server:
+Right, but it can be changed later (if you are fine with the current
+patchset I'll merge it so we can base such improvements on top if it).
 
- (1) dd of a 100MB file.
+> the ide_cd_breathe() case and I'd much rather have it there explicitly
+> for clarity. Something like:
+> 
+> 	if (blk_fs_request(rq) && (rq_data_dir(rq) == WRITE)) {
 
- (2) dd of a 200MB file.
+[ parentheses aroung rq_data_dir() check are not necessary ]
 
- (3) Eight parallel tars of 340MB kernel trees.
+> 		if (ide_cd_breathe(drive, rq))
+> 			return 1;
+> 	     } else {
+>                      cdrom_saw_media_change(drive);
+> 
+>                          if ((rq->cmd_flags & REQ_QUIET) == 0)
+> 				 printk(KERN_ERR PFX "%s: tray open\n",
+> 						 drive->name);
+> 	     }
+> 	break;
+> 
+> 
+> 
+> >  		}
+> >  		do_end_request = 1;
+> >  		break;
+> > -
+> >  	case UNIT_ATTENTION:
+> >  		cdrom_saw_media_change(drive);
+> > -		if (blk_pc_request(rq) || rq->cmd_type == REQ_TYPE_ATA_PC)
+> > +
+> > +		if (blk_fs_request(rq) == 0)
+> >  			return 0;
+> > +		/*
+> > +		 * Arrange to retry the request but be sure to give up if we've
+> > +		 * retried too many times.
+> > +		 */
+> > +		if (++rq->errors > ERROR_MAX)
+> > +			do_end_request = 1;
+> 
+> We could just as well kill any request which has retried ERROR_MAX
+> times, not only the one returning UNIT_ATTENTION, as an upper bound on
+> the times travelling through driver and block layer, don't you think?
 
-	Benchmark	Without Patch	With Patch
-	1		1.971s		3.371s
-	2		3.750s		7.093s
-	3		18 mins		22 mins
+Hmm, it seems like we already do -- in all cases that we don't end
+request unconditionally we either return or do this check...
 
-With this patch, we wait for the pages to be read from the backing fs and copy
-them in fscache_read_or_alloc_pages().
+> That's why I moved the ERROR_MAX check _after_ the switch-case. I know,
+> I know, a sentence about it in the commit message would've been quilt
+> suitable, i know :)...
 
-I'm sure there are ways to optimise things, but whilst doing a synchronous
-read at this in fscache_read_or_alloc_pages() might help an start-to-end read
-as done by most programs, it's less likely to help random-access reads, such
-as page-in for mmapped sections.
+Yep, I don't have a remote mind-reading device here (yet)... ;)
 
-Note also: (1) the caller of the netfs's readpages() has already done
-readahead speculation, and we should probably make best use of that, rather
-than doing it again; and (2) all the metadata for where the data blocks are on
-the backing fs has already been read by dint of calling bmap() to determine
-whether the data blocks exist or not.
+[...]
 
-What might be cute is to have cachefiles_read_or_alloc_pages() dentry_open()
-the backing file with O_DIRECT|O_NOHOLE, use ->read() to load the data into
-the netfs pages directly, and then fput() the file once it has finished.
+> > +			break;
+> > +		/* fall-through */
+> > +	case DATA_PROTECT:
+> > +		/*
+> > +		 * No point in retrying after an illegal request or data
+> > +		 * protect error.
+> > +		 */
+> > +		if ((rq->cmd_flags & REQ_QUIET) == 0)
+> >  			ide_dump_status(drive, "command error", stat);
+> > 
+> > original code respected REQ_QUIET for pc requests
+> 
+> ok, what's the rationale on being quiet per req_type? In other words, why did we
+> respect that for pc requests _and_ _not_ for fs requests?
 
-What would be even cuter is to do readv() for all the netfs pages
-simultaneously, but that's impractical as each page has to be kmap()'d whilst
-it is being read.
-
-David
----
-From: David Howells <dhowells@redhat.com>
-Subject: [PATCH] CacheFiles: Sync read demo for Nick Piggin
-
-
----
-
- fs/cachefiles/rdwr.c |  198 +++++++-------------------------------------------
- 1 files changed, 28 insertions(+), 170 deletions(-)
-
-
-diff --git a/fs/cachefiles/rdwr.c b/fs/cachefiles/rdwr.c
-index a69787e..d99e43d 100644
---- a/fs/cachefiles/rdwr.c
-+++ b/fs/cachefiles/rdwr.c
-@@ -14,53 +14,6 @@
- #include "internal.h"
- 
- /*
-- * detect wake up events generated by the unlocking of pages in which we're
-- * interested
-- * - we use this to detect read completion of backing pages
-- * - the caller holds the waitqueue lock
-- */
--static int cachefiles_read_waiter(wait_queue_t *wait, unsigned mode,
--				  int sync, void *_key)
--{
--	struct cachefiles_one_read *monitor =
--		container_of(wait, struct cachefiles_one_read, monitor);
--	struct cachefiles_object *object;
--	struct wait_bit_key *key = _key;
--	struct page *page = wait->private;
--
--	ASSERT(key);
--
--	_enter("{%lu},%u,%d,{%p,%u}",
--	       monitor->netfs_page->index, mode, sync,
--	       key->flags, key->bit_nr);
--
--	if (key->flags != &page->flags ||
--	    key->bit_nr != PG_locked)
--		return 0;
--
--	_debug("--- monitor %p %lx ---", page, page->flags);
--
--	if (!PageUptodate(page) && !PageError(page))
--		dump_stack();
--
--	/* remove from the waitqueue */
--	list_del(&wait->task_list);
--
--	/* move onto the action list and queue for FS-Cache thread pool */
--	ASSERT(monitor->op);
--
--	object = container_of(monitor->op->op.object,
--			      struct cachefiles_object, fscache);
--
--	spin_lock(&object->work_lock);
--	list_add_tail(&monitor->op_link, &monitor->op->to_do);
--	spin_unlock(&object->work_lock);
--
--	fscache_enqueue_retrieval(monitor->op);
--	return 0;
--}
--
--/*
-  * copy data from backing pages to netfs pages to complete a read operation
-  * - driven by FS-Cache's thread pool
-  */
-@@ -139,7 +92,6 @@ static int cachefiles_read_backing_file_one(struct cachefiles_object *object,
- 					    struct page *netpage,
- 					    struct pagevec *pagevec)
- {
--	struct cachefiles_one_read *monitor;
- 	struct address_space *bmapping;
- 	struct page *newpage, *backpage;
- 	int ret;
-@@ -151,15 +103,6 @@ static int cachefiles_read_backing_file_one(struct cachefiles_object *object,
- 	_debug("read back %p{%lu,%d}",
- 	       netpage, netpage->index, page_count(netpage));
- 
--	monitor = kzalloc(sizeof(*monitor), GFP_KERNEL);
--	if (!monitor)
--		goto nomem;
--
--	monitor->netfs_page = netpage;
--	monitor->op = fscache_get_retrieval(op);
--
--	init_waitqueue_func_entry(&monitor->monitor, cachefiles_read_waiter);
--
- 	/* attempt to get hold of the backing page */
- 	bmapping = object->backer->d_inode->i_mapping;
- 	newpage = NULL;
-@@ -172,7 +115,7 @@ static int cachefiles_read_backing_file_one(struct cachefiles_object *object,
- 		if (!newpage) {
- 			newpage = page_cache_alloc_cold(bmapping);
- 			if (!newpage)
--				goto nomem_monitor;
-+				goto nomem;
- 		}
- 
- 		ret = add_to_page_cache(newpage, bmapping,
-@@ -200,29 +143,12 @@ read_backing_page:
- 	if (ret < 0)
- 		goto read_error;
- 
--	/* set the monitor to transfer the data across */
--monitor_backing_page:
--	_debug("- monitor add");
--
--	/* install the monitor */
--	page_cache_get(monitor->netfs_page);
--	page_cache_get(backpage);
--	monitor->back_page = backpage;
--	monitor->monitor.private = backpage;
--	add_page_wait_queue(backpage, &monitor->monitor);
--	monitor = NULL;
--
--	/* but the page may have been read before the monitor was installed, so
--	 * the monitor may miss the event - so we have to ensure that we do get
--	 * one in such a case */
--	if (trylock_page(backpage)) {
--		_debug("jumpstart %p {%lx}", backpage, backpage->flags);
--		unlock_page(backpage);
--	}
--	goto success;
-+	/* wait for the page read to be complete */
-+	wait_on_page_locked(backpage);
-+	goto use_backing_page;
- 
--	/* if the backing page is already present, it can be in one of
--	 * three states: read in progress, read failed or read okay */
-+	/* if the backing page is already present, it can be in one of three
-+	 * states: read in progress, read failed or read okay */
- backing_page_already_present:
- 	_debug("- present");
- 
-@@ -231,14 +157,19 @@ backing_page_already_present:
- 		newpage = NULL;
- 	}
- 
-+use_backing_page:
- 	if (PageError(backpage))
- 		goto io_error;
- 
- 	if (PageUptodate(backpage))
- 		goto backing_page_already_uptodate;
- 
--	if (!trylock_page(backpage))
--		goto monitor_backing_page;
-+	lock_page(backpage);
-+	if (PageError(backpage) || PageUptodate(backpage)) {
-+		unlock_page(backpage);
-+		goto use_backing_page;
-+	}
-+
- 	_debug("read %p {%lx}", backpage, backpage->flags);
- 	goto read_backing_page;
- 
-@@ -252,18 +183,12 @@ backing_page_already_uptodate:
- 
- 	copy_highpage(netpage, backpage);
- 	fscache_end_io(op, netpage, 0);
--
--success:
- 	_debug("success");
- 	ret = 0;
- 
- out:
- 	if (backpage)
- 		page_cache_release(backpage);
--	if (monitor) {
--		fscache_put_retrieval(monitor->op);
--		kfree(monitor);
--	}
- 	_leave(" = %d", ret);
- 	return ret;
- 
-@@ -278,9 +203,6 @@ io_error:
- 
- nomem_page:
- 	page_cache_release(newpage);
--nomem_monitor:
--	fscache_put_retrieval(monitor->op);
--	kfree(monitor);
- nomem:
- 	_leave(" = -ENOMEM");
- 	return -ENOMEM;
-@@ -379,7 +301,6 @@ static int cachefiles_read_backing_file(struct cachefiles_object *object,
- 					struct list_head *list,
- 					struct pagevec *mark_pvec)
- {
--	struct cachefiles_one_read *monitor = NULL;
- 	struct address_space *bmapping = object->backer->d_inode->i_mapping;
- 	struct pagevec lru_pvec;
- 	struct page *newpage = NULL, *netpage, *_n, *backpage = NULL;
-@@ -395,16 +316,6 @@ static int cachefiles_read_backing_file(struct cachefiles_object *object,
- 		_debug("read back %p{%lu,%d}",
- 		       netpage, netpage->index, page_count(netpage));
- 
--		if (!monitor) {
--			monitor = kzalloc(sizeof(*monitor), GFP_KERNEL);
--			if (!monitor)
--				goto nomem;
--
--			monitor->op = fscache_get_retrieval(op);
--			init_waitqueue_func_entry(&monitor->monitor,
--						  cachefiles_read_waiter);
--		}
--
- 		for (;;) {
- 			backpage = find_get_page(bmapping, netpage->index);
- 			if (backpage)
-@@ -441,92 +352,44 @@ static int cachefiles_read_backing_file(struct cachefiles_object *object,
- 		if (ret < 0)
- 			goto read_error;
- 
--		/* add the netfs page to the pagecache and LRU, and set the
--		 * monitor to transfer the data across */
--	monitor_backing_page:
--		_debug("- monitor add");
--
--		ret = add_to_page_cache(netpage, op->mapping, netpage->index,
--					GFP_KERNEL);
--		if (ret < 0) {
--			if (ret == -EEXIST) {
--				page_cache_release(netpage);
--				continue;
--			}
--			goto nomem;
--		}
--
--		page_cache_get(netpage);
--		if (!pagevec_add(&lru_pvec, netpage))
--			__pagevec_lru_add_file(&lru_pvec);
--
--		/* install a monitor */
--		page_cache_get(netpage);
--		monitor->netfs_page = netpage;
--
--		page_cache_get(backpage);
--		monitor->back_page = backpage;
--		monitor->monitor.private = backpage;
--		add_page_wait_queue(backpage, &monitor->monitor);
--		monitor = NULL;
--
--		/* but the page may have been read before the monitor was
--		 * installed, so the monitor may miss the event - so we have to
--		 * ensure that we do get one in such a case */
--		if (trylock_page(backpage)) {
--			_debug("2unlock %p {%lx}", backpage, backpage->flags);
--			unlock_page(backpage);
--		}
--
--		page_cache_release(backpage);
--		backpage = NULL;
--
--		page_cache_release(netpage);
--		netpage = NULL;
--		continue;
-+		wait_on_page_locked(backpage);
- 
- 		/* if the backing page is already present, it can be in one of
- 		 * three states: read in progress, read failed or read okay */
- 	backing_page_already_present:
- 		_debug("- present %p", backpage);
- 
-+	check_backing_page:
- 		if (PageError(backpage))
- 			goto io_error;
- 
- 		if (PageUptodate(backpage))
--			goto backing_page_already_uptodate;
-+			goto copy_backing_page;
- 
- 		_debug("- not ready %p{%lx}", backpage, backpage->flags);
- 
--		if (!trylock_page(backpage))
--			goto monitor_backing_page;
--
--		if (PageError(backpage)) {
--			_debug("error %lx", backpage->flags);
-+		lock_page(backpage);
-+		if (PageError(backpage) || PageUptodate(backpage)) {
- 			unlock_page(backpage);
--			goto io_error;
-+			goto check_backing_page;
- 		}
- 
--		if (PageUptodate(backpage))
--			goto backing_page_already_uptodate_unlock;
--
- 		/* we've locked a page that's neither up to date nor erroneous,
- 		 * so we need to attempt to read it again */
- 		goto reread_backing_page;
- 
--		/* the backing page is already up to date, attach the netfs
--		 * page to the pagecache and LRU and copy the data across */
--	backing_page_already_uptodate_unlock:
--		_debug("uptodate %lx", backpage->flags);
--		unlock_page(backpage);
--	backing_page_already_uptodate:
--		_debug("- uptodate");
-+	copy_backing_page:
-+		_debug("- copy page");
- 
-+		/* add the netfs page to the pagecache and LRU */
- 		ret = add_to_page_cache(netpage, op->mapping, netpage->index,
- 					GFP_KERNEL);
- 		if (ret < 0) {
- 			if (ret == -EEXIST) {
- 				page_cache_release(netpage);
-+				page_cache_release(backpage);
-+				netpage = NULL;
-+				backpage = NULL;
- 				continue;
- 			}
- 			goto nomem;
-@@ -537,17 +400,16 @@ static int cachefiles_read_backing_file(struct cachefiles_object *object,
- 		page_cache_release(backpage);
- 		backpage = NULL;
- 
--		if (!pagevec_add(mark_pvec, netpage))
--			fscache_mark_pages_cached(op, mark_pvec);
--
- 		page_cache_get(netpage);
- 		if (!pagevec_add(&lru_pvec, netpage))
- 			__pagevec_lru_add_file(&lru_pvec);
- 
-+		if (!pagevec_add(mark_pvec, netpage))
-+			fscache_mark_pages_cached(op, mark_pvec);
-+
- 		fscache_end_io(op, netpage, 0);
- 		page_cache_release(netpage);
- 		netpage = NULL;
--		continue;
- 	}
- 
- 	netpage = NULL;
-@@ -564,10 +426,6 @@ out:
- 		page_cache_release(netpage);
- 	if (backpage)
- 		page_cache_release(backpage);
--	if (monitor) {
--		fscache_put_retrieval(op);
--		kfree(monitor);
--	}
- 
- 	list_for_each_entry_safe(netpage, _n, list, lru) {
- 		list_del(&netpage->lru);
-
+Historical reasons (please note that it is fixed now in patch #1/5).
