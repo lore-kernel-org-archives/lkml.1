@@ -1,104 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758849AbZDDMSW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755526AbZDDMXR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758849AbZDDMSW (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 4 Apr 2009 08:18:22 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756109AbZDDMRX
+	id S1755526AbZDDMXR (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 4 Apr 2009 08:23:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751914AbZDDMXE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 4 Apr 2009 08:17:23 -0400
-Received: from casper.infradead.org ([85.118.1.10]:45215 "EHLO
-	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752583AbZDDMRN (ORCPT
+	Sat, 4 Apr 2009 08:23:04 -0400
+Received: from anchor-post-1.mail.demon.net ([195.173.77.132]:35917 "EHLO
+	anchor-post-1.mail.demon.net" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751482AbZDDMXD (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 4 Apr 2009 08:17:13 -0400
-Subject: Re: [PATCH 6/6] perf_counter: kerneltop: output event support
-From: Peter Zijlstra <a.p.zijlstra@chello.nl>
-To: Corey Ashford <cjashfor@linux.vnet.ibm.com>
-Cc: Ingo Molnar <mingo@elte.hu>, linux-kernel@vger.kernel.org,
-       Paul Mackerras <paulus@samba.org>, Mike Galbraith <efault@gmx.de>,
-       Arjan van de Ven <arjan@infradead.org>,
-       Wu Fengguang <fengguang.wu@intel.com>
-In-Reply-To: <49D6A81B.8030004@linux.vnet.ibm.com>
-References: <20090325113021.781490788@chello.nl>
-	 <20090325113317.192910290@chello.nl>  <49D6A81B.8030004@linux.vnet.ibm.com>
-Content-Type: text/plain
-Date: Sat, 04 Apr 2009 14:17:03 +0200
-Message-Id: <1238847423.4549.1163.camel@laptop>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.26.0 
-Content-Transfer-Encoding: 7bit
+	Sat, 4 Apr 2009 08:23:03 -0400
+Date: Sat, 04 Apr 2009 13:20:14 +0100
+From: Darren Salt <linux@youmustbejoking.demon.co.uk>
+To: Corentin Chary <corentin.chary@gmail.com>
+Cc: Matthew Garrett <mjg59@srcf.ucam.org>, linux-kernel@vger.kernel.org,
+       acpi4asus-user@lists.sourceforge.net
+Subject: Re: [PATCH 2.6.29] eeepc-laptop: report brightness control events via  the input layer
+Message-ID: <504C2315A8%linux@youmustbejoking.demon.co.uk>
+In-Reply-To: <71cd59b00904040133p1f130673r4e93d2c48f8f4616@mail.gmail.com>
+References: <504BBE2828%linux@youmustbejoking.demon.co.uk> 
+ <20090404041813.GA30746@srcf.ucam.org> 
+ <71cd59b00904040133p1f130673r4e93d2c48f8f4616@mail.gmail.com>
+Mail-Followup-To: Corentin Chary <corentin.chary@gmail.com>, Matthew Garrett 
+ <mjg59@srcf.ucam.org>, linux-kernel@vger.kernel.org, 
+ acpi4asus-user@lists.sourceforge.net, Darren Salt 
+ <linux@youmustbejoking.demon.co.uk>
+User-Agent: Gemini/2.29m (Qt/3.3.8b) (Linux-x86_64)
+X-NuLabour-Date: Sat, 8891 Dec 1984 13:20:14 +0100
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+X-SA-Exim-Connect-IP: 192.168.0.5
+X-SA-Exim-Mail-From: linux@youmustbejoking.demon.co.uk
+X-SA-Exim-Scanned: No (on pentagram.youmustbejoking.demon.co.uk); SAEximRunCond expanded to false
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 2009-04-03 at 17:21 -0700, Corey Ashford wrote:
-> As I was stealing code from kerneltop today to use in the PAPI profiling 
-> implementation, I ran across the code below:
-> 
-> Peter Zijlstra wrote:
-> > Teach kerneltop about the new output ABI.
-> > 
-> > XXX: anybody fancy integrating the PID/TID data into the output?
-> > 
-> > Bump the mmap_data pages a little because we bloated the output and
-> > have to be more careful about overruns with structured data.
-> > 
-> > Signed-off-by: Peter Zijlstra <a.p.zijlstra@chello.nl>
-> > ---
-> [snip]
-> 
-> > 
-> > @@ -1147,28 +1152,75 @@ static void mmap_read(struct mmap_data *
-> >  	unsigned int head = mmap_read_head(md);
-> >  	unsigned int old = md->prev;
-> >  	unsigned char *data = md->base + page_size;
-> > +	int diff;
-> > 
-> >  	gettimeofday(&this_read, NULL);
-> > 
-> > -	if (head - old > md->mask) {
-> > +	/*
-> > +	 * If we're further behind than half the buffer, there's a chance
-> > +	 * the writer will bite our tail and screw up the events under us.
-> > +	 *
-> > +	 * If we somehow ended up ahead of the head, we got messed up.
-> > +	 *
-> > +	 * In either case, truncate and restart at head.
-> > +	 */
-> > +	diff = head - old;
-> > +	if (diff > md->mask / 2 || diff < 0) {
-> >  		struct timeval iv;
-> >  		unsigned long msecs;
-> > 
-> >  		timersub(&this_read, &last_read, &iv);
-> >  		msecs = iv.tv_sec*1000 + iv.tv_usec/1000;
-> > 
-> > -		fprintf(stderr, "WARNING: failed to keep up with mmap data.  Last read %lu msecs ago.\n", msecs);
-> > +		fprintf(stderr, "WARNING: failed to keep up with mmap data."
-> > +				"  Last read %lu msecs ago.\n", msecs);
-> > 
-> [snip]
-> 
-> The test for diff < 0 looks incorrect to me.  This shouldn't be an 
-> error, because it will frequently be the case that the head has wrapped 
-> around back to the beginning of the mmap'd pages, while old is near the end.
-> 
-> What it needs to find out, I think, is if the modulo distance between 
-> old and head is greater than 1/2 of the span of the mmap'd pages. 
-> Here's a suggested change:
-> 
-> -	diff = head - old;
-> +	diff = (head - old) & md->mask;
-> -	if (diff > md->mask / 2 || diff < 0) {
-> +	if (diff > md->mask / 2) {
-> 
-> 
-> What do you think?
+I demand that Corentin Chary may or may not have written...
 
-head and old are both u32 and are monotonically incremented, that means
-that (s32)(head - old) < 0 will only be true if old is ahead (or more
-than 2^31 behind) of head.
+>> On the other hand, the default behaviour of the acpi video driver is to
+>> change the brightness itself and then also to send the even to
+>> userspace, so I guess if it was going to break things it probably would
+>> have done already...
 
-Since mask will be smaller than 2^31 this seemed like a reasonable
-integrity test.
+> So, I think this patch is ok.
 
+> But there is a thing I don't like is
+> int brn = -2;
+> brn = notify_brn();
+> if (brn != -2)
 
+> How can brn be -2?
+
+If notify_brn() wasn't called, it will be.
+
+> And why -2?
+
+Because notify_brn() won't return it (and if it ever does, it needs to be
+fixed). (Yes, I know, "magic numbers" and all that...)
+
+-- 
+| Darren Salt    | linux or ds at              | nr. Ashington, | Toon
+| RISC OS, Linux | youmustbejoking,demon,co,uk | Northumberland | Army
+| + Lobby friends, family, business, government.    WE'RE KILLING THE PLANET.
+
+Opinions for rent. Reasonable rates.
