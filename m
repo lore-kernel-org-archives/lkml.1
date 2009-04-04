@@ -1,61 +1,75 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752203AbZDDE0b@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752299AbZDDEcS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752203AbZDDE0b (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 4 Apr 2009 00:26:31 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751299AbZDDE0I
+	id S1752299AbZDDEcS (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 4 Apr 2009 00:32:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750963AbZDDEb7
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 4 Apr 2009 00:26:08 -0400
-Received: from vms173001pub.verizon.net ([206.46.173.1]:60577 "EHLO
-	vms173001pub.verizon.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750805AbZDDE0D (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 4 Apr 2009 00:26:03 -0400
-Date: Sat, 04 Apr 2009 00:25:36 -0400 (EDT)
-From: Len Brown <lenb@kernel.org>
-X-X-Sender: lenb@localhost.localdomain
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: Nico Schottelius <nico-linux-20090213@schottelius.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Kernel Testers List <kernel-testers@vger.kernel.org>,
-       Dave Airlie <airlied@linux.ie>, Eric Anholt <eric@anholt.net>,
-       Matthew Garrett <mjg@redhat.com>
-Subject: Re: [Bug #12705] X200: Brightness broken since 2.6.29-rc4-58-g4c098bc
-In-reply-to: <200903072234.26989.rjw@sisk.pl>
-Message-id: <alpine.LFD.2.00.0904040024520.15220@localhost.localdomain>
-References: <KiHv0irKPzE.A.l3.hUarJB@chimera>
- <SLCXkuHtxAO.A.gvC.UVarJB@chimera>
- <20090304064354.GA19776@denkbrett.schottelius.org>
- <200903072234.26989.rjw@sisk.pl>
+	Sat, 4 Apr 2009 00:31:59 -0400
+Received: from www.tglx.de ([62.245.132.106]:44642 "EHLO www.tglx.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750805AbZDDEb6 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 4 Apr 2009 00:31:58 -0400
+Date: Sat, 4 Apr 2009 06:30:59 +0200 (CEST)
+From: Thomas Gleixner <tglx@linutronix.de>
+To: Fernando Lopez-Lezcano <nando@ccrma.Stanford.EDU>
+cc: LKML <linux-kernel@vger.kernel.org>,
+       rt-users <linux-rt-users@vger.kernel.org>, Ingo Molnar <mingo@elte.hu>,
+       Steven Rostedt <rostedt@goodmis.org>,
+       Peter Zijlstra <peterz@infradead.org>, Carsten Emde <ce@ceag.ch>,
+       Clark Williams <williams@redhat.com>,
+       Frank Rowand <frank.rowand@am.sony.com>,
+       Robin Gareus <robin@gareus.org>, Gregory Haskins <ghaskins@novell.com>,
+       Philippe Reynes <philippe.reynes@isismpp.fr>,
+       Will Schmidt <will_schmidt@vnet.ibm.com>
+Subject: Re: [Announce] 2.6.29.1-rt4
+In-Reply-To: <1238799852.3871.6.camel@localhost.localdomain>
+Message-ID: <alpine.LFD.2.00.0904040628310.12916@localhost.localdomain>
+References: <alpine.LFD.2.00.0902112332370.415@localhost.localdomain>  <alpine.LFD.2.00.0902122353050.16972@localhost.localdomain>  <alpine.LFD.2.00.0902231854360.3523@localhost.localdomain>  <alpine.LFD.2.00.0902241849230.3523@localhost.localdomain> 
+ <alpine.LFD.2.00.0902241856480.9135@localhost.localdomain>  <alpine.LFD.2.00.0903122013230.29264@localhost.localdomain>  <alpine.LFD.2.00.0903200014320.29264@localhost.localdomain>  <alpine.LFD.2.00.0903201832590.29264@localhost.localdomain> 
+ <alpine.LFD.2.00.0903231723090.29264@localhost.localdomain>  <alpine.LFD.2.00.0903252154040.3397@localhost.localdomain>  <alpine.LFD.2.00.0904020155320.12916@localhost.localdomain>  <alpine.LFD.2.00.0904031918090.12916@localhost.localdomain>
+ <1238799852.3871.6.camel@localhost.localdomain>
 User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
-MIME-version: 1.0
-Content-type: TEXT/PLAIN; charset=US-ASCII
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Fri, 3 Apr 2009, Fernando Lopez-Lezcano wrote:
 
-
-
-On Sat, 7 Mar 2009, Rafael J. Wysocki wrote:
-
-> On Wednesday 04 March 2009, Nico Schottelius wrote:
-> > Rafael J. Wysocki [Tue, Mar 03, 2009 at 08:25:55PM +0100]:
-> > > This message has been generated automatically as a part of a report
-> > > of recent regressions.
-> > > 
-> > > The following bug entry is on the current list of known regressions
-> > > from 2.6.28.  Please verify if it still should be listed and let me know
-> > > (either way).
+> On Fri, 2009-04-03 at 19:21 +0200, Thomas Gleixner wrote:
+> > We are pleased to announce the next update to our new preempt-rt
+> > series.
+> >   
+> > 	- rebased to 2.6.29.1
 > > 
-> > Well, well... nobody really cares about this bug, so it's still
-> > there. Seems this automatic reminder will be persistent until 2.6.30.
+> > 	- powerpc64 tlb rework fix by Peter
 > 
-> Well, thanks for the update.
+> Thanks for cc'ing me...
+> 
+> Just a heads up. I'm still having shutdown/suspend problems with this
+> release as before (I had not reported the suspend problem, I think -
+> machine hangs and has to be power cycled). Booting with "noreplace-smp"
+> fixes both. Is this something I could disable through configuration
+> options?
 
-It is a DRI bug, assigned to   	
-Eric Anholt -- I'm not handling it.
+No. I have this shutdown/suspend thing on my todo list. Can you send
+me your .config please ? This happens with the stock -rt kernel or do
+you have other patches on top of it ?
+ 
+> I was also seeing a hard hang when running a java program (with the
+> Fedora 10 open source java) - the swingosc gui component of
+> SuperCollider 3 (a computer music synthesis program). Impossible to know
+> what had failed, machine completely catatonic and nothing left on the
+> logs. 
+> 
+> I managed to start the same program _once_ (have not tested again) with
+> 2.6.29.1/rt4 + some patches & config from fc10' koji 2.6.29.1-15. The
+> mouse seemed to pause a couple of times and then I killed the program.
+> Restarting it again was successful. Sorry to not have more hard info...
 
+Too bad that I can't find my crystal ball :)
 
-thanks,
-Len Brown, Intel Open Source Technology Center
+Thanks,
 
+	tglx
