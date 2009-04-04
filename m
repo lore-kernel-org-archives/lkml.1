@@ -1,55 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755196AbZDDWOf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755685AbZDDWP5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755196AbZDDWOf (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 4 Apr 2009 18:14:35 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752719AbZDDWOY
+	id S1755685AbZDDWP5 (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 4 Apr 2009 18:15:57 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754140AbZDDWPr
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 4 Apr 2009 18:14:24 -0400
-Received: from mx2.redhat.com ([66.187.237.31]:55887 "EHLO mx2.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752234AbZDDWOX (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 4 Apr 2009 18:14:23 -0400
-Organization: Red Hat UK Ltd. Registered Address: Red Hat UK Ltd, Amberley
-	Place, 107-111 Peascod Street, Windsor, Berkshire, SI4 1TE, United
-	Kingdom.
-	Registered in England and Wales under Company Registration No. 3798903
-From: David Howells <dhowells@redhat.com>
-In-Reply-To: <200904050122.42081.nickpiggin@yahoo.com.au>
-References: <200904050122.42081.nickpiggin@yahoo.com.au> <20090403155436.28714.23368.stgit@warthog.procyon.org.uk> <20090403155624.28714.87176.stgit@warthog.procyon.org.uk> <200904041709.31651.nickpiggin@yahoo.com.au>
-To: Nick Piggin <nickpiggin@yahoo.com.au>
-Cc: dhowells@redhat.com, Andrew Morton <akpm@linux-foundation.org>,
-       linux-kernel@vger.kernel.org, nfsv4@linux-nfs.org,
-       linux-fsdevel@vger.kernel.org
-Subject: Re: [PATCH 21/41] CacheFiles: Permit the page lock state to be monitored [ver #48]
-Date: Sat, 04 Apr 2009 23:13:33 +0100
-Message-ID: <951.1238883213@redhat.com>
+	Sat, 4 Apr 2009 18:15:47 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:59306 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1754090AbZDDWPp (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 4 Apr 2009 18:15:45 -0400
+Date: Sat, 4 Apr 2009 15:13:13 -0700 (PDT)
+From: Linus Torvalds <torvalds@linux-foundation.org>
+X-X-Sender: torvalds@localhost.localdomain
+To: Theodore Tso <tytso@mit.edu>
+cc: Jens Axboe <jens.axboe@oracle.com>,
+       Linux Kernel Developers List <linux-kernel@vger.kernel.org>,
+       Ext4 Developers List <linux-ext4@vger.kernel.org>
+Subject: Re: [GIT PULL] Ext3 latency fixes
+In-Reply-To: <20090404135719.GA9812@mit.edu>
+Message-ID: <alpine.LFD.2.00.0904041448090.4023@localhost.localdomain>
+References: <1238742067-30814-1-git-send-email-tytso@mit.edu> <alpine.LFD.2.00.0904031110420.19690@localhost.localdomain> <alpine.LFD.2.00.0904031150190.4015@localhost.localdomain> <alpine.LFD.2.00.0904031329410.7007@localhost.localdomain>
+ <20090404135719.GA9812@mit.edu>
+User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Nick Piggin <nickpiggin@yahoo.com.au> wrote:
 
-> On Saturday 04 April 2009 17:09:31 Nick Piggin wrote:
-> > On Saturday 04 April 2009 02:56:24 David Howells wrote:
-> > > Add a function to install a monitor on the page lock waitqueue for a
-> > > particular page, thus allowing the page being unlocked to be detected.
-> > > 
-> > > This is used by CacheFiles to detect read completion on a page in the
-> > > backing filesystem so that it can then copy the data to the waiting
-> > > netfs page.
-> > 
-> > This is the only thing I'm still worried about in core code. The extra
-> > page flag (which is probably unusable for any other fs, due to its
-> > semantics) is an issue, but Andrew seemed like he was willing to spend
-> > *2* page flags on this, so I'm sure he's happy with 1.
+
+On Sat, 4 Apr 2009, Theodore Tso wrote:
 > 
-> Well that is to say it is not a such a bad concept to have...
+> Using ext3 data=writeback, your "write big (2GB) file and sync" as the
+> background workload, and fsync-tester, I was able to reduce the
+> latency down to under 1 second...
 
-What is not such a bad concept to have?  Having an extra page flag?
+Hmm. I can certainly see a very noticeable improvement.
 
-> actually we already have exactly this concept which is what should be used.
-> Ie. the filesystem's io completion handler.
+I could still see 1-2s fsync() delays for my MUA test (and seem to have 
+seen a 4s one once too). But most were all 'quite noticeable stutters', 
+and very seldom do they go into the 'ooh, that's really painful' stage.
 
-Which filesystem's I/O completion handler?
+And yes, anticipatory seems to be quite noticeably better than cfq here. 
+With cfq I got a few two-second delays on 'ftruncate()' too (probably 
+because of your new serialization code?), and the longest fsync() delay 
+was over 7 seconds. That was definitely solidly in the "painful" category.
 
-David
+(Jens - my test-case is not the exact same fsycn() test that Ted uses: 
+it's really just me being in my MUA editing an email, and doing that 
+
+	while : ; do time sh -c "dd if=/dev/zero of=bigfile bs=8M count=256 ; sync; rm bigfile"; done
+
+in another window. My MUA does these save-files ever minute or so, and 
+does a 'fsync()' after writing that (small) file. If the fsync() takes 
+more than half a second, I can definitely notice. If it takes 1-2 seconds, 
+it's a big stutter, where keyboard auto-repeat when moving around really 
+hurts (ie I don't see how it moves).
+
+If it takes 5+ seconds, it feels really bad, and as if the whole email 
+client had just died. 
+
+Yeah, it's a nasty test. 
+
+		Linus
