@@ -1,114 +1,38 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756003AbZDDVmW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754310AbZDDWDr@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756003AbZDDVmW (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 4 Apr 2009 17:42:22 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756533AbZDDVlj
+	id S1754310AbZDDWDr (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 4 Apr 2009 18:03:47 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751947AbZDDWDh
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 4 Apr 2009 17:41:39 -0400
-Received: from ogre.sisk.pl ([217.79.144.158]:38440 "EHLO ogre.sisk.pl"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756946AbZDDVlh (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 4 Apr 2009 17:41:37 -0400
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-To: NetDev <netdev@vger.kernel.org>
-Subject: [RFT][PATCH 3/3] NET/ixgbe: Fix powering off during shutdown
-Date: Sat, 4 Apr 2009 23:41:57 +0200
-User-Agent: KMail/1.11.2 (Linux/2.6.29-rjw; KDE/4.2.2; x86_64; ; )
-Cc: Jesse Brandeburg <jesse.brandeburg@gmail.com>,
-       Jeff Kirsher <jeffrey.t.kirsher@intel.com>,
-       Yinghai Lu <yinghai@kernel.org>,
-       pm list <linux-pm@lists.linux-foundation.org>,
-       LKML <linux-kernel@vger.kernel.org>
-References: <200904042337.31706.rjw@sisk.pl>
-In-Reply-To: <200904042337.31706.rjw@sisk.pl>
+	Sat, 4 Apr 2009 18:03:37 -0400
+Received: from cpsmtpm-eml103.kpnxchange.com ([195.121.3.7]:64847 "EHLO
+	CPSMTPM-EML103.kpnxchange.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751879AbZDDWDh (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 4 Apr 2009 18:03:37 -0400
+From: Frans Pop <elendil@planet.nl>
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Subject: Re: [RFC][PATCH] PM: Warn if interrupts are enabled during suspend-resume of sysdevs
+Date: Sun, 5 Apr 2009 00:03:31 +0200
+User-Agent: KMail/1.9.9
+Cc: lenb@kernel.org, linux-pm@lists.linux-foundation.org,
+       linux-kernel@vger.kernel.org, mingo@elte.hu
+References: <200904042323.19866.rjw@sisk.pl>
+In-reply-To: <200904042323.19866.rjw@sisk.pl>
 MIME-Version: 1.0
-Content-Type: Text/Plain;
+Content-Type: text/plain;
   charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-Message-Id: <200904042341.57942.rjw@sisk.pl>
+Message-Id: <200904050003.33609.elendil@planet.nl>
+X-OriginalArrivalTime: 04 Apr 2009 22:03:34.0483 (UTC) FILETIME=[32CA7230:01C9B571]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
+Content-Transfer-Encoding: 8bit
+X-MIME-Autoconverted: from base64 to 8bit by alpha.home.local id n34M3squ012140
 
-From: Rafael J. Wysocki <rjw@sisk.pl>
-
-Impact: Fix
-
-Prevent ixgbe from putting the adapter into D3 during shutdown
-except when we're going to power off the system, since doing that may
-generally cause problems with kexec to happen (such problems were
-observed for igb and forcedeth).  For this purpose seperate
-ixgbe_shutdown() from ixgbe_suspend() and use the appropriate PCI
-PM callbacks in both of them.
-
-Signed-off-by: Rafael J. Wysocki <rjw@sisk.pl>
----
- drivers/net/ixgbe/ixgbe_main.c |   36 ++++++++++++++++++++++++++++++++----
- 1 file changed, 32 insertions(+), 4 deletions(-)
-
-Index: linux-2.6/drivers/net/ixgbe/ixgbe_main.c
-===================================================================
---- linux-2.6.orig/drivers/net/ixgbe/ixgbe_main.c
-+++ linux-2.6/drivers/net/ixgbe/ixgbe_main.c
-@@ -3611,9 +3611,9 @@ static int ixgbe_resume(struct pci_dev *
- 
- 	return 0;
- }
--
- #endif /* CONFIG_PM */
--static int ixgbe_suspend(struct pci_dev *pdev, pm_message_t state)
-+
-+static int __ixgbe_shutdown(struct pci_dev *pdev, bool *enable_wake)
- {
- 	struct net_device *netdev = pci_get_drvdata(pdev);
- 	struct ixgbe_adapter *adapter = netdev_priv(netdev);
-@@ -3672,18 +3672,46 @@ static int ixgbe_suspend(struct pci_dev 
- 		pci_enable_wake(pdev, PCI_D3cold, 0);
- 	}
- 
-+	*enable_wake = !!wufc;
-+
- 	ixgbe_release_hw_control(adapter);
- 
- 	pci_disable_device(pdev);
- 
--	pci_set_power_state(pdev, pci_choose_state(pdev, state));
-+	return 0;
-+}
-+
-+#ifdef CONFIG_PM
-+static int ixgbe_suspend(struct pci_dev *pdev, pm_message_t state)
-+{
-+	int retval;
-+	bool wake;
-+
-+	retval = __ixgbe_shutdown(pdev, &wake);
-+	if (retval)
-+		return retval;
-+
-+	if (wake) {
-+		pci_prepare_to_sleep(pdev);
-+	} else {
-+		pci_wake_from_d3(pdev, false);
-+		pci_set_power_state(pdev, PCI_D3hot);
-+	}
- 
- 	return 0;
- }
-+#endif /* CONFIG_PM */
- 
- static void ixgbe_shutdown(struct pci_dev *pdev)
- {
--	ixgbe_suspend(pdev, PMSG_SUSPEND);
-+	bool wake;
-+
-+	__ixgbe_shutdown(pdev, &wake);
-+
-+	if (system_state == SYSTEM_POWER_OFF) {
-+		pci_wake_from_d3(pdev, wake);
-+		pci_set_power_state(pdev, PCI_D3hot);
-+	}
- }
- 
- /**
+> @@ -377,6 +381,9 @@ int sysdev_suspend(pm_message_t state)>         if (ret)>                 return ret;>  > +       WARN_ONCE(!irqs_disabled(),> +               "Interrupts enabled while suspending system devices");> +
+Missing \n ?
+> @@ -452,6 +465,9 @@ int sysdev_resume(void)>  {>         struct sysdev_class *cls;>  > +       WARN_ONCE(!irqs_disabled(),> +               "Interrupts enabled while resuming system devices");> +
+Again.
+Cheers,FJPÿôèº{.nÇ+‰·Ÿ®‰­†+%ŠËÿ±éİ¶¥Šwÿº{.nÇ+‰·¥Š{±şG«éÿŠ{ayºÊ‡Ú™ë,j­¢f£¢·hšïêÿ‘êçz_è®(­éšŠİ¢j"ú¶m§ÿÿ¾«şG«éÿ¢¸?™¨è­Ú&£ø§~á¶iO•æ¬z·švØ^¶m§ÿÿÃÿ¶ìÿ¢¸?–I¥
