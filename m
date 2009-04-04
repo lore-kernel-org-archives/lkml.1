@@ -1,81 +1,71 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756077AbZDDLDd@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759658AbZDDLIA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756077AbZDDLDd (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 4 Apr 2009 07:03:33 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754555AbZDDLDX
+	id S1759658AbZDDLIA (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 4 Apr 2009 07:08:00 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754555AbZDDLHu
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 4 Apr 2009 07:03:23 -0400
-Received: from hq2.tensilica.com ([65.205.227.30]:11210 "EHLO
-	maia.hq.tensilica.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1754496AbZDDLDW (ORCPT
+	Sat, 4 Apr 2009 07:07:50 -0400
+Received: from mail5.sea5.speakeasy.net ([69.17.117.7]:46517 "EHLO
+	mail5.sea5.speakeasy.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752946AbZDDLHt (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 4 Apr 2009 07:03:22 -0400
-Message-ID: <49D73E03.9040702@tensilica.com>
-Date: Sat, 04 Apr 2009 04:01:23 -0700
-From: Piet Delaney <piet.delaney@tensilica.com>
-User-Agent: Thunderbird 1.5.0.12 (X11/20070530)
+	Sat, 4 Apr 2009 07:07:49 -0400
+Date: Sat, 4 Apr 2009 04:07:47 -0700 (PDT)
+From: Trent Piepho <xyzzy@speakeasy.org>
+X-X-Sender: xyzzy@shell2.speakeasy.net
+To: Andy Walls <awalls@radix.net>
+cc: Linux Kernel <linux-kernel@vger.kernel.org>, linux-media@vger.kernel.org
+Subject: Re: When is a wake_up() not a wake up?
+In-Reply-To: <1238798924.3130.72.camel@palomino.walls.org>
+Message-ID: <Pine.LNX.4.58.0904040356210.5134@shell2.speakeasy.net>
+References: <1238798924.3130.72.camel@palomino.walls.org>
 MIME-Version: 1.0
-To: Johannes Weiner <jw@emlix.com>, Marc Gauthier <marc@tensilica.com>,
-       Chris Zankel <chris@zankel.net>
-CC: Piet Delaney <piet.delaney@gmail.com>,
-       Piet Delaney <pdelaney@tensilica.com>, Cord Seele <cs@emlix.com>,
-       Oskar Schirmer <os@emlix.com>, Daniel Gloeckner <dg@emlix.com>,
-       Piet Delaney <piet@tensilica.com>,
-       Maxim Grigoriev <maxim@tensilica.com>,
-       Dan Nicolaescu <dann@tensilica.com>,
-       Bill Huffman <huffman@tensilica.com>, Ross Morley <ross@tensilica.com>,
-       Chris Jones <cjones@tensilica.com>, linux-xtensa@linux-xtensa.org,
-       linux-next@vger.kernel.org, linux-kernel@vger.kernel.org,
-       Dror Maydan <maydan@tensilica.com>
-Subject: Re: [patch 0/8] xtensa: s6000 & s6105 - Git Repo Pulled; will try
- to merge early next week and get back to ya.
-References: <20090319155621.GA8299@emlix.com> <49C36D94.9010809@tensilica.com> <20090322185756.GA11319@emlix.com> <49CA1EDD.1060806@tensilica.com> <20090325124749.GA15248@emlix.com> <49CA310C.6060504@gmail.com> <20090325153533.GA18835@emlix.com> <49CA8661.40804@gmail.com> <20090326120745.GA23541@emlix.com> <49CBE5B9.9020405@tensilica.com> <20090327141226.GA26597@emlix.com>
-In-Reply-To: <20090327141226.GA26597@emlix.com>
-Content-Type: text/plain; charset=us-ascii; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Johannes Weiner wrote:
+On Fri, 3 Apr 2009, Andy Walls wrote:
+> 1. A work queue thread or read() call needs to send a command to the
+> CX23418 using the cx18_api_call() function
+> 2. It fills out a mailbox with a command for the CX23418
+> 3. It prepares to wait, just in case a wait is needed
+> 4. A SW1 interrupt is sent to the CX23418 telling it a mailbox is ready
+> 5. The ack filed in the mailbox, a PCI MMIO location, is checked to see
+> if the mailbox was ack'ed already
+> 6. If not, schedule_timeout() for up to 10 msecs (a near eternity...)
+> 7. Clean up the wait and move on
 
->> What's you proposal?
-> 
-> Sounds terrific.  I wish you had told us this plan before, that would
-> have saved us quite some discussion ;)
-> 
-> So please let us know where to find the merged tree when it's ready.
-> We will test it on our S6000 board and look over your work.
+10ms isn't that long.  With a 100 HZ kernel it's only one jiffie.  The
+shortest time msleep() can sleep on a 100 HZ kernel is 20 ms.
 
-I resolved the problems with the merge this evening and posted a
-copy here and at kernel.org:
+Is it possible that it's simply taking more than 10 ms for your process to
+get run?
 
-     git+ssh://git.linux-xtensa.org/git/kernel/xtensa-2.6.29-smp
+> Mar 31 23:36:56 palomino kernel: cx18-0:  irq: sending interrupt SW1: 8 to send CX18_CPU_DE_SET_MDL
+> Mar 31 23:36:56 palomino kernel: cx18-0:  api: scheduling to wait for ack of CX18_CPU_DE_SET_MDL: req 51267 ack 51266, pid 21092, state 2
+> Mar 31 23:36:56 palomino kernel: cx18-0:  irq: received interrupts SW1: 0  SW2: 8  HW2: 0
+> Mar 31 23:36:56 palomino kernel: cx18-0:  irq: Wake up initiated on pid 21092 in state 2
+> Mar 31 23:36:56 palomino kernel: cx18-0:  irq: Wake up succeeded on pid 21092, state 2 -> 0
+> Mar 31 23:36:56 palomino kernel: cx18-0:  api: done wait for ack of CX18_CPU_DE_SET_MDL: req 51267 ack 51267, current pid 21092, current state 0, state 0
+> Mar 31 23:36:56 palomino kernel: cx18-0:  warning: failed to be awakened upon RPU acknowledgment sending CX18_CPU_DE_SET_MDL; timed out waiting 10 msecs
 
-     git://git.kernel.org/pub/scm/linux/kernel/git/piet/xtensa-2.6.29-smp.git
+Try some higher resolution time stamps, you can't really tell much about
+when things are happening.
 
-I have two SMP FPGA systems testing the merge, one with cache aliasing, the other
-without. Both have been up now running NTP as a stress test for about two hours
-without any problems. Earlier this evening I did have one problem when it was just
-sitting idle; looked like a problem I had before and fixed.
+Here's some code I wrote to do it on x86.
 
-I had one problem I've not worked around for now. In vmlinux.lds.in.S you added a
-#include of <platform/hardware.h> put this causes compile problems for the LX60
-platform. You added it to define KERNELOFFSET where as I was bringing it from
-asm/core.h which caused less problems. <platform/hardware.h> seems reasonable,
-haven't got a clean solution for the asm macro problem yet for LX60 platform.
+#include <linux/calc64.h>
+#define MHZ     1666.787
+#define INT     (unsigned int)(MHZ * (1<<12) + 0.5)
+#define FRAC    (unsigned int)(MHZ * (1<<21) / 1000.0 + 0.5)
+#define timestamp(str, args...) { u64 _time; u32 _rem; rdtscll(_time); \
+        _time = (_time - starttime)<<12; \
+        _rem = do_div(_time, INT); \
+        printk("%s - %u.%03u us " str "\n", __func__, \
+                (unsigned int)_time, (_rem << 9) / FRAC , ## args); }
+static u64 starttime;
 
-Could you try this on your S6000 boards and look over our work. I'll
-try using xt-gdb and ocd with the Stretch board. I likely have a few
-minor tweaks in the Kconfig for _S6000 for selecting optimal defaults.
-
-
--piet
-
-
-
-
-
-
-
-	
+Change MHZ to what /proc/cpuinfo tells you.  Call 'rdtscll(starttime)' some
+time when your driver inits or a device gets opened or something like that.
+Makes the time stamps easier to read when they start near zero.
