@@ -1,61 +1,144 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754515AbZDDQAR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754575AbZDDQIZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754515AbZDDQAR (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 4 Apr 2009 12:00:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752195AbZDDP77
+	id S1754575AbZDDQIZ (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 4 Apr 2009 12:08:25 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751773AbZDDQIQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 4 Apr 2009 11:59:59 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:56232 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1752125AbZDDP76 (ORCPT
+	Sat, 4 Apr 2009 12:08:16 -0400
+Received: from 124x34x33x190.ap124.ftth.ucom.ne.jp ([124.34.33.190]:51150 "EHLO
+	master.linux-sh.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750801AbZDDQIO (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 4 Apr 2009 11:59:58 -0400
-Date: Sat, 4 Apr 2009 08:57:28 -0700 (PDT)
-From: Linus Torvalds <torvalds@linux-foundation.org>
-X-X-Sender: torvalds@localhost.localdomain
-To: Jens Axboe <jens.axboe@oracle.com>
-cc: Theodore Tso <tytso@mit.edu>,
-       Linux Kernel Developers List <linux-kernel@vger.kernel.org>,
-       Ext4 Developers List <linux-ext4@vger.kernel.org>
-Subject: Re: [GIT PULL] Ext3 latency fixes
-In-Reply-To: <20090404151649.GE5178@kernel.dk>
-Message-ID: <alpine.LFD.2.00.0904040854470.3915@localhost.localdomain>
-References: <1238742067-30814-1-git-send-email-tytso@mit.edu> <alpine.LFD.2.00.0904031110420.19690@localhost.localdomain> <alpine.LFD.2.00.0904031150190.4015@localhost.localdomain> <alpine.LFD.2.00.0904031329410.7007@localhost.localdomain> <20090404135719.GA9812@mit.edu>
- <20090404151649.GE5178@kernel.dk>
-User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
+	Sat, 4 Apr 2009 12:08:14 -0400
+Date: Sun, 5 Apr 2009 01:03:33 +0900
+From: Paul Mundt <lethal@linux-sh.org>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: linux-sh@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: [GIT PULL] sh updates for 2.6.30-rc1, part 2.
+Message-ID: <20090404160333.GC17834@linux-sh.org>
+Mail-Followup-To: Paul Mundt <lethal@linux-sh.org>,
+	Linus Torvalds <torvalds@linux-foundation.org>,
+	linux-sh@vger.kernel.org, linux-kernel@vger.kernel.org
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Please pull from:
 
+	master.kernel.org:/pub/scm/linux/kernel/git/lethal/sh-2.6.git
 
-On Sat, 4 Apr 2009, Jens Axboe wrote:
-> 
-> Big nack on this patch. Ted, this is EXACTLY where I told you we saw big
-> write regressions (sqlite performance drops by a factor of 4-5). Do a
-> git log on fs/buffer.c and see the original patch (which does what your
-> patch does) and the later revert. No idea why you are now suggestion
-> making that exact change?!
+Which contains:
 
-Jens, if I can re-create the 'fsync' times (I haven't yet), then the 
-default scheduler _will_ be switched to AS.
+Francesco VIRLINZI (1):
+      sh: Sanitize asm/mmu.h for assembly use.
 
-> Low latency is nice, but not at the cost of 4-5x throughput for real
-> world cases.
+Kuninori Morimoto (5):
+      sh: Remove buggy definition from SH7786 pinmux_data[]
+      sh: urquell: enable LAN device
+      sh: Tidy up sh7786 pinmux table.
+      sh: ap325rxa: Add ov772x support, again.
+      sh: ap325 and Migo-R use new sh_mobile_ceu_info flags
 
-I'm sorry, but that fsync thing _is_ a real-world case, and it's the one 
-that a hell of a lot more people care about than some idiotic sqlite 
-throughput issue.
+Magnus Damm (6):
+      clocksource: sh_cmt: use remove_irq() and remove clockevent workaround
+      sh: intc: install enable, disable and shutdown callbacks
+      sh: intc: set_irq_wake() support
+      input: sh_keysc: use enable/disable_irq_wake()
+      rtc: rtc-sh: use set_irq_wake()
+      input: migor_ts: add wakeup support
 
-You have a test-case now. Consider it a priority, or consider CFQ to be a 
-"for crazy servers that only care about throughput".
+Michael Trimarchi (1):
+      sh: Fix up DSP context save/restore.
 
-Quite frankly, the fact that I can see _seconds_ of latencies with a 
-really good SSD is not acceptable. The fact that it is by design is even 
-less so.
+Nobuhiro Iwamatsu (1):
+      sh: Add MMU dependency for kexec
 
-Latency is more important than throughput. It's that simple.
+Paul Mundt (8):
+      sh: Fix up -Wformat-security whining.
+      sh: migor: Fix up CEU use flags.
+      sh: Select ARCH_HIBERNATION_POSSIBLE.
+      sh: Add a command line option for disabling I/O trapping.
+      sh: Wire up ARCH_HAS_DEFAULT_IDLE for cpuidle.
+      sh: Kill off broken direct-mapped cache mode.
+      sh: update defconfigs.
+      sh: Fix up number of on-chip DMA channels on SH7091.
 
-			Linus
+Takashi Yoshii (1):
+      sh: sh7785lcr: Map whole PCI address space.
+
+ Documentation/kernel-parameters.txt       |    2 +
+ arch/sh/Kconfig                           |    6 +-
+ arch/sh/boards/board-ap325rxa.c           |   57 ++++++-
+ arch/sh/boards/board-urquell.c            |    4 +
+ arch/sh/boards/mach-migor/setup.c         |    4 +-
+ arch/sh/configs/ap325rxa_defconfig        |   70 ++++++---
+ arch/sh/configs/cayman_defconfig          |  235 ++++++++++++++---------------
+ arch/sh/configs/dreamcast_defconfig       |   71 ++++++---
+ arch/sh/configs/edosk7705_defconfig       |   29 +++--
+ arch/sh/configs/edosk7760_defconfig       |   78 +++++++---
+ arch/sh/configs/espt_defconfig            |   39 +++--
+ arch/sh/configs/hp6xx_defconfig           |   54 +++++--
+ arch/sh/configs/landisk_defconfig         |   97 ++++++++----
+ arch/sh/configs/lboxre2_defconfig         |   69 ++++++---
+ arch/sh/configs/magicpanelr2_defconfig    |   73 ++++++---
+ arch/sh/configs/microdev_defconfig        |   74 +++++++---
+ arch/sh/configs/migor_defconfig           |   82 +++++++----
+ arch/sh/configs/polaris_defconfig         |   31 ++--
+ arch/sh/configs/r7780mp_defconfig         |   91 +++++++++---
+ arch/sh/configs/r7785rp_defconfig         |   96 +++++++++---
+ arch/sh/configs/rsk7201_defconfig         |   57 +++++---
+ arch/sh/configs/rsk7203_defconfig         |   94 ++++++++----
+ arch/sh/configs/rts7751r2d1_defconfig     |   83 ++++++++---
+ arch/sh/configs/rts7751r2dplus_defconfig  |   83 ++++++++---
+ arch/sh/configs/sdk7780_defconfig         |   78 +++++++---
+ arch/sh/configs/se7206_defconfig          |   82 +++++++---
+ arch/sh/configs/se7343_defconfig          |   89 ++++++++----
+ arch/sh/configs/se7619_defconfig          |   55 +++++---
+ arch/sh/configs/se7705_defconfig          |   75 +++++++---
+ arch/sh/configs/se7712_defconfig          |   79 +++++++---
+ arch/sh/configs/se7721_defconfig          |   82 +++++++---
+ arch/sh/configs/se7722_defconfig          |   76 +++++++---
+ arch/sh/configs/se7750_defconfig          |   71 ++++++---
+ arch/sh/configs/se7751_defconfig          |   74 +++++++---
+ arch/sh/configs/se7780_defconfig          |   78 +++++++---
+ arch/sh/configs/sh03_defconfig            |   79 +++++++---
+ arch/sh/configs/sh7710voipgw_defconfig    |   69 ++++++---
+ arch/sh/configs/sh7763rdp_defconfig       |   82 +++++++---
+ arch/sh/configs/sh7785lcr_32bit_defconfig |   42 +++--
+ arch/sh/configs/sh7785lcr_defconfig       |   90 ++++++++----
+ arch/sh/configs/shmin_defconfig           |   73 ++++++---
+ arch/sh/configs/shx3_defconfig            |   99 ++++++++----
+ arch/sh/configs/snapgear_defconfig        |   62 ++++++--
+ arch/sh/configs/systemh_defconfig         |   54 +++++--
+ arch/sh/configs/titan_defconfig           |  101 +++++++++---
+ arch/sh/configs/ul2_defconfig             |   93 +++++++++---
+ arch/sh/configs/urquell_defconfig         |   45 ++++---
+ arch/sh/drivers/dma/Kconfig               |   20 ++-
+ arch/sh/drivers/pci/ops-sh7785lcr.c       |    9 +-
+ arch/sh/drivers/pci/pci-sh7780.c          |   16 +--
+ arch/sh/include/asm/mmu.h                 |   35 +++--
+ arch/sh/include/asm/processor_32.h        |   13 ++
+ arch/sh/include/asm/ptrace.h              |    8 -
+ arch/sh/include/asm/system.h              |    1 +
+ arch/sh/include/asm/system_32.h           |  170 +++++++++++++++------
+ arch/sh/include/cpu-sh4/cpu/sh7786.h      |  214 ++++++++++-----------------
+ arch/sh/kernel/cpu/sh3/entry.S            |   85 +----------
+ arch/sh/kernel/cpu/sh4/probe.c            |    5 -
+ arch/sh/kernel/cpu/sh4a/pinmux-sh7786.c   |  185 +++++------------------
+ arch/sh/kernel/idle.c                     |    2 +-
+ arch/sh/kernel/io_trapped.c               |   13 ++
+ arch/sh/kernel/process_32.c               |   14 ++-
+ arch/sh/kernel/ptrace_32.c                |    6 +-
+ arch/sh/kernel/setup.c                    |    5 +-
+ arch/sh/kernel/traps_32.c                 |    2 +
+ arch/sh/mm/Kconfig                        |   12 --
+ drivers/clocksource/sh_cmt.c              |    3 +-
+ drivers/input/keyboard/sh_keysc.c         |   17 ++-
+ drivers/input/touchscreen/migor_ts.c      |   23 +++
+ drivers/rtc/rtc-sh.c                      |   36 +++++
+ drivers/sh/intc.c                         |   68 +++++++++
+ 71 files changed, 2754 insertions(+), 1515 deletions(-)
