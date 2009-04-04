@@ -1,32 +1,20 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758950AbZDDNEk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756043AbZDDNHr@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758950AbZDDNEk (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 4 Apr 2009 09:04:40 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752340AbZDDNEd
+	id S1756043AbZDDNHr (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 4 Apr 2009 09:07:47 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753302AbZDDNHf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 4 Apr 2009 09:04:33 -0400
-Received: from mk-outboundfilter-3.mail.uk.tiscali.com ([212.74.114.23]:56832
-	"EHLO mk-outboundfilter-3.mail.uk.tiscali.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1752172AbZDDNEc (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 4 Apr 2009 09:04:32 -0400
-X-Trace: 235045156/mk-outboundfilter-1.mail.uk.tiscali.com/F2S/$F2S-ACCEPTED/f2s-freedom2Surf-customers/83.67.11.44/None/tvrtko@ursulin.net
-X-SBRS: None
-X-RemoteIP: 83.67.11.44
-X-IP-MAIL-FROM: tvrtko@ursulin.net
-X-MUA: KMail/1.9.10
-X-IP-BHB: Once
-X-IronPort-Anti-Spam-Filtered: true
-X-IronPort-Anti-Spam-Result: AlwFAJ/31klTQwss/2dsb2JhbACBUcpwgkeBSAY
-X-IronPort-AV: E=Sophos;i="4.39,323,1235952000"; 
-   d="scan'208";a="235045156"
-X-IP-Direction: IN
-From: "Tvrtko A. Ursulin" <tvrtko@ursulin.net>
-To: Ed Swierk <eswierk@aristanetworks.com>
+	Sat, 4 Apr 2009 09:07:35 -0400
+Received: from ogre.sisk.pl ([217.79.144.158]:37430 "EHLO ogre.sisk.pl"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751550AbZDDNHe (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 4 Apr 2009 09:07:34 -0400
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+To: "Tvrtko A. Ursulin" <tvrtko@ursulin.net>
 Subject: Re: [Regression in 2.6.29] forcedeth doesn't work after resume from hibernation (was: Re: Resume after hibernation regression in 2.6.29)
-Date: Sat, 4 Apr 2009 14:04:24 +0100
-User-Agent: KMail/1.9.10
-Cc: "Rafael J. Wysocki" <rjw@sisk.pl>, Pavel Machek <pavel@ucw.cz>,
+Date: Sat, 4 Apr 2009 15:07:41 +0200
+User-Agent: KMail/1.11.2 (Linux/2.6.29-rjw; KDE/4.2.2; x86_64; ; )
+Cc: Ed Swierk <eswierk@aristanetworks.com>, Pavel Machek <pavel@ucw.cz>,
        "linux-pm" <linux-pm@lists.linux-foundation.org>,
        kernel list <linux-kernel@vger.kernel.org>,
        Tobias Diedrich <ranma+kernel@tdiedrich.de>,
@@ -34,78 +22,80 @@ Cc: "Rafael J. Wysocki" <rjw@sisk.pl>, Pavel Machek <pavel@ucw.cz>,
        Arthur Jones <ajones@riverbed.com>,
        Andrew Morton <akpm@linux-foundation.org>,
        "David S. Miller" <davem@davemloft.net>, stable@kernel.org
-References: <200903261920.32173.tvrtko@ursulin.net> <9ae48b020904030824o1f94831asb60f979b3e489a8b@mail.gmail.com> <1238780473.19305.3.camel@localhost.localdomain>
-In-Reply-To: <1238780473.19305.3.camel@localhost.localdomain>
+References: <200903261920.32173.tvrtko@ursulin.net> <1238780473.19305.3.camel@localhost.localdomain> <200904041404.24616.tvrtko@ursulin.net>
+In-Reply-To: <200904041404.24616.tvrtko@ursulin.net>
 MIME-Version: 1.0
-Content-Type: text/plain;
+Content-Type: Text/Plain;
   charset="iso-8859-15"
 Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-Message-Id: <200904041404.24616.tvrtko@ursulin.net>
+Message-Id: <200904041507.42927.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Friday 03 April 2009 18:41:12 Ed Swierk wrote:
-> On Fri, 2009-04-03 at 08:24 -0700, Ed Swierk wrote:
-> > On Fri, Mar 27, 2009 at 1:09 PM, Rafael J. Wysocki <rjw@sisk.pl> wrote:
-> > > I was able to reproduce the problem and identify the commit that broke
-> > > the resume of forcedeth, which turned out to be:
+On Saturday 04 April 2009, Tvrtko A. Ursulin wrote:
+> On Friday 03 April 2009 18:41:12 Ed Swierk wrote:
+> > On Fri, 2009-04-03 at 08:24 -0700, Ed Swierk wrote:
+> > > On Fri, Mar 27, 2009 at 1:09 PM, Rafael J. Wysocki <rjw@sisk.pl> wrote:
+> > > > I was able to reproduce the problem and identify the commit that broke
+> > > > the resume of forcedeth, which turned out to be:
+> > > >
+> > > > commit cb52deba12f27af90a46d2f8667a64888118a888
+> > > > Author: Ed Swierk <eswierk@arastra.com>
+> > > > Date:   Mon Dec 1 12:24:43 2008 +0000
+> > > >
+> > > >    forcedeth: power down phy when interface is down
+> > > >
+> > > >    Signed-off-by: Ed Swierk <eswierk@arastra.com>
+> > > >    Tested-by: Arthur Jones <ajones@riverbed.com>
+> > > >    Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
+> > > >    Signed-off-by: David S. Miller <davem@davemloft.net>
+> > > >
+> > > > Since I have no slightest idea of what this commit is supposed to
+> > > > achieve, I can only ask for reverting it.  It reverts cleanly, BTW.
 > > >
-> > > commit cb52deba12f27af90a46d2f8667a64888118a888
-> > > Author: Ed Swierk <eswierk@arastra.com>
-> > > Date:   Mon Dec 1 12:24:43 2008 +0000
+> > > The change causes forcedeth to bring down the physical link when an
+> > > interface goes down; leaving it up causes the switch at the other end
+> > > to think the port is still active, with potentially random speed and
+> > > duplex parameters.
 > > >
-> > >    forcedeth: power down phy when interface is down
+> > > It's possible that the forcedeth driver needs to reset autonegotiation
+> > > after bringing it up the link again.
 > > >
-> > >    Signed-off-by: Ed Swierk <eswierk@arastra.com>
-> > >    Tested-by: Arthur Jones <ajones@riverbed.com>
-> > >    Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
-> > >    Signed-off-by: David S. Miller <davem@davemloft.net>
+> > > Can you please try this on a 2.6.29 kernel that's exhibiting the
+> > > symptoms you describe, after resuming the machine from hibernation:
 > > >
-> > > Since I have no slightest idea of what this commit is supposed to
-> > > achieve, I can only ask for reverting it.  It reverts cleanly, BTW.
+> > >   ethtool -s eth1 autoneg off speed 100 duplex full
+> > >   ethtool -s eth1 autoneg on
+> > >
+> > > This should reset autonegotiation manually and bring the link. Let me
+> > > know how it goes.
 > >
-> > The change causes forcedeth to bring down the physical link when an
-> > interface goes down; leaving it up causes the switch at the other end
-> > to think the port is still active, with potentially random speed and
-> > duplex parameters.
+> > Also please try this patch; it fixes the problem on my test system (a
+> > DFI board with an nVidia MCP55).
 > >
-> > It's possible that the forcedeth driver needs to reset autonegotiation
-> > after bringing it up the link again.
+> > Signed-off-by: Ed Swierk <eswierk@aristanetworks.com>
+> > --
+> > --- linux-2.6.29.x86_64/drivers/net/forcedeth.c.orig	2009-03-23
+> > 16:12:14.000000000 -0700 +++
+> > linux-2.6.29.x86_64/drivers/net/forcedeth.c	2009-04-03 10:11:26.839614710
+> > -0700 @@ -5995,6 +5995,9 @@
+> >  	for (i = 0;i <= np->register_size/sizeof(u32); i++)
+> >  		writel(np->saved_config_space[i], base+i*sizeof(u32));
 > >
-> > Can you please try this on a 2.6.29 kernel that's exhibiting the
-> > symptoms you describe, after resuming the machine from hibernation:
-> >
-> >   ethtool -s eth1 autoneg off speed 100 duplex full
-> >   ethtool -s eth1 autoneg on
-> >
-> > This should reset autonegotiation manually and bring the link. Let me
-> > know how it goes.
->
-> Also please try this patch; it fixes the problem on my test system (a
-> DFI board with an nVidia MCP55).
->
-> Signed-off-by: Ed Swierk <eswierk@aristanetworks.com>
-> --
-> --- linux-2.6.29.x86_64/drivers/net/forcedeth.c.orig	2009-03-23
-> 16:12:14.000000000 -0700 +++
-> linux-2.6.29.x86_64/drivers/net/forcedeth.c	2009-04-03 10:11:26.839614710
-> -0700 @@ -5995,6 +5995,9 @@
->  	for (i = 0;i <= np->register_size/sizeof(u32); i++)
->  		writel(np->saved_config_space[i], base+i*sizeof(u32));
->
-> +	/* restore phy state, including autoneg */
-> +	phy_init(dev);
-> +
->  	netif_device_attach(dev);
->  	if (netif_running(dev)) {
->  		rc = nv_open(dev);
+> > +	/* restore phy state, including autoneg */
+> > +	phy_init(dev);
+> > +
+> >  	netif_device_attach(dev);
+> >  	if (netif_running(dev)) {
+> >  		rc = nv_open(dev);
+> 
+> Works for me on MCP73 as well.
 
-Works for me on MCP73 as well.
+Great, thanks for testing.
 
-Although NIC LED is still on after hibernation - seems to go off shortly 
-before power off and then comes back on. Could be firmware issue I guess, 
-this motherboard has always gulped power when off.
+I think the patch should go to Linus ASAP and to -stable as a regression fix.
 
-Tvrtko
+Thanks,
+Rafael
