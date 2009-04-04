@@ -1,43 +1,43 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756396AbZDDSiA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756642AbZDDS4k@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756396AbZDDSiA (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 4 Apr 2009 14:38:00 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753072AbZDDShs
+	id S1756642AbZDDS4k (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 4 Apr 2009 14:56:40 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753154AbZDDS42
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 4 Apr 2009 14:37:48 -0400
-Received: from cavan.codon.org.uk ([93.93.128.6]:53185 "EHLO
-	vavatch.codon.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751925AbZDDShr (ORCPT
+	Sat, 4 Apr 2009 14:56:28 -0400
+Received: from moutng.kundenserver.de ([212.227.126.171]:62957 "EHLO
+	moutng.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752406AbZDDS41 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 4 Apr 2009 14:37:47 -0400
-Date: Sat, 4 Apr 2009 19:37:39 +0100
-From: Matthew Garrett <mjg59@srcf.ucam.org>
-To: Alexander Shumakovitch <shurik@gwu.edu>
-Cc: Greg KH <gregkh@suse.de>, linux-kernel@vger.kernel.org,
-       linux-usb@vger.kernel.org
-Subject: Re: qcserial/gobi firmware loader
-Message-ID: <20090404183739.GA7085@srcf.ucam.org>
-References: <20090401203726.GA17485@srcf.ucam.org> <20090403025654.GA20146@suse.de> <20090403135719.GD19774@srcf.ucam.org> <20090403150301.GA25846@suse.de> <20090403151237.GA25994@suse.de> <20090403164551.GA23689@srcf.ucam.org> <20090404152731.GA5080@srcf.ucam.org> <20090404181422.GA27714@gwu.edu>
+	Sat, 4 Apr 2009 14:56:27 -0400
+Message-ID: <49D7AD54.4060408@vlnb.net>
+Date: Sat, 04 Apr 2009 22:56:20 +0400
+From: Vladislav Bolkhovitin <vst@vlnb.net>
+User-Agent: Thunderbird 2.0.0.21 (X11/20090320)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090404181422.GA27714@gwu.edu>
-User-Agent: Mutt/1.5.12-2006-07-14
-X-SA-Exim-Connect-IP: <locally generated>
-X-SA-Exim-Mail-From: mjg59@codon.org.uk
-X-SA-Exim-Scanned: No (on vavatch.codon.org.uk); SAEximRunCond expanded to false
+To: linux-kernel@vger.kernel.org, linux-scsi@vger.kernel.org
+CC: scst-devel <scst-devel@lists.sourceforge.net>,
+       iscsitarget-devel@lists.sourceforge.net, stgt@vger.kernel.org,
+       James Bottomley <James.Bottomley@HansenPartnership.com>
+Subject: [ANNOUNCE]: Comparison of features sets between different SCSI targets
+ (SCST, STGT, IET, LIO)
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
+X-Provags-ID: V01U2FsdGVkX1+S6UgRvG3y38mAuHbZPJT8KsJlJURaAGij9o3
+ dQm/R4pCu93escj8h5Faa9b9OBHIiyTujsomtzI5qwnGvuAzQ0
+ eKQ6dq7/77E5JixL6ZL5g==
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, Apr 04, 2009 at 02:14:22PM -0400, Alexander Shumakovitch wrote:
-> Hi,
-> 
-> Messages magic4 magic5 contain the length of the second firmware file that has
-> to be implanted using the same procedure as in magic2 and magic3 (without
-> subtracting 8). The CRC checksum has to be updated afterwards.
+Hi All,
 
-Good catch. I've uploaded a fixed version.
+I set up http://scst.sourceforge.net/comparison.html page, which 
+compares features of existing SCSI target subsystems for Linux. The 
+comparison includes SCST, STGT, IET and LIO.
 
--- 
-Matthew Garrett | mjg59@srcf.ucam.org
+I might be not fully correct somewhere, so, if you don't agree with me 
+about some item(s) in the comparison table, please let me know and I 
+will fix that.
+
+Vlad
