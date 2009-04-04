@@ -1,92 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757479AbZDDNUR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758734AbZDDNWS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757479AbZDDNUR (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 4 Apr 2009 09:20:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753563AbZDDNUE
+	id S1758734AbZDDNWS (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 4 Apr 2009 09:22:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753698AbZDDNWD
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 4 Apr 2009 09:20:04 -0400
-Received: from bedivere.hansenpartnership.com ([66.63.167.143]:34636 "EHLO
-	bedivere.hansenpartnership.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1750906AbZDDNUC (ORCPT
+	Sat, 4 Apr 2009 09:22:03 -0400
+Received: from yw-out-2324.google.com ([74.125.46.30]:23741 "EHLO
+	yw-out-2324.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750906AbZDDNWB (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 4 Apr 2009 09:20:02 -0400
-Subject: Re: [PATCH 4/5] bfa: Brocade BFA FC SCSI driver (makefile)
-From: James Bottomley <James.Bottomley@HansenPartnership.com>
-To: Jing Huang <jhuang007@gmail.com>
-Cc: Krishna Gudipati <kgudipat@brocade.com>, huangj@brocade.com,
-       linux-kernel@vger.kernel.org, linux-scsi@vger.kernel.org,
-       nkattang@brocade.com, rvadivel@brocade.com, vravindr@brocade.com
-In-Reply-To: <b674f4c50904040541l523c489eh3556819a022c1ed7@mail.gmail.com>
-References: <200904020335.n323ZJVh004287@blc-10-2.brocade.com>
-	 <1238679361.3383.4.camel@mulgrave.int.hansenpartnership.com>
-	 <b674f4c50904040541l523c489eh3556819a022c1ed7@mail.gmail.com>
-Content-Type: text/plain
-Date: Sat, 04 Apr 2009 08:19:58 -0500
-Message-Id: <1238851198.4083.5.camel@mulgrave.int.hansenpartnership.com>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.22.3.1 (2.22.3.1-1.fc9) 
+	Sat, 4 Apr 2009 09:22:01 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
+         :cc:content-type:content-transfer-encoding;
+        b=dMFVi2/8ftIjkFcezV28jn7TthiwSIXsnylJzfAOUY+pMtfBSCAA76xSKEp/VpDViM
+         Plu6kI8xBwweksOMwDg8X51BurJha2NVz1BPDt4GkOFmQUhk5sUenTwPkeAFKLikrtTu
+         6dc2QeHIigv5fvOeTcL1hmHD/feXXZnDPliGI=
+MIME-Version: 1.0
+In-Reply-To: <3181463559098978317@unknownmsgid>
+References: <3181463559098978317@unknownmsgid>
+Date: Sat, 4 Apr 2009 09:21:58 -0400
+Message-ID: <625fc13d0904040621g7b89cd2cq9681ce80635a65c4@mail.gmail.com>
+Subject: Re: [PATCH -tip] Convert CONFIG_SMP=y powerpc defconfigs to TREE_RCU.
+From: Josh Boyer <jwboyer@gmail.com>
+To: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
+Cc: linux-kernel@vger.kernel.org, mingo@elte.hu, akpm@linux-foundation.org,
+       dipankar@in.ibm.com, niv@us.ibm.com, manfred@colorfullife.com,
+       peterz@infradead.org, lethal@linux-sh.org, kernel@wantstofly.org,
+       andi@firstfloor.org, kyle@mcmartin.ca, deller@gmx.de,
+       davem@davemloft.net, ralf@linux-mips.org, jes@sgi.com,
+       benh@kernel.crashing.org, paulus@samba.org, anton@samba.org
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, 2009-04-04 at 20:41 +0800, Jing Huang wrote:
-> On Thu, Apr 2, 2009 at 9:36 PM, James Bottomley
-> <James.Bottomley@hansenpartnership.com> wrote:
-> > On Wed, 2009-04-01 at 20:35 -0700, Krishna Gudipati wrote:
-> >> From: Krishna Chaitanya Gudipati <kgudipat@brocade.com>
-> >>
-> >> This patch contains Makefile and Kconfig file for scsi and bfa.Fixed
-> >> the code review comments from previous submission.
-> >>
-> >> Signed-off-by: Krishna Chaitanya Gudipati <kgudipat@brocade.com>
-> >> ---
-> >>  Kconfig      |    9 +++++++++
-> >>  Makefile     |    1 +
-> >>  bfa/Makefile |   27 +++++++++++++++++++++++++++
-> >>  3 files changed, 37 insertions(+)
-> >>
-> >> diff -urpN orig/drivers/scsi/Kconfig patch/drivers/scsi/Kconfig
-> >> --- orig/drivers/scsi/Kconfig 2009-04-01 20:08:49.271161000 -0700
-> >> +++ patch/drivers/scsi/Kconfig        2009-04-01 20:08:44.003822000 -0700
-> >> @@ -1797,6 +1797,15 @@ config SCSI_SRP
-> >>         To compile this driver as a module, choose M here: the
-> >>         module will be called libsrp.
-> >>
-> >> +config SCSI_BFA_FC
-> >> +     tristate "Brocade BFA Fibre Channel Support"
-> >> +     depends on PCI && SCSI
-> >> +     help
-> >> +       This bfa driver supports all Brocade PCIe Fibre Channel host adapters.
-> >> +
-> >> +       To compile this driver as a module, choose M here. The module will
-> >> +       be called bfa.
-> >> +
-> >
-> > You're still not using the FC transport class to export common sysfs FC
-> > information or to help make your driver smaller.  I thought you were
-> > going to fix this after this was noted in your first submission to
-> > linux-scsi on 24 September?
-> >
-> > James
-> >
-> >
-> 
-> Hi James,
-> 
-> We removed Brocade specific sysfs code after first linux-scsi
-> submission. Can you please
-> clarify where we are still not using the FC transport class to export
-> common sysfs FC
-> information? We do use the fc transport template to create the common
-> sysfs FC attributes
-> (in bfad_attr.c) under /sys/class/fc_host/<host#>
+On Fri, Apr 3, 2009 at 8:27 PM, Paul E. McKenney
+<paulmck@linux.vnet.ibm.com> wrote:
+> From: Paul E. McKenney <paulmck@linux.vnet.ibm.com>
+>
 
-Ah ... I was going by the fact that you don't  select SCSI_FC_ATTRS in
-the Kconfig ... so this is just something as simple as a missing select?
-(Without the select you'll fail some of the random compile tests because
-the needed scsi_transport_fc code won't be present).
+Why would one want to do this?  The commit log doesn't explain the
+switch and why it's great.  Mostly because the commit log doesn't
+exist.  (I'll stop channeling Andrew now)
 
-James
+It also might be a good idea to CC the linuxppc-dev list for this
+patch.  Or at least Kumar for the mpc86xx changes.
 
-
+josh
