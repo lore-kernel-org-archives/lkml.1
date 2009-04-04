@@ -1,16 +1,16 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754482AbZDDMpR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758506AbZDDMqv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754482AbZDDMpR (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 4 Apr 2009 08:45:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752172AbZDDMpD
+	id S1758506AbZDDMqv (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 4 Apr 2009 08:46:51 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753291AbZDDMqn
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 4 Apr 2009 08:45:03 -0400
-Received: from rtr.ca ([76.10.145.34]:33739 "EHLO mail.rtr.ca"
+	Sat, 4 Apr 2009 08:46:43 -0400
+Received: from rtr.ca ([76.10.145.34]:33767 "EHLO mail.rtr.ca"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751780AbZDDMpB (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 4 Apr 2009 08:45:01 -0400
-Message-ID: <49D7564A.9090409@rtr.ca>
-Date: Sat, 04 Apr 2009 08:44:58 -0400
+	id S1752172AbZDDMqn (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 4 Apr 2009 08:46:43 -0400
+Message-ID: <49D756B0.6030609@rtr.ca>
+Date: Sat, 04 Apr 2009 08:46:40 -0400
 From: Mark Lord <lkml@rtr.ca>
 Organization: Real-Time Remedies Inc.
 User-Agent: Thunderbird 2.0.0.21 (X11/20090318)
@@ -19,11 +19,11 @@ To: Jeff Garzik <jeff@garzik.org>
 Cc: Linus Torvalds <torvalds@linux-foundation.org>,
        Chris Mason <chris.mason@oracle.com>,
        Andrew Morton <akpm@linux-foundation.org>,
-       David Rees <drees76@gmail.com>,
+       Jens Axboe <jens.axboe@oracle.com>,
        Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
 Subject: Re: Linux 2.6.29
-References: <1238758370.32764.5.camel@think.oraclecorp.com> <alpine.LFD.2.00.0904030804160.4130@localhost.localdomain> <49D66C0E.5090301@garzik.org>
-In-Reply-To: <49D66C0E.5090301@garzik.org>
+References: <1238758370.32764.5.camel@think.oraclecorp.com> <alpine.LFD.2.00.0904030804160.4130@localhost.localdomain> <49D66C0E.5090301@garzik.org> <alpine.LFD.2.00.0904031309500.4015@localhost.localdomain> <49D68431.30703@garzik.org> <alpine.LFD.2.00.0904031452290.7007@localhost.localdomain> <49D6A04B.2080104@garzik.org>
+In-Reply-To: <49D6A04B.2080104@garzik.org>
 Content-Type: text/plain; charset=UTF-8; format=flowed
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
@@ -31,34 +31,29 @@ List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 Jeff Garzik wrote:
->
-> I've attached 'hdparm -I' in case anyone is curious.  It's from 
-> newegg.com, so nothing NDA'd or sekrit.
->
-> ATA device, with non-removable media
-> 	Model Number:       G.SKILL 128GB SSD                       
-> 	Serial Number:      MK0108480A545003B   
-> 	Firmware Revision:  02.10104
-> Standards:
-> 	Used: ATA/ATAPI-7 T13 1532D revision 4a 
-> 	Supported: 8 7 6 5 & some of 8
-> Configuration:
-> 	Logical		max	current
-> 	cylinders	16383	16383
-> 	heads		16	16
-> 	sectors/track	63	63
-> 	--
-> 	CHS current addressable sectors:   16514064
-> 	LBA    user addressable sectors:  250445824
-> 	device size with M = 1024*1024:      122288 MBytes
-> 	device size with M = 1000*1000:      128228 MBytes (128 GB)
+> Linus Torvalds wrote:
+>> "fio" does well:
+>>
+>>     http://git.kernel.dk/?p=fio.git;a=summary
+> 
+> Neat tool, Jens...
+> 
+> 
+>> and I think it comes with a few example files. Here's the random write 
+>> file that Jens suggested, and that works pretty well..
+>>
+>> It first creates a 2GB file to do the IO on, then does random 4k 
+>> writes to it with O_DIRECT.
+>>
+>> If your SSD does badly at it, you'll just want to kill it, but it 
+>> shows you how many MB/s it's doing (or, in the sucky case, how many 
+>> kB/s).
+> 
+> 
+> heh, so far, the SSD is poking along...
+> 
+> Jobs: 1 (f=1): [w] [2.5% done] [     0/   282 kb/s] [eta 02h:24m:59s]
 ..
 
-That's odd.  I kind of expected to see the sector size,
-cache size, and perhaps media rotation rate reported there..
-Can you update your hdparm (sourceforge) and repost?
+Try turning on the drive write cache?   hdparm -W1
 
-There might be other useful features of that drive,
-which some of us are quite curious to know about!  :)
-
-Thanks
