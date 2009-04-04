@@ -1,69 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756592AbZDDFGj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755013AbZDDF4a@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756592AbZDDFGj (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 4 Apr 2009 01:06:39 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751481AbZDDFG2
+	id S1755013AbZDDF4a (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 4 Apr 2009 01:56:30 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754394AbZDDFz6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 4 Apr 2009 01:06:28 -0400
-Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:39490
-	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
-	by vger.kernel.org with ESMTP id S1751476AbZDDFG1 (ORCPT
+	Sat, 4 Apr 2009 01:55:58 -0400
+Received: from smtp116.mail.mud.yahoo.com ([209.191.84.165]:46836 "HELO
+	smtp116.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1753516AbZDDFz4 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 4 Apr 2009 01:06:27 -0400
-Date: Fri, 03 Apr 2009 22:06:16 -0700 (PDT)
-Message-Id: <20090403.220616.176801869.davem@davemloft.net>
-To: keyoor.khristi@gmail.com
-Cc: linux-kernel@vger.kernel.org, netdev@vger.kernel.org
-Subject: Re: Issue with netlink implementation
-From: David Miller <davem@davemloft.net>
-In-Reply-To: <6b4fbcea0904031424j4b1f5526ydd1d21307e511273@mail.gmail.com>
-References: <6b4fbcea0904030921j1b627d3ar37af13a0788706b4@mail.gmail.com>
-	<6b4fbcea0904031424j4b1f5526ydd1d21307e511273@mail.gmail.com>
-X-Mailer: Mew version 6.1 on Emacs 22.1 / Mule 5.0 (SAKAKI)
-Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
+	Sat, 4 Apr 2009 01:55:56 -0400
+DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
+  s=s1024; d=yahoo.com.au;
+  h=Received:X-YMail-OSG:X-Yahoo-Newman-Property:From:To:Subject:Date:User-Agent:Cc:References:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Content-Disposition:Message-Id;
+  b=4y3QpGrgO0tAHR8Dxp7jhWy2SzvXLZyUt9IdwbC4Jbt09tLAAtTQ11qy3t/+uceJlbmNccfhQrMJJOjw7UWaiNBiy1ocX+LFoqgPQbJ0Ywdr3si6G5euexngRJnESuTaVtPMARoMusBwm94+Wwt6ywNbWg+3NhoZf8eh1GmtgX8=  ;
+X-YMail-OSG: QaxW9L4VM1kfWuMlg21UFIJvgmgavJq0E2WBLtuYqQLSnItvL9HbCeR_4Glvi24v3JxvwEe1ZPdw3hj5Db4Wky5DK1GK6vYVOKPpVUDuq3K0Ft_NMHDezNn5fNYq1iHHIyncWhGExX2.HczdWRRzCdAReCKG4NxjKq_9fs0jmXSPfaeJHW5JqxaMo23MeYtimiOSkVFRN4Ufv9LIwddXZ8MbUyfn95AEHp1ZSTd_Q0ziQUh_BaJtpAWlgkIlQKqqhmd5G4P3jrLKfAAY5XNpN12B5xoKjfFSvOGZh69EAJpFAm9WjYA.k.Zrwr9lhfFgxzsrsc6EbwM_gYEJSfV.E4R1Mg--
+X-Yahoo-Newman-Property: ymail-3
+From: Nick Piggin <nickpiggin@yahoo.com.au>
+To: David Howells <dhowells@redhat.com>
+Subject: Re: [PATCH 2/4] CacheFiles: Revert the addition of write_one_page()
+Date: Sat, 4 Apr 2009 16:55:42 +1100
+User-Agent: KMail/1.9.51 (KDE/4.0.4; ; )
+Cc: Christoph Hellwig <hch@infradead.org>, nfsv4@linux-nfs.org,
+       linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org
+References: <20090403135007.GB31907@infradead.org> <20090403094143.9510.80474.stgit@warthog.procyon.org.uk> <10983.1238766809@redhat.com>
+In-Reply-To: <10983.1238766809@redhat.com>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="utf-8"
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200904041655.43360.nickpiggin@yahoo.com.au>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Keyoor Khristi <keyoor.khristi@gmail.com>
-Date: Sat, 4 Apr 2009 02:54:48 +0530
-
-You might want to ask networking questions on the networking
-developer list, netdev@vger.kernel.org, CC:'d
-
-Thank you.
-
-> Hi All,
+On Saturday 04 April 2009 00:53:29 David Howells wrote:
+> Christoph Hellwig <hch@infradead.org> wrote:
 > 
-> We are facing an issue with netlink implementation. We are sending the
-> data from user space to kernel space. a kernel thread gets the data
-> from netlink socket (via skb_recv_datagram). After doing little bit
-> processing we give the skb to driver. driver sends the data and frees
-> the skb. Sometimes we observe that the writer thread in userspace gets
-> stuck writing a packet and doesnt come out. We traced the problem to
-> netlink_attachskb. When a packet is sent on the netlink socket
-> netlink_attachskb is called to add the skb to the queue. when there is
-> not enough space, the thread is added to nlk->wait queue and issues
-> schedule_timeout. it doesnt come out of it as no other thread awakens
-> it. It seems when the driver frees the skb, the data is freed and the
-> receive space is made available in the destructor but the thread
-> waiting is not awaken. This is causing the problem we're seeing.
-> I think the netlink implementation in af_netlink.c can be enhanced. In
-> netlink_attachskb, after invoking skb_set_owner_r we should change the
-> skb->destructor to point to newly added function netlink_rfree. When
-> skb is freed, netlink_rfree function can issue sock_rfree and awaken
-> the threads waiting on nlk->wait queue.
+> > Note that in the patch series going into mainline eventually this should
+> > not be a separate patch but the new ops should never be introduced.
 > 
-> Please let me know what you think about it.
-> I'm not sure if i've sent the email to correct forum. If i should be
-> sending to another forum, please tell me.
-> 
-> Regards,
-> K
-> --
-> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
-> Please read the FAQ at  http://www.tux.org/lkml/
+> Yes, probably, but this makes it easier for people to see what I'm proposing
+> to change.
+
+Definitely yes please. kmap resources are not infinite but there is obviously
+a proper kmap allocator so long as you only kmap one page at a time, then
+others will just block waiting for more. On sane platforms of course there
+is no penalty at all.
+
+So this change is definitely required if you want to get this patchset in.
+The alternative is to come up with a new API and get that merged first, but
+I figure you don't want that kind of dependency.
