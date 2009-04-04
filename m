@@ -1,81 +1,112 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S937653AbZDDAft@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S937617AbZDDAf0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S937653AbZDDAft (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 3 Apr 2009 20:35:49 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S936943AbZDDA2t
+	id S937617AbZDDAf0 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 3 Apr 2009 20:35:26 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S936734AbZDDA2Y
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 3 Apr 2009 20:28:49 -0400
-Received: from mail-gx0-f160.google.com ([209.85.217.160]:54807 "EHLO
-	mail-gx0-f160.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S937020AbZDDA2r convert rfc822-to-8bit (ORCPT
+	Fri, 3 Apr 2009 20:28:24 -0400
+Received: from hrndva-omtalb.mail.rr.com ([71.74.56.124]:46173 "EHLO
+	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S936653AbZDDA2L (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 3 Apr 2009 20:28:47 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:sender:in-reply-to:references:date
-         :x-google-sender-auth:message-id:subject:from:to:cc:content-type
-         :content-transfer-encoding;
-        b=PtlUwzb5YoJOhdqvux+nFq8WwuRqWFjT8nnL6+tUt//Wp1WYuex1R7JRIGYC8vBYJO
-         EqmEK0GvepXEF8DDq3tEYyhOY9hsDsgJOd3GkydrFgufa0ZxRkWA+FKFSTDEyE4+Vfq0
-         YSH2mEAXDPYBTGiUtY5kTXZRZXWzTVRXbQbIA=
-MIME-Version: 1.0
-In-Reply-To: <20090403200647.GA22497@sgi.com>
-References: <20090403200647.GA22497@sgi.com>
-Date: Fri, 3 Apr 2009 17:28:44 -0700
-X-Google-Sender-Auth: 08c8858fe56c44ae
-Message-ID: <1f1b08da0904031728m1369bfbat20e07a37b4a62604@mail.gmail.com>
-Subject: Re: [PATCH] Move calc_load call out from xtime_lock protection
-From: john stultz <johnstul@us.ibm.com>
-To: Dimitri Sivanich <sivanich@sgi.com>
-Cc: linux-kernel@vger.kernel.org, Ingo Molnar <mingo@elte.hu>,
-       Thomas Gleixner <tglx@linutronix.de>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 8BIT
+	Fri, 3 Apr 2009 20:28:11 -0400
+Message-Id: <20090404002808.471342596@goodmis.org>
+References: <20090404002703.627460459@goodmis.org>
+User-Agent: quilt/0.46-1
+Date: Fri, 03 Apr 2009 20:27:06 -0400
+From: Steven Rostedt <rostedt@goodmis.org>
+To: linux-kernel@vger.kernel.org
+Cc: Ingo Molnar <mingo@elte.hu>, Andrew Morton <akpm@linux-foundation.org>,
+       Frederic Weisbecker <fweisbec@gmail.com>,
+       Lai Jiangshan <laijs@cn.fujitsu.com>,
+       Steven Rostedt <srostedt@redhat.com>
+Subject: [PATCH 03/10] tracing: fix incorrect return type of ns2usecs() V2
+Content-Disposition: inline; filename=0003-tracing-fix-incorrect-return-type-of-ns2usecs-V2.patch
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Apr 3, 2009 at 1:06 PM, Dimitri Sivanich <sivanich@sgi.com> wrote:
-> The xtime_lock is being held for long periods on larger systems due
-> to an extensive amount of time being spent in calc_load(),
-> specifically here:
->  do_timer->update_times->calc_load->count_active_tasks->nr_active()
->
-> On a 64 cpu system I've seen this take approximately 55 usec.
-> Presumably it would be worse on larger systems.  This causes other
-> cpus to be held off in places such as
-> scheduler_tick->sched_clock_tick waiting for the xtime_lock to be
-> released.
->
-> Why does the xtime_lock need to be held when calc_load() is called?
-> Since the calculation is statistical in nature, it doesn't -seem- to
-> warrant protection via a write lock.
+From: Lai Jiangshan <laijs@cn.fujitsu.com>
 
-Hrm.. So its an interesting patch, and anything we can do to reduce
-xtime_lock write hold times is good, since lots of applications
-constantly pound on gettimeofday() and friends.
+Impact: fix time output bug in 32bits system
 
-So as far as what's being protected, from my quick audit, its
-basically just the avenrun[] array (also possibly the static count
-value in calc_load, but as long as only one cpu calls calc_load, you
-shouldn't have a race there).
+ns2usecs() returns 'long', it's incorrect.
 
-Readers of the avenrun array that might get bad data:
-   fs/proc/loadavg.c: loadavg_proc_show()
-   kernel/timer.c: do_sysinfo()
+(In i386)
+# cat trace
+...
+          <idle>-0     [000]   521.442100: _spin_lock <-tick_do_update_jiffies64
+          <idle>-0     [000]   521.442101: do_timer <-tick_do_update_jiffies64
+          <idle>-0     [000]   521.442102: update_wall_time <-do_timer
+          <idle>-0     [000]   521.442102: update_xtime_cache <-update_wall_time
+....
+(It always print the time less than 2200 seconds besides ...)
+Because 'long' is 32bits in i386. ( (1<<31) useconds is about 2200 seconds)
 
-Other users (and there are a few) don't take the xtime_lock to read it
-anyway, so no added risk there.
+# cat trace
+...
+          <idle>-0     [001] 4154502640.134759: rcu_bh_qsctr_inc <-__do_softirq
+          <idle>-0     [001] 4154502640.134760: _local_bh_enable <-__do_softirq
+          <idle>-0     [001] 4154502640.134761: idle_cpu <-irq_exit
+...
+(very large value)
+Because 'long' is a signed type and it is 32bits in i386.
 
-I'm not very savvy on users of the loadavg values, so I'm not as
-confident that this won't break anything. In fact, without changes to
-the CALC_LOAD() macros so it uses an intermediate value, I expect some
-very incorrect values could be seen.
+Changed from V1:
+return 'unsigned long long' instead of 'cycle_t'
 
-However, assuming that's fixed, and folks don't object to reading
-valid but inconsistent load avg values (ie: the 5 minute load not
-including high load seen in the 1minute load)  in the two functions
-above, then this might work.
+Signed-off-by: Lai Jiangshan <laijs@cn.fujitsu.com>
+LKML-Reference: <49D05D10.4030009@cn.fujitsu.com>
+Reported-by: Li Zefan <lizf@cn.fujitsu.com>
+Acked-by: Frederic Weisbecker <fweisbec@gmail.com>
+Signed-off-by: Steven Rostedt <srostedt@redhat.com>
+---
+ kernel/trace/trace.c        |    3 +--
+ kernel/trace/trace.h        |    2 +-
+ kernel/trace/trace_output.c |    2 +-
+ 3 files changed, 3 insertions(+), 4 deletions(-)
 
-thanks
--john
+diff --git a/kernel/trace/trace.c b/kernel/trace/trace.c
+index 67c6a21..222bbba 100644
+--- a/kernel/trace/trace.c
++++ b/kernel/trace/trace.c
+@@ -147,8 +147,7 @@ static int __init set_ftrace_dump_on_oops(char *str)
+ }
+ __setup("ftrace_dump_on_oops", set_ftrace_dump_on_oops);
+ 
+-long
+-ns2usecs(cycle_t nsec)
++unsigned long long ns2usecs(cycle_t nsec)
+ {
+ 	nsec += 500;
+ 	do_div(nsec, 1000);
+diff --git a/kernel/trace/trace.h b/kernel/trace/trace.h
+index d7410bb..93991e6 100644
+--- a/kernel/trace/trace.h
++++ b/kernel/trace/trace.h
+@@ -594,7 +594,7 @@ extern int trace_selftest_startup_branch(struct tracer *trace,
+ #endif /* CONFIG_FTRACE_STARTUP_TEST */
+ 
+ extern void *head_page(struct trace_array_cpu *data);
+-extern long ns2usecs(cycle_t nsec);
++extern unsigned long long ns2usecs(cycle_t nsec);
+ extern int
+ trace_vbprintk(unsigned long ip, const char *fmt, va_list args);
+ extern int
+diff --git a/kernel/trace/trace_output.c b/kernel/trace/trace_output.c
+index d72b9a6..64b54a5 100644
+--- a/kernel/trace/trace_output.c
++++ b/kernel/trace/trace_output.c
+@@ -423,7 +423,7 @@ int trace_print_lat_context(struct trace_iterator *iter)
+ 
+ 		trace_find_cmdline(entry->pid, comm);
+ 
+-		ret = trace_seq_printf(s, "%16s %5d %3d %d %08x %08lx [%08lx]"
++		ret = trace_seq_printf(s, "%16s %5d %3d %d %08x %08lx [%08llx]"
+ 				       " %ld.%03ldms (+%ld.%03ldms): ", comm,
+ 				       entry->pid, iter->cpu, entry->flags,
+ 				       entry->preempt_count, iter->idx,
+-- 
+1.6.2.1
+
+-- 
