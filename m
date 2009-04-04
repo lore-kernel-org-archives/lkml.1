@@ -1,27 +1,28 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754630AbZDDPto@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754515AbZDDQAR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754630AbZDDPto (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 4 Apr 2009 11:49:44 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751805AbZDDPtd
+	id S1754515AbZDDQAR (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 4 Apr 2009 12:00:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752195AbZDDP77
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 4 Apr 2009 11:49:33 -0400
-Received: from hrndva-omtalb.mail.rr.com ([71.74.56.123]:34294 "EHLO
-	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750965AbZDDPtd (ORCPT
+	Sat, 4 Apr 2009 11:59:59 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:56232 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1752125AbZDDP76 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 4 Apr 2009 11:49:33 -0400
-Date: Sat, 4 Apr 2009 11:49:30 -0400 (EDT)
-From: Steven Rostedt <rostedt@goodmis.org>
-X-X-Sender: rostedt@gandalf.stny.rr.com
-To: Tom Zanussi <tzanussi@gmail.com>
-cc: Ingo Molnar <mingo@elte.hu>, "Paul E. McKenney" <paulmck@us.ibm.com>,
-       linux-kernel <linux-kernel@vger.kernel.org>, fweisbec@gmail.com
-Subject: Re: [PATCH] tracing/filters: allow event filters to be set only when
- not tracing
-In-Reply-To: <1238830355.22495.55.camel@bookworm>
-Message-ID: <alpine.DEB.2.00.0904041143480.32083@gandalf.stny.rr.com>
-References: <1238390546.6368.65.camel@bookworm>  <20090401122408.GG12966@elte.hu> <1238653371.6655.48.camel@bookworm>  <20090403135956.GD8875@elte.hu>  <alpine.DEB.2.00.0904031010510.965@gandalf.stny.rr.com> <1238830355.22495.55.camel@bookworm>
-User-Agent: Alpine 2.00 (DEB 1167 2008-08-23)
+	Sat, 4 Apr 2009 11:59:58 -0400
+Date: Sat, 4 Apr 2009 08:57:28 -0700 (PDT)
+From: Linus Torvalds <torvalds@linux-foundation.org>
+X-X-Sender: torvalds@localhost.localdomain
+To: Jens Axboe <jens.axboe@oracle.com>
+cc: Theodore Tso <tytso@mit.edu>,
+       Linux Kernel Developers List <linux-kernel@vger.kernel.org>,
+       Ext4 Developers List <linux-ext4@vger.kernel.org>
+Subject: Re: [GIT PULL] Ext3 latency fixes
+In-Reply-To: <20090404151649.GE5178@kernel.dk>
+Message-ID: <alpine.LFD.2.00.0904040854470.3915@localhost.localdomain>
+References: <1238742067-30814-1-git-send-email-tytso@mit.edu> <alpine.LFD.2.00.0904031110420.19690@localhost.localdomain> <alpine.LFD.2.00.0904031150190.4015@localhost.localdomain> <alpine.LFD.2.00.0904031329410.7007@localhost.localdomain> <20090404135719.GA9812@mit.edu>
+ <20090404151649.GE5178@kernel.dk>
+User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
 MIME-Version: 1.0
 Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
@@ -29,66 +30,32 @@ List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-On Sat, 4 Apr 2009, Tom Zanussi wrote:
+
+On Sat, 4 Apr 2009, Jens Axboe wrote:
 > 
-> Hmm, after reading Paul's replies, it sounds like this approach might be
-> more trouble than it's worth.  Maybe going back to the idea of
-> temporarily stopping/starting tracing would be a better idea, but with a
-> little more heavyweight version of the current 'quick' tracing
-> start/stop (that would prevent entering the tracing functions (and ththe
-> filter_check_discard()).
+> Big nack on this patch. Ted, this is EXACTLY where I told you we saw big
+> write regressions (sqlite performance drops by a factor of 4-5). Do a
+> git log on fs/buffer.c and see the original patch (which does what your
+> patch does) and the later revert. No idea why you are now suggestion
+> making that exact change?!
 
+Jens, if I can re-create the 'fsync' times (I haven't yet), then the 
+default scheduler _will_ be switched to AS.
 
-Actually, I forgot what the general problem we are avoiding here with the
-RCU locks. Could you explain that again. Just so that I can get a better
-idea without having to read between the lines of the previous messages in 
-this thread.
+> Low latency is nice, but not at the cost of 4-5x throughput for real
+> world cases.
 
+I'm sorry, but that fsync thing _is_ a real-world case, and it's the one 
+that a hell of a lot more people care about than some idiotic sqlite 
+throughput issue.
 
-> 
-> I was thinking it would be something like:
-> 
-> stop_tracing();
-> current_tracer->stop(); /* unregister tracepoints, etc */
-> 
-> remove filter
-> 
-> current_tracer->start(); /* reregister tracepoints, etc */
-> start_tracing();
+You have a test-case now. Consider it a priority, or consider CFQ to be a 
+"for crazy servers that only care about throughput".
 
-This use to be the way start and stop worked, but I'm trying to
-make them more light weight. I've been wanting start/stop to be called
-by start_tracing() and stop_tracing() and those should be able to be 
-called in any context. But registering and unregistering tracepoints calls 
-mutexes, which can not be done in atomic context.
+Quite frankly, the fact that I can see _seconds_ of latencies with a 
+really good SSD is not acceptable. The fact that it is by design is even 
+less so.
 
-There are still some tracers that have start/stop using sleeping code, but 
-in the long run I want the tracers start/stop functions to be light.
+Latency is more important than throughput. It's that simple.
 
-
-> 
-> The struct tracer comments suggest that the stop()/start()
-> ops are meant for pausing, I'd guess for things like this, but some of
-> the tracers don't implement them.
-
-Yeah, They should, but leaving out the start/stop functions, is just
-the tracers way of saying, I don't need to pause. :-/
-
-> 
-> For the events in the event tracer, it would be something like:
-> 
-> stop_tracing();
-> call->unregfunc(); /* unregister tracepoint */
-> 
-> remove filter
-> 
-> call->regfunc(); /* reregister tracepoint */
-> start_tracing();
-> 
-> If that makes sense, I can try it that way instead.
-> 
-
-I'll comment about this if I get that explanation of the problem again ;-)
-
--- Steve
-
+			Linus
