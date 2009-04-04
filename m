@@ -1,101 +1,92 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756043AbZDDNHr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757479AbZDDNUR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756043AbZDDNHr (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 4 Apr 2009 09:07:47 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753302AbZDDNHf
+	id S1757479AbZDDNUR (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 4 Apr 2009 09:20:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753563AbZDDNUE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 4 Apr 2009 09:07:35 -0400
-Received: from ogre.sisk.pl ([217.79.144.158]:37430 "EHLO ogre.sisk.pl"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751550AbZDDNHe (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 4 Apr 2009 09:07:34 -0400
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-To: "Tvrtko A. Ursulin" <tvrtko@ursulin.net>
-Subject: Re: [Regression in 2.6.29] forcedeth doesn't work after resume from hibernation (was: Re: Resume after hibernation regression in 2.6.29)
-Date: Sat, 4 Apr 2009 15:07:41 +0200
-User-Agent: KMail/1.11.2 (Linux/2.6.29-rjw; KDE/4.2.2; x86_64; ; )
-Cc: Ed Swierk <eswierk@aristanetworks.com>, Pavel Machek <pavel@ucw.cz>,
-       "linux-pm" <linux-pm@lists.linux-foundation.org>,
-       kernel list <linux-kernel@vger.kernel.org>,
-       Tobias Diedrich <ranma+kernel@tdiedrich.de>,
-       Ayaz Abdulla <aabdulla@nvidia.com>, netdev <netdev@vger.kernel.org>,
-       Arthur Jones <ajones@riverbed.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       "David S. Miller" <davem@davemloft.net>, stable@kernel.org
-References: <200903261920.32173.tvrtko@ursulin.net> <1238780473.19305.3.camel@localhost.localdomain> <200904041404.24616.tvrtko@ursulin.net>
-In-Reply-To: <200904041404.24616.tvrtko@ursulin.net>
-MIME-Version: 1.0
-Content-Type: Text/Plain;
-  charset="iso-8859-15"
+	Sat, 4 Apr 2009 09:20:04 -0400
+Received: from bedivere.hansenpartnership.com ([66.63.167.143]:34636 "EHLO
+	bedivere.hansenpartnership.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1750906AbZDDNUC (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 4 Apr 2009 09:20:02 -0400
+Subject: Re: [PATCH 4/5] bfa: Brocade BFA FC SCSI driver (makefile)
+From: James Bottomley <James.Bottomley@HansenPartnership.com>
+To: Jing Huang <jhuang007@gmail.com>
+Cc: Krishna Gudipati <kgudipat@brocade.com>, huangj@brocade.com,
+       linux-kernel@vger.kernel.org, linux-scsi@vger.kernel.org,
+       nkattang@brocade.com, rvadivel@brocade.com, vravindr@brocade.com
+In-Reply-To: <b674f4c50904040541l523c489eh3556819a022c1ed7@mail.gmail.com>
+References: <200904020335.n323ZJVh004287@blc-10-2.brocade.com>
+	 <1238679361.3383.4.camel@mulgrave.int.hansenpartnership.com>
+	 <b674f4c50904040541l523c489eh3556819a022c1ed7@mail.gmail.com>
+Content-Type: text/plain
+Date: Sat, 04 Apr 2009 08:19:58 -0500
+Message-Id: <1238851198.4083.5.camel@mulgrave.int.hansenpartnership.com>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.22.3.1 (2.22.3.1-1.fc9) 
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200904041507.42927.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Saturday 04 April 2009, Tvrtko A. Ursulin wrote:
-> On Friday 03 April 2009 18:41:12 Ed Swierk wrote:
-> > On Fri, 2009-04-03 at 08:24 -0700, Ed Swierk wrote:
-> > > On Fri, Mar 27, 2009 at 1:09 PM, Rafael J. Wysocki <rjw@sisk.pl> wrote:
-> > > > I was able to reproduce the problem and identify the commit that broke
-> > > > the resume of forcedeth, which turned out to be:
-> > > >
-> > > > commit cb52deba12f27af90a46d2f8667a64888118a888
-> > > > Author: Ed Swierk <eswierk@arastra.com>
-> > > > Date:   Mon Dec 1 12:24:43 2008 +0000
-> > > >
-> > > >    forcedeth: power down phy when interface is down
-> > > >
-> > > >    Signed-off-by: Ed Swierk <eswierk@arastra.com>
-> > > >    Tested-by: Arthur Jones <ajones@riverbed.com>
-> > > >    Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
-> > > >    Signed-off-by: David S. Miller <davem@davemloft.net>
-> > > >
-> > > > Since I have no slightest idea of what this commit is supposed to
-> > > > achieve, I can only ask for reverting it.  It reverts cleanly, BTW.
-> > >
-> > > The change causes forcedeth to bring down the physical link when an
-> > > interface goes down; leaving it up causes the switch at the other end
-> > > to think the port is still active, with potentially random speed and
-> > > duplex parameters.
-> > >
-> > > It's possible that the forcedeth driver needs to reset autonegotiation
-> > > after bringing it up the link again.
-> > >
-> > > Can you please try this on a 2.6.29 kernel that's exhibiting the
-> > > symptoms you describe, after resuming the machine from hibernation:
-> > >
-> > >   ethtool -s eth1 autoneg off speed 100 duplex full
-> > >   ethtool -s eth1 autoneg on
-> > >
-> > > This should reset autonegotiation manually and bring the link. Let me
-> > > know how it goes.
+On Sat, 2009-04-04 at 20:41 +0800, Jing Huang wrote:
+> On Thu, Apr 2, 2009 at 9:36 PM, James Bottomley
+> <James.Bottomley@hansenpartnership.com> wrote:
+> > On Wed, 2009-04-01 at 20:35 -0700, Krishna Gudipati wrote:
+> >> From: Krishna Chaitanya Gudipati <kgudipat@brocade.com>
+> >>
+> >> This patch contains Makefile and Kconfig file for scsi and bfa.Fixed
+> >> the code review comments from previous submission.
+> >>
+> >> Signed-off-by: Krishna Chaitanya Gudipati <kgudipat@brocade.com>
+> >> ---
+> >>  Kconfig      |    9 +++++++++
+> >>  Makefile     |    1 +
+> >>  bfa/Makefile |   27 +++++++++++++++++++++++++++
+> >>  3 files changed, 37 insertions(+)
+> >>
+> >> diff -urpN orig/drivers/scsi/Kconfig patch/drivers/scsi/Kconfig
+> >> --- orig/drivers/scsi/Kconfig 2009-04-01 20:08:49.271161000 -0700
+> >> +++ patch/drivers/scsi/Kconfig        2009-04-01 20:08:44.003822000 -0700
+> >> @@ -1797,6 +1797,15 @@ config SCSI_SRP
+> >>         To compile this driver as a module, choose M here: the
+> >>         module will be called libsrp.
+> >>
+> >> +config SCSI_BFA_FC
+> >> +     tristate "Brocade BFA Fibre Channel Support"
+> >> +     depends on PCI && SCSI
+> >> +     help
+> >> +       This bfa driver supports all Brocade PCIe Fibre Channel host adapters.
+> >> +
+> >> +       To compile this driver as a module, choose M here. The module will
+> >> +       be called bfa.
+> >> +
 > >
-> > Also please try this patch; it fixes the problem on my test system (a
-> > DFI board with an nVidia MCP55).
+> > You're still not using the FC transport class to export common sysfs FC
+> > information or to help make your driver smaller.  I thought you were
+> > going to fix this after this was noted in your first submission to
+> > linux-scsi on 24 September?
 > >
-> > Signed-off-by: Ed Swierk <eswierk@aristanetworks.com>
-> > --
-> > --- linux-2.6.29.x86_64/drivers/net/forcedeth.c.orig	2009-03-23
-> > 16:12:14.000000000 -0700 +++
-> > linux-2.6.29.x86_64/drivers/net/forcedeth.c	2009-04-03 10:11:26.839614710
-> > -0700 @@ -5995,6 +5995,9 @@
-> >  	for (i = 0;i <= np->register_size/sizeof(u32); i++)
-> >  		writel(np->saved_config_space[i], base+i*sizeof(u32));
+> > James
 > >
-> > +	/* restore phy state, including autoneg */
-> > +	phy_init(dev);
-> > +
-> >  	netif_device_attach(dev);
-> >  	if (netif_running(dev)) {
-> >  		rc = nv_open(dev);
+> >
 > 
-> Works for me on MCP73 as well.
+> Hi James,
+> 
+> We removed Brocade specific sysfs code after first linux-scsi
+> submission. Can you please
+> clarify where we are still not using the FC transport class to export
+> common sysfs FC
+> information? We do use the fc transport template to create the common
+> sysfs FC attributes
+> (in bfad_attr.c) under /sys/class/fc_host/<host#>
 
-Great, thanks for testing.
+Ah ... I was going by the fact that you don't  select SCSI_FC_ATTRS in
+the Kconfig ... so this is just something as simple as a missing select?
+(Without the select you'll fail some of the random compile tests because
+the needed scsi_transport_fc code won't be present).
 
-I think the patch should go to Linus ASAP and to -stable as a regression fix.
+James
 
-Thanks,
-Rafael
+
