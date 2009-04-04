@@ -1,66 +1,163 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756742AbZDDVZb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755462AbZDDVlV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756742AbZDDVZb (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 4 Apr 2009 17:25:31 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751611AbZDDVZV
+	id S1755462AbZDDVlV (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 4 Apr 2009 17:41:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752657AbZDDVk6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 4 Apr 2009 17:25:21 -0400
-Received: from mx2.mail.elte.hu ([157.181.151.9]:36422 "EHLO mx2.mail.elte.hu"
+	Sat, 4 Apr 2009 17:40:58 -0400
+Received: from ogre.sisk.pl ([217.79.144.158]:38423 "EHLO ogre.sisk.pl"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751043AbZDDVZU (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 4 Apr 2009 17:25:20 -0400
-Date: Sat, 4 Apr 2009 23:24:50 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: Dave Jones <davej@redhat.com>,
-       Tarkan Erimer <tarkan.erimer@turknet.net.tr>,
-       linux-kernel@vger.kernel.org
-Subject: Re: Linux-2.6.29-git6 Compile Error
-Message-ID: <20090404212450.GA14729@elte.hu>
-References: <49D0D3DF.1050008@turknet.net.tr> <20090330143438.GA6736@elte.hu> <20090330164702.GA6372@redhat.com> <20090403174701.GF6295@elte.hu> <20090403175355.GB26888@redhat.com>
+	id S1752234AbZDDVk5 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 4 Apr 2009 17:40:57 -0400
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+To: NetDev <netdev@vger.kernel.org>
+Subject: [RFT][PATCH 2/3] NET/e1000e: Fix powering off during shutdown
+Date: Sat, 4 Apr 2009 23:40:43 +0200
+User-Agent: KMail/1.11.2 (Linux/2.6.29-rjw; KDE/4.2.2; x86_64; ; )
+Cc: Jesse Brandeburg <jesse.brandeburg@gmail.com>,
+       Jeff Kirsher <jeffrey.t.kirsher@intel.com>,
+       Yinghai Lu <yinghai@kernel.org>,
+       pm list <linux-pm@lists.linux-foundation.org>,
+       LKML <linux-kernel@vger.kernel.org>
+References: <200904042337.31706.rjw@sisk.pl>
+In-Reply-To: <200904042337.31706.rjw@sisk.pl>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: Text/Plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <20090403175355.GB26888@redhat.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+Message-Id: <200904042340.44376.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+From: Rafael J. Wysocki <rjw@sisk.pl>
 
-* Dave Jones <davej@redhat.com> wrote:
+Impact: Fix
 
-> On Fri, Apr 03, 2009 at 07:47:01PM +0200, Ingo Molnar wrote:
->  > 
->  > * Dave Jones <davej@redhat.com> wrote:
->  > 
->  > > On Mon, Mar 30, 2009 at 04:34:38PM +0200, Ingo Molnar wrote:
->  > >  > 
->  > >  > (Cc: added)
->  > > 
->  > > See 199785eac892a1fa1b71cc22bec58e8b156d9311
->  > > Steven picked up in this build failure _months_ ago in -next,
->  > > which caused me to regenerate the cpufreq tree so that the build failure
->  > > wouldn't get introduced to mainline.
->  > > 
->  > > Then the x86-merge comes along, and steamrollers over it.
->  > 
->  > hmmm ... there certainly was no build failure observable here. 
->  > Which commit caused the problem? 199785eac8 went in via your 
->  > tree, not the x86 tree.
-> 
-> The commits that moved the include file around reverted the 
-> changes from 199785eac8.
+Prevent e1000e from putting the adapter into D3 during shutdown
+except when we're going to power off the system, since doing that may
+generally cause problems with kexec to happen (such problems were
+observed for igb and forcedeth).  For this purpose seperate
+e1000e_shutdown() from e1000e_suspend() and use the appropriate PCI
+PM callbacks in both of them.
 
-ah. That was indeed my bad - sorry about that. Should we have 
-applied that fix to the x86 tree or did it only make sense after
-the merge?
+Signed-off-by: Rafael J. Wysocki <rjw@sisk.pl>
+---
+ drivers/net/e1000e/netdev.c |   58 +++++++++++++++++++++++++++++++++-----------
+ 1 file changed, 44 insertions(+), 14 deletions(-)
 
-	Ingo
+Index: linux-2.6/drivers/net/e1000e/netdev.c
+===================================================================
+--- linux-2.6.orig/drivers/net/e1000e/netdev.c
++++ linux-2.6/drivers/net/e1000e/netdev.c
+@@ -4346,7 +4346,7 @@ static int e1000_ioctl(struct net_device
+ 	}
+ }
+ 
+-static int e1000_suspend(struct pci_dev *pdev, pm_message_t state)
++static int __e1000_shutdown(struct pci_dev *pdev, bool *enable_wake)
+ {
+ 	struct net_device *netdev = pci_get_drvdata(pdev);
+ 	struct e1000_adapter *adapter = netdev_priv(netdev);
+@@ -4409,20 +4409,16 @@ static int e1000_suspend(struct pci_dev 
+ 
+ 		ew32(WUC, E1000_WUC_PME_EN);
+ 		ew32(WUFC, wufc);
+-		pci_enable_wake(pdev, PCI_D3hot, 1);
+-		pci_enable_wake(pdev, PCI_D3cold, 1);
+ 	} else {
+ 		ew32(WUC, 0);
+ 		ew32(WUFC, 0);
+-		pci_enable_wake(pdev, PCI_D3hot, 0);
+-		pci_enable_wake(pdev, PCI_D3cold, 0);
+ 	}
+ 
++	*enable_wake = !!wufc;
++
+ 	/* make sure adapter isn't asleep if manageability is enabled */
+-	if (adapter->flags & FLAG_MNG_PT_ENABLED) {
+-		pci_enable_wake(pdev, PCI_D3hot, 1);
+-		pci_enable_wake(pdev, PCI_D3cold, 1);
+-	}
++	if (adapter->flags & FLAG_MNG_PT_ENABLED)
++		*enable_wake = true;
+ 
+ 	if (adapter->hw.phy.type == e1000_phy_igp_3)
+ 		e1000e_igp3_phy_powerdown_workaround_ich8lan(&adapter->hw);
+@@ -4435,6 +4431,25 @@ static int e1000_suspend(struct pci_dev 
+ 
+ 	pci_disable_device(pdev);
+ 
++	return 0;
++}
++
++static void e1000_power_off(struct pci_dev *pdev, bool sleep, bool wake)
++{
++	if (sleep && wake) {
++		pci_prepare_to_sleep(pdev);
++		return;
++	}
++
++	pci_wake_from_d3(pdev, wake);
++	pci_set_power_state(pdev, PCI_D3hot);
++}
++
++static void e1000_complete_shutdown(struct pci_dev *pdev, bool sleep, bool wake)
++{
++	struct net_device *netdev = pci_get_drvdata(pdev);
++	struct e1000_adapter *adapter = netdev_priv(netdev);
++
+ 	/*
+ 	 * The pci-e switch on some quad port adapters will report a
+ 	 * correctable error when the MAC transitions from D0 to D3.  To
+@@ -4450,14 +4465,12 @@ static int e1000_suspend(struct pci_dev 
+ 		pci_write_config_word(us_dev, pos + PCI_EXP_DEVCTL,
+ 		                      (devctl & ~PCI_EXP_DEVCTL_CERE));
+ 
+-		pci_set_power_state(pdev, pci_choose_state(pdev, state));
++		e1000_power_off(pdev, sleep, wake);
+ 
+ 		pci_write_config_word(us_dev, pos + PCI_EXP_DEVCTL, devctl);
+ 	} else {
+-		pci_set_power_state(pdev, pci_choose_state(pdev, state));
++		e1000_power_off(pdev, sleep, wake);
+ 	}
+-
+-	return 0;
+ }
+ 
+ static void e1000e_disable_l1aspm(struct pci_dev *pdev)
+@@ -4486,6 +4499,18 @@ static void e1000e_disable_l1aspm(struct
+ }
+ 
+ #ifdef CONFIG_PM
++static int e1000_suspend(struct pci_dev *pdev, pm_message_t state)
++{
++	int retval;
++	bool wake;
++
++	retval = __e1000_shutdown(pdev, &wake);
++	if (!retval)
++		e1000_complete_shutdown(pdev, true, wake);
++
++	return retval;
++}
++
+ static int e1000_resume(struct pci_dev *pdev)
+ {
+ 	struct net_device *netdev = pci_get_drvdata(pdev);
+@@ -4549,7 +4574,12 @@ static int e1000_resume(struct pci_dev *
+ 
+ static void e1000_shutdown(struct pci_dev *pdev)
+ {
+-	e1000_suspend(pdev, PMSG_SUSPEND);
++	bool wake;
++
++	__e1000_shutdown(pdev, &wake);
++
++	if (system_state == SYSTEM_POWER_OFF)
++		e1000_complete_shutdown(pdev, false, wake);
+ }
+ 
+ #ifdef CONFIG_NET_POLL_CONTROLLER
