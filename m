@@ -1,51 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756890AbZDDT4v@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755612AbZDDUS6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756890AbZDDT4v (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 4 Apr 2009 15:56:51 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753201AbZDDT4k
+	id S1755612AbZDDUS6 (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 4 Apr 2009 16:18:58 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753532AbZDDUSq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 4 Apr 2009 15:56:40 -0400
-Received: from atrey.karlin.mff.cuni.cz ([195.113.26.193]:33304 "EHLO
-	atrey.karlin.mff.cuni.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753197AbZDDT4k (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 4 Apr 2009 15:56:40 -0400
-Date: Mon, 30 Mar 2009 12:25:02 +0200
-From: Pavel Machek <pavel@ucw.cz>
-To: Sergio Luis <sergio@larces.uece.br>
-Cc: Linux-kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Lauro Salmito <laurosalmito@gmail.com>,
-       "Rafael J. Wysocki" <rjw@sisk.pl>, x86 Maintainers <x86@kernel.org>,
-       Ingo Molnar <mingo@elte.hu>
-Subject: Re: [PATCH 6/6] x86: unify power/cpu_(32|64).c
-Message-ID: <20090330102502.GA1430@ucw.cz>
-References: <49D71EEE.30600@larces.uece.br>
+	Sat, 4 Apr 2009 16:18:46 -0400
+Received: from mx2.mail.elte.hu ([157.181.151.9]:40069 "EHLO mx2.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753197AbZDDUSp (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 4 Apr 2009 16:18:45 -0400
+Date: Sat, 4 Apr 2009 22:18:20 +0200
+From: Ingo Molnar <mingo@elte.hu>
+To: Jens Axboe <jens.axboe@oracle.com>
+Cc: Linus Torvalds <torvalds@linux-foundation.org>,
+       Theodore Tso <tytso@mit.edu>,
+       Linux Kernel Developers List <linux-kernel@vger.kernel.org>,
+       Ext4 Developers List <linux-ext4@vger.kernel.org>
+Subject: Re: [GIT PULL] Ext3 latency fixes
+Message-ID: <20090404201820.GA18067@elte.hu>
+References: <1238742067-30814-1-git-send-email-tytso@mit.edu> <alpine.LFD.2.00.0904031110420.19690@localhost.localdomain> <alpine.LFD.2.00.0904031150190.4015@localhost.localdomain> <alpine.LFD.2.00.0904031329410.7007@localhost.localdomain> <20090404135719.GA9812@mit.edu> <20090404151649.GE5178@kernel.dk> <alpine.LFD.2.00.0904040854470.3915@localhost.localdomain> <20090404173412.GF5178@kernel.dk>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <49D71EEE.30600@larces.uece.br>
+In-Reply-To: <20090404173412.GF5178@kernel.dk>
 User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi!
 
-> x86: unify power/cpu_(32|64).c
+* Jens Axboe <jens.axboe@oracle.com> wrote:
+
+> > Quite frankly, the fact that I can see _seconds_ of latencies 
+> > with a really good SSD is not acceptable. The fact that it is by 
+> > design is even less so.
 > 
-> This is the last unification step. Here we do remove one of the files
-> and rename the left one as cpu.c, as both are now the same.
-> Also update power/Makefile, telling it to build cpu.o, instead of
-> cpu_(32|64).o
-> 
-> Signed-off-by: Sergio Luis <sergio@larces.uece.br>
-> Signed-off-by: Lauro Salmito <laurosalmito@gmail.com>
+> Agree, multi-second latencies is not acceptable.
 
+btw., just to insert some hard data: usability studies place the 
+acceptance threshold for delays to around 300 milliseconds.
 
-Whole series looks ok to me.
+If the computer does not 'respond' (in a real or a fake, visible or 
+audible way) to their input within 0.3 seconds they get annoyed 
+emotionally.
 
-Acked-by: Pavel Machek <pavel@ucw.cz>
+It does not matter how complex it is for the kernel to solve this 
+problem, it does not matter how far away and difficult to access the 
+data is. If we are not absolutely latency centric in Linux, if we 
+spuriously delay apps that do supposedly simple-looking things the 
+user _will_ get annoyed and _will_ pick another OS.
 
--- 
-(english) http://www.livejournal.com/~pavelmachek
-(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
+All things considered it is certainly a combined kernel and app 
+problem space to get there, but not being completely aware of its 
+importance in the kernel kills any chance of us ever having a 
+long-term solution.
+
+	Ingo
