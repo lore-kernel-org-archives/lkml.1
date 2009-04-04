@@ -1,71 +1,76 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759658AbZDDLIA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757290AbZDDLNT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759658AbZDDLIA (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 4 Apr 2009 07:08:00 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754555AbZDDLHu
+	id S1757290AbZDDLNT (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 4 Apr 2009 07:13:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752037AbZDDLNF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 4 Apr 2009 07:07:50 -0400
-Received: from mail5.sea5.speakeasy.net ([69.17.117.7]:46517 "EHLO
-	mail5.sea5.speakeasy.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752946AbZDDLHt (ORCPT
+	Sat, 4 Apr 2009 07:13:05 -0400
+Received: from casper.infradead.org ([85.118.1.10]:57222 "EHLO
+	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751667AbZDDLNE (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 4 Apr 2009 07:07:49 -0400
-Date: Sat, 4 Apr 2009 04:07:47 -0700 (PDT)
-From: Trent Piepho <xyzzy@speakeasy.org>
-X-X-Sender: xyzzy@shell2.speakeasy.net
-To: Andy Walls <awalls@radix.net>
-cc: Linux Kernel <linux-kernel@vger.kernel.org>, linux-media@vger.kernel.org
-Subject: Re: When is a wake_up() not a wake up?
-In-Reply-To: <1238798924.3130.72.camel@palomino.walls.org>
-Message-ID: <Pine.LNX.4.58.0904040356210.5134@shell2.speakeasy.net>
-References: <1238798924.3130.72.camel@palomino.walls.org>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Sat, 4 Apr 2009 07:13:04 -0400
+Subject: RE: [patch 03/20] x86, ptrace, bts: defer branch trace stopping
+From: Peter Zijlstra <a.p.zijlstra@chello.nl>
+To: "Metzger, Markus T" <markus.t.metzger@intel.com>
+Cc: "mingo@elte.hu" <mingo@elte.hu>, "tglx@linutronix.de" <tglx@linutronix.de>,
+       "hpa@zytor.com" <hpa@zytor.com>,
+       "markus.t.metzger@gmail.com" <markus.t.metzger@gmail.com>,
+       "roland@redhat.com" <roland@redhat.com>,
+       "eranian@googlemail.com" <eranian@googlemail.com>,
+       "oleg@redhat.com" <oleg@redhat.com>,
+       "Villacis, Juan" <juan.villacis@intel.com>,
+       "ak@linux.jf.intel.com" <ak@linux.jf.intel.com>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>
+In-Reply-To: <928CFBE8E7CB0040959E56B4EA41A77E9271853A@irsmsx504.ger.corp.intel.com>
+References: <20090403144332.799740000@intel.com>
+	 <20090403144550.712401000@intel.com> <1238770852.798.146.camel@twins>
+	 <928CFBE8E7CB0040959E56B4EA41A77E9271853A@irsmsx504.ger.corp.intel.com>
+Content-Type: text/plain
+Date: Sat, 04 Apr 2009 13:12:31 +0200
+Message-Id: <1238843551.4549.1041.camel@laptop>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.26.0 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 3 Apr 2009, Andy Walls wrote:
-> 1. A work queue thread or read() call needs to send a command to the
-> CX23418 using the cx18_api_call() function
-> 2. It fills out a mailbox with a command for the CX23418
-> 3. It prepares to wait, just in case a wait is needed
-> 4. A SW1 interrupt is sent to the CX23418 telling it a mailbox is ready
-> 5. The ack filed in the mailbox, a PCI MMIO location, is checked to see
-> if the mailbox was ack'ed already
-> 6. If not, schedule_timeout() for up to 10 msecs (a near eternity...)
-> 7. Clean up the wait and move on
+On Sat, 2009-04-04 at 08:17 +0100, Metzger, Markus T wrote:
+> >-----Original Message-----
+> >From: Peter Zijlstra [mailto:a.p.zijlstra@chello.nl]
+> >Sent: Friday, April 03, 2009 5:01 PM
+> >To: Metzger, Markus T
+> 
+> 
+> >Also, I can't say I like the name, what about something like:
+> >
+> >void account_locked_buffer(struct mm_struct *mm, long pages)
+> >{
+> >	down_write(&mm->mmap_sem);
+> >
+> >	mm->total_vm += pages;
+> >	mm->locked_vm += pages;
+> >
+> >	up_write(&mm->mmap_sem);
+> >}
+> >
+> >but looking more closely at that alloc_locked_buffer() stuff, I really
+> >hate it, who in his right mind does a multi-page kmalloc() -- that's
+> >crazy.
+> 
+> I need a non-pageable chunk of memory to give to the cpu to store branch
+> trace data in. Kmalloc() is easy to use and gives me what I need.
+> 
+> How would I do this correctly?
 
-10ms isn't that long.  With a 100 HZ kernel it's only one jiffie.  The
-shortest time msleep() can sleep on a 100 HZ kernel is 20 ms.
+Well, how large should this buffer be and must it be physically
+contiguous?
 
-Is it possible that it's simply taking more than 10 ms for your process to
-get run?
+Apparently its large enough to account in pages, that would suggest you
+should use the page allocator to get memory.
 
-> Mar 31 23:36:56 palomino kernel: cx18-0:  irq: sending interrupt SW1: 8 to send CX18_CPU_DE_SET_MDL
-> Mar 31 23:36:56 palomino kernel: cx18-0:  api: scheduling to wait for ack of CX18_CPU_DE_SET_MDL: req 51267 ack 51266, pid 21092, state 2
-> Mar 31 23:36:56 palomino kernel: cx18-0:  irq: received interrupts SW1: 0  SW2: 8  HW2: 0
-> Mar 31 23:36:56 palomino kernel: cx18-0:  irq: Wake up initiated on pid 21092 in state 2
-> Mar 31 23:36:56 palomino kernel: cx18-0:  irq: Wake up succeeded on pid 21092, state 2 -> 0
-> Mar 31 23:36:56 palomino kernel: cx18-0:  api: done wait for ack of CX18_CPU_DE_SET_MDL: req 51267 ack 51267, current pid 21092, current state 0, state 0
-> Mar 31 23:36:56 palomino kernel: cx18-0:  warning: failed to be awakened upon RPU acknowledgment sending CX18_CPU_DE_SET_MDL; timed out waiting 10 msecs
+Furthermore, if it needs to be physically contiguous and its more than
+say 8 pages worth, you're basically up shit creek.
 
-Try some higher resolution time stamps, you can't really tell much about
-when things are happening.
-
-Here's some code I wrote to do it on x86.
-
-#include <linux/calc64.h>
-#define MHZ     1666.787
-#define INT     (unsigned int)(MHZ * (1<<12) + 0.5)
-#define FRAC    (unsigned int)(MHZ * (1<<21) / 1000.0 + 0.5)
-#define timestamp(str, args...) { u64 _time; u32 _rem; rdtscll(_time); \
-        _time = (_time - starttime)<<12; \
-        _rem = do_div(_time, INT); \
-        printk("%s - %u.%03u us " str "\n", __func__, \
-                (unsigned int)_time, (_rem << 9) / FRAC , ## args); }
-static u64 starttime;
-
-Change MHZ to what /proc/cpuinfo tells you.  Call 'rdtscll(starttime)' some
-time when your driver inits or a device gets opened or something like that.
-Makes the time stamps easier to read when they start near zero.
