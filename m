@@ -1,63 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755538AbZDDRjO@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755516AbZDDRjt@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755538AbZDDRjO (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 4 Apr 2009 13:39:14 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752683AbZDDRi6
+	id S1755516AbZDDRjt (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 4 Apr 2009 13:39:49 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754135AbZDDRjk
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 4 Apr 2009 13:38:58 -0400
-Received: from one.firstfloor.org ([213.235.205.2]:37374 "EHLO
-	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752227AbZDDRi5 (ORCPT
+	Sat, 4 Apr 2009 13:39:40 -0400
+Received: from bombadil.infradead.org ([18.85.46.34]:55689 "EHLO
+	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753123AbZDDRjj (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 4 Apr 2009 13:38:57 -0400
-Date: Sat, 4 Apr 2009 19:38:49 +0200
-From: Andi Kleen <andi@firstfloor.org>
-To: linux-kernel@vger.kernel.org, srinivasa@in.ibm.com
-Cc: akpm@osdl.org
-Subject: [PATCH] Update NSIGTRAP in asm-generic/siginfo.h
-Message-ID: <20090404173849.GA2040@basil>
+	Sat, 4 Apr 2009 13:39:39 -0400
+Date: Sat, 4 Apr 2009 13:39:36 -0400
+From: Christoph Hellwig <hch@infradead.org>
+To: David Howells <dhowells@redhat.com>
+Cc: linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org,
+       nfsv4@linux-nfs.org
+Subject: Re: [PATCH 10/41] FS-Cache: Add use of /proc and presentation of
+	statistics [ver #48]
+Message-ID: <20090404173936.GA21189@infradead.org>
+References: <20090403155436.28714.23368.stgit@warthog.procyon.org.uk> <20090403155528.28714.19141.stgit@warthog.procyon.org.uk>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-User-Agent: Mutt/1.5.17 (2007-11-01)
+In-Reply-To: <20090403155528.28714.19141.stgit@warthog.procyon.org.uk>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-SRS-Rewrite: SMTP reverse-path rewritten from <hch@infradead.org> by bombadil.infradead.org
+	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Update NSIGTRAP in asm-generic/siginfo.h
+On Fri, Apr 03, 2009 at 04:55:28PM +0100, David Howells wrote:
+> Make FS-Cache create its /proc interface and present various statistical
+> information through it.  Also provide the functions for updating this
+> information.
+> 
+> These features are enabled by:
+> 
+> 	CONFIG_FSCACHE_PROC
+> 	CONFIG_FSCACHE_STATS
+> 	CONFIG_FSCACHE_HISTOGRAM
+> 
+> The /proc directory for FS-Cache is also exported so that caching modules can
+> add their own statistics there too.
+> 
+> The FS-Cache module is loadable at this point, and the statistics files can be
+> examined by userspace:
+> 
+> 	cat /proc/fs/fscache/stats
+> 	cat /proc/fs/fscache/histogram
 
-Impact: (nearly) trivial
+I thought we didn't want to use procfs for these kinds of things
+anymore.
 
-The patch
-
-commit da654b74bda14c45a7d98c731bf3c1a43b6b74e2
-Author: Srinivasa Ds <srinivasa@in.ibm.com>
-Date:   Tue Sep 23 15:23:52 2008 +0530
-
-    signals: demultiplexing SIGTRAP signal
-
-forgot to update the NSIGTRAP define in asm-generic/siginfo.h to 
-the new number of sigtrap subcodes. Nothing in the tree seems to use it, 
-but presumably something in user space might. So update it.
-
-Cc: Srinivasa Ds <srinivasa@in.ibm.com>
-
-Signed-off-by: Andi Kleen <ak@linux.intel.com>
-
----
- include/asm-generic/siginfo.h |    2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
-
-Index: linux-2.6.29-ak/include/asm-generic/siginfo.h
-===================================================================
---- linux-2.6.29-ak.orig/include/asm-generic/siginfo.h	2008-10-24 13:34:57.000000000 +0200
-+++ linux-2.6.29-ak/include/asm-generic/siginfo.h	2009-04-04 19:35:23.000000000 +0200
-@@ -201,7 +201,7 @@
- #define TRAP_TRACE	(__SI_FAULT|2)	/* process trace trap */
- #define TRAP_BRANCH     (__SI_FAULT|3)  /* process taken branch trap */
- #define TRAP_HWBKPT     (__SI_FAULT|4)  /* hardware breakpoint/watchpoint */
--#define NSIGTRAP	2
-+#define NSIGTRAP	4
- 
- /*
-  * SIGCHLD si_codes
