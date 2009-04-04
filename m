@@ -1,91 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755806AbZDDMlt@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754482AbZDDMpR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755806AbZDDMlt (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 4 Apr 2009 08:41:49 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752172AbZDDMlj
+	id S1754482AbZDDMpR (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 4 Apr 2009 08:45:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752172AbZDDMpD
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 4 Apr 2009 08:41:39 -0400
-Received: from rv-out-0506.google.com ([209.85.198.224]:60655 "EHLO
-	rv-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751848AbZDDMli convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 4 Apr 2009 08:41:38 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
-         :cc:content-type:content-transfer-encoding;
-        b=nCIvP4Lbs/KSXTeoJRSBGp8Eq17e6DoV9G62rl0GuTtpmRg/He+ncT9H/thhaQOYZt
-         eIwZcHCn7Vuj1dkjWtZDhOxx2Fl6DB62MPhQHowJA25/qYPZu6WrNcy5TByeQS7KDyZ9
-         C1wvoJbfcbg4nMZmD8BKNfAZ0wP+fVqkip9lY=
+	Sat, 4 Apr 2009 08:45:03 -0400
+Received: from rtr.ca ([76.10.145.34]:33739 "EHLO mail.rtr.ca"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751780AbZDDMpB (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 4 Apr 2009 08:45:01 -0400
+Message-ID: <49D7564A.9090409@rtr.ca>
+Date: Sat, 04 Apr 2009 08:44:58 -0400
+From: Mark Lord <lkml@rtr.ca>
+Organization: Real-Time Remedies Inc.
+User-Agent: Thunderbird 2.0.0.21 (X11/20090318)
 MIME-Version: 1.0
-In-Reply-To: <1238679361.3383.4.camel@mulgrave.int.hansenpartnership.com>
-References: <200904020335.n323ZJVh004287@blc-10-2.brocade.com>
-	 <1238679361.3383.4.camel@mulgrave.int.hansenpartnership.com>
-Date: Sat, 4 Apr 2009 20:41:36 +0800
-Message-ID: <b674f4c50904040541l523c489eh3556819a022c1ed7@mail.gmail.com>
-Subject: Re: [PATCH 4/5] bfa: Brocade BFA FC SCSI driver (makefile)
-From: Jing Huang <jhuang007@gmail.com>
-To: James Bottomley <James.Bottomley@hansenpartnership.com>
-Cc: Krishna Gudipati <kgudipat@brocade.com>, huangj@brocade.com,
-       linux-kernel@vger.kernel.org, linux-scsi@vger.kernel.org,
-       nkattang@brocade.com, rvadivel@brocade.com, vravindr@brocade.com
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 8BIT
+To: Jeff Garzik <jeff@garzik.org>
+Cc: Linus Torvalds <torvalds@linux-foundation.org>,
+       Chris Mason <chris.mason@oracle.com>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       David Rees <drees76@gmail.com>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: Linux 2.6.29
+References: <1238758370.32764.5.camel@think.oraclecorp.com> <alpine.LFD.2.00.0904030804160.4130@localhost.localdomain> <49D66C0E.5090301@garzik.org>
+In-Reply-To: <49D66C0E.5090301@garzik.org>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Apr 2, 2009 at 9:36 PM, James Bottomley
-<James.Bottomley@hansenpartnership.com> wrote:
-> On Wed, 2009-04-01 at 20:35 -0700, Krishna Gudipati wrote:
->> From: Krishna Chaitanya Gudipati <kgudipat@brocade.com>
->>
->> This patch contains Makefile and Kconfig file for scsi and bfa.Fixed
->> the code review comments from previous submission.
->>
->> Signed-off-by: Krishna Chaitanya Gudipati <kgudipat@brocade.com>
->> ---
->>  Kconfig      |    9 +++++++++
->>  Makefile     |    1 +
->>  bfa/Makefile |   27 +++++++++++++++++++++++++++
->>  3 files changed, 37 insertions(+)
->>
->> diff -urpN orig/drivers/scsi/Kconfig patch/drivers/scsi/Kconfig
->> --- orig/drivers/scsi/Kconfig 2009-04-01 20:08:49.271161000 -0700
->> +++ patch/drivers/scsi/Kconfig        2009-04-01 20:08:44.003822000 -0700
->> @@ -1797,6 +1797,15 @@ config SCSI_SRP
->>         To compile this driver as a module, choose M here: the
->>         module will be called libsrp.
->>
->> +config SCSI_BFA_FC
->> +     tristate "Brocade BFA Fibre Channel Support"
->> +     depends on PCI && SCSI
->> +     help
->> +       This bfa driver supports all Brocade PCIe Fibre Channel host adapters.
->> +
->> +       To compile this driver as a module, choose M here. The module will
->> +       be called bfa.
->> +
+Jeff Garzik wrote:
 >
-> You're still not using the FC transport class to export common sysfs FC
-> information or to help make your driver smaller.  I thought you were
-> going to fix this after this was noted in your first submission to
-> linux-scsi on 24 September?
+> I've attached 'hdparm -I' in case anyone is curious.  It's from 
+> newegg.com, so nothing NDA'd or sekrit.
 >
-> James
->
->
+> ATA device, with non-removable media
+> 	Model Number:       G.SKILL 128GB SSD                       
+> 	Serial Number:      MK0108480A545003B   
+> 	Firmware Revision:  02.10104
+> Standards:
+> 	Used: ATA/ATAPI-7 T13 1532D revision 4a 
+> 	Supported: 8 7 6 5 & some of 8
+> Configuration:
+> 	Logical		max	current
+> 	cylinders	16383	16383
+> 	heads		16	16
+> 	sectors/track	63	63
+> 	--
+> 	CHS current addressable sectors:   16514064
+> 	LBA    user addressable sectors:  250445824
+> 	device size with M = 1024*1024:      122288 MBytes
+> 	device size with M = 1000*1000:      128228 MBytes (128 GB)
+..
 
-Hi James,
+That's odd.  I kind of expected to see the sector size,
+cache size, and perhaps media rotation rate reported there..
+Can you update your hdparm (sourceforge) and repost?
 
-We removed Brocade specific sysfs code after first linux-scsi
-submission. Can you please
-clarify where we are still not using the FC transport class to export
-common sysfs FC
-information? We do use the fc transport template to create the common
-sysfs FC attributes
-(in bfad_attr.c) under /sys/class/fc_host/<host#>
+There might be other useful features of that drive,
+which some of us are quite curious to know about!  :)
 
 Thanks
-
-Jing
