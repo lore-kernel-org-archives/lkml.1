@@ -1,54 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756586AbZDDIdh@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759224AbZDDIpv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756586AbZDDIdh (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 4 Apr 2009 04:33:37 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753919AbZDDId1
+	id S1759224AbZDDIpv (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 4 Apr 2009 04:45:51 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751798AbZDDIpk
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 4 Apr 2009 04:33:27 -0400
-Received: from mail-fx0-f158.google.com ([209.85.220.158]:52034 "EHLO
-	mail-fx0-f158.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753487AbZDDIdZ (ORCPT
+	Sat, 4 Apr 2009 04:45:40 -0400
+Received: from qw-out-2122.google.com ([74.125.92.25]:31431 "EHLO
+	qw-out-2122.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750939AbZDDIpj (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 4 Apr 2009 04:33:25 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
-         :cc:content-type:content-transfer-encoding;
-        b=ArQ02j9Tr3FOmKHAuvczfUgaG/ezT13wclpfO9P9ml8vUZwDGfZmhBmPDEn8ADc6Os
-         XZLoz+W/GCAKESgv02/D103N0mNdag0VkumR9yKmTmW0DCOlIng6xvBCAr7xejEMo+5Z
-         mAov6a4xC/wwTk8B72gqFsI+pjYHqs6Ev3saI=
+	Sat, 4 Apr 2009 04:45:39 -0400
+Message-ID: <49D71E2B.5060501@larces.uece.br>
+Date: Sat, 04 Apr 2009 05:45:31 -0300
+From: Sergio Luis <sergio@larces.uece.br>
+User-Agent: Thunderbird 2.0.0.18 (X11/20081105)
 MIME-Version: 1.0
-In-Reply-To: <20090404041813.GA30746@srcf.ucam.org>
-References: <504BBE2828%linux@youmustbejoking.demon.co.uk>
-	 <20090404041813.GA30746@srcf.ucam.org>
-Date: Sat, 4 Apr 2009 10:33:20 +0200
-Message-ID: <71cd59b00904040133p1f130673r4e93d2c48f8f4616@mail.gmail.com>
-Subject: Re: [PATCH 2.6.29] eeepc-laptop: report brightness control events via 
-	the input layer
-From: Corentin Chary <corentin.chary@gmail.com>
-To: Matthew Garrett <mjg59@srcf.ucam.org>
-Cc: linux-kernel@vger.kernel.org, acpi4asus-user@lists.sourceforge.net,
-       Darren Salt <linux@youmustbejoking.demon.co.uk>
+To: "Linux-kernel Mailing List" <linux-kernel@vger.kernel.org>
+CC: "Rafael J. Wysocki" <rjw@sisk.pl>, "Pavel Machek" <pavel@suse.cz>,
+       "x86 Maintainers" <x86@kernel.org>, "Ingo Molnar" <mingo@elte.hu>
+Subject: [PATCH 0/6] x86: unify power/cpu_(32|64).c 
 Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> On the other hand, the default behaviour of the acpi video driver is to
-> change the brightness itself and then also to send the even to
-> userspace, so I guess if it was going to break things it probably would
-> have done already...
+This patch series intends to unify the cpu_32.c and cpu_64.c files.
 
-So, I think this patch is ok.
+It's divided into 6 patches, that deal with the following:
+#1 - unify headers
+#2 - unify global variables
+#3 - unify saving of processor state
+#4 - unify restoring of processor state
+#5 - unify copyright notes on the files
+#6 - unify the files themselves, leaving only cpu.c
 
-But there is a thing I don't like is
-int brn = -2;
-brn = notify_brn();
-if (brn != -2)
+The code generated is _exactly_ the same as before, on both  i386 and
+x86-64 architectures, so I don't expect this to introduce _any_ new bugs.
+However, cleanups can be done in future, as for instance, the removal
+of a few global variables in the 32 bit architecture. We are not dealing 
+with those in this series.
 
-How can brn be -2 ? And why -2 ?
+The patches are against 2.6.29.
 
--- 
-Corentin Chary
-http://xf.iksaif.net
+Thanks,
+
+Sergio.
