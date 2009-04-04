@@ -1,25 +1,27 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764926AbZDDBdO@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762825AbZDDBtY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764926AbZDDBdO (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 3 Apr 2009 21:33:14 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753668AbZDDBc5
+	id S1762825AbZDDBtY (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 3 Apr 2009 21:49:24 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758135AbZDDBtO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 3 Apr 2009 21:32:57 -0400
-Received: from vms173003pub.verizon.net ([206.46.173.3]:29622 "EHLO
+	Fri, 3 Apr 2009 21:49:14 -0400
+Received: from vms173003pub.verizon.net ([206.46.173.3]:47777 "EHLO
 	vms173003pub.verizon.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752616AbZDDBc4 (ORCPT
+	with ESMTP id S1753619AbZDDBtN (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 3 Apr 2009 21:32:56 -0400
-Date: Fri, 03 Apr 2009 21:32:42 -0400 (EDT)
+	Fri, 3 Apr 2009 21:49:13 -0400
+Date: Fri, 03 Apr 2009 21:49:07 -0400 (EDT)
 From: Len Brown <lenb@kernel.org>
 X-X-Sender: lenb@localhost.localdomain
 To: Witold Szczeponik <Witold.Szczeponik@gmx.net>
-Cc: linux-acpi@vger.kernel.org, linux-kernel@vger.kernel.org,
-       bjorn.helgaas@hp.com, abelay@mit.edu, rjw@sisk.pl
+Cc: linux-acpi@vger.kernel.org,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       bjorn.helgaas@hp.com, abelay@mit.edu, "Rafael J. Wysocki" <rjw@sisk.pl>
 Subject: Re: [PATCH] PNPACPI: Enable PNPACPI _PSx Support, v3
-In-reply-to: <49D101DA.50201@gmx.net>
-Message-id: <alpine.LFD.2.00.0904032132310.4655@localhost.localdomain>
+In-reply-to: <alpine.LFD.2.00.0904032132310.4655@localhost.localdomain>
+Message-id: <alpine.LFD.2.00.0904032147040.4655@localhost.localdomain>
 References: <49D101DA.50201@gmx.net>
+ <alpine.LFD.2.00.0904032132310.4655@localhost.localdomain>
 User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
 MIME-version: 1.0
 Content-type: TEXT/PLAIN; charset=US-ASCII
@@ -27,8 +29,112 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-applied
+>From 6328a57401dc5f5cf9931738eb7268fcd8058c49 Mon Sep 17 00:00:00 2001
+From: Witold Szczeponik <Witold.Szczeponik@gmx.net>
+Date: Mon, 30 Mar 2009 19:31:06 +0200
+Subject: [PATCH] Enable PNPACPI _PSx Support, v3
+X-Patchwork-Hint: ignore
 
-thanks,
-Len Brown, Intel Open Source Technology Center
+(This is an update to the patch presented earlier in
+http://lkml.org/lkml/2008/12/8/284, with new error handling.)
+
+This patch sets the power of PnP ACPI devices to D0 when they
+are activated and to D3 when they are disabled.  The latter is
+in correspondence with the ACPI 3.0 specification, whereas the
+former is added in order to be able to power up a device after
+it has been previously disabled (or when booting up a system).
+(As a consequence, the patch makes the PnP ACPI code more ACPI
+compliant.)
+
+Section 6.2.2 of the ACPI Specification (at least versions 1.0b
+and 3.0a) states: "Prior to running this control method [_DIS],
+the OS[PM] will have already put the device in the D3 state."
+Unfortunately, there is no clear statement as to when to put
+a device in the D0 state. :-( Therefore, the patch executes the
+method calls as _PS3/_DIS and _SRS/_PS0. What is clear: "If the
+device is disabled, _SRS enables the device at the specified
+resources." (From the ACPI 3.0a Specification.)
+
+The patch fixes a problem with some IBM ThinkPads (at least the
+600E and the 600X) where the serial ports have a dedicated
+power source that needs to be brought up before the serial port
+can be used.  Without this patch, the serial port is enabled
+but has no power. (In the past, the tpctl utility had to be
+utilized to turn on the power, but support for this feature
+stopped with version 5.9 as it did not support the more recent
+kernel versions.)
+
+The error handlers that handle any errors that can occur during
+the power up/power down phases return the error codes to the
+caller directly.  Comments welcome! :-)
+
+No regressions were observed on hardware that does not require
+this patch.
+
+The patch is applied against 2.6.27.x.
+
+Signed-off-by: Witold Szczeponik <Witold.Szczeponik@gmx.net>
+Acked-by: Zhao Yakui <yakui.zhao@intel.com>
+Signed-off-by: Len Brown <len.brown@intel.com>
+---
+
+(not immediately clear what tree the orginal patch
+was based on top of, but here is what I checked-in
+on top of 2.6.29 -Len)
+
+ drivers/pnp/pnpacpi/core.c |   23 ++++++++++++++++-------
+ 1 files changed, 16 insertions(+), 7 deletions(-)
+
+diff --git a/drivers/pnp/pnpacpi/core.c b/drivers/pnp/pnpacpi/core.c
+index 2834846..9a3a682 100644
+--- a/drivers/pnp/pnpacpi/core.c
++++ b/drivers/pnp/pnpacpi/core.c
+@@ -83,7 +83,6 @@ static int pnpacpi_set_resources(struct pnp_dev *dev)
+ 	acpi_handle handle = dev->data;
+ 	struct acpi_buffer buffer;
+ 	int ret;
+-	acpi_status status;
+ 
+ 	pnp_dbg(&dev->dev, "set resources\n");
+ 	ret = pnpacpi_build_resource_template(dev, &buffer);
+@@ -94,21 +93,31 @@ static int pnpacpi_set_resources(struct pnp_dev *dev)
+ 		kfree(buffer.pointer);
+ 		return ret;
+ 	}
+-	status = acpi_set_current_resources(handle, &buffer);
+-	if (ACPI_FAILURE(status))
++	if (ACPI_FAILURE(acpi_set_current_resources(handle, &buffer)))
+ 		ret = -EINVAL;
++	else if (acpi_bus_power_manageable(handle))
++		ret = acpi_bus_set_power(handle, ACPI_STATE_D0);
+ 	kfree(buffer.pointer);
+ 	return ret;
+ }
+ 
+ static int pnpacpi_disable_resources(struct pnp_dev *dev)
+ {
+-	acpi_status status;
++	acpi_handle handle = dev->data;
++	int ret;
++
++	dev_dbg(&dev->dev, "disable resources\n");
+ 
+ 	/* acpi_unregister_gsi(pnp_irq(dev, 0)); */
+-	status = acpi_evaluate_object((acpi_handle) dev->data,
+-				      "_DIS", NULL, NULL);
+-	return ACPI_FAILURE(status) ? -ENODEV : 0;
++	ret = 0;
++	if (acpi_bus_power_manageable(handle)) {
++		ret = acpi_bus_set_power(handle, ACPI_STATE_D3);
++		if (ret)
++			return ret;
++	}
++	if (ACPI_FAILURE(acpi_evaluate_object(handle, "_DIS", NULL, NULL)))
++		ret = -ENODEV;
++	return ret;
+ }
+ 
+ #ifdef CONFIG_ACPI_SLEEP
+-- 
+1.6.2.2.404.ge96f3
 
