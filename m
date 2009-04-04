@@ -1,101 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761692AbZDDDiU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751728AbZDDEST@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761692AbZDDDiU (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 3 Apr 2009 23:38:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757302AbZDDDiF
+	id S1751728AbZDDEST (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 4 Apr 2009 00:18:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750865AbZDDESF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 3 Apr 2009 23:38:05 -0400
-Received: from mga09.intel.com ([134.134.136.24]:11491 "EHLO mga09.intel.com"
+	Sat, 4 Apr 2009 00:18:05 -0400
+Received: from cantor.suse.de ([195.135.220.2]:36814 "EHLO mx1.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755764AbZDDDiE convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 3 Apr 2009 23:38:04 -0400
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.39,322,1235980800"; 
-   d="scan'208";a="503519522"
-From: "Han, Weidong" <weidong.han@intel.com>
-To: "Siddha, Suresh B" <suresh.b.siddha@intel.com>
-CC: Ingo Molnar <mingo@elte.hu>, David Woodhouse <dwmw2@infradead.org>,
-       "Kay, Allen M" <allen.m.kay@intel.com>,
-       IOMMU <iommu@lists.linux-foundation.org>,
-       LKML <linux-kernel@vger.kernel.org>
-Date: Sat, 4 Apr 2009 11:37:56 +0800
-Subject: RE: [patch 2/2] x2apic/intr-remap: decouple interrupt remapping
- from x2apic
-Thread-Topic: [patch 2/2] x2apic/intr-remap: decouple interrupt remapping
- from x2apic
-Thread-Index: Acm0hdgEU6/gdZPSTz6ULPtHNvJMDgAS/D+w
-Message-ID: <715D42877B251141A38726ABF5CABF2C01A2F7C435@pdsmsx503.ccr.corp.intel.com>
-References: <715D42877B251141A38726ABF5CABF2C01A2F7C3A7@pdsmsx503.ccr.corp.intel.com>
- <1238781474.27006.7866.camel@localhost.localdomain>
-In-Reply-To: <1238781474.27006.7866.camel@localhost.localdomain>
-Accept-Language: en-US
-Content-Language: en-US
-X-MS-Has-Attach: 
-X-MS-TNEF-Correlator: 
-acceptlanguage: en-US
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 8BIT
+	id S1750973AbZDDESE (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 4 Apr 2009 00:18:04 -0400
+Date: Fri, 3 Apr 2009 21:17:40 -0700
+From: Greg KH <gregkh@suse.de>
+To: Russell King <rmk@arm.linux.org.uk>
+Cc: Ming Lei <tom.leiming@gmail.com>,
+       Linux Kernel List <linux-kernel@vger.kernel.org>
+Subject: Re: Commit 7a192ec is build breaking
+Message-ID: <20090404041740.GA6504@suse.de>
+References: <20090328140049.GA4344@flint.arm.linux.org.uk>
 MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20090328140049.GA4344@flint.arm.linux.org.uk>
+User-Agent: Mutt/1.5.19 (2009-01-05)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Siddha, Suresh B wrote:
-> On Fri, 2009-04-03 at 02:15 -0700, Han, Weidong wrote:
->> 
->> -#ifdef CONFIG_INTR_REMAP
->> +#ifdef CONFIG_X86_X2APIC
+On Sat, Mar 28, 2009 at 02:00:49PM +0000, Russell King wrote:
+> The commit:
 > 
-> Weidong, Can we also fix these config options?
+>     platform driver: fix incorrect use of 'platform_bus_type' with 'struct device_driver'
 > 
-> Today, selecting CONFIG_INTR_REMAP automatically selects
-> CONFIG_X86_X2APIC. It should be the other way round.
+> contains this:
 > 
-> i.e., turning on CONFIG_X86_X2APIC should automatically enable
-> CONFIG_INTR_REMAP and just enabling CONFIG_INTR_REMAP shouldn't enable
-> CONFIG_X86_X2APIC.
+> -static int __exit pxa2xx_flash_remove(struct device *dev)
+> +static int __exit pxa2xx_flash_remove(struct platform_device *dev)
+> ...
+> -       .remove         = __exit_p(pxa2xx_flash_remove),
+> +       .remove         = __devexit_p(pxa2xx_flash_remove),
 > 
-> Also please make sure that the code compiles (and works :)) in
-> different combinations of these config settings.
+> which leads to the following build error:
+> 
+> `pxa2xx_flash_remove' referenced in section `.data' of drivers/built-in.o: defined in discarded section `.exit.text' of drivers/built-in.o
+> 
+> This is not the only instance of it in this patch - all __exit_p's
+> touched by this patch have been converted to __devexit_p's without
+> regard to the original function.
+> 
+> Let's revert this change and, if we are going to convert functions
+> to be __devexit/__devinit, lets have that as a _separate_ patch doing
+> just that change.
 
+Ick, Ming, any thoughts?  I'll revert your patch as it looks like it is
+incorrect in this way.
 
-Thanks for your reminder. Following patch changes the config options selection. The code can compiles in different combinations.
+thanks,
 
-
-Subject: [PATCH] Change X2APIC and INTR_REMAP config selection
-
-Currently, selecting CONFIG_INTR_REMAP automatically selects
-CONFIG_X86_X2APIC. It should be the other way round. i.e. selecting
-CONFIG_X86_X2APIC automatically enables CONFIG_INTR_REMAP, but
-selecting CONFIG_INTR_REMAP won't enable CONFIG_X86_X2APIC.
-
-Signed-off-by: Weidong Han <weidong.han@intel.com>
----
- arch/x86/Kconfig |    2 +-
- 1 files changed, 1 insertions(+), 1 deletions(-)
-
-diff --git a/arch/x86/Kconfig b/arch/x86/Kconfig
-index 5696cec..0e522a4 100644
---- a/arch/x86/Kconfig
-+++ b/arch/x86/Kconfig
-@@ -251,6 +251,7 @@ config SMP
- config X86_X2APIC
- 	bool "Support x2apic"
- 	depends on X86_LOCAL_APIC && X86_64
-+	select INTR_REMAP
- 	---help---
- 	  This enables x2apic support on CPUs that have this feature.
- 
-@@ -1879,7 +1880,6 @@ config DMAR_FLOPPY_WA
- config INTR_REMAP
- 	bool "Support for Interrupt Remapping (EXPERIMENTAL)"
- 	depends on X86_64 && X86_IO_APIC && PCI_MSI && ACPI && EXPERIMENTAL
--	select X86_X2APIC
- 	---help---
- 	  Supports Interrupt remapping for IO-APIC and MSI devices.
- 	  To use x2apic mode in the CPU's which support x2APIC enhancements or
--- 
-1.6.0.4
-
-
+greg k-h
