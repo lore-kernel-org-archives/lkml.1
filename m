@@ -1,75 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752299AbZDDEcS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754304AbZDDEeU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752299AbZDDEcS (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 4 Apr 2009 00:32:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750963AbZDDEb7
+	id S1754304AbZDDEeU (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 4 Apr 2009 00:34:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751299AbZDDEeK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 4 Apr 2009 00:31:59 -0400
-Received: from www.tglx.de ([62.245.132.106]:44642 "EHLO www.tglx.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750805AbZDDEb6 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 4 Apr 2009 00:31:58 -0400
-Date: Sat, 4 Apr 2009 06:30:59 +0200 (CEST)
-From: Thomas Gleixner <tglx@linutronix.de>
-To: Fernando Lopez-Lezcano <nando@ccrma.Stanford.EDU>
-cc: LKML <linux-kernel@vger.kernel.org>,
-       rt-users <linux-rt-users@vger.kernel.org>, Ingo Molnar <mingo@elte.hu>,
-       Steven Rostedt <rostedt@goodmis.org>,
-       Peter Zijlstra <peterz@infradead.org>, Carsten Emde <ce@ceag.ch>,
-       Clark Williams <williams@redhat.com>,
-       Frank Rowand <frank.rowand@am.sony.com>,
-       Robin Gareus <robin@gareus.org>, Gregory Haskins <ghaskins@novell.com>,
-       Philippe Reynes <philippe.reynes@isismpp.fr>,
-       Will Schmidt <will_schmidt@vnet.ibm.com>
-Subject: Re: [Announce] 2.6.29.1-rt4
-In-Reply-To: <1238799852.3871.6.camel@localhost.localdomain>
-Message-ID: <alpine.LFD.2.00.0904040628310.12916@localhost.localdomain>
-References: <alpine.LFD.2.00.0902112332370.415@localhost.localdomain>  <alpine.LFD.2.00.0902122353050.16972@localhost.localdomain>  <alpine.LFD.2.00.0902231854360.3523@localhost.localdomain>  <alpine.LFD.2.00.0902241849230.3523@localhost.localdomain> 
- <alpine.LFD.2.00.0902241856480.9135@localhost.localdomain>  <alpine.LFD.2.00.0903122013230.29264@localhost.localdomain>  <alpine.LFD.2.00.0903200014320.29264@localhost.localdomain>  <alpine.LFD.2.00.0903201832590.29264@localhost.localdomain> 
- <alpine.LFD.2.00.0903231723090.29264@localhost.localdomain>  <alpine.LFD.2.00.0903252154040.3397@localhost.localdomain>  <alpine.LFD.2.00.0904020155320.12916@localhost.localdomain>  <alpine.LFD.2.00.0904031918090.12916@localhost.localdomain>
- <1238799852.3871.6.camel@localhost.localdomain>
-User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Sat, 4 Apr 2009 00:34:10 -0400
+Received: from acsinet11.oracle.com ([141.146.126.233]:41486 "EHLO
+	acsinet11.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750963AbZDDEeK (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 4 Apr 2009 00:34:10 -0400
+Date: Fri, 3 Apr 2009 21:31:30 -0700
+From: Randy Dunlap <randy.dunlap@oracle.com>
+To: lkml <linux-kernel@vger.kernel.org>
+Cc: akpm <akpm@linux-foundation.org>
+Subject: [PATCH] regulator: fix header file missing kernel-doc
+Message-Id: <20090403213130.9995f03b.randy.dunlap@oracle.com>
+Organization: Oracle Linux Eng.
+X-Mailer: Sylpheed 2.6.0 (GTK+ 2.12.0; x86_64-unknown-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
+X-Source-IP: acsmt706.oracle.com [141.146.40.84]
+X-Auth-Type: Internal IP
+X-CT-RefId: str=0001.0A010201.49D6E309.0118:SCFMA4539814,ss=1,fgs=0
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 3 Apr 2009, Fernando Lopez-Lezcano wrote:
+From: Randy Dunlap <randy.dunlap@oracle.com>
 
-> On Fri, 2009-04-03 at 19:21 +0200, Thomas Gleixner wrote:
-> > We are pleased to announce the next update to our new preempt-rt
-> > series.
-> >   
-> > 	- rebased to 2.6.29.1
-> > 
-> > 	- powerpc64 tlb rework fix by Peter
-> 
-> Thanks for cc'ing me...
-> 
-> Just a heads up. I'm still having shutdown/suspend problems with this
-> release as before (I had not reported the suspend problem, I think -
-> machine hangs and has to be power cycled). Booting with "noreplace-smp"
-> fixes both. Is this something I could disable through configuration
-> options?
+Add regulator header file missing kernel-doc:
 
-No. I have this shutdown/suspend thing on my todo list. Can you send
-me your .config please ? This happens with the stock -rt kernel or do
-you have other patches on top of it ?
- 
-> I was also seeing a hard hang when running a java program (with the
-> Fedora 10 open source java) - the swingosc gui component of
-> SuperCollider 3 (a computer music synthesis program). Impossible to know
-> what had failed, machine completely catatonic and nothing left on the
-> logs. 
-> 
-> I managed to start the same program _once_ (have not tested again) with
-> 2.6.29.1/rt4 + some patches & config from fc10' koji 2.6.29.1-15. The
-> mouse seemed to pause a couple of times and then I killed the program.
-> Restarting it again was successful. Sorry to not have more hard info...
+Warning(include/linux/regulator/driver.h:117): No description found for parameter 'set_mode'
 
-Too bad that I can't find my crystal ball :)
+Signed-off-by: Randy Dunlap <randy.dunlap@oracle.com>
+cc:	Liam Girdwood <lrg@slimlogic.co.uk>
+cc:	Mark Brown <broonie@opensource.wolfsonmicro.com>
+---
+ include/linux/regulator/driver.h |    1 +
+ 1 file changed, 1 insertion(+)
 
-Thanks,
-
-	tglx
+--- linux-2.6.29-git11.orig/include/linux/regulator/driver.h
++++ linux-2.6.29-git11/include/linux/regulator/driver.h
+@@ -50,6 +50,7 @@ enum regulator_status {
+  * @set_current_limit: Configure a limit for a current-limited regulator.
+  * @get_current_limit: Get the configured limit for a current-limited regulator.
+  *
++ * @set_mode: Set the configured operating mode for the regulator.
+  * @get_mode: Get the configured operating mode for the regulator.
+  * @get_status: Return actual (not as-configured) status of regulator, as a
+  *	REGULATOR_STATUS value (or negative errno)
