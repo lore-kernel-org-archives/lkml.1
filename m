@@ -1,109 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755762AbZDDSKf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757016AbZDDSL6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755762AbZDDSKf (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 4 Apr 2009 14:10:35 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753160AbZDDSK1
+	id S1757016AbZDDSL6 (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 4 Apr 2009 14:11:58 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752227AbZDDSLu
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 4 Apr 2009 14:10:27 -0400
-Received: from e8.ny.us.ibm.com ([32.97.182.138]:33638 "EHLO e8.ny.us.ibm.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751728AbZDDSK0 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 4 Apr 2009 14:10:26 -0400
-Message-ID: <49D7A285.5090900@linux.vnet.ibm.com>
-Date: Sat, 04 Apr 2009 11:10:13 -0700
-From: Corey Ashford <cjashfor@linux.vnet.ibm.com>
-User-Agent: Thunderbird 2.0.0.21 (Windows/20090302)
+	Sat, 4 Apr 2009 14:11:50 -0400
+Received: from twinlark.arctic.org ([208.69.40.136]:56128 "EHLO
+	twinlark.arctic.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751291AbZDDSLt (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 4 Apr 2009 14:11:49 -0400
+X-Greylist: delayed 400 seconds by postgrey-1.27 at vger.kernel.org; Sat, 04 Apr 2009 14:11:49 EDT
+Message-ID: <49D7A11A.8010801@kernel.org>
+Date: Sat, 04 Apr 2009 11:04:10 -0700
+From: "Andrew G. Morgan" <morgan@kernel.org>
+User-Agent: Thunderbird 2.0.0.21 (Macintosh/20090302)
 MIME-Version: 1.0
-To: Peter Zijlstra <a.p.zijlstra@chello.nl>
-CC: Ingo Molnar <mingo@elte.hu>, linux-kernel@vger.kernel.org,
-       Paul Mackerras <paulus@samba.org>, Mike Galbraith <efault@gmx.de>,
-       Arjan van de Ven <arjan@infradead.org>,
-       Wu Fengguang <fengguang.wu@intel.com>
-Subject: Re: [PATCH 6/6] perf_counter: kerneltop: output event support
-References: <20090325113021.781490788@chello.nl> <20090325113317.192910290@chello.nl>  <49D6A81B.8030004@linux.vnet.ibm.com> <1238847423.4549.1163.camel@laptop>
-In-Reply-To: <1238847423.4549.1163.camel@laptop>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+To: "Serge E. Hallyn" <serue@us.ibm.com>
+CC: linux-security-module@vger.kernel.org, lkml <linux-kernel@vger.kernel.org>,
+       James Morris <jmorris@namei.org>,
+       Casey Schaufler <casey@schaufler-ca.com>
+Subject: Re: [PATCH] don't raise all privs on setuid-root file with fE set
+ (v2)
+References: <20090402234714.GA2220@us.ibm.com>
+In-Reply-To: <20090402234714.GA2220@us.ibm.com>
+X-Enigmail-Version: 0.95.7
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Peter Zijlstra wrote:
-> On Fri, 2009-04-03 at 17:21 -0700, Corey Ashford wrote:
->> As I was stealing code from kerneltop today to use in the PAPI profiling 
->> implementation, I ran across the code below:
->>
->> Peter Zijlstra wrote:
->>> Teach kerneltop about the new output ABI.
->>>
->>> XXX: anybody fancy integrating the PID/TID data into the output?
->>>
->>> Bump the mmap_data pages a little because we bloated the output and
->>> have to be more careful about overruns with structured data.
->>>
->>> Signed-off-by: Peter Zijlstra <a.p.zijlstra@chello.nl>
->>> ---
->> [snip]
->>
->>> @@ -1147,28 +1152,75 @@ static void mmap_read(struct mmap_data *
->>>  	unsigned int head = mmap_read_head(md);
->>>  	unsigned int old = md->prev;
->>>  	unsigned char *data = md->base + page_size;
->>> +	int diff;
->>>
->>>  	gettimeofday(&this_read, NULL);
->>>
->>> -	if (head - old > md->mask) {
->>> +	/*
->>> +	 * If we're further behind than half the buffer, there's a chance
->>> +	 * the writer will bite our tail and screw up the events under us.
->>> +	 *
->>> +	 * If we somehow ended up ahead of the head, we got messed up.
->>> +	 *
->>> +	 * In either case, truncate and restart at head.
->>> +	 */
->>> +	diff = head - old;
->>> +	if (diff > md->mask / 2 || diff < 0) {
->>>  		struct timeval iv;
->>>  		unsigned long msecs;
->>>
->>>  		timersub(&this_read, &last_read, &iv);
->>>  		msecs = iv.tv_sec*1000 + iv.tv_usec/1000;
->>>
->>> -		fprintf(stderr, "WARNING: failed to keep up with mmap data.  Last read %lu msecs ago.\n", msecs);
->>> +		fprintf(stderr, "WARNING: failed to keep up with mmap data."
->>> +				"  Last read %lu msecs ago.\n", msecs);
->>>
->> [snip]
->>
->> The test for diff < 0 looks incorrect to me.  This shouldn't be an 
->> error, because it will frequently be the case that the head has wrapped 
->> around back to the beginning of the mmap'd pages, while old is near the end.
->>
->> What it needs to find out, I think, is if the modulo distance between 
->> old and head is greater than 1/2 of the span of the mmap'd pages. 
->> Here's a suggested change:
->>
->> -	diff = head - old;
->> +	diff = (head - old) & md->mask;
->> -	if (diff > md->mask / 2 || diff < 0) {
->> +	if (diff > md->mask / 2) {
->>
->>
->> What do you think?
+-----BEGIN PGP SIGNED MESSAGE-----
+Hash: SHA1
+
+Serge E. Hallyn wrote:
+> Distributions face a backward compatibility problem with starting to use
+> file capabilities.  For instance, removing setuid root from ping and
+> doing setcap cap_net_raw=pe means that booting with an older kernel
+> or one compiled without file capabilities means ping won't work for
+> non-root users.
 > 
-> head and old are both u32 and are monotonically incremented, that means
-> that (s32)(head - old) < 0 will only be true if old is ahead (or more
-> than 2^31 behind) of head.
+> In order to replace the setuid root bit on a capability-unaware
+> program, one has to set the effective, or legacy, file capability,
+> which makes the capability effective immediately.  This patch
+> uses the legacy bit as a queue to not automatically add full
+
+s/queue/cue/
+
+> privilege to a setuid-root program.
 > 
-> Since mask will be smaller than 2^31 this seemed like a reasonable
-> integrity test.
+> So, with this patch, an ordinary setuid-root program will run with
+> privilege.  But if /bin/ping has both setuid-root and cap_net_raw in
+> fP and fE, then ping (when run by non-root user) will not run
+> with only cap_net_raw.
 
-Ah, I see.  I assumed (but did not check) that there was logic to wrap 
-the old and head back to the beginning when they hit the end of the 
-mmap'd pages.
+Acked-by: Andrew G. Morgan <morgan@kernel.org>
 
-Thanks for your reply.
+Cheers
 
-- Corey
+Andrew
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.7 (Darwin)
+Comment: Using GnuPG with Mozilla - http://enigmail.mozdev.org
 
+iD8DBQFJ16EX+bHCR3gb8jsRAsHzAKChHDKjcjuptab+7K6i3xuwYHqQ5wCbBt4C
+hodJP4i1y7rJUGAytQHiouw=
+=7PGT
+-----END PGP SIGNATURE-----
