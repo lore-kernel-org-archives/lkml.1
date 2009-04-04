@@ -1,24 +1,25 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760896AbZDDIrS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760130AbZDDIsE@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760896AbZDDIrS (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 4 Apr 2009 04:47:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750939AbZDDIrA
+	id S1760130AbZDDIsE (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 4 Apr 2009 04:48:04 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751798AbZDDIrw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 4 Apr 2009 04:47:00 -0400
-Received: from qw-out-2122.google.com ([74.125.92.24]:61178 "EHLO
-	qw-out-2122.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1760233AbZDDIq7 (ORCPT
+	Sat, 4 Apr 2009 04:47:52 -0400
+Received: from mail-qy0-f118.google.com ([209.85.221.118]:50706 "EHLO
+	mail-qy0-f118.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750939AbZDDIru (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 4 Apr 2009 04:46:59 -0400
-Message-ID: <49D71E7B.10202@larces.uece.br>
-Date: Sat, 04 Apr 2009 05:46:51 -0300
+	Sat, 4 Apr 2009 04:47:50 -0400
+Message-ID: <49D71EAE.2020007@larces.uece.br>
+Date: Sat, 04 Apr 2009 05:47:42 -0300
 From: Sergio Luis <sergio@larces.uece.br>
 User-Agent: Thunderbird 2.0.0.18 (X11/20081105)
 MIME-Version: 1.0
 To: Linux-kernel Mailing List <linux-kernel@vger.kernel.org>
-CC: "Rafael J. Wysocki" <rjw@sisk.pl>, Pavel Machek <pavel@suse.cz>,
-       x86 Maintainers <x86@kernel.org>, Ingo Molnar <mingo@elte.hu>
-Subject: [PATCH 3/6] x86: unify power/cpu_(32|64) regarding saving processor
+CC: Lauro Salmito <laurosalmito@gmail.com>, "Rafael J. Wysocki" <rjw@sisk.pl>,
+       Pavel Machek <pavel@suse.cz>, x86 Maintainers <x86@kernel.org>,
+       Ingo Molnar <mingo@elte.hu>
+Subject: [PATCH 4/6] x86: unify power/cpu_(32|64) regarding restoring processor
  state
 Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
@@ -26,183 +27,331 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-x86: unify power/cpu_(32|64) regarding saving processor state
+x86: unify power/cpu_(32|64) regarding restoring processor state
 
 In this step we do unify cpu_32.c and cpu_64.c functions that
-work on saving the processor state.
+work on restoring the saved processor state. Also, we do
+eliminate the forward declaration of fix_processor_context()
+for X86_64, as it's not needed anymore.
 
 Signed-off-by: Sergio Luis <sergio@larces.uece.br>
 Signed-off-by: Lauro Salmito <laurosalmito@gmail.com>
 ---
- arch/x86/power/cpu_32.c |   48 +++++++++++++++++++++++++++++++++++++++++++++++
- arch/x86/power/cpu_64.c |   29 +++++++++++++++++++++++++++-
- 2 files changed, 76 insertions(+), 1 deletions(-)
+ arch/x86/power/cpu_32.c |   55 +++++++++++++++++++++-
+ arch/x86/power/cpu_64.c |  118 ++++++++++++++++++++++++++++++++--------------
+ 2 files changed, 135 insertions(+), 38 deletions(-)
 
 diff --git a/arch/x86/power/cpu_32.c b/arch/x86/power/cpu_32.c
-index e4bdc2a..dd32ecc 100644
+index dd32ecc..ef656e2 100644
 --- a/arch/x86/power/cpu_32.c
 +++ b/arch/x86/power/cpu_32.c
-@@ -31,25 +31,65 @@ static void fix_processor_context(void);
+@@ -26,8 +26,6 @@ unsigned long saved_context_esi, saved_context_edi;
+ unsigned long saved_context_eflags;
+ #else
+ /* CONFIG_X86_64 */
+-static void fix_processor_context(void);
+-
  struct saved_context saved_context;
  #endif
  
-+/**
-+ *	__save_processor_state - save CPU registers before creating a
-+ *		hibernation image and before restoring the memory state from it
-+ *	@ctxt - structure to store the registers contents in
-+ *
-+ *	NOTE: If there is a CPU register the modification of which by the
-+ *	boot kernel (ie. the kernel used for loading the hibernation image)
-+ *	might affect the operations of the restored target kernel (ie. the one
-+ *	saved in the hibernation image), then its contents must be saved by this
-+ *	function.  In other words, if kernel A is hibernated and different
-+ *	kernel B is used for loading the hibernation image into memory, the
-+ *	kernel A's __save_processor_state() function must save all registers
-+ *	needed by kernel A, so that it can operate correctly after the resume
-+ *	regardless of what kernel B does in the meantime.
-+ */
- static void __save_processor_state(struct saved_context *ctxt)
- {
-+#ifdef CONFIG_X86_32
- 	mtrr_save_fixed_ranges(NULL);
-+#endif
- 	kernel_fpu_begin();
+@@ -135,6 +133,11 @@ static void fix_processor_context(void)
+ 				 * similar stupidity.
+ 				 */
  
++#ifdef CONFIG_X86_64
++	get_cpu_gdt_table(cpu)[GDT_ENTRY_TSS].type = 9;
++
++	syscall_init();				/* This sets MSR_*STAR and related */
++#endif
+ 	load_TR_desc();				/* This does ltr */
+ 	load_LDT(&current->active_mm->context);	/* This does lldt */
+ 
+@@ -142,6 +145,7 @@ static void fix_processor_context(void)
+ 	 * Now maybe reload the debug registers
+ 	 */
+ 	if (current->thread.debugreg7) {
++#ifdef CONFIG_X86_32
+ 		set_debugreg(current->thread.debugreg0, 0);
+ 		set_debugreg(current->thread.debugreg1, 1);
+ 		set_debugreg(current->thread.debugreg2, 2);
+@@ -149,18 +153,40 @@ static void fix_processor_context(void)
+ 		/* no 4 and 5 */
+ 		set_debugreg(current->thread.debugreg6, 6);
+ 		set_debugreg(current->thread.debugreg7, 7);
++#else
++		/* CONFIG_X86_64 */
++		loaddebug(&current->thread, 0);
++		loaddebug(&current->thread, 1);
++		loaddebug(&current->thread, 2);
++		loaddebug(&current->thread, 3);
++		/* no 4 and 5 */
++		loaddebug(&current->thread, 6);
++		loaddebug(&current->thread, 7);
++#endif
+ 	}
+ 
+ }
+ 
++/**
++ *	__restore_processor_state - restore the contents of CPU registers saved
++ *		by __save_processor_state()
++ *	@ctxt - structure to load the registers contents from
++ */
+ static void __restore_processor_state(struct saved_context *ctxt)
+ {
  	/*
- 	 * descriptor tables
+ 	 * control registers
+ 	 */
+ 	/* cr4 was introduced in the Pentium CPU */
++#ifdef CONFIG_X86_32
+ 	if (ctxt->cr4)
+ 		write_cr4(ctxt->cr4);
++#else
++/* CONFIG X86_64 */
++	wrmsrl(MSR_EFER, ctxt->efer);
++	write_cr8(ctxt->cr8);
++	write_cr4(ctxt->cr4);
++#endif
+ 	write_cr3(ctxt->cr3);
+ 	write_cr2(ctxt->cr2);
+ 	write_cr0(ctxt->cr0);
+@@ -169,12 +195,19 @@ static void __restore_processor_state(struct saved_context *ctxt)
+ 	 * now restore the descriptor tables to their proper values
+ 	 * ltr is done i fix_processor_context().
  	 */
 +#ifdef CONFIG_X86_32
- 	store_gdt(&ctxt->gdt);
- 	store_idt(&ctxt->idt);
+ 	load_gdt(&ctxt->gdt);
+ 	load_idt(&ctxt->idt);
 +#else
 +/* CONFIG_X86_64 */
-+	store_gdt((struct desc_ptr *)&ctxt->gdt_limit);
-+	store_idt((struct desc_ptr *)&ctxt->idt_limit);
++	load_gdt((const struct desc_ptr *)&ctxt->gdt_limit);
++	load_idt((const struct desc_ptr *)&ctxt->idt_limit);
 +#endif
- 	store_tr(ctxt->tr);
  
-+	/* XMM0..XMM15 should be handled by kernel_fpu_begin(). */
  	/*
  	 * segment registers
  	 */
 +#ifdef CONFIG_X86_32
- 	savesegment(es, ctxt->es);
- 	savesegment(fs, ctxt->fs);
- 	savesegment(gs, ctxt->gs);
- 	savesegment(ss, ctxt->ss);
+ 	loadsegment(es, ctxt->es);
+ 	loadsegment(fs, ctxt->fs);
+ 	loadsegment(gs, ctxt->gs);
+@@ -185,6 +218,18 @@ static void __restore_processor_state(struct saved_context *ctxt)
+ 	 */
+ 	if (boot_cpu_has(X86_FEATURE_SEP))
+ 		enable_sep_cpu();
 +#else
 +/* CONFIG_X86_64 */
-+	asm volatile ("movw %%ds, %0" : "=m" (ctxt->ds));
-+	asm volatile ("movw %%es, %0" : "=m" (ctxt->es));
-+	asm volatile ("movw %%fs, %0" : "=m" (ctxt->fs));
-+	asm volatile ("movw %%gs, %0" : "=m" (ctxt->gs));
-+	asm volatile ("movw %%ss, %0" : "=m" (ctxt->ss));
++	asm volatile ("movw %0, %%ds" :: "r" (ctxt->ds));
++	asm volatile ("movw %0, %%es" :: "r" (ctxt->es));
++	asm volatile ("movw %0, %%fs" :: "r" (ctxt->fs));
++	load_gs_index(ctxt->gs);
++	asm volatile ("movw %0, %%ss" :: "r" (ctxt->ss));
 +
-+	rdmsrl(MSR_FS_BASE, ctxt->fs_base);
-+	rdmsrl(MSR_GS_BASE, ctxt->gs_base);
-+	rdmsrl(MSR_KERNEL_GS_BASE, ctxt->gs_kernel_base);
-+	mtrr_save_fixed_ranges(NULL);
-+
-+	rdmsrl(MSR_EFER, ctxt->efer);
++	wrmsrl(MSR_FS_BASE, ctxt->fs_base);
++	wrmsrl(MSR_GS_BASE, ctxt->gs_base);
++	wrmsrl(MSR_KERNEL_GS_BASE, ctxt->gs_kernel_base);
 +#endif
  
  	/*
- 	 * control registers
-@@ -57,7 +97,13 @@ static void __save_processor_state(struct saved_context *ctxt)
- 	ctxt->cr0 = read_cr0();
- 	ctxt->cr2 = read_cr2();
- 	ctxt->cr3 = read_cr3();
+ 	 * restore XCR0 for xsave capable cpu's.
+@@ -193,9 +238,13 @@ static void __restore_processor_state(struct saved_context *ctxt)
+ 		xsetbv(XCR_XFEATURE_ENABLED_MASK, pcntxt_mask);
+ 
+ 	fix_processor_context();
++
+ 	do_fpu_end();
+ 	mtrr_ap_init();
++
 +#ifdef CONFIG_X86_32
- 	ctxt->cr4 = read_cr4_safe();
-+#else
-+/* CONFIG_X86_64 */
-+	ctxt->cr4 = read_cr4();
-+	ctxt->cr8 = read_cr8();
+ 	mcheck_init(&boot_cpu_data);
 +#endif
  }
  
  /* Needed by apm.c */
-@@ -65,7 +111,9 @@ void save_processor_state(void)
+@@ -203,4 +252,6 @@ void restore_processor_state(void)
  {
- 	__save_processor_state(&saved_context);
+ 	__restore_processor_state(&saved_context);
  }
 +#ifdef CONFIG_X86_32
- EXPORT_SYMBOL(save_processor_state);
+ EXPORT_SYMBOL(restore_processor_state);
 +#endif
- 
- static void do_fpu_end(void)
- {
 diff --git a/arch/x86/power/cpu_64.c b/arch/x86/power/cpu_64.c
-index 1ee153e..5ababf8 100644
+index 5ababf8..8bd680a 100644
 --- a/arch/x86/power/cpu_64.c
 +++ b/arch/x86/power/cpu_64.c
-@@ -49,19 +49,35 @@ struct saved_context saved_context;
-  */
- static void __save_processor_state(struct saved_context *ctxt)
- {
-+#ifdef CONFIG_X86_32
-+	mtrr_save_fixed_ranges(NULL);
-+#endif
- 	kernel_fpu_begin();
+@@ -27,8 +27,6 @@ unsigned long saved_context_esi, saved_context_edi;
+ unsigned long saved_context_eflags;
+ #else
+ /* CONFIG_X86_64 */
+-static void fix_processor_context(void);
+-
+ struct saved_context saved_context;
+ #endif
  
+@@ -119,11 +117,57 @@ EXPORT_SYMBOL(save_processor_state);
+ static void do_fpu_end(void)
+ {
  	/*
- 	 * descriptor tables
+-	 * Restore FPU regs if necessary
++	 * Restore FPU regs if necessary.
+ 	 */
+ 	kernel_fpu_end();
+ }
+ 
++static void fix_processor_context(void)
++{
++	int cpu = smp_processor_id();
++	struct tss_struct *t = &per_cpu(init_tss, cpu);
++
++	set_tss_desc(cpu, t);	/*
++				 * This just modifies memory; should not be
++				 * necessary. But... This is necessary, because
++				 * 386 hardware has concept of busy TSS or some
++				 * similar stupidity.
++				 */
++
++#ifdef CONFIG_X86_64
++	get_cpu_gdt_table(cpu)[GDT_ENTRY_TSS].type = 9;
++
++	syscall_init();				/* This sets MSR_*STAR and related */
++#endif
++	load_TR_desc();				/* This does ltr */
++	load_LDT(&current->active_mm->context);	/* This does lldt */
++
++	/*
++	 * Now maybe reload the debug registers
++	 */
++	if (current->thread.debugreg7) {
++#ifdef CONFIG_X86_32
++		set_debugreg(current->thread.debugreg0, 0);
++		set_debugreg(current->thread.debugreg1, 1);
++		set_debugreg(current->thread.debugreg2, 2);
++		set_debugreg(current->thread.debugreg3, 3);
++		/* no 4 and 5 */
++		set_debugreg(current->thread.debugreg6, 6);
++		set_debugreg(current->thread.debugreg7, 7);
++#else
++		/* CONFIG_X86_64 */
++		loaddebug(&current->thread, 0);
++		loaddebug(&current->thread, 1);
++		loaddebug(&current->thread, 2);
++		loaddebug(&current->thread, 3);
++		/* no 4 and 5 */
++		loaddebug(&current->thread, 6);
++		loaddebug(&current->thread, 7);
++#endif
++	}
++
++}
++
+ /**
+  *	__restore_processor_state - restore the contents of CPU registers saved
+  *		by __save_processor_state()
+@@ -134,9 +178,16 @@ static void __restore_processor_state(struct saved_context *ctxt)
+ 	/*
+ 	 * control registers
+ 	 */
++	/* cr4 was introduced in the Pentium CPU */
++#ifdef CONFIG_X86_32
++	if (ctxt->cr4)
++		write_cr4(ctxt->cr4);
++#else
++/* CONFIG X86_64 */
+ 	wrmsrl(MSR_EFER, ctxt->efer);
+ 	write_cr8(ctxt->cr8);
+ 	write_cr4(ctxt->cr4);
++#endif
+ 	write_cr3(ctxt->cr3);
+ 	write_cr2(ctxt->cr2);
+ 	write_cr0(ctxt->cr0);
+@@ -145,13 +196,31 @@ static void __restore_processor_state(struct saved_context *ctxt)
+ 	 * now restore the descriptor tables to their proper values
+ 	 * ltr is done i fix_processor_context().
  	 */
 +#ifdef CONFIG_X86_32
-+	store_gdt(&ctxt->gdt);
-+	store_idt(&ctxt->idt);
++	load_gdt(&ctxt->gdt);
++	load_idt(&ctxt->idt);
 +#else
 +/* CONFIG_X86_64 */
- 	store_gdt((struct desc_ptr *)&ctxt->gdt_limit);
- 	store_idt((struct desc_ptr *)&ctxt->idt_limit);
+ 	load_gdt((const struct desc_ptr *)&ctxt->gdt_limit);
+ 	load_idt((const struct desc_ptr *)&ctxt->idt_limit);
+-
 +#endif
- 	store_tr(ctxt->tr);
  
- 	/* XMM0..XMM15 should be handled by kernel_fpu_begin(). */
  	/*
  	 * segment registers
  	 */
 +#ifdef CONFIG_X86_32
-+	savesegment(es, ctxt->es);
-+	savesegment(fs, ctxt->fs);
-+	savesegment(gs, ctxt->gs);
-+	savesegment(ss, ctxt->ss);
-+#else
-+/* CONFIG_X86_64 */
- 	asm volatile ("movw %%ds, %0" : "=m" (ctxt->ds));
- 	asm volatile ("movw %%es, %0" : "=m" (ctxt->es));
- 	asm volatile ("movw %%fs, %0" : "=m" (ctxt->fs));
-@@ -73,21 +89,32 @@ static void __save_processor_state(struct saved_context *ctxt)
- 	rdmsrl(MSR_KERNEL_GS_BASE, ctxt->gs_kernel_base);
- 	mtrr_save_fixed_ranges(NULL);
- 
-+	rdmsrl(MSR_EFER, ctxt->efer);
-+#endif
++	loadsegment(es, ctxt->es);
++	loadsegment(fs, ctxt->fs);
++	loadsegment(gs, ctxt->gs);
++	loadsegment(ss, ctxt->ss);
 +
- 	/*
- 	 * control registers
- 	 */
--	rdmsrl(MSR_EFER, ctxt->efer);
- 	ctxt->cr0 = read_cr0();
- 	ctxt->cr2 = read_cr2();
- 	ctxt->cr3 = read_cr3();
-+#ifdef CONFIG_X86_32
-+	ctxt->cr4 = read_cr4_safe();
++	/*
++	 * sysenter MSRs
++	 */
++	if (boot_cpu_has(X86_FEATURE_SEP))
++		enable_sep_cpu();
 +#else
 +/* CONFIG_X86_64 */
- 	ctxt->cr4 = read_cr4();
- 	ctxt->cr8 = read_cr8();
+ 	asm volatile ("movw %0, %%ds" :: "r" (ctxt->ds));
+ 	asm volatile ("movw %0, %%es" :: "r" (ctxt->es));
+ 	asm volatile ("movw %0, %%fs" :: "r" (ctxt->fs));
+@@ -161,6 +230,7 @@ static void __restore_processor_state(struct saved_context *ctxt)
+ 	wrmsrl(MSR_FS_BASE, ctxt->fs_base);
+ 	wrmsrl(MSR_GS_BASE, ctxt->gs_base);
+ 	wrmsrl(MSR_KERNEL_GS_BASE, ctxt->gs_kernel_base);
++#endif
+ 
+ 	/*
+ 	 * restore XCR0 for xsave capable cpu's.
+@@ -172,41 +242,17 @@ static void __restore_processor_state(struct saved_context *ctxt)
+ 
+ 	do_fpu_end();
+ 	mtrr_ap_init();
++
++#ifdef CONFIG_X86_32
++	mcheck_init(&boot_cpu_data);
 +#endif
  }
  
 +/* Needed by apm.c */
- void save_processor_state(void)
+ void restore_processor_state(void)
  {
- 	__save_processor_state(&saved_context);
+ 	__restore_processor_state(&saved_context);
  }
+-
+-static void fix_processor_context(void)
+-{
+-	int cpu = smp_processor_id();
+-	struct tss_struct *t = &per_cpu(init_tss, cpu);
+-
+-	/*
+-	 * This just modifies memory; should not be necessary. But... This
+-	 * is necessary, because 386 hardware has concept of busy TSS or some
+-	 * similar stupidity.
+-	 */
+-	set_tss_desc(cpu, t);
+-
+-	get_cpu_gdt_table(cpu)[GDT_ENTRY_TSS].type = 9;
+-
+-	syscall_init();                         /* This sets MSR_*STAR and related */
+-	load_TR_desc();				/* This does ltr */
+-	load_LDT(&current->active_mm->context);	/* This does lldt */
+-
+-	/*
+-	 * Now maybe reload the debug registers
+-	 */
+-	if (current->thread.debugreg7){
+-                loaddebug(&current->thread, 0);
+-                loaddebug(&current->thread, 1);
+-                loaddebug(&current->thread, 2);
+-                loaddebug(&current->thread, 3);
+-                /* no 4 and 5 */
+-                loaddebug(&current->thread, 6);
+-                loaddebug(&current->thread, 7);
+-	}
+-}
 +#ifdef CONFIG_X86_32
-+EXPORT_SYMBOL(save_processor_state);
++EXPORT_SYMBOL(restore_processor_state);
 +#endif
- 
- static void do_fpu_end(void)
- {
