@@ -1,56 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752892AbZDDESg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752203AbZDDE0b@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752892AbZDDESg (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 4 Apr 2009 00:18:36 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751723AbZDDEST
+	id S1752203AbZDDE0b (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 4 Apr 2009 00:26:31 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751299AbZDDE0I
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 4 Apr 2009 00:18:19 -0400
-Received: from cavan.codon.org.uk ([93.93.128.6]:57697 "EHLO
-	vavatch.codon.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751741AbZDDESS (ORCPT
+	Sat, 4 Apr 2009 00:26:08 -0400
+Received: from vms173001pub.verizon.net ([206.46.173.1]:60577 "EHLO
+	vms173001pub.verizon.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750805AbZDDE0D (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 4 Apr 2009 00:18:18 -0400
-Date: Sat, 4 Apr 2009 05:18:13 +0100
-From: Matthew Garrett <mjg59@srcf.ucam.org>
-To: linux-kernel@vger.kernel.org, acpi4asus-user@lists.sourceforge.net,
-       corentincj@iksaif.net, Darren Salt <linux@youmustbejoking.demon.co.uk>
-Subject: Re: [PATCH 2.6.29] eeepc-laptop: report brightness control events via the input layer
-Message-ID: <20090404041813.GA30746@srcf.ucam.org>
-References: <504BBE2828%linux@youmustbejoking.demon.co.uk>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <504BBE2828%linux@youmustbejoking.demon.co.uk>
-User-Agent: Mutt/1.5.12-2006-07-14
-X-SA-Exim-Connect-IP: <locally generated>
-X-SA-Exim-Mail-From: mjg59@codon.org.uk
-X-SA-Exim-Scanned: No (on vavatch.codon.org.uk); SAEximRunCond expanded to false
+	Sat, 4 Apr 2009 00:26:03 -0400
+Date: Sat, 04 Apr 2009 00:25:36 -0400 (EDT)
+From: Len Brown <lenb@kernel.org>
+X-X-Sender: lenb@localhost.localdomain
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: Nico Schottelius <nico-linux-20090213@schottelius.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Kernel Testers List <kernel-testers@vger.kernel.org>,
+       Dave Airlie <airlied@linux.ie>, Eric Anholt <eric@anholt.net>,
+       Matthew Garrett <mjg@redhat.com>
+Subject: Re: [Bug #12705] X200: Brightness broken since 2.6.29-rc4-58-g4c098bc
+In-reply-to: <200903072234.26989.rjw@sisk.pl>
+Message-id: <alpine.LFD.2.00.0904040024520.15220@localhost.localdomain>
+References: <KiHv0irKPzE.A.l3.hUarJB@chimera>
+ <SLCXkuHtxAO.A.gvC.UVarJB@chimera>
+ <20090304064354.GA19776@denkbrett.schottelius.org>
+ <200903072234.26989.rjw@sisk.pl>
+User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
+MIME-version: 1.0
+Content-type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Apr 03, 2009 at 06:57:50PM +0100, Darren Salt wrote:
-> This maps the brightness control events to one of two keys, either
-> KEY_BRIGHTNESSDOWN or KEY_BRIGHTNESSUP, as needed.
-> 
-> Some mapping has to be done due to the fact that the BIOS reports them as
-> <base value> + <current brightness index>; the selection is done according to
-> the sign of the change in brightness (if this is 0, no keypress is reported).
-> 
-> (Ref. http://lists.alioth.debian.org/pipermail/debian-eeepc-devel/2009-April/002001.html)
-> 
-> Signed-off-by: Darren Salt <linux@youmustbejoking.demon.co.uk>
 
-The reason I didn't do this is that the Eee changes the input brightness 
-in hardware, which means reporting it via the input layer as well can 
-cause a single keypress to raise the brightness by two steps - one in 
-hardware and one triggered by userland's response to the key press. I'd 
-be a little bit wary of this causing problems.
 
-On the other hand, the default behaviour of the acpi video driver is to 
-change the brightness itself and then also to send the even to 
-userspace, so I guess if it was going to break things it probably would 
-have done already...
 
--- 
-Matthew Garrett | mjg59@srcf.ucam.org
+On Sat, 7 Mar 2009, Rafael J. Wysocki wrote:
+
+> On Wednesday 04 March 2009, Nico Schottelius wrote:
+> > Rafael J. Wysocki [Tue, Mar 03, 2009 at 08:25:55PM +0100]:
+> > > This message has been generated automatically as a part of a report
+> > > of recent regressions.
+> > > 
+> > > The following bug entry is on the current list of known regressions
+> > > from 2.6.28.  Please verify if it still should be listed and let me know
+> > > (either way).
+> > 
+> > Well, well... nobody really cares about this bug, so it's still
+> > there. Seems this automatic reminder will be persistent until 2.6.30.
+> 
+> Well, thanks for the update.
+
+It is a DRI bug, assigned to   	
+Eric Anholt -- I'm not handling it.
+
+
+thanks,
+Len Brown, Intel Open Source Technology Center
+
