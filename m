@@ -1,69 +1,77 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756448AbZDDTSp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757177AbZDDTVV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756448AbZDDTSp (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 4 Apr 2009 15:18:45 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753585AbZDDTSf
+	id S1757177AbZDDTVV (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 4 Apr 2009 15:21:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755197AbZDDTVJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 4 Apr 2009 15:18:35 -0400
-Received: from thunk.org ([69.25.196.29]:33033 "EHLO thunker.thunk.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752430AbZDDTSe (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 4 Apr 2009 15:18:34 -0400
-Date: Sat, 4 Apr 2009 15:18:26 -0400
-From: Theodore Tso <tytso@mit.edu>
-To: Jens Axboe <jens.axboe@oracle.com>
-Cc: Linus Torvalds <torvalds@linux-foundation.org>,
-       Linux Kernel Developers List <linux-kernel@vger.kernel.org>,
-       Ext4 Developers List <linux-ext4@vger.kernel.org>
-Subject: Re: [GIT PULL] Ext3 latency fixes
-Message-ID: <20090404191826.GE9812@mit.edu>
-Mail-Followup-To: Theodore Tso <tytso@mit.edu>,
-	Jens Axboe <jens.axboe@oracle.com>,
-	Linus Torvalds <torvalds@linux-foundation.org>,
-	Linux Kernel Developers List <linux-kernel@vger.kernel.org>,
-	Ext4 Developers List <linux-ext4@vger.kernel.org>
-References: <1238742067-30814-1-git-send-email-tytso@mit.edu> <alpine.LFD.2.00.0904031110420.19690@localhost.localdomain> <alpine.LFD.2.00.0904031150190.4015@localhost.localdomain> <alpine.LFD.2.00.0904031329410.7007@localhost.localdomain> <20090404135719.GA9812@mit.edu> <20090404151649.GE5178@kernel.dk>
+	Sat, 4 Apr 2009 15:21:09 -0400
+Received: from moutng.kundenserver.de ([212.227.126.188]:54413 "EHLO
+	moutng.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753680AbZDDTVH (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 4 Apr 2009 15:21:07 -0400
+Message-ID: <49D7B320.4000506@vlnb.net>
+Date: Sat, 04 Apr 2009 23:21:04 +0400
+From: Vladislav Bolkhovitin <vst@vlnb.net>
+User-Agent: Thunderbird 2.0.0.21 (X11/20090320)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090404151649.GE5178@kernel.dk>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-SA-Exim-Connect-IP: <locally generated>
-X-SA-Exim-Mail-From: tytso@mit.edu
-X-SA-Exim-Scanned: No (on thunker.thunk.org); SAEximRunCond expanded to false
+To: Tomasz Chmielewski <mangoo@wpkg.org>
+CC: linux-scsi@vger.kernel.org, iscsitarget-devel@lists.sourceforge.net,
+       linux-kernel@vger.kernel.org, stgt@vger.kernel.org,
+       James Bottomley <James.Bottomley@HansenPartnership.com>,
+       scst-devel <scst-devel@lists.sourceforge.net>
+Subject: Re: [Scst-devel] [ANNOUNCE]: Comparison of features sets between
+ different SCSI targets (SCST, STGT, IET, LIO)
+References: <49D7AD54.4060408@vlnb.net> <49D7B122.50103@wpkg.org>
+In-Reply-To: <49D7B122.50103@wpkg.org>
+Content-Type: text/plain; charset=us-ascii; format=flowed
+Content-Transfer-Encoding: 7bit
+X-Provags-ID: V01U2FsdGVkX18aLnE82l546ojXiRw20tzLgFhoXfUsh68IowN
+ YHtgOQBmY+pYVv5pdKxrOb8EFERqCkAsW5uILNUQ5hgVXenNx8
+ BS2WVOrNckWUybncfLrcQ==
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, Apr 04, 2009 at 05:16:50PM +0200, Jens Axboe wrote:
-> Big nack on this patch. Ted, this is EXACTLY where I told you we saw big
-> write regressions (sqlite performance drops by a factor of 4-5). Do a
-> git log on fs/buffer.c and see the original patch (which does what your
-> patch does) and the later revert. 
+Tomasz Chmielewski, on 04/04/2009 11:12 PM wrote:
+> Vladislav Bolkhovitin schrieb:
+>> Hi All,
+>>
+>> I set up http://scst.sourceforge.net/comparison.html page, which 
+>> compares features of existing SCSI target subsystems for Linux. The 
+>> comparison includes SCST, STGT, IET and LIO.
+>>
+>> I might be not fully correct somewhere, so, if you don't agree with me 
+>> about some item(s) in the comparison table, please let me know and I 
+>> will fix that.
+> 
+> Performance is a bit debatable.
 
-You mean this revert, right?
+The result "in average" was listed in the comparison. Of course, one 
+target can be better somewhere, another one somewhere else. That a 
+nature of storage: it's pretty hard to optimize for all at once.
 
-commit 78f707bfc723552e8309b7c38a8d0cc51012e813
-Author: Jens Axboe <jens.axboe@oracle.com>
-Date:   Tue Feb 17 13:59:08 2009 +0100
+BTW, if I remember correctly your logs, you didn't apply all the SCST 
+kernel patches on your kernel. Then your results aren't much applicable 
+to this comparison, because it assumes all SCST kernel patches applied.
 
-    block: revert part of 18ce3751ccd488c78d3827e9f6bf54e6322676fb
-    
-    The above commit added WRITE_SYNC and switched various places to using
-    that for committing writes that will be waited upon immediately after
-    submission. However, this causes a performance regression with AS and CFQ
-    for ext3 at least, since sync_dirty_buffer() will submit some writes with
-    WRITE_SYNC while ext3 has sumitted others dependent writes without the sync
-    flag set. This causes excessive anticipation/idling in the IO scheduler
-    because sync and async writes get interleaved, causing a big performance
-    regression for the below test case (which is meant to simulate sqlite
-    like behaviour)....
+> I made some simple SCST and STGT tests last week, there were some where 
+> SCST won, there were some where STGT won.
+> 
+> What was surprising to me, although STGT has a bigger CPU impact than 
+> SCST, STGT was faster when reading from an encrypted (dm-crypt) volume, 
+> on a system where the CPU is the bottleneck (it can't decrypt as fast as 
+> HDD can deliver data).
+> 
+> STGT was much slower when reading from a non-encrypted volume, when 
+> target had "blockdev --setra 16384 ..." for a given target.
+> On the other hand, STGT was faster than SCST with default blockdev 
+> readahead settings (256).
+> 
+> If anyone's interested, I can show results in a readable form on Monday 
+> (right now, I have only raw data which is pretty long and would be hard 
+> to compare).
+> 
+> 
+> 
 
-OK, let me test things out first, but note that with the changes that
-Linus has already accepted, this may not be an issue --- since we've
-now fixed ext3 to submit those dependent writes with the SYNC flag
-now.  So I'm not sure the performance regression still applies, but
-I'll test using the test case supplied in the rest of the commit log
-and get back to you.
-
-						- Ted
