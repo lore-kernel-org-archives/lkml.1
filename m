@@ -1,44 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755510AbZDDRyo@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755544AbZDDSBR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755510AbZDDRyo (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 4 Apr 2009 13:54:44 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752622AbZDDRyf
+	id S1755544AbZDDSBR (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 4 Apr 2009 14:01:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753072AbZDDSA6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 4 Apr 2009 13:54:35 -0400
-Received: from cavan.codon.org.uk ([93.93.128.6]:48200 "EHLO
-	vavatch.codon.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751848AbZDDRye (ORCPT
+	Sat, 4 Apr 2009 14:00:58 -0400
+Received: from wf-out-1314.google.com ([209.85.200.173]:32417 "EHLO
+	wf-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751728AbZDDSA6 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 4 Apr 2009 13:54:34 -0400
-Date: Sat, 4 Apr 2009 18:54:28 +0100
-From: Matthew Garrett <mjg59@srcf.ucam.org>
-To: Kay Sievers <kay.sievers@vrfy.org>
-Cc: Greg KH <gregkh@suse.de>, linux-kernel@vger.kernel.org,
-       linux-usb@vger.kernel.org, shurik@gwu.edu
-Subject: Re: qcserial/gobi firmware loader
-Message-ID: <20090404175428.GA6651@srcf.ucam.org>
-References: <20090401203726.GA17485@srcf.ucam.org> <20090403025654.GA20146@suse.de> <20090403135719.GD19774@srcf.ucam.org> <20090403150301.GA25846@suse.de> <20090403151237.GA25994@suse.de> <20090403164551.GA23689@srcf.ucam.org> <20090404152731.GA5080@srcf.ucam.org> <ac3eb2510904041051k45599297s6a97094702664aac@mail.gmail.com>
+	Sat, 4 Apr 2009 14:00:58 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
+         :cc:content-type:content-transfer-encoding;
+        b=I/vrQNdKX4QtGHcJ9VXdhwn7Y/Ym0Op3WIQgEJyFiUTxdq8ZfAHOHBsV3nr8ZCOC0w
+         Rb6Kf6G0DZ5wX7Qg/4iO19xj0vZAsuyVb9kkMg3c3ORdS8XtXx2A7JvN2XAjAIEDSOiK
+         hCzYduh3DYVTEHA91CTiGW7AnydOZ8aisPRKA=
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <ac3eb2510904041051k45599297s6a97094702664aac@mail.gmail.com>
-User-Agent: Mutt/1.5.12-2006-07-14
-X-SA-Exim-Connect-IP: <locally generated>
-X-SA-Exim-Mail-From: mjg59@codon.org.uk
-X-SA-Exim-Scanned: No (on vavatch.codon.org.uk); SAEximRunCond expanded to false
+In-Reply-To: <alpine.LFD.2.00.0904041039230.3915@localhost.localdomain>
+References: <1238742067-30814-1-git-send-email-tytso@mit.edu>
+	 <alpine.LFD.2.00.0904031110420.19690@localhost.localdomain>
+	 <alpine.LFD.2.00.0904031150190.4015@localhost.localdomain>
+	 <alpine.LFD.2.00.0904031329410.7007@localhost.localdomain>
+	 <20090404135719.GA9812@mit.edu> <20090404151649.GE5178@kernel.dk>
+	 <alpine.LFD.2.00.0904040854470.3915@localhost.localdomain>
+	 <20090404173412.GF5178@kernel.dk>
+	 <alpine.LFD.2.00.0904041039230.3915@localhost.localdomain>
+Date: Sat, 4 Apr 2009 12:00:56 -0600
+Message-ID: <9b1675090904041100s4620e604nfa8281e9ab869841@mail.gmail.com>
+Subject: Re: [GIT PULL] Ext3 latency fixes
+From: "Trenton D. Adams" <trenton.d.adams@gmail.com>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: Jens Axboe <jens.axboe@oracle.com>, Theodore Tso <tytso@mit.edu>,
+       Linux Kernel Developers List <linux-kernel@vger.kernel.org>,
+       Ext4 Developers List <linux-ext4@vger.kernel.org>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, Apr 04, 2009 at 07:51:06PM +0200, Kay Sievers wrote:
-> This misses a '=':
->   GOTO "gobi_rules_end"
-> 
-> This:
->   /dev/%k
-> should be:
->   $env{DEVNAME}
+Hi Guys,
 
-Thanks, fixed those.
--- 
-Matthew Garrett | mjg59@srcf.ucam.org
+Sorry for this "quick" interruption.  Jens doesn't like the sqllite
+problem.  Ted and Linus don't like the latency problem.  Why not make
+that SYNC_ALL option a 1/0 option in /proc/sys/vm/sync_all or
+something of the like?  That sort of change is pretty small, and quick
+to make, right?  This would help, at least until the real problem is
+found.
+
+Sorry if I'm stepping out of bounds. :P
