@@ -1,86 +1,74 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S936599AbZDDBLd@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S937218AbZDDBT2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S936599AbZDDBLd (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 3 Apr 2009 21:11:33 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763858AbZDDBLY
+	id S937218AbZDDBT2 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 3 Apr 2009 21:19:28 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759797AbZDDBTS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 3 Apr 2009 21:11:24 -0400
-Received: from hrndva-omtalb.mail.rr.com ([71.74.56.124]:50134 "EHLO
-	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1763471AbZDDBLX (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 3 Apr 2009 21:11:23 -0400
-Date: Fri, 3 Apr 2009 21:11:20 -0400 (EDT)
-From: Steven Rostedt <rostedt@goodmis.org>
-X-X-Sender: rostedt@gandalf.stny.rr.com
-To: Ingo Molnar <mingo@elte.hu>
-cc: Tom Zanussi <tzanussi@gmail.com>, linux-kernel@vger.kernel.org,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Thomas Gleixner <tglx@linutronix.de>,
-       Peter Zijlstra <peterz@infradead.org>,
-       Frederic Weisbecker <fweisbec@gmail.com>,
-       Steven Rostedt <srostedt@redhat.com>
-Subject: Re: [PATCH 4/4] tracing/filters: use ring_buffer_discard_commit for
- discarded events
-In-Reply-To: <20090403115100.GH31399@elte.hu>
-Message-ID: <alpine.DEB.2.00.0904032109400.32083@gandalf.stny.rr.com>
-References: <20090402052721.013878388@goodmis.org> <20090402053522.834546042@goodmis.org> <1238663187.6621.13.camel@bookworm> <alpine.DEB.2.00.0904021033080.965@gandalf.stny.rr.com> <20090403115100.GH31399@elte.hu>
-User-Agent: Alpine 2.00 (DEB 1167 2008-08-23)
+	Fri, 3 Apr 2009 21:19:18 -0400
+Received: from mx3.mail.elte.hu ([157.181.1.138]:55679 "EHLO mx3.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1759660AbZDDBTP (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 3 Apr 2009 21:19:15 -0400
+Date: Sat, 4 Apr 2009 03:18:05 +0200
+From: Ingo Molnar <mingo@elte.hu>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: Yinghai Lu <yinghai@kernel.org>,
+       "Pallipadi, Venkatesh" <venkatesh.pallipadi@intel.com>,
+       "Siddha, Suresh B" <suresh.b.siddha@intel.com>,
+       Arjan van de Ven <arjan@infradead.org>,
+       Thomas Gleixner <tglx@linutronix.de>, "H. Peter Anvin" <hpa@zytor.com>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH] x86: make mtrr code could use debugpat
+Message-ID: <20090404011805.GA19492@elte.hu>
+References: <alpine.LFD.2.00.0903291553210.3948@localhost.localdomain> <1238434120.4529.783.camel@localhost.localdomain> <20090403175555.GH6295@elte.hu> <alpine.LFD.2.00.0904031203400.4015@localhost.localdomain> <20090403212152.GA3493@linux-os.sc.intel.com> <alpine.LFD.2.00.0904031443340.7007@localhost.localdomain> <alpine.LFD.2.00.0904031521460.3915@localhost.localdomain> <20090403222928.GA6446@elte.hu> <49D68F4B.9010808@kernel.org> <alpine.LFD.2.00.0904031737030.3915@localhost.localdomain>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <alpine.LFD.2.00.0904031737030.3915@localhost.localdomain>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: 0.1
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=0.1 required=5.9 tests=BAYES_00,URG_BIZ autolearn=no SpamAssassin version=3.2.5
+	1.6 URG_BIZ                BODY: Contains urgent matter
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-On Fri, 3 Apr 2009, Ingo Molnar wrote:
+* Linus Torvalds <torvalds@linux-foundation.org> wrote:
 
-> 
-> * Steven Rostedt <rostedt@goodmis.org> wrote:
-> 
-> > > [  240.462396]  [<ffffffff802c843b>] trace_function+0xab/0xc0
+> On Fri, 3 Apr 2009, Yinghai Lu wrote:
 > > 
-> > Oo, you have trace filters in trace_function. I'm not sure we want 
-> > that. If we do, please make it a separate function register. That 
-> > is, the function tracer is such a extreme hot path, that I would 
-> > like to avoid as many branch conditionals as possible. With the 
-> > dynamic function tracing, we can pick functions that do conditions 
-> > when we want them, and we can pick those that do not. If you look 
-> > at some of the register_ftrace_function callers, you will see 
-> > where I've picked different functions to be called by the tracer 
-> > depending on what the options are.
+> > only print out get_mtrr when debugpat
 > 
-> Actually, i like Tom's idea very much: as it allows pretty flexible 
-> context based filtering - not just function based filtering.
-> 
-> So we could filter for:
-> 
->  -    a specific PID
-> 
->  - or a pattern of ->comm strings ['bash' or 'sshd' or 'hackbench']
-> 
->  - or we could filter for non-zero preempt-counts
->    (i.e. critical sections only).
-> 
-> So this extends the function symbol based regexp mechanism in a 
-> quite natural way, and it would be sad to not do this just because 
-> it's ... arguably hard to implement robustly ;-)
-> 
-> The filter expression predicaments are pre-constructed and static at 
-> the point of execution, so they rely on no external facility other 
-> than some internal C code. So it should be possible to do this.
-> 
-> And if the tracepoint causes runtime overhead .. we need to optimize 
-> that. We could register a different, filter-aware mcount callback 
-> depending on whether there's any filter defined there.
+> Is that get_mtrr message really so interesting that it needs to be 
+> printed out at all? Even with debugpat?
 
-This is exactly what I was talking about in my ramblings up above ;-)
+With debugpat it's probably interesting - i think only a very small 
+fraction of users will enable it, and if they do we really want to 
+track all MTRR state.
 
-That is, if filtering is not on, we can just enable the non filtered 
-version of ftrace. As soon as the function tracer filtering is modified, 
-we switch to a "filter-aware" version of the function tracer.
+Since old MTRR state gets destroyed by new settings we better have a 
+clear idea how the BIOS set it, that might give us clues about 
+quirks, etc.
 
-I'll look at modifying it do to something like this.
+Based on MTRR bugreport patterns i was the one who asked Yinghai 
+during the development cycle to add more debugging there - so i'm to 
+blame for those printouts. We had several cases where it would have 
+been useful had we known the precise history of MTRR settings.
 
--- Steve
+I was under the impression that KERN_DEBUG would only show up on the 
+console if 'debug' is passed in on the boot command line - but your 
+bootlog didnt have 'debug' in it and i guess having it so frequently 
+in the dmesg is confusing as well. It might even be there for every 
+Xorg startup.
 
+Anyway ... the x86/urgent pull request i sent removes the printk 
+altogether.
+
+	Ingo
