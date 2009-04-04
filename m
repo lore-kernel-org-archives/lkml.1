@@ -1,84 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755424AbZDDRgz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755538AbZDDRjO@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755424AbZDDRgz (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 4 Apr 2009 13:36:55 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753072AbZDDRgp
+	id S1755538AbZDDRjO (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 4 Apr 2009 13:39:14 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752683AbZDDRi6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 4 Apr 2009 13:36:45 -0400
-Received: from brick.kernel.dk ([93.163.65.50]:46459 "EHLO kernel.dk"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752406AbZDDRgo (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 4 Apr 2009 13:36:44 -0400
-Date: Sat, 4 Apr 2009 19:36:42 +0200
-From: Jens Axboe <jens.axboe@oracle.com>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: Theodore Tso <tytso@mit.edu>,
-       Linux Kernel Developers List <linux-kernel@vger.kernel.org>,
-       Ext4 Developers List <linux-ext4@vger.kernel.org>
-Subject: Re: [GIT PULL] Ext3 latency fixes
-Message-ID: <20090404173642.GG5178@kernel.dk>
-References: <1238742067-30814-1-git-send-email-tytso@mit.edu> <alpine.LFD.2.00.0904031110420.19690@localhost.localdomain> <alpine.LFD.2.00.0904031150190.4015@localhost.localdomain> <alpine.LFD.2.00.0904031329410.7007@localhost.localdomain> <20090404135719.GA9812@mit.edu> <20090404151649.GE5178@kernel.dk> <alpine.LFD.2.00.0904040854470.3915@localhost.localdomain> <alpine.LFD.2.00.0904040901330.3915@localhost.localdomain>
+	Sat, 4 Apr 2009 13:38:58 -0400
+Received: from one.firstfloor.org ([213.235.205.2]:37374 "EHLO
+	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752227AbZDDRi5 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 4 Apr 2009 13:38:57 -0400
+Date: Sat, 4 Apr 2009 19:38:49 +0200
+From: Andi Kleen <andi@firstfloor.org>
+To: linux-kernel@vger.kernel.org, srinivasa@in.ibm.com
+Cc: akpm@osdl.org
+Subject: [PATCH] Update NSIGTRAP in asm-generic/siginfo.h
+Message-ID: <20090404173849.GA2040@basil>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <alpine.LFD.2.00.0904040901330.3915@localhost.localdomain>
+User-Agent: Mutt/1.5.17 (2007-11-01)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, Apr 04 2009, Linus Torvalds wrote:
-> 
-> 
-> On Sat, 4 Apr 2009, Linus Torvalds wrote:
-> 
-> > 
-> > 
-> > On Sat, 4 Apr 2009, Jens Axboe wrote:
-> > > 
-> > > Big nack on this patch. Ted, this is EXACTLY where I told you we saw big
-> > > write regressions (sqlite performance drops by a factor of 4-5). Do a
-> > > git log on fs/buffer.c and see the original patch (which does what your
-> > > patch does) and the later revert. No idea why you are now suggestion
-> > > making that exact change?!
-> > 
-> > Jens, if I can re-create the 'fsync' times (I haven't yet), then the 
-> > default scheduler _will_ be switched to AS.
-> 
-> Btw, that patch is "obviously correct".
-> 
-> That write we're submitting is very much a synchronous write. After all, 
-> the code is literally
-> 
-> 	ret = submit_bh(WRITE, bh);
-> 	wait_on_buffer(bh);
-> 
-> and it just doesn't get any more synchronous than that. If we don't start 
-> the IO immediately (since we're _waiting_ for it immediately), we're 
-> broken. 
-> 
-> Now, if we need to fix some mysql throughput issue as a result, then I'd 
-> suggest that we look at whether "sync_dirty_buffer()" is sometimes called 
-> when it doesn't need to be od (b) whether perhaps the unplugging behavior 
-> is simply buggy in some other way.
-> 
-> But Ted's patch makes so much sense on a purely conceptual level, that 
-> when you look at the patch, you should almost not even need to see the 
-> performance numbers to know it's right. But together with the numbers Ted 
-> posted, it's a total no-brainer. CFQ is clearly broken here, and it's 
-> pretty clear that apparently CFQ has been tuned (improperly) purely for 
-> throughput.
+Update NSIGTRAP in asm-generic/siginfo.h
 
-I agree, hence I previously wrote and submitted an IDENTICAL patch. I'll
-go and test things, not sure why you think that AS and CFQ perform very
-differently here, to my knowledge no such postings exist for this test
-case. And I'll state again that if they do, of course I'll look into
-that and fix it.
+Impact: (nearly) trivial
 
-One thing that may be of concern is the immediate unplug, but on the
-other hand, we do an immediate wait which would unplug anyway. So if we
-just look at the sqlite regression, I'm sure it'll be pretty easy to pin
-point with some blktrace data.
+The patch
 
--- 
-Jens Axboe
+commit da654b74bda14c45a7d98c731bf3c1a43b6b74e2
+Author: Srinivasa Ds <srinivasa@in.ibm.com>
+Date:   Tue Sep 23 15:23:52 2008 +0530
 
+    signals: demultiplexing SIGTRAP signal
+
+forgot to update the NSIGTRAP define in asm-generic/siginfo.h to 
+the new number of sigtrap subcodes. Nothing in the tree seems to use it, 
+but presumably something in user space might. So update it.
+
+Cc: Srinivasa Ds <srinivasa@in.ibm.com>
+
+Signed-off-by: Andi Kleen <ak@linux.intel.com>
+
+---
+ include/asm-generic/siginfo.h |    2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+Index: linux-2.6.29-ak/include/asm-generic/siginfo.h
+===================================================================
+--- linux-2.6.29-ak.orig/include/asm-generic/siginfo.h	2008-10-24 13:34:57.000000000 +0200
++++ linux-2.6.29-ak/include/asm-generic/siginfo.h	2009-04-04 19:35:23.000000000 +0200
+@@ -201,7 +201,7 @@
+ #define TRAP_TRACE	(__SI_FAULT|2)	/* process trace trap */
+ #define TRAP_BRANCH     (__SI_FAULT|3)  /* process taken branch trap */
+ #define TRAP_HWBKPT     (__SI_FAULT|4)  /* hardware breakpoint/watchpoint */
+-#define NSIGTRAP	2
++#define NSIGTRAP	4
+ 
+ /*
+  * SIGCHLD si_codes
