@@ -1,75 +1,45 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S936215AbZDDAmt@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S936627AbZDDAp3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S936215AbZDDAmt (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 3 Apr 2009 20:42:49 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760093AbZDDAmh
+	id S936627AbZDDAp3 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 3 Apr 2009 20:45:29 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757448AbZDDApR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 3 Apr 2009 20:42:37 -0400
-Received: from mx2.redhat.com ([66.187.237.31]:38959 "EHLO mx2.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1758963AbZDDAmg (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 3 Apr 2009 20:42:36 -0400
-Organization: Red Hat UK Ltd. Registered Address: Red Hat UK Ltd, Amberley
-	Place, 107-111 Peascod Street, Windsor, Berkshire, SI4 1TE, United
-	Kingdom.
-	Registered in England and Wales under Company Registration No. 3798903
-From: David Howells <dhowells@redhat.com>
-Subject: [PATCH] FS-Cache: Add MAINTAINERS record for FS-Cache and CacheFiles
-To: torvalds@osdl.org, joe@perches.com
-Cc: dhowells@redhat.com, steved@redhat.com, linux-cachefs@redhat.com,
-       linux-kernel@vger.kernel.org
-Date: Sat, 04 Apr 2009 01:40:56 +0100
-Message-ID: <20090404004056.1473.94222.stgit@warthog.procyon.org.uk>
-User-Agent: StGIT/0.14.3
+	Fri, 3 Apr 2009 20:45:17 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:60876 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1757151AbZDDApQ (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 3 Apr 2009 20:45:16 -0400
+Date: Fri, 3 Apr 2009 17:37:44 -0700 (PDT)
+From: Linus Torvalds <torvalds@linux-foundation.org>
+X-X-Sender: torvalds@localhost.localdomain
+To: Yinghai Lu <yinghai@kernel.org>
+cc: Ingo Molnar <mingo@elte.hu>,
+       "Pallipadi, Venkatesh" <venkatesh.pallipadi@intel.com>,
+       "Siddha, Suresh B" <suresh.b.siddha@intel.com>,
+       Arjan van de Ven <arjan@infradead.org>,
+       Thomas Gleixner <tglx@linutronix.de>, "H. Peter Anvin" <hpa@zytor.com>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH] x86: make mtrr code could use debugpat
+In-Reply-To: <49D68F4B.9010808@kernel.org>
+Message-ID: <alpine.LFD.2.00.0904031737030.3915@localhost.localdomain>
+References: <20090329205805.GA24693@elte.hu> <20090329210103.GA24901@elte.hu> <49CFF517.30001@kernel.org> <alpine.LFD.2.00.0903291553210.3948@localhost.localdomain> <1238434120.4529.783.camel@localhost.localdomain> <20090403175555.GH6295@elte.hu>
+ <alpine.LFD.2.00.0904031203400.4015@localhost.localdomain> <20090403212152.GA3493@linux-os.sc.intel.com> <alpine.LFD.2.00.0904031443340.7007@localhost.localdomain> <alpine.LFD.2.00.0904031521460.3915@localhost.localdomain> <20090403222928.GA6446@elte.hu>
+ <49D68F4B.9010808@kernel.org>
+User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7bit
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Add MAINTAINERS record for FS-Cache and CacheFiles.
-
-Signed-off-by: David Howells <dhowells@redhat.com>
----
-
- MAINTAINERS |   17 +++++++++++++++++
- 1 files changed, 17 insertions(+), 0 deletions(-)
 
 
-diff --git a/MAINTAINERS b/MAINTAINERS
-index 6fe6f39..e56f9f3 100644
---- a/MAINTAINERS
-+++ b/MAINTAINERS
-@@ -1068,6 +1068,14 @@ W:	http://linuxtv.org
- T:	git kernel.org:/pub/scm/linux/kernel/git/mchehab/linux-2.6.git
- S:	Maintained
- 
-+CACHEFILES: FS-CACHE BACKEND FOR CACHING ON MOUNTED FILESYSTEMS
-+P:	David Howells
-+M:	dhowells@redhat.com
-+L:	linux-cachefs@redhat.com
-+S:	Supported
-+F:	Documentation/filesystems/caching/cachefiles.txt
-+F:	fs/cachefiles/
-+
- CAFE CMOS INTEGRATED CAMERA CONTROLLER DRIVER
- P:	Jonathan Corbet
- M:	corbet@lwn.net
-@@ -1873,6 +1881,15 @@ M:	rjw@sisk.pl
- L:	linux-pm@lists.linux-foundation.org
- S:	Supported
- 
-+FS-CACHE: LOCAL CACHING FOR NETWORK FILESYSTEMS
-+P:	David Howells
-+M:	dhowells@redhat.com
-+L:	linux-cachefs@redhat.com
-+S:	Supported
-+F:	Documentation/filesystems/caching/
-+F:	fs/fscache/
-+F:	include/linux/fscache*.h
-+
- FTRACE
- P:	Steven Rostedt
- M:	rostedt@goodmis.org
+On Fri, 3 Apr 2009, Yinghai Lu wrote:
+> 
+> only print out get_mtrr when debugpat
 
+Is that get_mtrr message really so interesting that it needs to be printed 
+out at all? Even with debugpat?
+
+			Linus
