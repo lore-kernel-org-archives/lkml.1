@@ -1,46 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756493AbZDDSCV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756518AbZDDSDD@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756493AbZDDSCV (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 4 Apr 2009 14:02:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754063AbZDDSCM
+	id S1756518AbZDDSDD (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 4 Apr 2009 14:03:03 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754063AbZDDSCx
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 4 Apr 2009 14:02:12 -0400
-Received: from smtp125.sbc.mail.sp1.yahoo.com ([69.147.65.184]:32329 "HELO
-	smtp125.sbc.mail.sp1.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1753574AbZDDSCL (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 4 Apr 2009 14:02:11 -0400
-DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
-  s=s1024; d=pacbell.net;
-  h=Received:X-YMail-OSG:X-Yahoo-Newman-Property:From:To:Subject:Date:User-Agent:Cc:References:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Content-Disposition:Message-Id;
-  b=RUmxzw917fXiRLoQi7BZqL5bS2mp/rD7fbgPWPRPbNnv6jv+R107czLDncPwJM/fAwrBq1i3etQvCxS+VR2kBJtPIIjLm9D0GGBgMORuMpms7PE4VIadfBeUmP4Gmi3bcBsQAlXGFQQxwFpDzfgOc5rLmQW+OQsV7Pb9Ywm9duk=  ;
-X-YMail-OSG: jnDQadYVM1kPn9iNg8VQyoMmSvW5_1S_WpmV3z6ySBgQ_G.gC924FEZ24fF_6FXNgVzays1UKnOqZCDTheW9htdSnUgtnXnQitd5trSj5GiKEH5QpkH7yiHIpmXKLXs.UuTTR3sr2NpkSfoSVS48BIsArJpI3J40u6S5N1nFkfVxCHksUY4noNlkP4F38CQiKIPgskoTeuU3tKJHVBrlLcea8oz3B2VfaGjJXid_0bVeoLh5ASM9LoR3z9euUTuzJTvlTcyiDhIQsvkA
-X-Yahoo-Newman-Property: ymail-3
-From: David Brownell <david-b@pacbell.net>
-To: Krzysztof Halasa <khc@pm.waw.pl>
-Subject: Re: [PATCH] fix RTC-CMOS message, now with SOB
-Date: Sat, 4 Apr 2009 11:02:07 -0700
-User-Agent: KMail/1.9.10
-Cc: lkml <linux-kernel@vger.kernel.org>
-References: <m3vdpnvvzt.fsf@intrepid.localdomain> <m3r60bvvrg.fsf@intrepid.localdomain>
-In-Reply-To: <m3r60bvvrg.fsf@intrepid.localdomain>
+	Sat, 4 Apr 2009 14:02:53 -0400
+Received: from bu3sch.de ([62.75.166.246]:47689 "EHLO vs166246.vserver.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753160AbZDDSCw (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 4 Apr 2009 14:02:52 -0400
+From: Michael Buesch <mb@bu3sch.de>
+To: Francois Romieu <romieu@fr.zoreil.com>
+Subject: Re: 2.6.27.19 + 28.7: network timeouts for r8169 and 8139too
+Date: Sat, 4 Apr 2009 19:50:04 +0200
+User-Agent: KMail/1.9.9
+Cc: Rui Santos <rsantos@grupopie.com>,
+       Michael =?utf-8?q?B=C3=BCker?= <m.bueker@berlin.de>,
+       linux-kernel@vger.kernel.org
+References: <200903041828.49972.m.bueker@berlin.de> <20090322211159.GA23042@electric-eye.fr.zoreil.com> <49CA1822.6050902@grupopie.com>
+In-Reply-To: <49CA1822.6050902@grupopie.com>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 8bit
 Content-Disposition: inline
-Message-Id: <200904041102.07751.david-b@pacbell.net>
+Message-Id: <200904041950.04324.mb@bu3sch.de>
+Content-Type: text/plain;
+  charset="utf-8"
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thursday 02 April 2009, Krzysztof Halasa wrote:
-> +               !is_valid_irq(rtc_irq) ? "no alarms" :
-> +               cmos_rtc.mon_alrm ? "alarms up to one year" :
-> +               cmos_rtc.day_alrm ? "alarms up to one month" :
-> +               "alarms up to one day",
+On Wednesday 25 March 2009 12:40:18 Rui Santos wrote:
+> Francois Romieu wrote:
+> > Can you see if one of the attached patches or a combination of them
+> > makes a difference for the current (-git) kernel ?
+> >   
+> 
+> I've concluded the tests. Unfortunately, the problem still remains.
+> However, with both, and only both patches applied, the connection speed
+> was higher and took longer, a lot longer to reproduce the problem but,
+> it did.
 
-Could you reformat that so it looks more like the compound-IF
-statement it really is?  That is, display the nesting structure.
-And not use negative logic for that first test.
+I'm currently testing 2.6.29.1 without any additional patches but
+with the pci=nomsi boot option.
 
+I didn't notice any hickups, yet. I'm running a stresstest on a GBit link for quite
+some time now. Earlier tests with older kernels and MSI burped earlier.
+
+I will do more testing. If it turns out this is stable I will test the same kernel
+with Message Signaled Interrupts to see if that causes some breakage.
+
+-- 
+Greetings, Michael.
