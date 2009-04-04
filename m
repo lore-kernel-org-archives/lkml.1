@@ -1,71 +1,84 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754930AbZDDRSd@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754418AbZDDRXZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754930AbZDDRSd (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 4 Apr 2009 13:18:33 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751539AbZDDRSY
+	id S1754418AbZDDRXZ (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 4 Apr 2009 13:23:25 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752625AbZDDRXK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 4 Apr 2009 13:18:24 -0400
-Received: from smtp118.sbc.mail.sp1.yahoo.com ([69.147.64.91]:44780 "HELO
-	smtp118.sbc.mail.sp1.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1751453AbZDDRSX (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 4 Apr 2009 13:18:23 -0400
-DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
-  s=s1024; d=pacbell.net;
-  h=Received:X-YMail-OSG:X-Yahoo-Newman-Property:From:To:Subject:Date:User-Agent:Cc:References:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Content-Disposition:Message-Id;
-  b=LcCbIvDFSy4Qj/P+nnJ8YuFJd3Xx63Wyq3rNrcmmOMck/F0DqHqiJnRZVd7Qq/9g+DLqu9zKEkbdi28XubuZH6hVwvtxDLl4FR2ypyDPzU3c4NL2PiTUyqAI7HsF9jLGPs3g1j6bi58nuluLsb+/cGDQ4qD46656tX+cxaC8ekc=  ;
-X-YMail-OSG: 27gr8XMVM1krKU28a2mx177q3dnYsWp9.CEFbB8I._b5PNb97.b4av8aaqJGzzNb8Tiv.Uyu.eZNH8kmk491f1yRdilzfzlnF5deNvfr5nHZVwEBFZ0RDMhQuP_P_xntNwxcWVTAN3G_KLSvp3I0UzvWM06sa3rOkebJ0s5jjIQMvIIIalJHvqKGyyfxv.4sDhuZ2XBs85n.xbMVarCOHS7AEL5rxf3wj_BnkHx2VVyONN.53ANB1VeAdr99vUKYvKvFn2EtsiYJH9VXSUotoBkt7EcrIItMjPePOCWzOOnxrEtOK6XK
-X-Yahoo-Newman-Property: ymail-3
-From: David Brownell <david-b@pacbell.net>
-To: Kevin Cernekee <kpc.mtd@gmail.com>, dwmw2@infradead.org
-Subject: Re: [patch/rfc 2.6.29 1/2] MTD: driver model updates
-Date: Sat, 4 Apr 2009 10:18:19 -0700
-User-Agent: KMail/1.9.10
-Cc: dedekind@infradead.org, linux-kernel@vger.kernel.org,
-       Linux MTD <linux-mtd@lists.infradead.org>
-References: <200903260042.42091.david-b@pacbell.net> <1238742215.20906.99.camel@localhost.localdomain> <a95a62fe0904031300i82bdf42h5bc854a002e0091e@mail.gmail.com>
-In-Reply-To: <a95a62fe0904031300i82bdf42h5bc854a002e0091e@mail.gmail.com>
+	Sat, 4 Apr 2009 13:23:10 -0400
+Received: from e6.ny.us.ibm.com ([32.97.182.146]:44258 "EHLO e6.ny.us.ibm.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751539AbZDDRXI (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 4 Apr 2009 13:23:08 -0400
+Date: Sat, 4 Apr 2009 10:23:02 -0700
+From: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: Eric Dumazet <dada1@cosmosbay.com>, linux-kernel@vger.kernel.org,
+       netdev@vger.kernel.org, netfilter@vger.kernel.org,
+       "David S. Miller" <davem@davemloft.net>,
+       Patrick McHardy <kaber@trash.net>,
+       Rusty Russell <rusty@rustcorp.com.au>, coreteam@netfilter.org
+Subject: Re: [netfilter bug] BUG: using smp_processor_id() in preemptible
+	[00000000] code: ssh/9115, caller is ipt_do_table+0xc8/0x559
+Message-ID: <20090404172302.GA9600@linux.vnet.ibm.com>
+Reply-To: paulmck@linux.vnet.ibm.com
+References: <20090402200128.GA21805@elte.hu> <49D51D86.9030906@cosmosbay.com> <20090402203220.GA30375@elte.hu> <20090402211606.GC4076@elte.hu>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 8bit
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Message-Id: <200904041018.19657.david-b@pacbell.net>
+In-Reply-To: <20090402211606.GC4076@elte.hu>
+User-Agent: Mutt/1.5.15+20070412 (2007-04-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Friday 03 April 2009, Kevin Cernekee wrote:
-> @@ -413,6 +590,12 @@ done:
+On Thu, Apr 02, 2009 at 11:16:06PM +0200, Ingo Molnar wrote:
+> * Ingo Molnar <mingo@elte.hu> wrote:
+> > * Eric Dumazet <dada1@cosmosbay.com> wrote:
+> > > David put into its tree fix for that a few hours ago
+> > > 
+> > > commit fa9a86ddc8ecd2830a5e773facc250f110300ae7
+> > > 
+> > > (netfilter: iptables: lock free counters) forgot to disable BH
+> > > in arpt_do_table(), ipt_do_table() and  ip6t_do_table()
+> > > 
+> > > Use rcu_read_lock_bh() instead of rcu_read_lock() cures the problem.
+> > 
+> > ok, got your fix (attached below), thanks Eric for the pointer.
+> > 
+> > But i think my fix might be slightly better, because it does not 
+> > manipulate the preempt counter and leaves preemption enabled.
+> > 
+> > There's no BH context worries since this code did not seem to have 
+> > BH protection before either. (it used a plain read_lock(), not 
+> > read_lock_bh(), AFAICS)
+> > 
+> > I dont see any preemption worries either. I must be missing 
+> > something :)
 > 
->  static int __init init_mtd(void)
->  {
-> +       mtd_class = class_create(THIS_MODULE, "mtd");
-> +
-> +       if (IS_ERR(mtd_class)) {
-> +               pr_err("Error creating mtd class.\n");
-> +               return PTR_ERR(mtd_class);
-> +       }
-
-The reason I had the class creation code in its own initcall
-is to ensure that it's there even when procfs isn't.  This
-init_mtd() stuff is only there if procfs is configured.
-
-So I don't much like this part of Kevin's change ... unless
-MTD becomes dependent on procfs.  If there's an issue with
-CONFIG_MTD=m then there's a better fix than this.
-
-
->         if ((proc_mtd = create_proc_entry( "mtd", 0, NULL )))
->                 proc_mtd->read_proc = mtd_read_proc;
->         return 0;
-> @@ -422,6 +605,7 @@ static void __exit cleanup_mtd(void)
->  {
->          if (proc_mtd)
->                 remove_proc_entry( "mtd", NULL);
-> +       class_destroy(mtd_class);
->  }
+> as per the other mail - what i missed was that the old code _did_ 
+> use read_lock_bh(), which did not get carried over into the 
+> rcu_read_lock().
 > 
->  module_init(init_mtd);
+> So this fix affects basically all things netfilter, not just 
+> rcu-preempt - a plain rcu_read_lock() doesnt protect against BH 
+> context interaction.
 
+Strangely enough, the original motivation for rcu_read_lock_bh() does not
+apply to -rt kernels.  The problem was that denial-of-service workloads
+could apply such a heavy interrupt load to a given CPU that it never
+got back to process-level execution, thus never passing through any
+quiescent states.
 
+So rcu-bh has softirq-level quiescent states, solving that problem,
+but by disabling softirq (and thus preemption) across the read-side
+critical sections.
+
+But -rt has every point in the code not covered by rcu_read_lock()
+as a quiescent state, so should not be vulnerable to that particular
+denial-of-service attack.  But rcu-bh has the additional semantic of
+excluding BH execution while under rcu_read_lock_bh(), which appears
+to be used in this case, and probably others as well.
+
+Interesting corner we have painted ourselves into here...
+
+							Thanx, Paul
