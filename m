@@ -1,58 +1,106 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755580AbZDDQR7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754970AbZDDQTd@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755580AbZDDQR7 (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 4 Apr 2009 12:17:59 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752632AbZDDQRu
+	id S1754970AbZDDQTd (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 4 Apr 2009 12:19:33 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752632AbZDDQTX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 4 Apr 2009 12:17:50 -0400
-Received: from mail-qy0-f118.google.com ([209.85.221.118]:54983 "EHLO
-	mail-qy0-f118.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752596AbZDDQRu (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 4 Apr 2009 12:17:50 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
-         :cc:content-type:content-transfer-encoding;
-        b=v4ntMoI89LOc5Lq+Dk5mpFfZU4wvKAZui/f5KMKqzeRaNnYZDnEJTiZsp6b9LQk+FM
-         ulqKdTOwm5B1FLFFH7WJrIQ0rJ9icBBvuXwTjDBr3YMfJvLsBPJRuKJzcNkZiAGmt3AX
-         o1o7jHtbXgUZm5j5Fy95n9MJRN5J1ewG6Jemk=
-MIME-Version: 1.0
-In-Reply-To: <1238855797.4068.6.camel@macbook.infradead.org>
-References: <200903260042.42091.david-b@pacbell.net>
-	 <a95a62fe0904021641j17a7c26dv5652de4a19bad662@mail.gmail.com>
-	 <1238742215.20906.99.camel@localhost.localdomain>
-	 <a95a62fe0904031300i82bdf42h5bc854a002e0091e@mail.gmail.com>
-	 <1238855797.4068.6.camel@macbook.infradead.org>
-Date: Sat, 4 Apr 2009 09:17:46 -0700
-Message-ID: <a95a62fe0904040917w6396443bj3278abbae83df46@mail.gmail.com>
-Subject: Re: [patch/rfc 2.6.29 1/2] MTD: driver model updates
-From: Kevin Cernekee <kpc.mtd@gmail.com>
-To: David Woodhouse <dwmw2@infradead.org>
-Cc: dedekind@infradead.org, David Brownell <david-b@pacbell.net>,
-       Linux MTD <linux-mtd@lists.infradead.org>, linux-kernel@vger.kernel.org
-Content-Type: text/plain; charset=UTF-8
+	Sat, 4 Apr 2009 12:19:23 -0400
+Received: from mx2.netapp.com ([216.240.18.37]:16795 "EHLO mx2.netapp.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752596AbZDDQTW (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 4 Apr 2009 12:19:22 -0400
+X-IronPort-AV: E=Sophos;i="4.39,324,1235980800"; 
+   d="scan'208";a="150101489"
+Subject: Re: bus errors on nfs writes in latest git
+From: Trond Myklebust <Trond.Myklebust@netapp.com>
+To: "J. Bruce Fields" <bfields@fieldses.org>
+Cc: linux-nfs@vger.kernel.org, Nick Piggin <npiggin@suse.de>,
+       linux-kernel@vger.kernel.org
+In-Reply-To: <20090404161447.GE495@fieldses.org>
+References: <20090404161447.GE495@fieldses.org>
+Content-Type: text/plain
 Content-Transfer-Encoding: 7bit
+Organization: NetApp
+Date: Sat, 04 Apr 2009 12:19:09 -0400
+Message-Id: <1238861949.8114.3.camel@heimdal.trondhjem.org>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.26.0 
+X-OriginalArrivalTime: 04 Apr 2009 16:19:19.0704 (UTC) FILETIME=[1B954980:01C9B541]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 4/4/09, David Woodhouse <dwmw2@infradead.org> wrote:
-> I really do think I want this to avoid the need for 64-bit ioctls
-> (except maybe MEMERASE64).
+On Sat, 2009-04-04 at 12:14 -0400, J. Bruce Fields wrote:
+> My regular connecthon tests are reporting bus errors on the "write/read
+> 30 MB file" on recent upstream kernels.  I'm travelling and haven't had
+> a chance to do anything beyond kick off a dumb git-bisect, which pointed
+> the blame at the following commit.  Any ideas?
+> 
+> --b.
+> 
+> 
+> commit c2ec175c39f62949438354f603f4aa170846aabb
+> Author: Nick Piggin <npiggin@suse.de>
+> Date:   Tue Mar 31 15:23:21 2009 -0700
+> 
+>     mm: page_mkwrite change prototype to match fault
+>     
+>     Change the page_mkwrite prototype to take a struct vm_fault, and return
+>     VM_FAULT_xxx flags.  There should be no functional change.
+>     
+>     This makes it possible to return much more detailed error information to
+>     the VM (and also can provide more information eg.  virtual_address to the
+>     driver, which might be important in some special cases).
+>     
+>     This is required for a subsequent fix.  And will also make it easier to
+>     merge page_mkwrite() with fault() in future.
+>     
+>     Signed-off-by: Nick Piggin <npiggin@suse.de>
+>     Cc: Chris Mason <chris.mason@oracle.com>
+>     Cc: Trond Myklebust <trond.myklebust@fys.uio.no>
+>     Cc: Miklos Szeredi <miklos@szeredi.hu>
+>     Cc: Steven Whitehouse <swhiteho@redhat.com>
+>     Cc: Mark Fasheh <mfasheh@suse.com>
+>     Cc: Joel Becker <joel.becker@oracle.com>
+>     Cc: Artem Bityutskiy <dedekind@infradead.org>
+>     Cc: Felix Blyakher <felixb@sgi.com>
+>     Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
+>     Signed-off-by: Linus Torvalds <torvalds@linux-foundation.org>
+<snip>
+> diff --git a/fs/nfs/file.c b/fs/nfs/file.c
+> index 90f292b..cec7939 100644
+> --- a/fs/nfs/file.c
+> +++ b/fs/nfs/file.c
+> @@ -451,8 +451,9 @@ const struct address_space_operations nfs_file_aops = {
+>  	.launder_page = nfs_launder_page,
+>  };
+>  
+> -static int nfs_vm_page_mkwrite(struct vm_area_struct *vma, struct page *page)
+> +static int nfs_vm_page_mkwrite(struct vm_area_struct *vma, struct vm_fault *vmf)
+>  {
+> +	struct page *page = vmf->page;
+>  	struct file *filp = vma->vm_file;
+>  	struct dentry *dentry = filp->f_path.dentry;
+>  	unsigned pagelen;
+> @@ -483,6 +484,8 @@ static int nfs_vm_page_mkwrite(struct vm_area_struct *vma, struct page *page)
+>  		ret = pagelen;
+               ^^^^^^^^^^^^^^^^^^
+This would explain it. I assume that we're actually supposed to return 0
+in case of success.
 
-So, after adding the sysfs patches, we have two remaining sets of MTD
-operations that are limited to 32-bit offsets:
+>  out_unlock:
+>  	unlock_page(page);
+> +	if (ret)
+> +		ret = VM_FAULT_SIGBUS;
+>  	return ret;
+>  }
+>  
 
-The first set is required to support >4GiB NAND devices: MEMERASE,
-MEMREADOOB, and MEMWRITEOOB.
 
-The second set might not make sense at all for most NAND devices:
-MEMLOCK, MEMUNLOCK, and MEMGETREGIONINFO.  Maybe it would be nice to
-extend them for consistency's sake, but it is possible that they will
-never be needed on any >4GiB flash chip.
+-- 
+Trond Myklebust
+Linux NFS client maintainer
 
-How would you like to handle these?  Any thoughts on what the
-interfaces (sysfs or otherwise) might look like?
-
-Thanks.
+NetApp
+Trond.Myklebust@netapp.com
+www.netapp.com
