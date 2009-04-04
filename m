@@ -1,80 +1,46 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756253AbZDDSBc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756493AbZDDSCV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756253AbZDDSBc (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 4 Apr 2009 14:01:32 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754459AbZDDSBM
+	id S1756493AbZDDSCV (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 4 Apr 2009 14:02:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754063AbZDDSCM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 4 Apr 2009 14:01:12 -0400
-Received: from brick.kernel.dk ([93.163.65.50]:60955 "EHLO kernel.dk"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754171AbZDDSBL (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 4 Apr 2009 14:01:11 -0400
-Date: Sat, 4 Apr 2009 20:01:08 +0200
-From: Jens Axboe <jens.axboe@oracle.com>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: Theodore Tso <tytso@mit.edu>,
-       Linux Kernel Developers List <linux-kernel@vger.kernel.org>,
-       Ext4 Developers List <linux-ext4@vger.kernel.org>
-Subject: Re: [GIT PULL] Ext3 latency fixes
-Message-ID: <20090404180108.GH5178@kernel.dk>
-References: <1238742067-30814-1-git-send-email-tytso@mit.edu> <alpine.LFD.2.00.0904031110420.19690@localhost.localdomain> <alpine.LFD.2.00.0904031150190.4015@localhost.localdomain> <alpine.LFD.2.00.0904031329410.7007@localhost.localdomain> <20090404135719.GA9812@mit.edu> <20090404151649.GE5178@kernel.dk> <alpine.LFD.2.00.0904040854470.3915@localhost.localdomain> <20090404173412.GF5178@kernel.dk> <alpine.LFD.2.00.0904041039230.3915@localhost.localdomain>
+	Sat, 4 Apr 2009 14:02:12 -0400
+Received: from smtp125.sbc.mail.sp1.yahoo.com ([69.147.65.184]:32329 "HELO
+	smtp125.sbc.mail.sp1.yahoo.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1753574AbZDDSCL (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 4 Apr 2009 14:02:11 -0400
+DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
+  s=s1024; d=pacbell.net;
+  h=Received:X-YMail-OSG:X-Yahoo-Newman-Property:From:To:Subject:Date:User-Agent:Cc:References:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Content-Disposition:Message-Id;
+  b=RUmxzw917fXiRLoQi7BZqL5bS2mp/rD7fbgPWPRPbNnv6jv+R107czLDncPwJM/fAwrBq1i3etQvCxS+VR2kBJtPIIjLm9D0GGBgMORuMpms7PE4VIadfBeUmP4Gmi3bcBsQAlXGFQQxwFpDzfgOc5rLmQW+OQsV7Pb9Ywm9duk=  ;
+X-YMail-OSG: jnDQadYVM1kPn9iNg8VQyoMmSvW5_1S_WpmV3z6ySBgQ_G.gC924FEZ24fF_6FXNgVzays1UKnOqZCDTheW9htdSnUgtnXnQitd5trSj5GiKEH5QpkH7yiHIpmXKLXs.UuTTR3sr2NpkSfoSVS48BIsArJpI3J40u6S5N1nFkfVxCHksUY4noNlkP4F38CQiKIPgskoTeuU3tKJHVBrlLcea8oz3B2VfaGjJXid_0bVeoLh5ASM9LoR3z9euUTuzJTvlTcyiDhIQsvkA
+X-Yahoo-Newman-Property: ymail-3
+From: David Brownell <david-b@pacbell.net>
+To: Krzysztof Halasa <khc@pm.waw.pl>
+Subject: Re: [PATCH] fix RTC-CMOS message, now with SOB
+Date: Sat, 4 Apr 2009 11:02:07 -0700
+User-Agent: KMail/1.9.10
+Cc: lkml <linux-kernel@vger.kernel.org>
+References: <m3vdpnvvzt.fsf@intrepid.localdomain> <m3r60bvvrg.fsf@intrepid.localdomain>
+In-Reply-To: <m3r60bvvrg.fsf@intrepid.localdomain>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 8bit
 Content-Disposition: inline
-In-Reply-To: <alpine.LFD.2.00.0904041039230.3915@localhost.localdomain>
+Message-Id: <200904041102.07751.david-b@pacbell.net>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, Apr 04 2009, Linus Torvalds wrote:
-> 
-> 
-> On Sat, 4 Apr 2009, Jens Axboe wrote:
-> > > 
-> > > I'm sorry, but that fsync thing _is_ a real-world case, and it's the one 
-> > > that a hell of a lot more people care about than some idiotic sqlite 
-> > > throughput issue.
-> > 
-> > sqlite is just one case, I'm sure there are others. My point is that we
-> > should make sure that we don't regress on the throughput side. It's a
-> > trade off, we don't want throughput to fall through the floor either.
-> 
-> Jens, we _have_ regressed on the latency side. Everybody agrees. 
+On Thursday 02 April 2009, Krzysztof Halasa wrote:
+> +               !is_valid_irq(rtc_irq) ? "no alarms" :
+> +               cmos_rtc.mon_alrm ? "alarms up to one year" :
+> +               cmos_rtc.day_alrm ? "alarms up to one month" :
+> +               "alarms up to one day",
 
-It appears so, yes.
-
-> Also, I may be odd, but I really do think latency is more important than 
-> throughput. When my disk has latencies in the sub-milliseconds, I simply 
-> do not think it is _acceptable_ to have hickups that affect my workload in 
-> human-visible terms. 
-
-Not everyone has an Intel SSD. But yes, latency is definitely more
-important than throughput. That's not the same as saying that throughput
-doesn't matter, because it definitely does.
-
-> You say sqlite might regress by 4-5x. But Ted's numbers improve latencies 
-> by mor than that. I haven't re-created them yet myself (still reading 
-> email), but the point is, 4-5x may sound bad to you, but turn it around: 
-> the current latency situation is _really_ bad. If we can fix it, we 
-> definitely should.
-
-I haven't either. On monday I'll throw some testing and patches on the
-boxes here. We can get the latency right, I want that as much as the
-next guy. I just want to make sure it doesn't become too one-sided.
-
-> > > Quite frankly, the fact that I can see _seconds_ of latencies with a 
-> > > really good SSD is not acceptable. The fact that it is by design is even 
-> > > less so.
-> > 
-> > Agree, multi-second latencies is not acceptable.
-> 
-> I can literally send you strace output from my MUA, where it pauses for 
-> ten seconds after it has written about 5kB (that's _kilobytes_) of data 
-> and does a 'fsync'.
-
-Unless you make all journal writes sync, ext3 fsync will always suck big
-time. But I get your point.
-
--- 
-Jens Axboe
+Could you reformat that so it looks more like the compound-IF
+statement it really is?  That is, display the nesting structure.
+And not use negative logic for that first test.
 
