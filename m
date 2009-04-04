@@ -1,100 +1,106 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S937232AbZDDAa7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S937335AbZDDAbb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S937232AbZDDAa7 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 3 Apr 2009 20:30:59 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S936731AbZDDA2O
+	id S937335AbZDDAbb (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 3 Apr 2009 20:31:31 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S936700AbZDDA2Q
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 3 Apr 2009 20:28:14 -0400
-Received: from hrndva-omtalb.mail.rr.com ([71.74.56.123]:54706 "EHLO
+	Fri, 3 Apr 2009 20:28:16 -0400
+Received: from hrndva-omtalb.mail.rr.com ([71.74.56.124]:54717 "EHLO
 	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S936617AbZDDA2L (ORCPT
+	with ESMTP id S936627AbZDDA2L (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
 	Fri, 3 Apr 2009 20:28:11 -0400
-Message-Id: <20090404002808.027821767@goodmis.org>
+Message-Id: <20090404002808.240542163@goodmis.org>
 References: <20090404002703.627460459@goodmis.org>
 User-Agent: quilt/0.46-1
-Date: Fri, 03 Apr 2009 20:27:04 -0400
+Date: Fri, 03 Apr 2009 20:27:05 -0400
 From: Steven Rostedt <rostedt@goodmis.org>
 To: linux-kernel@vger.kernel.org
 Cc: Ingo Molnar <mingo@elte.hu>, Andrew Morton <akpm@linux-foundation.org>,
        Frederic Weisbecker <fweisbec@gmail.com>,
-       Steven Rostedt <srostedt@redhat.com>
-Subject: [PATCH 01/10] tracing: remove CALLER_ADDR2 from wakeup tracer
-Content-Disposition: inline; filename=0001-tracing-remove-CALLER_ADDR2-from-wakeup-tracer.patch
+       Li Zefan <lizf@cn.fujitsu.com>, Steven Rostedt <srostedt@redhat.com>
+Subject: [PATCH 02/10] tracing: use macros to denote usec and nsec per second
+Content-Disposition: inline; filename=0002-tracing-use-macros-to-denote-usec-and-nsec-per-seco.patch
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Steven Rostedt <srostedt@redhat.com>
+From: Li Zefan <lizf@cn.fujitsu.com>
 
-Maneesh Soni was getting a crash when running the wakeup tracer.
-We debugged it down to the recording of the function with the
-CALLER_ADDR2 macro.  This is used to get the location of the caller
-to schedule.
+Impact: cleanup
 
-But the problem comes when schedule is called by assmebly. In the case
-that Maneesh had, retint_careful would call schedule. But retint_careful
-does not set up a proper frame pointer. CALLER_ADDR2 is defined as
-__builtin_return_address(2). This produces the following assembly in
-the wakeup tracer code.
+Use USEC_PER_SEC and NSEC_PER_SEC instead of 1000000 and 1000000000.
 
-   mov    0x0(%rbp),%rcx  <--- get the frame pointer of the caller
-   mov    %r14d,%r8d
-   mov    0xf2de8e(%rip),%rdi
-
-   mov    0x8(%rcx),%rsi  <-- this is __builtin_return_address(1)
-   mov    0x28(%rdi,%rax,8),%rbx
-
-   mov    (%rcx),%rax  <-- get the frame pointer of the caller's caller
-   mov    %r12,%rcx
-   mov    0x8(%rax),%rdx <-- this is __builtin_return_address(2)
-
-At the reading of 0x8(%rax) Maneesh's machine would take a fault.
-The reason is that retint_careful did not set up the return address
-and the content of %rax here was zero.
-
-To verify this, I sent Maneesh a patch to create a frame pointer
-in retint_careful. He ran the test again but this time he would take
-the same type of fault from sysret_careful. The retint_careful was no
-longer an issue, but there are other callers that still have issues.
-
-Instead of adding frame pointers for all callers to schedule (in possibly
-all archs), it is much safer to simply not use CALLER_ADDR2. This
-loses out on knowing what called schedule, but the function tracer
-will help there if needed.
-
-Reported-by: Maneesh Soni <maneesh@in.ibm.com>
+Signed-off-by: Li Zefan <lizf@cn.fujitsu.com>
+LKML-Reference: <49CC7870.9000309@cn.fujitsu.com>
+Acked-by: Frederic Weisbecker <fweisbec@gmail.com>
 Signed-off-by: Steven Rostedt <srostedt@redhat.com>
 ---
- kernel/trace/trace_sched_wakeup.c |    8 +++++++-
- 1 files changed, 7 insertions(+), 1 deletions(-)
+ kernel/trace/trace_boot.c      |    5 +++--
+ kernel/trace/trace_mmiotrace.c |    6 ++++--
+ 2 files changed, 7 insertions(+), 4 deletions(-)
 
-diff --git a/kernel/trace/trace_sched_wakeup.c b/kernel/trace/trace_sched_wakeup.c
-index 3c5ad6b..5bc00e8 100644
---- a/kernel/trace/trace_sched_wakeup.c
-+++ b/kernel/trace/trace_sched_wakeup.c
-@@ -154,7 +154,7 @@ probe_wakeup_sched_switch(struct rq *rq, struct task_struct *prev,
- 	if (unlikely(!tracer_enabled || next != wakeup_task))
- 		goto out_unlock;
+diff --git a/kernel/trace/trace_boot.c b/kernel/trace/trace_boot.c
+index 7a30fc4..a29ef23 100644
+--- a/kernel/trace/trace_boot.c
++++ b/kernel/trace/trace_boot.c
+@@ -9,6 +9,7 @@
+ #include <linux/debugfs.h>
+ #include <linux/ftrace.h>
+ #include <linux/kallsyms.h>
++#include <linux/time.h>
  
--	trace_function(wakeup_trace, CALLER_ADDR1, CALLER_ADDR2, flags, pc);
-+	trace_function(wakeup_trace, CALLER_ADDR0, CALLER_ADDR1, flags, pc);
- 	tracing_sched_switch_trace(wakeup_trace, prev, next, flags, pc);
+ #include "trace.h"
+ #include "trace_output.h"
+@@ -67,7 +68,7 @@ initcall_call_print_line(struct trace_iterator *iter)
+ 	trace_assign_type(field, entry);
+ 	call = &field->boot_call;
+ 	ts = iter->ts;
+-	nsec_rem = do_div(ts, 1000000000);
++	nsec_rem = do_div(ts, NSEC_PER_SEC);
  
- 	/*
-@@ -257,6 +257,12 @@ probe_wakeup(struct rq *rq, struct task_struct *p, int success)
- 	data = wakeup_trace->data[wakeup_cpu];
- 	data->preempt_timestamp = ftrace_now(cpu);
- 	tracing_sched_wakeup_trace(wakeup_trace, p, current, flags, pc);
+ 	ret = trace_seq_printf(s, "[%5ld.%09ld] calling  %s @ %i\n",
+ 			(unsigned long)ts, nsec_rem, call->func, call->caller);
+@@ -92,7 +93,7 @@ initcall_ret_print_line(struct trace_iterator *iter)
+ 	trace_assign_type(field, entry);
+ 	init_ret = &field->boot_ret;
+ 	ts = iter->ts;
+-	nsec_rem = do_div(ts, 1000000000);
++	nsec_rem = do_div(ts, NSEC_PER_SEC);
+ 
+ 	ret = trace_seq_printf(s, "[%5ld.%09ld] initcall %s "
+ 			"returned %d after %llu msecs\n",
+diff --git a/kernel/trace/trace_mmiotrace.c b/kernel/trace/trace_mmiotrace.c
+index 8e37fcd..d53b45e 100644
+--- a/kernel/trace/trace_mmiotrace.c
++++ b/kernel/trace/trace_mmiotrace.c
+@@ -9,6 +9,8 @@
+ #include <linux/kernel.h>
+ #include <linux/mmiotrace.h>
+ #include <linux/pci.h>
++#include <linux/time.h>
 +
-+	/*
-+	 * We must be careful in using CALLER_ADDR2. But since wake_up
-+	 * is not called by an assembly function  (where as schedule is)
-+	 * it should be safe to use it here.
-+	 */
- 	trace_function(wakeup_trace, CALLER_ADDR1, CALLER_ADDR2, flags, pc);
+ #include <asm/atomic.h>
  
- out_locked:
+ #include "trace.h"
+@@ -174,7 +176,7 @@ static enum print_line_t mmio_print_rw(struct trace_iterator *iter)
+ 	struct mmiotrace_rw *rw;
+ 	struct trace_seq *s	= &iter->seq;
+ 	unsigned long long t	= ns2usecs(iter->ts);
+-	unsigned long usec_rem	= do_div(t, 1000000ULL);
++	unsigned long usec_rem	= do_div(t, USEC_PER_SEC);
+ 	unsigned secs		= (unsigned long)t;
+ 	int ret = 1;
+ 
+@@ -221,7 +223,7 @@ static enum print_line_t mmio_print_map(struct trace_iterator *iter)
+ 	struct mmiotrace_map *m;
+ 	struct trace_seq *s	= &iter->seq;
+ 	unsigned long long t	= ns2usecs(iter->ts);
+-	unsigned long usec_rem	= do_div(t, 1000000ULL);
++	unsigned long usec_rem	= do_div(t, USEC_PER_SEC);
+ 	unsigned secs		= (unsigned long)t;
+ 	int ret;
+ 
 -- 
 1.6.2.1
 
