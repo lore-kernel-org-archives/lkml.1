@@ -1,221 +1,148 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758396AbZDDOib@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752163AbZDDPRN@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758396AbZDDOib (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 4 Apr 2009 10:38:31 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756425AbZDDOhP
+	id S1752163AbZDDPRN (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 4 Apr 2009 11:17:13 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751357AbZDDPQy
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 4 Apr 2009 10:37:15 -0400
-Received: from mx2.redhat.com ([66.187.237.31]:35061 "EHLO mx2.redhat.com"
+	Sat, 4 Apr 2009 11:16:54 -0400
+Received: from brick.kernel.dk ([93.163.65.50]:37458 "EHLO kernel.dk"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754485AbZDDOhG (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 4 Apr 2009 10:37:06 -0400
-From: Izik Eidus <ieidus@redhat.com>
-To: akpm@linux-foundation.org
-Cc: linux-kernel@vger.kernel.org, kvm@vger.kernel.org, linux-mm@kvack.org,
-       avi@redhat.com, aarcange@redhat.com, chrisw@redhat.com,
-       mtosatti@redhat.com, hugh@veritas.com, kamezawa.hiroyu@jp.fujitsu.com,
-       Izik Eidus <ieidus@redhat.com>
-Subject: [PATCH 0/4] ksm - dynamic page sharing driver for linux v2
-Date: Sat,  4 Apr 2009 17:35:18 +0300
-Message-Id: <1238855722-32606-1-git-send-email-ieidus@redhat.com>
+	id S1750780AbZDDPQx (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 4 Apr 2009 11:16:53 -0400
+Date: Sat, 4 Apr 2009 17:16:50 +0200
+From: Jens Axboe <jens.axboe@oracle.com>
+To: Theodore Tso <tytso@mit.edu>
+Cc: Linus Torvalds <torvalds@linux-foundation.org>,
+       Linux Kernel Developers List <linux-kernel@vger.kernel.org>,
+       Ext4 Developers List <linux-ext4@vger.kernel.org>
+Subject: Re: [GIT PULL] Ext3 latency fixes
+Message-ID: <20090404151649.GE5178@kernel.dk>
+References: <1238742067-30814-1-git-send-email-tytso@mit.edu> <alpine.LFD.2.00.0904031110420.19690@localhost.localdomain> <alpine.LFD.2.00.0904031150190.4015@localhost.localdomain> <alpine.LFD.2.00.0904031329410.7007@localhost.localdomain> <20090404135719.GA9812@mit.edu>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20090404135719.GA9812@mit.edu>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
->From v1 to v2:
+On Sat, Apr 04 2009, Theodore Tso wrote:
+> On Fri, Apr 03, 2009 at 01:41:54PM -0700, Linus Torvalds wrote:
+> > 
+> > Hmm. So I decided to try with "data=writeback" to see if it really makes 
+> > that big of a difference. It does help, but I still easily trigger 
+> > multi-second pauses
+> 
+> Using ext3 data=writeback, your "write big (2GB) file and sync" as the
+> background workload, and fsync-tester, I was able to reduce the
+> latency down to under 1 second...
+> 
+> fsync time: 0.1717
+> fsync time: 0.0205
+> fsync time: 0.1814
+> fsync time: 0.7408
+> fsync time: 0.1955
+> fsync time: 0.0327
+> fsync time: 0.0456
+> fsync time: 0.0563
+> 
+> ...by doing two things: (1) Applying the attached patch, which fixes
+> one last critical place where we were using WRITE instead of
+> WRITE_SYNC --- the commit record was being written by
+> sync_dirty_buffer(), and this of _all_ places needs to use WRITE_SYNC,
+> since it waits for the buffer to be written write after submitting the
+> I/O, and (2) using the anticipatory I/O scheduler instead of the cfq
+> I/O scheduler.
+> 
+> (1) brought things down from 2-3.5 seconds on my system to 1-2
+> seconds, and (2) brought things down to what you see above.  I think
+> what is going on with the cfq scheduler is that it's using time slices
+> to make sure sync and async operations never completely starve each
+> other out, and in this case we need to tune the I/O scheduling
+> parameters so that for this workload, the synchronous operations don't
+> end up getting impeded by the asynchronous writes caused by background
+> "write big file and sync" task.
+> 
+> In any case, Jens may want to look at this test case (ext3
+> data=writeback, 'while : ; do time sh -c "dd if=/dev/zero of=bigfile
+> bs=8M count=256 ; sync"; done', and fsync-tester) as a good way to see
+> how cfq might be improved.
+> 
+> On another thread, it's been commented that there are still workloads
+> for which people are quietly switching from CFQ to AS, and this is
+> bad, because it causes us not to try to figure out why our default I/O
+> scheduler still as these 1% of cases where people need to use another
+> scheduler.  Well, here's one such case which is relatively easy to
+> reproduce.
+> 
+> > Are we perhaps ending up doing those regular 'bigfile' writes as 
+> > WRITE_SYNC, just because of the global "sync()" call? That's probably a 
+> > bad idea. A "sync" is about pure throughput. It's not about latency like 
+> > "fsync()" is.
+> 
+> Well, at least on my system where I did this round of testing (4gig
+> X61s with a 5400 RPM laptop drive), most of the time we weren't
+> writing the bigfile writes because of the sync, but because dd and
+> pdflush processes was trying to flush out the dirty pages from the big
+> write operation.  At the moment where "dd" completes and the "sync"
+> command is executed, the fsync latency jumped up to about 4-5 seconds
+> before this last round of changes.  After adding the attached patch
+> and switching to the AS I/O scheduler, at the moment of the sync the
+> fsync latency was just over a second (1.1 to 1.2 seconds).  The rest
+> of the time we are averaging between a 1/4 and a 1/3 of a second, with
+> rare fsync latency spikes up to about 3/4 of a second, as show at the
+> beginning of this message.
+> 
+> (Maybe on a system with a lot more memory, the dirty pages don't start
+> getting flushed to disk until the sync command, but that's not what
+> I'm seeing on my 4 gig laptop.)
+> 
+> In answer to your question, "sync" does the writes in two passes;
+> first it pushes out writes with wbc.sync_mode set to WB_SYNC_NONE, and
+> then it calls the page writeback routines a second time with
+> WB_SYNC_ALL.  So most of the writes should go out with WRITE, except
+> that the page writeback routines aren't as aggressive about pushing
+> out _all_ pages in WB_SYNC_NONE, so I believe some of the pages would
+> still be written on the WB_SYNC_ALL, and thus would go out using
+> WRITE_SYNc.  This is based on 2-3 month old memory of how things
+> worked in the page-writeback routines, which is the last time I traced
+> the very deep call trees involved in this area.  I'd have to run a
+> blktrace experiment to see for sure how many of the writes were going
+> out as WRITE vs. WRITE_SYNC in the case of the 'sync' command.
+> 
+> In any case, I recommend you take the following attached patch, and
+> then try out ext3 data=writeback with anticipatory I/O scheduler.
+> Hopefully you'll be pleased with the results.
+> 
+> 							- Ted
+> 
+> From 6d293d2aa42d43c120f113bde55f7b0d6f3f35ae Mon Sep 17 00:00:00 2001
+> From: Theodore Ts'o <tytso@mit.edu>
+> Date: Sat, 4 Apr 2009 09:17:38 -0400
+> Subject: [PATCH] sync_dirty_buffer: Use WRITE_SYNC instead of WRITE
+> 
+> The sync_dirty_buffer() function submits a buffer for write, and then
+> synchronously waits for it.  It clearly should use WRITE_SYNC instead
+> of WRITE.  This significantly reduces ext3's fsync() latency when
+> there is a huge background task writing data asyncronously in the
+> background, since ext3 uses sync_dirty_buffer() to write the commit
+> block.
 
-1)Fixed security issue found by Chris Wright:
-    Ksm was checking if page is a shared page by running !PageAnon.
-    Beacuse that Ksm scan only anonymous memory, all !PageAnons
-    inside ksm data strctures are shared page, however there might
-    be a case for do_wp_page() when the VM_SHARED is used where
-    do_wp_page() would instead of copying the page into new anonymos
-    page, would reuse the page, it was fixed by adding check for the
-    dirty_bit of the virtual addresses pointing into the shared page.
-    I was not finding any VM code tha would clear the dirty bit from
-    this virtual address (due to the fact that we allocate the page
-    using page_alloc() - kernel allocated pages), ~but i still want
-    confirmation about this from the vm guys - thanks.~
+Sorry for not commenting on the rest of your email, I don't have a lot
+of spare time on my hands. I'll get to that.
 
-2)Moved to sysfs to control ksm:
-    It was requested as a better way to control the ksm scanning
-    thread than ioctls.
-    the sysfs api:
-    dir: /sys/kernel/mm/ksm/
+Big nack on this patch. Ted, this is EXACTLY where I told you we saw big
+write regressions (sqlite performance drops by a factor of 4-5). Do a
+git log on fs/buffer.c and see the original patch (which does what your
+patch does) and the later revert. No idea why you are now suggestion
+making that exact change?!
 
-    kernel_pages_allocated - information about how many kernel pages
-    ksm have allocated, this pages are not swappable, and each page
-    like that is used by ksm to share pages with identical content
-    
-    pages_shared - how many pages were shared by ksm
+Low latency is nice, but not at the cost of 4-5x throughput for real
+world cases. Lets please try and keep a reasonable focus here, things
+need to be tested widely before we go and sprinkle sync magic
+everywhere. I can't rule out that CFQ will need adjusting, cutting down
+to basics it looks at sync vs async like AS does.
 
-    run - set to 1 when you want ksm to run, 0 when no
-
-    max_kernel_pages - set the maximum amount of kernel pages
-    to be allocated by ksm, set 0 for unlimited.
-
-    pages_to_scan - how many pages to scan before ksm will sleep
-
-    sleep - how much usecs ksm will sleep.
-
-3)Add sysfs paramater to control the maximum kernel pages to be by
-ksm.
-
-4)Add statistics about how much pages are really shared.
-
-
-One issue still to be discussed:
-There was a suggestion to use madvice(SHAREABLE) instead of using
-ioctls to register memory that need to be scanned by ksm.
-Such change is outside the area of ksm.c and would required adding
-new madvice api, and change some parts of the vm and the kernel
-code, so first thing to do, is realized if we really want this.
-
-I dont know any other open issues.
-
-Thanks.
-
-This is from the first post:
-(The kvm part, togather with the kvm-userspace part, was post with V1
-before about a week, whoever want to test ksm may download the
-patch from lkml archive)
-
-KSM is a linux driver that allows dynamicly sharing identical memory
-pages between one or more processes.
-
-Unlike tradtional page sharing that is made at the allocation of the
-memory, ksm do it dynamicly after the memory was created.
-Memory is periodically scanned; identical pages are identified and
-merged.
-The sharing is unnoticeable by the process that use this memory.
-(the shared pages are marked as readonly, and in case of write
-do_wp_page() take care to create new copy of the page)
-
-To find identical pages ksm use algorithm that is split into three
-primery levels:
-
-1) Ksm will start scan the memory and will calculate checksum for each
-   page that is registred to be scanned.
-   (In the first round of the scanning, ksm would only calculate
-    this checksum for all the pages)
-
-2) Ksm will go again on the whole memory and will recalculate the
-   checmsum of the pages, pages that are found to have the same
-   checksum value, would be considered "pages that are most likely
-   wont changed"
-   Ksm will insert this pages into sorted by page content RB-tree that
-   is called "unstable tree", the reason that this tree is called
-   unstable is due to the fact that the page contents might changed
-   while they are still inside the tree, and therefore the tree would
-   become corrupted.
-   Due to this problem ksm take two more steps in addition to the
-   checksum calculation:
-   a) Ksm will throw and recreate the entire unstable tree each round
-      of memory scanning - so if we have corruption, it will be fixed
-      when we will rebuild the tree.
-   b) Ksm is using RB-tree, that its balancing is made by the node color
-      and not by the content, so even if the page get corrupted, it still
-      would take the same amount of time to search on it.
-
-3) In addition to the unstable tree, ksm hold another tree that is called
-   "stable tree" - this tree is RB-tree that is sorted by the pages
-   content and all its pages are write protected, and therefore it cant get
-   corrupted.
-   Each time ksm will find two identcial pages using the unstable tree,
-   it will create new write-protected shared page, and this page will be
-   inserted into the stable tree, and would be saved there, the
-   stable tree, unlike the unstable tree, is never throwen away, so each
-   page that we find would be saved inside it.
-
-Taking into account the three levels that described above, the algorithm
-work like that:
-
-search primary tree (sorted by entire page contents, pages write protected)
-- if match found, merge
-- if no match found...
-  - search secondary tree (sorted by entire page contents, pages not write
-    protected)
-    - if match found, merge
-      - remove from secondary tree and insert merged page into primary tree
-    - if no match found...
-      - checksum
-        - if checksum hasn't changed
-	  - insert into secondary tree
-	- if it has, store updated checksum (note: first time this page
-	  is handled it won't have a checksum, so checksum will appear
-	  as "changed", so it takes two passes w/ no other matches to
-	  get into secondary tree)
-	  - do not insert into any tree, will see it again on next pass
-
-The basic idea of this algorithm, is that even if the unstable tree doesnt
-promise to us to find two identical pages in the first round, we would
-probably find them in the second or the third or the tenth round,
-then after we have found this two identical pages only once, we will insert
-them into the stable tree, and then they would be protected there forever.
-So the all idea of the unstable tree, is just to build the stable tree and
-then we will find the identical pages using it.
-
-The current implemantion can be improved alot:
-we dont have to calculate exspensive checksum, we can just use the host
-dirty bit.
-
-currently we dont support shared pages swapping (other pages that are not
-shared can be swapped (all the pages that we didnt find to be identical
-to other pages...).
-
-Walking on the tree, we keep call to get_user_pages(), we can optimized it
-by saving the pfn, and using mmu notifiers to know when the virtual address
-mapping was changed.
-
-We currently scan just programs that were registred to be used by ksm, we
-would later want to add the abilaty to tell ksm to scan PIDS (so you can
-scan closed binary applications as well).
-
-Right now ksm scanning is made by just one thread, multiple scanners
-support might would be needed.
-
-This driver is very useful for KVM as in cases of runing multiple guests
-operation system of the same type.
-(For desktop work loads we have achived more than x2 memory overcommit
-(more like x3))
-
-This driver have found users other than KVM, for example CERN,
-Fons Rademakers:
-"on many-core machines we run one large detector simulation program per core.
-These simulation programs are identical but run each in their own process and
-need about 2 - 2.5 GB RAM.
-We typically buy machines with 2GB RAM per core and so have a problem to run
-one of these programs per core.
-Of the 2 - 2.5 GB about 700MB is identical data in the form of magnetic field
-maps, detector geometry, etc.
-Currently people have been trying to start one program, initialize the geometry
-and field maps and then fork it N times, to have the data shared.
-With KSM this would be done automatically by the system so it sounded extremely
-attractive when Andrea presented it."
-
-I am sending another seires of patchs for kvm kernel and kvm-userspace
-that would allow users of kvm to test ksm with it.
-The kvm patchs would apply to Avi git tree.
-
-
-Izik Eidus (4):
-  MMU_NOTIFIERS: add set_pte_at_notify()
-  add page_wrprotect(): write protecting page.
-  add replace_page(): change the page pte is pointing to.
-  add ksm kernel shared memory driver.
-
- include/linux/ksm.h          |   48 ++
- include/linux/miscdevice.h   |    1 +
- include/linux/mm.h           |    5 +
- include/linux/mmu_notifier.h |   34 +
- include/linux/rmap.h         |   11 +
- mm/Kconfig                   |    6 +
- mm/Makefile                  |    1 +
- mm/ksm.c                     | 1668 ++++++++++++++++++++++++++++++++++++++++++
- mm/memory.c                  |   90 +++-
- mm/mmu_notifier.c            |   20 +
- mm/rmap.c                    |  139 ++++
- 11 files changed, 2021 insertions(+), 2 deletions(-)
- create mode 100644 include/linux/ksm.h
- create mode 100644 mm/ksm.c
+-- 
+Jens Axboe
 
