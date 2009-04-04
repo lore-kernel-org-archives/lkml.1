@@ -1,103 +1,104 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758322AbZDDMRz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758849AbZDDMSW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758322AbZDDMRz (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 4 Apr 2009 08:17:55 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756043AbZDDMRW
+	id S1758849AbZDDMSW (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 4 Apr 2009 08:18:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756109AbZDDMRX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 4 Apr 2009 08:17:22 -0400
-Received: from mail-fx0-f158.google.com ([209.85.220.158]:53386 "EHLO
-	mail-fx0-f158.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751482AbZDDMRM (ORCPT
+	Sat, 4 Apr 2009 08:17:23 -0400
+Received: from casper.infradead.org ([85.118.1.10]:45215 "EHLO
+	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752583AbZDDMRN (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 4 Apr 2009 08:17:12 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=from:to:subject:date:user-agent:cc:references:in-reply-to
-         :mime-version:content-disposition:message-id:content-type
-         :content-transfer-encoding;
-        b=f52d7PNtX22Ik5pn/rQSyGAKPNtrOMjpcKdE6MALNetgrnvR/rEO633eQuZE4FMERX
-         8lu1Fh0wgnlLpqm/Ln8slXLB91eefPBIrkkLHn7x8Ce1TKREd4XiOBKEZBGS1Lv1KAnt
-         9xyARTbcBhIbcP5T3w/1f/yccVCn96+OHQiVQ=
-From: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
-To: Borislav Petkov <petkovbb@googlemail.com>
-Subject: Re: [PATCH 3/3] ide-cd: cdrom_decode_status: simplify do_end_request logic
-Date: Sat, 4 Apr 2009 14:20:03 +0200
-User-Agent: KMail/1.11.1 (Linux/2.6.29-next-20090403; KDE/4.2.1; i686; ; )
-Cc: linux-kernel@vger.kernel.org, linux-ide@vger.kernel.org
-References: <1238745519-19389-3-git-send-email-petkovbb@gmail.com>
-In-Reply-To: <1238745519-19389-3-git-send-email-petkovbb@gmail.com>
-MIME-Version: 1.0
-Content-Disposition: inline
-Message-Id: <200904041420.03842.bzolnier@gmail.com>
-Content-Type: text/plain;
-  charset="iso-8859-1"
+	Sat, 4 Apr 2009 08:17:13 -0400
+Subject: Re: [PATCH 6/6] perf_counter: kerneltop: output event support
+From: Peter Zijlstra <a.p.zijlstra@chello.nl>
+To: Corey Ashford <cjashfor@linux.vnet.ibm.com>
+Cc: Ingo Molnar <mingo@elte.hu>, linux-kernel@vger.kernel.org,
+       Paul Mackerras <paulus@samba.org>, Mike Galbraith <efault@gmx.de>,
+       Arjan van de Ven <arjan@infradead.org>,
+       Wu Fengguang <fengguang.wu@intel.com>
+In-Reply-To: <49D6A81B.8030004@linux.vnet.ibm.com>
+References: <20090325113021.781490788@chello.nl>
+	 <20090325113317.192910290@chello.nl>  <49D6A81B.8030004@linux.vnet.ibm.com>
+Content-Type: text/plain
+Date: Sat, 04 Apr 2009 14:17:03 +0200
+Message-Id: <1238847423.4549.1163.camel@laptop>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.26.0 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-On Friday 03 April 2009, Borislav Petkov wrote:
-> Set do_end_request per default which results in several lines removed
-> and simplifying code flow. Also, add defines for cdrom_decode_status's
-> return codes instead of naked numbers.
+On Fri, 2009-04-03 at 17:21 -0700, Corey Ashford wrote:
+> As I was stealing code from kerneltop today to use in the PAPI profiling 
+> implementation, I ran across the code below:
 > 
-> There should be no functional change resulting from this patch.
+> Peter Zijlstra wrote:
+> > Teach kerneltop about the new output ABI.
+> > 
+> > XXX: anybody fancy integrating the PID/TID data into the output?
+> > 
+> > Bump the mmap_data pages a little because we bloated the output and
+> > have to be more careful about overruns with structured data.
+> > 
+> > Signed-off-by: Peter Zijlstra <a.p.zijlstra@chello.nl>
+> > ---
+> [snip]
 > 
-> Signed-off-by: Borislav Petkov <petkovbb@gmail.com>
-> ---
->  drivers/ide/ide-cd.c |   35 ++++++++++++-----------------------
->  drivers/ide/ide-cd.h |    9 ++++++---
->  2 files changed, 18 insertions(+), 26 deletions(-)
+> > 
+> > @@ -1147,28 +1152,75 @@ static void mmap_read(struct mmap_data *
+> >  	unsigned int head = mmap_read_head(md);
+> >  	unsigned int old = md->prev;
+> >  	unsigned char *data = md->base + page_size;
+> > +	int diff;
+> > 
+> >  	gettimeofday(&this_read, NULL);
+> > 
+> > -	if (head - old > md->mask) {
+> > +	/*
+> > +	 * If we're further behind than half the buffer, there's a chance
+> > +	 * the writer will bite our tail and screw up the events under us.
+> > +	 *
+> > +	 * If we somehow ended up ahead of the head, we got messed up.
+> > +	 *
+> > +	 * In either case, truncate and restart at head.
+> > +	 */
+> > +	diff = head - old;
+> > +	if (diff > md->mask / 2 || diff < 0) {
+> >  		struct timeval iv;
+> >  		unsigned long msecs;
+> > 
+> >  		timersub(&this_read, &last_read, &iv);
+> >  		msecs = iv.tv_sec*1000 + iv.tv_usec/1000;
+> > 
+> > -		fprintf(stderr, "WARNING: failed to keep up with mmap data.  Last read %lu msecs ago.\n", msecs);
+> > +		fprintf(stderr, "WARNING: failed to keep up with mmap data."
+> > +				"  Last read %lu msecs ago.\n", msecs);
+> > 
+> [snip]
 > 
-> diff --git a/drivers/ide/ide-cd.c b/drivers/ide/ide-cd.c
-> index bc37027..59a8bc2 100644
-> --- a/drivers/ide/ide-cd.c
-> +++ b/drivers/ide/ide-cd.c
-> @@ -301,17 +301,11 @@ static int ide_cd_breathe(ide_drive_t *drive, struct request *rq)
->  	}
->  }
->  
-> -/**
-> - * Returns:
-> - * 0: if the request should be continued.
-> - * 1: if the request will be going through error recovery.
-> - * 2: if the request should be ended.
-> - */
->  static int cdrom_decode_status(ide_drive_t *drive, u8 stat)
->  {
->  	ide_hwif_t *hwif = drive->hwif;
->  	struct request *rq = hwif->rq;
-> -	int err, sense_key, do_end_request;
-> +	int err, sense_key, do_end_request = 1;
+> The test for diff < 0 looks incorrect to me.  This shouldn't be an 
+> error, because it will frequently be the case that the head has wrapped 
+> around back to the beginning of the mmap'd pages, while old is near the end.
+> 
+> What it needs to find out, I think, is if the modulo distance between 
+> old and head is greater than 1/2 of the span of the mmap'd pages. 
+> Here's a suggested change:
+> 
+> -	diff = head - old;
+> +	diff = (head - old) & md->mask;
+> -	if (diff > md->mask / 2 || diff < 0) {
+> +	if (diff > md->mask / 2) {
+> 
+> 
+> What do you think?
 
-I think that do_end_request inversion makes code harder to follow
-and adds risk of subtle behavior changes.  It is not worth it IMHO,
-especialy since we may later remove this variable by doing a bit
-of code re-organization.
+head and old are both u32 and are monotonically incremented, that means
+that (s32)(head - old) < 0 will only be true if old is ahead (or more
+than 2^31 behind) of head.
 
-[...]
+Since mask will be smaller than 2^31 this seemed like a reasonable
+integrity test.
 
-> @@ -18,15 +18,18 @@
->  
->  #define ATAPI_WAIT_WRITE_BUSY	(10 * HZ)
->  
-> -/************************************************************************/
-> -
-> -#define SECTOR_BITS 		9
-> +#define SECTOR_BITS		9
->  #ifndef SECTOR_SIZE
->  #define SECTOR_SIZE		(1 << SECTOR_BITS)
->  #endif
 
-you may remove this extra SECTOR_SIZE definition while at it
-
->  #define SECTORS_PER_FRAME	(CD_FRAMESIZE >> SECTOR_BITS)
->  #define SECTOR_BUFFER_SIZE	(CD_FRAMESIZE * 32)
->  
-> +/* internal decode_status codes */
-> +#define REQ_CONT               0
-> +#define REQ_RECOVER            1
-> +#define REQ_FAIL               2
-
-REQ_* prefix is too generic, IDE_RQ_*?  also please use enum for it
