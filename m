@@ -1,337 +1,834 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757301AbZDEW4U@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755880AbZDEW4i@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757301AbZDEW4U (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 5 Apr 2009 18:56:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753396AbZDEW4K
+	id S1755880AbZDEW4i (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 5 Apr 2009 18:56:38 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753972AbZDEW40
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 5 Apr 2009 18:56:10 -0400
-Received: from smtp123.sbc.mail.sp1.yahoo.com ([69.147.64.96]:27929 "HELO
-	smtp123.sbc.mail.sp1.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1752212AbZDEW4J (ORCPT
+	Sun, 5 Apr 2009 18:56:26 -0400
+Received: from rcsinet13.oracle.com ([148.87.113.125]:42735 "EHLO
+	rgminet13.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753975AbZDEW4X (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 5 Apr 2009 18:56:09 -0400
-DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
-  s=s1024; d=pacbell.net;
-  h=Received:X-YMail-OSG:X-Yahoo-Newman-Property:From:To:Subject:Date:User-Agent:Cc:References:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Content-Disposition:Message-Id;
-  b=CDfUUfb+zZCqiW0SlrDuV1H6IiIFthcq/B1Z6ZsNM1hIyukp8YUHLlesd3/a1zK/pbehWhAPjVgozAo/HPLdW7JJskgnlMFy7fH6+pt+g6vJZkRgcffgy446hqF9s6pnFVvM5kjn5BzJGHAXzdr6wGtc3eX7Yapx5V36WvCGIUI=  ;
-X-YMail-OSG: tqO_d.cVM1kFEvY1CZIRvKXph5fMKz3HqPeilXQ.BgetOmjyaqvIK89CwopogejKhym.gnVtIZ_gmx0mngeyhdIPNtfNlXuJA941bvdYQxjAM9g3hDBD73JqgBQQElQgZVj8fwd5PDtff5yuXDDCDJaV976M4I.E1nhJV7D7mysilnFPPT115tn4Zj0y41.Vp12v7CCt0Z0UYhxravrDS9twlESOa_D9HDNTIefwXfmMhYFb0DYCF6351fKUNzuZTuXTwLjPnrNYhBOEbt2IhJkPBl8C0hdid_r_tqBo7y68pw--
-X-Yahoo-Newman-Property: ymail-3
-From: David Brownell <david-b@pacbell.net>
-To: nsnehaprabha@ti.com
-Subject: Re: [PATCH] MTD-NAND: Changes to read_page APIs to support NAND_ECC_HW_SYNDROME mode on TI DaVinci DM355
-Date: Sun, 5 Apr 2009 15:56:05 -0700
-User-Agent: KMail/1.9.10
-Cc: davinci-linux-open-source@linux.davincidsp.com,
-       linux-mtd@lists.infradead.org, linux-kernel@vger.kernel.org
-References: <1238601784-9563-1-git-send-email-nsnehaprabha@ti.com>
-In-Reply-To: <1238601784-9563-1-git-send-email-nsnehaprabha@ti.com>
+	Sun, 5 Apr 2009 18:56:23 -0400
+Message-ID: <49D936DA.7030506@oracle.com>
+Date: Sun, 05 Apr 2009 15:55:22 -0700
+From: Randy Dunlap <randy.dunlap@oracle.com>
+User-Agent: Thunderbird 2.0.0.19 (X11/20081227)
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="us-ascii"
+To: lkml <linux-kernel@vger.kernel.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>
+Subject: [PATCH] doc: fix kernel-parameters.txt to be alphabetic
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200904051556.05368.david-b@pacbell.net>
+X-Source-IP: acsmt707.oracle.com [141.146.40.85]
+X-Auth-Type: Internal IP
+X-CT-RefId: str=0001.0A010204.49D936DD.012B:SCFMA4539814,ss=1,fgs=0
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wednesday 01 April 2009, nsnehaprabha@ti.com wrote:
-> From: Sneha Narnakaje <nsnehaprabha@ti.com>
-> 
-> The NAND controller on TI DaVinci DM355 supports NAND devices
-> with large page size (2K and 4K), but the HW ECC is handled
-> for every 512byte read/write chunks. The current HW_SYNDROME
-> read_page/write_page APIs in the NAND core (nand_base) use the
-> "infix OOB" scheme.
+From: Randy Dunlap <randy.dunlap@oracle.com>
+Subject: docs: alphabetize entries in kernel-parameters.txt
 
-Makes me wonder if there should be a new NAND_ECC_HW_* mode,
-which doesn't use "infix OOB" ... since that's the problem.
+Move entries to be in alpha order as specified near the beginning
+of this file.
 
-Given bugs recently uncovered in that area, it seems that
-these DaVinci chips may be the first to use ECC_HW_SYNDROME
-in multi-chunk mode (and thus "infix OOB" in its full glory,
-rather than single-chunk subset which matches traditional
-layout with OOB at the end).
+Clean up some whitespace and line-length miscues.
 
+Add '=' to "selinux" option syntax.
 
-> The core APIs overwrite NAND manufacturer's bad block meta
-> data, thus complicating the jobs of non-Linux NAND programmers
-> (end equipment manufacturering). These APIs also imply ECC
-> protection for the prepad bytes, causing nand raw_write
-> operations to fail.
+Signed-off-by: Randy Dunlap <randy.dunlap@oracle.com>
+---
+ Documentation/kernel-parameters.txt |  481 ++++++++++++++++--------------------
+ 1 file changed, 226 insertions(+), 255 deletions(-)
 
-All of those seem like reasons to avoid NAND_ECC_HW_SYNDROME
-unless the ECC chunksize matches the page size ... that is,
-to only use it when "infix OOB" won't apply.
-
-I particularly dislike clobbering the bad block data, since
-once that's done it can't easily be recovered.  Preferable
-to leave those markers in place, so that the chip can still
-be re-initialized cleanly.
-
-
-> So the TI DaVinci NAND driver overrides these APIs for
-> DaVinci DM355.
-
-The same 4-bit ECC engine is used on most other DaVinci DM3xx
-chips; OMAP-L1xx chips, and their technical relatives like
-the DA8xx family, of course.
-
-
-> The read_page APIs required "page" to be passed for reading
-> the whole OOB area first and then data in chunks of 512bytes.
-> The ECC status is checked after reading every 512byte chunk
-> and passing the ECC syndrome.
-
-If this were a new NAND_ECC_HW_* flavor, all that logic
-would reside in the NAND core so that other chips could
-easily reuse it.  (The interface changes would still be
-needed.)
-
-- Dave
-
-
-> Since there is a change to read_page/read_page_raw API
-> definitions, other NAND drivers overriding these APIs have
-> also been changed (to address compilation problems).   
-> 
-> This patch also changes the way oobavail is calculated using
-> the oobfree[].length and the way oobfree[] is used. The
-> oobfree[] is defined as an array of MTD_MAX_OOBFREE_ENTRIES
-> size (8). If we initialize all 8 entries, then the current
-> for loop which has a chance to go beyond the array limit thus
-> causing incorrect oobavail value. The NAND core and other NAND
-> drivers do not require upto 8 oobfree entries, but the TI
-> DaVinci NAND driver requires upto 8 oobfree entries to support
-> upto 4K page size. The check for MTD_MAX_OOBFREE_ENTREIES is
-> already there in the drivers/mtd/onenand/onenand_base.c, which
-> is based on drivers/mtd/nand/nand_base.c. There is also a check
-> for ecc.steps to make the oobfree[] backward compatible with 2K
-> page size. The max oob size and page size have been adjusted for
-> the 4K+128 page size. Supporting up to 4K page with
-> NAND_ECC_HW_SYNDROME does not require changes to
-> include/mtd/mtd-abi.h (breaks user space IOCTL interface).               
-> 
-> Signed-off-by: Sandeep Paulraj <s-paulraj@ti.com>
-> Signed-off-by: Sneha Narnakaje <nsnehaprabha@ti.com>
-> ---
->  drivers/mtd/nand/atmel_nand.c    |    2 +-
->  drivers/mtd/nand/cafe_nand.c     |    2 +-
->  drivers/mtd/nand/fsl_elbc_nand.c |    3 +-
->  drivers/mtd/nand/nand_base.c     |   45 ++++++++++++++++++++++----------------
->  drivers/mtd/nand/sh_flctl.c      |    2 +-
->  include/linux/mtd/nand.h         |    8 +++---
->  6 files changed, 35 insertions(+), 27 deletions(-)
-> 
-> diff --git a/drivers/mtd/nand/atmel_nand.c b/drivers/mtd/nand/atmel_nand.c
-> index 47a33ce..b63eddb 100644
-> --- a/drivers/mtd/nand/atmel_nand.c
-> +++ b/drivers/mtd/nand/atmel_nand.c
-> @@ -214,7 +214,7 @@ static int atmel_nand_calculate(struct mtd_info *mtd,
->   * buf:        buffer to store read data
->   */
->  static int atmel_nand_read_page(struct mtd_info *mtd,
-> -		struct nand_chip *chip, uint8_t *buf)
-> +		struct nand_chip *chip, uint8_t *buf, int page)
->  {
->  	int eccsize = chip->ecc.size;
->  	int eccbytes = chip->ecc.bytes;
-> diff --git a/drivers/mtd/nand/cafe_nand.c b/drivers/mtd/nand/cafe_nand.c
-> index 22a6b2e..8ea1623 100644
-> --- a/drivers/mtd/nand/cafe_nand.c
-> +++ b/drivers/mtd/nand/cafe_nand.c
-> @@ -381,7 +381,7 @@ static int cafe_nand_read_oob(struct mtd_info *mtd, struct nand_chip *chip,
->   * we need a special oob layout and handling.
->   */
->  static int cafe_nand_read_page(struct mtd_info *mtd, struct nand_chip *chip,
-> -			       uint8_t *buf)
-> +			       uint8_t *buf, int page)
->  {
->  	struct cafe_priv *cafe = mtd->priv;
->  
-> diff --git a/drivers/mtd/nand/fsl_elbc_nand.c b/drivers/mtd/nand/fsl_elbc_nand.c
-> index 1f6eb25..ddd37d2 100644
-> --- a/drivers/mtd/nand/fsl_elbc_nand.c
-> +++ b/drivers/mtd/nand/fsl_elbc_nand.c
-> @@ -739,7 +739,8 @@ static int fsl_elbc_chip_init_tail(struct mtd_info *mtd)
->  
->  static int fsl_elbc_read_page(struct mtd_info *mtd,
->                                struct nand_chip *chip,
-> -                              uint8_t *buf)
-> +			      uint8_t *buf,
-> +			      int page)
->  {
->  	fsl_elbc_read_buf(mtd, buf, mtd->writesize);
->  	fsl_elbc_read_buf(mtd, chip->oob_poi, mtd->oobsize);
-> diff --git a/drivers/mtd/nand/nand_base.c b/drivers/mtd/nand/nand_base.c
-> index 599185c..d7f6650 100644
-> --- a/drivers/mtd/nand/nand_base.c
-> +++ b/drivers/mtd/nand/nand_base.c
-> @@ -750,7 +750,7 @@ static int nand_wait(struct mtd_info *mtd, struct nand_chip *chip)
->   * @buf:	buffer to store read data
->   */
->  static int nand_read_page_raw(struct mtd_info *mtd, struct nand_chip *chip,
-> -			      uint8_t *buf)
-> +			      uint8_t *buf, int page)
->  {
->  	chip->read_buf(mtd, buf, mtd->writesize);
->  	chip->read_buf(mtd, chip->oob_poi, mtd->oobsize);
-> @@ -764,7 +764,7 @@ static int nand_read_page_raw(struct mtd_info *mtd, struct nand_chip *chip,
->   * @buf:	buffer to store read data
->   */
->  static int nand_read_page_swecc(struct mtd_info *mtd, struct nand_chip *chip,
-> -				uint8_t *buf)
-> +				uint8_t *buf, int page)
->  {
->  	int i, eccsize = chip->ecc.size;
->  	int eccbytes = chip->ecc.bytes;
-> @@ -774,7 +774,7 @@ static int nand_read_page_swecc(struct mtd_info *mtd, struct nand_chip *chip,
->  	uint8_t *ecc_code = chip->buffers->ecccode;
->  	uint32_t *eccpos = chip->ecc.layout->eccpos;
->  
-> -	chip->ecc.read_page_raw(mtd, chip, buf);
-> +	chip->ecc.read_page_raw(mtd, chip, buf, page);
->  
->  	for (i = 0; eccsteps; eccsteps--, i += eccbytes, p += eccsize)
->  		chip->ecc.calculate(mtd, p, &ecc_calc[i]);
-> @@ -887,7 +887,7 @@ static int nand_read_subpage(struct mtd_info *mtd, struct nand_chip *chip, uint3
->   * Not for syndrome calculating ecc controllers which need a special oob layout
->   */
->  static int nand_read_page_hwecc(struct mtd_info *mtd, struct nand_chip *chip,
-> -				uint8_t *buf)
-> +				uint8_t *buf, int page)
->  {
->  	int i, eccsize = chip->ecc.size;
->  	int eccbytes = chip->ecc.bytes;
-> @@ -932,7 +932,7 @@ static int nand_read_page_hwecc(struct mtd_info *mtd, struct nand_chip *chip,
->   * we need a special oob layout and handling.
->   */
->  static int nand_read_page_syndrome(struct mtd_info *mtd, struct nand_chip *chip,
-> -				   uint8_t *buf)
-> +				   uint8_t *buf, int page)
->  {
->  	int i, eccsize = chip->ecc.size;
->  	int eccbytes = chip->ecc.bytes;
-> @@ -997,8 +997,10 @@ static uint8_t *nand_transfer_oob(struct nand_chip *chip, uint8_t *oob,
->  		struct nand_oobfree *free = chip->ecc.layout->oobfree;
->  		uint32_t boffs = 0, roffs = ops->ooboffs;
->  		size_t bytes = 0;
-> +		unsigned int i;
->  
-> -		for(; free->length && len; free++, len -= bytes) {
-> +		for (i = 0; i < chip->ecc.steps && i < MTD_MAX_OOBFREE_ENTRIES
-> +		     && free->length && len; i++, free++, len -= bytes) {
->  			/* Read request not from offset 0 ? */
->  			if (unlikely(roffs)) {
->  				if (roffs >= free->length) {
-> @@ -1074,11 +1076,13 @@ static int nand_do_read_ops(struct mtd_info *mtd, loff_t from,
->  
->  			/* Now read the page into the buffer */
->  			if (unlikely(ops->mode == MTD_OOB_RAW))
-> -				ret = chip->ecc.read_page_raw(mtd, chip, bufpoi);
-> +				ret = chip->ecc.read_page_raw(mtd, chip,
-> +							      bufpoi, page);
->  			else if (!aligned && NAND_SUBPAGE_READ(chip) && !oob)
->  				ret = chip->ecc.read_subpage(mtd, chip, col, bytes, bufpoi);
->  			else
-> -				ret = chip->ecc.read_page(mtd, chip, bufpoi);
-> +				ret = chip->ecc.read_page(mtd, chip, bufpoi,
-> +							  page);
->  			if (ret < 0)
->  				break;
->  
-> @@ -1666,8 +1670,10 @@ static uint8_t *nand_fill_oob(struct nand_chip *chip, uint8_t *oob,
->  		struct nand_oobfree *free = chip->ecc.layout->oobfree;
->  		uint32_t boffs = 0, woffs = ops->ooboffs;
->  		size_t bytes = 0;
-> +		unsigned int i;
->  
-> -		for(; free->length && len; free++, len -= bytes) {
-> +		for (i = 0; i < chip->ecc.steps && i < MTD_MAX_OOBFREE_ENTRIES
-> +		     && free->length && len; i++, free++, len -= bytes) {
->  			/* Write request not from offset 0 ? */
->  			if (unlikely(woffs)) {
->  				if (woffs >= free->length) {
-> @@ -2651,16 +2657,6 @@ int nand_scan_tail(struct mtd_info *mtd)
->  	}
->  
->  	/*
-> -	 * The number of bytes available for a client to place data into
-> -	 * the out of band area
-> -	 */
-> -	chip->ecc.layout->oobavail = 0;
-> -	for (i = 0; chip->ecc.layout->oobfree[i].length; i++)
-> -		chip->ecc.layout->oobavail +=
-> -			chip->ecc.layout->oobfree[i].length;
-> -	mtd->oobavail = chip->ecc.layout->oobavail;
-> -
-> -	/*
->  	 * Set the number of read / write steps for one page depending on ECC
->  	 * mode
->  	 */
-> @@ -2672,6 +2668,17 @@ int nand_scan_tail(struct mtd_info *mtd)
->  	chip->ecc.total = chip->ecc.steps * chip->ecc.bytes;
->  
->  	/*
-> +	 * The number of bytes available for a client to place data into
-> +	 * the out of band area
-> +	 */
-> +	chip->ecc.layout->oobavail = 0;
-> +	for (i = 0; i < chip->ecc.steps && i < MTD_MAX_OOBFREE_ENTRIES &&
-> +	     chip->ecc.layout->oobfree[i].length; i++)
-> +		chip->ecc.layout->oobavail +=
-> +			chip->ecc.layout->oobfree[i].length;
-> +	mtd->oobavail = chip->ecc.layout->oobavail;
-> +
-> +	/*
->  	 * Allow subpage writes up to ecc.steps. Not possible for MLC
->  	 * FLASH.
->  	 */
-> diff --git a/drivers/mtd/nand/sh_flctl.c b/drivers/mtd/nand/sh_flctl.c
-> index 821acb0..77e74a3 100644
-> --- a/drivers/mtd/nand/sh_flctl.c
-> +++ b/drivers/mtd/nand/sh_flctl.c
-> @@ -324,7 +324,7 @@ static void set_cmd_regs(struct mtd_info *mtd, uint32_t cmd, uint32_t flcmcdr_va
->  }
->  
->  static int flctl_read_page_hwecc(struct mtd_info *mtd, struct nand_chip *chip,
-> -				uint8_t *buf)
-> +				uint8_t *buf, int page)
->  {
->  	int i, eccsize = chip->ecc.size;
->  	int eccbytes = chip->ecc.bytes;
-> diff --git a/include/linux/mtd/nand.h b/include/linux/mtd/nand.h
-> index 27fb694..63ed0eb 100644
-> --- a/include/linux/mtd/nand.h
-> +++ b/include/linux/mtd/nand.h
-> @@ -43,8 +43,8 @@ extern void nand_wait_ready(struct mtd_info *mtd);
->   * is supported now. If you add a chip with bigger oobsize/page
->   * adjust this accordingly.
->   */
-> -#define NAND_MAX_OOBSIZE	64
-> -#define NAND_MAX_PAGESIZE	2048
-> +#define NAND_MAX_OOBSIZE	128
-> +#define NAND_MAX_PAGESIZE	4096
->  
->  /*
->   * Constants for hardware specific CLE/ALE/NCE function
-> @@ -278,13 +278,13 @@ struct nand_ecc_ctrl {
->  					   uint8_t *calc_ecc);
->  	int			(*read_page_raw)(struct mtd_info *mtd,
->  						 struct nand_chip *chip,
-> -						 uint8_t *buf);
-> +						 uint8_t *buf, int page);
->  	void			(*write_page_raw)(struct mtd_info *mtd,
->  						  struct nand_chip *chip,
->  						  const uint8_t *buf);
->  	int			(*read_page)(struct mtd_info *mtd,
->  					     struct nand_chip *chip,
-> -					     uint8_t *buf);
-> +					     uint8_t *buf, int page);
->  	int			(*read_subpage)(struct mtd_info *mtd,
->  					     struct nand_chip *chip,
->  					     uint32_t offs, uint32_t len,
-> -- 
-> 1.6.0.4
-> 
-
+--- lnx-2.6.orig/Documentation/kernel-parameters.txt
++++ lnx-2.6/Documentation/kernel-parameters.txt
+@@ -153,60 +153,6 @@ and is between 256 and 4096 characters. 
+ 			1,0: use 1st APIC table
+ 			default: 0
+ 
+-	acpi_sleep=	[HW,ACPI] Sleep options
+-			Format: { s3_bios, s3_mode, s3_beep, s4_nohwsig,
+-				  old_ordering, s4_nonvs }
+-			See Documentation/power/video.txt for information on
+-			s3_bios and s3_mode.
+-			s3_beep is for debugging; it makes the PC's speaker beep
+-			as soon as the kernel's real-mode entry point is called.
+-			s4_nohwsig prevents ACPI hardware signature from being
+-			used during resume from hibernation.
+-			old_ordering causes the ACPI 1.0 ordering of the _PTS
+-			control method, with respect to putting devices into
+-			low power states, to be enforced (the ACPI 2.0 ordering
+-			of _PTS is used by default).
+-			s4_nonvs prevents the kernel from saving/restoring the
+-			ACPI NVS memory during hibernation.
+-
+-	acpi_sci=	[HW,ACPI] ACPI System Control Interrupt trigger mode
+-			Format: { level | edge | high | low }
+-
+-	acpi_irq_balance [HW,ACPI]
+-			ACPI will balance active IRQs
+-			default in APIC mode
+-
+-	acpi_irq_nobalance [HW,ACPI]
+-			ACPI will not move active IRQs (default)
+-			default in PIC mode
+-
+-	acpi_irq_pci=	[HW,ACPI] If irq_balance, clear listed IRQs for
+-			use by PCI
+-			Format: <irq>,<irq>...
+-
+-	acpi_irq_isa=	[HW,ACPI] If irq_balance, mark listed IRQs used by ISA
+-			Format: <irq>,<irq>...
+-
+-	acpi_no_auto_ssdt	[HW,ACPI] Disable automatic loading of SSDT
+-
+-	acpi_os_name=	[HW,ACPI] Tell ACPI BIOS the name of the OS
+-			Format: To spoof as Windows 98: ="Microsoft Windows"
+-
+-	acpi_osi=	[HW,ACPI] Modify list of supported OS interface strings
+-			acpi_osi="string1"	# add string1 -- only one string
+-			acpi_osi="!string2"	# remove built-in string2
+-			acpi_osi=		# disable all strings
+-
+-	acpi_serialize	[HW,ACPI] force serialization of AML methods
+-
+-	acpi_skip_timer_override [HW,ACPI]
+-			Recognize and ignore IRQ0/pin2 Interrupt Override.
+-			For broken nForce2 BIOS resulting in XT-PIC timer.
+-	acpi_use_timer_override [HW,ACPI]
+-			Use timer override. For some broken Nvidia NF5 boards
+-			that require a timer override, but don't have
+-			HPET
+-
+ 	acpi_backlight=	[HW,ACPI]
+ 			acpi_backlight=vendor
+ 			acpi_backlight=video
+@@ -214,11 +160,6 @@ and is between 256 and 4096 characters. 
+ 			(e.g. thinkpad_acpi, sony_acpi, etc.) instead
+ 			of the ACPI video.ko driver.
+ 
+-	acpi_display_output=	[HW,ACPI]
+-			acpi_display_output=vendor
+-			acpi_display_output=video
+-			See above.
+-
+ 	acpi.debug_layer=	[HW,ACPI,ACPI_DEBUG]
+ 	acpi.debug_level=	[HW,ACPI,ACPI_DEBUG]
+ 			Format: <int>
+@@ -247,6 +188,41 @@ and is between 256 and 4096 characters. 
+ 			unusable.  The "log_buf_len" parameter may be useful
+ 			if you need to capture more output.
+ 
++	acpi_display_output=	[HW,ACPI]
++			acpi_display_output=vendor
++			acpi_display_output=video
++			See above.
++
++	acpi_irq_balance [HW,ACPI]
++			ACPI will balance active IRQs
++			default in APIC mode
++
++	acpi_irq_nobalance [HW,ACPI]
++			ACPI will not move active IRQs (default)
++			default in PIC mode
++
++	acpi_irq_isa=	[HW,ACPI] If irq_balance, mark listed IRQs used by ISA
++			Format: <irq>,<irq>...
++
++	acpi_irq_pci=	[HW,ACPI] If irq_balance, clear listed IRQs for
++			use by PCI
++			Format: <irq>,<irq>...
++
++	acpi_no_auto_ssdt	[HW,ACPI] Disable automatic loading of SSDT
++
++	acpi_os_name=	[HW,ACPI] Tell ACPI BIOS the name of the OS
++			Format: To spoof as Windows 98: ="Microsoft Windows"
++
++	acpi_osi=	[HW,ACPI] Modify list of supported OS interface strings
++			acpi_osi="string1"	# add string1 -- only one string
++			acpi_osi="!string2"	# remove built-in string2
++			acpi_osi=		# disable all strings
++
++	acpi_pm_good	[X86-32,X86-64]
++			Override the pmtimer bug detection: force the kernel
++			to assume that this machine's pmtimer latches its value
++			and always returns good values.
++
+  	acpi.power_nocheck=	[HW,ACPI]
+  			Format: 1/0 enable/disable the check of power state.
+  			On some bogus BIOS the _PSC object/_STA object of
+@@ -255,11 +231,6 @@ and is between 256 and 4096 characters. 
+  			power state again in power transition.
+  			1 : disable the power state check
+ 
+-	acpi_pm_good	[X86-32,X86-64]
+-			Override the pmtimer bug detection: force the kernel
+-			to assume that this machine's pmtimer latches its value
+-			and always returns good values.
+-
+ 	acpi_enforce_resources=	[ACPI]
+ 			{ strict | lax | no }
+ 			Check for resource conflicts between native drivers
+@@ -276,22 +247,6 @@ and is between 256 and 4096 characters. 
+ 			no: ACPI OperationRegions are not marked as reserved,
+ 			no further checks are performed.
+ 
+-	agp=		[AGP]
+-			{ off | try_unsupported }
+-			off: disable AGP support
+-			try_unsupported: try to drive unsupported chipsets
+-				(may crash computer or cause data corruption)
+-
+-	enable_timer_pin_1 [i386,x86-64]
+-			Enable PIN 1 of APIC timer
+-			Can be useful to work around chipset bugs
+-			(in particular on some ATI chipsets).
+-			The kernel tries to set a reasonable default.
+-
+-	disable_timer_pin_1 [i386,x86-64]
+-			Disable PIN 1 of APIC timer
+-			Can be useful to work around chipset bugs.
+-
+ 	ad1848=		[HW,OSS]
+ 			Format: <io>,<irq>,<dma>,<dma2>,<type>
+ 
+@@ -305,6 +260,12 @@ and is between 256 and 4096 characters. 
+ 			Format: <io>,<irq>,<dma>,<mss_io>,<mpu_io>,<mpu_irq>
+ 			See also header of sound/oss/aedsp16.c.
+ 
++	agp=		[AGP]
++			{ off | try_unsupported }
++			off: disable AGP support
++			try_unsupported: try to drive unsupported chipsets
++				(may crash computer or cause data corruption)
++
+ 	aha152x=	[HW,SCSI]
+ 			See Documentation/scsi/aha152x.txt.
+ 
+@@ -432,12 +393,6 @@ and is between 256 and 4096 characters. 
+ 			possible to determine what the correct size should be.
+ 			This option provides an override for these situations.
+ 
+-	security=	[SECURITY] Choose a security module to enable at boot.
+-			If this boot parameter is not specified, only the first
+-			security module asking for security registration will be
+-			loaded. An invalid security module name will be treated
+-			as if no module has been chosen.
+-
+ 	capability.disable=
+ 			[SECURITY] Disable capabilities.  This would normally
+ 			be used only if an alternative security model is to be
+@@ -509,24 +464,6 @@ and is between 256 and 4096 characters. 
+ 			Range: 0 - 8192
+ 			Default: 64
+ 
+-	dma_debug=off	If the kernel is compiled with DMA_API_DEBUG support
+-			this option disables the debugging code at boot.
+-
+-	dma_debug_entries=<number>
+-			This option allows to tune the number of preallocated
+-			entries for DMA-API debugging code. One entry is
+-			required per DMA-API allocation. Use this if the
+-			DMA-API debugging code disables itself because the
+-			architectural default is too low.
+-
+-	hpet=		[X86-32,HPET] option to control HPET usage
+-			Format: { enable (default) | disable | force |
+-				verbose }
+-			disable: disable HPET and use PIT instead
+-			force: allow force enabled of undocumented chips (ICH4,
+-			VIA, nVidia)
+-			verbose: show contents of HPET registers during setup
+-
+ 	com20020=	[HW,NET] ARCnet - COM20020 chipset
+ 			Format:
+ 			<io>[,<irq>[,<nodeID>[,<backplane>[,<ckp>[,<timeout>]]]]]
+@@ -570,23 +507,6 @@ and is between 256 and 4096 characters. 
+ 			console=brl,ttyS0
+ 		For now, only VisioBraille is supported.
+ 
+-	earlycon=	[KNL] Output early console device and options.
+-		uart[8250],io,<addr>[,options]
+-		uart[8250],mmio,<addr>[,options]
+-			Start an early, polled-mode console on the 8250/16550
+-			UART at the specified I/O port or MMIO address.
+-			The options are the same as for ttyS, above.
+-
+-	no_console_suspend
+-			[HW] Never suspend the console
+-			Disable suspending of consoles during suspend and
+-			hibernate operations.  Once disabled, debugging
+-			messages can reach various consoles while the rest
+-			of the system is being put to sleep (ie, while
+-			debugging driver suspend/resume hooks).  This may
+-			not work reliably with all consoles, but is known
+-			to work with serial and VGA consoles.
+-
+ 	coredump_filter=
+ 			[KNL] Change the default value for
+ 			/proc/<pid>/coredump_filter.
+@@ -643,30 +563,13 @@ and is between 256 and 4096 characters. 
+ 			Format: <area>[,<node>]
+ 			See also Documentation/networking/decnet.txt.
+ 
+-	vt.default_blu=	[VT]
+-			Format: <blue0>,<blue1>,<blue2>,...,<blue15>
+-			Change the default blue palette of the console.
+-			This is a 16-member array composed of values
+-			ranging from 0-255.
+-
+-	vt.default_grn=	[VT]
+-			Format: <green0>,<green1>,<green2>,...,<green15>
+-			Change the default green palette of the console.
+-			This is a 16-member array composed of values
+-			ranging from 0-255.
+-
+-	vt.default_red=	[VT]
+-			Format: <red0>,<red1>,<red2>,...,<red15>
+-			Change the default red palette of the console.
+-			This is a 16-member array composed of values
+-			ranging from 0-255.
+-
+-	vt.default_utf8=
+-			[VT]
+-			Format=<0|1>
+-			Set system-wide default UTF-8 mode for all tty's.
+-			Default is 1, i.e. UTF-8 mode is enabled for all
+-			newly opened terminals.
++	default_hugepagesz=
++			[same as hugepagesz=] The size of the default
++			HugeTLB page size. This is the size represented by
++			the legacy /proc/ hugepages APIs, used for SHM, and
++			default size when mounting hugetlbfs filesystems.
++			Defaults to the default architecture's huge page size
++			if not specified.
+ 
+ 	dhash_entries=	[KNL]
+ 			Set number of hash buckets for dentry cache.
+@@ -679,27 +582,9 @@ and is between 256 and 4096 characters. 
+ 			Documentation/serial/digiepca.txt.
+ 
+ 	disable_mtrr_cleanup [X86]
+-	enable_mtrr_cleanup [X86]
+ 			The kernel tries to adjust MTRR layout from continuous
+ 			to discrete, to make X server driver able to add WB
+-			entry later. This parameter enables/disables that.
+-
+-	mtrr_chunk_size=nn[KMG] [X86]
+-			used for mtrr cleanup. It is largest continous chunk
+-			that could hold holes aka. UC entries.
+-
+-	mtrr_gran_size=nn[KMG] [X86]
+-			Used for mtrr cleanup. It is granularity of mtrr block.
+-			Default is 1.
+-			Large value could prevent small alignment from
+-			using up MTRRs.
+-
+-	mtrr_spare_reg_nr=n [X86]
+-			Format: <integer>
+-			Range: 0,7 : spare reg number
+-			Default : 1
+-			Used for mtrr cleanup. It is spare mtrr entries number.
+-			Set to 2 or more if your graphical card needs more.
++			entry later. This parameter disables that.
+ 
+ 	disable_mtrr_trim [X86, Intel and AMD only]
+ 			By default the kernel will trim any uncacheable
+@@ -707,12 +592,38 @@ and is between 256 and 4096 characters. 
+ 			MTRR settings.  This parameter disables that behavior,
+ 			possibly causing your machine to run very slowly.
+ 
++	disable_timer_pin_1 [i386,x86-64]
++			Disable PIN 1 of APIC timer
++			Can be useful to work around chipset bugs.
++
+ 	dmasound=	[HW,OSS] Sound subsystem buffers
+ 
++	dma_debug=off	If the kernel is compiled with DMA_API_DEBUG support,
++			this option disables the debugging code at boot.
++
++	dma_debug_entries=<number>
++			This option allows to tune the number of preallocated
++			entries for DMA-API debugging code. One entry is
++			required per DMA-API allocation. Use this if the
++			DMA-API debugging code disables itself because the
++			architectural default is too low.
++
+ 	dscc4.setup=	[NET]
+ 
+ 	dtc3181e=	[HW,SCSI]
+ 
++	dynamic_printk	Enables pr_debug()/dev_dbg() calls if
++			CONFIG_DYNAMIC_PRINTK_DEBUG has been enabled.
++			These can also be switched on/off via
++			<debugfs>/dynamic_printk/modules
++
++	earlycon=	[KNL] Output early console device and options.
++		uart[8250],io,<addr>[,options]
++		uart[8250],mmio,<addr>[,options]
++			Start an early, polled-mode console on the 8250/16550
++			UART at the specified I/O port or MMIO address.
++			The options are the same as for ttyS, above.
++
+ 	earlyprintk=	[X86-32,X86-64,SH,BLACKFIN]
+ 			earlyprintk=vga
+ 			earlyprintk=serial[,ttySn[,baudrate]]
+@@ -754,6 +665,17 @@ and is between 256 and 4096 characters. 
+ 			pass this option to capture kernel.
+ 			See Documentation/kdump/kdump.txt for details.
+ 
++	enable_mtrr_cleanup [X86]
++			The kernel tries to adjust MTRR layout from continuous
++			to discrete, to make X server driver able to add WB
++			entry later. This parameter enables that.
++
++	enable_timer_pin_1 [i386,x86-64]
++			Enable PIN 1 of APIC timer
++			Can be useful to work around chipset bugs
++			(in particular on some ATI chipsets).
++			The kernel tries to set a reasonable default.
++
+ 	enforcing	[SELINUX] Set initial enforcing status.
+ 			Format: {"0" | "1"}
+ 			See security/selinux/Kconfig help text.
+@@ -841,6 +763,16 @@ and is between 256 and 4096 characters. 
+ 	hisax=		[HW,ISDN]
+ 			See Documentation/isdn/README.HiSax.
+ 
++	hlt		[BUGS=ARM,SH]
++
++	hpet=		[X86-32,HPET] option to control HPET usage
++			Format: { enable (default) | disable | force |
++				verbose }
++			disable: disable HPET and use PIT instead
++			force: allow force enabled of undocumented chips (ICH4,
++				VIA, nVidia)
++			verbose: show contents of HPET registers during setup
++
+ 	hugepages=	[HW,X86-32,IA-64] HugeTLB pages to allocate at boot.
+ 	hugepagesz=	[HW,IA-64,PPC,X86-64] The size of the HugeTLB pages.
+ 			On x86-64 and powerpc, this option can be specified
+@@ -850,15 +782,6 @@ and is between 256 and 4096 characters. 
+ 			(when the CPU supports the "pdpe1gb" cpuinfo flag)
+ 			Note that 1GB pages can only be allocated at boot time
+ 			using hugepages= and not freed afterwards.
+-	default_hugepagesz=
+-			[same as hugepagesz=] The size of the default
+-			HugeTLB page size. This is the size represented by
+-			the legacy /proc/ hugepages APIs, used for SHM, and
+-			default size when mounting hugetlbfs filesystems.
+-			Defaults to the default architecture's huge page size
+-			if not specified.
+-
+-	hlt		[BUGS=ARM,SH]
+ 
+ 	hvc_iucv=	[S390] Number of z/VM IUCV hypervisor console (HVC)
+ 			       terminal devices. Valid values: 0..8
+@@ -919,6 +842,9 @@ and is between 256 and 4096 characters. 
+ 	idebus=		[HW] (E)IDE subsystem - VLB/PCI bus speed
+ 			See Documentation/ide/ide.txt.
+ 
++	ide-pci-generic.all-generic-ide [HW] (E)IDE subsystem
++			Claim all unknown PCI IDE storage controllers.
++
+ 	idle=		[X86]
+ 			Format: idle=poll, idle=mwait, idle=halt, idle=nomwait
+ 			Poll forces a polling idle loop that can slightly
+@@ -934,9 +860,6 @@ and is between 256 and 4096 characters. 
+ 			In such case C2/C3 won't be used again.
+ 			idle=nomwait: Disable mwait for CPU C-states
+ 
+-	ide-pci-generic.all-generic-ide [HW] (E)IDE subsystem
+-			Claim all unknown PCI IDE storage controllers.
+-
+ 	ignore_loglevel	[KNL]
+ 			Ignore loglevel setting - this will print /all/
+ 			kernel messages to the console. Useful for debugging.
+@@ -970,25 +893,6 @@ and is between 256 and 4096 characters. 
+ 	inport.irq=	[HW] Inport (ATI XL and Microsoft) busmouse driver
+ 			Format: <irq>
+ 
+-	inttest=	[IA64]
+-
+-	iomem=		Disable strict checking of access to MMIO memory
+-		strict	regions from userspace.
+-		relaxed
+-
+-	iommu=		[x86]
+-		off
+-		force
+-		noforce
+-		biomerge
+-		panic
+-		nopanic
+-		merge
+-		nomerge
+-		forcesac
+-		soft
+-
+-
+ 	intel_iommu=	[DMAR] Intel IOMMU driver (DMAR) option
+ 		on
+ 			Enable intel iommu driver.
+@@ -1012,6 +916,28 @@ and is between 256 and 4096 characters. 
+ 			result in a hardware IOTLB flush operation as opposed
+ 			to batching them for performance.
+ 
++	inttest=	[IA64]
++
++	iomem=		Disable strict checking of access to MMIO memory
++		strict	regions from userspace.
++		relaxed
++
++	iommu=		[x86]
++		off
++		force
++		noforce
++		biomerge
++		panic
++		nopanic
++		merge
++		nomerge
++		forcesac
++		soft
++
++	io7=		[HW] IO7 for Marvel based alpha systems
++			See comment before marvel_specify_io7 in
++			arch/alpha/kernel/core_marvel.c.
++
+ 	io_delay=	[X86-32,X86-64] I/O delay method
+ 		0x80
+ 			Standard port 0x80 based delay
+@@ -1022,10 +948,6 @@ and is between 256 and 4096 characters. 
+ 		none
+ 			No delay
+ 
+-	io7=		[HW] IO7 for Marvel based alpha systems
+-			See comment before marvel_specify_io7 in
+-			arch/alpha/kernel/core_marvel.c.
+-
+ 	ip=		[IP_PNP]
+ 			See Documentation/filesystems/nfsroot.txt.
+ 
+@@ -1036,12 +958,6 @@ and is between 256 and 4096 characters. 
+ 	ips=		[HW,SCSI] Adaptec / IBM ServeRAID controller
+ 			See header of drivers/scsi/ips.c.
+ 
+-	ports=		[IP_VS_FTP] IPVS ftp helper module
+-			Default is 21.
+-			Up to 8 (IP_VS_APP_MAX_PORTS) ports
+-			may be specified.
+-			Format: <port>,<port>....
+-
+ 	irqfixup	[HW]
+ 			When an interrupt is not handled search all handlers
+ 			for it. Intended to get systems with badly broken
+@@ -1082,6 +998,8 @@ and is between 256 and 4096 characters. 
+ 	js=		[HW,JOY] Analog joystick
+ 			See Documentation/input/joystick.txt.
+ 
++	keepinitrd	[HW,ARM]
++
+ 	kernelcore=nn[KMG]	[KNL,X86-32,IA-64,PPC,X86-64] This parameter
+ 			specifies the amount of memory usable by the kernel
+ 			for non-movable allocations.  The requested amount is
+@@ -1107,21 +1025,6 @@ and is between 256 and 4096 characters. 
+ 			higher than default (KMEMTRACE_N_SUBBUFS in code) if
+ 			you experience buffer overruns.
+ 
+-	movablecore=nn[KMG]	[KNL,X86-32,IA-64,PPC,X86-64] This parameter
+-			is similar to kernelcore except it specifies the
+-			amount of memory used for migratable allocations.
+-			If both kernelcore and movablecore is specified,
+-			then kernelcore will be at *least* the specified
+-			value but may be more. If movablecore on its own
+-			is specified, the administrator must be careful
+-			that the amount of memory usable for all allocations
+-			is not too small.
+-
+-	keepinitrd	[HW,ARM]
+-
+-	kstack=N	[X86-32,X86-64] Print N words from the kernel stack
+-			in oops dumps.
+-
+ 	kgdboc=		[HW] kgdb over consoles.
+ 			Requires a tty driver that supports console polling.
+ 			(only serial suported for now)
+@@ -1131,6 +1034,9 @@ and is between 256 and 4096 characters. 
+ 			Configure the RouterBoard 532 series on-chip
+ 			Ethernet adapter MAC address.
+ 
++	kstack=N	[X86-32,X86-64] Print N words from the kernel stack
++			in oops dumps.
++
+ 	l2cr=		[PPC]
+ 
+ 	l3cr=		[PPC]
+@@ -1276,9 +1182,8 @@ and is between 256 and 4096 characters. 
+ 			(machvec) in a generic kernel.
+ 			Example: machvec=hpzx1_swiotlb
+ 
+-	max_loop=	[LOOP] Maximum number of loopback devices that can
+-			be mounted
+-			Format: <1-256>
++	max_addr=nn[KMG]	[KNL,BOOT,ia64] All physical memory greater
++			than or equal to this physical address is ignored.
+ 
+ 	maxcpus=	[SMP] Maximum number of processors that	an SMP kernel
+ 			should make use of.  maxcpus=n : n >= 0 limits the
+@@ -1286,8 +1191,9 @@ and is between 256 and 4096 characters. 
+ 			it is equivalent to "nosmp", which also disables
+ 			the IO APIC.
+ 
+-	max_addr=nn[KMG]	[KNL,BOOT,ia64] All physical memory greater than
+-			or equal to this physical address is ignored.
++	max_loop=	[LOOP] Maximum number of loopback devices that can
++			be mounted
++			Format: <1-256>
+ 
+ 	max_luns=	[SCSI] Maximum number of LUNs to probe.
+ 			Should be between 1 and 2^32-1.
+@@ -1414,6 +1320,16 @@ and is between 256 and 4096 characters. 
+ 	mousedev.yres=	[MOUSE] Vertical screen resolution, used for devices
+ 			reporting absolute coordinates, such as tablets
+ 
++	movablecore=nn[KMG]	[KNL,X86-32,IA-64,PPC,X86-64] This parameter
++			is similar to kernelcore except it specifies the
++			amount of memory used for migratable allocations.
++			If both kernelcore and movablecore is specified,
++			then kernelcore will be at *least* the specified
++			value but may be more. If movablecore on its own
++			is specified, the administrator must be careful
++			that the amount of memory usable for all allocations
++			is not too small.
++
+ 	mpu401=		[HW,OSS]
+ 			Format: <io>,<irq>
+ 
+@@ -1435,6 +1351,23 @@ and is between 256 and 4096 characters. 
+ 			[HW] Make the MicroTouch USB driver use raw coordinates
+ 			('y', default) or cooked coordinates ('n')
+ 
++	mtrr_chunk_size=nn[KMG] [X86]
++			used for mtrr cleanup. It is largest continous chunk
++			that could hold holes aka. UC entries.
++
++	mtrr_gran_size=nn[KMG] [X86]
++			Used for mtrr cleanup. It is granularity of mtrr block.
++			Default is 1.
++			Large value could prevent small alignment from
++			using up MTRRs.
++
++	mtrr_spare_reg_nr=n [X86]
++			Format: <integer>
++			Range: 0,7 : spare reg number
++			Default : 1
++			Used for mtrr cleanup. It is spare mtrr entries number.
++			Set to 2 or more if your graphical card needs more.
++
+ 	n2=		[NET] SDL Inc. RISCom/N2 synchronous serial card
+ 
+ 	NCR_D700=	[HW,SCSI]
+@@ -1495,11 +1428,13 @@ and is between 256 and 4096 characters. 
+ 			0 - turn nmi_watchdog off
+ 			1 - use the IO-APIC timer for the NMI watchdog
+ 			2 - use the local APIC for the NMI watchdog using
+-			a performance counter. Note: This will use one performance
+-			counter and the local APIC's performance vector.
+-			When panic is specified panic when an NMI watchdog timeout occurs.
+-			This is useful when you use a panic=... timeout and need the box
+-			quickly up again.
++			a performance counter. Note: This will use one
++			performance counter and the local APIC's performance
++			vector.
++			When panic is specified, panic when an NMI watchdog
++			timeout occurs.
++			This is useful when you use a panic=... timeout and
++			need the box quickly up again.
+ 			Instead of 1 and 2 it is possible to use the following
+ 			symbolic names: lapic and ioapic
+ 			Example: nmi_watchdog=2 or nmi_watchdog=panic,lapic
+@@ -1508,6 +1443,16 @@ and is between 256 and 4096 characters. 
+ 			emulation library even if a 387 maths coprocessor
+ 			is present.
+ 
++	no_console_suspend
++			[HW] Never suspend the console
++			Disable suspending of consoles during suspend and
++			hibernate operations.  Once disabled, debugging
++			messages can reach various consoles while the rest
++			of the system is being put to sleep (ie, while
++			debugging driver suspend/resume hooks).  This may
++			not work reliably with all consoles, but is known
++			to work with serial and VGA consoles.
++
+ 	noaliencache	[MM, NUMA, SLAB] Disables the allocation of alien
+ 			caches in the slab allocator.  Saves per-node memory,
+ 			but will impact performance.
+@@ -1522,6 +1467,8 @@ and is between 256 and 4096 characters. 
+ 
+ 	nocache		[ARM]
+ 
++	noclflush	[BUGS=X86] Don't use the CLFLUSH instruction
++
+ 	nodelayacct	[KNL] Disable per-task delay accounting
+ 
+ 	nodisconnect	[HW,SCSI,M68K] Disables SCSI disconnects.
+@@ -1550,8 +1497,6 @@ and is between 256 and 4096 characters. 
+ 			register save and restore. The kernel will only save
+ 			legacy floating-point registers on task switch.
+ 
+-	noclflush	[BUGS=X86] Don't use the CLFLUSH instruction
+-
+ 	nohlt		[BUGS=ARM,SH] Tells the kernel that the sleep(SH) or
+ 			wfi(ARM) instruction doesn't work correctly and not to
+ 			use it. This is also useful when using JTAG debugger.
+@@ -1596,12 +1541,6 @@ and is between 256 and 4096 characters. 
+ 
+ 	nolapic_timer	[X86-32,APIC] Do not use the local APIC timer.
+ 
+-	nox2apic	[X86-64,APIC] Do not enable x2APIC mode.
+-
+-	x2apic_phys	[X86-64,APIC] Use x2apic physical mode instead of
+-			default x2apic cluster mode on platforms
+-			supporting x2apic.
+-
+ 	noltlbs		[PPC] Do not use large page/tlb entries for kernel
+ 			lowmem mapping on PPC40x.
+ 
+@@ -1612,6 +1551,9 @@ and is between 256 and 4096 characters. 
+ 	nomfgpt		[X86-32] Disable Multi-Function General Purpose
+ 			Timer usage (for AMD Geode machines).
+ 
++	norandmaps	Don't use address space randomization.  Equivalent to
++			echo 0 > /proc/sys/kernel/randomize_va_space
++
+ 	noreplace-paravirt	[X86-32,PV_OPS] Don't patch paravirt_ops
+ 
+ 	noreplace-smp	[X86-32,SMP] Don't replace SMP instructions
+@@ -1650,13 +1592,13 @@ and is between 256 and 4096 characters. 
+ 			purges which is reported from either PAL_VM_SUMMARY or
+ 			SAL PALO.
+ 
++	nr_uarts=	[SERIAL] maximum number of UARTs to be registered.
++
+ 	numa_zonelist_order= [KNL, BOOT] Select zonelist order for NUMA.
+ 			one of ['zone', 'node', 'default'] can be specified
+ 			This can be set from sysctl after boot.
+ 			See Documentation/sysctl/vm.txt for details.
+ 
+-	nr_uarts=	[SERIAL] maximum number of UARTs to be registered.
+-
+ 	ohci1394_dma=early	[HW] enable debugging via the ohci1394 driver.
+ 			See Documentation/debugging-via-ohci1394.txt for more
+ 			info.
+@@ -1905,6 +1847,14 @@ and is between 256 and 4096 characters. 
+ 	printk.time=	Show timing data prefixed to each printk message line
+ 			Format: <bool>  (1/Y/y=enable, 0/N/n=disable)
+ 
++	processor.max_cstate=	[HW,ACPI]
++			Limit processor to maximum C-state
++			max_cstate=9 overrides any DMI blacklist limit.
++
++	processor.nocst	[HW,ACPI]
++			Ignore the _CST method to determine C-states,
++			instead using the legacy FADT method
++
+ 	profile=	[KNL] Enable kernel profiling via /proc/profile
+ 			Format: [schedule,]<number>
+ 			Param: "schedule" - profile schedule points.
+@@ -1914,14 +1864,6 @@ and is between 256 and 4096 characters. 
+ 				Requires CONFIG_SCHEDSTATS
+ 			Param: "kvm" - profile VM exits.
+ 
+-	processor.max_cstate=	[HW,ACPI]
+-			Limit processor to maximum C-state
+-			max_cstate=9 overrides any DMI blacklist limit.
+-
+-	processor.nocst	[HW,ACPI]
+-			Ignore the _CST method to determine C-states,
+-			instead using the legacy FADT method
+-
+ 	prompt_ramdisk=	[RAM] List of RAM disks to prompt for floppy disk
+ 			before loading.
+ 			See Documentation/blockdev/ramdisk.txt.
+@@ -2075,7 +2017,13 @@ and is between 256 and 4096 characters. 
+ 			allowing boot to proceed.  none ignores them, expecting
+ 			user space to do the scan.
+ 
+-	selinux		[SELINUX] Disable or enable SELinux at boot time.
++	security=	[SECURITY] Choose a security module to enable at boot.
++			If this boot parameter is not specified, only the first
++			security module asking for security registration will be
++			loaded. An invalid security module name will be treated
++			as if no module has been chosen.
++
++	selinux=	[SELINUX] Disable or enable SELinux at boot time.
+ 			Format: { "0" | "1" }
+ 			See security/selinux/Kconfig help text.
+ 			0 -- disable.
+@@ -2499,9 +2447,6 @@ and is between 256 and 4096 characters. 
+ 					medium is write-protected).
+ 			Example: quirks=0419:aaf5:rl,0421:0433:rc
+ 
+-	add_efi_memmap	[EFI; x86-32,X86-64] Include EFI memory map in
+-			kernel's map of available physical RAM.
+-
+ 	vdso=		[X86-32,SH,x86-64]
+ 			vdso=2: enable compat VDSO (default with COMPAT_VDSO)
+ 			vdso=1: enable VDSO (default)
+@@ -2540,6 +2485,31 @@ and is between 256 and 4096 characters. 
+ 	vmpoff=		[KNL,S390] Perform z/VM CP command after power off.
+ 			Format: <command>
+ 
++	vt.default_blu=	[VT]
++			Format: <blue0>,<blue1>,<blue2>,...,<blue15>
++			Change the default blue palette of the console.
++			This is a 16-member array composed of values
++			ranging from 0-255.
++
++	vt.default_grn=	[VT]
++			Format: <green0>,<green1>,<green2>,...,<green15>
++			Change the default green palette of the console.
++			This is a 16-member array composed of values
++			ranging from 0-255.
++
++	vt.default_red=	[VT]
++			Format: <red0>,<red1>,<red2>,...,<red15>
++			Change the default red palette of the console.
++			This is a 16-member array composed of values
++			ranging from 0-255.
++
++	vt.default_utf8=
++			[VT]
++			Format=<0|1>
++			Set system-wide default UTF-8 mode for all tty's.
++			Default is 1, i.e. UTF-8 mode is enabled for all
++			newly opened terminals.
++
+ 	waveartist=	[HW,OSS]
+ 			Format: <io>,<irq>,<dma>,<dma2>
+ 
+@@ -2552,6 +2522,10 @@ and is between 256 and 4096 characters. 
+ 	wdt=		[WDT] Watchdog
+ 			See Documentation/watchdog/wdt.txt.
+ 
++	x2apic_phys	[X86-64,APIC] Use x2apic physical mode instead of
++			default x2apic cluster mode on platforms
++			supporting x2apic.
++
+ 	xd=		[HW,XT] Original XT pre-IDE (RLL encoded) disks.
+ 	xd_geo=		See header of drivers/block/xd.c.
+ 
+@@ -2559,9 +2533,6 @@ and is between 256 and 4096 characters. 
+ 			Format:
+ 			<irq>,<irq_mask>,<io>,<full_duplex>,<do_sound>,<lockup_hack>[,<irq2>[,<irq3>[,<irq4>]]]
+ 
+-	norandmaps	Don't use address space randomization.  Equivalent to
+-			echo 0 > /proc/sys/kernel/randomize_va_space
+-
+ ______________________________________________________________________
+ 
+ TODO:
