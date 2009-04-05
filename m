@@ -1,285 +1,261 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758470AbZDEVjU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758605AbZDEVjj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758470AbZDEVjU (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 5 Apr 2009 17:39:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753644AbZDEVjJ
+	id S1758605AbZDEVjj (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 5 Apr 2009 17:39:39 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757474AbZDEVj2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 5 Apr 2009 17:39:09 -0400
-Received: from yw-out-2324.google.com ([74.125.46.31]:63578 "EHLO
-	yw-out-2324.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753492AbZDEVjG convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 5 Apr 2009 17:39:06 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
-         :cc:content-type:content-transfer-encoding;
-        b=TvH2YvIW8RtsVOvE2+qxMmJJskgEzPlRBU7+HipqiDxmux0L/sSEP6J/+SXzN2kMM4
-         7MKDTJ+gfBD48gSz5fBgs0q+gmPOgdDVArF7ZuMrLS/8Q+DbVPfOslJUwMSMh6ELbGUi
-         SFoStdTrZfWXdMJp0DDEDGT8rhtolc+m0S9hc=
+	Sun, 5 Apr 2009 17:39:28 -0400
+Received: from mx3.mail.elte.hu ([157.181.1.138]:35971 "EHLO mx3.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1758285AbZDEVj1 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 5 Apr 2009 17:39:27 -0400
+Date: Sun, 5 Apr 2009 23:38:28 +0200
+From: Ingo Molnar <mingo@elte.hu>
+To: Jaswinder Singh Rajput <jaswinder@kernel.org>
+Cc: Linus Torvalds <torvalds@linux-foundation.org>,
+       John Levon <levon@movementarian.org>, x86 maintainers <x86@kernel.org>,
+       LKML <linux-kernel@vger.kernel.org>,
+       Thomas Gleixner <tglx@linutronix.de>,
+       Robert Richter <robert.richter@amd.com>,
+       "H. Peter Anvin" <hpa@zytor.com>
+Subject: [RFC PATCH] x86, oprofile: fix P4 oprofile CPU setup bug
+Message-ID: <20090405213828.GA1059@elte.hu>
+References: <1238958725.3522.1.camel@ht.satnam> <alpine.LFD.2.00.0904051243310.4023@localhost.localdomain> <1238962495.3301.0.camel@ht.satnam>
 MIME-Version: 1.0
-In-Reply-To: <20090402233707.GB7842@mallorn>
-References: <20090402233707.GB7842@mallorn>
-Date: Sun, 5 Apr 2009 16:38:54 -0500
-Message-ID: <a4e6962a0904051438y63e4d265yb2551e4498273735@mail.gmail.com>
-Subject: Re: [V9fs-developer] [PATCH] net/9p: handle correctly interrupted 9P 
-	requests
-From: Eric Van Hensbergen <ericvh@gmail.com>
-To: Latchesar Ionkov <lucho@ionkov.net>
-Cc: v9fs-developer@lists.sourceforge.net, linux-kernel@vger.kernel.org
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 8BIT
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1238962495.3301.0.camel@ht.satnam>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.5
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Applied with some minor style changes to v9fs-devel.
-David Miller has requested that all patches to the net tree be cc:'d
-to netdev@vger.kernel.org.
-The other patches you sent have been applied as well.
 
-      -eric
+* Jaswinder Singh Rajput <jaswinder@kernel.org> wrote:
 
+> > Of course, this is all ancient code, so whatever. But I really 
+> > think this patch is actively bad - it just hides the issue 
+> > rather than fixing anything.
+> 
+> Subject: [PATCH] x86: fix BUG: using smp_processor_id() in preemptible [00000000] code: oprofiled/3319
+> 
+> Fixed this bug on P4 HT machine:
+> [  474.968698] BUG: using smp_processor_id() in preemptible [00000000] code: oprofiled/3319
+> [  474.968711] caller is get_stagger+0xe/0x2c
+> [  474.968716] Pid: 3319, comm: oprofiled Not tainted 2.6.29 #8
+> [  474.968720] Call Trace:
+> [  474.968730]  [<c03dee3a>] ? printk+0x14/0x16
+> [  474.968737]  [<c021bcb8>] debug_smp_processor_id+0xa4/0xb8
+> [  474.968742]  [<c034d64d>] get_stagger+0xe/0x2c
+> [  474.968747]  [<c034daa7>] p4_fill_in_addresses+0x33/0x2d4
+> [  474.968751]  [<c034cc06>] nmi_setup+0xce/0x194
+> [  474.968756]  [<c034acf9>] oprofile_setup+0x35/0x90
+> [  474.968760]  [<c034bc55>] event_buffer_open+0x47/0x63
+> [  474.968766]  [<c0179a8d>] __dentry_open+0x148/0x237
+> [  474.968770]  [<c0179c20>] nameidata_to_filp+0x31/0x48
+> [  474.968775]  [<c034bc0e>] ? event_buffer_open+0x0/0x63
+> [  474.968780]  [<c018493e>] do_filp_open+0x335/0x660
+> [  474.968786]  [<c0161f85>] ? lru_cache_add_lru+0x2c/0x2e
+> [  474.968792]  [<c0171808>] ? page_add_new_anon_rmap+0x5d/0x6a
+> [  474.968797]  [<c017985d>] do_sys_open+0x47/0xc1
+> [  474.968801]  [<c0179923>] sys_open+0x23/0x2b
+> [  474.968806]  [<c01029f4>] sysenter_do_call+0x12/0x26
+> 
+> Signed-off-by: Jaswinder Singh Rajput <jaswinderrajput@gmail.com>
+> ---
+>  arch/x86/oprofile/op_model_p4.c |   17 ++++++++++++++++-
+>  1 files changed, 16 insertions(+), 1 deletions(-)
+> 
+> diff --git a/arch/x86/oprofile/op_model_p4.c b/arch/x86/oprofile/op_model_p4.c
+> index 4c4a51c..8db034d 100644
+> --- a/arch/x86/oprofile/op_model_p4.c
+> +++ b/arch/x86/oprofile/op_model_p4.c
+> @@ -379,12 +379,18 @@ static struct p4_event_binding p4_events[NUM_EVENTS] = {
+>  static unsigned int get_stagger(void)
+>  {
+>  #ifdef CONFIG_SMP
+> -	int cpu = smp_processor_id();
+> +	int cpu = get_cpu();
+>  	return (cpu != first_cpu(per_cpu(cpu_sibling_map, cpu)));
+>  #endif
+>  	return 0;
+>  }
+>  
+> +static inline void put_stagger(void)
+> +{
+> +#ifdef CONFIG_SMP
+> +	put_cpu();
+> +#endif
+> +}
 
-On Thu, Apr 2, 2009 at 6:37 PM, Latchesar Ionkov <lucho@ionkov.net> wrote:
-> Currently the 9p code crashes when a operation is interrupted, i.e. for
-> example when the user presses ^C while reading from a file.
->
-> This patch fixes the code that is responsible for interruption and flushing
-> of 9P operations.
->
-> Signed-off-by: Latchesar Ionkov <lucho@ionkov.net>
->
-> diff --git a/include/net/9p/client.h b/include/net/9p/client.h
-> index 4012e07..e268122 100644
-> --- a/include/net/9p/client.h
-> +++ b/include/net/9p/client.h
-> @@ -98,7 +98,6 @@ enum p9_req_status_t {
->  struct p9_req_t {
->        int status;
->        int t_err;
-> -       u16 flush_tag;
->        wait_queue_head_t *wq;
->        struct p9_fcall *tc;
->        struct p9_fcall *rc;
-> diff --git a/net/9p/client.c b/net/9p/client.c
-> index c079df6..f5634b5 100644
-> --- a/net/9p/client.c
-> +++ b/net/9p/client.c
-> @@ -203,7 +203,6 @@ static struct p9_req_t *p9_tag_alloc(struct p9_client *c, u16 tag)
->        p9pdu_reset(req->tc);
->        p9pdu_reset(req->rc);
->
-> -       req->flush_tag = 0;
->        req->tc->tag = tag-1;
->        req->status = REQ_STATUS_ALLOC;
->
-> @@ -324,35 +323,9 @@ static void p9_free_req(struct p9_client *c, struct p9_req_t *r)
->  */
->  void p9_client_cb(struct p9_client *c, struct p9_req_t *req)
->  {
-> -       struct p9_req_t *other_req;
-> -       unsigned long flags;
-> -
->        P9_DPRINTK(P9_DEBUG_MUX, " tag %d\n", req->tc->tag);
-> -
-> -       if (req->status == REQ_STATUS_ERROR)
-> -               wake_up(req->wq);
-> -
-> -       if (req->flush_tag) {                   /* flush receive path */
-> -               P9_DPRINTK(P9_DEBUG_9P, "<<< RFLUSH %d\n", req->tc->tag);
-> -               spin_lock_irqsave(&c->lock, flags);
-> -               other_req = p9_tag_lookup(c, req->flush_tag);
-> -               if (other_req->status != REQ_STATUS_FLSH) /* stale flush */
-> -                       spin_unlock_irqrestore(&c->lock, flags);
-> -               else {
-> -                       other_req->status = REQ_STATUS_FLSHD;
-> -                       spin_unlock_irqrestore(&c->lock, flags);
-> -                       wake_up(other_req->wq);
-> -               }
-> -               p9_free_req(c, req);
-> -       } else {                                /* normal receive path */
-> -               P9_DPRINTK(P9_DEBUG_MUX, "normal: tag %d\n", req->tc->tag);
-> -               spin_lock_irqsave(&c->lock, flags);
-> -               if (req->status != REQ_STATUS_FLSHD)
-> -                       req->status = REQ_STATUS_RCVD;
-> -               spin_unlock_irqrestore(&c->lock, flags);
-> -               wake_up(req->wq);
-> -               P9_DPRINTK(P9_DEBUG_MUX, "wakeup: %d\n", req->tc->tag);
-> -       }
-> +       wake_up(req->wq);
-> +       P9_DPRINTK(P9_DEBUG_MUX, "wakeup: %d\n", req->tc->tag);
->  }
->  EXPORT_SYMBOL(p9_client_cb);
->
-> @@ -486,9 +459,15 @@ static int p9_client_flush(struct p9_client *c, struct p9_req_t *oldreq)
->        if (IS_ERR(req))
->                return PTR_ERR(req);
->
-> -       req->flush_tag = oldtag;
->
-> -       /* we don't free anything here because RPC isn't complete */
-> +       /* if we haven't received a response for oldreq,
-> +          remove it from the list. */
-> +       spin_lock(&c->lock);
-> +       if (oldreq->status==REQ_STATUS_FLSH)
-> +               list_del(&oldreq->req_list);
-> +       spin_unlock(&c->lock);
-> +
-> +       p9_free_req(c, req);
->        return 0;
->  }
->
-> @@ -509,7 +488,6 @@ p9_client_rpc(struct p9_client *c, int8_t type, const char *fmt, ...)
->        struct p9_req_t *req;
->        unsigned long flags;
->        int sigpending;
-> -       int flushed = 0;
->
->        P9_DPRINTK(P9_DEBUG_MUX, "client %p op %d\n", c, type);
->
-> @@ -546,42 +524,28 @@ p9_client_rpc(struct p9_client *c, int8_t type, const char *fmt, ...)
->                goto reterr;
->        }
->
-> -       /* if it was a flush we just transmitted, return our tag */
-> -       if (type == P9_TFLUSH)
-> -               return req;
-> -again:
->        P9_DPRINTK(P9_DEBUG_MUX, "wait %p tag: %d\n", req->wq, tag);
->        err = wait_event_interruptible(*req->wq,
->                                                req->status >= REQ_STATUS_RCVD);
-> -       P9_DPRINTK(P9_DEBUG_MUX, "wait %p tag: %d returned %d (flushed=%d)\n",
-> -                                               req->wq, tag, err, flushed);
-> +       P9_DPRINTK(P9_DEBUG_MUX, "wait %p tag: %d returned %d\n",
-> +                                               req->wq, tag, err);
->
->        if (req->status == REQ_STATUS_ERROR) {
->                P9_DPRINTK(P9_DEBUG_ERROR, "req_status error %d\n", req->t_err);
->                err = req->t_err;
-> -       } else if (err == -ERESTARTSYS && flushed) {
-> -               P9_DPRINTK(P9_DEBUG_MUX, "flushed - going again\n");
-> -               goto again;
-> -       } else if (req->status == REQ_STATUS_FLSHD) {
-> -               P9_DPRINTK(P9_DEBUG_MUX, "flushed - erestartsys\n");
-> -               err = -ERESTARTSYS;
->        }
->
-> -       if ((err == -ERESTARTSYS) && (c->status == Connected) && (!flushed)) {
-> -               P9_DPRINTK(P9_DEBUG_MUX, "flushing\n");
-> -               spin_lock_irqsave(&c->lock, flags);
-> -               if (req->status == REQ_STATUS_SENT)
-> -                       req->status = REQ_STATUS_FLSH;
-> -               spin_unlock_irqrestore(&c->lock, flags);
-> +       if ((err == -ERESTARTSYS) && (c->status == Connected)) {
-> +               P9_DPRINTK(P9_DEBUG_MUX, "flushing\n");
->                sigpending = 1;
-> -               flushed = 1;
->                clear_thread_flag(TIF_SIGPENDING);
->
-> -               if (c->trans_mod->cancel(c, req)) {
-> -                       err = p9_client_flush(c, req);
-> -                       if (err == 0)
-> -                               goto again;
-> -               }
-> +               if (c->trans_mod->cancel(c, req))
-> +                       p9_client_flush(c, req);
-> +
-> +               /* if we received the response anyway, don't signal error */
-> +               if (req->status == REQ_STATUS_RCVD)
-> +                       err = 0;
->        }
->
->        if (sigpending) {
-> diff --git a/net/9p/trans_fd.c b/net/9p/trans_fd.c
-> index c613ed0..a2a1814 100644
-> --- a/net/9p/trans_fd.c
-> +++ b/net/9p/trans_fd.c
-> @@ -213,8 +213,8 @@ static void p9_conn_cancel(struct p9_conn *m, int err)
->        spin_unlock_irqrestore(&m->client->lock, flags);
->
->        list_for_each_entry_safe(req, rtmp, &cancel_list, req_list) {
-> -               list_del(&req->req_list);
->                P9_DPRINTK(P9_DEBUG_ERROR, "call back req %p\n", req);
-> +               list_del(&req->req_list);
->                p9_client_cb(m->client, req);
->        }
->  }
-> @@ -336,7 +336,8 @@ static void p9_read_work(struct work_struct *work)
->                        "mux %p pkt: size: %d bytes tag: %d\n", m, n, tag);
->
->                m->req = p9_tag_lookup(m->client, tag);
-> -               if (!m->req) {
-> +               if (!m->req || (m->req->status != REQ_STATUS_SENT &&
-> +                                       m->req->status != REQ_STATUS_FLSH)) {
->                        P9_DPRINTK(P9_DEBUG_ERROR, "Unexpected packet tag %d\n",
->                                                                 tag);
->                        err = -EIO;
-> @@ -361,10 +362,11 @@ static void p9_read_work(struct work_struct *work)
->        if ((m->req) && (m->rpos == m->rsize)) { /* packet is read in */
->                P9_DPRINTK(P9_DEBUG_TRANS, "got new packet\n");
->                spin_lock(&m->client->lock);
-> +               if (m->req->status != REQ_STATUS_ERROR)
-> +                       m->req->status = REQ_STATUS_RCVD;
->                list_del(&m->req->req_list);
->                spin_unlock(&m->client->lock);
->                p9_client_cb(m->client, m->req);
-> -
->                m->rbuf = NULL;
->                m->rpos = 0;
->                m->rsize = 0;
-> @@ -454,6 +456,7 @@ static void p9_write_work(struct work_struct *work)
->                req = list_entry(m->unsent_req_list.next, struct p9_req_t,
->                               req_list);
->                req->status = REQ_STATUS_SENT;
-> +               P9_DPRINTK(P9_DEBUG_TRANS, "move req %p\n", req);
->                list_move_tail(&req->req_list, &m->req_list);
->
->                m->wbuf = req->tc->sdata;
-> @@ -683,12 +686,13 @@ static int p9_fd_cancel(struct p9_client *client, struct p9_req_t *req)
->        P9_DPRINTK(P9_DEBUG_TRANS, "client %p req %p\n", client, req);
->
->        spin_lock(&client->lock);
-> -       list_del(&req->req_list);
->
->        if (req->status == REQ_STATUS_UNSENT) {
-> +               list_del(&req->req_list);
->                req->status = REQ_STATUS_FLSHD;
->                ret = 0;
-> -       }
-> +       } else if (req->status == REQ_STATUS_SENT)
-> +               req->status = REQ_STATUS_FLSH;
->
->        spin_unlock(&client->lock);
->
-> diff --git a/net/9p/trans_rdma.c b/net/9p/trans_rdma.c
-> index 7fa0eb2..ac49900 100644
-> --- a/net/9p/trans_rdma.c
-> +++ b/net/9p/trans_rdma.c
-> @@ -295,6 +295,7 @@ handle_recv(struct p9_client *client, struct p9_trans_rdma *rdma,
->                goto err_out;
->
->        req->rc = c->rc;
-> +       req->status = REQ_STATUS_RCVD;
->        p9_client_cb(client, req);
->
->        return;
-> diff --git a/net/9p/trans_virtio.c b/net/9p/trans_virtio.c
-> index 2d7781e..bb8579a 100644
-> --- a/net/9p/trans_virtio.c
-> +++ b/net/9p/trans_virtio.c
-> @@ -134,6 +134,7 @@ static void req_done(struct virtqueue *vq)
->                P9_DPRINTK(P9_DEBUG_TRANS, ": rc %p\n", rc);
->                P9_DPRINTK(P9_DEBUG_TRANS, ": lookup tag %d\n", rc->tag);
->                req = p9_tag_lookup(chan->client, rc->tag);
-> +               req->status = REQ_STATUS_RCVD;
->                p9_client_cb(chan->client, req);
->        }
->  }
->
-> ------------------------------------------------------------------------------
-> _______________________________________________
-> V9fs-developer mailing list
-> V9fs-developer@lists.sourceforge.net
-> https://lists.sourceforge.net/lists/listinfo/v9fs-developer
->
+Hm, you only seem to be looking at solving that warning message, and 
+your interest does not seem to go outside of that scope at all. Your 
+first fix was to make the message go away, your second fix minimally 
+(tried to address) the review from Linus and did a mechanic change 
+to make the message go away.
+
+This second change was actually subtly worse than the first one: 
+because it spread the uncleanliness elsewhere. The getting of 
+'stagger' is in no way central to the code, it does not denote 
+critical sections at all.
+
+It is an internal detail that should not matter to preemptability. 
+Now you changed it to get/put the preemption count, but the code was 
+not improved at all - we just got more churn.
+
+The real fix would be to go to the right abstraction level and 
+realize how these MSRs are set up by the oprofile code, and put all 
+the MSR reads and writes into one non-preempt section.
+
+Could you please test the patch below? (Totally untested and 
+everything.) Please dont just check whether the warning went away, 
+but also whether Oprofile still works correctly on your P4/HT box.
+
+I would not be surprised if this patch was a Oprofile fix for HT 
+P4's where two CPU siblings share the PMU resources - but i dont 
+have the hardware to test it.
+
+Robert, Thomas, what do you think?
+
+Thanks,
+
+	Ingo
+
+--------------------->
+
+From: Ingo Molnar <mingo@elte.hu>
+Date: Sun, 5 Apr 2009 23:19:00 +0200
+Subject: [PATCH] x86, oprofile: fix P4 oprofile CPU setup bug
+
+Impact: fix stagger setting and preemption warning
+
+Jaswinder Singh Rajput reported that this warning triggers on
+his P4 box if he starts oprofile:
+
+[  474.968698] BUG: using smp_processor_id() in preemptible [00000000] code: oprofiled/3319
+[  474.968711] caller is get_stagger+0xe/0x2c
+[  474.968716] Pid: 3319, comm: oprofiled Not tainted 2.6.29 #8
+[  474.968720] Call Trace:
+[  474.968730]  [<c03dee3a>] ? printk+0x14/0x16
+[  474.968737]  [<c021bcb8>] debug_smp_processor_id+0xa4/0xb8
+[  474.968742]  [<c034d64d>] get_stagger+0xe/0x2c
+[  474.968747]  [<c034daa7>] p4_fill_in_addresses+0x33/0x2d4
+[  474.968751]  [<c034cc06>] nmi_setup+0xce/0x194
+[  474.968756]  [<c034acf9>] oprofile_setup+0x35/0x90
+[  474.968760]  [<c034bc55>] event_buffer_open+0x47/0x63
+[  474.968766]  [<c0179a8d>] __dentry_open+0x148/0x237
+[  474.968770]  [<c0179c20>] nameidata_to_filp+0x31/0x48
+[  474.968775]  [<c034bc0e>] ? event_buffer_open+0x0/0x63
+[  474.968780]  [<c018493e>] do_filp_open+0x335/0x660
+[  474.968786]  [<c0161f85>] ? lru_cache_add_lru+0x2c/0x2e
+[  474.968792]  [<c0171808>] ? page_add_new_anon_rmap+0x5d/0x6a
+[  474.968797]  [<c017985d>] do_sys_open+0x47/0xc1
+[  474.968801]  [<c0179923>] sys_open+0x23/0x2b
+[  474.968806]  [<c01029f4>] sysenter_do_call+0x12/0x26
+
+This warning at first sight looks like a false positive - the call
+to p4_fill_in_addresses() does not have to be preemptible in itself:
+we set up MSR parameters of one of the CPUs, which parameters are
+symmetric on all CPUs so this function can be called on any other CPU.
+
+But the 'stagger' value depends on the _current_ CPU's value, so here
+we set up CPU0's stagger to the wrong value ... 50% of the time.
+
+This code is fragile for another reason as well: should we ever rely
+on running on the CPU whole MSR parameters we are changing this code
+could break.
+
+So put the whole MSR parametering and setup loop(s) in nmi_setup()
+under a single get_cpu()/put_cpu() critical section, and change the
+'0' hack to this_cpu.
+
+Reported-by: Jaswinder Singh Rajput <jaswinderrajput@gmail.com>
+Cc: Robert Richter <robert.richter@amd.com>
+Cc: Linus Torvalds <torvalds@linux-foundation.org>
+LKML-Reference: <1238962495.3301.0.camel@ht.satnam>
+---
+ arch/x86/oprofile/nmi_int.c |   47 ++++++++++++++++++++++++++++++++-----------
+ 1 files changed, 35 insertions(+), 12 deletions(-)
+
+diff --git a/arch/x86/oprofile/nmi_int.c b/arch/x86/oprofile/nmi_int.c
+index c638685..6b3b734 100644
+--- a/arch/x86/oprofile/nmi_int.c
++++ b/arch/x86/oprofile/nmi_int.c
+@@ -140,6 +140,7 @@ static struct notifier_block profile_exceptions_nb = {
+ 
+ static int nmi_setup(void)
+ {
++	int this_cpu;
+ 	int err = 0;
+ 	int cpu;
+ 
+@@ -152,27 +153,49 @@ static int nmi_setup(void)
+ 		return err;
+ 	}
+ 
+-	/* We need to serialize save and setup for HT because the subset
++	/*
++	 * We need to serialize save and setup for HT because the subset
+ 	 * of msrs are distinct for save and setup operations
+ 	 */
+ 
+-	/* Assume saved/restored counters are the same on all CPUs */
+-	model->fill_in_addresses(&per_cpu(cpu_msrs, 0));
++	/*
++	 * Assume saved/restored counters are the same on all CPUs,
++	 * and copy the MSR parameter settings of this CPU to the other
++	 * CPUs. Do this all in a critical section: we are running under
++	 * the Oprofile start_mutex which allows preemption.
++	 *
++	 * Non-preemption is not needed per se under the current Oprofile
++	 * implementation, but it is generally wise for any CPU setup work:
++	 */
++	this_cpu = get_cpu();
++
++	model->fill_in_addresses(&per_cpu(cpu_msrs, this_cpu));
++
+ 	for_each_possible_cpu(cpu) {
+-		if (cpu != 0) {
+-			memcpy(per_cpu(cpu_msrs, cpu).counters,
+-				per_cpu(cpu_msrs, 0).counters,
+-				sizeof(struct op_msr) * model->num_counters);
+-
+-			memcpy(per_cpu(cpu_msrs, cpu).controls,
+-				per_cpu(cpu_msrs, 0).controls,
+-				sizeof(struct op_msr) * model->num_controls);
+-		}
++		/* Skip this CPU, we set up the parameters above: */
++		if (cpu == this_cpu)
++			continue;
+ 
++		memcpy(per_cpu(cpu_msrs, cpu).counters,
++			per_cpu(cpu_msrs, this_cpu).counters,
++			sizeof(struct op_msr) * model->num_counters);
++
++		memcpy(per_cpu(cpu_msrs, cpu).controls,
++			per_cpu(cpu_msrs, this_cpu).controls,
++			sizeof(struct op_msr) * model->num_controls);
+ 	}
++
++	/*
++	 * Now that we've set up each CPU's PMU parameters,
++	 * call each CPU and save the old MSR values, then load
++	 * the new settings:
++	 */
+ 	on_each_cpu(nmi_save_registers, NULL, 1);
+ 	on_each_cpu(nmi_cpu_setup, NULL, 1);
+ 	nmi_enabled = 1;
++
++	put_cpu();
++
+ 	return 0;
+ }
+ 
