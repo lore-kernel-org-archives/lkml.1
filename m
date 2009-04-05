@@ -1,289 +1,149 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758151AbZDEICf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758211AbZDEIGe@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758151AbZDEICf (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 5 Apr 2009 04:02:35 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757895AbZDEICR
+	id S1758211AbZDEIGe (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 5 Apr 2009 04:06:34 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753029AbZDEIGI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 5 Apr 2009 04:02:17 -0400
-Received: from mail-bw0-f169.google.com ([209.85.218.169]:46550 "EHLO
-	mail-bw0-f169.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757816AbZDEICP (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 5 Apr 2009 04:02:15 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=googlemail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:reply-to:mail-followup-to
-         :references:mime-version:content-type:content-disposition
-         :in-reply-to:user-agent;
-        b=rbaQWY3M3OPdwlonZZTcfwPwLP37YKAlBg0s8zhs6+ci4X/eWY8wDn05nC5AjUoCNN
-         zaS/oZRvOcB6ggj+AjInI7kfPHm7GJ8l3C9Sz+FniFBiu4MHJ3AKF0FmzJGTDcBGMdiE
-         wAfmQ0SXwfaocy3Ix1EPSK9192IMmUCo6ReRA=
-Date: Sun, 5 Apr 2009 10:02:09 +0200
-From: Borislav Petkov <petkovbb@googlemail.com>
-To: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
-Cc: linux-ide@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 5/5] ide-cd: fix intendation in cdrom_decode_status()
-Message-ID: <20090405080209.GA6433@liondog.tnic>
-Reply-To: petkovbb@gmail.com
-Mail-Followup-To: petkovbb@gmail.com,
-	Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>,
-	linux-ide@vger.kernel.org, linux-kernel@vger.kernel.org
-References: <20090403195757.31438.16866.sendpatchset@localhost.localdomain> <20090403195824.31438.50814.sendpatchset@localhost.localdomain>
+	Sun, 5 Apr 2009 04:06:08 -0400
+Received: from mx2.redhat.com ([66.187.237.31]:34700 "EHLO mx2.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752841AbZDEIGC (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 5 Apr 2009 04:06:02 -0400
+Message-ID: <49D86674.3020503@redhat.com>
+Date: Sun, 05 Apr 2009 11:06:12 +0300
+From: Avi Kivity <avi@redhat.com>
+User-Agent: Thunderbird 2.0.0.21 (X11/20090320)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
-In-Reply-To: <20090403195824.31438.50814.sendpatchset@localhost.localdomain>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+To: Rusty Russell <rusty@rustcorp.com.au>
+CC: Anthony Liguori <anthony@codemonkey.ws>,
+       Gregory Haskins <ghaskins@novell.com>, linux-kernel@vger.kernel.org,
+       agraf@suse.de, pmullaney@novell.com, pmorreale@novell.com,
+       netdev@vger.kernel.org, kvm@vger.kernel.org
+Subject: Re: [RFC PATCH 00/17] virtual-bus
+References: <20090331184057.28333.77287.stgit@dev.haskins.net> <200904011638.45135.rusty@rustcorp.com.au> <49D391F5.4080700@codemonkey.ws> <200904051314.23170.rusty@rustcorp.com.au>
+In-Reply-To: <200904051314.23170.rusty@rustcorp.com.au>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Apr 03, 2009 at 09:58:24PM +0200, Bartlomiej Zolnierkiewicz wrote:
-> From: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
-> Subject: [PATCH] ide-cd: fix intendation in cdrom_decode_status()a
+Rusty Russell wrote:
+> On Thursday 02 April 2009 02:40:29 Anthony Liguori wrote:
+>   
+>> Rusty Russell wrote:
+>>     
+>>> As you point out, 350-450 is possible, which is still bad, and it's at least
+>>> partially caused by the exit to userspace and two system calls.  If virtio_net
+>>> had a backend in the kernel, we'd be able to compare numbers properly.
+>>>       
+>> I doubt the userspace exit is the problem.  On a modern system, it takes 
+>> about 1us to do a light-weight exit and about 2us to do a heavy-weight 
+>> exit.  A transition to userspace is only about ~150ns, the bulk of the 
+>> additional heavy-weight exit cost is from vcpu_put() within KVM.
+>>     
+>
+> Just to inject some facts, servicing a ping via tap (ie host->guest then
+> guest->host response) takes 26 system calls from one qemu thread, 7 from
+> another (see strace below). Judging by those futex calls, multiple context
+> switches, too.
+>   
 
-Rediffed & lightly tested the whole series:
+Interesting stuff.  Even if amortized over half a ring's worth of 
+packets, that's quite a lot.
 
----
-From: Borislav Petkov <petkovbb@gmail.com>
-Date: Sun, 5 Apr 2009 09:59:42 +0200
-Subject: [PATCH] ide-cd: fix intendation in cdrom_decode_status()
+Two threads are involved (we complete on the iothread, since we don't 
+know which vcpu will end up processing the interrupt, if any).
 
-Fix intendation in cdrom_decode_status(), no real code changes.
+>
+> Pid 10260:
+> 12:37:40.245785 select(17, [4 6 8 14 16], [], [], {0, 996000}) = 1 (in [6], left {0, 992000}) <0.003995>
+>   
 
-While at it:
-- beautify comments
+Should switch to epoll with its lower wait costs.  Unfortunately the 
+relative timeout requires reading the clock.
 
-There should be no functional changes caused by this patch.
+> 12:37:40.250226 read(6, "\0\0\0\0\0\0\0\0\0\0RT\0\0224V*\211\24\210`\304\10\0E\0"..., 69632) = 108 <0.000051>
+> 12:37:40.250462 write(1, "tap read: 108 bytes\n", 20) = 20 <0.000197>
+>   
 
-Signed-off-by: Borislav Petkov <petkovbb@gmail.com>
-Signed-off-by: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
----
- drivers/ide/ide-cd.c |  186 ++++++++++++++++++++++++--------------------------
- 1 files changed, 89 insertions(+), 97 deletions(-)
+I hope this is your addition.
 
-diff --git a/drivers/ide/ide-cd.c b/drivers/ide/ide-cd.c
-index ffbaa6d..2989aa8 100644
---- a/drivers/ide/ide-cd.c
-+++ b/drivers/ide/ide-cd.c
-@@ -311,7 +311,7 @@ static int cdrom_decode_status(ide_drive_t *drive, u8 stat)
- {
- 	ide_hwif_t *hwif = drive->hwif;
- 	struct request *rq = hwif->rq;
--	int err, sense_key;
-+	int err, sense_key, do_end_request = 0;
- 	u8 quiet = rq->cmd_flags & REQ_QUIET;
- 
- 	/* get the IDE error register */
-@@ -330,116 +330,108 @@ static int cdrom_decode_status(ide_drive_t *drive, u8 stat)
- 		 */
- 		rq->cmd_flags |= REQ_FAILED;
- 		return 2;
--	} else {
--		int do_end_request = 0;
--
--		/*
--		 * if we have an error, pass back CHECK_CONDITION as the
--		 * scsi status byte
--		 */
--		if (blk_pc_request(rq) && !rq->errors)
--			rq->errors = SAM_STAT_CHECK_CONDITION;
-+	}
- 
--		if (blk_noretry_request(rq))
--			do_end_request = 1;
-+	/* if we have an error, pass CHECK_CONDITION as the SCSI status byte */
-+	if (blk_pc_request(rq) && !rq->errors)
-+		rq->errors = SAM_STAT_CHECK_CONDITION;
- 
--		switch (sense_key) {
--		case NOT_READY:
--			if (blk_fs_request(rq) == 0 ||
--			    rq_data_dir(rq) == READ) {
--				cdrom_saw_media_change(drive);
-+	if (blk_noretry_request(rq))
-+		do_end_request = 1;
- 
--				if (blk_fs_request(rq) && !quiet)
--					printk(KERN_ERR PFX "%s: tray open\n",
--						drive->name);
--			} else {
--				if (ide_cd_breathe(drive, rq))
--					return 1;
--			}
--			do_end_request = 1;
--			break;
--		case UNIT_ATTENTION:
-+	switch (sense_key) {
-+	case NOT_READY:
-+		if (blk_fs_request(rq) == 0 || rq_data_dir(rq) == READ) {
- 			cdrom_saw_media_change(drive);
- 
--			if (blk_fs_request(rq) == 0)
--				return 0;
--			/*
--			 * Arrange to retry the request but be sure to give up
--			 * if we've retried too many times.
--			 */
--			if (++rq->errors > ERROR_MAX)
--				do_end_request = 1;
--			break;
--		case ILLEGAL_REQUEST:
--			/*
--			 * Don't print error message for this condition--
--			 * SFF8090i indicates that 5/24/00 is the correct
--			 * response to a request to close the tray if the
--			 * drive doesn't have that capability.
--			 * cdrom_log_sense() knows this!
--			 */
--			if (rq->cmd[0] == GPCMD_START_STOP_UNIT)
--				break;
--			/* fall-through */
--		case DATA_PROTECT:
--			/*
--			 * No point in retrying after an illegal request or data
--			 * protect error.
--			 */
--			if (!quiet)
--				ide_dump_status(drive, "command error", stat);
--			do_end_request = 1;
--			break;
--		case MEDIUM_ERROR:
--			/*
--			 * No point in re-trying a zillion times on a bad
--			 * sector. If we got here the error is not correctable.
--			 */
--			if (!quiet)
--				ide_dump_status(drive, "media error "
--						"(bad sector)",	stat);
--			do_end_request = 1;
--			break;
--		case BLANK_CHECK:
--			/* disk appears blank ?? */
--			if (!quiet)
--				ide_dump_status(drive, "media error (blank)",
--						stat);
--			do_end_request = 1;
--			break;
--		default:
--			if (blk_fs_request(rq) == 0)
--				break;
--			if (err & ~ATA_ABORTED) {
--				/* go to the default handler for other errors */
--				ide_error(drive, "cdrom_decode_status", stat);
-+			if (blk_fs_request(rq) && !quiet)
-+				printk(KERN_ERR PFX "%s: tray open\n",
-+					drive->name);
-+		} else {
-+			if (ide_cd_breathe(drive, rq))
- 				return 1;
--			} else if (++rq->errors > ERROR_MAX)
--				/* we've racked up too many retries, abort */
--				do_end_request = 1;
- 		}
-+		do_end_request = 1;
-+		break;
-+	case UNIT_ATTENTION:
-+		cdrom_saw_media_change(drive);
- 
--		if (blk_fs_request(rq) == 0) {
--			rq->cmd_flags |= REQ_FAILED;
--			do_end_request = 1;
--		}
-+		if (blk_fs_request(rq) == 0)
-+			return 0;
- 
- 		/*
--		 * End a request through request sense analysis when we have
--		 * sense data. We need this in order to perform end of media
--		 * processing.
-+		 * Arrange to retry the request but be sure to give up if we've
-+		 * retried too many times.
- 		 */
--		if (do_end_request)
--			goto end_request;
--
-+		if (++rq->errors > ERROR_MAX)
-+			do_end_request = 1;
-+		break;
-+	case ILLEGAL_REQUEST:
-+		/*
-+		 * Don't print error message for this condition -- SFF8090i
-+		 * indicates that 5/24/00 is the correct response to a request
-+		 * to close the tray if the drive doesn't have that capability.
-+		 *
-+		 * cdrom_log_sense() knows this!
-+		 */
-+		if (rq->cmd[0] == GPCMD_START_STOP_UNIT)
-+			break;
-+		/* fall-through */
-+	case DATA_PROTECT:
- 		/*
--		 * If we got a CHECK_CONDITION status, queue
--		 * a request sense command.
-+		 * No point in retrying after an illegal request or data
-+		 * protect error.
- 		 */
--		if (stat & ATA_ERR)
--			cdrom_queue_request_sense(drive, NULL, NULL);
--		return 1;
-+		if (!quiet)
-+			ide_dump_status(drive, "command error", stat);
-+		do_end_request = 1;
-+		break;
-+	case MEDIUM_ERROR:
-+		/*
-+		 * No point in re-trying a zillion times on a bad sector.
-+		 * If we got here the error is not correctable.
-+		 */
-+		if (!quiet)
-+			ide_dump_status(drive, "media error "
-+					"(bad sector)", stat);
-+		do_end_request = 1;
-+		break;
-+	case BLANK_CHECK:
-+		/* disk appears blank? */
-+		if (!quiet)
-+			ide_dump_status(drive, "media error (blank)",
-+					stat);
-+		do_end_request = 1;
-+		break;
-+	default:
-+		if (blk_fs_request(rq) == 0)
-+			break;
-+		if (err & ~ATA_ABORTED) {
-+			/* go to the default handler for other errors */
-+			ide_error(drive, "cdrom_decode_status", stat);
-+			return 1;
-+		} else if (++rq->errors > ERROR_MAX)
-+			/* we've racked up too many retries, abort */
-+			do_end_request = 1;
-+
-+
-+	}
-+
-+	if (blk_fs_request(rq) == 0) {
-+		rq->cmd_flags |= REQ_FAILED;
-+		do_end_request = 1;
- 	}
-+	/*
-+	 * End a request through request sense analysis when we have sense data.
-+	 * We need this in order to perform end of media processing.
-+	 */
-+	if (do_end_request)
-+		goto end_request;
-+
-+	/* if we got a CHECK_CONDITION status, queue a request sense command */
-+	if (stat & ATA_ERR)
-+		cdrom_queue_request_sense(drive, NULL, NULL);
-+	return 1;
- 
- end_request:
- 	if (stat & ATA_ERR) {
--- 
-1.6.2.1
+> 12:37:40.250800 ioctl(7, 0x4008ae61, 0x7fff8cafb3a0) = 0 <0.000223>
+> 12:37:40.251149 read(6, 0x115c6ac, 69632) = -1 EAGAIN (Resource temporarily unavailable) <0.000019>
+>   
+
+This wouldn't be necessary with io_getevents().
+
+> 12:37:40.251292 write(1, "tap read: -1 bytes\n", 19) = 19 <0.000085>
+>   
+
+...
+
+> 12:37:40.251488 clock_gettime(CLOCK_MONOTONIC, {1554, 633304282}) = 0 <0.000020>
+> 12:37:40.251604 clock_gettime(CLOCK_MONOTONIC, {1554, 633413793}) = 0 <0.000019>
+>   
+
+Great.
+
+> 12:37:40.251717 futex(0xb81360, 0x81 /* FUTEX_??? */, 1) = 1 <0.001222>
+> 12:37:40.253037 select(17, [4 6 8 14 16], [], [], {1, 0}) = 1 (in [16], left {1, 0}) <0.000026>
+> 12:37:40.253196 read(16, "\16\0\0\0\0\0\0\0\376\377\377\377\0\0\0\0\0\0\0\0\0\0\0"..., 128) = 128 <0.000022>
+> 12:37:40.253324 rt_sigaction(SIGALRM, NULL, {0x406d50, ~[KILL STOP RTMIN RT_1], SA_RESTORER, 0x7f1a842430f0}, 8) = 0 <0.000018>
+> 12:37:40.253477 write(5, "\0", 1)       = 1 <0.000022>
+>   
+
+The write is to wake someone up.  Who?
+
+> 12:37:40.253585 read(16, 0x7fff8cb09440, 128) = -1 EAGAIN (Resource temporarily unavailable) <0.000020>
+>   
+
+Clearing up signalfd...
+
+> 12:37:40.253687 clock_gettime(CLOCK_MONOTONIC, {1554, 635496181}) = 0 <0.000019>
+> 12:37:40.253798 writev(6, [{"\0\0\0\0\0\0\0\0\0\0", 10}, {"*\211\24\210`\304RT\0\0224V\10\0E\0\0T\255\262\0\0@\1G"..., 98}], 2) = 108 <0.000062>
+> 12:37:40.253993 ioctl(7, 0x4008ae61, 0x7fff8caff460) = 0 <0.000161>
+>   
+
+Injecting the interrupt.
+
+> 12:37:40.254263 clock_gettime(CLOCK_MONOTONIC, {1554, 636077540}) = 0 <0.000019>
+> 12:37:40.254380 futex(0xb81360, 0x81 /* FUTEX_??? */, 1) = 1 <0.000394>
+> 12:37:40.254861 select(17, [4 6 8 14 16], [], [], {1, 0}) = 1 (in [4], left {1, 0}) <0.000022>
+> 12:37:40.255001 read(4, "\0", 512)      = 1 <0.000021>
+>   
+
+Great,  the write() was to wake ourselves up.
+
+> 12:37:40.255109 read(4, 0x7fff8cb092d0, 512) = -1 EAGAIN (Resource temporarily unavailable) <0.000018>
+> 12:37:40.255211 clock_gettime(CLOCK_MONOTONIC, {1554, 637020677}) = 0 <0.000019>
+> 12:37:40.255314 clock_gettime(CLOCK_MONOTONIC, {1554, 637123483}) = 0 <0.000019>
+> 12:37:40.255416 timer_gettime(0, {it_interval={0, 0}, it_value={0, 0}}) = 0 <0.000018>
+> 12:37:40.255524 timer_settime(0, 0, {it_interval={0, 0}, it_value={0, 14000000}}, NULL) = 0 <0.000021>
+> 12:37:40.255635 clock_gettime(CLOCK_MONOTONIC, {1554, 637443915}) = 0 <0.000019>
+> 12:37:40.255739 clock_gettime(CLOCK_MONOTONIC, {1554, 637547001}) = 0 <0.000018>
+> 12:37:40.255847 select(17, [4 6 8 14 16], [], [], {1, 0}) = 1 (in [16], left {0, 988000}) <0.014303>
+>
+>   
+
+This is the vcpu thread:
+
+> Pid 10262:
+> 12:37:40.252531 clock_gettime(CLOCK_MONOTONIC, {1554, 634339051}) = 0 <0.000018>
+> 12:37:40.252631 timer_gettime(0, {it_interval={0, 0}, it_value={0, 17549811}}) = 0 <0.000021>
+> 12:37:40.252750 timer_settime(0, 0, {it_interval={0, 0}, it_value={0, 250000}}, NULL) = 0 <0.000024>
+> 12:37:40.252868 ioctl(11, 0xae80, 0)    = 0 <0.001171>
+> 12:37:40.254128 futex(0xb81360, 0x80 /* FUTEX_??? */, 2) = 0 <0.000270>
+> 12:37:40.254490 ioctl(7, 0x4008ae61, 0x4134bee0) = 0 <0.000019>
+> 12:37:40.254598 futex(0xb81360, 0x81 /* FUTEX_??? */, 1) = 0 <0.000017>
+> 12:37:40.254693 ioctl(11, 0xae80 <unfinished ...>
+>   
+
+Looks like the interrupt from the iothread was injected and delivered 
+before the iothread could give up the mutex, so we needed to wait here.
 
 
 -- 
-Regards/Gruss,
-    Boris.
+I have a truly marvellous patch that fixes the bug which this
+signature is too narrow to contain.
+
