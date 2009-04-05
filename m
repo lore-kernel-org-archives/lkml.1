@@ -1,60 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752488AbZDERMh@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752478AbZDERPV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752488AbZDERMh (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 5 Apr 2009 13:12:37 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751631AbZDERM2
+	id S1752478AbZDERPV (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 5 Apr 2009 13:15:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752069AbZDERPE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 5 Apr 2009 13:12:28 -0400
-Received: from smtp5.welho.com ([213.243.153.39]:52778 "EHLO smtp5.welho.com"
+	Sun, 5 Apr 2009 13:15:04 -0400
+Received: from e2.ny.us.ibm.com ([32.97.182.142]:58596 "EHLO e2.ny.us.ibm.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751454AbZDERM1 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 5 Apr 2009 13:12:27 -0400
-Date: Sun, 5 Apr 2009 20:10:56 +0300
-From: Adrian Bunk <bunk@kernel.org>
-To: Akinobu Mita <akinobu.mita@gmail.com>, dhowells@redhat.com
-Cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org
-Subject: [2.6 patch] fix frv compile breakage
-Message-ID: <20090405171056.GD3718@localhost.pp.htv.fi>
+	id S1751748AbZDERPC (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 5 Apr 2009 13:15:02 -0400
+Date: Sun, 5 Apr 2009 10:15:00 -0700
+From: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
+To: Andi Kleen <andi@firstfloor.org>
+Cc: Ingo Molnar <mingo@elte.hu>, Josh Boyer <jwboyer@gmail.com>,
+       linux-kernel@vger.kernel.org, akpm@linux-foundation.org,
+       dipankar@in.ibm.com, niv@us.ibm.com, manfred@colorfullife.com,
+       peterz@infradead.org, lethal@linux-sh.org, kernel@wantstofly.org,
+       kyle@mcmartin.ca, deller@gmx.de, davem@davemloft.net,
+       ralf@linux-mips.org, jes@sgi.com, benh@kernel.crashing.org,
+       paulus@samba.org, anton@samba.org
+Subject: Re: [PATCH -tip] Convert CONFIG_SMP=y powerpc defconfigs to
+	TREE_RCU.
+Message-ID: <20090405171500.GL6893@linux.vnet.ibm.com>
+Reply-To: paulmck@linux.vnet.ibm.com
+References: <3181463559098978317@unknownmsgid> <625fc13d0904040621g7b89cd2cq9681ce80635a65c4@mail.gmail.com> <20090404163149.GC6893@linux.vnet.ibm.com> <20090405101756.GA10490@elte.hu> <20090405103759.GA17934@one.firstfloor.org> <20090405164904.GJ6893@linux.vnet.ibm.com> <20090405170113.GB17934@one.firstfloor.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-User-Agent: Mutt/1.5.18 (2008-05-17)
+In-Reply-To: <20090405170113.GB17934@one.firstfloor.org>
+User-Agent: Mutt/1.5.15+20070412 (2007-04-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This patch fixes the follwing build error caused by
-commit 7ca43e7564679604d86e9ed834e7bbcffd8a4a3f
-(mm: use debug_kmap_atomic):
+On Sun, Apr 05, 2009 at 07:01:13PM +0200, Andi Kleen wrote:
+> On Sun, Apr 05, 2009 at 09:49:04AM -0700, Paul E. McKenney wrote:
+> > On Sun, Apr 05, 2009 at 12:37:59PM +0200, Andi Kleen wrote:
+> > > > I'd suggest you dont do these dozens of defconfig updates at all - 
+> > > > arch maintainers can do this themselves, once the core kernel 
+> > > > default has been flipped.
+> > > 
+> > > AFAIK they don't. There's no make updatemyconfigwithdefaultstatementsconfig
+> > 
+> > My guess is that I would in fact have to send a few patches.  But I
+> > suppose that the real question is "how long should we wait to drop
+> > Classic RCU once the last arch has changed its defconfig?"  I have
+> > been assuming that we would wait one release cycle.
+> 
+> I don't think you have to wait, stale entries in defconfigs happen
+> all the time and Kconfig just asks then.
 
-<--  snip  -->
+Good point!
 
-...
-  AS      arch/frv/mm/tlb-miss.o
-...
-In file included from 
-arch/frv/mm/tlb-miss.S:13:
-...
-Assembler messages:
-include/asm-generic/ioctl.h:73: 
-Error: unrecognized instruction `extern unsigned int __invalid_size_argument_for_IO...'
-...
-
-<--  snip  -->
-
-Signed-off-by: Adrian Bunk <bunk@kernel.org>
-
----
-diff --git a/arch/frv/mm/tlb-miss.S b/arch/frv/mm/tlb-miss.S
-index 0764348..7f392bc 100644
---- a/arch/frv/mm/tlb-miss.S
-+++ b/arch/frv/mm/tlb-miss.S
-@@ -13,7 +13,6 @@
- #include <linux/linkage.h>
- #include <asm/page.h>
- #include <asm/pgtable.h>
--#include <asm/highmem.h>
- #include <asm/spr-regs.h>
- 
- 	.section	.text.tlbmiss
-
+							Thanx, Paul
