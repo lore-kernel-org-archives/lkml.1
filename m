@@ -1,40 +1,98 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756712AbZDEB55@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756887AbZDECci@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756712AbZDEB55 (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 4 Apr 2009 21:57:57 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755341AbZDEB5s
+	id S1756887AbZDECci (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 4 Apr 2009 22:32:38 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756611AbZDECc2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 4 Apr 2009 21:57:48 -0400
-Received: from hawking.rebel.net.au ([203.20.69.83]:49108 "EHLO
-	hawking.rebel.net.au" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753787AbZDEB5r (ORCPT
+	Sat, 4 Apr 2009 22:32:28 -0400
+Received: from wf-out-1314.google.com ([209.85.200.168]:26225 "EHLO
+	wf-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756579AbZDECc1 convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 4 Apr 2009 21:57:47 -0400
-Message-ID: <49D8100F.1060504@davidnewall.com>
-Date: Sun, 05 Apr 2009 11:27:35 +0930
-From: David Newall <davidn@davidnewall.com>
-User-Agent: Thunderbird 2.0.0.12 (X11/20080227)
+	Sat, 4 Apr 2009 22:32:27 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
+         :cc:content-type:content-transfer-encoding;
+        b=T8yjKVEYUSZAHcAjp0jVydBLyeUUd+zUqVjyv2fTR29rYhgunt7yhbMyVSlaIB1V/u
+         DiC1vN7b3z9RQY6C7MY01/EcypSdGwsKTtzOoD7Ih00PwJ9ObxfGstRK7jVRIe7xOy+M
+         e+oFKDDQb8e3rjh5exPZkPry0IQxBXxUxiJws=
 MIME-Version: 1.0
-To: Andrew Morton <akpm@linux-foundation.org>
-CC: Jeff Garzik <jeff@garzik.org>,
-       Lennart Sorensen <lsorense@csclub.uwaterloo.ca>,
-       Mark Lord <lkml@rtr.ca>, torvalds@linux-foundation.org, tytso@mit.edu,
-       drees76@gmail.com, jesper@krogh.cc, linux-kernel@vger.kernel.org
-Subject: Re: Linux 2.6.29
-References: <alpine.LFD.2.00.0903251622420.3032@localhost.localdomain>	<20090326171148.9bf8f1ec.akpm@linux-foundation.org>	<alpine.LFD.2.00.0903261723250.3994@localhost.localdomain>	<20090326174704.cd36bf7b.akpm@linux-foundation.org>	<alpine.LFD.2.00.0903261752110.3994@localhost.localdomain>	<20090326182519.d576d703.akpm@linux-foundation.org>	<20090401210337.GB3797@csclub.uwaterloo.ca>	<20090401143622.b1885643.akpm@linux-foundation.org>	<20090401225737.GC3797@csclub.uwaterloo.ca>	<49D6214A.9030204@rtr.ca>	<20090403151648.GJ3795@csclub.uwaterloo.ca>	<49D65C80.4080003@garzik.org> <20090404011838.9c39a78a.akpm@linux-foundation.org>
-In-Reply-To: <20090404011838.9c39a78a.akpm@linux-foundation.org>
+In-Reply-To: <20090404163612.GA17018@hack>
+References: <d82e647a0904040828n27af9173t7239b1822e6dc9ca@mail.gmail.com>
+	 <20090404163612.GA17018@hack>
+Date: Sun, 5 Apr 2009 10:32:25 +0800
+Message-ID: <d82e647a0904041932s5c194c34kbda033feae447585@mail.gmail.com>
+Subject: Re: [BUG 2.6.29] make install failed
+From: Ming Lei <tom.leiming@gmail.com>
+To: =?ISO-8859-1?Q?Am=E9rico_Wang?= <xiyou.wangcong@gmail.com>
+Cc: Linux Kernel List <linux-kernel@vger.kernel.org>
 Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Andrew Morton wrote:
-> - open the file
+2009/4/5 Américo Wang <xiyou.wangcong@gmail.com>:
+> On Sat, Apr 04, 2009 at 11:28:05PM +0800, Ming Lei wrote:
+>>commit 6bb597507f9839b1349878
+>>
+>>[lm@linux-lm linux-2.6]$ sudo make install
+>>  CHK     include/linux/version.h
+>>  CHK     include/linux/utsrelease.h
+>>  UPD     include/linux/utsrelease.h
+>>  SYMLINK include/asm -> include/asm-x86
+>>  CALL    scripts/checksyscalls.sh
+>>  CHK     include/linux/compile.h
+>>  SKIPPED include/linux/compile.h
+>>  CC      init/version.o
+>>  LD      init/built-in.o
+>>  CC      kernel/trace/trace.o
+>>  LD      kernel/trace/built-in.o
+>>  CC      kernel/module.o
+>>  LD      kernel/built-in.o
+>>
+>>  LD      vmlinux.o
+>>  MODPOST vmlinux.o
+>>WARNING: modpost: Found 2 section mismatch(es).
+>>To see full details build your kernel with:
+>>'make CONFIG_DEBUG_SECTION_MISMATCH=y'
+>>  GEN     .version
+>>  CHK     include/linux/compile.h
+>>  SKIPPED include/linux/compile.h
+>>  LD      .tmp_vmlinux1
+>>  KSYM    .tmp_kallsyms1.S
+>>  AS      .tmp_kallsyms1.o
+>>  LD      .tmp_vmlinux2
+>>  KSYM    .tmp_kallsyms2.S
+>>  AS      .tmp_kallsyms2.o
+>>  LD      vmlinux
+>>  SYSMAP  System.map
+>>  SYSMAP  .tmp_System.map
+>>sh /home/lm/git/linux-2.6/linux-2.6/arch/x86/boot/install.sh 2.6.29
+>>arch/x86/boot/bzImage \
+>>               System.map "/boot"
+>>WARNING: Couldn't open directory /lib/modules/2.6.29: No such file or directory
+>>FATAL: Could not open /lib/modules/2.6.29/modules.dep.temp for
+>>writing: No such file or directory
+>>No modules available for kernel "2.6.29".
+>>mkinitrd failed
 >
-> - unlink the file
->
-> - now sit in a loop, slowly nibbling away at the tail with
->   ftruncate() until the file is gone.
+> Probably you forgot to do 'make modules_install'?
 
-Why not fork and unlink in the child?
+No, I really does make modules_install before make install.
+I'll try it again.
+
+Thanks!
+
+>
+>
+> --
+> Do what you love, f**k the rest! F**k the regulations!
+>
+>
+
+
+
+-- 
+Lei Ming
