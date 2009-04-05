@@ -1,87 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758158AbZDEUWs@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758325AbZDEUdf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758158AbZDEUWs (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 5 Apr 2009 16:22:48 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756486AbZDEUWi
+	id S1758325AbZDEUdf (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 5 Apr 2009 16:33:35 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754648AbZDEUdZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 5 Apr 2009 16:22:38 -0400
-Received: from mail.fieldses.org ([141.211.133.115]:52207 "EHLO
-	pickle.fieldses.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753789AbZDEUWh (ORCPT
+	Sun, 5 Apr 2009 16:33:25 -0400
+Received: from ppp-110-39.adsl.restena.lu ([158.64.110.39]:39186 "EHLO
+	bonbons.gotdns.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753551AbZDEUdY (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 5 Apr 2009 16:22:37 -0400
-Date: Sun, 5 Apr 2009 16:22:33 -0400
-To: Trond Myklebust <Trond.Myklebust@netapp.com>
-Cc: linux-nfs@vger.kernel.org, Nick Piggin <npiggin@suse.de>,
-       linux-kernel@vger.kernel.org
-Subject: Re: bus errors on nfs writes in latest git
-Message-ID: <20090405202233.GA16937@fieldses.org>
-References: <20090404161447.GE495@fieldses.org> <1238861949.8114.3.camel@heimdal.trondhjem.org> <1238862470.8114.5.camel@heimdal.trondhjem.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1238862470.8114.5.camel@heimdal.trondhjem.org>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-From: "J. Bruce Fields" <bfields@fieldses.org>
+	Sun, 5 Apr 2009 16:33:24 -0400
+Date: Sun, 5 Apr 2009 22:33:18 +0200
+From: Bruno =?UTF-8?B?UHLDqW1vbnQ=?= <bonbons@linux-vserver.org>
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: Francois Romieu <romieu@fr.zoreil.com>, NetDev <netdev@vger.kernel.org>,
+       LKML <linux-kernel@vger.kernel.org>,
+       pm list <linux-pm@lists.linux-foundation.org>
+Subject: Re: [PATCH] NET/r8169: Rework suspend and resume
+Message-ID: <20090405223318.5a494e4e@neptune.home>
+In-Reply-To: <200904052040.04752.rjw@sisk.pl>
+References: <200904052040.04752.rjw@sisk.pl>
+X-Mailer: Claws Mail 3.7.0 (GTK+ 2.14.7; i686-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, Apr 04, 2009 at 12:27:50PM -0400, Trond Myklebust wrote:
-> On Sat, 2009-04-04 at 12:19 -0400, Trond Myklebust wrote:
-> > On Sat, 2009-04-04 at 12:14 -0400, J. Bruce Fields wrote:
-> > > My regular connecthon tests are reporting bus errors on the "write/read
-> > > 30 MB file" on recent upstream kernels.  I'm travelling and haven't had
-> > > a chance to do anything beyond kick off a dumb git-bisect, which pointed
-> > > the blame at the following commit.  Any ideas?
+On Sun, 05 April 2009 "Rafael J. Wysocki" <rjw@sisk.pl> wrote:
+> From: Rafael J. Wysocki <rjw@sisk.pl>
 > 
-> The following patch should fix it.
+> The recent changes of the PCI PM core allow us to simplify the
+> suspend and resume handling in a number of device drivers, since they
+> don't need to carry out the general PCI PM operations, such as
+> changing the power state of the device, during suspend and resume any
+> more.
+> 
+> Simplify the suspend and resume callbacks of r8169 using the
+> observation that the PCI PM core can take care of some operations
+> carried out by the driver.
+> 
+> Additionally, make the shutdown callback of r8169 only put the device
+> into a low power state if the system is going to be powered off
+> (kexec is known to have problems with network adapters that are put
+> into low power states on shutdown).
+> 
+> This patch has been tested on MSI Wind U100.
 
-Thanks--confirmed.  For what it's worth:
+Tested against 2.6.29.1 on my Commell LE-365 and suspend (S3) + WoL
+still works as expected.
 
-	Tested-by: J. Bruce Fields <bfields@citi.umich.edu>
+02:08.0 Ethernet controller [0200]: Realtek Semiconductor Co., Ltd.
+                     RTL-8169 Gigabit Ethernet [10ec:8169] (rev 10)
 
---b.
-
-> 
-> Cheers
->  Trond
-> ---------------------------------------------------------------
-> >From b7a178f4fab331821b8cff384e1954e62aa63e52 Mon Sep 17 00:00:00 2001
-> From: Trond Myklebust <Trond.Myklebust@netapp.com>
-> Date: Sat, 4 Apr 2009 12:22:57 -0400
-> Subject: [PATCH] NFS: Fix the return value in nfs_page_mkwrite()
-> 
-> Commit c2ec175c39f62949438354f603f4aa170846aabb (mm: page_mkwrite change
-> prototype to match fault) exposed a bug in the NFS implementation of
-> page_mkwrite. We should be returning 0 on success...
-> 
-> Signed-off-by: Trond Myklebust <Trond.Myklebust@netapp.com>
-> ---
->  fs/nfs/file.c |    2 --
->  1 files changed, 0 insertions(+), 2 deletions(-)
-> 
-> diff --git a/fs/nfs/file.c b/fs/nfs/file.c
-> index 3523b89..5a97bcf 100644
-> --- a/fs/nfs/file.c
-> +++ b/fs/nfs/file.c
-> @@ -516,8 +516,6 @@ static int nfs_vm_page_mkwrite(struct vm_area_struct *vma, struct vm_fault *vmf)
->  		goto out_unlock;
->  
->  	ret = nfs_updatepage(filp, page, 0, pagelen);
-> -	if (ret == 0)
-> -		ret = pagelen;
->  out_unlock:
->  	unlock_page(page);
->  	if (ret)
-> -- 
-> 1.6.0.4
-> 
-> 
-> -- 
-> Trond Myklebust
-> Linux NFS client maintainer
-> 
-> NetApp
-> Trond.Myklebust@netapp.com
-> www.netapp.com
+Bruno
