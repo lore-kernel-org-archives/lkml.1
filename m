@@ -1,94 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758227AbZDEIWp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758662AbZDEIXP@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758227AbZDEIWp (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 5 Apr 2009 04:22:45 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757656AbZDEIW2
+	id S1758662AbZDEIXP (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 5 Apr 2009 04:23:15 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757656AbZDEIWx
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 5 Apr 2009 04:22:28 -0400
-Received: from mail-bw0-f169.google.com ([209.85.218.169]:55832 "EHLO
-	mail-bw0-f169.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757471AbZDEIW0 convert rfc822-to-8bit (ORCPT
+	Sun, 5 Apr 2009 04:22:53 -0400
+Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:44615
+	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
+	by vger.kernel.org with ESMTP id S1758619AbZDEIWt (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 5 Apr 2009 04:22:26 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
-         :content-type:content-transfer-encoding;
-        b=xDrlL/xmTHBept8blbU6zwIV4O7g+9Bw1UKE42xw/UycZ3VL8eAVG2MO6rUxlKzOg6
-         B5YAM+GH5ARPPoIXhoX/FvfsTc75H9GkRana6aGW3xF2Kzo6cVzVycBUkH1jCOYurRSX
-         qV/iDYaD/lL5WIa6T3yKCtxkN9OzCMK9WueMM=
-MIME-Version: 1.0
-In-Reply-To: <504C592648%linux@youmustbejoking.demon.co.uk>
-References: <504BBE2828%linux@youmustbejoking.demon.co.uk>
-	 <20090404041813.GA30746@srcf.ucam.org>
-	 <71cd59b00904040133p1f130673r4e93d2c48f8f4616@mail.gmail.com>
-	 <504C2315A8%linux@youmustbejoking.demon.co.uk>
-	 <71cd59b00904040535t51f0e8bew34b487e0a3703f7e@mail.gmail.com>
-	 <504C592648%linux@youmustbejoking.demon.co.uk>
-Date: Sun, 5 Apr 2009 10:22:21 +0200
-Message-ID: <71cd59b00904050122r626028c7y62a0cd44411e08b7@mail.gmail.com>
-Subject: Re: [PATCH 2.6.29] eeepc-laptop: report brightness control events via 
-	the input layer
-From: Corentin Chary <corentin.chary@gmail.com>
-To: Corentin Chary <corentin.chary@gmail.com>,
-       Matthew Garrett <mjg59@srcf.ucam.org>, linux-kernel@vger.kernel.org,
-       acpi4asus-user@lists.sourceforge.net,
-       Darren Salt <linux@youmustbejoking.demon.co.uk>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 8BIT
+	Sun, 5 Apr 2009 04:22:49 -0400
+Date: Sun, 05 Apr 2009 01:22:37 -0700 (PDT)
+Message-Id: <20090405.012237.198610462.davem@davemloft.net>
+To: graham@gmurray.org.uk
+Cc: linux-kernel@vger.kernel.org, netdev@vger.kernel.org,
+       netfilter-devel@vger.kernel.org
+Subject: Re: Regression caused by commit "netfilter: iptables: lock free
+ counters"
+From: David Miller <davem@davemloft.net>
+In-Reply-To: <8763hja8cy.fsf@newton.gmurray.org.uk>
+References: <20090329234702.4988017f@desktop.r000n.info>
+	<8763hja8cy.fsf@newton.gmurray.org.uk>
+X-Mailer: Mew version 6.1 on Emacs 22.1 / Mule 5.0 (SAKAKI)
+Mime-Version: 1.0
+Content-Type: Text/Plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, Apr 5, 2009 at 12:10 AM, Darren Salt
-<linux@youmustbejoking.demon.co.uk> wrote:
-> I demand that Corentin Chary may or may not have written...
->
->>>> How can brn be -2?
->>> If notify_brn() wasn't called, it will be.
->
->> Oh, yeah, I miss the if() before notify_brn()
->
-> Easily missed. ;-)
->
->>>> And why -2?
->>> Because notify_brn() won't return it (and if it ever does, it needs to be
->>> fixed). (Yes, I know, "magic numbers" and all that...)
->
->> Maybe a negative known error code could be used here
->
-> I see the following:
->
-> * read_acpi_int() returns 0 and writes the brightness setting to *val, or
->  returns -1 and writes -1 to *val if the ACPI call failed.
->
-> * get_acpi() returns whatever was written to value by read_acpi_int(), or
->  -ENODEV if there's no ACPI method which can be called.
->
-> * read_brightness is a trivial wrapper for get_acpi().
->
-> * notify_brn() stores the result of read_brightness and returns the
->  previously-stored value, so it can store then later return -ENODEV, -1 or
->  the brightness setting.
->
-> This makes -ENODEV a suitable value. Replacing that -1 with something other
-> than -ENODEV might be good, but I don't think that that really matters right
-> now (though I've replaced the "!= -1" in the original version of the patch
-> with "< 0").
->
-> Revised patch follows...
+From: Graham Murray <graham@gmurray.org.uk>
+Date: Sun, 05 Apr 2009 08:05:17 +0100
 
-Thanks, it's cleaner now =).
+Please CC the appropriate mailing lists (as I have now) when reporting
+this incredibly useful information.  The networking and netfilter
+developers largely do not read linux-kernel.
 
-There was just a little
-
-ERROR: that open brace { should be on the previous line
-#36: FILE: drivers/platform/x86/eeepc-laptop.c:521:
-        if (bd)
-+       {
-
-But I corrected that. It is now pushed in acpi4asus tree.
-
--- 
-Corentin Chary
-http://xf.iksaif.net
+> Roman Mindalev <r000n@r000n.net> writes:
+> 
+> > Result of the bisection:
+> >
+> > 784544739a25c30637397ace5489eeb6e15d7d49 is first bad commit
+> > commit 784544739a25c30637397ace5489eeb6e15d7d49             
+> 
+> I am seeing a different problem which also bisects to this commit. There are
+> no kernel messages but ip6tables fails to run.
+> 
+> newton ~ # ip6tables -L -v
+> FATAL: Module ip6_tables not found.
+> ip6tables v1.4.3.1: can't initialize ip6tables table `filter': Memory allocation problem
+> Perhaps ip6tables or your kernel needs to be upgraded.
+> 
+> I get this error no matter which ip6tables sub-command I run. Ip6tables
+> is built into the kernel, not as modules.
+> 
+> An strace shows the failure to be 
+> socket(PF_INET6, SOCK_RAW, IPPROTO_RAW) = 3
+> getsockopt(3, SOL_IPV6, 0x40 /* IPV6_??? */, "filter\0\305\0w~\300\0wb\305P\24\312\t\0009b\305\216\23\0\0\310\341/g\16"..., [84]) = 0
+> brk(0)                                  = 0x8273000
+> brk(0x8294000)                          = 0x8294000
+> getsockopt(3, SOL_IPV6, 0x41 /* IPV6_??? */, 0x8273090, 0xbfd23628) = -1 ENOMEM (Cannot allocate memory)
+> close(3)                                = 0
+> 
+> --
+> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> Please read the FAQ at  http://www.tux.org/lkml/
