@@ -1,65 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752335AbZDES5m@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753797AbZDETBA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752335AbZDES5m (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 5 Apr 2009 14:57:42 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752002AbZDES5c
+	id S1753797AbZDETBA (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 5 Apr 2009 15:01:00 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753578AbZDETAq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 5 Apr 2009 14:57:32 -0400
-Received: from 82-117-125-11.tcdsl.calypso.net ([82.117.125.11]:50426 "EHLO
-	smtp.ossman.eu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751968AbZDES5b (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 5 Apr 2009 14:57:31 -0400
-Date: Sun, 5 Apr 2009 20:57:27 +0200
-From: Pierre Ossman <drzeus-mmc@drzeus.cx>
-To: Frans Meulenbroeks <fransmeulenbroeks@gmail.com>
-Cc: linux-kernel@vger.kernel.org, beagleboard@googlegroups.com,
-       openembedded-devel@openembedded.org, linux-omap@vger.kernel.org
-Subject: Re: [PATCH] drivers/mmc/core/core.c: extend limit
-Message-ID: <20090405205727.7a86d61b@mjolnir.ossman.eu>
-In-Reply-To: <alpine.LNX.2.00.0903252248430.32070@linux-suse.site>
-References: <alpine.LNX.2.00.0903252248430.32070@linux-suse.site>
-X-Mailer: Claws Mail 3.7.1 (GTK+ 2.16.0; x86_64-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Sun, 5 Apr 2009 15:00:46 -0400
+Received: from mail-fx0-f158.google.com ([209.85.220.158]:51008 "EHLO
+	mail-fx0-f158.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753550AbZDETAp (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 5 Apr 2009 15:00:45 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:sender:in-reply-to:references:date
+         :x-google-sender-auth:message-id:subject:from:to:cc:content-type
+         :content-transfer-encoding;
+        b=oo6TBYBBAQnzEKwFdA57adqJc3viB2XOvN7rqcEbRi+1wVQR2VlvMw+0rjmqo22bpa
+         hK0hCkg00bg1ROX+Qdbscpvw0wuDugKzDB+e0aNmVoONuLLQLm9a+HSOA4CMO+uTaMPX
+         d2WpRvpuG1lUOwKbqcz7GBSiFt+2F//ERldOQ=
+MIME-Version: 1.0
+In-Reply-To: <alpine.LFD.2.00.0904052046030.747@localhost.localdomain>
+References: <3efb10970904030502q1068731fl5b92f93d5341b43e@mail.gmail.com>
+	 <alpine.LFD.2.00.0904051257470.747@localhost.localdomain>
+	 <3efb10970904051139ue3802b1ib33487418188e4bc@mail.gmail.com>
+	 <alpine.LFD.2.00.0904052046030.747@localhost.localdomain>
+Date: Sun, 5 Apr 2009 21:00:39 +0200
+X-Google-Sender-Auth: 7e4481fecf44a824
+Message-ID: <3efb10970904051200g4c725badp6d05092b70dd56a2@mail.gmail.com>
+Subject: Re: System deadlock on 2.6.24-rt20 (-rt27 panics on 
+	locking-api-selftests)
+From: Remy Bohmer <linux@bohmer.net>
+To: Thomas Gleixner <tglx@linutronix.de>
+Cc: Steven Rostedt <rostedt@goodmis.org>, Ingo Molnar <mingo@elte.hu>,
+       LKML <linux-kernel@vger.kernel.org>,
+       linux-rt-users <linux-rt-users@vger.kernel.org>
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 25 Mar 2009 23:03:28 +0100 (CET)
-Frans Meulenbroeks <fransmeulenbroeks@gmail.com> wrote:
+Hello Thomas,
 
-> 
-> This did not help me as the limit was already at 300000. However, I 
-> decided to raise the limit to 500000. Still no go so I also doubled the 
-> read limit from 100000 to 200000. After that the cards work without 
-> problem. Changing the write timing back to 300000 brought the problem back 
-> so apparently both timings need to be extended. Attached is the patch I 
-> used for this. As it is a timeout limit value, it should not harm anyone, 
-> and a longer timeout at least allows more cards to be used.
-> 
+2009/4/5 Thomas Gleixner <tglx@linutronix.de>:
+> On Sun, 5 Apr 2009, Remy Bohmer wrote:
+>> > What happens if you disable the self tests ?
+>>
+>> The system boots and seems to run properly. We did not yet test for a
+>> longer period of time, but the first looks are that the hangups we had
+>> are gone now. But it would be good for the peace of mind if the
+>> locking-selftest was working properly.
+>
+> Patches are welcome. :)
+>
+> Seriously, I'm not going to look into that as my limited capacity is
+> focussed on 2.6.29-rt.
 
-Unfortunately some controllers cannot cope with huge timeouts and will
-complain. And such a huge timeout shouldn't be needed (and they weren't
-any larger in .27).
+As it should be... :-)
+I was not asking you to fix it, my apologies if you read it that way.
+It is not that important to me, just a nice-to-have.
 
-> 
-> What somewhat troubles me is that this worked in .27, so it might be this 
-> patch does not address the root cause. Then again this is the best I can 
-> do. If someone has a better solution, I am more than happy to test it.
-> 
 
-Indeed. Have you enabled MMC_DEBUG and checked that the controller
-actually follows the configured timeouts?
+Kind Regards,
 
-Rgds
--- 
-     -- Pierre Ossman
-
-  Linux kernel, MMC maintainer        http://www.kernel.org
-  rdesktop, core developer          http://www.rdesktop.org
-
-  WARNING: This correspondence is being monitored by the
-  Swedish government. Make sure your server uses encryption
-  for SMTP traffic and consider using PGP for end-to-end
-  encryption.
+Remy
