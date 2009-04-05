@@ -1,161 +1,79 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752344AbZDESk2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752747AbZDESpX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752344AbZDESk2 (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 5 Apr 2009 14:40:28 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752002AbZDESkI
+	id S1752747AbZDESpX (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 5 Apr 2009 14:45:23 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751961AbZDESpI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 5 Apr 2009 14:40:08 -0400
-Received: from ogre.sisk.pl ([217.79.144.158]:41085 "EHLO ogre.sisk.pl"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751966AbZDESkG (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 5 Apr 2009 14:40:06 -0400
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-To: Francois Romieu <romieu@fr.zoreil.com>
-Subject: [PATCH] NET/r8169: Rework suspend and resume
-Date: Sun, 5 Apr 2009 20:40:04 +0200
-User-Agent: KMail/1.11.2 (Linux/2.6.29-rjw; KDE/4.2.2; x86_64; ; )
-Cc: NetDev <netdev@vger.kernel.org>, LKML <linux-kernel@vger.kernel.org>,
-       pm list <linux-pm@lists.linux-foundation.org>
-MIME-Version: 1.0
-Content-Type: Text/Plain;
-  charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200904052040.04752.rjw@sisk.pl>
+	Sun, 5 Apr 2009 14:45:08 -0400
+Received: from 82-117-125-11.tcdsl.calypso.net ([82.117.125.11]:55906 "EHLO
+	smtp.ossman.eu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751939AbZDESpH (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 5 Apr 2009 14:45:07 -0400
+Date: Sun, 5 Apr 2009 20:45:00 +0200
+From: Pierre Ossman <drzeus-list@drzeus.cx>
+To: Andreas Mohr <andi@lisas.de>
+Cc: Pavel Machek <pavel@suse.cz>, Andreas Mohr <andi@lisas.de>,
+       Sriram V <vshrirama@gmail.com>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       linux-kernel@vger.kernel.org
+Subject: Re: Power Management with rootfs on SDMMC.
+Message-ID: <20090405204500.103af5eb@mjolnir.ossman.eu>
+In-Reply-To: <20090329162601.GA649@rhlx01.hs-esslingen.de>
+References: <8bf247760901012235v20bb448ch5c34fb2791ea83ca@mail.gmail.com>
+	<20090102102152.GA26603@rhlx01.hs-esslingen.de>
+	<20090102172407.GD1555@ucw.cz>
+	<20090329162601.GA649@rhlx01.hs-esslingen.de>
+X-Mailer: Claws Mail 3.7.1 (GTK+ 2.16.0; x86_64-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: multipart/signed; micalg=PGP-SHA1; protocol="application/pgp-signature"; boundary="=_freyr.ossman.eu-21482-1238957101-0001-2"
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Rafael J. Wysocki <rjw@sisk.pl>
+This is a MIME-formatted message.  If you see this text it means that your
+E-mail software does not support MIME-formatted messages.
 
-The recent changes of the PCI PM core allow us to simplify the
-suspend and resume handling in a number of device drivers, since they
-don't need to carry out the general PCI PM operations, such as
-changing the power state of the device, during suspend and resume any
-more.
+--=_freyr.ossman.eu-21482-1238957101-0001-2
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: quoted-printable
 
-Simplify the suspend and resume callbacks of r8169 using the
-observation that the PCI PM core can take care of some operations
-carried out by the driver.
+On Sun, 29 Mar 2009 18:26:01 +0200
+Andreas Mohr <andi@lisas.de> wrote:
 
-Additionally, make the shutdown callback of r8169 only put the device
-into a low power state if the system is going to be powered off
-(kexec is known to have problems with network adapters that are put
-into low power states on shutdown).
+>=20
+> The least that should be done now is to drastically change this Kconfig
+> description (mention that _both_ settings can be dangerous, and help
+> people decide which one to use), to reflect current knowledge.
+> I'd be willing to submit a patch... (--> Pierre, right?)
+>=20
 
-This patch has been tested on MSI Wind U100.
+Right. And it probably needs a better description, yes. What should
+also be clear is that one failure mode results in noisy corruption, and
+the other in silent corruption (which is much worse IMO).
 
-Signed-off-by: Rafael J. Wysocki <rjw@sisk.pl>
----
- drivers/net/r8169.c |   61 +++++++++++++++++++++++++++++++++-------------------
- 1 file changed, 39 insertions(+), 22 deletions(-)
+Rgds
+--=20
+     -- Pierre Ossman
 
-Index: linux-2.6/drivers/net/r8169.c
-===================================================================
---- linux-2.6.orig/drivers/net/r8169.c
-+++ linux-2.6/drivers/net/r8169.c
-@@ -3791,16 +3791,13 @@ static struct net_device_stats *rtl8169_
- 	return &dev->stats;
- }
- 
--#ifdef CONFIG_PM
--
--static int rtl8169_suspend(struct pci_dev *pdev, pm_message_t state)
-+static void rtl8169_net_suspend(struct net_device *dev)
- {
--	struct net_device *dev = pci_get_drvdata(pdev);
- 	struct rtl8169_private *tp = netdev_priv(dev);
- 	void __iomem *ioaddr = tp->mmio_addr;
- 
- 	if (!netif_running(dev))
--		goto out_pci_suspend;
-+		return;
- 
- 	netif_device_detach(dev);
- 	netif_stop_queue(dev);
-@@ -3812,24 +3809,25 @@ static int rtl8169_suspend(struct pci_de
- 	rtl8169_rx_missed(dev, ioaddr);
- 
- 	spin_unlock_irq(&tp->lock);
-+}
- 
--out_pci_suspend:
--	pci_save_state(pdev);
--	pci_enable_wake(pdev, pci_choose_state(pdev, state),
--		(tp->features & RTL_FEATURE_WOL) ? 1 : 0);
--	pci_set_power_state(pdev, pci_choose_state(pdev, state));
-+#ifdef CONFIG_PM
-+
-+static int rtl8169_suspend(struct device *device)
-+{
-+	struct pci_dev *pdev = to_pci_dev(device);
-+	struct net_device *dev = pci_get_drvdata(pdev);
-+
-+	rtl8169_net_suspend(dev);
- 
- 	return 0;
- }
- 
--static int rtl8169_resume(struct pci_dev *pdev)
-+static int rtl8169_resume(struct device *device)
- {
-+	struct pci_dev *pdev = to_pci_dev(device);
- 	struct net_device *dev = pci_get_drvdata(pdev);
- 
--	pci_set_power_state(pdev, PCI_D0);
--	pci_restore_state(pdev);
--	pci_enable_wake(pdev, PCI_D0, 0);
--
- 	if (!netif_running(dev))
- 		goto out;
- 
-@@ -3840,23 +3838,42 @@ out:
- 	return 0;
- }
- 
-+static struct dev_pm_ops rtl8169_pm_ops = {
-+	.suspend = rtl8169_suspend,
-+	.resume = rtl8169_resume,
-+	.freeze = rtl8169_suspend,
-+	.thaw = rtl8169_resume,
-+	.poweroff = rtl8169_suspend,
-+	.restore = rtl8169_resume,
-+};
-+
-+#define RTL8169_PM_OPS	(&rtl8169_pm_ops)
-+
-+#else /* !CONFIG_PM */
-+
-+#define RTL8169_PM_OPS	NULL
-+
-+#endif /* !CONFIG_PM */
-+
- static void rtl_shutdown(struct pci_dev *pdev)
- {
--	rtl8169_suspend(pdev, PMSG_SUSPEND);
--}
-+	struct net_device *dev = pci_get_drvdata(pdev);
- 
--#endif /* CONFIG_PM */
-+	rtl8169_net_suspend(dev);
-+
-+	if (system_state == SYSTEM_POWER_OFF) {
-+		pci_wake_from_d3(pdev, true);
-+		pci_set_power_state(pdev, PCI_D3hot);
-+	}
-+}
- 
- static struct pci_driver rtl8169_pci_driver = {
- 	.name		= MODULENAME,
- 	.id_table	= rtl8169_pci_tbl,
- 	.probe		= rtl8169_init_one,
- 	.remove		= __devexit_p(rtl8169_remove_one),
--#ifdef CONFIG_PM
--	.suspend	= rtl8169_suspend,
--	.resume		= rtl8169_resume,
- 	.shutdown	= rtl_shutdown,
--#endif
-+	.driver.pm	= RTL8169_PM_OPS,
- };
- 
- static int __init rtl8169_init_module(void)
+  Linux kernel, MMC maintainer        http://www.kernel.org
+  rdesktop, core developer          http://www.rdesktop.org
+
+  WARNING: This correspondence is being monitored by the
+  Swedish government. Make sure your server uses encryption
+  for SMTP traffic and consider using PGP for end-to-end
+  encryption.
+
+--=_freyr.ossman.eu-21482-1238957101-0001-2
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: attachment; filename=signature.asc
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v2.0.11 (GNU/Linux)
+
+iEYEARECAAYFAknY/C4ACgkQ7b8eESbyJLjz1gCfVo/lIzN/eRe+Ddw8niy4VRRG
+ZBcAoNerSDzREITDF+w3YyK1BeWKIa9j
+=BVoI
+-----END PGP SIGNATURE-----
+
+--=_freyr.ossman.eu-21482-1238957101-0001-2--
