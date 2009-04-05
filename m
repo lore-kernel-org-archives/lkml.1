@@ -1,26 +1,29 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758092AbZDET4Y@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758045AbZDEUBl@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758092AbZDET4Y (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 5 Apr 2009 15:56:24 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753466AbZDET4P
+	id S1758045AbZDEUBl (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 5 Apr 2009 16:01:41 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753532AbZDEUBd
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 5 Apr 2009 15:56:15 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:41510 "EHLO
+	Sun, 5 Apr 2009 16:01:33 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:48002 "EHLO
 	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1752294AbZDET4O (ORCPT
+	by vger.kernel.org with ESMTP id S1753528AbZDEUBc (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 5 Apr 2009 15:56:14 -0400
-Date: Sun, 5 Apr 2009 12:51:11 -0700 (PDT)
+	Sun, 5 Apr 2009 16:01:32 -0400
+Date: Sun, 5 Apr 2009 12:56:48 -0700 (PDT)
 From: Linus Torvalds <torvalds@linux-foundation.org>
 X-X-Sender: torvalds@localhost.localdomain
-To: Jaswinder Singh Rajput <jaswinder@kernel.org>
-cc: John Levon <levon@movementarian.org>, Ingo Molnar <mingo@elte.hu>,
-       x86 maintainers <x86@kernel.org>, LKML <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH] x86: fix BUG: using smp_processor_id() in preemptible
- [00000000] code: oprofiled/3319
-In-Reply-To: <1238958725.3522.1.camel@ht.satnam>
-Message-ID: <alpine.LFD.2.00.0904051243310.4023@localhost.localdomain>
-References: <1238958725.3522.1.camel@ht.satnam>
+To: Ingo Molnar <mingo@elte.hu>
+cc: linux-kernel@vger.kernel.org, Pekka Enberg <penberg@cs.helsinki.fi>,
+       Steven Rostedt <rostedt@goodmis.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Thomas Gleixner <tglx@linutronix.de>,
+       Eduard - Gabriel Munteanu <eduard.munteanu@linux360.ro>
+Subject: Re: [GIT PULL] SLAB include file dependency fixes + kmemtrace
+ updates
+In-Reply-To: <20090405193944.GA12691@elte.hu>
+Message-ID: <alpine.LFD.2.00.0904051251390.4023@localhost.localdomain>
+References: <20090405193944.GA12691@elte.hu>
 User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
 MIME-Version: 1.0
 Content-Type: TEXT/PLAIN; charset=US-ASCII
@@ -30,34 +33,32 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 
 
-On Mon, 6 Apr 2009, Jaswinder Singh Rajput wrote:
->
-> Fixed this bug on P4 HT machine:
+On Sun, 5 Apr 2009, Ingo Molnar wrote:
+> 
+> ( Please note that i rebased the tree exactly once, shortly after it 
+>   got finished, to make it all bisectable and reviewable: the 
+>   perfect insight shown in the tree now was IMHO not humanly 
+>   possible to achieve in advance.
 
-I don't think this really is correct.
+This is actually the rigth thing to do. Rebasing is not wrong, if it is 
+done judiciously (and not on already-exposed stuff).
 
-Anything that does that "get_stagger()" thing should already either be 
-tied to a specific CPU (because it's going to actually touch the variables 
-for "that CPU"), or it should likely set up the data structures for _all_ 
-cases.
+Rebasing is bad if
+ - you do it so late in the game that all test experience is basically 
+   worthless
+ - after you've pushed out and other people have seen and depend on that 
+   branch (and you didn't warn them)
+ - you do it to other peoples git commits, so that their tree (that was 
+   the source of the commit) now has the same commit duplicated as 
+   something else.
 
-Just as an example, look at something like "p4_setup_ctrs()": it will use 
-that stagger to determine what MSR to read. But if we are preemptable, the 
-CPU we actually do the MSR read on may be a _different_ CPU than the CPU 
-that we did the "get_stagger()" on!
+I wrote a posting about rebasing to Dave Airlie on dri-devel, that might 
+be googleable. Hmm. Here:
 
-So I really think that protecting against preemption inside of 
-"get_stagger()" is fundamentally buggy. Because if you need it, then by 
-the time you return the value from the function, the value has now lost 
-all meaning because you might have preempted to another CPU after doing 
-the put_cpu().
+	http://www.mail-archive.com/dri-devel@lists.sourceforge.net/msg39091.html
 
-So I think the "get_cpu()/put_cpu()" should be done around the whole 
-sequence (ie from before "get_stagger()" to after the stagger has been 
-used to initialize some data structures or do wrmsr/rdmsr calls.
+so rebase isn't bad, it's often a great way to fix things as you go along. 
+It just goes with a few basic caveats.
 
-Of course, this is all ancient code, so whatever. But I really think this 
-patch is actively bad - it just hides the issue rather than fixing 
-anything.
+			Linus
 
-		Linus
