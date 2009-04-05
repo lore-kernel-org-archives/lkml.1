@@ -1,65 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753787AbZDEO3a@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755269AbZDEOnb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753787AbZDEO3a (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 5 Apr 2009 10:29:30 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751643AbZDEO3W
+	id S1755269AbZDEOnb (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 5 Apr 2009 10:43:31 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752312AbZDEOnX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 5 Apr 2009 10:29:22 -0400
-Received: from krynn.se.axis.com ([193.13.178.10]:58980 "EHLO
-	krynn.se.axis.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751236AbZDEO3V (ORCPT
+	Sun, 5 Apr 2009 10:43:23 -0400
+Received: from mail-gx0-f160.google.com ([209.85.217.160]:63614 "EHLO
+	mail-gx0-f160.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753449AbZDEOnW convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 5 Apr 2009 10:29:21 -0400
-Date: Sun, 5 Apr 2009 16:27:51 +0200
-From: Jesper Nilsson <jesper.nilsson@axis.com>
-To: Linus Torvalds <torvalds@linux-foundation.org>,
-       LKML <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>
-Subject: [git pull] CRIS updates
-Message-ID: <20090405142750.GC29644@axis.com>
+	Sun, 5 Apr 2009 10:43:22 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:sender:in-reply-to:references:date
+         :x-google-sender-auth:message-id:subject:from:to:cc:content-type
+         :content-transfer-encoding;
+        b=KDeS97Wb+7yLZSQHfeQv7wb+27xp+PPx4cB5KQyCyq9POLfKHoxEzqljkr61fiMr+9
+         4DJuu6Ic1dS7nPyfo0TEjbccqeULxOr+elmXaJW64rSahqNI1jb8v70xqysLwG7afhTw
+         74Oyetyjdg7yEyV6KTfGJMo8jJKqBONONY8vk=
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-User-Agent: Mutt/1.5.18 (2008-05-17)
+In-Reply-To: <49D8ABA8.20700@redhat.com>
+References: <COL116-W68F0521CACD2E1656E8D1BDA870@phx.gbl>
+	 <49D8ABA8.20700@redhat.com>
+Date: Sun, 5 Apr 2009 10:43:20 -0400
+X-Google-Sender-Auth: faa5f87aee3dc389
+Message-ID: <b6c5339f0904050743k799104f1x443edb69a00fdb64@mail.gmail.com>
+Subject: Re: Intepreting an oops
+From: Bob Copeland <me@bobcopeland.com>
+To: Peter Hallberg <hallberg68@hotmail.com>
+Cc: Avi Kivity <avi@redhat.com>, linux-kernel@vger.kernel.org
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Sun, Apr 5, 2009 at 9:01 AM, Avi Kivity <avi@redhat.com> wrote:
+> Peter Hallberg wrote:
+>>
+>> How does one translate the offset in the function to a line number in the
+>> source code?
+>> [  218.418473] Call Trace:
+>> [  218.418484]  [] :nnpfs:nnpfs_writepage+0xab/0x230
+>>
+>
+> You can use 'objdump -Sr nnpfs.ko' and look for the address of
+> nnpfs_writepage, plus 0xab.
 
-Hi,
+I use the above sometimes, also you can do:
 
-The following changes since commit 15f7176eb1cccec0a332541285ee752b935c1c85:
-  Linus Torvalds (1):
-        Merge git://git.kernel.org/.../davem/net-2.6
+gdb nnpfs.ko
+gdb> l *(nnpfs_writepage+0xab)
 
-are available in the git repository at:
+Documentation/oops-tracing.txt has some helpful tips.
 
-  git://repo.or.cz/cris-mirror.git for-linus
-
-Jesper Nilsson (2):
-      CRISv32: Remove extraneous space between -I and the path.
-      Merge branch 'master' of git://git.kernel.org/.../rusty/linux-2.6-cpumask-for-cris into for-next
-
-Rusty Russell (3):
-      cpumask: prepare for iterators to only go to nr_cpu_ids/nr_cpumask_bits.: cris
-      cpumask: Use accessors code.: cris
-      cpumask: use mm_cpumask() wrapper: cris
-
-Stoyan Gaydarov (1):
-      BUG to BUG_ON changes
-
-Thomas Gleixner (1):
-      cris: convert obsolete hw_interrupt_type to struct irq_chip
-
- arch/cris/arch-v10/kernel/irq.c             |    2 +-
- arch/cris/arch-v32/boot/compressed/Makefile |    6 +++---
- arch/cris/arch-v32/kernel/irq.c             |    2 +-
- arch/cris/arch-v32/kernel/smp.c             |   10 +++++-----
- arch/cris/arch-v32/mm/tlb.c                 |    2 +-
- arch/cris/kernel/setup.c                    |    2 +-
- arch/cris/mm/init.c                         |    3 +--
- 7 files changed, 13 insertions(+), 14 deletions(-)
-
-/^JN - Jesper Nilsson
 -- 
-               Jesper Nilsson -- jesper.nilsson@axis.com
+Bob Copeland %% www.bobcopeland.com
