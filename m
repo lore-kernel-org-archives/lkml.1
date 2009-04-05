@@ -1,82 +1,116 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757355AbZDEHn7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758121AbZDEHwd@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757355AbZDEHn7 (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 5 Apr 2009 03:43:59 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757305AbZDEHnq
+	id S1758121AbZDEHwd (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 5 Apr 2009 03:52:33 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753029AbZDEHwX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 5 Apr 2009 03:43:46 -0400
-Received: from mail-bw0-f169.google.com ([209.85.218.169]:55002 "EHLO
-	mail-bw0-f169.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752861AbZDEHnp (ORCPT
+	Sun, 5 Apr 2009 03:52:23 -0400
+Received: from yw-out-2324.google.com ([74.125.46.30]:3998 "EHLO
+	yw-out-2324.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752841AbZDEHwW (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 5 Apr 2009 03:43:45 -0400
+	Sun, 5 Apr 2009 03:52:22 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
-        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
-         :cc:content-type:content-transfer-encoding;
-        b=pCwqzPXg9vVjpGTW82OHRFbyuFk2WvjRInT3ESF9tfG/MzthQxL6QiIQwrmxshASdf
-         nVP/0VcqvOyeM/dIjSrRi71OUwysIbNbXVGFzyM6s+ZBYT/2EmBkmgTDul5UpV6M41hA
-         fXyZbN7K5oNdl6bfZfmTCTZXA8ERIWxpiCObo=
-MIME-Version: 1.0
-In-Reply-To: <1227567739.6421.44.camel@localhost>
-References: <1227454026.7262.59.camel@localhost> <492A7632.4040106@compton.nu>
-	 <200811241613.25557.trenn@suse.de> <200811241736.53067.trenn@suse.de>
-	 <1227567739.6421.44.camel@localhost>
-Date: Sun, 5 Apr 2009 09:43:40 +0200
-Message-ID: <71cd59b00904050043u44d1cd2eu4b8d3aee9027ea17@mail.gmail.com>
-Subject: Re: [Acpi4asus-user] [PATCH 1/1] cpufreq: eeepc 900 frequency scaling 
-	driver
-From: Corentin Chary <corentin.chary@gmail.com>
-To: Cristiano Prisciandaro <cristiano.p@solnet.ch>
-Cc: Thomas Renninger <trenn@suse.de>, Dave Jones <davej@redhat.com>,
-       acpi4asus-user@lists.sourceforge.net, linux-kernel@vger.kernel.org,
-       cpufreq@vger.kernel.org, Tom Hughes <tom@compton.nu>,
-       linux acpi <linux-acpi@vger.kernel.org>,
-       Francesco Lattanzio <f.lattanzio@simail.it>,
-       Matthew Garrett <mjg59@srcf.ucam.org>,
-       Grigori Goronzy <greg@chown.ath.cx>
-Content-Type: text/plain; charset=ISO-8859-1
+        h=subject:from:to:cc:in-reply-to:references:content-type:date
+         :message-id:mime-version:x-mailer:content-transfer-encoding;
+        b=FbKnG9nGb2yQNfXMDw0hLS0nPZhScegIel/x/P7SKCur2gUwlkoiv9iUc7kYOsp3a8
+         FiWQhxumL5+m6vjVU72F4jBivZWeAc9vqY5x3iGvoFSsn/etxicfsUd1AEN1FpDeF6h4
+         myYt+NPTGlxe84iiYfgBZ9e9ZYmD9wO9MtxuE=
+Subject: Re: [PATCH 0/4] [GIT PULL] for tip/tracing/filters
+From: Tom Zanussi <tzanussi@gmail.com>
+To: Steven Rostedt <rostedt@goodmis.org>
+Cc: Ingo Molnar <mingo@elte.hu>, linux-kernel@vger.kernel.org,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Thomas Gleixner <tglx@linutronix.de>,
+       Peter Zijlstra <peterz@infradead.org>,
+       Frederic Weisbecker <fweisbec@gmail.com>
+In-Reply-To: <alpine.DEB.2.00.0904041140490.32083@gandalf.stny.rr.com>
+References: <20090402052721.013878388@goodmis.org>
+	 <20090403121434.GJ31399@elte.hu>
+	 <alpine.DEB.2.00.0904031035060.965@gandalf.stny.rr.com>
+	 <1238827803.22495.16.camel@bookworm>
+	 <alpine.DEB.2.00.0904041140490.32083@gandalf.stny.rr.com>
+Content-Type: text/plain
+Date: Sun, 05 Apr 2009 02:52:17 -0500
+Message-Id: <1238917937.7989.231.camel@tropicana>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.24.1 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
->> Could it happen that upcoming machines provide this interface (the two ACPI
->> functions) and also can do real CPU frequency/volt switching, e.g. via
->> acpi-cpufreq?
->
-> Probably this interface is a solution specific to machines based on the
-> celeron M: I don't even know if other 'old' models provide the same
-> interface.
+On Sat, 2009-04-04 at 11:42 -0400, Steven Rostedt wrote:
+> On Sat, 4 Apr 2009, Tom Zanussi wrote:
+> > On Fri, 2009-04-03 at 10:36 -0400, Steven Rostedt wrote:
+> > 
+> > I'm guessing the problem is that CONFIG_EVENT_TRACER wasn't selected but
+> > should have been, because those tracers all now export events
+> > (trace_event_types.h, included by trace_export.c).  I'm not sure this is
+> > the right way to do it, but the patch below selects EVENT_TRACER if
+> > TRACING is selected (a couple of the exported events belong to bprint
+> > and print, which don't have a config option other than TRACING, so it
+> > seems to belong there).
+> > 
+> > Signed-off-by: Tom Zanussi <tzanussi@gmail.com>
+> > 
+> > ---
+> >  kernel/trace/Kconfig |    3 ++-
+> >  1 files changed, 2 insertions(+), 1 deletions(-)
+> > 
+> > diff --git a/kernel/trace/Kconfig b/kernel/trace/Kconfig
+> > index 8a41360..a061746 100644
+> > --- a/kernel/trace/Kconfig
+> > +++ b/kernel/trace/Kconfig
+> > @@ -56,6 +56,7 @@ config TRACING
+> >  	select TRACEPOINTS
+> >  	select NOP_TRACER
+> >  	select BINARY_PRINTF
+> > +	select EVENT_TRACER
+> 
+> Yeah, we can do this.
+> 
+> >  
+> >  #
+> >  # Minimum requirements an architecture has to meet for us to
+> > @@ -177,7 +178,7 @@ config CONTEXT_SWITCH_TRACER
+> >  
+> >  config EVENT_TRACER
+> >  	bool "Trace various events in the kernel"
+> > -	select TRACING
+> > +	depends on TRACING
+> 
+> This means we can only select EVENT_TRACER if something else has been 
+> selected. Can't we keep the "select TRACING" here.
+> 
 
-Hi,
-We I just received another patch for that (adding a cpufv file in
-sysfs) and I don't really know what to do.
+Keeping 'select TRACING' here gives this error:
 
-As Grigori Goronzy said, using cpufreq in not a good idea:
+kernel/trace/Kconfig:53:error: found recursive dependency: TRACING ->
+EVENT_TRACER -> TRACING
 
-> 1) dynamic governors like "ondemand" or "conservative" are not suitable
-> for SHE. It's possible to avoid usage of these by specifying a long
-> (e.g. UINT_MAX) transition latency. However, the fallback governor is
-> "performance" which isn't a good idea either, because it'll use the
-> overclock setting always. For SHE, the default should be the "normal",
-> non-overclocked frequency.
->
-> 2) The SHE ACPI interface doesn't expose the clock frequencies. I'm
-> using 750 / 1000 / 1500 KHz at the moment, but that's hacky. cpufreq
-> does not support performance points with names, such as "powersave",
-> "normal", "performance", etc.
->
-> 3) It looks like it is impossible to use more than one cpufreq driver
-> per CPU. This effectively means you can either use the regular ACPI
-> frequency scaling, which switches between multipliers, or SHE. That's
-> unacceptable. SHE is not intended to replace the regular frequency
-> scaling, but to complement it.
+I'll have to play around with it some more...
 
-But adding another specific file for eeepc seems ugly too.
-Does someone have a great idea to solve that ?
+Tom
 
-Thanks
--- 
-Corentin Chary
-http://xf.iksaif.net
+> That way, we could just select EVENT_TRACER, but if anything other 
+> tracer is selected, we automatically get EVENT_TRACER.
+> 
+> The logic would be, if you pick any tracer you get the EVENT_TRACER.
+> But you can still just ask for the EVENT_TRACER with no other tracer.
+
+> -- Steve
+> 
+> 
+> 
+> >  	help
+> >  	  This tracer hooks to various trace points in the kernel
+> >  	  allowing the user to pick and choose which trace point they
+> > -- 
+> > 1.5.6.3
+> > 
+> > 
+> > 
+> > 
+
