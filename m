@@ -1,19 +1,20 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758024AbZDEEGV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757925AbZDEEHB@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758024AbZDEEGV (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 5 Apr 2009 00:06:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757814AbZDEEE4
+	id S1757925AbZDEEHB (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 5 Apr 2009 00:07:01 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757900AbZDEEFd
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 5 Apr 2009 00:04:56 -0400
-Received: from n14.bullet.mail.mud.yahoo.com ([68.142.206.41]:29767 "HELO
-	n14.bullet.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1757637AbZDEEEv (ORCPT
+	Sun, 5 Apr 2009 00:05:33 -0400
+Received: from n25.bullet.mail.mud.yahoo.com ([68.142.206.220]:30719 "HELO
+	n25.bullet.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1757868AbZDEEF3 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 5 Apr 2009 00:04:51 -0400
-X-Yahoo-Newman-Id: 238881.6276.bm@omp415.mail.mud.yahoo.com
-X-YMail-OSG: 7YyIwM0VM1nVqG1Edn5IaKytaH6tVA8KaTG17xSDHLOC.csL4PF_f23qzlAtp4fpenc4OKIeDuJ.5fz8gVzDEVT.BMV.v60wsCl97OUAQKyIBec1apa3z7q0Zx.2swAVfmsB3scTtO7Usb4wiYW.cVBdByGVD6JRY5JGhUjQOIQzfn6tRtXlldsfu88ORCHqDpB_VcHH3BBT8z0uG6EhYhoHF.U1Gf5O_awbpQXRmbx6hyQVbzrYURzkTKxEGAukPe5WfLT4Rw380h_rgoj9fWz4SqBQZfZXlZ63VSEOcKU83Zkkl3bHbovQHCydr6I6jszEpNtxaI0C5PvSTGWaodk-
+	Sun, 5 Apr 2009 00:05:29 -0400
+X-Yahoo-Newman-Id: 304575.19351.bm@omp425.mail.mud.yahoo.com
+X-YMail-OSG: Nz0f4RQVM1kMcfbzOu42YeSQPznVp6lm4bTh139a44NF.y3HQNbA9OQMTlVrgjCq1EVVg0B28MSCwBYZhBKRtfOq9rpn3053vOentB6.Q5v9MG_QWL6CknCDOMBcLysDulUCFHJ74sp_7Zyr5MEl.SZBfWhTY1WaigpLHFAvnvlfKfrFqx222ewmaWqG5zo3QGSOup.ApHjYE6CD6ZKXwAZqPHHvw85JSl5AkC9NaHLOxpE0rE9c5OGIH6NyqL7UrTY6VaERukX1nIDtOkateeZ4dc5sEnUPtkLy5sf6B4.FzuJAo50AgrU3d2lNVz4dRHR.4_Gr.5aenzi5ncfn
 X-Yahoo-Newman-Property: ymail-3
-Subject: [RFC PATCH 8/19] Target_Core_Mod Makefile and Kconfig
+Subject: [RFC PATCH 10/19] Target_Core_Mod Subsystem and SE Object plugin
+	infrastructure
 From: "Nicholas A. Bellinger" <nab@linux-iscsi.org>
 To: LKML <linux-kernel@vger.kernel.org>,
        linux-scsi <linux-scsi@vger.kernel.org>
@@ -22,14 +23,13 @@ Cc: James Bottomley <James.Bottomley@HansenPartnership.com>,
        Hannes Reinecke <hare@suse.de>,
        FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>,
        Mike Christie <michaelc@cs.wisc.edu>,
-       Joel Becker <joel.becker@oracle.com>,
        "Martin K. Petersen" <martin.petersen@oracle.com>,
        Ming Zhang <blackmagic02881@gmail.com>,
        Philipp Reisner <philipp.reisner@linbit.com>,
        Linus Torvalds <torvalds@linux-foundation.org>
 Content-Type: text/plain
-Date: Sat, 04 Apr 2009 21:01:55 -0700
-Message-Id: <1238904115.4250.749.camel@haakon2.linux-iscsi.org>
+Date: Sat, 04 Apr 2009 21:02:00 -0700
+Message-Id: <1238904120.4250.751.camel@haakon2.linux-iscsi.org>
 Mime-Version: 1.0
 X-Mailer: Evolution 2.22.3.1 
 Content-Transfer-Encoding: 7bit
@@ -37,201 +37,403 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This patch adds the Makefile and Kconfig changes
+This patch adds the simple plugin infrastructure used by subsystem and seobj plugins.
 
 Signed-off-by: Nicholas A. Bellinger <nab@linux-iscsi.org>
 
-diff --git a/drivers/Makefile b/drivers/Makefile
-index 2618a61..fea0008 100644
---- a/drivers/Makefile
-+++ b/drivers/Makefile
-@@ -36,14 +36,15 @@ obj-$(CONFIG_FB_INTEL)          += video/intelfb/
- 
- obj-y				+= serial/
- obj-$(CONFIG_PARPORT)		+= parport/
- obj-$(CONFIG_NUBUS)		+= nubus/
- obj-y				+= macintosh/
- obj-$(CONFIG_IDE)		+= ide/
- obj-$(CONFIG_SCSI)		+= scsi/
- obj-$(CONFIG_ATA)		+= ata/
-+obj-$(CONFIG_TARGET_CORE)	+= target/
- obj-$(CONFIG_FUSION)		+= message/
- obj-$(CONFIG_FIREWIRE)		+= firewire/
- obj-y				+= ieee1394/
-diff --git a/drivers/target/Kconfig b/drivers/target/Kconfig
+diff --git a/drivers/target/target_core_plugin.c b/drivers/target/target_core_plugin.c
 new file mode 100644
-index 0000000..57a1207
+index 0000000..55870a9
 --- /dev/null
-+++ b/drivers/target/Kconfig
-@@ -0,0 +1,6 @@
-+config TARGET_CORE
-+        tristate "Generic Target Core Engine and ConfigFS Infrastructure"
-+	select CONFIGFS_FS
-+        default m
-+        ---help---
-+        Say Y here to enable the Storage Engine, Subsystem Plugins, and ConfigFS enabled control path for the Generic Target Engine.
-diff --git a/drivers/target/MCONFIG_ALL b/drivers/target/MCONFIG_ALL
++++ b/drivers/target/target_core_plugin.c
+@@ -0,0 +1,310 @@
++/*******************************************************************************
++ * Filename:  target_core_plugin.c
++ *
++ * Copyright (c) 2006-2007 SBE, Inc.  All Rights Reserved.
++ * Copyright (c) 2007-2009 Rising Tide Software, Inc.
++ * Copyright (c) 2008-2009 Linux-iSCSI.org
++ *
++ * Nicholas A. Bellinger <nab@kernel.org>
++ *
++ * This program is free software; you can redistribute it and/or modify
++ * it under the terms of the GNU General Public License as published by
++ * the Free Software Foundation; either version 2 of the License, or
++ * (at your option) any later version.
++ *
++ * This program is distributed in the hope that it will be useful,
++ * but WITHOUT ANY WARRANTY; without even the implied warranty of
++ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
++ * GNU General Public License for more details.
++ *
++ * You should have received a copy of the GNU General Public License
++ * along with this program; if not, write to the Free Software
++ * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
++ *
++ ******************************************************************************/
++
++#define TARGET_CORE_PLUGIN_C
++
++#include <linux/net.h>
++#include <linux/string.h>
++#include <linux/timer.h>
++#include <linux/slab.h>
++#include <linux/spinlock.h>
++#include <linux/smp_lock.h>
++#include <linux/in.h>
++#include <net/sock.h>
++#include <net/tcp.h>
++
++#include <target/target_core_base.h>
++#include <target/target_core_hba.h>
++#include <target/target_core_seobj.h>
++#include <target/target_core_transport.h>
++#include <target/target_core_plugin.h>
++
++#undef TARGET_CORE_PLUGIN_C
++
++void plugin_load_all_classes(void)
++{
++	/*
++	 * Setup Transport Plugins
++	 */
++	plugin_register_class(PLUGIN_TYPE_TRANSPORT, "TRANSPORT", MAX_PLUGINS);
++	transport_load_plugins();
++
++	/*
++	 * Setup Storage Engine Object Plugins
++	 */
++	plugin_register_class(PLUGIN_TYPE_OBJ, "OBJ", MAX_PLUGINS);
++	se_obj_load_plugins();
++}
++EXPORT_SYMBOL(plugin_load_all_classes);
++
++se_plugin_class_t *plugin_get_class(
++	u32 plugin_class_type)
++{
++	se_plugin_class_t *pc;
++
++	if (plugin_class_type > MAX_PLUGIN_CLASSES) {
++		printk(KERN_ERR "Passed plugin class type: %u exceeds"
++			" MAX_PLUGIN_CLASSES: %d\n", plugin_class_type,
++			MAX_PLUGIN_CLASSES);
++		return NULL;
++	}
++
++	pc = &se_global->plugin_class_list[plugin_class_type];
++	if (!pc->plugin_array)
++		return NULL;
++
++	return pc;
++}
++
++int plugin_register_class(
++	u32 plugin_class_type,
++	unsigned char *plugin_class_name,
++	int max_plugins)
++{
++	u32 i;
++	se_plugin_class_t *pc;
++	se_plugin_t *p;
++
++	if (strlen(plugin_class_name) > MAX_PLUGIN_CLASS_NAME) {
++		printk(KERN_ERR "plugin_class_name exceeds MAX_PLUGIN_CLASS"
++				"_NAME: %u\n", MAX_PLUGIN_CLASS_NAME);
++		return -1;
++	}
++	spin_lock(&se_global->plugin_class_lock);
++	if (plugin_class_type > MAX_PLUGIN_CLASSES) {
++		printk(KERN_ERR "Passed plugin class type: %u exceeds"
++			" MAX_PLUGIN_CLASSES: %d\n", plugin_class_type,
++			MAX_PLUGIN_CLASSES);
++		return -1;
++	}
++
++	pc = &se_global->plugin_class_list[plugin_class_type];
++	if (pc->plugin_array) {
++		printk(KERN_ERR "Plugin Class Type: %u already exists\n",
++			plugin_class_type);
++		return -1;
++	}
++	spin_unlock(&se_global->plugin_class_lock);
++
++	pc->plugin_array = kzalloc(sizeof(se_plugin_t) * max_plugins,
++				GFP_KERNEL);
++	if (!(pc->plugin_array)) {
++		printk(KERN_ERR "Unable to locate pc->plugin_array\n");
++		return -1;
++	}
++
++	spin_lock_init(&pc->plugin_lock);
++	pc->max_plugins = max_plugins;
++	pc->plugin_class = plugin_class_type;
++	snprintf(pc->plugin_class_name, MAX_PLUGIN_CLASS_NAME,
++		"%s", plugin_class_name);
++
++	for (i = 0; i < max_plugins; i++) {
++		p = &pc->plugin_array[i];
++		p->plugin_class = pc;
++	}
++
++	printk(KERN_INFO "SE_PC[%u] - Registered Plugin Class: %s\n",
++			pc->plugin_class, pc->plugin_class_name);
++
++	return 0;
++}
++EXPORT_SYMBOL(plugin_register_class);
++
++int plugin_deregister_class(u32 plugin_class_type)
++{
++	int i;
++	se_plugin_class_t *pc;
++	se_plugin_t *p;
++
++	pc = plugin_get_class(plugin_class_type);
++	if (!(pc))
++		return -1;
++
++	for (i = 0; i < MAX_PLUGINS; i++) {
++		p = &pc->plugin_array[i];
++
++		if (!p->plugin_obj)
++			continue;
++
++		plugin_deregister(i, plugin_class_type);
++	}
++
++	kfree(pc->plugin_array);
++	pc->plugin_array = NULL;
++
++	return 0;
++}
++EXPORT_SYMBOL(plugin_deregister_class);
++
++void plugin_unload_all_classes(void)
++{
++	u32 i;
++	se_plugin_class_t *pc;
++
++	for (i = 0; i < MAX_PLUGIN_CLASSES; i++) {
++		pc = &se_global->plugin_class_list[i];
++
++		if (!pc->plugin_array)
++			continue;
++
++		plugin_deregister_class(i);
++	}
++
++	return;
++}
++EXPORT_SYMBOL(plugin_unload_all_classes);
++
++void *plugin_get_obj(
++	u32 plugin_class,
++	u32 plugin_loc,
++	int *ret)
++{
++	se_plugin_class_t *pc;
++	se_plugin_t *p;
++
++	pc = plugin_get_class(plugin_class);
++	if (!(pc))
++		return NULL;
++
++	spin_lock(&pc->plugin_lock);
++	if (plugin_loc > pc->max_plugins) {
++		printk(KERN_ERR "Passed plugin_loc: %d exceeds"
++			" pc->max_plugins: %d\n", plugin_loc, pc->max_plugins);
++		goto out;
++	}
++
++	p = &pc->plugin_array[plugin_loc];
++	if (!p->plugin_obj) {
++		printk(KERN_ERR "Passed plugin_loc: %u does not exist!\n",
++				plugin_loc);
++		goto out;
++	}
++	spin_unlock(&pc->plugin_lock);
++
++	*ret = 0;
++	return p->plugin_obj;
++out:
++	*ret = -1;
++	spin_unlock(&pc->plugin_lock);
++	return NULL;
++}
++EXPORT_SYMBOL(plugin_get_obj);
++
++struct se_plugin_s *plugin_register(
++	void *obj,
++	u32 plugin_loc,
++	unsigned char *plugin_name,
++	u32 plugin_class,
++	void (*get_plugin_info)(void *, char *, int *),
++	int *ret)
++{
++	se_plugin_class_t *pc;
++	se_plugin_t *p;
++
++	if (!obj) {
++		printk(KERN_ERR "obj or plugin_class pointers are NULL!\n");
++		return NULL;
++	}
++
++	if (strlen(plugin_name) > MAX_PLUGIN_NAME) {
++		printk(KERN_ERR "plugin_name exceeds MAX_PLUGIN_NAME: %u\n",
++				MAX_PLUGIN_NAME);
++		return NULL;
++	}
++
++	pc = plugin_get_class(plugin_class);
++	if (!(pc))
++		return NULL;
++
++	spin_lock(&pc->plugin_lock);
++	if (plugin_loc > pc->max_plugins) {
++		printk(KERN_ERR "Passed plugin_loc: %u exceeds pc->max_plugins:"
++			" %d\n", plugin_loc, pc->max_plugins);
++		*ret = -1;
++		goto out;
++	}
++
++	p = &pc->plugin_array[plugin_loc];
++	if (p->plugin_obj) {
++		printk(KERN_ERR "Passed plugin_loc: %u already registered\n",
++			plugin_loc);
++		*ret = -1;
++		goto out;
++	}
++
++	p->plugin_obj = obj;
++	p->get_plugin_info = get_plugin_info;
++	p->plugin_state = PLUGIN_REGISTERED;
++	p->plugin_type = plugin_loc;
++	snprintf(p->plugin_name, MAX_PLUGIN_NAME, "%s", plugin_name);
++
++	printk(KERN_INFO "PLUGIN_%s[%u] - %s registered\n",
++			pc->plugin_class_name, plugin_loc, plugin_name);
++	spin_unlock(&pc->plugin_lock);
++
++	return p;
++
++out:
++	spin_unlock(&pc->plugin_lock);
++	return NULL;
++}
++EXPORT_SYMBOL(plugin_register);
++
++int plugin_deregister(
++	u32 plugin_loc,
++	u32 plugin_class)
++{
++	int ret = 0;
++	se_plugin_class_t *pc;
++	se_plugin_t *p;
++
++	pc = plugin_get_class(plugin_class);
++	if (!(pc))
++		return -1;
++
++	spin_lock(&pc->plugin_lock);
++	if (plugin_loc > pc->max_plugins) {
++		printk(KERN_ERR "Passed plugin_loc: %u exceeds pc->max_plugins:"
++			" %d\n", plugin_loc, pc->max_plugins);
++		ret = -1;
++		goto out;
++	}
++
++	p = &pc->plugin_array[plugin_loc];
++	if (!p->plugin_obj) {
++		printk(KERN_ERR "Passed plugin_loc: %u not active!\n",
++			plugin_loc);
++		ret = -1;
++		goto out;
++	}
++
++	p->plugin_obj = NULL;
++	p->plugin_state = PLUGIN_FREE;
++
++out:
++	spin_unlock(&pc->plugin_lock);
++	return ret;
++}
+diff --git a/include/target/target_core_plugin.h b/include/target/target_core_plugin.h
 new file mode 100644
-index 0000000..df4d628
+index 0000000..92abe23
 --- /dev/null
-+++ b/drivers/target/MCONFIG_ALL
-@@ -0,0 +1,20 @@
-+MODVER ?= 1
-+
-+EZLK ?= 0
-+USEGDB ?= 1
-+
-+ERLONE ?= 1
-+ERLTWO ?= 1
-+
-+DEBUG_ISCSI ?= 0
-+DEBUG_OPCODES ?= 0
-+
-+DEBUG_AUTHD ?= 0
-+DEBUG_CHAP ?= 0
-+DEBUG_ERL ?= 0
-+DEBUG_DEV ?= 0
-+
-+DEBUG_SUSE ?= 0
-+
-+SNMP_FEATURE ?= 1
-+SNAP_FEATURE ?= 1
-diff --git a/drivers/target/MCONFIG_TARGET b/drivers/target/MCONFIG_TARGET
-new file mode 100644
-index 0000000..77378be
---- /dev/null
-+++ b/drivers/target/MCONFIG_TARGET
-@@ -0,0 +1,23 @@
-+##################################################################################
-+# Filename:  MCONFIG_TARGET
-+#
-+##################################################################################
++++ b/include/target/target_core_plugin.h
+@@ -0,0 +1,71 @@
++/*******************************************************************************
++ * Filename:  target_core_plugin.h
++ *
++ * Copyright (c) 2006-2007 SBE, Inc.  All Rights Reserved.
++ * Copyright (c) 2007-2009 Rising Tide Software, Inc.
++ * Copyright (c) 2008-2009 Linux-iSCSI.org
++ *
++ * Nicholas A. Bellinger <nab@kernel.org>
++ *
++ * This program is free software; you can redistribute it and/or modify
++ * it under the terms of the GNU General Public License as published by
++ * the Free Software Foundation; either version 2 of the License, or
++ * (at your option) any later version.
++ *
++ * This program is distributed in the hope that it will be useful,
++ * but WITHOUT ANY WARRANTY; without even the implied warranty of
++ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
++ * GNU General Public License for more details.
++ *
++ * You should have received a copy of the GNU General Public License
++ * along with this program; if not, write to the Free Software
++ * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
++ *
++ ******************************************************************************/
 +
 +
-+PYX_ISCSI_VENDOR ?="Linux-iSCSI.org"
++#ifndef TARGET_CORE_PLUGIN_H
++#define TARGET_CORE_PLUGIN_H
 +
-+# Transport Plugins and Devices.
-+#
-+LINUX_PARALLEL_SCSI ?= 1
-+LINUX_SCSI_MEDIA_ROM ?= 1
-+LINUX_PARALLEL_ATA ?= 0
-+LINUX_IBLOCK ?= 1
-+LINUX_RAMDISK ?= 1
-+LINUX_FILEIO ?= 1
++#define PLUGIN_TYPE_TRANSPORT	0
++#define PLUGIN_TYPE_OBJ		1
 +
-+#
-+# Workarounds for stupidity
-+#
-+LINUX_VPD_PAGE_CHECK?=1
++#define MAX_PLUGINS		32
++#define MAX_PLUGIN_CLASSES	16
++#define MAX_PLUGIN_CLASS_NAME	16
++#define MAX_PLUGIN_NAME		16
 +
-+LIO_TARGET_CONFIGFS?=1
-diff --git a/drivers/target/Makefile b/drivers/target/Makefile
-new file mode 100644
-index 0000000..63c1e3b
---- /dev/null
-+++ b/drivers/target/Makefile
-@@ -0,0 +1,101 @@
-+##################################################################################
-+# Filename:  Makefile
-+#
-+# Copyright (c) 2002, 2003, 2004, 2005 PyX Technologies, Inc.
-+# Copyright (c) 2005, 2006, 2007 SBE, Inc. 
-+# Copyright (c) 2007 Rising Tide Software, Inc.
-+#
-+# Nicholas A. Bellinger <nab@kernel.org>
-+#
-+# This program is free software; you can redistribute it and/or modify
-+# it under the terms of the GNU General Public License as published by
-+# the Free Software Foundation; either version 2 of the License, or
-+# (at your option) any later version.
-+#
-+# This program is distributed in the hope that it will be useful,
-+# but WITHOUT ANY WARRANTY; without even the implied warranty of
-+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-+# GNU General Public License for more details.
-+#
-+# You should have received a copy of the GNU General Public License
-+# along with this program; if not, write to the Free Software
-+# Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
-+#
-+##################################################################################
++#define PLUGIN_FREE		0
++#define PLUGIN_REGISTERED	1
 +
-+CWD=$(shell pwd)
++extern se_global_t *se_global;
 +
-+include $(CWD)/drivers/target/MCONFIG_TARGET
-+include $(CWD)/drivers/target/MCONFIG_ALL
++extern void plugin_load_all_classes(void);
++extern struct se_plugin_class_s *plugin_get_class(u32);
++extern int plugin_register_class(u32, unsigned char *, int);
++extern int plugin_deregister_class(u32);
++extern void plugin_unload_all_classes(void);
++extern void *plugin_get_obj(u32, u32, int *);
++extern struct se_plugin_s *plugin_register(void *, u32, unsigned char *, u32,
++				void (*get_plugin_info)(void *, char *, int *),
++				int *);
++extern int plugin_deregister(u32, u32);
 +
-+obj-$(CONFIG_TARGET_CORE)		+=	target_core_mod.o
-+target_core_mod-objs			:=	target_core_configfs.o \
-+						target_core_device.o \
-+						target_core_hba.o \
-+						target_core_plugin.o \
-+						target_core_pr.o \
-+						target_core_alua.o \
-+						target_core_scdb.o \
-+						target_core_seobj.o \
-+						target_core_tmr.o \
-+						target_core_tpg.o \
-+						target_core_transport.o \
-+						target_core_ua.o \
-+						div64.o
++typedef struct se_plugin_class_s {
++	unsigned char		plugin_class_name[MAX_PLUGIN_CLASS_NAME];
++	u32			plugin_class;
++	u32			max_plugins;
++	struct se_plugin_s	*plugin_array;
++	spinlock_t		plugin_lock;
++} se_plugin_class_t;
 +
-+ifeq ($(LINUX_IBLOCK), 1)
-+target_core_mod-objs			+=	target_core_iblock.o
-+EXTRA_CFLAGS				+=	-DPYX_IBLOCK
-+endif
-+ifeq ($(LINUX_PARALLEL_SCSI), 1)
-+target_core_mod-objs			+=	target_core_pscsi.o
-+EXTRA_CFLAGS				+=	-DPARALLEL_SCSI
-+endif
-+ifeq ($(LINUX_RAMDISK), 1)
-+target_core_mod-objs			+=	target_core_rd.o
-+EXTRA_CFLAGS				+=	-DPYX_RAMDISK
-+endif
-+ifeq ($(LINUX_FILEIO), 1)
-+target_core_mod-objs			+=	target_core_file.o
-+EXTRA_CFLAGS				+=	-DPYX_FILEIO
-+endif
-+ifeq ($(SNMP_FEATURE), 1)
-+target_core_mod-objs			+=	target_core_mib.o
-+EXTRA_CFLAGS				+=	-DSNMP_SUPPORT
-+endif
-+ifeq ($(LINUX_VPD_PAGE_CHECK), 1)
-+EXTRA_CFLAGS += -DLINUX_VPD_PAGE_CHECK
-+endif
-+ifeq ($(LINUX_SCSI_MEDIA_ROM), 1)
-+EXTRA_CFLAGS += -DLINUX_SCSI_MEDIA_ROM
-+endif
++typedef struct se_plugin_s	{
++	unsigned char		plugin_name[MAX_PLUGIN_NAME];
++	int			plugin_state;
++	u32			plugin_type;
++	se_plugin_class_t	*plugin_class;
++	void			*plugin_obj;
++	void (*get_plugin_info)(void *, char *, int *);
++} se_plugin_t;
 +
-+ifeq ($(DEBUG_DEV), 1)
-+EXTRA_CFLAGS += -DDEBUG_DEV
-+endif
-+
-+
-+EXTRA_CFLAGS+=-I$(CWD)/drivers/target/ -I$(CWD)/drivers/scsi/
-+EXTRA_CFLAGS+=-D_TARGET -DLINUX -DLINUX_KERNEL_26 -DLINUX_SCSI_HOST_LOCK -DLINUX_USE_SIGHAND
-+EXTRA_CFLAGS+=-DLINUX_SCATTERLIST_HAS_PAGE -DPYX_ISCSI_VENDOR='"Linux-iSCSI.org"'
-+
-+all:
-+	$(MAKE) -C $(KERNEL_DIR) SUBDIRS=$(CWD) modules CWD=$(CWD) ARCH=$(ARCH) KBUILD_VERBOSE=0
-+
-+install ins:
-+	rm -f /lib/modules/`uname -r`/kernel/drivers/scsi/iscsi_target_mod.ko
-+	rm -f /lib/modules/`uname -r`/kernel/drivers/iscsi/iscsi_target_mod.ko
-+	mkdir -p /lib/modules/`uname -r`/kernel/drivers/iscsi
-+	cp -f iscsi_target_mod.ko /lib/modules/`uname -r`/kernel/drivers/iscsi
-+	cp -f target_core_mod.ko /lib/modules/`uname -r`/kernel/drivers/iscsi
-+	depmod -ae
-+
-+
-+
-+clean:
-+	rm -f $(foreach prog,$(target_core_mod-objs) $(obj-m),$(CWD)/$(prog)) $(CWD)/target_core_mod.mod.o
-+	rm -f target_core_mod.ko target_core_mod.mod.c
-+	rm -f .*.cmd ../common/.*.cmd .make_autoconfig *~
-+	rm -fr .tmp_versions
-+
-+
++#endif /* TARGET_CORE_PLUGIN_H */
 
 
 
