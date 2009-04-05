@@ -1,63 +1,94 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758166AbZDEIT6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758227AbZDEIWp@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758166AbZDEIT6 (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 5 Apr 2009 04:19:58 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753029AbZDEITk
+	id S1758227AbZDEIWp (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 5 Apr 2009 04:22:45 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757656AbZDEIW2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 5 Apr 2009 04:19:40 -0400
-Received: from 2605ds1-ynoe.1.fullrate.dk ([90.184.12.24]:41937 "EHLO
-	shrek.krogh.cc" rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751654AbZDEITh (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 5 Apr 2009 04:19:37 -0400
-Message-ID: <49D86997.6010304@krogh.cc>
-Date: Sun, 05 Apr 2009 10:19:35 +0200
-From: Jesper Krogh <jesper@krogh.cc>
-User-Agent: Thunderbird 2.0.0.21 (X11/20090318)
+	Sun, 5 Apr 2009 04:22:28 -0400
+Received: from mail-bw0-f169.google.com ([209.85.218.169]:55832 "EHLO
+	mail-bw0-f169.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757471AbZDEIW0 convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 5 Apr 2009 04:22:26 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
+         :content-type:content-transfer-encoding;
+        b=xDrlL/xmTHBept8blbU6zwIV4O7g+9Bw1UKE42xw/UycZ3VL8eAVG2MO6rUxlKzOg6
+         B5YAM+GH5ARPPoIXhoX/FvfsTc75H9GkRana6aGW3xF2Kzo6cVzVycBUkH1jCOYurRSX
+         qV/iDYaD/lL5WIa6T3yKCtxkN9OzCMK9WueMM=
 MIME-Version: 1.0
-To: "netdev@vger.kernel.org" <netdev@vger.kernel.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Joe Korty <joe.korty@ccur.com>, Ayaz Abdulla <aabdulla@nvidia.com>
-Subject: eth0: too many iterations (16) in nv_nic_irq.
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+In-Reply-To: <504C592648%linux@youmustbejoking.demon.co.uk>
+References: <504BBE2828%linux@youmustbejoking.demon.co.uk>
+	 <20090404041813.GA30746@srcf.ucam.org>
+	 <71cd59b00904040133p1f130673r4e93d2c48f8f4616@mail.gmail.com>
+	 <504C2315A8%linux@youmustbejoking.demon.co.uk>
+	 <71cd59b00904040535t51f0e8bew34b487e0a3703f7e@mail.gmail.com>
+	 <504C592648%linux@youmustbejoking.demon.co.uk>
+Date: Sun, 5 Apr 2009 10:22:21 +0200
+Message-ID: <71cd59b00904050122r626028c7y62a0cd44411e08b7@mail.gmail.com>
+Subject: Re: [PATCH 2.6.29] eeepc-laptop: report brightness control events via 
+	the input layer
+From: Corentin Chary <corentin.chary@gmail.com>
+To: Corentin Chary <corentin.chary@gmail.com>,
+       Matthew Garrett <mjg59@srcf.ucam.org>, linux-kernel@vger.kernel.org,
+       acpi4asus-user@lists.sourceforge.net,
+       Darren Salt <linux@youmustbejoking.demon.co.uk>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-I have a 2.6.29 kernel which fills up the "dmesg-buffer" with these:
+On Sun, Apr 5, 2009 at 12:10 AM, Darren Salt
+<linux@youmustbejoking.demon.co.uk> wrote:
+> I demand that Corentin Chary may or may not have written...
+>
+>>>> How can brn be -2?
+>>> If notify_brn() wasn't called, it will be.
+>
+>> Oh, yeah, I miss the if() before notify_brn()
+>
+> Easily missed. ;-)
+>
+>>>> And why -2?
+>>> Because notify_brn() won't return it (and if it ever does, it needs to be
+>>> fixed). (Yes, I know, "magic numbers" and all that...)
+>
+>> Maybe a negative known error code could be used here
+>
+> I see the following:
+>
+> * read_acpi_int() returns 0 and writes the brightness setting to *val, or
+>  returns -1 and writes -1 to *val if the ACPI call failed.
+>
+> * get_acpi() returns whatever was written to value by read_acpi_int(), or
+>  -ENODEV if there's no ACPI method which can be called.
+>
+> * read_brightness is a trivial wrapper for get_acpi().
+>
+> * notify_brn() stores the result of read_brightness and returns the
+>  previously-stored value, so it can store then later return -ENODEV, -1 or
+>  the brightness setting.
+>
+> This makes -ENODEV a suitable value. Replacing that -1 with something other
+> than -ENODEV might be good, but I don't think that that really matters right
+> now (though I've replaced the "!= -1" in the original version of the patch
+> with "< 0").
+>
+> Revised patch follows...
 
-eth0: too many iterations (16) in nv_nic_irq.
+Thanks, it's cleaner now =).
 
-$ dmesg | grep -c "too many iterations"
-1986
+There was just a little
 
-I have seen the commit below.. is the fix just to set the limit to 30 
-instead? or is there a "real bug" underneath?
+ERROR: that open brace { should be on the previous line
+#36: FILE: drivers/platform/x86/eeepc-laptop.c:521:
+        if (bd)
++       {
 
-commit dccd547e2bf2c01a13c967ae03a705338394fad6
-Author: Joe Korty <joe.korty@ccur.com>
-Date:   Wed Oct 29 14:22:16 2008 -0700
+But I corrected that. It is now pushed in acpi4asus tree.
 
-     forcdeth: increase max_interrupt_work
-
-     This eliminates the following often-generated warning from my 64 bit
-     Opteron SMP test stand:
-
-         eth0: too many iterations (6) in nv_nic_irq
-
-     According to the web, the problem is that the forcedeth driver has a
-     too-low value for max_interrupt_work.  Grepping the kernel I see that
-     forcedeth has the second lowest value of all ethernet drivers (ie, 6).
-     Most are in the 20-40 range.  So this patch increases this a bit, 
-from 6
-     to 15 (at 15 forcedeth becomes the driver with third-lowest
-     max_interrupt_work value).
-
-     My test stand, which used to print out the above warnings repetitively
-     whenever it was under heavy net load, no longer does so.
-
-     Signed-off-by: Joe Korty <joe.korty@ccur.com>
-     Cc: Ayaz Abdulla <aabdulla@nvidia.com>
-     Cc: Jeff Garzik <jeff@garzik.org>
-     Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
-     Signed-off-by: Jeff Garzik <jgarzik@redhat.com>
+-- 
+Corentin Chary
+http://xf.iksaif.net
