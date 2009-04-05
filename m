@@ -1,63 +1,99 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755570AbZDEV7v@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758506AbZDEWAc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755570AbZDEV7v (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 5 Apr 2009 17:59:51 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753096AbZDEV7h
+	id S1758506AbZDEWAc (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 5 Apr 2009 18:00:32 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753578AbZDEWAV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 5 Apr 2009 17:59:37 -0400
-Received: from ogre.sisk.pl ([217.79.144.158]:41621 "EHLO ogre.sisk.pl"
+	Sun, 5 Apr 2009 18:00:21 -0400
+Received: from mx3.mail.elte.hu ([157.181.1.138]:48171 "EHLO mx3.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752708AbZDEV7f convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 5 Apr 2009 17:59:35 -0400
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-To: Bruno =?iso-8859-1?q?Pr=E9mont?= <bonbons@linux-vserver.org>
-Subject: Re: [PATCH] NET/r8169: Rework suspend and resume
-Date: Sun, 5 Apr 2009 23:59:31 +0200
-User-Agent: KMail/1.11.2 (Linux/2.6.29-rjw; KDE/4.2.2; x86_64; ; )
-Cc: Francois Romieu <romieu@fr.zoreil.com>, NetDev <netdev@vger.kernel.org>,
+	id S1753096AbZDEWAT (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 5 Apr 2009 18:00:19 -0400
+Date: Sun, 5 Apr 2009 23:59:16 +0200
+From: Ingo Molnar <mingo@elte.hu>
+To: Jaswinder Singh Rajput <jaswinder@kernel.org>
+Cc: Linus Torvalds <torvalds@linux-foundation.org>,
+       John Levon <levon@movementarian.org>, x86 maintainers <x86@kernel.org>,
        LKML <linux-kernel@vger.kernel.org>,
-       pm list <linux-pm@lists.linux-foundation.org>
-References: <200904052040.04752.rjw@sisk.pl> <20090405223318.5a494e4e@neptune.home>
-In-Reply-To: <20090405223318.5a494e4e@neptune.home>
+       Thomas Gleixner <tglx@linutronix.de>,
+       Robert Richter <robert.richter@amd.com>,
+       "H. Peter Anvin" <hpa@zytor.com>
+Subject: Re: [RFC PATCH] x86, oprofile: fix P4 oprofile CPU setup bug
+Message-ID: <20090405215916.GA27633@elte.hu>
+References: <1238958725.3522.1.camel@ht.satnam> <alpine.LFD.2.00.0904051243310.4023@localhost.localdomain> <1238962495.3301.0.camel@ht.satnam> <20090405213828.GA1059@elte.hu>
 MIME-Version: 1.0
-Content-Type: Text/Plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 8BIT
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Message-Id: <200904052359.31629.rjw@sisk.pl>
+In-Reply-To: <20090405213828.GA1059@elte.hu>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sunday 05 April 2009, Bruno Prémont wrote:
-> On Sun, 05 April 2009 "Rafael J. Wysocki" <rjw@sisk.pl> wrote:
-> > From: Rafael J. Wysocki <rjw@sisk.pl>
-> > 
-> > The recent changes of the PCI PM core allow us to simplify the
-> > suspend and resume handling in a number of device drivers, since they
-> > don't need to carry out the general PCI PM operations, such as
-> > changing the power state of the device, during suspend and resume any
-> > more.
-> > 
-> > Simplify the suspend and resume callbacks of r8169 using the
-> > observation that the PCI PM core can take care of some operations
-> > carried out by the driver.
-> > 
-> > Additionally, make the shutdown callback of r8169 only put the device
-> > into a low power state if the system is going to be powered off
-> > (kexec is known to have problems with network adapters that are put
-> > into low power states on shutdown).
-> > 
-> > This patch has been tested on MSI Wind U100.
-> 
-> Tested against 2.6.29.1 on my Commell LE-365 and suspend (S3) + WoL
-> still works as expected.
-> 
-> 02:08.0 Ethernet controller [0200]: Realtek Semiconductor Co., Ltd.
->                      RTL-8169 Gigabit Ethernet [10ec:8169] (rev 10)
 
-Thanks for testing!
+* Ingo Molnar <mingo@elte.hu> wrote:
 
-Best,
-Rafael
+> Hm, you only seem to be looking at solving that warning message, 
+> and your interest does not seem to go outside of that scope at 
+> all. Your first fix was to make the message go away, your second 
+> fix minimally (tried to address) the review from Linus and did a 
+> mechanic change to make the message go away.
+> 
+> This second change was actually subtly worse than the first one: 
+> because it spread the uncleanliness elsewhere. The getting of 
+> 'stagger' is in no way central to the code, it does not denote 
+> critical sections at all.
+
+btw. - and this is a pet peeve of mine - in the x86 tree we never 
+ever "fix" warnings.
+
+Warnings can only be dealt with in two ways correctly:
+
+ - Fix _false positive_ warnings - carefully analyzing and 
+   explaining why the warning is a false positive.
+
+ - .. or by fixing _real bugs_, which bugs some warning mechanism
+   exposed. The warning there does not need to be 'fixed' - it was
+   the canary for a real bug and we fix the _bug_, not the warning. 
+   ( the warning does go away but only as a side-effect of the bug
+     going away. )
+
+The moment you start 'fixing warnings' (and i note here that you 
+seem to be interested in doing many such changes and cleanups, so we 
+better talk about this fine distinction), you risk the exact pattern 
+that happened above:
+
+... something subtle happened somewhere - and you sent a patch that 
+you denoted as a 'fix' in the subject line. Your commit log did not 
+show at all whether you understood the full context, and you did not 
+analyze the _reason_ for the warning, at all.
+
+I routinely reject such patches, just based on that pattern, even if 
+i happen to agree with the change.
+
+They are in fact _actively harmful_, because a poor overworked 
+maintainer like me might apply it in a weak moment. [ except Linus, 
+who is overworked and still notices such patches but what's new ;-) ]
+
+Instead, if you see such warnings, and dont know why they trigger - 
+please send in the message denoted as a bug report. Or if you have a 
+guess of a patch but are unsure about a change in any way send in an 
+RFC patch and _declare_ the bits you are sure about and the bits you 
+are unsure about, and ask specific questions and show how far you 
+got in the analysis. It is not a problem to declare the area you 
+dont understand - it is useful information to those reading your 
+emails. Conversely, the _lack_ of such information is harmful. Ok?
+
+Please dont _ever_ send in patches without a meaningful changelog.
+
+Take this as a warning! ;-)
+
+	Ingo
