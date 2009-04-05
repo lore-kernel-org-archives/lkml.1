@@ -1,197 +1,80 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756732AbZDEGZq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757952AbZDEG0m@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756732AbZDEGZq (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 5 Apr 2009 02:25:46 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752676AbZDEGZf
+	id S1757952AbZDEG0m (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 5 Apr 2009 02:26:42 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755421AbZDEG0e
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 5 Apr 2009 02:25:35 -0400
-Received: from mail-bw0-f169.google.com ([209.85.218.169]:49069 "EHLO
-	mail-bw0-f169.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752240AbZDEGZe (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 5 Apr 2009 02:25:34 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=googlemail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:reply-to:mail-followup-to
-         :references:mime-version:content-type:content-disposition
-         :in-reply-to:user-agent;
-        b=mKvsUdB761Lu2+jEoJLVZvumvl65nNfhn6lE6Tw6acmPa5fpNBh2c4fP2itcE/jzPM
-         XEtW7OLZ+u9F8cZnprtIHtkSXeofQxGezMqgpj0ftN2bgvKzQExLCj17b1eMsRfuQO1s
-         4FJdE1VI29UjcgfoCM9JKNnuhqD3dbLJGXR3U=
-Date: Sun, 5 Apr 2009 08:25:27 +0200
-From: Borislav Petkov <petkovbb@googlemail.com>
-To: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
-Cc: linux-ide@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 3/5] ide-cd: convert cdrom_decode_status() to use
-	switch statements
-Message-ID: <20090405062527.GA774@liondog.tnic>
-Reply-To: petkovbb@gmail.com
-Mail-Followup-To: petkovbb@gmail.com,
-	Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>,
-	linux-ide@vger.kernel.org, linux-kernel@vger.kernel.org
-References: <20090403195757.31438.16866.sendpatchset@localhost.localdomain> <20090403195810.31438.66965.sendpatchset@localhost.localdomain> <20090405060911.GC4189@liondog.tnic>
+	Sun, 5 Apr 2009 02:26:34 -0400
+Received: from thunk.org ([69.25.196.29]:58284 "EHLO thunker.thunk.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754953AbZDEG0d (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 5 Apr 2009 02:26:33 -0400
+Date: Sun, 5 Apr 2009 02:26:26 -0400
+From: Theodore Tso <tytso@mit.edu>
+To: "Trenton D. Adams" <trenton.d.adams@gmail.com>
+Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: IO latency - a special case
+Message-ID: <20090405062626.GA7760@mit.edu>
+Mail-Followup-To: Theodore Tso <tytso@mit.edu>,
+	"Trenton D. Adams" <trenton.d.adams@gmail.com>,
+	Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+References: <9b1675090904041103v477913a5of06fa5c10ebee05f@mail.gmail.com> <9b1675090904041131u28635d8dnc3d13e88000394b4@mail.gmail.com> <20090405011355.GE7553@mit.edu> <9b1675090904042117k77463227y66a872d52d027e7e@mail.gmail.com> <9b1675090904042125g708076e6v665f5ecc7fa020a4@mail.gmail.com> <9b1675090904042313rb8178b6v1da3aeddfa57a869@mail.gmail.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20090405060911.GC4189@liondog.tnic>
+In-Reply-To: <9b1675090904042313rb8178b6v1da3aeddfa57a869@mail.gmail.com>
 User-Agent: Mutt/1.5.18 (2008-05-17)
+X-SA-Exim-Connect-IP: <locally generated>
+X-SA-Exim-Mail-From: tytso@mit.edu
+X-SA-Exim-Scanned: No (on thunker.thunk.org); SAEximRunCond expanded to false
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, Apr 05, 2009 at 08:09:11AM +0200, Borislav Petkov wrote:
-> On Fri, Apr 03, 2009 at 09:58:10PM +0200, Bartlomiej Zolnierkiewicz wrote:
-> > From: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
-> > Subject: [PATCH] ide-cd: convert cdrom_decode_status() to use switch statements
+On Sun, Apr 05, 2009 at 12:13:44AM -0600, Trenton D. Adams wrote:
+> Hi Ted,
 > 
-> Here's a rediffed version:
+> I have no idea what "sar" is, and a google search doesn't appear to
+> reveal anything useful.  Where can I get this "sar" tool?
+> 
+> I also do not have "iostat" on my system, and again, google does not
+> appear to reveal an official page for that, and gentoo doesn't appear
+> to have a package for it.
 
-Sorry, I'd forgotten the ide_cd_breathe patch, so here's the correct one:
+Both "sar" and "iostat" are part of the sysstat package.
 
----
-From: Borislav Petkov <petkovbb@gmail.com>
-Date: Sun, 5 Apr 2009 08:20:47 +0200
-Subject: [PATCH] ide-cd: convert cdrom_decode_status() to use switch statements
+Package: sysstat
+Priority: optional
+Section: admin
+Installed-Size: 808
+Maintainer: Ubuntu MOTU Developers <ubuntu-motu@lists.ubuntu.com>
+Original-Maintainer: Robert Luberda <robert@debian.org>
+Architecture: i386
+Version: 8.1.2-2ubuntu1
+Depends: libc6 (>= 2.4), debconf (>= 0.5) | debconf-2.0, ucf (>= 2.003), lsb-base (>= 3.0-6), bzip2
+Recommends: cron
+Suggests: isag
+Conflicts: atsar (<< 1.5-3)
+Filename: pool/main/s/sysstat/sysstat_8.1.2-2ubuntu1_i386.deb
+Size: 182222
+MD5sum: e59153e0121ce437082ab7e03fe647e0
+SHA1: 65383dec2ca6ea4fa5fed41afdde46639d2d5e98
+SHA256: eb5530307e52ef69b9d1d3c0e43e7a02e805888e183adcbef272bf9283829851
+Description: sar, iostat and mpstat - system performance tools for Linux
+ The sysstat package contains the following system performance tools:
+  * sar - collects and reports system activity information;
+  * iostat - reports CPU utilization and I/O statistics for disks;
+  * mpstat - reports global and per-processor statistics;
+  * pidstat - reports statistics for Linux tasks (processes);
+  * sadf - displays data collected by sar in various formats.
+ .
+ The statistics reported by sar concern I/O transfer rates,
+ paging activity, process-related activities, interrupts,
+ network activity, memory and swap space utilization, CPU
+ utilization, kernel activities and TTY statistics, among
+ others. Both UP and SMP machines are fully supported.
+Homepage: http://pagesperso-orange.fr/sebastien.godard/
+Bugs: mailto:ubuntu-users@lists.ubuntu.com
+Origin: Ubuntu
 
-Convert cdrom_decode_status() to use switch statements in
-preparation to unify handling of fs and pc requests.
-
-While at it:
-- remove superfluous comments and do minor CodingStyle fixups
-
-There should be no functional changes caused by this patch.
-
-Signed-off-by: Borislav Petkov <petkovbb@gmail.com>
-Signed-off-by: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
----
- drivers/ide/ide-cd.c |   57 ++++++++++++++++++++++++++++----------------------
- 1 files changed, 32 insertions(+), 25 deletions(-)
-
-diff --git a/drivers/ide/ide-cd.c b/drivers/ide/ide-cd.c
-index e946f0e..43db330 100644
---- a/drivers/ide/ide-cd.c
-+++ b/drivers/ide/ide-cd.c
-@@ -340,15 +340,14 @@ static int cdrom_decode_status(ide_drive_t *drive, u8 stat)
- 		if (blk_pc_request(rq) && !rq->errors)
- 			rq->errors = SAM_STAT_CHECK_CONDITION;
- 
--		/* check for tray open */
--		if (sense_key == NOT_READY) {
-+		switch (sense_key) {
-+		case NOT_READY:
- 			cdrom_saw_media_change(drive);
--		} else if (sense_key == UNIT_ATTENTION) {
--			/* check for media change */
-+			break;
-+		case UNIT_ATTENTION:
- 			cdrom_saw_media_change(drive);
- 			return 0;
--		} else if (sense_key == ILLEGAL_REQUEST &&
--			   rq->cmd[0] == GPCMD_START_STOP_UNIT) {
-+		case ILLEGAL_REQUEST:
- 			/*
- 			 * Don't print error message for this condition--
- 			 * SFF8090i indicates that 5/24/00 is the correct
-@@ -356,9 +355,13 @@ static int cdrom_decode_status(ide_drive_t *drive, u8 stat)
- 			 * drive doesn't have that capability.
- 			 * cdrom_log_sense() knows this!
- 			 */
--		} else if (!quiet) {
--			/* otherwise, print an error */
--			ide_dump_status(drive, "packet command error", stat);
-+			if (rq->cmd[0] == GPCMD_START_STOP_UNIT)
-+				break;
-+			/* fall-through */
-+		default:
-+			if (!quiet)
-+				ide_dump_status(drive, "packet command error",
-+						stat);
- 		}
- 
- 		rq->cmd_flags |= REQ_FAILED;
-@@ -378,12 +381,11 @@ static int cdrom_decode_status(ide_drive_t *drive, u8 stat)
- 		if (blk_noretry_request(rq))
- 			do_end_request = 1;
- 
--		if (sense_key == NOT_READY) {
--			/* tray open */
-+		switch (sense_key) {
-+		case NOT_READY:
- 			if (rq_data_dir(rq) == READ) {
- 				cdrom_saw_media_change(drive);
- 
--				/* fail the request */
- 				if (!quiet)
- 					printk(KERN_ERR PFX "%s: tray open\n",
- 						drive->name);
-@@ -392,8 +394,8 @@ static int cdrom_decode_status(ide_drive_t *drive, u8 stat)
- 					return 1;
- 			}
- 			do_end_request = 1;
--		} else if (sense_key == UNIT_ATTENTION) {
--			/* media change */
-+			break;
-+		case UNIT_ATTENTION:
- 			cdrom_saw_media_change(drive);
- 
- 			/*
-@@ -402,8 +404,9 @@ static int cdrom_decode_status(ide_drive_t *drive, u8 stat)
- 			 */
- 			if (++rq->errors > ERROR_MAX)
- 				do_end_request = 1;
--		} else if (sense_key == ILLEGAL_REQUEST ||
--			   sense_key == DATA_PROTECT) {
-+			break;
-+		case ILLEGAL_REQUEST:
-+		case DATA_PROTECT:
- 			/*
- 			 * No point in retrying after an illegal request or data
- 			 * protect error.
-@@ -411,7 +414,8 @@ static int cdrom_decode_status(ide_drive_t *drive, u8 stat)
- 			if (!quiet)
- 				ide_dump_status(drive, "command error", stat);
- 			do_end_request = 1;
--		} else if (sense_key == MEDIUM_ERROR) {
-+			break;
-+		case MEDIUM_ERROR:
- 			/*
- 			 * No point in re-trying a zillion times on a bad
- 			 * sector. If we got here the error is not correctable.
-@@ -420,19 +424,22 @@ static int cdrom_decode_status(ide_drive_t *drive, u8 stat)
- 				ide_dump_status(drive, "media error "
- 						"(bad sector)",	stat);
- 			do_end_request = 1;
--		} else if (sense_key == BLANK_CHECK) {
-+			break;
-+		case BLANK_CHECK:
- 			/* disk appears blank ?? */
- 			if (!quiet)
- 				ide_dump_status(drive, "media error (blank)",
- 						stat);
- 			do_end_request = 1;
--		} else if ((err & ~ATA_ABORTED) != 0) {
--			/* go to the default handler for other errors */
--			ide_error(drive, "cdrom_decode_status", stat);
--			return 1;
--		} else if ((++rq->errors > ERROR_MAX)) {
--			/* we've racked up too many retries, abort */
--			do_end_request = 1;
-+			break;
-+		default:
-+			if (err & ~ATA_ABORTED) {
-+				/* go to the default handler for other errors */
-+				ide_error(drive, "cdrom_decode_status", stat);
-+				return 1;
-+			} else if (++rq->errors > ERROR_MAX)
-+				/* we've racked up too many retries, abort */
-+				do_end_request = 1;
- 		}
- 
- 		/*
--- 
-1.6.2.1
-
-
--- 
-Regards/Gruss,
-    Boris.
+						- Ted
