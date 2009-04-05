@@ -1,49 +1,112 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758056AbZDEUF1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758203AbZDEUFp@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758056AbZDEUF1 (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 5 Apr 2009 16:05:27 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757301AbZDEUFM
+	id S1758203AbZDEUFp (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 5 Apr 2009 16:05:45 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758126AbZDEUFb
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 5 Apr 2009 16:05:12 -0400
-Received: from terminus.zytor.com ([198.137.202.10]:33123 "EHLO
-	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755769AbZDEUFL (ORCPT
+	Sun, 5 Apr 2009 16:05:31 -0400
+Received: from casper.infradead.org ([85.118.1.10]:37252 "EHLO
+	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1758079AbZDEUF3 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 5 Apr 2009 16:05:11 -0400
-Message-ID: <49D90EED.2060703@zytor.com>
-Date: Sun, 05 Apr 2009 13:05:01 -0700
-From: "H. Peter Anvin" <hpa@zytor.com>
-User-Agent: Thunderbird 2.0.0.14 (X11/20080501)
-MIME-Version: 1.0
-To: =?UTF-8?B?QWxlamFuZHJvIFJpdmVpcmEgRmVybsOhbmRleg==?= 
-	<ariveira@gmail.com>
-CC: Martin Steigerwald <Martin@lichtvoll.de>,
-       Bryan Henderson <hbryan@us.ibm.com>, linux-fsdevel@vger.kernel.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: Replacing VFAT as filesystem on removeable media
-References: <OFF614A035.0DA52102-ON8825758C.00613C94-8825758C.006215D5@us.ibm.com>	<200904031029.03581.Martin@lichtvoll.de>	<49D8510A.3010606@zytor.com> <20090405153041.08238acf@varda>
-In-Reply-To: <20090405153041.08238acf@varda>
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8bit
+	Sun, 5 Apr 2009 16:05:29 -0400
+Date: Sun, 5 Apr 2009 13:06:48 -0700
+From: Arjan van de Ven <arjan@infradead.org>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: Theodore Tso <tytso@mit.edu>, Jens Axboe <jens.axboe@oracle.com>,
+       Linux Kernel Developers List <linux-kernel@vger.kernel.org>,
+       Ext4 Developers List <linux-ext4@vger.kernel.org>
+Subject: Re: [GIT PULL] Ext3 latency fixes
+Message-ID: <20090405130648.3266a468@infradead.org>
+In-Reply-To: <alpine.LFD.2.00.0904051227120.4023@localhost.localdomain>
+References: <alpine.LFD.2.00.0904031150190.4015@localhost.localdomain>
+	<alpine.LFD.2.00.0904031329410.7007@localhost.localdomain>
+	<20090404135719.GA9812@mit.edu>
+	<20090404151649.GE5178@kernel.dk>
+	<alpine.LFD.2.00.0904040854470.3915@localhost.localdomain>
+	<20090404173412.GF5178@kernel.dk>
+	<alpine.LFD.2.00.0904041039230.3915@localhost.localdomain>
+	<20090404180108.GH5178@kernel.dk>
+	<20090404232222.GA7480@mit.edu>
+	<20090404163349.20df1208@infradead.org>
+	<20090405001005.GA7553@mit.edu>
+	<alpine.LFD.2.00.0904050927580.4023@localhost.localdomain>
+	<20090405115629.521057fc@infradead.org>
+	<alpine.LFD.2.00.0904051227120.4023@localhost.localdomain>
+Organization: Intel
+X-Mailer: Claws Mail 3.7.0 (GTK+ 2.14.7; i386-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
+X-SRS-Rewrite: SMTP reverse-path rewritten from <arjan@infradead.org> by casper.infradead.org
+	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Alejandro Riveira Fernández wrote:
->>>
->> Ironically enough, one of the better filesystems for being supported by
->> many OSes is probably ext2.  However, that doesn't mean it is even in
->> the same rough ballpark as (V)FAT.
+On Sun, 5 Apr 2009 12:34:32 -0700 (PDT)
+Linus Torvalds <torvalds@linux-foundation.org> wrote:
+
 > 
->   What about UDF ?
+> 
+> On Sun, 5 Apr 2009, Arjan van de Ven wrote:
+> >
+> > > See get_request():
+> > 
+> > our default number of requests is so low that we very regularly hit
+> > the limit. In addition to setting kjournald to higher priority, I
+> > tend to set the number of requests to 4096 or so to improve
+> > interactive performance on my own systems. That way at least the
+> > elevator has a chance to see the requests ;-)
+> 
+> That's insane. 
 
-Good point.  UDF is probably widely supported, but again, not in the
-same ballpark.  I don't personally know how complex UDF is to implement
-on a small memory device.
+4096 is an absolutely insane value that hides some of the problem
 
-	-hpa
+> Long queues make the problem harder to hit, yes. But
+> it also tends to make the problem them a million times worse when you
+> _do_ hit it.
+
+There is a dilemma though. By not having the IO needs in a queue,
+to some degree, they haven't gone away; they just are invisible.
+
+Now there is also a throttling value in having these limits, to
+slow down "regular" processes that would cause too much IO.
+Except that we have the dirty limit for that in the VM, and except that
+most actual IO is done by pdflush and other kernel threads, with the
+dirtying of data asynchronous to that.
+
+I would contend that for most common cases, not giving callers a request
+immediately does not change or throttle the actual IO that is in want
+of being sent to the device. All it does is reduce visibility of the IO
+need so less grouping of adjacent and prioritization can be done by the
+elevator.
+ 
+> I would suggest looking instead at trying to have separate allocation 
+> pools for bulk and "sync" IO. Instead of having just one rq->rq_pool,
+> we could easily have a rq->rq_bulk_pool and rq->rq_sync_pool.
+
+Well that or have pools for a few buckets of priority level.
+The risk of this is that someone like pdflush might get stuck on a low
+priority queue, and thus cannot send the IO it might have wanted to
+send into a higher priority queue. I fear that any such limits will in
+general punish the wrong guy; after all number 129 is punished, not the
+guy who put numbers 1 to 128 in the queue.
+
+I wonder if it wouldn't be a better solution to give insight of the
+queue length in use to pdflush, and have pdflush decide what kind of IO
+to submit based on the length, rather than having it just block.
+
+Just think of the sync() or fsync() cases.
+The total amount of IO that those calls will cause is pretty much
+fixed: the data that is "relevantly dirty" at the time of the call.
+Holding things back at the request allocation level does not change
+that, all it changes is that we delay merging requests that are
+adjacent, sort on priority, etc.
+
+
 
 -- 
-H. Peter Anvin, Intel Open Source Technology Center
-I work for Intel.  I don't speak on their behalf.
-
+Arjan van de Ven 	Intel Open Source Technology Centre
+For development, discussion and tips for power savings, 
+visit http://www.lesswatts.org
