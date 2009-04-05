@@ -1,49 +1,44 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753504AbZDEL34@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757643AbZDELhF@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753504AbZDEL34 (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 5 Apr 2009 07:29:56 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751363AbZDEL3n
+	id S1757643AbZDELhF (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 5 Apr 2009 07:37:05 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752340AbZDELgu
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 5 Apr 2009 07:29:43 -0400
-Received: from mail-bw0-f169.google.com ([209.85.218.169]:58611 "EHLO
-	mail-bw0-f169.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751016AbZDEL3m (ORCPT
+	Sun, 5 Apr 2009 07:36:50 -0400
+Received: from sovereign.computergmbh.de ([85.214.69.204]:47762 "EHLO
+	sovereign.computergmbh.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751565AbZDELgt (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 5 Apr 2009 07:29:42 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
-         :cc:content-type:content-transfer-encoding;
-        b=fzHuwIege/Sm/hyH7H73zAKx3D1plRVgv0hg4x0jwDiGgnatr3RZiq3+7t3D21wPLs
-         Z8hOSG+quyTqS5MKtjCnBSIzsh+MMXiLbqmAReKjbssyFgkVD2wctWIBBqT4Bt1H4SvP
-         MDCGGdOBzubhq99jaSgyCZgRngWlqp28mjOmg=
+	Sun, 5 Apr 2009 07:36:49 -0400
+Date: Sun, 5 Apr 2009 13:36:46 +0200 (CEST)
+From: Jan Engelhardt <jengelh@medozas.de>
+To: Eric Dumazet <dada1@cosmosbay.com>
+cc: David Miller <davem@davemloft.net>, graham@gmurray.org.uk,
+       linux-kernel@vger.kernel.org, netdev@vger.kernel.org,
+       netfilter-devel@vger.kernel.org
+Subject: Re: Regression caused by commit "netfilter: iptables: lock free
+ counters"
+In-Reply-To: <49D88162.5040809@cosmosbay.com>
+Message-ID: <alpine.LSU.2.00.0904051328030.7501@fbirervta.pbzchgretzou.qr>
+References: <20090329234702.4988017f@desktop.r000n.info> <8763hja8cy.fsf@newton.gmurray.org.uk> <20090405.012237.198610462.davem@davemloft.net> <49D88162.5040809@cosmosbay.com>
+User-Agent: Alpine 2.00 (LSU 1167 2008-08-23)
 MIME-Version: 1.0
-In-Reply-To: <49D7B122.50103@wpkg.org>
-References: <49D7AD54.4060408@vlnb.net> <49D7B122.50103@wpkg.org>
-Date: Sun, 5 Apr 2009 13:29:38 +0200
-Message-ID: <e2e108260904050429lcd1870ag6656f36a170ccab3@mail.gmail.com>
-Subject: Re: [Scst-devel] [ANNOUNCE]: Comparison of features sets between 
-	different SCSI targets (SCST, STGT, IET, LIO)
-From: Bart Van Assche <bart.vanassche@gmail.com>
-To: Tomasz Chmielewski <mangoo@wpkg.org>
-Cc: Vladislav Bolkhovitin <vst@vlnb.net>, linux-kernel@vger.kernel.org,
-       linux-scsi@vger.kernel.org, iscsitarget-devel@lists.sourceforge.net,
-       James Bottomley <James.Bottomley@hansenpartnership.com>,
-       scst-devel <scst-devel@lists.sourceforge.net>, stgt@vger.kernel.org
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, Apr 4, 2009 at 9:12 PM, Tomasz Chmielewski <mangoo@wpkg.org> wrote:
-> I made some simple SCST and STGT tests last week, there were some where SCST
-> won, there were some where STGT won.
 
-Hello Tomasz,
+On Sunday 2009-04-05 12:01, Eric Dumazet wrote:
+>
+>This could probably be solved using a single "table" containing
+>rules only, that could be shared for every cpus. Only counters
+>should be percpu. This should save a lot of ram, over previous
+>situation (2.6.29 or current one)
 
-It would be great if you could publish the details of your setup and
-the tests you have run, such that we are able to reproduce the tests
-and analyze the results further.
+Why would counters stay separate?
 
-Bart.
+I recognize all of this table copying is related to do NUMA
+optimizations, and I think I heard cache bouncing too somewhere else.
+
+[ http://marc.info/?l=netfilter-devel&m=119903624211253&w=2 ]
