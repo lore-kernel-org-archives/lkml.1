@@ -1,54 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757265AbZDENye@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755294AbZDEONs@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757265AbZDENye (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 5 Apr 2009 09:54:34 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753554AbZDENyY
+	id S1755294AbZDEONs (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 5 Apr 2009 10:13:48 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751128AbZDEONd
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 5 Apr 2009 09:54:24 -0400
-Received: from www.tglx.de ([62.245.132.106]:47116 "EHLO www.tglx.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752234AbZDENyY (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 5 Apr 2009 09:54:24 -0400
-Date: Sun, 5 Apr 2009 15:53:29 +0200 (CEST)
-From: Thomas Gleixner <tglx@linutronix.de>
-To: Fernando Lopez-Lezcano <nando@ccrma.Stanford.EDU>
-cc: LKML <linux-kernel@vger.kernel.org>,
-       rt-users <linux-rt-users@vger.kernel.org>, Ingo Molnar <mingo@elte.hu>,
-       Steven Rostedt <rostedt@goodmis.org>,
-       Peter Zijlstra <peterz@infradead.org>, Carsten Emde <ce@ceag.ch>,
-       Clark Williams <williams@redhat.com>,
-       Frank Rowand <frank.rowand@am.sony.com>,
-       Robin Gareus <robin@gareus.org>, Gregory Haskins <ghaskins@novell.com>,
-       Philippe Reynes <philippe.reynes@isismpp.fr>,
-       Will Schmidt <will_schmidt@vnet.ibm.com>
-Subject: Re: [Announce] 2.6.29.1-rt4
-In-Reply-To: <1238828273.15225.17.camel@localhost.localdomain>
-Message-ID: <alpine.LFD.2.00.0904051552320.747@localhost.localdomain>
-References: <alpine.LFD.2.00.0902112332370.415@localhost.localdomain>  <alpine.LFD.2.00.0902122353050.16972@localhost.localdomain>  <alpine.LFD.2.00.0902231854360.3523@localhost.localdomain>  <alpine.LFD.2.00.0902241849230.3523@localhost.localdomain> 
- <alpine.LFD.2.00.0902241856480.9135@localhost.localdomain>  <alpine.LFD.2.00.0903122013230.29264@localhost.localdomain>  <alpine.LFD.2.00.0903200014320.29264@localhost.localdomain>  <alpine.LFD.2.00.0903201832590.29264@localhost.localdomain> 
- <alpine.LFD.2.00.0903231723090.29264@localhost.localdomain>  <alpine.LFD.2.00.0903252154040.3397@localhost.localdomain>  <alpine.LFD.2.00.0904020155320.12916@localhost.localdomain>  <alpine.LFD.2.00.0904031918090.12916@localhost.localdomain> 
- <1238799852.3871.6.camel@localhost.localdomain>  <alpine.LFD.2.00.0904040628310.12916@localhost.localdomain> <1238828273.15225.17.camel@localhost.localdomain>
-User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
+	Sun, 5 Apr 2009 10:13:33 -0400
+Received: from yw-out-2324.google.com ([74.125.46.30]:15361 "EHLO
+	yw-out-2324.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751323AbZDEONc (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 5 Apr 2009 10:13:32 -0400
+Message-ID: <49D8BC87.8030401@codemonkey.ws>
+Date: Sun, 05 Apr 2009 09:13:27 -0500
+From: Anthony Liguori <anthony@codemonkey.ws>
+User-Agent: Thunderbird 2.0.0.21 (X11/20090320)
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+To: Rusty Russell <rusty@rustcorp.com.au>
+CC: Gregory Haskins <ghaskins@novell.com>, linux-kernel@vger.kernel.org,
+       agraf@suse.de, pmullaney@novell.com, pmorreale@novell.com,
+       netdev@vger.kernel.org, kvm@vger.kernel.org
+Subject: Re: [RFC PATCH 00/17] virtual-bus
+References: <20090331184057.28333.77287.stgit@dev.haskins.net> <200904011638.45135.rusty@rustcorp.com.au> <49D391F5.4080700@codemonkey.ws> <200904051314.23170.rusty@rustcorp.com.au>
+In-Reply-To: <200904051314.23170.rusty@rustcorp.com.au>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 3 Apr 2009, Fernando Lopez-Lezcano wrote:
-> > > Just a heads up. I'm still having shutdown/suspend problems with this
-> > > release as before (I had not reported the suspend problem, I think -
-> > > machine hangs and has to be power cycled). Booting with "noreplace-smp"
-> > > fixes both. Is this something I could disable through configuration
-> > > options?
-> > 
-> > No. I have this shutdown/suspend thing on my todo list. 
-> 
-> Ah, ok. No problem. If it were not for this feature I'd probably release
-> a test version for Planet CCRMA. 
+Rusty Russell wrote:
+> On Thursday 02 April 2009 02:40:29 Anthony Liguori wrote:
+>   
+>> Rusty Russell wrote:
+>>     
+>>> As you point out, 350-450 is possible, which is still bad, and it's at least
+>>> partially caused by the exit to userspace and two system calls.  If virtio_net
+>>> had a backend in the kernel, we'd be able to compare numbers properly.
+>>>       
+>> I doubt the userspace exit is the problem.  On a modern system, it takes 
+>> about 1us to do a light-weight exit and about 2us to do a heavy-weight 
+>> exit.  A transition to userspace is only about ~150ns, the bulk of the 
+>> additional heavy-weight exit cost is from vcpu_put() within KVM.
+>>     
+>
+> Just to inject some facts, servicing a ping via tap (ie host->guest then
+> guest->host response) takes 26 system calls from one qemu thread, 7 from
+> another (see strace below). Judging by those futex calls, multiple context
+> switches, too.
+>   
 
-Happens this shutdown/suspend problem every time or is this sporadic ?
+N.B. we're not optimized for latency today.  With the right 
+infrastructure in userspace, I'm confident we could get this down.
 
-Thanks,
+What we need is:
 
-	tglx
+1) Lockless MMIO/PIO dispatch (there should be two IO registration 
+interfaces, a new lockless one and the legacy one)
+2) A virtio-net thread that's independent of the IO thread.
+
+It would be interesting to count the number of syscalls required in the 
+lguest path since that should be a lot closer to optimal.
+
+Regards,
+
+Anthony Liguori
+
