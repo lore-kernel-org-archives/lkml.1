@@ -1,56 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755644AbZDETSe@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756374AbZDET0T@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755644AbZDETSe (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 5 Apr 2009 15:18:34 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755529AbZDETSB
+	id S1756374AbZDET0T (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 5 Apr 2009 15:26:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756214AbZDET0B
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 5 Apr 2009 15:18:01 -0400
-Received: from zeniv.linux.org.uk ([195.92.253.2]:32874 "EHLO
-	ZenIV.linux.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755481AbZDETR7 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 5 Apr 2009 15:17:59 -0400
-Date: Sun, 5 Apr 2009 20:17:57 +0100
-From: Al Viro <viro@ZenIV.linux.org.uk>
-To: Linus Torvalds <torvalds@linux-foundation.org>
+	Sun, 5 Apr 2009 15:26:01 -0400
+Received: from ogre.sisk.pl ([217.79.144.158]:41249 "EHLO ogre.sisk.pl"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1756211AbZDET0A (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 5 Apr 2009 15:26:00 -0400
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+To: Tino Keitel <tino.keitel@tikei.de>
+Subject: Re: Resume failure: ata3.01: revalidation failed (errno=-2)
+Date: Sun, 5 Apr 2009 21:25:59 +0200
+User-Agent: KMail/1.11.2 (Linux/2.6.29-rjw; KDE/4.2.2; x86_64; ; )
 Cc: linux-kernel@vger.kernel.org
-Subject: [git pull] audit patches
-Message-ID: <20090405191757.GB26366@ZenIV.linux.org.uk>
+References: <20090325064503.GA4959@dose.home.local>
+In-Reply-To: <20090325064503.GA4959@dose.home.local>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: Text/Plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-User-Agent: Mutt/1.5.18 (2008-05-17)
+Message-Id: <200904052125.59799.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Please, pull from
-git//git.kernel.org/pub/scm/linux/kernel/git/viro/audit-current.git/ audit.b62
+On Wednesday 25 March 2009, Tino Keitel wrote:
+> Hi,
+> 
+> I tried if I can get reliable suspend to RAM on my new Mac mini Core 2
+> Duo using 2.6.29, and did a "burn in" test with an endless
+> suspend/resume loop using RTC wakeup. After ~30 attempts, the kernel
+> hangs with a screen full of this message:
+> 
+> ata3.01: revalidation failed (errno=-2)
+> 
+> In the kernel log, I see _one_ occurrence of this message at each resume:
+> 
+> kern.debug: ata3.01: NODEV after polling detection
+> kern.err: ata3.01: revalidation failed (errno=-2)
+> 
+> I tried the same using 2.6.27.20 and got the same, after 52 attempts.
 
-Shortlog:
-Eric Paris (2):
-      audit: incorrect ref counting in audit tree tag_chunk
-      audit: audit_set_auditable defined but not used
+Can you run this test with the current mainline, please?
 
-Jiri Pirko (1):
-      audit: EXECVE record - removed bogus newline
-
-Miloslav Trmac (2):
-      Audit: fix handling of 'strings' with NULL characters
-      audit: ignore terminating NUL in AUDIT_USER_TTY messages
-
-Paul Moore (1):
-      audit: Fix possible return value truncation in audit_get_context()
-
-Randy Dunlap (1):
-      auditsc: fix kernel-doc notation
-
-Zhenwen Xu (1):
-      make the e->rule.xxx shorter in kernel auditfilter.c
-
-Diffstat:
- kernel/audit.c       |    5 ++++-
- kernel/audit_tree.c  |    2 ++
- kernel/auditfilter.c |   16 ++++++++--------
- kernel/auditsc.c     |   31 +++++++++++++++----------------
- 4 files changed, 29 insertions(+), 25 deletions(-)
+Rafael
