@@ -1,51 +1,90 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758827AbZDEKOs@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758893AbZDEKPI@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758827AbZDEKOs (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 5 Apr 2009 06:14:48 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756939AbZDEKOb
+	id S1758893AbZDEKPI (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 5 Apr 2009 06:15:08 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758848AbZDEKOv
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 5 Apr 2009 06:14:31 -0400
-Received: from ogre.sisk.pl ([217.79.144.158]:39617 "EHLO ogre.sisk.pl"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756292AbZDEKOa (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 5 Apr 2009 06:14:30 -0400
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-To: Jeff Kirsher <jeffrey.t.kirsher@intel.com>
-Subject: Re: [RFT][PATCH 0/3] NET: Shutdown fixes for e1000, e1000e and ixgbe
-Date: Sun, 5 Apr 2009 12:14:51 +0200
-User-Agent: KMail/1.11.2 (Linux/2.6.29-rjw; KDE/4.2.2; x86_64; ; )
-Cc: NetDev <netdev@vger.kernel.org>,
-       Jesse Brandeburg <jesse.brandeburg@gmail.com>,
-       Yinghai Lu <yinghai@kernel.org>,
-       pm list <linux-pm@lists.linux-foundation.org>,
-       LKML <linux-kernel@vger.kernel.org>
-References: <200904042337.31706.rjw@sisk.pl> <9929d2390904050059t4f38428fn145aa615f850dd1f@mail.gmail.com>
-In-Reply-To: <9929d2390904050059t4f38428fn145aa615f850dd1f@mail.gmail.com>
+	Sun, 5 Apr 2009 06:14:51 -0400
+Received: from jacques.telenet-ops.be ([195.130.132.50]:37339 "EHLO
+	jacques.telenet-ops.be" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1758831AbZDEKOu (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 5 Apr 2009 06:14:50 -0400
+Date: Sun, 5 Apr 2009 12:14:44 +0200 (CEST)
+From: Geert Uytterhoeven <geert@linux-m68k.org>
+To: Greg Kroah-Hartman <gregkh@suse.de>
+cc: Linux Kernel Development <linux-kernel@vger.kernel.org>
+Subject: [PATCH] platform: Make platform resources input parameters const
+Message-ID: <Pine.LNX.4.64.0904051214110.31394@anakin>
 MIME-Version: 1.0
-Content-Type: Text/Plain;
-  charset="utf-8"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200904051214.52451.rjw@sisk.pl>
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sunday 05 April 2009, Jeff Kirsher wrote:
-> On Sat, Apr 4, 2009 at 2:37 PM, Rafael J. Wysocki <rjw@sisk.pl> wrote:
-> > Hi,
-> >
-> > Commit 3fe7c4c9dca4fbbff92eb61a660690dad7029ec3 (net/igb: Fix kexec with igb
-> > (rev. 3)) fixed a kexec problem with igb by making its shutdown routine only
-> > put the device into a low power state if the system is going to be powered off.
-> >
-> > The following three patches make analogous changes to e1000, e1000e and ixgbe.
-> >
-> 
-> Thanks Rafael, I will add these patches to my tree and get them into
-> testing on Monday/Tuesday.  If everything looks good after testing, I
-> will push them with our other patches.
+Make the platform resources input parameters of platform_device_add_resources()
+and platform_device_register_simple() const, as the resources are copied and
+never modified.
 
-Great, thanks a lot!
+Signed-off-by: Geert Uytterhoeven <geert@linux-m68k.org>
+---
+ drivers/base/platform.c         |    4 ++--
+ include/linux/platform_device.h |    6 ++++--
+ 2 files changed, 6 insertions(+), 4 deletions(-)
 
-Rafael
+diff --git a/drivers/base/platform.c b/drivers/base/platform.c
+index d2198f6..25e23f9 100644
+--- a/drivers/base/platform.c
++++ b/drivers/base/platform.c
+@@ -184,7 +184,7 @@ EXPORT_SYMBOL_GPL(platform_device_alloc);
+  * released.
+  */
+ int platform_device_add_resources(struct platform_device *pdev,
+-				  struct resource *res, unsigned int num)
++				  const struct resource *res, unsigned int num)
+ {
+ 	struct resource *r;
+ 
+@@ -379,7 +379,7 @@ EXPORT_SYMBOL_GPL(platform_device_unregister);
+  */
+ struct platform_device *platform_device_register_simple(const char *name,
+ 							int id,
+-							struct resource *res,
++							const struct resource *res,
+ 							unsigned int num)
+ {
+ 	struct platform_device *pdev;
+diff --git a/include/linux/platform_device.h b/include/linux/platform_device.h
+index 76e470a..e5c2b64 100644
+--- a/include/linux/platform_device.h
++++ b/include/linux/platform_device.h
+@@ -42,12 +42,14 @@ extern int platform_get_irq_byname(struct platform_device *, char *);
+ extern int platform_add_devices(struct platform_device **, int);
+ 
+ extern struct platform_device *platform_device_register_simple(const char *, int id,
+-					struct resource *, unsigned int);
++					const struct resource *, unsigned int);
+ extern struct platform_device *platform_device_register_data(struct device *,
+ 		const char *, int, const void *, size_t);
+ 
+ extern struct platform_device *platform_device_alloc(const char *name, int id);
+-extern int platform_device_add_resources(struct platform_device *pdev, struct resource *res, unsigned int num);
++extern int platform_device_add_resources(struct platform_device *pdev,
++					 const struct resource *res,
++					 unsigned int num);
+ extern int platform_device_add_data(struct platform_device *pdev, const void *data, size_t size);
+ extern int platform_device_add(struct platform_device *pdev);
+ extern void platform_device_del(struct platform_device *pdev);
+-- 
+1.6.2.1
+
+Gr{oetje,eeting}s,
+
+						Geert
+
+--
+Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
+
+In personal conversations with technical people, I call myself a hacker. But
+when I'm talking to journalists I just say "programmer" or something like that.
+							    -- Linus Torvalds
