@@ -1,152 +1,82 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757666AbZDEHes@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757355AbZDEHn7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757666AbZDEHes (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 5 Apr 2009 03:34:48 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757003AbZDEHej
+	id S1757355AbZDEHn7 (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 5 Apr 2009 03:43:59 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757305AbZDEHnq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 5 Apr 2009 03:34:39 -0400
-Received: from mail-gx0-f160.google.com ([209.85.217.160]:51777 "EHLO
-	mail-gx0-f160.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755556AbZDEHei (ORCPT
+	Sun, 5 Apr 2009 03:43:46 -0400
+Received: from mail-bw0-f169.google.com ([209.85.218.169]:55002 "EHLO
+	mail-bw0-f169.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752861AbZDEHnp (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 5 Apr 2009 03:34:38 -0400
+	Sun, 5 Apr 2009 03:43:45 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
-        h=subject:from:to:cc:in-reply-to:references:content-type:date
-         :message-id:mime-version:x-mailer:content-transfer-encoding;
-        b=ioZF5Rx/pwgR90TuQS8g8FkaBx8+T9d9lYhP7Y7krJFu1ycTgSobnr+1Tip6uVSZe4
-         qYeWxnE9GxLkxU5mx0uzD54jhxEQ7FpwsQnCoHagCPaNSSDBwE1qbBB1EJXQ6DZCIjut
-         RJ0676ZC65Gd0+n8gi22eDrFSf8tDzbyF6h2w=
-Subject: Re: [PATCH] tracing/filters: allow event filters to be set only
- when not tracing
-From: Tom Zanussi <tzanussi@gmail.com>
-To: Steven Rostedt <rostedt@goodmis.org>
-Cc: Ingo Molnar <mingo@elte.hu>, "Paul E. McKenney" <paulmck@us.ibm.com>,
-       linux-kernel <linux-kernel@vger.kernel.org>, fweisbec@gmail.com
-In-Reply-To: <alpine.DEB.2.00.0904041143480.32083@gandalf.stny.rr.com>
-References: <1238390546.6368.65.camel@bookworm>
-	 <20090401122408.GG12966@elte.hu> <1238653371.6655.48.camel@bookworm>
-	 <20090403135956.GD8875@elte.hu>
-	 <alpine.DEB.2.00.0904031010510.965@gandalf.stny.rr.com>
-	 <1238830355.22495.55.camel@bookworm>
-	 <alpine.DEB.2.00.0904041143480.32083@gandalf.stny.rr.com>
-Content-Type: text/plain
-Date: Sun, 05 Apr 2009 02:34:25 -0500
-Message-Id: <1238916865.7989.212.camel@tropicana>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.24.1 
+        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
+         :cc:content-type:content-transfer-encoding;
+        b=pCwqzPXg9vVjpGTW82OHRFbyuFk2WvjRInT3ESF9tfG/MzthQxL6QiIQwrmxshASdf
+         nVP/0VcqvOyeM/dIjSrRi71OUwysIbNbXVGFzyM6s+ZBYT/2EmBkmgTDul5UpV6M41hA
+         fXyZbN7K5oNdl6bfZfmTCTZXA8ERIWxpiCObo=
+MIME-Version: 1.0
+In-Reply-To: <1227567739.6421.44.camel@localhost>
+References: <1227454026.7262.59.camel@localhost> <492A7632.4040106@compton.nu>
+	 <200811241613.25557.trenn@suse.de> <200811241736.53067.trenn@suse.de>
+	 <1227567739.6421.44.camel@localhost>
+Date: Sun, 5 Apr 2009 09:43:40 +0200
+Message-ID: <71cd59b00904050043u44d1cd2eu4b8d3aee9027ea17@mail.gmail.com>
+Subject: Re: [Acpi4asus-user] [PATCH 1/1] cpufreq: eeepc 900 frequency scaling 
+	driver
+From: Corentin Chary <corentin.chary@gmail.com>
+To: Cristiano Prisciandaro <cristiano.p@solnet.ch>
+Cc: Thomas Renninger <trenn@suse.de>, Dave Jones <davej@redhat.com>,
+       acpi4asus-user@lists.sourceforge.net, linux-kernel@vger.kernel.org,
+       cpufreq@vger.kernel.org, Tom Hughes <tom@compton.nu>,
+       linux acpi <linux-acpi@vger.kernel.org>,
+       Francesco Lattanzio <f.lattanzio@simail.it>,
+       Matthew Garrett <mjg59@srcf.ucam.org>,
+       Grigori Goronzy <greg@chown.ath.cx>
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, 2009-04-04 at 11:49 -0400, Steven Rostedt wrote:
-> On Sat, 4 Apr 2009, Tom Zanussi wrote:
-> > 
-> > Hmm, after reading Paul's replies, it sounds like this approach might be
-> > more trouble than it's worth.  Maybe going back to the idea of
-> > temporarily stopping/starting tracing would be a better idea, but with a
-> > little more heavyweight version of the current 'quick' tracing
-> > start/stop (that would prevent entering the tracing functions (and ththe
-> > filter_check_discard()).
-> 
-> 
-> Actually, I forgot what the general problem we are avoiding here with the
-> RCU locks. Could you explain that again. Just so that I can get a better
-> idea without having to read between the lines of the previous messages in 
-> this thread.
-> 
+>> Could it happen that upcoming machines provide this interface (the two ACPI
+>> functions) and also can do real CPU frequency/volt switching, e.g. via
+>> acpi-cpufreq?
+>
+> Probably this interface is a solution specific to machines based on the
+> celeron M: I don't even know if other 'old' models provide the same
+> interface.
 
-Basically the problem is that the tracing functions call
-filter_match_preds(call,...) where call->preds is an array of predicates
-that get checked to determine whether the current event matches or not.
-When an existing filter is deleted (or an old one replaced), the
-call->preds array is freed and set to NULL (which happens only via a
-write to the 'filter' debugfs file).  So without any protection, while
-one cpu is freeing the preds array, the others may still be using it,
-and if so, it will crash the box.  You can easily see the problem with
-e.g. the function tracer:
+Hi,
+We I just received another patch for that (adding a cpufv file in
+sysfs) and I don't really know what to do.
 
-# echo function > /debug/tracing/current_tracer
+As Grigori Goronzy said, using cpufreq in not a good idea:
 
-Function tracing is now live
+> 1) dynamic governors like "ondemand" or "conservative" are not suitable
+> for SHE. It's possible to avoid usage of these by specifying a long
+> (e.g. UINT_MAX) transition latency. However, the fallback governor is
+> "performance" which isn't a good idea either, because it'll use the
+> overclock setting always. For SHE, the default should be the "normal",
+> non-overclocked frequency.
+>
+> 2) The SHE ACPI interface doesn't expose the clock frequencies. I'm
+> using 750 / 1000 / 1500 KHz at the moment, but that's hacky. cpufreq
+> does not support performance points with names, such as "powersave",
+> "normal", "performance", etc.
+>
+> 3) It looks like it is impossible to use more than one cpufreq driver
+> per CPU. This effectively means you can either use the regular ACPI
+> frequency scaling, which switches between multipliers, or SHE. That's
+> unacceptable. SHE is not intended to replace the regular frequency
+> scaling, but to complement it.
 
-# echo 'common_pid == 0' > /debug/tracing/events/ftrace/function/filter
+But adding another specific file for eeepc seems ugly too.
+Does someone have a great idea to solve that ?
 
-No problem, no preds are freed the first time
-
-# echo 0 > /debug/tracing/events/ftrace/function/filter
-
-Crash.
-
-My first patch took the safe route and completely disallowed filters
-from being set when any tracing was live i.e. you had to for example
-echo 0 > tracing_enabled or echo 0 > enable for a particular event, etc.
-
-This wasn't great for usability, though - it would be much nicer to be
-able to remove or set new filters on the fly, while tracing is active,
-which rcu seemed perfect for - the preds wouldn't actually be destroyed
-until all the current users were finished with them.  My second patch
-implemented that and it seemed to nicely fix the problem, but it
-apparently can cause other problems...
-
-So assuming we can't use rcu for this, it would be nice to have a way to
-'pause' tracing so the current filter can be removed i.e. some version
-of stop_trace()/start_trace() that make sure nothing is still executing
-or can enter filter_match_preds() while the current call->preds is being
-destroyed.  Seems like it would be straightforward to implement for the
-event tracer, since each event maps to a tracepoint that could be
-temporarily unregistered/reregistered, but maybe not so easy for the
-ftrace tracers...
-
-Tom
-
-> 
-> > 
-> > I was thinking it would be something like:
-> > 
-> > stop_tracing();
-> > current_tracer->stop(); /* unregister tracepoints, etc */
-> > 
-> > remove filter
-> > 
-> > current_tracer->start(); /* reregister tracepoints, etc */
-> > start_tracing();
-> 
-> This use to be the way start and stop worked, but I'm trying to
-> make them more light weight. I've been wanting start/stop to be called
-> by start_tracing() and stop_tracing() and those should be able to be 
-> called in any context. But registering and unregistering tracepoints calls 
-> mutexes, which can not be done in atomic context.
-
-> There are still some tracers that have start/stop using sleeping code, but 
-> in the long run I want the tracers start/stop functions to be light.
-> 
-> 
-> > 
-> > The struct tracer comments suggest that the stop()/start()
-> > ops are meant for pausing, I'd guess for things like this, but some of
-> > the tracers don't implement them.
-> 
-> Yeah, They should, but leaving out the start/stop functions, is just
-> the tracers way of saying, I don't need to pause. :-/
-> 
-> > 
-> > For the events in the event tracer, it would be something like:
-> > 
-> > stop_tracing();
-> > call->unregfunc(); /* unregister tracepoint */
-> > 
-> > remove filter
-> > 
-> > call->regfunc(); /* reregister tracepoint */
-> > start_tracing();
-> > 
-> > If that makes sense, I can try it that way instead.
-> > 
-> 
-> I'll comment about this if I get that explanation of the problem again ;-)
-> 
-> -- Steve
-> 
-
+Thanks
+-- 
+Corentin Chary
+http://xf.iksaif.net
