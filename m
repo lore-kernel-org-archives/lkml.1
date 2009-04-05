@@ -1,65 +1,474 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757840AbZDEIsi@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757219AbZDEIu2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757840AbZDEIsi (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 5 Apr 2009 04:48:38 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756289AbZDEIs0
+	id S1757219AbZDEIu2 (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 5 Apr 2009 04:50:28 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754490AbZDEIuP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 5 Apr 2009 04:48:26 -0400
-Received: from www.tglx.de ([62.245.132.106]:56637 "EHLO www.tglx.de"
+	Sun, 5 Apr 2009 04:50:15 -0400
+Received: from mx2.redhat.com ([66.187.237.31]:38088 "EHLO mx2.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754336AbZDEIsY (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 5 Apr 2009 04:48:24 -0400
-Date: Sun, 5 Apr 2009 10:47:11 +0200 (CEST)
-From: Thomas Gleixner <tglx@linutronix.de>
-To: GeunSik Lim <leemgs1@gmail.com>
-cc: LKML <linux-kernel@vger.kernel.org>,
-       rt-users <linux-rt-users@vger.kernel.org>, Ingo Molnar <mingo@elte.hu>,
-       Steven Rostedt <rostedt@goodmis.org>,
-       Peter Zijlstra <peterz@infradead.org>, Carsten Emde <ce@ceag.ch>,
-       Clark Williams <williams@redhat.com>,
-       Frank Rowand <frank.rowand@am.sony.com>,
-       Robin Gareus <robin@gareus.org>, Gregory Haskins <ghaskins@novell.com>,
-       Philippe Reynes <philippe.reynes@isismpp.fr>,
-       Fernando Lopez-Lezcano <nando@ccrma.stanford.edu>,
-       Will Schmidt <will_schmidt@vnet.ibm.com>
-Subject: Re: [Announce] 2.6.29.1-rt4
-In-Reply-To: <49b7c2350904042028q8865f80tcf56500e8a009c0d@mail.gmail.com>
-Message-ID: <alpine.LFD.2.00.0904051038350.747@localhost.localdomain>
-References: <alpine.LFD.2.00.0902112332370.415@localhost.localdomain>  <alpine.LFD.2.00.0902241849230.3523@localhost.localdomain>  <alpine.LFD.2.00.0902241856480.9135@localhost.localdomain>  <alpine.LFD.2.00.0903122013230.29264@localhost.localdomain> 
- <alpine.LFD.2.00.0903200014320.29264@localhost.localdomain>  <alpine.LFD.2.00.0903201832590.29264@localhost.localdomain>  <alpine.LFD.2.00.0903231723090.29264@localhost.localdomain>  <alpine.LFD.2.00.0903252154040.3397@localhost.localdomain> 
- <alpine.LFD.2.00.0904020155320.12916@localhost.localdomain>  <alpine.LFD.2.00.0904031918090.12916@localhost.localdomain> <49b7c2350904042028q8865f80tcf56500e8a009c0d@mail.gmail.com>
-User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
+	id S1754345AbZDEIuL (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 5 Apr 2009 04:50:11 -0400
+Date: Sun, 5 Apr 2009 10:49:04 +0200
+From: Jiri Pirko <jpirko@redhat.com>
+To: linux-kernel@vger.kernel.org
+Cc: Andrew Morton <akpm@linux-foundation.org>, kosaki.motohiro@jp.fujitsu.com,
+       oleg@redhat.com, hugh@veritas.com, linux-mm@kvack.org, mingo@elte.hu
+Subject: [PATCH for -mm] getrusage: fill ru_maxrss value
+Message-ID: <20090405084902.GA4411@psychotron.englab.brq.redhat.com>
+References: <20081230201052.128B.KOSAKI.MOTOHIRO@jp.fujitsu.com> <20081231110816.5f80e265@psychotron.englab.brq.redhat.com> <20081231213705.1293.KOSAKI.MOTOHIRO@jp.fujitsu.com> <20090103175913.GA21180@redhat.com> <2f11576a0901031313u791d7dcex94b927cc56026e40@mail.gmail.com> <20090105163204.3ec9ff10@psychotron.englab.brq.redhat.com> <20090105141313.a4abd475.akpm@linux-foundation.org> <20090106104839.78eb07d1@psychotron.englab.brq.redhat.com> <20090402134738.43d87cb7.akpm@linux-foundation.org> <20090402211336.GB4076@elte.hu>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20090402211336.GB4076@elte.hu>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-GeunSik,
+(resend, repetitive patterns put into an inline function - not using max macro
+ because it's was decided not to use it in previous conversation)
 
-On Sun, 5 Apr 2009, GeunSik Lim wrote:
-> I have one question. What is "broken-out" 's meaning  for rt patch file?
+From: Jiri Pirko <jpirko@redhat.com>
 
-The broken out tar ball contains a patch series of smaller patches,
-which need to be applied in a give order. The order is determined from
-the series file. It's a "quilt" series. quilt is a patch series
-management tool. "man script" 
+Make ->ru_maxrss value in struct rusage filled accordingly to rss hiwater
+mark.  This struct is filled as a parameter to getrusage syscall. 
+->ru_maxrss value is set to KBs which is the way it is done in BSD
+systems.  /usr/bin/time (gnu time) application converts ->ru_maxrss to KBs
+which seems to be incorrect behavior.  Maintainer of this util was
+notified by me with the patch which corrects it and cc'ed.
 
-We keep those smaller patches for various reasons:
+To make this happen we extend struct signal_struct by two fields.  The
+first one is ->maxrss which we use to store rss hiwater of the task.  The
+second one is ->cmaxrss which we use to store highest rss hiwater of all
+task childs.  These values are used in k_getrusage() to actually fill
+->ru_maxrss.  k_getrusage() uses current rss hiwater value directly if mm
+struct exists.
 
-- It's way easier to move forward to the next kernel version with
-  smaller patches than with a huge all in one patch.
+Note:
+exec() clear mm->hiwater_rss, but doesn't clear sig->maxrss.
+it is intetionally behavior. *BSD getrusage have exec() inheriting.
 
-- It's easier to split out functionality from the patches and rework
-  that particular issue and replace the patches in the series
+Test progmam and test case
+===========================
 
-The broken out series is provided for people who want to look into the
-details of the patches and for preempt-rt developers.
+getrusage.c
+====
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+#include <sys/types.h>
+#include <sys/time.h>
+#include <sys/resource.h>
+#include <sys/types.h>
+#include <sys/wait.h>
+#include <unistd.h>
+#include <signal.h>
 
-patch-2.6.X-rtY.bz2 is the combination of all patches from the series
-applied. We provide this as a conveniance for users and testers so
-they just have to apply one big patch.
+static void consume(int mega)
+{
+	size_t sz = mega * 1024 * 1024;
+	void *ptr;
 
-Thanks,
+	ptr = malloc(sz);
+	memset(ptr, 0, sz);
+	usleep(1);  /* BSD rusage statics need to sleep 1 tick */
+}
 
-	tglx
+static void show_rusage(char *prefix)
+{
+	int err, err2;
+	struct rusage rusage_self;
+	struct rusage rusage_children;
+
+	printf("%s: ", prefix);
+	err = getrusage(RUSAGE_SELF, &rusage_self);
+	if (!err)
+		printf("self %ld ", rusage_self.ru_maxrss);
+	err2 = getrusage(RUSAGE_CHILDREN, &rusage_children);
+	if (!err2)
+		printf("children %ld ", rusage_children.ru_maxrss);
+
+	printf("\n");
+}
+
+int main(int argc, char** argv)
+{
+	int status;
+	int c;
+	int need_sleep_before_wait = 0;
+	int consume_large_memory_at_first = 0;
+	int create_child_at_first = 0;
+	int sigign = 0;
+	int create_child_before_exec = 0;
+	int after_fork_test = 0;
+
+	while ((c = getopt(argc, argv, "ceflsz")) != -1) {
+		switch (c) {
+		case 'c':
+			create_child_at_first = 1;
+			break;
+		case 'e':
+			create_child_before_exec = 1;
+			break;
+		case 'f':
+			after_fork_test = 1;
+			break;
+		case 'l':
+			consume_large_memory_at_first = 1;
+			break;
+		case 's':
+			sigign = 1;
+			break;
+		case 'z':
+			need_sleep_before_wait = 1;
+			break;
+		default:
+			break;
+		}
+	}
+
+	if (consume_large_memory_at_first)
+		consume(100);
+
+	if (create_child_at_first)
+		system("./child -q");
+
+	if (sigign)
+		signal(SIGCHLD, SIG_IGN);
+
+	if (fork()) {
+		usleep(1);
+		if (need_sleep_before_wait)
+			sleep(3); /* children become zombie */
+		show_rusage("pre_wait");
+		wait(&status);
+		show_rusage("post_wait");
+	} else {
+		usleep(1);
+		show_rusage("fork");
+
+		if (after_fork_test) {
+			consume(30);
+			show_rusage("fork2");
+		}
+		if (create_child_before_exec) {
+			system("./child -lq");
+			usleep(1);
+			show_rusage("fork3");
+		}
+
+		execl("./child", "child", 0);
+		exit(0);
+	}
+
+	return 0;
+}
+
+child.c
+====
+#include <sys/types.h>
+#include <unistd.h>
+#include <sys/types.h>
+#include <sys/wait.h>
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+#include <sys/types.h>
+#include <sys/time.h>
+#include <sys/resource.h>
+
+static void consume(int mega)
+{
+	size_t sz = mega * 1024 * 1024;
+	void *ptr;
+
+	ptr = malloc(sz);
+	memset(ptr, 0, sz);
+	usleep(1);  /* BSD rusage statics need to sleep 1 tick */
+}
+
+static void show_rusage(char *prefix)
+{
+	int err, err2;
+	struct rusage rusage_self;
+	struct rusage rusage_children;
+
+	printf("%s: ", prefix);
+	err = getrusage(RUSAGE_SELF, &rusage_self);
+	if (!err)
+		printf("self %ld ", rusage_self.ru_maxrss);
+	err2 = getrusage(RUSAGE_CHILDREN, &rusage_children);
+	if (!err2)
+		printf("children %ld ", rusage_children.ru_maxrss);
+
+	printf("\n");
+
+}
+
+int main(int argc, char** argv)
+{
+	int status;
+	int c;
+	int silent = 0;
+	int light_weight = 0;
+
+	while ((c = getopt(argc, argv, "lq")) != -1) {
+		switch (c) {
+		case 'l':
+			light_weight = 1;
+			break;
+		case 'q':
+			silent = 1;
+			break;
+		default:
+			break;
+		}
+	}
+
+	if (!silent)
+		show_rusage("exec");
+
+	if (fork()) {
+		if (light_weight)
+			consume(400);
+		else
+			consume(700);
+		wait(&status);
+	} else {
+		if (light_weight)
+			consume(600);
+		else
+			consume(900);
+
+		exit(0);
+	}
+
+	return 0;
+}
+
+testcase
+========
+
+1. inherit fork?
+
+   test way:
+   	% ./getrusage -lc
+
+   bsd result:
+   	fork line is "fork: self 0 children 0".
+
+   	-> rusage sholdn't be inherit by fork.
+	   (both RUSAGE_SELF and RUSAGE_CHILDREN)
+
+2. inherit exec?
+
+   test way:
+   	% ./getrusage -lce
+
+   bsd result:
+   	fork3: self 103204 children 60000
+	exec: self 103204 children 60000
+
+   	fork3 and exec line are the same.
+
+   	-> rusage shold be inherit by exec.
+	   (both RUSAGE_SELF and RUSAGE_CHILDREN)
+
+3. getrusage(RUSAGE_CHILDREN) collect grandchild statics?
+
+   test way:
+   	% ./getrusage
+
+   bsd result:
+   	post_wait line is about "post_wait: self 0 children 90000".
+
+	-> RUSAGE_CHILDREN can collect grandchild.
+
+4. zombie, but not waited children collect or not?
+
+   test way:
+   	% ./getrusage -z
+
+   bsd result:
+   	pre_wait line is "pre_wait: self 0 children 0".
+
+	-> zombie child process (not waited-for child process)
+	   isn't accounted.
+
+5. SIG_IGN collect or not
+
+   test way:
+   	% ./getrusage -s
+
+   bsd result:
+   	post_wait line is "post_wait: self 0 children 0".
+
+	-> if SIGCHLD is ignored, children isn't accounted.
+
+6. fork and malloc
+   test way:
+   	% ./getrusage -lcf
+
+   bsd result:
+   	fork line is "fork: self 0 children 0".
+   	fork2 line is about "fork: self 130000 children 0".
+
+   	-> rusage sholdn't be inherit by fork.
+	   (both RUSAGE_SELF and RUSAGE_CHILDREN)
+	   but additional memory cunsumption cause right
+	   maxrss calculation.
+
+Signed-off-by: Jiri Pirko <jpirko@redhat.com>
+Signed-off-by: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
+Cc: Oleg Nesterov <oleg@redhat.com>
+Cc: Hugh Dickins <hugh@veritas.com>
+Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
+CC: Ingo Molnar <mingo@elte.hu>
+---
+
+ fs/exec.c             |    3 +++
+ include/linux/sched.h |   10 ++++++++++
+ kernel/exit.c         |    6 ++++++
+ kernel/fork.c         |    1 +
+ kernel/sys.c          |   14 ++++++++++++++
+ 5 files changed, 34 insertions(+), 0 deletions(-)
+
+diff --git a/fs/exec.c b/fs/exec.c
+index 052a961..ddf6d1b 100644
+--- a/fs/exec.c
++++ b/fs/exec.c
+@@ -872,6 +872,9 @@ static int de_thread(struct task_struct *tsk)
+ 	sig->notify_count = 0;
+ 
+ no_thread_group:
++	if (current->mm)
++		setmax_mm_hiwater_rss(&sig->maxrss, current->mm);
++
+ 	exit_itimers(sig);
+ 	flush_itimer_signals();
+ 
+diff --git a/include/linux/sched.h b/include/linux/sched.h
+index 9da5aa0..f138651 100644
+--- a/include/linux/sched.h
++++ b/include/linux/sched.h
+@@ -397,6 +397,15 @@ static inline unsigned long get_mm_hiwater_rss(struct mm_struct *mm)
+ 	return max(mm->hiwater_rss, get_mm_rss(mm));
+ }
+ 
++static inline void setmax_mm_hiwater_rss(unsigned long *maxrss,
++					 struct mm_struct *mm)
++{
++	unsigned long hiwater_rss = get_mm_hiwater_rss(mm);
++
++	if (*maxrss < hiwater_rss)
++		*maxrss = hiwater_rss;
++}
++
+ static inline unsigned long get_mm_hiwater_vm(struct mm_struct *mm)
+ {
+ 	return max(mm->hiwater_vm, mm->total_vm);
+@@ -567,6 +576,7 @@ struct signal_struct {
+ 	unsigned long nvcsw, nivcsw, cnvcsw, cnivcsw;
+ 	unsigned long min_flt, maj_flt, cmin_flt, cmaj_flt;
+ 	unsigned long inblock, oublock, cinblock, coublock;
++	unsigned long maxrss, cmaxrss;
+ 	struct task_io_accounting ioac;
+ 
+ 	/*
+diff --git a/kernel/exit.c b/kernel/exit.c
+index 6686ed1..39600f6 100644
+--- a/kernel/exit.c
++++ b/kernel/exit.c
+@@ -943,6 +943,8 @@ NORET_TYPE void do_exit(long code)
+ 	if (group_dead) {
+ 		hrtimer_cancel(&tsk->signal->real_timer);
+ 		exit_itimers(tsk->signal);
++		if (tsk->mm)
++			setmax_mm_hiwater_rss(&tsk->signal->maxrss, tsk->mm);
+ 	}
+ 	acct_collect(code, group_dead);
+ 	if (group_dead)
+@@ -1188,6 +1190,7 @@ static int wait_task_zombie(struct task_struct *p, int options,
+ 		struct signal_struct *psig;
+ 		struct signal_struct *sig;
+ 		struct task_cputime cputime;
++		unsigned long maxrss;
+ 
+ 		/*
+ 		 * The resource counters for the group leader are in its
+@@ -1239,6 +1242,9 @@ static int wait_task_zombie(struct task_struct *p, int options,
+ 		psig->coublock +=
+ 			task_io_get_oublock(p) +
+ 			sig->oublock + sig->coublock;
++		maxrss = max(sig->maxrss, sig->cmaxrss);
++		if (psig->cmaxrss < maxrss)
++			psig->cmaxrss = maxrss;
+ 		task_io_accounting_add(&psig->ioac, &p->ioac);
+ 		task_io_accounting_add(&psig->ioac, &sig->ioac);
+ 		spin_unlock_irq(&p->parent->sighand->siglock);
+diff --git a/kernel/fork.c b/kernel/fork.c
+index 660c2b8..70b3a55 100644
+--- a/kernel/fork.c
++++ b/kernel/fork.c
+@@ -848,6 +848,7 @@ static int copy_signal(unsigned long clone_flags, struct task_struct *tsk)
+ 	sig->nvcsw = sig->nivcsw = sig->cnvcsw = sig->cnivcsw = 0;
+ 	sig->min_flt = sig->maj_flt = sig->cmin_flt = sig->cmaj_flt = 0;
+ 	sig->inblock = sig->oublock = sig->cinblock = sig->coublock = 0;
++	sig->maxrss = sig->cmaxrss = 0;
+ 	task_io_accounting_init(&sig->ioac);
+ 	sig->sum_sched_runtime = 0;
+ 	taskstats_tgid_init(sig);
+diff --git a/kernel/sys.c b/kernel/sys.c
+index 51dbb55..45611b0 100644
+--- a/kernel/sys.c
++++ b/kernel/sys.c
+@@ -1626,6 +1626,7 @@ static void k_getrusage(struct task_struct *p, int who, struct rusage *r)
+ 	unsigned long flags;
+ 	cputime_t utime, stime;
+ 	struct task_cputime cputime;
++	unsigned long maxrss = 0;
+ 
+ 	memset((char *) r, 0, sizeof *r);
+ 	utime = stime = cputime_zero;
+@@ -1634,6 +1635,7 @@ static void k_getrusage(struct task_struct *p, int who, struct rusage *r)
+ 		utime = task_utime(current);
+ 		stime = task_stime(current);
+ 		accumulate_thread_rusage(p, r);
++		maxrss = p->signal->maxrss;
+ 		goto out;
+ 	}
+ 
+@@ -1651,6 +1653,7 @@ static void k_getrusage(struct task_struct *p, int who, struct rusage *r)
+ 			r->ru_majflt = p->signal->cmaj_flt;
+ 			r->ru_inblock = p->signal->cinblock;
+ 			r->ru_oublock = p->signal->coublock;
++			maxrss = p->signal->cmaxrss;
+ 
+ 			if (who == RUSAGE_CHILDREN)
+ 				break;
+@@ -1665,6 +1668,8 @@ static void k_getrusage(struct task_struct *p, int who, struct rusage *r)
+ 			r->ru_majflt += p->signal->maj_flt;
+ 			r->ru_inblock += p->signal->inblock;
+ 			r->ru_oublock += p->signal->oublock;
++			if (maxrss < p->signal->maxrss)
++				maxrss = p->signal->maxrss;
+ 			t = p;
+ 			do {
+ 				accumulate_thread_rusage(t, r);
+@@ -1680,6 +1685,15 @@ static void k_getrusage(struct task_struct *p, int who, struct rusage *r)
+ out:
+ 	cputime_to_timeval(utime, &r->ru_utime);
+ 	cputime_to_timeval(stime, &r->ru_stime);
++
++	if (who != RUSAGE_CHILDREN) {
++		struct mm_struct *mm = get_task_mm(p);
++		if (mm) {
++			setmax_mm_hiwater_rss(&maxrss, mm);
++			mmput(mm);
++		}
++	}
++	r->ru_maxrss = maxrss * (PAGE_SIZE / 1024); /* convert pages to KBs */
+ }
+ 
+ int getrusage(struct task_struct *p, int who, struct rusage __user *ru)
