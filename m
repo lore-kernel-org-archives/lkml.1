@@ -1,75 +1,43 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758676AbZDEKam@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758919AbZDEKgS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758676AbZDEKam (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 5 Apr 2009 06:30:42 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757835AbZDEKaa
+	id S1758919AbZDEKgS (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 5 Apr 2009 06:36:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757730AbZDEKgD
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 5 Apr 2009 06:30:30 -0400
-Received: from gw1.cosmosbay.com ([212.99.114.194]:39006 "EHLO
-	gw1.cosmosbay.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757681AbZDEKa3 convert rfc822-to-8bit (ORCPT
+	Sun, 5 Apr 2009 06:36:03 -0400
+Received: from one.firstfloor.org ([213.235.205.2]:60022 "EHLO
+	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754007AbZDEKgB (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 5 Apr 2009 06:30:29 -0400
-Message-ID: <49D88839.4090902@cosmosbay.com>
-Date: Sun, 05 Apr 2009 12:30:17 +0200
-From: Eric Dumazet <dada1@cosmosbay.com>
-User-Agent: Thunderbird 2.0.0.21 (Windows/20090302)
-MIME-Version: 1.0
-To: Graham Murray <graham@gmurray.org.uk>
-CC: linux-kernel@vger.kernel.org, Linux Netdev List <netdev@vger.kernel.org>
-Subject: Re: Regression caused by commit "netfilter: iptables: lock free counters"
-References: <20090329234702.4988017f@desktop.r000n.info>	<8763hja8cy.fsf@newton.gmurray.org.uk>	<20090405.012237.198610462.davem@davemloft.net>	<49D88162.5040809@cosmosbay.com> <87ws9z8l4c.fsf@newton.gmurray.org.uk>
-In-Reply-To: <87ws9z8l4c.fsf@newton.gmurray.org.uk>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 8BIT
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-1.6 (gw1.cosmosbay.com [0.0.0.0]); Sun, 05 Apr 2009 12:30:19 +0200 (CEST)
+	Sun, 5 Apr 2009 06:36:01 -0400
+Date: Sun, 5 Apr 2009 12:37:59 +0200
+From: Andi Kleen <andi@firstfloor.org>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>,
+       Josh Boyer <jwboyer@gmail.com>, linux-kernel@vger.kernel.org,
+       akpm@linux-foundation.org, dipankar@in.ibm.com, niv@us.ibm.com,
+       manfred@colorfullife.com, peterz@infradead.org, lethal@linux-sh.org,
+       kernel@wantstofly.org, andi@firstfloor.org, kyle@mcmartin.ca,
+       deller@gmx.de, davem@davemloft.net, ralf@linux-mips.org, jes@sgi.com,
+       benh@kernel.crashing.org, paulus@samba.org, anton@samba.org
+Subject: Re: [PATCH -tip] Convert CONFIG_SMP=y powerpc defconfigs to TREE_RCU.
+Message-ID: <20090405103759.GA17934@one.firstfloor.org>
+References: <3181463559098978317@unknownmsgid> <625fc13d0904040621g7b89cd2cq9681ce80635a65c4@mail.gmail.com> <20090404163149.GC6893@linux.vnet.ibm.com> <20090405101756.GA10490@elte.hu>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20090405101756.GA10490@elte.hu>
+User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Graham Murray a écrit :
-> Eric Dumazet <dada1@cosmosbay.com> writes:
-> 
->>>>> 784544739a25c30637397ace5489eeb6e15d7d49 is first bad commit
->>>>> commit 784544739a25c30637397ace5489eeb6e15d7d49             
->>>> I am seeing a different problem which also bisects to this commit. There are
->>>> no kernel messages but ip6tables fails to run.
->>>>
->>>> newton ~ # ip6tables -L -v
->>>> FATAL: Module ip6_tables not found.
->>>> ip6tables v1.4.3.1: can't initialize ip6tables table `filter': Memory allocation problem
->>>> Perhaps ip6tables or your kernel needs to be upgraded.
->>>>
->>>> I get this error no matter which ip6tables sub-command I run. Ip6tables
->>>> is built into the kernel, not as modules.
->>>>
->>>> An strace shows the failure to be 
->>>> socket(PF_INET6, SOCK_RAW, IPPROTO_RAW) = 3
->>>> getsockopt(3, SOL_IPV6, 0x40 /* IPV6_??? */, "filter\0\305\0w~\300\0wb\305P\24\312\t\0009b\305\216\23\0\0\310\341/g\16"..., [84]) = 0
->>>> brk(0)                                  = 0x8273000
->>>> brk(0x8294000)                          = 0x8294000
->> so ip6tables allocates about 128 Kbytes of ram in order to get rules from kernel.
->>
->>>> getsockopt(3, SOL_IPV6, 0x41 /* IPV6_??? */, 0x8273090, 0xbfd23628) = -1 ENOMEM (Cannot allocate memory)
->>>> close(3)                                = 0
->>>>
->>
->> This is a big problem yes, since "iptables|ip6tables" -L needs to allocate kernel memory
->> to perform the momentary swap.
->>
->> On x86, this is potentially a problem if vmalloc space is exhausted or fragmented,
->> (or lowmem exhausted) and/or many cpus are online/possible.
-> 
-> iptables gives me no problems at all, it is just ip6tables that
-> fails. The first indication of this is during the init scripts when
-> ip6tables-restore fails.
+> I'd suggest you dont do these dozens of defconfig updates at all - 
+> arch maintainers can do this themselves, once the core kernel 
+> default has been flipped.
 
-I see, its a plain bug in net/ipv6/netfilter/ip6_tables.c
-function alloc_counters() always returns -ENOMEM
+AFAIK they don't. There's no make updatemyconfigwithdefaultstatementsconfig
 
-Unfortunatly , its Sunday here and I have to run for lunch time with family :)
-
-If nobody beats me, I will do the fix in a couple of hours...
-
-Thank you
-
+-Andi
+-- 
+ak@linux.intel.com -- Speaking for myself only.
