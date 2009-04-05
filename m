@@ -1,91 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755557AbZDEPEV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755194AbZDEPHh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755557AbZDEPEV (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 5 Apr 2009 11:04:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754428AbZDEPEG
+	id S1755194AbZDEPHh (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 5 Apr 2009 11:07:37 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754748AbZDEPH2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 5 Apr 2009 11:04:06 -0400
-Received: from casper.infradead.org ([85.118.1.10]:40459 "EHLO
-	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754052AbZDEPEF (ORCPT
+	Sun, 5 Apr 2009 11:07:28 -0400
+Received: from smtp-noauth7.primus.ca ([216.254.180.38]:53055 "EHLO
+	mail-06.primus.ca" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1754146AbZDEPH2 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 5 Apr 2009 11:04:05 -0400
-Date: Sun, 5 Apr 2009 08:05:30 -0700
-From: Arjan van de Ven <arjan@infradead.org>
-To: Theodore Tso <tytso@mit.edu>
-Cc: Jens Axboe <jens.axboe@oracle.com>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Linux Kernel Developers List <linux-kernel@vger.kernel.org>,
-       Ext4 Developers List <linux-ext4@vger.kernel.org>
-Subject: Re: [GIT PULL] Ext3 latency fixes
-Message-ID: <20090405080530.0859b9a6@infradead.org>
-In-Reply-To: <20090405001005.GA7553@mit.edu>
-References: <alpine.LFD.2.00.0904031150190.4015@localhost.localdomain>
-	<alpine.LFD.2.00.0904031329410.7007@localhost.localdomain>
-	<20090404135719.GA9812@mit.edu>
-	<20090404151649.GE5178@kernel.dk>
-	<alpine.LFD.2.00.0904040854470.3915@localhost.localdomain>
-	<20090404173412.GF5178@kernel.dk>
-	<alpine.LFD.2.00.0904041039230.3915@localhost.localdomain>
-	<20090404180108.GH5178@kernel.dk>
-	<20090404232222.GA7480@mit.edu>
-	<20090404163349.20df1208@infradead.org>
-	<20090405001005.GA7553@mit.edu>
-Organization: Intel
-X-Mailer: Claws Mail 3.7.0 (GTK+ 2.14.7; i386-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
-X-SRS-Rewrite: SMTP reverse-path rewritten from <arjan@infradead.org> by casper.infradead.org
-	See http://www.infradead.org/rpr.html
+	Sun, 5 Apr 2009 11:07:28 -0400
+DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws; s=default; d=elastic.org;
+	h=Received:From:To:Cc:Subject:Date:Message-Id:X-Mailer:In-Reply-To:References;
+	b=Iux51Z6G6+gb1Zt1siuRY6p9m672Yr8MO77fqn3eX92vOtGXyU8sDllYrCj1BxWgbXFqEQgtxuIfoxKpZIkNI2IGH6DUWVCeTMoi9CSpBo4NMZmcPKY7CPQRmjzhevAA;
+From: "Frank Ch. Eigler" <fche@elastic.org>
+To: linux-kernel@vger.kernel.org, utrace-devel@redhat.com
+Cc: systemtap@sources.redhat.com, fweisbec@gmail.com, rostedt@goodmis.org,
+       mingo@elte.hu, "Frank Ch. Eigler" <fche@elastic.org>
+Subject: [PATCH 1/2] make arch_init_ftrace_syscalls multiply callable
+Date: Sun,  5 Apr 2009 10:17:53 -0400
+Message-Id: <1238941074-27424-2-git-send-email-fche@elastic.org>
+X-Mailer: git-send-email 1.6.0.6
+In-Reply-To: <1238941074-27424-1-git-send-email-fche@elastic.org>
+References: <1238941074-27424-1-git-send-email-fche@elastic.org>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, 4 Apr 2009 20:10:05 -0400
-Theodore Tso <tytso@mit.edu> wrote:
+Since both the utrace-based ftrace engine and the original
+syscall-specific ftrace engine use the syscall pretty-printer, this
+initialization function needs to be callable from each of them.
 
-> On Sat, Apr 04, 2009 at 04:33:49PM -0700, Arjan van de Ven wrote:
-> > > However, the full latency fixes all the writes are synchronous,
-> > > so it must be the case that the delays are caused by the fact
-> > > that queue is getting implicitly unplugged after the synchronous
-> > > write, and the problem is no longer the mixing of WRITE and
-> > > WRITE_SYNC requests as posted in the commit log for 78f707bf.  If
-> > > we remove the automatic unplug for WRITE_SYNC requests, and add
-> > > an explicit unplug where it is needed, that should fix the
-> > > performance regression for this particular sqlite test case. 
-> > 
-> > removing the unplug is bound to be bad; after all we're waiting on
-> > the IO. But maybe it should be "make the unplug a REALLY short
-> > time". At least for rotating storage. For non-rotating .. I'd never
-> > wait.
-> 
-> Ext3 needs to submit a large number of blocks for writing with
-> WRITE_SYNC priority, without unplugging the queue, until they are all
-> submitted.  Then we want to let things rip.  (Hence the "add an
-> explicit unplug where it is needed".)
-> 
-> It may be that it's easier from an less-lines-of-the-kernels-to-change
-> point of view to add a WRITE_SYNC_PLUGGED which doesn't do the unplug,
-> and keep WRITE_SNYC as having the implicit unplug.  Or maybe it would
-> be better to completely separate the "send a write which is marked as
-> SYNC" from the "implicit unplug" in the API.
+Signed-off-by: Frank Ch. Eigler <fche@elastic.org>
+---
+ arch/x86/kernel/ftrace.c |    3 +++
+ 1 files changed, 3 insertions(+), 0 deletions(-)
 
-I think there's actually 3 cases:
-* Normal write with normal plugging rules
-* Write that should be "sync" priority, but which should explicitly NOT
-  unplug, even if it otherwise would have happened, because the caller
-  will, as part of the contract of the API, do the unplug when all IO
-  is submitted.
-  (a bit like tcp/cork)
-* Write that is sync priority and is the last one of a sequence,
-  and thus should unplug immediately.
-
-I can even imagine using a temporary/special queue for the 2nd case,
-and then splice that into the regular queue when the final IO comes in,
-in one go.
-
+diff --git a/arch/x86/kernel/ftrace.c b/arch/x86/kernel/ftrace.c
+index 1d0d7f4..1d99d3d 100644
+--- a/arch/x86/kernel/ftrace.c
++++ b/arch/x86/kernel/ftrace.c
+@@ -498,6 +498,9 @@ void arch_init_ftrace_syscalls(void)
+ 	if (atomic_inc_return(&refs) != 1)
+ 		goto end;
+ 
++        if (syscalls_metadata)
++                return;
++
+ 	syscalls_metadata = kzalloc(sizeof(*syscalls_metadata) *
+ 					FTRACE_SYSCALL_MAX, GFP_KERNEL);
+ 	if (!syscalls_metadata) {
 -- 
-Arjan van de Ven 	Intel Open Source Technology Centre
-For development, discussion and tips for power savings, 
-visit http://www.lesswatts.org
+1.6.0.6
+
