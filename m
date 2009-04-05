@@ -1,79 +1,140 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758262AbZDEVFS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758488AbZDEVGJ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758262AbZDEVFS (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 5 Apr 2009 17:05:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756641AbZDEVFD
+	id S1758488AbZDEVGJ (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 5 Apr 2009 17:06:09 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756808AbZDEVFz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 5 Apr 2009 17:05:03 -0400
-Received: from www.tglx.de ([62.245.132.106]:33471 "EHLO www.tglx.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753907AbZDEVFC (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 5 Apr 2009 17:05:02 -0400
-Date: Sun, 5 Apr 2009 23:02:58 +0200 (CEST)
-From: Thomas Gleixner <tglx@linutronix.de>
-To: Jaswinder Singh Rajput <jaswinder@kernel.org>
-cc: Linus Torvalds <torvalds@linux-foundation.org>,
-       John Levon <levon@movementarian.org>, Ingo Molnar <mingo@elte.hu>,
-       x86 maintainers <x86@kernel.org>, LKML <linux-kernel@vger.kernel.org>,
-       Robert Richter <robert.richter@amd.com>
-Subject: Re: [PATCH] x86: fix BUG: using smp_processor_id() in preemptible
- [00000000] code: oprofiled/3319
-In-Reply-To: <1238962495.3301.0.camel@ht.satnam>
-Message-ID: <alpine.LFD.2.00.0904052301481.747@localhost.localdomain>
-References: <1238958725.3522.1.camel@ht.satnam>  <alpine.LFD.2.00.0904051243310.4023@localhost.localdomain> <1238962495.3301.0.camel@ht.satnam>
-User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Sun, 5 Apr 2009 17:05:55 -0400
+Received: from pfepb.post.tele.dk ([195.41.46.236]:52544 "EHLO
+	pfepb.post.tele.dk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756641AbZDEVFz (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 5 Apr 2009 17:05:55 -0400
+Date: Sun, 5 Apr 2009 23:07:56 +0200
+From: Sam Ravnborg <sam@ravnborg.org>
+To: Anton Vorontsov <avorontsov@ru.mvista.com>
+Cc: Ingo Molnar <mingo@elte.hu>, Steven Rostedt <srostedt@redhat.com>,
+       Paul Mackerras <paulus@samba.org>,
+       Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+       linuxppc-dev@ozlabs.org, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 1/3] powerpc, Makefile: Make it possible to safely select CONFIG_FRAME_POINTER
+Message-ID: <20090405210756.GG24374@uranus.ravnborg.org>
+References: <20090320164404.GA19933@oksana.dev.rtsoft.ru> <20090320164429.GA28037@oksana.dev.rtsoft.ru>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20090320164429.GA28037@oksana.dev.rtsoft.ru>
+User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 6 Apr 2009, Jaswinder Singh Rajput wrote:
-> On Sun, 2009-04-05 at 12:51 -0700, Linus Torvalds wrote:
-> > 
-> > On Mon, 6 Apr 2009, Jaswinder Singh Rajput wrote:
-> > >
-> > > Fixed this bug on P4 HT machine:
-> > 
-> > I don't think this really is correct.
-> > 
-> > Anything that does that "get_stagger()" thing should already either be 
-> > tied to a specific CPU (because it's going to actually touch the variables 
-> > for "that CPU"), or it should likely set up the data structures for _all_ 
-> > cases.
+On Fri, Mar 20, 2009 at 07:44:29PM +0300, Anton Vorontsov wrote:
+> This patch introduces ARCH_HAS_NORMAL_FRAME_POINTERS Kconfig symbol.
+> When defined, the top level Makefile won't add -fno-omit-frame-pointer
+> cflag (the flag is useless in PowerPC kernels, and also makes gcc
+> generate wrong code).
+> 
+> Also move ARCH_WANT_FRAME_POINTERS's help text.
+> 
+> Signed-off-by: Anton Vorontsov <avorontsov@ru.mvista.com>
 
-Most of the functions are called preempt off anyway. The only one
-which needs care AFAICT is p4_fill_in_addresses, but the problem space
-is outside of the p4 specific code. It's the call site which is
-nmi_setup():
+Hi Anton - sorry for the late feedback.
 
-       model->fill_in_addresses(&per_cpu(cpu_msrs, 0));
-       ...
-       on_each_cpu(nmi_cpu_setup, NULL, 1);
+1) The preferred naming for variables that are supposed to be selcted
+   are "HAVE_xxxx".
+   So in this case it would be:
+   HAVE_NORMAL_FRAME_POINTER
 
-Need to have a closer look which parts of that section need to be
-preempt off.
+2) I do not really understand the interpretation of normal in this case,
+   can it be more specific?
 
-> > Just as an example, look at something like "p4_setup_ctrs()": it will use 
-> > that stagger to determine what MSR to read. But if we are preemptable, the 
-> > CPU we actually do the MSR read on may be a _different_ CPU than the CPU 
-> > that we did the "get_stagger()" on!
+   Looking at your patch then if specified we use "-fomit-frame-pointer"
+   in the case where it is set.
+   So I read it like:
 
-And that code has nested calls to get_stagger() via pmc_setup_one_p4_counter().
+      If arch has normal framepointer then we omit them - strange?
 
-That is odd as well. Why evaluate that twice ? So there are more
-things to look at before we just fix^Whide some debug warning.
+3) Indent in top-level MAkefile for new stuff is generally 8 spaces.
+   Do NOT use tabs as this would confuse make and rener assignmnet non-functional.
 
-> > Of course, this is all ancient code, so whatever. But I really think this 
-> > patch is actively bad - it just hides the issue rather than fixing 
-> > anything.
+4) The individual "HAVE_* members should be sorted alphabetically in the arch
+   Kconfig file (which they seldomly are :-( )
 
-And the proposed follow up patch is even worse as it just adds
-mechanical band aids all over the place without analysing where the
-root cause of the problem is.
+	Sam
 
-Thanks,
-
-	tglx
-
-
+> ---
+>  Makefile             |    7 +++++--
+>  arch/powerpc/Kconfig |    1 +
+>  lib/Kconfig.debug    |   16 ++++++++++------
+>  3 files changed, 16 insertions(+), 8 deletions(-)
+> 
+> diff --git a/Makefile b/Makefile
+> index 46c04c5..bf41b05 100644
+> --- a/Makefile
+> +++ b/Makefile
+> @@ -538,9 +538,12 @@ KBUILD_CFLAGS += $(call cc-option, -fno-stack-protector)
+>  endif
+>  
+>  ifdef CONFIG_FRAME_POINTER
+> -KBUILD_CFLAGS	+= -fno-omit-frame-pointer -fno-optimize-sibling-calls
+> +  KBUILD_CFLAGS	+= -fno-optimize-sibling-calls
+> +  ifndef ARCH_HAS_NORMAL_FRAME_POINTERS
+> +    KBUILD_CFLAGS	+= -fno-omit-frame-pointer
+> +  endif
+>  else
+> -KBUILD_CFLAGS	+= -fomit-frame-pointer
+> +  KBUILD_CFLAGS	+= -fomit-frame-pointer
+>  endif
+>  
+>  ifdef CONFIG_DEBUG_INFO
+> diff --git a/arch/powerpc/Kconfig b/arch/powerpc/Kconfig
+> index 97f9a64..4587e66 100644
+> --- a/arch/powerpc/Kconfig
+> +++ b/arch/powerpc/Kconfig
+> @@ -113,6 +113,7 @@ config PPC
+>  	select HAVE_FUNCTION_TRACER
+>  	select HAVE_FUNCTION_GRAPH_TRACER
+>  	select ARCH_WANT_OPTIONAL_GPIOLIB
+> +	select ARCH_HAS_NORMAL_FRAME_POINTERS
+>  	select HAVE_IDE
+>  	select HAVE_IOREMAP_PROT
+>  	select HAVE_EFFICIENT_UNALIGNED_ACCESS
+> diff --git a/lib/Kconfig.debug b/lib/Kconfig.debug
+> index 4b63b6b..fc8cd1f 100644
+> --- a/lib/Kconfig.debug
+> +++ b/lib/Kconfig.debug
+> @@ -661,20 +661,24 @@ config DEBUG_NOTIFIERS
+>  	  This is a relatively cheap check but if you care about maximum
+>  	  performance, say N.
+>  
+> -#
+> -# Select this config option from the architecture Kconfig, if it
+> -# it is preferred to always offer frame pointers as a config
+> -# option on the architecture (regardless of KERNEL_DEBUG):
+> -#
+>  config ARCH_WANT_FRAME_POINTERS
+>  	bool
+>  	help
+> +	  Select this config option from the architecture Kconfig, if it
+> +	  it is preferred to always offer frame pointers as a config
+> +	  option on the architecture (regardless of KERNEL_DEBUG).
+> +
+> +config ARCH_HAS_NORMAL_FRAME_POINTERS
+> +	bool
+> +	help
+> +	  Architectures should select this symbol if their ABI implies
+> +	  having a frame pointer.
+>  
+>  config FRAME_POINTER
+>  	bool "Compile the kernel with frame pointers"
+>  	depends on DEBUG_KERNEL && \
+>  		(CRIS || M68K || M68KNOMMU || FRV || UML || S390 || \
+> -		 AVR32 || SUPERH || BLACKFIN || MN10300) || \
+> +		 AVR32 || SUPERH || BLACKFIN || MN10300 || PPC) || \
+>  		ARCH_WANT_FRAME_POINTERS
+>  	default y if (DEBUG_INFO && UML) || ARCH_WANT_FRAME_POINTERS
+>  	help
+> -- 
+> 1.5.6.5
+> 
