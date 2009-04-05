@@ -1,61 +1,91 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757518AbZDED43@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751638AbZDEEBQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757518AbZDED43 (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 4 Apr 2009 23:56:29 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757088AbZDED4T
+	id S1751638AbZDEEBQ (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 5 Apr 2009 00:01:16 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750741AbZDEEA4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 4 Apr 2009 23:56:19 -0400
-Received: from hrndva-omtalb.mail.rr.com ([71.74.56.122]:53172 "EHLO
-	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754077AbZDED4S (ORCPT
+	Sun, 5 Apr 2009 00:00:56 -0400
+Received: from mail-bw0-f169.google.com ([209.85.218.169]:44083 "EHLO
+	mail-bw0-f169.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750712AbZDEEAz (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 4 Apr 2009 23:56:18 -0400
-Date: Sat, 4 Apr 2009 22:59:15 -0500
-From: "Serge E. Hallyn" <serge@hallyn.com>
-To: "Andrew G. Morgan" <morgan@kernel.org>
-Cc: "Serge E. Hallyn" <serue@us.ibm.com>,
-       linux-security-module@vger.kernel.org,
-       lkml <linux-kernel@vger.kernel.org>, James Morris <jmorris@namei.org>,
-       Casey Schaufler <casey@schaufler-ca.com>
-Subject: Re: [PATCH] don't raise all privs on setuid-root file with fE set
-	(v2)
-Message-ID: <20090405035914.GA26896@hallyn.com>
-References: <20090402234714.GA2220@us.ibm.com> <49D7A11A.8010801@kernel.org>
+	Sun, 5 Apr 2009 00:00:55 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
+         :cc:content-type:content-transfer-encoding;
+        b=ECsvPlduapS7ZRg1ojy6dMFsrzUNFnlXAOuTsZdL49elhZhj7lTGQOJfGPYgUkpktB
+         hbviwsVpw6yXRMyOGbRj5zOR8UqxM3GplQK4zvlZqxTmZytDOeI56HeSHeQFdFDilqBg
+         vuITz/sMP21RQdOKoCUTKBaiISitJDNQwiwR0=
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <49D7A11A.8010801@kernel.org>
-User-Agent: Mutt/1.5.15+20070412 (2007-04-11)
+In-Reply-To: <20090404.170539.148727646.davem@davemloft.net>
+References: <cb0375e10904010840n1543a890w9039465d0f80ffcc@mail.gmail.com>
+	 <20090404.170539.148727646.davem@davemloft.net>
+Date: Sun, 5 Apr 2009 00:00:51 -0400
+Message-ID: <cb0375e10904042100o1a203512l593021ee66cb591d@mail.gmail.com>
+Subject: Re: [PATCH 1/1] Tell linkwatch about new interfaces
+From: Andrew Lutomirski <amluto@gmail.com>
+To: David Miller <davem@davemloft.net>
+Cc: netdev@vger.kernel.org, linux-kernel@vger.kernel.org
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> Serge E. Hallyn wrote:
-> > Distributions face a backward compatibility problem with starting to use
-> > file capabilities.  For instance, removing setuid root from ping and
-> > doing setcap cap_net_raw=pe means that booting with an older kernel
-> > or one compiled without file capabilities means ping won't work for
-> > non-root users.
-> > 
-> > In order to replace the setuid root bit on a capability-unaware
-> > program, one has to set the effective, or legacy, file capability,
-> > which makes the capability effective immediately.  This patch
-> > uses the legacy bit as a queue to not automatically add full
-> 
-> s/queue/cue/
+On Sat, Apr 4, 2009 at 8:05 PM, David Miller <davem@davemloft.net> wrote:
+> From: Andrew Lutomirski <amluto@gmail.com>
+> Date: Wed, 1 Apr 2009 11:40:06 -0400
+>
+>> When a network driver registers a new interface, linkwatch will not notice,
+>> and hence not set the rfc2863 operstate, until netif_carrier_on gets called.
+>> If the new interface has no carrier when it is connected, then a status of
+>> "unknown" is reported to userspace, which confuses various tools
+>> (NetworkManager, for example).
+>>
+>> This fires a linkwatch event for all new interfaces, so that operstate
+>> gets set reasonably quickly.
+>>
+>> Signed-off-by: Andrew Lutomirski <amluto@gmail.com>
+>
+> The default assumed state for a freshly registered network
+> device is that the link is up.
+>
+> If that disagrees from reality, the driver should make the
+> appropriate netif_carrier_off() call.
+>
+> I'm sure you'll find that the e1000 driver is not doing this
+> and that is what causes the bug you are seeing.
+>
 
-Oops.
+Nope.  The end of e1000_probe (in e1000e) is:
 
-(I wonder whether this is worth resending?)
+        /* tell the stack to leave us alone until e1000_open() is called */
+        netif_carrier_off(netdev);
+        netif_tx_stop_all_queues(netdev);
 
-> > privilege to a setuid-root program.
-> > 
-> > So, with this patch, an ordinary setuid-root program will run with
-> > privilege.  But if /bin/ping has both setuid-root and cap_net_raw in
-> > fP and fE, then ping (when run by non-root user) will not run
-> > with only cap_net_raw.
-> 
-> Acked-by: Andrew G. Morgan <morgan@kernel.org>
+        strcpy(netdev->name, "eth%d");
+        err = register_netdev(netdev);
+        if (err)
+                goto err_register;
 
-thanks,
--serge
+        e1000_print_device_info(adapter);
+
+netif_carrier_off does:
+
+void netif_carrier_off(struct net_device *dev)
+{
+        if (!test_and_set_bit(__LINK_STATE_NOCARRIER, &dev->state)) {
+                if (dev->reg_state == NETREG_UNINITIALIZED)
+                        return;
+                linkwatch_fire_event(dev);
+        }
+}
+
+So, either it should be illegal to call netif_carrier_off on an
+unregistered net_device (and there should be a WARN() in
+netif_carrier_off), or it should work correctly, and
+register_netdevice should do the right thing when there is no carrier
+(i.e. something like my patch).
+
+--Andy
