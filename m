@@ -1,48 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752360AbZDEQ5w@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752140AbZDEQ7Y@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752360AbZDEQ5w (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 5 Apr 2009 12:57:52 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751454AbZDEQ5n
+	id S1752140AbZDEQ7Y (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 5 Apr 2009 12:59:24 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751458AbZDEQ7Q
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 5 Apr 2009 12:57:43 -0400
-Received: from smtp4.welho.com ([213.243.153.38]:54539 "EHLO smtp4.welho.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751446AbZDEQ5m (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 5 Apr 2009 12:57:42 -0400
-X-Greylist: delayed 1460 seconds by postgrey-1.27 at vger.kernel.org; Sun, 05 Apr 2009 12:57:42 EDT
-Date: Sun, 5 Apr 2009 19:31:49 +0300
-From: Adrian Bunk <bunk@kernel.org>
-To: Alan Cox <alan@redhat.com>
-Cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org
-Subject: [2.6 patch] make tty_driver_kref_get() static inline
-Message-ID: <20090405163149.GB3718@localhost.pp.htv.fi>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
+	Sun, 5 Apr 2009 12:59:16 -0400
+Received: from one.firstfloor.org ([213.235.205.2]:34393 "EHLO
+	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751454AbZDEQ7P (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 5 Apr 2009 12:59:15 -0400
+Date: Sun, 5 Apr 2009 19:01:13 +0200
+From: Andi Kleen <andi@firstfloor.org>
+To: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
+Cc: Andi Kleen <andi@firstfloor.org>, Ingo Molnar <mingo@elte.hu>,
+       Josh Boyer <jwboyer@gmail.com>, linux-kernel@vger.kernel.org,
+       akpm@linux-foundation.org, dipankar@in.ibm.com, niv@us.ibm.com,
+       manfred@colorfullife.com, peterz@infradead.org, lethal@linux-sh.org,
+       kernel@wantstofly.org, kyle@mcmartin.ca, deller@gmx.de,
+       davem@davemloft.net, ralf@linux-mips.org, jes@sgi.com,
+       benh@kernel.crashing.org, paulus@samba.org, anton@samba.org
+Subject: Re: [PATCH -tip] Convert CONFIG_SMP=y powerpc defconfigs to TREE_RCU.
+Message-ID: <20090405170113.GB17934@one.firstfloor.org>
+References: <3181463559098978317@unknownmsgid> <625fc13d0904040621g7b89cd2cq9681ce80635a65c4@mail.gmail.com> <20090404163149.GC6893@linux.vnet.ibm.com> <20090405101756.GA10490@elte.hu> <20090405103759.GA17934@one.firstfloor.org> <20090405164904.GJ6893@linux.vnet.ibm.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-User-Agent: Mutt/1.5.18 (2008-05-17)
+In-Reply-To: <20090405164904.GJ6893@linux.vnet.ibm.com>
+User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-tty_driver_kref_get() should be static inline and not extern inline
-(the latter even changed it's semantics in gcc >= 4.3).
+On Sun, Apr 05, 2009 at 09:49:04AM -0700, Paul E. McKenney wrote:
+> On Sun, Apr 05, 2009 at 12:37:59PM +0200, Andi Kleen wrote:
+> > > I'd suggest you dont do these dozens of defconfig updates at all - 
+> > > arch maintainers can do this themselves, once the core kernel 
+> > > default has been flipped.
+> > 
+> > AFAIK they don't. There's no make updatemyconfigwithdefaultstatementsconfig
+> 
+> My guess is that I would in fact have to send a few patches.  But I
+> suppose that the real question is "how long should we wait to drop
+> Classic RCU once the last arch has changed its defconfig?"  I have
+> been assuming that we would wait one release cycle.
 
-Signed-off-by: Adrian Bunk <bunk@kernel.org>
+I don't think you have to wait, stale entries in defconfigs happen
+all the time and Kconfig just asks then.
 
----
-
-diff --git a/include/linux/tty_driver.h b/include/linux/tty_driver.h
-index 08e0883..4116817 100644
---- a/include/linux/tty_driver.h
-+++ b/include/linux/tty_driver.h
-@@ -310,7 +310,8 @@ extern void tty_set_operations(struct tty_driver *driver,
- extern struct tty_driver *tty_find_polling_driver(char *name, int *line);
- 
- extern void tty_driver_kref_put(struct tty_driver *driver);
--extern inline struct tty_driver *tty_driver_kref_get(struct tty_driver *d)
-+
-+static inline struct tty_driver *tty_driver_kref_get(struct tty_driver *d)
- {
- 	kref_get(&d->kref);
- 	return d;
-
+-Andi
+-- 
+ak@linux.intel.com -- Speaking for myself only.
