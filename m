@@ -1,63 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756292AbZDEJLu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756197AbZDEJQY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756292AbZDEJLu (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 5 Apr 2009 05:11:50 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754128AbZDEJLi
+	id S1756197AbZDEJQY (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 5 Apr 2009 05:16:24 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755584AbZDEJQM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 5 Apr 2009 05:11:38 -0400
-Received: from mail-fx0-f158.google.com ([209.85.220.158]:56017 "EHLO
+	Sun, 5 Apr 2009 05:16:12 -0400
+Received: from mail-fx0-f158.google.com ([209.85.220.158]:42307 "EHLO
 	mail-fx0-f158.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751028AbZDEJLh (ORCPT
+	with ESMTP id S1755222AbZDEJQK (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 5 Apr 2009 05:11:37 -0400
+	Sun, 5 Apr 2009 05:16:10 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:date:message-id:subject:from:to:content-type
-         :content-transfer-encoding;
-        b=EZdmiYRYbd7Zu8Kzw1ptjRKB+i9vc64fd1oHN98vbErjdC65U5Gtd0+1/qFF/NBjsP
-         ImbnkJrYgtCL2XoSn4lrW6mD9v+8IpIFxuHgoJIV/D1QQa2WTezsHRUdLl6lEkBFp7yJ
-         XgFGZ7myCbe9j39mlWBq1qvILn5AQ5FISS+3Q=
-MIME-Version: 1.0
-Date: Sun, 5 Apr 2009 11:11:32 +0200
-Message-ID: <8db1092f0904050211m3385bf45wbf1a0452cb44cc06@mail.gmail.com>
-Subject: [2.6.29-git12 iwl3945] wlan0: beacon loss from AP 00:19:5b:e7:a2:f8 - 
-	sending probe request
-From: Maciej Rutecki <maciej.rutecki@gmail.com>
-To: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       linux-wireless@vger.kernel.org, ipw3945-devel@lists.sourceforge.net
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
+        d=googlemail.com; s=gamma;
+        h=from:to:cc:subject:date:message-id:x-mailer;
+        b=LakGodzJGXO+nfyvBma8cNdr7mdggA35VCqz7rDFXa9jNsZQYg2UhmaISthdFDuAMw
+         TOa++kIf94Q/czf/zbYtIKqLtHtwkj5Z+LOsBKlXgcI9fjANKhDW8umWX5uQLtKS6Kvh
+         5R4ggvv3vQvhTR11ui6Uk/YHTn7U4HeKnojT0=
+From: Borislav Petkov <petkovbb@googlemail.com>
+To: <bzolnier@gmail.com>
+Cc: linux-kernel@vger.kernel.org, linux-ide@vger.kernel.org
+Subject: [PATCH 1/2] ide-cd: reverse NOT_READY sense key logic
+Date: Sun,  5 Apr 2009 11:16:01 +0200
+Message-Id: <1238922962-19727-1-git-send-email-petkovbb@gmail.com>
+X-Mailer: git-send-email 1.6.2.1
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Wireless card:
-08:00.0 Network controller: Intel Corporation PRO/Wireless 3945ABG
-[Golan] Network Connection (rev 02)
+Make the case of flushing the drive's cache explicit.
 
-I have compiled 2.6.29-git12. Comparing to 2.6.29 (stable) I have
-message in dmesg:
+There should be no functional change resulting from this patch.
 
-wlan0: beacon loss from AP 00:19:5b:e7:a2:f8 - sending probe request
+Signed-off-by: Borislav Petkov <petkovbb@gmail.com>
+---
+ drivers/ide/ide-cd.c |    8 ++++----
+ 1 files changed, 4 insertions(+), 4 deletions(-)
 
-Also iwconfig shows slow Bit Rate (1 Mb/s). Connection seems be
-stable, but it never happen in 2.6.29.
-
-Dmesg:
-http://unixy.pl/maciek/download/kernel/2.6.29-git12/dmesg-2.6.29-git12.txt
-
-Dmesg (after "echo 0x43fff > /sys/class/net/wlan0/device/debug_level"):
-http://unixy.pl/maciek/download/kernel/2.6.29-git12/dmesg-2.6.29-git12-debug.txt
-
-
-iwconfig wlan0 from 2.6.29 (I remove "Encryption key"):
-http://unixy.pl/maciek/download/kernel/2.6.29-git12/iwconfig_wlan0_2.6.29.txt
-
-iwconfig wlan0 from 2.6.29-git12:
-http://unixy.pl/maciek/download/kernel/2.6.29-git12/iwconfig_wlan0_2.6.29-git12.txt
-
-Config (2.6.29-git12):
-http://unixy.pl/maciek/download/kernel/2.6.29-git12/config-2.6.29-git12.txt
+diff --git a/drivers/ide/ide-cd.c b/drivers/ide/ide-cd.c
+index 2989aa8..2aa13d8 100644
+--- a/drivers/ide/ide-cd.c
++++ b/drivers/ide/ide-cd.c
+@@ -341,15 +341,15 @@ static int cdrom_decode_status(ide_drive_t *drive, u8 stat)
+ 
+ 	switch (sense_key) {
+ 	case NOT_READY:
+-		if (blk_fs_request(rq) == 0 || rq_data_dir(rq) == READ) {
++		if (blk_fs_request(rq) && rq_data_dir(rq) == WRITE) {
++			if (ide_cd_breathe(drive, rq))
++				return 1;
++		} else {
+ 			cdrom_saw_media_change(drive);
+ 
+ 			if (blk_fs_request(rq) && !quiet)
+ 				printk(KERN_ERR PFX "%s: tray open\n",
+ 					drive->name);
+-		} else {
+-			if (ide_cd_breathe(drive, rq))
+-				return 1;
+ 		}
+ 		do_end_request = 1;
+ 		break;
 -- 
-Maciej Rutecki
-http://www.maciek.unixy.pl
+1.6.2.1
+
