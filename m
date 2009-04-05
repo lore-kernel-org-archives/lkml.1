@@ -1,64 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758045AbZDEUBl@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758056AbZDEUF1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758045AbZDEUBl (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 5 Apr 2009 16:01:41 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753532AbZDEUBd
+	id S1758056AbZDEUF1 (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 5 Apr 2009 16:05:27 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757301AbZDEUFM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 5 Apr 2009 16:01:33 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:48002 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1753528AbZDEUBc (ORCPT
+	Sun, 5 Apr 2009 16:05:12 -0400
+Received: from terminus.zytor.com ([198.137.202.10]:33123 "EHLO
+	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755769AbZDEUFL (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 5 Apr 2009 16:01:32 -0400
-Date: Sun, 5 Apr 2009 12:56:48 -0700 (PDT)
-From: Linus Torvalds <torvalds@linux-foundation.org>
-X-X-Sender: torvalds@localhost.localdomain
-To: Ingo Molnar <mingo@elte.hu>
-cc: linux-kernel@vger.kernel.org, Pekka Enberg <penberg@cs.helsinki.fi>,
-       Steven Rostedt <rostedt@goodmis.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Thomas Gleixner <tglx@linutronix.de>,
-       Eduard - Gabriel Munteanu <eduard.munteanu@linux360.ro>
-Subject: Re: [GIT PULL] SLAB include file dependency fixes + kmemtrace
- updates
-In-Reply-To: <20090405193944.GA12691@elte.hu>
-Message-ID: <alpine.LFD.2.00.0904051251390.4023@localhost.localdomain>
-References: <20090405193944.GA12691@elte.hu>
-User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
+	Sun, 5 Apr 2009 16:05:11 -0400
+Message-ID: <49D90EED.2060703@zytor.com>
+Date: Sun, 05 Apr 2009 13:05:01 -0700
+From: "H. Peter Anvin" <hpa@zytor.com>
+User-Agent: Thunderbird 2.0.0.14 (X11/20080501)
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+To: =?UTF-8?B?QWxlamFuZHJvIFJpdmVpcmEgRmVybsOhbmRleg==?= 
+	<ariveira@gmail.com>
+CC: Martin Steigerwald <Martin@lichtvoll.de>,
+       Bryan Henderson <hbryan@us.ibm.com>, linux-fsdevel@vger.kernel.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: Replacing VFAT as filesystem on removeable media
+References: <OFF614A035.0DA52102-ON8825758C.00613C94-8825758C.006215D5@us.ibm.com>	<200904031029.03581.Martin@lichtvoll.de>	<49D8510A.3010606@zytor.com> <20090405153041.08238acf@varda>
+In-Reply-To: <20090405153041.08238acf@varda>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-
-On Sun, 5 Apr 2009, Ingo Molnar wrote:
+Alejandro Riveira Fernández wrote:
+>>>
+>> Ironically enough, one of the better filesystems for being supported by
+>> many OSes is probably ext2.  However, that doesn't mean it is even in
+>> the same rough ballpark as (V)FAT.
 > 
-> ( Please note that i rebased the tree exactly once, shortly after it 
->   got finished, to make it all bisectable and reviewable: the 
->   perfect insight shown in the tree now was IMHO not humanly 
->   possible to achieve in advance.
+>   What about UDF ?
 
-This is actually the rigth thing to do. Rebasing is not wrong, if it is 
-done judiciously (and not on already-exposed stuff).
+Good point.  UDF is probably widely supported, but again, not in the
+same ballpark.  I don't personally know how complex UDF is to implement
+on a small memory device.
 
-Rebasing is bad if
- - you do it so late in the game that all test experience is basically 
-   worthless
- - after you've pushed out and other people have seen and depend on that 
-   branch (and you didn't warn them)
- - you do it to other peoples git commits, so that their tree (that was 
-   the source of the commit) now has the same commit duplicated as 
-   something else.
+	-hpa
 
-I wrote a posting about rebasing to Dave Airlie on dri-devel, that might 
-be googleable. Hmm. Here:
-
-	http://www.mail-archive.com/dri-devel@lists.sourceforge.net/msg39091.html
-
-so rebase isn't bad, it's often a great way to fix things as you go along. 
-It just goes with a few basic caveats.
-
-			Linus
+-- 
+H. Peter Anvin, Intel Open Source Technology Center
+I work for Intel.  I don't speak on their behalf.
 
