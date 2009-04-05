@@ -1,17 +1,19 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758106AbZDEEGn@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758301AbZDEEHf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758106AbZDEEGn (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 5 Apr 2009 00:06:43 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757910AbZDEEF0
+	id S1758301AbZDEEHf (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 5 Apr 2009 00:07:35 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757950AbZDEEFt
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 5 Apr 2009 00:05:26 -0400
-Received: from smtp126.sbc.mail.sp1.yahoo.com ([69.147.65.185]:48817 "HELO
-	smtp126.sbc.mail.sp1.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1757868AbZDEEFO (ORCPT
+	Sun, 5 Apr 2009 00:05:49 -0400
+Received: from smtp123.sbc.mail.sp1.yahoo.com ([69.147.64.96]:44863 "HELO
+	smtp123.sbc.mail.sp1.yahoo.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1757915AbZDEEFm (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 5 Apr 2009 00:05:14 -0400
+	Sun, 5 Apr 2009 00:05:42 -0400
+X-YMail-OSG: CIL0UnIVM1k4fC5pnB9SuaQLYKVymKDjJ8ombcGRIuLmlqv2EP3ZmIZGRL5U5MJoXgYH_tb73pygFdGm1f_CbrX7YzEf_oI2uBtKAdzOQfBRuCgJqf1wzYCQsyNWKxu3xXnsDB95_wrkMDF_iJ3eCj8AFule6xjGnPDotuffi232pEw76Qzx4F2OVmGiDIrsu.BzJDr6A6PEbkRMhC.N9NK46pQM4izBdhstUrT5JMeggyhTSWsbIXacB2VZ76gJ3pbRcocC2r.TZ1Tyu1krilm.A.wvK07pp4G9mRSe1vJWxQ2k.XR2ANfAGYdb1z8QaSgk_qH5uYriy_Zp56scd.E-
 X-Yahoo-Newman-Property: ymail-3
-Subject: [RFC PATCH 9/19] Target_Core_Mod SPC-3 Persistent Reservations
+Subject: [RFC PATCH 11/19] Target_Core_Mod PSCSI <-> Linux/SCSI subsystem
+	plugin
 From: "Nicholas A. Bellinger" <nab@linux-iscsi.org>
 To: LKML <linux-kernel@vger.kernel.org>,
        linux-scsi <linux-scsi@vger.kernel.org>
@@ -23,37 +25,37 @@ Cc: James Bottomley <James.Bottomley@HansenPartnership.com>,
        "Martin K. Petersen" <martin.petersen@oracle.com>,
        Ming Zhang <blackmagic02881@gmail.com>,
        Philipp Reisner <philipp.reisner@linbit.com>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Rafiu Fakunle <rafiu@openfiler.com>
-Content-Type: text/plain; charset=UTF-8
-Date: Sat, 04 Apr 2009 21:01:57 -0700
-Message-Id: <1238904117.4250.750.camel@haakon2.linux-iscsi.org>
+       Linus Torvalds <torvalds@linux-foundation.org>
+Content-Type: text/plain
+Date: Sat, 04 Apr 2009 21:02:03 -0700
+Message-Id: <1238904123.4250.752.camel@haakon2.linux-iscsi.org>
 Mime-Version: 1.0
 X-Mailer: Evolution 2.22.3.1 
-Content-Transfer-Encoding: 8bit
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This patch adds support for exhaustive support for SPC-3 compliant persistent reservations
-for target_core_mod/ConfigFS storage objects.
+This patch adds the PSCSI subsystem plugin for accessing struct scsi_device
+from upstream Linux/SCSI code.
 
 Signed-off-by: Nicholas A. Bellinger <nab@linux-iscsi.org>
 
-diff --git a/drivers/target/target_core_pr.c b/drivers/target/target_core_pr.c
+diff --git a/drivers/target/target_core_pscsi.c b/drivers/target/target_core_pscsi.c
 new file mode 100644
-index 0000000..9731ec3
+index 0000000..0962563
 --- /dev/null
-+++ b/drivers/target/target_core_pr.c
-@@ -0,0 +1,2207 @@
++++ b/drivers/target/target_core_pscsi.c
+@@ -0,0 +1,1657 @@
 +/*******************************************************************************
-+ * Filename:  target_core_pr.c
++ * Filename:  target_core_pscsi.c
 + *
-+ * This file contains SPC-3 compliant persistent reservations and
-+ * legacy SPC-2 reservations.
++ * This file contains the generic target mode <-> Linux SCSI subsystem plugin.
 + *
-+ * Copyright (c) 2009 Rising Tide, Inc.
-+ * Copyright (c) 2009 Linux-iSCSI.org
++ * Copyright (c) 2003, 2004, 2005 PyX Technologies, Inc.
++ * Copyright (c) 2005, 2006, 2007 SBE, Inc.
++ * Copyright (c) 2007-2009 Rising Tide Software, Inc.
++ * Copyright (c) 2008-2009 Linux-iSCSI.org
 + *
 + * Nicholas A. Bellinger <nab@kernel.org>
 + *
@@ -73,2245 +75,1829 @@ index 0000000..9731ec3
 + *
 + ******************************************************************************/
 +
-+#define TARGET_CORE_PR_C
++
++#define TARGET_CORE_PSCSI_C
 +
 +#include <linux/version.h>
++#include <linux/string.h>
++#include <linux/timer.h>
++#include <linux/blkdev.h>
 +#include <linux/slab.h>
 +#include <linux/spinlock.h>
++#include <linux/smp_lock.h>
++#include <linux/genhd.h>
++#include <linux/cdrom.h>
++#include <linux/file.h>
 +#include <scsi/scsi.h>
++#include <scsi/scsi_device.h>
 +#include <scsi/scsi_cmnd.h>
++#include <scsi/scsi_host.h>
++#include <sd.h>
++#include <sr.h>
 +
 +#include <target/target_core_base.h>
 +#include <target/target_core_device.h>
-+#include <target/target_core_hba.h>
-+#include <target/target_core_tmr.h>
 +#include <target/target_core_transport.h>
-+#include <target/target_core_pr.h>
-+#include <target/target_core_ua.h>
++#include <target/target_core_pscsi.h>
++#include <target/target_core_plugin.h>
++#include <target/target_core_seobj.h>
 +#include <target/target_core_transport_plugin.h>
-+#include <target/target_core_fabric_ops.h>
-+#include <target/target_core_configfs.h>
 +
-+#undef TARGET_CORE_PR_C
++#undef TARGET_CORE_PSCSI_C
 +
-+static void __core_scsi3_complete_pro_release(se_device_t *, se_node_acl_t *,
-+			t10_pr_registration_t *g, int);
++#define ISPRINT(a)  ((a >= ' ') && (a <= '~'))
 +
-+int core_scsi2_reservation_seq_non_holder(
-+	se_cmd_t *cmd,
-+	unsigned char *cdb,
-+	u32 pr_reg_type)
++/*	pscsi_get_sh():
++ *
++ *
++ */
++static struct Scsi_Host *pscsi_get_sh(u32 host_no)
 +{
-+	switch (cdb[0]) {
-+	case INQUIRY:
-+	case RELEASE:
-+	case RELEASE_10:
-+		return 0;
-+	default:
-+		return 1;
++	struct Scsi_Host *sh = NULL;
++
++	sh = scsi_host_lookup(host_no);
++	if (IS_ERR(sh)) {
++		printk(KERN_ERR "Unable to locate SCSI HBA with Host ID:"
++				" %u\n", host_no);
++		return NULL;
 +	}
 +
-+	return 1;
++	return sh;
 +}
 +
-+int core_scsi2_reservation_check(se_cmd_t *cmd, u32 *pr_reg_type)
++/*	pscsi_check_sd():
++ *
++ *	Should be called with scsi_device_get(sd) held
++ */
++int pscsi_check_sd(struct scsi_device *sd)
 +{
-+	se_device_t *dev = cmd->se_dev;
-+	se_session_t *sess = cmd->se_sess;
-+	int ret;
++	struct gendisk *disk;
++	struct scsi_disk *sdisk;
 +
-+	if (!(sess))
-+		return 0;
-+
-+	spin_lock(&dev->dev_reservation_lock);
-+	if (!dev->dev_reserved_node_acl || !sess) {
-+		spin_unlock(&dev->dev_reservation_lock);
-+		return 0;
-+	}
-+	ret = (dev->dev_reserved_node_acl != sess->se_node_acl) ? -1 : 0;
-+	spin_unlock(&dev->dev_reservation_lock);
-+
-+	return ret;
-+}
-+EXPORT_SYMBOL(core_scsi2_reservation_check);
-+
-+int core_scsi2_reservation_release(se_cmd_t *cmd)
-+{
-+	se_device_t *dev = cmd->se_dev;
-+	se_session_t *sess = cmd->se_sess;
-+	se_portal_group_t *tpg = sess->se_tpg;
-+
-+	if (!(sess) || !(tpg))
-+		return 0;
-+
-+	spin_lock(&dev->dev_reservation_lock);
-+	if (!dev->dev_reserved_node_acl || !sess) {
-+		spin_unlock(&dev->dev_reservation_lock);
-+		return 0;
-+	}
-+
-+	if (dev->dev_reserved_node_acl != sess->se_node_acl) {
-+		spin_unlock(&dev->dev_reservation_lock);
-+		return 0;
-+	}
-+	dev->dev_reserved_node_acl = NULL;
-+	printk(KERN_INFO "SCSI-2 Released reservation for %s LUN: %u ->"
-+		" MAPPED LUN: %u for %s\n", TPG_TFO(tpg)->get_fabric_name(),
-+		SE_LUN(cmd)->unpacked_lun, cmd->se_deve->mapped_lun,
-+		sess->se_node_acl->initiatorname);
-+	spin_unlock(&dev->dev_reservation_lock);
-+
-+	return 0;
-+}
-+EXPORT_SYMBOL(core_scsi2_reservation_release);
-+
-+int core_scsi2_reservation_reserve(se_cmd_t *cmd)
-+{
-+	se_device_t *dev = cmd->se_dev;
-+	se_session_t *sess = cmd->se_sess;
-+	se_portal_group_t *tpg = sess->se_tpg;
-+
-+	if ((T_TASK(cmd)->t_task_cdb[1] & 0x01) &&
-+	    (T_TASK(cmd)->t_task_cdb[1] & 0x02)) {
-+		printk(KERN_ERR "LongIO and Obselete Bits set, returning"
-+				" ILLEGAL_REQUEST\n");
++	if (!sd) {
++		printk(KERN_ERR "struct scsi_device is NULL!\n");
 +		return -1;
 +	}
 +
-+	/*
-+	 * This is currently the case for target_core_mod passthrough se_cmd_t
-+	 * ops
-+	 */
-+	if (!(sess) || !(tpg))
++	if (sd->type != TYPE_DISK)
 +		return 0;
 +
-+	spin_lock(&dev->dev_reservation_lock);
-+	if (dev->dev_reserved_node_acl &&
-+	   (dev->dev_reserved_node_acl != sess->se_node_acl)) {
-+		printk(KERN_ERR "SCSI-2 RESERVATION CONFLIFT for %s fabric\n",
-+			TPG_TFO(tpg)->get_fabric_name());
-+		printk(KERN_ERR "Original reserver LUN: %u %s\n",
-+			SE_LUN(cmd)->unpacked_lun,
-+			dev->dev_reserved_node_acl->initiatorname);
-+		printk(KERN_ERR "Current attempt - LUN: %u -> MAPPED LUN: %u"
-+			" from %s \n", SE_LUN(cmd)->unpacked_lun,
-+			cmd->se_deve->mapped_lun,
-+			sess->se_node_acl->initiatorname);
-+		spin_unlock(&dev->dev_reservation_lock);
-+		return 1;
++	/*
++	 * Some struct scsi_device of Type: Direct-Access, namely the
++	 * SGI Univerisal Xport do not have a corrasponding block device.
++	 * We skip these for now.
++	 */
++	sdisk = dev_get_drvdata(&sd->sdev_gendev);
++	if (!(sdisk))
++		return -1;
++
++	disk = (struct gendisk *) sdisk->disk;
++	if (!(disk->major)) {
++		printk(KERN_ERR "dev_get_drvdata() failed\n");
++		return -1;
 +	}
 +
-+	dev->dev_reserved_node_acl = sess->se_node_acl;
-+	dev->dev_flags |= DF_SPC2_RESERVATIONS;
-+	printk(KERN_INFO "SCSI-2 Reserved %s LUN: %u -> MAPPED LUN: %u"
-+		" for %s\n", TPG_TFO(tpg)->get_fabric_name(),
-+		SE_LUN(cmd)->unpacked_lun, cmd->se_deve->mapped_lun,
-+		sess->se_node_acl->initiatorname);
-+	spin_unlock(&dev->dev_reservation_lock);
++	if (linux_blockdevice_check(disk->major, disk->first_minor) < 0)
++		return -1;
 +
 +	return 0;
 +}
-+EXPORT_SYMBOL(core_scsi2_reservation_reserve);
++
++/*	pscsi_claim_sd():
++ *
++ *	Should be called with scsi_device_get(sd) held
++ */
++int pscsi_claim_sd(struct scsi_device *sd)
++{
++	struct block_device *bdev;
++	struct gendisk *disk;
++	struct scsi_disk *sdisk;
++
++	if (!sd) {
++		printk(KERN_ERR "struct scsi_device is NULL!\n");
++		return -1;
++	}
++
++	if (sd->type != TYPE_DISK)
++		return 0;
++
++	/*
++	 * Some struct scsi_device of Type: Direct-Access, namely the
++	 * SGI Univerisal Xport do not have a corrasponding block device.
++	 * We skip these for now.
++	 */
++	sdisk = dev_get_drvdata(&sd->sdev_gendev);
++	if (!(sdisk))
++		return -1;
++
++	disk = (struct gendisk *) sdisk->disk;
++	if (!(disk->major)) {
++		printk(KERN_ERR "dev_get_drvdata() failed\n");
++		return -1;
++	}
++
++	printk(KERN_INFO "PSCSI: Claiming %p Major:Minor - %d:%d\n",
++		sd, disk->major, disk->first_minor);
++
++	bdev = linux_blockdevice_claim(disk->major, disk->first_minor,
++				(void *)sd);
++	if (!(bdev))
++		return -1;
++
++	return 0;
++}
++
++/*	pscsi_release_sd()
++ *
++ * 	Should be called with scsi_device_get(sd) held
++ */
++int pscsi_release_sd(struct scsi_device *sd)
++{
++	struct gendisk *disk;
++	struct scsi_disk *sdisk;
++
++	if (!sd) {
++		printk(KERN_ERR "struct scsi_device is NULL!\n");
++		return -1;
++	}
++
++	if (sd->type != TYPE_DISK)
++		return 0;
++
++	/*
++	 * Some struct scsi_device of Type: Direct-Access, namely the
++	 * SGI Univerisal Xport do not have a corrasponding block device.
++	 * We skip these for now.
++	 */
++	sdisk = dev_get_drvdata(&sd->sdev_gendev);
++	if (!(sdisk))
++		return -1;
++
++	disk = (struct gendisk *) sdisk->disk;
++	if (!(disk->major)) {
++		printk(KERN_ERR "dev_get_drvdata() failed\n");
++		return -1;
++	}
++
++	printk(KERN_INFO "PSCSI: Releasing Major:Minor - %d:%d\n",
++		disk->major, disk->first_minor);
++
++	return linux_blockdevice_release(disk->major, disk->first_minor, NULL);
++}
++
++/*	pscsi_attach_hba():
++ *
++ * 	pscsi_get_sh() used scsi_host_lookup() to locate struct Scsi_Host.
++ *	from the passed SCSI Host ID.
++ */
++int pscsi_attach_hba(se_hba_t *hba, u32 host_id)
++{
++	int hba_depth, max_sectors;
++	struct Scsi_Host *sh;
++
++	sh = pscsi_get_sh(host_id);
++	if (!(sh))
++		return -EINVAL;
++
++	max_sectors = sh->max_sectors;
++
++	/*
++	 * Usually the SCSI LLD will use the hostt->can_queue value to define
++	 * its HBA TCQ depth.  Some other drivers (like 2.6 megaraid) don't set
++	 * this at all and set sh->can_queue at runtime.
++	 */
++	hba_depth = (sh->hostt->can_queue > sh->can_queue) ?
++		sh->hostt->can_queue : sh->can_queue;
++	atomic_set(&hba->left_queue_depth, hba_depth);
++	atomic_set(&hba->max_queue_depth, hba_depth);
++
++	hba->hba_ptr = (void *) sh;
++	hba->transport = &pscsi_template;
++
++	printk(KERN_INFO "CORE_HBA[%d] - %s SCSI HBA Driver %s on"
++		" Generic Target Core Stack %s\n", hba->hba_id,
++		PYX_ISCSI_VENDOR, PSCSI_VERSION, TARGET_CORE_MOD_VERSION);
++	printk(KERN_INFO "CORE_HBA[%d] - %s\n", hba->hba_id, (sh->hostt->name) ?
++			(sh->hostt->name) : "Unknown");
++	printk(KERN_INFO "CORE_HBA[%d] - Attached SCSI HBA to Generic"
++		" Target Core with TCQ Depth: %d MaxSectors: %hu\n",
++		hba->hba_id, atomic_read(&hba->max_queue_depth), max_sectors);
++
++	return 0;
++}
++
++/*	pscsi_detach_hba(): (Part of se_subsystem_api_t template)
++ *
++ *
++ */
++int pscsi_detach_hba(se_hba_t *hba)
++{
++	struct Scsi_Host *scsi_host = (struct Scsi_Host *) hba->hba_ptr;
++
++	scsi_host_put(scsi_host);
++
++	printk(KERN_INFO "CORE_HBA[%d] - Detached SCSI HBA: %s from"
++		" Generic Target Core\n", hba->hba_id,
++		(scsi_host->hostt->name) ? (scsi_host->hostt->name) :
++		"Unknown");
++
++	hba->hba_ptr = NULL;
++
++	return 0;
++}
++
++/*	pscsi_add_device_to_list():
++ *
++ *
++ */
++se_device_t *pscsi_add_device_to_list(
++	se_hba_t *hba,
++	se_subsystem_dev_t *se_dev,
++	pscsi_dev_virt_t *pdv,
++	struct scsi_device *sd,
++	int dev_flags)
++{
++	se_device_t *dev;
++
++	/*
++	 * Some pseudo SCSI HBAs do not fill in sector_size
++	 * correctly. (See ide-scsi.c)  So go ahead and setup sane
++	 * values.
++	 */
++	if (!sd->sector_size) {
++		switch (sd->type) {
++		case TYPE_DISK:
++			sd->sector_size = 512;
++			break;
++		case TYPE_ROM:
++			sd->sector_size = 2048;
++			break;
++		case TYPE_TAPE: /* The Tape may not be in the drive */
++			break;
++		case TYPE_MEDIUM_CHANGER: /* Control CDBs only */
++			break;
++		default:
++			printk(KERN_ERR "Unable to set sector_size for %d\n",
++					sd->type);
++			return NULL;
++		}
++
++		if (sd->sector_size) {
++			printk(KERN_ERR "Set broken SCSI Device"
++				" %d:%d:%d sector_size to %d\n", sd->channel,
++				sd->id, sd->lun, sd->sector_size);
++		}
++	}
++
++	if (!sd->queue_depth) {
++		sd->queue_depth = PSCSI_DEFAULT_QUEUEDEPTH;
++
++		printk(KERN_ERR "Set broken SCSI Device %d:%d:%d"
++			" queue_depth to %d\n", sd->channel, sd->id,
++				sd->lun, sd->queue_depth);
++	}
++	/*
++	 * Set the pointer pdv->pdv_sd to from passed struct scsi_device,
++	 * which has already been referenced with Linux SCSI code with
++	 * scsi_device_get() in this file's pscsi_create_virtdevice().
++	 *
++	 * The passthrough operations called by the transport_add_device_*
++	 * function below will require this pointer to be set for passthroug
++	 *  ops.
++	 *
++	 * For the shutdown case in pscsi_free_device(), this struct
++	 * scsi_device  reference is released with Linux SCSI code
++	 * scsi_device_put() and the pdv->pdv_sd cleared.
++	 */
++	pdv->pdv_sd = sd;
++
++	dev = transport_add_device_to_core_hba(hba, &pscsi_template,
++				se_dev, dev_flags, (void *)pdv);
++	if (!(dev)) {
++		pdv->pdv_sd = NULL;
++		return NULL;
++	}
++
++	/*
++	 * For TYPE_TAPE, attempt to determine blocksize with MODE_SENSE.
++	 */
++	if (sd->type == TYPE_TAPE) {
++		unsigned char *buf = NULL, cdb[SCSI_CDB_SIZE];
++		se_cmd_t *cmd;
++		u32 blocksize;
++
++		memset(cdb, 0, SCSI_CDB_SIZE);
++		cdb[0] = MODE_SENSE;
++		cdb[4] = 0x0c; /* 12 bytes */
++
++		cmd = transport_allocate_passthrough(&cdb[0],
++				SE_DIRECTION_READ, 0, NULL, 0, 12,
++				DEV_OBJ_API(dev), dev);
++		if (!(cmd)) {
++			printk(KERN_ERR "Unable to determine blocksize for"
++				" TYPE_TAPE\n");
++			goto out;
++		}
++
++		if (transport_generic_passthrough(cmd) < 0) {
++			printk(KERN_ERR "Unable to determine blocksize for"
++				" TYPE_TAPE\n");
++			goto out;
++		}
++
++		buf = (unsigned char *)T_TASK(cmd)->t_task_buf;
++		blocksize = (buf[9] << 16) | (buf[10] << 8) | (buf[11]);
++
++		/*
++		 * If MODE_SENSE still returns zero, set the default value
++		 * to 1024.
++		 */
++		sd->sector_size = blocksize;
++		if (!(sd->sector_size))
++			sd->sector_size = 1024;
++
++		transport_passthrough_release(cmd);
++	}
++out:
++	return dev;
++}
++
++int pscsi_claim_phydevice(se_hba_t *hba, se_device_t *dev)
++{
++	pscsi_dev_virt_t *pdv = (pscsi_dev_virt_t *) dev->dev_ptr;
++	struct scsi_device *sd = (struct scsi_device *)pdv->pdv_sd;
++
++	return pscsi_claim_sd(sd);
++}
++
++int pscsi_release_phydevice(se_device_t *dev)
++{
++	pscsi_dev_virt_t *pdv = (pscsi_dev_virt_t *) dev->dev_ptr;
++	struct scsi_device *sd = (struct scsi_device *)pdv->pdv_sd;
++
++	return pscsi_release_sd(sd);
++}
++
++void *pscsi_allocate_virtdevice(se_hba_t *hba, const char *name)
++{
++	pscsi_dev_virt_t *pdv;
++
++	pdv = kzalloc(sizeof(pscsi_dev_virt_t), GFP_KERNEL);
++	if (!(pdv)) {
++		printk(KERN_ERR "Unable to allocate memory for pscsi_dev_virt_t\n");
++		return NULL;
++	}
++	pdv->pdv_se_hba = hba;
++
++	printk(KERN_INFO "PSCSI: Allocated pdv: %p for %s\n", pdv, name);
++	return (void *)pdv;
++}
 +
 +/*
-+ * Begin SPC-3/SPC-4 Persistent Reservations emulation support
-+ *
-+ * This function is called by those initiator ports who are *NOT*
-+ * the active PR reservation holder when a reservation is present.
++ * Called with struct Scsi_Host->host_lock called.
 + */
-+static int core_scsi3_pr_seq_non_holder(
-+	se_cmd_t *cmd,
-+	unsigned char *cdb,
-+	u32 pr_reg_type)
++se_device_t *pscsi_create_type_disk(
++	struct scsi_device *sd,
++	pscsi_dev_virt_t *pdv,
++	se_subsystem_dev_t *se_dev,
++	se_hba_t *hba)
 +{
-+	se_dev_entry_t *se_deve;
-+	se_session_t *se_sess = SE_SESS(cmd);
-+	se_lun_t *se_lun = SE_LUN(cmd);
-+	int other_cdb = 0;
-+	int registered_nexus = 0, ret = 1; /* Conflict by default */
-+	int all_reg = 0, reg_only = 0; /* ALL_REG, REG_ONLY */
-+	int we = 0; /* Write Exclusive */
-+	int legacy = 0; /* Act like a legacy device and return
-+			 * RESERVATION CONFLICT on some CDBs */
++	se_device_t *dev;
++	struct Scsi_Host *sh = sd->host;
++	u32 dev_flags = 0;
 +
-+	se_deve = &se_sess->se_node_acl->device_list[se_lun->unpacked_lun];
-+
-+	switch (pr_reg_type) {
-+	case PR_TYPE_WRITE_EXCLUSIVE:
-+		we = 1;
-+	case PR_TYPE_EXCLUSIVE_ACCESS:
-+		/*
-+		 * Some commands are only allowed for the persistent reservation
-+		 * holder.
-+		 */
-+		if (se_deve->deve_flags & DEF_PR_REGISTERED)
-+			registered_nexus = 1;
-+		break;
-+	case PR_TYPE_WRITE_EXCLUSIVE_REGONLY:
-+		we = 1;
-+	case PR_TYPE_EXCLUSIVE_ACCESS_REGONLY:
-+		/*
-+		 * Some commands are only allowed for registered I_T Nexuses.
-+		 */
-+		reg_only = 1;
-+		if (se_deve->deve_flags & DEF_PR_REGISTERED)
-+			registered_nexus = 1;
-+		break;
-+	case PR_TYPE_WRITE_EXCLUSIVE_ALLREG:
-+		we = 1;
-+	case PR_TYPE_EXCLUSIVE_ACCESS_ALLREG:
-+		/*
-+		 * Each registered I_T Nexus is a reservation holder.
-+		 */
-+		all_reg = 1;
-+		if (se_deve->deve_flags & DEF_PR_REGISTERED)
-+			registered_nexus = 1;
-+		break;
-+	default:
-+		return -1;
++	if (scsi_device_get(sd)) {
++		printk(KERN_ERR "scsi_device_get() failed for %d:%d:%d:%d\n",
++			sh->host_no, sd->channel, sd->id, sd->lun);
++		spin_unlock_irq(sh->host_lock);
++		return NULL;
 +	}
-+	/*
-+	 * Referenced from spc4r17 table 45 for *NON* PR holder access
-+	 */
-+	switch (cdb[0]) {
-+	case SECURITY_PROTOCOL_IN:
-+		if (registered_nexus)
-+			return 0;
-+		ret = (we) ? 0 : 1;
-+		break;
-+	case MODE_SENSE:
-+	case MODE_SENSE_10:
-+	case READ_ATTRIBUTE:
-+	case READ_BUFFER:
-+	case RECEIVE_DIAGNOSTIC:
-+		if (legacy) {
-+			ret = 1;
-+			break;
-+		}
-+		if (registered_nexus) {
-+			ret = 0;
-+			break;
-+		}
-+		ret = (we) ? 0 : 1; /* Allowed Write Exclusive */
-+		break;
-+	case PERSISTENT_RESERVE_OUT:
++	spin_unlock_irq(sh->host_lock);
++
++	if (pscsi_check_sd(sd) < 0) {
++		scsi_device_put(sd);
++		printk(KERN_ERR "pscsi_check_sd() failed for %d:%d:%d:%d\n",
++			sh->host_no, sd->channel, sd->id, sd->lun);
++		return NULL;
++	}
++	if (!(pscsi_claim_sd(sd))) {
++		dev_flags |= DF_CLAIMED_BLOCKDEV;
++		dev_flags |= DF_PERSISTENT_CLAIMED_BLOCKDEV;
++	}
++	dev = pscsi_add_device_to_list(hba, se_dev, pdv, sd, dev_flags);
++	if (!(dev)) {
++		scsi_device_put(sd);
++		return NULL;
++	}
++	printk(KERN_INFO "CORE_PSCSI[%d] - Added TYPE_DISK for %d:%d:%d\n",
++		sh->host_no, sd->channel, sd->id, sd->lun);
++
++	return dev;
++}
++
++/*
++ * Called with struct Scsi_Host->host_lock called.
++ */
++se_device_t *pscsi_create_type_rom(
++	struct scsi_device *sd,
++	pscsi_dev_virt_t *pdv,
++	se_subsystem_dev_t *se_dev,
++	se_hba_t *hba)
++{
++	se_device_t *dev;
++	struct Scsi_Host *sh = sd->host;
++	u32 dev_flags = 0;
++
++	if (scsi_device_get(sd)) {
++		printk(KERN_ERR "scsi_device_get() failed for %d:%d:%d:%d\n",
++			sh->host_no, sd->channel, sd->id, sd->lun);
++		spin_unlock_irq(sh->host_lock);
++		return NULL;
++	}
++	spin_unlock_irq(sh->host_lock);
++
++	dev = pscsi_add_device_to_list(hba, se_dev, pdv, sd, dev_flags);
++	if (!(dev)) {
++		scsi_device_put(sd);
++		return NULL;
++	}
++	printk(KERN_INFO "CORE_PSCSI[%d] - Added Type: %s for %d:%d:%d\n",
++		sh->host_no, scsi_device_type(sd->type), sd->channel,
++		sd->id, sd->lun);
++
++	return dev;
++}
++
++/*
++ *Called with struct Scsi_Host->host_lock called.
++ */
++se_device_t *pscsi_create_type_other(
++	struct scsi_device *sd,
++	pscsi_dev_virt_t *pdv,
++	se_subsystem_dev_t *se_dev,
++	se_hba_t *hba)
++{
++	se_device_t *dev;
++	struct Scsi_Host *sh = sd->host;
++	u32 dev_flags = 0;
++
++	spin_unlock_irq(sh->host_lock);
++	dev = pscsi_add_device_to_list(hba, se_dev, pdv, sd, dev_flags);
++	if (!(dev))
++		return NULL;
++
++	printk(KERN_INFO "CORE_PSCSI[%d] - Added Type: %s for %d:%d:%d\n",
++		sh->host_no, scsi_device_type(sd->type), sd->channel,
++		sd->id, sd->lun);
++
++	return dev;
++}
++
++se_device_t *pscsi_create_virtdevice(
++	se_hba_t *hba,
++	se_subsystem_dev_t *se_dev,
++	void *p)
++{
++	pscsi_dev_virt_t *pdv = (pscsi_dev_virt_t *)p;
++	struct scsi_device *sd;
++	struct Scsi_Host *sh = (struct Scsi_Host *) hba->hba_ptr;
++
++	if (!(pdv)) {
++		printk(KERN_ERR "Unable to locate pscsi_dev_virt_t"
++				" parameter\n");
++		return NULL;
++	}
++
++	spin_lock_irq(sh->host_lock);
++	list_for_each_entry(sd, &sh->__devices, siblings) {
++		if (!(pdv->pdv_channel_id == sd->channel) ||
++		    !(pdv->pdv_target_id == sd->id) ||
++		    !(pdv->pdv_lun_id == sd->lun))
++			continue;
 +		/*
-+		 * This follows PERSISTENT_RESERVE_OUT service actions that
-+		 * are allowed in the presence of various reservations.
-+		 * See spc4r17, table 46
++		 * Functions will release struct scsi_host->host_lock
 +		 */
-+		switch (cdb[1] & 0x1f) {
-+		case PRO_CLEAR:
-+		case PRO_PREEMPT:
-+		case PRO_PREEMPT_AND_ABORT:
-+			ret = (registered_nexus) ? 0 : 1;
-+			break;
-+		case PRO_REGISTER:
-+		case PRO_REGISTER_AND_IGNORE_EXISTING_KEY:
-+			ret = 0;
-+			break;
-+		case PRO_REGISTER_AND_MOVE:
-+		case PRO_RESERVE:
-+			ret = 1;
-+			break;
-+		case PRO_RELEASE:
-+			ret = (registered_nexus) ? 0 : 1;
-+			break;
++		switch (sd->type) {
++		case TYPE_DISK:
++			return pscsi_create_type_disk(sd, pdv, se_dev, hba);
++		case TYPE_ROM:
++			return pscsi_create_type_rom(sd, pdv, se_dev, hba);
 +		default:
-+			printk(KERN_ERR "Unknown PERSISTENT_RESERVE_OUT service"
-+				" action: 0x%02x\n", cdb[1] & 0x1f);
-+			return -1;
-+		}
-+		break;
-+	/* FIXME PR + legacy RELEASE + RESERVE */
-+	case RELEASE:
-+	case RELEASE_10:
-+		ret = 1; /* Conflict */
-+		break;
-+	case RESERVE:
-+	case RESERVE_10:
-+		ret = 1; /* Conflict */
-+		break;
-+	case TEST_UNIT_READY:
-+		ret = (legacy) ? 1 : 0; /* Conflict for legacy */
-+		break;
-+	case MAINTENANCE_IN:
-+		switch (cdb[1] & 0x1f) {
-+		case MI_MANAGEMENT_PROTOCOL_IN:
-+			if (registered_nexus) {
-+				ret = 0;
-+				break;
-+			}
-+			ret = (we) ? 0 : 1; /* Allowed Write Exclusive */
-+			break;
-+		case MI_REPORT_SUPPORTED_OPERATION_CODES:
-+		case MI_REPORT_SUPPORTED_TASK_MANAGEMENT_FUNCTIONS:
-+			if (legacy) {
-+				ret = 1;
-+				break;
-+			}
-+			if (registered_nexus) {
-+				ret = 0;
-+				break;
-+			}
-+			ret = (we) ? 0 : 1; /* Allowed Write Exclusive */
-+			break;
-+		case MI_REPORT_ALIASES:
-+		case MI_REPORT_IDENTIFYING_INFORMATION:
-+		case MI_REPORT_PRIORITY:
-+		case MI_REPORT_TARGET_PGS:
-+		case MI_REPORT_TIMESTAMP:
-+			ret = 0; /* Allowed */
-+			break;
-+		default:
-+			printk(KERN_ERR "Unknown MI Service Action: 0x%02x\n",
-+				(cdb[1] & 0x1f));
-+			return -1;
-+		}
-+		break;
-+	case ACCESS_CONTROL_IN:
-+	case ACCESS_CONTROL_OUT:
-+	case INQUIRY:
-+	case LOG_SENSE:
-+	case READ_MEDIA_SERIAL_NUMBER:
-+	case REPORT_LUNS:
-+	case REQUEST_SENSE:
-+		ret = 0; /*/ Allowed CDBs */
-+		break;
-+	default:
-+		other_cdb = 1;
-+		break;
-+	}
-+	/*
-+	 * Case where the CDB is explictly allowed in the above switch
-+	 * statement.
-+	 */
-+	if (!(ret) && !(other_cdb)) {
-+#if 0
-+		printk(KERN_INFO "Allowing explict CDB: 0x%02x for %s"
-+			" reservation holder\n", cdb[0],
-+			core_scsi3_pr_dump_type(pr_reg_type));
-+#endif
-+		return ret;
-+	}
-+	/*
-+	 * Check if write exclusive initiator ports *NOT* holding the
-+	 * WRITE_EXCLUSIVE_* reservation.
-+	 */
-+	if ((we) && !(registered_nexus)) {
-+		if ((cmd->data_direction == SE_DIRECTION_WRITE) ||
-+		    (cmd->data_direction == SE_DIRECTION_BIDI)) {
-+			/*
-+			 * Conflict for write exclusive
-+			 */
-+			printk(KERN_INFO "%s Conflict for unregistered nexus"
-+				" %s CDB: 0x%02x to %s reservation\n",
-+				transport_dump_cmd_direction(cmd),
-+				se_sess->se_node_acl->initiatorname, cdb[0],
-+				core_scsi3_pr_dump_type(pr_reg_type));
-+			return 1;
-+		} else {
-+			/*
-+			 * Allow non WRITE CDBs for all Write Exclusive
-+			 * PR TYPEs to pass for registered and
-+			 * non-registered_nexuxes NOT holding the reservation.
-+			 *
-+			 * We only make noise for the unregisterd nexuses,
-+			 * as we expect registered non-reservation holding
-+			 * nexuses to issue CDBs.
-+			 */
-+#if 0
-+			if (!(registered_nexus)) {
-+				printk(KERN_INFO "Allowing implict CDB: 0x%02x"
-+					" for %s reservation on unregistered"
-+					" nexus\n", cdb[0],
-+					core_scsi3_pr_dump_type(pr_reg_type));
-+			}
-+#endif
-+			return 0;
-+		}
-+	} else if ((reg_only) || (all_reg)) {
-+		if (registered_nexus) {
-+			/*
-+			 * For PR_*_REG_ONLY and PR_*_ALL_REG reservations,
-+			 * allow commands from registered nexuses.
-+			 */
-+#if 0
-+			printk(KERN_INFO "Allowing implict CDB: 0x%02x for %s"
-+				" reservation\n", cdb[0],
-+				core_scsi3_pr_dump_type(pr_reg_type));
-+#endif
-+			return 0;
++			return pscsi_create_type_other(sd, pdv, se_dev, hba);
 +		}
 +	}
-+	printk(KERN_INFO "%s Conflict for %sregistered nexus %s CDB: 0x%2x"
-+		" for %s reservation\n", transport_dump_cmd_direction(cmd),
-+		(registered_nexus) ? "" : "un",
-+		se_sess->se_node_acl->initiatorname, cdb[0],
-+		core_scsi3_pr_dump_type(pr_reg_type));
++	spin_unlock_irq(sh->host_lock);
 +
-+	return 1; /* Conflict by default */
-+}
-+
-+static u32 core_scsi3_pr_generation(se_device_t *dev)
-+{
-+	se_subsystem_dev_t *su_dev = SU_DEV(dev);
-+	u32 prg;
-+	/*
-+	 * PRGeneration field shall contain the value of a 32-bit wrapping
-+	 * counter mainted by the device server.
-+	 *
-+	 * Note that this is done regardless of Active Persist across
-+	 * Target PowerLoss (APTPL)
-+	 *
-+	 * See spc4r17 section 6.3.12 READ_KEYS service action
-+	 */
-+	spin_lock(&dev->dev_reservation_lock);
-+	prg = T10_RES(su_dev)->pr_generation++;
-+	spin_unlock(&dev->dev_reservation_lock);
-+
-+	return prg;
-+}
-+
-+static int core_scsi3_pr_reservation_check(
-+	se_cmd_t *cmd,
-+	u32 *pr_reg_type)
-+{
-+	se_device_t *dev = cmd->se_dev;
-+	se_session_t *sess = cmd->se_sess;
-+	int ret;
-+
-+	if (!(sess))
-+		return 0;
-+
-+	spin_lock(&dev->dev_reservation_lock);
-+	if (!(dev->dev_pr_res_holder)) {
-+		spin_unlock(&dev->dev_reservation_lock);
-+		return 0;
-+	}
-+	*pr_reg_type = dev->dev_pr_res_holder->pr_res_type;
-+	cmd->pr_res_key = dev->dev_pr_res_holder->pr_res_key;
-+	ret = (dev->dev_pr_res_holder->pr_reg_nacl != sess->se_node_acl) ?
-+		-1 : 0;
-+	spin_unlock(&dev->dev_reservation_lock);
-+
-+	return ret;
-+}
-+
-+static int core_scsi3_legacy_reserve(se_cmd_t *cmd)
-+{
-+	/*
-+	 * FIXME: See spc4r17 Section 5.7.3
-+	 */
-+	return core_scsi2_reservation_reserve(cmd);
-+}
-+
-+static int core_scsi3_legacy_release(se_cmd_t *cmd)
-+{
-+	/*
-+	 * FIXME: See spc4r17 Section 5.7.3
-+	 */
-+	return core_scsi2_reservation_release(cmd);
-+}
-+
-+static int core_scsi3_alloc_registration(
-+	se_device_t *dev,
-+	se_node_acl_t *nacl,
-+	se_dev_entry_t *deve,
-+	u64 sa_res_key,
-+	int all_tg_pt,
-+	int ignore_key)
-+{
-+	struct target_core_fabric_ops *tfo = nacl->se_tpg->se_tpg_tfo;
-+	t10_reservation_template_t *pr_tmpl = &SU_DEV(dev)->t10_reservation;
-+	t10_pr_registration_t *pr_reg;
-+
-+	pr_reg = kmem_cache_zalloc(t10_pr_reg_cache, GFP_KERNEL);
-+	if (!(pr_reg)) {
-+		printk(KERN_ERR "Unable to allocate t10_pr_registration_t\n");
-+		return -1;
-+	}
-+
-+	INIT_LIST_HEAD(&pr_reg->pr_reg_list);
-+	INIT_LIST_HEAD(&pr_reg->pr_reg_abort_list);
-+	atomic_set(&pr_reg->pr_res_holders, 0);
-+	pr_reg->pr_reg_nacl = nacl;
-+	pr_reg->pr_reg_deve = deve;
-+	pr_reg->pr_res_mapped_lun = deve->mapped_lun;
-+	pr_reg->pr_res_key = sa_res_key;
-+	pr_reg->pr_reg_all_tg_pt = all_tg_pt;
-+	pr_reg->pr_reg_tg_pt_lun = deve->se_lun;
-+
-+	/*
-+	 * Increment PRgeneration counter for se_device_t upon a successful
-+	 * REGISTER, see spc4r17 section 6.3.2 READ_KEYS service action
-+	 */
-+	pr_reg->pr_res_generation = core_scsi3_pr_generation(dev);
-+
-+	spin_lock(&pr_tmpl->registration_lock);
-+	list_add_tail(&pr_reg->pr_reg_list, &pr_tmpl->registration_list);
-+	deve->deve_flags |= DEF_PR_REGISTERED;
-+	deve->pr_res_key = sa_res_key;
-+
-+	printk(KERN_INFO "SPC-3 PR [%s] Service Action: REGISTER%s Initiator"
-+		" Node: %s\n", tfo->get_fabric_name(), (ignore_key) ?
-+		"_AND_IGNORE_EXISTING_KEY" : "", nacl->initiatorname);
-+	printk(KERN_INFO "SPC-3 PR [%s] for %s TCM Subsystem %s Object Target"
-+		" Port(s)\n",  tfo->get_fabric_name(),
-+		(pr_reg->pr_reg_all_tg_pt) ? "ALL" : "SINGLE",
-+		TRANSPORT(dev)->name);
-+	printk(KERN_INFO "SPC-3 PR [%s] SA Res Key: 0x%016Lx PRgeneration:"
-+		" 0x%08x\n", tfo->get_fabric_name(), pr_reg->pr_res_key,
-+		pr_reg->pr_res_generation);
-+	spin_unlock(&pr_tmpl->registration_lock);
-+
-+	return 0;
-+}
-+
-+static t10_pr_registration_t *core_scsi3_locate_pr_reg(
-+	se_device_t *dev,
-+	se_node_acl_t *nacl)
-+{
-+	t10_reservation_template_t *pr_tmpl = &SU_DEV(dev)->t10_reservation;
-+	t10_pr_registration_t *pr_reg, *pr_reg_tmp;
-+
-+	spin_lock(&pr_tmpl->registration_lock);
-+	list_for_each_entry_safe(pr_reg, pr_reg_tmp,
-+			&pr_tmpl->registration_list, pr_reg_list) {
-+		if (pr_reg->pr_reg_nacl == nacl) {
-+			atomic_inc(&pr_reg->pr_res_holders);
-+			smp_mb__after_atomic_inc();
-+			spin_unlock(&pr_tmpl->registration_lock);
-+			return pr_reg;
-+		}
-+	}
-+	spin_unlock(&pr_tmpl->registration_lock);
++	printk(KERN_ERR "Unable to locate %d:%d:%d:%d\n", sh->host_no,
++		pdv->pdv_channel_id,  pdv->pdv_target_id, pdv->pdv_lun_id);
 +
 +	return NULL;
 +}
 +
-+static void core_scsi3_put_pr_reg(t10_pr_registration_t *pr_reg)
-+{
-+	atomic_dec(&pr_reg->pr_res_holders);
-+	smp_mb__after_atomic_dec();
-+}
-+
-+static int core_scsi3_check_implict_release(
-+	se_device_t *dev,
-+	t10_pr_registration_t *pr_reg)
-+{
-+	se_node_acl_t *nacl = pr_reg->pr_reg_nacl;
-+	t10_pr_registration_t *pr_res_holder;
-+	int ret = 0;
-+
-+	spin_lock(&dev->dev_reservation_lock);
-+	pr_res_holder = dev->dev_pr_res_holder;
-+	if ((pr_res_holder != NULL) && (pr_res_holder == pr_reg)) {
-+		/*
-+		 * Perform an implict RELEASE if the registration that
-+		 * is being released is holding the reservation.
-+		 *
-+		 * From spc4r17, section 5.7.11.1:
-+		 *
-+		 * e) If the I_T nexus is the persistent reservation holder
-+		 *    and the persistent reservation is not an all registrants
-+		 *    type, then a PERSISTENT RESERVE OUT command with REGISTER
-+		 *    service action or REGISTER AND  IGNORE EXISTING KEY
-+		 *    service action with the SERVICE ACTION RESERVATION KEY
-+		 *    field set to zero (see 5.7.11.3).
-+		 */
-+		__core_scsi3_complete_pro_release(dev, nacl, pr_reg, 0);
-+		ret = 1;
-+/* #warning FIXME: All Registrants, only release reservation when last registration is freed. */
-+	}
-+	spin_unlock(&dev->dev_reservation_lock);
-+
-+	return ret;
-+}
-+
-+/*
-+ * Called with t10_reservation_template_t->registration_lock held.
++/*	pscsi_activate_device(): (Part of se_subsystem_api_t template)
++ *
++ *
 + */
-+static void __core_scsi3_free_registration(
-+	se_device_t *dev,
-+	t10_pr_registration_t *pr_reg,
-+	struct list_head *preempt_and_abort_list,
-+	int dec_holders)
++int pscsi_activate_device(se_device_t *dev)
 +{
-+	struct target_core_fabric_ops *tfo =
-+			pr_reg->pr_reg_nacl->se_tpg->se_tpg_tfo;
-+	t10_reservation_template_t *pr_tmpl = &SU_DEV(dev)->t10_reservation;
++	pscsi_dev_virt_t *pdv = (pscsi_dev_virt_t *) dev->dev_ptr;
++	struct scsi_device *sd = (struct scsi_device *) pdv->pdv_sd;
++	struct Scsi_Host *sh = sd->host;
 +
-+	pr_reg->pr_reg_deve->deve_flags &= ~DEF_PR_REGISTERED;
-+	pr_reg->pr_reg_deve->pr_res_key = 0;
-+	list_del(&pr_reg->pr_reg_list);
-+	/*
-+	 * Caller accessing *pr_reg using core_scsi3_locate_pr_reg(),
-+	 * so call core_scsi3_put_pr_reg() to decrement our reference.
-+	 */
-+	if (dec_holders)
-+		core_scsi3_put_pr_reg(pr_reg);
-+	/*
-+	 * Wait until all reference from any other I_T nexuses for this
-+	 * *pr_reg have been released.  Because list_del() is called above,
-+	 * the last core_scsi3_put_pr_reg(pr_reg) will release this reference
-+	 * count back to zero, and we release *pr_reg.
-+	 */
-+	while (atomic_read(&pr_reg->pr_res_holders) != 0) {
-+		spin_unlock(&pr_tmpl->registration_lock);
-+		printk("SPC-3 PR [%s] waiting for pr_res_holders\n",
-+				tfo->get_fabric_name());
-+		msleep(10);
-+		spin_lock(&pr_tmpl->registration_lock);
-+	}
++	printk(KERN_INFO "CORE_PSCSI[%d] - Activating Device with TCQ: %d at"
++		" SCSI Location (Channel/Target/LUN) %d/%d/%d\n", sh->host_no,
++		 sd->queue_depth, sd->channel, sd->id, sd->lun);
 +
-+	printk(KERN_INFO "SPC-3 PR [%s] Service Action: UNREGISTER Initiator"
-+		" Node: %s\n", tfo->get_fabric_name(),
-+		pr_reg->pr_reg_nacl->initiatorname);
-+	printk(KERN_INFO "SPC-3 PR [%s] for %s TCM Subsystem %s Object Target"
-+		" Port(s)\n", tfo->get_fabric_name(),
-+		(pr_reg->pr_reg_all_tg_pt) ? "ALL" : "SINGLE",
-+		TRANSPORT(dev)->name);
-+	printk(KERN_INFO "SPC-3 PR [%s] SA Res Key: 0x%016Lx PRgeneration:"
-+		" 0x%08x\n", tfo->get_fabric_name(), pr_reg->pr_res_key,
-+		pr_reg->pr_res_generation);
-+
-+	if (!(preempt_and_abort_list)) {
-+		pr_reg->pr_reg_deve = NULL;
-+		pr_reg->pr_reg_nacl = NULL;
-+		kmem_cache_free(t10_pr_reg_cache, pr_reg);
-+		return;
-+	}
-+	/*
-+	 * For PREEMPT_AND_ABORT, the list of *pr_reg in preempt_and_abort_list
-+	 * are released once the ABORT_TASK_SET has completed..
-+	 */
-+	list_add_tail(&pr_reg->pr_reg_abort_list, preempt_and_abort_list);
++	return 0;
 +}
 +
-+void core_scsi3_free_pr_reg_from_nacl(
-+	se_device_t *dev,
-+	se_node_acl_t *nacl)
++/*	pscsi_deactivate_device(): (Part of se_subsystem_api_t template)
++ *
++ *
++ */
++void pscsi_deactivate_device(se_device_t *dev)
 +{
-+	t10_reservation_template_t *pr_tmpl = &SU_DEV(dev)->t10_reservation;
-+	t10_pr_registration_t *pr_reg, *pr_reg_tmp, *pr_res_holder;
-+	/*
-+	 * If the passed se_node_acl matches the reservation holder,
-+	 * release the reservation.
-+	 */
-+	spin_lock(&dev->dev_reservation_lock);
-+	pr_res_holder = dev->dev_pr_res_holder;
-+	if ((pr_res_holder != NULL) &&
-+	    (pr_res_holder->pr_reg_nacl == nacl))
-+		__core_scsi3_complete_pro_release(dev, nacl, pr_res_holder, 0);
-+	spin_unlock(&dev->dev_reservation_lock);
-+	/*
-+	 * Release any registration associated with the se_node_acl_t.
-+	 */
-+	spin_lock(&pr_tmpl->registration_lock);
-+	list_for_each_entry_safe(pr_reg, pr_reg_tmp,
-+			&pr_tmpl->registration_list, pr_reg_list) {
++	pscsi_dev_virt_t *pdv = (pscsi_dev_virt_t *) dev->dev_ptr;
++	struct scsi_device *sd = (struct scsi_device *) pdv->pdv_sd;
++	struct Scsi_Host *sh = sd->host;
 +
-+		if (pr_reg->pr_reg_nacl != nacl)
-+			continue;
-+
-+		__core_scsi3_free_registration(dev, pr_reg, NULL, 0);
-+	}
-+	spin_unlock(&pr_tmpl->registration_lock);
++	printk(KERN_INFO "CORE_PSCSI[%d] - Deactivating Device with TCQ: %d at"
++		" SCSI Location (Channel/Target/LUN) %d/%d/%d\n", sh->host_no,
++		sd->queue_depth, sd->channel, sd->id, sd->lun);
 +}
 +
-+void core_scsi3_free_all_registrations(
++/*	pscsi_free_device(): (Part of se_subsystem_api_t template)
++ *
++ *
++ */
++void pscsi_free_device(void *p)
++{
++	pscsi_dev_virt_t *pdv = (pscsi_dev_virt_t *) p;
++	struct scsi_device *sd = (struct scsi_device *) pdv->pdv_sd;
++
++	if (pdv->pdv_bd)
++		pdv->pdv_bd = NULL;
++
++	if (sd) {
++		if ((sd->type == TYPE_DISK) || (sd->type == TYPE_ROM))
++			scsi_device_put(sd);
++
++		pdv->pdv_sd = NULL;
++	}
++
++	kfree(pdv);
++}
++
++/*	pscsi_transport_complete():
++ *
++ *
++ */
++int pscsi_transport_complete(se_task_t *task)
++{
++	pscsi_dev_virt_t *pdv = (pscsi_dev_virt_t *) task->se_dev->dev_ptr;
++	struct scsi_device *sd = (struct scsi_device *) pdv->pdv_sd;
++	int result;
++	pscsi_plugin_task_t *pt = (pscsi_plugin_task_t *) task->transport_req;
++	unsigned char *cdb = &pt->pscsi_cdb[0];
++
++	result = pt->pscsi_result;
++
++# ifdef LINUX_VPD_PAGE_CHECK
++	if ((cdb[0] == INQUIRY) && host_byte(result) == DID_OK) {
++		u32 len = 0;
++		unsigned char *dst = (unsigned char *)
++				T_TASK(task->task_se_cmd)->t_task_buf;
++		unsigned char buf[VPD_BUF_LEN], *iqn = NULL;
++		se_subsystem_dev_t *su_dev = TASK_DEV(task)->se_sub_dev;
++		se_hba_t *hba = task->se_dev->se_hba;
++
++		/*
++		 * The Initiator port did not request VPD information.
++		 */
++		if (!(cdb[1] & 0x1)) {
++			task->task_scsi_status = GOOD;
++			return 0;
++		}
++
++		/*
++		 * Assume the SCSI Device did the right thing if an VPD length
++		 * is provided in the INQUIRY response payload.
++		 */
++		if (dst[3] != 0x00) {
++			su_dev->su_dev_flags |= SDF_FIRMWARE_VPD_UNIT_SERIAL;
++			su_dev->su_dev_flags &= ~SDF_EMULATED_VPD_UNIT_SERIAL;
++			task->task_scsi_status = GOOD;
++			return 0;
++		}
++
++		memset(buf, 0, VPD_BUF_LEN);
++		memset(dst, 0, task->task_size);
++		buf[0] = sd->type;
++
++		switch (cdb[2]) {
++		case 0x00:
++			buf[1] = 0x00;
++			buf[3] = 3;
++			buf[4] = 0x0;
++			buf[5] = 0x80;
++			buf[6] = 0x83;
++			len = 3;
++			break;
++		case 0x80:
++			buf[1] = 0x80;
++			if (su_dev->su_dev_flags &
++					SDF_EMULATED_VPD_UNIT_SERIAL)
++				len += sprintf((unsigned char *)&buf[4], "%s",
++					&su_dev->t10_wwn.unit_serial[0]);
++			else {
++				iqn = transport_get_iqn_sn();
++				len += sprintf((unsigned char *)&buf[4],
++					"%s:%u_%u_%u_%u", iqn, hba->hba_id,
++					sd->channel, sd->id, sd->lun);
++			}
++			buf[3] = len;
++			break;
++		case 0x83:
++			buf[1] = 0x83;
++			/* Start Identifier Page */
++			buf[4] = 0x2; /* ASCII */
++			buf[5] = 0x1;
++			buf[6] = 0x0;
++			len += sprintf((unsigned char *)&buf[8], "LIO-ORG");
++
++			if (su_dev->su_dev_flags &
++					SDF_EMULATED_VPD_UNIT_SERIAL) {
++				len += sprintf((unsigned char *)&buf[16],
++					"PSCSI:%s",
++					&su_dev->t10_wwn.unit_serial[0]);
++			} else {
++				iqn = transport_get_iqn_sn();
++				len += sprintf((unsigned char *)&buf[16],
++					"PSCSI:%s:%u_%u_%u_%u", iqn,
++					hba->hba_id, sd->channel,
++					sd->id, sd->lun);
++			}
++			buf[7] = len; /* Identifer Length */
++			len += 4;
++			buf[3] = len; /* Page Length */
++			break;
++		default:
++			break;
++		}
++
++		if ((len + 4) > task->task_size) {
++			printk(KERN_ERR "Inquiry VPD Length: %u larger than"
++				" req->sr_bufflen: %u\n", (len + 4),
++				task->task_size);
++			memcpy(dst, buf, task->task_size);
++		} else
++			memcpy(dst, buf, (len + 4));
++
++		/*
++		 * Fake the GOOD SAM status here too.
++		 */
++		task->task_scsi_status = GOOD;
++		return 0;
++	}
++
++# endif /* LINUX_VPD_PAGE_CHECK */
++
++	/*
++	 * Hack to make sure that Write-Protect modepage is set if R/O mode is
++	 * forced.
++	 */
++	if (((cdb[0] == MODE_SENSE) || (cdb[0] == MODE_SENSE_10)) &&
++	     (status_byte(result) << 1) == SAM_STAT_GOOD) {
++		if (!TASK_CMD(task)->se_deve)
++			goto after_mode_sense;
++
++		if (TASK_CMD(task)->se_deve->lun_flags &
++				TRANSPORT_LUNFLAGS_READ_ONLY) {
++			unsigned char *buf = (unsigned char *)
++				T_TASK(task->task_se_cmd)->t_task_buf;
++
++			if (cdb[0] == MODE_SENSE_10) {
++				if (!(buf[3] & 0x80))
++					buf[3] |= 0x80;
++			} else {
++				if (!(buf[2] & 0x80))
++					buf[2] |= 0x80;
++			}
++		}
++	}
++after_mode_sense:
++
++	if (sd->type != TYPE_TAPE)
++		goto after_mode_select;
++
++	/*
++	 * Hack to correctly obtain the initiator requested blocksize for
++	 * TYPE_TAPE.  Since this value is dependent upon each tape media,
++	 * struct scsi_device->sector_size will not contain the correct value
++	 * by default, so we go ahead and set it so
++	 * TRANSPORT(dev)->get_blockdev() returns the correct value to the
++	 * storage engine.
++	 */
++	if (((cdb[0] == MODE_SELECT) || (cdb[0] == MODE_SELECT_10)) &&
++	      (status_byte(result) << 1) == SAM_STAT_GOOD) {
++		unsigned char *buf;
++		struct scatterlist *sg = task->task_sg;
++		u16 bdl;
++		u32 blocksize;
++
++		buf = sg_virt(&sg[0]);
++		if (!(buf)) {
++			printk(KERN_ERR "Unable to get buf for scatterlist\n");
++			goto after_mode_select;
++		}
++
++		if (cdb[0] == MODE_SELECT)
++			bdl = (buf[3]);
++		else
++			bdl = (buf[6] << 8) | (buf[7]);
++
++		if (!bdl)
++			goto after_mode_select;
++
++		if (cdb[0] == MODE_SELECT)
++			blocksize = (buf[9] << 16) | (buf[10] << 8) |
++					(buf[11]);
++		else
++			blocksize = (buf[13] << 16) | (buf[14] << 8) |
++					(buf[15]);
++
++		sd->sector_size = blocksize;
++	}
++after_mode_select:
++
++	if (status_byte(result) & CHECK_CONDITION)
++		return 1;
++
++	return 0;
++}
++
++/*	pscsi_allocate_request(): (Part of se_subsystem_api_t template)
++ *
++ *
++ */
++void *pscsi_allocate_request(
++	se_task_t *task,
 +	se_device_t *dev)
 +{
-+	t10_reservation_template_t *pr_tmpl = &SU_DEV(dev)->t10_reservation;
-+	t10_pr_registration_t *pr_reg, *pr_reg_tmp, *pr_res_holder;
++	pscsi_plugin_task_t *pt;
 +
-+	spin_lock(&dev->dev_reservation_lock);
-+	pr_res_holder = dev->dev_pr_res_holder;
-+	if (pr_res_holder != NULL) {
-+		se_node_acl_t *pr_res_nacl = pr_res_holder->pr_reg_nacl;
-+		__core_scsi3_complete_pro_release(dev, pr_res_nacl,
-+				pr_res_holder, 0);
++	pt = kzalloc(sizeof(pscsi_plugin_task_t), GFP_KERNEL);
++	if (!(pt)) {
++		printk(KERN_ERR "Unable to allocate pscsi_plugin_task_t\n");
++		return NULL;
 +	}
-+	spin_unlock(&dev->dev_reservation_lock);
 +
-+	spin_lock(&pr_tmpl->registration_lock);
-+	list_for_each_entry_safe(pr_reg, pr_reg_tmp,
-+			&pr_tmpl->registration_list, pr_reg_list) {
-+
-+		__core_scsi3_free_registration(dev, pr_reg, NULL, 0);
-+	}
-+	spin_unlock(&pr_tmpl->registration_lock);
++	return pt;
 +}
 +
-+static int core_scsi3_emulate_pro_register(
-+	se_cmd_t *cmd,
-+	u64 res_key,
-+	u64 sa_res_key,
-+	int aptpl,
-+	int all_tg_pt,
-+	int spec_i_pt,
-+	int ignore_key)
++static int pscsi_blk_get_request(se_task_t *task)
 +{
-+	se_session_t *se_sess = SE_SESS(cmd);
-+	se_device_t *dev = SE_DEV(cmd);
-+	se_dev_entry_t *se_deve;
-+	se_lun_t *se_lun = SE_LUN(cmd);
-+	se_portal_group_t *se_tpg;
-+	t10_pr_registration_t *pr_reg, *pr_reg_p;
-+	t10_reservation_template_t *pr_tmpl = &SU_DEV(dev)->t10_reservation;
-+	int pr_holder = 0, ret = 0, type;
++	pscsi_plugin_task_t *pt = (pscsi_plugin_task_t *) task->transport_req;
++	pscsi_dev_virt_t *pdv = (pscsi_dev_virt_t *) task->se_dev->dev_ptr;
 +
-+	if (!(se_sess) || !(se_lun)) {
-+		printk(KERN_ERR "SPC-3 PR: se_sess || se_lun_t is NULL!\n");
++	pt->pscsi_req = blk_get_request(pdv->pdv_sd->request_queue,
++			(pt->pscsi_direction == DMA_TO_DEVICE), GFP_KERNEL);
++	if (!(pt->pscsi_req) || IS_ERR(pt->pscsi_req)) {
++		printk(KERN_ERR "PSCSI: blk_get_request() failed: %ld\n",
++				IS_ERR(pt->pscsi_req));
 +		return PYX_TRANSPORT_LOGICAL_UNIT_COMMUNICATION_FAILURE;
 +	}
-+	se_tpg = se_sess->se_tpg;
-+	se_deve = &se_sess->se_node_acl->device_list[se_lun->unpacked_lun];
++	/*
++	 * Defined as "scsi command" in include/linux/blkdev.h.
++	 */
++	pt->pscsi_req->cmd_type = REQ_TYPE_BLOCK_PC;
++	/*
++	 * Setup the done function pointer for struct request,
++	 * also set the end_io_data pointer.to se_task_t.
++	 */
++	pt->pscsi_req->end_io = pscsi_req_done;
++	pt->pscsi_req->end_io_data = (void *)task;
++	/*
++	 * Load the referenced se_task_t's SCSI CDB into
++	 * include/linux/blkdev.h:struct request->cmd
++	 */
++	pt->pscsi_req->cmd_len = COMMAND_SIZE(pt->pscsi_cdb[0]);
++	memcpy(pt->pscsi_req->cmd, pt->pscsi_cdb, pt->pscsi_req->cmd_len);
++	/*
++	 * Setup pointer for outgoing sense data.
++	 */
++	pt->pscsi_req->sense = (void *)&pt->pscsi_sense[0];
++	pt->pscsi_req->sense_len = 0;
 +
-+	if (aptpl) {
-+		printk(KERN_INFO "Activate Persistence across Target Power"
-+			" Loss = 1 not implemented yet\n");
-+		return PYX_TRANSPORT_INVALID_PARAMETER_LIST;
++	return 0;
++}
++
++/*      pscsi_do_task(): (Part of se_subsystem_api_t template)
++ *
++ *
++ */
++int pscsi_do_task(se_task_t *task)
++{
++	pscsi_plugin_task_t *pt = (pscsi_plugin_task_t *) task->transport_req;
++	pscsi_dev_virt_t *pdv = (pscsi_dev_virt_t *) task->se_dev->dev_ptr;
++	struct gendisk *gd = NULL;
++	/*
++	 * Grab pointer to struct gendisk for TYPE_DISK and TYPE_ROM
++	 * cases (eg: cases where struct scsi_device has a backing
++	 * struct block_device.  Also set the struct request->timeout
++	 * value based on peripheral device type (from SCSI).
++	 */
++	if (pdv->pdv_sd->type == TYPE_DISK) {
++		struct scsi_disk *sdisk = dev_get_drvdata(
++					&pdv->pdv_sd->sdev_gendev);
++		gd = sdisk->disk;
++		pt->pscsi_req->timeout = PS_TIMEOUT_DISK;
++	} else if (pdv->pdv_sd->type == TYPE_ROM) {
++		struct scsi_cd *scd = dev_get_drvdata(
++					&pdv->pdv_sd->sdev_gendev);
++		gd = scd->disk;
++		pt->pscsi_req->timeout = PS_TIMEOUT_OTHER;
++	} else
++		pt->pscsi_req->timeout = PS_TIMEOUT_OTHER;
++
++	pt->pscsi_req->retries = PS_RETRY;
++	/*
++	 * Queue the struct request into the struct scsi_device->request_queue.
++	 */
++	blk_execute_rq_nowait(pdv->pdv_sd->request_queue, gd,
++			      pt->pscsi_req, 1, pscsi_req_done);
++
++	return PYX_TRANSPORT_SENT_TO_TRANSPORT;
++}
++
++/*	pscsi_free_task(): (Part of se_subsystem_api_t template)
++ *
++ *
++ */
++void pscsi_free_task(se_task_t *task)
++{
++	pscsi_plugin_task_t *pt = (pscsi_plugin_task_t *)task->transport_req;
++	/*
++	 * We do not release the bio(s) here associated with this task, as
++	 * this is handled by bio_put() and pscsi_bi_endio().
++	 */
++	kfree(pt);
++}
++
++ssize_t pscsi_set_configfs_dev_params(se_hba_t *hba,
++	se_subsystem_dev_t *se_dev,
++	const char *page,
++	ssize_t count)
++{
++	pscsi_dev_virt_t *pdv = (pscsi_dev_virt_t *) se_dev->se_dev_su_ptr;
++	struct Scsi_Host *sh = (struct Scsi_Host *) hba->hba_ptr;
++	char *buf, *cur, *ptr, *ptr2;
++	int params = 0, ret;
++
++	buf = kzalloc(count, GFP_KERNEL);
++	if (!(buf)) {
++		printk(KERN_ERR "Unable to allocate memory for temporary"
++				" buffer\n");
++		return -ENOMEM;
++	}
++	memcpy(buf, page, count);
++	cur = buf;
++
++	while (cur) {
++		ptr = strstr(cur, "=");
++		if (!(ptr))
++			goto out;
++
++		*ptr = '\0';
++		ptr++;
++
++		ptr2 = strstr(cur, "scsi_channel_id");
++		if ((ptr2)) {
++			transport_check_dev_params_delim(ptr, &cur);
++			ret = strict_strtoul(ptr, 0,
++				(unsigned long *)&pdv->pdv_channel_id);
++			if (ret < 0) {
++				printk(KERN_ERR "strict_strtoul() failed for"
++					" scsi_channel_id=\n");
++				break;
++			}
++			printk(KERN_INFO "PSCSI[%d]: Referencing SCSI Channel"
++				" ID: %d\n",  sh->host_no, pdv->pdv_channel_id);
++			pdv->pdv_flags |= PDF_HAS_CHANNEL_ID;
++			params++;
++			continue;
++		}
++		ptr2 = strstr(cur, "scsi_target_id");
++		if ((ptr2)) {
++			transport_check_dev_params_delim(ptr, &cur);
++			ret = strict_strtoul(ptr, 0,
++				(unsigned long *)&pdv->pdv_target_id);
++			if (ret < 0) {
++				printk("strict_strtoul() failed for"
++					" strict_strtoul()\n");
++				break;
++			}
++			printk(KERN_INFO "PSCSI[%d]: Referencing SCSI Target"
++				" ID: %d\n", sh->host_no, pdv->pdv_target_id);
++			pdv->pdv_flags |= PDF_HAS_TARGET_ID;
++			params++;
++			continue;
++		}
++		ptr2 = strstr(cur, "scsi_lun_id");
++		if ((ptr2)) {
++			transport_check_dev_params_delim(ptr, &cur);
++			ret = strict_strtoul(ptr, 0,
++				(unsigned long *)&pdv->pdv_lun_id);
++			if (ret < 0) {
++				printk("strict_strtoul() failed for"
++					" scsi_lun_id=\n");
++				break;
++			}
++			printk(KERN_INFO "PSCSI[%d]: Referencing SCSI LUN ID:"
++				" %d\n", sh->host_no, pdv->pdv_lun_id);
++			pdv->pdv_flags |= PDF_HAS_LUN_ID;
++			params++;
++		} else
++			cur = NULL;
++	}
++
++out:
++	kfree(buf);
++	return (params) ? count : -EINVAL;
++}
++
++ssize_t pscsi_check_configfs_dev_params(
++	se_hba_t *hba,
++	se_subsystem_dev_t *se_dev)
++{
++	pscsi_dev_virt_t *pdv = (pscsi_dev_virt_t *) se_dev->se_dev_su_ptr;
++
++	if (!(pdv->pdv_flags & PDF_HAS_CHANNEL_ID) ||
++	    !(pdv->pdv_flags & PDF_HAS_TARGET_ID) ||
++	    !(pdv->pdv_flags & PDF_HAS_TARGET_ID)) {
++		printk(KERN_ERR "Missing scsi_channel_id=, scsi_target_id= and"
++			" scsi_lun_id= parameters\n");
++		return -1;
++	}
++
++	return 0;
++}
++
++ssize_t pscsi_show_configfs_dev_params(
++	se_hba_t *hba,
++	se_subsystem_dev_t *se_dev,
++	char *page)
++{
++	pscsi_dev_virt_t *pdv = (pscsi_dev_virt_t *) se_dev->se_dev_su_ptr;
++	int bl = 0;
++
++	__pscsi_get_dev_info(pdv, page, &bl);
++	return (ssize_t)bl;
++}
++
++se_device_t *pscsi_create_virtdevice_from_fd(
++	se_subsystem_dev_t *se_dev,
++	const char *page)
++{
++	pscsi_dev_virt_t *pdv = (pscsi_dev_virt_t *) se_dev->se_dev_su_ptr;
++	se_device_t *dev = NULL;
++	se_hba_t *hba = se_dev->se_dev_hba;
++	struct block_device *bd = NULL;
++	struct file *filp;
++	struct gendisk *gd = NULL;
++	struct inode *inode;
++	struct scsi_device *sd = NULL;
++	struct Scsi_Host *sh = (struct Scsi_Host *)hba->hba_ptr;
++	char *p = (char *)page;
++	int fd, ret;
++
++	ret = strict_strtol(p, 0, (long *)&fd);
++	if (ret < 0) {
++		printk(KERN_ERR "strict_strtol() failed for fd\n");
++		return ERR_PTR(-EINVAL);
++	}
++	if ((fd < 3 || fd > 7)) {
++		printk(KERN_ERR "PSCSI: Illegal value of file descriptor:"
++			" %d\n", fd);
++		return ERR_PTR(-EINVAL);
++	}
++	filp = fget(fd);
++	if (!(filp)) {
++		printk(KERN_ERR "PSCSI: Unable to fget() fd: %d\n", fd);
++		return ERR_PTR(-EBADF);
++	}
++	inode = igrab(filp->f_mapping->host);
++	if (!(inode)) {
++		printk(KERN_ERR "PSCSI: Unable to locate struct inode for"
++			" struct block_device fd\n");
++		fput(filp);
++		return ERR_PTR(-EINVAL);
 +	}
 +	/*
-+	 * Follow logic from spc4r17 Section 5.7.7, Register Behaviors Table 47
++	 * Look for struct scsi_device with a backing struct block_device.
++	 *
++	 * This means struct scsi_device->type == TYPE_DISK && TYPE_ROM.
 +	 */
-+	if (!(se_deve->deve_flags & DEF_PR_REGISTERED)) {
-+		if (res_key) {
-+			printk(KERN_WARNING "SPC-3 PR: Reservation Key non-zero"
-+				" for SA REGISTER, returning CONFLICT\n");
-+			return PYX_TRANSPORT_RESERVATION_CONFLICT;
++	if (S_ISBLK(inode->i_mode)) {
++		bd = I_BDEV(filp->f_mapping->host);
++		if (!(bd)) {
++			printk(KERN_ERR "PSCSI: Unable to locate struct"
++				" block_device from I_BDEV()\n");
++			iput(inode);
++			fput(filp);
++			return ERR_PTR(-EINVAL);
++		}
++		gd = bd->bd_disk;
++		if (!(gd)) {
++			printk(KERN_ERR "PSCSI: Unable to locate struct gendisk"
++				" from struct block_device\n");
++			iput(inode);
++			fput(filp);
++			return ERR_PTR(-EINVAL);
 +		}
 +		/*
-+		 * Do nothing but return GOOD status.
++		 * This struct gendisk->driver_fs() is marked as "// remove'
++		 * in include/linux/genhd.h..
++		 *
++		 * Currently in drivers/scsi/s[d,r].c:s[d,r]_probe(), this
++		 * pointer gets set by struct scsi_device->sdev_gendev.
++		 *
++		 * Is there a better way to locate struct scsi_device from
++		 * struct inode..?
 +		 */
-+		if (!(sa_res_key))
-+			return PYX_TRANSPORT_SENT_TO_TRANSPORT;
-+
-+		if (!(spec_i_pt)) {
-+			/*
-+			 * Perform the Service Action REGISTER on the Initiator
-+			 * Port Endpoint that the PRO was received from on the
-+			 * Logical Unit of the SCSI device server.
-+			 */
-+			ret = core_scsi3_alloc_registration(SE_DEV(cmd),
-+					se_sess->se_node_acl, se_deve,
-+					sa_res_key, all_tg_pt, ignore_key);
-+			if (ret != 0) {
-+				printk(KERN_ERR "Unable to allocate"
-+					" t10_pr_registration_t\n");
-+				return PYX_TRANSPORT_INVALID_PARAMETER_LIST;
-+			}
-+		} else {
-+			/*
-+			 * FIXME: Extract SCSI TransportID from Parameter list
-+			 * and loop through parameter list while calling logic
-+			 * from of core_scsi3_alloc_registration()
-+			 */
-+			printk("Specify Initiator Ports (SPEC_I_PT) = 1 not"
-+					" implemented yet\n");
-+			return PYX_TRANSPORT_INVALID_PARAMETER_LIST;
++		if (!(gd->driverfs_dev)) {
++			printk(KERN_ERR "PSCSI: struct gendisk->driverfs_dev"
++					" is NULL!\n");
++			iput(inode);
++			fput(filp);
++			return ERR_PTR(-EINVAL);
 +		}
++		sd = to_scsi_device(gd->driverfs_dev);
++		if (!(sd)) {
++			printk(KERN_ERR "PSCSI: Unable to locate struct"
++				" scsi_device from struct gendisk->"
++				"driverfs_dev\n");
++			iput(inode);
++			fput(filp);
++			return ERR_PTR(-EINVAL);
++		}
++		if (sd->host != sh) {
++			printk(KERN_ERR "PSCSI: Trying to attach scsi_device"
++				" Host ID: %d, but se_hba_t has SCSI Host ID:"
++				" %d\n", sd->host->host_no, sh->host_no);
++			iput(inode);
++			fput(filp);
++			return ERR_PTR(-EINVAL);
++		}
++		/*
++		 * Keep track of the struct block_device for now..
++		 */
++		pdv->pdv_bd = bd;
++		/*
++		 * pscsi_create_type_[disk,rom]() will release host_lock..
++		 */
++		spin_lock_irq(sh->host_lock);
++		switch (sd->type) {
++		case TYPE_DISK:
++			dev = pscsi_create_type_disk(sd, pdv, se_dev,
++					se_dev->se_dev_hba);
++			break;
++		case TYPE_ROM:
++			dev = pscsi_create_type_rom(sd, pdv, se_dev,
++					se_dev->se_dev_hba);
++			break;
++		default:
++			printk(KERN_ERR "PSCSI: Unable to handle type S_ISBLK()"
++				" == TRUE Type: %s\n",
++				scsi_device_type(sd->type));
++			spin_unlock_irq(sh->host_lock);
++			iput(inode);
++			fput(filp);
++			return ERR_PTR(-ENOSYS);
++		}
++	} else if (S_ISCHR(inode->i_mode)) {
++		/*
++		 * FIXME: Figure how to get struct scsi_device from character
++		 * device's struct inode.
++		 */
++		printk(KERN_ERR "SCSI Character Device unsupported via"
++			" configfs/fd  method.  Use configfs/control"
++				" instead\n");
++		iput(inode);
++		fput(filp);
++		return ERR_PTR(-ENOSYS);
 +	} else {
-+		/*
-+		 * Locate the existing *pr_reg via se_node_acl_t pointers
-+		 */
-+		pr_reg = core_scsi3_locate_pr_reg(SE_DEV(cmd),
-+				se_sess->se_node_acl);
-+		if (!(pr_reg)) {
-+			printk(KERN_ERR "SPC-3 PR: Unable to locate"
-+				" PR_REGISTERED *pr_reg for REGISTER\n");
-+			core_scsi3_put_pr_reg(pr_reg);
-+			return PYX_TRANSPORT_LOGICAL_UNIT_COMMUNICATION_FAILURE;
-+		}
-+		type = pr_reg->pr_res_type;
++		printk(KERN_ERR "PSCSI: File destriptor is not SCSI block or"
++			" character device, ignoring\n");
++		iput(inode);
++		fput(filp);
++		return ERR_PTR(-ENODEV);
++	}
 +
-+		if (!(ignore_key)) {
-+			if (res_key != pr_reg->pr_res_key) {
-+				printk(KERN_ERR "SPC-3 PR REGISTER: Received"
-+					" res_key: 0x%016Lx does not match"
-+					" existing SA REGISTER res_key:"
-+					" 0x%016Lx\n", res_key,
-+					pr_reg->pr_res_key);
-+				core_scsi3_put_pr_reg(pr_reg);
-+				return PYX_TRANSPORT_RESERVATION_CONFLICT;
++	/*
++	 * Clear pdv->pdv_bd on exception.
++	 */
++	if (!(dev))
++		pdv->pdv_bd = NULL;
++
++	iput(inode);
++	fput(filp);
++	return dev;
++}
++
++void pscsi_get_plugin_info(void *p, char *b, int *bl)
++{
++	*bl += sprintf(b + *bl, "%s SCSI Plugin %s\n",
++		PYX_ISCSI_VENDOR, PSCSI_VERSION);
++}
++
++void pscsi_get_hba_info(se_hba_t *hba, char *b, int *bl)
++{
++	struct Scsi_Host *sh = (struct Scsi_Host *) hba->hba_ptr;
++
++	*bl += sprintf(b + *bl, "Core Host ID: %u  SCSI Host ID: %u\n",
++			 hba->hba_id, sh->host_no);
++	*bl += sprintf(b + *bl, "        SCSI HBA: %s  <local>\n",
++		(sh->hostt->name) ? (sh->hostt->name) : "Unknown");
++}
++
++void pscsi_get_dev_info(se_device_t *dev, char *b, int *bl)
++{
++	pscsi_dev_virt_t *pdv = (pscsi_dev_virt_t *) dev->dev_ptr;
++
++	__pscsi_get_dev_info(pdv, b, bl);
++}
++
++void __pscsi_get_dev_info(pscsi_dev_virt_t *pdv, char *b, int *bl)
++{
++	int i;
++	struct scsi_device *sd = (struct scsi_device *) pdv->pdv_sd;
++
++	*bl += sprintf(b + *bl, "SCSI Device Bus Location:"
++		" Channel ID: %d Target ID: %d LUN: %d\n",
++		pdv->pdv_channel_id, pdv->pdv_target_id, pdv->pdv_lun_id);
++
++	if (sd) {
++		*bl += sprintf(b + *bl, "        ");
++		*bl += sprintf(b + *bl, "Vendor: ");
++		for (i = 0; i < 8; i++) {
++			if (ISPRINT(sd->vendor[i]))   /* printable character? */
++				*bl += sprintf(b + *bl, "%c", sd->vendor[i]);
++			else
++				*bl += sprintf(b + *bl, " ");
++		}
++		*bl += sprintf(b + *bl, " Model: ");
++		for (i = 0; i < 16; i++) {
++			if (ISPRINT(sd->model[i]))   /* printable character ? */
++				*bl += sprintf(b + *bl, "%c", sd->model[i]);
++			else
++				*bl += sprintf(b + *bl, " ");
++		}
++		*bl += sprintf(b + *bl, " Rev: ");
++		for (i = 0; i < 4; i++) {
++			if (ISPRINT(sd->rev[i]))   /* printable character ? */
++				*bl += sprintf(b + *bl, "%c", sd->rev[i]);
++			else
++				*bl += sprintf(b + *bl, " ");
++		}
++
++		if (sd->type == TYPE_DISK) {
++			struct scsi_disk *sdisk =
++					dev_get_drvdata(&sd->sdev_gendev);
++			struct gendisk *disk = (struct gendisk *) sdisk->disk;
++			struct block_device *bdev = bdget(MKDEV(disk->major,
++						disk->first_minor));
++
++			bdev->bd_disk = disk;
++			*bl += sprintf(b + *bl, "   %s\n", (!bdev->bd_holder) ?
++					"" : (bdev->bd_holder ==
++					(struct scsi_device *)sd) ?
++					"CLAIMED: PSCSI" : "CLAIMED: OS");
++		} else
++			*bl += sprintf(b + *bl, "\n");
++	}
++
++	return;
++}
++
++static void pscsi_bi_endio(struct bio *bio, int error)
++{
++	bio_put(bio);
++}
++
++static inline struct bio *pscsi_get_bio(pscsi_dev_virt_t *pdv, int sg_num)
++{
++	struct bio *bio;
++
++	bio = bio_alloc(GFP_KERNEL, sg_num);
++	if (!(bio)) {
++		printk(KERN_ERR "PSCSI: bio_alloc() failed\n");
++		return NULL;
++	}
++	bio->bi_end_io = pscsi_bi_endio;
++
++	/*
++	 * While using fs/bio.c:bio_add_page() in pscsi_map_task_SG(), each
++	 * struct bio->bi_bdev needs to be set in order for bdev_get_queue()
++	 * to locate struct request_queue in bio_add_page().
++	 */
++	bio->bi_bdev = pdv->pdv_bd;
++	if (!(bio->bi_bdev)) {
++		printk(KERN_ERR "PSCSI: Unable to locate struct block_device"
++				" for BIO\n");
++		bio_put(bio);
++		return NULL;
++	}
++
++	return bio;
++}
++
++#if 0
++#define DEBUG_PSCSI(x...) printk(x)
++#else
++#define DEBUG_PSCSI(x...)
++#endif
++
++/*      pscsi_map_task_SG():
++ *
++ *
++ */
++int pscsi_map_task_SG(se_task_t *task)
++{
++	pscsi_plugin_task_t *pt = (pscsi_plugin_task_t *) task->transport_req;
++	pscsi_dev_virt_t *pdv = (pscsi_dev_virt_t *) task->se_dev->dev_ptr;
++	struct bio *bio = NULL, *hbio = NULL, *tbio = NULL;
++	struct page *page;
++	struct request *rq = pt->pscsi_req;
++	struct scatterlist *sg;
++	u32 data_len = task->task_size, i, len, bytes, off;
++	int nr_pages = (task->task_size + task->task_sg[0].offset +
++			PAGE_SIZE - 1) >> PAGE_SHIFT;
++	int nr_vecs = 0, ret = 0;
++
++	if (!task->task_size)
++		return 0;
++	/*
++	 * For SCF_SCSI_DATA_SG_IO_CDB, Use fs/bio.c:bio_add_page() to setup
++	 * the bio_vec maplist from LIO-SE se_mem_t -> task->task_sg ->
++	 * struct scatterlist memory.  The se_task_t->task_sg[] currently needs
++	 * to be attached to struct bios for submission to Linux/SCSI using
++	 * struct request to struct scsi_device->request_queue.
++	 *
++	 * Note that this will be changing post v2.6.28 as Target_Core_Mod/pSCSI
++	 * is ported to upstream SCSI passthrough functionality that accepts
++	 * struct scatterlist->page_link or struct page as a paraemeter.
++	 */
++	DEBUG_PSCSI("PSCSI: nr_pages: %d\n", nr_pages);
++
++	for_each_sg(task->task_sg, sg, task->task_sg_num, i) {
++		page = sg_page(sg);
++		off = sg->offset;
++		len = sg->length;
++
++		DEBUG_PSCSI("PSCSI: i: %d page: %p len: %d off: %d\n", i,
++			page, len, off);
++
++		while (len > 0 && data_len > 0) {
++			bytes = min_t(unsigned int, len, PAGE_SIZE - off);
++			bytes = min(bytes, data_len);
++
++			if (!(bio)) {
++				nr_vecs = min_t(int, BIO_MAX_PAGES, nr_pages);
++				nr_pages -= nr_vecs;
++
++				bio = pscsi_get_bio(pdv, nr_vecs);
++				if (!(bio))
++					goto fail;
++
++				DEBUG_PSCSI("PSCSI: Allocated bio: %p,"
++					" nr_vecs: %d\n", bio, nr_vecs);
++				if (!tbio)
++					tbio = bio;
++				else
++					tbio = tbio->bi_next = bio;
 +			}
-+		}
-+		if (spec_i_pt) {
-+			printk(KERN_ERR "SPC-3 PR UNREGISTER: SPEC_I_PT"
-+				" set while sa_res_key=0\n");
-+			core_scsi3_put_pr_reg(pr_reg);
-+			return PYX_TRANSPORT_INVALID_PARAMETER_LIST;
-+		}
-+		/*
-+		 * sa_res_key=0 Unregister Reservation Key for registered I_T
-+		 * Nexus sa_res_key=1 Change Reservation Key for registered I_T
-+		 * Nexus.
-+		 */
-+		if (!(sa_res_key)) {
-+			pr_holder = core_scsi3_check_implict_release(
-+					SE_DEV(cmd), pr_reg);
 +
-+			spin_lock(&pr_tmpl->registration_lock);
-+			/*
-+			 * Release the calling I_T Nexus registration now..
-+			 */
-+			__core_scsi3_free_registration(SE_DEV(cmd), pr_reg,
-+							NULL, 1);
-+			/*
-+			 * From spc4r17, section 5.7.11.3 Unregistering
-+			 *
-+			 * If the persistent reservation is a registrants only
-+			 * type, the device server shall establish a unit
-+			 * attention condition for the initiator port associated
-+			 * with every registered I_T nexus except for the I_T
-+			 * nexus on which the PERSISTENT RESERVE OUT command was
-+			 * received, with the additional sense code set to
-+			 * RESERVATIONS RELEASED.
-+			 */
-+			if (pr_holder &&
-+			   ((type == PR_TYPE_WRITE_EXCLUSIVE_REGONLY) ||
-+			    (type == PR_TYPE_EXCLUSIVE_ACCESS_REGONLY))) {
-+				list_for_each_entry(pr_reg_p,
-+						&pr_tmpl->registration_list,
-+						pr_reg_list) {
++			DEBUG_PSCSI("PSCSI: Calling bio_add_page() i: %d bio:"
++				" %p page: %p len: %d off: %d\n", i, bio, page,
++				len, off);
 +
-+					core_scsi3_ua_allocate(
-+						pr_reg_p->pr_reg_nacl,
-+						pr_reg_p->pr_res_mapped_lun,
-+						0x2A,
-+						ASCQ_2AH_RESERVATIONS_RELEASED);
-+				}
++			ret = bio_add_page(bio, page, bytes, off);
++			if (ret != bytes)
++				goto fail;
++
++			DEBUG_PSCSI("PSCSI: bio->bi_vcnt: %d nr_vecs: %d\n",
++				bio->bi_vcnt, nr_vecs);
++
++			if (bio->bi_vcnt >= nr_vecs) {
++				bio->bi_flags &= ~(1 << BIO_SEG_VALID);
++				if (rq_data_dir(rq) == WRITE)
++					bio->bi_rw |= (1 << BIO_RW);
++				blk_queue_bounce(rq->q, &bio);
++
++				DEBUG_PSCSI("PSCSI: Calling blk_rq_append_bio()"
++					": i: %d bio: %p\n", i, bio);
++				ret = blk_rq_append_bio(rq->q, rq, bio);
++				if (ret < 0)
++					goto fail;
++
++				bio = NULL;
 +			}
-+			spin_unlock(&pr_tmpl->registration_lock);
-+		} else {
-+			/*
-+			 * Increment PRgeneration counter for se_device_t"
-+			 * upon a successful REGISTER, see spc4r17 section 6.3.2
-+			 * READ_KEYS service action.
-+			 */
-+			pr_reg->pr_res_generation = core_scsi3_pr_generation(
-+							SE_DEV(cmd));
-+			pr_reg->pr_res_key = sa_res_key;
-+			printk("SPC-3 PR [%s] REGISTER%s: Changed Reservation"
-+				" Key for %s to: 0x%016Lx PRgeneration:"
-+				" 0x%08x\n", CMD_TFO(cmd)->get_fabric_name(),
-+				(ignore_key) ? "_AND_IGNORE_EXISTING_KEY" : "",
-+				pr_reg->pr_reg_nacl->initiatorname,
-+				pr_reg->pr_res_key, pr_reg->pr_res_generation);
 +
-+			core_scsi3_put_pr_reg(pr_reg);
++			page++;
++			len -= bytes;
++			data_len -= bytes;
++			off = 0;
 +		}
 +	}
 +
-+	return 0;
-+}
++	rq->buffer = rq->data = NULL;
++	rq->data_len = task->task_size;
 +
-+unsigned char *core_scsi3_pr_dump_type(int type)
-+{
-+	switch (type) {
-+	case PR_TYPE_WRITE_EXCLUSIVE:
-+		return "Write Exclusive Access";
-+	case PR_TYPE_EXCLUSIVE_ACCESS:
-+		return "Exclusive Access";
-+	case PR_TYPE_WRITE_EXCLUSIVE_REGONLY:
-+		return "Write Exclusive Access, Registrants Only";
-+	case PR_TYPE_EXCLUSIVE_ACCESS_REGONLY:
-+		return "Exclusive Access, Registrants Only";
-+	case PR_TYPE_WRITE_EXCLUSIVE_ALLREG:
-+		return "Write Exclusive Access, All Registrants";
-+	case PR_TYPE_EXCLUSIVE_ACCESS_ALLREG:
-+		return "Exclusive Access, All Registrants";
-+	default:
-+		break;
++	return task->task_sg_num;
++fail:
++	while (hbio) {
++		bio = hbio;
++		hbio = hbio->bi_next;
++		bio->bi_next = NULL;
++		bio_endio(bio, 0);
 +	}
-+
-+	return "Unknown SPC-3 PR Type";
-+}
-+
-+static int core_scsi3_pro_reserve(
-+	se_cmd_t *cmd,
-+	se_device_t *dev,
-+	int type,
-+	int scope,
-+	u64 res_key)
-+{
-+	se_session_t *se_sess = SE_SESS(cmd);
-+	se_dev_entry_t *se_deve;
-+	se_lun_t *se_lun = SE_LUN(cmd);
-+	se_portal_group_t *se_tpg;
-+	t10_pr_registration_t *pr_reg, *pr_res_holder;
-+
-+	if (!(se_sess) || !(se_lun)) {
-+		printk(KERN_ERR "SPC-3 PR: se_sess || se_lun_t is NULL!\n");
-+		return PYX_TRANSPORT_LOGICAL_UNIT_COMMUNICATION_FAILURE;
-+	}
-+	se_tpg = se_sess->se_tpg;
-+	se_deve = &se_sess->se_node_acl->device_list[se_lun->unpacked_lun];
-+	/*
-+	 * Locate the existing *pr_reg via se_node_acl_t pointers
-+	 */
-+	pr_reg = core_scsi3_locate_pr_reg(SE_DEV(cmd), se_sess->se_node_acl);
-+	if (!(pr_reg)) {
-+		printk(KERN_ERR "SPC-3 PR: Unable to locate"
-+			" PR_REGISTERED *pr_reg for RESERVE\n");
-+		return PYX_TRANSPORT_LOGICAL_UNIT_COMMUNICATION_FAILURE;
-+	}
-+	/*
-+	 * For a given ALL_TG_PT=0 PR registration, a recevied PR reserve must
-+	 * be on the same matching se_portal_group_t + se_lun_t.
-+	 */
-+	if (!(pr_reg->pr_reg_all_tg_pt) &&
-+	     (pr_reg->pr_reg_tg_pt_lun != se_lun)) {
-+		printk(KERN_ERR "SPC-3 PR: Unable to handle RESERVE because"
-+			" ALL_TG_PT=0 and RESERVE was not received on same"
-+			" target port as REGISTER\n");
-+		core_scsi3_put_pr_reg(pr_reg);
-+		return PYX_TRANSPORT_RESERVATION_CONFLICT;
-+	}
-+	/*
-+	 * From spc4r17 Section 5.7.9: Reserving:
-+	 *
-+	 * An application client creates a persistent reservation by issuing
-+	 * a PERSISTENT RESERVE OUT command with RESERVE service action through
-+	 * a registered I_T nexus with the following parameters:
-+	 *    a) RESERVATION KEY set to the value of the reservation key that is
-+	 * 	 registered with the logical unit for the I_T nexus; and
-+	 */
-+	if (res_key != pr_reg->pr_res_key) {
-+		printk(KERN_ERR "SPC-3 PR RESERVE: Received res_key: 0x%016Lx"
-+			" does not match existing SA REGISTER res_key:"
-+			" 0x%016Lx\n", res_key, pr_reg->pr_res_key);
-+		core_scsi3_put_pr_reg(pr_reg);
-+		return PYX_TRANSPORT_RESERVATION_CONFLICT;
-+	}
-+	/*
-+	 * From spc4r17 Section 5.7.9: Reserving:
-+	 *
-+	 * From above:
-+	 *  b) TYPE field and SCOPE field set to the persistent reservation
-+	 *     being created.
-+	 *
-+	 * Only one persistent reservation is allowed at a time per logical unit
-+	 * and that persistent reservation has a scope of LU_SCOPE.
-+	 */
-+	if (scope != PR_SCOPE_LU_SCOPE) {
-+		printk(KERN_ERR "SPC-3 PR: Illegal SCOPE: 0x%02x\n", scope);
-+		core_scsi3_put_pr_reg(pr_reg);
-+		return PYX_TRANSPORT_INVALID_PARAMETER_LIST;
-+	}
-+	/*
-+	 * See if we have an existing PR reservation holder pointer at
-+	 * se_device_t->dev_pr_res_holder in the form t10_pr_registration_t
-+	 * *pr_res_holder.
-+	 */
-+	spin_lock(&dev->dev_reservation_lock);
-+	pr_res_holder = dev->dev_pr_res_holder;
-+	if ((pr_res_holder)) {
-+		/*
-+		 * From spc4r17 Section 5.7.9: Reserving:
-+		 *
-+		 * If the device server receives a PERSISTENT RESERVE OUT
-+		 * command from an I_T nexus other than a persistent reservation
-+		 * holder (see 5.7.10) that attempts to create a persistent
-+		 * reservation when a persistent reservation already exists for
-+		 * the logical unit, then the command shall be completed with
-+		 * RESERVATION CONFLICT status.
-+		 */
-+		if (pr_res_holder != pr_reg) {
-+			se_node_acl_t *pr_res_nacl = pr_res_holder->pr_reg_nacl;
-+			printk(KERN_ERR "SPC-3 PR: Attempted RESERVE from"
-+				" [%s]: %s while reservation already held by"
-+				" [%s]: %s, returning RESERVATION_CONFLICT\n",
-+				CMD_TFO(cmd)->get_fabric_name(),
-+				se_sess->se_node_acl->initiatorname,
-+				TPG_TFO(pr_res_nacl->se_tpg)->get_fabric_name(),
-+				pr_res_holder->pr_reg_nacl->initiatorname);
-+
-+			spin_unlock(&dev->dev_reservation_lock);
-+			core_scsi3_put_pr_reg(pr_reg);
-+			return PYX_TRANSPORT_RESERVATION_CONFLICT;
-+		}
-+		/*
-+		 * From spc4r17 Section 5.7.9: Reserving:
-+		 *
-+		 * If a persistent reservation holder attempts to modify the
-+		 * type or scope of an existing persistent reservation, the
-+		 * command shall be completed with RESERVATION CONFLICT status.
-+		 */
-+		if ((pr_res_holder->pr_res_type != type) ||
-+		    (pr_res_holder->pr_res_scope != scope)) {
-+			se_node_acl_t *pr_res_nacl = pr_res_holder->pr_reg_nacl;
-+			printk(KERN_ERR "SPC-3 PR: Attempted RESERVE from"
-+				" [%s]: %s trying to change TYPE and/or SCOPE,"
-+				" while reservation already held by [%s]: %s,"
-+				" returning RESERVATION_CONFLICT\n",
-+				CMD_TFO(cmd)->get_fabric_name(),
-+				se_sess->se_node_acl->initiatorname,
-+				TPG_TFO(pr_res_nacl->se_tpg)->get_fabric_name(),
-+				pr_res_holder->pr_reg_nacl->initiatorname);
-+
-+			spin_unlock(&dev->dev_reservation_lock);
-+			core_scsi3_put_pr_reg(pr_reg);
-+			return PYX_TRANSPORT_RESERVATION_CONFLICT;
-+		}
-+		/*
-+		 * From spc4r17 Section 5.7.9: Reserving:
-+		 *
-+		 * If the device server receives a PERSISTENT RESERVE OUT
-+		 * command with RESERVE service action where the TYPE field and
-+		 * the SCOPE field contain the same values as the existing type
-+		 * and scope from a persistent reservation holder, it shall not
-+		 * make any change to the existing persistent reservation and
-+		 * shall completethe command with GOOD status.
-+		 */
-+		spin_unlock(&dev->dev_reservation_lock);
-+		core_scsi3_put_pr_reg(pr_reg);
-+		return PYX_TRANSPORT_SENT_TO_TRANSPORT;
-+	}
-+	/*
-+	 * Otherwise, our *pr_reg becomes the PR reservation holder for said
-+	 * TYPE/SCOPE.  Also set the received scope and type in *pr_reg.
-+	 */
-+	pr_reg->pr_res_scope = scope;
-+	pr_reg->pr_res_type = type;
-+	pr_reg->pr_res_holder = 1;
-+	dev->dev_pr_res_holder = pr_reg;
-+
-+	printk(KERN_INFO "SPC-3 PR [%s] Service Action: RESERVE created new"
-+		" reservation holder TYPE: %s ALL_TG_PT: %d\n",
-+		CMD_TFO(cmd)->get_fabric_name(), core_scsi3_pr_dump_type(type),
-+		(pr_reg->pr_reg_all_tg_pt) ? 1 : 0);
-+	printk(KERN_INFO "SPC-3 PR [%s] RESERVE Node: %s\n",
-+			CMD_TFO(cmd)->get_fabric_name(),
-+			se_sess->se_node_acl->initiatorname);
-+	spin_unlock(&dev->dev_reservation_lock);
-+
-+	core_scsi3_put_pr_reg(pr_reg);
-+	return 0;
-+}
-+
-+static int core_scsi3_emulate_pro_reserve(
-+	se_cmd_t *cmd,
-+	int type,
-+	int scope,
-+	u64 res_key)
-+{
-+	se_device_t *dev = cmd->se_dev;
-+	int ret = 0;
-+
-+	switch (type) {
-+	case PR_TYPE_WRITE_EXCLUSIVE:
-+	case PR_TYPE_EXCLUSIVE_ACCESS:
-+	case PR_TYPE_WRITE_EXCLUSIVE_REGONLY:
-+	case PR_TYPE_EXCLUSIVE_ACCESS_REGONLY:
-+	case PR_TYPE_WRITE_EXCLUSIVE_ALLREG:
-+	case PR_TYPE_EXCLUSIVE_ACCESS_ALLREG:
-+		ret = core_scsi3_pro_reserve(cmd, dev, type, scope, res_key);
-+		break;
-+	default:
-+		printk(KERN_ERR "SPC-3 PR: Unknown Service Action RESERVE Type:"
-+			" 0x%02x\n", type);
-+		return PYX_TRANSPORT_INVALID_CDB_FIELD;
-+	}
-+
 +	return ret;
 +}
 +
-+/*
-+ * Called with se_device_t->dev_reservation_lock held.
++/*	pscsi_map_task_non_SG():
++ *
++ *
 + */
-+static void __core_scsi3_complete_pro_release(
-+	se_device_t *dev,
-+	se_node_acl_t *se_nacl,
-+	t10_pr_registration_t *pr_reg,
-+	int explict)
++int pscsi_map_task_non_SG(se_task_t *task)
 +{
-+	struct target_core_fabric_ops *tfo = se_nacl->se_tpg->se_tpg_tfo;
-+	/*
-+	 * Go ahead and release the current PR reservation holder.
-+	 */
-+	dev->dev_pr_res_holder = NULL;
++	se_cmd_t *cmd = TASK_CMD(task);
++	pscsi_plugin_task_t *pt = (pscsi_plugin_task_t *) task->transport_req;
++	pscsi_dev_virt_t *pdv = (pscsi_dev_virt_t *) task->se_dev->dev_ptr;
++	int ret = 0;
 +
-+	printk(KERN_INFO "SPC-3 PR [%s] Service Action: %s RELEASE cleared"
-+		" reservation holder TYPE: %s ALL_TG_PT: %d\n",
-+		tfo->get_fabric_name(), (explict) ? "explict" : "implict",
-+		core_scsi3_pr_dump_type(pr_reg->pr_res_type),
-+		(pr_reg->pr_reg_all_tg_pt) ? 1 : 0);
-+	printk(KERN_INFO "SPC-3 PR [%s] RELEASE Node: %s\n",
-+		tfo->get_fabric_name(),
-+		se_nacl->initiatorname);
-+	/*
-+	 * Clear TYPE and SCOPE for the next PROUT Service Action: RESERVE
-+	 */
-+	pr_reg->pr_res_holder = pr_reg->pr_res_type = pr_reg->pr_res_scope = 0;
-+}
-+
-+static int core_scsi3_emulate_pro_release(
-+	se_cmd_t *cmd,
-+	int type,
-+	int scope,
-+	u64 res_key)
-+{
-+	se_device_t *dev = cmd->se_dev;
-+	se_session_t *se_sess = SE_SESS(cmd);
-+	se_lun_t *se_lun = SE_LUN(cmd);
-+	t10_pr_registration_t *pr_reg, *pr_reg_p, *pr_res_holder;
-+	t10_reservation_template_t *pr_tmpl = &SU_DEV(dev)->t10_reservation;
-+
-+	if (!(se_sess) || !(se_lun)) {
-+		printk(KERN_ERR "SPC-3 PR: se_sess || se_lun_t is NULL!\n");
-+		return PYX_TRANSPORT_LOGICAL_UNIT_COMMUNICATION_FAILURE;
-+	}
-+	/*
-+	 * Locate the existing *pr_reg via se_node_acl_t pointers
-+	 */
-+	pr_reg = core_scsi3_locate_pr_reg(dev, se_sess->se_node_acl);
-+	if (!(pr_reg)) {
-+		printk(KERN_ERR "SPC-3 PR: Unable to locate"
-+			" PR_REGISTERED *pr_reg for RELEASE\n");
-+		return PYX_TRANSPORT_LOGICAL_UNIT_COMMUNICATION_FAILURE;
-+	}
-+	/*
-+	 * From spc4r17 Section 5.7.11.2 Releasing:
-+	 *
-+	 * If there is no persistent reservation or in response to a persistent
-+	 * reservation release request from a registered I_T nexus that is not a
-+	 * persistent reservation holder (see 5.7.10), the device server shall
-+	 * do the following:
-+	 *
-+	 *     a) Not release the persistent reservation, if any;
-+	 *     b) Not remove any registrations; and
-+	 *     c) Complete the command with GOOD status.
-+	 */
-+	spin_lock(&dev->dev_reservation_lock);
-+	pr_res_holder = dev->dev_pr_res_holder;
-+	if (!(pr_res_holder)) {
-+		/*
-+		 * No persistent reservation, return GOOD status.
-+		 */
-+		spin_unlock(&dev->dev_reservation_lock);
-+		core_scsi3_put_pr_reg(pr_reg);
-+		return PYX_TRANSPORT_SENT_TO_TRANSPORT;
-+	}
-+	if (pr_res_holder != pr_reg) {
-+		/*
-+		 * Release request from a registered I_T nexus that is not a
-+		 * persistent reservation holder. return GOOD status.
-+		 */
-+		spin_unlock(&dev->dev_reservation_lock);
-+		core_scsi3_put_pr_reg(pr_reg);
-+		return PYX_TRANSPORT_SENT_TO_TRANSPORT;
-+	}
-+	/*
-+	 * From spc4r17 Section 5.7.11.2 Releasing:
-+	 *
-+	 * Only the persistent reservation holder (see 5.7.10) is allowed to
-+	 * release a persistent reservation.
-+	 *
-+	 * An application client releases the persistent reservation by issuing
-+	 * a PERSISTENT RESERVE OUT command with RELEASE service action through
-+	 * an I_T nexus that is a persistent reservation holder with the
-+	 * following parameters:
-+	 *
-+	 *     a) RESERVATION KEY field set to the value of the reservation key
-+	 *	  that is registered with the logical unit for the I_T nexus;
-+	 */
-+	if (res_key != pr_reg->pr_res_key) {
-+		printk(KERN_ERR "SPC-3 PR RELEASE: Received res_key: 0x%016Lx"
-+			" does not match existing SA REGISTER res_key:"
-+			" 0x%016Lx\n", res_key, pr_reg->pr_res_key);
-+		spin_unlock(&dev->dev_reservation_lock);
-+		core_scsi3_put_pr_reg(pr_reg);
-+		return PYX_TRANSPORT_RESERVATION_CONFLICT;
-+	}
-+	/*
-+	 * From spc4r17 Section 5.7.11.2 Releasing and above:
-+	 *
-+	 * b) TYPE field and SCOPE field set to match the persistent
-+	 *    reservation being released.
-+	 */
-+	if ((pr_res_holder->pr_res_type != type) ||
-+	    (pr_res_holder->pr_res_scope != scope)) {
-+		se_node_acl_t *pr_res_nacl = pr_res_holder->pr_reg_nacl;
-+		printk(KERN_ERR "SPC-3 PR RELEASE: Attempted to release"
-+			" reservation from [%s]: %s with different TYPE "
-+			"and/or SCOPE  while reservation already held by"
-+			" [%s]: %s, returning RESERVATION_CONFLICT\n",
-+			CMD_TFO(cmd)->get_fabric_name(),
-+			se_sess->se_node_acl->initiatorname,
-+			TPG_TFO(pr_res_nacl->se_tpg)->get_fabric_name(),
-+			pr_res_holder->pr_reg_nacl->initiatorname);
-+
-+		spin_unlock(&dev->dev_reservation_lock);
-+		core_scsi3_put_pr_reg(pr_reg);
-+		return PYX_TRANSPORT_RESERVATION_CONFLICT;
-+	}
-+	/*
-+	 * In response to a persistent reservation release request from the
-+	 * persistent reservation holder the device server shall perform a
-+	 * release by doing the following as an uninterrupted series of actions:
-+	 * a) Release the persistent reservation;
-+	 * b) Not remove any registration(s);
-+	 * c) If the released persistent reservation is a registrants only type
-+	 * or all registrants type persistent reservation,
-+	 *    the device server shall establish a unit attention condition for
-+	 *    the initiator port associated with every regis-
-+	 *    tered I_T nexus other than I_T nexus on which the PERSISTENT
-+	 *    RESERVE OUT command with RELEASE service action was received,
-+	 *    with the additional sense code set to RESERVATIONS RELEASED; and
-+	 * d) If the persistent reservation is of any other type, the device
-+	 *    server shall not establish a unit attention condition.
-+	 */
-+	__core_scsi3_complete_pro_release(dev, se_sess->se_node_acl,
-+			pr_reg, 1);
-+
-+	if ((type != PR_TYPE_WRITE_EXCLUSIVE_REGONLY) &&
-+	    (type != PR_TYPE_EXCLUSIVE_ACCESS_REGONLY) &&
-+	    (type != PR_TYPE_WRITE_EXCLUSIVE_ALLREG) &&
-+	    (type != PR_TYPE_EXCLUSIVE_ACCESS_ALLREG)) {
-+		spin_unlock(&dev->dev_reservation_lock);
-+		core_scsi3_put_pr_reg(pr_reg);
++	if (!task->task_size)
 +		return 0;
++
++	ret = blk_rq_map_kern(pdv->pdv_sd->request_queue,
++			pt->pscsi_req, T_TASK(cmd)->t_task_buf,
++			task->task_size, GFP_KERNEL);
++	if (ret < 0) {
++		printk(KERN_ERR "PSCSI: blk_rq_map_kern() failed: %d\n", ret);
++		return PYX_TRANSPORT_LOGICAL_UNIT_COMMUNICATION_FAILURE;
 +	}
-+	spin_unlock(&dev->dev_reservation_lock);
-+
-+	spin_lock(&pr_tmpl->registration_lock);
-+	list_for_each_entry(pr_reg_p, &pr_tmpl->registration_list,
-+			pr_reg_list) {
-+		/*
-+		 * Do not establish a UNIT ATTENTION condition
-+		 * for the calling I_T Nexus
-+		 */
-+		if (pr_reg_p == pr_reg)
-+			continue;
-+
-+		core_scsi3_ua_allocate(pr_reg_p->pr_reg_nacl,
-+				pr_reg_p->pr_res_mapped_lun,
-+				0x2A, ASCQ_2AH_RESERVATIONS_RELEASED);
-+	}
-+	spin_unlock(&pr_tmpl->registration_lock);
-+
-+	core_scsi3_put_pr_reg(pr_reg);
 +	return 0;
 +}
 +
-+static int core_scsi3_emulate_pro_clear(
-+	se_cmd_t *cmd,
-+	u64 res_key)
-+{
-+	se_device_t *dev = cmd->se_dev;
-+	se_node_acl_t *pr_reg_nacl;
-+	se_session_t *se_sess = SE_SESS(cmd);
-+	t10_reservation_template_t *pr_tmpl = &SU_DEV(dev)->t10_reservation;
-+	t10_pr_registration_t *pr_reg, *pr_reg_tmp, *pr_reg_n, *pr_res_holder;
-+	u32 pr_res_mapped_lun = 0;
-+	int calling_it_nexus = 0;
-+	/*
-+	 * Locate the existing *pr_reg via se_node_acl_t pointers
-+	 */
-+	pr_reg_n = core_scsi3_locate_pr_reg(SE_DEV(cmd),
-+			se_sess->se_node_acl);
-+	if (!(pr_reg_n)) {
-+		printk(KERN_ERR "SPC-3 PR: Unable to locate"
-+			" PR_REGISTERED *pr_reg for CLEAR\n");
-+			return PYX_TRANSPORT_LOGICAL_UNIT_COMMUNICATION_FAILURE;
-+	}
-+	/*
-+	 * From spc4r17 section 5.7.11.6, Clearing:
-+	 *
-+	 * Any application client may release the persistent reservation and
-+	 * remove all registrations from a device server by issuing a
-+	 * PERSISTENT RESERVE OUT command with CLEAR service action through a
-+	 * registered I_T nexus with the following parameter:
-+	 *
-+	 *	a) RESERVATION KEY field set to the value of the reservation key
-+	 * 	   that is registered with the logical unit for the I_T nexus.
-+	 */
-+	if (res_key != pr_reg_n->pr_res_key) {
-+		printk(KERN_ERR "SPC-3 PR REGISTER: Received"
-+			" res_key: 0x%016Lx does not match"
-+			" existing SA REGISTER res_key:"
-+			" 0x%016Lx\n", res_key, pr_reg_n->pr_res_key);
-+		core_scsi3_put_pr_reg(pr_reg_n);
-+		return PYX_TRANSPORT_RESERVATION_CONFLICT;
-+	}
-+	/*
-+	 * a) Release the persistent reservation, if any;
-+	 */
-+	spin_lock(&dev->dev_reservation_lock);
-+	pr_res_holder = dev->dev_pr_res_holder;
-+	if (pr_res_holder) {
-+		se_node_acl_t *pr_res_nacl = pr_res_holder->pr_reg_nacl;
-+		__core_scsi3_complete_pro_release(dev, pr_res_nacl,
-+			pr_res_holder, 0);
-+	}
-+	spin_unlock(&dev->dev_reservation_lock);
-+	/*
-+	 * b) Remove all registration(s) (see spc4r17 5.7.7);
-+	 */
-+	spin_lock(&pr_tmpl->registration_lock);
-+	list_for_each_entry_safe(pr_reg, pr_reg_tmp,
-+			&pr_tmpl->registration_list, pr_reg_list) {
-+
-+		calling_it_nexus = (pr_reg_n == pr_reg) ? 1 : 0;
-+		pr_reg_nacl = pr_reg->pr_reg_nacl;
-+		pr_res_mapped_lun = pr_reg->pr_res_mapped_lun;
-+		__core_scsi3_free_registration(dev, pr_reg, NULL,
-+					calling_it_nexus);
-+		/*
-+		 * e) Establish a unit attention condition for the initiator
-+		 *    port associated with every registered I_T nexus other
-+		 *    than the I_T nexus on which the PERSISTENT RESERVE OUT
-+		 *    command with CLEAR service action was received, with the
-+		 *    additional sense code set to RESERVATIONS PREEMPTED.
-+		 */
-+		if (!(calling_it_nexus))
-+			core_scsi3_ua_allocate(pr_reg_nacl, pr_res_mapped_lun,
-+				0x2A, ASCQ_2AH_RESERVATIONS_PREEMPTED);
-+	}
-+	spin_unlock(&pr_tmpl->registration_lock);
-+
-+	printk(KERN_INFO "SPC-3 PR [%s] Service Action: CLEAR complete\n",
-+		CMD_TFO(cmd)->get_fabric_name());
-+
-+	core_scsi3_pr_generation(dev);
-+	return 0;
-+}
-+
-+/*
-+ * Called with se_device_t->dev_reservation_lock held.
++/*	pscsi_CDB_inquiry():
++ *
++ *
 + */
-+static void __core_scsi3_complete_pro_preempt(
-+	se_device_t *dev,
-+	t10_pr_registration_t *pr_reg,
-+	struct list_head *preempt_and_abort_list,
-+	int type,
-+	int scope,
-+	int abort)
++int pscsi_CDB_inquiry(se_task_t *task, u32 size)
 +{
-+	se_node_acl_t *nacl = pr_reg->pr_reg_nacl;
-+	struct target_core_fabric_ops *tfo = nacl->se_tpg->se_tpg_tfo;
-+	/*
-+	 * Do an implict RELEASE of the existing reservation.
-+	 */
-+	if (dev->dev_pr_res_holder)
-+		__core_scsi3_complete_pro_release(dev, nacl,
-+				dev->dev_pr_res_holder, 0);
++	pscsi_plugin_task_t *pt = (pscsi_plugin_task_t *) task->transport_req;
 +
-+	dev->dev_pr_res_holder = pr_reg;
-+	pr_reg->pr_res_holder = 1;
-+	pr_reg->pr_res_type = type;
-+	pr_reg->pr_res_scope = scope;
++	pt->pscsi_direction = DMA_FROM_DEVICE;
++	if (pscsi_blk_get_request(task) < 0)
++		return -1;
 +
-+	printk(KERN_INFO "SPC-3 PR [%s] Service Action: PREEMPT%s created new"
-+		" reservation holder TYPE: %s ALL_TG_PT: %d\n",
-+		tfo->get_fabric_name(), (abort) ? "_AND_ABORT" : "",
-+		core_scsi3_pr_dump_type(type),
-+		(pr_reg->pr_reg_all_tg_pt) ? 1 : 0);
-+	printk(KERN_INFO "SPC-3 PR [%s] PREEMPT%s from Node: %s\n",
-+		tfo->get_fabric_name(), (abort) ? "_AND_ABORT" : "",
-+		nacl->initiatorname);
-+	/*
-+	 * For PREEMPT_AND_ABORT, add the preempting reservation's
-+	 * t10_pr_registration_t to the list that will be compared
-+	 * against received CDBs..
-+	 */
-+	if (preempt_and_abort_list)
-+		list_add_tail(&pr_reg->pr_reg_abort_list,
-+				preempt_and_abort_list);
++	return pscsi_map_task_non_SG(task);
 +}
 +
-+static void core_scsi3_release_preempt_and_abort(
-+	struct list_head *preempt_and_abort_list,
-+	t10_pr_registration_t *pr_reg_holder)
++int pscsi_CDB_none(se_task_t *task, u32 size)
 +{
-+	t10_pr_registration_t *pr_reg, *pr_reg_tmp;
++	pscsi_plugin_task_t *pt = (pscsi_plugin_task_t *) task->transport_req;
 +
-+	list_for_each_entry_safe(pr_reg, pr_reg_tmp, preempt_and_abort_list,
-+				pr_reg_abort_list) {
++	pt->pscsi_direction = DMA_NONE;
 +
-+		list_del(&pr_reg->pr_reg_abort_list);
-+		if (pr_reg_holder == pr_reg)
-+			continue;
-+		if (pr_reg->pr_res_holder) {
-+			printk(KERN_WARNING "pr_reg->pr_res_holder still set\n");
-+			continue;
-+		}
-+
-+		pr_reg->pr_reg_deve = NULL;
-+		pr_reg->pr_reg_nacl = NULL;
-+		kmem_cache_free(t10_pr_reg_cache, pr_reg);
-+	}
++	return pscsi_blk_get_request(task);
 +}
 +
-+int core_scsi3_check_cdb_abort_and_preempt(
-+	struct list_head *preempt_and_abort_list,
-+	se_cmd_t *cmd)
++/*	pscsi_CDB_read_non_SG():
++ *
++ *
++ */
++int pscsi_CDB_read_non_SG(se_task_t *task, u32 size)
 +{
-+	t10_pr_registration_t *pr_reg, *pr_reg_tmp;
++	pscsi_plugin_task_t *pt = (pscsi_plugin_task_t *) task->transport_req;
 +
-+	list_for_each_entry_safe(pr_reg, pr_reg_tmp, preempt_and_abort_list,
-+				pr_reg_abort_list) {
-+		if (pr_reg->pr_res_key == cmd->pr_res_key)
-+			return 0;
-+	}
++	pt->pscsi_direction = DMA_FROM_DEVICE;
 +
-+	return 1;
-+}
-+
-+static int core_scsi3_emulate_pro_preempt(
-+	se_cmd_t *cmd,
-+	int type,
-+	int scope,
-+	u64 res_key,
-+	u64 sa_res_key,
-+	int abort)
-+{
-+	se_device_t *dev = SE_DEV(cmd);
-+	se_dev_entry_t *se_deve;
-+	se_lun_t *se_lun = SE_LUN(cmd);
-+	se_node_acl_t *pr_reg_nacl;
-+	se_session_t *se_sess = SE_SESS(cmd);
-+	struct list_head preempt_and_abort_list;
-+	t10_pr_registration_t *pr_reg, *pr_reg_tmp, *pr_reg_n, *pr_res_holder;
-+	t10_reservation_template_t *pr_tmpl = &SU_DEV(dev)->t10_reservation;
-+	u32 pr_res_mapped_lun = 0;
-+	int all_reg = 0, calling_it_nexus = 0, released_regs = 0;
-+	int prh_type = 0, prh_scope = 0;
-+
-+	if (!(se_sess))
++	if (pscsi_blk_get_request(task) < 0)
 +		return PYX_TRANSPORT_LOGICAL_UNIT_COMMUNICATION_FAILURE;
 +
-+	se_deve = &se_sess->se_node_acl->device_list[se_lun->unpacked_lun];
-+	if (!(se_deve->deve_flags & DEF_PR_REGISTERED))
-+		return PYX_TRANSPORT_RESERVATION_CONFLICT;
-+
-+	pr_reg_n = core_scsi3_locate_pr_reg(SE_DEV(cmd), se_sess->se_node_acl);
-+	if (!(pr_reg_n)) {
-+		printk(KERN_ERR "SPC-3 PR: Unable to locate"
-+			" PR_REGISTERED *pr_reg for PREEMPT%s\n",
-+			(abort) ? "_AND_ABORT" : "");
-+		return PYX_TRANSPORT_RESERVATION_CONFLICT;
-+	}
-+	if (pr_reg_n->pr_res_key != res_key) {
-+		core_scsi3_put_pr_reg(pr_reg_n);
-+		return PYX_TRANSPORT_RESERVATION_CONFLICT;
-+	}
-+	if (scope != PR_SCOPE_LU_SCOPE) {
-+		printk(KERN_ERR "SPC-3 PR: Illegal SCOPE: 0x%02x\n", scope);
-+		core_scsi3_put_pr_reg(pr_reg_n);
-+		return PYX_TRANSPORT_INVALID_PARAMETER_LIST;
-+	}
-+	INIT_LIST_HEAD(&preempt_and_abort_list);
-+
-+	spin_lock(&dev->dev_reservation_lock);
-+	pr_res_holder = dev->dev_pr_res_holder;
-+	if (pr_res_holder &&
-+	   ((pr_res_holder->pr_res_type == PR_TYPE_WRITE_EXCLUSIVE_ALLREG) ||
-+	    (pr_res_holder->pr_res_type == PR_TYPE_EXCLUSIVE_ACCESS_ALLREG)))
-+		all_reg = 1;
-+
-+	if (!(all_reg) && !(sa_res_key)) {
-+		spin_unlock(&dev->dev_reservation_lock);
-+		core_scsi3_put_pr_reg(pr_reg_n);
-+		return PYX_TRANSPORT_INVALID_PARAMETER_LIST;
-+	}
-+	/*
-+	 * From spc4r17, section 5.7.11.4.4 Removing Registrations:
-+	 *
-+	 * If the SERVICE ACTION RESERVATION KEY field does not identify a
-+	 * persistent reservation holder or there is no persistent reservation
-+	 * holder (i.e., there is no persistent reservation), then the device
-+	 * server shall perform a preempt by doing the following in an
-+	 * uninterrupted series of actions. (See below..)
-+	 */
-+	if (!(pr_res_holder) || (pr_res_holder->pr_res_key != sa_res_key)) {
-+		/*
-+		 * No existing or SA Reservation Key matching reservations..
-+		 *
-+		 * PROUT SA PREEMPT with All Registrant type reservations are
-+		 * allowed to be processed without a matching SA Reservation Key
-+		 */
-+		spin_lock(&pr_tmpl->registration_lock);
-+		list_for_each_entry_safe(pr_reg, pr_reg_tmp,
-+				&pr_tmpl->registration_list, pr_reg_list) {
-+			/*
-+			 * Removing of registrations in non all registrants
-+			 * type reservations without a matching SA reservation
-+			 * key.
-+			 *
-+			 * a) Remove the registrations for all I_T nexuses
-+			 *    specified by the SERVICE ACTION RESERVATION KEY
-+			 *    field;
-+			 * b) Ignore the contents of the SCOPE and TYPE fields;
-+			 * c) Process tasks as defined in 5.7.1; and
-+			 * d) Establish a unit attention condition for the
-+			 *    initiator port associated with every I_T nexus
-+			 *    that lost its registration other than the I_T
-+			 *    nexus on which the PERSISTENT RESERVE OUT command
-+			 *    was received, with the additional sense code set
-+			 *    to REGISTRATIONS PREEMPTED.
-+			 */
-+			if (!(all_reg)) {
-+				if (pr_reg->pr_res_key != sa_res_key)
-+					continue;
-+
-+				calling_it_nexus = (pr_reg_n == pr_reg) ? 1 : 0;
-+				pr_reg_nacl = pr_reg->pr_reg_nacl;
-+				pr_res_mapped_lun = pr_reg->pr_res_mapped_lun;
-+				__core_scsi3_free_registration(dev, pr_reg,
-+					(abort) ? &preempt_and_abort_list :
-+						NULL, calling_it_nexus);
-+				released_regs++;
-+			} else {
-+				/*
-+				 * Case for any existing all registrants type
-+				 * reservation, follow logic in spc4r17 section
-+				 * 5.7.11.4 Preempting, Table 52 and Figure 7.
-+				 *
-+				 * For a ZERO SA Reservation key, release
-+				 * all other registrations and do an implict
-+				 * release of active persistent reservation.
-+				 *
-+				 * For a non-ZERO SA Reservation key, only
-+				 * release the matching reservation key from
-+				 * registrations.
-+				 */
-+				if ((sa_res_key) &&
-+				     (pr_reg->pr_res_key != sa_res_key))
-+					continue;
-+
-+				calling_it_nexus = (pr_reg_n == pr_reg) ? 1 : 0;
-+				if (calling_it_nexus)
-+					continue;
-+
-+				pr_reg_nacl = pr_reg->pr_reg_nacl;
-+				pr_res_mapped_lun = pr_reg->pr_res_mapped_lun;
-+				__core_scsi3_free_registration(dev, pr_reg,
-+					(abort) ? &preempt_and_abort_list :
-+						NULL, 0);
-+				released_regs++;
-+			}
-+			if (!(calling_it_nexus))
-+				core_scsi3_ua_allocate(pr_reg_nacl,
-+					pr_res_mapped_lun, 0x2A,
-+					ASCQ_2AH_RESERVATIONS_PREEMPTED);
-+		}
-+		spin_unlock(&pr_tmpl->registration_lock);
-+		/*
-+		 * If a PERSISTENT RESERVE OUT with a PREEMPT service action or
-+		 * a PREEMPT AND ABORT service action sets the SERVICE ACTION
-+		 * RESERVATION KEY field to a value that does not match any
-+		 * registered reservation key, then the device server shall
-+		 * complete the command with RESERVATION CONFLICT status.
-+		 */
-+		if (!(released_regs)) {
-+			spin_unlock(&dev->dev_reservation_lock);
-+			core_scsi3_put_pr_reg(pr_reg_n);
-+			return PYX_TRANSPORT_RESERVATION_CONFLICT;
-+		}
-+		/*
-+		 * For an existing all registrants type reservation
-+		 * with a zero SA rservation key, preempt the existing
-+		 * reservation with the new PR type and scope.
-+		 */
-+		if (pr_res_holder && all_reg && !(sa_res_key)) {
-+			__core_scsi3_complete_pro_preempt(dev, pr_reg_n,
-+				(abort) ? &preempt_and_abort_list : NULL,
-+				type, scope, abort);
-+
-+			if (abort)
-+				core_scsi3_release_preempt_and_abort(
-+					&preempt_and_abort_list, pr_reg_n);
-+		}
-+		spin_unlock(&dev->dev_reservation_lock);
-+
-+		core_scsi3_put_pr_reg(pr_reg_n);
-+		core_scsi3_pr_generation(SE_DEV(cmd));
-+		return 0;
-+	}
-+	/*
-+	 * The PREEMPTing SA reservation key matches that of the
-+	 * existing persistent reservation, first, we check if
-+	 * we are preempting our own reservation.
-+	 * From spc4r17, section 5.7.11.4.3 Preempting
-+	 * persistent reservations and registration handling
-+	 *
-+	 * If an all registrants persistent reservation is not
-+	 * present, it is not an error for the persistent
-+	 * reservation holder to preempt itself (i.e., a
-+	 * PERSISTENT RESERVE OUT with a PREEMPT service action
-+	 * or a PREEMPT AND ABORT service action with the
-+	 * SERVICE ACTION RESERVATION KEY value equal to the
-+	 * persistent reservation holder's reservation key that
-+	 * is received from the persistent reservation holder).
-+	 * In that case, the device server shall establish the
-+	 * new persistent reservation and maintain the
-+	 * registration.
-+	 */
-+	prh_type = pr_res_holder->pr_res_type;
-+	prh_scope = pr_res_holder->pr_res_scope;
-+	/*
-+	 * If the SERVICE ACTION RESERVATION KEY field identifies a
-+	 * persistent reservation holder (see 5.7.10), the device
-+	 * server shall perform a preempt by doing the following as
-+	 * an uninterrupted series of actions:
-+	 *
-+	 * a) Release the persistent reservation for the holder
-+	 *    identified by the SERVICE ACTION RESERVATION KEY field;
-+	 */
-+	if (pr_reg_n != pr_res_holder)
-+		__core_scsi3_complete_pro_release(dev,
-+				pr_res_holder->pr_reg_nacl,
-+				dev->dev_pr_res_holder, 0);
-+	/*
-+	 * b) Remove the registrations for all I_T nexuses identified
-+	 *    by the SERVICE ACTION RESERVATION KEY field, except the
-+	 *    I_T nexus that is being used for the PERSISTENT RESERVE
-+	 *    OUT command. If an all registrants persistent reservation
-+	 *    is present and the SERVICE ACTION RESERVATION KEY field
-+	 *    is set to zero, then all registrations shall be removed
-+	 *    except for that of the I_T nexus that is being used for
-+	 *    the PERSISTENT RESERVE OUT command;
-+	 */
-+	spin_lock(&pr_tmpl->registration_lock);
-+	list_for_each_entry_safe(pr_reg, pr_reg_tmp,
-+			&pr_tmpl->registration_list, pr_reg_list) {
-+
-+		calling_it_nexus = (pr_reg_n == pr_reg) ? 1 : 0;
-+		if (calling_it_nexus)
-+			continue;
-+
-+		if (pr_reg->pr_res_key != sa_res_key)
-+			continue;
-+
-+		pr_reg_nacl = pr_reg->pr_reg_nacl;
-+		pr_res_mapped_lun = pr_reg->pr_res_mapped_lun;
-+		__core_scsi3_free_registration(dev, pr_reg,
-+				(abort) ? &preempt_and_abort_list : NULL,
-+				calling_it_nexus);
-+		/*
-+		 * e) Establish a unit attention condition for the initiator
-+		 *    port associated with every I_T nexus that lost its
-+		 *    persistent reservation and/or registration, with the
-+		 *    additional sense code set to REGISTRATIONS PREEMPTED;
-+		 */
-+		core_scsi3_ua_allocate(pr_reg_nacl, pr_res_mapped_lun, 0x2A,
-+				ASCQ_2AH_RESERVATIONS_PREEMPTED);
-+	}
-+	spin_unlock(&pr_tmpl->registration_lock);
-+	/*
-+	 * c) Establish a persistent reservation for the preempting
-+	 *    I_T nexus using the contents of the SCOPE and TYPE fields;
-+	 */
-+	__core_scsi3_complete_pro_preempt(dev, pr_reg_n,
-+			(abort) ? &preempt_and_abort_list : NULL,
-+			type, scope, abort);
-+	/*
-+	 * d) Process tasks as defined in 5.7.1;
-+	 * e) See above..
-+	 * f) If the type or scope has changed, then for every I_T nexus
-+	 *    whose reservation key was not removed, except for the I_T
-+	 *    nexus on which the PERSISTENT RESERVE OUT command was
-+	 *    received, the device server shall establish a unit
-+	 *    attention condition for the initiator port associated with
-+	 *    that I_T nexus, with the additional sense code set to
-+	 *    RESERVATIONS RELEASED. If the type or scope have not
-+	 *    changed, then no unit attention condition(s) shall be
-+	 *    established for this reason.
-+	 */
-+	if ((prh_type != type) || (prh_scope != scope)) {
-+		spin_lock(&pr_tmpl->registration_lock);
-+		list_for_each_entry_safe(pr_reg, pr_reg_tmp,
-+				&pr_tmpl->registration_list, pr_reg_list) {
-+
-+			calling_it_nexus = (pr_reg_n == pr_reg) ? 1 : 0;
-+			if (calling_it_nexus)
-+				continue;
-+
-+			core_scsi3_ua_allocate(pr_reg->pr_reg_nacl,
-+					pr_reg->pr_res_mapped_lun, 0x2A,
-+					ASCQ_2AH_RESERVATIONS_RELEASED);
-+		}
-+		spin_unlock(&pr_tmpl->registration_lock);
-+	}
-+	spin_unlock(&dev->dev_reservation_lock);
-+	/*
-+	 * Call LUN_RESET logic upon list of t10_pr_registration_t,
-+	 * All received CDBs for the matching existing reservation and
-+	 * registrations undergo ABORT_TASK logic.
-+	 *
-+	 * From there, core_scsi3_release_preempt_and_abort() will
-+	 * release every registration in the list (which have already
-+	 * been removed from the primary pr_reg list), except the
-+	 * new persistent reservation holder, the calling Initiator Port.
-+	 */
-+	if (abort) {
-+		core_tmr_lun_reset(dev, NULL, &preempt_and_abort_list, cmd);
-+		core_scsi3_release_preempt_and_abort(&preempt_and_abort_list,
-+						pr_reg_n);
-+	}
-+
-+	core_scsi3_put_pr_reg(pr_reg_n);
-+	core_scsi3_pr_generation(SE_DEV(cmd));
-+	return 0;
++	return pscsi_map_task_non_SG(task);
 +}
 +
-+#if 0
-+static int core_scsi3_emulate_pro_register_and_move(
-+	se_cmd_t *cmd,
-+	int type,
-+	int scope,
-+	u64 res_key,
-+	u64 sa_res_key)
-+{
-+	core_scsi3_pr_generation(SE_DEV(cmd));
-+	return 0;
-+}
-+#endif
-+
-+static unsigned long long core_scsi3_extract_reservation_key(unsigned char *cdb)
-+{
-+	unsigned int __v1, __v2;
-+
-+	__v1 = (cdb[0] << 24) | (cdb[1] << 16) | (cdb[2] << 8) | cdb[3];
-+	__v2 = (cdb[4] << 24) | (cdb[5] << 16) | (cdb[6] << 8) | cdb[7];
-+
-+	return ((unsigned long long)__v2) | (unsigned long long)__v1 << 32;
-+}
-+
-+/*
-+ * See spc4r17 section 6.14 Table 170
++/*	pscsi_CDB_read_SG():
++ *
++ *
 + */
-+static int core_scsi3_emulate_pr_out(se_cmd_t *cmd, unsigned char *cdb)
++int pscsi_CDB_read_SG(se_task_t *task, u32 size)
 +{
-+	unsigned char *buf = (unsigned char *)T_TASK(cmd)->t_task_buf;
-+	u64 res_key, sa_res_key;
-+	int scope, type, spec_i_pt, all_tg_pt, aptpl;
++	pscsi_plugin_task_t *pt = (pscsi_plugin_task_t *) task->transport_req;
 +
-+	/*
-+	 * FIXME: A NULL se_session_t pointer means an this is not coming from
-+	 * a $FABRIC_MOD's nexus, but from internal passthrough ops.
-+	 */
-+	if (!(SE_SESS(cmd)))
++	pt->pscsi_direction = DMA_FROM_DEVICE;
++
++	if (pscsi_blk_get_request(task) < 0)
 +		return PYX_TRANSPORT_LOGICAL_UNIT_COMMUNICATION_FAILURE;
 +
-+	/*
-+	 * From the PERSISTENT_RESERVE_OUT command descriptor block (CDB)
-+	 */
-+	scope = (cdb[2] & 0xf0);
-+	type = (cdb[2] & 0x0f);
-+	/*
-+	 * From PERSISTENT_RESERVE_OUT parameter list (payload)
-+	 */
-+	res_key = core_scsi3_extract_reservation_key(&buf[0]);
-+	sa_res_key = core_scsi3_extract_reservation_key(&buf[8]);
-+	spec_i_pt = (buf[20] & 0x08);
-+	all_tg_pt = (buf[20] & 0x04);
-+	aptpl = (buf[20] & 0x01);
++	if (pscsi_map_task_SG(task) < 0)
++		return PYX_TRANSPORT_LOGICAL_UNIT_COMMUNICATION_FAILURE;
 +
-+	/*
-+	 * SPEC_I_PT=1 is only valid for Service action: REGISTER
-+	 */
-+	if (spec_i_pt && ((cdb[1] & 0x1f) != PRO_REGISTER))
-+		return PYX_TRANSPORT_INVALID_PARAMETER_LIST;
-+	/*
-+	 * (core_scsi3_emulate_pro_* function parameters
-+	 * are defined by spc4r17 Table 174:
-+	 * PERSISTENT_RESERVE_OUT service actions and valid parameters.
-+	 */
-+	switch (cdb[1] & 0x1f) {
-+	case PRO_REGISTER:
-+		return core_scsi3_emulate_pro_register(cmd,
-+			res_key, sa_res_key, aptpl, all_tg_pt, spec_i_pt, 0);
-+	case PRO_RESERVE:
-+		return core_scsi3_emulate_pro_reserve(cmd,
-+			type, scope, res_key);
-+	case PRO_RELEASE:
-+		return core_scsi3_emulate_pro_release(cmd,
-+			type, scope, res_key);
-+	case PRO_CLEAR:
-+		return core_scsi3_emulate_pro_clear(cmd, res_key);
-+	case PRO_PREEMPT:
-+		return core_scsi3_emulate_pro_preempt(cmd, type, scope,
-+					res_key, sa_res_key, 0);
-+	case PRO_PREEMPT_AND_ABORT:
-+		return core_scsi3_emulate_pro_preempt(cmd, type, scope,
-+					res_key, sa_res_key, 1);
-+	case PRO_REGISTER_AND_IGNORE_EXISTING_KEY:
-+		return core_scsi3_emulate_pro_register(cmd,
-+			0, sa_res_key, aptpl, all_tg_pt, spec_i_pt, 1);
-+#if 0
-+	case PRO_REGISTER_AND_MOVE:
-+		return core_scsi3_emulate_pro_register_and_move(cmd,
-+			type, scope, res_key, sa_res_key);
-+#endif
++	return task->task_sg_num;
++}
++
++/*	pscsi_CDB_write_non_SG():
++ *
++ *
++ */
++int pscsi_CDB_write_non_SG(se_task_t *task, u32 size)
++{
++	pscsi_plugin_task_t *pt = (pscsi_plugin_task_t *) task->transport_req;
++
++	pt->pscsi_direction = DMA_TO_DEVICE;
++
++	if (pscsi_blk_get_request(task) < 0)
++		return PYX_TRANSPORT_LOGICAL_UNIT_COMMUNICATION_FAILURE;
++
++	return pscsi_map_task_non_SG(task);
++}
++
++/*	pscsi_CDB_write_SG():
++ *
++ *
++ */
++int pscsi_CDB_write_SG(se_task_t *task, u32 size)
++{
++	pscsi_plugin_task_t *pt = (pscsi_plugin_task_t *) task->transport_req;
++
++	pt->pscsi_direction = DMA_TO_DEVICE;
++
++	if (pscsi_blk_get_request(task) < 0)
++		return PYX_TRANSPORT_LOGICAL_UNIT_COMMUNICATION_FAILURE;
++
++	if (pscsi_map_task_SG(task) < 0)
++		return PYX_TRANSPORT_LOGICAL_UNIT_COMMUNICATION_FAILURE;
++
++	return task->task_sg_num;
++}
++
++/*	pscsi_check_lba():
++ *
++ *
++ */
++int pscsi_check_lba(unsigned long long lba, se_device_t *dev)
++{
++	return 0;
++}
++
++/*	pscsi_check_for_SG():
++ *
++ *
++ */
++int pscsi_check_for_SG(se_task_t *task)
++{
++	return task->task_sg_num;
++}
++
++/*	pscsi_get_cdb():
++ *
++ *
++ */
++unsigned char *pscsi_get_cdb(se_task_t *task)
++{
++	pscsi_plugin_task_t *pt = (pscsi_plugin_task_t *) task->transport_req;
++
++	return pt->pscsi_cdb;
++}
++
++/*	pscsi_get_sense_buffer():
++ *
++ *
++ */
++unsigned char *pscsi_get_sense_buffer(se_task_t *task)
++{
++	pscsi_plugin_task_t *pt = (pscsi_plugin_task_t *) task->transport_req;
++
++	return (unsigned char *)&pt->pscsi_sense[0];
++}
++
++/*	pscsi_get_blocksize():
++ *
++ *
++ */
++u32 pscsi_get_blocksize(se_device_t *dev)
++{
++	pscsi_dev_virt_t *pdv = (pscsi_dev_virt_t *) dev->dev_ptr;
++	struct scsi_device *sd = (struct scsi_device *) pdv->pdv_sd;
++
++	return sd->sector_size;
++}
++
++/*	pscsi_get_device_rev():
++ *
++ *
++ */
++u32 pscsi_get_device_rev(se_device_t *dev)
++{
++	pscsi_dev_virt_t *pdv = (pscsi_dev_virt_t *) dev->dev_ptr;
++	struct scsi_device *sd = (struct scsi_device *) pdv->pdv_sd;
++
++	return (sd->scsi_level - 1) ? sd->scsi_level - 1 : 1;
++}
++
++/*	pscsi_get_device_type():
++ *
++ *
++ */
++u32 pscsi_get_device_type(se_device_t *dev)
++{
++	pscsi_dev_virt_t *pdv = (pscsi_dev_virt_t *) dev->dev_ptr;
++	struct scsi_device *sd = (struct scsi_device *) pdv->pdv_sd;
++
++	return sd->type;
++}
++
++/*	pscsi_get_dma_length():
++ *
++ *
++ */
++u32 pscsi_get_dma_length(u32 task_size, se_device_t *dev)
++{
++	return PAGE_SIZE;
++}
++
++/*	pscsi_get_max_sectors():
++ *
++ *
++ */
++u32 pscsi_get_max_sectors(se_device_t *dev)
++{
++	pscsi_dev_virt_t *pdv = (pscsi_dev_virt_t *) dev->dev_ptr;
++	struct scsi_device *sd = (struct scsi_device *) pdv->pdv_sd;
++	return (sd->host->max_sectors > sd->request_queue->max_sectors) ?
++		sd->request_queue->max_sectors : sd->host->max_sectors;
++}
++
++/*	pscsi_get_queue_depth():
++ *
++ *
++ */
++u32 pscsi_get_queue_depth(se_device_t *dev)
++{
++	pscsi_dev_virt_t *pdv = (pscsi_dev_virt_t *) dev->dev_ptr;
++	struct scsi_device *sd = (struct scsi_device *) pdv->pdv_sd;
++
++	return sd->queue_depth;
++}
++
++void pscsi_shutdown_hba(se_hba_t *hba)
++{
++	return;
++}
++
++/*	pscsi_handle_SAM_STATUS_failures():
++ *
++ *
++ */
++static inline void pscsi_process_SAM_status(
++	se_task_t *task,
++	pscsi_plugin_task_t *pt)
++{
++	task->task_scsi_status = status_byte(pt->pscsi_result);
++	if ((task->task_scsi_status)) {
++		task->task_scsi_status <<= 1;
++		printk(KERN_INFO "PSCSI Status Byte exception at task: %p CDB:"
++			" 0x%02x Result: 0x%08x\n", task, pt->pscsi_cdb[0],
++			pt->pscsi_result);
++	}
++
++	switch (host_byte(pt->pscsi_result)) {
++	case DID_OK:
++		transport_complete_task(task, (!task->task_scsi_status));
++		break;
 +	default:
-+		printk(KERN_ERR "Unknown PERSISTENT_RESERVE_OUT service"
-+			" action: 0x%02x\n", cdb[1] & 0x1f);
-+		return PYX_TRANSPORT_INVALID_CDB_FIELD;
++		printk(KERN_INFO "PSCSI Host Byte exception at task: %p CDB:"
++			" 0x%02x Result: 0x%08x\n", task, pt->pscsi_cdb[0],
++			pt->pscsi_result);
++		task->task_scsi_status = SAM_STAT_CHECK_CONDITION;
++		task->task_error_status = PYX_TRANSPORT_UNKNOWN_SAM_OPCODE;
++		TASK_CMD(task)->transport_error_status =
++					PYX_TRANSPORT_UNKNOWN_SAM_OPCODE;
++		transport_complete_task(task, 0);
++		break;
 +	}
 +
-+	return PYX_TRANSPORT_INVALID_CDB_FIELD;
++	return;
 +}
 +
-+/*
-+ * PERSISTENT_RESERVE_IN Service Action READ_KEYS
-+ *
-+ * See spc4r17 section 5.7.6.2 and section 6.13.2, Table 160
-+ */
-+static int core_scsi3_pri_read_keys(se_cmd_t *cmd)
++void pscsi_req_done(struct request *req, int uptodate)
 +{
-+	se_device_t *se_dev = SE_DEV(cmd);
-+	se_subsystem_dev_t *su_dev = SU_DEV(se_dev);
-+	t10_pr_registration_t *pr_reg;
-+	unsigned char *buf = (unsigned char *)T_TASK(cmd)->t_task_buf;
-+	u32 add_len = 0, off = 8;
++	se_task_t *task = (se_task_t *)req->end_io_data;
++	pscsi_plugin_task_t *pt = (pscsi_plugin_task_t *)task->transport_req;
 +
-+	buf[0] = ((T10_RES(su_dev)->pr_generation >> 24) & 0xff);
-+	buf[1] = ((T10_RES(su_dev)->pr_generation >> 16) & 0xff);
-+	buf[2] = ((T10_RES(su_dev)->pr_generation >> 8) & 0xff);
-+	buf[3] = (T10_RES(su_dev)->pr_generation & 0xff);
++	pt->pscsi_result = req->errors;
++	pt->pscsi_resid = req->data_len;
 +
-+	spin_lock(&T10_RES(su_dev)->registration_lock);
-+	list_for_each_entry(pr_reg, &T10_RES(su_dev)->registration_list,
-+			pr_reg_list) {
-+		/*
-+		 * Check for overflow of 8byte PRI READ_KEYS payload and
-+		 * next reservation key list descriptor.
-+		 */
-+		if ((add_len + 8) > (cmd->data_length - 8))
-+			break;
-+
-+		buf[off++] = ((pr_reg->pr_res_key >> 56) & 0xff);
-+		buf[off++] = ((pr_reg->pr_res_key >> 48) & 0xff);
-+		buf[off++] = ((pr_reg->pr_res_key >> 40) & 0xff);
-+		buf[off++] = ((pr_reg->pr_res_key >> 32) & 0xff);
-+		buf[off++] = ((pr_reg->pr_res_key >> 24) & 0xff);
-+		buf[off++] = ((pr_reg->pr_res_key >> 16) & 0xff);
-+		buf[off++] = ((pr_reg->pr_res_key >> 8) & 0xff);
-+		buf[off++] = (pr_reg->pr_res_key & 0xff);
-+
-+		add_len += 8;
-+	}
-+	spin_unlock(&T10_RES(su_dev)->registration_lock);
-+
-+	buf[4] = ((add_len >> 24) & 0xff);
-+	buf[5] = ((add_len >> 16) & 0xff);
-+	buf[6] = ((add_len >> 8) & 0xff);
-+	buf[7] = (add_len & 0xff);
-+
-+	return 0;
++	pscsi_process_SAM_status(task, pt);
++	__blk_put_request(req->q, req);
++	pt->pscsi_req = NULL;
 +}
-+
-+/*
-+ * PERSISTENT_RESERVE_IN Service Action READ_RESERVATION
-+ *
-+ * See spc4r17 section 5.7.6.3 and section 6.13.3.2 Table 161 and 162
-+ */
-+static int core_scsi3_pri_read_reservation(se_cmd_t *cmd)
-+{
-+	se_device_t *se_dev = SE_DEV(cmd);
-+	se_subsystem_dev_t *su_dev = SU_DEV(se_dev);
-+	t10_pr_registration_t *pr_reg;
-+	unsigned char *buf = (unsigned char *)T_TASK(cmd)->t_task_buf;
-+	u64 pr_res_key;
-+	u32 add_len = 16; /* Hardcoded to 16 when a reservation is held. */
-+
-+	buf[0] = ((T10_RES(su_dev)->pr_generation >> 24) & 0xff);
-+	buf[1] = ((T10_RES(su_dev)->pr_generation >> 16) & 0xff);
-+	buf[2] = ((T10_RES(su_dev)->pr_generation >> 8) & 0xff);
-+	buf[3] = (T10_RES(su_dev)->pr_generation & 0xff);
-+
-+	spin_lock(&se_dev->dev_reservation_lock);
-+	pr_reg = se_dev->dev_pr_res_holder;
-+	if ((pr_reg)) {
-+		/*
-+		 * Set the hardcoded Additional Length
-+		 */
-+		buf[4] = ((add_len >> 24) & 0xff);
-+		buf[5] = ((add_len >> 16) & 0xff);
-+		buf[6] = ((add_len >> 8) & 0xff);
-+		buf[7] = (add_len & 0xff);
-+		/*
-+		 * Set the Reservation key.
-+		 *
-+		 * From spc4r17, section 5.7.10:
-+		 * A persistent reservation holder has its reservation key
-+		 * returned in the parameter data from a PERSISTENT
-+		 * RESERVE IN command with READ RESERVATION service action as
-+		 * follows:
-+		 * a) For a persistent reservation of the type Write Exclusive
-+		 *    - All Registrants or Exclusive Access ­ All Regitrants,
-+		 *      the reservation key shall be set to zero; or
-+		 * b) For all other persistent reservation types, the
-+		 *    reservation key shall be set to the registered
-+		 *    reservation key for the I_T nexus that holds the
-+		 *    persistent reservation.
-+		 */
-+		if ((pr_reg->pr_res_type == PR_TYPE_WRITE_EXCLUSIVE_ALLREG) ||
-+		    (pr_reg->pr_res_type == PR_TYPE_EXCLUSIVE_ACCESS_ALLREG))
-+			pr_res_key = 0;
-+		else
-+			pr_res_key = pr_reg->pr_res_key;
-+
-+		buf[8] = ((pr_res_key >> 56) & 0xff);
-+		buf[9] = ((pr_res_key >> 48) & 0xff);
-+		buf[10] = ((pr_res_key >> 40) & 0xff);
-+		buf[11] = ((pr_res_key >> 32) & 0xff);
-+		buf[12] = ((pr_res_key >> 24) & 0xff);
-+		buf[13] = ((pr_res_key >> 16) & 0xff);
-+		buf[14] = ((pr_res_key >> 8) & 0xff);
-+		buf[15] = (pr_res_key & 0xff);
-+		/*
-+		 * Set the SCOPE and TYPE
-+		 */
-+		buf[21] = (pr_reg->pr_res_scope & 0xf0) |
-+			  (pr_reg->pr_res_type & 0x0f);
-+	}
-+	spin_unlock(&se_dev->dev_reservation_lock);
-+
-+	return 0;
-+}
-+
-+/*
-+ * PERSISTENT_RESERVE_IN Service Action REPORT_CAPABILITIES
-+ *
-+ * See spc4r17 section 6.13.4 Table 165
-+ */
-+static int core_scsi3_pri_report_capabilities(se_cmd_t *cmd)
-+{
-+	unsigned char *buf = (unsigned char *)T_TASK(cmd)->t_task_buf;
-+	u16 add_len = 8; /* Hardcoded to 8. */
-+
-+	buf[0] = ((add_len << 8) & 0xff);
-+	buf[1] = (add_len & 0xff);
-+	/*
-+	 * FIXME: Leave these features disabled for now..
-+	 */
-+#if 0
-+	buf[2] |= 0x10; /* CRH: Compatible Reservation Hanlding bit. */
-+	buf[2] |= 0x08; /* SIP_C: Specify Initiator Ports Capable bit */
-+#endif
-+	buf[2] |= 0x04; /* ATP_C: All Target Ports Capable bit */
-+#if 0
-+	buf[2] |= 0x01; /* PTPL_C: Persistence across Target Power Loss bit */
-+#endif
-+	/*
-+	 * We are filling in the PERSISTENT RESERVATION TYPE MASK below, so
-+	 * set the TMV: Task Mask Valid bit.
-+	 */
-+	buf[3] |= 0x80;
-+	/*
-+	 * Change ALLOW COMMANDs to 0x20 or 0x40 later from Table 166
-+	 */
-+	buf[3] |= 0x10; /* ALLOW COMMANDs field 001b */
-+	/*
-+	 * PTPL_A: Persistence across Target Power Loss Active bit
-+	 */
-+#if 0
-+	buf[3] |= 0x01;
-+#endif
-+	/*
-+	 * Setup the PERSISTENT RESERVATION TYPE MASK from Table 167
-+	 */
-+	buf[4] |= 0x80; /* PR_TYPE_EXCLUSIVE_ACCESS_ALLREG */
-+	buf[4] |= 0x40; /* PR_TYPE_EXCLUSIVE_ACCESS_REGONLY */
-+	buf[4] |= 0x20; /* PR_TYPE_WRITE_EXCLUSIVE_REGONLY */
-+	buf[4] |= 0x08; /* PR_TYPE_EXCLUSIVE_ACCESS */
-+	buf[4] |= 0x02; /* PR_TYPE_WRITE_EXCLUSIVE */
-+	buf[5] |= 0x01; /* PR_TYPE_EXCLUSIVE_ACCESS_ALLREG */
-+
-+	return 0;
-+}
-+
-+/*
-+ * PERSISTENT_RESERVE_IN Service Action READ_FULL_STATUS
-+ *
-+ * See spc4r17 section 6.13.5 Table 168 and 169
-+ */
-+static int core_scsi3_pri_read_full_status(se_cmd_t *cmd)
-+{
-+	se_device_t *se_dev = SE_DEV(cmd);
-+	se_node_acl_t *se_nacl;
-+	se_subsystem_dev_t *su_dev = SU_DEV(se_dev);
-+	se_portal_group_t *se_tpg;
-+	t10_pr_registration_t *pr_reg, *pr_reg_tmp;
-+	t10_reservation_template_t *pr_tmpl = &SU_DEV(se_dev)->t10_reservation;
-+	unsigned char *buf = (unsigned char *)T_TASK(cmd)->t_task_buf;
-+	u32 add_desc_len = 0, add_len = 0, desc_len, exp_desc_len;
-+	u32 off = 8; /* off into first Full Status descriptor */
-+	int format_code = 0;
-+
-+	buf[0] = ((T10_RES(su_dev)->pr_generation >> 24) & 0xff);
-+	buf[1] = ((T10_RES(su_dev)->pr_generation >> 16) & 0xff);
-+	buf[2] = ((T10_RES(su_dev)->pr_generation >> 8) & 0xff);
-+	buf[3] = (T10_RES(su_dev)->pr_generation & 0xff);
-+
-+	spin_lock(&pr_tmpl->registration_lock);
-+	list_for_each_entry_safe(pr_reg, pr_reg_tmp,
-+			&pr_tmpl->registration_list, pr_reg_list) {
-+
-+		se_nacl = pr_reg->pr_reg_nacl;
-+		se_tpg = pr_reg->pr_reg_nacl->se_tpg;
-+		add_desc_len = 0;
-+		/*
-+		 * Determine expected length of $FABRIC_MOD specific
-+		 * TransportID full status descriptor..
-+		 */
-+		exp_desc_len = TPG_TFO(se_tpg)->tpg_get_pr_transport_id_len(
-+				se_tpg, se_nacl, &format_code);
-+
-+		if ((exp_desc_len + add_len) > cmd->data_length) {
-+			printk(KERN_WARNING "SPC-3 PRIN READ_FULL_STATUS ran"
-+				" out of buffer: %d\n", cmd->data_length);
-+			break;
-+		}
-+		/*
-+		 * Set RESERVATION KEY
-+		 */
-+		buf[off++] = ((pr_reg->pr_res_key >> 56) & 0xff);
-+		buf[off++] = ((pr_reg->pr_res_key >> 48) & 0xff);
-+		buf[off++] = ((pr_reg->pr_res_key >> 40) & 0xff);
-+		buf[off++] = ((pr_reg->pr_res_key >> 32) & 0xff);
-+		buf[off++] = ((pr_reg->pr_res_key >> 24) & 0xff);
-+		buf[off++] = ((pr_reg->pr_res_key >> 16) & 0xff);
-+		buf[off++] = ((pr_reg->pr_res_key >> 8) & 0xff);
-+		buf[off++] = (pr_reg->pr_res_key & 0xff);
-+		off += 4; /* Skip Over Reserved area */
-+
-+		/*
-+		 * Set ALL_TG_PT bit if PROUT SA REGISTER had this set.
-+		 */
-+		if (pr_reg->pr_reg_all_tg_pt)
-+			buf[off] = 0x02;
-+		/*
-+		 * The se_lun_t pointer will be present for the
-+		 * reservation holder for PR_HOLDER bit.
-+		 *
-+		 * Also, if this registration is the reservation
-+		 * holder, fill in SCOPE and TYPE in the next byte.
-+		 */
-+		if (pr_reg->pr_res_holder) {
-+			buf[off++] |= 0x01;
-+			buf[off++] = (pr_reg->pr_res_scope & 0xf0) |
-+				     (pr_reg->pr_res_type & 0x0f);
-+		} else
-+			off += 2;
-+
-+		off += 4; /* Skip over reserved area */
-+		/*
-+		 * From spc4r17 6.3.15:
-+		 *
-+		 * If the ALL_TG_PT bit set to zero, the RELATIVE TARGET PORT
-+		 * IDENTIFIER field contains the relative port identifier (see
-+		 * 3.1.120) of the target port that is part of the I_T nexus
-+		 * described by this full status descriptor. If the ALL_TG_PT
-+		 * bit is set to one, the contents of the RELATIVE TARGET PORT
-+		 * IDENTIFIER field are not defined by this standard.
-+		 */
-+		if (!(pr_reg->pr_reg_all_tg_pt)) {
-+			se_port_t *port = pr_reg->pr_reg_tg_pt_lun->lun_sep;
-+
-+			buf[off++] = ((port->sep_rtpi >> 8) & 0xff);
-+			buf[off++] = (port->sep_rtpi & 0xff);
-+		} else
-+			off += 2; /* Skip over RELATIVE TARGET PORT IDENTIFER */
-+
-+		/*
-+		 * Now, have the $FABRIC_MOD fill in the protocol identifier
-+		 */
-+		desc_len = TPG_TFO(se_tpg)->tpg_get_pr_transport_id(se_tpg,
-+				se_nacl, &format_code, &buf[off+4]);
-+		/*
-+		 * Set the ADDITIONAL DESCRIPTOR LENGTH
-+		 */
-+		buf[off++] = ((desc_len >> 24) & 0xff);
-+		buf[off++] = ((desc_len >> 16) & 0xff);
-+		buf[off++] = ((desc_len >> 8) & 0xff);
-+		buf[off++] = (desc_len & 0xff);
-+		/*
-+		 * Size of full desctipor header minus TransportID
-+		 * containing $FABRIC_MOD specific) initiator device/port
-+		 * WWN information.
-+		 *
-+		 *  See spc4r17 Section 6.13.5 Table 169
-+		 */
-+		add_desc_len = (24 + desc_len);
-+
-+		off += desc_len;
-+		add_len += add_desc_len;
-+	}
-+	spin_unlock(&pr_tmpl->registration_lock);
-+	/*
-+	 * Set ADDITIONAL_LENGTH
-+	 */
-+	buf[4] = ((add_len >> 24) & 0xff);
-+	buf[5] = ((add_len >> 16) & 0xff);
-+	buf[6] = ((add_len >> 8) & 0xff);
-+	buf[7] = (add_len & 0xff);
-+
-+	return 0;
-+}
-+
-+static int core_scsi3_emulate_pr_in(se_cmd_t *cmd, unsigned char *cdb)
-+{
-+	switch (cdb[1] & 0x1f) {
-+	case PRI_READ_KEYS:
-+		return core_scsi3_pri_read_keys(cmd);
-+	case PRI_READ_RESERVATION:
-+		return core_scsi3_pri_read_reservation(cmd);
-+	case PRI_REPORT_CAPABILITIES:
-+		return core_scsi3_pri_report_capabilities(cmd);
-+	case PRI_READ_FULL_STATUS:
-+		return core_scsi3_pri_read_full_status(cmd);
-+	default:
-+		printk(KERN_ERR "Unknown PERSISTENT_RESERVE_IN service"
-+			" action: 0x%02x\n", cdb[1] & 0x1f);
-+		return PYX_TRANSPORT_INVALID_CDB_FIELD;
-+	}
-+
-+}
-+
-+int core_scsi3_emulate_pr(se_cmd_t *cmd)
-+{
-+	unsigned char *cdb = &T_TASK(cmd)->t_task_cdb[0];
-+
-+	return (cdb[0] == PERSISTENT_RESERVE_OUT) ?
-+	       core_scsi3_emulate_pr_out(cmd, cdb) :
-+	       core_scsi3_emulate_pr_in(cmd, cdb);
-+}
-+
-+static int core_pt_reservation_check(se_cmd_t *cmd, u32 *pr_res_type)
-+{
-+	return 0;
-+}
-+
-+static int core_pt_reserve(se_cmd_t *cmd)
-+{
-+	return 0;
-+}
-+
-+static int core_pt_release(se_cmd_t *cmd)
-+{
-+	return 0;
-+}
-+
-+static int core_pt_seq_non_holder(
-+	se_cmd_t *cmd,
-+	unsigned char *cdb,
-+	u32 pr_reg_type)
-+{
-+	return 0;
-+}
-+
-+int core_setup_reservations(se_device_t *dev)
-+{
-+	se_subsystem_dev_t *su_dev = dev->se_sub_dev;
-+	t10_reservation_template_t *rest = &su_dev->t10_reservation;
-+	/*
-+	 * If this device is from Target_Core_Mod/pSCSI, use the reservations
-+	 * of the Underlying SCSI hardware.  In Linux/SCSI terms, this can
-+	 * cause a problem because libata and some SATA RAID HBAs appear
-+	 * under Linux/SCSI, but to emulate reservations themselves.
-+	 */
-+	if ((TRANSPORT(dev)->transport_type == TRANSPORT_PLUGIN_PHBA_PDEV) &&
-+	    !(DEV_ATTRIB(dev)->emulate_reservations)) {
-+		rest->res_type = SPC_PASSTHROUGH;
-+		rest->t10_reservation_check = &core_pt_reservation_check;
-+		rest->t10_reserve = &core_pt_reserve;
-+		rest->t10_release = &core_pt_release;
-+		rest->t10_seq_non_holder = &core_pt_seq_non_holder;
-+		printk(KERN_INFO "%s: Using SPC_PASSTHROUGH, no reservation"
-+			" emulation\n", TRANSPORT(dev)->name);
-+		return 0;
-+	}
-+	/*
-+	 * If SPC-3 or above is reported by real or emulated se_device_t,
-+	 * use emulated Persistent Reservations.
-+	 */
-+	if (TRANSPORT(dev)->get_device_rev(dev) >= SCSI_3) {
-+		rest->res_type = SPC3_PERSISTENT_RESERVATIONS;
-+		rest->t10_reservation_check = &core_scsi3_pr_reservation_check;
-+		rest->t10_reserve = &core_scsi3_legacy_reserve;
-+		rest->t10_release = &core_scsi3_legacy_release;
-+		rest->t10_seq_non_holder = &core_scsi3_pr_seq_non_holder;
-+		printk(KERN_INFO "%s: Using SPC3_PERSISTENT_RESERVATIONS"
-+			" emulation\n", TRANSPORT(dev)->name);
-+	} else {
-+		rest->res_type = SPC2_RESERVATIONS;
-+		rest->t10_reservation_check = &core_scsi2_reservation_check;
-+		rest->t10_reserve = &core_scsi2_reservation_reserve;
-+		rest->t10_release = &core_scsi2_reservation_release;
-+		rest->t10_seq_non_holder =
-+				&core_scsi2_reservation_seq_non_holder;
-+		printk(KERN_INFO "%s: Using SPC2_RESERVATIONS emulation\n",
-+			TRANSPORT(dev)->name);
-+	}
-+
-+	return 0;
-+}
-diff --git a/include/target/target_core_pr.h b/include/target/target_core_pr.h
+diff --git a/include/target/target_core_pscsi.h b/include/target/target_core_pscsi.h
 new file mode 100644
-index 0000000..23d9e18
+index 0000000..b05b793
 --- /dev/null
-+++ b/include/target/target_core_pr.h
-@@ -0,0 +1,54 @@
-+#ifndef TARGET_CORE_PR_H
-+#define TARGET_CORE_PR_H
-+/*
-+ * PERSISTENT_RESERVE_OUT service action codes
++++ b/include/target/target_core_pscsi.h
+@@ -0,0 +1,189 @@
++/*******************************************************************************
++ * Filename:  target_core_pscsi.h
 + *
-+ * spc4r17 section 6.14.2 Table 171
-+ */
-+#define PRO_REGISTER				0x00
-+#define PRO_RESERVE				0x01
-+#define PRO_RELEASE				0x02
-+#define PRO_CLEAR				0x03
-+#define PRO_PREEMPT				0x04
-+#define PRO_PREEMPT_AND_ABORT			0x05
-+#define PRO_REGISTER_AND_IGNORE_EXISTING_KEY	0x06
-+#define PRO_REGISTER_AND_MOVE			0x07
-+/*
-+ * PERSISTENT_RESERVE_IN service action codes
++ * This file contains the generic target mode <-> Linux SCSI subsystem plugin.
++ * specific definitions and prototypes.
 + *
-+ * spc4r17 section 6.13.1 Table 159
-+ */
-+#define PRI_READ_KEYS				0x00
-+#define PRI_READ_RESERVATION			0x01
-+#define PRI_REPORT_CAPABILITIES			0x02
-+#define PRI_READ_FULL_STATUS			0x03
-+/*
-+ * PERSISTENT_RESERVE_ SCOPE field
++ * Copyright (c) 2003, 2004, 2005 PyX Technologies, Inc.
++ * Copyright (c) 2005, 2006, 2007 SBE, Inc.
++ * Copyright (c) 2007-2009 Rising Tide Software, Inc.
++ * Copyright (c) 2008-2009 Linux-iSCSI.org
 + *
-+ * spc4r17 section 6.13.3.3 Table 163
-+ */
-+#define PR_SCOPE_LU_SCOPE			0x00
-+/*
-+ * PERSISTENT_RESERVE_* TYPE field
++ * Nicholas A. Bellinger <nab@kernel.org>
 + *
-+ * spc4r17 section 6.13.3.4 Table 164
-+ */
-+#define PR_TYPE_WRITE_EXCLUSIVE			0x01
-+#define PR_TYPE_EXCLUSIVE_ACCESS		0x03
-+#define PR_TYPE_WRITE_EXCLUSIVE_REGONLY		0x05
-+#define PR_TYPE_EXCLUSIVE_ACCESS_REGONLY	0x06
-+#define PR_TYPE_WRITE_EXCLUSIVE_ALLREG		0x07
-+#define PR_TYPE_EXCLUSIVE_ACCESS_ALLREG		0x08
++ * This program is free software; you can redistribute it and/or modify
++ * it under the terms of the GNU General Public License as published by
++ * the Free Software Foundation; either version 2 of the License, or
++ * (at your option) any later version.
++ *
++ * This program is distributed in the hope that it will be useful,
++ * but WITHOUT ANY WARRANTY; without even the implied warranty of
++ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
++ * GNU General Public License for more details.
++ *
++ * You should have received a copy of the GNU General Public License
++ * along with this program; if not, write to the Free Software
++ * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
++ *
++ ******************************************************************************/
 +
-+extern struct kmem_cache *t10_pr_reg_cache;
 +
-+extern void core_scsi3_free_pr_reg_from_nacl(struct se_device_s *,
-+					     struct se_node_acl_s *);
-+extern void core_scsi3_free_all_registrations(struct se_device_s *);
-+extern unsigned char *core_scsi3_pr_dump_type(int);
-+extern int core_scsi3_check_cdb_abort_and_preempt(struct list_head *,
-+						  struct se_cmd_s *);
-+extern int core_scsi3_emulate_pr(struct se_cmd_s *);
-+extern int core_setup_reservations(struct se_device_s *);
++#ifndef TARGET_CORE_PSCSI_H
++#define TARGET_CORE_PSCSI_H
 +
-+#endif /* TARGET_CORE_PR_H */
++#define PSCSI_VERSION		"v3.0"
++
++/* used in pscsi_find_alloc_len() */
++#ifndef INQUIRY_DATA_SIZE
++#define INQUIRY_DATA_SIZE	0x24
++#endif
++
++/* used in pscsi_add_device_to_list() */
++#define PSCSI_DEFAULT_QUEUEDEPTH	1
++
++#define PS_RETRY		5
++#define PS_TIMEOUT_DISK		(15*HZ)
++#define PS_TIMEOUT_OTHER	(500*HZ)
++
++extern se_global_t *se_global;
++extern struct block_device *linux_blockdevice_claim(int, int, void *);
++extern int linux_blockdevice_release(int, int, struct block_device *);
++extern int linux_blockdevice_check(int, int);
++
++extern int pscsi_CDB_inquiry(se_task_t *, u32);
++extern int pscsi_CDB_none(se_task_t *, u32);
++extern int pscsi_CDB_read_non_SG(se_task_t *, u32);
++extern int pscsi_CDB_read_SG(se_task_t *, u32);
++extern int pscsi_CDB_write_non_SG(se_task_t *, u32);
++extern int pscsi_CDB_write_SG(se_task_t *, u32);
++
++#ifndef PSCSI_INCLUDE_STRUCTS
++extern int pscsi_attach_hba(se_hba_t *, u32);
++extern int pscsi_detach_hba(se_hba_t *);
++extern int pscsi_claim_phydevice(se_hba_t *, se_device_t *);
++extern int pscsi_release_phydevice(se_device_t *);
++extern void *pscsi_allocate_virtdevice(se_hba_t *, const char *);
++extern se_device_t *pscsi_create_virtdevice(se_hba_t *, se_subsystem_dev_t *,
++					void *);
++extern int pscsi_activate_device(se_device_t *);
++extern void pscsi_deactivate_device(se_device_t *);
++extern void pscsi_free_device(void *);
++extern int pscsi_transport_complete(se_task_t *);
++extern void *pscsi_allocate_request(se_task_t *, se_device_t *);
++extern int pscsi_do_task(se_task_t *);
++extern void pscsi_free_task(se_task_t *);
++extern ssize_t pscsi_set_configfs_dev_params(se_hba_t *, se_subsystem_dev_t *,
++						const char *, ssize_t);
++extern ssize_t pscsi_check_configfs_dev_params(se_hba_t *,
++						se_subsystem_dev_t *);
++extern ssize_t pscsi_show_configfs_dev_params(se_hba_t *, se_subsystem_dev_t *,
++						char *);
++extern se_device_t *pscsi_create_virtdevice_from_fd(se_subsystem_dev_t *,
++						const char *);
++extern void pscsi_get_plugin_info(void *, char *, int *);
++extern void pscsi_get_hba_info(se_hba_t *, char *, int *);
++extern void pscsi_get_dev_info(se_device_t *, char *, int *);
++extern int pscsi_check_lba(unsigned long long, se_device_t *);
++extern int pscsi_check_for_SG(se_task_t *);
++extern unsigned char *pscsi_get_cdb(se_task_t *);
++extern unsigned char *pscsi_get_sense_buffer(se_task_t *);
++extern u32 pscsi_get_blocksize(se_device_t *);
++extern u32 pscsi_get_device_rev(se_device_t *);
++extern u32 pscsi_get_device_type(se_device_t *);
++extern u32 pscsi_get_dma_length(u32, se_device_t *);
++extern u32 pscsi_get_max_sectors(se_device_t *);
++extern u32 pscsi_get_queue_depth(se_device_t *);
++extern void pscsi_shutdown_hba(struct se_hba_s *);
++extern void pscsi_req_done(struct request *, int);
++#endif
++
++#include <linux/device.h>
++#include <scsi/scsi_driver.h>
++#include <scsi/scsi_device.h>
++#include <linux/kref.h>
++#include <linux/kobject.h>
++
++typedef struct pscsi_plugin_task_s {
++	unsigned char pscsi_cdb[SCSI_CDB_SIZE];
++	unsigned char pscsi_sense[SCSI_SENSE_BUFFERSIZE];
++	int	pscsi_direction;
++	int	pscsi_result;
++	u32	pscsi_resid;
++	struct request *pscsi_req;
++} pscsi_plugin_task_t;
++
++#define PDF_HAS_CHANNEL_ID	0x01
++#define PDF_HAS_TARGET_ID	0x02
++#define PDF_HAS_LUN_ID		0x04
++#define PDF_HAS_VPD_UNIT_SERIAL 0x08
++#define PDF_HAS_VPD_DEV_IDENT	0x10
++
++typedef struct pscsi_dev_virt_s {
++	int	pdv_flags;
++	int	pdv_channel_id;
++	int	pdv_target_id;
++	int	pdv_lun_id;
++	struct block_device *pdv_bd; /* Temporary for v2.6.28 */
++	struct scsi_device *pdv_sd;
++	struct se_hba_s *pdv_se_hba;
++} pscsi_dev_virt_t;
++
++extern void __pscsi_get_dev_info(pscsi_dev_virt_t *, char *, int *);
++
++/*
++ * We use the generic command sequencer, so we must setup
++ * se_subsystem_spc_t.
++ */
++#ifndef PSCSI_INCLUDE_STRUCTS
++
++se_subsystem_spc_t pscsi_template_spc = {
++	.inquiry		= pscsi_CDB_inquiry,
++	.none			= pscsi_CDB_none,
++	.read_non_SG		= pscsi_CDB_read_non_SG,
++	.read_SG		= pscsi_CDB_read_SG,
++	.write_non_SG		= pscsi_CDB_write_non_SG,
++	.write_SG		= pscsi_CDB_write_SG,
++};
++
++se_subsystem_api_t pscsi_template = {
++	.name			= "pscsi",			\
++	.type			= PSCSI,			\
++	.transport_type		= TRANSPORT_PLUGIN_PHBA_PDEV,	\
++	.attach_hba		= pscsi_attach_hba,		\
++	.detach_hba		= pscsi_detach_hba,		\
++	.activate_device	= pscsi_activate_device,	\
++	.deactivate_device	= pscsi_deactivate_device,	\
++	.claim_phydevice	= pscsi_claim_phydevice,	\
++	.allocate_virtdevice	= pscsi_allocate_virtdevice,	\
++	.create_virtdevice	= pscsi_create_virtdevice,	\
++	.free_device		= pscsi_free_device,		\
++	.release_phydevice	= pscsi_release_phydevice,	\
++	.transport_complete	= pscsi_transport_complete,	\
++	.allocate_request	= pscsi_allocate_request,	\
++	.do_task		= pscsi_do_task,		\
++	.free_task		= pscsi_free_task,		\
++	.check_configfs_dev_params = pscsi_check_configfs_dev_params, \
++	.set_configfs_dev_params = pscsi_set_configfs_dev_params, \
++	.show_configfs_dev_params = pscsi_show_configfs_dev_params, \
++	.create_virtdevice_from_fd = pscsi_create_virtdevice_from_fd, \
++	.get_plugin_info	= pscsi_get_plugin_info,	\
++	.get_hba_info		= pscsi_get_hba_info,		\
++	.get_dev_info		= pscsi_get_dev_info,		\
++	.check_lba		= pscsi_check_lba,		\
++	.check_for_SG		= pscsi_check_for_SG,		\
++	.get_cdb		= pscsi_get_cdb,		\
++	.get_sense_buffer	= pscsi_get_sense_buffer,	\
++	.get_blocksize		= pscsi_get_blocksize,		\
++	.get_device_rev		= pscsi_get_device_rev,		\
++	.get_device_type	= pscsi_get_device_type,	\
++	.get_dma_length		= pscsi_get_dma_length,		\
++	.get_max_sectors	= pscsi_get_max_sectors,	\
++	.get_queue_depth	= pscsi_get_queue_depth,	\
++	.shutdown_hba		= pscsi_shutdown_hba,		\
++	.write_pending		= NULL,				\
++	.spc			= &pscsi_template_spc,		\
++};
++
++#endif
++
++#endif   /*** TARGET_CORE_PSCSI_H ***/
 
 
