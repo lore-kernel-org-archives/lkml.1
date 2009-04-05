@@ -1,88 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754286AbZDEOUu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753787AbZDEO3a@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754286AbZDEOUu (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 5 Apr 2009 10:20:50 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751236AbZDEOUl
+	id S1753787AbZDEO3a (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 5 Apr 2009 10:29:30 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751643AbZDEO3W
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 5 Apr 2009 10:20:41 -0400
-Received: from tichy.grunau.be ([85.131.189.73]:48322 "EHLO tichy.grunau.be"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751150AbZDEOUk (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 5 Apr 2009 10:20:40 -0400
-Date: Sun, 5 Apr 2009 16:20:13 +0200
-From: Janne Grunau <j@jannau.net>
-To: Jeff Garzik <jeff@garzik.org>
-Cc: David Rees <drees76@gmail.com>, Mark Lord <lkml@rtr.ca>,
-       Lennart Sorensen <lsorense@csclub.uwaterloo.ca>,
-       Jens Axboe <jens.axboe@oracle.com>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Ingo Molnar <mingo@elte.hu>, Andrew Morton <akpm@linux-foundation.org>,
-       tytso@mit.edu, jesper@krogh.cc,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: Linux 2.6.29
-Message-ID: <20090405142013.GB10556@aniel>
-References: <20090403072507.GO5178@kernel.dk> <20090403142129.GH3795@csclub.uwaterloo.ca> <49D625A0.1030202@rtr.ca> <49D66A40.5020503@garzik.org> <20090403212847.GC25887@aniel> <49D68631.4030706@garzik.org> <72dbd3150904031553r3c60a3a5k45f16e0e7513d488@mail.gmail.com> <49D69C1D.50209@garzik.org> <20090404162954.GA5170@aniel> <49D7E71B.2080301@garzik.org>
+	Sun, 5 Apr 2009 10:29:22 -0400
+Received: from krynn.se.axis.com ([193.13.178.10]:58980 "EHLO
+	krynn.se.axis.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751236AbZDEO3V (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 5 Apr 2009 10:29:21 -0400
+Date: Sun, 5 Apr 2009 16:27:51 +0200
+From: Jesper Nilsson <jesper.nilsson@axis.com>
+To: Linus Torvalds <torvalds@linux-foundation.org>,
+       LKML <linux-kernel@vger.kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>
+Subject: [git pull] CRIS updates
+Message-ID: <20090405142750.GC29644@axis.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <49D7E71B.2080301@garzik.org>
-User-Agent: Mutt/1.5.19 (2009-01-05)
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, Apr 04, 2009 at 07:02:51PM -0400, Jeff Garzik wrote:
-> Janne Grunau wrote:
-> > 
-> > Jeff, could you please try following patch for 0.21 or update to the
-> > latest trunk revision. I don't have a way to reproduce the high
-> > latencies with fdatasync on ext3, data=ordered. Doing a parallel
-> > "dd if=/dev/zero of=file" on the same partition introduces even with
-> > sync_file_range latencies over 1 second.
-> 
-> Is dd + sync_file_range really a realistic comparison?  dd is streaming 
-> as fast as the disk can output data, whereas MythTV is streaming as fast 
-> as video is being recorded.  If you are maxing out your disk throughput, 
-> there will be obvious impact no matter what.
 
-sure, I tried simulating a case where the fsync/fdatasync from mythtv
-impose high latencies on other processes due to syncing other big writes
-too.
+Hi,
 
-> I would think a more accurate comparison would be recording multiple 
-> video streams in parallel, comparing fsync/fdatasync/sync_file_range?
+The following changes since commit 15f7176eb1cccec0a332541285ee752b935c1c85:
+  Linus Torvalds (1):
+        Merge git://git.kernel.org/.../davem/net-2.6
 
-I tested 3 simultaneous recordings and haven't noticed a difference. I'm
-even sure if I should. With multiple recording at the same time mythtv
-would also call fdatasync multiple times per second.
+are available in the git repository at:
 
-I guess I could compare how long fdatasync and sync_file_range with
-SYNC_FILE_RANGE_WAIT_BEFORE | SYNC_FILE_RANGE_WRITE |
-SYNC_FILE_RANGE_WAIT_AFTER are blocking. Not that mythtv would care
-since they are called in it's own thread.
+  git://repo.or.cz/cris-mirror.git for-linus
 
-> IOW, what is an average MythTV setup -- what processes are actively 
-> reading/writing storage?
+Jesper Nilsson (2):
+      CRISv32: Remove extraneous space between -I and the path.
+      Merge branch 'master' of git://git.kernel.org/.../rusty/linux-2.6-cpumask-for-cris into for-next
 
-writing:
-mythbackend - recordings and preview images (2-20mbps)
+Rusty Russell (3):
+      cpumask: prepare for iterators to only go to nr_cpu_ids/nr_cpumask_bits.: cris
+      cpumask: Use accessors code.: cris
+      cpumask: use mm_cpumask() wrapper: cris
 
-reading:
-mythfrontend - viewing (2-20mbps)
-mythcommflag - faster than viewing, maybe up to 50mbps (depending on cpu)
+Stoyan Gaydarov (1):
+      BUG to BUG_ON changes
 
-writing+reading:
-mythtranscode - combined rate less than 50mbps, usually more reads than
-                writes (depending on cpu)
-mythtranscode (lossless) - around maximal disk throughput
+Thomas Gleixner (1):
+      cris: convert obsolete hw_interrupt_type to struct irq_chip
 
-> Where are you noticing latencies, and does 
-> sync_file_range decrease those areas of high latency?
+ arch/cris/arch-v10/kernel/irq.c             |    2 +-
+ arch/cris/arch-v32/boot/compressed/Makefile |    6 +++---
+ arch/cris/arch-v32/kernel/irq.c             |    2 +-
+ arch/cris/arch-v32/kernel/smp.c             |   10 +++++-----
+ arch/cris/arch-v32/mm/tlb.c                 |    2 +-
+ arch/cris/kernel/setup.c                    |    2 +-
+ arch/cris/mm/init.c                         |    3 +--
+ 7 files changed, 13 insertions(+), 14 deletions(-)
 
-I don't notice latencies in mythtv, at least no for which file systems
-or the block layer can be blamed for. But my setup is build to avoid
-these. Mythtv records to it's own disks formatted with xfs. Mythtv
-generally tries to spread simultaneous recodings over different file
-systems. The tests were on a different system though.
-
-Janne
+/^JN - Jesper Nilsson
+-- 
+               Jesper Nilsson -- jesper.nilsson@axis.com
