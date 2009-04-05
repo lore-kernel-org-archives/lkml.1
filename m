@@ -1,62 +1,99 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751562AbZDEPyH@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751655AbZDEPyc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751562AbZDEPyH (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 5 Apr 2009 11:54:07 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751191AbZDEPxy
+	id S1751655AbZDEPyc (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 5 Apr 2009 11:54:32 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751191AbZDEPyV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 5 Apr 2009 11:53:54 -0400
-Received: from www17.your-server.de ([213.133.104.17]:40098 "EHLO
-	www17.your-server.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751188AbZDEPxx (ORCPT
+	Sun, 5 Apr 2009 11:54:21 -0400
+Received: from fk-out-0910.google.com ([209.85.128.188]:64204 "EHLO
+	fk-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751267AbZDEPyU (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 5 Apr 2009 11:53:53 -0400
-Subject: Re: Where to find news on 2.6.27.x?
-From: Thomas Meyer <thomas@m3y3r.de>
-To: Lasse Kliemann 
-	<lasse-gmane-linux-kernel-2009@mail.plastictree.net>
-Cc: linux-kernel@vger.kernel.org
-In-Reply-To: <loom.20090405T124156-250@post.gmane.org>
-References: <loom.20090405T124156-250@post.gmane.org>
-Content-Type: text/plain
-Date: Sun, 05 Apr 2009 17:53:33 +0200
-Message-Id: <1238946813.23495.3.camel@localhost.localdomain>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.24.5 (2.24.5-1.fc10) 
-Content-Transfer-Encoding: 7bit
-X-Authenticated-Sender: thomas@m3y3r.de
+	Sun, 5 Apr 2009 11:54:20 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=from:to:cc:subject:date:message-id:x-mailer;
+        b=yFontfyaaa8PyQm/4p8zRSPH0tG6PWuCLXcFli7so4UUmz2LhF0T+WBVe61Q/aVE2e
+         mpkXJt5q3rcd8cgvh4rrAiyFMsIZiyVtCJ+GrL2R4zhQ3Fs9Slnbsb7etgn+ua4Bi3zu
+         S1XAhIqBmq7kZMFOerdJ1YrSLQvVCtbH4VL3E=
+From: Andrea Righi <righi.andrea@gmail.com>
+To: Paul Menage <menage@google.com>, Pavel Emelyanov <xemul@openvz.org>,
+       Balbir Singh <balbir@linux.vnet.ibm.com>
+Cc: linux-kernel@vger.kernel.org, Andrea Righi <righi.andrea@gmail.com>
+Subject: [PATCH] res_counter: update documentation
+Date: Sun,  5 Apr 2009 17:54:13 +0200
+Message-Id: <1238946853-19627-1-git-send-email-righi.andrea@gmail.com>
+X-Mailer: git-send-email 1.5.6.3
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Am Sonntag, den 05.04.2009, 12:49 +0000 schrieb Lasse Kliemann:
-> Where can I find news on the 2.6.27.x series?
-> 
-Yes, AFAIK the 2.6.27.x series is a "long" maintained kernel. You could
-put the git repository in your RSS reader, to get informed on updates:
+After the introduction of resource counters hierarchies
+(28dbc4b6a01fb579a9441c7b81e3d3413dc452df) the prototypes of
+res_counter_init() and res_counter_charge() have been changed.
 
-http://git.kernel.org/?p=linux/kernel/git/stable/linux-2.6.27.y.git;a=rss
+Keep the documentation consistent with the actual function prototypes.
 
-> Is it still maintained, and if so, how would I notice when it is over?
+Signed-off-by: Andrea Righi <righi.andrea@gmail.com>
+---
+ Documentation/cgroups/resource_counter.txt |   27 +++++++++++++++++++++------
+ 1 files changed, 21 insertions(+), 6 deletions(-)
 
-http://lkml.org/lkml/2008/10/11/235
-
-> 
-> There isn't anything about this on the kernel website, nor in the RSS feed.
-
-See above RSS feed.
-> 
-> So, currently, I check the FTP servers every few days to see whether a new
-> tarball arrived. Up to now, each release of a 2.6.28.x or 2.6.29.x kernel was
-> accompanied by an update in the 2.6.27.x series. However, there is no such
-> update following 2.6.29.1. I am a bit worried now, whether it's okay to stick
-> with 2.6.27.21.
-> 
-> 
-> --
-> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
-> Please read the FAQ at  http://www.tux.org/lkml/
-> 
-> 
+diff --git a/Documentation/cgroups/resource_counter.txt b/Documentation/cgroups/resource_counter.txt
+index f196ac1..95b24d7 100644
+--- a/Documentation/cgroups/resource_counter.txt
++++ b/Documentation/cgroups/resource_counter.txt
+@@ -47,13 +47,18 @@ to work with it.
+ 
+ 2. Basic accounting routines
+ 
+- a. void res_counter_init(struct res_counter *rc)
++ a. void res_counter_init(struct res_counter *rc,
++				struct res_counter *rc_parent)
+ 
+  	Initializes the resource counter. As usual, should be the first
+ 	routine called for a new counter.
+ 
+- b. int res_counter_charge[_locked]
+-			(struct res_counter *rc, unsigned long val)
++	The struct res_counter *parent can be used to define a hierarchical
++	child -> parent relationship directly in the res_counter structure,
++	NULL can be used to define no relationship.
++
++ c. int res_counter_charge(struct res_counter *rc, unsigned long val,
++				struct res_counter **limit_fail_at)
+ 
+ 	When a resource is about to be allocated it has to be accounted
+ 	with the appropriate resource counter (controller should determine
+@@ -67,15 +72,25 @@ to work with it.
+ 	  * if the charging is performed first, then it should be uncharged
+ 	    on error path (if the one is called).
+ 
+- c. void res_counter_uncharge[_locked]
++	If the charging fails and a hierarchical dependency exists, the
++	limit_fail_at parameter is set to the particular res_counter element
++	where the charging failed.
++
++ d. int res_counter_charge_locked
++			(struct res_counter *rc, unsigned long val)
++
++	The same as res_counter_charge(), but it must not acquire/release the
++	res_counter->lock internally (it must be called with res_counter->lock
++	held).
++
++ e. void res_counter_uncharge[_locked]
+ 			(struct res_counter *rc, unsigned long val)
+ 
+ 	When a resource is released (freed) it should be de-accounted
+ 	from the resource counter it was accounted to.  This is called
+ 	"uncharging".
+ 
+-    The _locked routines imply that the res_counter->lock is taken.
+-
++	The _locked routines imply that the res_counter->lock is taken.
+ 
+  2.1 Other accounting routines
+ 
+-- 
+1.5.6.3
 
