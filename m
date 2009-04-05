@@ -1,52 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757235AbZDEGNz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757892AbZDEGU1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757235AbZDEGNz (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 5 Apr 2009 02:13:55 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755628AbZDEGNr
+	id S1757892AbZDEGU1 (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 5 Apr 2009 02:20:27 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755630AbZDEGUM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 5 Apr 2009 02:13:47 -0400
-Received: from wf-out-1314.google.com ([209.85.200.174]:57220 "EHLO
-	wf-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752386AbZDEGNq (ORCPT
+	Sun, 5 Apr 2009 02:20:12 -0400
+Received: from qw-out-2122.google.com ([74.125.92.25]:3464 "EHLO
+	qw-out-2122.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752386AbZDEGUL (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 5 Apr 2009 02:13:46 -0400
+	Sun, 5 Apr 2009 02:20:11 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
-        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
-         :content-type:content-transfer-encoding;
-        b=bu2LC7HWMKSi23LqXjRW8yw1NkZBzNC6MKXTZyhIc9E+a6y7jduEyCMkp5XN5fDnKP
-         Yl2oKu3P1JHKez9gxFybjg6ixuF1ZTqBUvfgiGigJz0nWzmMQT9eui/6YcszJ1gBwkKL
-         qf6FCbKP5UuVI0nRMRTDOPOWWPO/u8tt2wIWQ=
+        h=mime-version:date:message-id:subject:from:to:content-type
+         :content-transfer-encoding;
+        b=l5hLe98Wz8KyamXxInUqCuq4O0K7eZHU5KkOrgOk0sfgvHqKHIAkg92PUCD93HMGtu
+         OxEfF2/UOvJfcOEH+HGE3Z8LpVih2qV/1PVfILkPp+vSpulbAWBFN0BieaFxmjxEZqWr
+         tyHP/Q+Em5JSuI2kClHXbk/+BsSDKICRpjQ+I=
 MIME-Version: 1.0
-In-Reply-To: <9b1675090904042125g708076e6v665f5ecc7fa020a4@mail.gmail.com>
-References: <9b1675090904041103v477913a5of06fa5c10ebee05f@mail.gmail.com>
-	 <9b1675090904041131u28635d8dnc3d13e88000394b4@mail.gmail.com>
-	 <20090405011355.GE7553@mit.edu>
-	 <9b1675090904042117k77463227y66a872d52d027e7e@mail.gmail.com>
-	 <9b1675090904042125g708076e6v665f5ecc7fa020a4@mail.gmail.com>
-Date: Sun, 5 Apr 2009 00:13:44 -0600
-Message-ID: <9b1675090904042313rb8178b6v1da3aeddfa57a869@mail.gmail.com>
-Subject: Re: IO latency - a special case
-From: "Trenton D. Adams" <trenton.d.adams@gmail.com>
-To: Theodore Tso <tytso@mit.edu>,
-       "Trenton D. Adams" <trenton.d.adams@gmail.com>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Date: Sun, 5 Apr 2009 02:20:09 -0400
+Message-ID: <bf8f81390904042320h4c0a0a3bv5dd7d33aa69a5287@mail.gmail.com>
+Subject: Questions on userspace cpu freq governor for linux-2.6-tip
+From: Luke Gong <lukejgong@gmail.com>
+To: linux-kernel <linux-kernel@vger.kernel.org>
 Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Ted,
+Hey,
 
-I have no idea what "sar" is, and a google search doesn't appear to
-reveal anything useful.  Where can I get this "sar" tool?
+I have compiled the latest -tip kernel (2.6.29-tip). I enabled
+userspace governor for cpu freq scaling. When I am running this new
+kernel with userspace governor, I found something strange. At first, I
+set the cpu freq scaling governor to be userspace and set all the
+cores to run at the lowest speed. But when the machine is busy, I
+found the cpu speed increased and would not stay at the level set by
+the userspace governor. In the kernels other than this -tip one, I
+never saw this before. I am wondering if I have missed something or it
+is a bug for linux -tip kernel.
 
-I also do not have "iostat" on my system, and again, google does not
-appear to reveal an official page for that, and gentoo doesn't appear
-to have a package for it.
+Here is the snapshot:
 
-I have output without those tools, if you want that.  I hit a 1 minute
-load average of 46 this time, and 46 uninterruptible processes.
+[root@cic112 ~]# cat /sys/devices/system/cpu/cpu0/
+cpufreq/scaling_governor
+userspace
+[root@cic112 ~]# echo 2000000 >
+/sys/devices/system/cpu/cpu0/cpufreq/scaling_setspeed
+[root@cic112 ~]# cat
+/sys/devices/system/cpu/cpu0/cpufreq/cpuinfo_cur_freq
+2000000
+***********************************
+Then I start to run a cpu-intensive workload, now the speed increases.
+***********************************
+[root@cic112 ~]# cat /sys/devices/system/cpu/cpu0/cpufreq/cpuinfo_cur_freq
+3000000
+
+I am using a server with 2 Xeon5450 Quad core with cpu freq from 2GHz
+to 3GHz. Any comment is welcome and appreciated to be CCed to me.
 
 Thanks.
+
+-- 
+Luke
