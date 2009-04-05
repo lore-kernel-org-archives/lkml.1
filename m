@@ -1,66 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756375AbZDEOrq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753527AbZDEOsB@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756375AbZDEOrq (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 5 Apr 2009 10:47:46 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755557AbZDEOrb
+	id S1753527AbZDEOsB (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 5 Apr 2009 10:48:01 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755186AbZDEOrc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 5 Apr 2009 10:47:31 -0400
-Received: from jester.euphonynet.be ([212.87.96.13]:50474 "EHLO
-	mailpush2.euphonynet.be" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755401AbZDEOra (ORCPT
+	Sun, 5 Apr 2009 10:47:32 -0400
+Received: from smtp-noauth7.primus.ca ([216.254.180.38]:33817 "EHLO
+	mail-01.primus.ca" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1755103AbZDEOrb (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 5 Apr 2009 10:47:30 -0400
-X-Greylist: delayed 1637 seconds by postgrey-1.27 at vger.kernel.org; Sun, 05 Apr 2009 10:47:29 EDT
-From: Bart Van Assche <bart.vanassche@gmail.com>
-To: Steven Rostedt <srostedt@redhat.com>, Ingo Molnar <mingo@elte.hu>
-Subject: [2.6.29] Fix for enabling branch profiling makes sparse unusable
-Date: Sun, 5 Apr 2009 16:20:02 +0200
-User-Agent: KMail/1.10.3 (Linux/2.6.28.9-default; KDE/4.1.3; x86_64; ; )
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       LKML <linux-kernel@vger.kernel.org>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200904051620.02311.bart.vanassche@gmail.com>
+	Sun, 5 Apr 2009 10:47:31 -0400
+X-Greylist: delayed 1499 seconds by postgrey-1.27 at vger.kernel.org; Sun, 05 Apr 2009 10:47:30 EDT
+DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws; s=default; d=elastic.org;
+	h=Received:From:To:Cc:Subject:Date:Message-Id:X-Mailer;
+	b=tKc2ftO+3jcfR0Bwu0e64kUJoOFdcpGerhmZgrYC+y9j38HJC0gMRQqoaT0RRLJJhuze8nGpxG+rKYEAiyfxN9+SPlMJtlvXC5589UVaMdfh4GOSf9ctUVSQ1eXxcVb/;
+From: "Frank Ch. Eigler" <fche@elastic.org>
+To: linux-kernel@vger.kernel.org, utrace-devel@redhat.com
+Cc: systemtap@sources.redhat.com, fweisbec@gmail.com, rostedt@goodmis.org,
+       mingo@elte.hu, "Frank Ch. Eigler" <fche@elastic.org>
+Subject: [PATCH tip 0/2] utrace-ftrace engine v3
+Date: Sun,  5 Apr 2009 10:17:52 -0400
+Message-Id: <1238941074-27424-1-git-send-email-fche@elastic.org>
+X-Mailer: git-send-email 1.6.0.6
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-One of the changes between kernels 2.6.28 and 2.6.29 is that a branch profiler
-has been added for if() statements. Unfortunately this patch makes the sparse
-output unusable with CONFIG_TRACE_BRANCH_PROFILING=y: when branch profiling is
-enabled, sparse prints so much false positives that the real issues are no
-longer visible. This behavior can be reproduced as follows:
-* enable CONFIG_TRACE_BRANCH_PROFILING, e.g. by running make allyesconfig or
-  make allmodconfig.
-* run make C=2
+This version of the utrace-ftrace engine represents bringing v2 (as
+posted along with utrace two weeks ago) up to parity with the
+tip/tracing/syscalls one in terms of using the system call
+pretty-printing tables.  This patch applies to the
+tip/tracing/syscalls tree, except that it assumes that utrace patches
+are also applied beforehand.
 
-Result: a huge number of the following sparse warnings.
-...
-include/linux/cpumask.h:547:2: warning: symbol '______r' shadows an earlier one
-include/linux/cpumask.h:547:2: originally declared here
-...
+Next up could be adding an option to use the filterable TRACE_EVENT
+tracepoint engine instead of (or in addition to?)  the hand-written
+trace record management & formatting.
 
-The patch below fixes this by disabling branch profiling while analyzing the
-kernel code with sparse.
+Next up could also be removal of the syscall-tracing prototype, if
+people are so inclined.
 
-See also:
-* http://lkml.org/lkml/2008/11/21/18
-* http://bugzilla.kernel.org/show_bug.cgi?id=12925
 
-Signed-off-by: Bart Van Assche <bart.vanassche@gmail.com>
+Frank Ch. Eigler (2):
+  make arch_init_ftrace_syscalls multiply callable
+  utrace-based ftrace "process" engine, v3
 
---- orig/linux-2.6.29/include/linux/compiler.h	2009-03-23 19:12:14.000000000 -0400
-+++ linux-2.6.29/include/linux/compiler.h	2009-03-24 08:46:46.000000000 -0400
-@@ -75,7 +75,8 @@ struct ftrace_branch_data {
-  * Note: DISABLE_BRANCH_PROFILING can be used by special lowlevel code
-  * to disable branch tracing on a per file basis.
-  */
--#if defined(CONFIG_TRACE_BRANCH_PROFILING) && !defined(DISABLE_BRANCH_PROFILING)
-+#if defined(CONFIG_TRACE_BRANCH_PROFILING) \
-+    && !defined(DISABLE_BRANCH_PROFILING) && !defined(__CHECKER__)
- void ftrace_likely_update(struct ftrace_branch_data *f, int val, int expect);
- 
- #define likely_notrace(x)	__builtin_expect(!!(x), 1)
+ arch/x86/kernel/ftrace.c     |    3 +
+ include/linux/processtrace.h |   51 ++++
+ kernel/trace/Kconfig         |    8 +
+ kernel/trace/Makefile        |    1 +
+ kernel/trace/trace.h         |    9 +
+ kernel/trace/trace_process.c |  642 ++++++++++++++++++++++++++++++++++++++++++
+ 6 files changed, 714 insertions(+), 0 deletions(-)
+ create mode 100644 include/linux/processtrace.h
+ create mode 100644 kernel/trace/trace_process.c
+
