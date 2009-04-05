@@ -1,69 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752044AbZDESE6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753007AbZDESN6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752044AbZDESE6 (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 5 Apr 2009 14:04:58 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751344AbZDESEt
+	id S1753007AbZDESN6 (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 5 Apr 2009 14:13:58 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751724AbZDESNs
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 5 Apr 2009 14:04:49 -0400
-Received: from mail-bw0-f169.google.com ([209.85.218.169]:59890 "EHLO
-	mail-bw0-f169.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751108AbZDESEt (ORCPT
+	Sun, 5 Apr 2009 14:13:48 -0400
+Received: from mx03.syneticon.net ([78.111.66.105]:48242 "EHLO
+	mx03.syneticon.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751697AbZDESNr (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 5 Apr 2009 14:04:49 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:sender:date:x-google-sender-auth:message-id:subject
-         :from:to:content-type:content-transfer-encoding;
-        b=JvBZ3kx4eH8S4QmBL4HYM44OQoH+7cuaetA9uj/aRt6QDq+nernFjbPoF5NA3haOnt
-         nbBrEGxZoml3W41muvBO59uwNnmxCUicIUPgJbimWr/zrTHe0oudSF/lqIB+VKu0x/Cm
-         nKvMQ8hEL+aW2T6bMZFkuYywdN248rJl3Cb9U=
+	Sun, 5 Apr 2009 14:13:47 -0400
+Message-ID: <49D8F4D5.7010205@wpkg.org>
+Date: Sun, 05 Apr 2009 20:13:41 +0200
+From: Tomasz Chmielewski <mangoo@wpkg.org>
+User-Agent: Thunderbird 2.0.0.21 (X11/20090319)
 MIME-Version: 1.0
-Date: Sun, 5 Apr 2009 19:04:45 +0100
-X-Google-Sender-Auth: 920bed42abaf8d5a
-Message-ID: <19ac3f7a0904051104h1abc4cf3rae6dc1a027207831@mail.gmail.com>
-Subject: USB disconnect, address 6
-From: Jon Grant <jg@jguk.org>
-To: linux-kernel@vger.kernel.org
-Content-Type: text/plain; charset=UTF-8
+To: LKML <linux-kernel@vger.kernel.org>
+Subject: Re: Ext4 and the "30 second window of death"
+Content-Type: text/plain; charset=UTF-8; format=flowed
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hello
+>> The replace-via-truncate and replace-via-rename workarounds are there
+>> for the benefit of KDE, and GNOME, which in some configurations
+>> apparently will replace hundreds of dot files when the desktop is
+>> started up, for no reason that I can understand.  (Not such a great
+>> idea for SSD write endurance!)  Some people apparently spend hours
+>> making sure that their windows are exactly positioned the way they
+>> want it when their desktop starts up, and if the system crashes while
+>> their desktop is starting up, those they could lose their window
+>> positions, which apparently made a whole bunch of users cranky.  In
+>> practice, most of the editors that I'm familiar with have been around
+>> for a while, have needed to make sure that that cases such as yours
+>> wouldn't result in data loss, and so are pretty good about using
+>> fsync() so that users' files wouldn't be lost, no matter what the
+>> filesystem or operating system being used.
+> 
+> Its more than losing window postions.  I've been using ext4 with kde 4.2.1 
+> along with some experimental modules (drm for xorg for r600 support, btrfs) 
+> and a few patches.  As expected this has caused a few crashes.  I have had 
+> kde lose desktop setup info (eg. it forgot it was using xrender accel).  I 
+> have also had kmail lose all its configuration - which is a pita to rebuild.  
+> Note that these crashes occur long after kde has been started...
 
-Would there be a way to propagate the device name back from the scsi
-system to the usb so it can name the device which is disconnected in
-the output? This saves needing to go hunting to find what the
-disconnected device was.
+I've lost contents of my /etc/shadow file some time ago.
+Great fun after reboot.
 
-I'll be happy to donate to Linux Foundation if they need some cash to
-cover the time to do this.
-I'm not on the mailing list, so please include my email address in any replies.
-
-Regards, Jon
+But it also means that the problem begins not with KDE and Gnome, but 
+much, much earlier.
 
 
-Apr  5 18:56:33 data-laptop kernel: [65426.948048] usb 5-1: new high
-speed USB device using ehci_hcd and address 6
-Apr  5 18:56:33 data-laptop kernel: [65427.132049] usb 5-1:
-configuration #1 chosen from 1 choice
-Apr  5 18:56:33 data-laptop kernel: [65427.152066] scsi4 : SCSI
-emulation for USB Mass Storage devices
-Apr  5 18:56:38 data-laptop kernel: [65432.153182] scsi 4:0:0:0:
-Direct-Access     Samsung  Mighty Drive     PMAP PQ: 0 ANSI: 0 CCS
-Apr  5 18:56:38 data-laptop kernel: [65432.454122] sd 4:0:0:0: [sdc]
-2014208 512-byte hardware sectors (1031 MB)
-Apr  5 18:56:38 data-laptop kernel: [65432.454867] sd 4:0:0:0: [sdc]
-Write Protect is off
-Apr  5 18:56:38 data-laptop kernel: [65432.458744] sd 4:0:0:0: [sdc]
-2014208 512-byte hardware sectors (1031 MB)
-Apr  5 18:56:38 data-laptop kernel: [65432.459866] sd 4:0:0:0: [sdc]
-Write Protect is off
-Apr  5 18:56:38 data-laptop kernel: [65432.461202]  sdc: sdc1
-Apr  5 18:56:38 data-laptop kernel: [65432.462224] sd 4:0:0:0: [sdc]
-Attached SCSI removable disk
-Apr  5 18:56:38 data-laptop kernel: [65432.462547] sd 4:0:0:0:
-Attached scsi generic sg2 type 0
-Apr  5 18:56:58 data-laptop kernel: [65451.669308] usb 5-1: USB
-disconnect, address 6
+-- 
+Tomasz Chmielewski
+http://wpkg.org
