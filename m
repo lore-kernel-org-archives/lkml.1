@@ -1,64 +1,39 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757001AbZDEMzo@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756049AbZDENBm@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757001AbZDEMzo (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 5 Apr 2009 08:55:44 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751717AbZDEMzd
+	id S1756049AbZDENBm (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 5 Apr 2009 09:01:42 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752286AbZDENBd
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 5 Apr 2009 08:55:33 -0400
-Received: from lucidpixels.com ([75.144.35.66]:48148 "EHLO lucidpixels.com"
+	Sun, 5 Apr 2009 09:01:33 -0400
+Received: from mx2.redhat.com ([66.187.237.31]:34623 "EHLO mx2.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752365AbZDEMzc (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 5 Apr 2009 08:55:32 -0400
-Date: Sun, 5 Apr 2009 08:55:27 -0400 (EDT)
-From: Justin Piszcz <jpiszcz@lucidpixels.com>
-To: linux-kernel@vger.kernel.org
-Subject: Re: 2.6.29.1: kernel/console beep no longer available, audio problems
- too
-In-Reply-To: <alpine.DEB.2.00.0904050756050.20631@p34.internal.lan>
-Message-ID: <alpine.DEB.2.00.0904050852240.22989@p34.internal.lan>
-References: <alpine.DEB.2.00.0904050756050.20631@p34.internal.lan>
-User-Agent: Alpine 2.00 (DEB 1167 2008-08-23)
+	id S1751363AbZDENBd (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 5 Apr 2009 09:01:33 -0400
+Message-ID: <49D8ABA8.20700@redhat.com>
+Date: Sun, 05 Apr 2009 16:01:28 +0300
+From: Avi Kivity <avi@redhat.com>
+User-Agent: Thunderbird 2.0.0.21 (X11/20090320)
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; format=flowed; charset=US-ASCII
+To: Peter Hallberg <hallberg68@hotmail.com>
+CC: linux-kernel@vger.kernel.org
+Subject: Re: Intepreting an oops
+References: <COL116-W68F0521CACD2E1656E8D1BDA870@phx.gbl>
+In-Reply-To: <COL116-W68F0521CACD2E1656E8D1BDA870@phx.gbl>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Peter Hallberg wrote:
+> How does one translate the offset in the function to a line number in the source code?
+> [  218.418473] Call Trace:
+> [  218.418484]  [] :nnpfs:nnpfs_writepage+0xab/0x230
+>   
 
+You can use 'objdump -Sr nnpfs.ko' and look for the address of 
+nnpfs_writepage, plus 0xab.
 
-On Sun, 5 Apr 2009, Justin Piszcz wrote:
+-- 
+error compiling committee.c: too many arguments to function
 
-> Hello,
->
-> After upgrading from 2.6.28.2, I noticed 2.6.29.1 (the config option moved 
-> around too for the PC-speaker) that the audio for my sound card does not 
-> start working for 1-2 minutes after trying to play various sounds. 
-> Eventually, it starts to work, but the PC speaker no longer functions.
->
-> http://home.comcast.net/~jpiszcz/20090405/2.6.29.1-cfg.txt
-> http://home.comcast.net/~jpiszcz/20090405/2.6.28.2-cfg.txt
->
-> Is this a kernel/configuration issue or a bug since it appears the audio 
-> hw/configuration has been re-worked?
->
-> Justin.
->
-
-Pardon the noise:
-
-2009-04-05 06:05:39 configure xterm 242-1 242-1
-2009-04-05 06:05:39 status unpacked xterm 242-1
-2009-04-05 06:05:39 status unpacked xterm 242-1
-2009-04-05 06:05:39 status unpacked xterm 242-1
-2009-04-05 06:05:39 status unpacked xterm 242-1
-2009-04-05 06:05:39 status unpacked xterm 242-1
-2009-04-05 06:05:39 status half-configured xterm 242-1
-2009-04-05 06:05:40 status installed xterm 242-1
-
-The problem is the new xterm in debian testing, it has a bug, reporting it 
-now, all seems good so far with 2.6.29.1.
-
-(going back to xterm 235_2 fixes the beep problem):
-http://debian.oregonstate.edu/debian/pool/main/x/xterm/xterm_235-2_i386.deb
-
-Justin.
