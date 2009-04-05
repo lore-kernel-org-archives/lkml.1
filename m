@@ -1,62 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753135AbZDESw3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753413AbZDESzZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753135AbZDESw3 (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 5 Apr 2009 14:52:29 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752140AbZDESwU
+	id S1753413AbZDESzZ (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 5 Apr 2009 14:55:25 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751769AbZDESzK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 5 Apr 2009 14:52:20 -0400
-Received: from extu-mxob-2.symantec.com ([216.10.194.135]:47853 "EHLO
-	extu-mxob-2.symantec.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752141AbZDESwT (ORCPT
+	Sun, 5 Apr 2009 14:55:10 -0400
+Received: from casper.infradead.org ([85.118.1.10]:38588 "EHLO
+	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751224AbZDESzI (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 5 Apr 2009 14:52:19 -0400
-Date: Sun, 5 Apr 2009 19:51:27 +0100 (BST)
-From: Hugh Dickins <hugh@veritas.com>
-X-X-Sender: hugh@blonde.anvils
-To: Chris Friesen <cfriesen@nortel.com>
-cc: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>,
-       Michael Ellerman <michael@ellerman.id.au>, linuxppc-dev@ozlabs.org,
-       linux-kernel@vger.kernel.org,
-       Benjamin Herrenschmidt <benh@kernel.crashing.org>, peterz@infradead.org,
-       akpm@linux-foundation.org
-Subject: Re: Resend: /proc/<pid>/maps offset output broken in 2.6.29
-In-Reply-To: <49D523FB.2020504@nortel.com>
-Message-ID: <Pine.LNX.4.64.0904051944100.27448@blonde.anvils>
-References: <49CA8501.1000000@nortel.com>  <49D3F662.4050100@nortel.com>
- <1238659491.9041.133.camel@localhost> <Pine.LNX.4.64.0904021324070.16207@blonde.anvils>
- <49D4FB89.4070101@nortel.com> <Pine.LNX.4.64.0904021938270.25731@blonde.anvils>
- <49D523FB.2020504@nortel.com>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Sun, 5 Apr 2009 14:55:08 -0400
+Date: Sun, 5 Apr 2009 11:56:29 -0700
+From: Arjan van de Ven <arjan@infradead.org>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: Theodore Tso <tytso@mit.edu>, Jens Axboe <jens.axboe@oracle.com>,
+       Linux Kernel Developers List <linux-kernel@vger.kernel.org>,
+       Ext4 Developers List <linux-ext4@vger.kernel.org>
+Subject: Re: [GIT PULL] Ext3 latency fixes
+Message-ID: <20090405115629.521057fc@infradead.org>
+In-Reply-To: <alpine.LFD.2.00.0904050927580.4023@localhost.localdomain>
+References: <alpine.LFD.2.00.0904031150190.4015@localhost.localdomain>
+	<alpine.LFD.2.00.0904031329410.7007@localhost.localdomain>
+	<20090404135719.GA9812@mit.edu>
+	<20090404151649.GE5178@kernel.dk>
+	<alpine.LFD.2.00.0904040854470.3915@localhost.localdomain>
+	<20090404173412.GF5178@kernel.dk>
+	<alpine.LFD.2.00.0904041039230.3915@localhost.localdomain>
+	<20090404180108.GH5178@kernel.dk>
+	<20090404232222.GA7480@mit.edu>
+	<20090404163349.20df1208@infradead.org>
+	<20090405001005.GA7553@mit.edu>
+	<alpine.LFD.2.00.0904050927580.4023@localhost.localdomain>
+Organization: Intel
+X-Mailer: Claws Mail 3.7.0 (GTK+ 2.14.7; i386-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
+X-SRS-Rewrite: SMTP reverse-path rewritten from <arjan@infradead.org> by casper.infradead.org
+	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 2 Apr 2009, Chris Friesen wrote:
-> Hugh Dickins wrote:
+On Sun, 5 Apr 2009 10:01:06 -0700 (PDT)
+Linus Torvalds <torvalds@linux-foundation.org> wrote:
+> Also, one of the issues seems to literally be that the higher-level 
+> request handling doesn't care AT ALL about the priority. Allocating
+> the request itself does keep reads and writes separated, but if the
+> request is a SYNCIO request, and non-sync writes have filled up th
+> write requests, we'll have to wait for the background writes to free
+> up requests.
 > 
-> > This is a cosmetic matter, not worth more than a couple of lines of
-> > code: I suggested masking off the high bits in the display, but when
-> > KAMEZAWA-san suggested just showing 0, it was hard to argue against
-> > his brutal simplicity.
-> 
-> <snip>
-> 
-> > Consider this change a fix: it used to show 00000000 before 2.6.7.
-> > 
-> > See http://lkml.org/lkml/2009/1/13/331 for one of the threads
-> > on the subject - but you've not tempted me to reopen it!
-> 
-> Okay, fair enough.  I'll change my code to deal with it.  Thanks for the
-> explanation.
+> That is quite possibly the longest wait we have in the system.
 
-Oh, I thought you were arguing hypotheticals.  This is more serious,
-that you have some userspace code which depended on the 2.6.8-2.6.29
-way of filling that field, and now we're about to break it.
+it often is; latencytop tends to point that out.
+> 
+> See get_request():
 
-Please, would you share what you were doing with the vm_pgoff of an
-anonymous area?  I won't pretend: I am indeed hoping to show that
-what you were doing before was already broken, so that we can safely
-go ahead and break it some more!
+our default number of requests is so low that we very regularly hit the
+limit. In addition to setting kjournald to higher priority, I tend to
+set the number of requests to 4096 or so to improve interactive
+performance on my own systems. That way at least the elevator has a
+chance to see the requests ;-)
 
-Hugh
+
+-- 
+Arjan van de Ven 	Intel Open Source Technology Centre
+For development, discussion and tips for power savings, 
+visit http://www.lesswatts.org
