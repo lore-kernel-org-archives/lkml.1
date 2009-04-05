@@ -1,67 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758668AbZDEKCz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758758AbZDEKES@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758668AbZDEKCz (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 5 Apr 2009 06:02:55 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757660AbZDEKCq
+	id S1758758AbZDEKES (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 5 Apr 2009 06:04:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756470AbZDEKEB
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 5 Apr 2009 06:02:46 -0400
-Received: from www.tglx.de ([62.245.132.106]:47204 "EHLO www.tglx.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756470AbZDEKCp (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 5 Apr 2009 06:02:45 -0400
-Date: Sun, 5 Apr 2009 12:01:29 +0200 (CEST)
-From: Thomas Gleixner <tglx@linutronix.de>
-To: Darren Hart <dvhltc@us.ibm.com>
-cc: linux-kernel@vger.kernel.org, Sripathi Kodi <sripathik@in.ibm.com>,
-       Peter Zijlstra <peterz@infradead.org>,
-       John Stultz <johnstul@us.ibm.com>, Steven Rostedt <rostedt@goodmis.org>,
-       Dinakar Guniguntala <dino@in.ibm.com>,
-       Ulrich Drepper <drepper@redhat.com>, Eric Dumazet <dada1@cosmosbay.com>,
-       Ingo Molnar <mingo@elte.hu>, Jakub Jelinek <jakub@redhat.com>
-Subject: Re: [tip PATCH v7 0/9] RFC: futex: requeue pi implementation
-In-Reply-To: <20090403203832.9772.21410.stgit@Aeon>
-Message-ID: <alpine.LFD.2.00.0904041035411.2884@localhost.localdomain>
-References: <20090403203832.9772.21410.stgit@Aeon>
-User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
+	Sun, 5 Apr 2009 06:04:01 -0400
+Received: from mail-bw0-f169.google.com ([209.85.218.169]:40350 "EHLO
+	mail-bw0-f169.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755863AbZDEKD7 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 5 Apr 2009 06:03:59 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=sender:to:cc:subject:references:from:date:in-reply-to:message-id
+         :user-agent:mime-version:content-type;
+        b=tIWhcG5FvkeeJW7PdOsokN6YcWjJ0UMxCdCEB5CJ4Kwwp+Jm3+JDmJdk08xf7r0cKS
+         WN9sNCPYQ3/LJsD9/7sSbdCZUpsNwmaL0bAi/iHEB0FNou0fCXnKOTy3mH7voXNOD41u
+         h3taaKecMSSGgFmgFxUvTAIx9k3JGVn//8Vpo=
+To: Michael Buesch <mb@bu3sch.de>
+Cc: Jaswinder Singh Rajput <jaswinder@kernel.org>,
+       Sujith <Sujith.Manoharan@atheros.com>,
+       wireless <linux-wireless@vger.kernel.org>,
+       David Miller <davem@davemloft.net>, LKML <linux-kernel@vger.kernel.org>,
+       linville@tuxdriver.com
+Subject: Re: ath9k becon loss messages
+References: <1238923439.4120.9.camel@localhost.localdomain>
+	<200904051129.38904.mb@bu3sch.de> <200904051136.15285.mb@bu3sch.de>
+From: Kalle Valo <kalle.valo@iki.fi>
+Date: Sun, 05 Apr 2009 13:03:54 +0300
+In-Reply-To: <200904051136.15285.mb@bu3sch.de> (Michael Buesch's message of "Sun\, 5 Apr 2009 11\:36\:15 +0200")
+Message-ID: <87fxgnifhx.fsf@litku.valot.fi>
+User-Agent: Gnus/5.11 (Gnus v5.11) Emacs/22.2 (gnu/linux)
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Darren,
+Michael Buesch <mb@bu3sch.de> writes:
 
-On Fri, 3 Apr 2009, Darren Hart wrote:
-> The following series is v7 of the requeue_pi patches against
-> linux-2.6-tip/core/futexes.  The current futex implementation doesn't allow for
-> requeueing of PI futexes, which leads to a thundering herd during
-> pthread_cond_broadcasa()t (as opposed to a civilized priority ordered wakeup
-> sequence).  The core of the problem is that the underlying rt_mutex cannot be
-> left with waiters and no owner (which would break the PI logic).  This patch
-> series updates the futex code to allow for requeueing from non-PI to PI futexes
-> in support of PI aware pthread_cond_* calls along with some needful rt_mutex
-> helper routines.  The credit for the conceptual design goes to Thomas Gleixner,
-> while the bugs and other idiocies present in this implementation should be
-> attributed to me.
+> On Sunday 05 April 2009 11:29:38 Michael Buesch wrote:
+>
+>> I think this message should only show if
+>> CONFIG_MAC80211_VERBOSE_DEBUG is set. It's kind of expected that we
+>> lose a beacon once in a while, so we shouldn't print verbose
+>> messages to the kernel log (even if they are KERN_DEBUG).
+>> 
+>> And besides that, I think one can easily remotely trigger this
+>> message and flood the logs. So it should probably _also_ be
+>> ratelimited.
+>
+> Something like this:
 
-I went through the patches with a fine comb again and there is nothing
-left which triggered my futex wreckage sensors. Thanks for your
-patience to go through the lather, rinse, repeat drill.
+I agree, the message confuses the users and creates way too much
+problems. Your patch is a good solution, the message is still useful
+for the driver developers.
 
-I think we are at a point where that code simply needs exposure to the
-hostile environment of RT-Java VMs. I'm going to pull that into
-tip/next and into -rt. Even if we have no requeue_pi user right now we
-definitly want to test the heck out of the changes which also affect
-the existing futex ops.
+> Signed-off-by: Michael Buesch <mb@bu3sch.de>
 
-Uli, Jakub can you please go over the design and the user space
-interface ?
+Reviewed-by: Kalle Valo <kalle.valo@iki.fi>
 
-Darren, could you please polish the initial design notes - especially
-point out the subtle differences between requeue and requeue_pi - and
-send them into the thread? That might help Uli and Jakub and we
-definitly want to have that info preserved in Documentation/ as well.
-
-Thanks,
-
-	tglx
+-- 
+Kalle Valo
