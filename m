@@ -1,52 +1,46 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758262AbZDEUGw@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753496AbZDEUHL@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758262AbZDEUGw (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 5 Apr 2009 16:06:52 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757602AbZDEUGn
+	id S1753496AbZDEUHL (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 5 Apr 2009 16:07:11 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758237AbZDEUGz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 5 Apr 2009 16:06:43 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:55126 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1754625AbZDEUGm (ORCPT
+	Sun, 5 Apr 2009 16:06:55 -0400
+Received: from terminus.zytor.com ([198.137.202.10]:53496 "EHLO
+	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757602AbZDEUGz (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 5 Apr 2009 16:06:42 -0400
-Date: Sun, 5 Apr 2009 13:02:23 -0700 (PDT)
-From: Linus Torvalds <torvalds@linux-foundation.org>
-X-X-Sender: torvalds@localhost.localdomain
-To: Ingo Molnar <mingo@elte.hu>
-cc: linux-kernel@vger.kernel.org, Pekka Enberg <penberg@cs.helsinki.fi>,
-       Steven Rostedt <rostedt@goodmis.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Thomas Gleixner <tglx@linutronix.de>,
-       Eduard - Gabriel Munteanu <eduard.munteanu@linux360.ro>
-Subject: Re: [GIT PULL] SLAB include file dependency fixes + kmemtrace
- updates
-In-Reply-To: <alpine.LFD.2.00.0904051251390.4023@localhost.localdomain>
-Message-ID: <alpine.LFD.2.00.0904051257190.4023@localhost.localdomain>
-References: <20090405193944.GA12691@elte.hu> <alpine.LFD.2.00.0904051251390.4023@localhost.localdomain>
-User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
+	Sun, 5 Apr 2009 16:06:55 -0400
+Message-ID: <49D90F08.3010601@zytor.com>
+Date: Sun, 05 Apr 2009 13:05:28 -0700
+From: "H. Peter Anvin" <hpa@zytor.com>
+User-Agent: Thunderbird 2.0.0.14 (X11/20080501)
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+To: Ingo Molnar <mingo@elte.hu>
+CC: Meelis Roos <mroos@linux.ee>, Thomas Gleixner <tglx@linutronix.de>,
+       Yinghai Lu <yinghai@kernel.org>,
+       Linux Kernel list <linux-kernel@vger.kernel.org>
+Subject: Re: strange MTRR on 2.6.29-git
+References: <Pine.SOC.4.64.0904011711210.5672@math.ut.ee> <86802c440904011143i65d99bd8x7a296f616f6bfccc@mail.gmail.com> <Pine.SOC.4.64.0904050953480.2958@math.ut.ee> <20090405134109.GA24782@elte.hu>
+In-Reply-To: <20090405134109.GA24782@elte.hu>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-
-On Sun, 5 Apr 2009, Linus Torvalds wrote:
+Ingo Molnar wrote:
+>  
+> ok, great.
 > 
-> so rebase isn't bad, it's often a great way to fix things as you go along. 
-> It just goes with a few basic caveats.
+> I'm wondering whether CONFIG_MTRR_SANITIZER_ENABLE_DEFAULT should be 
+> 1 by default in the future.
+> 
 
-Btw, rebasing gets a really bad name exactly because when those rules are 
-violated, it ends up being _really_ painful and almost impossible for 
-people to work together because the end result just ends up being some 
-kind of patch-queue thing, and that just doesnt' work once the number of 
-queue entries reach a certain pain threshold.
+I suspect it should be.
 
-And it's happened in ACPI, DRI, ALSA, x86, etc, so those few basic caveats 
-are easy to violate and then have everybody hate you. 'git rebase' is very 
-useful (especially with '-i'), but it's really a dangerous tool in that it 
-can really wreak havoc too.
+	-hpa
 
-			Linus
+-- 
+H. Peter Anvin, Intel Open Source Technology Center
+I work for Intel.  I don't speak on their behalf.
+
