@@ -1,48 +1,42 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755279AbZDEMsb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755579AbZDEMz0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755279AbZDEMsb (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 5 Apr 2009 08:48:31 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753787AbZDEMsW
+	id S1755579AbZDEMz0 (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 5 Apr 2009 08:55:26 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751717AbZDEMzK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 5 Apr 2009 08:48:22 -0400
-Received: from col0-omc1-s2.col0.hotmail.com ([65.55.34.12]:19176 "EHLO
-	col0-omc1-s2.col0.hotmail.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751717AbZDEMsV convert rfc822-to-8bit
-	(ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 5 Apr 2009 08:48:21 -0400
-Message-ID: <COL116-W68F0521CACD2E1656E8D1BDA870@phx.gbl>
-X-Originating-IP: [84.216.37.216]
-From: Peter Hallberg <hallberg68@hotmail.com>
-To: <linux-kernel@vger.kernel.org>
-Subject: Intepreting an oops
-Date: Sun, 5 Apr 2009 14:48:19 +0200
-Importance: Normal
-Content-Type: text/plain; charset="iso-8859-1"
-Content-Transfer-Encoding: 8BIT
-MIME-Version: 1.0
-X-OriginalArrivalTime: 05 Apr 2009 12:48:19.0964 (UTC) FILETIME=[CC3403C0:01C9B5EC]
+	Sun, 5 Apr 2009 08:55:10 -0400
+Received: from main.gmane.org ([80.91.229.2]:42205 "EHLO ciao.gmane.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751363AbZDEMzJ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 5 Apr 2009 08:55:09 -0400
+X-Injected-Via-Gmane: http://gmane.org/
+To: linux-kernel@vger.kernel.org
+From: Lasse Kliemann 
+	<lasse-gmane-linux-kernel-2009@mail.plastictree.net>
+Subject: Where to find news on 2.6.27.x?
+Date: Sun, 5 Apr 2009 12:49:58 +0000 (UTC)
+Message-ID: <loom.20090405T124156-250@post.gmane.org>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
+X-Complaints-To: usenet@ger.gmane.org
+X-Gmane-NNTP-Posting-Host: main.gmane.org
+User-Agent: Loom/3.14 (http://gmane.org/)
+X-Loom-IP: 82.83.70.249 (Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.9.0.8) Gecko/2009033015 Minefield/3.0.8)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Where can I find news on the 2.6.27.x series?
 
-How does one translate the offset in the function to a line number in the source code?
-[  218.418473] Call Trace:
-[  218.418484]  [] :nnpfs:nnpfs_writepage+0xab/0x230
-[  218.418498]  [] __writepage+0xa/0x30
-[  218.418503]  [] write_cache_pages+0x250/0x340
-[  218.418509]  [] __writepage+0x0/0x30
-[  218.418522]  [] generic_file_aio_write+0x6f/0xd0
-[  218.418540]  [] do_writepages+0x2b/0x40
-[  218.418545]  [] __filemap_fdatawrite_range+0x52/0x60
-[  218.418558]  [] filemap_write_and_wait+0x35/0x50
-[  218.418570]  [] :nnpfs:nnpfs_fsync_int+0x47/0x1b0
-[  218.418599]  [] :nnpfs:nnpfs_release_file+0x9d/0xc0
-[  218.418608]  [] filp_close+0x33/0x90
-[  218.418615]  [] sys_close+0x9f/0x100
-[  218.418622]  [] system_call+0x7e/0x83
+Is it still maintained, and if so, how would I notice when it is over?
+
+There isn't anything about this on the kernel website, nor in the RSS feed.
+
+So, currently, I check the FTP servers every few days to see whether a new
+tarball arrived. Up to now, each release of a 2.6.28.x or 2.6.29.x kernel was
+accompanied by an update in the 2.6.27.x series. However, there is no such
+update following 2.6.29.1. I am a bit worried now, whether it's okay to stick
+with 2.6.27.21.
 
 
-_________________________________________________________________
-Hitta kärleken nu i vår!
-http://dejting.se.msn.com/channel/index.aspx?trackingid=1002952
