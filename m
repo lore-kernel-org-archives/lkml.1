@@ -1,53 +1,115 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752140AbZDEQ7Y@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752473AbZDERFW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752140AbZDEQ7Y (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 5 Apr 2009 12:59:24 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751458AbZDEQ7Q
+	id S1752473AbZDERFW (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 5 Apr 2009 13:05:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751458AbZDERFF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 5 Apr 2009 12:59:16 -0400
-Received: from one.firstfloor.org ([213.235.205.2]:34393 "EHLO
-	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751454AbZDEQ7P (ORCPT
+	Sun, 5 Apr 2009 13:05:05 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:36723 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751454AbZDERFE (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 5 Apr 2009 12:59:15 -0400
-Date: Sun, 5 Apr 2009 19:01:13 +0200
-From: Andi Kleen <andi@firstfloor.org>
-To: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
-Cc: Andi Kleen <andi@firstfloor.org>, Ingo Molnar <mingo@elte.hu>,
-       Josh Boyer <jwboyer@gmail.com>, linux-kernel@vger.kernel.org,
-       akpm@linux-foundation.org, dipankar@in.ibm.com, niv@us.ibm.com,
-       manfred@colorfullife.com, peterz@infradead.org, lethal@linux-sh.org,
-       kernel@wantstofly.org, kyle@mcmartin.ca, deller@gmx.de,
-       davem@davemloft.net, ralf@linux-mips.org, jes@sgi.com,
-       benh@kernel.crashing.org, paulus@samba.org, anton@samba.org
-Subject: Re: [PATCH -tip] Convert CONFIG_SMP=y powerpc defconfigs to TREE_RCU.
-Message-ID: <20090405170113.GB17934@one.firstfloor.org>
-References: <3181463559098978317@unknownmsgid> <625fc13d0904040621g7b89cd2cq9681ce80635a65c4@mail.gmail.com> <20090404163149.GC6893@linux.vnet.ibm.com> <20090405101756.GA10490@elte.hu> <20090405103759.GA17934@one.firstfloor.org> <20090405164904.GJ6893@linux.vnet.ibm.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090405164904.GJ6893@linux.vnet.ibm.com>
-User-Agent: Mutt/1.4.2.1i
+	Sun, 5 Apr 2009 13:05:04 -0400
+Date: Sun, 5 Apr 2009 10:01:06 -0700 (PDT)
+From: Linus Torvalds <torvalds@linux-foundation.org>
+X-X-Sender: torvalds@localhost.localdomain
+To: Theodore Tso <tytso@mit.edu>
+cc: Arjan van de Ven <arjan@infradead.org>, Jens Axboe <jens.axboe@oracle.com>,
+       Linux Kernel Developers List <linux-kernel@vger.kernel.org>,
+       Ext4 Developers List <linux-ext4@vger.kernel.org>
+Subject: Re: [GIT PULL] Ext3 latency fixes
+In-Reply-To: <20090405001005.GA7553@mit.edu>
+Message-ID: <alpine.LFD.2.00.0904050927580.4023@localhost.localdomain>
+References: <alpine.LFD.2.00.0904031150190.4015@localhost.localdomain> <alpine.LFD.2.00.0904031329410.7007@localhost.localdomain> <20090404135719.GA9812@mit.edu> <20090404151649.GE5178@kernel.dk> <alpine.LFD.2.00.0904040854470.3915@localhost.localdomain>
+ <20090404173412.GF5178@kernel.dk> <alpine.LFD.2.00.0904041039230.3915@localhost.localdomain> <20090404180108.GH5178@kernel.dk> <20090404232222.GA7480@mit.edu> <20090404163349.20df1208@infradead.org> <20090405001005.GA7553@mit.edu>
+User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, Apr 05, 2009 at 09:49:04AM -0700, Paul E. McKenney wrote:
-> On Sun, Apr 05, 2009 at 12:37:59PM +0200, Andi Kleen wrote:
-> > > I'd suggest you dont do these dozens of defconfig updates at all - 
-> > > arch maintainers can do this themselves, once the core kernel 
-> > > default has been flipped.
-> > 
-> > AFAIK they don't. There's no make updatemyconfigwithdefaultstatementsconfig
+
+
+On Sat, 4 Apr 2009, Theodore Tso wrote:
 > 
-> My guess is that I would in fact have to send a few patches.  But I
-> suppose that the real question is "how long should we wait to drop
-> Classic RCU once the last arch has changed its defconfig?"  I have
-> been assuming that we would wait one release cycle.
+> It may be that it's easier from an less-lines-of-the-kernels-to-change
+> point of view to add a WRITE_SYNC_PLUGGED which doesn't do the unplug,
+> and keep WRITE_SNYC as having the implicit unplug.  Or maybe it would
+> be better to completely separate the "send a write which is marked as
+> SYNC" from the "implicit unplug" in the API.
 
-I don't think you have to wait, stale entries in defconfigs happen
-all the time and Kconfig just asks then.
+Well, the block layer internally already separates the two, it's just 
+WRITE_SYNC that ties them together. So a trivial patch like the appended 
+would make WRITE_SYNC just mean "this is synchronous IO" without the 
+unplugging, and then WRITE_UNPLUG would mark it both as synchronous _and_ 
+unplug it.
 
--Andi
--- 
-ak@linux.intel.com -- Speaking for myself only.
+(Or you could do the WRITE_SYNC_PLUGGED model too, but I think WRITE_SYNC 
+and WRITE_UNPLUG actually would be better names, since they talk about the 
+effects more directly).
+
+The question is more of a "who really wants the unplugging". Presumably 
+the direct-io code-path really does (on the assumption that if you are 
+doing direct-io, the caller had better done all the coalescing it wants).
+
+Non-rotational media would tend to want the unplugging, but the block 
+layer already does that (ie in __make_request() we already do:
+
+        if (unplug || blk_queue_nonrot(q))
+                __generic_unplug_device(q);
+
+so non-rotational devices get unplugged whether the request was a 
+unplugging request or not).
+
+Of course, different IO schedulers react differently to that whole "sync 
+vs unplug" thing. I think CFQ is the only one that actually cares about 
+the "sync" bit (using different queues for sync vs async). The other 
+schedulers only care about the plugging. So the patch below really doesn't 
+make much sense as-is, because as things are right now, the scheduler 
+behaviors are so different for the unplug-vs-sync thing that no sane user 
+can ever know whether they should use WRITE_SYNC (== higher priority 
+queueing for CFQ, no-op for others) or WRITE_UNPLUG (unplug on all, and 
+additionally higher priority for CFQ).
+
+So I'm not serious about this patch, because as things are right now, I 
+don't think it's sensible, but I do think that this just generally shows 
+the confusion of what we should do. When is plugging right, when isn't it?
+
+Also, one of the issues seems to literally be that the higher-level 
+request handling doesn't care AT ALL about the priority. Allocating the 
+request itself does keep reads and writes separated, but if the request is 
+a SYNCIO request, and non-sync writes have filled up th write requests, 
+we'll have to wait for the background writes to free up requests.
+
+That is quite possibly the longest wait we have in the system.
+
+See get_request():
+
+	const int rw = rw_flags & 0x01;
+
+(That should _really_ be RW_MASK instead of 0x01, I suspect) and how the 
+request allocation itself is done.
+
+I think this is broken.
+
+			Linus
+
+---
+ include/linux/fs.h |    3 ++-
+ 1 files changed, 2 insertions(+), 1 deletions(-)
+
+diff --git a/include/linux/fs.h b/include/linux/fs.h
+index a09e17c..a144377 100644
+--- a/include/linux/fs.h
++++ b/include/linux/fs.h
+@@ -95,7 +95,8 @@ struct inodes_stat_t {
+ #define SWRITE 3	/* for ll_rw_block() - wait for buffer lock */
+ #define READ_SYNC	(READ | (1 << BIO_RW_SYNCIO) | (1 << BIO_RW_UNPLUG))
+ #define READ_META	(READ | (1 << BIO_RW_META))
+-#define WRITE_SYNC	(WRITE | (1 << BIO_RW_SYNCIO) | (1 << BIO_RW_UNPLUG))
++#define WRITE_SYNC	(WRITE | (1 << BIO_RW_SYNCIO))
++#define WRITE_UNPLUG	(WRITE | (1 << BIO_RW_SYNCIO) | (1 << BIO_RW_UNPLUG))
+ #define SWRITE_SYNC	(SWRITE | (1 << BIO_RW_SYNCIO) | (1 << BIO_RW_UNPLUG))
+ #define WRITE_BARRIER	(WRITE | (1 << BIO_RW_BARRIER))
+ #define DISCARD_NOBARRIER (1 << BIO_RW_DISCARD)
