@@ -1,48 +1,101 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753584AbZDERPi@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752172AbZDERZW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753584AbZDERPi (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 5 Apr 2009 13:15:38 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752349AbZDERPQ
+	id S1752172AbZDERZW (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 5 Apr 2009 13:25:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750975AbZDERZH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 5 Apr 2009 13:15:16 -0400
-Received: from rtr.ca ([76.10.145.34]:40104 "EHLO mail.rtr.ca"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753172AbZDERPO (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 5 Apr 2009 13:15:14 -0400
-Message-ID: <49D8E71F.6000703@rtr.ca>
-Date: Sun, 05 Apr 2009 13:15:11 -0400
-From: Mark Lord <lkml@rtr.ca>
-Organization: Real-Time Remedies Inc.
-User-Agent: Thunderbird 2.0.0.21 (X11/20090318)
+	Sun, 5 Apr 2009 13:25:07 -0400
+Received: from extu-mxob-1.symantec.com ([216.10.194.28]:39126 "EHLO
+	extu-mxob-1.symantec.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750799AbZDERZF (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 5 Apr 2009 13:25:05 -0400
+Date: Sun, 5 Apr 2009 18:24:22 +0100 (BST)
+From: Hugh Dickins <hugh@veritas.com>
+X-X-Sender: hugh@blonde.anvils
+To: Jiri Pirko <jpirko@redhat.com>
+cc: linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
+       kosaki.motohiro@jp.fujitsu.com, oleg@redhat.com, linux-mm@kvack.org,
+       mingo@elte.hu
+Subject: Re: [PATCH for -mm] getrusage: fill ru_maxrss value
+In-Reply-To: <20090405084902.GA4411@psychotron.englab.brq.redhat.com>
+Message-ID: <Pine.LNX.4.64.0904051736210.23536@blonde.anvils>
+References: <20081230201052.128B.KOSAKI.MOTOHIRO@jp.fujitsu.com>
+ <20081231110816.5f80e265@psychotron.englab.brq.redhat.com>
+ <20081231213705.1293.KOSAKI.MOTOHIRO@jp.fujitsu.com> <20090103175913.GA21180@redhat.com>
+ <2f11576a0901031313u791d7dcex94b927cc56026e40@mail.gmail.com>
+ <20090105163204.3ec9ff10@psychotron.englab.brq.redhat.com>
+ <20090105141313.a4abd475.akpm@linux-foundation.org>
+ <20090106104839.78eb07d1@psychotron.englab.brq.redhat.com>
+ <20090402134738.43d87cb7.akpm@linux-foundation.org> <20090402211336.GB4076@elte.hu>
+ <20090405084902.GA4411@psychotron.englab.brq.redhat.com>
 MIME-Version: 1.0
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: Theodore Tso <tytso@mit.edu>, Arjan van de Ven <arjan@infradead.org>,
-       Jens Axboe <jens.axboe@oracle.com>,
-       Linux Kernel Developers List <linux-kernel@vger.kernel.org>,
-       Ext4 Developers List <linux-ext4@vger.kernel.org>
-Subject: Re: [GIT PULL] Ext3 latency fixes
-References: <alpine.LFD.2.00.0904031150190.4015@localhost.localdomain> <alpine.LFD.2.00.0904031329410.7007@localhost.localdomain> <20090404135719.GA9812@mit.edu> <20090404151649.GE5178@kernel.dk> <alpine.LFD.2.00.0904040854470.3915@localhost.localdomain> <20090404173412.GF5178@kernel.dk> <alpine.LFD.2.00.0904041039230.3915@localhost.localdomain> <20090404180108.GH5178@kernel.dk> <20090404232222.GA7480@mit.edu> <20090404163349.20df1208@infradead.org> <20090405001005.GA7553@mit.edu> <alpine.LFD.2.00.0904050927580.4023@localhost.localdomain>
-In-Reply-To: <alpine.LFD.2.00.0904050927580.4023@localhost.localdomain>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Linus Torvalds wrote:
->
-> Non-rotational media would tend to want the unplugging, but the block 
-> layer already does that (ie in __make_request() we already do:
+On Sun, 5 Apr 2009, Jiri Pirko wrote:
+> (resend, repetitive patterns put into an inline function - not using max macro
+>  because it's was decided not to use it in previous conversation)
 > 
->         if (unplug || blk_queue_nonrot(q))
->                 __generic_unplug_device(q);
+> From: Jiri Pirko <jpirko@redhat.com>
 > 
-> so non-rotational devices get unplugged whether the request was a 
-> unplugging request or not).
-..
+> Make ->ru_maxrss value in struct rusage filled accordingly to rss hiwater
+> mark.  This struct is filled as a parameter to getrusage syscall. 
+> ->ru_maxrss value is set to KBs which is the way it is done in BSD
+> systems.  /usr/bin/time (gnu time) application converts ->ru_maxrss to KBs
+> which seems to be incorrect behavior.  Maintainer of this util was
+> notified by me with the patch which corrects it and cc'ed.
+> 
+> To make this happen we extend struct signal_struct by two fields.  The
+> first one is ->maxrss which we use to store rss hiwater of the task.  The
+> second one is ->cmaxrss which we use to store highest rss hiwater of all
+> task childs.  These values are used in k_getrusage() to actually fill
+> ->ru_maxrss.  k_getrusage() uses current rss hiwater value directly if mm
+> struct exists.
+> 
+> Note:
+> exec() clear mm->hiwater_rss, but doesn't clear sig->maxrss.
+> it is intetionally behavior. *BSD getrusage have exec() inheriting.
 
-Mmm.. except that Jeff's SSD doesn't appear to identify itself
-as a non-rotating media.  I suppose there's a way to "quirk" that
-somewhere, though.
+Sorry, I'm finding myself quite unable to Ack this: that may well
+be a measure of my density, rather than a criticism of your patch.
 
-:/
+On the nitpicking level: I wish you'd put the args the other way
+round in your setmax_mm_hiwater_rss(maxrss, mm): (mm, maxrss) would
+be more conventional.  Though we're gathering so many helpers for
+these things, hard-to-distinguish without looking up in the header
+file each time, that I wonder if they could all be refactored better.
+
+But on the more serious level: I find I don't really understand what
+this ru_maxrss number is supposed to be, so have a hard job telling
+whether you've implemented it right (as to whether things are
+updated in the right places, I'd rather rely on Oleg for that).
+
+You convey the impression that it's supposed to be similar to
+whatever it is in BSD, but little meaning beyond that.  We agreed
+before that it should be derived from hiwater_rss - though now I
+google for "BSD getrusage" I find ru_maxrss described as "maximum
+shared memory or current resident set", which leaves me thoroughly
+confused.
+
+I'm worrying particularly about the fork/exec issue you highlight.
+You're exemplary in providing your test programs, but there's a big
+omission: you don't mention that the first test, "./getrusage -lc",
+gives a very different result on Linux than you say it does on BSD -
+you say the BSD fork line is "fork: self 0 children 0", whereas
+I find my Linux fork line is "fork: self 102636 children 0".
+
+So after that discrepancy, I can't tell what to expect.  Not that
+I can make any sense of BSD's "self 0" there - I don't know how
+you could present 0 there if this is related to hiwater_rss.
+
+Now I'm seriously wondering if the ru_maxrss reported will generate
+more bugreports from people puzzled as to how it should behave,
+than help anyone in studying their process behaviour.
+
+Sorry to be so negative after all this time: I genuinely hope others
+will spring up to defend your patch and illustrate my stupidity.
+
+Hugh
