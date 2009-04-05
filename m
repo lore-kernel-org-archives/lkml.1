@@ -1,35 +1,32 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759197AbZDEELg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759278AbZDEELx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759197AbZDEELg (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 5 Apr 2009 00:11:36 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758741AbZDEEJm
+	id S1759278AbZDEELx (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 5 Apr 2009 00:11:53 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758822AbZDEEJr
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 5 Apr 2009 00:09:42 -0400
-Received: from thunk.org ([69.25.196.29]:54149 "EHLO thunker.thunk.org"
+	Sun, 5 Apr 2009 00:09:47 -0400
+Received: from thunk.org ([69.25.196.29]:54165 "EHLO thunker.thunk.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1758805AbZDEEJk (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 5 Apr 2009 00:09:40 -0400
-Date: Sat, 4 Apr 2009 21:28:39 -0400
+	id S1758749AbZDEEJo (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 5 Apr 2009 00:09:44 -0400
+Date: Sat, 4 Apr 2009 20:20:13 -0400
 From: Theodore Tso <tytso@mit.edu>
-To: Ric Wheeler <rwheeler@redhat.com>
-Cc: Jens Axboe <jens.axboe@oracle.com>, Mikulas Patocka <mpatocka@redhat.com>,
-       device-mapper development <dm-devel@redhat.com>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       ak@linux.intel.com, "MASON, CHRISTOPHER" <CHRIS.MASON@oracle.com>
-Subject: Re: [dm-devel] Barriers still not passing on simple dm devices...
-Message-ID: <20090405012839.GF7553@mit.edu>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: Jens Axboe <jens.axboe@oracle.com>,
+       Linux Kernel Developers List <linux-kernel@vger.kernel.org>,
+       Ext4 Developers List <linux-ext4@vger.kernel.org>
+Subject: Re: [GIT PULL] Ext3 latency fixes
+Message-ID: <20090405002013.GB7553@mit.edu>
 Mail-Followup-To: Theodore Tso <tytso@mit.edu>,
-	Ric Wheeler <rwheeler@redhat.com>,
+	Linus Torvalds <torvalds@linux-foundation.org>,
 	Jens Axboe <jens.axboe@oracle.com>,
-	Mikulas Patocka <mpatocka@redhat.com>,
-	device-mapper development <dm-devel@redhat.com>,
-	Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-	ak@linux.intel.com, "MASON, CHRISTOPHER" <CHRIS.MASON@oracle.com>
-References: <20090324150517.GX27476@kernel.dk> <Pine.LNX.4.64.0903251106520.27750@hs20-bc2-1.build.redhat.com> <20090325152751.GV27476@kernel.dk> <Pine.LNX.4.64.0903251825310.8027@hs20-bc2-1.build.redhat.com> <20090326084205.GG27476@kernel.dk> <Pine.LNX.4.64.0903302314500.6158@hs20-bc2-1.build.redhat.com> <20090331104933.GJ5178@kernel.dk> <Pine.LNX.4.64.0904021923040.19415@hs20-bc2-1.build.redhat.com> <20090403081131.GP5178@kernel.dk> <49D77AC3.3020207@redhat.com>
+	Linux Kernel Developers List <linux-kernel@vger.kernel.org>,
+	Ext4 Developers List <linux-ext4@vger.kernel.org>
+References: <1238742067-30814-1-git-send-email-tytso@mit.edu> <alpine.LFD.2.00.0904031110420.19690@localhost.localdomain> <alpine.LFD.2.00.0904031150190.4015@localhost.localdomain> <alpine.LFD.2.00.0904031329410.7007@localhost.localdomain> <20090404135719.GA9812@mit.edu> <alpine.LFD.2.00.0904041448090.4023@localhost.localdomain>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <49D77AC3.3020207@redhat.com>
+In-Reply-To: <alpine.LFD.2.00.0904041448090.4023@localhost.localdomain>
 User-Agent: Mutt/1.5.18 (2008-05-17)
 X-SA-Exim-Connect-IP: <locally generated>
 X-SA-Exim-Mail-From: tytso@mit.edu
@@ -38,38 +35,31 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, Apr 04, 2009 at 11:20:35AM -0400, Ric Wheeler wrote:
-> Barriers do work as we have them, but as others have mentioned, it is  
-> not a "free" win - fsync will actually move your data safely out to  
-> persistent storage for a huge percentage of real users (including every  
-> ATA/S-ATA and SAS drive I was able to test).  The file systems I  
-> monitored in production use without barriers were much less reliable.
+On Sat, Apr 04, 2009 at 03:13:13PM -0700, Linus Torvalds wrote:
+> And yes, anticipatory seems to be quite noticeably better than cfq here. 
+> With cfq I got a few two-second delays on 'ftruncate()' too (probably 
+> because of your new serialization code?), and the longest fsync() delay 
+> was over 7 seconds. That was definitely solidly in the "painful" category.
 
-The problem is that, as long as you're not under memory pressure, and
-not pushing the filesystem heavily, ext3 didn't corrupt *that* often
-without barriers.  So people got away with it "most of the time" ---
-just as applications replacing files by rewriting them in place using
-truncate and w/o fsync would "usually" not lose data after a crash if
-they were using ext3 with data=ordered mode.  This caused people to
-get lazy/sloppy.
+What is going on with in your "ftruncate()" case?  The synchronization
+code I added will do call filemap_flush() on close if the file
+descriptor had been previously truncated down to zero, either because
+it was opened with O_TRUNCATE, or if ftruncate(fd, 0) was explicitly
+called.  But it won't actually call fsync() or do anything special on
+the actual ftrucate() call; it just sets a flag indicating that the
+file in question should be flushed on close.
 
-So yes, barriers were something that were largely ignored for a long
-time.  After all, in a server environment with UPS's, without crappy
-proprietary video drivers, Linux systems didn't crash that often
-anyway.  So you really needed a large base of systems and with the
-ability to root cause failures such as what Ric had at EMC to see the
-problem.
+This is to make the right thing happen for applications which try to
+edit a file in place via:
 
-Even now, the reason why ext3 doesn't have barriers enabled by default
-(although we did make them the default for ext4) is because Andrew
-doesn't believe Chris's replication case is likely to be true for most
-users in practice, and he's concerned about the performance
-degradation of barriers.  He's basically depending on the fact that
-"usually" you can get away without using barriers.  Sigh....
+     fd = open("foo", O_RDWR);
+     len = read(fd, buf, MAXBUF);
+     <modify buf>
+     ftruncate(fd, 0);
+     write(fd, buf, len);
+     close(fd);
 
-						- Ted
+Otherwise, given the lack of fsync(fd) in the above sequence, a crash
+may leave he file "foo" truncated or only partially written out.
 
-P.S.  Of course, distributions should feel free to consider changing
-the default on their kernels.  SLES has already if memory serves
-correctly.  I don't know if RHEL has yet.
-
+        	     	  		     - Ted
