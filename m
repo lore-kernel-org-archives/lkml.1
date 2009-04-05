@@ -1,19 +1,18 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758451AbZDEEIN@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758637AbZDEEIu@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758451AbZDEEIN (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 5 Apr 2009 00:08:13 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757983AbZDEEGD
+	id S1758637AbZDEEIu (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 5 Apr 2009 00:08:50 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758101AbZDEEG1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 5 Apr 2009 00:06:03 -0400
-Received: from smtp116.sbc.mail.sp1.yahoo.com ([69.147.64.89]:24919 "HELO
+	Sun, 5 Apr 2009 00:06:27 -0400
+Received: from smtp116.sbc.mail.sp1.yahoo.com ([69.147.64.89]:24988 "HELO
 	smtp116.sbc.mail.sp1.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1757995AbZDEEF6 (ORCPT
+	by vger.kernel.org with SMTP id S1758055AbZDEEGX (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 5 Apr 2009 00:05:58 -0400
-X-YMail-OSG: sSj5g8cVM1l6MPs0iaBLxZ8wraI4UfYBGrJ0lCQ8BaszVvjwNpasZq4ZmX8CuMuaMEX6mDuDD4Nmq5Ck1GCSw5mVXXl_jhHyvOsTjU4QJSkjT0Q1t90dB9oBzH5vU0wQIveM7dUCCBI.OxgVNUZcofWlpAHR0ffoZWkzmEMsk8WBdrh4xCDxiK5o4FsXyl4Bbuq66Hj9DcRoNcFafhBDTzzAGHRj_pPVNBL4V6GYImyLnsyToAlmAxdIFt0A2Oiumi1pxTbAuRMAH1RfTh5GcOhMoUKmMPu9C9pmWO_RLfi4D4abf7g-
+	Sun, 5 Apr 2009 00:06:23 -0400
+X-YMail-OSG: qD2Yk9AVM1lpVNkesF3RCi5cvBMVIowkCTYR6oAWWFbFg8KrlR.d3qwLaOgDpTAyh.0yvdZjaQpqVTy7_LgvkuSMGlhigEtSE9aK.e_apDF0oZ0rPDW2aeGHyxHj30N7Gz7eYGvEZZQo1T9QQLPj6Fwe08gkQcEr3J8G7KqION88_4_85oErqjPsMsBAI1VWNsJITw5.6gM19d_yHoiSB5Dbw2mY9bLWw6BfC4UQ0HWHG5_UD9UdiOEy.j96dYR6weyLQGaE8nz.gmpEJ28WoscTz44SH2Y55yZaz4bZJZgymYNnabCJWcv46dffNMEJ.oCRRHjxlUcDA6C2NVS_yjKclD2WQTTiH4dmIg--
 X-Yahoo-Newman-Property: ymail-3
-Subject: [RFC PATCH 12/19] Target_Core_Mod RAMDISK_DR and RAMDISK_MCP
-	subsystem plugin
+Subject: [RFC PATCH 14/19] Target_Core_Mod SCSI MIBs
 From: "Nicholas A. Bellinger" <nab@linux-iscsi.org>
 To: LKML <linux-kernel@vger.kernel.org>,
        linux-scsi <linux-scsi@vger.kernel.org>
@@ -27,8 +26,8 @@ Cc: James Bottomley <James.Bottomley@HansenPartnership.com>,
        Philipp Reisner <philipp.reisner@linbit.com>,
        Linus Torvalds <torvalds@linux-foundation.org>
 Content-Type: text/plain
-Date: Sat, 04 Apr 2009 21:02:06 -0700
-Message-Id: <1238904126.4250.753.camel@haakon2.linux-iscsi.org>
+Date: Sat, 04 Apr 2009 21:02:11 -0700
+Message-Id: <1238904131.4250.755.camel@haakon2.linux-iscsi.org>
 Mime-Version: 1.0
 X-Mailer: Evolution 2.22.3.1 
 Content-Transfer-Encoding: 7bit
@@ -36,29 +35,24 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This patch adds the RAMDISK subsystem plugin for accessing struct page from upstream
-Linux/MM code.
+This patch adds support for SCSI MIBs through /proc/scsi_target/mib following RFC-4455.
 
 Signed-off-by: Nicholas A. Bellinger <nab@linux-iscsi.org>
 
-diff --git a/drivers/target/target_core_rd.c b/drivers/target/target_core_rd.c
+diff --git a/drivers/target/target_core_mib.c b/drivers/target/target_core_mib.c
 new file mode 100644
-index 0000000..4d5c058
+index 0000000..a2f9349
 --- /dev/null
-+++ b/drivers/target/target_core_rd.c
-@@ -0,0 +1,1422 @@
++++ b/drivers/target/target_core_mib.c
+@@ -0,0 +1,1188 @@
 +/*******************************************************************************
-+ * Filename:  target_core_rd.c
++ * Filename:  target_core_mib.c
 + *
-+ * This file contains the Storage Engine <-> Ramdisk transport
-+ * specific functions.
-+ *
-+ * Copyright (c) 2003, 2004, 2005 PyX Technologies, Inc.
-+ * Copyright (c) 2005, 2006, 2007 SBE, Inc.
++ * Copyright (c) 2006-2007 SBE, Inc.  All Rights Reserved.
 + * Copyright (c) 2007-2009 Rising Tide Software, Inc.
 + * Copyright (c) 2008-2009 Linux-iSCSI.org
 + *
-+ * Nicholas A. Bellinger <nab@kernel.org>
++ * Nicholas A. Bellinger <nab@linux-iscsi.org>
 + *
 + * This program is free software; you can redistribute it and/or modify
 + * it under the terms of the GNU General Public License as published by
@@ -77,1416 +71,1182 @@ index 0000000..4d5c058
 + ******************************************************************************/
 +
 +
-+#define TARGET_CORE_RD_C
-+
-+#include <linux/version.h>
-+#include <linux/string.h>
++#include <linux/kernel.h>
++#include <linux/module.h>
++#include <linux/delay.h>
 +#include <linux/timer.h>
++#include <linux/string.h>
++#include <linux/version.h>
++#include <linux/utsrelease.h>
++#include <linux/utsname.h>
++#include <linux/proc_fs.h>
++#include <linux/seq_file.h>
 +#include <linux/blkdev.h>
-+#include <linux/slab.h>
-+#include <linux/spinlock.h>
-+#include <linux/smp_lock.h>
 +#include <scsi/scsi.h>
++#include <scsi/scsi_device.h>
 +#include <scsi/scsi_host.h>
 +
 +#include <target/target_core_base.h>
-+#include <target/target_core_device.h>
++#include <target/target_core_hba.h>
 +#include <target/target_core_transport.h>
-+#include <target/target_core_rd.h>
++#include <target/target_core_mib.h>
++#include <target/target_core_plugin.h>
++#include <target/target_core_seobj.h>
++#include <target/target_core_fabric_ops.h>
++#include <target/target_core_configfs.h>
 +
-+#undef TARGET_CORE_RD_C
++/* SCSI mib table index */
++scsi_index_table_t scsi_index_table;
 +
-+/* #define DEBUG_RAMDISK_MCP */
-+/* #define DEBUG_RAMDISK_DR */
++#ifndef INITIAL_JIFFIES
++#define INITIAL_JIFFIES ((unsigned long)(unsigned int) (-300*HZ))
++#endif
 +
-+/*	rd_attach_hba(): (Part of se_subsystem_api_t template)
-+ *
-+ *
++/* SCSI Instance Table */
++#define SCSI_INST_SW_INDEX		1
++#define SCSI_TRANSPORT_INDEX		1
++
++#define NONE		"None"
++#define ISPRINT(a)   ((a >= ' ') && (a <= '~'))
++
++/* Structure for table row iteration with seq_file */
++typedef struct table_iter_s {
++	int	ti_skip_body;
++	u32	ti_offset;
++	void	*ti_ptr;
++} table_iter_t;
++
++/****************************************************************************
++ * SCSI MIB Tables
++ ****************************************************************************/
++
++/*
++ * SCSI Instance Table
 + */
-+int rd_attach_hba(se_hba_t *hba, u32 host_id)
++static int scsi_inst_seq_show(struct seq_file *seq, void *v)
 +{
-+	rd_host_t *rd_host;
++	se_hba_t *hba;
++	int i;
 +
-+	rd_host = kzalloc(sizeof(rd_host_t), GFP_KERNEL);
-+	if (!(rd_host)) {
-+		printk(KERN_ERR "Unable to allocate memory for rd_host_t\n");
-+		return -ENOMEM;
++	seq_puts(seq, "inst sw_indx\n");
++
++	spin_lock(&se_global->hba_lock);
++	for (i = 0; i < TRANSPORT_MAX_GLOBAL_HBAS; i++) {
++		hba = &se_global->hba_list[i];
++
++		if (!(hba->hba_status & HBA_STATUS_ACTIVE))
++			continue;
++
++		if (!hba->transport)
++			continue;
++
++		seq_printf(seq, "%u %u\n", hba->hba_index, SCSI_INST_SW_INDEX);
++		seq_printf(seq, "plugin: %s version: %s\n",
++				hba->transport->name,
++				TARGET_CORE_VERSION);
 +	}
-+
-+	rd_host->rd_host_id = host_id;
-+
-+	atomic_set(&hba->left_queue_depth, RD_HBA_QUEUE_DEPTH);
-+	atomic_set(&hba->max_queue_depth, RD_HBA_QUEUE_DEPTH);
-+	hba->hba_ptr = (void *) rd_host;
-+	hba->transport = (hba->type == RAMDISK_DR) ?
-+			&rd_dr_template : &rd_mcp_template;
-+
-+	printk(KERN_INFO "CORE_HBA[%d] - %s Ramdisk HBA Driver %s on"
-+		" Generic Target Core Stack %s\n", hba->hba_id,
-+		PYX_ISCSI_VENDOR, RD_HBA_VERSION, TARGET_CORE_MOD_VERSION);
-+	printk(KERN_INFO "CORE_HBA[%d] - Attached Ramdisk HBA: %u to Generic"
-+		" Target Core TCQ Depth: %d MaxSectors: %u\n", hba->hba_id,
-+		rd_host->rd_host_id, atomic_read(&hba->max_queue_depth),
-+		RD_MAX_SECTORS);
++	spin_unlock(&se_global->hba_lock);
 +
 +	return 0;
 +}
 +
-+/*	rd_detach_hba(): (Part of se_subsystem_api_t template)
-+ *
-+ *
-+ */
-+int rd_detach_hba(se_hba_t *hba)
++static int scsi_inst_seq_open(struct inode *inode, struct file *file)
 +{
-+	rd_host_t *rd_host;
-+
-+	if (!hba->hba_ptr) {
-+		printk(KERN_ERR "hba->hba_ptr is NULL!\n");
-+		return -1;
-+	}
-+
-+	rd_host = (rd_host_t *) hba->hba_ptr;
-+
-+	printk(KERN_INFO "CORE_HBA[%d] - Detached Ramdisk HBA: %u from"
-+		" Generic Target Core\n", hba->hba_id, rd_host->rd_host_id);
-+
-+	kfree(rd_host);
-+	hba->hba_ptr = NULL;
-+
-+	return 0;
++	return single_open(file, scsi_inst_seq_show, NULL);
 +}
 +
-+/*	rd_release_device_space():
-+ *
-+ *
-+ */
-+void rd_release_device_space(rd_dev_t *rd_dev)
-+{
-+	u32 i, j, page_count = 0, sg_per_table;
-+	rd_dev_sg_table_t *sg_table;
-+	struct page *pg;
-+	struct scatterlist *sg;
++static const struct file_operations scsi_inst_seq_fops = {
++	.owner	 = THIS_MODULE,
++	.open	 = scsi_inst_seq_open,
++	.read	 = seq_read,
++	.llseek	 = seq_lseek,
++	.release = single_release,
++};
 +
-+	if (!rd_dev->sg_table_array || !rd_dev->sg_table_count)
-+		return;
-+
-+	sg_table = rd_dev->sg_table_array;
-+
-+	for (i = 0; i < rd_dev->sg_table_count; i++) {
-+		sg = sg_table[i].sg_table;
-+		sg_per_table = sg_table[i].rd_sg_count;
-+
-+		for (j = 0; j < sg_per_table; j++) {
-+			pg = sg_page(&sg[j]);
-+			if ((pg)) {
-+				__free_page(pg);
-+				page_count++;
-+			}
-+		}
-+
-+		kfree(sg);
-+	}
-+
-+	printk(KERN_INFO "CORE_RD[%u] - Released device space for Ramdisk"
-+		" Device ID: %u, pages %u in %u tables total bytes %lu\n",
-+		rd_dev->rd_host->rd_host_id, rd_dev->rd_dev_id, page_count,
-+		rd_dev->sg_table_count, (unsigned long)page_count * PAGE_SIZE);
-+
-+	kfree(sg_table);
-+}
-+
-+
-+/*	rd_build_device_space():
-+ *
-+ *
-+ */
-+static int rd_build_device_space(rd_dev_t *rd_dev)
-+{
-+	u32 i = 0, j, page_offset = 0, sg_per_table, sg_tables, total_sg_needed;
-+	u32 max_sg_per_table = (RD_MAX_ALLOCATION_SIZE /
-+				sizeof(struct scatterlist));
-+	rd_dev_sg_table_t *sg_table;
-+	struct page *pg;
-+	struct scatterlist *sg;
-+
-+	if (rd_dev->rd_page_count <= 0) {
-+		printk(KERN_ERR "Illegal page count: %u for Ramdisk device\n",
-+			rd_dev->rd_page_count);
-+		return -1;
-+	}
-+	total_sg_needed = rd_dev->rd_page_count;
-+
-+	sg_tables = (total_sg_needed / max_sg_per_table) + 1;
-+
-+	sg_table = kzalloc(sg_tables * sizeof(rd_dev_sg_table_t), GFP_KERNEL);
-+	if (!(sg_table)) {
-+		printk(KERN_ERR "Unable to allocate memory for Ramdisk"
-+			" scatterlist tables\n");
-+		return -1;
-+	}
-+
-+	rd_dev->sg_table_array = sg_table;
-+	rd_dev->sg_table_count = sg_tables;
-+
-+	while (total_sg_needed) {
-+		sg_per_table = (total_sg_needed > max_sg_per_table) ?
-+			max_sg_per_table : total_sg_needed;
-+
-+		sg = kzalloc(sg_per_table * sizeof(struct scatterlist),
-+				GFP_KERNEL);
-+		if (!(sg)) {
-+			printk(KERN_ERR "Unable to allocate scatterlist array"
-+				" for rd_dev_t\n");
-+			return -1;
-+		}
-+
-+		sg_init_table((struct scatterlist *)&sg[0], sg_per_table);
-+
-+		sg_table[i].sg_table = sg;
-+		sg_table[i].rd_sg_count = sg_per_table;
-+		sg_table[i].page_start_offset = page_offset;
-+		sg_table[i++].page_end_offset = (page_offset + sg_per_table)
-+						- 1;
-+
-+		for (j = 0; j < sg_per_table; j++) {
-+			pg = (struct page *) alloc_pages(
-+					GFP_KERNEL, 0);
-+			if (!(pg)) {
-+				printk(KERN_ERR "Unable to allocate scatterlist"
-+					" pages for rd_dev_sg_table_t\n");
-+				return -1;
-+			}
-+			sg_assign_page(&sg[j], pg);
-+			sg[j].length = PAGE_SIZE;
-+		}
-+
-+		page_offset += sg_per_table;
-+		total_sg_needed -= sg_per_table;
-+	}
-+
-+	printk(KERN_INFO "CORE_RD[%u] - Built Ramdisk Device ID: %u space of"
-+		" %u pages in %u tables\n", rd_dev->rd_host->rd_host_id,
-+		rd_dev->rd_dev_id, rd_dev->rd_page_count,
-+		rd_dev->sg_table_count);
-+
-+	return 0;
-+}
-+
-+static void *rd_allocate_virtdevice(
-+	se_hba_t *hba,
-+	const char *name,
-+	int rd_direct)
-+{
-+	rd_dev_t *rd_dev;
-+	rd_host_t *rd_host = (rd_host_t *) hba->hba_ptr;
-+
-+	rd_dev = kzalloc(sizeof(rd_dev_t), GFP_KERNEL);
-+	if (!(rd_dev)) {
-+		printk(KERN_ERR "Unable to allocate memory for rd_dev_t\n");
-+		return NULL;
-+	}
-+
-+	rd_dev->rd_host = rd_host;
-+	rd_dev->rd_direct = rd_direct;
-+
-+	return rd_dev;
-+}
-+
-+void *rd_DIRECT_allocate_virtdevice(se_hba_t *hba, const char *name)
-+{
-+	return rd_allocate_virtdevice(hba, name, 1);
-+}
-+
-+void *rd_MEMCPY_allocate_virtdevice(se_hba_t *hba, const char *name)
-+{
-+	return rd_allocate_virtdevice(hba, name, 0);
-+}
-+
-+/*	rd_create_virtdevice():
-+ *
-+ *
-+ */
-+static se_device_t *rd_create_virtdevice(
-+	se_hba_t *hba,
-+	se_subsystem_dev_t *se_dev,
-+	void *p,
-+	int rd_direct)
++static void *locate_hba_start(
++	struct seq_file *seq,
++	loff_t *pos,
++	int (*do_check)(void *))
 +{
 +	se_device_t *dev;
-+	rd_dev_t *rd_dev = (rd_dev_t *) p;
-+	rd_host_t *rd_host = (rd_host_t *) hba->hba_ptr;
-+	int dev_flags = 0;
++	se_hba_t *hba;
++	table_iter_t *tpg_iter;
++	int i;
 +
-+	if (rd_dev->rd_direct)
-+		dev_flags |= DF_TRANSPORT_DMA_ALLOC;
-+
-+	if (rd_build_device_space(rd_dev) < 0)
-+		goto fail;
-+
-+	dev = transport_add_device_to_core_hba(hba,
-+			(rd_dev->rd_direct) ? &rd_dr_template :
-+			&rd_mcp_template, se_dev, dev_flags, (void *)rd_dev);
-+	if (!(dev))
-+		goto fail;
-+
-+	rd_dev->rd_dev_id = rd_host->rd_host_dev_id_count++;
-+	rd_dev->rd_queue_depth = dev->queue_depth;
-+
-+	printk(KERN_INFO "CORE_RD[%u] - Added LIO %s Ramdisk Device ID: %u of"
-+		" %u pages in %u tables, %lu total bytes\n",
-+		rd_host->rd_host_id, (!rd_dev->rd_direct) ? "MEMCPY" :
-+		"DIRECT", rd_dev->rd_dev_id, rd_dev->rd_page_count,
-+		rd_dev->sg_table_count,
-+		(unsigned long)(rd_dev->rd_page_count * PAGE_SIZE));
-+
-+	return dev;
-+
-+fail:
-+	rd_release_device_space(rd_dev);
-+	kfree(rd_dev);
-+	return NULL;
-+}
-+
-+se_device_t *rd_DIRECT_create_virtdevice(
-+	se_hba_t *hba,
-+	se_subsystem_dev_t *se_dev,
-+	void *p)
-+{
-+	return rd_create_virtdevice(hba, se_dev, p, 1);
-+}
-+
-+se_device_t *rd_MEMCPY_create_virtdevice(
-+	se_hba_t *hba,
-+	se_subsystem_dev_t *se_dev,
-+	void *p)
-+{
-+	return rd_create_virtdevice(hba, se_dev, p, 0);
-+}
-+
-+/*	rd_activate_device(): (Part of se_subsystem_api_t template)
-+ *
-+ *
-+ */
-+int rd_activate_device(se_device_t *dev)
-+{
-+	rd_dev_t *rd_dev = (rd_dev_t *) dev->dev_ptr;
-+	rd_host_t *rd_host = rd_dev->rd_host;
-+
-+	printk(KERN_INFO "CORE_RD[%u] - Activating Device with TCQ: %d at"
-+		" Ramdisk Device ID: %d\n", rd_host->rd_host_id,
-+		rd_dev->rd_queue_depth, rd_dev->rd_dev_id);
-+
-+	return 0;
-+}
-+
-+/*	rd_deactivate_device(): (Part of se_subsystem_api_t template)
-+ *
-+ *
-+ */
-+void rd_deactivate_device(se_device_t *dev)
-+{
-+	rd_dev_t *rd_dev = (rd_dev_t *) dev->dev_ptr;
-+	rd_host_t *rd_host = rd_dev->rd_host;
-+
-+	printk(KERN_INFO "CORE_RD[%u] - Deactivating Device with TCQ: %d at"
-+		" Ramdisk Device ID: %d\n", rd_host->rd_host_id,
-+		rd_dev->rd_queue_depth, rd_dev->rd_dev_id);
-+}
-+
-+/*	rd_free_device(): (Part of se_subsystem_api_t template)
-+ *
-+ *
-+ */
-+void rd_free_device(void *p)
-+{
-+	rd_dev_t *rd_dev = (rd_dev_t *) p;
-+
-+	rd_release_device_space(rd_dev);
-+	kfree(rd_dev);
-+}
-+
-+/*	rd_transport_complete(): (Part of se_subsystem_api_t template)
-+ *
-+ *
-+ */
-+int rd_transport_complete(se_task_t *task)
-+{
-+	return 0;
-+}
-+
-+/*	rd_allocate_request(): (Part of se_subsystem_api_t template)
-+ *
-+ *
-+ */
-+void *rd_allocate_request(
-+	se_task_t *task,
-+	se_device_t *dev)
-+{
-+	rd_request_t *rd_req;
-+
-+	rd_req = kzalloc(sizeof(rd_request_t), GFP_KERNEL);
-+	if (!(rd_req)) {
-+		printk(KERN_ERR "Unable to allocate rd_request_t\n");
++	if (*pos != 0)
 +		return NULL;
-+	}
-+	rd_req->rd_dev = (rd_dev_t *) dev->dev_ptr;
 +
-+	return (void *)rd_req;
-+}
++	tpg_iter = kzalloc(sizeof(table_iter_t), GFP_KERNEL);
++	if (!(tpg_iter))
++		return NULL;
++#if 0
++	printk(KERN_INFO "%s[%d] - Allocating iterp: %p\n", current->comm,
++			current->pid, tpg_iter);
++#endif
++	seq->private = (void *)tpg_iter;
 +
-+/*	rd_emulate_inquiry():
-+ *
-+ *
-+ */
-+static int rd_emulate_inquiry(se_task_t *task)
-+{
-+	unsigned char prod[64], se_location[128];
-+	rd_dev_t *rd_dev = (rd_dev_t *) task->se_dev->dev_ptr;
-+	se_cmd_t *cmd = TASK_CMD(task);
-+	se_hba_t *hba = task->se_dev->se_hba;
++	spin_lock(&se_global->hba_lock);
++	for (i = 0; i < TRANSPORT_MAX_GLOBAL_HBAS; i++) {
++		hba = &se_global->hba_list[i];
 +
-+	memset(prod, 0, 64);
-+	memset(se_location, 0, 128);
++		if (!(hba->hba_status & HBA_STATUS_ACTIVE))
++			continue;
++		if (do_check((void *)hba) == 0)
++			continue;
 +
-+	sprintf(prod, "RAMDISK-%s", (rd_dev->rd_direct) ? "DR" : "MCP");
-+	sprintf(se_location, "%u_%u", hba->hba_id, rd_dev->rd_dev_id);
-+
-+	return transport_generic_emulate_inquiry(cmd, TYPE_DISK, prod,
-+			(hba->transport->do_se_mem_map) ? RD_DR_VERSION :
-+			RD_MCP_VERSION, se_location);
-+}
-+
-+/*	rd_emulate_read_cap():
-+ *
-+ *
-+ */
-+static int rd_emulate_read_cap(se_task_t *task)
-+{
-+	rd_dev_t *rd_dev = (rd_dev_t *) task->se_dev->dev_ptr;
-+	u32 blocks = ((rd_dev->rd_page_count * PAGE_SIZE) /
-+		       DEV_ATTRIB(task->se_dev)->block_size) - 1;
-+
-+	if ((((rd_dev->rd_page_count * PAGE_SIZE) /
-+	       DEV_ATTRIB(task->se_dev)->block_size) - 1) >= 0x00000000ffffffff)
-+		blocks = 0xffffffff;
-+
-+	return transport_generic_emulate_readcapacity(TASK_CMD(task), blocks);
-+}
-+
-+static int rd_emulate_read_cap16(se_task_t *task)
-+{
-+	rd_dev_t *rd_dev = (rd_dev_t *) task->se_dev->dev_ptr;
-+	unsigned long long blocks_long = ((rd_dev->rd_page_count * PAGE_SIZE) /
-+				   DEV_ATTRIB(task->se_dev)->block_size) - 1;
-+
-+	return transport_generic_emulate_readcapacity_16(TASK_CMD(task),
-+				blocks_long);
-+}
-+
-+/*	rd_emulate_scsi_cdb():
-+ *
-+ *
-+ */
-+static int rd_emulate_scsi_cdb(se_task_t *task)
-+{
-+	int ret;
-+	se_cmd_t *cmd = TASK_CMD(task);
-+	rd_request_t *rd_req = (rd_request_t *) task->transport_req;
-+
-+	switch (rd_req->rd_scsi_cdb[0]) {
-+	case INQUIRY:
-+		if (rd_emulate_inquiry(task) < 0)
-+			return PYX_TRANSPORT_INVALID_CDB_FIELD;
-+		break;
-+	case READ_CAPACITY:
-+		ret = rd_emulate_read_cap(task);
-+		if (ret < 0)
-+			return ret;
-+		break;
-+	case MODE_SENSE:
-+		ret = transport_generic_emulate_modesense(TASK_CMD(task),
-+				rd_req->rd_scsi_cdb, rd_req->rd_buf, 0,
-+				TYPE_DISK);
-+		if (ret < 0)
-+			return ret;
-+		break;
-+	case MODE_SENSE_10:
-+		ret = transport_generic_emulate_modesense(TASK_CMD(task),
-+				rd_req->rd_scsi_cdb, rd_req->rd_buf, 1,
-+				TYPE_DISK);
-+		if (ret < 0)
-+			return ret;
-+		break;
-+	case SERVICE_ACTION_IN:
-+		if ((T_TASK(cmd)->t_task_cdb[1] & 0x1f) !=
-+		     SAI_READ_CAPACITY_16) {
-+			printk(KERN_ERR "Unsupported SA: 0x%02x\n",
-+					T_TASK(cmd)->t_task_cdb[1] & 0x1f);
-+			return PYX_TRANSPORT_UNKNOWN_SAM_OPCODE;
++		spin_lock(&hba->device_lock);
++		list_for_each_entry(dev, &hba->hba_dev_list, dev_list) {
++			tpg_iter->ti_ptr = (void *)dev;
++			tpg_iter->ti_offset = hba->hba_id;
++			atomic_inc(&hba->dev_mib_access_count);
++#if 0
++			printk(KERN_INFO "[%d]: Incremented dev_mib_access"
++				"_count: %d\n", hba->hba_id,
++				atomic_read(&hba->dev_mib_access_count));
++#endif
++			spin_unlock(&hba->device_lock);
++			spin_unlock(&se_global->hba_lock);
++			return SEQ_START_TOKEN;
 +		}
-+		ret = rd_emulate_read_cap16(task);
-+		if (ret < 0)
-+			return ret;
-+		break;
-+	case REQUEST_SENSE:
-+		ret = transport_generic_emulate_request_sense(cmd,
-+				T_TASK(cmd)->t_task_cdb);
-+		if (ret < 0)
-+			return ret;
-+		break;
-+	case ALLOW_MEDIUM_REMOVAL:
-+	case ERASE:
-+	case REZERO_UNIT:
-+	case SEEK_10:
-+	case SPACE:
-+	case START_STOP:
-+	case SYNCHRONIZE_CACHE:
-+	case TEST_UNIT_READY:
-+	case VERIFY:
-+	case WRITE_FILEMARKS:
-+	case RESERVE:
-+	case RESERVE_10:
-+	case RELEASE:
-+	case RELEASE_10:
-+		break;
-+	default:
-+		printk(KERN_ERR "Unsupported SCSI Opcode: 0x%02x for"
-+			" RAMDISKs\n", rd_req->rd_scsi_cdb[0]);
-+		return PYX_TRANSPORT_UNKNOWN_SAM_OPCODE;
++		spin_unlock(&hba->device_lock);
 +	}
++	spin_unlock(&se_global->hba_lock);
 +
-+	task->task_scsi_status = GOOD;
-+	transport_complete_task(task, 1);
-+
-+	return PYX_TRANSPORT_SENT_TO_TRANSPORT;
++	return SEQ_START_TOKEN;
 +}
 +
-+/*	rd_get_sg_table():
-+ *
-+ *
-+ */
-+static rd_dev_sg_table_t *rd_get_sg_table(rd_dev_t *rd_dev, u32 page)
++static void *locate_hba_next(
++	struct seq_file *seq,
++	void *v,
++	loff_t *pos,
++	int (*do_check)(void *))
 +{
-+	u32 i;
-+	rd_dev_sg_table_t *sg_table;
++	table_iter_t *iterp = (table_iter_t *)seq->private;
++	se_device_t *dev, *dev_p, *dev_next = NULL;
++	se_hba_t *hba;
++	int i;
 +
-+	for (i = 0; i < rd_dev->sg_table_count; i++) {
-+		sg_table = &rd_dev->sg_table_array[i];
-+		if ((sg_table->page_start_offset <= page) &&
-+		    (sg_table->page_end_offset >= page))
-+			return sg_table;
++	(*pos)++;
++
++	if (!(iterp))
++		return NULL;
++
++	dev = (se_device_t *)iterp->ti_ptr;
++	if (!(dev))
++		return NULL;
++
++	dev_p = dev;
++	spin_lock(&SE_HBA(dev)->device_lock);
++	list_for_each_entry_continue(dev_p, &dev->se_hba->hba_dev_list,
++			dev_list) {
++		dev_next = dev_p;
++		break;
 +	}
++	if ((dev_next)) {
++		iterp->ti_ptr = dev_next;
++		spin_unlock(&SE_HBA(dev)->device_lock);
++		return (void *)iterp;
++	}
++	spin_unlock(&SE_HBA(dev)->device_lock);
 +
-+	printk(KERN_ERR "Unable to locate rd_dev_sg_table_t for page: %u\n",
-+			page);
++	spin_lock(&se_global->hba_lock);
++	hba = &se_global->hba_list[iterp->ti_offset];
++	atomic_dec(&hba->dev_mib_access_count);
++	iterp->ti_ptr = NULL;
++
++	for (i = (iterp->ti_offset + 1); i < TRANSPORT_MAX_GLOBAL_HBAS; i++) {
++		hba = &se_global->hba_list[i];
++
++		if (!(hba->hba_status & HBA_STATUS_ACTIVE))
++			continue;
++		if (do_check((void *)hba) == 0)
++			continue;
++
++		spin_lock(&hba->device_lock);
++		list_for_each_entry(dev, &hba->hba_dev_list, dev_list) {
++			iterp->ti_ptr = (void *)dev;
++			iterp->ti_offset = hba->hba_id;
++			atomic_inc(&hba->dev_mib_access_count);
++
++			spin_unlock(&hba->device_lock);
++			spin_unlock(&se_global->hba_lock);
++			return (void *)iterp;
++		}
++		spin_unlock(&hba->device_lock);
++	}
++	spin_unlock(&se_global->hba_lock);
 +
 +	return NULL;
 +}
 +
-+/*	rd_MEMCPY_read():
-+ *
-+ *
-+ */
-+static int rd_MEMCPY_read(rd_request_t *req)
++static void locate_hba_stop(struct seq_file *seq, void *v)
 +{
-+	rd_dev_t *dev = req->rd_dev;
-+	rd_dev_sg_table_t *table;
-+	struct scatterlist *sg_d, *sg_s;
-+	void *dst, *src;
-+	u32 i = 0, j = 0, dst_offset = 0, src_offset = 0;
-+	u32 length, page_end = 0, table_sg_end;
-+	u32 rd_offset = req->rd_offset;
++	table_iter_t *iterp = (table_iter_t *)seq->private;
 +
-+	table = rd_get_sg_table(dev, req->rd_page);
-+	if (!(table))
-+		return -1;
++	if (!(iterp))
++		return;
 +
-+	table_sg_end = (table->page_end_offset - req->rd_page);
-+	sg_d = (struct scatterlist *) req->rd_buf;
-+	sg_s = &table->sg_table[req->rd_page - table->page_start_offset];
-+#ifdef DEBUG_RAMDISK_MCP
-+	printk(KERN_INFO "RD[%u]: Read LBA: %llu, Size: %u Page: %u, Offset:"
-+		" %u\n", dev->rd_dev_id, req->rd_lba, req->rd_size,
-+		req->rd_page, req->rd_offset);
-+#endif
-+	src_offset = rd_offset;
-+
-+	while (req->rd_size) {
-+		if ((sg_d[i].length - dst_offset) <
-+		    (sg_s[j].length - src_offset)) {
-+			length = (sg_d[i].length - dst_offset);
-+#ifdef DEBUG_RAMDISK_MCP
-+			printk(KERN_INFO "Step 1 - sg_d[%d]: %p length: %d"
-+				" offset: %u sg_s[%d].length: %u\n", i,
-+				&sg_d[i], sg_d[i].length, sg_d[i].offset, j,
-+				sg_s[j].length);
-+			printk(KERN_INFO "Step 1 - length: %u dst_offset: %u"
-+				" src_offset: %u\n", length, dst_offset,
-+				src_offset);
-+#endif
-+			if (length > req->rd_size)
-+				length = req->rd_size;
-+
-+			dst = sg_virt(&sg_d[i++]) + dst_offset;
-+			if (!dst)
-+				BUG();
-+
-+			src = sg_virt(&sg_s[j]) + src_offset;
-+			if (!src)
-+				BUG();
-+
-+			dst_offset = 0;
-+			src_offset = length;
-+			page_end = 0;
-+		} else {
-+			length = (sg_s[j].length - src_offset);
-+#ifdef DEBUG_RAMDISK_MCP
-+			printk(KERN_INFO "Step 2 - sg_d[%d]: %p length: %d"
-+				" offset: %u sg_s[%d].length: %u\n", i,
-+				&sg_d[i], sg_d[i].length, sg_d[i].offset,
-+				j, sg_s[j].length);
-+			printk(KERN_INFO "Step 2 - length: %u dst_offset: %u"
-+				" src_offset: %u\n", length, dst_offset,
-+				src_offset);
-+#endif
-+			if (length > req->rd_size)
-+				length = req->rd_size;
-+
-+			dst = sg_virt(&sg_d[i]) + dst_offset;
-+			if (!dst)
-+				BUG();
-+
-+			if (sg_d[i].length == length) {
-+				i++;
-+				dst_offset = 0;
-+			} else
-+				dst_offset = length;
-+
-+			src = sg_virt(&sg_s[j++]) + src_offset;
-+			if (!src)
-+				BUG();
-+
-+			src_offset = 0;
-+			page_end = 1;
-+		}
-+
-+		memcpy(dst, src, length);
-+
-+#ifdef DEBUG_RAMDISK_MCP
-+		printk(KERN_INFO "page: %u, remaining size: %u, length: %u,"
-+			" i: %u, j: %u\n", req->rd_page,
-+			(req->rd_size - length), length, i, j);
-+#endif
-+		req->rd_size -= length;
-+		if (!(req->rd_size))
-+			return 0;
-+
-+		if (!page_end)
-+			continue;
-+
-+		if (++req->rd_page <= table->page_end_offset) {
-+#ifdef DEBUG_RAMDISK_MCP
-+			printk(KERN_INFO "page: %u in same page table\n",
-+				req->rd_page);
-+#endif
-+			continue;
-+		}
-+#ifdef DEBUG_RAMDISK_MCP
-+		printk(KERN_INFO "getting new page table for page: %u\n",
-+				req->rd_page);
-+#endif
-+		table = rd_get_sg_table(dev, req->rd_page);
-+		if (!(table))
-+			return -1;
-+
-+		sg_s = &table->sg_table[j = 0];
-+	}
-+
-+	return 0;
-+}
-+
-+/*	rd_MEMCPY_write():
-+ *
-+ *
-+ */
-+static int rd_MEMCPY_write(rd_request_t *req)
-+{
-+	rd_dev_t *dev = req->rd_dev;
-+	rd_dev_sg_table_t *table;
-+	struct scatterlist *sg_d, *sg_s;
-+	void *dst, *src;
-+	u32 i = 0, j = 0, dst_offset = 0, src_offset = 0;
-+	u32 length, page_end = 0, table_sg_end;
-+	u32 rd_offset = req->rd_offset;
-+
-+	table = rd_get_sg_table(dev, req->rd_page);
-+	if (!(table))
-+		return -1;
-+
-+	table_sg_end = (table->page_end_offset - req->rd_page);
-+	sg_d = &table->sg_table[req->rd_page - table->page_start_offset];
-+	sg_s = (struct scatterlist *) req->rd_buf;
-+#ifdef DEBUG_RAMDISK_MCP
-+	printk(KERN_INFO "RD[%d] Write LBA: %llu, Size: %u, Page: %u,"
-+		" Offset: %u\n", dev->rd_dev_id, req->rd_lba, req->rd_size,
-+		req->rd_page, req->rd_offset);
-+#endif
-+	dst_offset = rd_offset;
-+
-+	while (req->rd_size) {
-+		if ((sg_s[i].length - src_offset) <
-+		    (sg_d[j].length - dst_offset)) {
-+			length = (sg_s[i].length - src_offset);
-+#ifdef DEBUG_RAMDISK_MCP
-+			printk(KERN_INFO "Step 1 - sg_s[%d]: %p length: %d"
-+				" offset: %d sg_d[%d].length: %u\n", i,
-+				&sg_s[i], sg_s[i].length, sg_s[i].offset,
-+				j, sg_d[j].length);
-+			printk(KERN_INFO "Step 1 - length: %u src_offset: %u"
-+				" dst_offset: %u\n", length, src_offset,
-+				dst_offset);
-+#endif
-+			if (length > req->rd_size)
-+				length = req->rd_size;
-+
-+			src = sg_virt(&sg_s[i++]) + src_offset;
-+			if (!src)
-+				BUG();
-+
-+			dst = sg_virt(&sg_d[j]) + dst_offset;
-+			if (!dst)
-+				BUG();
-+
-+			src_offset = 0;
-+			dst_offset = length;
-+			page_end = 0;
-+		} else {
-+			length = (sg_d[j].length - dst_offset);
-+#ifdef DEBUG_RAMDISK_MCP
-+			printk(KERN_INFO "Step 2 - sg_s[%d]: %p length: %d"
-+				" offset: %d sg_d[%d].length: %u\n", i,
-+				&sg_s[i], sg_s[i].length, sg_s[i].offset,
-+				j, sg_d[j].length);
-+			printk(KERN_INFO "Step 2 - length: %u src_offset: %u"
-+				" dst_offset: %u\n", length, src_offset,
-+				dst_offset);
-+#endif
-+			if (length > req->rd_size)
-+				length = req->rd_size;
-+
-+			src = sg_virt(&sg_s[i]) + src_offset;
-+			if (!src)
-+				BUG();
-+
-+			if (sg_s[i].length == length) {
-+				i++;
-+				src_offset = 0;
-+			} else
-+				src_offset = length;
-+
-+			dst = sg_virt(&sg_d[j++]) + dst_offset;
-+			if (!dst)
-+				BUG();
-+
-+			dst_offset = 0;
-+			page_end = 1;
-+		}
-+
-+		memcpy(dst, src, length);
-+
-+#ifdef DEBUG_RAMDISK_MCP
-+		printk(KERN_INFO "page: %u, remaining size: %u, length: %u,"
-+			" i: %u, j: %u\n", req->rd_page,
-+			(req->rd_size - length), length, i, j);
-+#endif
-+		req->rd_size -= length;
-+		if (!(req->rd_size))
-+			return 0;
-+
-+		if (!page_end)
-+			continue;
-+
-+		if (++req->rd_page <= table->page_end_offset) {
-+#ifdef DEBUG_RAMDISK_MCP
-+			printk(KERN_INFO "page: %u in same page table\n",
-+				req->rd_page);
-+#endif
-+			continue;
-+		}
-+#ifdef DEBUG_RAMDISK_MCP
-+		printk(KERN_INFO "getting new page table for page: %u\n",
-+				req->rd_page);
-+#endif
-+		table = rd_get_sg_table(dev, req->rd_page);
-+		if (!(table))
-+			return -1;
-+
-+		sg_d = &table->sg_table[j = 0];
-+	}
-+
-+	return 0;
-+}
-+
-+/*	rd_MEMCPY_do_task(): (Part of se_subsystem_api_t template)
-+ *
-+ *
-+ */
-+int rd_MEMCPY_do_task(se_task_t *task)
-+{
-+	se_device_t *dev = task->se_dev;
-+	rd_request_t *req = (rd_request_t *) task->transport_req;
-+	int ret;
-+
-+	if (!(TASK_CMD(task)->se_cmd_flags & SCF_SCSI_DATA_SG_IO_CDB))
-+		return rd_emulate_scsi_cdb(task);
-+
-+	req->rd_lba = task->task_lba;
-+	req->rd_page = (req->rd_lba * DEV_ATTRIB(dev)->block_size) / PAGE_SIZE;
-+	req->rd_offset = (req->rd_lba %
-+			 (PAGE_SIZE / DEV_ATTRIB(dev)->block_size)) *
-+			  DEV_ATTRIB(dev)->block_size;
-+	req->rd_size = task->task_size;
-+
-+	if (req->rd_data_direction == RD_DATA_READ)
-+		ret = rd_MEMCPY_read(req);
-+	else
-+		ret = rd_MEMCPY_write(req);
-+
-+	if (ret != 0)
-+		return ret;
-+
-+	task->task_scsi_status = GOOD;
-+	transport_complete_task(task, 1);
-+
-+	return PYX_TRANSPORT_SENT_TO_TRANSPORT;
-+}
-+
-+/*	rd_DIRECT_with_offset():
-+ *
-+ *
-+ */
-+static int rd_DIRECT_with_offset(
-+	se_task_t *task,
-+	struct list_head *se_mem_list,
-+	u32 *se_mem_cnt,
-+	u32 *task_offset)
-+{
-+	rd_request_t *req = (rd_request_t *)task->transport_req;
-+	rd_dev_t *dev = req->rd_dev;
-+	rd_dev_sg_table_t *table;
-+	se_mem_t *se_mem;
-+	struct scatterlist *sg_s;
-+	u32 j = 0, set_offset = 1;
-+	u32 get_next_table = 0, offset_length, table_sg_end;
-+
-+	table = rd_get_sg_table(dev, req->rd_page);
-+	if (!(table))
-+		return -1;
-+
-+	table_sg_end = (table->page_end_offset - req->rd_page);
-+	sg_s = &table->sg_table[req->rd_page - table->page_start_offset];
-+#ifdef DEBUG_RAMDISK_DR
-+	printk(KERN_INFO "%s DIRECT LBA: %llu, Size: %u Page: %u, Offset: %u\n",
-+		(req->rd_data_direction != RD_DATA_READ) ? "Write" : "Read",
-+		req->rd_lba, req->rd_size, req->rd_page, req->rd_offset);
-+#endif
-+	while (req->rd_size) {
-+		se_mem = kzalloc(sizeof(se_mem_t), GFP_KERNEL);
-+		if (!(se_mem)) {
-+			printk(KERN_ERR "Unable to allocate se_mem_t\n");
-+			return -1;
-+		}
-+		INIT_LIST_HEAD(&se_mem->se_list);
-+
-+		if (set_offset) {
-+			offset_length = sg_s[j].length - req->rd_offset;
-+			if (offset_length > req->rd_size)
-+				offset_length = req->rd_size;
-+
-+			se_mem->se_page = sg_page(&sg_s[j++]);
-+			se_mem->se_off = req->rd_offset;
-+			se_mem->se_len = offset_length;
-+
-+			set_offset = 0;
-+			get_next_table = (j > table_sg_end);
-+			goto check_eot;
-+		}
-+
-+		offset_length = (req->rd_size < req->rd_offset) ?
-+			req->rd_size : req->rd_offset;
-+
-+		se_mem->se_page = sg_page(&sg_s[j]);
-+		se_mem->se_len = offset_length;
-+
-+		set_offset = 1;
-+
-+check_eot:
-+#ifdef DEBUG_RAMDISK_DR
-+		printk(KERN_INFO "page: %u, size: %u, offset_length: %u, j: %u"
-+			" se_mem: %p, se_page: %p se_off: %u se_len: %u\n",
-+			req->rd_page, req->rd_size, offset_length, j, se_mem,
-+			se_mem->se_page, se_mem->se_off, se_mem->se_len);
-+#endif
-+		list_add_tail(&se_mem->se_list, se_mem_list);
-+		(*se_mem_cnt)++;
-+
-+		req->rd_size -= offset_length;
-+		if (!(req->rd_size))
-+			goto out;
-+
-+		if (!set_offset && !get_next_table)
-+			continue;
-+
-+		if (++req->rd_page <= table->page_end_offset) {
-+#ifdef DEBUG_RAMDISK_DR
-+			printk(KERN_INFO "page: %u in same page table\n",
-+					req->rd_page);
-+#endif
-+			continue;
-+		}
-+#ifdef DEBUG_RAMDISK_DR
-+		printk(KERN_INFO "getting new page table for page: %u\n",
-+				req->rd_page);
-+#endif
-+		table = rd_get_sg_table(dev, req->rd_page);
-+		if (!(table))
-+			return -1;
-+
-+		sg_s = &table->sg_table[j = 0];
-+	}
-+
-+out:
-+	T_TASK(task->task_se_cmd)->t_task_se_num += *se_mem_cnt;
-+#ifdef DEBUG_RAMDISK_DR
-+	printk(KERN_INFO "RD_DR - Allocated %u se_mem_t segments for task\n",
-+			*se_mem_cnt);
-+#endif
-+	return 0;
-+}
-+
-+/*	rd_DIRECT_without_offset():
-+ *
-+ *
-+ */
-+static int rd_DIRECT_without_offset(
-+	se_task_t *task,
-+	struct list_head *se_mem_list,
-+	u32 *se_mem_cnt,
-+	u32 *task_offset)
-+{
-+	rd_request_t *req = (rd_request_t *)task->transport_req;
-+	rd_dev_t *dev = req->rd_dev;
-+	rd_dev_sg_table_t *table;
-+	se_mem_t *se_mem;
-+	struct scatterlist *sg_s;
-+	u32 length, j = 0;
-+
-+	table = rd_get_sg_table(dev, req->rd_page);
-+	if (!(table))
-+		return -1;
-+
-+	sg_s = &table->sg_table[req->rd_page - table->page_start_offset];
-+#ifdef DEBUG_RAMDISK_DR
-+	printk(KERN_INFO "%s DIRECT LBA: %llu, Size: %u, Page: %u\n",
-+		(req->rd_data_direction != RD_DATA_READ) ? "Write" : "Read",
-+		req->rd_lba, req->rd_size, req->rd_page);
-+#endif
-+	while (req->rd_size) {
-+		se_mem = kzalloc(sizeof(se_mem_t), GFP_KERNEL);
-+		if (!(se_mem)) {
-+			printk(KERN_ERR "Unable to allocate se_mem_t\n");
-+			return -1;
-+		}
-+		INIT_LIST_HEAD(&se_mem->se_list);
-+
-+		length = (req->rd_size < sg_s[j].length) ?
-+			req->rd_size : sg_s[j].length;
-+
-+		se_mem->se_page = sg_page(&sg_s[j++]);
-+		se_mem->se_len = length;
-+
-+#ifdef DEBUG_RAMDISK_DR
-+		printk(KERN_INFO "page: %u, size: %u, j: %u se_mem: %p,"
-+			" se_page: %p se_off: %u se_len: %u\n", req->rd_page,
-+			req->rd_size, j, se_mem, se_mem->se_page,
-+			se_mem->se_off, se_mem->se_len);
-+#endif
-+		list_add_tail(&se_mem->se_list, se_mem_list);
-+		(*se_mem_cnt)++;
-+
-+		req->rd_size -= length;
-+		if (!(req->rd_size))
-+			goto out;
-+
-+		if (++req->rd_page <= table->page_end_offset) {
-+#ifdef DEBUG_RAMDISK_DR
-+			printk("page: %u in same page table\n",
-+				req->rd_page);
-+#endif
-+			continue;
-+		}
-+#ifdef DEBUG_RAMDISK_DR
-+		printk(KERN_INFO "getting new page table for page: %u\n",
-+				req->rd_page);
-+#endif
-+		table = rd_get_sg_table(dev, req->rd_page);
-+		if (!(table))
-+			return -1;
-+
-+		sg_s = &table->sg_table[j = 0];
-+	}
-+
-+out:
-+	T_TASK(task->task_se_cmd)->t_task_se_num += *se_mem_cnt;
-+#ifdef DEBUG_RAMDISK_DR
-+	printk(KERN_INFO "RD_DR - Allocated %u se_mem_t segments for task\n",
-+			*se_mem_cnt);
-+#endif
-+	return 0;
-+}
-+
-+/*	rd_DIRECT_do_se_mem_map():
-+ *
-+ *
-+ */
-+int rd_DIRECT_do_se_mem_map(
-+	se_task_t *task,
-+	struct list_head *se_mem_list,
-+	void *in_mem,
-+	se_mem_t *in_se_mem,
-+	se_mem_t **out_se_mem,
-+	u32 *se_mem_cnt,
-+	u32 *task_offset)
-+{
-+	rd_request_t *req = (rd_request_t *) task->transport_req;
-+	int ret;
-+
-+	req->rd_lba = task->task_lba;
-+	req->rd_req_flags = RRF_GOT_LBA;
-+	req->rd_page = ((req->rd_lba * DEV_ATTRIB(task->se_dev)->block_size) /
-+			PAGE_SIZE);
-+	req->rd_offset = (req->rd_lba %
-+			(PAGE_SIZE / DEV_ATTRIB(task->se_dev)->block_size)) *
-+			DEV_ATTRIB(task->se_dev)->block_size;
-+	req->rd_size = task->task_size;
-+
-+	if (req->rd_offset)
-+		ret = rd_DIRECT_with_offset(task, se_mem_list, se_mem_cnt,
-+				task_offset);
-+	else
-+		ret = rd_DIRECT_without_offset(task, se_mem_list, se_mem_cnt,
-+				task_offset);
-+
-+	return ret;
-+}
-+
-+/*	rd_DIRECT_free_DMA():
-+ *
-+ *
-+ */
-+void rd_DIRECT_free_DMA(se_cmd_t *cmd)
-+{
-+	se_mem_t *se_mem, *se_mem_tmp;
-+
-+	/*
-+	 * The scatterlists in the RAMDISK DIRECT case are using the pages
-+	 * from the rd_device_t's scatterlist table. They are referencing
-+	 * valid memory that is held within the RD transport plugin, so we
-+	 * only free the se_mem_t elements.
-+	 */
-+	list_for_each_entry_safe(se_mem, se_mem_tmp, T_TASK(cmd)->t_mem_list,
-+				se_list) {
-+		 list_del(&se_mem->se_list);
-+		 kfree(se_mem);
-+	}
-+	kfree(T_TASK(cmd)->t_mem_list);
-+	T_TASK(cmd)->t_mem_list = NULL;
-+	T_TASK(cmd)->t_task_se_num = 0;
-+}
-+
-+/*	rd_DIRECT_allocate_DMA():
-+ *
-+ *	Note that rd_DIRECT_do_se_mem_map() actually does the real work.
-+ */
-+int rd_DIRECT_allocate_DMA(se_cmd_t *cmd, u32 length, u32 dma_size)
-+{
-+	T_TASK(cmd)->t_mem_list = kzalloc(sizeof(struct list_head), GFP_KERNEL);
-+	if (!(T_TASK(cmd)->t_mem_list)) {
-+		printk(KERN_ERR "Unable to allocate memory for T_TASK(cmd)"
-+				"->t_mem_list\n");
-+		return -1;
-+	}
-+	INIT_LIST_HEAD(T_TASK(cmd)->t_mem_list);
-+
-+	return 0;
-+}
-+
-+/*	rd_DIRECT_do_task(): (Part of se_subsystem_api_t template)
-+ *
-+ *
-+ */
-+int rd_DIRECT_do_task(se_task_t *task)
-+{
-+	if (!(TASK_CMD(task)->se_cmd_flags & SCF_SCSI_DATA_SG_IO_CDB))
-+		return rd_emulate_scsi_cdb(task);
-+
-+	/*
-+	 * At this point the locally allocated RD tables have been mapped
-+	 * to se_mem_t elements in rd_DIRECT_do_se_mem_map().
-+	 */
-+	task->task_scsi_status = GOOD;
-+	transport_complete_task(task, 1);
-+
-+	return PYX_TRANSPORT_SENT_TO_TRANSPORT;
-+}
-+
-+/*	rd_free_task(): (Part of se_subsystem_api_t template)
-+ *
-+ *
-+ */
-+void rd_free_task(se_task_t *task)
-+{
-+	rd_request_t *req;
-+	req = (rd_request_t *) task->transport_req;
-+
-+	kfree(req);
-+}
-+
-+ssize_t rd_set_configfs_dev_params(
-+	se_hba_t *hba,
-+	se_subsystem_dev_t *se_dev,
-+	const char *page,
-+	ssize_t count)
-+{
-+	rd_dev_t *rd_dev = (rd_dev_t *) se_dev->se_dev_su_ptr;
-+	char *buf, *cur, *ptr, *ptr2;
-+	int params = 0, ret;
-+
-+	buf = kzalloc(count, GFP_KERNEL);
-+	if (!(buf)) {
-+		printk(KERN_ERR "Unable to allocate memory for temporary buffer\n");
-+		return 0;
-+	}
-+	memcpy(buf, page, count);
-+	cur = buf;
-+
-+	while (cur) {
-+		ptr = strstr(cur, "=");
-+		if (!(ptr))
-+			goto out;
-+
-+		*ptr = '\0';
-+		ptr++;
-+
-+		ptr2 = strstr(cur, "rd_pages");
-+		if ((ptr2)) {
-+			transport_check_dev_params_delim(ptr, &cur);
-+			ret = strict_strtoul(ptr, 0,
-+				(unsigned long *)&rd_dev->rd_page_count);
-+			if (ret < 0) {
-+				printk(KERN_ERR "strict_strtoul() failed for"
-+					" rd_pages=\n");
-+				break;
-+			}
-+			printk(KERN_INFO "RAMDISK: Referencing Page"
-+				" Count: %u\n", rd_dev->rd_page_count);
-+			rd_dev->rd_flags |= RDF_HAS_PAGE_COUNT;
-+			params++;
-+		} else
-+			cur = NULL;
-+	}
-+
-+out:
-+	kfree(buf);
-+	return (params) ? count : -EINVAL;
-+}
-+
-+ssize_t rd_check_configfs_dev_params(se_hba_t *hba, se_subsystem_dev_t *se_dev)
-+{
-+	rd_dev_t *rd_dev = (rd_dev_t *) se_dev->se_dev_su_ptr;
-+
-+	if (!(rd_dev->rd_flags & RDF_HAS_PAGE_COUNT)) {
-+		printk(KERN_INFO "Missing rd_pages= parameter\n");
-+		return -1;
-+	}
-+
-+	return 0;
-+}
-+
-+ssize_t rd_show_configfs_dev_params(
-+	se_hba_t *hba,
-+	se_subsystem_dev_t *se_dev,
-+	char *page)
-+{
-+	rd_dev_t *rd_dev = (rd_dev_t *) se_dev->se_dev_su_ptr;
-+	int bl = 0;
-+
-+	 __rd_get_dev_info(rd_dev, page, &bl);
-+	return (ssize_t)bl;
-+}
-+
-+void rd_dr_get_plugin_info(void *p, char *b, int *bl)
-+{
-+	*bl += sprintf(b + *bl, "%s RAMDISK_DR Plugin %s\n",
-+			PYX_ISCSI_VENDOR, RD_DR_VERSION);
-+}
-+
-+void rd_mcp_get_plugin_info(void *p, char *b, int *bl)
-+{
-+	*bl += sprintf(b + *bl, "%s RAMDISK_MCP Plugin %s\n",
-+			PYX_ISCSI_VENDOR, RD_MCP_VERSION);
-+}
-+
-+void rd_get_hba_info(se_hba_t *hba, char *b, int *bl)
-+{
-+	rd_host_t *rd_host = (rd_host_t *)hba->hba_ptr;
-+
-+	*bl += sprintf(b + *bl, "SE Host ID: %u  RD Host ID: %u\n",
-+		hba->hba_id, rd_host->rd_host_id);
-+	*bl += sprintf(b + *bl, "        LIO RamDisk HBA\n");
-+}
-+
-+void rd_get_dev_info(se_device_t *dev, char *b, int *bl)
-+{
-+	rd_dev_t *rd_dev = (rd_dev_t *) dev->dev_ptr;
-+
-+	__rd_get_dev_info(rd_dev, b, bl);
-+}
-+
-+void __rd_get_dev_info(rd_dev_t *rd_dev, char *b, int *bl)
-+{
-+	*bl += sprintf(b + *bl, "LIO RamDisk ID: %u  RamDisk Makeup: %s\n",
-+			rd_dev->rd_dev_id, (rd_dev->rd_direct) ?
-+			"rd_direct" : "rd_mcp");
-+	*bl += sprintf(b + *bl, "        PAGES/PAGE_SIZE: %u*%lu"
-+			"  SG_table_count: %u\n", rd_dev->rd_page_count,
-+			PAGE_SIZE, rd_dev->sg_table_count);
++	iterp->ti_ptr = NULL;
++	kfree(iterp);
++	seq->private = NULL;
 +
 +	return;
 +}
 +
-+/*	rd_map_task_non_SG():
-+ *
-+ *
++/*
++ * SCSI Device Table
 + */
-+void rd_map_task_non_SG(se_task_t *task)
++int do_hba_check(void *p)
 +{
-+	se_cmd_t *cmd = TASK_CMD(task);
-+	rd_request_t *req = (rd_request_t *) task->transport_req;
++	se_hba_t *hba = (se_hba_t *)p;
 +
-+	req->rd_bufflen		= task->task_size;
-+	req->rd_buf		= (void *) T_TASK(cmd)->t_task_buf;
-+	req->rd_sg_count	= 0;
++	return hba->dev_count;
 +}
 +
-+/*	rd_map_task_SG():
-+ *
-+ *
-+ */
-+void rd_map_task_SG(se_task_t *task)
++static void *scsi_dev_seq_start(struct seq_file *seq, loff_t *pos)
 +{
-+	rd_request_t *req = (rd_request_t *) task->transport_req;
-+
-+	req->rd_bufflen		= task->task_size;
-+	req->rd_buf		= task->task_sg;
-+	req->rd_sg_count	= task->task_sg_num;
++	return locate_hba_start(seq, pos, &do_hba_check);
 +}
 +
-+/*      iblock_CDB_inquiry():
-+ *
-+ *
-+ */
-+int rd_CDB_inquiry(se_task_t *task, u32 size)
++static void *scsi_dev_seq_next(struct seq_file *seq, void *v, loff_t *pos)
 +{
-+	rd_request_t *req = (rd_request_t *) task->transport_req;
-+
-+	req->rd_data_direction  = RD_DATA_READ;
-+
-+	rd_map_task_non_SG(task);
-+	return 0;
++	return locate_hba_next(seq, v, pos, &do_hba_check);
 +}
 +
-+/*      rd_CDB_none():
-+ *
-+ *
-+ */
-+int rd_CDB_none(se_task_t *task, u32 size)
++static void scsi_dev_seq_stop(struct seq_file *seq, void *v)
 +{
-+	rd_request_t *req = (rd_request_t *) task->transport_req;
-+
-+	req->rd_data_direction	= RD_DATA_NONE;
-+	req->rd_bufflen		= 0;
-+	req->rd_sg_count	= 0;
-+	req->rd_buf		= NULL;
-+
-+	return 0;
++	locate_hba_stop(seq, v);
 +}
 +
-+/*	rd_CDB_read_non_SG():
-+ *
-+ *
-+ */
-+int rd_CDB_read_non_SG(se_task_t *task, u32 size)
++static int scsi_dev_seq_show(struct seq_file *seq, void *v)
 +{
-+	rd_request_t *req = (rd_request_t *) task->transport_req;
++	se_hba_t *hba;
++	se_device_t *dev;
++	table_iter_t *iterp = (table_iter_t *)seq->private;
++	int k;
 +
-+	req->rd_data_direction = RD_DATA_READ;
-+	rd_map_task_non_SG(task);
++	if (v == SEQ_START_TOKEN)
++		seq_puts(seq, "inst indx role ports\n");
 +
-+	return 0;
-+}
++	hba = core_get_hba_from_id(iterp->ti_offset, 0);
++	if (!(hba)) {
++		/* Log error ? */
++		return 0;
++	}
 +
-+/*	rd_CDB_read_SG):
-+ *
-+ *
-+ */
-+int rd_CDB_read_SG(se_task_t *task, u32 size)
-+{
-+	rd_request_t *req = (rd_request_t *) task->transport_req;
++	spin_lock(&hba->device_lock);
++	dev = (se_device_t *)iterp->ti_ptr;
++	if ((dev)) {
++		char str[28];
 +
-+	req->rd_data_direction = RD_DATA_READ;
-+	rd_map_task_SG(task);
++		seq_printf(seq, "%u %u %s %u\n", hba->hba_index,
++			   dev->dev_index, "Target", dev->dev_port_count);
 +
-+	return req->rd_sg_count;
-+}
++		memcpy(&str[0], (void *)DEV_T10_WWN(dev), 28);
 +
-+/*	rd_CDB_write_non_SG():
-+ *
-+ *
-+ */
-+int rd_CDB_write_non_SG(se_task_t *task, u32 size)
-+{
-+	rd_request_t *req = (rd_request_t *) task->transport_req;
++		/* vendor */
++		for (k = 0; k < 8; k++)
++			str[k] = ISPRINT(DEV_T10_WWN(dev)->vendor[k]) ?
++					DEV_T10_WWN(dev)->vendor[k] : 0x20;
++		str[k] = 0x20;
 +
-+	req->rd_data_direction = RD_DATA_WRITE;
-+	rd_map_task_non_SG(task);
++		/* model */
++		for (k = 0; k < 16; k++)
++			str[k+9] = ISPRINT(DEV_T10_WWN(dev)->model[k]) ?
++					DEV_T10_WWN(dev)->model[k] : 0x20;
++		str[k + 9] = 0;
++
++		seq_printf(seq, "dev_alias: %s\n", str);
++	}
++	spin_unlock(&hba->device_lock);
++
++	/* Release the semaphore */
++	core_put_hba(hba);
 +
 +	return 0;
 +}
 +
-+/*	d_CDB_write_SG():
-+ *
-+ *
-+ */
-+int rd_CDB_write_SG(se_task_t *task, u32 size)
++static const struct seq_operations scsi_dev_seq_ops = {
++	.start  = scsi_dev_seq_start,
++	.next   = scsi_dev_seq_next,
++	.stop   = scsi_dev_seq_stop,
++	.show   = scsi_dev_seq_show
++};
++
++static int scsi_dev_seq_open(struct inode *inode, struct file *file)
 +{
-+	rd_request_t *req = (rd_request_t *) task->transport_req;
-+
-+	req->rd_data_direction = RD_DATA_WRITE;
-+	rd_map_task_SG(task);
-+
-+	return req->rd_sg_count;
++	return seq_open(file, &scsi_dev_seq_ops);
 +}
 +
-+/*	rd_DIRECT_check_lba():
-+ *
-+ *
++static const struct file_operations scsi_dev_seq_fops = {
++	.owner	 = THIS_MODULE,
++	.open	 = scsi_dev_seq_open,
++	.read	 = seq_read,
++	.llseek	 = seq_lseek,
++	.release = seq_release,
++};
++
++/*
++ * SCSI Port Table
 + */
-+int rd_DIRECT_check_lba(unsigned long long lba, se_device_t *dev)
++static void *scsi_port_seq_start(struct seq_file *seq, loff_t *pos)
 +{
-+	return ((lba % (PAGE_SIZE / DEV_ATTRIB(dev)->block_size)) *
-+		 DEV_ATTRIB(dev)->block_size) ? 1 : 0;
++	return locate_hba_start(seq, pos, &do_hba_check);
 +}
 +
-+/*	rd_MEMCPY_check_lba():
-+ *
-+ *
-+ */
-+int rd_MEMCPY_check_lba(unsigned long long lba, se_device_t *dev)
++static void *scsi_port_seq_next(struct seq_file *seq, void *v, loff_t *pos)
 +{
++	return locate_hba_next(seq, v, pos, &do_hba_check);
++}
++
++static void scsi_port_seq_stop(struct seq_file *seq, void *v)
++{
++	locate_hba_stop(seq, v);
++}
++
++static int scsi_port_seq_show(struct seq_file *seq, void *v)
++{
++	se_hba_t *hba;
++	se_device_t *dev;
++	se_port_t *sep, *sep_tmp;
++	table_iter_t *iterp = (table_iter_t *)seq->private;
++
++	if (v == SEQ_START_TOKEN)
++		seq_puts(seq, "inst device indx role busy_count\n");
++
++	hba = core_get_hba_from_id(iterp->ti_offset, 0);
++	if (!(hba)) {
++		/* Log error ? */
++		return 0;
++	}
++
++	/* FIXME: scsiPortBusyStatuses count */
++	spin_lock(&hba->device_lock);
++	dev = (se_device_t *)iterp->ti_ptr;
++	if ((dev)) {
++		spin_lock(&dev->se_port_lock);
++		list_for_each_entry_safe(sep, sep_tmp, &dev->dev_sep_list,
++				sep_list) {
++			seq_printf(seq, "%u %u %u %s%u %u\n", hba->hba_index,
++				dev->dev_index, sep->sep_index, "Device",
++				dev->dev_index, 0);
++		}
++		spin_unlock(&dev->se_port_lock);
++	}
++	spin_unlock(&hba->device_lock);
++
++	/* Release the semaphore */
++	core_put_hba(hba);
++
 +	return 0;
 +}
 +
-+/*	rd_check_for_SG(): (Part of se_subsystem_api_t template)
-+ *
-+ *
++static const struct seq_operations scsi_port_seq_ops = {
++	.start  = scsi_port_seq_start,
++	.next   = scsi_port_seq_next,
++	.stop   = scsi_port_seq_stop,
++	.show   = scsi_port_seq_show
++};
++
++static int scsi_port_seq_open(struct inode *inode, struct file *file)
++{
++	return seq_open(file, &scsi_port_seq_ops);
++}
++
++static const struct file_operations scsi_port_seq_fops = {
++	.owner	 = THIS_MODULE,
++	.open	 = scsi_port_seq_open,
++	.read	 = seq_read,
++	.llseek	 = seq_lseek,
++	.release = seq_release,
++};
++
++/*
++ * SCSI Transport Table
 + */
-+int rd_check_for_SG(se_task_t *task)
++static void *scsi_transport_seq_start(struct seq_file *seq, loff_t *pos)
 +{
-+	rd_request_t *req = (rd_request_t *) task->transport_req;
-+
-+	return req->rd_sg_count;
++	return locate_hba_start(seq, pos, &do_hba_check);
 +}
 +
-+/*	rd_get_cdb(): (Part of se_subsystem_api_t template)
-+ *
-+ *
++static void *scsi_transport_seq_next(struct seq_file *seq, void *v, loff_t *pos)
++{
++	return locate_hba_next(seq, v, pos, &do_hba_check);
++}
++
++static void scsi_transport_seq_stop(struct seq_file *seq, void *v)
++{
++	locate_hba_stop(seq, v);
++}
++
++static int scsi_transport_seq_show(struct seq_file *seq, void *v)
++{
++	se_hba_t *hba;
++	se_device_t *dev;
++	table_iter_t *iterp = (table_iter_t *)seq->private;
++	se_port_t *se, *se_tmp;
++	se_portal_group_t *tpg;
++	t10_wwn_t *wwn;
++	char buf[64];
++
++	if (v == SEQ_START_TOKEN)
++		seq_puts(seq, "inst device indx dev_name\n");
++
++	hba = core_get_hba_from_id(iterp->ti_offset, 0);
++	if (!(hba)) {
++		/* Log error ? */
++		return 0;
++	}
++
++	spin_lock(&hba->device_lock);
++	dev = (se_device_t *)iterp->ti_ptr;
++	if ((dev)) {
++		wwn = DEV_T10_WWN(dev);
++
++		spin_lock(&dev->se_port_lock);
++		list_for_each_entry_safe(se, se_tmp, &dev->dev_sep_list,
++				sep_list) {
++			tpg = se->sep_tpg;
++			sprintf(buf, "scsiTransport%s",
++					TPG_TFO(tpg)->get_fabric_name());
++
++			seq_printf(seq, "%u %s %u %s+%s\n",
++				hba->hba_index, /* scsiTransportIndex */
++				buf,  /* scsiTransportType */
++				TPG_TFO(tpg)->tpg_get_inst_index(tpg),
++				TPG_TFO(tpg)->tpg_get_wwn(tpg),
++				(strlen(wwn->unit_serial)) ?
++				/* scsiTransportDevName */
++				wwn->unit_serial : wwn->vendor);
++		}
++		spin_unlock(&dev->se_port_lock);
++	}
++	spin_unlock(&hba->device_lock);
++
++	/* Release the semaphore */
++	core_put_hba(hba);
++
++	return 0;
++}
++
++static const struct seq_operations scsi_transport_seq_ops = {
++	.start  = scsi_transport_seq_start,
++	.next   = scsi_transport_seq_next,
++	.stop   = scsi_transport_seq_stop,
++	.show   = scsi_transport_seq_show
++};
++
++static int scsi_transport_seq_open(struct inode *inode, struct file *file)
++{
++	return seq_open(file, &scsi_transport_seq_ops);
++}
++
++static const struct file_operations scsi_transport_seq_fops = {
++	.owner	 = THIS_MODULE,
++	.open	 = scsi_transport_seq_open,
++	.read	 = seq_read,
++	.llseek	 = seq_lseek,
++	.release = seq_release,
++};
++
++/*
++ * SCSI Target Device Table
 + */
-+unsigned char *rd_get_cdb(se_task_t *task)
++static void *scsi_tgt_dev_seq_start(struct seq_file *seq, loff_t *pos)
 +{
-+	rd_request_t *req = (rd_request_t *) task->transport_req;
-+
-+	return req->rd_scsi_cdb;
++	return locate_hba_start(seq, pos, &do_hba_check);
 +}
 +
-+/*	rd_get_blocksize(): (Part of se_subsystem_api_t template)
-+ *
-+ *
++static void *scsi_tgt_dev_seq_next(struct seq_file *seq, void *v, loff_t *pos)
++{
++	return locate_hba_next(seq, v, pos, &do_hba_check);
++}
++
++static void scsi_tgt_dev_seq_stop(struct seq_file *seq, void *v)
++{
++	locate_hba_stop(seq, v);
++}
++
++
++#define LU_COUNT	1  /* for now */
++static int scsi_tgt_dev_seq_show(struct seq_file *seq, void *v)
++{
++	se_hba_t *hba;
++	se_device_t *dev;
++	table_iter_t *iterp = (table_iter_t *)seq->private;
++	int non_accessible_lus = 0;
++	char status[16];
++
++	if (v == SEQ_START_TOKEN)
++		seq_puts(seq, "inst indx num_LUs status non_access_LUs"
++			" resets\n");
++
++	hba = core_get_hba_from_id(iterp->ti_offset, 0);
++	if (!(hba)) {
++		/* Log error ? */
++		return 0;
++	}
++
++	spin_lock(&hba->device_lock);
++	dev = (se_device_t *)iterp->ti_ptr;
++	if ((dev)) {
++		switch (dev->dev_status) {
++		case TRANSPORT_DEVICE_ACTIVATED:
++			strcpy(status, "activated");
++			break;
++		case TRANSPORT_DEVICE_DEACTIVATED:
++			strcpy(status, "deactivated");
++			non_accessible_lus = 1;
++			break;
++		case TRANSPORT_DEVICE_SHUTDOWN:
++			strcpy(status, "shutdown");
++			non_accessible_lus = 1;
++			break;
++		case TRANSPORT_DEVICE_OFFLINE_ACTIVATED:
++		case TRANSPORT_DEVICE_OFFLINE_DEACTIVATED:
++			strcpy(status, "offline");
++			non_accessible_lus = 1;
++			break;
++		default:
++			sprintf(status, "unknown(%d)", dev->dev_status);
++			non_accessible_lus = 1;
++		}
++
++		seq_printf(seq, "%u %u %u %s %u %u\n",
++			   hba->hba_index, dev->dev_index, LU_COUNT,
++			   status, non_accessible_lus, dev->num_resets);
++	}
++	spin_unlock(&hba->device_lock);
++
++	/* Release the semaphore */
++	core_put_hba(hba);
++
++	return 0;
++}
++
++static const struct seq_operations scsi_tgt_dev_seq_ops = {
++	.start  = scsi_tgt_dev_seq_start,
++	.next   = scsi_tgt_dev_seq_next,
++	.stop   = scsi_tgt_dev_seq_stop,
++	.show   = scsi_tgt_dev_seq_show
++};
++
++static int scsi_tgt_dev_seq_open(struct inode *inode, struct file *file)
++{
++	return seq_open(file, &scsi_tgt_dev_seq_ops);
++}
++
++static const struct file_operations scsi_tgt_dev_seq_fops = {
++	.owner	 = THIS_MODULE,
++	.open	 = scsi_tgt_dev_seq_open,
++	.read	 = seq_read,
++	.llseek	 = seq_lseek,
++	.release = seq_release,
++};
++
++/*
++ * SCSI Target Port Table
 + */
-+u32 rd_get_blocksize(se_device_t *dev)
++static void *scsi_tgt_port_seq_start(struct seq_file *seq, loff_t *pos)
 +{
-+	return RD_BLOCKSIZE;
++	return locate_hba_start(seq, pos, &do_hba_check);
 +}
 +
-+u32 rd_get_device_rev(se_device_t *dev)
++static void *scsi_tgt_port_seq_next(struct seq_file *seq, void *v, loff_t *pos)
 +{
-+	return SCSI_SPC_2; /* Returns SPC-3 in Initiator Data */
++	return locate_hba_next(seq, v, pos, &do_hba_check);
 +}
 +
-+u32 rd_get_device_type(se_device_t *dev)
++static void scsi_tgt_port_seq_stop(struct seq_file *seq, void *v)
 +{
-+	return TYPE_DISK;
++	locate_hba_stop(seq, v);
 +}
 +
-+/*	rd_get_dma_length(): (Part of se_subsystem_api_t template)
-+ *
-+ *
++static int scsi_tgt_port_seq_show(struct seq_file *seq, void *v)
++{
++	se_hba_t *hba;
++	se_device_t *dev;
++	se_port_t *sep, *sep_tmp;
++	se_portal_group_t *tpg;
++	table_iter_t *iterp = (table_iter_t *)seq->private;
++	u32 rx_mbytes, tx_mbytes;
++	unsigned long long num_cmds;
++	char buf[64];
++
++	if (v == SEQ_START_TOKEN)
++		seq_puts(seq, "inst device indx name port_index in_cmds"
++			" write_mbytes read_mbytes hs_in_cmds\n");
++
++	hba = core_get_hba_from_id(iterp->ti_offset, 0);
++	if (!(hba)) {
++		/* Log error ? */
++		return 0;
++	}
++
++	spin_lock(&hba->device_lock);
++	dev = (se_device_t *)iterp->ti_ptr;
++	if ((dev)) {
++		spin_lock(&dev->se_port_lock);
++		list_for_each_entry_safe(sep, sep_tmp, &dev->dev_sep_list,
++				sep_list) {
++			tpg = sep->sep_tpg;
++			sprintf(buf, "%sPort#",
++				TPG_TFO(tpg)->get_fabric_name());
++
++			seq_printf(seq, "%u %u %u %s%d %s%s%d ",
++			     hba->hba_index,
++			     dev->dev_index,
++			     sep->sep_index,
++			     buf, sep->sep_index,
++			     TPG_TFO(tpg)->tpg_get_wwn(tpg), "+t+",
++			     TPG_TFO(tpg)->tpg_get_tag(tpg));
++
++			spin_lock(&sep->sep_lun->lun_sep_lock);
++			num_cmds = sep->sep_stats.cmd_pdus;
++			rx_mbytes = (sep->sep_stats.rx_data_octets >> 20);
++			tx_mbytes = (sep->sep_stats.tx_data_octets >> 20);
++			spin_unlock(&sep->sep_lun->lun_sep_lock);
++
++			seq_printf(seq, "%llu %u %u %u\n", num_cmds,
++				rx_mbytes, tx_mbytes, 0);
++		}
++		spin_unlock(&dev->se_port_lock);
++	}
++	spin_unlock(&hba->device_lock);
++
++	/* Release the semaphore */
++	core_put_hba(hba);
++
++	return 0;
++}
++
++static const struct seq_operations scsi_tgt_port_seq_ops = {
++	.start  = scsi_tgt_port_seq_start,
++	.next   = scsi_tgt_port_seq_next,
++	.stop   = scsi_tgt_port_seq_stop,
++	.show   = scsi_tgt_port_seq_show
++};
++
++static int scsi_tgt_port_seq_open(struct inode *inode, struct file *file)
++{
++	return seq_open(file, &scsi_tgt_port_seq_ops);
++}
++
++static const struct file_operations scsi_tgt_port_seq_fops = {
++	.owner	 = THIS_MODULE,
++	.open	 = scsi_tgt_port_seq_open,
++	.read	 = seq_read,
++	.llseek	 = seq_lseek,
++	.release = seq_release,
++};
++
++/*
++ * SCSI Authorized Initiator Table:
++ * It contains the SCSI Initiators authorized to be attached to one of the
++ * local Target ports.
++ * Iterates through all active TPGs and extracts the info from the ACLs
 + */
-+u32 rd_get_dma_length(u32 task_size, se_device_t *dev)
++static void *scsi_auth_intr_seq_start(struct seq_file *seq, loff_t *pos)
 +{
-+	return PAGE_SIZE;
++	spin_lock_bh(&se_global->se_tpg_lock);
++	return seq_list_start(&se_global->g_se_tpg_list, *pos);
 +}
 +
-+/*	rd_get_max_sectors(): (Part of se_subsystem_api_t template)
-+ *
-+ *
++static void *scsi_auth_intr_seq_next(struct seq_file *seq, void *v,
++					 loff_t *pos)
++{
++	return seq_list_next(v, &se_global->g_se_tpg_list, pos);
++}
++
++static void scsi_auth_intr_seq_stop(struct seq_file *seq, void *v)
++{
++	spin_unlock_bh(&se_global->se_tpg_lock);
++}
++
++static inline int list_is_first(const struct list_head *list,
++				const struct list_head *head)
++{
++	return list->prev == head;
++}
++
++static int scsi_auth_intr_seq_show(struct seq_file *seq, void *v)
++{
++	se_portal_group_t *se_tpg = list_entry(v, se_portal_group_t,
++						se_tpg_list);
++	se_dev_entry_t *deve;
++	se_lun_t *lun;
++	se_node_acl_t *se_nacl;
++	int j;
++
++	if (list_is_first(&se_tpg->se_tpg_list,
++			  &se_global->g_se_tpg_list))
++		seq_puts(seq, "inst dev port indx dev_or_port intr_name "
++			 "map_indx att_count num_cmds read_mbytes "
++			 "write_mbytes hs_num_cmds creation_time row_status\n");
++
++	if (!(se_tpg))
++		return 0;
++
++	spin_lock(&se_tpg->acl_node_lock);
++	list_for_each_entry(se_nacl, &se_tpg->acl_node_list, acl_list) {
++		spin_lock(&se_nacl->device_list_lock);
++		for (j = 0; j < TRANSPORT_MAX_LUNS_PER_TPG; j++) {
++			deve = &se_nacl->device_list[j];
++			if (!(deve->lun_flags &
++					TRANSPORT_LUNFLAGS_INITIATOR_ACCESS) ||
++			    (!deve->se_lun))
++				continue;
++			lun = deve->se_lun;
++			if ((lun->lun_type != TRANSPORT_LUN_TYPE_DEVICE) ||
++			    (!lun->se_dev))
++				continue;
++
++			seq_printf(seq,"%u %u %u %u %u %s %u %u %u %u %u %u"
++						" %u %s\n",
++				/* scsiInstIndex */
++				TPG_TFO(se_tpg)->tpg_get_inst_index(se_tpg),
++				/* scsiDeviceIndex */
++				lun->se_dev->dev_index,
++				/* scsiAuthIntrTgtPortIndex */
++				TPG_TFO(se_tpg)->tpg_get_tag(se_tpg),
++				/* scsiAuthIntrIndex */
++				se_nacl->acl_index,
++				/* scsiAuthIntrDevOrPort */
++				1,
++				/* scsiAuthIntrName */
++				se_nacl->initiatorname[0] ?
++					se_nacl->initiatorname : NONE,
++				/* FIXME: scsiAuthIntrLunMapIndex */
++				0,
++				/* scsiAuthIntrAttachedTimes */
++				deve->attach_count,
++				/* scsiAuthIntrOutCommands */
++				deve->total_cmds,
++				/* scsiAuthIntrReadMegaBytes */
++				(u32)(deve->read_bytes >> 20),
++				/* scsiAuthIntrWrittenMegaBytes */
++				(u32)(deve->write_bytes >> 20),
++				/* FIXME: scsiAuthIntrHSOutCommands */
++				0,
++				/* scsiAuthIntrLastCreation */
++				(u32)(((u32)deve->creation_time -
++					    INITIAL_JIFFIES) * 100 / HZ),
++				/* FIXME: scsiAuthIntrRowStatus */
++				"Ready");
++		}
++		spin_unlock(&se_nacl->device_list_lock);
++	}
++	spin_unlock(&se_tpg->acl_node_lock);
++
++	return 0;
++}
++
++static const struct seq_operations scsi_auth_intr_seq_ops = {
++	.start	= scsi_auth_intr_seq_start,
++	.next	= scsi_auth_intr_seq_next,
++	.stop	= scsi_auth_intr_seq_stop,
++	.show	= scsi_auth_intr_seq_show
++};
++
++static int scsi_auth_intr_seq_open(struct inode *inode, struct file *file)
++{
++	return seq_open(file, &scsi_auth_intr_seq_ops);
++}
++
++static const struct file_operations scsi_auth_intr_seq_fops = {
++	.owner	 = THIS_MODULE,
++	.open	 = scsi_auth_intr_seq_open,
++	.read	 = seq_read,
++	.llseek	 = seq_lseek,
++	.release = seq_release,
++};
++
++/*
++ * SCSI Attached Initiator Port Table:
++ * It lists the SCSI Initiators attached to one of the local Target ports.
++ * Iterates through all active TPGs and use active sessions from each TPG
++ * to list the info fo this table.
 + */
-+u32 rd_get_max_sectors(se_device_t *dev)
++static void *scsi_att_intr_port_seq_start(struct seq_file *seq, loff_t *pos)
 +{
-+	return RD_MAX_SECTORS;
++	spin_lock_bh(&se_global->se_tpg_lock);
++	return seq_list_start(&se_global->g_se_tpg_list, *pos);
 +}
 +
-+/*	rd_get_queue_depth(): (Part of se_subsystem_api_t template)
-+ *
-+ *
++static void *scsi_att_intr_port_seq_next(struct seq_file *seq, void *v,
++					 loff_t *pos)
++{
++	return seq_list_next(v, &se_global->g_se_tpg_list, pos);
++}
++
++static void scsi_att_intr_port_seq_stop(struct seq_file *seq, void *v)
++{
++	spin_unlock_bh(&se_global->se_tpg_lock);
++}
++
++static int scsi_att_intr_port_seq_show(struct seq_file *seq, void *v)
++{
++	se_portal_group_t *se_tpg = list_entry(v, se_portal_group_t,
++						se_tpg_list);
++	se_dev_entry_t *deve;
++	se_lun_t *lun;
++	se_node_acl_t *se_nacl;
++	se_session_t *se_sess;
++	unsigned char buf[64];
++	int j;
++
++	if (list_is_first(&se_tpg->se_tpg_list,
++			  &se_global->g_se_tpg_list))
++		seq_puts(seq, "inst dev port indx port_auth_indx port_name"
++			" port_ident\n");
++
++	if (!(se_tpg))
++		return 0;
++
++	spin_lock(&se_tpg->session_lock);
++	list_for_each_entry(se_sess, &se_tpg->tpg_sess_list, sess_list) {
++		if ((TPG_TFO(se_tpg)->sess_logged_in(se_sess)) ||
++		    (!se_sess->se_node_acl) ||
++		    (!se_sess->se_node_acl->device_list))
++			continue;
++
++		se_nacl = se_sess->se_node_acl;
++
++		spin_lock(&se_nacl->device_list_lock);
++		for (j = 0; j < TRANSPORT_MAX_LUNS_PER_TPG; j++) {
++			deve = &se_nacl->device_list[j];
++			if (!(deve->lun_flags &
++					TRANSPORT_LUNFLAGS_INITIATOR_ACCESS) ||
++			   (!deve->se_lun))
++				continue;
++
++			lun = deve->se_lun;
++			if ((lun->lun_type != TRANSPORT_LUN_TYPE_DEVICE) ||
++			    (!lun->se_dev))
++				continue;
++
++			memset(buf, 0, 64);
++			TPG_TFO(se_tpg)->sess_get_initiator_wwn(se_sess,
++					(unsigned char *)&buf[0], 64);
++
++			seq_printf(seq,"%u %u %u %u %u %s+i+%s\n",
++				/* scsiInstIndex */
++				TPG_TFO(se_tpg)->tpg_get_inst_index(se_tpg),
++				/* scsiDeviceIndex */
++				lun->se_dev->dev_index,
++				/* scsiPortIndex */
++				TPG_TFO(se_tpg)->tpg_get_tag(se_tpg),
++				/* scsiAttIntrPortIndex */
++				TPG_TFO(se_tpg)->sess_get_index(se_sess),
++					/* scsiAttIntrPortAuthIntrIdx */
++				se_nacl->acl_index,
++				/* scsiAttIntrPortName */
++				se_nacl->initiatorname[0] ?
++					se_nacl->initiatorname : NONE,
++				/* scsiAttIntrPortIdentifier */
++				buf);
++		}
++		spin_unlock(&se_nacl->device_list_lock);
++	}
++	spin_unlock(&se_tpg->session_lock);
++
++	return 0;
++}
++
++static const struct seq_operations scsi_att_intr_port_seq_ops = {
++	.start	= scsi_att_intr_port_seq_start,
++	.next	= scsi_att_intr_port_seq_next,
++	.stop	= scsi_att_intr_port_seq_stop,
++	.show	= scsi_att_intr_port_seq_show
++};
++
++static int scsi_att_intr_port_seq_open(struct inode *inode, struct file *file)
++{
++	return seq_open(file, &scsi_att_intr_port_seq_ops);
++}
++
++static const struct file_operations scsi_att_intr_port_seq_fops = {
++	.owner	 = THIS_MODULE,
++	.open	 = scsi_att_intr_port_seq_open,
++	.read	 = seq_read,
++	.llseek	 = seq_lseek,
++	.release = seq_release,
++};
++
++/*
++ * SCSI Logical Unit Table
 + */
-+u32 rd_get_queue_depth(se_device_t *dev)
++static void *scsi_lu_seq_start(struct seq_file *seq, loff_t *pos)
 +{
-+	return RD_DEVICE_QUEUE_DEPTH;
++	return locate_hba_start(seq, pos, &do_hba_check);
 +}
 +
-+u32 rd_get_max_queue_depth(se_device_t *dev)
++static void *scsi_lu_seq_next(struct seq_file *seq, void *v, loff_t *pos)
 +{
-+	return RD_MAX_DEVICE_QUEUE_DEPTH;
++	return locate_hba_next(seq, v, pos, &do_hba_check);
 +}
-diff --git a/include/target/target_core_rd.h b/include/target/target_core_rd.h
++
++static void scsi_lu_seq_stop(struct seq_file *seq, void *v)
++{
++	locate_hba_stop(seq, v);
++}
++
++#define SCSI_LU_INDEX		1
++static int scsi_lu_seq_show(struct seq_file *seq, void *v)
++{
++	se_hba_t *hba;
++	se_device_t *dev;
++	table_iter_t *iterp = (table_iter_t *)seq->private;
++	int j;
++	char str[28];
++
++	if (v == SEQ_START_TOKEN)
++		seq_puts(seq, "inst dev indx LUN lu_name vend prod rev"
++		" dev_type status state-bit num_cmds read_mbytes"
++		" write_mbytes resets full_stat hs_num_cmds creation_time\n");
++
++	hba = core_get_hba_from_id(iterp->ti_offset, 0);
++	if (!(hba)) {
++		/* Log error ? */
++		return 0;
++	}
++
++	spin_lock(&hba->device_lock);
++	dev = (se_device_t *)iterp->ti_ptr;
++	if ((dev)) {
++		/* Fix LU state, if we can read it from the device */
++		seq_printf(seq, "%u %u %u %llu %s", hba->hba_index,
++				dev->dev_index, SCSI_LU_INDEX,
++				(unsigned long long)0, /* FIXME: scsiLuDefaultLun */
++				(strlen(DEV_T10_WWN(dev)->unit_serial)) ?
++				/* scsiLuWwnName */
++				(char *)&DEV_T10_WWN(dev)->unit_serial[0] :
++				"None");
++
++		memcpy(&str[0], (void *)DEV_T10_WWN(dev), 28);
++		/* scsiLuVendorId */
++		for (j = 0; j < 8; j++)
++			str[j] = ISPRINT(DEV_T10_WWN(dev)->vendor[j]) ?
++				DEV_T10_WWN(dev)->vendor[j] : 0x20;
++		str[8] = 0;
++		seq_printf(seq, " %s", str);
++
++		/* scsiLuProductId */
++		for (j = 0; j < 16; j++)
++			str[j] = ISPRINT(DEV_T10_WWN(dev)->model[j]) ?
++				DEV_T10_WWN(dev)->model[j] : 0x20;
++		str[16] = 0;
++		seq_printf(seq, " %s", str);
++
++		/* scsiLuRevisionId */
++		for (j = 0; j < 4; j++)
++			str[j] = ISPRINT(DEV_T10_WWN(dev)->revision[j]) ?
++				DEV_T10_WWN(dev)->revision[j] : 0x20;
++		str[4] = 0;
++		seq_printf(seq, " %s", str);
++
++		seq_printf(seq, " %u %s %s %llu %u %u %u %u %u %u\n",
++			/* scsiLuPeripheralType */
++			   dev->dev_obj_api->get_device_type((void *)dev),
++			   (dev->dev_status == TRANSPORT_DEVICE_ACTIVATED) ?
++			"available" : "notavailable", /* scsiLuStatus */
++			"exposed", 	/* scsiLuState */
++			(unsigned long long)dev->num_cmds,
++			/* scsiLuReadMegaBytes */
++			(u32)(dev->read_bytes >> 20),
++			/* scsiLuWrittenMegaBytes */
++			(u32)(dev->write_bytes >> 20),
++			dev->num_resets, /* scsiLuInResets */
++			0, /* scsiLuOutTaskSetFullStatus */
++			0, /* scsiLuHSInCommands */
++			(u32)(((u32)dev->creation_time - INITIAL_JIFFIES) *
++								100 / HZ));
++	}
++	spin_unlock(&hba->device_lock);
++
++	/* Release the semaphore */
++	core_put_hba(hba);
++
++	return 0;
++}
++
++static const struct seq_operations scsi_lu_seq_ops = {
++	.start  = scsi_lu_seq_start,
++	.next   = scsi_lu_seq_next,
++	.stop   = scsi_lu_seq_stop,
++	.show   = scsi_lu_seq_show
++};
++
++static int scsi_lu_seq_open(struct inode *inode, struct file *file)
++{
++	return seq_open(file, &scsi_lu_seq_ops);
++}
++
++static const struct file_operations scsi_lu_seq_fops = {
++	.owner	 = THIS_MODULE,
++	.open	 = scsi_lu_seq_open,
++	.read	 = seq_read,
++	.llseek	 = seq_lseek,
++	.release = seq_release,
++};
++
++/****************************************************************************/
++
++/*
++ * Remove proc fs entries
++ */
++void remove_scsi_target_mib(void)
++{
++	remove_proc_entry("scsi_target/mib/scsi_inst", NULL);
++	remove_proc_entry("scsi_target/mib/scsi_dev", NULL);
++	remove_proc_entry("scsi_target/mib/scsi_port", NULL);
++	remove_proc_entry("scsi_target/mib/scsi_transport", NULL);
++	remove_proc_entry("scsi_target/mib/scsi_tgt_dev", NULL);
++	remove_proc_entry("scsi_target/mib/scsi_tgt_port", NULL);
++	remove_proc_entry("scsi_target/mib/scsi_auth_intr", NULL);
++	remove_proc_entry("scsi_target/mib/scsi_att_intr_port", NULL);
++	remove_proc_entry("scsi_target/mib/scsi_lu", NULL);
++	remove_proc_entry("scsi_target/mib", NULL);
++}
++
++/*
++ * Create proc fs entries for the mib tables
++ */
++int init_scsi_target_mib(void)
++{
++	struct proc_dir_entry *dir_entry;
++	struct proc_dir_entry *scsi_inst_entry;
++	struct proc_dir_entry *scsi_dev_entry;
++	struct proc_dir_entry *scsi_port_entry;
++	struct proc_dir_entry *scsi_transport_entry;
++	struct proc_dir_entry *scsi_tgt_dev_entry;
++	struct proc_dir_entry *scsi_tgt_port_entry;
++	struct proc_dir_entry *scsi_auth_intr_entry;
++	struct proc_dir_entry *scsi_att_intr_port_entry;
++	struct proc_dir_entry *scsi_lu_entry;
++
++	dir_entry = proc_mkdir("scsi_target/mib", NULL);
++	if (!(dir_entry)) {
++		printk("proc_mkdir() failed.\n");
++		return -1;
++	}
++
++	scsi_inst_entry =
++		create_proc_entry("scsi_target/mib/scsi_inst", 0, NULL);
++	if (scsi_inst_entry)
++		scsi_inst_entry->proc_fops = &scsi_inst_seq_fops;
++	else
++		goto error;
++
++	scsi_dev_entry =
++		create_proc_entry("scsi_target/mib/scsi_dev", 0, NULL);
++	if (scsi_dev_entry)
++		scsi_dev_entry->proc_fops = &scsi_dev_seq_fops;
++	else
++		goto error;
++
++	scsi_port_entry =
++		create_proc_entry("scsi_target/mib/scsi_port", 0, NULL);
++	if (scsi_port_entry)
++		scsi_port_entry->proc_fops = &scsi_port_seq_fops;
++	else
++		goto error;
++
++	scsi_transport_entry =
++		create_proc_entry("scsi_target/mib/scsi_transport", 0, NULL);
++	if (scsi_transport_entry)
++		scsi_transport_entry->proc_fops = &scsi_transport_seq_fops;
++	else
++		goto error;
++
++	scsi_tgt_dev_entry =
++		create_proc_entry("scsi_target/mib/scsi_tgt_dev", 0, NULL);
++	if (scsi_tgt_dev_entry)
++		scsi_tgt_dev_entry->proc_fops = &scsi_tgt_dev_seq_fops;
++	else
++		goto error;
++
++	scsi_tgt_port_entry =
++		create_proc_entry("scsi_target/mib/scsi_tgt_port", 0, NULL);
++	if (scsi_tgt_port_entry)
++		scsi_tgt_port_entry->proc_fops = &scsi_tgt_port_seq_fops;
++	else
++		goto error;
++
++	scsi_auth_intr_entry =
++		create_proc_entry("scsi_target/mib/scsi_auth_intr", 0, NULL);
++	if (scsi_auth_intr_entry)
++		scsi_auth_intr_entry->proc_fops = &scsi_auth_intr_seq_fops;
++	else
++		goto error;
++
++	scsi_att_intr_port_entry =
++	      create_proc_entry("scsi_target/mib/scsi_att_intr_port", 0, NULL);
++	if (scsi_att_intr_port_entry)
++		scsi_att_intr_port_entry->proc_fops =
++				&scsi_att_intr_port_seq_fops;
++	else
++		goto error;
++
++	scsi_lu_entry = create_proc_entry("scsi_target/mib/scsi_lu", 0, NULL);
++	if (scsi_lu_entry)
++		scsi_lu_entry->proc_fops = &scsi_lu_seq_fops;
++	else
++		goto error;
++
++	return 0;
++
++error:
++	printk(KERN_ERR "create_proc_entry() failed.\n");
++	remove_scsi_target_mib();
++	return -1;
++}
++
++/*
++ * Initialize the index table for allocating unique row indexes to various mib
++ * tables
++ */
++void init_scsi_index_table(void)
++{
++	memset(&scsi_index_table, 0, sizeof(scsi_index_table));
++	spin_lock_init(&scsi_index_table.lock);
++}
++
++/*
++ * Allocate a new row index for the entry type specified
++ */
++u32 scsi_get_new_index(scsi_index_t type)
++{
++	u32 new_index;
++
++	if ((type < 0) || (type >= SCSI_INDEX_TYPE_MAX)) {
++		printk(KERN_ERR "Invalid index type %d\n", type);
++		return -1;
++	}
++
++	spin_lock(&scsi_index_table.lock);
++	new_index = ++scsi_index_table.scsi_mib_index[type];
++	if (new_index == 0)
++		new_index = ++scsi_index_table.scsi_mib_index[type];
++	spin_unlock(&scsi_index_table.lock);
++
++	return new_index;
++}
++EXPORT_SYMBOL(scsi_get_new_index);
+diff --git a/include/target/target_core_mib.h b/include/target/target_core_mib.h
 new file mode 100644
-index 0000000..c22f9d7
+index 0000000..36cacd5
 --- /dev/null
-+++ b/include/target/target_core_rd.h
-@@ -0,0 +1,257 @@
++++ b/include/target/target_core_mib.h
+@@ -0,0 +1,57 @@
 +/*******************************************************************************
-+ * Filename:  target_core_rd.h
++ * Filename:  target_core_mib.h
 + *
-+ * This file contains the Storage Engine <-> Ramdisk transport specific
-+ * definitions and prototypes.
-+ *
-+ * Copyright (c) 2003, 2004, 2005 PyX Technologies, Inc.
-+ * Copyright (c) 2005, 2006, 2007 SBE, Inc.
++ * Copyright (c) 2006 SBE, Inc.  All Rights Reserved.
 + * Copyright (c) 2007-2009 Rising Tide Software, Inc.
 + * Copyright (c) 2008-2009 Linux-iSCSI.org
 + *
-+ * Nicholas A. Bellinger <nab@kernel.org>
++ * Nicholas A. Bellinger <nab@linux-iscsi.org>
 + *
 + * This program is free software; you can redistribute it and/or modify
 + * it under the terms of the GNU General Public License as published by
@@ -1505,232 +1265,36 @@ index 0000000..c22f9d7
 + ******************************************************************************/
 +
 +
-+#ifndef TARGET_CORE_RD_H
-+#define TARGET_CORE_RD_H
++#ifndef TARGET_CORE_MIB_H
++#define TARGET_CORE_MIB_H
 +
-+#define RD_HBA_VERSION		"v3.0"
-+#define RD_DR_VERSION		"3.0"
-+#define RD_MCP_VERSION		"3.0"
++extern struct se_global_s *se_global;
 +
-+/* Largest piece of memory kmalloc can allocate */
-+#define RD_MAX_ALLOCATION_SIZE	65536
-+/* Maximum queuedepth for the Ramdisk HBA */
-+#define RD_HBA_QUEUE_DEPTH	256
-+#define RD_DEVICE_QUEUE_DEPTH	32
-+#define RD_MAX_DEVICE_QUEUE_DEPTH 128
-+#define RD_BLOCKSIZE		512
-+#define RD_MAX_SECTORS		1024
++typedef enum {
++	SCSI_INST_INDEX,
++	SCSI_DEVICE_INDEX,
++	SCSI_AUTH_INTR_INDEX,
++	SCSI_INDEX_TYPE_MAX
++} scsi_index_t;
 +
-+#define RD_DATA_READ		1
-+#define RD_DATA_WRITE		2
-+#define RD_DATA_NONE		3
++typedef struct scsi_index_table_s {
++	spinlock_t	lock;
++	u32 		scsi_mib_index[SCSI_INDEX_TYPE_MAX];
++} scsi_index_table_t;
 +
-+extern se_global_t *se_global;
++/* SCSI Port stats */
++typedef struct scsi_port_stats_s {
++	u64	cmd_pdus;
++	u64	tx_data_octets;
++	u64	rx_data_octets;
++} scsi_port_stats_t;
 +
-+#ifndef RD_INCLUDE_STRUCTS
-+extern int rd_CDB_inquiry(se_task_t *, u32);
-+extern int rd_CDB_none(se_task_t *, u32);
-+extern int rd_CDB_read_non_SG(se_task_t *, u32);
-+extern int rd_CDB_read_SG(se_task_t *, u32);
-+extern int rd_CDB_write_non_SG(se_task_t *, u32);
-+extern int rd_CDB_write_SG(se_task_t *, u32);
++extern int init_scsi_target_mib(void);
++extern void remove_scsi_target_mib(void);
++extern void init_scsi_index_table(void);
++extern u32 scsi_get_new_index(scsi_index_t);
 +
-+extern int rd_attach_hba(se_hba_t *, u32);
-+extern int rd_detach_hba(se_hba_t *);
-+extern void *rd_DIRECT_allocate_virtdevice(se_hba_t *, const char *);
-+extern void *rd_MEMCPY_allocate_virtdevice(se_hba_t *, const char *);
-+extern se_device_t *rd_DIRECT_create_virtdevice(se_hba_t *,
-+				se_subsystem_dev_t *, void *);
-+extern se_device_t *rd_MEMCPY_create_virtdevice(se_hba_t *,
-+				se_subsystem_dev_t *, void *);
-+extern int rd_activate_device(se_device_t *);
-+extern void rd_deactivate_device(se_device_t *);
-+extern void rd_free_device(void *);
-+extern int rd_transport_complete(se_task_t *);
-+extern void *rd_allocate_request(se_task_t *, se_device_t *);
-+extern int rd_DIRECT_do_task(se_task_t *);
-+extern int rd_MEMCPY_do_task(se_task_t *);
-+extern int rd_DIRECT_allocate_DMA(se_cmd_t *, u32, u32);
-+extern int rd_DIRECT_do_se_mem_map(struct se_task_s *, struct list_head *,
-+				void *, struct se_mem_s *, struct se_mem_s **,
-+				u32 *, u32 *);
-+extern void rd_DIRECT_free_DMA(se_cmd_t *);
-+extern void rd_free_task(se_task_t *);
-+extern ssize_t rd_set_configfs_dev_params(se_hba_t *, se_subsystem_dev_t *,
-+						const char *, ssize_t);
-+extern ssize_t rd_check_configfs_dev_params(se_hba_t *, se_subsystem_dev_t *);
-+extern ssize_t rd_show_configfs_dev_params(se_hba_t *, se_subsystem_dev_t *,
-+						char *);
-+extern void rd_dr_get_plugin_info(void *, char *, int *);
-+extern void rd_mcp_get_plugin_info(void *, char *, int *);
-+extern void rd_get_hba_info(se_hba_t *, char *, int *);
-+extern void rd_get_dev_info(se_device_t *, char *, int *);
-+extern int rd_DIRECT_check_lba(unsigned long long, se_device_t *);
-+extern int rd_MEMCPY_check_lba(unsigned long long, se_device_t *);
-+extern int rd_check_for_SG(se_task_t *);
-+extern unsigned char *rd_get_cdb(se_task_t *);
-+extern u32 rd_get_blocksize(se_device_t *);
-+extern u32 rd_get_device_rev(se_device_t *);
-+extern u32 rd_get_device_type(se_device_t *);
-+extern u32 rd_get_dma_length(u32, se_device_t *);
-+extern u32 rd_get_max_sectors(se_device_t *);
-+extern u32 rd_get_queue_depth(se_device_t *);
-+extern u32 rd_get_max_queue_depth(se_device_t *);
-+#endif /* ! RD_INCLUDE_STRUCTS */
++#endif   /*** TARGET_CORE_MIB_H ***/
 +
-+#define RRF_EMULATE_CDB		0x01
-+#define RRF_GOT_LBA		0x02
-+
-+typedef struct rd_request_s {
-+	/* SCSI CDB from iSCSI Command PDU */
-+	unsigned char	rd_scsi_cdb[SCSI_CDB_SIZE];
-+	/* Data Direction */
-+	u8		rd_data_direction;
-+	/* Total length of request */
-+	u32		rd_bufflen;
-+	/* RD request flags */
-+	u32		rd_req_flags;
-+	/* Offset from start of page */
-+	u32		rd_offset;
-+	/* Starting page in Ramdisk for request */
-+	u32		rd_page;
-+	/* Total number of pages needed for request */
-+	u32		rd_page_count;
-+	/* Scatterlist count */
-+	u32		rd_sg_count;
-+	u32		rd_size;
-+	/* Logical Block Address */
-+	unsigned long long	rd_lba;
-+	 /* Data buffer containing scatterlists(s) or
-+	  * contiguous memory segments */
-+	void		*rd_buf;
-+	/* Ramdisk device */
-+	struct rd_dev_s	*rd_dev;
-+} ____cacheline_aligned rd_request_t;
-+
-+typedef struct rd_dev_sg_table_s {
-+	u32		page_start_offset;
-+	u32		page_end_offset;
-+	u32		rd_sg_count;
-+	struct scatterlist *sg_table;
-+} ____cacheline_aligned rd_dev_sg_table_t;
-+
-+#define RDF_HAS_PAGE_COUNT	0x01
-+
-+typedef struct rd_dev_s {
-+	int		rd_direct;
-+	u32		rd_flags;
-+	/* Unique Ramdisk Device ID in Ramdisk HBA */
-+	u32		rd_dev_id;
-+	/* Total page count for ramdisk device */
-+	u32		rd_page_count;
-+	/* Number of SG tables in sg_table_array */
-+	u32		sg_table_count;
-+	u32		rd_queue_depth;
-+	/* Array of rd_dev_sg_table_t containing scatterlists */
-+	rd_dev_sg_table_t *sg_table_array;
-+	/* Ramdisk HBA device is connected to */
-+	struct rd_host_s *rd_host;
-+	/* Next RD Device entry in list */
-+	struct rd_dev_s *next;
-+} ____cacheline_aligned rd_dev_t;
-+
-+extern void __rd_get_dev_info(rd_dev_t *, char *, int *);
-+
-+typedef struct rd_host_s {
-+	u32		rd_host_dev_id_count;
-+	u32		rd_host_id;		/* Unique Ramdisk Host ID */
-+} ____cacheline_aligned rd_host_t;
-+
-+#ifndef RD_INCLUDE_STRUCTS
-+/*
-+ * We use the generic command sequencer, so we must setup
-+ * se_subsystem_spc_t.
-+ */
-+se_subsystem_spc_t rd_template_spc = {
-+	.inquiry		= rd_CDB_inquiry,
-+	.none			= rd_CDB_none,
-+	.read_non_SG		= rd_CDB_read_non_SG,
-+	.read_SG		= rd_CDB_read_SG,
-+	.write_non_SG		= rd_CDB_write_non_SG,
-+	.write_SG		= rd_CDB_write_SG,
-+};
-+
-+se_subsystem_api_t rd_dr_template = {
-+	.name			= "rd_dr",
-+	.type			= RAMDISK_DR,
-+	.transport_type		= TRANSPORT_PLUGIN_VHBA_VDEV,
-+	.attach_hba		= rd_attach_hba,
-+	.detach_hba		= rd_detach_hba,
-+	.allocate_virtdevice	= rd_DIRECT_allocate_virtdevice,
-+	.create_virtdevice	= rd_DIRECT_create_virtdevice,
-+	.activate_device	= rd_activate_device,
-+	.deactivate_device	= rd_deactivate_device,
-+	.free_device		= rd_free_device,
-+	.transport_complete	= rd_transport_complete,
-+	.allocate_DMA		= rd_DIRECT_allocate_DMA,
-+	.free_DMA		= rd_DIRECT_free_DMA,
-+	.allocate_request	= rd_allocate_request,
-+	.do_task		= rd_DIRECT_do_task,
-+	.free_task		= rd_free_task,
-+	.check_configfs_dev_params = rd_check_configfs_dev_params,
-+	.set_configfs_dev_params = rd_set_configfs_dev_params,
-+	.show_configfs_dev_params = rd_show_configfs_dev_params,
-+	.get_plugin_info	= rd_dr_get_plugin_info,
-+	.get_hba_info		= rd_get_hba_info,
-+	.get_dev_info		= rd_get_dev_info,
-+	.check_lba		= rd_DIRECT_check_lba,
-+	.check_for_SG		= rd_check_for_SG,
-+	.get_cdb		= rd_get_cdb,
-+	.get_blocksize		= rd_get_blocksize,
-+	.get_device_rev		= rd_get_device_rev,
-+	.get_device_type	= rd_get_device_type,
-+	.get_dma_length		= rd_get_dma_length,
-+	.get_max_sectors	= rd_get_max_sectors,
-+	.get_queue_depth	= rd_get_queue_depth,
-+	.get_max_queue_depth	= rd_get_max_queue_depth,
-+	.do_se_mem_map		= rd_DIRECT_do_se_mem_map,
-+	.write_pending		= NULL,
-+	.spc			= &rd_template_spc,
-+};
-+
-+se_subsystem_api_t rd_mcp_template = {
-+	.name			= "rd_mcp",
-+	.type			= RAMDISK_MCP,
-+	.transport_type		= TRANSPORT_PLUGIN_VHBA_VDEV,
-+	.attach_hba		= rd_attach_hba,
-+	.detach_hba		= rd_detach_hba,
-+	.allocate_virtdevice	= rd_MEMCPY_allocate_virtdevice,
-+	.create_virtdevice	= rd_MEMCPY_create_virtdevice,
-+	.activate_device	= rd_activate_device,
-+	.deactivate_device	= rd_deactivate_device,
-+	.free_device		= rd_free_device,
-+	.transport_complete	= rd_transport_complete,
-+	.allocate_request	= rd_allocate_request,
-+	.do_task		= rd_MEMCPY_do_task,
-+	.free_task		= rd_free_task,
-+	.check_configfs_dev_params = rd_check_configfs_dev_params,
-+	.set_configfs_dev_params = rd_set_configfs_dev_params,
-+	.show_configfs_dev_params = rd_show_configfs_dev_params,
-+	.get_plugin_info	= rd_mcp_get_plugin_info,
-+	.get_hba_info		= rd_get_hba_info,
-+	.get_dev_info		= rd_get_dev_info,
-+	.check_lba		= rd_MEMCPY_check_lba,
-+	.check_for_SG		= rd_check_for_SG,
-+	.get_cdb		= rd_get_cdb,
-+	.get_blocksize		= rd_get_blocksize,
-+	.get_device_rev		= rd_get_device_rev,
-+	.get_device_type	= rd_get_device_type,
-+	.get_dma_length		= rd_get_dma_length,
-+	.get_max_sectors	= rd_get_max_sectors,
-+	.get_queue_depth	= rd_get_queue_depth,
-+	.get_max_queue_depth	= rd_get_max_queue_depth,
-+	.write_pending		= NULL,
-+	.spc			= &rd_template_spc,
-+};
-+
-+#endif /* ! RD_INCLUDE_STRUCTS */
-+
-+#endif /* TARGET_CORE_RD_H */
 
 
