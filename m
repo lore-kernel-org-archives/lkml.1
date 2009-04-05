@@ -1,68 +1,41 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756611AbZDEAoV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756719AbZDEAui@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756611AbZDEAoV (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 4 Apr 2009 20:44:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754710AbZDEAoM
+	id S1756719AbZDEAui (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 4 Apr 2009 20:50:38 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755892AbZDEAuZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 4 Apr 2009 20:44:12 -0400
-Received: from terminus.zytor.com ([198.137.202.10]:60442 "EHLO
-	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754619AbZDEAoL (ORCPT
+	Sat, 4 Apr 2009 20:50:25 -0400
+Received: from mail-ew0-f165.google.com ([209.85.219.165]:47007 "EHLO
+	mail-ew0-f165.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755352AbZDEAuY (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 4 Apr 2009 20:44:11 -0400
-Message-ID: <49D7FD94.2040001@zytor.com>
-Date: Sat, 04 Apr 2009 17:38:44 -0700
-From: "H. Peter Anvin" <hpa@zytor.com>
-User-Agent: Thunderbird 2.0.0.14 (X11/20080501)
+	Sat, 4 Apr 2009 20:50:24 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
+         :content-type:content-transfer-encoding;
+        b=qbObOwsFmrsSFXWy7EVt2fzvgoYALcFmn/0/c6gAmPLpTad6JFACqN88RNTj+zZU1i
+         6djfKbgkcf/kER1XKCSbQ+PdW00ZfUg+qCdLh8P0CGB+RImvzcnW2EGG5uDLxVDH06vM
+         tSfdTWspu0rxJC2PPij2MWrwP12aaVlqvd+U0=
 MIME-Version: 1.0
-To: Anton Vorontsov <avorontsov@ru.mvista.com>
-CC: Kumar Gala <galak@kernel.crashing.org>,
-       David Brownell <dbrownell@users.sourceforge.net>,
-       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
-       linuxppc-dev@ozlabs.org
-Subject: Re: [PATCH 3/3] powerpc/86xx: Add MMC SPI support for MPC8610HPCD
- boards
-References: <20090404192826.GC12183@oksana.dev.rtsoft.ru>
-In-Reply-To: <20090404192826.GC12183@oksana.dev.rtsoft.ru>
+In-Reply-To: <20090329152334.GA11056@orion>
+References: <20090329152334.GA11056@orion>
+Date: Sun, 5 Apr 2009 04:50:21 +0400
+Message-ID: <a4423d670904041750i194b4351ib08cd18f4a5b7394@mail.gmail.com>
+Subject: Re: [PATCH 1/10] Staging: at76: convert to netdev_ops
+From: Alexander Beregalov <a.beregalov@gmail.com>
+To: gregkh@suse.de, linux-kernel@vger.kernel.org, netdev@vger.kernel.org
 Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Anton Vorontsov wrote:
-> This patch adds spi and mmc-spi-slot nodes, plus a gpio-controller
-> for PIXIS' sdcsr bank that is used for managing SPI chip-select and
-> for reading card's states.
-> 
-> Note that spi-max-frequency is lowered since at high frequencies SD
-> cards don't work reliably (there is some problem with the chip select
-> line, it's probably quite slow because it's routed via PIXIS).
-> 
-> Previously there was a work around: we didn't use chip-select line
-> at all, but some cards don't like that, so we'd better use the low
-> frequency.
-> 
-> Signed-off-by: Anton Vorontsov <avorontsov@ru.mvista.com>
+2009/3/29 Alexander Beregalov <a.beregalov@gmail.com>:
+>
+>
+> Signed-off-by: Alexander Beregalov <a.beregalov@gmail.com>
 
-I have to admit being somewhat confused.  The CS# line is pulled low and
-stays low for the duration of a command, so it shouldn't affect the SPI
-frequency, only the delay between commands.
-
-You're saying "some cards don't like not using the CS# line" ... in
-particular, I know there are hardware devices which toggle the clock at
-low frequency (< 400 kHz) for a while (I think the minimum is 88 clocks
-or so) and then permanently assert the CS# line before giving the
-starting CMD0.  Even so, the CMD0 is supposed to be sent at < 400 kHz
-since the card will still be in open drain mode at that point.
-
-Does that disagree with your observations?  If so, I'd be really
-interested to find out what you have seen in more detail, as it adds to
-the understanding of MMC/SD cards in the field.
-
-	-hpa
-
--- 
-H. Peter Anvin, Intel Open Source Technology Center
-I work for Intel.  I don't speak on their behalf.
-
+Greg, these patches fix build failures when CONFIG_COMPAT_NET_DEV_OPS
+is not set.
+I think they should be in 2.6.30 also.
