@@ -1,57 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754265AbZDEXlJ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758476AbZDEXlq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754265AbZDEXlJ (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 5 Apr 2009 19:41:09 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753576AbZDEXk4
+	id S1758476AbZDEXlq (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 5 Apr 2009 19:41:46 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753959AbZDEXlh
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 5 Apr 2009 19:40:56 -0400
-Received: from terminus.zytor.com ([198.137.202.10]:46638 "EHLO
-	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752937AbZDEXkz (ORCPT
+	Sun, 5 Apr 2009 19:41:37 -0400
+Received: from lon1-post-3.mail.demon.net ([195.173.77.150]:35602 "EHLO
+	lon1-post-3.mail.demon.net" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1752937AbZDEXlg (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 5 Apr 2009 19:40:55 -0400
-Message-ID: <49D9417D.8060309@zytor.com>
-Date: Sun, 05 Apr 2009 16:40:45 -0700
-From: "H. Peter Anvin" <hpa@zytor.com>
-User-Agent: Thunderbird 2.0.0.14 (X11/20080501)
+	Sun, 5 Apr 2009 19:41:36 -0400
+Message-ID: <49D941C1.1050007@lougher.demon.co.uk>
+Date: Mon, 06 Apr 2009 00:41:53 +0100
+From: Phillip Lougher <phillip@lougher.demon.co.uk>
+User-Agent: Thunderbird 2.0.0.18 (X11/20081125)
 MIME-Version: 1.0
-To: Andi Kleen <andi@firstfloor.org>
-CC: linux-kernel@vger.kernel.org
-Subject: Re: 2.6.29-git12 breaks vga=0x0f07 on MSI/Intel GPU
-References: <20090405231425.GC17934@one.firstfloor.org>
-In-Reply-To: <20090405231425.GC17934@one.firstfloor.org>
-Content-Type: text/plain; charset=UTF-8
+To: squashfs-devel@lists.sourceforge.net,
+       Linux Kernel Development <linux-kernel@vger.kernel.org>,
+       linux-fsdevel@vger.kernel.org,
+       Linux Embedded Maillist <linux-embedded@vger.kernel.org>
+Subject: Squashfs 4.0 tools (for 2.6.29) released
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Andi Kleen wrote:
-> Hi,
-> 
-> Something between 2.6.29 and 2.6.29-git12 broke vga=0x0f07 text mode
-> on one of my test boxes. The text mode display is still (barely)visible, 
-> but the display contents continuous move over the screen horizontally while
-> flickering. Without the option in 80x25 mode it still works. 2.6.29
-> also works fine.
-> 
-> This is a MSI system with integrated Intel GPU.
-> 
-> 00:02.1 Display controller: Intel Corporation: Unknown device 29c3 (rev 02)
-> 
-> Please tell me if you need more information, i'm not sure
-> what I should collect.
-> 
+Hi,
 
-vga=0xf07 (80x60) was broken until recently; it actually implemented the
-equivalent of "vga=0xf01" (80x50).
+I'm pleased to announce the first release of the squashfs 4.0 tools.
+These are needed by any Squashfs users using linux 2.6.29.  They are available
+from http://sourceforge.net/projects/squashfs
 
-Can you boot 2.6.22 with "vga=0xf07" on this box, and if so, how does it
-behave?
+The changes from the change-log are:
 
-	-hpa
+1. Unsquashfs improvements:
 
--- 
-H. Peter Anvin, Intel Open Source Technology Center
-I work for Intel.  I don't speak on their behalf.
+1.1 Support for 4.0 filesystems added.
+1.2 Swapping macros rewritten.
+1.3 Unsquashfs code restructured and split into separate files.
 
+2. Mksquashfs improvements:
+
+2.1 Swapping macros rewritten.  Fixed little-endian layout allows
+     code to be optimised and only added at compile time for
+     big endian systems.
+2.2 Support for pseudo files added.
+
+New Mksquashfs options
+
+Mksquashfs now supports pseudo files, these allow fake directories, character
+and block devices to be specified and added to the Squashfs filesystem being
+built, rather than requiring them to be present in the source directories.
+This, for example, allows device nodes to be added to the filesystem without
+requiring root access.
+
+Phillip
