@@ -1,68 +1,135 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759002AbZDEKV0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759073AbZDEKYo@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759002AbZDEKV0 (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 5 Apr 2009 06:21:26 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758892AbZDEKVO
+	id S1759073AbZDEKYo (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 5 Apr 2009 06:24:44 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757534AbZDEKYc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 5 Apr 2009 06:21:14 -0400
-Received: from cavan.codon.org.uk ([93.93.128.6]:49476 "EHLO
-	vavatch.codon.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1758474AbZDEKVL (ORCPT
+	Sun, 5 Apr 2009 06:24:32 -0400
+Received: from gw-ca.panasas.com ([209.116.51.66]:7941 "EHLO
+	laguna.int.panasas.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1756495AbZDEKYa (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 5 Apr 2009 06:21:11 -0400
-Date: Sun, 5 Apr 2009 11:20:57 +0100
-From: Matthew Garrett <mjg@redhat.com>
-To: Corentin Chary <corentin.chary@gmail.com>
-Cc: Cristiano Prisciandaro <cristiano.p@solnet.ch>,
-       Thomas Renninger <trenn@suse.de>, Dave Jones <davej@redhat.com>,
-       acpi4asus-user@lists.sourceforge.net, linux-kernel@vger.kernel.org,
-       cpufreq@vger.kernel.org, Tom Hughes <tom@compton.nu>,
-       linux acpi <linux-acpi@vger.kernel.org>,
-       Francesco Lattanzio <f.lattanzio@simail.it>,
-       Grigori Goronzy <greg@chown.ath.cx>
-Subject: Re: [Acpi4asus-user] [PATCH 1/1] cpufreq: eeepc 900 frequency scaling driver
-Message-ID: <20090405102057.GA14089@srcf.ucam.org>
-References: <1227454026.7262.59.camel@localhost> <492A7632.4040106@compton.nu> <200811241613.25557.trenn@suse.de> <200811241736.53067.trenn@suse.de> <1227567739.6421.44.camel@localhost> <71cd59b00904050043u44d1cd2eu4b8d3aee9027ea17@mail.gmail.com>
+	Sun, 5 Apr 2009 06:24:30 -0400
+Message-ID: <49D88650.9050400@panasas.com>
+Date: Sun, 05 Apr 2009 13:22:08 +0300
+From: Boaz Harrosh <bharrosh@panasas.com>
+User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1b3pre) Gecko/20090315 Remi/3.0-0.b2.fc10.remi Thunderbird/3.0b2
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <71cd59b00904050043u44d1cd2eu4b8d3aee9027ea17@mail.gmail.com>
-User-Agent: Mutt/1.5.12-2006-07-14
-X-SA-Exim-Connect-IP: <locally generated>
-X-SA-Exim-Mail-From: mjg59@codon.org.uk
-X-SA-Exim-Scanned: No (on vavatch.codon.org.uk); SAEximRunCond expanded to false
+To: Jeff Garzik <jeff@garzik.org>
+CC: open-osd mailing-list <osd-dev@open-osd.org>,
+       LKML <linux-kernel@vger.kernel.org>, linux-scsi@vger.kernel.org,
+       linux-fsdevel@vger.kernel.org, axboe@kernel.dk,
+       Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: [PATCH] osdblk: a Linux block device for OSD objects
+References: <20090402015455.GA14087@havoc.gtf.org> <49D4AF12.40708@panasas.com> <49D5D921.6080904@garzik.org>
+In-Reply-To: <49D5D921.6080904@garzik.org>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
+X-OriginalArrivalTime: 05 Apr 2009 10:24:27.0823 (UTC) FILETIME=[B30BD3F0:01C9B5D8]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, Apr 05, 2009 at 09:43:40AM +0200, Corentin Chary wrote:
-> >> Could it happen that upcoming machines provide this interface (the two ACPI
-> >> functions) and also can do real CPU frequency/volt switching, e.g. via
-> >> acpi-cpufreq?
-> >
-> > Probably this interface is a solution specific to machines based on the
-> > celeron M: I don't even know if other 'old' models provide the same
-> > interface.
+On 04/03/2009 12:38 PM, Jeff Garzik wrote:
+> Boaz Harrosh wrote:
+>> I have taken that to my heart and will submit patches for that, next week.
+>> Including a complimentary patch to this driver. These changes are only
+>> intended for 2.6.31 though.
 > 
-> Hi,
-> We I just received another patch for that (adding a cpufv file in
-> sysfs) and I don't really know what to do.
+> Consolidation of common code should occur after osdblk is in one of: 
+> open-osd.git, scsi-misc.git, or linux-2.6.git.
 > 
-> As Grigori Goronzy said, using cpufreq in not a good idea:
+> That way, the code movement can be consolidated into a single changeset, 
+> touching exofs, osdblk and libosd all at the same time...
+> 	-exofs code
+> 	-osdblk code
+> 	+libosd code
+> 
+> 
 
-I'm not sure I agree. It's clear that ondemand and conservative aren't 
-sensible choices with the driver, but beyond that...
+Yes my plan exactly. I'll do it on my linux-open-osd tree and push it
+through the exofs branch in the next Kernel (2.6.31)
 
-> > 3) It looks like it is impossible to use more than one cpufreq driver
-> > per CPU. This effectively means you can either use the regular ACPI
-> > frequency scaling, which switches between multipliers, or SHE. That's
-> > unacceptable. SHE is not intended to replace the regular frequency
-> > scaling, but to complement it.
+>> I also want to add a small utility that can manage objects, create, size,
+>> remove, and mount as a complimentary wrapper for this driver is "osdblk"
+>> a good name for such utility?
+> 
+> osdblk intentionally maintains -zero- metadata on its own.  Therefore, 
+> this utility you propose can be completely generic.  You could call it 
+> "osdobjutil", because it need not be tied to the osdblk driver.
+> 
+> The osdblk driver needs the following from the utility:
+> 
+> - create object of specified size
+> 
+> - delete object
+> 
+> and optionally:
+> - resize object to new size
+> 
 
-I don't think there's a terribly good reason to use the SHE methods if 
-the CPU supports speedstep. 945 will automatically drop the frontside 
-bus in the deepest P states. I'd be surprised if it gave any real world 
-benefits on the atom based systems.
+In that case then I have on Q, an "osd" application that will support
+the full osd API set through command line, like:
+usage: osd create|remove|read|write|append|flush... \
+	--obj=par_id,obj_id \
+	[--set_attr=page_no,attr_no,set_attr_file] \
+	[--get_attr=page_no,attr_no,set_attr_file] \
+	[--file=in_out_file] \
+	...
 
--- 
-Matthew Garrett | mjg59@srcf.ucam.org
+I intend to fully support any functionality available by the library.
+the osd_ktests should be duplicatable in bash
+
+> There is no need for a mount operation, because this is handled through 
+> class_osdblk_add()
+> 
+> 
+<snip>
+>>> +static void osdblk_osd_complete(struct osd_request *or, void *private)
+>>> +{
+>>> +	struct osdblk_request *orq = private;
+>>> +	struct osd_sense_info osi;
+>>> +	int ret = osd_req_decode_sense(or, &osi);
+>>> +
+>>> +	if (ret)
+>>> +		ret = -EIO;
+>>> +
+>>> +	osd_end_request(or);
+>>> +	osdblk_end_request(orq->osdev, orq, ret);
+>> should be reversed, very bad things will happen otherwise
+>>
+>> +	osdblk_end_request(orq->osdev, orq, ret);
+>> +	osd_end_request(or);
+> 
+> Perhaps you are confusing two different 'struct request' in use?
+> 
+> 	- struct request, passed to osdblk for execution
+> 	- struct request, used by libosd to pass commands
+> 
+> The object lifetime of the struct request stored in 'orq' is longer than 
+> the lifetime of the osd_request:
+> 
+> 	1) block layer passes 'rq' to osdblk
+> 	2) osdblk creates new 'or', passes 'or' to libosd
+> 	3) libosd calls osdblk completion function
+> 	4) osdblk completes 'or'
+> 	5) osdblk completes 'rq'
+> 
+> As you can see, the object lifetime of 'or' is entirely within 'rq'.
+> 
+> 
+
+Yes I was confused exactly as you described, thanks grate stuff.
+
+> 
+> 
+>> What can I say, great stuff.
+>>
+>> OSD is a very clean API, that makes whole subsystems look trivial.
+> 
+> I appreciate it, thanks for the review.
+> 
+> 	Jeff
+
+Thank you Jeff for doing this
+Boaz
