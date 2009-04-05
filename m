@@ -1,99 +1,71 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758506AbZDEWAc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758285AbZDEWDv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758506AbZDEWAc (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 5 Apr 2009 18:00:32 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753578AbZDEWAV
+	id S1758285AbZDEWDv (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 5 Apr 2009 18:03:51 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753387AbZDEWDl
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 5 Apr 2009 18:00:21 -0400
-Received: from mx3.mail.elte.hu ([157.181.1.138]:48171 "EHLO mx3.mail.elte.hu"
+	Sun, 5 Apr 2009 18:03:41 -0400
+Received: from www.tglx.de ([62.245.132.106]:50240 "EHLO www.tglx.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753096AbZDEWAT (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 5 Apr 2009 18:00:19 -0400
-Date: Sun, 5 Apr 2009 23:59:16 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: Jaswinder Singh Rajput <jaswinder@kernel.org>
-Cc: Linus Torvalds <torvalds@linux-foundation.org>,
-       John Levon <levon@movementarian.org>, x86 maintainers <x86@kernel.org>,
-       LKML <linux-kernel@vger.kernel.org>,
-       Thomas Gleixner <tglx@linutronix.de>,
-       Robert Richter <robert.richter@amd.com>,
-       "H. Peter Anvin" <hpa@zytor.com>
-Subject: Re: [RFC PATCH] x86, oprofile: fix P4 oprofile CPU setup bug
-Message-ID: <20090405215916.GA27633@elte.hu>
-References: <1238958725.3522.1.camel@ht.satnam> <alpine.LFD.2.00.0904051243310.4023@localhost.localdomain> <1238962495.3301.0.camel@ht.satnam> <20090405213828.GA1059@elte.hu>
+	id S1752335AbZDEWDk (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 5 Apr 2009 18:03:40 -0400
+Date: Mon, 6 Apr 2009 00:02:48 +0200 (CEST)
+From: Thomas Gleixner <tglx@linutronix.de>
+To: Fernando Lopez-Lezcano <nando@ccrma.Stanford.EDU>
+cc: LKML <linux-kernel@vger.kernel.org>,
+       rt-users <linux-rt-users@vger.kernel.org>, Ingo Molnar <mingo@elte.hu>,
+       Steven Rostedt <rostedt@goodmis.org>,
+       Peter Zijlstra <peterz@infradead.org>, Carsten Emde <ce@ceag.ch>,
+       Clark Williams <williams@redhat.com>,
+       Frank Rowand <frank.rowand@am.sony.com>,
+       Robin Gareus <robin@gareus.org>, Gregory Haskins <ghaskins@novell.com>,
+       Philippe Reynes <philippe.reynes@isismpp.fr>,
+       Will Schmidt <will_schmidt@vnet.ibm.com>
+Subject: Re: [Announce] 2.6.29.1-rt4
+In-Reply-To: <1238968196.4995.15.camel@localhost.localdomain>
+Message-ID: <alpine.LFD.2.00.0904060001480.747@localhost.localdomain>
+References: <alpine.LFD.2.00.0902112332370.415@localhost.localdomain>  <alpine.LFD.2.00.0902122353050.16972@localhost.localdomain>  <alpine.LFD.2.00.0902231854360.3523@localhost.localdomain>  <alpine.LFD.2.00.0902241849230.3523@localhost.localdomain> 
+ <alpine.LFD.2.00.0902241856480.9135@localhost.localdomain>  <alpine.LFD.2.00.0903122013230.29264@localhost.localdomain>  <alpine.LFD.2.00.0903200014320.29264@localhost.localdomain>  <alpine.LFD.2.00.0903201832590.29264@localhost.localdomain> 
+ <alpine.LFD.2.00.0903231723090.29264@localhost.localdomain>  <alpine.LFD.2.00.0903252154040.3397@localhost.localdomain>  <alpine.LFD.2.00.0904020155320.12916@localhost.localdomain>  <alpine.LFD.2.00.0904031918090.12916@localhost.localdomain> 
+ <1238799852.3871.6.camel@localhost.localdomain>  <alpine.LFD.2.00.0904040628310.12916@localhost.localdomain>  <1238828273.15225.17.camel@localhost.localdomain>  <alpine.LFD.2.00.0904051552320.747@localhost.localdomain>
+ <1238968196.4995.15.camel@localhost.localdomain>
+User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090405213828.GA1059@elte.hu>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Sun, 5 Apr 2009, Fernando Lopez-Lezcano wrote:
 
-* Ingo Molnar <mingo@elte.hu> wrote:
-
-> Hm, you only seem to be looking at solving that warning message, 
-> and your interest does not seem to go outside of that scope at 
-> all. Your first fix was to make the message go away, your second 
-> fix minimally (tried to address) the review from Linus and did a 
-> mechanic change to make the message go away.
+> On Sun, 2009-04-05 at 15:53 +0200, Thomas Gleixner wrote:
+> > On Fri, 3 Apr 2009, Fernando Lopez-Lezcano wrote:
+> > > > > Just a heads up. I'm still having shutdown/suspend problems with this
+> > > > > release as before (I had not reported the suspend problem, I think -
+> > > > > machine hangs and has to be power cycled). Booting with "noreplace-smp"
+> > > > > fixes both. Is this something I could disable through configuration
+> > > > > options?
+> > > > 
+> > > > No. I have this shutdown/suspend thing on my todo list. 
+> > > 
+> > > Ah, ok. No problem. If it were not for this feature I'd probably release
+> > > a test version for Planet CCRMA. 
+> > 
+> > Happens this shutdown/suspend problem every time or is this sporadic ?
 > 
-> This second change was actually subtly worse than the first one: 
-> because it spread the uncleanliness elsewhere. The getting of 
-> 'stagger' is in no way central to the code, it does not denote 
-> critical sections at all.
+> For me it is repeatable (on both a laptop and a desktop machine so it
+> does not appear to be very hardware specific). It might be of course an
+> interaction with the Fedora patches I use. 
+> 
+> In the category of "I wish I had a crystal ball" reports with no hard
+> data, I can confirm that my build of rt4 does hang. I was trying
+> 2.6.29.1-rt4 during a rehearsal for a concert yesterday[*] and after a
+> hard hang I reverted to the vanilla Fedora kernel (which is what I had
+> been using because of that problem - no clues left behind in logs). 
 
-btw. - and this is a pet peeve of mine - in the x86 tree we never 
-ever "fix" warnings.
+Hmm. Can you upload your full patch queue and the binary rpm so I can
+give it a test ride ?
 
-Warnings can only be dealt with in two ways correctly:
+Thanks,
 
- - Fix _false positive_ warnings - carefully analyzing and 
-   explaining why the warning is a false positive.
-
- - .. or by fixing _real bugs_, which bugs some warning mechanism
-   exposed. The warning there does not need to be 'fixed' - it was
-   the canary for a real bug and we fix the _bug_, not the warning. 
-   ( the warning does go away but only as a side-effect of the bug
-     going away. )
-
-The moment you start 'fixing warnings' (and i note here that you 
-seem to be interested in doing many such changes and cleanups, so we 
-better talk about this fine distinction), you risk the exact pattern 
-that happened above:
-
-... something subtle happened somewhere - and you sent a patch that 
-you denoted as a 'fix' in the subject line. Your commit log did not 
-show at all whether you understood the full context, and you did not 
-analyze the _reason_ for the warning, at all.
-
-I routinely reject such patches, just based on that pattern, even if 
-i happen to agree with the change.
-
-They are in fact _actively harmful_, because a poor overworked 
-maintainer like me might apply it in a weak moment. [ except Linus, 
-who is overworked and still notices such patches but what's new ;-) ]
-
-Instead, if you see such warnings, and dont know why they trigger - 
-please send in the message denoted as a bug report. Or if you have a 
-guess of a patch but are unsure about a change in any way send in an 
-RFC patch and _declare_ the bits you are sure about and the bits you 
-are unsure about, and ask specific questions and show how far you 
-got in the analysis. It is not a problem to declare the area you 
-dont understand - it is useful information to those reading your 
-emails. Conversely, the _lack_ of such information is harmful. Ok?
-
-Please dont _ever_ send in patches without a meaningful changelog.
-
-Take this as a warning! ;-)
-
-	Ingo
+	tglx
