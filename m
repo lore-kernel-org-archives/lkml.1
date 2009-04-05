@@ -1,135 +1,75 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759073AbZDEKYo@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758676AbZDEKam@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759073AbZDEKYo (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 5 Apr 2009 06:24:44 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757534AbZDEKYc
+	id S1758676AbZDEKam (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 5 Apr 2009 06:30:42 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757835AbZDEKaa
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 5 Apr 2009 06:24:32 -0400
-Received: from gw-ca.panasas.com ([209.116.51.66]:7941 "EHLO
-	laguna.int.panasas.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1756495AbZDEKYa (ORCPT
+	Sun, 5 Apr 2009 06:30:30 -0400
+Received: from gw1.cosmosbay.com ([212.99.114.194]:39006 "EHLO
+	gw1.cosmosbay.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757681AbZDEKa3 convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 5 Apr 2009 06:24:30 -0400
-Message-ID: <49D88650.9050400@panasas.com>
-Date: Sun, 05 Apr 2009 13:22:08 +0300
-From: Boaz Harrosh <bharrosh@panasas.com>
-User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1b3pre) Gecko/20090315 Remi/3.0-0.b2.fc10.remi Thunderbird/3.0b2
+	Sun, 5 Apr 2009 06:30:29 -0400
+Message-ID: <49D88839.4090902@cosmosbay.com>
+Date: Sun, 05 Apr 2009 12:30:17 +0200
+From: Eric Dumazet <dada1@cosmosbay.com>
+User-Agent: Thunderbird 2.0.0.21 (Windows/20090302)
 MIME-Version: 1.0
-To: Jeff Garzik <jeff@garzik.org>
-CC: open-osd mailing-list <osd-dev@open-osd.org>,
-       LKML <linux-kernel@vger.kernel.org>, linux-scsi@vger.kernel.org,
-       linux-fsdevel@vger.kernel.org, axboe@kernel.dk,
-       Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: [PATCH] osdblk: a Linux block device for OSD objects
-References: <20090402015455.GA14087@havoc.gtf.org> <49D4AF12.40708@panasas.com> <49D5D921.6080904@garzik.org>
-In-Reply-To: <49D5D921.6080904@garzik.org>
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
-X-OriginalArrivalTime: 05 Apr 2009 10:24:27.0823 (UTC) FILETIME=[B30BD3F0:01C9B5D8]
+To: Graham Murray <graham@gmurray.org.uk>
+CC: linux-kernel@vger.kernel.org, Linux Netdev List <netdev@vger.kernel.org>
+Subject: Re: Regression caused by commit "netfilter: iptables: lock free counters"
+References: <20090329234702.4988017f@desktop.r000n.info>	<8763hja8cy.fsf@newton.gmurray.org.uk>	<20090405.012237.198610462.davem@davemloft.net>	<49D88162.5040809@cosmosbay.com> <87ws9z8l4c.fsf@newton.gmurray.org.uk>
+In-Reply-To: <87ws9z8l4c.fsf@newton.gmurray.org.uk>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 8BIT
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-1.6 (gw1.cosmosbay.com [0.0.0.0]); Sun, 05 Apr 2009 12:30:19 +0200 (CEST)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 04/03/2009 12:38 PM, Jeff Garzik wrote:
-> Boaz Harrosh wrote:
->> I have taken that to my heart and will submit patches for that, next week.
->> Including a complimentary patch to this driver. These changes are only
->> intended for 2.6.31 though.
+Graham Murray a écrit :
+> Eric Dumazet <dada1@cosmosbay.com> writes:
 > 
-> Consolidation of common code should occur after osdblk is in one of: 
-> open-osd.git, scsi-misc.git, or linux-2.6.git.
-> 
-> That way, the code movement can be consolidated into a single changeset, 
-> touching exofs, osdblk and libosd all at the same time...
-> 	-exofs code
-> 	-osdblk code
-> 	+libosd code
-> 
-> 
-
-Yes my plan exactly. I'll do it on my linux-open-osd tree and push it
-through the exofs branch in the next Kernel (2.6.31)
-
->> I also want to add a small utility that can manage objects, create, size,
->> remove, and mount as a complimentary wrapper for this driver is "osdblk"
->> a good name for such utility?
-> 
-> osdblk intentionally maintains -zero- metadata on its own.  Therefore, 
-> this utility you propose can be completely generic.  You could call it 
-> "osdobjutil", because it need not be tied to the osdblk driver.
-> 
-> The osdblk driver needs the following from the utility:
-> 
-> - create object of specified size
-> 
-> - delete object
-> 
-> and optionally:
-> - resize object to new size
-> 
-
-In that case then I have on Q, an "osd" application that will support
-the full osd API set through command line, like:
-usage: osd create|remove|read|write|append|flush... \
-	--obj=par_id,obj_id \
-	[--set_attr=page_no,attr_no,set_attr_file] \
-	[--get_attr=page_no,attr_no,set_attr_file] \
-	[--file=in_out_file] \
-	...
-
-I intend to fully support any functionality available by the library.
-the osd_ktests should be duplicatable in bash
-
-> There is no need for a mount operation, because this is handled through 
-> class_osdblk_add()
-> 
-> 
-<snip>
->>> +static void osdblk_osd_complete(struct osd_request *or, void *private)
->>> +{
->>> +	struct osdblk_request *orq = private;
->>> +	struct osd_sense_info osi;
->>> +	int ret = osd_req_decode_sense(or, &osi);
->>> +
->>> +	if (ret)
->>> +		ret = -EIO;
->>> +
->>> +	osd_end_request(or);
->>> +	osdblk_end_request(orq->osdev, orq, ret);
->> should be reversed, very bad things will happen otherwise
+>>>>> 784544739a25c30637397ace5489eeb6e15d7d49 is first bad commit
+>>>>> commit 784544739a25c30637397ace5489eeb6e15d7d49             
+>>>> I am seeing a different problem which also bisects to this commit. There are
+>>>> no kernel messages but ip6tables fails to run.
+>>>>
+>>>> newton ~ # ip6tables -L -v
+>>>> FATAL: Module ip6_tables not found.
+>>>> ip6tables v1.4.3.1: can't initialize ip6tables table `filter': Memory allocation problem
+>>>> Perhaps ip6tables or your kernel needs to be upgraded.
+>>>>
+>>>> I get this error no matter which ip6tables sub-command I run. Ip6tables
+>>>> is built into the kernel, not as modules.
+>>>>
+>>>> An strace shows the failure to be 
+>>>> socket(PF_INET6, SOCK_RAW, IPPROTO_RAW) = 3
+>>>> getsockopt(3, SOL_IPV6, 0x40 /* IPV6_??? */, "filter\0\305\0w~\300\0wb\305P\24\312\t\0009b\305\216\23\0\0\310\341/g\16"..., [84]) = 0
+>>>> brk(0)                                  = 0x8273000
+>>>> brk(0x8294000)                          = 0x8294000
+>> so ip6tables allocates about 128 Kbytes of ram in order to get rules from kernel.
 >>
->> +	osdblk_end_request(orq->osdev, orq, ret);
->> +	osd_end_request(or);
-> 
-> Perhaps you are confusing two different 'struct request' in use?
-> 
-> 	- struct request, passed to osdblk for execution
-> 	- struct request, used by libosd to pass commands
-> 
-> The object lifetime of the struct request stored in 'orq' is longer than 
-> the lifetime of the osd_request:
-> 
-> 	1) block layer passes 'rq' to osdblk
-> 	2) osdblk creates new 'or', passes 'or' to libosd
-> 	3) libosd calls osdblk completion function
-> 	4) osdblk completes 'or'
-> 	5) osdblk completes 'rq'
-> 
-> As you can see, the object lifetime of 'or' is entirely within 'rq'.
-> 
-> 
-
-Yes I was confused exactly as you described, thanks grate stuff.
-
-> 
-> 
->> What can I say, great stuff.
+>>>> getsockopt(3, SOL_IPV6, 0x41 /* IPV6_??? */, 0x8273090, 0xbfd23628) = -1 ENOMEM (Cannot allocate memory)
+>>>> close(3)                                = 0
+>>>>
 >>
->> OSD is a very clean API, that makes whole subsystems look trivial.
+>> This is a big problem yes, since "iptables|ip6tables" -L needs to allocate kernel memory
+>> to perform the momentary swap.
+>>
+>> On x86, this is potentially a problem if vmalloc space is exhausted or fragmented,
+>> (or lowmem exhausted) and/or many cpus are online/possible.
 > 
-> I appreciate it, thanks for the review.
-> 
-> 	Jeff
+> iptables gives me no problems at all, it is just ip6tables that
+> fails. The first indication of this is during the init scripts when
+> ip6tables-restore fails.
 
-Thank you Jeff for doing this
-Boaz
+I see, its a plain bug in net/ipv6/netfilter/ip6_tables.c
+function alloc_counters() always returns -ENOMEM
+
+Unfortunatly , its Sunday here and I have to run for lunch time with family :)
+
+If nobody beats me, I will do the fix in a couple of hours...
+
+Thank you
+
