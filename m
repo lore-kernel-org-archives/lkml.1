@@ -1,101 +1,82 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752172AbZDERZW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752069AbZDER1V@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752172AbZDERZW (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 5 Apr 2009 13:25:22 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750975AbZDERZH
+	id S1752069AbZDER1V (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 5 Apr 2009 13:27:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750975AbZDER1M
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 5 Apr 2009 13:25:07 -0400
-Received: from extu-mxob-1.symantec.com ([216.10.194.28]:39126 "EHLO
-	extu-mxob-1.symantec.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750799AbZDERZF (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 5 Apr 2009 13:25:05 -0400
-Date: Sun, 5 Apr 2009 18:24:22 +0100 (BST)
-From: Hugh Dickins <hugh@veritas.com>
-X-X-Sender: hugh@blonde.anvils
-To: Jiri Pirko <jpirko@redhat.com>
-cc: linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
-       kosaki.motohiro@jp.fujitsu.com, oleg@redhat.com, linux-mm@kvack.org,
-       mingo@elte.hu
-Subject: Re: [PATCH for -mm] getrusage: fill ru_maxrss value
-In-Reply-To: <20090405084902.GA4411@psychotron.englab.brq.redhat.com>
-Message-ID: <Pine.LNX.4.64.0904051736210.23536@blonde.anvils>
-References: <20081230201052.128B.KOSAKI.MOTOHIRO@jp.fujitsu.com>
- <20081231110816.5f80e265@psychotron.englab.brq.redhat.com>
- <20081231213705.1293.KOSAKI.MOTOHIRO@jp.fujitsu.com> <20090103175913.GA21180@redhat.com>
- <2f11576a0901031313u791d7dcex94b927cc56026e40@mail.gmail.com>
- <20090105163204.3ec9ff10@psychotron.englab.brq.redhat.com>
- <20090105141313.a4abd475.akpm@linux-foundation.org>
- <20090106104839.78eb07d1@psychotron.englab.brq.redhat.com>
- <20090402134738.43d87cb7.akpm@linux-foundation.org> <20090402211336.GB4076@elte.hu>
- <20090405084902.GA4411@psychotron.englab.brq.redhat.com>
+	Sun, 5 Apr 2009 13:27:12 -0400
+Received: from mail001.aei.ca ([206.123.6.130]:47679 "EHLO mail001.aei.ca"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750799AbZDER1L (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 5 Apr 2009 13:27:11 -0400
+From: Ed Tomlinson <edt@aei.ca>
+To: Theodore Tso <tytso@mit.edu>
+Subject: Re: Ext4 and the "30 second window of death"
+Date: Sun, 5 Apr 2009 13:27:03 -0400
+User-Agent: KMail/1.11.1 (Linux/2.6.29-gentoo-r1-crc; KDE/4.2.1; x86_64; ; )
+Cc: Alberto Gonzalez <info@gnebu.es>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+References: <200903291224.21380.info@gnebu.es> <20090331122540.GB13356@mit.edu>
+In-Reply-To: <20090331122540.GB13356@mit.edu>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200904051327.04227.edt@aei.ca>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, 5 Apr 2009, Jiri Pirko wrote:
-> (resend, repetitive patterns put into an inline function - not using max macro
->  because it's was decided not to use it in previous conversation)
-> 
-> From: Jiri Pirko <jpirko@redhat.com>
-> 
-> Make ->ru_maxrss value in struct rusage filled accordingly to rss hiwater
-> mark.  This struct is filled as a parameter to getrusage syscall. 
-> ->ru_maxrss value is set to KBs which is the way it is done in BSD
-> systems.  /usr/bin/time (gnu time) application converts ->ru_maxrss to KBs
-> which seems to be incorrect behavior.  Maintainer of this util was
-> notified by me with the patch which corrects it and cc'ed.
-> 
-> To make this happen we extend struct signal_struct by two fields.  The
-> first one is ->maxrss which we use to store rss hiwater of the task.  The
-> second one is ->cmaxrss which we use to store highest rss hiwater of all
-> task childs.  These values are used in k_getrusage() to actually fill
-> ->ru_maxrss.  k_getrusage() uses current rss hiwater value directly if mm
-> struct exists.
-> 
-> Note:
-> exec() clear mm->hiwater_rss, but doesn't clear sig->maxrss.
-> it is intetionally behavior. *BSD getrusage have exec() inheriting.
+On Tuesday 31 March 2009 08:25:40 Theodore Tso wrote:
+> On Sun, Mar 29, 2009 at 12:24:21PM +0200, Alberto Gonzalez wrote:
+> > Hi,
+> >
+> > - I use Ext4 as my filesystem (default in next Fedora release).
+>
+> Fedora will have the patches so that applications that do
+> replace-via-truncate (a bad idea, these applications are buggy, and
+> will lose data sometimes even with ext3), or replace-via-rename
+> without the fsync(), will force the blocks out to disk with the
+> commit.
+>
+> > - Let's say I've been working on my book for the last 14 months and I've
+> > written about 400 pages on an ODF file.
+>
+> Openoffice, being a portable application, that has to work on other
+> operating systems and filesystems (for example, like Solaris's UFS),
+> does do open/write/close/fsync/rename.  So you're safe if you're using
+> OpenOffice (and emacs, and vim).
+>
+> The replace-via-truncate and replace-via-rename workarounds are there
+> for the benefit of KDE, and GNOME, which in some configurations
+> apparently will replace hundreds of dot files when the desktop is
+> started up, for no reason that I can understand.  (Not such a great
+> idea for SSD write endurance!)  Some people apparently spend hours
+> making sure that their windows are exactly positioned the way they
+> want it when their desktop starts up, and if the system crashes while
+> their desktop is starting up, those they could lose their window
+> positions, which apparently made a whole bunch of users cranky.  In
+> practice, most of the editors that I'm familiar with have been around
+> for a while, have needed to make sure that that cases such as yours
+> wouldn't result in data loss, and so are pretty good about using
+> fsync() so that users' files wouldn't be lost, no matter what the
+> filesystem or operating system being used.
 
-Sorry, I'm finding myself quite unable to Ack this: that may well
-be a measure of my density, rather than a criticism of your patch.
+Its more than losing window postions.  I've been using ext4 with kde 4.2.1 
+along with some experimental modules (drm for xorg for r600 support, btrfs) 
+and a few patches.  As expected this has caused a few crashes.  I have had 
+kde lose desktop setup info (eg. it forgot it was using xrender accel).  I 
+have also had kmail lose all its configuration - which is a pita to rebuild.  
+Note that these crashes occur long after kde has been started...
 
-On the nitpicking level: I wish you'd put the args the other way
-round in your setmax_mm_hiwater_rss(maxrss, mm): (mm, maxrss) would
-be more conventional.  Though we're gathering so many helpers for
-these things, hard-to-distinguish without looking up in the header
-file each time, that I wonder if they could all be refactored better.
+> The problem has been mostly with newer applications, especially the
+> newer desktop ones, which have been written to assume that they only
+> have to work safely on Linux and ext3.  The replace-via-truncate and
+> replace-via-rename workarounds provide this safety for ext4.
 
-But on the more serious level: I find I don't really understand what
-this ru_maxrss number is supposed to be, so have a hard job telling
-whether you've implemented it right (as to whether things are
-updated in the right places, I'd rather rely on Oleg for that).
+When there are patches out to improve this (bad) behavior I would love
+to try them.
 
-You convey the impression that it's supposed to be similar to
-whatever it is in BSD, but little meaning beyond that.  We agreed
-before that it should be derived from hiwater_rss - though now I
-google for "BSD getrusage" I find ru_maxrss described as "maximum
-shared memory or current resident set", which leaves me thoroughly
-confused.
-
-I'm worrying particularly about the fork/exec issue you highlight.
-You're exemplary in providing your test programs, but there's a big
-omission: you don't mention that the first test, "./getrusage -lc",
-gives a very different result on Linux than you say it does on BSD -
-you say the BSD fork line is "fork: self 0 children 0", whereas
-I find my Linux fork line is "fork: self 102636 children 0".
-
-So after that discrepancy, I can't tell what to expect.  Not that
-I can make any sense of BSD's "self 0" there - I don't know how
-you could present 0 there if this is related to hiwater_rss.
-
-Now I'm seriously wondering if the ru_maxrss reported will generate
-more bugreports from people puzzled as to how it should behave,
-than help anyone in studying their process behaviour.
-
-Sorry to be so negative after all this time: I genuinely hope others
-will spring up to defend your patch and illustrate my stupidity.
-
-Hugh
+TIA
+Ed Tomlinson
