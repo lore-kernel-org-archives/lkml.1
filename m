@@ -1,34 +1,35 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759384AbZDEEMo@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759197AbZDEELg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759384AbZDEEMo (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 5 Apr 2009 00:12:44 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758740AbZDEEJy
+	id S1759197AbZDEELg (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 5 Apr 2009 00:11:36 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758741AbZDEEJm
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 5 Apr 2009 00:09:54 -0400
-Received: from thunk.org ([69.25.196.29]:54169 "EHLO thunker.thunk.org"
+	Sun, 5 Apr 2009 00:09:42 -0400
+Received: from thunk.org ([69.25.196.29]:54149 "EHLO thunker.thunk.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1758805AbZDEEJw (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 5 Apr 2009 00:09:52 -0400
-Date: Sat, 4 Apr 2009 20:10:05 -0400
+	id S1758805AbZDEEJk (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 5 Apr 2009 00:09:40 -0400
+Date: Sat, 4 Apr 2009 21:28:39 -0400
 From: Theodore Tso <tytso@mit.edu>
-To: Arjan van de Ven <arjan@infradead.org>
-Cc: Jens Axboe <jens.axboe@oracle.com>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Linux Kernel Developers List <linux-kernel@vger.kernel.org>,
-       Ext4 Developers List <linux-ext4@vger.kernel.org>
-Subject: Re: [GIT PULL] Ext3 latency fixes
-Message-ID: <20090405001005.GA7553@mit.edu>
+To: Ric Wheeler <rwheeler@redhat.com>
+Cc: Jens Axboe <jens.axboe@oracle.com>, Mikulas Patocka <mpatocka@redhat.com>,
+       device-mapper development <dm-devel@redhat.com>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       ak@linux.intel.com, "MASON, CHRISTOPHER" <CHRIS.MASON@oracle.com>
+Subject: Re: [dm-devel] Barriers still not passing on simple dm devices...
+Message-ID: <20090405012839.GF7553@mit.edu>
 Mail-Followup-To: Theodore Tso <tytso@mit.edu>,
-	Arjan van de Ven <arjan@infradead.org>,
+	Ric Wheeler <rwheeler@redhat.com>,
 	Jens Axboe <jens.axboe@oracle.com>,
-	Linus Torvalds <torvalds@linux-foundation.org>,
-	Linux Kernel Developers List <linux-kernel@vger.kernel.org>,
-	Ext4 Developers List <linux-ext4@vger.kernel.org>
-References: <alpine.LFD.2.00.0904031150190.4015@localhost.localdomain> <alpine.LFD.2.00.0904031329410.7007@localhost.localdomain> <20090404135719.GA9812@mit.edu> <20090404151649.GE5178@kernel.dk> <alpine.LFD.2.00.0904040854470.3915@localhost.localdomain> <20090404173412.GF5178@kernel.dk> <alpine.LFD.2.00.0904041039230.3915@localhost.localdomain> <20090404180108.GH5178@kernel.dk> <20090404232222.GA7480@mit.edu> <20090404163349.20df1208@infradead.org>
+	Mikulas Patocka <mpatocka@redhat.com>,
+	device-mapper development <dm-devel@redhat.com>,
+	Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+	ak@linux.intel.com, "MASON, CHRISTOPHER" <CHRIS.MASON@oracle.com>
+References: <20090324150517.GX27476@kernel.dk> <Pine.LNX.4.64.0903251106520.27750@hs20-bc2-1.build.redhat.com> <20090325152751.GV27476@kernel.dk> <Pine.LNX.4.64.0903251825310.8027@hs20-bc2-1.build.redhat.com> <20090326084205.GG27476@kernel.dk> <Pine.LNX.4.64.0903302314500.6158@hs20-bc2-1.build.redhat.com> <20090331104933.GJ5178@kernel.dk> <Pine.LNX.4.64.0904021923040.19415@hs20-bc2-1.build.redhat.com> <20090403081131.GP5178@kernel.dk> <49D77AC3.3020207@redhat.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20090404163349.20df1208@infradead.org>
+In-Reply-To: <49D77AC3.3020207@redhat.com>
 User-Agent: Mutt/1.5.18 (2008-05-17)
 X-SA-Exim-Connect-IP: <locally generated>
 X-SA-Exim-Mail-From: tytso@mit.edu
@@ -37,33 +38,38 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, Apr 04, 2009 at 04:33:49PM -0700, Arjan van de Ven wrote:
-> > However, the full latency fixes all the writes are synchronous, so it
-> > must be the case that the delays are caused by the fact that queue is
-> > getting implicitly unplugged after the synchronous write, and the
-> > problem is no longer the mixing of WRITE and WRITE_SYNC requests as
-> > posted in the commit log for 78f707bf.  If we remove the automatic
-> > unplug for WRITE_SYNC requests, and add an explicit unplug where it is
-> > needed, that should fix the performance regression for this particular
-> > sqlite test case. 
-> 
-> removing the unplug is bound to be bad; after all we're waiting on the
-> IO. But maybe it should be "make the unplug a REALLY short time".
-> At least for rotating storage. For non-rotating .. I'd never wait.
+On Sat, Apr 04, 2009 at 11:20:35AM -0400, Ric Wheeler wrote:
+> Barriers do work as we have them, but as others have mentioned, it is  
+> not a "free" win - fsync will actually move your data safely out to  
+> persistent storage for a huge percentage of real users (including every  
+> ATA/S-ATA and SAS drive I was able to test).  The file systems I  
+> monitored in production use without barriers were much less reliable.
 
-Ext3 needs to submit a large number of blocks for writing with
-WRITE_SYNC priority, without unplugging the queue, until they are all
-submitted.  Then we want to let things rip.  (Hence the "add an
-explicit unplug where it is needed".)
+The problem is that, as long as you're not under memory pressure, and
+not pushing the filesystem heavily, ext3 didn't corrupt *that* often
+without barriers.  So people got away with it "most of the time" ---
+just as applications replacing files by rewriting them in place using
+truncate and w/o fsync would "usually" not lose data after a crash if
+they were using ext3 with data=ordered mode.  This caused people to
+get lazy/sloppy.
 
-It may be that it's easier from an less-lines-of-the-kernels-to-change
-point of view to add a WRITE_SYNC_PLUGGED which doesn't do the unplug,
-and keep WRITE_SNYC as having the implicit unplug.  Or maybe it would
-be better to completely separate the "send a write which is marked as
-SYNC" from the "implicit unplug" in the API.
+So yes, barriers were something that were largely ignored for a long
+time.  After all, in a server environment with UPS's, without crappy
+proprietary video drivers, Linux systems didn't crash that often
+anyway.  So you really needed a large base of systems and with the
+ability to root cause failures such as what Ric had at EMC to see the
+problem.
 
-Jens, do you have an opinion/preference?
+Even now, the reason why ext3 doesn't have barriers enabled by default
+(although we did make them the default for ext4) is because Andrew
+doesn't believe Chris's replication case is likely to be true for most
+users in practice, and he's concerned about the performance
+degradation of barriers.  He's basically depending on the fact that
+"usually" you can get away without using barriers.  Sigh....
 
-					- Ted
+						- Ted
 
+P.S.  Of course, distributions should feel free to consider changing
+the default on their kernels.  SLES has already if memory serves
+correctly.  I don't know if RHEL has yet.
 
