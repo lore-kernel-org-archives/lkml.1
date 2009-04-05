@@ -1,58 +1,79 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758470AbZDEU6V@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758262AbZDEVFS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758470AbZDEU6V (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 5 Apr 2009 16:58:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753618AbZDEU6H
+	id S1758262AbZDEVFS (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 5 Apr 2009 17:05:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756641AbZDEVFD
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 5 Apr 2009 16:58:07 -0400
-Received: from srv5.dvmed.net ([207.36.208.214]:42346 "EHLO mail.dvmed.net"
+	Sun, 5 Apr 2009 17:05:03 -0400
+Received: from www.tglx.de ([62.245.132.106]:33471 "EHLO www.tglx.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751972AbZDEU6G (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 5 Apr 2009 16:58:06 -0400
-Message-ID: <49D91B31.90300@garzik.org>
-Date: Sun, 05 Apr 2009 16:57:21 -0400
-From: Jeff Garzik <jeff@garzik.org>
-User-Agent: Thunderbird 2.0.0.21 (X11/20090320)
+	id S1753907AbZDEVFC (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 5 Apr 2009 17:05:02 -0400
+Date: Sun, 5 Apr 2009 23:02:58 +0200 (CEST)
+From: Thomas Gleixner <tglx@linutronix.de>
+To: Jaswinder Singh Rajput <jaswinder@kernel.org>
+cc: Linus Torvalds <torvalds@linux-foundation.org>,
+       John Levon <levon@movementarian.org>, Ingo Molnar <mingo@elte.hu>,
+       x86 maintainers <x86@kernel.org>, LKML <linux-kernel@vger.kernel.org>,
+       Robert Richter <robert.richter@amd.com>
+Subject: Re: [PATCH] x86: fix BUG: using smp_processor_id() in preemptible
+ [00000000] code: oprofiled/3319
+In-Reply-To: <1238962495.3301.0.camel@ht.satnam>
+Message-ID: <alpine.LFD.2.00.0904052301481.747@localhost.localdomain>
+References: <1238958725.3522.1.camel@ht.satnam>  <alpine.LFD.2.00.0904051243310.4023@localhost.localdomain> <1238962495.3301.0.camel@ht.satnam>
+User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
 MIME-Version: 1.0
-To: Mark Lord <lkml@rtr.ca>
-CC: Linus Torvalds <torvalds@linux-foundation.org>,
-       Theodore Tso <tytso@mit.edu>, Arjan van de Ven <arjan@infradead.org>,
-       Jens Axboe <jens.axboe@oracle.com>,
-       Linux Kernel Developers List <linux-kernel@vger.kernel.org>,
-       Ext4 Developers List <linux-ext4@vger.kernel.org>
-Subject: Re: [GIT PULL] Ext3 latency fixes
-References: <alpine.LFD.2.00.0904031150190.4015@localhost.localdomain> <alpine.LFD.2.00.0904031329410.7007@localhost.localdomain> <20090404135719.GA9812@mit.edu> <20090404151649.GE5178@kernel.dk> <alpine.LFD.2.00.0904040854470.3915@localhost.localdomain> <20090404173412.GF5178@kernel.dk> <alpine.LFD.2.00.0904041039230.3915@localhost.localdomain> <20090404180108.GH5178@kernel.dk> <20090404232222.GA7480@mit.edu> <20090404163349.20df1208@infradead.org> <20090405001005.GA7553@mit.edu> <alpine.LFD.2.00.0904050927580.4023@localhost.localdomain> <49D8E71F.6000703@rtr.ca>
-In-Reply-To: <49D8E71F.6000703@rtr.ca>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 7bit
-X-Spam-Score: -4.4 (----)
-X-Spam-Report: SpamAssassin version 3.2.5 on srv5.dvmed.net summary:
-	Content analysis details:   (-4.4 points, 5.0 required)
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Mark Lord wrote:
-> Linus Torvalds wrote:
->>
->> Non-rotational media would tend to want the unplugging, but the block 
->> layer already does that (ie in __make_request() we already do:
->>
->>         if (unplug || blk_queue_nonrot(q))
->>                 __generic_unplug_device(q);
->>
->> so non-rotational devices get unplugged whether the request was a 
->> unplugging request or not).
-> ..
-> 
-> Mmm.. except that Jeff's SSD doesn't appear to identify itself
-> as a non-rotating media.  I suppose there's a way to "quirk" that
-> somewhere, though.
+On Mon, 6 Apr 2009, Jaswinder Singh Rajput wrote:
+> On Sun, 2009-04-05 at 12:51 -0700, Linus Torvalds wrote:
+> > 
+> > On Mon, 6 Apr 2009, Jaswinder Singh Rajput wrote:
+> > >
+> > > Fixed this bug on P4 HT machine:
+> > 
+> > I don't think this really is correct.
+> > 
+> > Anything that does that "get_stagger()" thing should already either be 
+> > tied to a specific CPU (because it's going to actually touch the variables 
+> > for "that CPU"), or it should likely set up the data structures for _all_ 
+> > cases.
 
-We set it in libata-scsi.c:ata_scsi_dev_config() based on ata_id_is_ssd()
+Most of the functions are called preempt off anyway. The only one
+which needs care AFAICT is p4_fill_in_addresses, but the problem space
+is outside of the p4 specific code. It's the call site which is
+nmi_setup():
 
-That hueristic probably assumes Intel SSDs or something :/
+       model->fill_in_addresses(&per_cpu(cpu_msrs, 0));
+       ...
+       on_each_cpu(nmi_cpu_setup, NULL, 1);
 
-	Jeff
+Need to have a closer look which parts of that section need to be
+preempt off.
+
+> > Just as an example, look at something like "p4_setup_ctrs()": it will use 
+> > that stagger to determine what MSR to read. But if we are preemptable, the 
+> > CPU we actually do the MSR read on may be a _different_ CPU than the CPU 
+> > that we did the "get_stagger()" on!
+
+And that code has nested calls to get_stagger() via pmc_setup_one_p4_counter().
+
+That is odd as well. Why evaluate that twice ? So there are more
+things to look at before we just fix^Whide some debug warning.
+
+> > Of course, this is all ancient code, so whatever. But I really think this 
+> > patch is actively bad - it just hides the issue rather than fixing 
+> > anything.
+
+And the proposed follow up patch is even worse as it just adds
+mechanical band aids all over the place without analysing where the
+root cause of the problem is.
+
+Thanks,
+
+	tglx
 
 
