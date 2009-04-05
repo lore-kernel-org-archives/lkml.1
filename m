@@ -1,64 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757254AbZDEDtm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757518AbZDED43@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757254AbZDEDtm (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 4 Apr 2009 23:49:42 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756940AbZDEDte
+	id S1757518AbZDED43 (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 4 Apr 2009 23:56:29 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757088AbZDED4T
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 4 Apr 2009 23:49:34 -0400
-Received: from mx2.redhat.com ([66.187.237.31]:59732 "EHLO mx2.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750757AbZDEDtd (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 4 Apr 2009 23:49:33 -0400
-Message-ID: <49D82A52.8050808@redhat.com>
-Date: Sat, 04 Apr 2009 23:49:38 -0400
-From: Masami Hiramatsu <mhiramat@redhat.com>
-User-Agent: Thunderbird 2.0.0.21 (X11/20090320)
+	Sat, 4 Apr 2009 23:56:19 -0400
+Received: from hrndva-omtalb.mail.rr.com ([71.74.56.122]:53172 "EHLO
+	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754077AbZDED4S (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 4 Apr 2009 23:56:18 -0400
+Date: Sat, 4 Apr 2009 22:59:15 -0500
+From: "Serge E. Hallyn" <serge@hallyn.com>
+To: "Andrew G. Morgan" <morgan@kernel.org>
+Cc: "Serge E. Hallyn" <serue@us.ibm.com>,
+       linux-security-module@vger.kernel.org,
+       lkml <linux-kernel@vger.kernel.org>, James Morris <jmorris@namei.org>,
+       Casey Schaufler <casey@schaufler-ca.com>
+Subject: Re: [PATCH] don't raise all privs on setuid-root file with fE set
+	(v2)
+Message-ID: <20090405035914.GA26896@hallyn.com>
+References: <20090402234714.GA2220@us.ibm.com> <49D7A11A.8010801@kernel.org>
 MIME-Version: 1.0
-To: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>,
-       Ingo Molnar <mingo@elte.hu>
-CC: Ananth N Mavinakayanahalli <ananth@in.ibm.com>,
-       LKML <linux-kernel@vger.kernel.org>,
-       systemtap-ml <systemtap@sources.redhat.com>
-Subject: Re: [BUG][-tip] kprobes on module functions hits kernel BUG in 	text_poke
-    on x86-32
-References: <49D76FFF.6020202@redhat.com> <20090404154230.GB2451@Krystal> <49D7A6DF.8080804@redhat.com> <49D7AF26.5030808@redhat.com> <49D82987.5090003@redhat.com>
-In-Reply-To: <49D82987.5090003@redhat.com>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <49D7A11A.8010801@kernel.org>
+User-Agent: Mutt/1.5.15+20070412 (2007-04-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Masami Hiramatsu wrote:
-> Hmm, ok. AFAICS, fixmap is only for lowmem, and pkmap is only for highmem.
-
-Oops, I mean kmap...
-
-
-> So, I think we have some options;
+> Serge E. Hallyn wrote:
+> > Distributions face a backward compatibility problem with starting to use
+> > file capabilities.  For instance, removing setuid root from ping and
+> > doing setcap cap_net_raw=pe means that booting with an older kernel
+> > or one compiled without file capabilities means ping won't work for
+> > non-root users.
+> > 
+> > In order to replace the setuid root bit on a capability-unaware
+> > program, one has to set the effective, or legacy, file capability,
+> > which makes the capability effective immediately.  This patch
+> > uses the legacy bit as a queue to not automatically add full
 > 
-> A) Separate text_poke into __text_poke and __text_poke_highmem. And
->   use pkmap_atomic in __text_poke_highmem. This way doesn't require
->   any additional change except adding KM_TEXT_POKE0/1 in km_type.
+> s/queue/cue/
+
+Oops.
+
+(I wonder whether this is worth resending?)
+
+> > privilege to a setuid-root program.
+> > 
+> > So, with this patch, an ordinary setuid-root program will run with
+> > privilege.  But if /bin/ping has both setuid-root and cap_net_raw in
+> > fP and fE, then ping (when run by non-root user) will not run
+> > with only cap_net_raw.
 > 
-> B) Add set_fixmap_page and use it in text_poke. This will require
->   changes in paravirt_ops and pgtable.c. We need to ensure there is
->   no side effects.
-> 
-> C) Change pkmap_atomic_prot to map lowmem only if the page's pgprot
->   is different from user specified pgprot. And use it instead of
->   fixmap. This also requires KM_TEXT_POKE0/1, however we can
->   remove FIX_TEXT_POKE0/1.
+> Acked-by: Andrew G. Morgan <morgan@kernel.org>
 
-same, s/pkmap/kmap/g
-
-
--- 
-Masami Hiramatsu
-
-Software Engineer
-Hitachi Computer Products (America) Inc.
-Software Solutions Division
-
-e-mail: mhiramat@redhat.com
-
+thanks,
+-serge
