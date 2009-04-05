@@ -1,94 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755476AbZDEIjU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755182AbZDEIrM@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755476AbZDEIjU (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 5 Apr 2009 04:39:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752747AbZDEIjL
+	id S1755182AbZDEIrM (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 5 Apr 2009 04:47:12 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753582AbZDEIq4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 5 Apr 2009 04:39:11 -0400
-Received: from wa-out-1112.google.com ([209.85.146.177]:37753 "EHLO
-	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751545AbZDEIjJ (ORCPT
+	Sun, 5 Apr 2009 04:46:56 -0400
+Received: from smtp3.tech.numericable.fr ([82.216.111.39]:36174 "EHLO
+	smtp3.tech.numericable.fr" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753415AbZDEIqz (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 5 Apr 2009 04:39:09 -0400
-From: Grant Likely <grant.likely@secretlab.ca>
-Subject: [PATCH] xsysace: Fix dereferencing of cf_id after hd_driveid removal
-To: linux-kernel@vger.kernel.org
-Cc: Grant Likely <grant.likely@secretlab.ca>,
-       Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
-Date: Sun, 05 Apr 2009 02:39:03 -0600
-Message-ID: <20090405083649.1640.31018.stgit@localhost.localdomain>
-User-Agent: StGIT/0.14.2
+	Sun, 5 Apr 2009 04:46:55 -0400
+Message-ID: <49D86FFA.1010507@numericable.fr>
+Date: Sun, 05 Apr 2009 10:46:50 +0200
+From: Etienne Basset <etienne.basset@numericable.fr>
+User-Agent: Thunderbird 2.0.0.21 (X11/20090318)
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
+To: LSM <linux-security-module@vger.kernel.org>,
+       Casey Schaufler <casey@schaufler-ca.com>
+CC: Eric Paris <eparis@redhat.com>, linux-audit@redhat.com,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: [PATCH 0/2] security/smack implement logging V2
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Grant Likely <grant.likely@secretlab.ca>
+Hello,
 
-Commit 4aaf2fec718f6fbf38668edf733a0ab09a49cab1 (xsysace: make it
-'struct hd_driveid'-free) converted the cf_id member of 'struct
-ace_device' from a 'struct hd_driveid' to a u16 array.  However,
-references to the base of the structure were still using the '&'
-operator.  When the address was used with the ata_id_u32() macro, the
-compiler used the size of the entire array instead of sizeof(u16) to
-calculate the offset from the base address.
+the following 2 patches implements auditing of security events for Smack.
+It tries to implement what Eric Paris suggested, and moves shareable code
+to include/linux/lsm_audit.h and security/lsm_audit.c.
+Smack specific logging functions are now defined in smack_access.c
 
-This patch removes the use of the '&' operator from all references of
-cf_id to fix the bug and remove future confusion.
+patch 1 : created common LSM auditing code 
+patch 2 : convert smack to use it
 
-Signed-off-by: Grant Likely <grant.likely@secretlab.ca>
-CC: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
----
+the patches are against current mainline
+thanks,
+Etienne
 
- drivers/block/xsysace.c |   12 ++++++------
- 1 files changed, 6 insertions(+), 6 deletions(-)
+sample logs produced :
+
+type=1400 audit(1238919766.161:13): SMACK[smack_netlabel_send]: action=denied subject="FOO" object="BAR" requested=w pid=6672 comm="telnet" daddr=212.180.1.1 dest=80
+type=1400 audit(1238919813.116:21): SMACK[smack_inode_getattr]: action=denied subject="FOO" object="etienne" requested=r pid=6679 comm="bash" path="/home/etienne/Desktop" dev=sda8ino=1237000
+type=1400 audit(1238919813.773:22): SMACK[smack_inode_permission]: action=denied subject="FOO" object="_" requested=wx pid=6691 comm="rm"name="etienne" dev=sda8 ino=1236993
+type=1400 audit(1238919842.953:30): SMACK[smack_task_kill]: action=denied subject="FOO" object="_" requested=w pid=6679 comm="bash"pid=6466 comm="thunderbird-bin"
+type=1400 audit(1238920571.962:52): SMACK[smack_sb_mount]: action=denied subject="FOO" object="_" requested=w pid=6835 comm="mount" path="/debug" dev=sda5 ino=16161
+type=1400 audit(1238920971.805:10435): SMACK[smack_socket_sock_rcv_skb]: action=granted subject="_" object="_" requested=w saddr=77.199.172.15 src=8541 daddr=192.168.0.10 dest=36917 netif=eth0
 
 
-diff --git a/drivers/block/xsysace.c b/drivers/block/xsysace.c
-index 6cccdc3..4aecf5d 100644
---- a/drivers/block/xsysace.c
-+++ b/drivers/block/xsysace.c
-@@ -563,7 +563,7 @@ static void ace_fsm_dostate(struct ace_device *ace)
- 	case ACE_FSM_STATE_IDENTIFY_PREPARE:
- 		/* Send identify command */
- 		ace->fsm_task = ACE_TASK_IDENTIFY;
--		ace->data_ptr = &ace->cf_id;
-+		ace->data_ptr = ace->cf_id;
- 		ace->data_count = ACE_BUF_PER_SECTOR;
- 		ace_out(ace, ACE_SECCNTCMD, ACE_SECCNTCMD_IDENTIFY);
- 
-@@ -608,8 +608,8 @@ static void ace_fsm_dostate(struct ace_device *ace)
- 		break;
- 
- 	case ACE_FSM_STATE_IDENTIFY_COMPLETE:
--		ace_fix_driveid(&ace->cf_id[0]);
--		ace_dump_mem(&ace->cf_id, 512);	/* Debug: Dump out disk ID */
-+		ace_fix_driveid(ace->cf_id);
-+		ace_dump_mem(ace->cf_id, 512);	/* Debug: Dump out disk ID */
- 
- 		if (ace->data_result) {
- 			/* Error occured, disable the disk */
-@@ -622,9 +622,9 @@ static void ace_fsm_dostate(struct ace_device *ace)
- 
- 			/* Record disk parameters */
- 			set_capacity(ace->gd,
--				ata_id_u32(&ace->cf_id, ATA_ID_LBA_CAPACITY));
-+				ata_id_u32(ace->cf_id, ATA_ID_LBA_CAPACITY));
- 			dev_info(ace->dev, "capacity: %i sectors\n",
--				ata_id_u32(&ace->cf_id, ATA_ID_LBA_CAPACITY));
-+				ata_id_u32(ace->cf_id, ATA_ID_LBA_CAPACITY));
- 		}
- 
- 		/* We're done, drop to IDLE state and notify waiters */
-@@ -923,7 +923,7 @@ static int ace_release(struct gendisk *disk, fmode_t mode)
- static int ace_getgeo(struct block_device *bdev, struct hd_geometry *geo)
- {
- 	struct ace_device *ace = bdev->bd_disk->private_data;
--	u16 *cf_id = &ace->cf_id[0];
-+	u16 *cf_id = ace->cf_id;
- 
- 	dev_dbg(ace->dev, "ace_getgeo()\n");
- 
 
