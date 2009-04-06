@@ -1,62 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752397AbZDFEaV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752507AbZDFErW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752397AbZDFEaV (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 6 Apr 2009 00:30:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751129AbZDFEaH
+	id S1752507AbZDFErW (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 6 Apr 2009 00:47:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751241AbZDFErG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 6 Apr 2009 00:30:07 -0400
-Received: from ozlabs.org ([203.10.76.45]:41088 "EHLO ozlabs.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750733AbZDFEaG (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 6 Apr 2009 00:30:06 -0400
-To: <linux-kernel@vger.kernel.org>
-Cc: Andrew Morton <akpm@osdl.org>, <gnb@sgi.com>, <jbaron@redhat.com>
-Message-Id: <4a5c6b4cd1b77ebe6d60362bc982f4dc81cba85e.1238992196.git.michael@ellerman.id.au>
-From: Michael Ellerman <michael@ellerman.id.au>
-Subject: [PATCH] Resurrect old pr_debug() semantics as pr_devel()
-Date: Mon,  6 Apr 2009 14:30:03 +1000 (EST)
+	Mon, 6 Apr 2009 00:47:06 -0400
+Received: from hrndva-omtalb.mail.rr.com ([71.74.56.125]:57309 "EHLO
+	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751200AbZDFErF (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 6 Apr 2009 00:47:05 -0400
+Date: Sun, 5 Apr 2009 23:49:58 -0500
+From: "Serge E. Hallyn" <serge@hallyn.com>
+To: Mark Ryden <markryde@gmail.com>
+Cc: Greg KH <gregkh@suse.de>, David Shwatrz <dshwatrz@gmail.com>,
+       Tejun Heo <htejun@gmail.com>, Greg KH <greg@kroah.com>,
+       linux-kernel@vger.kernel.org, netdev@vger.kernel.org,
+       "Eric W. Biederman" <ebiederm@xmission.com>,
+       Al Viro <viro@ftp.linux.org.uk>,
+       Linux Containers <containers@lists.osdl.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Daniel Lezcano <dlezcano@fr.ibm.com>,
+       Benjamin Thery <benjamin.thery@bull.net>
+Subject: Re: sysfs tagged directory support status (was:. Re: [PATCH 1/8]
+	sysfs: Implement sysfs tagged directory support)
+Message-ID: <20090406044958.GA8644@hallyn.com>
+References: <dac45060904010300y7fe8a09dxb582929fc8018ec1@mail.gmail.com> <20090404030551.GC23516@suse.de> <dac45060904052128p6c539fe4p199a03f47a43a96b@mail.gmail.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <dac45060904052128p6c539fe4p199a03f47a43a96b@mail.gmail.com>
+User-Agent: Mutt/1.5.15+20070412 (2007-04-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-pr_debug() used to produce zero code unless DEBUG was #defined. This is
-now no longer the case in practice[1].
+Quoting Mark Ryden (markryde@gmail.com):
+> Hello,
+> I am sorry to hear that it is not merged yet.I hoped to try to start a
+> project with network namespaces.
 
-There are places where it's useful to have debugging printks, but we
-don't want them to generate any code in production kernels.
+Sysfs tagged directories are not supported, but with 2.6.29 you
+can use network namespaces.  There are some limits - you can't
+move a physical network device out of the initial network
+namespace, and (veth) devices which are not in the initial
+network namespace just don't show up in /sys/class/net (since
+we can't tag them).
 
-So add a new macro, pr_devel(), for _devel_opment, to provide the old
-semantics, ie. if the programmer doesn't explicitly enable debugging,
-no code is produced.
+But you can use network namespaces.
 
-[1]: You can turn CONFIG_DYNAMIC_DEBUG off, but it's enabled in at least
-     one distro kernel, so it's not really a solution.
-
-Signed-off-by: Michael Ellerman <michael@ellerman.id.au>
----
- include/linux/kernel.h |    9 +++++++++
- 1 files changed, 9 insertions(+), 0 deletions(-)
-
-diff --git a/include/linux/kernel.h b/include/linux/kernel.h
-index d9e75ec..883cd44 100644
---- a/include/linux/kernel.h
-+++ b/include/linux/kernel.h
-@@ -377,6 +377,15 @@ static inline char *pack_hex_byte(char *buf, u8 byte)
- #define pr_cont(fmt, ...) \
- 	printk(KERN_CONT fmt, ##__VA_ARGS__)
- 
-+/* pr_devel() should produce zero code unless DEBUG is defined */
-+#ifdef DEBUG
-+#define pr_devel(fmt, ...) \
-+	printk(KERN_DEBUG pr_fmt(fmt), ##__VA_ARGS__)
-+#else
-+#define pr_devel(fmt, ...) \
-+	({ if (0) printk(KERN_DEBUG pr_fmt(fmt), ##__VA_ARGS__); 0; })
-+#endif
-+
- /* If you are writing a driver, please use dev_dbg instead */
- #if defined(DEBUG)
- #define pr_debug(fmt, ...) \
--- 
-1.6.1.2
-
+-serge
