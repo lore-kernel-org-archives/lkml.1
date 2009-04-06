@@ -1,57 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755094AbZDFHgd@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755201AbZDFHhw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755094AbZDFHgd (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 6 Apr 2009 03:36:33 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753820AbZDFHgX
+	id S1755201AbZDFHhw (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 6 Apr 2009 03:37:52 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754484AbZDFHho
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 6 Apr 2009 03:36:23 -0400
-Received: from mx2.redhat.com ([66.187.237.31]:51867 "EHLO mx2.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753156AbZDFHgW (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 6 Apr 2009 03:36:22 -0400
-Message-ID: <49D9B031.2090209@redhat.com>
-Date: Mon, 06 Apr 2009 10:33:05 +0300
-From: Avi Kivity <avi@redhat.com>
-User-Agent: Thunderbird 2.0.0.21 (X11/20090320)
+	Mon, 6 Apr 2009 03:37:44 -0400
+Received: from extu-mxob-2.symantec.com ([216.10.194.135]:56719 "EHLO
+	extu-mxob-2.symantec.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754368AbZDFHhn (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 6 Apr 2009 03:37:43 -0400
+Date: Mon, 6 Apr 2009 08:22:07 +0100 (BST)
+From: Hugh Dickins <hugh@veritas.com>
+X-X-Sender: hugh@blonde.anvils
+To: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
+cc: Jiri Pirko <jpirko@redhat.com>, linux-kernel@vger.kernel.org,
+       Andrew Morton <akpm@linux-foundation.org>, oleg@redhat.com,
+       linux-mm@kvack.org, mingo@elte.hu
+Subject: Re: [PATCH for -mm] getrusage: fill ru_maxrss value
+In-Reply-To: <20090406091825.44F0.A69D9226@jp.fujitsu.com>
+Message-ID: <Pine.LNX.4.64.0904060811300.22841@blonde.anvils>
+References: <20090405084902.GA4411@psychotron.englab.brq.redhat.com>
+ <Pine.LNX.4.64.0904051736210.23536@blonde.anvils> <20090406091825.44F0.A69D9226@jp.fujitsu.com>
 MIME-Version: 1.0
-To: Nick Piggin <nickpiggin@yahoo.com.au>
-CC: Izik Eidus <ieidus@redhat.com>, akpm@linux-foundation.org,
-       linux-kernel@vger.kernel.org, kvm@vger.kernel.org, linux-mm@kvack.org,
-       aarcange@redhat.com, chrisw@redhat.com, mtosatti@redhat.com,
-       hugh@veritas.com, kamezawa.hiroyu@jp.fujitsu.com
-Subject: Re: [PATCH 0/4] ksm - dynamic page sharing driver for linux v2
-References: <1238855722-32606-1-git-send-email-ieidus@redhat.com> <200904061704.50052.nickpiggin@yahoo.com.au>
-In-Reply-To: <200904061704.50052.nickpiggin@yahoo.com.au>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Nick Piggin wrote:
-> On Sunday 05 April 2009 01:35:18 Izik Eidus wrote:
->
->   
->> This driver is very useful for KVM as in cases of runing multiple guests
->> operation system of the same type.
->> (For desktop work loads we have achived more than x2 memory overcommit
->> (more like x3))
->>     
->
-> Interesting that it is a desirable workload to have multiple guests each
-> running MS office.
->
-> I wonder, can windows enter a paravirtualised guest mode for KVM?
+On Mon, 6 Apr 2009, KOSAKI Motohiro wrote:
+> 
+> > I'm worrying particularly about the fork/exec issue you highlight.
+> > You're exemplary in providing your test programs, but there's a big
+> > omission: you don't mention that the first test, "./getrusage -lc",
+> > gives a very different result on Linux than you say it does on BSD -
+> > you say the BSD fork line is "fork: self 0 children 0", whereas
+> > I find my Linux fork line is "fork: self 102636 children 0".
+> 
+> FreeBSD update rusage at tick updating point. (I think all bsd do that)
+> Then, bsd displaing 0 is bsd's problem :)
 
-Windows has some support for paravirtualization, for example it can use 
-hypercalls instead of tlb flush IPIs.
+Ah, thank you.
 
->  And can
-> you detect page allocation/freeing events?
->   
+> 
+> Do I must change test program?
 
-Not that I know of.
+Apparently somebody needs to, please; though it appears to be already
+well supplied with usleep(1)s - maybe they needed to be usleep(2)s?
 
--- 
-error compiling committee.c: too many arguments to function
+And then change results shown in the changelog, and check conclusions
+drawn from them (if BSD is behaving as we do, it should still show
+maxrss not inherited over fork, but less obviously - the number goes
+down slightly, because the history is lost, but nowhere near to zero).
 
+Hugh
