@@ -1,76 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761529AbZDFWDf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756568AbZDFWDM@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761529AbZDFWDf (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 6 Apr 2009 18:03:35 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761264AbZDFWAn
+	id S1756568AbZDFWDM (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 6 Apr 2009 18:03:12 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760446AbZDFWAA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 6 Apr 2009 18:00:43 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:35549 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1761214AbZDFWAj (ORCPT
+	Mon, 6 Apr 2009 18:00:00 -0400
+Received: from rcsinet11.oracle.com ([148.87.113.123]:33590 "EHLO
+	rgminet11.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1761161AbZDFV77 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 6 Apr 2009 18:00:39 -0400
-Date: Mon, 6 Apr 2009 14:53:19 -0700 (PDT)
-From: Linus Torvalds <torvalds@linux-foundation.org>
-X-X-Sender: torvalds@localhost.localdomain
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Adrian Bunk <bunk@kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Natalie Protasevich <protasnb@gmail.com>,
-       Kernel Testers List <kernel-testers@vger.kernel.org>,
-       Network Development <netdev@vger.kernel.org>,
-       Linux ACPI <linux-acpi@vger.kernel.org>,
-       Linux PM List <linux-pm@lists.linux-foundation.org>,
-       Linux SCSI List <linux-scsi@vger.kernel.org>,
-       Trenton Adams <trenton.d.adams@gmail.com>
-Subject: Re: 2.6.29-git13: Reported regressions from 2.6.28
-In-Reply-To: <n4io5wq70ZO.A.gzG.rFn2JB@chimera>
-Message-ID: <alpine.LFD.2.00.0904061443000.7443@localhost.localdomain>
-References: <n4io5wq70ZO.A.gzG.rFn2JB@chimera>
-User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Mon, 6 Apr 2009 17:59:59 -0400
+Date: Mon, 6 Apr 2009 14:59:31 -0700
+From: Randy Dunlap <randy.dunlap@oracle.com>
+To: Mauro Carvalho Chehab <mchehab@redhat.com>,
+       lkml <linux-kernel@vger.kernel.org>
+Cc: Laurent Pinchart <laurent.pinchart@skynet.be>,
+       "Rafael J. Wysocki" <rjw@sisk.pl>
+Subject: [PATCH resend] PWC: fix build error when CONFIG_INPUT=m
+Message-Id: <20090406145931.c1c843ed.randy.dunlap@oracle.com>
+Organization: Oracle Linux Eng.
+X-Mailer: Sylpheed 2.6.0 (GTK+ 2.12.0; x86_64-unknown-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
+X-Source-IP: acsmt706.oracle.com [141.146.40.84]
+X-Auth-Type: Internal IP
+X-CT-RefId: str=0001.0A090201.49DA7B3B.02BE:SCFMA4539814,ss=1,fgs=0
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+From: Randy Dunlap <randy.dunlap@oracle.com>
 
+Fix build errors when USB_PWC=y and INPUT=m.
 
-On Mon, 6 Apr 2009, Rafael J. Wysocki wrote:
-> 
-> Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=13019
-> Subject		: /proc/<pid>/maps offset output broken in 2.6.29
-> Submitter	: "Chris Friesen" <cfriesen@nortel.com>
-> Date		: 2009-04-01 23:18 (6 days old)
-> References	: http://marc.info/?l=linuxppc-embedded&m=123862902916059&w=4
-> Handled-By	: Hugh Dickins <hugh@veritas.com>
+Signed-off-by: Randy Dunlap <randy.dunlap@oracle.com>
+---
+ drivers/media/video/pwc/Kconfig |    2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
-I don't think that's a regression, nor really a bug. It looks cosmetic, 
-and likely to be fixed, but not really worth worrying about.
-
-> Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=13018
-> Subject		: 2.6.29 on MacBook 2,1 fails to reboot
-> Submitter	: Trenton Adams <trenton.d.adams@gmail.com>
-> Date		: 2009-03-30 2:04 (8 days old)
-> References	: http://marc.info/?l=linux-kernel&m=123837870307249&w=4
-> Handled-By	: "Morten P.D. Stevens" <mstevens@win-professional.com>
-
-This went through bisection, but looking at the email log, I tend to 
-suspect that maybe Trenton marked some versions good even though they 
-weren't (because they got versions numbers from v2.6.27), and didn't 
-realize that that messes up bisection in a big way.
-
-The bug _sounds_ like some deadlock due to lock problems - the shutdown 
-path often triggers locks that no other path really cares about. And we 
-had some lock problems in the sound subsystem that got fixed post-2.6.28, 
-for example. 
-
-And it looks like the problem is somewhere in sound shutdown:
-
-12181 delete_module("snd_hda_codec", O_RDONLY|O_EXCL) = -1 EAGAIN (Resource temporarily unavailable) <0.000011>
-
-So commits like 91054598f794fb5d8a0b1e747ff8e2e8fc2115b3 ("ALSA: pcm_oss, 
-fix locking typo") might explain it.
-
-		Linus
+--- mmotm-2009-0214-0049.orig/drivers/media/video/pwc/Kconfig
++++ mmotm-2009-0214-0049/drivers/media/video/pwc/Kconfig
+@@ -39,7 +39,7 @@ config USB_PWC_DEBUG
+ config USB_PWC_INPUT_EVDEV
+ 	bool "USB Philips Cameras input events device support"
+ 	default y
+-	depends on USB_PWC && INPUT
++	depends on USB_PWC=INPUT || INPUT=y
+ 	---help---
+ 	  This option makes USB Philips cameras register the snapshot button as
+ 	  an input device to report button events.
