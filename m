@@ -1,51 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755113AbZDFJUX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756016AbZDFJUm@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755113AbZDFJUX (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 6 Apr 2009 05:20:23 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754750AbZDFJUI
+	id S1756016AbZDFJUm (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 6 Apr 2009 05:20:42 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755250AbZDFJUP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 6 Apr 2009 05:20:08 -0400
+	Mon, 6 Apr 2009 05:20:15 -0400
 Received: from ti-out-0910.google.com ([209.85.142.186]:43505 "EHLO
 	ti-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754690AbZDFJUH (ORCPT
+	with ESMTP id S1755170AbZDFJUO (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 6 Apr 2009 05:20:07 -0400
+	Mon, 6 Apr 2009 05:20:14 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
         h=from:to:cc:subject:date:message-id:x-mailer;
-        b=Ddcm2fiEx5hCZWuzSJwNtKRn8veUjM1AeosVIk4XhzB1hPszF9+CIonAPCnDXdo6hc
-         bWHnYZWjtKWZ86IzCe3BqMfHzKEdmBISLTa7b4Ev4+/LLha90yv9ChBbtswEwzysKaqb
-         6Ntdl0YhpTg3TIIxYsHD7k4nw5DQzY6N0TfO8=
+        b=VgsZrUUSNiVv2zDAL7nZtF7GjYULE/CFuWCGXZ0yyqcAZEygJ63n6rXv2FCTDyvwI4
+         L18KnvYq0PAb4vgVK/StMXPNNtkUbadDlHy22mqFuh6Gq9D4kz4+TgXdcUd5ESSjG/UM
+         YhwNjKrXT2aIguAVz6sBve/SD7s47NHG0NPeY=
 From: Huang Weiyi <weiyi.huang@gmail.com>
 To: mingo@redhat.com, hpa@zytor.com, x86@kernel.org
 Cc: linux-kernel@vger.kernel.org, Huang Weiyi <weiyi.huang@gmail.com>
-Subject: [PATCH 3/8] x86, mce: remove dupilcated #include
-Date: Mon,  6 Apr 2009 17:19:55 +0800
-Message-Id: <1239009595-3836-1-git-send-email-weiyi.huang@gmail.com>
+Subject: [PATCH 4/8] x86: remove dupilcated #include
+Date: Mon,  6 Apr 2009 17:20:05 +0800
+Message-Id: <1239009605-1796-1-git-send-email-weiyi.huang@gmail.com>
 X-Mailer: git-send-email 1.6.0.4
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Remove dupilicated #include in arch/x86/kernel/cpu/mcheck/mce_intel_64.c.
+Remove dupilcated #include in arch/x86/kernel/dumpstack.c.
 
 Signed-off-by: Huang Weiyi <weiyi.huang@gmail.com>
 ---
- arch/x86/kernel/cpu/mcheck/mce_intel_64.c |    1 -
+ arch/x86/kernel/dumpstack.c |    1 -
  1 files changed, 0 insertions(+), 1 deletions(-)
 
-diff --git a/arch/x86/kernel/cpu/mcheck/mce_intel_64.c b/arch/x86/kernel/cpu/mcheck/mce_intel_64.c
-index d6b72df..aedf976 100644
---- a/arch/x86/kernel/cpu/mcheck/mce_intel_64.c
-+++ b/arch/x86/kernel/cpu/mcheck/mce_intel_64.c
+diff --git a/arch/x86/kernel/dumpstack.c b/arch/x86/kernel/dumpstack.c
+index 95ea5fa..6d7966d 100644
+--- a/arch/x86/kernel/dumpstack.c
++++ b/arch/x86/kernel/dumpstack.c
 @@ -15,7 +15,6 @@
- #include <asm/hw_irq.h>
- #include <asm/idle.h>
- #include <asm/therm_throt.h>
--#include <asm/apic.h>
+ #include <linux/bug.h>
+ #include <linux/nmi.h>
+ #include <linux/sysfs.h>
+-#include <linux/ftrace.h>
  
- asmlinkage void smp_thermal_interrupt(void)
- {
+ #include <asm/stacktrace.h>
+ 
 -- 
 1.6.1.3
 
