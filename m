@@ -1,47 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752653AbZDFENc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753267AbZDFE2j@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752653AbZDFENc (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 6 Apr 2009 00:13:32 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750787AbZDFENX
+	id S1753267AbZDFE2j (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 6 Apr 2009 00:28:39 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750869AbZDFE21
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 6 Apr 2009 00:13:23 -0400
-Received: from hera.kernel.org ([140.211.167.34]:54630 "EHLO hera.kernel.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750733AbZDFENW (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 6 Apr 2009 00:13:22 -0400
-Subject: Re: [RFC PATCH] x86, oprofile: fix P4 oprofile CPU setup bug
-From: Jaswinder Singh Rajput <jaswinder@kernel.org>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: Linus Torvalds <torvalds@linux-foundation.org>,
-       John Levon <levon@movementarian.org>, x86 maintainers <x86@kernel.org>,
-       LKML <linux-kernel@vger.kernel.org>,
-       Thomas Gleixner <tglx@linutronix.de>,
-       Robert Richter <robert.richter@amd.com>,
-       "H. Peter Anvin" <hpa@zytor.com>
-In-Reply-To: <20090405215916.GA27633@elte.hu>
-References: <1238958725.3522.1.camel@ht.satnam>
-	 <alpine.LFD.2.00.0904051243310.4023@localhost.localdomain>
-	 <1238962495.3301.0.camel@ht.satnam> <20090405213828.GA1059@elte.hu>
-	 <20090405215916.GA27633@elte.hu>
-Content-Type: text/plain
-Date: Mon, 06 Apr 2009 09:41:40 +0530
-Message-Id: <1238991100.3513.14.camel@ht.satnam>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.24.5 (2.24.5-1.fc10) 
-Content-Transfer-Encoding: 7bit
+	Mon, 6 Apr 2009 00:28:27 -0400
+Received: from mail-bw0-f169.google.com ([209.85.218.169]:53745 "EHLO
+	mail-bw0-f169.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750733AbZDFE20 convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 6 Apr 2009 00:28:26 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
+         :cc:content-type:content-transfer-encoding;
+        b=tFm+I3Oqt13Ii6DpTfGZGGUF+Pgjvy12VBoq4SxVaxNccrj4pYj880zHWn4vrauIuJ
+         bSPqQ0U/rtawq6ua/TBRySba+aYKMCCtjF/tg8kGFHYm3rL4i1EKEVEp3LVseeFplSqC
+         FBCHIzZOlAdh0P2DYXSh93nsIDiKwYONLsrBU=
+MIME-Version: 1.0
+In-Reply-To: <20090404030551.GC23516@suse.de>
+References: <dac45060904010300y7fe8a09dxb582929fc8018ec1@mail.gmail.com>
+	 <20090404030551.GC23516@suse.de>
+Date: Mon, 6 Apr 2009 07:28:22 +0300
+Message-ID: <dac45060904052128p6c539fe4p199a03f47a43a96b@mail.gmail.com>
+Subject: Re: sysfs tagged directory support status (was:. Re: [PATCH 1/8] 
+	sysfs: Implement sysfs tagged directory support)
+From: Mark Ryden <markryde@gmail.com>
+To: Greg KH <gregkh@suse.de>
+Cc: Benjamin Thery <benjamin.thery@bull.net>,
+       David Shwatrz <dshwatrz@gmail.com>, Greg KH <greg@kroah.com>,
+       "Eric W. Biederman" <ebiederm@xmission.com>,
+       Andrew Morton <akpm@linux-foundation.org>, Tejun Heo <htejun@gmail.com>,
+       Daniel Lezcano <dlezcano@fr.ibm.com>, linux-kernel@vger.kernel.org,
+       Al Viro <viro@ftp.linux.org.uk>,
+       Linux Containers <containers@lists.osdl.org>, netdev@vger.kernel.org
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, 2009-04-05 at 23:59 +0200, Ingo Molnar wrote:
+Hello,
+I am sorry to hear that it is not merged yet.I hoped to try to start a
+project with network namespaces.
 
-> Please dont _ever_ send in patches without a meaningful changelog.
-> 
-> Take this as a warning! ;-)
-> 
+Regards,
+Mark
 
-Ok, I will be more careful next time. Anyway thanks for your Love ;-)
-
---
-JSR
-
+On Sat, Apr 4, 2009 at 6:05 AM, Greg KH <gregkh@suse.de> wrote:
+> On Wed, Apr 01, 2009 at 01:00:53PM +0300, Mark Ryden wrote:
+>> Hello,
+>>   I am back to it and I just want to ask if there are any news with
+>> sysfs tagged directory support patch. Is it merged now ?
+>
+> Not that I know of.
+>
+> thanks,
+>
+> greg k-h
+>
