@@ -1,111 +1,123 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755980AbZDFKwR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755559AbZDFK6q@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755980AbZDFKwR (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 6 Apr 2009 06:52:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755236AbZDFKwA
+	id S1755559AbZDFK6q (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 6 Apr 2009 06:58:46 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755269AbZDFK6h
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 6 Apr 2009 06:52:00 -0400
-Received: from mail-fx0-f158.google.com ([209.85.220.158]:60340 "EHLO
-	mail-fx0-f158.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755128AbZDFKv7 convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 6 Apr 2009 06:51:59 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=from:to:subject:date:user-agent:mime-version:content-type
-         :content-transfer-encoding:content-disposition:message-id;
-        b=i2144xOMvd249vdyxyiyObMrFgXFNRH6fRQ63Xx1I59ACI3f6GhgLEELY2EAvSrj8Q
-         1DzCGp72j56DRglrBfSLfdY9IH7rNo0jT92uO7oEk8KV7dNKV2oVL6PlgHplxNN4FeGB
-         CuBYNosXwhlsZD/7HDzCck42c1KM+V8/wX2Ag=
-From: Arkadiusz Miskiewicz <a.miskiewicz@gmail.com>
-To: linux-kernel@vger.kernel.org
-Subject: 2.6.29, today's git changes, oops at boot,   BUG: unable to handle kernel paging request at ffffffffa00f0016
-Date: Mon, 6 Apr 2009 12:51:52 +0200
-User-Agent: KMail/1.11.2 (Linux/2.6.29-final; KDE/4.2.2; x86_64; ; )
+	Mon, 6 Apr 2009 06:58:37 -0400
+Received: from www.tglx.de ([62.245.132.106]:45699 "EHLO www.tglx.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1755218AbZDFK6g (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 6 Apr 2009 06:58:36 -0400
+Date: Mon, 6 Apr 2009 12:56:17 +0200 (CEST)
+From: Thomas Gleixner <tglx@linutronix.de>
+To: Arun R Bharadwaj <arun@linux.vnet.ibm.com>
+cc: linux-kernel@vger.kernel.org, linux-pm@lists.linux-foundation.org,
+       a.p.zijlstra@chello.nl, ego@in.ibm.com, mingo@elte.hu,
+       andi@firstfloor.org, venkatesh.pallipadi@intel.com,
+       vatsa@linux.vnet.ibm.com, arjan@infradead.org,
+       svaidy@linux.vnet.ibm.com
+Subject: Re: [v4 RFC PATCH 4/4] timers: logic to move non pinned timers
+In-Reply-To: <20090406104228.GB17412@linux.vnet.ibm.com>
+Message-ID: <alpine.LFD.2.00.0904061248120.747@localhost.localdomain>
+References: <20090401113128.GA22478@linux.vnet.ibm.com> <20090401113738.GE22478@linux.vnet.ibm.com> <alpine.LFD.2.00.0904032142460.12916@localhost.localdomain> <20090406051656.GA17412@linux.vnet.ibm.com> <20090406104228.GB17412@linux.vnet.ibm.com>
+User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
 MIME-Version: 1.0
-Content-Type: Text/Plain;
-  charset="utf-8"
-Content-Transfer-Encoding: 8BIT
-Content-Disposition: inline
-Message-Id: <200904061251.53189.a.miskiewicz@gmail.com>
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Arun,
 
-Pulled Linus git few minutes ago and new oops at boot (happens on every boot).
-Yesterday git version was fine. Oopsed just while/after udev started.
+On Mon, 6 Apr 2009, Arun R Bharadwaj wrote:
+>  
+> +ktime_t clockevents_get_next_event(int cpu)
+> +{
+> +	struct tick_device *td;
+> +	struct clock_event_device *dev;
+> +
+> +	td = &per_cpu(tick_cpu_device, cpu);
+> +	dev = td->evtdev;
+> +
+> +	return dev->next_event;
+> +}
+> +
 
-x86_64, thinkpad t400
+Preferrably this function should be in the clock events code and a
+stub inline function which returns KTIME_MAX for non clock events
+archs is probably necessary as well.
 
-latest commit 0221c81b1b8eb0cbb6b30a0ced52ead32d2b4e4c
+>  /*
+>   * Switch the timer base to the current CPU when possible.
+>   */
+> @@ -198,8 +211,17 @@ switch_hrtimer_base(struct hrtimer *time
+>  {
+>  	struct hrtimer_clock_base *new_base;
+>  	struct hrtimer_cpu_base *new_cpu_base;
+> +	int cpu, preferred_cpu = -1;
+> +
+> +	cpu = smp_processor_id();
+> +	if (get_sysctl_timer_migration() && !pinned && idle_cpu(cpu)) {
+> +		preferred_cpu = get_nohz_load_balancer();
+> +		if (preferred_cpu >= 0)
+> +			cpu = preferred_cpu;
+> +	}
+>  
+> -	new_cpu_base = &__get_cpu_var(hrtimer_bases);
+> +again:
+> +	new_cpu_base = &per_cpu(hrtimer_bases, cpu);
+>  	new_base = &new_cpu_base->clock_base[base->index];
+>  
+>  	if (base != new_base) {
+> @@ -220,6 +242,32 @@ switch_hrtimer_base(struct hrtimer *time
+>  		spin_unlock(&base->cpu_base->lock);
+>  		spin_lock(&new_base->cpu_base->lock);
+>  		timer->base = new_base;
+> +
+> +		if (cpu == preferred_cpu) {
+> +			/* Calculate clock monotonic expiry time */
+> +			ktime_t expires = ktime_sub(hrtimer_get_expires(timer),
+> +							new_base->offset);
+> +
+> +			/*
+> +			 * Get the next event on target cpu from the
+> +			 * clock events layer.
+> +			 * This covers the highres=off nohz=on case as well.
+> +			 */
+> +			ktime_t next = clockevents_get_next_event(cpu);
+> +
+> +			ktime_t delta = ktime_sub(expires, next);
+> +
+> +			/*
+> +			 * We do not migrate the timer when it is expiring
+> +			 * before the next event on the target cpu because
+> +			 * we cannot reprogram the target cpu hardware and
+> +			 * we would cause it to fire late.
+> +			 */
+> +			if (delta.tv64 < 0) {
+> +				cpu = smp_processor_id();
 
-[    2.674741] VFS: Mounted root (xfs filesystem) readonly on device 8:3.
-[    2.674800] Trying to move old root to /initrd ... okay
-[    2.681684] Freeing unused kernel memory: 384k freed
-[    4.768259] input: Power Button (FF) as /class/input/input1
-[    4.769911] ACPI: AC Adapter [AC] (on-line)
-[    4.784019] ACPI: Power Button (FF) [PWRF]
-[    4.784082] input: Lid Switch as /class/input/input2
-[    4.784629] ACPI: Lid Switch [LID]
-[    4.784673] input: Sleep Button (CM) as /class/input/input3
-[    4.798528] ACPI: SSDT 00000000bd6d6c20 002C8 (v01  PmRef  Cpu0Ist 00003000 INTL 20050624)
-[    4.798954] BUG: unable to handle kernel paging request at ffffffffa00f0016
-[    4.799073] ACPI: SSDT 00000000bd6d4020 0087A (v01  PmRef  Cpu0Cst 00003001 INTL 20050624)
-[    4.799180] IP: [<ffffffffa00f0016>] 0xffffffffa00f0016
-[    4.799279] PGD 203067 PUD 207063 PMD 13b015067 PTE 0
-[    4.799498] Oops: 0010 [#1] PREEMPT SMP
-[    4.799675] last sysfs file: /sys/block/sda/uevent
-[    4.799733] CPU 0
-[    4.799826] Modules linked in: processor(+) battery ac button(+) crc_itu_t xfs exportfs scsi_wait_scan sd_mod crc_t10dif ahci libata scsi_mod
-[    4.800001] Pid: 3140, comm: async/0 Not tainted 2.6.29 #177 2764CTO
-[    4.800001] RIP: 0010:[<ffffffffa00f0016>]  [<ffffffffa00f0016>] 0xffffffffa00f0016
-[    4.800001] RSP: 0018:ffff880138f8fec8  EFLAGS: 00010246
-[    4.800001] RAX: ffff880138f8ffd8 RBX: 0000000000000000 RCX: ffffffff80588630
-[    4.800001] RDX: ffffffff80588660 RSI: 0000000000000006 RDI: 0000000000000000
-[    4.800001] RBP: ffff880138f8ff20 R08: ffff880138f8e000 R09: ffff880028034500
-[    4.800001] R10: 0000000300000000 R11: 0000000100000000 R12: ffff880139c05400
-[    4.800001] R13: ffff88013b90dd70 R14: 0000000000000001 R15: 0000000000000001
-[    4.800001] FS:  0000000000000000(0000) GS:ffff880028023000(0000) knlGS:0000000000000000
-[    4.800001] CS:  0010 DS: 0018 ES: 0018 CR0: 000000008005003b
-[    4.800001] CR2: ffffffffa00f0016 CR3: 000000013b045000 CR4: 00000000000006e0
-[    4.800001] DR0: 0000000000000000 DR1: 0000000000000000 DR2: 0000000000000000
-[    4.800001] DR3: 0000000000000000 DR6: 00000000ffff0ff0 DR7: 0000000000000400
-[    4.800001] Process async/0 (pid: 3140, threadinfo ffff880138f8e000, task ffff88013969d980)
-[    4.800001] Stack:
-[    4.800001]  ffffffff802554f7 0000000000000000 ffff88013969d980 ffffffff80238703
-[    4.801466]  ffff88013b90dee8 ffffffff80588618 ffff88013b90dd70 0000000000000000
-[    4.801466]  ffffffff802553de ffff88013b90dd70 ffff88013b88df00 ffff880138f8ff40
-[    4.801466] Call Trace:
-[    4.801466]  [<ffffffff802554f7>] ? async_thread+0x119/0x220
-[    4.801466]  [<ffffffff80238703>] ? default_wake_function+0x0/0xf
-[    4.801466]  [<ffffffff802553de>] ? async_thread+0x0/0x220
-[    4.801466]  [<ffffffff8024fd6d>] kthread+0x49/0x76
-[    4.801466]  [<ffffffff8020caaa>] child_rip+0xa/0x20
-[    4.801466]  [<ffffffff8024fd24>] ? kthread+0x0/0x76
-[    4.801466]  [<ffffffff8020caa0>] ? child_rip+0x0/0x20
-[    4.801466] Code:  Bad RIP value.
-[    4.801466] RIP  [<ffffffffa00f0016>] 0xffffffffa00f0016
-[    4.801466]  RSP <ffff880138f8fec8>
-[    4.801466] CR2: ffffffffa00f0016
-[    4.801466] ---[ end trace bc6c5e0bfc2ec314 ]---
-[    4.803382] ACPI: Sleep Button (CM) [SLPB]
-[    4.804132] Monitor-Mwait will be used to enter C-1 state
-[    4.804195] Monitor-Mwait will be used to enter C-2 state
-[    4.804263] Monitor-Mwait will be used to enter C-3 state
-[    4.804373] ACPI: CPU0 (power states: C1[C1] C2[C2] C3[C3])
-[    4.804612] processor ACPI_CPU:00: registered as cooling_device0
-[    4.804671] ACPI: Processor [CPU0] (supports 8 throttling states)
-[    4.805283] ACPI: SSDT 00000000bd6d5ca0 001CF (v01  PmRef    ApIst 00003000 INTL 20050624)
-[    4.805852] ACPI: SSDT 00000000bd6d5f20 0008D (v01  PmRef    ApCst 00003000 INTL 20050624)
-[    4.807419] ACPI: CPU1 (power states: C1[C1] C2[C2] C3[C3])
-[    4.807655] processor ACPI_CPU:01: registered as cooling_device1
-[    4.807715] ACPI: Processor [CPU1] (supports 8 throttling states)
-[    4.816002] Marking TSC unstable due to TSC halts in idle
-[    4.935770] usbcore: registered new interface driver usbfs
+  You are missing a small but fatal detail here: You hold
+  new_base->cpu_base->lock. So you need to do:
 
+  			    spin_unlock(&new_base->cpu_base->lock);
+			    spin_lock(&base->cpu_base->lock);
+  
+> +				goto again;
+> +			}
 
--- 
-Arkadiusz Miśkiewicz        PLD/Linux Team
-arekm / maven.pl            http://ftp.pld-linux.org/
+  Also you need to move
 
+>  		timer->base = new_base;
+
+  here to avoid a stale timer->base setting.
+
+> +		}
+>  	}
+>  	return new_base;
+>  }
+
+Thanks,
+
+	tglx
