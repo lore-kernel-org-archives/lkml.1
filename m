@@ -1,91 +1,134 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755329AbZDFXxS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752090AbZDFX4h@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755329AbZDFXxS (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 6 Apr 2009 19:53:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750902AbZDFXxG
+	id S1752090AbZDFX4h (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 6 Apr 2009 19:56:37 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751262AbZDFX42
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 6 Apr 2009 19:53:06 -0400
-Received: from mail-bw0-f169.google.com ([209.85.218.169]:63317 "EHLO
-	mail-bw0-f169.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750696AbZDFXxD (ORCPT
+	Mon, 6 Apr 2009 19:56:28 -0400
+Received: from fgwmail7.fujitsu.co.jp ([192.51.44.37]:52066 "EHLO
+	fgwmail7.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751235AbZDFX41 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 6 Apr 2009 19:53:03 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=subject:from:to:cc:content-type:date:message-id:mime-version
-         :x-mailer:content-transfer-encoding;
-        b=CFMWf2UvttMcWEud4PGeZ9yuFbRYHRmk+oqj4pLYSxfdkd5qgVaMJVEd/1C39WX1DI
-         eihd/Ubxr7Nxop6Ikfwsid1SRnX6QeBBMfKUqHRmpPksA9kvZFnaXUioVfSH1RhT+4Or
-         bd+bPIQCvbr119/2mV8SuTTjKj2jfAJJGiYSM=
-Subject: [BISECTED] [REGRESSION] can't anymore even do a s2ram-s2disk-s2ram
- cycle on acer aspire 5720G
-From: Maxim Levitsky <maximlevitsky@gmail.com>
-To: Alan Stern <stern@rowland.harvard.edu>
-Cc: linux-kernel <linux-kernel@vger.kernel.org>,
-       linux-usb <linux-usb@vger.kernel.org>
-Content-Type: text/plain
-Date: Tue, 07 Apr 2009 02:52:56 +0300
-Message-Id: <1239061976.4705.16.camel@maxim-laptop>
+	Mon, 6 Apr 2009 19:56:27 -0400
+Date: Tue, 7 Apr 2009 08:54:51 +0900
+From: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+To: balbir@linux.vnet.ibm.com
+Cc: "linux-mm@kvack.org" <linux-mm@kvack.org>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       "kosaki.motohiro@jp.fujitsu.com" <kosaki.motohiro@jp.fujitsu.com>
+Subject: Re: [RFC][PATCH 4/9] soft limit queue and priority
+Message-Id: <20090407085451.4be4fdea.kamezawa.hiroyu@jp.fujitsu.com>
+In-Reply-To: <20090406184221.GL7082@balbir.in.ibm.com>
+References: <20090403170835.a2d6cbc3.kamezawa.hiroyu@jp.fujitsu.com>
+	<20090403171248.df3e1b03.kamezawa.hiroyu@jp.fujitsu.com>
+	<20090406184221.GL7082@balbir.in.ibm.com>
+Organization: FUJITSU Co. LTD.
+X-Mailer: Sylpheed 2.5.0 (GTK+ 2.10.14; i686-pc-mingw32)
 Mime-Version: 1.0
-X-Mailer: Evolution 2.24.3 
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
+On Tue, 7 Apr 2009 00:12:21 +0530
+Balbir Singh <balbir@linux.vnet.ibm.com> wrote:
 
-This is first time, I am actually happy about a regression....
+> * KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com> [2009-04-03 17:12:48]:
+> 
+> > From: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+> > 
+> > Softlimitq. for memcg.
+> > 
+> > Implements an array of queue to list memcgs, array index is determined by
+> > the amount of memory usage excess the soft limit.
+> > 
+> > While Balbir's one uses RB-tree and my old one used a per-zone queue
+> > (with round-robin), this is one of mixture of them.
+> > (I'd like to use rotation of queue in later patches)
+> > 
+> > Priority is determined by following.
+> >    Assume unit = total pages/1024. (the code uses different value)
+> >    if excess is...
+> >       < unit,          priority = 0, 
+> >       < unit*2,        priority = 1,
+> >       < unit*2*2,      priority = 2,
+> >       ...
+> >       < unit*2^9,      priority = 9,
+> >       < unit*2^10,     priority = 10, (> 50% to total mem)
+> > 
+> > This patch just includes queue management part and not includes 
+> > selection logic from queue. Some trick will be used for selecting victims at
+> > soft limit in efficient way.
+> > 
+> > And this equips 2 queues, for anon and file. Inset/Delete of both list is
+> > done at once but scan will be independent. (These 2 queues are used later.)
+> > 
+> > Major difference from Balbir's one other than RB-tree is bahavior under
+> > hierarchy. This one adds all children to queue by checking hierarchical
+> > priority. This is for helping per-zone usage check on victim-selection logic.
+> > 
+> > Changelog: v1->v2
+> >  - fixed comments.
+> >  - change base size to exponent.
+> >  - some micro optimization to reduce code size.
+> >  - considering memory hotplug, it's not good to record a value calculated
+> >    from totalram_pages at boot and using it later is bad manner. Fixed it.
+> >  - removed soft_limit_lock (spinlock) 
+> >  - added soft_limit_update counter for avoiding mulptiple update at once.
+> >    
+> > 
+> > Signed-off-by: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+> > ---
+> >  mm/memcontrol.c |  118 +++++++++++++++++++++++++++++++++++++++++++++++++++++++-
+> >  1 file changed, 117 insertions(+), 1 deletion(-)
+> > 
+> > Index: softlimit-test2/mm/memcontrol.c
+> > ===================================================================
+> > --- softlimit-test2.orig/mm/memcontrol.c
+> > +++ softlimit-test2/mm/memcontrol.c
+> > @@ -192,7 +192,14 @@ struct mem_cgroup {
+> >  	atomic_t	refcnt;
+> > 
+> >  	unsigned int	swappiness;
+> > -
+> > +	/*
+> > +	 * For soft limit.
+> > +	 */
+> > +	int soft_limit_priority;
+> > +	struct list_head soft_limit_list[2];
+> 
+> Looking at the rest of the code in the patch, it is not apparent as to
+> why we need two list_heads/array of list_heads?
+> 
 
-I have a notebook, aspire 5720G that fails to do two suspends to ram in
-row.
+Considering LRU rotation, it's done per anon, file in zone.
 
-for example I can do s2ram->s2disk->s2ram->...
-but can't s2ram->s2ram.
+   ACTIVE -> INACTIVE -> out.
 
-Well that at least was the situation till now.
-Also there is no way to debug this - bios doesn't pass control back to
-linux on failed resume. I tried probably every guess I could come with.
+And, there can be 'File only', 'Anon only' cgroup.
 
-Now, after a commit a0d4922da2e4ccb0973095d8d29f36f6b1b5f703 which I
-finally bisected, I can't anymore do two suspends to ram at all,
-regardless of suspend to disk in between. Also bios doesn't pass control
-when resume fails.
+Then, we have 2 design choices.
 
-I actually did 3 bisects, as I had to find fixes to 2 more s2ram bugs
-that were fixed.
-the fixes are:
+  1. Use one list for selecting victim.
+     If target memory type (FILE/ANON) is empty, select another victim.
+  2. Use two list for selecting victim.
+     FILE and ANON victim selection can be done independently from each other.
 
-a0e280e0f33f6c859a235fb69a875ed8f3420388
-1e70c7f7a9d4a3d2cc78b40e1d7768d99cd79899
+This series uses "2". Because "1" can make "ticket" parameter useless in victim
+selection.
 
+Sorry for short text.
 
-Now, why I am happy about this:
-It seems that a suspend cycle changes something that explodes on next
-resume. a s2disk cycle cleared this, but not anymore, thus the poison
-must be somehow connected to the
-a0d4922da2e4ccb0973095d8d29f36f6b1b5f703
-
-PCI state?? I tried restoring it from saved file, (created on suspend)
-but this didn't help.
-(Only a single register, which looks like a clear or write register
-changed).
+Thanks,
+-Kame
 
 
-Also this commits narrows down the search, now it is clear that this is
-usb related. No wonder bios pokes at usb on resume and stalls.....
 
 
-It could even be connected to bios handoff, maybe we don't do that on
-resume?
-
-(Note: this regression is present all way to latest -git)
 
 
-What do you think?
 
-Best regards,
-	Maxim Levitsky
 
 
 
