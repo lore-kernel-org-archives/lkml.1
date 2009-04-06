@@ -1,258 +1,256 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756399AbZDFLlT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755941AbZDFLt1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756399AbZDFLlT (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 6 Apr 2009 07:41:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755834AbZDFLlI
+	id S1755941AbZDFLt1 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 6 Apr 2009 07:49:27 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755588AbZDFLtS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 6 Apr 2009 07:41:08 -0400
-Received: from gw3.lbox.cz ([62.245.111.133]:59130 "EHLO develbox.linuxbox.cz"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1755829AbZDFLlG (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 6 Apr 2009 07:41:06 -0400
-X-Greylist: delayed 1521 seconds by postgrey-1.27 at vger.kernel.org; Mon, 06 Apr 2009 07:41:06 EDT
-Date: Mon, 6 Apr 2009 13:15:38 +0200
-From: Nikola Ciprich <extmaillist@linuxbox.cz>
-To: Izik Eidus <ieidus@redhat.com>
-Cc: kvm@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 0/4] ksm - dynamic page sharing driver for linux v2
-Message-ID: <20090406111537.GA32039@develbox.linuxbox.cz>
-References: <1238855722-32606-1-git-send-email-ieidus@redhat.com>
-MIME-Version: 1.0
+	Mon, 6 Apr 2009 07:49:18 -0400
+Received: from wine.ocn.ne.jp ([122.1.235.145]:64257 "EHLO smtp.wine.ocn.ne.jp"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752924AbZDFLtS (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 6 Apr 2009 07:49:18 -0400
+To: pavel@ucw.cz, jmorris@namei.org
+Cc: linux-kernel@vger.kernel.org, linux-security-module@vger.kernel.org
+Subject: Re: TOMOYO in linux-next
+From: Tetsuo Handa <penguin-kernel@I-love.SAKURA.ne.jp>
+References: <20090326215031.GD29836@elf.ucw.cz>
+	<alpine.LRH.2.00.0903271102240.7492@tundra.namei.org>
+	<200903270412.n2R4CG7o054009@www262.sakura.ne.jp>
+In-Reply-To: <200903270412.n2R4CG7o054009@www262.sakura.ne.jp>
+Message-Id: <200904062049.AFJ90113.JFOOSFOVQHLFMt@I-love.SAKURA.ne.jp>
+X-Mailer: Winbiff [Version 2.50 PL2]
+X-Accept-Language: ja,en
+Date: Mon, 6 Apr 2009 20:49:14 +0900
+Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1238855722-32606-1-git-send-email-ieidus@redhat.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Izik,
-Is there some user documentation available? (apart from RTFS?:))
-I've compiled kernel with v2 of Your patches, loaded ksm module,
-did echo 1 > /proc/sys/kernel/mm/ksm/run, but I think it didn't do
-anything, at least no pages were collected..
-Could You advise me a bit?
-thanks a lot in advance...
-I can't wait to try it on our hosts runing 50-60 KVMs :)
-BR
-nik
+Hello.
 
+> > +#ifdef TOMOYO_DEBUG_DOMAIN_UNDELETE
+> > +                       if (domain2->is_deleted != 255)
+> > +                               printk(KERN_DEBUG
+> > +                                      "Marked %p as non undeletable\n",
+> > +                                      domain2);
+> > +#endif
+> > +                       domain2->is_deleted = 255;
+> > 
+> > (I don't know why we want undelete in tomoyo.)
+> This "undelete domain" feature was introduced to allow administrators switch
+> domain policy periodically.
+> 
+We reconsidered this feature and concluded that we won't need this feature.
 
-On Sat, Apr 04, 2009 at 05:35:18PM +0300, Izik Eidus wrote:
-> From v1 to v2:
-> 
-> 1)Fixed security issue found by Chris Wright:
->     Ksm was checking if page is a shared page by running !PageAnon.
->     Beacuse that Ksm scan only anonymous memory, all !PageAnons
->     inside ksm data strctures are shared page, however there might
->     be a case for do_wp_page() when the VM_SHARED is used where
->     do_wp_page() would instead of copying the page into new anonymos
->     page, would reuse the page, it was fixed by adding check for the
->     dirty_bit of the virtual addresses pointing into the shared page.
->     I was not finding any VM code tha would clear the dirty bit from
->     this virtual address (due to the fact that we allocate the page
->     using page_alloc() - kernel allocated pages), ~but i still want
->     confirmation about this from the vm guys - thanks.~
-> 
-> 2)Moved to sysfs to control ksm:
->     It was requested as a better way to control the ksm scanning
->     thread than ioctls.
->     the sysfs api:
->     dir: /sys/kernel/mm/ksm/
-> 
->     kernel_pages_allocated - information about how many kernel pages
->     ksm have allocated, this pages are not swappable, and each page
->     like that is used by ksm to share pages with identical content
->     
->     pages_shared - how many pages were shared by ksm
-> 
->     run - set to 1 when you want ksm to run, 0 when no
-> 
->     max_kernel_pages - set the maximum amount of kernel pages
->     to be allocated by ksm, set 0 for unlimited.
-> 
->     pages_to_scan - how many pages to scan before ksm will sleep
-> 
->     sleep - how much usecs ksm will sleep.
-> 
-> 3)Add sysfs paramater to control the maximum kernel pages to be by
-> ksm.
-> 
-> 4)Add statistics about how much pages are really shared.
-> 
-> 
-> One issue still to be discussed:
-> There was a suggestion to use madvice(SHAREABLE) instead of using
-> ioctls to register memory that need to be scanned by ksm.
-> Such change is outside the area of ksm.c and would required adding
-> new madvice api, and change some parts of the vm and the kernel
-> code, so first thing to do, is realized if we really want this.
-> 
-> I dont know any other open issues.
-> 
-> Thanks.
-> 
-> This is from the first post:
-> (The kvm part, togather with the kvm-userspace part, was post with V1
-> before about a week, whoever want to test ksm may download the
-> patch from lkml archive)
-> 
-> KSM is a linux driver that allows dynamicly sharing identical memory
-> pages between one or more processes.
-> 
-> Unlike tradtional page sharing that is made at the allocation of the
-> memory, ksm do it dynamicly after the memory was created.
-> Memory is periodically scanned; identical pages are identified and
-> merged.
-> The sharing is unnoticeable by the process that use this memory.
-> (the shared pages are marked as readonly, and in case of write
-> do_wp_page() take care to create new copy of the page)
-> 
-> To find identical pages ksm use algorithm that is split into three
-> primery levels:
-> 
-> 1) Ksm will start scan the memory and will calculate checksum for each
->    page that is registred to be scanned.
->    (In the first round of the scanning, ksm would only calculate
->     this checksum for all the pages)
-> 
-> 2) Ksm will go again on the whole memory and will recalculate the
->    checmsum of the pages, pages that are found to have the same
->    checksum value, would be considered "pages that are most likely
->    wont changed"
->    Ksm will insert this pages into sorted by page content RB-tree that
->    is called "unstable tree", the reason that this tree is called
->    unstable is due to the fact that the page contents might changed
->    while they are still inside the tree, and therefore the tree would
->    become corrupted.
->    Due to this problem ksm take two more steps in addition to the
->    checksum calculation:
->    a) Ksm will throw and recreate the entire unstable tree each round
->       of memory scanning - so if we have corruption, it will be fixed
->       when we will rebuild the tree.
->    b) Ksm is using RB-tree, that its balancing is made by the node color
->       and not by the content, so even if the page get corrupted, it still
->       would take the same amount of time to search on it.
-> 
-> 3) In addition to the unstable tree, ksm hold another tree that is called
->    "stable tree" - this tree is RB-tree that is sorted by the pages
->    content and all its pages are write protected, and therefore it cant get
->    corrupted.
->    Each time ksm will find two identcial pages using the unstable tree,
->    it will create new write-protected shared page, and this page will be
->    inserted into the stable tree, and would be saved there, the
->    stable tree, unlike the unstable tree, is never throwen away, so each
->    page that we find would be saved inside it.
-> 
-> Taking into account the three levels that described above, the algorithm
-> work like that:
-> 
-> search primary tree (sorted by entire page contents, pages write protected)
-> - if match found, merge
-> - if no match found...
->   - search secondary tree (sorted by entire page contents, pages not write
->     protected)
->     - if match found, merge
->       - remove from secondary tree and insert merged page into primary tree
->     - if no match found...
->       - checksum
->         - if checksum hasn't changed
-> 	  - insert into secondary tree
-> 	- if it has, store updated checksum (note: first time this page
-> 	  is handled it won't have a checksum, so checksum will appear
-> 	  as "changed", so it takes two passes w/ no other matches to
-> 	  get into secondary tree)
-> 	  - do not insert into any tree, will see it again on next pass
-> 
-> The basic idea of this algorithm, is that even if the unstable tree doesnt
-> promise to us to find two identical pages in the first round, we would
-> probably find them in the second or the third or the tenth round,
-> then after we have found this two identical pages only once, we will insert
-> them into the stable tree, and then they would be protected there forever.
-> So the all idea of the unstable tree, is just to build the stable tree and
-> then we will find the identical pages using it.
-> 
-> The current implemantion can be improved alot:
-> we dont have to calculate exspensive checksum, we can just use the host
-> dirty bit.
-> 
-> currently we dont support shared pages swapping (other pages that are not
-> shared can be swapped (all the pages that we didnt find to be identical
-> to other pages...).
-> 
-> Walking on the tree, we keep call to get_user_pages(), we can optimized it
-> by saving the pfn, and using mmu notifiers to know when the virtual address
-> mapping was changed.
-> 
-> We currently scan just programs that were registred to be used by ksm, we
-> would later want to add the abilaty to tell ksm to scan PIDS (so you can
-> scan closed binary applications as well).
-> 
-> Right now ksm scanning is made by just one thread, multiple scanners
-> support might would be needed.
-> 
-> This driver is very useful for KVM as in cases of runing multiple guests
-> operation system of the same type.
-> (For desktop work loads we have achived more than x2 memory overcommit
-> (more like x3))
-> 
-> This driver have found users other than KVM, for example CERN,
-> Fons Rademakers:
-> "on many-core machines we run one large detector simulation program per core.
-> These simulation programs are identical but run each in their own process and
-> need about 2 - 2.5 GB RAM.
-> We typically buy machines with 2GB RAM per core and so have a problem to run
-> one of these programs per core.
-> Of the 2 - 2.5 GB about 700MB is identical data in the form of magnetic field
-> maps, detector geometry, etc.
-> Currently people have been trying to start one program, initialize the geometry
-> and field maps and then fork it N times, to have the data shared.
-> With KSM this would be done automatically by the system so it sounded extremely
-> attractive when Andrea presented it."
-> 
-> I am sending another seires of patchs for kvm kernel and kvm-userspace
-> that would allow users of kvm to test ksm with it.
-> The kvm patchs would apply to Avi git tree.
-> 
-> 
-> Izik Eidus (4):
->   MMU_NOTIFIERS: add set_pte_at_notify()
->   add page_wrprotect(): write protecting page.
->   add replace_page(): change the page pte is pointing to.
->   add ksm kernel shared memory driver.
-> 
->  include/linux/ksm.h          |   48 ++
->  include/linux/miscdevice.h   |    1 +
->  include/linux/mm.h           |    5 +
->  include/linux/mmu_notifier.h |   34 +
->  include/linux/rmap.h         |   11 +
->  mm/Kconfig                   |    6 +
->  mm/Makefile                  |    1 +
->  mm/ksm.c                     | 1668 ++++++++++++++++++++++++++++++++++++++++++
->  mm/memory.c                  |   90 +++-
->  mm/mmu_notifier.c            |   20 +
->  mm/rmap.c                    |  139 ++++
->  11 files changed, 2021 insertions(+), 2 deletions(-)
->  create mode 100644 include/linux/ksm.h
->  create mode 100644 mm/ksm.c
-> 
-> --
-> To unsubscribe from this list: send the line "unsubscribe kvm" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
-> 
+Thanks.
+----------
+Subject: tomoyo: remove "undelete domain" command.
 
--- 
--------------------------------------
-Nikola CIPRICH
-LinuxBox.cz, s.r.o.
-28. rijna 168, 709 01 Ostrava
+Since TOMOYO's policy management tools does not use the "undelete domain"
+command, we decided to remove that command.
 
-tel.:   +420 596 603 142
-fax:    +420 596 621 273
-mobil:  +420 777 093 799
-www.linuxbox.cz
+Signed-off-by: Kentaro Takeda <takedakn@nttdata.co.jp>
+Signed-off-by: Tetsuo Handa <penguin-kernel@I-love.SAKURA.ne.jp>
+Signed-off-by: Toshiharu Harada <haradats@nttdata.co.jp>
+---
+ security/tomoyo/common.c |    7 ---
+ security/tomoyo/common.h |    8 ----
+ security/tomoyo/domain.c |   90 +----------------------------------------------
+ 3 files changed, 5 insertions(+), 100 deletions(-)
 
-mobil servis: +420 737 238 656
-email servis: servis@linuxbox.cz
--------------------------------------
+--- linux-2.6.29-git13.orig/security/tomoyo/common.c
++++ linux-2.6.29-git13/security/tomoyo/common.c
+@@ -1252,15 +1252,12 @@ static int tomoyo_write_domain_policy(st
+ 	struct tomoyo_domain_info *domain = head->write_var1;
+ 	bool is_delete = false;
+ 	bool is_select = false;
+-	bool is_undelete = false;
+ 	unsigned int profile;
+ 
+ 	if (tomoyo_str_starts(&data, TOMOYO_KEYWORD_DELETE))
+ 		is_delete = true;
+ 	else if (tomoyo_str_starts(&data, TOMOYO_KEYWORD_SELECT))
+ 		is_select = true;
+-	else if (tomoyo_str_starts(&data, TOMOYO_KEYWORD_UNDELETE))
+-		is_undelete = true;
+ 	if (is_select && tomoyo_is_select_one(head, data))
+ 		return 0;
+ 	/* Don't allow updating policies by non manager programs. */
+@@ -1274,9 +1271,7 @@ static int tomoyo_write_domain_policy(st
+ 			down_read(&tomoyo_domain_list_lock);
+ 			domain = tomoyo_find_domain(data);
+ 			up_read(&tomoyo_domain_list_lock);
+-		} else if (is_undelete)
+-			domain = tomoyo_undelete_domain(data);
+-		else
++		} else
+ 			domain = tomoyo_find_or_assign_new_domain(data, 0);
+ 		head->write_var1 = domain;
+ 		return 0;
+--- linux-2.6.29-git13.orig/security/tomoyo/common.h
++++ linux-2.6.29-git13/security/tomoyo/common.h
+@@ -88,10 +88,7 @@ struct tomoyo_domain_info {
+ 	/* Name of this domain. Never NULL.          */
+ 	const struct tomoyo_path_info *domainname;
+ 	u8 profile;        /* Profile number to use. */
+-	u8 is_deleted;     /* Delete flag.
+-			      0 = active.
+-			      1 = deleted but undeletable.
+-			      255 = deleted and no longer undeletable. */
++	bool is_deleted;   /* Delete flag.           */
+ 	bool quota_warned; /* Quota warnning flag.   */
+ 	/* DOMAIN_FLAGS_*. Use tomoyo_set_domain_flag() to modify. */
+ 	u8 flags;
+@@ -144,7 +141,6 @@ struct tomoyo_double_path_acl_record {
+ #define TOMOYO_KEYWORD_NO_INITIALIZE_DOMAIN      "no_initialize_domain "
+ #define TOMOYO_KEYWORD_NO_KEEP_DOMAIN            "no_keep_domain "
+ #define TOMOYO_KEYWORD_SELECT                    "select "
+-#define TOMOYO_KEYWORD_UNDELETE                  "undelete "
+ #define TOMOYO_KEYWORD_USE_PROFILE               "use_profile "
+ #define TOMOYO_KEYWORD_IGNORE_GLOBAL_ALLOW_READ  "ignore_global_allow_read"
+ /* A domain definition starts with <kernel>. */
+@@ -267,8 +263,6 @@ struct tomoyo_domain_info *tomoyo_find_d
+ struct tomoyo_domain_info *tomoyo_find_or_assign_new_domain(const char *
+ 							    domainname,
+ 							    const u8 profile);
+-/* Undelete a domain. */
+-struct tomoyo_domain_info *tomoyo_undelete_domain(const char *domainname);
+ /* Check mode for specified functionality. */
+ unsigned int tomoyo_check_flags(const struct tomoyo_domain_info *domain,
+ 				const u8 index);
+--- linux-2.6.29-git13.orig/security/tomoyo/domain.c
++++ linux-2.6.29-git13/security/tomoyo/domain.c
+@@ -551,9 +551,7 @@ int tomoyo_write_alias_policy(char *data
+ 	return tomoyo_update_alias_entry(data, cp, is_delete);
+ }
+ 
+-/* Domain create/delete/undelete handler. */
+-
+-/* #define TOMOYO_DEBUG_DOMAIN_UNDELETE */
++/* Domain create/delete handler. */
+ 
+ /**
+  * tomoyo_delete_domain - Delete a domain.
+@@ -571,41 +569,15 @@ int tomoyo_delete_domain(char *domainnam
+ 	tomoyo_fill_path_info(&name);
+ 	/***** EXCLUSIVE SECTION START *****/
+ 	down_write(&tomoyo_domain_list_lock);
+-#ifdef TOMOYO_DEBUG_DOMAIN_UNDELETE
+-	printk(KERN_DEBUG "tomoyo_delete_domain %s\n", domainname);
+-	list_for_each_entry(domain, &tomoyo_domain_list, list) {
+-		if (tomoyo_pathcmp(domain->domainname, &name))
+-			continue;
+-		printk(KERN_DEBUG "List: %p %u\n", domain, domain->is_deleted);
+-	}
+-#endif
+ 	/* Is there an active domain? */
+ 	list_for_each_entry(domain, &tomoyo_domain_list, list) {
+-		struct tomoyo_domain_info *domain2;
+ 		/* Never delete tomoyo_kernel_domain */
+ 		if (domain == &tomoyo_kernel_domain)
+ 			continue;
+ 		if (domain->is_deleted ||
+ 		    tomoyo_pathcmp(domain->domainname, &name))
+ 			continue;
+-		/* Mark already deleted domains as non undeletable. */
+-		list_for_each_entry(domain2, &tomoyo_domain_list, list) {
+-			if (!domain2->is_deleted ||
+-			    tomoyo_pathcmp(domain2->domainname, &name))
+-				continue;
+-#ifdef TOMOYO_DEBUG_DOMAIN_UNDELETE
+-			if (domain2->is_deleted != 255)
+-				printk(KERN_DEBUG
+-				       "Marked %p as non undeletable\n",
+-				       domain2);
+-#endif
+-			domain2->is_deleted = 255;
+-		}
+-		/* Delete and mark active domain as undeletable. */
+-		domain->is_deleted = 1;
+-#ifdef TOMOYO_DEBUG_DOMAIN_UNDELETE
+-		printk(KERN_DEBUG "Marked %p as undeletable\n", domain);
+-#endif
++		domain->is_deleted = true;
+ 		break;
+ 	}
+ 	up_write(&tomoyo_domain_list_lock);
+@@ -614,58 +586,6 @@ int tomoyo_delete_domain(char *domainnam
+ }
+ 
+ /**
+- * tomoyo_undelete_domain - Undelete a domain.
+- *
+- * @domainname: The name of domain.
+- *
+- * Returns pointer to "struct tomoyo_domain_info" on success, NULL otherwise.
+- */
+-struct tomoyo_domain_info *tomoyo_undelete_domain(const char *domainname)
+-{
+-	struct tomoyo_domain_info *domain;
+-	struct tomoyo_domain_info *candidate_domain = NULL;
+-	struct tomoyo_path_info name;
+-
+-	name.name = domainname;
+-	tomoyo_fill_path_info(&name);
+-	/***** EXCLUSIVE SECTION START *****/
+-	down_write(&tomoyo_domain_list_lock);
+-#ifdef TOMOYO_DEBUG_DOMAIN_UNDELETE
+-	printk(KERN_DEBUG "tomoyo_undelete_domain %s\n", domainname);
+-	list_for_each_entry(domain, &tomoyo_domain_list, list) {
+-		if (tomoyo_pathcmp(domain->domainname, &name))
+-			continue;
+-		printk(KERN_DEBUG "List: %p %u\n", domain, domain->is_deleted);
+-	}
+-#endif
+-	list_for_each_entry(domain, &tomoyo_domain_list, list) {
+-		if (tomoyo_pathcmp(&name, domain->domainname))
+-			continue;
+-		if (!domain->is_deleted) {
+-			/* This domain is active. I can't undelete. */
+-			candidate_domain = NULL;
+-#ifdef TOMOYO_DEBUG_DOMAIN_UNDELETE
+-			printk(KERN_DEBUG "%p is active. I can't undelete.\n",
+-			       domain);
+-#endif
+-			break;
+-		}
+-		/* Is this domain undeletable? */
+-		if (domain->is_deleted == 1)
+-			candidate_domain = domain;
+-	}
+-	if (candidate_domain) {
+-		candidate_domain->is_deleted = 0;
+-#ifdef TOMOYO_DEBUG_DOMAIN_UNDELETE
+-		printk(KERN_DEBUG "%p was undeleted.\n", candidate_domain);
+-#endif
+-	}
+-	up_write(&tomoyo_domain_list_lock);
+-	/***** EXCLUSIVE SECTION END *****/
+-	return candidate_domain;
+-}
+-
+-/**
+  * tomoyo_find_or_assign_new_domain - Create a domain.
+  *
+  * @domainname: The name of domain.
+@@ -711,10 +631,6 @@ struct tomoyo_domain_info *tomoyo_find_o
+ 		/***** CRITICAL SECTION END *****/
+ 		if (flag)
+ 			continue;
+-#ifdef TOMOYO_DEBUG_DOMAIN_UNDELETE
+-		printk(KERN_DEBUG "Reusing %p %s\n", domain,
+-		       domain->domainname->name);
+-#endif
+ 		list_for_each_entry(ptr, &domain->acl_info_list, list) {
+ 			ptr->type |= TOMOYO_ACL_DELETED;
+ 		}
+@@ -722,7 +638,7 @@ struct tomoyo_domain_info *tomoyo_find_o
+ 		domain->profile = profile;
+ 		domain->quota_warned = false;
+ 		mb(); /* Avoid out-of-order execution. */
+-		domain->is_deleted = 0;
++		domain->is_deleted = false;
+ 		goto out;
+ 	}
+ 	/* No memory reusable. Create using new memory. */
