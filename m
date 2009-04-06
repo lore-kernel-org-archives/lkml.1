@@ -1,202 +1,242 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758768AbZDFJtT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758847AbZDFJtz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758768AbZDFJtT (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 6 Apr 2009 05:49:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755874AbZDFJor
+	id S1758847AbZDFJtz (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 6 Apr 2009 05:49:55 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755890AbZDFJou
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 6 Apr 2009 05:44:47 -0400
-Received: from casper.infradead.org ([85.118.1.10]:42361 "EHLO
+	Mon, 6 Apr 2009 05:44:50 -0400
+Received: from casper.infradead.org ([85.118.1.10]:42367 "EHLO
 	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755233AbZDFJoj (ORCPT
+	with ESMTP id S1755620AbZDFJot (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 6 Apr 2009 05:44:39 -0400
-Message-Id: <20090406094517.724626696@chello.nl>
+	Mon, 6 Apr 2009 05:44:49 -0400
+Message-Id: <20090406094518.531137582@chello.nl>
 References: <20090406094458.977814421@chello.nl>
 User-Agent: quilt/0.46-1
-Date: Mon, 06 Apr 2009 11:45:03 +0200
+Date: Mon, 06 Apr 2009 11:45:12 +0200
 From: Peter Zijlstra <a.p.zijlstra@chello.nl>
 To: Ingo Molnar <mingo@elte.hu>
 Cc: Paul Mackerras <paulus@samba.org>,
        Corey Ashford <cjashfor@linux.vnet.ibm.com>,
        linux-kernel@vger.kernel.org, Peter Zijlstra <a.p.zijlstra@chello.nl>
-Subject: [PATCH 05/15] perf_counter: x86: self-IPI for pending work
-Content-Disposition: inline; filename=perf_counter-x86-pending.patch
+Subject: [PATCH 14/15] perf_counter: remove rq->lock usage
+Content-Disposition: inline; filename=per_counter-remove-rq_lock.patch
 X-Bad-Reply: References but no 'Re:' in Subject.
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Implement set_perf_counter_pending() with a self-IPI so that it will
-run ASAP in a usable context.
-
-For now use a second IRQ vector, because the primary vector pokes
-the apic in funny ways that seem to confuse things.
+Now that all the task runtime clock users are gone, remove the ugly
+rq->lock usage from perf counters, which solves the nasty deadlock
+seen when a software task clock counter was read from an NMI overflow
+context.
 
 Signed-off-by: Peter Zijlstra <a.p.zijlstra@chello.nl>
 ---
- arch/x86/include/asm/entry_arch.h   |    1 +
- arch/x86/include/asm/hardirq.h      |    1 +
- arch/x86/include/asm/hw_irq.h       |    1 +
- arch/x86/include/asm/irq_vectors.h  |    5 +++++
- arch/x86/include/asm/perf_counter.h |    3 ++-
- arch/x86/kernel/cpu/perf_counter.c  |   14 ++++++++++++++
- arch/x86/kernel/entry_64.S          |    2 ++
- arch/x86/kernel/irq.c               |    5 +++++
- arch/x86/kernel/irqinit_32.c        |    1 +
- arch/x86/kernel/irqinit_64.c        |    1 +
- 10 files changed, 33 insertions(+), 1 deletion(-)
+ include/linux/kernel_stat.h |    2 --
+ kernel/perf_counter.c       |   42 ++++++++++++++++--------------------------
+ kernel/sched.c              |   20 --------------------
+ 3 files changed, 16 insertions(+), 48 deletions(-)
 
-Index: linux-2.6/arch/x86/include/asm/entry_arch.h
+Index: linux-2.6/include/linux/kernel_stat.h
 ===================================================================
---- linux-2.6.orig/arch/x86/include/asm/entry_arch.h
-+++ linux-2.6/arch/x86/include/asm/entry_arch.h
-@@ -50,6 +50,7 @@ BUILD_INTERRUPT(spurious_interrupt,SPURI
- 
- #ifdef CONFIG_PERF_COUNTERS
- BUILD_INTERRUPT(perf_counter_interrupt, LOCAL_PERF_VECTOR)
-+BUILD_INTERRUPT(perf_pending_interrupt, LOCAL_PENDING_VECTOR)
- #endif
- 
- #ifdef CONFIG_X86_MCE_P4THERMAL
-Index: linux-2.6/arch/x86/include/asm/hardirq.h
-===================================================================
---- linux-2.6.orig/arch/x86/include/asm/hardirq.h
-+++ linux-2.6/arch/x86/include/asm/hardirq.h
-@@ -14,6 +14,7 @@ typedef struct {
- #endif
- 	unsigned int generic_irqs;	/* arch dependent */
- 	unsigned int apic_perf_irqs;
-+	unsigned int apic_pending_irqs;
- #ifdef CONFIG_SMP
- 	unsigned int irq_resched_count;
- 	unsigned int irq_call_count;
-Index: linux-2.6/arch/x86/include/asm/hw_irq.h
-===================================================================
---- linux-2.6.orig/arch/x86/include/asm/hw_irq.h
-+++ linux-2.6/arch/x86/include/asm/hw_irq.h
-@@ -30,6 +30,7 @@ extern void apic_timer_interrupt(void);
- extern void generic_interrupt(void);
- extern void error_interrupt(void);
- extern void perf_counter_interrupt(void);
-+extern void perf_pending_interrupt(void);
- 
- extern void spurious_interrupt(void);
- extern void thermal_interrupt(void);
-Index: linux-2.6/arch/x86/include/asm/irq_vectors.h
-===================================================================
---- linux-2.6.orig/arch/x86/include/asm/irq_vectors.h
-+++ linux-2.6/arch/x86/include/asm/irq_vectors.h
-@@ -117,6 +117,11 @@
- #define GENERIC_INTERRUPT_VECTOR	0xed
- 
+--- linux-2.6.orig/include/linux/kernel_stat.h
++++ linux-2.6/include/linux/kernel_stat.h
+@@ -85,8 +85,6 @@ static inline unsigned int kstat_irqs(un
  /*
-+ * Performance monitoring pending work vector:
-+ */
-+#define LOCAL_PENDING_VECTOR		0xec
-+
-+/*
-  * First APIC vector available to drivers: (vectors 0x30-0xee) we
-  * start at 0x31(0x41) to spread out vectors evenly between priority
-  * levels. (0x80 is the syscall vector)
-Index: linux-2.6/arch/x86/include/asm/perf_counter.h
-===================================================================
---- linux-2.6.orig/arch/x86/include/asm/perf_counter.h
-+++ linux-2.6/arch/x86/include/asm/perf_counter.h
-@@ -84,7 +84,8 @@ union cpuid10_edx {
- #define MSR_ARCH_PERFMON_FIXED_CTR2			0x30b
- #define X86_PMC_IDX_FIXED_BUS_CYCLES			(X86_PMC_IDX_FIXED + 2)
+  * Lock/unlock the current runqueue - to extract task statistics:
+  */
+-extern void curr_rq_lock_irq_save(unsigned long *flags);
+-extern void curr_rq_unlock_irq_restore(unsigned long *flags);
+ extern unsigned long long __task_delta_exec(struct task_struct *tsk, int update);
+ extern unsigned long long task_delta_exec(struct task_struct *);
  
--#define set_perf_counter_pending()	do { } while (0)
-+extern void set_perf_counter_pending(void);
-+
- #define clear_perf_counter_pending()	do { } while (0)
- #define test_perf_counter_pending()	(0)
- 
-Index: linux-2.6/arch/x86/kernel/cpu/perf_counter.c
+Index: linux-2.6/kernel/perf_counter.c
 ===================================================================
---- linux-2.6.orig/arch/x86/kernel/cpu/perf_counter.c
-+++ linux-2.6/arch/x86/kernel/cpu/perf_counter.c
-@@ -849,6 +849,20 @@ void smp_perf_counter_interrupt(struct p
- 	irq_exit();
+--- linux-2.6.orig/kernel/perf_counter.c
++++ linux-2.6/kernel/perf_counter.c
+@@ -172,8 +172,7 @@ static void __perf_counter_remove_from_c
+ 	if (ctx->task && cpuctx->task_ctx != ctx)
+ 		return;
+ 
+-	curr_rq_lock_irq_save(&flags);
+-	spin_lock(&ctx->lock);
++	spin_lock_irqsave(&ctx->lock, flags);
+ 
+ 	counter_sched_out(counter, cpuctx, ctx);
+ 
+@@ -198,8 +197,7 @@ static void __perf_counter_remove_from_c
+ 			    perf_max_counters - perf_reserved_percpu);
+ 	}
+ 
+-	spin_unlock(&ctx->lock);
+-	curr_rq_unlock_irq_restore(&flags);
++	spin_unlock_irqrestore(&ctx->lock, flags);
  }
  
-+void smp_perf_pending_interrupt(struct pt_regs *regs)
-+{
-+	irq_enter();
-+	ack_APIC_irq();
-+	inc_irq_stat(apic_pending_irqs);
-+	perf_counter_do_pending();
-+	irq_exit();
-+}
-+
-+void set_perf_counter_pending(void)
-+{
-+	apic->send_IPI_self(LOCAL_PENDING_VECTOR);
-+}
-+
- void perf_counters_lapic_init(int nmi)
+ 
+@@ -319,8 +317,7 @@ static void __perf_counter_disable(void 
+ 	if (ctx->task && cpuctx->task_ctx != ctx)
+ 		return;
+ 
+-	curr_rq_lock_irq_save(&flags);
+-	spin_lock(&ctx->lock);
++	spin_lock_irqsave(&ctx->lock, flags);
+ 
+ 	/*
+ 	 * If the counter is on, turn it off.
+@@ -336,8 +333,7 @@ static void __perf_counter_disable(void 
+ 		counter->state = PERF_COUNTER_STATE_OFF;
+ 	}
+ 
+-	spin_unlock(&ctx->lock);
+-	curr_rq_unlock_irq_restore(&flags);
++	spin_unlock_irqrestore(&ctx->lock, flags);
+ }
+ 
+ /*
+@@ -515,8 +511,7 @@ static void __perf_install_in_context(vo
+ 	if (ctx->task && cpuctx->task_ctx != ctx)
+ 		return;
+ 
+-	curr_rq_lock_irq_save(&flags);
+-	spin_lock(&ctx->lock);
++	spin_lock_irqsave(&ctx->lock, flags);
+ 	update_context_time(ctx);
+ 
+ 	/*
+@@ -565,8 +560,7 @@ static void __perf_install_in_context(vo
+  unlock:
+ 	hw_perf_restore(perf_flags);
+ 
+-	spin_unlock(&ctx->lock);
+-	curr_rq_unlock_irq_restore(&flags);
++	spin_unlock_irqrestore(&ctx->lock, flags);
+ }
+ 
+ /*
+@@ -641,8 +635,7 @@ static void __perf_counter_enable(void *
+ 	if (ctx->task && cpuctx->task_ctx != ctx)
+ 		return;
+ 
+-	curr_rq_lock_irq_save(&flags);
+-	spin_lock(&ctx->lock);
++	spin_lock_irqsave(&ctx->lock, flags);
+ 	update_context_time(ctx);
+ 
+ 	counter->prev_state = counter->state;
+@@ -678,8 +671,7 @@ static void __perf_counter_enable(void *
+ 	}
+ 
+  unlock:
+-	spin_unlock(&ctx->lock);
+-	curr_rq_unlock_irq_restore(&flags);
++	spin_unlock_irqrestore(&ctx->lock, flags);
+ }
+ 
+ /*
+@@ -971,7 +963,7 @@ int perf_counter_task_disable(void)
+ 	if (likely(!ctx->nr_counters))
+ 		return 0;
+ 
+-	curr_rq_lock_irq_save(&flags);
++	local_irq_save(flags);
+ 	cpu = smp_processor_id();
+ 
+ 	perf_counter_task_sched_out(curr, cpu);
+@@ -992,9 +984,7 @@ int perf_counter_task_disable(void)
+ 
+ 	hw_perf_restore(perf_flags);
+ 
+-	spin_unlock(&ctx->lock);
+-
+-	curr_rq_unlock_irq_restore(&flags);
++	spin_unlock_irqrestore(&ctx->lock, flags);
+ 
+ 	return 0;
+ }
+@@ -1011,7 +1001,7 @@ int perf_counter_task_enable(void)
+ 	if (likely(!ctx->nr_counters))
+ 		return 0;
+ 
+-	curr_rq_lock_irq_save(&flags);
++	local_irq_save(flags);
+ 	cpu = smp_processor_id();
+ 
+ 	perf_counter_task_sched_out(curr, cpu);
+@@ -1037,7 +1027,7 @@ int perf_counter_task_enable(void)
+ 
+ 	perf_counter_task_sched_in(curr, cpu);
+ 
+-	curr_rq_unlock_irq_restore(&flags);
++	local_irq_restore(flags);
+ 
+ 	return 0;
+ }
+@@ -1095,12 +1085,12 @@ static void __read(void *info)
+ 	struct perf_counter_context *ctx = counter->ctx;
+ 	unsigned long flags;
+ 
+-	curr_rq_lock_irq_save(&flags);
++	local_irq_save(flags);
+ 	if (ctx->is_active)
+ 		update_context_time(ctx);
+ 	counter->hw_ops->read(counter);
+ 	update_counter_times(counter);
+-	curr_rq_unlock_irq_restore(&flags);
++	local_irq_restore(flags);
+ }
+ 
+ static u64 perf_counter_read(struct perf_counter *counter)
+@@ -2890,7 +2880,7 @@ __perf_counter_exit_task(struct task_str
+ 		 * Be careful about zapping the list - IRQ/NMI context
+ 		 * could still be processing it:
+ 		 */
+-		curr_rq_lock_irq_save(&flags);
++		local_irq_save(flags);
+ 		perf_flags = hw_perf_save_disable();
+ 
+ 		cpuctx = &__get_cpu_var(perf_cpu_context);
+@@ -2903,7 +2893,7 @@ __perf_counter_exit_task(struct task_str
+ 		child_ctx->nr_counters--;
+ 
+ 		hw_perf_restore(perf_flags);
+-		curr_rq_unlock_irq_restore(&flags);
++		local_irq_restore(flags);
+ 	}
+ 
+ 	parent_counter = child_counter->parent;
+Index: linux-2.6/kernel/sched.c
+===================================================================
+--- linux-2.6.orig/kernel/sched.c
++++ linux-2.6/kernel/sched.c
+@@ -1004,26 +1004,6 @@ static struct rq *task_rq_lock(struct ta
+ 	}
+ }
+ 
+-void curr_rq_lock_irq_save(unsigned long *flags)
+-	__acquires(rq->lock)
+-{
+-	struct rq *rq;
+-
+-	local_irq_save(*flags);
+-	rq = cpu_rq(smp_processor_id());
+-	spin_lock(&rq->lock);
+-}
+-
+-void curr_rq_unlock_irq_restore(unsigned long *flags)
+-	__releases(rq->lock)
+-{
+-	struct rq *rq;
+-
+-	rq = cpu_rq(smp_processor_id());
+-	spin_unlock(&rq->lock);
+-	local_irq_restore(*flags);
+-}
+-
+ void task_rq_unlock_wait(struct task_struct *p)
  {
- 	u32 apic_val;
-Index: linux-2.6/arch/x86/kernel/entry_64.S
-===================================================================
---- linux-2.6.orig/arch/x86/kernel/entry_64.S
-+++ linux-2.6/arch/x86/kernel/entry_64.S
-@@ -1028,6 +1028,8 @@ apicinterrupt SPURIOUS_APIC_VECTOR \
- #ifdef CONFIG_PERF_COUNTERS
- apicinterrupt LOCAL_PERF_VECTOR \
- 	perf_counter_interrupt smp_perf_counter_interrupt
-+apicinterrupt LOCAL_PENDING_VECTOR \
-+	perf_pending_interrupt smp_perf_pending_interrupt
- #endif
- 
- /*
-Index: linux-2.6/arch/x86/kernel/irq.c
-===================================================================
---- linux-2.6.orig/arch/x86/kernel/irq.c
-+++ linux-2.6/arch/x86/kernel/irq.c
-@@ -67,6 +67,10 @@ static int show_other_interrupts(struct 
- 	for_each_online_cpu(j)
- 		seq_printf(p, "%10u ", irq_stats(j)->apic_perf_irqs);
- 	seq_printf(p, "  Performance counter interrupts\n");
-+	seq_printf(p, "PND: ");
-+	for_each_online_cpu(j)
-+		seq_printf(p, "%10u ", irq_stats(j)->apic_pending_irqs);
-+	seq_printf(p, "  Performance pending work\n");
- #endif
- 	if (generic_interrupt_extension) {
- 		seq_printf(p, "PLT: ");
-@@ -171,6 +175,7 @@ u64 arch_irq_stat_cpu(unsigned int cpu)
- 	sum += irq_stats(cpu)->apic_timer_irqs;
- 	sum += irq_stats(cpu)->irq_spurious_count;
- 	sum += irq_stats(cpu)->apic_perf_irqs;
-+	sum += irq_stats(cpu)->apic_pending_irqs;
- #endif
- 	if (generic_interrupt_extension)
- 		sum += irq_stats(cpu)->generic_irqs;
-Index: linux-2.6/arch/x86/kernel/irqinit_32.c
-===================================================================
---- linux-2.6.orig/arch/x86/kernel/irqinit_32.c
-+++ linux-2.6/arch/x86/kernel/irqinit_32.c
-@@ -166,6 +166,7 @@ static void __init apic_intr_init(void)
- 	alloc_intr_gate(ERROR_APIC_VECTOR, error_interrupt);
- # ifdef CONFIG_PERF_COUNTERS
- 	alloc_intr_gate(LOCAL_PERF_VECTOR, perf_counter_interrupt);
-+	alloc_intr_gate(LOCAL_PENDING_VECTOR, perf_pending_interrupt);
- # endif
- 
- # ifdef CONFIG_X86_MCE_P4THERMAL
-Index: linux-2.6/arch/x86/kernel/irqinit_64.c
-===================================================================
---- linux-2.6.orig/arch/x86/kernel/irqinit_64.c
-+++ linux-2.6/arch/x86/kernel/irqinit_64.c
-@@ -156,6 +156,7 @@ static void __init apic_intr_init(void)
- 	/* Performance monitoring interrupt: */
- #ifdef CONFIG_PERF_COUNTERS
- 	alloc_intr_gate(LOCAL_PERF_VECTOR, perf_counter_interrupt);
-+	alloc_intr_gate(LOCAL_PENDING_VECTOR, perf_pending_interrupt);
- #endif
- }
- 
+ 	struct rq *rq = task_rq(p);
 
 -- 
 
