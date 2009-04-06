@@ -1,49 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758055AbZDFJxv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755236AbZDFKJA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758055AbZDFJxv (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 6 Apr 2009 05:53:51 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754112AbZDFJxm
+	id S1755236AbZDFKJA (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 6 Apr 2009 06:09:00 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754421AbZDFKIu
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 6 Apr 2009 05:53:42 -0400
-Received: from 219-87-157-169.static.tfn.net.tw ([219.87.157.169]:51702 "EHLO
-	mswedge2.sunplus.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753832AbZDFJxl (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 6 Apr 2009 05:53:41 -0400
-X-Greylist: delayed 2607 seconds by postgrey-1.27 at vger.kernel.org; Mon, 06 Apr 2009 05:53:41 EDT
-To: linux-kernel@vger.kernel.org
+	Mon, 6 Apr 2009 06:08:50 -0400
+Received: from hera.kernel.org ([140.211.167.34]:36079 "EHLO hera.kernel.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754135AbZDFKIu (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 6 Apr 2009 06:08:50 -0400
+Message-ID: <49D9D4D8.2020608@kernel.org>
+Date: Mon, 06 Apr 2009 03:09:28 -0700
+From: Tejun Heo <tj@kernel.org>
+User-Agent: Thunderbird 2.0.0.19 (X11/20081227)
 MIME-Version: 1.0
-Subject: The kernel may clear part of my vendor-specific SCSI command.
-X-Mailer: Lotus Notes Release 7.0.3 September 26, 2007
-Message-ID: <OF437BF0D0.7661D63C-ON48257590.002E4899-48257590.00323751@sunplusct.com>
-From: =?Big5?B?WXUtTWluZyBDaGFuZyCxaah8u8o=?= 
-	<yuming.chang@sunplusct.com>
-Date: Mon, 6 Apr 2009 17:07:46 +0800
-X-MIMETrack: Serialize by Router on ctmail01/SunplusCT(Release 7.0.3FP1|February 24, 2008) at 2009/04/06 ?? 05:07:46,
-	Serialize complete at 2009/04/06 ?? 05:07:46
-Content-Type: text/plain; charset="US-ASCII"
+To: Niel Lambrechts <niel.lambrechts@gmail.com>
+CC: "linux.kernel" <linux-kernel@vger.kernel.org>
+Subject: Re: 2.6.29 regression: ATA bus errors on resume
+References: <ckpL0-3TE-3@gated-at.bofh.it> <ckpL0-3TE-5@gated-at.bofh.it> <ckpL0-3TE-7@gated-at.bofh.it> <ckpL0-3TE-9@gated-at.bofh.it> <ckpL0-3TE-11@gated-at.bofh.it> <ckpL0-3TE-1@gated-at.bofh.it> <cllvN-2Gf-1@gated-at.bofh.it> <49D0D788.6070405@gmail.com> <49D419E8.2080603@kernel.org> <49D4591B.3070807@gmail.com> <49D46096.1040701@kernel.org> <49D49B8A.7070408@gmail.com> <49D4C886.1010101@gmail.com> <49D6E7FA.3000306@kernel.org> <49D98C9E.2000507@gmail.com>
+In-Reply-To: <49D98C9E.2000507@gmail.com>
+X-Enigmail-Version: 0.95.7
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Mon, 06 Apr 2009 10:08:47 +0000 (UTC)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Dear Linux developers,
+Niel Lambrechts wrote:
+> On 04/04/2009 06:54 AM, Tejun Heo wrote:
+>> Hello, Neil.
+>>
+>> Niel Lambrechts wrote:
+>>   
+>>>> Thanks for your help, I've done at least 5 hibernate cycles without the
+>>>> problem recurring, I'll keep at it for a while... :)
+>>>>       
+>> Hmmm..
+>>   
+> Hi Tejun,
+> 
+> I have tested your patch some more over the weekend as well as on
+> 2.6.29.1, and suspend-to-disk and ram still works without a glitch for
+> me apart from the extra debugging being active.
+> 
+> Will the fix naturally make its way into the mainline kernel, or is
+> there any extra debugging/testing I can help with?
 
-I'm using CentOS 5.2(kernel-2.6.18) to control a specific USB massive 
-storage
-device. When I send a vendor-spcific SCSI command to the device like this:
+Well, the problem is the debug patch doesn't actually do anything
+other than printing out messages.  It could be that the problem is
+timing dependent (which is likely anyway).  You still can reporduce
+the problem with the patch, right?
 
-unsigned char scsi_cmd[16];
-sg_io_hdr_t io_hdr;
-scsi_cmd[0] = 0xf1;
-scsi_cmd[1] = 0xff;
-io_hdr.cmdp = scsi_cmd;
+Thanks.
 
-the device receives a command with scsi_cmd[1] = 0x1f. I think the first 
-of three
-bits of second byte of io_hdr.cmdp are cleared by kernel.
-
-Does anyone have some clues or hints?
-I wish you can CC to my mailbox when you respond to my posting.
-
-Regards,
-Chang Yu-ming
+-- 
+tejun
