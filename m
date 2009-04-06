@@ -1,147 +1,88 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755177AbZDFX5f@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754090AbZDFX7B@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755177AbZDFX5f (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 6 Apr 2009 19:57:35 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751452AbZDFX50
+	id S1754090AbZDFX7B (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 6 Apr 2009 19:59:01 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751262AbZDFX6w
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 6 Apr 2009 19:57:26 -0400
-Received: from fgwmail5.fujitsu.co.jp ([192.51.44.35]:54518 "EHLO
-	fgwmail5.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751262AbZDFX50 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 6 Apr 2009 19:57:26 -0400
-Date: Tue, 7 Apr 2009 08:55:55 +0900
-From: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-To: balbir@linux.vnet.ibm.com
-Cc: "linux-mm@kvack.org" <linux-mm@kvack.org>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       "kosaki.motohiro@jp.fujitsu.com" <kosaki.motohiro@jp.fujitsu.com>
-Subject: Re: [RFC][PATCH 4/9] soft limit queue and priority
-Message-Id: <20090407085555.a8818209.kamezawa.hiroyu@jp.fujitsu.com>
-In-Reply-To: <20090406110534.GJ7082@balbir.in.ibm.com>
-References: <20090403170835.a2d6cbc3.kamezawa.hiroyu@jp.fujitsu.com>
-	<20090403171248.df3e1b03.kamezawa.hiroyu@jp.fujitsu.com>
-	<20090406110534.GJ7082@balbir.in.ibm.com>
-Organization: FUJITSU Co. LTD.
-X-Mailer: Sylpheed 2.5.0 (GTK+ 2.10.14; i686-pc-mingw32)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Mon, 6 Apr 2009 19:58:52 -0400
+Received: from e8.ny.us.ibm.com ([32.97.182.138]:44602 "EHLO e8.ny.us.ibm.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751235AbZDFX6w (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 6 Apr 2009 19:58:52 -0400
+Date: Mon, 6 Apr 2009 16:58:50 -0700
+From: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
+To: Steven Rostedt <rostedt@goodmis.org>
+Cc: Frederic Weisbecker <fweisbec@gmail.com>, Tom Zanussi <tzanussi@gmail.com>,
+       Ingo Molnar <mingo@elte.hu>,
+       linux-kernel <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH] tracing/filters: allow event filters to be set only
+	when not tracing
+Message-ID: <20090406235850.GA20273@linux.vnet.ibm.com>
+Reply-To: paulmck@linux.vnet.ibm.com
+References: <1238830355.22495.55.camel@bookworm> <alpine.DEB.2.00.0904041143480.32083@gandalf.stny.rr.com> <1238916865.7989.212.camel@tropicana> <20090405171146.GK6893@linux.vnet.ibm.com> <alpine.DEB.2.00.0904061155120.4317@gandalf.stny.rr.com> <20090406161527.GD6988@linux.vnet.ibm.com> <alpine.DEB.2.00.0904061529370.4317@gandalf.stny.rr.com> <20090406194417.GA5936@nowhere> <alpine.DEB.2.00.0904061552260.23509@gandalf.stny.rr.com> <20090406201524.GF6988@linux.vnet.ibm.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20090406201524.GF6988@linux.vnet.ibm.com>
+User-Agent: Mutt/1.5.15+20070412 (2007-04-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 6 Apr 2009 16:35:34 +0530
-Balbir Singh <balbir@linux.vnet.ibm.com> wrote:
+On Mon, Apr 06, 2009 at 01:15:24PM -0700, Paul E. McKenney wrote:
+> On Mon, Apr 06, 2009 at 03:52:55PM -0400, Steven Rostedt wrote:
+> > 
+> > On Mon, 6 Apr 2009, Frederic Weisbecker wrote:
+> > > > > 
+> > > > > > > > So assuming we can't use rcu for this, it would be nice to have a way to
+> > > > > > > > 'pause' tracing so the current filter can be removed i.e. some version
+> > > > > > > > of stop_trace()/start_trace() that make sure nothing is still executing
+> > > > > > > > or can enter filter_match_preds() while the current call->preds is being
+> > > > > > > > destroyed.  Seems like it would be straightforward to implement for the
+> > > > > > > > event tracer, since each event maps to a tracepoint that could be
+> > > > > > > > temporarily unregistered/reregistered, but maybe not so easy for the
+> > > > > > > > ftrace tracers...
+> > > > > > > 
+> > > > > > > In principle, it would be possible to rework RCU so that instead of the
+> > > > > > > whole idle loop being a quiescent state, there is a single quiescent state
+> > > > > > > at one point in each idle loop.  The reason that I have been avoiding this
+> > > > > > > is that there are a lot of idle loops out there, and it would be a bit
+> > > > > > > annoying to (1) find them all and update them and (2) keep track of all of
+> > > > > > > them to ensure that new ones cannot slip in without the quiescent state.
+> > > > > > > 
+> > > > > > > But it could be done if the need is there.  Simple enough change.
+> > > > > > > The following patch shows the general approach, assuming that CPUs
+> > > > > > > are never put to sleep without entering nohz mode.
+> > > > > > > 
+> > > > > > > Thoughts?
+> > > > > > 
+> > > > > > I think using synchronize_sched() should be good enough for what we need.
+> > > > > 
+> > > > > Again, as long as either (1) you are OK with synchronize_sched()
+> > > > > ignoring preempt-disable sequences in the idle loop or (2) we rework RCU
+> > > > > to add something like an rcu_idle() call in each idle loop.
+> > > > 
+> > > > 3) add "notrace" to the idle functions ;-)
+> > > > 
+> > > > But perhaps the rcu_idle might be the best idea.
+> > > 
+> > > 
+> > > And tracing the idle time is also sometimes very useful :-)
+> > 
+> > Agreed. I guess choice 2 is the best answer.
+> 
+> Fair enough!
+> 
+> Would one of you please check the placement of the rcu_idle() in the
+> patch?  Patch reproduced below for convenience.
 
-> * KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com> [2009-04-03 17:12:48]:
-> 
-> > From: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-> > 
-> > Softlimitq. for memcg.
-> > 
-> > Implements an array of queue to list memcgs, array index is determined by
-> > the amount of memory usage excess the soft limit.
-> > 
-> > While Balbir's one uses RB-tree and my old one used a per-zone queue
-> > (with round-robin), this is one of mixture of them.
-> > (I'd like to use rotation of queue in later patches)
-> > 
-> > Priority is determined by following.
-> >    Assume unit = total pages/1024. (the code uses different value)
-> >    if excess is...
-> >       < unit,          priority = 0, 
-> >       < unit*2,        priority = 1,
-> >       < unit*2*2,      priority = 2,
-> >       ...
-> >       < unit*2^9,      priority = 9,
-> >       < unit*2^10,     priority = 10, (> 50% to total mem)
-> > 
-> > This patch just includes queue management part and not includes 
-> > selection logic from queue. Some trick will be used for selecting victims at
-> > soft limit in efficient way.
-> > 
-> > And this equips 2 queues, for anon and file. Inset/Delete of both list is
-> > done at once but scan will be independent. (These 2 queues are used later.)
-> > 
-> > Major difference from Balbir's one other than RB-tree is bahavior under
-> > hierarchy. This one adds all children to queue by checking hierarchical
-> > priority. This is for helping per-zone usage check on victim-selection logic.
-> > 
-> > Changelog: v1->v2
-> >  - fixed comments.
-> >  - change base size to exponent.
-> >  - some micro optimization to reduce code size.
-> >  - considering memory hotplug, it's not good to record a value calculated
-> >    from totalram_pages at boot and using it later is bad manner. Fixed it.
-> >  - removed soft_limit_lock (spinlock) 
-> >  - added soft_limit_update counter for avoiding mulptiple update at once.
-> >    
-> > 
-> > Signed-off-by: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-> > ---
-> >  mm/memcontrol.c |  118 +++++++++++++++++++++++++++++++++++++++++++++++++++++++-
-> >  1 file changed, 117 insertions(+), 1 deletion(-)
-> > 
-> > Index: softlimit-test2/mm/memcontrol.c
-> > ===================================================================
-> > --- softlimit-test2.orig/mm/memcontrol.c
-> > +++ softlimit-test2/mm/memcontrol.c
-> > @@ -192,7 +192,14 @@ struct mem_cgroup {
-> >  	atomic_t	refcnt;
-> > 
-> >  	unsigned int	swappiness;
-> > -
-> > +	/*
-> > +	 * For soft limit.
-> > +	 */
-> > +	int soft_limit_priority;
-> > +	struct list_head soft_limit_list[2];
-> > +#define SL_ANON (0)
-> > +#define SL_FILE (1)
-> 
-> Comments for the #define please.
-> 
-Sure.
+Hmmm...  Do the start_critical_timings() and stop_critical_timings()
+functions have anything to do with ftrace()?
 
-> > +	atomic_t soft_limit_update;
-> >  	/*
-> >  	 * statistics. This must be placed at the end of memcg.
-> >  	 */
-> > @@ -938,11 +945,115 @@ static bool mem_cgroup_soft_limit_check(
-> >  	return ret;
-> >  }
-> > 
-> > +/*
-> > + * Assume "base_amount", and excess = usage - soft limit.
-> > + *
-> > + * 0...... if excess < base_amount
-> > + * 1...... if excess < base_amount * 2
-> > + * 2...... if excess < base_amount * 2^2
-> > + * 3.......if excess < base_amount * 2^3
-> > + * ....
-> > + * 9.......if excess < base_amount * 2^9
-> > + * 10 .....if excess < base_amount * 2^10
-> > + *
-> > + * base_amount is detemined from total pages in the system.
-> > + */
-> > +
-> > +#define SLQ_MAXPRIO (11)
-> > +static struct {
-> > +	spinlock_t lock;
-> > +	struct list_head queue[SLQ_MAXPRIO][2]; /* 0:anon 1:file */
-> > +} softlimitq;
-> > +
-> > +#define SLQ_PRIO_FACTOR (1024) /* 2^10 */
-> > +
-> > +static int __calc_soft_limit_prio(unsigned long excess)
-> > +{
-> > +	unsigned long factor = totalram_pages /SLQ_PRIO_FACTOR;
-> 
-> I would prefer to use global_lru_pages()
-> 
-Hmm, ok.
+It does not look like I can just bury RCU-idle controls in these
+functions, given that they are also invoked around call_console_drivers(),
+but if all the idle loops are surrounded by stop_critical_timings() and
+start_critical_timings(), that would ease location of all the idle
+loops.  ;-)
 
-Thanks,
--Kame
-
+							Thanx, Paul
