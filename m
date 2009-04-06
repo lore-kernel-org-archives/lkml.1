@@ -1,49 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756905AbZDFTYX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753678AbZDFTao@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756905AbZDFTYX (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 6 Apr 2009 15:24:23 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752635AbZDFTYJ
+	id S1753678AbZDFTao (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 6 Apr 2009 15:30:44 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752045AbZDFTad
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 6 Apr 2009 15:24:09 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:50578 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751569AbZDFTYI (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 6 Apr 2009 15:24:08 -0400
+	Mon, 6 Apr 2009 15:30:33 -0400
+Received: from g1t0027.austin.hp.com ([15.216.28.34]:18669 "EHLO
+	g1t0027.austin.hp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751907AbZDFTad (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 6 Apr 2009 15:30:33 -0400
+Date: Mon, 6 Apr 2009 13:31:05 -0600
+From: dann frazier <dannf@hp.com>
+To: Brian Maly <bmaly@redhat.com>
+Cc: linux-kernel@vger.kernel.org, akpm@linux-foundation.org,
+       ying.huang@intel.com, rtc-linux@googlegroups.com
+Subject: Re: [PATCH] rtc: add x86 support for rtc-efi
+Message-ID: <20090406193105.GD21394@ldl.fc.hp.com>
+References: <49DA40B9.2060804@redhat.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
-From: Roland McGrath <roland@redhat.com>
-To: Masami Hiramatsu <mhiramat@redhat.com>
-X-Fcc: ~/Mail/linus
-Cc: Ingo Molnar <mingo@elte.hu>, Frederic Weisbecker <fweisbec@gmail.com>,
-       Ananth N Mavinakayanahalli <ananth@in.ibm.com>,
-       Steven Rostedt <rostedt@goodmis.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Andi Kleen <andi@firstfloor.org>,
-       Arnaldo Carvalho de Melo <acme@redhat.com>,
-       Jim Keniston <jkenisto@us.ibm.com>,
-       systemtap-ml <systemtap@sources.redhat.com>,
-       LKML <linux-kernel@vger.kernel.org>, kvm@vger.kernel.org
-Subject: Re: [PATCH -tip 2/6 V4.2] x86: add arch-dep register and stack access
- API to ptrace
-In-Reply-To: Masami Hiramatsu's message of  Friday, 3 April 2009 19:29:19 -0400 <49D69BCF.4080808@redhat.com>
-References: <49D4F4DF.1040605@redhat.com>
-	<20090402234835.GA6112@nowhere>
-	<49D6331D.6000505@redhat.com>
-	<20090403202004.3A2B1FC3AB@magilla.sf.frob.com>
-	<49D680D0.1090701@redhat.com>
-	<49D69BCF.4080808@redhat.com>
-X-Windows: garbage at your fingertips.
-Message-Id: <20090406192254.59713FC3E3@magilla.sf.frob.com>
-Date: Mon,  6 Apr 2009 12:22:54 -0700 (PDT)
+Content-Disposition: inline
+In-Reply-To: <49DA40B9.2060804@redhat.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-I have no comments about the patch, but the subject line is misleading
-because this has nothing do with ptrace.  It's in asm/ptrace.h but it being
-struct pt_regs does not really have anything to do with ptrace.
+[Adding rtc list to the CC]
 
+On Mon, Apr 06, 2009 at 01:49:45PM -0400, Brian Maly wrote:
+> This patch adds support for rtc-efi (RTC Class Driver for EFI-based  
+> systems) to x86.
+>
+> This patch is based on dann frazier patch [add rtc platform driver for  
+> EFI -> http://lkml.org/lkml/2009/1/8/434], and also depends on dann's  
+> patch. Dann's patch was in the mm tree, though I think its been merged  
+> already.
+>
+> This patch has been tested and works perfectly on every x86 EFI system I  
+> could find, though all have been EL64 systems. I would appreciate any  
+> testing feedback from EL32 systems from anyone that has one and can test.
+>
+> Signed-off-by: Brian Maly <bmaly@redhat.com>
 
-Thanks,
-Roland
+hey Brian,
+ Thanks for working on this. You might want to resubmit with the patch
+inlined instead of as an attachment to make it easier to review.
+
+-- 
+dann frazier
+
