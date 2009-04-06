@@ -1,115 +1,129 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756600AbZDFQPz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759284AbZDFQRU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756600AbZDFQPz (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 6 Apr 2009 12:15:55 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759104AbZDFQPe
+	id S1759284AbZDFQRU (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 6 Apr 2009 12:17:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752679AbZDFQRH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 6 Apr 2009 12:15:34 -0400
-Received: from e9.ny.us.ibm.com ([32.97.182.139]:55638 "EHLO e9.ny.us.ibm.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1759076AbZDFQPc (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 6 Apr 2009 12:15:32 -0400
-Date: Mon, 6 Apr 2009 09:15:27 -0700
-From: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
-To: Steven Rostedt <rostedt@goodmis.org>
-Cc: Tom Zanussi <tzanussi@gmail.com>, Ingo Molnar <mingo@elte.hu>,
-       linux-kernel <linux-kernel@vger.kernel.org>, fweisbec@gmail.com
-Subject: Re: [PATCH] tracing/filters: allow event filters to be set only
-	when not tracing
-Message-ID: <20090406161527.GD6988@linux.vnet.ibm.com>
-Reply-To: paulmck@linux.vnet.ibm.com
-References: <1238390546.6368.65.camel@bookworm> <20090401122408.GG12966@elte.hu> <1238653371.6655.48.camel@bookworm> <20090403135956.GD8875@elte.hu> <alpine.DEB.2.00.0904031010510.965@gandalf.stny.rr.com> <1238830355.22495.55.camel@bookworm> <alpine.DEB.2.00.0904041143480.32083@gandalf.stny.rr.com> <1238916865.7989.212.camel@tropicana> <20090405171146.GK6893@linux.vnet.ibm.com> <alpine.DEB.2.00.0904061155120.4317@gandalf.stny.rr.com>
+	Mon, 6 Apr 2009 12:17:07 -0400
+Received: from e23smtp07.au.ibm.com ([202.81.31.140]:33810 "EHLO
+	e23smtp07.au.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755144AbZDFQRD (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 6 Apr 2009 12:17:03 -0400
+Date: Mon, 6 Apr 2009 21:46:39 +0530
+From: Arun R Bharadwaj <arun@linux.vnet.ibm.com>
+To: linux-kernel@vger.kernel.org, linux-pm@lists.linux-foundation.org
+Cc: a.p.zijlstra@chello.nl, ego@in.ibm.com, tglx@linutronix.de, mingo@elte.hu,
+       andi@firstfloor.org, venkatesh.pallipadi@intel.com,
+       vatsa@linux.vnet.ibm.com, arjan@infradead.org,
+       svaidy@linux.vnet.ibm.com, Arun Bharadwaj <arun@linux.vnet.ibm.com>
+Subject: [v5 PATCH 2/4] timers: Identifying the existing pinned timers
+Message-ID: <20090406161639.GC15269@linux.vnet.ibm.com>
+Reply-To: arun@linux.vnet.ibm.com
+References: <20090406161357.GB15269@linux.vnet.ibm.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=iso-8859-1
 Content-Disposition: inline
-In-Reply-To: <alpine.DEB.2.00.0904061155120.4317@gandalf.stny.rr.com>
-User-Agent: Mutt/1.5.15+20070412 (2007-04-11)
+In-Reply-To: <20090406161357.GB15269@linux.vnet.ibm.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Apr 06, 2009 at 11:59:30AM -0400, Steven Rostedt wrote:
-> On Sun, 5 Apr 2009, Paul E. McKenney wrote:
-> > > Basically the problem is that the tracing functions call
-> > > filter_match_preds(call,...) where call->preds is an array of predicates
-> > > that get checked to determine whether the current event matches or not.
-> > > When an existing filter is deleted (or an old one replaced), the
-> > > call->preds array is freed and set to NULL (which happens only via a
-> > > write to the 'filter' debugfs file).  So without any protection, while
-> > > one cpu is freeing the preds array, the others may still be using it,
-> > > and if so, it will crash the box.  You can easily see the problem with
-> > > e.g. the function tracer:
-> > > 
-> > > # echo function > /debug/tracing/current_tracer
-> > > 
-> > > Function tracing is now live
-> > > 
-> > > # echo 'common_pid == 0' > /debug/tracing/events/ftrace/function/filter
-> > > 
-> > > No problem, no preds are freed the first time
-> > > 
-> > > # echo 0 > /debug/tracing/events/ftrace/function/filter
-> > > 
-> > > Crash.
-> > > 
-> > > My first patch took the safe route and completely disallowed filters
-> > > from being set when any tracing was live i.e. you had to for example
-> > > echo 0 > tracing_enabled or echo 0 > enable for a particular event, etc.
-> > > 
-> > > This wasn't great for usability, though - it would be much nicer to be
-> > > able to remove or set new filters on the fly, while tracing is active,
-> > > which rcu seemed perfect for - the preds wouldn't actually be destroyed
-> > > until all the current users were finished with them.  My second patch
-> > > implemented that and it seemed to nicely fix the problem, but it
-> > > apparently can cause other problems...
-> 
-> The proble is that function tracing also traces the rcu calls. Even though 
-> the function trace protects against recursion, by adding rcu locks to the
-> function tracer, we have just doubled the overhead for it. Every function 
-> trace will call rcu_read_lock, then that would be traced too, and the 
-> function tracer would see that it is recursive and return. All this is 
-> added overhead to _every_ function!
-> 
-> I do not understand why my recommendation is not used. All tracers require 
-> preemption to be disabled. By simply removing the pred from the list, do a 
-> synchronize_sched(), then set it to NULL. The update is done by userland, 
-> synchronizing a schedule should not be that noticeable.
+* Arun R Bharadwaj <arun@linux.vnet.ibm.com> [2009-04-06 21:43:57]:
 
-The only caution is that synchronize_sched() ignores preempt-disable
-sequences in the idle loop.  The reason for this is that synchronize_sched()
-maps to synchronize_rcu() for rcuclassic and rcutree.
+The following pinned hrtimers have been identified and marked:
+1)sched_rt_period_timer
+2)tick_sched_timer
+3)stack_trace_timer_fn
 
-So, if you need to make synchronize_sched() pay attention to
-preempt-disable sequences in the idle loop, something similar to the
-patch to RCU that I sent earlier (adding explicit rcu_idle() call to
-each idle loop) would be required.
+Signed-off-by: Arun R Bharadwaj <arun@linux.vnet.ibm.com>
+---
+ arch/x86/kernel/apic/x2apic_uv_x.c |    2 +-
+ kernel/sched.c                     |    5 +++--
+ kernel/time/tick-sched.c           |    7 ++++---
+ kernel/trace/trace_sysprof.c       |    3 ++-
+ 4 files changed, 10 insertions(+), 7 deletions(-)
 
-> > > So assuming we can't use rcu for this, it would be nice to have a way to
-> > > 'pause' tracing so the current filter can be removed i.e. some version
-> > > of stop_trace()/start_trace() that make sure nothing is still executing
-> > > or can enter filter_match_preds() while the current call->preds is being
-> > > destroyed.  Seems like it would be straightforward to implement for the
-> > > event tracer, since each event maps to a tracepoint that could be
-> > > temporarily unregistered/reregistered, but maybe not so easy for the
-> > > ftrace tracers...
-> > 
-> > In principle, it would be possible to rework RCU so that instead of the
-> > whole idle loop being a quiescent state, there is a single quiescent state
-> > at one point in each idle loop.  The reason that I have been avoiding this
-> > is that there are a lot of idle loops out there, and it would be a bit
-> > annoying to (1) find them all and update them and (2) keep track of all of
-> > them to ensure that new ones cannot slip in without the quiescent state.
-> > 
-> > But it could be done if the need is there.  Simple enough change.
-> > The following patch shows the general approach, assuming that CPUs
-> > are never put to sleep without entering nohz mode.
-> > 
-> > Thoughts?
-> 
-> I think using synchronize_sched() should be good enough for what we need.
-
-Again, as long as either (1) you are OK with synchronize_sched()
-ignoring preempt-disable sequences in the idle loop or (2) we rework RCU
-to add something like an rcu_idle() call in each idle loop.
-
-							Thanx, Paul
+Index: linux.trees.git/kernel/sched.c
+===================================================================
+--- linux.trees.git.orig/kernel/sched.c
++++ linux.trees.git/kernel/sched.c
+@@ -236,7 +236,7 @@ static void start_rt_bandwidth(struct rt
+ 
+ 		now = hrtimer_cb_get_time(&rt_b->rt_period_timer);
+ 		hrtimer_forward(&rt_b->rt_period_timer, now, rt_b->rt_period);
+-		hrtimer_start_expires(&rt_b->rt_period_timer,
++		hrtimer_start_expires_pinned(&rt_b->rt_period_timer,
+ 				HRTIMER_MODE_ABS);
+ 	}
+ 	spin_unlock(&rt_b->rt_runtime_lock);
+@@ -1156,7 +1156,8 @@ static __init void init_hrtick(void)
+  */
+ static void hrtick_start(struct rq *rq, u64 delay)
+ {
+-	hrtimer_start(&rq->hrtick_timer, ns_to_ktime(delay), HRTIMER_MODE_REL);
++	hrtimer_start_pinned(&rq->hrtick_timer, ns_to_ktime(delay),
++				HRTIMER_MODE_REL);
+ }
+ 
+ static inline void init_hrtick(void)
+Index: linux.trees.git/kernel/time/tick-sched.c
+===================================================================
+--- linux.trees.git.orig/kernel/time/tick-sched.c
++++ linux.trees.git/kernel/time/tick-sched.c
+@@ -348,7 +348,7 @@ void tick_nohz_stop_sched_tick(int inidl
+ 		ts->idle_expires = expires;
+ 
+ 		if (ts->nohz_mode == NOHZ_MODE_HIGHRES) {
+-			hrtimer_start(&ts->sched_timer, expires,
++			hrtimer_start_pinned(&ts->sched_timer, expires,
+ 				      HRTIMER_MODE_ABS);
+ 			/* Check, if the timer was already in the past */
+ 			if (hrtimer_active(&ts->sched_timer))
+@@ -394,7 +394,7 @@ static void tick_nohz_restart(struct tic
+ 		hrtimer_forward(&ts->sched_timer, now, tick_period);
+ 
+ 		if (ts->nohz_mode == NOHZ_MODE_HIGHRES) {
+-			hrtimer_start_expires(&ts->sched_timer,
++			hrtimer_start_expires_pinned(&ts->sched_timer,
+ 				      HRTIMER_MODE_ABS);
+ 			/* Check, if the timer was already in the past */
+ 			if (hrtimer_active(&ts->sched_timer))
+@@ -698,7 +698,8 @@ void tick_setup_sched_timer(void)
+ 
+ 	for (;;) {
+ 		hrtimer_forward(&ts->sched_timer, now, tick_period);
+-		hrtimer_start_expires(&ts->sched_timer, HRTIMER_MODE_ABS);
++		hrtimer_start_expires_pinned(&ts->sched_timer,
++						HRTIMER_MODE_ABS);
+ 		/* Check, if the timer was already in the past */
+ 		if (hrtimer_active(&ts->sched_timer))
+ 			break;
+Index: linux.trees.git/kernel/trace/trace_sysprof.c
+===================================================================
+--- linux.trees.git.orig/kernel/trace/trace_sysprof.c
++++ linux.trees.git/kernel/trace/trace_sysprof.c
+@@ -203,7 +203,8 @@ static void start_stack_timer(void *unus
+ 	hrtimer_init(hrtimer, CLOCK_MONOTONIC, HRTIMER_MODE_REL);
+ 	hrtimer->function = stack_trace_timer_fn;
+ 
+-	hrtimer_start(hrtimer, ns_to_ktime(sample_period), HRTIMER_MODE_REL);
++	hrtimer_start_pinned(hrtimer, ns_to_ktime(sample_period),
++				HRTIMER_MODE_REL);
+ }
+ 
+ static void start_stack_timers(void)
+Index: linux.trees.git/arch/x86/kernel/apic/x2apic_uv_x.c
+===================================================================
+--- linux.trees.git.orig/arch/x86/kernel/apic/x2apic_uv_x.c
++++ linux.trees.git/arch/x86/kernel/apic/x2apic_uv_x.c
+@@ -455,7 +455,7 @@ static void uv_heartbeat(unsigned long i
+ 	uv_set_scir_bits(bits);
+ 
+ 	/* enable next timer period */
+-	mod_timer(timer, jiffies + SCIR_CPU_HB_INTERVAL);
++	mod_timer_pinned(timer, jiffies + SCIR_CPU_HB_INTERVAL);
+ }
+ 
+ static void __cpuinit uv_heartbeat_enable(int cpu)
