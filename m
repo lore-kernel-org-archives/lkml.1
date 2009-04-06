@@ -1,17 +1,17 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759850AbZDFVvA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759967AbZDFVvo@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759850AbZDFVvA (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 6 Apr 2009 17:51:00 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759350AbZDFVuU
+	id S1759967AbZDFVvo (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 6 Apr 2009 17:51:44 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757581AbZDFVuX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 6 Apr 2009 17:50:20 -0400
-Received: from ogre.sisk.pl ([217.79.144.158]:49855 "EHLO ogre.sisk.pl"
+	Mon, 6 Apr 2009 17:50:23 -0400
+Received: from ogre.sisk.pl ([217.79.144.158]:49858 "EHLO ogre.sisk.pl"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1757390AbZDFVuT convert rfc822-to-8bit (ORCPT
+	id S1759124AbZDFVuU convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 6 Apr 2009 17:50:19 -0400
+	Mon, 6 Apr 2009 17:50:20 -0400
 Cc: Kernel Testers List <kernel-testers@vger.kernel.org>,
-       "Vegard Nossum" <vegard.nossum@gmail.com>
+       "Ingo Molnar" <mingo@elte.hu>, "Randy Dunlap" <randy.dunlap@oracle.com>
 References: <n4io5wq70ZO.A.gzG.rFn2JB@chimera>
 In-Reply-To: <n4io5wq70ZO.A.gzG.rFn2JB@chimera>
 From: "Rafael J. Wysocki" <rjw@sisk.pl>
@@ -19,8 +19,8 @@ MIME-Version: 1.0
 Content-Disposition: inline
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 8BIT
-Message-ID: <AsKNxFx2juN.A.g2B.wHn2JB@chimera>
-Subject: [Bug #12668] USB flash disk surprise disconnect
+Message-ID: <AsKNxFx2juN.A.KtB.sHn2JB@chimera>
+Subject: [Bug #12671] uvc_status_cleanup(): undefined reference to `input_unregister_device'
 To: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
 Date: Mon,  6 Apr 2009 21:05:35 +0200 (CEST)
 Sender: linux-kernel-owner@vger.kernel.org
@@ -35,10 +35,12 @@ from 2.6.28.  Please verify if it still should be listed and let me know
 (either way).
 
 
-Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=12668
-Subject		: USB flash disk surprise disconnect
-Submitter	: Vegard Nossum <vegard.nossum@gmail.com>
-Date		: 2009-02-08 10:21 (58 days old)
-References	: http://marc.info/?l=linux-kernel&m=123408851821292&w=4
+Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=12671
+Subject		: uvc_status_cleanup(): undefined reference to `input_unregister_device'
+Submitter	: Ingo Molnar <mingo@elte.hu>
+Date		: 2009-02-08 14:58 (58 days old)
+References	: http://marc.info/?l=linux-kernel&m=123410529909318&w=4
+Handled-By	: Randy Dunlap <randy.dunlap@oracle.com>
+Patch		: http://lkml.org/lkml/2009/2/15/172
 
 
