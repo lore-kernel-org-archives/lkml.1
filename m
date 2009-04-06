@@ -1,51 +1,131 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755950AbZDFOG6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755217AbZDFOL6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755950AbZDFOG6 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 6 Apr 2009 10:06:58 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753081AbZDFOGq
+	id S1755217AbZDFOL6 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 6 Apr 2009 10:11:58 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751361AbZDFOLt
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 6 Apr 2009 10:06:46 -0400
-Received: from caffeine.csclub.uwaterloo.ca ([129.97.134.17]:48413 "EHLO
-	caffeine.csclub.uwaterloo.ca" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1755329AbZDFOGq (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 6 Apr 2009 10:06:46 -0400
-Date: Mon, 6 Apr 2009 10:06:44 -0400
-To: Jeff Garzik <jeff@garzik.org>
-Cc: Janne Grunau <j@jannau.net>, David Rees <drees76@gmail.com>,
-       Mark Lord <lkml@rtr.ca>, Jens Axboe <jens.axboe@oracle.com>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Ingo Molnar <mingo@elte.hu>, Andrew Morton <akpm@linux-foundation.org>,
-       tytso@mit.edu, jesper@krogh.cc,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: Linux 2.6.29
-Message-ID: <20090406140643.GL3795@csclub.uwaterloo.ca>
-References: <20090403072507.GO5178@kernel.dk> <20090403142129.GH3795@csclub.uwaterloo.ca> <49D625A0.1030202@rtr.ca> <49D66A40.5020503@garzik.org> <20090403212847.GC25887@aniel> <49D68631.4030706@garzik.org> <72dbd3150904031553r3c60a3a5k45f16e0e7513d488@mail.gmail.com> <49D69C1D.50209@garzik.org> <20090404162954.GA5170@aniel> <49D7E71B.2080301@garzik.org>
+	Mon, 6 Apr 2009 10:11:49 -0400
+Received: from mx2.redhat.com ([66.187.237.31]:47605 "EHLO mx2.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751268AbZDFOLt (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 6 Apr 2009 10:11:49 -0400
+From: Jarod Wilson <jarod@redhat.com>
+Organization: Red Hat, Inc.
+To: dri-devel@lists.sourceforge.net
+Subject: [PATCH] drm: ignore LVDS on intel graphics systems that lie about having it
+Date: Mon, 6 Apr 2009 10:11:25 -0400
+User-Agent: KMail/1.11.1 (Linux/2.6.27.21-170.2.56.fc10.x86_64; KDE/4.2.1; x86_64; ; )
+Cc: linux-kernel@vger.kernel.org, xorg-devel@lists.x.org, notting@redhat.com
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain;
+  charset="us-ascii"
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <49D7E71B.2080301@garzik.org>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-From: lsorense@csclub.uwaterloo.ca (Lennart Sorensen)
+Message-Id: <200904061011.26389.jarod@redhat.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, Apr 04, 2009 at 07:02:51PM -0400, Jeff Garzik wrote:
-> Is dd + sync_file_range really a realistic comparison?  dd is streaming  
-> as fast as the disk can output data, whereas MythTV is streaming as fast  
-> as video is being recorded.  If you are maxing out your disk throughput,  
-> there will be obvious impact no matter what.
->
-> I would think a more accurate comparison would be recording multiple  
-> video streams in parallel, comparing fsync/fdatasync/sync_file_range?
->
-> IOW, what is an average MythTV setup -- what processes are actively  
-> reading/writing storage?  Where are you noticing latencies, and does  
-> sync_file_range decrease those areas of high latency?
+There are a number of small form factor desktop systems with Intel mobile
+graphics chips that lie and say they have an LVDS. With kernel mode-setting,
+this becomes a problem, and makes native resolution boot go haywire -- for
+example, my Dell Studio Hybrid, hooked to a 1920x1080 display claims to
+have a 1024x768 LVDS, and the resulting graphical boot on the 1920x1080
+display uses only the top left 1024x768, and auto-configured X will end
+up only 1024x768 as well. With this change, graphical boot and X
+both do 1920x1080 as expected.
 
-I am going to give the patch a shot.  I run dual tuners after all, so
-I do get multiple streams recording while doing playback at the same time.
+Note that we're simply embracing and extending the early bail-out code
+in place for the Mac Mini here. The xorg intel driver uses pci subsystem
+device and vendor id for matching, while we're using dmi lookups here.
+The MSI addition is courtesy of and tested by Bill Nottingham.
+
+One minor issue... Current Fedora rawhide, video playback using Xv makes
+X go off into the weeds with this patch added, but that's a bug elsewhere,
+still confident this patch DTRT.
+
+Signed-off-by: Jarod Wilson <jarod@redhat.com>
+Tested-by: Bill Nottingham <notting@redhat.com>
+
+---
+ drivers/gpu/drm/i915/intel_lvds.c |   46 ++++++++++++++++++++++++++++++------
+ 1 files changed, 38 insertions(+), 8 deletions(-)
+
+diff --git a/drivers/gpu/drm/i915/intel_lvds.c b/drivers/gpu/drm/i915/intel_lvds.c
+index 6619f26..4d64686 100644
+--- a/drivers/gpu/drm/i915/intel_lvds.c
++++ b/drivers/gpu/drm/i915/intel_lvds.c
+@@ -384,7 +384,51 @@ static const struct drm_encoder_funcs intel_lvds_enc_funcs = {
+ 	.destroy = intel_lvds_enc_destroy,
+ };
+ 
++static int __init intel_no_lvds_dmi_callback(const struct dmi_system_id *id)
++{
++	DRM_DEBUG("Skipping LVDS initialization for %s\n", id->ident);
++	return 1;
++}
+ 
++/* These systems claim to have LVDS, but really don't */
++static const struct dmi_system_id __initdata intel_no_lvds[] = {
++	{
++		.callback = intel_no_lvds_dmi_callback,
++		.ident = "Apple Mac Mini (Core series)",
++		.matches = {
++			DMI_MATCH(DMI_SYS_VENDOR, "Apple Inc."),
++			DMI_MATCH(DMI_PRODUCT_NAME, "Macmini1,1"),
++		},
++	},
++	{
++		.callback = intel_no_lvds_dmi_callback,
++		.ident = "Apple Mac Mini (Core 2 series)",
++		.matches = {
++			DMI_MATCH(DMI_SYS_VENDOR, "Apple Inc."),
++			DMI_MATCH(DMI_PRODUCT_NAME, "Macmini2,1"),
++		},
++	},
++	{
++		.callback = intel_no_lvds_dmi_callback,
++		.ident = "MSI IM-945GSE-A",
++		.matches = {
++			DMI_MATCH(DMI_SYS_VENDOR, "MSI"),
++			DMI_MATCH(DMI_PRODUCT_NAME, "A9830IMS"),
++		},
++	},
++	{
++		.callback = intel_no_lvds_dmi_callback,
++		.ident = "Dell Studio Hybrid",
++		.matches = {
++			DMI_MATCH(DMI_SYS_VENDOR, "Dell Inc."),
++			DMI_MATCH(DMI_PRODUCT_NAME, "Studio Hybrid 140g"),
++		},
++	},
++
++	/* FIXME: add a check for the Aopen Mini PC */
++
++	{ }	/* terminating entry */
++};
+ 
+ /**
+  * intel_lvds_init - setup LVDS connectors on this device
+@@ -404,15 +440,9 @@ void intel_lvds_init(struct drm_device *dev)
+ 	u32 lvds;
+ 	int pipe;
+ 
+-	/* Blacklist machines that we know falsely report LVDS. */
+-	/* FIXME: add a check for the Aopen Mini PC */
+-
+-	/* Apple Mac Mini Core Duo and Mac Mini Core 2 Duo */
+-	if(dmi_match(DMI_PRODUCT_NAME, "Macmini1,1") ||
+-	   dmi_match(DMI_PRODUCT_NAME, "Macmini2,1")) {
+-		DRM_DEBUG("Skipping LVDS initialization for Apple Mac Mini\n");
++	/* Skip init on machines we know falsely report LVDS */
++	if (dmi_check_system(intel_no_lvds))
+ 		return;
+-	}
+ 
+ 	intel_output = kzalloc(sizeof(struct intel_output), GFP_KERNEL);
+ 	if (!intel_output) {
 
 -- 
-Len Sorensen
+Jarod Wilson
+jarod@redhat.com
