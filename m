@@ -1,65 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751971AbZDFOut@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752964AbZDFOvw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751971AbZDFOut (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 6 Apr 2009 10:50:49 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751241AbZDFOui
+	id S1752964AbZDFOvw (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 6 Apr 2009 10:51:52 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751290AbZDFOvj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 6 Apr 2009 10:50:38 -0400
-Received: from mx2.redhat.com ([66.187.237.31]:42875 "EHLO mx2.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751232AbZDFOuh (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 6 Apr 2009 10:50:37 -0400
-Organization: Red Hat UK Ltd. Registered Address: Red Hat UK Ltd, Amberley
-	Place, 107-111 Peascod Street, Windsor, Berkshire, SI4 1TE, United
-	Kingdom.
-	Registered in England and Wales under Company Registration No. 3798903
-From: David Howells <dhowells@redhat.com>
-Subject: [PATCH] Make CONFIG_SLOW_WORK an automatic rather than manual config
-	option
-To: torvalds@osdl.org, akpm@linux-foundation.org, jeff@garzik.org
-Cc: dhowells@redhat.com, jj@chaosbits.net, linux-kernel@vger.kernel.org,
-       linux-fsdevel@vger.kernel.org
-Date: Mon, 06 Apr 2009 15:47:25 +0100
-Message-ID: <20090406144725.19407.16817.stgit@warthog.procyon.org.uk>
-User-Agent: StGIT/0.14.3
+	Mon, 6 Apr 2009 10:51:39 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:55382 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751241AbZDFOvi (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 6 Apr 2009 10:51:38 -0400
+Date: Mon, 6 Apr 2009 07:48:13 -0700 (PDT)
+From: Linus Torvalds <torvalds@linux-foundation.org>
+X-X-Sender: torvalds@localhost.localdomain
+To: Jens Axboe <jens.axboe@oracle.com>
+cc: Arjan van de Ven <arjan@infradead.org>, Theodore Tso <tytso@mit.edu>,
+       Linux Kernel Developers List <linux-kernel@vger.kernel.org>,
+       Ext4 Developers List <linux-ext4@vger.kernel.org>
+Subject: Re: [GIT PULL] Ext3 latency fixes
+In-Reply-To: <20090406081616.GT5178@kernel.dk>
+Message-ID: <alpine.LFD.2.00.0904060739570.4023@localhost.localdomain>
+References: <alpine.LFD.2.00.0904031150190.4015@localhost.localdomain> <alpine.LFD.2.00.0904031329410.7007@localhost.localdomain> <20090404135719.GA9812@mit.edu> <20090404151649.GE5178@kernel.dk> <alpine.LFD.2.00.0904040854470.3915@localhost.localdomain>
+ <20090404173412.GF5178@kernel.dk> <alpine.LFD.2.00.0904041039230.3915@localhost.localdomain> <20090404180108.GH5178@kernel.dk> <20090404232222.GA7480@mit.edu> <20090404163349.20df1208@infradead.org> <20090406081616.GT5178@kernel.dk>
+User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7bit
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Make CONFIG_SLOW_WORK an automatic rather than manual config option so that
-people configuring their kernels don't have to make the choice.  It can be
-selected automatically by those things that require it (such as FS-Cache).
-
-Signed-off-by: David Howells <dhowells@redhat.com>
----
-
- init/Kconfig |    4 +++-
- 1 files changed, 3 insertions(+), 1 deletions(-)
 
 
-diff --git a/init/Kconfig b/init/Kconfig
-index 09c7953..c52d1d4 100644
---- a/init/Kconfig
-+++ b/init/Kconfig
-@@ -1016,7 +1016,7 @@ source "arch/Kconfig"
- 
- config SLOW_WORK
- 	default n
--	bool "Enable slow work thread pool"
-+	bool
- 	help
- 	  The slow work thread pool provides a number of dynamically allocated
- 	  threads that can be used by the kernel to perform operations that
-@@ -1026,6 +1026,8 @@ config SLOW_WORK
- 	  by a series of mkdirs and a create call, all of which have to touch
- 	  disk.
- 
-+	  See Documentation/slow-work.txt.
-+
- endmenu		# General setup
- 
- config HAVE_GENERIC_DMA_COHERENT
+On Mon, 6 Apr 2009, Jens Axboe wrote:
+> 
+> Well, either you are submitting a single piece of IO (in which case you
+> just want to unplug or directly submit as part of the submit_bio()), or
+> you are submitting several IOS (in which case you just want to unplug at
+> the end of the IO submission, before waiting).
+
+That's not true.
+
+The plugging is often across multiple threads. It didn't _use_ to be (we 
+always unplugged at wait), but it is now. Nothing else explains why that 
+patch by Ted makes such a big throughput thing, because the code did
+
+      ret = submit_bh(WRITE_SYNC, bh);
+      wait_on_buffer(bh);
+
+ie it very much submits a _single_ IO, and waits on it. If plugging made a 
+difference, that means that unplugging was delayed so long that somebody 
+else does IO too - ie it gets delayed past a wait event.
+
+So according to your own rules, that submit_bh() _should_ use WRITE_SYNC, 
+but something bad happens if it does. I'm not quite seeing _what_, though, 
+unless there are multiple processes trying to dirty the _same_ buffer, and 
+they win if they all can dirty it without doing IO on it in between (and 
+then the write turns into just one write).
+
+		Linus
 
