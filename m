@@ -1,74 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758307AbZDFWVN@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760777AbZDFWVa@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758307AbZDFWVN (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 6 Apr 2009 18:21:13 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757346AbZDFWUy
+	id S1760777AbZDFWVa (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 6 Apr 2009 18:21:30 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760661AbZDFWVH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 6 Apr 2009 18:20:54 -0400
-Received: from mga14.intel.com ([143.182.124.37]:53274 "EHLO mga14.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1760029AbZDFWUx (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 6 Apr 2009 18:20:53 -0400
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.39,332,1235980800"; 
-   d="scan'208";a="128513401"
-Date: Tue, 7 Apr 2009 06:20:37 +0800
-From: Wu Fengguang <fengguang.wu@intel.com>
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Kernel Testers List <kernel-testers@vger.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       "Lin, Ming M" <ming.m.lin@intel.com>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Nick Piggin <npiggin@suse.de>, Peter Zijlstra <a.p.zijlstra@chello.nl>
-Subject: Re: [Bug #12809] iozone regression with 2.6.29-rc6
-Message-ID: <20090406222037.GA18714@localhost>
-References: <n4io5wq70ZO.A.gzG.rFn2JB@chimera> <AsKNxFx2juN.A.41._Gn2JB@chimera> <20090406221509.GA17604@localhost>
+	Mon, 6 Apr 2009 18:21:07 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:33557 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1755922AbZDFWVF (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 6 Apr 2009 18:21:05 -0400
+Date: Mon, 6 Apr 2009 15:17:28 -0700 (PDT)
+From: Linus Torvalds <torvalds@linux-foundation.org>
+X-X-Sender: torvalds@localhost.localdomain
+To: Ray Lee <ray-lk@madrabbit.org>
+cc: Hua Zhong <hzhong@gmail.com>, Theodore Tso <tytso@mit.edu>,
+       Jens Axboe <jens.axboe@oracle.com>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH 0/8][RFC] IO latency/throughput fixes
+In-Reply-To: <2c0942db0904061504l6504934bi446f7425fcd38470@mail.gmail.com>
+Message-ID: <alpine.LFD.2.00.0904061509020.7443@localhost.localdomain>
+References: <1239022088-29002-1-git-send-email-jens.axboe@oracle.com>  <alpine.LFD.2.00.0904060803141.4023@localhost.localdomain>  <20090406151054.GD5178@kernel.dk> <alpine.LFD.2.00.0904060840080.3863@localhost.localdomain>  <20090406183157.GD7376@mit.edu>
+ <alpine.LFD.2.00.0904061255160.4134@localhost.localdomain>  <002501c9b6f3$f85b4910$e911db30$@com> <20090406211931.GB8586@mit.edu>  <003001c9b6ff$a9259ce0$fb70d6a0$@com> <2c0942db0904061504l6504934bi446f7425fcd38470@mail.gmail.com>
+User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090406221509.GA17604@localhost>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Apr 07, 2009 at 06:15:09AM +0800, Wu Fengguang wrote:
-> On Tue, Apr 07, 2009 at 03:05:38AM +0800, Rafael J. Wysocki wrote:
-> > This message has been generated automatically as a part of a report
-> > of recent regressions.
-> > 
-> > The following bug entry is on the current list of known regressions
-> > from 2.6.28.  Please verify if it still should be listed and let me know
-> > (either way).
-> > 
-> > 
-> > Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=12809
-> > Subject		: iozone regression with 2.6.29-rc6
-> > Submitter	: Lin Ming <ming.m.lin@intel.com>
-> > Date		: 2009-02-27 9:13 (39 days old)
-> > First-Bad-Commit: http://git.kernel.org/?p=linux/kernel/git/torvalds/linux-2.6.git;a=commit;h=1cf6e7d83bf334cc5916137862c920a97aabc018
-> > References	: http://marc.info/?l=linux-kernel&m=123572630504360&w=4
-> > 		  http://lkml.org/lkml/2009/3/14/265
-> > Handled-By	: Wu Fengguang <fengguang.wu@intel.com>
-> > 
-> 
-> This bug could be closed.
-> 
-> The performance regression is triggered by commit 1cf6e7d83bf3(mm:
-> task dirty accounting fix). Which has been reverted in 2.6.29.
 
-Sorry for the mistake, commit 1cf6e7d83bf3 was _not_ reverted.
-So 2.6.29 is expected to have this regression.. 
 
-Thanks,
-Fengguang
+On Mon, 6 Apr 2009, Ray Lee wrote:
+> 
+> Your argument seems to be that someone may be relying upon default
+> kernel behavior and, at the same time, is willing to continually
+> upgrade their kernel.
 
-> For 2.6.30, commit 1cf6e7d83bf33(mm: task dirty accounting fix) and
-> 1b5e62b42b55(writeback: double the dirty thresholds) were just merged
-> together. The latter one restores the iozone performance. (However
-> might deteriorate some writeback slowness bugs..)
-> 
-> Thanks,
-> Fengguang
-> 
+No, I do think that the argument is valid per se: the crash behavior of 
+"data=ordered" wrt "data=writeback" _is_ very different. And it's true 
+that "data=ordered" has nicer behavior in the case of a crash.
+
+But it is also true that with all the recent patches, "data=writeback" has 
+become a _lot_ more attractive. It is slightly more ordered than it used 
+to be, in a very particular way that makes one of the biggest downsides go 
+away. And the latency improvements are really quite stunning (*). 
+
+So I think Hua's argument is real, but at the same time we should balance 
+it against the fact that a lot of people will just use whatever is the 
+default - and as a result we should strive to make the default be the 
+thing that we think people would be happiest with.
+
+I think "ordered" was a reasonable default, but that was at least partly 
+because _both_ ordered and writeback sucked (partly in different ways).
+
+I do think we could make it a config option.
+
+			Linus
+
+(*) Admittedly with a very specific workload, but I suspect it's not that 
+uncommon, and there will be people who never realized what their problem 
+was and blamed jerky behavior on scheduler or something.
