@@ -1,87 +1,77 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755835AbZDFLXV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756110AbZDFLbc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755835AbZDFLXV (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 6 Apr 2009 07:23:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755352AbZDFLXH
+	id S1756110AbZDFLbc (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 6 Apr 2009 07:31:32 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754940AbZDFLbX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 6 Apr 2009 07:23:07 -0400
-Received: from mx2.redhat.com ([66.187.237.31]:53340 "EHLO mx2.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755269AbZDFLXE (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 6 Apr 2009 07:23:04 -0400
-Message-ID: <49D9E53D.5080807@redhat.com>
-Date: Mon, 06 Apr 2009 14:19:25 +0300
-From: Izik Eidus <ieidus@redhat.com>
-User-Agent: Mozilla-Thunderbird 2.0.0.19 (X11/20090103)
+	Mon, 6 Apr 2009 07:31:23 -0400
+Received: from india.einfochips.com ([203.88.139.151]:9126 "EHLO
+	ahmedabad.einfochips.com" rhost-flags-OK-OK-OK-FAIL)
+	by vger.kernel.org with ESMTP id S1754819AbZDFLbW (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 6 Apr 2009 07:31:22 -0400
+Message-ID: <49D9E736.1060104@einfochips.com>
+Date: Mon, 06 Apr 2009 16:57:50 +0530
+From: Viral Mehta <viral.mehta@einfochips.com>
+Organization: eIbfochips Ltd.
+User-Agent: Thunderbird 2.0.0.21 (X11/20090302)
 MIME-Version: 1.0
-To: Nick Piggin <nickpiggin@yahoo.com.au>
-CC: akpm@linux-foundation.org, linux-kernel@vger.kernel.org,
-       kvm@vger.kernel.org, linux-mm@kvack.org, avi@redhat.com,
-       aarcange@redhat.com, chrisw@redhat.com, mtosatti@redhat.com,
-       hugh@veritas.com, kamezawa.hiroyu@jp.fujitsu.com
-Subject: Re: [PATCH 0/4] ksm - dynamic page sharing driver for linux v2
-References: <1238855722-32606-1-git-send-email-ieidus@redhat.com> <200904061704.50052.nickpiggin@yahoo.com.au>
-In-Reply-To: <200904061704.50052.nickpiggin@yahoo.com.au>
-Content-Type: text/plain; charset=UTF-8; format=flowed
+To: linux-kernel@vger.kernel.org
+Subject: [Fwd: kmap problem]
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Nick Piggin wrote:
-> On Sunday 05 April 2009 01:35:18 Izik Eidus wrote:
->
->   
->> This driver is very useful for KVM as in cases of runing multiple guests
->> operation system of the same type.
->> (For desktop work loads we have achived more than x2 memory overcommit
->> (more like x3))
->>     
->
-> Interesting that it is a desirable workload to have multiple guests each
-> running MS office.
->   
 
-This numbers are took from such workload, it is some kind of weird 
-script that keep opening Word / Excel and write there like a user...
-I think in addition it open internet explorer and enter to random sites...
-I can search for the script if wanted...
+Hi All,
+I am writing a kernel module. And I am facing a problem relate to Kmap.
 
-> I wonder, can windows enter a paravirtualised guest mode for KVM? And can
-> you detect page allocation/freeing events?
->   
+I am retriving Kernel Virtual Address for a specific Page using kmap() 
+and then after some time I am doing kunmap().
+Now, I know that kmap can give A LIMITED NUMBER OF MAPPINGS and so such 
+mapping should NOT be held longer. But in my case it is absolutely 
+necessary to hold more than 1024 such mappings.
 
-I Dont know.
+The same code is NOT working on 2.6.10 kernel and IS WORKING on 2.6.18 
+kernel. The system is same and there are two kernels that I am playing 
+with.
 
->  
->   
->> This driver have found users other than KVM, for example CERN,
->> Fons Rademakers:
->> "on many-core machines we run one large detector simulation program per core.
->> These simulation programs are identical but run each in their own process and
->> need about 2 - 2.5 GB RAM.
->> We typically buy machines with 2GB RAM per core and so have a problem to run
->> one of these programs per core.
->> Of the 2 - 2.5 GB about 700MB is identical data in the form of magnetic field
->> maps, detector geometry, etc.
->> Currently people have been trying to start one program, initialize the geometry
->> and field maps and then fork it N times, to have the data shared.
->> With KSM this would be done automatically by the system so it sounded extremely
->> attractive when Andrea presented it."
->>     
->
-> They should use a shared memory segment, or MAP_ANONYMOUS|MAP_SHARED etc.
-> Presumably they will probably want to control it to interleave it over
-> all numa nodes and use hugepages for it. It would be very little work.
->   
+My only question is what is so changed in 2.6.18 kernel from 2.6.10 that 
+the same code is working and evidently kmap can hold more than 1024 
+virtual address mappings.
 
-Agree about that, dont know their application to much, i know they had 
-problems to do it.
+The other thing I would like to know if there is ANY generic way to 
+handle this situation in 2.6.10 kernel.
 
->  
->   
->> I am sending another seires of patchs for kvm kernel and kvm-userspace
->> that would allow users of kvm to test ksm with it.
->> The kvm patchs would apply to Avi git tree.
->>     
+Thanks,
+Viral
+-- 
+_____________________________________________________________________
+Disclaimer: This e-mail message and all attachments transmitted with it
+are intended solely for the use of the addressee and may contain legally
+privileged and confidential information. If the reader of this message
+is not the intended recipient, or an employee or agent responsible for
+delivering this message to the intended recipient, you are hereby
+notified that any dissemination, distribution, copying, or other use of
+this message or its attachments is strictly prohibited. If you have
+received this message in error, please notify the sender immediately by
+replying to this message and please delete it from your computer. Any
+views expressed in this message are those of the individual sender
+unless otherwise stated.Company has taken enough precautions to prevent
+the spread of viruses. However the company accepts no liability for any
+damage caused by any virus transmitted by this email.
+__________________________________________________________________________
+
+
+--
+To unsubscribe, send a message with 'unsubscribe linux-mm' in
+the body to majordomo@kvack.org.  For more info on Linux MM,
+see: http://www.linux-mm.org/ .
+Don't email: <a href=mailto:"dont@kvack.org"> email@kvack.org </a>
+
+
+Email Scanned for Virus & Dangerous Content by : www.CleanMailGateway.com
+
 
