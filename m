@@ -1,62 +1,110 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757059AbZDFWxa@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759283AbZDFWyy@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757059AbZDFWxa (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 6 Apr 2009 18:53:30 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754903AbZDFWxU
+	id S1759283AbZDFWyy (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 6 Apr 2009 18:54:54 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754424AbZDFWyq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 6 Apr 2009 18:53:20 -0400
-Received: from rv-out-0506.google.com ([209.85.198.233]:25339 "EHLO
-	rv-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754424AbZDFWxU (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 6 Apr 2009 18:53:20 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=from:to:cc:references:in-reply-to:subject:date:message-id
-         :mime-version:content-type:content-transfer-encoding:x-mailer
-         :thread-index:content-language;
-        b=ktYSnBj3frUuwH0GYjVlRAC1EPcR7urk1HV0FunSxIYpF2g4Zt0v7C+Y1GwhV3qcjN
-         Cw+shvA++oYi10RH28tD7074nZe2kaqfCMV90L3t40nrIxaV2bb2H4y5yK8ShF0Ow3TU
-         GSy/SZquTMgeYPdHiBMGhT3fM4OicMiKLhOjo=
-From: "Hua Zhong" <hzhong@gmail.com>
-To: "'Ray Lee'" <ray-lk@madrabbit.org>
-Cc: "'Theodore Tso'" <tytso@mit.edu>,
-       "'Linus Torvalds'" <torvalds@linux-foundation.org>,
-       "'Jens Axboe'" <jens.axboe@oracle.com>,
-       "'Linux Kernel Mailing List'" <linux-kernel@vger.kernel.org>
-References: <1239022088-29002-1-git-send-email-jens.axboe@oracle.com> 	<20090406151054.GD5178@kernel.dk> <alpine.LFD.2.00.0904060840080.3863@localhost.localdomain> 	<20090406183157.GD7376@mit.edu> <alpine.LFD.2.00.0904061255160.4134@localhost.localdomain> 	<002501c9b6f3$f85b4910$e911db30$@com> <20090406211931.GB8586@mit.edu> 	<003001c9b6ff$a9259ce0$fb70d6a0$@com> <2c0942db0904061504l6504934bi446f7425fcd38470@mail.gmail.com> 	<003401c9b706$9c4c1b50$d4e451f0$@com> <2c0942db0904061548x2d34eff7g9b5332826509da53@mail.gmail.com>
-In-Reply-To: <2c0942db0904061548x2d34eff7g9b5332826509da53@mail.gmail.com>
-Subject: RE: [PATCH 0/8][RFC] IO latency/throughput fixes
-Date: Mon, 6 Apr 2009 15:52:50 -0700
-Message-ID: <003501c9b70a$6a809f20$3f81dd60$@com>
-MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="UTF-8"
+	Mon, 6 Apr 2009 18:54:46 -0400
+Received: from mga01.intel.com ([192.55.52.88]:13373 "EHLO mga01.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751907AbZDFWyp (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 6 Apr 2009 18:54:45 -0400
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.39,332,1235980800"; 
+   d="scan'208";a="445547478"
+Subject: Re: 2.6.29 git master and PAT problems
+From: "Pallipadi, Venkatesh" <venkatesh.pallipadi@intel.com>
+To: Arkadiusz Miskiewicz <a.miskiewicz@gmail.com>
+Cc: "Siddha, Suresh B" <suresh.b.siddha@intel.com>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       Jesse Barnes <jbarnes@virtuousgeek.org>
+In-Reply-To: <200904020912.23071.a.miskiewicz@gmail.com>
+References: <200903302317.04515.a.miskiewicz@gmail.com>
+	 <20090331002815.GB10490@linux-os.sc.intel.com>
+	 <20090402004933.GE10490@linux-os.sc.intel.com>
+	 <200904020912.23071.a.miskiewicz@gmail.com>
+Content-Type: text/plain
+Date: Mon, 06 Apr 2009 15:52:33 -0700
+Message-Id: <1239058353.4529.7124.camel@localhost.localdomain>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.24.3 (2.24.3-1.fc10) 
 Content-Transfer-Encoding: 7bit
-X-Mailer: Microsoft Office Outlook 12.0
-Thread-Index: Acm3CcVUo9wEBqCPQzu6yDr4nYlWgQAAE42A
-Content-Language: en-us
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> Security on an embedded device starts with controlling physical
-> access. If they have access to the storage media all bets are off,
-> whether it's data=ordered or not. (Access to the storage media is
-> really what we're talking about here -- medical data, for example,
-> hitting the platter before the metadata updates that then make that
-> data unaccessible to other userspace processes.)
+On Thu, 2009-04-02 at 00:12 -0700, Arkadiusz Miskiewicz wrote:
+> On Thursday 02 of April 2009, Pallipadi, Venkatesh wrote:
+> > On Mon, Mar 30, 2009 at 05:28:15PM -0700, Pallipadi, Venkatesh wrote:
+> > > On Mon, Mar 30, 2009 at 03:31:09PM -0700, Arkadiusz Miskiewicz wrote:
+> > > > On Monday 30 of March 2009, Pallipadi, Venkatesh wrote:
+> > > >
+> > > > More info follows. Now I've switched to
+> > > > e1c502482853f84606928f5a2f2eb6da1993cda1 which contains latest drm
+> > > > fixes and now I get much lower numbers of PAT errors but still.
+> > > >
+> > > > > On Mon, 2009-03-30 at 14:31 -0700, Arkadiusz Miskiewicz wrote:
+> > > > > > On Monday 30 of March 2009, Pallipadi, Venkatesh wrote:
+> > > > > > > Patch here should get rid of these errors.
+> > > > > > >
+> > > > > > > http://marc.info/?l=linux-kernel&m=123788806506230&w=2
+> > > > > > >
+> > > > > > > The patch is in tip and on its way to upstream.
+> > > > > >
+> > > > > > The problem is that kernel I'm running already contains this patch
+> > > > > > (it's merged already). Other ideas?
+> > > > > >
+> > > > > > ratelimiting that error is good IMO anyway.
+> > > > >
+> > > > > Rate limiting will just work around the problem here. Ideally we
+> > > > > should never see these errors. So, it will be better if we can narrow
+> > > > > down on the bug resulting in these error messages.
+> > > >
+> > > > Of course it's better. I'm saying that when these messages "fire" then
+> > > > it's hard to do anything else on the system for a while until these
+> > > > stop.
+> > > >
+> > > > > Can you please send me the output of
+> > > > > # cat /debug/x86/pat_memtype_list
+> > > > > with debugfs mounted.
+> > > > > and
+> > > > > # cat /proc/mtrr
+> > >
+> > > There seems to be two different problems here.
+> > > - We should not have that many single page ranges reserved. That will
+> > > cause a performance problem with drm even without the "freeing invalid
+> > > type" error. - "freeing invalid type" error itself. Seems to be caused
+> > > due to some unbalanced free along the drm path. We tried to find anything
+> > > obvious in the code that may be causing problem here. But, haven't found
+> > > anything so far. Will try to reproduce the problem internally and debug
+> > > it further.
+> >
+> > OK. I think we have root caused the thinko that was resulting in
+> > "freeing invalid type" error. Can you try the below test
+> > patch. Patch is not final version and may need some cleanup.
 > 
-> Because *if* they have access to the media, they can replace any
-> running code on that box, and your security is worthless.
+> Was testing on linus git as of today +
+> [PATCH] x86, PAT: Remove duplicate memtype reserve in pci mmap
+> + patch from this thread.
 > 
-> So no, I don't see how that's a valid argument.
+> It doesn't fix the problem. At least I'm able to reproduce "Freeint invalid
+> memtype" by just running http://www.tremulous.net/ game. It also happened when
+> watching youtube with opera. _Maybe_ things are little better because number
+> of "freeing invalid memtype" messages is much lower than before but there is
+> posibility that I simply didn't trigger it fully.
 
-The problem with security has nothing to do with embedded. It's 
-that when you commit metadata first and crash before you write 
-the data, then you get to see random blocks which might contain 
-sensitive information from other users.
+Arkadiusz,
 
-Hua
+I was finally able to reproduce the problem of "freeing invalid memtype"
+with upstream git kernel (commit 0221c81b1b) + latest xf86 intel driver.
+But, with upstream + the patch I had sent you earlier in this thread
+(http://marc.info/?l=linux-kernel&m=123863345520617&w=2) I don't see
+those freeing invalid memtype errors anymore.
+
+Can you please double check with current git and that patch and let me
+know if you are still seeing the problem.
+
+Thanks,
+Venki 
 
 
