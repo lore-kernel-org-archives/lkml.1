@@ -1,77 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753318AbZDFD5v@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752278AbZDFELY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753318AbZDFD5v (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 5 Apr 2009 23:57:51 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752211AbZDFD5m
+	id S1752278AbZDFELY (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 6 Apr 2009 00:11:24 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750733AbZDFELP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 5 Apr 2009 23:57:42 -0400
-Received: from fgwmail6.fujitsu.co.jp ([192.51.44.36]:37488 "EHLO
-	fgwmail6.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752141AbZDFD5l (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 5 Apr 2009 23:57:41 -0400
-From: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
-To: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
-Subject: Re: + mm-align-vmstat_works-timer.patch added to -mm tree
-Cc: kosaki.motohiro@jp.fujitsu.com, linux-kernel@vger.kernel.org,
-       anton@samba.org, linux-mm <linux-mm@kvack.org>,
-       Andrew Morton <akpm@linux-foundation.org>
-In-Reply-To: <20090406120533.450B.A69D9226@jp.fujitsu.com>
-References: <200904011945.n31JjWqG028114@imap1.linux-foundation.org> <20090406120533.450B.A69D9226@jp.fujitsu.com>
-Message-Id: <20090406125627.4514.A69D9226@jp.fujitsu.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset="US-ASCII"
+	Mon, 6 Apr 2009 00:11:15 -0400
+Received: from hera.kernel.org ([140.211.167.34]:54506 "EHLO hera.kernel.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750709AbZDFELO (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 6 Apr 2009 00:11:14 -0400
+Subject: Re: [RFC PATCH] x86, oprofile: fix P4 oprofile CPU setup bug
+From: Jaswinder Singh Rajput <jaswinder@kernel.org>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: Linus Torvalds <torvalds@linux-foundation.org>,
+       John Levon <levon@movementarian.org>, x86 maintainers <x86@kernel.org>,
+       LKML <linux-kernel@vger.kernel.org>,
+       Thomas Gleixner <tglx@linutronix.de>,
+       Robert Richter <robert.richter@amd.com>,
+       "H. Peter Anvin" <hpa@zytor.com>
+In-Reply-To: <20090405213828.GA1059@elte.hu>
+References: <1238958725.3522.1.camel@ht.satnam>
+	 <alpine.LFD.2.00.0904051243310.4023@localhost.localdomain>
+	 <1238962495.3301.0.camel@ht.satnam>  <20090405213828.GA1059@elte.hu>
+Content-Type: text/plain
+Date: Mon, 06 Apr 2009 09:40:10 +0530
+Message-Id: <1238991010.3513.12.camel@ht.satnam>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.24.5 (2.24.5-1.fc10) 
 Content-Transfer-Encoding: 7bit
-X-Mailer: Becky! ver. 2.50 [ja]
-Date: Mon,  6 Apr 2009 12:57:37 +0900 (JST)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> (swich to lkml and linux-mm)
-> 
-> Hi Anton,
-> 
-> Do you have any mesurement data?
-> 
-> Honestly, I made the same patch few week ago.
-> but I found two problems.
-> 
-> 1)
-> work queue tracer (in -tip) reported it isn't proper rounded.
+On Sun, 2009-04-05 at 23:38 +0200, Ingo Molnar wrote:
 
-Ah, sorry ignore this sentence.
-I used my local patch queue's feature for mesurement, not -tip.
+> The real fix would be to go to the right abstraction level and 
+> realize how these MSRs are set up by the oprofile code, and put all 
+> the MSR reads and writes into one non-preempt section.
+> 
+> Could you please test the patch below? (Totally untested and 
+> everything.) Please dont just check whether the warning went away, 
+> but also whether Oprofile still works correctly on your P4/HT box.
+> 
 
+This fixed the warning, thanks :-)
 
-> 
-> The fact is, schedule_delayed_work(work, round_jiffies_relative()) is
-> a bit ill.
-> 
-> it mean
->   - round_jiffies_relative() calculate rounded-time - jiffies
->   - schedule_delayed_work() calculate argument + jiffies
-> 
-> it assume no jiffies change at above two place. IOW it assume
-> non preempt kernel.
-> 
-> 
-> 2)
-> > -	schedule_delayed_work_on(cpu, vmstat_work, HZ + cpu);
-> > +	schedule_delayed_work_on(cpu, vmstat_work,
-> > +				 __round_jiffies_relative(HZ, cpu));
-> 
-> isn't same meaning.
-> 
-> vmstat_work mean to move per-cpu stastics to global stastics.
-> Then, (HZ + cpu) mean to avoid to touch the same global variable at the same time.
-> 
-> Oh well, this patch have performance regression risk on _very_ big server.
-> (perhaps, only sgi?)
-> 
-> but I agree vmstat_work is one of most work queue heavy user.
-> For power consumption view, it isn't proper behavior.
-> 
-> I still think improving another way.
+oprofile is still not working properly may be because of F10 update
+issues:
+Stopping profiling.
+warning: /usr/lib/libpng12.so.0.34.0 could not be found.
+warning: /usr/lib/libpurple.so.0.5.4 could not be found.
+warning: /vmlinux-unknown could not be found.
+warning: [heap] (tgid:3215 range:0x806f000-0x8091000) could not be found.
+warning: [heap] (tgid:3243 range:0x806f000-0x8091000) could not be found.
+warning: [heap] (tgid:3325 range:0x806f000-0x809b000) could not be found.
+warning: [heap] (tgid:3336 range:0x805d000-0x807e000) could not be found.
+warning: [heap] (tgid:3510 range:0x806f000-0x8091000) could not be found.
+warning: [heap] (tgid:4736 range:0x806f000-0x8091000) could not be found.
+warning: [heap] (tgid:5376 range:0x8058000-0x80a8000) could not be found.
+bfd_get_section_contents:get_debug:: Bad value
 
+--
+JSR
 
