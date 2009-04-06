@@ -1,150 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756231AbZDFOGj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755950AbZDFOG6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756231AbZDFOGj (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 6 Apr 2009 10:06:39 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753081AbZDFOGb
+	id S1755950AbZDFOG6 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 6 Apr 2009 10:06:58 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753081AbZDFOGq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 6 Apr 2009 10:06:31 -0400
-Received: from smtp111.iad.emailsrvr.com ([207.97.245.111]:44055 "EHLO
-	smtp111.iad.emailsrvr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752749AbZDFOGa (ORCPT
+	Mon, 6 Apr 2009 10:06:46 -0400
+Received: from caffeine.csclub.uwaterloo.ca ([129.97.134.17]:48413 "EHLO
+	caffeine.csclub.uwaterloo.ca" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1755329AbZDFOGq (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 6 Apr 2009 10:06:30 -0400
-X-Greylist: delayed 628 seconds by postgrey-1.27 at vger.kernel.org; Mon, 06 Apr 2009 10:06:30 EDT
-From: "Christopher J. Harrer" <charrer@alacritech.com>
-To: "'Mithlesh Thukral'" <mithlesh@linsyssoft.com>,
-       "'maximilian attems'" <max@stro.at>
-Cc: "'Linux Kernel Mailing List'" <linux-kernel@vger.kernel.org>,
-       <debian-kernel@lists.debian.org>
-Subject: RE: Staging: sxg: slicoss: Specify the license for Sahara SXG and Slicoss drivers
-Date: Mon, 6 Apr 2009 09:56:07 -0400
+	Mon, 6 Apr 2009 10:06:46 -0400
+Date: Mon, 6 Apr 2009 10:06:44 -0400
+To: Jeff Garzik <jeff@garzik.org>
+Cc: Janne Grunau <j@jannau.net>, David Rees <drees76@gmail.com>,
+       Mark Lord <lkml@rtr.ca>, Jens Axboe <jens.axboe@oracle.com>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Ingo Molnar <mingo@elte.hu>, Andrew Morton <akpm@linux-foundation.org>,
+       tytso@mit.edu, jesper@krogh.cc,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: Linux 2.6.29
+Message-ID: <20090406140643.GL3795@csclub.uwaterloo.ca>
+References: <20090403072507.GO5178@kernel.dk> <20090403142129.GH3795@csclub.uwaterloo.ca> <49D625A0.1030202@rtr.ca> <49D66A40.5020503@garzik.org> <20090403212847.GC25887@aniel> <49D68631.4030706@garzik.org> <72dbd3150904031553r3c60a3a5k45f16e0e7513d488@mail.gmail.com> <49D69C1D.50209@garzik.org> <20090404162954.GA5170@aniel> <49D7E71B.2080301@garzik.org>
 MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-X-Mailer: Microsoft Office Outlook, Build 11.0.5510
-In-Reply-To: <200904070037.48064.mithlesh@linsyssoft.com>
-X-MimeOLE: Produced By Microsoft MimeOLE V6.00.2900.5579
-Thread-Index: Acm2vO1pHH/OxWFrQ+yK1TyhPvLapQAASYjw
-Message-Id: <20090406135557.EA7091B4039@relay31.relay.iad.mlsrvr.com>
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <49D7E71B.2080301@garzik.org>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+From: lsorense@csclub.uwaterloo.ca (Lennart Sorensen)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
------Original Message-----
-From: Mithlesh Thukral [mailto:mithlesh@linsyssoft.com] 
-Sent: Monday, April 06, 2009 3:08 PM
-To: maximilian attems
-Cc: Linux Kernel Mailing List; debian-kernel@lists.debian.org; Christopher
-Harrer
-Subject: Re: Staging: sxg: slicoss: Specify the license for Sahara SXG and
-Slicoss drivers
-
-CCing a person who can better comment.
-
-Cheers,
-Mithlesh Thukral
-
-On Monday 06 April 2009 18:42:43 maximilian attems wrote:
-> On Sun, 05 Apr 2009, Linux Kernel Mailing List wrote:
-> > Gitweb:    
-> > http://git.kernel.org/linus/ba0e1ebb7ea0616eebc29d2077355bacea62a9d8
-> > Commit:     ba0e1ebb7ea0616eebc29d2077355bacea62a9d8
-> > Parent:     19be358212af35bd64d449da82279874099a1a85
-> > Author:     Mithlesh Thukral <mithlesh@linsyssoft.com>
-> > AuthorDate: Wed Mar 25 15:52:54 2009 +0530
-> > Committer:  Greg Kroah-Hartman <gregkh@suse.de>
-> > CommitDate: Fri Apr 3 14:54:38 2009 -0700
-> >
-> >     Staging: sxg: slicoss: Specify the license for Sahara SXG and 
-> > Slicoss drivers
-> >
-> >     Specify a license for the Alacritech Sahara (10Gbe) and SLICOSS
-> > (1GBE) firmware files.
-> >
-> >     Signed-off-by: Christopher Harrer <charrer@alacritech.com>
-> >     Signed-off-by: Mithlesh Thukral <mithlesh@linsyssoft.com>
-> >     Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
-> > ---
-> >  firmware/WHENCE |   33 ++++++++++++++++++++++++++++++---
-> >  1 files changed, 30 insertions(+), 3 deletions(-)
-> >
-> > diff --git a/firmware/WHENCE b/firmware/WHENCE index 
-> > df79422..d6c227d 100644
-> > --- a/firmware/WHENCE
-> > +++ b/firmware/WHENCE
-> > @@ -372,7 +372,21 @@ File: slicoss/oasisdbgdownload.sys.ihex
-> >  File: slicoss/oasisdownload.sys.ihex
-> >  File: slicoss/oasisrcvucode.sys.ihex
-> >
-> > -Licence: Unknown
-> > +Licence:
-> > +		Copyright (C) 1999-2009 Alacritech, Inc.
-> > +
-> > +	as an unpublished work. This notice does not imply unrestricted or
-> > +	public access to the source code from which this firmware image is
-> > +	derived.  Except as noted below this firmware image may not be
-> > +	reproduced, used, sold or transferred to any third party without
-> > +	Alacritech's prior written consent.  All Rights Reserved.
-> > +
-> > +	Permission is hereby granted for the distribution of this firmware
-> > +	image as part of a Linux or other Open Source operating system
-kernel
-> > +	in text or binary form as required.
-> > +
-> > +	This firmware may not be modified and may only be used with
-> > +	Alacritech hardware.
+On Sat, Apr 04, 2009 at 07:02:51PM -0400, Jeff Garzik wrote:
+> Is dd + sync_file_range really a realistic comparison?  dd is streaming  
+> as fast as the disk can output data, whereas MythTV is streaming as fast  
+> as video is being recorded.  If you are maxing out your disk throughput,  
+> there will be obvious impact no matter what.
 >
-> have you read what you say?
+> I would think a more accurate comparison would be recording multiple  
+> video streams in parallel, comparing fsync/fdatasync/sync_file_range?
 >
-> the last paragraph disables the distribution right, due beeing only 
-> allowed to be touched on alacritech hardware.
->
-> i'm certainly not buying anything from alacritech, but would want to 
-> disbribute your fimware in Debian in the nonfree firmware-linux 
-> package for the benefit of your customers.
-> -> http://packages.debian.org/sid/firmware-linux
->
-> >  Found in hex form in kernel source.
-> >
-> > @@ -383,10 +397,23 @@ Driver: SXG - Alacritech IS-NIC products
-> >  File: sxg/saharadownloadB.sys.ihex
-> >  File: sxg/saharadbgdownloadB.sys.ihex
-> >
-> > -Licence: Unknown
-> > +Licence:
-> > +		Copyright (C) 1999-2009 Alacritech, Inc.
-> > +
-> > +	as an unpublished work. This notice does not imply unrestricted or
-> > +	public access to the source code from which this firmware image is
-> > +	derived.  Except as noted below this firmware image may not be
-> > +	reproduced, used, sold or transferred to any third party without
-> > +	Alacritech's prior written consent.  All Rights Reserved.
-> > +
-> > +	Permission is hereby granted for the distribution of this firmware
-> > +	image as part of a Linux or other Open Source operating system
-kernel
-> > +	in text or binary form as required.
-> > +
-> > +	This firmware may not be modified and may only be used with
-> > +	Alacritech hardware.
->
-> same trouble,
-> nuke the "and may only be used with Alacritech hardware."
-Hello All,
+> IOW, what is an average MythTV setup -- what processes are actively  
+> reading/writing storage?  Where are you noticing latencies, and does  
+> sync_file_range decrease those areas of high latency?
 
-I apologize in advance for the trouble this is causing.  We used an existing
-license in the WHENCE file as a template for our text.  The intention of our
-wording is not to limit the actual distribution of the firmware file; but to
-control the platform(s) the firmware file may be executed on (as opposed to
-stored).
+I am going to give the patch a shot.  I run dual tuners after all, so
+I do get multiple streams recording while doing playback at the same time.
 
-Would changing to the wording to "This firmware may not be modified and may
-only be loaded to and executed on Alacritech hardware" be more clear? 
-
-Other suggestions, short of removing the line altogether?
-
-Thanks,
-
-Chris Harrer 
-
+-- 
+Len Sorensen
