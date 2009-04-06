@@ -1,131 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755217AbZDFOL6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756227AbZDFOP3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755217AbZDFOL6 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 6 Apr 2009 10:11:58 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751361AbZDFOLt
+	id S1756227AbZDFOP3 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 6 Apr 2009 10:15:29 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754312AbZDFOPU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 6 Apr 2009 10:11:49 -0400
-Received: from mx2.redhat.com ([66.187.237.31]:47605 "EHLO mx2.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751268AbZDFOLt (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 6 Apr 2009 10:11:49 -0400
-From: Jarod Wilson <jarod@redhat.com>
-Organization: Red Hat, Inc.
-To: dri-devel@lists.sourceforge.net
-Subject: [PATCH] drm: ignore LVDS on intel graphics systems that lie about having it
-Date: Mon, 6 Apr 2009 10:11:25 -0400
-User-Agent: KMail/1.11.1 (Linux/2.6.27.21-170.2.56.fc10.x86_64; KDE/4.2.1; x86_64; ; )
-Cc: linux-kernel@vger.kernel.org, xorg-devel@lists.x.org, notting@redhat.com
+	Mon, 6 Apr 2009 10:15:20 -0400
+Received: from caffeine.csclub.uwaterloo.ca ([129.97.134.17]:52963 "EHLO
+	caffeine.csclub.uwaterloo.ca" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1752970AbZDFOPS (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 6 Apr 2009 10:15:18 -0400
+Date: Mon, 6 Apr 2009 10:15:16 -0400
+To: Jeff Moyer <jmoyer@redhat.com>
+Cc: Ingo Molnar <mingo@elte.hu>, Andrew Morton <akpm@linux-foundation.org>,
+       torvalds@linux-foundation.org, tytso@mit.edu, drees76@gmail.com,
+       jesper@krogh.cc, linux-kernel@vger.kernel.org, jens.axboe@oracle.com
+Subject: Re: Linux 2.6.29
+Message-ID: <20090406141516.GM3795@csclub.uwaterloo.ca>
+References: <20090326171148.9bf8f1ec.akpm@linux-foundation.org> <alpine.LFD.2.00.0903261723250.3994@localhost.localdomain> <20090326174704.cd36bf7b.akpm@linux-foundation.org> <alpine.LFD.2.00.0903261752110.3994@localhost.localdomain> <20090326182519.d576d703.akpm@linux-foundation.org> <20090401210337.GB3797@csclub.uwaterloo.ca> <20090401143622.b1885643.akpm@linux-foundation.org> <20090402010044.GA16092@elte.hu> <20090403040649.GF3795@csclub.uwaterloo.ca> <x49myaxjrsb.fsf@segfault.boston.devel.redhat.com>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="us-ascii"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Message-Id: <200904061011.26389.jarod@redhat.com>
+In-Reply-To: <x49myaxjrsb.fsf@segfault.boston.devel.redhat.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+From: lsorense@csclub.uwaterloo.ca (Lennart Sorensen)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-There are a number of small form factor desktop systems with Intel mobile
-graphics chips that lie and say they have an LVDS. With kernel mode-setting,
-this becomes a problem, and makes native resolution boot go haywire -- for
-example, my Dell Studio Hybrid, hooked to a 1920x1080 display claims to
-have a 1024x768 LVDS, and the resulting graphical boot on the 1920x1080
-display uses only the top left 1024x768, and auto-configured X will end
-up only 1024x768 as well. With this change, graphical boot and X
-both do 1920x1080 as expected.
+On Fri, Apr 03, 2009 at 06:28:36PM -0400, Jeff Moyer wrote:
+> Could you try one more test, please?  Switch back to CFQ and set
+> /sys/block/sdX/queue/iosched/slice_idle to 0?
 
-Note that we're simply embracing and extending the early bail-out code
-in place for the Mac Mini here. The xorg intel driver uses pci subsystem
-device and vendor id for matching, while we're using dmi lookups here.
-The MSI addition is courtesy of and tested by Bill Nottingham.
+I actually am running cfq at the moment, but with Mark's (I think it
+was) preload library to change fsync calls to at most one per 5 seconds
+instead of 10 per second.  So far that has certainly made things a lot
+better as far as I can tell.  Maybe not as good as anticipatory seemed
+to be but certainly better.
 
-One minor issue... Current Fedora rawhide, video playback using Xv makes
-X go off into the weeds with this patch added, but that's a bug elsewhere,
-still confident this patch DTRT.
+I can try your suggestion too.
 
-Signed-off-by: Jarod Wilson <jarod@redhat.com>
-Tested-by: Bill Nottingham <notting@redhat.com>
+I set sda-sdd to 0.  I removed the preload library from the mythbackend.
 
----
- drivers/gpu/drm/i915/intel_lvds.c |   46 ++++++++++++++++++++++++++++++------
- 1 files changed, 38 insertions(+), 8 deletions(-)
+> I'm not sure how the applications you are running write to disk, but if
+> they interleave I/O between processes, this could help.  I'm not too
+> confident that this will make a difference, though, since CFQ changed to
+> time-slice based instead of quantum based before 2.6.18.  Still, it
+> would be another data point if you have the time.
 
-diff --git a/drivers/gpu/drm/i915/intel_lvds.c b/drivers/gpu/drm/i915/intel_lvds.c
-index 6619f26..4d64686 100644
---- a/drivers/gpu/drm/i915/intel_lvds.c
-+++ b/drivers/gpu/drm/i915/intel_lvds.c
-@@ -384,7 +384,51 @@ static const struct drm_encoder_funcs intel_lvds_enc_funcs = {
- 	.destroy = intel_lvds_enc_destroy,
- };
- 
-+static int __init intel_no_lvds_dmi_callback(const struct dmi_system_id *id)
-+{
-+	DRM_DEBUG("Skipping LVDS initialization for %s\n", id->ident);
-+	return 1;
-+}
- 
-+/* These systems claim to have LVDS, but really don't */
-+static const struct dmi_system_id __initdata intel_no_lvds[] = {
-+	{
-+		.callback = intel_no_lvds_dmi_callback,
-+		.ident = "Apple Mac Mini (Core series)",
-+		.matches = {
-+			DMI_MATCH(DMI_SYS_VENDOR, "Apple Inc."),
-+			DMI_MATCH(DMI_PRODUCT_NAME, "Macmini1,1"),
-+		},
-+	},
-+	{
-+		.callback = intel_no_lvds_dmi_callback,
-+		.ident = "Apple Mac Mini (Core 2 series)",
-+		.matches = {
-+			DMI_MATCH(DMI_SYS_VENDOR, "Apple Inc."),
-+			DMI_MATCH(DMI_PRODUCT_NAME, "Macmini2,1"),
-+		},
-+	},
-+	{
-+		.callback = intel_no_lvds_dmi_callback,
-+		.ident = "MSI IM-945GSE-A",
-+		.matches = {
-+			DMI_MATCH(DMI_SYS_VENDOR, "MSI"),
-+			DMI_MATCH(DMI_PRODUCT_NAME, "A9830IMS"),
-+		},
-+	},
-+	{
-+		.callback = intel_no_lvds_dmi_callback,
-+		.ident = "Dell Studio Hybrid",
-+		.matches = {
-+			DMI_MATCH(DMI_SYS_VENDOR, "Dell Inc."),
-+			DMI_MATCH(DMI_PRODUCT_NAME, "Studio Hybrid 140g"),
-+		},
-+	},
-+
-+	/* FIXME: add a check for the Aopen Mini PC */
-+
-+	{ }	/* terminating entry */
-+};
- 
- /**
-  * intel_lvds_init - setup LVDS connectors on this device
-@@ -404,15 +440,9 @@ void intel_lvds_init(struct drm_device *dev)
- 	u32 lvds;
- 	int pipe;
- 
--	/* Blacklist machines that we know falsely report LVDS. */
--	/* FIXME: add a check for the Aopen Mini PC */
--
--	/* Apple Mac Mini Core Duo and Mac Mini Core 2 Duo */
--	if(dmi_match(DMI_PRODUCT_NAME, "Macmini1,1") ||
--	   dmi_match(DMI_PRODUCT_NAME, "Macmini2,1")) {
--		DRM_DEBUG("Skipping LVDS initialization for Apple Mac Mini\n");
-+	/* Skip init on machines we know falsely report LVDS */
-+	if (dmi_check_system(intel_no_lvds))
- 		return;
--	}
- 
- 	intel_output = kzalloc(sizeof(struct intel_output), GFP_KERNEL);
- 	if (!intel_output) {
+Well when recording two shows at once, there will be two processes
+streaming to seperate files, and usually there will be two commercial
+flagging processes following behind reading those files and doing mysql
+updates as they go.
+
+> Thanks in advance!
+
+No problem.  If it solves this bad behaviour, it will be all worth it.
 
 -- 
-Jarod Wilson
-jarod@redhat.com
+Len Sorensen
