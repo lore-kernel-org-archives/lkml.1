@@ -1,20 +1,21 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756385AbZDFPgY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756240AbZDFPfm@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756385AbZDFPgY (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 6 Apr 2009 11:36:24 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756321AbZDFPeL
+	id S1756240AbZDFPfm (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 6 Apr 2009 11:35:42 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755924AbZDFPdn
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 6 Apr 2009 11:34:11 -0400
-Received: from earthlight.etchedpixels.co.uk ([81.2.110.250]:56967 "EHLO
+	Mon, 6 Apr 2009 11:33:43 -0400
+Received: from earthlight.etchedpixels.co.uk ([81.2.110.250]:56959 "EHLO
 	t61.ukuu.org.uk" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1755476AbZDFPeK (ORCPT
+	with ESMTP id S1755774AbZDFPdl (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 6 Apr 2009 11:34:10 -0400
+	Mon, 6 Apr 2009 11:33:41 -0400
 From: Alan Cox <alan@lxorguk.ukuu.org.uk>
-Subject: [PATCH 08/27] Fix DMA rx ring buffer handling
+Subject: [PATCH 12/27] specialix: Auto-load specialix module when device
+	opened.
 To: torvalds@linux-foundation.org, linux-kernel@vger.kernel.org
-Date: Mon, 06 Apr 2009 17:32:42 +0100
-Message-ID: <20090406163240.12934.91456.stgit@t61.ukuu.org.uk>
+Date: Mon, 06 Apr 2009 17:33:11 +0100
+Message-ID: <20090406163310.12934.74980.stgit@t61.ukuu.org.uk>
 In-Reply-To: <20090406162959.12934.97904.stgit@t61.ukuu.org.uk>
 References: <20090406162959.12934.97904.stgit@t61.ukuu.org.uk>
 User-Agent: StGIT/0.14.3
@@ -25,33 +26,28 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Sonic Zhang <sonic.zhang@analog.com>
+From: Scott James Remnant <scott@canonical.com>
 
-Reported-by: Qian Zhang <zhangq@sansitech.com>
-Signed-off-by: Sonic Zhang <sonic.zhang@analog.com>
-Signed-off-by: Bryan Wu <cooloney@kernel.org>
+The specialix module is missing the char-major-75-* alias that would
+cause it to be auto-loaded when a device of that type is opened.  This
+patch adds the alias.
+
+Signed-off-by: Scott James Remnant <scott@canonical.com>
+Signed-off-by: Tim Gardner <tim.gardner@canonical.com>
 Signed-off-by: Alan Cox <alan@lxorguk.ukuu.org.uk>
 ---
 
- drivers/serial/bfin_5xx.c |    4 +++-
- 1 files changed, 3 insertions(+), 1 deletions(-)
+ drivers/char/specialix.c |    1 +
+ 1 files changed, 1 insertions(+), 0 deletions(-)
 
 
-diff --git a/drivers/serial/bfin_5xx.c b/drivers/serial/bfin_5xx.c
-index d7b2716..12b11da 100644
---- a/drivers/serial/bfin_5xx.c
-+++ b/drivers/serial/bfin_5xx.c
-@@ -401,9 +401,11 @@ static void bfin_serial_dma_rx_chars(struct bfin_serial_port *uart)
- 	else
- 		flg = TTY_NORMAL;
+diff --git a/drivers/char/specialix.c b/drivers/char/specialix.c
+index 3c67c3d..e72be41 100644
+--- a/drivers/char/specialix.c
++++ b/drivers/char/specialix.c
+@@ -2365,3 +2365,4 @@ module_init(specialix_init_module);
+ module_exit(specialix_exit_module);
  
--	for (i = uart->rx_dma_buf.tail; i != uart->rx_dma_buf.head; i++) {
-+	for (i = uart->rx_dma_buf.tail; ; i++) {
- 		if (i >= UART_XMIT_SIZE)
- 			i = 0;
-+		if (i == uart->rx_dma_buf.head)
-+			break;
- 		if (!uart_handle_sysrq_char(&uart->port, uart->rx_dma_buf.buf[i]))
- 			uart_insert_char(&uart->port, status, OE,
- 				uart->rx_dma_buf.buf[i], flg);
+ MODULE_LICENSE("GPL");
++MODULE_ALIAS_CHARDEV_MAJOR(SPECIALIX_NORMAL_MAJOR);
 
