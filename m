@@ -1,57 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759531AbZDFPpn@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756826AbZDFPre@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759531AbZDFPpn (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 6 Apr 2009 11:45:43 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755269AbZDFPpd
+	id S1756826AbZDFPre (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 6 Apr 2009 11:47:34 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751290AbZDFPrY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 6 Apr 2009 11:45:33 -0400
-Received: from mail-ew0-f165.google.com ([209.85.219.165]:39336 "EHLO
-	mail-ew0-f165.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751268AbZDFPpb (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 6 Apr 2009 11:45:31 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:date:message-id:subject:from:to:content-type
-         :content-transfer-encoding;
-        b=YRO0+1y31ox7F0rgys4UXmnixVkLKSarMlv8met/DIRroA3p8CX8FBcjOP5bDtgg3t
-         +FqnE41AD3E99Vt7lI+9TyeyvSDnhyTtwfSA6PqETwe8+Vw2XnH2+Sj7ut5LfPQGOqE3
-         JZ1a43PafVCKMAXOO5sxk6fNgIOmJBQVelLcE=
+	Mon, 6 Apr 2009 11:47:24 -0400
+Received: from cantor.suse.de ([195.135.220.2]:45601 "EHLO mx1.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751266AbZDFPrX (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 6 Apr 2009 11:47:23 -0400
+Date: Mon, 6 Apr 2009 08:26:56 -0700
+From: Greg KH <gregkh@suse.de>
+To: Alan Cox <alan@lxorguk.ukuu.org.uk>
+Cc: David Woodhouse <dwmw2@infradead.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Mithlesh Thukral <mithlesh@linsyssoft.com>,
+       Christopher Harrer <charrer@alacritech.com>
+Subject: Re: Staging: sxg: Add support to download the firmware using
+	request_firmware()
+Message-ID: <20090406152656.GA25839@suse.de>
+References: <200904051919.n35JJUUq031448@hera.kernel.org> <1238978493.11870.2.camel@macbook.infradead.org> <20090406010754.GA32630@suse.de> <1238980795.11870.12.camel@macbook.infradead.org> <20090406023349.GA1314@suse.de> <20090406101026.04040c13@lxorguk.ukuu.org.uk>
 MIME-Version: 1.0
-Date: Mon, 6 Apr 2009 19:45:28 +0400
-Message-ID: <a4423d670904060845l55064a5boc5d869a9d1ae26a7@mail.gmail.com>
-Subject: [PATCH next] pci/intr_remapping.c should include acpi.h
-From: Alexander Beregalov <a.beregalov@gmail.com>
-To: LKML <linux-kernel@vger.kernel.org>,
-       "linux-next@vger.kernel.org" <linux-next@vger.kernel.org>,
-       David Woodhouse <David.Woodhouse@intel.com>,
-       "H. Peter Anvin" <hpa@linux.intel.com>
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20090406101026.04040c13@lxorguk.ukuu.org.uk>
+User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Fix this build error:
-drivers/pci/intr_remapping.c: In function 'ir_parse_ioapic_scope':
-drivers/pci/intr_remapping.c:617: error: invalid use of undefined type
-'struct acpi_dmar_hardware_unit'
+On Mon, Apr 06, 2009 at 10:10:26AM +0100, Alan Cox wrote:
+> > Firmware isn't "crap", it's needed by devices, and I don't see the
+> > problem of distributing it within the kernel tree, especially when the
+> > license of the firmware is just fine, like these files are.
+> 
+> For one firmware doesn't tie to the kernel release cycle so any
+> serious distribution has to split the two packages apart even if the
+> kernel community didn't.
 
-Signed-off-by: Alexander Beregalov <a.beregalov@gmail.com>
----
+So you are calling distros that don't do this "non-serious" now?  :)
 
- drivers/pci/intr_remapping.c |    1 +
- 1 files changed, 1 insertions(+), 0 deletions(-)
+What is the release cycle for this firmware tree?  And where is it
+released at?
 
-diff --git a/drivers/pci/intr_remapping.c b/drivers/pci/intr_remapping.c
-index 472be1c..f5e0ea7 100644
---- a/drivers/pci/intr_remapping.c
-+++ b/drivers/pci/intr_remapping.c
-@@ -9,6 +9,7 @@
- #include <asm/cpu.h>
- #include <linux/intel-iommu.h>
- #include "intr_remapping.h"
-+#include <acpi/acpi.h>
+> For a second it keeps a lot of irrelevant, unreviewable enormous hex file
+> changesets *off* the kernel lists and out of the git tree tracking.
 
- static struct ioapic_scope ir_ioapic[MAX_IO_APICS];
- static int ir_ioapic_num;
+git can handle this kind of thing trivially, that should not be an
+issue.  And I have not posted firmware updates to the kernel lists
+either, they probably just filter them out due to the size anyway.
+
+So for now, as the majority of the distros don't have a separate
+firmware package for the kernel, and there seems to not be any
+"kernel-wide policy" yet in place, I'll stick to the in-tree location
+for new drivers that need such a thing, as long as their firmware is
+allowed to be proper redistributed.
+
+thanks,
+
+greg k-h
+
+> 
+> 
+> Alan
