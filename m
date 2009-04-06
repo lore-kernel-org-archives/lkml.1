@@ -1,72 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758144AbZDFVgj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758624AbZDFVi3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758144AbZDFVgj (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 6 Apr 2009 17:36:39 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756413AbZDFVgV
+	id S1758624AbZDFVi3 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 6 Apr 2009 17:38:29 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754479AbZDFViT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 6 Apr 2009 17:36:21 -0400
-Received: from rv-out-0506.google.com ([209.85.198.229]:23226 "EHLO
-	rv-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757044AbZDFVgU (ORCPT
+	Mon, 6 Apr 2009 17:38:19 -0400
+Received: from mail.pikewerks.com ([24.96.136.236]:55487 "EHLO
+	mail.pikewerks.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753711AbZDFViT (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 6 Apr 2009 17:36:20 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=from:to:cc:references:in-reply-to:subject:date:message-id
-         :mime-version:content-type:content-transfer-encoding:x-mailer
-         :thread-index:content-language;
-        b=iqOvOjxq/sn8iQHZnkXmpg78CSJHzK3TbkiDVBq7lu+KsOSi1kh2pKUVd7CjESSCQt
-         eEkXanikccHo29oDI9NPcz5Czut99e+HlnJ+m6pL/TpVXmlND+5To/hAQh8xdDtgj395
-         irPl/N7k8a4G9IMBMoxXxqe1/uqUM9CplBjyo=
-From: "Hua Zhong" <hzhong@gmail.com>
-To: "'Theodore Tso'" <tytso@mit.edu>
-Cc: "'Linus Torvalds'" <torvalds@linux-foundation.org>,
-       "'Jens Axboe'" <jens.axboe@oracle.com>,
-       "'Linux Kernel Mailing List'" <linux-kernel@vger.kernel.org>
-References: <1239022088-29002-1-git-send-email-jens.axboe@oracle.com> <alpine.LFD.2.00.0904060803141.4023@localhost.localdomain> <20090406151054.GD5178@kernel.dk> <alpine.LFD.2.00.0904060840080.3863@localhost.localdomain> <20090406183157.GD7376@mit.edu> <alpine.LFD.2.00.0904061255160.4134@localhost.localdomain> <002501c9b6f3$f85b4910$e911db30$@com> <20090406211931.GB8586@mit.edu>
-In-Reply-To: <20090406211931.GB8586@mit.edu>
-Subject: RE: [PATCH 0/8][RFC] IO latency/throughput fixes
-Date: Mon, 6 Apr 2009 14:35:51 -0700
-Message-ID: <003001c9b6ff$a9259ce0$fb70d6a0$@com>
+	Mon, 6 Apr 2009 17:38:19 -0400
+X-Greylist: delayed 423 seconds by postgrey-1.27 at vger.kernel.org; Mon, 06 Apr 2009 17:38:19 EDT
+Message-ID: <49DA7498.3050000@pikewerks.com>
+Date: Mon, 06 Apr 2009 14:31:04 -0700
+From: Matt Klein <matt.klein@pikewerks.com>
+User-Agent: Thunderbird 2.0.0.21 (Windows/20090302)
 MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="us-ascii"
+To: linux-kernel@vger.kernel.org
+CC: matt.klein@pikewerks.com
+Subject: Cached IO Synchronization Question
+X-Enigmail-Version: 0.95.7
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
-X-Mailer: Microsoft Office Outlook 12.0
-Thread-Index: Acm2/WQmSOux4INoTqaIz/dD3oH8DwAAFvSg
-Content-Language: en-us
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> I've added workarounds for 2.6.30 that provide the replace-via-rename
-> and replace-via-truncate workarounds for ext3 data=writeback cases.
-> See commits e7c8f507 and f7ab34ea.
-> 
-> There won't be an implied fsync for newly created files, yes, but you
-> could have crashed 5 seconds earlier, at which point you would have
-> lost the newly created file anyway.  Replace-via-rename and
-> replace-via-truncate solves the problem for applications which are
-> editing pre-existing files, which was most of people's complaints
-> about depending on data=ordered semantics.
+(Please CC me on any responses)
 
-I am not talking about "most" people's complaints. There are use cases for
-ext3 far beyond the desktop.
+Hi,
 
-I worked on a user-space library on top of ext3 before on embedded systems.
-It may not have been the case for me but I could well imagine where it could
-get too clever and depend upon "ordered". You really don't want to silently
-corrupt people's data by changing the default. How about security too?
-Wasn't that the original reason for "ordered" mode?
+I am studying 2.6.27.21 to try to understand the IO synchronization
+model used in the Linux kernel.
 
-Ext3 is supposed to be a stable filesystem, while ext4 is the shiny new
-filesystem that gets to do all the exciting experiments. I thought it was
-the idea. People do not expect such a change at this stage, for better or
-worse. It's great that you can improve its performance, but the performance
-problem wasn't introduced yesterday, so if people care they could always
-mount it as writeback, but there is no urgency in doing it for them. A
-default semantic change is just crazy talk.
+I have the following question:
 
-Hua
+How are cached reads/writes synchronized? I assume they are, but I can
+not determine how it is done.
 
+1) do_generic_file_read calls find_get_page to get the existing page
+cache page if it exists (it uses RCU to prevent the page from being
+blown away while reading takes place). Assuming it does, it performs
+various checks to make sure the page is up to date before performing an
+atomic copy to user mode. The read path does not take the page lock.
 
+2) The write path takes both the inode lock and the page lock to prevent
+multiple writers. It also does an atomic copy from user mode into the
+page cache page.
+
+>From my reading of the code, the atomic copies are atomic only on a
+single processor, not across processors. Right?
+
+If so, what is to prevent one CPU from starting a cached read into a
+user mode buffer while another CPU has partially copied data into the
+page cache page?
+
+Thanks,
+Matt
+
+-- 
+Matt Klein
+Technical Specialist
+Pikewerks
+matt.klein@pikewerks.com / 206 327 4515
