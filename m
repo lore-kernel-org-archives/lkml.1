@@ -1,47 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757417AbZDFT7J@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757417AbZDFUEd@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757417AbZDFT7J (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 6 Apr 2009 15:59:09 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752249AbZDFT6y
+	id S1757417AbZDFUEd (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 6 Apr 2009 16:04:33 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752086AbZDFUEY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 6 Apr 2009 15:58:54 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:43348 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751804AbZDFT6y (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 6 Apr 2009 15:58:54 -0400
-Date: Mon, 6 Apr 2009 12:57:09 -0700 (PDT)
-From: Linus Torvalds <torvalds@linux-foundation.org>
-X-X-Sender: torvalds@localhost.localdomain
-To: Theodore Tso <tytso@mit.edu>
-cc: Jens Axboe <jens.axboe@oracle.com>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH 0/8][RFC] IO latency/throughput fixes
-In-Reply-To: <20090406183157.GD7376@mit.edu>
-Message-ID: <alpine.LFD.2.00.0904061255160.4134@localhost.localdomain>
-References: <1239022088-29002-1-git-send-email-jens.axboe@oracle.com> <alpine.LFD.2.00.0904060803141.4023@localhost.localdomain> <20090406151054.GD5178@kernel.dk> <alpine.LFD.2.00.0904060840080.3863@localhost.localdomain> <20090406183157.GD7376@mit.edu>
-User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
+	Mon, 6 Apr 2009 16:04:24 -0400
+Received: from mx2.redhat.com ([66.187.237.31]:44952 "EHLO mx2.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751986AbZDFUEX (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 6 Apr 2009 16:04:23 -0400
+From: Jarod Wilson <jarod@redhat.com>
+Organization: Red Hat, Inc.
+To: Carlos Corbacho <carlos@strangeworlds.co.uk>
+Subject: Re: [PATCH] acer-wmi: don't bother loading on unsupported systems
+Date: Mon, 6 Apr 2009 16:04:12 -0400
+User-Agent: KMail/1.11.1 (Linux/2.6.27.21-170.2.56.fc10.x86_64; KDE/4.2.1; x86_64; ; )
+Cc: aceracpi@googlegroups.com, linux-kernel@vger.kernel.org
+References: <200904060940.16889.jarod@redhat.com> <200904062053.12303.carlos@strangeworlds.co.uk>
+In-Reply-To: <200904062053.12303.carlos@strangeworlds.co.uk>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200904061604.12713.jarod@redhat.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-
-On Mon, 6 Apr 2009, Theodore Tso wrote:
+On Monday 06 April 2009 15:53:11 Carlos Corbacho wrote:
+> On Monday 06 April 2009 14:40:16 Jarod Wilson wrote:
+> > So have acer-wmi just bail on unsupported systems -- includes only my
+> > particular model of the Aspire One atm, but a larger list of unsupported
+> > systems can be found here:
+> >
+> > http://code.google.com/p/aceracpi/wiki/SupportedHardware
+> >
+> > This might well become unnecessary once the WMI sysfs interface mentioned
+> > in acer-wmi.c exists and the wild-card dmi modalias is gone, but for now...
+> > I prefer to have working wireless, and this isn't exactly an obvious root
+> > cause. I lack the hardware to further extend the blacklist, but doing so is
+> > trivial. Whether or not loading acer-wmi actually negatively impacts
+> > machines other than the AAO is unknown at this time.
 > 
-> Cool!  Maybe we can make things even better, but given where we are
-> at, this brings up an question: given Jens block latency patches
-> (thanks, Jens!), and the patches which add the flush on
-> replace-via-rename/replace-via-truncate for ext3 data=writeback,
-> should we make ext3 data=writeback the default for 2.6.30?
+> NAK.
+> 
+> An equivalent patch to this was submitted to the ACPI tree two days ago (which 
+> blacklists both the known Aspire One DMI entries) and is now upstream (and 
+> will also be backported to the next stable release).
+> 
+> http://git.kernel.org/?p=linux/kernel/git/torvalds/linux-2.6.git;a=commit;h=a74dd5fdabcd34c93e17e9c7024eeb503c92b048
 
-Yes. I want to go back and see how much this all helps for the 
-data=ordered case (if at all), but I think we should at least consider 
-trying 'data=writeback' as a default.
+Heh, that's what I get for waiting two days before actually submitting... ;)
 
-Does the 'synchronize on rename / close-after-ftrucate' patches leave any 
-other intersting cases open?
+Works for me.
 
-			Linus
+-- 
+Jarod Wilson
+jarod@redhat.com
