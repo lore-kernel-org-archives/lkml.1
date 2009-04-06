@@ -1,63 +1,44 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760006AbZDFVwK@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759913AbZDFVv3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760006AbZDFVwK (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 6 Apr 2009 17:52:10 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759819AbZDFVui
+	id S1759913AbZDFVv3 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 6 Apr 2009 17:51:29 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759605AbZDFVuW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 6 Apr 2009 17:50:38 -0400
-Received: from caffeine.csclub.uwaterloo.ca ([129.97.134.17]:54020 "EHLO
-	caffeine.csclub.uwaterloo.ca" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1759781AbZDFVug (ORCPT
+	Mon, 6 Apr 2009 17:50:22 -0400
+Received: from ogre.sisk.pl ([217.79.144.158]:49856 "EHLO ogre.sisk.pl"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1757718AbZDFVuT convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 6 Apr 2009 17:50:36 -0400
-Date: Mon, 6 Apr 2009 17:50:34 -0400
-To: Ingo Molnar <mingo@elte.hu>
-Cc: Jens Axboe <jens.axboe@oracle.com>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Theodore Tso <tytso@mit.edu>,
-       Linux Kernel Developers List <linux-kernel@vger.kernel.org>,
-       Ext4 Developers List <linux-ext4@vger.kernel.org>
-Subject: Re: [GIT PULL] Ext3 latency fixes
-Message-ID: <20090406215034.GD3797@csclub.uwaterloo.ca>
-References: <1238742067-30814-1-git-send-email-tytso@mit.edu> <alpine.LFD.2.00.0904031110420.19690@localhost.localdomain> <alpine.LFD.2.00.0904031150190.4015@localhost.localdomain> <alpine.LFD.2.00.0904031329410.7007@localhost.localdomain> <20090404135719.GA9812@mit.edu> <20090404151649.GE5178@kernel.dk> <alpine.LFD.2.00.0904040854470.3915@localhost.localdomain> <20090404173412.GF5178@kernel.dk> <20090404201820.GA18067@elte.hu>
+	Mon, 6 Apr 2009 17:50:19 -0400
+Cc: Kernel Testers List <kernel-testers@vger.kernel.org>,
+       "Alessandro Bono" <alessandro.bono@gmail.com>
+References: <n4io5wq70ZO.A.gzG.rFn2JB@chimera>
+In-Reply-To: <n4io5wq70ZO.A.gzG.rFn2JB@chimera>
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20090404201820.GA18067@elte.hu>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-From: lsorense@csclub.uwaterloo.ca (Lennart Sorensen)
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 8BIT
+Message-ID: <AsKNxFx2juN.A.yxB.tHn2JB@chimera>
+Subject: [Bug #12670] BUG: unable to handle kernel paging request at pin_to_kill+0x21
+To: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Date: Mon,  6 Apr 2009 21:05:35 +0200 (CEST)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, Apr 04, 2009 at 10:18:20PM +0200, Ingo Molnar wrote:
-> btw., just to insert some hard data: usability studies place the 
-> acceptance threshold for delays to around 300 milliseconds.
-> 
-> If the computer does not 'respond' (in a real or a fake, visible or 
-> audible way) to their input within 0.3 seconds they get annoyed 
-> emotionally.
+This message has been generated automatically as a part of a report
+of recent regressions.
 
-You mean like hitting 'skip commercial' on the remote, and 2 minutes later
-when the commercials are almost over, then it happens.  Yeah users get a
-bit peeved at that.  Fortunately that particularly behaviour is somewhat
-rare.  5 to 10 seconds is more common and sometimes it works fine.
+The following bug entry is on the current list of known regressions
+from 2.6.28.  Please verify if it still should be listed and let me know
+(either way).
 
-> It does not matter how complex it is for the kernel to solve this 
-> problem, it does not matter how far away and difficult to access the 
-> data is. If we are not absolutely latency centric in Linux, if we 
-> spuriously delay apps that do supposedly simple-looking things the 
-> user _will_ get annoyed and _will_ pick another OS.
 
-I would have to get _very_ annoyed before that happened.  I would have
-to find a less annoying OS to switch to as well.
+Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=12670
+Subject		: BUG: unable to handle kernel paging request at pin_to_kill+0x21
+Submitter	: Alessandro Bono <alessandro.bono@gmail.com>
+Date		: 2009-02-08 11:04 (58 days old)
+References	: http://marc.info/?l=linux-kernel&m=123409113223833&w=4
 
-> All things considered it is certainly a combined kernel and app 
-> problem space to get there, but not being completely aware of its 
-> importance in the kernel kills any chance of us ever having a 
-> long-term solution.
 
-Certainly my problems are likely to a large extent mythtv's fault.
-
--- 
-Len Sorensen
