@@ -1,81 +1,154 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757566AbZDFOZn@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757732AbZDFO3S@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757566AbZDFOZn (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 6 Apr 2009 10:25:43 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755914AbZDFOZT
+	id S1757732AbZDFO3S (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 6 Apr 2009 10:29:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755576AbZDFO3G
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 6 Apr 2009 10:25:19 -0400
-Received: from vpnflf.ccur.com ([12.192.68.2]:43717 "EHLO gamx.iccur.com"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1754684AbZDFOZR (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 6 Apr 2009 10:25:17 -0400
-Date: Mon, 6 Apr 2009 10:25:08 -0400
-From: Joe Korty <joe.korty@ccur.com>
-To: Jesper Krogh <jesper@krogh.cc>
-Cc: "netdev@vger.kernel.org" <netdev@vger.kernel.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Ayaz Abdulla <aabdulla@nvidia.com>
-Subject: Re: eth0: too many iterations (16) in nv_nic_irq.
-Message-ID: <20090406142508.GA18639@tsunami.ccur.com>
-Reply-To: Joe Korty <joe.korty@ccur.com>
-References: <49D86997.6010304@krogh.cc>
+	Mon, 6 Apr 2009 10:29:06 -0400
+Received: from baikonur.stro.at ([213.239.196.228]:50534 "EHLO
+	baikonur.stro.at" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755461AbZDFO3F (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 6 Apr 2009 10:29:05 -0400
+Date: Mon, 6 Apr 2009 16:25:40 +0200
+From: "'maximilian attems'" <max@stro.at>
+To: "Christopher J. Harrer" <charrer@alacritech.com>
+Cc: "'Mithlesh Thukral'" <mithlesh@linsyssoft.com>,
+       "'Linux Kernel Mailing List'" <linux-kernel@vger.kernel.org>,
+       debian-kernel@lists.debian.org
+Subject: Re: Staging: sxg: slicoss: Specify the license for Sahara SXG and Slicoss drivers
+Message-ID: <20090406142540.GP3901@baikonur.stro.at>
+References: <200904070037.48064.mithlesh@linsyssoft.com> <20090406135557.EA7091B4039@relay31.relay.iad.mlsrvr.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <49D86997.6010304@krogh.cc>
-User-Agent: Mutt/1.4.2.1i
+In-Reply-To: <20090406135557.EA7091B4039@relay31.relay.iad.mlsrvr.com>
+User-Agent: Mutt/1.5.9i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, Apr 05, 2009 at 04:19:35AM -0400, Jesper Krogh wrote:
-> I have a 2.6.29 kernel which fills up the "dmesg-buffer" with these:
+On Mon, Apr 06, 2009 at 09:56:07AM -0400, Christopher J. Harrer wrote:
+> -----Original Message-----
+> From: Mithlesh Thukral [mailto:mithlesh@linsyssoft.com] 
+> Sent: Monday, April 06, 2009 3:08 PM
+> To: maximilian attems
+> Cc: Linux Kernel Mailing List; debian-kernel@lists.debian.org; Christopher
+> Harrer
+> Subject: Re: Staging: sxg: slicoss: Specify the license for Sahara SXG and
+> Slicoss drivers
 > 
-> eth0: too many iterations (16) in nv_nic_irq.
+> CCing a person who can better comment.
 > 
-> $ dmesg | grep -c "too many iterations"
-> 1986
+> Cheers,
+> Mithlesh Thukral
 > 
-> I have seen the commit below.. is the fix just to set the limit to 30
-> instead? or is there a "real bug" underneath?
+> On Monday 06 April 2009 18:42:43 maximilian attems wrote:
+> > On Sun, 05 Apr 2009, Linux Kernel Mailing List wrote:
+> > > Gitweb:    
+> > > http://git.kernel.org/linus/ba0e1ebb7ea0616eebc29d2077355bacea62a9d8
+> > > Commit:     ba0e1ebb7ea0616eebc29d2077355bacea62a9d8
+> > > Parent:     19be358212af35bd64d449da82279874099a1a85
+> > > Author:     Mithlesh Thukral <mithlesh@linsyssoft.com>
+> > > AuthorDate: Wed Mar 25 15:52:54 2009 +0530
+> > > Committer:  Greg Kroah-Hartman <gregkh@suse.de>
+> > > CommitDate: Fri Apr 3 14:54:38 2009 -0700
+> > >
+> > >     Staging: sxg: slicoss: Specify the license for Sahara SXG and 
+> > > Slicoss drivers
+> > >
+> > >     Specify a license for the Alacritech Sahara (10Gbe) and SLICOSS
+> > > (1GBE) firmware files.
+> > >
+> > >     Signed-off-by: Christopher Harrer <charrer@alacritech.com>
+> > >     Signed-off-by: Mithlesh Thukral <mithlesh@linsyssoft.com>
+> > >     Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
+> > > ---
+> > >  firmware/WHENCE |   33 ++++++++++++++++++++++++++++++---
+> > >  1 files changed, 30 insertions(+), 3 deletions(-)
+> > >
+> > > diff --git a/firmware/WHENCE b/firmware/WHENCE index 
+> > > df79422..d6c227d 100644
+> > > --- a/firmware/WHENCE
+> > > +++ b/firmware/WHENCE
+> > > @@ -372,7 +372,21 @@ File: slicoss/oasisdbgdownload.sys.ihex
+> > >  File: slicoss/oasisdownload.sys.ihex
+> > >  File: slicoss/oasisrcvucode.sys.ihex
+> > >
+> > > -Licence: Unknown
+> > > +Licence:
+> > > +		Copyright (C) 1999-2009 Alacritech, Inc.
+> > > +
+> > > +	as an unpublished work. This notice does not imply unrestricted or
+> > > +	public access to the source code from which this firmware image is
+> > > +	derived.  Except as noted below this firmware image may not be
+> > > +	reproduced, used, sold or transferred to any third party without
+> > > +	Alacritech's prior written consent.  All Rights Reserved.
+> > > +
+> > > +	Permission is hereby granted for the distribution of this firmware
+> > > +	image as part of a Linux or other Open Source operating system
+> kernel
+> > > +	in text or binary form as required.
+> > > +
+> > > +	This firmware may not be modified and may only be used with
+> > > +	Alacritech hardware.
+> >
+> > have you read what you say?
+> >
+> > the last paragraph disables the distribution right, due beeing only 
+> > allowed to be touched on alacritech hardware.
+> >
+> > i'm certainly not buying anything from alacritech, but would want to 
+> > disbribute your fimware in Debian in the nonfree firmware-linux 
+> > package for the benefit of your customers.
+> > -> http://packages.debian.org/sid/firmware-linux
+> >
+> > >  Found in hex form in kernel source.
+> > >
+> > > @@ -383,10 +397,23 @@ Driver: SXG - Alacritech IS-NIC products
+> > >  File: sxg/saharadownloadB.sys.ihex
+> > >  File: sxg/saharadbgdownloadB.sys.ihex
+> > >
+> > > -Licence: Unknown
+> > > +Licence:
+> > > +		Copyright (C) 1999-2009 Alacritech, Inc.
+> > > +
+> > > +	as an unpublished work. This notice does not imply unrestricted or
+> > > +	public access to the source code from which this firmware image is
+> > > +	derived.  Except as noted below this firmware image may not be
+> > > +	reproduced, used, sold or transferred to any third party without
+> > > +	Alacritech's prior written consent.  All Rights Reserved.
+> > > +
+> > > +	Permission is hereby granted for the distribution of this firmware
+> > > +	image as part of a Linux or other Open Source operating system
+> kernel
+> > > +	in text or binary form as required.
+> > > +
+> > > +	This firmware may not be modified and may only be used with
+> > > +	Alacritech hardware.
+> >
+> > same trouble,
+> > nuke the "and may only be used with Alacritech hardware."
+> Hello All,
+> 
+> I apologize in advance for the trouble this is causing.  We used an existing
+> license in the WHENCE file as a template for our text.  The intention of our
+> wording is not to limit the actual distribution of the firmware file; but to
+> control the platform(s) the firmware file may be executed on (as opposed to
+> stored).
+> 
+> Would changing to the wording to "This firmware may not be modified and may
+> only be loaded to and executed on Alacritech hardware" be more clear? 
+> 
+> Other suggestions, short of removing the line altogether?
+> 
+> Thanks,
+> 
+> Chris Harrer 
+> 
 
-Probably.  Still it is worth trying the '30' as an experiment.
+removing the line altogether seems the easiest solution for your users.
 
-The underlying cause is likely to be something on your system
-holding off the eth0 interrupt for short periods of time.
-An SMI is one such possibility.
-
-I can't help but wonder if the printk itself is causing enough
-of a delay to make this condition reoccur indefinately, under
-sufficiently heavy net load, once it occurs once.  It might be
-better to instead use printk_ratelimit.
-
-Joe
-
-
-> commit dccd547e2bf2c01a13c967ae03a705338394fad6
-> Author: Joe Korty <joe.korty@ccur.com>
-> Date:   Wed Oct 29 14:22:16 2008 -0700
-> 
->      forcdeth: increase max_interrupt_work
-> 
->      This eliminates the following often-generated warning from my 64 bit
->      Opteron SMP test stand:
-> 
->          eth0: too many iterations (6) in nv_nic_irq
-> 
->      According to the web, the problem is that the forcedeth driver has a
->      too-low value for max_interrupt_work.  Grepping the kernel I see that
->      forcedeth has the second lowest value of all ethernet drivers (ie, 6).
->      Most are in the 20-40 range.  So this patch increases this a bit,
->      from 6 to 15 (at 15 forcedeth becomes the driver with third-lowest
->      max_interrupt_work value).
-> 
->      My test stand, which used to print out the above warnings repetitively
->      whenever it was under heavy net load, no longer does so.
-> 
->      Signed-off-by: Joe Korty <joe.korty@ccur.com>
->      Cc: Ayaz Abdulla <aabdulla@nvidia.com>
->      Cc: Jeff Garzik <jeff@garzik.org>
->      Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
->      Signed-off-by: Jeff Garzik <jgarzik@redhat.com>
+if they've gone through the trouble to copy the hardware and modify the
+firmware to work w/ that.. are they really going to care about violating
+the license?
