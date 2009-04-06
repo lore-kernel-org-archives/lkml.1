@@ -1,20 +1,21 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754751AbZDFPew@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756332AbZDFPef@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754751AbZDFPew (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 6 Apr 2009 11:34:52 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755867AbZDFPdl
+	id S1756332AbZDFPef (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 6 Apr 2009 11:34:35 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755719AbZDFPdk
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 6 Apr 2009 11:33:41 -0400
-Received: from earthlight.etchedpixels.co.uk ([81.2.110.250]:56956 "EHLO
+	Mon, 6 Apr 2009 11:33:40 -0400
+Received: from earthlight.etchedpixels.co.uk ([81.2.110.250]:56955 "EHLO
 	t61.ukuu.org.uk" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1755649AbZDFPdj (ORCPT
+	with ESMTP id S1751780AbZDFPdj (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
 	Mon, 6 Apr 2009 11:33:39 -0400
 From: Alan Cox <alan@lxorguk.ukuu.org.uk>
-Subject: [PATCH 07/27] blackfin: Fix tty compile error in PIO mode
+Subject: [PATCH 03/27] 8250_pci: add support for National Instruments 843x
+	RS232 devices
 To: torvalds@linux-foundation.org, linux-kernel@vger.kernel.org
-Date: Mon, 06 Apr 2009 17:32:35 +0100
-Message-ID: <20090406163234.12934.13341.stgit@t61.ukuu.org.uk>
+Date: Mon, 06 Apr 2009 17:32:07 +0100
+Message-ID: <20090406163206.12934.9844.stgit@t61.ukuu.org.uk>
 In-Reply-To: <20090406162959.12934.97904.stgit@t61.ukuu.org.uk>
 References: <20090406162959.12934.97904.stgit@t61.ukuu.org.uk>
 User-Agent: StGIT/0.14.3
@@ -25,43 +26,283 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Sonic Zhang <sonic.zhang@analog.com>
+From: Shawn Bohrer <shawn.bohrer@ni.com>
 
-drivers/serial/bfin_5xx.c: In function bfin_serial_rx_chars:
-drivers/serial/bfin_5xx.c:178: error: struct uart_info has no
-member
-named tty
-make[3]: *** [drivers/serial/bfin_5xx.o] Error 1
-make[2]: *** [drivers/serial] Error 2
-make[1]: *** [drivers] Error 2
-make[1]: *** Waiting for unfinished jobs....
-make[1]: Leaving directory `/root/projects/uClinux-dist/linux-2.6.x'
-make: *** [linux] Error 1
+This implements basic support for all 843x RS232 devices, but does not
+add DMA support.  This means that sustained data transfers at high baud
+rates may not be possible on multiple ports simultaneously.
 
-Signed-off-by: Sonic Zhang <sonic.zhang@analog.com>
-Signed-off-by: Bryan Wu <cooloney@kernel.org>
+Signed-off-by: Shawn Bohrer <shawn.bohrer@ni.com>
 Signed-off-by: Alan Cox <alan@lxorguk.ukuu.org.uk>
 ---
 
- drivers/serial/bfin_5xx.c |    4 ++--
- 1 files changed, 2 insertions(+), 2 deletions(-)
+ drivers/serial/8250_pci.c |  193 +++++++++++++++++++++++++++++++++++++++++++++
+ include/linux/pci_ids.h   |   14 +++
+ 2 files changed, 207 insertions(+), 0 deletions(-)
 
 
-diff --git a/drivers/serial/bfin_5xx.c b/drivers/serial/bfin_5xx.c
-index 45c32b2..d7b2716 100644
---- a/drivers/serial/bfin_5xx.c
-+++ b/drivers/serial/bfin_5xx.c
-@@ -174,10 +174,10 @@ static void bfin_serial_rx_chars(struct bfin_serial_port *uart)
- 			return;
- 		}
+diff --git a/drivers/serial/8250_pci.c b/drivers/serial/8250_pci.c
+index 533f820..2f570c7 100644
+--- a/drivers/serial/8250_pci.c
++++ b/drivers/serial/8250_pci.c
+@@ -306,6 +306,36 @@ static void __devexit pci_plx9050_exit(struct pci_dev *dev)
+ 	}
+ }
  
--	if (!uart->port.info || !uart->port.info->tty)
-+	if (!uart->port.info || !uart->port.info->port.tty)
- 		return;
- #endif
--	tty = uart->port.info->tty;
-+	tty = uart->port.info->port.tty;
++/* MITE registers */
++#define MITE_IOWBSR1	0xc4
++#define MITE_IOWCR1	0xf4
++#define MITE_LCIMR1	0x08
++#define MITE_LCIMR2	0x10
++
++#define MITE_LCIMR2_CLR_CPU_IE	(1 << 30)
++
++static void __devexit pci_ni8430_exit(struct pci_dev *dev)
++{
++	void __iomem *p;
++	unsigned long base, len;
++	unsigned int bar = 0;
++
++	if ((pci_resource_flags(dev, bar) & IORESOURCE_MEM) == 0) {
++		moan_device("no memory in bar", dev);
++		return;
++	}
++
++	base = pci_resource_start(dev, bar);
++	len =  pci_resource_len(dev, bar);
++	p = ioremap_nocache(base, len);
++	if (p == NULL)
++		return;
++
++	/* Disable the CPU Interrupt */
++	writel(MITE_LCIMR2_CLR_CPU_IE, p + MITE_LCIMR2);
++	iounmap(p);
++}
++
+ /* SBS Technologies Inc. PMC-OCTPRO and P-OCTAL cards */
+ static int
+ sbs_setup(struct serial_private *priv, const struct pciserial_board *board,
+@@ -597,6 +627,82 @@ static int pci_xircom_init(struct pci_dev *dev)
+ 	return 0;
+ }
  
- 	if (ANOMALY_05000363) {
- 		/* The BF533 (and BF561) family of processors have a nice anomaly
++#define MITE_IOWBSR1_WSIZE	0xa
++#define MITE_IOWBSR1_WIN_OFFSET	0x800
++#define MITE_IOWBSR1_WENAB	(1 << 7)
++#define MITE_LCIMR1_IO_IE_0	(1 << 24)
++#define MITE_LCIMR2_SET_CPU_IE	(1 << 31)
++#define MITE_IOWCR1_RAMSEL_MASK	0xfffffffe
++
++static int pci_ni8430_init(struct pci_dev *dev)
++{
++	void __iomem *p;
++	unsigned long base, len;
++	u32 device_window;
++	unsigned int bar = 0;
++
++	if ((pci_resource_flags(dev, bar) & IORESOURCE_MEM) == 0) {
++		moan_device("no memory in bar", dev);
++		return 0;
++	}
++
++	base = pci_resource_start(dev, bar);
++	len =  pci_resource_len(dev, bar);
++	p = ioremap_nocache(base, len);
++	if (p == NULL)
++		return -ENOMEM;
++
++	/* Set device window address and size in BAR0 */
++	device_window = ((base + MITE_IOWBSR1_WIN_OFFSET) & 0xffffff00)
++	                | MITE_IOWBSR1_WENAB | MITE_IOWBSR1_WSIZE;
++	writel(device_window, p + MITE_IOWBSR1);
++
++	/* Set window access to go to RAMSEL IO address space */
++	writel((readl(p + MITE_IOWCR1) & MITE_IOWCR1_RAMSEL_MASK),
++	       p + MITE_IOWCR1);
++
++	/* Enable IO Bus Interrupt 0 */
++	writel(MITE_LCIMR1_IO_IE_0, p + MITE_LCIMR1);
++
++	/* Enable CPU Interrupt */
++	writel(MITE_LCIMR2_SET_CPU_IE, p + MITE_LCIMR2);
++
++	iounmap(p);
++	return 0;
++}
++
++/* UART Port Control Register */
++#define NI8430_PORTCON	0x0f
++#define NI8430_PORTCON_TXVR_ENABLE	(1 << 3)
++
++static int
++pci_ni8430_setup(struct serial_private *priv, struct pciserial_board *board,
++		 struct uart_port *port, int idx)
++{
++	void __iomem *p;
++	unsigned long base, len;
++	unsigned int bar, offset = board->first_offset;
++
++	if (idx >= board->num_ports)
++		return 1;
++
++	bar = FL_GET_BASE(board->flags);
++	offset += idx * board->uart_offset;
++
++	base = pci_resource_start(priv->dev, bar);
++	len =  pci_resource_len(priv->dev, bar);
++	p = ioremap_nocache(base, len);
++
++	/* enable the transciever */
++	writeb(readb(p + offset + NI8430_PORTCON) | NI8430_PORTCON_TXVR_ENABLE,
++	       p + offset + NI8430_PORTCON);
++
++	iounmap(p);
++
++	return setup_port(priv, port, bar, offset, board->reg_shift);
++}
++
++
+ static int pci_netmos_init(struct pci_dev *dev)
+ {
+ 	/* subdevice 0x00PS means <P> parallel, <S> serial */
+@@ -913,6 +1019,18 @@ static struct pci_serial_quirk pci_serial_quirks[] __refdata = {
+ 		.exit		= __devexit_p(pci_ite887x_exit),
+ 	},
+ 	/*
++	 * National Instruments
++	 */
++	{
++		.vendor		= PCI_VENDOR_ID_NI,
++		.device		= PCI_ANY_ID,
++		.subvendor	= PCI_ANY_ID,
++		.subdevice	= PCI_ANY_ID,
++		.init		= pci_ni8430_init,
++		.setup		= pci_ni8430_setup,
++		.exit		= __devexit_p(pci_ni8430_exit),
++	},
++	/*
+ 	 * Panacom
+ 	 */
+ 	{
+@@ -1280,6 +1398,10 @@ enum pci_board_num_t {
+ 	pbn_exar_XR17C154,
+ 	pbn_exar_XR17C158,
+ 	pbn_pasemi_1682M,
++	pbn_ni8430_2,
++	pbn_ni8430_4,
++	pbn_ni8430_8,
++	pbn_ni8430_16,
+ };
+ 
+ /*
+@@ -1850,6 +1972,37 @@ static struct pciserial_board pci_boards[] __devinitdata = {
+ 		.num_ports	= 1,
+ 		.base_baud	= 8333333,
+ 	},
++	/*
++	 * National Instruments 843x
++	 */
++	[pbn_ni8430_16] = {
++		.flags		= FL_BASE0,
++		.num_ports	= 16,
++		.base_baud	= 3686400,
++		.uart_offset	= 0x10,
++		.first_offset	= 0x800,
++	},
++	[pbn_ni8430_8] = {
++		.flags		= FL_BASE0,
++		.num_ports	= 8,
++		.base_baud	= 3686400,
++		.uart_offset	= 0x10,
++		.first_offset	= 0x800,
++	},
++	[pbn_ni8430_4] = {
++		.flags		= FL_BASE0,
++		.num_ports	= 4,
++		.base_baud	= 3686400,
++		.uart_offset	= 0x10,
++		.first_offset	= 0x800,
++	},
++	[pbn_ni8430_2] = {
++		.flags		= FL_BASE0,
++		.num_ports	= 2,
++		.base_baud	= 3686400,
++		.uart_offset	= 0x10,
++		.first_offset	= 0x800,
++	},
+ };
+ 
+ static const struct pci_device_id softmodem_blacklist[] = {
+@@ -3052,6 +3205,46 @@ static struct pci_device_id serial_pci_tbl[] = {
+ 		pbn_pasemi_1682M },
+ 
+ 	/*
++	 * National Instruments
++	 */
++	{	PCI_VENDOR_ID_NI, PCI_DEVICE_ID_NI_PXI8430_2322,
++		PCI_ANY_ID, PCI_ANY_ID, 0, 0,
++		pbn_ni8430_2 },
++	{	PCI_VENDOR_ID_NI, PCI_DEVICE_ID_NI_PCI8430_2322,
++		PCI_ANY_ID, PCI_ANY_ID, 0, 0,
++		pbn_ni8430_2 },
++	{	PCI_VENDOR_ID_NI, PCI_DEVICE_ID_NI_PXI8430_2324,
++		PCI_ANY_ID, PCI_ANY_ID, 0, 0,
++		pbn_ni8430_4 },
++	{	PCI_VENDOR_ID_NI, PCI_DEVICE_ID_NI_PCI8430_2324,
++		PCI_ANY_ID, PCI_ANY_ID, 0, 0,
++		pbn_ni8430_4 },
++	{	PCI_VENDOR_ID_NI, PCI_DEVICE_ID_NI_PXI8430_2328,
++		PCI_ANY_ID, PCI_ANY_ID, 0, 0,
++		pbn_ni8430_8 },
++	{	PCI_VENDOR_ID_NI, PCI_DEVICE_ID_NI_PCI8430_2328,
++		PCI_ANY_ID, PCI_ANY_ID, 0, 0,
++		pbn_ni8430_8 },
++	{	PCI_VENDOR_ID_NI, PCI_DEVICE_ID_NI_PXI8430_23216,
++		PCI_ANY_ID, PCI_ANY_ID, 0, 0,
++		pbn_ni8430_16 },
++	{	PCI_VENDOR_ID_NI, PCI_DEVICE_ID_NI_PCI8430_23216,
++		PCI_ANY_ID, PCI_ANY_ID, 0, 0,
++		pbn_ni8430_16 },
++	{	PCI_VENDOR_ID_NI, PCI_DEVICE_ID_NI_PXI8432_2322,
++		PCI_ANY_ID, PCI_ANY_ID, 0, 0,
++		pbn_ni8430_2 },
++	{	PCI_VENDOR_ID_NI, PCI_DEVICE_ID_NI_PCI8432_2322,
++		PCI_ANY_ID, PCI_ANY_ID, 0, 0,
++		pbn_ni8430_2 },
++	{	PCI_VENDOR_ID_NI, PCI_DEVICE_ID_NI_PXI8432_2324,
++		PCI_ANY_ID, PCI_ANY_ID, 0, 0,
++		pbn_ni8430_4 },
++	{	PCI_VENDOR_ID_NI, PCI_DEVICE_ID_NI_PCI8432_2324,
++		PCI_ANY_ID, PCI_ANY_ID, 0, 0,
++		pbn_ni8430_4 },
++
++	/*
+ 	* ADDI-DATA GmbH communication cards <info@addi-data.com>
+ 	*/
+ 	{	PCI_VENDOR_ID_ADDIDATA,
+diff --git a/include/linux/pci_ids.h b/include/linux/pci_ids.h
+index 170f8b1..449e7d9 100644
+--- a/include/linux/pci_ids.h
++++ b/include/linux/pci_ids.h
+@@ -944,6 +944,20 @@
+ #define PCI_DEVICE_ID_SUN_TOMATILLO	0xa801
+ #define PCI_DEVICE_ID_SUN_CASSINI	0xabba
+ 
++#define PCI_VENDOR_ID_NI		0x1093
++#define PCI_DEVICE_ID_NI_PXI8430_2322	0x7080
++#define PCI_DEVICE_ID_NI_PCI8430_2322	0x70db
++#define PCI_DEVICE_ID_NI_PXI8430_2324	0x70dd
++#define PCI_DEVICE_ID_NI_PCI8430_2324	0x70df
++#define PCI_DEVICE_ID_NI_PXI8430_2328	0x70e2
++#define PCI_DEVICE_ID_NI_PCI8430_2328	0x70e4
++#define PCI_DEVICE_ID_NI_PXI8430_23216	0x70e6
++#define PCI_DEVICE_ID_NI_PCI8430_23216	0x70e7
++#define PCI_DEVICE_ID_NI_PXI8432_2322	0x70e8
++#define PCI_DEVICE_ID_NI_PCI8432_2322	0x70ea
++#define PCI_DEVICE_ID_NI_PXI8432_2324	0x70ec
++#define PCI_DEVICE_ID_NI_PCI8432_2324	0x70ee
++
+ #define PCI_VENDOR_ID_CMD		0x1095
+ #define PCI_DEVICE_ID_CMD_643		0x0643
+ #define PCI_DEVICE_ID_CMD_646		0x0646
 
