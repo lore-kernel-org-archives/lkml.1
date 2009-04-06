@@ -1,192 +1,136 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755384AbZDFN6t@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756211AbZDFODS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755384AbZDFN6t (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 6 Apr 2009 09:58:49 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754751AbZDFN6j
+	id S1756211AbZDFODS (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 6 Apr 2009 10:03:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754751AbZDFODD
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 6 Apr 2009 09:58:39 -0400
-Received: from dgate10.ts.fujitsu.com ([80.70.172.49]:15037 "EHLO
-	dgate10.ts.fujitsu.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754456AbZDFN6h (ORCPT
+	Mon, 6 Apr 2009 10:03:03 -0400
+Received: from wf-out-1314.google.com ([209.85.200.173]:56063 "EHLO
+	wf-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754621AbZDFODB (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 6 Apr 2009 09:58:37 -0400
-X-Greylist: delayed 607 seconds by postgrey-1.27 at vger.kernel.org; Mon, 06 Apr 2009 09:58:36 EDT
-DomainKey-Signature: s=s1536a; d=ts.fujitsu.com; c=nofws; q=dns;
-  h=X-SBRSScore:X-IronPort-AV:Received:X-IronPort-AV:
-   Received:Received:Message-ID:Date:From:Organization:
-   User-Agent:MIME-Version:To:CC:Subject:References:
-   In-Reply-To:X-Enigmail-Version:Content-Type;
-  b=WVs2nfp1GndxINAaRbw8JBLwGv/SnbqJdd4Q4y/t68olJFEl/etsQRJc
-   xrUSmFG4o1rFWlE8DnR5Lq8sWTcjyAJSPeON4K0bFzXpkxadyRKnuUwKe
-   JHUTMcVeiF+kraUpjSmu2Xngz/c4sUFte/OgwIuLnXF4sOQBIcJRJeoJy
-   tGa9JGklX48uips1K+g1TfBRJOgaAisrtPGZP3nwoQP3tBFIPA/o1e8kN
-   M1O2T3FByvKNsNqXhAsSpE40okSbJ;
-X-SBRSScore: None
-X-IronPort-AV: E=Sophos;i="4.39,330,1235948400"; 
-   d="diff'?scan'208";a="66614767"
-X-IronPort-AV: E=Sophos;i="4.39,330,1235948400"; 
-   d="diff'?scan'208";a="45958854"
-Message-ID: <49DA0829.20504@ts.fujitsu.com>
-Date: Mon, 06 Apr 2009 15:48:25 +0200
-From: Martin Wilck <martin.wilck@ts.fujitsu.com>
-Organization: Fujitsu Technology Solutions
-User-Agent: Thunderbird 2.0.0.15pre (X11/20080508)
+	Mon, 6 Apr 2009 10:03:01 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:date:message-id:subject:from:to:cc:content-type;
+        b=JhMWc2OGoIXNBLX6bCnJW7AMIs4NZIywVLZle4pnpRXo4wOcY1MOh/4KRdbLfDZQCF
+         uqAFVuPAsl2/e41wVazzSwuzRvkVk2SFiVc85hHnSXazXqauedML0IrO/po0YkGL+MDo
+         wybHcIlljVS9jaRFbcNR86M8pjNHa5EoQRimQ=
 MIME-Version: 1.0
-To: Corey Minyard <minyard@acm.org>
-CC: Wilck Martin <Martin.Wilck@ts.fujitsu.com>, Greg KH <greg@kroah.com>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       "openipmi-developer@lists.sourceforge.net" 
-	<openipmi-developer@lists.sourceforge.net>
-Subject: Re: [PATCH] limit CPU time spent in kipmid (PREVIOUS WAS BROKEN)
-References: <49C27281.4040207@fujitsu-siemens.com> <49C2B994.7040808@acm.org> <20090319235114.GA18182@kroah.com> <49C3B6A5.5030408@acm.org> <20090320174701.GA14823@kroah.com> <49C3E03E.10506@acm.org> <49C78BE0.9090107@fujitsu-siemens.com> <49C7F368.5040304@acm.org>
-In-Reply-To: <49C7F368.5040304@acm.org>
-X-Enigmail-Version: 0.95.6
-Content-Type: multipart/mixed;
- boundary="------------020502000704070403030107"
+Date: Mon, 6 Apr 2009 23:02:59 +0900
+Message-ID: <49b7c2350904060702j3f725a45ub5e7d3ee3af883c1@mail.gmail.com>
+Subject: [PATCH] Update old Mini-HOWTO for ftrace
+From: GeunSik Lim <leemgs1@gmail.com>
+To: Steven Rostedt <srostedt@redhat.com>, Ingo Molnar <mingo@elte.hu>
+Cc: rt-users <linux-rt-users@vger.kernel.org>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
+Content-Type: multipart/mixed; boundary=000e0cd311a21c6b1d0466e35b29
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This is a multi-part message in MIME format.
---------------020502000704070403030107
-Content-Type: text/plain; charset=ISO-8859-15; format=flowed
+--000e0cd311a21c6b1d0466e35b29
+Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 7bit
 
-Hello Corey,
+   Dear Steven,
 
-> I've done some experimenting with your patch and some more thinking.  
-> (BTW, setting the permissions of kipmid_max_busy to 0644 as Greg 
-> suggested makes changing the value for testing a lot easier :).
+   The author of ftrace(Internal kernel Function Tracer) feature
+renamed the ftrace tracer
+    to function to avoid further confusion between the ftrace
+infrastructure and the
+    function tracer on Oct-20, 2008.
 
-I apologize for the long delay - busy with other stuff.
+    But, Update of Mini-HOWTO document are still not working
+    .
+    Most of the developers often utilize "/debug/tracing/README" file
+as Mini-HOWTO.
+    They will confuse definition and usage about ftrace  between
+README(ftrace) file
+    and available_tracers(function) file after linux-2.6.27 like me.
+    And, I want you to append "chrt -f 5 sleep 1" command as simple
+example for latency.
 
-Here is the patch with modifiable, per-interface module parameter. 
-Feedback is welcome.
+    Signed-off-by: GeunSik Lim <leemgs1@gmail.com>
+    Signed-off-by: Steven Rostedt <srostedt@redhat.com>
+    Signed-off-by: Ingo Molnar <mingo@elte.hu>
+---
+ kernel/trace/trace.c |    3 ++-
+ 1 files changed, 2 insertions(+), 1 deletions(-)
 
-Best regards,
-Martin (*note changed email address!*)
+diff --git a/kernel/trace/trace.c b/kernel/trace/trace.c
+index a0174a4..15f0eec 100644
+--- a/kernel/trace/trace.c
++++ b/kernel/trace/trace.c
+@@ -2358,7 +2358,7 @@ static const char readme_msg[] =
+        "# mkdir /debug\n"
+        "# mount -t debugfs nodev /debug\n\n"
+        "# cat /debug/tracing/available_tracers\n"
+-       "wakeup preemptirqsoff preemptoff irqsoff ftrace sched_switch none\n\n"
++       "wakeup preemptirqsoff preemptoff irqsoff function
+sched_switch none\n\n"
+        "# cat /debug/tracing/current_tracer\n"
+        "none\n"
+        "# echo sched_switch > /debug/tracing/current_tracer\n"
+@@ -2368,6 +2368,7 @@ static const char readme_msg[] =
+        "noprint-parent nosym-offset nosym-addr noverbose\n"
+        "# echo print-parent > /debug/tracing/trace_options\n"
+        "# echo 1 > /debug/tracing/tracing_enabled\n"
++       "# chrt -f 5 sleep 1\n"
+        "# cat /debug/tracing/trace > /tmp/trace.txt\n"
+        "echo 0 > /debug/tracing/tracing_enabled\n"
+ ;
+
+
 
 -- 
-Dr. Martin Wilck
-PRIMERGY System Software Engineer
-x86 Server Engineering
+Regards,
+GeunSik Lim
+--
+To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
+the body of a message to majordomo@vger.kernel.org
+More majordomo info at  http://vger.kernel.org/majordomo-info.html
+Please read the FAQ at  http://www.tux.org/lkml/
 
-Fujitsu Technology Solutions GmbH
-Heinz-Nixdorf-Ring 1
-33106 Paderborn, Germany
+--000e0cd311a21c6b1d0466e35b29
+Content-Type: application/octet-stream; name="update-minihowto-ftrace.patch"
+Content-Disposition: attachment; filename="update-minihowto-ftrace.patch"
+Content-Transfer-Encoding: base64
+X-Attachment-Id: f_ft7rotyk0
 
-Phone:			++49 5251 525 2796
-Fax:			++49 5251 525 2820
-Email:			martin.wilck@ts.fujitsu.com
-Internet:		http://ts.fujitsu.com
-Company Details:	http://de.ts.fujitsu.com/imprint.html
-
---------------020502000704070403030107
-Content-Type: text/x-patch;
- name="kipmid_max_busy_arr_2.6.29.diff"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline;
- filename="kipmid_max_busy_arr_2.6.29.diff"
-
-Patch: Make busy-loops in kipmid configurable (take 3)
-
-This patch adds a module parameter "kipmid_max_busy" that specifies how many
-microseconds kipmid should busy-loop before going to sleep. The
-new parameter defaults to 0 (previous behavior - busy-loop forever).
-
-The main rationale of this patch is to be able to avoid irritating users
-who see lots of CPU time spent int kipmid0. With a bit of tuning of the
-kipmid_max_busy parameter it is possible to decrease the CPU usage of kipmid
-to negligible values without losing much performance.
-
-In this version of the patch, the parameter can be specified per-interface,
-like other ipmi_si parameters, and can be modified at runtime via sysfs.
-
-Signed-off-by: martin.wilck@ts.fujitsu.com
-
---- a/drivers/char/ipmi/ipmi_si_intf.c	2009-03-24 00:12:14.000000000 +0100
-+++ b/drivers/char/ipmi/ipmi_si_intf.c	2009-04-06 17:16:41.000000000 +0200
-@@ -297,6 +297,9 @@ struct smi_info {
- static int force_kipmid[SI_MAX_PARMS];
- static int num_force_kipmid;
- 
-+static unsigned int kipmid_max_busy[SI_MAX_PARMS];
-+static int num_max_busy;
-+
- static int unload_when_empty = 1;
- 
- static int try_smi_init(struct smi_info *smi);
-@@ -927,23 +930,57 @@ static void set_run_to_completion(void *
- 	}
- }
- 
-+static int ipmi_thread_must_sleep(enum si_sm_result smi_result, int intf_num,
-+				  int *busy, struct timespec *busy_time)
-+{
-+	unsigned int max_busy = 0;
-+	if (smi_result != SI_SM_CALL_WITH_DELAY) {
-+		if (*busy)
-+			*busy = 0;
-+		return 0;
-+	}
-+	if (intf_num < num_max_busy)
-+		max_busy = kipmid_max_busy[intf_num];
-+	if (*busy == 0) {
-+		*busy = 1;
-+		getnstimeofday(busy_time);
-+		timespec_add_ns(busy_time, max_busy*NSEC_PER_USEC);
-+	} else if (max_busy == 0)
-+		return 0;
-+	else {
-+		struct timespec now;
-+		getnstimeofday(&now);
-+		if (unlikely(timespec_compare(&now, busy_time) > 0)) {
-+			*busy = 0;
-+			return 1;
-+		}
-+	}
-+	return 0;
-+}
-+
- static int ipmi_thread(void *data)
- {
- 	struct smi_info *smi_info = data;
- 	unsigned long flags;
- 	enum si_sm_result smi_result;
-+	struct timespec busy_time;
-+	int busy = 0;
- 
- 	set_user_nice(current, 19);
- 	while (!kthread_should_stop()) {
-+		int must_sleep;
- 		spin_lock_irqsave(&(smi_info->si_lock), flags);
- 		smi_result = smi_event_handler(smi_info, 0);
- 		spin_unlock_irqrestore(&(smi_info->si_lock), flags);
-+		must_sleep = ipmi_thread_must_sleep(smi_result,
-+						    smi_info->intf_num,
-+						    &busy, &busy_time);
- 		if (smi_result == SI_SM_CALL_WITHOUT_DELAY)
- 			; /* do nothing */
--		else if (smi_result == SI_SM_CALL_WITH_DELAY)
-+		else if (smi_result == SI_SM_CALL_WITH_DELAY && !must_sleep)
- 			schedule();
- 		else
--			schedule_timeout_interruptible(1);
-+			schedule_timeout_interruptible(0);
- 	}
- 	return 0;
- }
-@@ -1213,6 +1250,11 @@ module_param(unload_when_empty, int, 0);
- MODULE_PARM_DESC(unload_when_empty, "Unload the module if no interfaces are"
- 		 " specified or found, default is 1.  Setting to 0"
- 		 " is useful for hot add of devices using hotmod.");
-+module_param_array(kipmid_max_busy, uint, &num_max_busy, 0644);
-+MODULE_PARM_DESC(kipmid_max_busy,
-+		 "Max time (in microseconds) to busy-wait for IPMI data before"
-+		 " sleeping. 0 (default) means to wait forever. Set to 100-500"
-+		 " if kipmid is using up a lot of CPU time.");
- 
- 
- static void std_irq_cleanup(struct smi_info *info)
-
---------------020502000704070403030107--
+QXV0aG9yOiBHZXVuU2lrICBMaW08bGVlbWdzMUBnbWFpbC5jb20+CkRhdGU6ICAgTW9uIEFwciA2
+IDIyOjQ4OjE2IDIwMDkgKzA5MDAKCiAgICBbUEFUQ0hdIFVwZGF0ZSBNaW5pLUhPV1RPIGZvciBm
+dHJhY2UKICAgIAogICAgVGhlIGF1dGhvciBvZiBmdHJhY2UoSW50ZXJuYWwga2VybmVsIEZ1bmN0
+aW9uIFRyYWNlcikgZmVhdHVyZSByZW5hbWVkIHRoZSBmdHJhY2UgdHJhY2VyCiAgICB0byBmdW5j
+dGlvbiB0byBhdm9pZCBmdXJ0aGVyIGNvbmZ1c2lvbiBiZXR3ZWVuIHRoZSBmdHJhY2UgaW5mcmFz
+dHJ1Y3R1cmUgYW5kIHRoZQogICAgZnVuY3Rpb24gdHJhY2VyIG9uIE9jdC0yMCwgMjAwOC4KICAg
+IAogICAgQnV0LCBVcGRhdGUgb2YgTWluaS1IT1dUTyBkb2N1bWVudCBhcmUgc3RpbGwgbm90IHdv
+cmtpbmcKICAgIC4KICAgIE1vc3Qgb2YgdGhlIGRldmVsb3BlcnMgb2Z0ZW4gdXRpbGl6ZSAiL2Rl
+YnVnL3RyYWNpbmcvUkVBRE1FIiBmaWxlIGFzIE1pbmktSE9XVE8uCiAgICBUaGV5IHdpbGwgY29u
+ZnVzZSBkZWZpbml0aW9uIGFuZCB1c2FnZSBhYm91dCBmdHJhY2UgIGJldHdlZW4gUkVBRE1FKGZ0
+cmFjZSkgZmlsZQogICAgYW5kIGF2YWlsYWJsZV90cmFjZXJzKGZ1bmN0aW9uKSBmaWxlIGFmdGVy
+IGxpbnV4LTIuNi4yNyBsaWtlIG1lLgogICAgQW5kLCBJIHdhbnQgeW91IHRvIGFwcGVuZCAiY2hy
+dCAtZiA1IHNsZWVwIDEiIGNvbW1hbmQgYXMgc2ltcGxlIGV4YW1wbGUgZm9yIGxhdGVuY3kuCiAg
+ICAKICAgIFNpZ25lZC1vZmYtYnk6IEdldW5TaWsgTGltIDxsZWVtZ3MxQGdtYWlsLmNvbT4KICAg
+IFNpZ25lZC1vZmYtYnk6IFN0ZXZlbiBSb3N0ZWR0IDxzcm9zdGVkdEByZWRoYXQuY29tPgogICAg
+U2lnbmVkLW9mZi1ieTogSW5nbyBNb2xuYXIgPG1pbmdvQGVsdGUuaHU+Ci0tLQoga2VybmVsL3Ry
+YWNlL3RyYWNlLmMgfCAgICAzICsrLQogMSBmaWxlcyBjaGFuZ2VkLCAyIGluc2VydGlvbnMoKyks
+IDEgZGVsZXRpb25zKC0pCgpkaWZmIC0tZ2l0IGEva2VybmVsL3RyYWNlL3RyYWNlLmMgYi9rZXJu
+ZWwvdHJhY2UvdHJhY2UuYwppbmRleCBhMDE3NGE0Li4xNWYwZWVjIDEwMDY0NAotLS0gYS9rZXJu
+ZWwvdHJhY2UvdHJhY2UuYworKysgYi9rZXJuZWwvdHJhY2UvdHJhY2UuYwpAQCAtMjM1OCw3ICsy
+MzU4LDcgQEAgc3RhdGljIGNvbnN0IGNoYXIgcmVhZG1lX21zZ1tdID0KICAgICAgICAiIyBta2Rp
+ciAvZGVidWdcbiIKICAgICAgICAiIyBtb3VudCAtdCBkZWJ1Z2ZzIG5vZGV2IC9kZWJ1Z1xuXG4i
+CiAgICAgICAgIiMgY2F0IC9kZWJ1Zy90cmFjaW5nL2F2YWlsYWJsZV90cmFjZXJzXG4iCi0gICAg
+ICAgIndha2V1cCBwcmVlbXB0aXJxc29mZiBwcmVlbXB0b2ZmIGlycXNvZmYgZnRyYWNlIHNjaGVk
+X3N3aXRjaCBub25lXG5cbiIKKyAgICAgICAid2FrZXVwIHByZWVtcHRpcnFzb2ZmIHByZWVtcHRv
+ZmYgaXJxc29mZiBmdW5jdGlvbiBzY2hlZF9zd2l0Y2ggbm9uZVxuXG4iCiAgICAgICAgIiMgY2F0
+IC9kZWJ1Zy90cmFjaW5nL2N1cnJlbnRfdHJhY2VyXG4iCiAgICAgICAgIm5vbmVcbiIKICAgICAg
+ICAiIyBlY2hvIHNjaGVkX3N3aXRjaCA+IC9kZWJ1Zy90cmFjaW5nL2N1cnJlbnRfdHJhY2VyXG4i
+CkBAIC0yMzY4LDYgKzIzNjgsNyBAQCBzdGF0aWMgY29uc3QgY2hhciByZWFkbWVfbXNnW10gPQog
+ICAgICAgICJub3ByaW50LXBhcmVudCBub3N5bS1vZmZzZXQgbm9zeW0tYWRkciBub3ZlcmJvc2Vc
+biIKICAgICAgICAiIyBlY2hvIHByaW50LXBhcmVudCA+IC9kZWJ1Zy90cmFjaW5nL3RyYWNlX29w
+dGlvbnNcbiIKICAgICAgICAiIyBlY2hvIDEgPiAvZGVidWcvdHJhY2luZy90cmFjaW5nX2VuYWJs
+ZWRcbiIKKyAgICAgICAiIyBjaHJ0IC1mIDUgc2xlZXAgMVxuIgogICAgICAgICIjIGNhdCAvZGVi
+dWcvdHJhY2luZy90cmFjZSA+IC90bXAvdHJhY2UudHh0XG4iCiAgICAgICAgImVjaG8gMCA+IC9k
+ZWJ1Zy90cmFjaW5nL3RyYWNpbmdfZW5hYmxlZFxuIgogOwoKCg==
+--000e0cd311a21c6b1d0466e35b29--
