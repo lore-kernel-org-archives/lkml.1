@@ -1,66 +1,46 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757959AbZDFWka@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757556AbZDFWsR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757959AbZDFWka (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 6 Apr 2009 18:40:30 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753125AbZDFWkT
+	id S1757556AbZDFWsR (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 6 Apr 2009 18:48:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755064AbZDFWr6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 6 Apr 2009 18:40:19 -0400
-Received: from mx2.redhat.com ([66.187.237.31]:42292 "EHLO mx2.redhat.com"
+	Mon, 6 Apr 2009 18:47:58 -0400
+Received: from ogre.sisk.pl ([217.79.144.158]:50242 "EHLO ogre.sisk.pl"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752507AbZDFWkS (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 6 Apr 2009 18:40:18 -0400
-Date: Mon, 6 Apr 2009 19:39:40 -0300
-From: Mauro Carvalho Chehab <mchehab@redhat.com>
-To: Randy Dunlap <randy.dunlap@oracle.com>
-Cc: lkml <linux-kernel@vger.kernel.org>,
-       Laurent Pinchart <laurent.pinchart@skynet.be>,
-       "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: [PATCH resend] PWC: fix build error when CONFIG_INPUT=m
-Message-ID: <20090406193940.36248080@pedra.chehab.org>
-In-Reply-To: <20090406145931.c1c843ed.randy.dunlap@oracle.com>
-References: <20090406145931.c1c843ed.randy.dunlap@oracle.com>
-Organization: Red Hat
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	id S1755107AbZDFWr5 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 6 Apr 2009 18:47:57 -0400
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+To: LKML <linux-kernel@vger.kernel.org>
+Subject: [2 regressions] Current git cannot find root device on x86-64 (HP nx6325), NFS broken
+Date: Tue, 7 Apr 2009 00:47:55 +0200
+User-Agent: KMail/1.11.2 (Linux/2.6.29-rjw; KDE/4.2.2; x86_64; ; )
+Cc: Linus Torvalds <torvalds@linux-foundation.org>,
+       Trond Myklebust <Trond.Myklebust@netapp.com>,
+       Tejun Heo <htejun@gmail.com>
+MIME-Version: 1.0
+Content-Type: Text/Plain;
+  charset="us-ascii"
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200904070047.56172.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Randy,
+Hi,
 
-Next time, could you please c/c linux-media@vger.kernel.org? I'm relying on
-linux-media project at Patchwork for helping to not forget to patches.
+Current mainline (commit 22ae77bc7ac115b9d518d5cbc13d39317079b2b0) can't
+find the root device (it's handled by statically compiled-in sata_sil) and
+generally causes the "invalid module format" message to appear for all modules
+loaded from the initrd on my HP nx6325 (the distro is openSUSE 11.1).
+
+I don't know which commit might have made this happen, but the breakage was
+introduced during the last three days (commit
+601cc11d054ae4b5e9b5babec3d8e4667a2cb9b5 is certainly good).  I'll bisect
+tomorrow if there are no ideas.
+
+Also, mounting directories over NFS doesn't work (I think it oopses, but
+didn't have the time to look at it more closely).
 
 Thanks,
-Mauro.
-
-On Mon, 6 Apr 2009 14:59:31 -0700
-Randy Dunlap <randy.dunlap@oracle.com> wrote:
-
-> From: Randy Dunlap <randy.dunlap@oracle.com>
-> 
-> Fix build errors when USB_PWC=y and INPUT=m.
-> 
-> Signed-off-by: Randy Dunlap <randy.dunlap@oracle.com>
-> ---
->  drivers/media/video/pwc/Kconfig |    2 +-
->  1 file changed, 1 insertion(+), 1 deletion(-)
-> 
-> --- mmotm-2009-0214-0049.orig/drivers/media/video/pwc/Kconfig
-> +++ mmotm-2009-0214-0049/drivers/media/video/pwc/Kconfig
-> @@ -39,7 +39,7 @@ config USB_PWC_DEBUG
->  config USB_PWC_INPUT_EVDEV
->  	bool "USB Philips Cameras input events device support"
->  	default y
-> -	depends on USB_PWC && INPUT
-> +	depends on USB_PWC=INPUT || INPUT=y
->  	---help---
->  	  This option makes USB Philips cameras register the snapshot button as
->  	  an input device to report button events.
-
-
--- 
-
-Cheers,
-Mauro
+Rafael
