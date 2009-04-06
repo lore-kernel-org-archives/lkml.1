@@ -1,59 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754210AbZDFFph@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753400AbZDFFsU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754210AbZDFFph (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 6 Apr 2009 01:45:37 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752415AbZDFFoa
+	id S1753400AbZDFFsU (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 6 Apr 2009 01:48:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752090AbZDFFsI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 6 Apr 2009 01:44:30 -0400
-Received: from kroah.org ([198.145.64.141]:47446 "EHLO coco.kroah.org"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1752272AbZDFFo3 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 6 Apr 2009 01:44:29 -0400
-Date: Sun, 5 Apr 2009 22:40:14 -0700
-From: Greg KH <greg@kroah.com>
-To: Alan Cox <alan@lxorguk.ukuu.org.uk>
-Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: USB: symbolserial: log the ioctl commands
-Message-ID: <20090406054014.GB12019@kroah.com>
-References: <200903261929.n2QJTUX1009811@hera.kernel.org> <20090326194421.41816289@lxorguk.ukuu.org.uk>
+	Mon, 6 Apr 2009 01:48:08 -0400
+Received: from srv5.dvmed.net ([207.36.208.214]:40537 "EHLO mail.dvmed.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751872AbZDFFsH (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 6 Apr 2009 01:48:07 -0400
+Message-ID: <49D99775.9030104@garzik.org>
+Date: Mon, 06 Apr 2009 01:47:33 -0400
+From: Jeff Garzik <jeff@garzik.org>
+User-Agent: Thunderbird 2.0.0.21 (X11/20090320)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090326194421.41816289@lxorguk.ukuu.org.uk>
-User-Agent: Mutt/1.5.19 (2009-01-05)
+To: Arjan van de Ven <arjan@infradead.org>
+CC: Mark Lord <lkml@rtr.ca>, Linus Torvalds <torvalds@linux-foundation.org>,
+       Theodore Tso <tytso@mit.edu>, Jens Axboe <jens.axboe@oracle.com>,
+       Linux Kernel Developers List <linux-kernel@vger.kernel.org>,
+       Ext4 Developers List <linux-ext4@vger.kernel.org>
+Subject: Re: [GIT PULL] Ext3 latency fixes
+References: <alpine.LFD.2.00.0904031150190.4015@localhost.localdomain>	<alpine.LFD.2.00.0904031329410.7007@localhost.localdomain>	<20090404135719.GA9812@mit.edu>	<20090404151649.GE5178@kernel.dk>	<alpine.LFD.2.00.0904040854470.3915@localhost.localdomain>	<20090404173412.GF5178@kernel.dk>	<alpine.LFD.2.00.0904041039230.3915@localhost.localdomain>	<20090404180108.GH5178@kernel.dk>	<20090404232222.GA7480@mit.edu>	<20090404163349.20df1208@infradead.org>	<20090405001005.GA7553@mit.edu>	<alpine.LFD.2.00.0904050927580.4023@localhost.localdomain>	<49D8E71F.6000703@rtr.ca>	<49D91B31.90300@garzik.org> <20090405164831.7ad01c20@infradead.org>
+In-Reply-To: <20090405164831.7ad01c20@infradead.org>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
+X-Spam-Score: -4.4 (----)
+X-Spam-Report: SpamAssassin version 3.2.5 on srv5.dvmed.net summary:
+	Content analysis details:   (-4.4 points, 5.0 required)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Mar 26, 2009 at 07:44:21PM +0000, Alan Cox wrote:
+Arjan van de Ven wrote:
+> On Sun, 05 Apr 2009 16:57:21 -0400
+> Jeff Garzik <jeff@garzik.org> wrote:
+>> We set it in libata-scsi.c:ata_scsi_dev_config() based on
+>> ata_id_is_ssd()
+>>
+>> That hueristic probably assumes Intel SSDs or something :/
 > 
-> > +static int symbol_tiocmget(struct tty_struct *tty, struct file *file)
-> > +{
-> > +	struct usb_serial_port *port = tty->driver_data;
-> > +	struct device *dev = &port->dev;
-> > +
-> > +	/* TODO */
-> > +	/* probably just need to shadow whatever was sent to us here */
-> > +	dev_info(dev, "%s\n", __func__);
-> > +	return 0;
-> > +}
-> 
-> If you don't have a modem you don't provide these methods. If you do have
-> a modem you return the values for the modem. Please do not try and stick
-> in stuff faking responses, it just makes a nasty mess in the longer term
-> and I've already cleared the same out of a ton of drivers - with I note
-> no breakages of user space.
+> you mean the "rpm" set to '1' ?
+> I was pretty sure that that was industry standard...
 
-I'm trying to get this driver working properly for a USB device that is
-being controlled by a Windows program running under WINE.  Right now
-there are some ioctls being called by either WINE or the serial program
-on Windows that the driver isn't handling and so it's not working
-properly.  This change was so that I could get feedback from the user
-with this situation to try to work it all out.
+A -new- industry standard.  You can certainly create a compliant SSD 
+while only conforming to ATA-7, for example.  Some older IDE flash 
+devices pretend they are normal hard drives in almost every respect, too.
 
-I've now got a trace of an attempt and will work to try to implement the
-needed ioctls to get it running properly.
+	Jeff
 
-thanks,
 
-greg k-h
+
