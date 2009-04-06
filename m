@@ -1,20 +1,20 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758832AbZDFPlP@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758948AbZDFPkv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758832AbZDFPlP (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 6 Apr 2009 11:41:15 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756930AbZDFPg3
+	id S1758948AbZDFPkv (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 6 Apr 2009 11:40:51 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756871AbZDFPgE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 6 Apr 2009 11:36:29 -0400
-Received: from earthlight.etchedpixels.co.uk ([81.2.110.250]:57003 "EHLO
+	Mon, 6 Apr 2009 11:36:04 -0400
+Received: from earthlight.etchedpixels.co.uk ([81.2.110.250]:57002 "EHLO
 	t61.ukuu.org.uk" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1756885AbZDFPg2 (ORCPT
+	with ESMTP id S1754114AbZDFPgC (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 6 Apr 2009 11:36:28 -0400
+	Mon, 6 Apr 2009 11:36:02 -0400
 From: Alan Cox <alan@lxorguk.ukuu.org.uk>
-Subject: [PATCH 23/27] cdc-acm: zydas 1602 identifier needed
+Subject: [PATCH 21/27] mux: fix build problem
 To: torvalds@linux-foundation.org, linux-kernel@vger.kernel.org
-Date: Mon, 06 Apr 2009 17:35:01 +0100
-Message-ID: <20090406163458.12934.66631.stgit@t61.ukuu.org.uk>
+Date: Mon, 06 Apr 2009 17:34:34 +0100
+Message-ID: <20090406163432.12934.38714.stgit@t61.ukuu.org.uk>
 In-Reply-To: <20090406162959.12934.97904.stgit@t61.ukuu.org.uk>
 References: <20090406162959.12934.97904.stgit@t61.ukuu.org.uk>
 User-Agent: StGIT/0.14.3
@@ -25,27 +25,35 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Bugzilla #9095 and a couple of other confirmations
+From: Alexander Beregalov <a.beregalov@gmail.com>
 
+Fixes:
+
+In file included from drivers/serial/mux.c:37:
+include/linux/serial_core.h: In function 'uart_handle_sysrq_char':
+include/linux/serial_core.h:467: error: 'struct uart_port' has no member named 'sysrq'
+include/linux/serial_core.h:468: error: 'struct uart_port' has no member named 'sysrq'
+
+
+Signed-off-by: Alexander Beregalov <a.beregalov@gmail.com>
 Signed-off-by: Alan Cox <alan@lxorguk.ukuu.org.uk>
 ---
 
- drivers/usb/class/cdc-acm.c |    3 +++
- 1 files changed, 3 insertions(+), 0 deletions(-)
+ include/linux/serial_core.h |    2 +-
+ 1 files changed, 1 insertions(+), 1 deletions(-)
 
 
-diff --git a/drivers/usb/class/cdc-acm.c b/drivers/usb/class/cdc-acm.c
-index 85f22c6..869d47c 100644
---- a/drivers/usb/class/cdc-acm.c
-+++ b/drivers/usb/class/cdc-acm.c
-@@ -1358,6 +1358,9 @@ static struct usb_device_id acm_ids[] = {
- 	{ USB_DEVICE(0x079b, 0x000f), /* BT On-Air USB MODEM */
- 	.driver_info = NO_UNION_NORMAL, /* has no union descriptor */
- 	},
-+	{ USB_DEVICE(0x0ace, 0x1602), /* ZyDAS 56K USB MODEM */
-+	.driver_info = SINGLE_RX_URB,
-+	},
- 	{ USB_DEVICE(0x0ace, 0x1608), /* ZyDAS 56K USB MODEM */
- 	.driver_info = SINGLE_RX_URB, /* firmware bug */
- 	},
+diff --git a/include/linux/serial_core.h b/include/linux/serial_core.h
+index df9245c..83e4b3f 100644
+--- a/include/linux/serial_core.h
++++ b/include/linux/serial_core.h
+@@ -277,7 +277,7 @@ struct uart_port {
+ 	struct uart_icount	icount;			/* statistics */
+ 
+ 	struct console		*cons;			/* struct console, if any */
+-#ifdef CONFIG_SERIAL_CORE_CONSOLE
++#if defined(CONFIG_SERIAL_CORE_CONSOLE) || defined(SUPPORT_SYSRQ)
+ 	unsigned long		sysrq;			/* sysrq timeout */
+ #endif
+ 
 
