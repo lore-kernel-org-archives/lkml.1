@@ -1,59 +1,119 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753482AbZDFPTr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753080AbZDFPVc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753482AbZDFPTr (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 6 Apr 2009 11:19:47 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751323AbZDFPTf
+	id S1753080AbZDFPVc (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 6 Apr 2009 11:21:32 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751235AbZDFPVX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 6 Apr 2009 11:19:35 -0400
-Received: from g4t0016.houston.hp.com ([15.201.24.19]:7638 "EHLO
-	g4t0016.houston.hp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751158AbZDFPTe (ORCPT
+	Mon, 6 Apr 2009 11:21:23 -0400
+Received: from e28smtp07.in.ibm.com ([59.145.155.7]:54247 "EHLO
+	e28smtp07.in.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750790AbZDFPVX (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 6 Apr 2009 11:19:34 -0400
-Date: Mon, 6 Apr 2009 09:19:31 -0600
-From: Alex Chiang <achiang@hp.com>
-To: Sam Ravnborg <sam@ravnborg.org>
-Cc: Jesse Barnes <jbarnes@virtuousgeek.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       linux-kernel@vger.kernel.org, linux-pci@vger.kernel.org
-Subject: Re: [git pull] PCI changes for 2.6.30
-Message-ID: <20090406151931.GB25005@ldl.fc.hp.com>
-References: <20090331121331.3673cf59@hobbes> <alpine.LFD.2.00.0904010957520.4130@localhost.localdomain> <20090401101309.67d0bea5@hobbes> <20090401183749.GC8188@ldl.fc.hp.com> <20090401191220.GB29673@uranus.ravnborg.org> <20090401222310.GA31290@ldl.fc.hp.com> <20090405193423.GB24374@uranus.ravnborg.org>
+	Mon, 6 Apr 2009 11:21:23 -0400
+Date: Mon, 6 Apr 2009 20:50:38 +0530
+From: Gautham R Shenoy <ego@in.ibm.com>
+To: Alan Stern <stern@rowland.harvard.edu>
+Cc: "Rafael J. Wysocki" <rjw@sisk.pl>, Peter Zijlstra <a.p.zijlstra@chello.nl>,
+       Rusty Russell <rusty@rustcorp.com.au>,
+       Linux Kernel List <linux-kernel@vger.kernel.org>,
+       Linux-pm mailing list <linux-pm@lists.linux-foundation.org>,
+       Ingo Molnar <mingo@elte.hu>, Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: [linux-pm] pm-hibernate : possible circular locking dependency
+	detected
+Message-ID: <20090406152038.GB17559@in.ibm.com>
+Reply-To: ego@in.ibm.com
+References: <200904061529.44780.rjw@sisk.pl> <Pine.LNX.4.44L0.0904061031420.3012-100000@iolanthe.rowland.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20090405193423.GB24374@uranus.ravnborg.org>
-User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
+In-Reply-To: <Pine.LNX.4.44L0.0904061031420.3012-100000@iolanthe.rowland.org>
+User-Agent: Mutt/1.5.17 (2007-11-01)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-* Sam Ravnborg <sam@ravnborg.org>:
+On Mon, Apr 06, 2009 at 10:37:10AM -0400, Alan Stern wrote:
+> On Mon, 6 Apr 2009, Rafael J. Wysocki wrote:
+> 
+> > On Monday 06 April 2009, Gautham R Shenoy wrote:
+> > > On Sun, Apr 05, 2009 at 03:44:54PM +0200, Ingo Molnar wrote:
+> > > > 
+> > > > * Rafael J. Wysocki <rjw@sisk.pl> wrote:
+> > > > 
+> > > > > On Sunday 05 April 2009, Ming Lei wrote:
+> > > > > > kernel version : one simple usb-serial patch against  commit
+> > > > > > 6bb597507f9839b13498781e481f5458aea33620.
+> > > > > > 
+> > > > > > Thanks.
+> > > > > 
+> > > > > Hmm, CPU hotplug again, it seems.
+> > > > > 
+> > > > > I'm not sure who's the maintainer at the moment.  Andrew, is that 
+> > > > > Gautham?
+> > > > 
+> > > > CPU hotplug tends to land on the scheduler people's desk normally.
+> > > > 
+> > > > But i'm not sure that's the real thing here - key appears to be this 
+> > > > work_on_cpu() worklet by the cpufreq code:
+> > > 
+> > > Actually, there are two dependency chains here which can lead to a deadlock.
+> > > The one we're seeing here is the longer of the two.
+> > > 
+> > > If the relevant locks are numbered as follows:
+> > > [1]: cpu_policy_rwsem
+> > > [2]: work_on_cpu
+> > > [3]: cpu_hotplug.lock
+> > > [4]: dpm_list_mtx
+> > > 
+> > > 
+> > > The individual callpaths are:
+> > > 
+> > > 1) do_dbs_timer()[1] --> dbs_check_cpu() --> __cpufreq_driver_getavg()
+> > >                                                                   |
+> > >                       work_on_cpu()[2] <-- get_measured_perf() <--|
+> > > 
+> > > 
+> > > 2) pci_device_probe() --> .. --> pci_call_probe() [3] --> work_on_cpu()[2]
+> > >                                                                      |
+> > >                   [4] device_pm_add() <-- ..<-- local_pci_probe() <--|
 > > 
-> > Reading through Documentation/PCI/pci.txt says that under
-> > CONFIG_HOTPLUG, __devinit should be a nop?
-> The documentation is not up-to-date in this respect.
+> > This should block on [4] held by hibernate().  That's why it calls
+> > device_pm_lock() after all.
+> > 
+> > > 3) hibernate() --> hibernatioin_snapshot() --> create_image()
+> > >                                                           |
+> > >        disable_nonboot_cpus() <-- [4] device_pm_lock() <--|
+> > >        |
+> > >        |--> _cpu_down() [3] --> cpufreq_cpu_callback() [1]
+> > > 
+> > > 
+> > > The two chains which can deadlock are
+> > > 
+> > > a) [1] --> [2] --> [4] --> [3] --> [1] (The one in this log)
+> > > and
+> > > b) [3] --> [2] --> [4] --> [3]
+> > 
+> > What exactly is the b) scenario?
 > 
-> Annotating a function __devinit will no matter the configuration
-> locate the code in a section named .devinit.text
-
-Ok, I'll update the documentation.
-
-> We then postprocess this section for illegal references using modpost.
+> If I understand correctly it isn't really a deadlock scenario, but it
+> is a lockdep violation.  The violation is:
 > 
-> The PCI_HOTPLUG code has often been troublesome with respect to these checks
-> as this code is only relevant if CONFIG_HOTPLUG is enabled
-> and will often not even be included in the kernel if not enabled.
-> This is true for pci_rescan_bus() for example.
+> 	The pci_device_probe() path 2) proves that dpm_list_mtx [4] can
+> 	be acquired while cpu_hotplug.lock [3] is held;
 > 
-> And we would like to export these symbols too. But we do not allow exported
-> symbols to be annotated __devinit as this code will be blown away in some configurations.
+> 	The hibernate() path 3) proves that cpu_hotplug.lock [3] can be
+> 	acquired while dpm_list_mtx [4] is held.
 > 
-> So the correct solution which you also used in your patch is to tell
-> modpost to ignore references to *init sections from this specific funtion
-> as they are OK.
+> The two pathways cannot run simultaneously (and hence cannot deadlock) 
+> because the prepare() stage of hibernation is supposed to stop all 
+> device probing.  But lockdep will still report a problem.
 
-Does this count as an Acked-by?
+Thanks for clarifying this Alan. I guess it boils down to teaching
+lockdep about this false-positive.
 
-Thanks.
+> 
+> Alan Stern
 
+-- 
+Thanks and Regards
+gautham
