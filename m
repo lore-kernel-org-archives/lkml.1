@@ -1,64 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758522AbZDFUXd@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755001AbZDFUep@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758522AbZDFUXd (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 6 Apr 2009 16:23:33 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752431AbZDFUXW
+	id S1755001AbZDFUep (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 6 Apr 2009 16:34:45 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752834AbZDFUef
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 6 Apr 2009 16:23:22 -0400
-Received: from phoenix.slamd64.com ([217.10.145.2]:38456 "EHLO
-	phoenix.slamd64.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750784AbZDFUXV (ORCPT
+	Mon, 6 Apr 2009 16:34:35 -0400
+Received: from fk-out-0910.google.com ([209.85.128.185]:45537 "EHLO
+	fk-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752635AbZDFUee convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 6 Apr 2009 16:23:21 -0400
-X-Greylist: delayed 1784 seconds by postgrey-1.27 at vger.kernel.org; Mon, 06 Apr 2009 16:23:20 EDT
-From: Carlos Corbacho <carlos@strangeworlds.co.uk>
-To: Jarod Wilson <jarod@redhat.com>
-Subject: Re: [PATCH] acer-wmi: don't bother loading on unsupported systems
-Date: Mon, 6 Apr 2009 20:53:11 +0100
-User-Agent: KMail/1.11.1 (Linux/2.6.28.8; KDE/4.2.1; x86_64; ; )
-Cc: aceracpi@googlegroups.com, linux-kernel@vger.kernel.org
-References: <200904060940.16889.jarod@redhat.com>
-In-Reply-To: <200904060940.16889.jarod@redhat.com>
+	Mon, 6 Apr 2009 16:34:34 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=from:to:subject:date:user-agent:cc:references:in-reply-to
+         :mime-version:content-type:content-transfer-encoding
+         :content-disposition:message-id;
+        b=CiDgAk1vJL+EzDNm38uQspgkgQKQ+5fjv64CfDpgBJy/+LzjoHkTOhX4tbrJ0N56Hq
+         AB5pd+d7e8paTOU+7VgV1XTCluZlFr2TylriAxxjtuEpsPaiZEr5KA5C4VBBxFqupomo
+         upwlNs1N+CoG0sN/5Jd+ndvZG07NKtnIjPyL4=
+From: Arkadiusz Miskiewicz <a.miskiewicz@gmail.com>
+To: linux-kernel@vger.kernel.org
+Subject: Re: kernel oops with latest git v2.6.29-9516-g0221c81
+Date: Mon, 6 Apr 2009 22:34:29 +0200
+User-Agent: KMail/1.11.2 (Linux/2.6.29-final; KDE/4.2.2; x86_64; ; )
+Cc: Riccardo Magliocchetti <riccardo.magliocchetti@gmail.com>,
+       Arjan van de Ven <arjan@linux.intel.com>
+References: <49DA6168.2020701@gmail.com>
+In-Reply-To: <49DA6168.2020701@gmail.com>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
+Content-Type: Text/Plain;
+  charset="iso-8859-2"
+Content-Transfer-Encoding: 8BIT
 Content-Disposition: inline
-Message-Id: <200904062053.12303.carlos@strangeworlds.co.uk>
-X-Greylist: Sender succeeded SMTP AUTH, not delayed by milter-greylist-4.0 (phoenix.slamd64.com [217.10.145.2]); Mon, 06 Apr 2009 19:53:13 +0000 (UTC)
+Message-Id: <200904062234.29481.a.miskiewicz@gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Monday 06 April 2009 14:40:16 Jarod Wilson wrote:
-> So have acer-wmi just bail on unsupported systems -- includes only my
-> particular model of the Aspire One atm, but a larger list of unsupported
-> systems can be found here:
+On Monday 06 of April 2009, Riccardo Magliocchetti wrote:
+> Hi,
 >
-> http://code.google.com/p/aceracpi/wiki/SupportedHardware
+> i've updated the kernel to latest git and now it's oopsing.
 >
-> This might well become unnecessary once the WMI sysfs interface mentioned
-> in acer-wmi.c exists and the wild-card dmi modalias is gone, but for now...
-> I prefer to have working wireless, and this isn't exactly an obvious root
-> cause. I lack the hardware to further extend the blacklist, but doing so is
-> trivial. Whether or not loading acer-wmi actually negatively impacts
-> machines other than the AAO is unknown at this time.
+> I've uploaded 3 pictures taken from a camera here:
+>
+> http://yfrog.com/41oops1j
+> http://yfrog.com/bcoops2j
+> http://yfrog.com/bcoops3j
 
-NAK.
+You hit the same thing as me:
+http://lkml.org/lkml/2009/4/6/93
 
-An equivalent patch to this was submitted to the ACPI tree two days ago (which 
-blacklists both the known Aspire One DMI entries) and is now upstream (and 
-will also be backported to the next stable release).
+I think that Arjan could tell us something about that problem (CC).
 
-http://git.kernel.org/?p=linux/kernel/git/torvalds/linux-2.6.git;a=commit;h=a74dd5fdabcd34c93e17e9c7024eeb503c92b048
-
-(The Aspire One is special as, unlike other Acer laptops which are 
-unsupported, it provides the ACPI-WMI inteface we're trying to match on, so it 
-really does have to be blacklisted - so WMI matching won't help in this 
-particular case).
-
--Carlos
 -- 
-E-Mail: carlos@strangeworlds.co.uk
-Web: strangeworlds.co.uk
-GPG Key ID: 0x23EE722D
+Arkadiusz Mi¶kiewicz        PLD/Linux Team
+arekm / maven.pl            http://ftp.pld-linux.org/
+
