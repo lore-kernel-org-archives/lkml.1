@@ -1,82 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756227AbZDFMBT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756510AbZDFMCI@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756227AbZDFMBT (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 6 Apr 2009 08:01:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755329AbZDFMBH
+	id S1756510AbZDFMCI (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 6 Apr 2009 08:02:08 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755203AbZDFMBy
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 6 Apr 2009 08:01:07 -0400
-Received: from smtp.nokia.com ([192.100.105.134]:47091 "EHLO
-	mgw-mx09.nokia.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755481AbZDFMBG (ORCPT
+	Mon, 6 Apr 2009 08:01:54 -0400
+Received: from atrey.karlin.mff.cuni.cz ([195.113.26.193]:36674 "EHLO
+	atrey.karlin.mff.cuni.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755200AbZDFMBy (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 6 Apr 2009 08:01:06 -0400
-Message-ID: <49D9EF0F.9090808@nokia.com>
-Date: Mon, 06 Apr 2009 15:01:19 +0300
-From: Adrian Hunter <adrian.hunter@nokia.com>
-User-Agent: Thunderbird 2.0.0.19 (X11/20090105)
+	Mon, 6 Apr 2009 08:01:54 -0400
+Date: Mon, 6 Apr 2009 14:01:37 +0200
+From: Pavel Machek <pavel@ucw.cz>
+To: Tetsuo Handa <penguin-kernel@I-love.SAKURA.ne.jp>
+Cc: jmorris@namei.org, linux-kernel@vger.kernel.org,
+       linux-security-module@vger.kernel.org
+Subject: Re: TOMOYO in linux-next
+Message-ID: <20090406120137.GA12468@elf.ucw.cz>
+References: <20090326215031.GD29836@elf.ucw.cz> <alpine.LRH.2.00.0903271102240.7492@tundra.namei.org> <200903270412.n2R4CG7o054009@www262.sakura.ne.jp> <200904062049.AFJ90113.JFOOSFOVQHLFMt@I-love.SAKURA.ne.jp>
 MIME-Version: 1.0
-To: Pierre Ossman <drzeus-mmc@drzeus.cx>
-CC: LKML <linux-kernel@vger.kernel.org>,
-       Kevin Hilman <khilman@deeprootsystems.com>,
-       Tony Lindgren <tony@atomide.com>,
-       linux-omap Mailing List <linux-omap@vger.kernel.org>
-Subject: [PATCH] omap_hsmmc: Flush posted write to IRQ
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
-X-OriginalArrivalTime: 06 Apr 2009 12:00:19.0509 (UTC) FILETIME=[41BB3650:01C9B6AF]
-X-Nokia-AV: Clean
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <200904062049.AFJ90113.JFOOSFOVQHLFMt@I-love.SAKURA.ne.jp>
+X-Warning: Reading this can be dangerous to your mental health.
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Kevin Hilman <khilman@deeprootsystems.com>
+On Mon 2009-04-06 20:49:14, Tetsuo Handa wrote:
+> Hello.
+> 
+> > > +#ifdef TOMOYO_DEBUG_DOMAIN_UNDELETE
+> > > +                       if (domain2->is_deleted != 255)
+> > > +                               printk(KERN_DEBUG
+> > > +                                      "Marked %p as non undeletable\n",
+> > > +                                      domain2);
+> > > +#endif
+> > > +                       domain2->is_deleted = 255;
+> > > 
+> > > (I don't know why we want undelete in tomoyo.)
+> > This "undelete domain" feature was introduced to allow administrators switch
+> > domain policy periodically.
+> > 
+> We reconsidered this feature and concluded that we won't need this feature.
 
-Spurious IRQs seen on MMC after 2.6.29.  Flush posted write in IRQ
-handler.
+Thanks.
+									Pavel
 
-The interrupt line is released by clearing the error status bits
-in the MMCHS_STAT register, which must occur before the interrupt
-handler returns to avoid unwanted irqs.  Hence the need to flush
-the posted write.
-
-Signed-off-by: Kevin Hilman <khilman@deeprootsystems.com>
-Signed-off-by: Adrian Hunter <adrian.hunter@nokia.com>
----
-
-
-
-
-This patch is slightly modified from Kevin's original, which is
-here:
-
-	http://marc.info/?l=linux-omap&m=123862814815052&w=2
-
-
-
- drivers/mmc/host/omap_hsmmc.c |    4 ++++
- 1 files changed, 4 insertions(+), 0 deletions(-)
-
-diff --git a/drivers/mmc/host/omap_hsmmc.c b/drivers/mmc/host/omap_hsmmc.c
-index 04e5a0c..2ae6049 100644
---- a/drivers/mmc/host/omap_hsmmc.c
-+++ b/drivers/mmc/host/omap_hsmmc.c
-@@ -452,6 +452,8 @@ static irqreturn_t mmc_omap_irq(int irq, void *dev_id)
- 	if (host->mrq == NULL) {
- 		OMAP_HSMMC_WRITE(host->base, STAT,
- 			OMAP_HSMMC_READ(host->base, STAT));
-+		/* Flush posted write */
-+		OMAP_HSMMC_READ(host->base, STAT);
- 		return IRQ_HANDLED;
- 	}
- 
-@@ -523,6 +525,8 @@ static irqreturn_t mmc_omap_irq(int irq, void *dev_id)
- 	}
- 
- 	OMAP_HSMMC_WRITE(host->base, STAT, status);
-+	/* Flush posted write */
-+	OMAP_HSMMC_READ(host->base, STAT);
- 
- 	if (end_cmd || (status & CC))
- 		mmc_omap_cmd_done(host, host->cmd);
 -- 
-1.5.6.3
+(english) http://www.livejournal.com/~pavelmachek
+(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
