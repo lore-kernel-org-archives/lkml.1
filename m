@@ -1,78 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753803AbZDFQja@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756874AbZDFQkC@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753803AbZDFQja (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 6 Apr 2009 12:39:30 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754537AbZDFQiu
+	id S1756874AbZDFQkC (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 6 Apr 2009 12:40:02 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756020AbZDFQi5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 6 Apr 2009 12:38:50 -0400
-Received: from hrndva-omtalb.mail.rr.com ([71.74.56.125]:40539 "EHLO
+	Mon, 6 Apr 2009 12:38:57 -0400
+Received: from hrndva-omtalb.mail.rr.com ([71.74.56.122]:40748 "EHLO
 	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753666AbZDFQiu (ORCPT
+	with ESMTP id S1755920AbZDFQi4 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 6 Apr 2009 12:38:50 -0400
-Message-Id: <20090406163831.617971999@goodmis.org>
+	Mon, 6 Apr 2009 12:38:56 -0400
+Message-Id: <20090406163831.423179976@goodmis.org>
 References: <20090406163706.097842409@goodmis.org>
 User-Agent: quilt/0.46-1
-Date: Mon, 06 Apr 2009 12:37:15 -0400
+Date: Mon, 06 Apr 2009 12:37:14 -0400
 From: Steven Rostedt <rostedt@goodmis.org>
 To: linux-kernel@vger.kernel.org
 Cc: Ingo Molnar <mingo@elte.hu>, Andrew Morton <akpm@linux-foundation.org>,
        Zhao Lei <zhaolei@cn.fujitsu.com>
-Subject: [PATCH 09/10] ftrace: Clean up enable logic for sched_switch
-Content-Disposition: inline; filename=0009-ftrace-Clean-up-enable-logic-for-sched_switch.patch
+Subject: [PATCH 08/10] ftrace: Add check of sched_stopped for probe_sched_wakeup
+Content-Disposition: inline; filename=0008-ftrace-Add-check-of-sched_stopped-for-probe_sched_w.patch
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 From: Zhaolei <zhaolei@cn.fujitsu.com>
 
-Unify sched_switch and sched_wakeup's action to following logic:
-Do record_cmdline when start_cmdline_record() is called.
-Start tracing events when the tracer is started.
+The wakeup tracing in sched_switch does not stop when a user
+disables tracing. This is because the probe_sched_wakeup() is missing
+the check to prevent the wakeup from being traced.
 
 Signed-off-by: Zhao Lei <zhaolei@cn.fujitsu.com>
-LKML-Reference: <49D1C596.5050203@cn.fujitsu.com>
+LKML-Reference: <49D1C543.3010307@cn.fujitsu.com>
 Signed-off-by: Steven Rostedt <rostedt@goodmis.org>
 ---
- kernel/trace/trace_sched_switch.c |   10 +++++-----
- 1 files changed, 5 insertions(+), 5 deletions(-)
+ kernel/trace/trace_sched_switch.c |    3 +++
+ 1 files changed, 3 insertions(+), 0 deletions(-)
 
 diff --git a/kernel/trace/trace_sched_switch.c b/kernel/trace/trace_sched_switch.c
-index 9117cea..9d8cccd 100644
+index de35f20..9117cea 100644
 --- a/kernel/trace/trace_sched_switch.c
 +++ b/kernel/trace/trace_sched_switch.c
-@@ -29,13 +29,13 @@ probe_sched_switch(struct rq *__rq, struct task_struct *prev,
- 	int cpu;
- 	int pc;
- 
--	if (!sched_ref || sched_stopped)
-+	if (unlikely(!sched_ref))
- 		return;
- 
- 	tracing_record_cmdline(prev);
- 	tracing_record_cmdline(next);
- 
--	if (!tracer_enabled)
-+	if (!tracer_enabled || sched_stopped)
- 		return;
- 
+@@ -62,6 +62,9 @@ probe_sched_wakeup(struct rq *__rq, struct task_struct *wakee, int success)
  	pc = preempt_count();
-@@ -56,15 +56,15 @@ probe_sched_wakeup(struct rq *__rq, struct task_struct *wakee, int success)
- 	unsigned long flags;
- 	int cpu, pc;
- 
--	if (!likely(tracer_enabled))
-+	if (unlikely(!sched_ref))
- 		return;
- 
--	pc = preempt_count();
  	tracing_record_cmdline(current);
  
--	if (sched_stopped)
-+	if (!tracer_enabled || sched_stopped)
- 		return;
- 
-+	pc = preempt_count();
++	if (sched_stopped)
++		return;
++
  	local_irq_save(flags);
  	cpu = raw_smp_processor_id();
  	data = ctx_trace->data[cpu];
