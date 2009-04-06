@@ -1,30 +1,22 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758340AbZDFB23@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755570AbZDFBqR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758340AbZDFB23 (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 5 Apr 2009 21:28:29 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753964AbZDFB2T
+	id S1755570AbZDFBqR (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 5 Apr 2009 21:46:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752391AbZDFBqA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 5 Apr 2009 21:28:19 -0400
-Received: from cantor2.suse.de ([195.135.220.15]:50409 "EHLO mx2.suse.de"
+	Sun, 5 Apr 2009 21:46:00 -0400
+Received: from cantor2.suse.de ([195.135.220.15]:50516 "EHLO mx2.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753374AbZDFB2S (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 5 Apr 2009 21:28:18 -0400
-Date: Mon, 06 Apr 2009 03:28:13 +0200
-Message-ID: <s5h63hia7v6.wl%tiwai@suse.de>
+	id S1750816AbZDFBp7 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 5 Apr 2009 21:45:59 -0400
+Date: Mon, 06 Apr 2009 03:45:57 +0200
+Message-ID: <s5h4ox2a71m.wl%tiwai@suse.de>
 From: Takashi Iwai <tiwai@suse.de>
-To: Adrian McMenamin <adrian@newgolddream.dyndns.info>
-Cc: Paul Mundt <lethal@linux-sh.org>,
-       Alsa-devel <alsa-devel@lists.sourceforge.net>,
-       LKML <linux-kernel@vger.kernel.org>,
-       linux-sh <linux-sh@vger.kernel.org>
-Subject: Re: [PATCH] snd: aica - fix annoying compiler warning
-In-Reply-To: <1238629310.7455.0.camel@localhost.localdomain>
-References: <1237154740.6636.4.camel@localhost.localdomain>
-	<s5htz5urnae.wl%tiwai@suse.de>
-	<1237190049.6513.3.camel@localhost.localdomain>
-	<s5hd4chsxt3.wl%tiwai@suse.de>
-	<20090330231043.GF19535@linux-sh.org>
-	<1238629310.7455.0.camel@localhost.localdomain>
+To: stoyboyker@gmail.com
+Cc: linux-kernel@vger.kernel.org, perex@perex.cz
+Subject: Re: [PATCH 03/13] [oss] changed ioctls to unlocked
+In-Reply-To: <1237929168-15341-4-git-send-email-stoyboyker@gmail.com>
+References: <1237929168-15341-4-git-send-email-stoyboyker@gmail.com>
 User-Agent: Wanderlust/2.12.0 (Your Wildest Dreams) SEMI/1.14.6 (Maruoka)
  FLIM/1.14.7 (=?ISO-8859-4?Q?Sanj=F2?=) APEL/10.6 Emacs/22.3
  (x86_64-suse-linux-gnu) MULE/5.0 (SAKAKI)
@@ -34,55 +26,149 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-At Thu, 02 Apr 2009 00:41:50 +0100,
-Adrian McMenamin wrote:
+At Tue, 24 Mar 2009 16:12:38 -0500,
+stoyboyker@gmail.com wrote:
 > 
-> On Tue, 2009-03-31 at 08:10 +0900, Paul Mundt wrote:
-> > On Mon, Mar 16, 2009 at 08:59:20AM +0100, Takashi Iwai wrote:
-> > > At Mon, 16 Mar 2009 07:54:09 +0000,
-> > > Adrian McMenamin wrote:
-> > > > 
-> > > > On Mon, 2009-03-16 at 07:31 +0100, Takashi Iwai wrote:
-> > > > > At Sun, 15 Mar 2009 22:05:40 +0000,
-> > > > > Adrian McMenamin wrote:
-> > > > > > 
-> > > > > > Cast pointer to data member of struct firmware as a void to end an
-> > > > > > annoying compiler warning.
-> > > > > > 
-> > > > > > fix annoying compiler warning
-> > > > > > 
-> > > > > > Signed-off-by: Adrian McMenamin <adrian@mcmen.demon.co.uk>
-> > > > > > ---
-> > > > > > 
-> > > > > > diff --git a/sound/sh/aica.c b/sound/sh/aica.c
-> > > > > > index 7c920f3..822b119 100644
-> > > > > > --- a/sound/sh/aica.c
-> > > > > > +++ b/sound/sh/aica.c
-> > > > > > @@ -567,7 +567,7 @@ static int load_aica_firmware(void)
-> > > > > >  		return err;
-> > > > > >  	/* write firware into memory */
-> > > > > >  	spu_disable();
-> > > > > > -	spu_memload(0, fw_entry->data, fw_entry->size);
-> > > > > > +	spu_memload(0, (void *)fw_entry->data, fw_entry->size);
-> > > > > 
-> > > > > IMO, it's better to fix spu_memload() to take const pointer instead of 
-> > > > > cast.
-> > > > > 
-> > > > 
-> > > > If that's what you want I can do that but it adds to kernel bloat by
-> > > > having two functions essentially do the same thing.
-> > > 
-> > > I meant a fix like below...
-> > > 
-> > Is anything happening with this, or should I just ignore it? 
-> > 
+> From: Stoyan Gaydarov <stoyboyker@gmail.com>
 > 
-> I though Takashi's fix was fine/obvious but it doesn't appear to have
-> been pushed upstream (yet?)
+> Signed-off-by: Stoyan Gaydarov <stoyboyker@gmail.com>
 
-Well, then it'd be appreciated if you repost your patch with my fix.
+The patch wasn't applied cleanly by some reason.
+Could you double-check with the latest git tree?
+(It might be a problem in my side, though, as I'm working remotely
+ now during vacation :)
+
 
 thanks,
 
 Takashi
 
+> ---
+>  sound/oss/sh_dac_audio.c |   60 ++++++++++++++++++++++++++++++---------------
+>  1 files changed, 40 insertions(+), 20 deletions(-)
+> 
+> diff --git a/sound/oss/sh_dac_audio.c b/sound/oss/sh_dac_audio.c
+> index e5d4239..22ae271 100644
+> --- a/sound/oss/sh_dac_audio.c
+> +++ b/sound/oss/sh_dac_audio.c
+> @@ -111,35 +111,43 @@ static void dac_audio_set_rate(void)
+>  	ctrl_outl(interval, TMU1_TCNT);
+>  }
+>  
+> -static int dac_audio_ioctl(struct inode *inode, struct file *file,
+> -			   unsigned int cmd, unsigned long arg)
+> +static long dac_audio_ioctl(struct file *file, unsigned int cmd,
+> +			    unsigned long arg)
+>  {
+>  	int val;
+> +	long ret;
+>  
+>  	switch (cmd) {
+>  	case OSS_GETVERSION:
+> -		return put_user(SOUND_VERSION, (int *)arg);
+> +		ret = put_user(SOUND_VERSION, (int *)arg);
+> +		break;
+>  
+>  	case SNDCTL_DSP_SYNC:
+>  		dac_audio_sync();
+> -		return 0;
+> +		ret = 0;
+> +		break;
+>  
+>  	case SNDCTL_DSP_RESET:
+>  		dac_audio_reset();
+> -		return 0;
+> +		ret = 0;
+> +		break;
+>  
+>  	case SNDCTL_DSP_GETFMTS:
+> -		return put_user(AFMT_U8, (int *)arg);
+> +		ret = put_user(AFMT_U8, (int *)arg);
+> +		break;
+>  
+>  	case SNDCTL_DSP_SETFMT:
+> -		return put_user(AFMT_U8, (int *)arg);
+> +		ret = put_user(AFMT_U8, (int *)arg);
+> +		break;
+>  
+>  	case SNDCTL_DSP_NONBLOCK:
+>  		file->f_flags |= O_NONBLOCK;
+> -		return 0;
+> +		ret = 0;
+> +		break;
+>  
+>  	case SNDCTL_DSP_GETCAPS:
+> -		return 0;
+> +		ret = 0;
+> +		break;
+>  
+>  	case SOUND_PCM_WRITE_RATE:
+>  		val = *(int *)arg;
+> @@ -147,32 +155,44 @@ static int dac_audio_ioctl(struct inode *inode, struct file *file,
+>  			rate = val;
+>  			dac_audio_set_rate();
+>  		}
+> -		return put_user(rate, (int *)arg);
+> +		ret = put_user(rate, (int *)arg);
+> +		break;
+>  
+>  	case SNDCTL_DSP_STEREO:
+> -		return put_user(0, (int *)arg);
+> +		ret = put_user(0, (int *)arg);
+> +		break;
+>  
+>  	case SOUND_PCM_WRITE_CHANNELS:
+> -		return put_user(1, (int *)arg);
+> +		ret = put_user(1, (int *)arg);
+> +		break;
+>  
+>  	case SNDCTL_DSP_SETDUPLEX:
+> -		return -EINVAL;
+> +		ret = -EINVAL;
+> +		break;
+>  
+>  	case SNDCTL_DSP_PROFILE:
+> -		return -EINVAL;
+> +		ret = -EINVAL;
+> +		break;
+>  
+>  	case SNDCTL_DSP_GETBLKSIZE:
+> -		return put_user(BUFFER_SIZE, (int *)arg);
+> +		ret = put_user(BUFFER_SIZE, (int *)arg);
+> +		break;
+>  
+>  	case SNDCTL_DSP_SETFRAGMENT:
+> -		return 0;
+> +		ret = 0;
+> +		break;
+>  
+>  	default:
+>  		printk(KERN_ERR "sh_dac_audio: unimplemented ioctl=0x%x\n",
+>  		       cmd);
+> -		return -EINVAL;
+> +		ret = -EINVAL;
+> +		break;
+>  	}
+> -	return -EINVAL;
+> +	if(!ret)
+> +	    ret = -EINVAL;
+> +
+> +	unlock_kernel();
+> +	return ret;
+>  }
+>  
+>  static ssize_t dac_audio_write(struct file *file, const char *buf, size_t count,
+> @@ -257,8 +277,8 @@ static int dac_audio_release(struct inode *inode, struct file *file)
+>  
+>  const struct file_operations dac_audio_fops = {
+>        .read =		dac_audio_read,
+> -      .write =	dac_audio_write,
+> -      .ioctl =	dac_audio_ioctl,
+> +      .write =		dac_audio_write,
+> +      .unlocked_ioctl =	dac_audio_ioctl,
+>        .open =		dac_audio_open,
+>        .release =	dac_audio_release,
+>  };
+> -- 
+> 1.6.2
+> 
