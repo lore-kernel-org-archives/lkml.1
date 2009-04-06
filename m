@@ -1,68 +1,74 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752223AbZDFTwY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756990AbZDFTxQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752223AbZDFTwY (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 6 Apr 2009 15:52:24 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751989AbZDFTwO
+	id S1756990AbZDFTxQ (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 6 Apr 2009 15:53:16 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752222AbZDFTw6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 6 Apr 2009 15:52:14 -0400
-Received: from qmta15.emeryville.ca.mail.comcast.net ([76.96.27.228]:33336
-	"EHLO QMTA15.emeryville.ca.mail.comcast.net" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751930AbZDFTwN (ORCPT
+	Mon, 6 Apr 2009 15:52:58 -0400
+Received: from hrndva-omtalb.mail.rr.com ([71.74.56.125]:38228 "EHLO
+	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753099AbZDFTw6 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 6 Apr 2009 15:52:13 -0400
-X-Greylist: delayed 356 seconds by postgrey-1.27 at vger.kernel.org; Mon, 06 Apr 2009 15:52:13 EDT
-Subject: Re: Replacing VFAT as filesystem on removeable media
-From: Nicholas Miell <nmiell@comcast.net>
-To: "H. Peter Anvin" <hpa@zytor.com>
-Cc: Alejandro Riveira =?ISO-8859-1?Q?Fern=E1ndez?= 
-	<ariveira@gmail.com>,
-       Martin Steigerwald <Martin@lichtvoll.de>,
-       Bryan Henderson <hbryan@us.ibm.com>, linux-fsdevel@vger.kernel.org,
-       linux-kernel@vger.kernel.org
-In-Reply-To: <49D90EED.2060703@zytor.com>
-References: <OFF614A035.0DA52102-ON8825758C.00613C94-8825758C.006215D5@us.ibm.com>
-	 <200904031029.03581.Martin@lichtvoll.de>	<49D8510A.3010606@zytor.com>
-	 <20090405153041.08238acf@varda>  <49D90EED.2060703@zytor.com>
-Content-Type: text/plain; charset="UTF-8"
-Date: Mon, 06 Apr 2009 12:46:13 -0700
-Message-Id: <1239047173.32425.10.camel@entropy>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.24.5 (2.24.5-1.fc10) 
-Content-Transfer-Encoding: 8bit
+	Mon, 6 Apr 2009 15:52:58 -0400
+Date: Mon, 6 Apr 2009 15:52:55 -0400 (EDT)
+From: Steven Rostedt <rostedt@goodmis.org>
+X-X-Sender: rostedt@gandalf.stny.rr.com
+To: Frederic Weisbecker <fweisbec@gmail.com>
+cc: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>,
+       Tom Zanussi <tzanussi@gmail.com>, Ingo Molnar <mingo@elte.hu>,
+       linux-kernel <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH] tracing/filters: allow event filters to be set only when
+ not tracing
+In-Reply-To: <20090406194417.GA5936@nowhere>
+Message-ID: <alpine.DEB.2.00.0904061552260.23509@gandalf.stny.rr.com>
+References: <1238653371.6655.48.camel@bookworm> <20090403135956.GD8875@elte.hu> <alpine.DEB.2.00.0904031010510.965@gandalf.stny.rr.com> <1238830355.22495.55.camel@bookworm> <alpine.DEB.2.00.0904041143480.32083@gandalf.stny.rr.com> <1238916865.7989.212.camel@tropicana>
+ <20090405171146.GK6893@linux.vnet.ibm.com> <alpine.DEB.2.00.0904061155120.4317@gandalf.stny.rr.com> <20090406161527.GD6988@linux.vnet.ibm.com> <alpine.DEB.2.00.0904061529370.4317@gandalf.stny.rr.com> <20090406194417.GA5936@nowhere>
+User-Agent: Alpine 2.00 (DEB 1167 2008-08-23)
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, 2009-04-05 at 13:05 -0700, H. Peter Anvin wrote:
-> Alejandro Riveira Fernández wrote:
-> >>>
-> >> Ironically enough, one of the better filesystems for being supported by
-> >> many OSes is probably ext2.  However, that doesn't mean it is even in
-> >> the same rough ballpark as (V)FAT.
+
+On Mon, 6 Apr 2009, Frederic Weisbecker wrote:
+> > > 
+> > > > > > So assuming we can't use rcu for this, it would be nice to have a way to
+> > > > > > 'pause' tracing so the current filter can be removed i.e. some version
+> > > > > > of stop_trace()/start_trace() that make sure nothing is still executing
+> > > > > > or can enter filter_match_preds() while the current call->preds is being
+> > > > > > destroyed.  Seems like it would be straightforward to implement for the
+> > > > > > event tracer, since each event maps to a tracepoint that could be
+> > > > > > temporarily unregistered/reregistered, but maybe not so easy for the
+> > > > > > ftrace tracers...
+> > > > > 
+> > > > > In principle, it would be possible to rework RCU so that instead of the
+> > > > > whole idle loop being a quiescent state, there is a single quiescent state
+> > > > > at one point in each idle loop.  The reason that I have been avoiding this
+> > > > > is that there are a lot of idle loops out there, and it would be a bit
+> > > > > annoying to (1) find them all and update them and (2) keep track of all of
+> > > > > them to ensure that new ones cannot slip in without the quiescent state.
+> > > > > 
+> > > > > But it could be done if the need is there.  Simple enough change.
+> > > > > The following patch shows the general approach, assuming that CPUs
+> > > > > are never put to sleep without entering nohz mode.
+> > > > > 
+> > > > > Thoughts?
+> > > > 
+> > > > I think using synchronize_sched() should be good enough for what we need.
+> > > 
+> > > Again, as long as either (1) you are OK with synchronize_sched()
+> > > ignoring preempt-disable sequences in the idle loop or (2) we rework RCU
+> > > to add something like an rcu_idle() call in each idle loop.
 > > 
-> >   What about UDF ?
+> > 3) add "notrace" to the idle functions ;-)
+> > 
+> > But perhaps the rcu_idle might be the best idea.
 > 
-> Good point.  UDF is probably widely supported, but again, not in the
-> same ballpark.  I don't personally know how complex UDF is to implement
-> on a small memory device.
 > 
-> 	-hpa
-> 
+> And tracing the idle time is also sometimes very useful :-)
 
-DVD players are small memory devices and they don't actually implement
-UDF.
+Agreed. I guess choice 2 is the best answer.
 
-(DVD movies have UDF filesystems, but they're constructed such that the
-files that the DVD player needs are at specific fixed offsets on the
-disc, and the DVD player never actually interprets the UDF filesystem.)
-
-Also, there's several different revisions of UDF, which causes some
-level of operating system compatibility problems.
-
-Fortunately, the UDF flavor likely to be used on magnetic/flash media is
-also the flavor that's the most compatible, so that makes things easier
-for everyone.
-
--- 
-Nicholas Miell <nmiell@comcast.net>
+-- Steve
 
