@@ -1,65 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757168AbZDFS4Z@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757691AbZDFTBV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757168AbZDFS4Z (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 6 Apr 2009 14:56:25 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751814AbZDFS4Q
+	id S1757691AbZDFTBV (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 6 Apr 2009 15:01:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753178AbZDFTBI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 6 Apr 2009 14:56:16 -0400
-Received: from mail-fx0-f158.google.com ([209.85.220.158]:51431 "EHLO
-	mail-fx0-f158.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751787AbZDFS4P (ORCPT
+	Mon, 6 Apr 2009 15:01:08 -0400
+Received: from earthlight.etchedpixels.co.uk ([81.2.110.250]:50769 "EHLO
+	www.etchedpixels.co.uk" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1751854AbZDFTBH (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 6 Apr 2009 14:56:15 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:sender:in-reply-to:references:date
-         :x-google-sender-auth:message-id:subject:from:to:cc:content-type
-         :content-transfer-encoding;
-        b=qZYDreX9pbaIUPJf0irlWo8vHpFicITlDX1p6UtM1QoO8IL6CdPcb1bHSzvNGW87Xp
-         /QsrapExCft28gJrO9O1XQZBCfpFHSVkyOjYP6oh5xntyP++TNb4CWQB/q6eYvbm8NVA
-         4BN1svajkPAfKOb5R2hy/+iIU5Oe0qLNsYvOs=
-MIME-Version: 1.0
-In-Reply-To: <20090118182042.GD30821@kernel.dk>
-References: <20090118153221.GA20980@localhost.localdomain>
-	 <20090118182042.GD30821@kernel.dk>
-Date: Mon, 6 Apr 2009 21:56:12 +0300
-X-Google-Sender-Auth: 60b5a7087c029f94
-Message-ID: <84144f020904061156t13ad34d7tf579a3c150c16b40@mail.gmail.com>
-Subject: Re: [RFC][PATCH] splice: fix deadlock
-From: Pekka Enberg <penberg@cs.helsinki.fi>
-To: Jens Axboe <jens.axboe@oracle.com>
-Cc: Vegard Nossum <vegard.nossum@gmail.com>, Jens Axboe <axboe@suse.de>,
-       Eric Dumazet <dada1@cosmosbay.com>, Al Viro <viro@zeniv.linux.org.uk>,
-       linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>
-Content-Type: text/plain; charset=ISO-8859-1
+	Mon, 6 Apr 2009 15:01:07 -0400
+Date: Mon, 6 Apr 2009 20:00:25 +0100
+From: Alan Cox <alan@lxorguk.ukuu.org.uk>
+To: Robin Getz <rgetz@blackfin.uclinux.org>
+Cc: netdev@vger.kernel.org, linux-kernel@vger.kernel.org,
+       Chris Peterson <cpeterso@cpeterso.com>, Matt Mackall <mpm@selenic.com>
+Subject: Re: IRQF_SAMPLE_RANDOM question...
+Message-ID: <20090406200025.67cc558a@lxorguk.ukuu.org.uk>
+In-Reply-To: <200904061430.26276.rgetz@blackfin.uclinux.org>
+References: <200904061430.26276.rgetz@blackfin.uclinux.org>
+X-Mailer: Claws Mail 3.7.0 (GTK+ 2.14.7; x86_64-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Jens,
+On Mon, 6 Apr 2009 14:30:26 -0400
+Robin Getz <rgetz@blackfin.uclinux.org> wrote:
 
-On Sun, Jan 18 2009, Vegard Nossum wrote:
->> From 8e1d58b03b47d937bc5e53d902bac6e690709034 Mon Sep 17 00:00:00 2001
->> From: Vegard Nossum <vegard.nossum@gmail.com>
->> Date: Sun, 18 Jan 2009 16:07:29 +0100
->> Subject: [PATCH] splice: fix deadlock
->>
->> splice from a file or socket needs to lock both the file/socket and the
->> pipe inodes. pipe_wait() unlocks only the pipe lock, regardless of the
->> order in which they were taken.
->>
->> This patch adds an additional (optional) argument to pipe_wait(); if
->> specified, pipe_wait() will unlock and reacquire both inode locks.
->>
->> It fixes the lockup that occurs with the test-case below, but please
->> review carefully. Consider this patch a proposal rather than a fix.
+> Although there was some discussion  
+> http://thread.gmane.org/gmane.linux.kernel/680723
+> 
+> about removing IRQF_SAMPLE_RANDOM from the remaining network drivers in May of 
+> 2008, but they still appears to be there in 2.6.29.
 
-On Sun, Jan 18, 2009 at 9:20 PM, Jens Axboe <jens.axboe@oracle.com> wrote:
-> Thanks for the bug report and test case, it is indeed buggy! Good
-> spotting. I'll review your patch thoroughly and test it, and then
-> integrate your patch.
+These are mostly unmaintained drivers. Dunno why tg3 isn't fixed - it has
+some mitigation logic so maybe its not observable
 
-What's the status of this patch? I don't think it ever got merged to mainline.
 
-                          Pekka
+> I can put a scope/analyser on a device - and look at the touchscreens, serial 
+> devices, USB, all without cracking the case. 
+
+But you can observe a network interface accurately from all over the lan
+(and with a ten dollar card), or a good deal further (I believe up to 1Km
+in the right conditions was claimed by some
+
+If you need absolute hard entropy then use a real entropy source, if not
+then your user space is using the wrong device file - the blocking for
+entropy one. At that point it depends how vital your SSL is to you and
+what it protects.
+
+Alan
