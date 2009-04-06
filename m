@@ -1,120 +1,109 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758403AbZDFNNd@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758534AbZDFNNs@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758403AbZDFNNd (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 6 Apr 2009 09:13:33 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755219AbZDFNNX
+	id S1758534AbZDFNNs (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 6 Apr 2009 09:13:48 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758385AbZDFNNd
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 6 Apr 2009 09:13:23 -0400
-Received: from baikonur.stro.at ([213.239.196.228]:51537 "EHLO
-	baikonur.stro.at" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756435AbZDFNNV (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 6 Apr 2009 09:13:21 -0400
-Date: Mon, 6 Apr 2009 15:12:43 +0200
-From: maximilian attems <max@stro.at>
-To: Mithlesh Thukral <mithlesh@linsyssoft.com>
-Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       debian-kernel@lists.debian.org
-Subject: Re: Staging: sxg: slicoss: Specify the license for Sahara SXG and
-	Slicoss drivers
-Message-ID: <20090406131243.GD4442@stro.at>
-Mail-Followup-To: Mithlesh Thukral <mithlesh@linsyssoft.com>,
-	Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-	debian-kernel@lists.debian.org
-References: <200904051944.n35JifSg018472@hera.kernel.org>
+	Mon, 6 Apr 2009 09:13:33 -0400
+Received: from brick.kernel.dk ([93.163.65.50]:42818 "EHLO kernel.dk"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1758366AbZDFNNc (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 6 Apr 2009 09:13:32 -0400
+Date: Mon, 6 Apr 2009 15:13:30 +0200
+From: Jens Axboe <jens.axboe@oracle.com>
+To: linux-kernel@vger.kernel.org
+Cc: tytso@mit.edu, torvalds@linux-foundation.org
+Subject: Re: [PATCH 0/8][RFC] IO latency/throughput fixes
+Message-ID: <20090406131330.GZ5178@kernel.dk>
+References: <1239022088-29002-1-git-send-email-jens.axboe@oracle.com> <20090406130414.GX5178@kernel.dk>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <200904051944.n35JifSg018472@hera.kernel.org>
-User-Agent: Mutt/1.5.19 (2009-01-05)
+In-Reply-To: <20090406130414.GX5178@kernel.dk>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, 05 Apr 2009, Linux Kernel Mailing List wrote:
-
-> Gitweb:     http://git.kernel.org/linus/ba0e1ebb7ea0616eebc29d2077355bacea62a9d8
-> Commit:     ba0e1ebb7ea0616eebc29d2077355bacea62a9d8
-> Parent:     19be358212af35bd64d449da82279874099a1a85
-> Author:     Mithlesh Thukral <mithlesh@linsyssoft.com>
-> AuthorDate: Wed Mar 25 15:52:54 2009 +0530
-> Committer:  Greg Kroah-Hartman <gregkh@suse.de>
-> CommitDate: Fri Apr 3 14:54:38 2009 -0700
+On Mon, Apr 06 2009, Jens Axboe wrote:
+> On Mon, Apr 06 2009, Jens Axboe wrote:
+> > Hi,
+> > 
+> > This is a set of patches that I worked on today in the hopes
+> > of furthering the latency goals and at least fixing some of
+> > the write regression with fwrite + fsync that current -git
+> > is suffering from.
+> > 
+> > I haven't done any latency tests yet, I'm just tossing this
+> > out there so we can collaborate on improving things. What I
+> > did test was the silly fwrite() + fsync() loop test, which
+> > is a LOT slower in current -git that it used to be. The test
+> > is basically:
+> > 
+> > 	while (nr--) {
+> > 		f = fopen();
+> > 		fprintf(f, "Some data here\n");
+> > 		fsync(fileno(f));
+> > 		fclose(f);
+> > 	}
+> > 
+> > which (for nr == 2000) takes 16 seconds in -git, completes
+> > in 0.9s with the patches.
 > 
->     Staging: sxg: slicoss: Specify the license for Sahara SXG and Slicoss drivers
->     
->     Specify a license for the Alacritech Sahara (10Gbe) and SLICOSS (1GBE)
->     firmware files.
->     
->     Signed-off-by: Christopher Harrer <charrer@alacritech.com>
->     Signed-off-by: Mithlesh Thukral <mithlesh@linsyssoft.com>
->     Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
-> ---
->  firmware/WHENCE |   33 ++++++++++++++++++++++++++++++---
->  1 files changed, 30 insertions(+), 3 deletions(-)
+> Ran the fsync-tester [1]. Drive is a 3-4 years old SATA drive, fs is
+> ext3/writeback. IO scheduler is CFQ.
 > 
-> diff --git a/firmware/WHENCE b/firmware/WHENCE
-> index df79422..d6c227d 100644
-> --- a/firmware/WHENCE
-> +++ b/firmware/WHENCE
-> @@ -372,7 +372,21 @@ File: slicoss/oasisdbgdownload.sys.ihex
->  File: slicoss/oasisdownload.sys.ihex
->  File: slicoss/oasisrcvucode.sys.ihex
->  
-> -Licence: Unknown
-> +Licence:
-> +		Copyright (C) 1999-2009 Alacritech, Inc.
-> +
-> +	as an unpublished work. This notice does not imply unrestricted or
-> +	public access to the source code from which this firmware image is
-> +	derived.  Except as noted below this firmware image may not be
-> +	reproduced, used, sold or transferred to any third party without
-> +	Alacritech's prior written consent.  All Rights Reserved.
-> +
-> +	Permission is hereby granted for the distribution of this firmware
-> +	image as part of a Linux or other Open Source operating system kernel
-> +	in text or binary form as required.
-> +
-> +	This firmware may not be modified and may only be used with
-> +	Alacritech hardware.
+> fsync time: 0.0402s
+> fsync time: 0.6572s
+> fsync time: 0.3187s
+> fsync time: 0.2901s
+> fsync time: 0.1478s
+> fsync time: 0.4158s
+> fsync time: 0.2815s
+> fsync time: 0.3216s
+> fsync time: 0.1604s
+> fsync time: 0.1929s
+> fsync time: 0.2413s
+> fsync time: 0.2138s
+> fsync time: 0.2441s
+> fsync time: 0.2785s
+> fsync time: 0.2640s
+> 
+> And with Linus torture dd running in the background:
+> 
+> fsync time: 0.0109s
+> fsync time: 0.5236s
+> fsync time: 1.2108s
+> fsync time: 0.2999s
+> fsync time: 1.5286s
+> fsync time: 0.2549s
+> fsync time: 0.4164s
+> fsync time: 1.1586s
+> fsync time: 1.6630s
+> fsync time: 0.6949s
+> fsync time: 1.0102s
+> fsync time: 0.3715s
+> fsync time: 0.6553s
 
-have you read what you say?
+And here is that latter test again with NCQ disabled on the drive:
 
-the last paragraph disables the distribution right,
-due beeing only allowed to be touched on alacritech hardware.
+fsync time: 0.0092s
+fsync time: 0.7815s
+fsync time: 0.6490s
+fsync time: 0.7894s
+fsync time: 0.5385s
+fsync time: 0.6598s
+fsync time: 0.7701s
+fsync time: 0.2155s
+fsync time: 0.0901s
+fsync time: 0.2765s
+fsync time: 0.2879s
+fsync time: 0.2882s
+fsync time: 0.2457s
+fsync time: 0.4319s
+fsync time: 0.3752s
 
-i'm certainly not buying anything from alacritech,
-but would want to disbribute your fimware in Debian
-in the nonfree firmware-linux package for the benefit
-of your customers.
--> http://packages.debian.org/sid/firmware-linux
-  
->  Found in hex form in kernel source.
->  
-> @@ -383,10 +397,23 @@ Driver: SXG - Alacritech IS-NIC products
->  File: sxg/saharadownloadB.sys.ihex
->  File: sxg/saharadbgdownloadB.sys.ihex
->  
-> -Licence: Unknown
-> +Licence:
-> +		Copyright (C) 1999-2009 Alacritech, Inc.
-> +
-> +	as an unpublished work. This notice does not imply unrestricted or
-> +	public access to the source code from which this firmware image is
-> +	derived.  Except as noted below this firmware image may not be
-> +	reproduced, used, sold or transferred to any third party without
-> +	Alacritech's prior written consent.  All Rights Reserved.
-> +
-> +	Permission is hereby granted for the distribution of this firmware
-> +	image as part of a Linux or other Open Source operating system kernel
-> +	in text or binary form as required.
-> +
-> +	This firmware may not be modified and may only be used with
-> +	Alacritech hardware.
-
-same trouble,
-nuke the "and may only be used with Alacritech hardware."
-
+It stays nicely below 1s.
 
 -- 
-maks
+Jens Axboe
+
