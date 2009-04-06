@@ -1,106 +1,93 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755589AbZDFP7o@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757165AbZDFQCA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755589AbZDFP7o (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 6 Apr 2009 11:59:44 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751472AbZDFP7e
+	id S1757165AbZDFQCA (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 6 Apr 2009 12:02:00 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751620AbZDFQBv
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 6 Apr 2009 11:59:34 -0400
-Received: from hrndva-omtalb.mail.rr.com ([71.74.56.124]:43349 "EHLO
-	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751385AbZDFP7e (ORCPT
+	Mon, 6 Apr 2009 12:01:51 -0400
+Received: from e23smtp04.au.ibm.com ([202.81.31.146]:47941 "EHLO
+	e23smtp04.au.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750784AbZDFQBu (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 6 Apr 2009 11:59:34 -0400
-Date: Mon, 6 Apr 2009 11:59:30 -0400 (EDT)
-From: Steven Rostedt <rostedt@goodmis.org>
-X-X-Sender: rostedt@gandalf.stny.rr.com
-To: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
-cc: Tom Zanussi <tzanussi@gmail.com>, Ingo Molnar <mingo@elte.hu>,
-       linux-kernel <linux-kernel@vger.kernel.org>, fweisbec@gmail.com
-Subject: Re: [PATCH] tracing/filters: allow event filters to be set only when
- not tracing
-In-Reply-To: <20090405171146.GK6893@linux.vnet.ibm.com>
-Message-ID: <alpine.DEB.2.00.0904061155120.4317@gandalf.stny.rr.com>
-References: <1238390546.6368.65.camel@bookworm> <20090401122408.GG12966@elte.hu> <1238653371.6655.48.camel@bookworm> <20090403135956.GD8875@elte.hu> <alpine.DEB.2.00.0904031010510.965@gandalf.stny.rr.com> <1238830355.22495.55.camel@bookworm>
- <alpine.DEB.2.00.0904041143480.32083@gandalf.stny.rr.com> <1238916865.7989.212.camel@tropicana> <20090405171146.GK6893@linux.vnet.ibm.com>
-User-Agent: Alpine 2.00 (DEB 1167 2008-08-23)
+	Mon, 6 Apr 2009 12:01:50 -0400
+Date: Mon, 6 Apr 2009 21:30:39 +0530
+From: Arun R Bharadwaj <arun@linux.vnet.ibm.com>
+To: Thomas Gleixner <tglx@linutronix.de>
+Cc: linux-kernel@vger.kernel.org, linux-pm@lists.linux-foundation.org,
+       a.p.zijlstra@chello.nl, ego@in.ibm.com, mingo@elte.hu,
+       andi@firstfloor.org, venkatesh.pallipadi@intel.com,
+       vatsa@linux.vnet.ibm.com, arjan@infradead.org,
+       svaidy@linux.vnet.ibm.com, Arun Bharadwaj <arun@linux.vnet.ibm.com>
+Subject: Re: [v4 RFC PATCH 4/4] timers: logic to move non pinned timers
+Message-ID: <20090406160039.GA15269@linux.vnet.ibm.com>
+Reply-To: arun@linux.vnet.ibm.com
+References: <20090401113128.GA22478@linux.vnet.ibm.com> <20090401113738.GE22478@linux.vnet.ibm.com> <alpine.LFD.2.00.0904032142460.12916@localhost.localdomain> <20090406051656.GA17412@linux.vnet.ibm.com> <20090406104228.GB17412@linux.vnet.ibm.com> <alpine.LFD.2.00.0904061248120.747@localhost.localdomain> <20090406152843.GA11645@linux.vnet.ibm.com> <alpine.LFD.2.00.0904061732020.21577@localhost.localdomain>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=iso-8859-1
+Content-Disposition: inline
+In-Reply-To: <alpine.LFD.2.00.0904061732020.21577@localhost.localdomain>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+* Thomas Gleixner <tglx@linutronix.de> [2009-04-06 17:35:09]:
 
-On Sun, 5 Apr 2009, Paul E. McKenney wrote:
-
-> > Basically the problem is that the tracing functions call
-> > filter_match_preds(call,...) where call->preds is an array of predicates
-> > that get checked to determine whether the current event matches or not.
-> > When an existing filter is deleted (or an old one replaced), the
-> > call->preds array is freed and set to NULL (which happens only via a
-> > write to the 'filter' debugfs file).  So without any protection, while
-> > one cpu is freeing the preds array, the others may still be using it,
-> > and if so, it will crash the box.  You can easily see the problem with
-> > e.g. the function tracer:
-> > 
-> > # echo function > /debug/tracing/current_tracer
-> > 
-> > Function tracing is now live
-> > 
-> > # echo 'common_pid == 0' > /debug/tracing/events/ftrace/function/filter
-> > 
-> > No problem, no preds are freed the first time
-> > 
-> > # echo 0 > /debug/tracing/events/ftrace/function/filter
-> > 
-> > Crash.
-> > 
-> > My first patch took the safe route and completely disallowed filters
-> > from being set when any tracing was live i.e. you had to for example
-> > echo 0 > tracing_enabled or echo 0 > enable for a particular event, etc.
-> > 
-> > This wasn't great for usability, though - it would be much nicer to be
-> > able to remove or set new filters on the fly, while tracing is active,
-> > which rcu seemed perfect for - the preds wouldn't actually be destroyed
-> > until all the current users were finished with them.  My second patch
-> > implemented that and it seemed to nicely fix the problem, but it
-> > apparently can cause other problems...
-
-The proble is that function tracing also traces the rcu calls. Even though 
-the function trace protects against recursion, by adding rcu locks to the
-function tracer, we have just doubled the overhead for it. Every function 
-trace will call rcu_read_lock, then that would be traced too, and the 
-function tracer would see that it is recursive and return. All this is 
-added overhead to _every_ function!
-
-I do not understand why my recommendation is not used. All tracers require 
-preemption to be disabled. By simply removing the pred from the list, do a 
-synchronize_sched(), then set it to NULL. The update is done by userland, 
-synchronizing a schedule should not be that noticeable.
-
-
-> > 
-> > So assuming we can't use rcu for this, it would be nice to have a way to
-> > 'pause' tracing so the current filter can be removed i.e. some version
-> > of stop_trace()/start_trace() that make sure nothing is still executing
-> > or can enter filter_match_preds() while the current call->preds is being
-> > destroyed.  Seems like it would be straightforward to implement for the
-> > event tracer, since each event maps to a tracepoint that could be
-> > temporarily unregistered/reregistered, but maybe not so easy for the
-> > ftrace tracers...
+> Arun,
 > 
-> In principle, it would be possible to rework RCU so that instead of the
-> whole idle loop being a quiescent state, there is a single quiescent state
-> at one point in each idle loop.  The reason that I have been avoiding this
-> is that there are a lot of idle loops out there, and it would be a bit
-> annoying to (1) find them all and update them and (2) keep track of all of
-> them to ensure that new ones cannot slip in without the quiescent state.
+> On Mon, 6 Apr 2009, Arun R Bharadwaj wrote:
+> > > > -	new_cpu_base = &__get_cpu_var(hrtimer_bases);
+> > > > +again:
+> > > > +	new_cpu_base = &per_cpu(hrtimer_bases, cpu);
+> > > >  	new_base = &new_cpu_base->clock_base[base->index];
+> > > >  
+> > > >  	if (base != new_base) {
+> > > > @@ -220,6 +242,32 @@ switch_hrtimer_base(struct hrtimer *time
+> > > >  		spin_unlock(&base->cpu_base->lock);
+> > > >  		spin_lock(&new_base->cpu_base->lock);
+> > > >  		timer->base = new_base;
+> > > > +
+> > > > +		if (cpu == preferred_cpu) {
+> > > > +			/* Calculate clock monotonic expiry time */
+> > > > +			ktime_t expires = ktime_sub(hrtimer_get_expires(timer),
+> > > > +							new_base->offset);
+> > > > +
+> > > > +			/*
+> > > > +			 * Get the next event on target cpu from the
+> > > > +			 * clock events layer.
+> > > > +			 * This covers the highres=off nohz=on case as well.
+> > > > +			 */
+> > > > +			ktime_t next = clockevents_get_next_event(cpu);
+> > > > +
+> > > > +			ktime_t delta = ktime_sub(expires, next);
+> > > > +
+> > > > +			/*
+> > > > +			 * We do not migrate the timer when it is expiring
+> > > > +			 * before the next event on the target cpu because
+> > > > +			 * we cannot reprogram the target cpu hardware and
+> > > > +			 * we would cause it to fire late.
+> > > > +			 */
+> > > > +			if (delta.tv64 < 0) {
+> > > > +				cpu = smp_processor_id();
+> > > 
+> > >   You are missing a small but fatal detail here: You hold
+> > >   new_base->cpu_base->lock. So you need to do:
+> > >
+> > 
+> > I just moved the if block.. if (cpu==preferred_cpu) above the base
+> > locking part to avoid the extra unlocking.
 > 
-> But it could be done if the need is there.  Simple enough change.
-> The following patch shows the general approach, assuming that CPUs
-> are never put to sleep without entering nohz mode.
+> That's not a good idea. You want to look at the next event with the
+> base lock of the other cpu held. That prevents that expires the first
+> pending timer right after you checked next_event and before you queue
+> your timer, which then might become the first timer to expire but you
+> can't reprogram the clock event device on the other cpu.
+>
+
+Okay... I understand. Thanks for the explanation :)
+Will post all the changes together in a separate thread.
+
+--arun
+> Thanks,
 > 
-> Thoughts?
-
-I think using synchronize_sched() should be good enough for what we need.
-
--- Steve
+> 	tglx
