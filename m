@@ -1,173 +1,81 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756224AbZDFOZ2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757566AbZDFOZn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756224AbZDFOZ2 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 6 Apr 2009 10:25:28 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755111AbZDFOZS
+	id S1757566AbZDFOZn (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 6 Apr 2009 10:25:43 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755914AbZDFOZT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 6 Apr 2009 10:25:18 -0400
-Received: from e28smtp04.in.ibm.com ([59.145.155.4]:44199 "EHLO
-	e28smtp04.in.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754312AbZDFOZQ (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 6 Apr 2009 10:25:16 -0400
-Date: Mon, 6 Apr 2009 19:54:52 +0530
-From: Gautham R Shenoy <ego@in.ibm.com>
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: Ingo Molnar <mingo@elte.hu>, Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       Rusty Russell <rusty@rustcorp.com.au>, Ming Lei <tom.leiming@gmail.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Linux-pm mailing list <linux-pm@lists.linux-foundation.org>,
-       Linux Kernel List <linux-kernel@vger.kernel.org>,
-       Venkatesh Pallipadi <venkatesh.pallipadi@intel.com>
-Subject: Re: pm-hibernate : possible circular locking dependency detected
-Message-ID: <20090406142452.GA17559@in.ibm.com>
-Reply-To: ego@in.ibm.com
-References: <d82e647a0904050253n31bd2654s9b216465eec4d038@mail.gmail.com> <20090405134454.GB25250@elte.hu> <20090406005515.GA28200@in.ibm.com> <200904061529.44780.rjw@sisk.pl>
-MIME-Version: 1.0
+	Mon, 6 Apr 2009 10:25:19 -0400
+Received: from vpnflf.ccur.com ([12.192.68.2]:43717 "EHLO gamx.iccur.com"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1754684AbZDFOZR (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 6 Apr 2009 10:25:17 -0400
+Date: Mon, 6 Apr 2009 10:25:08 -0400
+From: Joe Korty <joe.korty@ccur.com>
+To: Jesper Krogh <jesper@krogh.cc>
+Cc: "netdev@vger.kernel.org" <netdev@vger.kernel.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Ayaz Abdulla <aabdulla@nvidia.com>
+Subject: Re: eth0: too many iterations (16) in nv_nic_irq.
+Message-ID: <20090406142508.GA18639@tsunami.ccur.com>
+Reply-To: Joe Korty <joe.korty@ccur.com>
+References: <49D86997.6010304@krogh.cc>
+Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <200904061529.44780.rjw@sisk.pl>
-User-Agent: Mutt/1.5.17 (2007-11-01)
+In-Reply-To: <49D86997.6010304@krogh.cc>
+User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Apr 06, 2009 at 03:29:43PM +0200, Rafael J. Wysocki wrote:
-> On Monday 06 April 2009, Gautham R Shenoy wrote:
-> > On Sun, Apr 05, 2009 at 03:44:54PM +0200, Ingo Molnar wrote:
-> > > 
-> > > * Rafael J. Wysocki <rjw@sisk.pl> wrote:
-> > > 
-> > > > On Sunday 05 April 2009, Ming Lei wrote:
-> > > > > kernel version : one simple usb-serial patch against  commit
-> > > > > 6bb597507f9839b13498781e481f5458aea33620.
-> > > > > 
-> > > > > Thanks.
-> > > > 
-> > > > Hmm, CPU hotplug again, it seems.
-> > > > 
-> > > > I'm not sure who's the maintainer at the moment.  Andrew, is that 
-> > > > Gautham?
-> > > 
-> > > CPU hotplug tends to land on the scheduler people's desk normally.
-> > > 
-> > > But i'm not sure that's the real thing here - key appears to be this 
-> > > work_on_cpu() worklet by the cpufreq code:
-> > 
-> > Actually, there are two dependency chains here which can lead to a deadlock.
-> > The one we're seeing here is the longer of the two.
-> > 
-> > If the relevant locks are numbered as follows:
-> > [1]: cpu_policy_rwsem
-> > [2]: work_on_cpu
-> > [3]: cpu_hotplug.lock
-> > [4]: dpm_list_mtx
-> > 
-> > 
-> > The individual callpaths are:
-> > 
-> > 1) do_dbs_timer()[1] --> dbs_check_cpu() --> __cpufreq_driver_getavg()
-> >                                                                   |
-> >                       work_on_cpu()[2] <-- get_measured_perf() <--|
-> > 
-> > 
-> > 2) pci_device_probe() --> .. --> pci_call_probe() [3] --> work_on_cpu()[2]
-> >                                                                      |
-> >                   [4] device_pm_add() <-- ..<-- local_pci_probe() <--|
+On Sun, Apr 05, 2009 at 04:19:35AM -0400, Jesper Krogh wrote:
+> I have a 2.6.29 kernel which fills up the "dmesg-buffer" with these:
 > 
-> This should block on [4] held by hibernate().  That's why it calls
-> device_pm_lock() after all.
+> eth0: too many iterations (16) in nv_nic_irq.
+> 
+> $ dmesg | grep -c "too many iterations"
+> 1986
+> 
+> I have seen the commit below.. is the fix just to set the limit to 30
+> instead? or is there a "real bug" underneath?
 
-Agreed. But it does so holding the cpu_hotplug.lock at pci_call_probe().
-See below.
+Probably.  Still it is worth trying the '30' as an experiment.
 
-> 
-> > 3) hibernate() --> hibernatioin_snapshot() --> create_image()
-> >                                                           |
-> >        disable_nonboot_cpus() <-- [4] device_pm_lock() <--|
-> >        |
-> >        |--> _cpu_down() [3] --> cpufreq_cpu_callback() [1]
-> > 
-> > 
-> > The two chains which can deadlock are
-> > 
-> > a) [1] --> [2] --> [4] --> [3] --> [1] (The one in this log)
-> > and
-> > b) [3] --> [2] --> [4] --> [3]
-> 
-> What exactly is the b) scenario?
+The underlying cause is likely to be something on your system
+holding off the eth0 interrupt for short periods of time.
+An SMI is one such possibility.
 
-pci_call_probe() calls work_on_cpu() within
-get_online_cpus()/put_online_cpus(), the cpu hotplug read path.
-Thus we have a cpu_hotplug.lock --> work_on_cpu dependency here.
+I can't help but wonder if the printk itself is causing enough
+of a delay to make this condition reoccur indefinately, under
+sufficiently heavy net load, once it occurs once.  It might be
+better to instead use printk_ratelimit.
 
-This work_on_cpu() calls local_pci_probe() which, in one of the
-registration paths calls pcie_portdrv_probe(). This would
-eventually end up calling device_pm_add() which takes the
-dpm_list_mtx. Thus we have a work_on_cpu --> dpm_list_mtx
-dependency here. This is reflected in the lockdep log for dpm_list_mtx:
+Joe
 
-> > [ 2276.033054] -> #3 (dpm_list_mtx){+.+.+.}:
-> > [ 2276.033057]        [<ffffffff80265579>]  __lock_acquire+0x1402/0x178c
-> > [ 2276.033061]        [<ffffffff80265996>] lock_acquire+0x93/0xbf
-> > [ 2276.033065]        [<ffffffff804763db>] mutex_lock_nested+0x6a/0x362
-> > [ 2276.033068]        [<ffffffff803c4339>] device_pm_add+0x46/0xed
-> > [ 2276.033073]        [<ffffffff803bdeee>] device_add+0x488/0x61a
-> > [ 2276.033077]        [<ffffffff803be099>] device_register+0x19/0x1d
-> > [ 2276.033080]        [<ffffffff8036031a>] pcie_port_device_register+0x450/0x4b6
-> > [ 2276.033085]        [<ffffffff80469999>] pcie_portdrv_probe+0x69/0x82
-> > [ 2276.033089]        [<ffffffff8035bf77>] local_pci_probe+0x12/0x16
-> > [ 2276.033093]        [<ffffffff8024fdf8>] do_work_for_cpu+0x13/0x1b
-> > [ 2276.033097]        [<ffffffff80250038>] worker_thread+0x1b2/0x2c9
-> > [ 2276.033100]        [<ffffffff80253d40>] kthread+0x49/0x76
-> > [ 2276.033104]        [<ffffffff8020c1fa>] child_rip+0xa/0x20
-> > [ 2276.033107]        [<ffffffffffffffff>] 0xffffffffffffffff
 
-The dependency chain on this device_registration path would be
-cpu_hotplug.lock --> work_on_cpu --> dpm_list_mtx.
-
-On the hibernate path, we hold the dpm_list_mtx and call
-disable_nonboot_cpus() in create_image().
-disable_nonboot_cpus() calls _cpu_down() which again takes the
-cpu_hotplug.lock, this time the write-path. Thus we have a
-dpm_list_mtx --> cpu_hotplug.lock dependency here.
-
-These two dependency chains being in reverse order can cause a
-dead-lock, right ? Or am I reading something wrong here?
-
+> commit dccd547e2bf2c01a13c967ae03a705338394fad6
+> Author: Joe Korty <joe.korty@ccur.com>
+> Date:   Wed Oct 29 14:22:16 2008 -0700
 > 
-> > 
-> > Rafael,
-> > Sorry, I am not well versed with the hibernation code. But does the
-> > following make sense:
+>      forcdeth: increase max_interrupt_work
 > 
-> Not really ->
+>      This eliminates the following often-generated warning from my 64 bit
+>      Opteron SMP test stand:
 > 
-> > create_image()
-> > {
-> > 	device_pm_lock();
-> > 	 device_power_down(PMSG_FREEZE);
-> > 	 platform_pre_snapshot(platform_mode);
-> > 
-> >         device_pm_unlock();
+>          eth0: too many iterations (6) in nv_nic_irq
 > 
-> -> because dpm_list is under control of the hibernation code at this point
-> and it should remain locked.
+>      According to the web, the problem is that the forcedeth driver has a
+>      too-low value for max_interrupt_work.  Grepping the kernel I see that
+>      forcedeth has the second lowest value of all ethernet drivers (ie, 6).
+>      Most are in the 20-40 range.  So this patch increases this a bit,
+>      from 6 to 15 (at 15 forcedeth becomes the driver with third-lowest
+>      max_interrupt_work value).
 > 
-> > 	disable_nonboot_cpus()
+>      My test stand, which used to print out the above warnings repetitively
+>      whenever it was under heavy net load, no longer does so.
 > 
-> disable_nonboot_cpus() must not take dpm_list_mtx itself.
-> 
-> > 	device_pm_lock();
-> > 	.
-> > 	.
-> > 	.
-> > 	.
-> > }
-> 
-> Thanks,
-> Rafael
-
--- 
-Thanks and Regards
-gautham
+>      Signed-off-by: Joe Korty <joe.korty@ccur.com>
+>      Cc: Ayaz Abdulla <aabdulla@nvidia.com>
+>      Cc: Jeff Garzik <jeff@garzik.org>
+>      Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
+>      Signed-off-by: Jeff Garzik <jgarzik@redhat.com>
