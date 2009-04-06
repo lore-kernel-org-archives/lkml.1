@@ -1,179 +1,124 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757989AbZDFUPh@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758070AbZDFUQs@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757989AbZDFUPh (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 6 Apr 2009 16:15:37 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753686AbZDFUP2
+	id S1758070AbZDFUQs (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 6 Apr 2009 16:16:48 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753616AbZDFUQh
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 6 Apr 2009 16:15:28 -0400
-Received: from e6.ny.us.ibm.com ([32.97.182.146]:38535 "EHLO e6.ny.us.ibm.com"
+	Mon, 6 Apr 2009 16:16:37 -0400
+Received: from e6.ny.us.ibm.com ([32.97.182.146]:38861 "EHLO e6.ny.us.ibm.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753038AbZDFUP1 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 6 Apr 2009 16:15:27 -0400
-Date: Mon, 6 Apr 2009 13:15:24 -0700
-From: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
-To: Steven Rostedt <rostedt@goodmis.org>
-Cc: Frederic Weisbecker <fweisbec@gmail.com>, Tom Zanussi <tzanussi@gmail.com>,
-       Ingo Molnar <mingo@elte.hu>,
-       linux-kernel <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH] tracing/filters: allow event filters to be set only
-	when not tracing
-Message-ID: <20090406201524.GF6988@linux.vnet.ibm.com>
-Reply-To: paulmck@linux.vnet.ibm.com
-References: <alpine.DEB.2.00.0904031010510.965@gandalf.stny.rr.com> <1238830355.22495.55.camel@bookworm> <alpine.DEB.2.00.0904041143480.32083@gandalf.stny.rr.com> <1238916865.7989.212.camel@tropicana> <20090405171146.GK6893@linux.vnet.ibm.com> <alpine.DEB.2.00.0904061155120.4317@gandalf.stny.rr.com> <20090406161527.GD6988@linux.vnet.ibm.com> <alpine.DEB.2.00.0904061529370.4317@gandalf.stny.rr.com> <20090406194417.GA5936@nowhere> <alpine.DEB.2.00.0904061552260.23509@gandalf.stny.rr.com>
+	id S1754262AbZDFUQg (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 6 Apr 2009 16:16:36 -0400
+Message-ID: <49DA6324.9080801@linux.vnet.ibm.com>
+Date: Mon, 06 Apr 2009 13:16:36 -0700
+From: Corey Ashford <cjashfor@linux.vnet.ibm.com>
+User-Agent: Thunderbird 2.0.0.21 (Windows/20090302)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <alpine.DEB.2.00.0904061552260.23509@gandalf.stny.rr.com>
-User-Agent: Mutt/1.5.15+20070412 (2007-04-11)
+To: Peter Zijlstra <peterz@infradead.org>
+CC: Ingo Molnar <mingo@elte.hu>, Paul Mackerras <paulus@samba.org>,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 5/6] perf_counter: add more context information
+References: <20090402091158.291810516@chello.nl> <20090402091319.493101305@chello.nl> <1238763023.798.27.camel@twins> <49D654AB.4030207@linux.vnet.ibm.com>  <1239015668.798.4243.camel@twins> <1239016035.798.4254.camel@twins>  <49DA4FA0.6090902@linux.vnet.ibm.com> <1239044818.798.4775.camel@twins>
+In-Reply-To: <1239044818.798.4775.camel@twins>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Apr 06, 2009 at 03:52:55PM -0400, Steven Rostedt wrote:
+Peter Zijlstra wrote:
+> On Mon, 2009-04-06 at 11:53 -0700, Corey Ashford wrote:
+>> Peter Zijlstra wrote:
+>>> On Mon, 2009-04-06 at 13:01 +0200, Peter Zijlstra wrote:
+>>>> On Fri, 2009-04-03 at 11:25 -0700, Corey Ashford wrote:
+>>>>> Peter Zijlstra wrote:
+>>>>>> On Thu, 2009-04-02 at 11:12 +0200, Peter Zijlstra wrote:
+>>>>>>> plain text document attachment (perf_counter_callchain_context.patch)
+>>>>>>> Put in counts to tell which ips belong to what context.
+>>>>>>>
+>>>>>>>   -----
+>>>>>>>    | |  hv
+>>>>>>>    | --
+>>>>>>> nr | |  kernel
+>>>>>>>    | --
+>>>>>>>    | |  user
+>>>>>>>   -----
+>>>>>> Right, just realized that PERF_RECORD_IP needs something similar if one
+>>>>>> if not able to derive the context from the IP itself..
+>>>>>>
+>>>>> Three individual bits would suffice, or you could use a two-bit code -
+>>>>> 00 = user
+>>>>> 01 = kernel
+>>>>> 10 = hypervisor
+>>>>> 11 = reserved (or perhaps unknown)
+>>>>>
+>>>>> Unfortunately, because of alignment, it would need to take up another 64 
+>>>>> bit word, wouldn't it?  Too bad you cannot sneak the bits into the IP in 
+>>>>> a machine independent way.
+>>>>>
+>>>>> And since you probably need a separate word, that effectively doubles 
+>>>>> the amount of space taken up by IP samples (if we add a "no event 
+>>>>> header" option).  Should we add another bit in the record_type field - 
+>>>>> PERF_RECORD_IP_LEVEL (or similar) so that user-space apps don't have to 
+>>>>> get this if they don't need it?
+>>>> If we limit the event size to 64k (surely enough, right? :-), then we
+>>>> have 16 more bits to play with in the header, and we could do something
+>>>> like the below.
+>>>>
+>>>> A further possibility would also be to add an overflow bit in there,
+>>>> making the full 32bit PERF_RECORD space available to output events as
+>>>> well.
+>>>>
+>>>> Index: linux-2.6/include/linux/perf_counter.h
+>>>> ===================================================================
+>>>> --- linux-2.6.orig/include/linux/perf_counter.h
+>>>> +++ linux-2.6/include/linux/perf_counter.h
+>>>> @@ -201,9 +201,17 @@ struct perf_counter_mmap_page {
+>>>>  	__u32   data_head;		/* head in the data section */
+>>>>  };
+>>>>  
+>>>> +enum {
+>>>> +	PERF_EVENT_LEVEL_HV	= 0,
+>>>> +	PERF_EVENT_LEVEL_KERNEL = 1,
+>>>> +	PERF_EVENT_LEVEL_USER	= 2,
+>>>> +};
+>>>> +
+>>>>  struct perf_event_header {
+>>>>  	__u32	type;
+>>>> -	__u32	size;
+>>>> +	__u16	level		:  2,
+>>>> +		__reserved	: 14;
+>>>> +	__u16	size;
+>>>>  };
+>>> Except we should probably use masks again instead of bitfields so that
+>>> the thing is portable when streamed to disk, such as would be common
+>>> with splice().
+>> One downside of this approach is that you if you specify "no header" 
+>> (currently not possible, but maybe later?), you will not be able to get 
+>> the level bits.
 > 
-> On Mon, 6 Apr 2009, Frederic Weisbecker wrote:
-> > > > 
-> > > > > > > So assuming we can't use rcu for this, it would be nice to have a way to
-> > > > > > > 'pause' tracing so the current filter can be removed i.e. some version
-> > > > > > > of stop_trace()/start_trace() that make sure nothing is still executing
-> > > > > > > or can enter filter_match_preds() while the current call->preds is being
-> > > > > > > destroyed.  Seems like it would be straightforward to implement for the
-> > > > > > > event tracer, since each event maps to a tracepoint that could be
-> > > > > > > temporarily unregistered/reregistered, but maybe not so easy for the
-> > > > > > > ftrace tracers...
-> > > > > > 
-> > > > > > In principle, it would be possible to rework RCU so that instead of the
-> > > > > > whole idle loop being a quiescent state, there is a single quiescent state
-> > > > > > at one point in each idle loop.  The reason that I have been avoiding this
-> > > > > > is that there are a lot of idle loops out there, and it would be a bit
-> > > > > > annoying to (1) find them all and update them and (2) keep track of all of
-> > > > > > them to ensure that new ones cannot slip in without the quiescent state.
-> > > > > > 
-> > > > > > But it could be done if the need is there.  Simple enough change.
-> > > > > > The following patch shows the general approach, assuming that CPUs
-> > > > > > are never put to sleep without entering nohz mode.
-> > > > > > 
-> > > > > > Thoughts?
-> > > > > 
-> > > > > I think using synchronize_sched() should be good enough for what we need.
-> > > > 
-> > > > Again, as long as either (1) you are OK with synchronize_sched()
-> > > > ignoring preempt-disable sequences in the idle loop or (2) we rework RCU
-> > > > to add something like an rcu_idle() call in each idle loop.
-> > > 
-> > > 3) add "notrace" to the idle functions ;-)
-> > > 
-> > > But perhaps the rcu_idle might be the best idea.
-> > 
-> > 
-> > And tracing the idle time is also sometimes very useful :-)
+> Would this be desirable? I know we've mentioned it before, but it would
+> mean one cannot mix various event types (currently that means !mmap and
+> callchain with difficulty).
+
+I think it would.  For one use case I'm working on right now, simple 
+profiling, all I need are ip's.  If I could omit the header, that would 
+reduce the frequency of sigio's by a factor of three, and make it faster 
+to read up the ip's when the SIGIO's occur.
+
+I realize that it makes it impossible to mix record types with the 
+header removed, and skipping over the call chain data a bit more 
+difficult (but not rocket science).
+
+It could be made an error for the caller to specify both "no header" and 
+perf_coiunter_hw_event.mmap|munmap
+
+
 > 
-> Agreed. I guess choice 2 is the best answer.
+> As long as we mandate this header, we can have 16 misc bits.
+> 
 
-Fair enough!
+True.
 
-Would one of you please check the placement of the rcu_idle() in the
-patch?  Patch reproduced below for convenience.
-
-							Thanx, Paul
-
-------------------------------------------------------------------------
-
->From 7e08c37b20cb3d93ba67f8ad5d46f2c38acb8fe5 Mon Sep 17 00:00:00 2001
-From: Paul E. McKenney <paulmck@linux.vnet.ibm.com>
-Date: Sun, 5 Apr 2009 10:09:54 -0700
-Subject: [PATCH] Make idle loop (mostly) safe for RCU read-side critical sections.
-
-Not for inclusion, demo only.  Untested, probably fails to compile.
-
-This patch is for demonstration purposes only.  It adds a facility to
-rcutree.c to allow RCU read-side critical sections to be used in
-idle loops, as long as those RCU read-side critical sections do not
-lap over the call to rcu_idle().
-
-If this were a real patch, it would have the following:
-
-o	A config variable to allow architectures to opt out of this
-	sort of behavior.  (But then again, maybe not.)
-
-o	Follow-up patches that added a call to rcu_idle() to each
-	idle loop in the kernel, probably grouped by architecture.
-
-o	Documentation updates to explain the new loosened restrictions
-	regarding RCU read-side critical sections and idle loops.
-
-Signed-off-by: Paul E. McKenney <paulmck@linux.vnet.ibm.com>
----
- arch/x86/kernel/process.c |    1 +
- include/linux/rcupdate.h  |    1 +
- kernel/rcutree.c          |   21 ++++++++++++++-------
- 3 files changed, 16 insertions(+), 7 deletions(-)
-
-diff --git a/arch/x86/kernel/process.c b/arch/x86/kernel/process.c
-index 156f875..adbaf13 100644
---- a/arch/x86/kernel/process.c
-+++ b/arch/x86/kernel/process.c
-@@ -310,6 +310,7 @@ void default_idle(void)
- 		current_thread_info()->status |= TS_POLLING;
- 		trace_power_end(&it);
- 	} else {
-+		rcu_idle();
- 		local_irq_enable();
- 		/* loop is done by the caller */
- 		cpu_relax();
-diff --git a/include/linux/rcupdate.h b/include/linux/rcupdate.h
-index 528343e..3905f54 100644
---- a/include/linux/rcupdate.h
-+++ b/include/linux/rcupdate.h
-@@ -265,6 +265,7 @@ extern void synchronize_rcu(void);
- extern void rcu_barrier(void);
- extern void rcu_barrier_bh(void);
- extern void rcu_barrier_sched(void);
-+extern void rcu_idle(void);
- 
- /* Internal to kernel */
- extern void rcu_init(void);
-diff --git a/kernel/rcutree.c b/kernel/rcutree.c
-index 97ce315..4c61b71 100644
---- a/kernel/rcutree.c
-+++ b/kernel/rcutree.c
-@@ -937,6 +937,17 @@ static void rcu_do_batch(struct rcu_data *rdp)
- }
- 
- /*
-+ * Called from each idle loop to enable RCU to treat the idle loop as
-+ * a quiescent state.  Note that this code assumes that idle CPUs continue
-+ * executing instructions until they enter nohz mode.
-+ */
-+void rcu_idle(void)
-+{
-+	rcu_qsctr_inc(cpu);
-+	rcu_bh_qsctr_inc(cpu);
-+}
-+
-+/*
-  * Check to see if this CPU is in a non-context-switch quiescent state
-  * (user mode or idle loop for rcu, non-softirq execution for rcu_bh).
-  * Also schedule the RCU softirq handler.
-@@ -947,15 +958,11 @@ static void rcu_do_batch(struct rcu_data *rdp)
-  */
- void rcu_check_callbacks(int cpu, int user)
- {
--	if (user ||
--	    (idle_cpu(cpu) && rcu_scheduler_active &&
--	     !in_softirq() && hardirq_count() <= (1 << HARDIRQ_SHIFT))) {
-+	if (user) {
- 
- 		/*
--		 * Get here if this CPU took its interrupt from user
--		 * mode or from the idle loop, and if this is not a
--		 * nested interrupt.  In this case, the CPU is in
--		 * a quiescent state, so count it.
-+		 * Get here if this CPU took its interrupt from user mode.
-+		 * In this case, the CPU is in a quiescent state, so count it.
- 		 *
- 		 * No memory barrier is required here because both
- 		 * rcu_qsctr_inc() and rcu_bh_qsctr_inc() reference
--- 
-1.5.2.5
+- Corey
 
