@@ -1,148 +1,285 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759325AbZDFPmv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759407AbZDFPnd@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759325AbZDFPmv (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 6 Apr 2009 11:42:51 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757026AbZDFPhK
+	id S1759407AbZDFPnd (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 6 Apr 2009 11:43:33 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757386AbZDFPhR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 6 Apr 2009 11:37:10 -0400
-Received: from vervifontaine.sonytel.be ([80.88.33.193]:42470 "EHLO
-	pophost.sonytel.be" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1756963AbZDFPhI (ORCPT
+	Mon, 6 Apr 2009 11:37:17 -0400
+Received: from fg-out-1718.google.com ([72.14.220.154]:39637 "EHLO
+	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755598AbZDFPhP convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 6 Apr 2009 11:37:08 -0400
-Date: Mon, 6 Apr 2009 17:37:03 +0200 (CEST)
-From: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>
-To: "J. Bruce Fields" <bfields@fieldses.org>
-cc: Trond Myklebust <Trond.Myklebust@netapp.com>, linux-nfs@vger.kernel.org,
-       Nick Piggin <npiggin@suse.de>, linux-kernel@vger.kernel.org
-Subject: Re: bus errors on nfs writes in latest git
-In-Reply-To: <20090405202233.GA16937@fieldses.org>
-Message-ID: <alpine.LRH.2.00.0904061731260.11076@vixen.sonytel.be>
-References: <20090404161447.GE495@fieldses.org> <1238861949.8114.3.camel@heimdal.trondhjem.org> <1238862470.8114.5.camel@heimdal.trondhjem.org> <20090405202233.GA16937@fieldses.org>
-User-Agent: Alpine 2.00 (LRH 1167 2008-08-23)
+	Mon, 6 Apr 2009 11:37:15 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
+         :cc:content-type:content-transfer-encoding;
+        b=nyg1ZiEarFUeE5cQ2f5NywXUAE4Fi7YKngiHbjrvCDA49E379+el6A8hAJ8qdnnfA/
+         YHlP8q/VTYz7QzTynzmSSEAw8mmbtOD8IipgPVtzByslJZU7I3K8T/LUdSmUQege8lVJ
+         HuZZTUjku3afQU0GiEubXXJ3fI+iIJNGLbWto=
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=ISO-8859-15
+In-Reply-To: <7E82351C108FA840AB1866AC776AEC4658074803@orsmsx505.amr.corp.intel.com>
+References: <200903302317.04515.a.miskiewicz@gmail.com>
+	 <200903302331.10995.a.miskiewicz@gmail.com>
+	 <1238449555.4529.1095.camel@localhost.localdomain>
+	 <200903310031.10335.a.miskiewicz@gmail.com>
+	 <20090331002815.GB10490@linux-os.sc.intel.com>
+	 <20090402004933.GE10490@linux-os.sc.intel.com>
+	 <5a4c581d0904030253v44294f1bo1c65e89a3db9ae9b@mail.gmail.com>
+	 <7E82351C108FA840AB1866AC776AEC4658074803@orsmsx505.amr.corp.intel.com>
+Date: Mon, 6 Apr 2009 17:37:11 +0200
+Message-ID: <5a4c581d0904060837q6315fee6i368038d383dfadd@mail.gmail.com>
+Subject: Re: 2.6.29 git master and PAT problems
+From: Alessandro Suardi <alessandro.suardi@gmail.com>
+To: "Pallipadi, Venkatesh" <venkatesh.pallipadi@intel.com>
+Cc: Arkadiusz Miskiewicz <a.miskiewicz@gmail.com>,
+       "Siddha, Suresh B" <suresh.b.siddha@intel.com>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       Jesse Barnes <jbarnes@virtuousgeek.org>
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, 5 Apr 2009, J. Bruce Fields wrote:
-> On Sat, Apr 04, 2009 at 12:27:50PM -0400, Trond Myklebust wrote:
-> > On Sat, 2009-04-04 at 12:19 -0400, Trond Myklebust wrote:
-> > > On Sat, 2009-04-04 at 12:14 -0400, J. Bruce Fields wrote:
-> > > > My regular connecthon tests are reporting bus errors on the "write/read
-> > > > 30 MB file" on recent upstream kernels.  I'm travelling and haven't had
-> > > > a chance to do anything beyond kick off a dumb git-bisect, which pointed
-> > > > the blame at the following commit.  Any ideas?
-> > 
-> > The following patch should fix it.
-> 
-> Thanks--confirmed.  For what it's worth:
-> 
-> 	Tested-by: J. Bruce Fields <bfields@citi.umich.edu>
+On Fri, Apr 3, 2009 at 3:59 PM, Pallipadi, Venkatesh
+<venkatesh.pallipadi@intel.com> wrote:
+>
+>
+>>-----Original Message-----
+>>From: Alessandro Suardi [mailto:alessandro.suardi@gmail.com]
+>>Sent: Friday, April 03, 2009 2:54 AM
+>>To: Pallipadi, Venkatesh
+>>Cc: Arkadiusz Miskiewicz; Siddha, Suresh B;
+>>linux-kernel@vger.kernel.org; Jesse Barnes
+>>Subject: Re: 2.6.29 git master and PAT problems
+>>
+>>On Thu, Apr 2, 2009 at 2:49 AM, Pallipadi, Venkatesh
+>><venkatesh.pallipadi@intel.com> wrote:
+>>> On Mon, Mar 30, 2009 at 05:28:15PM -0700, Pallipadi, Venkatesh wrote:
+>>>> On Mon, Mar 30, 2009 at 03:31:09PM -0700, Arkadiusz
+>>Miskiewicz wrote:
+>>>> > On Monday 30 of March 2009, Pallipadi, Venkatesh wrote:
+>>>> >
+>>>> > More info follows. Now I've switched to
+>>>> > e1c502482853f84606928f5a2f2eb6da1993cda1 which contains
+>>latest drm fixes and
+>>>> > now I get much lower numbers of PAT errors but still.
+>>>> >
+>>>> > > On Mon, 2009-03-30 at 14:31 -0700, Arkadiusz Miskiewicz wrote:
+>>>> > > > On Monday 30 of March 2009, Pallipadi, Venkatesh wrote:
+>>>> > > > > Patch here should get rid of these errors.
+>>>> > > > >
+>>>> > > > > http://marc.info/?l=linux-kernel&m=123788806506230&w=2
+>>>> > > > >
+>>>> > > > > The patch is in tip and on its way to upstream.
+>>>> > > >
+>>>> > > > The problem is that kernel I'm running already
+>>contains this patch (it's
+>>>> > > > merged already). Other ideas?
+>>>> > > >
+>>>> > > > ratelimiting that error is good IMO anyway.
+>>>> > >
+>>>> > > Rate limiting will just work around the problem here.
+>>Ideally we should
+>>>> > > never see these errors. So, it will be better if we can
+>>narrow down on
+>>>> > > the bug resulting in these error messages.
+>>>> >
+>>>> > Of course it's better. I'm saying that when these
+>>messages "fire" then it's
+>>>> > hard to do anything else on the system for a while until
+>>these stop.
+>>>> >
+>>>> > > Can you please send me the output of
+>>>> > > # cat /debug/x86/pat_memtype_list
+>>>> > > with debugfs mounted.
+>>>> > > and
+>>>> > > # cat /proc/mtrr
+>>>> >
+>>>>
+>>>> There seems to be two different problems here.
+>>>> - We should not have that many single page ranges reserved.
+>>That will cause a
+>>>> performance problem with drm even without the "freeing
+>>invalid type" error.
+>>>> - "freeing invalid type" error itself. Seems to be caused
+>>due to some
+>>>> unbalanced free along the drm path. We tried to find
+>>anything obvious in the
+>>>> code that may be causing problem here. But, haven't found
+>>anything so far.
+>>>> Will try to reproduce the problem internally and debug it further.
+>>>>
+>>>
+>>> OK. I think we have root caused the thinko that was resulting in
+>>> "freeing invalid type" error. Can you try the below test
+>>> patch. Patch is not final version and may need some cleanup.
+>>>
+>>> Signed-off-by: Venkatesh Pallipadi <venkatesh.pallipadi@intel.com>
+>>> Signed-off-by: Suresh Siddha <suresh.b.siddha@intel.com>
+>>>
+>>> diff --git a/arch/x86/mm/pat.c b/arch/x86/mm/pat.c
+>>> index 640339e..c161700 100644
+>>> --- a/arch/x86/mm/pat.c
+>>> +++ b/arch/x86/mm/pat.c
+>>> @@ -847,7 +847,8 @@ cleanup_ret:
+>>>  * can be for the entire vma (in which case size can be zero).
+>>>  */
+>>>  void untrack_pfn_vma(struct vm_area_struct *vma, unsigned long pfn,
+>>> -                       unsigned long size)
+>>> +                       unsigned long size,
+>>> +                       unsigned long vstart, unsigned long vend)
+>>>  {
+>>>        unsigned long i;
+>>>        resource_size_t paddr;
+>>> @@ -866,7 +867,7 @@ void untrack_pfn_vma(struct
+>>vm_area_struct *vma, unsigned long pfn,
+>>>                return;
+>>>        }
+>>>
+>>> -       if (size != 0 && size != vma_size) {
+>>> +       if (size != 0) {
+>>>                /* free page by page, using pfn and size */
+>>>                paddr = (resource_size_t)pfn << PAGE_SHIFT;
+>>>                for (i = 0; i < size; i += PAGE_SIZE) {
+>>> @@ -874,9 +875,12 @@ void untrack_pfn_vma(struct
+>>vm_area_struct *vma, unsigned long pfn,
+>>>                        free_pfn_range(paddr, PAGE_SIZE);
+>>>                }
+>>>        } else {
+>>> -               /* free entire vma, page by page, using the
+>>pfn from pte */
+>>> -               for (i = 0; i < vma_size; i += PAGE_SIZE) {
+>>> -                       if (follow_phys(vma, vma_start + i,
+>>0, &prot, &paddr))
+>>> +               /*
+>>> +                * free vma range from vstart to end, page by page
+>>> +                * using the pfn from pte
+>>> +                */
+>>> +               for (i = vstart; i < vend; i += PAGE_SIZE) {
+>>> +                       if (follow_phys(vma, i, 0, &prot, &paddr))
+>>>                                continue;
+>>>
+>>>                        free_pfn_range(paddr, PAGE_SIZE);
+>>> diff --git a/include/asm-generic/pgtable.h
+>>b/include/asm-generic/pgtable.h
+>>> index 8e6d0ca..a325dc1 100644
+>>> --- a/include/asm-generic/pgtable.h
+>>> +++ b/include/asm-generic/pgtable.h
+>>> @@ -328,7 +328,8 @@ static inline int
+>>track_pfn_vma_copy(struct vm_area_struct *vma)
+>>>  * can be for the entire vma (in which case size can be zero).
+>>>  */
+>>>  static inline void untrack_pfn_vma(struct vm_area_struct *vma,
+>>> -                                       unsigned long pfn,
+>>unsigned long size)
+>>> +                               unsigned long pfn, unsigned
+>>long size,
+>>> +                               unsigned long vstart,
+>>unsigned long vend)
+>>>  {
+>>>  }
+>>>  #else
+>>> @@ -336,7 +337,8 @@ extern int track_pfn_vma_new(struct
+>>vm_area_struct *vma, pgprot_t *prot,
+>>>                                unsigned long pfn, unsigned
+>>long size);
+>>>  extern int track_pfn_vma_copy(struct vm_area_struct *vma);
+>>>  extern void untrack_pfn_vma(struct vm_area_struct *vma,
+>>unsigned long pfn,
+>>> -                               unsigned long size);
+>>> +                               unsigned long size,
+>>> +                               unsigned long vstart,
+>>unsigned long vend);
+>>>  #endif
+>>>
+>>>  #endif /* !__ASSEMBLY__ */
+>>> diff --git a/mm/memory.c b/mm/memory.c
+>>> index cf6873e..6e111c5 100644
+>>> --- a/mm/memory.c
+>>> +++ b/mm/memory.c
+>>> @@ -983,7 +983,7 @@ unsigned long unmap_vmas(struct
+>>mmu_gather **tlbp,
+>>>                        *nr_accounted += (end - start) >> PAGE_SHIFT;
+>>>
+>>>                if (unlikely(is_pfn_mapping(vma)))
+>>> -                       untrack_pfn_vma(vma, 0, 0);
+>>> +                       untrack_pfn_vma(vma, 0, 0, start, end);
+>>>
+>>>                while (start != end) {
+>>>                        if (!tlb_start_valid) {
+>>> @@ -1537,7 +1537,7 @@ int vm_insert_pfn(struct
+>>vm_area_struct *vma, unsigned long addr,
+>>>        ret = insert_pfn(vma, addr, pfn, pgprot);
+>>>
+>>>        if (ret)
+>>> -               untrack_pfn_vma(vma, pfn, PAGE_SIZE);
+>>> +               untrack_pfn_vma(vma, pfn, PAGE_SIZE, 0, 0);
+>>>
+>>>        return ret;
+>>>  }
+>>> @@ -1702,7 +1702,7 @@ int remap_pfn_range(struct
+>>vm_area_struct *vma, unsigned long addr,
+>>>        } while (pgd++, addr = next, addr != end);
+>>>
+>>>        if (err)
+>>> -               untrack_pfn_vma(vma, pfn, PAGE_ALIGN(size));
+>>> +               untrack_pfn_vma(vma, pfn, PAGE_ALIGN(size), 0, 0);
+>>>
+>>>        return err;
+>>>  }
+>>
+>>2.6.29-git9 plus the above patch still doesn't fix my Dell
+>>E6400 running
+>> Fedora 10 x86_64:
+>
+> The patch here should get rid of the below msgs.
+> http://marc.info/?l=linux-kernel&m=123862741914199&w=2
+>
+> Can you please test and check whether that resolves the problems?
+>
+> The patch inline in this mail above was a test patch to debug the
+> another problem that only happens with recent X and that one we
+> are still debugging. So you can ignore the above patch for now.
+>
+>
+> Thanks,
+> Venki
 
-JFYI, I was also seeing bus errors and read() returning EFAULT with current
-mainline on both PS3 (ppc64) and Sequoia (ppc32). So far I only saw it
-happening doing:
-  - apt-get update
-  - apt-get upgrade
-  - apt-get install
+Thanks Venki - the messages are gone, but I appear to be far from
+ having my graphical environment problems fixed...
 
-I tried bisecting it, but unfortunately it was not 100% reproducible.
-So far the oldest version where I saw it fail was 2.6.29-07100-g833bb30.
-It _looks_ like 2.6.29-06619-ge5824c9 is OK, but I'm not 100% sure.
+- I still get
 
-At first I didn't think of NFS (I'm indeed using nfsroot), but when searching
-for `bus error' I noticed this thread.
+Apr  6 11:59:39 localhost kernel: [drm] Initialized drm 1.1.0 20060810
+Apr  6 11:59:39 localhost kernel: pci 0000:00:02.0: PCI INT A -> GSI
+16 (level, low) -> IRQ 16
+Apr  6 11:59:39 localhost kernel: mtrr: type mismatch for
+e0000000,10000000 old: write-back new: write-combining
+Apr  6 11:59:39 localhost kernel: [drm] MTRR allocation failed.
+Graphics performance may suffer.
+Apr  6 11:59:39 localhost kernel: [drm] Initialized i915 1.6.0
+20080730 for 0000:00:02.0 on minor 0
+Apr  6 11:59:39 localhost kernel: mtrr: type mismatch for
+e0000000,10000000 old: write-back new: write-combining
 
-Your patch seems to fix it (I added a printk so I would notice when the bad
-case got triggered), and the commit that introduced the problem lies within
-the works/fails range I discovered, so
+- I can't switch from X to VT (Alt-Fn) as my screen gets blank, no
+ Caps Lock key led flashing when I hit the key, nothing else than a
+ poweroff works
 
-Tested-by: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>
+- I can't exit from X to VT as my screen gets flashing and scrolls
+ what appears to be a prompt on the top of the screen instead of
+ the bottom
 
-Thanks!
+F10 kernels behave the same way. 2.6.29.1 as well. Will test
+ 2.6.28 or earlier and report in a separate thread with full
+ config details.
 
-With kind regards,
+Thanks,
 
-Geert Uytterhoeven
-Software Architect
+--alessandro
 
-Sony Techsoft Centre Europe
-The Corporate Village · Da Vincilaan 7-D1 · B-1935 Zaventem · Belgium
+ "Sun keeps rising in the west / I keep on waking fully confused"
 
-Phone:    +32 (0)2 700 8453
-Fax:      +32 (0)2 700 8622
-E-mail:   Geert.Uytterhoeven@sonycom.com
-Internet: http://www.sony-europe.com/
-
-A division of Sony Europe (Belgium) N.V.
-VAT BE 0413.825.160 · RPR Brussels
-Fortis · BIC GEBABEBB · IBAN BE41293037680010
-
-> > 
-> > Cheers
-> >  Trond
-> > ---------------------------------------------------------------
-> > >From b7a178f4fab331821b8cff384e1954e62aa63e52 Mon Sep 17 00:00:00 2001
-> > From: Trond Myklebust <Trond.Myklebust@netapp.com>
-> > Date: Sat, 4 Apr 2009 12:22:57 -0400
-> > Subject: [PATCH] NFS: Fix the return value in nfs_page_mkwrite()
-> > 
-> > Commit c2ec175c39f62949438354f603f4aa170846aabb (mm: page_mkwrite change
-> > prototype to match fault) exposed a bug in the NFS implementation of
-> > page_mkwrite. We should be returning 0 on success...
-> > 
-> > Signed-off-by: Trond Myklebust <Trond.Myklebust@netapp.com>
-> > ---
-> >  fs/nfs/file.c |    2 --
-> >  1 files changed, 0 insertions(+), 2 deletions(-)
-> > 
-> > diff --git a/fs/nfs/file.c b/fs/nfs/file.c
-> > index 3523b89..5a97bcf 100644
-> > --- a/fs/nfs/file.c
-> > +++ b/fs/nfs/file.c
-> > @@ -516,8 +516,6 @@ static int nfs_vm_page_mkwrite(struct vm_area_struct *vma, struct vm_fault *vmf)
-> >  		goto out_unlock;
-> >  
-> >  	ret = nfs_updatepage(filp, page, 0, pagelen);
-> > -	if (ret == 0)
-> > -		ret = pagelen;
-> >  out_unlock:
-> >  	unlock_page(page);
-> >  	if (ret)
-> > -- 
-> > 1.6.0.4
-> > 
-> > 
-> > -- 
-> > Trond Myklebust
-> > Linux NFS client maintainer
-> > 
-> > NetApp
-> > Trond.Myklebust@netapp.com
-> > www.netapp.com
-> --
-> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
-> Please read the FAQ at  http://www.tux.org/lkml/
-> 
-
-With kind regards,
-
-Geert Uytterhoeven
-Software Architect
-
-Sony Techsoft Centre Europe
-The Corporate Village · Da Vincilaan 7-D1 · B-1935 Zaventem · Belgium
-
-Phone:    +32 (0)2 700 8453
-Fax:      +32 (0)2 700 8622
-E-mail:   Geert.Uytterhoeven@sonycom.com
-Internet: http://www.sony-europe.com/
-
-A division of Sony Europe (Belgium) N.V.
-VAT BE 0413.825.160 · RPR Brussels
-Fortis · BIC GEBABEBB · IBAN BE41293037680010
+   (The Replacements, "Within Your Reach")
