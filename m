@@ -1,75 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754739AbZDFHdY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755094AbZDFHgd@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754739AbZDFHdY (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 6 Apr 2009 03:33:24 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754906AbZDFHc5
+	id S1755094AbZDFHgd (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 6 Apr 2009 03:36:33 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753820AbZDFHgX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 6 Apr 2009 03:32:57 -0400
-Received: from smtp118.mail.mud.yahoo.com ([209.191.84.167]:48703 "HELO
-	smtp118.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1754540AbZDFHcu (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 6 Apr 2009 03:32:50 -0400
-DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
-  s=s1024; d=yahoo.com.au;
-  h=Received:X-YMail-OSG:X-Yahoo-Newman-Property:From:To:Subject:Date:User-Agent:Cc:References:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Content-Disposition:Message-Id;
-  b=xuPcjJnW0e/2gBBKZtnUBW6SYTUctwa4SGRxIJXlMFa6ewTggpAaGGAGQInzStzO1TG3EfnwDw8EPX4NHHlk/ViQgn6zLOdw9RwpUCaZR8hZ5NpcSYcLS2NaFNNRAd16+V8UK6z9a051xqINGl797IV4UXiei/uj9IEgCLY6qQw=  ;
-X-YMail-OSG: 0HG4kfUVM1m4_Lp7e0AIWZV.3iumzoDDndXJgx1ZvP4T.IY0K.hh06lNn8FApswuhLmdBmnIggjnxF3WxoLTQinju6zqA.Glenv1E.lcogLB94sABI7p4RwgurYut4CL44FeCVo4RxDoa4LAuVYtYsssgkxfpIGgaE0IKKo0Ia6C1pz71l9.80uktqM02P_p3RAdm1nDO6i.zy4FRjUMM6XYbkKjLtZ7JeCxc9rUQz4kUpcoXhICyl6DM8nePFYE3d8G6irV0XXH2PYy17qzq7gb_InsIvAAw0cryrko6egs77hBlWJP
-X-Yahoo-Newman-Property: ymail-3
-From: Nick Piggin <nickpiggin@yahoo.com.au>
-To: Martin Schwidefsky <schwidefsky@de.ibm.com>
-Subject: Re: [patch 0/6] Guest page hinting version 7.
-Date: Mon, 6 Apr 2009 17:32:39 +1000
-User-Agent: KMail/1.9.51 (KDE/4.0.4; ; )
-Cc: Jeremy Fitzhardinge <jeremy@goop.org>, Rik van Riel <riel@redhat.com>,
-       akpm@osdl.org, frankeh@watson.ibm.com, virtualization@lists.osdl.org,
-       linux-kernel@vger.kernel.org, virtualization@lists.linux-foundation.org,
-       linux-mm@kvack.org, hugh@veritas.com,
-       "Xen-devel" <xen-devel@lists.xensource.com>
-References: <20090327150905.819861420@de.ibm.com> <49D6532C.6010804@goop.org> <20090406092111.3b432edd@skybase>
-In-Reply-To: <20090406092111.3b432edd@skybase>
+	Mon, 6 Apr 2009 03:36:23 -0400
+Received: from mx2.redhat.com ([66.187.237.31]:51867 "EHLO mx2.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753156AbZDFHgW (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 6 Apr 2009 03:36:22 -0400
+Message-ID: <49D9B031.2090209@redhat.com>
+Date: Mon, 06 Apr 2009 10:33:05 +0300
+From: Avi Kivity <avi@redhat.com>
+User-Agent: Thunderbird 2.0.0.21 (X11/20090320)
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
+To: Nick Piggin <nickpiggin@yahoo.com.au>
+CC: Izik Eidus <ieidus@redhat.com>, akpm@linux-foundation.org,
+       linux-kernel@vger.kernel.org, kvm@vger.kernel.org, linux-mm@kvack.org,
+       aarcange@redhat.com, chrisw@redhat.com, mtosatti@redhat.com,
+       hugh@veritas.com, kamezawa.hiroyu@jp.fujitsu.com
+Subject: Re: [PATCH 0/4] ksm - dynamic page sharing driver for linux v2
+References: <1238855722-32606-1-git-send-email-ieidus@redhat.com> <200904061704.50052.nickpiggin@yahoo.com.au>
+In-Reply-To: <200904061704.50052.nickpiggin@yahoo.com.au>
+Content-Type: text/plain; charset=UTF-8; format=flowed
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200904061732.39885.nickpiggin@yahoo.com.au>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Monday 06 April 2009 17:21:11 Martin Schwidefsky wrote:
-> On Fri, 03 Apr 2009 11:19:24 -0700
+Nick Piggin wrote:
+> On Sunday 05 April 2009 01:35:18 Izik Eidus wrote:
+>
+>   
+>> This driver is very useful for KVM as in cases of runing multiple guests
+>> operation system of the same type.
+>> (For desktop work loads we have achived more than x2 memory overcommit
+>> (more like x3))
+>>     
+>
+> Interesting that it is a desirable workload to have multiple guests each
+> running MS office.
+>
+> I wonder, can windows enter a paravirtualised guest mode for KVM?
 
-> > Yes.  But it still depends on the guest.  A very helpful guest could 
-> > deliberately preswap pages so that it can mark them as volatile, whereas 
-> > a less helpful one may keep them persistent and defer preswapping them 
-> > until there's a good reason to do so.  Host swapping and page hinting 
-> > won't put any apparent memory pressure on the guest, so it has no reason 
-> > to start preswapping even if the overall system is under pressure.  
-> > Ballooning will expose each guest to its share of the overall system 
-> > memory pressure, so they can respond appropriately (one hopes).
-> 
-> Why should the guest want to do preswapping? It is as expensive for
-> the host to swap a page and get it back as it is for the guest (= one
-> write + one read). It is a waste of cpu time to call into the guest. You
-> need something we call PFAULT though: if a guest process hits a page
-> that is missing in the host page table you don't want to stop the
-> virtual cpu until the page is back. You notify the guest that the host
-> page is missing. The process that caused the fault is put to sleep
-> until the host retrieved the page again. You will find the pfault code
-> for s390 in arch/s390/mm/fault.c
-> 
-> So to me preswap doesn't make sense. The only thing you can gain by
-> putting memory pressure on the guest is to free some of the memory that
-> is used by the kernel for dentries, inodes, etc. 
+Windows has some support for paravirtualization, for example it can use 
+hypercalls instead of tlb flush IPIs.
 
-The guest kernel can have more context about usage patterns, or user
-hints set on some pages or ranges. And as you say, there are
-non-pagecache things to free that can be taking significant or most of
-the freeable memory, and there can be policy knobs set in the guest
-(swappiness or vfs_cache_pressure etc).
+>  And can
+> you detect page allocation/freeing events?
+>   
 
-I guess that counters or performance monitoring events in the guest
-should also look more like a normal Linux kernel (although I haven't
-remembered what you do in that department in your patches).
+Not that I know of.
+
+-- 
+error compiling committee.c: too many arguments to function
+
