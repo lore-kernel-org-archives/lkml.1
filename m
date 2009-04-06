@@ -1,46 +1,40 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753132AbZDFPGi@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752508AbZDFPIs@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753132AbZDFPGi (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 6 Apr 2009 11:06:38 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751721AbZDFPG3
+	id S1752508AbZDFPIs (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 6 Apr 2009 11:08:48 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751739AbZDFPIh
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 6 Apr 2009 11:06:29 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:35195 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751235AbZDFPG2 (ORCPT
+	Mon, 6 Apr 2009 11:08:37 -0400
+Received: from stinky.trash.net ([213.144.137.162]:48290 "EHLO
+	stinky.trash.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751235AbZDFPIh (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 6 Apr 2009 11:06:28 -0400
-Date: Mon, 6 Apr 2009 08:04:39 -0700 (PDT)
-From: Linus Torvalds <torvalds@linux-foundation.org>
-X-X-Sender: torvalds@localhost.localdomain
-To: Jens Axboe <jens.axboe@oracle.com>
-cc: linux-kernel@vger.kernel.org, tytso@mit.edu
-Subject: Re: [PATCH 0/8][RFC] IO latency/throughput fixes
-In-Reply-To: <1239022088-29002-1-git-send-email-jens.axboe@oracle.com>
-Message-ID: <alpine.LFD.2.00.0904060803141.4023@localhost.localdomain>
-References: <1239022088-29002-1-git-send-email-jens.axboe@oracle.com>
-User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
+	Mon, 6 Apr 2009 11:08:37 -0400
+Message-ID: <49DA1AEF.10105@trash.net>
+Date: Mon, 06 Apr 2009 17:08:31 +0200
+From: Patrick McHardy <kaber@trash.net>
+User-Agent: Mozilla-Thunderbird 2.0.0.19 (X11/20090103)
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+To: Eric Dumazet <dada1@cosmosbay.com>
+CC: Graham Murray <graham@gmurray.org.uk>,
+       "David S. Miller" <davem@davemloft.net>, linux-kernel@vger.kernel.org,
+       Linux Netdev List <netdev@vger.kernel.org>
+Subject: Re: [PATCH] netfilter: ip6tables fix
+References: <20090329234702.4988017f@desktop.r000n.info>	<8763hja8cy.fsf@newton.gmurray.org.uk>	<20090405.012237.198610462.davem@davemloft.net>	<49D88162.5040809@cosmosbay.com> <87ws9z8l4c.fsf@newton.gmurray.org.uk> <49D88839.4090902@cosmosbay.com> <49D8A445.4060201@cosmosbay.com> <49D8A6BB.5000700@cosmosbay.com>
+In-Reply-To: <49D8A6BB.5000700@cosmosbay.com>
+Content-Type: text/plain; charset=ISO-8859-15; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-
-On Mon, 6 Apr 2009, Jens Axboe wrote:
+Eric Dumazet wrote:
+> [PATCH] netfilter: ip6tables fix
 > 
-> This is a set of patches that I worked on today in the hopes
-> of furthering the latency goals and at least fixing some of
-> the write regression with fwrite + fsync that current -git
-> is suffering from.
+> ip6_tables.c alloc_counters() misses a return statement, making
+> ip6tables -L always failing.
+> 
+> Reported-by: Graham Murray <graham@gmurray.org.uk>
+> Signed-off-by: Eric Dumazet <dada1@cosmosbay.com>
 
-Goodie. Let's just do this. After all, right now we would otherwise have 
-to revert the other changes as being a regression, and I absolutely _love_ 
-the fact that we're actually finally getting somewhere on this fsync 
-latency issue that has been with us for so long.
-
-Jens - I can just apply this queue (I want to test it out anyway), or if 
-you prefer I can pull from you. Just tell me.
-
-		Linus
+Applied, thanks Eric.
