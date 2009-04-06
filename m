@@ -1,83 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751458AbZDFXcr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755529AbZDFXgV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751458AbZDFXcr (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 6 Apr 2009 19:32:47 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751268AbZDFXcg
+	id S1755529AbZDFXgV (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 6 Apr 2009 19:36:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751695AbZDFXgF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 6 Apr 2009 19:32:36 -0400
-Received: from www.tglx.de ([62.245.132.106]:37583 "EHLO www.tglx.de"
+	Mon, 6 Apr 2009 19:36:05 -0400
+Received: from hera.kernel.org ([140.211.167.34]:53592 "EHLO hera.kernel.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750847AbZDFXcg (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 6 Apr 2009 19:32:36 -0400
-Date: Tue, 7 Apr 2009 01:32:12 +0200 (CEST)
-From: Thomas Gleixner <tglx@linutronix.de>
-To: GeunSik Lim <leemgs1@gmail.com>
-cc: Steven Rostedt <srostedt@redhat.com>, Ingo Molnar <mingo@elte.hu>,
-       rt-users <linux-rt-users@vger.kernel.org>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH] Update old Mini-HOWTO for ftrace
-In-Reply-To: <49b7c2350904061609q7984d5f0u478a092ffcabe12c@mail.gmail.com>
-Message-ID: <alpine.LFD.2.00.0904070120090.21577@localhost.localdomain>
-References: <49b7c2350904060702j3f725a45ub5e7d3ee3af883c1@mail.gmail.com>  <49b7c2350904060717l1a87cca7p880b6843ea92c702@mail.gmail.com> <49b7c2350904061609q7984d5f0u478a092ffcabe12c@mail.gmail.com>
-User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
+	id S1751268AbZDFXgD (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 6 Apr 2009 19:36:03 -0400
+Date: Mon, 6 Apr 2009 23:34:20 +0000
+From: Chris Wright <chrisw@sous-sol.org>
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: Wu Fengguang <fengguang.wu@intel.com>, Nick Piggin <npiggin@suse.de>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>,
+       "Lin, Ming M" <ming.m.lin@intel.com>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Kernel Testers List <kernel-testers@vger.kernel.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>, stable@kernel.org
+Subject: Re: [stable] [Bug #12809] iozone regression with 2.6.29-rc6
+Message-ID: <20090406233420.GA17070@hera.kernel.org>
+References: <n4io5wq70ZO.A.gzG.rFn2JB@chimera> <20090406221509.GA17604@localhost> <20090406222037.GA18714@localhost> <200904070030.26367.rjw@sisk.pl>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <200904070030.26367.rjw@sisk.pl>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Mon, 06 Apr 2009 23:34:23 +0000 (UTC)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-GeunSik,
-
-On Tue, 7 Apr 2009, GeunSik Lim wrote:
-
-> Sorry,
-> I mistake because I don't understand how to submit patch exactly.
-
-To submit a patch you need to have:
-
-1) useful subject line
-
-   [PATCH] subsystem: what does the patch do
-
-   subsystem in your care is: ftrace
-
-2) useful patch description
-
-   explains what the patch does. Which bug/problem it fixes or which
-   enhancement it provides
-
-   Look at the git log. Each commit has an (more or lesss) usefull
-   description, but you get the idea. If you see a confusing or
-   cryptic description you need way more time to figure out what the
-   patch does or what it is supposed to do.
-
-3) Your Signed-off-by
-
-   Signed-off-by is the certificate of origin as described in
-   
-   Documentation/SubmittingPatches
-
-   You can only add your own Signed-off-by. You never can add the
-   Signed-off-by of some one else.
-
-> I just appended below "singned-off" contents for convenience.
-> Sorry again.
+* Rafael J. Wysocki (rjw@sisk.pl) wrote:
+> On Tuesday 07 April 2009, Wu Fengguang wrote:
+> > On Tue, Apr 07, 2009 at 06:15:09AM +0800, Wu Fengguang wrote:
+> > > On Tue, Apr 07, 2009 at 03:05:38AM +0800, Rafael J. Wysocki wrote:
+> > > > Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=12809
+> > > > Subject		: iozone regression with 2.6.29-rc6
+> > > > Submitter	: Lin Ming <ming.m.lin@intel.com>
+> > > > Date		: 2009-02-27 9:13 (39 days old)
+> > > > First-Bad-Commit: http://git.kernel.org/?p=linux/kernel/git/torvalds/linux-2.6.git;a=commit;h=1cf6e7d83bf334cc5916137862c920a97aabc018
+> > > > References	: http://marc.info/?l=linux-kernel&m=123572630504360&w=4
+> > > > 		  http://lkml.org/lkml/2009/3/14/265
+> > > > Handled-By	: Wu Fengguang <fengguang.wu@intel.com>
+> > > 
+> > > This bug could be closed.
+> > > 
+> > > The performance regression is triggered by commit 1cf6e7d83bf3(mm:
+> > > task dirty accounting fix). Which has been reverted in 2.6.29.
+> > 
+> > Sorry for the mistake, commit 1cf6e7d83bf3 was _not_ reverted.
+> > So 2.6.29 is expected to have this regression.. 
 > 
->    Signed-off-by: GeunSik Lim <leemgs1@gmail.com>
->    Signed-off-by: Steven Rostedt <srostedt@redhat.com>
->    Signed-off-by: Ingo Molnar <mingo@elte.hu>
+> Added -stable to the CC list.  I'm not sure if that was included into .29.1.
 
-That's how it might look later on. It would say:
+1cf6e7d83bf3 is part of 2.6.29.1 (came in 2.6.29-rc6)
 
-       GeunSik Lim  	 wrote the patch
-       Steven Rostedt 	 picked it up from your mail and sent it to Ingo
-       Ingo Molnar 	 received it from Steven's mail and applied it
+> > > For 2.6.30, commit 1cf6e7d83bf33(mm: task dirty accounting fix) and
+> > > 1b5e62b42b55(writeback: double the dirty thresholds) were just merged
+> > > together. The latter one restores the iozone performance. (However
+> > > might deteriorate some writeback slowness bugs..)
 
-There is no way for you to forsee how your patch will be picked up and
-propagated. It might go via Andrew Morton or directly to Linus. Ok ?
+1b5e62b42b55 is not in -stable.
 
-So you only add your own Signed-off-by.
-
-Hope that helps. Thanks,
-
-     tglx
+thanks,
+-chris
