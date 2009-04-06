@@ -1,50 +1,74 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760467AbZDFWU2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758307AbZDFWVN@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760467AbZDFWU2 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 6 Apr 2009 18:20:28 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760199AbZDFWTz
+	id S1758307AbZDFWVN (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 6 Apr 2009 18:21:13 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757346AbZDFWUy
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 6 Apr 2009 18:19:55 -0400
-Received: from ogre.sisk.pl ([217.79.144.158]:50132 "EHLO ogre.sisk.pl"
+	Mon, 6 Apr 2009 18:20:54 -0400
+Received: from mga14.intel.com ([143.182.124.37]:53274 "EHLO mga14.intel.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1759989AbZDFWTy convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 6 Apr 2009 18:19:54 -0400
-Cc: Kernel Testers List <kernel-testers@vger.kernel.org>,
-       "Benjamin Herrenschmidt" <benh@kernel.crashing.org>,
-       "Ingo Molnar" <mingo@elte.hu>,
-       "Paul Collins" <paul@burly.ondioline.org>,
-       "Thomas Gleixner" <tglx@linutronix.de>
-References: <n4io5wq70ZO.A.gzG.rFn2JB@chimera>
-In-Reply-To: <n4io5wq70ZO.A.gzG.rFn2JB@chimera>
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
+	id S1760029AbZDFWUx (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 6 Apr 2009 18:20:53 -0400
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.39,332,1235980800"; 
+   d="scan'208";a="128513401"
+Date: Tue, 7 Apr 2009 06:20:37 +0800
+From: Wu Fengguang <fengguang.wu@intel.com>
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Kernel Testers List <kernel-testers@vger.kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       "Lin, Ming M" <ming.m.lin@intel.com>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Nick Piggin <npiggin@suse.de>, Peter Zijlstra <a.p.zijlstra@chello.nl>
+Subject: Re: [Bug #12809] iozone regression with 2.6.29-rc6
+Message-ID: <20090406222037.GA18714@localhost>
+References: <n4io5wq70ZO.A.gzG.rFn2JB@chimera> <AsKNxFx2juN.A.41._Gn2JB@chimera> <20090406221509.GA17604@localhost>
 MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 8BIT
-Message-ID: <AsKNxFx2juN.A.DFC.yHn2JB@chimera>
-Subject: [Bug #12667] Badness at kernel/time/timekeeping.c:98 in pmud (timekeeping_suspended)
-To: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Date: Mon,  6 Apr 2009 21:05:35 +0200 (CEST)
+In-Reply-To: <20090406221509.GA17604@localhost>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This message has been generated automatically as a part of a report
-of recent regressions.
+On Tue, Apr 07, 2009 at 06:15:09AM +0800, Wu Fengguang wrote:
+> On Tue, Apr 07, 2009 at 03:05:38AM +0800, Rafael J. Wysocki wrote:
+> > This message has been generated automatically as a part of a report
+> > of recent regressions.
+> > 
+> > The following bug entry is on the current list of known regressions
+> > from 2.6.28.  Please verify if it still should be listed and let me know
+> > (either way).
+> > 
+> > 
+> > Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=12809
+> > Subject		: iozone regression with 2.6.29-rc6
+> > Submitter	: Lin Ming <ming.m.lin@intel.com>
+> > Date		: 2009-02-27 9:13 (39 days old)
+> > First-Bad-Commit: http://git.kernel.org/?p=linux/kernel/git/torvalds/linux-2.6.git;a=commit;h=1cf6e7d83bf334cc5916137862c920a97aabc018
+> > References	: http://marc.info/?l=linux-kernel&m=123572630504360&w=4
+> > 		  http://lkml.org/lkml/2009/3/14/265
+> > Handled-By	: Wu Fengguang <fengguang.wu@intel.com>
+> > 
+> 
+> This bug could be closed.
+> 
+> The performance regression is triggered by commit 1cf6e7d83bf3(mm:
+> task dirty accounting fix). Which has been reverted in 2.6.29.
 
-The following bug entry is on the current list of known regressions
-from 2.6.28.  Please verify if it still should be listed and let me know
-(either way).
+Sorry for the mistake, commit 1cf6e7d83bf3 was _not_ reverted.
+So 2.6.29 is expected to have this regression.. 
 
+Thanks,
+Fengguang
 
-Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=12667
-Subject		: Badness at kernel/time/timekeeping.c:98 in pmud (timekeeping_suspended)
-Submitter	: Paul Collins <paul@burly.ondioline.org>
-Date		: 2009-01-21 7:15 (76 days old)
-First-Bad-Commit: http://git.kernel.org/?p=linux/kernel/git/torvalds/linux-2.6.git;a=commit;h=1c5745aa380efb6417b5681104b007c8612fb496
-References	: http://marc.info/?l=linux-kernel&m=123252215315106&w=4
-Handled-By	: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Patch		: http://lkml.org/lkml/2009/2/16/78
-
-
+> For 2.6.30, commit 1cf6e7d83bf33(mm: task dirty accounting fix) and
+> 1b5e62b42b55(writeback: double the dirty thresholds) were just merged
+> together. The latter one restores the iozone performance. (However
+> might deteriorate some writeback slowness bugs..)
+> 
+> Thanks,
+> Fengguang
+> 
