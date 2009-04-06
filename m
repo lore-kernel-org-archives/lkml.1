@@ -1,58 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754017AbZDFQuX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756029AbZDFQun@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754017AbZDFQuX (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 6 Apr 2009 12:50:23 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752086AbZDFQuH
+	id S1756029AbZDFQun (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 6 Apr 2009 12:50:43 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753805AbZDFQub
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 6 Apr 2009 12:50:07 -0400
-Received: from smtp3.tech.numericable.fr ([82.216.111.39]:40694 "EHLO
-	smtp3.tech.numericable.fr" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751885AbZDFQuG (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 6 Apr 2009 12:50:06 -0400
-Message-ID: <49DA32B7.8080004@numericable.fr>
-Date: Mon, 06 Apr 2009 18:49:59 +0200
-From: Etienne Basset <etienne.basset@numericable.fr>
-User-Agent: Thunderbird 2.0.0.21 (X11/20090318)
-MIME-Version: 1.0
-To: Eric Paris <eparis@redhat.com>
-CC: LSM <linux-security-module@vger.kernel.org>,
-       Casey Schaufler <casey@schaufler-ca.com>, linux-audit@redhat.com,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       sgrubb@redhat.com, sds@tycho.nsa.gov
-Subject: Re: [PATCH 0/2] security/smack implement logging V2
-References: <49D86FFA.1010507@numericable.fr> <1239032066.4009.5.camel@localhost.localdomain>
-In-Reply-To: <1239032066.4009.5.camel@localhost.localdomain>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+	Mon, 6 Apr 2009 12:50:31 -0400
+Received: from mba.ocn.ne.jp ([122.1.235.107]:51814 "EHLO smtp.mba.ocn.ne.jp"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753141AbZDFQua (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 6 Apr 2009 12:50:30 -0400
+From: Atsushi Nemoto <anemo@mba.ocn.ne.jp>
+To: Alessandro Zummo <a.zummo@towertech.it>
+Cc: rtc-linux@googlegroups.com, linux-kernel@vger.kernel.org
+Subject: [PATCH] rtc-ds1553: Drop IRQF_DISABLED
+Date: Tue,  7 Apr 2009 01:50:32 +0900
+Message-Id: <1239036633-10032-2-git-send-email-anemo@mba.ocn.ne.jp>
+X-Mailer: git-send-email 1.5.6.3
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Eric Paris wrote:
-> On Sun, 2009-04-05 at 10:46 +0200, Etienne Basset wrote:
-> 
->> the following 2 patches implements auditing of security events for Smack.
->> It tries to implement what Eric Paris suggested, and moves shareable code
->> to include/linux/lsm_audit.h and security/lsm_audit.c.
->> Smack specific logging functions are now defined in smack_access.c
-> 
-> 
->> type=1400 audit(1238919813.116:21): SMACK[smack_inode_getattr]: action=denied subject="FOO" object="etienne" requested=r pid=6679 comm="bash" path="/home/etienne/Desktop" dev=sda8ino=1237000
-> 
-> Can we make SMACK[smack_inode_getarr] into key=value pairs too and get
-> rid of that extra ':'?  Anyone have naming suggestions?
-> 
-> lsm=SMACK function=smack_inode_getattr
-> 
-yes, sure. Maybe just :
-lsm=SMACK fn=smack_inode_getattr
-I want as much info as possible with as less characters as possible (is this english? :) )
+IRQF_DISABLED should be be used with IRQF_SHARED.  Drop IRQF_DISABLED
+and add spin_lock_irqsave/spin_unlock_irqrestore to the interrupt
+handler.
 
-> also: dev=sda8ino=1237000  I'm guessing that was just a typo of you
-> putting the example into the e-mail, but you may want to double check.
-> 
-yeah, bad cut&paste, sorry about that
+Signed-off-by: Atsushi Nemoto <anemo@mba.ocn.ne.jp>
+---
+ drivers/rtc/rtc-ds1553.c |    9 +++++++--
+ 1 files changed, 7 insertions(+), 2 deletions(-)
 
-Etienne
+diff --git a/drivers/rtc/rtc-ds1553.c b/drivers/rtc/rtc-ds1553.c
+index 38d472b..395f01b 100644
+--- a/drivers/rtc/rtc-ds1553.c
++++ b/drivers/rtc/rtc-ds1553.c
+@@ -195,14 +195,19 @@ static irqreturn_t ds1553_rtc_interrupt(int irq, void *dev_id)
+ 	struct rtc_plat_data *pdata = platform_get_drvdata(pdev);
+ 	void __iomem *ioaddr = pdata->ioaddr;
+ 	unsigned long events = RTC_IRQF;
++	unsigned long flags;
+ 
++	spin_lock_irqsave(&pdata->rtc->irq_lock, flags);
+ 	/* read and clear interrupt */
+-	if (!(readb(ioaddr + RTC_FLAGS) & RTC_FLAGS_AF))
++	if (!(readb(ioaddr + RTC_FLAGS) & RTC_FLAGS_AF)) {
++		spin_unlock_irqrestore(&pdata->rtc->irq_lock, flags);
+ 		return IRQ_NONE;
++	}
+ 	if (readb(ioaddr + RTC_SECONDS_ALARM) & 0x80)
+ 		events |= RTC_UF;
+ 	else
+ 		events |= RTC_AF;
++	spin_unlock_irqrestore(&pdata->rtc->irq_lock, flags);
+ 	rtc_update_irq(pdata->rtc, 1, events);
+ 	return IRQ_HANDLED;
+ }
+@@ -329,7 +334,7 @@ static int __devinit ds1553_rtc_probe(struct platform_device *pdev)
+ 	if (pdata->irq > 0) {
+ 		writeb(0, ioaddr + RTC_INTERRUPTS);
+ 		if (request_irq(pdata->irq, ds1553_rtc_interrupt,
+-				IRQF_DISABLED | IRQF_SHARED,
++				IRQF_SHARED,
+ 				pdev->name, pdev) < 0) {
+ 			dev_warn(&pdev->dev, "interrupt not available.\n");
+ 			pdata->irq = 0;
+-- 
+1.5.6.3
 
