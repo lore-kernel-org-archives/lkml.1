@@ -1,76 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754715AbZDFHMW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755002AbZDFHOw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754715AbZDFHMW (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 6 Apr 2009 03:12:22 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754421AbZDFHMN
+	id S1755002AbZDFHOw (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 6 Apr 2009 03:14:52 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753059AbZDFHOm
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 6 Apr 2009 03:12:13 -0400
-Received: from courier.cs.helsinki.fi ([128.214.9.1]:56934 "EHLO
-	mail.cs.helsinki.fi" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754313AbZDFHMM (ORCPT
+	Mon, 6 Apr 2009 03:14:42 -0400
+Received: from mail-bw0-f169.google.com ([209.85.218.169]:37752 "EHLO
+	mail-bw0-f169.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752539AbZDFHOl (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 6 Apr 2009 03:12:12 -0400
-Subject: Re: + page-owner-tracking.patch added to -mm tree
-From: Pekka Enberg <penberg@cs.helsinki.fi>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: Vegard Nossum <vegard.nossum@gmail.com>,
-       Eduard - Gabriel Munteanu <eduard.munteanu@linux360.ro>,
-       Mel Gorman <mel@csn.ul.ie>, Jason Baron <jbaron@redhat.com>,
-       linux-kernel@vger.kernel.org, mm-commits@vger.kernel.org,
-       alexn@dsv.su.se, akpm@linux-foundation.org, alexn@telia.com,
-       apw@shadowen.org, cl@linux-foundation.org, haveblue@us.ibm.com,
-       kamezawa.hiroyu@jp.fujitu.com, Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       Steven Rostedt <rostedt@goodmis.org>,
-       "Fr?d?ric Weisbecker" <fweisbec@gmail.com>
-In-Reply-To: <20090403144344.GA9643@elte.hu>
-References: <20090401125506.GA6406@csn.ul.ie>
-	 <20090401131713.GQ12966@elte.hu> <20090401133220.GB6406@csn.ul.ie>
-	 <20090401134917.GC18677@elte.hu> <1238597398.23857.11.camel@penberg-laptop>
-	 <20090401152251.GB23390@elte.hu> <1238656331.26286.17.camel@penberg-laptop>
-	 <20090403042131.GA15669@localhost> <20090403141743.GF8875@elte.hu>
-	 <49D61F09.2080808@cs.helsinki.fi>  <20090403144344.GA9643@elte.hu>
-Date: Mon, 06 Apr 2009 10:12:09 +0300
-Message-Id: <1239001929.1573.11.camel@penberg-laptop>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
+	Mon, 6 Apr 2009 03:14:41 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=googlemail.com; s=gamma;
+        h=from:to:subject:date:user-agent:cc:references:in-reply-to
+         :mime-version:content-type:content-transfer-encoding
+         :content-disposition:message-id;
+        b=Bcl1PmtCiXPCn5jJAgacNRHp3rFJ3fE+dpr7rFSJC1N9CT3kBx2/+h8m9S+izDSOiq
+         9TsybFuXsidVNObND8DDEICvV3Halj9Qs/zL+KI1GyzP2okg0C1tzwNl0Z3bp2oryv+K
+         wfZr5A1P7w4oGJbgV4vPJU0ToiMZWCXySL3sw=
+From: Helmut Schaa <helmut.schaa@googlemail.com>
+To: Kalle Valo <kalle.valo@iki.fi>
+Subject: Re: ath9k becon loss messages
+Date: Mon, 6 Apr 2009 09:14:31 +0200
+User-Agent: KMail/1.9.10
+Cc: Jaswinder Singh Rajput <jaswinder@kernel.org>,
+       Michael Buesch <mb@bu3sch.de>, Sujith <Sujith.Manoharan@atheros.com>,
+       wireless <linux-wireless@vger.kernel.org>,
+       David Miller <davem@davemloft.net>, LKML <linux-kernel@vger.kernel.org>
+References: <1238923439.4120.9.camel@localhost.localdomain> <1238925174.4120.12.camel@localhost.localdomain> <87bprbif2f.fsf@litku.valot.fi>
+In-Reply-To: <87bprbif2f.fsf@litku.valot.fi>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
-X-Mailer: Evolution 2.22.3.1 
+Content-Disposition: inline
+Message-Id: <200904060914.32245.helmut.schaa@gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Ingo,
-
-On Fri, 2009-04-03 at 16:43 +0200, Ingo Molnar wrote:
-> * Pekka Enberg <penberg@cs.helsinki.fi> wrote:
+Am Sonntag, 5. April 2009 schrieb Kalle Valo:
+> Jaswinder Singh Rajput <jaswinder@kernel.org> writes:
 > 
-> > Ingo Molnar wrote:
-> >> * Eduard - Gabriel Munteanu <eduard.munteanu@linux360.ro> wrote:
-> >>
-> >>> One thing I'm not sure about this patch is whether it manages to  
-> >>> record an allocation only once, i.e. does it log a single event  
-> >>> when/if the slab allocator requests pages? Some time ago I sent a  
-> >>> patch adding GFP_NOTRACE to gfp.h, but was rejected. Maybe this  
-> >>> could be a way out of the mess.
-> >>>
-> >>> (GFP_NOTRACE would also allow us to log "backend" allocations easily 
-> >>> and treat them separately, for the record, or simply filter them 
-> >>> out.)
-> >>
-> >> makes a lot of sense IMO to annotate these via a GFP flag.
+> >> And besides that, I think one can easily remotely trigger this
+> >> message and flood the logs. So it should probably _also_ be
+> >> ratelimited.
 > >
-> > Yup, make sense. I think I rejected the patch (did I?) because I 
-> > wanted to fix the slub/slab mess differently but here it makes 
-> > perfect sense.
-> 
-> I'm wondering how much could be shared with the kmemcheck's 
-> internal-allocation annotations. There's some overlap (although not 
-> a full match) i suspect?
+> > normally it prints after 120 seconds:
+> >
+> > [ 1078.848434] wlan0: beacon loss from AP 00:11:95:9e:df:f6 - sending probe request
+> > [ 1198.822913] wlan0: beacon loss from AP 00:11:95:9e:df:f6 - sending probe request
+> > [ 1318.824931] wlan0: beacon loss from AP 00:11:95:9e:df:f6 - sending probe request
 
-I didn't check but I suspect it's not a perfect match. Kmemcheck wants
-to know a lot more of the internal workings of an allocator than
-kmemtrace. That is, we need to deal with constructor special cases for
-initialization and debugging, for instance.
+> Then there is something happening in ath9k or your AP which prevents
+> ath9k from receiving beacons. Try pinging your AP with 100 ms
+> interval. Do you see anything happening in 120 s intervals?
 
-			Pekka
+NetworkManager typically scans every 120 seconds and I can also trigger
+the messages by a manual scan with iwlist. I did not dig any further but
+the messages seem to appear right at the end of the scan. Tried with iwlagn
+and both sw_scan and hw_scan.
 
+Helmut
