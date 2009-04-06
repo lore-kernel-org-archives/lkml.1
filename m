@@ -1,52 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752507AbZDFErW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753107AbZDFEsy@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752507AbZDFErW (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 6 Apr 2009 00:47:22 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751241AbZDFErG
+	id S1753107AbZDFEsy (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 6 Apr 2009 00:48:54 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750895AbZDFEsp
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 6 Apr 2009 00:47:06 -0400
-Received: from hrndva-omtalb.mail.rr.com ([71.74.56.125]:57309 "EHLO
-	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751200AbZDFErF (ORCPT
+	Mon, 6 Apr 2009 00:48:45 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:37040 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1750854AbZDFEso (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 6 Apr 2009 00:47:05 -0400
-Date: Sun, 5 Apr 2009 23:49:58 -0500
-From: "Serge E. Hallyn" <serge@hallyn.com>
-To: Mark Ryden <markryde@gmail.com>
-Cc: Greg KH <gregkh@suse.de>, David Shwatrz <dshwatrz@gmail.com>,
-       Tejun Heo <htejun@gmail.com>, Greg KH <greg@kroah.com>,
-       linux-kernel@vger.kernel.org, netdev@vger.kernel.org,
-       "Eric W. Biederman" <ebiederm@xmission.com>,
-       Al Viro <viro@ftp.linux.org.uk>,
-       Linux Containers <containers@lists.osdl.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Daniel Lezcano <dlezcano@fr.ibm.com>,
-       Benjamin Thery <benjamin.thery@bull.net>
-Subject: Re: sysfs tagged directory support status (was:. Re: [PATCH 1/8]
-	sysfs: Implement sysfs tagged directory support)
-Message-ID: <20090406044958.GA8644@hallyn.com>
-References: <dac45060904010300y7fe8a09dxb582929fc8018ec1@mail.gmail.com> <20090404030551.GC23516@suse.de> <dac45060904052128p6c539fe4p199a03f47a43a96b@mail.gmail.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <dac45060904052128p6c539fe4p199a03f47a43a96b@mail.gmail.com>
-User-Agent: Mutt/1.5.15+20070412 (2007-04-11)
+	Mon, 6 Apr 2009 00:48:44 -0400
+Date: Sun, 5 Apr 2009 21:46:19 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: "Jeff Haran" <jharan@Brocade.COM>
+Cc: <linux-kernel@vger.kernel.org>, Doug Thompson <norsk5@yahoo.com>
+Subject: Re: bug in drivers/edac/edac_core.h pci_write_bits32()
+Message-Id: <20090405214619.12611ef4.akpm@linux-foundation.org>
+In-Reply-To: <57AC2FA1761300418C7AB8F3EA493C9702B52DC8@HQ-EXCH-5.corp.brocade.com>
+References: <57AC2FA1761300418C7AB8F3EA493C9702B52DC8@HQ-EXCH-5.corp.brocade.com>
+X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.5; x86_64-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Quoting Mark Ryden (markryde@gmail.com):
-> Hello,
-> I am sorry to hear that it is not merged yet.I hoped to try to start a
-> project with network namespaces.
+(cc maintainer)
 
-Sysfs tagged directories are not supported, but with 2.6.29 you
-can use network namespaces.  There are some limits - you can't
-move a physical network device out of the initial network
-namespace, and (veth) devices which are not in the initial
-network namespace just don't show up in /sys/class/net (since
-we can't tag them).
+On Thu, 26 Mar 2009 16:54:01 -0700 "Jeff Haran" <jharan@Brocade.COM> wrote:
 
-But you can use network namespaces.
+> 2.6.29 and previous versions seem to contain this bug which I found just
+> eyeballing the code:
+> 
+> static inline void pci_write_bits32(struct pci_dev *pdev, int offset,
+>                     u32 value, u32 mask)
+> {
+>     if (mask != 0xffff) {
+>         u32 buf;
+> 
+>         pci_read_config_dword(pdev, offset, &buf);
+>         value &= mask;
+>         buf &= ~mask;
+>         value |= buf;
+>     }
+> 
+>     pci_write_config_dword(pdev, offset, value);
+> }
+> 
+> I'm pretty sure that "if" statement should be:
+> 
+> 	if (mask != 0xffffffff) {
+> 
+> Please copy my email address in any response as I do not subscribe.
+> 
+> Thanks,
 
--serge
