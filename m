@@ -1,76 +1,105 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759366AbZDFW5W@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758817AbZDFXAe@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759366AbZDFW5W (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 6 Apr 2009 18:57:22 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753027AbZDFW5F
+	id S1758817AbZDFXAe (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 6 Apr 2009 19:00:34 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753662AbZDFXAZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 6 Apr 2009 18:57:05 -0400
-Received: from terminus.zytor.com ([198.137.202.10]:50000 "EHLO
-	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751907AbZDFW5D (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 6 Apr 2009 18:57:03 -0400
-Message-ID: <49DA8857.8030607@zytor.com>
-Date: Mon, 06 Apr 2009 15:55:19 -0700
-From: "H. Peter Anvin" <hpa@zytor.com>
-User-Agent: Thunderbird 2.0.0.14 (X11/20080501)
+	Mon, 6 Apr 2009 19:00:25 -0400
+Received: from www.tglx.de ([62.245.132.106]:47716 "EHLO www.tglx.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751889AbZDFXAY (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 6 Apr 2009 19:00:24 -0400
+Date: Tue, 7 Apr 2009 00:59:52 +0200 (CEST)
+From: Thomas Gleixner <tglx@linutronix.de>
+To: David Brownell <david-b@pacbell.net>
+cc: nsnehaprabha@ti.com, davinci-linux-open-source@linux.davincidsp.com,
+       linux-mtd@lists.infradead.org, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] MTD-NAND: Changes to read_page APIs to support
+ NAND_ECC_HW_SYNDROME mode on TI DaVinci DM355
+In-Reply-To: <200904051556.05368.david-b@pacbell.net>
+Message-ID: <alpine.LFD.2.00.0904070042300.21577@localhost.localdomain>
+References: <1238601784-9563-1-git-send-email-nsnehaprabha@ti.com> <200904051556.05368.david-b@pacbell.net>
+User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
 MIME-Version: 1.0
-To: Jim Keniston <jkenisto@us.ibm.com>
-CC: Masami Hiramatsu <mhiramat@redhat.com>, Ingo Molnar <mingo@elte.hu>,
-       Ananth N Mavinakayanahalli <ananth@in.ibm.com>,
-       Andi Kleen <andi@firstfloor.org>, kvm@vger.kernel.org,
-       Steven Rostedt <rostedt@goodmis.org>,
-       Frederic Weisbecker <fweisbec@gmail.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Arnaldo Carvalho de Melo <acme@redhat.com>,
-       systemtap-ml <systemtap@sources.redhat.com>,
-       LKML <linux-kernel@vger.kernel.org>,
-       Vegard Nossum <vegard.nossum@gmail.com>, Avi Kivity <avi@redhat.com>,
-       Roland McGrath <roland@redhat.com>
-Subject: Re: [PATCH -tip 3/6 V4.1] x86: instruction decorder API
-References: <49D4F4E6.6060401@redhat.com> <49D69BCA.8060506@redhat.com>	 <49D69F39.4010101@zytor.com>  <49D6ABD1.7040704@redhat.com> <1239058135.5212.43.camel@localhost.localdomain>
-In-Reply-To: <1239058135.5212.43.camel@localhost.localdomain>
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Jim Keniston wrote:
+David, Sneha,
+
+I'm answering both mails in one go.
+
+On Sun, 5 Apr 2009, David Brownell wrote:
+
+> On Wednesday 01 April 2009, nsnehaprabha@ti.com wrote:
+> > From: Sneha Narnakaje <nsnehaprabha@ti.com>
+> > 
+> > The NAND controller on TI DaVinci DM355 supports NAND devices
+> > with large page size (2K and 4K), but the HW ECC is handled
+> > for every 512byte read/write chunks. The current HW_SYNDROME
+> > read_page/write_page APIs in the NAND core (nand_base) use the
+> > "infix OOB" scheme.
+
+For a damned good reason. If you want to use HW_SYNDROME mode then you
+better have the syndrome right after the data.
+
+data - ecc - data - ecc ...
+
+That's how HW_SYNDROME generators work. It's not about the write side,
+It's about the read side. You read n bytes of data and m btes of ecc
+in _ONE_ go and the hardware will tell you whether there is a bit flip
+or not. You can even do full hardware error correction this way. And
+it has been done.
+ 
+See also: http://linux-mtd.infradead.org/tech/mtdnand/x111.html#AEN140
+
+> Makes me wonder if there should be a new NAND_ECC_HW_* mode,
+> which doesn't use "infix OOB" ... since that's the problem.
 > 
-> For user-space probing, we've been concentrating on native-built
-> executables.  Am I correct in thinking that we'll see 16-bit or V86 mode
-> only on legacy apps built elsewhere?  In any case, it only makes sense
-> to build on the kvm folks' work in this regard.
+> Given bugs recently uncovered in that area, it seems that
+> these DaVinci chips may be the first to use ECC_HW_SYNDROME
+> in multi-chunk mode (and thus "infix OOB" in its full glory,
+> rather than single-chunk subset which matches traditional
+> layout with OOB at the end).
+
+Sorry, HW_SYNDROME was used in multi chunk mode from the very
+beginning. See above.
+ 
+If your device does not do that or you do not want to utilize it for
+whatever reasons then just use the NAND_ECC_HW mode which lets you
+place your ECC data where ever you want.
+
+> > The core APIs overwrite NAND manufacturer's bad block meta
+> > data, thus complicating the jobs of non-Linux NAND programmers
+> > (end equipment manufacturering). These APIs also imply ECC
+> > protection for the prepad bytes, causing nand raw_write
+> > operations to fail.
 > 
+> All of those seem like reasons to avoid NAND_ECC_HW_SYNDROME
+> unless the ECC chunksize matches the page size ... that is,
+> to only use it when "infix OOB" won't apply.
 
-That's a fair assumption; you will of course need to test it and take
-appropriate action if it doesn't pan out.
+Wrong, see above
+ 
+> I particularly dislike clobbering the bad block data, since
+> once that's done it can't easily be recovered.  Preferable
+> to leave those markers in place, so that the chip can still
+> be re-initialized cleanly.
 
-> 
-> As noted, the INAT tables follow the kvm model of one fat bitmap of
-> attributes per opcode, rather than the kprobes/uprobes model of one or
-> two 256-bit tables per attribute.  (This latter approach was due to the
-> gradual accumulation of tables over the years.)
-> 
-> I like the bitmap-per-opcode approach because it's relatively easy to
-> see in one place everything you're saying about a particular opcode.
-> But with all the potential clients for this service, it's not clear that
-> we'll get by with a single bitmap for every opcode.  (x86 kvm uses 32
-> bits per opcode, I think, and the INAT tables use 10.  Seems like we
-> could overrun 64 bits pretty quickly.)  So I guess that means we'll have
-> to get a little creative as to how we expose these attribute sets to the
-> client.
-> 
+And how do you utilize the "data-ecc-data-ecc..." scheme _WITHOUT_
+clobbering the bad block marker bytes ??? That's why we have the bad
+block table mechanism. And this is not a Linux kernel hackers oddity,
+just have a look at DiskOnChip devices which do exactly the same. It's
+dictated by the hardware and there is nothing you can do about it -
+aside of falling back to software ECC and giving up the HW
+acceleration.
 
-This is another very good reason to use an instruction table which is
-preprocessed into a usable format: it means that if the internal data
-structures change -- and they almost certainly will have to at some
-point -- the raw data isn't lost.
+This patch is utter nonsense. The whole functionality is already
+there. Just use the correct mode: NAND_ECC_HW. Place your ECC data
+where you want or where your commercial counterparts want them to show
+up. Using NAND_ECC_HW_SYNDROME for your case is just plain wrong.
 
-	-hpa
+Thanks,
 
--- 
-H. Peter Anvin, Intel Open Source Technology Center
-I work for Intel.  I don't speak on their behalf.
-
+	tglx
