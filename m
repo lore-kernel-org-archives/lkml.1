@@ -1,47 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757139AbZDFRLR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757410AbZDFRMA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757139AbZDFRLR (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 6 Apr 2009 13:11:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754704AbZDFRK7
+	id S1757410AbZDFRMA (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 6 Apr 2009 13:12:00 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752850AbZDFRLs
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 6 Apr 2009 13:10:59 -0400
-Received: from mx0.towertech.it ([213.215.222.73]:39831 "HELO mx0.towertech.it"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
-	id S1752172AbZDFRK6 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 6 Apr 2009 13:10:58 -0400
-Date: Mon, 6 Apr 2009 19:10:53 +0200
-From: Alessandro Zummo <alessandro.zummo@towertech.it>
-To: rtc-linux@googlegroups.com
-Cc: anemo@mba.ocn.ne.jp, Alessandro Zummo <a.zummo@towertech.it>,
-       linux-kernel@vger.kernel.org
-Subject: Re: [rtc-linux] [PATCH] rtc-tx4939: Drop IRQF_SHARED
-Message-ID: <20090406191053.740229a8@i1501.lan.towertech.it>
-In-Reply-To: <1239036633-10032-3-git-send-email-anemo@mba.ocn.ne.jp>
-References: <1239036633-10032-3-git-send-email-anemo@mba.ocn.ne.jp>
-Organization: Tower Technologies
-X-Mailer: Sylpheed
-X-This-Is-A-Real-Message: Yes
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Mon, 6 Apr 2009 13:11:48 -0400
+Received: from gw-ca.panasas.com ([209.116.51.66]:13613 "EHLO
+	laguna.int.panasas.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1751989AbZDFRLr (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 6 Apr 2009 13:11:47 -0400
+Message-ID: <49DA37C4.4090208@panasas.com>
+Date: Mon, 06 Apr 2009 20:11:32 +0300
+From: Boaz Harrosh <bharrosh@panasas.com>
+User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1b3pre) Gecko/20090315 Remi/3.0-0.b2.fc10.remi Thunderbird/3.0b2
+MIME-Version: 1.0
+To: James Bottomley <James.Bottomley@HansenPartnership.com>,
+       Hannes Reinecke <hare@suse.de>
+CC: Andrew Morton <akpm@linux-foundation.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       linux-scsi <linux-scsi@vger.kernel.org>,
+       linux-kernel <linux-kernel@vger.kernel.org>
+Subject: Re: [GIT PATCH] final set of SCSI updates for the merge window
+References: <1239033266.3641.9.camel@mulgrave>
+In-Reply-To: <1239033266.3641.9.camel@mulgrave>
+Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 7bit
+X-OriginalArrivalTime: 06 Apr 2009 17:11:42.0719 (UTC) FILETIME=[C1CAD0F0:01C9B6DA]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue,  7 Apr 2009 01:50:33 +0900
-Atsushi Nemoto <anemo@mba.ocn.ne.jp> wrote:
+On 04/06/2009 06:54 PM, James Bottomley wrote:
+> This is just an assorted set of driver updates (fcoe, qla2x, stex etc.)
+> 
+> The patch is available here:
+> 
+> master.kernel.org:/pub/scm/linux/kernel/git/jejb/scsi-misc-2.6.git
+> 
+> The short changelog is:
+> 
+> 
+<snip>
+> Hannes Reinecke (1):
+>       aic7xxx: leaves timer running on init failure
+> 
 
-> IRQF_SHARED should be used with IRQF_DISABLED.  This RTC have dedicated
-> irq line so there is no reason to use IRQF_SHARED.
+I was hoping you would also include this patch:
 
- Is that true for every board this rtc is/will be used on?
+http://www.spinics.net/lists/linux-scsi/msg34174.html
+Tested-by: Boaz Harrosh <bharrosh@panasas.com>
 
--- 
+After Hannes explained it looks totally un-dangerous, I've
+been running with it ever since.
 
- Best regards,
+It does remove that annoying dmsg warning every scsi ULD
+has.
 
- Alessandro Zummo,
-  Tower Technologies - Torino, Italy
+<snip>
 
-  http://www.towertech.it
-
+Thanks
+Boaz
