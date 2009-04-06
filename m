@@ -1,111 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756150AbZDFK7v@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756061AbZDFLAv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756150AbZDFK7v (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 6 Apr 2009 06:59:51 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755361AbZDFK7m
+	id S1756061AbZDFLAv (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 6 Apr 2009 07:00:51 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755388AbZDFLAl
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 6 Apr 2009 06:59:42 -0400
-Received: from viefep11-int.chello.at ([62.179.121.31]:43139 "EHLO
-	viefep11-int.chello.at" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754112AbZDFK7m (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 6 Apr 2009 06:59:42 -0400
-X-SourceIP: 213.93.53.227
-Subject: Re: [PATCH 5/6] perf_counter: add more context information
-From: Peter Zijlstra <a.p.zijlstra@chello.nl>
-To: Corey Ashford <cjashfor@linux.vnet.ibm.com>
-Cc: Ingo Molnar <mingo@elte.hu>, Paul Mackerras <paulus@samba.org>,
-       linux-kernel@vger.kernel.org
-In-Reply-To: <49D654AB.4030207@linux.vnet.ibm.com>
-References: <20090402091158.291810516@chello.nl>
-	 <20090402091319.493101305@chello.nl> <1238763023.798.27.camel@twins>
-	 <49D654AB.4030207@linux.vnet.ibm.com>
-Content-Type: text/plain
-Date: Mon, 06 Apr 2009 13:01:08 +0200
-Message-Id: <1239015668.798.4243.camel@twins>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.26.0 
+	Mon, 6 Apr 2009 07:00:41 -0400
+Received: from mx2.redhat.com ([66.187.237.31]:35829 "EHLO mx2.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1755361AbZDFLAk (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 6 Apr 2009 07:00:40 -0400
+Message-ID: <49D9E054.8090502@redhat.com>
+Date: Mon, 06 Apr 2009 13:58:28 +0300
+From: Izik Eidus <ieidus@redhat.com>
+User-Agent: Mozilla-Thunderbird 2.0.0.19 (X11/20090103)
+MIME-Version: 1.0
+To: Izik Eidus <ieidus@redhat.com>, akpm@linux-foundation.org,
+       linux-kernel@vger.kernel.org, kvm@vger.kernel.org, linux-mm@kvack.org,
+       avi@redhat.com, aarcange@redhat.com, chrisw@redhat.com,
+       mtosatti@redhat.com, hugh@veritas.com, kamezawa.hiroyu@jp.fujitsu.com
+Subject: Re: [PATCH 4/4] add ksm kernel shared memory driver.
+References: <1238855722-32606-1-git-send-email-ieidus@redhat.com> <1238855722-32606-2-git-send-email-ieidus@redhat.com> <1238855722-32606-3-git-send-email-ieidus@redhat.com> <1238855722-32606-4-git-send-email-ieidus@redhat.com> <1238855722-32606-5-git-send-email-ieidus@redhat.com> <20090406091348.GA18464@ports.donpac.ru>
+In-Reply-To: <20090406091348.GA18464@ports.donpac.ru>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 2009-04-03 at 11:25 -0700, Corey Ashford wrote:
-> Peter Zijlstra wrote:
-> > On Thu, 2009-04-02 at 11:12 +0200, Peter Zijlstra wrote:
-> >> plain text document attachment (perf_counter_callchain_context.patch)
-> >> Put in counts to tell which ips belong to what context.
-> >>
-> >>   -----
-> >>    | |  hv
-> >>    | --
-> >> nr | |  kernel
-> >>    | --
-> >>    | |  user
-> >>   -----
-> > 
-> > Right, just realized that PERF_RECORD_IP needs something similar if one
-> > if not able to derive the context from the IP itself..
-> > 
-> Three individual bits would suffice, or you could use a two-bit code -
-> 00 = user
-> 01 = kernel
-> 10 = hypervisor
-> 11 = reserved (or perhaps unknown)
-> 
-> Unfortunately, because of alignment, it would need to take up another 64 
-> bit word, wouldn't it?  Too bad you cannot sneak the bits into the IP in 
-> a machine independent way.
-> 
-> And since you probably need a separate word, that effectively doubles 
-> the amount of space taken up by IP samples (if we add a "no event 
-> header" option).  Should we add another bit in the record_type field - 
-> PERF_RECORD_IP_LEVEL (or similar) so that user-space apps don't have to 
-> get this if they don't need it?
+Andrey Panin wrote:
+> On 094, 04 04, 2009 at 05:35:22PM +0300, Izik Eidus wrote:
+>
+> <SNIP>
+>
+>   
+>> +static inline u32 calc_checksum(struct page *page)
+>> +{
+>> +	u32 checksum;
+>> +	void *addr = kmap_atomic(page, KM_USER0);
+>> +	checksum = jhash(addr, PAGE_SIZE, 17);
+>>     
+>
+> Why jhash2() is not used here ? It's faster and leads to smaller code size.
+>   
 
-If we limit the event size to 64k (surely enough, right? :-), then we
-have 16 more bits to play with in the header, and we could do something
-like the below.
+Beacuse i didnt know, i will check that and change.
 
-A further possibility would also be to add an overflow bit in there,
-making the full 32bit PERF_RECORD space available to output events as
-well.
+Thanks.
 
-Index: linux-2.6/include/linux/perf_counter.h
-===================================================================
---- linux-2.6.orig/include/linux/perf_counter.h
-+++ linux-2.6/include/linux/perf_counter.h
-@@ -201,9 +201,17 @@ struct perf_counter_mmap_page {
- 	__u32   data_head;		/* head in the data section */
- };
- 
-+enum {
-+	PERF_EVENT_LEVEL_HV	= 0,
-+	PERF_EVENT_LEVEL_KERNEL = 1,
-+	PERF_EVENT_LEVEL_USER	= 2,
-+};
-+
- struct perf_event_header {
- 	__u32	type;
--	__u32	size;
-+	__u16	level		:  2,
-+		__reserved	: 14;
-+	__u16	size;
- };
- 
- enum perf_event_type {
-Index: linux-2.6/kernel/perf_counter.c
-===================================================================
---- linux-2.6.orig/kernel/perf_counter.c
-+++ linux-2.6/kernel/perf_counter.c
-@@ -1832,6 +1832,8 @@ static void perf_counter_output(struct p
- 
- 	header.type = PERF_EVENT_COUNTER_OVERFLOW;
- 	header.size = sizeof(header);
-+	header.level = user_mode(regs) ? 
-+		PERF_EVENT_LEVEL_USER : PERF_EVENT_LEVEL_KERNEL;
- 
- 	if (record_type & PERF_RECORD_IP) {
- 		ip = instruction_pointer(regs);
+(We should really use in cpu crc for Intel Nehalem, and dirty bit for 
+the rest of the architactures...)
 
+>   
+>> +	kunmap_atomic(addr, KM_USER0);
+>> +	return checksum;
+>> +}
+>>     
+>
+>   
 
