@@ -1,46 +1,75 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757168AbZDFQu4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758156AbZDFQvk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757168AbZDFQu4 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 6 Apr 2009 12:50:56 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754093AbZDFQub
+	id S1758156AbZDFQvk (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 6 Apr 2009 12:51:40 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757271AbZDFQu6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 6 Apr 2009 12:50:31 -0400
-Received: from mba.ocn.ne.jp ([122.1.235.107]:51835 "EHLO smtp.mba.ocn.ne.jp"
+	Mon, 6 Apr 2009 12:50:58 -0400
+Received: from www.tglx.de ([62.245.132.106]:37324 "EHLO www.tglx.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753566AbZDFQua (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 6 Apr 2009 12:50:30 -0400
-From: Atsushi Nemoto <anemo@mba.ocn.ne.jp>
-To: Alessandro Zummo <a.zummo@towertech.it>
-Cc: rtc-linux@googlegroups.com, linux-kernel@vger.kernel.org
-Subject: [PATCH] rtc-tx4939: Drop IRQF_SHARED
-Date: Tue,  7 Apr 2009 01:50:33 +0900
-Message-Id: <1239036633-10032-3-git-send-email-anemo@mba.ocn.ne.jp>
-X-Mailer: git-send-email 1.5.6.3
+	id S1757105AbZDFQu5 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 6 Apr 2009 12:50:57 -0400
+Date: Mon, 6 Apr 2009 18:48:48 +0200 (CEST)
+From: Thomas Gleixner <tglx@linutronix.de>
+To: Arun R Bharadwaj <arun@linux.vnet.ibm.com>
+cc: linux-kernel@vger.kernel.org, linux-pm@lists.linux-foundation.org,
+       a.p.zijlstra@chello.nl, ego@in.ibm.com, mingo@elte.hu,
+       andi@firstfloor.org, venkatesh.pallipadi@intel.com,
+       vatsa@linux.vnet.ibm.com, arjan@infradead.org,
+       svaidy@linux.vnet.ibm.com
+Subject: Re: [v5 PATCH 4/4] timers: logic to move non pinned timers
+In-Reply-To: <20090406162205.GE15269@linux.vnet.ibm.com>
+Message-ID: <alpine.LFD.2.00.0904061846140.21577@localhost.localdomain>
+References: <20090406161357.GB15269@linux.vnet.ibm.com> <20090406162205.GE15269@linux.vnet.ibm.com>
+User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-IRQF_SHARED should be used with IRQF_DISABLED.  This RTC have dedicated
-irq line so there is no reason to use IRQF_SHARED.
+Arun,
 
-Signed-off-by: Atsushi Nemoto <anemo@mba.ocn.ne.jp>
----
- drivers/rtc/rtc-tx4939.c |    2 +-
- 1 files changed, 1 insertions(+), 1 deletions(-)
+On Mon, 6 Apr 2009, Arun R Bharadwaj wrote:
+> +again:
+> +	new_cpu_base = &per_cpu(hrtimer_bases, cpu);
+>  	new_base = &new_cpu_base->clock_base[base->index];
+>  
+>  	if (base != new_base) {
+> @@ -219,6 +230,34 @@ switch_hrtimer_base(struct hrtimer *time
+>  		timer->base = NULL;
+>  		spin_unlock(&base->cpu_base->lock);
+>  		spin_lock(&new_base->cpu_base->lock);
+> +
+> +		if (cpu == preferred_cpu) {
+> +			/* Calculate clock monotonic expiry time */
+> +			ktime_t expires = ktime_sub(hrtimer_get_expires(timer),
+> +							new_base->offset);
+> +
+> +			/*
+> +			 * Get the next event on target cpu from the
+> +			 * clock events layer.
+> +			 * This covers the highres=off nohz=on case as well.
+> +			 */
+> +			ktime_t next = clockevents_get_next_event(cpu);
+> +
+> +			ktime_t delta = ktime_sub(expires, next);
+> +
+> +			/*
+> +			 * We do not migrate the timer when it is expiring
+> +			 * before the next event on the target cpu because
+> +			 * we cannot reprogram the target cpu hardware and
+> +			 * we would cause it to fire late.
+> +			 */
+> +			if (delta.tv64 < 0) {
+> +				cpu = smp_processor_id();
+> +				spin_unlock(&new_base->cpu_base->lock);
+> +				spin_lock(&base->cpu_base->lock);
 
-diff --git a/drivers/rtc/rtc-tx4939.c b/drivers/rtc/rtc-tx4939.c
-index 4ee4857..69085d9 100644
---- a/drivers/rtc/rtc-tx4939.c
-+++ b/drivers/rtc/rtc-tx4939.c
-@@ -261,7 +261,7 @@ static int __init tx4939_rtc_probe(struct platform_device *pdev)
- 
- 	tx4939_rtc_cmd(pdata->rtcreg, TX4939_RTCCTL_COMMAND_NOP);
- 	if (devm_request_irq(&pdev->dev, irq, tx4939_rtc_interrupt,
--			     IRQF_DISABLED | IRQF_SHARED,
-+			     IRQF_DISABLED,
- 			     pdev->name, &pdev->dev) < 0) {
- 		return -EBUSY;
- 	}
--- 
-1.5.6.3
+Darn, I knew that I missed something when I looked at this before:
 
+      	     	    	   	 timer->base = base;
+
+Thanks,
+
+	tglx
