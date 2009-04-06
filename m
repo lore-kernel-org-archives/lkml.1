@@ -1,305 +1,179 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754317AbZDFGqT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754489AbZDFGuu@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754317AbZDFGqT (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 6 Apr 2009 02:46:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752940AbZDFGqH
+	id S1754489AbZDFGuu (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 6 Apr 2009 02:50:50 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753175AbZDFGuk
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 6 Apr 2009 02:46:07 -0400
-Received: from chilli.pcug.org.au ([203.10.76.44]:58715 "EHLO smtps.tip.net.au"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752354AbZDFGqE (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 6 Apr 2009 02:46:04 -0400
-Date: Mon, 6 Apr 2009 16:45:55 +1000
-From: Stephen Rothwell <sfr@canb.auug.org.au>
-To: linux-next@vger.kernel.org
-Cc: LKML <linux-kernel@vger.kernel.org>
-Subject: linux-next: Tree for April 6
-Message-Id: <20090406164555.e1232116.sfr@canb.auug.org.au>
-X-Mailer: Sylpheed 2.6.0 (GTK+ 2.14.7; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: multipart/signed; protocol="application/pgp-signature";
- micalg="PGP-SHA1";
- boundary="Signature=_Mon__6_Apr_2009_16_45_55_+1000_GVPnOLLIiLf4z1jO"
+	Mon, 6 Apr 2009 02:50:40 -0400
+Received: from smtp-out.google.com ([216.239.45.13]:3673 "EHLO
+	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753119AbZDFGuk convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 6 Apr 2009 02:50:40 -0400
+DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
+	h=mime-version:in-reply-to:references:date:message-id:subject:from:to:
+	cc:content-type:content-transfer-encoding:x-system-of-record;
+	b=P2PmhCsUu1szZ0XHnfHJB7p8vKB7ugFf5kMmict4tkCrR3Tz/uRR/ZHlOGMOwvSbX
+	gl76Qj82HPDrjwAFAJB7A==
+MIME-Version: 1.0
+In-Reply-To: <49D8CB17.7040501@gmail.com>
+References: <1236823015-4183-1-git-send-email-vgoyal@redhat.com>
+	 <1236823015-4183-2-git-send-email-vgoyal@redhat.com>
+	 <20090312001146.74591b9d.akpm@linux-foundation.org>
+	 <20090312180126.GI10919@redhat.com> <49D8CB17.7040501@gmail.com>
+Date: Sun, 5 Apr 2009 23:50:31 -0700
+Message-ID: <e98e18940904052350wc44fdffl480d613c661d5fe6@mail.gmail.com>
+Subject: Re: [PATCH 01/10] Documentation
+From: Nauman Rafique <nauman@google.com>
+To: righi.andrea@gmail.com
+Cc: Vivek Goyal <vgoyal@redhat.com>, Andrew Morton <akpm@linux-foundation.org>,
+       dpshah@google.com, lizf@cn.fujitsu.com, mikew@google.com,
+       fchecconi@gmail.com, paolo.valente@unimore.it, jens.axboe@oracle.com,
+       ryov@valinux.co.jp, fernando@intellilink.co.jp, s-uchida@ap.jp.nec.com,
+       taka@valinux.co.jp, guijianfeng@cn.fujitsu.com, arozansk@redhat.com,
+       jmoyer@redhat.com, oz-kernel@redhat.com, dhaval@linux.vnet.ibm.com,
+       balbir@linux.vnet.ibm.com, linux-kernel@vger.kernel.org,
+       containers@lists.linux-foundation.org, menage@google.com,
+       peterz@infradead.org
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 8BIT
+X-System-Of-Record: true
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---Signature=_Mon__6_Apr_2009_16_45_55_+1000_GVPnOLLIiLf4z1jO
-Content-Type: text/plain; charset=US-ASCII
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+On Sun, Apr 5, 2009 at 8:15 AM, Andrea Righi <righi.andrea@gmail.com> wrote:
+> On 2009-03-12 19:01, Vivek Goyal wrote:
+>> On Thu, Mar 12, 2009 at 12:11:46AM -0700, Andrew Morton wrote:
+>>> On Wed, 11 Mar 2009 21:56:46 -0400 Vivek Goyal <vgoyal@redhat.com> wrote:
+> [snip]
+>>> Also..  there are so many IO controller implementations that I've lost
+>>> track of who is doing what.  I do have one private report here that
+>>> Andreas's controller "is incredibly productive for us and has allowed
+>>> us to put twice as many users per server with faster times for all
+>>> users".  Which is pretty stunning, although it should be viewed as a
+>>> condemnation of the current code, I'm afraid.
+>>>
+>>
+>> I had looked briefly at Andrea's implementation in the past. I will look
+>> again. I had thought that this approach did not get much traction.
+>
+> Hi Vivek, sorry for my late reply. I periodically upload the latest
+> versions of io-throttle here if you're still interested:
+> http://download.systemimager.org/~arighi/linux/patches/io-throttle/
+>
+> There's no consistent changes respect to the latest version I posted to
+> the LKML, just rebasing to the recent kernels.
+>
+>>
+>> Some quick thoughts about this approach though.
+>>
+>> - It is not a proportional weight controller. It is more of limiting
+>>   bandwidth in absolute numbers for each cgroup on each disk.
+>>
+>>   So each cgroup will define a rule for each disk in the system mentioning
+>>   at what maximum rate that cgroup can issue IO to that disk and throttle
+>>   the IO from that cgroup if rate has excedded.
+>
+> Correct. Add also the proportional weight control has been in the TODO
+> list since the early versions, but I never dedicated too much effort to
+> implement this feature, I can focus on this and try to write something
+> if we all think it is worth to be done.
+>
+>>
+>>   Above requirement can create configuration problems.
+>>
+>>       - If there are large number of disks in system, per cgroup one shall
+>>         have to create rules for each disk. Until and unless admin knows
+>>         what applications are in which cgroup and strictly what disk
+>>         these applications do IO to and create rules for only those
+>>         disks.
+>
+> I don't think this is a huge problem anyway. IMHO a userspace tool, e.g.
+> a script, would be able to efficiently create/modify rules parsing user
+> defined rules in some human-readable form (config files, etc.), even in
+> presence of hundreds of disk. The same is valid for dm-ioband I think.
+>
+>>
+>>       - I think problem gets compounded if there is a hierarchy of
+>>         logical devices. I think in that case one shall have to create
+>>         rules for logical devices and not actual physical devices.
+>
+> With logical devices you mean device-mapper devices (i.e. LVM, software
+> RAID, etc.)? or do you mean that we need to introduce the concept of
+> "logical device" to easily (quickly) configure IO requirements and then
+> map those logical devices to the actual physical devices? In this case I
+> think this can be addressed in userspace. Or maybe I'm totally missing
+> the point here.
+>
+>>
+>> - Because it is not proportional weight distribution, if some
+>>   cgroup is not using its planned BW, other group sharing the
+>>   disk can not make use of spare BW.
+>>
+>
+> Right.
+>
+>> - I think one should know in advance the throughput rate of underlying media
+>>   and also know competing applications so that one can statically define
+>>   the BW assigned to each cgroup on each disk.
+>>
+>>   This will be difficult. Effective BW extracted out of a rotational media
+>>   is dependent on the seek pattern so one shall have to either try to make
+>>   some conservative estimates and try to divide BW (we will not utilize disk
+>>   fully) or take some peak numbers and divide BW (cgroup might not get the
+>>   maximum rate configured).
+>
+> Correct. I think the proportional weight approach is the only solution
+> to efficiently use the whole BW. OTOH absolute limiting rules offer a
+> better control over QoS, because you can totally remove performance
+> bursts/peaks that could break QoS requirements for short periods of
+> time. So, my "ideal" IO controller should allow to define both rules:
+> absolute and proportional limits.
 
-Hi all,
+I completely agree with Andrea here. The final solution has to have
+both absolute limits and proportions. But instead of adding a token
+based approach on top of proportional based system, I have been
+thinking about modifying the proportional approach to support absolute
+limits. This might not work, but I think this is an interesting idea
+to think about.
 
-Changes since 20090403:
+Here are my thoughts on it so far. We start with the patches that
+Vivek has sent, and change the notion of weights to percent. That is,
+the user space specifies percents of disk times instead of weights. We
+do not put entities in idle tree; whenever an entity is not
+backlogged, we still keep them in the active trees, and allocate them
+time slices. But since they have not requests in them, no requests
+will get dispatched during the time slices allocated to these
+entities. Moreover, if the percents of all entities do not add upto
+hundred, we introduce a dummy entity at each level to soak up the rest
+of "percent". This dummy entity would get time slices just like any
+other entity, but will not dispatch any requests. With these
+modification, we can limit entities to their allocated percent of disk
+time.
 
-Removed tree:
-	proc (by request)
+We might want a situation in which we want to allow certain entities
+to exceed their "percent" of disk time, while others should be
+limited. In this case, we can extend the above mentioned approach by
+introducing a secondary active tree. All entities which are allowed to
+exceed their "percent" can be queued in the secondary tree, besides
+the primary tree. Whenever an idle (or dummy) entity gets a time
+slice, instead of idling the disk, an entity can be picked from the
+secondary tree.
 
-Various conflicts have moved due to trees being merged into Linus' tree.
+The advantage of an approach like this is that it will be relatively
+smaller modification of the proposed proportional approach. Moreover,
+entities will be throttled by getting time slices less frequently,
+instead of being allowed to send a burst and then getting starved
+(like in ticket based approach). The downside is that this approach
+sounds unconventional and probably have not been tried in other
+domains either. Thoughts? opinions?
 
-The tip-core tree lost a conflict, but gained another against Linus' tree.
+I will create patches based on the above idea in a few weeks.
 
-The cpus4096 tree lost all its conflicts.
-
-The tracing tree lost 4 conflicts and 2 merge fixup patches.
-
-The nfs tree lost its conflict, but gained 2 build failures for which I
-applied a patch and reverted a commit.
-
-The acpi tree lost its conflict.
-
-The scsi tree lost its build failure.
-
-The vfs tree lots its conflict and merge fixups.
-
-The cifs tree lost its build failure.
-
-The dmwm2-iommu tree lost its conflicts.
-
-----------------------------------------------------------------------------
-
-I have created today's linux-next tree at
-git://git.kernel.org/pub/scm/linux/kernel/git/sfr/linux-next.git
-(patches at
-http://www.kernel.org/pub/linux/kernel/people/sfr/linux-next/).  If you
-are tracking the linux-next tree using git, you should not use "git pull"
-to do so as that will try to merge the new linux-next release with the
-old one.  You should use "git fetch" as mentioned in the FAQ on the wiki
-(see below).
-
-You can see which trees have been included by looking in the Next/Trees
-file in the source.  There are also quilt-import.log and merge.log files
-in the Next directory.  Between each merge, the tree was built with
-a ppc64_defconfig for powerpc and an allmodconfig for x86_64. After the
-final fixups (if any), it is also built with powerpc allnoconfig (32 and
-64 bit), ppc44x_defconfig and allyesconfig (minus
-CONFIG_PROFILE_ALL_BRANCHES) and i386, sparc and sparc64 defconfig.
-These builds also have CONFIG_ENABLE_WARN_DEPRECATED,
-CONFIG_ENABLE_MUST_CHECK and CONFIG_DEBUG_INFO disabled when necessary.
-
-Below is a summary of the state of the merge.
-
-We are up to 132 trees (counting Linus' and 18 trees of patches pending for
-Linus' tree), more are welcome (even if they are currently empty).
-Thanks to those who have contributed, and to those who haven't, please do.
-
-Status of my local build tests will be at
-http://kisskb.ellerman.id.au/linux-next .  If maintainers want to give
-advice about cross compilers/configs that work, we are always open to add
-more builds.
-
-Thanks to Jan Dittmer for adding the linux-next tree to his build tests
-at http://l4x.org/k/ , the guys at http://test.kernel.org/ and Randy
-Dunlap for doing many randconfig builds.
-
-There is a wiki covering stuff to do with linux-next at
-http://linux.f-seidel.de/linux-next/pmwiki/ .  Thanks to Frank Seidel.
-
---=20
-Cheers,
-Stephen Rothwell                    sfr@canb.auug.org.au
-
-$ git checkout master
-$ git reset --hard stable
-Merging origin/master
-Merging arm-current/master
-Merging m68k-current/for-linus
-Merging powerpc-merge/merge
-Merging sparc-current/master
-Merging scsi-rc-fixes/master
-Merging net-current/master
-Merging sound-current/for-linus
-Merging pci-current/for-linus
-Merging wireless-current/master
-Merging kbuild-current/master
-Merging quilt/driver-core.current
-Merging quilt/usb.current
-Merging cpufreq-current/fixes
-Merging input-current/for-linus
-Merging md-current/for-linus
-Merging audit-current/for-linus
-Merging crypto-current/master
-Merging dwmw2/master
-Merging arm/devel
-Merging avr32/avr32-arch
-Merging blackfin/for-linus
-Merging cris/for-next
-Merging ia64/test
-Merging m68k/for-next
-Merging m68knommu/for-next
-Merging mips/mips-for-linux-next
-Merging parisc/master
-Merging powerpc/next
-Merging 4xx/next
-Merging galak/next
-Merging pxa/for-next
-Merging s390/features
-Merging sh/master
-Merging sparc/master
-Merging x86/auto-x86-next
-CONFLICT (content): Merge conflict in arch/x86/kernel/cpu/intel_cacheinfo.c
-Merging xtensa/master
-Merging tip-core/auto-core-next
-CONFLICT (content): Merge conflict in include/linux/netfilter/xt_limit.h
-CONFLICT (content): Merge conflict in include/linux/netfilter/xt_statistic.h
-CONFLICT (content): Merge conflict in kernel/sysctl.c
-Merging cpus4096/auto-cpus4096-next
-Merging tracing/auto-tracing-next
-CONFLICT (content): Merge conflict in kernel/trace/blktrace.c
-CONFLICT (content): Merge conflict in kernel/trace/trace_output.h
-CONFLICT (content): Merge conflict in mm/slob.c
-Merging genirq/auto-genirq-next
-Merging safe-poison-pointers/auto-safe-poison-pointers-next
-Merging sched/auto-sched-next
-Merging stackprotector/auto-stackprotector-next
-Merging timers/auto-timers-next
-Merging pci/linux-next
-Merging quilt/device-mapper
-Merging hid/for-next
-Merging quilt/i2c
-Merging quilt/jdelvare-hwmon
-Merging quilt/kernel-doc
-CONFLICT (content): Merge conflict in Documentation/kernel-parameters.txt
-Merging v4l-dvb/master
-CONFLICT (content): Merge conflict in arch/sh/boards/board-ap325rxa.c
-CONFLICT (content): Merge conflict in arch/sh/boards/mach-migor/setup.c
-CONFLICT (content): Merge conflict in drivers/media/video/cx25840/cx25840-a=
-udio.c
-CONFLICT (content): Merge conflict in drivers/media/video/em28xx/em28xx-aud=
-io.c
-CONFLICT (content): Merge conflict in include/linux/i2c-id.h
-Merging quota/for_next
-CONFLICT (content): merge conflict in fs/quota/dquot.c
-CONFLICT (content): Merge conflict in fs/Kconfig
-CONFLICT (content): Merge conflict in fs/ext4/ext4.h
-CONFLICT (content): Merge conflict in fs/ext4/inode.c
-CONFLICT (content): Merge conflict in fs/reiserfs/namei.c
-CONFLICT (content): Merge conflict in fs/reiserfs/stree.c
-CONFLICT (content): Merge conflict in fs/udf/balloc.c
-Merging jfs/next
-Merging kbuild/master
-Merging quilt/ide
-Merging libata/NEXT
-Merging nfs/linux-next
-Merging xfs/master
-Merging infiniband/for-next
-Merging acpi/test
-Merging nfsd/nfsd-next
-CONFLICT (content): Merge conflict in include/linux/nfs4.h
-Merging ieee1394/for-next
-Merging ubi/linux-next
-Merging kvm/master
-Merging dlm/next
-Merging scsi/master
-CONFLICT (content): Merge conflict in firmware/WHENCE
-Merging ocfs2/linux-next
-CONFLICT (content): Merge conflict in fs/ocfs2/dir.c
-Merging ext4/next
-Merging async_tx/next
-Merging udf/for_next
-Merging net/master
-Merging wireless/master
-Merging mtd/master
-CONFLICT (content): Merge conflict in drivers/mtd/maps/Makefile
-Merging crypto/master
-Merging vfs/for-next
-Merging sound/for-next
-Merging cpufreq/next
-Merging v9fs/for-next
-CONFLICT (content): Merge conflict in net/9p/protocol.c
-Merging quilt/rr
-CONFLICT (content): Merge conflict in kernel/extable.c
-CONFLICT (content): Merge conflict in kernel/module.c
-CONFLICT (content): Merge conflict in kernel/params.c
-Merging cifs/master
-Merging mmc/next
-Merging gfs2/master
-Merging input/next
-Merging bkl-removal/bkl-removal
-Merging ubifs/linux-next
-Merging lsm/for-next
-Merging block/for-next
-Merging embedded/master
-Merging firmware/master
-CONFLICT (content): Merge conflict in firmware/Makefile
-CONFLICT (content): Merge conflict in firmware/WHENCE
-CONFLICT (content): Merge conflict in sound/isa/Kconfig
-Merging pcmcia/master
-Merging battery/master
-Merging leds/for-mm
-Merging backlight/for-mm
-Merging kgdb/kgdb-next
-Merging slab/for-next
-Merging uclinux/for-next
-Merging md/for-next
-Merging mfd/for-next
-Merging hdlc/hdlc-next
-Merging drm/drm-next
-Merging voltage/for-next
-Merging security-testing/next
-Merging lblnet/master
-Merging quilt/ttydev
-CONFLICT (content): Merge conflict in fs/devpts/inode.c
-Merging agp/agp-next
-Merging generic-ipi/auto-generic-ipi-next
-Merging oprofile/auto-oprofile-next
-Merging fastboot/auto-fastboot-next
-Merging sparseirq/auto-sparseirq-next
-Merging iommu/auto-iommu-next
-Merging uwb/for-upstream
-Merging watchdog/master
-Merging bdev/master
-Merging dwmw2-iommu/master
-Merging cputime/cputime
-Merging osd/linux-next
-Merging fatfs/master
-Merging fuse/for-next
-Merging jc_docs/docs-next
-Merging nommu/master
-Merging trivial/for-next
-Merging audit/for-next
-Merging squashfs/master
-Merging omap/for-next
-Merging quilt/aoe
-Merging kmemleak/kmemleak
-CONFLICT (content): Merge conflict in Documentation/kernel-parameters.txt
-CONFLICT (content): Merge conflict in MAINTAINERS
-CONFLICT (content): Merge conflict in init/main.c
-CONFLICT (content): Merge conflict in lib/Kconfig.debug
-CONFLICT (content): Merge conflict in mm/slob.c
-Merging suspend/linux-next
-Merging quilt/driver-core
-CONFLICT (content): Merge conflict in drivers/media/video/v4l2-device.c
-CONFLICT (content): Merge conflict in drivers/mtd/maps/pxa2xx-flash.c
-CONFLICT (content): Merge conflict in drivers/net/wimax/i2400m/usb-notif.c
-CONFLICT (content): Merge conflict in drivers/sh/maple/maple.c
-CONFLICT (content): Merge conflict in drivers/spi/spi_gpio.c
-CONFLICT (content): Merge conflict in drivers/spi/spi_mpc83xx.c
-CONFLICT (content): Merge conflict in fs/sysfs/bin.c
-CONFLICT (content): Merge conflict in lib/Kconfig.debug
-CONFLICT (content): Merge conflict in lib/Makefile
-Merging quilt/usb
-CONFLICT (rename/delete): Rename drivers/usb/misc/phidget.h->arch/arm/mach-=
-gemini/include/mach/vmalloc.h in HEAD and deleted in quilt/usb
-Merging quilt/staging
-CONFLICT (add/add): Merge conflict in drivers/staging/pohmelfs/path_entry.c
-CONFLICT (add/add): Merge conflict in drivers/staging/serqt_usb/serqt_usb.c
-CONFLICT (content): Merge conflict in firmware/WHENCE
-Merging scsi-post-merge/master
-Applying: nfs: build fix for client.c
-[master c133fb3] Revert "nfs41: use rpc prepare call state for session rese=
-t"
-
---Signature=_Mon__6_Apr_2009_16_45_55_+1000_GVPnOLLIiLf4z1jO
-Content-Type: application/pgp-signature
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.9 (GNU/Linux)
-
-iEYEARECAAYFAknZpSMACgkQjjKRsyhoI8xZiACfW1TczTa+pDdOxK6+aFgeejvb
-PcMAniA/LamLh9pel7N1xk0tVFfInzaq
-=n8ov
------END PGP SIGNATURE-----
-
---Signature=_Mon__6_Apr_2009_16_45_55_+1000_GVPnOLLIiLf4z1jO--
+>
+> I still have to look closely at your patchset anyway. I will do and give
+> a feedback.
+>
+> -Andrea
+>
