@@ -1,90 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758230AbZDFSx4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757168AbZDFS4Z@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758230AbZDFSx4 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 6 Apr 2009 14:53:56 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757857AbZDFSxe
+	id S1757168AbZDFS4Z (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 6 Apr 2009 14:56:25 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751814AbZDFS4Q
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 6 Apr 2009 14:53:34 -0400
-Received: from 2605ds1-ynoe.1.fullrate.dk ([90.184.12.24]:53768 "EHLO
-	shrek.krogh.cc" rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1757629AbZDFSxd (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 6 Apr 2009 14:53:33 -0400
-Message-ID: <49DA4FB2.9010406@krogh.cc>
-Date: Mon, 06 Apr 2009 20:53:38 +0200
-From: Jesper Krogh <jesper@krogh.cc>
-User-Agent: Thunderbird 2.0.0.21 (X11/20090318)
+	Mon, 6 Apr 2009 14:56:16 -0400
+Received: from mail-fx0-f158.google.com ([209.85.220.158]:51431 "EHLO
+	mail-fx0-f158.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751787AbZDFS4P (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 6 Apr 2009 14:56:15 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:sender:in-reply-to:references:date
+         :x-google-sender-auth:message-id:subject:from:to:cc:content-type
+         :content-transfer-encoding;
+        b=qZYDreX9pbaIUPJf0irlWo8vHpFicITlDX1p6UtM1QoO8IL6CdPcb1bHSzvNGW87Xp
+         /QsrapExCft28gJrO9O1XQZBCfpFHSVkyOjYP6oh5xntyP++TNb4CWQB/q6eYvbm8NVA
+         4BN1svajkPAfKOb5R2hy/+iIU5Oe0qLNsYvOs=
 MIME-Version: 1.0
-To: "Brandeburg, Jesse" <jesse.brandeburg@intel.com>
-CC: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       "netdev@vger.kernel.org" <netdev@vger.kernel.org>,
-       e1000-devel@lists.sourceforge.net
-Subject: Re: e1000: eth2: e1000_clean_tx_irq: Detected Tx Unit Hang
-References: <49D867BE.1010700@krogh.cc> <alpine.WNT.2.00.0904061029410.5196@jbrandeb-desk1.amr.corp.intel.com>
-In-Reply-To: <alpine.WNT.2.00.0904061029410.5196@jbrandeb-desk1.amr.corp.intel.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+In-Reply-To: <20090118182042.GD30821@kernel.dk>
+References: <20090118153221.GA20980@localhost.localdomain>
+	 <20090118182042.GD30821@kernel.dk>
+Date: Mon, 6 Apr 2009 21:56:12 +0300
+X-Google-Sender-Auth: 60b5a7087c029f94
+Message-ID: <84144f020904061156t13ad34d7tf579a3c150c16b40@mail.gmail.com>
+Subject: Re: [RFC][PATCH] splice: fix deadlock
+From: Pekka Enberg <penberg@cs.helsinki.fi>
+To: Jens Axboe <jens.axboe@oracle.com>
+Cc: Vegard Nossum <vegard.nossum@gmail.com>, Jens Axboe <axboe@suse.de>,
+       Eric Dumazet <dada1@cosmosbay.com>, Al Viro <viro@zeniv.linux.org.uk>,
+       linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Brandeburg, Jesse wrote:
-> Hi Jesper,
-> 
-> On Sun, 5 Apr 2009, Jesper Krogh wrote:
->> I have a 2.6.27.20 system in production, the e1000 drivers seem pretty 
->> "noisy" allthough everything appears to work excellent.
-> 
-> well, nice to hear its working, but wierd about the messages.
->  
->> dmesg here: http://krogh.cc/~jesper/dmesg-ko-2.6.27.20.txt
+Hi Jens,
+
+On Sun, Jan 18 2009, Vegard Nossum wrote:
+>> From 8e1d58b03b47d937bc5e53d902bac6e690709034 Mon Sep 17 00:00:00 2001
+>> From: Vegard Nossum <vegard.nossum@gmail.com>
+>> Date: Sun, 18 Jan 2009 16:07:29 +0100
+>> Subject: [PATCH] splice: fix deadlock
 >>
->> [476197.380486] e1000: eth3: e1000_clean_tx_irq: Detected Tx Unit Hang
->> [476197.380488]   Tx Queue             <0>
->> [476197.380489]   TDH                  <c>
->> [476197.380490]   TDT                  <63>
->> [476197.380490]   next_to_use          <63>
->> [476197.380491]   next_to_clean        <b>
->> [476197.380491] buffer_info[next_to_clean]
->> [476197.380492]   time_stamp           <10717579a>
->> [476197.380492]   next_to_watch        <f>
->> [476197.380493]   jiffies              <107175a3e>
->> [476197.380494]   next_to_watch.status <0>
+>> splice from a file or socket needs to lock both the file/socket and the
+>> pipe inodes. pipe_wait() unlocks only the pipe lock, regardless of the
+>> order in which they were taken.
 >>
->> The system has been up for 14 days but the dmesg-buffer has allready 
->> overflown with these.
-> 
-> I looked at your dmesg and it appears that there is never a 
-> NETDEV_WATCHDOG message, which would normally indicate that the driver 
-> isn't resetting itself out of the problem.  Does ethtool -S eth3 show any 
-> tx_timeout_count ?
-
-$ for i in 0 1 2 3; do sudo ethtool -S eth${i} | grep tx_timeout_count; done
-      tx_timeout_count: 6
-      tx_timeout_count: 3
-      tx_timeout_count: 14
-      tx_timeout_count: 23
-
-
->> Configuratoin is a 4 x 1GbitE bond all with Intel NICs
+>> This patch adds an additional (optional) argument to pipe_wait(); if
+>> specified, pipe_wait() will unlock and reacquire both inode locks.
 >>
->> 06:01.0 Ethernet controller: Intel Corporation 82546EB Gigabit Ethernet 
->> Controller (Copper) (rev 03)
->> 06:01.1 Ethernet controller: Intel Corporation 82546EB Gigabit Ethernet 
->> Controller (Copper) (rev 03)
->> 06:02.0 Ethernet controller: Intel Corporation 82546EB Gigabit Ethernet 
->> Controller (Copper) (rev 03)
->> 06:02.1 Ethernet controller: Intel Corporation 82546EB Gigabit Ethernet 
->> Controller (Copper) (rev 03)
-> 
-> are you doing testing with the remote end of this link?  I'm wondering if 
-> something changed in the kernel that is causing remote link down events to 
-> not stop the tx queue (our hardware just completely stops in its tracks 
-> w.r.t tx when link goes down)
+>> It fixes the lockup that occurs with the test-case below, but please
+>> review carefully. Consider this patch a proposal rather than a fix.
 
-They are connected directly to a switch stack. I'd be surprised if there 
-is anything in there that does magic. I have around 100 other cables 
-into that one.
+On Sun, Jan 18, 2009 at 9:20 PM, Jens Axboe <jens.axboe@oracle.com> wrote:
+> Thanks for the bug report and test case, it is indeed buggy! Good
+> spotting. I'll review your patch thoroughly and test it, and then
+> integrate your patch.
 
--- 
-Jesper
+What's the status of this patch? I don't think it ever got merged to mainline.
 
+                          Pekka
