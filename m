@@ -1,64 +1,111 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755002AbZDFHOw@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754999AbZDFHVh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755002AbZDFHOw (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 6 Apr 2009 03:14:52 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753059AbZDFHOm
+	id S1754999AbZDFHVh (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 6 Apr 2009 03:21:37 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753820AbZDFHV1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 6 Apr 2009 03:14:42 -0400
-Received: from mail-bw0-f169.google.com ([209.85.218.169]:37752 "EHLO
-	mail-bw0-f169.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752539AbZDFHOl (ORCPT
+	Mon, 6 Apr 2009 03:21:27 -0400
+Received: from mtagate8.de.ibm.com ([195.212.29.157]:48206 "EHLO
+	mtagate8.de.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753434AbZDFHV0 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 6 Apr 2009 03:14:41 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=googlemail.com; s=gamma;
-        h=from:to:subject:date:user-agent:cc:references:in-reply-to
-         :mime-version:content-type:content-transfer-encoding
-         :content-disposition:message-id;
-        b=Bcl1PmtCiXPCn5jJAgacNRHp3rFJ3fE+dpr7rFSJC1N9CT3kBx2/+h8m9S+izDSOiq
-         9TsybFuXsidVNObND8DDEICvV3Halj9Qs/zL+KI1GyzP2okg0C1tzwNl0Z3bp2oryv+K
-         wfZr5A1P7w4oGJbgV4vPJU0ToiMZWCXySL3sw=
-From: Helmut Schaa <helmut.schaa@googlemail.com>
-To: Kalle Valo <kalle.valo@iki.fi>
-Subject: Re: ath9k becon loss messages
-Date: Mon, 6 Apr 2009 09:14:31 +0200
-User-Agent: KMail/1.9.10
-Cc: Jaswinder Singh Rajput <jaswinder@kernel.org>,
-       Michael Buesch <mb@bu3sch.de>, Sujith <Sujith.Manoharan@atheros.com>,
-       wireless <linux-wireless@vger.kernel.org>,
-       David Miller <davem@davemloft.net>, LKML <linux-kernel@vger.kernel.org>
-References: <1238923439.4120.9.camel@localhost.localdomain> <1238925174.4120.12.camel@localhost.localdomain> <87bprbif2f.fsf@litku.valot.fi>
-In-Reply-To: <87bprbif2f.fsf@litku.valot.fi>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
+	Mon, 6 Apr 2009 03:21:26 -0400
+Date: Mon, 6 Apr 2009 09:21:11 +0200
+From: Martin Schwidefsky <schwidefsky@de.ibm.com>
+To: Jeremy Fitzhardinge <jeremy@goop.org>
+Cc: Rik van Riel <riel@redhat.com>, akpm@osdl.org,
+       Nick Piggin <nickpiggin@yahoo.com.au>, frankeh@watson.ibm.com,
+       virtualization@lists.osdl.org, linux-kernel@vger.kernel.org,
+       virtualization@lists.linux-foundation.org, linux-mm@kvack.org,
+       hugh@veritas.com, Xen-devel <xen-devel@lists.xensource.com>
+Subject: Re: [patch 0/6] Guest page hinting version 7.
+Message-ID: <20090406092111.3b432edd@skybase>
+In-Reply-To: <49D6532C.6010804@goop.org>
+References: <20090327150905.819861420@de.ibm.com>
+	<200903281705.29798.rusty@rustcorp.com.au>
+	<20090329162336.7c0700e9@skybase>
+	<200904022232.02185.nickpiggin@yahoo.com.au>
+	<20090402175249.3c4a6d59@skybase>
+	<49D50CB7.2050705@redhat.com>
+	<49D518E9.1090001@goop.org>
+	<49D51CA9.6090601@redhat.com>
+	<49D5215D.6050503@goop.org>
+	<20090403104913.29c62082@skybase>
+	<49D6532C.6010804@goop.org>
+Organization: IBM Corporation
+X-Mailer: Claws Mail 3.7.1 (GTK+ 2.14.7; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200904060914.32245.helmut.schaa@gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Am Sonntag, 5. April 2009 schrieb Kalle Valo:
-> Jaswinder Singh Rajput <jaswinder@kernel.org> writes:
+On Fri, 03 Apr 2009 11:19:24 -0700
+Jeremy Fitzhardinge <jeremy@goop.org> wrote:
+
+> Martin Schwidefsky wrote:
+> > This is the basic idea of guest page hinting. Let the host memory
+> > manager make it decision based on the data it has. That includes page
+> > age determined with a global LRU list, page age determined with a
+> > per-guest LRU list, i/o rates of the guests, all kind of policy which
+> > guest should have how much memory.
 > 
-> >> And besides that, I think one can easily remotely trigger this
-> >> message and flood the logs. So it should probably _also_ be
-> >> ratelimited.
-> >
-> > normally it prints after 120 seconds:
-> >
-> > [ 1078.848434] wlan0: beacon loss from AP 00:11:95:9e:df:f6 - sending probe request
-> > [ 1198.822913] wlan0: beacon loss from AP 00:11:95:9e:df:f6 - sending probe request
-> > [ 1318.824931] wlan0: beacon loss from AP 00:11:95:9e:df:f6 - sending probe request
+> Do you look at fault rates?  Refault rates?
 
-> Then there is something happening in ath9k or your AP which prevents
-> ath9k from receiving beacons. Try pinging your AP with 100 ms
-> interval. Do you see anything happening in 120 s intervals?
+That is hidden in the memory management of z/VM. I know some details
+how the z/VM page manager works but in the end I don't care as the
+guest operating system.
 
-NetworkManager typically scans every 120 seconds and I can also trigger
-the messages by a manual scan with iwlist. I did not dig any further but
-the messages seem to appear right at the end of the scan. Tried with iwlagn
-and both sw_scan and hw_scan.
+> >  The page hinting comes into play
+> > AFTER the decision has been made which page to evict. Only then the host
+> > should look at the volatile vs. stable page state and decide what has
+> > to be done with the page. If it is volatile the host can throw the page
+> > away because the guest can recreate it with LESS effort. That is the
+> > optimization.
+> >   
+> 
+> Yes, and its good from that perspective.   Do you really implement it 
+> purely that way, or do you bias the LRU to push volatile and free pages 
+> down the end of the LRU list in preference to pages which must be 
+> preserved?  If you have a small bias then you can prefer to evict easily 
+> evictable pages compared to their near-equivalents which require IO.
 
-Helmut
+We though about a bias to prefer volatile pages but in the end decided
+against it. We do prefer free pages, if the page manager finds a unused
+page it will reuse it immediately.
+
+> > But with page hinting you don't have to even ask. Just take the pages
+> > if you need them. The guest already told you that you can have them by
+> > setting the unused state.
+> >   
+> 
+> Yes.  But it still depends on the guest.  A very helpful guest could 
+> deliberately preswap pages so that it can mark them as volatile, whereas 
+> a less helpful one may keep them persistent and defer preswapping them 
+> until there's a good reason to do so.  Host swapping and page hinting 
+> won't put any apparent memory pressure on the guest, so it has no reason 
+> to start preswapping even if the overall system is under pressure.  
+> Ballooning will expose each guest to its share of the overall system 
+> memory pressure, so they can respond appropriately (one hopes).
+
+Why should the guest want to do preswapping? It is as expensive for
+the host to swap a page and get it back as it is for the guest (= one
+write + one read). It is a waste of cpu time to call into the guest. You
+need something we call PFAULT though: if a guest process hits a page
+that is missing in the host page table you don't want to stop the
+virtual cpu until the page is back. You notify the guest that the host
+page is missing. The process that caused the fault is put to sleep
+until the host retrieved the page again. You will find the pfault code
+for s390 in arch/s390/mm/fault.c
+
+So to me preswap doesn't make sense. The only thing you can gain by
+putting memory pressure on the guest is to free some of the memory that
+is used by the kernel for dentries, inodes, etc. 
+
+-- 
+blue skies,
+   Martin.
+
+"Reality continues to ruin my life." - Calvin.
+
