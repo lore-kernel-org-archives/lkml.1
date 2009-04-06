@@ -1,66 +1,461 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754403AbZDFG0I@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754145AbZDFGoQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754403AbZDFG0I (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 6 Apr 2009 02:26:08 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752415AbZDFGZx
+	id S1754145AbZDFGoQ (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 6 Apr 2009 02:44:16 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752670AbZDFGn5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 6 Apr 2009 02:25:53 -0400
-Received: from brick.kernel.dk ([93.163.65.50]:52730 "EHLO kernel.dk"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752272AbZDFGZw (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 6 Apr 2009 02:25:52 -0400
-Date: Mon, 6 Apr 2009 08:25:50 +0200
-From: Jens Axboe <jens.axboe@oracle.com>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: Arjan van de Ven <arjan@infradead.org>, Theodore Tso <tytso@mit.edu>,
-       Linux Kernel Developers List <linux-kernel@vger.kernel.org>,
-       Ext4 Developers List <linux-ext4@vger.kernel.org>
-Subject: Re: [GIT PULL] Ext3 latency fixes
-Message-ID: <20090406062549.GO5178@kernel.dk>
-References: <alpine.LFD.2.00.0904040854470.3915@localhost.localdomain> <20090404173412.GF5178@kernel.dk> <alpine.LFD.2.00.0904041039230.3915@localhost.localdomain> <20090404180108.GH5178@kernel.dk> <20090404232222.GA7480@mit.edu> <20090404163349.20df1208@infradead.org> <20090405001005.GA7553@mit.edu> <alpine.LFD.2.00.0904050927580.4023@localhost.localdomain> <20090405115629.521057fc@infradead.org> <alpine.LFD.2.00.0904051227120.4023@localhost.localdomain>
+	Mon, 6 Apr 2009 02:43:57 -0400
+Received: from mail-bw0-f169.google.com ([209.85.218.169]:59837 "EHLO
+	mail-bw0-f169.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752507AbZDFGn4 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 6 Apr 2009 02:43:56 -0400
+Message-ID: <49D9A4A5.5070202@petalogix.com>
+Date: Mon, 06 Apr 2009 08:43:49 +0200
+From: Michal Simek <michal.simek@petalogix.com>
+Reply-To: michal.simek@petalogix.com
+User-Agent: Thunderbird 2.0.0.18 (X11/20081120)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <alpine.LFD.2.00.0904051227120.4023@localhost.localdomain>
+To: monstr@monstr.eu
+CC: torvalds@linux-foundation.org,
+       Linux Kernel list <linux-kernel@vger.kernel.org>,
+       lkml <linux-arch@vger.kernel.org>, microblaze-uclinux@itee.uq.edu.au,
+       Andrew Morton <akpm@linux-foundation.org>,
+       John Williams <john.williams@petalogix.com>,
+       John Linn <John.Linn@xilinx.com>,
+       Stephen Neuendorffer <stephenn@xilinx.com>,
+       Thomas Gleixner <tglx@linutronix.de>,
+       Randy Dunlap <randy.dunlap@oracle.com>, Arnd Bergmann <arnd@arndb.de>,
+       Ingo Molnar <mingo@elte.hu>, Peter Korsgaard <jacmet@sunsite.dk>,
+       Alan Cox <alan@lxorguk.ukuu.org.uk>
+Subject: Re: [GIT PULL] Microblaze initial pack v2
+References: <49CE0345.1000604@monstr.eu>
+In-Reply-To: <49CE0345.1000604@monstr.eu>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, Apr 05 2009, Linus Torvalds wrote:
-> 
-> 
-> On Sun, 5 Apr 2009, Arjan van de Ven wrote:
-> >
-> > > See get_request():
-> > 
-> > our default number of requests is so low that we very regularly hit the
-> > limit. In addition to setting kjournald to higher priority, I tend to
-> > set the number of requests to 4096 or so to improve interactive
-> > performance on my own systems. That way at least the elevator has a
-> > chance to see the requests ;-)
-> 
-> That's insane. Long queues make the problem harder to hit, yes. But it 
-> also tends to make the problem them a million times worse when you _do_ 
-> hit it.
+Hi Linus,
 
-Unfortunately it is insane, because the vm will barf big time on that.
-Perhaps when we do the "throttle at device IO rate" for dirtying of data
-we can be more relaxed, but increasing nr_requests too much will just
-cause the vm to go nuts.
+Could you please pull Microblaze cpu to your repo?
+I checked that Microblaze is still not there.
 
-> I would suggest looking instead at trying to have separate allocation 
-> pools for bulk and "sync" IO. Instead of having just one rq->rq_pool, we 
-> could easily have a rq->rq_bulk_pool and rq->rq_sync_pool.
-> 
-> We might even _save_ memory by having two pools simply because that may 
-> make it much less important to have a big pool. Most subsystems don't 
-> really need that many requests in flight anyway, and the advantage to the 
-> elevator of huge pools is rather dubious.
+Is it anything wrong with my pack?
 
-The pools are not big, the number is just a maximum allocation number.
-In reality we only store 4 requests in the mempool, and we should
-probably just dump that down to 1.
+Thanks,
+Michal
+
+> Hi Linus,
+>
+> This pack v2 contains initial pack for Xilinx Microblaze CPU.
+>
+> Please pull
+>     git://git.monstr.eu/linux-2.6-microblaze.git for-linus
+>
+>
+> Changes in v2:
+> Ingo reviewed it and I fixed one license issue + I added my Signed-off-by line.
+>
+>
+> Thanks,
+> Michal
+>
+> -----
+>
+> The following changes since commit 8e0ee43bc2c3e19db56a4adaa9a9b04ce885cd84:
+>   Linus Torvalds (1):
+>         Linux 2.6.29
+>
+> are available in the git repository at:
+>
+>   git://git.monstr.eu/linux-2.6-microblaze.git for-linus
+>
+> Michal Simek (60):
+>       microblaze_v8: Cpuinfo handling
+>       microblaze_v8: Open firmware files
+>       microblaze_v8: Platform bus registration
+>       microblaze_v8: exception handling
+>       microblaze_v8: Signal support
+>       microblaze_v8: Selfmodified code
+>       microblaze_v8: cache support
+>       microblaze_v8: Generic dts file for platforms
+>       microblaze_v8: kernel modules support
+>       microblaze_v8: lmb include file
+>       microblaze_v8: PVR support, cpuinfo support
+>       microblaze_v8: defconfig file
+>       microblaze_v8: assembler files head.S, entry-nommu.S, syscall_table.S
+>       microblaze_v8: vmlinux.lds.S - linker script
+>       microblaze_v8: supported function for memory - kernel/lib
+>       microblaze_v8: checksum support
+>       microblaze_v8: early_printk support
+>       microblaze_v8: uaccess files
+>       microblaze_v8: heartbeat file
+>       microblaze_v8: setup.c, setup.h - system setting
+>       microblaze_v8: asm-offsets.c
+>       microblaze_v8: process and init task function
+>       microblaze_v8: delay.h, timex.h
+>       microblaze_v8: ptrace support
+>       microblaze_v8: IPC support
+>       microblaze_v8: traps support
+>       microblaze_v8: memory inicialization, MMU, TLB
+>       microblaze_v8: page.h, segment.h, unaligned.h
+>       microblaze_v8: includes SHM*, msgbuf
+>       microblaze_v8: bug headers files
+>       microblaze_v8: definitions of types
+>       microblaze_v8: ioctl support
+>       microblaze_v8: io.h IO operations
+>       microblaze_v8: headers for executables format FLAT, ELF
+>       microblaze_v8: dma support
+>       microblaze_v8: headers for irq
+>       microblaze_v8: atomic.h bitops.h swab.h byteorder.h
+>       microblaze_v8: headers pgalloc.h pgtable.h
+>       microblaze_v8: system.h processor.h
+>       microblaze_v8: clinkage.h linkage.h sections.h kmap_types.h
+>       microblaze_v8: stats headers
+>       microblaze_v8: termbits.h termios.h
+>       microblaze_v8: sigcontext.h siginfo.h
+>       microblaze_v8: headers simple files - empty or redirect to asm-generic
+>       microblaze_v8: gpio.h, serial.h
+>       microblaze_v8: namei.h
+>       microblaze_v8: headers files entry.h current.h mman.h registers.h sembuf.h
+>       microblaze_v8: device.h param.h topology.h
+>       microblaze_v8: pool.h socket.h
+>       microblaze_v8: fcntl.h sockios.h ucontext.h
+>       microblaze_v8: unistd.h
+>       microblaze_v8: string.h thread_info.h
+>       microblaze_v8: Kbuild file
+>       microblaze_v8: pci headers
+>       microblaze_v8: syscalls.h
+>       microblaze_v8: Interrupt handling and timer support
+>       microblaze_v8: Kconfig patches
+>       microblaze_v8: Makefiles for Microblaze cpu
+>       microblaze_v8: Uartlite for Microblaze
+>       microblaze_v8: Add MAINTAINERS fragment
+>
+>  MAINTAINERS                                     |    8 +
+>  arch/microblaze/Kconfig                         |  141 +++
+>  arch/microblaze/Kconfig.debug                   |   26 +
+>  arch/microblaze/Makefile                        |   69 ++
+>  arch/microblaze/boot/Makefile                   |   17 +
+>  arch/microblaze/configs/nommu_defconfig         |  804 ++++++++++++++++
+>  arch/microblaze/include/asm/Kbuild              |   26 +
+>  arch/microblaze/include/asm/atomic.h            |  123 +++
+>  arch/microblaze/include/asm/bitops.h            |   27 +
+>  arch/microblaze/include/asm/bug.h               |   15 +
+>  arch/microblaze/include/asm/bugs.h              |   17 +
+>  arch/microblaze/include/asm/byteorder.h         |    6 +
+>  arch/microblaze/include/asm/cache.h             |   45 +
+>  arch/microblaze/include/asm/cacheflush.h        |   85 ++
+>  arch/microblaze/include/asm/checksum.h          |   98 ++
+>  arch/microblaze/include/asm/clinkage.h          |    1 +
+>  arch/microblaze/include/asm/cpuinfo.h           |  102 ++
+>  arch/microblaze/include/asm/cputime.h           |    1 +
+>  arch/microblaze/include/asm/current.h           |   21 +
+>  arch/microblaze/include/asm/delay.h             |   72 ++
+>  arch/microblaze/include/asm/device.h            |   21 +
+>  arch/microblaze/include/asm/div64.h             |    1 +
+>  arch/microblaze/include/asm/dma-mapping.h       |  129 +++
+>  arch/microblaze/include/asm/dma.h               |   16 +
+>  arch/microblaze/include/asm/elf.h               |   30 +
+>  arch/microblaze/include/asm/emergency-restart.h |    1 +
+>  arch/microblaze/include/asm/entry.h             |   35 +
+>  arch/microblaze/include/asm/errno.h             |    1 +
+>  arch/microblaze/include/asm/exceptions.h        |   96 ++
+>  arch/microblaze/include/asm/fcntl.h             |    1 +
+>  arch/microblaze/include/asm/flat.h              |   90 ++
+>  arch/microblaze/include/asm/futex.h             |    1 +
+>  arch/microblaze/include/asm/gpio.h              |   56 ++
+>  arch/microblaze/include/asm/hardirq.h           |   29 +
+>  arch/microblaze/include/asm/io.h                |  209 ++++
+>  arch/microblaze/include/asm/ioctl.h             |    1 +
+>  arch/microblaze/include/asm/ioctls.h            |   91 ++
+>  arch/microblaze/include/asm/ipc.h               |    1 +
+>  arch/microblaze/include/asm/ipcbuf.h            |   36 +
+>  arch/microblaze/include/asm/irq.h               |   47 +
+>  arch/microblaze/include/asm/irq_regs.h          |    1 +
+>  arch/microblaze/include/asm/irqflags.h          |  123 +++
+>  arch/microblaze/include/asm/kdebug.h            |    1 +
+>  arch/microblaze/include/asm/kmap_types.h        |   29 +
+>  arch/microblaze/include/asm/linkage.h           |   15 +
+>  arch/microblaze/include/asm/lmb.h               |   17 +
+>  arch/microblaze/include/asm/local.h             |    1 +
+>  arch/microblaze/include/asm/mman.h              |   25 +
+>  arch/microblaze/include/asm/mmu.h               |   19 +
+>  arch/microblaze/include/asm/mmu_context.h       |   21 +
+>  arch/microblaze/include/asm/module.h            |   37 +
+>  arch/microblaze/include/asm/msgbuf.h            |   31 +
+>  arch/microblaze/include/asm/mutex.h             |    1 +
+>  arch/microblaze/include/asm/namei.h             |   22 +
+>  arch/microblaze/include/asm/of_device.h         |   45 +
+>  arch/microblaze/include/asm/of_platform.h       |   64 ++
+>  arch/microblaze/include/asm/page.h              |  140 +++
+>  arch/microblaze/include/asm/param.h             |   30 +
+>  arch/microblaze/include/asm/pci-bridge.h        |    1 +
+>  arch/microblaze/include/asm/pci.h               |    1 +
+>  arch/microblaze/include/asm/percpu.h            |    1 +
+>  arch/microblaze/include/asm/pgalloc.h           |   14 +
+>  arch/microblaze/include/asm/pgtable.h           |   54 ++
+>  arch/microblaze/include/asm/poll.h              |    1 +
+>  arch/microblaze/include/asm/posix_types.h       |   73 ++
+>  arch/microblaze/include/asm/processor.h         |   93 ++
+>  arch/microblaze/include/asm/prom.h              |  313 ++++++
+>  arch/microblaze/include/asm/ptrace.h            |   68 ++
+>  arch/microblaze/include/asm/pvr.h               |  209 ++++
+>  arch/microblaze/include/asm/registers.h         |   33 +
+>  arch/microblaze/include/asm/resource.h          |    1 +
+>  arch/microblaze/include/asm/scatterlist.h       |   28 +
+>  arch/microblaze/include/asm/sections.h          |   25 +
+>  arch/microblaze/include/asm/segment.h           |   43 +
+>  arch/microblaze/include/asm/selfmod.h           |   24 +
+>  arch/microblaze/include/asm/sembuf.h            |   34 +
+>  arch/microblaze/include/asm/serial.h            |   14 +
+>  arch/microblaze/include/asm/setup.h             |   44 +
+>  arch/microblaze/include/asm/shmbuf.h            |   42 +
+>  arch/microblaze/include/asm/shmparam.h          |    6 +
+>  arch/microblaze/include/asm/sigcontext.h        |   20 +
+>  arch/microblaze/include/asm/siginfo.h           |   15 +
+>  arch/microblaze/include/asm/signal.h            |  165 ++++
+>  arch/microblaze/include/asm/socket.h            |   66 ++
+>  arch/microblaze/include/asm/sockios.h           |   23 +
+>  arch/microblaze/include/asm/stat.h              |   73 ++
+>  arch/microblaze/include/asm/statfs.h            |    1 +
+>  arch/microblaze/include/asm/string.h            |   24 +
+>  arch/microblaze/include/asm/swab.h              |    8 +
+>  arch/microblaze/include/asm/syscalls.h          |   45 +
+>  arch/microblaze/include/asm/system.h            |   91 ++
+>  arch/microblaze/include/asm/termbits.h          |  203 ++++
+>  arch/microblaze/include/asm/termios.h           |   88 ++
+>  arch/microblaze/include/asm/thread_info.h       |  159 ++++
+>  arch/microblaze/include/asm/timex.h             |   18 +
+>  arch/microblaze/include/asm/tlb.h               |   16 +
+>  arch/microblaze/include/asm/tlbflush.h          |   20 +
+>  arch/microblaze/include/asm/topology.h          |   11 +
+>  arch/microblaze/include/asm/types.h             |   38 +
+>  arch/microblaze/include/asm/uaccess.h           |  134 +++
+>  arch/microblaze/include/asm/ucontext.h          |   22 +
+>  arch/microblaze/include/asm/unaligned.h         |   22 +
+>  arch/microblaze/include/asm/unistd.h            |  421 +++++++++
+>  arch/microblaze/include/asm/xor.h               |    1 +
+>  arch/microblaze/kernel/Makefile                 |   19 +
+>  arch/microblaze/kernel/asm-offsets.c            |  115 +++
+>  arch/microblaze/kernel/cpu/Makefile             |    8 +
+>  arch/microblaze/kernel/cpu/cache.c              |  258 +++++
+>  arch/microblaze/kernel/cpu/cpuinfo-pvr-full.c   |  101 ++
+>  arch/microblaze/kernel/cpu/cpuinfo-static.c     |  144 +++
+>  arch/microblaze/kernel/cpu/cpuinfo.c            |   86 ++
+>  arch/microblaze/kernel/cpu/mb.c                 |  148 +++
+>  arch/microblaze/kernel/cpu/pvr.c                |   81 ++
+>  arch/microblaze/kernel/early_printk.c           |  107 +++
+>  arch/microblaze/kernel/entry-nommu.S            |  596 ++++++++++++
+>  arch/microblaze/kernel/exceptions.c             |  124 +++
+>  arch/microblaze/kernel/head.S                   |   56 ++
+>  arch/microblaze/kernel/heartbeat.c              |   67 ++
+>  arch/microblaze/kernel/hw_exception_handler.S   |  458 +++++++++
+>  arch/microblaze/kernel/init_task.c              |   29 +
+>  arch/microblaze/kernel/intc.c                   |  172 ++++
+>  arch/microblaze/kernel/irq.c                    |  104 ++
+>  arch/microblaze/kernel/microblaze_ksyms.c       |   47 +
+>  arch/microblaze/kernel/module.c                 |  151 +++
+>  arch/microblaze/kernel/of_device.c              |  115 +++
+>  arch/microblaze/kernel/of_platform.c            |  201 ++++
+>  arch/microblaze/kernel/process.c                |  187 ++++
+>  arch/microblaze/kernel/prom.c                   | 1147 +++++++++++++++++++++++
+>  arch/microblaze/kernel/prom_parse.c             | 1025 ++++++++++++++++++++
+>  arch/microblaze/kernel/ptrace.c                 |  182 ++++
+>  arch/microblaze/kernel/selfmod.c                |   81 ++
+>  arch/microblaze/kernel/setup.c                  |  199 ++++
+>  arch/microblaze/kernel/signal.c                 |  538 +++++++++++
+>  arch/microblaze/kernel/sys_microblaze.c         |  227 +++++
+>  arch/microblaze/kernel/syscall_table.S          |  365 +++++++
+>  arch/microblaze/kernel/timer.c                  |  262 ++++++
+>  arch/microblaze/kernel/traps.c                  |  107 +++
+>  arch/microblaze/kernel/vmlinux.lds.S            |  163 ++++
+>  arch/microblaze/lib/Makefile                    |   13 +
+>  arch/microblaze/lib/checksum.c                  |  163 ++++
+>  arch/microblaze/lib/fastcopy.S                  |  662 +++++++++++++
+>  arch/microblaze/lib/memcpy.c                    |  161 ++++
+>  arch/microblaze/lib/memmove.c                   |  175 ++++
+>  arch/microblaze/lib/memset.c                    |   82 ++
+>  arch/microblaze/lib/uaccess.c                   |   41 +
+>  arch/microblaze/mm/Makefile                     |    5 +
+>  arch/microblaze/mm/init.c                       |  201 ++++
+>  arch/microblaze/platform/Kconfig.platform       |   85 ++
+>  arch/microblaze/platform/Makefile               |    6 +
+>  arch/microblaze/platform/generic/Kconfig.auto   |   62 ++
+>  arch/microblaze/platform/generic/Makefile       |    3 +
+>  arch/microblaze/platform/generic/system.dts     |  332 +++++++
+>  arch/microblaze/platform/platform.c             |   31 +
+>  drivers/serial/Kconfig                          |    4 +-
+>  154 files changed, 15718 insertions(+), 2 deletions(-)
+>  create mode 100644 arch/microblaze/Kconfig
+>  create mode 100644 arch/microblaze/Kconfig.debug
+>  create mode 100644 arch/microblaze/Makefile
+>  create mode 100644 arch/microblaze/boot/Makefile
+>  create mode 100644 arch/microblaze/configs/nommu_defconfig
+>  create mode 100644 arch/microblaze/include/asm/Kbuild
+>  create mode 100644 arch/microblaze/include/asm/atomic.h
+>  create mode 100644 arch/microblaze/include/asm/auxvec.h
+>  create mode 100644 arch/microblaze/include/asm/bitops.h
+>  create mode 100644 arch/microblaze/include/asm/bug.h
+>  create mode 100644 arch/microblaze/include/asm/bugs.h
+>  create mode 100644 arch/microblaze/include/asm/byteorder.h
+>  create mode 100644 arch/microblaze/include/asm/cache.h
+>  create mode 100644 arch/microblaze/include/asm/cacheflush.h
+>  create mode 100644 arch/microblaze/include/asm/checksum.h
+>  create mode 100644 arch/microblaze/include/asm/clinkage.h
+>  create mode 100644 arch/microblaze/include/asm/cpuinfo.h
+>  create mode 100644 arch/microblaze/include/asm/cputable.h
+>  create mode 100644 arch/microblaze/include/asm/cputime.h
+>  create mode 100644 arch/microblaze/include/asm/current.h
+>  create mode 100644 arch/microblaze/include/asm/delay.h
+>  create mode 100644 arch/microblaze/include/asm/device.h
+>  create mode 100644 arch/microblaze/include/asm/div64.h
+>  create mode 100644 arch/microblaze/include/asm/dma-mapping.h
+>  create mode 100644 arch/microblaze/include/asm/dma.h
+>  create mode 100644 arch/microblaze/include/asm/elf.h
+>  create mode 100644 arch/microblaze/include/asm/emergency-restart.h
+>  create mode 100644 arch/microblaze/include/asm/entry.h
+>  create mode 100644 arch/microblaze/include/asm/errno.h
+>  create mode 100644 arch/microblaze/include/asm/exceptions.h
+>  create mode 100644 arch/microblaze/include/asm/fcntl.h
+>  create mode 100644 arch/microblaze/include/asm/flat.h
+>  create mode 100644 arch/microblaze/include/asm/futex.h
+>  create mode 100644 arch/microblaze/include/asm/gpio.h
+>  create mode 100644 arch/microblaze/include/asm/hardirq.h
+>  create mode 100644 arch/microblaze/include/asm/hw_irq.h
+>  create mode 100644 arch/microblaze/include/asm/io.h
+>  create mode 100644 arch/microblaze/include/asm/ioctl.h
+>  create mode 100644 arch/microblaze/include/asm/ioctls.h
+>  create mode 100644 arch/microblaze/include/asm/ipc.h
+>  create mode 100644 arch/microblaze/include/asm/ipcbuf.h
+>  create mode 100644 arch/microblaze/include/asm/irq.h
+>  create mode 100644 arch/microblaze/include/asm/irq_regs.h
+>  create mode 100644 arch/microblaze/include/asm/irqflags.h
+>  create mode 100644 arch/microblaze/include/asm/kdebug.h
+>  create mode 100644 arch/microblaze/include/asm/kmap_types.h
+>  create mode 100644 arch/microblaze/include/asm/linkage.h
+>  create mode 100644 arch/microblaze/include/asm/lmb.h
+>  create mode 100644 arch/microblaze/include/asm/local.h
+>  create mode 100644 arch/microblaze/include/asm/mman.h
+>  create mode 100644 arch/microblaze/include/asm/mmu.h
+>  create mode 100644 arch/microblaze/include/asm/mmu_context.h
+>  create mode 100644 arch/microblaze/include/asm/module.h
+>  create mode 100644 arch/microblaze/include/asm/msgbuf.h
+>  create mode 100644 arch/microblaze/include/asm/mutex.h
+>  create mode 100644 arch/microblaze/include/asm/namei.h
+>  create mode 100644 arch/microblaze/include/asm/of_device.h
+>  create mode 100644 arch/microblaze/include/asm/of_platform.h
+>  create mode 100644 arch/microblaze/include/asm/page.h
+>  create mode 100644 arch/microblaze/include/asm/param.h
+>  create mode 100644 arch/microblaze/include/asm/pci-bridge.h
+>  create mode 100644 arch/microblaze/include/asm/pci.h
+>  create mode 100644 arch/microblaze/include/asm/percpu.h
+>  create mode 100644 arch/microblaze/include/asm/pgalloc.h
+>  create mode 100644 arch/microblaze/include/asm/pgtable.h
+>  create mode 100644 arch/microblaze/include/asm/poll.h
+>  create mode 100644 arch/microblaze/include/asm/posix_types.h
+>  create mode 100644 arch/microblaze/include/asm/processor.h
+>  create mode 100644 arch/microblaze/include/asm/prom.h
+>  create mode 100644 arch/microblaze/include/asm/ptrace.h
+>  create mode 100644 arch/microblaze/include/asm/pvr.h
+>  create mode 100644 arch/microblaze/include/asm/registers.h
+>  create mode 100644 arch/microblaze/include/asm/resource.h
+>  create mode 100644 arch/microblaze/include/asm/scatterlist.h
+>  create mode 100644 arch/microblaze/include/asm/sections.h
+>  create mode 100644 arch/microblaze/include/asm/segment.h
+>  create mode 100644 arch/microblaze/include/asm/selfmod.h
+>  create mode 100644 arch/microblaze/include/asm/sembuf.h
+>  create mode 100644 arch/microblaze/include/asm/serial.h
+>  create mode 100644 arch/microblaze/include/asm/setup.h
+>  create mode 100644 arch/microblaze/include/asm/shmbuf.h
+>  create mode 100644 arch/microblaze/include/asm/shmparam.h
+>  create mode 100644 arch/microblaze/include/asm/sigcontext.h
+>  create mode 100644 arch/microblaze/include/asm/siginfo.h
+>  create mode 100644 arch/microblaze/include/asm/signal.h
+>  create mode 100644 arch/microblaze/include/asm/socket.h
+>  create mode 100644 arch/microblaze/include/asm/sockios.h
+>  create mode 100644 arch/microblaze/include/asm/stat.h
+>  create mode 100644 arch/microblaze/include/asm/statfs.h
+>  create mode 100644 arch/microblaze/include/asm/string.h
+>  create mode 100644 arch/microblaze/include/asm/swab.h
+>  create mode 100644 arch/microblaze/include/asm/syscalls.h
+>  create mode 100644 arch/microblaze/include/asm/system.h
+>  create mode 100644 arch/microblaze/include/asm/termbits.h
+>  create mode 100644 arch/microblaze/include/asm/termios.h
+>  create mode 100644 arch/microblaze/include/asm/thread_info.h
+>  create mode 100644 arch/microblaze/include/asm/timex.h
+>  create mode 100644 arch/microblaze/include/asm/tlb.h
+>  create mode 100644 arch/microblaze/include/asm/tlbflush.h
+>  create mode 100644 arch/microblaze/include/asm/topology.h
+>  create mode 100644 arch/microblaze/include/asm/types.h
+>  create mode 100644 arch/microblaze/include/asm/uaccess.h
+>  create mode 100644 arch/microblaze/include/asm/ucontext.h
+>  create mode 100644 arch/microblaze/include/asm/unaligned.h
+>  create mode 100644 arch/microblaze/include/asm/unistd.h
+>  create mode 100644 arch/microblaze/include/asm/user.h
+>  create mode 100644 arch/microblaze/include/asm/vga.h
+>  create mode 100644 arch/microblaze/include/asm/xor.h
+>  create mode 100644 arch/microblaze/kernel/Makefile
+>  create mode 100644 arch/microblaze/kernel/asm-offsets.c
+>  create mode 100644 arch/microblaze/kernel/cpu/Makefile
+>  create mode 100644 arch/microblaze/kernel/cpu/cache.c
+>  create mode 100644 arch/microblaze/kernel/cpu/cpuinfo-pvr-full.c
+>  create mode 100644 arch/microblaze/kernel/cpu/cpuinfo-static.c
+>  create mode 100644 arch/microblaze/kernel/cpu/cpuinfo.c
+>  create mode 100644 arch/microblaze/kernel/cpu/mb.c
+>  create mode 100644 arch/microblaze/kernel/cpu/pvr.c
+>  create mode 100644 arch/microblaze/kernel/early_printk.c
+>  create mode 100644 arch/microblaze/kernel/entry-nommu.S
+>  create mode 100644 arch/microblaze/kernel/exceptions.c
+>  create mode 100644 arch/microblaze/kernel/head.S
+>  create mode 100644 arch/microblaze/kernel/heartbeat.c
+>  create mode 100644 arch/microblaze/kernel/hw_exception_handler.S
+>  create mode 100644 arch/microblaze/kernel/init_task.c
+>  create mode 100644 arch/microblaze/kernel/intc.c
+>  create mode 100644 arch/microblaze/kernel/irq.c
+>  create mode 100644 arch/microblaze/kernel/microblaze_ksyms.c
+>  create mode 100644 arch/microblaze/kernel/module.c
+>  create mode 100644 arch/microblaze/kernel/of_device.c
+>  create mode 100644 arch/microblaze/kernel/of_platform.c
+>  create mode 100644 arch/microblaze/kernel/process.c
+>  create mode 100644 arch/microblaze/kernel/prom.c
+>  create mode 100644 arch/microblaze/kernel/prom_parse.c
+>  create mode 100644 arch/microblaze/kernel/ptrace.c
+>  create mode 100644 arch/microblaze/kernel/selfmod.c
+>  create mode 100644 arch/microblaze/kernel/setup.c
+>  create mode 100644 arch/microblaze/kernel/signal.c
+>  create mode 100644 arch/microblaze/kernel/sys_microblaze.c
+>  create mode 100644 arch/microblaze/kernel/syscall_table.S
+>  create mode 100644 arch/microblaze/kernel/timer.c
+>  create mode 100644 arch/microblaze/kernel/traps.c
+>  create mode 100644 arch/microblaze/kernel/vmlinux.lds.S
+>  create mode 100644 arch/microblaze/lib/Makefile
+>  create mode 100644 arch/microblaze/lib/checksum.c
+>  create mode 100644 arch/microblaze/lib/fastcopy.S
+>  create mode 100644 arch/microblaze/lib/memcpy.c
+>  create mode 100644 arch/microblaze/lib/memmove.c
+>  create mode 100644 arch/microblaze/lib/memset.c
+>  create mode 100644 arch/microblaze/lib/uaccess.c
+>  create mode 100644 arch/microblaze/mm/Makefile
+>  create mode 100644 arch/microblaze/mm/init.c
+>  create mode 100644 arch/microblaze/platform/Kconfig.platform
+>  create mode 100644 arch/microblaze/platform/Makefile
+>  create mode 100644 arch/microblaze/platform/generic/Kconfig.auto
+>  create mode 100644 arch/microblaze/platform/generic/Makefile
+>  create mode 100644 arch/microblaze/platform/generic/system.dts
+>  create mode 100644 arch/microblaze/platform/platform.c
+>
+>
+>
+>
+>
+>   
+
 
 -- 
-Jens Axboe
+Michal Simek, Ing. (M.Eng)
+PetaLogix - Linux Solutions for a Reconfigurable World
+w: www.petalogix.com p: +61-7-30090663,+42-0-721842854 f: +61-7-30090663
 
