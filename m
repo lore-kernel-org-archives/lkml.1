@@ -1,77 +1,282 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756110AbZDFLbc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756348AbZDFLcu@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756110AbZDFLbc (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 6 Apr 2009 07:31:32 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754940AbZDFLbX
+	id S1756348AbZDFLcu (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 6 Apr 2009 07:32:50 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755365AbZDFLck
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 6 Apr 2009 07:31:23 -0400
-Received: from india.einfochips.com ([203.88.139.151]:9126 "EHLO
-	ahmedabad.einfochips.com" rhost-flags-OK-OK-OK-FAIL)
-	by vger.kernel.org with ESMTP id S1754819AbZDFLbW (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 6 Apr 2009 07:31:22 -0400
-Message-ID: <49D9E736.1060104@einfochips.com>
-Date: Mon, 06 Apr 2009 16:57:50 +0530
-From: Viral Mehta <viral.mehta@einfochips.com>
-Organization: eIbfochips Ltd.
-User-Agent: Thunderbird 2.0.0.21 (X11/20090302)
+	Mon, 6 Apr 2009 07:32:40 -0400
+Received: from mx2.redhat.com ([66.187.237.31]:36565 "EHLO mx2.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1755042AbZDFLci (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 6 Apr 2009 07:32:38 -0400
+Message-ID: <49D9E81A.3070602@redhat.com>
+Date: Mon, 06 Apr 2009 14:31:38 +0300
+From: Izik Eidus <ieidus@redhat.com>
+User-Agent: Mozilla-Thunderbird 2.0.0.19 (X11/20090103)
 MIME-Version: 1.0
-To: linux-kernel@vger.kernel.org
-Subject: [Fwd: kmap problem]
+To: Nikola Ciprich <extmaillist@linuxbox.cz>
+CC: kvm@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 0/4] ksm - dynamic page sharing driver for linux v2
+References: <1238855722-32606-1-git-send-email-ieidus@redhat.com> <20090406111537.GA32039@develbox.linuxbox.cz>
+In-Reply-To: <20090406111537.GA32039@develbox.linuxbox.cz>
 Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Nikola Ciprich wrote:
+> Hi Izik,
+> Is there some user documentation available? (apart from RTFS?:))
+> I've compiled kernel with v2 of Your patches, loaded ksm module,
+> did echo 1 > /proc/sys/kernel/mm/ksm/run, but I think it didn't do
+> anything, at least no pages were collected..
+> Could You advise me a bit?
+> thanks a lot in advance...
+> I can't wait to try it on our hosts runing 50-60 KVMs :)
+> BR
+> nik
+>   
+You need the userspace / kvm patchs that i posted together with V1 about 
+1-2 weeks ago...
+What you should do is this:
+Patch Linus kernel git with the ksm patchs (V2) (like you just did)
+This patchs can be found at:
+http://lkml.org/lkml/2009/4/4/77
 
-Hi All,
-I am writing a kernel module. And I am facing a problem relate to Kmap.
+Then patch Avi kernel git with the kvm patchs that were sent togather 
+with V1
+Patchs can be found at:
+http://lkml.org/lkml/2009/3/30/534
 
-I am retriving Kernel Virtual Address for a specific Page using kmap() 
-and then after some time I am doing kunmap().
-Now, I know that kmap can give A LIMITED NUMBER OF MAPPINGS and so such 
-mapping should NOT be held longer. But in my case it is absolutely 
-necessary to hold more than 1024 such mappings.
+and then Avi git userspace with this patchs:
+http://lkml.org/lkml/2009/3/30/538
 
-The same code is NOT working on 2.6.10 kernel and IS WORKING on 2.6.18 
-kernel. The system is same and there are two kernels that I am playing 
-with.
+Now, after you finish patching the kernel, load the kvm modules from avi 
+git, and then using patched userspace
+you can start using ksm:
 
-My only question is what is so changed in 2.6.18 kernel from 2.6.10 that 
-the same code is working and evidently kmap can hold more than 1024 
-virtual address mappings.
+set up the speed: (just number, you can change them to make it take less 
+or more cpu)
+echo 400 > /sys/kernel/mm/ksm/pages_to_scan
+echo 10000 > /sys/kernel/mm/ksm/sleep
 
-The other thing I would like to know if there is ANY generic way to 
-handle this situation in 2.6.10 kernel.
+echo 1 > /sys/kernel/mm/ksm/run
 
-Thanks,
-Viral
--- 
-_____________________________________________________________________
-Disclaimer: This e-mail message and all attachments transmitted with it
-are intended solely for the use of the addressee and may contain legally
-privileged and confidential information. If the reader of this message
-is not the intended recipient, or an employee or agent responsible for
-delivering this message to the intended recipient, you are hereby
-notified that any dissemination, distribution, copying, or other use of
-this message or its attachments is strictly prohibited. If you have
-received this message in error, please notify the sender immediately by
-replying to this message and please delete it from your computer. Any
-views expressed in this message are those of the individual sender
-unless otherwise stated.Company has taken enough precautions to prevent
-the spread of viruses. However the company accepts no liability for any
-damage caused by any virus transmitted by this email.
-__________________________________________________________________________
+Dont raise all the VMS at once, beacuse then KSM wont be able to catch 
+with the memory allocation...
+Raise few VMS, see that their memory get shared and your host free 
+memory grow, then raise more VMS and so on...
 
-
---
-To unsubscribe, send a message with 'unsubscribe linux-mm' in
-the body to majordomo@kvack.org.  For more info on Linux MM,
-see: http://www.linux-mm.org/ .
-Don't email: <a href=mailto:"dont@kvack.org"> email@kvack.org </a>
-
-
-Email Scanned for Virus & Dangerous Content by : www.CleanMailGateway.com
-
+Enjoy.
+(You can check  pages_shared for the number of pages that have been 
+shared, you can run top as well)
+>
+> On Sat, Apr 04, 2009 at 05:35:18PM +0300, Izik Eidus wrote:
+>   
+>> From v1 to v2:
+>>
+>> 1)Fixed security issue found by Chris Wright:
+>>     Ksm was checking if page is a shared page by running !PageAnon.
+>>     Beacuse that Ksm scan only anonymous memory, all !PageAnons
+>>     inside ksm data strctures are shared page, however there might
+>>     be a case for do_wp_page() when the VM_SHARED is used where
+>>     do_wp_page() would instead of copying the page into new anonymos
+>>     page, would reuse the page, it was fixed by adding check for the
+>>     dirty_bit of the virtual addresses pointing into the shared page.
+>>     I was not finding any VM code tha would clear the dirty bit from
+>>     this virtual address (due to the fact that we allocate the page
+>>     using page_alloc() - kernel allocated pages), ~but i still want
+>>     confirmation about this from the vm guys - thanks.~
+>>
+>> 2)Moved to sysfs to control ksm:
+>>     It was requested as a better way to control the ksm scanning
+>>     thread than ioctls.
+>>     the sysfs api:
+>>     dir: /sys/kernel/mm/ksm/
+>>
+>>     kernel_pages_allocated - information about how many kernel pages
+>>     ksm have allocated, this pages are not swappable, and each page
+>>     like that is used by ksm to share pages with identical content
+>>     
+>>     pages_shared - how many pages were shared by ksm
+>>
+>>     run - set to 1 when you want ksm to run, 0 when no
+>>
+>>     max_kernel_pages - set the maximum amount of kernel pages
+>>     to be allocated by ksm, set 0 for unlimited.
+>>
+>>     pages_to_scan - how many pages to scan before ksm will sleep
+>>
+>>     sleep - how much usecs ksm will sleep.
+>>
+>> 3)Add sysfs paramater to control the maximum kernel pages to be by
+>> ksm.
+>>
+>> 4)Add statistics about how much pages are really shared.
+>>
+>>
+>> One issue still to be discussed:
+>> There was a suggestion to use madvice(SHAREABLE) instead of using
+>> ioctls to register memory that need to be scanned by ksm.
+>> Such change is outside the area of ksm.c and would required adding
+>> new madvice api, and change some parts of the vm and the kernel
+>> code, so first thing to do, is realized if we really want this.
+>>
+>> I dont know any other open issues.
+>>
+>> Thanks.
+>>
+>> This is from the first post:
+>> (The kvm part, togather with the kvm-userspace part, was post with V1
+>> before about a week, whoever want to test ksm may download the
+>> patch from lkml archive)
+>>
+>> KSM is a linux driver that allows dynamicly sharing identical memory
+>> pages between one or more processes.
+>>
+>> Unlike tradtional page sharing that is made at the allocation of the
+>> memory, ksm do it dynamicly after the memory was created.
+>> Memory is periodically scanned; identical pages are identified and
+>> merged.
+>> The sharing is unnoticeable by the process that use this memory.
+>> (the shared pages are marked as readonly, and in case of write
+>> do_wp_page() take care to create new copy of the page)
+>>
+>> To find identical pages ksm use algorithm that is split into three
+>> primery levels:
+>>
+>> 1) Ksm will start scan the memory and will calculate checksum for each
+>>    page that is registred to be scanned.
+>>    (In the first round of the scanning, ksm would only calculate
+>>     this checksum for all the pages)
+>>
+>> 2) Ksm will go again on the whole memory and will recalculate the
+>>    checmsum of the pages, pages that are found to have the same
+>>    checksum value, would be considered "pages that are most likely
+>>    wont changed"
+>>    Ksm will insert this pages into sorted by page content RB-tree that
+>>    is called "unstable tree", the reason that this tree is called
+>>    unstable is due to the fact that the page contents might changed
+>>    while they are still inside the tree, and therefore the tree would
+>>    become corrupted.
+>>    Due to this problem ksm take two more steps in addition to the
+>>    checksum calculation:
+>>    a) Ksm will throw and recreate the entire unstable tree each round
+>>       of memory scanning - so if we have corruption, it will be fixed
+>>       when we will rebuild the tree.
+>>    b) Ksm is using RB-tree, that its balancing is made by the node color
+>>       and not by the content, so even if the page get corrupted, it still
+>>       would take the same amount of time to search on it.
+>>
+>> 3) In addition to the unstable tree, ksm hold another tree that is called
+>>    "stable tree" - this tree is RB-tree that is sorted by the pages
+>>    content and all its pages are write protected, and therefore it cant get
+>>    corrupted.
+>>    Each time ksm will find two identcial pages using the unstable tree,
+>>    it will create new write-protected shared page, and this page will be
+>>    inserted into the stable tree, and would be saved there, the
+>>    stable tree, unlike the unstable tree, is never throwen away, so each
+>>    page that we find would be saved inside it.
+>>
+>> Taking into account the three levels that described above, the algorithm
+>> work like that:
+>>
+>> search primary tree (sorted by entire page contents, pages write protected)
+>> - if match found, merge
+>> - if no match found...
+>>   - search secondary tree (sorted by entire page contents, pages not write
+>>     protected)
+>>     - if match found, merge
+>>       - remove from secondary tree and insert merged page into primary tree
+>>     - if no match found...
+>>       - checksum
+>>         - if checksum hasn't changed
+>> 	  - insert into secondary tree
+>> 	- if it has, store updated checksum (note: first time this page
+>> 	  is handled it won't have a checksum, so checksum will appear
+>> 	  as "changed", so it takes two passes w/ no other matches to
+>> 	  get into secondary tree)
+>> 	  - do not insert into any tree, will see it again on next pass
+>>
+>> The basic idea of this algorithm, is that even if the unstable tree doesnt
+>> promise to us to find two identical pages in the first round, we would
+>> probably find them in the second or the third or the tenth round,
+>> then after we have found this two identical pages only once, we will insert
+>> them into the stable tree, and then they would be protected there forever.
+>> So the all idea of the unstable tree, is just to build the stable tree and
+>> then we will find the identical pages using it.
+>>
+>> The current implemantion can be improved alot:
+>> we dont have to calculate exspensive checksum, we can just use the host
+>> dirty bit.
+>>
+>> currently we dont support shared pages swapping (other pages that are not
+>> shared can be swapped (all the pages that we didnt find to be identical
+>> to other pages...).
+>>
+>> Walking on the tree, we keep call to get_user_pages(), we can optimized it
+>> by saving the pfn, and using mmu notifiers to know when the virtual address
+>> mapping was changed.
+>>
+>> We currently scan just programs that were registred to be used by ksm, we
+>> would later want to add the abilaty to tell ksm to scan PIDS (so you can
+>> scan closed binary applications as well).
+>>
+>> Right now ksm scanning is made by just one thread, multiple scanners
+>> support might would be needed.
+>>
+>> This driver is very useful for KVM as in cases of runing multiple guests
+>> operation system of the same type.
+>> (For desktop work loads we have achived more than x2 memory overcommit
+>> (more like x3))
+>>
+>> This driver have found users other than KVM, for example CERN,
+>> Fons Rademakers:
+>> "on many-core machines we run one large detector simulation program per core.
+>> These simulation programs are identical but run each in their own process and
+>> need about 2 - 2.5 GB RAM.
+>> We typically buy machines with 2GB RAM per core and so have a problem to run
+>> one of these programs per core.
+>> Of the 2 - 2.5 GB about 700MB is identical data in the form of magnetic field
+>> maps, detector geometry, etc.
+>> Currently people have been trying to start one program, initialize the geometry
+>> and field maps and then fork it N times, to have the data shared.
+>> With KSM this would be done automatically by the system so it sounded extremely
+>> attractive when Andrea presented it."
+>>
+>> I am sending another seires of patchs for kvm kernel and kvm-userspace
+>> that would allow users of kvm to test ksm with it.
+>> The kvm patchs would apply to Avi git tree.
+>>
+>>
+>> Izik Eidus (4):
+>>   MMU_NOTIFIERS: add set_pte_at_notify()
+>>   add page_wrprotect(): write protecting page.
+>>   add replace_page(): change the page pte is pointing to.
+>>   add ksm kernel shared memory driver.
+>>
+>>  include/linux/ksm.h          |   48 ++
+>>  include/linux/miscdevice.h   |    1 +
+>>  include/linux/mm.h           |    5 +
+>>  include/linux/mmu_notifier.h |   34 +
+>>  include/linux/rmap.h         |   11 +
+>>  mm/Kconfig                   |    6 +
+>>  mm/Makefile                  |    1 +
+>>  mm/ksm.c                     | 1668 ++++++++++++++++++++++++++++++++++++++++++
+>>  mm/memory.c                  |   90 +++-
+>>  mm/mmu_notifier.c            |   20 +
+>>  mm/rmap.c                    |  139 ++++
+>>  11 files changed, 2021 insertions(+), 2 deletions(-)
+>>  create mode 100644 include/linux/ksm.h
+>>  create mode 100644 mm/ksm.c
+>>
+>> --
+>> To unsubscribe from this list: send the line "unsubscribe kvm" in
+>> the body of a message to majordomo@vger.kernel.org
+>> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+>>
+>>     
+>
+>   
 
