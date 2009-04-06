@@ -1,67 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758028AbZDFNPT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758576AbZDFNQR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758028AbZDFNPT (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 6 Apr 2009 09:15:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756164AbZDFNPB
+	id S1758576AbZDFNQR (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 6 Apr 2009 09:16:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754995AbZDFNQE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 6 Apr 2009 09:15:01 -0400
-Received: from wa-out-1112.google.com ([209.85.146.179]:34700 "EHLO
-	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754995AbZDFNPA (ORCPT
+	Mon, 6 Apr 2009 09:16:04 -0400
+Received: from juliette.telenet-ops.be ([195.130.137.74]:49575 "EHLO
+	juliette.telenet-ops.be" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755649AbZDFNQD (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 6 Apr 2009 09:15:00 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:subject:message-id:mime-version:content-type
-         :content-disposition:user-agent;
-        b=kHIY3FHucw7b75PsbgjZpr+njGyGsYUjzMUi65pvqvHSxgDt8NOhFREZmPs1UAODdU
-         fLmYhtx+LwDXI8A9CM6ZFgGzxvx1kWCwEj8iSoZjJXgaqWdRPiLuy+0CPwgiQegb8M6m
-         PPPsxhFHSSDg0HiFeumYDFaEEKfuWkC/m/Egw=
-Date: Mon, 6 Apr 2009 17:14:44 +0400
-From: Alexander Beregalov <a.beregalov@gmail.com>
-To: kees.cook@canonical.com, serue@us.ibm.com, jmorris@namei.org,
-       linux-next@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: [PATCH next] module.c: fix build breakage when !MODULE_UNLOAD
-Message-ID: <20090406131444.GA3928@orion>
+	Mon, 6 Apr 2009 09:16:03 -0400
+Date: Mon, 6 Apr 2009 15:15:55 +0200 (CEST)
+From: Geert Uytterhoeven <geert@linux-m68k.org>
+To: Kalle Valo <kalle.valo@nokia.com>, Greg Kroah-Hartman <gregkh@suse.de>
+cc: Linux Kernel Development <linux-kernel@vger.kernel.org>
+Subject: [PATCH] staging: STLC45XX should depend on GENERIC_HARDIRQS
+Message-ID: <Pine.LNX.4.64.0904061515001.13923@anakin>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-User-Agent: Mutt/1.5.19 (2009-01-05)
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Fix this build error when CONFIG_MODULE_UNLOAD is not set:
-kernel/module.c: In function 'sys_init_module':
-kernel/module.c:2401: error: 'modules_disabled' undeclared
+m68k allmodconfig:
+| drivers/staging/stlc45xx/stlc45xx.c: In function 'stlc45xx_probe':
+| drivers/staging/stlc45xx/stlc45xx.c:2456: error: implicit declaration of function 'set_irq_type'
+| make[6]: *** [drivers/staging/stlc45xx/stlc45xx.o] Error 1
 
-Signed-off-by: Alexander Beregalov <a.beregalov@gmail.com>
+Signed-off-by: Geert Uytterhoeven <geert@linux-m68k.org>
 ---
+ drivers/staging/stlc45xx/Kconfig |    2 +-
+ 1 files changed, 1 insertions(+), 1 deletions(-)
 
- kernel/module.c |    6 +++---
- 1 files changed, 3 insertions(+), 3 deletions(-)
+diff --git a/drivers/staging/stlc45xx/Kconfig b/drivers/staging/stlc45xx/Kconfig
+index 8d3f46f..947fb75 100644
+--- a/drivers/staging/stlc45xx/Kconfig
++++ b/drivers/staging/stlc45xx/Kconfig
+@@ -1,6 +1,6 @@
+ config STLC45XX
+ 	tristate "stlc4550/4560 support"
+-	depends on MAC80211 && WLAN_80211 && SPI_MASTER
++	depends on MAC80211 && WLAN_80211 && SPI_MASTER && GENERIC_HARDIRQS
+ 	---help---
+ 	  This is a driver for stlc4550 and stlc4560 chipsets.
+ 
+-- 
+1.6.2.1
 
-diff --git a/kernel/module.c b/kernel/module.c
-index 274ab43..5fb0ece 100644
---- a/kernel/module.c
-+++ b/kernel/module.c
-@@ -73,6 +73,9 @@ DEFINE_MUTEX(module_mutex);
- EXPORT_SYMBOL_GPL(module_mutex);
- static LIST_HEAD(modules);
- 
-+/* Block module loading/unloading? */
-+int modules_disabled = 0;
-+
- /* Waiting for a module to finish initializing? */
- static DECLARE_WAIT_QUEUE_HEAD(module_wq);
- 
-@@ -782,9 +785,6 @@ static void wait_for_zero_refcount(struct module *mod)
- 	mutex_lock(&module_mutex);
- }
- 
--/* Block module loading/unloading? */
--int modules_disabled = 0;
--
- SYSCALL_DEFINE2(delete_module, const char __user *, name_user,
- 		unsigned int, flags)
- {
+Gr{oetje,eeting}s,
+
+						Geert
+
+--
+Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
+
+In personal conversations with technical people, I call myself a hacker. But
+when I'm talking to journalists I just say "programmer" or something like that.
+							    -- Linus Torvalds
