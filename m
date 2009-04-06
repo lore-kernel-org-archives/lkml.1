@@ -1,40 +1,87 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752508AbZDFPIs@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753562AbZDFPJ7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752508AbZDFPIs (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 6 Apr 2009 11:08:48 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751739AbZDFPIh
+	id S1753562AbZDFPJ7 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 6 Apr 2009 11:09:59 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752086AbZDFPJr
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 6 Apr 2009 11:08:37 -0400
-Received: from stinky.trash.net ([213.144.137.162]:48290 "EHLO
-	stinky.trash.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751235AbZDFPIh (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 6 Apr 2009 11:08:37 -0400
-Message-ID: <49DA1AEF.10105@trash.net>
-Date: Mon, 06 Apr 2009 17:08:31 +0200
-From: Patrick McHardy <kaber@trash.net>
-User-Agent: Mozilla-Thunderbird 2.0.0.19 (X11/20090103)
+	Mon, 6 Apr 2009 11:09:47 -0400
+Received: from brick.kernel.dk ([93.163.65.50]:49464 "EHLO kernel.dk"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751739AbZDFPJq (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 6 Apr 2009 11:09:46 -0400
+Date: Mon, 6 Apr 2009 17:09:44 +0200
+From: Jens Axboe <jens.axboe@oracle.com>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: Arjan van de Ven <arjan@infradead.org>, Theodore Tso <tytso@mit.edu>,
+       Linux Kernel Developers List <linux-kernel@vger.kernel.org>,
+       Ext4 Developers List <linux-ext4@vger.kernel.org>
+Subject: Re: [GIT PULL] Ext3 latency fixes
+Message-ID: <20090406150943.GC5178@kernel.dk>
+References: <20090404135719.GA9812@mit.edu> <20090404151649.GE5178@kernel.dk> <alpine.LFD.2.00.0904040854470.3915@localhost.localdomain> <20090404173412.GF5178@kernel.dk> <alpine.LFD.2.00.0904041039230.3915@localhost.localdomain> <20090404180108.GH5178@kernel.dk> <20090404232222.GA7480@mit.edu> <20090404163349.20df1208@infradead.org> <20090406081616.GT5178@kernel.dk> <alpine.LFD.2.00.0904060739570.4023@localhost.localdomain>
 MIME-Version: 1.0
-To: Eric Dumazet <dada1@cosmosbay.com>
-CC: Graham Murray <graham@gmurray.org.uk>,
-       "David S. Miller" <davem@davemloft.net>, linux-kernel@vger.kernel.org,
-       Linux Netdev List <netdev@vger.kernel.org>
-Subject: Re: [PATCH] netfilter: ip6tables fix
-References: <20090329234702.4988017f@desktop.r000n.info>	<8763hja8cy.fsf@newton.gmurray.org.uk>	<20090405.012237.198610462.davem@davemloft.net>	<49D88162.5040809@cosmosbay.com> <87ws9z8l4c.fsf@newton.gmurray.org.uk> <49D88839.4090902@cosmosbay.com> <49D8A445.4060201@cosmosbay.com> <49D8A6BB.5000700@cosmosbay.com>
-In-Reply-To: <49D8A6BB.5000700@cosmosbay.com>
-Content-Type: text/plain; charset=ISO-8859-15; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <alpine.LFD.2.00.0904060739570.4023@localhost.localdomain>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Eric Dumazet wrote:
-> [PATCH] netfilter: ip6tables fix
+On Mon, Apr 06 2009, Linus Torvalds wrote:
 > 
-> ip6_tables.c alloc_counters() misses a return statement, making
-> ip6tables -L always failing.
 > 
-> Reported-by: Graham Murray <graham@gmurray.org.uk>
-> Signed-off-by: Eric Dumazet <dada1@cosmosbay.com>
+> On Mon, 6 Apr 2009, Jens Axboe wrote:
+> > 
+> > Well, either you are submitting a single piece of IO (in which case you
+> > just want to unplug or directly submit as part of the submit_bio()), or
+> > you are submitting several IOS (in which case you just want to unplug at
+> > the end of the IO submission, before waiting).
+> 
+> That's not true.
+> 
+> The plugging is often across multiple threads. It didn't _use_ to be (we 
 
-Applied, thanks Eric.
+It is completely true, you will very rarely see merges between
+processes. The plug may be across the entire device and it'll get you
+some inter-process sorting as well if you have more than one app busy,
+but for merging it's usually effectively per-process.
+
+> always unplugged at wait), but it is now. Nothing else explains why that 
+> patch by Ted makes such a big throughput thing, because the code did
+> 
+>       ret = submit_bh(WRITE_SYNC, bh);
+>       wait_on_buffer(bh);
+
+Linus, the implementation is still basically the same. Yes it's true
+that you used to do
+
+        submit();
+        unplug(;)
+        wait();
+
+and you better still be doing that or things will run at the timer
+unplug speed - not very fast. The only difference is that we hide the
+unplug in the wait_on_bit() callback, but it's definitely still very
+much the same thing.
+
+> ie it very much submits a _single_ IO, and waits on it. If plugging made a 
+> difference, that means that unplugging was delayed so long that somebody 
+> else does IO too - ie it gets delayed past a wait event.
+> 
+> So according to your own rules, that submit_bh() _should_ use WRITE_SYNC, 
+> but something bad happens if it does. I'm not quite seeing _what_, though, 
+> unless there are multiple processes trying to dirty the _same_ buffer, and 
+> they win if they all can dirty it without doing IO on it in between (and 
+> then the write turns into just one write).
+
+sync_dirty_buffer() should use it, I agree, I even did the original
+patch for it. And in the series posted today, it's also there and it
+performs as expected now. For this particular case, it's not about
+plugging. The performance penalty came from the 'sync' modifier, it'll
+change how the IO schedulers look at the IO. Both AS and CFQ would have
+considerably worse performance with this, as you would be mixing related
+IO into both sync and async buckets. So it wasn't merging (as suspected)
+or plugging.
+
+-- 
+Jens Axboe
+
