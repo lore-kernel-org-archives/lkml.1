@@ -1,51 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758788AbZDFVCj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756586AbZDFVL4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758788AbZDFVCj (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 6 Apr 2009 17:02:39 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758716AbZDFVC2
+	id S1756586AbZDFVL4 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 6 Apr 2009 17:11:56 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753918AbZDFVLh
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 6 Apr 2009 17:02:28 -0400
-Received: from extu-mxob-1.symantec.com ([216.10.194.28]:46333 "EHLO
-	extu-mxob-1.symantec.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1758711AbZDFVC1 (ORCPT
+	Mon, 6 Apr 2009 17:11:37 -0400
+Received: from fg-out-1718.google.com ([72.14.220.159]:28755 "EHLO
+	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751723AbZDFVLg (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 6 Apr 2009 17:02:27 -0400
-Date: Mon, 6 Apr 2009 22:01:15 +0100 (BST)
-From: Hugh Dickins <hugh@veritas.com>
-X-X-Sender: hugh@blonde.anvils
-To: Andrew Morton <akpm@linux-foundation.org>
-cc: Yuri Tikhonov <yur@emcraft.com>, yanok@emcraft.com, prodyuth@gmail.com,
-       jwboyer@linux.vnet.ibm.com, linuxppc-dev@ozlabs.org,
-       linux-kernel@vger.kernel.org
-Subject: [PATCH 3/3] powerpc: allow 256kB pages with SHMEM
-In-Reply-To: <Pine.LNX.4.64.0904062151250.21044@blonde.anvils>
-Message-ID: <Pine.LNX.4.64.0904062156290.21044@blonde.anvils>
-References: <Pine.LNX.4.64.0904062151250.21044@blonde.anvils>
+	Mon, 6 Apr 2009 17:11:36 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=from:to:subject:date:user-agent:cc:references:in-reply-to
+         :mime-version:content-disposition:message-id:content-type
+         :content-transfer-encoding;
+        b=U3+/zFNvxRbwDFf+N8KifrdyKWCIzoaOe6TzOSWCA6vdYy2KNVB18OHFWNdrfSCiKV
+         zbu8gUgeG+pMagtBW0/TYxJsq7mTucP/UlngzM32MBI45kPjINbOG+GJffgGOi9chwLo
+         EAaqca8t9xXmZ2k2bnU+nM8eQv+ldoVYMpqHM=
+From: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
+To: Grant Likely <grant.likely@secretlab.ca>
+Subject: Re: [PATCH] xsysace: Fix dereferencing of cf_id after hd_driveid removal
+Date: Mon, 6 Apr 2009 22:58:10 +0200
+User-Agent: KMail/1.11.1 (Linux/2.6.29-next-20090403; KDE/4.2.1; i686; ; )
+Cc: linux-kernel@vger.kernel.org
+References: <20090405083649.1640.31018.stgit@localhost.localdomain>
+In-Reply-To: <20090405083649.1640.31018.stgit@localhost.localdomain>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Disposition: inline
+Message-Id: <200904062258.10946.bzolnier@gmail.com>
+Content-Type: text/plain;
+  charset="utf-8"
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Now that shmem's divisions by zero and SHMEM_MAX_BYTES are fixed,
-let powerpc 256kB pages coexist with CONFIG_SHMEM again.
+On Sunday 05 April 2009, Grant Likely wrote:
+> From: Grant Likely <grant.likely@secretlab.ca>
+> 
+> Commit 4aaf2fec718f6fbf38668edf733a0ab09a49cab1 (xsysace: make it
+> 'struct hd_driveid'-free) converted the cf_id member of 'struct
+> ace_device' from a 'struct hd_driveid' to a u16 array.  However,
+> references to the base of the structure were still using the '&'
+> operator.  When the address was used with the ata_id_u32() macro, the
+> compiler used the size of the entire array instead of sizeof(u16) to
+> calculate the offset from the base address.
+>  
+> This patch removes the use of the '&' operator from all references of
+> cf_id to fix the bug and remove future confusion.
+> 
+> Signed-off-by: Grant Likely <grant.likely@secretlab.ca>
+> CC: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
 
-Signed-off-by: Hugh Dickins <hugh@veritas.com>
----
-Added linuxppc-dev and some other Cc's for this 3/3: sorry
-if you didn't see 1/3 and 2/3, they were just in mm/shmem.c.
-
- arch/powerpc/Kconfig |    2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
-
---- 2.6.29-git13/arch/powerpc/Kconfig	2009-04-06 11:47:57.000000000 +0100
-+++ linux/arch/powerpc/Kconfig	2009-04-06 18:18:47.000000000 +0100
-@@ -462,7 +462,7 @@ config PPC_64K_PAGES
- 
- config PPC_256K_PAGES
- 	bool "256k page size" if 44x
--	depends on !STDBINUTILS && (!SHMEM || BROKEN)
-+	depends on !STDBINUTILS
- 	help
- 	  Make the page size 256k.
- 
+Thanks for quickly spotting & fixing it.
