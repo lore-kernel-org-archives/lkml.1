@@ -1,50 +1,72 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753921AbZDFSP7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753278AbZDFSWF@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753921AbZDFSP7 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 6 Apr 2009 14:15:59 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752222AbZDFSPt
+	id S1753278AbZDFSWF (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 6 Apr 2009 14:22:05 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751385AbZDFSVw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 6 Apr 2009 14:15:49 -0400
-Received: from charlotte.tuxdriver.com ([70.61.120.58]:47175 "EHLO
-	smtp.tuxdriver.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750790AbZDFSPs (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 6 Apr 2009 14:15:48 -0400
-Date: Mon, 6 Apr 2009 14:00:42 -0400
-From: "John W. Linville" <linville@tuxdriver.com>
-To: Kalle Valo <kalle.valo@iki.fi>
-Cc: Michael Buesch <mb@bu3sch.de>,
-       Jaswinder Singh Rajput <jaswinder@kernel.org>,
-       Sujith <Sujith.Manoharan@atheros.com>,
-       wireless <linux-wireless@vger.kernel.org>,
-       David Miller <davem@davemloft.net>, LKML <linux-kernel@vger.kernel.org>,
-       Helmut Schaa <helmut.schaa@googlemail.com>
-Subject: Re: ath9k becon loss messages
-Message-ID: <20090406180042.GD10842@tuxdriver.com>
-References: <1238923439.4120.9.camel@localhost.localdomain> <200904061217.31134.mb@bu3sch.de> <87tz52xepy.fsf@litku.valot.fi> <200904061251.10965.helmut.schaa@gmail.com> <da94abde0904060405k280b3094jc20d0f7a4e6e759d@mail.gmail.com> <87iqlhdd3z.fsf@litku.valot.fi>
-MIME-Version: 1.0
+	Mon, 6 Apr 2009 14:21:52 -0400
+Received: from mga03.intel.com ([143.182.124.21]:42168 "EHLO mga03.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750790AbZDFSVw (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 6 Apr 2009 14:21:52 -0400
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.39,331,1235980800"; 
+   d="scan'208";a="128430360"
+Date: Mon, 6 Apr 2009 11:21:49 -0700
+From: Fenghua Yu <fenghua.yu@intel.com>
+To: Linus Torvalds <torvalds@linux-foundation.org>,
+       David Woodhouse <dwmw2@infradead.org>, Ingo Molnar <mingo@elte.hu>,
+       "Zhao, Yu" <yu.zhao@intel.com>
+Cc: lkml <linux-kernel@vger.kernel.org>,
+       iommu <iommu@lists.linux-foundation.org>
+Subject: [PATCH] Intel-IOMMU Alignment Issue in dma_pte_clear_range()
+Message-ID: <20090406182149.GA28529@linux-os.sc.intel.com>
+References: <1238507922.3294.35.camel@macbook.infradead.org> <alpine.LFD.2.00.0904031140520.19690@localhost.localdomain> <20090403191923.GA7772@linux-os.sc.intel.com>
+Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <87iqlhdd3z.fsf@litku.valot.fi>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+In-Reply-To: <20090403191923.GA7772@linux-os.sc.intel.com>
+User-Agent: Mutt/1.4.1i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Apr 06, 2009 at 06:18:56PM +0300, Kalle Valo wrote:
+This issue was pointed out by Linus.
 
-> When I'm able to implement the proper fix, I think it should first have
-> proper testing in wireles-testing before pushing it to mainline. So
-> maybe the proper fix is 2.6.31 material, just to be on the safe side
-> here.
-> 
-> John, what do you think?
+In dma_pte_clear_range() in intel-iommu.c
 
-It depends on what the proper fix looks like, but basically anything
-posted in the last week and thereafter is already 2.6.31 material
-unless it is a specific bug fix for what is already in Linus' kernel.
+start = PAGE_ALIGN(start);
+end &= PAGE_MASK;
+npages = (end - start) / VTD_PAGE_SIZE;
 
-John
--- 
-John W. Linville		Someday the world will need a hero, and you
-linville@tuxdriver.com			might be all we have.  Be ready.
+In partial page case, start could be bigger than end and npages will be
+negative.
+
+Currently the issue doesn't show up as a real bug in testing because start and
+end have been aligned to page boundary already by all callers. So the issue has
+been hiden. But it is dangerous programming practice.
+
+The following patch fixes the issue. It's applied on iommu-2.6.git tree.
+
+Signed-off-by: Fenghua Yu <fenghua.yu@intel.com>
+
+---
+
+ intel-iommu.c |    4 ++--
+ 1 files changed, 2 insertions(+), 2 deletions(-)
+
+diff --git a/drivers/pci/intel-iommu.c b/drivers/pci/intel-iommu.c
+index fd7472f..bce4f6e 100644
+--- a/drivers/pci/intel-iommu.c
++++ b/drivers/pci/intel-iommu.c
+@@ -732,8 +732,8 @@ static void dma_pte_clear_range(struct dmar_domain *domain, u64 start, u64 end)
+ 	start &= (((u64)1) << addr_width) - 1;
+ 	end &= (((u64)1) << addr_width) - 1;
+ 	/* in case it's partial page */
+-	start = PAGE_ALIGN(start);
+-	end &= PAGE_MASK;
++	start &= PAGE_MASK;
++	end = PAGE_ALIGN(end);
+ 	npages = (end - start) / VTD_PAGE_SIZE;
+ 
+ 	/* we don't need lock here, nobody else touches the iova range */
