@@ -1,256 +1,82 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755941AbZDFLt1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756227AbZDFMBT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755941AbZDFLt1 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 6 Apr 2009 07:49:27 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755588AbZDFLtS
+	id S1756227AbZDFMBT (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 6 Apr 2009 08:01:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755329AbZDFMBH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 6 Apr 2009 07:49:18 -0400
-Received: from wine.ocn.ne.jp ([122.1.235.145]:64257 "EHLO smtp.wine.ocn.ne.jp"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752924AbZDFLtS (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 6 Apr 2009 07:49:18 -0400
-To: pavel@ucw.cz, jmorris@namei.org
-Cc: linux-kernel@vger.kernel.org, linux-security-module@vger.kernel.org
-Subject: Re: TOMOYO in linux-next
-From: Tetsuo Handa <penguin-kernel@I-love.SAKURA.ne.jp>
-References: <20090326215031.GD29836@elf.ucw.cz>
-	<alpine.LRH.2.00.0903271102240.7492@tundra.namei.org>
-	<200903270412.n2R4CG7o054009@www262.sakura.ne.jp>
-In-Reply-To: <200903270412.n2R4CG7o054009@www262.sakura.ne.jp>
-Message-Id: <200904062049.AFJ90113.JFOOSFOVQHLFMt@I-love.SAKURA.ne.jp>
-X-Mailer: Winbiff [Version 2.50 PL2]
-X-Accept-Language: ja,en
-Date: Mon, 6 Apr 2009 20:49:14 +0900
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	Mon, 6 Apr 2009 08:01:07 -0400
+Received: from smtp.nokia.com ([192.100.105.134]:47091 "EHLO
+	mgw-mx09.nokia.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755481AbZDFMBG (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 6 Apr 2009 08:01:06 -0400
+Message-ID: <49D9EF0F.9090808@nokia.com>
+Date: Mon, 06 Apr 2009 15:01:19 +0300
+From: Adrian Hunter <adrian.hunter@nokia.com>
+User-Agent: Thunderbird 2.0.0.19 (X11/20090105)
+MIME-Version: 1.0
+To: Pierre Ossman <drzeus-mmc@drzeus.cx>
+CC: LKML <linux-kernel@vger.kernel.org>,
+       Kevin Hilman <khilman@deeprootsystems.com>,
+       Tony Lindgren <tony@atomide.com>,
+       linux-omap Mailing List <linux-omap@vger.kernel.org>
+Subject: [PATCH] omap_hsmmc: Flush posted write to IRQ
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
+X-OriginalArrivalTime: 06 Apr 2009 12:00:19.0509 (UTC) FILETIME=[41BB3650:01C9B6AF]
+X-Nokia-AV: Clean
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hello.
+From: Kevin Hilman <khilman@deeprootsystems.com>
 
-> > +#ifdef TOMOYO_DEBUG_DOMAIN_UNDELETE
-> > +                       if (domain2->is_deleted != 255)
-> > +                               printk(KERN_DEBUG
-> > +                                      "Marked %p as non undeletable\n",
-> > +                                      domain2);
-> > +#endif
-> > +                       domain2->is_deleted = 255;
-> > 
-> > (I don't know why we want undelete in tomoyo.)
-> This "undelete domain" feature was introduced to allow administrators switch
-> domain policy periodically.
-> 
-We reconsidered this feature and concluded that we won't need this feature.
+Spurious IRQs seen on MMC after 2.6.29.  Flush posted write in IRQ
+handler.
 
-Thanks.
-----------
-Subject: tomoyo: remove "undelete domain" command.
+The interrupt line is released by clearing the error status bits
+in the MMCHS_STAT register, which must occur before the interrupt
+handler returns to avoid unwanted irqs.  Hence the need to flush
+the posted write.
 
-Since TOMOYO's policy management tools does not use the "undelete domain"
-command, we decided to remove that command.
-
-Signed-off-by: Kentaro Takeda <takedakn@nttdata.co.jp>
-Signed-off-by: Tetsuo Handa <penguin-kernel@I-love.SAKURA.ne.jp>
-Signed-off-by: Toshiharu Harada <haradats@nttdata.co.jp>
+Signed-off-by: Kevin Hilman <khilman@deeprootsystems.com>
+Signed-off-by: Adrian Hunter <adrian.hunter@nokia.com>
 ---
- security/tomoyo/common.c |    7 ---
- security/tomoyo/common.h |    8 ----
- security/tomoyo/domain.c |   90 +----------------------------------------------
- 3 files changed, 5 insertions(+), 100 deletions(-)
 
---- linux-2.6.29-git13.orig/security/tomoyo/common.c
-+++ linux-2.6.29-git13/security/tomoyo/common.c
-@@ -1252,15 +1252,12 @@ static int tomoyo_write_domain_policy(st
- 	struct tomoyo_domain_info *domain = head->write_var1;
- 	bool is_delete = false;
- 	bool is_select = false;
--	bool is_undelete = false;
- 	unsigned int profile;
- 
- 	if (tomoyo_str_starts(&data, TOMOYO_KEYWORD_DELETE))
- 		is_delete = true;
- 	else if (tomoyo_str_starts(&data, TOMOYO_KEYWORD_SELECT))
- 		is_select = true;
--	else if (tomoyo_str_starts(&data, TOMOYO_KEYWORD_UNDELETE))
--		is_undelete = true;
- 	if (is_select && tomoyo_is_select_one(head, data))
- 		return 0;
- 	/* Don't allow updating policies by non manager programs. */
-@@ -1274,9 +1271,7 @@ static int tomoyo_write_domain_policy(st
- 			down_read(&tomoyo_domain_list_lock);
- 			domain = tomoyo_find_domain(data);
- 			up_read(&tomoyo_domain_list_lock);
--		} else if (is_undelete)
--			domain = tomoyo_undelete_domain(data);
--		else
-+		} else
- 			domain = tomoyo_find_or_assign_new_domain(data, 0);
- 		head->write_var1 = domain;
- 		return 0;
---- linux-2.6.29-git13.orig/security/tomoyo/common.h
-+++ linux-2.6.29-git13/security/tomoyo/common.h
-@@ -88,10 +88,7 @@ struct tomoyo_domain_info {
- 	/* Name of this domain. Never NULL.          */
- 	const struct tomoyo_path_info *domainname;
- 	u8 profile;        /* Profile number to use. */
--	u8 is_deleted;     /* Delete flag.
--			      0 = active.
--			      1 = deleted but undeletable.
--			      255 = deleted and no longer undeletable. */
-+	bool is_deleted;   /* Delete flag.           */
- 	bool quota_warned; /* Quota warnning flag.   */
- 	/* DOMAIN_FLAGS_*. Use tomoyo_set_domain_flag() to modify. */
- 	u8 flags;
-@@ -144,7 +141,6 @@ struct tomoyo_double_path_acl_record {
- #define TOMOYO_KEYWORD_NO_INITIALIZE_DOMAIN      "no_initialize_domain "
- #define TOMOYO_KEYWORD_NO_KEEP_DOMAIN            "no_keep_domain "
- #define TOMOYO_KEYWORD_SELECT                    "select "
--#define TOMOYO_KEYWORD_UNDELETE                  "undelete "
- #define TOMOYO_KEYWORD_USE_PROFILE               "use_profile "
- #define TOMOYO_KEYWORD_IGNORE_GLOBAL_ALLOW_READ  "ignore_global_allow_read"
- /* A domain definition starts with <kernel>. */
-@@ -267,8 +263,6 @@ struct tomoyo_domain_info *tomoyo_find_d
- struct tomoyo_domain_info *tomoyo_find_or_assign_new_domain(const char *
- 							    domainname,
- 							    const u8 profile);
--/* Undelete a domain. */
--struct tomoyo_domain_info *tomoyo_undelete_domain(const char *domainname);
- /* Check mode for specified functionality. */
- unsigned int tomoyo_check_flags(const struct tomoyo_domain_info *domain,
- 				const u8 index);
---- linux-2.6.29-git13.orig/security/tomoyo/domain.c
-+++ linux-2.6.29-git13/security/tomoyo/domain.c
-@@ -551,9 +551,7 @@ int tomoyo_write_alias_policy(char *data
- 	return tomoyo_update_alias_entry(data, cp, is_delete);
- }
- 
--/* Domain create/delete/undelete handler. */
--
--/* #define TOMOYO_DEBUG_DOMAIN_UNDELETE */
-+/* Domain create/delete handler. */
- 
- /**
-  * tomoyo_delete_domain - Delete a domain.
-@@ -571,41 +569,15 @@ int tomoyo_delete_domain(char *domainnam
- 	tomoyo_fill_path_info(&name);
- 	/***** EXCLUSIVE SECTION START *****/
- 	down_write(&tomoyo_domain_list_lock);
--#ifdef TOMOYO_DEBUG_DOMAIN_UNDELETE
--	printk(KERN_DEBUG "tomoyo_delete_domain %s\n", domainname);
--	list_for_each_entry(domain, &tomoyo_domain_list, list) {
--		if (tomoyo_pathcmp(domain->domainname, &name))
--			continue;
--		printk(KERN_DEBUG "List: %p %u\n", domain, domain->is_deleted);
--	}
--#endif
- 	/* Is there an active domain? */
- 	list_for_each_entry(domain, &tomoyo_domain_list, list) {
--		struct tomoyo_domain_info *domain2;
- 		/* Never delete tomoyo_kernel_domain */
- 		if (domain == &tomoyo_kernel_domain)
- 			continue;
- 		if (domain->is_deleted ||
- 		    tomoyo_pathcmp(domain->domainname, &name))
- 			continue;
--		/* Mark already deleted domains as non undeletable. */
--		list_for_each_entry(domain2, &tomoyo_domain_list, list) {
--			if (!domain2->is_deleted ||
--			    tomoyo_pathcmp(domain2->domainname, &name))
--				continue;
--#ifdef TOMOYO_DEBUG_DOMAIN_UNDELETE
--			if (domain2->is_deleted != 255)
--				printk(KERN_DEBUG
--				       "Marked %p as non undeletable\n",
--				       domain2);
--#endif
--			domain2->is_deleted = 255;
--		}
--		/* Delete and mark active domain as undeletable. */
--		domain->is_deleted = 1;
--#ifdef TOMOYO_DEBUG_DOMAIN_UNDELETE
--		printk(KERN_DEBUG "Marked %p as undeletable\n", domain);
--#endif
-+		domain->is_deleted = true;
- 		break;
+
+
+
+This patch is slightly modified from Kevin's original, which is
+here:
+
+	http://marc.info/?l=linux-omap&m=123862814815052&w=2
+
+
+
+ drivers/mmc/host/omap_hsmmc.c |    4 ++++
+ 1 files changed, 4 insertions(+), 0 deletions(-)
+
+diff --git a/drivers/mmc/host/omap_hsmmc.c b/drivers/mmc/host/omap_hsmmc.c
+index 04e5a0c..2ae6049 100644
+--- a/drivers/mmc/host/omap_hsmmc.c
++++ b/drivers/mmc/host/omap_hsmmc.c
+@@ -452,6 +452,8 @@ static irqreturn_t mmc_omap_irq(int irq, void *dev_id)
+ 	if (host->mrq == NULL) {
+ 		OMAP_HSMMC_WRITE(host->base, STAT,
+ 			OMAP_HSMMC_READ(host->base, STAT));
++		/* Flush posted write */
++		OMAP_HSMMC_READ(host->base, STAT);
+ 		return IRQ_HANDLED;
  	}
- 	up_write(&tomoyo_domain_list_lock);
-@@ -614,58 +586,6 @@ int tomoyo_delete_domain(char *domainnam
- }
  
- /**
-- * tomoyo_undelete_domain - Undelete a domain.
-- *
-- * @domainname: The name of domain.
-- *
-- * Returns pointer to "struct tomoyo_domain_info" on success, NULL otherwise.
-- */
--struct tomoyo_domain_info *tomoyo_undelete_domain(const char *domainname)
--{
--	struct tomoyo_domain_info *domain;
--	struct tomoyo_domain_info *candidate_domain = NULL;
--	struct tomoyo_path_info name;
--
--	name.name = domainname;
--	tomoyo_fill_path_info(&name);
--	/***** EXCLUSIVE SECTION START *****/
--	down_write(&tomoyo_domain_list_lock);
--#ifdef TOMOYO_DEBUG_DOMAIN_UNDELETE
--	printk(KERN_DEBUG "tomoyo_undelete_domain %s\n", domainname);
--	list_for_each_entry(domain, &tomoyo_domain_list, list) {
--		if (tomoyo_pathcmp(domain->domainname, &name))
--			continue;
--		printk(KERN_DEBUG "List: %p %u\n", domain, domain->is_deleted);
--	}
--#endif
--	list_for_each_entry(domain, &tomoyo_domain_list, list) {
--		if (tomoyo_pathcmp(&name, domain->domainname))
--			continue;
--		if (!domain->is_deleted) {
--			/* This domain is active. I can't undelete. */
--			candidate_domain = NULL;
--#ifdef TOMOYO_DEBUG_DOMAIN_UNDELETE
--			printk(KERN_DEBUG "%p is active. I can't undelete.\n",
--			       domain);
--#endif
--			break;
--		}
--		/* Is this domain undeletable? */
--		if (domain->is_deleted == 1)
--			candidate_domain = domain;
--	}
--	if (candidate_domain) {
--		candidate_domain->is_deleted = 0;
--#ifdef TOMOYO_DEBUG_DOMAIN_UNDELETE
--		printk(KERN_DEBUG "%p was undeleted.\n", candidate_domain);
--#endif
--	}
--	up_write(&tomoyo_domain_list_lock);
--	/***** EXCLUSIVE SECTION END *****/
--	return candidate_domain;
--}
--
--/**
-  * tomoyo_find_or_assign_new_domain - Create a domain.
-  *
-  * @domainname: The name of domain.
-@@ -711,10 +631,6 @@ struct tomoyo_domain_info *tomoyo_find_o
- 		/***** CRITICAL SECTION END *****/
- 		if (flag)
- 			continue;
--#ifdef TOMOYO_DEBUG_DOMAIN_UNDELETE
--		printk(KERN_DEBUG "Reusing %p %s\n", domain,
--		       domain->domainname->name);
--#endif
- 		list_for_each_entry(ptr, &domain->acl_info_list, list) {
- 			ptr->type |= TOMOYO_ACL_DELETED;
- 		}
-@@ -722,7 +638,7 @@ struct tomoyo_domain_info *tomoyo_find_o
- 		domain->profile = profile;
- 		domain->quota_warned = false;
- 		mb(); /* Avoid out-of-order execution. */
--		domain->is_deleted = 0;
-+		domain->is_deleted = false;
- 		goto out;
+@@ -523,6 +525,8 @@ static irqreturn_t mmc_omap_irq(int irq, void *dev_id)
  	}
- 	/* No memory reusable. Create using new memory. */
+ 
+ 	OMAP_HSMMC_WRITE(host->base, STAT, status);
++	/* Flush posted write */
++	OMAP_HSMMC_READ(host->base, STAT);
+ 
+ 	if (end_cmd || (status & CC))
+ 		mmc_omap_cmd_done(host, host->cmd);
+-- 
+1.5.6.3
