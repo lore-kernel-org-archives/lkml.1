@@ -1,20 +1,20 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754992AbZDFPci@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755049AbZDFPdW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754992AbZDFPci (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 6 Apr 2009 11:32:38 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752521AbZDFPc0
+	id S1755049AbZDFPdW (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 6 Apr 2009 11:33:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752293AbZDFPc7
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 6 Apr 2009 11:32:26 -0400
-Received: from earthlight.etchedpixels.co.uk ([81.2.110.250]:46780 "EHLO
+	Mon, 6 Apr 2009 11:32:59 -0400
+Received: from earthlight.etchedpixels.co.uk ([81.2.110.250]:56937 "EHLO
 	t61.ukuu.org.uk" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1753649AbZDFPcZ (ORCPT
+	with ESMTP id S1751557AbZDFPc6 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 6 Apr 2009 11:32:25 -0400
+	Mon, 6 Apr 2009 11:32:58 -0400
 From: Alan Cox <alan@lxorguk.ukuu.org.uk>
-Subject: [PATCH 01/27] 8250_pnp.c: add another Wacom tablet
+Subject: [PATCH 06/27] blackfin: Use unsigned long for flags with irq functions
 To: torvalds@linux-foundation.org, linux-kernel@vger.kernel.org
-Date: Mon, 06 Apr 2009 17:31:54 +0100
-Message-ID: <20090406163150.12934.23200.stgit@t61.ukuu.org.uk>
+Date: Mon, 06 Apr 2009 17:32:28 +0100
+Message-ID: <20090406163227.12934.77478.stgit@t61.ukuu.org.uk>
 In-Reply-To: <20090406162959.12934.97904.stgit@t61.ukuu.org.uk>
 References: <20090406162959.12934.97904.stgit@t61.ukuu.org.uk>
 User-Agent: StGIT/0.14.3
@@ -25,31 +25,38 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Danny Kukawka <dkukawka@suse.de>
+From: Mike Frysinger <vapier.adi@gmail.com>
 
-Add another serial Wacom tablet with pnp_id: WACF009.
-
-Signed-off-by: Danny Kukawka <dkukawka@suse.de>
-Signed-off-by: Alan Cox <alan@etchedpixels.co.uk>
---
- 8250_pnp.c |    1 +
- 1 file changed, 1 insertion(+)
+Signed-off-by: Mike Frysinger <vapier.adi@gmail.com>
+Signed-off-by: Bryan Wu <cooloney@kernel.org>
+Signed-off-by: Alan Cox <alan@lxorguk.ukuu.org.uk>
 ---
 
- drivers/serial/8250_pnp.c |    1 +
- 1 files changed, 1 insertions(+), 0 deletions(-)
+ drivers/serial/bfin_5xx.c |    5 +++--
+ 1 files changed, 3 insertions(+), 2 deletions(-)
 
 
-diff --git a/drivers/serial/8250_pnp.c b/drivers/serial/8250_pnp.c
-index bbcfc26..6db9f13 100644
---- a/drivers/serial/8250_pnp.c
-+++ b/drivers/serial/8250_pnp.c
-@@ -333,6 +333,7 @@ static const struct pnp_device_id pnp_dev_table[] = {
- 	{       "WACF006",              0       },
- 	{       "WACF007",              0       },
- 	{       "WACF008",              0       },
-+	{       "WACF009",              0       },
- 	/* Compaq touchscreen */
- 	{       "FPI2002",              0 },
- 	/* Fujitsu Stylistic touchscreens */
+diff --git a/drivers/serial/bfin_5xx.c b/drivers/serial/bfin_5xx.c
+index 318d69d..45c32b2 100644
+--- a/drivers/serial/bfin_5xx.c
++++ b/drivers/serial/bfin_5xx.c
+@@ -415,7 +415,8 @@ static void bfin_serial_dma_rx_chars(struct bfin_serial_port *uart)
+ 
+ void bfin_serial_rx_dma_timeout(struct bfin_serial_port *uart)
+ {
+-	int x_pos, pos, flags;
++	int x_pos, pos;
++	unsigned long flags;
+ 
+ 	spin_lock_irqsave(&uart->port.lock, flags);
+ 
+@@ -1088,7 +1089,7 @@ static void
+ bfin_serial_console_write(struct console *co, const char *s, unsigned int count)
+ {
+ 	struct bfin_serial_port *uart = &bfin_serial_ports[co->index];
+-	int flags = 0;
++	unsigned long flags;
+ 
+ 	spin_lock_irqsave(&uart->port.lock, flags);
+ 	uart_console_write(&uart->port, s, count, bfin_serial_console_putchar);
 
