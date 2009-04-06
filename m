@@ -1,113 +1,74 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755401AbZDFRZV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753359AbZDFRa0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755401AbZDFRZV (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 6 Apr 2009 13:25:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751216AbZDFRZF
+	id S1753359AbZDFRa0 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 6 Apr 2009 13:30:26 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751590AbZDFRaM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 6 Apr 2009 13:25:05 -0400
-Received: from mail.vyatta.com ([76.74.103.46]:44775 "EHLO mail.vyatta.com"
+	Mon, 6 Apr 2009 13:30:12 -0400
+Received: from mx2.redhat.com ([66.187.237.31]:57614 "EHLO mx2.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750905AbZDFRZE (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 6 Apr 2009 13:25:04 -0400
-Date: Mon, 6 Apr 2009 10:24:54 -0700
-From: Stephen Hemminger <shemminger@vyatta.com>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: "David S. Miller" <davem@davemloft.net>, netdev@vger.kernel.org,
-       linux-kernel@vger.kernel.org, Thomas Gleixner <tglx@linutronix.de>
-Subject: Re: [crash, bisected] net, sky2: BUG: unable to handle kernel NULL
- pointer dereference, pci_vpd_truncate()
-Message-ID: <20090406102454.0fc7f3c3@nehalam>
-In-Reply-To: <20090406090303.GA12525@elte.hu>
-References: <20090406090303.GA12525@elte.hu>
-Organization: Vyatta
-X-Mailer: Claws Mail 3.6.1 (GTK+ 2.16.0; x86_64-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	id S1751216AbZDFRaL (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 6 Apr 2009 13:30:11 -0400
+From: Jarod Wilson <jarod@redhat.com>
+Organization: Red Hat, Inc.
+To: Jesse Barnes <jbarnes@virtuousgeek.org>
+Subject: Re: [PATCH] drm: ignore LVDS on intel graphics systems that lie about having it
+Date: Mon, 6 Apr 2009 13:29:53 -0400
+User-Agent: KMail/1.11.1 (Linux/2.6.27.21-170.2.56.fc10.x86_64; KDE/4.2.1; x86_64; ; )
+Cc: dri-devel@lists.sourceforge.net, xorg-devel@lists.x.org,
+       linux-kernel@vger.kernel.org, notting@redhat.com,
+       Zhenyu Wang <zhenyu.z.wang@intel.com>,
+       Fu Michael <michael_fu@linux.intel.com>
+References: <200904061011.26389.jarod@redhat.com> <20090406095216.4361d128@hobbes>
+In-Reply-To: <20090406095216.4361d128@hobbes>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200904061329.53824.jarod@redhat.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 6 Apr 2009 11:03:03 +0200
-Ingo Molnar <mingo@elte.hu> wrote:
+On Monday 06 April 2009 12:52:16 Jesse Barnes wrote:
+> On Mon, 6 Apr 2009 10:11:25 -0400
+> Jarod Wilson <jarod@redhat.com> wrote:
+> 
+> > There are a number of small form factor desktop systems with Intel
+> > mobile graphics chips that lie and say they have an LVDS. With kernel
+> > mode-setting, this becomes a problem, and makes native resolution
+> > boot go haywire -- for example, my Dell Studio Hybrid, hooked to a
+> > 1920x1080 display claims to have a 1024x768 LVDS, and the resulting
+> > graphical boot on the 1920x1080 display uses only the top left
+> > 1024x768, and auto-configured X will end up only 1024x768 as well.
+> > With this change, graphical boot and X both do 1920x1080 as expected.
+> > 
+> > Note that we're simply embracing and extending the early bail-out code
+> > in place for the Mac Mini here. The xorg intel driver uses pci
+> > subsystem device and vendor id for matching, while we're using dmi
+> > lookups here. The MSI addition is courtesy of and tested by Bill
+> > Nottingham.
+> > 
+> > One minor issue... Current Fedora rawhide, video playback using Xv
+> > makes X go off into the weeds with this patch added, but that's a bug
+> > elsewhere, still confident this patch DTRT.
+> > 
+> > Signed-off-by: Jarod Wilson <jarod@redhat.com>
+> > Tested-by: Bill Nottingham <notting@redhat.com>
+> 
+> The 2D driver has a similar set of quirks, but since we started that
+> list we've found that the VBIOS should contain a pretty reliable table
+> indicating which outputs are available, including LVDS.  I think if we
+> can figure out how to parse it reliably (accounting for VBIOS
+> versioning and structure size changes) we shouldn't need this patch.
+> If we can't get that done in time for 2.6.30 though I'm all for
+> including this.
 
-> 
-> Not sure whether this has been reported before, but one of the -tip 
-> testboxes started showing the boot crash attached below. Reproduces 
-> with latest -git.
-> 
-> I have bisected it to:
-> 
-> | installing & booting kernel ... => good. (114 seconds)
-> | 3834507d0c5480a0f05486c2fb57ed18fd179a83 is first bad commit
-> | commit 3834507d0c5480a0f05486c2fb57ed18fd179a83
-> | Author: Stephen Hemminger <shemminger@vyatta.com>
-> | Date:   Tue Feb 3 11:27:30 2009 +0000
-> |
-> |     sky2: set VPD size
-> |    
-> |     Read configuration register during probe and use it to size the
-> |     available VPD. Move existing code using same register slightly
-> |     earlier in probe handling.
-> 
-> [ I'm testing the straight revert currently. Can send more info if 
->   needed. ]
-> 
-> 	Ingo
-> 
-> [   35.298806] initcall bnx2x_init+0x0/0x60 returned 0 after 129 usecs
-> [   35.305155] calling  skge_init_module+0x0/0x60 @ 1
-> [   35.310087] initcall skge_init_module+0x0/0x60 returned 0 after 77 usecs
-> [   35.316873] calling  sky2_init_module+0x0/0x60 @ 1
-> [   35.321741] sky2 driver version 1.22
-> [   35.325465] sky2 0000:02:00.0: PCI INT A -> GSI 19 (level, low) -> IRQ 19
-> [   35.332489] sky2 0000:02:00.0: setting latency timer to 64
-> [   35.338137] BUG: unable to handle kernel NULL pointer dereference at 0000000000000018
-> [   35.342329] IP: [<ffffffff8060107b>] pci_vpd_truncate+0x2b/0x40
-> [   35.342329] PGD 0 
-> [   35.342329] Oops: 0002 [#1] SMP DEBUG_PAGEALLOC
-> [   35.342329] last sysfs file: 
-> [   35.342329] CPU 0 
-> [   35.342329] Pid: 9, comm: work_on_cpu/0 Not tainted 2.6.29-tip-09528-g243ae82-dirty #3383 System Product Name
-> [   35.342329] RIP: 0010:[<ffffffff8060107b>]  [<ffffffff8060107b>] pci_vpd_truncate+0x2b/0x40
-> [   35.342329] RSP: 0018:ffff88007fbb3d20  EFLAGS: 00010206
-> [   35.342329] RAX: 0000000000000000 RBX: ffff88007fb59a60 RCX: 000000000000000a
-> [   35.342329] RDX: ffff88007fb88000 RSI: 0000000000000400 RDI: ffff88007e58e000
-> [   35.342329] RBP: ffff88007fbb3d20 R08: 0000000000000000 R09: 0000000000000309
-> [   35.342329] R10: ffff88007fbaa7a0 R11: 0000000000000002 R12: ffff88007e58e080
-> [   35.342329] R13: 0000000000000000 R14: ffff88007e58e000 R15: ffffffff802920c0
-> [   35.342329] FS:  0000000000000000(0000) GS:ffff880006200000(0000) knlGS:0000000000000000
-> [   35.431275] CS:  0010 DS: 0018 ES: 0018 CR0: 000000008005003b
-> [   35.431275] CR2: 0000000000000018 CR3: 0000000000201000 CR4: 00000000000026a0
-> [   35.431275] DR0: 0000000000000000 DR1: 0000000000000000 DR2: 0000000000000000
-> [   35.431275] DR3: 0000000000000000 DR6: 00000000ffff0ff0 DR7: 0000000000000400
-> [   35.431275] Process work_on_cpu/0 (pid: 9, threadinfo ffff88007fbb2000, task ffff88007fbaa000)
-> [   35.431275] Stack:
-> [   35.431275]  ffff88007fbb3e20 ffffffff81013047 ffff88007fbaa000 0000000000000000
-> [   35.431275]  000000017fbaa768 0000000000000000 ffff880000000001 ffffffff80240700
-> [   35.431275]  ffff88007fbaa038 0000000000000038 ffff88007fbaa7a0 0000000000000038
-> [   35.431275] Call Trace:
-> [   35.431275]  [<ffffffff81013047>] sky2_probe+0x1d7/0xc10
-> [   35.431275]  [<ffffffff80240700>] ? native_sched_clock+0x20/0x80
-> [   35.431275]  [<ffffffff802a58e1>] ? __lock_acquire+0x201/0xa10
-> [   35.431275]  [<ffffffff802405b9>] ? sched_clock+0x9/0x10
-> [   35.431275]  [<ffffffff802920c0>] ? do_work_for_cpu+0x0/0x20
-> [   35.431275]  [<ffffffff80607b02>] local_pci_probe+0x12/0x20
-> [   35.431275]  [<ffffffff802920d3>] do_work_for_cpu+0x13/0x20
-> [   35.431275]  [<ffffffff8029323d>] worker_thread+0x24d/0x360
-> [   35.431275]  [<ffffffff802931c0>] ? worker_thread+0x1d0/0x360
-> [   35.431275]  [<ffffffff80296a50>] ? autoremove_wake_function+0x0/0x40
-> [   35.431275]  [<ffffffff80292ff0>] ? worker_thread+0x0/0x360
-> [   35.431275]  [<ffffffff8029660d>] kthread+0x4d/0x80
-> [   35.431275]  [<ffffffff8023a10a>] child_rip+0xa/0x20
-> [   35.431275]  [<ffffffff80239a90>] ? restore_args+0x0/0x30
-> [   35.431275]  [<ffffffff802965c0>] ? kthread+0x0/0x80
-> [   35.431275]  [<ffffffff8023a100>] ? child_rip+0x0/0x20
-> [   35.431275] Code: 55 48 8b 97 e0 07 00 00 48 89 e5 48 85 d2 75 07 c9 b8 ea ff ff ff c3 8b 02 48 39 f0 72 f2 89 32 48 8b 87 e0 07 00 00 48 8b 40 10 <48> 89 70 18 c9 31 c0 c3 66 66 66 90 66 66 90 66 66 90 66 66 90 
-> [   35.431275] RIP  [<ffffffff8060107b>] pci_vpd_truncate+0x2b/0x40
-> [   35.431275]  RSP <ffff88007fbb3d20>
+Sounds like a plan to me. Either way, would this patch still make sense
+for submission to the 2.6.29.x stable series? I've already tacked it
+onto the Fedora 2.6.29 kernel builds, fwiw.
 
-It is reported, and fixed in david's tree.
-The problem is really an init-order issue in PCI bus code, but no
-one else seems to want to fix it.  (sysfs for pci should be up before network
-devices).
+-- 
+Jarod Wilson
+jarod@redhat.com
