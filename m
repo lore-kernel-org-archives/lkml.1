@@ -1,69 +1,138 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754010AbZDFRnl@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753264AbZDFRvX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754010AbZDFRnl (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 6 Apr 2009 13:43:41 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751993AbZDFRnd
+	id S1753264AbZDFRvX (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 6 Apr 2009 13:51:23 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750804AbZDFRvN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 6 Apr 2009 13:43:33 -0400
-Received: from mx2.redhat.com ([66.187.237.31]:60103 "EHLO mx2.redhat.com"
+	Mon, 6 Apr 2009 13:51:13 -0400
+Received: from mx2.redhat.com ([66.187.237.31]:57043 "EHLO mx2.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752048AbZDFRnc (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 6 Apr 2009 13:43:32 -0400
-Message-ID: <49DA3F85.7050302@redhat.com>
-Date: Mon, 06 Apr 2009 13:44:37 -0400
-From: Masami Hiramatsu <mhiramat@redhat.com>
-User-Agent: Thunderbird 2.0.0.21 (X11/20090320)
+	id S1751717AbZDFRvM (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 6 Apr 2009 13:51:12 -0400
+Message-ID: <49DA40B9.2060804@redhat.com>
+Date: Mon, 06 Apr 2009 13:49:45 -0400
+From: Brian Maly <bmaly@redhat.com>
+User-Agent: Thunderbird 1.5.0.2 (X11/20060501)
 MIME-Version: 1.0
-To: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
-CC: Ingo Molnar <mingo@elte.hu>,
-       Ananth N Mavinakayanahalli <ananth@in.ibm.com>,
-       LKML <linux-kernel@vger.kernel.org>,
-       systemtap-ml <systemtap@sources.redhat.com>
-Subject: Re: [BUGFIX][PATCH -tip] x86: fix text_poke to handle highmem pages
-References: <49D76FFF.6020202@redhat.com> <20090404154230.GB2451@Krystal> <49D7A6DF.8080804@redhat.com> <49D7AF26.5030808@redhat.com> <49D82987.5090003@redhat.com> <49DA37CB.4020901@redhat.com> <20090406173238.GA31867@Krystal>
-In-Reply-To: <20090406173238.GA31867@Krystal>
-X-Enigmail-Version: 0.95.7
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+To: linux-kernel@vger.kernel.org, akpm@linux-foundation.org
+CC: dannf@hp.com, ying.huang@intel.com
+Subject: [PATCH] rtc: add x86 support for rtc-efi
+Content-Type: multipart/mixed;
+ boundary="------------040202070901050704000008"
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Mathieu Desnoyers wrote:
-> * Masami Hiramatsu (mhiramat@redhat.com) wrote:
->> Fix a bug in text_poke to handle highmem pages, because module
->> text pages are possible to be highmem pages on x86-32.
->> In that case, since fixmap can't handle those pages, text_poke
->> uses kmap_atomic.
->>
-> 
-> Hrm, can you remind me what would be the downside of using kmap_atomic
-> in every scenarios (highmem and non-highmem) then ?
+This is a multi-part message in MIME format.
+--------------040202070901050704000008
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 
-kmap_atomic can handle only highmem pages. If you passes lowmem pages,
-it returns just original vaddr of it. (because kmap is only for
-highmem support)
+This patch adds support for rtc-efi (RTC Class Driver for EFI-based 
+systems) to x86.
 
-> 
-> I would try to avoid "special cases" as much as possible, because they
-> just make problems harder to reproduce.
+This patch is based on dann frazier patch [add rtc platform driver for 
+EFI -> http://lkml.org/lkml/2009/1/8/434], and also depends on dann's 
+patch. Dann's patch was in the mm tree, though I think its been merged 
+already.
 
-Actually, this bug is a special case because it happens only on PAE kernel.
+This patch has been tested and works perfectly on every x86 EFI system I 
+could find, though all have been EL64 systems. I would appreciate any 
+testing feedback from EL32 systems from anyone that has one and can test.
 
-> 
-> The idea would be to either add fixmap highmem support, or to simply use
-> kmap_atomic() for all cases until we add fixmap highmem support.
-> 
+Signed-off-by: Brian Maly <bmaly@redhat.com>
 
 
-Thank you,
 
--- 
-Masami Hiramatsu
 
-Software Engineer
-Hitachi Computer Products (America) Inc.
-Software Solutions Division
 
-e-mail: mhiramat@redhat.com
+--------------040202070901050704000008
+Content-Type: text/x-patch;
+ name="2.6.29-add-x86-support-for-efi-rtc.patch"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline;
+ filename="2.6.29-add-x86-support-for-efi-rtc.patch"
 
+--- a/drivers/rtc/Kconfig	2009-03-28 04:25:33.000000000 -0400
++++ b/drivers/rtc/Kconfig	2009-03-26 12:53:59.000000000 -0400
+@@ -442,7 +442,7 @@ config RTC_DRV_DS1742
+ 
+ config RTC_DRV_EFI
+ 	tristate "EFI RTC"
+-	depends on IA64
++	depends on IA64 || (X86 && EFI) || (X86_64 && EFI)
+ 	help
+ 	  If you say yes here you will get support for the EFI
+ 	  Real Time Clock.
+--- a/arch/x86/kernel/time_32.c	2009-03-12 22:39:28.000000000 -0400
++++ b/arch/x86/kernel/time_32.c	2009-03-27 12:08:58.000000000 -0400
+@@ -32,6 +32,7 @@
+ #include <linux/interrupt.h>
+ #include <linux/time.h>
+ #include <linux/mca.h>
++#include <linux/platform_device.h>
+ 
+ #include <asm/arch_hooks.h>
+ #include <asm/hpet.h>
+@@ -135,3 +136,24 @@ void __init time_init(void)
+ 	tsc_init();
+ 	late_time_init = choose_time_init();
+ }
++
++#ifdef CONFIG_EFI
++extern int efi_enabled;
++
++static struct platform_device rtc_efi_dev = {
++	.name = "rtc-efi",
++	.id = -1,
++};
++
++static int __init rtc_init(void)
++{
++	if (efi_enabled) {
++		if (platform_device_register(&rtc_efi_dev) < 0)
++			printk(KERN_ERR "unable to register rtc device...\n");
++	}
++	/* not necessarily an error */
++	return 0;
++}
++module_init(rtc_init);
++#endif
++
+--- a/arch/x86/kernel/time_64.c	2009-03-12 22:39:28.000000000 -0400
++++ b/arch/x86/kernel/time_64.c	2009-03-27 12:09:39.000000000 -0400
+@@ -18,6 +18,7 @@
+ #include <linux/time.h>
+ #include <linux/mca.h>
+ #include <linux/nmi.h>
++#include <linux/platform_device.h>
+ 
+ #include <asm/i8253.h>
+ #include <asm/hpet.h>
+@@ -135,3 +136,24 @@ void __init time_init(void)
+ 
+ 	late_time_init = choose_time_init();
+ }
++
++#ifdef CONFIG_EFI
++extern int efi_enabled;
++
++static struct platform_device rtc_efi_dev = {
++	.name = "rtc-efi",
++	.id = -1,
++};
++
++static int __init rtc_init(void)
++{
++	if (efi_enabled) {
++		if (platform_device_register(&rtc_efi_dev) < 0)
++			printk(KERN_ERR "unable to register rtc device...\n");
++	}
++	/* not necessarily an error */
++	return 0;
++}
++module_init(rtc_init);
++#endif
++
+
+--------------040202070901050704000008--
