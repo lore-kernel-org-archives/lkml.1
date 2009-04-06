@@ -1,56 +1,29 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757316AbZDFTgF@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757548AbZDFThA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757316AbZDFTgF (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 6 Apr 2009 15:36:05 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755154AbZDFTft
+	id S1757548AbZDFThA (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 6 Apr 2009 15:37:00 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757287AbZDFTgi
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 6 Apr 2009 15:35:49 -0400
-Received: from rcsinet13.oracle.com ([148.87.113.125]:37832 "EHLO
-	rgminet13.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755249AbZDFTfs (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 6 Apr 2009 15:35:48 -0400
-Message-ID: <49DA596A.5090104@oracle.com>
-Date: Mon, 06 Apr 2009 12:35:06 -0700
-From: Randy Dunlap <randy.dunlap@oracle.com>
-Organization: Oracle Linux Engineering
-User-Agent: Thunderbird 2.0.0.6 (X11/20070801)
+	Mon, 6 Apr 2009 15:36:38 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:50037 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1757347AbZDFTgh (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 6 Apr 2009 15:36:37 -0400
 MIME-Version: 1.0
-To: linux-kernel@vger.kernel.org
-CC: Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: mmotm 2009-04-05-21-45 uploaded
-References: <200904060450.n364oaUj031923@imap1.linux-foundation.org>
-In-Reply-To: <200904060450.n364oaUj031923@imap1.linux-foundation.org>
-Content-Type: text/plain; charset=ISO-8859-1
+Content-Type: text/plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
-X-Source-IP: acsmt703.oracle.com [141.146.40.81]
-X-Auth-Type: Internal IP
-X-CT-RefId: str=0001.0A010204.49DA5962.015D:SCFMA4539814,ss=1,fgs=0
+From: Roland McGrath <roland@redhat.com>
+To: Oleg Nesterov <oleg@redhat.com>
+X-Fcc: ~/Mail/linus
+Cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] ptrace: fix exit_ptrace() vs ptrace_traceme() race
+In-Reply-To: Oleg Nesterov's message of  Monday, 6 April 2009 18:52:38 +0200 <20090406165238.GA25710@redhat.com>
+References: <20090406165238.GA25710@redhat.com>
+X-Zippy-Says: I think my CAREER is RUINED!!
+Message-Id: <20090406193549.F13E8FC3E3@magilla.sf.frob.com>
+Date: Mon,  6 Apr 2009 12:35:49 -0700 (PDT)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-akpm@linux-foundation.org wrote:
-> The mm-of-the-moment snapshot 2009-04-05-21-45 has been uploaded to
-> 
->    http://userweb.kernel.org/~akpm/mmotm/
-> 
-> and will soon be available at
-> 
->    git://git.zen-sources.org/zen/mmotm.git
-> 
-> It contains the following patches against 2.6.29:
-
-
-Duplicate functions merged here (2 functions duplicated),
-so *all* (of my) builds fail with these errors:
-
-
-mmotm-2009-0405-2145/scripts/kallsyms.c:550: error: redefinition of 'may_be_linker_script_provide_symbol'
-mmotm-2009-0405-2145/scripts/kallsyms.c:505: error: previous definition of 'may_be_linker_script_provide_symbol' was here
-mmotm-2009-0405-2145/scripts/kallsyms.c:584: error: redefinition of 'prefix_underscores_count'
-mmotm-2009-0405-2145/scripts/kallsyms.c:539: error: previous definition of 'prefix_underscores_count' was here
-
-
--- 
-~Randy
+Acked-by: Roland McGrath <roland@redhat.com>
