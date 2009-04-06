@@ -1,58 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755236AbZDFKJA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755298AbZDFKSe@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755236AbZDFKJA (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 6 Apr 2009 06:09:00 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754421AbZDFKIu
+	id S1755298AbZDFKSe (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 6 Apr 2009 06:18:34 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752620AbZDFKSX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 6 Apr 2009 06:08:50 -0400
-Received: from hera.kernel.org ([140.211.167.34]:36079 "EHLO hera.kernel.org"
+	Mon, 6 Apr 2009 06:18:23 -0400
+Received: from bu3sch.de ([62.75.166.246]:44801 "EHLO vs166246.vserver.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754135AbZDFKIu (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 6 Apr 2009 06:08:50 -0400
-Message-ID: <49D9D4D8.2020608@kernel.org>
-Date: Mon, 06 Apr 2009 03:09:28 -0700
-From: Tejun Heo <tj@kernel.org>
-User-Agent: Thunderbird 2.0.0.19 (X11/20081227)
+	id S1751304AbZDFKSW (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 6 Apr 2009 06:18:22 -0400
+From: Michael Buesch <mb@bu3sch.de>
+To: Helmut Schaa <helmut.schaa@googlemail.com>
+Subject: Re: ath9k becon loss messages
+Date: Mon, 6 Apr 2009 12:17:30 +0200
+User-Agent: KMail/1.9.9
+Cc: Kalle Valo <kalle.valo@iki.fi>,
+       Jaswinder Singh Rajput <jaswinder@kernel.org>,
+       Sujith <Sujith.Manoharan@atheros.com>,
+       wireless <linux-wireless@vger.kernel.org>,
+       David Miller <davem@davemloft.net>, LKML <linux-kernel@vger.kernel.org>
+References: <1238923439.4120.9.camel@localhost.localdomain> <87bprbif2f.fsf@litku.valot.fi> <200904060914.32245.helmut.schaa@gmail.com>
+In-Reply-To: <200904060914.32245.helmut.schaa@gmail.com>
 MIME-Version: 1.0
-To: Niel Lambrechts <niel.lambrechts@gmail.com>
-CC: "linux.kernel" <linux-kernel@vger.kernel.org>
-Subject: Re: 2.6.29 regression: ATA bus errors on resume
-References: <ckpL0-3TE-3@gated-at.bofh.it> <ckpL0-3TE-5@gated-at.bofh.it> <ckpL0-3TE-7@gated-at.bofh.it> <ckpL0-3TE-9@gated-at.bofh.it> <ckpL0-3TE-11@gated-at.bofh.it> <ckpL0-3TE-1@gated-at.bofh.it> <cllvN-2Gf-1@gated-at.bofh.it> <49D0D788.6070405@gmail.com> <49D419E8.2080603@kernel.org> <49D4591B.3070807@gmail.com> <49D46096.1040701@kernel.org> <49D49B8A.7070408@gmail.com> <49D4C886.1010101@gmail.com> <49D6E7FA.3000306@kernel.org> <49D98C9E.2000507@gmail.com>
-In-Reply-To: <49D98C9E.2000507@gmail.com>
-X-Enigmail-Version: 0.95.7
-Content-Type: text/plain; charset=UTF-8
+Content-Type: text/plain;
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Mon, 06 Apr 2009 10:08:47 +0000 (UTC)
+Content-Disposition: inline
+Message-Id: <200904061217.31134.mb@bu3sch.de>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Niel Lambrechts wrote:
-> On 04/04/2009 06:54 AM, Tejun Heo wrote:
->> Hello, Neil.
->>
->> Niel Lambrechts wrote:
->>   
->>>> Thanks for your help, I've done at least 5 hibernate cycles without the
->>>> problem recurring, I'll keep at it for a while... :)
->>>>       
->> Hmmm..
->>   
-> Hi Tejun,
+On Monday 06 April 2009 09:14:31 Helmut Schaa wrote:
+> Am Sonntag, 5. April 2009 schrieb Kalle Valo:
+> > Jaswinder Singh Rajput <jaswinder@kernel.org> writes:
+> > 
+> > >> And besides that, I think one can easily remotely trigger this
+> > >> message and flood the logs. So it should probably _also_ be
+> > >> ratelimited.
+> > >
+> > > normally it prints after 120 seconds:
+> > >
+> > > [ 1078.848434] wlan0: beacon loss from AP 00:11:95:9e:df:f6 - sending probe request
+> > > [ 1198.822913] wlan0: beacon loss from AP 00:11:95:9e:df:f6 - sending probe request
+> > > [ 1318.824931] wlan0: beacon loss from AP 00:11:95:9e:df:f6 - sending probe request
 > 
-> I have tested your patch some more over the weekend as well as on
-> 2.6.29.1, and suspend-to-disk and ram still works without a glitch for
-> me apart from the extra debugging being active.
+> > Then there is something happening in ath9k or your AP which prevents
+> > ath9k from receiving beacons. Try pinging your AP with 100 ms
+> > interval. Do you see anything happening in 120 s intervals?
 > 
-> Will the fix naturally make its way into the mainline kernel, or is
-> there any extra debugging/testing I can help with?
+> NetworkManager typically scans every 120 seconds and I can also trigger
+> the messages by a manual scan with iwlist. I did not dig any further but
+> the messages seem to appear right at the end of the scan. Tried with iwlagn
+> and both sw_scan and hw_scan.
 
-Well, the problem is the debug patch doesn't actually do anything
-other than printing out messages.  It could be that the problem is
-timing dependent (which is likely anyway).  You still can reporduce
-the problem with the patch, right?
+Yeah OK. While scanning it's expected to lose some frames.
 
-Thanks.
+However, the driver should probably protect against this by using the scan notification
+callbacks. It could disable beacon-loss reporting while scanning.
 
 -- 
-tejun
+Greetings, Michael.
