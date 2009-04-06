@@ -1,58 +1,106 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758156AbZDFQl3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756227AbZDFQmG@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758156AbZDFQl3 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 6 Apr 2009 12:41:29 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756016AbZDFQjQ
+	id S1756227AbZDFQmG (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 6 Apr 2009 12:42:06 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756524AbZDFQja
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 6 Apr 2009 12:39:16 -0400
-Received: from hrndva-omtalb.mail.rr.com ([71.74.56.123]:41059 "EHLO
+	Mon, 6 Apr 2009 12:39:30 -0400
+Received: from hrndva-omtalb.mail.rr.com ([71.74.56.125]:41353 "EHLO
 	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753224AbZDFQjO (ORCPT
+	with ESMTP id S1756609AbZDFQj3 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 6 Apr 2009 12:39:14 -0400
-Message-Id: <20090406163830.552790815@goodmis.org>
+	Mon, 6 Apr 2009 12:39:29 -0400
+Message-Id: <20090406163830.104444218@goodmis.org>
 References: <20090406163706.097842409@goodmis.org>
 User-Agent: quilt/0.46-1
-Date: Mon, 06 Apr 2009 12:37:10 -0400
+Date: Mon, 06 Apr 2009 12:37:08 -0400
 From: Steven Rostedt <rostedt@goodmis.org>
 To: linux-kernel@vger.kernel.org
 Cc: Ingo Molnar <mingo@elte.hu>, Andrew Morton <akpm@linux-foundation.org>,
+       Li Zefan <lizf@cn.fujitsu.com>,
        Frederic Weisbecker <fweisbec@gmail.com>
-Subject: [PATCH 04/10] tracing/ftrace: fix missing include string.h
-Content-Disposition: inline; filename=0004-tracing-ftrace-fix-missing-include-string.h.patch
+Subject: [PATCH 02/10] tracing: use macros to denote usec and nsec per second
+Content-Disposition: inline; filename=0002-tracing-use-macros-to-denote-usec-and-nsec-per-seco.patch
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Frederic Weisbecker <fweisbec@gmail.com>
+From: Li Zefan <lizf@cn.fujitsu.com>
 
-Building a kernel with tracing can raise the following warning on
-tip/master:
+Impact: cleanup
 
-kernel/trace/trace.c:1249: error: implicit declaration of function 'vbin_printf'
+Use USEC_PER_SEC and NSEC_PER_SEC instead of 1000000 and 1000000000.
 
-We are missing an include to string.h
-
-Reported-by: Ingo Molnar <mingo@elte.hu>
-Signed-off-by: Frederic Weisbecker <fweisbec@gmail.com>
-LKML-Reference: <1238160130-7437-1-git-send-email-fweisbec@gmail.com>
+Signed-off-by: Li Zefan <lizf@cn.fujitsu.com>
+LKML-Reference: <49CC7870.9000309@cn.fujitsu.com>
+Acked-by: Frederic Weisbecker <fweisbec@gmail.com>
 Signed-off-by: Steven Rostedt <rostedt@goodmis.org>
 ---
- kernel/trace/trace.c |    1 +
- 1 files changed, 1 insertions(+), 0 deletions(-)
+ kernel/trace/trace_boot.c      |    5 +++--
+ kernel/trace/trace_mmiotrace.c |    6 ++++--
+ 2 files changed, 7 insertions(+), 4 deletions(-)
 
-diff --git a/kernel/trace/trace.c b/kernel/trace/trace.c
-index 5232201..6f15d85 100644
---- a/kernel/trace/trace.c
-+++ b/kernel/trace/trace.c
-@@ -30,6 +30,7 @@
- #include <linux/percpu.h>
- #include <linux/splice.h>
- #include <linux/kdebug.h>
-+#include <linux/string.h>
- #include <linux/ctype.h>
- #include <linux/init.h>
- #include <linux/poll.h>
+diff --git a/kernel/trace/trace_boot.c b/kernel/trace/trace_boot.c
+index 7a30fc4..a29ef23 100644
+--- a/kernel/trace/trace_boot.c
++++ b/kernel/trace/trace_boot.c
+@@ -9,6 +9,7 @@
+ #include <linux/debugfs.h>
+ #include <linux/ftrace.h>
+ #include <linux/kallsyms.h>
++#include <linux/time.h>
+ 
+ #include "trace.h"
+ #include "trace_output.h"
+@@ -67,7 +68,7 @@ initcall_call_print_line(struct trace_iterator *iter)
+ 	trace_assign_type(field, entry);
+ 	call = &field->boot_call;
+ 	ts = iter->ts;
+-	nsec_rem = do_div(ts, 1000000000);
++	nsec_rem = do_div(ts, NSEC_PER_SEC);
+ 
+ 	ret = trace_seq_printf(s, "[%5ld.%09ld] calling  %s @ %i\n",
+ 			(unsigned long)ts, nsec_rem, call->func, call->caller);
+@@ -92,7 +93,7 @@ initcall_ret_print_line(struct trace_iterator *iter)
+ 	trace_assign_type(field, entry);
+ 	init_ret = &field->boot_ret;
+ 	ts = iter->ts;
+-	nsec_rem = do_div(ts, 1000000000);
++	nsec_rem = do_div(ts, NSEC_PER_SEC);
+ 
+ 	ret = trace_seq_printf(s, "[%5ld.%09ld] initcall %s "
+ 			"returned %d after %llu msecs\n",
+diff --git a/kernel/trace/trace_mmiotrace.c b/kernel/trace/trace_mmiotrace.c
+index 8e37fcd..d53b45e 100644
+--- a/kernel/trace/trace_mmiotrace.c
++++ b/kernel/trace/trace_mmiotrace.c
+@@ -9,6 +9,8 @@
+ #include <linux/kernel.h>
+ #include <linux/mmiotrace.h>
+ #include <linux/pci.h>
++#include <linux/time.h>
++
+ #include <asm/atomic.h>
+ 
+ #include "trace.h"
+@@ -174,7 +176,7 @@ static enum print_line_t mmio_print_rw(struct trace_iterator *iter)
+ 	struct mmiotrace_rw *rw;
+ 	struct trace_seq *s	= &iter->seq;
+ 	unsigned long long t	= ns2usecs(iter->ts);
+-	unsigned long usec_rem	= do_div(t, 1000000ULL);
++	unsigned long usec_rem	= do_div(t, USEC_PER_SEC);
+ 	unsigned secs		= (unsigned long)t;
+ 	int ret = 1;
+ 
+@@ -221,7 +223,7 @@ static enum print_line_t mmio_print_map(struct trace_iterator *iter)
+ 	struct mmiotrace_map *m;
+ 	struct trace_seq *s	= &iter->seq;
+ 	unsigned long long t	= ns2usecs(iter->ts);
+-	unsigned long usec_rem	= do_div(t, 1000000ULL);
++	unsigned long usec_rem	= do_div(t, USEC_PER_SEC);
+ 	unsigned secs		= (unsigned long)t;
+ 	int ret;
+ 
 -- 
 1.6.2.1
 
