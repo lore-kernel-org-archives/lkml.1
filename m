@@ -1,82 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753568AbZDFBNP@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754544AbZDFBOy@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753568AbZDFBNP (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 5 Apr 2009 21:13:15 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752869AbZDFBM6
+	id S1754544AbZDFBOy (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 5 Apr 2009 21:14:54 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752869AbZDFBOp
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 5 Apr 2009 21:12:58 -0400
-Received: from cantor2.suse.de ([195.135.220.15]:50255 "EHLO mx2.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752840AbZDFBM6 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 5 Apr 2009 21:12:58 -0400
-Date: Sun, 5 Apr 2009 18:07:54 -0700
-From: Greg KH <gregkh@suse.de>
-To: David Woodhouse <dwmw2@infradead.org>
-Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Mithlesh Thukral <mithlesh@linsyssoft.com>,
-       Christopher Harrer <charrer@alacritech.com>
-Subject: Re: Staging: sxg: Add support to download the firmware using
-	request_firmware()
-Message-ID: <20090406010754.GA32630@suse.de>
-References: <200904051919.n35JJUUq031448@hera.kernel.org> <1238978493.11870.2.camel@macbook.infradead.org>
+	Sun, 5 Apr 2009 21:14:45 -0400
+Received: from yw-out-2324.google.com ([74.125.46.31]:48859 "EHLO
+	yw-out-2324.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751549AbZDFBOo (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 5 Apr 2009 21:14:44 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:sender:in-reply-to:references:date
+         :x-google-sender-auth:message-id:subject:from:to:cc:content-type
+         :content-transfer-encoding;
+        b=pLvMzTIruCZHQUtuksrE48luJ/dT0bXB/A6dnGR9cBNQzUld8LjOm6WQEXXCsPcyQF
+         wgvsoxOKvn1J3WYUOt6fqutSRyyboEr4VuWBJuxvPFmObxArqcTA4TuQ8G5el0p+IKvw
+         fZSpNk8OlntkLXQuzW+J9eWC6I99wfIEtwglI=
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1238978493.11870.2.camel@macbook.infradead.org>
-User-Agent: Mutt/1.5.19 (2009-01-05)
+In-Reply-To: <49D89C06.1060700@gmail.com>
+References: <20090324150517.GX27476@kernel.dk>
+	 <Pine.LNX.4.64.0903251825310.8027@hs20-bc2-1.build.redhat.com>
+	 <20090326084205.GG27476@kernel.dk>
+	 <Pine.LNX.4.64.0903302314500.6158@hs20-bc2-1.build.redhat.com>
+	 <20090331104933.GJ5178@kernel.dk>
+	 <Pine.LNX.4.64.0904021923040.19415@hs20-bc2-1.build.redhat.com>
+	 <20090403081131.GP5178@kernel.dk> <49D77AC3.3020207@redhat.com>
+	 <20090405012839.GF7553@mit.edu> <49D89C06.1060700@gmail.com>
+Date: Sun, 5 Apr 2009 21:14:42 -0400
+X-Google-Sender-Auth: b059344bfa9e8f8d
+Message-ID: <75b66ecd0904051814n353bb69bp76a38e36cac4d3fe@mail.gmail.com>
+Subject: Re: [dm-devel] Barriers still not passing on simple dm devices...
+From: Lee Revell <rlrevell@joe-job.com>
+To: Ric Wheeler <ricwheeler@gmail.com>
+Cc: Theodore Tso <tytso@mit.edu>, Ric Wheeler <rwheeler@redhat.com>,
+       Jens Axboe <jens.axboe@oracle.com>,
+       Mikulas Patocka <mpatocka@redhat.com>,
+       device-mapper development <dm-devel@redhat.com>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       ak@linux.intel.com, "MASON, CHRISTOPHER" <CHRIS.MASON@oracle.com>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, Apr 05, 2009 at 05:41:33PM -0700, David Woodhouse wrote:
-> On Sun, 2009-04-05 at 19:19 +0000, Linux Kernel Mailing List wrote:
-> > Gitweb:     http://git.kernel.org/linus/cda3b517a478324233d9be71232b60e2e2efe848
-> > Commit:     cda3b517a478324233d9be71232b60e2e2efe848
-> > Parent:     e5ea8da06ba610551a75c79c1467aae379e953ce
-> > Author:     Mithlesh Thukral <mithlesh@linsyssoft.com>
-> > AuthorDate: Fri Mar 20 17:39:04 2009 +0530
-> > Committer:  Greg Kroah-Hartman <gregkh@suse.de>
-> > CommitDate: Fri Apr 3 14:53:14 2009 -0700
-> > 
-> >     Staging: sxg: Add support to download the firmware using request_firmware()
-> >     
-> >     Add support for downloading the firmware using kernel-builtin mechanism.
-> >     This will remove the need for the firmware files in the driver source code.
-> >     
-> >     Signed-off-by: Christopher Harrer <charrer@alacritech.com>
-> >     Signed-off-by: Mithlesh Thukral <mithlesh@linsyssoft.com>
-> >     Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
-> > ---
-> >  drivers/staging/sxg/saharadbgdownload-1.71.c  | 5233 ------------------------
-> >  drivers/staging/sxg/saharadbgdownloadB-1.10.c | 5251 -------------------------
-> >  drivers/staging/sxg/saharadownload-1.55.c     | 4531 ---------------------
-> >  drivers/staging/sxg/saharadownloadB-1.8.c     | 4532 ---------------------
-> >  drivers/staging/sxg/sxg.c                     |  206 +-
-> >  firmware/Makefile                             |    2 +
-> >  firmware/WHENCE                               |   12 +
-> >  firmware/sxg/saharadbgdownloadB.sys.ihex      | 3937 ++++++++++++++++++
-> >  firmware/sxg/saharadownloadB.sys.ihex         | 3385 ++++++++++++++++
-> >  9 files changed, 7437 insertions(+), 19652 deletions(-)
-> 
-> NO!
-> 
-> What the hell are you playing at, Greg?
-> 
-> We don't want to be adding _new_ binary firmware into the firmware/
-> directory -- that was only the temporary location for removing the
-> _existing_ crap.
+On Sun, Apr 5, 2009 at 7:54 AM, Ric Wheeler <ricwheeler@gmail.com> wrote:
+> One thing to point out here is that there are a lot of "servers" in high end
+> data centers that do not have UPS backup. Those racks full of 1U and 2U
+> boxes that are used to make "grids", "clouds" and so on often are built with
+> as much gear as you can stuff in a rack - no batteries or UPS to be seen, so
+> they are really quite similar to the normal desktop or home systems that we
+> normally run at home :-)
 
-Is that written anywhere that I missed?  If so, sorry, I didn't realize
-that.
+These days even bargain basement data centers provide UPS functionality for
+you, via generator backup and A/B power.
 
-> We have the linux-firmware.git repository, into which we are collecting
-> new firmware blobs. Don't add them to the kernel sources.
-
-Who do we email to add this to?
-
-And finally, what's wrong with adding new firmware images into the
-firmware/ directory?  What is the issue here?
-
-thanks,
-
-greg k-h
+Lee
