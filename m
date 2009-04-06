@@ -1,165 +1,375 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758333AbZDFQO3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758736AbZDFQOs@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758333AbZDFQO3 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 6 Apr 2009 12:14:29 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753655AbZDFQK2
+	id S1758736AbZDFQOs (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 6 Apr 2009 12:14:48 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755168AbZDFQK3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 6 Apr 2009 12:10:28 -0400
-Received: from relay2.sgi.com ([192.48.179.30]:58108 "EHLO relay.sgi.com"
+	Mon, 6 Apr 2009 12:10:29 -0400
+Received: from relay2.sgi.com ([192.48.179.30]:58102 "EHLO relay.sgi.com"
 	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1753282AbZDFQKS (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 6 Apr 2009 12:10:18 -0400
-Message-Id: <20090406161016.120568000@sgi.com>
+	id S1752040AbZDFQKQ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 6 Apr 2009 12:10:16 -0400
+Message-Id: <20090406161011.421626000@sgi.com>
 User-Agent: quilt/0.47-1
-Date: Mon, 06 Apr 2009 11:08:22 -0500
+Date: Mon, 06 Apr 2009 11:08:11 -0500
 From: steiner@sgi.com
 To: akpm@osdl.org, linux-kernel@vger.kernel.org
-Subject: [patch 13/13] GRU - update to rev 0.9 of gru spec
+Subject: [patch 02/13] GRU - dump chiplet state
 References: <20090406160809.278924000@sgi.com>
-Content-Disposition: inline; filename=uv_gru_spec_update
+Content-Disposition: inline; filename=uv_gru_grudump
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 From: Jack Steiner <steiner@sgi.com>
 
-Update GRU driver to the latest version of the GRU spec. This consists
-of minor updates:
-	- changes & additions to error status bits
-	- new restriction on handling of TLB misses while in FMM mode
-	- new field (not used by software) in TFH
+Add support for dumpping the state of an entire GRU chiplet.
 
 
 Signed-off-by: Jack Steiner <steiner@sgi.com>
 
 
 ---
- drivers/misc/sgi-gru/gru_instructions.h |   19 ++++++++++++-------
- drivers/misc/sgi-gru/grufault.c         |    8 ++++++--
- drivers/misc/sgi-gru/gruhandles.h       |    3 ++-
- drivers/misc/sgi-gru/grukservices.c     |    3 ++-
- drivers/misc/sgi-gru/gruprocfs.c        |    1 +
- drivers/misc/sgi-gru/grutables.h        |    1 +
- 6 files changed, 24 insertions(+), 11 deletions(-)
+ drivers/misc/sgi-gru/Makefile    |    2 
+ drivers/misc/sgi-gru/grufile.c   |    3 
+ drivers/misc/sgi-gru/grukdump.c  |  217 +++++++++++++++++++++++++++++++++++++++
+ drivers/misc/sgi-gru/grulib.h    |   33 +++++
+ drivers/misc/sgi-gru/grutables.h |   12 ++
+ 5 files changed, 266 insertions(+), 1 deletion(-)
 
-Index: linux/drivers/misc/sgi-gru/gru_instructions.h
+Index: linux/drivers/misc/sgi-gru/Makefile
 ===================================================================
---- linux.orig/drivers/misc/sgi-gru/gru_instructions.h	2009-04-06 09:17:38.000000000 -0500
-+++ linux/drivers/misc/sgi-gru/gru_instructions.h	2009-04-06 09:17:42.000000000 -0500
-@@ -253,32 +253,37 @@ struct gru_instruction {
- #define CBE_CAUSE_HA_RESPONSE_FATAL		(1 << 13)
- #define CBE_CAUSE_HA_RESPONSE_NON_FATAL		(1 << 14)
- #define CBE_CAUSE_ADDRESS_SPACE_DECODE_ERROR	(1 << 15)
--#define CBE_CAUSE_RESPONSE_DATA_ERROR		(1 << 16)
--#define CBE_CAUSE_PROTOCOL_STATE_DATA_ERROR	(1 << 17)
-+#define CBE_CAUSE_PROTOCOL_STATE_DATA_ERROR	(1 << 16)
-+#define CBE_CAUSE_RA_RESPONSE_DATA_ERROR	(1 << 17)
-+#define CBE_CAUSE_HA_RESPONSE_DATA_ERROR	(1 << 18)
+--- linux.orig/drivers/misc/sgi-gru/Makefile	2009-03-04 10:48:41.000000000 -0600
++++ linux/drivers/misc/sgi-gru/Makefile	2009-03-04 10:49:01.000000000 -0600
+@@ -3,5 +3,5 @@ ifdef CONFIG_SGI_GRU_DEBUG
+ endif
  
- /* CBE cbrexecstatus bits */
- #define CBR_EXS_ABORT_OCC_BIT			0
- #define CBR_EXS_INT_OCC_BIT			1
- #define CBR_EXS_PENDING_BIT			2
- #define CBR_EXS_QUEUED_BIT			3
--#define CBR_EXS_TLBHW_BIT			4
-+#define CBR_EXS_TLB_INVAL_BIT			4
- #define CBR_EXS_EXCEPTION_BIT			5
+ obj-$(CONFIG_SGI_GRU) := gru.o
+-gru-y := grufile.o grumain.o grufault.o grutlbpurge.o gruprocfs.o grukservices.o gruhandles.o
++gru-y := grufile.o grumain.o grufault.o grutlbpurge.o gruprocfs.o grukservices.o gruhandles.o grukdump.o
  
- #define CBR_EXS_ABORT_OCC			(1 << CBR_EXS_ABORT_OCC_BIT)
- #define CBR_EXS_INT_OCC				(1 << CBR_EXS_INT_OCC_BIT)
- #define CBR_EXS_PENDING				(1 << CBR_EXS_PENDING_BIT)
- #define CBR_EXS_QUEUED				(1 << CBR_EXS_QUEUED_BIT)
--#define CBR_EXS_TLBHW				(1 << CBR_EXS_TLBHW_BIT)
-+#define CBR_TLB_INVAL				(1 << CBR_EXS_TLB_INVAL_BIT)
- #define CBR_EXS_EXCEPTION			(1 << CBR_EXS_EXCEPTION_BIT)
+Index: linux/drivers/misc/sgi-gru/grufile.c
+===================================================================
+--- linux.orig/drivers/misc/sgi-gru/grufile.c	2009-03-04 10:48:56.000000000 -0600
++++ linux/drivers/misc/sgi-gru/grufile.c	2009-03-04 10:49:01.000000000 -0600
+@@ -255,6 +255,9 @@ static long gru_file_unlocked_ioctl(stru
+ 	case GRU_GET_CONFIG_INFO:
+ 		err = gru_get_config_info(arg);
+ 		break;
++	case GRU_DUMP_CHIPLET_STATE:
++		err = gru_dump_chiplet_request(arg);
++		break;
+ 	}
+ 	return err;
+ }
+Index: linux/drivers/misc/sgi-gru/grukdump.c
+===================================================================
+--- /dev/null	1970-01-01 00:00:00.000000000 +0000
++++ linux/drivers/misc/sgi-gru/grukdump.c	2009-03-04 10:51:19.000000000 -0600
+@@ -0,0 +1,217 @@
++/*
++ * SN Platform GRU Driver
++ *
++ *            Dump GRU State
++ *
++ * This file is subject to the terms and conditions of the GNU General Public
++ * License.  See the file "COPYING" in the main directory of this archive
++ * for more details.
++ *
++ * Copyright (c) 2008 Silicon Graphics, Inc.  All Rights Reserved.
++ */
++
++#include <linux/kernel.h>
++#include <linux/mm.h>
++#include <linux/spinlock.h>
++#include <linux/uaccess.h>
++#include <linux/delay.h>
++#include <asm/uv/uv_hub.h>
++#include "gru.h"
++#include "grutables.h"
++#include "gruhandles.h"
++#include "grulib.h"
++
++#define CCH_LOCK_ATTEMPTS	10
++
++static int gru_user_copy_handle(void __user **dp, void *s)
++{
++	if (copy_to_user(*(void __user **)dp, s, GRU_HANDLE_BYTES))
++		return -1;
++	*dp += GRU_HANDLE_BYTES;
++	return 0;
++}
++
++static int gru_dump_context_data(void *grubase,
++			struct gru_context_configuration_handle *cch,
++			void __user *ubuf, int ctxnum, int dsrcnt)
++{
++	void *cb, *cbe, *tfh, *gseg;
++	int i, scr;
++
++	gseg = grubase + ctxnum * GRU_GSEG_STRIDE;
++	cb = gseg + GRU_CB_BASE;
++	cbe = grubase + GRU_CBE_BASE;
++	tfh = grubase + GRU_TFH_BASE;
++
++	for_each_cbr_in_allocation_map(i, &cch->cbr_allocation_map, scr) {
++		if (gru_user_copy_handle(&ubuf, cb))
++			goto fail;
++		if (gru_user_copy_handle(&ubuf, tfh + i * GRU_HANDLE_STRIDE))
++			goto fail;
++		if (gru_user_copy_handle(&ubuf, cbe + i * GRU_HANDLE_STRIDE))
++			goto fail;
++		cb += GRU_HANDLE_STRIDE;
++	}
++	if (dsrcnt)
++		memcpy(ubuf, gseg + GRU_DS_BASE, dsrcnt * GRU_HANDLE_STRIDE);
++	return 0;
++
++fail:
++	return -EFAULT;
++}
++
++static int gru_dump_tfm(struct gru_state *gru,
++		void __user *ubuf, void __user *ubufend)
++{
++	struct gru_tlb_fault_map *tfm;
++	int i, ret, bytes;
++
++	bytes = GRU_NUM_TFM * GRU_CACHE_LINE_BYTES;
++	if (bytes > ubufend - ubuf)
++		ret = -EFBIG;
++
++	for (i = 0; i < GRU_NUM_TFM; i++) {
++		tfm = get_tfm(gru->gs_gru_base_vaddr, i);
++		if (gru_user_copy_handle(&ubuf, tfm))
++			goto fail;
++	}
++	return GRU_NUM_TFM * GRU_CACHE_LINE_BYTES;
++
++fail:
++	return -EFAULT;
++}
++
++static int gru_dump_tgh(struct gru_state *gru,
++		void __user *ubuf, void __user *ubufend)
++{
++	struct gru_tlb_global_handle *tgh;
++	int i, ret, bytes;
++
++	bytes = GRU_NUM_TGH * GRU_CACHE_LINE_BYTES;
++	if (bytes > ubufend - ubuf)
++		ret = -EFBIG;
++
++	for (i = 0; i < GRU_NUM_TGH; i++) {
++		tgh = get_tgh(gru->gs_gru_base_vaddr, i);
++		if (gru_user_copy_handle(&ubuf, tgh))
++			goto fail;
++	}
++	return GRU_NUM_TGH * GRU_CACHE_LINE_BYTES;
++
++fail:
++	return -EFAULT;
++}
++
++static int gru_dump_context(struct gru_state *gru, int ctxnum,
++		void __user *ubuf, void __user *ubufend, char data_opt,
++		char lock_cch)
++{
++	struct gru_dump_context_header hdr;
++	struct gru_dump_context_header __user *uhdr = ubuf;
++	struct gru_context_configuration_handle *cch;
++	struct gru_thread_state *gts;
++	int try, cch_locked, cbrcnt = 0, dsrcnt = 0, bytes = 0, ret = 0;
++	void *grubase;
++
++	memset(&hdr, 0, sizeof(hdr));
++	grubase = gru->gs_gru_base_vaddr;
++	cch = get_cch(grubase, ctxnum);
++	for (try = 0; try < CCH_LOCK_ATTEMPTS; try++) {
++		cch_locked =  trylock_cch_handle(cch);
++		if (cch_locked)
++			break;
++		msleep(1);
++	}
++
++	ubuf += sizeof(hdr);
++	if (gru_user_copy_handle(&ubuf, cch))
++		goto fail;
++	bytes = sizeof(hdr) + GRU_CACHE_LINE_BYTES;
++
++	if (cch_locked || !lock_cch) {
++		gts = gru->gs_gts[ctxnum];
++		if (gts) {
++			hdr.pid = gts->ts_tgid_owner;
++			hdr.vaddr = gts->ts_vma->vm_start;
++		}
++		if (cch->state != CCHSTATE_INACTIVE) {
++			cbrcnt = hweight64(cch->cbr_allocation_map) *
++						GRU_CBR_AU_SIZE;
++			dsrcnt = data_opt ? hweight32(cch->dsr_allocation_map) *
++						GRU_DSR_AU_CL : 0;
++		}
++		bytes += (3 * cbrcnt + dsrcnt) * GRU_CACHE_LINE_BYTES;
++		if (bytes > ubufend - ubuf)
++			ret = -EFBIG;
++		else
++			ret = gru_dump_context_data(grubase, cch, ubuf, ctxnum,
++							dsrcnt);
++
++	}
++	if (cch_locked)
++		unlock_cch_handle(cch);
++	if (ret)
++		return ret;
++
++	hdr.magic = GRU_DUMP_MAGIC;
++	hdr.ctxnum = ctxnum;
++	hdr.cbrcnt = cbrcnt;
++	hdr.dsrcnt = dsrcnt;
++	hdr.cch_locked = cch_locked;
++	if (!ret && copy_to_user((void __user *)uhdr, &hdr, sizeof(hdr)))
++		ret = -EFAULT;
++
++	return ret ? ret : bytes;
++
++fail:
++	unlock_cch_handle(cch);
++	return -EFAULT;
++}
++
++int gru_dump_chiplet_request(unsigned long arg)
++{
++	struct gru_state *gru;
++	struct gru_dump_chiplet_state_req req;
++	void __user *ubuf;
++	void __user *ubufend;
++	int ctxnum, ret, cnt = 0;
++
++	if (copy_from_user(&req, (void __user *)arg, sizeof(req)))
++		return -EFAULT;
++
++	/* Currently, only dump by gid is implemented */
++	if (req.gid >= gru_max_gids || req.gid < 0)
++		return -EINVAL;
++
++	gru = GID_TO_GRU(req.gid);
++	ubuf = req.buf;
++	ubufend = req.buf + req.buflen;
++
++	ret = gru_dump_tfm(gru, ubuf, ubufend);
++	if (ret < 0)
++		goto fail;
++	ubuf += ret;
++
++	ret = gru_dump_tgh(gru, ubuf, ubufend);
++	if (ret < 0)
++		goto fail;
++	ubuf += ret;
++
++	for (ctxnum = 0; ctxnum < GRU_NUM_CCH; ctxnum++) {
++		if (req.ctxnum == ctxnum || req.ctxnum < 0) {
++			ret = gru_dump_context(gru, ctxnum, ubuf, ubufend,
++						req.data_opt, req.lock_cch);
++			if (ret < 0)
++				goto fail;
++			ubuf += ret;
++			cnt++;
++		}
++	}
++
++	if (copy_to_user((void __user *)arg, &req, sizeof(req)))
++		return -EFAULT;
++	return cnt;
++
++fail:
++	return ret;
++}
+Index: linux/drivers/misc/sgi-gru/grulib.h
+===================================================================
+--- linux.orig/drivers/misc/sgi-gru/grulib.h	2009-03-04 10:47:49.000000000 -0600
++++ linux/drivers/misc/sgi-gru/grulib.h	2009-03-04 10:49:01.000000000 -0600
+@@ -47,6 +47,9 @@
+ /* For fetching GRU chiplet status */
+ #define GRU_GET_CHIPLET_STATUS		_IOWR(GRU_IOCTL_NUM, 10, void *)
+ 
++/* For dumpping GRU chiplet state */
++#define GRU_DUMP_CHIPLET_STATE		_IOWR(GRU_IOCTL_NUM, 11, void *)
++
+ /* For user TLB flushing (primarily for tests) */
+ #define GRU_USER_FLUSH_TLB		_IOWR(GRU_IOCTL_NUM, 50, void *)
+ 
+@@ -84,6 +87,36 @@ struct gru_flush_tlb_req {
+ };
  
  /*
-  * Exceptions are retried for the following cases. If any OTHER bits are set
-  * in ecause, the exception is not retryable.
++ * Structure used to pass TLB flush parameters to the driver
++ */
++enum {dcs_pid, dcs_gid};
++struct gru_dump_chiplet_state_req {
++	unsigned int	op;
++	int		gid;
++	int		ctxnum;
++	char		data_opt;
++	char		lock_cch;
++	pid_t		pid;
++	void		*buf;
++	size_t		buflen;
++	/* ---- output --- */
++	unsigned int	num_contexts;
++};
++
++#define GRU_DUMP_MAGIC	0x3474ab6c
++struct gru_dump_context_header {
++	unsigned int	magic;
++	unsigned char	gid;
++	unsigned char	ctxnum;
++	unsigned char	cbrcnt;
++	unsigned char	dsrcnt;
++	pid_t		pid;
++	unsigned long	vaddr;
++	int		cch_locked;
++	unsigned long	data[0];
++};
++
++/*
+  * GRU configuration info (temp - for testing)
   */
--#define EXCEPTION_RETRY_BITS (CBE_CAUSE_RESPONSE_DATA_ERROR |		\
--			      CBE_CAUSE_RA_REQUEST_TIMEOUT |		\
-+#define EXCEPTION_RETRY_BITS (CBE_CAUSE_EXECUTION_HW_ERROR |		\
- 			      CBE_CAUSE_TLBHW_ERROR |			\
--			      CBE_CAUSE_HA_REQUEST_TIMEOUT)
-+			      CBE_CAUSE_RA_REQUEST_TIMEOUT |		\
-+			      CBE_CAUSE_RA_RESPONSE_NON_FATAL |		\
-+			      CBE_CAUSE_HA_RESPONSE_NON_FATAL |		\
-+			      CBE_CAUSE_RA_RESPONSE_DATA_ERROR |	\
-+			      CBE_CAUSE_HA_RESPONSE_DATA_ERROR		\
-+			      )
- 
- /* Message queue head structure */
- union gru_mesqhead {
-Index: linux/drivers/misc/sgi-gru/grufault.c
-===================================================================
---- linux.orig/drivers/misc/sgi-gru/grufault.c	2009-04-06 09:17:38.000000000 -0500
-+++ linux/drivers/misc/sgi-gru/grufault.c	2009-04-06 09:17:42.000000000 -0500
-@@ -339,8 +339,12 @@ static int gru_try_dropin(struct gru_thr
- 	 * Might be a hardware race OR a stupid user. Ignore FMM because FMM
- 	 * is a transient state.
- 	 */
--	if (tfh->status != TFHSTATUS_EXCEPTION)
--		goto failnoexception;
-+	if (tfh->status != TFHSTATUS_EXCEPTION) {
-+		gru_flush_cache(tfh);
-+		if (tfh->status != TFHSTATUS_EXCEPTION)
-+			goto failnoexception;
-+		STAT(tfh_stale_on_fault);
-+	}
- 	if (tfh->state == TFHSTATE_IDLE)
- 		goto failidle;
- 	if (tfh->state == TFHSTATE_MISS_FMM && cb)
-Index: linux/drivers/misc/sgi-gru/gruhandles.h
-===================================================================
---- linux.orig/drivers/misc/sgi-gru/gruhandles.h	2009-04-06 09:17:38.000000000 -0500
-+++ linux/drivers/misc/sgi-gru/gruhandles.h	2009-04-06 09:17:42.000000000 -0500
-@@ -255,7 +255,8 @@ struct gru_tlb_fault_handle {
- 	unsigned int state:3;
- 	unsigned int fill3:1;
- 
--	unsigned int cause:7;
-+	unsigned int cause:6;
-+	unsigned int cb_int:1;
- 	unsigned int fill4:1;
- 
- 	unsigned int indexway:12;	/* DW 0 - high 32 */
-Index: linux/drivers/misc/sgi-gru/grukservices.c
-===================================================================
---- linux.orig/drivers/misc/sgi-gru/grukservices.c	2009-04-06 09:17:38.000000000 -0500
-+++ linux/drivers/misc/sgi-gru/grukservices.c	2009-04-06 09:17:50.000000000 -0500
-@@ -406,7 +406,8 @@ static int gru_retry_exception(void *cb)
- 			return CBS_IDLE;
- 
- 		gru_get_cb_exception_detail(cb, &excdet);
--		if (excdet.ecause & ~EXCEPTION_RETRY_BITS)
-+		if ((excdet.ecause & ~EXCEPTION_RETRY_BITS) ||
-+				(excdet.cbrexecstatus & CBR_EXS_ABORT_OCC))
- 			break;
- 		if (retry-- == 0)
- 			break;
-Index: linux/drivers/misc/sgi-gru/gruprocfs.c
-===================================================================
---- linux.orig/drivers/misc/sgi-gru/gruprocfs.c	2009-04-06 09:17:38.000000000 -0500
-+++ linux/drivers/misc/sgi-gru/gruprocfs.c	2009-04-06 09:17:42.000000000 -0500
-@@ -89,6 +89,7 @@ static int statistics_show(struct seq_fi
- 	printstat(s, tlb_dropin_fail_fmm);
- 	printstat(s, tlb_dropin_fail_no_exception);
- 	printstat(s, tlb_dropin_fail_no_exception_war);
-+	printstat(s, tfh_stale_on_fault);
- 	printstat(s, mmu_invalidate_range);
- 	printstat(s, mmu_invalidate_page);
- 	printstat(s, mmu_clear_flush_young);
+ struct gru_config_info {
 Index: linux/drivers/misc/sgi-gru/grutables.h
 ===================================================================
---- linux.orig/drivers/misc/sgi-gru/grutables.h	2009-04-06 09:17:38.000000000 -0500
-+++ linux/drivers/misc/sgi-gru/grutables.h	2009-04-06 09:17:42.000000000 -0500
-@@ -212,6 +212,7 @@ struct gru_stats_s {
- 	atomic_long_t tlb_dropin_fail_fmm;
- 	atomic_long_t tlb_dropin_fail_no_exception;
- 	atomic_long_t tlb_dropin_fail_no_exception_war;
-+	atomic_long_t tfh_stale_on_fault;
- 	atomic_long_t mmu_invalidate_range;
- 	atomic_long_t mmu_invalidate_page;
- 	atomic_long_t mmu_clear_flush_young;
+--- linux.orig/drivers/misc/sgi-gru/grutables.h	2009-03-04 10:49:00.000000000 -0600
++++ linux/drivers/misc/sgi-gru/grutables.h	2009-03-04 10:50:44.000000000 -0600
+@@ -554,6 +554,12 @@ struct gru_blade_state {
+ 
+ /* Lock hierarchy checking enabled only in emulator */
+ 
++/* 0 = lock failed, 1 = locked */
++static inline int __trylock_handle(void *h)
++{
++	return !test_and_set_bit(1, h);
++}
++
+ static inline void __lock_handle(void *h)
+ {
+ 	while (test_and_set_bit(1, h))
+@@ -565,6 +571,11 @@ static inline void __unlock_handle(void 
+ 	clear_bit(1, h);
+ }
+ 
++static inline int trylock_cch_handle(struct gru_context_configuration_handle *cch)
++{
++	return __trylock_handle(cch);
++}
++
+ static inline void lock_cch_handle(struct gru_context_configuration_handle *cch)
+ {
+ 	__lock_handle(cch);
+@@ -606,6 +617,7 @@ extern void gts_drop(struct gru_thread_s
+ extern void gru_tgh_flush_init(struct gru_state *gru);
+ extern int gru_kservices_init(struct gru_state *gru);
+ extern void gru_kservices_exit(struct gru_state *gru);
++extern int gru_dump_chiplet_request(unsigned long arg);
+ extern irqreturn_t gru_intr(int irq, void *dev_id);
+ extern int gru_handle_user_call_os(unsigned long address);
+ extern int gru_user_flush_tlb(unsigned long arg);
 
