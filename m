@@ -1,27 +1,28 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756730AbZDFSow@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757121AbZDFSp0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756730AbZDFSow (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 6 Apr 2009 14:44:52 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753918AbZDFSok
+	id S1757121AbZDFSp0 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 6 Apr 2009 14:45:26 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753918AbZDFSpI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 6 Apr 2009 14:44:40 -0400
-Received: from mail.vyatta.com ([76.74.103.46]:48908 "EHLO mail.vyatta.com"
+	Mon, 6 Apr 2009 14:45:08 -0400
+Received: from mga01.intel.com ([192.55.52.88]:47066 "EHLO mga01.intel.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752246AbZDFSoj (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 6 Apr 2009 14:44:39 -0400
-Date: Mon, 6 Apr 2009 11:44:32 -0700
-From: Stephen Hemminger <shemminger@vyatta.com>
-To: Jeff Garzik <jeff@garzik.org>
-Cc: Robin Getz <rgetz@blackfin.uclinux.org>, netdev@vger.kernel.org,
-       linux-kernel@vger.kernel.org, Chris Peterson <cpeterso@cpeterso.com>,
-       Matt Mackall <mpm@selenic.com>, David Miller <davem@davemloft.net>
-Subject: Re: IRQF_SAMPLE_RANDOM question...
-Message-ID: <20090406114432.3a554eba@nehalam>
-In-Reply-To: <49DA4C85.5090806@garzik.org>
-References: <200904061430.26276.rgetz@blackfin.uclinux.org>
-	<49DA4C85.5090806@garzik.org>
-Organization: Vyatta
-X-Mailer: Claws Mail 3.6.1 (GTK+ 2.16.0; x86_64-pc-linux-gnu)
+	id S1751266AbZDFSpG (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 6 Apr 2009 14:45:06 -0400
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.39,331,1235980800"; 
+   d="scan'208";a="679222528"
+Date: Mon, 6 Apr 2009 11:44:48 -0700
+From: Jesse Barnes <jesse.barnes@intel.com>
+To: Andrew Patterson <andrew.patterson@hp.com>
+Cc: linux-pci@vger.kernel.org, linux-kernel@vger.kernel.org,
+       jbarnes@virtuousgeek.org
+Subject: Re: [PATCH v2] PCI: Add support for turning PCIe ECRC on or off
+Message-ID: <20090406114448.1403297f@hobbes>
+In-Reply-To: <20090403220136.22113.83729.stgit@bob.kio>
+References: <20090403220131.22113.56040.stgit@bob.kio>
+	<20090403220136.22113.83729.stgit@bob.kio>
+X-Mailer: Claws Mail 3.5.0 (GTK+ 2.14.4; x86_64-pc-linux-gnu)
 Mime-Version: 1.0
 Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
@@ -29,57 +30,31 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 06 Apr 2009 14:40:05 -0400
-Jeff Garzik <jeff@garzik.org> wrote:
+On Fri, 03 Apr 2009 16:01:36 -0600
+Andrew Patterson <andrew.patterson@hp.com> wrote:
 
-> Robin Getz wrote:
-> > Although there was some discussion  
-> > http://thread.gmane.org/gmane.linux.kernel/680723
-> > 
-> > about removing IRQF_SAMPLE_RANDOM from the remaining network drivers in May of 
-> > 2008, but they still appears to be there in 2.6.29.
-> > 
-> > drivers/net/ibmlana.c
-> > drivers/net/macb.c
-> > drivers/net/3c523.c
-> > drivers/net/3c527.c
-> > drivers/net/netxen/netxen_nic_main.c
-> > drivers/net/cris/eth_v10.c
-> > drivers/net/xen-netfront.c
-> > drivers/net/atlx/atl1.c
-> > drivers/net/qla3xxx.c
-> > drivers/net/tg3.c
-> > drivers/net/niu.c
-> > 
-> > So what is the plan? If I send a patch to add IRQF_SAMPLE_RANDOM to others 
-> > (like the Blackfin) networking drivers - will it get rejected?
-> > 
-> > We have lots of embedded headless systems (no keyboard/mouse, no soundcard, no 
-> > video) systems with *no* sources of entropy - and people using SSL.
-> > 
-> > I didn't really find any docs which describe what should have 
-> > IRQF_SAMPLE_RANDOM on it or not. I did find Matt Mackall describing it as:
-> >> We currently assume that IRQF_SAMPLE_RANDOM means 'this is a completely
-> >> trusted unobservable entropy source' which is obviously wrong for
-> >> network devices but is right for some other classes of device.
-> > 
-> > Currently - I see most things I see using IRQF_SAMPLE_RANDOM would also fail 
-> > the "completely unobservable" test. Other than the TRNG that are inside the 
-> > CPU - what does pass?
+> PCI: Add support for turning PCIe ECRC on or off
 > 
-> IMO it's not observation but rather that a remote host is essentially 
-> your source of entropy -- which means your source of entropy is 
-> potentially controllable or influenced by an attacker.
+> Adds support for PCI Express transaction layer end-to-end CRC checking
+> (ECRC).  This patch will enable/disable ECRC checking by
+> setting/clearing the ECRC Check Enable and/or ECRC Generation Enable
+> bits for devices that support ECRC.
 > 
-> Furthermore, with hardware interrupt mitigation, non-trivial traffic 
-> levels can imply that interrupts are delivered with timer-based 
-> regularity.  This, too, may clearly be influenced by a remote attacker.
+> The ECRC setting is controlled by the "pci=ecrc=<policy>" command-line
+> option. If this option is not set or is set to 'bios", the enable and
+> generation bits are left in whatever state that firmware/BIOS set
+> them to. The "off" setting turns them off, and the "on" option turns
+> them on (if the device supports it).
 > 
-> Thus I think IRQF_SAMPLE_RANDOM should be banned from network drivers... 
->   but that is not a universal opinion.
+> Turning ECRC on or off can be a data integrity versus performance
+> tradeoff.  In theory, turning it on will catch more data errors,
+> turning it off means possibly better performance since CRC does not
+> need to be calculated by the PCIe hardware and packet sizes are
+> reduced.
 > 
-> 	Jeff
+> Signed-off-by: Andrew Patterson <andrew.patterson@hp.com>
 
-The real problem one is xen-netfront. Because 1) it is least random,
-the attacker might be another VM 2) the VM is most in need of random
-samples because it doesn't have real hardware.
+Applied to my for-linus branch, thanks Andrew.
+
+-- 
+Jesse Barnes, Intel Open Source Technology Center
