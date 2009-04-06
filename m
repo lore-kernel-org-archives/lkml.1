@@ -1,61 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756227AbZDFOP3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756682AbZDFOPo@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756227AbZDFOP3 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 6 Apr 2009 10:15:29 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754312AbZDFOPU
+	id S1756682AbZDFOPo (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 6 Apr 2009 10:15:44 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755233AbZDFOPX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 6 Apr 2009 10:15:20 -0400
-Received: from caffeine.csclub.uwaterloo.ca ([129.97.134.17]:52963 "EHLO
-	caffeine.csclub.uwaterloo.ca" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1752970AbZDFOPS (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 6 Apr 2009 10:15:18 -0400
-Date: Mon, 6 Apr 2009 10:15:16 -0400
-To: Jeff Moyer <jmoyer@redhat.com>
-Cc: Ingo Molnar <mingo@elte.hu>, Andrew Morton <akpm@linux-foundation.org>,
-       torvalds@linux-foundation.org, tytso@mit.edu, drees76@gmail.com,
-       jesper@krogh.cc, linux-kernel@vger.kernel.org, jens.axboe@oracle.com
-Subject: Re: Linux 2.6.29
-Message-ID: <20090406141516.GM3795@csclub.uwaterloo.ca>
-References: <20090326171148.9bf8f1ec.akpm@linux-foundation.org> <alpine.LFD.2.00.0903261723250.3994@localhost.localdomain> <20090326174704.cd36bf7b.akpm@linux-foundation.org> <alpine.LFD.2.00.0903261752110.3994@localhost.localdomain> <20090326182519.d576d703.akpm@linux-foundation.org> <20090401210337.GB3797@csclub.uwaterloo.ca> <20090401143622.b1885643.akpm@linux-foundation.org> <20090402010044.GA16092@elte.hu> <20090403040649.GF3795@csclub.uwaterloo.ca> <x49myaxjrsb.fsf@segfault.boston.devel.redhat.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <x49myaxjrsb.fsf@segfault.boston.devel.redhat.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-From: lsorense@csclub.uwaterloo.ca (Lennart Sorensen)
+	Mon, 6 Apr 2009 10:15:23 -0400
+Received: from gate.crashing.org ([63.228.1.57]:54097 "EHLO gate.crashing.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1755518AbZDFOPW (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 6 Apr 2009 10:15:22 -0400
+Cc: David Brownell <dbrownell@users.sourceforge.net>,
+       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
+       linuxppc-dev@ozlabs.org
+Message-Id: <6758B03E-2525-4754-83FA-643CED277CC6@kernel.crashing.org>
+From: Kumar Gala <galak@kernel.crashing.org>
+To: Anton Vorontsov <avorontsov@ru.mvista.com>
+In-Reply-To: <20090404192802.GA12183@oksana.dev.rtsoft.ru>
+Content-Type: text/plain; charset=US-ASCII; format=flowed; delsp=yes
+Content-Transfer-Encoding: 7bit
+Mime-Version: 1.0 (Apple Message framework v930.3)
+Subject: Re: [PATCH 1/3] spi_mpc83xx: Handles other Freescale processors
+Date: Mon, 6 Apr 2009 09:13:51 -0500
+References: <20090404192802.GA12183@oksana.dev.rtsoft.ru>
+X-Mailer: Apple Mail (2.930.3)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Apr 03, 2009 at 06:28:36PM -0400, Jeff Moyer wrote:
-> Could you try one more test, please?  Switch back to CFQ and set
-> /sys/block/sdX/queue/iosched/slice_idle to 0?
 
-I actually am running cfq at the moment, but with Mark's (I think it
-was) preload library to change fsync calls to at most one per 5 seconds
-instead of 10 per second.  So far that has certainly made things a lot
-better as far as I can tell.  Maybe not as good as anticipatory seemed
-to be but certainly better.
+On Apr 4, 2009, at 2:28 PM, Anton Vorontsov wrote:
 
-I can try your suggestion too.
+> With this patch we'll able to select spi_mpc83xx driver on the MPC86xx
+> platforms. Let the driver depend on FSL_SOC, so we don't have to worry
+> about Kconfig anymore.
+>
+> Also remove the "experimental" dependency, the driver has been tested
+> to work on a various hardware, and surely not experimental anymore.
+>
+> Signed-off-by: Anton Vorontsov <avorontsov@ru.mvista.com>
+> ---
+> drivers/spi/Kconfig |   14 ++++++--------
+> 1 files changed, 6 insertions(+), 8 deletions(-)
 
-I set sda-sdd to 0.  I removed the preload library from the mythbackend.
+this looks fine, but why don't we go ahead and rename things as well?   
+SPI_MPC83xx -> SPI_MPC8xxx, spi_mpc83xx.c -> spi_mpc8xxx.c
 
-> I'm not sure how the applications you are running write to disk, but if
-> they interleave I/O between processes, this could help.  I'm not too
-> confident that this will make a difference, though, since CFQ changed to
-> time-slice based instead of quantum based before 2.6.18.  Still, it
-> would be another data point if you have the time.
-
-Well when recording two shows at once, there will be two processes
-streaming to seperate files, and usually there will be two commercial
-flagging processes following behind reading those files and doing mysql
-updates as they go.
-
-> Thanks in advance!
-
-No problem.  If it solves this bad behaviour, it will be all worth it.
-
--- 
-Len Sorensen
+- k
