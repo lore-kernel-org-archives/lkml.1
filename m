@@ -1,72 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758017AbZDFOj1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758328AbZDFOj4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758017AbZDFOj1 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 6 Apr 2009 10:39:27 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755549AbZDFOjS
+	id S1758328AbZDFOj4 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 6 Apr 2009 10:39:56 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756344AbZDFOjr
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 6 Apr 2009 10:39:18 -0400
-Received: from mx2.redhat.com ([66.187.237.31]:58279 "EHLO mx2.redhat.com"
+	Mon, 6 Apr 2009 10:39:47 -0400
+Received: from gate.crashing.org ([63.228.1.57]:36928 "EHLO gate.crashing.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755329AbZDFOjS (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 6 Apr 2009 10:39:18 -0400
-Organization: Red Hat UK Ltd. Registered Address: Red Hat UK Ltd, Amberley
-	Place, 107-111 Peascod Street, Windsor, Berkshire, SI4 1TE, United
-	Kingdom.
-	Registered in England and Wales under Company Registration No. 3798903
-From: David Howells <dhowells@redhat.com>
-Subject: [PATCH] FRV: Fix compile breakage
-To: torvalds@osdl.org, akpm@linux-foundation.org
-Cc: linux-kernel@vger.kernel.org, Adrian Bunk <bunk@kernel.org>,
-       David Howells <dhowells@redhat.com>
-Date: Mon, 06 Apr 2009 15:36:04 +0100
-Message-ID: <20090406143604.16864.95018.stgit@warthog.procyon.org.uk>
-User-Agent: StGIT/0.14.3
-MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
+	id S1755549AbZDFOjq (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 6 Apr 2009 10:39:46 -0400
+Cc: Anton Vorontsov <avorontsov@ru.mvista.com>, linuxppc-dev@ozlabs.org,
+       Andrew Morton <akpm@linux-foundation.org>,
+       David Brownell <dbrownell@users.sourceforge.net>,
+       linux-kernel@vger.kernel.org
+Message-Id: <7450FD1B-9C81-4C98-8A81-63999892A3A4@kernel.crashing.org>
+From: Kumar Gala <galak@kernel.crashing.org>
+To: Gary Thomas <gary@mlbassoc.com>
+In-Reply-To: <49DA12C7.9000900@mlbassoc.com>
+Content-Type: text/plain; charset=US-ASCII; format=flowed; delsp=yes
 Content-Transfer-Encoding: 7bit
+Mime-Version: 1.0 (Apple Message framework v930.3)
+Subject: Re: [PATCH 1/3] spi_mpc83xx: Handles other Freescale processors
+Date: Mon, 6 Apr 2009 09:36:33 -0500
+References: <20090404192802.GA12183@oksana.dev.rtsoft.ru> <6758B03E-2525-4754-83FA-643CED277CC6@kernel.crashing.org> <49DA12C7.9000900@mlbassoc.com>
+X-Mailer: Apple Mail (2.930.3)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Adrian Bunk <bunk@kernel.org>
 
-This patch fixes the follwing build error caused by
-commit 7ca43e7564679604d86e9ed834e7bbcffd8a4a3f
-(mm: use debug_kmap_atomic):
+On Apr 6, 2009, at 9:33 AM, Gary Thomas wrote:
 
-<--  snip  -->
+> Kumar Gala wrote:
+>>
+>> On Apr 4, 2009, at 2:28 PM, Anton Vorontsov wrote:
+>>
+>>> With this patch we'll able to select spi_mpc83xx driver on the  
+>>> MPC86xx
+>>> platforms. Let the driver depend on FSL_SOC, so we don't have to  
+>>> worry
+>>> about Kconfig anymore.
+>>>
+>>> Also remove the "experimental" dependency, the driver has been  
+>>> tested
+>>> to work on a various hardware, and surely not experimental anymore.
+>>>
+>>> Signed-off-by: Anton Vorontsov <avorontsov@ru.mvista.com>
+>>> ---
+>>> drivers/spi/Kconfig |   14 ++++++--------
+>>> 1 files changed, 6 insertions(+), 8 deletions(-)
+>>
+>> this looks fine, but why don't we go ahead and rename things as well?
+>> SPI_MPC83xx -> SPI_MPC8xxx, spi_mpc83xx.c -> spi_mpc8xxx.c
+>
+> mpc8xxx implies mpc82xx (e.g. mpc8272) which is not the same  
+> controller
+> as on the mpc83xx
 
-...
-  AS      arch/frv/mm/tlb-miss.o
-...
-In file included from
-arch/frv/mm/tlb-miss.S:13:
-...
-Assembler messages:
-include/asm-generic/ioctl.h:73:
-Error: unrecognized instruction `extern unsigned int __invalid_size_argument_for_IO...'
-...
+True, but normally the 82xx drivers are "cpm" prefixed.  I think 8xxx  
+is at better name than 83xx.
 
-<--  snip  -->
-
-Signed-off-by: Adrian Bunk <bunk@kernel.org>
-Signed-off-by: David Howells <dhowells@redhat.com>
----
-
- arch/frv/mm/tlb-miss.S |    1 -
- 1 files changed, 0 insertions(+), 1 deletions(-)
-
-
-diff --git a/arch/frv/mm/tlb-miss.S b/arch/frv/mm/tlb-miss.S
-index 0764348..7f392bc 100644
---- a/arch/frv/mm/tlb-miss.S
-+++ b/arch/frv/mm/tlb-miss.S
-@@ -13,7 +13,6 @@
- #include <linux/linkage.h>
- #include <asm/page.h>
- #include <asm/pgtable.h>
--#include <asm/highmem.h>
- #include <asm/spr-regs.h>
- 
- 	.section	.text.tlbmiss
-
+- k
