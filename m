@@ -1,141 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758156AbZDFToe@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752223AbZDFTwY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758156AbZDFToe (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 6 Apr 2009 15:44:34 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752518AbZDFToZ
+	id S1752223AbZDFTwY (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 6 Apr 2009 15:52:24 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751989AbZDFTwO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 6 Apr 2009 15:44:25 -0400
-Received: from mail-ew0-f165.google.com ([209.85.219.165]:52165 "EHLO
-	mail-ew0-f165.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756871AbZDFToY (ORCPT
+	Mon, 6 Apr 2009 15:52:14 -0400
+Received: from qmta15.emeryville.ca.mail.comcast.net ([76.96.27.228]:33336
+	"EHLO QMTA15.emeryville.ca.mail.comcast.net" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751930AbZDFTwN (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 6 Apr 2009 15:44:24 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:references:mime-version
-         :content-type:content-disposition:in-reply-to:user-agent;
-        b=I3XatGBOERSGKZJpd4FoXl436VazOYcwjcg2Ur3cfgi1+JxvR+SSgmkNOMCmkpVlaI
-         UWGQqK1t3HMc9IDr7jpCnarQ9qnO7j7utTLZqIhUAXOeYVnI/dKEOabDNErZEaM8UIid
-         h9cFehM2PTmzLyiq0cu82y9XHKgNnc2tdt3Pg=
-Date: Mon, 6 Apr 2009 21:44:18 +0200
-From: Frederic Weisbecker <fweisbec@gmail.com>
-To: Steven Rostedt <rostedt@goodmis.org>
-Cc: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>,
-       Tom Zanussi <tzanussi@gmail.com>, Ingo Molnar <mingo@elte.hu>,
-       linux-kernel <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH] tracing/filters: allow event filters to be set only
-	when not tracing
-Message-ID: <20090406194417.GA5936@nowhere>
-References: <1238653371.6655.48.camel@bookworm> <20090403135956.GD8875@elte.hu> <alpine.DEB.2.00.0904031010510.965@gandalf.stny.rr.com> <1238830355.22495.55.camel@bookworm> <alpine.DEB.2.00.0904041143480.32083@gandalf.stny.rr.com> <1238916865.7989.212.camel@tropicana> <20090405171146.GK6893@linux.vnet.ibm.com> <alpine.DEB.2.00.0904061155120.4317@gandalf.stny.rr.com> <20090406161527.GD6988@linux.vnet.ibm.com> <alpine.DEB.2.00.0904061529370.4317@gandalf.stny.rr.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <alpine.DEB.2.00.0904061529370.4317@gandalf.stny.rr.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+	Mon, 6 Apr 2009 15:52:13 -0400
+X-Greylist: delayed 356 seconds by postgrey-1.27 at vger.kernel.org; Mon, 06 Apr 2009 15:52:13 EDT
+Subject: Re: Replacing VFAT as filesystem on removeable media
+From: Nicholas Miell <nmiell@comcast.net>
+To: "H. Peter Anvin" <hpa@zytor.com>
+Cc: Alejandro Riveira =?ISO-8859-1?Q?Fern=E1ndez?= 
+	<ariveira@gmail.com>,
+       Martin Steigerwald <Martin@lichtvoll.de>,
+       Bryan Henderson <hbryan@us.ibm.com>, linux-fsdevel@vger.kernel.org,
+       linux-kernel@vger.kernel.org
+In-Reply-To: <49D90EED.2060703@zytor.com>
+References: <OFF614A035.0DA52102-ON8825758C.00613C94-8825758C.006215D5@us.ibm.com>
+	 <200904031029.03581.Martin@lichtvoll.de>	<49D8510A.3010606@zytor.com>
+	 <20090405153041.08238acf@varda>  <49D90EED.2060703@zytor.com>
+Content-Type: text/plain; charset="UTF-8"
+Date: Mon, 06 Apr 2009 12:46:13 -0700
+Message-Id: <1239047173.32425.10.camel@entropy>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.24.5 (2.24.5-1.fc10) 
+Content-Transfer-Encoding: 8bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Apr 06, 2009 at 03:30:32PM -0400, Steven Rostedt wrote:
-> 
-> On Mon, 6 Apr 2009, Paul E. McKenney wrote:
-> 
-> > On Mon, Apr 06, 2009 at 11:59:30AM -0400, Steven Rostedt wrote:
-> > > On Sun, 5 Apr 2009, Paul E. McKenney wrote:
-> > > > > Basically the problem is that the tracing functions call
-> > > > > filter_match_preds(call,...) where call->preds is an array of predicates
-> > > > > that get checked to determine whether the current event matches or not.
-> > > > > When an existing filter is deleted (or an old one replaced), the
-> > > > > call->preds array is freed and set to NULL (which happens only via a
-> > > > > write to the 'filter' debugfs file).  So without any protection, while
-> > > > > one cpu is freeing the preds array, the others may still be using it,
-> > > > > and if so, it will crash the box.  You can easily see the problem with
-> > > > > e.g. the function tracer:
-> > > > > 
-> > > > > # echo function > /debug/tracing/current_tracer
-> > > > > 
-> > > > > Function tracing is now live
-> > > > > 
-> > > > > # echo 'common_pid == 0' > /debug/tracing/events/ftrace/function/filter
-> > > > > 
-> > > > > No problem, no preds are freed the first time
-> > > > > 
-> > > > > # echo 0 > /debug/tracing/events/ftrace/function/filter
-> > > > > 
-> > > > > Crash.
-> > > > > 
-> > > > > My first patch took the safe route and completely disallowed filters
-> > > > > from being set when any tracing was live i.e. you had to for example
-> > > > > echo 0 > tracing_enabled or echo 0 > enable for a particular event, etc.
-> > > > > 
-> > > > > This wasn't great for usability, though - it would be much nicer to be
-> > > > > able to remove or set new filters on the fly, while tracing is active,
-> > > > > which rcu seemed perfect for - the preds wouldn't actually be destroyed
-> > > > > until all the current users were finished with them.  My second patch
-> > > > > implemented that and it seemed to nicely fix the problem, but it
-> > > > > apparently can cause other problems...
-> > > 
-> > > The proble is that function tracing also traces the rcu calls. Even though 
-> > > the function trace protects against recursion, by adding rcu locks to the
-> > > function tracer, we have just doubled the overhead for it. Every function 
-> > > trace will call rcu_read_lock, then that would be traced too, and the 
-> > > function tracer would see that it is recursive and return. All this is 
-> > > added overhead to _every_ function!
-> > > 
-> > > I do not understand why my recommendation is not used. All tracers require 
-> > > preemption to be disabled. By simply removing the pred from the list, do a 
-> > > synchronize_sched(), then set it to NULL. The update is done by userland, 
-> > > synchronizing a schedule should not be that noticeable.
+On Sun, 2009-04-05 at 13:05 -0700, H. Peter Anvin wrote:
+> Alejandro Riveira Fernández wrote:
+> >>>
+> >> Ironically enough, one of the better filesystems for being supported by
+> >> many OSes is probably ext2.  However, that doesn't mean it is even in
+> >> the same rough ballpark as (V)FAT.
 > > 
-> > The only caution is that synchronize_sched() ignores preempt-disable
-> > sequences in the idle loop.  The reason for this is that synchronize_sched()
-> > maps to synchronize_rcu() for rcuclassic and rcutree.
-> > 
-> > So, if you need to make synchronize_sched() pay attention to
-> > preempt-disable sequences in the idle loop, something similar to the
-> > patch to RCU that I sent earlier (adding explicit rcu_idle() call to
-> > each idle loop) would be required.
+> >   What about UDF ?
 > 
-> Ah! OK, now I understand the issue :-)
+> Good point.  UDF is probably widely supported, but again, not in the
+> same ballpark.  I don't personally know how complex UDF is to implement
+> on a small memory device.
 > 
-> > 
-> > > > > So assuming we can't use rcu for this, it would be nice to have a way to
-> > > > > 'pause' tracing so the current filter can be removed i.e. some version
-> > > > > of stop_trace()/start_trace() that make sure nothing is still executing
-> > > > > or can enter filter_match_preds() while the current call->preds is being
-> > > > > destroyed.  Seems like it would be straightforward to implement for the
-> > > > > event tracer, since each event maps to a tracepoint that could be
-> > > > > temporarily unregistered/reregistered, but maybe not so easy for the
-> > > > > ftrace tracers...
-> > > > 
-> > > > In principle, it would be possible to rework RCU so that instead of the
-> > > > whole idle loop being a quiescent state, there is a single quiescent state
-> > > > at one point in each idle loop.  The reason that I have been avoiding this
-> > > > is that there are a lot of idle loops out there, and it would be a bit
-> > > > annoying to (1) find them all and update them and (2) keep track of all of
-> > > > them to ensure that new ones cannot slip in without the quiescent state.
-> > > > 
-> > > > But it could be done if the need is there.  Simple enough change.
-> > > > The following patch shows the general approach, assuming that CPUs
-> > > > are never put to sleep without entering nohz mode.
-> > > > 
-> > > > Thoughts?
-> > > 
-> > > I think using synchronize_sched() should be good enough for what we need.
-> > 
-> > Again, as long as either (1) you are OK with synchronize_sched()
-> > ignoring preempt-disable sequences in the idle loop or (2) we rework RCU
-> > to add something like an rcu_idle() call in each idle loop.
+> 	-hpa
 > 
-> 3) add "notrace" to the idle functions ;-)
-> 
-> But perhaps the rcu_idle might be the best idea.
 
+DVD players are small memory devices and they don't actually implement
+UDF.
 
-And tracing the idle time is also sometimes very useful :-)
+(DVD movies have UDF filesystems, but they're constructed such that the
+files that the DVD player needs are at specific fixed offsets on the
+disc, and the DVD player never actually interprets the UDF filesystem.)
 
+Also, there's several different revisions of UDF, which causes some
+level of operating system compatibility problems.
 
- 
-> -- Steve
-> 
+Fortunately, the UDF flavor likely to be used on magnetic/flash media is
+also the flavor that's the most compatible, so that makes things easier
+for everyone.
+
+-- 
+Nicholas Miell <nmiell@comcast.net>
 
