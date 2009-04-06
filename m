@@ -1,55 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754491AbZDFG6P@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754230AbZDFHCT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754491AbZDFG6P (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 6 Apr 2009 02:58:15 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753559AbZDFG56
+	id S1754230AbZDFHCT (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 6 Apr 2009 03:02:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752272AbZDFHCG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 6 Apr 2009 02:57:58 -0400
-Received: from smtp.cs.aau.dk ([130.225.194.6]:46577 "EHLO smtp.cs.aau.dk"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753329AbZDFG56 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 6 Apr 2009 02:57:58 -0400
-Subject: Re: [Lguest] [PATCH 4/5] lguest: use KVM hypercalls
-From: Simon Holm =?ISO-8859-1?Q?Th=F8gersen?= <odie@cs.aau.dk>
-To: Rusty Russell <rusty@rustcorp.com.au>
-Cc: lguest@ozlabs.org, virtualization@lists.osdl.org,
-       Ingo Molnar <mingo@redhat.com>, linux-kernel@vger.kernel.org,
-       Matias Zabaljauregui <zabaljauregui@gmail.com>
-In-Reply-To: <200904052234.48483.rusty@rustcorp.com.au>
-References: <200903271022.38244.rusty@rustcorp.com.au>
-	 <1238709324.5823.8.camel@odie.local>
-	 <200904052234.48483.rusty@rustcorp.com.au>
-Content-Type: text/plain; charset="UTF-8"
-Date: Mon, 06 Apr 2009 08:56:39 +0200
-Message-Id: <1239000999.6448.821.camel@odie.local>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.24.4 
-Content-Transfer-Encoding: 8bit
+	Mon, 6 Apr 2009 03:02:06 -0400
+Received: from mail-fx0-f158.google.com ([209.85.220.158]:50787 "EHLO
+	mail-fx0-f158.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751050AbZDFHCF (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 6 Apr 2009 03:02:05 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:to:subject:message-id:mime-version:content-type
+         :content-disposition:user-agent;
+        b=vHiFva001KceqpYXcar/l3QLJLtX68DJpqdmg4S7+MFBVChjUfPLz4zGDcfXAXdKHc
+         ar+dnwFYDoKkVcZn6NgOeXuMpwVxa+PexQUayD8aD5c7wr+DtExnmdvlOxJ1KzLkbPth
+         2tOOAkoOOc61zoxM8249ovuL0KGGEDo9rdNko=
+Date: Mon, 6 Apr 2009 11:01:52 +0400
+From: Alexander Beregalov <a.beregalov@gmail.com>
+To: linux-next@vger.kernel.org, linux-kernel@vger.kernel.org, mingo@elte.hu,
+       sfr@canb.auug.org.au, kees@ubuntu.com
+Subject: [PATCH next] sysctl: fix build breakage
+Message-ID: <20090406070152.GA29032@orion>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+User-Agent: Mutt/1.5.19 (2009-01-05)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-søn, 05 04 2009 kl. 22:34 +0930, skrev Rusty Russell: 
-> On Friday 03 April 2009 08:25:24 Simon Holm Thøgersen wrote:
-> > fre, 27 03 2009 kl. 10:22 +1030, skrev Rusty Russell:
-> > > From: Matias Zabaljauregui <zabaljauregui@gmail.com>
-> > > 
-> > > Impact: cleanup
-> > > 
-> > > This patch allow us to use KVM hypercalls
-> > 
-> > Something has broken in relation to this change. I'm not sure it is this
-> > change itself or one following, but I get the following error when using
-> > lguest:
-> > 
-> > lguest: unhandled trap 6 at 0x418726 (0x0)
-> 
-> Any chance you didn't rebuild the Launcher?
+Fix this build error when MODULES is not set:
+kernel/sysctl.c:545: error: 'one' undeclared here
 
-Nope, I've double and triple checked that. I still kind of expect
-something weird at my end though, so I'd be interested to know the
-result of others using my config.
+Signed-off-by: Alexander Beregalov <a.beregalov@gmail.com>
+---
 
+ kernel/sysctl.c |    2 +-
+ 1 files changed, 1 insertions(+), 1 deletions(-)
 
-Simon
-
+diff --git a/kernel/sysctl.c b/kernel/sysctl.c
+index 4a0f8ad..655762b 100644
+--- a/kernel/sysctl.c
++++ b/kernel/sysctl.c
+@@ -91,7 +91,7 @@ extern int rcutorture_runnable;
+ #endif /* #ifdef CONFIG_RCU_TORTURE_TEST */
+ 
+ /* Constants used for minimum and  maximum */
+-#if defined(CONFIG_DETECT_HUNG_TASK) || defined(CONFIG_DETECT_SOFTLOCKUP) || defined(CONFIG_HIGHMEM)
++#if defined(CONFIG_DETECT_HUNG_TASK) || defined(CONFIG_DETECT_SOFTLOCKUP) || defined(CONFIG_HIGHMEM) || defined(CONFIG_MODULES)
+ static int one = 1;
+ #endif
+ #ifdef CONFIG_DETECT_SOFTLOCKUP
