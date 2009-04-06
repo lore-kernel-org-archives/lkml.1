@@ -1,76 +1,254 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756290AbZDFLGW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756522AbZDFLGh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756290AbZDFLGW (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 6 Apr 2009 07:06:22 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755987AbZDFLFw
+	id S1756522AbZDFLGh (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 6 Apr 2009 07:06:37 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756269AbZDFLGK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 6 Apr 2009 07:05:52 -0400
-Received: from mail-bw0-f169.google.com ([209.85.218.169]:60583 "EHLO
-	mail-bw0-f169.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755448AbZDFLFu convert rfc822-to-8bit (ORCPT
+	Mon, 6 Apr 2009 07:06:10 -0400
+Received: from e28smtp08.in.ibm.com ([59.145.155.8]:48948 "EHLO
+	e28smtp08.in.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756236AbZDFLGI (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 6 Apr 2009 07:05:50 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:sender:in-reply-to:references:date
-         :x-google-sender-auth:message-id:subject:from:to:cc:content-type
-         :content-transfer-encoding;
-        b=LPLa0LlNoap1DjDf4yP9IDWOCmpldOh627+qhQ4diU2hSgDemg8y2npmpHROn5DUZ0
-         /njk0nUz+oRk/EyHOlzSn2v87pSj9Q6ZrJ9W0yaGmhr2I+V7BfuDuPZ1Y+JSTy2Uo4WC
-         VmsFN0wtxCBCFjLA1qxIV4Ivo35JBP/BrLChE=
+	Mon, 6 Apr 2009 07:06:08 -0400
+Date: Mon, 6 Apr 2009 16:35:34 +0530
+From: Balbir Singh <balbir@linux.vnet.ibm.com>
+To: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+Cc: "linux-mm@kvack.org" <linux-mm@kvack.org>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       "kosaki.motohiro@jp.fujitsu.com" <kosaki.motohiro@jp.fujitsu.com>
+Subject: Re: [RFC][PATCH 4/9] soft limit queue and priority
+Message-ID: <20090406110534.GJ7082@balbir.in.ibm.com>
+Reply-To: balbir@linux.vnet.ibm.com
+References: <20090403170835.a2d6cbc3.kamezawa.hiroyu@jp.fujitsu.com> <20090403171248.df3e1b03.kamezawa.hiroyu@jp.fujitsu.com>
 MIME-Version: 1.0
-In-Reply-To: <200904061251.10965.helmut.schaa@gmail.com>
-References: <1238923439.4120.9.camel@localhost.localdomain>
-	 <200904061217.31134.mb@bu3sch.de> <87tz52xepy.fsf@litku.valot.fi>
-	 <200904061251.10965.helmut.schaa@gmail.com>
-Date: Mon, 6 Apr 2009 14:05:46 +0300
-X-Google-Sender-Auth: 266aaf6c979ff1b0
-Message-ID: <da94abde0904060405k280b3094jc20d0f7a4e6e759d@mail.gmail.com>
-Subject: Re: ath9k becon loss messages
-From: Kalle Valo <kalle.valo@iki.fi>
-To: Helmut Schaa <helmut.schaa@googlemail.com>
-Cc: Michael Buesch <mb@bu3sch.de>,
-       Jaswinder Singh Rajput <jaswinder@kernel.org>,
-       Sujith <Sujith.Manoharan@atheros.com>,
-       wireless <linux-wireless@vger.kernel.org>,
-       David Miller <davem@davemloft.net>, LKML <linux-kernel@vger.kernel.org>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 8BIT
+Content-Type: text/plain; charset=iso-8859-1
+Content-Disposition: inline
+In-Reply-To: <20090403171248.df3e1b03.kamezawa.hiroyu@jp.fujitsu.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Apr 6, 2009 at 1:51 PM, Helmut Schaa
-<helmut.schaa@googlemail.com> wrote:
-> Am Montag, 6. April 2009 schrieb Kalle Valo:
->
->> But ath9k nor iwlwifi don't support beacon filtering and this is a
->> problem in mac80211. We need to disable the beacon loss check in
->> mac80211, most probably by stopping the associated timer whenever
->> scanning.
->
-> Yeah, but the first execution of the timer will then also detect
-> beacon loss:
->
-> 1006   if (!((local->hw.flags & IEEE80211_HW_BEACON_FILTER) &&
-> 1007         (local->hw.conf.flags & IEEE80211_CONF_PS)) &&
-> 1008       time_after(jiffies,
-> 1009            ifmgd->last_beacon + IEEE80211_MONITORING_INTERVAL)) {
->
-> If the scan took longer then IEEE80211_MONITORING_INTERVAL (=2 sec) this
-> condition will apply just after the scan finished.
+* KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com> [2009-04-03 17:12:48]:
 
-Not if we do "mod_timer(&ifmgd->timer, jiffies +
-IEEE80211_MONITORING_INTERVAL)" after the scan has finished. That way
-there's enought time to receive beacons before the timer triggers.
+> From: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+> 
+> Softlimitq. for memcg.
+> 
+> Implements an array of queue to list memcgs, array index is determined by
+> the amount of memory usage excess the soft limit.
+> 
+> While Balbir's one uses RB-tree and my old one used a per-zone queue
+> (with round-robin), this is one of mixture of them.
+> (I'd like to use rotation of queue in later patches)
+> 
+> Priority is determined by following.
+>    Assume unit = total pages/1024. (the code uses different value)
+>    if excess is...
+>       < unit,          priority = 0, 
+>       < unit*2,        priority = 1,
+>       < unit*2*2,      priority = 2,
+>       ...
+>       < unit*2^9,      priority = 9,
+>       < unit*2^10,     priority = 10, (> 50% to total mem)
+> 
+> This patch just includes queue management part and not includes 
+> selection logic from queue. Some trick will be used for selecting victims at
+> soft limit in efficient way.
+> 
+> And this equips 2 queues, for anon and file. Inset/Delete of both list is
+> done at once but scan will be independent. (These 2 queues are used later.)
+> 
+> Major difference from Balbir's one other than RB-tree is bahavior under
+> hierarchy. This one adds all children to queue by checking hierarchical
+> priority. This is for helping per-zone usage check on victim-selection logic.
+> 
+> Changelog: v1->v2
+>  - fixed comments.
+>  - change base size to exponent.
+>  - some micro optimization to reduce code size.
+>  - considering memory hotplug, it's not good to record a value calculated
+>    from totalram_pages at boot and using it later is bad manner. Fixed it.
+>  - removed soft_limit_lock (spinlock) 
+>  - added soft_limit_update counter for avoiding mulptiple update at once.
+>    
+> 
+> Signed-off-by: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+> ---
+>  mm/memcontrol.c |  118 +++++++++++++++++++++++++++++++++++++++++++++++++++++++-
+>  1 file changed, 117 insertions(+), 1 deletion(-)
+> 
+> Index: softlimit-test2/mm/memcontrol.c
+> ===================================================================
+> --- softlimit-test2.orig/mm/memcontrol.c
+> +++ softlimit-test2/mm/memcontrol.c
+> @@ -192,7 +192,14 @@ struct mem_cgroup {
+>  	atomic_t	refcnt;
+> 
+>  	unsigned int	swappiness;
+> -
+> +	/*
+> +	 * For soft limit.
+> +	 */
+> +	int soft_limit_priority;
+> +	struct list_head soft_limit_list[2];
+> +#define SL_ANON (0)
+> +#define SL_FILE (1)
 
-> Maybe this issue could be
-> avoided by making the beacon loss detection smarter then just checking if no
-> beacon was received within the last two seconds.
+Comments for the #define please.
 
-Definitely the beacon loss logic should be smarter, but I think that
-should be improved separately. I just have tried to do small changes
-at a time to avoid regressions and I didn't even consider improving
-the beacon loss logic.
+> +	atomic_t soft_limit_update;
+>  	/*
+>  	 * statistics. This must be placed at the end of memcg.
+>  	 */
+> @@ -938,11 +945,115 @@ static bool mem_cgroup_soft_limit_check(
+>  	return ret;
+>  }
+> 
+> +/*
+> + * Assume "base_amount", and excess = usage - soft limit.
+> + *
+> + * 0...... if excess < base_amount
+> + * 1...... if excess < base_amount * 2
+> + * 2...... if excess < base_amount * 2^2
+> + * 3.......if excess < base_amount * 2^3
+> + * ....
+> + * 9.......if excess < base_amount * 2^9
+> + * 10 .....if excess < base_amount * 2^10
+> + *
+> + * base_amount is detemined from total pages in the system.
+> + */
+> +
+> +#define SLQ_MAXPRIO (11)
+> +static struct {
+> +	spinlock_t lock;
+> +	struct list_head queue[SLQ_MAXPRIO][2]; /* 0:anon 1:file */
+> +} softlimitq;
+> +
+> +#define SLQ_PRIO_FACTOR (1024) /* 2^10 */
+> +
+> +static int __calc_soft_limit_prio(unsigned long excess)
+> +{
+> +	unsigned long factor = totalram_pages /SLQ_PRIO_FACTOR;
 
-Kalle
+I would prefer to use global_lru_pages()
+
+> +
+> +	return fls(excess/factor);
+> +}
+> +
+> +static int mem_cgroup_soft_limit_prio(struct mem_cgroup *mem)
+> +{
+> +	unsigned long excess, max_excess = 0;
+> +	struct res_counter *c = &mem->res;
+> +
+> +	do {
+> +		excess = res_counter_soft_limit_excess(c) >> PAGE_SHIFT;
+> +		if (max_excess < excess)
+> +			max_excess = excess;
+                max_excess = min(max_excess, excess)
+> +		c = c->parent;
+> +	} while (c);
+> +
+> +	return __calc_soft_limit_prio(max_excess);
+> +}
+> +
+> +static void __mem_cgroup_requeue(struct mem_cgroup *mem, int prio)
+> +{
+> +	/* enqueue to softlimit queue */
+> +	int i;
+> +
+> +	spin_lock(&softlimitq.lock);
+> +	if (prio != mem->soft_limit_priority) {
+> +		mem->soft_limit_priority = prio;
+> +		for (i = 0; i < 2; i++) {
+> +			list_del_init(&mem->soft_limit_list[i]);
+> +			list_add_tail(&mem->soft_limit_list[i],
+> +				      &softlimitq.queue[prio][i]);
+> +		}
+> +	}
+> +	spin_unlock(&softlimitq.lock);
+> +}
+> +
+> +static void __mem_cgroup_dequeue(struct mem_cgroup *mem)
+> +{
+> +	int i;
+> +
+> +	spin_lock(&softlimitq.lock);
+> +	for (i = 0; i < 2; i++)
+> +		list_del_init(&mem->soft_limit_list[i]);
+> +	spin_unlock(&softlimitq.lock);
+> +}
+> +
+> +static int
+> +__mem_cgroup_update_soft_limit_cb(struct mem_cgroup *mem, void *data)
+> +{
+> +	int priority;
+> +	/* If someone updates, we don't need more */
+> +	priority = mem_cgroup_soft_limit_prio(mem);
+> +
+> +	if (priority != mem->soft_limit_priority)
+> +		__mem_cgroup_requeue(mem, priority);
+> +	return 0;
+> +}
+> +
+>  static void mem_cgroup_update_soft_limit(struct mem_cgroup *mem)
+>  {
+> +	int priority;
+> +
+> +	/* check status change */
+> +	priority = mem_cgroup_soft_limit_prio(mem);
+> +	if (priority != mem->soft_limit_priority &&
+> +	    atomic_inc_return(&mem->soft_limit_update) > 1) {
+> +		mem_cgroup_walk_tree(mem, NULL,
+> +				     __mem_cgroup_update_soft_limit_cb);
+> +		atomic_set(&mem->soft_limit_update, 0);
+> +	}
+>  	return;
+>  }
+> 
+> +static void softlimitq_init(void)
+> +{
+> +	int i;
+> +
+> +	spin_lock_init(&softlimitq.lock);
+> +	for (i = 0; i < SLQ_MAXPRIO; i++) {
+> +		INIT_LIST_HEAD(&softlimitq.queue[i][SL_ANON]);
+> +		INIT_LIST_HEAD(&softlimitq.queue[i][SL_FILE]);
+> +	}
+> +}
+> +
+>  /*
+>   * Unlike exported interface, "oom" parameter is added. if oom==true,
+>   * oom-killer can be invoked.
+> @@ -2512,6 +2623,7 @@ mem_cgroup_create(struct cgroup_subsys *
+>  	if (cont->parent == NULL) {
+>  		enable_swap_cgroup();
+>  		parent = NULL;
+> +		softlimitq_init();
+>  	} else {
+>  		parent = mem_cgroup_from_cont(cont->parent);
+>  		mem->use_hierarchy = parent->use_hierarchy;
+> @@ -2532,6 +2644,9 @@ mem_cgroup_create(struct cgroup_subsys *
+>  		res_counter_init(&mem->memsw, NULL);
+>  	}
+>  	mem->last_scanned_child = 0;
+> +	mem->soft_limit_priority = 0;
+> +	INIT_LIST_HEAD(&mem->soft_limit_list[SL_ANON]);
+> +	INIT_LIST_HEAD(&mem->soft_limit_list[SL_FILE]);
+>  	spin_lock_init(&mem->reclaim_param_lock);
+> 
+>  	if (parent)
+> @@ -2556,6 +2671,7 @@ static void mem_cgroup_destroy(struct cg
+>  {
+>  	struct mem_cgroup *mem = mem_cgroup_from_cont(cont);
+> 
+> +	__mem_cgroup_dequeue(mem);
+>  	mem_cgroup_put(mem);
+>  }
+> 
+> 
+> 
+
+-- 
+	Balbir
