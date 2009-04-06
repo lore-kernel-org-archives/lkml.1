@@ -1,63 +1,144 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758322AbZDFCir@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753124AbZDFDao@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758322AbZDFCir (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 5 Apr 2009 22:38:47 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753716AbZDFCii
+	id S1753124AbZDFDao (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 5 Apr 2009 23:30:44 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752214AbZDFDae
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 5 Apr 2009 22:38:38 -0400
-Received: from cantor2.suse.de ([195.135.220.15]:51108 "EHLO mx2.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753324AbZDFCih (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 5 Apr 2009 22:38:37 -0400
-Date: Sun, 5 Apr 2009 19:33:49 -0700
-From: Greg KH <gregkh@suse.de>
-To: David Woodhouse <dwmw2@infradead.org>
-Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Mithlesh Thukral <mithlesh@linsyssoft.com>,
-       Christopher Harrer <charrer@alacritech.com>
-Subject: Re: Staging: sxg: Add support to download the firmware using
-	request_firmware()
-Message-ID: <20090406023349.GA1314@suse.de>
-References: <200904051919.n35JJUUq031448@hera.kernel.org> <1238978493.11870.2.camel@macbook.infradead.org> <20090406010754.GA32630@suse.de> <1238980795.11870.12.camel@macbook.infradead.org>
+	Sun, 5 Apr 2009 23:30:34 -0400
+Received: from fgwmail5.fujitsu.co.jp ([192.51.44.35]:51039 "EHLO
+	fgwmail5.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752042AbZDFDad (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 5 Apr 2009 23:30:33 -0400
+From: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
+To: linux-kernel@vger.kernel.org
+Subject: Re: + mm-align-vmstat_works-timer.patch added to -mm tree
+Cc: kosaki.motohiro@jp.fujitsu.com, anton@samba.org,
+       linux-mm <linux-mm@kvack.org>,
+       Andrew Morton <akpm@linux-foundation.org>
+In-Reply-To: <200904011945.n31JjWqG028114@imap1.linux-foundation.org>
+References: <200904011945.n31JjWqG028114@imap1.linux-foundation.org>
+Message-Id: <20090406120533.450B.A69D9226@jp.fujitsu.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1238980795.11870.12.camel@macbook.infradead.org>
-User-Agent: Mutt/1.5.19 (2009-01-05)
+Content-Type: text/plain; charset="US-ASCII"
+Content-Transfer-Encoding: 7bit
+X-Mailer: Becky! ver. 2.50 [ja]
+Date: Mon,  6 Apr 2009 12:30:26 +0900 (JST)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, Apr 05, 2009 at 06:19:55PM -0700, David Woodhouse wrote:
-> On Sun, 2009-04-05 at 18:07 -0700, Greg KH wrote:
-> > Who do we email to add this to?
+(swich to lkml and linux-mm)
+
+Hi Anton,
+
+Do you have any mesurement data?
+
+Honestly, I made the same patch few week ago.
+but I found two problems.
+
+1)
+work queue tracer (in -tip) reported it isn't proper rounded.
+
+The fact is, schedule_delayed_work(work, round_jiffies_relative()) is
+a bit ill.
+
+it mean
+  - round_jiffies_relative() calculate rounded-time - jiffies
+  - schedule_delayed_work() calculate argument + jiffies
+
+it assume no jiffies change at above two place. IOW it assume
+non preempt kernel.
+
+
+2)
+> -	schedule_delayed_work_on(cpu, vmstat_work, HZ + cpu);
+> +	schedule_delayed_work_on(cpu, vmstat_work,
+> +				 __round_jiffies_relative(HZ, cpu));
+
+isn't same meaning.
+
+vmstat_work mean to move per-cpu stastics to global stastics.
+Then, (HZ + cpu) mean to avoid to touch the same global variable at the same time.
+
+Oh well, this patch have performance regression risk on _very_ big server.
+(perhaps, only sgi?)
+
+but I agree vmstat_work is one of most work queue heavy user.
+For power consumption view, it isn't proper behavior.
+
+I still think improving another way.
+
 > 
-> Clone git.kernel.org/pub/scm/linux/kernel/git/dwmw2/linux-firmware.git,
-> add your firmware (and update the WHENCE file accordingly), and send me
-> a pull request. Preferably with a Signed-off-by: from within the company
-> that owns the firmware in question.
-
-Care to document this somewhere in the kernel tree so we know about it?
-
-> > And finally, what's wrong with adding new firmware images into the
-> > firmware/ directory?  What is the issue here?
+> The patch titled
+>      mm: align vmstat_work's timer
+> has been added to the -mm tree.  Its filename is
+>      mm-align-vmstat_works-timer.patch
 > 
-> We're working on _removing_ this crap from the kernel source tree -- not
-> adding new instances of it.
+> Before you just go and hit "reply", please:
+>    a) Consider who else should be cc'ed
+>    b) Prefer to cc a suitable mailing list as well
+>    c) Ideally: find the original patch on the mailing list and do a
+>       reply-to-all to that, adding suitable additional cc's
+> 
+> *** Remember to use Documentation/SubmitChecklist when testing your code ***
+> 
+> See http://userweb.kernel.org/~akpm/stuff/added-to-mm.txt to find
+> out what to do about this
+> 
+> The current -mm tree may be found at http://userweb.kernel.org/~akpm/mmotm/
+> 
+> ------------------------------------------------------
+> Subject: mm: align vmstat_work's timer
+> From: Anton Blanchard <anton@samba.org>
+> 
+> Even though vmstat_work is marked deferrable, there are still benefits to
+> aligning it.  For certain applications we want to keep OS jitter as low as
+> possible and aligning timers and work so they occur together can reduce
+> their overall impact.
+> 
+> Signed-off-by: Anton Blanchard <anton@samba.org>
+> Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
+> ---
+> 
+>  mm/vmstat.c |    5 +++--
+>  1 file changed, 3 insertions(+), 2 deletions(-)
+> 
+> diff -puN mm/vmstat.c~mm-align-vmstat_works-timer mm/vmstat.c
+> --- a/mm/vmstat.c~mm-align-vmstat_works-timer
+> +++ a/mm/vmstat.c
+> @@ -984,7 +984,7 @@ static void vmstat_update(struct work_st
+>  {
+>  	refresh_cpu_vm_stats(smp_processor_id());
+>  	schedule_delayed_work(&__get_cpu_var(vmstat_work),
+> -		sysctl_stat_interval);
+> +		round_jiffies_relative(sysctl_stat_interval));
+>  }
+>  
+>  static void __cpuinit start_cpu_timer(int cpu)
+> @@ -992,7 +992,8 @@ static void __cpuinit start_cpu_timer(in
+>  	struct delayed_work *vmstat_work = &per_cpu(vmstat_work, cpu);
+>  
+>  	INIT_DELAYED_WORK_DEFERRABLE(vmstat_work, vmstat_update);
+> -	schedule_delayed_work_on(cpu, vmstat_work, HZ + cpu);
+> +	schedule_delayed_work_on(cpu, vmstat_work,
+> +				 __round_jiffies_relative(HZ, cpu));
+>  }
+>  
+>  /*
+> _
+> 
+> Patches currently in -mm which might be from anton@samba.org are
+> 
+> origin.patch
+> mm-align-vmstat_works-timer.patch
+> random-align-rekey_works-timer.patch
+> sunrpc-align-cache_clean-works-timer.patch
+> 
+> --
+> To unsubscribe from this list: send the line "unsubscribe mm-commits" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
 
-Firmware isn't "crap", it's needed by devices, and I don't see the
-problem of distributing it within the kernel tree, especially when the
-license of the firmware is just fine, like these files are.
 
-> We have a separate repository in which we're collecting
-> redistributable firmware images, and the distributions are moving
-> towards shipping that instead of just the legacy stuff from the kernel
-> tree. Add any new firmware to that repository instead, as described
-> above.
 
-Are there releases of the firmware tree published and announced
-anywhere so the distros know to do this?
-
-thanks,
-
-greg k-h
