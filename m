@@ -1,40 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758297AbZDFUWt@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758522AbZDFUXd@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758297AbZDFUWt (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 6 Apr 2009 16:22:49 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756922AbZDFUWg
+	id S1758522AbZDFUXd (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 6 Apr 2009 16:23:33 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752431AbZDFUXW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 6 Apr 2009 16:22:36 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:48076 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1755882AbZDFUWg (ORCPT
+	Mon, 6 Apr 2009 16:23:22 -0400
+Received: from phoenix.slamd64.com ([217.10.145.2]:38456 "EHLO
+	phoenix.slamd64.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750784AbZDFUXV (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 6 Apr 2009 16:22:36 -0400
-Date: Mon, 6 Apr 2009 13:20:02 -0700 (PDT)
-From: Linus Torvalds <torvalds@linux-foundation.org>
-X-X-Sender: torvalds@localhost.localdomain
-To: Hua Zhong <hzhong@gmail.com>
-cc: "'Theodore Tso'" <tytso@mit.edu>, "'Jens Axboe'" <jens.axboe@oracle.com>,
-       "'Linux Kernel Mailing List'" <linux-kernel@vger.kernel.org>
-Subject: RE: [PATCH 0/8][RFC] IO latency/throughput fixes
-In-Reply-To: <002501c9b6f3$f85b4910$e911db30$@com>
-Message-ID: <alpine.LFD.2.00.0904061319370.7443@localhost.localdomain>
-References: <1239022088-29002-1-git-send-email-jens.axboe@oracle.com> <alpine.LFD.2.00.0904060803141.4023@localhost.localdomain> <20090406151054.GD5178@kernel.dk> <alpine.LFD.2.00.0904060840080.3863@localhost.localdomain> <20090406183157.GD7376@mit.edu>
- <alpine.LFD.2.00.0904061255160.4134@localhost.localdomain> <002501c9b6f3$f85b4910$e911db30$@com>
-User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
+	Mon, 6 Apr 2009 16:23:21 -0400
+X-Greylist: delayed 1784 seconds by postgrey-1.27 at vger.kernel.org; Mon, 06 Apr 2009 16:23:20 EDT
+From: Carlos Corbacho <carlos@strangeworlds.co.uk>
+To: Jarod Wilson <jarod@redhat.com>
+Subject: Re: [PATCH] acer-wmi: don't bother loading on unsupported systems
+Date: Mon, 6 Apr 2009 20:53:11 +0100
+User-Agent: KMail/1.11.1 (Linux/2.6.28.8; KDE/4.2.1; x86_64; ; )
+Cc: aceracpi@googlegroups.com, linux-kernel@vger.kernel.org
+References: <200904060940.16889.jarod@redhat.com>
+In-Reply-To: <200904060940.16889.jarod@redhat.com>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200904062053.12303.carlos@strangeworlds.co.uk>
+X-Greylist: Sender succeeded SMTP AUTH, not delayed by milter-greylist-4.0 (phoenix.slamd64.com [217.10.145.2]); Mon, 06 Apr 2009 19:53:13 +0000 (UTC)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-
-On Mon, 6 Apr 2009, Hua Zhong wrote:
+On Monday 06 April 2009 14:40:16 Jarod Wilson wrote:
+> So have acer-wmi just bail on unsupported systems -- includes only my
+> particular model of the Aspire One atm, but a larger list of unsupported
+> systems can be found here:
 >
-> Grr..making writeback as default would break people's setup that relies on
-> the ordered semantics, especially in the embedded world. It's a big no-no.
+> http://code.google.com/p/aceracpi/wiki/SupportedHardware
+>
+> This might well become unnecessary once the WMI sysfs interface mentioned
+> in acer-wmi.c exists and the wild-card dmi modalias is gone, but for now...
+> I prefer to have working wireless, and this isn't exactly an obvious root
+> cause. I lack the hardware to further extend the blacklist, but doing so is
+> trivial. Whether or not loading acer-wmi actually negatively impacts
+> machines other than the AAO is unknown at this time.
 
-We could make it a config option, perhaps.
+NAK.
 
-		Linus
+An equivalent patch to this was submitted to the ACPI tree two days ago (which 
+blacklists both the known Aspire One DMI entries) and is now upstream (and 
+will also be backported to the next stable release).
+
+http://git.kernel.org/?p=linux/kernel/git/torvalds/linux-2.6.git;a=commit;h=a74dd5fdabcd34c93e17e9c7024eeb503c92b048
+
+(The Aspire One is special as, unlike other Acer laptops which are 
+unsupported, it provides the ACPI-WMI inteface we're trying to match on, so it 
+really does have to be blacklisted - so WMI matching won't help in this 
+particular case).
+
+-Carlos
+-- 
+E-Mail: carlos@strangeworlds.co.uk
+Web: strangeworlds.co.uk
+GPG Key ID: 0x23EE722D
