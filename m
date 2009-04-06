@@ -1,56 +1,99 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755176AbZDFQgt@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753666AbZDFQiv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755176AbZDFQgt (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 6 Apr 2009 12:36:49 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752452AbZDFQgj
+	id S1753666AbZDFQiv (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 6 Apr 2009 12:38:51 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752850AbZDFQik
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 6 Apr 2009 12:36:39 -0400
-Received: from mba.ocn.ne.jp ([122.1.235.107]:50074 "EHLO smtp.mba.ocn.ne.jp"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752293AbZDFQgi (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 6 Apr 2009 12:36:38 -0400
-From: Atsushi Nemoto <anemo@mba.ocn.ne.jp>
-To: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
-Cc: Sergei Shtylyov <sshtylyov@ru.mvista.com>, linux-ide@vger.kernel.org,
-       linux-kernel@vger.kernel.org
-Subject: [PATCH] tx4939ide: Fix tx4939ide_{in,out}put_data_swap argument
-Date: Tue,  7 Apr 2009 01:36:41 +0900
-Message-Id: <1239035801-9603-1-git-send-email-anemo@mba.ocn.ne.jp>
-X-Mailer: git-send-email 1.5.6.3
+	Mon, 6 Apr 2009 12:38:40 -0400
+Received: from hrndva-omtalb.mail.rr.com ([71.74.56.122]:40346 "EHLO
+	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752452AbZDFQik (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 6 Apr 2009 12:38:40 -0400
+Message-Id: <20090406163829.878419451@goodmis.org>
+References: <20090406163706.097842409@goodmis.org>
+User-Agent: quilt/0.46-1
+Date: Mon, 06 Apr 2009 12:37:07 -0400
+From: Steven Rostedt <rostedt@goodmis.org>
+To: linux-kernel@vger.kernel.org
+Cc: Ingo Molnar <mingo@elte.hu>, Andrew Morton <akpm@linux-foundation.org>
+Subject: [PATCH 01/10] tracing: remove CALLER_ADDR2 from wakeup tracer
+Content-Disposition: inline; filename=0001-tracing-remove-CALLER_ADDR2-from-wakeup-tracer.patch
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-The commit adb1af9 ("ide: pass command instead of request to
-ide_pio_datablock()") missed tx4939ide driver.
+From: Steven Rostedt <srostedt@redhat.com>
 
-Signed-off-by: Atsushi Nemoto <anemo@mba.ocn.ne.jp>
+Maneesh Soni was getting a crash when running the wakeup tracer.
+We debugged it down to the recording of the function with the
+CALLER_ADDR2 macro.  This is used to get the location of the caller
+to schedule.
+
+But the problem comes when schedule is called by assmebly. In the case
+that Maneesh had, retint_careful would call schedule. But retint_careful
+does not set up a proper frame pointer. CALLER_ADDR2 is defined as
+__builtin_return_address(2). This produces the following assembly in
+the wakeup tracer code.
+
+   mov    0x0(%rbp),%rcx  <--- get the frame pointer of the caller
+   mov    %r14d,%r8d
+   mov    0xf2de8e(%rip),%rdi
+
+   mov    0x8(%rcx),%rsi  <-- this is __builtin_return_address(1)
+   mov    0x28(%rdi,%rax,8),%rbx
+
+   mov    (%rcx),%rax  <-- get the frame pointer of the caller's caller
+   mov    %r12,%rcx
+   mov    0x8(%rax),%rdx <-- this is __builtin_return_address(2)
+
+At the reading of 0x8(%rax) Maneesh's machine would take a fault.
+The reason is that retint_careful did not set up the return address
+and the content of %rax here was zero.
+
+To verify this, I sent Maneesh a patch to create a frame pointer
+in retint_careful. He ran the test again but this time he would take
+the same type of fault from sysret_careful. The retint_careful was no
+longer an issue, but there are other callers that still have issues.
+
+Instead of adding frame pointers for all callers to schedule (in possibly
+all archs), it is much safer to simply not use CALLER_ADDR2. This
+loses out on knowing what called schedule, but the function tracer
+will help there if needed.
+
+Reported-by: Maneesh Soni <maneesh@in.ibm.com>
+Signed-off-by: Steven Rostedt <rostedt@goodmis.org>
 ---
- drivers/ide/tx4939ide.c |    4 ++--
- 1 files changed, 2 insertions(+), 2 deletions(-)
+ kernel/trace/trace_sched_wakeup.c |    8 +++++++-
+ 1 files changed, 7 insertions(+), 1 deletions(-)
 
-diff --git a/drivers/ide/tx4939ide.c b/drivers/ide/tx4939ide.c
-index 2aad79b..571ad24 100644
---- a/drivers/ide/tx4939ide.c
-+++ b/drivers/ide/tx4939ide.c
-@@ -445,7 +445,7 @@ static void tx4939ide_tf_load(ide_drive_t *drive, struct ide_cmd *cmd)
- #ifdef __BIG_ENDIAN
+diff --git a/kernel/trace/trace_sched_wakeup.c b/kernel/trace/trace_sched_wakeup.c
+index 3c5ad6b..5bc00e8 100644
+--- a/kernel/trace/trace_sched_wakeup.c
++++ b/kernel/trace/trace_sched_wakeup.c
+@@ -154,7 +154,7 @@ probe_wakeup_sched_switch(struct rq *rq, struct task_struct *prev,
+ 	if (unlikely(!tracer_enabled || next != wakeup_task))
+ 		goto out_unlock;
  
- /* custom iops (independent from SWAP_IO_SPACE) */
--static void tx4939ide_input_data_swap(ide_drive_t *drive, struct request *rq,
-+static void tx4939ide_input_data_swap(ide_drive_t *drive, struct ide_cmd *cmd,
- 				void *buf, unsigned int len)
- {
- 	unsigned long port = drive->hwif->io_ports.data_addr;
-@@ -457,7 +457,7 @@ static void tx4939ide_input_data_swap(ide_drive_t *drive, struct request *rq,
- 	__ide_flush_dcache_range((unsigned long)buf, roundup(len, 2));
- }
+-	trace_function(wakeup_trace, CALLER_ADDR1, CALLER_ADDR2, flags, pc);
++	trace_function(wakeup_trace, CALLER_ADDR0, CALLER_ADDR1, flags, pc);
+ 	tracing_sched_switch_trace(wakeup_trace, prev, next, flags, pc);
  
--static void tx4939ide_output_data_swap(ide_drive_t *drive, struct request *rq,
-+static void tx4939ide_output_data_swap(ide_drive_t *drive, struct ide_cmd *cmd,
- 				void *buf, unsigned int len)
- {
- 	unsigned long port = drive->hwif->io_ports.data_addr;
+ 	/*
+@@ -257,6 +257,12 @@ probe_wakeup(struct rq *rq, struct task_struct *p, int success)
+ 	data = wakeup_trace->data[wakeup_cpu];
+ 	data->preempt_timestamp = ftrace_now(cpu);
+ 	tracing_sched_wakeup_trace(wakeup_trace, p, current, flags, pc);
++
++	/*
++	 * We must be careful in using CALLER_ADDR2. But since wake_up
++	 * is not called by an assembly function  (where as schedule is)
++	 * it should be safe to use it here.
++	 */
+ 	trace_function(wakeup_trace, CALLER_ADDR1, CALLER_ADDR2, flags, pc);
+ 
+ out_locked:
 -- 
-1.5.6.3
+1.6.2.1
 
+-- 
