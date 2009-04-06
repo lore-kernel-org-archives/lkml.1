@@ -1,112 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755189AbZDFQzp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753463AbZDFQ5X@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755189AbZDFQzp (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 6 Apr 2009 12:55:45 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751730AbZDFQzf
+	id S1753463AbZDFQ5X (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 6 Apr 2009 12:57:23 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752850AbZDFQ5O
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 6 Apr 2009 12:55:35 -0400
-Received: from moutng.kundenserver.de ([212.227.126.188]:63704 "EHLO
-	moutng.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750804AbZDFQze (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 6 Apr 2009 12:55:34 -0400
-Message-ID: <49DA33EF.3020700@vlnb.net>
-Date: Mon, 06 Apr 2009 20:55:11 +0400
-From: Vladislav Bolkhovitin <vst@vlnb.net>
-User-Agent: Thunderbird 2.0.0.21 (X11/20090320)
+	Mon, 6 Apr 2009 12:57:14 -0400
+Received: from mx2.redhat.com ([66.187.237.31]:55492 "EHLO mx2.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752518AbZDFQ5N (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 6 Apr 2009 12:57:13 -0400
+Date: Mon, 6 Apr 2009 18:52:38 +0200
+From: Oleg Nesterov <oleg@redhat.com>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: Roland McGrath <roland@redhat.com>, linux-kernel@vger.kernel.org
+Subject: [PATCH] ptrace: fix exit_ptrace() vs ptrace_traceme() race
+Message-ID: <20090406165238.GA25710@redhat.com>
 MIME-Version: 1.0
-To: Tomasz Chmielewski <mangoo@wpkg.org>
-CC: Bart Van Assche <bart.vanassche@gmail.com>, linux-kernel@vger.kernel.org,
-       linux-scsi@vger.kernel.org, iscsitarget-devel@lists.sourceforge.net,
-       James Bottomley <James.Bottomley@hansenpartnership.com>,
-       scst-devel <scst-devel@lists.sourceforge.net>, stgt@vger.kernel.org
-Subject: Re: [Scst-devel] [ANNOUNCE]: Comparison of features sets between
- 	different SCSI targets (SCST, STGT, IET, LIO)
-References: <49D7AD54.4060408@vlnb.net> <49D7B122.50103@wpkg.org> <e2e108260904050429lcd1870ag6656f36a170ccab3@mail.gmail.com> <49D9D9A0.40106@wpkg.org>
-In-Reply-To: <49D9D9A0.40106@wpkg.org>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
-X-Provags-ID: V01U2FsdGVkX19elv1AdS+IfWubelAXD5Fh9DUTHIUqKkyhiJU
- JpwyD9b13hGhW+vEz3Nv5J9cmGhWDwRKVNaG9GCHHUHQLnSAln
- 9wtAEivd+Tw9zB/9Bs8NQ==
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Tomasz Chmielewski, on 04/06/2009 02:29 PM wrote:
-> Bart Van Assche schrieb:
-> 
->> Hello Tomasz,
->>
->> It would be great if you could publish the details of your setup and
->> the tests you have run, such that we are able to reproduce the tests
->> and analyze the results further.
-> 
-> Here it is.
-> 
-> The target is running Debian Lenny 64bit userspace on an Intel Celeron 2.93GHz CPU, 2 GB RAM.
-> 
-> Initiator is running Debian Etch 64 bit userspace, open-iscsi 2.0-869, Intel Xeon 3050/2.13GHz, 8 GB RAM.
-> 
-> 
-> Each test was repeated 6 times, "sync" was made and caches were dropped on both sides before each test was started.
-> 
-> dd parameters were like below, so 6.6 GB of data was read each time:
-> 
-> dd if=/dev/sdag of=/dev/null bs=64k count=100000
-> 
-> 
-> Data was read from two block devices:
-> - /dev/md0, which is RAID-1 on two ST31500341AS 1.5 TB drives
-> - encrypted dm-crypt device which is on top of /dev/md0
-> 
-> Encrypted device was created with the following additional options passed to cryptsetup
-> (it provides the most performance on systems where CPU is a bottleneck, but with decreased
-> security when compared to default options):
-> 
-> -c aes-ecb-plain -s 128
-> 
-> 
-> Generally, CPU on the target was a bottleneck, so I also tested the load on target.
-> 
-> 
-> md0, crypt columns - averages from dd
-> us, sy, id, wa - averages from vmstat
-> 
-> 
-> 1. Disk speeds on the target
-> 
-> Raw performance: 102.17 MB/s
-> Raw performance (encrypted):  50.21 MB/s
-> 
-> 
-> 2. Read-ahead on the initiator: 256 (default); md0, crypt - MB/s
-> 
->                            md0   us  sy  id  wa  | crypt   us  sy  id  wa  
-> STGT                      50.63   4% 45% 18% 33% | 32.52    3% 62% 16% 19%
-> SCST (debug + no patches) 43.75   0% 26% 30% 44% | 42.05    0% 84%  1% 15%
-> SCST (fullperf + patches) 45.18   0% 25% 33% 42% | 44.12    0% 81%  2% 17%
-> 
-> 
-> 3. Read-ahead on the initiator: 16384; md0, crypt - MB/s
-> 
->                            md0   us  sy  id  wa  | crypt   us  sy  id  wa  
-> STGT                      56.43   3% 55%  2% 40% | 46.90    3% 90%  3%  4%
-> SCST (debug + no patches) 73.85   0% 58%  1% 41% | 42.70    0% 85%  0% 15%
-> SCST (fullperf + patches) 76.27   0% 63%  1% 36% | 42.52    0% 85%  0% 15%
+Pointed out by Roland. The bug was recently introduced by me in
+"forget_original_parent: split out the un-ptrace part", commit
+39c626ae47c469abdfd30c6e42eff884931380d6.
 
-Good! You proved that:
+Since that patch we have a window after exit_ptrace() drops tasklist
+and before forget_original_parent() takes it again. In this window
+the child can do ptrace(PTRACE_TRACEME) and nobody can untrace this
+child after that.
 
-1. SCST is capable to work much better than STGT: 35% for md and 37% for 
-crypt considering maximum values.
+Change ptrace_traceme() to not attach to the exiting ->real_parent.
+We don't report the error in this case, we pretend we attach right
+before ->real_parent calls exit_ptrace() which should untrace us
+anyway.
 
-2. Default read-ahead size isn't appropriate for remote data access 
-cases and should be increased. I slowly have been discussing it in past 
-few months with Wu Fengguang, the read-ahead maintainer.
+Signed-off-by: Oleg Nesterov <oleg@redhat.com>
 
-Which IO scheduler on the target did you use? I guess, deadline? If so, 
-you should try with CFQ as well.
-
-Thanks,
-Vlad
+--- 6.30/kernel/ptrace.c~TRACEME	2009-04-06 00:03:42.000000000 +0200
++++ 6.30/kernel/ptrace.c	2009-04-06 18:25:53.000000000 +0200
+@@ -606,10 +606,11 @@ repeat:
+ 		ret = security_ptrace_traceme(current->parent);
+ 
+ 		/*
+-		 * Set the ptrace bit in the process ptrace flags.
+-		 * Then link us on our parent's ptraced list.
++		 * Check PF_EXITING to ensure ->real_parent has not passed
++		 * exit_ptrace(). Otherwise we don't report the error but
++		 * pretend ->real_parent untraces us right after return.
+ 		 */
+-		if (!ret) {
++		if (!ret && !(current->real_parent->flags & PF_EXITING)) {
+ 			current->ptrace |= PT_PTRACED;
+ 			__ptrace_link(current, current->real_parent);
+ 		}
 
