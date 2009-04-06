@@ -1,123 +1,111 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755559AbZDFK6q@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756150AbZDFK7v@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755559AbZDFK6q (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 6 Apr 2009 06:58:46 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755269AbZDFK6h
+	id S1756150AbZDFK7v (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 6 Apr 2009 06:59:51 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755361AbZDFK7m
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 6 Apr 2009 06:58:37 -0400
-Received: from www.tglx.de ([62.245.132.106]:45699 "EHLO www.tglx.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755218AbZDFK6g (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 6 Apr 2009 06:58:36 -0400
-Date: Mon, 6 Apr 2009 12:56:17 +0200 (CEST)
-From: Thomas Gleixner <tglx@linutronix.de>
-To: Arun R Bharadwaj <arun@linux.vnet.ibm.com>
-cc: linux-kernel@vger.kernel.org, linux-pm@lists.linux-foundation.org,
-       a.p.zijlstra@chello.nl, ego@in.ibm.com, mingo@elte.hu,
-       andi@firstfloor.org, venkatesh.pallipadi@intel.com,
-       vatsa@linux.vnet.ibm.com, arjan@infradead.org,
-       svaidy@linux.vnet.ibm.com
-Subject: Re: [v4 RFC PATCH 4/4] timers: logic to move non pinned timers
-In-Reply-To: <20090406104228.GB17412@linux.vnet.ibm.com>
-Message-ID: <alpine.LFD.2.00.0904061248120.747@localhost.localdomain>
-References: <20090401113128.GA22478@linux.vnet.ibm.com> <20090401113738.GE22478@linux.vnet.ibm.com> <alpine.LFD.2.00.0904032142460.12916@localhost.localdomain> <20090406051656.GA17412@linux.vnet.ibm.com> <20090406104228.GB17412@linux.vnet.ibm.com>
-User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Mon, 6 Apr 2009 06:59:42 -0400
+Received: from viefep11-int.chello.at ([62.179.121.31]:43139 "EHLO
+	viefep11-int.chello.at" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754112AbZDFK7m (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 6 Apr 2009 06:59:42 -0400
+X-SourceIP: 213.93.53.227
+Subject: Re: [PATCH 5/6] perf_counter: add more context information
+From: Peter Zijlstra <a.p.zijlstra@chello.nl>
+To: Corey Ashford <cjashfor@linux.vnet.ibm.com>
+Cc: Ingo Molnar <mingo@elte.hu>, Paul Mackerras <paulus@samba.org>,
+       linux-kernel@vger.kernel.org
+In-Reply-To: <49D654AB.4030207@linux.vnet.ibm.com>
+References: <20090402091158.291810516@chello.nl>
+	 <20090402091319.493101305@chello.nl> <1238763023.798.27.camel@twins>
+	 <49D654AB.4030207@linux.vnet.ibm.com>
+Content-Type: text/plain
+Date: Mon, 06 Apr 2009 13:01:08 +0200
+Message-Id: <1239015668.798.4243.camel@twins>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.26.0 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Arun,
+On Fri, 2009-04-03 at 11:25 -0700, Corey Ashford wrote:
+> Peter Zijlstra wrote:
+> > On Thu, 2009-04-02 at 11:12 +0200, Peter Zijlstra wrote:
+> >> plain text document attachment (perf_counter_callchain_context.patch)
+> >> Put in counts to tell which ips belong to what context.
+> >>
+> >>   -----
+> >>    | |  hv
+> >>    | --
+> >> nr | |  kernel
+> >>    | --
+> >>    | |  user
+> >>   -----
+> > 
+> > Right, just realized that PERF_RECORD_IP needs something similar if one
+> > if not able to derive the context from the IP itself..
+> > 
+> Three individual bits would suffice, or you could use a two-bit code -
+> 00 = user
+> 01 = kernel
+> 10 = hypervisor
+> 11 = reserved (or perhaps unknown)
+> 
+> Unfortunately, because of alignment, it would need to take up another 64 
+> bit word, wouldn't it?  Too bad you cannot sneak the bits into the IP in 
+> a machine independent way.
+> 
+> And since you probably need a separate word, that effectively doubles 
+> the amount of space taken up by IP samples (if we add a "no event 
+> header" option).  Should we add another bit in the record_type field - 
+> PERF_RECORD_IP_LEVEL (or similar) so that user-space apps don't have to 
+> get this if they don't need it?
 
-On Mon, 6 Apr 2009, Arun R Bharadwaj wrote:
->  
-> +ktime_t clockevents_get_next_event(int cpu)
-> +{
-> +	struct tick_device *td;
-> +	struct clock_event_device *dev;
-> +
-> +	td = &per_cpu(tick_cpu_device, cpu);
-> +	dev = td->evtdev;
-> +
-> +	return dev->next_event;
-> +}
-> +
+If we limit the event size to 64k (surely enough, right? :-), then we
+have 16 more bits to play with in the header, and we could do something
+like the below.
 
-Preferrably this function should be in the clock events code and a
-stub inline function which returns KTIME_MAX for non clock events
-archs is probably necessary as well.
+A further possibility would also be to add an overflow bit in there,
+making the full 32bit PERF_RECORD space available to output events as
+well.
 
->  /*
->   * Switch the timer base to the current CPU when possible.
->   */
-> @@ -198,8 +211,17 @@ switch_hrtimer_base(struct hrtimer *time
->  {
->  	struct hrtimer_clock_base *new_base;
->  	struct hrtimer_cpu_base *new_cpu_base;
-> +	int cpu, preferred_cpu = -1;
-> +
-> +	cpu = smp_processor_id();
-> +	if (get_sysctl_timer_migration() && !pinned && idle_cpu(cpu)) {
-> +		preferred_cpu = get_nohz_load_balancer();
-> +		if (preferred_cpu >= 0)
-> +			cpu = preferred_cpu;
-> +	}
->  
-> -	new_cpu_base = &__get_cpu_var(hrtimer_bases);
-> +again:
-> +	new_cpu_base = &per_cpu(hrtimer_bases, cpu);
->  	new_base = &new_cpu_base->clock_base[base->index];
->  
->  	if (base != new_base) {
-> @@ -220,6 +242,32 @@ switch_hrtimer_base(struct hrtimer *time
->  		spin_unlock(&base->cpu_base->lock);
->  		spin_lock(&new_base->cpu_base->lock);
->  		timer->base = new_base;
-> +
-> +		if (cpu == preferred_cpu) {
-> +			/* Calculate clock monotonic expiry time */
-> +			ktime_t expires = ktime_sub(hrtimer_get_expires(timer),
-> +							new_base->offset);
-> +
-> +			/*
-> +			 * Get the next event on target cpu from the
-> +			 * clock events layer.
-> +			 * This covers the highres=off nohz=on case as well.
-> +			 */
-> +			ktime_t next = clockevents_get_next_event(cpu);
-> +
-> +			ktime_t delta = ktime_sub(expires, next);
-> +
-> +			/*
-> +			 * We do not migrate the timer when it is expiring
-> +			 * before the next event on the target cpu because
-> +			 * we cannot reprogram the target cpu hardware and
-> +			 * we would cause it to fire late.
-> +			 */
-> +			if (delta.tv64 < 0) {
-> +				cpu = smp_processor_id();
+Index: linux-2.6/include/linux/perf_counter.h
+===================================================================
+--- linux-2.6.orig/include/linux/perf_counter.h
++++ linux-2.6/include/linux/perf_counter.h
+@@ -201,9 +201,17 @@ struct perf_counter_mmap_page {
+ 	__u32   data_head;		/* head in the data section */
+ };
+ 
++enum {
++	PERF_EVENT_LEVEL_HV	= 0,
++	PERF_EVENT_LEVEL_KERNEL = 1,
++	PERF_EVENT_LEVEL_USER	= 2,
++};
++
+ struct perf_event_header {
+ 	__u32	type;
+-	__u32	size;
++	__u16	level		:  2,
++		__reserved	: 14;
++	__u16	size;
+ };
+ 
+ enum perf_event_type {
+Index: linux-2.6/kernel/perf_counter.c
+===================================================================
+--- linux-2.6.orig/kernel/perf_counter.c
++++ linux-2.6/kernel/perf_counter.c
+@@ -1832,6 +1832,8 @@ static void perf_counter_output(struct p
+ 
+ 	header.type = PERF_EVENT_COUNTER_OVERFLOW;
+ 	header.size = sizeof(header);
++	header.level = user_mode(regs) ? 
++		PERF_EVENT_LEVEL_USER : PERF_EVENT_LEVEL_KERNEL;
+ 
+ 	if (record_type & PERF_RECORD_IP) {
+ 		ip = instruction_pointer(regs);
 
-  You are missing a small but fatal detail here: You hold
-  new_base->cpu_base->lock. So you need to do:
 
-  			    spin_unlock(&new_base->cpu_base->lock);
-			    spin_lock(&base->cpu_base->lock);
-  
-> +				goto again;
-> +			}
-
-  Also you need to move
-
->  		timer->base = new_base;
-
-  here to avoid a stale timer->base setting.
-
-> +		}
->  	}
->  	return new_base;
->  }
-
-Thanks,
-
-	tglx
