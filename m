@@ -1,93 +1,71 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757165AbZDFQCA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752518AbZDFQGf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757165AbZDFQCA (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 6 Apr 2009 12:02:00 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751620AbZDFQBv
+	id S1752518AbZDFQGf (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 6 Apr 2009 12:06:35 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751009AbZDFQG0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 6 Apr 2009 12:01:51 -0400
-Received: from e23smtp04.au.ibm.com ([202.81.31.146]:47941 "EHLO
-	e23smtp04.au.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750784AbZDFQBu (ORCPT
+	Mon, 6 Apr 2009 12:06:26 -0400
+Received: from mail-ew0-f165.google.com ([209.85.219.165]:54407 "EHLO
+	mail-ew0-f165.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750903AbZDFQGZ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 6 Apr 2009 12:01:50 -0400
-Date: Mon, 6 Apr 2009 21:30:39 +0530
-From: Arun R Bharadwaj <arun@linux.vnet.ibm.com>
-To: Thomas Gleixner <tglx@linutronix.de>
-Cc: linux-kernel@vger.kernel.org, linux-pm@lists.linux-foundation.org,
-       a.p.zijlstra@chello.nl, ego@in.ibm.com, mingo@elte.hu,
-       andi@firstfloor.org, venkatesh.pallipadi@intel.com,
-       vatsa@linux.vnet.ibm.com, arjan@infradead.org,
-       svaidy@linux.vnet.ibm.com, Arun Bharadwaj <arun@linux.vnet.ibm.com>
-Subject: Re: [v4 RFC PATCH 4/4] timers: logic to move non pinned timers
-Message-ID: <20090406160039.GA15269@linux.vnet.ibm.com>
-Reply-To: arun@linux.vnet.ibm.com
-References: <20090401113128.GA22478@linux.vnet.ibm.com> <20090401113738.GE22478@linux.vnet.ibm.com> <alpine.LFD.2.00.0904032142460.12916@localhost.localdomain> <20090406051656.GA17412@linux.vnet.ibm.com> <20090406104228.GB17412@linux.vnet.ibm.com> <alpine.LFD.2.00.0904061248120.747@localhost.localdomain> <20090406152843.GA11645@linux.vnet.ibm.com> <alpine.LFD.2.00.0904061732020.21577@localhost.localdomain>
+	Mon, 6 Apr 2009 12:06:25 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
+         :cc:content-type:content-transfer-encoding;
+        b=iwF7VimCErAV7B3ZuT6nbly/QCOzZ1SCoyQei9znYpak064xEEfw1Lfxz2AMUiGtTn
+         u6QvHzvQsNr9RFFvhFGsnSk66ypfHsZCMUnmjO7Lx4JaK1iewf1Fj6JhfZRBcHz/ppAS
+         lDhegGUuWTLGklme4j79NJ83HHQLct30E4jtU=
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-Content-Disposition: inline
-In-Reply-To: <alpine.LFD.2.00.0904061732020.21577@localhost.localdomain>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+In-Reply-To: <49D9CF13.60202@in.ibm.com>
+References: <20090406164555.e1232116.sfr@canb.auug.org.au>
+	 <49D9CF13.60202@in.ibm.com>
+Date: Mon, 6 Apr 2009 20:06:21 +0400
+Message-ID: <a4423d670904060906l339a987bm8cb0543d309ecac3@mail.gmail.com>
+Subject: Re: Next April 6 : x86 allmodconfig failure [drivers/pci]
+From: Alexander Beregalov <a.beregalov@gmail.com>
+To: Sachin Sant <sachinp@in.ibm.com>,
+       David Woodhouse <david.woodhouse@intel.com>,
+       Ingo Molnar <mingo@elte.hu>
+Cc: LKML <linux-kernel@vger.kernel.org>,
+       Stephen Rothwell <sfr@canb.auug.org.au>, linux-next@vger.kernel.org
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-* Thomas Gleixner <tglx@linutronix.de> [2009-04-06 17:35:09]:
-
-> Arun,
-> 
-> On Mon, 6 Apr 2009, Arun R Bharadwaj wrote:
-> > > > -	new_cpu_base = &__get_cpu_var(hrtimer_bases);
-> > > > +again:
-> > > > +	new_cpu_base = &per_cpu(hrtimer_bases, cpu);
-> > > >  	new_base = &new_cpu_base->clock_base[base->index];
-> > > >  
-> > > >  	if (base != new_base) {
-> > > > @@ -220,6 +242,32 @@ switch_hrtimer_base(struct hrtimer *time
-> > > >  		spin_unlock(&base->cpu_base->lock);
-> > > >  		spin_lock(&new_base->cpu_base->lock);
-> > > >  		timer->base = new_base;
-> > > > +
-> > > > +		if (cpu == preferred_cpu) {
-> > > > +			/* Calculate clock monotonic expiry time */
-> > > > +			ktime_t expires = ktime_sub(hrtimer_get_expires(timer),
-> > > > +							new_base->offset);
-> > > > +
-> > > > +			/*
-> > > > +			 * Get the next event on target cpu from the
-> > > > +			 * clock events layer.
-> > > > +			 * This covers the highres=off nohz=on case as well.
-> > > > +			 */
-> > > > +			ktime_t next = clockevents_get_next_event(cpu);
-> > > > +
-> > > > +			ktime_t delta = ktime_sub(expires, next);
-> > > > +
-> > > > +			/*
-> > > > +			 * We do not migrate the timer when it is expiring
-> > > > +			 * before the next event on the target cpu because
-> > > > +			 * we cannot reprogram the target cpu hardware and
-> > > > +			 * we would cause it to fire late.
-> > > > +			 */
-> > > > +			if (delta.tv64 < 0) {
-> > > > +				cpu = smp_processor_id();
-> > > 
-> > >   You are missing a small but fatal detail here: You hold
-> > >   new_base->cpu_base->lock. So you need to do:
-> > >
-> > 
-> > I just moved the if block.. if (cpu==preferred_cpu) above the base
-> > locking part to avoid the extra unlocking.
-> 
-> That's not a good idea. You want to look at the next event with the
-> base lock of the other cpu held. That prevents that expires the first
-> pending timer right after you checked next_event and before you queue
-> your timer, which then might become the first timer to expire but you
-> can't reprogram the clock event device on the other cpu.
+2009/4/6 Sachin Sant <sachinp@in.ibm.com>:
+> Today's next tree allmodconfig build on x86 failed with
 >
+> drivers/pci/intel-iommu.c:2636:35: error: macro "if" passed 2 arguments, but
+> takes just 1
+> drivers/pci/intel-iommu.c: In function init_iommu_hw:
+> drivers/pci/intel-iommu.c:2636: error: expected ( before { token
+> drivers/pci/intel-iommu.c:2637: error: ______r undeclared (first use in this
+> function)
+> drivers/pci/intel-iommu.c:2637: error: (Each undeclared identifier is
+> reported only once
+> drivers/pci/intel-iommu.c:2637: error: for each function it appears in.)
+> drivers/pci/intel-iommu.c:2640:35: error: macro "if" passed 2 arguments, but
+> takes just 1
+> drivers/pci/intel-iommu.c:2640: error: expected ( before { token
+>
+> and many more of such errors. Similar errors with intr_remapping.c
+>
+> drivers/pci/intr_remapping.c:679:28: error: macro "if" passed 2 arguments,
+> but takes just 1
+> drivers/pci/intr_remapping.c: In function disable_intr_remapping:
+> drivers/pci/intr_remapping.c:679: error: expected ( before { token
+> drivers/pci/intr_remapping.c:693:28: error: macro "if" passed 2 arguments,
+> but takes just 1
+> ......
 
-Okay... I understand. Thanks for the explanation :)
-Will post all the changes together in a separate thread.
+CC'ed David and Ingo.
 
---arun
-> Thanks,
-> 
-> 	tglx
+commit 8f912ba4d
+
+if (i=drhd->iommu, 0)
+
+looks strange
