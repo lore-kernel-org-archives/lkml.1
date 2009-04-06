@@ -1,66 +1,87 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755978AbZDFLV6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755835AbZDFLXV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755978AbZDFLV6 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 6 Apr 2009 07:21:58 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755289AbZDFLVs
+	id S1755835AbZDFLXV (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 6 Apr 2009 07:23:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755352AbZDFLXH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 6 Apr 2009 07:21:48 -0400
-Received: from fg-out-1718.google.com ([72.14.220.152]:36447 "EHLO
-	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755269AbZDFLVr (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 6 Apr 2009 07:21:47 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=googlemail.com; s=gamma;
-        h=message-id:date:from:user-agent:mime-version:to:cc:subject
-         :references:in-reply-to:content-type:content-transfer-encoding;
-        b=IzCtM0sECUjjsWHjkrKYHiaNpE0kCyNaxVYAi8/6d0BdQzFZygQGNYXBMj1DL4NtXj
-         8GemtGXUp/CrmSocFJCp8kYELT+w5GL83fxtM5Ee5WUWv2WJ58HRLFeaP47WKZl5BfPG
-         V3kIT+Mv9m6g6xv6tpaq9DkQKx3YDH2RT3TkI=
-Message-ID: <49D9E5E5.9080505@googlemail.com>
-Date: Mon, 06 Apr 2009 13:22:13 +0200
-From: Gabriel C <nix.or.die@googlemail.com>
-User-Agent: Thunderbird 2.0.0.21 (X11/20090324)
+	Mon, 6 Apr 2009 07:23:07 -0400
+Received: from mx2.redhat.com ([66.187.237.31]:53340 "EHLO mx2.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1755269AbZDFLXE (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 6 Apr 2009 07:23:04 -0400
+Message-ID: <49D9E53D.5080807@redhat.com>
+Date: Mon, 06 Apr 2009 14:19:25 +0300
+From: Izik Eidus <ieidus@redhat.com>
+User-Agent: Mozilla-Thunderbird 2.0.0.19 (X11/20090103)
 MIME-Version: 1.0
-To: Stephen Rothwell <sfr@canb.auug.org.au>
-CC: Nico -telmich- Schottelius <nico-linux-next@schottelius.org>,
-       linux-next@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>,
-       Rusty Russell <rusty@rustcorp.com.au>
-Subject: Re: Invalid module format
-References: <20090401164450.f8192631.sfr@canb.auug.org.au>	<20090401150928.GA5886@denkbrett.schottelius.org> <20090402123223.f31370cd.sfr@canb.auug.org.au>
-In-Reply-To: <20090402123223.f31370cd.sfr@canb.auug.org.au>
-Content-Type: text/plain; charset=ISO-8859-1
+To: Nick Piggin <nickpiggin@yahoo.com.au>
+CC: akpm@linux-foundation.org, linux-kernel@vger.kernel.org,
+       kvm@vger.kernel.org, linux-mm@kvack.org, avi@redhat.com,
+       aarcange@redhat.com, chrisw@redhat.com, mtosatti@redhat.com,
+       hugh@veritas.com, kamezawa.hiroyu@jp.fujitsu.com
+Subject: Re: [PATCH 0/4] ksm - dynamic page sharing driver for linux v2
+References: <1238855722-32606-1-git-send-email-ieidus@redhat.com> <200904061704.50052.nickpiggin@yahoo.com.au>
+In-Reply-To: <200904061704.50052.nickpiggin@yahoo.com.au>
+Content-Type: text/plain; charset=UTF-8; format=flowed
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Stephen Rothwell wrote:
+Nick Piggin wrote:
+> On Sunday 05 April 2009 01:35:18 Izik Eidus wrote:
+>
+>   
+>> This driver is very useful for KVM as in cases of runing multiple guests
+>> operation system of the same type.
+>> (For desktop work loads we have achived more than x2 memory overcommit
+>> (more like x3))
+>>     
+>
+> Interesting that it is a desirable workload to have multiple guests each
+> running MS office.
+>   
 
-> Hi Nico,
-> 
-> On Wed, 1 Apr 2009 17:09:28 +0200 Nico -telmich- Schottelius <nico-linux-next@schottelius.org> wrote:
->> Stephen Rothwell [Wed, Apr 01, 2009 at 04:44:50PM +1100]:
->>> Changes since 20090331:
->> Same problem since 20090324.
->>
->> arch=amd64, config attached, all modules have that problem.
-> 
-> Does Linus' kernel with this config show the problem?
-> 
+This numbers are took from such workload, it is some kind of weird 
+script that keep opening Word / Excel and write there like a user...
+I think in addition it open internet explorer and enter to random sites...
+I can search for the script if wanted...
 
+> I wonder, can windows enter a paravirtualised guest mode for KVM? And can
+> you detect page allocation/freeing events?
+>   
 
-Now it does , CONFIG_MODVERSIONS is broken in Linus tree too.
+I Dont know.
 
-I reverted this commit :
+>  
+>   
+>> This driver have found users other than KVM, for example CERN,
+>> Fons Rademakers:
+>> "on many-core machines we run one large detector simulation program per core.
+>> These simulation programs are identical but run each in their own process and
+>> need about 2 - 2.5 GB RAM.
+>> We typically buy machines with 2GB RAM per core and so have a problem to run
+>> one of these programs per core.
+>> Of the 2 - 2.5 GB about 700MB is identical data in the form of magnetic field
+>> maps, detector geometry, etc.
+>> Currently people have been trying to start one program, initialize the geometry
+>> and field maps and then fork it N times, to have the data shared.
+>> With KSM this would be done automatically by the system so it sounded extremely
+>> attractive when Andrea presented it."
+>>     
+>
+> They should use a shared memory segment, or MAP_ANONYMOUS|MAP_SHARED etc.
+> Presumably they will probably want to control it to interleave it over
+> all numa nodes and use hugepages for it. It would be very little work.
+>   
 
-http://git.kernel.org/?p=linux/kernel/git/torvalds/linux-2.6.git;a=commitdiff;h=9cb610d8e35fe3ec95a2fe2030b02f85aeea83c1
+Agree about that, dont know their application to much, i know they had 
+problems to do it.
 
-and after that modules loading seems to work again here.
-
-
-Gabriel
-
- 
-
+>  
+>   
+>> I am sending another seires of patchs for kvm kernel and kvm-userspace
+>> that would allow users of kvm to test ksm with it.
+>> The kvm patchs would apply to Avi git tree.
+>>     
 
