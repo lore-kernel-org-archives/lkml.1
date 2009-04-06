@@ -1,91 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752521AbZDFPTU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753482AbZDFPTr@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752521AbZDFPTU (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 6 Apr 2009 11:19:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750894AbZDFPTF
+	id S1753482AbZDFPTr (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 6 Apr 2009 11:19:47 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751323AbZDFPTf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 6 Apr 2009 11:19:05 -0400
-Received: from mail-fx0-f158.google.com ([209.85.220.158]:45917 "EHLO
-	mail-fx0-f158.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750790AbZDFPTC (ORCPT
+	Mon, 6 Apr 2009 11:19:35 -0400
+Received: from g4t0016.houston.hp.com ([15.201.24.19]:7638 "EHLO
+	g4t0016.houston.hp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751158AbZDFPTe (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 6 Apr 2009 11:19:02 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=sender:to:cc:subject:references:from:date:in-reply-to:message-id
-         :user-agent:mime-version:content-type;
-        b=LpT/Wb8gQSunWSKVi3a3BYFT7sNlkIr/lHNhoY0thjg0bvKFCspBK4mEwGBkKI0Nor
-         LwYH1J3I0LdXSd1IUgNT4SuBM+qxSnkdoJzdcto+D/2RHWpXcjvuIKXVsOQT3MUuNQaB
-         wI/OR6dMM7WymZkM9nnKXP1GGfHaXK/iUa68Q=
-To: "John W. Linville" <linville@tuxdriver.com>
-Cc: Michael Buesch <mb@bu3sch.de>,
-       Jaswinder Singh Rajput <jaswinder@kernel.org>,
-       Sujith <Sujith.Manoharan@atheros.com>,
-       wireless <linux-wireless@vger.kernel.org>,
-       David Miller <davem@davemloft.net>, LKML <linux-kernel@vger.kernel.org>,
-       Helmut Schaa <helmut.schaa@googlemail.com>
-Subject: Re: ath9k becon loss messages
-References: <1238923439.4120.9.camel@localhost.localdomain>
-	<200904061217.31134.mb@bu3sch.de> <87tz52xepy.fsf@litku.valot.fi>
-	<200904061251.10965.helmut.schaa@gmail.com>
-	<da94abde0904060405k280b3094jc20d0f7a4e6e759d@mail.gmail.com>
-From: Kalle Valo <kalle.valo@iki.fi>
-Date: Mon, 06 Apr 2009 18:18:56 +0300
-In-Reply-To: <da94abde0904060405k280b3094jc20d0f7a4e6e759d@mail.gmail.com> (Kalle Valo's message of "Mon\, 6 Apr 2009 14\:05\:46 +0300")
-Message-ID: <87iqlhdd3z.fsf@litku.valot.fi>
-User-Agent: Gnus/5.11 (Gnus v5.11) Emacs/22.3 (gnu/linux)
+	Mon, 6 Apr 2009 11:19:34 -0400
+Date: Mon, 6 Apr 2009 09:19:31 -0600
+From: Alex Chiang <achiang@hp.com>
+To: Sam Ravnborg <sam@ravnborg.org>
+Cc: Jesse Barnes <jbarnes@virtuousgeek.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       linux-kernel@vger.kernel.org, linux-pci@vger.kernel.org
+Subject: Re: [git pull] PCI changes for 2.6.30
+Message-ID: <20090406151931.GB25005@ldl.fc.hp.com>
+References: <20090331121331.3673cf59@hobbes> <alpine.LFD.2.00.0904010957520.4130@localhost.localdomain> <20090401101309.67d0bea5@hobbes> <20090401183749.GC8188@ldl.fc.hp.com> <20090401191220.GB29673@uranus.ravnborg.org> <20090401222310.GA31290@ldl.fc.hp.com> <20090405193423.GB24374@uranus.ravnborg.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20090405193423.GB24374@uranus.ravnborg.org>
+User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Kalle Valo <kalle.valo@iki.fi> writes:
+* Sam Ravnborg <sam@ravnborg.org>:
+> > 
+> > Reading through Documentation/PCI/pci.txt says that under
+> > CONFIG_HOTPLUG, __devinit should be a nop?
+> The documentation is not up-to-date in this respect.
+> 
+> Annotating a function __devinit will no matter the configuration
+> locate the code in a section named .devinit.text
 
-> On Mon, Apr 6, 2009 at 1:51 PM, Helmut Schaa
-> <helmut.schaa@googlemail.com> wrote:
->
->> Maybe this issue could be
->> avoided by making the beacon loss detection smarter then just checking if no
->> beacon was received within the last two seconds.
->
-> Definitely the beacon loss logic should be smarter, but I think that
-> should be improved separately. I just have tried to do small changes
-> at a time to avoid regressions and I didn't even consider improving
-> the beacon loss logic.
+Ok, I'll update the documentation.
 
-I reverted my beacon filter patches but added a similar "beacon loss"
-message. With iwl3945 I was able to reproduce the problem even by just
-associating to an AP and issuing 'iwlist wlan0 scan':
+> We then postprocess this section for illegal references using modpost.
+> 
+> The PCI_HOTPLUG code has often been troublesome with respect to these checks
+> as this code is only relevant if CONFIG_HOTPLUG is enabled
+> and will often not even be included in the kernel if not enabled.
+> This is true for pci_rescan_bus() for example.
+> 
+> And we would like to export these symbols too. But we do not allow exported
+> symbols to be annotated __devinit as this code will be blown away in some configurations.
+> 
+> So the correct solution which you also used in your patch is to tell
+> modpost to ignore references to *init sections from this specific funtion
+> as they are OK.
 
-Apr  6 15:09:31 tikku kernel: [ 3692.544221] beacon loss (reverted version)
-Apr  6 15:09:46 tikku kernel: [ 3707.654520] beacon loss (reverted version)
-Apr  6 15:09:53 tikku kernel: [ 3714.314057] beacon loss (reverted version)
+Does this count as an Acked-by?
 
-So the good news is that this is not a new regression, the problem just
-appeared because of the new printk I added to my beacon filtering
-patches.
+Thanks.
 
-I'm suffering from flu right now (damn the finnish weather), but I tried
-to investigate this a bit. The problem happens when mac80211 does not
-receive anything for two seconds while scanning. For example, at my home
-there are only few APs and scanning takes a long time due to 11a support
-in iwl3945, so I can reproduce the problem easily.
-
-I'm working on implementing a proper fix, but due to my condition it
-might take few days before I'm able to finish it. But in the mean time,
-Michael's patch, changing the "beacon loss" messages visible only when
-CONFIG_MAC80211_VERBOSE_DEBUG is enabled, is the way to go forward. The
-message is useful for developers (eg. we found this bug because of the
-message), but it's better that users don't see it. I would like to have
-the patch for 2.6.30.
-
-When I'm able to implement the proper fix, I think it should first have
-proper testing in wireles-testing before pushing it to mainline. So
-maybe the proper fix is 2.6.31 material, just to be on the safe side
-here.
-
-John, what do you think?
-
--- 
-Kalle Valo
