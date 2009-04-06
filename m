@@ -1,66 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761317AbZDFWB1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761457AbZDFWCt@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761317AbZDFWB1 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 6 Apr 2009 18:01:27 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759836AbZDFVzT
+	id S1761457AbZDFWCt (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 6 Apr 2009 18:02:49 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760916AbZDFV6W
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 6 Apr 2009 17:55:19 -0400
-Received: from ishtar.tlinx.org ([64.81.245.74]:40647 "EHLO ishtar.tlinx.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1759725AbZDFVzR (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 6 Apr 2009 17:55:17 -0400
-X-Greylist: delayed 1365 seconds by postgrey-1.27 at vger.kernel.org; Mon, 06 Apr 2009 17:55:17 EDT
-Message-ID: <49DA74E9.9050702@tlinx.org>
-Date: Mon, 06 Apr 2009 14:32:25 -0700
-From: Linda Walsh <lkml@tlinx.org>
-User-Agent: Thunderbird 2.0.0.21 (Windows/20090302)
-MIME-Version: 1.0
-To: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-CC: Matthew Garrett <mjg59@srcf.ucam.org>
-Subject: supporting laptops fs-semantic changes (was Re: Ext4 and the "30
- second window of death")
-References: <200903291224.21380.info@gnebu.es> <200903311452.05210.info@gnebu.es> <20090331134547.GJ13356@mit.edu> <200904010002.47077.info@gnebu.es> <49D2A5AB.1090704@ursus.ath.cx> <20090401015010.GB4529@mit.edu> <20090401052050.GA20456@sucs.org> <20090401151219.GA12285@srcf.ucam.org> <20090401173521.GA15423@mit.edu> <20090401174336.GA14726@srcf.ucam.org>
-In-Reply-To: <20090401174336.GA14726@srcf.ucam.org>
-X-Stationery: 0.4.8.14
-Content-Type: text/plain; charset=UTF-8; format=flowed
+	Mon, 6 Apr 2009 17:58:22 -0400
+Received: from rcsinet12.oracle.com ([148.87.113.124]:40574 "EHLO
+	rgminet12.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1760920AbZDFV6V (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 6 Apr 2009 17:58:21 -0400
+Date: Mon, 6 Apr 2009 14:57:55 -0700
+From: Randy Dunlap <randy.dunlap@oracle.com>
+To: Mauro Carvalho Chehab <mchehab@redhat.com>,
+       lkml <linux-kernel@vger.kernel.org>
+Cc: Laurent Pinchart <laurent.pinchart@skynet.be>,
+       "Rafael J. Wysocki" <rjw@sisk.pl>
+Subject: [PATCH resend] UVC: uvc_status_cleanup(): undefined reference to
+ `input_unregister_device'
+Message-Id: <20090406145755.8879e292.randy.dunlap@oracle.com>
+Organization: Oracle Linux Eng.
+X-Mailer: Sylpheed 2.6.0 (GTK+ 2.12.0; x86_64-unknown-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
+X-Source-IP: acsmt705.oracle.com [141.146.40.83]
+X-Auth-Type: Internal IP
+X-CT-RefId: str=0001.0A090204.49DA7ADC.00B0:SCFMA4539814,ss=1,fgs=0
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Matthew Garrett wrote:
->> The other subtlety comes if we add fsync() suppression to laptop mode
------
-    Perhaps this has already been suggested, but rather than
-adding all these semantics to the core file-system / kernel routines,
-wouldn't it be preferable to allow some 'layering' of a pseudo,
-memory-based file-system, OVER some 'real' file system (OR), definable
-set of files (under a subdir...or same device...or whatever).
+From: Randy Dunlap <randy.dunlap@oracle.com>
 
-The semantics of when the virtual-fs would sync to the physical-fs/files
-controlled via mount options.  Physical disk writes would be controlled by
-selectively ignoring or honoring various "sync" events (time expired,
-sync, fsync).
+Fix build errors when USB_VIDEO_CLASS=y and INPUT=m.
+Fixes kernel bugzilla #12671.
 
-This could allow file-systems with different 'needs' (DB, or otherwise)
-to be treated differently. 
+Signed-off-by: Randy Dunlap <randy.dunlap@oracle.com>
+Acked-by: Laurent Pinchart <laurent.pinchart@skynet.be>
+---
+ drivers/media/video/uvc/Kconfig |    2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
-The advantage of another layer, is you could define _how much_ buffering
-you wanted to allocate to a filesystem (or file-set).  Maybe it's tolerable
-losing a audio-recording of a talk, so large buff + don't sync 'cept when
-full is fine.  Sensitive filesystems(or sets) (i.e. db's), could be set
-with buffers to hold largest 'single-writes', but sync/fsyncs are what
-they are.
-
-An optimization could provide for read/writes through the user-mem 
-controlled
-buffered 'fs', to do direct I/O rather than into normal file-buffs where
-possible, since presumably all accesses to a file would go through the
-layer or not.
-
-Wouldn't require application changing, and wouldn't require changing
-well defined, lower-level kernel-filesystem operations.
-
-Just a thought.
-Linda
+--- mmotm-2009-0214-0049.orig/drivers/media/video/uvc/Kconfig
++++ mmotm-2009-0214-0049/drivers/media/video/uvc/Kconfig
+@@ -9,7 +9,7 @@ config USB_VIDEO_CLASS
+ config USB_VIDEO_CLASS_INPUT_EVDEV
+ 	bool "UVC input events device support"
+ 	default y
+-	depends on USB_VIDEO_CLASS && INPUT
++	depends on USB_VIDEO_CLASS=INPUT || INPUT=y
+ 	---help---
+ 	  This option makes USB Video Class devices register an input device
+ 	  to report button events.
 
