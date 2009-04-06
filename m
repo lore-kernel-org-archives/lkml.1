@@ -1,46 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755674AbZDFXXa@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753931AbZDFXa7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755674AbZDFXXa (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 6 Apr 2009 19:23:30 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752677AbZDFXXU
+	id S1753931AbZDFXa7 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 6 Apr 2009 19:30:59 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750847AbZDFXau
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 6 Apr 2009 19:23:20 -0400
-Received: from nessie.weebeastie.net ([220.233.7.36]:55988 "EHLO
-	bunyip.billabong.weebeastie.net" rhost-flags-OK-OK-OK-FAIL)
-	by vger.kernel.org with ESMTP id S1751787AbZDFXXT (ORCPT
+	Mon, 6 Apr 2009 19:30:50 -0400
+Received: from mail-ew0-f165.google.com ([209.85.219.165]:38520 "EHLO
+	mail-ew0-f165.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750696AbZDFXat (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 6 Apr 2009 19:23:19 -0400
-X-Greylist: delayed 2122 seconds by postgrey-1.27 at vger.kernel.org; Mon, 06 Apr 2009 19:23:19 EDT
-Date: Tue, 7 Apr 2009 08:47:49 +1000
-From: CaT <cat@zip.com.au>
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Kernel Testers List <kernel-testers@vger.kernel.org>
-Subject: Re: [Bug #12909] boot/kernel init duration regression from 2.6.28
-Message-ID: <20090406224749.GC19377@zip.com.au>
-References: <n4io5wq70ZO.A.gzG.rFn2JB@chimera> <AsKNxFx2juN.A.z3H.SGn2JB@chimera>
+	Mon, 6 Apr 2009 19:30:49 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:user-agent:mime-version:to:cc:subject
+         :references:in-reply-to:content-type:content-transfer-encoding;
+        b=qXRRX86/1h5Opx+JUxDRkKlLPsXhYj6viy37t8ixvckSoepDd5ouan5XZkrbAgxgtE
+         FtLHu/L0Xn6qRhr/cykDUOh400KicPBnqyftJcIlYF1qZs0QXsnve4VC3ti6BR0dFnPl
+         brM2m4kA5Ym+uMVkORY7zYi5hwbsCaJBvwTQs=
+Message-ID: <49DA9094.1070803@gmail.com>
+Date: Tue, 07 Apr 2009 01:30:28 +0200
+From: =?UTF-8?B?Sm9zw6kgTWFyw63CrWEgRmVybsOhbmRleiBHb256w6FsZXo=?= 
+	<josemariafg@gmail.com>
+User-Agent: Thunderbird 2.0.0.21 (X11/20090323)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <AsKNxFx2juN.A.z3H.SGn2JB@chimera>
-Organisation: Furball Inc.
-User-Agent: Mutt/1.5.18 (2008-05-17)
+To: Pierre Ossman <drzeus-list@drzeus.cx>
+CC: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 1/1] mmc: Some microSD cards are not recognized by PCIxx12
+ SDA controller
+References: <49B5C091.3090303@gmail.com>	<20090324211748.30cd7429@mjolnir.ossman.eu>	<49C9E4B8.3000708@gmail.com>	<20090325171749.62bd0fbb@mjolnir.ossman.eu>	<49CBAF36.1010203@gmail.com> <20090405203317.72ce6aff@mjolnir.ossman.eu>
+In-Reply-To: <20090405203317.72ce6aff@mjolnir.ossman.eu>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Apr 06, 2009 at 09:05:41PM +0200, Rafael J. Wysocki wrote:
-> Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=12909
-> Subject		: boot/kernel init duration regression from 2.6.28
-> Submitter	: CaT <cat@zip.com.au>
-> Date		: 2009-03-16 10:25 (22 days old)
-> References	: http://marc.info/?l=linux-kernel&m=123720083515950&w=4
+It is curious. I have concentrated my tests on 2.6.29 with HZ=100 and no preemption, and I have done next tests with my microSD card and laptop:
 
-I got it tracked down to .29-rc1. I guess I'll need to learn to use git
-now (and user the desktop - compiling on the EEE takes /ages/). Also have
-.29.1 ready to test when I get home tonight.
+*	mmc_delay(2) -> FAIL
+*	mdelay(2) -> FAIL
+*	mmc_delay(10) -> Works!
+*	mdelay(10) -> Works!
 
--- 
-  "A search of his car uncovered pornography, a homemade sex aid, women's 
-  stockings and a Jack Russell terrier."
-    - http://www.news.com.au/story/0%2C27574%2C24675808-421%2C00.html
+And by mistake I found that:
+
+*	msleep(2) -> Works!
+
+	Best Regards,
+		José María
+
+Pierre Ossman wrote:
+> 
+> All of them will result in a sleep though. Preferably, I'd like to now
+> the minimum delay you need to get things working. Change from
+> mmc_delay() to mdelay() to make sure there aren't any sleeps (which
+> generally take quite some time to complete).
+> 
+> Rgds
+
