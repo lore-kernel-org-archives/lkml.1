@@ -1,97 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753888AbZDFTUW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755362AbZDFTVy@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753888AbZDFTUW (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 6 Apr 2009 15:20:22 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752270AbZDFTUD
+	id S1755362AbZDFTVy (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 6 Apr 2009 15:21:54 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752270AbZDFTVq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 6 Apr 2009 15:20:03 -0400
-Received: from nwd2mail10.analog.com ([137.71.25.55]:30062 "EHLO
-	nwd2mail10.analog.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751569AbZDFTUA (ORCPT
+	Mon, 6 Apr 2009 15:21:46 -0400
+Received: from smtp-outbound-2.vmware.com ([65.115.85.73]:58782 "EHLO
+	smtp-outbound-2.vmware.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1752075AbZDFTVp (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 6 Apr 2009 15:20:00 -0400
-X-IronPort-AV: E=Sophos;i="4.39,332,1235970000"; 
-   d="scan'208";a="85842290"
-From: Robin Getz <rgetz@blackfin.uclinux.org>
-Organization: Blackfin uClinux org
-To: "Jeff Garzik" <jeff@garzik.org>
-Subject: Re: IRQF_SAMPLE_RANDOM question...
-Date: Mon, 6 Apr 2009 15:22:15 -0400
-User-Agent: KMail/1.9.5
-CC: netdev@vger.kernel.org, linux-kernel@vger.kernel.org,
-       "Chris Peterson" <cpeterso@cpeterso.com>,
-       "Matt Mackall" <mpm@selenic.com>, "David Miller" <davem@davemloft.net>
-References: <200904061430.26276.rgetz@blackfin.uclinux.org> <49DA4C85.5090806@garzik.org>
-In-Reply-To: <49DA4C85.5090806@garzik.org>
+	Mon, 6 Apr 2009 15:21:45 -0400
+Date: Mon, 6 Apr 2009 12:22:38 -0700
+From: Randy Robertson <rmrobert@vmware.com>
+To: linux-kernel@vger.kernel.org
+Cc: David Howells <dhowells@redhat.com>
+Subject: [PATCH] initramfs: Fix initramfs to work with hardlinked init
+Message-ID: <20090406192238.GA6621@vmware.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Message-ID: <200904061522.15810.rgetz@blackfin.uclinux.org>
-X-OriginalArrivalTime: 06 Apr 2009 19:19:57.0854 (UTC) FILETIME=[AC733BE0:01C9B6EC]
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon 6 Apr 2009 14:40, Jeff Garzik pondered:
-> Robin Getz wrote:
-> > Although there was some discussion  
-> > http://thread.gmane.org/gmane.linux.kernel/680723
-> > 
-> > about removing IRQF_SAMPLE_RANDOM from the remaining network drivers 
-> > in May of 2008, but they still appears to be there in 2.6.29.
-> > 
-> > drivers/net/ibmlana.c
-> > drivers/net/macb.c
-> > drivers/net/3c523.c
-> > drivers/net/3c527.c
-> > drivers/net/netxen/netxen_nic_main.c
-> > drivers/net/cris/eth_v10.c
-> > drivers/net/xen-netfront.c
-> > drivers/net/atlx/atl1.c
-> > drivers/net/qla3xxx.c
-> > drivers/net/tg3.c
-> > drivers/net/niu.c
-> > 
-> > So what is the plan? If I send a patch to add IRQF_SAMPLE_RANDOM to others 
-> > (like the Blackfin) networking drivers - will it get rejected?
-> > 
-> > We have lots of embedded headless systems (no keyboard/mouse, no
-> > soundcard, no video) systems with *no* sources of entropy - and
-> > people using SSL. 
-> > 
-> > I didn't really find any docs which describe what should have 
-> > IRQF_SAMPLE_RANDOM on it or not. I did find Matt Mackall describing it as:
-> >> We currently assume that IRQF_SAMPLE_RANDOM means 'this is a completely
-> >> trusted unobservable entropy source' which is obviously wrong for
-> >> network devices but is right for some other classes of device.
-> > 
-> > Currently - I see most things I see using IRQF_SAMPLE_RANDOM would 
-> > also fail the "completely unobservable" test. Other than the TRNG that 
-> > are inside the CPU - what does pass?
-> 
-> IMO it's not observation but rather that a remote host is essentially 
-> your source of entropy -- which means your source of entropy is 
-> potentially controllable or influenced by an attacker.
+Change cb6ff208076b5f434db1b8c983429269d719cef5 seems to have broken
+booting from initramfs with /sbin/init being a hardlink.  It seems like
+the logic required for XIP on nommu, i.e. ftruncate to reported cpio
+header file size (body_len) is broken for hardlinks, which have
+a reported size of 0, and the truncate thus nukes the contents of the
+file (in my case busybox), making boot impossible and ending with runaway
+loop modprobe binfmt-0000 - and of course 0000 is not a valid binary format.
 
-Ok - so if it is "un-influenceable" or more specifically - not remotely 
-influenceable - that works for me, and says that keyboards, serial devices, 
-USB, etc -- should be OK - since they are not remote, even if they can be 
-controlled locally.
+My fix is to only call ftruncate if size is non-zero which fixes things
+for me, but I'm not certain whether this will break XIP for those files
+on nommu systems, although I would guess not.
 
-You assume that the local user is the root user - as least as far as entropy 
-goes?
+This update adds David's ack and fixes whitespace.
 
-Correct?
+Signed-off-by: Randy Robertson <rmrobert@vmware.com>
+Acked-by: David Howells <dhowells@redhat.com>
+---
+ init/initramfs.c |    3 ++-
+ 1 files changed, 2 insertions(+), 1 deletions(-)
 
-> Furthermore, with hardware interrupt mitigation, non-trivial traffic 
-> levels can imply that interrupts are delivered with timer-based 
-> regularity.  This, too, may clearly be influenced by a remote attacker.
-> 
-> Thus I think IRQF_SAMPLE_RANDOM should be banned from network drivers... 
-> but that is not a universal opinion.
-
-It didn't seem like there were that many people who disagreed with Chris's 
-original patch - but there wasn't anyone acking it either...
-
--Robin
+diff --git a/init/initramfs.c b/init/initramfs.c
+index 80cd713..ddf30d1 100644
+--- a/init/initramfs.c
++++ b/init/initramfs.c
+@@ -310,7 +310,8 @@ static int __init do_name(void)
+ 			if (wfd >= 0) {
+ 				sys_fchown(wfd, uid, gid);
+ 				sys_fchmod(wfd, mode);
+-				sys_ftruncate(wfd, body_len);
++				if (body_len)
++					sys_ftruncate(wfd, body_len);
+ 				vcollected = kstrdup(collected, GFP_KERNEL);
+ 				state = CopyFile;
+ 			}
