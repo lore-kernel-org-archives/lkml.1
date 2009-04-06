@@ -1,59 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758576AbZDFNQR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757042AbZDFNTi@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758576AbZDFNQR (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 6 Apr 2009 09:16:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754995AbZDFNQE
+	id S1757042AbZDFNTi (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 6 Apr 2009 09:19:38 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754403AbZDFNTa
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 6 Apr 2009 09:16:04 -0400
-Received: from juliette.telenet-ops.be ([195.130.137.74]:49575 "EHLO
-	juliette.telenet-ops.be" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755649AbZDFNQD (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 6 Apr 2009 09:16:03 -0400
-Date: Mon, 6 Apr 2009 15:15:55 +0200 (CEST)
-From: Geert Uytterhoeven <geert@linux-m68k.org>
-To: Kalle Valo <kalle.valo@nokia.com>, Greg Kroah-Hartman <gregkh@suse.de>
-cc: Linux Kernel Development <linux-kernel@vger.kernel.org>
-Subject: [PATCH] staging: STLC45XX should depend on GENERIC_HARDIRQS
-Message-ID: <Pine.LNX.4.64.0904061515001.13923@anakin>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Mon, 6 Apr 2009 09:19:30 -0400
+Received: from slimlogic.co.uk ([89.16.172.20]:35788 "EHLO slimlogic.co.uk"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753081AbZDFNT3 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 6 Apr 2009 09:19:29 -0400
+Subject: Re: [PATCH] regulator: fix header file missing kernel-doc
+From: Liam Girdwood <lrg@slimlogic.co.uk>
+To: Randy Dunlap <randy.dunlap@oracle.com>
+Cc: lkml <linux-kernel@vger.kernel.org>, akpm <akpm@linux-foundation.org>
+In-Reply-To: <20090403213130.9995f03b.randy.dunlap@oracle.com>
+References: <20090403213130.9995f03b.randy.dunlap@oracle.com>
+Content-Type: text/plain
+Date: Mon, 06 Apr 2009 14:19:00 +0100
+Message-Id: <1239023941.12172.194.camel@vega.slimlogic.co.uk>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.24.3 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-m68k allmodconfig:
-| drivers/staging/stlc45xx/stlc45xx.c: In function 'stlc45xx_probe':
-| drivers/staging/stlc45xx/stlc45xx.c:2456: error: implicit declaration of function 'set_irq_type'
-| make[6]: *** [drivers/staging/stlc45xx/stlc45xx.o] Error 1
+On Fri, 2009-04-03 at 21:31 -0700, Randy Dunlap wrote:
+> From: Randy Dunlap <randy.dunlap@oracle.com>
+> 
+> Add regulator header file missing kernel-doc:
+> 
+> Warning(include/linux/regulator/driver.h:117): No description found for parameter 'set_mode'
+> 
+> Signed-off-by: Randy Dunlap <randy.dunlap@oracle.com>
+> cc:	Liam Girdwood <lrg@slimlogic.co.uk>
+> cc:	Mark Brown <broonie@opensource.wolfsonmicro.com>
+> ---
+>  include/linux/regulator/driver.h |    1 +
+>  1 file changed, 1 insertion(+)
+> 
 
-Signed-off-by: Geert Uytterhoeven <geert@linux-m68k.org>
----
- drivers/staging/stlc45xx/Kconfig |    2 +-
- 1 files changed, 1 insertions(+), 1 deletions(-)
+Applied.
 
-diff --git a/drivers/staging/stlc45xx/Kconfig b/drivers/staging/stlc45xx/Kconfig
-index 8d3f46f..947fb75 100644
---- a/drivers/staging/stlc45xx/Kconfig
-+++ b/drivers/staging/stlc45xx/Kconfig
-@@ -1,6 +1,6 @@
- config STLC45XX
- 	tristate "stlc4550/4560 support"
--	depends on MAC80211 && WLAN_80211 && SPI_MASTER
-+	depends on MAC80211 && WLAN_80211 && SPI_MASTER && GENERIC_HARDIRQS
- 	---help---
- 	  This is a driver for stlc4550 and stlc4560 chipsets.
- 
--- 
-1.6.2.1
+Thanks
 
-Gr{oetje,eeting}s,
+Liam
 
-						Geert
-
---
-Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
-
-In personal conversations with technical people, I call myself a hacker. But
-when I'm talking to journalists I just say "programmer" or something like that.
-							    -- Linus Torvalds
