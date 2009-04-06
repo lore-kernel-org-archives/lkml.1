@@ -1,58 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753107AbZDFEsy@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752104AbZDFFBT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753107AbZDFEsy (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 6 Apr 2009 00:48:54 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750895AbZDFEsp
+	id S1752104AbZDFFBT (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 6 Apr 2009 01:01:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751200AbZDFFBG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 6 Apr 2009 00:48:45 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:37040 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1750854AbZDFEso (ORCPT
+	Mon, 6 Apr 2009 01:01:06 -0400
+Received: from mail-ew0-f165.google.com ([209.85.219.165]:53551 "EHLO
+	mail-ew0-f165.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750934AbZDFFBF (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 6 Apr 2009 00:48:44 -0400
-Date: Sun, 5 Apr 2009 21:46:19 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: "Jeff Haran" <jharan@Brocade.COM>
-Cc: <linux-kernel@vger.kernel.org>, Doug Thompson <norsk5@yahoo.com>
-Subject: Re: bug in drivers/edac/edac_core.h pci_write_bits32()
-Message-Id: <20090405214619.12611ef4.akpm@linux-foundation.org>
-In-Reply-To: <57AC2FA1761300418C7AB8F3EA493C9702B52DC8@HQ-EXCH-5.corp.brocade.com>
-References: <57AC2FA1761300418C7AB8F3EA493C9702B52DC8@HQ-EXCH-5.corp.brocade.com>
-X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.5; x86_64-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Mon, 6 Apr 2009 01:01:05 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:user-agent:mime-version:to:cc:subject
+         :references:in-reply-to:content-type:content-transfer-encoding;
+        b=gwL28HyFYSNy54zdmgtjFGyFcmf0u4HUTY3zSnwapGbF9TDmjEi5A0fiiCi60liX3F
+         4il7oFYUZranmVi0ooAMXlHSb9DBZlk/l8hmem/zcaNHS9iYEcGD/PqU30g/kzctoQWW
+         hp2P/OlXGOQXFl3XzfxpZhg5T9G39ybK+RQTE=
+Message-ID: <49D98C9E.2000507@gmail.com>
+Date: Mon, 06 Apr 2009 07:01:18 +0200
+From: Niel Lambrechts <niel.lambrechts@gmail.com>
+User-Agent: Thunderbird 2.0.0.21 (X11/20090310)
+MIME-Version: 1.0
+To: Tejun Heo <tj@kernel.org>
+CC: "linux.kernel" <linux-kernel@vger.kernel.org>
+Subject: Re: 2.6.29 regression: ATA bus errors on resume
+References: <ckpL0-3TE-3@gated-at.bofh.it> <ckpL0-3TE-5@gated-at.bofh.it> <ckpL0-3TE-7@gated-at.bofh.it> <ckpL0-3TE-9@gated-at.bofh.it> <ckpL0-3TE-11@gated-at.bofh.it> <ckpL0-3TE-1@gated-at.bofh.it> <cllvN-2Gf-1@gated-at.bofh.it> <49D0D788.6070405@gmail.com> <49D419E8.2080603@kernel.org> <49D4591B.3070807@gmail.com> <49D46096.1040701@kernel.org> <49D49B8A.7070408@gmail.com> <49D4C886.1010101@gmail.com> <49D6E7FA.3000306@kernel.org>
+In-Reply-To: <49D6E7FA.3000306@kernel.org>
+Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-(cc maintainer)
+On 04/04/2009 06:54 AM, Tejun Heo wrote:
+> Hello, Neil.
+>
+> Niel Lambrechts wrote:
+>   
+>>> Thanks for your help, I've done at least 5 hibernate cycles without the
+>>> problem recurring, I'll keep at it for a while... :)
+>>>       
+>
+> Hmmm..
+>   
+Hi Tejun,
 
-On Thu, 26 Mar 2009 16:54:01 -0700 "Jeff Haran" <jharan@Brocade.COM> wrote:
+I have tested your patch some more over the weekend as well as on
+2.6.29.1, and suspend-to-disk and ram still works without a glitch for
+me apart from the extra debugging being active.
 
-> 2.6.29 and previous versions seem to contain this bug which I found just
-> eyeballing the code:
-> 
-> static inline void pci_write_bits32(struct pci_dev *pdev, int offset,
->                     u32 value, u32 mask)
-> {
->     if (mask != 0xffff) {
->         u32 buf;
-> 
->         pci_read_config_dword(pdev, offset, &buf);
->         value &= mask;
->         buf &= ~mask;
->         value |= buf;
->     }
-> 
->     pci_write_config_dword(pdev, offset, value);
-> }
-> 
-> I'm pretty sure that "if" statement should be:
-> 
-> 	if (mask != 0xffffffff) {
-> 
-> Please copy my email address in any response as I do not subscribe.
-> 
-> Thanks,
+Will the fix naturally make its way into the mainline kernel, or is
+there any extra debugging/testing I can help with?
+
+Regards,
+Niel
 
