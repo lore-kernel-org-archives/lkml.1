@@ -1,223 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757527AbZDEXx6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754311AbZDFAV4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757527AbZDEXx6 (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 5 Apr 2009 19:53:58 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752937AbZDEXxt
+	id S1754311AbZDFAV4 (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 5 Apr 2009 20:21:56 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752212AbZDFAVp
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 5 Apr 2009 19:53:49 -0400
-Received: from 136-022.dsl.LABridge.com ([206.117.136.22]:1473 "EHLO
-	mail.perches.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751388AbZDEXxs (ORCPT
+	Sun, 5 Apr 2009 20:21:45 -0400
+Received: from fgwmail7.fujitsu.co.jp ([192.51.44.37]:45633 "EHLO
+	fgwmail7.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751549AbZDFAVo (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 5 Apr 2009 19:53:48 -0400
-Subject: [PATCH] include/video/cyblafb.h - Remove it, it's unused
-From: Joe Perches <joe@perches.com>
-To: Krzysztof Helt <krzysztof.h1@wp.pl>
-Cc: LKML <linux-kernel@vger.kernel.org>
-Content-Type: text/plain
-Date: Sun, 05 Apr 2009 16:53:13 -0700
-Message-Id: <1238975593.4832.23.camel@localhost>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.24.2-1.2mdv2009.0 
+	Sun, 5 Apr 2009 20:21:44 -0400
+From: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
+To: Hugh Dickins <hugh@veritas.com>
+Subject: Re: [PATCH for -mm] getrusage: fill ru_maxrss value
+Cc: kosaki.motohiro@jp.fujitsu.com, Jiri Pirko <jpirko@redhat.com>,
+       linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
+       oleg@redhat.com, linux-mm@kvack.org, mingo@elte.hu
+In-Reply-To: <Pine.LNX.4.64.0904051736210.23536@blonde.anvils>
+References: <20090405084902.GA4411@psychotron.englab.brq.redhat.com> <Pine.LNX.4.64.0904051736210.23536@blonde.anvils>
+Message-Id: <20090406091825.44F0.A69D9226@jp.fujitsu.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset="US-ASCII"
 Content-Transfer-Encoding: 7bit
+X-Mailer: Becky! ver. 2.50 [ja]
+Date: Mon,  6 Apr 2009 09:21:34 +0900 (JST)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-commit ddb53d48da5b0e691f35e703ac29118747f86c99
-removed drivers/video/cyblafb.c, but not this .h file
+Hi
 
-commit 4752a439dbcebf609df8995e6114e9db1c1deae6
-Author: Joe Perches <joe@perches.com>
-Date:   Sun Apr 5 16:41:25 2009 -0700
+> I'm worrying particularly about the fork/exec issue you highlight.
+> You're exemplary in providing your test programs, but there's a big
+> omission: you don't mention that the first test, "./getrusage -lc",
+> gives a very different result on Linux than you say it does on BSD -
+> you say the BSD fork line is "fork: self 0 children 0", whereas
+> I find my Linux fork line is "fork: self 102636 children 0".
 
-    include/video/cyblafb.h - Remove it, it's unused
-    
-    Signed-off-by: Joe Perches <joe@perches.com>
----
- include/video/cyblafb.h |  175 -----------------------------------------------
- 1 files changed, 0 insertions(+), 175 deletions(-)
+FreeBSD update rusage at tick updating point. (I think all bsd do that)
+Then, bsd displaing 0 is bsd's problem :)
 
-diff --git a/include/video/cyblafb.h b/include/video/cyblafb.h
-deleted file mode 100644
-index d3c1d4e..0000000
---- a/include/video/cyblafb.h
-+++ /dev/null
-@@ -1,175 +0,0 @@
--
--#ifndef CYBLAFB_DEBUG
--#define CYBLAFB_DEBUG 0
--#endif
--
--#if CYBLAFB_DEBUG
--#define debug(f,a...)	printk("%s:" f,  __func__ , ## a);
--#else
--#define debug(f,a...)
--#endif
--
--#define output(f, a...) printk("cyblafb: " f, ## a)
--
--#define Kb	(1024)
--#define Mb	(Kb*Kb)
--
--/* PCI IDS of supported cards temporarily here */
--
--#define CYBERBLADEi1	0x8500
--
--/* these defines are for 'lcd' variable */
--#define LCD_STRETCH	0
--#define LCD_CENTER	1
--#define LCD_BIOS	2
--
--/* display types */
--#define DISPLAY_CRT	0
--#define DISPLAY_FP	1
--
--#define ROP_S	0xCC
--
--#define point(x,y) ((y)<<16|(x))
--
--//
--// Attribute Regs, ARxx, 3c0/3c1
--//
--#define AR00	0x00
--#define AR01	0x01
--#define AR02	0x02
--#define AR03	0x03
--#define AR04	0x04
--#define AR05	0x05
--#define AR06	0x06
--#define AR07	0x07
--#define AR08	0x08
--#define AR09	0x09
--#define AR0A	0x0A
--#define AR0B	0x0B
--#define AR0C	0x0C
--#define AR0D	0x0D
--#define AR0E	0x0E
--#define AR0F	0x0F
--#define AR10	0x10
--#define AR12	0x12
--#define AR13	0x13
--
--//
--// Sequencer Regs, SRxx, 3c4/3c5
--//
--#define SR00	0x00
--#define SR01	0x01
--#define SR02	0x02
--#define SR03	0x03
--#define SR04	0x04
--#define SR0D	0x0D
--#define SR0E	0x0E
--#define SR11	0x11
--#define SR18	0x18
--#define SR19	0x19
--
--//
--//
--//
--#define CR00	0x00
--#define CR01	0x01
--#define CR02	0x02
--#define CR03	0x03
--#define CR04	0x04
--#define CR05	0x05
--#define CR06	0x06
--#define CR07	0x07
--#define CR08	0x08
--#define CR09	0x09
--#define CR0A	0x0A
--#define CR0B	0x0B
--#define CR0C	0x0C
--#define CR0D	0x0D
--#define CR0E	0x0E
--#define CR0F	0x0F
--#define CR10	0x10
--#define CR11	0x11
--#define CR12	0x12
--#define CR13	0x13
--#define CR14	0x14
--#define CR15	0x15
--#define CR16	0x16
--#define CR17	0x17
--#define CR18	0x18
--#define CR19	0x19
--#define CR1A	0x1A
--#define CR1B	0x1B
--#define CR1C	0x1C
--#define CR1D	0x1D
--#define CR1E	0x1E
--#define CR1F	0x1F
--#define CR20	0x20
--#define CR21	0x21
--#define CR27	0x27
--#define CR29	0x29
--#define CR2A	0x2A
--#define CR2B	0x2B
--#define CR2D	0x2D
--#define CR2F	0x2F
--#define CR36	0x36
--#define CR38	0x38
--#define CR39	0x39
--#define CR3A	0x3A
--#define CR55	0x55
--#define CR56	0x56
--#define CR57	0x57
--#define CR58	0x58
--
--//
--//
--//
--
--#define GR00	0x01
--#define GR01	0x01
--#define GR02	0x02
--#define GR03	0x03
--#define GR04	0x04
--#define GR05	0x05
--#define GR06	0x06
--#define GR07	0x07
--#define GR08	0x08
--#define GR0F	0x0F
--#define GR20	0x20
--#define GR23	0x23
--#define GR2F	0x2F
--#define GR30	0x30
--#define GR31	0x31
--#define GR33	0x33
--#define GR52	0x52
--#define GR53	0x53
--#define GR5D	0x5d
--
--
--//
--// Graphics Engine
--//
--#define GEBase	0x2100		// could be mapped elsewhere if we like it
--#define GE00	(GEBase+0x00)	// source 1, p 111
--#define GE04	(GEBase+0x04)	// source 2, p 111
--#define GE08	(GEBase+0x08)	// destination 1, p 111
--#define GE0C	(GEBase+0x0C)	// destination 2, p 112
--#define GE10	(GEBase+0x10)	// right view base & enable, p 112
--#define GE13	(GEBase+0x13)	// left view base & enable, p 112
--#define GE18	(GEBase+0x18)	// block write start address, p 112
--#define GE1C	(GEBase+0x1C)	// block write end address, p 112
--#define GE20	(GEBase+0x20)	// engine status, p 113
--#define GE24	(GEBase+0x24)	// reset all GE pointers
--#define GE44	(GEBase+0x44)	// command register, p 126
--#define GE48	(GEBase+0x48)	// raster operation, p 127
--#define GE60	(GEBase+0x60)	// foreground color, p 128
--#define GE64	(GEBase+0x64)	// background color, p 128
--#define GE6C	(GEBase+0x6C)	// Pattern and Style, p 129, ok
--#define GE9C	(GEBase+0x9C)	// pixel engine data port, p 125
--#define GEB8	(GEBase+0xB8)	// Destination Stride / Buffer Base 0, p 133
--#define GEBC	(GEBase+0xBC)	// Destination Stride / Buffer Base 1, p 133
--#define GEC0	(GEBase+0xC0)	// Destination Stride / Buffer Base 2, p 133
--#define GEC4	(GEBase+0xC4)	// Destination Stride / Buffer Base 3, p 133
--#define GEC8	(GEBase+0xC8)	// Source Stride / Buffer Base 0, p 133
--#define GECC	(GEBase+0xCC)	// Source Stride / Buffer Base 1, p 133
--#define GED0	(GEBase+0xD0)	// Source Stride / Buffer Base 2, p 133
--#define GED4	(GEBase+0xD4)	// Source Stride / Buffer Base 3, p 133
+Do I must change test program?
+
+> So after that discrepancy, I can't tell what to expect.  Not that
+> I can make any sense of BSD's "self 0" there - I don't know how
+> you could present 0 there if this is related to hiwater_rss.
+> 
+> Now I'm seriously wondering if the ru_maxrss reported will generate
+> more bugreports from people puzzled as to how it should behave,
+> than help anyone in studying their process behaviour.
+> 
+> Sorry to be so negative after all this time: I genuinely hope others
+> will spring up to defend your patch and illustrate my stupidity.
+
+
+
 
 
