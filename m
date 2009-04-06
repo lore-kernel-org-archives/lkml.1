@@ -1,161 +1,111 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755614AbZDFJoj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755491AbZDFJo4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755614AbZDFJoj (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 6 Apr 2009 05:44:39 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753081AbZDFJo2
+	id S1755491AbZDFJo4 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 6 Apr 2009 05:44:56 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755415AbZDFJog
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 6 Apr 2009 05:44:28 -0400
-Received: from e23smtp05.au.ibm.com ([202.81.31.147]:39154 "EHLO
-	e23smtp05.au.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751304AbZDFJo1 (ORCPT
+	Mon, 6 Apr 2009 05:44:36 -0400
+Received: from bombadil.infradead.org ([18.85.46.34]:34353 "EHLO
+	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755536AbZDFJof (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 6 Apr 2009 05:44:27 -0400
-Date: Mon, 6 Apr 2009 15:13:51 +0530
-From: Balbir Singh <balbir@linux.vnet.ibm.com>
-To: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-Cc: "linux-mm@kvack.org" <linux-mm@kvack.org>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       "kosaki.motohiro@jp.fujitsu.com" <kosaki.motohiro@jp.fujitsu.com>
-Subject: Re: [RFC][PATCH 3/9] soft limit update filter
-Message-ID: <20090406094351.GI7082@balbir.in.ibm.com>
-Reply-To: balbir@linux.vnet.ibm.com
-References: <20090403170835.a2d6cbc3.kamezawa.hiroyu@jp.fujitsu.com> <20090403171202.cd7e094b.kamezawa.hiroyu@jp.fujitsu.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-Content-Disposition: inline
-In-Reply-To: <20090403171202.cd7e094b.kamezawa.hiroyu@jp.fujitsu.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+	Mon, 6 Apr 2009 05:44:35 -0400
+Message-Id: <20090406094518.618876874@chello.nl>
+References: <20090406094458.977814421@chello.nl>
+User-Agent: quilt/0.46-1
+Date: Mon, 06 Apr 2009 11:45:13 +0200
+From: Peter Zijlstra <a.p.zijlstra@chello.nl>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: Paul Mackerras <paulus@samba.org>,
+       Corey Ashford <cjashfor@linux.vnet.ibm.com>,
+       linux-kernel@vger.kernel.org, Peter Zijlstra <a.p.zijlstra@chello.nl>
+Subject: [PATCH 15/15] perf_counter: minimize context time updates
+Content-Disposition: inline; filename=perf_counter-frop.patch
+X-Bad-Reply: References but no 'Re:' in Subject.
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-* KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com> [2009-04-03 17:12:02]:
+Push the update_context_time() calls up the stack so that we get less
+invokations and thereby a less noisy output:
 
-> No changes from v1.
-> ==
-> From: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-> 
-> Check/Update softlimit information at every charge is over-killing, so
-> we need some filter.
-> 
-> This patch tries to count events in the memcg and if events > threshold
-> tries to update memcg's soft limit status and reset event counter to 0.
-> 
-> Event counter is maintained by per-cpu which has been already used,
-> Then, no siginificant overhead(extra cache-miss etc..) in theory.
-> 
-> Signed-off-by: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-> ---
-> Index: mmotm-2.6.29-Mar23/mm/memcontrol.c
-> ===================================================================
-> --- mmotm-2.6.29-Mar23.orig/mm/memcontrol.c
-> +++ mmotm-2.6.29-Mar23/mm/memcontrol.c
-> @@ -66,6 +66,7 @@ enum mem_cgroup_stat_index {
->  	MEM_CGROUP_STAT_PGPGIN_COUNT,	/* # of pages paged in */
->  	MEM_CGROUP_STAT_PGPGOUT_COUNT,	/* # of pages paged out */
-> 
-> +	MEM_CGROUP_STAT_EVENTS,  /* sum of page-in/page-out for internal use */
->  	MEM_CGROUP_STAT_NSTATS,
->  };
-> 
-> @@ -105,6 +106,22 @@ static s64 mem_cgroup_local_usage(struct
->  	return ret;
->  }
-> 
-> +/* For intenal use of per-cpu event counting. */
-> +
-> +static inline void
-> +__mem_cgroup_stat_reset_safe(struct mem_cgroup_stat_cpu *stat,
-> +		enum mem_cgroup_stat_index idx)
-> +{
-> +	stat->count[idx] = 0;
-> +}
+before:
 
-Why do we do this and why do we need a special event?
+ # ./perfstat -e 1:0 -e 1:1 -e 1:1 -e 1:1 -l ls > /dev/null
 
-> +
-> +static inline s64
-> +__mem_cgroup_stat_read_local(struct mem_cgroup_stat_cpu *stat,
-> +			    enum mem_cgroup_stat_index idx)
-> +{
-> +	return stat->count[idx];
-> +}
-> +
->  /*
->   * per-zone information in memory controller.
->   */
-> @@ -235,6 +252,8 @@ static void mem_cgroup_charge_statistics
->  	else
->  		__mem_cgroup_stat_add_safe(cpustat,
->  				MEM_CGROUP_STAT_PGPGOUT_COUNT, 1);
-> +	__mem_cgroup_stat_add_safe(cpustat, MEM_CGROUP_STAT_EVENTS, 1);
-> +
->  	put_cpu();
->  }
-> 
-> @@ -897,9 +916,26 @@ static void record_last_oom(struct mem_c
->  	mem_cgroup_walk_tree(mem, NULL, record_last_oom_cb);
->  }
-> 
-> +#define SOFTLIMIT_EVENTS_THRESH (1024) /* 1024 times of page-in/out */
-> +/*
-> + * Returns true if sum of page-in/page-out events since last check is
-> + * over SOFTLIMIT_EVENT_THRESH. (counter is per-cpu.)
-> + */
->  static bool mem_cgroup_soft_limit_check(struct mem_cgroup *mem)
->  {
-> -	return false;
-> +	bool ret = false;
-> +	int cpu = get_cpu();
-> +	s64 val;
-> +	struct mem_cgroup_stat_cpu *cpustat;
-> +
-> +	cpustat = &mem->stat.cpustat[cpu];
-> +	val = __mem_cgroup_stat_read_local(cpustat, MEM_CGROUP_STAT_EVENTS);
-> +	if (unlikely(val > SOFTLIMIT_EVENTS_THRESH)) {
-> +		__mem_cgroup_stat_reset_safe(cpustat, MEM_CGROUP_STAT_EVENTS);
-> +		ret = true;
-> +	}
-> +	put_cpu();
-> +	return ret;
->  }
->
+ Performance counter stats for 'ls':
 
-It is good to have the caller and the function in the same patch.
-Otherwise, you'll notice unused warnings. I think this function can be
-simplified further
+      10.163691  cpu clock ticks      (msecs)  (scaled from 98.94%)
+      10.215360  task clock ticks     (msecs)  (scaled from 98.18%)
+      10.185549  task clock ticks     (msecs)  (scaled from 98.53%)
+      10.183581  task clock ticks     (msecs)  (scaled from 98.71%)
 
-1. Lets gid rid of MEM_CGRUP_STAT_EVENTS
-2. Lets rewrite mem_cgroup_soft_limit_check as
+ Wall-clock time elapsed:    11.912858 msecs
 
-static bool mem_cgroup_soft_limit_check(struct mem_cgroup *mem)
-{
-     bool ret = false;
-     int cpu = get_cpu();
-     s64 pgin, pgout;
-     struct mem_cgroup_stat_cpu *cpustat;
+after:
 
-     cpustat = &mem->stat.cpustat[cpu];
-     pgin = __mem_cgroup_stat_read_local(cpustat, MEM_CGROUP_STAT_PGPGIN_COUNT);
-     pgout = __mem_cgroup_stat_read_local(cpustat, MEM_CGROUP_STAT_PGPGOUT_COUNT);
-     val = pgin + pgout - mem->last_event_count;
-     if (unlikely(val > SOFTLIMIT_EVENTS_THRESH)) {
-             mem->last_event_count = pgin + pgout;
-             ret = true;
-     }
-     put_cpu();
-     return ret;
-}
+ # ./perfstat -e 1:0 -e 1:1 -e 1:1 -e 1:1 -l ls > /dev/null
 
-mem->last_event_count can either be atomic or protected using one of
-the locks you intend to introduce. This will avoid the overhead of
-incrementing event at every charge_statistics.
+ Performance counter stats for 'ls':
 
+       9.316630  cpu clock ticks      (msecs)
+       9.280789  task clock ticks     (msecs)
+       9.280789  task clock ticks     (msecs)
+       9.280789  task clock ticks     (msecs)
 
+ Wall-clock time elapsed:     9.574872 msecs
+
+Signed-off-by: Peter Zijlstra <a.p.zijlstra@chello.nl>
+---
+ kernel/perf_counter.c |    7 +++++--
+ 1 file changed, 5 insertions(+), 2 deletions(-)
+
+Index: linux-2.6/kernel/perf_counter.c
+===================================================================
+--- linux-2.6.orig/kernel/perf_counter.c
++++ linux-2.6/kernel/perf_counter.c
+@@ -319,6 +319,8 @@ static void __perf_counter_disable(void 
  
->  static void mem_cgroup_update_soft_limit(struct mem_cgroup *mem)
-> 
-> 
+ 	spin_lock_irqsave(&ctx->lock, flags);
+ 
++	update_context_time(ctx);
++
+ 	/*
+ 	 * If the counter is on, turn it off.
+ 	 * If it is in error state, leave it in error state.
+@@ -797,6 +799,8 @@ void perf_counter_task_sched_out(struct 
+ 	if (likely(!cpuctx->task_ctx))
+ 		return;
+ 
++	update_context_time(ctx);
++
+ 	regs = task_pt_regs(task);
+ 	perf_swcounter_event(PERF_COUNT_CONTEXT_SWITCHES, 1, 1, regs);
+ 	__perf_counter_sched_out(ctx, cpuctx);
+@@ -2336,7 +2340,6 @@ static void task_clock_perf_counter_upda
+ 	u64 prev, now;
+ 	s64 delta;
+ 
+-	update_context_time(counter->ctx);
+ 	now = counter->ctx->time;
+ 
+ 	prev = atomic64_xchg(&counter->hw.prev_count, now);
+@@ -2349,7 +2352,6 @@ static int task_clock_perf_counter_enabl
+ 	struct hw_perf_counter *hwc = &counter->hw;
+ 	u64 now;
+ 
+-	update_context_time(counter->ctx);
+ 	now = counter->ctx->time;
+ 
+ 	atomic64_set(&hwc->prev_count, now);
+@@ -2372,6 +2374,7 @@ static void task_clock_perf_counter_disa
+ 
+ static void task_clock_perf_counter_read(struct perf_counter *counter)
+ {
++	update_context_time(counter->ctx);
+ 	task_clock_perf_counter_update(counter);
+ }
+ 
 
 -- 
-	Balbir
+
