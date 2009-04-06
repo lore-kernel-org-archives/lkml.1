@@ -1,51 +1,148 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759276AbZDFPmf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759325AbZDFPmv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759276AbZDFPmf (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 6 Apr 2009 11:42:35 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757449AbZDFPgv
+	id S1759325AbZDFPmv (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 6 Apr 2009 11:42:51 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757026AbZDFPhK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 6 Apr 2009 11:36:51 -0400
-Received: from earthlight.etchedpixels.co.uk ([81.2.110.250]:57006 "EHLO
-	t61.ukuu.org.uk" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1757363AbZDFPgu (ORCPT
+	Mon, 6 Apr 2009 11:37:10 -0400
+Received: from vervifontaine.sonytel.be ([80.88.33.193]:42470 "EHLO
+	pophost.sonytel.be" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1756963AbZDFPhI (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 6 Apr 2009 11:36:50 -0400
-From: Alan Cox <alan@lxorguk.ukuu.org.uk>
-Subject: [PATCH 27/27] 8250: Fix warning
-To: torvalds@linux-foundation.org, linux-kernel@vger.kernel.org
-Date: Mon, 06 Apr 2009 17:35:42 +0100
-Message-ID: <20090406163539.12934.21845.stgit@t61.ukuu.org.uk>
-In-Reply-To: <20090406162959.12934.97904.stgit@t61.ukuu.org.uk>
-References: <20090406162959.12934.97904.stgit@t61.ukuu.org.uk>
-User-Agent: StGIT/0.14.3
+	Mon, 6 Apr 2009 11:37:08 -0400
+Date: Mon, 6 Apr 2009 17:37:03 +0200 (CEST)
+From: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>
+To: "J. Bruce Fields" <bfields@fieldses.org>
+cc: Trond Myklebust <Trond.Myklebust@netapp.com>, linux-nfs@vger.kernel.org,
+       Nick Piggin <npiggin@suse.de>, linux-kernel@vger.kernel.org
+Subject: Re: bus errors on nfs writes in latest git
+In-Reply-To: <20090405202233.GA16937@fieldses.org>
+Message-ID: <alpine.LRH.2.00.0904061731260.11076@vixen.sonytel.be>
+References: <20090404161447.GE495@fieldses.org> <1238861949.8114.3.camel@heimdal.trondhjem.org> <1238862470.8114.5.camel@heimdal.trondhjem.org> <20090405202233.GA16937@fieldses.org>
+User-Agent: Alpine 2.00 (LRH 1167 2008-08-23)
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7bit
+Content-Type: TEXT/PLAIN; charset=ISO-8859-15
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-The 8430 patch was short a const so caused a warning.
+On Sun, 5 Apr 2009, J. Bruce Fields wrote:
+> On Sat, Apr 04, 2009 at 12:27:50PM -0400, Trond Myklebust wrote:
+> > On Sat, 2009-04-04 at 12:19 -0400, Trond Myklebust wrote:
+> > > On Sat, 2009-04-04 at 12:14 -0400, J. Bruce Fields wrote:
+> > > > My regular connecthon tests are reporting bus errors on the "write/read
+> > > > 30 MB file" on recent upstream kernels.  I'm travelling and haven't had
+> > > > a chance to do anything beyond kick off a dumb git-bisect, which pointed
+> > > > the blame at the following commit.  Any ideas?
+> > 
+> > The following patch should fix it.
+> 
+> Thanks--confirmed.  For what it's worth:
+> 
+> 	Tested-by: J. Bruce Fields <bfields@citi.umich.edu>
 
-Signed-off-by: Alan Cox <alan@lxorguk.ukuu.org.uk>
----
+JFYI, I was also seeing bus errors and read() returning EFAULT with current
+mainline on both PS3 (ppc64) and Sequoia (ppc32). So far I only saw it
+happening doing:
+  - apt-get update
+  - apt-get upgrade
+  - apt-get install
 
- drivers/serial/8250_pci.c |    3 ++-
- 1 files changed, 2 insertions(+), 1 deletions(-)
+I tried bisecting it, but unfortunately it was not 100% reproducible.
+So far the oldest version where I saw it fail was 2.6.29-07100-g833bb30.
+It _looks_ like 2.6.29-06619-ge5824c9 is OK, but I'm not 100% sure.
 
+At first I didn't think of NFS (I'm indeed using nfsroot), but when searching
+for `bus error' I noticed this thread.
 
-diff --git a/drivers/serial/8250_pci.c b/drivers/serial/8250_pci.c
-index 5b0e80d..7ddff3f 100644
---- a/drivers/serial/8250_pci.c
-+++ b/drivers/serial/8250_pci.c
-@@ -728,7 +728,8 @@ static int pci_ni8430_init(struct pci_dev *dev)
- #define NI8430_PORTCON_TXVR_ENABLE	(1 << 3)
- 
- static int
--pci_ni8430_setup(struct serial_private *priv, struct pciserial_board *board,
-+pci_ni8430_setup(struct serial_private *priv,
-+		 const struct pciserial_board *board,
- 		 struct uart_port *port, int idx)
- {
- 	void __iomem *p;
+Your patch seems to fix it (I added a printk so I would notice when the bad
+case got triggered), and the commit that introduced the problem lies within
+the works/fails range I discovered, so
 
+Tested-by: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>
+
+Thanks!
+
+With kind regards,
+
+Geert Uytterhoeven
+Software Architect
+
+Sony Techsoft Centre Europe
+The Corporate Village · Da Vincilaan 7-D1 · B-1935 Zaventem · Belgium
+
+Phone:    +32 (0)2 700 8453
+Fax:      +32 (0)2 700 8622
+E-mail:   Geert.Uytterhoeven@sonycom.com
+Internet: http://www.sony-europe.com/
+
+A division of Sony Europe (Belgium) N.V.
+VAT BE 0413.825.160 · RPR Brussels
+Fortis · BIC GEBABEBB · IBAN BE41293037680010
+
+> > 
+> > Cheers
+> >  Trond
+> > ---------------------------------------------------------------
+> > >From b7a178f4fab331821b8cff384e1954e62aa63e52 Mon Sep 17 00:00:00 2001
+> > From: Trond Myklebust <Trond.Myklebust@netapp.com>
+> > Date: Sat, 4 Apr 2009 12:22:57 -0400
+> > Subject: [PATCH] NFS: Fix the return value in nfs_page_mkwrite()
+> > 
+> > Commit c2ec175c39f62949438354f603f4aa170846aabb (mm: page_mkwrite change
+> > prototype to match fault) exposed a bug in the NFS implementation of
+> > page_mkwrite. We should be returning 0 on success...
+> > 
+> > Signed-off-by: Trond Myklebust <Trond.Myklebust@netapp.com>
+> > ---
+> >  fs/nfs/file.c |    2 --
+> >  1 files changed, 0 insertions(+), 2 deletions(-)
+> > 
+> > diff --git a/fs/nfs/file.c b/fs/nfs/file.c
+> > index 3523b89..5a97bcf 100644
+> > --- a/fs/nfs/file.c
+> > +++ b/fs/nfs/file.c
+> > @@ -516,8 +516,6 @@ static int nfs_vm_page_mkwrite(struct vm_area_struct *vma, struct vm_fault *vmf)
+> >  		goto out_unlock;
+> >  
+> >  	ret = nfs_updatepage(filp, page, 0, pagelen);
+> > -	if (ret == 0)
+> > -		ret = pagelen;
+> >  out_unlock:
+> >  	unlock_page(page);
+> >  	if (ret)
+> > -- 
+> > 1.6.0.4
+> > 
+> > 
+> > -- 
+> > Trond Myklebust
+> > Linux NFS client maintainer
+> > 
+> > NetApp
+> > Trond.Myklebust@netapp.com
+> > www.netapp.com
+> --
+> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> Please read the FAQ at  http://www.tux.org/lkml/
+> 
+
+With kind regards,
+
+Geert Uytterhoeven
+Software Architect
+
+Sony Techsoft Centre Europe
+The Corporate Village · Da Vincilaan 7-D1 · B-1935 Zaventem · Belgium
+
+Phone:    +32 (0)2 700 8453
+Fax:      +32 (0)2 700 8622
+E-mail:   Geert.Uytterhoeven@sonycom.com
+Internet: http://www.sony-europe.com/
+
+A division of Sony Europe (Belgium) N.V.
+VAT BE 0413.825.160 · RPR Brussels
+Fortis · BIC GEBABEBB · IBAN BE41293037680010
