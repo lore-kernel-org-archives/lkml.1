@@ -1,141 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759313AbZDFVNJ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759457AbZDFVNs@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759313AbZDFVNJ (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 6 Apr 2009 17:13:09 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757616AbZDFVLp
+	id S1759457AbZDFVNs (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 6 Apr 2009 17:13:48 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758758AbZDFVLt
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 6 Apr 2009 17:11:45 -0400
+	Mon, 6 Apr 2009 17:11:49 -0400
 Received: from mail-fx0-f158.google.com ([209.85.220.158]:55424 "EHLO
 	mail-fx0-f158.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757664AbZDFVLk (ORCPT
+	with ESMTP id S1756967AbZDFVLp (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 6 Apr 2009 17:11:40 -0400
+	Mon, 6 Apr 2009 17:11:45 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
         h=from:to:subject:date:user-agent:cc:references:in-reply-to
          :mime-version:content-disposition:message-id:content-type
          :content-transfer-encoding;
-        b=VdZZ9BwFV/hwjaq91AX4TJwlNl9H6c4MSLlXGXq7bBiSJb+wy6UmNjWohuNBAvisTx
-         jtZL74GVH6tk8K0C924WB3WK+LePzIvNdXQB2wM/Ps2Avn3hHecytvZoriF3LzXtX9Kd
-         UZabfBOpJCcrYjkm1Vi/1gVWpTx+SALuBHENI=
+        b=xAYrsH0kav3/DMr1OEYIWuTOdt0aAWL89mnxuHm0YzH7qufYdRqxlFe7Pvo1kF4u4V
+         wMjgfnIDyYPzlWZkyxpq6aR3bBLU1T2EIslLHNUr71g4rSFNZDVgWFhM41gRH5RAkqs/
+         F0DcpFLjaeNwCP712L0c+rMk0w4EvJbMfYaZI=
 From: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
-To: petkovbb@gmail.com
-Subject: Re: [PATCH 1/5] ide-cd: respect REQ_QUIET for fs requests in cdrom_decode_status()
-Date: Mon, 6 Apr 2009 22:58:40 +0200
+To: Sergei Shtylyov <sshtylyov@ru.mvista.com>
+Subject: Re: [PATCH] tx493[89]ide: Remove big endian version of tx493[89]ide_tf_{load,read}
+Date: Mon, 6 Apr 2009 23:13:50 +0200
 User-Agent: KMail/1.11.1 (Linux/2.6.29-next-20090403; KDE/4.2.1; i686; ; )
-Cc: linux-ide@vger.kernel.org, linux-kernel@vger.kernel.org
-References: <20090403195757.31438.16866.sendpatchset@localhost.localdomain> <20090405051342.GB4189@liondog.tnic>
-In-Reply-To: <20090405051342.GB4189@liondog.tnic>
+Cc: Atsushi Nemoto <anemo@mba.ocn.ne.jp>, linux-ide@vger.kernel.org,
+       linux-kernel@vger.kernel.org
+References: <1239034146-3514-1-git-send-email-anemo@mba.ocn.ne.jp> <49DA2C50.6000108@ru.mvista.com>
+In-Reply-To: <49DA2C50.6000108@ru.mvista.com>
 MIME-Version: 1.0
 Content-Disposition: inline
-Message-Id: <200904062258.41148.bzolnier@gmail.com>
+Message-Id: <200904062313.50980.bzolnier@gmail.com>
 Content-Type: text/plain;
-  charset="utf-8"
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sunday 05 April 2009, Borislav Petkov wrote:
-> On Fri, Apr 03, 2009 at 09:57:57PM +0200, Bartlomiej Zolnierkiewicz wrote:
-> > From: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
-> > Subject: [PATCH] ide-cd: respect REQ_QUIET for fs requests in cdrom_decode_status()
-> > 
-> > Cc: Borislav Petkov <petkovbb@gmail.com>
-> > Signed-off-by: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
-> > ---
-> >  drivers/ide/ide-cd.c |   15 ++++++++++-----
-> >  1 file changed, 10 insertions(+), 5 deletions(-)
-> > 
-> > Index: b/drivers/ide/ide-cd.c
-> > ===================================================================
-> > --- a/drivers/ide/ide-cd.c
-> > +++ b/drivers/ide/ide-cd.c
-> > @@ -382,7 +382,8 @@ static int cdrom_decode_status(ide_drive
-> >  				cdrom_saw_media_change(drive);
-> >  
-> >  				/* fail the request */
-> > -				printk(KERN_ERR PFX "%s: tray open\n",
-> > +				if ((rq->cmd_flags & REQ_QUIET) == 0)
-> > +					printk(KERN_ERR PFX "%s: tray open\n",
-> >  						drive->name);
-> >  			} else {
-> >  				if (ide_cd_breathe(drive, rq))
-> > @@ -405,19 +406,23 @@ static int cdrom_decode_status(ide_drive
-> >  			 * No point in retrying after an illegal request or data
-> >  			 * protect error.
-> >  			 */
-> > -			ide_dump_status(drive, "command error", stat);
-> > +			if ((rq->cmd_flags & REQ_QUIET) == 0)
-> > +				ide_dump_status(drive, "command error", stat);
-> >  			do_end_request = 1;
-> >  		} else if (sense_key == MEDIUM_ERROR) {
-> >  			/*
-> >  			 * No point in re-trying a zillion times on a bad
-> >  			 * sector. If we got here the error is not correctable.
-> >  			 */
-> > -			ide_dump_status(drive, "media error (bad sector)",
-> > -					stat);
-> > +			if ((rq->cmd_flags & REQ_QUIET) == 0)
-> > +				ide_dump_status(drive, "media error "
-> > +						"(bad sector)", stat);
-> >  			do_end_request = 1;
-> >  		} else if (sense_key == BLANK_CHECK) {
-> >  			/* disk appears blank ?? */
-> > -			ide_dump_status(drive, "media error (blank)", stat);
-> > +			if ((rq->cmd_flags & REQ_QUIET) == 0)
-> > +				ide_dump_status(drive, "media error (blank)",
-> > +						stat);
-> >  			do_end_request = 1;
-> >  		} else if ((err & ~ATA_ABORTED) != 0) {
-> >  			/* go to the default handler for other errors */
+On Monday 06 April 2009, Sergei Shtylyov wrote:
+> Atsushi Nemoto wrote:
 > 
+> > Now tx493[89]ide_tf_{load,read} do not contain word I/O operations.
+> > They are endian-free now.
 > 
-> Let's cache the REQ_QUIET value instead, for slightly better readability:
+> > Signed-off-by: Atsushi Nemoto <anemo@mba.ocn.ne.jp>
 > 
-> ---
-> From: Borislav Petkov <petkovbb@gmail.com>
-> Date: Sun, 5 Apr 2009 06:40:50 +0200
-> Subject: [PATCH] ide-cd: respect REQ_QUIET for fs requests in cdrom_decode_status()
-> 
-> There should be no functional change resulting from this patch.
-> 
-> Suggested-by: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
-> Signed-off-by: Borislav Petkov <petkovbb@gmail.com>
+>     Oops, now this clashes with my patchset (not applied to pata-2.6 AFAICS). 
+> I guess I'll have to repost it... Bart?
 
-Yes, this version is better, applied.
+Since I already had your patches merged locally I just applied this one
+in front of yours and then repeated:
 
-I also applied patches 2-5 (correcting "From:" line in patches 3 & 5,
-re-adding your attribution to 3-5 and fixing "S-o-b:" order in 3-5).
+- force apply the patch
+- ignore rejects
+- refresh the patch
+- audit the result
 
-[ S-o-B order should be:
+cycle for all patches.
 
-  - me
-  - you
-  - me (this one added now)
-
-  to show the correct patch history -- the fact that I'm also
-  the final committer doesn't matter. ]
-
-Patch #5 had a small whitespace mismatch introduced while re-diffing
-(also fixed now):
-
-@@ -412,13 +413,14 @@
- 		} else if (++rq->errors > ERROR_MAX)
- 			/* we've racked up too many retries, abort */
- 			do_end_request = 1;
-+
-+
- 	}
- 
- 	if (blk_fs_request(rq) == 0) {
- 		rq->cmd_flags |= REQ_FAILED;
- 		do_end_request = 1;
- 	}
--
- 	/*
- 	 * End a request through request sense analysis when we have sense data.
- 	 * We need this in order to perform end of media processing.
+It seems like the end result is OK (changes to big endian ->tf_{load,read}
+vanished, change to "fixup" ->tf_load survived and all patch descriptions
+remained valid) but please verify it.
 
 Thanks,
 Bart
