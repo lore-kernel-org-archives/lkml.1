@@ -1,74 +1,112 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757122AbZDFQwf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755189AbZDFQzp@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757122AbZDFQwf (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 6 Apr 2009 12:52:35 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756208AbZDFQwY
+	id S1755189AbZDFQzp (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 6 Apr 2009 12:55:45 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751730AbZDFQzf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 6 Apr 2009 12:52:24 -0400
-Received: from outbound-mail-106.bluehost.com ([69.89.22.6]:48801 "HELO
-	outbound-mail-106.bluehost.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1753068AbZDFQwX (ORCPT
+	Mon, 6 Apr 2009 12:55:35 -0400
+Received: from moutng.kundenserver.de ([212.227.126.188]:63704 "EHLO
+	moutng.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750804AbZDFQze (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 6 Apr 2009 12:52:23 -0400
-DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws; s=default; d=virtuousgeek.org;
-	h=Received:Date:From:To:Cc:Subject:Message-ID:In-Reply-To:References:X-Mailer:Mime-Version:Content-Type:Content-Transfer-Encoding:X-Identified-User;
-	b=jhYhhCQ6yNvNomUOW1C+/4d5mxogNnc13ybu+5ASkPjY3LjCMWilFYYpC6OWJTGzE48qnTWWJup/1ncXCsV3Dt5yHk18q2l//RB0yH1N5iaGTT5rDquIwdP0i4rjOzYG;
-Date: Mon, 6 Apr 2009 09:52:16 -0700
-From: Jesse Barnes <jbarnes@virtuousgeek.org>
-To: Jarod Wilson <jarod@redhat.com>
-Cc: dri-devel@lists.sourceforge.net, xorg-devel@lists.x.org,
-       linux-kernel@vger.kernel.org, notting@redhat.com,
-       Zhenyu Wang <zhenyu.z.wang@intel.com>,
-       Fu Michael <michael_fu@linux.intel.com>
-Subject: Re: [PATCH] drm: ignore LVDS on intel graphics systems that lie
- about having it
-Message-ID: <20090406095216.4361d128@hobbes>
-In-Reply-To: <200904061011.26389.jarod@redhat.com>
-References: <200904061011.26389.jarod@redhat.com>
-X-Mailer: Claws Mail 3.5.0 (GTK+ 2.14.4; x86_64-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Mon, 6 Apr 2009 12:55:34 -0400
+Message-ID: <49DA33EF.3020700@vlnb.net>
+Date: Mon, 06 Apr 2009 20:55:11 +0400
+From: Vladislav Bolkhovitin <vst@vlnb.net>
+User-Agent: Thunderbird 2.0.0.21 (X11/20090320)
+MIME-Version: 1.0
+To: Tomasz Chmielewski <mangoo@wpkg.org>
+CC: Bart Van Assche <bart.vanassche@gmail.com>, linux-kernel@vger.kernel.org,
+       linux-scsi@vger.kernel.org, iscsitarget-devel@lists.sourceforge.net,
+       James Bottomley <James.Bottomley@hansenpartnership.com>,
+       scst-devel <scst-devel@lists.sourceforge.net>, stgt@vger.kernel.org
+Subject: Re: [Scst-devel] [ANNOUNCE]: Comparison of features sets between
+ 	different SCSI targets (SCST, STGT, IET, LIO)
+References: <49D7AD54.4060408@vlnb.net> <49D7B122.50103@wpkg.org> <e2e108260904050429lcd1870ag6656f36a170ccab3@mail.gmail.com> <49D9D9A0.40106@wpkg.org>
+In-Reply-To: <49D9D9A0.40106@wpkg.org>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
-X-Identified-User: {10642:box514.bluehost.com:virtuous:virtuousgeek.org} {sentby:smtp auth 75.111.28.251 authed with jbarnes@virtuousgeek.org}
+X-Provags-ID: V01U2FsdGVkX19elv1AdS+IfWubelAXD5Fh9DUTHIUqKkyhiJU
+ JpwyD9b13hGhW+vEz3Nv5J9cmGhWDwRKVNaG9GCHHUHQLnSAln
+ 9wtAEivd+Tw9zB/9Bs8NQ==
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 6 Apr 2009 10:11:25 -0400
-Jarod Wilson <jarod@redhat.com> wrote:
-
-> There are a number of small form factor desktop systems with Intel
-> mobile graphics chips that lie and say they have an LVDS. With kernel
-> mode-setting, this becomes a problem, and makes native resolution
-> boot go haywire -- for example, my Dell Studio Hybrid, hooked to a
-> 1920x1080 display claims to have a 1024x768 LVDS, and the resulting
-> graphical boot on the 1920x1080 display uses only the top left
-> 1024x768, and auto-configured X will end up only 1024x768 as well.
-> With this change, graphical boot and X both do 1920x1080 as expected.
+Tomasz Chmielewski, on 04/06/2009 02:29 PM wrote:
+> Bart Van Assche schrieb:
 > 
-> Note that we're simply embracing and extending the early bail-out code
-> in place for the Mac Mini here. The xorg intel driver uses pci
-> subsystem device and vendor id for matching, while we're using dmi
-> lookups here. The MSI addition is courtesy of and tested by Bill
-> Nottingham.
+>> Hello Tomasz,
+>>
+>> It would be great if you could publish the details of your setup and
+>> the tests you have run, such that we are able to reproduce the tests
+>> and analyze the results further.
 > 
-> One minor issue... Current Fedora rawhide, video playback using Xv
-> makes X go off into the weeds with this patch added, but that's a bug
-> elsewhere, still confident this patch DTRT.
+> Here it is.
 > 
-> Signed-off-by: Jarod Wilson <jarod@redhat.com>
-> Tested-by: Bill Nottingham <notting@redhat.com>
+> The target is running Debian Lenny 64bit userspace on an Intel Celeron 2.93GHz CPU, 2 GB RAM.
+> 
+> Initiator is running Debian Etch 64 bit userspace, open-iscsi 2.0-869, Intel Xeon 3050/2.13GHz, 8 GB RAM.
+> 
+> 
+> Each test was repeated 6 times, "sync" was made and caches were dropped on both sides before each test was started.
+> 
+> dd parameters were like below, so 6.6 GB of data was read each time:
+> 
+> dd if=/dev/sdag of=/dev/null bs=64k count=100000
+> 
+> 
+> Data was read from two block devices:
+> - /dev/md0, which is RAID-1 on two ST31500341AS 1.5 TB drives
+> - encrypted dm-crypt device which is on top of /dev/md0
+> 
+> Encrypted device was created with the following additional options passed to cryptsetup
+> (it provides the most performance on systems where CPU is a bottleneck, but with decreased
+> security when compared to default options):
+> 
+> -c aes-ecb-plain -s 128
+> 
+> 
+> Generally, CPU on the target was a bottleneck, so I also tested the load on target.
+> 
+> 
+> md0, crypt columns - averages from dd
+> us, sy, id, wa - averages from vmstat
+> 
+> 
+> 1. Disk speeds on the target
+> 
+> Raw performance: 102.17 MB/s
+> Raw performance (encrypted):  50.21 MB/s
+> 
+> 
+> 2. Read-ahead on the initiator: 256 (default); md0, crypt - MB/s
+> 
+>                            md0   us  sy  id  wa  | crypt   us  sy  id  wa  
+> STGT                      50.63   4% 45% 18% 33% | 32.52    3% 62% 16% 19%
+> SCST (debug + no patches) 43.75   0% 26% 30% 44% | 42.05    0% 84%  1% 15%
+> SCST (fullperf + patches) 45.18   0% 25% 33% 42% | 44.12    0% 81%  2% 17%
+> 
+> 
+> 3. Read-ahead on the initiator: 16384; md0, crypt - MB/s
+> 
+>                            md0   us  sy  id  wa  | crypt   us  sy  id  wa  
+> STGT                      56.43   3% 55%  2% 40% | 46.90    3% 90%  3%  4%
+> SCST (debug + no patches) 73.85   0% 58%  1% 41% | 42.70    0% 85%  0% 15%
+> SCST (fullperf + patches) 76.27   0% 63%  1% 36% | 42.52    0% 85%  0% 15%
 
-The 2D driver has a similar set of quirks, but since we started that
-list we've found that the VBIOS should contain a pretty reliable table
-indicating which outputs are available, including LVDS.  I think if we
-can figure out how to parse it reliably (accounting for VBIOS
-versioning and structure size changes) we shouldn't need this patch.
-If we can't get that done in time for 2.6.30 though I'm all for
-including this.
+Good! You proved that:
 
-Zhenyu and Michael does that sound doable?
+1. SCST is capable to work much better than STGT: 35% for md and 37% for 
+crypt considering maximum values.
+
+2. Default read-ahead size isn't appropriate for remote data access 
+cases and should be increased. I slowly have been discussing it in past 
+few months with Wu Fengguang, the read-ahead maintainer.
+
+Which IO scheduler on the target did you use? I guess, deadline? If so, 
+you should try with CFQ as well.
 
 Thanks,
--- 
-Jesse Barnes, Intel Open Source Technology Center
+Vlad
+
