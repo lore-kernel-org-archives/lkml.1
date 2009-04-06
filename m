@@ -1,93 +1,90 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754077AbZDFR7l@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756068AbZDFSAe@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754077AbZDFR7l (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 6 Apr 2009 13:59:41 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751323AbZDFR7c
+	id S1756068AbZDFSAe (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 6 Apr 2009 14:00:34 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753197AbZDFSAZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 6 Apr 2009 13:59:32 -0400
-Received: from tomts40.bellnexxia.net ([209.226.175.97]:33938 "EHLO
-	tomts40-srv.bellnexxia.net" rhost-flags-OK-OK-OK-FAIL)
-	by vger.kernel.org with ESMTP id S1751917AbZDFR7b (ORCPT
+	Mon, 6 Apr 2009 14:00:25 -0400
+Received: from mho-02-ewr.mailhop.org ([204.13.248.72]:58152 "EHLO
+	mho-02-ewr.mailhop.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751917AbZDFSAY (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 6 Apr 2009 13:59:31 -0400
-X-IronPort-Anti-Spam-Filtered: true
-X-IronPort-Anti-Spam-Result: AoYFAF/a2UlMQW1W/2dsb2JhbACBUslmhA8G
-Date: Mon, 6 Apr 2009 13:58:07 -0400
-From: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
-To: Masami Hiramatsu <mhiramat@redhat.com>
-Cc: Ingo Molnar <mingo@elte.hu>,
-       Ananth N Mavinakayanahalli <ananth@in.ibm.com>,
-       LKML <linux-kernel@vger.kernel.org>,
-       systemtap-ml <systemtap@sources.redhat.com>
-Subject: Re: [BUGFIX][PATCH -tip] x86: fix text_poke to handle highmem pages
-Message-ID: <20090406175807.GD31867@Krystal>
-References: <49D76FFF.6020202@redhat.com> <20090404154230.GB2451@Krystal> <49D7A6DF.8080804@redhat.com> <49D7AF26.5030808@redhat.com> <49D82987.5090003@redhat.com> <49DA37CB.4020901@redhat.com> <20090406173238.GA31867@Krystal> <49DA3F85.7050302@redhat.com>
-Mime-Version: 1.0
+	Mon, 6 Apr 2009 14:00:24 -0400
+X-Greylist: delayed 4255 seconds by postgrey-1.27 at vger.kernel.org; Mon, 06 Apr 2009 14:00:24 EDT
+X-Mail-Handler: MailHop Outbound by DynDNS
+X-Originating-IP: 72.249.23.125
+X-Report-Abuse-To: abuse@dyndns.com (see http://www.dyndns.com/services/mailhop/outbound_abuse.html for abuse reporting information)
+X-MHO-User: U2FsdGVkX1/06DTsF3/K4L5xU5yjst49
+Date: Mon, 6 Apr 2009 09:49:18 -0700
+From: Tony Lindgren <tony@atomide.com>
+To: Adrian Hunter <adrian.hunter@nokia.com>
+Cc: Pierre Ossman <drzeus-mmc@drzeus.cx>, LKML <linux-kernel@vger.kernel.org>,
+       Kevin Hilman <khilman@deeprootsystems.com>,
+       linux-omap Mailing List <linux-omap@vger.kernel.org>
+Subject: Re: [PATCH] omap_hsmmc: Flush posted write to IRQ
+Message-ID: <20090406164917.GA30724@atomide.com>
+References: <49D9EF0F.9090808@nokia.com>
+MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <49DA3F85.7050302@redhat.com>
-X-Editor: vi
-X-Info: http://krystal.dyndns.org:8080
-X-Operating-System: Linux/2.6.21.3-grsec (i686)
-X-Uptime: 13:55:07 up 37 days, 14:21,  1 user,  load average: 0.42, 0.56,
-	0.53
+In-Reply-To: <49D9EF0F.9090808@nokia.com>
 User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-* Masami Hiramatsu (mhiramat@redhat.com) wrote:
-> Mathieu Desnoyers wrote:
-> > * Masami Hiramatsu (mhiramat@redhat.com) wrote:
-> >> Fix a bug in text_poke to handle highmem pages, because module
-> >> text pages are possible to be highmem pages on x86-32.
-> >> In that case, since fixmap can't handle those pages, text_poke
-> >> uses kmap_atomic.
-> >>
-> > 
-> > Hrm, can you remind me what would be the downside of using kmap_atomic
-> > in every scenarios (highmem and non-highmem) then ?
-> 
-> kmap_atomic can handle only highmem pages. If you passes lowmem pages,
-> it returns just original vaddr of it. (because kmap is only for
-> highmem support)
-> 
+* Adrian Hunter <adrian.hunter@nokia.com> [090406 05:00]:
+> From: Kevin Hilman <khilman@deeprootsystems.com>
+>
+> Spurious IRQs seen on MMC after 2.6.29.  Flush posted write in IRQ
+> handler.
+>
+> The interrupt line is released by clearing the error status bits
+> in the MMCHS_STAT register, which must occur before the interrupt
+> handler returns to avoid unwanted irqs.  Hence the need to flush
+> the posted write.
+>
+> Signed-off-by: Kevin Hilman <khilman@deeprootsystems.com>
+> Signed-off-by: Adrian Hunter <adrian.hunter@nokia.com>
 
-OK, and if we are doing a second kmap_atomic() of a module text page
-which is already mapped, does the second kmap_atomic return the vaddr of
-the page originally mapped or is it creating a second mapping ?
+Acked-by: Tony Lindgen <tony@atomide.com>
 
-Because if we ever decide to enforce read-only page mapping for module
-text pages, touching highmem pages too, we will run into real trouble if
-those happen to be the same page.
-
-Mathieu
-
-> > 
-> > I would try to avoid "special cases" as much as possible, because they
-> > just make problems harder to reproduce.
-> 
-> Actually, this bug is a special case because it happens only on PAE kernel.
-> 
-> > 
-> > The idea would be to either add fixmap highmem support, or to simply use
-> > kmap_atomic() for all cases until we add fixmap highmem support.
-> > 
-> 
-> 
-> Thank you,
-> 
+> ---
+>
+>
+>
+>
+> This patch is slightly modified from Kevin's original, which is
+> here:
+>
+> 	http://marc.info/?l=linux-omap&m=123862814815052&w=2
+>
+>
+>
+> drivers/mmc/host/omap_hsmmc.c |    4 ++++
+> 1 files changed, 4 insertions(+), 0 deletions(-)
+>
+> diff --git a/drivers/mmc/host/omap_hsmmc.c b/drivers/mmc/host/omap_hsmmc.c
+> index 04e5a0c..2ae6049 100644
+> --- a/drivers/mmc/host/omap_hsmmc.c
+> +++ b/drivers/mmc/host/omap_hsmmc.c
+> @@ -452,6 +452,8 @@ static irqreturn_t mmc_omap_irq(int irq, void *dev_id)
+> 	if (host->mrq == NULL) {
+> 		OMAP_HSMMC_WRITE(host->base, STAT,
+> 			OMAP_HSMMC_READ(host->base, STAT));
+> +		/* Flush posted write */
+> +		OMAP_HSMMC_READ(host->base, STAT);
+> 		return IRQ_HANDLED;
+> 	}
+>
+> @@ -523,6 +525,8 @@ static irqreturn_t mmc_omap_irq(int irq, void *dev_id)
+> 	}
+>
+> 	OMAP_HSMMC_WRITE(host->base, STAT, status);
+> +	/* Flush posted write */
+> +	OMAP_HSMMC_READ(host->base, STAT);
+>
+> 	if (end_cmd || (status & CC))
+> 		mmc_omap_cmd_done(host, host->cmd);
 > -- 
-> Masami Hiramatsu
-> 
-> Software Engineer
-> Hitachi Computer Products (America) Inc.
-> Software Solutions Division
-> 
-> e-mail: mhiramat@redhat.com
-> 
-
--- 
-Mathieu Desnoyers
-OpenPGP key fingerprint: 8CD5 52C3 8E3C 4140 715F  BA06 3F25 A8FE 3BAE 9A68
+> 1.5.6.3
