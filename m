@@ -1,78 +1,158 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754295AbZDFAlv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753979AbZDFAxD@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754295AbZDFAlv (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 5 Apr 2009 20:41:51 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752069AbZDFAlm
+	id S1753979AbZDFAxD (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 5 Apr 2009 20:53:03 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752717AbZDFAwv
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 5 Apr 2009 20:41:42 -0400
-Received: from casper.infradead.org ([85.118.1.10]:41653 "EHLO
-	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751549AbZDFAlm (ORCPT
+	Sun, 5 Apr 2009 20:52:51 -0400
+Received: from smtp-out.google.com ([216.239.45.13]:48320 "EHLO
+	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751549AbZDFAwu (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 5 Apr 2009 20:41:42 -0400
-Subject: Re: Staging: sxg: Add support to download the firmware using
- request_firmware()
-From: David Woodhouse <dwmw2@infradead.org>
-To: Greg Kroah-Hartman <gregkh@suse.de>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Cc: Mithlesh Thukral <mithlesh@linsyssoft.com>,
-       Christopher Harrer <charrer@alacritech.com>
-In-Reply-To: <200904051919.n35JJUUq031448@hera.kernel.org>
-References: <200904051919.n35JJUUq031448@hera.kernel.org>
-Content-Type: text/plain
-Date: Sun, 05 Apr 2009 17:41:33 -0700
-Message-Id: <1238978493.11870.2.camel@macbook.infradead.org>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.26.0 (2.26.0-2.fc11) 
-Content-Transfer-Encoding: 7bit
-X-SRS-Rewrite: SMTP reverse-path rewritten from <dwmw2@infradead.org> by casper.infradead.org
-	See http://www.infradead.org/rpr.html
+	Sun, 5 Apr 2009 20:52:50 -0400
+DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
+	h=date:from:x-x-sender:to:cc:subject:message-id:user-agent:
+	mime-version:content-type:x-system-of-record;
+	b=AmzhuTY6CIPOnRBH8FArHbJ5thSQ1fCES1U4A3ESuGKLjqYGzbX5u+V+9PprhIAFd
+	En+n4nei2+x+xtWff7/hA==
+Date: Sun, 5 Apr 2009 17:52:01 -0700 (PDT)
+From: David Rientjes <rientjes@google.com>
+X-X-Sender: rientjes@chino.kir.corp.google.com
+To: Pekka Enberg <penberg@cs.helsinki.fi>
+cc: Christoph Lameter <cl@linux-foundation.org>, linux-kernel@vger.kernel.org
+Subject: [patch] slub: default min_partial to at least highest cpus per
+ node
+Message-ID: <alpine.DEB.2.00.0904051653420.25339@chino.kir.corp.google.com>
+User-Agent: Alpine 2.00 (DEB 1167 2008-08-23)
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+X-System-Of-Record: true
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, 2009-04-05 at 19:19 +0000, Linux Kernel Mailing List wrote:
-> Gitweb:     http://git.kernel.org/linus/cda3b517a478324233d9be71232b60e2e2efe848
-> Commit:     cda3b517a478324233d9be71232b60e2e2efe848
-> Parent:     e5ea8da06ba610551a75c79c1467aae379e953ce
-> Author:     Mithlesh Thukral <mithlesh@linsyssoft.com>
-> AuthorDate: Fri Mar 20 17:39:04 2009 +0530
-> Committer:  Greg Kroah-Hartman <gregkh@suse.de>
-> CommitDate: Fri Apr 3 14:53:14 2009 -0700
-> 
->     Staging: sxg: Add support to download the firmware using request_firmware()
->     
->     Add support for downloading the firmware using kernel-builtin mechanism.
->     This will remove the need for the firmware files in the driver source code.
->     
->     Signed-off-by: Christopher Harrer <charrer@alacritech.com>
->     Signed-off-by: Mithlesh Thukral <mithlesh@linsyssoft.com>
->     Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
-> ---
->  drivers/staging/sxg/saharadbgdownload-1.71.c  | 5233 ------------------------
->  drivers/staging/sxg/saharadbgdownloadB-1.10.c | 5251 -------------------------
->  drivers/staging/sxg/saharadownload-1.55.c     | 4531 ---------------------
->  drivers/staging/sxg/saharadownloadB-1.8.c     | 4532 ---------------------
->  drivers/staging/sxg/sxg.c                     |  206 +-
->  firmware/Makefile                             |    2 +
->  firmware/WHENCE                               |   12 +
->  firmware/sxg/saharadbgdownloadB.sys.ihex      | 3937 ++++++++++++++++++
->  firmware/sxg/saharadownloadB.sys.ihex         | 3385 ++++++++++++++++
->  9 files changed, 7437 insertions(+), 19652 deletions(-)
+The pre-defined MIN_PARTIAL value may not be suitable for machines with a
+large number of cpus per node.  To avoid excessively allocating new slabs
+because there is not at least the same number of slabs on a node's
+partial list as cpus, this will default a cache's min_partial value to be
+at least the highest number of cpus per node on the system.
 
-NO!
+This default will never exceed MAX_PARTIAL, however, so very large
+systems don't waste an excessive amount of memory.
 
-What the hell are you playing at, Greg?
+When remote_node_defrag_ratio allows defragmenting remote nodes, it
+ensures that nr_partial exceeds min_partial so there will always be a
+local reserve when a cpu slab is filled to avoid allocating new slabs
+locally as a result of a remote cpu stealing a partial slab.
 
-We don't want to be adding _new_ binary firmware into the firmware/
-directory -- that was only the temporary location for removing the
-_existing_ crap.
+The cache's min_partial setting may still be changed by writing to
+/sys/kernel/slab/cache/min_partial.  The only restriction when doing so
+is that the value be within MIN_PARTIAL and MAX_PARTIAL.
 
-We have the linux-firmware.git repository, into which we are collecting
-new firmware blobs. Don't add them to the kernel sources.
+Cc: Christoph Lameter <cl@linux-foundation.org>
+Signed-off-by: David Rientjes <rientjes@google.com>
+---
+ mm/slub.c |   50 ++++++++++++++++++++++++++++++++++++++++++--------
+ 1 files changed, 42 insertions(+), 8 deletions(-)
 
-This whole 'staging' clusterfuck is getting out of hand.
-
--- 
-dwmw2
-
+diff --git a/mm/slub.c b/mm/slub.c
+--- a/mm/slub.c
++++ b/mm/slub.c
+@@ -1941,6 +1941,15 @@ static unsigned long calculate_alignment(unsigned long flags,
+ 	return ALIGN(align, sizeof(void *));
+ }
+ 
++static void set_min_partial(struct kmem_cache *s, unsigned long min)
++{
++	if (min < MIN_PARTIAL)
++		min = MIN_PARTIAL;
++	else if (min > MAX_PARTIAL)
++		min = MAX_PARTIAL;
++	s->min_partial = min;
++}
++
+ static void init_kmem_cache_cpu(struct kmem_cache *s,
+ 			struct kmem_cache_cpu *c)
+ {
+@@ -2093,6 +2102,8 @@ static inline int alloc_kmem_cache_cpus(struct kmem_cache *s, gfp_t flags)
+ #endif
+ 
+ #ifdef CONFIG_NUMA
++static unsigned long min_partial_per_node;
++
+ /*
+  * No kmalloc_node yet so do it by hand. We know that this is the first
+  * slab on the node for this slabcache. There are no concurrent accesses
+@@ -2188,6 +2199,26 @@ static int init_kmem_cache_nodes(struct kmem_cache *s, gfp_t gfpflags)
+ 	}
+ 	return 1;
+ }
++
++static void __cpuinit set_min_partial_per_node(int node)
++{
++	unsigned int nr_cpus;
++
++	/*
++	 * Add one cpu since this is called for CPU_UP_PREPARE and this cpu is
++	 * not online yet.  CPU_ONLINE would require taking slub_lock.
++	 */
++	nr_cpus = nr_cpus_node(node) + 1;
++	if (nr_cpus > min_partial_per_node)
++		min_partial_per_node = min_t(unsigned long,
++					     nr_cpus, MAX_PARTIAL);
++}
++
++static void set_cache_min_partial_per_node(struct kmem_cache *s)
++{
++	if (s->min_partial < min_partial_per_node)
++		set_min_partial(s, min_partial_per_node);
++}
+ #else
+ static void free_kmem_cache_nodes(struct kmem_cache *s)
+ {
+@@ -2198,16 +2229,15 @@ static int init_kmem_cache_nodes(struct kmem_cache *s, gfp_t gfpflags)
+ 	init_kmem_cache_node(&s->local_node, s);
+ 	return 1;
+ }
+-#endif
+ 
+-static void set_min_partial(struct kmem_cache *s, unsigned long min)
++static inline void set_min_partial_per_node(int node)
++{
++}
++
++static inline void set_cache_min_partial_per_node(const struct kmem_cache *s)
+ {
+-	if (min < MIN_PARTIAL)
+-		min = MIN_PARTIAL;
+-	else if (min > MAX_PARTIAL)
+-		min = MAX_PARTIAL;
+-	s->min_partial = min;
+ }
++#endif
+ 
+ /*
+  * calculate_sizes() determines the order and the distribution of data within
+@@ -2352,6 +2382,7 @@ static int kmem_cache_open(struct kmem_cache *s, gfp_t gfpflags,
+ 	 * list to avoid pounding the page allocator excessively.
+ 	 */
+ 	set_min_partial(s, ilog2(s->size));
++	set_cache_min_partial_per_node(s);
+ 	s->refcount = 1;
+ #ifdef CONFIG_NUMA
+ 	s->remote_node_defrag_ratio = 1000;
+@@ -3239,10 +3270,13 @@ static int __cpuinit slab_cpuup_callback(struct notifier_block *nfb,
+ 	case CPU_UP_PREPARE:
+ 	case CPU_UP_PREPARE_FROZEN:
+ 		init_alloc_cpu_cpu(cpu);
++		set_min_partial_per_node(cpu_to_node(cpu));
+ 		down_read(&slub_lock);
+-		list_for_each_entry(s, &slab_caches, list)
++		list_for_each_entry(s, &slab_caches, list) {
+ 			s->cpu_slab[cpu] = alloc_kmem_cache_cpu(s, cpu,
+ 							GFP_KERNEL);
++			set_cache_min_partial_per_node(s);
++		}
+ 		up_read(&slub_lock);
+ 		break;
+ 
