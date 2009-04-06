@@ -1,70 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754733AbZDFHzH@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754717AbZDFIM4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754733AbZDFHzH (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 6 Apr 2009 03:55:07 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751709AbZDFHy4
+	id S1754717AbZDFIM4 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 6 Apr 2009 04:12:56 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752104AbZDFIMr
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 6 Apr 2009 03:54:56 -0400
-Received: from mx2.redhat.com ([66.187.237.31]:48783 "EHLO mx2.redhat.com"
+	Mon, 6 Apr 2009 04:12:47 -0400
+Received: from brick.kernel.dk ([93.163.65.50]:38535 "EHLO kernel.dk"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751652AbZDFHyz (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 6 Apr 2009 03:54:55 -0400
-Message-ID: <49D9B504.2050901@redhat.com>
-Date: Mon, 06 Apr 2009 10:53:40 +0300
-From: Avi Kivity <avi@redhat.com>
-User-Agent: Thunderbird 2.0.0.21 (X11/20090320)
+	id S1752062AbZDFIMr (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 6 Apr 2009 04:12:47 -0400
+Date: Mon, 6 Apr 2009 10:12:44 +0200
+From: Jens Axboe <jens.axboe@oracle.com>
+To: Theodore Tso <tytso@mit.edu>
+Cc: Linus Torvalds <torvalds@linux-foundation.org>,
+       Linux Kernel Developers List <linux-kernel@vger.kernel.org>,
+       Ext4 Developers List <linux-ext4@vger.kernel.org>
+Subject: Re: [GIT PULL] Ext3 latency fixes
+Message-ID: <20090406081244.GR5178@kernel.dk>
+References: <1238742067-30814-1-git-send-email-tytso@mit.edu> <alpine.LFD.2.00.0904031110420.19690@localhost.localdomain> <alpine.LFD.2.00.0904031150190.4015@localhost.localdomain> <alpine.LFD.2.00.0904031329410.7007@localhost.localdomain> <20090404135719.GA9812@mit.edu> <20090404151649.GE5178@kernel.dk> <20090404191826.GE9812@mit.edu>
 MIME-Version: 1.0
-To: Pekka Paalanen <pq@iki.fi>
-CC: Masami Hiramatsu <mhiramat@redhat.com>,
-       Vegard Nossum <vegard.nossum@gmail.com>, Ingo Molnar <mingo@elte.hu>,
-       "H. Peter Anvin" <hpa@zytor.com>,
-       Frederic Weisbecker <fweisbec@gmail.com>,
-       Steven Rostedt <rostedt@goodmis.org>,
-       Ananth N Mavinakayanahalli <ananth@in.ibm.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Andi Kleen <andi@firstfloor.org>, Jim Keniston <jkenisto@us.ibm.com>,
-       kvm@vger.kernel.org, systemtap-ml <systemtap@sources.redhat.com>,
-       LKML <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH -tip 0/6 V4] tracing: kprobe-based event tracer
-References: <49D4F4B5.9040107@redhat.com>	<20090403112639.GC31399@elte.hu>	<49D5F80B.7000305@redhat.com>	<20090403121202.GI31399@elte.hu>	<49D5FE42.5080100@redhat.com>	<20090403122654.GA19451@elte.hu>	<19f34abd0904030616v56d66a11u7ee6054502f2922@mail.gmail.com>	<49D61489.9020406@redhat.com> <20090405223710.49299b9a@daedalus.pq.iki.fi>
-In-Reply-To: <20090405223710.49299b9a@daedalus.pq.iki.fi>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20090404191826.GE9812@mit.edu>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Pekka Paalanen wrote:
-> Not just emulation but address diversion, i.e. modifying the operation
-> (not the text) before executing it. Mmiotrace could do something like
-> this:
-> 1. a blob calls ioremap
-> 2. mmiotrace maps the MMIO area privately
-> 3. the blob receives a dummy map from ioremap, that will generate
-> page fault
-> 4. the blob accesses the dummy map and raises a page fault
-> 5. pf handler detects the dummy map
-> 6. mmiotrace pf handler emulates the instruction and replaces the
-> dummy address with the real MMIO address.
-> 7. mmiotrace records the operation and the datum
-> 8. go to step 4, or whatever
->
-> This means mmiotrace would not have to fiddle with the page
-> tables and page presence bits like it does now. As said, this
-> would make mmiotrace SMP-proof, and also eliminate the die notifier
-> (used for the instruction single stepping trap).
->
-> IMO a big step from a hack to a tool. Getting rid of the custom
-> instruction parser in mmiotrace would be a good step in itself.
->
-> Avi Kivity noted, that the KVM emulator does almost everything. Does
-> it allow also address diversion?
->   
+On Sat, Apr 04 2009, Theodore Tso wrote:
+> On Sat, Apr 04, 2009 at 05:16:50PM +0200, Jens Axboe wrote:
+> > Big nack on this patch. Ted, this is EXACTLY where I told you we saw big
+> > write regressions (sqlite performance drops by a factor of 4-5). Do a
+> > git log on fs/buffer.c and see the original patch (which does what your
+> > patch does) and the later revert. 
+> 
+> You mean this revert, right?
+> 
+> commit 78f707bfc723552e8309b7c38a8d0cc51012e813
+> Author: Jens Axboe <jens.axboe@oracle.com>
+> Date:   Tue Feb 17 13:59:08 2009 +0100
+> 
+>     block: revert part of 18ce3751ccd488c78d3827e9f6bf54e6322676fb
+>     
+>     The above commit added WRITE_SYNC and switched various places to using
+>     that for committing writes that will be waited upon immediately after
+>     submission. However, this causes a performance regression with AS and CFQ
+>     for ext3 at least, since sync_dirty_buffer() will submit some writes with
+>     WRITE_SYNC while ext3 has sumitted others dependent writes without the sync
+>     flag set. This causes excessive anticipation/idling in the IO scheduler
+>     because sync and async writes get interleaved, causing a big performance
+>     regression for the below test case (which is meant to simulate sqlite
+>     like behaviour)....
+> 
+> OK, let me test things out first, but note that with the changes that
+> Linus has already accepted, this may not be an issue --- since we've
+> now fixed ext3 to submit those dependent writes with the SYNC flag
+> now.  So I'm not sure the performance regression still applies, but
+> I'll test using the test case supplied in the rest of the commit log
+> and get back to you.
 
-Operand access is by means of a callback, so yes.  In kvm's use, it's 
-used to access guest memory, so it modified the addresses before reading 
-or writing.
+Yep that's the one. I'll throw some testing together here, too.
 
 -- 
-error compiling committee.c: too many arguments to function
+Jens Axboe
 
