@@ -1,54 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756460AbZDFWdj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758592AbZDFWey@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756460AbZDFWdj (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 6 Apr 2009 18:33:39 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754082AbZDFWda
+	id S1758592AbZDFWey (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 6 Apr 2009 18:34:54 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755604AbZDFWel
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 6 Apr 2009 18:33:30 -0400
-Received: from e9.ny.us.ibm.com ([32.97.182.139]:44340 "EHLO e9.ny.us.ibm.com"
+	Mon, 6 Apr 2009 18:34:41 -0400
+Received: from ogre.sisk.pl ([217.79.144.158]:50214 "EHLO ogre.sisk.pl"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753699AbZDFWd3 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 6 Apr 2009 18:33:29 -0400
-Date: Mon, 6 Apr 2009 15:33:25 -0700
-From: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
-To: Kyle McMartin <kyle@mcmartin.ca>
-Cc: linux-kernel@vger.kernel.org, mingo@elte.hu, akpm@linux-foundation.org,
-       dipankar@in.ibm.com, niv@us.ibm.com, manfred@colorfullife.com,
-       peterz@infradead.org, lethal@linux-sh.org, kernel@wantstofly.org,
-       andi@firstfloor.org, deller@gmx.de, davem@davemloft.net,
-       ralf@linux-mips.org, jes@sgi.com, benh@kernel.crashing.org,
-       paulus@samba.org, anton@samba.org
-Subject: Re: [PATCH -tip] v2: Make TREE_RCU be default (was CLASSIC_RCU).
-Message-ID: <20090406223325.GN6988@linux.vnet.ibm.com>
-Reply-To: paulmck@linux.vnet.ibm.com
-References: <20090406221628.GA18232@linux.vnet.ibm.com> <20090406221834.GA7372@bombadil.infradead.org>
+	id S1754907AbZDFWei (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 6 Apr 2009 18:34:38 -0400
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Subject: Re: 2.6.29-git13: Reported regressions from 2.6.28
+Date: Tue, 7 Apr 2009 00:34:59 +0200
+User-Agent: KMail/1.11.2 (Linux/2.6.29-rjw; KDE/4.2.2; x86_64; ; )
+Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Adrian Bunk <bunk@kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Natalie Protasevich <protasnb@gmail.com>,
+       Kernel Testers List <kernel-testers@vger.kernel.org>,
+       Network Development <netdev@vger.kernel.org>,
+       Linux ACPI <linux-acpi@vger.kernel.org>,
+       Linux PM List <linux-pm@lists.linux-foundation.org>,
+       Linux SCSI List <linux-scsi@vger.kernel.org>,
+       Trenton Adams <trenton.d.adams@gmail.com>
+References: <n4io5wq70ZO.A.gzG.rFn2JB@chimera> <alpine.LFD.2.00.0904061443000.7443@localhost.localdomain>
+In-Reply-To: <alpine.LFD.2.00.0904061443000.7443@localhost.localdomain>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: Text/Plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <20090406221834.GA7372@bombadil.infradead.org>
-User-Agent: Mutt/1.5.15+20070412 (2007-04-11)
+Message-Id: <200904070035.00784.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Apr 06, 2009 at 06:18:34PM -0400, Kyle McMartin wrote:
-> On Mon, Apr 06, 2009 at 03:16:28PM -0700, Paul E. McKenney wrote:
-> > Given that there have been no TREE_RCU bugs reported for some months,
-> > it is time to make TREE_RCU be the default RCU implementation.  The rest
-> > of this series updates defconfig files that: (1) have CONFIG_SMP=y and
-> > (2) explicitly mention CONFIG_CLASSIC_RCU.
-> > 
-> > Given that I don't have access to most of the relevant hardware, much
-> > of this is untested.
-> > 
-> > Changes since v1: per-arch defconfig patches dropped.
-> > 
-> > Signed-off-by: Paul E. McKenney <paulmck@linux.vnet.ibm.com>
+On Monday 06 April 2009, Linus Torvalds wrote:
 > 
-> Do you intend to do this for .30 or .31? I'll try to test it as
-> soon as I can on parisc... Somehow I suspect it won't be the worst
-> of the problems... :)
+> On Mon, 6 Apr 2009, Rafael J. Wysocki wrote:
+> > 
+> > Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=13019
+> > Subject		: /proc/<pid>/maps offset output broken in 2.6.29
+> > Submitter	: "Chris Friesen" <cfriesen@nortel.com>
+> > Date		: 2009-04-01 23:18 (6 days old)
+> > References	: http://marc.info/?l=linuxppc-embedded&m=123862902916059&w=4
+> > Handled-By	: Hugh Dickins <hugh@veritas.com>
+> 
+> I don't think that's a regression, nor really a bug. It looks cosmetic, 
+> and likely to be fixed, but not really worth worrying about.
 
-I was hoping for .30 -- should I now don my asbestos suit?  ;-)
+OK, I've dropped it from the list.
 
-						Thanx, Paul
+Thanks,
+Rafael
