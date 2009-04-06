@@ -1,63 +1,46 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752521AbZDFO6Y@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753132AbZDFPGi@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752521AbZDFO6Y (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 6 Apr 2009 10:58:24 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751471AbZDFO6O
+	id S1753132AbZDFPGi (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 6 Apr 2009 11:06:38 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751721AbZDFPG3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 6 Apr 2009 10:58:14 -0400
-Received: from mgw2.diku.dk ([130.225.96.92]:56964 "EHLO mgw2.diku.dk"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751384AbZDFO6N (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 6 Apr 2009 10:58:13 -0400
-Date: Mon, 6 Apr 2009 16:58:06 +0200 (CEST)
-From: Julia Lawall <julia@diku.dk>
-To: tglx@linutronix.de, linux-kernel@vger.kernel.org,
-       kernel-janitors@vger.kernel.org
-Subject: [PATCH] kernel/hrtimer.c: use function hrtimer_is_queued
-Message-ID: <Pine.LNX.4.64.0904061656500.20450@pc-004.diku.dk>
+	Mon, 6 Apr 2009 11:06:29 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:35195 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751235AbZDFPG2 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 6 Apr 2009 11:06:28 -0400
+Date: Mon, 6 Apr 2009 08:04:39 -0700 (PDT)
+From: Linus Torvalds <torvalds@linux-foundation.org>
+X-X-Sender: torvalds@localhost.localdomain
+To: Jens Axboe <jens.axboe@oracle.com>
+cc: linux-kernel@vger.kernel.org, tytso@mit.edu
+Subject: Re: [PATCH 0/8][RFC] IO latency/throughput fixes
+In-Reply-To: <1239022088-29002-1-git-send-email-jens.axboe@oracle.com>
+Message-ID: <alpine.LFD.2.00.0904060803141.4023@localhost.localdomain>
+References: <1239022088-29002-1-git-send-email-jens.axboe@oracle.com>
+User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
 MIME-Version: 1.0
 Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Julia Lawall <julia@diku.dk>
 
-Use the hrtimer_is_queued function rather than an explicit bit-and for
-testing timer->state, as done elsewhere.
 
-The semantic patch that makes this change is as follows:
-(http://www.emn.fr/x-info/coccinelle/)
+On Mon, 6 Apr 2009, Jens Axboe wrote:
+> 
+> This is a set of patches that I worked on today in the hopes
+> of furthering the latency goals and at least fixing some of
+> the write regression with fwrite + fsync that current -git
+> is suffering from.
 
-// <smpl>
-@header@
-@@
+Goodie. Let's just do this. After all, right now we would otherwise have 
+to revert the other changes as being a regression, and I absolutely _love_ 
+the fact that we're actually finally getting somewhere on this fsync 
+latency issue that has been with us for so long.
 
-#include <linux/hrtimer.h>
+Jens - I can just apply this queue (I want to test it out anyway), or if 
+you prefer I can pull from you. Just tell me.
 
-@depends on header@
-struct hrtimer *timer;
-@@
-
-- (timer->state & HRTIMER_STATE_ENQUEUED)
-+ hrtimer_is_queued(timer)
-// </smpl>
-
-Signed-off-by: Julia Lawall <julia@diku.dk>
-
----
- kernel/hrtimer.c |    2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
-
-diff -u -p a/kernel/hrtimer.c b/kernel/hrtimer.c
---- a/kernel/hrtimer.c
-+++ b/kernel/hrtimer.c
-@@ -850,7 +850,7 @@ static void __remove_hrtimer(struct hrti
- 			     struct hrtimer_clock_base *base,
- 			     unsigned long newstate, int reprogram)
- {
--	if (timer->state & HRTIMER_STATE_ENQUEUED) {
-+	if (hrtimer_is_queued(timer)) {
- 		/*
- 		 * Remove the timer from the rbtree and replace the
- 		 * first entry pointer if necessary.
+		Linus
