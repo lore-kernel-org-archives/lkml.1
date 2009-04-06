@@ -1,68 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759573AbZDFVPk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756524AbZDFVTx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759573AbZDFVPk (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 6 Apr 2009 17:15:40 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754084AbZDFVP3
+	id S1756524AbZDFVTx (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 6 Apr 2009 17:19:53 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753289AbZDFVTn
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 6 Apr 2009 17:15:29 -0400
-Received: from e37.co.us.ibm.com ([32.97.110.158]:41626 "EHLO
-	e37.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753289AbZDFVP2 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 6 Apr 2009 17:15:28 -0400
-Message-ID: <49DA70F0.3020108@linux.vnet.ibm.com>
-Date: Mon, 06 Apr 2009 14:15:28 -0700
-From: Corey Ashford <cjashfor@linux.vnet.ibm.com>
-User-Agent: Thunderbird 2.0.0.21 (Windows/20090302)
+	Mon, 6 Apr 2009 17:19:43 -0400
+Received: from THUNK.ORG ([69.25.196.29]:41093 "EHLO thunker.thunk.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751723AbZDFVTm (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 6 Apr 2009 17:19:42 -0400
+Date: Mon, 6 Apr 2009 17:19:31 -0400
+From: Theodore Tso <tytso@mit.edu>
+To: Hua Zhong <hzhong@gmail.com>
+Cc: "'Linus Torvalds'" <torvalds@linux-foundation.org>,
+       "'Jens Axboe'" <jens.axboe@oracle.com>,
+       "'Linux Kernel Mailing List'" <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH 0/8][RFC] IO latency/throughput fixes
+Message-ID: <20090406211931.GB8586@mit.edu>
+Mail-Followup-To: Theodore Tso <tytso@mit.edu>,
+	Hua Zhong <hzhong@gmail.com>,
+	'Linus Torvalds' <torvalds@linux-foundation.org>,
+	'Jens Axboe' <jens.axboe@oracle.com>,
+	'Linux Kernel Mailing List' <linux-kernel@vger.kernel.org>
+References: <1239022088-29002-1-git-send-email-jens.axboe@oracle.com> <alpine.LFD.2.00.0904060803141.4023@localhost.localdomain> <20090406151054.GD5178@kernel.dk> <alpine.LFD.2.00.0904060840080.3863@localhost.localdomain> <20090406183157.GD7376@mit.edu> <alpine.LFD.2.00.0904061255160.4134@localhost.localdomain> <002501c9b6f3$f85b4910$e911db30$@com>
 MIME-Version: 1.0
-To: Peter Zijlstra <peterz@infradead.org>
-CC: Ingo Molnar <mingo@elte.hu>, Paul Mackerras <paulus@samba.org>,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 5/6] perf_counter: add more context information
-References: <20090402091158.291810516@chello.nl> <20090402091319.493101305@chello.nl> <1238763023.798.27.camel@twins> <49D654AB.4030207@linux.vnet.ibm.com>  <1239015668.798.4243.camel@twins> <1239016035.798.4254.camel@twins>  <49DA4FA0.6090902@linux.vnet.ibm.com> <1239044818.798.4775.camel@twins>  <49DA6324.9080801@linux.vnet.ibm.com> <1239050799.4557.24.camel@laptop>
-In-Reply-To: <1239050799.4557.24.camel@laptop>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <002501c9b6f3$f85b4910$e911db30$@com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-SA-Exim-Connect-IP: <locally generated>
+X-SA-Exim-Mail-From: tytso@mit.edu
+X-SA-Exim-Scanned: No (on thunker.thunk.org); SAEximRunCond expanded to false
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Mon, Apr 06, 2009 at 01:12:08PM -0700, Hua Zhong wrote:
+> Grr..making writeback as default would break people's setup that relies on
+> the ordered semantics, especially in the embedded world. It's a big no-no.
 
+I've added workarounds for 2.6.30 that provide the replace-via-rename
+and replace-via-truncate workarounds for ext3 data=writeback cases.
+See commits e7c8f507 and f7ab34ea.  
 
-Peter Zijlstra wrote:
-> On Mon, 2009-04-06 at 13:16 -0700, Corey Ashford wrote:
-> 
->>>> One downside of this approach is that you if you specify "no header" 
->>>> (currently not possible, but maybe later?), you will not be able to get 
->>>> the level bits.
->>> Would this be desirable? 
-> 
->> I think it would.  For one use case I'm working on right now, simple 
->> profiling, all I need are ip's.  If I could omit the header, that would 
->> reduce the frequency of sigio's by a factor of three, and make it faster 
->> to read up the ip's when the SIGIO's occur.
-> 
-> Self-profiling?
-> 
-> So you're interested in getting the smallest possible record size, that
-> would still be 2 u64, right? Otherwise you don't get the IP context that
-> started this.
-> 
-> 
+There won't be an implied fsync for newly created files, yes, but you
+could have crashed 5 seconds earlier, at which point you would have
+lost the newly created file anyway.  Replace-via-rename and
+replace-via-truncate solves the problem for applications which are
+editing pre-existing files, which was most of people's complaints
+about depending on data=ordered semantics.
 
-Self-profiling mainly, yes.  PAPI specs an ability for remote monitoring 
-of processes and threads, but I think it's only partially implemented.
-
-So when you are talking about IP context, you mean pid/tid?
-
-Regards,
-
-- Corey
-
-Corey Ashford
-Software Engineer
-IBM Linux Technology Center, Linux Toolchain
-Beaverton, OR
-503-578-3507
-cjashfor@us.ibm.com
-
+						- Ted
