@@ -1,212 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751943AbZDGLBo@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754114AbZDGLDY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751943AbZDGLBo (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 7 Apr 2009 07:01:44 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751592AbZDGLBf
+	id S1754114AbZDGLDY (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 7 Apr 2009 07:03:24 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751287AbZDGLDO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 7 Apr 2009 07:01:35 -0400
-Received: from baikonur.stro.at ([213.239.196.228]:40206 "EHLO
-	baikonur.stro.at" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751516AbZDGLBe (ORCPT
+	Tue, 7 Apr 2009 07:03:14 -0400
+Received: from qw-out-2122.google.com ([74.125.92.24]:42381 "EHLO
+	qw-out-2122.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751290AbZDGLDN (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 7 Apr 2009 07:01:34 -0400
-Date: Tue, 7 Apr 2009 13:01:15 +0200
-From: maximilian attems <max@stro.at>
-To: "Christopher J. Harrer" <charrer@alacritech.com>
-Cc: "'Mithlesh Thukral'" <mithlesh@linsyssoft.com>,
-       "'Linux Kernel Mailing List'" <linux-kernel@vger.kernel.org>,
-       debian-kernel@lists.debian.org, Greg Kroah-Hartman <gregkh@suse.de>
-Subject: Re: Staging: sxg: slicoss: Specify the license for Sahara SXG and
-	Slicoss drivers
-Message-ID: <20090407110115.GF4442@stro.at>
-Mail-Followup-To: "Christopher J. Harrer" <charrer@alacritech.com>,
-	'Mithlesh Thukral' <mithlesh@linsyssoft.com>,
-	'Linux Kernel Mailing List' <linux-kernel@vger.kernel.org>,
-	debian-kernel@lists.debian.org, Greg Kroah-Hartman <gregkh@suse.de>
-References: <200904070037.48064.mithlesh@linsyssoft.com> <20090406135557.EA7091B4039@relay31.relay.iad.mlsrvr.com> <20090406142540.GP3901@baikonur.stro.at>
+	Tue, 7 Apr 2009 07:03:13 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:user-agent:mime-version:to:cc:subject
+         :references:in-reply-to:content-type:content-transfer-encoding;
+        b=rn0AKNxFaBIWGR8K7GP4u8ZO1p4REz10R1dEO3qr1H4yfU/a1RcLshzRxrxfZCqI9O
+         mvY11BUM7EG7opwyuR36YFszcOyBYX9vhg2/kUMB9BQrkwXWaW9Kypb8pDO2qpn3bRwr
+         PBjm1u/FwU7TIatiVGuuirjcIdEpXbwRgoLXc=
+Message-ID: <49DB32EE.4050309@gmail.com>
+Date: Tue, 07 Apr 2009 13:03:10 +0200
+From: Jiri Slaby <jirislaby@gmail.com>
+User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; cs-CZ; rv:1.9.1b3pre) Gecko/20090223 SUSE/3.0b2-8.1 Thunderbird/3.0b2
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090406142540.GP3901@baikonur.stro.at>
-User-Agent: Mutt/1.5.19 (2009-01-05)
+To: Len Brown <lenb@kernel.org>
+CC: "Rafael J. Wysocki" <rjw@sisk.pl>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Kernel Testers List <kernel-testers@vger.kernel.org>,
+       Lin Ming <ming.m.lin@intel.com>
+Subject: Re: [Bug #12908] acpi_ex_extract_from_field -- div by zero
+References: <n4io5wq70ZO.A.gzG.rFn2JB@chimera> <AsKNxFx2juN.A.l9H.UGn2JB@chimera> <alpine.LFD.2.00.0904070008140.5698@localhost.localdomain>
+In-Reply-To: <alpine.LFD.2.00.0904070008140.5698@localhost.localdomain>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 06 Apr 2009, 'maximilian attems' wrote:
-
-> On Mon, Apr 06, 2009 at 09:56:07AM -0400, Christopher J. Harrer wrote:
-> > -----Original Message-----
-> > From: Mithlesh Thukral [mailto:mithlesh@linsyssoft.com] 
-> > Sent: Monday, April 06, 2009 3:08 PM
-> > To: maximilian attems
-> > Cc: Linux Kernel Mailing List; debian-kernel@lists.debian.org; Christopher
-> > Harrer
-> > Subject: Re: Staging: sxg: slicoss: Specify the license for Sahara SXG and
-> > Slicoss drivers
-> > 
-> > CCing a person who can better comment.
-> > 
-> > Cheers,
-> > Mithlesh Thukral
-> > 
-> > On Monday 06 April 2009 18:42:43 maximilian attems wrote:
-> > > On Sun, 05 Apr 2009, Linux Kernel Mailing List wrote:
-> > > > Gitweb:    
-> > > > http://git.kernel.org/linus/ba0e1ebb7ea0616eebc29d2077355bacea62a9d8
-> > > > Commit:     ba0e1ebb7ea0616eebc29d2077355bacea62a9d8
-> > > > Parent:     19be358212af35bd64d449da82279874099a1a85
-> > > > Author:     Mithlesh Thukral <mithlesh@linsyssoft.com>
-> > > > AuthorDate: Wed Mar 25 15:52:54 2009 +0530
-> > > > Committer:  Greg Kroah-Hartman <gregkh@suse.de>
-> > > > CommitDate: Fri Apr 3 14:54:38 2009 -0700
-> > > >
-> > > >     Staging: sxg: slicoss: Specify the license for Sahara SXG and 
-> > > > Slicoss drivers
-> > > >
-> > > >     Specify a license for the Alacritech Sahara (10Gbe) and SLICOSS
-> > > > (1GBE) firmware files.
-> > > >
-> > > >     Signed-off-by: Christopher Harrer <charrer@alacritech.com>
-> > > >     Signed-off-by: Mithlesh Thukral <mithlesh@linsyssoft.com>
-> > > >     Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
-> > > > ---
-> > > >  firmware/WHENCE |   33 ++++++++++++++++++++++++++++++---
-> > > >  1 files changed, 30 insertions(+), 3 deletions(-)
-> > > >
-> > > > diff --git a/firmware/WHENCE b/firmware/WHENCE index 
-> > > > df79422..d6c227d 100644
-> > > > --- a/firmware/WHENCE
-> > > > +++ b/firmware/WHENCE
-> > > > @@ -372,7 +372,21 @@ File: slicoss/oasisdbgdownload.sys.ihex
-> > > >  File: slicoss/oasisdownload.sys.ihex
-> > > >  File: slicoss/oasisrcvucode.sys.ihex
-> > > >
-> > > > -Licence: Unknown
-> > > > +Licence:
-> > > > +		Copyright (C) 1999-2009 Alacritech, Inc.
-> > > > +
-> > > > +	as an unpublished work. This notice does not imply unrestricted or
-> > > > +	public access to the source code from which this firmware image is
-> > > > +	derived.  Except as noted below this firmware image may not be
-> > > > +	reproduced, used, sold or transferred to any third party without
-> > > > +	Alacritech's prior written consent.  All Rights Reserved.
-> > > > +
-> > > > +	Permission is hereby granted for the distribution of this firmware
-> > > > +	image as part of a Linux or other Open Source operating system
-> > kernel
-> > > > +	in text or binary form as required.
-> > > > +
-> > > > +	This firmware may not be modified and may only be used with
-> > > > +	Alacritech hardware.
-> > >
-> > > have you read what you say?
-> > >
-> > > the last paragraph disables the distribution right, due beeing only 
-> > > allowed to be touched on alacritech hardware.
-> > >
-> > > i'm certainly not buying anything from alacritech, but would want to 
-> > > disbribute your fimware in Debian in the nonfree firmware-linux 
-> > > package for the benefit of your customers.
-> > > -> http://packages.debian.org/sid/firmware-linux
-> > >
-> > > >  Found in hex form in kernel source.
-> > > >
-> > > > @@ -383,10 +397,23 @@ Driver: SXG - Alacritech IS-NIC products
-> > > >  File: sxg/saharadownloadB.sys.ihex
-> > > >  File: sxg/saharadbgdownloadB.sys.ihex
-> > > >
-> > > > -Licence: Unknown
-> > > > +Licence:
-> > > > +		Copyright (C) 1999-2009 Alacritech, Inc.
-> > > > +
-> > > > +	as an unpublished work. This notice does not imply unrestricted or
-> > > > +	public access to the source code from which this firmware image is
-> > > > +	derived.  Except as noted below this firmware image may not be
-> > > > +	reproduced, used, sold or transferred to any third party without
-> > > > +	Alacritech's prior written consent.  All Rights Reserved.
-> > > > +
-> > > > +	Permission is hereby granted for the distribution of this firmware
-> > > > +	image as part of a Linux or other Open Source operating system
-> > kernel
-> > > > +	in text or binary form as required.
-> > > > +
-> > > > +	This firmware may not be modified and may only be used with
-> > > > +	Alacritech hardware.
-> > >
-> > > same trouble,
-> > > nuke the "and may only be used with Alacritech hardware."
-> > Hello All,
-> > 
-> > I apologize in advance for the trouble this is causing.  We used an existing
-> > license in the WHENCE file as a template for our text.  The intention of our
-> > wording is not to limit the actual distribution of the firmware file; but to
-> > control the platform(s) the firmware file may be executed on (as opposed to
-> > stored).
-> > 
-> > Would changing to the wording to "This firmware may not be modified and may
-> > only be loaded to and executed on Alacritech hardware" be more clear? 
-> > 
-> > Other suggestions, short of removing the line altogether?
-> > 
-> > Thanks,
-> > 
-> > Chris Harrer 
-> > 
+On 04/07/2009 06:09 AM, Len Brown wrote:
+> On Mon, 6 Apr 2009, Rafael J. Wysocki wrote:
 > 
-> removing the line altogether seems the easiest solution for your users.
+>> This message has been generated automatically as a part of a report
+>> of recent regressions.
+>>
+>> The following bug entry is on the current list of known regressions
+>> from 2.6.28.  Please verify if it still should be listed and let me know
+>> (either way).
+>>
+>>
+>> Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=12908
+>> Subject		: acpi_ex_extract_from_field -- div by zero
+>> Submitter	: Jiri Slaby <jirislaby@gmail.com>
+>> Date		: 2009-03-15 10:47 (23 days old)
+>> References	: http://marc.info/?l=linux-kernel&m=123711408225013&w=4
+>> Handled-By	: Lin Ming <ming.m.lin@intel.com>
 > 
-> if they've gone through the trouble to copy the hardware and modify the
-> firmware to work w/ that.. are they really going to care about violating
-> the license?
- 
-once you already change the firmware you are indeed already
-violating the license, so the proposed change for beeing able to
-distribute your firmware is below.
+> This is unreproducible and now marked closed.
 
-please acknowledge belows change, so that greg can merge it.
+s/un/hardly /. As I wrote earlier this usually happens after few days
+being off which makes it peculiar.
 
-thanks.
+> The theory is that somebody (else:-) scribbled on random kernel memory...
 
+Might be, this will probably be hard to catch :/.
 
->From 138cbd51ee3c6f5d60be6fe92c4874c2db55fd69 Mon Sep 17 00:00:00 2001
-From: maximilian attems <max@stro.at>
-Date: Tue, 7 Apr 2009 12:52:34 +0200
-Subject: [PATCH] Alacritech: reword firmware license to be distributable
-
-by requesting the firmware to only be "used" on Alacritech products
-the granted distribution right one paragraph above is negated.
-
-Signed-off-by: maximilian attems <max@stro.at>
----
- firmware/WHENCE |    6 ++----
- 1 files changed, 2 insertions(+), 4 deletions(-)
-
-diff --git a/firmware/WHENCE b/firmware/WHENCE
-index c006af8..ba43c58 100644
---- a/firmware/WHENCE
-+++ b/firmware/WHENCE
-@@ -411,8 +411,7 @@ Licence:
- 	image as part of a Linux or other Open Source operating system kernel
- 	in text or binary form as required.
- 
--	This firmware may not be modified and may only be used with
--	Alacritech hardware.
-+	This firmware may not be modified.
- 
- Found in hex form in kernel source.
- 
-@@ -436,8 +435,7 @@ Licence:
- 	image as part of a Linux or other Open Source operating system kernel
- 	in text or binary form as required.
- 
--	This firmware may not be modified and may only be used with
--	Alacritech hardware.
-+	This firmware may not be modified.
- 
- Found in hex form in kernel source.
- 
--- 
-1.6.2.1
-
-
+Or even a HW malfunction...
