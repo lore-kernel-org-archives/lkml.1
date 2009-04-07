@@ -1,59 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759007AbZDGE0t@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757711AbZDGE2f@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759007AbZDGE0t (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 7 Apr 2009 00:26:49 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753511AbZDGE0i
+	id S1757711AbZDGE2f (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 7 Apr 2009 00:28:35 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752063AbZDGE20
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 7 Apr 2009 00:26:38 -0400
-Received: from ozlabs.org ([203.10.76.45]:47555 "EHLO ozlabs.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752063AbZDGE0h (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 7 Apr 2009 00:26:37 -0400
-From: Rusty Russell <rusty@rustcorp.com.au>
-To: Ingo Molnar <mingo@elte.hu>
-Subject: Re: pm-hibernate : possible circular locking dependency detected
-Date: Tue, 7 Apr 2009 13:56:28 +0930
-User-Agent: KMail/1.11.2 (Linux/2.6.27-11-generic; KDE/4.2.2; i686; ; )
-Cc: "Rafael J. Wysocki" <rjw@sisk.pl>, Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       Ming Lei <tom.leiming@gmail.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       "Linux-pm mailing list" <linux-pm@lists.linux-foundation.org>,
-       Linux Kernel List <linux-kernel@vger.kernel.org>,
-       Gautham R Shenoy <ego@in.ibm.com>
-References: <d82e647a0904050253n31bd2654s9b216465eec4d038@mail.gmail.com> <200904051212.53353.rjw@sisk.pl> <20090405134454.GB25250@elte.hu>
-In-Reply-To: <20090405134454.GB25250@elte.hu>
-MIME-Version: 1.0
-Content-Type: Text/Plain;
-  charset="iso-8859-1"
+	Tue, 7 Apr 2009 00:28:26 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:36301 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751202AbZDGE20 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 7 Apr 2009 00:28:26 -0400
+Date: Mon, 6 Apr 2009 21:25:39 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Randy Dunlap <randy.dunlap@oracle.com>
+Cc: linux-kernel@vger.kernel.org, "Eric W. Biederman" <ebiederm@xmission.com>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>
+Subject: Re: mmotm 2009-04-05-21-45 uploaded (sysctl)
+Message-Id: <20090406212539.13d28f16.akpm@linux-foundation.org>
+In-Reply-To: <49DAD2AA.9000604@oracle.com>
+References: <200904060450.n364oaUj031923@imap1.linux-foundation.org>
+	<20090406210921.9efab09b.randy.dunlap@oracle.com>
+	<49DAD2AA.9000604@oracle.com>
+X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.5; x86_64-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200904071356.29914.rusty@rustcorp.com.au>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sunday 05 April 2009 23:14:54 Ingo Molnar wrote:
-> 
-> * Rafael J. Wysocki <rjw@sisk.pl> wrote:
-> 
-> > On Sunday 05 April 2009, Ming Lei wrote:
-> > > kernel version : one simple usb-serial patch against  commit
-> > > 6bb597507f9839b13498781e481f5458aea33620.
-> > > 
-> > > Thanks.
-> > 
-> > Hmm, CPU hotplug again, it seems.
-> > 
-> > I'm not sure who's the maintainer at the moment.  Andrew, is that 
-> > Gautham?
-> 
-> CPU hotplug tends to land on the scheduler people's desk normally.
-> 
-> But i'm not sure that's the real thing here - key appears to be this 
-> work_on_cpu() worklet by the cpufreq code:
+On Mon, 06 Apr 2009 21:12:26 -0700 Randy Dunlap <randy.dunlap@oracle.com> wrote:
 
-Looks like this will be fixed by Andrew's work-on-cpu-in-own-thread
-patch which I just put out the pull request for.
+> Randy Dunlap wrote:
+> > On Sun, 05 Apr 2009 21:50:36 -0700 akpm@linux-foundation.org wrote:
+> > 
+> >> The mm-of-the-moment snapshot 2009-04-05-21-45 has been uploaded to
+> >>
+> >>    http://userweb.kernel.org/~akpm/mmotm/
+> >>
+> >> and will soon be available at
+> >>
+> >>    git://git.zen-sources.org/zen/mmotm.git
+> >>
+> >> It contains the following patches against 2.6.29:
+> > 
+> > 
+> > kernel/sysctl.c: In function '__register_sysctl_paths':
+> > kernel/sysctl.c:2059: error: 'struct ctl_table_header' has no member named 'dep_map'
+> > 
+> > 
+> > config attached.
+> > 
+> > ---
+> > ~Randy
+> 
+> kernel/sysctl.c: s/CONFIG_DEBUG_LOCK_ALLOC/CONFIG_PROVE_LOCKING/ at line 2056.
 
-Cheers,
-Rusty.
+OK, thanks, sysctl-lockdep-support-for-sysctl-reference-counting.patch.
+
+I have a note here that Peter had issues with that patch anyway.  I'm
+not yet sure if it's due to be fixed or dropped or what?
+
