@@ -1,69 +1,116 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759738AbZDGF3b@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759540AbZDGF3t@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759738AbZDGF3b (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 7 Apr 2009 01:29:31 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759397AbZDGF2x
+	id S1759540AbZDGF3t (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 7 Apr 2009 01:29:49 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759518AbZDGF3P
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 7 Apr 2009 01:28:53 -0400
-Received: from cn.fujitsu.com ([222.73.24.84]:54684 "EHLO song.cn.fujitsu.com"
-	rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org with ESMTP
-	id S1758318AbZDGF2R (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 7 Apr 2009 01:28:17 -0400
-Message-ID: <49DAE48D.3070408@cn.fujitsu.com>
-Date: Tue, 07 Apr 2009 13:28:45 +0800
-From: Li Zefan <lizf@cn.fujitsu.com>
-User-Agent: Thunderbird 2.0.0.9 (X11/20071115)
-MIME-Version: 1.0
-To: Andrew Morton <akpm@linux-foundation.org>
-CC: Li Xiaodong <lixd@cn.fujitsu.com>, linux-kernel@vger.kernel.org,
-       David Miller <davem@davemloft.net>, linux-net@vger.kernel.org
-Subject: [PATCH] Documentation/sysctl/net.txt: fix a typo
-References: <1238493359-22157-1-git-send-email-lixd@cn.fujitsu.com> <49D40D67.9020909@cn.fujitsu.com>
-In-Reply-To: <49D40D67.9020909@cn.fujitsu.com>
-Content-Type: text/plain; charset=GB2312
+	Tue, 7 Apr 2009 01:29:15 -0400
+Received: from fgwmail5.fujitsu.co.jp ([192.51.44.35]:41515 "EHLO
+	fgwmail5.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1758893AbZDGF3N (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 7 Apr 2009 01:29:13 -0400
+Date: Tue, 7 Apr 2009 14:27:39 +0900
+From: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+To: linux-kernel@vger.kernel.org
+Cc: akpm@linux-foundation.org
+Subject: Re: mmotm 2009-04-05-21-45 uploaded
+Message-Id: <20090407142739.0027de02.kamezawa.hiroyu@jp.fujitsu.com>
+In-Reply-To: <200904060450.n364oaUj031923@imap1.linux-foundation.org>
+References: <200904060450.n364oaUj031923@imap1.linux-foundation.org>
+Organization: FUJITSU Co. LTD.
+X-Mailer: Sylpheed 2.5.0 (GTK+ 2.10.14; i686-pc-mingw32)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Li Zefan wrote:
->> -There are  only  two  files  in this subdirectory. They control the delays for
->> -deleting and destroying socket descriptors.
->> +There is only one file in this directory.
->> +unix_dgram_qlen limits the max number of datagrams queued in Unix domain
->> +socket's buffer. It will not take effect unless PF_UNIX flag is spicified.
->>  
+On Sun, 05 Apr 2009 21:50:36 -0700
+akpm@linux-foundation.org wrote:
+
+> The mm-of-the-moment snapshot 2009-04-05-21-45 has been uploaded to
 > 
-> s/spicified/specified
+>    http://userweb.kernel.org/~akpm/mmotm/
 > 
+> and will soon be available at
+> 
+>    git://git.zen-sources.org/zen/mmotm.git
+> 
+> It contains the following patches against 2.6.29:
+> 
+> origin.patch
 
-sigh..This slipped into mainline..let's fix it.
+The warning itself comes from changes in origin.patch...so, someone
+might fix this already...
 
+==
+At make, following warning is pirnted.
 
-================
+scripts/kconfig/mconf arch/x86/Kconfig
+usr/Kconfig:145:warning: defaults for choice values not supported
 
+This is a fix.
 
-s/spicified/specified
-
-Signed-off-by: Li Zefan <lizf@cn.fujitsu.com>
+Signed-off-by: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
 ---
- Documentation/sysctl/net.txt |    2 +-
- 1 files changed, 1 insertions(+), 1 deletions(-)
+ usr/Kconfig |   17 ++++-------------
+ 1 file changed, 4 insertions(+), 13 deletions(-)
 
-diff --git a/Documentation/sysctl/net.txt b/Documentation/sysctl/net.txt
-index a34d55b..df38ef0 100644
---- a/Documentation/sysctl/net.txt
-+++ b/Documentation/sysctl/net.txt
-@@ -95,7 +95,7 @@ of struct cmsghdr structures with appended data.
+Index: mmotm-2.6.29-Apr5/usr/Kconfig
+===================================================================
+--- mmotm-2.6.29-Apr5.orig/usr/Kconfig
++++ mmotm-2.6.29-Apr5/usr/Kconfig
+@@ -72,10 +72,9 @@ config RD_LZMA
+ 	  Support loading of a LZMA encoded initial ramdisk or cpio buffer
+ 	  If unsure, say N.
  
- There is only one file in this directory.
- unix_dgram_qlen limits the max number of datagrams queued in Unix domain
--socket's buffer. It will not take effect unless PF_UNIX flag is spicified.
-+socket's buffer. It will not take effect unless PF_UNIX flag is specified.
+-if INITRAMFS_SOURCE!=""
+-
+ choice
+ 	prompt "Built-in initramfs compression mode"
++	default INITRAMFS_COMPTRSSION_NONE if INITRAMFS_SOURCE=""
+ 	help
+ 	  This option decides by which algorithm the builtin initramfs
+ 	  will be compressed.  Several compression algorithms are
+@@ -109,6 +108,7 @@ config INITRAMFS_COMPRESSION_NONE
+ config INITRAMFS_COMPRESSION_GZIP
+ 	bool "Gzip"
+ 	depends on RD_GZIP
++	depends on INITRAMFS_SOURCE!=""
+ 	help
+ 	  The old and tried gzip compression. Its compression ratio is
+ 	  the poorest among the 3 choices; however its speed (both
+@@ -117,6 +117,7 @@ config INITRAMFS_COMPRESSION_GZIP
+ config INITRAMFS_COMPRESSION_BZIP2
+ 	bool "Bzip2"
+ 	depends on RD_BZIP2
++	depends on INITRAMFS_SOURCE!=""
+ 	help
+ 	  Its compression ratio and speed is intermediate.
+ 	  Decompression speed is slowest among the three.  The initramfs
+@@ -127,6 +128,7 @@ config INITRAMFS_COMPRESSION_BZIP2
+ config INITRAMFS_COMPRESSION_LZMA
+ 	bool "LZMA"
+ 	depends on RD_LZMA
++	depends on INITRAMFS_SOURCE!=""
+ 	help
+ 	  The most recent compression algorithm.
+ 	  Its ratio is best, decompression speed is between the other
+@@ -134,14 +136,3 @@ config INITRAMFS_COMPRESSION_LZMA
+ 	  smaller with LZMA in comparison to gzip.
  
- 
- 3. /proc/sys/net/ipv4 - IPV4 settings
--- 
-1.5.4.rc3
-
+ endchoice
+-
+-endif
+-
+-if INITRAMFS_SOURCE=""
+-# The builtin initramfs is so small so we don't want to bug the user...
+-
+-config INITRAMFS_COMPRESSION_NONE
+-	bool
+-	default y
+-
+-endif
 
