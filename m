@@ -1,81 +1,93 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760732AbZDGUiF@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760843AbZDGUjk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760732AbZDGUiF (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 7 Apr 2009 16:38:05 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759041AbZDGUhw
+	id S1760843AbZDGUjk (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 7 Apr 2009 16:39:40 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753422AbZDGUjb
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 7 Apr 2009 16:37:52 -0400
-Received: from xc.sipsolutions.net ([83.246.72.84]:56031 "EHLO
-	sipsolutions.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1758793AbZDGUhv (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 7 Apr 2009 16:37:51 -0400
-Subject: Re: attempt to scan fails (device busy) if essid/ssid was changed
- recently
-From: Johannes Berg <johannes@sipsolutions.net>
-To: Maxim Levitsky <maximlevitsky@gmail.com>
-Cc: linux-wireless <linux-wireless@vger.kernel.org>,
-       linux-kernel <linux-kernel@vger.kernel.org>
-In-Reply-To: <1239135878.17958.11.camel@maxim-laptop> (sfid-20090407_222443_633750_085B264D)
-References: <1239062401.4705.23.camel@maxim-laptop>
-	 (sfid-20090407_020013_939126_90578556)  <1239092296.22453.1.camel@johannes.local>
-	 <1239108689.15015.3.camel@maxim-laptop>
-	 (sfid-20090407_145137_740898_8D0C40FD)  <1239109001.22453.40.camel@johannes.local>
-	 <1239109497.15015.12.camel@maxim-laptop>
-	 (sfid-20090407_150534_375314_4DA28551)  <1239110010.22453.41.camel@johannes.local>
-	 <1239110412.15015.23.camel@maxim-laptop>
-	 (sfid-20090407_152021_060436_AEF9110F)  <1239110860.4084.0.camel@johannes.local>
-	 <1239112310.15015.25.camel@maxim-laptop>
-	 <1239135878.17958.11.camel@maxim-laptop>
-	 (sfid-20090407_222443_633750_085B264D)
-Content-Type: multipart/signed; micalg="pgp-sha1"; protocol="application/pgp-signature"; boundary="=-rTsNHbRqMDQTm6MFc5Sm"
-Date: Tue, 07 Apr 2009 22:37:17 +0200
-Message-Id: <1239136637.7475.57.camel@johannes.local>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.24.5 
+	Tue, 7 Apr 2009 16:39:31 -0400
+Received: from mailfe05.tele2.it ([212.247.154.141]:51178 "EHLO swip.net"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1752786AbZDGUja (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 7 Apr 2009 16:39:30 -0400
+X-Greylist: delayed 3602 seconds by postgrey-1.27 at vger.kernel.org; Tue, 07 Apr 2009 16:39:30 EDT
+X-Cloudmark-Score: 0.000000 []
+X-Cloudmark-Analysis: v=1.0 c=1 a=gTSgHfSoPMgA:10 a=WEZlaz5u_NcA:10 a=8hWvghSQAAAA:8 a=i3dBniZaX_s5fkRFNy4A:9 a=ut7B469KWZMQuGnG2voA:7 a=2aeDbn_x8FWsf6A1nBDGQkLOvQcA:4 a=RMBU5szJeCoA:10
+Message-ID: <49DBABD4.4020403@gmail.com>
+Date: Tue, 07 Apr 2009 21:39:00 +0200
+From: Massimo Maiurana <maiurana@gmail.com>
+User-Agent: Thunderbird 2.0.0.12 (X11/20080213)
+MIME-Version: 1.0
+To: Sam Ravnborg <sam@ravnborg.org>
+CC: linux-kernel@vger.kernel.org
+Subject: Re: kconfig: update-po-config broken in 2.6.29
+References: <49DBA1E4.8000502@gmail.com> <20090407191741.GA13838@uranus.ravnborg.org>
+In-Reply-To: <20090407191741.GA13838@uranus.ravnborg.org>
+X-Enigmail-Version: 0.95.6
+OpenPGP: id=7044D601
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Sam Ravnborg, il 07/04/2009 21:17, scrisse:
+> On Tue, Apr 07, 2009 at 08:56:36PM +0200, Massimo Maiurana wrote:
+>> hi,
+>> in latest 2.6.29 "make update-po-config" fails at msguniq invocation 
+>> with an "invalid control sequence" error.
+>> the offending string is the following, and it's located in 
+>> drivers/staging/panel/Kconfig:72:
+>> "'\e[L' which are specific to the LCD, and a few ANSI codes. The"
+>>
+>> looks to me like gettext expects strings in printf format, so in 
+>> this case it thinks "\e" is a control sequence but doesn't recognise 
+>> it as a valid one.
+>>
+>> I can still obtain a suitable linux.pot file escaping the backslash, 
+>> and the resulting linux.mo file works even if the string is again 
+>> unescaped, but of course if I leave the escaped string it will be 
+>> displayed as-is (with a double backslash) if i run a configurator in 
+>> english, so it is not a valid solution for a patch.
+>>
+>> Maybe a valid solution would be to tell kxgettext to automatically 
+>> escape this kind of strings in the */config.pot he produces, so that 
+>> msguniq would not complain?... I don't really know, and I don't even 
+>> know how to do it. I see there is an escape function right at the 
+>> top of kxgettext.c, but as I'm not a coder I don't really know how 
+>> to hack it, so it's up to you... sorry.
+> Seems like a simple solution - thank for analyzing it!
+> 
+> Could you try following (untested) patch and see if that works
+> for you.
+> 
+> Thanks,
+> 	Sam
+> 
+> diff --git a/scripts/kconfig/kxgettext.c b/scripts/kconfig/kxgettext.c
+> index 6eb72a7..8d9ce22 100644
+> --- a/scripts/kconfig/kxgettext.c
+> +++ b/scripts/kconfig/kxgettext.c
+> @@ -43,6 +43,10 @@ static char *escape(const char* text, char *bf, int len)
+>  			++text;
+>  			goto next;
+>  		}
+> +		else if (*text == '\\') {
+> +			*bfp++ = '\\';
+> +			len--;
+> +		}
+>  		*bfp++ = *text++;
+>  next:
+>  		--len;
+> 
 
---=-rTsNHbRqMDQTm6MFc5Sm
-Content-Type: text/plain
-Content-Transfer-Encoding: quoted-printable
+yes, your patch works as it should, i.e. the backslash get escaped 
+and msguniq doesn't say a word :)
 
-On Tue, 2009-04-07 at 23:24 +0300, Maxim Levitsky wrote:
+many thanks, sam.
 
-> First I get this in kernel logs:
->=20
->=20
-> > [   29.971903] WARNING:
-> at /home/maxim/software/kernel/linux-2.6/net/wireless/core.h:79
-> nl80211_send_wiphy+0x8bd/0xa20 [cfg80211]()
+-- 
+       Massimo Maiurana         massimo<at>ragusa.linux.it
+       http://massimo.solira.org       GPG keyID #7044D601
 
-Eh, I don't think that is present in a recent wireless tree.
-
-johannes
-
---=-rTsNHbRqMDQTm6MFc5Sm
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: This is a digitally signed message part
-
------BEGIN PGP SIGNATURE-----
-Comment: Johannes Berg (powerbook)
-
-iQIcBAABAgAGBQJJ27l6AAoJEKVg1VMiehFYWwQP/i8S5heEHp+qyopOy2DxFtWt
-P2cxbgUzy13lyQ8L0zbZQhFUFjkBRIdC1QKwqceMuHDF/9/mc9V6QShPnGhQcp9c
-QsitprbskxZJo08dF+IMWOkZGWdPrqMvlOawbY0q+ZH9aSk76Nsufde8SvFrzwc4
-ph8MnMsRDnJn06LTTd4J4KMI8HYYGUYdOt3uk9wbk+1IK0kF/vxgnat0+iGirE0S
-kQrO/PnWKpaF7wF3Y6crIXcxUDWUtEnkXsV9677sFt6QlVJVYgs79gQRhrfsswY2
-VtjRdP3c1BdggqAn3OVtnmSXfzB5oTvOVzNzOS7W9j7DTqm0qQ73rUE8OhIqEdU/
-A8EFQguN9TFvp02dyuVj+VcrFzSL5Dbn/rdESGXxGPfZ7fZSedyiwz9oBobNu0BP
-DI9NZwJVLBsRTcTE5XI/5YEPMJIqofraAtGgvRBksJqzdJPJcGcUDAPKPv/uBaKV
-NYG1huOy+69yud+62zsc4LCcLrMAMaxj7C3q4675iCqA0I9vZ0EoU1o72Mv8Na1i
-Dl5hk7D+vKpqEG8i19XzECiJB/X0mFZ/hT2mP3VuI40vC4TNpu8sFNPVoalfDbS2
-TvcsZCGVmYa9peIOR8zGzWsirryp10hL2beHdI6FnbALrcYZZ3C2VKmvC1K7DMma
-Wp6h71O+hhSLXK4E8Or9
-=2JVt
------END PGP SIGNATURE-----
-
---=-rTsNHbRqMDQTm6MFc5Sm--
-
+Articolo 33 - [...]Enti e privati hanno il diritto di istituire
+scuole ed istituti di educazione, senza oneri per lo Stato.[...]
