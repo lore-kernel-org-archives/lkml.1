@@ -1,61 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754438AbZDGEM1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758125AbZDGENT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754438AbZDGEM1 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 7 Apr 2009 00:12:27 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751827AbZDGEMM
+	id S1758125AbZDGENT (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 7 Apr 2009 00:13:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751860AbZDGENF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 7 Apr 2009 00:12:12 -0400
-Received: from vms173003pub.verizon.net ([206.46.173.3]:36482 "EHLO
-	vms173003pub.verizon.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750820AbZDGEMK (ORCPT
+	Tue, 7 Apr 2009 00:13:05 -0400
+Received: from rcsinet13.oracle.com ([148.87.113.125]:59277 "EHLO
+	rgminet13.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751827AbZDGEND (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 7 Apr 2009 00:12:10 -0400
-Date: Tue, 07 Apr 2009 00:12:03 -0400 (EDT)
-From: Len Brown <lenb@kernel.org>
-X-X-Sender: lenb@localhost.localdomain
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Kernel Testers List <kernel-testers@vger.kernel.org>,
-       Dave Airlie <airlied@linux.ie>, Eric Anholt <eric@anholt.net>,
-       Matthew Garrett <mjg@redhat.com>,
-       Nico Schottelius <nico-linux-20090213@schottelius.org>
-Subject: Re: [Bug #12705] X200: Brightness broken since 2.6.29-rc4-58-g4c098bc
-In-reply-to: <AsKNxFx2juN.A.vfB.lHn2JB@chimera>
-Message-id: <alpine.LFD.2.00.0904070011280.5698@localhost.localdomain>
-References: <n4io5wq70ZO.A.gzG.rFn2JB@chimera>
- <AsKNxFx2juN.A.vfB.lHn2JB@chimera>
-User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
-MIME-version: 1.0
-Content-type: TEXT/PLAIN; charset=US-ASCII
+	Tue, 7 Apr 2009 00:13:03 -0400
+Message-ID: <49DAD2AA.9000604@oracle.com>
+Date: Mon, 06 Apr 2009 21:12:26 -0700
+From: Randy Dunlap <randy.dunlap@oracle.com>
+Organization: Oracle Linux Engineering
+User-Agent: Thunderbird 2.0.0.6 (X11/20070801)
+MIME-Version: 1.0
+To: Randy Dunlap <randy.dunlap@oracle.com>
+CC: linux-kernel@vger.kernel.org, akpm@linux-foundation.org
+Subject: Re: mmotm 2009-04-05-21-45 uploaded (sysctl)
+References: <200904060450.n364oaUj031923@imap1.linux-foundation.org> <20090406210921.9efab09b.randy.dunlap@oracle.com>
+In-Reply-To: <20090406210921.9efab09b.randy.dunlap@oracle.com>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
+X-Source-IP: acsmt701.oracle.com [141.146.40.71]
+X-Auth-Type: Internal IP
+X-CT-RefId: str=0001.0A090206.49DAD2A0.00EA:SCFMA4539814,ss=1,fgs=0
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-
-On Mon, 6 Apr 2009, Rafael J. Wysocki wrote:
-
-> This message has been generated automatically as a part of a report
-> of recent regressions.
+Randy Dunlap wrote:
+> On Sun, 05 Apr 2009 21:50:36 -0700 akpm@linux-foundation.org wrote:
 > 
-> The following bug entry is on the current list of known regressions
-> from 2.6.28.  Please verify if it still should be listed and let me know
-> (either way).
+>> The mm-of-the-moment snapshot 2009-04-05-21-45 has been uploaded to
+>>
+>>    http://userweb.kernel.org/~akpm/mmotm/
+>>
+>> and will soon be available at
+>>
+>>    git://git.zen-sources.org/zen/mmotm.git
+>>
+>> It contains the following patches against 2.6.29:
 > 
 > 
-> Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=12705
-> Subject		: X200: Brightness broken since 2.6.29-rc4-58-g4c098bc
-> Submitter	: Nico Schottelius <nico-linux-20090213@schottelius.org>
-> Date		: 2009-02-13 9:33 (53 days old)
-> First-Bad-Commit: http://git.kernel.org/?p=linux/kernel/git/torvalds/linux-2.6.git;a=commit;h=e806b4957412bf472d826bd8cc571da041248799
-> References	: http://marc.info/?l=linux-kernel&m=123451768406825&w=4
-> 		  http://marc.info/?l=linux-kernel&m=123479975503827&w=2
+> kernel/sysctl.c: In function '__register_sysctl_paths':
+> kernel/sysctl.c:2059: error: 'struct ctl_table_header' has no member named 'dep_map'
+> 
+> 
+> config attached.
+> 
+> ---
+> ~Randy
 
-> Handled-By	: Len Brown <lenb@kernel.org>
+kernel/sysctl.c: s/CONFIG_DEBUG_LOCK_ALLOC/CONFIG_PROVE_LOCKING/ at line 2056.
 
-Handled-By	: Eric Anholt <eric@anholt.net>
-
-thanks,
-Len Brown, Intel Open Source Technology Center
-
-
+-- 
+~Randy
