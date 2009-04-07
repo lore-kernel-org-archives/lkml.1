@@ -1,114 +1,141 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761412AbZDGPY4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760774AbZDGPYj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761412AbZDGPY4 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 7 Apr 2009 11:24:56 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753415AbZDGPKa
+	id S1760774AbZDGPYj (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 7 Apr 2009 11:24:39 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759327AbZDGPK2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 7 Apr 2009 11:10:30 -0400
-Received: from one.firstfloor.org ([213.235.205.2]:41316 "EHLO
+	Tue, 7 Apr 2009 11:10:28 -0400
+Received: from one.firstfloor.org ([213.235.205.2]:41321 "EHLO
 	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1759282AbZDGPK0 (ORCPT
+	with ESMTP id S1759350AbZDGPKY (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 7 Apr 2009 11:10:26 -0400
+	Tue, 7 Apr 2009 11:10:24 -0400
 From: Andi Kleen <andi@firstfloor.org>
 References: <20090407509.382219156@firstfloor.org>
 In-Reply-To: <20090407509.382219156@firstfloor.org>
 To: linux-kernel@vger.kernel.org, linux-mm@kvack.org, x86@kernel.org
-Subject: [PATCH] [16/16] POISON: Add madvise() based injector for poisoned data
-Message-Id: <20090407151014.364D81D0470@basil.firstfloor.org>
-Date: Tue,  7 Apr 2009 17:10:14 +0200 (CEST)
+Subject: [PATCH] [14/16] x86: MCE: Rename mce_notify_user to mce_notify_irq
+Message-Id: <20090407151012.120C51D046E@basil.firstfloor.org>
+Date: Tue,  7 Apr 2009 17:10:11 +0200 (CEST)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-Impact: optional, useful for debugging
+Impact: cleanup
 
-Add a new madvice sub command to inject poison for some
-pages in a process' address space.  This is useful for
-testing the poison page handling.
-
-Open issues:
-
-- This patch allows root to tie up arbitary amounts of memory.
-Should this be disabled inside containers?
-- There's a small race window between getting the page and injecting.
-The patch drops the ref count because otherwise memory_failure
-complains about dangling references. In theory with a multi threaded
-injector one could inject poison for a process foreign page this way.
-Not a serious issue right now.
+Rename the mce_notify_user function to mce_notify_irq. The next
+patch will split the wakeup handling of interrupt context 
+and of process context and it's better to give it a clearer
+name for this.
 
 Signed-off-by: Andi Kleen <ak@linux.intel.com>
 
 ---
- include/asm-generic/mman.h |    1 +
- mm/madvise.c               |   37 +++++++++++++++++++++++++++++++++++++
- 2 files changed, 38 insertions(+)
+ arch/x86/include/asm/mce.h                |    2 +-
+ arch/x86/kernel/cpu/mcheck/mce-inject.c   |    2 +-
+ arch/x86/kernel/cpu/mcheck/mce_64.c       |   10 +++++-----
+ arch/x86/kernel/cpu/mcheck/mce_intel_64.c |    2 +-
+ arch/x86/kernel/signal.c                  |    2 +-
+ 5 files changed, 9 insertions(+), 9 deletions(-)
 
-Index: linux/mm/madvise.c
+Index: linux/arch/x86/kernel/cpu/mcheck/mce_64.c
 ===================================================================
---- linux.orig/mm/madvise.c	2009-04-07 16:36:29.000000000 +0200
-+++ linux/mm/madvise.c	2009-04-07 16:39:39.000000000 +0200
-@@ -208,6 +208,38 @@
- 	return error;
+--- linux.orig/arch/x86/kernel/cpu/mcheck/mce_64.c	2009-04-07 16:39:21.000000000 +0200
++++ linux/arch/x86/kernel/cpu/mcheck/mce_64.c	2009-04-07 16:43:04.000000000 +0200
+@@ -303,14 +303,14 @@
+ 	ack_APIC_irq();
+ 	exit_idle();
+ 	irq_enter();
+-	mce_notify_user();
++	mce_notify_irq();
+ 	irq_exit();
  }
  
-+#ifdef CONFIG_MEMORY_FAILURE
-+/*
-+ * Error injection support for memory error handling.
-+ */
-+static int madvise_poison(unsigned long start, unsigned long end)
-+{
-+	/*
-+	 * RED-PEN
-+	 * This allows to tie up arbitary amounts of memory.
-+	 * Might be a good idea to disable it inside containers even for root.
-+	 */
-+	if (!capable(CAP_SYS_ADMIN))
-+		return -EPERM;
-+	for (; start < end; start += PAGE_SIZE) {
-+		struct page *p;
-+		int ret = get_user_pages(current, current->mm, start, 1,
-+						0, 0, &p, NULL);
-+		if (ret != 1)
-+			return ret;
-+		put_page(p);
-+		/*
-+ 		 * RED-PEN page can be reused, but otherwise we'll have to fight with the
-+		 * refcnt
-+		 */
-+		printk(KERN_INFO "Injecting memory failure for page %lx at %lx\n",
-+		       page_to_pfn(p), start);
-+		memory_failure(page_to_pfn(p), 0);
-+	}
-+	return 0;
-+}
-+#endif
-+
- static long
- madvise_vma(struct vm_area_struct *vma, struct vm_area_struct **prev,
- 		unsigned long start, unsigned long end, int behavior)
-@@ -290,6 +322,11 @@
- 	int write;
- 	size_t len;
+ static void mce_report_event(struct pt_regs *regs)
+ {
+ 	if (regs->flags & (X86_VM_MASK|X86_EFLAGS_IF)) {
+-		mce_notify_user();
++		mce_notify_irq();
+ 		return;
+ 	}
  
-+#ifdef CONFIG_MEMORY_FAILURE
-+	if (behavior == MADV_POISON)
-+		return madvise_poison(start, start+len_in);
-+#endif
-+
- 	write = madvise_need_mmap_write(behavior);
- 	if (write)
- 		down_write(&current->mm->mmap_sem);
-Index: linux/include/asm-generic/mman.h
+@@ -904,7 +904,7 @@
+ 	 * polling interval, otherwise increase the polling interval.
+ 	 */
+ 	n = &__get_cpu_var(next_interval);
+-	if (mce_notify_user()) {
++	if (mce_notify_irq()) {
+ 		*n = max(*n/2, HZ/100);
+ 	} else {
+ 		*n = min(*n*2, (int)round_jiffies_relative(check_interval*HZ));
+@@ -926,7 +926,7 @@
+  * Can be called from interrupt context, but not from machine check/NMI
+  * context.
+  */
+-int mce_notify_user(void)
++int mce_notify_irq(void)
+ {
+ 	/* Not more than two messages every minute */
+ 	static DEFINE_RATELIMIT_STATE(ratelimit, 60*HZ, 2);
+@@ -950,7 +950,7 @@
+ 	}
+ 	return 0;
+ }
+-EXPORT_SYMBOL_GPL(mce_notify_user);
++EXPORT_SYMBOL_GPL(mce_notify_irq);
+ 
+ /*
+  * Initialize Machine Checks for a CPU.
+Index: linux/arch/x86/include/asm/mce.h
 ===================================================================
---- linux.orig/include/asm-generic/mman.h	2009-04-07 16:36:29.000000000 +0200
-+++ linux/include/asm-generic/mman.h	2009-04-07 16:39:39.000000000 +0200
-@@ -34,6 +34,7 @@
- #define MADV_REMOVE	9		/* remove these pages & resources */
- #define MADV_DONTFORK	10		/* don't inherit across fork */
- #define MADV_DOFORK	11		/* do inherit across fork */
-+#define MADV_POISON	12		/* poison the page (root only) */
+--- linux.orig/arch/x86/include/asm/mce.h	2009-04-07 16:39:21.000000000 +0200
++++ linux/arch/x86/include/asm/mce.h	2009-04-07 16:43:04.000000000 +0200
+@@ -162,7 +162,7 @@
+ };
+ extern void machine_check_poll(enum mcp_flags flags, mce_banks_t *b);
  
- /* compatibility flags */
- #define MAP_FILE	0
+-extern int mce_notify_user(void);
++extern int mce_notify_irq(void);
+ 
+ #endif /* !CONFIG_X86_32 */
+ 
+Index: linux/arch/x86/kernel/cpu/mcheck/mce-inject.c
+===================================================================
+--- linux.orig/arch/x86/kernel/cpu/mcheck/mce-inject.c	2009-04-07 16:39:21.000000000 +0200
++++ linux/arch/x86/kernel/cpu/mcheck/mce-inject.c	2009-04-07 16:39:39.000000000 +0200
+@@ -65,7 +65,7 @@
+ 		memset(&b, 0xff, sizeof(mce_banks_t));
+ 		printk(KERN_INFO "Starting machine check poll CPU %d\n", cpu);
+ 		machine_check_poll(0, &b);
+-		mce_notify_user();
++		mce_notify_irq();
+ 		printk(KERN_INFO "Finished machine check poll on CPU %d\n",
+ 		       cpu);
+ 	}
+Index: linux/arch/x86/kernel/signal.c
+===================================================================
+--- linux.orig/arch/x86/kernel/signal.c	2009-04-07 16:39:21.000000000 +0200
++++ linux/arch/x86/kernel/signal.c	2009-04-07 16:43:04.000000000 +0200
+@@ -860,7 +860,7 @@
+ #if defined(CONFIG_X86_64) && defined(CONFIG_X86_MCE)
+ 	/* notify userspace of pending MCEs */
+ 	if (thread_info_flags & _TIF_MCE_NOTIFY)
+-		mce_notify_user();
++		mce_notify_irq();
+ #endif /* CONFIG_X86_64 && CONFIG_X86_MCE */
+ 
+ 	/* deal with pending signal delivery */
+Index: linux/arch/x86/kernel/cpu/mcheck/mce_intel_64.c
+===================================================================
+--- linux.orig/arch/x86/kernel/cpu/mcheck/mce_intel_64.c	2009-04-07 16:39:21.000000000 +0200
++++ linux/arch/x86/kernel/cpu/mcheck/mce_intel_64.c	2009-04-07 16:39:39.000000000 +0200
+@@ -132,7 +132,7 @@
+ static void intel_threshold_interrupt(void)
+ {
+ 	machine_check_poll(MCP_TIMESTAMP, &__get_cpu_var(mce_banks_owned));
+-	mce_notify_user();
++	mce_notify_irq();
+ }
+ 
+ static void print_update(char *type, int *hdr, int num)
