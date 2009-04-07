@@ -1,137 +1,154 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760094AbZDGPPF@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760034AbZDGPOK@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760094AbZDGPPF (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 7 Apr 2009 11:15:05 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758551AbZDGPIF
+	id S1760034AbZDGPOK (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 7 Apr 2009 11:14:10 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758635AbZDGPH7
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 7 Apr 2009 11:08:05 -0400
-Received: from one.firstfloor.org ([213.235.205.2]:48866 "EHLO
+	Tue, 7 Apr 2009 11:07:59 -0400
+Received: from one.firstfloor.org ([213.235.205.2]:48855 "EHLO
 	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1758125AbZDGPIE (ORCPT
+	with ESMTP id S1757575AbZDGPH6 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 7 Apr 2009 11:08:04 -0400
+	Tue, 7 Apr 2009 11:07:58 -0400
 From: Andi Kleen <andi@firstfloor.org>
 References: <20090407507.636692542@firstfloor.org>
 In-Reply-To: <20090407507.636692542@firstfloor.org>
 To: hpa@zytor.com, linux-kernel@vger.kernel.org, mingo@elte.hu,
        tglx@linutronix.de
-Subject: [PATCH] [17/28] x86: MCE: Add table driven machine check grading
-Message-Id: <20090407150759.9823D1D046D@basil.firstfloor.org>
-Date: Tue,  7 Apr 2009 17:07:59 +0200 (CEST)
+Subject: [PATCH] [14/28] x86: MCE: Add MSR read wrappers for easier error injection
+Message-Id: <20090407150756.23F221D046E@basil.firstfloor.org>
+Date: Tue,  7 Apr 2009 17:07:55 +0200 (CEST)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-Impact: Feature
+This will be used by future patches to allow machine check error injection.
+Right now it's a nop, except for adding some wrappers around the MSR reads.
 
-The machine check grading (as in deciding what should be done for a given
-register value) has to be done multiple times soon and it's also getting more complicated. 
-So it makes sense to consolidate it into a single function. To get smaller
-and more straight forward and possibly more extensible code I opted towards
-a new table driven method. The various rules are put into a table
-when is then executed by a very simple interpreter.
+This is early in the sequence to avoid too many conflicts.
 
-The grading engine is in a new file mce-severity.c. I also added a private
-include file mce-internal.h, because mce.h is already a bit too cluttered.
+Andi Kleen <ak@linux.intel.com>
 
-This is dead code right now, but will be used in followon patches.
 
 Signed-off-by: Andi Kleen <ak@linux.intel.com>
 
 ---
- arch/x86/kernel/cpu/mcheck/Makefile       |    1 
- arch/x86/kernel/cpu/mcheck/mce-internal.h |   10 ++++
- arch/x86/kernel/cpu/mcheck/mce-severity.c |   61 ++++++++++++++++++++++++++++++
- 3 files changed, 72 insertions(+)
+ arch/x86/kernel/cpu/mcheck/mce_64.c |   37 ++++++++++++++++++++++++------------
+ 1 file changed, 25 insertions(+), 12 deletions(-)
 
-Index: linux/arch/x86/kernel/cpu/mcheck/mce-severity.c
+Index: linux/arch/x86/kernel/cpu/mcheck/mce_64.c
 ===================================================================
---- /dev/null	1970-01-01 00:00:00.000000000 +0000
-+++ linux/arch/x86/kernel/cpu/mcheck/mce-severity.c	2009-04-07 16:43:08.000000000 +0200
-@@ -0,0 +1,61 @@
-+/*
-+ * MCE grading rules.
-+ * Copyright 2008, 2009 Intel Corporation.
-+ *
-+ * This program is free software; you can redistribute it and/or
-+ * modify it under the terms of the GNU General Public License
-+ * as published by the Free Software Foundation; version 2
-+ * of the License.
-+ *
-+ * Author: Andi Kleen
-+ */
-+#include <linux/kernel.h>
-+#include <asm/mce.h>
-+
-+#include "mce-internal.h"
-+
-+/*
-+ * Grade an mce by severity. In general the most severe ones are processed
-+ * first. Since there are quite a lot of combinations test the bits in a
-+ * table-driven way. The rules are simply processed in order, first
-+ * match wins.
-+ */
-+
-+static struct severity {
-+	u64 mask;
-+	u64 result;
-+	unsigned char sev;
-+	unsigned char mcgmask;
-+	unsigned char mcgres;
-+	char *msg;
-+} severities[] = {
-+#define SEV(s) .sev = MCE_ ## s ## _SEVERITY
-+#define BITCLR(x, s, m, r...) { .mask = x, .result = 0, SEV(s), .msg = m, ## r }
-+#define BITSET(x, s, m, r...) { .mask = x, .result = x, SEV(s), .msg = m, ## r }
-+#define MCGMASK(x, res, s, m, r...) \
-+	{ .mcgmask = x, .mcgres = res, SEV(s), .msg = m, ## r }
-+	BITCLR(MCI_STATUS_VAL, NO, "Invalid"),
-+	BITCLR(MCI_STATUS_EN, NO, "Not enabled"),
-+	BITSET(MCI_STATUS_PCC, PANIC, "Processor context corrupt"),
-+	MCGMASK(MCG_STATUS_RIPV, 0, PANIC, "No restart IP"),
-+	BITSET(MCI_STATUS_UC|MCI_STATUS_OVER, PANIC, "Overflowed uncorrected"),
-+	BITSET(MCI_STATUS_UC, UC, "Uncorrected"),
-+	BITSET(0, SOME, "No match")	/* always matches. keep at end */
-+};
-+
-+int mce_severity(struct mce *a, int tolerant, char **msg)
+--- linux.orig/arch/x86/kernel/cpu/mcheck/mce_64.c	2009-04-07 16:09:59.000000000 +0200
++++ linux/arch/x86/kernel/cpu/mcheck/mce_64.c	2009-04-07 16:43:12.000000000 +0200
+@@ -171,6 +171,19 @@
+ 	panic(msg);
+ }
+ 
++/* MSR access wrappers used for error injection */
++static u64 mce_rdmsrl(u32 msr)
 +{
-+	struct severity *s;
-+	for (s = severities;; s++) {
-+		if ((a->status & s->mask) != s->result)
-+			continue;
-+		if ((a->mcgstatus & s->mcgmask) != s->mcgres)
-+			continue;
-+		if (s->sev > MCE_NO_SEVERITY && (a->status & MCI_STATUS_UC) &&
-+			tolerant < 1)
-+			return MCE_PANIC_SEVERITY;
-+		if (msg)
-+			*msg = s->msg;
-+		return s->sev;
-+	}
++	u64 v;
++	rdmsrl(msr, v);
++	return v;
 +}
-Index: linux/arch/x86/kernel/cpu/mcheck/Makefile
-===================================================================
---- linux.orig/arch/x86/kernel/cpu/mcheck/Makefile	2009-04-07 16:09:53.000000000 +0200
-+++ linux/arch/x86/kernel/cpu/mcheck/Makefile	2009-04-07 16:43:09.000000000 +0200
-@@ -5,3 +5,4 @@
- obj-$(CONFIG_X86_MCE_AMD)	+= mce_amd_64.o
- obj-$(CONFIG_X86_MCE_NONFATAL)	+= non-fatal.o
- obj-$(CONFIG_X86_MCE_THRESHOLD) += threshold.o
-+obj-$(CONFIG_X86_64)		+= mce-severity.o
-Index: linux/arch/x86/kernel/cpu/mcheck/mce-internal.h
-===================================================================
---- /dev/null	1970-01-01 00:00:00.000000000 +0000
-+++ linux/arch/x86/kernel/cpu/mcheck/mce-internal.h	2009-04-07 16:43:08.000000000 +0200
-@@ -0,0 +1,10 @@
-+#include <asm/mce.h>
 +
-+enum severity_level {
-+	MCE_NO_SEVERITY,
-+	MCE_SOME_SEVERITY,
-+	MCE_UC_SEVERITY,
-+	MCE_PANIC_SEVERITY,
-+};
++static void mce_wrmsrl(u32 msr, u64 v)
++{
++	wrmsrl(msr, v);
++}
 +
-+int mce_severity(struct mce *a, int tolerant, char **msg);
+ int mce_available(struct cpuinfo_x86 *c)
+ {
+ 	if (mce_dont_init)
+@@ -188,7 +201,7 @@
+ 		m->cs = 0;
+ 	}
+ 	if (rip_msr)
+-		rdmsrl(rip_msr, m->ip);
++		m->ip = mce_rdmsrl(rip_msr);
+ }
+ 
+ /*
+@@ -250,7 +263,7 @@
+ 
+ 	mce_setup(&m);
+ 
+-	rdmsrl(MSR_IA32_MCG_STATUS, m.mcgstatus);
++	m.mcgstatus = mce_rdmsrl(MSR_IA32_MCG_STATUS);
+ 	for (i = 0; i < banks; i++) {
+ 		if (!bank[i] || !test_bit(i, *b))
+ 			continue;
+@@ -261,7 +274,7 @@
+ 		m.tsc = 0;
+ 
+ 		barrier();
+-		rdmsrl(MSR_IA32_MC0_STATUS + i*4, m.status);
++		m.status = mce_rdmsrl(MSR_IA32_MC0_STATUS + i*4);
+ 		if (!(m.status & MCI_STATUS_VAL))
+ 			continue;
+ 
+@@ -276,9 +289,9 @@
+ 			continue;
+ 
+ 		if (m.status & MCI_STATUS_MISCV)
+-			rdmsrl(MSR_IA32_MC0_MISC + i*4, m.misc);
++			m.misc = mce_rdmsrl(MSR_IA32_MC0_MISC + i*4);
+ 		if (m.status & MCI_STATUS_ADDRV)
+-			rdmsrl(MSR_IA32_MC0_ADDR + i*4, m.addr);
++			m.addr = mce_rdmsrl(MSR_IA32_MC0_ADDR + i*4);
+ 
+ 		if (!(flags & MCP_TIMESTAMP))
+ 			m.tsc = 0;
+@@ -294,7 +307,7 @@
+ 		/*
+ 		 * Clear state for this bank.
+ 		 */
+-		wrmsrl(MSR_IA32_MC0_STATUS+4*i, 0);
++		mce_wrmsrl(MSR_IA32_MC0_STATUS+4*i, 0);
+ 	}
+ 
+ 	/*
+@@ -342,8 +355,8 @@
+ 		goto out;
+ 
+ 	mce_setup(&m);
++	m.mcgstatus = mce_rdmsrl(MSR_IA32_MCG_STATUS);
+ 
+-	rdmsrl(MSR_IA32_MCG_STATUS, m.mcgstatus);
+ 	/* if the restart IP is not valid, we're done for */
+ 	if (!(m.mcgstatus & MCG_STATUS_RIPV))
+ 		no_way_out = 1;
+@@ -360,7 +373,7 @@
+ 		m.addr = 0;
+ 		m.bank = i;
+ 
+-		rdmsrl(MSR_IA32_MC0_STATUS + i*4, m.status);
++		m.status = mce_rdmsrl(MSR_IA32_MC0_STATUS + i*4);
+ 		if ((m.status & MCI_STATUS_VAL) == 0)
+ 			continue;
+ 
+@@ -400,9 +413,9 @@
+ 		}
+ 
+ 		if (m.status & MCI_STATUS_MISCV)
+-			rdmsrl(MSR_IA32_MC0_MISC + i*4, m.misc);
++			m.misc = mce_rdmsrl(MSR_IA32_MC0_MISC + i*4);
+ 		if (m.status & MCI_STATUS_ADDRV)
+-			rdmsrl(MSR_IA32_MC0_ADDR + i*4, m.addr);
++			m.addr = mce_rdmsrl(MSR_IA32_MC0_ADDR + i*4);
+ 
+ 		mce_get_rip(&m, regs);
+ 		mce_log(&m);
+@@ -467,9 +480,9 @@
+ 	/* the last thing we do is clear state */
+ 	for (i = 0; i < banks; i++) {
+ 		if (test_bit(i, toclear))
+-			wrmsrl(MSR_IA32_MC0_STATUS+4*i, 0);
++			mce_wrmsrl(MSR_IA32_MC0_STATUS+4*i, 0);
+ 	}
+-	wrmsrl(MSR_IA32_MCG_STATUS, 0);
++	mce_wrmsrl(MSR_IA32_MCG_STATUS, 0);
+ out:
+ 	atomic_dec(&mce_entry);
+ 	sync_core();
