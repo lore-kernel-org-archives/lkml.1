@@ -1,93 +1,44 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760843AbZDGUjk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760883AbZDGUkN@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760843AbZDGUjk (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 7 Apr 2009 16:39:40 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753422AbZDGUjb
+	id S1760883AbZDGUkN (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 7 Apr 2009 16:40:13 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760951AbZDGUj5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 7 Apr 2009 16:39:31 -0400
-Received: from mailfe05.tele2.it ([212.247.154.141]:51178 "EHLO swip.net"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1752786AbZDGUja (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 7 Apr 2009 16:39:30 -0400
-X-Greylist: delayed 3602 seconds by postgrey-1.27 at vger.kernel.org; Tue, 07 Apr 2009 16:39:30 EDT
-X-Cloudmark-Score: 0.000000 []
-X-Cloudmark-Analysis: v=1.0 c=1 a=gTSgHfSoPMgA:10 a=WEZlaz5u_NcA:10 a=8hWvghSQAAAA:8 a=i3dBniZaX_s5fkRFNy4A:9 a=ut7B469KWZMQuGnG2voA:7 a=2aeDbn_x8FWsf6A1nBDGQkLOvQcA:4 a=RMBU5szJeCoA:10
-Message-ID: <49DBABD4.4020403@gmail.com>
-Date: Tue, 07 Apr 2009 21:39:00 +0200
-From: Massimo Maiurana <maiurana@gmail.com>
-User-Agent: Thunderbird 2.0.0.12 (X11/20080213)
+	Tue, 7 Apr 2009 16:39:57 -0400
+Received: from courier.cs.helsinki.fi ([128.214.9.1]:59717 "EHLO
+	mail.cs.helsinki.fi" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1759404AbZDGUj4 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 7 Apr 2009 16:39:56 -0400
+Message-ID: <49DBB929.4080205@cs.helsinki.fi>
+Date: Tue, 07 Apr 2009 23:35:53 +0300
+From: Pekka Enberg <penberg@cs.helsinki.fi>
+User-Agent: Thunderbird 2.0.0.21 (Macintosh/20090302)
 MIME-Version: 1.0
-To: Sam Ravnborg <sam@ravnborg.org>
-CC: linux-kernel@vger.kernel.org
-Subject: Re: kconfig: update-po-config broken in 2.6.29
-References: <49DBA1E4.8000502@gmail.com> <20090407191741.GA13838@uranus.ravnborg.org>
-In-Reply-To: <20090407191741.GA13838@uranus.ravnborg.org>
-X-Enigmail-Version: 0.95.6
-OpenPGP: id=7044D601
-Content-Type: text/plain; charset=UTF-8; format=flowed
+To: David Rientjes <rientjes@google.com>
+CC: Christoph Lameter <cl@linux-foundation.org>, linux-kernel@vger.kernel.org
+Subject: Re: [patch] slub: default min_partial to at least highest cpus per
+  node
+References: <alpine.DEB.2.00.0904051653420.25339@chino.kir.corp.google.com>  <49DBA23A.3000106@cs.helsinki.fi> <84144f020904071209j638aae9bv406661ec401af7af@mail.gmail.com> <alpine.DEB.2.00.0904071231500.21113@chino.kir.corp.google.com> <49DBAF7E.30704@cs.helsinki.fi> <alpine.DEB.2.00.0904071302430.32321@chino.kir.corp.google.com> <49DBB373.5050800@cs.helsinki.fi> <alpine.DEB.2.00.0904071316460.21748@chino.kir.corp.google.com>
+In-Reply-To: <alpine.DEB.2.00.0904071316460.21748@chino.kir.corp.google.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Sam Ravnborg, il 07/04/2009 21:17, scrisse:
-> On Tue, Apr 07, 2009 at 08:56:36PM +0200, Massimo Maiurana wrote:
->> hi,
->> in latest 2.6.29 "make update-po-config" fails at msguniq invocation 
->> with an "invalid control sequence" error.
->> the offending string is the following, and it's located in 
->> drivers/staging/panel/Kconfig:72:
->> "'\e[L' which are specific to the LCD, and a few ANSI codes. The"
->>
->> looks to me like gettext expects strings in printf format, so in 
->> this case it thinks "\e" is a control sequence but doesn't recognise 
->> it as a valid one.
->>
->> I can still obtain a suitable linux.pot file escaping the backslash, 
->> and the resulting linux.mo file works even if the string is again 
->> unescaped, but of course if I leave the escaped string it will be 
->> displayed as-is (with a double backslash) if i run a configurator in 
->> english, so it is not a valid solution for a patch.
->>
->> Maybe a valid solution would be to tell kxgettext to automatically 
->> escape this kind of strings in the */config.pot he produces, so that 
->> msguniq would not complain?... I don't really know, and I don't even 
->> know how to do it. I see there is an escape function right at the 
->> top of kxgettext.c, but as I'm not a coder I don't really know how 
->> to hack it, so it's up to you... sorry.
-> Seems like a simple solution - thank for analyzing it!
+David Rientjes wrote:
+> On Tue, 7 Apr 2009, Pekka Enberg wrote:
 > 
-> Could you try following (untested) patch and see if that works
-> for you.
+>>> If you think that's acceptable, I'd be just as satisfied with that approach
+>>> as long as all archs have valid cpu_to_node() mappings at the time of
+>>> CPU_UP_PREPARE.
+>> Well, that doesn't change the current behavior, so sure, I think it's
+>> acceptable. And if the new defaults seem reasonable enough, we can probably
+>> get rid of the tunable altogether.
 > 
-> Thanks,
-> 	Sam
-> 
-> diff --git a/scripts/kconfig/kxgettext.c b/scripts/kconfig/kxgettext.c
-> index 6eb72a7..8d9ce22 100644
-> --- a/scripts/kconfig/kxgettext.c
-> +++ b/scripts/kconfig/kxgettext.c
-> @@ -43,6 +43,10 @@ static char *escape(const char* text, char *bf, int len)
->  			++text;
->  			goto next;
->  		}
-> +		else if (*text == '\\') {
-> +			*bfp++ = '\\';
-> +			len--;
-> +		}
->  		*bfp++ = *text++;
->  next:
->  		--len;
-> 
+> I'd like to remove MAX_PARTIAL and replace it with nr_cpu_ids.
 
-yes, your patch works as it should, i.e. the backslash get escaped 
-and msguniq doesn't say a word :)
-
-many thanks, sam.
-
--- 
-       Massimo Maiurana         massimo<at>ragusa.linux.it
-       http://massimo.solira.org       GPG keyID #7044D601
-
-Articolo 33 - [...]Enti e privati hanno il diritto di istituire
-scuole ed istituti di educazione, senza oneri per lo Stato.[...]
+Yeah, something more dynamic makes sense. But we probably need to do 
+ilog2(nr_cpu_ids) or something; otherwise we will have very long partial 
+lists on big iron machines (think 4096 cpus here).
