@@ -1,57 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752861AbZDGNgG@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756064AbZDGNhb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752861AbZDGNgG (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 7 Apr 2009 09:36:06 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751863AbZDGNfy
+	id S1756064AbZDGNhb (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 7 Apr 2009 09:37:31 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752444AbZDGNhW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 7 Apr 2009 09:35:54 -0400
-Received: from rtr.ca ([76.10.145.34]:43313 "EHLO mail.rtr.ca"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751159AbZDGNfx (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 7 Apr 2009 09:35:53 -0400
-Message-ID: <49DB56B8.1060805@rtr.ca>
-Date: Tue, 07 Apr 2009 09:35:52 -0400
-From: Mark Lord <lkml@rtr.ca>
-Organization: Real-Time Remedies Inc.
-User-Agent: Thunderbird 2.0.0.21 (X11/20090318)
-MIME-Version: 1.0
+	Tue, 7 Apr 2009 09:37:22 -0400
+Received: from zone0.gcu-squad.org ([212.85.147.21]:21453 "EHLO
+	services.gcu-squad.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752161AbZDGNhW (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 7 Apr 2009 09:37:22 -0400
+Date: Tue, 7 Apr 2009 15:37:09 +0200
+From: Jean Delvare <khali@linux-fr.org>
 To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: Ray Lee <ray-lk@madrabbit.org>, Hua Zhong <hzhong@gmail.com>,
-       Theodore Tso <tytso@mit.edu>, Jens Axboe <jens.axboe@oracle.com>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH 0/8][RFC] IO latency/throughput fixes
-References: <1239022088-29002-1-git-send-email-jens.axboe@oracle.com>  <alpine.LFD.2.00.0904060803141.4023@localhost.localdomain>  <20090406151054.GD5178@kernel.dk> <alpine.LFD.2.00.0904060840080.3863@localhost.localdomain>  <20090406183157.GD7376@mit.edu> <alpine.LFD.2.00.0904061255160.4134@localhost.localdomain>  <002501c9b6f3$f85b4910$e911db30$@com> <20090406211931.GB8586@mit.edu>  <003001c9b6ff$a9259ce0$fb70d6a0$@com> <2c0942db0904061504l6504934bi446f7425fcd38470@mail.gmail.com> <alpine.LFD.2.00.0904061509020.7443@localhost.localdomain> <alpine.LFD.2.00.0904061604410.8214@localhost.localdomain>
-In-Reply-To: <alpine.LFD.2.00.0904061604410.8214@localhost.localdomain>
-Content-Type: text/plain; charset=UTF-8; format=flowed
+Cc: LKML <linux-kernel@vger.kernel.org>,
+       LM Sensors <lm-sensors@lm-sensors.org>
+Subject: [GIT PULL] More hwmon updates for 2.6.30
+Message-ID: <20090407153709.5cdc8c1a@hyperion.delvare>
+X-Mailer: Claws Mail 3.5.0 (GTK+ 2.14.4; x86_64-suse-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Linus Torvalds wrote:
-..
->  - If I did this right, this _only_ overrides the data mode if it's not 
->    explicitly specified on disk in the superblock mount options.
-> 
-> IOW, if you have done a 
-> 
-> 	tune2fs -o journal_data_ordered
-> 
-> then this will _not_ override that.
-..
+Hi Linus,
 
-Thanks for saving me time to look up that command!  :)
+Please pull some hwmon subsystem updates for Linux 2.6.30 from:
 
-With the stuff I work on here, kernel oops and sudden reboots
-are not at all uncommon during development, and I really prefer
-to keep "ordered" as the default on these machines for a tiny
-extra margin of safety.
+git://jdelvare.pck.nerim.net/jdelvare-2.6 hwmon-for-linus
 
-What happens with ext3 "writeback", and ext4 "whatever",
-when one does the quickie reboot method:
+ drivers/acpi/acpica/nsxfeval.c |    3 +-
+ drivers/hwmon/Kconfig          |   12 +
+ drivers/hwmon/Makefile         |    1 +
+ drivers/hwmon/asus_atk0110.c   | 1009 ++++++++++++++++++++++++++++++++++++++++
+ drivers/hwmon/lm95241.c        |  112 ++---
+ include/acpi/acpixf.h          |    2 -
+ 6 files changed, 1070 insertions(+), 69 deletions(-)
+ create mode 100644 drivers/hwmon/asus_atk0110.c
 
-   ALT-SYSRQ-S ALT-SYSRQ-U ALT-SYSRQ-S ALT-SYSRQ-B
+---------------
 
-???
+Jean Delvare (1):
+      hwmon: (lm95241) Convert to new-style i2c driver
 
-Cheers
+Luca Tettamanti (1):
+      hwmon: Add Asus ATK0110 support
+
+Thanks,
+-- 
+Jean Delvare
