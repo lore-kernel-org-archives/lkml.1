@@ -1,67 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757244AbZDGAA2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757701AbZDGACi@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757244AbZDGAA2 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 6 Apr 2009 20:00:28 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754140AbZDGAAJ
+	id S1757701AbZDGACi (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 6 Apr 2009 20:02:38 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754460AbZDGAC2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 6 Apr 2009 20:00:09 -0400
-Received: from mail-ew0-f165.google.com ([209.85.219.165]:60232 "EHLO
-	mail-ew0-f165.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750696AbZDGAAH (ORCPT
+	Mon, 6 Apr 2009 20:02:28 -0400
+Received: from terminus.zytor.com ([198.137.202.10]:33027 "EHLO
+	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753619AbZDGAC1 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 6 Apr 2009 20:00:07 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=subject:from:to:content-type:date:message-id:mime-version:x-mailer
-         :content-transfer-encoding;
-        b=HqYYoNy4c0UdpiG5sJTVEmyIWpS2vH/GWyRe3tbhT/Byfa4B0tINlYdHN32+WIQ0fy
-         h6wwCTGcl7s+eyAwAQdqTDNQoEMyShcOYq4pciyZLxGQbUzW9SeIuFocSATGYhieqgeb
-         m/OkFmHnVuA9/lT6395ypm7k1MNNP1mWtqV7I=
-Subject: attempt to scan fails (device busy) if essid/ssid was changed
- recently
-From: Maxim Levitsky <maximlevitsky@gmail.com>
-To: linux-wireless <linux-wireless@vger.kernel.org>,
-       linux-kernel <linux-kernel@vger.kernel.org>
-Content-Type: text/plain
-Date: Tue, 07 Apr 2009 03:00:01 +0300
-Message-Id: <1239062401.4705.23.camel@maxim-laptop>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.24.3 
+	Mon, 6 Apr 2009 20:02:27 -0400
+Message-ID: <49DA9800.2090905@zytor.com>
+Date: Mon, 06 Apr 2009 17:02:08 -0700
+From: "H. Peter Anvin" <hpa@zytor.com>
+User-Agent: Thunderbird 2.0.0.14 (X11/20080501)
+MIME-Version: 1.0
+To: Randy Robertson <rmrobert@vmware.com>
+CC: linux-kernel@vger.kernel.org, David Howells <dhowells@redhat.com>
+Subject: Re: [PATCH] initramfs: Fix initramfs to work with hardlinked init
+References: <20090406192238.GA6621@vmware.com>
+In-Reply-To: <20090406192238.GA6621@vmware.com>
+Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Recently I was trying to reduce time it takes for wireless card to
-connect.
+Randy Robertson wrote:
+> Change cb6ff208076b5f434db1b8c983429269d719cef5 seems to have broken
+> booting from initramfs with /sbin/init being a hardlink.  It seems like
+> the logic required for XIP on nommu, i.e. ftruncate to reported cpio
+> header file size (body_len) is broken for hardlinks, which have
+> a reported size of 0, and the truncate thus nukes the contents of the
+> file (in my case busybox), making boot impossible and ending with runaway
+> loop modprobe binfmt-0000 - and of course 0000 is not a valid binary format.
+> 
+> My fix is to only call ftruncate if size is non-zero which fixes things
+> for me, but I'm not certain whether this will break XIP for those files
+> on nommu systems, although I would guess not.
+> 
+> This update adds David's ack and fixes whitespace.
+> 
+> Signed-off-by: Randy Robertson <rmrobert@vmware.com>
+> Acked-by: David Howells <dhowells@redhat.com>
 
-I noticed that always first attempt at scan fails when NM asks for scan.
-I also noticed that this happens with quite recent kernels (I think
-2,6.28) didn't have this behavior.
+Looks right to me.
 
-Looking a bit deeper I discovered that each time NM disconnects from a
-networks it sets random ssid/essid to the card (using wireless
-extensions)
+Acked-by: H. Peter Anvin <hpa@zytor.com>
 
-After that scan fails for some time.
+	-hpa
 
-as a NM free example you can run 
-
-iwconfig wlan0 essid dummy
-iwlist scan
-
-
-and this will fail
-
-
-
-NM in this case waits for whole 10 seconds.
-
-
-What do you think about this?
-
-I confirm that on iwl3945 and ath5k, so this isn't driver specific.
-
-Best regards,
-	Maxim Levitsky
+-- 
+H. Peter Anvin, Intel Open Source Technology Center
+I work for Intel.  I don't speak on their behalf.
 
