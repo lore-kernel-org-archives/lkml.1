@@ -1,29 +1,29 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754980AbZDTLpd@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755391AbZDTLpr@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754980AbZDTLpd (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 20 Apr 2009 07:45:33 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754899AbZDTLpS
+	id S1755391AbZDTLpr (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 20 Apr 2009 07:45:47 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755297AbZDTLpc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 20 Apr 2009 07:45:18 -0400
-Received: from atrey.karlin.mff.cuni.cz ([195.113.26.193]:43007 "EHLO
+	Mon, 20 Apr 2009 07:45:32 -0400
+Received: from atrey.karlin.mff.cuni.cz ([195.113.26.193]:43036 "EHLO
 	atrey.karlin.mff.cuni.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754485AbZDTLpQ (ORCPT
+	with ESMTP id S1755340AbZDTLpb (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 20 Apr 2009 07:45:16 -0400
-Date: Tue, 7 Apr 2009 09:26:52 +0200
+	Mon, 20 Apr 2009 07:45:31 -0400
+Date: Tue, 7 Apr 2009 09:27:09 +0200
 From: Pavel Machek <pavel@ucw.cz>
-To: Maxim Levitsky <maximlevitsky@gmail.com>
-Cc: Alan Stern <stern@rowland.harvard.edu>,
-       linux-kernel <linux-kernel@vger.kernel.org>,
-       linux-usb <linux-usb@vger.kernel.org>
-Subject: Re: [BISECTED] [REGRESSION] can't anymore even do a
-	s2ram-s2disk-s2ram cycle on acer aspire 5720G
-Message-ID: <20090407072651.GC1408@ucw.cz>
-References: <1239061976.4705.16.camel@maxim-laptop>
+To: Marcel Holtmann <marcel@holtmann.org>
+Cc: "Rafael J. Wysocki" <rjw@sisk.pl>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Kernel Testers List <kernel-testers@vger.kernel.org>,
+       Greg KH <greg@kroah.com>
+Subject: Re: [Bug #12871] usb bluetooth crashes system
+Message-ID: <20090407072709.GD1408@ucw.cz>
+References: <n4io5wq70ZO.A.gzG.rFn2JB@chimera> <AsKNxFx2juN.A.dO.aGn2JB@chimera> <1239088599.19390.27.camel@violet> <20090407210946.GK3278@elf.ucw.cz>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <1239061976.4705.16.camel@maxim-laptop>
+In-Reply-To: <20090407210946.GK3278@elf.ucw.cz>
 User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
@@ -31,11 +31,28 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 Hi!
 
-> Also this commits narrows down the search, now it is clear that this is
-> usb related. No wonder bios pokes at usb on resume and stalls.....
+> > > This message has been generated automatically as a part of a report
+> > > of recent regressions.
+> > > 
+> > > The following bug entry is on the current list of known regressions
+> > > from 2.6.28.  Please verify if it still should be listed and let me know
+> > > (either way).
+> > > 
+> > > 
+> > > Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=12871
+> > > Subject		: usb bluetooth crashes system
+> > > Submitter	: Pavel Machek <pavel@ucw.cz>
+> > > Date		: 2009-03-10 11:23 (28 days old)
+> > > References	: http://marc.info/?l=linux-kernel&m=123668450400940&w=4
+> > 
+> > please have this re-tested against 2.6.30-rc1 then we can work on
+> > figuring out which patch might have fixed it. I think it is fixed now,
+> > but I could be also wrong here.
+> 
+> 2.6.30-rc1 does not seem to be out (according to kernel.org); I can
+> test the latest git if that helps?
 
-So obvious next step is to compile-out usb support and see what
-happens?
+Seems to be ok in 2.6.30-rc1 after quick test...
 
 -- 
 (english) http://www.livejournal.com/~pavelmachek
