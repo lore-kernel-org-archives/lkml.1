@@ -1,52 +1,93 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755083AbZDGGYx@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753415AbZDGGZ0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755083AbZDGGYx (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 7 Apr 2009 02:24:53 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751268AbZDGGYj
+	id S1753415AbZDGGZ0 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 7 Apr 2009 02:25:26 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752709AbZDGGZH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 7 Apr 2009 02:24:39 -0400
-Received: from an-out-0708.google.com ([209.85.132.245]:21866 "EHLO
-	an-out-0708.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751244AbZDGGYh (ORCPT
+	Tue, 7 Apr 2009 02:25:07 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:52074 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751268AbZDGGZF (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 7 Apr 2009 02:24:37 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:mime-version:content-type
-         :content-disposition:in-reply-to:user-agent;
-        b=gfTExINkhGHdGYJHmt/dJm08Od9zHMOBQE92cxTmoooEkMt4R9nvmtqkx36S3+z6a6
-         GskGcKmo3bLhpPYG62fzSdVePqdHvaLolwmsqVVcXfrVhr5D0ZpezGS9f4/u4GOrbV+R
-         hzV0M5I8cHpho9mk5tVS+37eqRRdyfmKXScZY=
-Date: Tue, 7 Apr 2009 06:24:25 +0000
-From: Jarek Poplawski <jarkao2@gmail.com>
-To: "Trenton D. Adams" <trenton.d.adams@gmail.com>
-Cc: Linus Torvalds <torvalds@linux-foundation.org>,
-       "Rafael J. Wysocki" <rjw@sisk.pl>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Adrian Bunk <bunk@kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Natalie Protasevich <protasnb@gmail.com>,
-       Kernel Testers List <kernel-testers@vger.kernel.org>,
-       Network Development <netdev@vger.kernel.org>,
-       Linux ACPI <linux-acpi@vger.kernel.org>,
-       Linux PM List <linux-pm@lists.linux-foundation.org>,
-       Linux SCSI List <linux-scsi@vger.kernel.org>
-Subject: Re: 2.6.29-git13: Reported regressions from 2.6.28
-Message-ID: <20090407062425.GA4195@ff.dom.local>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <9b1675090904062123u42a00a80y3a4385740ecc0121@mail.gmail.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+	Tue, 7 Apr 2009 02:25:05 -0400
+Date: Mon, 6 Apr 2009 23:21:41 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: "Theodore Ts'o" <tytso@mit.edu>
+Cc: Linux Kernel Developers List <linux-kernel@vger.kernel.org>,
+       Ext4 Developers List <linux-ext4@vger.kernel.org>, jack@suse.cz,
+       Jens Axboe <jens.axboe@oracle.com>
+Subject: Re: [PATCH 1/3] block_write_full_page: Use synchronous writes for
+ WBC_SYNC_ALL writebacks
+Message-Id: <20090406232141.ebdb426a.akpm@linux-foundation.org>
+In-Reply-To: <1238185471-31152-2-git-send-email-tytso@mit.edu>
+References: <1238185471-31152-1-git-send-email-tytso@mit.edu>
+	<1238185471-31152-2-git-send-email-tytso@mit.edu>
+X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.5; x86_64-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 07-04-2009 06:23, Trenton D. Adams wrote:
-...
-> This gave me a bit of a chuckle. ROFL.  I didn't think you were
-> _blaming_ me.  And even if you were, I'd just say "I'M HUMAN MAN". ;)
+On Fri, 27 Mar 2009 16:24:29 -0400 "Theodore Ts'o" <tytso@mit.edu> wrote:
 
-So, do you think you should be treated better than others? @-)
+> When doing synchronous writes because wbc->sync_mode is set to
+> WBC_SYNC_ALL, send the write request using WRITE_SYNC, so that we
+> don't unduly block system calls such as fsync().
+> 
 
-Jarek P.
+Who what where why when?  How does this patch work?
+
+> ---
+>  fs/buffer.c |    5 +++--
+>  1 files changed, 3 insertions(+), 2 deletions(-)
+> 
+> diff --git a/fs/buffer.c b/fs/buffer.c
+> index 891e1c7..e7ebd95 100644
+> --- a/fs/buffer.c
+> +++ b/fs/buffer.c
+> @@ -1714,6 +1714,7 @@ static int __block_write_full_page(struct inode *inode, struct page *page,
+>  	struct buffer_head *bh, *head;
+>  	const unsigned blocksize = 1 << inode->i_blkbits;
+>  	int nr_underway = 0;
+> +	int write_op = (wbc->sync_mode == WB_SYNC_ALL ? WRITE_SYNC : WRITE);
+>  
+>  	BUG_ON(!PageLocked(page));
+>  
+> @@ -1805,7 +1806,7 @@ static int __block_write_full_page(struct inode *inode, struct page *page,
+>  	do {
+>  		struct buffer_head *next = bh->b_this_page;
+>  		if (buffer_async_write(bh)) {
+> -			submit_bh(WRITE, bh);
+> +			submit_bh(write_op, bh);
+>  			nr_underway++;
+>  		}
+>  		bh = next;
+> @@ -1859,7 +1860,7 @@ recover:
+>  		struct buffer_head *next = bh->b_this_page;
+>  		if (buffer_async_write(bh)) {
+>  			clear_buffer_dirty(bh);
+> -			submit_bh(WRITE, bh);
+> +			submit_bh(write_op, bh);
+>  			nr_underway++;
+>  		}
+>  		bh = next;
+
+<spends faaaaaaaaaaaaaaaaaaaaaar too long trying to work out what WRITE_SYNC does>
+
+ytf can't we document these things?
+
+I'm having trouble distinguishing all that code from a pile of crap.
+
+I mean, let's graph it:
+
+WRITE_SYNC -> WRITE_SYNC_PLUG -> BIO_RW_SYNCIO -> bio_sync() -> REQ_RW_SYNC -> rw_is_sync() -> does something mysterious in get_request()
+                                                                            -> rq_is_sync() -> does something mysterious in IO schedulers
+                              -> BIO_RW_NOIDLE -> bio_noidle() -> REQ_NOIDLE -> rq_noidle() -> does something mysterious in cfq-iosched only
+           -> BIO_RW_UNPLUG   -> bio_unplug() -> REQ_UNPLUG -> OK, the cognoscenti know what this is supposed to do, but it is unused!
+
+It this really really so obvious and simple that we can afford to leave
+WRITE_SYNC semantics undocumented?
+
+All this makes it impossible to review your patch.
