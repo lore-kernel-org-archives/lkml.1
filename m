@@ -1,80 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759268AbZDGAbW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754367AbZDGAei@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759268AbZDGAbW (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 6 Apr 2009 20:31:22 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752075AbZDGAbJ
+	id S1754367AbZDGAei (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 6 Apr 2009 20:34:38 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752040AbZDGAe3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 6 Apr 2009 20:31:09 -0400
-Received: from srv5.dvmed.net ([207.36.208.214]:49240 "EHLO mail.dvmed.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751951AbZDGAbI (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 6 Apr 2009 20:31:08 -0400
-Message-ID: <49DA9EC3.4060903@garzik.org>
-Date: Mon, 06 Apr 2009 20:30:59 -0400
-From: Jeff Garzik <jeff@garzik.org>
-User-Agent: Thunderbird 2.0.0.21 (X11/20090320)
+	Mon, 6 Apr 2009 20:34:29 -0400
+Received: from hrndva-omtalb.mail.rr.com ([71.74.56.123]:61160 "EHLO
+	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751471AbZDGAe2 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 6 Apr 2009 20:34:28 -0400
+Date: Mon, 6 Apr 2009 20:34:20 -0400 (EDT)
+From: Steven Rostedt <rostedt@goodmis.org>
+X-X-Sender: rostedt@gandalf.stny.rr.com
+To: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
+cc: Frederic Weisbecker <fweisbec@gmail.com>, Tom Zanussi <tzanussi@gmail.com>,
+       Ingo Molnar <mingo@elte.hu>,
+       linux-kernel <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH] tracing/filters: allow event filters to be set only when
+ not tracing
+In-Reply-To: <20090406235850.GA20273@linux.vnet.ibm.com>
+Message-ID: <alpine.DEB.2.00.0904062032160.24008@gandalf.stny.rr.com>
+References: <1238830355.22495.55.camel@bookworm> <alpine.DEB.2.00.0904041143480.32083@gandalf.stny.rr.com> <1238916865.7989.212.camel@tropicana> <20090405171146.GK6893@linux.vnet.ibm.com> <alpine.DEB.2.00.0904061155120.4317@gandalf.stny.rr.com>
+ <20090406161527.GD6988@linux.vnet.ibm.com> <alpine.DEB.2.00.0904061529370.4317@gandalf.stny.rr.com> <20090406194417.GA5936@nowhere> <alpine.DEB.2.00.0904061552260.23509@gandalf.stny.rr.com> <20090406201524.GF6988@linux.vnet.ibm.com>
+ <20090406235850.GA20273@linux.vnet.ibm.com>
+User-Agent: Alpine 2.00 (DEB 1167 2008-08-23)
 MIME-Version: 1.0
-To: Matt Mackall <mpm@selenic.com>
-CC: Sven-Haegar Koch <haegar@sdinet.de>,
-       Robin Getz <rgetz@blackfin.uclinux.org>, netdev@vger.kernel.org,
-       linux-kernel@vger.kernel.org, Chris Peterson <cpeterso@cpeterso.com>
-Subject: Re: IRQF_SAMPLE_RANDOM question...
-References: <200904061430.26276.rgetz@blackfin.uclinux.org>	 <1239044483.14392.55.camel@calx>	 <alpine.DEB.2.00.0904070003470.6968@aurora.sdinet.de> <1239063404.14392.118.camel@calx>
-In-Reply-To: <1239063404.14392.118.camel@calx>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
-X-Spam-Score: -4.4 (----)
-X-Spam-Report: SpamAssassin version 3.2.5 on srv5.dvmed.net summary:
-	Content analysis details:   (-4.4 points, 5.0 required)
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Matt Mackall wrote:
-> On Tue, 2009-04-07 at 00:09 +0200, Sven-Haegar Koch wrote:
->> On Mon, 6 Apr 2009, Matt Mackall wrote:
->>
->>> On Mon, 2009-04-06 at 14:30 -0400, Robin Getz wrote:
->>>> We have lots of embedded headless systems (no keyboard/mouse, no soundcard, no 
->>>> video) systems with *no* sources of entropy - and people using SSL.
->>> I'd rather add a random_sample_network call somewhere reasonably central
->>> in the network stack. Then we can use the knowledge that the sample is
->>> network-connected in the random core to decide how to measure its
->>> entropy. The trouble with IRQF_SAMPLE_RANDOM is that many of its users
->>> are technically bogus as entropy sources in the current model.
->>>
->>> I'm eventually going to move the RNG away from the strict theoretical
->>> entropy accounting model to a more pragmatic one which will be much
->>> happier with iffy entropy sources, but that's a ways off.
->> Btw, perhaps not the perfect question in this thread:
->> But what should we use to keep servers running without a hardware rng 
->> available and without any external input besides the network?
->> After having ssh and openvpn die because of no random and having 
->> the machines like dead and unreachable for me I use "ln -sf 
->> /dev/urandom /dev/random", but that does not feel so good.
+
+
+On Mon, 6 Apr 2009, Paul E. McKenney wrote:
 > 
-> It's fine so long as you're not wearing a tinfoil hat. In fact, as
-> the /dev/random maintainer, I'd recommend it.
+> Hmmm...  Do the start_critical_timings() and stop_critical_timings()
+> functions have anything to do with ftrace()?
+
+Yep.
+
 > 
-> Ted and I have recently been talking about revisiting the design
-> of /dev/random to avoid these sorts of issues.
+> It does not look like I can just bury RCU-idle controls in these
+> functions, given that they are also invoked around call_console_drivers(),
+> but if all the idle loops are surrounded by stop_critical_timings() and
+> start_critical_timings(), that would ease location of all the idle
+> loops.  ;-)
 
+They are for the irqsoff tracer. Several archs will disable interrupts and 
+call an assembly "halt" type instruction that can be woken up by 
+interrupts. But this skips the irqs off check, and we end up with irqsoff 
+showing the idle loop with huge interrupts off latencies.
 
-Two points...
+I'm not sure they are included in all archs. They may be.
 
-- while I would welcome a more pragmatic entropy accounting model,
-
-- it seems misplaced to _solely_ address network entropy problems 
-(timer-based regularity, external visibility and access) within the 
-devrandom machinery.
-
-IRQF_SAMPLE_RANDOM in network drivers IMO just gives users a false sense 
-of security about their entropy.
-
-And more fundamentally, IRQF_SAMPLE_RANDOM should never be used on a 
-non-random source.
-
-	Jeff
-
-
+-- Steve
 
