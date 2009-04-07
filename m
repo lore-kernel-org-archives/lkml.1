@@ -1,104 +1,97 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759632AbZDGGjc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759821AbZDGGjr@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759632AbZDGGjc (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 7 Apr 2009 02:39:32 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752431AbZDGGiD
+	id S1759821AbZDGGjr (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 7 Apr 2009 02:39:47 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759311AbZDGGic
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 7 Apr 2009 02:38:03 -0400
-Received: from e23smtp07.au.ibm.com ([202.81.31.140]:59381 "EHLO
-	e23smtp07.au.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1759262AbZDGGiB (ORCPT
+	Tue, 7 Apr 2009 02:38:32 -0400
+Received: from fg-out-1718.google.com ([72.14.220.158]:10829 "EHLO
+	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757602AbZDGGia (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 7 Apr 2009 02:38:01 -0400
-Date: Tue, 7 Apr 2009 12:07:22 +0530
-From: Balbir Singh <balbir@linux.vnet.ibm.com>
-To: "linux-mm@kvack.org" <linux-mm@kvack.org>
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>,
-       "lizf@cn.fujitsu.com" <lizf@cn.fujitsu.com>,
-       Rik van Riel <riel@surriel.com>, Bharata B Rao <bharata.rao@in.ibm.com>,
-       Dhaval Giani <dhaval@linux.vnet.ibm.com>,
-       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
-Subject: [RFI] Shared accounting for memory resource controller
-Message-ID: <20090407063722.GQ7082@balbir.in.ibm.com>
-Reply-To: balbir@linux.vnet.ibm.com
+	Tue, 7 Apr 2009 02:38:30 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=googlemail.com; s=gamma;
+        h=date:from:to:cc:subject:message-id:reply-to:mail-followup-to
+         :references:mime-version:content-type:content-disposition
+         :in-reply-to:user-agent;
+        b=BOTTlRSN5FN3kOk9vm8b4GlClQ7++CHYDFHVnOmDJ3YFwc811MgmINlVLDsVRABopq
+         mA2961zgb6CAropRmTcDoUaYC1+BqFZ5Mt7H/WK84JnxfEpzbL+w9Snqnb6t2tU8Fh7S
+         XZI4eNg/p/JrDpc4YcEakIRik7EhYM4ll4WFU=
+Date: Tue, 7 Apr 2009 08:38:21 +0200
+From: Borislav Petkov <petkovbb@googlemail.com>
+To: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
+Cc: linux-kernel@vger.kernel.org, linux-ide@vger.kernel.org
+Subject: Re: [PATCH 2/2] ide-cd: cdrom_decode_status: use return codes
+	instead of naked numbers
+Message-ID: <20090407063821.GB4532@liondog.tnic>
+Reply-To: petkovbb@gmail.com
+Mail-Followup-To: petkovbb@gmail.com,
+	Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>,
+	linux-kernel@vger.kernel.org, linux-ide@vger.kernel.org
+References: <1238922962-19727-2-git-send-email-petkovbb@gmail.com> <200904062300.16108.bzolnier@gmail.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
+Content-Type: text/plain; charset=utf-8
 Content-Disposition: inline
+In-Reply-To: <200904062300.16108.bzolnier@gmail.com>
 User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi, All,
+Hi,
 
-This is a request for input for the design of shared page accounting for
-the memory resource controller, here is what I have so far
+On Mon, Apr 06, 2009 at 11:00:15PM +0200, Bartlomiej Zolnierkiewicz wrote:
+> On Sunday 05 April 2009, Borislav Petkov wrote:
+> > Remove unused SECTOR_SIZE while at it.
+> > 
+> > There should be no functional change resulting from this patch.
+> > 
+> > Signed-off-by: Borislav Petkov <petkovbb@gmail.com>
+> 
+> [...]
+> 
+> > @@ -431,7 +425,7 @@ static int cdrom_decode_status(ide_drive_t *drive, u8 stat)
+> >  	/* if we got a CHECK_CONDITION status, queue a request sense command */
+> >  	if (stat & ATA_ERR)
+> >  		cdrom_queue_request_sense(drive, NULL, NULL);
+> > -	return 1;
+> > +	return REQ_RECOVER;
+> >  
+> >  end_request:
+> >  	if (stat & ATA_ERR) {
+> > @@ -445,9 +439,9 @@ end_request:
+> >  		hwif->rq = NULL;
+> >  
+> >  		cdrom_queue_request_sense(drive, rq->sense, rq);
+> > -		return 1;
+> > -	} else
+> > -		return 2;
+> > +		return REQ_RECOVER;
+> > +	}
+> > +	return REQ_FAIL;
+> >  }
+> 
+> Could it be that cdrom_newpc_intr() chunk got lost somewhere along the way,
+> IIRC it was there?
 
-Motivation for shared page accounting
--------------------------------------
-1. Memory cgroup administrators will benefit from the knowledge of how
-   much of the data is shared, it helps size the groups correctly.
-2. We currently report only the pages brought in by the cgroup, knowledge
-   of shared data will give a complete picture of the actual usage.
+That I dropped :), my bad.
 
-Use rmap to account sharing/unsharing through mapcount
--------------------------------------------------------
+> > +/* internal decode_status codes */
+> > +#define REQ_CONT               0
+> > +#define REQ_RECOVER            1
+> > +#define REQ_FAIL               2
+> 
+> Did you notice my comments about REQ_* in previous mail?
 
-The current page has links to
-
-	+-------+
-	|       |
-	|	+--->pc->mem_cgroup (first mem_cgroup to touch the page)
-	|	|
-	| page	|
-	|	+--->mapping (used for rmap)
-	|	|
-	+-------+
-
-While accounting shared pages works well, as pages get unshared, I've hit a
-problem. Here is the current flow for shared accounting
-
-Flow for sharing
-----------------
-1. Page not yet mapped anywhere (_mapcount is -1 and mem_cgroup,mapping is NULL)
-2. Page gets mapped for the first time (_mapcount is 0, mem_cgroup points
-   to the memory resource group that brought in the page, mapping is set)
-3. Page gets shared (_mapcount is 1, mem_cgroup points to the cgroup that
-   brought in the page, mapping is set and now has rmap information)
-
-When a page is being shared at step 3, we detect we are sharing the page and
-
-1. For page->pc->mem_cgroup, we note that the page is being shared
-2. For any vma that maps this page, we get to vma->vm_mm and then to the
-   other mem_cgroup that is sharing this page and note this page is being
-   shared.
-
-So far so good
-
-When a page is being uncharged
-
-1. We note that we need to deduct the shared accounting from the mem_cgroup
-2. When the _mapcount reaches 0, we have no way of knowing which of the
-   mm's or mem_cgroup's is left behind. The original page->pc->mem_cgroup
-   could have unmapped this page long time back. At this point we want
-   to note the only mm that has this page mapped and the mem_cgroup is not
-   sharing the page, but that the page is private to it.
-
-Figuring out the mem_cgroup/mm for the last uncharge, requires a rmap
-lookup, which we cannot do with PTE lock held (I have all my hooks in
-page_add.*rmap() and page_remove_rmap()).
-
-Questions, suggestions
-
-1. Does it make sense to use the rmap routines for shared accounting?
-2. How do we solve the problem of the last unshare causing the pages
-   becoming private
-	a. Can we use rmap?
-	b. Can we live with leaving the page being marked as shared, even
-           though it is no longer shared?
-
+Yep, about those - is there a valid reason for calling them IDE_RQ_*?
+I know REQ_* is too generic but since they're private to the driver it
+really is the only proper naming you _can_ have without adding too much
+information to the name. FWIW, SCSI has even more generic names for them
+- SUCCESS, FAILED, etc. And the IDE_* prefix is only then called for
+when they're going to be visible/used by some other IDE parts. So IMHO
+REQ_* or RQ_* is actually better in this case.
 
 -- 
-	Balbir
+Regards/Gruss,
+    Boris.
