@@ -1,48 +1,83 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752959AbZDGKji@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753179AbZDGKtP@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752959AbZDGKji (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 7 Apr 2009 06:39:38 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751821AbZDGKj2
+	id S1753179AbZDGKtP (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 7 Apr 2009 06:49:15 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752161AbZDGKs4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 7 Apr 2009 06:39:28 -0400
-Received: from mx2.redhat.com ([66.187.237.31]:53096 "EHLO mx2.redhat.com"
+	Tue, 7 Apr 2009 06:48:56 -0400
+Received: from mx1.emlix.com ([193.175.82.87]:40870 "EHLO mx1.emlix.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751800AbZDGKj2 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 7 Apr 2009 06:39:28 -0400
-Message-ID: <49DB2D14.5010603@redhat.com>
-Date: Tue, 07 Apr 2009 13:38:12 +0300
-From: Avi Kivity <avi@redhat.com>
-User-Agent: Thunderbird 2.0.0.21 (X11/20090320)
-MIME-Version: 1.0
-To: Andrew Morton <akpm@linux-foundation.org>
-CC: Apollon Oikonomopoulos <ao-lkml@noc.grnet.gr>,
-       linux-kernel@vger.kernel.org
-Subject: Re: Block device cache issue
-References: <20090402145205.GG30077@apollon.noc.grnet.gr> <20090407003153.41fb9c78.akpm@linux-foundation.org>
-In-Reply-To: <20090407003153.41fb9c78.akpm@linux-foundation.org>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+	id S1752075AbZDGKs4 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 7 Apr 2009 06:48:56 -0400
+From: Johannes Weiner <jw@emlix.com>
+To: Chris Zankel <chris@zankel.net>
+Cc: linux-kernel@vger.kernel.org
+Subject: [patch] xtensa: always use correct stack pointer for stack traces
+Date: Tue,  7 Apr 2009 12:50:27 +0200
+Message-Id: <1239101428-29312-1-git-send-email-jw@emlix.com>
+Organization: emlix gmbh, Goettingen, Germany
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Andrew Morton wrote:
->
->> should it perhaps be the case that the partition's buffers somehow be 
->> linked with those of the containing device, or even be part of them? I 
->> don't even know if this is possible without significant overhead in the 
->> page cache (of which my understanding is very shallow), but keep in mind 
->> that this behaviour almost led to filesystem corruption (luckily we only 
->> changed a single file and hit a single inode).
->>     
->
-> It would incur overhead.  We could perhaps fix it by having a single
-> cache for /dev/sda and then just making /dev/sda1 access that cache
-> with an offset.
+Commit '28a0ce7 xtensa: use correct stack pointer for stack traces'
+changed the stack tracer from always reading the stack pointer
+register to always using the saved value in the task descriptor.
 
-The offset can be non PAGE_SIZE aligned (and usually isn't, 63 sectors 
-difference with normal partitioning).
+The author was too dense to consider the fact that the saved stack
+value is stale for a running process und thus unusable for 'current'.
 
+What we do now is to use the stack pointer register (a1) for when the
+task is unknown - we can't help it then - or when the task is
+'current'.  For everything else use the saved stack pointer value
+contained in the task descriptor.
+
+Signed-off-by: Johannes Weiner <jw@emlix.com>
+---
+ arch/xtensa/kernel/traps.c |   16 ++++++++++++++--
+ 1 files changed, 14 insertions(+), 2 deletions(-)
+
+diff --git a/arch/xtensa/kernel/traps.c b/arch/xtensa/kernel/traps.c
+index 9f0b711..ba9ab93 100644
+--- a/arch/xtensa/kernel/traps.c
++++ b/arch/xtensa/kernel/traps.c
+@@ -369,6 +369,18 @@ void show_regs(struct pt_regs * regs)
+ 		       regs->syscall);
+ }
+ 
++static __always_inline unsigned long *stack_pointer(struct task_struct *task)
++{
++	unsigned long *sp;
++
++	if (!task || task == current)
++		__asm__ __volatile__ ("mov %0, a1\n" : "=a"(sp));
++	else
++		sp = (unsigned long *)task->thread.sp;
++
++	return sp;
++}
++
+ void show_trace(struct task_struct *task, unsigned long *sp)
+ {
+ 	unsigned long a0, a1, pc;
+@@ -377,7 +389,7 @@ void show_trace(struct task_struct *task, unsigned long *sp)
+ 	if (sp)
+ 		a1 = (unsigned long)sp;
+ 	else
+-		a1 = task->thread.sp;
++		a1 = (unsigned long)stack_pointer(task);
+ 
+ 	sp_start = a1 & ~(THREAD_SIZE-1);
+ 	sp_end = sp_start + THREAD_SIZE;
+@@ -420,7 +432,7 @@ void show_stack(struct task_struct *task, unsigned long *sp)
+ 	unsigned long *stack;
+ 
+ 	if (!sp)
+-		sp = (unsigned long *)task->thread.sp;
++		sp = stack_pointer(task);
+  	stack = sp;
+ 
+ 	printk("\nStack: ");
 -- 
-error compiling committee.c: too many arguments to function
+1.6.2.107.ge47ee
 
