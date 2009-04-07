@@ -1,15 +1,15 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754615AbZDGJJE@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754267AbZDGJJa@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754615AbZDGJJE (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 7 Apr 2009 05:09:04 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754796AbZDGJIQ
+	id S1754267AbZDGJJa (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 7 Apr 2009 05:09:30 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755604AbZDGJIf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 7 Apr 2009 05:08:16 -0400
-Received: from hera.kernel.org ([140.211.167.34]:46991 "EHLO hera.kernel.org"
+	Tue, 7 Apr 2009 05:08:35 -0400
+Received: from hera.kernel.org ([140.211.167.34]:47017 "EHLO hera.kernel.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755491AbZDGJIN (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 7 Apr 2009 05:08:13 -0400
-Date: Tue, 7 Apr 2009 09:07:37 GMT
+	id S1755568AbZDGJIc (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 7 Apr 2009 05:08:32 -0400
+Date: Tue, 7 Apr 2009 09:07:49 GMT
 From: Peter Zijlstra <a.p.zijlstra@chello.nl>
 To: linux-tip-commits@vger.kernel.org
 Cc: linux-kernel@vger.kernel.org, paulus@samba.org, hpa@zytor.com,
@@ -18,203 +18,160 @@ Cc: linux-kernel@vger.kernel.org, paulus@samba.org, hpa@zytor.com,
 Reply-To: mingo@redhat.com, hpa@zytor.com, paulus@samba.org,
        linux-kernel@vger.kernel.org, a.p.zijlstra@chello.nl,
        tglx@linutronix.de, cjashfor@linux.vnet.ibm.com, mingo@elte.hu
-In-Reply-To: <20090406094517.724626696@chello.nl>
-References: <20090406094517.724626696@chello.nl>
-Subject: [tip:perfcounters/core] perf_counter: x86: self-IPI for pending work
-Message-ID: <tip-b6276f353bf490add62dcf7db0ebd75baa3e1a37@git.kernel.org>
-Git-Commit-ID: b6276f353bf490add62dcf7db0ebd75baa3e1a37
+In-Reply-To: <20090406094517.812109629@chello.nl>
+References: <20090406094517.812109629@chello.nl>
+Subject: [tip:perfcounters/core] perf_counter: theres more to overflow than writing events
+Message-ID: <tip-f6c7d5fe58b4846ee0cb4b98b6042489705eced4@git.kernel.org>
+Git-Commit-ID: f6c7d5fe58b4846ee0cb4b98b6042489705eced4
 X-Mailer: tip-git-log-daemon
 MIME-Version: 1.0
 Content-Type: text/plain; charset=UTF-8
 Content-Disposition: inline
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Tue, 07 Apr 2009 09:07:40 +0000 (UTC)
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Tue, 07 Apr 2009 09:07:52 +0000 (UTC)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Commit-ID:  b6276f353bf490add62dcf7db0ebd75baa3e1a37
-Gitweb:     http://git.kernel.org/tip/b6276f353bf490add62dcf7db0ebd75baa3e1a37
+Commit-ID:  f6c7d5fe58b4846ee0cb4b98b6042489705eced4
+Gitweb:     http://git.kernel.org/tip/f6c7d5fe58b4846ee0cb4b98b6042489705eced4
 Author:     Peter Zijlstra <a.p.zijlstra@chello.nl>
-AuthorDate: Mon, 6 Apr 2009 11:45:03 +0200
+AuthorDate: Mon, 6 Apr 2009 11:45:04 +0200
 Committer:  Ingo Molnar <mingo@elte.hu>
 CommitDate: Tue, 7 Apr 2009 10:48:56 +0200
 
-perf_counter: x86: self-IPI for pending work
+perf_counter: theres more to overflow than writing events
 
-Implement set_perf_counter_pending() with a self-IPI so that it will
-run ASAP in a usable context.
+Prepare for more generic overflow handling. The new perf_counter_overflow()
+method will handle the generic bits of the counter overflow, and can return
+a !0 return value, in which case the counter should be (soft) disabled, so
+that it won't count until it's properly disabled.
 
-For now use a second IRQ vector, because the primary vector pokes
-the apic in funny ways that seem to confuse things.
+XXX: do powerpc and swcounter
 
 Signed-off-by: Peter Zijlstra <a.p.zijlstra@chello.nl>
 Cc: Paul Mackerras <paulus@samba.org>
 Cc: Corey Ashford <cjashfor@linux.vnet.ibm.com>
-LKML-Reference: <20090406094517.724626696@chello.nl>
+LKML-Reference: <20090406094517.812109629@chello.nl>
 Signed-off-by: Ingo Molnar <mingo@elte.hu>
 
 
 ---
- arch/x86/include/asm/entry_arch.h   |    1 +
- arch/x86/include/asm/hardirq.h      |    1 +
- arch/x86/include/asm/hw_irq.h       |    1 +
- arch/x86/include/asm/irq_vectors.h  |    5 +++++
- arch/x86/include/asm/perf_counter.h |    3 ++-
- arch/x86/kernel/cpu/perf_counter.c  |   14 ++++++++++++++
- arch/x86/kernel/entry_64.S          |    2 ++
- arch/x86/kernel/irq.c               |    5 +++++
- arch/x86/kernel/irqinit_32.c        |    1 +
- arch/x86/kernel/irqinit_64.c        |    1 +
- 10 files changed, 33 insertions(+), 1 deletions(-)
+ arch/powerpc/kernel/perf_counter.c |    2 +-
+ arch/x86/kernel/cpu/perf_counter.c |    3 ++-
+ include/linux/perf_counter.h       |    4 ++--
+ kernel/perf_counter.c              |   29 +++++++++++++++++++++++------
+ 4 files changed, 28 insertions(+), 10 deletions(-)
 
-diff --git a/arch/x86/include/asm/entry_arch.h b/arch/x86/include/asm/entry_arch.h
-index c2e6bed..fe24d28 100644
---- a/arch/x86/include/asm/entry_arch.h
-+++ b/arch/x86/include/asm/entry_arch.h
-@@ -50,6 +50,7 @@ BUILD_INTERRUPT(spurious_interrupt,SPURIOUS_APIC_VECTOR)
- 
- #ifdef CONFIG_PERF_COUNTERS
- BUILD_INTERRUPT(perf_counter_interrupt, LOCAL_PERF_VECTOR)
-+BUILD_INTERRUPT(perf_pending_interrupt, LOCAL_PENDING_VECTOR)
- #endif
- 
- #ifdef CONFIG_X86_MCE_P4THERMAL
-diff --git a/arch/x86/include/asm/hardirq.h b/arch/x86/include/asm/hardirq.h
-index 2545442..f5ebe2a 100644
---- a/arch/x86/include/asm/hardirq.h
-+++ b/arch/x86/include/asm/hardirq.h
-@@ -14,6 +14,7 @@ typedef struct {
- #endif
- 	unsigned int generic_irqs;	/* arch dependent */
- 	unsigned int apic_perf_irqs;
-+	unsigned int apic_pending_irqs;
- #ifdef CONFIG_SMP
- 	unsigned int irq_resched_count;
- 	unsigned int irq_call_count;
-diff --git a/arch/x86/include/asm/hw_irq.h b/arch/x86/include/asm/hw_irq.h
-index ae80f64..7309c0a 100644
---- a/arch/x86/include/asm/hw_irq.h
-+++ b/arch/x86/include/asm/hw_irq.h
-@@ -30,6 +30,7 @@ extern void apic_timer_interrupt(void);
- extern void generic_interrupt(void);
- extern void error_interrupt(void);
- extern void perf_counter_interrupt(void);
-+extern void perf_pending_interrupt(void);
- 
- extern void spurious_interrupt(void);
- extern void thermal_interrupt(void);
-diff --git a/arch/x86/include/asm/irq_vectors.h b/arch/x86/include/asm/irq_vectors.h
-index 3cbd79b..545bb81 100644
---- a/arch/x86/include/asm/irq_vectors.h
-+++ b/arch/x86/include/asm/irq_vectors.h
-@@ -117,6 +117,11 @@
- #define GENERIC_INTERRUPT_VECTOR	0xed
+diff --git a/arch/powerpc/kernel/perf_counter.c b/arch/powerpc/kernel/perf_counter.c
+index 0a4d14f..f88c35d 100644
+--- a/arch/powerpc/kernel/perf_counter.c
++++ b/arch/powerpc/kernel/perf_counter.c
+@@ -732,7 +732,7 @@ static void record_and_restart(struct perf_counter *counter, long val,
+ 	 * Finally record data if requested.
+ 	 */
+ 	if (record)
+-		perf_counter_output(counter, 1, regs);
++		perf_counter_overflow(counter, 1, regs);
+ }
  
  /*
-+ * Performance monitoring pending work vector:
-+ */
-+#define LOCAL_PENDING_VECTOR		0xec
-+
-+/*
-  * First APIC vector available to drivers: (vectors 0x30-0xee) we
-  * start at 0x31(0x41) to spread out vectors evenly between priority
-  * levels. (0x80 is the syscall vector)
-diff --git a/arch/x86/include/asm/perf_counter.h b/arch/x86/include/asm/perf_counter.h
-index e2b0e66..d08dd52 100644
---- a/arch/x86/include/asm/perf_counter.h
-+++ b/arch/x86/include/asm/perf_counter.h
-@@ -84,7 +84,8 @@ union cpuid10_edx {
- #define MSR_ARCH_PERFMON_FIXED_CTR2			0x30b
- #define X86_PMC_IDX_FIXED_BUS_CYCLES			(X86_PMC_IDX_FIXED + 2)
- 
--#define set_perf_counter_pending()	do { } while (0)
-+extern void set_perf_counter_pending(void);
-+
- #define clear_perf_counter_pending()	do { } while (0)
- #define test_perf_counter_pending()	(0)
- 
 diff --git a/arch/x86/kernel/cpu/perf_counter.c b/arch/x86/kernel/cpu/perf_counter.c
-index c74e20d..4384158 100644
+index 4384158..1116a41 100644
 --- a/arch/x86/kernel/cpu/perf_counter.c
 +++ b/arch/x86/kernel/cpu/perf_counter.c
-@@ -849,6 +849,20 @@ void smp_perf_counter_interrupt(struct pt_regs *regs)
- 	irq_exit();
+@@ -800,7 +800,8 @@ again:
+ 			continue;
+ 
+ 		perf_save_and_restart(counter);
+-		perf_counter_output(counter, nmi, regs);
++		if (perf_counter_overflow(counter, nmi, regs))
++			__pmc_generic_disable(counter, &counter->hw, bit);
+ 	}
+ 
+ 	hw_perf_ack_status(ack);
+diff --git a/include/linux/perf_counter.h b/include/linux/perf_counter.h
+index 977fb15..ca2d4df 100644
+--- a/include/linux/perf_counter.h
++++ b/include/linux/perf_counter.h
+@@ -491,8 +491,8 @@ extern int hw_perf_group_sched_in(struct perf_counter *group_leader,
+ 	       struct perf_counter_context *ctx, int cpu);
+ extern void perf_counter_update_userpage(struct perf_counter *counter);
+ 
+-extern void perf_counter_output(struct perf_counter *counter,
+-				int nmi, struct pt_regs *regs);
++extern int perf_counter_overflow(struct perf_counter *counter,
++				 int nmi, struct pt_regs *regs);
+ /*
+  * Return 1 for a software counter, 0 for a hardware counter
+  */
+diff --git a/kernel/perf_counter.c b/kernel/perf_counter.c
+index 0a2ade2..195e976 100644
+--- a/kernel/perf_counter.c
++++ b/kernel/perf_counter.c
+@@ -1800,8 +1800,8 @@ static void perf_output_end(struct perf_output_handle *handle)
+ 	rcu_read_unlock();
  }
  
-+void smp_perf_pending_interrupt(struct pt_regs *regs)
-+{
-+	irq_enter();
-+	ack_APIC_irq();
-+	inc_irq_stat(apic_pending_irqs);
-+	perf_counter_do_pending();
-+	irq_exit();
-+}
-+
-+void set_perf_counter_pending(void)
-+{
-+	apic->send_IPI_self(LOCAL_PENDING_VECTOR);
-+}
-+
- void perf_counters_lapic_init(int nmi)
+-void perf_counter_output(struct perf_counter *counter,
+-			 int nmi, struct pt_regs *regs)
++static void perf_counter_output(struct perf_counter *counter,
++				int nmi, struct pt_regs *regs)
  {
- 	u32 apic_val;
-diff --git a/arch/x86/kernel/entry_64.S b/arch/x86/kernel/entry_64.S
-index 3f129d9..1d46cba 100644
---- a/arch/x86/kernel/entry_64.S
-+++ b/arch/x86/kernel/entry_64.S
-@@ -1028,6 +1028,8 @@ apicinterrupt SPURIOUS_APIC_VECTOR \
- #ifdef CONFIG_PERF_COUNTERS
- apicinterrupt LOCAL_PERF_VECTOR \
- 	perf_counter_interrupt smp_perf_counter_interrupt
-+apicinterrupt LOCAL_PENDING_VECTOR \
-+	perf_pending_interrupt smp_perf_pending_interrupt
- #endif
+ 	int ret;
+ 	u64 record_type = counter->hw_event.record_type;
+@@ -2034,6 +2034,17 @@ void perf_counter_munmap(unsigned long addr, unsigned long len,
+ }
  
  /*
-diff --git a/arch/x86/kernel/irq.c b/arch/x86/kernel/irq.c
-index 9c27543..d465487 100644
---- a/arch/x86/kernel/irq.c
-+++ b/arch/x86/kernel/irq.c
-@@ -67,6 +67,10 @@ static int show_other_interrupts(struct seq_file *p, int prec)
- 	for_each_online_cpu(j)
- 		seq_printf(p, "%10u ", irq_stats(j)->apic_perf_irqs);
- 	seq_printf(p, "  Performance counter interrupts\n");
-+	seq_printf(p, "PND: ");
-+	for_each_online_cpu(j)
-+		seq_printf(p, "%10u ", irq_stats(j)->apic_pending_irqs);
-+	seq_printf(p, "  Performance pending work\n");
- #endif
- 	if (generic_interrupt_extension) {
- 		seq_printf(p, "PLT: ");
-@@ -171,6 +175,7 @@ u64 arch_irq_stat_cpu(unsigned int cpu)
- 	sum += irq_stats(cpu)->apic_timer_irqs;
- 	sum += irq_stats(cpu)->irq_spurious_count;
- 	sum += irq_stats(cpu)->apic_perf_irqs;
-+	sum += irq_stats(cpu)->apic_pending_irqs;
- #endif
- 	if (generic_interrupt_extension)
- 		sum += irq_stats(cpu)->generic_irqs;
-diff --git a/arch/x86/kernel/irqinit_32.c b/arch/x86/kernel/irqinit_32.c
-index 925d87c..3190a6b 100644
---- a/arch/x86/kernel/irqinit_32.c
-+++ b/arch/x86/kernel/irqinit_32.c
-@@ -166,6 +166,7 @@ static void __init apic_intr_init(void)
- 	alloc_intr_gate(ERROR_APIC_VECTOR, error_interrupt);
- # ifdef CONFIG_PERF_COUNTERS
- 	alloc_intr_gate(LOCAL_PERF_VECTOR, perf_counter_interrupt);
-+	alloc_intr_gate(LOCAL_PENDING_VECTOR, perf_pending_interrupt);
- # endif
++ * Generic counter overflow handling.
++ */
++
++int perf_counter_overflow(struct perf_counter *counter,
++			  int nmi, struct pt_regs *regs)
++{
++	perf_counter_output(counter, nmi, regs);
++	return 0;
++}
++
++/*
+  * Generic software counter infrastructure
+  */
  
- # ifdef CONFIG_X86_MCE_P4THERMAL
-diff --git a/arch/x86/kernel/irqinit_64.c b/arch/x86/kernel/irqinit_64.c
-index 665e2ab..53ceb26 100644
---- a/arch/x86/kernel/irqinit_64.c
-+++ b/arch/x86/kernel/irqinit_64.c
-@@ -156,6 +156,7 @@ static void __init apic_intr_init(void)
- 	/* Performance monitoring interrupt: */
- #ifdef CONFIG_PERF_COUNTERS
- 	alloc_intr_gate(LOCAL_PERF_VECTOR, perf_counter_interrupt);
-+	alloc_intr_gate(LOCAL_PENDING_VECTOR, perf_pending_interrupt);
- #endif
+@@ -2077,6 +2088,7 @@ static void perf_swcounter_set_period(struct perf_counter *counter)
+ 
+ static enum hrtimer_restart perf_swcounter_hrtimer(struct hrtimer *hrtimer)
+ {
++	enum hrtimer_restart ret = HRTIMER_RESTART;
+ 	struct perf_counter *counter;
+ 	struct pt_regs *regs;
+ 
+@@ -2092,12 +2104,14 @@ static enum hrtimer_restart perf_swcounter_hrtimer(struct hrtimer *hrtimer)
+ 			!counter->hw_event.exclude_user)
+ 		regs = task_pt_regs(current);
+ 
+-	if (regs)
+-		perf_counter_output(counter, 0, regs);
++	if (regs) {
++		if (perf_counter_overflow(counter, 0, regs))
++			ret = HRTIMER_NORESTART;
++	}
+ 
+ 	hrtimer_forward_now(hrtimer, ns_to_ktime(counter->hw.irq_period));
+ 
+-	return HRTIMER_RESTART;
++	return ret;
  }
  
+ static void perf_swcounter_overflow(struct perf_counter *counter,
+@@ -2105,7 +2119,10 @@ static void perf_swcounter_overflow(struct perf_counter *counter,
+ {
+ 	perf_swcounter_update(counter);
+ 	perf_swcounter_set_period(counter);
+-	perf_counter_output(counter, nmi, regs);
++	if (perf_counter_overflow(counter, nmi, regs))
++		/* soft-disable the counter */
++		;
++
+ }
+ 
+ static int perf_swcounter_match(struct perf_counter *counter,
