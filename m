@@ -1,75 +1,127 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758780AbZDGFGZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758420AbZDGFIY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758780AbZDGFGZ (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 7 Apr 2009 01:06:25 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752172AbZDGFGP
+	id S1758420AbZDGFIY (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 7 Apr 2009 01:08:24 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751435AbZDGFIN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 7 Apr 2009 01:06:15 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:37355 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751605AbZDGFGO (ORCPT
+	Tue, 7 Apr 2009 01:08:13 -0400
+Received: from rv-out-0506.google.com ([209.85.198.233]:52831 "EHLO
+	rv-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750979AbZDGFIM convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 7 Apr 2009 01:06:14 -0400
-Date: Mon, 6 Apr 2009 22:02:03 -0700 (PDT)
-From: Linus Torvalds <torvalds@linux-foundation.org>
-X-X-Sender: torvalds@localhost.localdomain
-To: "Trenton D. Adams" <trenton.d.adams@gmail.com>
-cc: Chris Mason <chris.mason@oracle.com>, Theodore Tso <tytso@mit.edu>,
-       Hua Zhong <hzhong@gmail.com>, Jens Axboe <jens.axboe@oracle.com>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH 0/8][RFC] IO latency/throughput fixes
-In-Reply-To: <9b1675090904062148k7081be9bs26b5852d71a0a45c@mail.gmail.com>
-Message-ID: <alpine.LFD.2.00.0904062156180.4010@localhost.localdomain>
-References: <1239022088-29002-1-git-send-email-jens.axboe@oracle.com>  <20090406151054.GD5178@kernel.dk>  <alpine.LFD.2.00.0904060840080.3863@localhost.localdomain>  <20090406183157.GD7376@mit.edu>  <alpine.LFD.2.00.0904061255160.4134@localhost.localdomain>
-  <002501c9b6f3$f85b4910$e911db30$@com> <20090406211931.GB8586@mit.edu>  <1239076379.17426.23.camel@think.oraclecorp.com>  <9b1675090904062113r2bd2b209hea1061cc54a0b9c0@mail.gmail.com>  <alpine.LFD.2.00.0904062120560.4010@localhost.localdomain>
- <9b1675090904062148k7081be9bs26b5852d71a0a45c@mail.gmail.com>
-User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
+	Tue, 7 Apr 2009 01:08:12 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
+         :cc:content-type:content-transfer-encoding;
+        b=Ijoa3vu1y8aK0+jZuWsdQNmEgTHMAF8S4d3ORZJkYuhEpEysdO0/Z14gd3l5ywYt8f
+         zit2MQdyCeGaA5pRI/jO1zqdpHp5Qwmyeprf3tk5OILylZB/AFkWQDC1xhwKOZS5G9ZV
+         mifqely/gJ38oaFT4NWco9BwuseqdUpazv3/4=
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+In-Reply-To: <1239068812.4753.15.camel@localhost.localdomain>
+References: <49b7c2350904060702j3f725a45ub5e7d3ee3af883c1@mail.gmail.com>
+	 <1239068812.4753.15.camel@localhost.localdomain>
+Date: Tue, 7 Apr 2009 14:08:10 +0900
+Message-ID: <49b7c2350904062208qc16ef6ag9a33bef66721f4e@mail.gmail.com>
+Subject: Re: [PATCH] Update old Mini-HOWTO for ftrace
+From: GeunSik Lim <leemgs1@gmail.com>
+To: Steven Rostedt <srostedt@redhat.com>
+Cc: Ingo Molnar <mingo@elte.hu>, rt-users <linux-rt-users@vger.kernel.org>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       Nikanth Karthikensan <knikanth@suse.de>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Dear steven,
+
+I  confirm http://lkml.org/lkml/2009/3/23/24 webpage now.
+I am gratified with a similar patch that another people sent  this problem.
+
+In fact, I figured out trivial problem of old mini-HOWTO according to
+http://www.redhat.com/docs/en-US/Red_Hat_Enterprise_MRG/1.1/html/Realtime_Tuning_Guide/sect-Realtime_Tuning_Guide-Realtime_Specific_Tuning-Using_the_ftrace_Utility_for_Tracing_Latencies.html
+web manual.
+
+I want you to change MRG Kernel from ftrace to function for
+consistency in private.
+Thank you for interesting article
+
+Regards,
+GeunSik Lim..
+
+2009/4/7 Steven Rostedt <srostedt@redhat.com>:
+>
+> On Mon, 2009-04-06 at 23:02 +0900, GeunSik Lim wrote:
+>> Dear Steven,
+>>
+>>    The author of ftrace(Internal kernel Function Tracer) feature
+>> renamed the ftrace tracer
+>>     to function to avoid further confusion between the ftrace
+>> infrastructure and the
+>>     function tracer on Oct-20, 2008.
+>>
+>>     But, Update of Mini-HOWTO document are still not working
+>>     .
+>>     Most of the developers often utilize "/debug/tracing/README" file
+>> as Mini-HOWTO.
+>>     They will confuse definition and usage about ftrace  between
+>> README(ftrace) file
+>>     and available_tracers(function) file after linux-2.6.27 like me.
+>>     And, I want you to append "chrt -f 5 sleep 1" command as simple
+>> example for latency.
+>>
+>>     Signed-off-by: GeunSik Lim <leemgs1@gmail.com>
+>>     Signed-off-by: Steven Rostedt <srostedt@redhat.com>
+>>     Signed-off-by: Ingo Molnar <mingo@elte.hu>
+>> ---
+>>  kernel/trace/trace.c |    3 ++-
+>>  1 files changed, 2 insertions(+), 1 deletions(-)
+>>
+>> diff --git a/kernel/trace/trace.c b/kernel/trace/trace.c
+>> index a0174a4..15f0eec 100644
+>> --- a/kernel/trace/trace.c
+>> +++ b/kernel/trace/trace.c
+>> @@ -2358,7 +2358,7 @@ static const char readme_msg[] =
+>>         "# mkdir /debug\n"
+>>         "# mount -t debugfs nodev /debug\n\n"
+>>         "# cat /debug/tracing/available_tracers\n"
+>> -       "wakeup preemptirqsoff preemptoff irqsoff ftrace sched_switch none\n\n"
+>> +       "wakeup preemptirqsoff preemptoff irqsoff function
+>> sched_switch none\n\n"
+>>         "# cat /debug/tracing/current_tracer\n"
+>>         "none\n"
+>>         "# echo sched_switch > /debug/tracing/current_tracer\n"
+>> @@ -2368,6 +2368,7 @@ static const char readme_msg[] =
+>>         "noprint-parent nosym-offset nosym-addr noverbose\n"
+>>         "# echo print-parent > /debug/tracing/trace_options\n"
+>>         "# echo 1 > /debug/tracing/tracing_enabled\n"
+>> +       "# chrt -f 5 sleep 1\n"
+>>         "# cat /debug/tracing/trace > /tmp/trace.txt\n"
+>>         "echo 0 > /debug/tracing/tracing_enabled\n"
+>>  ;
+>>
+>
+> Actually Nikanth sent a similar patch a month ago, but somehow it
+> slipped under the radar. I'll be picking that one up instead.
+>
+> http://lkml.org/lkml/2009/3/23/24
+>
+> But thanks anyway.
+>
+> -- Steve
+>
+>
+>
 
 
-On Mon, 6 Apr 2009, Trenton D. Adams wrote:
-> 
-> What about a procfs setting instead?  Is there a policy about why
-> something should be in procfs or /sys, or as a kernel config option?
-> That's basically as small as the patch you just made, right?
 
-I'm never really against making things dynamically tunable, but this 
-already was, and that wasn't really the issue.
-
-Sure, you can just re-mount your filesystem with different options. That's 
-what I did while testing - my /home is on a drive of its own, so I would 
-just log out and as root unmount and re-mount with data=ordered/writeback, 
-and log in and test again.
-
-So dynamic tuning is good. But at the same time, having a tuning option is 
-_never_ an excuse for not getting the default right in the first place. 
-It's just a cop-out to say "hey, the default may be wrong for you, but you 
-can always tune it locally with XYZ".
-
-The thing is, almost nobody does that. Partly because it needs effort and 
-knowledge, partly because after a few years the number of tuning knobs are 
-in the hundreds for every little thing. 
-
-So instead, leave the tuning for the _really_ odd cases (if you use your 
-machine as an IP router, you hopefully know enough to tune it if you 
-really care). Not for random general-purpose "use for whatever" kind of 
-thing. 
-
-> I'm just thinking that something like this, where people want one
-> thing or the other, but may not know it when they install Linux, might
-> like to change it realtime.  Especially if they are a Linux newbie,
-> and don't know how to compile their own kernel.  Or don't have time to
-> maintain their own kernel installs.
-
-Oh absolutely. I'm not expecting people to compile their own kernels. I'm 
-expecting that within a few months, most modern distributions will have 
-(almost by mistake) gotten a new set of saner defaults, and anybody who 
-keeps their machine up-to-date will see a smoother experience without ever 
-even realizing _why_.
-
-			Linus
+-- 
+Regards,
+GeunSik Lim
+--
+To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
+the body of a message to majordomo@vger.kernel.org
+More majordomo info at  http://vger.kernel.org/majordomo-info.html
+Please read the FAQ at  http://www.tux.org/lkml/
