@@ -1,76 +1,71 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755992AbZDGGe4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753009AbZDGGfS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755992AbZDGGe4 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 7 Apr 2009 02:34:56 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751930AbZDGGeq
+	id S1753009AbZDGGfS (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 7 Apr 2009 02:35:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754782AbZDGGe7
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 7 Apr 2009 02:34:46 -0400
-Received: from mail.charite.de ([141.42.4.200]:52489 "EHLO mail.charite.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751799AbZDGGeq (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 7 Apr 2009 02:34:46 -0400
-Date: Tue, 7 Apr 2009 08:34:43 +0200
-From: Ralf Hildebrandt <Ralf.Hildebrandt@charite.de>
-To: linux-kernel@vger.kernel.org
-Subject: WATCHDOG i6300ESB doesn't reboot the machine
-Message-ID: <20090407063443.GC1723@charite.de>
-Mail-Followup-To: linux-kernel@vger.kernel.org
+	Tue, 7 Apr 2009 02:34:59 -0400
+Received: from e23smtp04.au.ibm.com ([202.81.31.146]:45723 "EHLO
+	e23smtp04.au.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754323AbZDGGe6 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 7 Apr 2009 02:34:58 -0400
+Date: Tue, 7 Apr 2009 12:04:41 +0530
+From: "K.Prasad" <prasad@linux.vnet.ibm.com>
+To: Alan Stern <stern@rowland.harvard.edu>
+Cc: Ingo Molnar <mingo@elte.hu>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Benjamin Herrenschmidt <benh@au1.ibm.com>,
+       Frederic Weisbecker <fweisbec@gmail.com>, maneesh@linux.vnet.ibm.com,
+       Roland McGrath <roland@redhat.com>,
+       Steven Rostedt <rostedt@goodmis.org>
+Subject: [Patch 00/11] Hardware Breakpoint interfaces
+Message-ID: <20090407063441.GA17461@in.ibm.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
 User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-I recently installed the watchdog package along with the i6300ESB
-module. I killed the watchdog process and waited for the reboot. To no
-avail. Is my test flawed? I even stopped the watchdog process,
-unloaded and loaded the i6300esb module: No reboot. 
+Hi Alan,
+	I am sending you the patches with the changes mentioned in the 
+Changelog below. Please read the patches in conjunction with my replies
+sent to your previous comments.
 
-This is an HP-Server.
+Let me know your thoughts on this.
 
-dmesg output:
+Changelog
+-----------
+- Introduce (un)register_user_hw_breakpoint() which would take two parameters -
+  pointer to 'struct task_struct' and 'struct hw_breakpoint'.
+- Change the return value behaviour in ptrace(). Return '0' for write in DR0 -
+  DR3 (with the exception being when the registered address is not in
+  user-space), while restricting error returns for write in DR7. Move memory
+  (de)allocation behaviour for 'struct hw_breakpoint' to ptrace related code and
+  flush_thread_hw_breakpoint() from unregister_user_hw_breakpoint() code.
+- Addition of arch_flush_thread_hw_breakpoint() to zero-out thread->debugreg[n]
+  registers.
+- Consolidate arch-specific kernel/thread update routines into
+  arch_update_kernel_hw_breakpoints() and arch_update_user_hw_breakpoint()
+  routines.
+- Re-arrange the patchset to enable compilation after application of every
+  patch in the patchset.
+- hw_breakpoint_handler() modified to:
+  - Unconditionally invoke (*trigger) function call
+  - Return NOTIFY_DONE only when other bits in DR6 are set or when
+    breakpoint originates due to an address in user-space
+  - Do an early return if trap bits are not set and we have entered the handler
+    because of BT, BS or BD bits in dr6 being set.
+- samples/hw_breakpoint/data_breakpoint.c modified to accept module
+  parameters
 
-[  140.017922] i6300ESB timer: initialized (0xf86cc000). heartbeat=30 sec (nowayout=0)
+The patchset is based on commit f0e36dc28173b65df2216dfae7109645d97a1bd9 of -tip
+tree.
 
-lspci -vv output:
+Thanks,
+K.Prasad
 
-00:1c.0 PCI bridge: Intel Corporation 6300ESB 64-bit PCI-X Bridge (rev 02) (prog-if 00 [Normal decode])
-        Control: I/O+ Mem+ BusMaster+ SpecCycle- MemWINV- VGASnoop- ParErr+ Stepping- SERR+ FastB2B- DisINTx-
-        Status: Cap+ 66MHz+ UDF- FastB2B- ParErr- DEVSEL=fast >TAbort- <TAbort- <MAbort- >SERR- <PERR- INTx-
-        Latency: 64, Cache Line Size: 64 bytes
-        Bus: primary=00, secondary=02, subordinate=02, sec-latency=64
-        I/O behind bridge: 00004000-00004fff
-        Memory behind bridge: fdf00000-fdffffff
-        Prefetchable memory behind bridge: 0000000088000000-00000000880fffff
-        Secondary status: 66MHz+ FastB2B+ ParErr- DEVSEL=medium >TAbort- <TAbort- <MAbort- <SERR- <PERR-
-        BridgeCtl: Parity+ SERR+ NoISA- VGA- MAbort- >Reset- FastB2B-
-                PriDiscTmr- SecDiscTmr- DiscTmrStat- DiscTmrSERREn-
-        Capabilities: [50] PCI-X bridge device
-	        Secondary Status: 64bit+ 133MHz- SCD- USC- SCO- SRD- Freq=66MHz
-                Status: Dev=00:1c.0 64bit+ 133MHz- SCD- USC- SCO- SRD-
-                Upstream: Capacity=65535 CommitmentLimit=0
-		Downstream: Capacity=65535 CommitmentLimit=0
 
-# uname -a
-Linux mail-ausfall.charite.de 2.6.29.1 #1 SMP Mon Apr 6 15:25:51 CEST 2009 i686 GNU/Linux
-
-# cat /etc/issue
-Debian GNU/Linux squeeze/sid \n \l
-
-# lsmod |grep esb
-i6300esb                4852  0 
-
-# ll /dev/watchdog 
-crw-rw---- 1 root root 10, 130  6. Apr 15:31 /dev/watchdog
-
--- 
-Ralf Hildebrandt
-  Geschäftsbereich IT | Abteilung Netzwerk
-  Charité - Universitätsmedizin Berlin
-  Campus Benjamin Franklin
-  Hindenburgdamm 30 | D-12200 Berlin
-  Tel. +49 30 450 570 155 | Fax: +49 30 450 570 962
-  Ralf.Hildebrandt@charite.de | http://www.charite.de
