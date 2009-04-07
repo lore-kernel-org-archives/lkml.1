@@ -1,87 +1,121 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758768AbZDGCJA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759570AbZDGCJk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758768AbZDGCJA (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 6 Apr 2009 22:09:00 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753042AbZDGCIv
+	id S1759570AbZDGCJk (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 6 Apr 2009 22:09:40 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753690AbZDGCJb
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 6 Apr 2009 22:08:51 -0400
-Received: from bilbo.ozlabs.org ([203.10.76.25]:45150 "EHLO bilbo.ozlabs.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752063AbZDGCIu (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 6 Apr 2009 22:08:50 -0400
-Subject: Re: [PATCH] Resurrect old pr_debug() semantics as pr_devel()
-From: Michael Ellerman <michael@ellerman.id.au>
-Reply-To: michael@ellerman.id.au
-To: Jason Baron <jbaron@redhat.com>
-Cc: linux-kernel@vger.kernel.org, Andrew Morton <akpm@osdl.org>
-In-Reply-To: <20090406212417.GC3212@redhat.com>
-References: <4a5c6b4cd1b77ebe6d60362bc982f4dc81cba85e.1238992196.git.michael@ellerman.id.au>
-	 <20090406212417.GC3212@redhat.com>
-Content-Type: multipart/signed; micalg="pgp-sha1"; protocol="application/pgp-signature"; boundary="=-1FgHI7KhzeTS9+ZfrdFK"
-Date: Tue, 07 Apr 2009 12:08:47 +1000
-Message-Id: <1239070127.6565.9.camel@localhost>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.24.3 
+	Mon, 6 Apr 2009 22:09:31 -0400
+Received: from cn.fujitsu.com ([222.73.24.84]:52004 "EHLO song.cn.fujitsu.com"
+	rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org with ESMTP
+	id S1752248AbZDGCJa (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 6 Apr 2009 22:09:30 -0400
+Message-ID: <49DAB5F4.8000500@cn.fujitsu.com>
+Date: Tue, 07 Apr 2009 10:09:56 +0800
+From: Li Zefan <lizf@cn.fujitsu.com>
+User-Agent: Thunderbird 2.0.0.9 (X11/20071115)
+MIME-Version: 1.0
+To: Ingo Molnar <mingo@elte.hu>
+CC: "Alan D. Brunelle" <alan.brunelle@hp.com>,
+       Steven Rostedt <rostedt@goodmis.org>,
+       Jens Axboe <jens.axboe@oracle.com>,
+       Arnaldo Carvalho de Melo <acme@redhat.com>,
+       Frederic Weisbecker <fweisbec@gmail.com>,
+       FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>,
+       LKML <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH] blktrace: fix pdu_len when tracing packet command	requests
+References: <49D42036.5010102@cn.fujitsu.com> <49D4507E.2060602@cn.fujitsu.com> <20090403135736.GC8875@elte.hu>
+In-Reply-To: <20090403135736.GC8875@elte.hu>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Ingo Molnar wrote:
+> * Li Zefan <lizf@cn.fujitsu.com> wrote:
+> 
+>> Since commit d7e3c3249ef23b4617393c69fe464765b4ff1645 ("block: add
+>> large command support"), struct request->cmd has been changed from
+>> unsinged char cmd[BLK_MAX_CDB] to unsigned char *cmd.
+>>
+>> v1 -> v2:
+>> - make sure rq->cmd_len is always intialized, and then we can use
+>>   rq->cmd_len instead of BLK_MAX_CDB.
+> 
+> Thanks. I've added a 'v2-by: FUJITA Tomonori' and the Ack from 
+> Fujita-san as well to document the precise lineage of the fix.
+> 
+> Note: there's an important robustness and security issue to check 
+> before we can apply this fully.
+> 
+> variable-size records are always tricky and need a full audit of the 
+> software stack.
+> 
+> rq->cmd_len comes from sg device ioctls, and the sg command header 
+> can have an arbitrary value for sg_io_v4::header_len. The only limit 
+> in the block layer at the moment is that it must fit into a single 
+> kmalloc() - and that - in theory - can be very large.
+> 
+> So:
+> 
+> 1) the ftrace ring-buffer code has to be checked (does it work well 
+>    with larger than 4K records). Steve .. how well will it work?
+> 
 
---=-1FgHI7KhzeTS9+ZfrdFK
-Content-Type: text/plain
-Content-Transfer-Encoding: quoted-printable
+There is a check:
 
-On Mon, 2009-04-06 at 17:24 -0400, Jason Baron wrote:
-> On Mon, Apr 06, 2009 at 02:30:03PM +1000, Michael Ellerman wrote:
-> > pr_debug() used to produce zero code unless DEBUG was #defined. This is
-> > now no longer the case in practice[1].
-> >=20
-> > There are places where it's useful to have debugging printks, but we
-> > don't want them to generate any code in production kernels.
-> >=20
-> > So add a new macro, pr_devel(), for _devel_opment, to provide the old
-> > semantics, ie. if the programmer doesn't explicitly enable debugging,
-> > no code is produced.
-> >=20
-> > [1]: You can turn CONFIG_DYNAMIC_DEBUG off, but it's enabled in at leas=
-t
-> >      one distro kernel, so it's not really a solution.
-> >=20
->=20
-> hmm...its designed to have low overhead when CONFIG_DYNAMIC_DEBUG
-> is on, but none of the debugging printks are enabled.=20
+ring_buffer_lock_reserve(length)
+{
+	...
+	length = rb_calculate_event_length(length);
+	if (length > BUF_PAGE_SIZE)
+		goto out;
+	...
+}
 
-Sure, it does that fairly well, and there are places where it's a good
-trade off to have the debug available at the cost of a bit more code.
+so if the record is around PAGE_SIZE, the event will not be recorded.
 
-> Is there a specific benchmark or test case that is unaccpetable?
+> 2) and the user-space blktrace+blkparse code has to be checked for 
+>    overflows and static sizes as well. Jens, Alan?
+> 
+>    I had a quick look at the user-space code. It seems mostly fine. 
+>    There appears to be one minor bug in blkrawverify.c:
+> 
+>                         pdu_buf = malloc(bit->pdu_len);
+>                         n = fread(pdu_buf, bit->pdu_len, 1, ifp);
+>                         if (n == 0) {
+>                                 INC_BAD("bad pdu");
+> 
+>    malloc() can return NULL under memory pressure - shouldnt we
+>    check it for NULL instead of passing it to fread()?
+> 
+>    Oh, there does seem to be a buffer-overflow problem in 
+>    blkparse_fmt.c:
+> 
 
-Yes. Compiling with DYNAMIC_DEBUG=3Dy generates a non-zero amount of code
-for each pr_debug(), and in some places that is unacceptable.  :)
+and this can be fixed easily.
 
-cheers
-
---=20
-Michael Ellerman
-OzLabs, IBM Australia Development Lab
-
-wwweb: http://michael.ellerman.id.au
-phone: +61 2 6212 1183 (tie line 70 21183)
-
-We do not inherit the earth from our ancestors,
-we borrow it from our children. - S.M.A.R.T Person
-
---=-1FgHI7KhzeTS9+ZfrdFK
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: This is a digitally signed message part
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.9 (GNU/Linux)
-
-iEYEABECAAYFAknata8ACgkQdSjSd0sB4dLYzwCgq3UIiRQ1VfLq9sXesddrrt1+
-CD0AnjPs/zERDpEfpa8YT6z/DQX83Z+U
-=aIHd
------END PGP SIGNATURE-----
-
---=-1FgHI7KhzeTS9+ZfrdFK--
-
+>    static char *dump_pdu(unsigned char *pdu_buf, int pdu_len)
+>    {
+>         static char p[4096];
+>         int i, len;
+> 
+>         if (!pdu_buf || !pdu_len)
+>                 return NULL;
+> 
+>         for (len = 0, i = 0; i < pdu_len; i++) {
+>                 if (i)
+>                         len += sprintf(p + len, " ");
+> 
+>                 len += sprintf(p + len, "%02x", pdu_buf[i]);
+>    [...]
+> 
+>    that p[4096] is a buffer-overflow if the pdu_len goes over 4096. 
+>    This is a small potential security issue if we apply this patch. 
+>    Should be changed to malloc(pdu_len) instead.
+> 
+>    ( Relatively small because SG_IO ioctls are not normally allowed
+>      to unprivileged users so generating intentionally large packets 
+>      to exploit a sysadmin running blkparse seems like a stretch of 
+>      a threat model. )
+> 
