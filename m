@@ -1,84 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761600AbZDGVkv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759737AbZDGVlT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761600AbZDGVkv (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 7 Apr 2009 17:40:51 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757205AbZDGVkm
+	id S1759737AbZDGVlT (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 7 Apr 2009 17:41:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760728AbZDGVkm
 	(ORCPT <rfc822;linux-kernel-outgoing>);
 	Tue, 7 Apr 2009 17:40:42 -0400
-Received: from gerard.telenet-ops.be ([195.130.132.48]:44555 "EHLO
-	gerard.telenet-ops.be" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755261AbZDGVkl (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 7 Apr 2009 17:40:41 -0400
-Date: Tue, 7 Apr 2009 23:40:39 +0200 (CEST)
-From: Geert Uytterhoeven <geert@linux-m68k.org>
-To: David Teigland <teigland@redhat.com>
-cc: Linux Kernel Development <linux-kernel@vger.kernel.org>
-Subject: [PATCH] dlm: Make name input parameter of {,dlm_}new_lockspace()
- const
-Message-ID: <Pine.LNX.4.64.0904072340220.27188@anakin>
+Received: from grfedg702rm001.telecomitalia.it ([217.169.121.21]:21865 "EHLO
+	GRFEDG702RM001.telecomitalia.it" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1756321AbZDGVkm convert rfc822-to-8bit
+	(ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 7 Apr 2009 17:40:42 -0400
+X-Greylist: delayed 327 seconds by postgrey-1.27 at vger.kernel.org; Tue, 07 Apr 2009 17:40:41 EDT
+From: Genoni Luigi <luigi.genoni@telecomitalia.it>
+To: "jgarzik@pobox.com" <jgarzik@pobox.com>, "tj@kernel.org" <tj@kernel.org>
+CC: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
+Date: Tue, 7 Apr 2009 23:34:59 +0200
+Subject: nvida sata controller CK804  and  NCQ not working on
+ linux-2.6.28||29.1
+Thread-Topic: nvida sata controller CK804  and  NCQ not working on
+ linux-2.6.28||29.1
+Thread-Index: AQHJt8izCA3CCCYeA02x2UTVNF8w4A==
+Message-ID: <8260162D332466469A1DD3FB317C18882E665616BA@GRFMBX706RM001.griffon.local>
+Accept-Language: en-US
+Content-Language: en-US
+X-MS-Has-Attach: 
+X-MS-TNEF-Correlator: 
+acceptlanguage: en-US
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 8BIT
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-| fs/gfs2/lock_dlm.c:207: warning: passing argument 1 of 'dlm_new_lockspace' discards qualifiers from pointer target type
-
-Signed-off-by: Geert Uytterhoeven <geert@linux-m68k.org>
----
- fs/dlm/lockspace.c  |    4 ++--
- include/linux/dlm.h |    4 ++--
- 2 files changed, 4 insertions(+), 4 deletions(-)
-
-diff --git a/fs/dlm/lockspace.c b/fs/dlm/lockspace.c
-index cd8e2df..82528d9 100644
---- a/fs/dlm/lockspace.c
-+++ b/fs/dlm/lockspace.c
-@@ -384,7 +384,7 @@ static void threads_stop(void)
- 	dlm_astd_stop();
- }
- 
--static int new_lockspace(char *name, int namelen, void **lockspace,
-+static int new_lockspace(const char *name, int namelen, void **lockspace,
- 			 uint32_t flags, int lvblen)
- {
- 	struct dlm_ls *ls;
-@@ -614,7 +614,7 @@ static int new_lockspace(char *name, int namelen, void **lockspace,
- 	return error;
- }
- 
--int dlm_new_lockspace(char *name, int namelen, void **lockspace,
-+int dlm_new_lockspace(const char *name, int namelen, void **lockspace,
- 		      uint32_t flags, int lvblen)
- {
- 	int error = 0;
-diff --git a/include/linux/dlm.h b/include/linux/dlm.h
-index b9cd386..0b3518c 100644
---- a/include/linux/dlm.h
-+++ b/include/linux/dlm.h
-@@ -81,8 +81,8 @@ struct dlm_lksb {
-  * the cluster, the calling node joins it.
-  */
- 
--int dlm_new_lockspace(char *name, int namelen, dlm_lockspace_t **lockspace,
--		      uint32_t flags, int lvblen);
-+int dlm_new_lockspace(const char *name, int namelen,
-+		      dlm_lockspace_t **lockspace, uint32_t flags, int lvblen);
- 
- /*
-  * dlm_release_lockspace
--- 
-1.6.2.1
+Hi,
+to make NCQ work with nvidia sata CK804 I had to introduce this simple
+change into sata-nv.c. Is there some reason I am missing why adma_enable is
+not by default one, so later in the dome NCQ is not enabled?
 
 
-Gr{oetje,eeting}s,
 
-						Geert
+--- linux/drivers/ata/sata_nv.c.old     2009-04-06 14:56:19.000000000 +0200
++++ linux/drivers/ata/sata_nv.c 2009-04-06 14:56:24.000000000 +0200
+@@ -577,7 +577,7 @@
+ MODULE_DEVICE_TABLE(pci, nv_pci_tbl);
+ MODULE_VERSION(DRV_VERSION);
 
---
-Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
+-static int adma_enabled;
++static int adma_enabled = 1;
+ static int swncq_enabled = 1;
 
-In personal conversations with technical people, I call myself a hacker. But
-when I'm talking to journalists I just say "programmer" or something like that.
-							    -- Linus Torvalds
+ static void nv_adma_register_mode(struct ata_port *ap)
+
+regards
+
+
+Luigi Genoni
+
+Questo messaggio e i suoi allegati sono indirizzati esclusivamente alle persone indicate. La diffusione, copia o qualsiasi altra azione derivante dalla conoscenza di queste informazioni sono rigorosamente vietate. Qualora abbiate ricevuto questo documento per errore siete cortesemente pregati di darne immediata comunicazione al mittente e di provvedere alla sua distruzione, Grazie.
+
+This e-mail and any attachments is confidential and may contain privileged information intended for the addressee(s) only. Dissemination, copying, printing or use by anybody else is unauthorised. If you are not the intended recipient, please delete this message and any attachments and advise the sender by return e-mail, Thanks.
+
