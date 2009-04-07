@@ -1,76 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758133AbZDGT3n@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758306AbZDGTao@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758133AbZDGT3n (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 7 Apr 2009 15:29:43 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753838AbZDGT3e
+	id S1758306AbZDGTao (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 7 Apr 2009 15:30:44 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755718AbZDGTaf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 7 Apr 2009 15:29:34 -0400
-Received: from one.firstfloor.org ([213.235.205.2]:43846 "EHLO
-	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753057AbZDGT3d (ORCPT
+	Tue, 7 Apr 2009 15:30:35 -0400
+Received: from fmailhost04.isp.att.net ([204.127.217.104]:46977 "EHLO
+	fmailhost04.isp.att.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755328AbZDGTae (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 7 Apr 2009 15:29:33 -0400
-Date: Tue, 7 Apr 2009 21:31:45 +0200
-From: Andi Kleen <andi@firstfloor.org>
-To: Johannes Weiner <hannes@cmpxchg.org>
-Cc: Andi Kleen <andi@firstfloor.org>, linux-kernel@vger.kernel.org,
-       linux-mm@kvack.org, x86@kernel.org
-Subject: Re: [PATCH] [8/16] POISON: Add various poison checks in mm/memory.c
-Message-ID: <20090407193145.GU17934@one.firstfloor.org>
-References: <20090407509.382219156@firstfloor.org> <20090407151005.4E24B1D046D@basil.firstfloor.org> <20090407190330.GB3818@cmpxchg.org>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090407190330.GB3818@cmpxchg.org>
-User-Agent: Mutt/1.4.2.1i
+	Tue, 7 Apr 2009 15:30:34 -0400
+X-Originating-IP: [69.76.240.125]
+Message-ID: <49DBA9D0.7080400@lwfinger.net>
+Date: Tue, 07 Apr 2009 14:30:24 -0500
+From: Larry Finger <Larry.Finger@lwfinger.net>
+User-Agent: Thunderbird 2.0.0.19 (X11/20081227)
+MIME-Version: 1.0
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+CC: LKML <linux-kernel@vger.kernel.org>, Mike Galbraith <efault@gmx.de>,
+       Rusty Russell <rusty@rustcorp.com.au>
+Subject: Re: [2 regressions] Current git cannot find root device on x86-64(HP
+ nx6325), NFS broken
+References: <49DB69FA.1060202@lwfinger.net> <200904072113.20703.rjw@sisk.pl>
+In-Reply-To: <200904072113.20703.rjw@sisk.pl>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Apr 07, 2009 at 09:03:30PM +0200, Johannes Weiner wrote:
-> On Tue, Apr 07, 2009 at 05:10:05PM +0200, Andi Kleen wrote:
-> > 
-> > Bail out early when poisoned pages are found in page fault handling.
-> > Since they are poisoned they should not be mapped freshly
-> > into processes.
-> > 
-> > This is generally handled in the same way as OOM, just a different
-> > error code is returned to the architecture code.
-> > 
-> > Signed-off-by: Andi Kleen <ak@linux.intel.com>
-> > 
-> > ---
-> >  mm/memory.c |    7 +++++++
-> >  1 file changed, 7 insertions(+)
-> > 
-> > Index: linux/mm/memory.c
-> > ===================================================================
-> > --- linux.orig/mm/memory.c	2009-04-07 16:39:39.000000000 +0200
-> > +++ linux/mm/memory.c	2009-04-07 16:39:39.000000000 +0200
-> > @@ -2560,6 +2560,10 @@
-> >  		goto oom;
-> >  	__SetPageUptodate(page);
-> >  
-> > +	/* Kludge for now until we take poisoned pages out of the free lists */
-> > +	if (unlikely(PagePoison(page)))
-> > +		return VM_FAULT_POISON;
-> > +
+Rafael J. Wysocki wrote:
+> On Tuesday 07 April 2009, Larry Finger wrote:
+>> My system also fails to load modules from initrd unless 9cb610d is reverted.
+>> Something is wrong with the "module: remove the SHF_ALLOC flag on the __versions
+>> section" patch.
 > 
-> When memory_failure() hits a page still on the free list
+> This is fixed in the current -git, although I had to apply the patch from
+> http://patchwork.kernel.org/patch/16776/
+> to fix an Oops on boot.
 
-It won't free it then. Later on it will take it out of the free lists,
-but that code is not written yet.
+Thanks for the heads-up, particularly on the 16776 patch above. I was in the
+middle of a bisection to isolate that one.
 
-> (!page_count()) then the get_page() in memory_failure() will trigger a
-> VM_BUG.  So either this check is unneeded or it should be
+Do you know anything about a regression that leads to "phy0: Failed to
+initialize wep: -2" messages? It is the 3rd one that I'm chasing and seems to
+affect all wireless drivers. For this one, removing and reinserting the driver
+corrects the problem.
 
-So no bug
-> get_page_unless_zero() in memory_failure()?
+Larry
 
-That's not what this is handling.  The issue is that sometimes
-the process can still freeing it and we need to make sure it 
-never hits the free lists.
 
--Andi
--- 
-ak@linux.intel.com -- Speaking for myself only.
+
