@@ -1,51 +1,76 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757777AbZDGPwu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758182AbZDGPxQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757777AbZDGPwu (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 7 Apr 2009 11:52:50 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754300AbZDGPwk
+	id S1758182AbZDGPxQ (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 7 Apr 2009 11:53:16 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756971AbZDGPw5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 7 Apr 2009 11:52:40 -0400
-Received: from srv5.dvmed.net ([207.36.208.214]:49693 "EHLO mail.dvmed.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753875AbZDGPwk (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 7 Apr 2009 11:52:40 -0400
-Message-ID: <49DB76BD.8090203@garzik.org>
-Date: Tue, 07 Apr 2009 11:52:29 -0400
-From: Jeff Garzik <jeff@garzik.org>
-User-Agent: Thunderbird 2.0.0.21 (X11/20090320)
+	Tue, 7 Apr 2009 11:52:57 -0400
+Received: from acsinet12.oracle.com ([141.146.126.234]:19713 "EHLO
+	acsinet12.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754300AbZDGPw4 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 7 Apr 2009 11:52:56 -0400
+Message-ID: <49DB769B.7010203@oracle.com>
+Date: Tue, 07 Apr 2009 08:51:55 -0700
+From: Randy Dunlap <randy.dunlap@oracle.com>
+Organization: Oracle Linux Engineering
+User-Agent: Thunderbird 2.0.0.6 (X11/20070801)
 MIME-Version: 1.0
-To: Alan Cox <alan@lxorguk.ukuu.org.uk>
-CC: torvalds@linux-foundation.org, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] parport: Use the PCI IRQ if offered
-References: <20090407143009.31233.22016.stgit@t61.ukuu.org.uk>
-In-Reply-To: <20090407143009.31233.22016.stgit@t61.ukuu.org.uk>
-Content-Type: text/plain; charset=UTF-8; format=flowed
+To: linux-kernel@vger.kernel.org
+CC: Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: mmotm 2009-04-07-01-06 uploaded (serial/8250_pci & kernel/sysctl)
+References: <200904070812.n378CCnZ030736@imap1.linux-foundation.org>
+In-Reply-To: <200904070812.n378CCnZ030736@imap1.linux-foundation.org>
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
-X-Spam-Score: -4.4 (----)
-X-Spam-Report: SpamAssassin version 3.2.5 on srv5.dvmed.net summary:
-	Content analysis details:   (-4.4 points, 5.0 required)
+X-Source-IP: acsmt705.oracle.com [141.146.40.83]
+X-Auth-Type: Internal IP
+X-CT-RefId: str=0001.0A010202.49DB7695.0094:SCFMA4539814,ss=1,fgs=0
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Alan Cox wrote:
-> PCI parallel port devices can IRQ share so we should stop them hogging the
-> line and making a mess on modern PC systems. We know the sharing side works
-> as the PCMCIA driver has shared the parallel port IRQ for some time.
+akpm@linux-foundation.org wrote:
+> The mm-of-the-moment snapshot 2009-04-07-01-06 has been uploaded to
 > 
-> Signed-off-by: Alan Cox <alan@lxorguk.ukuu.org.uk>
-> ---
+>    http://userweb.kernel.org/~akpm/mmotm/
 > 
->  drivers/parport/parport_cs.c     |    3 +-
->  drivers/parport/parport_pc.c     |   57 ++++++++++++++++++++++++--------------
->  drivers/parport/parport_serial.c |   20 +++++++++++--
->  include/linux/parport_pc.h       |   11 ++++---
->  4 files changed, 60 insertions(+), 31 deletions(-)
-
-Acked-by: Jeff Garzik <jgarzik@pobox.com>
-
-(I did some parport work many years ago, trying to improve the parport 
-driver's integration with modern on-mainboard parallel port controls; 
-this was one of the goals, only now realized)
+> and will soon be available at
+> 
+>    git://git.zen-sources.org/zen/mmotm.git
+> 
+> It contains the following patches against 2.6.29:
 
 
+some kind of patch/diff problem here:
+
+drivers/serial/8250_pci.c:
+
+static int
+<<<<<<< HEAD:drivers/serial/8250_pci.c
+pci_ni8430_setup(struct serial_private *priv,
+		 const struct pciserial_board *board,
+=======
+pci_ni8430_setup(struct serial_private *priv, struct pciserial_board *board,
+>>>>>>> FETCH_HEAD:drivers/serial/8250_pci.c
+		 struct uart_port *port, int idx)
+{
+
+
+and here:
+
+kernel/sysctl.c:
+
+static int zero;
+<<<<<<< HEAD:kernel/sysctl.c
+static int __maybe_unused one = 1;
+static int __maybe_unused two = 2;
+=======
+static int two = 2;
+>>>>>>> FETCH_HEAD:kernel/sysctl.c
+static unsigned long one_ul = 1;
+static int one_hundred = 100;
+static int one_thousand = 1000;
+
+-- 
+~Randy
