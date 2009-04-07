@@ -1,79 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754093AbZDGHtk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752663AbZDGHty@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754093AbZDGHtk (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 7 Apr 2009 03:49:40 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751884AbZDGHt2
+	id S1752663AbZDGHty (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 7 Apr 2009 03:49:54 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752282AbZDGHth
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 7 Apr 2009 03:49:28 -0400
-Received: from mail-fx0-f158.google.com ([209.85.220.158]:46649 "EHLO
-	mail-fx0-f158.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751663AbZDGHt0 convert rfc822-to-8bit (ORCPT
+	Tue, 7 Apr 2009 03:49:37 -0400
+Received: from metis.ext.pengutronix.de ([92.198.50.35]:47181 "EHLO
+	metis.ext.pengutronix.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752548AbZDGHth (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 7 Apr 2009 03:49:26 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
-         :cc:content-type:content-transfer-encoding;
-        b=vqY+b5qvVaQK6lP63F9lKLpxivOngm2V6cQThlv9+9n4D2+rKdzrm/XaSYFX1dYNDf
-         BfSDRoirTv6K4KCcYMPh9m8Kr/8dyNwvhSc5F+oq6tR4SvAbxoGM8HkL9wdPvvmi7NJ9
-         vijkmBv81dR9YxXZPNGWJiP3/wEg77loPASuI=
-MIME-Version: 1.0
-In-Reply-To: <1239088491.19390.25.camel@violet>
-References: <n4io5wq70ZO.A.gzG.rFn2JB@chimera>
-	 <AsKNxFx2juN.A.bxC.BJn2JB@chimera> <1239088491.19390.25.camel@violet>
-Date: Tue, 7 Apr 2009 09:49:23 +0200
-Message-ID: <8db1092f0904070049o675de150qd319fc5853ec9bd8@mail.gmail.com>
-Subject: Re: [Bug #12499] Problem with using bluetooth adaper connected to usb 
-	port
-From: Maciej Rutecki <maciej.rutecki@gmail.com>
-To: Marcel Holtmann <marcel@holtmann.org>
-Cc: "Rafael J. Wysocki" <rjw@sisk.pl>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Kernel Testers List <kernel-testers@vger.kernel.org>
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8BIT
+	Tue, 7 Apr 2009 03:49:37 -0400
+From: Luotao Fu <l.fu@pengutronix.de>
+To: gregkh@suse.de
+Cc: linux-usb@vger.kernel.org, linux-kernel@vger.kernel.org,
+       Luotao Fu <l.fu@pengutronix.de>
+Subject: [PATCH] USB: serial: add FTDI FT4232H ID
+Date: Tue,  7 Apr 2009 09:49:33 +0200
+Message-Id: <1239090573-11527-1-git-send-email-l.fu@pengutronix.de>
+X-Mailer: git-send-email 1.6.2.1
+X-SA-Exim-Connect-IP: 2001:6f8:1178:2:215:17ff:fe12:23b0
+X-SA-Exim-Mail-From: l.fu@pengutronix.de
+X-SA-Exim-Scanned: No (on metis.ext.pengutronix.de); SAEximRunCond expanded to false
+X-PTX-Original-Recipient: linux-kernel@vger.kernel.org
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-2009/4/7 Marcel Holtmann <marcel@holtmann.org>:
-> Hi Rafael,
->
->> This message has been generated automatically as a part of a report
->> of recent regressions.
->>
->> The following bug entry is on the current list of known regressions
->> from 2.6.28.  Please verify if it still should be listed and let me know
->> (either way).
->>
->>
->> Bug-Entry     : http://bugzilla.kernel.org/show_bug.cgi?id=12499
->> Subject               : Problem with using bluetooth adaper connected to usb port
->> Submitter     : "Maciej Rutecki" <maciej.rutecki@gmail.com>
->> Date          : 2009-01-13 18:34 (84 days old)
+add the ID of FT4232H Hi-Speed quad channel serial converter.
 
-I forgot this bug :)
+Signed-off-by: Luotao Fu <l.fu@pengutronix.de>
+---
+ drivers/usb/serial/ftdi_sio.c |    1 +
+ drivers/usb/serial/ftdi_sio.h |    1 +
+ 2 files changed, 2 insertions(+), 0 deletions(-)
 
->> References    : http://marc.info/?l=linux-kernel&m=123187185426236&w=4
->
-> I prefer to have this checked against 2.6.30-rc1 once Linus released
-> that one. I think that I know the root cause for this one and it is
-> actually a hardware/firmware bug. Some Bluetooth dongles expect to have
-> the interrupt and bulk URBs available at the same time. Otherwise they
-> do pee in their pants.
-
-I will check -rc1 when will be available.
-
->
-> Regards
->
-> Marcel
->
->
->
-
-
-Regards
+diff --git a/drivers/usb/serial/ftdi_sio.c b/drivers/usb/serial/ftdi_sio.c
+index ae84c32..08f5c8a 100644
+--- a/drivers/usb/serial/ftdi_sio.c
++++ b/drivers/usb/serial/ftdi_sio.c
+@@ -668,6 +668,7 @@ static struct usb_device_id id_table_combined [] = {
+ 	{ USB_DEVICE(DE_VID, WHT_PID) },
+ 	{ USB_DEVICE(ADI_VID, ADI_GNICE_PID),
+ 		.driver_info = (kernel_ulong_t)&ftdi_jtag_quirk },
++	{ USB_DEVICE(FTDI_VID, FTDI_4232H_PID) },
+ 	{ },					/* Optional parameter entry */
+ 	{ }					/* Terminating entry */
+ };
+diff --git a/drivers/usb/serial/ftdi_sio.h b/drivers/usb/serial/ftdi_sio.h
+index daaf63d..e1072b5 100644
+--- a/drivers/usb/serial/ftdi_sio.h
++++ b/drivers/usb/serial/ftdi_sio.h
+@@ -28,6 +28,7 @@
+ #define FTDI_8U232AM_ALT_PID 0x6006 /* FTDI's alternate PID for above */
+ #define FTDI_8U2232C_PID 0x6010 /* Dual channel device */
+ #define FTDI_232RL_PID  0xFBFA  /* Product ID for FT232RL */
++#define FTDI_4232H_PID 0x6011	/* quad channel hi-speed */
+ #define FTDI_RELAIS_PID	0xFA10  /* Relais device from Rudolf Gugler */
+ #define FTDI_NF_RIC_VID	0x0DCD	/* Vendor Id */
+ #define FTDI_NF_RIC_PID	0x0001	/* Product Id */
 -- 
-Maciej Rutecki
-http://www.maciek.unixy.pl
+1.6.2.1
+
