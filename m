@@ -1,101 +1,115 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759559AbZDGReO@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759978AbZDGRea@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759559AbZDGReO (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 7 Apr 2009 13:34:14 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756450AbZDGRdy
+	id S1759978AbZDGRea (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 7 Apr 2009 13:34:30 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759571AbZDGReI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 7 Apr 2009 13:33:54 -0400
-Received: from g4t0016.houston.hp.com ([15.201.24.19]:10617 "EHLO
-	g4t0016.houston.hp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756756AbZDGRdx (ORCPT
+	Tue, 7 Apr 2009 13:34:08 -0400
+Received: from smtp-68.nebula.fi ([83.145.220.68]:38825 "EHLO
+	smtp-68.nebula.fi" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1759608AbZDGReH (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 7 Apr 2009 13:33:53 -0400
-Subject: Re: [PATCH next] pci: fix build error with !PCIE_ECRC
-From: Andrew Patterson <andrew.patterson@hp.com>
-To: Alexander Beregalov <a.beregalov@gmail.com>
-Cc: linux-next@vger.kernel.org, linux-kernel@vger.kernel.org,
-       jbarnes@virtuousgeek.org, linux-pci@vger.kernel.org
-In-Reply-To: <20090407123707.GA18687@orion>
-References: <20090407123707.GA18687@orion>
-Content-Type: text/plain
-Date: Tue, 07 Apr 2009 17:33:49 +0000
-Message-Id: <1239125629.19984.196.camel@grinch>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.24.3 
-Content-Transfer-Encoding: 7bit
+	Tue, 7 Apr 2009 13:34:07 -0400
+From: Pekka Enberg <penberg@cs.helsinki.fi>
+To: ming@elte.hu
+Cc: penberg@cs.helsinki.fi, x86@kernel.org, linux-kernel@vger.kernel.org
+Subject: [PATCH 09/13] x86: unify trivial differences in irqinit_{32,64}.c
+Date: Tue,  7 Apr 2009 16:48:36 +0300
+Message-Id: <1239112120-676-9-git-send-email-penberg@cs.helsinki.fi>
+X-Mailer: git-send-email 1.5.6.3
+In-Reply-To: <1239112120-676-1-git-send-email-penberg@cs.helsinki.fi>
+References: <1239112120-676-1-git-send-email-penberg@cs.helsinki.fi>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 2009-04-07 at 16:37 +0400, Alexander Beregalov wrote:
-> Fix this build error:
-> drivers/built-in.o: In function `pci_init_capabilities':
-> drivers/pci/probe.c:989: undefined reference to `pcie_set_ecrc_checking'
-> drivers/built-in.o: In function `pci_setup':
-> drivers/pci/pci.c:2547: undefined reference to `pcie_ecrc_get_policy'
-> 
-> Signed-off-by: Alexander Beregalov <a.beregalov@gmail.com>
-> ---
-> 
->  drivers/pci/pci.c        |    2 ++
->  drivers/pci/pcie/Kconfig |    2 +-
->  drivers/pci/probe.c      |    2 ++
->  3 files changed, 5 insertions(+), 1 deletions(-)
-> 
-> diff --git a/drivers/pci/pci.c b/drivers/pci/pci.c
-> index f61b2cf..f1c393e 100644
-> --- a/drivers/pci/pci.c
-> +++ b/drivers/pci/pci.c
-> @@ -2543,8 +2543,10 @@ static int __init pci_setup(char *str)
->  			} else if (!strncmp(str, "resource_alignment=", 19)) {
->  				pci_set_resource_alignment_param(str + 19,
->  							strlen(str + 19));
-> +#ifdef CONFIG_PCIE_ECRC
->  			} else if (!strncmp(str, "ecrc=", 5)) {
->  				pcie_ecrc_get_policy(str + 5);
-> +#endif
->  			} else {
->  				printk(KERN_ERR "PCI: Unknown option `%s'\n",
->  						str);
-> diff --git a/drivers/pci/pcie/Kconfig b/drivers/pci/pcie/Kconfig
-> index a79e52b..9d0e727 100644
-> --- a/drivers/pci/pcie/Kconfig
-> +++ b/drivers/pci/pcie/Kconfig
-> @@ -52,7 +52,7 @@ config PCIEASPM_DEBUG
->  #
->  config PCIE_ECRC
->  	bool "PCI Express ECRC support"
-> -	depends on PCI
-> +	depends on PCI && PCIEPORTBUS
+Impact: cleanup
 
-We really only need this.  There are empty functions in
-include/linux/pci.h to handle the case where PCIE_ECRC is not defined.
-The problem is that the code in drivers/pci/pcie is only compiled if
-PCIEPORTBUS is defined.  This feature does not depend on any PCIEPORTBUS
-code. So either ecrc.c needs to be moved to drivers/pci or we need to
-not assume that drivers/pci/pcie is only for the portbus driver.
+Signed-off-by: Pekka Enberg <penberg@cs.helsinki.fi>
+---
+ arch/x86/kernel/irqinit_32.c |   20 ++++++++++++++++++++
+ arch/x86/kernel/irqinit_64.c |    4 ++++
+ 2 files changed, 24 insertions(+), 0 deletions(-)
 
-
->  	help
->  	  Enables PCI Express ECRC (transaction layer end-to-end CRC
->  	  checking)
-> diff --git a/drivers/pci/probe.c b/drivers/pci/probe.c
-> index d5125a1..8d402a8 100644
-> --- a/drivers/pci/probe.c
-> +++ b/drivers/pci/probe.c
-> @@ -985,8 +985,10 @@ static void pci_init_capabilities(struct pci_dev *dev)
->  	/* Single Root I/O Virtualization */
->  	pci_iov_init(dev);
->  
-> +#ifdef CONFIG_PCIE_ECRC
->  	/* PCIe end-to-end CRC checking */
->  	pcie_set_ecrc_checking(dev);
-> +#endif
->  }
->  
->  void pci_device_add(struct pci_dev *dev, struct pci_bus *bus)
-> 
+diff --git a/arch/x86/kernel/irqinit_32.c b/arch/x86/kernel/irqinit_32.c
+index a780de3..72ce942 100644
+--- a/arch/x86/kernel/irqinit_32.c
++++ b/arch/x86/kernel/irqinit_32.c
+@@ -1,20 +1,24 @@
++#include <linux/linkage.h>
+ #include <linux/errno.h>
+ #include <linux/signal.h>
+ #include <linux/sched.h>
+ #include <linux/ioport.h>
+ #include <linux/interrupt.h>
++#include <linux/timex.h>
+ #include <linux/slab.h>
+ #include <linux/random.h>
+ #include <linux/init.h>
+ #include <linux/kernel_stat.h>
+ #include <linux/sysdev.h>
+ #include <linux/bitops.h>
++#include <linux/acpi.h>
+ #include <linux/io.h>
+ #include <linux/delay.h>
+ 
+ #include <asm/atomic.h>
+ #include <asm/system.h>
+ #include <asm/timer.h>
++#include <asm/hw_irq.h>
+ #include <asm/pgtable.h>
+ #include <asm/desc.h>
+ #include <asm/apic.h>
+@@ -22,6 +26,22 @@
+ #include <asm/i8259.h>
+ #include <asm/traps.h>
+ 
++/*
++ * ISA PIC or low IO-APIC triggered (INTA-cycle or APIC) interrupts:
++ * (these are usually mapped to vectors 0x30-0x3f)
++ */
++
++/*
++ * The IO-APIC gives us many more interrupt sources. Most of these
++ * are unused but an SMP system is supposed to have enough memory ...
++ * sometimes (mostly wrt. hw bugs) we get corrupted vectors all
++ * across the spectrum, so we really want to be prepared to get all
++ * of these. Plus, more powerful systems might have more than 64
++ * IO-APIC registers.
++ *
++ * (these are usually mapped into the 0x30-0xff vector range)
++ */
++
+ #ifdef CONFIG_X86_32
+ /*
+  * Note that on a 486, we don't want to do a SIGFPE on an irq13
+diff --git a/arch/x86/kernel/irqinit_64.c b/arch/x86/kernel/irqinit_64.c
+index ed50e35..687b6c3 100644
+--- a/arch/x86/kernel/irqinit_64.c
++++ b/arch/x86/kernel/irqinit_64.c
+@@ -17,11 +17,14 @@
+ 
+ #include <asm/atomic.h>
+ #include <asm/system.h>
++#include <asm/timer.h>
+ #include <asm/hw_irq.h>
+ #include <asm/pgtable.h>
+ #include <asm/desc.h>
+ #include <asm/apic.h>
++#include <asm/setup.h>
+ #include <asm/i8259.h>
++#include <asm/traps.h>
+ 
+ /*
+  * ISA PIC or low IO-APIC triggered (INTA-cycle or APIC) interrupts:
+@@ -136,6 +139,7 @@ static void __init init_ISA_irqs(void)
+ 	}
+ }
+ 
++/* Overridden in paravirt.c */
+ void init_IRQ(void) __attribute__((weak, alias("native_init_IRQ")));
+ 
+ static void __init smp_intr_init(void)
 -- 
-Andrew Patterson
-Hewlett-Packard
+1.5.6.3
 
