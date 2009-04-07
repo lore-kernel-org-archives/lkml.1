@@ -1,83 +1,87 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753179AbZDGKtP@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753083AbZDGKtc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753179AbZDGKtP (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 7 Apr 2009 06:49:15 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752161AbZDGKs4
+	id S1753083AbZDGKtc (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 7 Apr 2009 06:49:32 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752299AbZDGKs5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 7 Apr 2009 06:48:56 -0400
-Received: from mx1.emlix.com ([193.175.82.87]:40870 "EHLO mx1.emlix.com"
+	Tue, 7 Apr 2009 06:48:57 -0400
+Received: from mx1.emlix.com ([193.175.82.87]:35931 "EHLO mx1.emlix.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752075AbZDGKs4 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	id S1752118AbZDGKs4 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
 	Tue, 7 Apr 2009 06:48:56 -0400
 From: Johannes Weiner <jw@emlix.com>
 To: Chris Zankel <chris@zankel.net>
 Cc: linux-kernel@vger.kernel.org
-Subject: [patch] xtensa: always use correct stack pointer for stack traces
-Date: Tue,  7 Apr 2009 12:50:27 +0200
-Message-Id: <1239101428-29312-1-git-send-email-jw@emlix.com>
+Subject: [patch] xtensa: register gpio chip before use
+Date: Tue,  7 Apr 2009 12:50:28 +0200
+Message-Id: <1239101428-29312-2-git-send-email-jw@emlix.com>
 Organization: emlix gmbh, Goettingen, Germany
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Commit '28a0ce7 xtensa: use correct stack pointer for stack traces'
-changed the stack tracer from always reading the stack pointer
-register to always using the saved value in the task descriptor.
+Platform initialization sets up the LED heartbeat that is controlled
+via GPIO.  Requesting the GPIO pins fails, however, as the chip is
+only initialized later by a device_initcall().
 
-The author was too dense to consider the fact that the saved stack
-value is stale for a running process und thus unusable for 'current'.
-
-What we do now is to use the stack pointer register (a1) for when the
-task is unknown - we can't help it then - or when the task is
-'current'.  For everything else use the saved stack pointer value
-contained in the task descriptor.
+Fix this up by exporting the initialization function.  Let the
+platform set up the chip before it starts using it.
 
 Signed-off-by: Johannes Weiner <jw@emlix.com>
 ---
- arch/xtensa/kernel/traps.c |   16 ++++++++++++++--
- 1 files changed, 14 insertions(+), 2 deletions(-)
+ arch/xtensa/platforms/s6105/setup.c               |    3 +++
+ arch/xtensa/variants/s6000/gpio.c                 |    3 +--
+ arch/xtensa/variants/s6000/include/variant/gpio.h |    6 ++++++
+ 3 files changed, 10 insertions(+), 2 deletions(-)
+ create mode 100644 arch/xtensa/variants/s6000/include/variant/gpio.h
 
-diff --git a/arch/xtensa/kernel/traps.c b/arch/xtensa/kernel/traps.c
-index 9f0b711..ba9ab93 100644
---- a/arch/xtensa/kernel/traps.c
-+++ b/arch/xtensa/kernel/traps.c
-@@ -369,6 +369,18 @@ void show_regs(struct pt_regs * regs)
- 		       regs->syscall);
- }
+diff --git a/arch/xtensa/platforms/s6105/setup.c b/arch/xtensa/platforms/s6105/setup.c
+index ae041d5..855ddea 100644
+--- a/arch/xtensa/platforms/s6105/setup.c
++++ b/arch/xtensa/platforms/s6105/setup.c
+@@ -10,6 +10,8 @@
+ #include <asm/bootparam.h>
  
-+static __always_inline unsigned long *stack_pointer(struct task_struct *task)
-+{
-+	unsigned long *sp;
+ #include <variant/hardware.h>
++#include <variant/gpio.h>
 +
-+	if (!task || task == current)
-+		__asm__ __volatile__ ("mov %0, a1\n" : "=a"(sp));
-+	else
-+		sp = (unsigned long *)task->thread.sp;
-+
-+	return sp;
-+}
-+
- void show_trace(struct task_struct *task, unsigned long *sp)
+ #include <platform/gpio.h>
+ 
+ void platform_halt(void)
+@@ -47,6 +49,7 @@ void __init platform_setup(char **cmdline)
+ 
+ void __init platform_init(bp_tag_t *first)
  {
- 	unsigned long a0, a1, pc;
-@@ -377,7 +389,7 @@ void show_trace(struct task_struct *task, unsigned long *sp)
- 	if (sp)
- 		a1 = (unsigned long)sp;
- 	else
--		a1 = task->thread.sp;
-+		a1 = (unsigned long)stack_pointer(task);
++	s6_gpio_init();
+ 	gpio_request(GPIO_LED1_NGREEN, "led1_green");
+ 	gpio_request(GPIO_LED1_RED, "led1_red");
+ 	gpio_direction_output(GPIO_LED1_NGREEN, 1);
+diff --git a/arch/xtensa/variants/s6000/gpio.c b/arch/xtensa/variants/s6000/gpio.c
+index 33a8d95..79317fd 100644
+--- a/arch/xtensa/variants/s6000/gpio.c
++++ b/arch/xtensa/variants/s6000/gpio.c
+@@ -64,8 +64,7 @@ static struct gpio_chip gpiochip = {
+ 	.exported = 0, /* no exporting to userspace */
+ };
  
- 	sp_start = a1 & ~(THREAD_SIZE-1);
- 	sp_end = sp_start + THREAD_SIZE;
-@@ -420,7 +432,7 @@ void show_stack(struct task_struct *task, unsigned long *sp)
- 	unsigned long *stack;
- 
- 	if (!sp)
--		sp = (unsigned long *)task->thread.sp;
-+		sp = stack_pointer(task);
-  	stack = sp;
- 
- 	printk("\nStack: ");
+-static int gpio_init(void)
++int s6_gpio_init(void)
+ {
+ 	return gpiochip_add(&gpiochip);
+ }
+-device_initcall(gpio_init);
+diff --git a/arch/xtensa/variants/s6000/include/variant/gpio.h b/arch/xtensa/variants/s6000/include/variant/gpio.h
+new file mode 100644
+index 0000000..8327f62
+--- /dev/null
++++ b/arch/xtensa/variants/s6000/include/variant/gpio.h
+@@ -0,0 +1,6 @@
++#ifndef _XTENSA_VARIANT_S6000_GPIO_H
++#define _XTENSA_VARIANT_S6000_GPIO_H
++
++extern int s6_gpio_init(void);
++
++#endif /* _XTENSA_VARIANT_S6000_GPIO_H */
 -- 
 1.6.2.107.ge47ee
 
