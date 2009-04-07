@@ -1,61 +1,33 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761415AbZDGVQR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761032AbZDGVRP@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761415AbZDGVQR (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 7 Apr 2009 17:16:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760658AbZDGVQA
+	id S1761032AbZDGVRP (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 7 Apr 2009 17:17:15 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755795AbZDGVQ6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 7 Apr 2009 17:16:00 -0400
-Received: from ogre.sisk.pl ([217.79.144.158]:55915 "EHLO ogre.sisk.pl"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1759042AbZDGVP7 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 7 Apr 2009 17:15:59 -0400
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-To: Len Brown <lenb@kernel.org>
-Subject: Re: [Bug #12705] X200: Brightness broken since 2.6.29-rc4-58-g4c098bc
-Date: Tue, 7 Apr 2009 23:16:14 +0200
-User-Agent: KMail/1.11.2 (Linux/2.6.29-rjw; KDE/4.2.2; x86_64; ; )
-Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Kernel Testers List <kernel-testers@vger.kernel.org>,
-       Dave Airlie <airlied@linux.ie>, Eric Anholt <eric@anholt.net>,
-       Matthew Garrett <mjg@redhat.com>,
-       Nico Schottelius <nico-linux-20090213@schottelius.org>
-References: <n4io5wq70ZO.A.gzG.rFn2JB@chimera> <AsKNxFx2juN.A.vfB.lHn2JB@chimera> <alpine.LFD.2.00.0904070011280.5698@localhost.localdomain>
-In-Reply-To: <alpine.LFD.2.00.0904070011280.5698@localhost.localdomain>
+	Tue, 7 Apr 2009 17:16:58 -0400
+Received: from smtp.ultrahosting.com ([74.213.174.254]:34794 "EHLO
+	smtp.ultrahosting.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754810AbZDGVQ6 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 7 Apr 2009 17:16:58 -0400
+Date: Tue, 7 Apr 2009 17:11:26 -0400 (EDT)
+From: Christoph Lameter <cl@linux.com>
+X-X-Sender: cl@qirst.com
+To: Andi Kleen <andi@firstfloor.org>
+cc: linux-kernel@vger.kernel.org, linux-mm@kvack.org, x86@kernel.org
+Subject: Re: [PATCH] [5/16] POISON: Add support for poison swap entries
+In-Reply-To: <20090407151002.0AA8F1D046E@basil.firstfloor.org>
+Message-ID: <alpine.DEB.1.10.0904071710500.12192@qirst.com>
+References: <20090407509.382219156@firstfloor.org> <20090407151002.0AA8F1D046E@basil.firstfloor.org>
+User-Agent: Alpine 1.10 (DEB 962 2008-03-14)
 MIME-Version: 1.0
-Content-Type: Text/Plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200904072316.15367.rjw@sisk.pl>
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tuesday 07 April 2009, Len Brown wrote:
-> 
-> On Mon, 6 Apr 2009, Rafael J. Wysocki wrote:
-> 
-> > This message has been generated automatically as a part of a report
-> > of recent regressions.
-> > 
-> > The following bug entry is on the current list of known regressions
-> > from 2.6.28.  Please verify if it still should be listed and let me know
-> > (either way).
-> > 
-> > 
-> > Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=12705
-> > Subject		: X200: Brightness broken since 2.6.29-rc4-58-g4c098bc
-> > Submitter	: Nico Schottelius <nico-linux-20090213@schottelius.org>
-> > Date		: 2009-02-13 9:33 (53 days old)
-> > First-Bad-Commit: http://git.kernel.org/?p=linux/kernel/git/torvalds/linux-2.6.git;a=commit;h=e806b4957412bf472d826bd8cc571da041248799
-> > References	: http://marc.info/?l=linux-kernel&m=123451768406825&w=4
-> > 		  http://marc.info/?l=linux-kernel&m=123479975503827&w=2
-> 
-> > Handled-By	: Len Brown <lenb@kernel.org>
-> 
-> Handled-By	: Eric Anholt <eric@anholt.net>
 
-Updated.
+Could you separate the semantic changes to flag checking for migration
+out for easier review?
 
-Thanks,
-Rafael
+
