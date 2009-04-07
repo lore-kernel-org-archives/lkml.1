@@ -1,52 +1,39 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759995AbZDGUWr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760625AbZDGUXY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759995AbZDGUWr (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 7 Apr 2009 16:22:47 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756149AbZDGUWi
+	id S1760625AbZDGUXY (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 7 Apr 2009 16:23:24 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755261AbZDGUXM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 7 Apr 2009 16:22:38 -0400
-Received: from one.firstfloor.org ([213.235.205.2]:57387 "EHLO
-	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752362AbZDGUWi (ORCPT
+	Tue, 7 Apr 2009 16:23:12 -0400
+Received: from vms173017pub.verizon.net ([206.46.173.17]:63779 "EHLO
+	vms173017pub.verizon.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756149AbZDGUXK (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 7 Apr 2009 16:22:38 -0400
-Date: Tue, 7 Apr 2009 22:24:49 +0200
-From: Andi Kleen <andi@firstfloor.org>
-To: Johannes Weiner <hannes@cmpxchg.org>
-Cc: Andi Kleen <andi@firstfloor.org>, linux-kernel@vger.kernel.org,
-       linux-mm@kvack.org, x86@kernel.org
-Subject: Re: [PATCH] [8/16] POISON: Add various poison checks in mm/memory.c
-Message-ID: <20090407202449.GX17934@one.firstfloor.org>
-References: <20090407509.382219156@firstfloor.org> <20090407151005.4E24B1D046D@basil.firstfloor.org> <20090407190330.GB3818@cmpxchg.org> <20090407193145.GU17934@one.firstfloor.org> <20090407201708.GA4220@cmpxchg.org>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090407201708.GA4220@cmpxchg.org>
-User-Agent: Mutt/1.4.2.1i
+	Tue, 7 Apr 2009 16:23:10 -0400
+Date: Tue, 07 Apr 2009 16:22:58 -0400 (EDT)
+From: Len Brown <lenb@kernel.org>
+X-X-Sender: lenb@localhost.localdomain
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: Vegard Nossum <vegard.nossum@gmail.com>,
+       Arkadiusz Miskiewicz <a.miskiewicz@gmail.com>,
+       Arjan van de Ven <arjan@linux.intel.com>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       ACPI Devel Maling List <linux-acpi@vger.kernel.org>
+Subject: Re: [PATCH] acpi/battery: fix async boot oops
+In-reply-to: <200904072116.32475.rjw@sisk.pl>
+Message-id: <alpine.LFD.2.00.0904071622490.4799@localhost.localdomain>
+References: <20090407091052.GA17822@damson.cased.tu-darmstadt.de>
+ <200904072116.32475.rjw@sisk.pl>
+User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
+MIME-version: 1.0
+Content-type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> I think we missed each other here.  I wasn't talking about _why_ you
-> take that reference -- that is clear.  But I see these two
-> possibilities:
-> 
->   a) memory_failure() is called on a page on the free list, the
->   get_page() will trigger a bug because the refcount is 0
+applied
 
-Ah got it now. Sorry for misreading you. That's indeed a problem.
-Fixing.
+thanks,
+Len Brown, Intel Open Source Technology Center
 
-free pages was something my injector based test suite didn't cover :/
-
->   b) if that is not possible, the above check is not needed
-
-There was at least one case where the process could free it anyways.
-I think. Or maybe that was something I fixed in a different way.
-It's possible this check is not needed, but it's probably safer
-to keep it (and it's all super slow path)
-
--Andi
-
--- 
-ak@linux.intel.com -- Speaking for myself only.
