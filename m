@@ -1,96 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762199AbZDGWgk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762023AbZDGWm2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762199AbZDGWgk (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 7 Apr 2009 18:36:40 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755601AbZDGWga
+	id S1762023AbZDGWm2 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 7 Apr 2009 18:42:28 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756050AbZDGWmT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 7 Apr 2009 18:36:30 -0400
-Received: from one.firstfloor.org ([213.235.205.2]:52883 "EHLO
-	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755103AbZDGWga (ORCPT
+	Tue, 7 Apr 2009 18:42:19 -0400
+Received: from rv-out-0506.google.com ([209.85.198.226]:3670 "EHLO
+	rv-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754947AbZDGWmS convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 7 Apr 2009 18:36:30 -0400
-Date: Wed, 8 Apr 2009 00:36:26 +0200
-From: Andi Kleen <andi@firstfloor.org>
-To: linux-kernel@vger.kernel.org
-Subject: [PATCH] Clean up sys_shutdown
-Message-ID: <20090407223626.GA25557@basil.nowhere.org>
+	Tue, 7 Apr 2009 18:42:18 -0400
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-User-Agent: Mutt/1.5.17 (2007-11-01)
+In-Reply-To: <f73f7ab80904071540w3d298c3bh386b46d5685f746e@mail.gmail.com>
+References: <1238839639.3560.37.camel@macbook.infradead.org>
+	 <20090407055245.GA10406@elte.hu>
+	 <1239084280.22733.404.camel@macbook.infradead.org>
+	 <20090407061558.GA31261@elte.hu> <20090407084950.GA1467@elte.hu>
+	 <20090407090229.GA2467@elte.hu>
+	 <1239104035.22733.443.camel@macbook.infradead.org>
+	 <alpine.LFD.2.00.0904070751510.4010@localhost.localdomain>
+	 <alpine.LFD.2.00.0904070759050.4010@localhost.localdomain>
+	 <f73f7ab80904071540w3d298c3bh386b46d5685f746e@mail.gmail.com>
+Date: Tue, 7 Apr 2009 18:42:17 -0400
+Message-ID: <f73f7ab80904071542r1d3e5e1au21c8c4ded9d36f7d@mail.gmail.com>
+Subject: Re: [PATCH] intel-iommu: fix build with CONFIG_BRANCH_TRACER=y
+From: Kyle Moffett <kyle@moffetthome.net>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: David Woodhouse <dwmw2@infradead.org>, Ingo Molnar <mingo@elte.hu>,
+       iommu@lists.linux-foundation.org, linux-kernel@vger.kernel.org
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Clean up sys_shutdown exit path
+Whoops, resent the original HTML email as plain text, sorry...
 
-Impact: cleanup, fix
+On Tue, Apr 7, 2009 at 10:59 AM, Linus Torvalds
+<torvalds@linux-foundation.org> wrote:
+>
+> On Tue, 7 Apr 2009, Linus Torvalds wrote:
+> >
+> > Can we please do it something like the following instead:
+> >
+> >       #define if(a, ...) \
+> >               __trace_if( (a, ## __VA_ARGS__) )
+> >
+> > so that you don't need to do that ", ## __VA_ARGS__" thing three times?
+>
+> IOW, does this (TOTALLY UNTESTED) patch work?
+>
+>                Linus
+>
+> -#define if(cond) if (__builtin_constant_p((cond)) ? !!(cond) :         \
+> +#define if(cond, ...) __trace_if( (cond , ## __VA_ARGS__) )
+> +#define __trace_if(cond) \
+> +       if (__builtin_constant_p((cond)) ? !!(cond) :                   \
 
-Clean up sys_shutdown exit path. Factor out common code. Return
-correct error code instead of always 0 on failure.
+Umm, why not just use the much nicer pre-C99 GCC syntax?  It
+automatically makes "cond" expand into the full comma-separated
+argument list.  No other changes should be necessary.  IOW, something
+like this:
 
-Signed-off-by: Andi Kleen <ak@linux.intel.com>
+-#define if(cond) if (__builtin_constant_p((cond)) ? !!(cond) :         \
++#define if(cond...) if (__builtin_constant_p((cond)) ? !!(cond) :         \
 
----
- kernel/sys.c |   24 +++++++++---------------
- 1 file changed, 9 insertions(+), 15 deletions(-)
-
-Index: linux/kernel/sys.c
-===================================================================
---- linux.orig/kernel/sys.c	2009-04-07 16:09:58.000000000 +0200
-+++ linux/kernel/sys.c	2009-04-07 16:43:17.000000000 +0200
-@@ -360,6 +360,7 @@
- 		void __user *, arg)
- {
- 	char buffer[256];
-+	int ret = 0;
- 
- 	/* We only trust the superuser with rebooting the system. */
- 	if (!capable(CAP_SYS_BOOT))
-@@ -397,7 +398,7 @@
- 		kernel_halt();
- 		unlock_kernel();
- 		do_exit(0);
--		break;
-+		panic("cannot halt");
- 
- 	case LINUX_REBOOT_CMD_POWER_OFF:
- 		kernel_power_off();
-@@ -417,29 +418,22 @@
- 
- #ifdef CONFIG_KEXEC
- 	case LINUX_REBOOT_CMD_KEXEC:
--		{
--			int ret;
--			ret = kernel_kexec();
--			unlock_kernel();
--			return ret;
--		}
-+		ret = kernel_kexec();
-+		break;
- #endif
- 
- #ifdef CONFIG_HIBERNATION
- 	case LINUX_REBOOT_CMD_SW_SUSPEND:
--		{
--			int ret = hibernate();
--			unlock_kernel();
--			return ret;
--		}
-+		ret = hibernate();
-+		break;
- #endif
- 
- 	default:
--		unlock_kernel();
--		return -EINVAL;
-+		ret = -EINVAL;
-+		break;
- 	}
- 	unlock_kernel();
--	return 0;
-+	return ret;
- }
- 
- static void deferred_cad(struct work_struct *dummy)
+Cheers,
+Kyle Moffett
