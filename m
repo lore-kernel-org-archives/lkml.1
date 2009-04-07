@@ -1,62 +1,81 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755718AbZDGJX4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756112AbZDGJYV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755718AbZDGJX4 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 7 Apr 2009 05:23:56 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751930AbZDGJXr
+	id S1756112AbZDGJYV (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 7 Apr 2009 05:24:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751930AbZDGJYG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 7 Apr 2009 05:23:47 -0400
-Received: from mx2.mail.elte.hu ([157.181.151.9]:47234 "EHLO mx2.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751636AbZDGJXr (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 7 Apr 2009 05:23:47 -0400
-Date: Tue, 7 Apr 2009 11:23:33 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: Peter Zijlstra <a.p.zijlstra@chello.nl>
-Cc: Paul Mackerras <paulus@samba.org>,
-       Corey Ashford <cjashfor@linux.vnet.ibm.com>,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 00/15] various perf counter bits
-Message-ID: <20090407092333.GB17301@elte.hu>
-References: <20090406094458.977814421@chello.nl>
+	Tue, 7 Apr 2009 05:24:06 -0400
+Received: from hrndva-omtalb.mail.rr.com ([71.74.56.125]:44496 "EHLO
+	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753408AbZDGJYF (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 7 Apr 2009 05:24:05 -0400
+Date: Tue, 7 Apr 2009 05:24:00 -0400 (EDT)
+From: Steven Rostedt <rostedt@goodmis.org>
+X-X-Sender: rostedt@gandalf.stny.rr.com
+To: Tom Zanussi <tzanussi@gmail.com>
+cc: linux-kernel@vger.kernel.org, Ingo Molnar <mingo@elte.hu>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Thomas Gleixner <tglx@linutronix.de>,
+       Peter Zijlstra <peterz@infradead.org>,
+       Frederic Weisbecker <fweisbec@gmail.com>,
+       Steven Rostedt <srostedt@redhat.com>
+Subject: Re: [PATCH 4/4] tracing/filters: use ring_buffer_discard_commit for
+ discarded events
+In-Reply-To: <1239083209.7220.42.camel@tropicana>
+Message-ID: <alpine.DEB.2.00.0904070521510.22758@gandalf.stny.rr.com>
+References: <20090402052721.013878388@goodmis.org>  <20090402053522.834546042@goodmis.org> <1238663187.6621.13.camel@bookworm>  <alpine.DEB.2.00.0904021033080.965@gandalf.stny.rr.com> <1239083209.7220.42.camel@tropicana>
+User-Agent: Alpine 2.00 (DEB 1167 2008-08-23)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090406094458.977814421@chello.nl>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-another thing i noticed is that our CPU migration counters look a 
-bit weird:
+On Tue, 7 Apr 2009, Tom Zanussi wrote:
+> 
+> > The bug does not stick out in this patch set. Perhaps it is part of the 
+> > original too?  But something somewhere is calling the discard outside the 
+> > reserve and commit.
+> > 
+> 
+> It doesn't stick out to me either - the funny thing is that it only
+> happens with CONFIG_PREEMPT_VOLUNTARY - with CONFIG_PREEMPT it's fine.
+> 
+> In fact, with CONFIG_PREEMPT_VOLUNTARY, an RB_WARN_ON(!preempt_count())
+> right after frace_preempt_disable() triggers immediately, which unless
+> I'm missing something, should never happen.  Is there a bug in
+> PREEMPT_VOLUNTARY?
+> 
+> Tom
+> 
+> diff --git a/kernel/trace/ring_buffer.c b/kernel/trace/ring_buffer.c
+> index 7a6209f..bac9ab7 100644
+> --- a/kernel/trace/ring_buffer.c
+> +++ b/kernel/trace/ring_buffer.c
+> @@ -1494,6 +1494,8 @@ ring_buffer_lock_reserve(struct ring_buffer *buffer, unsigned long length)
+>  	/* If we are tracing schedule, we don't want to recurse */
+>  	resched = ftrace_preempt_disable();
+>  
+> +	RB_WARN_ON(buffer, !preempt_count());
 
-aldebaran:~/linux/linux/Documentation/perf_counter> taskset 1 perfstat ls
-design.txt  kerneltop  kerneltop.c  Makefile  perfstat
+Ug, I'm an idiot ;-)
 
- Performance counter stats for 'ls':
+PREEMPT_VOLUNTARY will always have preempt_count return zero. We need a:
 
-       0.686802  task clock ticks     (msecs)
-              3  context switches     (events)
-              4  CPU migrations       (events)
-            285  pagefaults           (events)
-        2183899  CPU cycles           (events)
-        1492516  instructions         (events)
-          24638  cache references     (events)
-           1763  cache misses         (events)
+	RB_WARN_ON_PREEMPT(buffer);
 
- Wall-clock time elapsed:     0.694796 msecs
+macro, so that we can define it to warn on CONFIG_PREEMPT but have it be a
+nop for all else.
 
+Note, I'm currently traveling so my response times will be limited.
 
-the 'taskset 1' binds perfstat to a single CPU - still we had 4 
-cross-CPU migrations?
+-- Steve
 
-	Ingo
+> +
+>  	cpu = raw_smp_processor_id();
+>  
+>  	if (!cpumask_test_cpu(cpu, buffer->cpumask))
+> 
+> 
