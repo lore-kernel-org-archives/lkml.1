@@ -1,63 +1,76 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752822AbZDGGcT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755992AbZDGGe4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752822AbZDGGcT (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 7 Apr 2009 02:32:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751711AbZDGGb4
+	id S1755992AbZDGGe4 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 7 Apr 2009 02:34:56 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751930AbZDGGeq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 7 Apr 2009 02:31:56 -0400
-Received: from rv-out-0506.google.com ([209.85.198.232]:64251 "EHLO
-	rv-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751107AbZDGGby convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 7 Apr 2009 02:31:54 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
-         :cc:content-type:content-transfer-encoding;
-        b=PRdtMs2DvgumLQjTeEH5xrDHJqNynqj4OjKhKdLospERNJeUxa8VT8tlUj3WAhINlD
-         QU1jF0uEug5p+3J4klzEaoPMiK5+KKI54MKMws0jx9f5Se5CiXz/fdsYucJwoSLZc4iH
-         r2ESFPl9BmBoGVtIe3u2FmxSkduUSvZ69AhC0=
+	Tue, 7 Apr 2009 02:34:46 -0400
+Received: from mail.charite.de ([141.42.4.200]:52489 "EHLO mail.charite.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751799AbZDGGeq (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 7 Apr 2009 02:34:46 -0400
+Date: Tue, 7 Apr 2009 08:34:43 +0200
+From: Ralf Hildebrandt <Ralf.Hildebrandt@charite.de>
+To: linux-kernel@vger.kernel.org
+Subject: WATCHDOG i6300ESB doesn't reboot the machine
+Message-ID: <20090407063443.GC1723@charite.de>
+Mail-Followup-To: linux-kernel@vger.kernel.org
 MIME-Version: 1.0
-In-Reply-To: <20090407062425.GA4195@ff.dom.local>
-References: <9b1675090904062123u42a00a80y3a4385740ecc0121@mail.gmail.com>
-	 <20090407062425.GA4195@ff.dom.local>
-Date: Tue, 7 Apr 2009 00:31:52 -0600
-Message-ID: <9b1675090904062331m56c09a09r88594381a3eaad48@mail.gmail.com>
-Subject: Re: 2.6.29-git13: Reported regressions from 2.6.28
-From: "Trenton D. Adams" <trenton.d.adams@gmail.com>
-To: Jarek Poplawski <jarkao2@gmail.com>
-Cc: Linus Torvalds <torvalds@linux-foundation.org>,
-       "Rafael J. Wysocki" <rjw@sisk.pl>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Adrian Bunk <bunk@kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Natalie Protasevich <protasnb@gmail.com>,
-       Kernel Testers List <kernel-testers@vger.kernel.org>,
-       Network Development <netdev@vger.kernel.org>,
-       Linux ACPI <linux-acpi@vger.kernel.org>,
-       Linux PM List <linux-pm@lists.linux-foundation.org>,
-       Linux SCSI List <linux-scsi@vger.kernel.org>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 8BIT
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
+Content-Transfer-Encoding: 8bit
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Apr 7, 2009 at 12:24 AM, Jarek Poplawski <jarkao2@gmail.com> wrote:
-> On 07-04-2009 06:23, Trenton D. Adams wrote:
-> ...
->> This gave me a bit of a chuckle. ROFL. †I didn't think you were
->> _blaming_ me. †And even if you were, I'd just say "I'M HUMAN MAN". ;)
->
-> So, do you think you should be treated better than others? @-)
->
-> Jarek P.
->
+I recently installed the watchdog package along with the i6300ESB
+module. I killed the watchdog process and waited for the reboot. To no
+avail. Is my test flawed? I even stopped the watchdog process,
+unloaded and loaded the i6300esb module: No reboot. 
 
-This gave me a bit of a confused look. Better, how so?  And what would
-provoke such a comment?  Linus was simply being excessively polite,
-which is a good side to error on I suppose, but I don't need excessive
-politeness.  I didn't in any way think he had blamed me for anything.
-And why would I?  He hadn't said anything that indicated he was.
+This is an HP-Server.
 
-Yeah, having trouble getting into your head on that comment.  _confused look_
+dmesg output:
+
+[  140.017922] i6300ESB timer: initialized (0xf86cc000). heartbeat=30 sec (nowayout=0)
+
+lspci -vv output:
+
+00:1c.0 PCI bridge: Intel Corporation 6300ESB 64-bit PCI-X Bridge (rev 02) (prog-if 00 [Normal decode])
+        Control: I/O+ Mem+ BusMaster+ SpecCycle- MemWINV- VGASnoop- ParErr+ Stepping- SERR+ FastB2B- DisINTx-
+        Status: Cap+ 66MHz+ UDF- FastB2B- ParErr- DEVSEL=fast >TAbort- <TAbort- <MAbort- >SERR- <PERR- INTx-
+        Latency: 64, Cache Line Size: 64 bytes
+        Bus: primary=00, secondary=02, subordinate=02, sec-latency=64
+        I/O behind bridge: 00004000-00004fff
+        Memory behind bridge: fdf00000-fdffffff
+        Prefetchable memory behind bridge: 0000000088000000-00000000880fffff
+        Secondary status: 66MHz+ FastB2B+ ParErr- DEVSEL=medium >TAbort- <TAbort- <MAbort- <SERR- <PERR-
+        BridgeCtl: Parity+ SERR+ NoISA- VGA- MAbort- >Reset- FastB2B-
+                PriDiscTmr- SecDiscTmr- DiscTmrStat- DiscTmrSERREn-
+        Capabilities: [50] PCI-X bridge device
+	        Secondary Status: 64bit+ 133MHz- SCD- USC- SCO- SRD- Freq=66MHz
+                Status: Dev=00:1c.0 64bit+ 133MHz- SCD- USC- SCO- SRD-
+                Upstream: Capacity=65535 CommitmentLimit=0
+		Downstream: Capacity=65535 CommitmentLimit=0
+
+# uname -a
+Linux mail-ausfall.charite.de 2.6.29.1 #1 SMP Mon Apr 6 15:25:51 CEST 2009 i686 GNU/Linux
+
+# cat /etc/issue
+Debian GNU/Linux squeeze/sid \n \l
+
+# lsmod |grep esb
+i6300esb                4852  0 
+
+# ll /dev/watchdog 
+crw-rw---- 1 root root 10, 130  6. Apr 15:31 /dev/watchdog
+
+-- 
+Ralf Hildebrandt
+  Gesch√§ftsbereich IT | Abteilung Netzwerk
+  Charit√© - Universit√§tsmedizin Berlin
+  Campus Benjamin Franklin
+  Hindenburgdamm 30 | D-12200 Berlin
+  Tel. +49 30 450 570 155 | Fax: +49 30 450 570 962
+  Ralf.Hildebrandt@charite.de | http://www.charite.de
