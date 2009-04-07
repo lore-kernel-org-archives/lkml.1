@@ -1,27 +1,28 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761976AbZDGW0P@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762121AbZDGW1Z@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761976AbZDGW0P (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 7 Apr 2009 18:26:15 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758066AbZDGWZz
+	id S1762121AbZDGW1Z (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 7 Apr 2009 18:27:25 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758066AbZDGW1F
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 7 Apr 2009 18:25:55 -0400
-Received: from srv5.dvmed.net ([207.36.208.214]:46380 "EHLO mail.dvmed.net"
+	Tue, 7 Apr 2009 18:27:05 -0400
+Received: from srv5.dvmed.net ([207.36.208.214]:46398 "EHLO mail.dvmed.net"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755601AbZDGWZy (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 7 Apr 2009 18:25:54 -0400
-Message-ID: <49DBD2E6.1060702@garzik.org>
-Date: Tue, 07 Apr 2009 18:25:42 -0400
+	id S1754542AbZDGW1C (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 7 Apr 2009 18:27:02 -0400
+Message-ID: <49DBD32F.3090703@garzik.org>
+Date: Tue, 07 Apr 2009 18:26:55 -0400
 From: Jeff Garzik <jeff@garzik.org>
 User-Agent: Thunderbird 2.0.0.21 (X11/20090320)
 MIME-Version: 1.0
-To: Robin Getz <rgetz@blackfin.uclinux.org>
-CC: Sven-Haegar Koch <haegar@sdinet.de>, Matt Mackall <mpm@selenic.com>,
-       netdev@vger.kernel.org, linux-kernel@vger.kernel.org,
-       Chris Peterson <cpeterso@cpeterso.com>
-Subject: Re: IRQF_SAMPLE_RANDOM question...
-References: <200904061430.26276.rgetz@blackfin.uclinux.org> <alpine.DEB.2.00.0904070003470.6968@aurora.sdinet.de> <49DA91C2.1020106@garzik.org> <200904071758.50823.rgetz@blackfin.uclinux.org>
-In-Reply-To: <200904071758.50823.rgetz@blackfin.uclinux.org>
-Content-Type: text/plain; charset=UTF-8; format=flowed
+To: Matthew Wilcox <willy@linux.intel.com>
+CC: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>,
+       Sergei Shtylyov <sshtylyov@ru.mvista.com>, linux-ide@vger.kernel.org,
+       linux-kernel@vger.kernel.org, jgarzik@redhat.com,
+       David Woodhouse <David.Woodhouse@intel.com>
+Subject: Re: [PATCH 4/5] ide: Add support for TRIM
+References: <1238683047-13588-1-git-send-email-willy@linux.intel.com> <20090402165117.GQ2661@linux.intel.com> <200904022137.35671.bzolnier@gmail.com> <200904072339.00224.bzolnier@gmail.com> <20090407221554.GA4527@linux.intel.com>
+In-Reply-To: <20090407221554.GA4527@linux.intel.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
 X-Spam-Score: -4.4 (----)
 X-Spam-Report: SpamAssassin version 3.2.5 on srv5.dvmed.net summary:
@@ -30,52 +31,21 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Robin Getz wrote:
-> On Mon 6 Apr 2009 19:35, Jeff Garzik pondered:
->> Sven-Haegar Koch wrote:
->>> On Mon, 6 Apr 2009, Matt Mackall wrote:
->>>
->>>> On Mon, 2009-04-06 at 14:30 -0400, Robin Getz wrote:
->>>>> We have lots of embedded headless systems (no keyboard/mouse, no
->>>>> soundcard, no video) systems with *no* sources of entropy - and people
->>>>> using SSL. 
->>>> I'd rather add a random_sample_network call somewhere reasonably central
->>>> in the network stack. Then we can use the knowledge that the sample is
->>>> network-connected in the random core to decide how to measure its
->>>> entropy. The trouble with IRQF_SAMPLE_RANDOM is that many of its users
->>>> are technically bogus as entropy sources in the current model.
->>>>
->>>> I'm eventually going to move the RNG away from the strict theoretical
->>>> entropy accounting model to a more pragmatic one which will be much
->>>> happier with iffy entropy sources, but that's a ways off.
->>> Btw, perhaps not the perfect question in this thread:
->>> But what should we use to keep servers running without a hardware rng 
->>> available and without any external input besides the network?
->>> After having ssh and openvpn die because of no random and having 
->>> the machines like dead and unreachable for me I use "ln -sf 
->>> /dev/urandom /dev/random", but that does not feel so good.
->> We see this question every time IRQF_SAMPLE_RANDOM is discussed.
->>
->> There is plenty of entropy data available, you just have to look 
->> around...  Google around for "EGD", video entropy daemon, audio entropy 
->> daemon, etc...
->>
->> Even headless servers have entropy sources if you look hard enough.
+Matthew Wilcox wrote:
+> On Tue, Apr 07, 2009 at 11:38:59PM +0200, Bartlomiej Zolnierkiewicz wrote:
+>> I would like to see this merged for -rc1 so I tried to put it altogether
+>> and then integrate it over recent IDE and block changes...
 > 
-> The original question wasn't headless servers - it was headless, no audio, no 
-> video, boot from flash, (initrd root file systems), diskless. embedded 
-> devices.
-> 
-> And few want to load up perl on an embedded device just to gather entropy. :(
+> You're missing 1/5 and 2/5.  This patch will crash horribly if you use
+> it with a drive which supports TRIM.
 
-Get a list of <special files> from EGD, and
+For things that need to hit along with the block layer, Bart and I could 
+Ack the IDE+libata patches, and Jens could merge all of them.
 
-	cat <special files> | sha1sum
-
-then...
-
-The basic point is that you can find entropy, even in a guest VM.
+Or just poke Jens to review and merge the block stuff.  Then the rest 
+can go at any time.
 
 	Jeff
+
 
 
