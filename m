@@ -1,58 +1,94 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758859AbZDGPI0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758911AbZDGPI6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758859AbZDGPI0 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 7 Apr 2009 11:08:26 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756473AbZDGPHF
+	id S1758911AbZDGPI6 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 7 Apr 2009 11:08:58 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758182AbZDGPHm
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 7 Apr 2009 11:07:05 -0400
-Received: from one.firstfloor.org ([213.235.205.2]:48811 "EHLO
-	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754373AbZDGPHB (ORCPT
+	Tue, 7 Apr 2009 11:07:42 -0400
+Received: from bear.ext.ti.com ([192.94.94.41]:46759 "EHLO bear.ext.ti.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1758502AbZDGPHk convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 7 Apr 2009 11:07:01 -0400
-From: Andi Kleen <andi@firstfloor.org>
-References: <20090407506.675031434@firstfloor.org>
-In-Reply-To: <20090407506.675031434@firstfloor.org>
-To: ying.huang@intel.com, hpa@zytor.com, linux-kernel@vger.kernel.org,
-       mingo@elte.hu, tglx@linutronix.de
-Subject: [PATCH] [3/4] x86: MCE: Improve mce_get_rip
-Message-Id: <20090407150656.43E161D046D@basil.firstfloor.org>
-Date: Tue,  7 Apr 2009 17:06:56 +0200 (CEST)
+	Tue, 7 Apr 2009 11:07:40 -0400
+From: "Narnakaje, Snehaprabha" <nsnehaprabha@ti.com>
+To: Thomas Gleixner <tglx@linutronix.de>
+CC: "linux-mtd@lists.infradead.org" <linux-mtd@lists.infradead.org>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       "davinci-linux-open-source@linux.davincidsp.com" 
+	<davinci-linux-open-source@linux.davincidsp.com>,
+       "Paulraj, Sandeep" <s-paulraj@ti.com>
+Date: Tue, 7 Apr 2009 10:07:16 -0500
+Subject: RE: [PATCH] MTD-NAND: Changes to read_page APIs to support
+ NAND_ECC_HW_SYNDROME mode on TI DaVinci DM355
+Thread-Topic: [PATCH] MTD-NAND: Changes to read_page APIs to support
+ NAND_ECC_HW_SYNDROME mode on TI DaVinci DM355
+Thread-Index: Acm3DJO47XIQrYrxTciH3CafgfUNLAAhNAlw
+Message-ID: <7A436F7769CA33409C6B44B358BFFF0CFFAA8FCA@dlee02.ent.ti.com>
+References: <1238601784-9563-1-git-send-email-nsnehaprabha@ti.com>
+ <alpine.LFD.2.00.0904070102260.21577@localhost.localdomain>
+In-Reply-To: <alpine.LFD.2.00.0904070102260.21577@localhost.localdomain>
+Accept-Language: en-US
+Content-Language: en-US
+X-MS-Has-Attach: 
+X-MS-TNEF-Correlator: 
+acceptlanguage: en-US
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 8BIT
+MIME-Version: 1.0
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Thomas,
 
-From: Huang Ying <ying.huang@intel.com>
+> -----Original Message-----
+> From: Thomas Gleixner [mailto:tglx@linutronix.de]
+> Sent: Monday, April 06, 2009 7:08 PM
+> To: Narnakaje, Snehaprabha
+> Cc: linux-mtd@lists.infradead.org; linux-kernel@vger.kernel.org; davinci-
+> linux-open-source@linux.davincidsp.com; Paulraj, Sandeep
+> Subject: Re: [PATCH] MTD-NAND: Changes to read_page APIs to support
+> NAND_ECC_HW_SYNDROME mode on TI DaVinci DM355
+> 
+> Sneha,
+> 
+> On Wed, 1 Apr 2009, nsnehaprabha@ti.com wrote:
+> 
+> Would you please care to CC the still caring but admittedly lazy and
+> distracted maintainer on such patches ?
 
-Return rip/cs if MCG_STATUS_EIPV is set in mce_get_rip(). Remain m->cs
-if RIP is read from rip_msr.
+Who would that be?
 
-Signed-off-by: Huang Ying <ying.huang@intel.com>
-Signed-off-by: Andi Kleen <ak@linux.intel.com>
+Is the list below correct?
 
----
- arch/x86/kernel/cpu/mcheck/mce_64.c |    3 +--
- 1 file changed, 1 insertion(+), 2 deletions(-)
+Steven J. Hill (sjhill@realitydiluted.com)
+Thomas Gleixner (tglx@linuxtronix.de)
+David Woodhouse (dwmw2@infradead.org)
 
-Index: linux/arch/x86/kernel/cpu/mcheck/mce_64.c
-===================================================================
---- linux.orig/arch/x86/kernel/cpu/mcheck/mce_64.c	2009-04-07 16:09:59.000000000 +0200
-+++ linux/arch/x86/kernel/cpu/mcheck/mce_64.c	2009-04-07 16:43:15.000000000 +0200
-@@ -175,7 +175,7 @@
+> 
+> > From: Sneha Narnakaje <nsnehaprabha@ti.com>
+> >
+> > The NAND controller on TI DaVinci DM355 supports NAND devices with large
+> page size (2K and 4K), but the HW ECC is handled for every 512byte
+> read/write chunks. The current HW_SYNDROME read_page/write_page APIs in
+> the NAND core (nand_base) use the "infix OOB" scheme. The core APIs
+> overwrite NAND manufacturer's bad block meta data, thus complicating the
+> jobs of non-Linux NAND programmers (end equipment manufacturering). These
+> APIs also imply ECC protection for the prepad bytes, causing nand
+> raw_write operations to fail.
+> 
+> Please use proper line breaks. 523 characters do not fit into a
+> terminal.
+
+OK.
+
+Thanks
+Sneha
  
- static inline void mce_get_rip(struct mce *m, struct pt_regs *regs)
- {
--	if (regs && (m->mcgstatus & MCG_STATUS_RIPV)) {
-+	if (regs && (m->mcgstatus & (MCG_STATUS_RIPV | MCG_STATUS_EIPV))) {
- 		m->ip = regs->ip;
- 		m->cs = regs->cs;
- 	} else {
-@@ -186,7 +186,6 @@
- 		/* Assume the RIP in the MSR is exact. Is this true? */
- 		m->mcgstatus |= MCG_STATUS_EIPV;
- 		rdmsrl(rip_msr, m->ip);
--		m->cs = 0;
- 	}
- }
- 
+> 
+> Thanks,
+> 
+> 	tglx
+> 
+> 
+
