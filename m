@@ -1,168 +1,104 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758028AbZDGGiu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759632AbZDGGjc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758028AbZDGGiu (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 7 Apr 2009 02:38:50 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758867AbZDGGhO
+	id S1759632AbZDGGjc (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 7 Apr 2009 02:39:32 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752431AbZDGGiD
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 7 Apr 2009 02:37:14 -0400
-Received: from e23smtp06.au.ibm.com ([202.81.31.148]:46773 "EHLO
-	e23smtp06.au.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1758847AbZDGGhM (ORCPT
+	Tue, 7 Apr 2009 02:38:03 -0400
+Received: from e23smtp07.au.ibm.com ([202.81.31.140]:59381 "EHLO
+	e23smtp07.au.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1759262AbZDGGiB (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 7 Apr 2009 02:37:12 -0400
-Date: Tue, 7 Apr 2009 12:07:00 +0530
-From: "K.Prasad" <prasad@linux.vnet.ibm.com>
-To: Alan Stern <stern@rowland.harvard.edu>
-Cc: Ingo Molnar <mingo@elte.hu>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Benjamin Herrenschmidt <benh@au1.ibm.com>,
-       Frederic Weisbecker <fweisbec@gmail.com>, maneesh@linux.vnet.ibm.com,
-       Roland McGrath <roland@redhat.com>,
-       Steven Rostedt <rostedt@goodmis.org>,
-       "K.Prasad" <prasad@linux.vnet.ibm.com>
-Subject: [Patch 10/11] Sample HW breakpoint over kernel data address
-Message-ID: <20090407063700.GK17461@in.ibm.com>
-References: <20090407063058.301701787@prasadkr_t60p.in.ibm.com>
+	Tue, 7 Apr 2009 02:38:01 -0400
+Date: Tue, 7 Apr 2009 12:07:22 +0530
+From: Balbir Singh <balbir@linux.vnet.ibm.com>
+To: "linux-mm@kvack.org" <linux-mm@kvack.org>
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+       KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>,
+       "lizf@cn.fujitsu.com" <lizf@cn.fujitsu.com>,
+       Rik van Riel <riel@surriel.com>, Bharata B Rao <bharata.rao@in.ibm.com>,
+       Dhaval Giani <dhaval@linux.vnet.ibm.com>,
+       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
+Subject: [RFI] Shared accounting for memory resource controller
+Message-ID: <20090407063722.GQ7082@balbir.in.ibm.com>
+Reply-To: balbir@linux.vnet.ibm.com
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline; filename=samples_hw_breakpoint_10
+Content-Type: text/plain; charset=iso-8859-1
+Content-Disposition: inline
 User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This patch introduces a sample kernel module to demonstrate the use of Hardware
-Breakpoint feature. It places a breakpoint over the kernel variable 'pid_max'
-to monitor all write operations and emits a function-backtrace when done.
+Hi, All,
 
-Signed-off-by: K.Prasad <prasad@linux.vnet.ibm.com>
----
- samples/Kconfig                         |    6 ++
- samples/Makefile                        |    4 +
- samples/hw_breakpoint/Makefile          |    1 
- samples/hw_breakpoint/data_breakpoint.c |   83 ++++++++++++++++++++++++++++++++
- 4 files changed, 93 insertions(+), 1 deletion(-)
+This is a request for input for the design of shared page accounting for
+the memory resource controller, here is what I have so far
 
-Index: samples/Kconfig
-===================================================================
---- samples/Kconfig.orig
-+++ samples/Kconfig
-@@ -39,5 +39,11 @@ config SAMPLE_KRETPROBES
- 	default m
- 	depends on SAMPLE_KPROBES && KRETPROBES
- 
-+config SAMPLE_HW_BREAKPOINT
-+	tristate "Build kernel hardware breakpoint examples -- loadable modules only"
-+	depends on HAVE_HW_BREAKPOINT && m
-+	help
-+	  This builds kernel hardware breakpoint example modules.
-+
- endif # SAMPLES
- 
-Index: samples/Makefile
-===================================================================
---- samples/Makefile.orig
-+++ samples/Makefile
-@@ -1,3 +1,5 @@
- # Makefile for Linux samples code
- 
--obj-$(CONFIG_SAMPLES)	+= markers/ kobject/ kprobes/ tracepoints/
-+obj-$(CONFIG_SAMPLES)	+= markers/ kobject/ kprobes/ tracepoints/ \
-+			   hw_breakpoint/
-+
-Index: samples/hw_breakpoint/Makefile
-===================================================================
---- /dev/null
-+++ samples/hw_breakpoint/Makefile
-@@ -0,0 +1 @@
-+obj-$(CONFIG_SAMPLE_HW_BREAKPOINT) += data_breakpoint.o
-Index: samples/hw_breakpoint/data_breakpoint.c
-===================================================================
---- /dev/null
-+++ samples/hw_breakpoint/data_breakpoint.c
-@@ -0,0 +1,83 @@
-+/*
-+ * data_breakpoint.c - Sample HW Breakpoint file to watch kernel data address
-+ *
-+ * This program is free software; you can redistribute it and/or modify
-+ * it under the terms of the GNU General Public License as published by
-+ * the Free Software Foundation; either version 2 of the License, or
-+ * (at your option) any later version.
-+ *
-+ * This program is distributed in the hope that it will be useful,
-+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
-+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-+ * GNU General Public License for more details.
-+ *
-+ * You should have received a copy of the GNU General Public License
-+ * along with this program; if not, write to the Free Software
-+ * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
-+ *
-+ * usage: insmod data_breakpoint.ko ksym=<ksym_name>
-+ *
-+ * This file is a kernel module that places a breakpoint over ksym_name kernel
-+ * variable using Hardware Breakpoint register. The corresponding handler which
-+ * prints a backtrace is invoked everytime a write operation is performed on
-+ * that variable.
-+ *
-+ * Copyright (C) IBM Corporation, 2009
-+ */
-+#include <linux/module.h>	/* Needed by all modules */
-+#include <linux/kernel.h>	/* Needed for KERN_INFO */
-+#include <linux/init.h>		/* Needed for the macros */
-+
-+#include <asm/hw_breakpoint.h>
-+
-+struct hw_breakpoint sample_hbp;
-+
-+static char ksym_name[KSYM_NAME_LEN] = "pid_max";
-+module_param_string(ksym, ksym_name, KSYM_NAME_LEN, S_IRUGO);
-+MODULE_PARM_DESC(ksym, "Kernel symbol to monitor; this module will report any"
-+			" write operations on the kernel symbol");
-+
-+void sample_hbp_handler(struct hw_breakpoint *temp, struct pt_regs
-+								*temp_regs)
-+{
-+	printk(KERN_INFO "%s value is changed\n", ksym_name);
-+	dump_stack();
-+	printk(KERN_INFO "Dump stack from sample_hbp_handler\n");
-+}
-+
-+static int __init hw_break_module_init(void)
-+{
-+	int ret;
-+
-+#ifdef CONFIG_X86
-+	sample_hbp.info.name = ksym_name;
-+	sample_hbp.info.type = HW_BREAKPOINT_WRITE;
-+	sample_hbp.info.len = HW_BREAKPOINT_LEN_4;
-+
-+	sample_hbp.triggered = (void *)sample_hbp_handler;
-+#endif /* CONFIG_X86 */
-+
-+	ret = register_kernel_hw_breakpoint(&sample_hbp);
-+
-+	if (ret < 0) {
-+		printk(KERN_INFO "Breakpoint registration failed\n");
-+		return ret;
-+	} else
-+		printk(KERN_INFO "HW Breakpoint for %s write installed\n",
-+								ksym_name);
-+
-+	return 0;
-+}
-+
-+static void __exit hw_break_module_exit(void)
-+{
-+	unregister_kernel_hw_breakpoint(&sample_hbp);
-+	printk(KERN_INFO "HW Breakpoint for %s write uninstalled\n", ksym_name);
-+}
-+
-+module_init(hw_break_module_init);
-+module_exit(hw_break_module_exit);
-+
-+MODULE_LICENSE("GPL");
-+MODULE_AUTHOR("K.Prasad");
-+MODULE_DESCRIPTION("ksym breakpoint");
+Motivation for shared page accounting
+-------------------------------------
+1. Memory cgroup administrators will benefit from the knowledge of how
+   much of the data is shared, it helps size the groups correctly.
+2. We currently report only the pages brought in by the cgroup, knowledge
+   of shared data will give a complete picture of the actual usage.
 
+Use rmap to account sharing/unsharing through mapcount
+-------------------------------------------------------
+
+The current page has links to
+
+	+-------+
+	|       |
+	|	+--->pc->mem_cgroup (first mem_cgroup to touch the page)
+	|	|
+	| page	|
+	|	+--->mapping (used for rmap)
+	|	|
+	+-------+
+
+While accounting shared pages works well, as pages get unshared, I've hit a
+problem. Here is the current flow for shared accounting
+
+Flow for sharing
+----------------
+1. Page not yet mapped anywhere (_mapcount is -1 and mem_cgroup,mapping is NULL)
+2. Page gets mapped for the first time (_mapcount is 0, mem_cgroup points
+   to the memory resource group that brought in the page, mapping is set)
+3. Page gets shared (_mapcount is 1, mem_cgroup points to the cgroup that
+   brought in the page, mapping is set and now has rmap information)
+
+When a page is being shared at step 3, we detect we are sharing the page and
+
+1. For page->pc->mem_cgroup, we note that the page is being shared
+2. For any vma that maps this page, we get to vma->vm_mm and then to the
+   other mem_cgroup that is sharing this page and note this page is being
+   shared.
+
+So far so good
+
+When a page is being uncharged
+
+1. We note that we need to deduct the shared accounting from the mem_cgroup
+2. When the _mapcount reaches 0, we have no way of knowing which of the
+   mm's or mem_cgroup's is left behind. The original page->pc->mem_cgroup
+   could have unmapped this page long time back. At this point we want
+   to note the only mm that has this page mapped and the mem_cgroup is not
+   sharing the page, but that the page is private to it.
+
+Figuring out the mem_cgroup/mm for the last uncharge, requires a rmap
+lookup, which we cannot do with PTE lock held (I have all my hooks in
+page_add.*rmap() and page_remove_rmap()).
+
+Questions, suggestions
+
+1. Does it make sense to use the rmap routines for shared accounting?
+2. How do we solve the problem of the last unshare causing the pages
+   becoming private
+	a. Can we use rmap?
+	b. Can we live with leaving the page being marked as shared, even
+           though it is no longer shared?
+
+
+-- 
+	Balbir
