@@ -1,120 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755940AbZDGMjU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756154AbZDGMjw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755940AbZDGMjU (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 7 Apr 2009 08:39:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753042AbZDGMjE
+	id S1756154AbZDGMjw (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 7 Apr 2009 08:39:52 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754976AbZDGMjm
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 7 Apr 2009 08:39:04 -0400
-Received: from qw-out-2122.google.com ([74.125.92.27]:14214 "EHLO
-	qw-out-2122.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751202AbZDGMjB (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 7 Apr 2009 08:39:01 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=subject:from:to:cc:in-reply-to:references:content-type:date
-         :message-id:mime-version:x-mailer:content-transfer-encoding;
-        b=cFk/xfaueqNJ/LH+8D9+hGSEjFyEn+7cm/seeMMFCptFx3vc+GiThmnopz/2BjYK1R
-         2C1QMf0BlQ5T5hNULKRnZQt3EWUcWf1KJXzlfwLtpdPtAUN7mBn3p8ZqnFPMQ/UI73C9
-         xO+HYQkPeUW4JsmsG13VzgFXbA9ZTV+M6YP2M=
-Subject: Re: Topro 6800 webcam driver
-From: Alexey Klimov <klimov.linux@gmail.com>
-To: Andrey Panin <pazke@donpac.ru>
-Cc: Anders Blomdell <anders.blomdell@control.lth.se>,
-       Jean-Francois Moine <moinejf@free.fr>,
-       Linux Media <linux-media@vger.kernel.org>, linux-kernel@vger.kernel.org
-In-Reply-To: <20090407111331.GA6618@ports.donpac.ru>
-References: <49DB1FCC.4010902@control.lth.se>
-	 <20090407111331.GA6618@ports.donpac.ru>
-Content-Type: text/plain
-Date: Tue, 07 Apr 2009 16:39:01 +0400
-Message-Id: <1239107942.23489.23.camel@tux.localhost>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.24.5 
-Content-Transfer-Encoding: 7bit
+	Tue, 7 Apr 2009 08:39:42 -0400
+Received: from vps1.tull.net ([66.180.172.116]:35674 "HELO vps1.tull.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
+	id S1755007AbZDGMjl (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 7 Apr 2009 08:39:41 -0400
+X-Greylist: delayed 400 seconds by postgrey-1.27 at vger.kernel.org; Tue, 07 Apr 2009 08:39:41 EDT
+Date: Tue, 7 Apr 2009 22:31:48 +1000
+From: Nick Andrew <nick@nick-andrew.net>
+To: don fisher <hdf3@comcast.net>
+Cc: linux-kernel@vger.kernel.org
+Subject: Re: [PATCH try #1] Kconfig: cleanup block/Kconfig help descriptions
+Message-ID: <20090407123148.GA11750@mail.local.tull.net>
+References: <20080223225640.20233.12405.stgit@marcab.local.tull.net> <49BDC438.6080900@comcast.net>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <49BDC438.6080900@comcast.net>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-SMTPD: qpsmtpd/0.26, http://develooper.com/code/qpsmtpd/
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 2009-04-07 at 15:13 +0400, Andrey Panin wrote:
-> On 097, 04 07, 2009 at 11:41:32AM +0200, Anders Blomdell wrote:
+On Sun, Mar 15, 2009 at 08:15:04PM -0700, don fisher wrote:
+> Nick,
+>
+> I am trying to configure a linux-2.6.28.7 kernel.
+>
+> Please explain why the switch for large block devices should be !64BIT.  
+> I have a 64BIT system and currently cannot generate files greater than  
+> 2TB. Is this the problem? Should this be true for 64BIT systems?
 
-<snip>
+Sorry I didn't see this email earlier.
 
+Probably due to this:
 
-> > +static const struct sd_desc sd_desc = {
-> > +	.name = MODULE_NAME,
-> > +	.ctrls = sd_ctrls,
-> > +	.nctrls = ARRAY_SIZE(sd_ctrls),
-> > +	.config = sd_config,
-> > +	.init = sd_init,
-> > +	.start = sd_start,
-> > +	.stopN = sd_stopN,
-> > +	.pkt_scan = sd_pkt_scan,
-> > +	.querymenu = sd_querymenu,
-> > +
-> > +};
-> > +
-> > +static const __devinitdata struct usb_device_id device_table[] = {
-> > +	{USB_DEVICE(0x06a2, 0x0003)},
-> > +	{}			/* Terminating entry */
-> > +};
-> > +
-> > +MODULE_DEVICE_TABLE(usb, device_table);
-> > +
-> > +static int sd_probe(struct usb_interface *interface,
-> > +		    const struct usb_device_id *id)
-> > +{
-> > +	return gspca_dev_probe(interface, id, &sd_desc, sizeof(struct sd),
-> > +			       THIS_MODULE);
-> > +}
-> > +
-> > +static struct usb_driver tp6800_driver = {
-> > +	.name = MODULE_NAME,
-> > +	.id_table = device_table,
-> > +	.probe = sd_probe,
-> > +	.disconnect = gspca_disconnect,
-> > +#ifdef CONFIG_PM
-> > +	.suspend = gspca_suspend,
-> > +	.resume = gspca_resume,
-> > +#endif
-> > +};
-> > +
-> > +/* Module loading and unloading */
-> > +
-> > +static int __init tp6800_init(void)
-> > +{
-> > +	int result;
-> > +
-> > +	result = usb_register(&tp6800_driver);
-> > +	if (result) {
-> > +		printk(KERN_INFO "%s usb_register_failed %d\n",
-> > +		       MODULE_NAME, result);
-> > +	} else {
-> > +		printk(KERN_INFO "%s registered\n", MODULE_NAME);
-> > +	}
-> > +
-> > +	return result;
-> > +}
-> > +
-> > +static void __exit tp6800_exit(void)
-> > +{
-> > +	usb_deregister(&tp6800_driver);
-> > +	printk(KERN_INFO "%s deregistered\n", MODULE_NAME);
-> > +}
-> 
-> Are these registered/deregistered messages really useful ?
+#ifdef CONFIG_LBD
+typedef u64 sector_t;
+typedef u64 blkcnt_t;
+#else
+typedef unsigned long sector_t;
+typedef unsigned long blkcnt_t;
+#endif
 
-Looks like that gspca-framework use PDEBUG() messages for that.
-For example, t613.c contains this:
+With a 64-bit machine, your sector_t and blkcnt_t are already 64 bits
+wide, so CONFIG_LBD is not required.
 
-static void __exit sd_mod_exit(void)
-{
-        usb_deregister(&sd_driver);
-        PDEBUG(D_PROBE, "deregistered");
-}
-
-
--- 
-Best regards, Klimov Alexey
-
+Nick.
