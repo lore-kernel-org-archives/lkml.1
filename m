@@ -1,57 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754620AbZDGLe1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753727AbZDGLeu@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754620AbZDGLe1 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 7 Apr 2009 07:34:27 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751266AbZDGLeS
+	id S1753727AbZDGLeu (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 7 Apr 2009 07:34:50 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752185AbZDGLej
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 7 Apr 2009 07:34:18 -0400
-Received: from hera.kernel.org ([140.211.167.34]:51517 "EHLO hera.kernel.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750920AbZDGLeR (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 7 Apr 2009 07:34:17 -0400
-Subject: Re: [RFC] Static/Runtime CPU/IO bound scheduling polices based on
- CPU(s) to support complete spectrum of tasks
-From: Jaswinder Singh Rajput <jaswinder@kernel.org>
-To: Andi Kleen <andi@firstfloor.org>
-Cc: Linus Torvalds <torvalds@linux-foundation.org>,
-       Ingo Molnar <mingo@elte.hu>, Andrew Morton <akpm@linux-foundation.org>,
-       David Woodhouse <dwmw2@infradead.org>,
-       Peter Zijlstra <peterz@infradead.org>,
-       David Miller <davem@davemloft.net>,
-       Steven Rostedt <rostedt@goodmis.org>,
-       LKML <linux-kernel@vger.kernel.org>,
-       Thomas Gleixner <tglx@linutronix.de>, "H. Peter Anvin" <hpa@kernel.org>,
-       Alan Cox <alan@lxorguk.ukuu.org.uk>
-In-Reply-To: <20090407105835.GP17934@one.firstfloor.org>
-References: <1239099931.4773.25.camel@ht.satnam>
-	 <20090407105835.GP17934@one.firstfloor.org>
+	Tue, 7 Apr 2009 07:34:39 -0400
+Received: from bombadil.infradead.org ([18.85.46.34]:50113 "EHLO
+	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752375AbZDGLei (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 7 Apr 2009 07:34:38 -0400
+Subject: Re: [PATCH] intel-iommu: fix build with CONFIG_BRANCH_TRACER=y
+From: David Woodhouse <dwmw2@infradead.org>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: torvalds@linux-foundation.org, iommu@lists.linux-foundation.org,
+       linux-kernel@vger.kernel.org
+In-Reply-To: <20090407090229.GA2467@elte.hu>
+References: <1238839639.3560.37.camel@macbook.infradead.org>
+	 <20090407053739.GA10500@elte.hu>
+	 <1239083045.22733.383.camel@macbook.infradead.org>
+	 <20090407054818.GA5557@elte.hu> <20090407055245.GA10406@elte.hu>
+	 <1239084280.22733.404.camel@macbook.infradead.org>
+	 <20090407061558.GA31261@elte.hu> <20090407084950.GA1467@elte.hu>
+	 <20090407090229.GA2467@elte.hu>
 Content-Type: text/plain
-Date: Tue, 07 Apr 2009 17:02:31 +0530
-Message-Id: <1239103951.4773.29.camel@ht.satnam>
+Date: Tue, 07 Apr 2009 04:33:55 -0700
+Message-Id: <1239104035.22733.443.camel@macbook.infradead.org>
 Mime-Version: 1.0
-X-Mailer: Evolution 2.24.5 (2.24.5-1.fc10) 
+X-Mailer: Evolution 2.26.0 (2.26.0-2.fc11) 
 Content-Transfer-Encoding: 7bit
+X-SRS-Rewrite: SMTP reverse-path rewritten from <dwmw2@infradead.org> by bombadil.infradead.org
+	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 2009-04-07 at 12:58 +0200, Andi Kleen wrote:
-> On Tue, Apr 07, 2009 at 03:55:31PM +0530, Jaswinder Singh Rajput wrote:
-> > I am planning to prepare the followings:
+On Tue, 2009-04-07 at 11:02 +0200, Ingo Molnar wrote:
+> for_each_active_iommu() and for_each_iommu() uses some tricky
+> C that is weird and borderline valid but does not allow the
+> macro evaluation trick used by the branch tracer/profiler:
 > 
-> This seems all quite vague. Perhaps it would be good if you started
-> with a clear definition what problem you're trying to solve.
+>    drivers/pci/intr_remapping.c:680:28: error: macro "if" passed 2
+> arguments, but takes just 1
 > 
+> Switch it to a braced group statement.
 
-This will solves 2 major problems:
+It doesn't even need the braces -- just putting simple parens around the
+comma-expression would have sufficed (that was Andrew's attempt).
 
-1. Support complete task spectrum (Hard/soft/non Realtime) on one
-system.
+But it's a workaround, not a fix -- if we're going to #define if() then
+we should damn well make it transparent, and not have to work around
+breakage in arbitrary places.
 
-2. Take Maximum advantage of the each CPU core and treat each CPU core
-as a System. So we can take maximum utilization of the Hardware.
+Hence the patch I sent to Linus last night, which fixes it in the
+_right_ place:
+	http://marc.info/?l=linux-kernel&m=123907505308502&w=2
 
---
-JSR
-
+-- 
+David Woodhouse                            Open Source Technology Centre
+David.Woodhouse@intel.com                              Intel Corporation
 
