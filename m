@@ -1,260 +1,77 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757120AbZDGJMk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757184AbZDGJM6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757120AbZDGJMk (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 7 Apr 2009 05:12:40 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756207AbZDGJKL
+	id S1757184AbZDGJM6 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 7 Apr 2009 05:12:58 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755773AbZDGJKT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 7 Apr 2009 05:10:11 -0400
-Received: from hera.kernel.org ([140.211.167.34]:39057 "EHLO hera.kernel.org"
+	Tue, 7 Apr 2009 05:10:19 -0400
+Received: from sh.osrg.net ([192.16.179.4]:60053 "EHLO sh.osrg.net"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756208AbZDGJKI (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 7 Apr 2009 05:10:08 -0400
-Date: Tue, 7 Apr 2009 09:09:26 GMT
-From: Peter Zijlstra <a.p.zijlstra@chello.nl>
-To: linux-tip-commits@vger.kernel.org
-Cc: linux-kernel@vger.kernel.org, paulus@samba.org, hpa@zytor.com,
-       mingo@redhat.com, a.p.zijlstra@chello.nl, tglx@linutronix.de,
-       cjashfor@linux.vnet.ibm.com, mingo@elte.hu
-Reply-To: mingo@redhat.com, hpa@zytor.com, paulus@samba.org,
-       linux-kernel@vger.kernel.org, a.p.zijlstra@chello.nl,
-       tglx@linutronix.de, cjashfor@linux.vnet.ibm.com, mingo@elte.hu
-In-Reply-To: <20090406094518.531137582@chello.nl>
-References: <20090406094518.531137582@chello.nl>
-Subject: [tip:perfcounters/core] perf_counter: remove rq->lock usage
-Message-ID: <tip-849691a6cd40270ff5f4a8846d5f6bf8df663ffc@git.kernel.org>
-Git-Commit-ID: 849691a6cd40270ff5f4a8846d5f6bf8df663ffc
-X-Mailer: tip-git-log-daemon
-MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Disposition: inline
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Tue, 07 Apr 2009 09:09:28 +0000 (UTC)
+	id S1756371AbZDGJKS (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 7 Apr 2009 05:10:18 -0400
+Date: Tue, 7 Apr 2009 18:09:50 +0900
+To: galak@kernel.crashing.org
+Cc: fujita.tomonori@lab.ntt.co.jp, beckyb@kernel.crashing.org,
+       linux-kernel@vger.kernel.org, mingo@elte.hu, jeremy@goop.org,
+       ian.campbell@citrix.com
+Subject: Re: [PATCH 5/7] swiotlb: (re)Create swiotlb_unmap_single
+From: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
+In-Reply-To: <FCEB8195-191B-4835-B895-D70C19DE23DE@kernel.crashing.org>
+References: <1238810209-24499-6-git-send-email-beckyb@kernel.crashing.org>
+	<20090407112247W.fujita.tomonori@lab.ntt.co.jp>
+	<FCEB8195-191B-4835-B895-D70C19DE23DE@kernel.crashing.org>
+Mime-Version: 1.0
+Content-Type: Text/Plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
+Message-Id: <20090407180928Y.fujita.tomonori@lab.ntt.co.jp>
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-3.0 (sh.osrg.net [192.16.179.4]); Tue, 07 Apr 2009 18:09:51 +0900 (JST)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Commit-ID:  849691a6cd40270ff5f4a8846d5f6bf8df663ffc
-Gitweb:     http://git.kernel.org/tip/849691a6cd40270ff5f4a8846d5f6bf8df663ffc
-Author:     Peter Zijlstra <a.p.zijlstra@chello.nl>
-AuthorDate: Mon, 6 Apr 2009 11:45:12 +0200
-Committer:  Ingo Molnar <mingo@elte.hu>
-CommitDate: Tue, 7 Apr 2009 10:49:01 +0200
+On Tue, 7 Apr 2009 01:34:44 -0500
+Kumar Gala <galak@kernel.crashing.org> wrote:
 
-perf_counter: remove rq->lock usage
+> 
+> On Apr 6, 2009, at 9:24 PM, FUJITA Tomonori wrote:
+> 
+> > On Fri,  3 Apr 2009 20:56:47 -0500
+> > Becky Bruce <beckyb@kernel.crashing.org> wrote:
+> >
+> >> This mirrors the current swiotlb_sync_single() setup
+> >> where the swiotlb_unmap_single() function is static to this
+> >> file and contains the logic required to determine if we need
+> >> to call actual sync_single.  Previously, swiotlb_unmap_page
+> >> and swiotlb_unmap_sg were duplicating very similar code.
+> >> The duplicated code has also been reformatted for
+> >> readability.
+> >>
+> >> Note that the swiotlb_unmap_sg code was previously doing
+> >> a complicated comparison to determine if an addresses needed
+> >> to be unmapped where a simple is_swiotlb_buffer() call
+> >> would have sufficed.
+> >>
+> >> Signed-off-by: Becky Bruce <beckyb@kernel.crashing.org>
+> >> ---
+> >> lib/swiotlb.c |   36 +++++++++++++++++++++++-------------
+> >> 1 files changed, 23 insertions(+), 13 deletions(-)
+> >>
+> >> diff --git a/lib/swiotlb.c b/lib/swiotlb.c
+> >> index af2ec25..602315b 100644
+> >> --- a/lib/swiotlb.c
+> >> +++ b/lib/swiotlb.c
+> >
+> > I don't think 'swiotlb_unmap_single' name is appropriate.
+> >
+> > swiotlb_unmap_single sounds like an exported function that IOMMUs can
+> > use (and it was) however it should not be.
+> 
+> What do you suggest we call it?  __swiotlb_unmap_single.
 
-Now that all the task runtime clock users are gone, remove the ugly
-rq->lock usage from perf counters, which solves the nasty deadlock
-seen when a software task clock counter was read from an NMI overflow
-context.
+I think that __swiotlb_unmap_single is better because the name implies
+that it's an internal function. It's fine by me.
 
-Signed-off-by: Peter Zijlstra <a.p.zijlstra@chello.nl>
-Cc: Paul Mackerras <paulus@samba.org>
-Cc: Corey Ashford <cjashfor@linux.vnet.ibm.com>
-LKML-Reference: <20090406094518.531137582@chello.nl>
-Signed-off-by: Ingo Molnar <mingo@elte.hu>
-
-
----
- include/linux/kernel_stat.h |    2 --
- kernel/perf_counter.c       |   42 ++++++++++++++++--------------------------
- kernel/sched.c              |   20 --------------------
- 3 files changed, 16 insertions(+), 48 deletions(-)
-
-diff --git a/include/linux/kernel_stat.h b/include/linux/kernel_stat.h
-index b6d2887..080d1fd 100644
---- a/include/linux/kernel_stat.h
-+++ b/include/linux/kernel_stat.h
-@@ -85,8 +85,6 @@ static inline unsigned int kstat_irqs(unsigned int irq)
- /*
-  * Lock/unlock the current runqueue - to extract task statistics:
-  */
--extern void curr_rq_lock_irq_save(unsigned long *flags);
--extern void curr_rq_unlock_irq_restore(unsigned long *flags);
- extern unsigned long long __task_delta_exec(struct task_struct *tsk, int update);
- extern unsigned long long task_delta_exec(struct task_struct *);
- 
-diff --git a/kernel/perf_counter.c b/kernel/perf_counter.c
-index 56b7eb5..f4f7596 100644
---- a/kernel/perf_counter.c
-+++ b/kernel/perf_counter.c
-@@ -172,8 +172,7 @@ static void __perf_counter_remove_from_context(void *info)
- 	if (ctx->task && cpuctx->task_ctx != ctx)
- 		return;
- 
--	curr_rq_lock_irq_save(&flags);
--	spin_lock(&ctx->lock);
-+	spin_lock_irqsave(&ctx->lock, flags);
- 
- 	counter_sched_out(counter, cpuctx, ctx);
- 
-@@ -198,8 +197,7 @@ static void __perf_counter_remove_from_context(void *info)
- 			    perf_max_counters - perf_reserved_percpu);
- 	}
- 
--	spin_unlock(&ctx->lock);
--	curr_rq_unlock_irq_restore(&flags);
-+	spin_unlock_irqrestore(&ctx->lock, flags);
- }
- 
- 
-@@ -319,8 +317,7 @@ static void __perf_counter_disable(void *info)
- 	if (ctx->task && cpuctx->task_ctx != ctx)
- 		return;
- 
--	curr_rq_lock_irq_save(&flags);
--	spin_lock(&ctx->lock);
-+	spin_lock_irqsave(&ctx->lock, flags);
- 
- 	/*
- 	 * If the counter is on, turn it off.
-@@ -336,8 +333,7 @@ static void __perf_counter_disable(void *info)
- 		counter->state = PERF_COUNTER_STATE_OFF;
- 	}
- 
--	spin_unlock(&ctx->lock);
--	curr_rq_unlock_irq_restore(&flags);
-+	spin_unlock_irqrestore(&ctx->lock, flags);
- }
- 
- /*
-@@ -515,8 +511,7 @@ static void __perf_install_in_context(void *info)
- 	if (ctx->task && cpuctx->task_ctx != ctx)
- 		return;
- 
--	curr_rq_lock_irq_save(&flags);
--	spin_lock(&ctx->lock);
-+	spin_lock_irqsave(&ctx->lock, flags);
- 	update_context_time(ctx);
- 
- 	/*
-@@ -565,8 +560,7 @@ static void __perf_install_in_context(void *info)
-  unlock:
- 	hw_perf_restore(perf_flags);
- 
--	spin_unlock(&ctx->lock);
--	curr_rq_unlock_irq_restore(&flags);
-+	spin_unlock_irqrestore(&ctx->lock, flags);
- }
- 
- /*
-@@ -641,8 +635,7 @@ static void __perf_counter_enable(void *info)
- 	if (ctx->task && cpuctx->task_ctx != ctx)
- 		return;
- 
--	curr_rq_lock_irq_save(&flags);
--	spin_lock(&ctx->lock);
-+	spin_lock_irqsave(&ctx->lock, flags);
- 	update_context_time(ctx);
- 
- 	counter->prev_state = counter->state;
-@@ -678,8 +671,7 @@ static void __perf_counter_enable(void *info)
- 	}
- 
-  unlock:
--	spin_unlock(&ctx->lock);
--	curr_rq_unlock_irq_restore(&flags);
-+	spin_unlock_irqrestore(&ctx->lock, flags);
- }
- 
- /*
-@@ -971,7 +963,7 @@ int perf_counter_task_disable(void)
- 	if (likely(!ctx->nr_counters))
- 		return 0;
- 
--	curr_rq_lock_irq_save(&flags);
-+	local_irq_save(flags);
- 	cpu = smp_processor_id();
- 
- 	perf_counter_task_sched_out(curr, cpu);
-@@ -992,9 +984,7 @@ int perf_counter_task_disable(void)
- 
- 	hw_perf_restore(perf_flags);
- 
--	spin_unlock(&ctx->lock);
--
--	curr_rq_unlock_irq_restore(&flags);
-+	spin_unlock_irqrestore(&ctx->lock, flags);
- 
- 	return 0;
- }
-@@ -1011,7 +1001,7 @@ int perf_counter_task_enable(void)
- 	if (likely(!ctx->nr_counters))
- 		return 0;
- 
--	curr_rq_lock_irq_save(&flags);
-+	local_irq_save(flags);
- 	cpu = smp_processor_id();
- 
- 	perf_counter_task_sched_out(curr, cpu);
-@@ -1037,7 +1027,7 @@ int perf_counter_task_enable(void)
- 
- 	perf_counter_task_sched_in(curr, cpu);
- 
--	curr_rq_unlock_irq_restore(&flags);
-+	local_irq_restore(flags);
- 
- 	return 0;
- }
-@@ -1095,12 +1085,12 @@ static void __read(void *info)
- 	struct perf_counter_context *ctx = counter->ctx;
- 	unsigned long flags;
- 
--	curr_rq_lock_irq_save(&flags);
-+	local_irq_save(flags);
- 	if (ctx->is_active)
- 		update_context_time(ctx);
- 	counter->hw_ops->read(counter);
- 	update_counter_times(counter);
--	curr_rq_unlock_irq_restore(&flags);
-+	local_irq_restore(flags);
- }
- 
- static u64 perf_counter_read(struct perf_counter *counter)
-@@ -2890,7 +2880,7 @@ __perf_counter_exit_task(struct task_struct *child,
- 		 * Be careful about zapping the list - IRQ/NMI context
- 		 * could still be processing it:
- 		 */
--		curr_rq_lock_irq_save(&flags);
-+		local_irq_save(flags);
- 		perf_flags = hw_perf_save_disable();
- 
- 		cpuctx = &__get_cpu_var(perf_cpu_context);
-@@ -2903,7 +2893,7 @@ __perf_counter_exit_task(struct task_struct *child,
- 		child_ctx->nr_counters--;
- 
- 		hw_perf_restore(perf_flags);
--		curr_rq_unlock_irq_restore(&flags);
-+		local_irq_restore(flags);
- 	}
- 
- 	parent_counter = child_counter->parent;
-diff --git a/kernel/sched.c b/kernel/sched.c
-index f76e3c0..0de2f81 100644
---- a/kernel/sched.c
-+++ b/kernel/sched.c
-@@ -997,26 +997,6 @@ static struct rq *task_rq_lock(struct task_struct *p, unsigned long *flags)
- 	}
- }
- 
--void curr_rq_lock_irq_save(unsigned long *flags)
--	__acquires(rq->lock)
--{
--	struct rq *rq;
--
--	local_irq_save(*flags);
--	rq = cpu_rq(smp_processor_id());
--	spin_lock(&rq->lock);
--}
--
--void curr_rq_unlock_irq_restore(unsigned long *flags)
--	__releases(rq->lock)
--{
--	struct rq *rq;
--
--	rq = cpu_rq(smp_processor_id());
--	spin_unlock(&rq->lock);
--	local_irq_restore(*flags);
--}
--
- void task_rq_unlock_wait(struct task_struct *p)
- {
- 	struct rq *rq = task_rq(p);
+If it is odd that __swiotlb_unmap_single() is just a wrapper function
+of unmap_single(), which does the real job to unmap a dma mapping, it
+might be another possible option to rename unmap_single to
+do_unamp_single and use unmap_single.
