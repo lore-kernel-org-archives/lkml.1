@@ -1,116 +1,72 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759540AbZDGF3t@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756124AbZDGFaz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759540AbZDGF3t (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 7 Apr 2009 01:29:49 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759518AbZDGF3P
+	id S1756124AbZDGFaz (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 7 Apr 2009 01:30:55 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756694AbZDGF2w
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 7 Apr 2009 01:29:15 -0400
-Received: from fgwmail5.fujitsu.co.jp ([192.51.44.35]:41515 "EHLO
-	fgwmail5.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1758893AbZDGF3N (ORCPT
+	Tue, 7 Apr 2009 01:28:52 -0400
+Received: from ti-out-0910.google.com ([209.85.142.186]:22942 "EHLO
+	ti-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755930AbZDGF1q (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 7 Apr 2009 01:29:13 -0400
-Date: Tue, 7 Apr 2009 14:27:39 +0900
-From: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-To: linux-kernel@vger.kernel.org
-Cc: akpm@linux-foundation.org
-Subject: Re: mmotm 2009-04-05-21-45 uploaded
-Message-Id: <20090407142739.0027de02.kamezawa.hiroyu@jp.fujitsu.com>
-In-Reply-To: <200904060450.n364oaUj031923@imap1.linux-foundation.org>
-References: <200904060450.n364oaUj031923@imap1.linux-foundation.org>
-Organization: FUJITSU Co. LTD.
-X-Mailer: Sylpheed 2.5.0 (GTK+ 2.10.14; i686-pc-mingw32)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Tue, 7 Apr 2009 01:27:46 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
+         :cc:content-type:content-transfer-encoding;
+        b=PGb0EICvX4fKZoBIOp2vt4xSRWpN4PIBDXixz94Q6wij6R2YdKIyGj0nRZXOpo9i9M
+         aGmV+PrXHy8mgRUguIgvTtsS2UcxJ5Gb4KUopEGNICKZsiKTg+REgtOtqBizjfcKqSst
+         4BE6U9HJAw4z2ZZ4Ix8R3OZkRFMAE8bC2U5PY=
+MIME-Version: 1.0
+In-Reply-To: <49D9CF13.60202@in.ibm.com>
+References: <20090406164555.e1232116.sfr@canb.auug.org.au>
+	 <49D9CF13.60202@in.ibm.com>
+Date: Tue, 7 Apr 2009 13:27:42 +0800
+Message-ID: <df9815e70904062227u2ee2214do56ce0b86207c52@mail.gmail.com>
+Subject: Re: Next April 6 : x86 allmodconfig failure [drivers/pci]
+From: Jike Song <albcamus@gmail.com>
+To: Sachin Sant <sachinp@in.ibm.com>
+Cc: LKML <linux-kernel@vger.kernel.org>,
+       Stephen Rothwell <sfr@canb.auug.org.au>, linux-next@vger.kernel.org
+Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, 05 Apr 2009 21:50:36 -0700
-akpm@linux-foundation.org wrote:
+On Mon, Apr 6, 2009 at 5:44 PM, Sachin Sant <sachinp@in.ibm.com> wrote:
+> Today's next tree allmodconfig build on x86 failed with
+>
+> drivers/pci/intel-iommu.c:2636:35: error: macro "if" passed 2 arguments, but
+> takes just 1
+> drivers/pci/intel-iommu.c: In function init_iommu_hw:
+> drivers/pci/intel-iommu.c:2636: error: expected ( before { token
+> drivers/pci/intel-iommu.c:2637: error: ______r undeclared (first use in this
+> function)
+> drivers/pci/intel-iommu.c:2637: error: (Each undeclared identifier is
+> reported only once
+> drivers/pci/intel-iommu.c:2637: error: for each function it appears in.)
+> drivers/pci/intel-iommu.c:2640:35: error: macro "if" passed 2 arguments, but
+> takes just 1
+> drivers/pci/intel-iommu.c:2640: error: expected ( before { token
+>
+> and many more of such errors. Similar errors with intr_remapping.c
+>
+> drivers/pci/intr_remapping.c:679:28: error: macro "if" passed 2 arguments,
+> but takes just 1
+> drivers/pci/intr_remapping.c: In function disable_intr_remapping:
+> drivers/pci/intr_remapping.c:679: error: expected ( before { token
+> drivers/pci/intr_remapping.c:693:28: error: macro "if" passed 2 arguments,
+> but takes just 1
+> ......
+>
+> Thanks
+> -Sachin
 
-> The mm-of-the-moment snapshot 2009-04-05-21-45 has been uploaded to
-> 
->    http://userweb.kernel.org/~akpm/mmotm/
-> 
-> and will soon be available at
-> 
->    git://git.zen-sources.org/zen/mmotm.git
-> 
-> It contains the following patches against 2.6.29:
-> 
-> origin.patch
+Also happens on linux-next?  This happens on Linus tree: v2.6.29-9854-gd508afb
 
-The warning itself comes from changes in origin.patch...so, someone
-might fix this already...
 
-==
-At make, following warning is pirnted.
 
-scripts/kconfig/mconf arch/x86/Kconfig
-usr/Kconfig:145:warning: defaults for choice values not supported
-
-This is a fix.
-
-Signed-off-by: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
----
- usr/Kconfig |   17 ++++-------------
- 1 file changed, 4 insertions(+), 13 deletions(-)
-
-Index: mmotm-2.6.29-Apr5/usr/Kconfig
-===================================================================
---- mmotm-2.6.29-Apr5.orig/usr/Kconfig
-+++ mmotm-2.6.29-Apr5/usr/Kconfig
-@@ -72,10 +72,9 @@ config RD_LZMA
- 	  Support loading of a LZMA encoded initial ramdisk or cpio buffer
- 	  If unsure, say N.
- 
--if INITRAMFS_SOURCE!=""
--
- choice
- 	prompt "Built-in initramfs compression mode"
-+	default INITRAMFS_COMPTRSSION_NONE if INITRAMFS_SOURCE=""
- 	help
- 	  This option decides by which algorithm the builtin initramfs
- 	  will be compressed.  Several compression algorithms are
-@@ -109,6 +108,7 @@ config INITRAMFS_COMPRESSION_NONE
- config INITRAMFS_COMPRESSION_GZIP
- 	bool "Gzip"
- 	depends on RD_GZIP
-+	depends on INITRAMFS_SOURCE!=""
- 	help
- 	  The old and tried gzip compression. Its compression ratio is
- 	  the poorest among the 3 choices; however its speed (both
-@@ -117,6 +117,7 @@ config INITRAMFS_COMPRESSION_GZIP
- config INITRAMFS_COMPRESSION_BZIP2
- 	bool "Bzip2"
- 	depends on RD_BZIP2
-+	depends on INITRAMFS_SOURCE!=""
- 	help
- 	  Its compression ratio and speed is intermediate.
- 	  Decompression speed is slowest among the three.  The initramfs
-@@ -127,6 +128,7 @@ config INITRAMFS_COMPRESSION_BZIP2
- config INITRAMFS_COMPRESSION_LZMA
- 	bool "LZMA"
- 	depends on RD_LZMA
-+	depends on INITRAMFS_SOURCE!=""
- 	help
- 	  The most recent compression algorithm.
- 	  Its ratio is best, decompression speed is between the other
-@@ -134,14 +136,3 @@ config INITRAMFS_COMPRESSION_LZMA
- 	  smaller with LZMA in comparison to gzip.
- 
- endchoice
--
--endif
--
--if INITRAMFS_SOURCE=""
--# The builtin initramfs is so small so we don't want to bug the user...
--
--config INITRAMFS_COMPRESSION_NONE
--	bool
--	default y
--
--endif
-
+-- 
+Thanks,
+Jike
