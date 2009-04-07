@@ -1,67 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755653AbZDGLOY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753765AbZDGLT5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755653AbZDGLOY (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 7 Apr 2009 07:14:24 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754177AbZDGLOM
+	id S1753765AbZDGLT5 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 7 Apr 2009 07:19:57 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752096AbZDGLTs
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 7 Apr 2009 07:14:12 -0400
-Received: from nwd2mail11.analog.com ([137.71.25.57]:59066 "EHLO
-	nwd2mail11.analog.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751326AbZDGLOL (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 7 Apr 2009 07:14:11 -0400
-X-IronPort-AV: E=Sophos;i="4.39,337,1235970000"; 
-   d="scan'208";a="69177913"
-From: Robin Getz <rgetz@blackfin.uclinux.org>
-Organization: Blackfin uClinux org
-To: "Matt Mackall" <mpm@selenic.com>
-Subject: Re: IRQF_SAMPLE_RANDOM question...
-Date: Tue, 7 Apr 2009 07:16:25 -0400
-User-Agent: KMail/1.9.5
-CC: netdev@vger.kernel.org, linux-kernel@vger.kernel.org,
-       "Chris Peterson" <cpeterso@cpeterso.com>
-References: <200904061430.26276.rgetz@blackfin.uclinux.org> <1239044483.14392.55.camel@calx>
-In-Reply-To: <1239044483.14392.55.camel@calx>
+	Tue, 7 Apr 2009 07:19:48 -0400
+Received: from bilbo.ozlabs.org ([203.10.76.25]:56362 "EHLO bilbo.ozlabs.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751911AbZDGLTr (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 7 Apr 2009 07:19:47 -0400
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
+Content-Type: text/plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-ID: <200904070716.25846.rgetz@blackfin.uclinux.org>
-X-OriginalArrivalTime: 07 Apr 2009 11:14:08.0356 (UTC) FILETIME=[F8689240:01C9B771]
+Message-ID: <18907.14029.301492.493938@cargo.ozlabs.ibm.com>
+Date: Tue, 7 Apr 2009 21:19:41 +1000
+From: Paul Mackerras <paulus@samba.org>
+To: mingo@redhat.com, hpa@zytor.com, linux-kernel@vger.kernel.org,
+       a.p.zijlstra@chello.nl, tglx@linutronix.de, mingo@elte.hu
+Cc: linux-tip-commits@vger.kernel.org
+Subject: Re: [tip:perfcounters/core] x86, perfcounters: add atomic64_xchg()
+In-Reply-To: <tip-b226fa12991d6ee9b6b13a7e1de88ec5d25f5007@git.kernel.org>
+References: <20090406094518.445450972@chello.nl>
+	<tip-b226fa12991d6ee9b6b13a7e1de88ec5d25f5007@git.kernel.org>
+X-Mailer: VM 8.0.9 under Emacs 22.2.1 (i486-pc-linux-gnu)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon 6 Apr 2009 15:01, Matt Mackall pondered:
-> On Mon, 2009-04-06 at 14:30 -0400, Robin Getz wrote:
-> > We have lots of embedded headless systems (no keyboard/mouse, no
-> > soundcard, no video) systems with *no* sources of entropy - and
-> > people using SSL. 
+Ingo Molnar writes:
+
+> Complete atomic64_t support on the 32-bit side by adding atomic64_xch().
 > 
-> I'd rather add a random_sample_network call somewhere reasonably central
-> in the network stack. Then we can use the knowledge that the sample is
-> network-connected in the random core to decide how to measure its
-> entropy. The trouble with IRQF_SAMPLE_RANDOM is that many of its users
-> are technically bogus as entropy sources in the current model.
+> Cc: Peter Zijlstra <a.p.zijlstra@chello.nl>
+> LKML-Reference: <20090406094518.445450972@chello.nl>
+> Signed-off-by: Ingo Molnar <mingo@elte.hu>
+> 
+> 
+> ---
+>  arch/x86/include/asm/atomic_32.h |    6 ++++++
+>  1 files changed, 6 insertions(+), 0 deletions(-)
+> 
+> diff --git a/arch/x86/include/asm/atomic_32.h b/arch/x86/include/asm/atomic_32.h
+> index 977250e..a9fef6c 100644
+> --- a/arch/x86/include/asm/atomic_32.h
+> +++ b/arch/x86/include/asm/atomic_32.h
+> @@ -306,6 +306,12 @@ static inline void atomic64_set(atomic64_t *ptr, unsigned long long new_val)
+>  	} while (atomic64_cmpxchg(ptr, old_val, new_val) != old_val);
+>  }
+>  
+> +static inline void
+> +atomic64_xchg(atomic64_t *ptr, unsigned long long new_val)
+> +{
+> +	atomic64_set(ptr, new_val);
+> +}
 
-OK - that makes more sense.
+Umm, I don't know much about x86, but that doesn't look like an
+exchange operation to me...  Shouldn't it return a value, for a start?
 
-Does that mean we also shouldn't be using IRQF_SAMPLE_RANDOM on interrupt 
-sources in subsystems which already have add_xxx_randomness() in them? (block 
-devices, and input devices?)
-
-block/blk-core.c -> blk_end_io() -> add_disk_randomness()
-drivers/input/input.c -> input_event() -> add_input_randomness()
-
- drivers/block/xen-blkfront.c, line 639
-
- drivers/input/touchscreen/wm97xx-core.c, line 374
- drivers/input/keyboard/gpio_keys.c, line 145
- drivers/input/keyboard/bf54x-keys.c, line 255
- drivers/input/serio/hp_sdc.c, line 881
-
-> I'm eventually going to move the RNG away from the strict theoretical
-> entropy accounting model to a more pragmatic one which will be much
-> happier with iffy entropy sources, but that's a ways off.
-
-Looking forward to it.
+Paul.
