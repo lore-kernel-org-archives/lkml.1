@@ -1,33 +1,24 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752877AbZDGHfW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753395AbZDGHh0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752877AbZDGHfW (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 7 Apr 2009 03:35:22 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751570AbZDGHfH
+	id S1753395AbZDGHh0 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 7 Apr 2009 03:37:26 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751452AbZDGHhN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 7 Apr 2009 03:35:07 -0400
-Received: from fgwmail5.fujitsu.co.jp ([192.51.44.35]:48146 "EHLO
-	fgwmail5.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751569AbZDGHfF (ORCPT
+	Tue, 7 Apr 2009 03:37:13 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:57516 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751223AbZDGHhL (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 7 Apr 2009 03:35:05 -0400
-Date: Tue, 7 Apr 2009 16:33:31 +0900
-From: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-To: balbir@linux.vnet.ibm.com
-Cc: "linux-mm@kvack.org" <linux-mm@kvack.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       "lizf@cn.fujitsu.com" <lizf@cn.fujitsu.com>,
-       Rik van Riel <riel@surriel.com>, Bharata B Rao <bharata.rao@in.ibm.com>,
-       Dhaval Giani <dhaval@linux.vnet.ibm.com>,
-       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
-Subject: Re: [RFI] Shared accounting for memory resource controller
-Message-Id: <20090407163331.8e577170.kamezawa.hiroyu@jp.fujitsu.com>
-In-Reply-To: <20090407071825.GR7082@balbir.in.ibm.com>
-References: <20090407063722.GQ7082@balbir.in.ibm.com>
-	<20090407160014.8c545c3c.kamezawa.hiroyu@jp.fujitsu.com>
-	<20090407071825.GR7082@balbir.in.ibm.com>
-Organization: FUJITSU Co. LTD.
-X-Mailer: Sylpheed 2.5.0 (GTK+ 2.10.14; i686-pc-mingw32)
+	Tue, 7 Apr 2009 03:37:11 -0400
+Date: Tue, 7 Apr 2009 00:35:24 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: adobra@cise.ufl.edu
+Cc: linux-kernel@vger.kernel.org
+Subject: Re: I/O throughput problem in newer kernels
+Message-Id: <20090407003524.41c9b666.akpm@linux-foundation.org>
+In-Reply-To: <52041.128.227.162.217.1238684768.squirrel@webmail.cise.ufl.edu>
+References: <52041.128.227.162.217.1238684768.squirrel@webmail.cise.ufl.edu>
+X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.5; x86_64-redhat-linux-gnu)
 Mime-Version: 1.0
 Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
@@ -35,112 +26,110 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 7 Apr 2009 12:48:25 +0530
-Balbir Singh <balbir@linux.vnet.ibm.com> wrote:
+On Thu, 2 Apr 2009 11:06:08 -0400 (EDT) adobra@cise.ufl.edu wrote:
 
-> * KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com> [2009-04-07 16:00:14]:
+> While putting together a not so average machine for database research, I
+> bumped into the following performance problem with the newer kernels (I
+> tested 2.6.27.11, 2.6.29): the aggregate throughput drops drastically when
+> more than 20 hard drives are involved in the operation. This problem is
+> not happening on 2.6.22.9 or 2.6.20 (did not test other kernels).
+
+Well that's bad.  You'd at least expect the throughput to level out.
+
+> Since I am not subscribed to the mailing list, I would appreciate you
+> cc-ing me on any reply or discussion.
 > 
-> > On Tue, 7 Apr 2009 12:07:22 +0530
-> > Balbir Singh <balbir@linux.vnet.ibm.com> wrote:
-> > 
-> > > Hi, All,
-> > > 
-> > > This is a request for input for the design of shared page accounting for
-> > > the memory resource controller, here is what I have so far
-> > > 
-> > 
-> > In my first impression, I think simple counting is impossible.
-> > IOW, "usage count" and "shared or not" is very different problem.
-> > 
-> > Assume a page and its page_cgroup.
-> > 
-> > Case 1)
-> >   1. a page is mapped by process-X under group-A
-> >   2. its mapped by process-Y in group-B (now, shared and charged under group-A)
-> >   3. move process-X to group-B
-> >   4. now the page is not shared.
-> > 
+> 1. Description of the machine
+> -----------------------------------------------
+> 8 Quad-Core AMD Opteron(tm) Processor 8346 HE
+> Each processor has independent memory banks (16GB in each bank for 128GB
+> total)
+> Two PCI busses (connected in different places in the NUMA architecture)
+> 8 hard drives installed into the base system on SATA interfaces
+>     First hard drive dedicated to the OS
+>     7 Western Digital hard drives (90 MB/s max throughput)
+>     Nvidia SATA chipset
+> 4 Adaptec 5805 RAID cards installed in PCI-E 16X slots (all running at 8X
+> speed)
+>    The 4 cards live on two separate PCI busses
+> 6 IBM EXP3000 disk enclosures
+>    2 cards connect to 2 enclosures each, the other 2 to 1 enclosure
+> 8 Western Digital Velociraptor HD in each enclosure
+>    Max measured throughput 110-120 MB/s
 > 
-> By shared I don't mean only between cgroups, it could be a page shared
-> in the same cgroup
+> Total number of hard drives used the tests: 7+47=54 or subsets
+> The Adaptec cards are configure to expose each disk individually to the
+> OS. Any RAID configuration seems to limit the throughput at 300-350MB/s
+> which is too low for the purpose of this system.
 > 
-Hmm, is it good information ?
-
-Such kind of information can be calucated by
-==
-   rss = 0;
-   for_each_process_under_cgroup() {
-       mm = tsk->mm
-       rss += mm->anon_rss;
-   }
-   some_of_all_rss = rss;
-   
-   shared_ratio = mem_cgrou->rss *100 / some_of_all_rss.
-==
-   if 100%, all anon memory are not shared.
- 
-
-> > Case 2)
-> >   swap is an object which can be shared.
-> > 
+> 2. Throughput tests
+> --------------------------------
+> I did two types of tests: using dd (spawning parallel dd jobs that lasted
+> at least 10s) or using a multi-threaded program that simulates the
+> intended usage for the system. Results using both are consistent so I will
+> only report the results with the custom program. Both the dd test and the
+> custom one do reads in large chunks (256K/request at least). All request
+> in the custom program are made with "read" system call to page aligned
+> memory (allocated with mmap to make sure). The kernel is doing a zero-copy
+> to user space otherwise the speeds observed are not possible.
 > 
-> Good point, I expect the user to account all cached pages as shared -
-> no
-Maybe yes if we explain it's so ;)
-
-?
+> Here is what I observed in terms of throughput:
+> a. Speed/WD disk: 90 MB/s
+> b. Speed/Velociraptor disk: 110 MB/s
+> c. Speed of all WD disks in base system: 700MB/s
+> d. Speed of disks in one enclosure: 750 MB/s
+> e. Speed of disks connected to one Adaptec card: 1000 MB/s
+> f. Speed of disks connected on a single PCI bus: 2000 MB/s
 > 
-> > Case 3)
-> >   1. a page known as "A" is mapped by process-X under group-A.
-> >   2. its mapped by process-Y under group-B(now, shared and charged under group-A)
-> >   3. Do copy-on-write by process-X.
-> >      Now, "A" is mapped only by B but accoutned under group-A.
-> >      This case is ignored intentionally, now.
+> The above numbers look good and are consistent on all kernels that I tried.
 > 
-> Yes, that is the original design
+> THE PROBLEM: when the number of disks exceeds 20 the throughput plummets
+> on newer kernels.
 > 
-> >      Do you want to call try_charge() both against group-A and group-B
-> >      under process-X's page fault ?
-> > 
+> g. SPEED OF ALL DISKS: 600 MB/s on newer kernels, 2700 MB/s on older kernels
+> The throughput drops drastically the moment 20-25 hard drives are involved
 > 
-> No we don't, but copy-on-write is caught at page_rmap_dup() - no?
+> 3. Tests I performed to ensure the number of hard drives is the culprit
+> ----------------------------------------------------------------------------------------------------------------
+> a. Took 1, 2, 3 and 4 disks from each enclosure to ensure uniform load on
+> buses
+>     performance going up as expected until 20 drives reached than dropping
 > 
-Hmm, if we don't consider group-B, maybe we can.
-But I wonder counting is overkill..
-
-
-> > There will be many many corner case.
-> > 
-> > 
-> > > Motivation for shared page accounting
-> > > -------------------------------------
-> > > 1. Memory cgroup administrators will benefit from the knowledge of how
-> > >    much of the data is shared, it helps size the groups correctly.
-> > > 2. We currently report only the pages brought in by the cgroup, knowledge
-> > >    of shared data will give a complete picture of the actual usage.
-> > > 
-> > 
-> > Motivation sounds good. But counting this in generic rmap will have tons of
-> > troubles and slow-down.
-> > 
-> > I bet we should prepare a file as
-> >   /proc/<pid>/cgroup_maps
-> > 
-> > And show RSS/RSS-owned-by-us per process. Maybe this feature will be able to be
-> > implemented in 3 days.
+> b. Involved combinations of the regular WD drives and the Velociraptors.
+>     Had no major influence on the observation
 > 
-> Yes, we can probably do that, but if we have too many processes in one
-> cgroup, we'll need to walk across all of them in user space. One other
-> alternative I did not mention is to walk the LRU like we walk page
-> tables and look at page_mapcount of every page, but that will be
-> very slow.
+> c. Involved combinations of enclosures
+>     No influence
+> 
+> d. Used the hard drives in decreasing order of measured speed (as reported
+> by hdparm)
+>     Only minor influence and still drastic drop at 20
+> 
+> e. Changed the I/O scheduler used for the hard drives
+>     No influence
+> 
+> 4. Things that I do not think are wrong
+> --------------------------------------------------------------
+> a. aacraid or scsi_nv drivers
+>     The problem depends only on the number of hard drives not the
+> combination of the drives themselves
+> 
+> b. Limitations on the buses
+>     The measured speeds of the subsystems indicate that no bottleneck on
+> individual buses is reached. Even if this is the case, the throughput
+> should level up not drop dramatically
+> 
+> c. Failures in the system
+>     No errors reported in /var/log/messages or other logs related to I/O
+> 
+> Of course, this begs the question WHAT IS WRONG?
+> 
+> I would be more than happy to run any tests you suggest on my system to
+> find the problem.
+> 
 
-Can't we make use of information in mm_counters ? (As I shown in above)
-(see set/get/add/inc/dec_mm_counters())
+Did you monitor the CPU utilisation?
 
-Thanks,
--Kame
-
-
-
+It would be interesting to test with O_DIRECT (dd conv=direct) to
+remove the page allocator and page reclaim from the picture.
 
