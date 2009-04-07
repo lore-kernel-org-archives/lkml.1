@@ -1,52 +1,86 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754819AbZDGFpR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753905AbZDGFq6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754819AbZDGFpR (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 7 Apr 2009 01:45:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753190AbZDGFot
+	id S1753905AbZDGFq6 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 7 Apr 2009 01:46:58 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751740AbZDGFqs
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 7 Apr 2009 01:44:49 -0400
-Received: from bombadil.infradead.org ([18.85.46.34]:57015 "EHLO
-	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752866AbZDGFos (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 7 Apr 2009 01:44:48 -0400
-Subject: Re: [GIT *] intel-iommu updates for 2.6.30 (second batch)
-From: David Woodhouse <dwmw2@infradead.org>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: torvalds@linux-foundation.org, iommu@lists.linux-foundation.org,
-       linux-kernel@vger.kernel.org
-In-Reply-To: <20090407053739.GA10500@elte.hu>
-References: <1238839639.3560.37.camel@macbook.infradead.org>
-	 <20090407053739.GA10500@elte.hu>
-Content-Type: text/plain; charset="UTF-8"
-Date: Mon, 06 Apr 2009 22:44:05 -0700
-Message-Id: <1239083045.22733.383.camel@macbook.infradead.org>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.26.0 (2.26.0-2.fc11) 
-Content-Transfer-Encoding: 8bit
-X-SRS-Rewrite: SMTP reverse-path rewritten from <dwmw2@infradead.org> by bombadil.infradead.org
-	See http://www.infradead.org/rpr.html
+	Tue, 7 Apr 2009 01:46:48 -0400
+Received: from cn.fujitsu.com ([222.73.24.84]:52871 "EHLO song.cn.fujitsu.com"
+	rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org with ESMTP
+	id S1750977AbZDGFqs (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 7 Apr 2009 01:46:48 -0400
+Message-ID: <49DAE8E4.2030106@cn.fujitsu.com>
+Date: Tue, 07 Apr 2009 13:47:16 +0800
+From: Li Zefan <lizf@cn.fujitsu.com>
+User-Agent: Thunderbird 2.0.0.9 (X11/20071115)
+MIME-Version: 1.0
+To: Andrew Morton <akpm@linux-foundation.org>
+CC: "Serge E. Hallyn" <serue@us.ibm.com>, LKML <linux-kernel@vger.kernel.org>,
+       Linux Containers <containers@lists.linux-foundation.org>
+Subject: [PATCH] devcgroup: skip superfluous checks when found the DEV_ALL
+ elem
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 2009-04-07 at 07:37 +0200, Ingo Molnar wrote:
-> I suspect these bits are the ones that broke the upstream build:
-> 
->  drivers/pci/dmar.c:47: error: expected ‘=’, ‘,’, ‘;’, ‘asm’ or
-> ‘__attribute__’ before ‘dmar_tbl_size’
->  drivers/pci/dmar.c:62: warning: ‘struct acpi_dmar_device_scope’
-> declared inside parameter list
->  drivers/pci/dmar.c:62: warning: its scope is only this definition or
-> declaration, which is probably not what you want
+While walking through the whitelist, if the DEV_ALL item is found,
+no more check is needed.
 
-Yeah, <acpi/acpi.h> was being included implicitly for me, but certain
-configs don't do that. Alexander Beregalov sent a patch for that, which
-I added to my tree before Linus pulled it.
+Signed-off-by: Li Zefan <lizf@cn.fujitsu.com>
+---
+ security/device_cgroup.c |   10 ++++++----
+ 1 files changed, 6 insertions(+), 4 deletions(-)
 
-Commit 46f06b72378d3187f0d12f7a60d020676bfbf332 is the fix.
-
+diff --git a/security/device_cgroup.c b/security/device_cgroup.c
+index 5fda7df..b8186ba 100644
+--- a/security/device_cgroup.c
++++ b/security/device_cgroup.c
+@@ -490,7 +490,7 @@ int devcgroup_inode_permission(struct inode *inode, int mask)
+ 
+ 	list_for_each_entry_rcu(wh, &dev_cgroup->whitelist, list) {
+ 		if (wh->type & DEV_ALL)
+-			goto acc_check;
++			goto found;
+ 		if ((wh->type & DEV_BLOCK) && !S_ISBLK(inode->i_mode))
+ 			continue;
+ 		if ((wh->type & DEV_CHAR) && !S_ISCHR(inode->i_mode))
+@@ -499,11 +499,12 @@ int devcgroup_inode_permission(struct inode *inode, int mask)
+ 			continue;
+ 		if (wh->minor != ~0 && wh->minor != iminor(inode))
+ 			continue;
+-acc_check:
++
+ 		if ((mask & MAY_WRITE) && !(wh->access & ACC_WRITE))
+ 			continue;
+ 		if ((mask & MAY_READ) && !(wh->access & ACC_READ))
+ 			continue;
++found:
+ 		rcu_read_unlock();
+ 		return 0;
+ 	}
+@@ -527,7 +528,7 @@ int devcgroup_inode_mknod(int mode, dev_t dev)
+ 
+ 	list_for_each_entry_rcu(wh, &dev_cgroup->whitelist, list) {
+ 		if (wh->type & DEV_ALL)
+-			goto acc_check;
++			goto found;
+ 		if ((wh->type & DEV_BLOCK) && !S_ISBLK(mode))
+ 			continue;
+ 		if ((wh->type & DEV_CHAR) && !S_ISCHR(mode))
+@@ -536,9 +537,10 @@ int devcgroup_inode_mknod(int mode, dev_t dev)
+ 			continue;
+ 		if (wh->minor != ~0 && wh->minor != MINOR(dev))
+ 			continue;
+-acc_check:
++
+ 		if (!(wh->access & ACC_MKNOD))
+ 			continue;
++found:
+ 		rcu_read_unlock();
+ 		return 0;
+ 	}
 -- 
-David Woodhouse                            Open Source Technology Centre
-David.Woodhouse@intel.com                              Intel Corporation
+1.5.4.rc3
 
