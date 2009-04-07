@@ -1,64 +1,79 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760328AbZDGUPq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760211AbZDGURW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760328AbZDGUPq (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 7 Apr 2009 16:15:46 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755100AbZDGUPf
+	id S1760211AbZDGURW (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 7 Apr 2009 16:17:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755482AbZDGURN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 7 Apr 2009 16:15:35 -0400
-Received: from courier.cs.helsinki.fi ([128.214.9.1]:58442 "EHLO
-	mail.cs.helsinki.fi" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755482AbZDGUPe (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 7 Apr 2009 16:15:34 -0400
-Message-ID: <49DBB373.5050800@cs.helsinki.fi>
-Date: Tue, 07 Apr 2009 23:11:31 +0300
-From: Pekka Enberg <penberg@cs.helsinki.fi>
-User-Agent: Thunderbird 2.0.0.21 (Macintosh/20090302)
-MIME-Version: 1.0
-To: David Rientjes <rientjes@google.com>
-CC: Christoph Lameter <cl@linux-foundation.org>, linux-kernel@vger.kernel.org
-Subject: Re: [patch] slub: default min_partial to at least highest cpus per
-  node
-References: <alpine.DEB.2.00.0904051653420.25339@chino.kir.corp.google.com>  <49DBA23A.3000106@cs.helsinki.fi> <84144f020904071209j638aae9bv406661ec401af7af@mail.gmail.com> <alpine.DEB.2.00.0904071231500.21113@chino.kir.corp.google.com> <49DBAF7E.30704@cs.helsinki.fi> <alpine.DEB.2.00.0904071302430.32321@chino.kir.corp.google.com>
-In-Reply-To: <alpine.DEB.2.00.0904071302430.32321@chino.kir.corp.google.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+	Tue, 7 Apr 2009 16:17:13 -0400
+Received: from cmpxchg.org ([85.214.51.133]:36655 "EHLO cmpxchg.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754191AbZDGURN (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 7 Apr 2009 16:17:13 -0400
+Date: Tue, 7 Apr 2009 22:17:08 +0200
+From: Johannes Weiner <hannes@cmpxchg.org>
+To: Andi Kleen <andi@firstfloor.org>
+Cc: linux-kernel@vger.kernel.org, linux-mm@kvack.org, x86@kernel.org
+Subject: Re: [PATCH] [8/16] POISON: Add various poison checks in mm/memory.c
+Message-ID: <20090407201708.GA4220@cmpxchg.org>
+References: <20090407509.382219156@firstfloor.org> <20090407151005.4E24B1D046D@basil.firstfloor.org> <20090407190330.GB3818@cmpxchg.org> <20090407193145.GU17934@one.firstfloor.org>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20090407193145.GU17934@one.firstfloor.org>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi David,
-
-On Tue, 7 Apr 2009, Pekka Enberg wrote:
->>> I'd be just as happy with the following, although it would require changing
->>> MIN_PARTIAL to be greater than its default of 5 if a node supports more cpus
->>> for optimal performance (the old patch did that automatically up to
->>> MAX_PARTIAL).
->> Hmm but why not move ->min_partial to struct kmem_cache_node as I suggested
->> and make sure it's adjusted properly as with nr_cpus_node()?
-
-David Rientjes wrote:
-> Sure, that's also possible except we'd lose the ability to tune 
-> min_partial with /sys/kernel/slab/cache/min_partial, unless it would then 
-> change n->min_partial for each N_NORMAL_MEMORY node.  We lack an interface 
-> to change the per-node min_partial.
+On Tue, Apr 07, 2009 at 09:31:45PM +0200, Andi Kleen wrote:
+> On Tue, Apr 07, 2009 at 09:03:30PM +0200, Johannes Weiner wrote:
+> > On Tue, Apr 07, 2009 at 05:10:05PM +0200, Andi Kleen wrote:
+> > > 
+> > > Bail out early when poisoned pages are found in page fault handling.
+> > > Since they are poisoned they should not be mapped freshly
+> > > into processes.
+> > > 
+> > > This is generally handled in the same way as OOM, just a different
+> > > error code is returned to the architecture code.
+> > > 
+> > > Signed-off-by: Andi Kleen <ak@linux.intel.com>
+> > > 
+> > > ---
+> > >  mm/memory.c |    7 +++++++
+> > >  1 file changed, 7 insertions(+)
+> > > 
+> > > Index: linux/mm/memory.c
+> > > ===================================================================
+> > > --- linux.orig/mm/memory.c	2009-04-07 16:39:39.000000000 +0200
+> > > +++ linux/mm/memory.c	2009-04-07 16:39:39.000000000 +0200
+> > > @@ -2560,6 +2560,10 @@
+> > >  		goto oom;
+> > >  	__SetPageUptodate(page);
+> > >  
+> > > +	/* Kludge for now until we take poisoned pages out of the free lists */
+> > > +	if (unlikely(PagePoison(page)))
+> > > +		return VM_FAULT_POISON;
+> > > +
+> > 
+> > When memory_failure() hits a page still on the free list
 > 
-> If you think that's acceptable, I'd be just as satisfied with that 
-> approach as long as all archs have valid cpu_to_node() mappings at the 
-> time of CPU_UP_PREPARE.
+> It won't free it then. Later on it will take it out of the free lists,
+> but that code is not written yet.
+> 
+> > (!page_count()) then the get_page() in memory_failure() will trigger a
+> > VM_BUG.  So either this check is unneeded or it should be
+> 
+> So no bug
+> > get_page_unless_zero() in memory_failure()?
+> 
+> That's not what this is handling.  The issue is that sometimes
+> the process can still freeing it and we need to make sure it 
+> never hits the free lists.
 
-Well, that doesn't change the current behavior, so sure, I think it's 
-acceptable. And if the new defaults seem reasonable enough, we can 
-probably get rid of the tunable altogether.
+I think we missed each other here.  I wasn't talking about _why_ you
+take that reference -- that is clear.  But I see these two
+possibilities:
 
-David Rientjes wrote:
-> Aside: we're lacking in the documentation of these sysfs tunables such as 
-> remote_node_defrag_ratio to begin with, the only way to figure out what it 
-> does is by reading the code or making assumptions based on its name.  I'd 
-> be happy to add some documentation but it'd be good to keep it separate 
-> from Documentation/vm/slub.txt.
+  a) memory_failure() is called on a page on the free list, the
+  get_page() will trigger a bug because the refcount is 0
 
-AFAICT, the Documentation/ABI directory is the right place for this kind 
-of stuff.
-
-			Pekka
+  b) if that is not possible, the above check is not needed
