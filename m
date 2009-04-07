@@ -1,81 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760997AbZDGU2G@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760995AbZDGUbP@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760997AbZDGU2G (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 7 Apr 2009 16:28:06 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760822AbZDGU1m
+	id S1760995AbZDGUbP (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 7 Apr 2009 16:31:15 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755378AbZDGUbB
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 7 Apr 2009 16:27:42 -0400
-Received: from mail-fx0-f158.google.com ([209.85.220.158]:36502 "EHLO
-	mail-fx0-f158.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1760833AbZDGU1k (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 7 Apr 2009 16:27:40 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
-         :cc:content-type:content-transfer-encoding;
-        b=YS/94u1+O4Lbf4r1yo9JBMeaY2MExFKOZNWJgPWu0XyKFNy8uyb6PQ8oQMtqd61fm/
-         k/LFyU+ublp/iOVNykSMCoWWgmepIsH8gSRA9546htJ/3TS7KQHcCaz8BGKkfQG9sPLz
-         axtk1srVBnq8c8hQ8XrbPaXEwHfjdKQh8ZWZ0=
-MIME-Version: 1.0
-In-Reply-To: <49DA49AA.1060106@wpkg.org>
-References: <49D7AD54.4060408@vlnb.net> <49D7B122.50103@wpkg.org>
-	 <e2e108260904050429lcd1870ag6656f36a170ccab3@mail.gmail.com>
-	 <49D9D9A0.40106@wpkg.org> <49DA33EF.3020700@vlnb.net>
-	 <49DA49AA.1060106@wpkg.org>
-Date: Tue, 7 Apr 2009 22:27:36 +0200
-Message-ID: <e2e108260904071327u6b6c6e43tdc76f648be0302dd@mail.gmail.com>
-Subject: Re: [Scst-devel] [ANNOUNCE]: Comparison of features sets between 
-	different SCSI targets (SCST, STGT, IET, LIO)
-From: Bart Van Assche <bart.vanassche@gmail.com>
-To: Tomasz Chmielewski <mangoo@wpkg.org>
-Cc: Vladislav Bolkhovitin <vst@vlnb.net>, linux-kernel@vger.kernel.org,
-       linux-scsi@vger.kernel.org, iscsitarget-devel@lists.sourceforge.net,
-       James Bottomley <James.Bottomley@hansenpartnership.com>,
-       scst-devel <scst-devel@lists.sourceforge.net>, stgt@vger.kernel.org
-Content-Type: text/plain; charset=ISO-8859-1
+	Tue, 7 Apr 2009 16:31:01 -0400
+Received: from waste.org ([66.93.16.53]:39835 "EHLO waste.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1755230AbZDGUbA (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 7 Apr 2009 16:31:00 -0400
+Subject: Re: IRQF_SAMPLE_RANDOM question...
+From: Matt Mackall <mpm@selenic.com>
+To: Robin Getz <rgetz@blackfin.uclinux.org>
+Cc: netdev@vger.kernel.org, linux-kernel@vger.kernel.org,
+       Chris Peterson <cpeterso@cpeterso.com>
+In-Reply-To: <200904070716.25846.rgetz@blackfin.uclinux.org>
+References: <200904061430.26276.rgetz@blackfin.uclinux.org>
+	 <1239044483.14392.55.camel@calx>
+	 <200904070716.25846.rgetz@blackfin.uclinux.org>
+Content-Type: text/plain
+Date: Tue, 07 Apr 2009 07:57:31 -0700
+Message-Id: <1239116251.14392.133.camel@calx>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.24.5 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Apr 6, 2009 at 8:27 PM, Tomasz Chmielewski <mangoo@wpkg.org> wrote:
-> Note that crypt performance for SCST was worse than that of STGT for large
-> read-ahead values.
-> Also, SCST performance on crypt device was more or less the same with 256
-> and 16384 readahead values. I wonder why performance didn't increase here
-> while increasing readahead values? Could anyone recheck if it's the same on
-> some other system?
+On Tue, 2009-04-07 at 07:16 -0400, Robin Getz wrote:
+> On Mon 6 Apr 2009 15:01, Matt Mackall pondered:
+> > On Mon, 2009-04-06 at 14:30 -0400, Robin Getz wrote:
+> > > We have lots of embedded headless systems (no keyboard/mouse, no
+> > > soundcard, no video) systems with *no* sources of entropy - and
+> > > people using SSL. 
+> > 
+> > I'd rather add a random_sample_network call somewhere reasonably central
+> > in the network stack. Then we can use the knowledge that the sample is
+> > network-connected in the random core to decide how to measure its
+> > entropy. The trouble with IRQF_SAMPLE_RANDOM is that many of its users
+> > are technically bogus as entropy sources in the current model.
+> 
+> OK - that makes more sense.
+> 
+> Does that mean we also shouldn't be using IRQF_SAMPLE_RANDOM on interrupt 
+> sources in subsystems which already have add_xxx_randomness() in them? (block 
+> devices, and input devices?)
+> 
+> block/blk-core.c -> blk_end_io() -> add_disk_randomness()
+> drivers/input/input.c -> input_event() -> add_input_randomness()
+> 
+>  drivers/block/xen-blkfront.c, line 639
+> 
+>  drivers/input/touchscreen/wm97xx-core.c, line 374
+>  drivers/input/keyboard/gpio_keys.c, line 145
+>  drivers/input/keyboard/bf54x-keys.c, line 255
+>  drivers/input/serio/hp_sdc.c, line 881
 
-I have repeated the test for the non-encrypted case. Setup details:
-* target: 2.6.29.1 kernel, 64-bit, Intel E8400 CPU @ 3 GHz, 4 GB RAM,
-two ST3250410AS disks, with /dev/md3 set up in RAID-1 with a stripe
-size of 32 KB, local reading speed of /dev/md3: 120 MB/s, I/O
-scheduler: CFQ.
-* initiator: 2.6.28.7 kernel, 64-bit, Intel E6750 CPU @ 2.66 GHz, 2 GB RAM.
-* network: 1 Gbit/s Ethernet, two systems connected back to back via a
-crossed cable.
+Yes. The flag needs to be taken out and shot. Everything going into the
+RNG should be made to go through an add_*_randomness interface only.
+Preferably not at a per-driver level.
 
-Each test was repeated four times. Before each test the target caches
-were dropped via the command "sync; echo 3 >
-/proc/sys/vm/drop_caches". The following test has been run on the
-initiator:
+-- 
+http://selenic.com : development and support for Mercurial and Linux
 
-sync; echo 3 > /proc/sys/vm/drop_caches; dd if=/dev/sdb of=/dev/null
-bs=64K count=100000
 
-Results with read-ahead set to 256 on the initiator, in MB/s:
-
-STGT 56.7 +/- 0.3
-SCST 56.9 +/- 1.1
-
-Results with read-ahead set to 16384 on the initiator, in MB/s:
-
-STGT 59.9 +/- 0.1
-SCST 59.5 +/- 0.0
-
-Or: slightly better results with the larger read-ahead value, and a
-performance difference well below 1% between the STGT and SCST
-performance results.
-
-Bart.
