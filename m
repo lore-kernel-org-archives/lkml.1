@@ -1,43 +1,43 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759614AbZDGRou@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760374AbZDGRrf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759614AbZDGRou (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 7 Apr 2009 13:44:50 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757885AbZDGRoi
+	id S1760374AbZDGRrf (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 7 Apr 2009 13:47:35 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756473AbZDGRrY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 7 Apr 2009 13:44:38 -0400
-Received: from verein.lst.de ([213.95.11.210]:52601 "EHLO verein.lst.de"
+	Tue, 7 Apr 2009 13:47:24 -0400
+Received: from brick.kernel.dk ([93.163.65.50]:47075 "EHLO kernel.dk"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1757003AbZDGRoi (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 7 Apr 2009 13:44:38 -0400
-Date: Tue, 7 Apr 2009 19:44:17 +0200
-From: Christoph Hellwig <hch@lst.de>
-To: Sam Ravnborg <sam@ravnborg.org>
-Cc: Christoph Hellwig <hch@lst.de>, linux-kernel@vger.kernel.org,
-       linux-fsdevel@vger.kernel.org
-Subject: Re: [PATCH] romfs: cleanup romfs_fs.h
-Message-ID: <20090407174417.GC14462@lst.de>
-References: <20090407160708.GA11384@lst.de> <20090407174457.GA13089@uranus.ravnborg.org>
-Mime-Version: 1.0
+	id S1755548AbZDGRrX (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 7 Apr 2009 13:47:23 -0400
+Date: Tue, 7 Apr 2009 19:47:22 +0200
+From: Jens Axboe <jens.axboe@oracle.com>
+To: Alasdair G Kergon <agk@redhat.com>
+Cc: Christoph Hellwig <hch@lst.de>, neilb@suse.de,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] dm: move bio_list fns to bio.h (was [PATCH])
+Message-ID: <20090407174722.GB5178@kernel.dk>
+References: <20090407162014.GA11899@lst.de> <20090407172853.GL5688@agk.fab.redhat.com>
+MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20090407174457.GA13089@uranus.ravnborg.org>
-User-Agent: Mutt/1.3.28i
-X-Spam-Score: -0.001 () BAYES_44
+In-Reply-To: <20090407172853.GL5688@agk.fab.redhat.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Apr 07, 2009 at 07:44:57PM +0200, Sam Ravnborg wrote:
-> On Tue, Apr 07, 2009 at 06:07:08PM +0200, Christoph Hellwig wrote:
-> > There's no kernel-only content in it anymore, so move it to header-y
-> > and remove the superflous #ifdef __KERNEL__.
+On Tue, Apr 07 2009, Alasdair G Kergon wrote:
+> On Tue, Apr 07, 2009 at 06:20:14PM +0200, Christoph Hellwig wrote:
+> > It's used by DM and MD and generally useful, so move the bio list
+> > helpers into bio.h.
+>  
+> A good idea.
 > 
-> today there is no difference between header-y and unifdef-y.
-> We pass everything through unifdef these days.
+> Jens - do you want to pick that up or shall I include it with the next little
+> batch (dm barrier support!) I'm preparing?
 
-The __KERNEL__ removal still applies, and as long as we have two
-different variables it should use the correct one.
+Agree, it's a good idea. I'll just include it in the next pull, unless
+it makes life more difficult for you.
 
-But why do you send all through unifdef anyway?  That's a pretty bad
-signal to send when we try to get people to do cleanly seprated headers.
+-- 
+Jens Axboe
 
