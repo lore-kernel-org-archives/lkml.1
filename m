@@ -1,123 +1,73 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756862AbZDGNN4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757050AbZDGNO1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756862AbZDGNN4 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 7 Apr 2009 09:13:56 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756240AbZDGNNf
+	id S1757050AbZDGNO1 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 7 Apr 2009 09:14:27 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756290AbZDGNNh
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 7 Apr 2009 09:13:35 -0400
-Received: from hera.kernel.org ([140.211.167.34]:59378 "EHLO hera.kernel.org"
+	Tue, 7 Apr 2009 09:13:37 -0400
+Received: from hera.kernel.org ([140.211.167.34]:59381 "EHLO hera.kernel.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756251AbZDGNNd (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 7 Apr 2009 09:13:33 -0400
-Date: Tue, 7 Apr 2009 13:12:59 GMT
-From: Steven Rostedt <rostedt@goodmis.org>
+	id S1756384AbZDGNNf (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 7 Apr 2009 09:13:35 -0400
+Date: Tue, 7 Apr 2009 13:12:49 GMT
+From: Frederic Weisbecker <fweisbec@gmail.com>
 To: linux-tip-commits@vger.kernel.org
 Cc: linux-kernel@vger.kernel.org, hpa@zytor.com, mingo@redhat.com,
-       yinghai@kernel.org, rostedt@goodmis.org, tglx@linutronix.de,
+       fweisbec@gmail.com, rostedt@goodmis.org, tglx@linutronix.de,
        mingo@elte.hu
 Reply-To: mingo@redhat.com, hpa@zytor.com, linux-kernel@vger.kernel.org,
-       yinghai@kernel.org, rostedt@goodmis.org, tglx@linutronix.de,
+       fweisbec@gmail.com, rostedt@goodmis.org, tglx@linutronix.de,
        mingo@elte.hu
-In-Reply-To: <alpine.DEB.2.00.0903252053080.5675@gandalf.stny.rr.com>
-References: <alpine.DEB.2.00.0903252053080.5675@gandalf.stny.rr.com>
-Subject: [tip:tracing/urgent] function-graph: add proper initialization for init task
-Message-ID: <tip-5ac9f62267dc92c7735c642a5942d9e6c1190308@git.kernel.org>
-Git-Commit-ID: 5ac9f62267dc92c7735c642a5942d9e6c1190308
+In-Reply-To: <1238160130-7437-1-git-send-email-fweisbec@gmail.com>
+References: <1238160130-7437-1-git-send-email-fweisbec@gmail.com>
+Subject: [tip:tracing/urgent] tracing/ftrace: fix missing include string.h
+Message-ID: <tip-5f0c6c03c5fee91c02c696bc9bf4c0d41392abe7@git.kernel.org>
+Git-Commit-ID: 5f0c6c03c5fee91c02c696bc9bf4c0d41392abe7
 X-Mailer: tip-git-log-daemon
 MIME-Version: 1.0
 Content-Type: text/plain; charset=UTF-8
 Content-Disposition: inline
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Tue, 07 Apr 2009 13:13:01 +0000 (UTC)
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Tue, 07 Apr 2009 13:12:51 +0000 (UTC)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Commit-ID:  5ac9f62267dc92c7735c642a5942d9e6c1190308
-Gitweb:     http://git.kernel.org/tip/5ac9f62267dc92c7735c642a5942d9e6c1190308
-Author:     Steven Rostedt <rostedt@goodmis.org>
-AuthorDate: Wed, 25 Mar 2009 20:55:00 -0400
+Commit-ID:  5f0c6c03c5fee91c02c696bc9bf4c0d41392abe7
+Gitweb:     http://git.kernel.org/tip/5f0c6c03c5fee91c02c696bc9bf4c0d41392abe7
+Author:     Frederic Weisbecker <fweisbec@gmail.com>
+AuthorDate: Fri, 27 Mar 2009 14:22:10 +0100
 Committer:  Ingo Molnar <mingo@elte.hu>
-CommitDate: Tue, 7 Apr 2009 14:00:39 +0200
+CommitDate: Tue, 7 Apr 2009 14:00:18 +0200
 
-function-graph: add proper initialization for init task
+tracing/ftrace: fix missing include string.h
 
-Impact: fix to crash going to kexec
+Building a kernel with tracing can raise the following warning on
+tip/master:
 
-The init task did not properly initialize the function graph pointers.
-Altough these pointers are NULL, they can not be assumed to be NULL
-for the init task, and must still be properly initialize.
+kernel/trace/trace.c:1249: error: implicit declaration of function 'vbin_printf'
 
-This usually is not an issue since a problem only arises when a task
-exits, and the init tasks do not usually exit. But when doing tests
-with kexec, the init tasks do exit, and the bug appears.
+We are missing an include to string.h
 
-This patch properly initializes the init tasks function graph data
-structures.
-
-Reported-and-Tested-by: Yinghai Lu <yinghai@kernel.org>
-LKML-Reference: <alpine.DEB.2.00.0903252053080.5675@gandalf.stny.rr.com>
+Reported-by: Ingo Molnar <mingo@elte.hu>
+Signed-off-by: Frederic Weisbecker <fweisbec@gmail.com>
+LKML-Reference: <1238160130-7437-1-git-send-email-fweisbec@gmail.com>
 Signed-off-by: Steven Rostedt <rostedt@goodmis.org>
 Signed-off-by: Ingo Molnar <mingo@elte.hu>
 
 
 ---
- include/linux/ftrace.h    |    8 ++++++--
- include/linux/init_task.h |    2 ++
- 2 files changed, 8 insertions(+), 2 deletions(-)
+ kernel/trace/trace.c |    1 +
+ 1 files changed, 1 insertions(+), 0 deletions(-)
 
-diff --git a/include/linux/ftrace.h b/include/linux/ftrace.h
-index 015a3d2..da5405d 100644
---- a/include/linux/ftrace.h
-+++ b/include/linux/ftrace.h
-@@ -356,6 +356,9 @@ struct ftrace_graph_ret {
- 
- #ifdef CONFIG_FUNCTION_GRAPH_TRACER
- 
-+/* for init task */
-+#define INIT_FTRACE_GRAPH		.ret_stack = NULL
-+
- /*
-  * Stack of return addresses for functions
-  * of a thread.
-@@ -430,10 +433,11 @@ static inline void unpause_graph_tracing(void)
- {
- 	atomic_dec(&current->tracing_graph_pause);
- }
--#else
-+#else /* !CONFIG_FUNCTION_GRAPH_TRACER */
- 
- #define __notrace_funcgraph
- #define __irq_entry
-+#define INIT_FTRACE_GRAPH
- 
- static inline void ftrace_graph_init_task(struct task_struct *t) { }
- static inline void ftrace_graph_exit_task(struct task_struct *t) { }
-@@ -445,7 +449,7 @@ static inline int task_curr_ret_stack(struct task_struct *tsk)
- 
- static inline void pause_graph_tracing(void) { }
- static inline void unpause_graph_tracing(void) { }
--#endif
-+#endif /* CONFIG_FUNCTION_GRAPH_TRACER */
- 
- #ifdef CONFIG_TRACING
- #include <linux/sched.h>
-diff --git a/include/linux/init_task.h b/include/linux/init_task.h
-index e752d97..cada054 100644
---- a/include/linux/init_task.h
-+++ b/include/linux/init_task.h
-@@ -5,6 +5,7 @@
- #include <linux/irqflags.h>
- #include <linux/utsname.h>
- #include <linux/lockdep.h>
-+#include <linux/ftrace.h>
- #include <linux/ipc.h>
- #include <linux/pid_namespace.h>
- #include <linux/user_namespace.h>
-@@ -184,6 +185,7 @@ extern struct cred init_cred;
- 	INIT_IDS							\
- 	INIT_TRACE_IRQFLAGS						\
- 	INIT_LOCKDEP							\
-+	INIT_FTRACE_GRAPH						\
- }
- 
- 
+diff --git a/kernel/trace/trace.c b/kernel/trace/trace.c
+index 457dd8c..2230b46 100644
+--- a/kernel/trace/trace.c
++++ b/kernel/trace/trace.c
+@@ -30,6 +30,7 @@
+ #include <linux/percpu.h>
+ #include <linux/splice.h>
+ #include <linux/kdebug.h>
++#include <linux/string.h>
+ #include <linux/ctype.h>
+ #include <linux/init.h>
+ #include <linux/poll.h>
