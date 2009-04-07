@@ -1,16 +1,16 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758732AbZDGGhF@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758850AbZDGGhd@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758732AbZDGGhF (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 7 Apr 2009 02:37:05 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758119AbZDGGg2
+	id S1758850AbZDGGhd (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 7 Apr 2009 02:37:33 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758725AbZDGGgu
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 7 Apr 2009 02:36:28 -0400
-Received: from e28smtp01.in.ibm.com ([59.145.155.1]:55943 "EHLO
-	e28smtp01.in.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1758346AbZDGGg0 (ORCPT
+	Tue, 7 Apr 2009 02:36:50 -0400
+Received: from e23smtp04.au.ibm.com ([202.81.31.146]:45956 "EHLO
+	e23smtp04.au.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753485AbZDGGgs (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 7 Apr 2009 02:36:26 -0400
-Date: Tue, 7 Apr 2009 12:05:55 +0530
+	Tue, 7 Apr 2009 02:36:48 -0400
+Date: Tue, 7 Apr 2009 12:06:29 +0530
 From: "K.Prasad" <prasad@linux.vnet.ibm.com>
 To: Alan Stern <stern@rowland.harvard.edu>
 Cc: Ingo Molnar <mingo@elte.hu>,
@@ -19,438 +19,299 @@ Cc: Ingo Molnar <mingo@elte.hu>,
        Benjamin Herrenschmidt <benh@au1.ibm.com>,
        Frederic Weisbecker <fweisbec@gmail.com>, maneesh@linux.vnet.ibm.com,
        Roland McGrath <roland@redhat.com>,
-       Steven Rostedt <rostedt@goodmis.org>
-Subject: [Patch 03/11] x86 architecture implementation of Hardware
-	Breakpoint interfaces
-Message-ID: <20090407063555.GD17461@in.ibm.com>
+       Steven Rostedt <rostedt@goodmis.org>,
+       "K.Prasad" <prasad@linux.vnet.ibm.com>
+Subject: [Patch 08/11] Modify Ptrace routines to access breakpoint registers
+Message-ID: <20090407063629.GI17461@in.ibm.com>
 References: <20090407063058.301701787@prasadkr_t60p.in.ibm.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline; filename=arch_x86_hwbkpt_03
+Content-Disposition: inline; filename=modify_ptrace_08
 User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This patch introduces the arch-specific implementation of hw_breakpoint.c
-inside x86 specific directories. They contain functions which help validate and
-serve requests for using Hardware Breakpoint registers on x86 processors.
+This patch modifies the ptrace code to use the new wrapper routines around the 
+debug/breakpoint registers.
 
 Signed-off-by: K.Prasad <prasad@linux.vnet.ibm.com>
+Signed-off-by: Maneesh Soni <maneesh@linux.vnet.ibm.com>
 Signed-off-by: Alan Stern <stern@rowland.harvard.edu>
 ---
- arch/x86/Kconfig                |    1 
- arch/x86/kernel/Makefile        |    2 
- arch/x86/kernel/hw_breakpoint.c |  379 ++++++++++++++++++++++++++++++++++++++++
- 3 files changed, 381 insertions(+), 1 deletion(-)
+ arch/x86/kernel/ptrace.c |  227 ++++++++++++++++++++++++++++-------------------
+ 1 file changed, 137 insertions(+), 90 deletions(-)
 
-Index: arch/x86/Kconfig
+Index: arch/x86/kernel/ptrace.c
 ===================================================================
---- arch/x86/Kconfig.orig
-+++ arch/x86/Kconfig
-@@ -47,6 +47,7 @@ config X86
- 	select HAVE_KERNEL_LZMA
- 	select HAVE_ARCH_KMEMCHECK
- 	select HAVE_DMA_API_DEBUG
-+	select HAVE_HW_BREAKPOINT
- 
- config ARCH_DEFCONFIG
- 	string
-Index: arch/x86/kernel/Makefile
-===================================================================
---- arch/x86/kernel/Makefile.orig
-+++ arch/x86/kernel/Makefile
-@@ -36,7 +36,7 @@ obj-$(CONFIG_X86_64)	+= sys_x86_64.o x86
- obj-$(CONFIG_X86_64)	+= syscall_64.o vsyscall_64.o
- obj-y			+= bootflag.o e820.o
- obj-y			+= pci-dma.o quirks.o i8237.o topology.o kdebugfs.o
--obj-y			+= alternative.o i8253.o pci-nommu.o
-+obj-y			+= alternative.o i8253.o pci-nommu.o hw_breakpoint.o
- obj-y			+= tsc.o io_delay.o rtc.o
- 
- obj-$(CONFIG_X86_TRAMPOLINE)	+= trampoline.o
-Index: arch/x86/kernel/hw_breakpoint.c
-===================================================================
---- /dev/null
-+++ arch/x86/kernel/hw_breakpoint.c
-@@ -0,0 +1,379 @@
-+/*
-+ * This program is free software; you can redistribute it and/or modify
-+ * it under the terms of the GNU General Public License as published by
-+ * the Free Software Foundation; either version 2 of the License, or
-+ * (at your option) any later version.
-+ *
-+ * This program is distributed in the hope that it will be useful,
-+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
-+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-+ * GNU General Public License for more details.
-+ *
-+ * You should have received a copy of the GNU General Public License
-+ * along with this program; if not, write to the Free Software
-+ * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
-+ *
-+ * Copyright (C) 2007 Alan Stern
-+ * Copyright (C) 2009 IBM Corporation
-+ */
-+
-+/*
-+ * HW_breakpoint: a unified kernel/user-space hardware breakpoint facility,
-+ * using the CPU's debug registers.
-+ */
-+
-+#include <linux/irqflags.h>
-+#include <linux/notifier.h>
-+#include <linux/kallsyms.h>
-+#include <linux/kprobes.h>
-+#include <linux/percpu.h>
-+#include <linux/kdebug.h>
-+#include <linux/kernel.h>
-+#include <linux/module.h>
-+#include <linux/mutex.h>
-+#include <linux/sched.h>
-+#include <linux/init.h>
-+#include <linux/smp.h>
-+
+--- arch/x86/kernel/ptrace.c.orig
++++ arch/x86/kernel/ptrace.c
+@@ -34,6 +34,7 @@
+ #include <asm/prctl.h>
+ #include <asm/proto.h>
+ #include <asm/ds.h>
 +#include <asm/hw_breakpoint.h>
-+#include <asm/processor.h>
-+#include <asm/debugreg.h>
+ 
+ #include "tls.h"
+ 
+@@ -134,11 +135,6 @@ static int set_segment_reg(struct task_s
+ 	return 0;
+ }
+ 
+-static unsigned long debugreg_addr_limit(struct task_struct *task)
+-{
+-	return TASK_SIZE - 3;
+-}
+-
+ #else  /* CONFIG_X86_64 */
+ 
+ #define FLAG_MASK		(FLAG_MASK_32 | X86_EFLAGS_NT)
+@@ -263,15 +259,6 @@ static int set_segment_reg(struct task_s
+ 	return 0;
+ }
+ 
+-static unsigned long debugreg_addr_limit(struct task_struct *task)
+-{
+-#ifdef CONFIG_IA32_EMULATION
+-	if (test_tsk_thread_flag(task, TIF_IA32))
+-		return IA32_PAGE_OFFSET - 3;
+-#endif
+-	return TASK_SIZE_MAX - 7;
+-}
+-
+ #endif	/* CONFIG_X86_32 */
+ 
+ static unsigned long get_flags(struct task_struct *task)
+@@ -462,95 +449,155 @@ static int genregs_set(struct task_struc
+ }
+ 
+ /*
+- * This function is trivial and will be inlined by the compiler.
+- * Having it separates the implementation details of debug
+- * registers from the interface details of ptrace.
++ * Decode the length and type bits for a particular breakpoint as
++ * stored in debug register 7.  Return the "enabled" status.
+  */
+-static unsigned long ptrace_get_debugreg(struct task_struct *child, int n)
++static int decode_dr7(unsigned long dr7, int bpnum, unsigned *len,
++		unsigned *type)
+ {
+-	switch (n) {
+-	case 0:		return child->thread.debugreg0;
+-	case 1:		return child->thread.debugreg1;
+-	case 2:		return child->thread.debugreg2;
+-	case 3:		return child->thread.debugreg3;
+-	case 6:		return child->thread.debugreg6;
+-	case 7:		return child->thread.debugreg7;
+-	}
+-	return 0;
++	int temp = dr7 >> (DR_CONTROL_SHIFT + bpnum * DR_CONTROL_SIZE);
 +
-+/* Unmasked kernel DR7 value */
-+static unsigned long kdr7;
-+static const unsigned long	kdr7_masks[HB_NUM] = {
-+	0xffff00ff,	/* Same for 3, 2, 1, 0 */
-+	0xfff000fc,	/* Same for 3, 2, 1 */
-+	0xff0000f0,	/* Same for 3, 2 */
-+	0xf00f00c0	/* LEN3, R/W3, G3, L3 */
-+};
-+
-+/*
-+ * Masks for the bits corresponding to registers DR0 - DR3 in DR7 register.
-+ * Used to clear and verify the status of bits corresponding to DR0 - DR3
-+ */
-+static const unsigned long	dr7_masks[HB_NUM] = {
-+	0x000f0003,	/* LEN0, R/W0, G0, L0 */
-+	0x00f0000c,	/* LEN1, R/W1, G1, L1 */
-+	0x0f000030,	/* LEN2, R/W2, G2, L2 */
-+	0xf00000c0	/* LEN3, R/W3, G3, L3 */
-+};
-+
-+
-+/*
-+ * Encode the length, type, Exact, and Enable bits for a particular breakpoint
-+ * as stored in debug register 7.
-+ */
-+static unsigned long encode_dr7(int drnum, unsigned len, unsigned type)
-+{
-+	unsigned long temp;
-+
-+	temp = (len | type) & 0xf;
-+	temp <<= (DR_CONTROL_SHIFT + drnum * DR_CONTROL_SIZE);
-+	temp |= (DR_GLOBAL_ENABLE << (drnum * DR_ENABLE_SIZE)) |
-+				DR_GLOBAL_SLOWDOWN;
-+	return temp;
-+}
-+
-+void arch_update_kernel_hw_breakpoints(void *unused)
-+{
-+	struct hw_breakpoint *bp;
-+	unsigned long dr7;
-+	int i;
-+
-+	/* Check if there is nothing to update */
-+	if (hbp_kernel_pos == HB_NUM)
-+		return;
-+
-+	get_debugreg(dr7, 7);
-+
-+	/* Don't allow debug exceptions while we update the registers */
-+	set_debugreg(0UL, 7);
-+
-+	/* Clear all kernel-space bits in kdr7 and dr7 before we set them */
-+	kdr7 &= ~kdr7_masks[hbp_kernel_pos];
-+	dr7 &= ~kdr7_masks[hbp_kernel_pos];
-+
-+	for (i = hbp_kernel_pos; i < HB_NUM; i++) {
-+		bp = hbp_kernel[i];
-+		if (bp) {
-+			kdr7 |= encode_dr7(i, bp->info.len, bp->info.type);
-+			set_debugreg(hbp_kernel[i]->info.address, i);
-+		}
-+	}
-+
-+	dr7 |= kdr7;
-+
-+	/* No need to set DR6 */
-+	set_debugreg(dr7, 7);
-+}
-+
-+/*
-+ * Install the thread breakpoints in their debug registers.
-+ */
-+void arch_install_thread_hw_breakpoint(struct task_struct *tsk)
-+{
-+	struct thread_struct *thread = &(tsk->thread);
-+
-+	switch (hbp_kernel_pos) {
-+	case 4:
-+		set_debugreg(thread->debugreg[3], 3);
-+	case 3:
-+		set_debugreg(thread->debugreg[2], 2);
-+	case 2:
-+		set_debugreg(thread->debugreg[1], 1);
-+	case 1:
-+		set_debugreg(thread->debugreg[0], 0);
-+	default:
-+		break;
-+	}
-+
-+	/* No need to set DR6 */
-+	set_debugreg((kdr7 | thread->debugreg7), 7);
-+}
-+
-+/*
-+ * Install the debug register values for just the kernel, no thread.
-+ */
-+void arch_uninstall_thread_hw_breakpoint()
-+{
-+	/* Clear the user-space portion of debugreg7 by setting only kdr7 */
-+	set_debugreg(kdr7, 7);
-+
-+}
-+
-+static int get_hbp_len(u8 hbp_len)
-+{
-+	unsigned int len_in_bytes = 0;
-+
-+	switch (hbp_len) {
-+	case HW_BREAKPOINT_LEN_1:
-+		len_in_bytes = 1;
-+		break;
-+	case HW_BREAKPOINT_LEN_2:
-+		len_in_bytes = 2;
-+		break;
-+	case HW_BREAKPOINT_LEN_4:
-+		len_in_bytes = 4;
-+		break;
-+#ifdef CONFIG_X86_64
-+	case HW_BREAKPOINT_LEN_8:
-+		len_in_bytes = 8;
-+		break;
-+#endif
-+	}
-+	return len_in_bytes;
-+}
-+
-+/*
-+ * Check for virtual address in user space.
-+ */
-+int arch_check_va_in_userspace(unsigned long va, u8 hbp_len)
-+{
-+	unsigned int len;
-+
-+	len = get_hbp_len(hbp_len);
-+
-+	return (va <= TASK_SIZE - len);
-+}
-+
-+/*
-+ * Check for virtual address in kernel space.
-+ */
-+int arch_check_va_in_kernelspace(unsigned long va, u8 hbp_len)
-+{
-+	unsigned int len;
-+
-+	len = get_hbp_len(hbp_len);
-+
-+	return (va >= TASK_SIZE) && ((va + len - 1) >= TASK_SIZE);
-+}
-+
-+/*
-+ * Store a breakpoint's encoded address, length, and type.
-+ */
-+void arch_store_info(struct hw_breakpoint *bp)
-+{
-+	/*
-+	 * User-space requests will always have the address field populated
-+	 * For kernel-addresses, either the address or symbol name can be
-+	 * specified.
++	*len = (temp & 0xc) | 0x40;
++	*type = (temp & 0x3) | 0x80;
++	return (dr7 >> (bpnum * DR_ENABLE_SIZE)) & 0x3;
+ }
+ 
+-static int ptrace_set_debugreg(struct task_struct *child,
+-			       int n, unsigned long data)
++static void ptrace_triggered(struct hw_breakpoint *bp, struct pt_regs *regs)
+ {
++	struct thread_struct *thread = &(current->thread);
+ 	int i;
+ 
+-	if (unlikely(n == 4 || n == 5))
+-		return -EIO;
++	/* Store in the virtual DR6 register the fact that the breakpoint
++	 * was hit so the thread's debugger will see it.
 +	 */
-+	if (bp->info.address)
-+		return;
-+	if (bp->info.name)
-+		bp->info.address = (unsigned long)
-+					kallsyms_lookup_name(bp->info.name);
-+}
-+
-+/*
-+ * Validate the arch-specific HW Breakpoint register settings
-+ */
-+int arch_validate_hwbkpt_settings(struct hw_breakpoint *bp,
-+						struct task_struct *tsk)
-+{
-+	unsigned int align;
-+	int ret = -EINVAL;
-+
-+	switch (bp->info.type) {
-+
-+	/*
-+	 * Ptrace-refactoring code
-+	 * For now, we'll allow instruction breakpoint only for user-space
-+	 * addresses
-+	 */
-+	case HW_BREAKPOINT_EXECUTE:
-+		if ((!arch_check_va_in_userspace(bp->info.address,
-+							bp->info.len)) &&
-+			bp->info.len != HW_BREAKPOINT_LEN_EXECUTE)
-+			return ret;
-+		break;
-+	case HW_BREAKPOINT_WRITE:
-+		break;
-+	case HW_BREAKPOINT_RW:
-+		break;
-+	default:
-+		return ret;
-+	}
-+
-+	switch (bp->info.len) {
-+	case HW_BREAKPOINT_LEN_1:
-+		align = 0;
-+		break;
-+	case HW_BREAKPOINT_LEN_2:
-+		align = 1;
-+		break;
-+	case HW_BREAKPOINT_LEN_4:
-+		align = 3;
-+		break;
-+#ifdef CONFIG_X86_64
-+	case HW_BREAKPOINT_LEN_8:
-+		align = 7;
-+		break;
-+#endif
-+	default:
-+		return ret;
-+	}
-+
-+	/*
-+	 * Check that the low-order bits of the address are appropriate
-+	 * for the alignment implied by len.
-+	 */
-+	if (bp->info.address & align)
-+		return ret;
-+
-+	if (bp->triggered) {
-+		ret = 0;
-+		arch_store_info(bp);
-+	}
-+	return ret;
-+}
-+
-+void arch_update_user_hw_breakpoint(int pos, struct task_struct *tsk)
-+{
-+	struct thread_struct *thread = &(tsk->thread);
-+	struct hw_breakpoint *bp = thread->hbp[pos];
-+
-+	thread->debugreg7 &= ~dr7_masks[pos];
-+	if (bp) {
-+		thread->debugreg[pos] = bp->info.address;
-+		thread->debugreg7 |= encode_dr7(pos, bp->info.len,
-+							bp->info.type);
-+	} else
-+		thread->debugreg[pos] = 0;
-+}
-+
-+void arch_flush_thread_hw_breakpoint(struct task_struct *tsk)
-+{
-+	int i;
-+	struct thread_struct *thread = &(tsk->thread);
-+
-+	thread->debugreg7 = 0;
-+	for (i = 0; i < HB_NUM; i++)
-+		thread->debugreg[i] = 0;
-+}
-+
-+/*
-+ * Copy out the debug register information for a core dump.
-+ *
-+ * tsk must be equal to current.
-+ */
-+void dump_thread_hw_breakpoint(struct task_struct *tsk, int u_debugreg[8])
-+{
-+	struct thread_struct *thread = &(tsk->thread);
-+	int i;
-+
-+	memset(u_debugreg, 0, sizeof u_debugreg);
-+
-+	for (i = 0; i < HB_NUM; ++i)
-+		u_debugreg[i] = thread->debugreg[i];
-+
-+	u_debugreg[6] = thread->debugreg6;
-+	u_debugreg[7] = thread->debugreg7;
-+}
-+
-+/*
-+ * Handle debug exception notifications.
-+ */
-+int __kprobes hw_breakpoint_handler(struct die_args *args)
-+{
-+	int i, rc = NOTIFY_STOP;
-+	struct hw_breakpoint *bp;
-+	/* The DR6 value is stored in args->err */
-+	unsigned long dr7, dr6 = args->err;
-+
-+	/*
-+	 * We are here because BT, BS or BD bit is set and no trap bits are set
-+	 * in dr6 register. Do an early return
-+	 */
-+	if ((dr6 & (DR_TRAP0|DR_TRAP1|DR_TRAP2|DR_TRAP3)) == 0)
-+		return NOTIFY_DONE;
-+
-+	get_debugreg(dr7, 7);
-+
-+	/* Disable breakpoints during exception handling */
-+	set_debugreg(0UL, 7);
-+	/*
-+	 * Assert that local interrupts are disabled
-+	 * Reset the DRn bits in the virtualized register value.
-+	 * The ptrace trigger routine will add in whatever is needed.
-+	 */
-+	current->thread.debugreg6 &= ~(DR_TRAP0|DR_TRAP1|DR_TRAP2|DR_TRAP3);
-+
-+	/* Lazy debug register switching */
-+	if (per_cpu(last_debugged_task, get_cpu()) != current) {
-+		switch_to_none_hw_breakpoint();
-+		put_cpu_no_resched();
-+	}
-+
-+	/* Handle all the breakpoints that were triggered */
-+	for (i = 0; i < HB_NUM; ++i) {
-+		if (likely(!(dr6 & (DR_TRAP0 << i))))
-+			continue;
++	for (i = 0; i < hbp_kernel_pos; i++)
 +		/*
-+		 * Find the corresponding hw_breakpoint structure and
-+		 * invoke its triggered callback.
++		 * We will check bp->info.address against the address stored in
++		 * thread's hbp structure and not debugreg[i]. This is to ensure
++		 * that the corresponding bit for 'i' in DR7 register is enabled
 +		 */
-+		if (i >= hbp_kernel_pos)
-+			bp = hbp_kernel[i];
-+		else {
-+			bp = current->thread.hbp[i];
-+			if (!bp) {
-+				/* False alarm due to lazy DR switching */
-+				continue;
++		if (bp->info.address == thread->hbp[i]->info.address)
++			break;
+ 
+-	if (n < 4 && unlikely(data >= debugreg_addr_limit(child)))
+-		return -EIO;
++	thread->debugreg6 |= (DR_TRAP0 << i);
++}
+ 
+-	switch (n) {
+-	case 0:		child->thread.debugreg0 = data; break;
+-	case 1:		child->thread.debugreg1 = data; break;
+-	case 2:		child->thread.debugreg2 = data; break;
+-	case 3:		child->thread.debugreg3 = data; break;
++/*
++ * Handle ptrace writes to debug register 7.
++ */
++static int ptrace_write_dr7(struct task_struct *tsk, unsigned long data)
++{
++	struct thread_struct *thread = &(tsk->thread);
++	unsigned long old_dr7 = thread->debugreg7;
++	int i, rc = 0;
++	int enabled;
++	unsigned len, type;
++	struct hw_breakpoint *bp;
+ 
+-	case 6:
+-		if ((data & ~0xffffffffUL) != 0)
+-			return -EIO;
+-		child->thread.debugreg6 = data;
+-		break;
++	data &= ~DR_CONTROL_RESERVED;
+ 
+-	case 7:
+-		/*
+-		 * Sanity-check data. Take one half-byte at once with
+-		 * check = (val >> (16 + 4*i)) & 0xf. It contains the
+-		 * R/Wi and LENi bits; bits 0 and 1 are R/Wi, and bits
+-		 * 2 and 3 are LENi. Given a list of invalid values,
+-		 * we do mask |= 1 << invalid_value, so that
+-		 * (mask >> check) & 1 is a correct test for invalid
+-		 * values.
+-		 *
+-		 * R/Wi contains the type of the breakpoint /
+-		 * watchpoint, LENi contains the length of the watched
+-		 * data in the watchpoint case.
+-		 *
+-		 * The invalid values are:
+-		 * - LENi == 0x10 (undefined), so mask |= 0x0f00.	[32-bit]
+-		 * - R/Wi == 0x10 (break on I/O reads or writes), so
+-		 *   mask |= 0x4444.
+-		 * - R/Wi == 0x00 && LENi != 0x00, so we have mask |=
+-		 *   0x1110.
+-		 *
+-		 * Finally, mask = 0x0f00 | 0x4444 | 0x1110 == 0x5f54.
+-		 *
+-		 * See the Intel Manual "System Programming Guide",
+-		 * 15.2.4
+-		 *
+-		 * Note that LENi == 0x10 is defined on x86_64 in long
+-		 * mode (i.e. even for 32-bit userspace software, but
+-		 * 64-bit kernel), so the x86_64 mask value is 0x5454.
+-		 * See the AMD manual no. 24593 (AMD64 System Programming)
+-		 */
+-#ifdef CONFIG_X86_32
+-#define	DR7_MASK	0x5f54
+-#else
+-#define	DR7_MASK	0x5554
+-#endif
+-		data &= ~DR_CONTROL_RESERVED;
+-		for (i = 0; i < 4; i++)
+-			if ((DR7_MASK >> ((data >> (16 + 4*i)) & 0xf)) & 1)
+-				return -EIO;
+-		child->thread.debugreg7 = data;
+-		if (data)
+-			set_tsk_thread_flag(child, TIF_DEBUG);
+-		else
+-			clear_tsk_thread_flag(child, TIF_DEBUG);
+-		break;
++restore:
++	/*
++	 * Loop through all the hardware breakpoints, making the
++	 * appropriate changes to each.
++	 */
++	for (i = 0; i < HB_NUM; i++) {
++		enabled = decode_dr7(data, i, &len, &type);
++		bp = thread->hbp[i];
++
++		if (!enabled) {
++			if (bp) {
++				__unregister_user_hw_breakpoint(i, tsk);
++				kfree(bp);
 +			}
++			continue;
 +		}
-+		(bp->triggered)(bp, args->regs);
-+		/*
-+		 * We have more work to do (send signals) if the breakpoint is
-+		 * triggered due to user-space address, or if exceptions other
-+		 * than breakpoint (such as single-stepping) are triggered.
-+		 */
-+		if (arch_check_va_in_userspace(bp->info.address, bp->info.len))
-+			rc = NOTIFY_DONE;
-+	}
-+	if (dr6 & ~(DR_TRAP0|DR_TRAP1|DR_TRAP2|DR_TRAP3))
-+		rc = NOTIFY_DONE;
-+	set_debugreg(dr7, 7);
++
++		if (!bp) {
++			rc = -ENOMEM;
++			bp = kzalloc(sizeof(struct hw_breakpoint), GFP_KERNEL);
++			if (bp) {
++				bp->info.address = thread->debugreg[i];
++				bp->triggered = ptrace_triggered;
++				bp->info.len = len;
++				bp->info.type = type;
++				rc = __register_user_hw_breakpoint(i, tsk, bp);
++				if (!rc)
++					set_tsk_thread_flag(tsk, TIF_DEBUG);
++				else
++					kfree(bp);
++			}
++		} else
++			rc = __modify_user_hw_breakpoint(i, tsk, bp);
++
++		if (rc)
++			break;
++ 	}
++
++	/* If anything above failed, restore the original settings */
++	if (rc < 0) {
++		data = old_dr7;
++		goto restore;
+ 	}
 +	return rc;
 +}
+ 
+-	return 0;
++/*
++ * Handle PTRACE_PEEKUSR calls for the debug register area.
++ */
++unsigned long ptrace_get_debugreg(struct task_struct *tsk, int n)
++{
++	struct thread_struct *thread = &(tsk->thread);
++	unsigned long val = 0;
++
++	mutex_lock(&hw_breakpoint_mutex);
++
++	if (n < HB_NUM)
++		val = thread->debugreg[n];
++	else if (n == 6)
++		val = thread->debugreg6;
++	else if (n == 7)
++		val = thread->debugreg7;
++
++	mutex_unlock(&hw_breakpoint_mutex);
++	return val;
++}
++
++/*
++ * Handle PTRACE_POKEUSR calls for the debug register area.
++ */
++int ptrace_set_debugreg(struct task_struct *tsk, int n, unsigned long val)
++{
++	struct thread_struct *thread = &(tsk->thread);
++	int rc = 0;
++
++	/* There are no DR4 or DR5 registers */
++	if (n == 4 || n == 5)
++		return -EIO;
++
++	mutex_lock(&hw_breakpoint_mutex);
++	if (n == 6) {
++		tsk->thread.debugreg6 = val;
++		goto ret_path;
++	}
++	if (n < HB_NUM) {
++		if (thread->hbp[n]) {
++			if (arch_check_va_in_userspace(val,
++					thread->hbp[n]->info.len) == 0) {
++				rc = -EIO;
++				goto ret_path;
++			}
++			thread->hbp[n]->info.address = val;
++		}
++		thread->debugreg[n] = val;
++	}
++	/* All that's left is DR7 */
++	if (n == 7)
++		rc = ptrace_write_dr7(tsk, val);
++
++ret_path:
++	mutex_unlock(&hw_breakpoint_mutex);
++	return rc;
+ }
+ 
+ /*
 
