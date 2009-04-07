@@ -1,44 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756575AbZDGTSd@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755679AbZDGTT0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756575AbZDGTSd (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 7 Apr 2009 15:18:33 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751930AbZDGTSY
+	id S1755679AbZDGTT0 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 7 Apr 2009 15:19:26 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752827AbZDGTTR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 7 Apr 2009 15:18:24 -0400
-Received: from ogre.sisk.pl ([217.79.144.158]:55463 "EHLO ogre.sisk.pl"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751551AbZDGTSY (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 7 Apr 2009 15:18:24 -0400
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-To: Trond Myklebust <Trond.Myklebust@netapp.com>
-Subject: Re: [2 regressions] Current git cannot find root device on x86-64 (HP nx6325), NFS broken
-Date: Tue, 7 Apr 2009 21:18:47 +0200
-User-Agent: KMail/1.11.2 (Linux/2.6.29-rjw; KDE/4.2.2; x86_64; ; )
-Cc: LKML <linux-kernel@vger.kernel.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Tejun Heo <htejun@gmail.com>
-References: <200904070047.56172.rjw@sisk.pl> <1239061566.6196.13.camel@heimdal.trondhjem.org>
-In-Reply-To: <1239061566.6196.13.camel@heimdal.trondhjem.org>
+	Tue, 7 Apr 2009 15:19:17 -0400
+Received: from hrndva-omtalb.mail.rr.com ([71.74.56.124]:61213 "EHLO
+	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751462AbZDGTTQ (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 7 Apr 2009 15:19:16 -0400
+Date: Tue, 7 Apr 2009 15:19:14 -0400 (EDT)
+From: Steven Rostedt <rostedt@goodmis.org>
+X-X-Sender: rostedt@gandalf.stny.rr.com
+To: Ingo Molnar <mingo@elte.hu>
+cc: linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
+       Frederic Weisbecker <fweisbec@gmail.com>
+Subject: Re: [PATCH 05/10] tracing/ftrace: factorize the tracing files
+ creation
+In-Reply-To: <20090407122315.GD11641@elte.hu>
+Message-ID: <alpine.DEB.2.00.0904071518480.30880@gandalf.stny.rr.com>
+References: <20090406163706.097842409@goodmis.org> <20090406163830.773115333@goodmis.org> <20090407122315.GD11641@elte.hu>
+User-Agent: Alpine 2.00 (DEB 1167 2008-08-23)
 MIME-Version: 1.0
-Content-Type: Text/Plain;
-  charset="iso-8859-2"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200904072118.48049.rjw@sisk.pl>
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tuesday 07 April 2009, Trond Myklebust wrote:
-> On Tue, 2009-04-07 at 00:47 +0200, Rafael J. Wysocki wrote:
-> > Also, mounting directories over NFS doesn't work (I think it oopses, but
-> > didn't have the time to look at it more closely).
+
+
+On Tue, 7 Apr 2009, Ingo Molnar wrote:
+
 > 
-> There is a known double free issue that affects the 'proto=' mount
-> option (we call kfree(string) twice). Please could you check that the
-> following patch fixes it for you?
+> * Steven Rostedt <rostedt@goodmis.org> wrote:
+> 
+> > --- a/kernel/trace/trace_event_profile.c
+> > +++ b/kernel/trace/trace_event_profile.c
+> > @@ -6,7 +6,7 @@
+> >   */
+> >  
+> >  #include "trace.h"
+> > -
+> > +#if 0
+> >  int ftrace_profile_enable(int event_id)
+> >  {
+> >  	struct ftrace_event_call *event;
+> > @@ -29,3 +29,4 @@ void ftrace_profile_disable(int event_id)
+> >  	}
+> >  }
+> >  
+> > +#endif
+> 
+> uhm, that's not a very nice to do ;-)
 
-The problem is fixed in the current -git, so I guess the patch is in there. :-)
+Ug! I mssed that :-p
 
-Thanks,
-Rafael
+-- Steve
+
