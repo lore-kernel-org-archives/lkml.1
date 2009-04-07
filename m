@@ -1,183 +1,120 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753726AbZDGHYT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753717AbZDGH0e@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753726AbZDGHYT (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 7 Apr 2009 03:24:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751911AbZDGHYG
+	id S1753717AbZDGH0e (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 7 Apr 2009 03:26:34 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752550AbZDGH0Y
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 7 Apr 2009 03:24:06 -0400
-Received: from ist.d-labs.de ([213.239.218.44]:33802 "EHLO mx01.d-labs.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751244AbZDGHYF (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 7 Apr 2009 03:24:05 -0400
-Date: Tue, 7 Apr 2009 09:23:46 +0200
-From: Florian Mickler <florian@mickler.org>
-To: Eric Anholt <eric@anholt.net>
-Cc: LKML <linux-kernel@vger.kernel.org>, jbarnes@virtuousgeek.org,
-       airlied@linux.ie, keithp@keithp.com
-Subject: Re: Regression X Hangs at bootup -- PATCH
-Message-ID: <20090407092346.058d19a0@schatten>
-In-Reply-To: <1239069835.31656.109.camel@gaiman.anholt.net>
-References: <20090406225541.0e1e043b@schatten>
-	<1239069835.31656.109.camel@gaiman.anholt.net>
-X-Mailer: Claws Mail 3.7.0 (GTK+ 2.12.11; x86_64-pc-linux-gnu)
+	Tue, 7 Apr 2009 03:26:24 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:51991 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751256AbZDGH0X (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 7 Apr 2009 03:26:23 -0400
+Date: Tue, 7 Apr 2009 00:23:13 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Jens Axboe <jens.axboe@oracle.com>
+Cc: "Theodore Ts'o" <tytso@mit.edu>,
+       Linux Kernel Developers List <linux-kernel@vger.kernel.org>,
+       Ext4 Developers List <linux-ext4@vger.kernel.org>, jack@suse.cz
+Subject: Re: [PATCH 1/3] block_write_full_page: Use synchronous writes for
+ WBC_SYNC_ALL writebacks
+Message-Id: <20090407002313.fcdd1da0.akpm@linux-foundation.org>
+In-Reply-To: <20090407070835.GM5178@kernel.dk>
+References: <1238185471-31152-1-git-send-email-tytso@mit.edu>
+	<1238185471-31152-2-git-send-email-tytso@mit.edu>
+	<20090406232141.ebdb426a.akpm@linux-foundation.org>
+	<20090406235052.1ea47513.akpm@linux-foundation.org>
+	<20090407070835.GM5178@kernel.dk>
+X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.5; x86_64-redhat-linux-gnu)
 Mime-Version: 1.0
-Content-Type: multipart/signed; boundary="Sig_/Se12EXXJUOh=z/EzxexGZ+g";
- protocol="application/pgp-signature"; micalg=PGP-SHA1
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---Sig_/Se12EXXJUOh=z/EzxexGZ+g
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: quoted-printable
+On Tue, 7 Apr 2009 09:08:36 +0200 Jens Axboe <jens.axboe@oracle.com> wrote:
 
-On Mon, 06 Apr 2009 19:03:55 -0700
-Eric Anholt <eric@anholt.net> wrote:
+> On Mon, Apr 06 2009, Andrew Morton wrote:
+> > On Mon, 6 Apr 2009 23:21:41 -0700 Andrew Morton <akpm@linux-foundation.org> wrote:
+> > 
+> > > I mean, let's graph it:
+> > > 
+> > > WRITE_SYNC -> WRITE_SYNC_PLUG -> BIO_RW_SYNCIO -> bio_sync() -> REQ_RW_SYNC -> rw_is_sync() -> does something mysterious in get_request()
+> > >                                                                             -> rq_is_sync() -> does something mysterious in IO schedulers
+> > >                               -> BIO_RW_NOIDLE -> bio_noidle() -> REQ_NOIDLE -> rq_noidle() -> does something mysterious in cfq-iosched only
+> > >            -> BIO_RW_UNPLUG   -> bio_unplug() -> REQ_UNPLUG -> OK, the cognoscenti know what this is supposed to do, but it is unused!
 
-> Nice catch!  Thanks.  I did some cleanup that brings it more in line
-> with style elsewhere in the code and cuts some of the gratuitous
-> looking changes.  Would you be OK with these changes rolled into your
-> original diff?
+I think the number of different greps which was needed to find all the
+above was excessive.  Too many levels of wrappers and helpers.
 
- i take it, you appended the endresult?
+If there was documentation at the intermediate levels then that would
+terminate the search early.  But working out the _actual_ semantics of
+(say) BIO_RW_SYNCIO is quite hard!
 
-i'm ok with it, it's less invasive. but i think your
-i915_gem_put_relocs part is wrong. (see below)
+> > whoop, I found a use of bio_unplug() in __make_request().
+> > 
+> > So it appears that the intent of your patch is to cause an unplug after
+> > submission of each WB_SYNC_ALL block?
+> > 
+> > But what about all the other stuff which WRITE_SYNC might or might not
+> > do?  What does WRITE_SYNC _actually_ do, and what are the actual
+> > effects of this change??
+> > 
+> > And what effect will this large stream of unplugs have upon merging?
+> 
+> It looks like a good candidate for WRITE_SYNC_PLUG instead,
 
+Perhaps that mean that Ted didn't know what his own patch did.  I
+certainly couldn't work it out.  That's a problem, IMO!
 
->=20
->  drivers/gpu/drm/i915/i915_gem.c |   34
-> ++++++++++++++++++++++------------ 1 files changed, 22 insertions(+),
-> 12 deletions(-)
->=20
-> diff --git a/drivers/gpu/drm/i915/i915_gem.c
-> b/drivers/gpu/drm/i915/i915_gem.c index 33ab07b..6f7d0e2 100644
-> --- a/drivers/gpu/drm/i915/i915_gem.c
-> +++ b/drivers/gpu/drm/i915/i915_gem.c
-> @@ -141,15 +141,18 @@ fast_shmem_read(struct page **pages,
->  		int length)
->  {
->  	char __iomem *vaddr;
-> -	int ret;
-> +	int unwritten;
-> =20
->  	vaddr =3D kmap_atomic(pages[page_base >> PAGE_SHIFT],
-> KM_USER0); if (vaddr =3D=3D NULL)
->  		return -ENOMEM;
-> -	ret =3D __copy_to_user_inatomic(data, vaddr + page_offset,
-> length);
-> +	unwritten =3D __copy_to_user_inatomic(data, vaddr +
-> page_offset, length); kunmap_atomic(vaddr, KM_USER0);
-> =20
-> -	return ret;
-> +	if (unwritten)
-> +		return -EFAULT;
-> +
-> +	return 0;
->  }
+> since it
+> does more than one buffer submission before waiting. It likely wont mean
+> a whole lot since we'll usually only have a single buffer on that page,
+> but for < PAGE_CACHE_SIZE block sizes it could easily make a big
+> difference (4 ios instead of 1!).
 
-yep thats ok.
+OK.
 
-> =20
->  static inline int
-> @@ -3000,13 +3003,13 @@ i915_gem_get_relocs_from_user(struct
-> drm_i915_gem_exec_object *exec_list, drm_free(*relocs, reloc_count *
-> sizeof(**relocs), DRM_MEM_DRIVER);
->  			*relocs =3D NULL;
-> -			return ret;
-> +			return -EFAULT;
->  		}
-> =20
->  		reloc_index +=3D exec_list[i].relocation_count;
->  	}
-> =20
-> -	return ret;
-> +	return 0;
->  }
-> =20
+But what is the advantage in doing this stream of unplugs?  For your
+average fsync(), we're probably doing tens of thousands per second.
+Does it actually help?
 
-right.
+I assume that the actual code path for such a buffer becomes a lot
+longer because we need to go beyond the the queueing layer and perhaps
+as far down as the device driver for each block, so the CPU cost will
+go up?
 
->  static int
-> @@ -3015,23 +3018,28 @@ i915_gem_put_relocs_to_user(struct
-> drm_i915_gem_exec_object *exec_list, struct
-> drm_i915_gem_relocation_entry *relocs) {
->  	uint32_t reloc_count =3D 0, i;
-> -	int ret;
-> +	int ret =3D 0;
-> =20
->  	for (i =3D 0; i < buffer_count; i++) {
->  		struct drm_i915_gem_relocation_entry __user
-> *user_relocs;
-> +		int unwritten;
-> =20
->  		user_relocs =3D (void __user
-> *)(uintptr_t)exec_list[i].relocs_ptr;=20
-> -		if (ret =3D=3D 0) {
-> -			ret =3D copy_to_user(user_relocs,
-> -					   &relocs[reloc_count],
-> -
-> exec_list[i].relocation_count *
-> -					   sizeof(*relocs));
-> +		unwritten =3D copy_to_user(user_relocs,
-> +					 &relocs[reloc_count],
-> +
-> exec_list[i].relocation_count *
-> +					 sizeof(*relocs));
-> +
-> +		if (unwritten) {
-> +			ret =3D -EFAULT;
-> +			goto err;
->  		}
-> =20
->  		reloc_count +=3D exec_list[i].relocation_count;
->  	}
-> =20
+> So on the write side, basically we have:
 
-i wondered too at first about the if (ret =3D=3D 0) part, but you need the
-whole reloc_count to free everything in the next part:
+Could we get this in patch form, pretty please?
 
-> +err:
->  	drm_free(relocs, reloc_count * sizeof(*relocs),
-> DRM_MEM_DRIVER);=20
->  	return ret;
+> WRITE                   Normal async write.
+> WRITE_SYNC_PLUG         Sync write, someone will wait on this so don't
+>                         treat it as background activity. This is a hint
+>                         to the io schedulers. This one does NOT unplug
+>                         the queue, either the caller should do it after
+>                         submission, or he should make sure that the
+>                         wait_on_* callbacks do it for him.
 
+The description isn't terribly useful unless the reader is told what
+actions the schedulers are expected to take in response to the hint.
 
-so i think, this would be a memleak in the error-case (if it ever
-happens)
+> WRITE_SYNC              Like WRITE_SYNC_PLUG, but causes immediate
+>                         unplug of the queue after submission. Most
+>                         uses of this should likely use WRITE_SYNC_PLUG,
+>                         at least in the normal IO path.
+> WRITE_ODIRECT           Like WRITE_SYNC, but also passes a hint to the
+>                         IO scheduler that we should expect more IO.
+>                         This is similar to how a read is treated in the
+>                         scheduler, it'll enable anticipation/idling.
 
+Ditto, somewhat.
 
-> @@ -3306,10 +3314,12 @@ err:
->  				   (uintptr_t) args->buffers_ptr,
->  				   exec_list,
->  				   sizeof(*exec_list) *
-> args->buffer_count);
-> -		if (ret)
-> +		if (ret) {
-> +			ret =3D -EFAULT;
->  			DRM_ERROR("failed to copy %d exec entries "
->  				  "back to user (%d)\n",
->  				  args->buffer_count, ret);
-> +		}
->  	}
-> =20
->  	/* Copy the updated relocations out regardless of current
-> error
+> Ditto for the SWRITE* variants, which are special hacks for
+> ll_rw_block() only.
+> 
+> I have killed REQ_UNPLUG, it doesn't make sense to pass the further down
+> than to __make_request(), so the bio flag is enough.
 
-
-
-
-
---Sig_/Se12EXXJUOh=z/EzxexGZ+g
-Content-Type: application/pgp-signature; name=signature.asc
-Content-Disposition: attachment; filename=signature.asc
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v2.0.9 (GNU/Linux)
-
-iEYEARECAAYFAkna/4gACgkQPjqCkyL3Kv3n7QCeP0X6fOU08qbdP7Z7RJBVDEWt
-4wkAn1pxlR9kLQ0E5lFGf7zA5g4APtkz
-=c6Dd
------END PGP SIGNATURE-----
-
---Sig_/Se12EXXJUOh=z/EzxexGZ+g--
+OK.
