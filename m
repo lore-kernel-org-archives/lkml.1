@@ -1,16 +1,16 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759209AbZDGGiP@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759307AbZDGGic@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759209AbZDGGiP (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 7 Apr 2009 02:38:15 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758758AbZDGGgw
+	id S1759307AbZDGGic (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 7 Apr 2009 02:38:32 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758180AbZDGGhA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 7 Apr 2009 02:36:52 -0400
-Received: from e28smtp01.in.ibm.com ([59.145.155.1]:56092 "EHLO
-	e28smtp01.in.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1758165AbZDGGgv (ORCPT
+	Tue, 7 Apr 2009 02:37:00 -0400
+Received: from e23smtp09.au.ibm.com ([202.81.31.142]:60270 "EHLO
+	e23smtp09.au.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1758746AbZDGGg7 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 7 Apr 2009 02:36:51 -0400
-Date: Tue, 7 Apr 2009 12:06:20 +0530
+	Tue, 7 Apr 2009 02:36:59 -0400
+Date: Tue, 7 Apr 2009 12:06:46 +0530
 From: "K.Prasad" <prasad@linux.vnet.ibm.com>
 To: Alan Stern <stern@rowland.harvard.edu>
 Cc: Ingo Molnar <mingo@elte.hu>,
@@ -21,13 +21,12 @@ Cc: Ingo Molnar <mingo@elte.hu>,
        Roland McGrath <roland@redhat.com>,
        Steven Rostedt <rostedt@goodmis.org>,
        "K.Prasad" <prasad@linux.vnet.ibm.com>
-Subject: [Patch 07/11] Modify signal handling code to refrain from
-	re-enabling HW Breakpoints
-Message-ID: <20090407063620.GH17461@in.ibm.com>
+Subject: [Patch 09/11] Cleanup HW Breakpoint registers before kexec
+Message-ID: <20090407063646.GJ17461@in.ibm.com>
 References: <20090407063058.301701787@prasadkr_t60p.in.ibm.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline; filename=modify_signal_07
+Content-Disposition: inline; filename=modify_kexec_09
 User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
@@ -35,34 +34,56 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 From: Alan Stern <stern@rowland.harvard.edu>
 
-This patch disables re-enabling of Hardware Breakpoint registers through
-the  signal handling code. This is now done during
-hw_breakpoint_handler().
+This patch disables Hardware breakpoints before doing a 'kexec' on the machine.
+
+[K.Prasad: Split-out from the bigger patch and minor changes following
+           re-basing]
 
 Signed-off-by: K.Prasad <prasad@linux.vnet.ibm.com>
 Signed-off-by: Alan Stern <stern@rowland.harvard.edu>
 ---
- arch/x86/kernel/signal.c |    9 ---------
- 1 file changed, 9 deletions(-)
+ arch/x86/kernel/machine_kexec_32.c |    2 ++
+ arch/x86/kernel/machine_kexec_64.c |    2 ++
+ 2 files changed, 4 insertions(+)
 
-Index: arch/x86/kernel/signal.c
+Index: arch/x86/kernel/machine_kexec_32.c
 ===================================================================
---- arch/x86/kernel/signal.c.orig
-+++ arch/x86/kernel/signal.c
-@@ -799,15 +799,6 @@ static void do_signal(struct pt_regs *re
+--- arch/x86/kernel/machine_kexec_32.c.orig	2009-04-01 20:53:43.000000000 +0530
++++ arch/x86/kernel/machine_kexec_32.c	2009-04-01 20:54:46.000000000 +0530
+@@ -25,6 +25,7 @@
+ #include <asm/desc.h>
+ #include <asm/system.h>
+ #include <asm/cacheflush.h>
++#include <asm/debugreg.h>
  
- 	signr = get_signal_to_deliver(&info, &ka, regs, NULL);
- 	if (signr > 0) {
--		/*
--		 * Re-enable any watchpoints before delivering the
--		 * signal to user space. The processor register will
--		 * have been cleared if the watchpoint triggered
--		 * inside the kernel.
--		 */
--		if (current->thread.debugreg7)
--			set_debugreg(current->thread.debugreg7, 7);
--
- 		/* Whee! Actually deliver the signal.  */
- 		if (handle_signal(signr, &info, &ka, oldset, regs) == 0) {
- 			/*
+ static void set_idt(void *newidt, __u16 limit)
+ {
+@@ -202,6 +203,7 @@
+ 
+ 	/* Interrupts aren't acceptable while we reboot */
+ 	local_irq_disable();
++	hw_breakpoint_disable();
+ 
+ 	if (image->preserve_context) {
+ #ifdef CONFIG_X86_IO_APIC
+Index: arch/x86/kernel/machine_kexec_64.c
+===================================================================
+--- arch/x86/kernel/machine_kexec_64.c.orig	2009-04-01 20:53:43.000000000 +0530
++++ arch/x86/kernel/machine_kexec_64.c	2009-04-01 20:54:46.000000000 +0530
+@@ -18,6 +18,7 @@
+ #include <asm/pgtable.h>
+ #include <asm/tlbflush.h>
+ #include <asm/mmu_context.h>
++#include <asm/debugreg.h>
+ 
+ static int init_one_level2_page(struct kimage *image, pgd_t *pgd,
+ 				unsigned long addr)
+@@ -282,6 +283,7 @@
+ 
+ 	/* Interrupts aren't acceptable while we reboot */
+ 	local_irq_disable();
++	hw_breakpoint_disable();
+ 
+ 	if (image->preserve_context) {
+ #ifdef CONFIG_X86_IO_APIC
 
