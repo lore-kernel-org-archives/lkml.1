@@ -1,49 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761409AbZDGVZT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761238AbZDGV2U@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761409AbZDGVZT (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 7 Apr 2009 17:25:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757642AbZDGVZE
+	id S1761238AbZDGV2U (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 7 Apr 2009 17:28:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756703AbZDGV2H
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 7 Apr 2009 17:25:04 -0400
-Received: from smtp.ultrahosting.com ([74.213.174.254]:45286 "EHLO
-	smtp.ultrahosting.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756489AbZDGVZD (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 7 Apr 2009 17:25:03 -0400
-Date: Tue, 7 Apr 2009 17:19:19 -0400 (EDT)
-From: Christoph Lameter <cl@linux.com>
-X-X-Sender: cl@qirst.com
-To: Andi Kleen <andi@firstfloor.org>
-cc: Lee.Schermerhorn@hp.com, npiggin@suse.de, linux-kernel@vger.kernel.org,
-       linux-mm@kvack.org, x86@kernel.org
-Subject: Re: [PATCH] [10/16] POISON: Use bitmask/action code for try_to_unmap
- behaviour
-In-Reply-To: <20090407151007.71F3F1D046F@basil.firstfloor.org>
-Message-ID: <alpine.DEB.1.10.0904071714450.12192@qirst.com>
-References: <20090407509.382219156@firstfloor.org> <20090407151007.71F3F1D046F@basil.firstfloor.org>
-User-Agent: Alpine 1.10 (DEB 962 2008-03-14)
+	Tue, 7 Apr 2009 17:28:07 -0400
+Received: from ogre.sisk.pl ([217.79.144.158]:56011 "EHLO ogre.sisk.pl"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1755100AbZDGV2G (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 7 Apr 2009 17:28:06 -0400
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+To: Hugh Dickins <hugh@veritas.com>
+Subject: Re: [Bug #12870] 2.6.29-rc "TKIP: replay detected" regression
+Date: Tue, 7 Apr 2009 23:28:21 +0200
+User-Agent: KMail/1.11.2 (Linux/2.6.29-rjw; KDE/4.2.2; x86_64; ; )
+Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Kernel Testers List <kernel-testers@vger.kernel.org>,
+       "John W. Linville" <linville@tuxdriver.com>
+References: <n4io5wq70ZO.A.gzG.rFn2JB@chimera> <AsKNxFx2juN.A.cV.bGn2JB@chimera> <Pine.LNX.4.64.0904070001400.4254@blonde.anvils>
+In-Reply-To: <Pine.LNX.4.64.0904070001400.4254@blonde.anvils>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: Text/Plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200904072328.22309.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 7 Apr 2009, Andi Kleen wrote:
+On Tuesday 07 April 2009, Hugh Dickins wrote:
+> On Mon, 6 Apr 2009, Rafael J. Wysocki wrote:
+> > 
+> > Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=12870
+> > Subject		: 2.6.29-rc "TKIP: replay detected" regression
+> > Submitter	: Hugh Dickins <hugh@veritas.com>
+> > Date		: 2009-03-11 12:07 (27 days old)
+> > References	: http://marc.info/?l=linux-kernel&m=123677337219148&w=4
+> > Handled-By	: "John W. Linville" <linville@tuxdriver.com>
+> > Patch		: http://marc.info/?l=linux-wireless&m=123678463704691&w=2
+> 
+> John's fix went into 2.6.29 final: please remove this regression now.
 
-> +
-> +enum ttu_flags {
-> +	TTU_UNMAP = 0,			/* unmap mode */
-> +	TTU_MIGRATION = 1,		/* migration mode */
-> +	TTU_MUNLOCK = 2,		/* munlock mode */
-> +	TTU_ACTION_MASK = 0xff,
-> +
-> +	TTU_IGNORE_MLOCK = (1 << 8),	/* ignore mlock */
+Done.
 
-
-Ignoring MLOCK? This means we are violating POSIX which says that an
-MLOCKed page cannot be unmapped from a process? Note that page migration
-does this under special pte entries so that the page will never appear to
-be unmapped to user space.
-
-How does that work for the poisoning case? We substitute a fresh page?
-
+Thanks,
+Rafael
