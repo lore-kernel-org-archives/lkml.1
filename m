@@ -1,31 +1,36 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756755AbZDGNAl@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756260AbZDGNFZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756755AbZDGNAl (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 7 Apr 2009 09:00:41 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756623AbZDGNAO
+	id S1756260AbZDGNFZ (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 7 Apr 2009 09:05:25 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753284AbZDGNFH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 7 Apr 2009 09:00:14 -0400
-Received: from mail-fx0-f158.google.com ([209.85.220.158]:49525 "EHLO
+	Tue, 7 Apr 2009 09:05:07 -0400
+Received: from mail-fx0-f158.google.com ([209.85.220.158]:64865 "EHLO
 	mail-fx0-f158.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756416AbZDGNAN (ORCPT
+	with ESMTP id S1752898AbZDGNFF (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 7 Apr 2009 09:00:13 -0400
+	Tue, 7 Apr 2009 09:05:05 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
         h=subject:from:to:cc:in-reply-to:references:content-type:date
          :message-id:mime-version:x-mailer:content-transfer-encoding;
-        b=sgVBoQjDoHonNsL+Xlub4qN1n+H6tnx82+zlRI/Od2rxzesPsRreibZZeNR8Cr1Hjy
-         uSYef4dC4z+mmSgxTbB1YKr7hqDC4k+GhHnY9bx7q/1WyQ4+JKF1ukjZ1ZcNGnzzscsq
-         iwKJTtslIVlE5ye/VMg8TlbR0d9hTKUu4IwAA=
-Subject: Re: 2.6.29+ ath5k connect disconnect cycles?
+        b=OZiWhQd+V3UciiWMr1m2e1eXgrHagMrkFivtXmcRYfkd5S5Rv0KahXx5s0UZ5nhb22
+         velh98hp0gaj0DwUqLcGmEG9U51PJ7G9YBphRgaDtn0+UIZ9blvDz/PSU3E8CmxHXI1g
+         JnSi3GKXC3rpGUaeyVJc0//zgg7m3aDq9vkPY=
+Subject: Re: attempt to scan fails (device busy) if essid/ssid was changed
+ recently
 From: Maxim Levitsky <maximlevitsky@gmail.com>
-To: Soeren Sonnenburg <sonne@debian.org>
-Cc: Linux Kernel <linux-kernel@vger.kernel.org>
-In-Reply-To: <1239008128.32048.211.camel@localhost>
-References: <1239008128.32048.211.camel@localhost>
+To: Johannes Berg <johannes@sipsolutions.net>
+Cc: linux-wireless <linux-wireless@vger.kernel.org>,
+       linux-kernel <linux-kernel@vger.kernel.org>
+In-Reply-To: <1239109001.22453.40.camel@johannes.local>
+References: <1239062401.4705.23.camel@maxim-laptop>
+	 (sfid-20090407_020013_939126_90578556)  <1239092296.22453.1.camel@johannes.local>
+	 <1239108689.15015.3.camel@maxim-laptop>
+	 (sfid-20090407_145137_740898_8D0C40FD)  <1239109001.22453.40.camel@johannes.local>
 Content-Type: text/plain
-Date: Tue, 07 Apr 2009 16:00:08 +0300
-Message-Id: <1239109208.15015.11.camel@maxim-laptop>
+Date: Tue, 07 Apr 2009 16:04:57 +0300
+Message-Id: <1239109497.15015.12.camel@maxim-laptop>
 Mime-Version: 1.0
 X-Mailer: Evolution 2.24.3 
 Content-Transfer-Encoding: 7bit
@@ -33,25 +38,50 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 2009-04-06 at 10:55 +0200, Soeren Sonnenburg wrote:
-> Dear all,
+On Tue, 2009-04-07 at 14:56 +0200, Johannes Berg wrote:
+> On Tue, 2009-04-07 at 15:51 +0300, Maxim Levitsky wrote:
 > 
-> does anyone else observer strange connect disconnect cycles with ath5k?
-> I have two different notebooks here one with an AR5414 and one with some
-> 2424 (?) chipset both having the same problems to connect...
+> > > > I noticed that always first attempt at scan fails when NM asks for scan.
+> > > > I also noticed that this happens with quite recent kernels (I think
+> > > > 2,6.28) didn't have this behavior.
+> > > 
+> > > I'm pretty sure it did.
 > 
-> Soeren
+> > I am sure that on older kernel there was no -EBUSY error returned to
+> > userspace. It probably just stalled the client.
+> 
+> Can't imagine it did, maybe it just dropped the request though without
+> indicating an error.
+Very likely.
 
-I use latest -git of wireless-testing, and AR2425.
-Thanks to hard work of ath5k developers, it works better and better.
-Yet phy seems to die when loaded with traffic, but its reset brings is
-back alive. ath5k does a reset every 10 seconds.
+> 
+> > > > Looking a bit deeper I discovered that each time NM disconnects from a
+> > > > networks it sets random ssid/essid to the card (using wireless
+> > > > extensions)
+> > > 
+> > > This forces a scan
+> > > 
+> > > > After that scan fails for some time.
+> > > > 
+> > > > as a NM free example you can run 
+> > > > 
+> > > > iwconfig wlan0 essid dummy
+> > > > iwlist scan
+> > > 
+> > > and then this fails with EBUSY.
+> > Thanks for explanation.
+> > Since NM has its reasons to clear essid (to prevent unwanted
+> > association), then what can be  done to prevent this (and still use
+> > wireless extensions, since nl80211 support isn't yet mature)?
+> 
+> Nothing. Wext sucks, news at 11, yadda.
+Thanks.
+Everything understood.
 
-If you use WPA, then you might have bigger problems, I mean, during the
-period when phy is dead, AP might ask for group rekey, but ath5k won't
-hear this, and continue using old keys. This causes much longer delays,
-and sometimes reconnect cycles you see.
 
 Best regards,
 	Maxim Levitsky
+
+> 
+> johannes
 
