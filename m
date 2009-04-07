@@ -1,115 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761920AbZDGWqV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762240AbZDGWqh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761920AbZDGWqV (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 7 Apr 2009 18:46:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758939AbZDGWqF
+	id S1762240AbZDGWqh (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 7 Apr 2009 18:46:37 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761989AbZDGWqR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 7 Apr 2009 18:46:05 -0400
-Received: from mga03.intel.com ([143.182.124.21]:15502 "EHLO mga03.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1758859AbZDGWqD (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 7 Apr 2009 18:46:03 -0400
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.39,339,1235980800"; 
-   d="scan'208";a="128994528"
-Date: Wed, 8 Apr 2009 06:45:45 +0800
-From: Wu Fengguang <fengguang.wu@intel.com>
-To: Ying Han <yinghan@google.com>
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       LKML <linux-kernel@vger.kernel.org>,
-       "linux-fsdevel@vger.kernel.org" <linux-fsdevel@vger.kernel.org>,
-       "linux-mm@kvack.org" <linux-mm@kvack.org>
-Subject: Re: [PATCH 02/14] mm: fix major/minor fault accounting on retried
-	fault
-Message-ID: <20090407224545.GA5607@localhost>
-References: <20090407071729.233579162@intel.com> <20090407072132.943283183@intel.com> <604427e00904071258y78eea757m6d95d08deec49450@mail.gmail.com>
+	Tue, 7 Apr 2009 18:46:17 -0400
+Received: from smtp128.sbc.mail.sp1.yahoo.com ([69.147.65.187]:30540 "HELO
+	smtp128.sbc.mail.sp1.yahoo.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1761676AbZDGWqQ (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 7 Apr 2009 18:46:16 -0400
+DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
+  s=s1024; d=pacbell.net;
+  h=Received:X-YMail-OSG:X-Yahoo-Newman-Property:From:To:Subject:Date:User-Agent:Cc:References:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Content-Disposition:Message-Id;
+  b=5shloUtlxNqT1bRVEuXZju5CRRadbxZKUF9eH7gLoym/wpRHBPt2W4Y9Aqrsnxoei/vm4VOylLYWJllxMGcPFRxrqyukXLklWluXhFmaX6QkKo/whDKV5bgtXy6xeSp0Kf4An+oIMU2FCHJm6SrDR0EuzkeL/c0ms0VVe+QNZLY=  ;
+X-YMail-OSG: .X3_FdAVM1kVWrGGiIe9y730qnzgD7huQcTlfTNMGj54r.kXwJuHgccAA7PgO6m4n2FTtFHPhCZNEradUnBzGBa17IG8ClvXVWZtjW32rdOv9pG_CYhescy.clTmENy.OlIxW12xQqzTIJyvk6tAPHO8H2Dc64BPwEPh1zaCFxS8rfz0AVecV2neHX7PtDYNgNg_RmBDiRRt_lonC4KdYsTt4rFhd701asNeCmnMsvlSFQnZvMRtixCZldMFNft5g8S3pikMEUZvQmEwh7prQ70FbJqKT5VVF6d17yJeZndnRzA.C2HI
+X-Yahoo-Newman-Property: ymail-3
+From: David Brownell <david-b@pacbell.net>
+To: "Narnakaje, Snehaprabha" <nsnehaprabha@ti.com>
+Subject: Re: [PATCH] MTD-NAND: Changes to read_page APIs to support NAND_ECC_HW_SYNDROME mode on TI DaVinci DM355
+Date: Tue, 7 Apr 2009 15:46:14 -0700
+User-Agent: KMail/1.9.10
+Cc: Thomas Gleixner <tglx@linutronix.de>,
+       "davinci-linux-open-source@linux.davincidsp.com" 
+	<davinci-linux-open-source@linux.davincidsp.com>,
+       "linux-mtd@lists.infradead.org" <linux-mtd@lists.infradead.org>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
+References: <1238601784-9563-1-git-send-email-nsnehaprabha@ti.com> <alpine.LFD.2.00.0904071831550.21577@localhost.localdomain> <7A436F7769CA33409C6B44B358BFFF0CFFAA9253@dlee02.ent.ti.com>
+In-Reply-To: <7A436F7769CA33409C6B44B358BFFF0CFFAA9253@dlee02.ent.ti.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain;
+  charset="us-ascii"
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <604427e00904071258y78eea757m6d95d08deec49450@mail.gmail.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+Message-Id: <200904071546.14898.david-b@pacbell.net>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Apr 08, 2009 at 03:58:16AM +0800, Ying Han wrote:
-> On Tue, Apr 7, 2009 at 12:17 AM, Wu Fengguang <fengguang.wu@intel.com> wrote:
-> > VM_FAULT_RETRY does make major/minor faults accounting a bit twisted..
-> >
-> > Cc: Ying Han <yinghan@google.com>
-> > Signed-off-by: Wu Fengguang <fengguang.wu@intel.com>
-> > ---
-> >  arch/x86/mm/fault.c |    2 ++
-> >  mm/memory.c         |   22 ++++++++++++++--------
-> >  2 files changed, 16 insertions(+), 8 deletions(-)
-> >
-> > --- mm.orig/arch/x86/mm/fault.c
-> > +++ mm/arch/x86/mm/fault.c
-> > @@ -1160,6 +1160,8 @@ good_area:
-> >        if (fault & VM_FAULT_RETRY) {
-> >                if (retry_flag) {
-> >                        retry_flag = 0;
-> > +                       tsk->maj_flt++;
-> > +                       tsk->min_flt--;
-> >                        goto retry;
-> >                }
-> >                BUG();
-> sorry, little bit confuse here. are we assuming the retry path will
-> return min_flt as always?
+On Tuesday 07 April 2009, Narnakaje, Snehaprabha wrote:
+> 
+>  I have not sent the actual NAND driver to the linux-mtd yet, since
+>  the initial version (supported only 1-bit HW ECC) submitted by David
+>  Brownell was still in review (no comments and not approved yet).
 
-Sure - except for some really exceptional ftruncate cases.
-The page was there ready, and we'll retry immediately.
+It merged to mainline yesterday; should verify on DM6446 EVM.
 
-maj_flt/min_flt are not _exact_ numbers by their nature, so 99.9%
-accuracy shall be fine.
+The funky bits are fortunately limited to the 4-bit ECC support,
+which are natural to review/evaluate as deltas on top of that core.
+It was easy to tell they would bring out some confusion, which is
+a good sign of something that's worth reviewing separately.
 
-Thanks,
-Fengguang
+And, given the patches I referenced previously ... even those
+should only be an issue for large page chips.  (And no DaVinci
+board that uses large page chips has hit mainline yet.  Lots of
+stuff in the queue for, one hopes, 2.6.31 though.)
 
-> > --- mm.orig/mm/memory.c
-> > +++ mm/mm/memory.c
-> > @@ -2882,26 +2882,32 @@ int handle_mm_fault(struct mm_struct *mm
-> >        pud_t *pud;
-> >        pmd_t *pmd;
-> >        pte_t *pte;
-> > +       int ret;
-> >
-> >        __set_current_state(TASK_RUNNING);
-> >
-> > -       count_vm_event(PGFAULT);
-> > -
-> > -       if (unlikely(is_vm_hugetlb_page(vma)))
-> > -               return hugetlb_fault(mm, vma, address, write_access);
-> > +       if (unlikely(is_vm_hugetlb_page(vma))) {
-> > +               ret = hugetlb_fault(mm, vma, address, write_access);
-> > +               goto out;
-> > +       }
-> >
-> > +       ret = VM_FAULT_OOM;
-> >        pgd = pgd_offset(mm, address);
-> >        pud = pud_alloc(mm, pgd, address);
-> >        if (!pud)
-> > -               return VM_FAULT_OOM;
-> > +               goto out;
-> >        pmd = pmd_alloc(mm, pud, address);
-> >        if (!pmd)
-> > -               return VM_FAULT_OOM;
-> > +               goto out;
-> >        pte = pte_alloc_map(mm, pmd, address);
-> >        if (!pte)
-> > -               return VM_FAULT_OOM;
-> > +               goto out;
-> >
-> > -       return handle_pte_fault(mm, vma, address, pte, pmd, write_access);
-> > +       ret = handle_pte_fault(mm, vma, address, pte, pmd, write_access);
-> > +out:
-> > +       if (!(ret & VM_FAULT_RETRY))
-> > +               count_vm_event(PGFAULT);
-> > +       return ret;
-> >  }
-> >
-> >  #ifndef __PAGETABLE_PUD_FOLDED
-> >
-> > --
-> >
-> >
+- Dave
+
