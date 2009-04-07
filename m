@@ -1,24 +1,33 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752444AbZDGHdx@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752877AbZDGHfW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752444AbZDGHdx (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 7 Apr 2009 03:33:53 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751570AbZDGHdl
+	id S1752877AbZDGHfW (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 7 Apr 2009 03:35:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751570AbZDGHfH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 7 Apr 2009 03:33:41 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:48211 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751458AbZDGHdl (ORCPT
+	Tue, 7 Apr 2009 03:35:07 -0400
+Received: from fgwmail5.fujitsu.co.jp ([192.51.44.35]:48146 "EHLO
+	fgwmail5.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751569AbZDGHfF (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 7 Apr 2009 03:33:41 -0400
-Date: Tue, 7 Apr 2009 00:31:53 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Apollon Oikonomopoulos <ao-lkml@noc.grnet.gr>
-Cc: linux-kernel@vger.kernel.org
-Subject: Re: Block device cache issue
-Message-Id: <20090407003153.41fb9c78.akpm@linux-foundation.org>
-In-Reply-To: <20090402145205.GG30077@apollon.noc.grnet.gr>
-References: <20090402145205.GG30077@apollon.noc.grnet.gr>
-X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.5; x86_64-redhat-linux-gnu)
+	Tue, 7 Apr 2009 03:35:05 -0400
+Date: Tue, 7 Apr 2009 16:33:31 +0900
+From: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+To: balbir@linux.vnet.ibm.com
+Cc: "linux-mm@kvack.org" <linux-mm@kvack.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       "lizf@cn.fujitsu.com" <lizf@cn.fujitsu.com>,
+       Rik van Riel <riel@surriel.com>, Bharata B Rao <bharata.rao@in.ibm.com>,
+       Dhaval Giani <dhaval@linux.vnet.ibm.com>,
+       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
+Subject: Re: [RFI] Shared accounting for memory resource controller
+Message-Id: <20090407163331.8e577170.kamezawa.hiroyu@jp.fujitsu.com>
+In-Reply-To: <20090407071825.GR7082@balbir.in.ibm.com>
+References: <20090407063722.GQ7082@balbir.in.ibm.com>
+	<20090407160014.8c545c3c.kamezawa.hiroyu@jp.fujitsu.com>
+	<20090407071825.GR7082@balbir.in.ibm.com>
+Organization: FUJITSU Co. LTD.
+X-Mailer: Sylpheed 2.5.0 (GTK+ 2.10.14; i686-pc-mingw32)
 Mime-Version: 1.0
 Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
@@ -26,67 +35,112 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 2 Apr 2009 17:52:05 +0300 Apollon Oikonomopoulos <ao-lkml@noc.grnet.gr> wrote:
+On Tue, 7 Apr 2009 12:48:25 +0530
+Balbir Singh <balbir@linux.vnet.ibm.com> wrote:
 
-> Greetings to the list,
+> * KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com> [2009-04-07 16:00:14]:
 > 
-> At my company, we have come across something that we think is a design 
-> limitation in the way the Linux kernel handles block device caches.  I 
-> will first describe the incident we encountered, before speculating on 
-> the actual cause.
+> > On Tue, 7 Apr 2009 12:07:22 +0530
+> > Balbir Singh <balbir@linux.vnet.ibm.com> wrote:
+> > 
+> > > Hi, All,
+> > > 
+> > > This is a request for input for the design of shared page accounting for
+> > > the memory resource controller, here is what I have so far
+> > > 
+> > 
+> > In my first impression, I think simple counting is impossible.
+> > IOW, "usage count" and "shared or not" is very different problem.
+> > 
+> > Assume a page and its page_cgroup.
+> > 
+> > Case 1)
+> >   1. a page is mapped by process-X under group-A
+> >   2. its mapped by process-Y in group-B (now, shared and charged under group-A)
+> >   3. move process-X to group-B
+> >   4. now the page is not shared.
+> > 
 > 
-> As part of our infrastructure, we are running some Linux servers used as 
-> Xen Dom0s, using SAN LUNs as the VMs' disk images, so these LUNs contain 
-> normal MBR partition tables. At some point  we came across a VM, that - 
-> due to a misconfiguration of GRUB - failed on a reboot. We used 
-> multipath-tools' kpartx to create a device-mapper device pointing to the 
-> first partition of the LUN, mounted the filesystem, changed 
-> boot/grub/menu.lst, unmounted it and proceeded to boot the VM once more.  
-> To our surprise, Xen's pygrub showed the boot menu exactly as it was 
-> before the changes we made. We double-checked that the changes we made 
-> were indeed there and tried to find out what was actually going on.
+> By shared I don't mean only between cgroups, it could be a page shared
+> in the same cgroup
 > 
-> As it turned out, the LUN device's read buffers had not been updated;  
-> losetup'ing the LUN device with the proper offset to the first partition 
-> and mounting it gave us exactly the image of the filesystem as it was 
-> _before_ our changes. We started digging into the kernel's buffer 
-> internals and came along the conclusion [1] that every block device  has 
-> its own pagecache, attached to a hash of (major,minor), that is 
-> independent from the caches of its containing or contained devices.  
-> 
-> Now, in practice one rarely - if ever - accesses the same data from 
-> these two different paths (disk + partition), except in scenarios like 
-> this. However currently there seems to be an implicit assumption that 
-> these two paths should not be used in the same "uptime" cycle at all, at 
-> least not without dropping the caches.  For the record, I managed to 
-> reproduce the whole issue by reading a single block through sda, dd'ing 
-> random data to it through sda1 and re-reading it through sda: its 
-> contents were intact (even hours later) and were up-to-date only when 
-> using O_DIRECT and finally when I dropped all caches (using 
-> /proc/sys/vm/drop_caches).
-> 
-> And now we come to the question part: Can someone please verify that the 
-> above statements are correct, or am I missing something?
+Hmm, is it good information ?
 
-The above statements are correct ;)
+Such kind of information can be calucated by
+==
+   rss = 0;
+   for_each_process_under_cgroup() {
+       mm = tsk->mm
+       rss += mm->anon_rss;
+   }
+   some_of_all_rss = rss;
+   
+   shared_ratio = mem_cgrou->rss *100 / some_of_all_rss.
+==
+   if 100%, all anon memory are not shared.
+ 
 
-Similarly, the pagecache for /etc/password is separate from the
-pagecache for the device upon which /etc is mounted.
+> > Case 2)
+> >   swap is an object which can be shared.
+> > 
+> 
+> Good point, I expect the user to account all cached pages as shared -
+> no
+Maybe yes if we explain it's so ;)
 
-> If they are, 
-> should it perhaps be the case that the partition's buffers somehow be 
-> linked with those of the containing device, or even be part of them? I 
-> don't even know if this is possible without significant overhead in the 
-> page cache (of which my understanding is very shallow), but keep in mind 
-> that this behaviour almost led to filesystem corruption (luckily we only 
-> changed a single file and hit a single inode).
+?
+> 
+> > Case 3)
+> >   1. a page known as "A" is mapped by process-X under group-A.
+> >   2. its mapped by process-Y under group-B(now, shared and charged under group-A)
+> >   3. Do copy-on-write by process-X.
+> >      Now, "A" is mapped only by B but accoutned under group-A.
+> >      This case is ignored intentionally, now.
+> 
+> Yes, that is the original design
+> 
+> >      Do you want to call try_charge() both against group-A and group-B
+> >      under process-X's page fault ?
+> > 
+> 
+> No we don't, but copy-on-write is caught at page_rmap_dup() - no?
+> 
+Hmm, if we don't consider group-B, maybe we can.
+But I wonder counting is overkill..
 
-It would incur overhead.  We could perhaps fix it by having a single
-cache for /dev/sda and then just making /dev/sda1 access that cache
-with an offset.  But it rarely if ever comes up - I guess the few
-applications which do this sort of thing are taking suitable steps to
-avoid it - fsync, ioctl(BKLFLSBUF), posix_fadvise(FADV_DONTNEED),
-O_DIRECT, etc.
+
+> > There will be many many corner case.
+> > 
+> > 
+> > > Motivation for shared page accounting
+> > > -------------------------------------
+> > > 1. Memory cgroup administrators will benefit from the knowledge of how
+> > >    much of the data is shared, it helps size the groups correctly.
+> > > 2. We currently report only the pages brought in by the cgroup, knowledge
+> > >    of shared data will give a complete picture of the actual usage.
+> > > 
+> > 
+> > Motivation sounds good. But counting this in generic rmap will have tons of
+> > troubles and slow-down.
+> > 
+> > I bet we should prepare a file as
+> >   /proc/<pid>/cgroup_maps
+> > 
+> > And show RSS/RSS-owned-by-us per process. Maybe this feature will be able to be
+> > implemented in 3 days.
+> 
+> Yes, we can probably do that, but if we have too many processes in one
+> cgroup, we'll need to walk across all of them in user space. One other
+> alternative I did not mention is to walk the LRU like we walk page
+> tables and look at page_mapcount of every page, but that will be
+> very slow.
+
+Can't we make use of information in mm_counters ? (As I shown in above)
+(see set/get/add/inc/dec_mm_counters())
+
+Thanks,
+-Kame
+
 
 
 
