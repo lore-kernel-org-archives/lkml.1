@@ -1,22 +1,23 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755832AbZDGX4x@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755674AbZDGX5S@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755832AbZDGX4x (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 7 Apr 2009 19:56:53 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754782AbZDGX4j
+	id S1755674AbZDGX5S (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 7 Apr 2009 19:57:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754828AbZDGX4k
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 7 Apr 2009 19:56:39 -0400
-Received: from norsk5.dsl.xmission.com ([166.70.24.44]:22500 "EHLO
+	Tue, 7 Apr 2009 19:56:40 -0400
+Received: from norsk5.dsl.xmission.com ([166.70.24.44]:22499 "EHLO
 	master.douglaskthompson.com" rhost-flags-OK-OK-OK-FAIL)
-	by vger.kernel.org with ESMTP id S1754248AbZDGX4j (ORCPT
+	by vger.kernel.org with ESMTP id S1754025AbZDGX4j (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
 	Tue, 7 Apr 2009 19:56:39 -0400
+X-Greylist: delayed 644 seconds by postgrey-1.27 at vger.kernel.org; Tue, 07 Apr 2009 19:56:39 EDT
 Date: Tue, 07 Apr 2009 17:45:50 -0600
 From: dougthompson@xmission.com
 To: khali@linux-fr.org, qingtao.cao@windriver.com, jharan@Brocade.COM,
        dougthompson@xmission.com, linux-kernel@vger.kernel.org,
        akpm@linux-foundation.org
-Subject: [PATCH 3/3] edac: add new core index allocator
-Message-ID: <49dbe5ae.rglwvzb95ZzxtybW%dougthompson@xmission.com>
+Subject: [PATCH 1/3] edac: fix worktodo to proper cast
+Message-ID: <49dbe5ae.cLzjokemOI4s7lyb%dougthompson@xmission.com>
 User-Agent: Heirloom mailx 12.2 01/07/07
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
@@ -25,60 +26,61 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Harry Ciao <qingtao.cao@windriver.com>
+From: Jean Delvare <khali@linux-fr.org>
 
-Add edac_device_alloc_index(), because for some platforms there may
-exist several EDAC driver modules that could make use of
-edac_device_ctl_info structure at the same time. The index allocation
-for these structures should be taken care of by EDAC core.
+The edac-core driver includes code which assumes that the work_struct
+which is included in every delayed_work is the first member of that
+structure. This is currently the case but might change in the future,
+so use to_delayed_work() instead, which doesn't make such an
+assumption.
 
-Signed-off-by: Harry Ciao <qingtao.cao@windriver.com>
+Signed-off-by: Jean Delvare <khali@linux-fr.org>
 Signed-off-by: Doug Thompson <dougthompson@xmission.com>
 ---
- edac_core.h   |    1 +
- edac_device.c |   13 +++++++++++++
- 2 files changed, 14 insertions(+)
+drivers/edac/edac_device.c |    2 +-
+drivers/edac/edac_mc.c     |    2 +-
+drivers/edac/edac_pci.c    |    2 +-
+3 files changed, 3 insertions(+), 3 deletions(-)
 
-Index: linux-2.6.29/drivers/edac/edac_core.h
-===================================================================
---- linux-2.6.29.orig/drivers/edac/edac_core.h
-+++ linux-2.6.29/drivers/edac/edac_core.h
-@@ -840,6 +840,7 @@ extern void edac_device_handle_ue(struct
- 				int inst_nr, int block_nr, const char *msg);
- extern void edac_device_handle_ce(struct edac_device_ctl_info *edac_dev,
- 				int inst_nr, int block_nr, const char *msg);
-+extern int edac_device_alloc_index(void);
- 
- /*
-  * edac_pci APIs
 Index: linux-2.6.29/drivers/edac/edac_device.c
 ===================================================================
 --- linux-2.6.29.orig/drivers/edac/edac_device.c
 +++ linux-2.6.29/drivers/edac/edac_device.c
-@@ -37,6 +37,7 @@
+@@ -389,7 +389,8 @@ static void del_edac_device_from_global_
   */
- static DEFINE_MUTEX(device_ctls_mutex);
- static LIST_HEAD(edac_device_list);
-+static atomic_t device_indexes = ATOMIC_INIT(0);
+ static void edac_device_workq_function(struct work_struct *work_req)
+ {
+-	struct delayed_work *d_work = (struct delayed_work *)work_req;
++	struct delayed_work *d_work =
++			container_of(work_req, struct delayed_work, work);
+ 	struct edac_device_ctl_info *edac_dev = to_edac_device_ctl_work(d_work);
  
- #ifdef CONFIG_EDAC_DEBUG
- static void edac_device_dump_device(struct edac_device_ctl_info *edac_dev)
-@@ -491,6 +492,18 @@ void edac_device_reset_delay_period(stru
- 	mutex_unlock(&device_ctls_mutex);
- }
+ 	mutex_lock(&device_ctls_mutex);
+Index: linux-2.6.29/drivers/edac/edac_mc.c
+===================================================================
+--- linux-2.6.29.orig/drivers/edac/edac_mc.c
++++ linux-2.6.29/drivers/edac/edac_mc.c
+@@ -260,7 +260,8 @@ static int edac_mc_assert_error_check_an
+  */
+ static void edac_mc_workq_function(struct work_struct *work_req)
+ {
+-	struct delayed_work *d_work = (struct delayed_work *)work_req;
++	struct delayed_work *d_work =
++			container_of(work_req, struct delayed_work, work);
+ 	struct mem_ctl_info *mci = to_edac_mem_ctl_work(d_work);
  
-+/*
-+ * edac_device_alloc_index: Allocate a unique device index number
-+ *
-+ * Return:
-+ *	allocated index number
-+ */
-+int edac_device_alloc_index(void)
-+{
-+	return atomic_inc_return(&device_indexes) - 1;
-+}
-+EXPORT_SYMBOL_GPL(edac_device_alloc_index);
-+
- /**
-  * edac_device_add_device: Insert the 'edac_dev' structure into the
-  * edac_device global list and create sysfs entries associated with
+ 	mutex_lock(&mem_ctls_mutex);
+Index: linux-2.6.29/drivers/edac/edac_pci.c
+===================================================================
+--- linux-2.6.29.orig/drivers/edac/edac_pci.c
++++ linux-2.6.29/drivers/edac/edac_pci.c
+@@ -232,7 +232,8 @@ EXPORT_SYMBOL_GPL(edac_pci_find);
+  */
+ static void edac_pci_workq_function(struct work_struct *work_req)
+ {
+-	struct delayed_work *d_work = (struct delayed_work *)work_req;
++	struct delayed_work *d_work =
++			container_of(work_req, struct delayed_work, work);
+ 	struct edac_pci_ctl_info *pci = to_edac_pci_ctl_work(d_work);
+ 	int msec;
+ 	unsigned long delay;
