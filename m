@@ -1,75 +1,101 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760165AbZDGTKX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760355AbZDGTNV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760165AbZDGTKX (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 7 Apr 2009 15:10:23 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758426AbZDGTJv
+	id S1760355AbZDGTNV (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 7 Apr 2009 15:13:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751833AbZDGTNF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 7 Apr 2009 15:09:51 -0400
-Received: from mail-bw0-f169.google.com ([209.85.218.169]:40113 "EHLO
-	mail-bw0-f169.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755572AbZDGTJt convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 7 Apr 2009 15:09:49 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:sender:in-reply-to:references:date
-         :x-google-sender-auth:message-id:subject:from:to:cc:content-type
-         :content-transfer-encoding;
-        b=jF7inaWGQxofL0boAC8As+DX2cjGURARQXO4sO5wDBX+3cbECnLaaBhBVux+Eg3wdD
-         9PZH5TDvzDPEEiH5Z6AmLxFB3paPD1tmi3M4q4nLcGEk2Td/Bj23Y9MD3m+/KhvPyeJ0
-         eoNxRqz/ypwfJE/ljfn6neDXjceP6FtYpn4og=
+	Tue, 7 Apr 2009 15:13:05 -0400
+Received: from relay1.sgi.com ([192.48.179.29]:33393 "EHLO relay.sgi.com"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1750804AbZDGTNE (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 7 Apr 2009 15:13:04 -0400
+Date: Tue, 7 Apr 2009 14:13:00 -0500
+From: Robin Holt <holt@sgi.com>
+To: Andi Kleen <andi@firstfloor.org>, Russ Anderson <rja@sgi.com>
+Cc: linux-kernel@vger.kernel.org, linux-mm@kvack.org, x86@kernel.org
+Subject: Re: [PATCH] [0/16] POISON: Intro
+Message-ID: <20090407191300.GA10768@sgi.com>
+References: <20090407509.382219156@firstfloor.org>
 MIME-Version: 1.0
-In-Reply-To: <49DBA23A.3000106@cs.helsinki.fi>
-References: <alpine.DEB.2.00.0904051653420.25339@chino.kir.corp.google.com>
-	 <49DBA23A.3000106@cs.helsinki.fi>
-Date: Tue, 7 Apr 2009 22:09:46 +0300
-X-Google-Sender-Auth: 95bcda7735aea0e9
-Message-ID: <84144f020904071209j638aae9bv406661ec401af7af@mail.gmail.com>
-Subject: Re: [patch] slub: default min_partial to at least highest cpus per 
-	node
-From: Pekka Enberg <penberg@cs.helsinki.fi>
-To: David Rientjes <rientjes@google.com>
-Cc: Christoph Lameter <cl@linux-foundation.org>, linux-kernel@vger.kernel.org
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 8BIT
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20090407509.382219156@firstfloor.org>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-David Rientjes wrote:
->> The pre-defined MIN_PARTIAL value may not be suitable for machines with a
->> large number of cpus per node.  To avoid excessively allocating new slabs
->> because there is not at least the same number of slabs on a node's
->> partial list as cpus, this will default a cache's min_partial value to be
->> at least the highest number of cpus per node on the system.
->>
->> This default will never exceed MAX_PARTIAL, however, so very large
->> systems don't waste an excessive amount of memory.
->>
->> When remote_node_defrag_ratio allows defragmenting remote nodes, it
->> ensures that nr_partial exceeds min_partial so there will always be a
->> local reserve when a cpu slab is filled to avoid allocating new slabs
->> locally as a result of a remote cpu stealing a partial slab.
->>
->> The cache's min_partial setting may still be changed by writing to
->> /sys/kernel/slab/cache/min_partial.  The only restriction when doing so
->> is that the value be within MIN_PARTIAL and MAX_PARTIAL.
->>
->> Cc: Christoph Lameter <cl@linux-foundation.org>
->> Signed-off-by: David Rientjes <rientjes@google.com>
+How does this overlap with the bad page quarantine that ia64 uses
+following an MCA?
 
-On Tue, Apr 7, 2009 at 9:58 PM, Pekka Enberg <penberg@cs.helsinki.fi> wrote:
-> Hmm, partial lists are per-node, so wouldn't it be better to do the
-> adjustment for every struct kmem_cache_node separately? The
-> 'min_partial_per_node' global seems just too ugly and confusing to live
-> with.
+Robin
 
-Btw, that requires moving ->min_partial to struct kmem_cache_node from
-struct kmem_cache.  But I think that makes a whole lot of sense if
-some nodes may have more CPUs than others.
-
-And while the improvement is kinda obvious, I would be interested to
-know what kind of workload benefits from this patch (and see numbers
-if there are any).
-
-                                  Pekka
+On Tue, Apr 07, 2009 at 05:09:56PM +0200, Andi Kleen wrote:
+> 
+> Upcoming Intel CPUs have support for recovering from some memory errors. This
+> requires the OS to declare a page "poisoned", kill the processes associated
+> with it and avoid using it in the future. This patchkit implements
+> the necessary infrastructure in the VM.
+> 
+> To quote the overview comment:
+> 
+>  * High level machine check handler. Handles pages reported by the
+>  * hardware as being corrupted usually due to a 2bit ECC memory or cache
+>  * failure.
+>  *
+>  * This focusses on pages detected as corrupted in the background.
+>  * When the current CPU tries to consume corruption the currently
+>  * running process can just be killed directly instead. This implies
+>  * that if the error cannot be handled for some reason it's safe to
+>  * just ignore it because no corruption has been consumed yet. Instead
+>  * when that happens another machine check will happen.
+>  *
+>  * Handles page cache pages in various states. The tricky part
+>  * here is that we can access any page asynchronous to other VM
+>  * users, because memory failures could happen anytime and anywhere,
+>  * possibly violating some of their assumptions. This is why this code
+>  * has to be extremely careful. Generally it tries to use normal locking
+>  * rules, as in get the standard locks, even if that means the
+>  * error handling takes potentially a long time.
+>  *
+>  * Some of the operations here are somewhat inefficient and have non
+>  * linear algorithmic complexity, because the data structures have not
+>  * been optimized for this case. This is in particular the case
+>  * for the mapping from a vma to a process. Since this case is expected
+>  * to be rare we hope we can get away with this.
+> 
+> The code consists of a the high level handler in mm/memory-failure.c, 
+> a new page poison bit and various checks in the VM to handle poisoned
+> pages.
+> 
+> The main target right now is KVM guests, but it works for all kinds
+> of applications.
+> 
+> For the KVM use there was need for a new signal type so that
+> KVM can inject the machine check into the guest with the proper
+> address. This in theory allows other applications to handle
+> memory failures too. The expection is that near all applications
+> won't do that, but some very specialized ones might. 
+> 
+> This is not fully complete yet, in particular there are still ways
+> to access poison through various ways (crash dump, /proc/kcore etc.)
+> that need to be plugged too.
+> 
+> Also undoubtedly the high level handler still has bugs and cases
+> it cannot recover from. For example nonlinear mappings deadlock right now
+> and a few other cases lose references. Huge pages are not supported
+> yet. Any additional testing, reviewing etc. welcome. 
+> 
+> The patch series requires the earlier x86 MCE feature series for the x86
+> specific action optional part. The code can be tested without the x86 specific
+> part using the injector, this only requires to enable the Kconfig entry
+> manually in some Kconfig file (by default it is implicitely enabled
+> by the architecture)
+> 
+> -Andi
+> 
+> --
+> To unsubscribe, send a message with 'unsubscribe linux-mm' in
+> the body to majordomo@kvack.org.  For more info on Linux MM,
+> see: http://www.linux-mm.org/ .
+> Don't email: <a href=mailto:"dont@kvack.org"> email@kvack.org </a>
