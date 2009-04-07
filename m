@@ -1,67 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760617AbZDGUUm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759995AbZDGUWr@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760617AbZDGUUm (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 7 Apr 2009 16:20:42 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757516AbZDGUUc
+	id S1759995AbZDGUWr (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 7 Apr 2009 16:22:47 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756149AbZDGUWi
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 7 Apr 2009 16:20:32 -0400
-Received: from mail-ew0-f165.google.com ([209.85.219.165]:43073 "EHLO
-	mail-ew0-f165.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757587AbZDGUUb convert rfc822-to-8bit (ORCPT
+	Tue, 7 Apr 2009 16:22:38 -0400
+Received: from one.firstfloor.org ([213.235.205.2]:57387 "EHLO
+	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752362AbZDGUWi (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 7 Apr 2009 16:20:31 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:sender:in-reply-to:references:date
-         :x-google-sender-auth:message-id:subject:from:to:cc:content-type
-         :content-transfer-encoding;
-        b=Gi4rouYHrhor0EsBCXv31VBsD/RAU/BAcuJItOGqvB5X/KNkGKXPTE2aMwkXk0K3wE
-         HDYXKZSEz8f70mAOBZ+t9MJ7WgYgjSEANaV8JEJiE4rAPOY0xSzXRXRkxB2z43JLqpcA
-         alastTuZZv2/yWw+SepmW2xP9RSnyR1a5IYos=
-MIME-Version: 1.0
-In-Reply-To: <20090328213950.1c788471@hyperion.delvare>
-References: <20090328213950.1c788471@hyperion.delvare>
-Date: Tue, 7 Apr 2009 22:20:29 +0200
-X-Google-Sender-Auth: b74ccba30d18bccc
-Message-ID: <10f740e80904071320t2fdd073bs51f3a8abf0f60e36@mail.gmail.com>
-Subject: Re: [GIT PULL] i2c updates for 2.6.30
-From: Geert Uytterhoeven <geert@linux-m68k.org>
-To: Jean Delvare <khali@linux-fr.org>, Wolfram Sang <w.sang@pengutronix.de>
-Cc: LKML <linux-kernel@vger.kernel.org>, Linux I2C <linux-i2c@vger.kernel.org>
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8BIT
+	Tue, 7 Apr 2009 16:22:38 -0400
+Date: Tue, 7 Apr 2009 22:24:49 +0200
+From: Andi Kleen <andi@firstfloor.org>
+To: Johannes Weiner <hannes@cmpxchg.org>
+Cc: Andi Kleen <andi@firstfloor.org>, linux-kernel@vger.kernel.org,
+       linux-mm@kvack.org, x86@kernel.org
+Subject: Re: [PATCH] [8/16] POISON: Add various poison checks in mm/memory.c
+Message-ID: <20090407202449.GX17934@one.firstfloor.org>
+References: <20090407509.382219156@firstfloor.org> <20090407151005.4E24B1D046D@basil.firstfloor.org> <20090407190330.GB3818@cmpxchg.org> <20090407193145.GU17934@one.firstfloor.org> <20090407201708.GA4220@cmpxchg.org>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20090407201708.GA4220@cmpxchg.org>
+User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, Mar 28, 2009 at 22:39, Jean Delvare <khali@linux-fr.org> wrote:
-> Please pull the i2c subsystem updates for Linux 2.6.30 from:
+> I think we missed each other here.  I wasn't talking about _why_ you
+> take that reference -- that is clear.  But I see these two
+> possibilities:
+> 
+>   a) memory_failure() is called on a page on the free list, the
+>   get_page() will trigger a bug because the refcount is 0
 
-> Wolfram Sang (4):
->      i2c-algo-pca: Rework waiting for a free bus
+Ah got it now. Sorry for misreading you. That's indeed a problem.
+Fixing.
 
-This one introduced:
+free pages was something my injector based test suite didn't cover :/
 
-drivers/i2c/algos/i2c-algo-pca.c:197: warning: 'state' is used
-uninitialized in this function
+>   b) if that is not possible, the above check is not needed
 
-Probably
+There was at least one case where the process could free it anyways.
+I think. Or maybe that was something I fixed in a different way.
+It's possible this check is not needed, but it's probably safer
+to keep it (and it's all super slow path)
 
-        while (pca_status(adap) != 0xf8) {
+-Andi
 
-should become
-
-        while ((state = pca_status(adap)) != 0xf8) {
-
-again.
-
-Gr{oetje,eeting}s,
-
-						Geert
-
---
-Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
-
-In personal conversations with technical people, I call myself a hacker. But
-when I'm talking to journalists I just say "programmer" or something like that.
-							    -- Linus Torvalds
+-- 
+ak@linux.intel.com -- Speaking for myself only.
