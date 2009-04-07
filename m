@@ -1,78 +1,83 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757643AbZDGHFo@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757676AbZDGHIw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757643AbZDGHFo (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 7 Apr 2009 03:05:44 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751800AbZDGHFc
+	id S1757676AbZDGHIw (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 7 Apr 2009 03:08:52 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751908AbZDGHIl
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 7 Apr 2009 03:05:32 -0400
-Received: from mga14.intel.com ([143.182.124.37]:14874 "EHLO mga14.intel.com"
+	Tue, 7 Apr 2009 03:08:41 -0400
+Received: from brick.kernel.dk ([93.163.65.50]:32981 "EHLO kernel.dk"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751452AbZDGHFb (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 7 Apr 2009 03:05:31 -0400
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.39,336,1235980800"; 
-   d="scan'208";a="128660884"
-Date: Tue, 7 Apr 2009 15:05:07 +0800
-From: Wu Fengguang <fengguang.wu@intel.com>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: Linus Torvalds <torvalds@linux-foundation.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Avan Anishchuk <matimatik@gmail.com>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Pekka Enberg <penberg@cs.helsinki.fi>,
-       Steven Rostedt <rostedt@goodmis.org>,
-       Thomas Gleixner <tglx@linutronix.de>,
-       Eduard - Gabriel Munteanu <eduard.munteanu@linux360.ro>
-Subject: Re: [PATCH] ramfs: fix double freeing s_fs_info on failed mount
-Message-ID: <20090407070507.GA500@localhost>
-References: <20090405193944.GA12691@elte.hu> <alpine.LFD.2.00.0904061842490.4010@localhost.localdomain> <alpine.LFD.2.00.0904062045530.4010@localhost.localdomain> <alpine.LFD.2.00.0904062108550.4010@localhost.localdomain> <alpine.LFD.2.00.0904062142110.4010@localhost.localdomain> <20090407052801.GA4235@elte.hu> <20090407055502.GA22881@localhost> <20090407060309.GA21788@elte.hu> <20090407061650.GA31745@localhost> <20090407065308.GA19470@elte.hu>
+	id S1751800AbZDGHIk (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 7 Apr 2009 03:08:40 -0400
+Date: Tue, 7 Apr 2009 09:08:36 +0200
+From: Jens Axboe <jens.axboe@oracle.com>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: "Theodore Ts'o" <tytso@mit.edu>,
+       Linux Kernel Developers List <linux-kernel@vger.kernel.org>,
+       Ext4 Developers List <linux-ext4@vger.kernel.org>, jack@suse.cz
+Subject: Re: [PATCH 1/3] block_write_full_page: Use synchronous writes for
+	WBC_SYNC_ALL writebacks
+Message-ID: <20090407070835.GM5178@kernel.dk>
+References: <1238185471-31152-1-git-send-email-tytso@mit.edu> <1238185471-31152-2-git-send-email-tytso@mit.edu> <20090406232141.ebdb426a.akpm@linux-foundation.org> <20090406235052.1ea47513.akpm@linux-foundation.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20090407065308.GA19470@elte.hu>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+In-Reply-To: <20090406235052.1ea47513.akpm@linux-foundation.org>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Apr 07, 2009 at 02:53:08PM +0800, Ingo Molnar wrote:
+On Mon, Apr 06 2009, Andrew Morton wrote:
+> On Mon, 6 Apr 2009 23:21:41 -0700 Andrew Morton <akpm@linux-foundation.org> wrote:
 > 
-> * Wu Fengguang <fengguang.wu@intel.com> wrote:
-> 
-> > From: Ingo Molnar <mingo@elte.hu>
+> > I mean, let's graph it:
 > > 
-> > If ramfs mount fails, s_fs_info will be freed twice in 
-> > ramfs_fill_super() and ramfs_kill_sb(), leading to kernel oops.
-> > 
-> > Consolidate and beautify the code. Make sure s_fs_info and s_root 
-> > are in known good states.
-> > 
-> > Acked-by: Wu Fengguang <fengguang.wu@intel.com>
-> > Signed-off-by: Ingo Molnar <mingo@elte.hu>
+> > WRITE_SYNC -> WRITE_SYNC_PLUG -> BIO_RW_SYNCIO -> bio_sync() -> REQ_RW_SYNC -> rw_is_sync() -> does something mysterious in get_request()
+> >                                                                             -> rq_is_sync() -> does something mysterious in IO schedulers
+> >                               -> BIO_RW_NOIDLE -> bio_noidle() -> REQ_NOIDLE -> rq_noidle() -> does something mysterious in cfq-iosched only
+> >            -> BIO_RW_UNPLUG   -> bio_unplug() -> REQ_UNPLUG -> OK, the cognoscenti know what this is supposed to do, but it is unused!
 > 
-> Nit: the commit is missing a Reported-by :)
+> whoop, I found a use of bio_unplug() in __make_request().
 > 
-> Linus might not insist on seeing his name mentioned yet another time 
-> in a commit, but it's generally good practice to always add bug 
-> report info and names.
+> So it appears that the intent of your patch is to cause an unplug after
+> submission of each WB_SYNC_ALL block?
 > 
-> Note that in this case the really hard work was there: Linus had to 
-> spend at least 2 hours on tracking down and bisecting this bug. (and 
-> Linus probably did this super-fast compared to the average tester - 
-> most other bug reporters spend a day or more on bisection, limited 
-> by lack of practice and by the slowness of kernel builds on ordinary 
-> hardware.)
+> But what about all the other stuff which WRITE_SYNC might or might not
+> do?  What does WRITE_SYNC _actually_ do, and what are the actual
+> effects of this change??
 > 
-> So the real human effort was spent there, not in my 5 minutes on 
-> fixing the bug that Linus served on a plate - while the commit only 
-> credits me. That's not fair :)
+> And what effect will this large stream of unplugs have upon merging?
 
-Good point! Thank you very much for mentoring me on this whole process!
+It looks like a good candidate for WRITE_SYNC_PLUG instead, since it
+does more than one buffer submission before waiting. It likely wont mean
+a whole lot since we'll usually only have a single buffer on that page,
+but for < PAGE_CACHE_SIZE block sizes it could easily make a big
+difference (4 ios instead of 1!).
 
-> See the tip:out-of-tree local commit i made and sent out.
+So on the write side, basically we have:
 
-Yes I've seen that, very comprehensive changelog and solid&pretty code!
+WRITE                   Normal async write.
+WRITE_SYNC_PLUG         Sync write, someone will wait on this so don't
+                        treat it as background activity. This is a hint
+                        to the io schedulers. This one does NOT unplug
+                        the queue, either the caller should do it after
+                        submission, or he should make sure that the
+                        wait_on_* callbacks do it for him.
+WRITE_SYNC              Like WRITE_SYNC_PLUG, but causes immediate
+                        unplug of the queue after submission. Most
+                        uses of this should likely use WRITE_SYNC_PLUG,
+                        at least in the normal IO path.
+WRITE_ODIRECT           Like WRITE_SYNC, but also passes a hint to the
+                        IO scheduler that we should expect more IO.
+                        This is similar to how a read is treated in the
+                        scheduler, it'll enable anticipation/idling.
 
-Best regards,
-Fengguang Wu
+Ditto for the SWRITE* variants, which are special hacks for
+ll_rw_block() only.
+
+I have killed REQ_UNPLUG, it doesn't make sense to pass the further down
+than to __make_request(), so the bio flag is enough.
+
+-- 
+Jens Axboe
 
