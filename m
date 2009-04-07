@@ -1,60 +1,79 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754764AbZDGIaa@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752161AbZDGIcP@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754764AbZDGIaa (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 7 Apr 2009 04:30:30 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751582AbZDGIaV
+	id S1752161AbZDGIcP (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 7 Apr 2009 04:32:15 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751256AbZDGIb7
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 7 Apr 2009 04:30:21 -0400
-Received: from smtp-out.google.com ([216.239.33.17]:15641 "EHLO
-	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751223AbZDGIaT (ORCPT
+	Tue, 7 Apr 2009 04:31:59 -0400
+Received: from nwd2mail10.analog.com ([137.71.25.55]:10500 "EHLO
+	nwd2mail10.analog.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751223AbZDGIb6 convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 7 Apr 2009 04:30:19 -0400
-DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
-	h=date:from:x-x-sender:to:cc:subject:in-reply-to:message-id:
-	references:user-agent:mime-version:content-type:x-system-of-record;
-	b=A/w08WhlHJGfVzGyO1xdq+nhsrrGhwBORqIPvDA7FHyEuc1EmNSnKpWGbxkZnFG3R
-	nu135R24SIYazbORWemhg==
-Date: Tue, 7 Apr 2009 01:30:03 -0700 (PDT)
-From: David Rientjes <rientjes@google.com>
-X-X-Sender: rientjes@chino.kir.corp.google.com
-To: Andi Kleen <andi@firstfloor.org>
-cc: Brice Goglin <Brice.Goglin@inria.fr>,
-       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
-       Yinghai Lu <yhlu.kernel@gmail.com>, Chris Worley <worleys@gmail.com>,
-       linux-kernel@vger.kernel.org
-Subject: Re: Off topic: Numactl "distance" wrong
-In-Reply-To: <20090407082342.GM17934@one.firstfloor.org>
-Message-ID: <alpine.DEB.2.00.0904070123100.24412@chino.kir.corp.google.com>
-References: <86802c440904031448yc6d499ckd9cb969ce136f477@mail.gmail.com> <87r609jtc2.fsf@basil.nowhere.org> <20090407111539.F0F5.A69D9226@jp.fujitsu.com> <49DAF003.1070605@inria.fr> <20090407070530.GJ17934@one.firstfloor.org>
- <alpine.DEB.2.00.0904070035570.20262@chino.kir.corp.google.com> <20090407075908.GL17934@one.firstfloor.org> <alpine.DEB.2.00.0904070058070.20262@chino.kir.corp.google.com> <20090407082342.GM17934@one.firstfloor.org>
-User-Agent: Alpine 2.00 (DEB 1167 2008-08-23)
+	Tue, 7 Apr 2009 04:31:58 -0400
+From: "Cai, Cliff" <Cliff.Cai@analog.com>
+X-IronPort-AV: E=Sophos;i="4.39,336,1235970000"; 
+   d="scan'208";a="85894743"
+X-MimeOLE: Produced By Microsoft Exchange V6.5
+Content-Class: urn:content-classes:message
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-X-System-Of-Record: true
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 8BIT
+Subject: RE: [PATCH] mmc: align data size for host which only supports power-of-2 block
+Date: Tue, 7 Apr 2009 16:34:37 +0800
+Message-ID: <0F1B54C89D5F954D8535DB252AF412FA03D4261F@chinexm1.ad.analog.com>
+In-Reply-To: <20090405210900.644a81bb@mjolnir.ossman.eu>
+X-MS-Has-Attach: 
+X-MS-TNEF-Correlator: 
+Thread-Topic: [PATCH] mmc: align data size for host which only supports power-of-2 block
+Thread-Index: Acm2If67xsUISJ4eSheg9aD6Kus+tABOEXlQ
+To: "Pierre Ossman" <drzeus-mmc@drzeus.cx>
+CC: "Bryan Wu" <cooloney@kernel.org>, <linux-kernel@vger.kernel.org>
+X-OriginalArrivalTime: 07 Apr 2009 08:31:28.0919 (UTC) FILETIME=[3F54AA70:01C9B75B]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 7 Apr 2009, Andi Kleen wrote:
+ 
 
-> No actually it was intended to prevent tables that confuse the scheduler/VM
-> from being used. At least that is what I wrote it for. The only check
-> that is really needed is that remote != local, the rest is fluff
-> admittedly and could be all dropped.
-> 
+>-----Original Message-----
+>From: Pierre Ossman [mailto:drzeus-mmc@drzeus.cx] 
+>Sent: Monday, April 06, 2009 3:09 AM
+>To: Cai, Cliff
+>Cc: Bryan Wu; linux-kernel@vger.kernel.org
+>Subject: Re: [PATCH] mmc: align data size for host which only 
+>supports power-of-2 block
+>
+>On Thu, 26 Mar 2009 10:22:54 +0800
+>"Cai, Cliff" <Cliff.Cai@analog.com> wrote:
+>
+>> >
+>> >mmc_align_data_size() shouldn't be adjusting the size to 
+>something it 
+>> >can easily determine that it's invalid.
+>> 
+>> Should I create a new function to do the power-of-2 adjustment?
+>> Or any ideal way to do it?
+>
+>That function is the correct place. My point was that we need 
+>to check after the adjustment that we didn't violate any of 
+>the other restrictions the driver has set. If we do, we should 
+>just return the original value.
 
-I think users, current and future, of node_distance(a, b) would assume it 
-would be equal to node_distance(b, a).  Admittedly, later revisions of the 
-SLIT specification allow this to not necessarily be true.
+What are other restrictions?I don't see any other restrictions on data
+size in current host driver
+Except 4 byte alignment.
 
-I agreed with you early on that we shouldn't add an interface to 
-dynamically change the localities in the SLIT, not only because of the 
-dependencies that the VM and scheduler have which you mentioned, but also 
-because there is no current interface for changing it and its much more 
-reasonable to simply fix the BIOS instead of tuning this (which is even 
-more argument for making slit_valid() as sane as possible).
 
-I do think that it would be helpful to add a parameter to disable parsing 
-the SLIT, however, when it is known to be incorrect.  I haven't heard your 
-objection to that yet.
+>> Otherwise,the SDH almost can't be used as sdio host.
+>
+>Unfortunately I think this controller will be very unsuitable 
+>as an SDIO controller anyway with that restriction.
+
+Yes,But since we need to support some SDIO devices according to our
+customers'
+Requests ,I think we have no other choice of this.
+
+
+Thanks
+
+Cliff
