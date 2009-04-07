@@ -1,125 +1,274 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752485AbZDGIMe@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752817AbZDGINO@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752485AbZDGIMe (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 7 Apr 2009 04:12:34 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751653AbZDGIMS
+	id S1752817AbZDGINO (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 7 Apr 2009 04:13:14 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752898AbZDGIM5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 7 Apr 2009 04:12:18 -0400
-Received: from mga02.intel.com ([134.134.136.20]:15580 "EHLO mga02.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751582AbZDGIMP convert rfc822-to-8bit (ORCPT
+	Tue, 7 Apr 2009 04:12:57 -0400
+Received: from e28smtp09.in.ibm.com ([59.145.155.9]:34448 "EHLO
+	e28smtp09.in.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752486AbZDGIMy (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 7 Apr 2009 04:12:15 -0400
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.39,336,1235980800"; 
-   d="scan'208";a="504228674"
-From: "Metzger, Markus T" <markus.t.metzger@intel.com>
-To: Peter Zijlstra <a.p.zijlstra@chello.nl>
-CC: "mingo@elte.hu" <mingo@elte.hu>, "tglx@linutronix.de" <tglx@linutronix.de>,
-       "hpa@zytor.com" <hpa@zytor.com>,
-       "markus.t.metzger@gmail.com" <markus.t.metzger@gmail.com>,
-       "roland@redhat.com" <roland@redhat.com>,
-       "eranian@googlemail.com" <eranian@googlemail.com>,
-       "oleg@redhat.com" <oleg@redhat.com>,
-       "Villacis, Juan" <juan.villacis@intel.com>,
-       "ak@linux.jf.intel.com" <ak@linux.jf.intel.com>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>
-Date: Tue, 7 Apr 2009 09:12:07 +0100
-Subject: RE: [patch 03/20] x86, ptrace, bts: defer branch trace stopping
-Thread-Topic: [patch 03/20] x86, ptrace, bts: defer branch trace stopping
-Thread-Index: Acm1FkXE/DBYDZcnQUCVs4ekLabKXACP9+uQ
-Message-ID: <928CFBE8E7CB0040959E56B4EA41A77E92768007@irsmsx504.ger.corp.intel.com>
-References: <20090403144332.799740000@intel.com>
-	 <20090403144550.712401000@intel.com> <1238770852.798.146.camel@twins>
-	 <928CFBE8E7CB0040959E56B4EA41A77E9271853A@irsmsx504.ger.corp.intel.com>
- <1238843551.4549.1041.camel@laptop>
-In-Reply-To: <1238843551.4549.1041.camel@laptop>
-Accept-Language: en-US
-Content-Language: en-US
-X-MS-Has-Attach: 
-X-MS-TNEF-Correlator: 
-acceptlanguage: en-US
-Content-Type: text/plain; charset="iso-8859-1"
+	Tue, 7 Apr 2009 04:12:54 -0400
+Date: Tue, 7 Apr 2009 13:41:57 +0530
+From: Arun R Bharadwaj <arun@linux.vnet.ibm.com>
+To: Thomas Gleixner <tglx@linutronix.de>, mingo@elte.hu
+Cc: linux-kernel@vger.kernel.org, linux-pm@lists.linux-foundation.org,
+       a.p.zijlstra@chello.nl, ego@in.ibm.com, andi@firstfloor.org,
+       venkatesh.pallipadi@intel.com, vatsa@linux.vnet.ibm.com,
+       arjan@infradead.org, svaidy@linux.vnet.ibm.com
+Subject: Re: [v5 PATCH 4/4] timers: logic to move non pinned timers
+Message-ID: <20090407081157.GA7628@linux.vnet.ibm.com>
+Reply-To: arun@linux.vnet.ibm.com
+References: <20090406161357.GB15269@linux.vnet.ibm.com> <20090406162205.GE15269@linux.vnet.ibm.com> <alpine.LFD.2.00.0904061846140.21577@localhost.localdomain>
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8BIT
+Content-Type: text/plain; charset=iso-8859-1
+Content-Disposition: inline
+In-Reply-To: <alpine.LFD.2.00.0904061846140.21577@localhost.localdomain>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
->-----Original Message-----
->From: Peter Zijlstra [mailto:a.p.zijlstra@chello.nl]
->Sent: Saturday, April 04, 2009 1:13 PM
->To: Metzger, Markus T
->Cc: mingo@elte.hu; tglx@linutronix.de; hpa@zytor.com; markus.t.metzger@gmail.com; roland@redhat.com;
->eranian@googlemail.com; oleg@redhat.com; Villacis, Juan; ak@linux.jf.intel.com; linux-
->kernel@vger.kernel.org; Andrew Morton
->Subject: RE: [patch 03/20] x86, ptrace, bts: defer branch trace stopping
->
->On Sat, 2009-04-04 at 08:17 +0100, Metzger, Markus T wrote:
->> >-----Original Message-----
->> >From: Peter Zijlstra [mailto:a.p.zijlstra@chello.nl]
->> >Sent: Friday, April 03, 2009 5:01 PM
->> >To: Metzger, Markus T
->>
->>
->> >Also, I can't say I like the name, what about something like:
->> >
->> >void account_locked_buffer(struct mm_struct *mm, long pages)
->> >{
->> >	down_write(&mm->mmap_sem);
->> >
->> >	mm->total_vm += pages;
->> >	mm->locked_vm += pages;
->> >
->> >	up_write(&mm->mmap_sem);
->> >}
->> >
->> >but looking more closely at that alloc_locked_buffer() stuff, I really
->> >hate it, who in his right mind does a multi-page kmalloc() -- that's
->> >crazy.
->>
->> I need a non-pageable chunk of memory to give to the cpu to store branch
->> trace data in. Kmalloc() is easy to use and gives me what I need.
->>
->> How would I do this correctly?
->
->Well, how large should this buffer be and must it be physically
->contiguous?
+* Thomas Gleixner <tglx@linutronix.de> [2009-04-06 18:48:48]:
 
-The size is set by the user. It is limited by (locked memory) RLIMIT.
+Hi,
 
-The buffer need not be physically contiguous, but it must not be paged out
-and should be marked accessed and dirty.
-(see §18.7.8.2 in vol. 3b, Software Developer's Manual).
+I tested my patchset for any possible regression, with kernbench.
+Posting the results below. The results show that we are not facing
+any regression due to these patches.
 
->Apparently its large enough to account in pages, that would suggest you
->should use the page allocator to get memory.
+Ingo,
 
-Wouldn't kmalloc forward the request to the page allocator for large memory?
+Can you please include the patch series in the -tip so that it gets
+more testing? I worked with Thomas to implement all the necessary
+fine-tunings that were required.
+
+I'm reposting the [PATCH 4/4] in this mail. All the other patches in
+the patchset are unchanged.
 
 
->Furthermore, if it needs to be physically contiguous and its more than
->say 8 pages worth, you're basically up shit creek.
+Kernbech results on an 8-cpu, 2 package machine.
 
-If not enough memory is available, I would expect users to request smaller
-buffers until the request can be satisfied.
+-----------------------------------------------------------------------
+| No. of Threads  |	 Time(s) - Without   |	   Time(s) - With the |
+|		  |       patches applied    |	     patches applied  |
+-----------------------------------------------------------------------
+|	1	  |	      298.9	     |		298.8	      |
+|	2	  |	      148.2	     |		148.6	      |
+|	4	  |	       76.9	     |		 76.5	      |
+|	8	  |	       43.8	     |		 43.5	      |
+|      16	  |	       39.5	     |		 39.3	      |
+|      32	  |	       39.1	     |		 39.1	      |
+-----------------------------------------------------------------------
 
+--arun
+---
 
-thanks and regards,
-markus.
----------------------------------------------------------------------
-Intel GmbH
-Dornacher Strasse 1
-85622 Feldkirchen/Muenchen Germany
-Sitz der Gesellschaft: Feldkirchen bei Muenchen
-Geschaeftsfuehrer: Douglas Lusk, Peter Gleissner, Hannes Schwaderer
-Registergericht: Muenchen HRB 47456 Ust.-IdNr.
-VAT Registration No.: DE129385895
-Citibank Frankfurt (BLZ 502 109 00) 600119052
+Signed-off-by: Arun R Bharadwaj <arun@linux.vnet.ibm.com>
+---
+ include/linux/clockchips.h |    9 +++++++++
+ include/linux/sched.h      |   12 ++++++++++++
+ kernel/hrtimer.c           |   42 +++++++++++++++++++++++++++++++++++++++++-
+ kernel/sched.c             |    5 +++++
+ kernel/time/clockevents.c  |   14 ++++++++++++++
+ kernel/timer.c             |   12 +++++++++++-
+ 6 files changed, 92 insertions(+), 2 deletions(-)
 
-This e-mail and any attachments may contain confidential material for
-the sole use of the intended recipient(s). Any review or distribution
-by others is strictly prohibited. If you are not the intended
-recipient, please contact the sender and delete all copies.
-
+Index: linux.trees.git/kernel/timer.c
+===================================================================
+--- linux.trees.git.orig/kernel/timer.c
++++ linux.trees.git/kernel/timer.c
+@@ -37,6 +37,7 @@
+ #include <linux/delay.h>
+ #include <linux/tick.h>
+ #include <linux/kallsyms.h>
++#include <linux/sched.h>
+ 
+ #include <asm/uaccess.h>
+ #include <asm/unistd.h>
+@@ -606,7 +607,7 @@ __mod_timer(struct timer_list *timer, un
+ {
+ 	struct tvec_base *base, *new_base;
+ 	unsigned long flags;
+-	int ret;
++	int ret, preferred_cpu, cpu;
+ 
+ 	ret = 0;
+ 
+@@ -627,6 +628,15 @@ __mod_timer(struct timer_list *timer, un
+ 
+ 	new_base = __get_cpu_var(tvec_bases);
+ 
++	cpu = smp_processor_id();
++	if (get_sysctl_timer_migration() && idle_cpu(cpu) && !pinned) {
++		preferred_cpu = get_nohz_load_balancer();
++		if (preferred_cpu >= 0)
++			cpu = preferred_cpu;
++	}
++
++	new_base = per_cpu(tvec_bases, cpu);
++
+ 	if (base != new_base) {
+ 		/*
+ 		 * We are trying to schedule the timer on the local CPU.
+Index: linux.trees.git/kernel/hrtimer.c
+===================================================================
+--- linux.trees.git.orig/kernel/hrtimer.c
++++ linux.trees.git/kernel/hrtimer.c
+@@ -43,6 +43,8 @@
+ #include <linux/seq_file.h>
+ #include <linux/err.h>
+ #include <linux/debugobjects.h>
++#include <linux/sched.h>
++#include <linux/timer.h>
+ 
+ #include <asm/uaccess.h>
+ 
+@@ -198,8 +200,17 @@ switch_hrtimer_base(struct hrtimer *time
+ {
+ 	struct hrtimer_clock_base *new_base;
+ 	struct hrtimer_cpu_base *new_cpu_base;
++	int cpu, preferred_cpu = -1;
+ 
+-	new_cpu_base = &__get_cpu_var(hrtimer_bases);
++	cpu = smp_processor_id();
++	if (get_sysctl_timer_migration() && !pinned && idle_cpu(cpu)) {
++		preferred_cpu = get_nohz_load_balancer();
++		if (preferred_cpu >= 0)
++			cpu = preferred_cpu;
++	}
++
++again:
++	new_cpu_base = &per_cpu(hrtimer_bases, cpu);
+ 	new_base = &new_cpu_base->clock_base[base->index];
+ 
+ 	if (base != new_base) {
+@@ -219,6 +230,35 @@ switch_hrtimer_base(struct hrtimer *time
+ 		timer->base = NULL;
+ 		spin_unlock(&base->cpu_base->lock);
+ 		spin_lock(&new_base->cpu_base->lock);
++
++		if (cpu == preferred_cpu) {
++			/* Calculate clock monotonic expiry time */
++			ktime_t expires = ktime_sub(hrtimer_get_expires(timer),
++							new_base->offset);
++
++			/*
++			 * Get the next event on target cpu from the
++			 * clock events layer.
++			 * This covers the highres=off nohz=on case as well.
++			 */
++			ktime_t next = clockevents_get_next_event(cpu);
++
++			ktime_t delta = ktime_sub(expires, next);
++
++			/*
++			 * We do not migrate the timer when it is expiring
++			 * before the next event on the target cpu because
++			 * we cannot reprogram the target cpu hardware and
++			 * we would cause it to fire late.
++			 */
++			if (delta.tv64 < 0) {
++				cpu = smp_processor_id();
++				spin_unlock(&new_base->cpu_base->lock);
++				spin_lock(&base->cpu_base->lock);
++				timer->base = base;
++				goto again;
++			}
++		}
+ 		timer->base = new_base;
+ 	}
+ 	return new_base;
+Index: linux.trees.git/include/linux/sched.h
+===================================================================
+--- linux.trees.git.orig/include/linux/sched.h
++++ linux.trees.git/include/linux/sched.h
+@@ -265,6 +265,7 @@ static inline int select_nohz_load_balan
+ }
+ #endif
+ 
++extern int get_nohz_load_balancer(void);
+ /*
+  * Only dump TASK_* tasks. (0 for all tasks)
+  */
+@@ -1769,6 +1770,17 @@ int sched_nr_latency_handler(struct ctl_
+ 		struct file *file, void __user *buffer, size_t *length,
+ 		loff_t *ppos);
+ #endif
++#ifdef CONFIG_SCHED_DEBUG
++static inline int get_sysctl_timer_migration(void)
++{
++	return sysctl_timer_migration;
++}
++#else
++static inline int get_sysctl_timer_migration(void)
++{
++	return 1;
++}
++#endif
+ extern unsigned int sysctl_sched_rt_period;
+ extern int sysctl_sched_rt_runtime;
+ 
+Index: linux.trees.git/kernel/sched.c
+===================================================================
+--- linux.trees.git.orig/kernel/sched.c
++++ linux.trees.git/kernel/sched.c
+@@ -4009,6 +4009,11 @@ static struct {
+ 	.load_balancer = ATOMIC_INIT(-1),
+ };
+ 
++int get_nohz_load_balancer(void)
++{
++	return atomic_read(&nohz.load_balancer);
++}
++
+ /*
+  * This routine will try to nominate the ilb (idle load balancing)
+  * owner among the cpus whose ticks are stopped. ilb owner will do the idle
+Index: linux.trees.git/kernel/time/clockevents.c
+===================================================================
+--- linux.trees.git.orig/kernel/time/clockevents.c
++++ linux.trees.git/kernel/time/clockevents.c
+@@ -18,6 +18,7 @@
+ #include <linux/notifier.h>
+ #include <linux/smp.h>
+ #include <linux/sysdev.h>
++#include <linux/tick.h>
+ 
+ /* The registered clock event devices */
+ static LIST_HEAD(clockevent_devices);
+@@ -252,3 +253,16 @@ void clockevents_notify(unsigned long re
+ }
+ EXPORT_SYMBOL_GPL(clockevents_notify);
+ #endif
++
++#ifdef CONFIG_GENERIC_CLOCKEVENTS
++ktime_t clockevents_get_next_event(int cpu)
++{
++	struct tick_device *td;
++	struct clock_event_device *dev;
++
++	td = &per_cpu(tick_cpu_device, cpu);
++	dev = td->evtdev;
++
++	return dev->next_event;
++}
++#endif
+Index: linux.trees.git/include/linux/clockchips.h
+===================================================================
+--- linux.trees.git.orig/include/linux/clockchips.h
++++ linux.trees.git/include/linux/clockchips.h
+@@ -143,3 +143,12 @@ extern void clockevents_notify(unsigned 
+ #endif
+ 
+ #endif
++
++#ifdef CONFIG_GENERIC_CLOCKEVENTS
++extern ktime_t clockevents_get_next_event(int cpu);
++#else
++static inline ktime_t clockevents_get_next_event(int cpu)
++{
++	return KTIME_MAX;
++}
++#endif
