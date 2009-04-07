@@ -1,54 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761021AbZDGVXr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761409AbZDGVZT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761021AbZDGVXr (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 7 Apr 2009 17:23:47 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759944AbZDGVXf
+	id S1761409AbZDGVZT (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 7 Apr 2009 17:25:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757642AbZDGVZE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 7 Apr 2009 17:23:35 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:50756 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1758120AbZDGVXe (ORCPT
+	Tue, 7 Apr 2009 17:25:04 -0400
+Received: from smtp.ultrahosting.com ([74.213.174.254]:45286 "EHLO
+	smtp.ultrahosting.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756489AbZDGVZD (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 7 Apr 2009 17:23:34 -0400
-Date: Tue, 7 Apr 2009 14:11:56 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Alexey Dobriyan <adobriyan@gmail.com>
-Cc: linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] Consolidate init_mm definition
-Message-Id: <20090407141156.296d0d0c.akpm@linux-foundation.org>
-In-Reply-To: <20090326235116.GA26129@x200.localdomain>
-References: <20090326235116.GA26129@x200.localdomain>
-X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Tue, 7 Apr 2009 17:25:03 -0400
+Date: Tue, 7 Apr 2009 17:19:19 -0400 (EDT)
+From: Christoph Lameter <cl@linux.com>
+X-X-Sender: cl@qirst.com
+To: Andi Kleen <andi@firstfloor.org>
+cc: Lee.Schermerhorn@hp.com, npiggin@suse.de, linux-kernel@vger.kernel.org,
+       linux-mm@kvack.org, x86@kernel.org
+Subject: Re: [PATCH] [10/16] POISON: Use bitmask/action code for try_to_unmap
+ behaviour
+In-Reply-To: <20090407151007.71F3F1D046F@basil.firstfloor.org>
+Message-ID: <alpine.DEB.1.10.0904071714450.12192@qirst.com>
+References: <20090407509.382219156@firstfloor.org> <20090407151007.71F3F1D046F@basil.firstfloor.org>
+User-Agent: Alpine 1.10 (DEB 962 2008-03-14)
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 27 Mar 2009 02:51:16 +0300
-Alexey Dobriyan <adobriyan@gmail.com> wrote:
+On Tue, 7 Apr 2009, Andi Kleen wrote:
 
-> --- /dev/null
-> +++ b/mm/init-mm.c
-> @@ -0,0 +1,13 @@
-> +#include <linux/mm_types.h>
-> +#include <asm/pgtable.h>
 > +
-> +struct mm_struct init_mm = {
-> +	.mm_rb		= RB_ROOT,
-> +	.pgd		= swapper_pg_dir,
-> +	.mm_users	= ATOMIC_INIT(2),
-> +	.mm_count	= ATOMIC_INIT(1),
-> +	.mmap_sem	= __RWSEM_INITIALIZER(init_mm.mmap_sem),
-> +	.page_table_lock =  __SPIN_LOCK_UNLOCKED(init_mm.page_table_lock),
-> +	.mmlist		= LIST_HEAD_INIT(init_mm.mmlist),
-> +	.cpu_vm_mask	= CPU_MASK_ALL,
-> +};
+> +enum ttu_flags {
+> +	TTU_UNMAP = 0,			/* unmap mode */
+> +	TTU_MIGRATION = 1,		/* migration mode */
+> +	TTU_MUNLOCK = 2,		/* munlock mode */
+> +	TTU_ACTION_MASK = 0xff,
+> +
+> +	TTU_IGNORE_MLOCK = (1 << 8),	/* ignore mlock */
 
-I'd be more conmfortable if this file were to explicitly include the
-headers which it needs.
 
-As it stands, variations in configs (especially different
-architectures) have a decent chance of breaking things.
+Ignoring MLOCK? This means we are violating POSIX which says that an
+MLOCKed page cannot be unmapped from a process? Note that page migration
+does this under special pte entries so that the page will never appear to
+be unmapped to user space.
+
+How does that work for the poisoning case? We substitute a fresh page?
 
