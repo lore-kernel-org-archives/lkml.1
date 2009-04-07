@@ -1,58 +1,41 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760910AbZDGTDo@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760937AbZDGTFG@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760910AbZDGTDo (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 7 Apr 2009 15:03:44 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754318AbZDGTDf
+	id S1760937AbZDGTFG (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 7 Apr 2009 15:05:06 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754318AbZDGTEt
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 7 Apr 2009 15:03:35 -0400
-Received: from cmpxchg.org ([85.214.51.133]:39646 "EHLO cmpxchg.org"
+	Tue, 7 Apr 2009 15:04:49 -0400
+Received: from mx2.redhat.com ([66.187.237.31]:55246 "EHLO mx2.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753663AbZDGTDf (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 7 Apr 2009 15:03:35 -0400
-Date: Tue, 7 Apr 2009 21:03:30 +0200
-From: Johannes Weiner <hannes@cmpxchg.org>
-To: Andi Kleen <andi@firstfloor.org>
-Cc: linux-kernel@vger.kernel.org, linux-mm@kvack.org, x86@kernel.org
-Subject: Re: [PATCH] [8/16] POISON: Add various poison checks in mm/memory.c
-Message-ID: <20090407190330.GB3818@cmpxchg.org>
-References: <20090407509.382219156@firstfloor.org> <20090407151005.4E24B1D046D@basil.firstfloor.org>
+	id S1753619AbZDGTEs (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 7 Apr 2009 15:04:48 -0400
+Date: Tue, 7 Apr 2009 13:04:03 -0600
+From: Pete Zaitcev <zaitcev@redhat.com>
+To: "John Stoffel" <john@stoffel.org>
+Cc: Jarek Poplawski <jarkao2@gmail.com>, linux-kernel@vger.kernel.org,
+       netdev@vger.kernel.org, linux-usb@vger.kernel.org, zaitcev@redhat.com
+Subject: Re: usb_mon oops Re: tcpdump crashes 2.6.29.1 (and 2.6.29-rc5)
+Message-Id: <20090407130403.e0061a8d.zaitcev@redhat.com>
+In-Reply-To: <18907.28788.965069.573489@stoffel.org>
+References: <18906.49779.243047.207639@stoffel.org>
+	<20090407120022.GA6519@ff.dom.local>
+	<18907.28788.965069.573489@stoffel.org>
+Organization: Red Hat, Inc.
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090407151005.4E24B1D046D@basil.firstfloor.org>
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Apr 07, 2009 at 05:10:05PM +0200, Andi Kleen wrote:
-> 
-> Bail out early when poisoned pages are found in page fault handling.
-> Since they are poisoned they should not be mapped freshly
-> into processes.
-> 
-> This is generally handled in the same way as OOM, just a different
-> error code is returned to the architecture code.
-> 
-> Signed-off-by: Andi Kleen <ak@linux.intel.com>
-> 
-> ---
->  mm/memory.c |    7 +++++++
->  1 file changed, 7 insertions(+)
-> 
-> Index: linux/mm/memory.c
-> ===================================================================
-> --- linux.orig/mm/memory.c	2009-04-07 16:39:39.000000000 +0200
-> +++ linux/mm/memory.c	2009-04-07 16:39:39.000000000 +0200
-> @@ -2560,6 +2560,10 @@
->  		goto oom;
->  	__SetPageUptodate(page);
->  
-> +	/* Kludge for now until we take poisoned pages out of the free lists */
-> +	if (unlikely(PagePoison(page)))
-> +		return VM_FAULT_POISON;
-> +
+On Tue, 7 Apr 2009 11:25:40 -0400, "John Stoffel" <john@stoffel.org> wrote:
 
-When memory_failure() hits a page still on the free list
-(!page_count()) then the get_page() in memory_failure() will trigger a
-VM_BUG.  So either this check is unneeded or it should be
-get_page_unless_zero() in memory_failure()?
+> But I'm surprised that USB_MON would be the cause when it's a
+> networking tool which is starting up?  *shrug*
+
+The libpcap supports usbmon. Perhaps it scans something.
+
+The big problem with usbmon is, it has to trust what drivers
+stuff into URBs. Bet it's your uvcvideo. A rough driver, that.
+
+-- Pete
