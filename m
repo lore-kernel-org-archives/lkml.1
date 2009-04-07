@@ -1,57 +1,117 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760801AbZDGS2e@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760857AbZDGSa3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760801AbZDGS2e (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 7 Apr 2009 14:28:34 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758873AbZDGS2V
+	id S1760857AbZDGSa3 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 7 Apr 2009 14:30:29 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757819AbZDGSaU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 7 Apr 2009 14:28:21 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:47847 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1758469AbZDGS2U (ORCPT
+	Tue, 7 Apr 2009 14:30:20 -0400
+Received: from mail-ew0-f165.google.com ([209.85.219.165]:50885 "EHLO
+	mail-ew0-f165.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757066AbZDGSaT (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 7 Apr 2009 14:28:20 -0400
-Date: Tue, 7 Apr 2009 11:22:47 -0700 (PDT)
-From: Linus Torvalds <torvalds@linux-foundation.org>
-X-X-Sender: torvalds@localhost.localdomain
-To: Jeff Garzik <jeff@garzik.org>
-cc: Arjan van de Ven <arjan@infradead.org>, Mark Lord <lkml@rtr.ca>,
-       Theodore Tso <tytso@mit.edu>, Jens Axboe <jens.axboe@oracle.com>,
-       Linux Kernel Developers List <linux-kernel@vger.kernel.org>,
-       Ext4 Developers List <linux-ext4@vger.kernel.org>
-Subject: Re: [GIT PULL] Ext3 latency fixes
-In-Reply-To: <alpine.LFD.2.00.0904071107500.27889@localhost.localdomain>
-Message-ID: <alpine.LFD.2.00.0904071121060.27889@localhost.localdomain>
-References: <alpine.LFD.2.00.0904031150190.4015@localhost.localdomain> <alpine.LFD.2.00.0904031329410.7007@localhost.localdomain> <20090404135719.GA9812@mit.edu> <20090404151649.GE5178@kernel.dk> <alpine.LFD.2.00.0904040854470.3915@localhost.localdomain>
- <20090404173412.GF5178@kernel.dk> <alpine.LFD.2.00.0904041039230.3915@localhost.localdomain> <20090404180108.GH5178@kernel.dk> <20090404232222.GA7480@mit.edu> <20090404163349.20df1208@infradead.org> <20090405001005.GA7553@mit.edu>
- <alpine.LFD.2.00.0904050927580.4023@localhost.localdomain> <49D8E71F.6000703@rtr.ca> <49D91B31.90300@garzik.org> <20090405164831.7ad01c20@infradead.org> <49D99775.9030104@garzik.org> <alpine.LFD.2.00.0904071107500.27889@localhost.localdomain>
-User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
+	Tue, 7 Apr 2009 14:30:19 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:to:cc:subject:message-id:references:mime-version
+         :content-type:content-disposition:in-reply-to:user-agent;
+        b=e/3CL9abQAkel20yloZTA4qpIwxN8h7o4239U6EoyKmNvJWS74Py5yEyl6DSNFA/rU
+         DCqCnsd7hm5KZOOkGg8cUHNJftflThlNezosTsC8OHFiN7EtjOtn3XXayvPn/Q1GTTKq
+         9dgySfA8miqIt4Eqb+PCwry1WfWpyaUm3HSIk=
+Date: Tue, 7 Apr 2009 20:30:15 +0200
+From: Frederic Weisbecker <fweisbec@gmail.com>
+To: Miklos Szeredi <miklos@szeredi.hu>
+Cc: linux-kernel@vger.kernel.org, rusty@rustcorp.com.au, srostedt@redhat.com,
+       mingo@elte.hu
+Subject: Re: [bug] lockdep warning: module_mutex vs. ftrace_lock
+Message-ID: <20090407183014.GA7531@nowhere>
+References: <E1LrEGG-0000ag-Js@pomaz-ex.szeredi.hu>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <E1LrEGG-0000ag-Js@pomaz-ex.szeredi.hu>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-
-On Tue, 7 Apr 2009, Linus Torvalds wrote:
+On Tue, Apr 07, 2009 at 06:34:56PM +0200, Miklos Szeredi wrote:
+> =======================================================
+> [ INFO: possible circular locking dependency detected ]
+> 2.6.29-09854-gd508afb-dirty #6
+> -------------------------------------------------------
+> modprobe/3184 is trying to acquire lock:
+>  (ftrace_lock){+.+.+.}, at: [<ffffffff80277e71>] ftrace_convert_nops+0x32/0x267
 > 
-> Something like this might be a good idea. 
-
-And it clearly is "something like".
-
-> I've seen several SSD's that do _not_ do that whole RPM == 1 thing, but 
-> they have "SSD" in their names. 
+> but task is already holding lock:
+>  (module_mutex){+.+.+.}, at: [<ffffffff8026a539>] sys_init_module+0x3f/0x1d3
 > 
-> I forget how the ID is stored (I have this memory of it being big-endian 
-> 16-bit words or something crazy like that?), but aside from fixing up that 
-> kind of crazyness, maybe something like this is worth it?
+> which lock already depends on the new lock.
+> 
+> 
+> the existing dependency chain (in reverse order) is:
+> 
+> -> #1 (module_mutex){+.+.+.}:
+>        [<ffffffff8026134a>] __lock_acquire+0x12fe/0x1668
+>        [<ffffffff802617a2>] lock_acquire+0xee/0x112
+>        [<ffffffff804fe0a6>] mutex_lock_nested+0x4f/0x305
+>        [<ffffffff8026709e>] module_update_tracepoints+0x1c/0x73
+>        [<ffffffff80274f74>] tracepoint_update_probes+0x21/0x23
+>        [<ffffffff8027510a>] tracepoint_probe_register+0x4a/0x68
+>        [<ffffffff80277cae>] register_ftrace_graph+0x2a9/0x30f
+>        [<ffffffff8027f928>] trace_selftest_startup_function_graph+0x2e/0xbb
+>        [<ffffffff8027fdc5>] register_tracer+0x151/0x26e
+>        [<ffffffff8070b942>] init_graph_trace+0x10/0x12
+>        [<ffffffff80209066>] do_one_initcall+0x5b/0x135
+>        [<ffffffff806fa5e4>] kernel_init+0x12f/0x185
+>        [<ffffffff8020c2ba>] child_rip+0xa/0x20
+>        [<ffffffffffffffff>] 0xffffffffffffffff
+> 
+> -> #0 (ftrace_lock){+.+.+.}:
+>        [<ffffffff80261067>] __lock_acquire+0x101b/0x1668
+>        [<ffffffff802617a2>] lock_acquire+0xee/0x112
+>        [<ffffffff804fe0a6>] mutex_lock_nested+0x4f/0x305
+>        [<ffffffff80277e71>] ftrace_convert_nops+0x32/0x267
+>        [<ffffffff802780bd>] ftrace_init_module+0x17/0x19
+>        [<ffffffff8026a011>] load_module+0x1122/0x160b
+>        [<ffffffff8026a556>] sys_init_module+0x5c/0x1d3
+>        [<ffffffff8020b21b>] system_call_fastpath+0x16/0x1b
+>        [<ffffffffffffffff>] 0xffffffffffffffff
 
-Yeah, just checked. My memory wasn't wrong, and that code can not possibly 
-work. Not only isn't that whole field generally NUL-terminated at all, my 
-recollection of odd 16-bit byte ordering was right.
 
-So that patch is crap. 
 
-But the _concept_ may be worth pursuing. 
+Ah that's this ftrace/modules lock dependency that Steven told me about
+recently. Steven, do you know more about it now?
 
-			Linus
+Thanks.
+Frederic.
+
+ 
+> other info that might help us debug this:
+> 
+> 1 lock held by modprobe/3184:
+>  #0:  (module_mutex){+.+.+.}, at: [<ffffffff8026a539>] sys_init_module+0x3f/0x1d3
+> 
+> stack backtrace:
+> Pid: 3184, comm: modprobe Not tainted 2.6.29-09854-gd508afb-dirty #6
+> Call Trace:
+>  [<ffffffff8025fba1>] print_circular_bug_tail+0xc5/0xd0
+>  [<ffffffff80261067>] __lock_acquire+0x101b/0x1668
+>  [<ffffffff80267905>] ? find_symbol_in_section+0x39/0xda
+>  [<ffffffff80266a52>] ? each_symbol_in_section+0x3a/0x7a
+>  [<ffffffff802617a2>] lock_acquire+0xee/0x112
+>  [<ffffffff80277e71>] ? ftrace_convert_nops+0x32/0x267
+>  [<ffffffff804fe0a6>] mutex_lock_nested+0x4f/0x305
+>  [<ffffffff80277e71>] ? ftrace_convert_nops+0x32/0x267
+>  [<ffffffff8020af16>] ? ftrace_call+0x5/0x2b
+>  [<ffffffff80277e71>] ftrace_convert_nops+0x32/0x267
+>  [<ffffffff802780bd>] ftrace_init_module+0x17/0x19
+>  [<ffffffff8026a011>] load_module+0x1122/0x160b
+>  [<ffffffff8025f3a5>] ? trace_hardirqs_on_caller+0x114/0x138
+>  [<ffffffff8026a556>] sys_init_module+0x5c/0x1d3
+>  [<ffffffff8020b21b>] system_call_fastpath+0x16/0x1b
+> --
+> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> Please read the FAQ at  http://www.tux.org/lkml/
+
