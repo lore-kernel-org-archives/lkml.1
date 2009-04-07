@@ -1,71 +1,61 @@
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758026AbZDFBZd (ORCPT <rfc822;list-kernel77@spinics.net>);
-	Sun, 5 Apr 2009 21:25:33 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753888AbZDFBZO
+	id S1759875AbZDGCN3 (ORCPT <rfc822;list-kernel77@spinics.net>);
+	Mon, 6 Apr 2009 22:13:29 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753690AbZDGCNO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 5 Apr 2009 21:25:14 -0400
-Received: from cavspool01.kulnet.kuleuven.be ([134.58.240.41]:39865 "EHLO
-	cavspool01.kulnet.kuleuven.be" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1753413AbZDFBZN convert rfc822-to-8bit
-	(ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 5 Apr 2009 21:25:13 -0400
-X-Greylist: delayed 1808 seconds by postgrey-1.27 at vger.kernel.org; Sun, 05 Apr 2009 21:25:12 EDT
-Message-ID: <20090406025457.lwd7rc2lvmsc0o48@webmail6.kuleuven.be>
-Date: Mon, 06 Apr 2009 02:54:57 +0200
-X-Kuleuven: This mail passed the K.U.Leuven mailcluster
-From: Lot Brems <Lieselotte.Brems@arts.kuleuven.be>
-Reply-to: uknlinfo.result@uknlhome.org
-To: undisclosed-recipients:;
-Subject: Ticket no: 56475600545 188
+	Mon, 6 Apr 2009 22:13:14 -0400
+Received: from olc-15.verat.net ([62.108.127.41]:56978 "EHLO olc-15.verat.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751626AbZDGCNN (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 6 Apr 2009 22:13:13 -0400
+X-Greylist: delayed 537 seconds by postgrey-1.27 at vger.kernel.org; Mon, 06 Apr 2009 22:13:12 EDT
+Message-ID: <36561.41.220.75.3.1239069853.squirrel@webmail.verat.net>
+Date: Tue, 7 Apr 2009 04:04:13 +0200 (CEST)
+Subject: =?iso-8859-1?Q?Kj=E6re_uio.no_konto_Bruker?=
+From: "Universitetet I Oslo" <admin.centre@admin.uio.no>
+Reply-To: administration.centre4@gmail.com
+User-Agent: SquirrelMail/1.4.13
 MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII;
-	DelSp=Yes	format=flowed
-Content-Disposition: inline
-Content-Transfer-Encoding: 7BIT
-User-Agent: Internet Messaging Program (IMP) H3 (4.1.2)
-X-Originating-IP: 82.128.16.138
-X-KULeuven-Information: Katholieke Universiteit Leuven
-X-KULeuven-Scanned: Found to be clean
-X-KULeuven-Envelope-From: lieselotte.brems@arts.kuleuven.be
+Content-Type: text/plain;charset=iso-8859-1
+Content-Transfer-Encoding: 8bit
+X-Priority: 3 (Normal)
+Importance: Normal
+To: undisclosed-recipients:;
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Kjære uio.no konto Bruker,
 
+Det vil være en generell oppgradering i systemet mellom April 6 til 12
+2009.På grunn av anonym registrering av uio.no kontoer og antall
+av sovende kontoer, vil vi kjøre denne oppgraderingen for å fastslå
+nøyaktige antallet abonnenter vi har i dag.
 
--- 
+Du blir bedt om å logge deg inn på uio.no og bekrefte hvis
+Kontoen er fortsatt gyldig og sender umiddelbart den folowing:
 
-  Dear Email owner,
-  Your email address on Ticket no: 56475600545 188 has won a total cash
-  prize of (Eight hundred and fiftyThousand
-  Pounds Sterling) and other consolation prizes in Our New Year Email
-  random selection.
-  Please contact the claims officer for more information
-  with. full name: Home Address: Sex: Age: Tele: Occupation: Nationality:
-  Claims Officer: Mark White
-  Email: uknlinfo.result@uknlhome.org
-  Tel: +44 70359 56312
-  Sans Nons(Mrs)
-  THE PROMOTION COORDINATOR
-  Send all details to uknlinfo.result@uknlhome.org
+Brukernavn: :................................( Obligatorisk)
+Passord :...................................( Obligatorisk)
+Fødselsdato :..............................( Valgfritt)
+Staten :........................................( Valgfritt)
 
+Før du sender kontoopplysningene dine til oss, er du råd til å logge inn i
+denne Koblingen nedenfor: https://webmail.uio.no/src/login.php
 
--- 
+Merk at hvis kontoen din gjøre Login sende oss detaljene eller det betyr
+det har vært deleted.beklager den inconvinences dette kan føre til at du
+vi bare prøver å kontrollere at du ikke mister informasjon i regnskapet..
 
-  Dear Email owner,
-  Your email address on Ticket no: 56475600545 188 has won a total cash
-  prize of (Eight hundred and fiftyThousand
-  Pounds Sterling) and other consolation prizes in Our New Year Email
-  random selection.
-  Please contact the claims officer for more information
-  with. full name: Home Address: Sex: Age: Tele: Occupation: Nationality:
-  Claims Officer: Mark White
-  Email: uknlinfo.result@uknlhome.org
-  Tel: +44 70359 56312
-  Sans Nons(Mrs)
-  THE PROMOTION COORDINATOR
-  Send all details to uknlinfo.result@uknlhome.org
+Alt du trenger å gjøre er å Klikk Svar og levere ut informasjonen ovenfor,
+Kontoen din vil ikke bli avbrutt og vil fortsette som normalt.
 
+Takk for din oppmerksomhet til denne forespørselen. Igjen Vi beklager
+eventuelle
+inconveniences. Advarsel! Konto brukere som nekter å oppdatere kontoen sin
+etter 5 dager etter å ha mottatt denne advarselen, brukeren mister sin konto
+permanent.
 
-Disclaimer: http://www.kuleuven.be/cwis/email_disclaimer.htm
+2009© Universitetet i Oslo (uio.no)
+
 
