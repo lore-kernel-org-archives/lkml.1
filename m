@@ -1,74 +1,92 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759835AbZDGQgj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759926AbZDGQhs@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759835AbZDGQgj (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 7 Apr 2009 12:36:39 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758946AbZDGQgL
+	id S1759926AbZDGQhs (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 7 Apr 2009 12:37:48 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757972AbZDGQhi
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 7 Apr 2009 12:36:11 -0400
-Received: from mx2.redhat.com ([66.187.237.31]:48203 "EHLO mx2.redhat.com"
+	Tue, 7 Apr 2009 12:37:38 -0400
+Received: from sh.osrg.net ([192.16.179.4]:50386 "EHLO sh.osrg.net"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1758840AbZDGQgK (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 7 Apr 2009 12:36:10 -0400
-Date: Tue, 7 Apr 2009 18:36:23 +0200
-From: Michal Schmidt <mschmidt@redhat.com>
-To: netdev@vger.kernel.org
-Cc: linux-kernel@vger.kernel.org, Stephen Hemminger <shemminger@vyatta.com>
-Subject: [PATCH] skge: fix occasional BUG during MTU change
-Message-ID: <20090407183623.7545bb0b@leela>
-Organization: Red Hat
+	id S1757227AbZDGQhh (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 7 Apr 2009 12:37:37 -0400
+Date: Wed, 8 Apr 2009 01:37:15 +0900
+To: galak@kernel.crashing.org
+Cc: fujita.tomonori@lab.ntt.co.jp, beckyb@kernel.crashing.org,
+       linux-kernel@vger.kernel.org, mingo@elte.hu, jeremy@goop.org,
+       ian.campbell@citrix.com
+Subject: Re: [PATCH 5/7] swiotlb: (re)Create swiotlb_unmap_single
+From: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
+In-Reply-To: <9C76D5F2-5D3C-4499-B358-129428FA6F33@kernel.crashing.org>
+References: <FCEB8195-191B-4835-B895-D70C19DE23DE@kernel.crashing.org>
+	<20090407180928Y.fujita.tomonori@lab.ntt.co.jp>
+	<9C76D5F2-5D3C-4499-B358-129428FA6F33@kernel.crashing.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+Content-Type: Text/Plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
+Message-Id: <20090408013700L.fujita.tomonori@lab.ntt.co.jp>
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-3.0 (sh.osrg.net [192.16.179.4]); Wed, 08 Apr 2009 01:37:16 +0900 (JST)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-The BUG_ON(skge->tx_ring.to_use != skge->tx_ring.to_clean) in skge_up()
-was sometimes observed when setting MTU.
+On Tue, 7 Apr 2009 10:32:20 -0500
+Kumar Gala <galak@kernel.crashing.org> wrote:
 
-skge_down() disables the TX queue, but then reenables it by mistake via
-skge_tx_clean().
-Fix it by moving the waking of the queue from skge_tx_clean() to the
-other caller. And to make sure start_xmit is not in progress on another
-CPU, skge_down() should call netif_tx_disable().
+> 
+> On Apr 7, 2009, at 4:09 AM, FUJITA Tomonori wrote:
+> 
+> > On Tue, 7 Apr 2009 01:34:44 -0500
+> > Kumar Gala <galak@kernel.crashing.org> wrote:
+> >
+> >>
+> >> On Apr 6, 2009, at 9:24 PM, FUJITA Tomonori wrote:
+> >>
+> >>> On Fri,  3 Apr 2009 20:56:47 -0500
+> >>> Becky Bruce <beckyb@kernel.crashing.org> wrote:
+> >>>
+> >>>> This mirrors the current swiotlb_sync_single() setup
+> >>>> where the swiotlb_unmap_single() function is static to this
+> >>>> file and contains the logic required to determine if we need
+> >>>> to call actual sync_single.  Previously, swiotlb_unmap_page
+> >>>> and swiotlb_unmap_sg were duplicating very similar code.
+> >>>> The duplicated code has also been reformatted for
+> >>>> readability.
+> >>>>
+> >>>> Note that the swiotlb_unmap_sg code was previously doing
+> >>>> a complicated comparison to determine if an addresses needed
+> >>>> to be unmapped where a simple is_swiotlb_buffer() call
+> >>>> would have sufficed.
+> >>>>
+> >>>> Signed-off-by: Becky Bruce <beckyb@kernel.crashing.org>
+> >>>> ---
+> >>>> lib/swiotlb.c |   36 +++++++++++++++++++++++-------------
+> >>>> 1 files changed, 23 insertions(+), 13 deletions(-)
+> >>>>
+> >>>> diff --git a/lib/swiotlb.c b/lib/swiotlb.c
+> >>>> index af2ec25..602315b 100644
+> >>>> --- a/lib/swiotlb.c
+> >>>> +++ b/lib/swiotlb.c
+> >>>
+> >>> I don't think 'swiotlb_unmap_single' name is appropriate.
+> >>>
+> >>> swiotlb_unmap_single sounds like an exported function that IOMMUs  
+> >>> can
+> >>> use (and it was) however it should not be.
+> >>
+> >> What do you suggest we call it?  __swiotlb_unmap_single.
+> >
+> > I think that __swiotlb_unmap_single is better because the name implies
+> > that it's an internal function. It's fine by me.
+> >
+> > If it is odd that __swiotlb_unmap_single() is just a wrapper function
+> > of unmap_single(), which does the real job to unmap a dma mapping, it
+> > might be another possible option to rename unmap_single to
+> > do_unamp_single and use unmap_single.
+> 
+> I think you lost me here.  I'd prefer to just use  
+> __swiotlb_unmap_single at this point and get this code into the tree  
+> and work on such renaming after the fact (if that's ok).
 
-The bug was reported to me by Jiri Jilek whose Debian system sometimes
-failed to boot. He tested the patch and the bug did not happen anymore.
-
-Signed-off-by: Michal Schmidt <mschmidt@redhat.com>
----
- drivers/net/skge.c |    4 ++--
- 1 files changed, 2 insertions(+), 2 deletions(-)
-
-diff --git a/drivers/net/skge.c b/drivers/net/skge.c
-index 952d37f..b2a05af 100644
---- a/drivers/net/skge.c
-+++ b/drivers/net/skge.c
-@@ -2674,7 +2674,7 @@ static int skge_down(struct net_device *dev)
- 	if (netif_msg_ifdown(skge))
- 		printk(KERN_INFO PFX "%s: disabling interface\n", dev->name);
- 
--	netif_stop_queue(dev);
-+	netif_tx_disable(dev);
- 
- 	if (hw->chip_id == CHIP_ID_GENESIS && hw->phy_type == SK_PHY_XMAC)
- 		del_timer_sync(&skge->link_timer);
-@@ -2881,7 +2881,6 @@ static void skge_tx_clean(struct net_device *dev)
- 	}
- 
- 	skge->tx_ring.to_clean = e;
--	netif_wake_queue(dev);
- }
- 
- static void skge_tx_timeout(struct net_device *dev)
-@@ -2893,6 +2892,7 @@ static void skge_tx_timeout(struct net_device *dev)
- 
- 	skge_write8(skge->hw, Q_ADDR(txqaddr[skge->port], Q_CSR), CSR_STOP);
- 	skge_tx_clean(dev);
-+	netif_wake_queue(dev);
- }
- 
- static int skge_change_mtu(struct net_device *dev, int new_mtu)
--- 
-1.6.2.2
-
+If you are rushing to merge this right now, the original patchset is
+fine by me (I thought that you missed this merge window). I'll rename
+it later.
