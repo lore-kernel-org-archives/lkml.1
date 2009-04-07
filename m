@@ -1,73 +1,46 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753955AbZDGHyV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753570AbZDGH5O@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753955AbZDGHyV (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 7 Apr 2009 03:54:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752352AbZDGHyM
+	id S1753570AbZDGH5O (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 7 Apr 2009 03:57:14 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751918AbZDGH45
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 7 Apr 2009 03:54:12 -0400
-Received: from one.firstfloor.org ([213.235.205.2]:35038 "EHLO
-	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752249AbZDGHyM (ORCPT
+	Tue, 7 Apr 2009 03:56:57 -0400
+Received: from cavan.codon.org.uk ([93.93.128.6]:56001 "EHLO
+	vavatch.codon.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751800AbZDGH45 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 7 Apr 2009 03:54:12 -0400
-Date: Tue, 7 Apr 2009 09:56:21 +0200
-From: Andi Kleen <andi@firstfloor.org>
-To: Brice Goglin <Brice.Goglin@inria.fr>
-Cc: Andi Kleen <andi@firstfloor.org>,
-       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
-       Yinghai Lu <yhlu.kernel@gmail.com>,
-       David Rientjes <rientjes@google.com>, Chris Worley <worleys@gmail.com>,
-       linux-kernel@vger.kernel.org
-Subject: Re: Off topic: Numactl "distance" wrong
-Message-ID: <20090407075621.GK17934@one.firstfloor.org>
-References: <86802c440904031448yc6d499ckd9cb969ce136f477@mail.gmail.com> <87r609jtc2.fsf@basil.nowhere.org> <20090407111539.F0F5.A69D9226@jp.fujitsu.com> <49DAF003.1070605@inria.fr> <20090407070530.GJ17934@one.firstfloor.org> <49DB0388.1040408@inria.fr>
-Mime-Version: 1.0
+	Tue, 7 Apr 2009 03:56:57 -0400
+Date: Tue, 7 Apr 2009 08:56:40 +0100
+From: Matthew Garrett <mjg@redhat.com>
+To: David Woodhouse <dwmw2@infradead.org>
+Cc: Ingo Molnar <mingo@elte.hu>, Andrew Lutomirski <amluto@gmail.com>,
+       Jesse Barnes <jbarnes@virtuousgeek.org>,
+       Kyle McMartin <kyle@redhat.com>, Fenghua Yu <fenghua.yu@intel.com>,
+       Suresh Siddha <suresh.b.siddha@intel.com>,
+       Yinghai Lu <yinghai@kernel.org>, Mark Gross <mgross@linux.intel.com>,
+       LKML <linux-kernel@vger.kernel.org>
+Subject: Re: 2.6.29: can't resume from suspend with DMAR (intel iommu) enabled
+Message-ID: <20090407075640.GA16516@srcf.ucam.org>
+References: <cb0375e10903241258x32c9d0f3g35a4f56793eb8677@mail.gmail.com> <20090324203259.GC26930@elte.hu> <1238003581.2085.53.camel@macbook.infradead.org> <20090325175908.GA25518@elte.hu> <1239051362.22733.87.camel@macbook.infradead.org>
+MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <49DB0388.1040408@inria.fr>
-User-Agent: Mutt/1.4.2.1i
+In-Reply-To: <1239051362.22733.87.camel@macbook.infradead.org>
+User-Agent: Mutt/1.5.12-2006-07-14
+X-SA-Exim-Connect-IP: <locally generated>
+X-SA-Exim-Mail-From: mjg59@codon.org.uk
+X-SA-Exim-Scanned: No (on vavatch.codon.org.uk); SAEximRunCond expanded to false
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Apr 07, 2009 at 09:40:56AM +0200, Brice Goglin wrote:
-> Andi Kleen wrote:
-> >> Well, some user-space application may use these distances
-> >> to improve their binding.
-> >>     
-> >
-> > I'm not aware of any that does.
-> 
-> We have some people here that would like to use it ideally. But they
-> know numa distances is almost never available, so they don't really look
-> at using them...
+On Mon, Apr 06, 2009 at 01:56:01PM -0700, David Woodhouse wrote:
 
->From my experience and from talking at people they tend to have enough
-trouble getting the basic NUMA tunings done, without caring about
-such (arcane) details.
+> Dirk reported the same panic, but we've just turned his iommu back on
+> and completely failed to reproduce the problem -- so I'm kind of stuck.
 
-> 
-> > If it's true then the correct place would be to fix the BIOS.
-> >   
-> 
-> Come on, you know it's not going to happen for 99.9% on the existing
-> opteron boxes. We have many hardware quirks in the kernel, I don't see
-> why this numa distance problem would not deserve its own work around.
-
-The systems where it makes a large difference typically have them anyways.
-
-Anyways if you really want you can ask Len for a way to override SLIT
-tables at boot time (similar to the mechanism for MADTs), but I suspect
-he wouldn't be particularly enthuiastic. Also it's a little more tricky
-than for normal MADTs because SLIT parsing happens very early.
-
-> By the way, anybody looked at this on Nehalem boxes ?
-
-Current Nehalem boxes are all fully connected, so 10/20 
-(or sometimes scaled to trigger the zone fallback workaround) is the
-correct answer and you don't get any benefits from magic in this area.
-
--Andi
+I saw this on a T400, but only on the first boot after enabling DMAR - 
+power cycling "fixed" it.
 
 -- 
-ak@linux.intel.com -- Speaking for myself only.
+Matthew Garrett | mjg59@srcf.ucam.org
