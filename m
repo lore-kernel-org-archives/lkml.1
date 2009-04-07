@@ -1,87 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753083AbZDGKtc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752646AbZDGKwi@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753083AbZDGKtc (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 7 Apr 2009 06:49:32 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752299AbZDGKs5
+	id S1752646AbZDGKwi (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 7 Apr 2009 06:52:38 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751971AbZDGKw2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 7 Apr 2009 06:48:57 -0400
-Received: from mx1.emlix.com ([193.175.82.87]:35931 "EHLO mx1.emlix.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752118AbZDGKs4 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 7 Apr 2009 06:48:56 -0400
-From: Johannes Weiner <jw@emlix.com>
-To: Chris Zankel <chris@zankel.net>
-Cc: linux-kernel@vger.kernel.org
-Subject: [patch] xtensa: register gpio chip before use
-Date: Tue,  7 Apr 2009 12:50:28 +0200
-Message-Id: <1239101428-29312-2-git-send-email-jw@emlix.com>
-Organization: emlix gmbh, Goettingen, Germany
+	Tue, 7 Apr 2009 06:52:28 -0400
+Received: from gate.in-addr.de ([212.8.193.158]:42248 "EHLO mx.in-addr.de"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1751721AbZDGKw2 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 7 Apr 2009 06:52:28 -0400
+X-Greylist: delayed 1567 seconds by postgrey-1.27 at vger.kernel.org; Tue, 07 Apr 2009 06:52:27 EDT
+Date: Tue, 7 Apr 2009 12:26:31 +0200
+From: Lars Marowsky-Bree <lmb@suse.de>
+To: Philipp Reisner <philipp.reisner@linbit.com>, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 00/12] DRBD: a block device for HA clusters
+Message-ID: <20090407102631.GI11117@suse.de>
+References: <1238431643-19433-1-git-send-email-philipp.reisner@linbit.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=iso-8859-1
+Content-Disposition: inline
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <1238431643-19433-1-git-send-email-philipp.reisner@linbit.com>
+X-Ctuhulu: HASTUR
+User-Agent: Mutt/1.5.17 (2007-11-01)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Platform initialization sets up the LED heartbeat that is controlled
-via GPIO.  Requesting the GPIO pins fails, however, as the chip is
-only initialized later by a device_initcall().
+On 2009-03-30T18:47:08, Philipp Reisner <philipp.reisner@linbit.com> wrote:
 
-Fix this up by exporting the initialization function.  Let the
-platform set up the chip before it starts using it.
+> Hi,
+> 
+>   This is a repost of DRBD, to keep you updated about the ongoing
+>   cleanups.
 
-Signed-off-by: Johannes Weiner <jw@emlix.com>
----
- arch/xtensa/platforms/s6105/setup.c               |    3 +++
- arch/xtensa/variants/s6000/gpio.c                 |    3 +--
- arch/xtensa/variants/s6000/include/variant/gpio.h |    6 ++++++
- 3 files changed, 10 insertions(+), 2 deletions(-)
- create mode 100644 arch/xtensa/variants/s6000/include/variant/gpio.h
+Hi Philipp,
 
-diff --git a/arch/xtensa/platforms/s6105/setup.c b/arch/xtensa/platforms/s6105/setup.c
-index ae041d5..855ddea 100644
---- a/arch/xtensa/platforms/s6105/setup.c
-+++ b/arch/xtensa/platforms/s6105/setup.c
-@@ -10,6 +10,8 @@
- #include <asm/bootparam.h>
- 
- #include <variant/hardware.h>
-+#include <variant/gpio.h>
-+
- #include <platform/gpio.h>
- 
- void platform_halt(void)
-@@ -47,6 +49,7 @@ void __init platform_setup(char **cmdline)
- 
- void __init platform_init(bp_tag_t *first)
- {
-+	s6_gpio_init();
- 	gpio_request(GPIO_LED1_NGREEN, "led1_green");
- 	gpio_request(GPIO_LED1_RED, "led1_red");
- 	gpio_direction_output(GPIO_LED1_NGREEN, 1);
-diff --git a/arch/xtensa/variants/s6000/gpio.c b/arch/xtensa/variants/s6000/gpio.c
-index 33a8d95..79317fd 100644
---- a/arch/xtensa/variants/s6000/gpio.c
-+++ b/arch/xtensa/variants/s6000/gpio.c
-@@ -64,8 +64,7 @@ static struct gpio_chip gpiochip = {
- 	.exported = 0, /* no exporting to userspace */
- };
- 
--static int gpio_init(void)
-+int s6_gpio_init(void)
- {
- 	return gpiochip_add(&gpiochip);
- }
--device_initcall(gpio_init);
-diff --git a/arch/xtensa/variants/s6000/include/variant/gpio.h b/arch/xtensa/variants/s6000/include/variant/gpio.h
-new file mode 100644
-index 0000000..8327f62
---- /dev/null
-+++ b/arch/xtensa/variants/s6000/include/variant/gpio.h
-@@ -0,0 +1,6 @@
-+#ifndef _XTENSA_VARIANT_S6000_GPIO_H
-+#define _XTENSA_VARIANT_S6000_GPIO_H
-+
-+extern int s6_gpio_init(void);
-+
-+#endif /* _XTENSA_VARIANT_S6000_GPIO_H */
+thanks for the submission!
+
+On reading the code, I think it is in pretty good shape to be merged for
+linux-next or Andrew's tree, at the very least.
+
+(Ultimately, of course it'd be very nice if we could reduce the number
+of raid engines in the kernel, but that should not necessarily delay the
+merge here. Like Greg likes to say, the kernel community also merges
+tons of hardware drivers in much worse states.)
+
+Maybe you could also provide a git repository of a kernel tree with your
+patches where testers could pull from?
+
+
+Regards,
+    Lars
+
 -- 
-1.6.2.107.ge47ee
+Teamlead Kernel, SuSE Labs, Research and Development
+SUSE LINUX Products GmbH, GF: Markus Rex, HRB 16746 (AG Nürnberg)
+"Experience is the name everyone gives to their mistakes." -- Oscar Wilde
 
