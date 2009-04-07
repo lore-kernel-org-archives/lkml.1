@@ -1,76 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757042AbZDGN2u@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757074AbZDGNbv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757042AbZDGN2u (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 7 Apr 2009 09:28:50 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754355AbZDGN2i
+	id S1757074AbZDGNbv (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 7 Apr 2009 09:31:51 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752375AbZDGNbk
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 7 Apr 2009 09:28:38 -0400
-Received: from mx3.mail.elte.hu ([157.181.1.138]:53253 "EHLO mx3.mail.elte.hu"
+	Tue, 7 Apr 2009 09:31:40 -0400
+Received: from rtr.ca ([76.10.145.34]:59395 "EHLO mail.rtr.ca"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752418AbZDGN2h (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 7 Apr 2009 09:28:37 -0400
-Date: Tue, 7 Apr 2009 15:28:25 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: Paul Mackerras <paulus@samba.org>
-Cc: mingo@redhat.com, hpa@zytor.com, linux-kernel@vger.kernel.org,
-       a.p.zijlstra@chello.nl, tglx@linutronix.de,
-       linux-tip-commits@vger.kernel.org
-Subject: Re: [tip:perfcounters/core] x86, perfcounters: add atomic64_xchg()
-Message-ID: <20090407132825.GB30984@elte.hu>
-References: <20090406094518.445450972@chello.nl> <tip-b226fa12991d6ee9b6b13a7e1de88ec5d25f5007@git.kernel.org> <18907.14029.301492.493938@cargo.ozlabs.ibm.com>
+	id S1752154AbZDGNbj (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 7 Apr 2009 09:31:39 -0400
+Message-ID: <49DB55B9.7030108@rtr.ca>
+Date: Tue, 07 Apr 2009 09:31:37 -0400
+From: Mark Lord <lkml@rtr.ca>
+Organization: Real-Time Remedies Inc.
+User-Agent: Thunderbird 2.0.0.21 (X11/20090318)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <18907.14029.301492.493938@cargo.ozlabs.ibm.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.5
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+To: Lennart Sorensen <lsorense@csclub.uwaterloo.ca>
+Cc: Ingo Molnar <mingo@elte.hu>, Jens Axboe <jens.axboe@oracle.com>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Theodore Tso <tytso@mit.edu>,
+       Linux Kernel Developers List <linux-kernel@vger.kernel.org>,
+       Ext4 Developers List <linux-ext4@vger.kernel.org>
+Subject: Re: [GIT PULL] Ext3 latency fixes
+References: <1238742067-30814-1-git-send-email-tytso@mit.edu> <alpine.LFD.2.00.0904031110420.19690@localhost.localdomain> <alpine.LFD.2.00.0904031150190.4015@localhost.localdomain> <alpine.LFD.2.00.0904031329410.7007@localhost.localdomain> <20090404135719.GA9812@mit.edu> <20090404151649.GE5178@kernel.dk> <alpine.LFD.2.00.0904040854470.3915@localhost.localdomain> <20090404173412.GF5178@kernel.dk> <20090404201820.GA18067@elte.hu> <20090406215034.GD3797@csclub.uwaterloo.ca>
+In-Reply-To: <20090406215034.GD3797@csclub.uwaterloo.ca>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-* Paul Mackerras <paulus@samba.org> wrote:
-
-> Ingo Molnar writes:
+Lennart Sorensen wrote:
+> On Sat, Apr 04, 2009 at 10:18:20PM +0200, Ingo Molnar wrote:
+>> btw., just to insert some hard data: usability studies place the 
+>> acceptance threshold for delays to around 300 milliseconds.
+>>
+>> If the computer does not 'respond' (in a real or a fake, visible or 
+>> audible way) to their input within 0.3 seconds they get annoyed 
+>> emotionally.
 > 
-> > Complete atomic64_t support on the 32-bit side by adding atomic64_xch().
-> > 
-> > Cc: Peter Zijlstra <a.p.zijlstra@chello.nl>
-> > LKML-Reference: <20090406094518.445450972@chello.nl>
-> > Signed-off-by: Ingo Molnar <mingo@elte.hu>
-> > 
-> > 
-> > ---
-> >  arch/x86/include/asm/atomic_32.h |    6 ++++++
-> >  1 files changed, 6 insertions(+), 0 deletions(-)
-> > 
-> > diff --git a/arch/x86/include/asm/atomic_32.h b/arch/x86/include/asm/atomic_32.h
-> > index 977250e..a9fef6c 100644
-> > --- a/arch/x86/include/asm/atomic_32.h
-> > +++ b/arch/x86/include/asm/atomic_32.h
-> > @@ -306,6 +306,12 @@ static inline void atomic64_set(atomic64_t *ptr, unsigned long long new_val)
-> >  	} while (atomic64_cmpxchg(ptr, old_val, new_val) != old_val);
-> >  }
-> >  
-> > +static inline void
-> > +atomic64_xchg(atomic64_t *ptr, unsigned long long new_val)
-> > +{
-> > +	atomic64_set(ptr, new_val);
-> > +}
-> 
-> Umm, I don't know much about x86, but that doesn't look like an 
-> exchange operation to me...  Shouldn't it return a value, for a 
-> start?
+> You mean like hitting 'skip commercial' on the remote, and 2 minutes later
+> when the commercials are almost over, then it happens.  Yeah users get a
+> bit peeved at that.  Fortunately that particularly behaviour is somewhat
+> rare.  5 to 10 seconds is more common and sometimes it works fine.
+..
 
-Yes, indeed :) Fixed it.
+I generally don't see any delay at all when doing that,
+even when the Mythtv system is very busy on multiple recordings.
+But then, I also don't use the huge LIRC stack for the simple R/C either.
 
-/me officially loves commit notifications
-
-	Ingo
+cheers
