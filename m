@@ -1,58 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759143AbZDGCYL@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760033AbZDGCZ2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759143AbZDGCYL (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 6 Apr 2009 22:24:11 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754667AbZDGCXM
+	id S1760033AbZDGCZ2 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 6 Apr 2009 22:25:28 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752478AbZDGCZM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 6 Apr 2009 22:23:12 -0400
-Received: from hrndva-omtalb.mail.rr.com ([71.74.56.122]:62436 "EHLO
-	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752508AbZDGCXI (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 6 Apr 2009 22:23:08 -0400
-Message-Id: <20090407022305.342936742@goodmis.org>
-References: <20090407022242.515462242@goodmis.org>
-User-Agent: quilt/0.46-1
-Date: Mon, 06 Apr 2009 22:22:44 -0400
-From: Steven Rostedt <rostedt@goodmis.org>
-To: linux-kernel@vger.kernel.org
-Cc: Ingo Molnar <mingo@elte.hu>, Andrew Morton <akpm@linux-foundation.org>,
-       Nikanth Karthikesan <knikanth@suse.de>
-Subject: [PATCH 2/3] Update /debug/tracing/README
-Content-Disposition: inline; filename=0002-Update-debug-tracing-README.patch
+	Mon, 6 Apr 2009 22:25:12 -0400
+Received: from sh.osrg.net ([192.16.179.4]:46143 "EHLO sh.osrg.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751471AbZDGCZK (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 6 Apr 2009 22:25:10 -0400
+Date: Tue, 7 Apr 2009 11:24:42 +0900
+To: beckyb@kernel.crashing.org
+Cc: linux-kernel@vger.kernel.org, mingo@elte.hu, jeremy@goop.org,
+       fujita.tomonori@lab.ntt.co.jp, ian.campbell@citrix.com
+Subject: Re: [PATCH V2 0/7] swiotlb: changes for powerpc/highmem
+From: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
+In-Reply-To: <1238810209-24499-1-git-send-email-beckyb@kernel.crashing.org>
+References: <1238810209-24499-1-git-send-email-beckyb@kernel.crashing.org>
+Mime-Version: 1.0
+Content-Type: Text/Plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
+Message-Id: <20090407112448L.fujita.tomonori@lab.ntt.co.jp>
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-3.0 (sh.osrg.net [192.16.179.4]); Tue, 07 Apr 2009 11:24:42 +0900 (JST)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Nikanth Karthikesan <knikanth@suse.de>
+On Fri,  3 Apr 2009 20:56:42 -0500
+Becky Bruce <beckyb@kernel.crashing.org> wrote:
 
-Some of the tracers have been renamed, which was not updated in the in-kernel
-run-time README file. Update it.
+> This is v2 of a series of fairly minor patches that get swiotlb
+> working on 32-bit powerpc systems with HIGHMEM, plus some cleanup
+> of the outdated comments in the code. I've made a couple of things
+> weak that ppc needs to override, and have changed the prototypes
+> for a couple of functions to include the hwdev pointer, which
+> we need to ppc to convert bus addresses to and from phys/virt
+> addresses. I've also fixed a build warning I've been seeing on
+> ppc.
+> 
+> In response to commentary on the previous series, I've also
+> refactored the code a bit, altough I did this slightly
+> differently than was suggested because I noticed we could use the
+> new helper function in 2 places instead of one. I've reformatted
+> a bit of code based on commentary as well.
+> 
+> I have not tested this in any way on any non-ppc platforms,
+> so commentary/testing from x86/ia64 folks is, once again,
+> greatly appreciated.
+> 
+> I'm going to be offline for the next week, but will respond to
+> commentary as soon as I return.
+> 
+> Cheers,
+> Becky
+> 
+> diffstat:
+> arch/x86/kernel/pci-swiotlb.c |    2 +-
+> include/linux/swiotlb.h       |    3 +-
+> lib/swiotlb.c                 |  115 ++++++++++++++++++++++-------------------
+> 3 files changed, 64 insertions(+), 56 deletions(-)
 
-Signed-off-by: Nikanth Karthikesan <knikanth@suse.de>
-LKML-Reference: <200903231158.32151.knikanth@suse.de>
-Signed-off-by: Steven Rostedt <rostedt@goodmis.org>
----
- kernel/trace/trace.c |    4 ++--
- 1 files changed, 2 insertions(+), 2 deletions(-)
-
-diff --git a/kernel/trace/trace.c b/kernel/trace/trace.c
-index b0cec4c..0615751 100644
---- a/kernel/trace/trace.c
-+++ b/kernel/trace/trace.c
-@@ -2360,9 +2360,9 @@ static const char readme_msg[] =
- 	"# mkdir /debug\n"
- 	"# mount -t debugfs nodev /debug\n\n"
- 	"# cat /debug/tracing/available_tracers\n"
--	"wakeup preemptirqsoff preemptoff irqsoff ftrace sched_switch none\n\n"
-+	"wakeup preemptirqsoff preemptoff irqsoff function sched_switch nop\n\n"
- 	"# cat /debug/tracing/current_tracer\n"
--	"none\n"
-+	"nop\n"
- 	"# echo sched_switch > /debug/tracing/current_tracer\n"
- 	"# cat /debug/tracing/current_tracer\n"
- 	"sched_switch\n"
--- 
-1.6.2.1
-
--- 
+I have a minor comment on 5/7 but the rest looks fine to me.
