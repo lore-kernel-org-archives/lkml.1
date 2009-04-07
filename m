@@ -1,732 +1,95 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760483AbZDGWxZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755662AbZDGW52@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760483AbZDGWxZ (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 7 Apr 2009 18:53:25 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751884AbZDGWxI
+	id S1755662AbZDGW52 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 7 Apr 2009 18:57:28 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750999AbZDGW5R
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 7 Apr 2009 18:53:08 -0400
-Received: from havoc.gtf.org ([69.61.125.42]:35774 "EHLO havoc.gtf.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751435AbZDGWxG (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 7 Apr 2009 18:53:06 -0400
-Date: Tue, 7 Apr 2009 18:53:02 -0400
-From: Jeff Garzik <jeff@garzik.org>
-To: LKML <linux-kernel@vger.kernel.org>, linux-scsi@vger.kernel.org
-Cc: linux-fsdevel@vger.kernel.org, axboe@kernel.dk,
+	Tue, 7 Apr 2009 18:57:17 -0400
+Received: from mail-bw0-f169.google.com ([209.85.218.169]:38882 "EHLO
+	mail-bw0-f169.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750790AbZDGW5Q convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 7 Apr 2009 18:57:16 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=from:to:subject:date:user-agent:cc:references:in-reply-to
+         :mime-version:content-disposition:message-id:content-type
+         :content-transfer-encoding;
+        b=wGwwnL9bNpNN3b9b9YjKuc6u0R22k+sgQstuJQk7sQOPOZzjWwf+dO2+XrycYM9dUN
+         1rDZuDQStQSkaWMDNOzQJhOGCSgrvkC4LJ7nRNkH8Ouvj53MA8bWBcvrPQ/q2bvf6Wcy
+         ghCj44sy3mY2+nLb3ahi74h1DnLX1Yo2Yn7Uo=
+From: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
+To: Jeff Garzik <jeff@garzik.org>
+Subject: Re: [git pull] IDE updates part 4
+Date: Wed, 8 Apr 2009 00:59:43 +0200
+User-Agent: KMail/1.11.1 (Linux/2.6.29-10247-g8e2c4f2-dirty; KDE/4.2.1; i686; ; )
+Cc: Linus Torvalds <torvalds@linux-foundation.org>,
        Andrew Morton <akpm@linux-foundation.org>,
-       James.Bottomley@HansenPartnership.com, bharrosh@panasas.com,
-       osd-dev@open-osd.org
-Subject: [PATCH v2] osdblk: a Linux block device for OSD objects
-Message-ID: <20090407225302.GA14248@havoc.gtf.org>
-References: <20090402015455.GA14087@havoc.gtf.org>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+       Stephen Rothwell <sfr@canb.auug.org.au>, linux-ide@vger.kernel.org,
+       linux-kernel@vger.kernel.org
+References: <200904080020.43175.bzolnier@gmail.com> <49DBD3EE.3010601@garzik.org>
+In-Reply-To: <49DBD3EE.3010601@garzik.org>
+MIME-Version: 1.0
 Content-Disposition: inline
-In-Reply-To: <20090402015455.GA14087@havoc.gtf.org>
-User-Agent: Mutt/1.4.2.2i
+Message-Id: <200904080059.43698.bzolnier@gmail.com>
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This is a client for libosd.  This block driver exports a single OSD
-object as a Linux block device.
+On Wednesday 08 April 2009 00:30:06 Jeff Garzik wrote:
+> Bartlomiej Zolnierkiewicz wrote:
+> > - TRIM support ("discard" operation for SSD devices)
+> >   (David Woodhouse & Matthew Wilcox)
+> > 
+> >   Since this is a new feature and hasn't seen much testing with production
+> >   devices it is not enabled by default yet (requires use of "ide_core.trim=1"
+> >   kernel parameter).
+> 
+> 
+> As noted by Matthew, this appears to be missing the requisite block support?
 
-See the comment block at the top of the driver for usage instructions.
+I had this nice feeling of missing some detail but I didn't have time to think
+about it too much since I was rushing to get all changes integrated for the last
+pre -rc1 pull request.  Now it is late due to premature TRIM support... :)
 
-The major remaining pre-merge FIXME is its handling of bio's, as pointed
-out by Jens.  This perhaps requires looking at libosd, and a bit of
-discussion w/ Boaz and crew.
+However it is not all that bad since we can just leave things as they are for
+now and disable TRIM support until block changes get merged with patch below.
 
-Not-yet-signed-off-by: me
+[ I added it to the pull request.  Sorry Linus, this is the best I can do ATM
+  before failing asleep -- if this is not acceptable I'll revisit pull request
+  tomorrow. ]
 
+>From 316f69abbb73595d0950c56c3b293534056d112e Mon Sep 17 00:00:00 2001
+From: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
+Date: Wed, 8 Apr 2009 00:42:59 +0200
+Subject: [PATCH] ide: disable TRIM until block layer support gets merged
+
+Signed-off-by: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
 ---
-Other changes since last posting:
-- use strict_strtoul (akpm review)
-- add barrier support, and issue OSD flush requests
-- replace global array of devices with linked list (jejb review)
-- fix OSD credentials (boaz rev)
-- use block layer tagging (jejb rev)
-- use GFP_ATOMIC rather than GFP_NOIO (axboe rev)
-- improve comments
-- module refcounting
+ drivers/ide/ide.c |    3 +++
+ 1 files changed, 3 insertions(+), 0 deletions(-)
 
- drivers/block/Kconfig  |   16 +
- drivers/block/Makefile |    1 
- drivers/block/osdblk.c |  630 +++++++++++++++++++++++++++++++++++++++++++++++++
- 3 files changed, 647 insertions(+)
+diff --git a/drivers/ide/ide.c b/drivers/ide/ide.c
+index 7b7cd76..4ed66d0 100644
+--- a/drivers/ide/ide.c
++++ b/drivers/ide/ide.c
+@@ -178,11 +178,14 @@ EXPORT_SYMBOL_GPL(ide_pci_clk);
+ module_param_named(pci_clock, ide_pci_clk, int, 0);
+ MODULE_PARM_DESC(pci_clock, "PCI bus clock frequency (in MHz)");
+ 
++/* needs block layer support */
++#if 0
+ int ide_trim = 0;
+ EXPORT_SYMBOL_GPL(ide_trim);
+ 
+ module_param_named(trim, ide_trim, int, 0);
+ MODULE_PARM_DESC(trim, "TRIM support (0=off, 1=on)");
++#endif
+ 
+ static int ide_set_dev_param_mask(const char *s, struct kernel_param *kp)
+ {
+-- 
+1.6.0.6
 
-diff --git a/drivers/block/Kconfig b/drivers/block/Kconfig
-index ddea8e4..34722c8 100644
---- a/drivers/block/Kconfig
-+++ b/drivers/block/Kconfig
-@@ -298,6 +298,22 @@ config BLK_DEV_NBD
- 
- 	  If unsure, say N.
- 
-+config BLK_DEV_OSD
-+	tristate "OSD object-as-blkdev support"
-+	depends on SCSI_OSD_INITIATOR
-+	---help---
-+	  Saying Y or M here will allow the exporting of a single SCSI
-+	  OSD (object-based storage) object as a Linux block device.
-+
-+	  For example, if you create a 2G object on an OSD device,
-+	  you can then use this module to present that 2G object as
-+	  a Linux block device.
-+
-+	  To compile this driver as a module, choose M here: the
-+	  module will be called osdblk.
-+
-+	  If unsure, say N.
-+
- config BLK_DEV_SX8
- 	tristate "Promise SATA SX8 support"
- 	depends on PCI
-diff --git a/drivers/block/Makefile b/drivers/block/Makefile
-index 7755a5e..cdaa3f8 100644
---- a/drivers/block/Makefile
-+++ b/drivers/block/Makefile
-@@ -23,6 +23,7 @@ obj-$(CONFIG_XILINX_SYSACE)	+= xsysace.o
- obj-$(CONFIG_CDROM_PKTCDVD)	+= pktcdvd.o
- obj-$(CONFIG_MG_DISK)		+= mg_disk.o
- obj-$(CONFIG_SUNVDC)		+= sunvdc.o
-+obj-$(CONFIG_BLK_DEV_OSD)	+= osdblk.o
- 
- obj-$(CONFIG_BLK_DEV_UMEM)	+= umem.o
- obj-$(CONFIG_BLK_DEV_NBD)	+= nbd.o
-diff --git a/drivers/block/osdblk.c b/drivers/block/osdblk.c
-new file mode 100644
-index 0000000..645ccc6
---- /dev/null
-+++ b/drivers/block/osdblk.c
-@@ -0,0 +1,630 @@
-+
-+/*
-+   osdblk.c -- Export a single SCSI OSD object as a Linux block device
-+
-+
-+   Copyright 2009 Red Hat, Inc.
-+
-+   This program is free software; you can redistribute it and/or modify
-+   it under the terms of the GNU General Public License as published by
-+   the Free Software Foundation.
-+
-+   This program is distributed in the hope that it will be useful,
-+   but WITHOUT ANY WARRANTY; without even the implied warranty of
-+   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-+   GNU General Public License for more details.
-+
-+   You should have received a copy of the GNU General Public License
-+   along with this program; see the file COPYING.  If not, write to
-+   the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.
-+
-+
-+   Instructions for use
-+   --------------------
-+
-+   1) Map a Linux block device to an existing OSD object.
-+
-+      In this example, we will use partition id 1234, object id 5678,
-+      OSD device /dev/osd1.
-+
-+      $ echo "1234 5678 /dev/osd1" > /sys/class/osdblk/add
-+
-+
-+   2) List all active blkdev<->object mappings.
-+
-+      In this example, we have performed step #1 twice, creating two blkdevs,
-+      mapped to two separate OSD objects.
-+
-+      $ cat /sys/class/osdblk/list
-+      0 174 1234 5678 /dev/osd1
-+      1 179 1994 897123 /dev/osd0
-+
-+      The columns, in order, are:
-+      - blkdev unique id
-+      - blkdev assigned major
-+      - OSD object partition id
-+      - OSD object id
-+      - OSD device
-+
-+
-+   3) Remove an active blkdev<->object mapping.
-+
-+      In this example, we remove the mapping with blkdev unique id 1.
-+
-+      $ echo 1 > /sys/class/osdblk/remove
-+
-+
-+   NOTE:  The actual creation and deletion of OSD objects is outside the scope
-+   of this driver.
-+
-+ */
-+
-+#include <linux/kernel.h>
-+#include <linux/device.h>
-+#include <linux/module.h>
-+#include <linux/fs.h>
-+#include <scsi/osd_initiator.h>
-+#include <scsi/osd_attributes.h>
-+#include <scsi/osd_sec.h>
-+
-+#define DRV_NAME "osdblk"
-+#define PFX DRV_NAME ": "
-+
-+struct osdblk_device;
-+
-+enum {
-+	OSDBLK_MINORS_PER_MAJOR	= 256,		/* max minors per blkdev */
-+	OSDBLK_MAX_REQ		= 32,		/* max parallel requests */
-+	OSDBLK_OP_TIMEOUT	= 4 * 60,	/* sync OSD req timeout */
-+};
-+
-+struct osdblk_request {
-+	struct request		*rq;		/* blk layer request */
-+	struct bio		*bio;		/* cloned bio */
-+	struct osdblk_device	*osdev;		/* associated blkdev */
-+};
-+
-+struct osdblk_device {
-+	int			id;		/* blkdev unique id */
-+
-+	int			major;		/* blkdev assigned major */
-+	struct gendisk		*disk;		/* blkdev's gendisk and rq */
-+	struct request_queue	*q;
-+
-+	struct osd_dev		*osd;		/* associated OSD */
-+
-+	char			name[32];	/* blkdev name, e.g. osdblk34 */
-+
-+	spinlock_t		lock;		/* queue lock */
-+
-+	struct osd_obj_id	obj;		/* OSD partition, obj id */
-+	uint8_t			obj_cred[OSD_CAP_LEN]; /* OSD cred */
-+
-+	struct osdblk_request	req[OSDBLK_MAX_REQ]; /* request table */
-+
-+	struct list_head	node;
-+
-+	char			osd_path[0];	/* OSD device path */
-+};
-+
-+static struct class *class_osdblk;		/* /sys/class/osdblk */
-+static struct mutex ctl_mutex;	/* Serialize open/close/setup/teardown */
-+static LIST_HEAD(osdblkdev_list);
-+
-+static struct block_device_operations osdblk_bd_ops = {
-+	.owner		= THIS_MODULE,
-+};
-+
-+static const struct osd_attr g_attr_logical_length = ATTR_DEF(
-+	OSD_APAGE_OBJECT_INFORMATION, OSD_ATTR_OI_LOGICAL_LENGTH, 8);
-+
-+/* copied from exofs; move to libosd? */
-+static void osd_make_credential(u8 cred_a[OSD_CAP_LEN],
-+				const struct osd_obj_id *obj)
-+{
-+	osd_sec_init_nosec_doall_caps(cred_a, obj, false, true);
-+}
-+
-+/*
-+ * Perform a synchronous OSD operation.  copied from exofs; move to libosd?
-+ */
-+static int osd_sync_op(struct osd_request *or, int timeout, uint8_t *credential)
-+{
-+	int ret;
-+
-+	or->timeout = timeout;
-+	ret = osd_finalize_request(or, 0, credential, NULL);
-+	if (ret)
-+		return ret;
-+
-+	ret = osd_execute_request(or);
-+
-+	/* osd_req_decode_sense(or, ret); */
-+	return ret;
-+}
-+
-+/*
-+ * Perform an asynchronous OSD operation.  copied from exofs; move to libosd?
-+ */
-+static int osd_async_op(struct osd_request *or, osd_req_done_fn *async_done,
-+		   void *caller_context, u8 *cred)
-+{
-+	int ret;
-+
-+	ret = osd_finalize_request(or, 0, cred, NULL);
-+	if (ret)
-+		return ret;
-+
-+	ret = osd_execute_request_async(or, async_done, caller_context);
-+
-+	return ret;
-+}
-+
-+/* copied from exofs; move to libosd? */
-+static int extract_attr_from_req(struct osd_request *or, struct osd_attr *attr)
-+{
-+	struct osd_attr cur_attr = {.attr_page = 0}; /* start with zeros */
-+	void *iter = NULL;
-+	int nelem;
-+
-+	do {
-+		nelem = 1;
-+		osd_req_decode_get_attr_list(or, &cur_attr, &nelem, &iter);
-+		if ((cur_attr.attr_page == attr->attr_page) &&
-+		    (cur_attr.attr_id == attr->attr_id)) {
-+			attr->len = cur_attr.len;
-+			attr->val_ptr = cur_attr.val_ptr;
-+			return 0;
-+		}
-+	} while (iter);
-+
-+	return -EIO;
-+}
-+
-+static int osdblk_get_obj_size(struct osdblk_device *osdev, u64 *size_out)
-+{
-+	struct osd_request *or;
-+	struct osd_attr attr;
-+	int ret;
-+
-+	/* start request */
-+	or = osd_start_request(osdev->osd, GFP_KERNEL);
-+	if (!or)
-+		return -ENOMEM;
-+
-+	/* create a get-attributes(length) request */
-+	osd_req_get_attributes(or, &osdev->obj);
-+
-+	osd_req_add_get_attr_list(or, &g_attr_logical_length, 1);
-+
-+	/* execute op synchronously */
-+	ret = osd_sync_op(or, OSDBLK_OP_TIMEOUT, osdev->obj_cred);
-+	if (ret)
-+		goto out;
-+
-+	/* extract length from returned attribute info */
-+	attr = g_attr_logical_length;
-+	ret = extract_attr_from_req(or, &attr);
-+	if (ret)
-+		goto out;
-+
-+	*size_out = get_unaligned_be64(attr.val_ptr);
-+
-+out:
-+	osd_end_request(or);
-+	return ret;
-+
-+}
-+
-+static void osdblk_end_request(struct osdblk_device *osdev,
-+			       struct osdblk_request *orq,
-+			       int error)
-+{
-+	struct request *rq = orq->rq;
-+	int rc;
-+
-+	/* complete request, at block layer */
-+	rc = __blk_end_request(rq, error, blk_rq_bytes(rq));
-+}
-+
-+static void osdblk_osd_complete(struct osd_request *or, void *private)
-+{
-+	struct osdblk_request *orq = private;
-+	struct osd_sense_info osi;
-+	int ret = osd_req_decode_sense(or, &osi);
-+
-+	if (ret)
-+		ret = -EIO;
-+
-+	/* complete OSD request */
-+	osd_end_request(or);
-+
-+	/* complete request passed to osdblk by block layer */
-+	osdblk_end_request(orq->osdev, orq, ret);
-+}
-+
-+static void osdblk_rq_fn(struct request_queue *q)
-+{
-+	struct osdblk_device *osdev = q->queuedata;
-+	struct request *rq;
-+	struct osdblk_request *orq;
-+	struct osd_request *or;
-+	struct bio *bio;
-+	int do_write, do_flush;
-+
-+	while (1) {
-+		/* peek at request from block layer */
-+		rq = elv_next_request(q);
-+		if (!rq)
-+			break;
-+
-+		/* filter out block requests we don't understand */
-+		if (!blk_fs_request(rq) && !blk_barrier_rq(rq)) {
-+			end_request(rq, 0);
-+			continue;
-+		}
-+
-+		/* deduce our operation (read, write, flush) */
-+		/* I wish the block layer simplified cmd_type/cmd_flags/cmd[]
-+		 * into a clearly defined set of RPC commands:
-+		 * read, write, flush, scsi command, power mgmt req,
-+		 * driver-specific, etc.
-+		 */
-+
-+		do_flush = (rq->special == (void *) 0xdeadbeefUL);
-+		do_write = (rq_data_dir(rq) == WRITE);
-+
-+		/* a bio clone to be passed down to OSD request */
-+		bio = bio_clone(rq->bio, GFP_ATOMIC);
-+		if (!bio)
-+			break;
-+
-+		/* alloc internal OSD request, for OSD command execution */
-+		or = osd_start_request(osdev->osd, GFP_ATOMIC);
-+		if (!or) {
-+			bio_put(bio);
-+			break;
-+		}
-+
-+		orq = &osdev->req[rq->tag];
-+		orq->rq = rq;
-+		orq->bio = bio;
-+		orq->osdev = osdev;
-+
-+		/* init OSD command: flush, write or read */
-+		if (do_flush)
-+			osd_req_flush_object(or, &osdev->obj,
-+					     OSD_CDB_FLUSH_ALL, 0, 0);
-+		else if (do_write)
-+			osd_req_write(or, &osdev->obj, bio,
-+				      rq->sector * 512ULL);
-+		else
-+			osd_req_read(or, &osdev->obj, bio,
-+				     rq->sector * 512ULL);
-+
-+		/* begin OSD command execution */
-+		if (osd_async_op(or, osdblk_osd_complete, orq,
-+				 osdev->obj_cred)) {
-+			osd_end_request(or);
-+			blk_requeue_request(q, rq);
-+			bio_put(bio);
-+		}
-+
-+		/* remove the special 'flush' marker, now that the command
-+		 * is executing
-+		 */
-+		rq->special = NULL;
-+	}
-+}
-+
-+static void osdblk_prepare_flush(struct request_queue *q, struct request *rq)
-+{
-+	/* add driver-specific marker, to indicate that this request
-+	 * is a flush command
-+	 */
-+	rq->special = (void *) 0xdeadbeefUL;
-+}
-+
-+static void osdblk_free_disk(struct osdblk_device *osdev)
-+{
-+	struct gendisk *disk = osdev->disk;
-+
-+	if (!disk)
-+		return;
-+
-+	if (disk->flags & GENHD_FL_UP)
-+		del_gendisk(disk);
-+	if (disk->queue)
-+		blk_cleanup_queue(disk->queue);
-+	put_disk(disk);
-+}
-+
-+static int osdblk_init_disk(struct osdblk_device *osdev)
-+{
-+	struct gendisk *disk;
-+	struct request_queue *q;
-+	int rc;
-+	u64 obj_size = 0;
-+
-+	/* contact OSD, request size info about the object being mapped */
-+	rc = osdblk_get_obj_size(osdev, &obj_size);
-+	if (rc)
-+		return rc;
-+
-+	/* create gendisk info */
-+	disk = alloc_disk(OSDBLK_MINORS_PER_MAJOR);
-+	if (!disk)
-+		return -ENOMEM;
-+
-+	sprintf(disk->disk_name, DRV_NAME "/%d", osdev->id);
-+	disk->major = osdev->major;
-+	disk->first_minor = 0;
-+	disk->fops = &osdblk_bd_ops;
-+	disk->private_data = osdev;
-+
-+	/* init rq */
-+	q = blk_init_queue(osdblk_rq_fn, &osdev->lock);
-+	if (!q) {
-+		put_disk(disk);
-+		return -ENOMEM;
-+	}
-+
-+	/* switch queue to TCQ mode; allocate tag map */
-+	rc = blk_queue_init_tags(q, OSDBLK_MAX_REQ, NULL);
-+	if (rc) {
-+		blk_cleanup_queue(q);
-+		put_disk(disk);
-+		return rc;
-+	}
-+
-+	blk_queue_prep_rq(q, blk_queue_start_tag);
-+	blk_queue_ordered(q, QUEUE_ORDERED_DRAIN_FLUSH, osdblk_prepare_flush);
-+
-+	disk->queue = q;
-+
-+	q->queuedata = osdev;
-+
-+	osdev->disk = disk;
-+	osdev->q = q;
-+
-+	/* finally, announce the disk to the world */
-+	set_capacity(disk, obj_size);
-+	add_disk(disk);
-+
-+	return 0;
-+}
-+
-+/********************************************************************
-+  /sys/class/osdblk/
-+                     add	map OSD object to blkdev
-+                     remove	unmap OSD object
-+                     list	show mappings
-+ *******************************************************************/
-+
-+static void class_osdblk_release(struct class *cls)
-+{
-+	kfree(cls);
-+}
-+
-+static ssize_t class_osdblk_list(struct class *c, char *data)
-+{
-+	int n = 0;
-+	struct list_head *tmp;
-+
-+	mutex_lock_nested(&ctl_mutex, SINGLE_DEPTH_NESTING);
-+
-+	list_for_each(tmp, &osdblkdev_list) {
-+		struct osdblk_device *osdev;
-+
-+		osdev = list_entry(tmp, struct osdblk_device, node);
-+
-+		n += sprintf(data+n, "%d %d %llu %llu %s\n",
-+			osdev->id,
-+			osdev->major,
-+			osdev->obj.partition,
-+			osdev->obj.id,
-+			osdev->osd_path);
-+	}
-+
-+	mutex_unlock(&ctl_mutex);
-+	return n;
-+}
-+
-+static ssize_t class_osdblk_add(struct class *c, const char *buf, size_t count)
-+{
-+	struct osdblk_device *osdev;
-+	ssize_t rc;
-+	int irc, new_id = 0;
-+	struct list_head *tmp;
-+
-+	if (!try_module_get(THIS_MODULE))
-+		return -ENODEV;
-+
-+	/* new osdblk_device object */
-+	osdev = kzalloc(sizeof(*osdev) + strlen(buf) + 1, GFP_KERNEL);
-+	if (!osdev) {
-+		rc = -ENOMEM;
-+		goto err_out_mod;
-+	}
-+
-+	/* static osdblk_device initialization */
-+	spin_lock_init(&osdev->lock);
-+	INIT_LIST_HEAD(&osdev->node);
-+
-+	/* generate unique id: find highest unique id, add one */
-+
-+	mutex_lock_nested(&ctl_mutex, SINGLE_DEPTH_NESTING);
-+
-+	list_for_each(tmp, &osdblkdev_list) {
-+		struct osdblk_device *osdev;
-+
-+		osdev = list_entry(tmp, struct osdblk_device, node);
-+		if (osdev->id > new_id)
-+			new_id = osdev->id + 1;
-+	}
-+
-+	osdev->id = new_id;
-+
-+	/* add to global list */
-+	list_add_tail(&osdev->node, &osdblkdev_list);
-+
-+	mutex_unlock(&ctl_mutex);
-+
-+	/* parse add command */
-+	if (sscanf(buf, "%llu %llu %s", &osdev->obj.partition, &osdev->obj.id,
-+		   osdev->osd_path) != 3) {
-+		rc = -EINVAL;
-+		goto err_out_slot;
-+	}
-+
-+	/* initialize rest of new object */
-+	sprintf(osdev->name, DRV_NAME "%d", osdev->id);
-+
-+	/* contact requested OSD */
-+	osdev->osd = osduld_path_lookup(osdev->osd_path);
-+	if (IS_ERR(osdev->osd)) {
-+		rc = PTR_ERR(osdev->osd);
-+		goto err_out_slot;
-+	}
-+
-+	/* build OSD credential */
-+	osd_make_credential(osdev->obj_cred, &osdev->obj);
-+
-+	/* register our block device */
-+	irc = register_blkdev(0, osdev->name);
-+	if (irc < 0) {
-+		rc = irc;
-+		goto err_out_osd;
-+	}
-+
-+	osdev->major = irc;
-+
-+	/* set up and announce blkdev mapping */
-+	rc = osdblk_init_disk(osdev);
-+	if (rc)
-+		goto err_out_blkdev;
-+
-+	return 0;
-+
-+err_out_blkdev:
-+	unregister_blkdev(osdev->major, osdev->name);
-+err_out_osd:
-+	osduld_put_device(osdev->osd);
-+err_out_slot:
-+	mutex_lock_nested(&ctl_mutex, SINGLE_DEPTH_NESTING);
-+	list_del_init(&osdev->node);
-+	mutex_unlock(&ctl_mutex);
-+
-+	kfree(osdev);
-+err_out_mod:
-+	module_put(THIS_MODULE);
-+	return rc;
-+}
-+
-+static ssize_t class_osdblk_remove(struct class *c, const char *buf,
-+					size_t count)
-+{
-+	struct osdblk_device *osdev = NULL;
-+	int target_id, rc;
-+	unsigned long ul;
-+	struct list_head *tmp;
-+
-+	rc = strict_strtoul(buf, 10, &ul);
-+	if (rc)
-+		return rc;
-+
-+	/* convert to int; abort if we lost anything in the conversion */
-+	target_id = (int) ul;
-+	if (target_id != ul)
-+		return -EINVAL;
-+
-+	/* remove object from list immediately */
-+	mutex_lock_nested(&ctl_mutex, SINGLE_DEPTH_NESTING);
-+
-+	list_for_each(tmp, &osdblkdev_list) {
-+		osdev = list_entry(tmp, struct osdblk_device, node);
-+		if (osdev->id == target_id) {
-+			list_del_init(&osdev->node);
-+			break;
-+		}
-+		osdev = NULL;
-+	}
-+
-+	mutex_unlock(&ctl_mutex);
-+
-+	if (!osdev)
-+		return -ENOENT;
-+
-+	/* clean up and free blkdev and associated OSD connection */
-+	osdblk_free_disk(osdev);
-+	unregister_blkdev(osdev->major, osdev->name);
-+	osduld_put_device(osdev->osd);
-+	kfree(osdev);
-+
-+	/* release module ref */
-+	module_put(THIS_MODULE);
-+
-+	return 0;
-+}
-+
-+static struct class_attribute class_osdblk_attrs[] = {
-+	__ATTR(add,	0200, NULL, class_osdblk_add),
-+	__ATTR(remove,	0200, NULL, class_osdblk_remove),
-+	__ATTR(list,	0444, class_osdblk_list, NULL),
-+	__ATTR_NULL
-+};
-+
-+static int osdblk_sysfs_init(void)
-+{
-+	int ret = 0;
-+
-+	/*
-+	 * create control files in sysfs
-+	 * /sys/class/osdblk/...
-+	 */
-+	class_osdblk = kzalloc(sizeof(*class_osdblk), GFP_KERNEL);
-+	if (!class_osdblk)
-+		return -ENOMEM;
-+
-+	class_osdblk->name = DRV_NAME;
-+	class_osdblk->owner = THIS_MODULE;
-+	class_osdblk->class_release = class_osdblk_release;
-+	class_osdblk->class_attrs = class_osdblk_attrs;
-+
-+	ret = class_register(class_osdblk);
-+	if (ret) {
-+		kfree(class_osdblk);
-+		class_osdblk = NULL;
-+		printk(PFX "failed to create class osdblk\n");
-+		return ret;
-+	}
-+
-+	return 0;
-+}
-+
-+static void osdblk_sysfs_cleanup(void)
-+{
-+	if (class_osdblk)
-+		class_destroy(class_osdblk);
-+	class_osdblk = NULL;
-+}
-+
-+static int __init osdblk_init(void)
-+{
-+	int rc;
-+
-+	rc = osdblk_sysfs_init();
-+	if (rc)
-+		return rc;
-+
-+	return 0;
-+}
-+
-+static void __exit osdblk_exit(void)
-+{
-+	osdblk_sysfs_cleanup();
-+}
-+
-+module_init(osdblk_init);
-+module_exit(osdblk_exit);
-+
