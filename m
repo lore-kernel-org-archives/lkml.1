@@ -1,122 +1,123 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755774AbZDGNNk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756862AbZDGNN4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755774AbZDGNNk (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 7 Apr 2009 09:13:40 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752161AbZDGNN3
+	id S1756862AbZDGNN4 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 7 Apr 2009 09:13:56 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756240AbZDGNNf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 7 Apr 2009 09:13:29 -0400
-Received: from hera.kernel.org ([140.211.167.34]:59344 "EHLO hera.kernel.org"
+	Tue, 7 Apr 2009 09:13:35 -0400
+Received: from hera.kernel.org ([140.211.167.34]:59378 "EHLO hera.kernel.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752663AbZDGNN2 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 7 Apr 2009 09:13:28 -0400
-Date: Tue, 7 Apr 2009 13:12:38 GMT
-From: Lai Jiangshan <laijs@cn.fujitsu.com>
+	id S1756251AbZDGNNd (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 7 Apr 2009 09:13:33 -0400
+Date: Tue, 7 Apr 2009 13:12:59 GMT
+From: Steven Rostedt <rostedt@goodmis.org>
 To: linux-tip-commits@vger.kernel.org
 Cc: linux-kernel@vger.kernel.org, hpa@zytor.com, mingo@redhat.com,
-       lizf@cn.fujitsu.com, fweisbec@gmail.com, rostedt@goodmis.org,
-       tglx@linutronix.de, laijs@cn.fujitsu.com, mingo@elte.hu
+       yinghai@kernel.org, rostedt@goodmis.org, tglx@linutronix.de,
+       mingo@elte.hu
 Reply-To: mingo@redhat.com, hpa@zytor.com, linux-kernel@vger.kernel.org,
-       fweisbec@gmail.com, rostedt@goodmis.org, lizf@cn.fujitsu.com,
-       tglx@linutronix.de, laijs@cn.fujitsu.com, mingo@elte.hu
-In-Reply-To: <49D05D10.4030009@cn.fujitsu.com>
-References: <49D05D10.4030009@cn.fujitsu.com>
-Subject: [tip:tracing/urgent] tracing: fix incorrect return type of ns2usecs()
-Message-ID: <tip-cf8e3474654f20433aab9aa35826d43b5f245008@git.kernel.org>
-Git-Commit-ID: cf8e3474654f20433aab9aa35826d43b5f245008
+       yinghai@kernel.org, rostedt@goodmis.org, tglx@linutronix.de,
+       mingo@elte.hu
+In-Reply-To: <alpine.DEB.2.00.0903252053080.5675@gandalf.stny.rr.com>
+References: <alpine.DEB.2.00.0903252053080.5675@gandalf.stny.rr.com>
+Subject: [tip:tracing/urgent] function-graph: add proper initialization for init task
+Message-ID: <tip-5ac9f62267dc92c7735c642a5942d9e6c1190308@git.kernel.org>
+Git-Commit-ID: 5ac9f62267dc92c7735c642a5942d9e6c1190308
 X-Mailer: tip-git-log-daemon
 MIME-Version: 1.0
 Content-Type: text/plain; charset=UTF-8
 Content-Disposition: inline
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Tue, 07 Apr 2009 13:12:40 +0000 (UTC)
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Tue, 07 Apr 2009 13:13:01 +0000 (UTC)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Commit-ID:  cf8e3474654f20433aab9aa35826d43b5f245008
-Gitweb:     http://git.kernel.org/tip/cf8e3474654f20433aab9aa35826d43b5f245008
-Author:     Lai Jiangshan <laijs@cn.fujitsu.com>
-AuthorDate: Mon, 30 Mar 2009 13:48:00 +0800
+Commit-ID:  5ac9f62267dc92c7735c642a5942d9e6c1190308
+Gitweb:     http://git.kernel.org/tip/5ac9f62267dc92c7735c642a5942d9e6c1190308
+Author:     Steven Rostedt <rostedt@goodmis.org>
+AuthorDate: Wed, 25 Mar 2009 20:55:00 -0400
 Committer:  Ingo Molnar <mingo@elte.hu>
-CommitDate: Tue, 7 Apr 2009 13:59:23 +0200
+CommitDate: Tue, 7 Apr 2009 14:00:39 +0200
 
-tracing: fix incorrect return type of ns2usecs()
+function-graph: add proper initialization for init task
 
-Impact: fix time output bug in 32bits system
+Impact: fix to crash going to kexec
 
-ns2usecs() returns 'long', it's incorrect.
+The init task did not properly initialize the function graph pointers.
+Altough these pointers are NULL, they can not be assumed to be NULL
+for the init task, and must still be properly initialize.
 
-(In i386)
-..
-          <idle>-0     [000]   521.442100: _spin_lock <-tick_do_update_jiffies64
-          <idle>-0     [000]   521.442101: do_timer <-tick_do_update_jiffies64
-          <idle>-0     [000]   521.442102: update_wall_time <-do_timer
-          <idle>-0     [000]   521.442102: update_xtime_cache <-update_wall_time
-...
-(It always print the time less than 2200 seconds besides ...)
-Because 'long' is 32bits in i386. ( (1<<31) useconds is about 2200 seconds)
+This usually is not an issue since a problem only arises when a task
+exits, and the init tasks do not usually exit. But when doing tests
+with kexec, the init tasks do exit, and the bug appears.
 
-..
-          <idle>-0     [001] 4154502640.134759: rcu_bh_qsctr_inc <-__do_softirq
-          <idle>-0     [001] 4154502640.134760: _local_bh_enable <-__do_softirq
-          <idle>-0     [001] 4154502640.134761: idle_cpu <-irq_exit
-..
-(very large value)
-Because 'long' is a signed type and it is 32bits in i386.
+This patch properly initializes the init tasks function graph data
+structures.
 
-Changes in v2:
-return 'unsigned long long' instead of 'cycle_t'
-
-Signed-off-by: Lai Jiangshan <laijs@cn.fujitsu.com>
-LKML-Reference: <49D05D10.4030009@cn.fujitsu.com>
-Reported-by: Li Zefan <lizf@cn.fujitsu.com>
-Acked-by: Frederic Weisbecker <fweisbec@gmail.com>
+Reported-and-Tested-by: Yinghai Lu <yinghai@kernel.org>
+LKML-Reference: <alpine.DEB.2.00.0903252053080.5675@gandalf.stny.rr.com>
 Signed-off-by: Steven Rostedt <rostedt@goodmis.org>
 Signed-off-by: Ingo Molnar <mingo@elte.hu>
 
 
 ---
- kernel/trace/trace.c        |    3 +--
- kernel/trace/trace.h        |    2 +-
- kernel/trace/trace_output.c |    2 +-
- 3 files changed, 3 insertions(+), 4 deletions(-)
+ include/linux/ftrace.h    |    8 ++++++--
+ include/linux/init_task.h |    2 ++
+ 2 files changed, 8 insertions(+), 2 deletions(-)
 
-diff --git a/kernel/trace/trace.c b/kernel/trace/trace.c
-index a0174a4..457dd8c 100644
---- a/kernel/trace/trace.c
-+++ b/kernel/trace/trace.c
-@@ -147,8 +147,7 @@ static int __init set_ftrace_dump_on_oops(char *str)
- }
- __setup("ftrace_dump_on_oops", set_ftrace_dump_on_oops);
+diff --git a/include/linux/ftrace.h b/include/linux/ftrace.h
+index 015a3d2..da5405d 100644
+--- a/include/linux/ftrace.h
++++ b/include/linux/ftrace.h
+@@ -356,6 +356,9 @@ struct ftrace_graph_ret {
  
--long
--ns2usecs(cycle_t nsec)
-+unsigned long long ns2usecs(cycle_t nsec)
+ #ifdef CONFIG_FUNCTION_GRAPH_TRACER
+ 
++/* for init task */
++#define INIT_FTRACE_GRAPH		.ret_stack = NULL
++
+ /*
+  * Stack of return addresses for functions
+  * of a thread.
+@@ -430,10 +433,11 @@ static inline void unpause_graph_tracing(void)
  {
- 	nsec += 500;
- 	do_div(nsec, 1000);
-diff --git a/kernel/trace/trace.h b/kernel/trace/trace.h
-index cb0ce3f..0d81a4a 100644
---- a/kernel/trace/trace.h
-+++ b/kernel/trace/trace.h
-@@ -596,7 +596,7 @@ extern int trace_selftest_startup_branch(struct tracer *trace,
- #endif /* CONFIG_FTRACE_STARTUP_TEST */
+ 	atomic_dec(&current->tracing_graph_pause);
+ }
+-#else
++#else /* !CONFIG_FUNCTION_GRAPH_TRACER */
  
- extern void *head_page(struct trace_array_cpu *data);
--extern long ns2usecs(cycle_t nsec);
-+extern unsigned long long ns2usecs(cycle_t nsec);
- extern int
- trace_vbprintk(unsigned long ip, const char *fmt, va_list args);
- extern int
-diff --git a/kernel/trace/trace_output.c b/kernel/trace/trace_output.c
-index d72b9a6..64b54a5 100644
---- a/kernel/trace/trace_output.c
-+++ b/kernel/trace/trace_output.c
-@@ -423,7 +423,7 @@ int trace_print_lat_context(struct trace_iterator *iter)
+ #define __notrace_funcgraph
+ #define __irq_entry
++#define INIT_FTRACE_GRAPH
  
- 		trace_find_cmdline(entry->pid, comm);
+ static inline void ftrace_graph_init_task(struct task_struct *t) { }
+ static inline void ftrace_graph_exit_task(struct task_struct *t) { }
+@@ -445,7 +449,7 @@ static inline int task_curr_ret_stack(struct task_struct *tsk)
  
--		ret = trace_seq_printf(s, "%16s %5d %3d %d %08x %08lx [%08lx]"
-+		ret = trace_seq_printf(s, "%16s %5d %3d %d %08x %08lx [%08llx]"
- 				       " %ld.%03ldms (+%ld.%03ldms): ", comm,
- 				       entry->pid, iter->cpu, entry->flags,
- 				       entry->preempt_count, iter->idx,
+ static inline void pause_graph_tracing(void) { }
+ static inline void unpause_graph_tracing(void) { }
+-#endif
++#endif /* CONFIG_FUNCTION_GRAPH_TRACER */
+ 
+ #ifdef CONFIG_TRACING
+ #include <linux/sched.h>
+diff --git a/include/linux/init_task.h b/include/linux/init_task.h
+index e752d97..cada054 100644
+--- a/include/linux/init_task.h
++++ b/include/linux/init_task.h
+@@ -5,6 +5,7 @@
+ #include <linux/irqflags.h>
+ #include <linux/utsname.h>
+ #include <linux/lockdep.h>
++#include <linux/ftrace.h>
+ #include <linux/ipc.h>
+ #include <linux/pid_namespace.h>
+ #include <linux/user_namespace.h>
+@@ -184,6 +185,7 @@ extern struct cred init_cred;
+ 	INIT_IDS							\
+ 	INIT_TRACE_IRQFLAGS						\
+ 	INIT_LOCKDEP							\
++	INIT_FTRACE_GRAPH						\
+ }
+ 
+ 
