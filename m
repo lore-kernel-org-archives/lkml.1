@@ -1,141 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760774AbZDGPYj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761490AbZDGPZt@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760774AbZDGPYj (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 7 Apr 2009 11:24:39 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759327AbZDGPK2
+	id S1761490AbZDGPZt (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 7 Apr 2009 11:25:49 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759654AbZDGPLy
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 7 Apr 2009 11:10:28 -0400
-Received: from one.firstfloor.org ([213.235.205.2]:41321 "EHLO
-	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1759350AbZDGPKY (ORCPT
+	Tue, 7 Apr 2009 11:11:54 -0400
+Received: from fg-out-1718.google.com ([72.14.220.156]:28292 "EHLO
+	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1759617AbZDGPLw (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 7 Apr 2009 11:10:24 -0400
-From: Andi Kleen <andi@firstfloor.org>
-References: <20090407509.382219156@firstfloor.org>
-In-Reply-To: <20090407509.382219156@firstfloor.org>
-To: linux-kernel@vger.kernel.org, linux-mm@kvack.org, x86@kernel.org
-Subject: [PATCH] [14/16] x86: MCE: Rename mce_notify_user to mce_notify_irq
-Message-Id: <20090407151012.120C51D046E@basil.firstfloor.org>
-Date: Tue,  7 Apr 2009 17:10:11 +0200 (CEST)
+	Tue, 7 Apr 2009 11:11:52 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:to:cc:subject:message-id:references:mime-version
+         :content-type:content-disposition:in-reply-to:user-agent;
+        b=e/EQQ+HtvW8EBAyqKy8iEWLBat2NiviBFMaVIApTLatpy6V2cj04ohBFV+Qo25W/AM
+         8Jk1NlJdQWNAHmE/OkU/Ya3uqw1neJDcWGG9AWASTbvpaNgQaah2jrPV0ob/QH00vuw+
+         jbr08PbCdMJDH5SvTvhIDBA6mzELZFp6OXbfA=
+Date: Tue, 7 Apr 2009 19:11:48 +0400
+From: Cyrill Gorcunov <gorcunov@gmail.com>
+To: Pekka Enberg <penberg@cs.helsinki.fi>
+Cc: mingo@elte.hu, x86@kernel.org, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 01/13] x86: move x86_quirk_pre_intr_init() to
+	irqinit_32.c
+Message-ID: <20090407151148.GE8146@lenovo>
+References: <1239112120-676-1-git-send-email-penberg@cs.helsinki.fi>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1239112120-676-1-git-send-email-penberg@cs.helsinki.fi>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+[Pekka Enberg - Tue, Apr 07, 2009 at 04:48:28PM +0300]
+| Impact: cleanup
+| 
+| In preparation for unifying irqinit_{32,64}.c, make
+| x86_quirk_pre_intr_init() local to irqinit_32.c.
+| 
+| Signed-off-by: Pekka Enberg <penberg@cs.helsinki.fi>
+| ---
+|  arch/x86/include/asm/i8259.h |    4 ----
+|  arch/x86/include/asm/setup.h |    1 -
+|  arch/x86/kernel/irqinit_32.c |   20 +++++++++++++++++++-
+|  arch/x86/kernel/setup.c      |   18 ------------------
+|  4 files changed, 19 insertions(+), 24 deletions(-)
 
-Impact: cleanup
+Hi Pekka,
 
-Rename the mce_notify_user function to mce_notify_irq. The next
-patch will split the wakeup handling of interrupt context 
-and of process context and it's better to give it a clearer
-name for this.
+it seems you've messed with Ingo's email address :) (fixed).
+Btw, I sent same series a bit ago -- maybe you could
+take a look on it as well? http://lkml.org/lkml/2009/3/29/214
 
-Signed-off-by: Andi Kleen <ak@linux.intel.com>
-
----
- arch/x86/include/asm/mce.h                |    2 +-
- arch/x86/kernel/cpu/mcheck/mce-inject.c   |    2 +-
- arch/x86/kernel/cpu/mcheck/mce_64.c       |   10 +++++-----
- arch/x86/kernel/cpu/mcheck/mce_intel_64.c |    2 +-
- arch/x86/kernel/signal.c                  |    2 +-
- 5 files changed, 9 insertions(+), 9 deletions(-)
-
-Index: linux/arch/x86/kernel/cpu/mcheck/mce_64.c
-===================================================================
---- linux.orig/arch/x86/kernel/cpu/mcheck/mce_64.c	2009-04-07 16:39:21.000000000 +0200
-+++ linux/arch/x86/kernel/cpu/mcheck/mce_64.c	2009-04-07 16:43:04.000000000 +0200
-@@ -303,14 +303,14 @@
- 	ack_APIC_irq();
- 	exit_idle();
- 	irq_enter();
--	mce_notify_user();
-+	mce_notify_irq();
- 	irq_exit();
- }
- 
- static void mce_report_event(struct pt_regs *regs)
- {
- 	if (regs->flags & (X86_VM_MASK|X86_EFLAGS_IF)) {
--		mce_notify_user();
-+		mce_notify_irq();
- 		return;
- 	}
- 
-@@ -904,7 +904,7 @@
- 	 * polling interval, otherwise increase the polling interval.
- 	 */
- 	n = &__get_cpu_var(next_interval);
--	if (mce_notify_user()) {
-+	if (mce_notify_irq()) {
- 		*n = max(*n/2, HZ/100);
- 	} else {
- 		*n = min(*n*2, (int)round_jiffies_relative(check_interval*HZ));
-@@ -926,7 +926,7 @@
-  * Can be called from interrupt context, but not from machine check/NMI
-  * context.
-  */
--int mce_notify_user(void)
-+int mce_notify_irq(void)
- {
- 	/* Not more than two messages every minute */
- 	static DEFINE_RATELIMIT_STATE(ratelimit, 60*HZ, 2);
-@@ -950,7 +950,7 @@
- 	}
- 	return 0;
- }
--EXPORT_SYMBOL_GPL(mce_notify_user);
-+EXPORT_SYMBOL_GPL(mce_notify_irq);
- 
- /*
-  * Initialize Machine Checks for a CPU.
-Index: linux/arch/x86/include/asm/mce.h
-===================================================================
---- linux.orig/arch/x86/include/asm/mce.h	2009-04-07 16:39:21.000000000 +0200
-+++ linux/arch/x86/include/asm/mce.h	2009-04-07 16:43:04.000000000 +0200
-@@ -162,7 +162,7 @@
- };
- extern void machine_check_poll(enum mcp_flags flags, mce_banks_t *b);
- 
--extern int mce_notify_user(void);
-+extern int mce_notify_irq(void);
- 
- #endif /* !CONFIG_X86_32 */
- 
-Index: linux/arch/x86/kernel/cpu/mcheck/mce-inject.c
-===================================================================
---- linux.orig/arch/x86/kernel/cpu/mcheck/mce-inject.c	2009-04-07 16:39:21.000000000 +0200
-+++ linux/arch/x86/kernel/cpu/mcheck/mce-inject.c	2009-04-07 16:39:39.000000000 +0200
-@@ -65,7 +65,7 @@
- 		memset(&b, 0xff, sizeof(mce_banks_t));
- 		printk(KERN_INFO "Starting machine check poll CPU %d\n", cpu);
- 		machine_check_poll(0, &b);
--		mce_notify_user();
-+		mce_notify_irq();
- 		printk(KERN_INFO "Finished machine check poll on CPU %d\n",
- 		       cpu);
- 	}
-Index: linux/arch/x86/kernel/signal.c
-===================================================================
---- linux.orig/arch/x86/kernel/signal.c	2009-04-07 16:39:21.000000000 +0200
-+++ linux/arch/x86/kernel/signal.c	2009-04-07 16:43:04.000000000 +0200
-@@ -860,7 +860,7 @@
- #if defined(CONFIG_X86_64) && defined(CONFIG_X86_MCE)
- 	/* notify userspace of pending MCEs */
- 	if (thread_info_flags & _TIF_MCE_NOTIFY)
--		mce_notify_user();
-+		mce_notify_irq();
- #endif /* CONFIG_X86_64 && CONFIG_X86_MCE */
- 
- 	/* deal with pending signal delivery */
-Index: linux/arch/x86/kernel/cpu/mcheck/mce_intel_64.c
-===================================================================
---- linux.orig/arch/x86/kernel/cpu/mcheck/mce_intel_64.c	2009-04-07 16:39:21.000000000 +0200
-+++ linux/arch/x86/kernel/cpu/mcheck/mce_intel_64.c	2009-04-07 16:39:39.000000000 +0200
-@@ -132,7 +132,7 @@
- static void intel_threshold_interrupt(void)
- {
- 	machine_check_poll(MCP_TIMESTAMP, &__get_cpu_var(mce_banks_owned));
--	mce_notify_user();
-+	mce_notify_irq();
- }
- 
- static void print_update(char *type, int *hdr, int num)
+        Cyrill
