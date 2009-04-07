@@ -1,41 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755758AbZDGOsT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757011AbZDGOsz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755758AbZDGOsT (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 7 Apr 2009 10:48:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754281AbZDGOsE
+	id S1757011AbZDGOsz (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 7 Apr 2009 10:48:55 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752086AbZDGOso
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 7 Apr 2009 10:48:04 -0400
-Received: from caffeine.csclub.uwaterloo.ca ([129.97.134.17]:34431 "EHLO
-	caffeine.csclub.uwaterloo.ca" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1753568AbZDGOsD (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 7 Apr 2009 10:48:03 -0400
-Date: Tue, 7 Apr 2009 10:48:01 -0400
-To: Mark Lord <lkml@rtr.ca>
-Cc: Ingo Molnar <mingo@elte.hu>, Jens Axboe <jens.axboe@oracle.com>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Theodore Tso <tytso@mit.edu>,
-       Linux Kernel Developers List <linux-kernel@vger.kernel.org>,
-       Ext4 Developers List <linux-ext4@vger.kernel.org>
-Subject: Re: [GIT PULL] Ext3 latency fixes
-Message-ID: <20090407144801.GR3795@csclub.uwaterloo.ca>
-References: <alpine.LFD.2.00.0904031110420.19690@localhost.localdomain> <alpine.LFD.2.00.0904031150190.4015@localhost.localdomain> <alpine.LFD.2.00.0904031329410.7007@localhost.localdomain> <20090404135719.GA9812@mit.edu> <20090404151649.GE5178@kernel.dk> <alpine.LFD.2.00.0904040854470.3915@localhost.localdomain> <20090404173412.GF5178@kernel.dk> <20090404201820.GA18067@elte.hu> <20090406215034.GD3797@csclub.uwaterloo.ca> <49DB55B9.7030108@rtr.ca>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <49DB55B9.7030108@rtr.ca>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-From: lsorense@csclub.uwaterloo.ca (Lennart Sorensen)
+	Tue, 7 Apr 2009 10:48:44 -0400
+Received: from mx1.emlix.com ([193.175.82.87]:47997 "EHLO mx1.emlix.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752638AbZDGOso (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 7 Apr 2009 10:48:44 -0400
+From: Johannes Weiner <jw@emlix.com>
+To: Ben Dooks <ben-linux@fluff.org>
+Cc: linux-kernel@vger.kernel.org
+Subject: [patch] i2c-s6000: don't use device->bus_id directly
+Date: Tue,  7 Apr 2009 16:50:18 +0200
+Message-Id: <1239115818-22035-1-git-send-email-jw@emlix.com>
+In-Reply-To: <20090407100012.GA13800@fluff.org.uk>
+References: <20090407100012.GA13800@fluff.org.uk>
+Organization: emlix gmbh, Goettingen, Germany
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Apr 07, 2009 at 09:31:37AM -0400, Mark Lord wrote:
-> I generally don't see any delay at all when doing that,
-> even when the Mythtv system is very busy on multiple recordings.
-> But then, I also don't use the huge LIRC stack for the simple R/C either.
+Use the dev_name() helper to get a name string for a device instead of
+open-coding random device field accesses.
 
-But it happens with the keyboard too. :)
+With '1fa5ae8 driver core: get rid of struct device's bus_id string
+array' in place, this is not just a cleanup but a compilation fix.
 
+Signed-off-by: Johannes Weiner <jw@emlix.com>
+---
+ drivers/i2c/busses/i2c-s6000.c |    2 +-
+ 1 files changed, 1 insertions(+), 1 deletions(-)
+
+Sorry, went unnoticed until the compilation broke on a newer kernel
+with the above mentioned commit.  Please apply.
+
+diff --git a/drivers/i2c/busses/i2c-s6000.c b/drivers/i2c/busses/i2c-s6000.c
+index c91359f..a19af51 100644
+--- a/drivers/i2c/busses/i2c-s6000.c
++++ b/drivers/i2c/busses/i2c-s6000.c
+@@ -276,7 +276,7 @@ static int __devinit s6i2c_probe(struct platform_device *dev)
+ 	}
+ 	iface->res = request_mem_region(iface->res->start,
+ 					resource_size(iface->res),
+-					dev->dev.bus_id);
++					dev_name(&dev->dev));
+ 	if (!iface->res) {
+ 		rc = -EBUSY;
+ 		goto err_out;
 -- 
-Len Sorensen
+1.6.2.107.ge47ee
+
