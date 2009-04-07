@@ -1,168 +1,75 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757357AbZDGTJu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760165AbZDGTKX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757357AbZDGTJu (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 7 Apr 2009 15:09:50 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754546AbZDGTJ0
+	id S1760165AbZDGTKX (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 7 Apr 2009 15:10:23 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758426AbZDGTJv
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 7 Apr 2009 15:09:26 -0400
-Received: from THUNK.ORG ([69.25.196.29]:53818 "EHLO thunker.thunk.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753049AbZDGTJZ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 7 Apr 2009 15:09:25 -0400
-Date: Tue, 7 Apr 2009 15:09:13 -0400
-From: Theodore Tso <tytso@mit.edu>
-To: Jens Axboe <jens.axboe@oracle.com>
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       Linux Kernel Developers List <linux-kernel@vger.kernel.org>,
-       Ext4 Developers List <linux-ext4@vger.kernel.org>, jack@suse.cz
-Subject: Re: [PATCH 1/3] block_write_full_page: Use synchronous writes for
-	WBC_SYNC_ALL writebacks
-Message-ID: <20090407190913.GA31723@mit.edu>
-Mail-Followup-To: Theodore Tso <tytso@mit.edu>,
-	Jens Axboe <jens.axboe@oracle.com>,
-	Andrew Morton <akpm@linux-foundation.org>,
-	Linux Kernel Developers List <linux-kernel@vger.kernel.org>,
-	Ext4 Developers List <linux-ext4@vger.kernel.org>, jack@suse.cz
-References: <1238185471-31152-1-git-send-email-tytso@mit.edu> <1238185471-31152-2-git-send-email-tytso@mit.edu> <20090406232141.ebdb426a.akpm@linux-foundation.org> <20090406235052.1ea47513.akpm@linux-foundation.org> <20090407070835.GM5178@kernel.dk> <20090407002313.fcdd1da0.akpm@linux-foundation.org> <20090407075732.GO5178@kernel.dk>
+	Tue, 7 Apr 2009 15:09:51 -0400
+Received: from mail-bw0-f169.google.com ([209.85.218.169]:40113 "EHLO
+	mail-bw0-f169.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755572AbZDGTJt convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 7 Apr 2009 15:09:49 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:sender:in-reply-to:references:date
+         :x-google-sender-auth:message-id:subject:from:to:cc:content-type
+         :content-transfer-encoding;
+        b=jF7inaWGQxofL0boAC8As+DX2cjGURARQXO4sO5wDBX+3cbECnLaaBhBVux+Eg3wdD
+         9PZH5TDvzDPEEiH5Z6AmLxFB3paPD1tmi3M4q4nLcGEk2Td/Bj23Y9MD3m+/KhvPyeJ0
+         eoNxRqz/ypwfJE/ljfn6neDXjceP6FtYpn4og=
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090407075732.GO5178@kernel.dk>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-SA-Exim-Connect-IP: <locally generated>
-X-SA-Exim-Mail-From: tytso@mit.edu
-X-SA-Exim-Scanned: No (on thunker.thunk.org); SAEximRunCond expanded to false
+In-Reply-To: <49DBA23A.3000106@cs.helsinki.fi>
+References: <alpine.DEB.2.00.0904051653420.25339@chino.kir.corp.google.com>
+	 <49DBA23A.3000106@cs.helsinki.fi>
+Date: Tue, 7 Apr 2009 22:09:46 +0300
+X-Google-Sender-Auth: 95bcda7735aea0e9
+Message-ID: <84144f020904071209j638aae9bv406661ec401af7af@mail.gmail.com>
+Subject: Re: [patch] slub: default min_partial to at least highest cpus per 
+	node
+From: Pekka Enberg <penberg@cs.helsinki.fi>
+To: David Rientjes <rientjes@google.com>
+Cc: Christoph Lameter <cl@linux-foundation.org>, linux-kernel@vger.kernel.org
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Apr 07, 2009 at 09:57:32AM +0200, Jens Axboe wrote:
-> > > It looks like a good candidate for WRITE_SYNC_PLUG instead,
-> > 
+David Rientjes wrote:
+>> The pre-defined MIN_PARTIAL value may not be suitable for machines with a
+>> large number of cpus per node.  To avoid excessively allocating new slabs
+>> because there is not at least the same number of slabs on a node's
+>> partial list as cpus, this will default a cache's min_partial value to be
+>> at least the highest number of cpus per node on the system.
+>>
+>> This default will never exceed MAX_PARTIAL, however, so very large
+>> systems don't waste an excessive amount of memory.
+>>
+>> When remote_node_defrag_ratio allows defragmenting remote nodes, it
+>> ensures that nr_partial exceeds min_partial so there will always be a
+>> local reserve when a cpu slab is filled to avoid allocating new slabs
+>> locally as a result of a remote cpu stealing a partial slab.
+>>
+>> The cache's min_partial setting may still be changed by writing to
+>> /sys/kernel/slab/cache/min_partial.  The only restriction when doing so
+>> is that the value be within MIN_PARTIAL and MAX_PARTIAL.
+>>
+>> Cc: Christoph Lameter <cl@linux-foundation.org>
+>> Signed-off-by: David Rientjes <rientjes@google.com>
 
-So is this patch sane?  (Compile-tested only, since I'm at a
-conference at the moment).  Am I using the proper abstraction to
-unplug the block device?  If not, it might be nice to document the
-preferred for callers into the block layer.
+On Tue, Apr 7, 2009 at 9:58 PM, Pekka Enberg <penberg@cs.helsinki.fi> wrote:
+> Hmm, partial lists are per-node, so wouldn't it be better to do the
+> adjustment for every struct kmem_cache_node separately? The
+> 'min_partial_per_node' global seems just too ugly and confusing to live
+> with.
 
-(BTW, I was looking at Documentation/biodoc.txt, and I found some
-clearly old documentation bits: "This is just the same as in 2.4 so
-far, though per-device unplugging support is anticipated for 2.5."  :-)
+Btw, that requires moving ->min_partial to struct kmem_cache_node from
+struct kmem_cache.  But I think that makes a whole lot of sense if
+some nodes may have more CPUs than others.
 
-					- Ted
+And while the improvement is kinda obvious, I would be interested to
+know what kind of workload benefits from this patch (and see numbers
+if there are any).
 
-[RFQ] Smart unplugging for page writeback
-
-Now that we have a distinction between WRITE_SYNC and WRITE_SYNC_PLUG,
-use WRITE_SYNC_PLUG in block_write_full_page(), and then before we
-wait for page writebacks to complete in jbd, jbd2, and filemap, call
-blk_unplug() to make sure the writes are on the way to the disk.
-
-diff --git a/fs/buffer.c b/fs/buffer.c
-index 977e12a..95b5390 100644
---- a/fs/buffer.c
-+++ b/fs/buffer.c
-@@ -1646,7 +1646,8 @@ static int __block_write_full_page(struct inode *inode, struct page *page,
- 	struct buffer_head *bh, *head;
- 	const unsigned blocksize = 1 << inode->i_blkbits;
- 	int nr_underway = 0;
--	int write_op = (wbc->sync_mode == WB_SYNC_ALL ? WRITE_SYNC : WRITE);
-+	int write_op = (wbc->sync_mode == WB_SYNC_ALL ?
-+			WRITE_SYNC_PLUG : WRITE);
- 
- 	BUG_ON(!PageLocked(page));
- 
-diff --git a/fs/jbd/commit.c b/fs/jbd/commit.c
-index a8e8513..3e6726f 100644
---- a/fs/jbd/commit.c
-+++ b/fs/jbd/commit.c
-@@ -21,6 +21,7 @@
- #include <linux/mm.h>
- #include <linux/pagemap.h>
- #include <linux/bio.h>
-+#include <linux/blkdev.h>
- 
- /*
-  * Default IO end handler for temporary BJ_IO buffer_heads.
-@@ -196,6 +197,7 @@ static int journal_submit_data_buffers(journal_t *journal,
- 	int locked;
- 	int bufs = 0;
- 	struct buffer_head **wbuf = journal->j_wbuf;
-+	struct block_device *fs_bdev = 0;
- 	int err = 0;
- 
- 	/*
-@@ -213,6 +215,7 @@ write_out_data:
- 	while (commit_transaction->t_sync_datalist) {
- 		jh = commit_transaction->t_sync_datalist;
- 		bh = jh2bh(jh);
-+		fs_bdev = bh->b_bdev;
- 		locked = 0;
- 
- 		/* Get reference just to make sure buffer does not disappear
-@@ -290,6 +293,8 @@ write_out_data:
- 	}
- 	spin_unlock(&journal->j_list_lock);
- 	journal_do_submit_data(wbuf, bufs, write_op);
-+	if (fs_bdev)
-+		blk_unplug(bdev_get_queue(fs_bdev));
- 
- 	return err;
- }
-diff --git a/fs/jbd2/commit.c b/fs/jbd2/commit.c
-index 282750c..b5448dd 100644
---- a/fs/jbd2/commit.c
-+++ b/fs/jbd2/commit.c
-@@ -26,6 +26,7 @@
- #include <linux/writeback.h>
- #include <linux/backing-dev.h>
- #include <linux/bio.h>
-+#include <linux/blkdev.h>
- 
- /*
-  * Default IO end handler for temporary BJ_IO buffer_heads.
-@@ -176,6 +177,7 @@ static int journal_wait_on_commit_record(journal_t *journal,
- 
- retry:
- 	clear_buffer_dirty(bh);
-+	blk_unplug(bdev_get_queue(bh->b_bdev));
- 	wait_on_buffer(bh);
- 	if (buffer_eopnotsupp(bh) && (journal->j_flags & JBD2_BARRIER)) {
- 		printk(KERN_WARNING
-@@ -241,10 +243,12 @@ static int journal_submit_data_buffers(journal_t *journal,
- 	struct jbd2_inode *jinode;
- 	int err, ret = 0;
- 	struct address_space *mapping;
-+	struct block_device *fs_bdev = 0;
- 
- 	spin_lock(&journal->j_list_lock);
- 	list_for_each_entry(jinode, &commit_transaction->t_inode_list, i_list) {
- 		mapping = jinode->i_vfs_inode->i_mapping;
-+		fs_bdev = jinode->i_vfs_inode->i_sb->s_bdev;
- 		jinode->i_flags |= JI_COMMIT_RUNNING;
- 		spin_unlock(&journal->j_list_lock);
- 		/*
-@@ -262,6 +266,8 @@ static int journal_submit_data_buffers(journal_t *journal,
- 		wake_up_bit(&jinode->i_flags, __JI_COMMIT_RUNNING);
- 	}
- 	spin_unlock(&journal->j_list_lock);
-+	if (fs_bdev)
-+		blk_unplug(bdev_get_queue(fs_bdev));
- 	return ret;
- }
- 
-diff --git a/mm/filemap.c b/mm/filemap.c
-index 2e2d38e..eff2ed9 100644
---- a/mm/filemap.c
-+++ b/mm/filemap.c
-@@ -274,6 +274,10 @@ int wait_on_page_writeback_range(struct address_space *mapping,
- 	if (end < start)
- 		return 0;
- 
-+	if (mapping->host && mapping->host->i_sb && mapping->host->i_sb &&
-+	    mapping->host->i_sb->s_bdev)
-+		blk_unplug(bdev_get_queue(mapping->host->i_sb->s_bdev));
-+
- 	pagevec_init(&pvec, 0);
- 	index = start;
- 	while ((index <= end) &&
+                                  Pekka
