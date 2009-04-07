@@ -1,76 +1,91 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754652AbZDGMQf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754990AbZDGMX1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754652AbZDGMQf (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 7 Apr 2009 08:16:35 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751244AbZDGMQ0
+	id S1754990AbZDGMX1 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 7 Apr 2009 08:23:27 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752049AbZDGMXS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 7 Apr 2009 08:16:26 -0400
-Received: from mx3.mail.elte.hu ([157.181.1.138]:60348 "EHLO mx3.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751159AbZDGMQ0 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 7 Apr 2009 08:16:26 -0400
-Date: Tue, 7 Apr 2009 14:14:57 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: David Woodhouse <dwmw2@infradead.org>
-Cc: torvalds@linux-foundation.org, iommu@lists.linux-foundation.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] intel-iommu: fix build with CONFIG_BRANCH_TRACER=y
-Message-ID: <20090407121457.GC11641@elte.hu>
-References: <1238839639.3560.37.camel@macbook.infradead.org> <20090407053739.GA10500@elte.hu> <1239083045.22733.383.camel@macbook.infradead.org> <20090407054818.GA5557@elte.hu> <20090407055245.GA10406@elte.hu> <1239084280.22733.404.camel@macbook.infradead.org> <20090407061558.GA31261@elte.hu> <20090407084950.GA1467@elte.hu> <20090407090229.GA2467@elte.hu> <1239104035.22733.443.camel@macbook.infradead.org>
+	Tue, 7 Apr 2009 08:23:18 -0400
+Received: from mail-qy0-f118.google.com ([209.85.221.118]:63319 "EHLO
+	mail-qy0-f118.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751159AbZDGMXR convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 7 Apr 2009 08:23:17 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
+         :cc:content-type:content-transfer-encoding;
+        b=Qu7rH5LNWaPTI3oc+y2TQlG13nVl7sW2BTNY9IdpeI4EhJ7QSMdtp5y58MSJKv83Z2
+         Gxa6VMxfxhKAMFMLSipPylwlSmw1bcv1jr/rnkOv2uXX7Cy5Emp13fXfzpD/6xjyrTnV
+         HAVEbtc1ibJ6XmaDFXRfULI4CytVJ9gndWyHw=
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1239104035.22733.443.camel@macbook.infradead.org>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+In-Reply-To: <1238431643-19433-1-git-send-email-philipp.reisner@linbit.com>
+References: <1238431643-19433-1-git-send-email-philipp.reisner@linbit.com>
+Date: Tue, 7 Apr 2009 17:53:14 +0530
+Message-ID: <807b3a220904070523t746ad2abx6a46d30e816eb1d6@mail.gmail.com>
+Subject: Re: [PATCH 00/12] DRBD: a block device for HA clusters
+From: Nikanth K <nikanth@gmail.com>
+To: Philipp Reisner <philipp.reisner@linbit.com>
+Cc: linux-kernel@vger.kernel.org, gregkh@suse.de, jens.axboe@oracle.com,
+       nab@risingtidestorage.com, andi@firstfloor.org,
+       Nikanth Karthikesan <knikanth@suse.de>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Hi Philipp,
 
-* David Woodhouse <dwmw2@infradead.org> wrote:
+On Mon, Mar 30, 2009 at 10:17 PM, Philipp Reisner
+<philipp.reisner@linbit.com> wrote:
+> Hi,
+>
+>  This is a repost of DRBD, to keep you updated about the ongoing
+>  cleanups.
+>
+> Description
+>
+>  DRBD is a shared-nothing, synchronously replicated block device. It
+>  is designed to serve as a building block for high availability
+>  clusters and in this context, is a "drop-in" replacement for shared
+>  storage. Simplistically, you could see it as a network RAID 1.
+>
+>  Each minor device has a role, which can be 'primary' or 'secondary'.
+>  On the node with the primary device the application is supposed to
+>  run and to access the device (/dev/drbdX). Every write is sent to
+>  the local 'lower level block device' and, across the network, to the
+>  node with the device in 'secondary' state.  The secondary device
+>  simply writes the data to its lower level block device.
+>
+>  DRBD can also be used in dual-Primary mode (device writable on both
+>  nodes), which means it can exhibit shared disk semantics in a
+>  shared-nothing cluster.  Needless to say, on top of dual-Primary
+>  DRBD utilizing a cluster file system is necessary to maintain for
+>  cache coherency.
+>
+>  This is one of the areas where DRBD differs notably from RAID1 (say
+>  md) stacked on top of NBD or iSCSI. DRBD solves the issue of
+>  concurrent writes to the same on disk location. That is an error of
+>  the layer above us -- it usually indicates a broken lock manager in
+>  a cluster file system --, but DRBD has to ensure that both sides
+>  agree on which write came last, and therefore overwrites the other
+>  write.
+>
 
-> On Tue, 2009-04-07 at 11:02 +0200, Ingo Molnar wrote:
-> > for_each_active_iommu() and for_each_iommu() uses some tricky
-> > C that is weird and borderline valid but does not allow the
-> > macro evaluation trick used by the branch tracer/profiler:
-> > 
-> >    drivers/pci/intr_remapping.c:680:28: error: macro "if" passed 2
-> > arguments, but takes just 1
-> > 
-> > Switch it to a braced group statement.
-> 
-> It doesn't even need the braces -- just putting simple parens 
-> around the comma-expression would have sufficed (that was Andrew's 
-> attempt).
-> 
-> But it's a workaround, not a fix -- if we're going to #define if() 
-> then we should damn well make it transparent, and not have to work 
-> around breakage in arbitrary places.
+So this difference to RAID1+NBD is required only if the DLM of the
+clustered fs is buggy?
 
-Well, i consider it a feature that it flags weird if (x, y) 
-constructs: and yes, these iterators you introduced, while they are 
-legit C, definitely count as 'weird'. If regular code was doing it, 
-not a loop abstraction, i'd call it non-obvious and borderline 
-broken straight away.
 
-We should _never ever_ put comma statements into if () constructs 
-without a _really_ good reason - and if yes, we can flag that we 
-know what we are doing, via extra parentheses.
+>  More background on this can be found in this paper:
+>    http://www.drbd.org/fileadmin/drbd/publications/drbd8.pdf
+>
+>  Beyond that, DRBD addresses various issues of cluster partitioning,
+>  which the MD/NBD stack, to the best of our knowledge, does not
+>  solve. The above-mentioned paper goes into some detail about that as
+>  well.
+>
 
-> Hence the patch I sent to Linus last night, which fixes it in the 
-> _right_ place:
-> 	http://marc.info/?l=linux-kernel&m=123907505308502&w=2
+It would be nice, if you can list those limitations of NBD/RAID here.
 
-I dont think that's the right fix for the reason above - all the 
-places where the branch-profiler 'broke' the build before were 
-genuinely weird pieces of code that needed fixing.
-
-	Ingo
+Thanks
+Nikanth
