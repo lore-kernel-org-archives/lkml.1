@@ -1,71 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757218AbZDGNOm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757333AbZDGNO7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757218AbZDGNOm (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 7 Apr 2009 09:14:42 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756808AbZDGNNr
+	id S1757333AbZDGNO7 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 7 Apr 2009 09:14:59 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756818AbZDGNNt
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 7 Apr 2009 09:13:47 -0400
-Received: from hera.kernel.org ([140.211.167.34]:59392 "EHLO hera.kernel.org"
+	Tue, 7 Apr 2009 09:13:49 -0400
+Received: from hera.kernel.org ([140.211.167.34]:59394 "EHLO hera.kernel.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755981AbZDGNNq (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 7 Apr 2009 09:13:46 -0400
-Date: Tue, 7 Apr 2009 13:13:09 GMT
-From: Zhaolei <zhaolei@cn.fujitsu.com>
+	id S1756811AbZDGNNr (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 7 Apr 2009 09:13:47 -0400
+Date: Tue, 7 Apr 2009 13:13:18 GMT
+From: Huang Weiyi <weiyi.huang@gmail.com>
 To: linux-tip-commits@vger.kernel.org
 Cc: linux-kernel@vger.kernel.org, hpa@zytor.com, mingo@redhat.com,
-       rostedt@goodmis.org, zhaolei@cn.fujitsu.com, tglx@linutronix.de,
-       mingo@elte.hu
+       rostedt@goodmis.org, tglx@linutronix.de, mingo@elte.hu,
+       weiyi.huang@gmail.com
 Reply-To: mingo@redhat.com, hpa@zytor.com, linux-kernel@vger.kernel.org,
-       rostedt@goodmis.org, zhaolei@cn.fujitsu.com, tglx@linutronix.de,
+       rostedt@goodmis.org, tglx@linutronix.de, weiyi.huang@gmail.com,
        mingo@elte.hu
-In-Reply-To: <49D1C543.3010307@cn.fujitsu.com>
-References: <49D1C543.3010307@cn.fujitsu.com>
-Subject: [tip:tracing/urgent] ftrace: Add check of sched_stopped for probe_sched_wakeup
-Message-ID: <tip-8bcae09b93e7f96f700b6bb372c2b3f2b36636dc@git.kernel.org>
-Git-Commit-ID: 8bcae09b93e7f96f700b6bb372c2b3f2b36636dc
+In-Reply-To: <1238503291-2532-1-git-send-email-weiyi.huang@gmail.com>
+References: <1238503291-2532-1-git-send-email-weiyi.huang@gmail.com>
+Subject: [tip:tracing/urgent] tracing, x86: remove duplicated #include
+Message-ID: <tip-5ab8026a3016fbed5c73aa070d9f6989cf791099@git.kernel.org>
+Git-Commit-ID: 5ab8026a3016fbed5c73aa070d9f6989cf791099
 X-Mailer: tip-git-log-daemon
 MIME-Version: 1.0
 Content-Type: text/plain; charset=UTF-8
 Content-Disposition: inline
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Tue, 07 Apr 2009 13:13:10 +0000 (UTC)
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Tue, 07 Apr 2009 13:13:20 +0000 (UTC)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Commit-ID:  8bcae09b93e7f96f700b6bb372c2b3f2b36636dc
-Gitweb:     http://git.kernel.org/tip/8bcae09b93e7f96f700b6bb372c2b3f2b36636dc
-Author:     Zhaolei <zhaolei@cn.fujitsu.com>
-AuthorDate: Tue, 31 Mar 2009 15:24:51 +0800
+Commit-ID:  5ab8026a3016fbed5c73aa070d9f6989cf791099
+Gitweb:     http://git.kernel.org/tip/5ab8026a3016fbed5c73aa070d9f6989cf791099
+Author:     Huang Weiyi <weiyi.huang@gmail.com>
+AuthorDate: Tue, 31 Mar 2009 20:41:31 +0800
 Committer:  Ingo Molnar <mingo@elte.hu>
-CommitDate: Tue, 7 Apr 2009 14:01:11 +0200
+CommitDate: Tue, 7 Apr 2009 14:01:53 +0200
 
-ftrace: Add check of sched_stopped for probe_sched_wakeup
+tracing, x86: remove duplicated #include
 
-The wakeup tracing in sched_switch does not stop when a user
-disables tracing. This is because the probe_sched_wakeup() is missing
-the check to prevent the wakeup from being traced.
+Remove duplicated #include in arch/x86/kernel/ftrace.c.
 
-Signed-off-by: Zhao Lei <zhaolei@cn.fujitsu.com>
-LKML-Reference: <49D1C543.3010307@cn.fujitsu.com>
+Signed-off-by: Huang Weiyi <weiyi.huang@gmail.com>
+LKML-Reference: <1238503291-2532-1-git-send-email-weiyi.huang@gmail.com>
 Signed-off-by: Steven Rostedt <rostedt@goodmis.org>
 Signed-off-by: Ingo Molnar <mingo@elte.hu>
 
 
 ---
- kernel/trace/trace_sched_switch.c |    3 +++
- 1 files changed, 3 insertions(+), 0 deletions(-)
+ arch/x86/kernel/ftrace.c |    1 -
+ 1 files changed, 0 insertions(+), 1 deletions(-)
 
-diff --git a/kernel/trace/trace_sched_switch.c b/kernel/trace/trace_sched_switch.c
-index de35f20..9117cea 100644
---- a/kernel/trace/trace_sched_switch.c
-+++ b/kernel/trace/trace_sched_switch.c
-@@ -62,6 +62,9 @@ probe_sched_wakeup(struct rq *__rq, struct task_struct *wakee, int success)
- 	pc = preempt_count();
- 	tracing_record_cmdline(current);
+diff --git a/arch/x86/kernel/ftrace.c b/arch/x86/kernel/ftrace.c
+index 61df775..70a10ca 100644
+--- a/arch/x86/kernel/ftrace.c
++++ b/arch/x86/kernel/ftrace.c
+@@ -20,7 +20,6 @@
  
-+	if (sched_stopped)
-+		return;
-+
- 	local_irq_save(flags);
- 	cpu = raw_smp_processor_id();
- 	data = ctx_trace->data[cpu];
+ #include <asm/cacheflush.h>
+ #include <asm/ftrace.h>
+-#include <linux/ftrace.h>
+ #include <asm/nops.h>
+ #include <asm/nmi.h>
+ 
