@@ -1,58 +1,41 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753068AbZDGFns@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755416AbZDGFoz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753068AbZDGFns (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 7 Apr 2009 01:43:48 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751605AbZDGFnj
+	id S1755416AbZDGFoz (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 7 Apr 2009 01:44:55 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751605AbZDGFoq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 7 Apr 2009 01:43:39 -0400
-Received: from mx2.mail.elte.hu ([157.181.151.9]:56545 "EHLO mx2.mail.elte.hu"
+	Tue, 7 Apr 2009 01:44:46 -0400
+Received: from brick.kernel.dk ([93.163.65.50]:38297 "EHLO kernel.dk"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750945AbZDGFnj (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 7 Apr 2009 01:43:39 -0400
-Date: Tue, 7 Apr 2009 07:42:49 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: David Woodhouse <dwmw2@infradead.org>
-Cc: torvalds@linux-foundation.org, iommu@lists.linux-foundation.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: [GIT *] intel-iommu updates for 2.6.30 (second batch)
-Message-ID: <20090407054249.GA25772@elte.hu>
-References: <1238839639.3560.37.camel@macbook.infradead.org> <20090407053739.GA10500@elte.hu>
+	id S1750945AbZDGFoq (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 7 Apr 2009 01:44:46 -0400
+Date: Tue, 7 Apr 2009 07:44:44 +0200
+From: Jens Axboe <jens.axboe@oracle.com>
+To: Alexander Beregalov <a.beregalov@gmail.com>
+Cc: linux-kernel@vger.kernel.org, neilb@suse.de, torvalds@linux-foundation.org
+Subject: Re: [PATCH] md/raid1: fix build breakage
+Message-ID: <20090407054444.GK5178@kernel.dk>
+References: <20090406213556.GA29973@orion>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <20090407053739.GA10500@elte.hu>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+In-Reply-To: <20090406213556.GA29973@orion>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-* Ingo Molnar <mingo@elte.hu> wrote:
-
-> I suspect these bits are the ones that broke the upstream build:
+On Tue, Apr 07 2009, Alexander Beregalov wrote:
+> Fix this build error:
+> drivers/md/raid1.c: In function 'raid1_congested':
+> drivers/md/raid1.c:589: error: 'BDI_write_congested' undeclared
 > 
->  drivers/pci/dmar.c:47: error: expected ‘=’, ‘,’, ‘;’, ‘asm’ or ‘__attribute__’ before ‘dmar_tbl_size’
->  drivers/pci/dmar.c:62: warning: ‘struct acpi_dmar_device_scope’ declared inside parameter list
->  drivers/pci/dmar.c:62: warning: its scope is only this definition or declaration, which is probably not what you want
-> 
-> config attached.
+> BDI_write_congested was changed in 1faa16d2
+> (block: change the request allocation/congestion logic to be sync/async
+> based)
 
-hm, it breaks on all !ACPI configs AFAICS. The whole new code 
-section you added to dmar.c depends on ACPI functionality.
+Strange, I was so sure I had grepped for those. Thanks for the
+quick-fix, I see Linus already added it.
 
-Restricting DMAR to "depends on ACPI" in the Kconfig would probably 
-work but is somewhat lame: this built fine with !ACPI before and if 
-the hw ever gets discovered purely via the PCI space (it does not 
-currently) we are hardwired to ACPI only. (adding more Kconfig 
-dependencies also restricts testing, etc.)
+-- 
+Jens Axboe
 
-	Ingo
