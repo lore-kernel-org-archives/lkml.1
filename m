@@ -1,84 +1,97 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752663AbZDGKCy@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752722AbZDGKIc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752663AbZDGKCy (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 7 Apr 2009 06:02:54 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754156AbZDGKCi
+	id S1752722AbZDGKIc (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 7 Apr 2009 06:08:32 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752054AbZDGKIW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 7 Apr 2009 06:02:38 -0400
-Received: from e39.co.us.ibm.com ([32.97.110.160]:49113 "EHLO
-	e39.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754293AbZDGKCh (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 7 Apr 2009 06:02:37 -0400
-Date: Tue, 7 Apr 2009 15:32:25 +0530
-From: Maneesh Soni <maneesh@in.ibm.com>
-To: Steven Rostedt <rostedt@goodmis.org>
-Cc: LKML <linux-kernel@vger.kernel.org>, Ingo Molnar <mingo@elte.hu>,
-       Frederic Weisbecker <fweisbec@gmail.com>,
-       Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: [PATCH][GIT PULL] tracing/wakeup: move access to wakeup_cpu
-	into spinlock
-Message-ID: <20090407100225.GC4138@in.ibm.com>
-Reply-To: maneesh@in.ibm.com
-References: <20090326122806.GA4188@in.ibm.com> <20090326132739.GB5960@nowhere> <alpine.DEB.2.00.0903260949340.17665@gandalf.stny.rr.com> <alpine.DEB.2.00.0903261032070.17665@gandalf.stny.rr.com> <20090327084144.GA23318@in.ibm.com> <20090327124532.GA9963@in.ibm.com> <alpine.DEB.2.00.0904011939170.30963@gandalf.stny.rr.com> <20090402060249.GH4620@in.ibm.com> <alpine.DEB.2.00.0904020915280.30963@gandalf.stny.rr.com>
+	Tue, 7 Apr 2009 06:08:22 -0400
+Received: from hera.kernel.org ([140.211.167.34]:37293 "EHLO hera.kernel.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751621AbZDGKIV (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 7 Apr 2009 06:08:21 -0400
+Date: Tue, 7 Apr 2009 10:06:31 GMT
+From: Ingo Molnar <mingo@elte.hu>
+To: linux-tip-commits@vger.kernel.org
+Cc: linux-kernel@vger.kernel.org, hpa@zytor.com, mingo@redhat.com,
+       a.p.zijlstra@chello.nl, tglx@linutronix.de, mingo@elte.hu
+Reply-To: mingo@redhat.com, hpa@zytor.com, linux-kernel@vger.kernel.org,
+       a.p.zijlstra@chello.nl, tglx@linutronix.de, mingo@elte.hu
+In-Reply-To: <20090406094518.445450972@chello.nl>
+References: <20090406094518.445450972@chello.nl>
+Subject: [tip:perfcounters/core] x86, perfcounters: add atomic64_xchg()
+Message-ID: <tip-98c2aaf8be5baf7193be37fb28bce8e7327158bc@git.kernel.org>
+Git-Commit-ID: 98c2aaf8be5baf7193be37fb28bce8e7327158bc
+X-Mailer: tip-git-log-daemon
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=UTF-8
 Content-Disposition: inline
-In-Reply-To: <alpine.DEB.2.00.0904020915280.30963@gandalf.stny.rr.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Tue, 07 Apr 2009 10:06:34 +0000 (UTC)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Apr 02, 2009 at 09:18:35AM -0400, Steven Rostedt wrote:
-[..]
-> 
-> > 
-> > BUG: unable to handle kernel NULL pointer dereference at 0000000000000008
-> > IP: [<ffffffff80292349>] probe_wakeup_sched_switch+0x11f/0x1e8
-> > PGD 0 
-> > Oops: 0000 [#1] SMP 
-> > last sysfs file: /sys/devices/pci0000:01/0000:01:01.1/irq
-> > CPU 3 
-> > Modules linked in: autofs4 hidp rfcomm l2cap bluetooth iptable_filter ip_tables ip6t_REJECT xt_tcpudp ip6table_filter ip6_tables x_tables ipv6 dm_mirror dm_region_hash dm_log dm_multipath scsi_dh dm_mod sbs sbshc battery ac parport_pc lp parport sg sr_mod ide_cd_mod cdrom serio_raw acpi_memhotplug button tg3 libphy i2c_piix4 i2c_core pcspkr usb_storage uhci_hcd ohci_hcd ehci_hcd aacraid sd_mod scsi_mod ext3 jbd
-> > Pid: 16589, comm: sshd Not tainted 2.6.29-tip-test #3 eserver xSeries 366-[88632RA]-
-> > RIP: 0010:[<ffffffff80292349>]  [<ffffffff80292349>] probe_wakeup_sched_switch+0x11f/0x1e8
-> > RSP: 0018:ffff8801da1b5e90  EFLAGS: 00010046
-> > RAX: 0000000000000000 RBX: 0000000000000000 RCX: 0000000000000046
-> > RDX: 0000000000000000 RSI: ffffffff8020bf85 RDI: ffffffff80d6f460
-> > RBP: ffff8801da1b5ed0 R08: 0000000000000000 R09: 0000000100000003
-> > R10: ffff8801da1b5ed0 R11: ffff88022d152078 R12: 0000000000000046
-> > R13: ffff88022f352040 R14: 0000000000000000 R15: 0000000000000003
-> > FS:  00007f748364d710(0000) GS:ffff880028155000(0000) knlGS:0000000000000000
-> > CS:  0010 DS: 0000 ES: 0000 CR0: 000000008005003b
-> > CR2: 0000000000000008 CR3: 00000001cfd8e000 CR4: 00000000000006e0
-> > DR0: 0000000000000000 DR1: 0000000000000000 DR2: 0000000000000000
-> > DR3: ffffffff80d91980 DR6: 00000000ffff0ff0 DR7: 0000000000000600
-> > Process sshd (pid: 16589, threadinfo ffff8801da1b4000, task ffff88022d152040)
-> > Stack:
-> >  ffff88022d152040 ffff88022d152040 ffff880028162960 ffff880224d79810
-> >  ffff880028167d00 00007fff8b6c7190 0000000000000005 00007fff8b6c7190
-> >  ffff8801da1b5f70 ffffffff805210b7 ffff8802295b8558 0000000000000001
-> > Call Trace:
-> >  [<ffffffff805210b7>] schedule+0x82f/0xb39
-> >  [<ffffffff802d95a4>] ? sys_write+0x72/0x8d
-> >  [<ffffffff8020bf85>] sysret_careful+0xd/0x10
-> 
-> This is what I was afraid of. Your other crashes were intret_careful, 
-> now we are hitting sysret_careful. I'm going to pull out all references to 
-> CALLER_ADDR2. The above patch was simply me manually putting in a call 
-> frame in intret_careful. But this is unreliable, any caller from an 
-> interrupt (or syscall) to schedule will cause an error. I'm not sure we 
-> need the CALLER_ADDR2 anyway.
-> 
+Commit-ID:  98c2aaf8be5baf7193be37fb28bce8e7327158bc
+Gitweb:     http://git.kernel.org/tip/98c2aaf8be5baf7193be37fb28bce8e7327158bc
+Author:     Ingo Molnar <mingo@elte.hu>
+AuthorDate: Tue, 7 Apr 2009 11:30:17 +0200
+Committer:  Ingo Molnar <mingo@elte.hu>
+CommitDate: Tue, 7 Apr 2009 12:02:41 +0200
 
-I had also tested with passing 0 instead of CALLER_ADDR2 and didn't see any crash.
+x86, perfcounters: add atomic64_xchg()
 
-Thanks
-Maneesh
+Complete atomic64_t support on the 32-bit side by adding atomic64_xch().
 
--- 
-Maneesh Soni
-Linux Technology Center
-IBM India Systems and Technology Lab,
-Bangalore, India.
+Cc: Peter Zijlstra <a.p.zijlstra@chello.nl>
+LKML-Reference: <20090406094518.445450972@chello.nl>
+Signed-off-by: Ingo Molnar <mingo@elte.hu>
+
+
+---
+ arch/x86/include/asm/atomic_32.h |   24 +++++++++++++++++++++---
+ 1 files changed, 21 insertions(+), 3 deletions(-)
+
+diff --git a/arch/x86/include/asm/atomic_32.h b/arch/x86/include/asm/atomic_32.h
+index 977250e..aff9f1f 100644
+--- a/arch/x86/include/asm/atomic_32.h
++++ b/arch/x86/include/asm/atomic_32.h
+@@ -291,19 +291,37 @@ atomic64_cmpxchg(atomic64_t *ptr, unsigned long long old_val,
+ }
+ 
+ /**
+- * atomic64_set - set atomic64 variable
++ * atomic64_xchg - xchg atomic64 variable
+  * @ptr:      pointer to type atomic64_t
+  * @new_val:  value to assign
++ * @old_val:  old value that was there
+  *
+- * Atomically sets the value of @ptr to @new_val.
++ * Atomically xchgs the value of @ptr to @new_val and returns
++ * the old value.
+  */
+-static inline void atomic64_set(atomic64_t *ptr, unsigned long long new_val)
++
++static inline unsigned long long
++atomic64_xchg(atomic64_t *ptr, unsigned long long new_val)
+ {
+ 	unsigned long long old_val;
+ 
+ 	do {
+ 		old_val = atomic_read(ptr);
+ 	} while (atomic64_cmpxchg(ptr, old_val, new_val) != old_val);
++
++	return old_val;
++}
++
++/**
++ * atomic64_set - set atomic64 variable
++ * @ptr:      pointer to type atomic64_t
++ * @new_val:  value to assign
++ *
++ * Atomically sets the value of @ptr to @new_val.
++ */
++static inline void atomic64_set(atomic64_t *ptr, unsigned long long new_val)
++{
++	atomic64_xchg(ptr, new_val);
+ }
+ 
+ /**
