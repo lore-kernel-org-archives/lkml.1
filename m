@@ -1,54 +1,41 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758038AbZDGOoN@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755758AbZDGOsT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758038AbZDGOoN (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 7 Apr 2009 10:44:13 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758185AbZDGOnw
+	id S1755758AbZDGOsT (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 7 Apr 2009 10:48:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754281AbZDGOsE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 7 Apr 2009 10:43:52 -0400
-Received: from earthlight.etchedpixels.co.uk ([81.2.110.250]:55930 "EHLO
-	t61.ukuu.org.uk" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1758141AbZDGOnv (ORCPT
+	Tue, 7 Apr 2009 10:48:04 -0400
+Received: from caffeine.csclub.uwaterloo.ca ([129.97.134.17]:34431 "EHLO
+	caffeine.csclub.uwaterloo.ca" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1753568AbZDGOsD (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 7 Apr 2009 10:43:51 -0400
-From: Mike Frysinger <vapier.adi@gmail.com>
-To: torvalds@linux-foundation.org, linux-kernel@vger.kernel.org
-Date: Tue, 07 Apr 2009 16:42:51 +0100
-Message-ID: <20090407154142.17182.93917.stgit@t61.ukuu.org.uk>
-In-Reply-To: <20090407153824.17182.81672.stgit@t61.ukuu.org.uk>
-References: <20090407153824.17182.81672.stgit@t61.ukuu.org.uk>
-User-Agent: StGIT/0.14.3
+	Tue, 7 Apr 2009 10:48:03 -0400
+Date: Tue, 7 Apr 2009 10:48:01 -0400
+To: Mark Lord <lkml@rtr.ca>
+Cc: Ingo Molnar <mingo@elte.hu>, Jens Axboe <jens.axboe@oracle.com>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Theodore Tso <tytso@mit.edu>,
+       Linux Kernel Developers List <linux-kernel@vger.kernel.org>,
+       Ext4 Developers List <linux-ext4@vger.kernel.org>
+Subject: Re: [GIT PULL] Ext3 latency fixes
+Message-ID: <20090407144801.GR3795@csclub.uwaterloo.ca>
+References: <alpine.LFD.2.00.0904031110420.19690@localhost.localdomain> <alpine.LFD.2.00.0904031150190.4015@localhost.localdomain> <alpine.LFD.2.00.0904031329410.7007@localhost.localdomain> <20090404135719.GA9812@mit.edu> <20090404151649.GE5178@kernel.dk> <alpine.LFD.2.00.0904040854470.3915@localhost.localdomain> <20090404173412.GF5178@kernel.dk> <20090404201820.GA18067@elte.hu> <20090406215034.GD3797@csclub.uwaterloo.ca> <49DB55B9.7030108@rtr.ca>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <49DB55B9.7030108@rtr.ca>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+From: lsorense@csclub.uwaterloo.ca (Lennart Sorensen)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Subject: Kconfig check tighten
+On Tue, Apr 07, 2009 at 09:31:37AM -0400, Mark Lord wrote:
+> I generally don't see any delay at all when doing that,
+> even when the Mythtv system is very busy on multiple recordings.
+> But then, I also don't use the huge LIRC stack for the simple R/C either.
 
-This is needed as it can be built as a module.
+But it happens with the keyboard too. :)
 
-Signed-off-by: Mike Frysinger <vapier.adi@gmail.com>
-Signed-off-by: Bryan Wu <cooloney@kernel.org>
-Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
-Signed-off-by: Alan Cox <alan@lxorguk.ukuu.org.uk>
----
-
- drivers/serial/Kconfig |    2 +-
- 1 files changed, 1 insertions(+), 1 deletions(-)
-
-
-diff --git a/drivers/serial/Kconfig b/drivers/serial/Kconfig
-index 1e2dd6f..1537e0d 100644
---- a/drivers/serial/Kconfig
-+++ b/drivers/serial/Kconfig
-@@ -707,7 +707,7 @@ choice
- 
- config SERIAL_BFIN_DMA
- 	bool "DMA mode"
--	depends on !DMA_UNCACHED_NONE && !KGDB_SERIAL_CONSOLE
-+	depends on !DMA_UNCACHED_NONE && KGDB_SERIAL_CONSOLE=n
- 	help
- 	  This driver works under DMA mode. If this option is selected, the
- 	  blackfin simple dma driver is also enabled.
-
+-- 
+Len Sorensen
