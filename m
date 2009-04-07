@@ -1,67 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760791AbZDGSk3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754683AbZDGSwW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760791AbZDGSk3 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 7 Apr 2009 14:40:29 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760730AbZDGSkI
+	id S1754683AbZDGSwW (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 7 Apr 2009 14:52:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751621AbZDGSwM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 7 Apr 2009 14:40:08 -0400
-Received: from kroah.org ([198.145.64.141]:52831 "EHLO coco.kroah.org"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1758323AbZDGSkF (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 7 Apr 2009 14:40:05 -0400
-Subject: patch staging-stlc45xx-should-depend-on-generic_hardirqs.patch added to gregkh-2.6 tree
-To: geert@linux-m68k.org, gregkh@suse.de, kalle.valo@nokia.com,
-       linux-kernel@vger.kernel.org
-From: <gregkh@suse.de>
-Date: Tue, 07 Apr 2009 11:36:40 -0700
-In-Reply-To: <Pine.LNX.4.64.0904061515001.13923@anakin>
-Message-ID: <12391294002943@kroah.org>
+	Tue, 7 Apr 2009 14:52:12 -0400
+Received: from cmpxchg.org ([85.214.51.133]:43246 "EHLO cmpxchg.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751045AbZDGSwM (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 7 Apr 2009 14:52:12 -0400
+Date: Tue, 7 Apr 2009 20:51:46 +0200
+From: Johannes Weiner <hannes@cmpxchg.org>
+To: Andi Kleen <andi@firstfloor.org>
+Cc: hugh@veritas.com, npiggin@suse.de, riel@redhat.com,
+       lee.schermerhorn@hp.com, akpm@linux-foundation.org,
+       linux-kernel@vger.kernel.org, linux-mm@kvack.org, x86@kernel.org
+Subject: Re: [PATCH] [13/16] POISON: The high level memory error handler in the VM
+Message-ID: <20090407185146.GA3818@cmpxchg.org>
+References: <20090407509.382219156@firstfloor.org> <20090407151010.E72A91D0471@basil.firstfloor.org>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20090407151010.E72A91D0471@basil.firstfloor.org>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Hi Andi,
 
-This is a note to let you know that I've just added the patch titled
+On Tue, Apr 07, 2009 at 05:10:10PM +0200, Andi Kleen wrote:
 
-    Subject: Staging: STLC45XX should depend on GENERIC_HARDIRQS
+> +static void collect_procs_anon(struct page *page, struct list_head *to_kill,
+> +			      struct to_kill **tkc)
+> +{
+> +	struct vm_area_struct *vma;
+> +	struct task_struct *tsk;
+> +	struct anon_vma *av = page_lock_anon_vma(page);
+> +
+> +	if (av == NULL)	/* Not actually mapped anymore */
+> +		goto out;
+> +
+> +	read_lock(&tasklist_lock);
+> +	for_each_process (tsk) {
+> +		if (!tsk->mm)
+> +			continue;
+> +		list_for_each_entry (vma, &av->head, anon_vma_node) {
+> +			if (vma->vm_mm == tsk->mm)
+> +				add_to_kill(tsk, page, vma, to_kill, tkc);
+> +		}
+> +	}
+> +	read_unlock(&tasklist_lock);
+> +out:
+> +	page_unlock_anon_vma(av);
 
-to my gregkh-2.6 tree.  Its filename is
+If !av, this doesn't need an unlock and in fact crashes due to
+dereferencing NULL.
 
-    staging-stlc45xx-should-depend-on-generic_hardirqs.patch
+> +static int poison_page_prepare(struct page *p, unsigned long pfn, int trapno)
+> +{
+> +	if (PagePoison(p)) {
+> +		printk(KERN_ERR
+> +		       "MCE: Error for already poisoned page at %lx\n", pfn);
+> +		return -1;
+> +	}
+> +	SetPagePoison(p);
 
-This tree can be found at 
-    http://www.kernel.org/pub/linux/kernel/people/gregkh/gregkh-2.6/patches/
-
-
->From geert@linux-m68k.org  Tue Apr  7 11:18:56 2009
-From: Geert Uytterhoeven <geert@linux-m68k.org>
-Date: Mon, 6 Apr 2009 15:15:55 +0200 (CEST)
-Subject: Staging: STLC45XX should depend on GENERIC_HARDIRQS
-To: Kalle Valo <kalle.valo@nokia.com>, Greg Kroah-Hartman <gregkh@suse.de>
-Cc: Linux Kernel Development <linux-kernel@vger.kernel.org>
-Message-ID: <Pine.LNX.4.64.0904061515001.13923@anakin>
-
-
-m68k allmodconfig:
-| drivers/staging/stlc45xx/stlc45xx.c: In function 'stlc45xx_probe':
-| drivers/staging/stlc45xx/stlc45xx.c:2456: error: implicit declaration of function 'set_irq_type'
-| make[6]: *** [drivers/staging/stlc45xx/stlc45xx.o] Error 1
-
-Signed-off-by: Geert Uytterhoeven <geert@linux-m68k.org>
-Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
-
----
- drivers/staging/stlc45xx/Kconfig |    2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
-
---- a/drivers/staging/stlc45xx/Kconfig
-+++ b/drivers/staging/stlc45xx/Kconfig
-@@ -1,6 +1,6 @@
- config STLC45XX
- 	tristate "stlc4550/4560 support"
--	depends on MAC80211 && WLAN_80211 && SPI_MASTER
-+	depends on MAC80211 && WLAN_80211 && SPI_MASTER && GENERIC_HARDIRQS
- 	---help---
- 	  This is a driver for stlc4550 and stlc4560 chipsets.
- 
-
+TestSetPagePoison()?
