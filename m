@@ -1,117 +1,116 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760857AbZDGSa3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760467AbZDGSee@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760857AbZDGSa3 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 7 Apr 2009 14:30:29 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757819AbZDGSaU
+	id S1760467AbZDGSee (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 7 Apr 2009 14:34:34 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757430AbZDGSeZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 7 Apr 2009 14:30:20 -0400
-Received: from mail-ew0-f165.google.com ([209.85.219.165]:50885 "EHLO
-	mail-ew0-f165.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757066AbZDGSaT (ORCPT
+	Tue, 7 Apr 2009 14:34:25 -0400
+Received: from comal.ext.ti.com ([198.47.26.152]:40809 "EHLO comal.ext.ti.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1757044AbZDGSeY convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 7 Apr 2009 14:30:19 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:references:mime-version
-         :content-type:content-disposition:in-reply-to:user-agent;
-        b=e/3CL9abQAkel20yloZTA4qpIwxN8h7o4239U6EoyKmNvJWS74Py5yEyl6DSNFA/rU
-         DCqCnsd7hm5KZOOkGg8cUHNJftflThlNezosTsC8OHFiN7EtjOtn3XXayvPn/Q1GTTKq
-         9dgySfA8miqIt4Eqb+PCwry1WfWpyaUm3HSIk=
-Date: Tue, 7 Apr 2009 20:30:15 +0200
-From: Frederic Weisbecker <fweisbec@gmail.com>
-To: Miklos Szeredi <miklos@szeredi.hu>
-Cc: linux-kernel@vger.kernel.org, rusty@rustcorp.com.au, srostedt@redhat.com,
-       mingo@elte.hu
-Subject: Re: [bug] lockdep warning: module_mutex vs. ftrace_lock
-Message-ID: <20090407183014.GA7531@nowhere>
-References: <E1LrEGG-0000ag-Js@pomaz-ex.szeredi.hu>
+	Tue, 7 Apr 2009 14:34:24 -0400
+From: "Narnakaje, Snehaprabha" <nsnehaprabha@ti.com>
+To: Thomas Gleixner <tglx@linutronix.de>
+CC: David Brownell <david-b@pacbell.net>,
+       "davinci-linux-open-source@linux.davincidsp.com" 
+	<davinci-linux-open-source@linux.davincidsp.com>,
+       "linux-mtd@lists.infradead.org" <linux-mtd@lists.infradead.org>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
+Date: Tue, 7 Apr 2009 13:34:01 -0500
+Subject: RE: [PATCH] MTD-NAND: Changes to read_page APIs to support
+ NAND_ECC_HW_SYNDROME mode on TI DaVinci DM355
+Thread-Topic: [PATCH] MTD-NAND: Changes to read_page APIs to support
+ NAND_ECC_HW_SYNDROME mode on TI DaVinci DM355
+Thread-Index: Acm3oJqXCDsOhxybQ2qEExMEd/evBwACyTYw
+Message-ID: <7A436F7769CA33409C6B44B358BFFF0CFFAA9253@dlee02.ent.ti.com>
+References: <1238601784-9563-1-git-send-email-nsnehaprabha@ti.com>
+ <200904051556.05368.david-b@pacbell.net>
+ <alpine.LFD.2.00.0904070042300.21577@localhost.localdomain>
+ <200904061849.23110.david-b@pacbell.net>
+ <7A436F7769CA33409C6B44B358BFFF0CFFAA90C0@dlee02.ent.ti.com>
+ <alpine.LFD.2.00.0904071831550.21577@localhost.localdomain>
+In-Reply-To: <alpine.LFD.2.00.0904071831550.21577@localhost.localdomain>
+Accept-Language: en-US
+Content-Language: en-US
+X-MS-Has-Attach: 
+X-MS-TNEF-Correlator: 
+acceptlanguage: en-US
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 8BIT
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <E1LrEGG-0000ag-Js@pomaz-ex.szeredi.hu>
-User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Apr 07, 2009 at 06:34:56PM +0200, Miklos Szeredi wrote:
-> =======================================================
-> [ INFO: possible circular locking dependency detected ]
-> 2.6.29-09854-gd508afb-dirty #6
-> -------------------------------------------------------
-> modprobe/3184 is trying to acquire lock:
->  (ftrace_lock){+.+.+.}, at: [<ffffffff80277e71>] ftrace_convert_nops+0x32/0x267
-> 
-> but task is already holding lock:
->  (module_mutex){+.+.+.}, at: [<ffffffff8026a539>] sys_init_module+0x3f/0x1d3
-> 
-> which lock already depends on the new lock.
-> 
-> 
-> the existing dependency chain (in reverse order) is:
-> 
-> -> #1 (module_mutex){+.+.+.}:
->        [<ffffffff8026134a>] __lock_acquire+0x12fe/0x1668
->        [<ffffffff802617a2>] lock_acquire+0xee/0x112
->        [<ffffffff804fe0a6>] mutex_lock_nested+0x4f/0x305
->        [<ffffffff8026709e>] module_update_tracepoints+0x1c/0x73
->        [<ffffffff80274f74>] tracepoint_update_probes+0x21/0x23
->        [<ffffffff8027510a>] tracepoint_probe_register+0x4a/0x68
->        [<ffffffff80277cae>] register_ftrace_graph+0x2a9/0x30f
->        [<ffffffff8027f928>] trace_selftest_startup_function_graph+0x2e/0xbb
->        [<ffffffff8027fdc5>] register_tracer+0x151/0x26e
->        [<ffffffff8070b942>] init_graph_trace+0x10/0x12
->        [<ffffffff80209066>] do_one_initcall+0x5b/0x135
->        [<ffffffff806fa5e4>] kernel_init+0x12f/0x185
->        [<ffffffff8020c2ba>] child_rip+0xa/0x20
->        [<ffffffffffffffff>] 0xffffffffffffffff
-> 
-> -> #0 (ftrace_lock){+.+.+.}:
->        [<ffffffff80261067>] __lock_acquire+0x101b/0x1668
->        [<ffffffff802617a2>] lock_acquire+0xee/0x112
->        [<ffffffff804fe0a6>] mutex_lock_nested+0x4f/0x305
->        [<ffffffff80277e71>] ftrace_convert_nops+0x32/0x267
->        [<ffffffff802780bd>] ftrace_init_module+0x17/0x19
->        [<ffffffff8026a011>] load_module+0x1122/0x160b
->        [<ffffffff8026a556>] sys_init_module+0x5c/0x1d3
->        [<ffffffff8020b21b>] system_call_fastpath+0x16/0x1b
->        [<ffffffffffffffff>] 0xffffffffffffffff
+Thomas,
 
-
-
-Ah that's this ftrace/modules lock dependency that Steven told me about
-recently. Steven, do you know more about it now?
-
-Thanks.
-Frederic.
-
- 
-> other info that might help us debug this:
+> -----Original Message-----
+> From: Thomas Gleixner [mailto:tglx@linutronix.de]
+> Sent: Tuesday, April 07, 2009 12:46 PM
+> To: Narnakaje, Snehaprabha
+> Cc: David Brownell; davinci-linux-open-source@linux.davincidsp.com; linux-
+> mtd@lists.infradead.org; linux-kernel@vger.kernel.org
+> Subject: RE: [PATCH] MTD-NAND: Changes to read_page APIs to support
+> NAND_ECC_HW_SYNDROME mode on TI DaVinci DM355
 > 
-> 1 lock held by modprobe/3184:
->  #0:  (module_mutex){+.+.+.}, at: [<ffffffff8026a539>] sys_init_module+0x3f/0x1d3
+> On Tue, 7 Apr 2009, Narnakaje, Snehaprabha wrote:
+> > > And that's exactly what these patches do:  enable just such choices.
+> > > The $SUBJECT patch would be needed to use NAND_ECC_HW with this 4-bit
+> > > ECC hardware, and not be forced to "choose" the infix-OOB policy.
+> >
+> > I had looked read_page/write_page APIs of the NAND_ECC_HW mode to
+> > see if we can use this mode for DaVinci DM355 device.
+> >
+> > The read_page handler for NAND_ECC_HW mode reads the data and ECC
+> > from hardware for each chunk. It then reads the OOB and extracts ecc
+> > code from it, before using the ECC from hardware and ecc code from
+> > OOB for data correction.
+> >
+> > On DaVinci DM355 device, we need to pass the ecc code/syndrome
+> > extracted from OOB area, in order to read the HW ECC for each data
+> > chunk. This is where we differ from NAND_ECC_HW mode.
 > 
-> stack backtrace:
-> Pid: 3184, comm: modprobe Not tainted 2.6.29-09854-gd508afb-dirty #6
-> Call Trace:
->  [<ffffffff8025fba1>] print_circular_bug_tail+0xc5/0xd0
->  [<ffffffff80261067>] __lock_acquire+0x101b/0x1668
->  [<ffffffff80267905>] ? find_symbol_in_section+0x39/0xda
->  [<ffffffff80266a52>] ? each_symbol_in_section+0x3a/0x7a
->  [<ffffffff802617a2>] lock_acquire+0xee/0x112
->  [<ffffffff80277e71>] ? ftrace_convert_nops+0x32/0x267
->  [<ffffffff804fe0a6>] mutex_lock_nested+0x4f/0x305
->  [<ffffffff80277e71>] ? ftrace_convert_nops+0x32/0x267
->  [<ffffffff8020af16>] ? ftrace_call+0x5/0x2b
->  [<ffffffff80277e71>] ftrace_convert_nops+0x32/0x267
->  [<ffffffff802780bd>] ftrace_init_module+0x17/0x19
->  [<ffffffff8026a011>] load_module+0x1122/0x160b
->  [<ffffffff8025f3a5>] ? trace_hardirqs_on_caller+0x114/0x138
->  [<ffffffff8026a556>] sys_init_module+0x5c/0x1d3
->  [<ffffffff8020b21b>] system_call_fastpath+0x16/0x1b
-> --
-> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
-> Please read the FAQ at  http://www.tux.org/lkml/
+> I have to admit that I'm slightly confused. Is the below description
+> correct?
+> 
+> On write you generate the ECC via hardware and store it in the OOB
+> area, right ?
+
+Yes. For a large page (e.g. 2K+64), ECC should be stored in the 64bytes OOB region. The NAND controller on DaVinci DM355 device is capable of generating HW ECC (4-bit) for every 512bytes. This means, we have 4 eccsteps. The ECC should be generated by the HW for every 512byte chunk write and stored temporarily in a buffer until all 4 eccsteps have been tried. The ECC from the temporary buffer is then written to the OOB area.
+
+> 
+> On read you read the oob data first and extract the ECC. Then you feed
+> the extracted ECC into the HW generator and read the data. Is this
+> correct ?
+
+Almost, read OOB, read data and then feed the extracted ECC into HW generator. Read the ECC status to see any correction required on the read data. Again, reading data, feeding the extracted ECC into HW generator and the correction will have to be repeated for # of times - eccsteps.
+
+> 
+> > The read_page/write_page APIs for NAND_ECC_HW_SYNDROME have the
+> > other problem that David mentioned - overwriting NAND manufacturers
+> > bad block meta data, when used with large page NAND chips. These
+> > APIs do not handle the "eccsteps" properly. The OOB is read/written
+> > after every data chunk, thus you actually have overwritten the
+> > factory bad block information, when these APIs handle the last data
+> > chunk. OOB should be read/written after the entire data (a page) is
+> > read/written.
+> 
+> Again, that is _how_ the NAND_ECC_HW_SYNDROME functions work. And if
+> your hardware needs a completely different mode, then we need to
+> analyse what's the best solution for it.
+
+Based on the description above, NAND_ECC_HW_SYNDROME fitted well, with the exception of overriding the read_page/write_page APIs (to fix the bugs mentioned above). I have not sent the actual NAND driver to the linux-mtd yet, since the initial version (supported only 1-bit HW ECC) submitted by David Brownell was still in review (no comments and not approved yet). While coming up with read_page API in the DaVinci NAND driver, we realized the need to pass "page" parameter. The read_page API in the DaVinci NAND driver required to call chip->cmdfunc to adjust the read location (page vs. OOB). The "page" parameter has to be passed to the chip->cmdfunc.
+This patch was a "preparation" patch for the DaVinci NAND driver 4-bit ECC support. It added the "page" parameter to the "read_page" and "read_page_raw" handlers, fixed few other bugs.
+
+> 
+> Right now the provided information is way to diffuse to do that.
+> 
+> You provided a patch without explaining what your hardware needs and
+> showing how the actual user of the modified API looks like and how the
+> functionality is implemented.
+> 
+> Thanks,
+> 
+> 	tglx
 
