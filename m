@@ -1,93 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757362AbZDFX7u@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757244AbZDGAA2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757362AbZDFX7u (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 6 Apr 2009 19:59:50 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751649AbZDFX7l
+	id S1757244AbZDGAA2 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 6 Apr 2009 20:00:28 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754140AbZDGAAJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 6 Apr 2009 19:59:41 -0400
-Received: from mx2.netapp.com ([216.240.18.37]:47371 "EHLO mx2.netapp.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750696AbZDFX7k (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 6 Apr 2009 19:59:40 -0400
-X-IronPort-AV: E=Sophos;i="4.39,333,1235980800"; 
-   d="scan'208";a="151078788"
-Subject: Re: [2 regressions] Current git cannot find root device on x86-64
- (HP nx6325), NFS broken
-From: Trond Myklebust <Trond.Myklebust@netapp.com>
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: LKML <linux-kernel@vger.kernel.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Tejun Heo <htejun@gmail.com>
-In-Reply-To: <200904070047.56172.rjw@sisk.pl>
-References: <200904070047.56172.rjw@sisk.pl>
+	Mon, 6 Apr 2009 20:00:09 -0400
+Received: from mail-ew0-f165.google.com ([209.85.219.165]:60232 "EHLO
+	mail-ew0-f165.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750696AbZDGAAH (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 6 Apr 2009 20:00:07 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=subject:from:to:content-type:date:message-id:mime-version:x-mailer
+         :content-transfer-encoding;
+        b=HqYYoNy4c0UdpiG5sJTVEmyIWpS2vH/GWyRe3tbhT/Byfa4B0tINlYdHN32+WIQ0fy
+         h6wwCTGcl7s+eyAwAQdqTDNQoEMyShcOYq4pciyZLxGQbUzW9SeIuFocSATGYhieqgeb
+         m/OkFmHnVuA9/lT6395ypm7k1MNNP1mWtqV7I=
+Subject: attempt to scan fails (device busy) if essid/ssid was changed
+ recently
+From: Maxim Levitsky <maximlevitsky@gmail.com>
+To: linux-wireless <linux-wireless@vger.kernel.org>,
+       linux-kernel <linux-kernel@vger.kernel.org>
 Content-Type: text/plain
-Content-Transfer-Encoding: 7bit
-Organization: NetApp
-Date: Mon, 06 Apr 2009 16:46:06 -0700
-Message-Id: <1239061566.6196.13.camel@heimdal.trondhjem.org>
+Date: Tue, 07 Apr 2009 03:00:01 +0300
+Message-Id: <1239062401.4705.23.camel@maxim-laptop>
 Mime-Version: 1.0
-X-Mailer: Evolution 2.26.0 
-X-OriginalArrivalTime: 06 Apr 2009 23:59:37.0007 (UTC) FILETIME=[BD9ACBF0:01C9B713]
+X-Mailer: Evolution 2.24.3 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 2009-04-07 at 00:47 +0200, Rafael J. Wysocki wrote:
-> Also, mounting directories over NFS doesn't work (I think it oopses, but
-> didn't have the time to look at it more closely).
+Recently I was trying to reduce time it takes for wireless card to
+connect.
 
-There is a known double free issue that affects the 'proto=' mount
-option (we call kfree(string) twice). Please could you check that the
-following patch fixes it for you?
+I noticed that always first attempt at scan fails when NM asks for scan.
+I also noticed that this happens with quite recent kernels (I think
+2,6.28) didn't have this behavior.
 
-Cheers
-  Trond
+Looking a bit deeper I discovered that each time NM disconnects from a
+networks it sets random ssid/essid to the card (using wireless
+extensions)
 
---------------------------------------------------------------------
->From a3e6cc62dce11c75249f01423eb9b41531759d36 Mon Sep 17 00:00:00 2001
-From: Trond Myklebust <Trond.Myklebust@netapp.com>
-Date: Mon, 6 Apr 2009 16:41:35 -0700
-Subject: [PATCH] NFS: Fix a double free in nfs_parse_mount_options()
+After that scan fails for some time.
 
-Due to an apparent typo, commit a67d18f89f5782806135aad4ee012ff78d45aae7
-(NFS: load the rpc/rdma transport module automatically) lead to the
-'proto=' mount option doing a double free, while Opt_mountproto leaks a
-string.
+as a NM free example you can run 
 
-Signed-off-by: Trond Myklebust <Trond.Myklebust@netapp.com>
----
- fs/nfs/super.c |    2 +-
- 1 files changed, 1 insertions(+), 1 deletions(-)
+iwconfig wlan0 essid dummy
+iwlist scan
 
-diff --git a/fs/nfs/super.c b/fs/nfs/super.c
-index 82eaadb..6717200 100644
---- a/fs/nfs/super.c
-+++ b/fs/nfs/super.c
-@@ -1228,7 +1228,6 @@ static int nfs_parse_mount_options(char *raw,
- 				goto out_nomem;
- 			token = match_token(string,
- 					    nfs_xprt_protocol_tokens, args);
--			kfree(string);
- 
- 			switch (token) {
- 			case Opt_xprt_udp:
-@@ -1258,6 +1257,7 @@ static int nfs_parse_mount_options(char *raw,
- 				goto out_nomem;
- 			token = match_token(string,
- 					    nfs_xprt_protocol_tokens, args);
-+			kfree(string);
- 
- 			switch (token) {
- 			case Opt_xprt_udp:
--- 
-1.6.0.4
+
+and this will fail
 
 
 
--- 
-Trond Myklebust
-Linux NFS client maintainer
+NM in this case waits for whole 10 seconds.
 
-NetApp
-Trond.Myklebust@netapp.com
-www.netapp.com
+
+What do you think about this?
+
+I confirm that on iwl3945 and ath5k, so this isn't driver specific.
+
+Best regards,
+	Maxim Levitsky
+
