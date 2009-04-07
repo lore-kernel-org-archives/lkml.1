@@ -1,85 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756848AbZDGNwN@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755528AbZDGN7U@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756848AbZDGNwN (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 7 Apr 2009 09:52:13 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754426AbZDGNv4
+	id S1755528AbZDGN7U (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 7 Apr 2009 09:59:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752063AbZDGN7F
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 7 Apr 2009 09:51:56 -0400
-Received: from mail-fx0-f158.google.com ([209.85.220.158]:34606 "EHLO
-	mail-fx0-f158.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752840AbZDGNvz (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 7 Apr 2009 09:51:55 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=subject:from:to:cc:in-reply-to:references:content-type:date
-         :message-id:mime-version:x-mailer:content-transfer-encoding;
-        b=A1gmaUvDOVJkjvmpTN/qhvlRU2ffCFta7ajimuU2NMkWq5By14xO71hcaVeOFKBImD
-         cRS+IW+gvnPMVWoA05f7fecF627EEU+PKgLPxYHBYKRdJui8vb8WLQs3fM9d6VohhQHm
-         ZHl1msTEpAl5W+zaKMZC13/WkqLi4hv6y3uuE=
-Subject: Re: attempt to scan fails (device busy) if essid/ssid was changed
- recently
-From: Maxim Levitsky <maximlevitsky@gmail.com>
-To: Johannes Berg <johannes@sipsolutions.net>
-Cc: linux-wireless <linux-wireless@vger.kernel.org>,
-       linux-kernel <linux-kernel@vger.kernel.org>
-In-Reply-To: <1239110860.4084.0.camel@johannes.local>
-References: <1239062401.4705.23.camel@maxim-laptop>
-	 (sfid-20090407_020013_939126_90578556)  <1239092296.22453.1.camel@johannes.local>
-	 <1239108689.15015.3.camel@maxim-laptop>
-	 (sfid-20090407_145137_740898_8D0C40FD)  <1239109001.22453.40.camel@johannes.local>
-	 <1239109497.15015.12.camel@maxim-laptop>
-	 (sfid-20090407_150534_375314_4DA28551)  <1239110010.22453.41.camel@johannes.local>
-	 <1239110412.15015.23.camel@maxim-laptop>
-	 (sfid-20090407_152021_060436_AEF9110F)  <1239110860.4084.0.camel@johannes.local>
-Content-Type: text/plain
-Date: Tue, 07 Apr 2009 16:51:50 +0300
-Message-Id: <1239112310.15015.25.camel@maxim-laptop>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.24.3 
-Content-Transfer-Encoding: 7bit
+	Tue, 7 Apr 2009 09:59:05 -0400
+Received: from mx2.redhat.com ([66.187.237.31]:48008 "EHLO mx2.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750894AbZDGN7C (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 7 Apr 2009 09:59:02 -0400
+Date: Tue, 7 Apr 2009 15:57:46 +0200
+From: Andrea Arcangeli <aarcange@redhat.com>
+To: Izik Eidus <ieidus@redhat.com>
+Cc: akpm@linux-foundation.org, linux-kernel@vger.kernel.org,
+       kvm@vger.kernel.org, linux-mm@kvack.org, avi@redhat.com,
+       chrisw@redhat.com, mtosatti@redhat.com, hugh@veritas.com,
+       kamezawa.hiroyu@jp.fujitsu.com
+Subject: Re: [PATCH 0/4] ksm - dynamic page sharing driver for linux v2
+Message-ID: <20090407135745.GA21874@random.random>
+References: <1238855722-32606-1-git-send-email-ieidus@redhat.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1238855722-32606-1-git-send-email-ieidus@redhat.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 2009-04-07 at 15:27 +0200, Johannes Berg wrote:
-> On Tue, 2009-04-07 at 16:20 +0300, Maxim Levitsky wrote:
+On Sat, Apr 04, 2009 at 05:35:18PM +0300, Izik Eidus wrote:
+> From v1 to v2:
 > 
-> > > Of course, we can go back to dropping the scan request, but that
-> > > wouldn't be very nice.
-> > > 
-> > > Is this creating any problems?
-> 
-> > Yep, but dropping the request won't help ether.
-> 
-> Indeed.
-> 
-> > Problem is that wpa_supplicant will attempt to scan before association,
-> > scan fails (it doesn't know it is already running) thus it waits 10
-> > seconds. (I patched it to wait 2 seconds).
-> > 
-> > It happens if user first disconnects, and then reconnects to a network
-> > (typical test I do for time it takes to connect)
-> > 
-> > Now I patched it not to clear essid on disconnect, and this helped
-> > reduce connect times by about 2 seconds.
-> > 
-> > now it takes just 3~4 seconds to connect to open network, and ~6 seconds
-> > to WPA2 network.
-> > 
-> > (This is with patched dhclient, I reduced its timeouts, but this is
-> > another story.... it seems that first DHCPREQUEST never succeeds, and I
-> > tested this with 2 cards, and few wireless networks)
-> 
-> Have you tried with a new tree and wpa_supplicant's (from git) nl80211
-> driver? Might be a lot better.
-I use NM and wpa_supplicant from -git
-Last time, I tried nl80211 wpa_supplicant driver it didn't work well,
-but I try again soon I  hope.
- 
+> 1)Fixed security issue found by Chris Wright:
+>     Ksm was checking if page is a shared page by running !PageAnon.
+>     Beacuse that Ksm scan only anonymous memory, all !PageAnons
+>     inside ksm data strctures are shared page, however there might
+>     be a case for do_wp_page() when the VM_SHARED is used where
+>     do_wp_page() would instead of copying the page into new anonymos
+>     page, would reuse the page, it was fixed by adding check for the
+>     dirty_bit of the virtual addresses pointing into the shared page.
+>     I was not finding any VM code tha would clear the dirty bit from
+>     this virtual address (due to the fact that we allocate the page
+>     using page_alloc() - kernel allocated pages), ~but i still want
+>     confirmation about this from the vm guys - thanks.~
 
-Best regards,
-	Maxim Levitsky
-> 
-> johannes
+As far as I can tell this wasn't a bug and this change is
+unnecessary. I already checked this bit but I may have missed
+something, so I ask here to be sure.
 
+As far as I can tell when VM_SHARED is set, no anonymous page can ever
+be allocated by in that vma range, hence no KSM page can ever be
+generated in that vma either. MAP_SHARED|MAP_ANONYMOUS is only a
+different API for /dev/shm, IPCSHM backing, no anonymous pages can
+live there. It surely worked like that in older 2.6, reading latest
+code it seems to still work like that, but if something has changed
+Hugh will surely correct me in a jiffy ;).
+
+I still see this in the file=null path.
+  
+  } else if (vm_flags & VM_SHARED) {
+    error = shmem_zero_setup(vma);
+    	  if (error)
+		goto free_vma;
+		}
+
+
+So you can revert your change for now.
