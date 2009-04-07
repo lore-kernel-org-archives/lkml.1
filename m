@@ -1,45 +1,115 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762168AbZDGWop@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761920AbZDGWqV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762168AbZDGWop (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 7 Apr 2009 18:44:45 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761747AbZDGWoc
+	id S1761920AbZDGWqV (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 7 Apr 2009 18:46:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758939AbZDGWqF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 7 Apr 2009 18:44:32 -0400
-Received: from cantor2.suse.de ([195.135.220.15]:44842 "EHLO mx2.suse.de"
+	Tue, 7 Apr 2009 18:46:05 -0400
+Received: from mga03.intel.com ([143.182.124.21]:15502 "EHLO mga03.intel.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755176AbZDGWob (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 7 Apr 2009 18:44:31 -0400
-Date: Tue, 7 Apr 2009 15:41:22 -0700
-From: Greg KH <gregkh@suse.de>
-To: Matthew Garrett <mjg59@srcf.ucam.org>
-Cc: linux-kernel@vger.kernel.org
-Subject: Re: qcserial comes up in unhelpful custom mode?
-Message-ID: <20090407224122.GG11258@suse.de>
-References: <20090401203726.GA17485@srcf.ucam.org> <20090403025654.GA20146@suse.de> <20090403135719.GD19774@srcf.ucam.org> <20090403150301.GA25846@suse.de> <20090403151232.GA21657@srcf.ucam.org> <20090403155704.GA26189@suse.de> <20090403160639.GA22722@srcf.ucam.org>
+	id S1758859AbZDGWqD (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 7 Apr 2009 18:46:03 -0400
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.39,339,1235980800"; 
+   d="scan'208";a="128994528"
+Date: Wed, 8 Apr 2009 06:45:45 +0800
+From: Wu Fengguang <fengguang.wu@intel.com>
+To: Ying Han <yinghan@google.com>
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+       LKML <linux-kernel@vger.kernel.org>,
+       "linux-fsdevel@vger.kernel.org" <linux-fsdevel@vger.kernel.org>,
+       "linux-mm@kvack.org" <linux-mm@kvack.org>
+Subject: Re: [PATCH 02/14] mm: fix major/minor fault accounting on retried
+	fault
+Message-ID: <20090407224545.GA5607@localhost>
+References: <20090407071729.233579162@intel.com> <20090407072132.943283183@intel.com> <604427e00904071258y78eea757m6d95d08deec49450@mail.gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20090403160639.GA22722@srcf.ucam.org>
-User-Agent: Mutt/1.5.19 (2009-01-05)
+In-Reply-To: <604427e00904071258y78eea757m6d95d08deec49450@mail.gmail.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Apr 03, 2009 at 05:06:39PM +0100, Matthew Garrett wrote:
-> On Fri, Apr 03, 2009 at 08:57:04AM -0700, Greg KH wrote:
-> > On Fri, Apr 03, 2009 at 04:12:32PM +0100, Matthew Garrett wrote:
-> > > Hmm. What's the USB ID of that one?
-> > 
-> > USB_DEVICE(0x05c6, 0x9211);
-> 
-> The driver seems to flag that as the QDL device rather than the modem. 
-> Are you sure it's working?
+On Wed, Apr 08, 2009 at 03:58:16AM +0800, Ying Han wrote:
+> On Tue, Apr 7, 2009 at 12:17 AM, Wu Fengguang <fengguang.wu@intel.com> wrote:
+> > VM_FAULT_RETRY does make major/minor faults accounting a bit twisted..
+> >
+> > Cc: Ying Han <yinghan@google.com>
+> > Signed-off-by: Wu Fengguang <fengguang.wu@intel.com>
+> > ---
+> >  arch/x86/mm/fault.c |    2 ++
+> >  mm/memory.c         |   22 ++++++++++++++--------
+> >  2 files changed, 16 insertions(+), 8 deletions(-)
+> >
+> > --- mm.orig/arch/x86/mm/fault.c
+> > +++ mm/arch/x86/mm/fault.c
+> > @@ -1160,6 +1160,8 @@ good_area:
+> >        if (fault & VM_FAULT_RETRY) {
+> >                if (retry_flag) {
+> >                        retry_flag = 0;
+> > +                       tsk->maj_flt++;
+> > +                       tsk->min_flt--;
+> >                        goto retry;
+> >                }
+> >                BUG();
+> sorry, little bit confuse here. are we assuming the retry path will
+> return min_flt as always?
 
-No I'm not as the whole laptop seems to be dead now, so I can't verify
-it :(
+Sure - except for some really exceptional ftruncate cases.
+The page was there ready, and we'll retry immediately.
 
-stupid pre-production hardware...
+maj_flt/min_flt are not _exact_ numbers by their nature, so 99.9%
+accuracy shall be fine.
 
-sorry,
+Thanks,
+Fengguang
 
-greg k-h
+> > --- mm.orig/mm/memory.c
+> > +++ mm/mm/memory.c
+> > @@ -2882,26 +2882,32 @@ int handle_mm_fault(struct mm_struct *mm
+> >        pud_t *pud;
+> >        pmd_t *pmd;
+> >        pte_t *pte;
+> > +       int ret;
+> >
+> >        __set_current_state(TASK_RUNNING);
+> >
+> > -       count_vm_event(PGFAULT);
+> > -
+> > -       if (unlikely(is_vm_hugetlb_page(vma)))
+> > -               return hugetlb_fault(mm, vma, address, write_access);
+> > +       if (unlikely(is_vm_hugetlb_page(vma))) {
+> > +               ret = hugetlb_fault(mm, vma, address, write_access);
+> > +               goto out;
+> > +       }
+> >
+> > +       ret = VM_FAULT_OOM;
+> >        pgd = pgd_offset(mm, address);
+> >        pud = pud_alloc(mm, pgd, address);
+> >        if (!pud)
+> > -               return VM_FAULT_OOM;
+> > +               goto out;
+> >        pmd = pmd_alloc(mm, pud, address);
+> >        if (!pmd)
+> > -               return VM_FAULT_OOM;
+> > +               goto out;
+> >        pte = pte_alloc_map(mm, pmd, address);
+> >        if (!pte)
+> > -               return VM_FAULT_OOM;
+> > +               goto out;
+> >
+> > -       return handle_pte_fault(mm, vma, address, pte, pmd, write_access);
+> > +       ret = handle_pte_fault(mm, vma, address, pte, pmd, write_access);
+> > +out:
+> > +       if (!(ret & VM_FAULT_RETRY))
+> > +               count_vm_event(PGFAULT);
+> > +       return ret;
+> >  }
+> >
+> >  #ifndef __PAGETABLE_PUD_FOLDED
+> >
+> > --
+> >
+> >
