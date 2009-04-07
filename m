@@ -1,62 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754994AbZDGDmX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755856AbZDGDye@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754994AbZDGDmX (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 6 Apr 2009 23:42:23 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752521AbZDGDmO
+	id S1755856AbZDGDye (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 6 Apr 2009 23:54:34 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752569AbZDGDyZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 6 Apr 2009 23:42:14 -0400
-Received: from chilli.pcug.org.au ([203.10.76.44]:44053 "EHLO smtps.tip.net.au"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752257AbZDGDmN (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 6 Apr 2009 23:42:13 -0400
-Date: Tue, 7 Apr 2009 13:42:01 +1000
-From: Stephen Rothwell <sfr@canb.auug.org.au>
-To: Takashi Iwai <tiwai@suse.de>
-Cc: Linus Torvalds <torvalds@linux-foundation.org>,
-       Andrew Morton <akpm@linux-foundation.org>, perex@perex.cz,
-       linux-kernel@vger.kernel.org
-Subject: Re: [GIT PULL] sound updates for 2.6.30
-Message-Id: <20090407134201.9c69ed4d.sfr@canb.auug.org.au>
-In-Reply-To: <s5hskkli38v.wl%tiwai@suse.de>
-References: <s5hskkli38v.wl%tiwai@suse.de>
-X-Mailer: Sylpheed 2.6.0 (GTK+ 2.14.7; i486-pc-linux-gnu)
+	Mon, 6 Apr 2009 23:54:25 -0400
+Received: from acsinet11.oracle.com ([141.146.126.233]:46358 "EHLO
+	acsinet11.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752563AbZDGDyY (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 6 Apr 2009 23:54:24 -0400
+Subject: Re: [PATCH 0/8][RFC] IO latency/throughput fixes
+From: Chris Mason <chris.mason@oracle.com>
+To: Theodore Tso <tytso@mit.edu>
+Cc: Hua Zhong <hzhong@gmail.com>,
+       "'Linus Torvalds'" <torvalds@linux-foundation.org>,
+       "'Jens Axboe'" <jens.axboe@oracle.com>,
+       "'Linux Kernel Mailing List'" <linux-kernel@vger.kernel.org>
+In-Reply-To: <20090406211931.GB8586@mit.edu>
+References: <1239022088-29002-1-git-send-email-jens.axboe@oracle.com>
+	 <alpine.LFD.2.00.0904060803141.4023@localhost.localdomain>
+	 <20090406151054.GD5178@kernel.dk>
+	 <alpine.LFD.2.00.0904060840080.3863@localhost.localdomain>
+	 <20090406183157.GD7376@mit.edu>
+	 <alpine.LFD.2.00.0904061255160.4134@localhost.localdomain>
+	 <002501c9b6f3$f85b4910$e911db30$@com>  <20090406211931.GB8586@mit.edu>
+Content-Type: text/plain
+Date: Mon, 06 Apr 2009 23:52:59 -0400
+Message-Id: <1239076379.17426.23.camel@think.oraclecorp.com>
 Mime-Version: 1.0
-Content-Type: multipart/signed; protocol="application/pgp-signature";
- micalg="PGP-SHA1";
- boundary="Signature=_Tue__7_Apr_2009_13_42_01_+1000_W5holYzc9HBsV8_U"
+X-Mailer: Evolution 2.24.1 
+Content-Transfer-Encoding: 7bit
+X-Source-IP: acsmt702.oracle.com [141.146.40.80]
+X-Auth-Type: Internal IP
+X-CT-RefId: str=0001.0A09020B.49DACE20.00FC:SCFMA4539814,ss=1,fgs=0
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---Signature=_Tue__7_Apr_2009_13_42_01_+1000_W5holYzc9HBsV8_U
-Content-Type: text/plain; charset=US-ASCII
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+On Mon, 2009-04-06 at 17:19 -0400, Theodore Tso wrote:
+> On Mon, Apr 06, 2009 at 01:12:08PM -0700, Hua Zhong wrote:
+> > Grr..making writeback as default would break people's setup that relies on
+> > the ordered semantics, especially in the embedded world. It's a big no-no.
+> 
+> I've added workarounds for 2.6.30 that provide the replace-via-rename
+> and replace-via-truncate workarounds for ext3 data=writeback cases.
+> See commits e7c8f507 and f7ab34ea.  
+> 
+> There won't be an implied fsync for newly created files, yes, but you
+> could have crashed 5 seconds earlier, at which point you would have
+> lost the newly created file anyway.  Replace-via-rename and
+> replace-via-truncate solves the problem for applications which are
+> editing pre-existing files, which was most of people's complaints
+> about depending on data=ordered semantics.
 
-Hi Takashi,
+XFS got a reputation for losing data largely based on null bytes in
+files after a crash.  In the XFS case the files always had zeros, and
+not garbage that used to be on disk.
 
-On Tue, 07 Apr 2009 04:53:04 +0200 Takashi Iwai <tiwai@suse.de> wrote:
->
-> Peter Ujfalusi (3):
->       ASoC: TWL4030: Add constrains for second stream
+Years later xfs still gets beaten up for null bytes in files even though
+they added code to prevent a long time ago.
 
-This commit causes the linux-next tree to fail to build ... see my other
-email.
+Please leave data=ordered as the default for ext3.  If we really need to
+fix ext3, it makes sense to switch to the xfs style i_size update at IO
+end instead of data=writeback.
 
---=20
-Cheers,
-Stephen Rothwell                    sfr@canb.auug.org.au
-http://www.canb.auug.org.au/~sfr/
+-chris
 
---Signature=_Tue__7_Apr_2009_13_42_01_+1000_W5holYzc9HBsV8_U
-Content-Type: application/pgp-signature
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.9 (GNU/Linux)
-
-iEYEARECAAYFAknay4kACgkQjjKRsyhoI8zHMwCcDBg4rofDTxIf6i43CLB0BMOu
-+B8AmwdRATbgqAMrPj8HHiT8wGcW3D7F
-=+P+/
------END PGP SIGNATURE-----
-
---Signature=_Tue__7_Apr_2009_13_42_01_+1000_W5holYzc9HBsV8_U--
