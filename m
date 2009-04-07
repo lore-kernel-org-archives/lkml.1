@@ -1,128 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759854AbZDGCXt@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759143AbZDGCYL@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759854AbZDGCXt (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 6 Apr 2009 22:23:49 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754097AbZDGCXL
+	id S1759143AbZDGCYL (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 6 Apr 2009 22:24:11 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754667AbZDGCXM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 6 Apr 2009 22:23:11 -0400
-Received: from hrndva-omtalb.mail.rr.com ([71.74.56.125]:62430 "EHLO
+	Mon, 6 Apr 2009 22:23:12 -0400
+Received: from hrndva-omtalb.mail.rr.com ([71.74.56.122]:62436 "EHLO
 	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752478AbZDGCXI (ORCPT
+	with ESMTP id S1752508AbZDGCXI (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
 	Mon, 6 Apr 2009 22:23:08 -0400
-Message-Id: <20090407022305.151723627@goodmis.org>
+Message-Id: <20090407022305.342936742@goodmis.org>
 References: <20090407022242.515462242@goodmis.org>
 User-Agent: quilt/0.46-1
-Date: Mon, 06 Apr 2009 22:22:43 -0400
+Date: Mon, 06 Apr 2009 22:22:44 -0400
 From: Steven Rostedt <rostedt@goodmis.org>
 To: linux-kernel@vger.kernel.org
 Cc: Ingo Molnar <mingo@elte.hu>, Andrew Morton <akpm@linux-foundation.org>,
-       Frederic Weisbecker <fweisbec@gmail.com>
-Subject: [PATCH 1/3] tracing/ftrace: alloc the started cpumask for the trace file
-Content-Disposition: inline; filename=0001-tracing-ftrace-alloc-the-started-cpumask-for-the-tr.patch
+       Nikanth Karthikesan <knikanth@suse.de>
+Subject: [PATCH 2/3] Update /debug/tracing/README
+Content-Disposition: inline; filename=0002-Update-debug-tracing-README.patch
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Frederic Weisbecker <fweisbec@gmail.com>
+From: Nikanth Karthikesan <knikanth@suse.de>
 
-Impact: fix a crash while cat trace file
+Some of the tracers have been renamed, which was not updated in the in-kernel
+run-time README file. Update it.
 
-Currently we are using a cpumask to remind each cpu where a
-trace occured. It lets us notice the user that a cpu just had
-its first trace.
-
-But on latest -tip we have the following crash once we cat the trace
-file:
-
-IP: [<c0270c4a>] print_trace_fmt+0x45/0xe7
-*pde = 00000000
-Oops: 0000 [#1] PREEMPT SMP
-last sysfs file: /sys/class/net/eth0/carrier
-Pid: 3897, comm: cat Not tainted (2.6.29-tip-02825-g0f22972-dirty #81)
-EIP: 0060:[<c0270c4a>] EFLAGS: 00010297 CPU: 0
-EIP is at print_trace_fmt+0x45/0xe7
-EAX: 00000000 EBX: 00000000 ECX: c12d9e98 EDX: ccdb7010
-ESI: d31f4000 EDI: 00322401 EBP: d31f3f10 ESP: d31f3efc
-DS: 007b ES: 007b FS: 00d8 GS: 00e0 SS: 0068
-Process cat (pid: 3897, ti=d31f2000 task=d3b3cf20 task.ti=d31f2000)
-Stack:
-d31f4080 ccdb7010 d31f4000 d691fe70 ccdb7010 d31f3f24 c0270e5c d31f4000
-d691fe70 d31f4000 d31f3f34 c02718e8 c12d9e98 d691fe70 d31f3f70 c02bfc33
-00001000 09130000 d3b46e00 d691fe98 00000000 00000079 00000001 00000000
-Call Trace:
-[<c0270e5c>] ? print_trace_line+0x170/0x17c
-[<c02718e8>] ? s_show+0xa7/0xbd
-[<c02bfc33>] ? seq_read+0x24a/0x327
-[<c02bf9e9>] ? seq_read+0x0/0x327
-[<c02ab18b>] ? vfs_read+0x86/0xe1
-[<c02ab289>] ? sys_read+0x40/0x65
-[<c0202d8f>] ? sysenter_do_call+0x12/0x3c
-Code: 00 00 00 89 45 ec f7 c7 00 20 00 00 89 55 f0 74 4e f6 86 98 10 00 00 02 74 45 8b 86 8c 10 00 00 8b 9e a8 10 00 00 e8 52 f3 ff ff <0f> a3 03 19 c0 85 c0 75 2b 8b 86 8c 10 00 00 8b 9e a8 10 00 00
-EIP: [<c0270c4a>] print_trace_fmt+0x45/0xe7 SS:ESP 0068:d31f3efc
-CR2: 0000000000000000
----[ end trace aa9cf38e5ebed9dd ]---
-
-This is because we alloc the iter->started cpumask on tracing_pipe_open but
-not on tracing_open.
-
-It hadn't been noticed until now because we need to have ring buffer overruns
-to activate the starting of cpu buffer detection.
-
-Also, we need a check to not print the messagge for the first trace on the file.
-
-Signed-off-by: Frederic Weisbecker <fweisbec@gmail.com>
-LKML-Reference: <1238619188-6109-1-git-send-email-fweisbec@gmail.com>
+Signed-off-by: Nikanth Karthikesan <knikanth@suse.de>
+LKML-Reference: <200903231158.32151.knikanth@suse.de>
 Signed-off-by: Steven Rostedt <rostedt@goodmis.org>
 ---
- kernel/trace/trace.c |   13 ++++++++++++-
- 1 files changed, 12 insertions(+), 1 deletions(-)
+ kernel/trace/trace.c |    4 ++--
+ 1 files changed, 2 insertions(+), 2 deletions(-)
 
 diff --git a/kernel/trace/trace.c b/kernel/trace/trace.c
-index d64a162..b0cec4c 100644
+index b0cec4c..0615751 100644
 --- a/kernel/trace/trace.c
 +++ b/kernel/trace/trace.c
-@@ -1623,7 +1623,11 @@ static void test_cpu_buff_start(struct trace_iterator *iter)
- 		return;
- 
- 	cpumask_set_cpu(iter->cpu, iter->started);
--	trace_seq_printf(s, "##### CPU %u buffer started ####\n", iter->cpu);
-+
-+	/* Don't print started cpu buffer for the first entry of the trace */
-+	if (iter->idx > 1)
-+		trace_seq_printf(s, "##### CPU %u buffer started ####\n",
-+				iter->cpu);
- }
- 
- static enum print_line_t print_trace_fmt(struct trace_iterator *iter)
-@@ -1858,6 +1862,11 @@ __tracing_open(struct inode *inode, struct file *file)
- 	if (current_trace)
- 		*iter->trace = *current_trace;
- 
-+	if (!alloc_cpumask_var(&iter->started, GFP_KERNEL))
-+		goto fail;
-+
-+	cpumask_clear(iter->started);
-+
- 	if (current_trace && current_trace->print_max)
- 		iter->tr = &max_tr;
- 	else
-@@ -1908,6 +1917,7 @@ __tracing_open(struct inode *inode, struct file *file)
- 		if (iter->buffer_iter[cpu])
- 			ring_buffer_read_finish(iter->buffer_iter[cpu]);
- 	}
-+	free_cpumask_var(iter->started);
-  fail:
- 	mutex_unlock(&trace_types_lock);
- 	kfree(iter->trace);
-@@ -1951,6 +1961,7 @@ static int tracing_release(struct inode *inode, struct file *file)
- 
- 	seq_release(inode, file);
- 	mutex_destroy(&iter->mutex);
-+	free_cpumask_var(iter->started);
- 	kfree(iter->trace);
- 	kfree(iter);
- 	return 0;
+@@ -2360,9 +2360,9 @@ static const char readme_msg[] =
+ 	"# mkdir /debug\n"
+ 	"# mount -t debugfs nodev /debug\n\n"
+ 	"# cat /debug/tracing/available_tracers\n"
+-	"wakeup preemptirqsoff preemptoff irqsoff ftrace sched_switch none\n\n"
++	"wakeup preemptirqsoff preemptoff irqsoff function sched_switch nop\n\n"
+ 	"# cat /debug/tracing/current_tracer\n"
+-	"none\n"
++	"nop\n"
+ 	"# echo sched_switch > /debug/tracing/current_tracer\n"
+ 	"# cat /debug/tracing/current_tracer\n"
+ 	"sched_switch\n"
 -- 
 1.6.2.1
 
