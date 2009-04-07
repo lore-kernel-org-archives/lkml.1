@@ -1,52 +1,164 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758537AbZDGEZN@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758733AbZDGE03@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758537AbZDGEZN (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 7 Apr 2009 00:25:13 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751870AbZDGEY7
+	id S1758733AbZDGE03 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 7 Apr 2009 00:26:29 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751894AbZDGE0U
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 7 Apr 2009 00:24:59 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:45984 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751605AbZDGEY6 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 7 Apr 2009 00:24:58 -0400
-Date: Mon, 6 Apr 2009 21:20:23 -0700 (PDT)
-From: Linus Torvalds <torvalds@linux-foundation.org>
-X-X-Sender: torvalds@localhost.localdomain
-To: Andrew Morton <akpm@linux-foundation.org>
-cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Pekka Enberg <penberg@cs.helsinki.fi>,
-       Steven Rostedt <rostedt@goodmis.org>, Ingo Molnar <mingo@elte.hu>,
-       Thomas Gleixner <tglx@linutronix.de>,
-       Eduard - Gabriel Munteanu <eduard.munteanu@linux360.ro>
-Subject: Re: [GIT PULL] SLAB include file dependency fixes + kmemtrace
- updates
-In-Reply-To: <alpine.LFD.2.00.0904062045530.4010@localhost.localdomain>
-Message-ID: <alpine.LFD.2.00.0904062108550.4010@localhost.localdomain>
-References: <20090405193944.GA12691@elte.hu> <alpine.LFD.2.00.0904061842490.4010@localhost.localdomain> <alpine.LFD.2.00.0904062045530.4010@localhost.localdomain>
-User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
+	Tue, 7 Apr 2009 00:26:20 -0400
+Received: from ozlabs.org ([203.10.76.45]:47543 "EHLO ozlabs.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751202AbZDGE0T (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 7 Apr 2009 00:26:19 -0400
+From: Rusty Russell <rusty@rustcorp.com.au>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Subject: [PULL] kthread and two misc cleanups (all long in linux-next)
+Date: Tue, 7 Apr 2009 13:56:12 +0930
+User-Agent: KMail/1.11.2 (Linux/2.6.27-11-generic; KDE/4.2.2; i686; ; )
+Cc: linux-kernel@vger.kernel.org, Lai Jiangshan <laijs@cn.fujitsu.com>,
+       Vitaliy Gusev <vgusev@openvz.org>, Oleg Nesterov <oleg@redhat.com>,
+       Andrew Morton <akpm@linux-foundation.org>, Ingo Molnar <mingo@elte.hu>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: Text/Plain;
+  charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200904071356.13545.rusty@rustcorp.com.au>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+The following changes since commit d508afb437daee7cf07da085b635c44a4ebf9b38:             
+  Trond Myklebust (1):                                                                   
+        NFS: Fix a double free in nfs_parse_mount_options()                              
 
+are available in the git repository at:
 
-On Mon, 6 Apr 2009, Linus Torvalds wrote:
-> 
-> Andrew, I'll continue to bisect. Looks like it might be the epoll changes 
-> (that's the only really 'core' thing there). Although I don't understand 
-> why those would make that Mac Mini unhappy, but not affect the other 
-> machines. So maybe I should just stop guessing until the bisection ends..
+  ssh://master.kernel.org/pub/scm/linux/kernel/git/rusty/linux-2.6-for-linus.git master
 
-It bisected past them. I'm getting worried that it's timing-related, 
-because nothing that remains looks even remotely interesting for that Mac 
-mini, but right now:
+Andrew Morton (1):
+      work_on_cpu(): rewrite it to create a kernel thread on demand
 
- - bad: 56fcef75117a153f298b3fe54af31053f53997dd
- - good: bb233fdfc7b7cefe45bfa2e8d1b24e79c60a48e5
+Lai Jiangshan (1):
+      cpuhotplug: remove cpu_hotplug_init()
 
-and there's not a whole lot of commits in between.
+Oleg Nesterov (1):
+      kthread: move sched-realeted initialization from kthreadd context
 
-		Linus
+Rusty Russell (1):
+      misc: remove redundant start_kernel prototypes.
+
+Vitaliy Gusev (1):
+      kthread: Don't looking for a task in create_kthread() #2
+
+ include/asm-frv/gdb-stub.h     |    1 -
+ include/asm-mn10300/gdb-stub.h |    1 -
+ include/linux/cpu.h            |    5 -----
+ init/main.c                    |    1 -
+ kernel/cpu.c                   |   11 +++--------
+ kernel/kthread.c               |   26 ++++++++++++--------------
+ kernel/workqueue.c             |   36 +++++++++++++++++++-----------------
+ 7 files changed, 34 insertions(+), 47 deletions(-)
+
+commit 2bb68fd7b6882ec39688d187ad89917ce734e9c8
+Author: Rusty Russell <rusty@rustcorp.com.au>
+Date:   Tue Apr 7 13:51:33 2009 -0600
+
+    misc: remove redundant start_kernel prototypes.
+    
+    No need for redeclaration.
+    
+    Signed-off-by: Rusty Russell <rusty@rustcorp.com.au>
+
+ include/asm-frv/gdb-stub.h     |    1 -
+ include/asm-mn10300/gdb-stub.h |    1 -
+ 2 files changed, 0 insertions(+), 2 deletions(-)
+
+commit 49f3e4288e07854308caabe790e8491c2e64faf9
+Author: Lai Jiangshan <laijs@cn.fujitsu.com>
+Date:   Tue Feb 17 17:08:40 2009 +0800
+
+    cpuhotplug: remove cpu_hotplug_init()
+    
+    cpu_hotplug_init() is almost equal to a dummy function,
+    this patch remove it.
+    
+    Signed-off-by: Lai Jiangshan <laijs@cn.fujitsu.com>
+    Signed-off-by: Rusty Russell <rusty@rustcorp.com.au>
+
+ include/linux/cpu.h |    5 -----
+ init/main.c         |    1 -
+ kernel/cpu.c        |   11 +++--------
+ 3 files changed, 3 insertions(+), 14 deletions(-)
+
+commit f52a0223e95a5f49f028f61902c86b12ad81df5d
+Author: Vitaliy Gusev <vgusev@openvz.org>
+Date:   Tue Apr 7 13:51:35 2009 -0600
+
+    kthread: Don't looking for a task in create_kthread() #2
+    
+    Remove the unnecessary find_task_by_pid_ns(). kthread() can just
+    use "current" to get the same result.
+    
+    Signed-off-by: Vitaliy Gusev <vgusev@openvz.org>
+    Acked-by: Oleg Nesterov <oleg@redhat.com>
+    Signed-off-by: Rusty Russell <rusty@rustcorp.com.au>
+
+ kernel/kthread.c |    4 +---
+ 1 files changed, 1 insertions(+), 3 deletions(-)
+
+commit 5fc789815a655473119ccc8df8199ae39639db91
+Author: Oleg Nesterov <oleg@redhat.com>
+Date:   Tue Apr 7 13:51:35 2009 -0600
+
+    kthread: move sched-realeted initialization from kthreadd context
+    
+    kthreadd is the single thread which implements ths "create" request, move
+    sched_setscheduler/etc from create_kthread() to kthread_create() to
+    improve the scalability.
+    
+    We should be careful with sched_setscheduler(), use _nochek helper.
+    
+    Signed-off-by: Oleg Nesterov <oleg@redhat.com>
+    Cc: Christoph Hellwig <hch@lst.de>
+    Cc: "Eric W. Biederman" <ebiederm@xmission.com>
+    Cc: Ingo Molnar <mingo@elte.hu>
+    Cc: Pavel Emelyanov <xemul@openvz.org>
+    Cc: Vitaliy Gusev <vgusev@openvz.org
+    Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
+    Signed-off-by: Rusty Russell <rusty@rustcorp.com.au>
+
+ kernel/kthread.c |   22 +++++++++++-----------
+ 1 files changed, 11 insertions(+), 11 deletions(-)
+
+commit 188b4afa4bc94d7aaefac27fe37263df107f4c2d
+Author: Andrew Morton <akpm@linux-foundation.org>
+Date:   Tue Apr 7 13:51:35 2009 -0600
+
+    work_on_cpu(): rewrite it to create a kernel thread on demand
+    
+    The various implemetnations and proposed implemetnations of work_on_cpu()
+    are vulnerable to various deadlocks because they all used queues of some
+    form.
+    
+    Unrelated pieces of kernel code thus gained dependencies wherein if one
+    work_on_cpu() caller holds a lock which some other work_on_cpu() callback
+    also takes, the kernel could rarely deadlock.
+    
+    Fix this by creating a short-lived kernel thread for each work_on_cpu()
+    invokation.
+    
+    This is not terribly fast, but the only current caller of work_on_cpu() is
+    pci_call_probe().
+    
+    It would be nice to find some other way of doing the node-local
+    allocations in the PCI probe code so that we can zap work_on_cpu()
+    altogether.  The code there is rather nasty.  I can't think of anything
+    simple at this time...
+    
+    Cc: Rusty Russell <rusty@rustcorp.com.au>
+    Cc: Ingo Molnar <mingo@elte.hu>
+    Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
+    Signed-off-by: Rusty Russell <rusty@rustcorp.com.au>
+
+ kernel/workqueue.c |   36 +++++++++++++++++++-----------------
+ 1 files changed, 19 insertions(+), 17 deletions(-)
