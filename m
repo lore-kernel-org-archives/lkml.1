@@ -1,63 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753907AbZDGImG@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754806AbZDGInR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753907AbZDGImG (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 7 Apr 2009 04:42:06 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752398AbZDGIly
+	id S1754806AbZDGInR (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 7 Apr 2009 04:43:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752137AbZDGInD
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 7 Apr 2009 04:41:54 -0400
-Received: from mail-bw0-f169.google.com ([209.85.218.169]:40574 "EHLO
-	mail-bw0-f169.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751396AbZDGIlw (ORCPT
+	Tue, 7 Apr 2009 04:43:03 -0400
+Received: from viefep14-int.chello.at ([62.179.121.34]:52354 "EHLO
+	viefep14-int.chello.at" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751930AbZDGInB (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 7 Apr 2009 04:41:52 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
-         :cc:content-type:content-transfer-encoding;
-        b=kI3v7LDNrBsYbCkFZMW6Q/aYZ3kyNVXlkSh/UIKmVQZivo8mR9gS4OQMu5NJy/4JWG
-         iGBjhJImVYSQgfDu3kKNBIaJ06xk83MW2J0xVAC+RFmwuqChGOqhH+SZwpGCxNvUsgtQ
-         0XRMatbada35b1SOoJNSP/EFYr0FyEmw4rKSQ=
-MIME-Version: 1.0
-In-Reply-To: <alpine.LNX.2.00.0904071020380.7197@speedy.coe.org>
-References: <n4io5wq70ZO.A.gzG.rFn2JB@chimera>
-	 <AsKNxFx2juN.A.gjH.4Fn2JB@chimera>
-	 <aa79d98a0904062031x321bd160rd89b19a6a49fe760@mail.gmail.com>
-	 <alpine.LNX.2.00.0904071020380.7197@speedy.coe.org>
-Date: Tue, 7 Apr 2009 12:41:49 +0400
-Message-ID: <aa79d98a0904070141r45d752dana00cebb381b72c4c@mail.gmail.com>
-Subject: Re: [Bug #13015] pppoe over ethernet
-From: Cyrill Gorcunov <gorcunov@gmail.com>
-To: Detlef Tschirschky <detlef.tschirschky@gmx.de>
-Cc: "Rafael J. Wysocki" <rjw@sisk.pl>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Kernel Testers List <kernel-testers@vger.kernel.org>
-Content-Type: text/plain; charset=ISO-8859-1
+	Tue, 7 Apr 2009 04:43:01 -0400
+X-SourceIP: 213.93.53.227
+Subject: Re: [linux-pm] pm-hibernate : possible circular locking dependency
+ detected
+From: Peter Zijlstra <a.p.zijlstra@chello.nl>
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: Alan Stern <stern@rowland.harvard.edu>, Gautham R Shenoy <ego@in.ibm.com>,
+       Rusty Russell <rusty@rustcorp.com.au>,
+       Linux Kernel List <linux-kernel@vger.kernel.org>,
+       Linux-pm mailing list <linux-pm@lists.linux-foundation.org>,
+       Ingo Molnar <mingo@elte.hu>, Andrew Morton <akpm@linux-foundation.org>
+In-Reply-To: <200904062158.11245.rjw@sisk.pl>
+References: <Pine.LNX.4.44L0.0904061439230.4571-100000@iolanthe.rowland.org>
+	 <200904062158.11245.rjw@sisk.pl>
+Content-Type: text/plain
+Date: Tue, 07 Apr 2009 10:43:50 +0200
+Message-Id: <1239093831.798.5717.camel@twins>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.26.0 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 4/7/09, Detlef Tschirschky <detlef.tschirschky@gmx.de> wrote:
-> On Tue, 7 Apr 2009, Cyrill Gorcunov wrote:
->
->> On 4/6/09, Rafael J. Wysocki wrote:
->
->>> Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=13015
->>> Subject	: pppoe over ethernet
->
->> I expect the issue is inspered by network problem found in plain
->> 2.6.29. Detlef could you confirm the problem is still active in
->> 2.6.29.1 or in current -git mainline?
->
-> Moin Cyrill,
->
-> 2.6.29.1 is running fine for me. Can't find any network problems in
-> 2.6.29.1 now.
->
-> Thanks and regards
->
-> Detlef
->
->
-Thanks a lot, Detlef!
-Rafael, i guess we could close the bug.
+On Mon, 2009-04-06 at 21:58 +0200, Rafael J. Wysocki wrote:
+> On Monday 06 April 2009, Alan Stern wrote:
+> > On Mon, 6 Apr 2009, Gautham R Shenoy wrote:
+> > 
+> > > > If I understand correctly it isn't really a deadlock scenario, but it
+> > > > is a lockdep violation.  The violation is:
+> > > > 
+> > > > 	The pci_device_probe() path 2) proves that dpm_list_mtx [4] can
+> > > > 	be acquired while cpu_hotplug.lock [3] is held;
+> > > > 
+> > > > 	The hibernate() path 3) proves that cpu_hotplug.lock [3] can be
+> > > > 	acquired while dpm_list_mtx [4] is held.
+> > > > 
+> > > > The two pathways cannot run simultaneously (and hence cannot deadlock) 
+> > > > because the prepare() stage of hibernation is supposed to stop all 
+> > > > device probing.  But lockdep will still report a problem.
+> > > 
+> > > Thanks for clarifying this Alan. I guess it boils down to teaching
+> > > lockdep about this false-positive.
+> > 
+> > Or else changing the code somehow to avoid the violation completely.  
+> > But I have no idea how...  And AFAIK, teaching lockdep about special 
+> > cases like this is not so easy to do.
+> 
+> Yeah, I've just wanted to ask about that.  Peter, how can we do it?
+
+I think it would come down to modeling that blocking of probes as a lock
+or something -- because that's basically what it is.
+
+So on the regular probe path, take a read lock of this lock, and on the
+suspend path take it as write or something.
+
