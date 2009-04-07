@@ -1,72 +1,84 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757363AbZDGXrU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755832AbZDGX4x@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757363AbZDGXrU (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 7 Apr 2009 19:47:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754248AbZDGXrG
+	id S1755832AbZDGX4x (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 7 Apr 2009 19:56:53 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754782AbZDGX4j
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 7 Apr 2009 19:47:06 -0400
-Received: from THUNK.ORG ([69.25.196.29]:34185 "EHLO thunker.thunk.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754025AbZDGXrF (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 7 Apr 2009 19:47:05 -0400
-Date: Tue, 7 Apr 2009 19:46:55 -0400
-From: Theodore Tso <tytso@mit.edu>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: jens.axboe@oracle.com, linux-kernel@vger.kernel.org,
-       linux-ext4@vger.kernel.org, jack@suse.cz
-Subject: Re: [PATCH] block_write_full_page: switch synchronous writes to
-	use WRITE_SYNC_PLUG
-Message-ID: <20090407234655.GC7031@mit.edu>
-Mail-Followup-To: Theodore Tso <tytso@mit.edu>,
-	Andrew Morton <akpm@linux-foundation.org>, jens.axboe@oracle.com,
-	linux-kernel@vger.kernel.org, linux-ext4@vger.kernel.org,
-	jack@suse.cz
-References: <20090406232141.ebdb426a.akpm@linux-foundation.org> <20090406235052.1ea47513.akpm@linux-foundation.org> <20090407070835.GM5178@kernel.dk> <20090407002313.fcdd1da0.akpm@linux-foundation.org> <20090407075732.GO5178@kernel.dk> <20090407190913.GA31723@mit.edu> <20090407193239.GE5178@kernel.dk> <20090407214421.GA7031@mit.edu> <20090407221933.GB7031@mit.edu> <20090407160944.de3c5139.akpm@linux-foundation.org>
+	Tue, 7 Apr 2009 19:56:39 -0400
+Received: from norsk5.dsl.xmission.com ([166.70.24.44]:22500 "EHLO
+	master.douglaskthompson.com" rhost-flags-OK-OK-OK-FAIL)
+	by vger.kernel.org with ESMTP id S1754248AbZDGX4j (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 7 Apr 2009 19:56:39 -0400
+Date: Tue, 07 Apr 2009 17:45:50 -0600
+From: dougthompson@xmission.com
+To: khali@linux-fr.org, qingtao.cao@windriver.com, jharan@Brocade.COM,
+       dougthompson@xmission.com, linux-kernel@vger.kernel.org,
+       akpm@linux-foundation.org
+Subject: [PATCH 3/3] edac: add new core index allocator
+Message-ID: <49dbe5ae.rglwvzb95ZzxtybW%dougthompson@xmission.com>
+User-Agent: Heirloom mailx 12.2 01/07/07
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090407160944.de3c5139.akpm@linux-foundation.org>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-SA-Exim-Connect-IP: <locally generated>
-X-SA-Exim-Mail-From: tytso@mit.edu
-X-SA-Exim-Scanned: No (on thunker.thunk.org); SAEximRunCond expanded to false
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Apr 07, 2009 at 04:09:44PM -0700, Andrew Morton wrote:
-> > 
-> > The upstream callers of block_write_full_page() which wait for the
-> > writes to finish call wait_on_buffer(), wait_on_writeback_range()
-> > (which ultimately calls sync_page(), which calls
-> > blk_run_backing_dev(), which will unplug the device queue), and so on.
-> 
-> <sob>
+From: Harry Ciao <qingtao.cao@windriver.com>
 
-No question, this stuff needs to be better documented; the codepaths
-involved is scattered between files in block/, fs/, and mm/
-directories, and it's not well documented as *all* what a filesystem
-developer is supposed to do.
+Add edac_device_alloc_index(), because for some platforms there may
+exist several EDAC driver modules that could make use of
+edac_device_ctl_info structure at the same time. The index allocation
+for these structures should be taken care of by EDAC core.
 
-> >  	const unsigned blocksize = 1 << inode->i_blkbits;
-> >  	int nr_underway = 0;
-> > -	int write_op = (wbc->sync_mode == WB_SYNC_ALL ? WRITE_SYNC : WRITE);
-> > +	int write_op = (wbc->sync_mode == WB_SYNC_ALL ?
-> > +			WRITE_SYNC_PLUG : WRITE);
-> >  
-> >  	BUG_ON(!PageLocked(page));
-> 
-> So how does WRITE_SYNC_PLUG differ from WRITE, and what effect does
-> this change have upon kernel behaviour?
+Signed-off-by: Harry Ciao <qingtao.cao@windriver.com>
+Signed-off-by: Doug Thompson <dougthompson@xmission.com>
+---
+ edac_core.h   |    1 +
+ edac_device.c |   13 +++++++++++++
+ 2 files changed, 14 insertions(+)
 
-The difference between WRITE_SYNC_PLUG and WRITE is that from the
-perspective of the I/O scheduler, they are prioritized as
-"synchronous" operations.  Some I/O schedulers, such as AS and CFQ,
-prioritize synchronous writes and put them in the same bucket as
-synchronous reads, and above asynchronous writes.
-
-Currently, we are using WRITE_SYNC, which has the implicit unplug if
-wbc->sync_mode is WB_SYNC_ALL.  WRITE_SYNC_PLUG removes the implicit
-unplug, which was the issue that you had expressed concern.
-
-	      	      	    	     	 - Ted
+Index: linux-2.6.29/drivers/edac/edac_core.h
+===================================================================
+--- linux-2.6.29.orig/drivers/edac/edac_core.h
++++ linux-2.6.29/drivers/edac/edac_core.h
+@@ -840,6 +840,7 @@ extern void edac_device_handle_ue(struct
+ 				int inst_nr, int block_nr, const char *msg);
+ extern void edac_device_handle_ce(struct edac_device_ctl_info *edac_dev,
+ 				int inst_nr, int block_nr, const char *msg);
++extern int edac_device_alloc_index(void);
+ 
+ /*
+  * edac_pci APIs
+Index: linux-2.6.29/drivers/edac/edac_device.c
+===================================================================
+--- linux-2.6.29.orig/drivers/edac/edac_device.c
++++ linux-2.6.29/drivers/edac/edac_device.c
+@@ -37,6 +37,7 @@
+  */
+ static DEFINE_MUTEX(device_ctls_mutex);
+ static LIST_HEAD(edac_device_list);
++static atomic_t device_indexes = ATOMIC_INIT(0);
+ 
+ #ifdef CONFIG_EDAC_DEBUG
+ static void edac_device_dump_device(struct edac_device_ctl_info *edac_dev)
+@@ -491,6 +492,18 @@ void edac_device_reset_delay_period(stru
+ 	mutex_unlock(&device_ctls_mutex);
+ }
+ 
++/*
++ * edac_device_alloc_index: Allocate a unique device index number
++ *
++ * Return:
++ *	allocated index number
++ */
++int edac_device_alloc_index(void)
++{
++	return atomic_inc_return(&device_indexes) - 1;
++}
++EXPORT_SYMBOL_GPL(edac_device_alloc_index);
++
+ /**
+  * edac_device_add_device: Insert the 'edac_dev' structure into the
+  * edac_device global list and create sysfs entries associated with
