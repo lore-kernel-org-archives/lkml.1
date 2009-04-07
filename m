@@ -1,57 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758344AbZDGDbt@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754994AbZDGDmX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758344AbZDGDbt (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 6 Apr 2009 23:31:49 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752702AbZDGDbk
+	id S1754994AbZDGDmX (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 6 Apr 2009 23:42:23 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752521AbZDGDmO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 6 Apr 2009 23:31:40 -0400
-Received: from mail-bw0-f169.google.com ([209.85.218.169]:61228 "EHLO
-	mail-bw0-f169.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751268AbZDGDbj (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 6 Apr 2009 23:31:39 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
-         :cc:content-type:content-transfer-encoding;
-        b=vjOxnhgm/FgRw6+ChDiF9Txr9nYiT1SoiheBQwLKmqYnmIS0K264+Zwco0HoHtQcJc
-         oo2Sp9TtDMeX6uDlUqA4mUAvcOQ917KR2Qfm/pyGSovYz90rfdHtN3AZJLZ8qLSSSO2W
-         A98Vh8jSUsfM0FxrZ7cbIQU+BLY2bZs/YjP9o=
-MIME-Version: 1.0
-In-Reply-To: <AsKNxFx2juN.A.gjH.4Fn2JB@chimera>
-References: <n4io5wq70ZO.A.gzG.rFn2JB@chimera>
-	 <AsKNxFx2juN.A.gjH.4Fn2JB@chimera>
-Date: Tue, 7 Apr 2009 07:31:36 +0400
-Message-ID: <aa79d98a0904062031x321bd160rd89b19a6a49fe760@mail.gmail.com>
-Subject: Re: [Bug #13015] pppoe over ethernet
-From: Cyrill Gorcunov <gorcunov@gmail.com>
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Kernel Testers List <kernel-testers@vger.kernel.org>,
-       Detlef Tschirschky <detlef.tschirschky@gmx.de>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+	Mon, 6 Apr 2009 23:42:14 -0400
+Received: from chilli.pcug.org.au ([203.10.76.44]:44053 "EHLO smtps.tip.net.au"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752257AbZDGDmN (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 6 Apr 2009 23:42:13 -0400
+Date: Tue, 7 Apr 2009 13:42:01 +1000
+From: Stephen Rothwell <sfr@canb.auug.org.au>
+To: Takashi Iwai <tiwai@suse.de>
+Cc: Linus Torvalds <torvalds@linux-foundation.org>,
+       Andrew Morton <akpm@linux-foundation.org>, perex@perex.cz,
+       linux-kernel@vger.kernel.org
+Subject: Re: [GIT PULL] sound updates for 2.6.30
+Message-Id: <20090407134201.9c69ed4d.sfr@canb.auug.org.au>
+In-Reply-To: <s5hskkli38v.wl%tiwai@suse.de>
+References: <s5hskkli38v.wl%tiwai@suse.de>
+X-Mailer: Sylpheed 2.6.0 (GTK+ 2.14.7; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: multipart/signed; protocol="application/pgp-signature";
+ micalg="PGP-SHA1";
+ boundary="Signature=_Tue__7_Apr_2009_13_42_01_+1000_W5holYzc9HBsV8_U"
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 4/6/09, Rafael J. Wysocki <rjw@sisk.pl> wrote:
-> This message has been generated automatically as a part of a report
-> of recent regressions.
+--Signature=_Tue__7_Apr_2009_13_42_01_+1000_W5holYzc9HBsV8_U
+Content-Type: text/plain; charset=US-ASCII
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
+
+Hi Takashi,
+
+On Tue, 07 Apr 2009 04:53:04 +0200 Takashi Iwai <tiwai@suse.de> wrote:
 >
-> The following bug entry is on the current list of known regressions
-> from 2.6.28.  Please verify if it still should be listed and let me know
-> (either way).
->
->
-> Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=13015
-> Subject		: pppoe over ethernet
-> Submitter	: Detlef Tschirschky <detlef.tschirschky@gmx.de>
-> Date		: 2009-03-25 21:28 (13 days old)
-> References	: http://marc.info/?l=linux-kernel&m=123801663105671&w=4
->
->
->
-I expect the issue is inspered by network problem found in plain
-2.6.29. Detlef could you confirm the problem is still active in
-2.6.29.1 or in current -git mainline?
+> Peter Ujfalusi (3):
+>       ASoC: TWL4030: Add constrains for second stream
+
+This commit causes the linux-next tree to fail to build ... see my other
+email.
+
+--=20
+Cheers,
+Stephen Rothwell                    sfr@canb.auug.org.au
+http://www.canb.auug.org.au/~sfr/
+
+--Signature=_Tue__7_Apr_2009_13_42_01_+1000_W5holYzc9HBsV8_U
+Content-Type: application/pgp-signature
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.9 (GNU/Linux)
+
+iEYEARECAAYFAknay4kACgkQjjKRsyhoI8zHMwCcDBg4rofDTxIf6i43CLB0BMOu
++B8AmwdRATbgqAMrPj8HHiT8wGcW3D7F
+=+P+/
+-----END PGP SIGNATURE-----
+
+--Signature=_Tue__7_Apr_2009_13_42_01_+1000_W5holYzc9HBsV8_U--
