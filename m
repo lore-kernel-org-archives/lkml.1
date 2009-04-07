@@ -1,15 +1,15 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756841AbZDGJL5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757120AbZDGJMk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756841AbZDGJL5 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 7 Apr 2009 05:11:57 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756021AbZDGJJq
+	id S1757120AbZDGJMk (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 7 Apr 2009 05:12:40 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756207AbZDGJKL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 7 Apr 2009 05:09:46 -0400
-Received: from hera.kernel.org ([140.211.167.34]:47104 "EHLO hera.kernel.org"
+	Tue, 7 Apr 2009 05:10:11 -0400
+Received: from hera.kernel.org ([140.211.167.34]:39057 "EHLO hera.kernel.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756154AbZDGJJo (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 7 Apr 2009 05:09:44 -0400
-Date: Tue, 7 Apr 2009 09:09:13 GMT
+	id S1756208AbZDGJKI (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 7 Apr 2009 05:10:08 -0400
+Date: Tue, 7 Apr 2009 09:09:26 GMT
 From: Peter Zijlstra <a.p.zijlstra@chello.nl>
 To: linux-tip-commits@vger.kernel.org
 Cc: linux-kernel@vger.kernel.org, paulus@samba.org, hpa@zytor.com,
@@ -18,130 +18,243 @@ Cc: linux-kernel@vger.kernel.org, paulus@samba.org, hpa@zytor.com,
 Reply-To: mingo@redhat.com, hpa@zytor.com, paulus@samba.org,
        linux-kernel@vger.kernel.org, a.p.zijlstra@chello.nl,
        tglx@linutronix.de, cjashfor@linux.vnet.ibm.com, mingo@elte.hu
-In-Reply-To: <20090406094518.445450972@chello.nl>
-References: <20090406094518.445450972@chello.nl>
-Subject: [tip:perfcounters/core] perf_counter: rework the task clock software counter
-Message-ID: <tip-a39d6f2556c4a19f58f538c6aa28bf8faca4fcb8@git.kernel.org>
-Git-Commit-ID: a39d6f2556c4a19f58f538c6aa28bf8faca4fcb8
+In-Reply-To: <20090406094518.531137582@chello.nl>
+References: <20090406094518.531137582@chello.nl>
+Subject: [tip:perfcounters/core] perf_counter: remove rq->lock usage
+Message-ID: <tip-849691a6cd40270ff5f4a8846d5f6bf8df663ffc@git.kernel.org>
+Git-Commit-ID: 849691a6cd40270ff5f4a8846d5f6bf8df663ffc
 X-Mailer: tip-git-log-daemon
 MIME-Version: 1.0
 Content-Type: text/plain; charset=UTF-8
 Content-Disposition: inline
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Tue, 07 Apr 2009 09:09:15 +0000 (UTC)
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Tue, 07 Apr 2009 09:09:28 +0000 (UTC)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Commit-ID:  a39d6f2556c4a19f58f538c6aa28bf8faca4fcb8
-Gitweb:     http://git.kernel.org/tip/a39d6f2556c4a19f58f538c6aa28bf8faca4fcb8
+Commit-ID:  849691a6cd40270ff5f4a8846d5f6bf8df663ffc
+Gitweb:     http://git.kernel.org/tip/849691a6cd40270ff5f4a8846d5f6bf8df663ffc
 Author:     Peter Zijlstra <a.p.zijlstra@chello.nl>
-AuthorDate: Mon, 6 Apr 2009 11:45:11 +0200
+AuthorDate: Mon, 6 Apr 2009 11:45:12 +0200
 Committer:  Ingo Molnar <mingo@elte.hu>
-CommitDate: Tue, 7 Apr 2009 10:49:00 +0200
+CommitDate: Tue, 7 Apr 2009 10:49:01 +0200
 
-perf_counter: rework the task clock software counter
+perf_counter: remove rq->lock usage
 
-Rework the task clock software counter to use the context time instead
-of the task runtime clock, this removes the last such user.
+Now that all the task runtime clock users are gone, remove the ugly
+rq->lock usage from perf counters, which solves the nasty deadlock
+seen when a software task clock counter was read from an NMI overflow
+context.
 
 Signed-off-by: Peter Zijlstra <a.p.zijlstra@chello.nl>
 Cc: Paul Mackerras <paulus@samba.org>
 Cc: Corey Ashford <cjashfor@linux.vnet.ibm.com>
-LKML-Reference: <20090406094518.445450972@chello.nl>
+LKML-Reference: <20090406094518.531137582@chello.nl>
 Signed-off-by: Ingo Molnar <mingo@elte.hu>
 
 
 ---
- kernel/perf_counter.c |   42 ++++++++++++------------------------------
- 1 files changed, 12 insertions(+), 30 deletions(-)
+ include/linux/kernel_stat.h |    2 --
+ kernel/perf_counter.c       |   42 ++++++++++++++++--------------------------
+ kernel/sched.c              |   20 --------------------
+ 3 files changed, 16 insertions(+), 48 deletions(-)
 
+diff --git a/include/linux/kernel_stat.h b/include/linux/kernel_stat.h
+index b6d2887..080d1fd 100644
+--- a/include/linux/kernel_stat.h
++++ b/include/linux/kernel_stat.h
+@@ -85,8 +85,6 @@ static inline unsigned int kstat_irqs(unsigned int irq)
+ /*
+  * Lock/unlock the current runqueue - to extract task statistics:
+  */
+-extern void curr_rq_lock_irq_save(unsigned long *flags);
+-extern void curr_rq_unlock_irq_restore(unsigned long *flags);
+ extern unsigned long long __task_delta_exec(struct task_struct *tsk, int update);
+ extern unsigned long long task_delta_exec(struct task_struct *);
+ 
 diff --git a/kernel/perf_counter.c b/kernel/perf_counter.c
-index 84d85ab..56b7eb5 100644
+index 56b7eb5..f4f7596 100644
 --- a/kernel/perf_counter.c
 +++ b/kernel/perf_counter.c
-@@ -974,9 +974,6 @@ int perf_counter_task_disable(void)
- 	curr_rq_lock_irq_save(&flags);
+@@ -172,8 +172,7 @@ static void __perf_counter_remove_from_context(void *info)
+ 	if (ctx->task && cpuctx->task_ctx != ctx)
+ 		return;
+ 
+-	curr_rq_lock_irq_save(&flags);
+-	spin_lock(&ctx->lock);
++	spin_lock_irqsave(&ctx->lock, flags);
+ 
+ 	counter_sched_out(counter, cpuctx, ctx);
+ 
+@@ -198,8 +197,7 @@ static void __perf_counter_remove_from_context(void *info)
+ 			    perf_max_counters - perf_reserved_percpu);
+ 	}
+ 
+-	spin_unlock(&ctx->lock);
+-	curr_rq_unlock_irq_restore(&flags);
++	spin_unlock_irqrestore(&ctx->lock, flags);
+ }
+ 
+ 
+@@ -319,8 +317,7 @@ static void __perf_counter_disable(void *info)
+ 	if (ctx->task && cpuctx->task_ctx != ctx)
+ 		return;
+ 
+-	curr_rq_lock_irq_save(&flags);
+-	spin_lock(&ctx->lock);
++	spin_lock_irqsave(&ctx->lock, flags);
+ 
+ 	/*
+ 	 * If the counter is on, turn it off.
+@@ -336,8 +333,7 @@ static void __perf_counter_disable(void *info)
+ 		counter->state = PERF_COUNTER_STATE_OFF;
+ 	}
+ 
+-	spin_unlock(&ctx->lock);
+-	curr_rq_unlock_irq_restore(&flags);
++	spin_unlock_irqrestore(&ctx->lock, flags);
+ }
+ 
+ /*
+@@ -515,8 +511,7 @@ static void __perf_install_in_context(void *info)
+ 	if (ctx->task && cpuctx->task_ctx != ctx)
+ 		return;
+ 
+-	curr_rq_lock_irq_save(&flags);
+-	spin_lock(&ctx->lock);
++	spin_lock_irqsave(&ctx->lock, flags);
+ 	update_context_time(ctx);
+ 
+ 	/*
+@@ -565,8 +560,7 @@ static void __perf_install_in_context(void *info)
+  unlock:
+ 	hw_perf_restore(perf_flags);
+ 
+-	spin_unlock(&ctx->lock);
+-	curr_rq_unlock_irq_restore(&flags);
++	spin_unlock_irqrestore(&ctx->lock, flags);
+ }
+ 
+ /*
+@@ -641,8 +635,7 @@ static void __perf_counter_enable(void *info)
+ 	if (ctx->task && cpuctx->task_ctx != ctx)
+ 		return;
+ 
+-	curr_rq_lock_irq_save(&flags);
+-	spin_lock(&ctx->lock);
++	spin_lock_irqsave(&ctx->lock, flags);
+ 	update_context_time(ctx);
+ 
+ 	counter->prev_state = counter->state;
+@@ -678,8 +671,7 @@ static void __perf_counter_enable(void *info)
+ 	}
+ 
+  unlock:
+-	spin_unlock(&ctx->lock);
+-	curr_rq_unlock_irq_restore(&flags);
++	spin_unlock_irqrestore(&ctx->lock, flags);
+ }
+ 
+ /*
+@@ -971,7 +963,7 @@ int perf_counter_task_disable(void)
+ 	if (likely(!ctx->nr_counters))
+ 		return 0;
+ 
+-	curr_rq_lock_irq_save(&flags);
++	local_irq_save(flags);
  	cpu = smp_processor_id();
  
--	/* force the update of the task clock: */
--	__task_delta_exec(curr, 1);
--
  	perf_counter_task_sched_out(curr, cpu);
+@@ -992,9 +984,7 @@ int perf_counter_task_disable(void)
  
- 	spin_lock(&ctx->lock);
-@@ -1017,9 +1014,6 @@ int perf_counter_task_enable(void)
- 	curr_rq_lock_irq_save(&flags);
+ 	hw_perf_restore(perf_flags);
+ 
+-	spin_unlock(&ctx->lock);
+-
+-	curr_rq_unlock_irq_restore(&flags);
++	spin_unlock_irqrestore(&ctx->lock, flags);
+ 
+ 	return 0;
+ }
+@@ -1011,7 +1001,7 @@ int perf_counter_task_enable(void)
+ 	if (likely(!ctx->nr_counters))
+ 		return 0;
+ 
+-	curr_rq_lock_irq_save(&flags);
++	local_irq_save(flags);
  	cpu = smp_processor_id();
  
--	/* force the update of the task clock: */
--	__task_delta_exec(curr, 1);
--
  	perf_counter_task_sched_out(curr, cpu);
+@@ -1037,7 +1027,7 @@ int perf_counter_task_enable(void)
  
- 	spin_lock(&ctx->lock);
-@@ -2347,38 +2341,28 @@ static const struct hw_perf_counter_ops perf_ops_cpu_clock = {
-  * Software counter: task time clock
-  */
+ 	perf_counter_task_sched_in(curr, cpu);
  
--/*
-- * Called from within the scheduler:
-- */
--static u64 task_clock_perf_counter_val(struct perf_counter *counter, int update)
+-	curr_rq_unlock_irq_restore(&flags);
++	local_irq_restore(flags);
+ 
+ 	return 0;
+ }
+@@ -1095,12 +1085,12 @@ static void __read(void *info)
+ 	struct perf_counter_context *ctx = counter->ctx;
+ 	unsigned long flags;
+ 
+-	curr_rq_lock_irq_save(&flags);
++	local_irq_save(flags);
+ 	if (ctx->is_active)
+ 		update_context_time(ctx);
+ 	counter->hw_ops->read(counter);
+ 	update_counter_times(counter);
+-	curr_rq_unlock_irq_restore(&flags);
++	local_irq_restore(flags);
+ }
+ 
+ static u64 perf_counter_read(struct perf_counter *counter)
+@@ -2890,7 +2880,7 @@ __perf_counter_exit_task(struct task_struct *child,
+ 		 * Be careful about zapping the list - IRQ/NMI context
+ 		 * could still be processing it:
+ 		 */
+-		curr_rq_lock_irq_save(&flags);
++		local_irq_save(flags);
+ 		perf_flags = hw_perf_save_disable();
+ 
+ 		cpuctx = &__get_cpu_var(perf_cpu_context);
+@@ -2903,7 +2893,7 @@ __perf_counter_exit_task(struct task_struct *child,
+ 		child_ctx->nr_counters--;
+ 
+ 		hw_perf_restore(perf_flags);
+-		curr_rq_unlock_irq_restore(&flags);
++		local_irq_restore(flags);
+ 	}
+ 
+ 	parent_counter = child_counter->parent;
+diff --git a/kernel/sched.c b/kernel/sched.c
+index f76e3c0..0de2f81 100644
+--- a/kernel/sched.c
++++ b/kernel/sched.c
+@@ -997,26 +997,6 @@ static struct rq *task_rq_lock(struct task_struct *p, unsigned long *flags)
+ 	}
+ }
+ 
+-void curr_rq_lock_irq_save(unsigned long *flags)
+-	__acquires(rq->lock)
 -{
--	struct task_struct *curr = counter->task;
--	u64 delta;
+-	struct rq *rq;
 -
--	delta = __task_delta_exec(curr, update);
--
--	return curr->se.sum_exec_runtime + delta;
+-	local_irq_save(*flags);
+-	rq = cpu_rq(smp_processor_id());
+-	spin_lock(&rq->lock);
 -}
 -
--static void task_clock_perf_counter_update(struct perf_counter *counter, u64 now)
-+static void task_clock_perf_counter_update(struct perf_counter *counter)
- {
--	u64 prev;
-+	u64 prev, now;
- 	s64 delta;
- 
--	prev = atomic64_read(&counter->hw.prev_count);
+-void curr_rq_unlock_irq_restore(unsigned long *flags)
+-	__releases(rq->lock)
+-{
+-	struct rq *rq;
 -
--	atomic64_set(&counter->hw.prev_count, now);
-+	update_context_time(counter->ctx);
-+	now = counter->ctx->time;
- 
-+	prev = atomic64_xchg(&counter->hw.prev_count, now);
- 	delta = now - prev;
+-	rq = cpu_rq(smp_processor_id());
+-	spin_unlock(&rq->lock);
+-	local_irq_restore(*flags);
+-}
 -
- 	atomic64_add(delta, &counter->count);
- }
- 
- static int task_clock_perf_counter_enable(struct perf_counter *counter)
+ void task_rq_unlock_wait(struct task_struct *p)
  {
- 	struct hw_perf_counter *hwc = &counter->hw;
-+	u64 now;
-+
-+	update_context_time(counter->ctx);
-+	now = counter->ctx->time;
- 
--	atomic64_set(&hwc->prev_count, task_clock_perf_counter_val(counter, 0));
-+	atomic64_set(&hwc->prev_count, now);
- 	hrtimer_init(&hwc->hrtimer, CLOCK_MONOTONIC, HRTIMER_MODE_REL);
- 	hwc->hrtimer.function = perf_swcounter_hrtimer;
- 	if (hwc->irq_period) {
-@@ -2393,14 +2377,12 @@ static int task_clock_perf_counter_enable(struct perf_counter *counter)
- static void task_clock_perf_counter_disable(struct perf_counter *counter)
- {
- 	hrtimer_cancel(&counter->hw.hrtimer);
--	task_clock_perf_counter_update(counter,
--			task_clock_perf_counter_val(counter, 0));
-+	task_clock_perf_counter_update(counter);
- }
- 
- static void task_clock_perf_counter_read(struct perf_counter *counter)
- {
--	task_clock_perf_counter_update(counter,
--			task_clock_perf_counter_val(counter, 1));
-+	task_clock_perf_counter_update(counter);
- }
- 
- static const struct hw_perf_counter_ops perf_ops_task_clock = {
+ 	struct rq *rq = task_rq(p);
