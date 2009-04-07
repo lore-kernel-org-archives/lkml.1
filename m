@@ -1,113 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760100AbZDGTvv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757761AbZDGT5V@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760100AbZDGTvv (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 7 Apr 2009 15:51:51 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753715AbZDGTvm
+	id S1757761AbZDGT5V (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 7 Apr 2009 15:57:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752950AbZDGT5J
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 7 Apr 2009 15:51:42 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:45693 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751045AbZDGTvl (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 7 Apr 2009 15:51:41 -0400
-Date: Tue, 7 Apr 2009 12:49:33 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: holt@sgi.com
-Cc: linux-kernel@vger.kernel.org, holt@sgi.com, dcn@sgi.com
-Subject: Re: [Patch 2/3] Prevent false sgi-xpc heartbeat failures.
-Message-Id: <20090407124933.c2fb210f.akpm@linux-foundation.org>
-In-Reply-To: <20090403160449.144474404@attica.americas.sgi.com>
-References: <20090403160440.637837240@attica.americas.sgi.com>
-	<20090403160449.144474404@attica.americas.sgi.com>
-X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Tue, 7 Apr 2009 15:57:09 -0400
+Received: from mailfe15.tele2.it ([212.247.155.205]:37662 "EHLO swip.net"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1752635AbZDGT5I (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 7 Apr 2009 15:57:08 -0400
+X-Greylist: delayed 3604 seconds by postgrey-1.27 at vger.kernel.org; Tue, 07 Apr 2009 15:57:08 EDT
+X-Cloudmark-Score: 0.000000 []
+X-Cloudmark-Analysis: v=1.0 c=1 a=5OFHYswelGgA:10 a=uVG3iVQp83oA:10 a=8hWvghSQAAAA:8 a=t2g_X5M5wnNHXu2OfLYA:9 a=S88Xux0CGMRWUpaNqscjAtUn1cgA:4 a=4W84yQIDYkUA:10
+Message-ID: <49DBA1E4.8000502@gmail.com>
+Date: Tue, 07 Apr 2009 20:56:36 +0200
+From: Massimo Maiurana <maiurana@gmail.com>
+User-Agent: Thunderbird 2.0.0.12 (X11/20080213)
+MIME-Version: 1.0
+To: sam@ravnborg.org
+CC: linux-kernel@vger.kernel.org
+Subject: kconfig: update-po-config broken in 2.6.29
+X-Enigmail-Version: 0.95.6
+OpenPGP: id=7044D601
+Content-Type: text/plain; charset=UTF-8; format=flowed
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 03 Apr 2009 11:04:42 -0500
-holt@sgi.com wrote:
+hi,
+in latest 2.6.29 "make update-po-config" fails at msguniq invocation 
+with an "invalid control sequence" error.
+the offending string is the following, and it's located in 
+drivers/staging/panel/Kconfig:72:
+"'\e[L' which are specific to the LCD, and a few ANSI codes. The"
 
-> +void (*xpc_allow_hb) (short partid);
-> +void (*xpc_disallow_hb) (short partid);
-> +void (*xpc_disallow_all_hbs) (void);
->  void (*xpc_heartbeat_init) (void);
->  void (*xpc_heartbeat_exit) (void);
->  void (*xpc_increment_heartbeat) (void);
+looks to me like gettext expects strings in printf format, so in 
+this case it thinks "\e" is a control sequence but doesn't recognise 
+it as a valid one.
 
-The driver adds a huge number of globals.
+I can still obtain a suitable linux.pot file escaping the backslash, 
+and the resulting linux.mo file works even if the string is again 
+unescaped, but of course if I leave the escaped string it will be 
+displayed as-is (with a double backslash) if i run a configurator in 
+english, so it is not a valid solution for a patch.
 
-As a pointless cleanup it might be nice to convert all this:
+Maybe a valid solution would be to tell kxgettext to automatically 
+escape this kind of strings in the */config.pot he produces, so that 
+msguniq would not complain?... I don't really know, and I don't even 
+know how to do it. I see there is an escape function right at the 
+top of kxgettext.c, but as I'm not a coder I don't really know how 
+to hack it, so it's up to you... sorry.
 
-: int (*xpc_setup_partitions_sn) (void);
-: void (*xpc_teardown_partitions_sn) (void);
-: enum xp_retval (*xpc_get_partition_rsvd_page_pa) (void *buf, u64 *cookie,
-: 						  unsigned long *rp_pa,
-: 						  size_t *len);
-: int (*xpc_setup_rsvd_page_sn) (struct xpc_rsvd_page *rp);
-: 
-: void (*xpc_allow_hb) (short partid);
-: void (*xpc_disallow_hb) (short partid);
-: void (*xpc_disallow_all_hbs) (void);
-: void (*xpc_heartbeat_init) (void);
-: void (*xpc_heartbeat_exit) (void);
-: void (*xpc_increment_heartbeat) (void);
-: void (*xpc_offline_heartbeat) (void);
-: void (*xpc_online_heartbeat) (void);
-: enum xp_retval (*xpc_get_remote_heartbeat) (struct xpc_partition *part);
-: 
-: enum xp_retval (*xpc_make_first_contact) (struct xpc_partition *part);
-: void (*xpc_notify_senders_of_disconnect) (struct xpc_channel *ch);
-: u64 (*xpc_get_chctl_all_flags) (struct xpc_partition *part);
-: enum xp_retval (*xpc_setup_msg_structures) (struct xpc_channel *ch);
-: void (*xpc_teardown_msg_structures) (struct xpc_channel *ch);
-: void (*xpc_process_msg_chctl_flags) (struct xpc_partition *part, int ch_number);
-: int (*xpc_n_of_deliverable_payloads) (struct xpc_channel *ch);
-: void *(*xpc_get_deliverable_payload) (struct xpc_channel *ch);
-: 
-: void (*xpc_request_partition_activation) (struct xpc_rsvd_page *remote_rp,
-: 					  unsigned long remote_rp_pa,
-: 					  int nasid);
-: void (*xpc_request_partition_reactivation) (struct xpc_partition *part);
-: void (*xpc_request_partition_deactivation) (struct xpc_partition *part);
-: void (*xpc_cancel_partition_deactivation_request) (struct xpc_partition *part);
-: 
-: void (*xpc_process_activate_IRQ_rcvd) (void);
-: enum xp_retval (*xpc_setup_ch_structures_sn) (struct xpc_partition *part);
-: void (*xpc_teardown_ch_structures_sn) (struct xpc_partition *part);
-: 
-: void (*xpc_indicate_partition_engaged) (struct xpc_partition *part);
-: int (*xpc_partition_engaged) (short partid);
-: int (*xpc_any_partition_engaged) (void);
-: void (*xpc_indicate_partition_disengaged) (struct xpc_partition *part);
-: void (*xpc_assume_partition_disengaged) (short partid);
-: 
-: void (*xpc_send_chctl_closerequest) (struct xpc_channel *ch,
-: 				     unsigned long *irq_flags);
-: void (*xpc_send_chctl_closereply) (struct xpc_channel *ch,
-: 				   unsigned long *irq_flags);
-: void (*xpc_send_chctl_openrequest) (struct xpc_channel *ch,
-: 				    unsigned long *irq_flags);
-: void (*xpc_send_chctl_openreply) (struct xpc_channel *ch,
-: 				  unsigned long *irq_flags);
-: 
-: enum xp_retval (*xpc_save_remote_msgqueue_pa) (struct xpc_channel *ch,
-: 					       unsigned long msgqueue_pa);
-: 
-: enum xp_retval (*xpc_send_payload) (struct xpc_channel *ch, u32 flags,
-: 				    void *payload, u16 payload_size,
-: 				    u8 notify_type, xpc_notify_func func,
-: 				    void *key);
-: void (*xpc_received_payload) (struct xpc_channel *ch, void *payload);
+-- 
+       Massimo Maiurana         massimo<at>ragusa.linux.it
+       http://massimo.solira.org       GPG keyID #7044D601
 
-into
-
-struct xpc_operations {
-	int (*setup_partitions_sn)(void);
-	...
-	void (*xpc_received_payload)(struct xpc_channel *ch, void *payload);
-} xpc_operations;
-
-Or not ;)
+Articolo 33 - [...]Enti e privati hanno il diritto di istituire
+scuole ed istituti di educazione, senza oneri per lo Stato.[...]
