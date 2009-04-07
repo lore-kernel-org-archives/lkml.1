@@ -1,79 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762014AbZDGWdl@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762036AbZDGWf6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762014AbZDGWdl (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 7 Apr 2009 18:33:41 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756586AbZDGWdc
+	id S1762036AbZDGWf6 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 7 Apr 2009 18:35:58 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757883AbZDGWfs
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 7 Apr 2009 18:33:32 -0400
-Received: from one.firstfloor.org ([213.235.205.2]:50583 "EHLO
-	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751930AbZDGWdb (ORCPT
+	Tue, 7 Apr 2009 18:35:48 -0400
+Received: from fk-out-0910.google.com ([209.85.128.185]:8883 "EHLO
+	fk-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752622AbZDGWfr (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 7 Apr 2009 18:33:31 -0400
-Date: Wed, 8 Apr 2009 00:35:45 +0200
-From: Andi Kleen <andi@firstfloor.org>
-To: Christoph Lameter <cl@linux.com>
-Cc: Andi Kleen <andi@firstfloor.org>, Lee.Schermerhorn@hp.com, npiggin@suse.de,
-       linux-kernel@vger.kernel.org, linux-mm@kvack.org, x86@kernel.org
-Subject: Re: [PATCH] [10/16] POISON: Use bitmask/action code for try_to_unmap behaviour
-Message-ID: <20090407223545.GC17934@one.firstfloor.org>
-References: <20090407509.382219156@firstfloor.org> <20090407151007.71F3F1D046F@basil.firstfloor.org> <alpine.DEB.1.10.0904071714450.12192@qirst.com> <20090407215953.GA17934@one.firstfloor.org> <alpine.DEB.1.10.0904071802290.12192@qirst.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	Tue, 7 Apr 2009 18:35:47 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=from:to:subject:date:user-agent:cc:references:in-reply-to
+         :mime-version:content-type:content-transfer-encoding
+         :content-disposition:message-id;
+        b=TFf/T/OXBk//iJ0MtK2IYB4xKqOTp0qPXjV1S2nQyrJYcYlXCr3NFzT9JppySpjVoq
+         Gl8T1SJxm81A1FPiUIKtvHwcYbdImFqYaGzqmnu1OUwtEliz5GXlRZ0kuBR3k1mf347e
+         iH0CmrAr2mIX3Gn8M5zfy/NDG6aTdOT+9m8Nc=
+From: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
+To: Matthew Wilcox <willy@linux.intel.com>
+Subject: Re: [PATCH 4/5] ide: Add support for TRIM
+Date: Wed, 8 Apr 2009 00:35:16 +0200
+User-Agent: KMail/1.11.1 (Linux/2.6.29-10247-g8e2c4f2-dirty; KDE/4.2.1; i686; ; )
+Cc: Sergei Shtylyov <sshtylyov@ru.mvista.com>, linux-ide@vger.kernel.org,
+       linux-kernel@vger.kernel.org, jgarzik@redhat.com,
+       David Woodhouse <David.Woodhouse@intel.com>
+References: <1238683047-13588-1-git-send-email-willy@linux.intel.com> <200904072339.00224.bzolnier@gmail.com> <20090407221554.GA4527@linux.intel.com>
+In-Reply-To: <20090407221554.GA4527@linux.intel.com>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <alpine.DEB.1.10.0904071802290.12192@qirst.com>
-User-Agent: Mutt/1.4.2.1i
+Message-Id: <200904080035.16457.bzolnier@gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Apr 07, 2009 at 06:04:39PM -0400, Christoph Lameter wrote:
-> On Tue, 7 Apr 2009, Andi Kleen wrote:
+On Wednesday 08 April 2009 00:15:54 Matthew Wilcox wrote:
+> On Tue, Apr 07, 2009 at 11:38:59PM +0200, Bartlomiej Zolnierkiewicz wrote:
+> > I would like to see this merged for -rc1 so I tried to put it altogether
+> > and then integrate it over recent IDE and block changes...
 > 
-> > > Ignoring MLOCK? This means we are violating POSIX which says that an
-> > > MLOCKed page cannot be unmapped from a process?
-> >
-> > I'm sure if you can find sufficiently vague language in the document
-> > to standards lawyer around that requirement @)
-> >
-> > The alternative would be to panic.
-> 
-> 
-> If you unmmap a MLOCKed page then you may get memory corruption because
-> f.e. the Infiniband layer is doing DMA to that page.
+> You're missing 1/5 and 2/5.  This patch will crash horribly if you use
+> it with a drive which supports TRIM.
 
-The page is not going away, it's poisoned in hardware and software 
-and stays. There is currently no mechanism to unpoison pages without
-rebooting.
-
-DMA should actually cause a bus abort on the hardware level, 
-at least for RMW.
-
-I currently don't have a cancel mechanism for such kinds of mappings
-though. It just does cancel_dirty_page(), but when IO is happening
-
-In theory one could add a more forceful IO cancel mechanism using
-special driver callbacks, but I'm not sure it's worth it. Normally the 
-hardware should abort on hitting poison (although some might do strange things)
-and you'll get some more (recoverable) machine checks.
-
-> > > How does that work for the poisoning case? We substitute a fresh page?
-> >
-> > It depends on the state of the page. If it was a clean disk mapped
-> > page yes (it's just invalidated and can be reloaded). If it's a dirty anon
-> > page the process is normally killed first (with advisory mode on) or only
-> > killed when it hits the corrupted page. The process can also
-> > catch the signal if it choses so. The late killing works with
-> > a special entry similar to the migration case, but that results
-> > in a special SIGBUS.
-> 
-> I think a process needs to be killed if any MLOCKed page gets corrupted
-> because the OS cannot keep the POSIX guarantees.
-
-That's the default behaviour with vm.memory_failure_early_kill = 1
-However the process can catch the signal if it wants.
-
--Andi
-
--- 
-ak@linux.intel.com -- Speaking for myself only.
+Heh, I knew something was out of place...
