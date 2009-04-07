@@ -1,151 +1,147 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756188AbZDGJMV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756841AbZDGJL5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756188AbZDGJMV (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 7 Apr 2009 05:12:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756314AbZDGJKD
+	id S1756841AbZDGJL5 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 7 Apr 2009 05:11:57 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756021AbZDGJJq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 7 Apr 2009 05:10:03 -0400
-Received: from mga02.intel.com ([134.134.136.20]:7044 "EHLO mga02.intel.com"
+	Tue, 7 Apr 2009 05:09:46 -0400
+Received: from hera.kernel.org ([140.211.167.34]:47104 "EHLO hera.kernel.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756294AbZDGJKA (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 7 Apr 2009 05:10:00 -0400
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.39,336,1235980800"; 
-   d="scan'208";a="504241156"
-From: "Metzger, Markus T" <markus.t.metzger@intel.com>
-To: Peter Zijlstra <a.p.zijlstra@chello.nl>
-CC: "mingo@elte.hu" <mingo@elte.hu>, "tglx@linutronix.de" <tglx@linutronix.de>,
-       "hpa@zytor.com" <hpa@zytor.com>,
-       "markus.t.metzger@gmail.com" <markus.t.metzger@gmail.com>,
-       "roland@redhat.com" <roland@redhat.com>,
-       "eranian@googlemail.com" <eranian@googlemail.com>,
-       "oleg@redhat.com" <oleg@redhat.com>,
-       "Villacis, Juan" <juan.villacis@intel.com>,
-       "ak@linux.jf.intel.com" <ak@linux.jf.intel.com>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>
-Date: Tue, 7 Apr 2009 10:09:50 +0100
-Subject: RE: [patch 03/20] x86, ptrace, bts: defer branch trace stopping
-Thread-Topic: [patch 03/20] x86, ptrace, bts: defer branch trace stopping
-Thread-Index: Acm3WrzUpuqTReY7RRa3n4zjoB/UaAAAmQQw
-Message-ID: <928CFBE8E7CB0040959E56B4EA41A77E927680A4@irsmsx504.ger.corp.intel.com>
-References: <20090403144332.799740000@intel.com>
-	 <20090403144550.712401000@intel.com> <1238770852.798.146.camel@twins>
-	 <928CFBE8E7CB0040959E56B4EA41A77E9271853A@irsmsx504.ger.corp.intel.com>
-	 <1238843551.4549.1041.camel@laptop>
-	 <928CFBE8E7CB0040959E56B4EA41A77E92768007@irsmsx504.ger.corp.intel.com>
- <1239092961.798.5686.camel@twins>
-In-Reply-To: <1239092961.798.5686.camel@twins>
-Accept-Language: en-US
-Content-Language: en-US
-X-MS-Has-Attach: 
-X-MS-TNEF-Correlator: 
-acceptlanguage: en-US
-Content-Type: text/plain; charset="utf-8"
+	id S1756154AbZDGJJo (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 7 Apr 2009 05:09:44 -0400
+Date: Tue, 7 Apr 2009 09:09:13 GMT
+From: Peter Zijlstra <a.p.zijlstra@chello.nl>
+To: linux-tip-commits@vger.kernel.org
+Cc: linux-kernel@vger.kernel.org, paulus@samba.org, hpa@zytor.com,
+       mingo@redhat.com, a.p.zijlstra@chello.nl, tglx@linutronix.de,
+       cjashfor@linux.vnet.ibm.com, mingo@elte.hu
+Reply-To: mingo@redhat.com, hpa@zytor.com, paulus@samba.org,
+       linux-kernel@vger.kernel.org, a.p.zijlstra@chello.nl,
+       tglx@linutronix.de, cjashfor@linux.vnet.ibm.com, mingo@elte.hu
+In-Reply-To: <20090406094518.445450972@chello.nl>
+References: <20090406094518.445450972@chello.nl>
+Subject: [tip:perfcounters/core] perf_counter: rework the task clock software counter
+Message-ID: <tip-a39d6f2556c4a19f58f538c6aa28bf8faca4fcb8@git.kernel.org>
+Git-Commit-ID: a39d6f2556c4a19f58f538c6aa28bf8faca4fcb8
+X-Mailer: tip-git-log-daemon
 MIME-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
+Content-Disposition: inline
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Tue, 07 Apr 2009 09:09:15 +0000 (UTC)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
-Content-Transfer-Encoding: 8bit
-X-MIME-Autoconverted: from base64 to 8bit by alpha.home.local id n379Caqu014644
 
->-----Original Message-----
->From: Peter Zijlstra [mailto:a.p.zijlstra@chello.nl]
->Sent: Tuesday, April 07, 2009 10:29 AM
->To: Metzger, Markus T
->Cc: mingo@elte.hu; tglx@linutronix.de; hpa@zytor.com; markus.t.metzger@gmail.com; roland@redhat.com;
->eranian@googlemail.com; oleg@redhat.com; Villacis, Juan; ak@linux.jf.intel.com; linux-
->kernel@vger.kernel.org; Andrew Morton
->Subject: RE: [patch 03/20] x86, ptrace, bts: defer branch trace stopping
->
->On Tue, 2009-04-07 at 09:12 +0100, Metzger, Markus T wrote:
->> >-----Original Message-----
->> >From: Peter Zijlstra [mailto:a.p.zijlstra@chello.nl]
->> >Sent: Saturday, April 04, 2009 1:13 PM
->> >To: Metzger, Markus T
->> >Cc: mingo@elte.hu; tglx@linutronix.de; hpa@zytor.com; markus.t.metzger@gmail.com;
->roland@redhat.com;
->> >eranian@googlemail.com; oleg@redhat.com; Villacis, Juan; ak@linux.jf.intel..com; linux-
->> >kernel@vger.kernel.org; Andrew Morton
->> >Subject: RE: [patch 03/20] x86, ptrace, bts: defer branch trace stopping
->> >
->> >On Sat, 2009-04-04 at 08:17 +0100, Metzger, Markus T wrote:
->> >> >-----Original Message-----
->> >> >From: Peter Zijlstra [mailto:a.p.zijlstra@chello.nl]
->> >> >Sent: Friday, April 03, 2009 5:01 PM
->> >> >To: Metzger, Markus T
->> >>
->> >>
->> >> >Also, I can't say I like the name, what about something like:
->> >> >
->> >> >void account_locked_buffer(struct mm_struct *mm, long pages)
->> >> >{
->> >> >	down_write(&mm->mmap_sem);
->> >> >
->> >> >	mm->total_vm += pages;
->> >> >	mm->locked_vm += pages;
->> >> >
->> >> >	up_write(&mm->mmap_sem);
->> >> >}
->> >> >
->> >> >but looking more closely at that alloc_locked_buffer() stuff, I really
->> >> >hate it, who in his right mind does a multi-page kmalloc() -- that's
->> >> >crazy.
->> >>
->> >> I need a non-pageable chunk of memory to give to the cpu to store branch
->> >> trace data in. Kmalloc() is easy to use and gives me what I need.
->> >>
->> >> How would I do this correctly?
->> >
->> >Well, how large should this buffer be and must it be physically
->> >contiguous?
->>
->> The size is set by the user. It is limited by (locked memory) RLIMIT.
->>
->> The buffer need not be physically contiguous, but it must not be paged out
->> and should be marked accessed and dirty.
->> (see Â§18.7.8.2 in vol. 3b, Software Developer's Manual).
->
->The Intel one I presume?
+Commit-ID:  a39d6f2556c4a19f58f538c6aa28bf8faca4fcb8
+Gitweb:     http://git.kernel.org/tip/a39d6f2556c4a19f58f538c6aa28bf8faca4fcb8
+Author:     Peter Zijlstra <a.p.zijlstra@chello.nl>
+AuthorDate: Mon, 6 Apr 2009 11:45:11 +0200
+Committer:  Ingo Molnar <mingo@elte.hu>
+CommitDate: Tue, 7 Apr 2009 10:49:00 +0200
 
-Yes. For x86 Architecture.
+perf_counter: rework the task clock software counter
+
+Rework the task clock software counter to use the context time instead
+of the task runtime clock, this removes the last such user.
+
+Signed-off-by: Peter Zijlstra <a.p.zijlstra@chello.nl>
+Cc: Paul Mackerras <paulus@samba.org>
+Cc: Corey Ashford <cjashfor@linux.vnet.ibm.com>
+LKML-Reference: <20090406094518.445450972@chello.nl>
+Signed-off-by: Ingo Molnar <mingo@elte.hu>
 
 
->Ok, if you must mark the pages accessed and dirty you should get whole
->pages, otherwise you cannot make that promise on the ptes, right?
+---
+ kernel/perf_counter.c |   42 ++++++++++++------------------------------
+ 1 files changed, 12 insertions(+), 30 deletions(-)
 
-The feedback I got so far was that kmalloc'ed memory is OK to use
-in that case.
-
-
->> >Apparently its large enough to account in pages, that would suggest you
->> >should use the page allocator to get memory.
->>
->> Wouldn't kmalloc forward the request to the page allocator for large memory?
->
->It may, but doesn't need to.
->
->> >Furthermore, if it needs to be physically contiguous and its more than
->> >say 8 pages worth, you're basically up shit creek.
->>
->> If not enough memory is available, I would expect users to request smaller
->> buffers until the request can be satisfied.
->
->Sounds like a very bad interface, esp since you don't need physically
->contiguous memory.
->
->So what you need to do is allocate pages, order-0, grab a reference,
->then vmap them into a linear piece, poke at the ptes to set the young
->and dirty bits and provide that to your hardware.
-
-OK.
-
-Would a simple vmalloc() do the job?
-Looks like it uses PAGE_KERNEL which has the present, accessed, and dirty bits
-set. It also does the page allocation and vmap() for me.
-
-thanks,
-markus.
-
----------------------------------------------------------------------Intel GmbHDornacher Strasse 185622 Feldkirchen/Muenchen GermanySitz der Gesellschaft: Feldkirchen bei MuenchenGeschaeftsfuehrer: Douglas Lusk, Peter Gleissner, Hannes SchwadererRegistergericht: Muenchen HRB 47456 Ust.-IdNr.VAT Registration No.: DE129385895Citibank Frankfurt (BLZ 502 109 00) 600119052
-This e-mail and any attachments may contain confidential material forthe sole use of the intended recipient(s). Any review or distributionby others is strictly prohibited. If you are not the intendedrecipient, please contact the sender and delete all copies.ÿôèº{.nÇ+‰·Ÿ®‰­†+%ŠËÿ±éÝ¶¥Šwÿº{.nÇ+‰·¥Š{±þG«éÿŠ{ayºÊ‡Ú™ë,j­¢f£¢·hšïêÿ‘êçz_è®(­éšŽŠÝ¢j"ú¶m§ÿÿ¾«þG«éÿ¢¸?™¨è­Ú&£ø§~á¶iO•æ¬z·švØ^¶m§ÿÿÃÿ¶ìÿ¢¸?–I¥
+diff --git a/kernel/perf_counter.c b/kernel/perf_counter.c
+index 84d85ab..56b7eb5 100644
+--- a/kernel/perf_counter.c
++++ b/kernel/perf_counter.c
+@@ -974,9 +974,6 @@ int perf_counter_task_disable(void)
+ 	curr_rq_lock_irq_save(&flags);
+ 	cpu = smp_processor_id();
+ 
+-	/* force the update of the task clock: */
+-	__task_delta_exec(curr, 1);
+-
+ 	perf_counter_task_sched_out(curr, cpu);
+ 
+ 	spin_lock(&ctx->lock);
+@@ -1017,9 +1014,6 @@ int perf_counter_task_enable(void)
+ 	curr_rq_lock_irq_save(&flags);
+ 	cpu = smp_processor_id();
+ 
+-	/* force the update of the task clock: */
+-	__task_delta_exec(curr, 1);
+-
+ 	perf_counter_task_sched_out(curr, cpu);
+ 
+ 	spin_lock(&ctx->lock);
+@@ -2347,38 +2341,28 @@ static const struct hw_perf_counter_ops perf_ops_cpu_clock = {
+  * Software counter: task time clock
+  */
+ 
+-/*
+- * Called from within the scheduler:
+- */
+-static u64 task_clock_perf_counter_val(struct perf_counter *counter, int update)
+-{
+-	struct task_struct *curr = counter->task;
+-	u64 delta;
+-
+-	delta = __task_delta_exec(curr, update);
+-
+-	return curr->se.sum_exec_runtime + delta;
+-}
+-
+-static void task_clock_perf_counter_update(struct perf_counter *counter, u64 now)
++static void task_clock_perf_counter_update(struct perf_counter *counter)
+ {
+-	u64 prev;
++	u64 prev, now;
+ 	s64 delta;
+ 
+-	prev = atomic64_read(&counter->hw.prev_count);
+-
+-	atomic64_set(&counter->hw.prev_count, now);
++	update_context_time(counter->ctx);
++	now = counter->ctx->time;
+ 
++	prev = atomic64_xchg(&counter->hw.prev_count, now);
+ 	delta = now - prev;
+-
+ 	atomic64_add(delta, &counter->count);
+ }
+ 
+ static int task_clock_perf_counter_enable(struct perf_counter *counter)
+ {
+ 	struct hw_perf_counter *hwc = &counter->hw;
++	u64 now;
++
++	update_context_time(counter->ctx);
++	now = counter->ctx->time;
+ 
+-	atomic64_set(&hwc->prev_count, task_clock_perf_counter_val(counter, 0));
++	atomic64_set(&hwc->prev_count, now);
+ 	hrtimer_init(&hwc->hrtimer, CLOCK_MONOTONIC, HRTIMER_MODE_REL);
+ 	hwc->hrtimer.function = perf_swcounter_hrtimer;
+ 	if (hwc->irq_period) {
+@@ -2393,14 +2377,12 @@ static int task_clock_perf_counter_enable(struct perf_counter *counter)
+ static void task_clock_perf_counter_disable(struct perf_counter *counter)
+ {
+ 	hrtimer_cancel(&counter->hw.hrtimer);
+-	task_clock_perf_counter_update(counter,
+-			task_clock_perf_counter_val(counter, 0));
++	task_clock_perf_counter_update(counter);
+ }
+ 
+ static void task_clock_perf_counter_read(struct perf_counter *counter)
+ {
+-	task_clock_perf_counter_update(counter,
+-			task_clock_perf_counter_val(counter, 1));
++	task_clock_perf_counter_update(counter);
+ }
+ 
+ static const struct hw_perf_counter_ops perf_ops_task_clock = {
