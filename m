@@ -1,64 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757871AbZDGP07@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761573AbZDGP0l@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757871AbZDGP07 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 7 Apr 2009 11:26:59 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760748AbZDGPTL
+	id S1761573AbZDGP0l (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 7 Apr 2009 11:26:41 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757321AbZDGPNV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 7 Apr 2009 11:19:11 -0400
-Received: from fg-out-1718.google.com ([72.14.220.157]:38568 "EHLO
-	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1758848AbZDGPTJ (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 7 Apr 2009 11:19:09 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=sender:to:cc:subject:references:from:date:in-reply-to:message-id
-         :user-agent:mime-version:content-type;
-        b=gfn6CvjTEOac8ZvSx8eVpt+vZrkyiCOQUKUlBqMvr5qmI7iuFo9DGo3dkk1ilAqbhl
-         6+0NWZZ8/tIfeefnuNIZeWVUqUMIBWXW33kXPDb92fzbMcynUeePja/JaFOo7UeNYhAc
-         AwF39DJct5DrdF1oSySk/+Hg+PhNYu7GgpFVg=
-To: "John W. Linville" <linville@tuxdriver.com>
-Cc: Michael Buesch <mb@bu3sch.de>,
-       Jaswinder Singh Rajput <jaswinder@kernel.org>,
-       Sujith <Sujith.Manoharan@atheros.com>,
-       wireless <linux-wireless@vger.kernel.org>,
-       David Miller <davem@davemloft.net>, LKML <linux-kernel@vger.kernel.org>,
-       Helmut Schaa <helmut.schaa@googlemail.com>
-Subject: Re: ath9k becon loss messages
-References: <1238923439.4120.9.camel@localhost.localdomain>
-	<200904061217.31134.mb@bu3sch.de> <87tz52xepy.fsf@litku.valot.fi>
-	<200904061251.10965.helmut.schaa@gmail.com>
-	<da94abde0904060405k280b3094jc20d0f7a4e6e759d@mail.gmail.com>
-	<87iqlhdd3z.fsf@litku.valot.fi> <20090406180042.GD10842@tuxdriver.com>
-	<87fxglhuuc.fsf@litku.valot.fi> <20090407135359.GA28289@tuxdriver.com>
-From: Kalle Valo <kalle.valo@iki.fi>
-Date: Tue, 07 Apr 2009 18:19:04 +0300
-In-Reply-To: <20090407135359.GA28289@tuxdriver.com> (John W. Linville's message of "Tue\, 7 Apr 2009 09\:53\:59 -0400")
-Message-ID: <87vdpga3vb.fsf@litku.valot.fi>
-User-Agent: Gnus/5.11 (Gnus v5.11) Emacs/22.3 (gnu/linux)
+	Tue, 7 Apr 2009 11:13:21 -0400
+Received: from mx2.mail.elte.hu ([157.181.151.9]:39471 "EHLO mx2.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1760000AbZDGPNT (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 7 Apr 2009 11:13:19 -0400
+Date: Tue, 7 Apr 2009 17:12:24 +0200
+From: Ingo Molnar <mingo@elte.hu>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: David Woodhouse <dwmw2@infradead.org>, iommu@lists.linux-foundation.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] intel-iommu: fix build with CONFIG_BRANCH_TRACER=y
+Message-ID: <20090407151224.GA14486@elte.hu>
+References: <1239083045.22733.383.camel@macbook.infradead.org> <20090407054818.GA5557@elte.hu> <20090407055245.GA10406@elte.hu> <1239084280.22733.404.camel@macbook.infradead.org> <20090407061558.GA31261@elte.hu> <20090407084950.GA1467@elte.hu> <20090407090229.GA2467@elte.hu> <1239104035.22733.443.camel@macbook.infradead.org> <alpine.LFD.2.00.0904070751510.4010@localhost.localdomain> <alpine.LFD.2.00.0904070759050.4010@localhost.localdomain>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <alpine.LFD.2.00.0904070759050.4010@localhost.localdomain>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-"John W. Linville" <linville@tuxdriver.com> writes:
 
->> But do you take Michael's patch[1] for disabling the "beacon loss"
->> message for 2.6.30? I think we should have it in 2.6.30, otherwise we
->> will get quite a lot of bug reports. Do you want me to resend it?
->> 
->> [1] http://marc.info/?l=linux-kernel&m=123892431619630&w=2
->
-> I'll make a note of it.
+* Linus Torvalds <torvalds@linux-foundation.org> wrote:
 
-Thanks.
+> On Tue, 7 Apr 2009, Linus Torvalds wrote:
+> > 
+> > Can we please do it something like the following instead:
+> > 
+> > 	#define if(a, ...) \
+> > 		__trace_if( (a, ## __VA_ARGS__) )
+> > 
+> > so that you don't need to do that ", ## __VA_ARGS__" thing three times?
+> 
+> IOW, does this (TOTALLY UNTESTED) patch work?
 
-> I took a couple of days off last week and have been poking at other
-> things, so I'm a bit behind on the merging.  If you don't see it in
-> another week or so then poke me again?
+i've done some (very light) testing and it works here.
 
-I will. This isn't urgent, so no need to rush.
-
--- 
-Kalle Valo
+	Ingo
