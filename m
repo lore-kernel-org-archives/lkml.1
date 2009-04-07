@@ -1,44 +1,110 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760883AbZDGUkN@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761206AbZDGUmS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760883AbZDGUkN (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 7 Apr 2009 16:40:13 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760951AbZDGUj5
+	id S1761206AbZDGUmS (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 7 Apr 2009 16:42:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760297AbZDGUmH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 7 Apr 2009 16:39:57 -0400
-Received: from courier.cs.helsinki.fi ([128.214.9.1]:59717 "EHLO
-	mail.cs.helsinki.fi" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1759404AbZDGUj4 (ORCPT
+	Tue, 7 Apr 2009 16:42:07 -0400
+Received: from a4.complang.tuwien.ac.at ([128.130.173.65]:60208 "EHLO
+	a4.complang.tuwien.ac.at" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1759778AbZDGUmG (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 7 Apr 2009 16:39:56 -0400
-Message-ID: <49DBB929.4080205@cs.helsinki.fi>
-Date: Tue, 07 Apr 2009 23:35:53 +0300
-From: Pekka Enberg <penberg@cs.helsinki.fi>
-User-Agent: Thunderbird 2.0.0.21 (Macintosh/20090302)
+	Tue, 7 Apr 2009 16:42:06 -0400
+X-Greylist: delayed 2252 seconds by postgrey-1.27 at vger.kernel.org; Tue, 07 Apr 2009 16:42:06 EDT
+Subject: Out-of-order writing by disk drives
+To: linux-kernel@vger.kernel.org
+Date: Tue, 7 Apr 2009 22:04:29 +0200 (CEST)
+From: "Anton Ertl" <anton@mips.complang.tuwien.ac.at>
+Reply-To: anton@mips.complang.tuwien.ac.at
+X-Info: DVR-Nummer der TU Wien: 0005886
+X-Mailer: ELM [version 2.5 PL7]
 MIME-Version: 1.0
-To: David Rientjes <rientjes@google.com>
-CC: Christoph Lameter <cl@linux-foundation.org>, linux-kernel@vger.kernel.org
-Subject: Re: [patch] slub: default min_partial to at least highest cpus per
-  node
-References: <alpine.DEB.2.00.0904051653420.25339@chino.kir.corp.google.com>  <49DBA23A.3000106@cs.helsinki.fi> <84144f020904071209j638aae9bv406661ec401af7af@mail.gmail.com> <alpine.DEB.2.00.0904071231500.21113@chino.kir.corp.google.com> <49DBAF7E.30704@cs.helsinki.fi> <alpine.DEB.2.00.0904071302430.32321@chino.kir.corp.google.com> <49DBB373.5050800@cs.helsinki.fi> <alpine.DEB.2.00.0904071316460.21748@chino.kir.corp.google.com>
-In-Reply-To: <alpine.DEB.2.00.0904071316460.21748@chino.kir.corp.google.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Type: text/plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
+Message-Id: <E1LrHX3-0003u5-2G@a4.complang.tuwien.ac.at>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-David Rientjes wrote:
-> On Tue, 7 Apr 2009, Pekka Enberg wrote:
-> 
->>> If you think that's acceptable, I'd be just as satisfied with that approach
->>> as long as all archs have valid cpu_to_node() mappings at the time of
->>> CPU_UP_PREPARE.
->> Well, that doesn't change the current behavior, so sure, I think it's
->> acceptable. And if the new defaults seem reasonable enough, we can probably
->> get rid of the tunable altogether.
-> 
-> I'd like to remove MAX_PARTIAL and replace it with nr_cpu_ids.
+I have released a new version of hdtest, a program that tests whether
+hard disks write out-of-order relative to the order that the writes
+were passed to them from the OS.  You find the program at
 
-Yeah, something more dynamic makes sense. But we probably need to do 
-ilog2(nr_cpu_ids) or something; otherwise we will have very long partial 
-lists on big iron machines (think 4096 cpus here).
+http://www.complang.tuwien.ac.at/anton/hdtest/
+
+Here I mainly present the results from my tests, and explain enough
+about the program so you know what I am talking about.
+
+
+HOW DOES IT WORK?
+
+It writes the blocks in an order like this:
+
+1000-0-1001-0-1002-0-...
+
+This sequence seems to inspire PATA and SATA disks to write
+out-of-order (in the order 1000-1001-1002-...-0).  So you turn off the
+drive's power while running the program.  The written blocks contain
+certain data that another program from the suite can check after you
+power the drive up again.
+
+
+RESULTS
+
+I performed two sets of tests, one in November 1999, and one in April
+2009.  The results have not changed much.  In both tests disks wrote
+data seriously out-of-order in their default configuration; they can
+delay the writing of block 0 in this test for quite a long time.
+
+In more detail:
+
+In 2009 I tested three drives (and accessed the whole drive) under
+Linux 2.6.18 on Debian Etch; the USB enclosure used was a Tsunami
+Elegant 3.5" Enclosure that has PATA and SATA disk drive interfaces.
+
+* Maxtor L300R0 PATA (300GB) connected through an USB enclosure: In
+  two tests it wrote the consecutive blocks 47 and 34 blocks after the
+  last written block 0.
+
+* Seagate ST340062 Model 0A PATA (7200.10, 400GB):
+   connected through a USB enclosure:
+    3 times the result was as if it had written the blocks in-order
+    1 time  it wrote  3064 blocks out-of-order
+    2 times it wrote 18384 blocks out-of-order
+   connected directly via PATA cable:
+    1 time it wrote 1972 blocks out-of-order
+
+* Seagate ST340062 Model 0AS SATA (7200.10, 400GB) connected through a
+  USB enclosure:
+    1 time the result was as if it had written the blocks in-order
+    2 times it wrote  3064 blocks out-of-order
+    1 time  it wrote  6128 blocks out-of-order
+    1 time  it wrote 12256 blocks out-of-order
+    1 time it did not write block 0 at all
+
+It is interesting that the number of blocks that is found to be
+out-of-order is often a multiple of 3064.  Maybe this is a multiple of
+a track size; no other explanations come to mind.
+
+In 1999 I tested two drives (and accessed one partition) under
+Linux-2.2.1 on RedHat 5.1.  The two drives were a Quantum Fireball
+CR8.4A (8GB) and an IBM-DHEA-36480 (6GB), both connected directly via
+PATA.  I did one test with each of the disks, and they did not even
+write block 0 once on the platters before I turned off the power.
+
+I also tested the Quantum with write caching disabled (hdparm -W 0).
+Hdtest was now quite noisy and produced the in-order result.
+
+
+CONCLUSION
+
+Applications and file systems requiring in-order writes (i.e.,
+basically all of them) should use barriers or turn off write caching
+for the disk drive(s) they use.  Unfortunately, the Linux ext3 file
+system does not use barriers by default; use the mount option
+barrier=1 to enable them, e.g. by putting a line like this in
+/etc/fstab:
+
+/dev/md2        /home           ext3    defaults,barrier=1      1	2
+
+- anton
