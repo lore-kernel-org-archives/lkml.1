@@ -1,62 +1,97 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761080AbZDGPV7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761026AbZDGPVm@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761080AbZDGPV7 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 7 Apr 2009 11:21:59 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759333AbZDGPKL
+	id S1761026AbZDGPVm (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 7 Apr 2009 11:21:42 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758073AbZDGPKK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 7 Apr 2009 11:10:11 -0400
+	Tue, 7 Apr 2009 11:10:10 -0400
 Received: from one.firstfloor.org ([213.235.205.2]:41298 "EHLO
 	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1759317AbZDGPKK (ORCPT
+	with ESMTP id S1759309AbZDGPKJ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 7 Apr 2009 11:10:10 -0400
+	Tue, 7 Apr 2009 11:10:09 -0400
 From: Andi Kleen <andi@firstfloor.org>
 References: <20090407509.382219156@firstfloor.org>
 In-Reply-To: <20090407509.382219156@firstfloor.org>
 To: linux-kernel@vger.kernel.org, linux-mm@kvack.org, x86@kernel.org
-Subject: [PATCH] [8/16] POISON: Add various poison checks in mm/memory.c
-Message-Id: <20090407151005.4E24B1D046D@basil.firstfloor.org>
-Date: Tue,  7 Apr 2009 17:10:05 +0200 (CEST)
+Subject: [PATCH] [7/16] POISON: Add basic support for poisoned pages in fault handler
+Message-Id: <20090407151004.2F5D21D0470@basil.firstfloor.org>
+Date: Tue,  7 Apr 2009 17:10:04 +0200 (CEST)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-Bail out early when poisoned pages are found in page fault handling.
-Since they are poisoned they should not be mapped freshly
-into processes.
-
-This is generally handled in the same way as OOM, just a different
-error code is returned to the architecture code.
+- Add a new VM_FAULT_POISON error code to handle_mm_fault. Right now
+architectures have to explicitely enable poison page support, so
+this is forward compatible to all architectures. They only need
+to add it when they enable poison page support.
+- Add poison page handling in swap in fault code
 
 Signed-off-by: Andi Kleen <ak@linux.intel.com>
 
 ---
- mm/memory.c |    7 +++++++
- 1 file changed, 7 insertions(+)
+ include/linux/mm.h |    3 ++-
+ mm/memory.c        |   17 ++++++++++++++---
+ 2 files changed, 16 insertions(+), 4 deletions(-)
 
 Index: linux/mm/memory.c
 ===================================================================
---- linux.orig/mm/memory.c	2009-04-07 16:39:39.000000000 +0200
-+++ linux/mm/memory.c	2009-04-07 16:39:39.000000000 +0200
-@@ -2560,6 +2560,10 @@
- 		goto oom;
- 	__SetPageUptodate(page);
+--- linux.orig/mm/memory.c	2009-04-07 16:39:24.000000000 +0200
++++ linux/mm/memory.c	2009-04-07 16:43:06.000000000 +0200
+@@ -1315,7 +1315,8 @@
+ 				if (ret & VM_FAULT_ERROR) {
+ 					if (ret & VM_FAULT_OOM)
+ 						return i ? i : -ENOMEM;
+-					else if (ret & VM_FAULT_SIGBUS)
++					if (ret &
++					    (VM_FAULT_POISON|VM_FAULT_SIGBUS))
+ 						return i ? i : -EFAULT;
+ 					BUG();
+ 				}
+@@ -2426,8 +2427,15 @@
+ 		goto out;
  
-+	/* Kludge for now until we take poisoned pages out of the free lists */
-+	if (unlikely(PagePoison(page)))
-+		return VM_FAULT_POISON;
-+
- 	if (mem_cgroup_newpage_charge(page, mm, GFP_KERNEL))
- 		goto oom_free_page;
+ 	entry = pte_to_swp_entry(orig_pte);
+-	if (is_migration_entry(entry)) {
+-		migration_entry_wait(mm, pmd, address);
++	if (unlikely(non_swap_entry(entry))) {
++		if (is_migration_entry(entry)) {
++			migration_entry_wait(mm, pmd, address);
++		} else if (is_poison_entry(entry)) {
++			ret = VM_FAULT_POISON;
++		} else {
++			print_bad_pte(vma, address, pte, NULL);
++			ret = VM_FAULT_OOM;
++		}
+ 		goto out;
+ 	}
+ 	delayacct_set_flag(DELAYACCT_PF_SWAPIN);
+@@ -2451,6 +2459,9 @@
+ 		/* Had to read the page from swap area: Major fault */
+ 		ret = VM_FAULT_MAJOR;
+ 		count_vm_event(PGMAJFAULT);
++	} else if (PagePoison(page)) {
++		ret = VM_FAULT_POISON;
++		goto out;
+ 	}
  
-@@ -2625,6 +2629,9 @@
- 	if (unlikely(ret & (VM_FAULT_ERROR | VM_FAULT_NOPAGE)))
- 		return ret;
+ 	lock_page(page);
+Index: linux/include/linux/mm.h
+===================================================================
+--- linux.orig/include/linux/mm.h	2009-04-07 16:39:24.000000000 +0200
++++ linux/include/linux/mm.h	2009-04-07 16:43:05.000000000 +0200
+@@ -702,11 +702,12 @@
+ #define VM_FAULT_SIGBUS	0x0002
+ #define VM_FAULT_MAJOR	0x0004
+ #define VM_FAULT_WRITE	0x0008	/* Special case for get_user_pages */
++#define VM_FAULT_POISON 0x0010	/* Hit poisoned page */
  
-+	if (unlikely(PagePoison(vmf.page)))
-+		return VM_FAULT_POISON;
-+
- 	/*
- 	 * For consistency in subsequent calls, make the faulted page always
- 	 * locked.
+ #define VM_FAULT_NOPAGE	0x0100	/* ->fault installed the pte, not return page */
+ #define VM_FAULT_LOCKED	0x0200	/* ->fault locked the returned page */
+ 
+-#define VM_FAULT_ERROR	(VM_FAULT_OOM | VM_FAULT_SIGBUS)
++#define VM_FAULT_ERROR	(VM_FAULT_OOM | VM_FAULT_SIGBUS | VM_FAULT_POISON)
+ 
+ /*
+  * Can be called by the pagefault handler when it gets a VM_FAULT_OOM.
