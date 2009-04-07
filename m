@@ -1,67 +1,47 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754714AbZDGMpU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755830AbZDGMt2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754714AbZDGMpU (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 7 Apr 2009 08:45:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751528AbZDGMpG
+	id S1755830AbZDGMt2 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 7 Apr 2009 08:49:28 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752096AbZDGMtS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 7 Apr 2009 08:45:06 -0400
-Received: from bombadil.infradead.org ([18.85.46.34]:47363 "EHLO
-	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751159AbZDGMpE (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 7 Apr 2009 08:45:04 -0400
-Subject: Re: [PATCH] intel-iommu: fix build with CONFIG_BRANCH_TRACER=y
-From: David Woodhouse <dwmw2@infradead.org>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: torvalds@linux-foundation.org, iommu@lists.linux-foundation.org,
-       linux-kernel@vger.kernel.org
-In-Reply-To: <20090407121457.GC11641@elte.hu>
-References: <1238839639.3560.37.camel@macbook.infradead.org>
-	 <20090407053739.GA10500@elte.hu>
-	 <1239083045.22733.383.camel@macbook.infradead.org>
-	 <20090407054818.GA5557@elte.hu> <20090407055245.GA10406@elte.hu>
-	 <1239084280.22733.404.camel@macbook.infradead.org>
-	 <20090407061558.GA31261@elte.hu> <20090407084950.GA1467@elte.hu>
-	 <20090407090229.GA2467@elte.hu>
-	 <1239104035.22733.443.camel@macbook.infradead.org>
-	 <20090407121457.GC11641@elte.hu>
-Content-Type: text/plain
-Date: Tue, 07 Apr 2009 05:44:23 -0700
-Message-Id: <1239108263.22733.492.camel@macbook.infradead.org>
+	Tue, 7 Apr 2009 08:49:18 -0400
+Received: from mba.ocn.ne.jp ([122.1.235.107]:55220 "EHLO smtp.mba.ocn.ne.jp"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751528AbZDGMtS (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 7 Apr 2009 08:49:18 -0400
+Date: Tue, 07 Apr 2009 21:49:23 +0900 (JST)
+Message-Id: <20090407.214923.126142447.anemo@mba.ocn.ne.jp>
+To: peterz@infradead.org
+Cc: a.zummo@towertech.it, rtc-linux@googlegroups.com,
+       linux-kernel@vger.kernel.org, tglx@linutronix.de
+Subject: Re: [PATCH] rtc-ds1553: Drop IRQF_DISABLED
+From: Atsushi Nemoto <anemo@mba.ocn.ne.jp>
+In-Reply-To: <1239046422.798.4803.camel@twins>
+References: <1239036633-10032-2-git-send-email-anemo@mba.ocn.ne.jp>
+	<1239046422.798.4803.camel@twins>
+X-Fingerprint: 6ACA 1623 39BD 9A94 9B1A  B746 CA77 FE94 2874 D52F
+X-Pgp-Public-Key: http://wwwkeys.pgp.net/pks/lookup?op=get&search=0x2874D52F
+X-Mailer: Mew version 5.2 on Emacs 21.4 / Mule 5.0 (SAKAKI)
 Mime-Version: 1.0
-X-Mailer: Evolution 2.26.0 (2.26.0-2.fc11) 
+Content-Type: Text/Plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
-X-SRS-Rewrite: SMTP reverse-path rewritten from <dwmw2@infradead.org> by bombadil.infradead.org
-	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 2009-04-07 at 14:14 +0200, Ingo Molnar wrote:
-> Well, i consider it a feature that it flags weird if (x, y) 
-> constructs: and yes, these iterators you introduced, while they are 
-> legit C, definitely count as 'weird'. If regular code was doing it, 
-> not a loop abstraction, i'd call it non-obvious and borderline 
-> broken straight away.
+On Mon, 06 Apr 2009 21:33:42 +0200, Peter Zijlstra <peterz@infradead.org> wrote:
+> > IRQF_DISABLED should be be used with IRQF_SHARED.  Drop IRQF_DISABLED
+> > and add spin_lock_irqsave/spin_unlock_irqrestore to the interrupt
+> > handler.
 > 
-> We should _never ever_ put comma statements into if () constructs 
-> without a _really_ good reason - and if yes, we can flag that we 
-> know what we are doing, via extra parentheses.
+> I think you should use IRQF_DISABLED if at all possible. Only broken
+> hardware has an excuse not to.
+> 
+> NAK
 
-I disagree. I don't think we should be declaring valid C syntax as 'off
-limits', however rare it is.
+OK, then I will drop IRQF_SHARED instead.  There is no in-tree user of
+this driver and only out-of-tree user I know uses dedicated irq line
+for this RTC.
 
-_Especially_ if it only actually fails with a fairly esoteric config
-option set. That's just asking for build breakage.
-
-> and if yes, we can flag that we know what we are doing, via extra 
-> parentheses.
-
-That's hardly much of a barrier. The requirement to sprinkle
-gratuitous-looking extra parentheses around the place really isn't going
-to give us much of a _benefit_ in return for the build breakage.
-
--- 
-David Woodhouse                            Open Source Technology Centre
-David.Woodhouse@intel.com                              Intel Corporation
-
+---
+Atsushi Nemoto
