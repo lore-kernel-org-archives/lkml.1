@@ -1,101 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760355AbZDGTNV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758146AbZDGTNk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760355AbZDGTNV (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 7 Apr 2009 15:13:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751833AbZDGTNF
+	id S1758146AbZDGTNk (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 7 Apr 2009 15:13:40 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758088AbZDGTNU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 7 Apr 2009 15:13:05 -0400
-Received: from relay1.sgi.com ([192.48.179.29]:33393 "EHLO relay.sgi.com"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1750804AbZDGTNE (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 7 Apr 2009 15:13:04 -0400
-Date: Tue, 7 Apr 2009 14:13:00 -0500
-From: Robin Holt <holt@sgi.com>
-To: Andi Kleen <andi@firstfloor.org>, Russ Anderson <rja@sgi.com>
-Cc: linux-kernel@vger.kernel.org, linux-mm@kvack.org, x86@kernel.org
-Subject: Re: [PATCH] [0/16] POISON: Intro
-Message-ID: <20090407191300.GA10768@sgi.com>
-References: <20090407509.382219156@firstfloor.org>
+	Tue, 7 Apr 2009 15:13:20 -0400
+Received: from ogre.sisk.pl ([217.79.144.158]:55430 "EHLO ogre.sisk.pl"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1756778AbZDGTNT (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 7 Apr 2009 15:13:19 -0400
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+To: Larry Finger <Larry.Finger@lwfinger.net>
+Subject: Re: [2 regressions] Current git cannot find root device on x86-64(HP nx6325), NFS broken
+Date: Tue, 7 Apr 2009 21:13:20 +0200
+User-Agent: KMail/1.11.2 (Linux/2.6.29-rjw; KDE/4.2.2; x86_64; ; )
+Cc: LKML <linux-kernel@vger.kernel.org>, Mike Galbraith <efault@gmx.de>,
+       Rusty Russell <rusty@rustcorp.com.au>
+References: <49DB69FA.1060202@lwfinger.net>
+In-Reply-To: <49DB69FA.1060202@lwfinger.net>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: Text/Plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <20090407509.382219156@firstfloor.org>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+Message-Id: <200904072113.20703.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-How does this overlap with the bad page quarantine that ia64 uses
-following an MCA?
+On Tuesday 07 April 2009, Larry Finger wrote:
+> >On Tue, 2009-04-07 at 00:47 +0200, Rafael J. Wysocki wrote:
+> >> Hi,
+> >>
+> >> Current mainline (commit 22ae77bc7ac115b9d518d5cbc13d39317079b2b0) can't
+> >> find the root device (it's handled by statically compiled-in sata_sil) and
+> >> generally causes the "invalid module format" message to appear for all modules
+> >> loaded from the initrd on my HP nx6325 (the distro is openSUSE 11.1).
+> >>
+> >> I don't know which commit might have made this happen, but the breakage was
+> >> introduced during the last three days (commit
+> >> 601cc11d054ae4b5e9b5babec3d8e4667a2cb9b5 is certainly good). I'll bisect
+> >> tomorrow if there are no ideas.
+> 
+> > I bisected "invalid module format" woes to 9cb610d.
+> 
+> My system also fails to load modules from initrd unless 9cb610d is reverted.
+> Something is wrong with the "module: remove the SHF_ALLOC flag on the __versions
+> section" patch.
 
-Robin
+This is fixed in the current -git, although I had to apply the patch from
+http://patchwork.kernel.org/patch/16776/
+to fix an Oops on boot.
 
-On Tue, Apr 07, 2009 at 05:09:56PM +0200, Andi Kleen wrote:
-> 
-> Upcoming Intel CPUs have support for recovering from some memory errors. This
-> requires the OS to declare a page "poisoned", kill the processes associated
-> with it and avoid using it in the future. This patchkit implements
-> the necessary infrastructure in the VM.
-> 
-> To quote the overview comment:
-> 
->  * High level machine check handler. Handles pages reported by the
->  * hardware as being corrupted usually due to a 2bit ECC memory or cache
->  * failure.
->  *
->  * This focusses on pages detected as corrupted in the background.
->  * When the current CPU tries to consume corruption the currently
->  * running process can just be killed directly instead. This implies
->  * that if the error cannot be handled for some reason it's safe to
->  * just ignore it because no corruption has been consumed yet. Instead
->  * when that happens another machine check will happen.
->  *
->  * Handles page cache pages in various states. The tricky part
->  * here is that we can access any page asynchronous to other VM
->  * users, because memory failures could happen anytime and anywhere,
->  * possibly violating some of their assumptions. This is why this code
->  * has to be extremely careful. Generally it tries to use normal locking
->  * rules, as in get the standard locks, even if that means the
->  * error handling takes potentially a long time.
->  *
->  * Some of the operations here are somewhat inefficient and have non
->  * linear algorithmic complexity, because the data structures have not
->  * been optimized for this case. This is in particular the case
->  * for the mapping from a vma to a process. Since this case is expected
->  * to be rare we hope we can get away with this.
-> 
-> The code consists of a the high level handler in mm/memory-failure.c, 
-> a new page poison bit and various checks in the VM to handle poisoned
-> pages.
-> 
-> The main target right now is KVM guests, but it works for all kinds
-> of applications.
-> 
-> For the KVM use there was need for a new signal type so that
-> KVM can inject the machine check into the guest with the proper
-> address. This in theory allows other applications to handle
-> memory failures too. The expection is that near all applications
-> won't do that, but some very specialized ones might. 
-> 
-> This is not fully complete yet, in particular there are still ways
-> to access poison through various ways (crash dump, /proc/kcore etc.)
-> that need to be plugged too.
-> 
-> Also undoubtedly the high level handler still has bugs and cases
-> it cannot recover from. For example nonlinear mappings deadlock right now
-> and a few other cases lose references. Huge pages are not supported
-> yet. Any additional testing, reviewing etc. welcome. 
-> 
-> The patch series requires the earlier x86 MCE feature series for the x86
-> specific action optional part. The code can be tested without the x86 specific
-> part using the injector, this only requires to enable the Kconfig entry
-> manually in some Kconfig file (by default it is implicitely enabled
-> by the architecture)
-> 
-> -Andi
-> 
-> --
-> To unsubscribe, send a message with 'unsubscribe linux-mm' in
-> the body to majordomo@kvack.org.  For more info on Linux MM,
-> see: http://www.linux-mm.org/ .
-> Don't email: <a href=mailto:"dont@kvack.org"> email@kvack.org </a>
+Thanks,
+Rafael
