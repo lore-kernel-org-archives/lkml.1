@@ -1,63 +1,110 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758746AbZDGTqZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759684AbZDGTsx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758746AbZDGTqZ (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 7 Apr 2009 15:46:25 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751802AbZDGTqO
+	id S1759684AbZDGTsx (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 7 Apr 2009 15:48:53 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756145AbZDGTsk
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 7 Apr 2009 15:46:14 -0400
-Received: from srv5.dvmed.net ([207.36.208.214]:49018 "EHLO mail.dvmed.net"
+	Tue, 7 Apr 2009 15:48:40 -0400
+Received: from www.tglx.de ([62.245.132.106]:58782 "EHLO www.tglx.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753685AbZDGTqO (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 7 Apr 2009 15:46:14 -0400
-Message-ID: <49DBAD5B.7010107@garzik.org>
-Date: Tue, 07 Apr 2009 15:45:31 -0400
-From: Jeff Garzik <jeff@garzik.org>
-User-Agent: Thunderbird 2.0.0.21 (X11/20090320)
+	id S1753813AbZDGTsk (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 7 Apr 2009 15:48:40 -0400
+Date: Tue, 7 Apr 2009 21:48:14 +0200 (CEST)
+From: Thomas Gleixner <tglx@linutronix.de>
+To: "Narnakaje, Snehaprabha" <nsnehaprabha@ti.com>
+cc: David Brownell <david-b@pacbell.net>,
+       "davinci-linux-open-source@linux.davincidsp.com" 
+	<davinci-linux-open-source@linux.davincidsp.com>,
+       "linux-mtd@lists.infradead.org" <linux-mtd@lists.infradead.org>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
+Subject: RE: [PATCH] MTD-NAND: Changes to read_page APIs to support
+ NAND_ECC_HW_SYNDROME mode on TI DaVinci DM355
+In-Reply-To: <7A436F7769CA33409C6B44B358BFFF0CFFAA9253@dlee02.ent.ti.com>
+Message-ID: <alpine.LFD.2.00.0904072123320.21577@localhost.localdomain>
+References: <1238601784-9563-1-git-send-email-nsnehaprabha@ti.com> <200904051556.05368.david-b@pacbell.net> <alpine.LFD.2.00.0904070042300.21577@localhost.localdomain> <200904061849.23110.david-b@pacbell.net> <7A436F7769CA33409C6B44B358BFFF0CFFAA90C0@dlee02.ent.ti.com>
+ <alpine.LFD.2.00.0904071831550.21577@localhost.localdomain> <7A436F7769CA33409C6B44B358BFFF0CFFAA9253@dlee02.ent.ti.com>
+User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
 MIME-Version: 1.0
-To: Mark Lord <lkml@rtr.ca>
-CC: Linus Torvalds <torvalds@linux-foundation.org>,
-       Ray Lee <ray-lk@madrabbit.org>, Hua Zhong <hzhong@gmail.com>,
-       Theodore Tso <tytso@mit.edu>, Jens Axboe <jens.axboe@oracle.com>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH 0/8][RFC] IO latency/throughput fixes
-References: <1239022088-29002-1-git-send-email-jens.axboe@oracle.com>  <alpine.LFD.2.00.0904060803141.4023@localhost.localdomain>  <20090406151054.GD5178@kernel.dk> <alpine.LFD.2.00.0904060840080.3863@localhost.localdomain>  <20090406183157.GD7376@mit.edu> <alpine.LFD.2.00.0904061255160.4134@localhost.localdomain>  <002501c9b6f3$f85b4910$e911db30$@com> <20090406211931.GB8586@mit.edu>  <003001c9b6ff$a9259ce0$fb70d6a0$@com> <2c0942db0904061504l6504934bi446f7425fcd38470@mail.gmail.com> <alpine.LFD.2.00.0904061509020.7443@localhost.localdomain> <alpine.LFD.2.00.0904061604410.8214@localhost.localdomain> <49DB56B8.1060805@rtr.ca> <alpine.LFD.2.00.0904070727260.4010@localhost.localdomain> <49DBA87F.6070501@rtr.ca>
-In-Reply-To: <49DBA87F.6070501@rtr.ca>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 7bit
-X-Spam-Score: -4.4 (----)
-X-Spam-Report: SpamAssassin version 3.2.5 on srv5.dvmed.net summary:
-	Content analysis details:   (-4.4 points, 5.0 required)
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Mark Lord wrote:
-> Linus Torvalds wrote:
->>
->> On Tue, 7 Apr 2009, Mark Lord wrote:
->>> What happens with ext3 "writeback", and ext4 "whatever",
->>> when one does the quickie reboot method:
->>>
->>>   ALT-SYSRQ-S ALT-SYSRQ-U ALT-SYSRQ-S ALT-SYSRQ-B
->>>
->>> ???
->>
->> Since 's' syncs (I think 'u' does too, as part of making things 
->> read-only), the data blocks will be on disk after the boot regardless 
->> of any other ordering.
-> ..
-> 
-> I was thinking more about delayed allocation in ext4, though.
-> If it hasn't allocated the blocks, then sync() has nothing to write out.
-> Or do they have hooks into the block layer to force alloc/commit when
-> somebody does a sync() ??
+On Tue, 7 Apr 2009, Narnakaje, Snehaprabha wrote:
+> > > On DaVinci DM355 device, we need to pass the ecc code/syndrome
+> > > extracted from OOB area, in order to read the HW ECC for each data
+> > > chunk. This is where we differ from NAND_ECC_HW mode.
+> > 
+> > I have to admit that I'm slightly confused. Is the below description
+> > correct?
+> > 
+> > On write you generate the ECC via hardware and store it in the OOB
+> > area, right ?
 
-sync(2) doesn't just sync dirty buffers...  it sync's inodes, which 
-pokes the filesystem to do something intelligent, perhaps triggering (a) 
-write-out of data, (b) write-out of zeroed blocks, or (c) annotation in 
-filesystem metadata that certain blocks are allocated, but not initialized.
+Your mailer still does not insert line breaks at around 78 chars.
+ 
+> Yes. For a large page (e.g. 2K+64), ECC should be stored in the
+> 64bytes OOB region. The NAND controller on DaVinci DM355 device is
+> capable of generating HW ECC (4-bit) for every 512bytes. This means,
+> we have 4 eccsteps. The ECC should be generated by the HW for every
+> 512byte chunk write and stored temporarily in a buffer until all 4
+> eccsteps have been tried. The ECC from the temporary buffer is then
+> written to the OOB area.
 
-	Jeff
+That's exactly what NAND_ECC_HW does.
 
+> > 
+> > On read you read the oob data first and extract the ECC. Then you feed
+> > the extracted ECC into the HW generator and read the data. Is this
+> > correct ?
+ 
+> Almost, read OOB, read data and then feed the extracted ECC into HW
+> generator. Read the ECC status to see any correction required on the
+> read data. Again, reading data, feeding the extracted ECC into HW
+> generator and the correction will have to be repeated for # of times
+> - eccsteps.
 
+Ok.
 
+> > 
+> > > The read_page/write_page APIs for NAND_ECC_HW_SYNDROME have the
+> > > other problem that David mentioned - overwriting NAND manufacturers
+> > > bad block meta data, when used with large page NAND chips. These
+> > > APIs do not handle the "eccsteps" properly. The OOB is read/written
+> > > after every data chunk, thus you actually have overwritten the
+> > > factory bad block information, when these APIs handle the last data
+> > > chunk. OOB should be read/written after the entire data (a page) is
+> > > read/written.
+> > 
+> > Again, that is _how_ the NAND_ECC_HW_SYNDROME functions work. And if
+> > your hardware needs a completely different mode, then we need to
+> > analyse what's the best solution for it.
+ 
+> Based on the description above, NAND_ECC_HW_SYNDROME fitted well,
+
+No, it does not fit well.
+
+> with the exception of overriding the read_page/write_page APIs (to
+> fix the bugs mentioned above). I have not sent the actual NAND
+
+Those are not bugs. You abused that interface and now you claim it has
+bugs. It does _not_. You introduced the bugs by using a function for
+something it was never designed for.
+
+> driver to the linux-mtd yet, since the initial version (supported
+> only 1-bit HW ECC) submitted by David Brownell was still in review
+> (no comments and not approved yet). While coming up with read_page
+> API in the DaVinci NAND driver, we realized the need to pass "page"
+> parameter. The read_page API in the DaVinci NAND driver required to
+> call chip->cmdfunc to adjust the read location (page vs. OOB). The
+> "page" parameter has to be passed to the chip->cmdfunc.
+
+This is the wrong approach. 
+
+What you need is a NAND_ECC_HW_OOB_FIRST mode, which uses the
+NAND_ECC_HW write function and implements a separate read function
+which reads the oob and then reads the data chunks.
+
+Thanks,
+
+	tglx
