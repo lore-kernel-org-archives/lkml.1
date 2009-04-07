@@ -1,15 +1,15 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751972AbZDGJLW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755576AbZDGJLj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751972AbZDGJLW (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 7 Apr 2009 05:11:22 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756058AbZDGJJg
+	id S1755576AbZDGJLj (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 7 Apr 2009 05:11:39 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756087AbZDGJJh
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 7 Apr 2009 05:09:36 -0400
-Received: from hera.kernel.org ([140.211.167.34]:47091 "EHLO hera.kernel.org"
+	Tue, 7 Apr 2009 05:09:37 -0400
+Received: from hera.kernel.org ([140.211.167.34]:47095 "EHLO hera.kernel.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756021AbZDGJJe (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 7 Apr 2009 05:09:34 -0400
-Date: Tue, 7 Apr 2009 09:08:48 GMT
+	id S1756048AbZDGJJf (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 7 Apr 2009 05:09:35 -0400
+Date: Tue, 7 Apr 2009 09:09:00 GMT
 From: Peter Zijlstra <a.p.zijlstra@chello.nl>
 To: linux-tip-commits@vger.kernel.org
 Cc: linux-kernel@vger.kernel.org, paulus@samba.org, hpa@zytor.com,
@@ -18,150 +18,248 @@ Cc: linux-kernel@vger.kernel.org, paulus@samba.org, hpa@zytor.com,
 Reply-To: mingo@redhat.com, hpa@zytor.com, paulus@samba.org,
        linux-kernel@vger.kernel.org, a.p.zijlstra@chello.nl,
        tglx@linutronix.de, cjashfor@linux.vnet.ibm.com, mingo@elte.hu
-In-Reply-To: <20090406094518.266679874@chello.nl>
-References: <20090406094518.266679874@chello.nl>
-Subject: [tip:perfcounters/core] perf_counter: change event definition
-Message-ID: <tip-4c9e25428ff46b968a30f1dfafdba550cb6e4141@git.kernel.org>
-Git-Commit-ID: 4c9e25428ff46b968a30f1dfafdba550cb6e4141
+In-Reply-To: <20090406094518.353552838@chello.nl>
+References: <20090406094518.353552838@chello.nl>
+Subject: [tip:perfcounters/core] perf_counter: rework context time
+Message-ID: <tip-4af4998b8aa35600f4c4a4f3c3a23baca6081d02@git.kernel.org>
+Git-Commit-ID: 4af4998b8aa35600f4c4a4f3c3a23baca6081d02
 X-Mailer: tip-git-log-daemon
 MIME-Version: 1.0
 Content-Type: text/plain; charset=UTF-8
 Content-Disposition: inline
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Tue, 07 Apr 2009 09:08:50 +0000 (UTC)
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Tue, 07 Apr 2009 09:09:02 +0000 (UTC)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Commit-ID:  4c9e25428ff46b968a30f1dfafdba550cb6e4141
-Gitweb:     http://git.kernel.org/tip/4c9e25428ff46b968a30f1dfafdba550cb6e4141
+Commit-ID:  4af4998b8aa35600f4c4a4f3c3a23baca6081d02
+Gitweb:     http://git.kernel.org/tip/4af4998b8aa35600f4c4a4f3c3a23baca6081d02
 Author:     Peter Zijlstra <a.p.zijlstra@chello.nl>
-AuthorDate: Mon, 6 Apr 2009 11:45:09 +0200
+AuthorDate: Mon, 6 Apr 2009 11:45:10 +0200
 Committer:  Ingo Molnar <mingo@elte.hu>
-CommitDate: Tue, 7 Apr 2009 10:48:59 +0200
+CommitDate: Tue, 7 Apr 2009 10:49:00 +0200
 
-perf_counter: change event definition
+perf_counter: rework context time
 
-Currently the definition of an event is slightly ambiguous. We have
-wakeup events, for poll() and SIGIO, which are either generated
-when a record crosses a page boundary (hw_events.wakeup_events == 0),
-or every wakeup_events new records.
-
-Now a record can be either a counter overflow record, or a number of
-different things, like the mmap PROT_EXEC region notifications.
-
-Then there is the PERF_COUNTER_IOC_REFRESH event limit, which only
-considers counter overflows.
-
-This patch changes then wakeup_events and SIGIO notification to only
-consider overflow events. Furthermore it changes the SIGIO notification
-to report SIGHUP when the event limit is reached and the counter will
-be disabled.
+Since perf_counter_context is switched along with tasks, we can
+maintain the context time without using the task runtime clock.
 
 Signed-off-by: Peter Zijlstra <a.p.zijlstra@chello.nl>
 Cc: Paul Mackerras <paulus@samba.org>
 Cc: Corey Ashford <cjashfor@linux.vnet.ibm.com>
-LKML-Reference: <20090406094518.266679874@chello.nl>
+LKML-Reference: <20090406094518.353552838@chello.nl>
 Signed-off-by: Ingo Molnar <mingo@elte.hu>
 
 
 ---
- include/linux/perf_counter.h |    1 +
- kernel/perf_counter.c        |   22 +++++++++++++++-------
- 2 files changed, 16 insertions(+), 7 deletions(-)
+ include/linux/perf_counter.h |   10 ++----
+ kernel/perf_counter.c        |   78 ++++++++++++++++++-----------------------
+ 2 files changed, 37 insertions(+), 51 deletions(-)
 
 diff --git a/include/linux/perf_counter.h b/include/linux/perf_counter.h
-index 8122018..0f5a400 100644
+index 0f5a400..7f5d353 100644
 --- a/include/linux/perf_counter.h
 +++ b/include/linux/perf_counter.h
-@@ -439,6 +439,7 @@ struct perf_counter {
+@@ -477,14 +477,10 @@ struct perf_counter_context {
+ 	struct task_struct	*task;
  
- 	/* delayed work for NMIs and such */
- 	int				pending_wakeup;
-+	int				pending_kill;
- 	int				pending_disable;
- 	struct perf_pending_entry	pending;
+ 	/*
+-	 * time_now is the current time in nanoseconds since an arbitrary
+-	 * point in the past.  For per-task counters, this is based on the
+-	 * task clock, and for per-cpu counters it is based on the cpu clock.
+-	 * time_lost is an offset from the task/cpu clock, used to make it
+-	 * appear that time only passes while the context is scheduled in.
++	 * Context clock, runs when context enabled.
+ 	 */
+-	u64			time_now;
+-	u64			time_lost;
++	u64			time;
++	u64			timestamp;
+ #endif
+ };
  
 diff --git a/kernel/perf_counter.c b/kernel/perf_counter.c
-index c05e103..8c8eaf0 100644
+index 8c8eaf0..84d85ab 100644
 --- a/kernel/perf_counter.c
 +++ b/kernel/perf_counter.c
-@@ -1596,7 +1596,11 @@ void perf_counter_wakeup(struct perf_counter *counter)
- 	rcu_read_unlock();
+@@ -117,7 +117,7 @@ counter_sched_out(struct perf_counter *counter,
+ 		return;
  
- 	wake_up_all(&counter->waitq);
--	kill_fasync(&counter->fasync, SIGIO, POLL_IN);
-+
-+	if (counter->pending_kill) {
-+		kill_fasync(&counter->fasync, SIGIO, counter->pending_kill);
-+		counter->pending_kill = 0;
-+	}
+ 	counter->state = PERF_COUNTER_STATE_INACTIVE;
+-	counter->tstamp_stopped = ctx->time_now;
++	counter->tstamp_stopped = ctx->time;
+ 	counter->hw_ops->disable(counter);
+ 	counter->oncpu = -1;
+ 
+@@ -253,27 +253,20 @@ retry:
+ 	spin_unlock_irq(&ctx->lock);
+ }
+ 
+-/*
+- * Get the current time for this context.
+- * If this is a task context, we use the task's task clock,
+- * or for a per-cpu context, we use the cpu clock.
+- */
+-static u64 get_context_time(struct perf_counter_context *ctx, int update)
++static inline u64 perf_clock(void)
+ {
+-	struct task_struct *curr = ctx->task;
+-
+-	if (!curr)
+-		return cpu_clock(smp_processor_id());
+-
+-	return __task_delta_exec(curr, update) + curr->se.sum_exec_runtime;
++	return cpu_clock(smp_processor_id());
  }
  
  /*
-@@ -1727,6 +1731,7 @@ struct perf_output_handle {
- 	unsigned int		head;
- 	int			wakeup;
- 	int			nmi;
-+	int			overflow;
- };
- 
- static inline void __perf_output_wakeup(struct perf_output_handle *handle)
-@@ -1741,7 +1746,7 @@ static inline void __perf_output_wakeup(struct perf_output_handle *handle)
- 
- static int perf_output_begin(struct perf_output_handle *handle,
- 			     struct perf_counter *counter, unsigned int size,
--			     int nmi)
-+			     int nmi, int overflow)
+  * Update the record of the current time in a context.
+  */
+-static void update_context_time(struct perf_counter_context *ctx, int update)
++static void update_context_time(struct perf_counter_context *ctx)
  {
- 	struct perf_mmap_data *data;
- 	unsigned int offset, head;
-@@ -1751,8 +1756,9 @@ static int perf_output_begin(struct perf_output_handle *handle,
- 	if (!data)
- 		goto out;
+-	ctx->time_now = get_context_time(ctx, update) - ctx->time_lost;
++	u64 now = perf_clock();
++
++	ctx->time += now - ctx->timestamp;
++	ctx->timestamp = now;
+ }
  
--	handle->counter	= counter;
--	handle->nmi	= nmi;
-+	handle->counter	 = counter;
-+	handle->nmi	 = nmi;
-+	handle->overflow = overflow;
+ /*
+@@ -284,15 +277,17 @@ static void update_counter_times(struct perf_counter *counter)
+ 	struct perf_counter_context *ctx = counter->ctx;
+ 	u64 run_end;
  
- 	if (!data->nr_pages)
- 		goto fail;
-@@ -1816,7 +1822,7 @@ static void perf_output_end(struct perf_output_handle *handle)
- {
- 	int wakeup_events = handle->counter->hw_event.wakeup_events;
+-	if (counter->state >= PERF_COUNTER_STATE_INACTIVE) {
+-		counter->total_time_enabled = ctx->time_now -
+-			counter->tstamp_enabled;
+-		if (counter->state == PERF_COUNTER_STATE_INACTIVE)
+-			run_end = counter->tstamp_stopped;
+-		else
+-			run_end = ctx->time_now;
+-		counter->total_time_running = run_end - counter->tstamp_running;
+-	}
++	if (counter->state < PERF_COUNTER_STATE_INACTIVE)
++		return;
++
++	counter->total_time_enabled = ctx->time - counter->tstamp_enabled;
++
++	if (counter->state == PERF_COUNTER_STATE_INACTIVE)
++		run_end = counter->tstamp_stopped;
++	else
++		run_end = ctx->time;
++
++	counter->total_time_running = run_end - counter->tstamp_running;
+ }
  
--	if (wakeup_events) {
-+	if (handle->overflow && wakeup_events) {
- 		int events = atomic_inc_return(&handle->data->events);
- 		if (events >= wakeup_events) {
- 			atomic_sub(wakeup_events, &handle->data->events);
-@@ -1891,7 +1897,7 @@ static void perf_counter_output(struct perf_counter *counter,
- 		header.size += sizeof(u64);
+ /*
+@@ -332,7 +327,7 @@ static void __perf_counter_disable(void *info)
+ 	 * If it is in error state, leave it in error state.
+ 	 */
+ 	if (counter->state >= PERF_COUNTER_STATE_INACTIVE) {
+-		update_context_time(ctx, 1);
++		update_context_time(ctx);
+ 		update_counter_times(counter);
+ 		if (counter == counter->group_leader)
+ 			group_sched_out(counter, cpuctx, ctx);
+@@ -426,7 +421,7 @@ counter_sched_in(struct perf_counter *counter,
+ 		return -EAGAIN;
  	}
  
--	ret = perf_output_begin(&handle, counter, header.size, nmi);
-+	ret = perf_output_begin(&handle, counter, header.size, nmi, 1);
- 	if (ret)
- 		return;
+-	counter->tstamp_running += ctx->time_now - counter->tstamp_stopped;
++	counter->tstamp_running += ctx->time - counter->tstamp_stopped;
  
-@@ -1955,7 +1961,7 @@ static void perf_counter_mmap_output(struct perf_counter *counter,
- {
- 	struct perf_output_handle handle;
- 	int size = mmap_event->event.header.size;
--	int ret = perf_output_begin(&handle, counter, size, 0);
-+	int ret = perf_output_begin(&handle, counter, size, 0, 0);
+ 	if (!is_software_counter(counter))
+ 		cpuctx->active_oncpu++;
+@@ -493,9 +488,9 @@ static void add_counter_to_ctx(struct perf_counter *counter,
+ 	list_add_counter(counter, ctx);
+ 	ctx->nr_counters++;
+ 	counter->prev_state = PERF_COUNTER_STATE_OFF;
+-	counter->tstamp_enabled = ctx->time_now;
+-	counter->tstamp_running = ctx->time_now;
+-	counter->tstamp_stopped = ctx->time_now;
++	counter->tstamp_enabled = ctx->time;
++	counter->tstamp_running = ctx->time;
++	counter->tstamp_stopped = ctx->time;
+ }
  
- 	if (ret)
- 		return;
-@@ -2084,8 +2090,10 @@ int perf_counter_overflow(struct perf_counter *counter,
- 	int events = atomic_read(&counter->event_limit);
- 	int ret = 0;
+ /*
+@@ -522,7 +517,7 @@ static void __perf_install_in_context(void *info)
  
-+	counter->pending_kill = POLL_IN;
- 	if (events && atomic_dec_and_test(&counter->event_limit)) {
- 		ret = 1;
-+		counter->pending_kill = POLL_HUP;
- 		if (nmi) {
- 			counter->pending_disable = 1;
- 			perf_pending_queue(&counter->pending,
+ 	curr_rq_lock_irq_save(&flags);
+ 	spin_lock(&ctx->lock);
+-	update_context_time(ctx, 1);
++	update_context_time(ctx);
+ 
+ 	/*
+ 	 * Protect the list operation against NMI by disabling the
+@@ -648,13 +643,13 @@ static void __perf_counter_enable(void *info)
+ 
+ 	curr_rq_lock_irq_save(&flags);
+ 	spin_lock(&ctx->lock);
+-	update_context_time(ctx, 1);
++	update_context_time(ctx);
+ 
+ 	counter->prev_state = counter->state;
+ 	if (counter->state >= PERF_COUNTER_STATE_INACTIVE)
+ 		goto unlock;
+ 	counter->state = PERF_COUNTER_STATE_INACTIVE;
+-	counter->tstamp_enabled = ctx->time_now - counter->total_time_enabled;
++	counter->tstamp_enabled = ctx->time - counter->total_time_enabled;
+ 
+ 	/*
+ 	 * If the counter is in a group and isn't the group leader,
+@@ -737,8 +732,8 @@ static void perf_counter_enable(struct perf_counter *counter)
+ 	 */
+ 	if (counter->state == PERF_COUNTER_STATE_OFF) {
+ 		counter->state = PERF_COUNTER_STATE_INACTIVE;
+-		counter->tstamp_enabled = ctx->time_now -
+-			counter->total_time_enabled;
++		counter->tstamp_enabled =
++			ctx->time - counter->total_time_enabled;
+ 	}
+  out:
+ 	spin_unlock_irq(&ctx->lock);
+@@ -778,7 +773,7 @@ void __perf_counter_sched_out(struct perf_counter_context *ctx,
+ 	ctx->is_active = 0;
+ 	if (likely(!ctx->nr_counters))
+ 		goto out;
+-	update_context_time(ctx, 0);
++	update_context_time(ctx);
+ 
+ 	flags = hw_perf_save_disable();
+ 	if (ctx->nr_active) {
+@@ -883,12 +878,7 @@ __perf_counter_sched_in(struct perf_counter_context *ctx,
+ 	if (likely(!ctx->nr_counters))
+ 		goto out;
+ 
+-	/*
+-	 * Add any time since the last sched_out to the lost time
+-	 * so it doesn't get included in the total_time_enabled and
+-	 * total_time_running measures for counters in the context.
+-	 */
+-	ctx->time_lost = get_context_time(ctx, 0) - ctx->time_now;
++	ctx->timestamp = perf_clock();
+ 
+ 	flags = hw_perf_save_disable();
+ 
+@@ -1043,8 +1033,8 @@ int perf_counter_task_enable(void)
+ 		if (counter->state > PERF_COUNTER_STATE_OFF)
+ 			continue;
+ 		counter->state = PERF_COUNTER_STATE_INACTIVE;
+-		counter->tstamp_enabled = ctx->time_now -
+-			counter->total_time_enabled;
++		counter->tstamp_enabled =
++			ctx->time - counter->total_time_enabled;
+ 		counter->hw_event.disabled = 0;
+ 	}
+ 	hw_perf_restore(perf_flags);
+@@ -1113,7 +1103,7 @@ static void __read(void *info)
+ 
+ 	curr_rq_lock_irq_save(&flags);
+ 	if (ctx->is_active)
+-		update_context_time(ctx, 1);
++		update_context_time(ctx);
+ 	counter->hw_ops->read(counter);
+ 	update_counter_times(counter);
+ 	curr_rq_unlock_irq_restore(&flags);
