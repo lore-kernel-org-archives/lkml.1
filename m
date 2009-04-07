@@ -1,63 +1,87 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758938AbZDGQ27@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758287AbZDGQfQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758938AbZDGQ27 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 7 Apr 2009 12:28:59 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757461AbZDGQ2t
+	id S1758287AbZDGQfQ (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 7 Apr 2009 12:35:16 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753437AbZDGQfB
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 7 Apr 2009 12:28:49 -0400
-Received: from one.firstfloor.org ([213.235.205.2]:52709 "EHLO
-	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754049AbZDGQ2s (ORCPT
+	Tue, 7 Apr 2009 12:35:01 -0400
+Received: from fxip-0047f.externet.hu ([88.209.222.127]:38957 "EHLO
+	pomaz-ex.szeredi.hu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753398AbZDGQfA (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 7 Apr 2009 12:28:48 -0400
-Date: Tue, 7 Apr 2009 18:30:57 +0200
-From: Andi Kleen <andi@firstfloor.org>
-To: Rik van Riel <riel@redhat.com>
-Cc: Andi Kleen <andi@firstfloor.org>, hugh@veritas.com, npiggin@suse.de,
-       lee.schermerhorn@hp.com, akpm@linux-foundation.org,
-       linux-kernel@vger.kernel.org, linux-mm@kvack.org, x86@kernel.org
-Subject: Re: [PATCH] [13/16] POISON: The high level memory error handler in the VM
-Message-ID: <20090407163057.GR17934@one.firstfloor.org>
-References: <20090407509.382219156@firstfloor.org> <20090407151010.E72A91D0471@basil.firstfloor.org> <49DB7934.3060008@redhat.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <49DB7934.3060008@redhat.com>
-User-Agent: Mutt/1.4.2.1i
+	Tue, 7 Apr 2009 12:35:00 -0400
+To: linux-kernel@vger.kernel.org
+CC: rusty@rustcorp.com.au, srostedt@redhat.com, mingo@elte.hu
+Subject: [bug] lockdep warning: module_mutex vs. ftrace_lock
+Message-Id: <E1LrEGG-0000ag-Js@pomaz-ex.szeredi.hu>
+From: Miklos Szeredi <miklos@szeredi.hu>
+Date: Tue, 07 Apr 2009 18:34:56 +0200
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Apr 07, 2009 at 12:03:00PM -0400, Rik van Riel wrote:
-> Andi Kleen wrote:
-> 
-> >This is rather tricky code and needs a lot of review. Undoubtedly it still
-> >has bugs.
-> 
-> It's just complex enough that it looks like it might have
-> more bugs, but I sure couldn't find any.
+=======================================================
+[ INFO: possible circular locking dependency detected ]
+2.6.29-09854-gd508afb-dirty #6
+-------------------------------------------------------
+modprobe/3184 is trying to acquire lock:
+ (ftrace_lock){+.+.+.}, at: [<ffffffff80277e71>] ftrace_convert_nops+0x32/0x267
 
-Thanks for the review.
+but task is already holding lock:
+ (module_mutex){+.+.+.}, at: [<ffffffff8026a539>] sys_init_module+0x3f/0x1d3
 
-Perhaps I didn't put it strongly enough: I know there are still bugs 
-in there (e.g. nonlinear mappings deadlock and there are some cases
-where the reference count of the page doesn't drop the zero).
+which lock already depends on the new lock.
 
-> Hitting a bug in this code seems favorable to hitting
-> guaranteed memory corruption, so I hope Andrew or Ingo
 
-Yes the alternative is always panic() when the hardware detects
-the consumed corruption and bails out.  So even if this code is buggy it's 
-very likely still an improvement. So it would be reasonable to
-do a relatively early merge and improve further in tree.
+the existing dependency chain (in reverse order) is:
 
-> >Signed-off-by: Andi Kleen <ak@linux.intel.com>
-> 
-> Acked-by: Rik van Riel <riel@redhat.com>
+-> #1 (module_mutex){+.+.+.}:
+       [<ffffffff8026134a>] __lock_acquire+0x12fe/0x1668
+       [<ffffffff802617a2>] lock_acquire+0xee/0x112
+       [<ffffffff804fe0a6>] mutex_lock_nested+0x4f/0x305
+       [<ffffffff8026709e>] module_update_tracepoints+0x1c/0x73
+       [<ffffffff80274f74>] tracepoint_update_probes+0x21/0x23
+       [<ffffffff8027510a>] tracepoint_probe_register+0x4a/0x68
+       [<ffffffff80277cae>] register_ftrace_graph+0x2a9/0x30f
+       [<ffffffff8027f928>] trace_selftest_startup_function_graph+0x2e/0xbb
+       [<ffffffff8027fdc5>] register_tracer+0x151/0x26e
+       [<ffffffff8070b942>] init_graph_trace+0x10/0x12
+       [<ffffffff80209066>] do_one_initcall+0x5b/0x135
+       [<ffffffff806fa5e4>] kernel_init+0x12f/0x185
+       [<ffffffff8020c2ba>] child_rip+0xa/0x20
+       [<ffffffffffffffff>] 0xffffffffffffffff
 
-Thanks added 
+-> #0 (ftrace_lock){+.+.+.}:
+       [<ffffffff80261067>] __lock_acquire+0x101b/0x1668
+       [<ffffffff802617a2>] lock_acquire+0xee/0x112
+       [<ffffffff804fe0a6>] mutex_lock_nested+0x4f/0x305
+       [<ffffffff80277e71>] ftrace_convert_nops+0x32/0x267
+       [<ffffffff802780bd>] ftrace_init_module+0x17/0x19
+       [<ffffffff8026a011>] load_module+0x1122/0x160b
+       [<ffffffff8026a556>] sys_init_module+0x5c/0x1d3
+       [<ffffffff8020b21b>] system_call_fastpath+0x16/0x1b
+       [<ffffffffffffffff>] 0xffffffffffffffff
 
--Andi
+other info that might help us debug this:
 
--- 
-ak@linux.intel.com -- Speaking for myself only.
+1 lock held by modprobe/3184:
+ #0:  (module_mutex){+.+.+.}, at: [<ffffffff8026a539>] sys_init_module+0x3f/0x1d3
+
+stack backtrace:
+Pid: 3184, comm: modprobe Not tainted 2.6.29-09854-gd508afb-dirty #6
+Call Trace:
+ [<ffffffff8025fba1>] print_circular_bug_tail+0xc5/0xd0
+ [<ffffffff80261067>] __lock_acquire+0x101b/0x1668
+ [<ffffffff80267905>] ? find_symbol_in_section+0x39/0xda
+ [<ffffffff80266a52>] ? each_symbol_in_section+0x3a/0x7a
+ [<ffffffff802617a2>] lock_acquire+0xee/0x112
+ [<ffffffff80277e71>] ? ftrace_convert_nops+0x32/0x267
+ [<ffffffff804fe0a6>] mutex_lock_nested+0x4f/0x305
+ [<ffffffff80277e71>] ? ftrace_convert_nops+0x32/0x267
+ [<ffffffff8020af16>] ? ftrace_call+0x5/0x2b
+ [<ffffffff80277e71>] ftrace_convert_nops+0x32/0x267
+ [<ffffffff802780bd>] ftrace_init_module+0x17/0x19
+ [<ffffffff8026a011>] load_module+0x1122/0x160b
+ [<ffffffff8025f3a5>] ? trace_hardirqs_on_caller+0x114/0x138
+ [<ffffffff8026a556>] sys_init_module+0x5c/0x1d3
+ [<ffffffff8020b21b>] system_call_fastpath+0x16/0x1b
