@@ -1,52 +1,79 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755805AbZDGOk0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756582AbZDGOlA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755805AbZDGOk0 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 7 Apr 2009 10:40:26 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753284AbZDGOkJ
+	id S1756582AbZDGOlA (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 7 Apr 2009 10:41:00 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754990AbZDGOku
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 7 Apr 2009 10:40:09 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:39751 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1752834AbZDGOkH (ORCPT
+	Tue, 7 Apr 2009 10:40:50 -0400
+Received: from earthlight.etchedpixels.co.uk ([81.2.110.250]:43306 "EHLO
+	t61.ukuu.org.uk" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1754281AbZDGOkt (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 7 Apr 2009 10:40:07 -0400
-Date: Tue, 7 Apr 2009 07:33:26 -0700 (PDT)
-From: Linus Torvalds <torvalds@linux-foundation.org>
-X-X-Sender: torvalds@localhost.localdomain
-To: Mark Lord <lkml@rtr.ca>
-cc: Ray Lee <ray-lk@madrabbit.org>, Hua Zhong <hzhong@gmail.com>,
-       Theodore Tso <tytso@mit.edu>, Jens Axboe <jens.axboe@oracle.com>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH 0/8][RFC] IO latency/throughput fixes
-In-Reply-To: <49DB56B8.1060805@rtr.ca>
-Message-ID: <alpine.LFD.2.00.0904070727260.4010@localhost.localdomain>
-References: <1239022088-29002-1-git-send-email-jens.axboe@oracle.com>  <alpine.LFD.2.00.0904060803141.4023@localhost.localdomain>  <20090406151054.GD5178@kernel.dk> <alpine.LFD.2.00.0904060840080.3863@localhost.localdomain>  <20090406183157.GD7376@mit.edu>
- <alpine.LFD.2.00.0904061255160.4134@localhost.localdomain>  <002501c9b6f3$f85b4910$e911db30$@com> <20090406211931.GB8586@mit.edu>  <003001c9b6ff$a9259ce0$fb70d6a0$@com> <2c0942db0904061504l6504934bi446f7425fcd38470@mail.gmail.com>
- <alpine.LFD.2.00.0904061509020.7443@localhost.localdomain> <alpine.LFD.2.00.0904061604410.8214@localhost.localdomain> <49DB56B8.1060805@rtr.ca>
-User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
+	Tue, 7 Apr 2009 10:40:49 -0400
+From: Alan Cox <alan@lxorguk.ukuu.org.uk>
+Subject: [PATCH 00/11] Series short description
+To: torvalds@linux-foundation.org, linux-kernel@vger.kernel.org
+Date: Tue, 07 Apr 2009 16:40:02 +0100
+Message-ID: <20090407153824.17182.81672.stgit@t61.ukuu.org.uk>
+User-Agent: StGIT/0.14.3
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+More small updates and a driver for the MAX3100. The MAX3100 driver needs kref
+bits eventually but its otherwise fine and good enough to merge
+---
+
+Adrian Bunk (1):
+      tty: Correct inline types for tty_driver_kref_get()
+
+Alan Cox (2):
+      lanana: assign a device name and numbering for MAX3100
+      serqt: initial clean up pass for tty side
+
+Breno Leitao (1):
+      Here are some cleanups, mainly removing unused variables and silly
+
+Christian Pellegrin (1):
+      Add support for the MAX3100 SPI UART.
+
+Claudio Scordino (1):
+      tty: Use the generic RS485 ioctl on CRIS
+
+Mike Frysinger (3):
+      Signed-off-by: Mike Frysinger <vapier.adi@gmail.com>
+      Depend on KGDB_SERIAL_CONSOLE being set to N rather than !Y, since it can
+      Signed-off-by: Mike Frysinger <vapier.adi@gmail.com>
+
+Sonic Zhang (2):
+      Both software emulated and hardware based CTS and RTS are enabled in
+      Only CTS bit is affected.
 
 
-On Tue, 7 Apr 2009, Mark Lord wrote:
-> 
-> What happens with ext3 "writeback", and ext4 "whatever",
-> when one does the quickie reboot method:
-> 
->   ALT-SYSRQ-S ALT-SYSRQ-U ALT-SYSRQ-S ALT-SYSRQ-B
-> 
-> ???
+ Documentation/devices.txt                          |    4 
+ .../mach-bf518/include/mach/bfin_serial_5xx.h      |   10 
+ .../mach-bf527/include/mach/bfin_serial_5xx.h      |   36 --
+ .../mach-bf533/include/mach/bfin_serial_5xx.h      |   29 -
+ .../mach-bf537/include/mach/bfin_serial_5xx.h      |   37 --
+ .../mach-bf538/include/mach/bfin_serial_5xx.h      |   10 
+ .../mach-bf548/include/mach/bfin_serial_5xx.h      |  117 +----
+ .../mach-bf561/include/mach/bfin_serial_5xx.h      |   29 -
+ arch/cris/include/asm/ioctls.h                     |    5 
+ arch/cris/include/asm/rs485.h                      |    8 
+ arch/cris/include/asm/termios.h                    |    1 
+ drivers/serial/Kconfig                             |   47 ++
+ drivers/serial/Makefile                            |    1 
+ drivers/serial/bfin_5xx.c                          |  282 ++++++++-----
+ drivers/serial/crisv10.c                           |   79 +++-
+ drivers/serial/crisv10.h                           |    2 
+ drivers/serial/jsm/jsm_neo.c                       |   14 -
+ drivers/serial/jsm/jsm_tty.c                       |   19 -
+ drivers/staging/serqt_usb/serqt_usb.c              |  449 +++++++-------------
+ include/linux/serial_core.h                        |    3 
+ include/linux/tty_driver.h                         |    3 
+ 21 files changed, 547 insertions(+), 638 deletions(-)
 
-Since 's' syncs (I think 'u' does too, as part of making things 
-read-only), the data blocks will be on disk after the boot regardless of 
-any other ordering.
-
-Of course, it will leave all your lock-files files alone, and I can almost 
-guarantee that some daemons (read: "NetworkManager") will then fail on the 
-next boot because they think they are already running.
-
-			Linus
+-- 
