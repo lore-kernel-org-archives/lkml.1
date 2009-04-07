@@ -1,67 +1,113 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759971AbZDGTtP@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760100AbZDGTvv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759971AbZDGTtP (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 7 Apr 2009 15:49:15 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756778AbZDGTsq
+	id S1760100AbZDGTvv (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 7 Apr 2009 15:51:51 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753715AbZDGTvm
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 7 Apr 2009 15:48:46 -0400
-Received: from wf-out-1314.google.com ([209.85.200.168]:39991 "EHLO
-	wf-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1758861AbZDGTsp (ORCPT
+	Tue, 7 Apr 2009 15:51:42 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:45693 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751045AbZDGTvl (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 7 Apr 2009 15:48:45 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:date:message-id:subject:from:to:content-type;
-        b=KEh+EJKlJicG78uzaUQSrfu0ZeyibGu5gim3TiJWdYBnpxMpx88DCKVlytHpb/TsEk
-         n3CCxkI1o1wEYUbcLPEwYLPwR2a1OUaKark93YlwUG6yccC775/C9BM5KRjVXbdRsMz2
-         OXQxek0HjEZrbidZ8zOwaJdKK9ewGx1Y+WYqk=
-MIME-Version: 1.0
-Date: Wed, 8 Apr 2009 03:48:44 +0800
-Message-ID: <b7997bdf0904071248t48fed168r7fa21b421c74358a@mail.gmail.com>
-Subject: splice lost data
-From: xinglp <xinglp@gmail.com>
-To: linux-kernel@vger.kernel.org
-Content-Type: multipart/mixed; boundary=000e0cd150b678bea00466fc4d0e
+	Tue, 7 Apr 2009 15:51:41 -0400
+Date: Tue, 7 Apr 2009 12:49:33 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: holt@sgi.com
+Cc: linux-kernel@vger.kernel.org, holt@sgi.com, dcn@sgi.com
+Subject: Re: [Patch 2/3] Prevent false sgi-xpc heartbeat failures.
+Message-Id: <20090407124933.c2fb210f.akpm@linux-foundation.org>
+In-Reply-To: <20090403160449.144474404@attica.americas.sgi.com>
+References: <20090403160440.637837240@attica.americas.sgi.com>
+	<20090403160449.144474404@attica.americas.sgi.com>
+X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---000e0cd150b678bea00466fc4d0e
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+On Fri, 03 Apr 2009 11:04:42 -0500
+holt@sgi.com wrote:
 
-2.6.29.1 in VM
+> +void (*xpc_allow_hb) (short partid);
+> +void (*xpc_disallow_hb) (short partid);
+> +void (*xpc_disallow_all_hbs) (void);
+>  void (*xpc_heartbeat_init) (void);
+>  void (*xpc_heartbeat_exit) (void);
+>  void (*xpc_increment_heartbeat) (void);
 
-When recv data more than 8K (1024*8) bytes at once, data lost happen.
+The driver adds a huge number of globals.
 
---000e0cd150b678bea00466fc4d0e
-Content-Type: text/plain; charset=US-ASCII; name="splice_test.c"
-Content-Disposition: attachment; filename="splice_test.c"
-Content-Transfer-Encoding: base64
-X-Attachment-Id: f_ft904iks
+As a pointless cleanup it might be nice to convert all this:
 
-I2RlZmluZSBTUExJQ0VfU0laRQkoMTAyNCo4KS8vd2hlbiBkZWZpbmUgU1BMSUNFX1NJWkUgYmln
-Z2VyIHRoYW4gKDEwMjQqOCkgZGF0YSBsb3N0IGhhcHBlbi4NCi8vVGhpcyBmdW5jdGlvbiBpcyBj
-YWxsZWQgd2hlbiBFUE9MTElOIG9uIFNvY2tldA0Kdm9pZCBSZWN2QnlTcGxpY2UoaW50IGhGaWxl
-LGludCBTb2NrZXQpDQp7DQoJc3NpemVfdAlTaXplVG9SZWFkOw0KCXNzaXplX3QJU2l6ZVJlYWQ7
-DQoJc3NpemVfdAlTaXplTGVmdDsNCglzc2l6ZV90CVNpemVXcml0ZTsNCg0KCXdoaWxlKENvbnRl
-bnRMZW5ndGg+MCkvL0NvbnRlbnRMZW5ndGggaXMgZ2xvYmFsDQoJew0KCQlTaXplVG9SZWFkCT1T
-UExJQ0VfU0laRT5Db250ZW50TGVuZ3RoP0NvbnRlbnRMZW5ndGg6U1BMSUNFX1NJWkU7DQoNCgkJ
-U2l6ZVJlYWQJPXNwbGljZShTb2NrZXQsTlVMTCxQaXBlc1sxXSxOVUxMLFNpemVUb1JlYWQsU1BM
-SUNFX0ZfTk9OQkxPQ0spOy8vUGlwZXNbXSBpcyBnbG9iYWwNCg0KCQlpZihTaXplUmVhZD4wKQ0K
-CQl7DQoJCQlDb250ZW50TGVuZ3RoLT1TaXplUmVhZDsNCg0KCQkJU2l6ZUxlZnQ9U2l6ZVJlYWQ7
-DQoJCQkNCgkJCXdoaWxlKFNpemVMZWZ0PjApDQoJCQl7DQoJCQkJU2l6ZVdyaXRlPXNwbGljZShQ
-aXBlc1swXSxOVUxMLGhGaWxlLE5VTEwsU2l6ZUxlZnQsU1BMSUNFX0ZfTk9OQkxPQ0spOy8vUGlw
-ZXNbXSBpcyBnbG9iYWwNCg0KCQkJCWlmKFNpemVXcml0ZT4wKQ0KCQkJCXsNCgkJCQkJU2l6ZUxl
-ZnQtPVNpemVXcml0ZTsNCgkJCQl9DQoJCQkJZWxzZSBpZihFSU5UUj09ZXJybm8pDQoJCQkJew0K
-CQkJCQljb250aW51ZTsNCgkJCQl9DQoJCQkJZWxzZQ0KCQkJCXsNCgkJCQkJcGVycm9yKCJzcGxp
-Y2UiKTsNCgkJCQkJcmV0dXJuOw0KCQkJCX0NCgkJCX0NCg0KCQkJaWYoU2l6ZVJlYWQ8U2l6ZVRv
-UmVhZCkNCgkJCXsNCgkJCQlyZXR1cm47Ly9ObyBtb3JlIGRhdGEgaW4gc29ja2V0IGJ1Zg0KCQkJ
-fQ0KCQl9DQoJCWVsc2UNCgkJew0KCQkJaWYoMD09U2l6ZVJlYWQpDQoJCQl7DQoJCQkJcGVycm9y
-KCJwZWVyIGNsb3NlIik7DQoJCQkJcmV0dXJuOw0KCQkJfQ0KCQkJZWxzZQ0KCQkJew0KCQkJCWlm
-KEVBR0FJTj09ZXJybm8pDQoJCQkJew0KCQkJCQlyZXR1cm47DQoJCQkJfQ0KCQkJCWVsc2UgaWYo
-RUlOVFI9PWVycm5vKQ0KCQkJCXsNCgkJCQkJY29udGludWU7DQoJCQkJfQ0KCQkJCWVsc2UNCgkJ
-CQl7DQoJCQkJCXBlcnJvcigic3BsaWNlIik7DQoJCQkJCXJldHVybjsNCgkJCQl9DQoJCQl9DQoJ
-CX0NCgl9DQp9DQoNCg==
---000e0cd150b678bea00466fc4d0e--
+: int (*xpc_setup_partitions_sn) (void);
+: void (*xpc_teardown_partitions_sn) (void);
+: enum xp_retval (*xpc_get_partition_rsvd_page_pa) (void *buf, u64 *cookie,
+: 						  unsigned long *rp_pa,
+: 						  size_t *len);
+: int (*xpc_setup_rsvd_page_sn) (struct xpc_rsvd_page *rp);
+: 
+: void (*xpc_allow_hb) (short partid);
+: void (*xpc_disallow_hb) (short partid);
+: void (*xpc_disallow_all_hbs) (void);
+: void (*xpc_heartbeat_init) (void);
+: void (*xpc_heartbeat_exit) (void);
+: void (*xpc_increment_heartbeat) (void);
+: void (*xpc_offline_heartbeat) (void);
+: void (*xpc_online_heartbeat) (void);
+: enum xp_retval (*xpc_get_remote_heartbeat) (struct xpc_partition *part);
+: 
+: enum xp_retval (*xpc_make_first_contact) (struct xpc_partition *part);
+: void (*xpc_notify_senders_of_disconnect) (struct xpc_channel *ch);
+: u64 (*xpc_get_chctl_all_flags) (struct xpc_partition *part);
+: enum xp_retval (*xpc_setup_msg_structures) (struct xpc_channel *ch);
+: void (*xpc_teardown_msg_structures) (struct xpc_channel *ch);
+: void (*xpc_process_msg_chctl_flags) (struct xpc_partition *part, int ch_number);
+: int (*xpc_n_of_deliverable_payloads) (struct xpc_channel *ch);
+: void *(*xpc_get_deliverable_payload) (struct xpc_channel *ch);
+: 
+: void (*xpc_request_partition_activation) (struct xpc_rsvd_page *remote_rp,
+: 					  unsigned long remote_rp_pa,
+: 					  int nasid);
+: void (*xpc_request_partition_reactivation) (struct xpc_partition *part);
+: void (*xpc_request_partition_deactivation) (struct xpc_partition *part);
+: void (*xpc_cancel_partition_deactivation_request) (struct xpc_partition *part);
+: 
+: void (*xpc_process_activate_IRQ_rcvd) (void);
+: enum xp_retval (*xpc_setup_ch_structures_sn) (struct xpc_partition *part);
+: void (*xpc_teardown_ch_structures_sn) (struct xpc_partition *part);
+: 
+: void (*xpc_indicate_partition_engaged) (struct xpc_partition *part);
+: int (*xpc_partition_engaged) (short partid);
+: int (*xpc_any_partition_engaged) (void);
+: void (*xpc_indicate_partition_disengaged) (struct xpc_partition *part);
+: void (*xpc_assume_partition_disengaged) (short partid);
+: 
+: void (*xpc_send_chctl_closerequest) (struct xpc_channel *ch,
+: 				     unsigned long *irq_flags);
+: void (*xpc_send_chctl_closereply) (struct xpc_channel *ch,
+: 				   unsigned long *irq_flags);
+: void (*xpc_send_chctl_openrequest) (struct xpc_channel *ch,
+: 				    unsigned long *irq_flags);
+: void (*xpc_send_chctl_openreply) (struct xpc_channel *ch,
+: 				  unsigned long *irq_flags);
+: 
+: enum xp_retval (*xpc_save_remote_msgqueue_pa) (struct xpc_channel *ch,
+: 					       unsigned long msgqueue_pa);
+: 
+: enum xp_retval (*xpc_send_payload) (struct xpc_channel *ch, u32 flags,
+: 				    void *payload, u16 payload_size,
+: 				    u8 notify_type, xpc_notify_func func,
+: 				    void *key);
+: void (*xpc_received_payload) (struct xpc_channel *ch, void *payload);
+
+into
+
+struct xpc_operations {
+	int (*setup_partitions_sn)(void);
+	...
+	void (*xpc_received_payload)(struct xpc_channel *ch, void *payload);
+} xpc_operations;
+
+Or not ;)
