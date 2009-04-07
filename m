@@ -1,70 +1,45 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753461AbZDGHot@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753397AbZDGHqV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753461AbZDGHot (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 7 Apr 2009 03:44:49 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752040AbZDGHoh
+	id S1753397AbZDGHqV (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 7 Apr 2009 03:46:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752282AbZDGHqH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 7 Apr 2009 03:44:37 -0400
-Received: from smtp-out.google.com ([216.239.45.13]:12132 "EHLO
-	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751256AbZDGHoh (ORCPT
+	Tue, 7 Apr 2009 03:46:07 -0400
+Received: from mail-fx0-f158.google.com ([209.85.220.158]:35315 "EHLO
+	mail-fx0-f158.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751394AbZDGHqF (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 7 Apr 2009 03:44:37 -0400
-DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
-	h=date:from:x-x-sender:to:cc:subject:in-reply-to:message-id:
-	references:user-agent:mime-version:content-type:x-system-of-record;
-	b=kuobiNueV3DkDdLPhUoeSEAcnY6Ywrihvyo9HfHij4yMv3ImUiGCIT6t6s8GDsAE+
-	xI9Pcx4gRPh5+Xg0ACibQ==
-Date: Tue, 7 Apr 2009 00:44:21 -0700 (PDT)
-From: David Rientjes <rientjes@google.com>
-X-X-Sender: rientjes@chino.kir.corp.google.com
-To: Andi Kleen <andi@firstfloor.org>
-cc: Brice Goglin <Brice.Goglin@inria.fr>,
-       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
-       Yinghai Lu <yhlu.kernel@gmail.com>, Chris Worley <worleys@gmail.com>,
-       linux-kernel@vger.kernel.org
-Subject: Re: Off topic: Numactl "distance" wrong
-In-Reply-To: <20090407070530.GJ17934@one.firstfloor.org>
-Message-ID: <alpine.DEB.2.00.0904070035570.20262@chino.kir.corp.google.com>
-References: <86802c440904031448yc6d499ckd9cb969ce136f477@mail.gmail.com> <87r609jtc2.fsf@basil.nowhere.org> <20090407111539.F0F5.A69D9226@jp.fujitsu.com> <49DAF003.1070605@inria.fr> <20090407070530.GJ17934@one.firstfloor.org>
-User-Agent: Alpine 2.00 (DEB 1167 2008-08-23)
+	Tue, 7 Apr 2009 03:46:05 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:date:message-id:subject:from:to:content-type
+         :content-transfer-encoding;
+        b=LQXVJgg0ktnmtWmOoue3UnBulPV9tGknztPXAUoCD9m0MYOY3+sXtiNLjw1nDFgDO+
+         LpX6LTGRrU3t+kbfZXKn0uMaM+1sYN9QtEu+rJwiJn7V3wkkWVphoXLkCViY8yqe2W76
+         1KrF4kSFyn4r+qlUwcORsqhB4NQXstUT9E3Ow=
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-X-System-Of-Record: true
+Date: Tue, 7 Apr 2009 09:45:38 +0200
+Message-ID: <8db1092f0904070045l1249fcc4x394dcf286ea6456a@mail.gmail.com>
+Subject: [2.6.29-git14] FATAL: Error inserting dm_mod...: Invalid module 
+	format
+From: Maciej Rutecki <maciej.rutecki@gmail.com>
+To: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       linux-crypto@vger.kernel.org
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 7 Apr 2009, Andi Kleen wrote:
+During boot I can't mount encrypted partitions:
 
-> I'm not aware of any that does. In general applications usually
-> only use the bare basics of NUMA API (if at all), the fancy stuff tends
-> to be more slideware.
-> 
-> If it's true then the correct place would be to fix the BIOS.
-> 
+http://unixy.pl/maciek/download/kernel/2.6.29-git14/laptop/dm/img_0003.jpg
 
-We already verify that each node has local distance to itself and that its 
-distance to any other node is greater than local when determining whether 
-the SLIT is valid.
+2.6.29-git12 works OK.
 
-It would also be possible to verify that the distance between two 
-localities is described consistently in the table (like in the following 
-patch).
+Config:
+http://unixy.pl/maciek/download/kernel/2.6.29-git14/laptop/dm/config-2.6.29-git14.txt
 
-I do think it would be helpful to add an acpi=noslit option, however, that 
-would disable parsing the SLIT if it is known to incorrectly describe the 
-physical topology of the system.
----
-diff --git a/drivers/acpi/numa.c b/drivers/acpi/numa.c
---- a/drivers/acpi/numa.c
-+++ b/drivers/acpi/numa.c
-@@ -172,6 +172,8 @@ static __init int slit_valid(struct acpi_table_slit *slit)
- 					return 0;
- 			} else if (val <= LOCAL_DISTANCE)
- 				return 0;
-+			if (val != slit->entry[d*j + i])
-+				return 0;
- 		}
- 	}
- 	return 1;
+-- 
+Maciej Rutecki
+http://www.maciek.unixy.pl
