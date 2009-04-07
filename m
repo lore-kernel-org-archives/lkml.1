@@ -1,76 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760922AbZDGPU7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760913AbZDGPUl@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760922AbZDGPU7 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 7 Apr 2009 11:20:59 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758918AbZDGPKH
+	id S1760913AbZDGPUl (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 7 Apr 2009 11:20:41 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759195AbZDGPKG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 7 Apr 2009 11:10:07 -0400
-Received: from one.firstfloor.org ([213.235.205.2]:41291 "EHLO
+	Tue, 7 Apr 2009 11:10:06 -0400
+Received: from one.firstfloor.org ([213.235.205.2]:41289 "EHLO
 	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1759299AbZDGPKF (ORCPT
+	with ESMTP id S1759186AbZDGPKD (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 7 Apr 2009 11:10:05 -0400
+	Tue, 7 Apr 2009 11:10:03 -0400
 From: Andi Kleen <andi@firstfloor.org>
 References: <20090407509.382219156@firstfloor.org>
 In-Reply-To: <20090407509.382219156@firstfloor.org>
 To: linux-kernel@vger.kernel.org, linux-mm@kvack.org, x86@kernel.org
-Subject: [PATCH] [4/16] POISON: Export some rmap vma locking to outside world
-Message-Id: <20090407151000.DEF941D046D@basil.firstfloor.org>
-Date: Tue,  7 Apr 2009 17:10:00 +0200 (CEST)
+Subject: [PATCH] [3/16] POISON: Handle poisoned pages in page free
+Message-Id: <20090407150959.C099D1D046E@basil.firstfloor.org>
+Date: Tue,  7 Apr 2009 17:09:59 +0200 (CEST)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-Needed for later patch that walks rmap entries on its own.
+Make sure no poisoned pages are put back into the free page
+lists.  This can happen with some races.
 
-This used to be very frowned upon, but memory-failure.c does
-some rather specialized rmap walking and rmap has been stable
-for quite some time, so I think it's ok now to export it.
+This is allo slow path in the bad page bits path, so another
+check doesn't really matter.
 
 Signed-off-by: Andi Kleen <ak@linux.intel.com>
 
 ---
- include/linux/rmap.h |    6 ++++++
- mm/rmap.c            |    4 ++--
- 2 files changed, 8 insertions(+), 2 deletions(-)
+ mm/page_alloc.c |    9 +++++++++
+ 1 file changed, 9 insertions(+)
 
-Index: linux/include/linux/rmap.h
+Index: linux/mm/page_alloc.c
 ===================================================================
---- linux.orig/include/linux/rmap.h	2009-04-07 16:39:26.000000000 +0200
-+++ linux/include/linux/rmap.h	2009-04-07 16:43:06.000000000 +0200
-@@ -118,6 +118,12 @@
- }
- #endif
+--- linux.orig/mm/page_alloc.c	2009-04-07 16:39:26.000000000 +0200
++++ linux/mm/page_alloc.c	2009-04-07 16:39:39.000000000 +0200
+@@ -228,6 +228,15 @@
+ 	static unsigned long nr_unshown;
  
-+/*
-+ * Called by memory-failure.c to kill processes.
-+ */
-+struct anon_vma *page_lock_anon_vma(struct page *page);
-+void page_unlock_anon_vma(struct anon_vma *anon_vma);
+ 	/*
++	 * Page may have been marked bad before process is freeing it.
++	 * Make sure it is not put back into the free page lists.
++	 */
++	if (PagePoison(page)) {
++		/* check more flags here... */
++		return;
++	}
 +
- #else	/* !CONFIG_MMU */
- 
- #define anon_vma_init()		do {} while (0)
-Index: linux/mm/rmap.c
-===================================================================
---- linux.orig/mm/rmap.c	2009-04-07 16:39:26.000000000 +0200
-+++ linux/mm/rmap.c	2009-04-07 16:43:06.000000000 +0200
-@@ -191,7 +191,7 @@
-  * Getting a lock on a stable anon_vma from a page off the LRU is
-  * tricky: page_lock_anon_vma rely on RCU to guard against the races.
-  */
--static struct anon_vma *page_lock_anon_vma(struct page *page)
-+struct anon_vma *page_lock_anon_vma(struct page *page)
- {
- 	struct anon_vma *anon_vma;
- 	unsigned long anon_mapping;
-@@ -211,7 +211,7 @@
- 	return NULL;
- }
- 
--static void page_unlock_anon_vma(struct anon_vma *anon_vma)
-+void page_unlock_anon_vma(struct anon_vma *anon_vma)
- {
- 	spin_unlock(&anon_vma->lock);
- 	rcu_read_unlock();
++	/*
+ 	 * Allow a burst of 60 reports, then keep quiet for that minute;
+ 	 * or allow a steady drip of one report per second.
+ 	 */
