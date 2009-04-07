@@ -1,67 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754806AbZDGInR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753491AbZDGIuh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754806AbZDGInR (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 7 Apr 2009 04:43:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752137AbZDGInD
+	id S1753491AbZDGIuh (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 7 Apr 2009 04:50:37 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751244AbZDGIu1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 7 Apr 2009 04:43:03 -0400
-Received: from viefep14-int.chello.at ([62.179.121.34]:52354 "EHLO
-	viefep14-int.chello.at" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751930AbZDGInB (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 7 Apr 2009 04:43:01 -0400
-X-SourceIP: 213.93.53.227
-Subject: Re: [linux-pm] pm-hibernate : possible circular locking dependency
- detected
-From: Peter Zijlstra <a.p.zijlstra@chello.nl>
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: Alan Stern <stern@rowland.harvard.edu>, Gautham R Shenoy <ego@in.ibm.com>,
-       Rusty Russell <rusty@rustcorp.com.au>,
-       Linux Kernel List <linux-kernel@vger.kernel.org>,
-       Linux-pm mailing list <linux-pm@lists.linux-foundation.org>,
-       Ingo Molnar <mingo@elte.hu>, Andrew Morton <akpm@linux-foundation.org>
-In-Reply-To: <200904062158.11245.rjw@sisk.pl>
-References: <Pine.LNX.4.44L0.0904061439230.4571-100000@iolanthe.rowland.org>
-	 <200904062158.11245.rjw@sisk.pl>
-Content-Type: text/plain
-Date: Tue, 07 Apr 2009 10:43:50 +0200
-Message-Id: <1239093831.798.5717.camel@twins>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.26.0 
-Content-Transfer-Encoding: 7bit
+	Tue, 7 Apr 2009 04:50:27 -0400
+Received: from cantor.suse.de ([195.135.220.2]:49132 "EHLO mx1.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751223AbZDGIu0 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 7 Apr 2009 04:50:26 -0400
+Date: Tue, 7 Apr 2009 10:50:23 +0200
+From: Michal Hocko <mhocko@suse.cz>
+To: Peter Hallberg <hallberg68@hotmail.com>
+Cc: linux-kernel@vger.kernel.org
+Subject: Re: Intepreting an oops
+Message-ID: <20090407085023.GB26300@tiehlicka.suse.cz>
+References: <COL116-W68F0521CACD2E1656E8D1BDA870@phx.gbl>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <COL116-W68F0521CACD2E1656E8D1BDA870@phx.gbl>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 2009-04-06 at 21:58 +0200, Rafael J. Wysocki wrote:
-> On Monday 06 April 2009, Alan Stern wrote:
-> > On Mon, 6 Apr 2009, Gautham R Shenoy wrote:
-> > 
-> > > > If I understand correctly it isn't really a deadlock scenario, but it
-> > > > is a lockdep violation.  The violation is:
-> > > > 
-> > > > 	The pci_device_probe() path 2) proves that dpm_list_mtx [4] can
-> > > > 	be acquired while cpu_hotplug.lock [3] is held;
-> > > > 
-> > > > 	The hibernate() path 3) proves that cpu_hotplug.lock [3] can be
-> > > > 	acquired while dpm_list_mtx [4] is held.
-> > > > 
-> > > > The two pathways cannot run simultaneously (and hence cannot deadlock) 
-> > > > because the prepare() stage of hibernation is supposed to stop all 
-> > > > device probing.  But lockdep will still report a problem.
-> > > 
-> > > Thanks for clarifying this Alan. I guess it boils down to teaching
-> > > lockdep about this false-positive.
-> > 
-> > Or else changing the code somehow to avoid the violation completely.  
-> > But I have no idea how...  And AFAIK, teaching lockdep about special 
-> > cases like this is not so easy to do.
+On Sun 05-04-09 14:48:19, Peter Hallberg wrote:
 > 
-> Yeah, I've just wanted to ask about that.  Peter, how can we do it?
+> How does one translate the offset in the function to a line number in the source code?
+> [  218.418473] Call Trace:
+> [  218.418484]  [] :nnpfs:nnpfs_writepage+0xab/0x230
+> [  218.418498]  [] __writepage+0xa/0x30
+> [  218.418503]  [] write_cache_pages+0x250/0x340
+> [  218.418509]  [] __writepage+0x0/0x30
+> [  218.418522]  [] generic_file_aio_write+0x6f/0xd0
+> [  218.418540]  [] do_writepages+0x2b/0x40
+> [  218.418545]  [] __filemap_fdatawrite_range+0x52/0x60
+> [  218.418558]  [] filemap_write_and_wait+0x35/0x50
+> [  218.418570]  [] :nnpfs:nnpfs_fsync_int+0x47/0x1b0
+> [  218.418599]  [] :nnpfs:nnpfs_release_file+0x9d/0xc0
+> [  218.418608]  [] filp_close+0x33/0x90
+> [  218.418615]  [] sys_close+0x9f/0x100
+> [  218.418622]  [] system_call+0x7e/0x83
+> 
 
-I think it would come down to modeling that blocking of probes as a lock
-or something -- because that's basically what it is.
-
-So on the regular probe path, take a read lock of this lock, and on the
-suspend path take it as write or something.
-
+addr2line is also an option
+-- 
+Michal Hocko
+L3 team 
+SUSE LINUX s.r.o.
+Lihovarska 1060/12
+190 00 Praha 9    
+Czech Republic
