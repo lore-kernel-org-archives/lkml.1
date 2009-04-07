@@ -1,104 +1,75 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759026AbZDGQwY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754607AbZDGQ47@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759026AbZDGQwY (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 7 Apr 2009 12:52:24 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755667AbZDGQwM
+	id S1754607AbZDGQ47 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 7 Apr 2009 12:56:59 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750836AbZDGQ4u
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 7 Apr 2009 12:52:12 -0400
-Received: from gate.crashing.org ([63.228.1.57]:48901 "EHLO gate.crashing.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754364AbZDGQwK (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 7 Apr 2009 12:52:10 -0400
-Cc: beckyb@kernel.crashing.org, linux-kernel@vger.kernel.org, mingo@elte.hu,
-       jeremy@goop.org, ian.campbell@citrix.com
-Message-Id: <77EA4458-602F-4DA9-B7E7-E48B5B0DCF91@kernel.crashing.org>
-From: Kumar Gala <galak@kernel.crashing.org>
-To: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
-In-Reply-To: <20090408013700L.fujita.tomonori@lab.ntt.co.jp>
-Content-Type: text/plain; charset=US-ASCII; format=flowed; delsp=yes
-Content-Transfer-Encoding: 7bit
-Mime-Version: 1.0 (Apple Message framework v930.3)
-Subject: Re: [PATCH 5/7] swiotlb: (re)Create swiotlb_unmap_single
-Date: Tue, 7 Apr 2009 11:50:56 -0500
-References: <FCEB8195-191B-4835-B895-D70C19DE23DE@kernel.crashing.org> <20090407180928Y.fujita.tomonori@lab.ntt.co.jp> <9C76D5F2-5D3C-4499-B358-129428FA6F33@kernel.crashing.org> <20090408013700L.fujita.tomonori@lab.ntt.co.jp>
-X-Mailer: Apple Mail (2.930.3)
+	Tue, 7 Apr 2009 12:56:50 -0400
+Received: from ti-out-0910.google.com ([209.85.142.188]:22422 "EHLO
+	ti-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750790AbZDGQ4t (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 7 Apr 2009 12:56:49 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:to:cc:subject:message-id:references:mime-version
+         :content-type:content-disposition:in-reply-to:user-agent;
+        b=QiRVG4gsAD1IsLJr1j9upZOcHWmrwtaGPkPmvCF1fUoMXH+n/xTCkp02lfDfEX/It9
+         LlCYsu/Ynz+gS3JNbgDxwmsNvq0/r6RiqhKebQ8VgxOQ9t9DTaeSSssrqTMmU5shQHW/
+         ijmQSFxAv0ecDbL6lTvfaQ4+mxE11UbqggOiE=
+Date: Wed, 8 Apr 2009 00:57:36 +0800
+From: =?utf-8?Q?Am=C3=A9rico?= Wang <xiyou.wangcong@gmail.com>
+To: "figo.zhang" <figo.zhang@kolorific.com>
+Cc: mingo@elte.hu, linux-kernel@vger.kernel.org, rdunlap@xenotime.net
+Subject: Re: [PATCH]kernel/sched_fair.c: the comment of the
+	calc_delta_fair() maybe not correctly
+Message-ID: <20090407165736.GI12226@hack>
+References: <20090407063306.64659F50054@mail.kolorific.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20090407063306.64659F50054@mail.kolorific.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-On Apr 7, 2009, at 11:37 AM, FUJITA Tomonori wrote:
-
-> On Tue, 7 Apr 2009 10:32:20 -0500
-> Kumar Gala <galak@kernel.crashing.org> wrote:
+On Tue, Apr 07, 2009 at 02:33:06PM +0800, figo.zhang wrote:
+>the comment of the calc_delta_fair() maybe not correctly, should be
+>delta *= NICE_O_LOAD/se->load
 >
->>
->> On Apr 7, 2009, at 4:09 AM, FUJITA Tomonori wrote:
->>
->>> On Tue, 7 Apr 2009 01:34:44 -0500
->>> Kumar Gala <galak@kernel.crashing.org> wrote:
->>>
->>>>
->>>> On Apr 6, 2009, at 9:24 PM, FUJITA Tomonori wrote:
->>>>
->>>>> On Fri,  3 Apr 2009 20:56:47 -0500
->>>>> Becky Bruce <beckyb@kernel.crashing.org> wrote:
->>>>>
->>>>>> This mirrors the current swiotlb_sync_single() setup
->>>>>> where the swiotlb_unmap_single() function is static to this
->>>>>> file and contains the logic required to determine if we need
->>>>>> to call actual sync_single.  Previously, swiotlb_unmap_page
->>>>>> and swiotlb_unmap_sg were duplicating very similar code.
->>>>>> The duplicated code has also been reformatted for
->>>>>> readability.
->>>>>>
->>>>>> Note that the swiotlb_unmap_sg code was previously doing
->>>>>> a complicated comparison to determine if an addresses needed
->>>>>> to be unmapped where a simple is_swiotlb_buffer() call
->>>>>> would have sufficed.
->>>>>>
->>>>>> Signed-off-by: Becky Bruce <beckyb@kernel.crashing.org>
->>>>>> ---
->>>>>> lib/swiotlb.c |   36 +++++++++++++++++++++++-------------
->>>>>> 1 files changed, 23 insertions(+), 13 deletions(-)
->>>>>>
->>>>>> diff --git a/lib/swiotlb.c b/lib/swiotlb.c
->>>>>> index af2ec25..602315b 100644
->>>>>> --- a/lib/swiotlb.c
->>>>>> +++ b/lib/swiotlb.c
->>>>>
->>>>> I don't think 'swiotlb_unmap_single' name is appropriate.
->>>>>
->>>>> swiotlb_unmap_single sounds like an exported function that IOMMUs
->>>>> can
->>>>> use (and it was) however it should not be.
->>>>
->>>> What do you suggest we call it?  __swiotlb_unmap_single.
->>>
->>> I think that __swiotlb_unmap_single is better because the name  
->>> implies
->>> that it's an internal function. It's fine by me.
->>>
->>> If it is odd that __swiotlb_unmap_single() is just a wrapper  
->>> function
->>> of unmap_single(), which does the real job to unmap a dma mapping,  
->>> it
->>> might be another possible option to rename unmap_single to
->>> do_unamp_single and use unmap_single.
->>
->> I think you lost me here.  I'd prefer to just use
->> __swiotlb_unmap_single at this point and get this code into the tree
->> and work on such renaming after the fact (if that's ok).
+>Signed-off-by: figo.zhang <figo.zhang@kolorific.com>
+
+Agreed.
+
+But...
+
+
 >
-> If you are rushing to merge this right now, the original patchset is
-> fine by me (I thought that you missed this merge window). I'll rename
-> it later.
+>diff --git a/kernel/sched_fair.c b/kernel/sched_fair.c
+>index 3816f21..5134b45 100644
+>--- a/kernel/sched_fair.c
+>+++ b/kernel/sched_fair.c
+>@@ -386,7 +386,7 @@ int sched_nr_latency_handler(struct ctl_table
+>*table, int write, #endif
+> 
+> /*
+>- * delta /= w
+>+ * delta *= NICE_O_LOAD/se->load
 
-We probably did, but one can never tell with these things.  It seemed  
-like Ingo merged and pushed some swiotlb changes late in the game for . 
-29
+Is that an 'O' or '0'(zero)? It looks like an 'O' for me ...
+Obviously, it should be '0' (zero). :)
 
-I'm still not clear on what you are suggesting... "rename unmap_single  
-to do_unamp_single and use unmap_single".
 
-- k
+>  */
+> static inline unsigned long
+> calc_delta_fair(unsigned long delta, struct sched_entity *se)
+>--
+>To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
+>the body of a message to majordomo@vger.kernel.org
+>More majordomo info at  http://vger.kernel.org/majordomo-info.html
+>Please read the FAQ at  http://www.tux.org/lkml/
+
+-- 
+Do what you love, f**k the rest! F**k the regulations!
+ 
