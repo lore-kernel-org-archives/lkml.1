@@ -1,60 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755772AbZDGDVj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753991AbZDGDZC@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755772AbZDGDVj (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 6 Apr 2009 23:21:39 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752451AbZDGDVa
+	id S1753991AbZDGDZC (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 6 Apr 2009 23:25:02 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752222AbZDGDYt
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 6 Apr 2009 23:21:30 -0400
-Received: from fgwmail5.fujitsu.co.jp ([192.51.44.35]:36066 "EHLO
-	fgwmail5.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752191AbZDGDVa (ORCPT
+	Mon, 6 Apr 2009 23:24:49 -0400
+Received: from outbound-mail-312.bluehost.com ([67.222.54.5]:59661 "HELO
+	outbound-mail-312.bluehost.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1751268AbZDGDYs (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 6 Apr 2009 23:21:30 -0400
-Date: Tue, 7 Apr 2009 12:19:58 +0900
-From: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-To: Randy Dunlap <randy.dunlap@oracle.com>
-Cc: linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: mmotm 2009-04-05-21-45 uploaded
-Message-Id: <20090407121958.8e544e90.kamezawa.hiroyu@jp.fujitsu.com>
-In-Reply-To: <49DA596A.5090104@oracle.com>
-References: <200904060450.n364oaUj031923@imap1.linux-foundation.org>
-	<49DA596A.5090104@oracle.com>
-Organization: FUJITSU Co. LTD.
-X-Mailer: Sylpheed 2.5.0 (GTK+ 2.10.14; i686-pc-mingw32)
+	Mon, 6 Apr 2009 23:24:48 -0400
+DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws; s=default; d=virtuousgeek.org;
+	h=Received:Date:From:To:Cc:Subject:Message-ID:In-Reply-To:References:X-Mailer:Mime-Version:Content-Type:Content-Transfer-Encoding:X-Identified-User;
+	b=OFAs9ODN4h66yj+M2dgv9LAKmSJmZjKTxkmsxA5FVP8CF255by85lA+cQVqnXWlKbhv1h7Mr2Xiw6soKpQdDkvuyVle00z2eHaPldP4BkXp7y0jH4hEbWeZv8MC0dk1F;
+Date: Mon, 6 Apr 2009 20:24:41 -0700
+From: Jesse Barnes <jbarnes@virtuousgeek.org>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: David Miller <davem@davemloft.net>, akpm@linux-foundation.org,
+       netdev@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: Re: [GIT]: Networking
+Message-ID: <20090406202441.1c050ec6@hobbes>
+In-Reply-To: <alpine.LFD.2.00.0904061931160.4010@localhost.localdomain>
+References: <20090406.175752.236260059.davem@davemloft.net>
+	<alpine.LFD.2.00.0904061824410.4010@localhost.localdomain>
+	<20090406.190745.263215778.davem@davemloft.net>
+	<alpine.LFD.2.00.0904061931160.4010@localhost.localdomain>
+X-Mailer: Claws Mail 3.5.0 (GTK+ 2.14.4; x86_64-pc-linux-gnu)
 Mime-Version: 1.0
 Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
+X-Identified-User: {10642:box514.bluehost.com:virtuous:virtuousgeek.org} {sentby:smtp auth 75.111.28.251 authed with jbarnes@virtuousgeek.org}
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 06 Apr 2009 12:35:06 -0700
-Randy Dunlap <randy.dunlap@oracle.com> wrote:
+On Mon, 6 Apr 2009 19:32:11 -0700 (PDT)
+Linus Torvalds <torvalds@linux-foundation.org> wrote:
 
-> akpm@linux-foundation.org wrote:
-> > The mm-of-the-moment snapshot 2009-04-05-21-45 has been uploaded to
+> 
+> 
+> On Mon, 6 Apr 2009, David Miller wrote:
+> 
+> > From: Linus Torvalds <torvalds@linux-foundation.org>
+> > Date: Mon, 6 Apr 2009 18:25:31 -0700 (PDT)
+> > > 
+> > > 
+> > > The sky2 driver is buggered (by the previous pull, I presume).
+> > > Some PCI interaction. NULL pointer dereference at boot.
 > > 
-> >    http://userweb.kernel.org/~akpm/mmotm/
-> > 
-> > and will soon be available at
-> > 
-> >    git://git.zen-sources.org/zen/mmotm.git
-> > 
-> > It contains the following patches against 2.6.29:
+> > Fixed in the PCI tree, have you pulled that one yet?
 > 
+> Nobody has even _asked_ me to pull.
 > 
-> Duplicate functions merged here (2 functions duplicated),
-> so *all* (of my) builds fail with these errors:
-> 
-> 
-> mmotm-2009-0405-2145/scripts/kallsyms.c:550: error: redefinition of 'may_be_linker_script_provide_symbol'
-> mmotm-2009-0405-2145/scripts/kallsyms.c:505: error: previous definition of 'may_be_linker_script_provide_symbol' was here
-> mmotm-2009-0405-2145/scripts/kallsyms.c:584: error: redefinition of 'prefix_underscores_count'
-> mmotm-2009-0405-2145/scripts/kallsyms.c:539: error: previous definition of 'prefix_underscores_count' was here
-> 
-> 
-Maybe  kallsyms-tracing-output-more-proper-symbol-name.patch is applied twice
-by linux-next.path.
+> What's the point of having fixes available if they aren't merged?
 
--Kame
+I just pushed it into my repo today and wanted at least a day of
+linux-next before asking you to pull.
 
+-- 
+Jesse Barnes, Intel Open Source Technology Center
