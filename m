@@ -1,92 +1,74 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759926AbZDGQhs@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759431AbZDGQo5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759926AbZDGQhs (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 7 Apr 2009 12:37:48 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757972AbZDGQhi
+	id S1759431AbZDGQo5 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 7 Apr 2009 12:44:57 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754819AbZDGQok
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 7 Apr 2009 12:37:38 -0400
-Received: from sh.osrg.net ([192.16.179.4]:50386 "EHLO sh.osrg.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1757227AbZDGQhh (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 7 Apr 2009 12:37:37 -0400
-Date: Wed, 8 Apr 2009 01:37:15 +0900
-To: galak@kernel.crashing.org
-Cc: fujita.tomonori@lab.ntt.co.jp, beckyb@kernel.crashing.org,
-       linux-kernel@vger.kernel.org, mingo@elte.hu, jeremy@goop.org,
-       ian.campbell@citrix.com
-Subject: Re: [PATCH 5/7] swiotlb: (re)Create swiotlb_unmap_single
-From: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
-In-Reply-To: <9C76D5F2-5D3C-4499-B358-129428FA6F33@kernel.crashing.org>
-References: <FCEB8195-191B-4835-B895-D70C19DE23DE@kernel.crashing.org>
-	<20090407180928Y.fujita.tomonori@lab.ntt.co.jp>
-	<9C76D5F2-5D3C-4499-B358-129428FA6F33@kernel.crashing.org>
-Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
-Message-Id: <20090408013700L.fujita.tomonori@lab.ntt.co.jp>
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-3.0 (sh.osrg.net [192.16.179.4]); Wed, 08 Apr 2009 01:37:16 +0900 (JST)
+	Tue, 7 Apr 2009 12:44:40 -0400
+Received: from wf-out-1314.google.com ([209.85.200.171]:60287 "EHLO
+	wf-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754540AbZDGQoi convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 7 Apr 2009 12:44:38 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
+         :cc:content-type:content-transfer-encoding;
+        b=dyuc77oYnhBi+IPVgVshTbnyBLnk78oTRF5zjEnXjpQc9VaH1gMeE/vV9eFUmO1LIP
+         ZZffEC+HkCCFbv8/5Tp1PxTDGCshO51XME5x4musbLDQgitZToNTz+FvfhPWRAReum14
+         R+/AeuUByJWMsEAI0WkCk6iKYn6Sl8biv/s+0=
+MIME-Version: 1.0
+In-Reply-To: <49DB7C77.1000702@s5r6.in-berlin.de>
+References: <n4io5wq70ZO.A.gzG.rFn2JB@chimera>
+	 <alpine.LFD.2.00.0904061443000.7443@localhost.localdomain>
+	 <49DB7C77.1000702@s5r6.in-berlin.de>
+Date: Tue, 7 Apr 2009 10:44:37 -0600
+Message-ID: <9b1675090904070944m798ed608i1d9194ebd1ed3961@mail.gmail.com>
+Subject: Re: 2.6.29-git13: Reported regressions from 2.6.28
+From: "Trenton D. Adams" <trenton.d.adams@gmail.com>
+To: Stefan Richter <stefanr@s5r6.in-berlin.de>
+Cc: Linus Torvalds <torvalds@linux-foundation.org>,
+       "Rafael J. Wysocki" <rjw@sisk.pl>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Adrian Bunk <bunk@kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Natalie Protasevich <protasnb@gmail.com>,
+       Kernel Testers List <kernel-testers@vger.kernel.org>,
+       Network Development <netdev@vger.kernel.org>,
+       Linux ACPI <linux-acpi@vger.kernel.org>,
+       Linux PM List <linux-pm@lists.linux-foundation.org>,
+       Linux SCSI List <linux-scsi@vger.kernel.org>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 7 Apr 2009 10:32:20 -0500
-Kumar Gala <galak@kernel.crashing.org> wrote:
+On Tue, Apr 7, 2009 at 10:16 AM, Stefan Richter
+<stefanr@s5r6.in-berlin.de> wrote:
+> Linus Torvalds wrote:
+>> On Mon, 6 Apr 2009, Rafael J. Wysocki wrote:
+>>> Bug-Entry    : http://bugzilla.kernel.org/show_bug.cgi?id=13018
+>>> Subject              : 2.6.29 on MacBook 2,1 fails to reboot
+>>> Submitter    : Trenton Adams <trenton.d.adams@gmail.com>
+>>> Date         : 2009-03-30 2:04 (8 days old)
+>>> References   : http://marc.info/?l=linux-kernel&m=123837870307249&w=4
+>>> Handled-By   : "Morten P.D. Stevens" <mstevens@win-professional.com>
+>>
+>
+> Trenton,
+> could it be the same as this one?
+> http://bugzilla.kernel.org/show_bug.cgi?id=12321
+> "System hangs when unloading alsa modules"
+> http://bugs.gentoo.org/show_bug.cgi?id=253535
+> "System hangs when unloading alsa modules on Kernel >2.6.28"
+> --
+> Stefan Richter
+> -=====-==--= -=-- --===
+> http://arcgraph.de/sr/
+>
 
-> 
-> On Apr 7, 2009, at 4:09 AM, FUJITA Tomonori wrote:
-> 
-> > On Tue, 7 Apr 2009 01:34:44 -0500
-> > Kumar Gala <galak@kernel.crashing.org> wrote:
-> >
-> >>
-> >> On Apr 6, 2009, at 9:24 PM, FUJITA Tomonori wrote:
-> >>
-> >>> On Fri,  3 Apr 2009 20:56:47 -0500
-> >>> Becky Bruce <beckyb@kernel.crashing.org> wrote:
-> >>>
-> >>>> This mirrors the current swiotlb_sync_single() setup
-> >>>> where the swiotlb_unmap_single() function is static to this
-> >>>> file and contains the logic required to determine if we need
-> >>>> to call actual sync_single.  Previously, swiotlb_unmap_page
-> >>>> and swiotlb_unmap_sg were duplicating very similar code.
-> >>>> The duplicated code has also been reformatted for
-> >>>> readability.
-> >>>>
-> >>>> Note that the swiotlb_unmap_sg code was previously doing
-> >>>> a complicated comparison to determine if an addresses needed
-> >>>> to be unmapped where a simple is_swiotlb_buffer() call
-> >>>> would have sufficed.
-> >>>>
-> >>>> Signed-off-by: Becky Bruce <beckyb@kernel.crashing.org>
-> >>>> ---
-> >>>> lib/swiotlb.c |   36 +++++++++++++++++++++++-------------
-> >>>> 1 files changed, 23 insertions(+), 13 deletions(-)
-> >>>>
-> >>>> diff --git a/lib/swiotlb.c b/lib/swiotlb.c
-> >>>> index af2ec25..602315b 100644
-> >>>> --- a/lib/swiotlb.c
-> >>>> +++ b/lib/swiotlb.c
-> >>>
-> >>> I don't think 'swiotlb_unmap_single' name is appropriate.
-> >>>
-> >>> swiotlb_unmap_single sounds like an exported function that IOMMUs  
-> >>> can
-> >>> use (and it was) however it should not be.
-> >>
-> >> What do you suggest we call it?  __swiotlb_unmap_single.
-> >
-> > I think that __swiotlb_unmap_single is better because the name implies
-> > that it's an internal function. It's fine by me.
-> >
-> > If it is odd that __swiotlb_unmap_single() is just a wrapper function
-> > of unmap_single(), which does the real job to unmap a dma mapping, it
-> > might be another possible option to rename unmap_single to
-> > do_unamp_single and use unmap_single.
-> 
-> I think you lost me here.  I'd prefer to just use  
-> __swiotlb_unmap_single at this point and get this code into the tree  
-> and work on such renaming after the fact (if that's ok).
-
-If you are rushing to merge this right now, the original patchset is
-fine by me (I thought that you missed this merge window). I'll rename
-it later.
+The first one looks similar, if not identical.  The second one
+doesn't, because my problem happens on 2.6.29 only, not 2.6.28.
+Either way, the unload problem with the module didn't happen in
+2.6.28.
