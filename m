@@ -1,81 +1,103 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758626AbZDGQsE@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760066AbZDGQvp@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758626AbZDGQsE (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 7 Apr 2009 12:48:04 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756788AbZDGQrv
+	id S1760066AbZDGQvp (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 7 Apr 2009 12:51:45 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753230AbZDGQvf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 7 Apr 2009 12:47:51 -0400
-Received: from www.tglx.de ([62.245.132.106]:41842 "EHLO www.tglx.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755869AbZDGQrv (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 7 Apr 2009 12:47:51 -0400
-Date: Tue, 7 Apr 2009 18:45:36 +0200 (CEST)
-From: Thomas Gleixner <tglx@linutronix.de>
-To: "Narnakaje, Snehaprabha" <nsnehaprabha@ti.com>
-cc: David Brownell <david-b@pacbell.net>,
-       "davinci-linux-open-source@linux.davincidsp.com" 
-	<davinci-linux-open-source@linux.davincidsp.com>,
-       "linux-mtd@lists.infradead.org" <linux-mtd@lists.infradead.org>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
-Subject: RE: [PATCH] MTD-NAND: Changes to read_page APIs to support
- NAND_ECC_HW_SYNDROME mode on TI DaVinci DM355
-In-Reply-To: <7A436F7769CA33409C6B44B358BFFF0CFFAA90C0@dlee02.ent.ti.com>
-Message-ID: <alpine.LFD.2.00.0904071831550.21577@localhost.localdomain>
-References: <1238601784-9563-1-git-send-email-nsnehaprabha@ti.com> <200904051556.05368.david-b@pacbell.net> <alpine.LFD.2.00.0904070042300.21577@localhost.localdomain> <200904061849.23110.david-b@pacbell.net>
- <7A436F7769CA33409C6B44B358BFFF0CFFAA90C0@dlee02.ent.ti.com>
-User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Tue, 7 Apr 2009 12:51:35 -0400
+Received: from smtp1.Stanford.EDU ([171.67.219.81]:56601 "EHLO
+	smtp1.stanford.edu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752547AbZDGQve (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 7 Apr 2009 12:51:34 -0400
+Subject: Re: [Announce] 2.6.29.1-rt4
+From: Fernando Lopez-Lezcano <nando@ccrma.Stanford.EDU>
+To: Thomas Gleixner <tglx@linutronix.de>
+Cc: nando@ccrma.Stanford.EDU, LKML <linux-kernel@vger.kernel.org>,
+       rt-users <linux-rt-users@vger.kernel.org>, Ingo Molnar <mingo@elte.hu>,
+       Steven Rostedt <rostedt@goodmis.org>,
+       Peter Zijlstra <peterz@infradead.org>, Carsten Emde <ce@ceag.ch>,
+       Clark Williams <williams@redhat.com>,
+       Frank Rowand <frank.rowand@am.sony.com>,
+       Robin Gareus <robin@gareus.org>, Gregory Haskins <ghaskins@novell.com>,
+       Philippe Reynes <philippe.reynes@isismpp.fr>,
+       Will Schmidt <will_schmidt@vnet.ibm.com>
+In-Reply-To: <alpine.LFD.2.00.0904062151020.21577@localhost.localdomain>
+References: <alpine.LFD.2.00.0902112332370.415@localhost.localdomain>
+	 <alpine.LFD.2.00.0902122353050.16972@localhost.localdomain>
+	 <alpine.LFD.2.00.0902231854360.3523@localhost.localdomain>
+	 <alpine.LFD.2.00.0902241849230.3523@localhost.localdomain>
+	 <alpine.LFD.2.00.0902241856480.9135@localhost.localdomain>
+	 <alpine.LFD.2.00.0903122013230.29264@localhost.localdomain>
+	 <alpine.LFD.2.00.0903200014320.29264@localhost.localdomain>
+	 <alpine.LFD.2.00.0903201832590.29264@localhost.localdomain>
+	 <alpine.LFD.2.00.0903231723090.29264@localhost.localdomain>
+	 <alpine.LFD.2.00.0903252154040.3397@localhost.localdomain>
+	 <alpine.LFD.2.00.0904020155320.12916@localhost.localdomain>
+	 <alpine.LFD.2.00.0904031918090.12916@localhost.localdomain>
+	 <1238799852.3871.6.camel@localhost.localdomain>
+	 <alpine.LFD.2.00.0904040628310.12916@localhost.localdomain>
+	 <1238828273.15225.17.camel@localhost.localdomain>
+	 <alpine.LFD.2.00.0904051552320.747@localhost.localdomain>
+	 <1238968196.4995.15.camel@localhost.localdomain>
+	 <alpine.LFD.2.00.0904060001480.747@localhost.localdomain>
+	 <1238973052.4995.29.camel@localhost.localdomain>
+	 <alpine.LFD.2.00.0904062151020.21577@localhost.localdomain>
+Content-Type: text/plain
+Date: Tue, 07 Apr 2009 09:52:03 -0700
+Message-Id: <1239123123.12637.9.camel@localhost.localdomain>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.24.5 (2.24.5-1.fc10) 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 7 Apr 2009, Narnakaje, Snehaprabha wrote:
-> > And that's exactly what these patches do:  enable just such choices.
-> > The $SUBJECT patch would be needed to use NAND_ECC_HW with this 4-bit
-> > ECC hardware, and not be forced to "choose" the infix-OOB policy.
->
-> I had looked read_page/write_page APIs of the NAND_ECC_HW mode to
-> see if we can use this mode for DaVinci DM355 device.
+On Mon, 2009-04-06 at 21:54 +0200, Thomas Gleixner wrote:
+> Fernando,
 > 
-> The read_page handler for NAND_ECC_HW mode reads the data and ECC
-> from hardware for each chunk. It then reads the OOB and extracts ecc
-> code from it, before using the ECC from hardware and ecc code from
-> OOB for data correction.
->
-> On DaVinci DM355 device, we need to pass the ecc code/syndrome
-> extracted from OOB area, in order to read the HW ECC for each data
-> chunk. This is where we differ from NAND_ECC_HW mode.
+> On Sun, 5 Apr 2009, Fernando Lopez-Lezcano wrote:
+> > > Hmm. Can you upload your full patch queue and the binary rpm so I can
+> > > give it a test ride ?
+> > 
+> > Sure, no problem. I just did a release to planetcore-testing repo (with
+> > a warning to the planetccrma list), you can find it here:
+> > 
+> > http://ccrma.stanford.edu/planetccrma/mirror/fedora/linux/planetcore/testing/10/i386/repoview/index.html
+> > http://ccrma.stanford.edu/planetccrma/mirror/fedora/linux/planetcore/testing/10/x86_64/repoview/index.html
+> > 
+> > (the one I have tested and hangs is the i386 PAE version)
+> > Source here:
+> > 
+> > http://ccrma.stanford.edu/planetccrma/mirror/fedora/linux/planetcore/testing/10/SRPMS/
+> > 
+> > (if you don't want to figure out the .src.rpm - I would not blame you -
+> > I can give you a list of the patches that were actually applied - of the
+> > ones that are included in the package)
+> 
+> No problem. I know how to distangle those beasts.
+> 
+> Still I have no reproducer yet. One of my 32bit test machines survived
+> a 200 cycle test w/o showing it.
 
-I have to admit that I'm slightly confused. Is the below description
-correct?
+Arghh, I don't know what it could be then. You mean 200 power cycles??
+Wow... it only takes one here. Thanks for testing. 
 
-On write you generate the ECC via hardware and store it in the OOB
-area, right ?
+> Is there anything special what you run, load ... ?
 
-On read you read the oob data first and extract the ECC. Then you feed
-the extracted ECC into the HW generator and read the data. Is this
-correct ?
+Not that I can think of right now. This happens on 32 bit installs on
+both Fedora 9 and Fedora 10. Nothing special installed, of course I have
+the Planet CCRMA packages but they don't involve additional kernel
+modules or anything that (I think) deals with startup or shutdown. 
 
-> The read_page/write_page APIs for NAND_ECC_HW_SYNDROME have the
-> other problem that David mentioned - overwriting NAND manufacturers
-> bad block meta data, when used with large page NAND chips. These
-> APIs do not handle the "eccsteps" properly. The OOB is read/written
-> after every data chunk, thus you actually have overwritten the
-> factory bad block information, when these APIs handle the last data
-> chunk. OOB should be read/written after the entire data (a page) is
-> read/written.
+> Looks like I need to add a 32bit install to my T61 in the hope to
+> reproduce.
 
-Again, that is _how_ the NAND_ECC_HW_SYNDROME functions work. And if
-your hardware needs a completely different mode, then we need to
-analyse what's the best solution for it.
+Sorry for the inconvenience. Additional installs, argh (BTW, I won't be
+reading email for at least a week, of to LAC2009 tomorrow with a week of
+R&R before - please keep cc'ing me on rt stuff). 
 
-Right now the provided information is way to diffuse to do that.
+Thanks!!!
+-- Fernando
 
-You provided a patch without explaining what your hardware needs and
-showing how the actual user of the modified API looks like and how the
-functionality is implemented.
 
-Thanks,
-
-	tglx
