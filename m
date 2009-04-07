@@ -1,59 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755558AbZDGG1X@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752822AbZDGGcT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755558AbZDGG1X (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 7 Apr 2009 02:27:23 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757789AbZDGG1F
+	id S1752822AbZDGGcT (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 7 Apr 2009 02:32:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751711AbZDGGb4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 7 Apr 2009 02:27:05 -0400
-Received: from rv-out-0506.google.com ([209.85.198.231]:54800 "EHLO
+	Tue, 7 Apr 2009 02:31:56 -0400
+Received: from rv-out-0506.google.com ([209.85.198.232]:64251 "EHLO
 	rv-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757453AbZDGG1E (ORCPT
+	with ESMTP id S1751107AbZDGGby convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 7 Apr 2009 02:27:04 -0400
+	Tue, 7 Apr 2009 02:31:54 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
         h=mime-version:in-reply-to:references:date:message-id:subject:from:to
          :cc:content-type:content-transfer-encoding;
-        b=UXqqIlpUJHFzrrn3BGUBF2aJfn4iloTPnfSFu+EVPP1H8u067ojRy14SSF9pNbKC7t
-         9bflabWfl30OVIhl23bKw/XbmalwbSj2ZPt1hhuan1r9aRpaXozpR6kB5Y81yKpK1EO8
-         U3ewb5NsyN7Jw0PT7KnQEmcOxar/j1TP9HCa4=
+        b=PRdtMs2DvgumLQjTeEH5xrDHJqNynqj4OjKhKdLospERNJeUxa8VT8tlUj3WAhINlD
+         QU1jF0uEug5p+3J4klzEaoPMiK5+KKI54MKMws0jx9f5Se5CiXz/fdsYucJwoSLZc4iH
+         r2ESFPl9BmBoGVtIe3u2FmxSkduUSvZ69AhC0=
 MIME-Version: 1.0
-In-Reply-To: <alpine.LFD.2.00.0904062156180.4010@localhost.localdomain>
-References: <1239022088-29002-1-git-send-email-jens.axboe@oracle.com>
-	 <20090406183157.GD7376@mit.edu>
-	 <alpine.LFD.2.00.0904061255160.4134@localhost.localdomain>
-	 <002501c9b6f3$f85b4910$e911db30$@com> <20090406211931.GB8586@mit.edu>
-	 <1239076379.17426.23.camel@think.oraclecorp.com>
-	 <9b1675090904062113r2bd2b209hea1061cc54a0b9c0@mail.gmail.com>
-	 <alpine.LFD.2.00.0904062120560.4010@localhost.localdomain>
-	 <9b1675090904062148k7081be9bs26b5852d71a0a45c@mail.gmail.com>
-	 <alpine.LFD.2.00.0904062156180.4010@localhost.localdomain>
-Date: Tue, 7 Apr 2009 00:27:02 -0600
-Message-ID: <9b1675090904062327k353f5ab3xe3b755e9fc78b059@mail.gmail.com>
-Subject: Re: [PATCH 0/8][RFC] IO latency/throughput fixes
+In-Reply-To: <20090407062425.GA4195@ff.dom.local>
+References: <9b1675090904062123u42a00a80y3a4385740ecc0121@mail.gmail.com>
+	 <20090407062425.GA4195@ff.dom.local>
+Date: Tue, 7 Apr 2009 00:31:52 -0600
+Message-ID: <9b1675090904062331m56c09a09r88594381a3eaad48@mail.gmail.com>
+Subject: Re: 2.6.29-git13: Reported regressions from 2.6.28
 From: "Trenton D. Adams" <trenton.d.adams@gmail.com>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: Chris Mason <chris.mason@oracle.com>, Theodore Tso <tytso@mit.edu>,
-       Hua Zhong <hzhong@gmail.com>, Jens Axboe <jens.axboe@oracle.com>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+To: Jarek Poplawski <jarkao2@gmail.com>
+Cc: Linus Torvalds <torvalds@linux-foundation.org>,
+       "Rafael J. Wysocki" <rjw@sisk.pl>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Adrian Bunk <bunk@kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Natalie Protasevich <protasnb@gmail.com>,
+       Kernel Testers List <kernel-testers@vger.kernel.org>,
+       Network Development <netdev@vger.kernel.org>,
+       Linux ACPI <linux-acpi@vger.kernel.org>,
+       Linux PM List <linux-pm@lists.linux-foundation.org>,
+       Linux SCSI List <linux-scsi@vger.kernel.org>
 Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Apr 6, 2009 at 11:02 PM, Linus Torvalds
-<torvalds@linux-foundation.org> wrote:
+On Tue, Apr 7, 2009 at 12:24 AM, Jarek Poplawski <jarkao2@gmail.com> wrote:
+> On 07-04-2009 06:23, Trenton D. Adams wrote:
+> ...
+>> This gave me a bit of a chuckle. ROFL.  I didn't think you were
+>> _blaming_ me.  And even if you were, I'd just say "I'M HUMAN MAN". ;)
 >
-> So dynamic tuning is good. But at the same time, having a tuning option is
-> _never_ an excuse for not getting the default right in the first place.
-> It's just a cop-out to say "hey, the default may be wrong for you, but you
-> can always tune it locally with XYZ".
+> So, do you think you should be treated better than others? @-)
+>
+> Jarek P.
+>
 
-Oh, right, you had mentioned that a few days ago about not liking to
-have to tune stuff.  I agree, the kernel should just work, except in
-rare cases.  But, with procfs, you could still have the default to
-data=writeback, and realtime tuneable.  That is what I meant.
+This gave me a bit of a confused look. Better, how so?  And what would
+provoke such a comment?  Linus was simply being excessively polite,
+which is a good side to error on I suppose, but I don't need excessive
+politeness.  I didn't in any way think he had blamed me for anything.
+And why would I?  He hadn't said anything that indicated he was.
 
-Anyhow, I don't want to take up too much of your time.  I wouldn't
-want to know how busy you are. :P  No need to reply. :D
+Yeah, having trouble getting into your head on that comment.  _confused look_
