@@ -1,236 +1,107 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761792AbZDGVlx@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761796AbZDGVma@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761792AbZDGVlx (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 7 Apr 2009 17:41:53 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761635AbZDGVlE
+	id S1761796AbZDGVma (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 7 Apr 2009 17:42:30 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761665AbZDGVmR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 7 Apr 2009 17:41:04 -0400
-Received: from mail-fx0-f158.google.com ([209.85.220.158]:50051 "EHLO
-	mail-fx0-f158.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1761641AbZDGVlA (ORCPT
+	Tue, 7 Apr 2009 17:42:17 -0400
+Received: from nwd2mail11.analog.com ([137.71.25.57]:53760 "EHLO
+	nwd2mail11.analog.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1761303AbZDGVmQ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 7 Apr 2009 17:41:00 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=from:to:subject:date:user-agent:cc:references:in-reply-to
-         :mime-version:content-disposition:message-id:content-type
-         :content-transfer-encoding;
-        b=WBVdXSe/NzC//n8b7GigMAeMguGAQYhiUdaEFJg0PtqFSw0W6s4jTWfg8fP56boiVu
-         bcpdc4yTS6pfR5f1a7HA/9HJ/lWeWmaRwp6iuMiwmnon8cL/3VF7EJDhWAxdCQ95YLjv
-         mnqudKgHnrIiGLsLBeAMgt9h/0VqnWnRuwRgk=
-From: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
-To: Matthew Wilcox <willy@linux.intel.com>
-Subject: Re: [PATCH 4/5] ide: Add support for TRIM
-Date: Tue, 7 Apr 2009 23:38:59 +0200
-User-Agent: KMail/1.11.1 (Linux/2.6.29-10247-g8e2c4f2-dirty; KDE/4.2.1; i686; ; )
-Cc: Sergei Shtylyov <sshtylyov@ru.mvista.com>, linux-ide@vger.kernel.org,
-       linux-kernel@vger.kernel.org, jgarzik@redhat.com,
-       David Woodhouse <David.Woodhouse@intel.com>
-References: <1238683047-13588-1-git-send-email-willy@linux.intel.com> <20090402165117.GQ2661@linux.intel.com> <200904022137.35671.bzolnier@gmail.com>
-In-Reply-To: <200904022137.35671.bzolnier@gmail.com>
+	Tue, 7 Apr 2009 17:42:16 -0400
+X-IronPort-AV: E=Sophos;i="4.39,339,1235970000"; 
+   d="scan'208";a="69210947"
+From: Robin Getz <rgetz@blackfin.uclinux.org>
+Organization: Blackfin uClinux org
+To: "Matt Mackall" <mpm@selenic.com>
+Subject: Re: IRQF_SAMPLE_RANDOM question...
+Date: Tue, 7 Apr 2009 17:44:17 -0400
+User-Agent: KMail/1.9.5
+CC: netdev@vger.kernel.org, linux-kernel@vger.kernel.org,
+       "Chris Peterson" <cpeterso@cpeterso.com>
+References: <200904061430.26276.rgetz@blackfin.uclinux.org> <200904070716.25846.rgetz@blackfin.uclinux.org> <1239116251.14392.133.camel@calx>
+In-Reply-To: <1239116251.14392.133.camel@calx>
 MIME-Version: 1.0
-Content-Disposition: inline
-Message-Id: <200904072339.00224.bzolnier@gmail.com>
-Content-Type: text/plain;
-  charset="iso-8859-1"
+Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-ID: <200904071744.17727.rgetz@blackfin.uclinux.org>
+X-OriginalArrivalTime: 07 Apr 2009 21:41:57.0791 (UTC) FILETIME=[AD2432F0:01C9B7C9]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thursday 02 April 2009 21:37:35 Bartlomiej Zolnierkiewicz wrote:
-> On Thursday 02 April 2009, Matthew Wilcox wrote:
-> > On Thu, Apr 02, 2009 at 08:38:03PM +0400, Sergei Shtylyov wrote:
-> > > Hello.
-> > >>>> +	task->tf_flags   = IDE_TFLAG_LBA48 | IDE_TFLAG_OUT_HOB |
-> > >>>> +			   IDE_TFLAG_OUT_TF | IDE_TFLAG_OUT_DEVICE |
-> > >
-> > >>>   The last 3 flags are going to be obsoleted too...
-> > >
-> > >> So if I remove them today, the command will still work?
-> > >
-> > >     s/obsoleted/renamed and moved to another other field/ -- I'm going to 
-> > > submit a patchset refactoring 'struct ide_cmd and 'struct ide-taskfile' 
-> > > at last...
+On Tue 7 Apr 2009 10:57, Matt Mackall pondered:
+> On Tue, 2009-04-07 at 07:16 -0400, Robin Getz wrote:
+> > On Mon 6 Apr 2009 15:01, Matt Mackall pondered:
+> > > On Mon, 2009-04-06 at 14:30 -0400, Robin Getz wrote:
+> > > > We have lots of embedded headless systems (no keyboard/mouse, no
+> > > > soundcard, no video) systems with *no* sources of entropy - and
+> > > > people using SSL. 
+> > > 
+> > > I'd rather add a random_sample_network call somewhere reasonably
+> > > central in the network stack. Then we can use the knowledge that the
+> > > sample is network-connected in the random core to decide how to 
+> > > measure its entropy. The trouble with IRQF_SAMPLE_RANDOM is that 
+> > > many of its users are technically bogus as entropy sources in the
+> > > current model. 
 > > 
-> > Since I'm coding to today's kernel, not to a patch which doesn't exist
-> > yet, taking them out won't work very well.
+> > OK - that makes more sense.
 > > 
-> > I've not been paying much attention to drivers/ide, so I've no idea
-> > whether the following patch works.  It does at least compile:
+> > Does that mean we also shouldn't be using IRQF_SAMPLE_RANDOM on
+> > interrupt sources in subsystems which already have add_xxx_randomness()
+> > in them? (block devices, and input devices?)
 > > 
-> > +++ b/drivers/ide/ide-disk.c
-> > @@ -407,7 +407,7 @@ static void idedisk_prepare_flush(struct request_queue *q, s
-> >  static int idedisk_prepare_discard(struct request_queue *q, struct request *rq,
-> >                                                         struct bio *bio)
-> >  {
-> > -       ide_task_t *task;
-> > +       struct ide_cmd *task;
-> >         unsigned size;
-> >         struct page *page = alloc_page(GFP_KERNEL);
-> >         if (!page)
-> > @@ -432,8 +432,8 @@ static int idedisk_prepare_discard(struct request_queue *q, 
-> >  
-> >         task->tf_flags   = IDE_TFLAG_LBA48 | IDE_TFLAG_OUT_HOB |
-> >                            IDE_TFLAG_OUT_TF | IDE_TFLAG_OUT_DEVICE |
-> > -                          IDE_TFLAG_DYN;
-> > -       task->data_phase = TASKFILE_OUT_DMA;
-> > +                          IDE_TFLAG_DYN | IDE_TFLAG_WRITE;
-> > +       task->protocol = ATA_PROT_DMA;
-> >  
-> >         rq->cmd_type = REQ_TYPE_ATA_TASKFILE;
-> >         rq->special = task;
+> > block/blk-core.c -> blk_end_io() -> add_disk_randomness()
+> > drivers/input/input.c -> input_event() -> add_input_randomness()
 > > 
-> > If I've understood 0dfb991c6943c810175376b58d1c29cfe532541b correctly,
-> > this should be equivalent.  Bart?
-> 
-> Yep.  The final patch looks fine overall (thanks for adding TRIM support
-> also to drivers/ide), with the small exception for this chunk:
-> 
-> @@ -521,6 +567,9 @@ static int set_wcache(ide_drive_t *drive, int arg)
->  
->         update_ordered(drive);
->  
-> +       if (ata_id_has_trim(drive->id))
-> +               blk_queue_set_discard(drive->queue, idedisk_prepare_discard);
-> +
->         return err;
->  }
-> 
-> as it would fit better somewhere in ide_disk_setup() ISO set_wcache()...
-> 
-> [ When it comes to CodingStyle issues I don't care that much though I think
->   that applying Sergei's suggestions will make the patch more consistent with
->   the rest of drivers/ide code... ]
+> >  drivers/block/xen-blkfront.c, line 639
+> > 
+> >  drivers/input/touchscreen/wm97xx-core.c, line 374
+> >  drivers/input/keyboard/gpio_keys.c, line 145
+> >  drivers/input/keyboard/bf54x-keys.c, line 255
+> >  drivers/input/serio/hp_sdc.c, line 881
+>
+> Yes. The flag needs to be taken out and shot. 
 
-I would like to see this merged for -rc1 so I tried to put it altogether
-and then integrate it over recent IDE and block changes...
+In general or just for input and block devices?
 
-I ended up with the patch below which I'll push to Linus in a few minutes.
+There are still some in others:
 
-Once it hits Linus' tree please test that it still works. :)
+arch/arm/mach-omap1/board-palmz71.c
+arch/arm/mach-pxa/lubbock.c
+arch/arm/mach-pxa/magician.c
+arch/arm/mach-pxa/palmtx.c
+arch/arm/mach-pxa/palmz72.c
+arch/arm/mach-pxa/trizeps4.c
+arch/sparc/kernel/ldc.c
+arch/um/drivers/line.c
+arch/um/drivers/mconsole_kern.c
+arch/um/drivers/port_kern.c
+arch/um/drivers/xterm_kern.c
+arch/um/kernel/sigio.c
+arch/x86/kernel/amd_iommu_init.c
+drivers/i2c/busses/i2c-pmcmsp.c
+drivers/mfd/tps65010.c
+drivers/power/pda_power.c
+drivers/serial/bfin_sport_uart.c
+drivers/serial/mpc52xx_uart.c
+drivers/serial/uartlite.c
+drivers/staging/comedi/interrupt.h
+drivers/usb/gadget/goku_udc.c
+drivers/usb/gadget/omap_udc.c
+drivers/usb/gadget/pxa25x_udc.c
+drivers/usb/otg/gpio_vbus.c
+drivers/usb/otg/isp1301_omap.c
 
-Thanks.
+> Everything going into the 
+> RNG should be made to go through an add_*_randomness interface only.
+> Preferably not at a per-driver level.
 
-From: David Woodhouse <David.Woodhouse@intel.com>
-Subject: [PATCH 4/5] ide: Add support for TRIM
+Is that "Everything in general, with a few exceptions", or "__Everything__"?
 
-Bart: Since this is a new feature and hasn't seen much testing with
-production devices it is not enabled by default yet (requires use of
-"ide_core.trim=1" kernel parameter).
+If it is the latter I'll remove the ones that I'm responsible for, and send 
+Sam something for checkpatch.pl to warn if this is used in the future.
 
-Signed-off-by: David Woodhouse <David.Woodhouse@intel.com>
-[modified to reduce amount of special casing needed for discard]
-Signed-off-by: Matthew Wilcox <willy@linux.intel.com>
-Cc: Jeff Garzik <jgarzik@redhat.com>
-Cc: Sergei Shtylyov <sshtylyov@ru.mvista.com>
-[bart: apply follow-up changes from Matthew]
-[bart: apply CodingStyle fixups per Sergei's suggestion]
-[bart: move blk_queue_set_discard() call to ide_disk_setup()]
-[bart: port over recent IDE changes]
-[bart: remove "bio" argument from idedisk_prepare_discard()]
-[bart: s/PAGE_SIZE/PAGE_SIZE + 8/ + set ATA_LBA bit in tf.device]
-[bart: add "ide_core.trim=" kernel parameter]
-Signed-off-by: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
----
- drivers/ide/ide-disk.c |   53 +++++++++++++++++++++++++++++++++++++++++++++++++
- drivers/ide/ide.c      |    6 +++++
- 2 files changed, 59 insertions(+)
-
-Index: b/drivers/ide/ide-disk.c
-===================================================================
---- a/drivers/ide/ide-disk.c
-+++ b/drivers/ide/ide-disk.c
-@@ -415,6 +415,54 @@ static void idedisk_prepare_flush(struct
- 	rq->special = cmd;
- }
- 
-+static int idedisk_prepare_discard(struct request_queue *q, struct request *rq)
-+{
-+	struct ide_cmd *cmd;
-+	struct page *page;
-+	struct bio *bio = rq->bio;
-+	unsigned int size;
-+
-+	page = alloc_page(GFP_KERNEL);
-+	if (!page)
-+		goto error;
-+
-+	cmd = kzalloc(sizeof(*cmd), GFP_KERNEL);
-+	if (!cmd)
-+		goto free_page;
-+
-+	size = ata_set_lba_range_entries(page_address(page), PAGE_SIZE / 8,
-+					 bio->bi_sector, bio_sectors(bio));
-+	bio->bi_size = 0;
-+
-+	if (bio_add_pc_page(q, bio, page, size, 0) < size)
-+		goto free_task;
-+
-+	cmd->tf.command = ATA_CMD_DSM;
-+	cmd->tf.feature = ATA_DSM_TRIM;
-+	cmd->tf.nsect   = size / 512;
-+	cmd->hob.nsect  = (size / 512) >> 8;
-+	cmd->tf.device  = ATA_LBA;
-+
-+	cmd->valid.out.tf  = IDE_VALID_OUT_TF | IDE_VALID_DEVICE;
-+	cmd->valid.out.hob = IDE_VALID_OUT_HOB;
-+
-+	cmd->tf_flags = IDE_TFLAG_LBA48 | IDE_TFLAG_WRITE | IDE_TFLAG_DYN;
-+	cmd->protocol = ATA_PROT_DMA;
-+
-+	rq->cmd_type = REQ_TYPE_ATA_TASKFILE;
-+	rq->special = cmd;
-+	rq->nr_sectors = size / 512;
-+
-+	return 0;
-+
-+ free_task:
-+	kfree(cmd);
-+ free_page:
-+	__free_page(page);
-+ error:
-+	return -ENOMEM;
-+}
-+
- ide_devset_get(multcount, mult_count);
- 
- /*
-@@ -606,6 +654,8 @@ static int ide_disk_check(ide_drive_t *d
- 	return 1;
- }
- 
-+extern int ide_trim;
-+
- static void ide_disk_setup(ide_drive_t *drive)
- {
- 	struct ide_disk_obj *idkp = drive->driver_data;
-@@ -693,6 +743,9 @@ static void ide_disk_setup(ide_drive_t *
- 
- 	set_wcache(drive, 1);
- 
-+	if (ata_id_has_trim(id) && ide_trim)
-+		blk_queue_set_discard(q, idedisk_prepare_discard);
-+
- 	if ((drive->dev_flags & IDE_DFLAG_LBA) == 0 &&
- 	    (drive->head == 0 || drive->head > 16)) {
- 		printk(KERN_ERR "%s: invalid geometry: %d physical heads?\n",
-Index: b/drivers/ide/ide.c
-===================================================================
---- a/drivers/ide/ide.c
-+++ b/drivers/ide/ide.c
-@@ -178,6 +178,12 @@ EXPORT_SYMBOL_GPL(ide_pci_clk);
- module_param_named(pci_clock, ide_pci_clk, int, 0);
- MODULE_PARM_DESC(pci_clock, "PCI bus clock frequency (in MHz)");
- 
-+int ide_trim = 0;
-+EXPORT_SYMBOL_GPL(ide_trim);
-+
-+module_param_named(trim, ide_trim, int, 0);
-+MODULE_PARM_DESC(trim, "TRIM support (0=off, 1=on)");
-+
- static int ide_set_dev_param_mask(const char *s, struct kernel_param *kp)
- {
- 	int a, b, i, j = 1;
-
-
+-Robin
