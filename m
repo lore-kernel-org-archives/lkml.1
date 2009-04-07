@@ -1,67 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760995AbZDGUbP@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759989AbZDGUhJ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760995AbZDGUbP (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 7 Apr 2009 16:31:15 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755378AbZDGUbB
+	id S1759989AbZDGUhJ (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 7 Apr 2009 16:37:09 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755544AbZDGUg4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 7 Apr 2009 16:31:01 -0400
-Received: from waste.org ([66.93.16.53]:39835 "EHLO waste.org"
+	Tue, 7 Apr 2009 16:36:56 -0400
+Received: from cmpxchg.org ([85.214.51.133]:34968 "EHLO cmpxchg.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755230AbZDGUbA (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 7 Apr 2009 16:31:00 -0400
-Subject: Re: IRQF_SAMPLE_RANDOM question...
-From: Matt Mackall <mpm@selenic.com>
-To: Robin Getz <rgetz@blackfin.uclinux.org>
-Cc: netdev@vger.kernel.org, linux-kernel@vger.kernel.org,
-       Chris Peterson <cpeterso@cpeterso.com>
-In-Reply-To: <200904070716.25846.rgetz@blackfin.uclinux.org>
-References: <200904061430.26276.rgetz@blackfin.uclinux.org>
-	 <1239044483.14392.55.camel@calx>
-	 <200904070716.25846.rgetz@blackfin.uclinux.org>
-Content-Type: text/plain
-Date: Tue, 07 Apr 2009 07:57:31 -0700
-Message-Id: <1239116251.14392.133.camel@calx>
+	id S1754939AbZDGUgz (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 7 Apr 2009 16:36:55 -0400
+Date: Tue, 7 Apr 2009 22:36:51 +0200
+From: Johannes Weiner <hannes@cmpxchg.org>
+To: Andi Kleen <andi@firstfloor.org>
+Cc: linux-kernel@vger.kernel.org, linux-mm@kvack.org, x86@kernel.org
+Subject: Re: [PATCH] [8/16] POISON: Add various poison checks in mm/memory.c
+Message-ID: <20090407203651.GA4415@cmpxchg.org>
+References: <20090407509.382219156@firstfloor.org> <20090407151005.4E24B1D046D@basil.firstfloor.org> <20090407190330.GB3818@cmpxchg.org> <20090407193145.GU17934@one.firstfloor.org> <20090407201708.GA4220@cmpxchg.org> <20090407202449.GX17934@one.firstfloor.org>
 Mime-Version: 1.0
-X-Mailer: Evolution 2.24.5 
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20090407202449.GX17934@one.firstfloor.org>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 2009-04-07 at 07:16 -0400, Robin Getz wrote:
-> On Mon 6 Apr 2009 15:01, Matt Mackall pondered:
-> > On Mon, 2009-04-06 at 14:30 -0400, Robin Getz wrote:
-> > > We have lots of embedded headless systems (no keyboard/mouse, no
-> > > soundcard, no video) systems with *no* sources of entropy - and
-> > > people using SSL. 
+On Tue, Apr 07, 2009 at 10:24:49PM +0200, Andi Kleen wrote:
+> > I think we missed each other here.  I wasn't talking about _why_ you
+> > take that reference -- that is clear.  But I see these two
+> > possibilities:
 > > 
-> > I'd rather add a random_sample_network call somewhere reasonably central
-> > in the network stack. Then we can use the knowledge that the sample is
-> > network-connected in the random core to decide how to measure its
-> > entropy. The trouble with IRQF_SAMPLE_RANDOM is that many of its users
-> > are technically bogus as entropy sources in the current model.
+> >   a) memory_failure() is called on a page on the free list, the
+> >   get_page() will trigger a bug because the refcount is 0
 > 
-> OK - that makes more sense.
+> Ah got it now. Sorry for misreading you. That's indeed a problem.
+> Fixing.
 > 
-> Does that mean we also shouldn't be using IRQF_SAMPLE_RANDOM on interrupt 
-> sources in subsystems which already have add_xxx_randomness() in them? (block 
-> devices, and input devices?)
-> 
-> block/blk-core.c -> blk_end_io() -> add_disk_randomness()
-> drivers/input/input.c -> input_event() -> add_input_randomness()
-> 
->  drivers/block/xen-blkfront.c, line 639
-> 
->  drivers/input/touchscreen/wm97xx-core.c, line 374
->  drivers/input/keyboard/gpio_keys.c, line 145
->  drivers/input/keyboard/bf54x-keys.c, line 255
->  drivers/input/serio/hp_sdc.c, line 881
+> free pages was something my injector based test suite didn't cover :/
 
-Yes. The flag needs to be taken out and shot. Everything going into the
-RNG should be made to go through an add_*_randomness interface only.
-Preferably not at a per-driver level.
+Hm, perhaps walking mem_map and poisoning pages at random? :)
 
--- 
-http://selenic.com : development and support for Mercurial and Linux
+> >   b) if that is not possible, the above check is not needed
+> 
+> There was at least one case where the process could free it anyways.
+> I think. Or maybe that was something I fixed in a different way.
+> It's possible this check is not needed, but it's probably safer
+> to keep it (and it's all super slow path)
 
+Ok.  I first thought it could be useful to shrink the race window
+between allocating the page and installing the pte but the rest of the
+poisoning code should be able to cope.
 
+	Hannes
