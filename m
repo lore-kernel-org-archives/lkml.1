@@ -1,80 +1,47 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760983AbZDGXRB@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761144AbZDGXRc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760983AbZDGXRB (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 7 Apr 2009 19:17:01 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757308AbZDGXN2
+	id S1761144AbZDGXRc (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 7 Apr 2009 19:17:32 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760505AbZDGXP4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 7 Apr 2009 19:13:28 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:52136 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1757492AbZDGXN1 (ORCPT
+	Tue, 7 Apr 2009 19:15:56 -0400
+Received: from mail-bw0-f169.google.com ([209.85.218.169]:37820 "EHLO
+	mail-bw0-f169.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1760343AbZDGXPx (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 7 Apr 2009 19:13:27 -0400
-Date: Tue, 7 Apr 2009 16:09:44 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Theodore Tso <tytso@mit.edu>
-Cc: jens.axboe@oracle.com, linux-kernel@vger.kernel.org,
-       linux-ext4@vger.kernel.org, jack@suse.cz
-Subject: Re: [PATCH] block_write_full_page: switch synchronous writes to use
- WRITE_SYNC_PLUG
-Message-Id: <20090407160944.de3c5139.akpm@linux-foundation.org>
-In-Reply-To: <20090407221933.GB7031@mit.edu>
-References: <1238185471-31152-1-git-send-email-tytso@mit.edu>
-	<1238185471-31152-2-git-send-email-tytso@mit.edu>
-	<20090406232141.ebdb426a.akpm@linux-foundation.org>
-	<20090406235052.1ea47513.akpm@linux-foundation.org>
-	<20090407070835.GM5178@kernel.dk>
-	<20090407002313.fcdd1da0.akpm@linux-foundation.org>
-	<20090407075732.GO5178@kernel.dk>
-	<20090407190913.GA31723@mit.edu>
-	<20090407193239.GE5178@kernel.dk>
-	<20090407214421.GA7031@mit.edu>
-	<20090407221933.GB7031@mit.edu>
-X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Tue, 7 Apr 2009 19:15:53 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=from:to:subject:date:user-agent:cc:references:in-reply-to
+         :mime-version:content-type:content-transfer-encoding
+         :content-disposition:message-id;
+        b=PVir2cq78JBzibODKsrZx6Ta0WdWkj2GvfNq9aQrLlV2q2rU/GMwN3zxq5iN08A6RY
+         lFiaj8j0mHWXyXZKikrhLgb4ioJRRXTWjjuYuWJcfY0AWhQECXaHYzBdGk6w/mtj0Gji
+         fd5EgFJPh+fXxqWp6ULHrhr+stvWO9cyaqWKc=
+From: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
+To: Jeff Garzik <jeff@garzik.org>
+Subject: Re: [git pull] IDE updates part 4
+Date: Wed, 8 Apr 2009 01:19:21 +0200
+User-Agent: KMail/1.11.1 (Linux/2.6.29-10247-g8e2c4f2-dirty; KDE/4.2.1; i686; ; )
+Cc: Linus Torvalds <torvalds@linux-foundation.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Stephen Rothwell <sfr@canb.auug.org.au>, linux-ide@vger.kernel.org,
+       linux-kernel@vger.kernel.org
+References: <200904080020.43175.bzolnier@gmail.com> <49DBD3EE.3010601@garzik.org> <200904080059.43698.bzolnier@gmail.com>
+In-Reply-To: <200904080059.43698.bzolnier@gmail.com>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200904080119.22102.bzolnier@gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 7 Apr 2009 18:19:33 -0400
-Theodore Tso <tytso@mit.edu> wrote:
+On Wednesday 08 April 2009 00:59:43 Bartlomiej Zolnierkiewicz wrote:
 
-> Now that we have a distinction between WRITE_SYNC and WRITE_SYNC_PLUG,
-> use WRITE_SYNC_PLUG in __block_write_full_page() to avoid unplugging
-> the block device I/O queue between each page that gets flushed out.
-> 
-> The upstream callers of block_write_full_page() which wait for the
-> writes to finish call wait_on_buffer(), wait_on_writeback_range()
-> (which ultimately calls sync_page(), which calls
-> blk_run_backing_dev(), which will unplug the device queue), and so on.
-> 
-
-<sob>
-
-> 
-> We should get this applied to avoid any performance regressions
-> resulting from commit a64c8610.
-> 
->  fs/buffer.c |    3 ++-
->  1 files changed, 2 insertions(+), 1 deletions(-)
-> 
-> diff --git a/fs/buffer.c b/fs/buffer.c
-> index 977e12a..95b5390 100644
-> --- a/fs/buffer.c
-> +++ b/fs/buffer.c
-> @@ -1646,7 +1646,8 @@ static int __block_write_full_page(struct inode *inode, struct page *page,
->  	struct buffer_head *bh, *head;
->  	const unsigned blocksize = 1 << inode->i_blkbits;
->  	int nr_underway = 0;
-> -	int write_op = (wbc->sync_mode == WB_SYNC_ALL ? WRITE_SYNC : WRITE);
-> +	int write_op = (wbc->sync_mode == WB_SYNC_ALL ?
-> +			WRITE_SYNC_PLUG : WRITE);
->  
->  	BUG_ON(!PageLocked(page));
-
-So how does WRITE_SYNC_PLUG differ from WRITE, and what effect does
-this change have upon kernel behaviour?
-
-
+> [ I added it to the pull request.  Sorry Linus, this is the best I can do ATM
+>   before failing asleep -- if this is not acceptable I'll revisit pull request
+           ^^^^^^^
+I failed to spot it.
