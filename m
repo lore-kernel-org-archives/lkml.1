@@ -1,64 +1,131 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758349AbZDGPCv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758182AbZDGPET@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758349AbZDGPCv (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 7 Apr 2009 11:02:51 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752834AbZDGPCn
+	id S1758182AbZDGPET (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 7 Apr 2009 11:04:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752834AbZDGPEI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 7 Apr 2009 11:02:43 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:38444 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751833AbZDGPCm (ORCPT
+	Tue, 7 Apr 2009 11:04:08 -0400
+Received: from smtp-68.nebula.fi ([83.145.220.68]:49176 "EHLO
+	smtp-68.nebula.fi" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751557AbZDGPEH (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 7 Apr 2009 11:02:42 -0400
-Date: Tue, 7 Apr 2009 07:59:41 -0700 (PDT)
-From: Linus Torvalds <torvalds@linux-foundation.org>
-X-X-Sender: torvalds@localhost.localdomain
-To: David Woodhouse <dwmw2@infradead.org>
-cc: Ingo Molnar <mingo@elte.hu>, iommu@lists.linux-foundation.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] intel-iommu: fix build with CONFIG_BRANCH_TRACER=y
-In-Reply-To: <alpine.LFD.2.00.0904070751510.4010@localhost.localdomain>
-Message-ID: <alpine.LFD.2.00.0904070759050.4010@localhost.localdomain>
-References: <1238839639.3560.37.camel@macbook.infradead.org>  <20090407053739.GA10500@elte.hu>  <1239083045.22733.383.camel@macbook.infradead.org>  <20090407054818.GA5557@elte.hu> <20090407055245.GA10406@elte.hu>  <1239084280.22733.404.camel@macbook.infradead.org>
-  <20090407061558.GA31261@elte.hu> <20090407084950.GA1467@elte.hu>  <20090407090229.GA2467@elte.hu> <1239104035.22733.443.camel@macbook.infradead.org> <alpine.LFD.2.00.0904070751510.4010@localhost.localdomain>
-User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Tue, 7 Apr 2009 11:04:07 -0400
+From: Pekka Enberg <penberg@cs.helsinki.fi>
+To: ming@elte.hu
+Cc: penberg@cs.helsinki.fi, x86@kernel.org, linux-kernel@vger.kernel.org
+Subject: [PATCH 01/13] x86: move x86_quirk_pre_intr_init() to irqinit_32.c
+Date: Tue,  7 Apr 2009 16:48:28 +0300
+Message-Id: <1239112120-676-1-git-send-email-penberg@cs.helsinki.fi>
+X-Mailer: git-send-email 1.5.6.3
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Impact: cleanup
 
+In preparation for unifying irqinit_{32,64}.c, make
+x86_quirk_pre_intr_init() local to irqinit_32.c.
 
-On Tue, 7 Apr 2009, Linus Torvalds wrote:
-> 
-> Can we please do it something like the following instead:
-> 
-> 	#define if(a, ...) \
-> 		__trace_if( (a, ## __VA_ARGS__) )
-> 
-> so that you don't need to do that ", ## __VA_ARGS__" thing three times?
-
-IOW, does this (TOTALLY UNTESTED) patch work?
-
-		Linus
-
+Signed-off-by: Pekka Enberg <penberg@cs.helsinki.fi>
 ---
- include/linux/compiler.h |    4 +++-
- 1 files changed, 3 insertions(+), 1 deletions(-)
+ arch/x86/include/asm/i8259.h |    4 ----
+ arch/x86/include/asm/setup.h |    1 -
+ arch/x86/kernel/irqinit_32.c |   20 +++++++++++++++++++-
+ arch/x86/kernel/setup.c      |   18 ------------------
+ 4 files changed, 19 insertions(+), 24 deletions(-)
 
-diff --git a/include/linux/compiler.h b/include/linux/compiler.h
-index 6faa7e5..cebfdcd 100644
---- a/include/linux/compiler.h
-+++ b/include/linux/compiler.h
-@@ -114,7 +114,9 @@ void ftrace_likely_update(struct ftrace_branch_data *f, int val, int expect);
-  * "Define 'is'", Bill Clinton
-  * "Define 'if'", Steven Rostedt
-  */
--#define if(cond) if (__builtin_constant_p((cond)) ? !!(cond) :		\
-+#define if(cond, ...) __trace_if( (cond , ## __VA_ARGS__) )
-+#define __trace_if(cond) \
-+	if (__builtin_constant_p((cond)) ? !!(cond) :			\
- 	({								\
- 		int ______r;						\
- 		static struct ftrace_branch_data			\
+diff --git a/arch/x86/include/asm/i8259.h b/arch/x86/include/asm/i8259.h
+index 1a99e6c..58d7091 100644
+--- a/arch/x86/include/asm/i8259.h
++++ b/arch/x86/include/asm/i8259.h
+@@ -60,8 +60,4 @@ extern struct irq_chip i8259A_chip;
+ extern void mask_8259A(void);
+ extern void unmask_8259A(void);
+ 
+-#ifdef CONFIG_X86_32
+-extern void init_ISA_irqs(void);
+-#endif
+-
+ #endif /* _ASM_X86_I8259_H */
+diff --git a/arch/x86/include/asm/setup.h b/arch/x86/include/asm/setup.h
+index bdc2ada..4093d1e 100644
+--- a/arch/x86/include/asm/setup.h
++++ b/arch/x86/include/asm/setup.h
+@@ -33,7 +33,6 @@ struct x86_quirks {
+ 	int (*setup_ioapic_ids)(void);
+ };
+ 
+-extern void x86_quirk_pre_intr_init(void);
+ extern void x86_quirk_intr_init(void);
+ 
+ extern void x86_quirk_trap_init(void);
+diff --git a/arch/x86/kernel/irqinit_32.c b/arch/x86/kernel/irqinit_32.c
+index 368b0a8..0c0dedc 100644
+--- a/arch/x86/kernel/irqinit_32.c
++++ b/arch/x86/kernel/irqinit_32.c
+@@ -53,7 +53,7 @@ static struct irqaction fpu_irq = {
+ 	.name = "fpu",
+ };
+ 
+-void __init init_ISA_irqs(void)
++static void __init init_ISA_irqs(void)
+ {
+ 	int i;
+ 
+@@ -121,6 +121,24 @@ int vector_used_by_percpu_irq(unsigned int vector)
+ /* Overridden in paravirt.c */
+ void init_IRQ(void) __attribute__((weak, alias("native_init_IRQ")));
+ 
++/**
++ * x86_quirk_pre_intr_init - initialisation prior to setting up interrupt vectors
++ *
++ * Description:
++ *	Perform any necessary interrupt initialisation prior to setting up
++ *	the "ordinary" interrupt call gates.  For legacy reasons, the ISA
++ *	interrupts should be initialised here if the machine emulates a PC
++ *	in any way.
++ **/
++static void __init x86_quirk_pre_intr_init(void)
++{
++	if (x86_quirks->arch_pre_intr_init) {
++		if (x86_quirks->arch_pre_intr_init())
++			return;
++	}
++	init_ISA_irqs();
++}
++
+ void __init native_init_IRQ(void)
+ {
+ 	int i;
+diff --git a/arch/x86/kernel/setup.c b/arch/x86/kernel/setup.c
+index b415843..523bb69 100644
+--- a/arch/x86/kernel/setup.c
++++ b/arch/x86/kernel/setup.c
+@@ -997,24 +997,6 @@ void __init setup_arch(char **cmdline_p)
+ #ifdef CONFIG_X86_32
+ 
+ /**
+- * x86_quirk_pre_intr_init - initialisation prior to setting up interrupt vectors
+- *
+- * Description:
+- *	Perform any necessary interrupt initialisation prior to setting up
+- *	the "ordinary" interrupt call gates.  For legacy reasons, the ISA
+- *	interrupts should be initialised here if the machine emulates a PC
+- *	in any way.
+- **/
+-void __init x86_quirk_pre_intr_init(void)
+-{
+-	if (x86_quirks->arch_pre_intr_init) {
+-		if (x86_quirks->arch_pre_intr_init())
+-			return;
+-	}
+-	init_ISA_irqs();
+-}
+-
+-/**
+  * x86_quirk_intr_init - post gate setup interrupt initialisation
+  *
+  * Description:
+-- 
+1.5.6.3
+
