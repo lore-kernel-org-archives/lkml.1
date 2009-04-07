@@ -1,92 +1,73 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753019AbZDGHw6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753955AbZDGHyV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753019AbZDGHw6 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 7 Apr 2009 03:52:58 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752163AbZDGHws
+	id S1753955AbZDGHyV (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 7 Apr 2009 03:54:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752352AbZDGHyM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 7 Apr 2009 03:52:48 -0400
-Received: from ozlabs.org ([203.10.76.45]:55267 "EHLO ozlabs.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751849AbZDGHwq (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 7 Apr 2009 03:52:46 -0400
-From: Rusty Russell <rusty@rustcorp.com.au>
-To: Mike Galbraith <efault@gmx.de>
-Subject: [PULL] module bogus patch revert
-Date: Tue, 7 Apr 2009 17:22:39 +0930
-User-Agent: KMail/1.11.2 (Linux/2.6.27-11-generic; KDE/4.2.2; i686; ; )
-Cc: Ingo Molnar <mingo@elte.hu>, LKML <linux-kernel@vger.kernel.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>
-References: <1239008928.5812.6.camel@marge.simson.net>
-In-Reply-To: <1239008928.5812.6.camel@marge.simson.net>
-MIME-Version: 1.0
-Content-Type: Text/Plain;
-  charset="iso-8859-15"
-Content-Transfer-Encoding: 7bit
+	Tue, 7 Apr 2009 03:54:12 -0400
+Received: from one.firstfloor.org ([213.235.205.2]:35038 "EHLO
+	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752249AbZDGHyM (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 7 Apr 2009 03:54:12 -0400
+Date: Tue, 7 Apr 2009 09:56:21 +0200
+From: Andi Kleen <andi@firstfloor.org>
+To: Brice Goglin <Brice.Goglin@inria.fr>
+Cc: Andi Kleen <andi@firstfloor.org>,
+       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
+       Yinghai Lu <yhlu.kernel@gmail.com>,
+       David Rientjes <rientjes@google.com>, Chris Worley <worleys@gmail.com>,
+       linux-kernel@vger.kernel.org
+Subject: Re: Off topic: Numactl "distance" wrong
+Message-ID: <20090407075621.GK17934@one.firstfloor.org>
+References: <86802c440904031448yc6d499ckd9cb969ce136f477@mail.gmail.com> <87r609jtc2.fsf@basil.nowhere.org> <20090407111539.F0F5.A69D9226@jp.fujitsu.com> <49DAF003.1070605@inria.fr> <20090407070530.GJ17934@one.firstfloor.org> <49DB0388.1040408@inria.fr>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Message-Id: <200904071722.40781.rusty@rustcorp.com.au>
+In-Reply-To: <49DB0388.1040408@inria.fr>
+User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Monday 06 April 2009 18:38:48 Mike Galbraith wrote:
-> Hi Rusty,
+On Tue, Apr 07, 2009 at 09:40:56AM +0200, Brice Goglin wrote:
+> Andi Kleen wrote:
+> >> Well, some user-space application may use these distances
+> >> to improve their binding.
+> >>     
+> >
+> > I'm not aware of any that does.
 > 
-> The below rendered modules unloadable, and my bog standard opensuse 11.0
-> x86_64 box became a doorstop.
-...
-> (nobody else has griped yet and it's already 11:08.  hm)
+> We have some people here that would like to use it ideally. But they
+> know numa distances is almost never available, so they don't really look
+> at using them...
 
-Needs MODVERSIONS=y + MODULE_FORCE_UNLOAD=n.
+>From my experience and from talking at people they tend to have enough
+trouble getting the basic NUMA tunings done, without caring about
+such (arcane) details.
 
-Thanks for report!
-Rusty.
----
+> 
+> > If it's true then the correct place would be to fix the BIOS.
+> >   
+> 
+> Come on, you know it's not going to happen for 99.9% on the existing
+> opteron boxes. We have many hardware quirks in the kernel, I don't see
+> why this numa distance problem would not deserve its own work around.
 
-The following changes since commit d508afb437daee7cf07da085b635c44a4ebf9b38:
-  Trond Myklebust (1):
-        NFS: Fix a double free in nfs_parse_mount_options()
+The systems where it makes a large difference typically have them anyways.
 
-are available in the git repository at:
+Anyways if you really want you can ask Len for a way to override SLIT
+tables at boot time (similar to the mechanism for MADTs), but I suspect
+he wouldn't be particularly enthuiastic. Also it's a little more tricky
+than for normal MADTs because SLIT parsing happens very early.
 
-  git://git.kernel.org/pub/scm/linux/kernel/git/rusty/linux-2.6-module-and-param.git master
+> By the way, anybody looked at this on Nehalem boxes ?
 
-Rusty Russell (1):
-      Revert "module: remove the SHF_ALLOC flag on the __versions section."
+Current Nehalem boxes are all fully connected, so 10/20 
+(or sometimes scaled to trigger the zone fallback workaround) is the
+correct answer and you don't get any benefits from magic in this area.
 
- kernel/module.c |    3 ---
- 1 files changed, 0 insertions(+), 3 deletions(-)
+-Andi
 
-
-commit 2e45e77787c9d0720b046eb69856edf43b17e33e
-Author: Rusty Russell <rusty@rustcorp.com.au>
-Date:   Tue Apr 7 17:12:43 2009 +0930
-
-    Revert "module: remove the SHF_ALLOC flag on the __versions section."
-    
-    This reverts commit 9cb610d8e35fe3ec95a2fe2030b02f85aeea83c1.
-    
-    This was an impressively stupid patch.  Firstly, we reset the SHF_ALLOC
-    flag lower down in the same function, so the patch was useless.  Even
-    better, find_sec() ignores sections with SHF_ALLOC not set, so
-    it breaks CONFIG_MODVERSIONS=y with CONFIG_MODULE_FORCE_LOAD=n, which
-    refuses to load the module since it can't find the __versions section.
-    
-    Signed-off-by: Rusty Russell <rusty@rustcorp.com.au>
----
- kernel/module.c |    3 ---
- 1 files changed, 0 insertions(+), 3 deletions(-)
-
-diff --git a/kernel/module.c b/kernel/module.c
-index c268a77..05f014e 100644
---- a/kernel/module.c
-+++ b/kernel/module.c
-@@ -1952,9 +1952,6 @@ static noinline struct module *load_module(void __user *umod,
- 		if (strstarts(secstrings+sechdrs[i].sh_name, ".exit"))
- 			sechdrs[i].sh_flags &= ~(unsigned long)SHF_ALLOC;
- #endif
--		/* Don't keep __versions around; it's just for loading. */
--		if (strcmp(secstrings + sechdrs[i].sh_name, "__versions") == 0)
--			sechdrs[i].sh_flags &= ~(unsigned long)SHF_ALLOC;
- 	}
- 
- 	modindex = find_sec(hdr, sechdrs, secstrings,
+-- 
+ak@linux.intel.com -- Speaking for myself only.
