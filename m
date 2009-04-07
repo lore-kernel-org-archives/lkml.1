@@ -1,62 +1,76 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752877AbZDGJq6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752809AbZDGJw4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752877AbZDGJq6 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 7 Apr 2009 05:46:58 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751721AbZDGJqr
+	id S1752809AbZDGJw4 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 7 Apr 2009 05:52:56 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751802AbZDGJwr
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 7 Apr 2009 05:46:47 -0400
-Received: from lnx503.hrz.tu-darmstadt.de ([130.83.156.232]:37185 "EHLO
-	lnx503.hrz.tu-darmstadt.de" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751528AbZDGJqq (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 7 Apr 2009 05:46:46 -0400
-From: Uwe Bonnes <bon@elektron.ikp.physik.tu-darmstadt.de>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	Tue, 7 Apr 2009 05:52:47 -0400
+Received: from nn7.de ([85.214.94.156]:53843 "EHLO nn7.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751721AbZDGJwq (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 7 Apr 2009 05:52:46 -0400
+Subject: Re: 2.6.29+ ath5k connect disconnect cycles?
+From: Soeren Sonnenburg <sonne@debian.org>
+To: Tulio Magno Quites Machado Filho <tuliom@quites.com.br>
+Cc: Linux Kernel <linux-kernel@vger.kernel.org>,
+       ath5k-devel <ath5k-devel@venema.h4ckr.net>
+In-Reply-To: <20090406195544.GA3542@joutaro.rooms.iriga>
+References: <1239008128.32048.211.camel@localhost>
+	 <20090406195544.GA3542@joutaro.rooms.iriga>
+Content-Type: text/plain
 Content-Transfer-Encoding: 7bit
-Message-ID: <18907.8396.397764.21716@elektron.ikp.physik.tu-darmstadt.de>
-Date: Tue, 7 Apr 2009 11:45:48 +0200
-To: Luotao Fu <l.fu@pengutronix.de>
-Cc: Uwe Bonnes <bon@elektron.ikp.physik.tu-darmstadt.de>, gregkh@suse.de,
-       linux-usb@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] USB: serial: add FTDI FT4232H ID
-In-Reply-To: <20090407090353.GA12669@pengutronix.de>
-References: <1239090573-11527-1-git-send-email-l.fu@pengutronix.de>
-	<18907.3900.117808.251116@elektron.ikp.physik.tu-darmstadt.de>
-	<20090407090353.GA12669@pengutronix.de>
-X-Mailer: VM 7.19 under Emacs 21.3.1
-X-PMX-TU: seen v0.62 by 5.5.3.366731, Antispam-Engine: 2.7.0.366912, Antispam-Data: 2009.4.7.93123
-X-PMX-SPAMCHECK: outgoing mail
+Date: Tue, 07 Apr 2009 11:52:41 +0200
+Message-Id: <1239097961.32048.484.camel@localhost>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.24.5 
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
->>>>> "Luotao" == Luotao Fu <l.fu@pengutronix.de> writes:
+On Mon, 2009-04-06 at 21:55 +0200, Tulio Magno Quites Machado Filho
+wrote:
+> On Apr 06 09 10:55, Soeren Sonnenburg wrote:
+> > does anyone else observer strange connect disconnect cycles with ath5k?
+> > I have two different notebooks here one with an AR5414 and one with some
+> > 2424 (?) chipset both having the same problems to connect...
+> 
+> Hello Soeren,
+> 
+> Is there any information from dmesg?
 
-    Luotao> On Tue, Apr 07, 2009 at 10:30:52AM +0200, Uwe Bonnes wrote:
-    >> >>>>> "Luotao" == Luotao Fu <l.fu@pengutronix.de> writes:
-    >> 
-    Luotao> add the ID of FT4232H Hi-Speed quad channel serial converter.
-    >>  This probably isn't enough to make the devices work.
-    >> 
-    >> The FT2232H and FT4432H are High Speed devices with defaul buffer
-    >> sizes of 512 bytes. A recieve buffer contains two status bytes and
-    >> then up to 510 bytes of data against 62 bytes on the old devices.
+I am seeing cycles of
 
-    Luotao> Shame on me. I did only check whether the device with its four
-    Luotao> channels are registered. Since the chip is built-in on our board
-    Luotao> and I still need some additional libraries to check the devices
-    Luotao> connected to it. I haven't done any function tests still. Will
-    Luotao> keep an eye on this. Sounds that it could be a little hairy
-    Luotao> then. Afais the PID 6001 is e.g. shared by common/high speed
-    Luotao> devices. I didn't grab deeper in the ftdi code, probably it'll
-    Luotao> be some way to work around this.
+airport: deauthenticated (Reason: 2)
+airport: direct probe to AP XX:XX:XX:XX:XX:XX try 1
+airport direct probe responded
+airport: authenticate with AP XX:XX:XX:XX:XX:XX
+airport: authenticated
+airport: associate with AP XX:XX:XX:XX:XX:XX
+airport: RX ReassocResp from XX:XX:XX:XX:XX:XX (capab=0x421 status=0 aid=79)
+airport: associated
+airport: deauthenticated (Reason: 2)
+airport: direct probe to AP XX:XX:XX:XX:XX:XX try 1
+airport direct probe responded
+airport: authenticate with AP XX:XX:XX:XX:XX:XX
+airport: authenticated
+airport: associate with AP XX:XX:XX:XX:XX:XX
+airport: RX ReassocResp from XX:XX:XX:XX:XX:XX (capab=0x421 status=0 aid=81)
+airport: associated
+airport: deauthenticated (Reason: 2)
+airport: direct probe to AP XX:XX:XX:XX:XX:XX try 1
+airport direct probe responded
+airport: authenticate with AP XX:XX:XX:XX:XX:XX
+airport: authenticated
+airport: associate with AP XX:XX:XX:XX:XX:XX
+airport: RX ReassocResp from XX:XX:XX:XX:XX:XX (capab=0x421 status=0 aid=82)
+airport: associated
+airport: deauthenticated (Reason: 2)
+...
 
-For libusb access, some work for the H-Type chips has already been don in
-libftdi (www.intra2net.com/en/developer/libftdi/)
+Not sure about the involvement of network-manager here... but I see that
+the device gets a valid IP via dhcp.
 
+Soeren
 -- 
-Uwe Bonnes                bon@elektron.ikp.physik.tu-darmstadt.de
-
-Institut fuer Kernphysik  Schlossgartenstrasse 9  64289 Darmstadt
---------- Tel. 06151 162516 -------- Fax. 06151 164321 ----------
+For the one fact about the future of which we can be certain is that it
+will be utterly fantastic. -- Arthur C. Clarke, 1962
