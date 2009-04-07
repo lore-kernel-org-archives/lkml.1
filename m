@@ -1,116 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760467AbZDGSee@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760229AbZDGSkF@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760467AbZDGSee (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 7 Apr 2009 14:34:34 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757430AbZDGSeZ
+	id S1760229AbZDGSkF (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 7 Apr 2009 14:40:05 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756729AbZDGSjz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 7 Apr 2009 14:34:25 -0400
-Received: from comal.ext.ti.com ([198.47.26.152]:40809 "EHLO comal.ext.ti.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1757044AbZDGSeY convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 7 Apr 2009 14:34:24 -0400
-From: "Narnakaje, Snehaprabha" <nsnehaprabha@ti.com>
-To: Thomas Gleixner <tglx@linutronix.de>
-CC: David Brownell <david-b@pacbell.net>,
-       "davinci-linux-open-source@linux.davincidsp.com" 
-	<davinci-linux-open-source@linux.davincidsp.com>,
-       "linux-mtd@lists.infradead.org" <linux-mtd@lists.infradead.org>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
-Date: Tue, 7 Apr 2009 13:34:01 -0500
-Subject: RE: [PATCH] MTD-NAND: Changes to read_page APIs to support
- NAND_ECC_HW_SYNDROME mode on TI DaVinci DM355
-Thread-Topic: [PATCH] MTD-NAND: Changes to read_page APIs to support
- NAND_ECC_HW_SYNDROME mode on TI DaVinci DM355
-Thread-Index: Acm3oJqXCDsOhxybQ2qEExMEd/evBwACyTYw
-Message-ID: <7A436F7769CA33409C6B44B358BFFF0CFFAA9253@dlee02.ent.ti.com>
-References: <1238601784-9563-1-git-send-email-nsnehaprabha@ti.com>
- <200904051556.05368.david-b@pacbell.net>
- <alpine.LFD.2.00.0904070042300.21577@localhost.localdomain>
- <200904061849.23110.david-b@pacbell.net>
- <7A436F7769CA33409C6B44B358BFFF0CFFAA90C0@dlee02.ent.ti.com>
- <alpine.LFD.2.00.0904071831550.21577@localhost.localdomain>
-In-Reply-To: <alpine.LFD.2.00.0904071831550.21577@localhost.localdomain>
-Accept-Language: en-US
-Content-Language: en-US
-X-MS-Has-Attach: 
-X-MS-TNEF-Correlator: 
-acceptlanguage: en-US
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 8BIT
+	Tue, 7 Apr 2009 14:39:55 -0400
+Received: from kroah.org ([198.145.64.141]:52804 "EHLO coco.kroah.org"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1754035AbZDGSjy (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 7 Apr 2009 14:39:54 -0400
+Date: Tue, 7 Apr 2009 11:28:55 -0700
+From: Greg KH <greg@kroah.com>
+To: Christopher Harrer <charrer@alacritech.com>
+Cc: "'Lior Dotan'" <liodot@gmail.com>, gregkh@suse.de,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH]  SLICOSS - use gfp_kernel where possible
+Message-ID: <20090407182854.GB27973@kroah.com>
+References: <4992B7EE.8020601@gmail.com> <019E07F7ABD24C5A9F79702ADD7F8230@exton.alacritech.com>
 MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <019E07F7ABD24C5A9F79702ADD7F8230@exton.alacritech.com>
+User-Agent: Mutt/1.5.19 (2009-01-05)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Thomas,
+On Tue, Mar 24, 2009 at 02:31:14PM -0400, Christopher Harrer wrote:
+> > -----Original Message-----
+> > From: Lior Dotan [mailto:liodot@gmail.com] 
+> > Sent: Wednesday, February 11, 2009 6:35 AM
+> > To: gregkh@suse.de
+> > Cc: Christopher Harrer; linux-kernel@vger.kernel.org
+> > Subject: [PATCH] SLICOSS - use gfp_kernel where possible
+> > 
+> > Use GFP_KERNEL instead of GFP_ATOMIC where possible.
+> > 
+> > Signed_off-by: Lior Dotan <liodot@gmail.com>
+> > 
+> > 
+> > 
+> Hi Greg,
+> 
+> In speaking with Lior, would it be possible to revert this patch?  It's
+> causing:
+> 
+> > Mar 24 11:50:31 linuxdev kernel: BUG: sleeping function called from 
+> > invalid context at mm/slub.c:1599 Mar 24 11:50:31 linuxdev kernel: 
+> > in_atomic(): 1, irqs_disabled(): 0, pid:
+> > 3251, name: avahi-daemon
+> 
+> Please let me know if you need any additional information or have any
+> questions.
 
-> -----Original Message-----
-> From: Thomas Gleixner [mailto:tglx@linutronix.de]
-> Sent: Tuesday, April 07, 2009 12:46 PM
-> To: Narnakaje, Snehaprabha
-> Cc: David Brownell; davinci-linux-open-source@linux.davincidsp.com; linux-
-> mtd@lists.infradead.org; linux-kernel@vger.kernel.org
-> Subject: RE: [PATCH] MTD-NAND: Changes to read_page APIs to support
-> NAND_ECC_HW_SYNDROME mode on TI DaVinci DM355
-> 
-> On Tue, 7 Apr 2009, Narnakaje, Snehaprabha wrote:
-> > > And that's exactly what these patches do:  enable just such choices.
-> > > The $SUBJECT patch would be needed to use NAND_ECC_HW with this 4-bit
-> > > ECC hardware, and not be forced to "choose" the infix-OOB policy.
-> >
-> > I had looked read_page/write_page APIs of the NAND_ECC_HW mode to
-> > see if we can use this mode for DaVinci DM355 device.
-> >
-> > The read_page handler for NAND_ECC_HW mode reads the data and ECC
-> > from hardware for each chunk. It then reads the OOB and extracts ecc
-> > code from it, before using the ECC from hardware and ecc code from
-> > OOB for data correction.
-> >
-> > On DaVinci DM355 device, we need to pass the ecc code/syndrome
-> > extracted from OOB area, in order to read the HW ECC for each data
-> > chunk. This is where we differ from NAND_ECC_HW mode.
-> 
-> I have to admit that I'm slightly confused. Is the below description
-> correct?
-> 
-> On write you generate the ECC via hardware and store it in the OOB
-> area, right ?
+Now reverted, sorry for the delay.
 
-Yes. For a large page (e.g. 2K+64), ECC should be stored in the 64bytes OOB region. The NAND controller on DaVinci DM355 device is capable of generating HW ECC (4-bit) for every 512bytes. This means, we have 4 eccsteps. The ECC should be generated by the HW for every 512byte chunk write and stored temporarily in a buffer until all 4 eccsteps have been tried. The ECC from the temporary buffer is then written to the OOB area.
-
-> 
-> On read you read the oob data first and extract the ECC. Then you feed
-> the extracted ECC into the HW generator and read the data. Is this
-> correct ?
-
-Almost, read OOB, read data and then feed the extracted ECC into HW generator. Read the ECC status to see any correction required on the read data. Again, reading data, feeding the extracted ECC into HW generator and the correction will have to be repeated for # of times - eccsteps.
-
-> 
-> > The read_page/write_page APIs for NAND_ECC_HW_SYNDROME have the
-> > other problem that David mentioned - overwriting NAND manufacturers
-> > bad block meta data, when used with large page NAND chips. These
-> > APIs do not handle the "eccsteps" properly. The OOB is read/written
-> > after every data chunk, thus you actually have overwritten the
-> > factory bad block information, when these APIs handle the last data
-> > chunk. OOB should be read/written after the entire data (a page) is
-> > read/written.
-> 
-> Again, that is _how_ the NAND_ECC_HW_SYNDROME functions work. And if
-> your hardware needs a completely different mode, then we need to
-> analyse what's the best solution for it.
-
-Based on the description above, NAND_ECC_HW_SYNDROME fitted well, with the exception of overriding the read_page/write_page APIs (to fix the bugs mentioned above). I have not sent the actual NAND driver to the linux-mtd yet, since the initial version (supported only 1-bit HW ECC) submitted by David Brownell was still in review (no comments and not approved yet). While coming up with read_page API in the DaVinci NAND driver, we realized the need to pass "page" parameter. The read_page API in the DaVinci NAND driver required to call chip->cmdfunc to adjust the read location (page vs. OOB). The "page" parameter has to be passed to the chip->cmdfunc.
-This patch was a "preparation" patch for the DaVinci NAND driver 4-bit ECC support. It added the "page" parameter to the "read_page" and "read_page_raw" handlers, fixed few other bugs.
-
-> 
-> Right now the provided information is way to diffuse to do that.
-> 
-> You provided a patch without explaining what your hardware needs and
-> showing how the actual user of the modified API looks like and how the
-> functionality is implemented.
-> 
-> Thanks,
-> 
-> 	tglx
-
+greg k-h
