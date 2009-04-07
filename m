@@ -1,60 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755890AbZDGXYV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761132AbZDGXZ7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755890AbZDGXYV (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 7 Apr 2009 19:24:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752872AbZDGXYB
+	id S1761132AbZDGXZ7 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 7 Apr 2009 19:25:59 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753384AbZDGXZt
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 7 Apr 2009 19:24:01 -0400
-Received: from mu-out-0910.google.com ([209.85.134.188]:49089 "EHLO
-	mu-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752561AbZDGXX7 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 7 Apr 2009 19:23:59 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=from:to:subject:date:user-agent:cc:references:in-reply-to
-         :mime-version:content-disposition:message-id:content-type
-         :content-transfer-encoding;
-        b=b24wlF4cja4oihwCsr7PFnWTgLj2xXUPc9nqED6c0Ynnbb5I0vjaIHOVg9NJ08ob9Z
-         bfVfgNzQRAKbaKTMSDdeIkpzlhok+J9jGgdnnSQGj/ZjAQPUF1xUlSVjehXPSZfnzNBp
-         q/PbzS0hgwzWUidkh0t16hoVELxbzevE6TPUY=
-From: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
-To: Jeff Garzik <jeff@garzik.org>
-Subject: Re: [git pull] IDE updates part 4
-Date: Wed, 8 Apr 2009 01:26:58 +0200
-User-Agent: KMail/1.11.1 (Linux/2.6.29-10247-g8e2c4f2-dirty; KDE/4.2.1; i686; ; )
-Cc: Linus Torvalds <torvalds@linux-foundation.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Stephen Rothwell <sfr@canb.auug.org.au>, linux-ide@vger.kernel.org,
-       linux-kernel@vger.kernel.org
-References: <200904080020.43175.bzolnier@gmail.com> <49DBD3EE.3010601@garzik.org> <200904080059.43698.bzolnier@gmail.com>
-In-Reply-To: <200904080059.43698.bzolnier@gmail.com>
+	Tue, 7 Apr 2009 19:25:49 -0400
+Received: from srv5.dvmed.net ([207.36.208.214]:59439 "EHLO mail.dvmed.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751978AbZDGXZs (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 7 Apr 2009 19:25:48 -0400
+Message-ID: <49DBE0F9.7000207@garzik.org>
+Date: Tue, 07 Apr 2009 19:25:45 -0400
+From: Jeff Garzik <jeff@garzik.org>
+User-Agent: Thunderbird 2.0.0.21 (X11/20090320)
 MIME-Version: 1.0
-Content-Disposition: inline
-Message-Id: <200904080126.58613.bzolnier@gmail.com>
-Content-Type: text/plain;
-  charset="iso-8859-1"
+To: Oleg Drokin <green@linuxhacker.ru>
+CC: linux-fsdevel@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH 1/3] VFS "stat light" out of fstatat, and fine grained
+ flags
+References: <20090407231524.GA1569655@fiona.linuxhacker.ru>
+In-Reply-To: <20090407231524.GA1569655@fiona.linuxhacker.ru>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
+X-Spam-Score: -4.4 (----)
+X-Spam-Report: SpamAssassin version 3.2.5 on srv5.dvmed.net summary:
+	Content analysis details:   (-4.4 points, 5.0 required)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wednesday 08 April 2009 00:59:43 Bartlomiej Zolnierkiewicz wrote:
+Oleg Drokin wrote:
+> Hello!
+> 
+>    This is reworked Mark Fasheh's patch + my earlier patch.
+>    It allows one to specify which specific struct stat fields are needed
+>    out of the fstatat call, and also a request to obtain most uptodate
+>    information for inode (for NFS mostly).
+> 
+>    Also it adds AT_STAT_SELF flag to mean that the stat should be executed not
+>    on a path, but on the passed filedecriptor itself.
+> 
+>    A first real kernel user for this added in loop block driver that does
+>    not care about size or anything else besides rdev and inode number.
+> 
+>    I see various architectures replicate bits of vfs_*stat* in some compat
+>    code, I am not sure if we need to update those as well or not.
+> 
+>    This patch does away with all the extra syscalls.
 
-[...]
 
-> diff --git a/drivers/ide/ide.c b/drivers/ide/ide.c
-> index 7b7cd76..4ed66d0 100644
-> --- a/drivers/ide/ide.c
-> +++ b/drivers/ide/ide.c
-> @@ -178,11 +178,14 @@ EXPORT_SYMBOL_GPL(ide_pci_clk);
->  module_param_named(pci_clock, ide_pci_clk, int, 0);
->  MODULE_PARM_DESC(pci_clock, "PCI bus clock frequency (in MHz)");
->  
-> +/* needs block layer support */
-> +#if 0
->  int ide_trim = 0;
+linux-kernel should be included in the discussion of this syscall.
 
-This patch is crap and will break ide-disk build.
+	Jeff
 
-Linus, I'll revisit the pull request later...
+
