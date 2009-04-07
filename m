@@ -1,93 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756545AbZDGFxr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753681AbZDGFyx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756545AbZDGFxr (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 7 Apr 2009 01:53:47 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752138AbZDGFxg
+	id S1753681AbZDGFyx (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 7 Apr 2009 01:54:53 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751799AbZDGFyk
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 7 Apr 2009 01:53:36 -0400
-Received: from mx2.mail.elte.hu ([157.181.151.9]:60773 "EHLO mx2.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751799AbZDGFxg (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 7 Apr 2009 01:53:36 -0400
-Date: Tue, 7 Apr 2009 07:52:45 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: David Woodhouse <dwmw2@infradead.org>
-Cc: torvalds@linux-foundation.org, iommu@lists.linux-foundation.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: [GIT *] intel-iommu updates for 2.6.30 (second batch)
-Message-ID: <20090407055245.GA10406@elte.hu>
-References: <1238839639.3560.37.camel@macbook.infradead.org> <20090407053739.GA10500@elte.hu> <1239083045.22733.383.camel@macbook.infradead.org> <20090407054818.GA5557@elte.hu>
+	Tue, 7 Apr 2009 01:54:40 -0400
+Received: from mail-fx0-f158.google.com ([209.85.220.158]:46151 "EHLO
+	mail-fx0-f158.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751415AbZDGFyj (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 7 Apr 2009 01:54:39 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=sender:to:cc:subject:references:from:date:in-reply-to:message-id
+         :user-agent:mime-version:content-type;
+        b=keweKt7Qvd6K/fU3NSjaQ+GmqGKNFIpTT1YgZNB7rQpwj+MvnIg7h3kK6qHHdjstHG
+         emLpz4aOr8mR49ZnNwwoHzexf9dj0zLywzGJI/obm8B+4C0L9pNV9R1KAsIj+TkLoCxw
+         FpEdEvjoNBz2DRAD2NtA+hXAO3W1fdQVJXIT8=
+To: "John W. Linville" <linville@tuxdriver.com>
+Cc: Michael Buesch <mb@bu3sch.de>,
+       Jaswinder Singh Rajput <jaswinder@kernel.org>,
+       Sujith <Sujith.Manoharan@atheros.com>,
+       wireless <linux-wireless@vger.kernel.org>,
+       David Miller <davem@davemloft.net>, LKML <linux-kernel@vger.kernel.org>,
+       Helmut Schaa <helmut.schaa@googlemail.com>
+Subject: Re: ath9k becon loss messages
+References: <1238923439.4120.9.camel@localhost.localdomain>
+	<200904061217.31134.mb@bu3sch.de> <87tz52xepy.fsf@litku.valot.fi>
+	<200904061251.10965.helmut.schaa@gmail.com>
+	<da94abde0904060405k280b3094jc20d0f7a4e6e759d@mail.gmail.com>
+	<87iqlhdd3z.fsf@litku.valot.fi> <20090406180042.GD10842@tuxdriver.com>
+From: Kalle Valo <kalle.valo@iki.fi>
+Date: Tue, 07 Apr 2009 08:54:35 +0300
+In-Reply-To: <20090406180042.GD10842@tuxdriver.com> (John W. Linville's message of "Mon\, 6 Apr 2009 14\:00\:42 -0400")
+Message-ID: <87fxglhuuc.fsf@litku.valot.fi>
+User-Agent: Gnus/5.11 (Gnus v5.11) Emacs/22.3 (gnu/linux)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <20090407054818.GA5557@elte.hu>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+Content-Type: text/plain; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+"John W. Linville" <linville@tuxdriver.com> writes:
 
-* Ingo Molnar <mingo@elte.hu> wrote:
+> On Mon, Apr 06, 2009 at 06:18:56PM +0300, Kalle Valo wrote:
+>
+>> When I'm able to implement the proper fix, I think it should first have
+>> proper testing in wireles-testing before pushing it to mainline. So
+>> maybe the proper fix is 2.6.31 material, just to be on the safe side
+>> here.
+>> 
+>> John, what do you think?
+>
+> It depends on what the proper fix looks like, but basically anything
+> posted in the last week and thereafter is already 2.6.31 material
+> unless it is a specific bug fix for what is already in Linus' kernel.
 
-> 
-> * David Woodhouse <dwmw2@infradead.org> wrote:
-> 
-> > On Tue, 2009-04-07 at 07:37 +0200, Ingo Molnar wrote:
-> > > I suspect these bits are the ones that broke the upstream build:
-> > > 
-> > >  drivers/pci/dmar.c:47: error: expected ‘=’, ‘,’, ‘;’, ‘asm’ or
-> > > ‘__attribute__’ before ‘dmar_tbl_size’
-> > >  drivers/pci/dmar.c:62: warning: ‘struct acpi_dmar_device_scope’
-> > > declared inside parameter list
-> > >  drivers/pci/dmar.c:62: warning: its scope is only this definition or
-> > > declaration, which is probably not what you want
-> > 
-> > Yeah, <acpi/acpi.h> was being included implicitly for me, but 
-> > certain configs don't do that. Alexander Beregalov sent a patch 
-> > for that, which I added to my tree before Linus pulled it.
-> > 
-> > Commit 46f06b72378d3187f0d12f7a60d020676bfbf332 is the fix.
-> 
-> No, that does not fix it - it's still broken with 
-> v2.6.29-9854-gd508afb. Try the config i sent.
+Ok, that settles it then. Because this bug has been in mac80211 for ages
+we can wait for 2.6.31.
 
-The problem is INTR_REMAP. That brings in DMAR but not ACPI.
+But do you take Michael's patch[1] for disabling the "beacon loss"
+message for 2.6.30? I think we should have it in 2.6.30, otherwise we
+will get quite a lot of bug reports. Do you want me to resend it?
 
-The patch below fixes it, but it is only an ugly workaround: we 
-really dont want 'depends on ACPI' dependencies to spread like that.
+[1] http://marc.info/?l=linux-kernel&m=123892431619630&w=2
 
-ACPI is a hardware discovery mechanism. It might be the only way to 
-discover these pieces of hardware at the moment, but we should not 
-tie method of discovery to hardware support. I'd suggest a 
-dmar_acpi.c splitout of the ACPI bits.
-
-More testing too please - this was really an avoidable bug.
-
-	Ingo
-
----
- arch/x86/Kconfig |    2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
-
-Index: linux2/arch/x86/Kconfig
-===================================================================
---- linux2.orig/arch/x86/Kconfig
-+++ linux2/arch/x86/Kconfig
-@@ -268,7 +268,7 @@ config SMP_SUPPORT
- 
- config X86_X2APIC
- 	bool "Support x2apic"
--	depends on X86_LOCAL_APIC && X86_64
-+	depends on X86_LOCAL_APIC && X86_64 && ACPI
- 	select INTR_REMAP
- 	---help---
- 	  This enables x2apic support on CPUs that have this feature.
+-- 
+Kalle Valo
