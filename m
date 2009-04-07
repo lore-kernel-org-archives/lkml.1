@@ -1,127 +1,92 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753033AbZDGHvo@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753019AbZDGHw6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753033AbZDGHvo (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 7 Apr 2009 03:51:44 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751930AbZDGHvg
+	id S1753019AbZDGHw6 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 7 Apr 2009 03:52:58 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752163AbZDGHws
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 7 Apr 2009 03:51:36 -0400
-Received: from mail-ew0-f165.google.com ([209.85.219.165]:54690 "EHLO
-	mail-ew0-f165.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751908AbZDGHvf convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 7 Apr 2009 03:51:35 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:sender:in-reply-to:references:date
-         :x-google-sender-auth:message-id:subject:from:to:cc:content-type
-         :content-transfer-encoding;
-        b=E2roDExE3gTqwSG+kiYwSjYYoqvi22/7Oj9SpRXTCV61PGn2t+hg2TrYjKixPyl91+
-         qt2zi3Oou7erjCW4mD47caJ3w01uS957CSq8opcJ6ojlZUW98QCZNL0p/HvF8I65AvVw
-         ldP07POcxRZGXQyix+Qv2FDCUqOZKVtaz08TQ=
+	Tue, 7 Apr 2009 03:52:48 -0400
+Received: from ozlabs.org ([203.10.76.45]:55267 "EHLO ozlabs.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751849AbZDGHwq (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 7 Apr 2009 03:52:46 -0400
+From: Rusty Russell <rusty@rustcorp.com.au>
+To: Mike Galbraith <efault@gmx.de>
+Subject: [PULL] module bogus patch revert
+Date: Tue, 7 Apr 2009 17:22:39 +0930
+User-Agent: KMail/1.11.2 (Linux/2.6.27-11-generic; KDE/4.2.2; i686; ; )
+Cc: Ingo Molnar <mingo@elte.hu>, LKML <linux-kernel@vger.kernel.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>
+References: <1239008928.5812.6.camel@marge.simson.net>
+In-Reply-To: <1239008928.5812.6.camel@marge.simson.net>
 MIME-Version: 1.0
-In-Reply-To: <alpine.LFD.2.00.0904061604410.8214@localhost.localdomain>
-References: <1239022088-29002-1-git-send-email-jens.axboe@oracle.com>
-	 <alpine.LFD.2.00.0904060840080.3863@localhost.localdomain>
-	 <20090406183157.GD7376@mit.edu>
-	 <alpine.LFD.2.00.0904061255160.4134@localhost.localdomain>
-	 <002501c9b6f3$f85b4910$e911db30$@com> <20090406211931.GB8586@mit.edu>
-	 <003001c9b6ff$a9259ce0$fb70d6a0$@com>
-	 <2c0942db0904061504l6504934bi446f7425fcd38470@mail.gmail.com>
-	 <alpine.LFD.2.00.0904061509020.7443@localhost.localdomain>
-	 <alpine.LFD.2.00.0904061604410.8214@localhost.localdomain>
-Date: Tue, 7 Apr 2009 09:51:31 +0200
-X-Google-Sender-Auth: 669b7bb09157b190
-Message-ID: <10f740e80904070051u4ec81842u931a405ab5bde985@mail.gmail.com>
-Subject: Re: [PATCH 0/8][RFC] IO latency/throughput fixes
-From: Geert Uytterhoeven <geert@linux-m68k.org>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: Ray Lee <ray-lk@madrabbit.org>, Hua Zhong <hzhong@gmail.com>,
-       Theodore Tso <tytso@mit.edu>, Jens Axboe <jens.axboe@oracle.com>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8BIT
+Content-Type: Text/Plain;
+  charset="iso-8859-15"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200904071722.40781.rusty@rustcorp.com.au>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Apr 7, 2009 at 01:10, Linus Torvalds
-<torvalds@linux-foundation.org> wrote:
-> On Mon, 6 Apr 2009, Linus Torvalds wrote:
->> thing that we think people would be happiest with.
->>
->> I think "ordered" was a reasonable default, but that was at least partly
->> because _both_ ordered and writeback sucked (partly in different ways).
->>
->> I do think we could make it a config option.
->
-> A patch _something_ like this.
->
-> A few notes:
->
->  - This is UNTESTED (of course)
->
->  - If I did this right, this _only_ overrides the data mode if it's not
->   explicitly specified on disk in the superblock mount options.
->
-> IOW, if you have done a
->
->        tune2fs -o journal_data_ordered
->
-> then this will _not_ override that. Only in the absense of any explicit
-> flags should this trigger and then make the choice be 'writeback'.
->
-> And just to be _extra_ backwards compatible, if you really want the old
-> behavior, and don't want to set the ordering flag explicitly, just answer
-> 'y' to the EXT3_DEFAULTS_TO_ORDERED Kconfig question.
->
-> What do people think? Anybody want to test?
->
->                Linus
->
-> ---
->  fs/ext3/Kconfig |   19 +++++++++++++++++++
->  fs/ext3/super.c |    8 +++++++-
->  2 files changed, 26 insertions(+), 1 deletions(-)
->
-> diff --git a/fs/ext3/Kconfig b/fs/ext3/Kconfig
-> index 8e0cfe4..fb3c1a2 100644
-> --- a/fs/ext3/Kconfig
-> +++ b/fs/ext3/Kconfig
-> @@ -28,6 +28,25 @@ config EXT3_FS
->          To compile this file system support as a module, choose M here: the
->          module will be called ext3.
->
-> +config EXT3_DEFAULTS_TO_ORDERED
-> +       bool "Default to 'data=ordered' in ext3 (legacy option)"
-> +       depends on EXT3_FS
-> +       help
-> +         If a filesystem does not explicitly specify a data ordering
-> +         mode, and the journal capability allowed it, ext3 used to
-> +         historically default to 'data=ordered'.
-> +
-> +         That was a rather unfortunate choice, because it leads to all
-> +         kinds of latency problems, and the 'data=writeback' mode is more
-> +         appropriate these days.
-> +
-> +         You should probably always answer 'n' here, and if you really
-            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-> +         want to use 'data=ordered' mode, set it in the filesystem itself
-> +         with 'tune2fs -o journal_data_ordered'.
-> +
-> +         But if you really want to enable the legacy default, you can do
-> +         so by answering 'y' to this question.
-> +
+On Monday 06 April 2009 18:38:48 Mike Galbraith wrote:
+> Hi Rusty,
+> 
+> The below rendered modules unloadable, and my bog standard opensuse 11.0
+> x86_64 box became a doorstop.
+...
+> (nobody else has griped yet and it's already 11:08.  hm)
 
-So `allmodconfig' will enable it? Is that the right thing to do, or
-should it be inverted?
+Needs MODVERSIONS=y + MODULE_FORCE_UNLOAD=n.
 
-Gr{oetje,eeting}s,
+Thanks for report!
+Rusty.
+---
 
-						Geert
+The following changes since commit d508afb437daee7cf07da085b635c44a4ebf9b38:
+  Trond Myklebust (1):
+        NFS: Fix a double free in nfs_parse_mount_options()
 
---
-Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
+are available in the git repository at:
 
-In personal conversations with technical people, I call myself a hacker. But
-when I'm talking to journalists I just say "programmer" or something like that.
-							    -- Linus Torvalds
+  git://git.kernel.org/pub/scm/linux/kernel/git/rusty/linux-2.6-module-and-param.git master
+
+Rusty Russell (1):
+      Revert "module: remove the SHF_ALLOC flag on the __versions section."
+
+ kernel/module.c |    3 ---
+ 1 files changed, 0 insertions(+), 3 deletions(-)
+
+
+commit 2e45e77787c9d0720b046eb69856edf43b17e33e
+Author: Rusty Russell <rusty@rustcorp.com.au>
+Date:   Tue Apr 7 17:12:43 2009 +0930
+
+    Revert "module: remove the SHF_ALLOC flag on the __versions section."
+    
+    This reverts commit 9cb610d8e35fe3ec95a2fe2030b02f85aeea83c1.
+    
+    This was an impressively stupid patch.  Firstly, we reset the SHF_ALLOC
+    flag lower down in the same function, so the patch was useless.  Even
+    better, find_sec() ignores sections with SHF_ALLOC not set, so
+    it breaks CONFIG_MODVERSIONS=y with CONFIG_MODULE_FORCE_LOAD=n, which
+    refuses to load the module since it can't find the __versions section.
+    
+    Signed-off-by: Rusty Russell <rusty@rustcorp.com.au>
+---
+ kernel/module.c |    3 ---
+ 1 files changed, 0 insertions(+), 3 deletions(-)
+
+diff --git a/kernel/module.c b/kernel/module.c
+index c268a77..05f014e 100644
+--- a/kernel/module.c
++++ b/kernel/module.c
+@@ -1952,9 +1952,6 @@ static noinline struct module *load_module(void __user *umod,
+ 		if (strstarts(secstrings+sechdrs[i].sh_name, ".exit"))
+ 			sechdrs[i].sh_flags &= ~(unsigned long)SHF_ALLOC;
+ #endif
+-		/* Don't keep __versions around; it's just for loading. */
+-		if (strcmp(secstrings + sechdrs[i].sh_name, "__versions") == 0)
+-			sechdrs[i].sh_flags &= ~(unsigned long)SHF_ALLOC;
+ 	}
+ 
+ 	modindex = find_sec(hdr, sechdrs, secstrings,
