@@ -1,118 +1,187 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752646AbZDGFYU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758870AbZDGF3H@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752646AbZDGFYU (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 7 Apr 2009 01:24:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751911AbZDGFYJ
+	id S1758870AbZDGF3H (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 7 Apr 2009 01:29:07 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754735AbZDGF2r
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 7 Apr 2009 01:24:09 -0400
-Received: from wf-out-1314.google.com ([209.85.200.171]:12903 "EHLO
-	wf-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751711AbZDGFYI (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 7 Apr 2009 01:24:08 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=from:to:cc:references:in-reply-to:subject:date:message-id
-         :mime-version:content-type:content-transfer-encoding:x-mailer
-         :thread-index:content-language;
-        b=U0ByxUKLTTE6WyH+jJa2gSFMtZEzbtEyge+wsE3o6pdoMqO0Mq6EYZTWU4cARwMeVk
-         71aTdJ5hLm5+LpUoLiDCB5v8/ZVbJAQ5Ao7t6oopkQ8e4l1Czi4C1+zvXCkyux+aPMQa
-         ZRU4Vy9h5l5Hg2L6lwZFsofnb4H9U60ULbCqo=
-From: "Hua Zhong" <hzhong@gmail.com>
-To: "'Linus Torvalds'" <torvalds@linux-foundation.org>,
-       "'Trenton D. Adams'" <trenton.d.adams@gmail.com>
-Cc: "'Chris Mason'" <chris.mason@oracle.com>, "'Theodore Tso'" <tytso@mit.edu>,
-       "'Jens Axboe'" <jens.axboe@oracle.com>,
-       "'Linux Kernel Mailing List'" <linux-kernel@vger.kernel.org>
-References: <1239022088-29002-1-git-send-email-jens.axboe@oracle.com>  <20090406151054.GD5178@kernel.dk>  <alpine.LFD.2.00.0904060840080.3863@localhost.localdomain>  <20090406183157.GD7376@mit.edu>  <alpine.LFD.2.00.0904061255160.4134@localhost.localdomain>  <002501c9b6f3$f85b4910$e911db30$@com> <20090406211931.GB8586@mit.edu>  <1239076379.17426.23.camel@think.oraclecorp.com>  <9b1675090904062113r2bd2b209hea1061cc54a0b9c0@mail.gmail.com>  <alpine.LFD.2.00.0904062120560.4010@localhost.localdomain> <9b1675090904062148k7081be9bs26b5852d71a0a45c@mail.gmail.com> <alpine.LFD.2.00.0904062156180.4010@localhost.localdomain>
-In-Reply-To: <alpine.LFD.2.00.0904062156180.4010@localhost.localdomain>
-Subject: RE: [PATCH 0/8][RFC] IO latency/throughput fixes
-Date: Mon, 6 Apr 2009 22:23:31 -0700
-Message-ID: <006f01c9b741$00c70510$02550f30$@com>
+	Tue, 7 Apr 2009 01:28:47 -0400
+Received: from mx2.mail.elte.hu ([157.181.151.9]:49142 "EHLO mx2.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1759317AbZDGF2q (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 7 Apr 2009 01:28:46 -0400
+Date: Tue, 7 Apr 2009 07:28:01 +0200
+From: Ingo Molnar <mingo@elte.hu>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+       Avan Anishchuk <matimatik@gmail.com>,
+       Wu Fengguang <fengguang.wu@intel.com>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Pekka Enberg <penberg@cs.helsinki.fi>,
+       Steven Rostedt <rostedt@goodmis.org>,
+       Thomas Gleixner <tglx@linutronix.de>,
+       Eduard - Gabriel Munteanu <eduard.munteanu@linux360.ro>
+Subject: [patch] ramfs: add support for "mode=" mount option, fix
+Message-ID: <20090407052801.GA4235@elte.hu>
+References: <20090405193944.GA12691@elte.hu> <alpine.LFD.2.00.0904061842490.4010@localhost.localdomain> <alpine.LFD.2.00.0904062045530.4010@localhost.localdomain> <alpine.LFD.2.00.0904062108550.4010@localhost.localdomain> <alpine.LFD.2.00.0904062142110.4010@localhost.localdomain>
 MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-X-Mailer: Microsoft Office Outlook 12.0
-Thread-Index: Acm3Po5M4qfoe24fTje4bWI/KGVbNwAATisw
-Content-Language: en-us
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <alpine.LFD.2.00.0904062142110.4010@localhost.localdomain>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-The (small) set of people that rely on "ordered" understand 
-the problem, as long as they are aware of the change (no, I 
-don't think reading through all changelogs from their old 
-kernel to the new one is a realistic option).
 
-So a config option should be good enough to get them to notice
-the change (I assume a missing default will force them to 
-choose an option), and therefore explicitly add the -o ordered 
-option to their scripts.
+* Linus Torvalds <torvalds@linux-foundation.org> wrote:
 
-On the other hand a run-time tunable has no real point.
+> On Mon, 6 Apr 2009, Linus Torvalds wrote:
+> > 
+> > It bisected past them. I'm getting worried that it's timing-related, 
+> > because nothing that remains looks even remotely interesting for that Mac 
+> > mini, but right now:
+> > 
+> >  - bad: 56fcef75117a153f298b3fe54af31053f53997dd
+> >  - good: bb233fdfc7b7cefe45bfa2e8d1b24e79c60a48e5
+> > 
+> > and there's not a whole lot of commits in between.
+> 
+> It's c3b1b1cbf002e65a3cabd479e68b5f35886a26db: 'ramfs: add support 
+> for "mode=" mount option'.
+> 
+> And I checked. Reverting it at the tip fixes it. So no random 
+> timing fluctuations.
+> 
+> So that commit causes some random SLAB corruption, that then 
+> (depending apparently on luck) may or may not crash in some odd 
+> random places later.
 
-> -----Original Message-----
-> From: Linus Torvalds [mailto:torvalds@linux-foundation.org]
-> Sent: Monday, April 06, 2009 10:02 PM
-> To: Trenton D. Adams
-> Cc: Chris Mason; Theodore Tso; Hua Zhong; Jens Axboe; Linux Kernel
-> Mailing List
-> Subject: Re: [PATCH 0/8][RFC] IO latency/throughput fixes
-> 
-> 
-> 
-> On Mon, 6 Apr 2009, Trenton D. Adams wrote:
-> >
-> > What about a procfs setting instead?  Is there a policy about why
-> > something should be in procfs or /sys, or as a kernel config option?
-> > That's basically as small as the patch you just made, right?
-> 
-> I'm never really against making things dynamically tunable, but this
-> already was, and that wasn't really the issue.
-> 
-> Sure, you can just re-mount your filesystem with different options.
-> That's
-> what I did while testing - my /home is on a drive of its own, so I
-> would
-> just log out and as root unmount and re-mount with
-> data=ordered/writeback,
-> and log in and test again.
-> 
-> So dynamic tuning is good. But at the same time, having a tuning option
-> is
-> _never_ an excuse for not getting the default right in the first place.
-> It's just a cop-out to say "hey, the default may be wrong for you, but
-> you
-> can always tune it locally with XYZ".
-> 
-> The thing is, almost nobody does that. Partly because it needs effort
-> and
-> knowledge, partly because after a few years the number of tuning knobs
-> are
-> in the hundreds for every little thing.
-> 
-> So instead, leave the tuning for the _really_ odd cases (if you use
-> your
-> machine as an IP router, you hopefully know enough to tune it if you
-> really care). Not for random general-purpose "use for whatever" kind of
-> thing.
-> 
-> > I'm just thinking that something like this, where people want one
-> > thing or the other, but may not know it when they install Linux,
-> might
-> > like to change it realtime.  Especially if they are a Linux newbie,
-> > and don't know how to compile their own kernel.  Or don't have time
-> to
-> > maintain their own kernel installs.
-> 
-> Oh absolutely. I'm not expecting people to compile their own kernels.
-> I'm
-> expecting that within a few months, most modern distributions will have
-> (almost by mistake) gotten a new set of saner defaults, and anybody who
-> keeps their machine up-to-date will see a smoother experience without
-> ever
-> even realizing _why_.
-> 
-> 			Linus
+ah - forget my previous mail then.
 
+This commit does have a couple of genuinely odd looking lines.
+
+For example:
+
++       sb->s_fs_info = fsi;
++
++       err = ramfs_parse_options(data, &fsi->mount_opts);
++       if (err)
++               goto fail;
+
+Say we fail in ramfs_parse_options() and do the 'fail' pattern:
+
++fail:
++       kfree(fsi);
++       iput(inode);
++       return err;
+
+so we have 'fsi' kfree()'d but dont clear sb->s_fs_info! That's 
+almost always a bad practice. And indeed, in the kill_super 
+callback:
+
++static void ramfs_kill_sb(struct super_block *sb)
++{
++       kfree(sb->s_fs_info);
+
+What ensures that this cannot be a double kfree() memory corruption? 
+That pointer should have been cleared with something like the patch 
+below. (totally untested)
+
+And there's also another, probably just theoretical worry about 
+another failure path:
+
++       fsi = kzalloc(sizeof(struct ramfs_fs_info), GFP_KERNEL);
++       if (!fsi) {
++               err = -ENOMEM;
++               goto fail;
++       }
++       sb->s_fs_info = fsi;
+
+leaves sb->s_fs_info uninitialized in the failure case, and might 
+hit this code unconditionally:
+
++static void ramfs_kill_sb(struct super_block *sb)
++{
++       kfree(sb->s_fs_info);
++       kill_litter_super(sb);
++}
+
+Leaving this code at the mercy of the external call environment 
+initializing sb->s_fs_info. Which if it does not do (or stops 
+doing in the future), can trigger a kfree of a random pointer.
+
+(I think ->kill_super() gets called even if ->fill_super() fails, 
+but i have not checked closely.)
+
+These kinds of assymetric failure paths are really a red flag during 
+review.
+
+VFS infrastructure nit: we have 20 other similar looking but 
+slightly differently implemented filesystem options parsers, in each 
+filesystem. Might make sense to factor that out a bit and 
+standardize it across all filesystems and make it all a bit safer. 
+Duplicating code like that is never good IMHO.
+
+	Ingo
+
+diff --git a/fs/ramfs/inode.c b/fs/ramfs/inode.c
+index a404fb8..3a6b193 100644
+--- a/fs/ramfs/inode.c
++++ b/fs/ramfs/inode.c
+@@ -221,22 +221,23 @@ static int ramfs_fill_super(struct super_block * sb, void * data, int silent)
+ 	save_mount_options(sb, data);
+ 
+ 	fsi = kzalloc(sizeof(struct ramfs_fs_info), GFP_KERNEL);
++	sb->s_fs_info = fsi;
+ 	if (!fsi) {
+ 		err = -ENOMEM;
+ 		goto fail;
+ 	}
+-	sb->s_fs_info = fsi;
+ 
+ 	err = ramfs_parse_options(data, &fsi->mount_opts);
+ 	if (err)
+ 		goto fail;
+ 
+-	sb->s_maxbytes = MAX_LFS_FILESIZE;
+-	sb->s_blocksize = PAGE_CACHE_SIZE;
+-	sb->s_blocksize_bits = PAGE_CACHE_SHIFT;
+-	sb->s_magic = RAMFS_MAGIC;
+-	sb->s_op = &ramfs_ops;
+-	sb->s_time_gran = 1;
++	sb->s_maxbytes		= MAX_LFS_FILESIZE;
++	sb->s_blocksize		= PAGE_CACHE_SIZE;
++	sb->s_blocksize_bits	= PAGE_CACHE_SHIFT;
++	sb->s_magic		= RAMFS_MAGIC;
++	sb->s_op		= &ramfs_ops;
++	sb->s_time_gran		= 1;
++
+ 	inode = ramfs_get_inode(sb, S_IFDIR | fsi->mount_opts.mode, 0);
+ 	if (!inode) {
+ 		err = -ENOMEM;
+@@ -244,14 +245,16 @@ static int ramfs_fill_super(struct super_block * sb, void * data, int silent)
+ 	}
+ 
+ 	root = d_alloc_root(inode);
++	sb->s_root = root;
+ 	if (!root) {
+ 		err = -ENOMEM;
+ 		goto fail;
+ 	}
+-	sb->s_root = root;
++
+ 	return 0;
+ fail:
+ 	kfree(fsi);
++	sb->s_fs_info = NULL;
+ 	iput(inode);
+ 	return err;
+ }
