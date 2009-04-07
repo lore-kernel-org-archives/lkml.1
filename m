@@ -1,77 +1,129 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757184AbZDGJM6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757332AbZDGJN2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757184AbZDGJM6 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 7 Apr 2009 05:12:58 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755773AbZDGJKT
+	id S1757332AbZDGJN2 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 7 Apr 2009 05:13:28 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756475AbZDGJKV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 7 Apr 2009 05:10:19 -0400
-Received: from sh.osrg.net ([192.16.179.4]:60053 "EHLO sh.osrg.net"
+	Tue, 7 Apr 2009 05:10:21 -0400
+Received: from hera.kernel.org ([140.211.167.34]:39067 "EHLO hera.kernel.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756371AbZDGJKS (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 7 Apr 2009 05:10:18 -0400
-Date: Tue, 7 Apr 2009 18:09:50 +0900
-To: galak@kernel.crashing.org
-Cc: fujita.tomonori@lab.ntt.co.jp, beckyb@kernel.crashing.org,
-       linux-kernel@vger.kernel.org, mingo@elte.hu, jeremy@goop.org,
-       ian.campbell@citrix.com
-Subject: Re: [PATCH 5/7] swiotlb: (re)Create swiotlb_unmap_single
-From: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
-In-Reply-To: <FCEB8195-191B-4835-B895-D70C19DE23DE@kernel.crashing.org>
-References: <1238810209-24499-6-git-send-email-beckyb@kernel.crashing.org>
-	<20090407112247W.fujita.tomonori@lab.ntt.co.jp>
-	<FCEB8195-191B-4835-B895-D70C19DE23DE@kernel.crashing.org>
-Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
-Message-Id: <20090407180928Y.fujita.tomonori@lab.ntt.co.jp>
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-3.0 (sh.osrg.net [192.16.179.4]); Tue, 07 Apr 2009 18:09:51 +0900 (JST)
+	id S1756389AbZDGJKT (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 7 Apr 2009 05:10:19 -0400
+Date: Tue, 7 Apr 2009 09:09:38 GMT
+From: Peter Zijlstra <a.p.zijlstra@chello.nl>
+To: linux-tip-commits@vger.kernel.org
+Cc: linux-kernel@vger.kernel.org, paulus@samba.org, hpa@zytor.com,
+       mingo@redhat.com, a.p.zijlstra@chello.nl, tglx@linutronix.de,
+       cjashfor@linux.vnet.ibm.com, mingo@elte.hu
+Reply-To: mingo@redhat.com, hpa@zytor.com, paulus@samba.org,
+       linux-kernel@vger.kernel.org, a.p.zijlstra@chello.nl,
+       tglx@linutronix.de, cjashfor@linux.vnet.ibm.com, mingo@elte.hu
+In-Reply-To: <20090406094518.618876874@chello.nl>
+References: <20090406094518.618876874@chello.nl>
+Subject: [tip:perfcounters/core] perf_counter: minimize context time updates
+Message-ID: <tip-bce379bf358738ab8efc8cda2594a299ac685085@git.kernel.org>
+Git-Commit-ID: bce379bf358738ab8efc8cda2594a299ac685085
+X-Mailer: tip-git-log-daemon
+MIME-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
+Content-Disposition: inline
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Tue, 07 Apr 2009 09:09:40 +0000 (UTC)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 7 Apr 2009 01:34:44 -0500
-Kumar Gala <galak@kernel.crashing.org> wrote:
+Commit-ID:  bce379bf358738ab8efc8cda2594a299ac685085
+Gitweb:     http://git.kernel.org/tip/bce379bf358738ab8efc8cda2594a299ac685085
+Author:     Peter Zijlstra <a.p.zijlstra@chello.nl>
+AuthorDate: Mon, 6 Apr 2009 11:45:13 +0200
+Committer:  Ingo Molnar <mingo@elte.hu>
+CommitDate: Tue, 7 Apr 2009 10:49:01 +0200
 
-> 
-> On Apr 6, 2009, at 9:24 PM, FUJITA Tomonori wrote:
-> 
-> > On Fri,  3 Apr 2009 20:56:47 -0500
-> > Becky Bruce <beckyb@kernel.crashing.org> wrote:
-> >
-> >> This mirrors the current swiotlb_sync_single() setup
-> >> where the swiotlb_unmap_single() function is static to this
-> >> file and contains the logic required to determine if we need
-> >> to call actual sync_single.  Previously, swiotlb_unmap_page
-> >> and swiotlb_unmap_sg were duplicating very similar code.
-> >> The duplicated code has also been reformatted for
-> >> readability.
-> >>
-> >> Note that the swiotlb_unmap_sg code was previously doing
-> >> a complicated comparison to determine if an addresses needed
-> >> to be unmapped where a simple is_swiotlb_buffer() call
-> >> would have sufficed.
-> >>
-> >> Signed-off-by: Becky Bruce <beckyb@kernel.crashing.org>
-> >> ---
-> >> lib/swiotlb.c |   36 +++++++++++++++++++++++-------------
-> >> 1 files changed, 23 insertions(+), 13 deletions(-)
-> >>
-> >> diff --git a/lib/swiotlb.c b/lib/swiotlb.c
-> >> index af2ec25..602315b 100644
-> >> --- a/lib/swiotlb.c
-> >> +++ b/lib/swiotlb.c
-> >
-> > I don't think 'swiotlb_unmap_single' name is appropriate.
-> >
-> > swiotlb_unmap_single sounds like an exported function that IOMMUs can
-> > use (and it was) however it should not be.
-> 
-> What do you suggest we call it?  __swiotlb_unmap_single.
+perf_counter: minimize context time updates
 
-I think that __swiotlb_unmap_single is better because the name implies
-that it's an internal function. It's fine by me.
+Push the update_context_time() calls up the stack so that we get less
+invokations and thereby a less noisy output:
 
-If it is odd that __swiotlb_unmap_single() is just a wrapper function
-of unmap_single(), which does the real job to unmap a dma mapping, it
-might be another possible option to rename unmap_single to
-do_unamp_single and use unmap_single.
+before:
+
+ # ./perfstat -e 1:0 -e 1:1 -e 1:1 -e 1:1 -l ls > /dev/null
+
+ Performance counter stats for 'ls':
+
+      10.163691  cpu clock ticks      (msecs)  (scaled from 98.94%)
+      10.215360  task clock ticks     (msecs)  (scaled from 98.18%)
+      10.185549  task clock ticks     (msecs)  (scaled from 98.53%)
+      10.183581  task clock ticks     (msecs)  (scaled from 98.71%)
+
+ Wall-clock time elapsed:    11.912858 msecs
+
+after:
+
+ # ./perfstat -e 1:0 -e 1:1 -e 1:1 -e 1:1 -l ls > /dev/null
+
+ Performance counter stats for 'ls':
+
+       9.316630  cpu clock ticks      (msecs)
+       9.280789  task clock ticks     (msecs)
+       9.280789  task clock ticks     (msecs)
+       9.280789  task clock ticks     (msecs)
+
+ Wall-clock time elapsed:     9.574872 msecs
+
+Signed-off-by: Peter Zijlstra <a.p.zijlstra@chello.nl>
+Cc: Paul Mackerras <paulus@samba.org>
+Cc: Corey Ashford <cjashfor@linux.vnet.ibm.com>
+LKML-Reference: <20090406094518.618876874@chello.nl>
+Signed-off-by: Ingo Molnar <mingo@elte.hu>
+
+
+---
+ kernel/perf_counter.c |    7 +++++--
+ 1 files changed, 5 insertions(+), 2 deletions(-)
+
+diff --git a/kernel/perf_counter.c b/kernel/perf_counter.c
+index f4f7596..863703b 100644
+--- a/kernel/perf_counter.c
++++ b/kernel/perf_counter.c
+@@ -319,6 +319,8 @@ static void __perf_counter_disable(void *info)
+ 
+ 	spin_lock_irqsave(&ctx->lock, flags);
+ 
++	update_context_time(ctx);
++
+ 	/*
+ 	 * If the counter is on, turn it off.
+ 	 * If it is in error state, leave it in error state.
+@@ -797,6 +799,8 @@ void perf_counter_task_sched_out(struct task_struct *task, int cpu)
+ 	if (likely(!cpuctx->task_ctx))
+ 		return;
+ 
++	update_context_time(ctx);
++
+ 	regs = task_pt_regs(task);
+ 	perf_swcounter_event(PERF_COUNT_CONTEXT_SWITCHES, 1, 1, regs);
+ 	__perf_counter_sched_out(ctx, cpuctx);
+@@ -2336,7 +2340,6 @@ static void task_clock_perf_counter_update(struct perf_counter *counter)
+ 	u64 prev, now;
+ 	s64 delta;
+ 
+-	update_context_time(counter->ctx);
+ 	now = counter->ctx->time;
+ 
+ 	prev = atomic64_xchg(&counter->hw.prev_count, now);
+@@ -2349,7 +2352,6 @@ static int task_clock_perf_counter_enable(struct perf_counter *counter)
+ 	struct hw_perf_counter *hwc = &counter->hw;
+ 	u64 now;
+ 
+-	update_context_time(counter->ctx);
+ 	now = counter->ctx->time;
+ 
+ 	atomic64_set(&hwc->prev_count, now);
+@@ -2372,6 +2374,7 @@ static void task_clock_perf_counter_disable(struct perf_counter *counter)
+ 
+ static void task_clock_perf_counter_read(struct perf_counter *counter)
+ {
++	update_context_time(counter->ctx);
+ 	task_clock_perf_counter_update(counter);
+ }
+ 
