@@ -1,89 +1,46 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758631AbZDGRPS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758564AbZDGRUf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758631AbZDGRPS (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 7 Apr 2009 13:15:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756345AbZDGROx
+	id S1758564AbZDGRUf (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 7 Apr 2009 13:20:35 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754639AbZDGRUZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 7 Apr 2009 13:14:53 -0400
-Received: from einhorn.in-berlin.de ([192.109.42.8]:52183 "EHLO
-	einhorn.in-berlin.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755035AbZDGROv (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 7 Apr 2009 13:14:51 -0400
-X-Envelope-From: stefanr@s5r6.in-berlin.de
-Message-ID: <49DB8909.3000905@s5r6.in-berlin.de>
-Date: Tue, 07 Apr 2009 19:10:33 +0200
-From: Stefan Richter <stefanr@s5r6.in-berlin.de>
-User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.8.1.21) Gecko/20090323 SeaMonkey/1.1.15
+	Tue, 7 Apr 2009 13:20:25 -0400
+Received: from srv5.dvmed.net ([207.36.208.214]:42416 "EHLO mail.dvmed.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752569AbZDGRUY (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 7 Apr 2009 13:20:24 -0400
+Message-ID: <49DB8B54.7050402@garzik.org>
+Date: Tue, 07 Apr 2009 13:20:20 -0400
+From: Jeff Garzik <jeff@garzik.org>
+User-Agent: Thunderbird 2.0.0.21 (X11/20090320)
 MIME-Version: 1.0
-To: "Trenton D. Adams" <trenton.d.adams@gmail.com>
-CC: Linus Torvalds <torvalds@linux-foundation.org>,
-       "Rafael J. Wysocki" <rjw@sisk.pl>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Adrian Bunk <bunk@kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Natalie Protasevich <protasnb@gmail.com>,
-       Kernel Testers List <kernel-testers@vger.kernel.org>,
-       Network Development <netdev@vger.kernel.org>,
-       Linux ACPI <linux-acpi@vger.kernel.org>,
-       Linux PM List <linux-pm@lists.linux-foundation.org>,
-       Linux SCSI List <linux-scsi@vger.kernel.org>,
-       Takashi Iwai <tiwai@suse.de>
-Subject: 2.6.29 on MacBook 2,1 fails to reboot (was Re: 2.6.29-git13: Reported
- regressions from 2.6.28)
-References: <n4io5wq70ZO.A.gzG.rFn2JB@chimera>	 <alpine.LFD.2.00.0904061443000.7443@localhost.localdomain>	 <49DB7C77.1000702@s5r6.in-berlin.de> <9b1675090904070944m798ed608i1d9194ebd1ed3961@mail.gmail.com>
-In-Reply-To: <9b1675090904070944m798ed608i1d9194ebd1ed3961@mail.gmail.com>
-X-Enigmail-Version: 0.95.7
-Content-Type: text/plain; charset=ISO-8859-1
+To: Matthew Wilcox <willy@linux.intel.com>
+CC: linux-ide@vger.kernel.org, linux-kernel@vger.kernel.org,
+       Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>,
+       David Woodhouse <David.Woodhouse@intel.com>
+Subject: Re: [PATCH 4/5] ide: Add support for TRIM
+References: <1238683047-13588-1-git-send-email-willy@linux.intel.com> <1238683047-13588-2-git-send-email-willy@linux.intel.com> <1238683047-13588-3-git-send-email-willy@linux.intel.com> <1238683047-13588-4-git-send-email-willy@linux.intel.com>
+In-Reply-To: <1238683047-13588-4-git-send-email-willy@linux.intel.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
+X-Spam-Score: -4.4 (----)
+X-Spam-Report: SpamAssassin version 3.2.5 on srv5.dvmed.net summary:
+	Content analysis details:   (-4.4 points, 5.0 required)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Trenton D. Adams wrote:
-> On Tue, Apr 7, 2009 at 10:16 AM, Stefan Richter
-> <stefanr@s5r6.in-berlin.de> wrote:
->> Linus Torvalds wrote:
->>> On Mon, 6 Apr 2009, Rafael J. Wysocki wrote:
->>>> Bug-Entry    : http://bugzilla.kernel.org/show_bug.cgi?id=13018
->>>> Subject              : 2.6.29 on MacBook 2,1 fails to reboot
-...
->>> The bug _sounds_ like some deadlock due to lock problems - the shutdown 
->>> path often triggers locks that no other path really cares about. And we 
->>> had some lock problems in the sound subsystem that got fixed post-2.6.28, 
->>> for example. 
->>> 
->>> And it looks like the problem is somewhere in sound shutdown:
->>> 
->>> 12181 delete_module("snd_hda_codec", O_RDONLY|O_EXCL) = -1 EAGAIN (Resource temporarily unavailable) <0.000011>
->>> 
->>> So commits like 91054598f794fb5d8a0b1e747ff8e2e8fc2115b3 ("ALSA: pcm_oss, 
->>> fix locking typo") might explain it.
-...
->> could it be the same as this one?
->> http://bugzilla.kernel.org/show_bug.cgi?id=12321
->> "System hangs when unloading alsa modules"
->> http://bugs.gentoo.org/show_bug.cgi?id=253535
->> "System hangs when unloading alsa modules on Kernel >2.6.28"
-...
-> The first one looks similar, if not identical.  The second one
-> doesn't, because my problem happens on 2.6.29 only, not 2.6.28.
+Matthew Wilcox wrote:
+> From: David Woodhouse <David.Woodhouse@intel.com>
+> 
+> Signed-off-by: David Woodhouse <David.Woodhouse@intel.com>
+> [modified to reduce amount of special casing needed for discard]
+> Signed-off-by: Matthew Wilcox <willy@linux.intel.com>
+> ---
+>  drivers/ide/ide-disk.c |   49 ++++++++++++++++++++++++++++++++++++++++++++++++
+>  1 files changed, 49 insertions(+), 0 deletions(-)
 
-The Gentoo bug entry too is about a regression _after_ 2.6.28. :-)
-I.e. 2.6.28.y. are unaffected.  It's actually just the downstream
-duplicate of the kernel.org bug entry.
+OK, the linux/ata.h portion of TRIM support is now upstream.  This can 
+go via Bart's tree.
 
-> Either way, the unload problem with the module didn't happen in
-> 2.6.28.
 
-Interdependencies between ALSA modules have changed.  The Gentoo init
-scripts attempted to unload them in an order which deadlocked modprobe
-due to dependencies.  The fix for Gentoo is to just not unload the
-modules on system shutdown.  My Gentoo/amd64 Mac mini was affected by
-this too; fixed by userland update.
-
-(Added Cc to tiwai@suse.de)
--- 
-Stefan Richter
--=====-=-=== -=-= -==-=
-http://arcgraph.de/sr/
