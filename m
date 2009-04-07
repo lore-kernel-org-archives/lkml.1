@@ -1,53 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758306AbZDGTao@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758189AbZDGTbI@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758306AbZDGTao (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 7 Apr 2009 15:30:44 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755718AbZDGTaf
+	id S1758189AbZDGTbI (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 7 Apr 2009 15:31:08 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757010AbZDGTas
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 7 Apr 2009 15:30:35 -0400
-Received: from fmailhost04.isp.att.net ([204.127.217.104]:46977 "EHLO
-	fmailhost04.isp.att.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755328AbZDGTae (ORCPT
+	Tue, 7 Apr 2009 15:30:48 -0400
+Received: from yx-out-2324.google.com ([74.125.44.30]:54067 "EHLO
+	yx-out-2324.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1758493AbZDGTar (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 7 Apr 2009 15:30:34 -0400
-X-Originating-IP: [69.76.240.125]
-Message-ID: <49DBA9D0.7080400@lwfinger.net>
-Date: Tue, 07 Apr 2009 14:30:24 -0500
-From: Larry Finger <Larry.Finger@lwfinger.net>
-User-Agent: Thunderbird 2.0.0.19 (X11/20081227)
+	Tue, 7 Apr 2009 15:30:47 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
+         :cc:content-type:content-transfer-encoding;
+        b=arFKKSlD+NDrtV1VeU4DM//bQgVdx/FbQrVmpi2tTsaEH9b8ySBGcj+zI/1qG8t3Ls
+         e2Tewasvee0Vw4/BhZndyCJAQ6RUMYLt0mSLnhNl2Lw3pHPUbSBMw943RR+sRbC0plzy
+         1Z9oCMhTgLWoXHFc2+JmIJL8P4FfZxefS9mR4=
 MIME-Version: 1.0
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-CC: LKML <linux-kernel@vger.kernel.org>, Mike Galbraith <efault@gmx.de>,
-       Rusty Russell <rusty@rustcorp.com.au>
-Subject: Re: [2 regressions] Current git cannot find root device on x86-64(HP
- nx6325), NFS broken
-References: <49DB69FA.1060202@lwfinger.net> <200904072113.20703.rjw@sisk.pl>
-In-Reply-To: <200904072113.20703.rjw@sisk.pl>
-Content-Type: text/plain; charset=ISO-8859-1
+In-Reply-To: <20090407182157.GW3204@webber.adilger.int>
+References: <20090407062356.GA1336463@fiona.linuxhacker.ru>
+	 <20090407173248.GC31824@shareable.org> <49DB8F8E.9010605@garzik.org>
+	 <20090407175617.GF31824@shareable.org>
+	 <20090407182157.GW3204@webber.adilger.int>
+Date: Tue, 7 Apr 2009 12:30:45 -0700
+Message-ID: <a36005b50904071230h4850b5e3q2ad72a8e8babe09a@mail.gmail.com>
+Subject: Re: Attempt at "stat light" implementation
+From: Ulrich Drepper <drepper@gmail.com>
+To: Andreas Dilger <adilger@sun.com>
+Cc: Jamie Lokier <jamie@shareable.org>, Jeff Garzik <jeff@garzik.org>,
+       Oleg Drokin <green@linuxhacker.ru>, linux-fsdevel@vger.kernel.org,
+       LKML <linux-kernel@vger.kernel.org>
+Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Rafael J. Wysocki wrote:
-> On Tuesday 07 April 2009, Larry Finger wrote:
->> My system also fails to load modules from initrd unless 9cb610d is reverted.
->> Something is wrong with the "module: remove the SHF_ALLOC flag on the __versions
->> section" patch.
-> 
-> This is fixed in the current -git, although I had to apply the patch from
-> http://patchwork.kernel.org/patch/16776/
-> to fix an Oops on boot.
+On Tue, Apr 7, 2009 at 11:21 AM, Andreas Dilger <adilger@sun.com> wrote:
+> There is one in OS/X called getattrlist, but it is quite complex and
+> would require attribute handling wildly different than what the kernel
+> and *nix applications are doing:
+>
+> http://www.manpagez.com/man/2/getattrlist/
 
-Thanks for the heads-up, particularly on the 16776 patch above. I was in the
-middle of a bisection to isolate that one.
+I think this is overkill.  There are two different tasks to do:
 
-Do you know anything about a regression that leads to "phy0: Failed to
-initialize wep: -2" messages? It is the 3rd one that I'm chasing and seems to
-affect all wireless drivers. For this one, removing and reinserting the driver
-corrects the problem.
+- speed up stat by providing a subset of the information
 
-Larry
+- provide a mechanism to get arbitrary attribute support and efficient
+ways to get to it
 
 
+Trying to force both of these tasks into one interface will partially
+defeat the purpose of the first, creating a fast stat replacement.  I
+think these should be different interfaces (if the second type is
+needed at all).
 
+As for making the interface extendable.  In all the years there hasn't
+really been much need to extend the stat structure (ignoring extended
+attributes).  So, I'd not be worried about using a simple 32-bit
+bitmask to select the fields to include in the fast stat.
