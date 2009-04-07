@@ -1,53 +1,72 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760804AbZDGVot@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761596AbZDGVp4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760804AbZDGVot (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 7 Apr 2009 17:44:49 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758199AbZDGVoh
+	id S1761596AbZDGVp4 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 7 Apr 2009 17:45:56 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760900AbZDGVpq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 7 Apr 2009 17:44:37 -0400
-Received: from THUNK.ORG ([69.25.196.29]:49595 "EHLO thunker.thunk.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756161AbZDGVoe (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 7 Apr 2009 17:44:34 -0400
-Date: Tue, 7 Apr 2009 17:44:21 -0400
-From: Theodore Tso <tytso@mit.edu>
-To: Jens Axboe <jens.axboe@oracle.com>
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       Linux Kernel Developers List <linux-kernel@vger.kernel.org>,
-       Ext4 Developers List <linux-ext4@vger.kernel.org>, jack@suse.cz
-Subject: Re: [PATCH 1/3] block_write_full_page: Use synchronous writes for
-	WBC_SYNC_ALL writebacks
-Message-ID: <20090407214421.GA7031@mit.edu>
-Mail-Followup-To: Theodore Tso <tytso@mit.edu>,
-	Jens Axboe <jens.axboe@oracle.com>,
-	Andrew Morton <akpm@linux-foundation.org>,
-	Linux Kernel Developers List <linux-kernel@vger.kernel.org>,
-	Ext4 Developers List <linux-ext4@vger.kernel.org>, jack@suse.cz
-References: <1238185471-31152-1-git-send-email-tytso@mit.edu> <1238185471-31152-2-git-send-email-tytso@mit.edu> <20090406232141.ebdb426a.akpm@linux-foundation.org> <20090406235052.1ea47513.akpm@linux-foundation.org> <20090407070835.GM5178@kernel.dk> <20090407002313.fcdd1da0.akpm@linux-foundation.org> <20090407075732.GO5178@kernel.dk> <20090407190913.GA31723@mit.edu> <20090407193239.GE5178@kernel.dk>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090407193239.GE5178@kernel.dk>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-SA-Exim-Connect-IP: <locally generated>
-X-SA-Exim-Mail-From: tytso@mit.edu
-X-SA-Exim-Scanned: No (on thunker.thunk.org); SAEximRunCond expanded to false
+	Tue, 7 Apr 2009 17:45:46 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:52944 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1759967AbZDGVpp (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 7 Apr 2009 17:45:45 -0400
+Date: Tue, 7 Apr 2009 14:38:33 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Jeremy Fitzhardinge <jeremy@goop.org>
+Cc: x86@kernel.org, mingo@elte.hu, linux-kernel@vger.kernel.org,
+       a.p.zijlstra@chello.nl, nickpiggin@yahoo.com.au, tglx@linutronix.de,
+       jeremy.fitzhardinge@citrix.com
+Subject: Re: [PATCH 7/8] mm: allow preemption in apply_to_pte_range
+Message-Id: <20090407143833.a6841a8b.akpm@linux-foundation.org>
+In-Reply-To: <1238176963-21093-8-git-send-email-jeremy@goop.org>
+References: <1238176963-21093-1-git-send-email-jeremy@goop.org>
+	<1238176963-21093-8-git-send-email-jeremy@goop.org>
+X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Apr 07, 2009 at 09:32:39PM +0200, Jens Axboe wrote:
+On Fri, 27 Mar 2009 11:02:42 -0700
+Jeremy Fitzhardinge <jeremy@goop.org> wrote:
+
+> From: Jeremy Fitzhardinge <jeremy.fitzhardinge@citrix.com>
 > 
-> This should be all you need, forget the below. The manual unplugging
-> only really makes sense for very select situations, since it'll be done
-> when someone waits on the buffer anyway.
+> Impact: allow preemption in apply_to_pte_range updates to init_mm
+> 
+> Preemption is now allowed for lazy mmu mode, so don't disable
+> it for the inner loop of apply_to_pte_range.  This only applies
+> when doing updates to init_mm; user pagetables are still modified
+> under the pte lock, so preemption is disabled anyway.
+> 
+> Signed-off-by: Jeremy Fitzhardinge <jeremy.fitzhardinge@citrix.com>
+> ---
+>  mm/memory.c |    2 --
+>  1 files changed, 0 insertions(+), 2 deletions(-)
+> 
+> diff --git a/mm/memory.c b/mm/memory.c
+> index 27f8677..ef11ac6 100644
+> --- a/mm/memory.c
+> +++ b/mm/memory.c
+> @@ -1722,7 +1722,6 @@ static int apply_to_pte_range(struct mm_struct *mm, pmd_t *pmd,
+>  
+>  	BUG_ON(pmd_huge(*pmd));
+>  
+> -	preempt_disable();
+>  	arch_enter_lazy_mmu_mode();
+>  
+>  	token = pmd_pgtable(*pmd);
+> @@ -1734,7 +1733,6 @@ static int apply_to_pte_range(struct mm_struct *mm, pmd_t *pmd,
+>  	} while (pte++, addr += PAGE_SIZE, addr != end);
+>  
+>  	arch_leave_lazy_mmu_mode();
+> -	preempt_enable();
+>  
+>  	if (mm != &init_mm)
+>  		pte_unmap_unlock(pte-1, ptl);
 
-Thanks, ok; I missed the "sync_buffer" in the call to wait_on_bit() in
-__wait_on_buffer().  It also wasn't obvious to me that
-wait_on_writeback_range() ultimately ends up calling aops->sync_page
-which for filemap.c will call blk_run_backing_dev() --- and that
-blk_run_*() results in the right device queue getting unplugged.  So
-this would be a nice thing to get documented in
-Documentation/biodoc.txt.
+So across the aptch series the aggregate change to mm/ is nil, and this
+is wholly an x86 patch series?
 
-						- Ted
