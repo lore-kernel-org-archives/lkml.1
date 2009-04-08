@@ -1,60 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764084AbZDHPWt@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932091AbZDHPXu@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764084AbZDHPWt (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 8 Apr 2009 11:22:49 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754856AbZDHPWh
+	id S932091AbZDHPXu (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 8 Apr 2009 11:23:50 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754856AbZDHPXl
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 8 Apr 2009 11:22:37 -0400
-Received: from yw-out-2324.google.com ([74.125.46.31]:1944 "EHLO
-	yw-out-2324.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753552AbZDHPWg convert rfc822-to-8bit (ORCPT
+	Wed, 8 Apr 2009 11:23:41 -0400
+Received: from bombadil.infradead.org ([18.85.46.34]:53839 "EHLO
+	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751792AbZDHPXk (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 8 Apr 2009 11:22:36 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:sender:in-reply-to:references:date
-         :x-google-sender-auth:message-id:subject:from:to:cc:content-type
-         :content-transfer-encoding;
-        b=xFm/6Qr5J0koY7nxYgjur6p432oSMMp5yQZDSR5uFOplLJ9Xe+nc2tPOlw2UFFNjnU
-         /syFJgmMXXt5+YGV1Fzh54qI7Fhr5oSq8eTB3zQyaZSsqeBYNBkjyuHAibVu+ZlS9nd1
-         jASV2iKbLmgHzRl7ECGhmc33k3e4Vo0CciBps=
-MIME-Version: 1.0
-In-Reply-To: <20090331122348.GA31324@hash.localnet>
-References: <20090107152208.GB4207@linux.vnet.ibm.com>
-	 <25891f3e0902012357n21e7bc2fmc59fb2a842631651@mail.gmail.com>
-	 <20090215134702.GA10180@hash.localnet> <49A9C3D7.8060706@gmail.com>
-	 <20090330085952.GB3837@linux.vnet.ibm.com>
-	 <b6c5339f0903300958m587cde69o44ae24d0609228ba@mail.gmail.com>
-	 <20090330175951.GB4199@linux.vnet.ibm.com>
-	 <b6c5339f0903301113y6cb0b8bu1eaa55439eb18d97@mail.gmail.com>
-	 <20090331035140.GC4199@linux.vnet.ibm.com>
-	 <20090331122348.GA31324@hash.localnet>
-Date: Wed, 8 Apr 2009 11:22:34 -0400
-X-Google-Sender-Auth: 486ad1f7dd9c5230
-Message-ID: <b6c5339f0904080822m6129073ahc5caa14c3cd20fd2@mail.gmail.com>
-Subject: Re: [ath5k-devel] [PATCH 1/1] ath5k: fix hw rate index condition
-From: Bob Copeland <me@bobcopeland.com>
-To: Dhaval Giani <dhaval@linux.vnet.ibm.com>
-Cc: Dhaval Giani <dhaval.lists@thegianis.in>, Jiri Slaby <jirislaby@gmail.com>,
-       linux-wireless@vger.kernel.org, linville@tuxdriver.com,
-       linux-kernel@vger.kernel.org, ath5k-devel@venema.h4ckr.net,
-       davem@davemloft.net
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 8BIT
+	Wed, 8 Apr 2009 11:23:40 -0400
+Subject: Re: Cached IO Synchronization Question
+From: Peter Zijlstra <peterz@infradead.org>
+To: Matt Klein <matt.klein@pikewerks.com>
+Cc: linux-kernel@vger.kernel.org, Nick Piggin <nickpiggin@yahoo.com.au>
+In-Reply-To: <49DA7498.3050000@pikewerks.com>
+References: <49DA7498.3050000@pikewerks.com>
+Content-Type: text/plain
+Date: Wed, 08 Apr 2009 17:23:37 +0200
+Message-Id: <1239204217.4557.2590.camel@laptop>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.26.0 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Mar 31, 2009 at 8:23 AM, Bob Copeland <me@bobcopeland.com> wrote:
-> Ok - that is a useful data point.  Perhaps something to do with the rates
-> the peer supports; it would help if you could grab a scan next time you
-> are in the area.  Turn off auto-connect to open networks, then do:
+On Mon, 2009-04-06 at 14:31 -0700, Matt Klein wrote:
+> (Please CC me on any responses)
+> 
+> Hi,
+> 
+> I am studying 2.6.27.21 to try to understand the IO synchronization
+> model used in the Linux kernel.
+> 
+> I have the following question:
+> 
+> How are cached reads/writes synchronized? I assume they are, but I can
+> not determine how it is done.
+> 
+> 1) do_generic_file_read calls find_get_page to get the existing page
+> cache page if it exists (it uses RCU to prevent the page from being
+> blown away while reading takes place). Assuming it does, it performs
+> various checks to make sure the page is up to date before performing an
+> atomic copy to user mode. The read path does not take the page lock.
+> 
+> 2) The write path takes both the inode lock and the page lock to prevent
+> multiple writers. It also does an atomic copy from user mode into the
+> page cache page.
+> 
+> From my reading of the code, the atomic copies are atomic only on a
+> single processor, not across processors. Right?
 
-Hi Dhaval,
+Not even that ;-)
 
-Would you mind trying this patch and report the warnings it triggers?
+> If so, what is to prevent one CPU from starting a cached read into a
+> user mode buffer while another CPU has partially copied data into the
+> page cache page?
 
-http://marc.info/?l=linux-kernel&m=123915183521347&q=raw
+Note how do_generic_file_read() checks PageUptodate() and does a
+lock_page_killable() in case its not.
 
--- 
-Bob Copeland %% www.bobcopeland.com
+
+
