@@ -1,57 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764652AbZDHM5W@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764701AbZDHNBX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764652AbZDHM5W (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 8 Apr 2009 08:57:22 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754718AbZDHM5E
+	id S1764701AbZDHNBX (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 8 Apr 2009 09:01:23 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760050AbZDHNBM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 8 Apr 2009 08:57:04 -0400
-Received: from mail-bw0-f169.google.com ([209.85.218.169]:38632 "EHLO
-	mail-bw0-f169.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1760037AbZDHM5B (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 8 Apr 2009 08:57:01 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=googlemail.com; s=gamma;
-        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
-         :cc:content-type:content-transfer-encoding;
-        b=eAVeYu0V8bui3NEQgLgNQYMkMQIqTKTO6d5F5DKpmZe1kOG1BSVXw8FPM97fRjQaui
-         qUy/uSlnEkX7fSWzMkTV3ITI3U0RB7uY+PckiH3YzNgyjId4FdwynwSl4IxIMXoXbhd5
-         cEWCFAc34t1YAPF17W0QS6AH524wVGTLD+iLM=
+	Wed, 8 Apr 2009 09:01:12 -0400
+Received: from hera.kernel.org ([140.211.167.34]:41563 "EHLO hera.kernel.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1755013AbZDHNBL (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 8 Apr 2009 09:01:11 -0400
+Date: Wed, 8 Apr 2009 13:00:32 GMT
+From: Yinghai Lu <yinghai@kernel.org>
+To: linux-tip-commits@vger.kernel.org
+Cc: linux-kernel@vger.kernel.org, hpa@zytor.com, mingo@redhat.com,
+       yinghai@kernel.org, tglx@linutronix.de, mingo@elte.hu
+Reply-To: mingo@redhat.com, hpa@zytor.com, linux-kernel@vger.kernel.org,
+       yinghai@kernel.org, tglx@linutronix.de, mingo@elte.hu
+In-Reply-To: <49D6A692.6040400@kernel.org>
+References: <49D6A692.6040400@kernel.org>
+Subject: [tip:x86/apic] x86: make wakeup_secondary_cpu_via_init static
+Message-ID: <tip-cdc1cb0d4445f39561a65204d26f89365f917550@git.kernel.org>
+Git-Commit-ID: cdc1cb0d4445f39561a65204d26f89365f917550
+X-Mailer: tip-git-log-daemon
 MIME-Version: 1.0
-In-Reply-To: <20090407103611.GA5910@elte.hu>
-References: <alpine.LFD.2.00.0904060840080.3863@localhost.localdomain>
-	 <alpine.LFD.2.00.0904061255160.4134@localhost.localdomain>
-	 <002501c9b6f3$f85b4910$e911db30$@com> <20090406211931.GB8586@mit.edu>
-	 <003001c9b6ff$a9259ce0$fb70d6a0$@com>
-	 <2c0942db0904061504l6504934bi446f7425fcd38470@mail.gmail.com>
-	 <alpine.LFD.2.00.0904061509020.7443@localhost.localdomain>
-	 <alpine.LFD.2.00.0904061604410.8214@localhost.localdomain>
-	 <10f740e80904070051u4ec81842u931a405ab5bde985@mail.gmail.com>
-	 <20090407103611.GA5910@elte.hu>
-Date: Wed, 8 Apr 2009 14:56:59 +0200
-Message-ID: <1158166a0904080556n29daf102wec5689cf12b4b81f@mail.gmail.com>
-Subject: Re: [PATCH 0/8][RFC] IO latency/throughput fixes
-From: Denys Vlasenko <vda.linux@googlemail.com>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: Geert Uytterhoeven <geert@linux-m68k.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Ray Lee <ray-lk@madrabbit.org>, Hua Zhong <hzhong@gmail.com>,
-       Theodore Tso <tytso@mit.edu>, Jens Axboe <jens.axboe@oracle.com>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=UTF-8
+Content-Disposition: inline
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Wed, 08 Apr 2009 13:00:34 +0000 (UTC)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Ingo,
+Commit-ID:  cdc1cb0d4445f39561a65204d26f89365f917550
+Gitweb:     http://git.kernel.org/tip/cdc1cb0d4445f39561a65204d26f89365f917550
+Author:     Yinghai Lu <yinghai@kernel.org>
+AuthorDate: Fri, 3 Apr 2009 17:15:14 -0700
+Committer:  Ingo Molnar <mingo@elte.hu>
+CommitDate: Wed, 8 Apr 2009 14:50:28 +0200
 
-On Tue, Apr 7, 2009 at 12:36 PM, Ingo Molnar <mingo@elte.hu> wrote:
-> allmod/allyes will enable all sorts of legacy options.
->
-> Since besides myself i'm not aware of any other person on this
-> planet actually _booting_ allyes/allmod Linux kernels,
+x86: make wakeup_secondary_cpu_via_init static
 
-Does allyesconfig boot? Any funny effects?
---
-vda
+Impact: cleanup
+
+Signed-off-by: Yinghai Lu <yinghai@kernel.org>
+LKML-Reference: <49D6A692.6040400@kernel.org>
+Signed-off-by: Ingo Molnar <mingo@elte.hu>
+
+
+---
+ arch/x86/kernel/smpboot.c |    2 +-
+ 1 files changed, 1 insertions(+), 1 deletions(-)
+
+diff --git a/arch/x86/kernel/smpboot.c b/arch/x86/kernel/smpboot.c
+index 58d24ef..bddf2cc 100644
+--- a/arch/x86/kernel/smpboot.c
++++ b/arch/x86/kernel/smpboot.c
+@@ -538,7 +538,7 @@ wakeup_secondary_cpu_via_nmi(int logical_apicid, unsigned long start_eip)
+ 	return (send_status | accept_status);
+ }
+ 
+-int __devinit
++static int __devinit
+ wakeup_secondary_cpu_via_init(int phys_apicid, unsigned long start_eip)
+ {
+ 	unsigned long send_status, accept_status = 0;
