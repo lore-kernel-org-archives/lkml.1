@@ -1,83 +1,80 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763857AbZDHVOf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932348AbZDHVPt@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763857AbZDHVOf (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 8 Apr 2009 17:14:35 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760450AbZDHVOY
+	id S932348AbZDHVPt (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 8 Apr 2009 17:15:49 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756947AbZDHVPj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 8 Apr 2009 17:14:24 -0400
-Received: from blaine.gmane.org ([80.91.229.8]:50302 "EHLO hugh.gmane.org"
+	Wed, 8 Apr 2009 17:15:39 -0400
+Received: from sh.osrg.net ([192.16.179.4]:43021 "EHLO sh.osrg.net"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756947AbZDHVOX (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 8 Apr 2009 17:14:23 -0400
-X-Originating-IP: [69.76.240.125]
-Message-ID: <49DD136B.50300@lwfinger.net>
-Date: Wed, 08 Apr 2009 16:13:15 -0500
-From: Larry Finger <Larry.Finger@lwfinger.net>
-User-Agent: Thunderbird 2.0.0.19 (X11/20081227)
-MIME-Version: 1.0
-To: Andreas Schwab <schwab@linux-m68k.org>
-CC: public-alan-jenkins-cCz0Lq7MMjm9FHfhHBbuYA@hugh.gmane.org,
-       Larry Finger 
-	<public-Larry.Finger-tQ5ms3gMjBLk1uMJSBkQmQ@hugh.gmane.org>,
-       Rusty Russell 
-	<public-rusty-8n+1lVoiYb80n/F98K4Iww@hugh.gmane.org>,
-       Arjan van de Ven 
-	<public-arjan-VuQAYsv1563Yd54FQh9/CA@hugh.gmane.org>,
-       LKML <public-linux-kernel-u79uwXL29TY76Z2rM5mHXA@hugh.gmane.org>,
-       "Rafael J. Wysocki" <public-rjw-KKrjLPT3xs0@hugh.gmane.org>,
-       wireless 
-	<public-linux-wireless-u79uwXL29TY76Z2rM5mHXA@hugh.gmane.org>
-Subject: Re: Regression in 2.6.30-rc1 since commit acae0515 - wireless broken
-References: <49DC2DF5.3010603@lwfinger.net> <49DC31EA.8050208@linux.intel.com>	<200904081631.09150.rusty@rustcorp.com.au>	<49DCB976.4020200@lwfinger.net>	<9b2b86520904081006m6e6b5276v834c3565b0f6f4c7@mail.gmail.com> <m2fxgi6hdq.fsf@igel.home>
-In-Reply-To: <m2fxgi6hdq.fsf@igel.home>
-Content-Type: text/plain; charset=ISO-8859-1
+	id S1756581AbZDHVPi (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 8 Apr 2009 17:15:38 -0400
+Date: Thu, 9 Apr 2009 06:15:07 +0900
+To: galak@kernel.crashing.org
+Cc: hch@infradead.org, linux-kernel@vger.kernel.org, mingo@elte.hu,
+       jeremy@goop.org, fujita.tomonori@lab.ntt.co.jp, ian.campbell@citrix.com,
+       beckyb@kernel.crashing.org
+Subject: Re: [PATCH 4/7] swiotlb: Allow arch override of
+ address_needs_mapping
+From: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
+In-Reply-To: <7366A4DE-6848-4AF6-AA33-6BD89B0A5153@kernel.crashing.org>
+References: <1239199761-22886-5-git-send-email-galak@kernel.crashing.org>
+	<20090408203823.GA14985@infradead.org>
+	<7366A4DE-6848-4AF6-AA33-6BD89B0A5153@kernel.crashing.org>
+Mime-Version: 1.0
+Content-Type: Text/Plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
+Message-Id: <20090409061444G.fujita.tomonori@lab.ntt.co.jp>
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-3.0 (sh.osrg.net [192.16.179.4]); Thu, 09 Apr 2009 06:15:08 +0900 (JST)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Wed, 8 Apr 2009 15:56:32 -0500
+Kumar Gala <galak@kernel.crashing.org> wrote:
 
+> 
+> On Apr 8, 2009, at 3:38 PM, Christoph Hellwig wrote:
+> 
+> > On Wed, Apr 08, 2009 at 09:09:18AM -0500, Kumar Gala wrote:
+> >> From: Becky Bruce <beckyb@kernel.crashing.org>
+> >>
+> >> Some architectures require additional checking to determine
+> >> if a device can dma to an address and need to provide their
+> >> own address_needs_mapping..
+> >
+> > Shouldn't we just move it completely to the arch?  I think that ia64  
+> > and
+> > x86 currently use the same one is more of an accident.
+> 
+> It seems like the swiotlb code uses __weak for a number of things:
+> 
+> lib/swiotlb.c:void * __weak __init swiotlb_alloc_boot(size_t size,  
+> unsigned long nslabs)
+> lib/swiotlb.c:void * __weak swiotlb_alloc(unsigned order, unsigned  
+> long nslabs)
+> lib/swiotlb.c:dma_addr_t __weak swiotlb_phys_to_bus(struct device  
+> *hwdev, phys_addr_t paddr)
+> lib/swiotlb.c:phys_addr_t __weak swiotlb_bus_to_phys(struct device  
+> *hwdev, dma_addr_t baddr)
+> lib/swiotlb.c:void * __weak swiotlb_bus_to_virt(struct device *hwdev,  
+> dma_addr_t address)
+> lib/swiotlb.c:int __weak swiotlb_arch_address_needs_mapping(struct  
+> device *hwdev,
+> lib/swiotlb.c:int __weak swiotlb_arch_range_needs_mapping(phys_addr_t  
+> paddr, size_t size)
+> 
+> instead of #ifndef HAVE_ARCH_<FOO>.  Not sure if there is a historical  
+> reason for that.
 
-Andreas Schwab wrote:
-> 
-> 
-> Alan Jenkins <sourcejedi.lkml-gM/Ye1E23mwN+BqQ9rBEUg@public.gmane.org>
-> writes:
-> 
->> I agree that commit looks like it should be a no-op though :-).
-> 
-> But it isn't.
-> 
-> Andreas.
-> 
-> ---
-> Fix try_then_request_module to use waiting __request_module again.
-> 
-> Signed-off-by: Andreas Schwab <schwab@linux-m68k.org>
-> ---
->  include/linux/kmod.h |    2 +-
->  1 file changed, 1 insertion(+), 1 deletion(-)
-> 
-> Index: linux-2.6.30-rc1/include/linux/kmod.h
-> ===================================================================
-> --- linux-2.6.30-rc1.orig/include/linux/kmod.h	2009-04-08 12:47:54.000000000 +0200
-> +++ linux-2.6.30-rc1/include/linux/kmod.h	2009-04-08 17:39:35.000000000 +0200
-> @@ -34,7 +34,7 @@ extern int __request_module(bool wait, c
->  #define request_module(mod...) __request_module(true, mod)
->  #define request_module_nowait(mod...) __request_module(false, mod)
->  #define try_then_request_module(x, mod...) \
-> -	((x) ?: (__request_module(false, mod), (x)))
-> +	((x) ?: (__request_module(true, mod), (x)))
->  #else
->  static inline int request_module(const char *name, ...) { return -ENOSYS; }
->  static inline int request_module_nowait(const char *name, ...) { return -ENOSYS; }
-> 
+ia64 and x86_64 use swiotlb but neither need this function. And
+neither need any above __weak. They were added for dom0 support.
+Yeah, swiotlb is much cleaner and better if we don't add dom0 support.
 
-Bingo. The above patch fixes my system. Andreas, you have a much sharper eye
-than I do.
+About this patch, I think that we could do better. What we need to do
+is allowing each architectures to have is_buffer_dma_capable().
 
-Feel free to add a Tested-by: Larry Finger <Larry.Finger@lwfinger.net> if you wish.
-
-Larry
-
-
+I'm doing the dma_mapping_ops unification. I think that adding
+something like is_buffer_dma_capable to dma_map_ops struct is
+cleaner. Then we don't need this __weak function. But this patch is
+fine by me for now.
