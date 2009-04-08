@@ -1,60 +1,72 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758937AbZDHHD7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759465AbZDHHEl@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758937AbZDHHD7 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 8 Apr 2009 03:03:59 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751435AbZDHHDt
+	id S1759465AbZDHHEl (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 8 Apr 2009 03:04:41 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750725AbZDHHEb
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 8 Apr 2009 03:03:49 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:52709 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1750772AbZDHHDt (ORCPT
+	Wed, 8 Apr 2009 03:04:31 -0400
+Received: from smtp-out.google.com ([216.239.33.17]:49008 "EHLO
+	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751138AbZDHHEa convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 8 Apr 2009 03:03:49 -0400
-Date: Wed, 8 Apr 2009 00:00:18 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Andi Kleen <andi@firstfloor.org>
-Cc: linux-kernel@vger.kernel.org, linux-mm@kvack.org, x86@kernel.org
-Subject: Re: [PATCH] [2/16] POISON: Add page flag for poisoned pages
-Message-Id: <20090408000018.9567a5fa.akpm@linux-foundation.org>
-In-Reply-To: <20090408062441.GF17934@one.firstfloor.org>
-References: <20090407509.382219156@firstfloor.org>
-	<20090407150958.BA68F1D046D@basil.firstfloor.org>
-	<20090407221421.890f27a6.akpm@linux-foundation.org>
-	<20090408062441.GF17934@one.firstfloor.org>
-X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.5; x86_64-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Wed, 8 Apr 2009 03:04:30 -0400
+DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
+	h=mime-version:in-reply-to:references:date:message-id:subject:from:to:
+	cc:content-type:content-transfer-encoding:x-system-of-record;
+	b=rm2nKJFSS4j5pbu7qWYWkRxnjRNWD5JqKLBhlBv/AVAnrBbEbjyfvdSlg2qEcZX2n
+	ld+alQyieiKe4rQBygT7g==
+MIME-Version: 1.0
+In-Reply-To: <alpine.DEB.2.00.0904062153120.29426@gandalf.stny.rr.com>
+References: <49D5E3EE.70201@cn.fujitsu.com> <49D5E44B.3080104@cn.fujitsu.com>
+	 <alpine.DEB.2.00.0904062153120.29426@gandalf.stny.rr.com>
+Date: Wed, 8 Apr 2009 00:04:24 -0700
+Message-ID: <5df78e1d0904080004y7be9b31k524c32aeed787c1f@mail.gmail.com>
+Subject: Re: [PATCH 2/2] ftrace: Code cleanup for kernel/trace/trace_events_stage_*.h
+From: Jiaying Zhang <jiayingz@google.com>
+To: Steven Rostedt <rostedt@goodmis.org>
+Cc: Zhaolei <zhaolei@cn.fujitsu.com>, linux-kernel@vger.kernel.org
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 8BIT
+X-System-Of-Record: true
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 8 Apr 2009 08:24:41 +0200 Andi Kleen <andi@firstfloor.org> wrote:
+Hi Steve,
 
-> On Tue, Apr 07, 2009 at 10:14:21PM -0700, Andrew Morton wrote:
-> > On Tue,  7 Apr 2009 17:09:58 +0200 (CEST) Andi Kleen <andi@firstfloor.org> wrote:
-> > 
-> > > Poisoned pages need special handling in the VM and shouldn't be touched 
-> > > again. This requires a new page flag. Define it here.
-> > 
-> > I wish this patchset didn't change/abuse the well-understood meaning of
-> > the word "poison".
-> 
-> Sorry, that's the terminology on the hardware side.
-> 
-> If there's much confusion I could rename it HwPoison or somesuch?
+I am looking at ftrace code more closely. It is also not clear to me why we
+want to define the trace event macros in three stage header files. I wonder
+whether it would be clearer if we merge them together. Then people don't
+need to look at three files to understand what is going on in event tracing.
 
-I understand that'd be a PITA but I suspect it would be best,
-long-term.  Having this conflict in core MM is really pretty bad.
+Jiaying
 
-> > > The page flags wars seem to be over, so it shouldn't be a problem
-> > > to get a new one. I hope.
-> > 
-> > They are?  How did it all get addressed?
-> 
-> Allowing 64bit to use more and using [V]SPARSEMAP to limit flags
-> use for zones. I think.
-
-Nobody ever seems to be able to work out how many we actually have
-left.
-
+On Mon, Apr 6, 2009 at 6:54 PM, Steven Rostedt <rostedt@goodmis.org> wrote:
+>
+> On Fri, 3 Apr 2009, Zhaolei wrote:
+>
+> > Add TRACE_FORMAT's define for trace_events_stage_2.h.
+> > Although it is already defined in trace_events_stage_1.h, we should make each
+> > function independence.
+> >
+> > Move TP_fast_assign's define from trace_events_stage_2.h to
+> > trace_events_stage_3.h because it is used there.
+> >
+> > Unify TRACE_EVENT's 5th argument's name to "assign"
+> >
+> > Impact: cleanup, no functionality changed
+> >
+> > Signed-off-by: Zhao Lei <zhaolei@cn.fujitsu.com>
+>
+> I see what you are doing here, but I'm a little hesitant to apply it.
+> I'm getting ready to travel, so I do not have the time to look deeper at
+> this today. I'll try to do it while I'm traveling.
+>
+> Thanks,
+>
+> -- Steve
+> --
+> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> Please read the FAQ at  http://www.tux.org/lkml/
