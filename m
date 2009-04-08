@@ -1,85 +1,102 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762233AbZDHHxw@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762929AbZDHHyZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762233AbZDHHxw (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 8 Apr 2009 03:53:52 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753116AbZDHHxm
+	id S1762929AbZDHHyZ (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 8 Apr 2009 03:54:25 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759128AbZDHHyK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 8 Apr 2009 03:53:42 -0400
-Received: from e28smtp04.in.ibm.com ([59.145.155.4]:54971 "EHLO
-	e28smtp04.in.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751981AbZDHHxl (ORCPT
+	Wed, 8 Apr 2009 03:54:10 -0400
+Received: from wf-out-1314.google.com ([209.85.200.170]:29112 "EHLO
+	wf-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753116AbZDHHyI (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 8 Apr 2009 03:53:41 -0400
-Date: Wed, 8 Apr 2009 13:22:40 +0530
-From: Dhaval Giani <dhaval@linux.vnet.ibm.com>
-To: Bharata B Rao <bharata.rao@gmail.com>
-Cc: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>,
-       balbir@linux.vnet.ibm.com, "linux-mm@kvack.org" <linux-mm@kvack.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       "lizf@cn.fujitsu.com" <lizf@cn.fujitsu.com>,
-       Rik van Riel <riel@surriel.com>, Bharata B Rao <bharata.rao@in.ibm.com>,
-       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
-Subject: Re: [RFI] Shared accounting for memory resource controller
-Message-ID: <20090408075240.GA16028@linux.vnet.ibm.com>
-Reply-To: Dhaval Giani <dhaval@linux.vnet.ibm.com>
-References: <20090407172419.a5f318b9.kamezawa.hiroyu@jp.fujitsu.com> <20090408052904.GY7082@balbir.in.ibm.com> <20090408151529.fd6626c2.kamezawa.hiroyu@jp.fujitsu.com> <20090408070401.GC7082@balbir.in.ibm.com> <20090408160733.4813cb8d.kamezawa.hiroyu@jp.fujitsu.com> <20090408071115.GD7082@balbir.in.ibm.com> <20090408161824.26f47077.kamezawa.hiroyu@jp.fujitsu.com> <344eb09a0904080031y4406c001n584725b87024755@mail.gmail.com> <20090408163440.4442dc3c.kamezawa.hiroyu@jp.fujitsu.com> <344eb09a0904080045s94c792dmc2250aaf39c09222@mail.gmail.com>
+	Wed, 8 Apr 2009 03:54:08 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
+         :cc:content-type:content-transfer-encoding;
+        b=owVZRDfhmSHySB9gxwhj9uay9opRgwJddNEBxwK2P9rdn5AJLQ+XWuJP7VDRy0oqRk
+         VAhrytHG3Sl/iJcQG00Q0Xew0Rpj+zDRk6qZD4cN7BNNoO4oLIjqnKWtIWItpmp5Vga7
+         /bOxbiZYBSI3gGGfMSQsaBYS0CpdO5psIULC4=
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <344eb09a0904080045s94c792dmc2250aaf39c09222@mail.gmail.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+In-Reply-To: <19f34abd0904080020l4f013b58va37c452b91831f85@mail.gmail.com>
+References: <b7997bdf0904071248t48fed168r7fa21b421c74358a@mail.gmail.com>
+	 <19f34abd0904080020l4f013b58va37c452b91831f85@mail.gmail.com>
+Date: Wed, 8 Apr 2009 15:54:07 +0800
+Message-ID: <b7997bdf0904080054q6a0ed16ax28d23e040bb77e31@mail.gmail.com>
+Subject: Re: splice lost data
+From: xinglp <xinglp@gmail.com>
+To: Vegard Nossum <vegard.nossum@gmail.com>
+Cc: linux-kernel@vger.kernel.org
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Apr 08, 2009 at 01:15:01PM +0530, Bharata B Rao wrote:
-> On Wed, Apr 8, 2009 at 1:04 PM, KAMEZAWA Hiroyuki
-> <kamezawa.hiroyu@jp.fujitsu.com> wrote:
-> > On Wed, 8 Apr 2009 13:01:15 +0530
-> > Bharata B Rao <bharata.rao@gmail.com> wrote:
-> >
-> >> On Wed, Apr 8, 2009 at 12:48 PM, KAMEZAWA Hiroyuki
-> >> <kamezawa.hiroyu@jp.fujitsu.com> wrote:
-> >> >
-> >> > On Wed, 8 Apr 2009 12:41:15 +0530
-> >> > Balbir Singh <balbir@linux.vnet.ibm.com> wrote:
-> >> > > 3. Using the above, we can then try to (using an algorithm you
-> >> > > proposed), try to do some work for figuring out the shared percentage.
-> >> > >
-> >> > This is the point. At last. Why "# of shared pages" is important ?
-> >> >
-> >> > I wonder it's better to add new stat file as memory.cacheinfo which helps
-> >> > following kind of commands.
-> >> >
-> >> >  #cacheinfo /cgroups/memory/group01/
-> >> >       /usr/lib/libc.so.1     30pages
-> >> >       /var/log/messages      1 pages
-> >> >       /tmp/xxxxxx            20 pages
-> >>
-> >> Can I suggest that we don't add new files for additional stats and try
-> >> as far as possible to include them in <controller>.stat file. Please
-> >> note that we have APIs in libcgroup library which can return
-> >> statistics from controllers associated with a cgroup and these APIs
-> >> assume that stats are part of <controller>.stat file.
-> >>
-> > Hmm ? Is there generic assumption as all cgroup has "stat" file ?
-> 
-> No. But I would think if any controller has any stats to export, it
-> would do so via <controller>.stat file.
-> 
-> > And libcgroup cause bug if the new entry is added to stat file ?
-> 
-> No. It can cope with new entries being added to stat file as long as
-> they appear as (name, value) pairs.
-> 
+2009/4/8, Vegard Nossum <vegard.nossum@gmail.com>:
+> 2009/4/7 xinglp <xinglp@gmail.com>:
+>
+> Don't know if this is related to the problem you report, but your code is buggy.
+>
+> You're checking errno before you know that splice() returned -1. Now,
+> I don't know the actual implementation, but as with most system calls,
+> the interface specifies only that errno is updated when the function
+> returns -1:
+>
+>       "On error, splice() returns -1 and errno is set to indicate the
+> error." (man 2 splice)
+>
+> You're also not checking explicitly for the return value 0, which
+> would possibly also not set errno (i.e. you're using perror() in the
+> case where splice() returned 0).
+>
+> Please let me know if this fixes your problem!
+>
+>
+> Vegard
+>
 
-And if it does not, we should fix it to cope up with it. But I agree
-with bharata, we should avoid adding new files, and try to use the stat
-file.
+I see ,but that's not the point.
+Now I knew the reason while data lost:
 
-thanks,
--- 
-regards,
-Dhaval
+I use epoll(ET) and splice() to recv  data  and write it to DISK (
+through pipe).
+ And in the earlier time I use epoll(ET) and recv() to recv data  and
+write it to DISK (through buffer).
+
+But recv() and splice() is not the same when they were used with epoll(ET).
+
+By 'man epoll' I got a QA.
+
+Q9    Do  I need to continuously read/write a file descriptor until
+EAGAIN when using
+      the EPOLLET flag (edge-triggered behavior) ?
+
+A9    No you don't.  Receiving an event from epoll_wait(2) should
+suggest to you that
+      such file descriptor is ready for the requested I/O operation.
+You have simply
+      to consider it ready until you will receive the next EAGAIN.
+When and how  you
+      will  use such file descriptor is entirely up to you.  Also, the
+condition that
+      the read/write I/O space is exhausted can be detected by
+checking the amount of
+      data  read  from  / written to the target file descriptor.  For
+example, if you
+      call read(2) by asking to read a certain amount of data and
+read(2)  returns  a
+      lower  number  of bytes, you can be sure of having exhausted the
+read I/O space
+      for such file descriptor.  The same is true when writing using
+the write(2).
+
+So I break the loop at "returns a lower number  of bytes" when I use
+recv(), that works well.
+
+But If I do the same "break" with splice(). epoll_wait won't return
+new EPOLLIN until new data come in. So maybe lost few data at the
+tail(in fact just lost events).
+
+As <w@1wt.**>  said:
+"splice() does not always forward all available data".
