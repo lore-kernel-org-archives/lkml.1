@@ -1,74 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1765159AbZDHNCG@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932241AbZDHNCg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1765159AbZDHNCG (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 8 Apr 2009 09:02:06 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763891AbZDHNBZ
+	id S932241AbZDHNCg (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 8 Apr 2009 09:02:36 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1764367AbZDHNBe
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 8 Apr 2009 09:01:25 -0400
-Received: from hera.kernel.org ([140.211.167.34]:41574 "EHLO hera.kernel.org"
+	Wed, 8 Apr 2009 09:01:34 -0400
+Received: from hera.kernel.org ([140.211.167.34]:41604 "EHLO hera.kernel.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1764258AbZDHNBY (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 8 Apr 2009 09:01:24 -0400
-Date: Wed, 8 Apr 2009 13:00:55 GMT
-From: Russ Anderson <rja@sgi.com>
+	id S1764999AbZDHNBc (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 8 Apr 2009 09:01:32 -0400
+Date: Wed, 8 Apr 2009 13:01:06 GMT
+From: Jack Steiner <steiner@sgi.com>
 To: linux-tip-commits@vger.kernel.org
-Cc: linux-kernel@vger.kernel.org, rja@sgi.com, hpa@zytor.com, mingo@redhat.com,
-       tglx@linutronix.de, mingo@elte.hu
-Reply-To: mingo@redhat.com, hpa@zytor.com, rja@sgi.com,
-       linux-kernel@vger.kernel.org, tglx@linutronix.de, mingo@elte.hu
-In-Reply-To: <20090403222423.GA28546@sgi.com>
-References: <20090403222423.GA28546@sgi.com>
-Subject: [tip:x86/uv] x86: prevent /sys/firmware/sgi_uv from being created on non-uv systems
-Message-ID: <tip-06aa05b307e8efbc278f201198e7cdf3877bc5c2@git.kernel.org>
-Git-Commit-ID: 06aa05b307e8efbc278f201198e7cdf3877bc5c2
+Cc: linux-kernel@vger.kernel.org, hpa@zytor.com, mingo@redhat.com,
+       steiner@sgi.com, tglx@linutronix.de, mingo@elte.hu
+Reply-To: mingo@redhat.com, hpa@zytor.com, linux-kernel@vger.kernel.org,
+       steiner@sgi.com, tglx@linutronix.de, mingo@elte.hu
+In-Reply-To: <20090403203942.GA20137@sgi.com>
+References: <20090403203942.GA20137@sgi.com>
+Subject: [tip:x86/uv] x86, uv: add Kconfig dependency on NUMA for UV systems
+Message-ID: <tip-54c28d294c658abb6d6430a49fda230fdfd601c8@git.kernel.org>
+Git-Commit-ID: 54c28d294c658abb6d6430a49fda230fdfd601c8
 X-Mailer: tip-git-log-daemon
 MIME-Version: 1.0
 Content-Type: text/plain; charset=UTF-8
 Content-Disposition: inline
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Wed, 08 Apr 2009 13:00:57 +0000 (UTC)
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Wed, 08 Apr 2009 13:01:08 +0000 (UTC)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Commit-ID:  06aa05b307e8efbc278f201198e7cdf3877bc5c2
-Gitweb:     http://git.kernel.org/tip/06aa05b307e8efbc278f201198e7cdf3877bc5c2
-Author:     Russ Anderson <rja@sgi.com>
-AuthorDate: Fri, 3 Apr 2009 17:24:23 -0500
+Commit-ID:  54c28d294c658abb6d6430a49fda230fdfd601c8
+Gitweb:     http://git.kernel.org/tip/54c28d294c658abb6d6430a49fda230fdfd601c8
+Author:     Jack Steiner <steiner@sgi.com>
+AuthorDate: Fri, 3 Apr 2009 15:39:42 -0500
 Committer:  Ingo Molnar <mingo@elte.hu>
-CommitDate: Wed, 8 Apr 2009 14:58:10 +0200
+CommitDate: Wed, 8 Apr 2009 14:58:11 +0200
 
-x86: prevent /sys/firmware/sgi_uv from being created on non-uv systems
+x86, uv: add Kconfig dependency on NUMA for UV systems
 
-/sys/firmware/sgi_uv should only be created on uv systems.
+Impact: build fix
 
-Signed-off-by: Russ Anderson <rja@sgi.com>
-LKML-Reference: <20090403222423.GA28546@sgi.com>
+Add Kconfig dependency on NUMA for enabling UV. Although it might
+be possible to configure non-NUMA UV systems, they are unsupported
+and not interesting. Much of the infrastructure for UV requires
+NUMA support.
+
+Signed-off-by: Jack Steiner <steiner@sgi.com>
+LKML-Reference: <20090403203942.GA20137@sgi.com>
 Signed-off-by: Ingo Molnar <mingo@elte.hu>
 
 
 ---
- arch/x86/kernel/uv_sysfs.c |    4 ++++
- 1 files changed, 4 insertions(+), 0 deletions(-)
+ arch/x86/Kconfig |    1 +
+ 1 files changed, 1 insertions(+), 0 deletions(-)
 
-diff --git a/arch/x86/kernel/uv_sysfs.c b/arch/x86/kernel/uv_sysfs.c
-index 67f9b9d..36afb98 100644
---- a/arch/x86/kernel/uv_sysfs.c
-+++ b/arch/x86/kernel/uv_sysfs.c
-@@ -21,6 +21,7 @@
- 
- #include <linux/sysdev.h>
- #include <asm/uv/bios.h>
-+#include <asm/uv/uv.h>
- 
- struct kobject *sgi_uv_kobj;
- 
-@@ -47,6 +48,9 @@ static int __init sgi_uv_sysfs_init(void)
- {
- 	unsigned long ret;
- 
-+	if (!is_uv_system())
-+		return -ENODEV;
-+
- 	if (!sgi_uv_kobj)
- 		sgi_uv_kobj = kobject_create_and_add("sgi_uv", firmware_kobj);
- 	if (!sgi_uv_kobj) {
+diff --git a/arch/x86/Kconfig b/arch/x86/Kconfig
+index 748e50a..2817ab5 100644
+--- a/arch/x86/Kconfig
++++ b/arch/x86/Kconfig
+@@ -354,6 +354,7 @@ config X86_UV
+ 	bool "SGI Ultraviolet"
+ 	depends on X86_64
+ 	depends on X86_EXTENDED_PLATFORM
++	depends on NUMA
+ 	select X86_X2APIC
+ 	---help---
+ 	  This option is needed in order to support SGI Ultraviolet systems.
