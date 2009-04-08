@@ -1,25 +1,25 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933044AbZDHLtq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759459AbZDHLu0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933044AbZDHLtq (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 8 Apr 2009 07:49:46 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932281AbZDHL2k
+	id S1759459AbZDHLu0 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 8 Apr 2009 07:50:26 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932252AbZDHL2m
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 8 Apr 2009 07:28:40 -0400
-Received: from out2.smtp.messagingengine.com ([66.111.4.26]:48868 "EHLO
+	Wed, 8 Apr 2009 07:28:42 -0400
+Received: from out2.smtp.messagingengine.com ([66.111.4.26]:37856 "EHLO
 	out2.smtp.messagingengine.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1764665AbZDHL1k (ORCPT
+	by vger.kernel.org with ESMTP id S1764669AbZDHL1j (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 8 Apr 2009 07:27:40 -0400
-X-Sasl-enc: /3WQDVpCiak5WSQgzYE6JmN4tNYHVpLDtygAEMjK/qSi 1239190059
+	Wed, 8 Apr 2009 07:27:39 -0400
+X-Sasl-enc: N4vROtlaFM1rapJYlNJPKt/SM23Oo1TlQJ9iA9lUWCjF 1239190057
 From: Jack Stone <jwjstone@fastmail.fm>
 To: linux-kernel@vger.kernel.org
 Cc: jeff@garzik.org, kernel-janitors@vger.kernel.org,
        Jack Stone <jwjstone@fastmail.fm>
-Subject: [PATCH 38/56] pci: Remove void casts
-Date: Wed,  8 Apr 2009 12:22:10 +0100
-Message-Id: <1239189748-11703-39-git-send-email-jwjstone@fastmail.fm>
+Subject: [PATCH 36/56] ocfs2: Remove void casts
+Date: Wed,  8 Apr 2009 12:22:08 +0100
+Message-Id: <1239189748-11703-37-git-send-email-jwjstone@fastmail.fm>
 X-Mailer: git-send-email 1.5.4.3
-In-Reply-To: <1239189748-11703-38-git-send-email-jwjstone@fastmail.fm>
+In-Reply-To: <1239189748-11703-36-git-send-email-jwjstone@fastmail.fm>
 References: <>
  <1239189748-11703-1-git-send-email-jwjstone@fastmail.fm>
  <1239189748-11703-2-git-send-email-jwjstone@fastmail.fm>
@@ -57,8 +57,6 @@ References: <>
  <1239189748-11703-34-git-send-email-jwjstone@fastmail.fm>
  <1239189748-11703-35-git-send-email-jwjstone@fastmail.fm>
  <1239189748-11703-36-git-send-email-jwjstone@fastmail.fm>
- <1239189748-11703-37-git-send-email-jwjstone@fastmail.fm>
- <1239189748-11703-38-git-send-email-jwjstone@fastmail.fm>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
@@ -67,49 +65,51 @@ Remove uneeded void casts
 
 Signed-Off-By: Jack Stone <jwjstone@fastmail.fm>
 ---
- drivers/pci/intel-iommu.c |    8 ++++----
- 1 files changed, 4 insertions(+), 4 deletions(-)
+ fs/ocfs2/dlm/dlmmaster.c |   10 ++++------
+ 1 files changed, 4 insertions(+), 6 deletions(-)
 
-diff --git a/drivers/pci/intel-iommu.c b/drivers/pci/intel-iommu.c
-index fb3a3f3..c0dd267 100644
---- a/drivers/pci/intel-iommu.c
-+++ b/drivers/pci/intel-iommu.c
-@@ -519,7 +519,7 @@ static struct context_entry * device_to_context_entry(struct intel_iommu *iommu,
- 	root = &iommu->root_entry[bus];
- 	context = get_context_addr_from_root(root);
- 	if (!context) {
--		context = (struct context_entry *)alloc_pgtable_page();
-+		context = alloc_pgtable_page();
- 		if (!context) {
- 			spin_unlock_irqrestore(&iommu->lock, flags);
- 			return NULL;
-@@ -789,7 +789,7 @@ static int iommu_alloc_root_entry(struct intel_iommu *iommu)
- 	struct root_entry *root;
- 	unsigned long flags;
+diff --git a/fs/ocfs2/dlm/dlmmaster.c b/fs/ocfs2/dlm/dlmmaster.c
+index f8b653f..e4c2f5b 100644
+--- a/fs/ocfs2/dlm/dlmmaster.c
++++ b/fs/ocfs2/dlm/dlmmaster.c
+@@ -758,8 +758,7 @@ lookup:
+ 		spin_unlock(&dlm->spinlock);
+ 		mlog(0, "allocating a new resource\n");
+ 		/* nothing found and we need to allocate one. */
+-		alloc_mle = (struct dlm_master_list_entry *)
+-			kmem_cache_alloc(dlm_mle_cache, GFP_NOFS);
++		alloc_mle = kmem_cache_alloc(dlm_mle_cache, GFP_NOFS);
+ 		if (!alloc_mle)
+ 			goto leave;
+ 		res = dlm_new_lockres(dlm, lockid, namelen);
+@@ -1543,8 +1542,7 @@ way_up_top:
+ 			spin_unlock(&dlm->master_lock);
+ 			spin_unlock(&dlm->spinlock);
  
--	root = (struct root_entry *)alloc_pgtable_page();
-+	root = alloc_pgtable_page();
- 	if (!root)
- 		return -ENOMEM;
+-			mle = (struct dlm_master_list_entry *)
+-				kmem_cache_alloc(dlm_mle_cache, GFP_NOFS);
++			mle = kmem_cache_alloc(dlm_mle_cache, GFP_NOFS);
+ 			if (!mle) {
+ 				response = DLM_MASTER_RESP_ERROR;
+ 				mlog_errno(-ENOMEM);
+@@ -2455,7 +2453,7 @@ static int dlm_migrate_lockres(struct dlm_ctxt *dlm,
+ 		goto leave;
+ 	}
  
-@@ -1290,7 +1290,7 @@ static int domain_init(struct dmar_domain *domain, int guest_width)
- 	domain->iommu_count = 1;
+-	mle = (struct dlm_master_list_entry *) kmem_cache_alloc(dlm_mle_cache,
++	mle = kmem_cache_alloc(dlm_mle_cache,
+ 								GFP_NOFS);
+ 	if (!mle) {
+ 		mlog_errno(ret);
+@@ -3036,7 +3034,7 @@ int dlm_migrate_request_handler(struct o2net_msg *msg, u32 len, void *data,
+ 	hash = dlm_lockid_hash(name, namelen);
  
- 	/* always allocate the top pgd */
--	domain->pgd = (struct dma_pte *)alloc_pgtable_page();
-+	domain->pgd = alloc_pgtable_page();
- 	if (!domain->pgd)
- 		return -ENOMEM;
- 	__iommu_flush_cache(iommu, domain->pgd, PAGE_SIZE);
-@@ -3019,7 +3019,7 @@ static int vm_domain_init(struct dmar_domain *domain, int guest_width)
- 	domain->max_addr = 0;
+ 	/* preallocate.. if this fails, abort */
+-	mle = (struct dlm_master_list_entry *) kmem_cache_alloc(dlm_mle_cache,
++	mle = kmem_cache_alloc(dlm_mle_cache,
+ 							 GFP_NOFS);
  
- 	/* always allocate the top pgd */
--	domain->pgd = (struct dma_pte *)alloc_pgtable_page();
-+	domain->pgd = alloc_pgtable_page();
- 	if (!domain->pgd)
- 		return -ENOMEM;
- 	domain_flush_cache(domain, domain->pgd, PAGE_SIZE);
+ 	if (!mle) {
 -- 
 1.5.4.3
 
