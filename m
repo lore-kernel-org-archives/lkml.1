@@ -1,58 +1,74 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764205AbZDHJ4s@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762851AbZDHJ7n@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764205AbZDHJ4s (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 8 Apr 2009 05:56:48 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762599AbZDHJ4d
+	id S1762851AbZDHJ7n (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 8 Apr 2009 05:59:43 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754885AbZDHJ7d
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 8 Apr 2009 05:56:33 -0400
-Received: from one.firstfloor.org ([213.235.205.2]:37907 "EHLO
-	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757026AbZDHJ4c (ORCPT
+	Wed, 8 Apr 2009 05:59:33 -0400
+Received: from atrey.karlin.mff.cuni.cz ([195.113.26.193]:43146 "EHLO
+	atrey.karlin.mff.cuni.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754709AbZDHJ7c (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 8 Apr 2009 05:56:32 -0400
-To: Hidetoshi Seto <seto.hidetoshi@jp.fujitsu.com>
-Cc: hpa@zytor.com, linux-kernel@vger.kernel.org, mingo@elte.hu,
-       tglx@linutronix.de
-Subject: Re: [PATCH] [6/28] x86: MCE: Add machine check exception count in /proc/interrupts
-From: Andi Kleen <andi@firstfloor.org>
-References: <20090407507.636692542@firstfloor.org>
-	<20090407150747.21C711D046E@basil.firstfloor.org>
-	<49DC2F5D.1010401@jp.fujitsu.com>
-Date: Wed, 08 Apr 2009 11:56:26 +0200
-In-Reply-To: <49DC2F5D.1010401@jp.fujitsu.com> (Hidetoshi Seto's message of "Wed, 08 Apr 2009 14:00:13 +0900")
-Message-ID: <87iqlfa2ph.fsf@basil.nowhere.org>
-User-Agent: Gnus/5.1008 (Gnus v5.10.8) Emacs/22.3 (gnu/linux)
+	Wed, 8 Apr 2009 05:59:32 -0400
+Date: Wed, 8 Apr 2009 12:02:30 +0200
+From: Pavel Machek <pavel@ucw.cz>
+To: Pekka Enberg <penberg@cs.helsinki.fi>
+Cc: greg@kroah.com, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 11/11] w35und: make led lookup tables static
+Message-ID: <20090408100230.GC24848@elf.ucw.cz>
+References: <1239178446-12893-1-git-send-email-penberg@cs.helsinki.fi> <1239178446-12893-11-git-send-email-penberg@cs.helsinki.fi>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1239178446-12893-11-git-send-email-penberg@cs.helsinki.fi>
+X-Warning: Reading this can be dangerous to your mental health.
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hidetoshi Seto <seto.hidetoshi@jp.fujitsu.com> writes:
+On Wed 2009-04-08 11:14:06, Pekka Enberg wrote:
+> Impact: cleanup
+> 
+> No need to keep read-only data on the stack.
 
-> Andi Kleen wrote:
->> @@ -96,6 +97,12 @@
->>  	seq_printf(p, "  Threshold APIC interrupts\n");
->>  # endif
->>  #endif
->> +#if defined(CONFIG_X86_MCE) && defined(CONFIG_X86_64)
->> +	seq_printf(p, "%*s: ", prec, "MCE");
->> +	for_each_online_cpu(j)
->> +		seq_printf(p, "%10u ", per_cpu(mce_exception_count, j));
->> +	seq_printf(p, "  Machine check exceptions\n");
->> +#endif
->>  	seq_printf(p, "%*s: %10u\n", prec, "ERR", atomic_read(&irq_err_count));
->>  #if defined(CONFIG_X86_IO_APIC)
->>  	seq_printf(p, "%*s: %10u\n", prec, "MIS", atomic_read(&irq_mis_count));
->
-> How about unifying ifdefs?
+It would be enough to just put static to the variables. They would
+still be off-stack, but would be local...
 
-I did it this way because these are only temporary until the 32bit<->64bit merge
-patch goes in too. So next patch would be to change it to X86_NEW_MCE and
-then when the old 32bit machine check code is finally dropped one or two
-releases later to just X86_MCE
+Anyway that's a detail.
 
--Andi
+Whole series:
+
+Acked-by: Pavel Machek <pavel@ucw.cz>
+
+> diff --git a/drivers/staging/winbond/wbusb.c b/drivers/staging/winbond/wbusb.c
+> index cffd732..dc7cc08 100644
+> --- a/drivers/staging/winbond/wbusb.c
+> +++ b/drivers/staging/winbond/wbusb.c
+> @@ -171,14 +171,21 @@ static const struct ieee80211_ops wbsoft_ops = {
+>  	.get_tsf		= wbsoft_get_tsf,
+>  };
+>  
+> +static u8 LED_GRAY[20] = {
+> +	0, 3, 4, 6, 8, 10, 11, 12, 13, 14, 15, 14, 13, 12, 11, 10, 8, 6, 4, 2
+> +};
+> +
+> +static u8 LED_GRAY2[30] = {
+> +	7, 8, 9, 10, 11, 12, 13, 14, 15, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+> +	0, 15, 14, 13, 12, 11, 10, 9, 8
+> +};
+> +
+>  static void hal_led_control(unsigned long data)
+>  {
+>  	struct wbsoft_priv *adapter = (struct wbsoft_priv *)data;
+>  	struct hw_data *pHwData = &adapter->sHwData;
+>  	struct wb35_reg *reg = &pHwData->reg;
+>  	u32 LEDSet = (pHwData->SoftwareSet & HAL_LED_SET_MASK) >> HAL_LED_SET_SHIFT;
+> -	u8 LEDgray[20] = { 0, 3, 4, 6, 8, 10, 11, 12, 13, 14, 15, 14, 13, 12, 11, 10, 8, 6, 4, 2 };
+> -	u8 LEDgray2[30] = { 7, 8, 9, 10, 11, 12, 13, 14, 15, 0, 0, 0,
+> 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 15, 14, 13, 12, 11, 10, 9, 8 };
+
 
 -- 
-ak@linux.intel.com -- Speaking for myself only.
+(english) http://www.livejournal.com/~pavelmachek
+(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
