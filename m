@@ -1,138 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763094AbZDHTfj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1765836AbZDHTgs@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763094AbZDHTfj (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 8 Apr 2009 15:35:39 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757538AbZDHTf1
+	id S1765836AbZDHTgs (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 8 Apr 2009 15:36:48 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757538AbZDHTgh
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 8 Apr 2009 15:35:27 -0400
-Received: from fg-out-1718.google.com ([72.14.220.154]:4395 "EHLO
-	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755633AbZDHTf0 convert rfc822-to-8bit (ORCPT
+	Wed, 8 Apr 2009 15:36:37 -0400
+Received: from mga14.intel.com ([143.182.124.37]:47621 "EHLO mga14.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754208AbZDHTgg convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 8 Apr 2009 15:35:26 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:date:message-id:subject:from:to:content-type
-         :content-transfer-encoding;
-        b=vNTcq02t1mJPA7TdXhyrHqMVWSs8H4FihgSJtYrcrS3VGUr2et1BQ1FmKiKrxkQdle
-         LGwomrjJfq8Mrf/ivntLOoOx3ajgXfJl026LAgAG6jD7yl338txhM9tz3zhuOSItHU0S
-         GXM+Z0V/xxRmyUD3CYEsG7dDAywt01QrNJX9o=
+	Wed, 8 Apr 2009 15:36:36 -0400
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.40,157,1239001200"; 
+   d="scan'208";a="129406634"
+From: "Luck, Tony" <tony.luck@intel.com>
+To: Frederic Weisbecker <fweisbec@gmail.com>, Ingo Molnar <mingo@elte.hu>
+CC: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>,
+       Steven Rostedt <rostedt@goodmis.org>,
+       "tglx@linutronix.de" <tglx@linutronix.de>,
+       Jason Baron <jbaron@redhat.com>, "Frank Ch. Eigler" <fche@redhat.com>,
+       Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>,
+       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
+       Lai Jiangshan <laijs@cn.fujitsu.com>,
+       Jiaying Zhang <jiayingz@google.com>, Michael Rubin <mrubin@google.com>,
+       Martin Bligh <mbligh@google.com>, Michael Davidson <md@google.com>
+Date: Wed, 8 Apr 2009 12:36:33 -0700
+Subject: RE: [PATCH] tracing/syscalls: use a dedicated file header
+Thread-Topic: [PATCH] tracing/syscalls: use a dedicated file header
+Thread-Index: Acm4eZNF8KGpaBaXQcGxbtalkXva4AABD7yQ
+Message-ID: <57C9024A16AD2D4C97DC78E552063EA39B2F707D@orsmsx505.amr.corp.intel.com>
+References: <1236955332-10133-1-git-send-email-fweisbec@gmail.com>
+ <1236955332-10133-2-git-send-email-fweisbec@gmail.com>
+ <12c511ca0904061455k3f8a9cc8r25b7930f257ed922@mail.gmail.com>
+ <20090408184058.GB6017@nowhere>
+In-Reply-To: <20090408184058.GB6017@nowhere>
+Accept-Language: en-US
+Content-Language: en-US
+X-MS-Has-Attach: 
+X-MS-TNEF-Correlator: 
+acceptlanguage: en-US
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7BIT
 MIME-Version: 1.0
-Date: Wed, 8 Apr 2009 21:35:23 +0200
-Message-ID: <8db1092f0904081235x58081f1by842ab45ad861e294@mail.gmail.com>
-Subject: [2.6.30-rc1] device-mapper: table: 254:0: crypt: Error allocating 
-	crypto tfm
-From: Maciej Rutecki <maciej.rutecki@gmail.com>
-To: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       "Rafael J. Wysocki" <rjw@sisk.pl>, herbert@gondor.apana.org.au,
-       davem@davemloft.net, linux-crypto@vger.kernel.org
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Kernel 2.6.30.1
+> Tony, can you tell me if the patch below fixes your build?
+> Thanks!
 
-I try mount encrypted partition:
-root@zlom:/home/maciek# cryptsetup create secret /dev/sda6
-Enter passphrase:
-Command failed: device-mapper: reload ioctl failed: Zły argument
+Frederic,
 
-"Zły argument"="Bad argument"
+Yes ... works great.  Builds are OK with and without CONFIG_IA32_SUPPORT.
+Kernel with CONFIG_IA32_SUPPORT=y boots fine and can run x86 (32-bit) binaries.
 
-Dmesg shows:
-[  193.421463] device-mapper: table: 254:0: crypt: Error allocating crypto tfm
-[  193.421471] device-mapper: ioctl: error adding target to table
-[  193.465318] device-mapper: ioctl: device doesn't appear to be in
-the dev hash table
+Acked-by: Tony Luck <tony.luck@intel.com>
 
-BUT, I try again:
-root@zlom:/home/maciek# cryptsetup create secret /dev/sda6
-Enter passphrase:
-root@zlom:/home/maciek# mount /mnt/sec/
-root@zlom:/home/maciek# df -h | grep sec
-/dev/mapper/secret     89G   42G   43G  50% /mnt/sec
 
-Then it works.
+Thanks for fixing this so quickly.
 
-root@zlom:/home/maciek# cat /proc/crypto
-name         : cbc(aes)
-driver       : cbc(aes-asm)
-module       : kernel
-priority     : 200
-refcnt       : 2
-selftest     : passed
-type         : givcipher
-async        : yes
-blocksize    : 16
-min keysize  : 16
-max keysize  : 32
-ivsize       : 16
-geniv        : chainiv
-
-name         : cbc(aes)
-driver       : cbc(aes-asm)
-module       : cbc
-priority     : 200
-refcnt       : 2
-selftest     : passed
-type         : blkcipher
-blocksize    : 16
-min keysize  : 16
-max keysize  : 32
-ivsize       : 16
-geniv        : <default>
-
-name         : aes
-driver       : aes-asm
-module       : aes_i586
-priority     : 200
-refcnt       : 2
-selftest     : passed
-type         : cipher
-blocksize    : 16
-min keysize  : 16
-max keysize  : 32
-
-name         : aes
-driver       : aes-generic
-module       : aes_generic
-priority     : 100
-refcnt       : 1
-selftest     : passed
-type         : cipher
-blocksize    : 16
-min keysize  : 16
-max keysize  : 32
-
-name         : stdrng
-driver       : krng
-module       : kernel
-priority     : 200
-refcnt       : 2
-selftest     : passed
-type         : rng
-seedsize     : 0
-
-name         : md5
-driver       : md5-generic
-module       : kernel
-priority     : 0
-refcnt       : 1
-selftest     : passed
-type         : shash
-blocksize    : 64
-digestsize   : 16
-descsize     : 88
-
-Any else information is needed?
-
-Config:
-http://unixy.pl/maciek/download/kernel/2.6.30-rc1/pc/config-2.6.30-rc1.txt
-
-dmesg:
-http://unixy.pl/maciek/download/kernel/2.6.30-rc1/pc/dmesg.txt
--- 
-Maciej Rutecki
-http://www.maciek.unixy.pl
+-Tony
