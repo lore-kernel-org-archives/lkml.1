@@ -1,71 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764417AbZDHMns@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764848AbZDHMof@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764417AbZDHMns (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 8 Apr 2009 08:43:48 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754492AbZDHMnj
+	id S1764848AbZDHMof (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 8 Apr 2009 08:44:35 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755261AbZDHMoZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 8 Apr 2009 08:43:39 -0400
-Received: from mx3.mail.elte.hu ([157.181.1.138]:36016 "EHLO mx3.mail.elte.hu"
+	Wed, 8 Apr 2009 08:44:25 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:35001 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754358AbZDHMni (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 8 Apr 2009 08:43:38 -0400
-Date: Wed, 8 Apr 2009 14:43:22 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
-Cc: galak@kernel.crashing.org, beckyb@kernel.crashing.org,
-       linux-kernel@vger.kernel.org, jeremy@goop.org, ian.campbell@citrix.com
-Subject: Re: [PATCH 5/7] swiotlb: (re)Create swiotlb_unmap_single
-Message-ID: <20090408124322.GG18581@elte.hu>
-References: <77EA4458-602F-4DA9-B7E7-E48B5B0DCF91@kernel.crashing.org> <20090408022241U.fujita.tomonori@lab.ntt.co.jp> <726BF449-4F7A-472D-AC5A-D8218B61210B@kernel.crashing.org> <20090408031541G.fujita.tomonori@lab.ntt.co.jp>
+	id S1750902AbZDHMoY (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 8 Apr 2009 08:44:24 -0400
+Date: Wed, 8 Apr 2009 08:44:11 -0400 (EDT)
+From: Mikulas Patocka <mpatocka@redhat.com>
+X-X-Sender: mpatocka@hs20-bc2-1.build.redhat.com
+To: Lee Revell <rlrevell@joe-job.com>
+cc: Ric Wheeler <ricwheeler@gmail.com>, Theodore Tso <tytso@mit.edu>,
+       Ric Wheeler <rwheeler@redhat.com>, Jens Axboe <jens.axboe@oracle.com>,
+       device-mapper development <dm-devel@redhat.com>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       ak@linux.intel.com, "MASON, CHRISTOPHER" <CHRIS.MASON@oracle.com>
+Subject: Re: [dm-devel] Barriers still not passing on simple dm devices...
+In-Reply-To: <75b66ecd0904051814n353bb69bp76a38e36cac4d3fe@mail.gmail.com>
+Message-ID: <Pine.LNX.4.64.0904080839200.28196@hs20-bc2-1.build.redhat.com>
+References: <20090324150517.GX27476@kernel.dk> 
+ <Pine.LNX.4.64.0903251825310.8027@hs20-bc2-1.build.redhat.com> 
+ <20090326084205.GG27476@kernel.dk>  <Pine.LNX.4.64.0903302314500.6158@hs20-bc2-1.build.redhat.com>
+  <20090331104933.GJ5178@kernel.dk>  <Pine.LNX.4.64.0904021923040.19415@hs20-bc2-1.build.redhat.com>
+  <20090403081131.GP5178@kernel.dk> <49D77AC3.3020207@redhat.com> 
+ <20090405012839.GF7553@mit.edu> <49D89C06.1060700@gmail.com>
+ <75b66ecd0904051814n353bb69bp76a38e36cac4d3fe@mail.gmail.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090408031541G.fujita.tomonori@lab.ntt.co.jp>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.5
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Sun, 5 Apr 2009, Lee Revell wrote:
 
-* FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp> wrote:
-
-> > Same here.  It makes it easier for us to work on the powerpc arch  
-> > specific changes for .31 if we can get these into .30.  What are you  
-> > looking at for .31?
+> On Sun, Apr 5, 2009 at 7:54 AM, Ric Wheeler <ricwheeler@gmail.com> wrote:
+> > One thing to point out here is that there are a lot of "servers" in high end
+> > data centers that do not have UPS backup. Those racks full of 1U and 2U
+> > boxes that are used to make "grids", "clouds" and so on often are built with
+> > as much gear as you can stuff in a rack - no batteries or UPS to be seen, so
+> > they are really quite similar to the normal desktop or home systems that we
+> > normally run at home :-)
 > 
-> I need to finish the dma_mapping_ops cleanups and cross-arch 
-> unification stuff:
-> 
-> http://marc.info/?l=linux-kernel&m=123827903216314&w=2
-> 
-> But the changes to swiotlb is minor. BTW, I have the patches for 
-> powerpc too.
-> 
-> > Ingo, any comments on that?
+> These days even bargain basement data centers provide UPS functionality for
+> you, via generator backup and A/B power.
 
-if it's genuine fixes we can do it post-rc1, but it looks a tad wide 
-for that:
+I have seen an installation having generator backup, but with another 
+serious flaw --- if someone plugged a computer causing short-circuit, it 
+turned off the circuit breaker for the whole rack :)
 
- arch/x86/kernel/pci-swiotlb.c |    2 +-
- include/linux/swiotlb.h       |    3 +-
- lib/swiotlb.c                 |  115 ++++++++++++++++++++++-------------------
+Mikulas
 
-the patches came right in the merge window - that's too late for 
-IOMMU bits, the patch cutoff is generally the beginning of the merge 
-window. (Which was on March 23 in this window)
-
-But i can queue them up in the .31 queue if it has all the Acks from 
-you folks. Becky, mind resending the latest version, with all the 
-acks in place?
-
-Thanks,
-
-	Ingo
+> Lee
