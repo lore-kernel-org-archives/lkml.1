@@ -1,69 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761396AbZDHUU1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759849AbZDHUVv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761396AbZDHUU1 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 8 Apr 2009 16:20:27 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754683AbZDHUUK
+	id S1759849AbZDHUVv (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 8 Apr 2009 16:21:51 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752431AbZDHUVk
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 8 Apr 2009 16:20:10 -0400
-Received: from hera.kernel.org ([140.211.167.34]:60317 "EHLO hera.kernel.org"
+	Wed, 8 Apr 2009 16:21:40 -0400
+Received: from mx2.redhat.com ([66.187.237.31]:54012 "EHLO mx2.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754145AbZDHUUJ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 8 Apr 2009 16:20:09 -0400
-Message-ID: <49DD068F.8040102@kernel.org>
-Date: Wed, 08 Apr 2009 13:18:23 -0700
-From: Tejun Heo <tj@kernel.org>
-User-Agent: Thunderbird 2.0.0.19 (X11/20081227)
+	id S1751827AbZDHUVk (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 8 Apr 2009 16:21:40 -0400
+Message-ID: <49DD073E.4050804@redhat.com>
+Date: Wed, 08 Apr 2009 13:21:18 -0700
+From: Masami Hiramatsu <mhiramat@redhat.com>
+User-Agent: Thunderbird 2.0.0.21 (X11/20090320)
 MIME-Version: 1.0
-To: Ivan Kokshaysky <ink@jurassic.park.msu.ru>
-CC: Martin Schwidefsky <schwidefsky@de.ibm.com>, Ingo Molnar <mingo@elte.hu>,
-       rusty@rustcorp.com.au, tglx@linutronix.de, x86@kernel.org,
-       linux-kernel@vger.kernel.org, hpa@zytor.com,
-       Paul Mundt <lethal@linux-sh.org>, rmk@arm.linux.org.uk,
-       starvik@axis.com, ralf@linux-mips.org, davem@davemloft.net,
-       cooloney@kernel.org, kyle@mcmartin.ca, matthew@wil.cx,
-       grundler@parisc-linux.org, takata@linux-m32r.org,
-       benh@kernel.crashing.org, rth@twiddle.net, heiko.carstens@de.ibm.com
-Subject: Re: [GIT RFC] percpu: use dynamic percpu allocator as the default
- percpu allocator
-References: <49D2B04D.4070604@kernel.org> <20090401101054.0a4b187d@skybase> <49D3231D.2040403@kernel.org> <20090401103257.12c2517e@skybase> <49D32B96.3060102@kernel.org> <20090401130731.785714c5@skybase> <49D41B79.60708@kernel.org> <20090402072418.GA14071@jurassic.park.msu.ru> <20090402131341.08ef4184@skybase> <49D558CE.9090608@kernel.org> <20090407160940.GA31956@jurassic.park.msu.ru>
-In-Reply-To: <20090407160940.GA31956@jurassic.park.msu.ru>
-X-Enigmail-Version: 0.95.7
+To: Gary Hade <garyhade@us.ibm.com>
+CC: mingo@elte.hu, mingo@redhat.com, x86@kernel.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: BUG from text_poke() during CPU offlining
+References: <20090408201107.GA11159@us.ibm.com>
+In-Reply-To: <20090408201107.GA11159@us.ibm.com>
 Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Wed, 08 Apr 2009 20:17:55 +0000 (UTC)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hello,
+Hi Gary,
 
-Ivan Kokshaysky wrote:
-> On Fri, Apr 03, 2009 at 09:31:10AM +0900, Tejun Heo wrote:
->> Can STATIC_DEFINE_PER_CPU() be made to work?  It's not pretty but if
->> that's the only sensible way to reach uniform static/dynamic handling,
->> I suppose we can ignore the slight ugliness.
-> 
-> Well, I've got a workaround that has zero impact on common code (patch
-> appended).
-> 
-> The idea is that we can effectively discard the "static" specifier
-> by declaring a dummy variable right before actual per-cpu variable
-> definition:
-> 
-> #define DEFINE_PER_CPU_SECTION(type, name, section)			\
-> 	__attribute__((__section__(".garbage"), __unused__))		\
-> 		char __dummy__##name;					\
-> 	__attribute__((__section__(PER_CPU_BASE_SECTION section)))	\
-> 		__weak __typeof__(type) per_cpu__##name
+Gary Hade wrote:
+> I ran into the below BUG with 32-bit 2.6.30-rc1 while offlining
+> all of the offlineable CPUs.  It happened when the last offlineable
+> CPUs was being offlined.  The problem disappeared after I reverted
+> the following two patches.
+>  - x86: implement atomic text_poke() via fixmap
+>    http://git.kernel.org/?p=linux/kernel/git/torvalds/linux-2.6.git;a=commitdiff;h=78ff7fae04554b49d29226ed12536268c2500d1f
+>  - x86: expand irq-off region in text_poke()
+>    http://git.kernel.org/?p=linux/kernel/git/torvalds/linux-2.6.git;a=commitdiff;h=7cf49427042400d40bdc80b5c3399b6b5945afa8
 
-Nice.  I think .discard would suit better for the dummy variable tho
-(x86 discards the section and it seems to be more common name with
-ldscript using /DISCARD/ identifier for things to throw away).  Also,
-it seems like if two different files happen to use static percpu
-variables with the same name, they would end up sharing it, right?
-That looks a tad bit dangerous.
+Hmm, this bug seems that the same bug I reported recently.
 
-Thanks.
+http://lkml.org/lkml/2009/4/4/71
+
+I'm working on that.
+
+Thank you for reporting!
+
+
+> 
+> Gary
+> 
 
 -- 
-tejun
+Masami Hiramatsu
+
+Software Engineer
+Hitachi Computer Products (America) Inc.
+Software Solutions Division
+
+e-mail: mhiramat@redhat.com
+
