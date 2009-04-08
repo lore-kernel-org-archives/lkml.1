@@ -1,70 +1,145 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756252AbZDHDmi@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755683AbZDHDoU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756252AbZDHDmi (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 7 Apr 2009 23:42:38 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752412AbZDHDm3
+	id S1755683AbZDHDoU (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 7 Apr 2009 23:44:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753293AbZDHDoI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 7 Apr 2009 23:42:29 -0400
-Received: from smtprelay10.ispgateway.de ([80.67.29.24]:54248 "EHLO
-	smtprelay10.ispgateway.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752403AbZDHDm2 (ORCPT
+	Tue, 7 Apr 2009 23:44:08 -0400
+Received: from fgwmail6.fujitsu.co.jp ([192.51.44.36]:58792 "EHLO
+	fgwmail6.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751636AbZDHDoH (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 7 Apr 2009 23:42:28 -0400
-From: Ingo Oeser <ioe-lkml@rameria.de>
-To: Russ Anderson <rja@sgi.com>
-Subject: Re: [PATCH 1/2] Avoid putting a bad page back on the LRU
-Date: Wed, 8 Apr 2009 05:43:15 +0200
-User-Agent: KMail/1.11.0 (Linux/2.6.27-11-generic; KDE/4.2.0; x86_64; ; )
-Cc: linux-kernel@vger.kernel.org, linux-mm@kvack.org, x86@kernel.org,
-       Andi Kleen <andi@firstfloor.org>
-References: <20090408001133.GB27170@sgi.com>
-In-Reply-To: <20090408001133.GB27170@sgi.com>
+	Tue, 7 Apr 2009 23:44:07 -0400
+Message-ID: <49DC1D7E.4010802@jp.fujitsu.com>
+Date: Wed, 08 Apr 2009 12:43:58 +0900
+From: Hidetoshi Seto <seto.hidetoshi@jp.fujitsu.com>
+User-Agent: Thunderbird 2.0.0.21 (Windows/20090302)
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
+To: Andi Kleen <andi@firstfloor.org>
+CC: hpa@zytor.com, linux-kernel@vger.kernel.org, mingo@elte.hu,
+       tglx@linutronix.de
+Subject: Re: [PATCH] [1/4] x86: MCE: Make polling timer interval per CPU
+References: <20090407506.675031434@firstfloor.org> <20090407150654.071D21D046E@basil.firstfloor.org>
+In-Reply-To: <20090407150654.071D21D046E@basil.firstfloor.org>
+Content-Type: text/plain; charset=ISO-2022-JP
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200904080543.16454.ioe-lkml@rameria.de>
-X-Df-Sender: 849595
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Russ,
+Andi Kleen wrote:
+> Impact: bug fix
+> 
+> The polling timer while running per CPU still uses a global next_interval
+> variable, which lead to some CPUs either polling too fast or too slow.
+> This was not a serious problem because all errors get picked up eventually,
+> but it's still better to avoid it. Turn next_interval into a per cpu variable.
+> 
+> Signed-off-by: Andi Kleen <ak@linux.intel.com>
+> 
+> ---
+>  arch/x86/kernel/cpu/mcheck/mce_64.c |   25 +++++++++++++------------
+>  1 file changed, 13 insertions(+), 12 deletions(-)
+> 
+> Index: linux/arch/x86/kernel/cpu/mcheck/mce_64.c
+> ===================================================================
+> --- linux.orig/arch/x86/kernel/cpu/mcheck/mce_64.c	2009-04-07 16:09:57.000000000 +0200
+> +++ linux/arch/x86/kernel/cpu/mcheck/mce_64.c	2009-04-07 16:43:16.000000000 +0200
+> @@ -452,13 +452,14 @@
+>   */
+>  
+>  static int check_interval = 5 * 60; /* 5 minutes */
+> -static int next_interval; /* in jiffies */
+> +static DEFINE_PER_CPU(int, next_interval); /* in jiffies */
+>  static void mcheck_timer(unsigned long);
+>  static DEFINE_PER_CPU(struct timer_list, mce_timer);
+>  
+>  static void mcheck_timer(unsigned long data)
+>  {
+>  	struct timer_list *t = &per_cpu(mce_timer, data);
+> +	int *n;
+>  
+>  	WARN_ON(smp_processor_id() != data);
+>  
+> @@ -470,14 +471,14 @@
+>  	 * Alert userspace if needed.  If we logged an MCE, reduce the
+>  	 * polling interval, otherwise increase the polling interval.
+>  	 */
+> +	n = &__get_cpu_var(next_interval);
+>  	if (mce_notify_user()) {
+> -		next_interval = max(next_interval/2, HZ/100);
+> +		*n = max(*n/2, HZ/100);
+>  	} else {
+> -		next_interval = min(next_interval * 2,
+> -				(int)round_jiffies_relative(check_interval*HZ));
+> +		*n = min(*n*2, (int)round_jiffies_relative(check_interval*HZ));
+>  	}
+>  
+> -	t->expires = jiffies + next_interval;
+> +	t->expires = jiffies + *n;
+>  	add_timer(t);
+>  }
+>  
+> @@ -632,14 +633,14 @@
+>  static void mce_init_timer(void)
+>  {
+>  	struct timer_list *t = &__get_cpu_var(mce_timer);
+> +	int *n = &__get_cpu_var(next_interval);
+>  
+> -	/* data race harmless because everyone sets to the same value */
+> -	if (!next_interval)
+> -		next_interval = check_interval * HZ;
+> -	if (!next_interval)
 
-On Wednesday 08 April 2009, Russ Anderson wrote:
-> --- linux-next.orig/mm/migrate.c	2009-04-07 18:32:12.781949840 -0500
-> +++ linux-next/mm/migrate.c	2009-04-07 18:34:19.169736260 -0500
-> @@ -693,6 +696,26 @@ unlock:
->   		 * restored.
->   		 */
->   		list_del(&page->lru);
-> +#ifdef CONFIG_MEMORY_FAILURE
-> +		if (PagePoison(page)) {
-> +			if (rc == 0)
-> +				/*
-> +				 * A page with a memory error that has
-> +				 * been migrated will not be moved to
-> +				 * the LRU.
-> +				 */
-> +				goto move_newpage;
-> +			else
-> +				/*
-> +				 * The page failed to migrate and will not
-> +				 * be added to the bad page list.  Clearing
-> +				 * the error bit will allow another attempt
-> +				 * to migrate if it gets another correctable
-> +				 * error.
-> +				 */
-> +				ClearPagePoison(page);
+[plan A]
+Add
+	if (!check_interval)
+		return;
 
-Clearing the flag doesn't change the fact, that this page is representing 
-permanently bad RAM.
+Or...
 
-What about removing it from the LRU and adding it to a bad RAM list in every case?
-After hot swapping the physical RAM banks it could be moved back, not before.
+> +	if (!*n)
+> +		*n = check_interval * HZ;
+> +	if (!*n)
+>  		return;
+>  	setup_timer(t, mcheck_timer, smp_processor_id());
+> -	t->expires = round_jiffies(jiffies + next_interval);
+> +	t->expires = round_jiffies(jiffies + *n);
+>  	add_timer(t);
+>  }
+>  
+> @@ -907,7 +908,6 @@
+>  /* Reinit MCEs after user configuration changes */
+>  static void mce_restart(void)
+>  {
+> -	next_interval = check_interval * HZ;
+>  	on_each_cpu(mce_cpu_restart, NULL, 1);
+>  }
+>  
+
+[plan B]
+Don't remove this line.
+
+Take A or B, or we cannot stop polling timer by setting check_interval
+to 0 via sysfs and then the timer will spin with 0 interval.
 
 
-Best Regards
+Thanks,
+H.Seto
 
-Ingo Oeser
+> @@ -1110,7 +1110,8 @@
+>  		break;
+>  	case CPU_DOWN_FAILED:
+>  	case CPU_DOWN_FAILED_FROZEN:
+> -		t->expires = round_jiffies(jiffies + next_interval);
+> +		t->expires = round_jiffies(jiffies +
+> +						__get_cpu_var(next_interval));
+>  		add_timer_on(t, cpu);
+>  		smp_call_function_single(cpu, mce_reenable_cpu, &action, 1);
+>  		break;
+> --
+> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> Please read the FAQ at  http://www.tux.org/lkml/
+> 
