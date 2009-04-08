@@ -1,48 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1765441AbZDHOZw@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759432AbZDHO1X@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1765441AbZDHOZw (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 8 Apr 2009 10:25:52 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1764371AbZDHOZS
+	id S1759432AbZDHO1X (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 8 Apr 2009 10:27:23 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759001AbZDHO1M
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 8 Apr 2009 10:25:18 -0400
-Received: from rtr.ca ([76.10.145.34]:39200 "EHLO mail.rtr.ca"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1763155AbZDHOZQ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 8 Apr 2009 10:25:16 -0400
-Message-ID: <49DCB3C9.9040809@rtr.ca>
-Date: Wed, 08 Apr 2009 10:25:13 -0400
-From: Mark Lord <liml@rtr.ca>
-Organization: Real-Time Remedies Inc.
-User-Agent: Thunderbird 2.0.0.21 (X11/20090318)
+	Wed, 8 Apr 2009 10:27:12 -0400
+Received: from out2.smtp.messagingengine.com ([66.111.4.26]:52233 "EHLO
+	out2.smtp.messagingengine.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1753552AbZDHO1L (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 8 Apr 2009 10:27:11 -0400
+X-Sasl-enc: F+Y+A52dzrdCG++LyNfuThsRrxEwu4waWdUpUm2TI8ws 1239200829
+Message-ID: <49DCB43A.8080901@fastmail.fm>
+Date: Wed, 08 Apr 2009 15:27:06 +0100
+From: Jack Stone <jwjstone@fastmail.fm>
+User-Agent: Thunderbird 2.0.0.21 (X11/20090325)
 MIME-Version: 1.0
-To: Markus Trippelsdorf <markus@trippelsdorf.de>
-Cc: Mark Lord <liml@rtr.ca>, Jeff Garzik <jeff@garzik.org>,
-       Matthew Wilcox <willy@linux.intel.com>, linux-ide@vger.kernel.org,
-       linux-kernel@vger.kernel.org,
-       Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>,
-       David Woodhouse <David.Woodhouse@intel.com>
-Subject: Re: [PATCH 4/5] ide: Add support for TRIM
-References: <1238683047-13588-1-git-send-email-willy@linux.intel.com> <1238683047-13588-2-git-send-email-willy@linux.intel.com> <1238683047-13588-3-git-send-email-willy@linux.intel.com> <1238683047-13588-4-git-send-email-willy@linux.intel.com> <49DB8B54.7050402@garzik.org> <49DB9422.5040702@rtr.ca> <20090407181033.GA2673@gentoox2.trippelsdorf.de> <49DBB071.6000105@rtr.ca> <20090408071404.GA2656@gentoox2.trippelsdorf.de>
-In-Reply-To: <20090408071404.GA2656@gentoox2.trippelsdorf.de>
-Content-Type: text/plain; charset=UTF-8; format=flowed
+To: wharms@bfs.de
+CC: Bert Wesarg <bert.wesarg@googlemail.com>, linux-kernel@vger.kernel.org,
+       jeff@garzik.org, kernel-janitors@vger.kernel.org
+Subject: Re: [PATCH 20/56] inflate: Remove void casts
+References: <1239189748-11703-1-git-send-email-jwjstone@fastmail.fm>	 <1239189748-11703-13-git-send-email-jwjstone@fastmail.fm>	 <1239189748-11703-14-git-send-email-jwjstone@fastmail.fm>	 <1239189748-11703-15-git-send-email-jwjstone@fastmail.fm>	 <1239189748-11703-16-git-send-email-jwjstone@fastmail.fm>	 <1239189748-11703-17-git-send-email-jwjstone@fastmail.fm>	 <1239189748-11703-18-git-send-email-jwjstone@fastmail.fm>	 <1239189748-11703-19-git-send-email-jwjstone@fastmail.fm>	 <1239189748-11703-20-git-send-email-jwjstone@fastmail.fm>	 <1239189748-11703-21-git-send-email-jwjstone@fastmail.fm> <36ca99e90904080439u7098d2feka5dd39f8ab6a470c@mail.gmail.com> <49DCB26C.3070709@bfs.de>
+In-Reply-To: <49DCB26C.3070709@bfs.de>
+Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Markus Trippelsdorf wrote:
-> ..
-> The new firmware is out and looks promising:
-> 
-> ########## Begin SSD TRIM output ##########
-> word21 bit10 = 1: support for the DATA SET MANAGEMENT is changeable.
-> word169 bit0 = 1: device supports the Trim bit of DATA SET MANAGEMENT command.
->   word69 bit14 = 1: Trim function of the DATA SET MANAGEMENT command supports determinate behavior.
-> ########## End SSD TRIM output ##########
-> 
-> This is the output from a modified hdparm, that checks the relevant bits. 
-..
+walter harms wrote:
+> Bert Wesarg schrieb:
+>   
+>> On Wed, Apr 8, 2009 at 13:21, Jack Stone <jwjstone@fastmail.fm> wrote:
+>>     
+>>> Remove uneeded void casts
+>>>
+>>> Signed-Off-By: Jack Stone <jwjstone@fastmail.fm>
+>>> ---
+>>>  lib/inflate.c |    4 ++--
+>>>  1 files changed, 2 insertions(+), 2 deletions(-)
+>>>
+>>> diff --git a/lib/inflate.c b/lib/inflate.c
+>>> index 1a8e8a9..4b672f9 100644
+>>> --- a/lib/inflate.c
+>>> +++ b/lib/inflate.c
+>>> @@ -481,7 +481,7 @@ DEBG1("3 ");
+>>>         z = 1 << j;             /* table entries for j-bit table */
+>>>
+>>>         /* allocate and link in new table */
+>>> -        if ((q = (struct huft *)malloc((z + 1)*sizeof(struct huft))) ==
+>>> +        if ((q = malloc((z + 1)*sizeof(struct huft))) ==
+>>>             (struct huft *)NULL)
+>>>       
+> and move the q= from the if. less than half the size.
+>
+> q = malloc( (z + 1)*sizeof(*q) ):
+> if ( q == NULL )
+>   
+I was avoiding that sort of thing as this patch series is large enough
+as it is.
 
-I'll release hdparm-9.14 shortly, with reporting for the TRIM feature in the -I output.
+Thanks,
 
-Cheers
+Jack
