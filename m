@@ -1,76 +1,75 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932686AbZDHSk2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934425AbZDHSlA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932686AbZDHSk2 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 8 Apr 2009 14:40:28 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932451AbZDHSjb
+	id S934425AbZDHSlA (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 8 Apr 2009 14:41:00 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933019AbZDHSj4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 8 Apr 2009 14:39:31 -0400
-Received: from fg-out-1718.google.com ([72.14.220.157]:47280 "EHLO
-	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S932272AbZDHSj2 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 8 Apr 2009 14:39:28 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:references:mime-version
-         :content-type:content-disposition:in-reply-to:user-agent;
-        b=DgCrbQNTbk2HKbytGS2I7sMQVxSfS9J+Fm/ExbmtUyA88sibaQjglhiFiT6SkxBr36
-         ZghDDSxnb94z7Q6I5iOlO7vLJh65MmPGldOu65+aWh0S9qUI4Q4cSzaOgKUJ1X2ANhiO
-         kuBIJ8E5aADtihmDTHq7tbzug5kv5rPGLQuR8=
-Date: Wed, 8 Apr 2009 22:39:24 +0400
-From: Cyrill Gorcunov <gorcunov@gmail.com>
-To: mingo@redhat.com, hpa@zytor.com, linux-kernel@vger.kernel.org,
-       yinghai@kernel.org, tglx@linutronix.de, mingo@elte.hu
-Cc: linux-tip-commits@vger.kernel.org
-Subject: Re: [tip:x86/apic] x86: make wakeup_secondary_cpu_via_init static
-Message-ID: <20090408183924.GF7556@lenovo>
-References: <49D6A692.6040400@kernel.org> <tip-cdc1cb0d4445f39561a65204d26f89365f917550@git.kernel.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <tip-cdc1cb0d4445f39561a65204d26f89365f917550@git.kernel.org>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+	Wed, 8 Apr 2009 14:39:56 -0400
+Received: from 82-117-125-11.tcdsl.calypso.net ([82.117.125.11]:34686 "EHLO
+	smtp.ossman.eu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S932891AbZDHSjy (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 8 Apr 2009 14:39:54 -0400
+Date: Wed, 8 Apr 2009 20:39:45 +0200
+From: Pierre Ossman <pierre@ossman.eu>
+To: Wolfgang =?UTF-8?B?TcO8ZXM=?= <wolfgang.mues@auerswald.de>
+Cc: Pierre Ossman <drzeus@drzeus.cx>,
+       "Andrew Morton" <akpm@linux-foundation.org>,
+       "Matt Fleming" <matt@console-pimps.org>,
+       "David Brownell" <dbrownell@users.sourceforge.net>,
+       "Mike Frysinger" <vapier.adi@gmail.com>, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 6/7 revised] mmc_spi: convert timeout handling to
+ jiffies and avoid busy waiting
+Message-ID: <20090408203945.3bc06acd@mjolnir.ossman.eu>
+In-Reply-To: <200904071626.30917.wolfgang.mues@auerswald.de>
+References: <200904071626.30917.wolfgang.mues@auerswald.de>
+X-Mailer: Claws Mail 3.7.1 (GTK+ 2.16.0; x86_64-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: multipart/signed; micalg=PGP-SHA1; protocol="application/pgp-signature"; boundary="=_freyr.ossman.eu-25978-1239215989-0001-2"
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-[Yinghai Lu - Wed, Apr 08, 2009 at 01:00:32PM +0000]
-| Commit-ID:  cdc1cb0d4445f39561a65204d26f89365f917550
-| Gitweb:     http://git.kernel.org/tip/cdc1cb0d4445f39561a65204d26f89365f917550
-| Author:     Yinghai Lu <yinghai@kernel.org>
-| AuthorDate: Fri, 3 Apr 2009 17:15:14 -0700
-| Committer:  Ingo Molnar <mingo@elte.hu>
-| CommitDate: Wed, 8 Apr 2009 14:50:28 +0200
-| 
-| x86: make wakeup_secondary_cpu_via_init static
-| 
-| Impact: cleanup
-| 
-| Signed-off-by: Yinghai Lu <yinghai@kernel.org>
-| LKML-Reference: <49D6A692.6040400@kernel.org>
-| Signed-off-by: Ingo Molnar <mingo@elte.hu>
-| 
-| 
-| ---
-|  arch/x86/kernel/smpboot.c |    2 +-
-|  1 files changed, 1 insertions(+), 1 deletions(-)
-| 
-| diff --git a/arch/x86/kernel/smpboot.c b/arch/x86/kernel/smpboot.c
-| index 58d24ef..bddf2cc 100644
-| --- a/arch/x86/kernel/smpboot.c
-| +++ b/arch/x86/kernel/smpboot.c
-| @@ -538,7 +538,7 @@ wakeup_secondary_cpu_via_nmi(int logical_apicid, unsigned long start_eip)
-|  	return (send_status | accept_status);
-|  }
-|  
-| -int __devinit
-| +static int __devinit
-|  wakeup_secondary_cpu_via_init(int phys_apicid, unsigned long start_eip)
-|  {
-|  	unsigned long send_status, accept_status = 0;
+This is a MIME-formatted message.  If you see this text it means that your
+E-mail software does not support MIME-formatted messages.
 
-Hi Yinghai,
+--=_freyr.ossman.eu-25978-1239215989-0001-2
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: quoted-printable
 
-just curious why it's not __cpuinit? Did I miss something?
+On Tue, 7 Apr 2009 15:26:30 +0100
+Wolfgang M=C3=BCes <wolfgang.mues@auerswald.de> wrote:
 
-       Cyrill
+> From: Wolfgang Muees <wolfgang.mues@auerswald.de>
+>=20
+> o SD/MMC card timeouts can be very high. So avoid busy-waiting,
+>   using the scheduler. Calculate all timeouts in jiffies units,
+>   because this will give us the correct sign when to involve
+>   the scheduler.
+>=20
+> Signed-off-by: Wolfgang Muees <wolfgang.mues@auerswald.de>
+>=20
+
+Also queued.
+
+--=20
+     -- Pierre Ossman
+
+  WARNING: This correspondence is being monitored by the
+  Swedish government. Make sure your server uses encryption
+  for SMTP traffic and consider using PGP for end-to-end
+  encryption.
+
+--=_freyr.ossman.eu-25978-1239215989-0001-2
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: attachment; filename=signature.asc
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v2.0.11 (GNU/Linux)
+
+iEYEARECAAYFAknc73YACgkQ7b8eESbyJLjnlACg9ydC0FIZIGXNKgXKf18O+DI2
+NT8AoNGxButck/M8vha4WDNBb/leZxKw
+=pSFW
+-----END PGP SIGNATURE-----
+
+--=_freyr.ossman.eu-25978-1239215989-0001-2--
