@@ -1,49 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760423AbZDHFyT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760144AbZDHFyy@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760423AbZDHFyT (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 8 Apr 2009 01:54:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755084AbZDHFyA
+	id S1760144AbZDHFyy (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 8 Apr 2009 01:54:54 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757960AbZDHFyo
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 8 Apr 2009 01:54:00 -0400
-Received: from mail-bw0-f169.google.com ([209.85.218.169]:48820 "EHLO
-	mail-bw0-f169.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754293AbZDHFx7 (ORCPT
+	Wed, 8 Apr 2009 01:54:44 -0400
+Received: from mms3.broadcom.com ([216.31.210.19]:2522 "EHLO MMS3.broadcom.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1756038AbZDHFyn convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 8 Apr 2009 01:53:59 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:sender:in-reply-to:references:date
-         :x-google-sender-auth:message-id:subject:from:to:cc:content-type
-         :content-transfer-encoding;
-        b=pmB1/nDV30g3rqSGwP6xxhTeu9yUSEns1f2hS/jmXqbWJo2tKHJ3u9QAv5ZAUPQfbU
-         r3mELvkXeScQHL0YXXVktt7ey0YQMvrV06jfdW/t1Aomi2VincFNNHpmPnFDcgsF78u3
-         ze/KqkFz4AIxcqctnkHfhgNC9hQweRxSEdOgY=
+	Wed, 8 Apr 2009 01:54:43 -0400
+X-Server-Uuid: B55A25B1-5D7D-41F8-BC53-C57E7AD3C201
+From: "Michael Chan" <mchan@broadcom.com>
+To: "'Robin Holt'" <holt@sgi.com>, "Matthew Carlson" <mcarlson@broadcom.com>,
+       "David S. Miller" <davem@davemloft.net>,
+       "Benjamin Li" <benli@broadcom.com>
+cc: "Linux Kernel Mailing List" <linux-kernel@vger.kernel.org>,
+       "Linus Torvalds" <torvalds@linux-foundation.org>
+Date: Tue, 7 Apr 2009 22:54:33 -0700
+Subject: Re: Linux 2.6.30-rc1
+Thread-Topic: Linux 2.6.30-rc1
+Thread-Index: Acm4DB0NR/3C4BloSpqLEImsrhC8DwACLITw
+Message-ID: <C27F8246C663564A84BB7AB343977242176F6BF106@IRVEXCHCCR01.corp.ad.broadcom.com>
+In-Reply-To: <20090408053721.GE10768@sgi.com>
+Accept-Language: en-US
+Content-Language: en-US
+X-MS-Has-Attach: 
+X-MS-TNEF-Correlator: 
+acceptlanguage: en-US
 MIME-Version: 1.0
-In-Reply-To: <20090408054612.GA6744@ldl.fc.hp.com>
-References: <20090408003921.GA5054@ldl.fc.hp.com>
-	 <20090408010331.GB10768@sgi.com> <20090408054612.GA6744@ldl.fc.hp.com>
-Date: Wed, 8 Apr 2009 08:53:57 +0300
-X-Google-Sender-Auth: 733a2b4d168b8da1
-Message-ID: <84144f020904072253j4c8b338we034f687da783280@mail.gmail.com>
-Subject: Re: cross-compilers
-From: Pekka Enberg <penberg@cs.helsinki.fi>
-To: Alex Chiang <achiang@hp.com>
-Cc: Robin Holt <holt@sgi.com>, Andrew Morton <akpm@linux-foundation.org>,
-       linux-kernel <linux-kernel@vger.kernel.org>, linux-ia64@vger.kernel.org,
-       Vegard Nossum <vegard.nossum@gmail.com>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+X-WSS-ID: 65C2E3935Y817732127-01-01
+Content-Type: text/plain;
+ charset=us-ascii
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Alex,
+Robin Holt wrote:
 
-On Wed, Apr 8, 2009 at 8:46 AM, Alex Chiang <achiang@hp.com> wrote:
-> I guess the question remains for Andrew. Since I pretty much did
-> all the work needed to update his cross-compiler repo, is there
-> still value in it?
+> Booting an ia64 box with a tg3 adapter results in no network.
+>  If I look
+> at the MAC address of the adapter, it has changed radically from the
+> original MAC.  The original MAC continues to be reported by EFI and
+> booting an old kernel gets the correct MAC.
+>
+> Good MAC:     08:00:69:13:E6:3C
+> Bad MAC:      00:00:3C:E6:13:69 (recreated from memory)
 
-I don't know about Andrew, but Vegard might be interested:
+Looks like endian swapped.  Can you provide the entire tg3 signon
+string?  Please also dump the beginning part of the nvram:
 
-http://www.kernel.org/pub/tools/crosstool/
+ethtool -e eth0 length 0x90
+
+>
+> If I set the MAC using ifconfig, then everything works normally.
+>
+
+The bad MAC address that has been swapped is also a valid MAC address
+and should still work though.
+
