@@ -1,21 +1,26 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S936785AbZDJLwg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S936711AbZDJLxS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S936785AbZDJLwg (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 10 Apr 2009 07:52:36 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S936048AbZDJLvm
+	id S936711AbZDJLxS (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 10 Apr 2009 07:53:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S936384AbZDJLvn
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 10 Apr 2009 07:51:42 -0400
-Received: from wine.ocn.ne.jp ([122.1.235.145]:58901 "EHLO smtp.wine.ocn.ne.jp"
+	Fri, 10 Apr 2009 07:51:43 -0400
+Received: from wine.ocn.ne.jp ([122.1.235.145]:59141 "EHLO smtp.wine.ocn.ne.jp"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S936062AbZDJLvj (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	id S936027AbZDJLvj (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
 	Fri, 10 Apr 2009 07:51:39 -0400
-Message-Id: <20090408133126.180521064@I-love.SAKURA.ne.jp>
+Message-Id: <20090408133525.714423392@I-love.SAKURA.ne.jp>
+References: <20090408133126.180521064@I-love.SAKURA.ne.jp>
 User-Agent: quilt/0.46-1
-Date: Wed, 08 Apr 2009 22:31:26 +0900
+Date: Wed, 08 Apr 2009 22:31:28 +0900
 From: Tetsuo Handa <penguin-kernel@I-love.SAKURA.ne.jp>
 To: jmorris@namei.org
-Cc: linux-security-module@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: [TOMOYO 0/2] Final patches for kenrel 2.6.30.
+Cc: linux-security-module@vger.kernel.org, linux-kernel@vger.kernel.org,
+       Kentaro Takeda <takedakn@nttdata.co.jp>,
+       Tetsuo Handa <penguin-kernel@I-love.SAKURA.ne.jp>,
+       Toshiharu Harada <haradats@nttdata.co.jp>
+Subject: [TOMOYO 2/2] Hello.
+Content-Disposition: inline; filename=tomoyo-version-bump.patch
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
@@ -109,9 +114,128 @@ We thank Linus Torvalds for allowing us to join the Linux community.
 
 With many more thanks, we would like to release this snapshot as TOMOYO Linux
 version 2.2.0. Thank you for waiting.
+----------------------------------------
+Subject: [TOMOYO 2/2] tomoyo: version bump to 2.2.0.
 
---
-Kentaro Takeda
-Tetsuo Handa
-Toshiharu Harada
+Signed-off-by: Kentaro Takeda <takedakn@nttdata.co.jp>
+Signed-off-by: Tetsuo Handa <penguin-kernel@I-love.SAKURA.ne.jp>
+Signed-off-by: Toshiharu Harada <haradats@nttdata.co.jp>
+---
+ security/tomoyo/common.c   |    6 +++---
+ security/tomoyo/common.h   |    2 +-
+ security/tomoyo/domain.c   |    2 +-
+ security/tomoyo/file.c     |    2 +-
+ security/tomoyo/realpath.c |    2 +-
+ security/tomoyo/realpath.h |    2 +-
+ security/tomoyo/tomoyo.c   |    2 +-
+ security/tomoyo/tomoyo.h   |    2 +-
+ 8 files changed, 10 insertions(+), 10 deletions(-)
 
+--- linux-2.6.30-rc1.orig/security/tomoyo/common.c
++++ linux-2.6.30-rc1/security/tomoyo/common.c
+@@ -5,7 +5,7 @@
+  *
+  * Copyright (C) 2005-2009  NTT DATA CORPORATION
+  *
+- * Version: 2.2.0-pre   2009/02/01
++ * Version: 2.2.0   2009/04/01
+  *
+  */
+ 
+@@ -1773,7 +1773,7 @@ void tomoyo_load_policy(const char *file
+ 	envp[2] = NULL;
+ 	call_usermodehelper(argv[0], argv, envp, 1);
+ 
+-	printk(KERN_INFO "TOMOYO: 2.2.0-pre   2009/02/01\n");
++	printk(KERN_INFO "TOMOYO: 2.2.0   2009/04/01\n");
+ 	printk(KERN_INFO "Mandatory Access Control activated.\n");
+ 	tomoyo_policy_loaded = true;
+ 	{ /* Check all profiles currently assigned to domains are defined. */
+@@ -1800,7 +1800,7 @@ void tomoyo_load_policy(const char *file
+ static int tomoyo_read_version(struct tomoyo_io_buffer *head)
+ {
+ 	if (!head->read_eof) {
+-		tomoyo_io_printf(head, "2.2.0-pre");
++		tomoyo_io_printf(head, "2.2.0");
+ 		head->read_eof = true;
+ 	}
+ 	return 0;
+--- linux-2.6.30-rc1.orig/security/tomoyo/common.h
++++ linux-2.6.30-rc1/security/tomoyo/common.h
+@@ -5,7 +5,7 @@
+  *
+  * Copyright (C) 2005-2009  NTT DATA CORPORATION
+  *
+- * Version: 2.2.0-pre   2009/02/01
++ * Version: 2.2.0   2009/04/01
+  *
+  */
+ 
+--- linux-2.6.30-rc1.orig/security/tomoyo/domain.c
++++ linux-2.6.30-rc1/security/tomoyo/domain.c
+@@ -5,7 +5,7 @@
+  *
+  * Copyright (C) 2005-2009  NTT DATA CORPORATION
+  *
+- * Version: 2.2.0-pre   2009/02/01
++ * Version: 2.2.0   2009/04/01
+  *
+  */
+ 
+--- linux-2.6.30-rc1.orig/security/tomoyo/file.c
++++ linux-2.6.30-rc1/security/tomoyo/file.c
+@@ -5,7 +5,7 @@
+  *
+  * Copyright (C) 2005-2009  NTT DATA CORPORATION
+  *
+- * Version: 2.2.0-pre   2009/02/01
++ * Version: 2.2.0   2009/04/01
+  *
+  */
+ 
+--- linux-2.6.30-rc1.orig/security/tomoyo/realpath.c
++++ linux-2.6.30-rc1/security/tomoyo/realpath.c
+@@ -5,7 +5,7 @@
+  *
+  * Copyright (C) 2005-2009  NTT DATA CORPORATION
+  *
+- * Version: 2.2.0-pre   2009/02/01
++ * Version: 2.2.0   2009/04/01
+  *
+  */
+ 
+--- linux-2.6.30-rc1.orig/security/tomoyo/realpath.h
++++ linux-2.6.30-rc1/security/tomoyo/realpath.h
+@@ -5,7 +5,7 @@
+  *
+  * Copyright (C) 2005-2009  NTT DATA CORPORATION
+  *
+- * Version: 2.2.0-pre   2009/02/01
++ * Version: 2.2.0   2009/04/01
+  *
+  */
+ 
+--- linux-2.6.30-rc1.orig/security/tomoyo/tomoyo.c
++++ linux-2.6.30-rc1/security/tomoyo/tomoyo.c
+@@ -5,7 +5,7 @@
+  *
+  * Copyright (C) 2005-2009  NTT DATA CORPORATION
+  *
+- * Version: 2.2.0-pre   2009/02/01
++ * Version: 2.2.0   2009/04/01
+  *
+  */
+ 
+--- linux-2.6.30-rc1.orig/security/tomoyo/tomoyo.h
++++ linux-2.6.30-rc1/security/tomoyo/tomoyo.h
+@@ -5,7 +5,7 @@
+  *
+  * Copyright (C) 2005-2009  NTT DATA CORPORATION
+  *
+- * Version: 2.2.0-pre   2009/02/01
++ * Version: 2.2.0   2009/04/01
+  *
+  */
+ 
+
+-- 
