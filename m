@@ -1,68 +1,98 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933859AbZDHQZl@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933461AbZDHQ3Z@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933859AbZDHQZl (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 8 Apr 2009 12:25:41 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933911AbZDHQZA
+	id S933461AbZDHQ3Z (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 8 Apr 2009 12:29:25 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759824AbZDHQ3O
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 8 Apr 2009 12:25:00 -0400
-Received: from mail-fx0-f158.google.com ([209.85.220.158]:35009 "EHLO
-	mail-fx0-f158.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S933852AbZDHQY6 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 8 Apr 2009 12:24:58 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:mime-version:content-type
-         :content-disposition:user-agent;
-        b=pQC8zFd9qnzsrmuwvQ7LBlc3H+K9EVm1Syb+nMt0XXA6P8zcD1XtwufRvt6Pf6oV7w
-         G+2LuKW3tXwd1Nqp99TgGdx/prxM6/d1JWQShlFe4P26d2k44GpN+16skeWPQNssNHpn
-         bcAh25JxE2IfDBZ+p4+/8+273bs26LG3pwdXk=
-Date: Wed, 8 Apr 2009 18:24:52 +0200
-From: Vegard Nossum <vegard.nossum@gmail.com>
-To: Arjan van de Ven <arjan@linux.intel.com>, Jeff Garzik <jgarzik@redhat.com>
-Cc: linux-kernel@vger.kernel.org
-Subject: [PATCH] ata: fix obviously wrong comment
-Message-ID: <20090408162452.GA10440@damson.cased.tu-darmstadt.de>
+	Wed, 8 Apr 2009 12:29:14 -0400
+Received: from mx3.mail.elte.hu ([157.181.1.138]:46855 "EHLO mx3.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1756086AbZDHQ3N (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 8 Apr 2009 12:29:13 -0400
+Date: Wed, 8 Apr 2009 18:26:51 +0200
+From: Ingo Molnar <mingo@elte.hu>
+To: Christoph Lameter <cl@linux.com>
+Cc: Linus Torvalds <torvalds@linux-foundation.org>, Tejun Heo <tj@kernel.org>,
+       Martin Schwidefsky <schwidefsky@de.ibm.com>, rusty@rustcorp.com.au,
+       tglx@linutronix.de, x86@kernel.org, linux-kernel@vger.kernel.org,
+       hpa@zytor.com, Paul Mundt <lethal@linux-sh.org>, rmk@arm.linux.org.uk,
+       starvik@axis.com, ralf@linux-mips.org, davem@davemloft.net,
+       cooloney@kernel.org, kyle@mcmartin.ca, matthew@wil.cx,
+       grundler@parisc-linux.org, takata@linux-m32r.org,
+       benh@kernel.crashing.org, rth@twiddle.net, ink@jurassic.park.msu.ru,
+       heiko.carstens@de.ibm.com, Nick Piggin <npiggin@suse.de>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>
+Subject: Re: [PATCH UPDATED] percpu: use dynamic percpu allocator as the
+	default percpu allocator
+Message-ID: <20090408162651.GA14449@elte.hu>
+References: <49D2B209.9060000@kernel.org> <alpine.DEB.1.10.0904010948120.7643@qirst.com> <20090401154913.GA31435@elte.hu> <alpine.DEB.1.10.0904011404240.29839@qirst.com> <20090401190113.GA734@elte.hu> <alpine.LFD.2.00.0904011235160.4130@localhost.localdomain> <20090401223241.GA28168@elte.hu> <alpine.DEB.1.10.0904012216370.32656@qirst.com> <20090402034223.GA25791@elte.hu> <alpine.DEB.1.10.0904020948570.31756@qirst.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
+In-Reply-To: <alpine.DEB.1.10.0904020948570.31756@qirst.com>
 User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
->From 776d93d1e11ff79ed2693541b0663dbb2ffa3aee Mon Sep 17 00:00:00 2001
-From: Vegard Nossum <vegard.nossum@gmail.com>
-Date: Wed, 8 Apr 2009 18:19:39 +0200
-Subject: [PATCH] ata: fix obviously wrong comment
 
-Also remove the now-useless debug printouts which are supposed to
-tell us when the scan starts and ends.
+* Christoph Lameter <cl@linux.com> wrote:
 
-Signed-off-by: Vegard Nossum <vegard.nossum@gmail.com>
----
- drivers/ata/libata-core.c |    4 +---
- 1 files changed, 1 insertions(+), 3 deletions(-)
+> On Thu, 2 Apr 2009, Ingo Molnar wrote:
+> 
+> > to quote an earlier part of my mail:
+> >
+> > > > We encourage kfree(NULL) and it triggers commonly in the 
+> > > > kernel today [on distro kernels we checked it can trigger 
+> > > > once per syscall!] - so i think we should consider 
+> > > > free_percpu(NULL) a possibly common pattern too. (even 
+> > > > though today it's likely _not_ common at all.)
+> >
+> > I specifically mentioned that it is not at all common now.
+> 
+> What is this? Nonsense day? Consider it a common pattern although 
+> its likely not common at all? April fools day?
 
-diff --git a/drivers/ata/libata-core.c b/drivers/ata/libata-core.c
-index e7ea77c..065507c 100644
---- a/drivers/ata/libata-core.c
-+++ b/drivers/ata/libata-core.c
-@@ -6110,13 +6110,11 @@ int ata_host_register(struct ata_host *host, struct scsi_host_template *sht)
- 			ata_port_printk(ap, KERN_INFO, "DUMMY\n");
- 	}
- 
--	/* perform each probe synchronously */
--	DPRINTK("probe begin\n");
-+	/* perform each probe asynchronously */
- 	for (i = 0; i < host->n_ports; i++) {
- 		struct ata_port *ap = host->ports[i];
- 		async_schedule(async_port_probe, ap);
- 	}
--	DPRINTK("probe end\n");
- 
- 	return 0;
- }
--- 
-1.6.0.6
+Dude, this is a new facility freshly modernized and freshly made 
+usable. What did you expect, for a thousand usecases pop up in the 
+kernel overnight? _None_ of this code is "common" today per se. (the 
+networking folks are working on making it more and more common 
+though)
 
+> > But there's no reason why an object shutdown fastpath with an 
+> > optional percpu buffer (say for debug statistics, not enabled by 
+> > default) couldnt look like this:
+> >
+> > 	percpu_free(NULL);
+> >
+> > We actually have such patterns of kfree(ptr) use, where the _common_
+> > case in a fastpath is kfree(NULL).
+> 
+> Speculation. A shutdown fastpath? The percpu allocation and free 
+> operations are expensive and deal with teardown and setup of 
+> virtual mappings. Those paths are *not* optimized for fastpath 
+> use. kfree is different.
+
+Of course a lot of this is speculation, dynamic percpu so far has 
+been a rarely used facility compared to kmalloc()/kfree(). If you 
+dont accept my analogy that's fine - but that is opinion against 
+opinion - while you state you opinion as truism.
+
+So my point remains: your patch had effects you clearly did not 
+anticipate, and the cacheline alignment management situation is not 
+nearly as clear-cut as you imagine it to be.
+
+Unfortunately you failed to answer my detailed mail that made very 
+specific points though, you only got into generalities and flames 
+about my summary mail - so it's hard to judge what your opinion 
+about those specific facts is - you have not stated one.
+
+	Ingo
