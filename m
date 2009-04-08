@@ -1,93 +1,96 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933397AbZDHMSw@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764616AbZDHMT0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933397AbZDHMSw (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 8 Apr 2009 08:18:52 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933736AbZDHMSV
+	id S1764616AbZDHMT0 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 8 Apr 2009 08:19:26 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933863AbZDHMS6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 8 Apr 2009 08:18:21 -0400
-Received: from mx2.mail.elte.hu ([157.181.151.9]:35867 "EHLO mx2.mail.elte.hu"
+	Wed, 8 Apr 2009 08:18:58 -0400
+Received: from leb.cs.unibo.it ([130.136.1.102]:37932 "EHLO leb.cs.unibo.it"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S933641AbZDHMSU (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 8 Apr 2009 08:18:20 -0400
-Date: Wed, 8 Apr 2009 14:17:57 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: Jeremy Fitzhardinge <jeremy@goop.org>
-Cc: the arch/x86 maintainers <x86@kernel.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH] early-quirks: remove duplicate #ifdef
-Message-ID: <20090408121757.GA18581@elte.hu>
-References: <49DA7E18.1050209@goop.org>
+	id S933837AbZDHMS4 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 8 Apr 2009 08:18:56 -0400
+Date: Wed, 8 Apr 2009 14:18:51 +0200
+From: Renzo Davoli <renzo@cs.unibo.it>
+To: =?iso-8859-1?Q?Am=E9rico?= Wang <xiyou.wangcong@gmail.com>
+Cc: linux-kernel@vger.kernel.org, Jeff Dike <jdike@addtoit.com>,
+       user-mode-linux-devel@lists.sourceforge.net, mtk.manpages@gmail.com,
+       Roland McGrath <roland@redhat.com>
+Subject: Re: [PATCH 0/2] ptrace_vm: ptrace for syscall emulation virtual
+	machines
+Message-ID: <20090408121851.GE24173@cs.unibo.it>
+References: <20090204080236.GA17452@cs.unibo.it> <20090310214436.GC5213@cs.unibo.it> <20090316074520.GC3360@hack> <20090324234753.GH22695@cs.unibo.it> <20090329163228.GE7671@hack> <20090404101708.GG4203@cs.unibo.it> <20090407173646.GL12226@hack>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <49DA7E18.1050209@goop.org>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+In-Reply-To: <20090407173646.GL12226@hack>
+User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+> > #endif
+> > #ifdef PTRACE_SINGLEBLOCK
+> >   case PTRACE_SINGLEBLOCK:
+> > #endif
+> > #ifdef PTRACE_SYSEMU
+> >   case PTRACE_SYSEMU:
+> >   case PTRACE_SYSEMU_SINGLESTEP:
+> > #endif
+> >   case PTRACE_SYSCALL:
+> >   case PTRACE_CONT:
+> >     return ptrace_resume(child, request, 0, data);
+> >+/* statements added for PTRACE_VM management */
+> >+#ifdef PTRACE_VM
+> >+  case PTRACE_VM:
+> >+#ifdef PTRACE_VM_SINGLESTEP
+> >+  case PTRACE_VM_SINGLESTEP:
+> >+#endif
+> >+#ifdef PTRACE_VM_SINGLEBLOCK
+> >+  case PTRACE_VM_SINGLEBLOCK:
+> >+#endif
+> >+    return ptrace_resume(child, PTRACE_VM_TAGS_MAPPING(request), addr, data);
+> >+#endif
+> >....
+> >  
+> 
+> Hmmm, I see your points. Thanks for your analysis.
+> 
+The "resume tags" SYSCALL, SINGLESTEP/SINGLEBLOCK, CONT give to ptrace
+the command to resume and indicate when ptrace must stop next time.
+The VM_SKIPCALL, VM_SKIPEXIT tags refer to the current system call.
+The two sets are independent, orthogonal.
 
-* Jeremy Fitzhardinge <jeremy@goop.org> wrote:
+I may want to skip this system call and stop either at the next system call
+or at the next block, instruction or never.
+As usual, everything is possible with or without some tags, the difference
+in in this case in terms of clearness of the interface.
 
-> "#if defined(CONFIG_ACPI) && defined(CONFIG_X86_IO_APIC)" was repeated
-> twice.
->
-> Signed-off-by: Jeremy Fitzhardinge <jeremy.fitzhardinge@citrix.com>
+If we'd provide only a PTRACE_VM call (namely a PTRACE_VM_SYSCALL)
+to resume up to the next syscall it was not possible to use it 
+to implement a virtualized "ptrace".
+The virtual ptrace call may need to stop the process after an instruction
+or a block as it was requested to do so.
+In this case the VM monitor should use PTRACE_SINGLE* without the
+VM_SKIP* optimization (maybe faking the execution of a getpid
+to skip a system call, like in the old times of User mode Linux).
+For a similar reason PTRACE_SYSEMY_SINGLESTEP was added in the kernel.
 
-hm, this was due to the patch below. Your patch essentially reverts 
-that patch?
+WHy we should make life harder to VM monitor designer?
 
-	Ingo
+We could also have a unique PTRACE_VM tag and encode both
+SYSCALL/SINGLESTEP/SINGLEBLOCK/BLOCK
+and
+SKIPCALL/SKIPEXIT
+in different bits inside the addr field.
 
---------------->
->From a59dacfdc9ba06903652fa4883bf1106278b18ec Mon Sep 17 00:00:00 2001
-From: Ingo Molnar <mingo@elte.hu>
-Date: Fri, 17 Oct 2008 14:38:08 +0200
-Subject: [PATCH] x86 early quirks: eliminate unused function
-MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Transfer-Encoding: 8bit
+Again, this is a trick to use just one tag.
+It is a matter of values.
+Efficiency is the meaning of this patch, so it is a conditio
+sine qua non.
+Apart from efficiency, what do we want most?
+Clearness of interface design?
+Back compatibility for very improbable cases?
 
-Impact: cleanup
+I bet on the former, usually it is an insurance for the future.
 
-this warning:
-
-  arch/x86/kernel/early-quirks.c:99: warning: ‘ati_ixp4x0_rev’ defined but not used
-
-triggers because ati_ixp4x0_rev() is only used in the
-ACPI && X86_IO_APIC case.
-
-Signed-off-by: Ingo Molnar <mingo@elte.hu>
----
- arch/x86/kernel/early-quirks.c |    2 ++
- 1 files changed, 2 insertions(+), 0 deletions(-)
-
-diff --git a/arch/x86/kernel/early-quirks.c b/arch/x86/kernel/early-quirks.c
-index 76b8cd9..ebdb85c 100644
---- a/arch/x86/kernel/early-quirks.c
-+++ b/arch/x86/kernel/early-quirks.c
-@@ -97,6 +97,7 @@ static void __init nvidia_bugs(int num, int slot, int func)
- }
- 
- #if defined(CONFIG_ACPI) && defined(CONFIG_X86_IO_APIC)
-+#if defined(CONFIG_ACPI) && defined(CONFIG_X86_IO_APIC)
- static u32 __init ati_ixp4x0_rev(int num, int slot, int func)
- {
- 	u32 d;
-@@ -114,6 +115,7 @@ static u32 __init ati_ixp4x0_rev(int num, int slot, int func)
- 	d &= 0xff;
- 	return d;
- }
-+#endif
- 
- static void __init ati_bugs(int num, int slot, int func)
- {
+	renzo
