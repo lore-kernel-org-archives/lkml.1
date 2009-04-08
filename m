@@ -1,94 +1,277 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934692AbZDHREr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934632AbZDHREZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934692AbZDHREr (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 8 Apr 2009 13:04:47 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934166AbZDHRAT
+	id S934632AbZDHREZ (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 8 Apr 2009 13:04:25 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934441AbZDHRAI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 8 Apr 2009 13:00:19 -0400
-Received: from 124x34x33x190.ap124.ftth.ucom.ne.jp ([124.34.33.190]:37493 "EHLO
-	master.linux-sh.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1765619AbZDHRAR (ORCPT
+	Wed, 8 Apr 2009 13:00:08 -0400
+Received: from mx3.mail.elte.hu ([157.181.1.138]:40506 "EHLO mx3.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S934440AbZDHQ77 convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 8 Apr 2009 13:00:17 -0400
-Date: Thu, 9 Apr 2009 01:55:29 +0900
-From: Paul Mundt <lethal@linux-sh.org>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>,
-       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
-       niv@us.ibm.com, dvhltc@us.ibm.com, dhowells@redhat.com,
-       kernel@wantstofly.org, matthew@wil.cx, Matt Mackall <mpm@selenic.com>
-Subject: Re: [PATCH] v3 RCU: the bloatwatch edition
-Message-ID: <20090408165528.GA16317@linux-sh.org>
-Mail-Followup-To: Paul Mundt <lethal@linux-sh.org>,
-	Ingo Molnar <mingo@elte.hu>,
-	"Paul E. McKenney" <paulmck@linux.vnet.ibm.com>,
-	Andrew Morton <akpm@linux-foundation.org>,
-	linux-kernel@vger.kernel.org, niv@us.ibm.com, dvhltc@us.ibm.com,
-	dhowells@redhat.com, kernel@wantstofly.org, matthew@wil.cx,
-	Matt Mackall <mpm@selenic.com>
-References: <20090203183426.GA14409@linux.vnet.ibm.com> <20090329203118.GA14005@linux.vnet.ibm.com> <20090402223605.GB19007@elte.hu> <20090402224455.GA13777@linux-sh.org> <20090408163838.GB14449@elte.hu>
+	Wed, 8 Apr 2009 12:59:59 -0400
+Date: Wed, 8 Apr 2009 18:59:35 +0200
+From: Ingo Molnar <mingo@elte.hu>
+To: Thomas Gleixner <tglx@linutronix.de>
+Cc: Sam Ravnborg <sam@ravnborg.org>, LKML <linux-kernel@vger.kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Peter Zijlstra <peterz@infradead.org>
+Subject: Re: [PATCH] kbuild: work around distcc/icecc madness
+Message-ID: <20090408165935.GA19904@elte.hu>
+References: <alpine.LFD.2.00.0903192121300.29264@localhost.localdomain> <20090320092234.GA3792@elte.hu> <alpine.LFD.2.00.0903201127360.29264@localhost.localdomain> <20090320185917.GB6224@elte.hu> <alpine.LFD.2.00.0903202010250.29264@localhost.localdomain> <20090320193334.GA19501@elte.hu> <alpine.LFD.2.00.0903202123310.29264@localhost.localdomain> <20090321141800.GB22029@elte.hu> <alpine.LFD.2.00.0904022327540.12916@localhost.localdomain> <20090408161344.GF16759@elte.hu>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20090408163838.GB14449@elte.hu>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+Content-Transfer-Encoding: 8BIT
+In-Reply-To: <20090408161344.GF16759@elte.hu>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.5
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Apr 08, 2009 at 06:38:38PM +0200, Ingo Molnar wrote:
-> 
-> * Paul Mundt <lethal@linux-sh.org> wrote:
-> 
-> > On Fri, Apr 03, 2009 at 12:36:05AM +0200, Ingo Molnar wrote:
-> > > * Paul E. McKenney <paulmck@linux.vnet.ibm.com> wrote:
-> > > > This patch is a version of RCU designed for (!SMP && EMBEDDED) 
-> > > > provided as a proof of concept of a small-footprint RCU 
-> > > > implementation. In particular, the implementation of 
-> > > > synchronize_rcu() is extremely lightweight and high performance.  
-> > > > It passes rcutorture testing in each of the four relevant 
-> > > > configurations (combinations of NO_HZ and PREEMPT) on x86.  This 
-> > > > saves about 900 bytes compared to Classic RCU, and a couple 
-> > > > kilobytes compared to Hierarchical RCU:
-> > > 
-> > > Andrew, what do you think?
-> > > 
-> > > A worry is yet another RCU variant - we already have 3.
-> > > 
-> > > A trick we could use would be to put it into Documentation/rcu/, 
-> > > linked in via some clever Makefile magic and only usable if a 
-> > > ultra-embedded developer does a build with something like 
-> > > CONFIG_RCU_TINY=y. That way there's no real maintenance and testing 
-> > > overhead.
-> > > 
-> > > It _does_ have documentation value beyond the ~900 bytes: it's the 
-> > > simplest and smallest possible still-working UP RCU implementation 
-> > > so it would be easy to teach RCU concepts via that, gradually.
-> > 
-> > A similar argument could have been used for tiny-shmem when it was 
-> > first integrated. As this is hiding behind CONFIG_EMBEDDED, most 
-> > users are not going to run in to it, so the confusion of 1 more 
-> > RCU variant is not likely to be a problem for those that aren't 
-> > actively seeking it out.
-> > 
-> > So, personally I think it is a good idea, and I have no 
-> > reservations about default enabling it for a number of more 
-> > constrained SH platforms.
-> 
-> but at least tiny-shmem is now nicely hidden in mm/shmem.c, in an 
-> unintrusive !CONFIG_SHMEM branch. There's no CONFIG_TINY_SHMEM 
-> option anymore - it's all done in the !CONFIG_SHMEM case.
-> 
-Now it is, yes, but it was not originally, and it was still useful when
-it was split out. If we are going to tolerate multiple RCU
-implementations in the kernel, then I see no reason to not include
-tiny-RCU in the same category. Even in the case where some of the other
-RCU variants go away, tiny-RCU remains a viable option for simple
-platforms that are more concerned about memory than anything else, so
-it's always a valid alternative.
 
-If in the future things are more consolidated and the config option goes
-away then great, but that hardly seems like a sane prerequisite for
-merging it. CONFIG_EMBEDDED handles this just fine. You don't need to
-enable it if you don't wish to, but it's certainly measurable enough to
-be useful for those of us that have no problems enabling it ;-)
+* Ingo Molnar <mingo@elte.hu> wrote:
+
+> > > I'll try to reproduce it once more and see what's going on.
+> > 
+> > It'd be nice if you could spare some time and try to figure out 
+> > what's going on. Everytime I forget to apply that patch to one 
+> > of my trees I run into random full kernel rebuilds, which 
+> > becomes pretty annoying. Especially when I try to reproduce some 
+> > user problem with the users's config which is usually based on 
+> > some distro config + some random changes (i.e. builds every 
+> > random driver and some more).
+> 
+> sure - queued it up in tip:out-of-tree and will yell once i see it 
+> break again.
+
+Find below the build log leading up to the cfi related build 
+failure.
+
+	Ingo
+
+/home/mingo/tip/arch/x86/Makefile:82: stack protector enabled but no compiler support
+rm -f include/config/kernel.release
+echo 2.6.30-rc1-tip > include/config/kernel.release
+set -e; : '  CHK     include/linux/version.h'; mkdir -p include/linux/; 	(echo \#define LINUX_VERSION_CODE 132638; echo '#define KERNEL_VERSION(a,b,c) (((a) << 16) + ((b) << 8) + (c))';) < /home/mingo/tip/Makefile > include/linux/version.h.tmp; if [ -r include/linux/version.h ] && cmp -s include/linux/version.h include/linux/version.h.tmp; then rm -f include/linux/version.h.tmp; else : '  UPD     include/linux/version.h'; mv -f include/linux/version.h.tmp include/linux/version.h; fi
+set -e; : '  CHK     include/linux/utsrelease.h'; mkdir -p include/linux/; 	if [ `echo -n "2.6.30-rc1-tip" | wc -c ` -gt 64 ]; then echo '"2.6.30-rc1-tip" exceeds 64 characters' >&2; exit 1; fi; (echo \#define UTS_RELEASE \"2.6.30-rc1-tip\";) < include/config/kernel.release > include/linux/utsrelease.h.tmp; if [ -r include/linux/utsrelease.h ] && cmp -s include/linux/utsrelease.h include/linux/utsrelease.h.tmp; then rm -f include/linux/utsrelease.h.tmp; else : '  UPD     include/linux/utsrelease.h'; mv -f include/linux/utsrelease.h.tmp include/linux/utsrelease.h; fi
+set -e; if [ -L include/asm ]; then asmlink=`readlink include/asm | cut -d '-' -f 2`; if [ "$asmlink" != "x86" ]; then echo "ERROR: the symlink include/asm points to asm-$asmlink but asm-x86 was expected"; echo "       set ARCH or save .config and run 'make mrproper' to fix it"; exit 1; fi; test -e $asmlink || rm include/asm; elif [ -d include/asm ]; then echo "ERROR: include/asm is a directory but a symlink was expected"; exit 1; fi
+make -f scripts/Makefile.build obj=scripts/basic
+if [ ! -L include/asm ]; then : '  SYMLINK include/asm -> include/asm-x86'; if [ ! -d include/asm-x86 ]; then mkdir -p include/asm-x86; fi; ln -fsn asm-x86 include/asm; fi
+mkdir -p .tmp_versions 
+make -f scripts/Makefile.build obj=scripts
+make -f scripts/Makefile.build obj=scripts/mod
+make -f scripts/Makefile.build obj=scripts/selinux
+make -f scripts/Makefile.build obj=scripts/selinux/mdp
+make -f scripts/Makefile.build obj=.
+mkdir -p kernel/
+mkdir -p arch/x86/kernel/
+make -f scripts/Makefile.build obj=. missing-syscalls
+  /bin/sh scripts/checksyscalls.sh distcc /opt/crosstool/gcc-4.2.2-glibc-2.3.6/i686-unknown-linux-gnu/bin/i686-unknown-linux-gnu-gcc -Wp,-MD,./.missing-syscalls.d  -nostdinc -isystem /opt/crosstool/gcc-4.2.2-glibc-2.3.6/i686-unknown-linux-gnu/lib/gcc/i686-unknown-linux-gnu/4.2.2/include -Iinclude  -I/home/mingo/tip/arch/x86/include -include include/linux/autoconf.h -D__KERNEL__ -Wall -Wundef -Wstrict-prototypes -Wno-trigraphs -fno-strict-aliasing -fno-common -Werror-implicit-function-declaration -Os -m32 -msoft-float -mregparm=3 -freg-struct-return -mpreferred-stack-boundary=2 -march=i686 -mtune=generic -ffreestanding -DCONFIG_AS_CFI=1 -DCONFIG_AS_CFI_SIGNAL_FRAME=1 -pipe -Wno-sign-compare -fno-asynchronous-unwind-tables -mno-sse -mno-mmx -mno-sse2 -mno-3dnow -fno-omit-frame-pointer -fno-optimize-sibling-calls -pg -Wdeclaration-after-statement -Wno-pointer-sign -fwrapv   -D"KBUILD_STR(s)=#s" -D"KBUILD_BASENAME=KBUILD_STR(missing_syscalls)"  -D"KBUILD_MODNAME=KBUILD_STR(missing_syscalls)" 
+make -f scripts/Makefile.build obj=init
+make -f scripts/Makefile.build obj=usr
+/bin/sh /home/mingo/tip/scripts/mkcompile_h include/linux/compile.h \
+	"i386" "y" "" "distcc /opt/crosstool/gcc-4.2.2-glibc-2.3.6/i686-unknown-linux-gnu/bin/i686-unknown-linux-gnu-gcc -Wall -Wundef -Wstrict-prototypes -Wno-trigraphs -fno-strict-aliasing -fno-common -Werror-implicit-function-declaration -Os -m32 -msoft-float -mregparm=3 -freg-struct-return -mpreferred-stack-boundary=2  -march=i686 -mtune=generic  -ffreestanding -DCONFIG_AS_CFI=1 -DCONFIG_AS_CFI_SIGNAL_FRAME=1 -pipe -Wno-sign-compare -fno-asynchronous-unwind-tables -mno-sse -mno-mmx -mno-sse2 -mno-3dnow   -fno-omit-frame-pointer -fno-optimize-sibling-calls -pg -Wdeclaration-after-statement -Wno-pointer-sign -fwrapv "
+make -f scripts/Makefile.build obj=arch/x86/kvm
+make -f scripts/Makefile.build obj=arch/x86/kernel
+make -f scripts/Makefile.build obj=arch/x86/mm
+make -f scripts/Makefile.build obj=arch/x86/crypto
+make -f scripts/Makefile.build obj=arch/x86/vdso
+  distcc /opt/crosstool/gcc-4.2.2-glibc-2.3.6/i686-unknown-linux-gnu/bin/i686-unknown-linux-gnu-gcc -Wp,-MD,arch/x86/kernel/.entry_32.o.d  -nostdinc -isystem /opt/crosstool/gcc-4.2.2-glibc-2.3.6/i686-unknown-linux-gnu/lib/gcc/i686-unknown-linux-gnu/4.2.2/include -Iinclude  -I/home/mingo/tip/arch/x86/include -include include/linux/autoconf.h -D__KERNEL__ -D__ASSEMBLY__ -m32 -DCONFIG_AS_CFI=1 -DCONFIG_AS_CFI_SIGNAL_FRAME=1      -c -o arch/x86/kernel/entry_32.o arch/x86/kernel/entry_32.S
+  distcc /opt/crosstool/gcc-4.2.2-glibc-2.3.6/i686-unknown-linux-gnu/bin/i686-unknown-linux-gnu-gcc -Wp,-MD,arch/x86/kernel/.irq.o.d  -nostdinc -isystem /opt/crosstool/gcc-4.2.2-glibc-2.3.6/i686-unknown-linux-gnu/lib/gcc/i686-unknown-linux-gnu/4.2.2/include -Iinclude  -I/home/mingo/tip/arch/x86/include -include include/linux/autoconf.h -D__KERNEL__ -Wall -Wundef -Wstrict-prototypes -Wno-trigraphs -fno-strict-aliasing -fno-common -Werror-implicit-function-declaration -Os -m32 -msoft-float -mregparm=3 -freg-struct-return -mpreferred-stack-boundary=2 -march=i686 -mtune=generic -ffreestanding -DCONFIG_AS_CFI=1 -DCONFIG_AS_CFI_SIGNAL_FRAME=1 -pipe -Wno-sign-compare -fno-asynchronous-unwind-tables -mno-sse -mno-mmx -mno-sse2 -mno-3dnow -fno-omit-frame-pointer -fno-optimize-sibling-calls -pg -Wdeclaration-after-statement -Wno-pointer-sign -fwrapv   -D"KBUILD_STR(s)=#s" -D"KBUILD_BASENAME=KBUILD_STR(irq)"  -D"KBUILD_MODNAME=KBUILD_STR(irq)"  -c -o arch/x86/kernel/irq.o arch/x86/kernel/irq.c
+  distcc /opt/crosstool/gcc-4.2.2-glibc-2.3.6/i686-unknown-linux-gnu/bin/i686-unknown-linux-gnu-gcc -Wp,-MD,arch/x86/kernel/.irq_32.o.d  -nostdinc -isystem /opt/crosstool/gcc-4.2.2-glibc-2.3.6/i686-unknown-linux-gnu/lib/gcc/i686-unknown-linux-gnu/4.2.2/include -Iinclude  -I/home/mingo/tip/arch/x86/include -include include/linux/autoconf.h -D__KERNEL__ -Wall -Wundef -Wstrict-prototypes -Wno-trigraphs -fno-strict-aliasing -fno-common -Werror-implicit-function-declaration -Os -m32 -msoft-float -mregparm=3 -freg-struct-return -mpreferred-stack-boundary=2 -march=i686 -mtune=generic -ffreestanding -DCONFIG_AS_CFI=1 -DCONFIG_AS_CFI_SIGNAL_FRAME=1 -pipe -Wno-sign-compare -fno-asynchronous-unwind-tables -mno-sse -mno-mmx -mno-sse2 -mno-3dnow -fno-omit-frame-pointer -fno-optimize-sibling-calls -pg -Wdeclaration-after-statement -Wno-pointer-sign -fwrapv   -D"KBUILD_STR(s)=#s" -D"KBUILD_BASENAME=KBUILD_STR(irq_32)"  -D"KBUILD_MODNAME=KBUILD_STR(irq_32)"  -c -o arch/x86/kernel/irq_32.o arch/x86/kernel/irq_32.c
+distcc[3214] (dcc_parse_hosts) Warning: /etc/distcc/hosts contained no hosts; can't distribute work
+  distcc /opt/crosstool/gcc-4.2.2-glibc-2.3.6/i686-unknown-linux-gnu/bin/i686-unknown-linux-gnu-gcc -Wp,-MD,arch/x86/kernel/.dumpstack_32.o.d  -nostdinc -isystem /opt/crosstool/gcc-4.2.2-glibc-2.3.6/i686-unknown-linux-gnu/lib/gcc/i686-unknown-linux-gnu/4.2.2/include -Iinclude  -I/home/mingo/tip/arch/x86/include -include include/linux/autoconf.h -D__KERNEL__ -Wall -Wundef -Wstrict-prototypes -Wno-trigraphs -fno-strict-aliasing -fno-common -Werror-implicit-function-declaration -Os -m32 -msoft-float -mregparm=3 -freg-struct-return -mpreferred-stack-boundary=2 -march=i686 -mtune=generic -ffreestanding -DCONFIG_AS_CFI=1 -DCONFIG_AS_CFI_SIGNAL_FRAME=1 -pipe -Wno-sign-compare -fno-asynchronous-unwind-tables -mno-sse -mno-mmx -mno-sse2 -mno-3dnow -fno-omit-frame-pointer -fno-optimize-sibling-calls -pg -Wdeclaration-after-statement -Wno-pointer-sign -fwrapv   -D"KBUILD_STR(s)=#s" -D"KBUILD_BASENAME=KBUILD_STR(dumpstack_32)"  -D"KBUILD_MODNAME=KBUILD_STR(dumpstack_32)"  -c -o arch/x86/kernel/dumpstack_32.o arch/x86/kernel/dumpstack_32.c
+distcc[3214] (dcc_build_somewhere) Warning: failed to distribute, running locally instead
+distcc[3222] (dcc_parse_hosts) Warning: /etc/distcc/hosts contained no hosts; can't distribute work
+distcc[3222] (dcc_build_somewhere) Warning: failed to distribute, running locally instead
+distcc[3230] (dcc_parse_hosts) Warning: /etc/distcc/hosts contained no hosts; can't distribute work
+  distcc /opt/crosstool/gcc-4.2.2-glibc-2.3.6/i686-unknown-linux-gnu/bin/i686-unknown-linux-gnu-gcc -Wp,-MD,arch/x86/kernel/.ioport.o.d  -nostdinc -isystem /opt/crosstool/gcc-4.2.2-glibc-2.3.6/i686-unknown-linux-gnu/lib/gcc/i686-unknown-linux-gnu/4.2.2/include -Iinclude  -I/home/mingo/tip/arch/x86/include -include include/linux/autoconf.h -D__KERNEL__ -Wall -Wundef -Wstrict-prototypes -Wno-trigraphs -fno-strict-aliasing -fno-common -Werror-implicit-function-declaration -Os -m32 -msoft-float -mregparm=3 -freg-struct-return -mpreferred-stack-boundary=2 -march=i686 -mtune=generic -ffreestanding -DCONFIG_AS_CFI=1 -DCONFIG_AS_CFI_SIGNAL_FRAME=1 -pipe -Wno-sign-compare -fno-asynchronous-unwind-tables -mno-sse -mno-mmx -mno-sse2 -mno-3dnow -fno-omit-frame-pointer -fno-optimize-sibling-calls -pg -Wdeclaration-after-statement -Wno-pointer-sign -fwrapv   -D"KBUILD_STR(s)=#s" -D"KBUILD_BASENAME=KBUILD_STR(ioport)"  -D"KBUILD_MODNAME=KBUILD_STR(ioport)"  -c -o arch/x86/kernel/ioport.o arch/x86/kernel/ioport.c
+  distcc /opt/crosstool/gcc-4.2.2-glibc-2.3.6/i686-unknown-linux-gnu/bin/i686-unknown-linux-gnu-gcc -Wp,-MD,arch/x86/kernel/.time_32.o.d  -nostdinc -isystem /opt/crosstool/gcc-4.2.2-glibc-2.3.6/i686-unknown-linux-gnu/lib/gcc/i686-unknown-linux-gnu/4.2.2/include -Iinclude  -I/home/mingo/tip/arch/x86/include -include include/linux/autoconf.h -D__KERNEL__ -Wall -Wundef -Wstrict-prototypes -Wno-trigraphs -fno-strict-aliasing -fno-common -Werror-implicit-function-declaration -Os -m32 -msoft-float -mregparm=3 -freg-struct-return -mpreferred-stack-boundary=2 -march=i686 -mtune=generic -ffreestanding -DCONFIG_AS_CFI=1 -DCONFIG_AS_CFI_SIGNAL_FRAME=1 -pipe -Wno-sign-compare -fno-asynchronous-unwind-tables -mno-sse -mno-mmx -mno-sse2 -mno-3dnow -fno-omit-frame-pointer -fno-optimize-sibling-calls -pg -Wdeclaration-after-statement -Wno-pointer-sign -fwrapv   -D"KBUILD_STR(s)=#s" -D"KBUILD_BASENAME=KBUILD_STR(time_32)"  -D"KBUILD_MODNAME=KBUILD_STR(time_32)"  -c -o arch/x86/kernel/time_32.o arch/x86/kernel/time_32.c
+distcc[3230] (dcc_build_somewhere) Warning: failed to distribute, running locally instead
+distcc[3236] (dcc_parse_hosts) Warning: /etc/distcc/hosts contained no hosts; can't distribute work
+distcc[3240] (dcc_parse_hosts) Warning: /etc/distcc/hosts contained no hosts; can't distribute work
+distcc[3240] (dcc_build_somewhere) Warning: failed to distribute, running locally instead
+arch/x86/kernel/entry_32.S: make -f scripts/Makefile.build obj=kernel
+  distcc /opt/crosstool/gcc-4.2.2-glibc-2.3.6/i686-unknown-linux-gnu/bin/i686-unknown-linux-gnu-gcc -Wp,-MD,arch/x86/kernel/.dumpstack.o.d  -nostdinc -isystem /opt/crosstool/gcc-4.2.2-glibc-2.3.6/i686-unknown-linux-gnu/lib/gcc/i686-unknown-linux-gnu/4.2.2/include -Iinclude  -I/home/mingo/tip/arch/x86/include -include include/linux/autoconf.h -D__KERNEL__ -Wall -Wundef -Wstrict-prototypes -Wno-trigraphs -fno-strict-aliasing -fno-common -Werror-implicit-function-declaration -Os -m32 -msoft-float -mregparm=3 -freg-struct-return -mpreferred-stack-boundary=2 -march=i686 -mtune=generic -ffreestanding -DCONFIG_AS_CFI=1 -DCONFIG_AS_CFI_SIGNAL_FRAME=1 -pipe -Wno-sign-compare -fno-asynchronous-unwind-tables -mno-sse -mno-mmx -mno-sse2 -mno-3dnow -fno-omit-frame-pointer -fno-optimize-sibling-calls -pg -Wdeclaration-after-statement -Wno-pointer-sign -fwrapv   -D"KBUILD_STR(s)=#s" -D"KBUILD_BASENAME=KBUILD_STR(dumpstack)"  -D"KBUILD_MODNAME=KBUILD_STR(dumpstack)"  -c -o arch/x86/kernel/dumpstack.o arch/x86/kernel/dumpstack.c
+  distcc /opt/crosstool/gcc-4.2.2-glibc-2.3.6/i686-unknown-linux-gnu/bin/i686-unknown-linux-gnu-gcc -Wp,-MD,arch/x86/kernel/.ldt.o.d  -nostdinc -isystem /opt/crosstool/gcc-4.2.2-glibc-2.3.6/i686-unknown-linux-gnu/lib/gcc/i686-unknown-linux-gnu/4.2.2/include -Iinclude  -I/home/mingo/tip/arch/x86/include -include include/linux/autoconf.h -D__KERNEL__ -Wall -Wundef -Wstrict-prototypes -Wno-trigraphs -fno-strict-aliasing -fno-common -Werror-implicit-function-declaration -Os -m32 -msoft-float -mregparm=3 -freg-struct-return -mpreferred-stack-boundary=2 -march=i686 -mtune=generic -ffreestanding -DCONFIG_AS_CFI=1 -DCONFIG_AS_CFI_SIGNAL_FRAME=1 -pipe -Wno-sign-compare -fno-asynchronous-unwind-tables -mno-sse -mno-mmx -mno-sse2 -mno-3dnow -fno-omit-frame-pointer -fno-optimize-sibling-calls -pg -Wdeclaration-after-statement -Wno-pointer-sign -fwrapv   -D"KBUILD_STR(s)=#s" -D"KBUILD_BASENAME=KBUILD_STR(ldt)"  -D"KBUILD_MODNAME=KBUILD_STR(ldt)"  -c -o arch/x86/kernel/ldt.o arch/x86/kernel/ldt.c
+distcc[3236] (dcc_build_somewhere) Warning: failed to distribute, running locally instead
+distcc[3245] (dcc_parse_hosts) Warning: /etc/distcc/hosts contained no hosts; can't distribute work
+  distcc /opt/crosstool/gcc-4.2.2-glibc-2.3.6/i686-unknown-linux-gnu/bin/i686-unknown-linux-gnu-gcc -Wp,-MD,arch/x86/kernel/.setup.o.d  -nostdinc -isystem /opt/crosstool/gcc-4.2.2-glibc-2.3.6/i686-unknown-linux-gnu/lib/gcc/i686-unknown-linux-gnu/4.2.2/include -Iinclude  -I/home/mingo/tip/arch/x86/include -include include/linux/autoconf.h -D__KERNEL__ -Wall -Wundef -Wstrict-prototypes -Wno-trigraphs -fno-strict-aliasing -fno-common -Werror-implicit-function-declaration -Os -m32 -msoft-float -mregparm=3 -freg-struct-return -mpreferred-stack-boundary=2 -march=i686 -mtune=generic -ffreestanding -DCONFIG_AS_CFI=1 -DCONFIG_AS_CFI_SIGNAL_FRAME=1 -pipe -Wno-sign-compare -fno-asynchronous-unwind-tables -mno-sse -mno-mmx -mno-sse2 -mno-3dnow -fno-omit-frame-pointer -fno-optimize-sibling-calls -pg -Wdeclaration-after-statement -Wno-pointer-sign -fwrapv   -D"KBUILD_STR(s)=#s" -D"KBUILD_BASENAME=KBUILD_STR(setup)"  -D"KBUILD_MODNAME=KBUILD_STR(setup)"  -c -o arch/x86/kernel/setup.o arch/x86/kernel/setup.c
+Assembler messages:
+arch/x86/kernel/entry_32.S:346: Error: unknown pseudo-op: `.cfi_signal_frame'
+arch/x86/kernel/entry_32.S:394: Error: unknown pseudo-op: `.cfi_signal_frame'
+arch/x86/kernel/entry_32.S:519: Error: unknown pseudo-op: `.cfi_signal_frame'
+arch/x86/kernel/entry_32.S:614: distcc[3250] (dcc_parse_hosts) Warning: /etc/distcc/hosts contained no hosts; can't distribute work
+distcc[3250] (dcc_build_somewhere) Warning: failed to distribute, running locally instead
+Error: unknown pseudo-op: `.cfi_signal_frame'
+arch/x86/kernel/entry_32.S:685: Error: unknown pseudo-op: `.cfi_signal_frame'
+distcc[3245] (dcc_build_somewhere) Warning: failed to distribute, running locally instead
+arch/x86/kernel/entry_32.S:754: Error: unknown pseudo-op: `.cfi_signal_frame'
+/home/mingo/tip/arch/x86/include/asm/entry_arch.h:13: Error: unknown pseudo-op: `.cfi_signal_frame'
+/home/mingo/tip/arch/x86/include/asm/entry_arch.h:14: Error: unknown pseudo-op: `.cfi_signal_frame'
+/home/mingo/tip/arch/x86/include/asm/entry_arch.h:15: Error: unknown pseudo-op: `.cfi_signal_frame'
+/home/mingo/tip/arch/x86/include/asm/entry_arch.h:16: Error: unknown pseudo-op: `.cfi_signal_frame'
+/home/mingo/tip/arch/x86/include/asm/entry_arch.h:18: Error: unknown pseudo-op: `.cfi_signal_frame'
+  distcc /opt/crosstool/gcc-4.2.2-glibc-2.3.6/i686-unknown-linux-gnu/bin/i686-unknown-linux-gnu-gcc -Wp,-MD,arch/x86/kernel/.i8259.o.d  -nostdinc -isystem /opt/crosstool/gcc-4.2.2-glibc-2.3.6/i686-unknown-linux-gnu/lib/gcc/i686-unknown-linux-gnu/4.2.2/include -Iinclude  -I/home/mingo/tip/arch/x86/include -include include/linux/autoconf.h -D__KERNEL__ -Wall -Wundef -Wstrict-prototypes -Wno-trigraphs -fno-strict-aliasing -fno-common -Werror-implicit-function-declaration -Os -m32 -msoft-float -mregparm=3 -freg-struct-return -mpreferred-stack-boundary=2 -march=i686 -mtune=generic -ffreestanding -DCONFIG_AS_CFI=1 -DCONFIG_AS_CFI_SIGNAL_FRAME=1 -pipe -Wno-sign-compare -fno-asynchronous-unwind-tables -mno-sse -mno-mmx -mno-sse2 -mno-3dnow -fno-omit-frame-pointer -fno-optimize-sibling-calls -pg -Wdeclaration-after-statement -Wno-pointer-sign -fwrapv   -D"KBUILD_STR(s)=#s" -D"KBUILD_BASENAME=KBUILD_STR(i8259)"  -D"KBUILD_MODNAME=KBUILD_STR(i8259)"  -c -o arch/x86/kernel/i8259.o arch/x86/kernel/i8259.c
+/home/mingo/tip/arch/x86/include/asm/entry_arch.h:20: Error: unknown pseudo-op: `.cfi_signal_frame'
+/home/mingo/tip/arch/x86/include/asm/entry_arch.h:22: Error: unknown pseudo-op: `.cfi_signal_frame'
+/home/mingo/tip/arch/x86/include/asm/entry_arch.h:24: Error: unknown pseudo-op: `.cfi_signal_frame'
+/home/mingo/tip/arch/x86/include/asm/entry_arch.h:26: Error: unknown pseudo-op: `.cfi_signal_frame'
+/home/mingo/tip/arch/x86/include/asm/entry_arch.h:28: Error: unknown pseudo-op: `.cfi_signal_frame'
+/home/mingo/tip/arch/x86/include/asm/entry_arch.h:30: Error: unknown pseudo-op: `.cfi_signal_frame'
+/home/mingo/tip/arch/x86/include/asm/entry_arch.h:32: Error: unknown pseudo-op: `.cfi_signal_frame'
+/home/mingo/tip/arch/x86/include/asm/entry_arch.h:36: Error: unknown pseudo-op: `.cfi_signal_frame'
+/home/mingo/tip/arch/x86/include/asm/entry_arch.h:47: Error: unknown pseudo-op: `.cfi_signal_frame'
+/home/mingo/tip/arch/x86/include/asm/entry_arch.h:48: Error: unknown pseudo-op: `.cfi_signal_frame'
+/home/mingo/tip/arch/x86/include/asm/entry_arch.h:49: Error: unknown pseudo-op: `.cfi_signal_frame'
+/home/mingo/tip/arch/x86/include/asm/entry_arch.h:52: Error: unknown pseudo-op: `.cfi_signal_frame'
+/home/mingo/tip/arch/x86/include/asm/entry_arch.h:53: distcc[3252] (dcc_parse_hosts) Warning: /etc/distcc/hosts contained no hosts; can't distribute work
+distcc[3252] (dcc_build_somewhere) Warning: failed to distribute, running locally instead
+Error: unknown pseudo-op: `.cfi_signal_frame'
+arch/x86/kernel/entry_32.S:816: Error: unknown pseudo-op: `.cfi_signal_frame'
+arch/x86/kernel/entry_32.S:826: Error: unknown pseudo-op: `.cfi_signal_frame'
+arch/x86/kernel/entry_32.S:836: Error: unknown pseudo-op: `.cfi_signal_frame'
+arch/x86/kernel/entry_32.S:861: Error: unknown pseudo-op: `.cfi_signal_frame'
+arch/x86/kernel/entry_32.S:871: Error: unknown pseudo-op: `.cfi_signal_frame'
+arch/x86/kernel/entry_32.S:881: Error: unknown pseudo-op: `.cfi_signal_frame'
+arch/x86/kernel/entry_32.S:891: Error: unknown pseudo-op: `.cfi_signal_frame'
+arch/x86/kernel/entry_32.S:901: Error: unknown pseudo-op: `.cfi_signal_frame'
+  distcc /opt/crosstool/gcc-4.2.2-glibc-2.3.6/i686-unknown-linux-gnu/bin/i686-unknown-linux-gnu-gcc -Wp,-MD,arch/x86/kernel/.irqinit_32.o.d  -nostdinc -isystem /opt/crosstool/gcc-4.2.2-glibc-2.3.6/i686-unknown-linux-gnu/lib/gcc/i686-unknown-linux-gnu/4.2.2/include -Iinclude  -I/home/mingo/tip/arch/x86/include -include include/linux/autoconf.h -D__KERNEL__ -Wall -Wundef -Wstrict-prototypes -Wno-trigraphs -fno-strict-aliasing -fno-common -Werror-implicit-function-declaration -Os -m32 -msoft-float -mregparm=3 -freg-struct-return -mpreferred-stack-boundary=2 -march=i686 -mtune=generic -ffreestanding -DCONFIG_AS_CFI=1 -DCONFIG_AS_CFI_SIGNAL_FRAME=1 -pipe -Wno-sign-compare -fno-asynchronous-unwind-tables -mno-sse -mno-mmx -mno-sse2 -mno-3dnow -fno-omit-frame-pointer -fno-optimize-sibling-calls -pg -Wdeclaration-after-statement -Wno-pointer-sign -fwrapv   -D"KBUILD_STR(s)=#s" -D"KBUILD_BASENAME=KBUILD_STR(irqinit_32)"  -D"KBUILD_MODNAME=KBUILD_STR(irqinit_32)"  -c -o arch/x86/kernel/irqinit_32.o arch/x86/kernel/irqinit_32.c
+arch/x86/kernel/entry_32.S:909: Error: unknown pseudo-op: `.cfi_signal_frame'
+arch/x86/kernel/entry_32.S:917: Error: unknown pseudo-op: `.cfi_signal_frame'
+arch/x86/kernel/entry_32.S:925: distcc[3254] (dcc_parse_hosts) Warning: /etc/distcc/hosts contained no hosts; can't distribute work
+Error: unknown pseudo-op: `.cfi_signal_frame'
+arch/x86/kernel/entry_32.S:933: Error: unknown pseudo-op: `.cfi_signal_frame'
+arch/x86/kernel/entry_32.S:955: Error: unknown pseudo-op: `.cfi_signal_frame'
+arch/x86/kernel/entry_32.S:1190: Error: unknown pseudo-op: `.cfi_signal_frame'
+arch/x86/kernel/entry_32.S:1276: Error: unknown pseudo-op: `.cfi_signal_frame'
+arch/x86/kernel/entry_32.S:1301: Error: unknown pseudo-op: `.cfi_signal_frame'
+arch/x86/kernel/entry_32.S:1336: Error: unknown pseudo-op: `.cfi_signal_frame'
+arch/x86/kernel/entry_32.S:1380: Error: unknown pseudo-op: `.cfi_signal_frame'
+arch/x86/kernel/entry_32.S:1393: Error: unknown pseudo-op: `.cfi_signal_frame'
+distcc[3256] (dcc_parse_hosts) Warning: /etc/distcc/hosts contained no hosts; can't distribute work
+distcc[3256] (dcc_build_somewhere) Warning: failed to distribute, running locally instead
+distcc[3209] ERROR: compile (null) on localhost failed
+make[1]: *** [arch/x86/kernel/entry_32.o] Error 1
+make[1]: *** Waiting for unfinished jobs....
+distcc[3254] (dcc_build_somewhere) Warning: failed to distribute, running locally instead
+make -f scripts/Makefile.build obj=mm
+make -f scripts/Makefile.build obj=fs
+make -f scripts/Makefile.build obj=ipc
+make -f scripts/Makefile.build obj=security
+make -f scripts/Makefile.build obj=security/integrity/ima
+make -f scripts/Makefile.build obj=crypto
+make -f scripts/Makefile.build obj=kernel/irq
+make -f scripts/Makefile.build obj=kernel/power
+make -f scripts/Makefile.build obj=security/keys
+make -f scripts/Makefile.build obj=kernel/time
+make -f scripts/Makefile.build obj=security/selinux
+make -f scripts/Makefile.build obj=kernel/trace
+make -f scripts/Makefile.build obj=security/tomoyo
+  distcc /opt/crosstool/gcc-4.2.2-glibc-2.3.6/i686-unknown-linux-gnu/bin/i686-unknown-linux-gnu-gcc -Wp,-MD,security/selinux/.avc.o.d  -nostdinc -isystem /opt/crosstool/gcc-4.2.2-glibc-2.3.6/i686-unknown-linux-gnu/lib/gcc/i686-unknown-linux-gnu/4.2.2/include -Iinclude  -I/home/mingo/tip/arch/x86/include -include include/linux/autoconf.h -D__KERNEL__ -Wall -Wundef -Wstrict-prototypes -Wno-trigraphs -fno-strict-aliasing -fno-common -Werror-implicit-function-declaration -Os -m32 -msoft-float -mregparm=3 -freg-struct-return -mpreferred-stack-boundary=2 -march=i686 -mtune=generic -ffreestanding -DCONFIG_AS_CFI=1 -DCONFIG_AS_CFI_SIGNAL_FRAME=1 -pipe -Wno-sign-compare -fno-asynchronous-unwind-tables -mno-sse -mno-mmx -mno-sse2 -mno-3dnow -fno-omit-frame-pointer -fno-optimize-sibling-calls -pg -Wdeclaration-after-statement -Wno-pointer-sign -fwrapv -Isecurity/selinux/include   -D"KBUILD_STR(s)=#s" -D"KBUILD_BASENAME=KBUILD_STR(avc)"  -D"KBUILD_MODNAME=KBUILD_STR(selinux)"  -c -o security/selinux/avc.o security/selinux/avc.c
+  distcc /opt/crosstool/gcc-4.2.2-glibc-2.3.6/i686-unknown-linux-gnu/bin/i686-unknown-linux-gnu-gcc -Wp,-MD,security/keys/.key.o.d  -nostdinc -isystem /opt/crosstool/gcc-4.2.2-glibc-2.3.6/i686-unknown-linux-gnu/lib/gcc/i686-unknown-linux-gnu/4.2.2/include -Iinclude  -I/home/mingo/tip/arch/x86/include -include include/linux/autoconf.h -D__KERNEL__ -Wall -Wundef -Wstrict-prototypes -Wno-trigraphs -fno-strict-aliasing -fno-common -Werror-implicit-function-declaration -Os -m32 -msoft-float -mregparm=3 -freg-struct-return -mpreferred-stack-boundary=2 -march=i686 -mtune=generic -ffreestanding -DCONFIG_AS_CFI=1 -DCONFIG_AS_CFI_SIGNAL_FRAME=1 -pipe -Wno-sign-compare -fno-asynchronous-unwind-tables -mno-sse -mno-mmx -mno-sse2 -mno-3dnow -fno-omit-frame-pointer -fno-optimize-sibling-calls -pg -Wdeclaration-after-statement -Wno-pointer-sign -fwrapv   -D"KBUILD_STR(s)=#s" -D"KBUILD_BASENAME=KBUILD_STR(key)"  -D"KBUILD_MODNAME=KBUILD_STR(key)"  -c -o security/keys/key.o security/keys/key.c
+distcc[3538] (dcc_parse_hosts) Warning: /etc/distcc/hosts contained no hosts; can't distribute work
+distcc[3538] (dcc_build_somewhere) Warning: failed to distribute, running locally instead
+  distcc /opt/crosstool/gcc-4.2.2-glibc-2.3.6/i686-unknown-linux-gnu/bin/i686-unknown-linux-gnu-gcc -Wp,-MD,kernel/.spinlock.o.d  -nostdinc -isystem /opt/crosstool/gcc-4.2.2-glibc-2.3.6/i686-unknown-linux-gnu/lib/gcc/i686-unknown-linux-gnu/4.2.2/include -Iinclude  -I/home/mingo/tip/arch/x86/include -include include/linux/autoconf.h -D__KERNEL__ -Wall -Wundef -Wstrict-prototypes -Wno-trigraphs -fno-strict-aliasing -fno-common -Werror-implicit-function-declaration -Os -m32 -msoft-float -mregparm=3 -freg-struct-return -mpreferred-stack-boundary=2 -march=i686 -mtune=generic -ffreestanding -DCONFIG_AS_CFI=1 -DCONFIG_AS_CFI_SIGNAL_FRAME=1 -pipe -Wno-sign-compare -fno-asynchronous-unwind-tables -mno-sse -mno-mmx -mno-sse2 -mno-3dnow -fno-omit-frame-pointer -fno-optimize-sibling-calls -pg -Wdeclaration-after-statement -Wno-pointer-sign -fwrapv   -D"KBUILD_STR(s)=#s" -D"KBUILD_BASENAME=KBUILD_STR(spinlock)"  -D"KBUILD_MODNAME=KBUILD_STR(spinlock)"  -c -o kernel/spinlock.o kernel/spinlock.c
+distcc[3532] (dcc_parse_hosts) Warning: /etc/distcc/hosts contained no hosts; can't distribute work
+  distcc /opt/crosstool/gcc-4.2.2-glibc-2.3.6/i686-unknown-linux-gnu/bin/i686-unknown-linux-gnu-gcc -Wp,-MD,security/selinux/.hooks.o.d  -nostdinc -isystem /opt/crosstool/gcc-4.2.2-glibc-2.3.6/i686-unknown-linux-gnu/lib/gcc/i686-unknown-linux-gnu/4.2.2/include -Iinclude  -I/home/mingo/tip/arch/x86/include -include include/linux/autoconf.h -D__KERNEL__ -Wall -Wundef -Wstrict-prototypes -Wno-trigraphs -fno-strict-aliasing -fno-common -Werror-implicit-function-declaration -Os -m32 -msoft-float -mregparm=3 -freg-struct-return -mpreferred-stack-boundary=2 -march=i686 -mtune=generic -ffreestanding -DCONFIG_AS_CFI=1 -DCONFIG_AS_CFI_SIGNAL_FRAME=1 -pipe -Wno-sign-compare -fno-asynchronous-unwind-tables -mno-sse -mno-mmx -mno-sse2 -mno-3dnow -fno-omit-frame-pointer -fno-optimize-sibling-calls -pg -Wdeclaration-after-statement -Wno-pointer-sign -fwrapv -Isecurity/selinux/include   -D"KBUILD_STR(s)=#s" -D"KBUILD_BASENAME=KBUILD_STR(hooks)"  -D"KBUILD_MODNAME=KBUILD_STR(selinux)"  -c -o security/selinux/hooks.o security/selinux/hooks.c
+  distcc /opt/crosstool/gcc-4.2.2-glibc-2.3.6/i686-unknown-linux-gnu/bin/i686-unknown-linux-gnu-gcc -Wp,-MD,security/tomoyo/.realpath.o.d  -nostdinc -isystem /opt/crosstool/gcc-4.2.2-glibc-2.3.6/i686-unknown-linux-gnu/lib/gcc/i686-unknown-linux-gnu/4.2.2/include -Iinclude  -I/home/mingo/tip/arch/x86/include -include include/linux/autoconf.h -D__KERNEL__ -Wall -Wundef -Wstrict-prototypes -Wno-trigraphs -fno-strict-aliasing -fno-common -Werror-implicit-function-declaration -Os -m32 -msoft-float -mregparm=3 -freg-struct-return -mpreferred-stack-boundary=2 -march=i686 -mtune=generic -ffreestanding -DCONFIG_AS_CFI=1 -DCONFIG_AS_CFI_SIGNAL_FRAME=1 -pipe -Wno-sign-compare -fno-asynchronous-unwind-tables -mno-sse -mno-mmx -mno-sse2 -mno-3dnow -fno-omit-frame-pointer -fno-optimize-sibling-calls -pg -Wdeclaration-after-statement -Wno-pointer-sign -fwrapv   -D"KBUILD_STR(s)=#s" -D"KBUILD_BASENAME=KBUILD_STR(realpath)"  -D"KBUILD_MODNAME=KBUILD_STR(realpath)"  -c -o security/tomoyo/realpath.o security/tomoyo/realpath.c
+  distcc /opt/crosstool/gcc-4.2.2-glibc-2.3.6/i686-unknown-linux-gnu/bin/i686-unknown-linux-gnu-gcc -Wp,-MD,security/integrity/ima/.ima_queue.o.d  -nostdinc -isystem /opt/crosstool/gcc-4.2.2-glibc-2.3.6/i686-unknown-linux-gnu/lib/gcc/i686-unknown-linux-gnu/4.2.2/include -Iinclude  -I/home/mingo/tip/arch/x86/include -include include/linux/autoconf.h -D__KERNEL__ -Wall -Wundef -Wstrict-prototypes -Wno-trigraphs -fno-strict-aliasing -fno-common -Werror-implicit-function-declaration -Os -m32 -msoft-float -mregparm=3 -freg-struct-return -mpreferred-stack-boundary=2 -march=i686 -mtune=generic -ffreestanding -DCONFIG_AS_CFI=1 -DCONFIG_AS_CFI_SIGNAL_FRAME=1 -pipe -Wno-sign-compare -fno-asynchronous-unwind-tables -mno-sse -mno-mmx -mno-sse2 -mno-3dnow -fno-omit-frame-pointer -fno-optimize-sibling-calls -pg -Wdeclaration-after-statement -Wno-pointer-sign -fwrapv   -D"KBUILD_STR(s)=#s" -D"KBUILD_BASENAME=KBUILD_STR(ima_queue)"  -D"KBUILD_MODNAME=KBUILD_STR(ima)"  -c -o security/integrity/ima/ima_queue.o security/integrity/ima/ima_queue.c
+  distcc /opt/crosstool/gcc-4.2.2-glibc-2.3.6/i686-unknown-linux-gnu/bin/i686-unknown-linux-gnu-gcc -Wp,-MD,security/.security.o.d  -nostdinc -isystem /opt/crosstool/gcc-4.2.2-glibc-2.3.6/i686-unknown-linux-gnu/lib/gcc/i686-unknown-linux-gnu/4.2.2/include -Iinclude  -I/home/mingo/tip/arch/x86/include -include include/linux/autoconf.h -D__KERNEL__ -Wall -Wundef -Wstrict-prototypes -Wno-trigraphs -fno-strict-aliasing -fno-common -Werror-implicit-function-declaration -Os -m32 -msoft-float -mregparm=3 -freg-struct-return -mpreferred-stack-boundary=2 -march=i686 -mtune=generic -ffreestanding -DCONFIG_AS_CFI=1 -DCONFIG_AS_CFI_SIGNAL_FRAME=1 -pipe -Wno-sign-compare -fno-asynchronous-unwind-tables -mno-sse -mno-mmx -mno-sse2 -mno-3dnow -fno-omit-frame-pointer -fno-optimize-sibling-calls -pg -Wdeclaration-after-statement -Wno-pointer-sign -fwrapv   -D"KBUILD_STR(s)=#s" -D"KBUILD_BASENAME=KBUILD_STR(security)"  -D"KBUILD_MODNAME=KBUILD_STR(security)"  -c -o security/security.o security/security.c
+  distcc /opt/crosstool/gcc-4.2.2-glibc-2.3.6/i686-unknown-linux-gnu/bin/i686-unknown-linux-gnu-gcc -Wp,-MD,security/keys/.keyring.o.d  -nostdinc -isystem /opt/crosstool/gcc-4.2.2-glibc-2.3.6/i686-unknown-linux-gnu/lib/gcc/i686-unknown-linux-gnu/4.2.2/include -Iinclude  -I/home/mingo/tip/arch/x86/include -include include/linux/autoconf.h -D__KERNEL__ -Wall -Wundef -Wstrict-prototypes -Wno-trigraphs -fno-strict-aliasing -fno-common -Werror-implicit-function-declaration -Os -m32 -msoft-float -mregparm=3 -freg-struct-return -mpreferred-stack-boundary=2 -march=i686 -mtune=generic -ffreestanding -DCONFIG_AS_CFI=1 -DCONFIG_AS_CFI_SIGNAL_FRAME=1 -pipe -Wno-sign-compare -fno-asynchronous-unwind-tables -mno-sse -mno-mmx -mno-sse2 -mno-3dnow -fno-omit-frame-pointer -fno-optimize-sibling-calls -pg -Wdeclaration-after-statement -Wno-pointer-sign -fwrapv   -D"KBUILD_STR(s)=#s" -D"KBUILD_BASENAME=KBUILD_STR(keyring)"  -D"KBUILD_MODNAME=KBUILD_STR(keyring)"  -c -o security/keys/keyring.o security/keys/keyring.c
+  distcc /opt/crosstool/gcc-4.2.2-glibc-2.3.6/i686-unknown-linux-gnu/bin/i686-unknown-linux-gnu-gcc -Wp,-MD,security/integrity/ima/.ima_fs.o.d  -nostdinc -isystem /opt/crosstool/gcc-4.2.2-glibc-2.3.6/i686-unknown-linux-gnu/lib/gcc/i686-unknown-linux-gnu/4.2.2/include -Iinclude  -I/home/mingo/tip/arch/x86/include -include include/linux/autoconf.h -D__KERNEL__ -Wall -Wundef -Wstrict-prototypes -Wno-trigraphs -fno-strict-aliasing -fno-common -Werror-implicit-function-declaration -Os -m32 -msoft-float -mregparm=3 -freg-struct-return -mpreferred-stack-boundary=2 -march=i686 -mtune=generic -ffreestanding -DCONFIG_AS_CFI=1 -DCONFIG_AS_CFI_SIGNAL_FRAME=1 -pipe -Wno-sign-compare -fno-asynchronous-unwind-tables -mno-sse -mno-mmx -mno-sse2 -mno-3dnow -fno-omit-frame-pointer -fno-optimize-sibling-calls -pg -Wdeclaration-after-statement -Wno-pointer-sign -fwrapv   -D"KBUILD_STR(s)=#s" -D"KBUILD_BASENAME=KBUILD_STR(ima_fs)"  -D"KBUILD_MODNAME=KBUILD_STR(ima)"  -c -o security/integrity/ima/ima_fs.o security/integrity/ima/ima_fs.c
+  distcc /opt/crosstool/gcc-4.2.2-glibc-2.3.6/i686-unknown-linux-gnu/bin/i686-unknown-linux-gnu-gcc -Wp,-MD,security/tomoyo/.common.o.d  -nostdinc -isystem /opt/crosstool/gcc-4.2.2-glibc-2.3.6/i686-unknown-linux-gnu/lib/gcc/i686-unknown-linux-gnu/4.2.2/include -Iinclude  -I/home/mingo/tip/arch/x86/include -include include/linux/autoconf.h -D__KERNEL__ -Wall -Wundef -Wstrict-prototypes -Wno-trigraphs -fno-strict-aliasing -fno-common -Werror-implicit-function-declaration -Os -m32 -msoft-float -mregparm=3 -freg-struct-return -mpreferred-stack-boundary=2 -march=i686 -mtune=generic -ffreestanding -DCONFIG_AS_CFI=1 -DCONFIG_AS_CFI_SIGNAL_FRAME=1 -pipe -Wno-sign-compare -fno-asynchronous-unwind-tables -mno-sse -mno-mmx -mno-sse2 -mno-3dnow -fno-omit-frame-pointer -fno-optimize-sibling-calls -pg -Wdeclaration-after-statement -Wno-pointer-sign -fwrapv   -D"KBUILD_STR(s)=#s" -D"KBUILD_BASENAME=KBUILD_STR(common)"  -D"KBUILD_MODNAME=KBUILD_STR(common)"  -c -o security/tomoyo/common.o security/tomoyo/common.c
+  distcc /opt/crosstool/gcc-4.2.2-glibc-2.3.6/i686-unknown-linux-gnu/bin/i686-unknown-linux-gnu-gcc -Wp,-MD,security/.commoncap.o.d  -nostdinc -isystem /opt/crosstool/gcc-4.2.2-glibc-2.3.6/i686-unknown-linux-gnu/lib/gcc/i686-unknown-linux-gnu/4.2.2/include -Iinclude  -I/home/mingo/tip/arch/x86/include -include include/linux/autoconf.h -D__KERNEL__ -Wall -Wundef -Wstrict-prototypes -Wno-trigraphs -fno-strict-aliasing -fno-common -Werror-implicit-function-declaration -Os -m32 -msoft-float -mregparm=3 -freg-struct-return -mpreferred-stack-boundary=2 -march=i686 -mtune=generic -ffreestanding -DCONFIG_AS_CFI=1 -DCONFIG_AS_CFI_SIGNAL_FRAME=1 -pipe -Wno-sign-compare -fno-asynchronous-unwind-tables -mno-sse -mno-mmx -mno-sse2 -mno-3dnow -fno-omit-frame-pointer -fno-optimize-sibling-calls -pg -Wdeclaration-after-statement -Wno-pointer-sign -fwrapv   -D"KBUILD_STR(s)=#s" -D"KBUILD_BASENAME=KBUILD_STR(commoncap)"  -D"KBUILD_MODNAME=KBUILD_STR(commoncap)"  -c -o security/commoncap.o security/commoncap.c
+distcc[3550] (dcc_parse_hosts) Warning: /etc/distcc/hosts contained no hosts; can't distribute work
+distcc[3550] (dcc_build_somewhere) Warning: failed to distribute, running locally instead
+  distcc /opt/crosstool/gcc-4.2.2-glibc-2.3.6/i686-unknown-linux-gnu/bin/i686-unknown-linux-gnu-gcc -Wp,-MD,security/selinux/.netlink.o.d  -nostdinc -isystem /opt/crosstool/gcc-4.2.2-glibc-2.3.6/i686-unknown-linux-gnu/lib/gcc/i686-unknown-linux-gnu/4.2.2/include -Iinclude  -I/home/mingo/tip/arch/x86/include -include include/linux/autoconf.h -D__KERNEL__ -Wall -Wundef -Wstrict-prototypes -Wno-trigraphs -fno-strict-aliasing -fno-common -Werror-implicit-function-declaration -Os -m32 -msoft-float -mregparm=3 -freg-struct-return -mpreferred-stack-boundary=2 -march=i686 -mtune=generic -ffreestanding -DCONFIG_AS_CFI=1 -DCONFIG_AS_CFI_SIGNAL_FRAME=1 -pipe -Wno-sign-compare -fno-asynchronous-unwind-tables -mno-sse -mno-mmx -mno-sse2 -mno-3dnow -fno-omit-frame-pointer -fno-optimize-sibling-calls -pg -Wdeclaration-after-statement -Wno-pointer-sign -fwrapv -Isecurity/selinux/include   -D"KBUILD_STR(s)=#s" -D"KBUILD_BASENAME=KBUILD_STR(netlink)"  -D"KBUILD_MODNAME=KBUILD_STR(selinux)"  -c -o security/selinux/netlink.o security/selinux/netlink.c
+distcc[3555] (dcc_parse_hosts) Warning: /etc/distcc/hosts contained no hosts; can't distribute work
+  distcc /opt/crosstool/gcc-4.2.2-glibc-2.3.6/i686-unknown-linux-gnu/bin/i686-unknown-linux-gnu-gcc -Wp,-MD,security/tomoyo/.tomoyo.o.d  -nostdinc -isystem /opt/crosstool/gcc-4.2.2-glibc-2.3.6/i686-unknown-linux-gnu/lib/gcc/i686-unknown-linux-gnu/4.2.2/include -Iinclude  -I/home/mingo/tip/arch/x86/include -include include/linux/autoconf.h -D__KERNEL__ -Wall -Wundef -Wstrict-prototypes -Wno-trigraphs -fno-strict-aliasing -fno-common -Werror-implicit-function-declaration -Os -m32 -msoft-float -mregparm=3 -freg-struct-return -mpreferred-stack-boundary=2 -march=i686 -mtune=generic -ffreestanding -DCONFIG_AS_CFI=1 -DCONFIG_AS_CFI_SIGNAL_FRAME=1 -pipe -Wno-sign-compare -fno-asynchronous-unwind-tables -mno-sse -mno-mmx -mno-sse2 -mno-3dnow -fno-omit-frame-pointer -fno-optimize-sibling-calls -pg -Wdeclaration-after-statement -Wno-pointer-sign -fwrapv   -D"KBUILD_STR(s)=#s" -D"KBUILD_BASENAME=KBUILD_STR(tomoyo)"  -D"KBUILD_MODNAME=KBUILD_STR(tomoyo)"  -c -o security/tomoyo/tomoyo.o security/tomoyo/tomoyo.c
+distcc[3532] (dcc_build_somewhere) Warning: failed to distribute, running locally instead
+distcc[3562] (dcc_parse_hosts) Warning: /etc/distcc/hosts contained no hosts; can't distribute work
+distcc[3564] (dcc_parse_hosts) Warning: /etc/distcc/hosts contained no hosts; can't distribute work
+  distcc /opt/crosstool/gcc-4.2.2-glibc-2.3.6/i686-unknown-linux-gnu/bin/i686-unknown-linux-gnu-gcc -Wp,-MD,security/selinux/.selinuxfs.o.d  -nostdinc -isystem /opt/crosstool/gcc-4.2.2-glibc-2.3.6/i686-unknown-linux-gnu/lib/gcc/i686-unknown-linux-gnu/4.2.2/include -Iinclude  -I/home/mingo/tip/arch/x86/include -include include/linux/autoconf.h -D__KERNEL__ -Wall -Wundef -Wstrict-prototypes -Wno-trigraphs -fno-strict-aliasing -fno-common -Werror-implicit-function-declaration -Os -m32 -msoft-float -mregparm=3 -freg-struct-return -mpreferred-stack-boundary=2 -march=i686 -mtune=generic -ffreestanding -DCONFIG_AS_CFI=1 -DCONFIG_AS_CFI_SIGNAL_FRAME=1 -pipe -Wno-sign-compare -fno-asynchronous-unwind-tables -mno-sse -mno-mmx -mno-sse2 -mno-3dnow -fno-omit-frame-pointer -fno-optimize-sibling-calls -pg -Wdeclaration-after-statement -Wno-pointer-sign -fwrapv -Isecurity/selinux/include   -D"KBUILD_STR(s)=#s" -D"KBUILD_BASENAME=KBUILD_STR(selinuxfs)"  -D"KBUILD_MODNAME=KBUILD_STR(selinux)"  -c -o security/selinux/selinuxfs.o security/selinux/selinuxfs.c
+distcc[3565] (dcc_parse_hosts) Warning: /etc/distcc/hosts contained no hosts; can't distribute work
+  distcc /opt/crosstool/gcc-4.2.2-glibc-2.3.6/i686-unknown-linux-gnu/bin/i686-unknown-linux-gnu-gcc -Wp,-MD,security/integrity/ima/.ima_init.o.d  -nostdinc -isystem /opt/crosstool/gcc-4.2.2-glibc-2.3.6/i686-unknown-linux-gnu/lib/gcc/i686-unknown-linux-gnu/4.2.2/include -Iinclude  -I/home/mingo/tip/arch/x86/include -include include/linux/autoconf.h -D__KERNEL__ -Wall -Wundef -Wstrict-prototypes -Wno-trigraphs -fno-strict-aliasing -fno-common -Werror-implicit-function-declaration -Os -m32 -msoft-float -mregparm=3 -freg-struct-return -mpreferred-stack-boundary=2 -march=i686 -mtune=generic -ffreestanding -DCONFIG_AS_CFI=1 -DCONFIG_AS_CFI_SIGNAL_FRAME=1 -pipe -Wno-sign-compare -fno-asynchronous-unwind-tables -mno-sse -mno-mmx -mno-sse2 -mno-3dnow -fno-omit-frame-pointer -fno-optimize-sibling-calls -pg -Wdeclaration-after-statement -Wno-pointer-sign -fwrapv   -D"KBUILD_STR(s)=#s" -D"KBUILD_BASENAME=KBUILD_STR(ima_init)"  -D"KBUILD_MODNAME=KBUILD_STR(ima)"  -c -o security/integrity/ima/ima_init.o security/integrity/ima/ima_init.c
+  distcc /opt/crosstool/gcc-4.2.2-glibc-2.3.6/i686-unknown-linux-gnu/bin/i686-unknown-linux-gnu-gcc -Wp,-MD,security/.capability.o.d  -nostdinc -isystem /opt/crosstool/gcc-4.2.2-glibc-2.3.6/i686-unknown-linux-gnu/lib/gcc/i686-unknown-linux-gnu/4.2.2/include -Iinclude  -I/home/mingo/tip/arch/x86/include -include include/linux/autoconf.h -D__KERNEL__ -Wall -Wundef -Wstrict-prototypes -Wno-trigraphs -fno-strict-aliasing -fno-common -Werror-implicit-function-declaration -Os -m32 -msoft-float -mregparm=3 -freg-struct-return -mpreferred-stack-boundary=2 -march=i686 -mtune=generic -ffreestanding -DCONFIG_AS_CFI=1 -DCONFIG_AS_CFI_SIGNAL_FRAME=1 -pipe -Wno-sign-compare -fno-asynchronous-unwind-tables -mno-sse -mno-mmx -mno-sse2 -mno-3dnow -fno-omit-frame-pointer -fno-optimize-sibling-calls -pg -Wdeclaration-after-statement -Wno-pointer-sign -fwrapv   -D"KBUILD_STR(s)=#s" -D"KBUILD_BASENAME=KBUILD_STR(capability)"  -D"KBUILD_MODNAME=KBUILD_STR(capability)"  -c -o security/capability.o security/capability.c
+  distcc /opt/crosstool/gcc-4.2.2-glibc-2.3.6/i686-unknown-linux-gnu/bin/i686-unknown-linux-gnu-gcc -Wp,-MD,security/keys/.keyctl.o.d  -nostdinc -isystem /opt/crosstool/gcc-4.2.2-glibc-2.3.6/i686-unknown-linux-gnu/lib/gcc/i686-unknown-linux-gnu/4.2.2/include -Iinclude  -I/home/mingo/tip/arch/x86/include -include include/linux/autoconf.h -D__KERNEL__ -Wall -Wundef -Wstrict-prototypes -Wno-trigraphs -fno-strict-aliasing -fno-common -Werror-implicit-function-declaration -Os -m32 -msoft-float -mregparm=3 -freg-struct-return -mpreferred-stack-boundary=2 -march=i686 -mtune=generic -ffreestanding -DCONFIG_AS_CFI=1 -DCONFIG_AS_CFI_SIGNAL_FRAME=1 -pipe -Wno-sign-compare -fno-asynchronous-unwind-tables -mno-sse -mno-mmx -mno-sse2 -mno-3dnow -fno-omit-frame-pointer -fno-optimize-sibling-calls -pg -Wdeclaration-after-statement -Wno-pointer-sign -fwrapv   -D"KBUILD_STR(s)=#s" -D"KBUILD_BASENAME=KBUILD_STR(keyctl)"  -D"KBUILD_MODNAME=KBUILD_STR(keyctl)"  -c -o security/keys/keyctl.o security/keys/keyctl.c
+  distcc /opt/crosstool/gcc-4.2.2-glibc-2.3.6/i686-unknown-linux-gnu/bin/i686-unknown-linux-gnu-gcc -Wp,-MD,kernel/.kallsyms.o.d  -nostdinc -isystem /opt/crosstool/gcc-4.2.2-glibc-2.3.6/i686-unknown-linux-gnu/lib/gcc/i686-unknown-linux-gnu/4.2.2/include -Iinclude  -I/home/mingo/tip/arch/x86/include -include include/linux/autoconf.h -D__KERNEL__ -Wall -Wundef -Wstrict-prototypes -Wno-trigraphs -fno-strict-aliasing -fno-common -Werror-implicit-function-declaration -Os -m32 -msoft-float -mregparm=3 -freg-struct-return -mpreferred-stack-boundary=2 -march=i686 -mtune=generic -ffreestanding -DCONFIG_AS_CFI=1 -DCONFIG_AS_CFI_SIGNAL_FRAME=1 -pipe -Wno-sign-compare -fno-asynchronous-unwind-tables -mno-sse -mno-mmx -mno-sse2 -mno-3dnow -fno-omit-frame-pointer -fno-optimize-sibling-calls -pg -Wdeclaration-after-statement -Wno-pointer-sign -fwrapv   -D"KBUILD_STR(s)=#s" -D"KBUILD_BASENAME=KBUILD_STR(kallsyms)"  -D"KBUILD_MODNAME=KBUILD_STR(kallsyms)"  -c -o kernel/kallsyms.o kernel/kallsyms.c
+  distcc /opt/crosstool/gcc-4.2.2-glibc-2.3.6/i686-unknown-linux-gnu/bin/i686-unknown-linux-gnu-gcc -Wp,-MD,security/selinux/.nlmsgtab.o.d  -nostdinc -isystem /opt/crosstool/gcc-4.2.2-glibc-2.3.6/i686-unknown-linux-gnu/lib/gcc/i686-unknown-linux-gnu/4.2.2/include -Iinclude  -I/home/mingo/tip/arch/x86/include -include include/linux/autoconf.h -D__KERNEL__ -Wall -Wundef -Wstrict-prototypes -Wno-trigraphs -fno-strict-aliasing -fno-common -Werror-implicit-function-declaration -Os -m32 -msoft-float -mregparm=3 -freg-struct-return -mpreferred-stack-boundary=2 -march=i686 -mtune=generic -ffreestanding -DCONFIG_AS_CFI=1 -DCONFIG_AS_CFI_SIGNAL_FRAME=1 -pipe -Wno-sign-compare -fno-asynchronous-unwind-tables -mno-sse -mno-mmx -mno-sse2 -mno-3dnow -fno-omit-frame-pointer -fno-optimize-sibling-calls -pg -Wdeclaration-after-statement -Wno-pointer-sign -fwrapv -Isecurity/selinux/include   -D"KBUILD_STR(s)=#s" -D"KBUILD_BASENAME=KBUILD_STR(nlmsgtab)"  -D"KBUILD_MODNAME=KBUILD_STR(selinux)"  -c -o security/selinux/nlmsgtab.o security/selinux/nlmsgtab.c
+distcc[3574] (dcc_parse_hosts) Warning: /etc/distcc/hosts contained no hosts; can't distribute work
+  distcc /opt/crosstool/gcc-4.2.2-glibc-2.3.6/i686-unknown-linux-gnu/bin/i686-unknown-linux-gnu-gcc -Wp,-MD,kernel/.uid16.o.d  -nostdinc -isystem /opt/crosstool/gcc-4.2.2-glibc-2.3.6/i686-unknown-linux-gnu/lib/gcc/i686-unknown-linux-gnu/4.2.2/include -Iinclude  -I/home/mingo/tip/arch/x86/include -include include/linux/autoconf.h -D__KERNEL__ -Wall -Wundef -Wstrict-prototypes -Wno-trigraphs -fno-strict-aliasing -fno-common -Werror-implicit-function-declaration -Os -m32 -msoft-float -mregparm=3 -freg-struct-return -mpreferred-stack-boundary=2 -march=i686 -mtune=generic -ffreestanding -DCONFIG_AS_CFI=1 -DCONFIG_AS_CFI_SIGNAL_FRAME=1 -pipe -Wno-sign-compare -fno-asynchronous-unwind-tables -mno-sse -mno-mmx -mno-sse2 -mno-3dnow -fno-omit-frame-pointer -fno-optimize-sibling-calls -pg -Wdeclaration-after-statement -Wno-pointer-sign -fwrapv   -D"KBUILD_STR(s)=#s" -D"KBUILD_BASENAME=KBUILD_STR(uid16)"  -D"KBUILD_MODNAME=KBUILD_STR(uid16)"  -c -o kernel/uid16.o kernel/uid16.c
+  distcc /opt/crosstool/gcc-4.2.2-glibc-2.3.6/i686-unknown-linux-gnu/bin/i686-unknown-linux-gnu-gcc -Wp,-MD,security/tomoyo/.domain.o.d  -nostdinc -isystem /opt/crosstool/gcc-4.2.2-glibc-2.3.6/i686-unknown-linux-gnu/lib/gcc/i686-unknown-linux-gnu/4.2.2/include -Iinclude  -I/home/mingo/tip/arch/x86/include -include include/linux/autoconf.h -D__KERNEL__ -Wall -Wundef -Wstrict-prototypes -Wno-trigraphs -fno-strict-aliasing -fno-common -Werror-implicit-function-declaration -Os -m32 -msoft-float -mregparm=3 -freg-struct-return -mpreferred-stack-boundary=2 -march=i686 -mtune=generic -ffreestanding -DCONFIG_AS_CFI=1 -DCONFIG_AS_CFI_SIGNAL_FRAME=1 -pipe -Wno-sign-compare -fno-asynchronous-unwind-tables -mno-sse -mno-mmx -mno-sse2 -mno-3dnow -fno-omit-frame-pointer -fno-optimize-sibling-calls -pg -Wdeclaration-after-statement -Wno-pointer-sign -fwrapv   -D"KBUILD_STR(s)=#s" -D"KBUILD_BASENAME=KBUILD_STR(domain)"  -D"KBUILD_MODNAME=KBUILD_STR(domain)"  -c -o security/tomoyo/domain.o security/tomoyo/domain.c
+distcc[3555] (dcc_build_somewhere) Warning: failed to distribute, running locally instead
+distcc[3578] (dcc_parse_hosts) Warning: /etc/distcc/hosts contained no hosts; can't distribute work
+distcc[3579] (dcc_parse_hosts) Warning: /etc/distcc/hosts contained no hosts; can't distribute work
+distcc[3580] (dcc_parse_hosts) Warning: /etc/distcc/hosts contained no hosts; can't distribute work
+distcc[3581] (dcc_parse_hosts) Warning: /etc/distcc/hosts contained no hosts; can't distribute work
+  distcc /opt/crosstool/gcc-4.2.2-glibc-2.3.6/i686-unknown-linux-gnu/bin/i686-unknown-linux-gnu-gcc -Wp,-MD,security/integrity/ima/.ima_main.o.d  -nostdinc -isystem /opt/crosstool/gcc-4.2.2-glibc-2.3.6/i686-unknown-linux-gnu/lib/gcc/i686-unknown-linux-gnu/4.2.2/include -Iinclude  -I/home/mingo/tip/arch/x86/include -include include/linux/autoconf.h -D__KERNEL__ -Wall -Wundef -Wstrict-prototypes -Wno-trigraphs -fno-strict-aliasing -fno-common -Werror-implicit-function-declaration -Os -m32 -msoft-float -mregparm=3 -freg-struct-return -mpreferred-stack-boundary=2 -march=i686 -mtune=generic -ffreestanding -DCONFIG_AS_CFI=1 -DCONFIG_AS_CFI_SIGNAL_FRAME=1 -pipe -Wno-sign-compare -fno-asynchronous-unwind-tables -mno-sse -mno-mmx -mno-sse2 -mno-3dnow -fno-omit-frame-pointer -fno-optimize-sibling-calls -pg -Wdeclaration-after-statement -Wno-pointer-sign -fwrapv   -D"KBUILD_STR(s)=#s" -D"KBUILD_BASENAME=KBUILD_STR(ima_main)"  -D"KBUILD_MODNAME=KBUILD_STR(ima)"  -c -o security/integrity/ima/ima_main.o security/integrity/ima/ima_main.c
+distcc[3584] (dcc_parse_hosts) Warning: /etc/distcc/hosts contained no hosts; can't distribute work
+distcc[3588] (dcc_parse_hosts) Warning: /etc/distcc/hosts contained no hosts; can't distribute work
+distcc[3562] (dcc_build_somewhere) Warning: failed to distribute, running locally instead
+distcc[3572] (dcc_parse_hosts) Warning: /etc/distcc/hosts contained no hosts; can't distribute work
+distcc[3589] (dcc_parse_hosts) Warning: /etc/distcc/hosts contained no hosts; can't distribute work
+distcc[3564] (dcc_build_somewhere) Warning: failed to distribute, running locally instead
+distcc[3565] (dcc_build_somewhere) Warning: failed to distribute, running locally instead
+distcc[3590] (dcc_parse_hosts) Warning: /etc/distcc/hosts contained no hosts; can't distribute work
+distcc[3574] (dcc_build_somewhere) Warning: failed to distribute, running locally instead
+distcc[3593] (dcc_parse_hosts) Warning: /etc/distcc/hosts contained no hosts; can't distribute work
+distcc[3593] (dcc_build_somewhere) Warning: failed to distribute, running locally instead
+distcc[3578] (dcc_build_somewhere) Warning: failed to distribute, running locally instead
+distcc[3579] (dcc_build_somewhere) Warning: failed to distribute, running locally instead
+distcc[3581] (dcc_build_somewhere) Warning: failed to distribute, running locally instead
+distcc[3595] (dcc_parse_hosts) Warning: /etc/distcc/hosts contained no hosts; can't distribute work
+distcc[3580] (dcc_build_somewhere) Warning: failed to distribute, running locally instead
+distcc[3588] (dcc_build_somewhere) Warning: failed to distribute, running locally instead
+distcc[3572] (dcc_build_somewhere) Warning: failed to distribute, running locally instead
+distcc[3587] (dcc_parse_hosts) Warning: /etc/distcc/hosts contained no hosts; can't distribute work
+distcc[3587] (dcc_build_somewhere) Warning: failed to distribute, running locally instead
+distcc[3589] (dcc_build_somewhere) Warning: failed to distribute, running locally instead
+distcc[3584] (dcc_build_somewhere) Warning: failed to distribute, running locally instead
+distcc[3591] (dcc_parse_hosts) Warning: /etc/distcc/hosts contained no hosts; can't distribute work
+distcc[3591] (dcc_build_somewhere) Warning: failed to distribute, running locally instead
+distcc[3595] (dcc_build_somewhere) Warning: failed to distribute, running locally instead
+distcc[3597] (dcc_parse_hosts) Warning: /etc/distcc/hosts contained no hosts; can't distribute work
+distcc[3590] (dcc_build_somewhere) Warning: failed to distribute, running locally instead
+  distcc /opt/crosstool/gcc-4.2.2-glibc-2.3.6/i686-unknown-linux-gnu/bin/i686-unknown-linux-gnu-gcc -Wp,-MD,crypto/.api.o.d  -nostdinc -isystem /opt/crosstool/gcc-4.2.2-glibc-2.3.6/i686-unknown-linux-gnu/lib/gcc/i686-unknown-linux-gnu/4.2.2/include -Iinclude  -I/home/mingo/tip/arch/x86/include -include include/linux/autoconf.h -D__KERNEL__ -Wall -Wundef -Wstrict-prototypes -Wno-trigraphs -fno-strict-aliasing -fno-common -Werror-implicit-function-declaration -Os -m32 -msoft-float -mregparm=3 -freg-struct-return -mpreferred-stack-boundary=2 -march=i686 -mtune=generic -ffreestanding -DCONFIG_AS_CFI=1 -DCONFIG_AS_CFI_SIGNAL_FRAME=1 -pipe -Wno-sign-compare -fno-asynchronous-unwind-tables -mno-sse -mno-mmx -mno-sse2 -mno-3dnow -fno-omit-frame-pointer -fno-optimize-sibling-calls -pg -Wdeclaration-after-statement -Wno-pointer-sign -fwrapv   -D"KBUILD_STR(s)=#s" -D"KBUILD_BASENAME=KBUILD_STR(api)"  -D"KBUILD_MODNAME=KBUILD_STR(crypto)"  -c -o crypto/api.o crypto/api.c
+distcc[3597] (dcc_build_somewhere) Warning: failed to distribute, running locally instead
+  distcc /opt/crosstool/gcc-4.2.2-glibc-2.3.6/i686-unknown-linux-gnu/bin/i686-unknown-linux-gnu-gcc -Wp,-MD,kernel/time/.timekeeping.o.d  -nostdinc -isystem /opt/crosstool/gcc-4.2.2-glibc-2.3.6/i686-unknown-linux-gnu/lib/gcc/i686-unknown-linux-gnu/4.2.2/include -Iinclude  -I/home/mingo/tip/arch/x86/include -include include/linux/autoconf.h -D__KERNEL__ -Wall -Wundef -Wstrict-prototypes -Wno-trigraphs -fno-strict-aliasing -fno-common -Werror-implicit-function-declaration -Os -m32 -msoft-float -mregparm=3 -freg-struct-return -mpreferred-stack-boundary=2 -march=i686 -mtune=generic -ffreestanding -DCONFIG_AS_CFI=1 -DCONFIG_AS_CFI_SIGNAL_FRAME=1 -pipe -Wno-sign-compare -fno-asynchronous-unwind-tables -mno-sse -mno-mmx -mno-sse2 -mno-3dnow -fno-omit-frame-pointer -fno-optimize-sibling-calls -pg -Wdeclaration-after-statement -Wno-pointer-sign -fwrapv   -D"KBUILD_STR(s)=#s" -D"KBUILD_BASENAME=KBUILD_STR(timekeeping)"  -D"KBUILD_MODNAME=KBUILD_STR(timekeeping)"  -c -o kernel/time/timekeeping.o kernel/time/timekeeping.c
+distcc[3601] (dcc_parse_hosts) Warning: /etc/distcc/hosts contained no hosts; can't distribute work
+  distcc /opt/crosstool/gcc-4.2.2-glibc-2.3.6/i686-unknown-linux-gnu/bin/i686-unknown-linux-gnu-gcc -Wp,-MD,security/selinux/.netif.o.d  -nostdinc -isystem /opt/crosstool/gcc-4.2.2-glibc-2.3.6/i686-unknown-linux-gnu/lib/gcc/i686-unknown-linux-gnu/4.2.2/include -Iinclude  -I/home/mingo/tip/arch/x86/include -include include/linux/autoconf.h -D__KERNEL__ -Wall -Wundef -Wstrict-prototypes -Wno-trigraphs -fno-strict-aliasing -fno-common -Werror-implicit-function-declaration -Os -m32 -msoft-float -mregparm=3 -freg-struct-return -mpreferred-stack-boundary=2 -march=i686 -mtune=generic -ffreestanding -DCONFIG_AS_CFI=1 -DCONFIG_AS_CFI_SIGNAL_FRAME=1 -pipe -Wno-sign-compare -fno-asynchronous-unwind-tables -mno-sse -mno-mmx -mno-sse2 -mno-3dnow -fno-omit-frame-pointer -fno-optimize-sibling-calls -pg -Wdeclaration-after-statement -Wno-pointer-sign -fwrapv -Isecurity/selinux/include   -D"KBUILD_STR(s)=#s" -D"KBUILD_BASENAME=KBUILD_STR(netif)"  -D"KBUILD_MODNAME=KBUILD_STR(selinux)"  -c -o security/selinux/netif.o security/selinux/netif.c
+distcc[3600] (dcc_parse_hosts) Warning: /etc/distcc/hosts contained no hosts; can't distribute work
+distcc[3600] (dcc_build_somewhere) Warning: failed to distribute, running locally instead
+distcc[3601] (dcc_build_somewhere) Warning: failed to distribute, running locally instead
+make -f scripts/Makefile.build obj=block
+distcc[3603] (dcc_parse_hosts) Warning: /etc/distcc/hosts contained no hosts; can't distribute work
+distcc[3603] (dcc_build_somewhere) Warning: failed to distribute, running locally instead
+  distcc /opt/crosstool/gcc-4.2.2-glibc-2.3.6/i686-unknown-linux-gnu/bin/i686-unknown-linux-gnu-gcc -Wp,-MD,kernel/power/.console.o.d  -nostdinc -isystem /opt/crosstool/gcc-4.2.2-glibc-2.3.6/i686-unknown-linux-gnu/lib/gcc/i686-unknown-linux-gnu/4.2.2/include -Iinclude  -I/home/mingo/tip/arch/x86/include -include include/linux/autoconf.h -D__KERNEL__ -Wall -Wundef -Wstrict-prototypes -Wno-trigraphs -fno-strict-aliasing -fno-common -Werror-implicit-function-declaration -Os -m32 -msoft-float -mregparm=3 -freg-struct-return -mpreferred-stack-boundary=2 -march=i686 -mtune=generic -ffreestanding -DCONFIG_AS_CFI=1 -DCONFIG_AS_CFI_SIGNAL_FRAME=1 -pipe -Wno-sign-compare -fno-asynchronous-unwind-tables -mno-sse -mno-mmx -mno-sse2 -mno-3dnow -fno-omit-frame-pointer -fno-optimize-sibling-calls -pg -Wdeclaration-after-statement -Wno-pointer-sign -fwrapv   -D"KBUILD_STR(s)=#s" -D"KBUILD_BASENAME=KBUILD_STR(console)"  -D"KBUILD_MODNAME=KBUILD_STR(console)"  -c -o kernel/power/console.o kernel/power/console.c
+distcc[3607] (dcc_parse_hosts) Warning: /etc/distcc/hosts contained no hosts; can't distribute work
+  distcc /opt/crosstool/gcc-4.2.2-glibc-2.3.6/i686-unknown-linux-gnu/bin/i686-unknown-linux-gnu-gcc -Wp,-MD,kernel/trace/.trace_selftest_dynamic.o.d  -nostdinc -isystem /opt/crosstool/gcc-4.2.2-glibc-2.3.6/i686-unknown-linux-gnu/lib/gcc/i686-unknown-linux-gnu/4.2.2/include -Iinclude  -I/home/mingo/tip/arch/x86/include -include include/linux/autoconf.h -D__KERNEL__ -Wall -Wundef -Wstrict-prototypes -Wno-trigraphs -fno-strict-aliasing -fno-common -Werror-implicit-function-declaration -Os -m32 -msoft-float -mregparm=3 -freg-struct-return -mpreferred-stack-boundary=2 -march=i686 -mtune=generic -ffreestanding -DCONFIG_AS_CFI=1 -DCONFIG_AS_CFI_SIGNAL_FRAME=1 -pipe -Wno-sign-compare -fno-asynchronous-unwind-tables -mno-sse -mno-mmx -mno-sse2 -mno-3dnow -fno-omit-frame-pointer -fno-optimize-sibling-calls -Wdeclaration-after-statement -Wno-pointer-sign -fwrapv -pg   -D"KBUILD_STR(s)=#s" -D"KBUILD_BASENAME=KBUILD_STR(trace_selftest_dynamic)"  -D"KBUILD_MODNAME=KBUILD_STR(trace_selftest_dynamic)"  -c -o kernel/trace/trace_selftest_dynamic.o kernel/trace/trace_selftest_dynamic.c
+distcc[3607] (dcc_build_somewhere) Warning: failed to distribute, running locally instead
+  distcc /opt/crosstool/gcc-4.2.2-glibc-2.3.6/i686-unknown-linux-gnu/bin/i686-unknown-linux-gnu-gcc -Wp,-MD,kernel/irq/.manage.o.d  -nostdinc -isystem /opt/crosstool/gcc-4.2.2-glibc-2.3.6/i686-unknown-linux-gnu/lib/gcc/i686-unknown-linux-gnu/4.2.2/include -Iinclude  -I/home/mingo/tip/arch/x86/include -include include/linux/autoconf.h -D__KERNEL__ -Wall -Wundef -Wstrict-prototypes -Wno-trigraphs -fno-strict-aliasing -fno-common -Werror-implicit-function-declaration -Os -m32 -msoft-float -mregparm=3 -freg-struct-return -mpreferred-stack-boundary=2 -march=i686 -mtune=generic -ffreestanding -DCONFIG_AS_CFI=1 -DCONFIG_AS_CFI_SIGNAL_FRAME=1 -pipe -Wno-sign-compare -fno-asynchronous-unwind-tables -mno-sse -mno-mmx -mno-sse2 -mno-3dnow -fno-omit-frame-pointer -fno-optimize-sibling-calls -pg -Wdeclaration-after-statement -Wno-pointer-sign -fwrapv   -D"KBUILD_STR(s)=#s" -D"KBUILD_BASENAME=KBUILD_STR(manage)"  -D"KBUILD_MODNAME=KBUILD_STR(manage)"  -c -o kernel/irq/manage.o kernel/irq/manage.c
+distcc[3610] (dcc_parse_hosts) Warning: /etc/distcc/hosts contained no hosts; can't distribute work
+make -f scripts/Makefile.build obj=fs/affs
+distcc[3611] (dcc_parse_hosts) Warning: /etc/distcc/hosts contained no hosts; can't distribute work
+distcc[3610] (dcc_build_somewhere) Warning: failed to distribute, running locally instead
+distcc[3611] (dcc_build_somewhere) Warning: failed to distribute, running locally instead
+make -f scripts/Makefile.build obj=fs/afs
+include/linux/cred.h: In function 'get_cred':
+include/linux/cred.h:188: warning: passing argument 1 of 'get_new_cred' discards qualifiers from pointer target type
+  distcc /opt/crosstool/gcc-4.2.2-glibc-2.3.6/i686-unknown-linux-gnu/bin/i686-unknown-linux-gnu-gcc -Wp,-MD,fs/afs/.mntpt.o.d  -nostdinc -isystem /opt/crosstool/gcc-4.2.2-glibc-2.3.6/i686-unknown-linux-gnu/lib/gcc/i686-unknown-linux-gnu/4.2.2/include -Iinclude  -I/home/mingo/tip/arch/x86/include -include include/linux/autoconf.h -D__KERNEL__ -Wall -Wundef -Wstrict-prototypes -Wno-trigraphs -fno-strict-aliasing -fno-common -Werror-implicit-function-declaration -Os -m32 -msoft-float -mregparm=3 -freg-struct-return -mpreferred-stack-boundary=2 -march=i686 -mtune=generic -ffreestanding -DCONFIG_AS_CFI=1 -DCONFIG_AS_CFI_SIGNAL_FRAME=1 -pipe -Wno-sign-compare -fno-asynchronous-unwind-tables -mno-sse -mno-mmx -mno-sse2 -mno-3dnow -fno-omit-frame-pointer -fno-optimize-sibling-calls -pg -Wdeclaration-after-statement -Wno-pointer-sign -fwrapv   -D"KBUILD_STR(s)=#s" -D"KBUILD_BASENAME=KBUILD_STR(mntpt)"  -D"KBUILD_MODNAME=KBUILD_STR(kafs)"  -c -o fs/afs/mntpt.o fs/afs/mntpt.c
+distcc[3627] (dcc_parse_hosts) Warning: /etc/distcc/hosts contained no hosts; can't distribute work
+distcc[3627] (dcc_build_somewhere) Warning: failed to distribute, running locally instead
+make -f scripts/Makefile.build obj=fs/autofs
+  distcc /opt/crosstool/gcc-4.2.2-glibc-2.3.6/i686-unknown-linux-gnu/bin/i686-unknown-linux-gnu-gcc -Wp,-MD,security/tomoyo/.file.o.d  -nostdinc -isystem /opt/crosstool/gcc-4.2.2-glibc-2.3.6/i686-unknown-linux-gnu/lib/gcc/i686-unknown-linux-gnu/4.2.2/include -Iinclude  -I/home/mingo/tip/arch/x86/include -include include/linux/autoconf.h -D__KERNEL__ -Wall -Wundef -Wstrict-prototypes -Wno-trigraphs -fno-strict-aliasing -fno-common -Werror-implicit-function-declaration -Os -m32 -msoft-float -mregparm=3 -freg-struct-return -mpreferred-stack-boundary=2 -march=i686 -mtune=generic -ffreestanding -DCONFIG_AS_CFI=1 -DCONFIG_AS_CFI_SIGNAL_FRAME=1 -pipe -Wno-sign-compare -fno-asynchronous-unwind-tables -mno-sse -mno-mmx -mno-sse2 -mno-3dnow -fno-omit-frame-pointer -fno-optimize-sibling-calls -pg -Wdeclaration-after-statement -Wno-pointer-sign -fwrapv   -D"KBUILD_STR(s)=#s" -D"KBUILD_BASENAME=KBUILD_STR(file)"  -D"KBUILD_MODNAME=KBUILD_STR(file)"  -c -o security/tomoyo/file.o security/tomoyo/file.c
+distcc[3662] (dcc_parse_hosts) Warning: /etc/distcc/hosts contained no hosts; can't distribute work
+distcc[3662] (dcc_build_somewhere) Warning: failed to distribute, running locally instead
+include/linux/cred.h: In function 'get_cred':
+include/linux/cred.h:188: warning: passing argument 1 of 'get_new_cred' discards qualifiers from pointer target type
