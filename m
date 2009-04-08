@@ -1,77 +1,143 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760735AbZDHHbf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763389AbZDHHac@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760735AbZDHHbf (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 8 Apr 2009 03:31:35 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762799AbZDHHbR
+	id S1763389AbZDHHac (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 8 Apr 2009 03:30:32 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763327AbZDHH3q
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 8 Apr 2009 03:31:17 -0400
-Received: from wa-out-1112.google.com ([209.85.146.183]:21116 "EHLO
-	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751677AbZDHHbQ convert rfc822-to-8bit (ORCPT
+	Wed, 8 Apr 2009 03:29:46 -0400
+Received: from rv-out-0506.google.com ([209.85.198.231]:30092 "EHLO
+	rv-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1763365AbZDHH3o (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 8 Apr 2009 03:31:16 -0400
+	Wed, 8 Apr 2009 03:29:44 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
-        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
-         :cc:content-type:content-transfer-encoding;
-        b=Ta3TklRYEBwPjYKhvS4B538pVNflJ/AMxroPsWYZSti68JgGRPWlf99/EHlvei2iBY
-         s2J8h2SBPK4FVw0kO4elmOaZa/qFly9doYorDAdf1dJz8sNCMZn0EnCYSPrUf5kfbkMp
-         nip/tcHWcnfgsjA2qvGxuihCqTjRUbqLb7plg=
+        h=date:from:to:cc:subject:message-id:mime-version:content-type
+         :content-disposition:user-agent;
+        b=sg/FhL4PM/lNtNU8PMjuUtfl4tgeWQitnfzx2v7ZycBMo/xbvTk84MxAh6En+gTxUM
+         uljjxI5Xn4CN/LbN8/5g9/+FBpNLY1T9KbHJKwSSoxtEbeX7OC+lgq7M3nbOYk2fY/5m
+         qLIBqsuW0flk5AwKNVHsKBI/8IlVEGyckRdKQ=
+Date: Wed, 8 Apr 2009 00:29:36 -0700
+From: Dmitry Torokhov <dmitry.torokhov@gmail.com>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
+       linux-input@vger.kernel.org
+Subject: [git pull] Input updates for 2.6.30-rc1
+Message-ID: <20090408072935.GA27920@dtor-d630.eng.vmware.com>
 MIME-Version: 1.0
-In-Reply-To: <20090408161824.26f47077.kamezawa.hiroyu@jp.fujitsu.com>
-References: <20090407063722.GQ7082@balbir.in.ibm.com>
-	 <20090407163331.8e577170.kamezawa.hiroyu@jp.fujitsu.com>
-	 <20090407080355.GS7082@balbir.in.ibm.com>
-	 <20090407172419.a5f318b9.kamezawa.hiroyu@jp.fujitsu.com>
-	 <20090408052904.GY7082@balbir.in.ibm.com>
-	 <20090408151529.fd6626c2.kamezawa.hiroyu@jp.fujitsu.com>
-	 <20090408070401.GC7082@balbir.in.ibm.com>
-	 <20090408160733.4813cb8d.kamezawa.hiroyu@jp.fujitsu.com>
-	 <20090408071115.GD7082@balbir.in.ibm.com>
-	 <20090408161824.26f47077.kamezawa.hiroyu@jp.fujitsu.com>
-Date: Wed, 8 Apr 2009 13:01:15 +0530
-Message-ID: <344eb09a0904080031y4406c001n584725b87024755@mail.gmail.com>
-Subject: Re: [RFI] Shared accounting for memory resource controller
-From: Bharata B Rao <bharata.rao@gmail.com>
-To: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-Cc: balbir@linux.vnet.ibm.com, "linux-mm@kvack.org" <linux-mm@kvack.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       "lizf@cn.fujitsu.com" <lizf@cn.fujitsu.com>,
-       Rik van Riel <riel@surriel.com>, Bharata B Rao <bharata.rao@in.ibm.com>,
-       Dhaval Giani <dhaval@linux.vnet.ibm.com>,
-       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 8BIT
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Apr 8, 2009 at 12:48 PM, KAMEZAWA Hiroyuki
-<kamezawa.hiroyu@jp.fujitsu.com> wrote:
->
-> On Wed, 8 Apr 2009 12:41:15 +0530
-> Balbir Singh <balbir@linux.vnet.ibm.com> wrote:
-> > 3. Using the above, we can then try to (using an algorithm you
-> > proposed), try to do some work for figuring out the shared percentage.
-> >
-> This is the point. At last. Why "# of shared pages" is important ?
->
-> I wonder it's better to add new stat file as memory.cacheinfo which helps
-> following kind of commands.
->
->  #cacheinfo /cgroups/memory/group01/
->       /usr/lib/libc.so.1     30pages
->       /var/log/messages      1 pages
->       /tmp/xxxxxx            20 pages
+Hi Linus,
 
-Can I suggest that we don't add new files for additional stats and try
-as far as possible to include them in <controller>.stat file. Please
-note that we have APIs in libcgroup library which can return
-statistics from controllers associated with a cgroup and these APIs
-assume that stats are part of <controller>.stat file.
+Please pull from:
 
-Regards,
-Bharata.
---
-http://bharata.sulekha.com/blog/posts.htm
+	git://git.kernel.org/pub/scm/linux/kernel/git/dtor/input.git for-linus
+or
+	master.kernel.org:/pub/scm/linux/kernel/git/dtor/input.git for-linus
+
+to receive updates for the input subsystem. Bunch of new drivers plus
+some cleanups to existing ones, nothing too exciting. It looks like I
+managed to miss the merge window. Oh well...
+
+Changelog:
+---------
+
+Adrian McMenamin (1):
+      Input: add support for the Maple mouse on the SEGA Dreamcast
+
+Andy Whitcroft (1):
+      Input: psmouse - add newline to OLPC HGPK touchpad debugging
+
+Daniel Mack (1):
+      Input: generic driver for rotary encoders on GPIOs
+
+Daniel Mierswa (2):
+      Input: atkbd - consolidate force release quirk setup
+      Input: atkbd - add quirk for Fujitsu Siemens Amilo PA 1510
+
+Dmitry Torokhov (3):
+      Input: fix polling of /proc/bus/input/devices
+      Input: arrange drivers/input/misc/Makefile in alphabetical order
+      Input: i8042 - add HP DV9700 to the noloop list
+
+Helge Deller (1):
+      Input: hilkbd - fix crash when removing hilkbd module
+
+Johannes Berg (1):
+      Input: stop autorepeat timer on key release
+
+Mark Brown (2):
+      Input: wm97xx - use disable_irq_nosync() for Mainstone
+      Input: add accelerated touchscreen support for Marvell Zylonite
+
+Michael Hennerich (3):
+      Input: bf54x-keys - fix typo in warning
+      Input: add AD7877 touchscreen driver
+      Input: add AD7879 Touchscreen driver
+
+Mike Rapoport (2):
+      Input: wm97xx - add BTN_TOUCH event to wm97xx to use it with Android
+      Input: ucb1400_ts, mainstone-wm97xx - add BTN_TOUCH events
+
+Phil Sutter (1):
+      Input: add driver for S1 button of rb532
+
+Roel Kluin (1):
+      Input: pc110pad - use no_pci_devices()
+
+Ville Syrjala (3):
+      Input: ati_remote2 - complete suspend support
+      Input: ati_remote2 - add per device attrs
+      Input: ati_remote2 - check module params
+
+
+Diffstat:
+--------
+
+ Documentation/input/rotary-encoder.txt       |  101 +++
+ arch/mips/include/asm/mach-rc32434/gpio.h    |    3 +
+ arch/mips/rb532/devices.c                    |   19 +-
+ drivers/input/input.c                        |   13 +-
+ drivers/input/keyboard/atkbd.c               |  135 ++---
+ drivers/input/keyboard/bf54x-keys.c          |    4 +-
+ drivers/input/keyboard/hilkbd.c              |  140 +++--
+ drivers/input/misc/Kconfig                   |   23 +
+ drivers/input/misc/Makefile                  |   28 +-
+ drivers/input/misc/ati_remote2.c             |  277 ++++++++-
+ drivers/input/misc/rb532_button.c            |  120 ++++
+ drivers/input/misc/rotary_encoder.c          |  221 +++++++
+ drivers/input/mouse/Kconfig                  |   11 +
+ drivers/input/mouse/Makefile                 |    9 +-
+ drivers/input/mouse/hgpk.c                   |    2 +-
+ drivers/input/mouse/maplemouse.c             |  147 +++++
+ drivers/input/mouse/pc110pad.c               |    5 +-
+ drivers/input/serio/i8042-x86ia64io.h        |    8 +
+ drivers/input/touchscreen/Kconfig            |   58 ++
+ drivers/input/touchscreen/Makefile           |    3 +
+ drivers/input/touchscreen/ad7877.c           |  844 ++++++++++++++++++++++++++
+ drivers/input/touchscreen/ad7879.c           |  782 ++++++++++++++++++++++++
+ drivers/input/touchscreen/mainstone-wm97xx.c |    3 +-
+ drivers/input/touchscreen/ucb1400_ts.c       |    5 +-
+ drivers/input/touchscreen/wm97xx-core.c      |   13 +-
+ drivers/input/touchscreen/zylonite-wm97xx.c  |  240 ++++++++
+ include/linux/rotary_encoder.h               |   13 +
+ include/linux/spi/ad7879.h                   |   35 ++
+ 28 files changed, 3062 insertions(+), 200 deletions(-)
+ create mode 100644 Documentation/input/rotary-encoder.txt
+ create mode 100644 drivers/input/misc/rb532_button.c
+ create mode 100644 drivers/input/misc/rotary_encoder.c
+ create mode 100644 drivers/input/mouse/maplemouse.c
+ create mode 100644 drivers/input/touchscreen/ad7877.c
+ create mode 100644 drivers/input/touchscreen/ad7879.c
+ create mode 100644 drivers/input/touchscreen/zylonite-wm97xx.c
+ create mode 100644 include/linux/rotary_encoder.h
+ create mode 100644 include/linux/spi/ad7879.h
+
+-- 
+Dmitry
+
