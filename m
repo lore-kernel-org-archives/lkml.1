@@ -1,52 +1,40 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764799AbZDHUyW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1765209AbZDHUyq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764799AbZDHUyW (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 8 Apr 2009 16:54:22 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752271AbZDHUyO
+	id S1765209AbZDHUyq (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 8 Apr 2009 16:54:46 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760393AbZDHUyd
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 8 Apr 2009 16:54:14 -0400
-Received: from pfepa.post.tele.dk ([195.41.46.235]:58283 "EHLO
-	pfepa.post.tele.dk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752012AbZDHUyN (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 8 Apr 2009 16:54:13 -0400
-Date: Wed, 8 Apr 2009 22:56:10 +0200
-From: Sam Ravnborg <sam@ravnborg.org>
-To: David Howells <dhowells@redhat.com>
-Cc: jeremy@goop.org, mingo@elte.hu, akpm@linux-foundation.org, x86@kernel.org,
-       linux-kernel@vger.kernel.org, a.p.zijlstra@chello.nl,
-       nickpiggin@yahoo.com.au, tglx@linutronix.de, ysato@users.sourceforge.jp
-Subject: Re: [PATCH] FRV: Use <asm-generic/pgtable.h> in NOMMU mode
-Message-ID: <20090408205610.GA9970@uranus.ravnborg.org>
-References: <20090408184455.GB332@uranus.ravnborg.org> <21081.1239214221@redhat.com> <20090408183011.24150.43310.stgit@warthog.procyon.org.uk> <24317.1239216477@redhat.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <24317.1239216477@redhat.com>
-User-Agent: Mutt/1.4.2.1i
+	Wed, 8 Apr 2009 16:54:33 -0400
+Received: from gate.crashing.org ([63.228.1.57]:36133 "EHLO gate.crashing.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752271AbZDHUyc (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 8 Apr 2009 16:54:32 -0400
+Message-Id: <E942C580-7C39-44AB-B207-C65CDE0B5292@kernel.crashing.org>
+From: Kumar Gala <galak@kernel.crashing.org>
+To: Jesse Barnes <jbarnes@virtuousgeek.org>
+Content-Type: text/plain; charset=US-ASCII; format=flowed; delsp=yes
+Content-Transfer-Encoding: 7bit
+Mime-Version: 1.0 (Apple Message framework v930.3)
+Subject: tracking of PCI address space
+Date: Wed, 8 Apr 2009 15:53:55 -0500
+Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       linux-pci@vger.kernel.org, Benjamin Herrenschmidt <benh@au1.ibm.com>,
+       Linux/PPC Development <linuxppc-dev@ozlabs.org>
+X-Mailer: Apple Mail (2.930.3)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Apr 08, 2009 at 07:47:57PM +0100, David Howells wrote:
-> Sam Ravnborg <sam@ravnborg.org> wrote:
-> 
-> > Any change we can have these header files moved before too
-> > many patches are queued?
-> 
-> Sure.  Do you have patches to move FRV and MN10300 headers?
+I was wondering if we have anything that tracks regions associated  
+with the "inbound" side of a pci_bus.
 
-For frv it is as simple as:
+What I mean is on embedded PPC we have window/mapping registers for  
+both inbound (accessing memory on the SoC) and outbound (access PCI  
+device MMIO, IO etc).  The combination of the inbound & outbound  
+convey what exists in the PCI address space vs CPU physical address  
+space (and how to map from one to the other).  Today in the PPC land  
+we only attach outbound windows to the pci_bus.  So technically the  
+inbound side information (like what subset of physical memory is  
+visible on the PCI bus) seems to be lost.
 
-mkdir -p arch/frv/include/asm
-git mv include/asm-frv/* arch/frv/include/asm
-git commit
-
-For mn10300 Al Viro sent a set of patches some months ago.
-Google turned up the following:
-http://lkml.indiana.edu/hypermail/linux/kernel/0812.2/00826.html
-http://lkml.indiana.edu/hypermail/linux/kernel/0812.2/00827.html
-
-I did not try - but I assume they would apply almost clean today.
-
-	Sam
+- k
