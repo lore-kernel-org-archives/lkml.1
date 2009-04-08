@@ -1,80 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761003AbZDHTz3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S935210AbZDHTz7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761003AbZDHTz3 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 8 Apr 2009 15:55:29 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760105AbZDHTzG
+	id S935210AbZDHTz7 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 8 Apr 2009 15:55:59 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761003AbZDHTzp
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 8 Apr 2009 15:55:06 -0400
-Received: from palinux.external.hp.com ([192.25.206.14]:34792 "EHLO
-	mail.parisc-linux.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1759352AbZDHTzF (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 8 Apr 2009 15:55:05 -0400
-Date: Wed, 8 Apr 2009 13:54:48 -0600
-From: Matthew Wilcox <matthew@wil.cx>
-To: "Mike Miller (OS Dev)" <mikem@beardog.cca.cpqcorp.net>
-Cc: LKML-SCSI <linux-scsi@vger.kernel.org>,
-       LKML <linux-kernel@vger.kernel.org>, mike.miller@hp.com
-Subject: Re: READ CAPACITY (16) failing
-Message-ID: <20090408195447.GP20983@parisc-linux.org>
-References: <20090408194357.GA15043@beardog.cca.cpqcorp.net>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090408194357.GA15043@beardog.cca.cpqcorp.net>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+	Wed, 8 Apr 2009 15:55:45 -0400
+Received: from mx2.redhat.com ([66.187.237.31]:47880 "EHLO mx2.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1759774AbZDHTzn (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 8 Apr 2009 15:55:43 -0400
+Date: Wed, 8 Apr 2009 15:55:15 -0400
+From: Chuck Ebbert <cebbert@redhat.com>
+To: "Theodore Ts'o" <tytso@mit.edu>
+Cc: linux-ext4@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: Re: Ext4 tree stable patches backports for 2.6.27 and 2.6.28
+Message-ID: <20090408155515.4193d090@dhcp-100-2-144.bos.redhat.com>
+In-Reply-To: <E1Lmh5L-0004oH-Mp@closure.thunk.org>
+References: <E1Lmh5L-0004oH-Mp@closure.thunk.org>
+Organization: Red Hat, Inc.
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Apr 08, 2009 at 02:43:57PM -0500, Mike Miller (OS Dev) wrote:
-> I'm working on the HP Smart Array SCSI driver (hpsa) and I'm seeing the
-> following failures:
+On Thu, 26 Mar 2009 00:20:55 -0400
+"Theodore Ts'o" <tytso@mit.edu> wrote:
+
+> I've updated the for-stable and for-stable-2.6.27 branches in the ext4
+> git tree that were merged into mainline right before 2.6.29.  In
+> addition, there is a build fix for ocfs2 if CONFIG_OFS2_COMPAT_JBD is
+> enabled.
 > 
-> hpsa1: <0x3230> at PCI 0000:02:00.0 IRQ 76 using DAC
-> scsi4 : hpsa
-> scsi 4:0:0:0: Direct-Access     HP       LOGICAL VOLUME   5.20 PQ: 0 ANSI: 5
-> sd 4:0:0:0: Attached scsi generic sg4 type 0
-> sd 4:0:0:0: [sdd] READ CAPACITY(16) failed
-> sd 4:0:0:0: [sdd] Result: hostbyte=DID_ABORT driverbyte=DRIVER_OK
-> sd 4:0:0:0: [sdd] Sense not available.
-> hpsa: cp ffff8800cf400000 has check condition: unknown type: Sense: 0x5,
-> ASC: 0x20, ASCQ: 0x0, Returning result: 0x2, cmd=[a0 00 00 00 00 00 00 00 10
-> 00]
-
-> The READ CAPACITY failures are what I'm concerned about. I can't seem to track
-> down why that's failing.
-> I've tried printing out the_result from sd but it's not printing out. I'm
-> assuming that anytime I load the driver it goes thru sd.
+> The ext4 git tree can be found here:
 > 
-> 	if (the_result) {
-> 		sense_valid = scsi_sense_valid(&sshdr);
-> 		if (sense_valid &&
-> 			sshdr.sense_key == ILLEGAL_REQUEST &&
-> 			(sshdr.asc == 0x20 || sshdr.asc == 0x24) &&
-> 			sshdr.ascq == 0x00)
-> 			/* Invalid Command Operation Code or
-> 			 * Invalid Field in CDB, just retry
-> 			 * silently with RC10 */
-> 			return -EINVAL;
-> 		}
-> 	retries--;
-> 	} while (the_result && retries);
-> 	printk(KERN_WARNING "sd-mfm: the_result = %d\n", the_result);
+>    git://git.kernel.org/pub/scm/linux/kernel/git/tytso/ext4.git
+>    http://git.kernel.org/?p=linux/kernel/git/tytso/ext4.git
+> 
+> The new patches in the for-stable and for-stable-2.6.27 branches can be
+> found below.
+> 
+> If folks can test out the for-stable and/or the for-stable-2.6.27
+> branches, I would appreciate it before I send these patches to
+> stable@kernel.org.
+> 
 
-Probably the device you're testing against doesn't support RC16, which
-is fine.  But for some reason, we're not getting valid sense data back
-from the device.  Now, there's two responses to this that seem rational
-to me:
+The patches for 2.6.27 apply and build fine, but I haven't gotten any testing
+yet.
 
- - In sd.c, if the drive has returned no/invalid sense data, try RC10
-   silently, just like the 0x20 / 0x24 ASC case.
- - Find out why this drive doesn't report valid sense data when attached
-   to hpsa.  I assume it does report valid sense data when attached to
-   some other scsi card?
-
--- 
-Matthew Wilcox				Intel Open Source Technology Centre
-"Bill, look, we understand that you're interested in selling us this
-operating system, but compare it to ours.  We can't possibly take such
-a retrograde step."
+The real problem with 2.6.27 now is that the vm cyclic writeback changes went
+into 2.6.27-stable and there has been no backport of the corresponding ext4
+fix for the problems it exposed. That code has changed radically since 2.6.27
+and it looks like it would be very difficult to backport what went into 2.6.29,
+but without that fix users of 2.6.27 hit stalls and need to reboot.
