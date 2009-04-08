@@ -1,79 +1,87 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763427AbZDHSXr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763082AbZDHSZY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763427AbZDHSXr (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 8 Apr 2009 14:23:47 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760748AbZDHSXg
+	id S1763082AbZDHSZY (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 8 Apr 2009 14:25:24 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757190AbZDHSZF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 8 Apr 2009 14:23:36 -0400
-Received: from 82-117-125-11.tcdsl.calypso.net ([82.117.125.11]:44157 "EHLO
-	smtp.ossman.eu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756894AbZDHSXg (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 8 Apr 2009 14:23:36 -0400
-Date: Wed, 8 Apr 2009 20:23:24 +0200
-From: Pierre Ossman <pierre@ossman.eu>
-To: Haavard Skinnemoen <haavard.skinnemoen@atmel.com>
-Cc: Linux Kernel list <linux-kernel@vger.kernel.org>,
-       Jonas Larsson <jonas.larsson@martinsson.se>,
-       Haavard Skinnemoen <haavard.skinnemoen@atmel.com>
-Subject: Re: [PATCH] atmel-mci: Add support for inverted detect pin
-Message-ID: <20090408202324.60080108@mjolnir.ossman.eu>
-In-Reply-To: <1238507945-5453-1-git-send-email-haavard.skinnemoen@atmel.com>
-References: <1238507945-5453-1-git-send-email-haavard.skinnemoen@atmel.com>
-X-Mailer: Claws Mail 3.7.1 (GTK+ 2.16.0; x86_64-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: multipart/signed; micalg=PGP-SHA1; protocol="application/pgp-signature"; boundary="=_freyr.ossman.eu-25561-1239215009-0001-2"
+	Wed, 8 Apr 2009 14:25:05 -0400
+Received: from metis.ext.pengutronix.de ([92.198.50.35]:37605 "EHLO
+	metis.ext.pengutronix.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751720AbZDHSZD (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 8 Apr 2009 14:25:03 -0400
+Date: Wed, 8 Apr 2009 20:24:57 +0200
+From: Robert Schwebel <r.schwebel@pengutronix.de>
+To: Michael Riepe <michael.riepe@googlemail.com>
+Cc: linux-kernel@vger.kernel.org, Ingo Molnar <mingo@elte.hu>,
+       tglx@linutronix.de
+Subject: Re: Identifying Intel Atom Z500PT
+Message-ID: <20090408182457.GX5367@pengutronix.de>
+References: <20090407222144.GU5367@pengutronix.de> <49DCE2E3.7050700@googlemail.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=iso-8859-15
+Content-Disposition: inline
+In-Reply-To: <49DCE2E3.7050700@googlemail.com>
+X-Sent-From: Pengutronix Entwicklungszentrum Nord - Hildesheim
+X-URL: http://www.pengutronix.de/
+X-IRC: #ptxdist @freenode
+X-Accept-Language: de,en
+X-Accept-Content-Type: text/plain
+X-Impressum: Pengutronix - Linux Solutions for Science and Industry
+	Handelsregister:  Amtsgericht Hildesheim, HRA 2686 Peiner Strasse
+	6-8, 31137 Hildesheim, Germany Phone: +49-5121-206917-0 |  Fax:
+	+49-5121-206917-5555 Inhaber: Dipl.-Ing. Robert Schwebel
+X-Message-Flag: See Message Headers for Impressum
+X-Uptime: 20:22:59 up 49 days, 10:16, 16 users,  load average: 0.03, 0.03,
+	0.00
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-SA-Exim-Connect-IP: 2001:6f8:1178:2:215:17ff:fe12:23b0
+X-SA-Exim-Mail-From: rsc@pengutronix.de
+X-SA-Exim-Scanned: No (on metis.ext.pengutronix.de); SAEximRunCond expanded to false
+X-PTX-Original-Recipient: linux-kernel@vger.kernel.org
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This is a MIME-formatted message.  If you see this text it means that your
-E-mail software does not support MIME-formatted messages.
+Hi Michael,
 
---=_freyr.ossman.eu-25561-1239215009-0001-2
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: quoted-printable
+On Wed, Apr 08, 2009 at 07:46:11PM +0200, Michael Riepe wrote:
+> Robert Schwebel wrote:
+> > Does anyone have an idea how to properly identify an Atom Z500PT cpu?
+> > The get_model_name() mechanics in arch/x86/kernel/cpu/common.c uses
+> > cpuid() to find out about the brand id, which is "Genuine Intel(R) CPU"
+> > with family 6 and model 28.
+>
+> Family 6, model 28, stepping 2 seems to be common to all current Atoms
+> -- my 330 reports the same. There are some flags, however, that
+> currently only appear in the Z series, e.g. vmx is not available on the
+> 230/330/N270. To differentiate between the latter, you could look for
+> 64-bit support (which is missing in the N270) and the number of cores.
+> Besides that, the 230/330 models lack the speedstep feature.
+>
+> I don't know if there's a way to distinguish a -P model from a -PT
+> model. But from a software point of view, they should be identical anyway.
 
-On Tue, 31 Mar 2009 15:59:05 +0200
-Haavard Skinnemoen <haavard.skinnemoen@atmel.com> wrote:
+Yup, should not matter from the software side.
 
-> From: Jonas Larsson <jonas.larsson@martinsson.se>
->=20
-> Same patch as before, modified to use bool. Also adds description of
-> the new field in struct atmel_mci that I missed in the first patch.
->=20
-> This patch adds Atmel MCI support for inverted detect pins.
->=20
-> Signed-off-by: Jonas Larsson <jonas.larsson@martinsson.se>
-> Signed-off-by: Haavard Skinnemoen <haavard.skinnemoen@atmel.com>
-> ---
-> Pierre, if it's fine with you, I'd like to apply this to the avr32 tree
-> since I have another patch which depends on this as well as another
-> change which hasn't gone upstream yet.
->=20
+> > Below is the output of /proc/cpuinfo on that box:
+> >
+> > root@phyCORE:~ cat /proc/cpuinfo | grep model | head -n 2
+> > model           : 28
+> > model name      : Genuine Intel(R) CPU        @ 1.10GHz
+>
+> Strange - the 330 reports:
+>
+> model name      : Intel(R) Atom(TM) CPU  330   @ 1.60GHz
+>
+> (running 2.6.29).
 
-Sure.
+Looks like the model name string comes from the BIOS, I suppose I'll
+have to talk to the BIOS guys in order to resolve that issue.
 
-Acked-by: Pierre Ossman <pierre@ossman.eu>
-
---=20
-     -- Pierre Ossman
-
-  WARNING: This correspondence is being monitored by the
-  Swedish government. Make sure your server uses encryption
-  for SMTP traffic and consider using PGP for end-to-end
-  encryption.
-
---=_freyr.ossman.eu-25561-1239215009-0001-2
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: attachment; filename=signature.asc
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v2.0.11 (GNU/Linux)
-
-iEYEARECAAYFAknc66MACgkQ7b8eESbyJLgYbACg8CuVvq6X/ub3hX6j+JqPQTeW
-k2YAn2rFWS22eNhDpOFBzKxJzCUqdETa
-=LmBU
------END PGP SIGNATURE-----
-
---=_freyr.ossman.eu-25561-1239215009-0001-2--
+rsc
+-- 
+Pengutronix e.K.                           |                             |
+Industrial Linux Solutions                 | http://www.pengutronix.de/  |
+Peiner Str. 6-8, 31137 Hildesheim, Germany | Phone: +49-5121-206917-0    |
+Amtsgericht Hildesheim, HRA 2686           | Fax:   +49-5121-206917-5555 |
