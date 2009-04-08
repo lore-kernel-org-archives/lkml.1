@@ -1,59 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932961AbZDHPB5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933184AbZDHPC3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932961AbZDHPB5 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 8 Apr 2009 11:01:57 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932709AbZDHPAp
+	id S933184AbZDHPC3 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 8 Apr 2009 11:02:29 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932578AbZDHPBZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 8 Apr 2009 11:00:45 -0400
-Received: from hera.kernel.org ([140.211.167.34]:51561 "EHLO hera.kernel.org"
+	Wed, 8 Apr 2009 11:01:25 -0400
+Received: from mx2.redhat.com ([66.187.237.31]:47099 "EHLO mx2.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S932624AbZDHPAo (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 8 Apr 2009 11:00:44 -0400
-Message-ID: <49DCBBF1.8080903@kernel.org>
-Date: Wed, 08 Apr 2009 08:00:01 -0700
-From: Yinghai Lu <yinghai@kernel.org>
-User-Agent: Thunderbird 2.0.0.19 (X11/20081227)
+	id S1765813AbZDHPBX (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 8 Apr 2009 11:01:23 -0400
+Message-ID: <49DCBC12.3040700@redhat.com>
+Date: Wed, 08 Apr 2009 08:00:34 -0700
+From: Masami Hiramatsu <mhiramat@redhat.com>
+User-Agent: Thunderbird 2.0.0.21 (X11/20090320)
 MIME-Version: 1.0
-To: Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
-       "H. Peter Anvin" <hpa@zytor.com>
-CC: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
-Subject: [PATCH] x86: make 64 bit to use default_inquire_remote_apic -resend
+To: "Frank Ch. Eigler" <fche@redhat.com>
+CC: Andi Kleen <andi@firstfloor.org>, Ingo Molnar <mingo@elte.hu>,
+       Frederic Weisbecker <fweisbec@gmail.com>,
+       Ananth N Mavinakayanahalli <ananth@in.ibm.com>,
+       Jim Keniston <jkenisto@us.ibm.com>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Vegard Nossum <vegard.nossum@gmail.com>,
+       "H. Peter Anvin" <hpa@zytor.com>, Steven Rostedt <rostedt@goodmis.org>,
+       Avi Kivity <avi@redhat.com>,
+       Satoshi Oshima <satoshi.oshima.fk@hitachi.com>,
+       systemtap-ml <systemtap@sources.redhat.com>,
+       LKML <linux-kernel@vger.kernel.org>
+Subject: Re: [RFC][PROTO][PATCH -tip 0/7] kprobes: support jump optimization
+ on x86
+References: <49DA7702.5030308@redhat.com> <20090408011743.GB5977@nowhere> <49DC0307.6080107@redhat.com> <20090408101056.GA14482@elte.hu> <20090408110602.GA14687@one.firstfloor.org> <20090408130150.GC13827@redhat.com>
+In-Reply-To: <20090408130150.GC13827@redhat.com>
 Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Frank Ch. Eigler wrote:
+> On Wed, Apr 08, 2009 at 01:06:02PM +0200, Andi Kleen wrote:
+>> [...]
+>>> I'm curious: what is the biggest kprobe count you've ever seen, in 
+>>> the field? 1000? 10,000? 100,000? More?
+>> The limit is iirc how much memory the gcc compiling the probes program
+>> consumes before running out of swap space.
+> 
+> On a machine with lots of free RAM, gcc will not hold itself back.  On
+> my home server, a 40000-kprobe script compiled (pass 4) in about 4
+> seconds using about 200MB RAM.
 
-Impact: restore old behavior
+Hm, when 40,000 kprobes are optimized, it will consume less than 8MB ...
+I guess that is acceptable for recent machines.
 
-for flat and phys_flat
+Thank you,
 
-Signed-off-by: Yinhai Lu <yinghai@kernel.org.
+-- 
+Masami Hiramatsu
 
----
- arch/x86/kernel/apic/apic_flat_64.c |    4 ++--
- 1 file changed, 2 insertions(+), 2 deletions(-)
+Software Engineer
+Hitachi Computer Products (America) Inc.
+Software Solutions Division
 
-Index: linux-2.6/arch/x86/kernel/apic/apic_flat_64.c
-===================================================================
---- linux-2.6.orig/arch/x86/kernel/apic/apic_flat_64.c
-+++ linux-2.6/arch/x86/kernel/apic/apic_flat_64.c
-@@ -212,7 +212,7 @@ struct apic apic_flat =  {
- 	.trampoline_phys_high		= DEFAULT_TRAMPOLINE_PHYS_HIGH,
- 	.wait_for_init_deassert		= NULL,
- 	.smp_callin_clear_local_apic	= NULL,
--	.inquire_remote_apic		= NULL,
-+	.inquire_remote_apic		= default_inquire_remote_apic,
- 
- 	.read				= native_apic_mem_read,
- 	.write				= native_apic_mem_write,
-@@ -362,7 +362,7 @@ struct apic apic_physflat =  {
- 	.trampoline_phys_high		= DEFAULT_TRAMPOLINE_PHYS_HIGH,
- 	.wait_for_init_deassert		= NULL,
- 	.smp_callin_clear_local_apic	= NULL,
--	.inquire_remote_apic		= NULL,
-+	.inquire_remote_apic		= default_inquire_remote_apic,
- 
- 	.read				= native_apic_mem_read,
- 	.write				= native_apic_mem_write,
+e-mail: mhiramat@redhat.com
+
