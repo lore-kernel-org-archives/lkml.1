@@ -1,105 +1,75 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763417AbZDHOno@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761319AbZDHOoX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763417AbZDHOno (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 8 Apr 2009 10:43:44 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753552AbZDHOnf
+	id S1761319AbZDHOoX (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 8 Apr 2009 10:44:23 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755340AbZDHOoH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 8 Apr 2009 10:43:35 -0400
-Received: from mx0.hoeg.nl ([87.251.61.211]:57843 "EHLO palm.hoeg.nl"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1752493AbZDHOne (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 8 Apr 2009 10:43:34 -0400
-X-Greylist: delayed 421 seconds by postgrey-1.27 at vger.kernel.org; Wed, 08 Apr 2009 10:43:34 EDT
-Date: Wed, 8 Apr 2009 16:36:31 +0200
-From: Ed Schouten <ed@FreeBSD.org>
-To: linux-kernel@vger.kernel.org
-Subject: Inconsistency between PTY read() return values
-Message-ID: <20090408143631.GH32098@hoeg.nl>
+	Wed, 8 Apr 2009 10:44:07 -0400
+Received: from rv-out-0506.google.com ([209.85.198.236]:63234 "EHLO
+	rv-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752113AbZDHOoF convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 8 Apr 2009 10:44:05 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
+         :cc:content-type:content-transfer-encoding;
+        b=Eh7I6V8Vsmgs/MoONH/cEMv93XxC1IZC+nhSNb8ocBoiWssj72rwGULCmhgW97n4kh
+         nTvHJbdKS3dpYdkmb4X2Q4qMDcoFqeg7SB4rGyoZSTiEgv4VW7BYbIaJEPRROVGs6Ecu
+         9Rtc9r1lezoXFJaiNufTmOuYVjB5g8By/Ggr4=
 MIME-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha1;
-	protocol="application/pgp-signature"; boundary="it/zdz3K1bH9Y8/E"
-Content-Disposition: inline
-User-Agent: Mutt/1.5.19 (2009-01-05)
+In-Reply-To: <49DCB5A5.7040100@rtr.ca>
+References: <1238683047-13588-1-git-send-email-willy@linux.intel.com>
+	 <1238683047-13588-2-git-send-email-willy@linux.intel.com>
+	 <1238683047-13588-3-git-send-email-willy@linux.intel.com>
+	 <1238683047-13588-4-git-send-email-willy@linux.intel.com>
+	 <49DCB5A5.7040100@rtr.ca>
+Date: Wed, 8 Apr 2009 23:44:04 +0900
+Message-ID: <7fe698080904080744y15f781b9lc71d84e705ef6089@mail.gmail.com>
+Subject: Re: [PATCH 4/5] ide: Add support for TRIM
+From: Dongjun Shin <djshin90@gmail.com>
+To: Mark Lord <liml@rtr.ca>
+Cc: Matthew Wilcox <willy@linux.intel.com>, linux-ide@vger.kernel.org,
+       linux-kernel@vger.kernel.org, jgarzik@redhat.com,
+       David Woodhouse <David.Woodhouse@intel.com>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Wed, Apr 8, 2009 at 11:33 PM, Mark Lord <liml@rtr.ca> wrote:
+>
+> Matthew Wilcox wrote:
+>>
+>> From: David Woodhouse <David.Woodhouse@intel.com>
+>>
+>> Signed-off-by: David Woodhouse <David.Woodhouse@intel.com>
+>> [modified to reduce amount of special casing needed for discard]
+>> Signed-off-by: Matthew Wilcox <willy@linux.intel.com>
+>> ---
+>
+> ..
+>>
+>> +       task->tf.command = ATA_CMD_DSM;
+>> +       task->tf.feature = ATA_DSM_TRIM;
+>> +       task->tf.hob_feature = 0x00;
+>> +       task->tf.nsect = size / 512;
+>> +       task->tf.hob_nsect = (size / 512) >> 8;
+>
+> ..
+>
+> Matthew (or others),
+>
+> Could you perhaps explain what the purpose of the data portion
+> of this command is for?  The draft ATA spec I have here has mangled
+> text in the description -- like it's missing a crucial sentence there.
+>
+> So it's not obvious exactly why this command even needs data to
+> be transfered.
 
---it/zdz3K1bH9Y8/E
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+It's for transfering list of LBA ranges which composed of
+LBA offset (48bit) and length of data to be trimmed (16bit).
 
-Hi all,
-
-Some time ago I noticed this small inconsistency between the return
-values of read() calls on pseudo-terminal master devices while working
-on the FreeBSD TTY code.
-
-Consider the following example:
-
-| #include <fcntl.h>
-| #include <stdio.h>
-| #include <stdlib.h>
-| #include <unistd.h>
-|=20
-| int
-| main(int argc, char *argv[])
-| {
-| 	int f1, f2;
-| 	char buf[20];
-| 	ssize_t r;
-|=20
-| 	f1 =3D posix_openpt(O_RDWR|O_NOCTTY);
-| 	grantpt(f1);
-| 	unlockpt(f1);
-|=20
-| 	f2 =3D open(ptsname(f1), O_RDWR);
-| 	close(f2);
-|=20
-| 	r =3D read(f1, buf, sizeof buf);
-| 	printf("%zd\n", r);
-| 	if (r =3D=3D -1)
-| 		perror("read");
-|=20
-| 	return (0);
-| }
-
-The code is very simple. It acquires a pseudo-terminal, opens the slave
-device and closes it. After that it tries to perform a read() on the
-pseudo-terminal master device. On at least Solaris 7 to 10, Mac OS X
-10.5 and FreeBSD 6 to HEAD, this code just prints 0. On Linux
-(at least 2.6.22-2.6.28) I see the following:
-
-	-1
-	read: Input/output error
-
-I looked through the standards and it seems the POSIX onlinepubs don't
-mention the behaviour of pseudo-terminal master file descriptors at all.
-This means it would even be valid of we return 0x1337 or something.
-
-But still, I think it's a little inconsistent. Most programmers would
-expect pseudo-terminal master file descriptors to behave somewhat
-similar to TTYs, even though they don't need to be. When you try to
-perform a read() on the TTY after the master file descriptor gets
-closed, you get an end-of-file. You only get an EIO when trying to write
-to this descriptor.
-
-Would it be hard to change the Linux TTY code to behave the same?
-
---=20
- Ed Schouten <ed@FreeBSD.org>
-
---it/zdz3K1bH9Y8/E
-Content-Type: application/pgp-signature
-Content-Disposition: inline
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.9 (FreeBSD)
-
-iEYEARECAAYFAknctm4ACgkQ52SDGA2eCwWQUACeMTft7z3y4FnW6h1b6Gfjd7z5
-PX0Ani82jJvSFws6NijyzAqSPFBwc32D
-=fR0x
------END PGP SIGNATURE-----
-
---it/zdz3K1bH9Y8/E--
+--
+Dongjun
