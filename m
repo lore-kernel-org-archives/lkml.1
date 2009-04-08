@@ -1,161 +1,97 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1765870AbZDHOFU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1765935AbZDHOGE@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1765870AbZDHOFU (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 8 Apr 2009 10:05:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759936AbZDHOE6
+	id S1765935AbZDHOGE (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 8 Apr 2009 10:06:04 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1764133AbZDHOFr
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 8 Apr 2009 10:04:58 -0400
-Received: from out2.smtp.messagingengine.com ([66.111.4.26]:54439 "EHLO
-	out2.smtp.messagingengine.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1755567AbZDHOE4 (ORCPT
+	Wed, 8 Apr 2009 10:05:47 -0400
+Received: from fk-out-0910.google.com ([209.85.128.187]:51681 "EHLO
+	fk-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1759371AbZDHOFq convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 8 Apr 2009 10:04:56 -0400
-X-Sasl-enc: 6csf6lnKTFq3Q8xW3lyVqwB+J5yxZUqH62jiUmQ1P5e7 1239199495
-Message-ID: <49DCAF04.3090803@fastmail.fm>
-Date: Wed, 08 Apr 2009 15:04:52 +0100
-From: Jack Stone <jwjstone@fastmail.fm>
-User-Agent: Thunderbird 2.0.0.21 (X11/20090325)
+	Wed, 8 Apr 2009 10:05:46 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
+         :cc:content-type:content-transfer-encoding;
+        b=QFGDgsMf8FxwnqDy74NXaBpYSK7t06dWUxcwoxE7oAW0owzR6MAn38VPtiI79lDTJG
+         bl1qlNeXqhoZx2Ny2xmYRch8auUENGnCE/1eOFlSzIONgyCJLVAng8qfO7IUD57KA3Xe
+         6Xym7kitcKtF6IqcQuprvJS78j8fXz+7jVFG8=
 MIME-Version: 1.0
-To: Bert Wesarg <bert.wesarg@googlemail.com>
-CC: linux-kernel@vger.kernel.org, jeff@garzik.org,
-       kernel-janitors@vger.kernel.org
-Subject: Re: [PATCH 35/56] ntfs: Remove void casts
-References: <1239189748-11703-1-git-send-email-jwjstone@fastmail.fm>	 <1239189748-11703-28-git-send-email-jwjstone@fastmail.fm>	 <1239189748-11703-29-git-send-email-jwjstone@fastmail.fm>	 <1239189748-11703-30-git-send-email-jwjstone@fastmail.fm>	 <1239189748-11703-31-git-send-email-jwjstone@fastmail.fm>	 <1239189748-11703-32-git-send-email-jwjstone@fastmail.fm>	 <1239189748-11703-33-git-send-email-jwjstone@fastmail.fm>	 <1239189748-11703-34-git-send-email-jwjstone@fastmail.fm>	 <1239189748-11703-35-git-send-email-jwjstone@fastmail.fm>	 <1239189748-11703-36-git-send-email-jwjstone@fastmail.fm> <36ca99e90904080522o4813667fx535e02179b1f3688@mail.gmail.com>
-In-Reply-To: <36ca99e90904080522o4813667fx535e02179b1f3688@mail.gmail.com>
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
+In-Reply-To: <49DCAC88.7010500@fastmail.fm>
+References: <1239189748-11703-1-git-send-email-jwjstone@fastmail.fm>
+	 <1239189748-11703-15-git-send-email-jwjstone@fastmail.fm>
+	 <1239189748-11703-16-git-send-email-jwjstone@fastmail.fm>
+	 <1239189748-11703-17-git-send-email-jwjstone@fastmail.fm>
+	 <1239189748-11703-18-git-send-email-jwjstone@fastmail.fm>
+	 <1239189748-11703-19-git-send-email-jwjstone@fastmail.fm>
+	 <1239189748-11703-20-git-send-email-jwjstone@fastmail.fm>
+	 <1239189748-11703-21-git-send-email-jwjstone@fastmail.fm>
+	 <36ca99e90904080439u7098d2feka5dd39f8ab6a470c@mail.gmail.com>
+	 <49DCAC88.7010500@fastmail.fm>
+Date: Wed, 8 Apr 2009 15:05:43 +0100
+Message-ID: <87a5b0800904080705n74829b75l8becfd6e7d1a321f@mail.gmail.com>
+Subject: Re: [PATCH 20/56] inflate: Remove void casts
+From: Will Newton <will.newton@gmail.com>
+To: Jack Stone <jwjstone@fastmail.fm>
+Cc: Bert Wesarg <bert.wesarg@googlemail.com>, linux-kernel@vger.kernel.org,
+       jeff@garzik.org, kernel-janitors@vger.kernel.org
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Fixed patch,
+On Wed, Apr 8, 2009 at 2:54 PM, Jack Stone <jwjstone@fastmail.fm> wrote:
+> Heres the fixed patch
+>
+> Thanks,
+>
+> Jack
+>
+> --
+>
+> inflate: Remove void casts
+>
+> From: Jack Stone <jwjstone@fastmail.fm>
+>
+> Remove uneeded void casts
+>
+> Signed-Off-By: Jack Stone <jwjstone@fastmail.fm>
+> ---
+>
+>  lib/inflate.c |    5 ++---
+>  1 files changed, 2 insertions(+), 3 deletions(-)
+>
+> diff --git a/lib/inflate.c b/lib/inflate.c
+> index 1a8e8a9..1eb0cd8 100644
+> --- a/lib/inflate.c
+> +++ b/lib/inflate.c
+> @@ -249,7 +249,7 @@ static void *malloc(int size)
+>
+>        malloc_ptr = (malloc_ptr + 3) & ~3;     /* Align */
+>
+> -       p = (void *)malloc_ptr;
+> +       p = malloc_ptr;
+>        malloc_ptr += size;
 
-Thanks,
+Won't this cause a "assignment makes pointer from integer without a
+cast" warning?
 
-Jack
-
---
-
-ntfs: Remove void casts
-
-From: Jack Stone <jwjstone@fastmail.fm>
-
-Remove uneeded void casts
-
-Signed-Off-By: Jack Stone <jwjstone@fastmail.fm>
----
-
- fs/ntfs/dir.c     |    8 ++++----
- fs/ntfs/index.c   |    2 +-
- fs/ntfs/super.c   |    8 ++++----
- fs/ntfs/usnjrnl.c |    2 +-
- 4 files changed, 10 insertions(+), 10 deletions(-)
-
-diff --git a/fs/ntfs/dir.c b/fs/ntfs/dir.c
-index 5a9e344..c373301 100644
---- a/fs/ntfs/dir.c
-+++ b/fs/ntfs/dir.c
-@@ -326,7 +326,7 @@ descend_into_child_node:
-         goto err_out;
-     }
-     lock_page(page);
--    kaddr = (u8*)page_address(page);
-+    kaddr = page_address(page);
- fast_descend_into_child_node:
-     /* Get to the index allocation block. */
-     ia = (INDEX_ALLOCATION*)(kaddr + ((vcn <<
-@@ -804,7 +804,7 @@ descend_into_child_node:
-         goto err_out;
-     }
-     lock_page(page);
--    kaddr = (u8*)page_address(page);
-+    kaddr = page_address(page);
- fast_descend_into_child_node:
-     /* Get to the index allocation block. */
-     ia = (INDEX_ALLOCATION*)(kaddr + ((vcn <<
-@@ -1279,7 +1279,7 @@ get_next_bmp_page:
-         bmp_page = NULL;
-         goto iput_err_out;
-     }
--    bmp = (u8*)page_address(bmp_page);
-+    bmp = page_address(bmp_page);
-     /* Find next index block in use. */
-     while (!(bmp[cur_bmp_pos >> 3] & (1 << (cur_bmp_pos & 7)))) {
- find_next_index_buffer:
-@@ -1322,7 +1322,7 @@ find_next_index_buffer:
-             goto err_out;
-         }
-         lock_page(ia_page);
--        kaddr = (u8*)page_address(ia_page);
-+        kaddr = page_address(ia_page);
-     }
-     /* Get the current index buffer. */
-     ia = (INDEX_ALLOCATION*)(kaddr + (ia_pos & ~PAGE_CACHE_MASK &
-diff --git a/fs/ntfs/index.c b/fs/ntfs/index.c
-index 2194eff..16a8b2e 100644
---- a/fs/ntfs/index.c
-+++ b/fs/ntfs/index.c
-@@ -282,7 +282,7 @@ descend_into_child_node:
-         goto err_out;
-     }
-     lock_page(page);
--    kaddr = (u8*)page_address(page);
-+    kaddr = page_address(page);
- fast_descend_into_child_node:
-     /* Get to the index allocation block. */
-     ia = (INDEX_ALLOCATION*)(kaddr + ((vcn <<
-diff --git a/fs/ntfs/super.c b/fs/ntfs/super.c
-index f76951d..d05bccf 100644
---- a/fs/ntfs/super.c
-+++ b/fs/ntfs/super.c
-@@ -1295,7 +1295,7 @@ static int
-check_windows_hibernation_status(ntfs_volume *vol)
-         ret = PTR_ERR(page);
-         goto iput_out;
-     }
--    kaddr = (u32*)page_address(page);
-+    kaddr = page_address(page);
-     if (*(le32*)kaddr == cpu_to_le32(0x72626968)/*'hibr'*/) {
-         ntfs_debug("Magic \"hibr\" found in hiberfil.sys.  Windows is "
-                 "hibernated on the volume.  This is the "
-@@ -1515,7 +1515,7 @@ not_enabled:
-                 "attribute.");
-         return false;
-     }
--    uh = (USN_HEADER*)page_address(page);
-+    uh = page_address(page);
-     /* Sanity check the $Max. */
-     if (unlikely(sle64_to_cpu(uh->allocation_delta) >
-             sle64_to_cpu(uh->maximum_size))) {
-@@ -2501,7 +2501,7 @@ static s64 get_nr_free_clusters(ntfs_volume *vol)
-             nr_free -= PAGE_CACHE_SIZE * 8;
-             continue;
-         }
--        kaddr = (u32*)kmap_atomic(page, KM_USER0);
-+        kaddr = kmap_atomic(page, KM_USER0);
-         /*
-          * For each 4 bytes, subtract the number of set bits. If this
-          * is the last page and it is partial we don't really care as
-@@ -2572,7 +2572,7 @@ static unsigned long
-__get_nr_free_mft_records(ntfs_volume *vol,
-             nr_free -= PAGE_CACHE_SIZE * 8;
-             continue;
-         }
--        kaddr = (u32*)kmap_atomic(page, KM_USER0);
-+        kaddr = kmap_atomic(page, KM_USER0);
-         /*
-          * For each 4 bytes, subtract the number of set bits. If this
-          * is the last page and it is partial we don't really care as
-diff --git a/fs/ntfs/usnjrnl.c b/fs/ntfs/usnjrnl.c
-index b2bc0d5..5c8fdd7 100644
---- a/fs/ntfs/usnjrnl.c
-+++ b/fs/ntfs/usnjrnl.c
-@@ -58,7 +58,7 @@ bool ntfs_stamp_usnjrnl(ntfs_volume *vol)
-                     "$UsnJrnl/$DATA/$Max attribute.");
-             return false;
-         }
--        uh = (USN_HEADER*)page_address(page);
-+        uh = page_address(page);
-         stamp = get_current_ntfs_time();
-         ntfs_debug("Stamping transaction log ($UsnJrnl): old "
-                 "journal_id 0x%llx, old lowest_valid_usn "
+>        if (free_mem_end_ptr && malloc_ptr >= free_mem_end_ptr)
+> @@ -481,8 +481,7 @@ DEBG1("3 ");
+>         z = 1 << j;             /* table entries for j-bit table */
+>
+>         /* allocate and link in new table */
+> -        if ((q = (struct huft *)malloc((z + 1)*sizeof(struct huft))) ==
+> -            (struct huft *)NULL)
+> +        if ((q = malloc((z + 1)*sizeof(struct huft))) == NULL)
+>         {
+>           if (h)
+>             huft_free(u[0]);
+> --
+> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> Please read the FAQ at  http://www.tux.org/lkml/
+>
