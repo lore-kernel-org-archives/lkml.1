@@ -1,47 +1,43 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762229AbZDHFqZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757568AbZDHFut@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762229AbZDHFqZ (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 8 Apr 2009 01:46:25 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758369AbZDHFqO
+	id S1757568AbZDHFut (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 8 Apr 2009 01:50:49 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756641AbZDHFuk
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 8 Apr 2009 01:46:14 -0400
-Received: from g4t0014.houston.hp.com ([15.201.24.17]:22853 "EHLO
-	g4t0014.houston.hp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757890AbZDHFqN (ORCPT
+	Wed, 8 Apr 2009 01:50:40 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:55647 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1755706AbZDHFuj (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 8 Apr 2009 01:46:13 -0400
-Date: Tue, 7 Apr 2009 23:46:12 -0600
-From: Alex Chiang <achiang@hp.com>
-To: Robin Holt <holt@sgi.com>
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       linux-kernel <linux-kernel@vger.kernel.org>, linux-ia64@vger.kernel.org
-Subject: Re: cross-compilers
-Message-ID: <20090408054612.GA6744@ldl.fc.hp.com>
-References: <20090408003921.GA5054@ldl.fc.hp.com> <20090408010331.GB10768@sgi.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090408010331.GB10768@sgi.com>
-User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
+	Wed, 8 Apr 2009 01:50:39 -0400
+Date: Tue, 7 Apr 2009 22:47:09 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Andi Kleen <andi@firstfloor.org>
+Cc: linux-kernel@vger.kernel.org, linux-mm@kvack.org, x86@kernel.org
+Subject: Re: [PATCH] [0/16] POISON: Intro
+Message-Id: <20090407224709.742376ff.akpm@linux-foundation.org>
+In-Reply-To: <20090407509.382219156@firstfloor.org>
+References: <20090407509.382219156@firstfloor.org>
+X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.5; x86_64-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-* Robin Holt <holt@sgi.com>:
-> Don't know if this answers your problem, but I use the tools from
-> emdebian and they do not suffer from the problems you list below.
+On Tue,  7 Apr 2009 17:09:56 +0200 (CEST) Andi Kleen <andi@firstfloor.org> wrote:
 
-Wow, this seems _much_ simpler. Once you get the toolchain
-installed, all you have to do is set ARCH and CROSS_COMPILE
-appropriately?
+> Upcoming Intel CPUs have support for recovering from some memory errors. This
+> requires the OS to declare a page "poisoned", kill the processes associated
+> with it and avoid using it in the future. This patchkit implements
+> the necessary infrastructure in the VM.
 
-I guess the question remains for Andrew. Since I pretty much did
-all the work needed to update his cross-compiler repo, is there
-still value in it?
+Seems that this feature is crying out for a testing framework (perhaps
+it already has one?).  A simplistic approach would be
 
-Or shall we just recommend emdebian to everyone? :)
+	echo some-pfn > /proc/bad-pfn-goes-here
 
-Thanks.
-
-/ac
+A slightly more sophisticated version might do the deed from within a
+timer interrupt, just to get a bit more coverage.
 
