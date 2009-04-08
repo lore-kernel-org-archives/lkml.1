@@ -1,47 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S935115AbZDHRx1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S935116AbZDHRzU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S935115AbZDHRx1 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 8 Apr 2009 13:53:27 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755755AbZDHRxK
+	id S935116AbZDHRzU (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 8 Apr 2009 13:55:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755559AbZDHRy6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 8 Apr 2009 13:53:10 -0400
-Received: from zrtps0kp.nortel.com ([47.140.192.56]:35641 "EHLO
-	zrtps0kp.nortel.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753568AbZDHRxJ (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 8 Apr 2009 13:53:09 -0400
-Message-ID: <49DCE470.9060109@nortel.com>
-Date: Wed, 08 Apr 2009 11:52:48 -0600
-From: "Chris Friesen" <cfriesen@nortel.com>
-User-Agent: Thunderbird 2.0.0.21 (X11/20090302)
+	Wed, 8 Apr 2009 13:54:58 -0400
+Received: from smtp6.welho.com ([213.243.153.40]:36312 "EHLO smtp6.welho.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1755313AbZDHRy6 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 8 Apr 2009 13:54:58 -0400
+Date: Wed, 8 Apr 2009 20:54:55 +0300
+From: Adrian Bunk <bunk@kernel.org>
+To: Alan Cox <alan@lxorguk.ukuu.org.uk>
+Cc: torvalds@linux-foundation.org, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] tty: MAX3100
+Message-ID: <20090408175455.GA6721@localhost.pp.htv.fi>
+References: <20090408114427.28788.50640.stgit@t61.ukuu.org.uk>
 MIME-Version: 1.0
-To: linux-kernel@vger.kernel.org,
-       Linux Network Development list <netdev@vger.kernel.org>
-Subject: dhcp-based netboot over jumbo-frame network? 
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
-X-OriginalArrivalTime: 08 Apr 2009 17:52:50.0250 (UTC) FILETIME=[D561AAA0:01C9B872]
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
+In-Reply-To: <20090408114427.28788.50640.stgit@t61.ukuu.org.uk>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Wed, Apr 08, 2009 at 12:44:52PM +0100, Alan Cox wrote:
+> Thou shalt remember to use 'git add' or there will errors and wrath from on
+> list and much wailing and gnashing of teeth.
+> 
+> Signed-off-by: Alan "I'm hiding" Cox <alan@lxorguk.ukuu.org.uk>
+> ---
+> 
+>  drivers/serial/max3100.c |  927 ++++++++++++++++++++++++++++++++++++++++++++++
+>  1 files changed, 927 insertions(+), 0 deletions(-)
+>  create mode 100644 drivers/serial/max3100.c
+>...
+> --- /dev/null
+> +++ b/drivers/serial/max3100.c
+>...
+> +#include <linux/serial_max3100.h>
+>...
 
-Hi all,
+Thou shalt remember to also send the header file.
 
-We have an existing system that loads a bare kernel using tftp, then 
-mounts a rootfs via NFS.  The wrinkle is that this is on a jumbo-frame 
-enabled network, so somehow the MTU needs to be set before mounting the 
-rootfs.
+cu
+Adrian
 
-In a previous version we patched ipconfig.c to support the DHCP option 
-to specify the MTU value, but I'm wondering about the "proper" way to do 
-this on current kernels.
+-- 
 
-I suppose the obvious answer would be initramfs.  The downsides to that 
-solution are that it would increase the size of the kernel file, and we 
-would need to change the existing build system.  In the face of a small 
-patch to ipconfig, it's not a very attractive solution.
+       "Is there not promise of rain?" Ling Tan asked suddenly out
+        of the darkness. There had been need of rain for many days.
+       "Only a promise," Lao Er said.
+                                       Pearl S. Buck - Dragon Seed
 
-Looking forward to your responses.
-
-Chris
