@@ -1,62 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762208AbZDHGNg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762590AbZDHGRR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762208AbZDHGNg (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 8 Apr 2009 02:13:36 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757808AbZDHGN1
+	id S1762590AbZDHGRR (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 8 Apr 2009 02:17:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759817AbZDHGRD
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 8 Apr 2009 02:13:27 -0400
-Received: from one.firstfloor.org ([213.235.205.2]:34877 "EHLO
-	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756704AbZDHGN0 (ORCPT
+	Wed, 8 Apr 2009 02:17:03 -0400
+Received: from fgwmail5.fujitsu.co.jp ([192.51.44.35]:60077 "EHLO
+	fgwmail5.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1758814AbZDHGRA (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 8 Apr 2009 02:13:26 -0400
-Date: Wed, 8 Apr 2009 08:15:39 +0200
-From: Andi Kleen <andi@firstfloor.org>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: Andi Kleen <andi@firstfloor.org>, linux-kernel@vger.kernel.org,
-       linux-mm@kvack.org, x86@kernel.org
-Subject: Re: [PATCH] [0/16] POISON: Intro
-Message-ID: <20090408061539.GD17934@one.firstfloor.org>
-References: <20090407509.382219156@firstfloor.org> <20090407221542.91cd3c42.akpm@linux-foundation.org>
+	Wed, 8 Apr 2009 02:17:00 -0400
+Date: Wed, 8 Apr 2009 15:15:29 +0900
+From: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+To: balbir@linux.vnet.ibm.com
+Cc: "linux-mm@kvack.org" <linux-mm@kvack.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       "lizf@cn.fujitsu.com" <lizf@cn.fujitsu.com>,
+       Rik van Riel <riel@surriel.com>, Bharata B Rao <bharata.rao@in.ibm.com>,
+       Dhaval Giani <dhaval@linux.vnet.ibm.com>,
+       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
+Subject: Re: [RFI] Shared accounting for memory resource controller
+Message-Id: <20090408151529.fd6626c2.kamezawa.hiroyu@jp.fujitsu.com>
+In-Reply-To: <20090408052904.GY7082@balbir.in.ibm.com>
+References: <20090407063722.GQ7082@balbir.in.ibm.com>
+	<20090407160014.8c545c3c.kamezawa.hiroyu@jp.fujitsu.com>
+	<20090407071825.GR7082@balbir.in.ibm.com>
+	<20090407163331.8e577170.kamezawa.hiroyu@jp.fujitsu.com>
+	<20090407080355.GS7082@balbir.in.ibm.com>
+	<20090407172419.a5f318b9.kamezawa.hiroyu@jp.fujitsu.com>
+	<20090408052904.GY7082@balbir.in.ibm.com>
+Organization: FUJITSU Co. LTD.
+X-Mailer: Sylpheed 2.5.0 (GTK+ 2.10.14; i686-pc-mingw32)
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090407221542.91cd3c42.akpm@linux-foundation.org>
-User-Agent: Mutt/1.4.2.1i
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Apr 07, 2009 at 10:15:42PM -0700, Andrew Morton wrote:
-> On Tue,  7 Apr 2009 17:09:56 +0200 (CEST) Andi Kleen <andi@firstfloor.org> wrote:
+On Wed, 8 Apr 2009 10:59:04 +0530
+Balbir Singh <balbir@linux.vnet.ibm.com> wrote:
+
+
+> > no serious intention.
+> > Just because you wrote "expect the user to account all cached pages as shared" ;)
+> >
 > 
-> > Upcoming Intel CPUs have support for recovering from some memory errors. This
-> > requires the OS to declare a page "poisoned", kill the processes associated
-> > with it and avoid using it in the future. This patchkit implements
-> > the necessary infrastructure in the VM.
-> 
-> If the page is clean then we can just toss it and grab a new one from
-> backing store without killing anyone.
-> 
-> Does the patchset do that?
+> OK, I noticed another thing, our RSS accounting is not RSS per-se, it
+> includes only anon RSS, file backed pages are accounted as cached.
+> I'll send out a patch to see if we can include anon RSS as well.
+>  
 
-Yes. But it only really works for shared mmap, anonymous and private
-tends to be near always dirty.
+I think we can't do it in memcg layer without new-hook because file caches
+are added to radix-tree before mapped.
 
-Also you can disable even the early kill and only request kill
-on access.
+mm struct has anon_rss and file_rss coutners. Then, you can show
+sum of total maps of file pages. maybe.
 
-It also does some other tricks, like for dirty file just trigger
-an IO error (although I must admit the dirty handling is rather
-tricky and I would appreciate very careful review of that part)s
+Thanks,
+-Kame
 
-A few other known recovery tricks are not implemented yet
-(like handling free memory[1]), but will be over time.
-
--Andi
-
-[1] I didn't consider that one high priority since production
-systems with long uptime shouldn't have much free memory.
-
--- 
-ak@linux.intel.com -- Speaking for myself only.
