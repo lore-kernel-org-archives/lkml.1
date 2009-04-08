@@ -1,42 +1,34 @@
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761626AbZDGWPa (ORCPT <rfc822;list-kernel77@spinics.net>);
-	Tue, 7 Apr 2009 18:15:30 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756126AbZDGWPQ
+	id S932805AbZDHRHT (ORCPT <rfc822;list-kernel77@spinics.net>);
+	Wed, 8 Apr 2009 13:07:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934792AbZDHRGD
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 7 Apr 2009 18:15:16 -0400
-Received: from 62-233-81-176.iomart.com ([62.233.81.176]:44959 "EHLO
-	kissez893.easyvserver.com" rhost-flags-OK-FAIL-OK-OK)
-	by vger.kernel.org with ESMTP id S1753077AbZDGWPP (ORCPT
+	Wed, 8 Apr 2009 13:06:03 -0400
+Received: from cp-out1.libero.it ([212.52.84.101]:52513 "EHLO
+	cp-out1.libero.it" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S934811AbZDHRGA convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 7 Apr 2009 18:15:15 -0400
-X-Greylist: delayed 2392 seconds by postgrey-1.27 at vger.kernel.org; Tue, 07 Apr 2009 18:15:14 EDT
-Message-ID: <20090407212348.7821.qmail@kissez893.easyvserver.com>
-Content-Disposition: inline
-Content-Transfer-Encoding: binary
-Content-Type: text/plain
+	Wed, 8 Apr 2009 13:06:00 -0400
+Date: Wed,  8 Apr 2009 19:05:40 +0200
+Message-Id: <KHSKTG$882CD774B81B5C50468E02617E2F218B@libero.it>
+Subject: very urgent
 MIME-Version: 1.0
-X-Mailer: MIME::Lite 2.117  (F2.74)
-Date: Tue, 7 Apr 2009 21:23:48 UT
-From: Rozsahegyi Mark <noreply@nevetosok.hu>
-To: Linux Kernel <linux-kernel@vger.kernel.org>
-Subject: 1 + 1%
-Reply-To: noreply@nevetosok.hu
+X-Sensitivity: 3
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7BIT
+From: "suleman_m028" <suleman_m028@libero.it>
+X-XaM3-API-Version: 4.3 (R1) (B3pl25)
+X-SenderIP: 41.203.226.128
+To: unlisted-recipients:; (no To-header on input)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-:-) (-:
- 
-Ha Ön optimista azért, ha kevésbé azért segítsen, adója mindkét 1%-ának felajánlásával, szervezeteink számára! 
+I am  Mr Suleman Muhammed the manager of auditing and accounting department  Bank of African,I need
+your urgent assistance in transferring the sum of ($8.5  million us dollars
+immediately to your account. upon your reply I will send you full details on how
+the business will be executed,Reply me throght this email adress bellow sulemlan_m03@voila.fr
 
-Adója elsõ 1%-át kérjük adja az Egy Optimista Magyarországért Alapítványnak 18161911-1-41, a második 1%-ot a 1524-es technikai számú Derû Egyháznak, hogy a két szervezet együttmûködéseként megvalósuljon az átlátható adományozás, és mind többen lássák, adományozni nem csak decemberben lehet.
 
-"Adományozáshoz nem alkalomra, hanem Önre van szükség!" Amennyiben CSAK a második 1%-ot adja nekünk, azért is hálásak leszünk.
 
-Legyen szép és derûs a napja!
- 
-:-) (-:
 
-Pozitív non-profit kezdeményezéseinkrõl tájékoztatjuk, amennyiben ide kattint: http://nevetosok.hu/cgi-bin/register.cgi?act=m&list=8&sub=NcGgdPRY5yLh 
-
-A jövöben nem kap több levelet, amennyiben ezt jelzi számunkra, azzal, hogy ide kattint: http://nevetosok.hu/cgi-bin/register.cgi?un=NcGgdPRY5yLh 
