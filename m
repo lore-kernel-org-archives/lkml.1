@@ -1,78 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763466AbZDHIwv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763662AbZDHIxi@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763466AbZDHIwv (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 8 Apr 2009 04:52:51 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758786AbZDHIvj
+	id S1763662AbZDHIxi (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 8 Apr 2009 04:53:38 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756722AbZDHIvu
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 8 Apr 2009 04:51:39 -0400
-Received: from smtp-68.nebula.fi ([83.145.220.68]:60968 "EHLO
-	smtp-68.nebula.fi" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1761524AbZDHIv1 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 8 Apr 2009 04:51:27 -0400
-From: Pekka Enberg <penberg@cs.helsinki.fi>
-To: greg@kroah.com
-Cc: linux-kernel@vger.kernel.org, Pavel Machek <pavel@ucw.cz>
-Subject: [PATCH 3/4] w35und: inline hal_set_rf_power() to mto.c
-Date: Wed,  8 Apr 2009 11:51:21 +0300
-Message-Id: <1239180682-22860-3-git-send-email-penberg@cs.helsinki.fi>
-X-Mailer: git-send-email 1.5.6.3
-In-Reply-To: <1239180682-22860-1-git-send-email-penberg@cs.helsinki.fi>
-References: <1239180682-22860-1-git-send-email-penberg@cs.helsinki.fi>
+	Wed, 8 Apr 2009 04:51:50 -0400
+Received: from cn.fujitsu.com ([222.73.24.84]:64747 "EHLO song.cn.fujitsu.com"
+	rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org with ESMTP
+	id S1762169AbZDHIvo (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 8 Apr 2009 04:51:44 -0400
+Message-ID: <49DC6569.5030908@cn.fujitsu.com>
+Date: Wed, 08 Apr 2009 16:50:49 +0800
+From: Shen Feng <shen@cn.fujitsu.com>
+User-Agent: Thunderbird 2.0.0.14 (X11/20080501)
+MIME-Version: 1.0
+To: David Miller <davem@davemloft.net>
+CC: bhutchings@solarflare.com, akpm@linux-foundation.org,
+       netdev@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] IPv4/IPv6: update sysctl files
+References: <49DC091C.6070708@cn.fujitsu.com>	<1239158863.11534.52.camel@deadeye.i.decadent.org.uk>	<49DC19D5.7090101@cn.fujitsu.com> <20090408.001828.262566823.davem@davemloft.net>
+In-Reply-To: <20090408.001828.262566823.davem@davemloft.net>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Impact: cleanup
 
-It's a trivial wrapper that is used in only one place, so lets inline it.
 
-Cc: Pavel Machek <pavel@ucw.cz>
-Signed-off-by: Pekka Enberg <penberg@cs.helsinki.fi>
----
- drivers/staging/winbond/mto.c     |    2 +-
- drivers/staging/winbond/wbhal.c   |    5 -----
- drivers/staging/winbond/wbhal_f.h |    1 -
- 3 files changed, 1 insertions(+), 7 deletions(-)
+on 04/08/2009 03:18 PM, David Miller wrote:
+> From: Shen Feng <shen@cn.fujitsu.com>
+> Date: Wed, 08 Apr 2009 11:28:21 +0800
+> 
+>>
+>> on 04/08/2009 10:47 AM, Ben Hutchings wrote:
+>>> On Wed, 2009-04-08 at 02:39 +0000, Shen Feng wrote:
+>>>> Now the following sysctl files in /proc/sys/net/ipv4 are used by
+>>>> both IPv4 and IPv6.
+>>>> tcp_mem  tcp_rmem  tcp_wmem
+>>>> udp_mem  udp_rmem_min  udp_wmem_min
+>>>> Putting them in /proc/sys/net/ipv4 is not a good choice.
+>>> [...]
+>>>
+>>> But this is part of the ABI to userland.  You cannot remove sysctl files
+>>> without long advance notice documented in feature-removal-schedule.txt
+>>> (if at all).
+>>>
+>>> If it is possible to add the paths
+>>> /proc/sys/net/{tcp,udp} while retaining aliases under /proc/sys/net/ipv4
+>>> then that might be a workable solution.
+>> Thanks. That's a good solution.
+>>
+>> But I'm still confused.
+>> Why not create another tcp_mem in /proc/sys/net/ipv6?
+> 
+> People just need to understand that ipv4 is always going to be
+> there and that's where all the tcp controls are.
+> 
+> I really am not going to entertain changes that try to move generic
+> inet sysctl things out of the ipv4 directory.  There is really no
+> point at all.
+> 
 
-diff --git a/drivers/staging/winbond/mto.c b/drivers/staging/winbond/mto.c
-index 94a060b..7deb5c7 100644
---- a/drivers/staging/winbond/mto.c
-+++ b/drivers/staging/winbond/mto.c
-@@ -175,7 +175,7 @@ void MTO_Init(struct wbsoft_priv *adapter)
- 	}
- 	else	//follow the setting from EEPROM
- 		MTOPARA_TXPOWER_INDEX() = MTO_TXPOWER_FROM_EEPROM;
--	hal_set_rf_power(MTO_HAL(), (u8)MTOPARA_TXPOWER_INDEX());
-+	RFSynthesizer_SetPowerIndex(MTO_HAL(), (u8)MTOPARA_TXPOWER_INDEX());
- 	//------------------------------------------------
- 
- 	// For RSSI turning 20060808.4 Cancel load from EEPROM
-diff --git a/drivers/staging/winbond/wbhal.c b/drivers/staging/winbond/wbhal.c
-index 01626a1..b9a6e38 100644
---- a/drivers/staging/winbond/wbhal.c
-+++ b/drivers/staging/winbond/wbhal.c
-@@ -18,8 +18,3 @@ unsigned char hal_set_dxx_reg(struct hw_data *pHwData, u16 number, u32 value)
- 	ret = Wb35Reg_WriteSync(pHwData, number, value);
- 	return ret;
- }
--
--void hal_set_rf_power(struct hw_data *pHwData, u8 PowerIndex)
--{
--	RFSynthesizer_SetPowerIndex(pHwData, PowerIndex);
--}
-diff --git a/drivers/staging/winbond/wbhal_f.h b/drivers/staging/winbond/wbhal_f.h
-index c4934cb..fd1d3c2 100644
---- a/drivers/staging/winbond/wbhal_f.h
-+++ b/drivers/staging/winbond/wbhal_f.h
-@@ -39,7 +39,6 @@ void hal_set_cwmax(  struct hw_data * pHwData,  u16 cwin_max );
- void hal_set_rsn_wpa(  struct hw_data * pHwData,  u32 * RSN_IE_Bitmap , u32 * RSN_OUI_type , unsigned char bDesiredAuthMode);
- void hal_set_connect_info(  struct hw_data * pHwData,  unsigned char boConnect );
- u8 hal_get_est_sq3(  struct hw_data * pHwData,  u8 Count );
--void hal_set_rf_power(  struct hw_data * pHwData,  u8 PowerIndex ); // 20060621 Modify
- void hal_descriptor_indicate(  struct hw_data * pHwData,  PDESCRIPTOR pDes );
- u8 hal_get_antenna_number(  struct hw_data * pHwData );
- u32 hal_get_bss_pk_cnt(  struct hw_data * pHwData );
--- 
-1.5.6.3
+/proc/sys/net/ipv4/tcp_mem is a inet sysctl, but it also controls the tcp v6.
+So it's also a inet6 sysctl. Is it intentional?
+This may confuse users. We may have a /proc/sys/net/ipv6/tcp6_mem.
 
+> 
+> 
