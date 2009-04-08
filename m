@@ -1,64 +1,43 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761413AbZDHHFD@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762079AbZDHHFi@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761413AbZDHHFD (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 8 Apr 2009 03:05:03 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761143AbZDHHEq
+	id S1762079AbZDHHFi (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 8 Apr 2009 03:05:38 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760748AbZDHHFF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 8 Apr 2009 03:04:46 -0400
-Received: from e23smtp07.au.ibm.com ([202.81.31.140]:60635 "EHLO
-	e23smtp07.au.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1761066AbZDHHEp (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 8 Apr 2009 03:04:45 -0400
-Date: Wed, 8 Apr 2009 12:34:01 +0530
-From: Balbir Singh <balbir@linux.vnet.ibm.com>
-To: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-Cc: "linux-mm@kvack.org" <linux-mm@kvack.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       "lizf@cn.fujitsu.com" <lizf@cn.fujitsu.com>,
-       Rik van Riel <riel@surriel.com>, Bharata B Rao <bharata.rao@in.ibm.com>,
-       Dhaval Giani <dhaval@linux.vnet.ibm.com>,
-       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
-Subject: Re: [RFI] Shared accounting for memory resource controller
-Message-ID: <20090408070401.GC7082@balbir.in.ibm.com>
-Reply-To: balbir@linux.vnet.ibm.com
-References: <20090407063722.GQ7082@balbir.in.ibm.com> <20090407160014.8c545c3c.kamezawa.hiroyu@jp.fujitsu.com> <20090407071825.GR7082@balbir.in.ibm.com> <20090407163331.8e577170.kamezawa.hiroyu@jp.fujitsu.com> <20090407080355.GS7082@balbir.in.ibm.com> <20090407172419.a5f318b9.kamezawa.hiroyu@jp.fujitsu.com> <20090408052904.GY7082@balbir.in.ibm.com> <20090408151529.fd6626c2.kamezawa.hiroyu@jp.fujitsu.com>
+	Wed, 8 Apr 2009 03:05:05 -0400
+Received: from cn.fujitsu.com ([222.73.24.84]:62082 "EHLO song.cn.fujitsu.com"
+	rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org with ESMTP
+	id S1760485AbZDHHFD (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 8 Apr 2009 03:05:03 -0400
+Message-ID: <49DC4CC0.9050805@cn.fujitsu.com>
+Date: Wed, 08 Apr 2009 15:05:36 +0800
+From: Li Zefan <lizf@cn.fujitsu.com>
+User-Agent: Thunderbird 2.0.0.9 (X11/20071115)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-Content-Disposition: inline
-In-Reply-To: <20090408151529.fd6626c2.kamezawa.hiroyu@jp.fujitsu.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+To: LKML <linux-kernel@vger.kernel.org>
+CC: Andrew Morton <akpm@linux-foundation.org>
+Subject: [PATCH 0/6] fs: use memdup_user()
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-* KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com> [2009-04-08 15:15:29]:
+Remove open-coded memdup_user() in fs/.
 
-> On Wed, 8 Apr 2009 10:59:04 +0530
-> Balbir Singh <balbir@linux.vnet.ibm.com> wrote:
-> 
-> 
-> > > no serious intention.
-> > > Just because you wrote "expect the user to account all cached pages as shared" ;)
-> > >
-> > 
-> > OK, I noticed another thing, our RSS accounting is not RSS per-se, it
-> > includes only anon RSS, file backed pages are accounted as cached.
-> > I'll send out a patch to see if we can include anon RSS as well.
-> >  
-> 
-> I think we can't do it in memcg layer without new-hook because file caches
-> are added to radix-tree before mapped.
-> 
-> mm struct has anon_rss and file_rss coutners. Then, you can show
-> sum of total maps of file pages. maybe.
->
+   text    data     bss     dec     hex filename
+7684360  520520 5629456 13834336         d31860 vmlinux.o.orig
+   text    data     bss     dec     hex filename
+7683392  520520 5629456 13833368         d31498 vmlinux.o
 
-Yes, correct and that is a hook worth adding, IMHO. Better statistics
-are critical and it will also help us with the shared memory
-accounting. Without that we can't account for file rss in the memory
-cgroup. 
+ fs/btrfs/ioctl.c               |   49 +++++++++------------------------------
+ fs/btrfs/super.c               |   13 +++-------
+ fs/ecryptfs/miscdev.c          |   15 ++++--------
+ fs/ncpfs/ioctl.c               |   21 +++++-----------
+ fs/sysfs/bin.c                 |   13 ++--------
+ fs/xattr.c                     |   10 ++-----
+ fs/xfs/linux-2.6/xfs_ioctl.c   |   23 +++++-------------
+ fs/xfs/linux-2.6/xfs_ioctl32.c |   12 +++------
+ 8 files changed, 45 insertions(+), 111 deletions(-)
+---
 
--- 
-	Balbir
