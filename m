@@ -1,64 +1,83 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933184AbZDHPC3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762565AbZDHPFb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933184AbZDHPC3 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 8 Apr 2009 11:02:29 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932578AbZDHPBZ
+	id S1762565AbZDHPFb (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 8 Apr 2009 11:05:31 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753247AbZDHPFU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 8 Apr 2009 11:01:25 -0400
-Received: from mx2.redhat.com ([66.187.237.31]:47099 "EHLO mx2.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1765813AbZDHPBX (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 8 Apr 2009 11:01:23 -0400
-Message-ID: <49DCBC12.3040700@redhat.com>
-Date: Wed, 08 Apr 2009 08:00:34 -0700
-From: Masami Hiramatsu <mhiramat@redhat.com>
-User-Agent: Thunderbird 2.0.0.21 (X11/20090320)
+	Wed, 8 Apr 2009 11:05:20 -0400
+Received: from out2.smtp.messagingengine.com ([66.111.4.26]:59190 "EHLO
+	out2.smtp.messagingengine.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751087AbZDHPFT (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 8 Apr 2009 11:05:19 -0400
+X-Sasl-enc: Yqu3+4goFix7mdT5TLUcOlzfXHNxUzhKT1gytVPbqJNw 1239203117
+Message-ID: <49DCBD2A.60602@fastmail.fm>
+Date: Wed, 08 Apr 2009 16:05:14 +0100
+From: Jack Stone <jwjstone@fastmail.fm>
+User-Agent: Thunderbird 2.0.0.21 (X11/20090325)
 MIME-Version: 1.0
-To: "Frank Ch. Eigler" <fche@redhat.com>
-CC: Andi Kleen <andi@firstfloor.org>, Ingo Molnar <mingo@elte.hu>,
-       Frederic Weisbecker <fweisbec@gmail.com>,
-       Ananth N Mavinakayanahalli <ananth@in.ibm.com>,
-       Jim Keniston <jkenisto@us.ibm.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Vegard Nossum <vegard.nossum@gmail.com>,
-       "H. Peter Anvin" <hpa@zytor.com>, Steven Rostedt <rostedt@goodmis.org>,
-       Avi Kivity <avi@redhat.com>,
-       Satoshi Oshima <satoshi.oshima.fk@hitachi.com>,
-       systemtap-ml <systemtap@sources.redhat.com>,
-       LKML <linux-kernel@vger.kernel.org>
-Subject: Re: [RFC][PROTO][PATCH -tip 0/7] kprobes: support jump optimization
- on x86
-References: <49DA7702.5030308@redhat.com> <20090408011743.GB5977@nowhere> <49DC0307.6080107@redhat.com> <20090408101056.GA14482@elte.hu> <20090408110602.GA14687@one.firstfloor.org> <20090408130150.GC13827@redhat.com>
-In-Reply-To: <20090408130150.GC13827@redhat.com>
+To: Ingo Molnar <mingo@elte.hu>
+CC: Bert Wesarg <bert.wesarg@googlemail.com>, linux-kernel@vger.kernel.org,
+       jeff@garzik.org, kernel-janitors@vger.kernel.org
+Subject: Re: [PATCH 54/56] x86: Remove void casts
+References: <1239189748-11703-54-git-send-email-jwjstone@fastmail.fm> <1239189748-11703-55-git-send-email-jwjstone@fastmail.fm> <36ca99e90904080518qf81b483h6ed2bc9752ee0d1e@mail.gmail.com> <49DCAE97.8040602@fastmail.fm> <20090408140637.GC12931@elte.hu> <49DCB140.7000603@fastmail.fm> <20090408144055.GH12931@elte.hu> <49DCB8C5.4090108@fastmail.fm> <20090408144842.GK12931@elte.hu> <49DCBA61.8060507@fastmail.fm> <20090408145715.GO12931@elte.hu> <49DCBBDF.4040603@fastmail.fm>
+In-Reply-To: <49DCBBDF.4040603@fastmail.fm>
 Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Frank Ch. Eigler wrote:
-> On Wed, Apr 08, 2009 at 01:06:02PM +0200, Andi Kleen wrote:
->> [...]
->>> I'm curious: what is the biggest kprobe count you've ever seen, in 
->>> the field? 1000? 10,000? 100,000? More?
->> The limit is iirc how much memory the gcc compiling the probes program
->> consumes before running out of swap space.
-> 
-> On a machine with lots of free RAM, gcc will not hold itself back.  On
-> my home server, a 40000-kprobe script compiled (pass 4) in about 4
-> seconds using about 200MB RAM.
+Jack Stone wrote:
+> Ingo Molnar wrote:
+>   
+>> * Jack Stone <jwjstone@fastmail.fm> wrote:
+>>
+>>   
+>>     
+>>> Ingo Molnar wrote:
+>>>     
+>>>       
+>>>> No, i mean, this approach should be changed, and i dont think any 
+>>>> type cast change should go via any trivial tree. It's easy to mess 
+>>>> it up. Please submit them to the maintainer trees
+>>>>       
+>>>>         
+>>> Ok. I'll try and find appropriate CCs. I'm going out shortly so it 
+>>> might take me a while.
+>>>     
+>>>       
+>> Since you do many such patches it might make sense to script up a 
+>> "who maintains what" kind of script - and share that script with 
+>> lkml.
+>>
+>> I have this silly little script:
+>>
+>>   git log $@ | grep Signed-off-by: |
+>>    cut -d: -f2 | cut -d\< -f1 |
+>>     sort | uniq -c | sort -n
+>>
+>> To find out any recent parties that touches a particular file. But 
+>> it would be nice to somehow automate the pickup of mailing-list 
+>> addresses from MAINTAINERS for example. We've literally got hundreds 
+>> of email lists there.
+>>
+>> It is not trivial to do though :-)
+>>   
+>>     
+> It would be useful. The main problem is working out what files belong to
+> what MAINTAINERS entries.
+>
+> I'll see what I can cook up.
+>
+> Thanks,
+>
+> Jack
+>   
+Look what turned up!
 
-Hm, when 40,000 kprobes are optimized, it will consume less than 8MB ...
-I guess that is acceptable for recent machines.
+http://marc.info/?l=linux-kernel&m=123916809504492&w=2
 
-Thank you,
+Thanks,
 
--- 
-Masami Hiramatsu
-
-Software Engineer
-Hitachi Computer Products (America) Inc.
-Software Solutions Division
-
-e-mail: mhiramat@redhat.com
-
+Jack
