@@ -1,72 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763409AbZDHS1Y@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764105AbZDHS1p@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763409AbZDHS1Y (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 8 Apr 2009 14:27:24 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751711AbZDHS1G
+	id S1764105AbZDHS1p (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 8 Apr 2009 14:27:45 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754702AbZDHS1M
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 8 Apr 2009 14:27:06 -0400
-Received: from mx2.redhat.com ([66.187.237.31]:46616 "EHLO mx2.redhat.com"
+	Wed, 8 Apr 2009 14:27:12 -0400
+Received: from e6.ny.us.ibm.com ([32.97.182.146]:42452 "EHLO e6.ny.us.ibm.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751423AbZDHS1D (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 8 Apr 2009 14:27:03 -0400
-Date: Wed, 8 Apr 2009 15:31:10 -0300
-From: Glauber Costa <glommer@redhat.com>
-To: "H. Peter Anvin" <hpa@zytor.com>
-Cc: kvm@vger.kernel.org, linux-kernel@vger.kernel.org, avi@redhat.com
-Subject: Re: [PATCH] disable interrupt shadow state for emulated instruction
-Message-ID: <20090408183110.GD25323@poweredge.glommer>
-References: <1239213452-5966-1-git-send-email-glommer@redhat.com> <49DCE9E5.8020703@zytor.com>
+	id S1753423AbZDHS1J (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 8 Apr 2009 14:27:09 -0400
+Date: Wed, 8 Apr 2009 11:27:03 -0700
+From: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: Josh Boyer <jwboyer@gmail.com>, linux-kernel@vger.kernel.org,
+       akpm@linux-foundation.org, dipankar@in.ibm.com, niv@us.ibm.com,
+       manfred@colorfullife.com, peterz@infradead.org, lethal@linux-sh.org,
+       kernel@wantstofly.org, andi@firstfloor.org, kyle@mcmartin.ca,
+       deller@gmx.de, davem@davemloft.net, ralf@linux-mips.org, jes@sgi.com,
+       benh@kernel.crashing.org, paulus@samba.org, anton@samba.org
+Subject: Re: [PATCH -tip] Convert CONFIG_SMP=y powerpc defconfigs to
+	TREE_RCU.
+Message-ID: <20090408182703.GF6745@linux.vnet.ibm.com>
+Reply-To: paulmck@linux.vnet.ibm.com
+References: <3181463559098978317@unknownmsgid> <625fc13d0904040621g7b89cd2cq9681ce80635a65c4@mail.gmail.com> <20090404163149.GC6893@linux.vnet.ibm.com> <20090405101756.GA10490@elte.hu> <20090405164420.GI6893@linux.vnet.ibm.com> <20090408124623.GH18581@elte.hu> <20090408174841.GE6745@linux.vnet.ibm.com> <20090408181005.GA2784@elte.hu>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <49DCE9E5.8020703@zytor.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+In-Reply-To: <20090408181005.GA2784@elte.hu>
+User-Agent: Mutt/1.5.15+20070412 (2007-04-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Apr 08, 2009 at 11:16:05AM -0700, H. Peter Anvin wrote:
-> Glauber Costa wrote:
->> we currently unblock shadow interrupt state when we skip an instruction,
->> but failing to do so when we actually emulate one. This blocks interrupts
->> in key instruction blocks, in particular sti; hlt; sequences
->>
->> Without this patch, I cannot boot gpxe option roms at vmx machines.
->> This is described at https://bugzilla.redhat.com/show_bug.cgi?id=494469
->>
->> diff --git a/arch/x86/kvm/vmx.c b/arch/x86/kvm/vmx.c
->> index c6997c0..cee38e4 100644
->> --- a/arch/x86/kvm/vmx.c
->> +++ b/arch/x86/kvm/vmx.c
->> @@ -736,26 +736,34 @@ static void vmx_set_rflags(struct kvm_vcpu *vcpu, unsigned long rflags)
->>  	vmcs_writel(GUEST_RFLAGS, rflags);
->>  }
->>  +static void vmx_block_interrupt_shadow(struct kvm_vcpu *vcpu)
->> +{
->> +	/*
->> +	 * We emulated an instruction, so temporary interrupt blocking
->> +	 * should be removed, if set.
->> +	 */
->> +	u32 interruptibility = vmcs_read32(GUEST_INTERRUPTIBILITY_INFO);
->> +	u32 interruptibility_mask = ((GUEST_INTR_STATE_STI | GUEST_INTR_STATE_MOV_SS));
->> +
->> +	if (interruptibility & interruptibility_mask)
->> +		vmcs_write32(GUEST_INTERRUPTIBILITY_INFO,
->> +			     interruptibility & ~interruptibility_mask);
->> +	vcpu->arch.interrupt_window_open = 1;
->> +}
->> +
->
-> How does this logic work when the instruction emulated is an STI or MOV  
-> SS instruction?  In particular, when does GUEST_INTERRUPTIBILITY_INFO  
-> sets set to reflect the *blocking* operation?
-mov ss is a non-issue, since it is executed natively.
+On Wed, Apr 08, 2009 at 08:10:05PM +0200, Ingo Molnar wrote:
+> 
+> * Paul E. McKenney <paulmck@linux.vnet.ibm.com> wrote:
+> 
+> > > So no, there's no requirement to touch defconfigs - to the 
+> > > contrary: it has way too wide of a cross section with other 
+> > > trees to be really practical to carry in the RCU tree.
+> > 
+> > Sounds good to me!!!  So, is http://lkml.org/lkml/2009/4/3/561 
+> > sufficient, or should I repost?
+> 
+> I have queued up your patch:
+> 
+>  31c9a24: RCU: make treercu be default
+> 
+> ... a week ago :-)
 
-As for sti, I'm not sure. I see code for emulating sti, but in my testings,
-this code was never ever touched, under a number of different scenarios.
-Avi, can you clarify if sti can be in fact emulated, and under which
-circunstamces? 
+Color me slow, stupid, and oblivious!  ;-)
 
-If it can, I'd say we'd have to introduce a block_interrupt_shadow as well,
-and call from it from within the emulator, whenever the first sti is dispatched.
+Thank you for applying it!
 
+							Thanx, Paul
