@@ -1,72 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759465AbZDHHEl@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761413AbZDHHFD@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759465AbZDHHEl (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 8 Apr 2009 03:04:41 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750725AbZDHHEb
+	id S1761413AbZDHHFD (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 8 Apr 2009 03:05:03 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761143AbZDHHEq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 8 Apr 2009 03:04:31 -0400
-Received: from smtp-out.google.com ([216.239.33.17]:49008 "EHLO
-	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751138AbZDHHEa convert rfc822-to-8bit (ORCPT
+	Wed, 8 Apr 2009 03:04:46 -0400
+Received: from e23smtp07.au.ibm.com ([202.81.31.140]:60635 "EHLO
+	e23smtp07.au.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1761066AbZDHHEp (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 8 Apr 2009 03:04:30 -0400
-DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
-	h=mime-version:in-reply-to:references:date:message-id:subject:from:to:
-	cc:content-type:content-transfer-encoding:x-system-of-record;
-	b=rm2nKJFSS4j5pbu7qWYWkRxnjRNWD5JqKLBhlBv/AVAnrBbEbjyfvdSlg2qEcZX2n
-	ld+alQyieiKe4rQBygT7g==
+	Wed, 8 Apr 2009 03:04:45 -0400
+Date: Wed, 8 Apr 2009 12:34:01 +0530
+From: Balbir Singh <balbir@linux.vnet.ibm.com>
+To: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+Cc: "linux-mm@kvack.org" <linux-mm@kvack.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       "lizf@cn.fujitsu.com" <lizf@cn.fujitsu.com>,
+       Rik van Riel <riel@surriel.com>, Bharata B Rao <bharata.rao@in.ibm.com>,
+       Dhaval Giani <dhaval@linux.vnet.ibm.com>,
+       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
+Subject: Re: [RFI] Shared accounting for memory resource controller
+Message-ID: <20090408070401.GC7082@balbir.in.ibm.com>
+Reply-To: balbir@linux.vnet.ibm.com
+References: <20090407063722.GQ7082@balbir.in.ibm.com> <20090407160014.8c545c3c.kamezawa.hiroyu@jp.fujitsu.com> <20090407071825.GR7082@balbir.in.ibm.com> <20090407163331.8e577170.kamezawa.hiroyu@jp.fujitsu.com> <20090407080355.GS7082@balbir.in.ibm.com> <20090407172419.a5f318b9.kamezawa.hiroyu@jp.fujitsu.com> <20090408052904.GY7082@balbir.in.ibm.com> <20090408151529.fd6626c2.kamezawa.hiroyu@jp.fujitsu.com>
 MIME-Version: 1.0
-In-Reply-To: <alpine.DEB.2.00.0904062153120.29426@gandalf.stny.rr.com>
-References: <49D5E3EE.70201@cn.fujitsu.com> <49D5E44B.3080104@cn.fujitsu.com>
-	 <alpine.DEB.2.00.0904062153120.29426@gandalf.stny.rr.com>
-Date: Wed, 8 Apr 2009 00:04:24 -0700
-Message-ID: <5df78e1d0904080004y7be9b31k524c32aeed787c1f@mail.gmail.com>
-Subject: Re: [PATCH 2/2] ftrace: Code cleanup for kernel/trace/trace_events_stage_*.h
-From: Jiaying Zhang <jiayingz@google.com>
-To: Steven Rostedt <rostedt@goodmis.org>
-Cc: Zhaolei <zhaolei@cn.fujitsu.com>, linux-kernel@vger.kernel.org
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 8BIT
-X-System-Of-Record: true
+Content-Type: text/plain; charset=iso-8859-1
+Content-Disposition: inline
+In-Reply-To: <20090408151529.fd6626c2.kamezawa.hiroyu@jp.fujitsu.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Steve,
+* KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com> [2009-04-08 15:15:29]:
 
-I am looking at ftrace code more closely. It is also not clear to me why we
-want to define the trace event macros in three stage header files. I wonder
-whether it would be clearer if we merge them together. Then people don't
-need to look at three files to understand what is going on in event tracing.
+> On Wed, 8 Apr 2009 10:59:04 +0530
+> Balbir Singh <balbir@linux.vnet.ibm.com> wrote:
+> 
+> 
+> > > no serious intention.
+> > > Just because you wrote "expect the user to account all cached pages as shared" ;)
+> > >
+> > 
+> > OK, I noticed another thing, our RSS accounting is not RSS per-se, it
+> > includes only anon RSS, file backed pages are accounted as cached.
+> > I'll send out a patch to see if we can include anon RSS as well.
+> >  
+> 
+> I think we can't do it in memcg layer without new-hook because file caches
+> are added to radix-tree before mapped.
+> 
+> mm struct has anon_rss and file_rss coutners. Then, you can show
+> sum of total maps of file pages. maybe.
+>
 
-Jiaying
+Yes, correct and that is a hook worth adding, IMHO. Better statistics
+are critical and it will also help us with the shared memory
+accounting. Without that we can't account for file rss in the memory
+cgroup. 
 
-On Mon, Apr 6, 2009 at 6:54 PM, Steven Rostedt <rostedt@goodmis.org> wrote:
->
-> On Fri, 3 Apr 2009, Zhaolei wrote:
->
-> > Add TRACE_FORMAT's define for trace_events_stage_2.h.
-> > Although it is already defined in trace_events_stage_1.h, we should make each
-> > function independence.
-> >
-> > Move TP_fast_assign's define from trace_events_stage_2.h to
-> > trace_events_stage_3.h because it is used there.
-> >
-> > Unify TRACE_EVENT's 5th argument's name to "assign"
-> >
-> > Impact: cleanup, no functionality changed
-> >
-> > Signed-off-by: Zhao Lei <zhaolei@cn.fujitsu.com>
->
-> I see what you are doing here, but I'm a little hesitant to apply it.
-> I'm getting ready to travel, so I do not have the time to look deeper at
-> this today. I'll try to do it while I'm traveling.
->
-> Thanks,
->
-> -- Steve
-> --
-> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
-> Please read the FAQ at  http://www.tux.org/lkml/
+-- 
+	Balbir
