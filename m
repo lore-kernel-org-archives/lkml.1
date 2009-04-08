@@ -1,60 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751979AbZDHEP3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752320AbZDHEYp@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751979AbZDHEP3 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 8 Apr 2009 00:15:29 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751058AbZDHEPR
+	id S1752320AbZDHEYp (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 8 Apr 2009 00:24:45 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751265AbZDHEYg
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 8 Apr 2009 00:15:17 -0400
-Received: from terminus.zytor.com ([198.137.202.10]:51334 "EHLO
-	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750706AbZDHEPP (ORCPT
+	Wed, 8 Apr 2009 00:24:36 -0400
+Received: from mail.renesas.com ([202.234.163.13]:58469 "EHLO
+	mail03.idc.renesas.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1750716AbZDHEYg (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 8 Apr 2009 00:15:15 -0400
-Message-ID: <49DC24C2.7000608@zytor.com>
-Date: Tue, 07 Apr 2009 21:14:58 -0700
-From: "H. Peter Anvin" <hpa@zytor.com>
-User-Agent: Thunderbird 2.0.0.14 (X11/20080501)
-MIME-Version: 1.0
-To: Glauber Costa <glommer@redhat.com>
-CC: kvm@vger.kernel.org, linux-kernel@vger.kernel.org, avi@redhat.com
-Subject: Re: [PATCH] do not keep interrupt window closed by sti in real mode
-References: <1239161017-7398-1-git-send-email-glommer@redhat.com>
-In-Reply-To: <1239161017-7398-1-git-send-email-glommer@redhat.com>
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
+	Wed, 8 Apr 2009 00:24:36 -0400
+X-AuditID: ac140386-0000000a00001aa8-1d-49dc26d65246
+Date: Wed, 08 Apr 2009 13:23:49 +0900
+From: Nobuhiro Iwamatsu <iwamatsu.nobuhiro@renesas.com>
+Subject: [PATCH] vma: Fix typo vma->pg_off to vma->vm_pgoff
+To: LKML <linux-kernel@vger.kernel.org>
+Cc: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>,
+       Andrew Morton <akpm@linux-foundation.org>
+Message-id: <49DC26D5.5010007@renesas.com>
+MIME-version: 1.0
+Content-type: text/plain; charset=ISO-2022-JP
+Content-transfer-encoding: 7bit
+User-Agent: Thunderbird 1.5.0.14 (Windows/20071210)
+X-Brightmail-Tracker: AAAAAA==
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Glauber Costa wrote:
-> While in real mode, sti does not block interrupts from the subsequent
-> instruction. This is stated at Intel SDM Volume 2b, page 4-432
+Oops, I mistake in address of LKML.
+I resend this.
 
-I don't see how you're getting that idea from the STI documentation --
-and I am quite sure that that is not the case.  Quite on the contrary.
-The only differences between protected mode and real mode has to do with
-the handling of VIF when CPL=3 (this rather naturally falls out if one
-considers CPL=0 in real mode).
+---
+Become compile error by 6260a4b0521a41189b2c2a8119096c1e21dbdf2c,
+because changed variable name is wrong.
 
-The text is:
+.....
+fs/proc/task_nommu.c:138: error: 'struct vm_area_struct' has no member named 'pg_off'
+distcc[21484] ERROR: compile fs/proc/task_nommu.c on sprygo/32 failed
+make[3]: *** [fs/proc/task_nommu.o] Error 1
+make[2]: *** [fs/proc] Error 2
+make[1]: *** [fs] Error 2
+make: *** [sub-make] Error 2
+.....
 
-"If protected-mode virtual interrupts are not enabled, STI sets the
-interrupt flag (IF) in the EFLAGS register. After the IF flag is set,
-the processor begins responding to external, maskable interrupts after
-the next instruction is executed. The delayed effect of this instruction
-is provided to allow interrupts to be enabled just before returning from
-a procedure (or subroutine). For instance, if an STI instruction is
-followed by an RET instruction, the RET instruction is allowed to
-execute before external interrupts are recognized1. If the STI
-instruction is followed by a CLI instruction (which clears the IF flag),
-the effect of the STI instruction is negated."
+Signed-off-by: Nobuhiro Iwamatsu <iwamatsu.nobuhiro@renesas.com>
+CC: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+CC: Andrew Morton <akpm@linux-foundation.org>
+---
+ fs/proc/task_nommu.c |    2 +-
+ 1 files changed, 1 insertions(+), 1 deletions(-)
 
-Obviously, in real mode, "protected-mode virtual interrupts" are not
-enabled, as is also confirmed by Table 4-5.
+diff --git a/fs/proc/task_nommu.c b/fs/proc/task_nommu.c
+index 12c2037..64a72e2 100644
+--- a/fs/proc/task_nommu.c
++++ b/fs/proc/task_nommu.c
+@@ -135,7 +135,7 @@ static int nommu_vma_show(struct seq_file *m, struct vm_area_struct *vma)
+ 		struct inode *inode = vma->vm_file->f_path.dentry->d_inode;
+ 		dev = inode->i_sb->s_dev;
+ 		ino = inode->i_ino;
+-		pgoff = (loff_t)vma->pg_off << PAGE_SHIFT;
++		pgoff = (loff_t)vma->vm_pgoff << PAGE_SHIFT;
+ 	}
 
-	-hpa
-
--- 
-H. Peter Anvin, Intel Open Source Technology Center
-I work for Intel.  I don't speak on their behalf.
+ 	seq_printf(m,
+-- 1.6.2.2
 
