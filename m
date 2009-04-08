@@ -1,47 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933294AbZDHPK5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933103AbZDHPL3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933294AbZDHPK5 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 8 Apr 2009 11:10:57 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757196AbZDHPKp
+	id S933103AbZDHPL3 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 8 Apr 2009 11:11:29 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763997AbZDHPKy
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 8 Apr 2009 11:10:45 -0400
-Received: from palinux.external.hp.com ([192.25.206.14]:34054 "EHLO
-	mail.parisc-linux.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754982AbZDHPKo (ORCPT
+	Wed, 8 Apr 2009 11:10:54 -0400
+Received: from [212.69.161.110] ([212.69.161.110]:60921 "EHLO
+	mail09.linbit.com" rhost-flags-FAIL-FAIL-OK-OK) by vger.kernel.org
+	with ESMTP id S932543AbZDHPKx convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 8 Apr 2009 11:10:44 -0400
-Date: Wed, 8 Apr 2009 09:10:33 -0600
-From: Matthew Wilcox <matthew@wil.cx>
-To: Julia Lawall <julia@diku.dk>
-Cc: Jack Stone <jwjstone@fastmail.fm>, Ingo Molnar <mingo@elte.hu>,
-       Bert Wesarg <bert.wesarg@googlemail.com>, linux-kernel@vger.kernel.org,
-       jeff@garzik.org, kernel-janitors@vger.kernel.org
-Subject: Re: [PATCH 54/56] x86: Remove void casts
-Message-ID: <20090408151032.GB20983@parisc-linux.org>
-References: <49DCAE97.8040602@fastmail.fm> <20090408140637.GC12931@elte.hu> <49DCB140.7000603@fastmail.fm> <20090408144055.GH12931@elte.hu> <49DCB8C5.4090108@fastmail.fm> <20090408144842.GK12931@elte.hu> <49DCBA61.8060507@fastmail.fm> <20090408145715.GO12931@elte.hu> <49DCBBDF.4040603@fastmail.fm> <Pine.LNX.4.64.0904081705390.9554@pc-004.diku.dk>
+	Wed, 8 Apr 2009 11:10:53 -0400
+From: Philipp Reisner <philipp.reisner@linbit.com>
+Organization: LINBIT
+To: Nikanth K <nikanth@gmail.com>
+Subject: Re: [PATCH 01/12] DRBD: lru_cache
+Date: Wed, 8 Apr 2009 17:09:54 +0200
+User-Agent: KMail/1.11.0 (Linux/2.6.27-11-generic; KDE/4.2.0; i686; ; )
+Cc: linux-kernel@vger.kernel.org, gregkh@suse.de,
+       Nikanth Karthikesan <knikanth@suse.de>
+References: <1237823287-12734-1-git-send-email-philipp.reisner@linbit.com> <1237823287-12734-2-git-send-email-philipp.reisner@linbit.com> <807b3a220904080315r7277dd68t1abd08b6c5a830dd@mail.gmail.com>
+In-Reply-To: <807b3a220904080315r7277dd68t1abd08b6c5a830dd@mail.gmail.com>
+X-OTRS-FollowUp-SenderType: agent
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain;
+  charset="utf-8"
+Content-Transfer-Encoding: 8BIT
 Content-Disposition: inline
-In-Reply-To: <Pine.LNX.4.64.0904081705390.9554@pc-004.diku.dk>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+Message-Id: <200904081709.55481.philipp.reisner@linbit.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Apr 08, 2009 at 05:06:57PM +0200, Julia Lawall wrote:
-> This can be helpful: http://lwn.net/Articles/284469/
-> 
-> It's a bit out of date, though, because git-blame seems to have 
-> disappeared as a command.
+On Wednesday 08 April 2009 12:15:13 Nikanth K wrote:
+> On Mon, Mar 23, 2009 at 9:17 PM, Philipp Reisner
+>
+> <philipp.reisner@linbit.com> wrote:
+> > +/* this is developers aid only! */
+> > +#define PARANOIA_ENTRY() BUG_ON(test_and_set_bit(__LC_PARANOIA,
+> > &lc->flags)) +#define PARANOIA_LEAVE() do { clear_bit(__LC_PARANOIA,
+> > &lc->flags); smp_mb__after_clear_bit(); } while (0) +#define RETURN(x...)
+> >     do { PARANOIA_LEAVE(); return x ; } while (0) +
+>
+> The PARANOIA_LEAVE is used for void functions, so RETURN can be
+> changed to take a simple non-variadic argument. Or empty RETURN()
+> could be used everywhere instead of mixing PARANOIA_LEAVE() and
+> RETURN(). Just to make it consistent.
 
-Are you just getting confused by the removal of the 'git-foo' form?
+Ok, using the RETURN() now everywhere.
 
-'git blame' works, and I see:
-$ dpkg -S /usr/lib/git-core/git-blame 
-git-core: /usr/lib/git-core/git-blame
+> Also this could be made as nop based on some config debug option?
+>
 
+It is a very cheap debugging code, setting and clearing a single bit, just
+to make sure the function calls of the lru-cache API are used in the right
+order.
+
+Since it is that cheap I decided to have it permanently in, but if 
+I get that hint twice, I will change it into a config debug option.
+
+-Phil
 -- 
-Matthew Wilcox				Intel Open Source Technology Centre
-"Bill, look, we understand that you're interested in selling us this
-operating system, but compare it to ours.  We can't possibly take such
-a retrograde step."
+: Dipl-Ing Philipp Reisner
+: LINBIT | Your Way to High Availability
+: Tel: +43-1-8178292-50, Fax: +43-1-8178292-82
+: http://www.linbit.com
+
+DRBD(R) and LINBIT(R) are registered trademarks of LINBIT, Austria.
+
