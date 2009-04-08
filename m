@@ -1,1085 +1,641 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763514AbZDHHdZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763479AbZDHHch@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763514AbZDHHdZ (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 8 Apr 2009 03:33:25 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757802AbZDHHdM
+	id S1763479AbZDHHch (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 8 Apr 2009 03:32:37 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762790AbZDHHcI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 8 Apr 2009 03:33:12 -0400
-Received: from mail-fx0-f158.google.com ([209.85.220.158]:44624 "EHLO
-	mail-fx0-f158.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756919AbZDHHdJ (ORCPT
+	Wed, 8 Apr 2009 03:32:08 -0400
+Received: from 219-87-157-169.static.tfn.net.tw ([219.87.157.169]:38483 "EHLO
+	mswedge2.sunplus.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1761105AbZDHHcE (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 8 Apr 2009 03:33:09 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=sender:from:to:cc:subject:date:message-id:x-mailer:in-reply-to
-         :references;
-        b=ur/ozf3G/h/KZVbCISIuuNGQp0Y+uDDOuKlbZCSQ5um21fDmqwBc80mm6mkX7UDruD
-         gw1VzsWSrN3j7YXuegoHC5ZGTM0aYZOmfY/WHuFPIoXpjQ1F80JOTRKWIJ7yrWHdjvr3
-         A1oIF8q7ViiHKkOuaz8Ao3qbvnRqdxHHIUcIQ=
-From: chripell@fsfe.org
-To: chripell@gmail.com, linux-kernel@vger.kernel.org, mingo@elte.hu,
-       akpm@linux-foundation.org, alan@lxorguk.ukuu.org.uk
-Subject: [-rc1, build bug] Re: [PATCH 05/11] Add support for the MAX3100 SPI UART.
-Date: Wed,  8 Apr 2009 08:34:33 +0200
-Message-Id: <1239172473685-git-send-email-chripell@fsfe.org>
-X-Mailer: git-send-email 1.4.4.4
-In-Reply-To: <20090408061811.GA22767@elte.hu>
-References: <20090408061811.GA22767@elte.hu>
+	Wed, 8 Apr 2009 03:32:04 -0400
+To: linux-arch@vger.kernel.org, linux-kernel@vger.kernel.org
+Cc: torvalds@linux-foundation.org, Arnd Bergmann <arnd@arndb.de>,
+       Sam Ravnborg <sam@ravnborg.org>, Thomas Gleixner <tglx@linutronix.de>,
+       Kyle McMartin <kyle@mcmartin.ca>
+MIME-Version: 1.0
+Subject: [PATCH 11/14] score - New architecure port to SunplusCT S+CORE
+X-Mailer: Lotus Notes Release 6.5 September 26, 2003
+Message-ID: <OF59471ADD.3D343341-ON48257592.002912F7-48257592.00295402@sunplusct.com>
+From: liqin.chen@sunplusct.com
+Date: Wed, 8 Apr 2009 15:29:18 +0800
+X-MIMETrack: Serialize by Router on ctmail01/SunplusCT(Release 7.0.3FP1|February 24, 2008) at 2009/04/08 ?? 03:29:17,
+	Serialize complete at 2009/04/08 ?? 03:29:17
+Content-Type: text/plain; charset="GB2312"
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
+Content-Transfer-Encoding: 8bit
+X-MIME-Autoconverted: from base64 to 8bit by alpha.home.local id n387Xvqu027120
 
-This patch adds files that were missing from 2.6.30-rc1:
+From: Chen Liqin <liqin.chen@sunplusct.com>
 
-max3100.c and serial_max3100.h are taken from max3100-spi-uart-driver.patch 
-in 2.6.28-rc2-mm1
+kernel/traps.c and kernel/vmlinux.lds.S
+for the score architecture.
 
-max3100-spi-uart-driver-fix.patch from 2.6.28-rc2-mm1 is applied
+Signed off by: Chen Liqin <liqin.chen@sunplusct.com>
+Signed off by: Lennox Wu <lennox.wu@sunplusct.com>
+--
 
-the assigned major/minor  number is changed to 204/209 according to
-Documentation/devices.txt
-
-I tested just the compilation and checkpatch.pl since I still have to port 2.6.30-rc1
-to my ARM board.
-
-Signed-off-by: Christian Pellegrin <chripell@evolware.org>
----
- drivers/serial/max3100.c       |  927 ++++++++++++++++++++++++++++++++++++++++
- include/linux/serial_core.h    |    3 +
- include/linux/serial_max3100.h |   53 +++
- 3 files changed, 983 insertions(+), 0 deletions(-)
- create mode 100644 drivers/serial/max3100.c
- create mode 100644 include/linux/serial_max3100.h
-
-diff --git a/drivers/serial/max3100.c b/drivers/serial/max3100.c
-new file mode 100644
-index 0000000..bebf4c6
---- /dev/null
-+++ b/drivers/serial/max3100.c
-@@ -0,0 +1,927 @@
+diff -uprN -x linux-2.6-git.ori/Documentation/dontdiff 
+linux-2.6-git.ori/arch/score/kernel/traps.c 
+linux-2.6-git.new/arch/score/kernel/traps.c
+--- linux-2.6-git.ori/arch/score/kernel/traps.c 1970-01-01 
+08:00:00.000000000 +0800
++++ linux-2.6-git.new/arch/score/kernel/traps.c 2009-04-07 
+21:48:34.000000000 +0800
+@@ -0,0 +1,349 @@
 +/*
++ * arch/score/kernel/traps.c
 + *
-+ *  Copyright (C) 2008 Christian Pellegrin <chripell@evolware.org>
++ * Score Processor version.
++ *
++ * Copyright (C) 2009 Sunplus Core Technology Co., Ltd.
++ *  Chen Liqin <liqin.chen@sunplusct.com>
++ *  Lennox Wu <lennox.wu@sunplusct.com>
 + *
 + * This program is free software; you can redistribute it and/or modify
 + * it under the terms of the GNU General Public License as published by
 + * the Free Software Foundation; either version 2 of the License, or
 + * (at your option) any later version.
 + *
++ * This program is distributed in the hope that it will be useful,
++ * but WITHOUT ANY WARRANTY; without even the implied warranty of
++ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
++ * GNU General Public License for more details.
 + *
-+ * Notes: the MAX3100 doesn't provide an interrupt on CTS so we have
-+ * to use polling for flow control. TX empty IRQ is unusable, since
-+ * writing conf clears FIFO buffer and we cannot have this interrupt
-+ * always asking us for attention.
-+ *
-+ * Example platform data:
-+
-+ static struct plat_max3100 max3100_plat_data = {
-+ .loopback = 0,
-+ .crystal = 0,
-+ .poll_time = 100,
-+ };
-+
-+ static struct spi_board_info spi_board_info[] = {
-+ {
-+ .modalias	= "max3100",
-+ .platform_data	= &max3100_plat_data,
-+ .irq		= IRQ_EINT12,
-+ .max_speed_hz	= 5*1000*1000,
-+ .chip_select	= 0,
-+ },
-+ };
-+
-+ * The initial minor number is 209 in the low-density serial port:
-+ * mknod /dev/ttyMAX0 c 204 209
++ * You should have received a copy of the GNU General Public License
++ * along with this program; if not, see the file COPYING, or write
++ * to the Free Software Foundation, Inc.,
++ * 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 + */
 +
-+#define MAX3100_MAJOR 204
-+#define MAX3100_MINOR 209
-+/* 4 MAX3100s should be enough for everyone */
-+#define MAX_MAX3100 4
-+
-+#include <linux/delay.h>
-+#include <linux/device.h>
-+#include <linux/serial_core.h>
-+#include <linux/serial.h>
-+#include <linux/spi/spi.h>
-+#include <linux/freezer.h>
-+
-+#include <linux/serial_max3100.h>
-+
-+#define MAX3100_C    (1<<14)
-+#define MAX3100_D    (0<<14)
-+#define MAX3100_W    (1<<15)
-+#define MAX3100_RX   (0<<15)
-+
-+#define MAX3100_WC   (MAX3100_W  | MAX3100_C)
-+#define MAX3100_RC   (MAX3100_RX | MAX3100_C)
-+#define MAX3100_WD   (MAX3100_W  | MAX3100_D)
-+#define MAX3100_RD   (MAX3100_RX | MAX3100_D)
-+#define MAX3100_CMD  (3 << 14)
-+
-+#define MAX3100_T    (1<<14)
-+#define MAX3100_R    (1<<15)
-+
-+#define MAX3100_FEN  (1<<13)
-+#define MAX3100_SHDN (1<<12)
-+#define MAX3100_TM   (1<<11)
-+#define MAX3100_RM   (1<<10)
-+#define MAX3100_PM   (1<<9)
-+#define MAX3100_RAM  (1<<8)
-+#define MAX3100_IR   (1<<7)
-+#define MAX3100_ST   (1<<6)
-+#define MAX3100_PE   (1<<5)
-+#define MAX3100_L    (1<<4)
-+#define MAX3100_BAUD (0xf)
-+
-+#define MAX3100_TE   (1<<10)
-+#define MAX3100_RAFE (1<<10)
-+#define MAX3100_RTS  (1<<9)
-+#define MAX3100_CTS  (1<<9)
-+#define MAX3100_PT   (1<<8)
-+#define MAX3100_DATA (0xff)
-+
-+#define MAX3100_RT   (MAX3100_R | MAX3100_T)
-+#define MAX3100_RTC  (MAX3100_RT | MAX3100_CTS | MAX3100_RAFE)
-+
-+/* the following simulate a status reg for ignore_status_mask */
-+#define MAX3100_STATUS_PE 1
-+#define MAX3100_STATUS_FE 2
-+#define MAX3100_STATUS_OE 4
-+
-+struct max3100_port {
-+	struct uart_port port;
-+	struct spi_device *spi;
-+
-+	int cts;	        /* last CTS received for flow ctrl */
-+	int tx_empty;		/* last TX empty bit */
-+
-+	spinlock_t conf_lock;	/* shared data */
-+	int conf_commit;	/* need to make changes */
-+	int conf;		/* configuration for the MAX31000
-+				 * (bits 0-7, bits 8-11 are irqs) */
-+	int rts_commit;	        /* need to change rts */
-+	int rts;		/* rts status */
-+	int baud;		/* current baud rate */
-+
-+	int parity;		/* keeps track if we should send parity */
-+#define MAX3100_PARITY_ON 1
-+#define MAX3100_PARITY_ODD 2
-+#define MAX3100_7BIT 4
-+	int rx_enabled;	        /* if we should rx chars */
-+
-+	int irq;		/* irq assigned to the max3100 */
-+
-+	int minor;		/* minor number */
-+	int crystal;		/* 1 if 3.6864Mhz crystal 0 for 1.8432 */
-+	int loopback;		/* 1 if we are in loopback mode */
-+
-+	/* for handling irqs: need workqueue since we do spi_sync */
-+	struct workqueue_struct *workqueue;
-+	struct work_struct work;
-+	/* set to 1 to make the workhandler exit as soon as possible */
-+	int  force_end_work;
-+	/* need to know we are suspending to avoid deadlock on workqueue */
-+	int suspending;
-+
-+	/* hook for suspending MAX3100 via dedicated pin */
-+	void (*max3100_hw_suspend) (int suspend);
-+
-+	/* poll time (in ms) for ctrl lines */
-+	int poll_time;
-+	/* and its timer */
-+	struct timer_list	timer;
-+};
-+
-+static struct max3100_port *max3100s[MAX_MAX3100]; /* the chips */
-+static DEFINE_MUTEX(max3100s_lock);		   /* race on probe */
-+
-+static int max3100_do_parity(struct max3100_port *s, u16 c)
-+{
-+	int parity;
-+
-+	if (s->parity & MAX3100_PARITY_ODD)
-+		parity = 1;
-+	else
-+		parity = 0;
-+
-+	if (s->parity & MAX3100_7BIT)
-+		c &= 0x7f;
-+	else
-+		c &= 0xff;
-+
-+	parity = parity ^ (hweight8(c) & 1);
-+	return parity;
-+}
-+
-+static int max3100_check_parity(struct max3100_port *s, u16 c)
-+{
-+	return max3100_do_parity(s, c) == ((c >> 8) & 1);
-+}
-+
-+static void max3100_calc_parity(struct max3100_port *s, u16 *c)
-+{
-+	if (s->parity & MAX3100_7BIT)
-+		*c &= 0x7f;
-+	else
-+		*c &= 0xff;
-+
-+	if (s->parity & MAX3100_PARITY_ON)
-+		*c |= max3100_do_parity(s, *c) << 8;
-+}
-+
-+static void max3100_work(struct work_struct *w);
-+
-+static void max3100_dowork(struct max3100_port *s)
-+{
-+	if (!s->force_end_work && !work_pending(&s->work) &&
-+	    !freezing(current) && !s->suspending)
-+		queue_work(s->workqueue, &s->work);
-+}
-+
-+static void max3100_timeout(unsigned long data)
-+{
-+	struct max3100_port *s = (struct max3100_port *)data;
-+
-+	if (s->port.info) {
-+		max3100_dowork(s);
-+		mod_timer(&s->timer, jiffies + s->poll_time);
-+	}
-+}
-+
-+static int max3100_sr(struct max3100_port *s, u16 tx, u16 *rx)
-+{
-+	struct spi_message message;
-+	u16 etx, erx;
-+	int status;
-+	struct spi_transfer tran = {
-+		.tx_buf = &etx,
-+		.rx_buf = &erx,
-+		.len = 2,
-+	};
-+
-+	etx = cpu_to_be16(tx);
-+	spi_message_init(&message);
-+	spi_message_add_tail(&tran, &message);
-+	status = spi_sync(s->spi, &message);
-+	if (status) {
-+		dev_warn(&s->spi->dev, "error while calling spi_sync\n");
-+		return -EIO;
-+	}
-+	*rx = be16_to_cpu(erx);
-+	s->tx_empty = (*rx & MAX3100_T) > 0;
-+	dev_dbg(&s->spi->dev, "%04x - %04x\n", tx, *rx);
-+	return 0;
-+}
-+
-+static int max3100_handlerx(struct max3100_port *s, u16 rx)
-+{
-+	unsigned int ch, flg, status = 0;
-+	int ret = 0, cts;
-+
-+	if (rx & MAX3100_R && s->rx_enabled) {
-+		dev_dbg(&s->spi->dev, "%s\n", __func__);
-+		ch = rx & (s->parity & MAX3100_7BIT ? 0x7f : 0xff);
-+		if (rx & MAX3100_RAFE) {
-+			s->port.icount.frame++;
-+			flg = TTY_FRAME;
-+			status |= MAX3100_STATUS_FE;
-+		} else {
-+			if (s->parity & MAX3100_PARITY_ON) {
-+				if (max3100_check_parity(s, rx)) {
-+					s->port.icount.rx++;
-+					flg = TTY_NORMAL;
-+				} else {
-+					s->port.icount.parity++;
-+					flg = TTY_PARITY;
-+					status |= MAX3100_STATUS_PE;
-+				}
-+			} else {
-+				s->port.icount.rx++;
-+				flg = TTY_NORMAL;
-+			}
-+		}
-+		uart_insert_char(&s->port, status, MAX3100_STATUS_OE, ch, flg);
-+		ret = 1;
-+	}
-+
-+	cts = (rx & MAX3100_CTS) > 0;
-+	if (s->cts != cts) {
-+		s->cts = cts;
-+		uart_handle_cts_change(&s->port, cts ? TIOCM_CTS : 0);
-+	}
-+
-+	return ret;
-+}
-+
-+static void max3100_work(struct work_struct *w)
-+{
-+	struct max3100_port *s = container_of(w, struct max3100_port, work);
-+	int rxchars;
-+	u16 tx, rx;
-+	int conf, cconf, rts, crts;
-+	struct circ_buf *xmit = &s->port.info->xmit;
-+
-+	dev_dbg(&s->spi->dev, "%s\n", __func__);
-+
-+	rxchars = 0;
-+	do {
-+		spin_lock(&s->conf_lock);
-+		conf = s->conf;
-+		cconf = s->conf_commit;
-+		s->conf_commit = 0;
-+		rts = s->rts;
-+		crts = s->rts_commit;
-+		s->rts_commit = 0;
-+		spin_unlock(&s->conf_lock);
-+		if (cconf)
-+			max3100_sr(s, MAX3100_WC | conf, &rx);
-+		if (crts) {
-+			max3100_sr(s, MAX3100_WD | MAX3100_TE |
-+				   (s->rts ? MAX3100_RTS : 0), &rx);
-+			rxchars += max3100_handlerx(s, rx);
-+		}
-+
-+		max3100_sr(s, MAX3100_RD, &rx);
-+		rxchars += max3100_handlerx(s, rx);
-+
-+		if (rx & MAX3100_T) {
-+			tx = 0xffff;
-+			if (s->port.x_char) {
-+				tx = s->port.x_char;
-+				s->port.icount.tx++;
-+				s->port.x_char = 0;
-+			} else if (!uart_circ_empty(xmit) &&
-+				   !uart_tx_stopped(&s->port)) {
-+				tx = xmit->buf[xmit->tail];
-+				xmit->tail = (xmit->tail + 1) &
-+					(UART_XMIT_SIZE - 1);
-+				s->port.icount.tx++;
-+			}
-+			if (tx != 0xffff) {
-+				max3100_calc_parity(s, &tx);
-+				tx |= MAX3100_WD | (s->rts ? MAX3100_RTS : 0);
-+				max3100_sr(s, tx, &rx);
-+				rxchars += max3100_handlerx(s, rx);
-+			}
-+		}
-+
-+		if (rxchars > 16 && s->port.info->port.tty != NULL) {
-+			tty_flip_buffer_push(s->port.info->port.tty);
-+			rxchars = 0;
-+		}
-+		if (uart_circ_chars_pending(xmit) < WAKEUP_CHARS)
-+			uart_write_wakeup(&s->port);
-+
-+	} while (!s->force_end_work &&
-+		 !freezing(current) &&
-+		 ((rx & MAX3100_R) ||
-+		  (!uart_circ_empty(xmit) &&
-+		   !uart_tx_stopped(&s->port))));
-+
-+	if (rxchars > 0 && s->port.info->port.tty != NULL)
-+		tty_flip_buffer_push(s->port.info->port.tty);
-+}
-+
-+static irqreturn_t max3100_irq(int irqno, void *dev_id)
-+{
-+	struct max3100_port *s = dev_id;
-+
-+	dev_dbg(&s->spi->dev, "%s\n", __func__);
-+
-+	max3100_dowork(s);
-+	return IRQ_HANDLED;
-+}
-+
-+static void max3100_enable_ms(struct uart_port *port)
-+{
-+	struct max3100_port *s = container_of(port,
-+					      struct max3100_port,
-+					      port);
-+
-+	if (s->poll_time > 0)
-+		mod_timer(&s->timer, jiffies);
-+	dev_dbg(&s->spi->dev, "%s\n", __func__);
-+}
-+
-+static void max3100_start_tx(struct uart_port *port)
-+{
-+	struct max3100_port *s = container_of(port,
-+					      struct max3100_port,
-+					      port);
-+
-+	dev_dbg(&s->spi->dev, "%s\n", __func__);
-+
-+	max3100_dowork(s);
-+}
-+
-+static void max3100_stop_rx(struct uart_port *port)
-+{
-+	struct max3100_port *s = container_of(port,
-+					      struct max3100_port,
-+					      port);
-+
-+	dev_dbg(&s->spi->dev, "%s\n", __func__);
-+
-+	s->rx_enabled = 0;
-+	spin_lock(&s->conf_lock);
-+	s->conf &= ~MAX3100_RM;
-+	s->conf_commit = 1;
-+	spin_unlock(&s->conf_lock);
-+	max3100_dowork(s);
-+}
-+
-+static unsigned int max3100_tx_empty(struct uart_port *port)
-+{
-+	struct max3100_port *s = container_of(port,
-+					      struct max3100_port,
-+					      port);
-+
-+	dev_dbg(&s->spi->dev, "%s\n", __func__);
-+
-+	/* may not be truly up-to-date */
-+	max3100_dowork(s);
-+	return s->tx_empty;
-+}
-+
-+static unsigned int max3100_get_mctrl(struct uart_port *port)
-+{
-+	struct max3100_port *s = container_of(port,
-+					      struct max3100_port,
-+					      port);
-+
-+	dev_dbg(&s->spi->dev, "%s\n", __func__);
-+
-+	/* may not be truly up-to-date */
-+	max3100_dowork(s);
-+	/* always assert DCD and DSR since these lines are not wired */
-+	return (s->cts ? TIOCM_CTS : 0) | TIOCM_DSR | TIOCM_CAR;
-+}
-+
-+static void max3100_set_mctrl(struct uart_port *port, unsigned int mctrl)
-+{
-+	struct max3100_port *s = container_of(port,
-+					      struct max3100_port,
-+					      port);
-+	int rts;
-+
-+	dev_dbg(&s->spi->dev, "%s\n", __func__);
-+
-+	rts = (mctrl & TIOCM_RTS) > 0;
-+
-+	spin_lock(&s->conf_lock);
-+	if (s->rts != rts) {
-+		s->rts = rts;
-+		s->rts_commit = 1;
-+		max3100_dowork(s);
-+	}
-+	spin_unlock(&s->conf_lock);
-+}
-+
-+static void
-+max3100_set_termios(struct uart_port *port, struct ktermios *termios,
-+		    struct ktermios *old)
-+{
-+	struct max3100_port *s = container_of(port,
-+					      struct max3100_port,
-+					      port);
-+	int baud = 0;
-+	unsigned cflag;
-+	u32 param_new, param_mask, parity = 0;
-+	struct tty_struct *tty = s->port.info->port.tty;
-+
-+	dev_dbg(&s->spi->dev, "%s\n", __func__);
-+	if (!tty)
-+		return;
-+
-+	cflag = termios->c_cflag;
-+	param_new = 0;
-+	param_mask = 0;
-+
-+	baud = tty_get_baud_rate(tty);
-+	param_new = s->conf & MAX3100_BAUD;
-+	switch (baud) {
-+	case 300:
-+		if (s->crystal)
-+			baud = s->baud;
-+		else
-+			param_new = 15;
-+		break;
-+	case 600:
-+		param_new = 14 + s->crystal;
-+		break;
-+	case 1200:
-+		param_new = 13 + s->crystal;
-+		break;
-+	case 2400:
-+		param_new = 12 + s->crystal;
-+		break;
-+	case 4800:
-+		param_new = 11 + s->crystal;
-+		break;
-+	case 9600:
-+		param_new = 10 + s->crystal;
-+		break;
-+	case 19200:
-+		param_new = 9 + s->crystal;
-+		break;
-+	case 38400:
-+		param_new = 8 + s->crystal;
-+		break;
-+	case 57600:
-+		param_new = 1 + s->crystal;
-+		break;
-+	case 115200:
-+		param_new = 0 + s->crystal;
-+		break;
-+	case 230400:
-+		if (s->crystal)
-+			param_new = 0;
-+		else
-+			baud = s->baud;
-+		break;
-+	default:
-+		baud = s->baud;
-+	}
-+	tty_encode_baud_rate(tty, baud, baud);
-+	s->baud = baud;
-+	param_mask |= MAX3100_BAUD;
-+
-+	if ((cflag & CSIZE) == CS8) {
-+		param_new &= ~MAX3100_L;
-+		parity &= ~MAX3100_7BIT;
-+	} else {
-+		param_new |= MAX3100_L;
-+		parity |= MAX3100_7BIT;
-+		cflag = (cflag & ~CSIZE) | CS7;
-+	}
-+	param_mask |= MAX3100_L;
-+
-+	if (cflag & CSTOPB)
-+		param_new |= MAX3100_ST;
-+	else
-+		param_new &= ~MAX3100_ST;
-+	param_mask |= MAX3100_ST;
-+
-+	if (cflag & PARENB) {
-+		param_new |= MAX3100_PE;
-+		parity |= MAX3100_PARITY_ON;
-+	} else {
-+		param_new &= ~MAX3100_PE;
-+		parity &= ~MAX3100_PARITY_ON;
-+	}
-+	param_mask |= MAX3100_PE;
-+
-+	if (cflag & PARODD)
-+		parity |= MAX3100_PARITY_ODD;
-+	else
-+		parity &= ~MAX3100_PARITY_ODD;
-+
-+	/* mask termios capabilities we don't support */
-+	cflag &= ~CMSPAR;
-+	termios->c_cflag = cflag;
-+
-+	s->port.ignore_status_mask = 0;
-+	if (termios->c_iflag & IGNPAR)
-+		s->port.ignore_status_mask |=
-+			MAX3100_STATUS_PE | MAX3100_STATUS_FE |
-+			MAX3100_STATUS_OE;
-+
-+	/* we are sending char from a workqueue so enable */
-+	s->port.info->port.tty->low_latency = 1;
-+
-+	if (s->poll_time > 0)
-+		del_timer_sync(&s->timer);
-+
-+	uart_update_timeout(port, termios->c_cflag, baud);
-+
-+	spin_lock(&s->conf_lock);
-+	s->conf = (s->conf & ~param_mask) | (param_new & param_mask);
-+	s->conf_commit = 1;
-+	s->parity = parity;
-+	spin_unlock(&s->conf_lock);
-+	max3100_dowork(s);
-+
-+	if (UART_ENABLE_MS(&s->port, termios->c_cflag))
-+		max3100_enable_ms(&s->port);
-+}
-+
-+static void max3100_shutdown(struct uart_port *port)
-+{
-+	struct max3100_port *s = container_of(port,
-+					      struct max3100_port,
-+					      port);
-+
-+	dev_dbg(&s->spi->dev, "%s\n", __func__);
-+
-+	if (s->suspending)
-+		return;
-+
-+	s->force_end_work = 1;
-+
-+	if (s->poll_time > 0)
-+		del_timer_sync(&s->timer);
-+
-+	if (s->workqueue) {
-+		flush_workqueue(s->workqueue);
-+		destroy_workqueue(s->workqueue);
-+		s->workqueue = NULL;
-+	}
-+	if (s->irq)
-+		free_irq(s->irq, s);
-+
-+	/* set shutdown mode to save power */
-+	if (s->max3100_hw_suspend)
-+		s->max3100_hw_suspend(1);
-+	else  {
-+		u16 tx, rx;
-+
-+		tx = MAX3100_WC | MAX3100_SHDN;
-+		max3100_sr(s, tx, &rx);
-+	}
-+}
-+
-+static int max3100_startup(struct uart_port *port)
-+{
-+	struct max3100_port *s = container_of(port,
-+					      struct max3100_port,
-+					      port);
-+	char b[12];
-+
-+	dev_dbg(&s->spi->dev, "%s\n", __func__);
-+
-+	s->conf = MAX3100_RM;
-+	s->baud = s->crystal ? 230400 : 115200;
-+	s->rx_enabled = 1;
-+
-+	if (s->suspending)
-+		return 0;
-+
-+	s->force_end_work = 0;
-+	s->parity = 0;
-+	s->rts = 0;
-+
-+	sprintf(b, "max3100-%d", s->minor);
-+	s->workqueue = create_freezeable_workqueue(b);
-+	if (!s->workqueue) {
-+		dev_warn(&s->spi->dev, "cannot create workqueue\n");
-+		return -EBUSY;
-+	}
-+	INIT_WORK(&s->work, max3100_work);
-+
-+	if (request_irq(s->irq, max3100_irq,
-+			IRQF_TRIGGER_FALLING, "max3100", s) < 0) {
-+		dev_warn(&s->spi->dev, "cannot allocate irq %d\n", s->irq);
-+		s->irq = 0;
-+		destroy_workqueue(s->workqueue);
-+		s->workqueue = NULL;
-+		return -EBUSY;
-+	}
-+
-+	if (s->loopback) {
-+		u16 tx, rx;
-+		tx = 0x4001;
-+		max3100_sr(s, tx, &rx);
-+	}
-+
-+	if (s->max3100_hw_suspend)
-+		s->max3100_hw_suspend(0);
-+	s->conf_commit = 1;
-+	max3100_dowork(s);
-+	/* wait for clock to settle */
-+	msleep(50);
-+
-+	max3100_enable_ms(&s->port);
-+
-+	return 0;
-+}
-+
-+static const char *max3100_type(struct uart_port *port)
-+{
-+	struct max3100_port *s = container_of(port,
-+					      struct max3100_port,
-+					      port);
-+
-+	dev_dbg(&s->spi->dev, "%s\n", __func__);
-+
-+	return s->port.type == PORT_MAX3100 ? "MAX3100" : NULL;
-+}
-+
-+static void max3100_release_port(struct uart_port *port)
-+{
-+	struct max3100_port *s = container_of(port,
-+					      struct max3100_port,
-+					      port);
-+
-+	dev_dbg(&s->spi->dev, "%s\n", __func__);
-+}
-+
-+static void max3100_config_port(struct uart_port *port, int flags)
-+{
-+	struct max3100_port *s = container_of(port,
-+					      struct max3100_port,
-+					      port);
-+
-+	dev_dbg(&s->spi->dev, "%s\n", __func__);
-+
-+	if (flags & UART_CONFIG_TYPE)
-+		s->port.type = PORT_MAX3100;
-+}
-+
-+static int max3100_verify_port(struct uart_port *port,
-+			       struct serial_struct *ser)
-+{
-+	struct max3100_port *s = container_of(port,
-+					      struct max3100_port,
-+					      port);
-+	int ret = -EINVAL;
-+
-+	dev_dbg(&s->spi->dev, "%s\n", __func__);
-+
-+	if (ser->type == PORT_UNKNOWN || ser->type == PORT_MAX3100)
-+		ret = 0;
-+	return ret;
-+}
-+
-+static void max3100_stop_tx(struct uart_port *port)
-+{
-+	struct max3100_port *s = container_of(port,
-+					      struct max3100_port,
-+					      port);
-+
-+	dev_dbg(&s->spi->dev, "%s\n", __func__);
-+}
-+
-+static int max3100_request_port(struct uart_port *port)
-+{
-+	struct max3100_port *s = container_of(port,
-+					      struct max3100_port,
-+					      port);
-+
-+	dev_dbg(&s->spi->dev, "%s\n", __func__);
-+	return 0;
-+}
-+
-+static void max3100_break_ctl(struct uart_port *port, int break_state)
-+{
-+	struct max3100_port *s = container_of(port,
-+					      struct max3100_port,
-+					      port);
-+
-+	dev_dbg(&s->spi->dev, "%s\n", __func__);
-+}
-+
-+static struct uart_ops max3100_ops = {
-+	.tx_empty	= max3100_tx_empty,
-+	.set_mctrl	= max3100_set_mctrl,
-+	.get_mctrl	= max3100_get_mctrl,
-+	.stop_tx        = max3100_stop_tx,
-+	.start_tx	= max3100_start_tx,
-+	.stop_rx	= max3100_stop_rx,
-+	.enable_ms      = max3100_enable_ms,
-+	.break_ctl      = max3100_break_ctl,
-+	.startup	= max3100_startup,
-+	.shutdown	= max3100_shutdown,
-+	.set_termios	= max3100_set_termios,
-+	.type		= max3100_type,
-+	.release_port   = max3100_release_port,
-+	.request_port   = max3100_request_port,
-+	.config_port	= max3100_config_port,
-+	.verify_port	= max3100_verify_port,
-+};
-+
-+static struct uart_driver max3100_uart_driver = {
-+	.owner          = THIS_MODULE,
-+	.driver_name    = "ttyMAX",
-+	.dev_name       = "ttyMAX",
-+	.major          = MAX3100_MAJOR,
-+	.minor          = MAX3100_MINOR,
-+	.nr             = MAX_MAX3100,
-+};
-+static int uart_driver_registered;
-+
-+static int __devinit max3100_probe(struct spi_device *spi)
-+{
-+	int i, retval;
-+	struct plat_max3100 *pdata;
-+	u16 tx, rx;
-+
-+	mutex_lock(&max3100s_lock);
-+
-+	if (!uart_driver_registered) {
-+		uart_driver_registered = 1;
-+		retval = uart_register_driver(&max3100_uart_driver);
-+		if (retval) {
-+			printk(KERN_ERR "Couldn't register max3100 uart driver\n");
-+			mutex_unlock(&max3100s_lock);
-+			return retval;
-+		}
-+	}
-+
-+	for (i = 0; i < MAX_MAX3100; i++)
-+		if (!max3100s[i])
-+			break;
-+	if (i == MAX_MAX3100) {
-+		dev_warn(&spi->dev, "too many MAX3100 chips\n");
-+		mutex_unlock(&max3100s_lock);
-+		return -ENOMEM;
-+	}
-+
-+	max3100s[i] = kzalloc(sizeof(struct max3100_port), GFP_KERNEL);
-+	if (!max3100s[i]) {
-+		dev_warn(&spi->dev,
-+			 "kmalloc for max3100 structure %d failed!\n", i);
-+		mutex_unlock(&max3100s_lock);
-+		return -ENOMEM;
-+	}
-+	max3100s[i]->spi = spi;
-+	max3100s[i]->irq = spi->irq;
-+	spin_lock_init(&max3100s[i]->conf_lock);
-+	dev_set_drvdata(&spi->dev, max3100s[i]);
-+	pdata = spi->dev.platform_data;
-+	max3100s[i]->crystal = pdata->crystal;
-+	max3100s[i]->loopback = pdata->loopback;
-+	max3100s[i]->poll_time = pdata->poll_time * HZ / 1000;
-+	if (pdata->poll_time > 0 && max3100s[i]->poll_time == 0)
-+		max3100s[i]->poll_time = 1;
-+	max3100s[i]->max3100_hw_suspend = pdata->max3100_hw_suspend;
-+	max3100s[i]->minor = i;
-+	init_timer(&max3100s[i]->timer);
-+	max3100s[i]->timer.function = max3100_timeout;
-+	max3100s[i]->timer.data = (unsigned long) max3100s[i];
-+
-+	dev_dbg(&spi->dev, "%s: adding port %d\n", __func__, i);
-+	max3100s[i]->port.irq = max3100s[i]->irq;
-+	max3100s[i]->port.uartclk = max3100s[i]->crystal ? 3686400 : 1843200;
-+	max3100s[i]->port.fifosize = 16;
-+	max3100s[i]->port.ops = &max3100_ops;
-+	max3100s[i]->port.flags = UPF_SKIP_TEST | UPF_BOOT_AUTOCONF;
-+	max3100s[i]->port.line = i;
-+	max3100s[i]->port.type = PORT_MAX3100;
-+	max3100s[i]->port.dev = &spi->dev;
-+	retval = uart_add_one_port(&max3100_uart_driver, &max3100s[i]->port);
-+	if (retval < 0)
-+		dev_warn(&spi->dev,
-+			 "uart_add_one_port failed for line %d with error %d\n",
-+			 i, retval);
-+
-+	/* set shutdown mode to save power. Will be woken-up on open */
-+	if (max3100s[i]->max3100_hw_suspend)
-+		max3100s[i]->max3100_hw_suspend(1);
-+	else {
-+		tx = MAX3100_WC | MAX3100_SHDN;
-+		max3100_sr(max3100s[i], tx, &rx);
-+	}
-+	mutex_unlock(&max3100s_lock);
-+	return 0;
-+}
-+
-+static int __devexit max3100_remove(struct spi_device *spi)
-+{
-+	struct max3100_port *s = dev_get_drvdata(&spi->dev);
-+	int i;
-+
-+	mutex_lock(&max3100s_lock);
-+
-+	/* find out the index for the chip we are removing */
-+	for (i = 0; i < MAX_MAX3100; i++)
-+		if (max3100s[i] == s)
-+			break;
-+
-+	dev_dbg(&spi->dev, "%s: removing port %d\n", __func__, i);
-+	uart_remove_one_port(&max3100_uart_driver, &max3100s[i]->port);
-+	kfree(max3100s[i]);
-+	max3100s[i] = NULL;
-+
-+	/* check if this is the last chip we have */
-+	for (i = 0; i < MAX_MAX3100; i++)
-+		if (max3100s[i]) {
-+			mutex_unlock(&max3100s_lock);
-+			return 0;
-+		}
-+	pr_debug("removing max3100 driver\n");
-+	uart_unregister_driver(&max3100_uart_driver);
-+
-+	mutex_unlock(&max3100s_lock);
-+	return 0;
-+}
-+
-+#ifdef CONFIG_PM
-+
-+static int max3100_suspend(struct spi_device *spi, pm_message_t state)
-+{
-+	struct max3100_port *s = dev_get_drvdata(&spi->dev);
-+
-+	dev_dbg(&s->spi->dev, "%s\n", __func__);
-+
-+	disable_irq(s->irq);
-+
-+	s->suspending = 1;
-+	uart_suspend_port(&max3100_uart_driver, &s->port);
-+
-+	if (s->max3100_hw_suspend)
-+		s->max3100_hw_suspend(1);
-+	else {
-+		/* no HW suspend, so do SW one */
-+		u16 tx, rx;
-+
-+		tx = MAX3100_WC | MAX3100_SHDN;
-+		max3100_sr(s, tx, &rx);
-+	}
-+	return 0;
-+}
-+
-+static int max3100_resume(struct spi_device *spi)
-+{
-+	struct max3100_port *s = dev_get_drvdata(&spi->dev);
-+
-+	dev_dbg(&s->spi->dev, "%s\n", __func__);
-+
-+	if (s->max3100_hw_suspend)
-+		s->max3100_hw_suspend(0);
-+	uart_resume_port(&max3100_uart_driver, &s->port);
-+	s->suspending = 0;
-+
-+	enable_irq(s->irq);
-+
-+	s->conf_commit = 1;
-+	if (s->workqueue)
-+		max3100_dowork(s);
-+
-+	return 0;
-+}
-+
-+#else
-+#define max3100_suspend NULL
-+#define max3100_resume  NULL
-+#endif
-+
-+static struct spi_driver max3100_driver = {
-+	.driver = {
-+		.name		= "max3100",
-+		.bus		= &spi_bus_type,
-+		.owner		= THIS_MODULE,
-+	},
-+
-+	.probe		= max3100_probe,
-+	.remove		= __devexit_p(max3100_remove),
-+	.suspend	= max3100_suspend,
-+	.resume		= max3100_resume,
-+};
-+
-+static int __init max3100_init(void)
-+{
-+	return spi_register_driver(&max3100_driver);
-+}
-+module_init(max3100_init);
-+
-+static void __exit max3100_exit(void)
-+{
-+	spi_unregister_driver(&max3100_driver);
-+}
-+module_exit(max3100_exit);
-+
-+MODULE_DESCRIPTION("MAX3100 driver");
-+MODULE_AUTHOR("Christian Pellegrin <chripell@evolware.org>");
-+MODULE_LICENSE("GPL");
-diff --git a/include/linux/serial_core.h b/include/linux/serial_core.h
-index 57a97e5..ec3df6c 100644
---- a/include/linux/serial_core.h
-+++ b/include/linux/serial_core.h
-@@ -167,6 +167,9 @@
- /* MAX3100 */
- #define PORT_MAX3100    86
- 
-+/* MAX3100 */
-+#define PORT_MAX3100    83
-+
- #ifdef __KERNEL__
- 
- #include <linux/compiler.h>
-diff --git a/include/linux/serial_max3100.h b/include/linux/serial_max3100.h
-new file mode 100644
-index 0000000..b7e9a01
---- /dev/null
-+++ b/include/linux/serial_max3100.h
-@@ -0,0 +1,53 @@
++#include <linux/module.h>
++#include <linux/sched.h>
++#include <asm/cacheflush.h>
++#include <asm/ptrace.h>
++#include <asm/setup.h>
++#include <asm/irq.h>
++#include <asm/irq_regs.h>
++
++unsigned long exception_handlers[32];
 +
 +/*
++ * The architecture-independent show_stack generator
++ */
++void show_stack(struct task_struct *task, unsigned long *sp)
++{
++       int i;
++       long stackdata;
++
++       sp = sp ? sp : (unsigned long *)&sp;
++
++       printk("Stack:   ");
++       i = 1;
++       while ((long) sp & (PAGE_SIZE - 1)) {
++               if (i && ((i % 8) == 0))
++                       printk("\n");
++               if (i > 40) {
++                       printk(" ...");
++                       break;
++               }
++
++               if (__get_user(stackdata, sp++)) {
++                       printk(" (Bad stack address)");
++                       break;
++               }
++
++               printk(" %08lx", stackdata);
++               i++;
++       }
++       printk("\n");
++}
++
++static void show_trace(long *sp)
++{
++       int i;
++       long addr;
++
++       sp = sp ? sp : (long *) &sp;
++
++       printk("Call Trace:  ");
++       i = 1;
++       while ((long) sp & (PAGE_SIZE - 1)) {
++               if (__get_user(addr, sp++)) {
++                       if (i && ((i % 6) == 0))
++                               printk("\n");
++                       printk(" (Bad stack address)\n");
++                       break;
++               }
++
++               if (kernel_text_address(addr)) {
++                       if (i && ((i % 6) == 0))
++                               printk("\n");
++                       if (i > 40) {
++                               printk(" ...");
++                               break;
++                       }
++
++                       printk(" [<%08lx>]", addr);
++                       i++;
++               }
++       }
++       printk("\n");
++}
++
++static void show_code(unsigned int *pc)
++{
++       long i;
++
++       printk("\nCode:");
++
++       for (i = -3; i < 6; i++) {
++               unsigned long insn;
++               if (__get_user(insn, pc + i)) {
++                       printk(" (Bad address in epc)\n");
++                       break;
++               }
++               printk("%c%08lx%c", (i ? ' ' : '<'), insn, (i ? ' ' : 
+'>'));
++       }
++}
++
++/*
++ * FIXME: really the generic show_regs should take a const pointer 
+argument.
++ */
++void show_regs(struct pt_regs *regs)
++{
++       printk("r0 : %08lx %08lx %08lx %08lx %08lx %08lx %08lx %08lx\n",
++               regs->regs[0], regs->regs[1], regs->regs[2], 
+regs->regs[3],
++               regs->regs[4], regs->regs[5], regs->regs[6], 
+regs->regs[7]);
++       printk("r8 : %08lx %08lx %08lx %08lx %08lx %08lx %08lx %08lx\n",
++               regs->regs[8], regs->regs[9], regs->regs[10], 
+regs->regs[11],
++               regs->regs[12], regs->regs[13], regs->regs[14], 
+regs->regs[15]);
++       printk("r16: %08lx %08lx %08lx %08lx %08lx %08lx %08lx %08lx\n",
++               regs->regs[16], regs->regs[17], regs->regs[18], 
+regs->regs[19],
++               regs->regs[20], regs->regs[21], regs->regs[22], 
+regs->regs[23]);
++       printk("r24: %08lx %08lx %08lx %08lx %08lx %08lx %08lx %08lx\n",
++               regs->regs[24], regs->regs[25], regs->regs[26], 
+regs->regs[27],
++               regs->regs[28], regs->regs[29], regs->regs[30], 
+regs->regs[31]);
++
++       printk("CEH : %08lx\n", regs->ceh);
++       printk("CEL : %08lx\n", regs->cel);
++
++       printk("EMA:%08lx, epc:%08lx  %s\nPSR: %08lx\nECR:%08lx\nCondition 
+: %08lx\n",
++               regs->cp0_ema, regs->cp0_epc, print_tainted(), 
+regs->cp0_psr,
++               regs->cp0_ecr, regs->cp0_condition);
++}
++
++static void show_registers(struct pt_regs *regs)
++{
++       show_regs(regs);
++       printk("Process %s (pid: %d, stackpage=%08lx)\n",
++               current->comm, current->pid, (unsigned long) current);
++       show_stack(current_thread_info()->task, (long *) regs->regs[0]);
++       show_trace((long *) regs->regs[0]);
++       show_code((unsigned int *) regs->cp0_epc);
++       printk("\n");
++}
++
++/*
++ * The architecture-independent dump_stack generator
++ */
++void dump_stack(void)
++{
++       show_stack(current_thread_info()->task,
++                  (long *) get_irq_regs()->regs[0]);
++}
++EXPORT_SYMBOL(dump_stack);
++
++void __die(const char *str, struct pt_regs *regs, const char *file,
++          const char *func, unsigned long line)
++{
++       console_verbose();
++       printk("%s", str);
++       if (file && func)
++               printk(" in %s:%s, line %ld", file, func, line);
++       printk(":\n");
++       show_registers(regs);
++       do_exit(SIGSEGV);
++}
++
++void __die_if_kernel(const char *str, struct pt_regs *regs,
++                    const char *file, const char *func, unsigned long 
+line)
++{
++       if (!user_mode(regs))
++               __die(str, regs, file, func, line);
++}
++
++asmlinkage void do_adelinsn(struct pt_regs *regs)
++{
++       printk("do_ADE-linsn:ema:0x%08lx:epc:0x%08lx\n",
++                regs->cp0_ema, regs->cp0_epc);
++       die_if_kernel("do_ade execution Exception\n", regs);
++       force_sig(SIGBUS, current);
++}
++
++asmlinkage void do_adedata(struct pt_regs *regs)
++{
++       const struct exception_table_entry *fixup;
++       fixup = search_exception_tables(regs->cp0_epc);
++       if (fixup) {
++               regs->cp0_epc = fixup->nextinsn;
++               return;
++       }
++       printk("do_ADE-data:ema:0x%08lx:epc:0x%08lx\n",
++                regs->cp0_ema, regs->cp0_epc);
++       die_if_kernel("do_ade execution Exception\n", regs);
++       force_sig(SIGBUS, current);
++}
++
++asmlinkage void do_pel(struct pt_regs *regs)
++{
++       die_if_kernel("do_pel execution Exception", regs);
++       force_sig(SIGFPE, current);
++}
++
++asmlinkage void do_cee(struct pt_regs *regs)
++{
++       die_if_kernel("do_cee execution Exception", regs);
++       force_sig(SIGFPE, current);
++}
++
++asmlinkage void do_cpe(struct pt_regs *regs)
++{
++       die_if_kernel("do_cpe execution Exception", regs);
++       force_sig(SIGFPE, current);
++}
++
++asmlinkage void do_be(struct pt_regs *regs)
++{
++       die_if_kernel("do_be execution Exception", regs);
++       force_sig(SIGBUS, current);
++}
++
++asmlinkage void do_ov(struct pt_regs *regs)
++{
++       siginfo_t info;
++
++       die_if_kernel("do_ov execution Exception", regs);
++
++       info.si_code = FPE_INTOVF;
++       info.si_signo = SIGFPE;
++       info.si_errno = 0;
++       info.si_addr = (void *)regs->cp0_epc;
++       force_sig_info(SIGFPE, &info, current);
++}
++
++asmlinkage void do_tr(struct pt_regs *regs)
++{
++       die_if_kernel("do_tr execution Exception", regs);
++       force_sig(SIGTRAP, current);
++}
++
++asmlinkage void do_ri(struct pt_regs *regs)
++{
++       unsigned long epc_insn;
++       unsigned long epc = regs->cp0_epc;
++
++       read_tsk_long(current, epc, &epc_insn);
++       if (current->thread.single_step == 1) {
++               if ((epc == current->thread.addr1) ||
++                   (epc == current->thread.addr2)) {
++                       clear_single_step(current);
++                       force_sig(SIGTRAP, current);
++                       return;
++               } else
++                       BUG();
++       } else if ((epc_insn == BREAKPOINT32_INSN) ||
++                  ((epc_insn & 0x0000FFFF) == 0x7002) ||
++                  ((epc_insn & 0xFFFF0000) == 0x70020000)) {
++                       force_sig(SIGTRAP, current);
++                       return;
++       } else {
++               die_if_kernel("do_ri execution Exception", regs);
++               force_sig(SIGILL, current);
++       }
++}
++
++asmlinkage void do_ccu(struct pt_regs *regs)
++{
++       die_if_kernel("do_ccu execution Exception", regs);
++       force_sig(SIGILL, current);
++}
++
++asmlinkage void do_reserved(struct pt_regs *regs)
++{
++       /*
++        * Game over - no way to handle this if it ever occurs.  Most 
+probably
++        * caused by a new unknown cpu type or after another deadly
++        * hard/software error.
++        */
++       die_if_kernel("do_reserved execution Exception", regs);
++       show_regs(regs);
++       panic("Caught reserved exception - should not happen.");
++}
++
++/*
++ * NMI exception handler.
++ */
++void nmi_exception_handler(struct pt_regs *regs)
++{
++       die_if_kernel("nmi_exception_handler execution Exception", regs);
++       die("NMI", regs);
++}
++
++/* Install CPU exception handler */
++void *set_except_vector(int n, void *addr)
++{
++       unsigned long handler = (unsigned long) addr;
++       unsigned long old_handler = exception_handlers[n];
++
++       exception_handlers[n] = handler;
++       return (void *)old_handler;
++}
++
++void __init trap_init(void)
++{
++       int i;
++
++       pgd_current = (unsigned long)init_mm.pgd;
++       /* DEBUG EXCEPTION */
++       memcpy((void *) DEBUG_VECTOR_BASE_ADDR,
++                       &debug_exception_vector, DEBUG_VECTOR_SIZE);
++       /* NMI EXCEPTION */
++       memcpy((void *) GENERAL_VECTOR_BASE_ADDR,
++                       &general_exception_vector, GENERAL_VECTOR_SIZE);
++
++       /*
++        * Initialise exception handlers
++        */
++       for (i = 0; i <= 31; i++)
++               set_except_vector(i, handle_reserved);
++
++       set_except_vector(1, handle_nmi);
++       set_except_vector(2, handle_adelinsn);
++       set_except_vector(3, handle_tlb_refill);
++       set_except_vector(4, handle_tlb_invaild);
++       set_except_vector(5, handle_ibe);
++       set_except_vector(6, handle_pel);
++       set_except_vector(7, handle_sys);
++       set_except_vector(8, handle_ccu);
++       set_except_vector(9, handle_ri);
++       set_except_vector(10, handle_tr);
++       set_except_vector(11, handle_adedata);
++       set_except_vector(12, handle_adedata);
++       set_except_vector(13, handle_tlb_refill);
++       set_except_vector(14, handle_tlb_invaild);
++       set_except_vector(15, handle_mod);
++       set_except_vector(16, handle_cee);
++       set_except_vector(17, handle_cpe);
++       set_except_vector(18, handle_dbe);
++       flush_icache_range(DEBUG_VECTOR_BASE_ADDR, IRQ_VECTOR_BASE_ADDR);
++
++       atomic_inc(&init_mm.mm_count);
++       current->active_mm = &init_mm;
++       cpu_cache_init();
++}
+diff -uprN -x linux-2.6-git.ori/Documentation/dontdiff 
+linux-2.6-git.ori/arch/score/kernel/vmlinux.lds.S 
+linux-2.6-git.new/arch/score/kernel/vmlinux.lds.S
+--- linux-2.6-git.ori/arch/score/kernel/vmlinux.lds.S   1970-01-01 
+08:00:00.000000000 +0800
++++ linux-2.6-git.new/arch/score/kernel/vmlinux.lds.S   2009-04-01 
+16:35:01.000000000 +0800
+@@ -0,0 +1,219 @@
++/*
++ * arch/score/kernel/vmlinux.lds.S
 + *
-+ *  Copyright (C) 2007 Christian Pellegrin
++ * Score Processor version.
++ *
++ * Copyright (C) 2009 Sunplus Core Technology Co., Ltd.
++ *  Chen Liqin <liqin.chen@sunplusct.com>
++ *  Lennox Wu <lennox.wu@sunplusct.com>
 + *
 + * This program is free software; you can redistribute it and/or modify
 + * it under the terms of the GNU General Public License as published by
 + * the Free Software Foundation; either version 2 of the License, or
 + * (at your option) any later version.
++ *
++ * This program is distributed in the hope that it will be useful,
++ * but WITHOUT ANY WARRANTY; without even the implied warranty of
++ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
++ * GNU General Public License for more details.
++ *
++ * You should have received a copy of the GNU General Public License
++ * along with this program; if not, see the file COPYING, or write
++ * to the Free Software Foundation, Inc.,
++ * 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 + */
 +
++#include <asm/asm-offsets.h>
++#include <asm-generic/vmlinux.lds.h>
 +
-+#ifndef _LINUX_SERIAL_MAX3100_H
-+#define _LINUX_SERIAL_MAX3100_H 1
++OUTPUT_ARCH(score)
++ENTRY(_stext)
++PHDRS {
++       text PT_LOAD FLAGS(7);  /* RWX */
++       note PT_NOTE FLAGS(4);  /* R__ */
++}
++jiffies = jiffies_64;
 +
++SECTIONS
++{
++       . = CONFIG_MEMORY_START + 0x2000;
++       /* read-only */
++       _text = .;      /* Text and read-only data */
++       .text : {
++               TEXT_TEXT
++               SCHED_TEXT
++               LOCK_TEXT
++               KPROBES_TEXT
++               *(.text.*)
++               *(.fixup)
++               *(.gnu.warning)
++       } :text = 0
++       _etext = .;     /* End of text section */
 +
-+/**
-+ * struct plat_max3100 - MAX3100 SPI UART platform data
-+ * @loopback:            force MAX3100 in loopback
-+ * @crystal:             1 for 3.6864 Mhz, 0 for 1.8432
-+ * @max3100_hw_suspend:  MAX3100 has a shutdown pin. This is a hook
-+ *                       called on suspend and resume to activate it.
-+ * @poll_time:           poll time for CTS signal in ms, 0 disables (so no hw
-+ *                       flow ctrl is possible but you have less CPU usage)
-+ *
-+ * You should use this structure in your machine description to specify
-+ * how the MAX3100 is connected. Example:
-+ *
-+ * static struct plat_max3100 max3100_plat_data = {
-+ *  .loopback = 0,
-+ *  .crystal = 0,
-+ *  .poll_time = 100,
-+ * };
-+ *
-+ * static struct spi_board_info spi_board_info[] = {
-+ * {
-+ *  .modalias	= "max3100",
-+ *  .platform_data	= &max3100_plat_data,
-+ *  .irq		= IRQ_EINT12,
-+ *  .max_speed_hz	= 5*1000*1000,
-+ *  .chip_select	= 0,
-+ * },
-+ * };
-+ *
-+ **/
-+struct plat_max3100 {
-+	int loopback;
-+	int crystal;
-+	void (*max3100_hw_suspend) (int suspend);
-+	int poll_time;
-+};
++       /* Exception table */
++       . = ALIGN(16);
++       __ex_table : {
++               __start___ex_table = .;
++               *(__ex_table)
++               __stop___ex_table = .;
++       }
 +
++       /* Exception table for data bus errors */
++       __dbe_table : {
++               __start___dbe_table = .;
++               *(__dbe_table)
++               __stop___dbe_table = .;
++       }
++
++       NOTES :text :note
++       .dummy : { *(.dummy) } :text
++
++       RODATA
++
++       /* writeable */
++       .data : {       /* Data */
++               /*
++                * This ALIGN is needed as a workaround for a bug a
++                * gcc bug upto 4.1 which limits the maximum alignment
++                * to at most 32kB and results in the following
++                * warning:
++                *
++                *  CC      arch/score/kernel/init_task.o
++                * arch/score/kernel/init_task.c:30: warning: alignment
++                * of ‚Äòinit_thread_union‚Ä°ˆis greater than maximum
++                * object file alignment.  Using 32768
++                */
++               . = ALIGN(_PAGE_SIZE);
++               *(.data.init_task)
++
++               DATA_DATA
++               CONSTRUCTORS
++       }
++       _gp = . + 0x8000;
++       .lit8 : {
++               *(.lit8)
++       }
++       .lit4 : {
++               *(.lit4)
++       }
++       /* We want the small data sections together, so single-instruction 
+offsets
++          can access them all, and initialized data all before 
+uninitialized, so
++          we can shorten the on-disk segment size.  */
++       .sdata : {
++               *(.sdata)
++       }
++
++       . = ALIGN(_PAGE_SIZE);
++       .data_nosave : {
++               __nosave_begin = .;
++               *(.data.nosave)
++       }
++       . = ALIGN(_PAGE_SIZE);
++       __nosave_end = .;
++
++       . = ALIGN(32);
++       .data.cacheline_aligned : {
++               *(.data.cacheline_aligned)
++       }
++       _edata =  .;                    /* End of data section */
++
++       /* will be freed after init */
++       . = ALIGN(_PAGE_SIZE);          /* Init code and data */
++       __init_begin = .;
++       .init.text : {
++               _sinittext = .;
++               INIT_TEXT
++               _einittext = .;
++       }
++       .init.data : {
++               INIT_DATA
++       }
++       . = ALIGN(16);
++       .init.setup : {
++               __setup_start = .;
++               *(.init.setup)
++               __setup_end = .;
++       }
++
++       .initcall.init : {
++               __initcall_start = .;
++               INITCALLS
++               __initcall_end = .;
++       }
++
++       .con_initcall.init : {
++               __con_initcall_start = .;
++               *(.con_initcall.init)
++               __con_initcall_end = .;
++       }
++       SECURITY_INIT
++
++       /* .exit.text is discarded at runtime, not link time, to deal with
++        * references from .rodata
++        */
++       .exit.text : {
++               EXIT_TEXT
++       }
++       .exit.data : {
++               EXIT_DATA
++       }
++#if defined(CONFIG_BLK_DEV_INITRD)
++       . = ALIGN(_PAGE_SIZE);
++       .init.ramfs : {
++               __initramfs_start = .;
++               *(.init.ramfs)
++               __initramfs_end = .;
++       }
 +#endif
--- 
-1.5.6.5
-
-Signed-off-by: Christian Pellegrin <chripell@evolware.org>
----
- include/linux/serial_core.h |    3 ---
- 1 files changed, 0 insertions(+), 3 deletions(-)
-
-diff --git a/include/linux/serial_core.h b/include/linux/serial_core.h
-index ec3df6c..57a97e5 100644
---- a/include/linux/serial_core.h
-+++ b/include/linux/serial_core.h
-@@ -167,9 +167,6 @@
- /* MAX3100 */
- #define PORT_MAX3100    86
- 
--/* MAX3100 */
--#define PORT_MAX3100    83
--
- #ifdef __KERNEL__
- 
- #include <linux/compiler.h>
--- 
-1.5.6.5
-
++       PERCPU(_PAGE_SIZE)
++       . = ALIGN(_PAGE_SIZE);
++       __init_end = .;
++       /* freed after init ends here */
++
++       __bss_start = .;        /* BSS */
++       .sbss  : {
++               *(.sbss)
++               *(.scommon)
++       }
++       .bss : {
++               *(.bss)
++               *(COMMON)
++       }
++       __bss_stop = .;
++
++       _end = .;
++
++       /* Sections to be discarded */
++       /DISCARD/ : {
++               *(.exitcall.exit)
++
++               /* ABI crap starts here */
++               *(.SCORE.options)
++               *(.options)
++               *(.pdr)
++               *(.reginfo)
++       }
++
++       /* These mark the ABI of the kernel for debuggers.  */
++       .mdebug.abi32 : {
++               KEEP(*(.mdebug.abi32))
++       }
++
++       /* This is the score specific mdebug section.  */
++       .mdebug : {
++               *(.mdebug)
++       }
++
++       STABS_DEBUG
++       DWARF_DEBUG
++
++       /* These must appear regardless of  .  */
++       .gptab.sdata : {
++               *(.gptab.data)
++               *(.gptab.sdata)
++       }
++       .gptab.sbss : {
++               *(.gptab.bss)
++               *(.gptab.sbss)
++       }
++}
+ˇÙË∫{.n«+â∑üÆâ≠Ü+%äÀˇ±È›∂•äwˇ∫{.n«+â∑•ä{±˛G´ùÈˇä{ay∫ á⁄ôÎ,j≠¢f£¢∑höèÔÅÍˇëÍÁz_ËÆ(≠Èöéä›¢j"ù˙∂mßˇˇæ´˛G´ùÈˇ¢∏?ô®Ë≠⁄&£¯ß~è·∂iOïÊ¨z∑övÿ^∂mßˇˇ√ˇ∂Ïˇ¢∏?ñI•
