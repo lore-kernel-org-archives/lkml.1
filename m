@@ -1,52 +1,41 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762457AbZDHLNY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758114AbZDHLWQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762457AbZDHLNY (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 8 Apr 2009 07:13:24 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757067AbZDHLMu
+	id S1758114AbZDHLWQ (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 8 Apr 2009 07:22:16 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755261AbZDHLV6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 8 Apr 2009 07:12:50 -0400
-Received: from mail-qy0-f118.google.com ([209.85.221.118]:42657 "EHLO
-	mail-qy0-f118.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1760949AbZDHLMt (ORCPT
+	Wed, 8 Apr 2009 07:21:58 -0400
+Received: from mail-bw0-f169.google.com ([209.85.218.169]:45148 "EHLO
+	mail-bw0-f169.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753473AbZDHLV5 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 8 Apr 2009 07:12:49 -0400
+	Wed, 8 Apr 2009 07:21:57 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
-        h=date:from:x-x-sender:to:subject:message-id:user-agent:mime-version
-         :content-type;
-        b=dYKqdZ/CQ1Ggpy7e8DZqQ6d0cHT+ylGOzS2QrcFHNT48ZUrCtCwqugNA96mVFz8lwE
-         dWJm6rs7sjIe84F5si2IC4Z5CX9DtHP0jCwEqRNO0MqPhrH46UhboslXVVKK9uZKz6mZ
-         qIl9FQoqI1MYtlVKqHg7ntpVwkKwO5lGbRum0=
-Date: Wed, 8 Apr 2009 14:09:15 +0300 (EAT)
-From: Dan Carpenter <error27@gmail.com>
-X-X-Sender: dcarpenter@bicker
-To: linux-kernel@vger.kernel.org
-Subject: [patch] trivial: unreached code. drivers/net/mlx4/en_rx.c
-Message-ID: <alpine.DEB.2.00.0904081406130.30705@bicker>
-User-Agent: Alpine 2.00 (DEB 1167 2008-08-23)
+        h=message-id:date:from:user-agent:mime-version:to:cc:subject
+         :content-type:content-transfer-encoding;
+        b=s+arpTJ2tYcpbW2q0dprLSlyb7M622mb6WsMoH72lIssAOL4iwyiymgHBzDr9TH3RC
+         pdhM6s2XKq22iS3vNRWwlZ+YjwCuouRjwcNcwDd6drZHAMT2epLmfVKKeW8Rq9GTA+y+
+         uzDhBzyDFB1jK7CqEJ6JN11G22lhbBR33sF1U=
+Message-ID: <49DC88D5.3070806@gmail.com>
+Date: Wed, 08 Apr 2009 13:21:57 +0200
+From: Jiri Slaby <jirislaby@gmail.com>
+User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; cs-CZ; rv:1.9.1b3pre) Gecko/20090223 SUSE/3.0b2-8.1 Thunderbird/3.0b2
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+To: Eric Biederman <ebiederm@aristanetworks.com>
+CC: Andrew Morton <akpm@linux-foundation.org>,
+       Linux kernel mailing list <linux-kernel@vger.kernel.org>
+Subject: [mmotm] sysctl: unexported linux/lockdep.h
+Content-Type: text/plain; charset=ISO-8859-2
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Remove the return after the goto.  We want the goto because it frees 
-memory as well as returning err.
+Hi,
 
-Found by smatch (http://repo.or.cz/w/smatch.git).
+sysctl-lockdep-support-for-sysctl-reference-counting.patch adds
+#include <linux/lockdep.h> into include/linux/sysctl.h
 
-regards,
-dan carpenter
-
-Signed-off-by: Dan Carpenter <error27@gmail.com>
-
---- orig/drivers/net/mlx4/en_rx.c	2009-04-07 21:01:20.000000000 +0300
-+++ devel/drivers/net/mlx4/en_rx.c	2009-04-07 21:01:27.000000000 +0300
-@@ -950,7 +950,6 @@
- 	if (err) {
- 		mlx4_err(mdev, "Failed to allocate qp #%d\n", qpn);
- 		goto out;
--		return err;
- 	}
- 	qp->event = mlx4_en_sqp_event;
- 
+sysctl.h is exported, but lockdep.h is not. Please move the include
+inside the __KERNEL__ section.
