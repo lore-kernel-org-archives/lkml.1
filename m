@@ -1,1180 +1,1085 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763446AbZDHHb4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763514AbZDHHdZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763446AbZDHHb4 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 8 Apr 2009 03:31:56 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763396AbZDHHb3
+	id S1763514AbZDHHdZ (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 8 Apr 2009 03:33:25 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757802AbZDHHdM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 8 Apr 2009 03:31:29 -0400
-Received: from 219-87-157-169.static.tfn.net.tw ([219.87.157.169]:38388 "EHLO
-	mswedge2.sunplus.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1763422AbZDHHbZ (ORCPT
+	Wed, 8 Apr 2009 03:33:12 -0400
+Received: from mail-fx0-f158.google.com ([209.85.220.158]:44624 "EHLO
+	mail-fx0-f158.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756919AbZDHHdJ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 8 Apr 2009 03:31:25 -0400
-To: linux-arch@vger.kernel.org, linux-kernel@vger.kernel.org
-Cc: torvalds@linux-foundation.org, Arnd Bergmann <arnd@arndb.de>,
-       Sam Ravnborg <sam@ravnborg.org>, Thomas Gleixner <tglx@linutronix.de>,
-       Kyle McMartin <kyle@mcmartin.ca>
-MIME-Version: 1.0
-Subject: [PATCH 10/14] score - New architecure port to SunplusCT S+CORE
-X-Mailer: Lotus Notes Release 6.5 September 26, 2003
-Message-ID: <OF2105AD3B.51B1C200-ON48257592.0029010D-48257592.0029439F@sunplusct.com>
-From: liqin.chen@sunplusct.com
-Date: Wed, 8 Apr 2009 15:28:34 +0800
-X-MIMETrack: Serialize by Router on ctmail01/SunplusCT(Release 7.0.3FP1|February 24, 2008) at 2009/04/08 ?? 03:28:35,
-	Serialize complete at 2009/04/08 ?? 03:28:35
-Content-Type: text/plain; charset="US-ASCII"
+	Wed, 8 Apr 2009 03:33:09 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=sender:from:to:cc:subject:date:message-id:x-mailer:in-reply-to
+         :references;
+        b=ur/ozf3G/h/KZVbCISIuuNGQp0Y+uDDOuKlbZCSQ5um21fDmqwBc80mm6mkX7UDruD
+         gw1VzsWSrN3j7YXuegoHC5ZGTM0aYZOmfY/WHuFPIoXpjQ1F80JOTRKWIJ7yrWHdjvr3
+         A1oIF8q7ViiHKkOuaz8Ao3qbvnRqdxHHIUcIQ=
+From: chripell@fsfe.org
+To: chripell@gmail.com, linux-kernel@vger.kernel.org, mingo@elte.hu,
+       akpm@linux-foundation.org, alan@lxorguk.ukuu.org.uk
+Subject: [-rc1, build bug] Re: [PATCH 05/11] Add support for the MAX3100 SPI UART.
+Date: Wed,  8 Apr 2009 08:34:33 +0200
+Message-Id: <1239172473685-git-send-email-chripell@fsfe.org>
+X-Mailer: git-send-email 1.4.4.4
+In-Reply-To: <20090408061811.GA22767@elte.hu>
+References: <20090408061811.GA22767@elte.hu>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Chen Liqin <liqin.chen@sunplusct.com>
+This patch adds files that were missing from 2.6.30-rc1:
 
-kernel/signal.c, kernel/syscalls.S, kernel/sys-score.c,
-kernel/time.c for the score architecture.
+max3100.c and serial_max3100.h are taken from max3100-spi-uart-driver.patch 
+in 2.6.28-rc2-mm1
 
-Signed off by: Chen Liqin <liqin.chen@sunplusct.com>
-Signed off by: Lennox Wu <lennox.wu@sunplusct.com>
---
+max3100-spi-uart-driver-fix.patch from 2.6.28-rc2-mm1 is applied
 
-diff -uprN -x linux-2.6-git.ori/Documentation/dontdiff 
-linux-2.6-git.ori/arch/score/kernel/signal.c 
-linux-2.6-git.new/arch/score/kernel/signal.c
---- linux-2.6-git.ori/arch/score/kernel/signal.c        1970-01-01 
-08:00:00.000000000 +0800
-+++ linux-2.6-git.new/arch/score/kernel/signal.c        2009-04-07 
-21:47:02.000000000 +0800
-@@ -0,0 +1,380 @@
+the assigned major/minor  number is changed to 204/209 according to
+Documentation/devices.txt
+
+I tested just the compilation and checkpatch.pl since I still have to port 2.6.30-rc1
+to my ARM board.
+
+Signed-off-by: Christian Pellegrin <chripell@evolware.org>
+---
+ drivers/serial/max3100.c       |  927 ++++++++++++++++++++++++++++++++++++++++
+ include/linux/serial_core.h    |    3 +
+ include/linux/serial_max3100.h |   53 +++
+ 3 files changed, 983 insertions(+), 0 deletions(-)
+ create mode 100644 drivers/serial/max3100.c
+ create mode 100644 include/linux/serial_max3100.h
+
+diff --git a/drivers/serial/max3100.c b/drivers/serial/max3100.c
+new file mode 100644
+index 0000000..bebf4c6
+--- /dev/null
++++ b/drivers/serial/max3100.c
+@@ -0,0 +1,927 @@
 +/*
-+ * arch/score/kernel/signal.c
 + *
-+ * Score Processor version.
-+ *
-+ * Copyright (C) 2009 Sunplus Core Technology Co., Ltd.
-+ *  Chen Liqin <liqin.chen@sunplusct.com>
-+ *  Lennox Wu <lennox.wu@sunplusct.com>
++ *  Copyright (C) 2008 Christian Pellegrin <chripell@evolware.org>
 + *
 + * This program is free software; you can redistribute it and/or modify
 + * it under the terms of the GNU General Public License as published by
 + * the Free Software Foundation; either version 2 of the License, or
 + * (at your option) any later version.
 + *
-+ * This program is distributed in the hope that it will be useful,
-+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
-+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-+ * GNU General Public License for more details.
 + *
-+ * You should have received a copy of the GNU General Public License
-+ * along with this program; if not, see the file COPYING, or write
-+ * to the Free Software Foundation, Inc.,
-+ * 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
++ * Notes: the MAX3100 doesn't provide an interrupt on CTS so we have
++ * to use polling for flow control. TX empty IRQ is unusable, since
++ * writing conf clears FIFO buffer and we cannot have this interrupt
++ * always asking us for attention.
++ *
++ * Example platform data:
++
++ static struct plat_max3100 max3100_plat_data = {
++ .loopback = 0,
++ .crystal = 0,
++ .poll_time = 100,
++ };
++
++ static struct spi_board_info spi_board_info[] = {
++ {
++ .modalias	= "max3100",
++ .platform_data	= &max3100_plat_data,
++ .irq		= IRQ_EINT12,
++ .max_speed_hz	= 5*1000*1000,
++ .chip_select	= 0,
++ },
++ };
++
++ * The initial minor number is 209 in the low-density serial port:
++ * mknod /dev/ttyMAX0 c 204 209
 + */
 +
-+#include <linux/sched.h>
-+#include <linux/mm.h>
-+#include <linux/signal.h>
-+#include <linux/errno.h>
-+#include <linux/ptrace.h>
-+#include <linux/unistd.h>
-+#include <linux/uaccess.h>
-+#include <asm/cacheflush.h>
-+#include <asm/ucontext.h>
++#define MAX3100_MAJOR 204
++#define MAX3100_MINOR 209
++/* 4 MAX3100s should be enough for everyone */
++#define MAX_MAX3100 4
 +
-+#define _BLOCKABLE (~(sigmask(SIGKILL) | sigmask(SIGSTOP)))
++#include <linux/delay.h>
++#include <linux/device.h>
++#include <linux/serial_core.h>
++#include <linux/serial.h>
++#include <linux/spi/spi.h>
++#include <linux/freezer.h>
 +
-+struct rt_sigframe {
-+       u32 rs_ass[4];          /* argument save space */
-+       u32 rs_code[2];         /* signal trampoline */
-+       struct siginfo rs_info;
-+       struct ucontext rs_uc;
++#include <linux/serial_max3100.h>
++
++#define MAX3100_C    (1<<14)
++#define MAX3100_D    (0<<14)
++#define MAX3100_W    (1<<15)
++#define MAX3100_RX   (0<<15)
++
++#define MAX3100_WC   (MAX3100_W  | MAX3100_C)
++#define MAX3100_RC   (MAX3100_RX | MAX3100_C)
++#define MAX3100_WD   (MAX3100_W  | MAX3100_D)
++#define MAX3100_RD   (MAX3100_RX | MAX3100_D)
++#define MAX3100_CMD  (3 << 14)
++
++#define MAX3100_T    (1<<14)
++#define MAX3100_R    (1<<15)
++
++#define MAX3100_FEN  (1<<13)
++#define MAX3100_SHDN (1<<12)
++#define MAX3100_TM   (1<<11)
++#define MAX3100_RM   (1<<10)
++#define MAX3100_PM   (1<<9)
++#define MAX3100_RAM  (1<<8)
++#define MAX3100_IR   (1<<7)
++#define MAX3100_ST   (1<<6)
++#define MAX3100_PE   (1<<5)
++#define MAX3100_L    (1<<4)
++#define MAX3100_BAUD (0xf)
++
++#define MAX3100_TE   (1<<10)
++#define MAX3100_RAFE (1<<10)
++#define MAX3100_RTS  (1<<9)
++#define MAX3100_CTS  (1<<9)
++#define MAX3100_PT   (1<<8)
++#define MAX3100_DATA (0xff)
++
++#define MAX3100_RT   (MAX3100_R | MAX3100_T)
++#define MAX3100_RTC  (MAX3100_RT | MAX3100_CTS | MAX3100_RAFE)
++
++/* the following simulate a status reg for ignore_status_mask */
++#define MAX3100_STATUS_PE 1
++#define MAX3100_STATUS_FE 2
++#define MAX3100_STATUS_OE 4
++
++struct max3100_port {
++	struct uart_port port;
++	struct spi_device *spi;
++
++	int cts;	        /* last CTS received for flow ctrl */
++	int tx_empty;		/* last TX empty bit */
++
++	spinlock_t conf_lock;	/* shared data */
++	int conf_commit;	/* need to make changes */
++	int conf;		/* configuration for the MAX31000
++				 * (bits 0-7, bits 8-11 are irqs) */
++	int rts_commit;	        /* need to change rts */
++	int rts;		/* rts status */
++	int baud;		/* current baud rate */
++
++	int parity;		/* keeps track if we should send parity */
++#define MAX3100_PARITY_ON 1
++#define MAX3100_PARITY_ODD 2
++#define MAX3100_7BIT 4
++	int rx_enabled;	        /* if we should rx chars */
++
++	int irq;		/* irq assigned to the max3100 */
++
++	int minor;		/* minor number */
++	int crystal;		/* 1 if 3.6864Mhz crystal 0 for 1.8432 */
++	int loopback;		/* 1 if we are in loopback mode */
++
++	/* for handling irqs: need workqueue since we do spi_sync */
++	struct workqueue_struct *workqueue;
++	struct work_struct work;
++	/* set to 1 to make the workhandler exit as soon as possible */
++	int  force_end_work;
++	/* need to know we are suspending to avoid deadlock on workqueue */
++	int suspending;
++
++	/* hook for suspending MAX3100 via dedicated pin */
++	void (*max3100_hw_suspend) (int suspend);
++
++	/* poll time (in ms) for ctrl lines */
++	int poll_time;
++	/* and its timer */
++	struct timer_list	timer;
 +};
 +
-+int setup_sigcontext(struct pt_regs *regs, struct sigcontext __user *sc)
++static struct max3100_port *max3100s[MAX_MAX3100]; /* the chips */
++static DEFINE_MUTEX(max3100s_lock);		   /* race on probe */
++
++static int max3100_do_parity(struct max3100_port *s, u16 c)
 +{
-+       int err = 0;
-+       unsigned long reg;
++	int parity;
 +
-+       reg = regs->cp0_epc; err |= __put_user(reg, &sc->sc_pc);
-+       err |= __put_user(regs->cp0_psr, &sc->sc_psr);
-+       err |= __put_user(regs->cp0_condition, &sc->sc_condition);
++	if (s->parity & MAX3100_PARITY_ODD)
++		parity = 1;
++	else
++		parity = 0;
 +
++	if (s->parity & MAX3100_7BIT)
++		c &= 0x7f;
++	else
++		c &= 0xff;
 +
-+#define save_gp_reg(i) {                               \
-+       reg = regs->regs[i];                            \
-+       err |= __put_user(reg, &sc->sc_regs[i]);        \
-+} while (0)
-+       save_gp_reg(0); save_gp_reg(1); save_gp_reg(2);
-+       save_gp_reg(3); save_gp_reg(4); save_gp_reg(5); save_gp_reg(6);
-+       save_gp_reg(7); save_gp_reg(8); save_gp_reg(9); save_gp_reg(10);
-+       save_gp_reg(11); save_gp_reg(12); save_gp_reg(13); 
-save_gp_reg(14);
-+       save_gp_reg(15); save_gp_reg(16); save_gp_reg(17); 
-save_gp_reg(18);
-+       save_gp_reg(19); save_gp_reg(20); save_gp_reg(21); 
-save_gp_reg(22);
-+       save_gp_reg(23); save_gp_reg(24); save_gp_reg(25); 
-save_gp_reg(26);
-+       save_gp_reg(27); save_gp_reg(28); save_gp_reg(29);
-+#undef save_gp_reg
-+
-+       reg = regs->ceh; err |= __put_user(reg, &sc->sc_mdceh);
-+       reg = regs->cel; err |= __put_user(reg, &sc->sc_mdcel);
-+       err |= __put_user(regs->cp0_ecr, &sc->sc_ecr);
-+       err |= __put_user(regs->cp0_ema, &sc->sc_ema);
-+
-+       return err;
++	parity = parity ^ (hweight8(c) & 1);
++	return parity;
 +}
 +
-+int restore_sigcontext(struct pt_regs *regs, struct sigcontext __user 
-*sc)
++static int max3100_check_parity(struct max3100_port *s, u16 c)
 +{
-+       int err = 0;
-+       u32 reg;
-+
-+       err |= __get_user(regs->cp0_epc, &sc->sc_pc);
-+       err |= __get_user(regs->cp0_condition, &sc->sc_condition);
-+
-+       err |= __get_user(reg, &sc->sc_mdceh);
-+       regs->ceh = (int) reg;
-+       err |= __get_user(reg, &sc->sc_mdcel);
-+       regs->cel = (int) reg;
-+
-+       err |= __get_user(reg, &sc->sc_psr);
-+       regs->cp0_psr = (int) reg;
-+       err |= __get_user(reg, &sc->sc_ecr);
-+       regs->cp0_ecr = (int) reg;
-+       err |= __get_user(reg, &sc->sc_ema);
-+       regs->cp0_ema = (int) reg;
-+
-+#define restore_gp_reg(i) do {                         \
-+       err |= __get_user(reg, &sc->sc_regs[i]);        \
-+       regs->regs[i] = reg;                            \
-+} while (0)
-+       restore_gp_reg(0); restore_gp_reg(1); restore_gp_reg(2); 
-restore_gp_reg(3);
-+       restore_gp_reg(4); restore_gp_reg(5); restore_gp_reg(6); 
-restore_gp_reg(7);
-+       restore_gp_reg(8); restore_gp_reg(9); restore_gp_reg(10); 
-restore_gp_reg(11);
-+       restore_gp_reg(12); restore_gp_reg(13); restore_gp_reg(14); 
-restore_gp_reg(15);
-+       restore_gp_reg(16); restore_gp_reg(17); restore_gp_reg(18); 
-restore_gp_reg(19);
-+       restore_gp_reg(20); restore_gp_reg(21); restore_gp_reg(22); 
-restore_gp_reg(23);
-+       restore_gp_reg(24); restore_gp_reg(25); restore_gp_reg(26); 
-restore_gp_reg(27);
-+       restore_gp_reg(28); restore_gp_reg(29);
-+#undef restore_gp_reg
-+
-+       return err;
++	return max3100_do_parity(s, c) == ((c >> 8) & 1);
 +}
++
++static void max3100_calc_parity(struct max3100_port *s, u16 *c)
++{
++	if (s->parity & MAX3100_7BIT)
++		*c &= 0x7f;
++	else
++		*c &= 0xff;
++
++	if (s->parity & MAX3100_PARITY_ON)
++		*c |= max3100_do_parity(s, *c) << 8;
++}
++
++static void max3100_work(struct work_struct *w);
++
++static void max3100_dowork(struct max3100_port *s)
++{
++	if (!s->force_end_work && !work_pending(&s->work) &&
++	    !freezing(current) && !s->suspending)
++		queue_work(s->workqueue, &s->work);
++}
++
++static void max3100_timeout(unsigned long data)
++{
++	struct max3100_port *s = (struct max3100_port *)data;
++
++	if (s->port.info) {
++		max3100_dowork(s);
++		mod_timer(&s->timer, jiffies + s->poll_time);
++	}
++}
++
++static int max3100_sr(struct max3100_port *s, u16 tx, u16 *rx)
++{
++	struct spi_message message;
++	u16 etx, erx;
++	int status;
++	struct spi_transfer tran = {
++		.tx_buf = &etx,
++		.rx_buf = &erx,
++		.len = 2,
++	};
++
++	etx = cpu_to_be16(tx);
++	spi_message_init(&message);
++	spi_message_add_tail(&tran, &message);
++	status = spi_sync(s->spi, &message);
++	if (status) {
++		dev_warn(&s->spi->dev, "error while calling spi_sync\n");
++		return -EIO;
++	}
++	*rx = be16_to_cpu(erx);
++	s->tx_empty = (*rx & MAX3100_T) > 0;
++	dev_dbg(&s->spi->dev, "%04x - %04x\n", tx, *rx);
++	return 0;
++}
++
++static int max3100_handlerx(struct max3100_port *s, u16 rx)
++{
++	unsigned int ch, flg, status = 0;
++	int ret = 0, cts;
++
++	if (rx & MAX3100_R && s->rx_enabled) {
++		dev_dbg(&s->spi->dev, "%s\n", __func__);
++		ch = rx & (s->parity & MAX3100_7BIT ? 0x7f : 0xff);
++		if (rx & MAX3100_RAFE) {
++			s->port.icount.frame++;
++			flg = TTY_FRAME;
++			status |= MAX3100_STATUS_FE;
++		} else {
++			if (s->parity & MAX3100_PARITY_ON) {
++				if (max3100_check_parity(s, rx)) {
++					s->port.icount.rx++;
++					flg = TTY_NORMAL;
++				} else {
++					s->port.icount.parity++;
++					flg = TTY_PARITY;
++					status |= MAX3100_STATUS_PE;
++				}
++			} else {
++				s->port.icount.rx++;
++				flg = TTY_NORMAL;
++			}
++		}
++		uart_insert_char(&s->port, status, MAX3100_STATUS_OE, ch, flg);
++		ret = 1;
++	}
++
++	cts = (rx & MAX3100_CTS) > 0;
++	if (s->cts != cts) {
++		s->cts = cts;
++		uart_handle_cts_change(&s->port, cts ? TIOCM_CTS : 0);
++	}
++
++	return ret;
++}
++
++static void max3100_work(struct work_struct *w)
++{
++	struct max3100_port *s = container_of(w, struct max3100_port, work);
++	int rxchars;
++	u16 tx, rx;
++	int conf, cconf, rts, crts;
++	struct circ_buf *xmit = &s->port.info->xmit;
++
++	dev_dbg(&s->spi->dev, "%s\n", __func__);
++
++	rxchars = 0;
++	do {
++		spin_lock(&s->conf_lock);
++		conf = s->conf;
++		cconf = s->conf_commit;
++		s->conf_commit = 0;
++		rts = s->rts;
++		crts = s->rts_commit;
++		s->rts_commit = 0;
++		spin_unlock(&s->conf_lock);
++		if (cconf)
++			max3100_sr(s, MAX3100_WC | conf, &rx);
++		if (crts) {
++			max3100_sr(s, MAX3100_WD | MAX3100_TE |
++				   (s->rts ? MAX3100_RTS : 0), &rx);
++			rxchars += max3100_handlerx(s, rx);
++		}
++
++		max3100_sr(s, MAX3100_RD, &rx);
++		rxchars += max3100_handlerx(s, rx);
++
++		if (rx & MAX3100_T) {
++			tx = 0xffff;
++			if (s->port.x_char) {
++				tx = s->port.x_char;
++				s->port.icount.tx++;
++				s->port.x_char = 0;
++			} else if (!uart_circ_empty(xmit) &&
++				   !uart_tx_stopped(&s->port)) {
++				tx = xmit->buf[xmit->tail];
++				xmit->tail = (xmit->tail + 1) &
++					(UART_XMIT_SIZE - 1);
++				s->port.icount.tx++;
++			}
++			if (tx != 0xffff) {
++				max3100_calc_parity(s, &tx);
++				tx |= MAX3100_WD | (s->rts ? MAX3100_RTS : 0);
++				max3100_sr(s, tx, &rx);
++				rxchars += max3100_handlerx(s, rx);
++			}
++		}
++
++		if (rxchars > 16 && s->port.info->port.tty != NULL) {
++			tty_flip_buffer_push(s->port.info->port.tty);
++			rxchars = 0;
++		}
++		if (uart_circ_chars_pending(xmit) < WAKEUP_CHARS)
++			uart_write_wakeup(&s->port);
++
++	} while (!s->force_end_work &&
++		 !freezing(current) &&
++		 ((rx & MAX3100_R) ||
++		  (!uart_circ_empty(xmit) &&
++		   !uart_tx_stopped(&s->port))));
++
++	if (rxchars > 0 && s->port.info->port.tty != NULL)
++		tty_flip_buffer_push(s->port.info->port.tty);
++}
++
++static irqreturn_t max3100_irq(int irqno, void *dev_id)
++{
++	struct max3100_port *s = dev_id;
++
++	dev_dbg(&s->spi->dev, "%s\n", __func__);
++
++	max3100_dowork(s);
++	return IRQ_HANDLED;
++}
++
++static void max3100_enable_ms(struct uart_port *port)
++{
++	struct max3100_port *s = container_of(port,
++					      struct max3100_port,
++					      port);
++
++	if (s->poll_time > 0)
++		mod_timer(&s->timer, jiffies);
++	dev_dbg(&s->spi->dev, "%s\n", __func__);
++}
++
++static void max3100_start_tx(struct uart_port *port)
++{
++	struct max3100_port *s = container_of(port,
++					      struct max3100_port,
++					      port);
++
++	dev_dbg(&s->spi->dev, "%s\n", __func__);
++
++	max3100_dowork(s);
++}
++
++static void max3100_stop_rx(struct uart_port *port)
++{
++	struct max3100_port *s = container_of(port,
++					      struct max3100_port,
++					      port);
++
++	dev_dbg(&s->spi->dev, "%s\n", __func__);
++
++	s->rx_enabled = 0;
++	spin_lock(&s->conf_lock);
++	s->conf &= ~MAX3100_RM;
++	s->conf_commit = 1;
++	spin_unlock(&s->conf_lock);
++	max3100_dowork(s);
++}
++
++static unsigned int max3100_tx_empty(struct uart_port *port)
++{
++	struct max3100_port *s = container_of(port,
++					      struct max3100_port,
++					      port);
++
++	dev_dbg(&s->spi->dev, "%s\n", __func__);
++
++	/* may not be truly up-to-date */
++	max3100_dowork(s);
++	return s->tx_empty;
++}
++
++static unsigned int max3100_get_mctrl(struct uart_port *port)
++{
++	struct max3100_port *s = container_of(port,
++					      struct max3100_port,
++					      port);
++
++	dev_dbg(&s->spi->dev, "%s\n", __func__);
++
++	/* may not be truly up-to-date */
++	max3100_dowork(s);
++	/* always assert DCD and DSR since these lines are not wired */
++	return (s->cts ? TIOCM_CTS : 0) | TIOCM_DSR | TIOCM_CAR;
++}
++
++static void max3100_set_mctrl(struct uart_port *port, unsigned int mctrl)
++{
++	struct max3100_port *s = container_of(port,
++					      struct max3100_port,
++					      port);
++	int rts;
++
++	dev_dbg(&s->spi->dev, "%s\n", __func__);
++
++	rts = (mctrl & TIOCM_RTS) > 0;
++
++	spin_lock(&s->conf_lock);
++	if (s->rts != rts) {
++		s->rts = rts;
++		s->rts_commit = 1;
++		max3100_dowork(s);
++	}
++	spin_unlock(&s->conf_lock);
++}
++
++static void
++max3100_set_termios(struct uart_port *port, struct ktermios *termios,
++		    struct ktermios *old)
++{
++	struct max3100_port *s = container_of(port,
++					      struct max3100_port,
++					      port);
++	int baud = 0;
++	unsigned cflag;
++	u32 param_new, param_mask, parity = 0;
++	struct tty_struct *tty = s->port.info->port.tty;
++
++	dev_dbg(&s->spi->dev, "%s\n", __func__);
++	if (!tty)
++		return;
++
++	cflag = termios->c_cflag;
++	param_new = 0;
++	param_mask = 0;
++
++	baud = tty_get_baud_rate(tty);
++	param_new = s->conf & MAX3100_BAUD;
++	switch (baud) {
++	case 300:
++		if (s->crystal)
++			baud = s->baud;
++		else
++			param_new = 15;
++		break;
++	case 600:
++		param_new = 14 + s->crystal;
++		break;
++	case 1200:
++		param_new = 13 + s->crystal;
++		break;
++	case 2400:
++		param_new = 12 + s->crystal;
++		break;
++	case 4800:
++		param_new = 11 + s->crystal;
++		break;
++	case 9600:
++		param_new = 10 + s->crystal;
++		break;
++	case 19200:
++		param_new = 9 + s->crystal;
++		break;
++	case 38400:
++		param_new = 8 + s->crystal;
++		break;
++	case 57600:
++		param_new = 1 + s->crystal;
++		break;
++	case 115200:
++		param_new = 0 + s->crystal;
++		break;
++	case 230400:
++		if (s->crystal)
++			param_new = 0;
++		else
++			baud = s->baud;
++		break;
++	default:
++		baud = s->baud;
++	}
++	tty_encode_baud_rate(tty, baud, baud);
++	s->baud = baud;
++	param_mask |= MAX3100_BAUD;
++
++	if ((cflag & CSIZE) == CS8) {
++		param_new &= ~MAX3100_L;
++		parity &= ~MAX3100_7BIT;
++	} else {
++		param_new |= MAX3100_L;
++		parity |= MAX3100_7BIT;
++		cflag = (cflag & ~CSIZE) | CS7;
++	}
++	param_mask |= MAX3100_L;
++
++	if (cflag & CSTOPB)
++		param_new |= MAX3100_ST;
++	else
++		param_new &= ~MAX3100_ST;
++	param_mask |= MAX3100_ST;
++
++	if (cflag & PARENB) {
++		param_new |= MAX3100_PE;
++		parity |= MAX3100_PARITY_ON;
++	} else {
++		param_new &= ~MAX3100_PE;
++		parity &= ~MAX3100_PARITY_ON;
++	}
++	param_mask |= MAX3100_PE;
++
++	if (cflag & PARODD)
++		parity |= MAX3100_PARITY_ODD;
++	else
++		parity &= ~MAX3100_PARITY_ODD;
++
++	/* mask termios capabilities we don't support */
++	cflag &= ~CMSPAR;
++	termios->c_cflag = cflag;
++
++	s->port.ignore_status_mask = 0;
++	if (termios->c_iflag & IGNPAR)
++		s->port.ignore_status_mask |=
++			MAX3100_STATUS_PE | MAX3100_STATUS_FE |
++			MAX3100_STATUS_OE;
++
++	/* we are sending char from a workqueue so enable */
++	s->port.info->port.tty->low_latency = 1;
++
++	if (s->poll_time > 0)
++		del_timer_sync(&s->timer);
++
++	uart_update_timeout(port, termios->c_cflag, baud);
++
++	spin_lock(&s->conf_lock);
++	s->conf = (s->conf & ~param_mask) | (param_new & param_mask);
++	s->conf_commit = 1;
++	s->parity = parity;
++	spin_unlock(&s->conf_lock);
++	max3100_dowork(s);
++
++	if (UART_ENABLE_MS(&s->port, termios->c_cflag))
++		max3100_enable_ms(&s->port);
++}
++
++static void max3100_shutdown(struct uart_port *port)
++{
++	struct max3100_port *s = container_of(port,
++					      struct max3100_port,
++					      port);
++
++	dev_dbg(&s->spi->dev, "%s\n", __func__);
++
++	if (s->suspending)
++		return;
++
++	s->force_end_work = 1;
++
++	if (s->poll_time > 0)
++		del_timer_sync(&s->timer);
++
++	if (s->workqueue) {
++		flush_workqueue(s->workqueue);
++		destroy_workqueue(s->workqueue);
++		s->workqueue = NULL;
++	}
++	if (s->irq)
++		free_irq(s->irq, s);
++
++	/* set shutdown mode to save power */
++	if (s->max3100_hw_suspend)
++		s->max3100_hw_suspend(1);
++	else  {
++		u16 tx, rx;
++
++		tx = MAX3100_WC | MAX3100_SHDN;
++		max3100_sr(s, tx, &rx);
++	}
++}
++
++static int max3100_startup(struct uart_port *port)
++{
++	struct max3100_port *s = container_of(port,
++					      struct max3100_port,
++					      port);
++	char b[12];
++
++	dev_dbg(&s->spi->dev, "%s\n", __func__);
++
++	s->conf = MAX3100_RM;
++	s->baud = s->crystal ? 230400 : 115200;
++	s->rx_enabled = 1;
++
++	if (s->suspending)
++		return 0;
++
++	s->force_end_work = 0;
++	s->parity = 0;
++	s->rts = 0;
++
++	sprintf(b, "max3100-%d", s->minor);
++	s->workqueue = create_freezeable_workqueue(b);
++	if (!s->workqueue) {
++		dev_warn(&s->spi->dev, "cannot create workqueue\n");
++		return -EBUSY;
++	}
++	INIT_WORK(&s->work, max3100_work);
++
++	if (request_irq(s->irq, max3100_irq,
++			IRQF_TRIGGER_FALLING, "max3100", s) < 0) {
++		dev_warn(&s->spi->dev, "cannot allocate irq %d\n", s->irq);
++		s->irq = 0;
++		destroy_workqueue(s->workqueue);
++		s->workqueue = NULL;
++		return -EBUSY;
++	}
++
++	if (s->loopback) {
++		u16 tx, rx;
++		tx = 0x4001;
++		max3100_sr(s, tx, &rx);
++	}
++
++	if (s->max3100_hw_suspend)
++		s->max3100_hw_suspend(0);
++	s->conf_commit = 1;
++	max3100_dowork(s);
++	/* wait for clock to settle */
++	msleep(50);
++
++	max3100_enable_ms(&s->port);
++
++	return 0;
++}
++
++static const char *max3100_type(struct uart_port *port)
++{
++	struct max3100_port *s = container_of(port,
++					      struct max3100_port,
++					      port);
++
++	dev_dbg(&s->spi->dev, "%s\n", __func__);
++
++	return s->port.type == PORT_MAX3100 ? "MAX3100" : NULL;
++}
++
++static void max3100_release_port(struct uart_port *port)
++{
++	struct max3100_port *s = container_of(port,
++					      struct max3100_port,
++					      port);
++
++	dev_dbg(&s->spi->dev, "%s\n", __func__);
++}
++
++static void max3100_config_port(struct uart_port *port, int flags)
++{
++	struct max3100_port *s = container_of(port,
++					      struct max3100_port,
++					      port);
++
++	dev_dbg(&s->spi->dev, "%s\n", __func__);
++
++	if (flags & UART_CONFIG_TYPE)
++		s->port.type = PORT_MAX3100;
++}
++
++static int max3100_verify_port(struct uart_port *port,
++			       struct serial_struct *ser)
++{
++	struct max3100_port *s = container_of(port,
++					      struct max3100_port,
++					      port);
++	int ret = -EINVAL;
++
++	dev_dbg(&s->spi->dev, "%s\n", __func__);
++
++	if (ser->type == PORT_UNKNOWN || ser->type == PORT_MAX3100)
++		ret = 0;
++	return ret;
++}
++
++static void max3100_stop_tx(struct uart_port *port)
++{
++	struct max3100_port *s = container_of(port,
++					      struct max3100_port,
++					      port);
++
++	dev_dbg(&s->spi->dev, "%s\n", __func__);
++}
++
++static int max3100_request_port(struct uart_port *port)
++{
++	struct max3100_port *s = container_of(port,
++					      struct max3100_port,
++					      port);
++
++	dev_dbg(&s->spi->dev, "%s\n", __func__);
++	return 0;
++}
++
++static void max3100_break_ctl(struct uart_port *port, int break_state)
++{
++	struct max3100_port *s = container_of(port,
++					      struct max3100_port,
++					      port);
++
++	dev_dbg(&s->spi->dev, "%s\n", __func__);
++}
++
++static struct uart_ops max3100_ops = {
++	.tx_empty	= max3100_tx_empty,
++	.set_mctrl	= max3100_set_mctrl,
++	.get_mctrl	= max3100_get_mctrl,
++	.stop_tx        = max3100_stop_tx,
++	.start_tx	= max3100_start_tx,
++	.stop_rx	= max3100_stop_rx,
++	.enable_ms      = max3100_enable_ms,
++	.break_ctl      = max3100_break_ctl,
++	.startup	= max3100_startup,
++	.shutdown	= max3100_shutdown,
++	.set_termios	= max3100_set_termios,
++	.type		= max3100_type,
++	.release_port   = max3100_release_port,
++	.request_port   = max3100_request_port,
++	.config_port	= max3100_config_port,
++	.verify_port	= max3100_verify_port,
++};
++
++static struct uart_driver max3100_uart_driver = {
++	.owner          = THIS_MODULE,
++	.driver_name    = "ttyMAX",
++	.dev_name       = "ttyMAX",
++	.major          = MAX3100_MAJOR,
++	.minor          = MAX3100_MINOR,
++	.nr             = MAX_MAX3100,
++};
++static int uart_driver_registered;
++
++static int __devinit max3100_probe(struct spi_device *spi)
++{
++	int i, retval;
++	struct plat_max3100 *pdata;
++	u16 tx, rx;
++
++	mutex_lock(&max3100s_lock);
++
++	if (!uart_driver_registered) {
++		uart_driver_registered = 1;
++		retval = uart_register_driver(&max3100_uart_driver);
++		if (retval) {
++			printk(KERN_ERR "Couldn't register max3100 uart driver\n");
++			mutex_unlock(&max3100s_lock);
++			return retval;
++		}
++	}
++
++	for (i = 0; i < MAX_MAX3100; i++)
++		if (!max3100s[i])
++			break;
++	if (i == MAX_MAX3100) {
++		dev_warn(&spi->dev, "too many MAX3100 chips\n");
++		mutex_unlock(&max3100s_lock);
++		return -ENOMEM;
++	}
++
++	max3100s[i] = kzalloc(sizeof(struct max3100_port), GFP_KERNEL);
++	if (!max3100s[i]) {
++		dev_warn(&spi->dev,
++			 "kmalloc for max3100 structure %d failed!\n", i);
++		mutex_unlock(&max3100s_lock);
++		return -ENOMEM;
++	}
++	max3100s[i]->spi = spi;
++	max3100s[i]->irq = spi->irq;
++	spin_lock_init(&max3100s[i]->conf_lock);
++	dev_set_drvdata(&spi->dev, max3100s[i]);
++	pdata = spi->dev.platform_data;
++	max3100s[i]->crystal = pdata->crystal;
++	max3100s[i]->loopback = pdata->loopback;
++	max3100s[i]->poll_time = pdata->poll_time * HZ / 1000;
++	if (pdata->poll_time > 0 && max3100s[i]->poll_time == 0)
++		max3100s[i]->poll_time = 1;
++	max3100s[i]->max3100_hw_suspend = pdata->max3100_hw_suspend;
++	max3100s[i]->minor = i;
++	init_timer(&max3100s[i]->timer);
++	max3100s[i]->timer.function = max3100_timeout;
++	max3100s[i]->timer.data = (unsigned long) max3100s[i];
++
++	dev_dbg(&spi->dev, "%s: adding port %d\n", __func__, i);
++	max3100s[i]->port.irq = max3100s[i]->irq;
++	max3100s[i]->port.uartclk = max3100s[i]->crystal ? 3686400 : 1843200;
++	max3100s[i]->port.fifosize = 16;
++	max3100s[i]->port.ops = &max3100_ops;
++	max3100s[i]->port.flags = UPF_SKIP_TEST | UPF_BOOT_AUTOCONF;
++	max3100s[i]->port.line = i;
++	max3100s[i]->port.type = PORT_MAX3100;
++	max3100s[i]->port.dev = &spi->dev;
++	retval = uart_add_one_port(&max3100_uart_driver, &max3100s[i]->port);
++	if (retval < 0)
++		dev_warn(&spi->dev,
++			 "uart_add_one_port failed for line %d with error %d\n",
++			 i, retval);
++
++	/* set shutdown mode to save power. Will be woken-up on open */
++	if (max3100s[i]->max3100_hw_suspend)
++		max3100s[i]->max3100_hw_suspend(1);
++	else {
++		tx = MAX3100_WC | MAX3100_SHDN;
++		max3100_sr(max3100s[i], tx, &rx);
++	}
++	mutex_unlock(&max3100s_lock);
++	return 0;
++}
++
++static int __devexit max3100_remove(struct spi_device *spi)
++{
++	struct max3100_port *s = dev_get_drvdata(&spi->dev);
++	int i;
++
++	mutex_lock(&max3100s_lock);
++
++	/* find out the index for the chip we are removing */
++	for (i = 0; i < MAX_MAX3100; i++)
++		if (max3100s[i] == s)
++			break;
++
++	dev_dbg(&spi->dev, "%s: removing port %d\n", __func__, i);
++	uart_remove_one_port(&max3100_uart_driver, &max3100s[i]->port);
++	kfree(max3100s[i]);
++	max3100s[i] = NULL;
++
++	/* check if this is the last chip we have */
++	for (i = 0; i < MAX_MAX3100; i++)
++		if (max3100s[i]) {
++			mutex_unlock(&max3100s_lock);
++			return 0;
++		}
++	pr_debug("removing max3100 driver\n");
++	uart_unregister_driver(&max3100_uart_driver);
++
++	mutex_unlock(&max3100s_lock);
++	return 0;
++}
++
++#ifdef CONFIG_PM
++
++static int max3100_suspend(struct spi_device *spi, pm_message_t state)
++{
++	struct max3100_port *s = dev_get_drvdata(&spi->dev);
++
++	dev_dbg(&s->spi->dev, "%s\n", __func__);
++
++	disable_irq(s->irq);
++
++	s->suspending = 1;
++	uart_suspend_port(&max3100_uart_driver, &s->port);
++
++	if (s->max3100_hw_suspend)
++		s->max3100_hw_suspend(1);
++	else {
++		/* no HW suspend, so do SW one */
++		u16 tx, rx;
++
++		tx = MAX3100_WC | MAX3100_SHDN;
++		max3100_sr(s, tx, &rx);
++	}
++	return 0;
++}
++
++static int max3100_resume(struct spi_device *spi)
++{
++	struct max3100_port *s = dev_get_drvdata(&spi->dev);
++
++	dev_dbg(&s->spi->dev, "%s\n", __func__);
++
++	if (s->max3100_hw_suspend)
++		s->max3100_hw_suspend(0);
++	uart_resume_port(&max3100_uart_driver, &s->port);
++	s->suspending = 0;
++
++	enable_irq(s->irq);
++
++	s->conf_commit = 1;
++	if (s->workqueue)
++		max3100_dowork(s);
++
++	return 0;
++}
++
++#else
++#define max3100_suspend NULL
++#define max3100_resume  NULL
++#endif
++
++static struct spi_driver max3100_driver = {
++	.driver = {
++		.name		= "max3100",
++		.bus		= &spi_bus_type,
++		.owner		= THIS_MODULE,
++	},
++
++	.probe		= max3100_probe,
++	.remove		= __devexit_p(max3100_remove),
++	.suspend	= max3100_suspend,
++	.resume		= max3100_resume,
++};
++
++static int __init max3100_init(void)
++{
++	return spi_register_driver(&max3100_driver);
++}
++module_init(max3100_init);
++
++static void __exit max3100_exit(void)
++{
++	spi_unregister_driver(&max3100_driver);
++}
++module_exit(max3100_exit);
++
++MODULE_DESCRIPTION("MAX3100 driver");
++MODULE_AUTHOR("Christian Pellegrin <chripell@evolware.org>");
++MODULE_LICENSE("GPL");
+diff --git a/include/linux/serial_core.h b/include/linux/serial_core.h
+index 57a97e5..ec3df6c 100644
+--- a/include/linux/serial_core.h
++++ b/include/linux/serial_core.h
+@@ -167,6 +167,9 @@
+ /* MAX3100 */
+ #define PORT_MAX3100    86
+ 
++/* MAX3100 */
++#define PORT_MAX3100    83
++
+ #ifdef __KERNEL__
+ 
+ #include <linux/compiler.h>
+diff --git a/include/linux/serial_max3100.h b/include/linux/serial_max3100.h
+new file mode 100644
+index 0000000..b7e9a01
+--- /dev/null
++++ b/include/linux/serial_max3100.h
+@@ -0,0 +1,53 @@
 +
 +/*
-+ * Determine which stack to use..
-+ */
-+void __user *get_sigframe(struct k_sigaction *ka, struct pt_regs *regs,
-+                         size_t frame_size)
-+{
-+       unsigned long sp;
-+
-+       /* Default to using normal stack */
-+       sp = regs->regs[0];
-+       sp -= 32;
-+
-+       /* This is the X/Open sanctioned signal stack switching.  */
-+       if ((ka->sa.sa_flags & SA_ONSTACK) && (!on_sig_stack(sp)))
-+               sp = current->sas_ss_sp + current->sas_ss_size;
-+
-+       return (void *)((sp - frame_size) & ~7);
-+}
-+
-+asmlinkage int sys_rt_sigsuspend(struct pt_regs *regs)
-+{
-+       sigset_t newset;
-+       sigset_t __user *unewset;
-+       size_t sigsetsize;
-+
-+       sigsetsize = regs->regs[5];
-+       if (sigsetsize != sizeof(sigset_t))
-+               return -EINVAL;
-+
-+       unewset = (sigset_t __user *) regs->regs[4];
-+       if (copy_from_user(&newset, unewset, sizeof(newset)))
-+               return -EFAULT;
-+
-+       sigdelsetmask(&newset, ~_BLOCKABLE);
-+
-+       spin_lock_irq(&current->sighand->siglock);
-+       current->saved_sigmask = current->blocked;
-+       current->blocked = newset;
-+       recalc_sigpending();
-+       spin_unlock_irq(&current->sighand->siglock);
-+
-+       current->state = TASK_INTERRUPTIBLE;
-+       schedule();
-+       set_thread_flag(TIF_RESTORE_SIGMASK);
-+       return -ERESTARTNOHAND;
-+}
-+
-+asmlinkage int sys_sigaltstack(struct pt_regs *regs)
-+{
-+       const stack_t *uss = (const stack_t *) regs->regs[4];
-+       stack_t *uoss = (stack_t *) regs->regs[5];
-+       unsigned long usp = regs->regs[0];
-+
-+       return do_sigaltstack(uss, uoss, usp);
-+}
-+
-+asmlinkage void sys_rt_sigreturn(struct pt_regs *regs)
-+{
-+       struct rt_sigframe __user *frame;
-+       sigset_t set;
-+       stack_t st;
-+       int sig;
-+
-+       frame = (struct rt_sigframe __user *) regs->regs[0];
-+       if (!access_ok(VERIFY_READ, frame, sizeof(*frame)))
-+               goto badframe;
-+       if (__copy_from_user(&set, &frame->rs_uc.uc_sigmask, sizeof(set)))
-+               goto badframe;
-+
-+       sigdelsetmask(&set, ~_BLOCKABLE);
-+       spin_lock_irq(&current->sighand->siglock);
-+       current->blocked = set;
-+       recalc_sigpending();
-+       spin_unlock_irq(&current->sighand->siglock);
-+
-+       sig = restore_sigcontext(regs, &frame->rs_uc.uc_mcontext);
-+       if (sig < 0)
-+               goto badframe;
-+       else if (sig)
-+               force_sig(sig, current);
-+
-+       if (__copy_from_user(&st, &frame->rs_uc.uc_stack, sizeof(st)))
-+               goto badframe;
-+
-+       /* It is more difficult to avoid calling this function than to
-+          call it and ignore errors.  */
-+       do_sigaltstack((stack_t __user *)&st, NULL, regs->regs[0]);
-+
-+       __asm__ __volatile__(
-+               "mv\tr0, %0\n\t"
-+               "la\tr8, syscall_exit\n\t"
-+               "br\tr8\n\t"
-+               : : "r" (regs) : "r8");
-+
-+badframe:
-+       force_sig(SIGSEGV, current);
-+}
-+
-+int setup_rt_frame(struct k_sigaction *ka, struct pt_regs *regs,
-+       int signr, sigset_t *set, siginfo_t *info)
-+{
-+       struct rt_sigframe *frame;
-+       int err = 0;
-+
-+       frame = get_sigframe(ka, regs, sizeof(*frame));
-+       if (!access_ok(VERIFY_WRITE, frame, sizeof(*frame)))
-+               goto give_sigsegv;
-+
-+       /*
-+        * Set up the return code ...
-+        *
-+        *         li      v0, __NR_rt_sigreturn
-+        *         syscall
-+        */
-+       err |= __put_user(0x87788000 + __NR_rt_sigreturn*2, frame->rs_code 
-+ 0);
-+       err |= __put_user(0x80008002, frame->rs_code + 1);
-+       flush_cache_sigtramp((unsigned long) frame->rs_code);
-+
-+       err |= copy_siginfo_to_user(&frame->rs_info, info);
-+       err |= __put_user(0, &frame->rs_uc.uc_flags);
-+       err |= __put_user(0, &frame->rs_uc.uc_link);
-+       err |= __put_user((void *)current->sas_ss_sp,
-+                               &frame->rs_uc.uc_stack.ss_sp);
-+       err |= __put_user(sas_ss_flags(regs->regs[0]),
-+                               &frame->rs_uc.uc_stack.ss_flags);
-+       err |= __put_user(current->sas_ss_size,
-+                               &frame->rs_uc.uc_stack.ss_size);
-+       err |= setup_sigcontext(regs, &frame->rs_uc.uc_mcontext);
-+       err |= __copy_to_user(&frame->rs_uc.uc_sigmask, set, 
-sizeof(*set));
-+
-+       if (err)
-+               goto give_sigsegv;
-+
-+       regs->regs[0] = (unsigned long) frame;
-+       regs->regs[3] = (unsigned long) frame->rs_code;
-+       regs->regs[4] = signr;
-+       regs->regs[5] = (unsigned long) &frame->rs_info;
-+       regs->regs[6] = (unsigned long) &frame->rs_uc;
-+       regs->regs[29] = (unsigned long) ka->sa.sa_handler;
-+       regs->cp0_epc = (unsigned long) ka->sa.sa_handler;
-+
-+       return 0;
-+
-+give_sigsegv:
-+       if (signr == SIGSEGV)
-+               ka->sa.sa_handler = SIG_DFL;
-+       force_sig(SIGSEGV, current);
-+       return -EFAULT;
-+}
-+
-+int handle_signal(unsigned long sig, siginfo_t *info,
-+       struct k_sigaction *ka, sigset_t *oldset, struct pt_regs *regs)
-+{
-+       int ret;
-+
-+       if (regs->is_syscall) {
-+               switch (regs->regs[4]) {
-+               case ERESTART_RESTARTBLOCK:
-+               case ERESTARTNOHAND:
-+                       regs->regs[4] = EINTR;
-+                       break;
-+               case ERESTARTSYS:
-+                       if (!(ka->sa.sa_flags & SA_RESTART)) {
-+                               regs->regs[4] = EINTR;
-+                               break;
-+                       }
-+               case ERESTARTNOINTR:
-+                       regs->regs[4] = regs->orig_r4;
-+                       regs->regs[7] = regs->orig_r7;
-+                       regs->cp0_epc -= 8;
-+               }
-+
-+               regs->is_syscall = 0;
-+       }
-+
-+       /*
-+        * Set up the stack frame
-+        */
-+       ret = setup_rt_frame(ka, regs, sig, oldset, info);
-+
-+       spin_lock_irq(&current->sighand->siglock);
-+       sigorsets(&current->blocked, &current->blocked, &ka->sa.sa_mask);
-+       if (!(ka->sa.sa_flags & SA_NODEFER))
-+               sigaddset(&current->blocked, sig);
-+       recalc_sigpending();
-+       spin_unlock_irq(&current->sighand->siglock);
-+
-+       return ret;
-+}
-+
-+asmlinkage void do_signal(struct pt_regs *regs)
-+{
-+       struct k_sigaction ka;
-+       sigset_t *oldset;
-+       siginfo_t info;
-+       int signr;
-+
-+       /*
-+        * We want the common case to go fast, which is why we may in 
-certain
-+        * cases get here from kernel mode. Just return without doing 
-anything
-+        * if so.
-+        */
-+       if (!user_mode(regs))
-+               return;
-+
-+       if (test_thread_flag(TIF_RESTORE_SIGMASK))
-+               oldset = &current->saved_sigmask;
-+       else
-+               oldset = &current->blocked;
-+
-+       signr = get_signal_to_deliver(&info, &ka, regs, NULL);
-+       if (signr > 0) {
-+               /* Actually deliver the signal.  */
-+               if (handle_signal(signr, &info, &ka, oldset, regs) == 0) {
-+                       /*
-+                        * A signal was successfully delivered; the saved
-+                        * sigmask will have been stored in the signal 
-frame,
-+                        * and will be restored by sigreturn, so we can 
-simply
-+                        * clear the TIF_RESTORE_SIGMASK flag.
-+                        */
-+                       if (test_thread_flag(TIF_RESTORE_SIGMASK))
-+                               clear_thread_flag(TIF_RESTORE_SIGMASK);
-+               }
-+
-+               return;
-+       }
-+
-+       if (regs->is_syscall) {
-+               if (regs->regs[4] == ERESTARTNOHAND ||
-+                   regs->regs[4] == ERESTARTSYS ||
-+                   regs->regs[4] == ERESTARTNOINTR) {
-+                       regs->regs[4] = regs->orig_r4;
-+                       regs->regs[7] = regs->orig_r7;
-+                       regs->cp0_epc -= 8;
-+               }
-+
-+               if (regs->regs[4] == ERESTART_RESTARTBLOCK) {
-+                       regs->regs[27] = __NR_restart_syscall;
-+                       regs->regs[4] = regs->orig_r4;
-+                       regs->regs[7] = regs->orig_r7;
-+                       regs->cp0_epc -= 8;
-+               }
-+
-+               regs->is_syscall = 0;   /* Don't deal with this again.  */
-+       }
-+
-+       /*
-+        * If there's no signal to deliver, we just put the saved sigmask
-+        * back
-+        */
-+       if (test_thread_flag(TIF_RESTORE_SIGMASK)) {
-+               clear_thread_flag(TIF_RESTORE_SIGMASK);
-+               sigprocmask(SIG_SETMASK, &current->saved_sigmask, NULL);
-+       }
-+}
-+
-+/*
-+ * notification of userspace execution resumption
-+ * - triggered by the TIF_WORK_MASK flags
-+ */
-+asmlinkage void do_notify_resume(struct pt_regs *regs, void *unused,
-+                               __u32 thread_info_flags)
-+{
-+       /* deal with pending signal delivery */
-+       if (thread_info_flags & (_TIF_SIGPENDING | _TIF_RESTORE_SIGMASK))
-+               do_signal(regs);
-+}
-diff -uprN -x linux-2.6-git.ori/Documentation/dontdiff 
-linux-2.6-git.ori/arch/score/kernel/syscalls.S 
-linux-2.6-git.new/arch/score/kernel/syscalls.S
---- linux-2.6-git.ori/arch/score/kernel/syscalls.S      1970-01-01 
-08:00:00.000000000 +0800
-+++ linux-2.6-git.new/arch/score/kernel/syscalls.S      2009-04-02 
-15:09:33.000000000 +0800
-@@ -0,0 +1,372 @@
-+/*
-+ * arch/score/kernel/syscalls.S
 + *
-+ * Score Processor version.
-+ *
-+ * Copyright (C) 2009 Sunplus Core Technology Co., Ltd.
-+ *  Chen Liqin <liqin.chen@sunplusct.com>
-+ *  Lennox Wu <lennox.wu@sunplusct.com>
++ *  Copyright (C) 2007 Christian Pellegrin
 + *
 + * This program is free software; you can redistribute it and/or modify
 + * it under the terms of the GNU General Public License as published by
 + * the Free Software Foundation; either version 2 of the License, or
 + * (at your option) any later version.
-+ *
-+ * This program is distributed in the hope that it will be useful,
-+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
-+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-+ * GNU General Public License for more details.
-+ *
-+ * You should have received a copy of the GNU General Public License
-+ * along with this program; if not, see the file COPYING, or write
-+ * to the Free Software Foundation, Inc.,
-+ * 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 + */
 +
-+       .macro  syscalltable
-+       sys     sys_restart_syscall     0       /* 0 */
-+       sys     sys_exit                1
-+       sys     sys_fork_wrapper        0
-+       sys     sys_read                3
-+       sys     sys_write               3
-+       sys     sys_open                3       /* 5 */
-+       sys     sys_close               1
-+       sys     sys_waitpid             3
-+       sys     sys_creat               2
-+       sys     sys_link                2
-+       sys     sys_unlink              1       /* 10 */
-+       sys     sys_execve_wrapper      0
-+       sys     sys_chdir               1
-+       sys     sys_time                1
-+       sys     sys_mknod               3
-+       sys     sys_chmod               2       /* 15 */
-+       sys     sys_lchown              3
-+       sys     sys_ni_syscall          0
-+       sys     sys_ni_syscall          0       /* old stat */
-+       sys     sys_lseek               3
-+       sys     sys_getpid              0       /* 20 */
-+       sys     sys_mount               5
-+       sys     sys_ni_syscall          0       /* old umount */
-+       sys     sys_setuid              1
-+       sys     sys_getuid              0
-+       sys     sys_stime               1       /* 25 */
-+       sys     sys_ptrace              4
-+       sys     sys_alarm               1
-+       sys     sys_ni_syscall          0       /* old fstat */
-+       sys     sys_pause               0
-+       sys     sys_ni_syscall          0       /* 30 old utime */
-+       sys     sys_ni_syscall          0       /* old stty */
-+       sys     sys_ni_syscall          0       /* old gtty */
-+       sys     sys_access              2
-+       sys     sys_nice                1
-+       sys     sys_ni_syscall          0       /* 35 old ftime */
-+       sys     sys_sync                0
-+       sys     sys_kill                2
-+       sys     sys_rename              2
-+       sys     sys_mkdir               2
-+       sys     sys_rmdir               1       /* 40 */
-+       sys     sys_dup                 1
-+       sys     sys_pipe                0
-+       sys     sys_times               1
-+       sys     sys_ni_syscall          0       /* old prof */
-+       sys     sys_brk                 1       /* 45 */
-+       sys     sys_setgid              1
-+       sys     sys_getgid              0
-+       sys     sys_ni_syscall          0       /* old signal */
-+       sys     sys_geteuid             0
-+       sys     sys_getegid             0       /* 50 */
-+       sys     sys_acct                1
-+       sys     sys_umount              2
-+       sys     sys_ni_syscall          0       /* old lock */
-+       sys     sys_ioctl               3
-+       sys     sys_fcntl               3       /* 55 */
-+       sys     sys_ni_syscall          2
-+       sys     sys_setpgid             2
-+       sys     sys_ni_syscall          0       /* old ulimit */
-+       sys     sys_ni_syscall          0       /* old uname */
-+       sys     sys_umask               1       /* 60 */
-+       sys     sys_chroot              1
-+       sys     sys_ustat               2
-+       sys     sys_dup2                2
-+       sys     sys_getppid             0
-+       sys     sys_getpgrp             0       /* 65 */
-+       sys     sys_setsid              0
-+       sys     sys_ni_syscall          0       /* old sigaction */
-+       sys     sys_sgetmask            0
-+       sys     sys_ssetmask            1
-+       sys     sys_setreuid            2       /* 70 */
-+       sys     sys_setregid            2
-+       sys     sys_ni_syscall          0       /* old sigsuspend */
-+       sys     sys_ni_syscall          0       /* old sigpending */
-+       sys     sys_sethostname         2
-+       sys     sys_setrlimit           2       /* 75 */
-+       sys     sys_ni_syscall          0       /* old getrlimit */
-+       sys     sys_getrusage           2
-+       sys     sys_gettimeofday        2
-+       sys     sys_settimeofday        2
-+       sys     sys_getgroups           2       /* 80 */
-+       sys     sys_setgroups           2
-+       sys     sys_ni_syscall          0       /* old_select */
-+       sys     sys_symlink             2
-+       sys     sys_ni_syscall          0       /* old lstat */
-+       sys     sys_readlink            3       /* 85 */
-+       sys     sys_uselib              1
-+       sys     sys_ni_syscall          0       /* sys_swapon */
-+       sys     sys_reboot              3
-+       sys     sys_ni_syscall          0       /* old_readdir */
-+       sys     sys_ni_syscall          0       /* 90 sys_mmap */
-+       sys     sys_munmap              2
-+       sys     sys_truncate            2
-+       sys     sys_ftruncate           2
-+       sys     sys_fchmod              2
-+       sys     sys_fchown              3       /* 95 */
-+       sys     sys_getpriority         2
-+       sys     sys_setpriority         3
-+       sys     sys_ni_syscall          0       /* old profil */
-+       sys     sys_statfs              2
-+       sys     sys_fstatfs             2       /* 100 */
-+       sys     sys_ni_syscall          0       /* old ioperm */
-+       sys     sys_ni_syscall          0       /* old socketcall */
-+       sys     sys_syslog              3
-+       sys     sys_setitimer           3
-+       sys     sys_getitimer           2       /* 105 */
-+       sys     sys_newstat             2
-+       sys     sys_newlstat            2
-+       sys     sys_newfstat            2
-+       sys     sys_ni_syscall          0       /* old uname */
-+       sys     sys_ni_syscall          0       /* 110 */
-+       sys     sys_vhangup             0
-+       sys     sys_ni_syscall          0       /* old idle */
-+       sys     sys_ni_syscall          0       /* old vm86 */
-+       sys     sys_wait4               4
-+       sys     sys_ni_syscall          0       /* 115 swapoff */
-+       sys     sys_sysinfo             1
-+       sys     sys_ni_syscall          0       /* old ipc */
-+       sys     sys_fsync               1
-+       sys     sys_ni_syscall          0       /* old sigreturn */
-+       sys     sys_clone_wrapper       0       /* 120 */
-+       sys     sys_setdomainname       2
-+       sys     sys_newuname            1
-+       sys     sys_ni_syscall          0       /* old modify_ldt */
-+       sys     sys_adjtimex            1
-+       sys     sys_ni_syscall          0       /* 125 old mprotect */
-+       sys     sys_ni_syscall          0       /* old sigprocmask */
-+       sys     sys_ni_syscall          0       /* old create_module */
-+       sys     sys_init_module         5
-+       sys     sys_delete_module       1
-+       sys     sys_ni_syscall          0       /* 130 old get_kernel_syms 
-*/
-+       sys     sys_quotactl            4
-+       sys     sys_getpgid             1
-+       sys     sys_fchdir              1
-+       sys     sys_bdflush             2
-+       sys     sys_ni_syscall          0       /* 135 old sysfs */
-+       sys     sys_personality         1
-+       sys     sys_ni_syscall          0       /* for afs_syscall */
-+       sys     sys_setfsuid            1
-+       sys     sys_setfsgid            1
-+       sys     sys_llseek              5       /* 140 */
-+       sys     sys_getdents            3
-+       sys     sys_ni_syscall          0       /* old select */
-+       sys     sys_flock               2
-+       sys     sys_ni_syscall          0       /* old msync */
-+       sys     sys_readv               3       /* 145 */
-+       sys     sys_writev              3
-+       sys     sys_ni_syscall          0
-+       sys     sys_ni_syscall          0
-+       sys     sys_ni_syscall          0
-+       sys     sys_ni_syscall          0       /* 150 */
-+       sys     sys_getsid              1
-+       sys     sys_fdatasync           1
-+       sys     sys_sysctl              1
-+       sys     sys_ni_syscall          0       /* old mlock */
-+       sys     sys_ni_syscall          0       /* 155 old munlock */
-+       sys     sys_ni_syscall          0       /* old mlockall */
-+       sys     sys_ni_syscall          0       /* old munlockall */
-+       sys     sys_sched_setparam      2
-+       sys     sys_sched_getparam      2
-+       sys     sys_sched_setscheduler  3       /* 160 */
-+       sys     sys_sched_getscheduler  1
-+       sys     sys_sched_yield         0
-+       sys     sys_sched_get_priority_max 1
-+       sys     sys_sched_get_priority_min 1
-+       sys     sys_sched_rr_get_interval 2     /* 165 */
-+       sys     sys_nanosleep,          2
-+       sys     sys_mremap,             5
-+       sys     sys_accept              3
-+       sys     sys_bind                3
-+       sys     sys_connect             3       /* 170 */
-+       sys     sys_getpeername         3
-+       sys     sys_getsockname         3
-+       sys     sys_getsockopt          5
-+       sys     sys_listen              2
-+       sys     sys_recv                4       /* 175 */
-+       sys     sys_recvfrom            6
-+       sys     sys_recvmsg             3
-+       sys     sys_send                4
-+       sys     sys_sendmsg             3
-+       sys     sys_sendto              6       /* 180 */
-+       sys     sys_setsockopt          5
-+       sys     sys_shutdown            2
-+       sys     sys_socket              3
-+       sys     sys_socketpair          4
-+       sys     sys_setresuid           3       /* 185 */
-+       sys     sys_getresuid           3
-+       sys     sys_ni_syscall          0       /* old query_module */
-+       sys     sys_ni_syscall          0       /* old poll */
-+       sys     sys_nfsservctl          3
-+       sys     sys_setresgid           3       /* 190 */
-+       sys     sys_getresgid           3
-+       sys     sys_prctl               5
-+       sys     sys_rt_sigreturn_wrapper        0
-+       sys     sys_rt_sigaction        4
-+       sys     sys_rt_sigprocmask      4       /* 195 */
-+       sys     sys_rt_sigpending       2
-+       sys     sys_rt_sigtimedwait     4
-+       sys     sys_rt_sigqueueinfo     3
-+       sys     sys_rt_sigsuspend_wrapper       0
-+       sys     sys_pread64_wrapper     6       /* 200 */
-+       sys     sys_pwrite64_wrapper    6
-+       sys     sys_chown               3
-+       sys     sys_getcwd              2
-+       sys     sys_capget              2
-+       sys     sys_capset              2       /* 205 */
-+       sys     sys_sigaltstack_wrapper 0
-+       sys     sys_sendfile            4
-+       sys     sys_ni_syscall          0
-+       sys     sys_ni_syscall          0
-+       sys     sys_mmap2               6       /* 210 */
-+       sys     sys_truncate64          4
-+       sys     sys_ftruncate64         4
-+       sys     sys_stat64              2
-+       sys     sys_lstat64             2
-+       sys     sys_fstat64             2       /* 215 */
-+       sys     sys_pivot_root          2
-+       sys     sys_ni_syscall          0       /* old mincore */
-+       sys     sys_ni_syscall          0       /* old madvise */
-+       sys     sys_getdents64          3
-+       sys     sys_fcntl64             3       /* 220 */
-+       sys     sys_ni_syscall          0
-+       sys     sys_gettid              0
-+       sys     sys_readahead           5
-+       sys     sys_setxattr            5
-+       sys     sys_lsetxattr           5       /* 225 */
-+       sys     sys_fsetxattr           5
-+       sys     sys_getxattr            4
-+       sys     sys_lgetxattr           4
-+       sys     sys_fgetxattr           4
-+       sys     sys_listxattr           3       /* 230 */
-+       sys     sys_llistxattr          3
-+       sys     sys_flistxattr          3
-+       sys     sys_removexattr         2
-+       sys     sys_lremovexattr        2
-+       sys     sys_fremovexattr        2       /* 235 */
-+       sys     sys_tkill               2
-+       sys     sys_sendfile64          5
-+       sys     sys_futex               6
-+       sys     sys_sched_setaffinity   3
-+       sys     sys_sched_getaffinity   3       /* 240 */
-+       sys     sys_io_setup            2
-+       sys     sys_io_destroy          1
-+       sys     sys_io_getevents        5
-+       sys     sys_io_submit           3
-+       sys     sys_io_cancel           3       /* 245 */
-+       sys     sys_exit_group          1
-+       sys     sys_lookup_dcookie      4
-+       sys     sys_epoll_create        1
-+       sys     sys_epoll_ctl           4
-+       sys     sys_epoll_wait          3       /* 250 */
-+       sys     sys_ni_syscall          0       /* old remap_file_pages */
-+       sys     sys_set_tid_address     1
-+       sys     sys_ni_syscall          0
-+       sys     sys_fadvise64_64_wrapper        6
-+       sys     sys_statfs64            3       /* 255 */
-+       sys     sys_fstatfs64           2
-+       sys     sys_timer_create        3
-+       sys     sys_timer_settime       4
-+       sys     sys_timer_gettime       2
-+       sys     sys_timer_getoverrun    1       /* 260 */
-+       sys     sys_timer_delete        1
-+       sys     sys_clock_settime       2
-+       sys     sys_clock_gettime       2
-+       sys     sys_clock_getres        2
-+       sys     sys_clock_nanosleep     4       /* 265 */
-+       sys     sys_tgkill              3
-+       sys     sys_utimes              2
-+       sys     sys_ni_syscall          0       /* old mbind */
-+       sys     sys_ni_syscall          0       /* old get_mempolicy */
-+       sys     sys_ni_syscall          0       /* 270 old set_mempolicy 
-*/
-+       sys     sys_mq_open             4
-+       sys     sys_mq_unlink           1
-+       sys     sys_mq_timedsend        5
-+       sys     sys_mq_timedreceive     5
-+       sys     sys_mq_notify           2       /* 275 */
-+       sys     sys_mq_getsetattr       3
-+       sys     sys_ni_syscall          0       /* sys_vserver */
-+       sys     sys_waitid              5
-+       sys     sys_ni_syscall          0
-+       sys     sys_add_key             5       /* 280 */
-+       sys     sys_request_key         4
-+       sys     sys_keyctl              5
-+       sys     sys_ni_syscall          0       /* old set_thread_area */
-+       sys     sys_inotify_init        0
-+       sys     sys_inotify_add_watch   3       /* 285 */
-+       sys     sys_inotify_rm_watch    2
-+       sys     sys_ni_syscall          0       /* old migrate_pages */
-+       sys     sys_openat              4
-+       sys     sys_mkdirat             3
-+       sys     sys_mknodat             4       /* 290 */
-+       sys     sys_fchownat            5
-+       sys     sys_futimesat           3
-+       sys     sys_fstatat64           4
-+       sys     sys_unlinkat            3
-+       sys     sys_renameat            4       /* 295 */
-+       sys     sys_linkat              5
-+       sys     sys_symlinkat           3
-+       sys     sys_readlinkat          4
-+       sys     sys_fchmodat            3
-+       sys     sys_faccessat           3       /* 300 */
-+       sys     sys_pselect6            6
-+       sys     sys_ppoll               5
-+       sys     sys_unshare             1
-+       sys     sys_splice              4
-+       sys     sys_sync_file_range     7       /* 305 */
-+       sys     sys_tee                 4
-+       sys     sys_vmsplice            4
-+       sys     sys_move_pages          6
-+       sys     sys_set_robust_list     2
-+       sys     sys_get_robust_list     3       /* 310 */
-+       sys     sys_kexec_load          4
-+       sys     sys_getcpu              3
-+       sys     sys_epoll_pwait         6
-+       sys     sys_ioprio_set          3
-+       sys     sys_ioprio_get          2       /* 315 */
-+       sys     sys_utimensat           4
-+       sys     sys_signalfd            3
-+       sys     sys_ni_syscall          0
-+       sys     sys_eventfd             1
-+       sys     sys_fallocate           6       /* 320 */
-+       sys     sys_timerfd_create      2
-+       sys     sys_timerfd_gettime     2
-+       sys     sys_timerfd_settime     4
-+       sys     sys_signalfd4           4
-+       sys     sys_eventfd2            2       /* 325 */
-+       sys     sys_epoll_create1       1
-+       sys     sys_dup3                3
-+       sys     sys_pipe2               2
-+       sys     sys_inotify_init1       1
-+       .endm
 +
-+       /* We pre-compute the number of _instruction_ bytes needed to
-+          load or store the arguments 6-8. Negative values are ignored. 
-*/
++#ifndef _LINUX_SERIAL_MAX3100_H
++#define _LINUX_SERIAL_MAX3100_H 1
 +
-+       .macro  sys function, nargs
-+       .word   \function
-+       .word   \nargs
-+       .endm
 +
-+       .align  2
-+       .globl  sys_call_table
-+       .type   sys_call_table, @object
-+sys_call_table:
-+       syscalltable
-+       .size   sys_call_table, . - sys_call_table
-diff -uprN -x linux-2.6-git.ori/Documentation/dontdiff 
-linux-2.6-git.ori/arch/score/kernel/sys-score.c 
-linux-2.6-git.new/arch/score/kernel/sys-score.c
---- linux-2.6-git.ori/arch/score/kernel/sys-score.c     1970-01-01 
-08:00:00.000000000 +0800
-+++ linux-2.6-git.new/arch/score/kernel/sys-score.c     2009-04-07 
-21:21:20.000000000 +0800
-@@ -0,0 +1,178 @@
-+/*
-+ * arch/score/kernel/syscall.c
++/**
++ * struct plat_max3100 - MAX3100 SPI UART platform data
++ * @loopback:            force MAX3100 in loopback
++ * @crystal:             1 for 3.6864 Mhz, 0 for 1.8432
++ * @max3100_hw_suspend:  MAX3100 has a shutdown pin. This is a hook
++ *                       called on suspend and resume to activate it.
++ * @poll_time:           poll time for CTS signal in ms, 0 disables (so no hw
++ *                       flow ctrl is possible but you have less CPU usage)
 + *
-+ * Score Processor version.
++ * You should use this structure in your machine description to specify
++ * how the MAX3100 is connected. Example:
 + *
-+ * Copyright (C) 2009 Sunplus Core Technology Co., Ltd.
-+ *  Chen Liqin <liqin.chen@sunplusct.com>
-+ *  Lennox Wu <lennox.wu@sunplusct.com>
++ * static struct plat_max3100 max3100_plat_data = {
++ *  .loopback = 0,
++ *  .crystal = 0,
++ *  .poll_time = 100,
++ * };
 + *
-+ * This program is free software; you can redistribute it and/or modify
-+ * it under the terms of the GNU General Public License as published by
-+ * the Free Software Foundation; either version 2 of the License, or
-+ * (at your option) any later version.
++ * static struct spi_board_info spi_board_info[] = {
++ * {
++ *  .modalias	= "max3100",
++ *  .platform_data	= &max3100_plat_data,
++ *  .irq		= IRQ_EINT12,
++ *  .max_speed_hz	= 5*1000*1000,
++ *  .chip_select	= 0,
++ * },
++ * };
 + *
-+ * This program is distributed in the hope that it will be useful,
-+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
-+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-+ * GNU General Public License for more details.
-+ *
-+ * You should have received a copy of the GNU General Public License
-+ * along with this program; if not, see the file COPYING, or write
-+ * to the Free Software Foundation, Inc.,
-+ * 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
-+ */
-+
-+#include <linux/fs.h>
-+#include <linux/mman.h>
-+#include <linux/syscalls.h>
-+#include <linux/file.h>
-+#include <linux/utsname.h>
-+#include <linux/unistd.h>
-+#include <linux/shm.h>
-+#include <linux/module.h>
-+#include <asm/uaccess.h>
-+
-+unsigned long shm_align_mask = PAGE_SIZE - 1;
-+EXPORT_SYMBOL(shm_align_mask);
-+
-+asmlinkage unsigned long
-+sys_mmap2(unsigned long addr, unsigned long len, unsigned long prot,
-+         unsigned long flags, unsigned long fd, unsigned long pgoff)
-+{
-+       int error = -EBADF;
-+       struct file *file = NULL;
-+
-+       if (pgoff & (~PAGE_MASK >> 12))
-+               return -EINVAL;
-+
-+       flags &= ~(MAP_EXECUTABLE | MAP_DENYWRITE);
-+       if (!(flags & MAP_ANONYMOUS)) {
-+               file = fget(fd);
-+               if (!file)
-+                       return error;
-+       }
-+
-+       down_write(&current->mm->mmap_sem);
-+       error = do_mmap_pgoff(file, addr, len, prot, flags, pgoff >> 
-(PAGE_SHIFT-12));
-+       up_write(&current->mm->mmap_sem);
-+
-+       if (file)
-+               fput(file);
-+
-+       return error;
-+}
-+
-+/*
-+ * Fork a new task - this creates a new program thread.
-+ * This is called indirectly via a small wrapper
-+ */
-+asmlinkage int
-+sys_fork(struct pt_regs *regs)
-+{
-+       return do_fork(SIGCHLD, regs->regs[0], regs, 0, NULL, NULL);
-+}
-+
-+/*
-+ * Clone a task - this clones the calling program thread.
-+ * This is called indirectly via a small wrapper
-+ */
-+asmlinkage int
-+sys_clone(struct pt_regs *regs)
-+{
-+       unsigned long clone_flags;
-+       unsigned long newsp;
-+       int __user *parent_tidptr, *child_tidptr;
-+
-+       clone_flags = regs->regs[4];
-+       newsp = regs->regs[5];
-+       if (!newsp)
-+               newsp = regs->regs[0];
-+       parent_tidptr = (int __user *)regs->regs[6];
-+
-+       child_tidptr = NULL;
-+       if (clone_flags & (CLONE_CHILD_SETTID | CLONE_CHILD_CLEARTID)) {
-+               int __user *__user *usp = (int __user *__user 
-*)regs->regs[0];
-+
-+               if (get_user(child_tidptr, &usp[4]))
-+                       return -EFAULT;
-+       }
-+
-+       return do_fork(clone_flags, newsp, regs, 0,
-+                       parent_tidptr, child_tidptr);
-+}
-+
-+/*
-+ * sys_execve() executes a new program.
-+ * This is called indirectly via a small wrapper
-+ */
-+asmlinkage int sys_execve(struct pt_regs *regs)
-+{
-+       int error;
-+       char *filename;
-+
-+       filename = getname((char *) (long) regs->regs[4]);
-+       error = PTR_ERR(filename);
-+       if (IS_ERR(filename))
-+               return error;
-+
-+       error = do_execve(filename, (char **) (long) regs->regs[5],
-+                         (char **) (long) regs->regs[6], regs);
-+
-+       putname(filename);
-+       return error;
-+}
-+
-+/*
-+ * If we ever come here the user sp is bad.  Zap the process right away.
-+ * Due to the bad stack signaling wouldn't work.
-+ */
-+asmlinkage void bad_stack(void)
-+{
-+       do_exit(SIGSEGV);
-+}
-+
-+/*
-+ * Do a system call from kernel instead of calling sys_execve so we
-+ * end up with proper pt_regs.
-+ */
-+int kernel_execve(const char *filename, char *const argv[], char *const 
-envp[])
-+{
-+       register unsigned long __r4 asm("r4") = (unsigned long) filename;
-+       register unsigned long __r5 asm("r5") = (unsigned long) argv;
-+       register unsigned long __r6 asm("r6") = (unsigned long) envp;
-+       register unsigned long __r7 asm("r7");
-+
-+       __asm__ volatile ("     \n"
-+               "ldi    r27, %5         \n"
-+               "syscall                \n"
-+               "mv     %0, r4          \n"
-+               "mv     %1, r7          \n"
-+               : "=&r" (__r4), "=r" (__r7)
-+               : "r" (__r4), "r" (__r5), "r" (__r6), "i" (__NR_execve)
-+               : "r8", "r9", "r10", "r11", "r22", "r23", "r24", "r25",
-+                 "r26", "r27", "memory");
-+
-+       if (__r7 == 0)
-+               return __r4;
-+
-+       return -__r4;
-+}
-+
-+asmlinkage ssize_t sys_pwrite64_wrapper(unsigned int fd, const char *buf,
-+                                       long long count, loff_t pos)
-+{
-+       return sys_pwrite64(fd, buf, (long) count, pos);
-+}
-+
-+asmlinkage ssize_t sys_pread64_wrapper(unsigned int fd, char *buf,
-+                                       long long count, loff_t pos)
-+{
-+       return sys_pread64(fd, buf, (long) count, pos);
-+}
-+
-+asmlinkage long
-+sys_fadvise64_64_wrapper(int fd, int unused, loff_t offset, size_t len, 
-int advice)
-+{
-+       return sys_fadvise64(fd, offset, len, advice);
-+}
-diff -uprN -x linux-2.6-git.ori/Documentation/dontdiff 
-linux-2.6-git.ori/arch/score/kernel/time.c 
-linux-2.6-git.new/arch/score/kernel/time.c
---- linux-2.6-git.ori/arch/score/kernel/time.c  1970-01-01 
-08:00:00.000000000 +0800
-+++ linux-2.6-git.new/arch/score/kernel/time.c  2009-04-07 
-21:21:49.000000000 +0800
-@@ -0,0 +1,144 @@
-+/*
-+ * arch/score/kernel/time.c
-+ *
-+ * Score Processor version.
-+ *
-+ * Copyright (C) 2009 Sunplus Core Technology Co., Ltd.
-+ *  Chen Liqin <liqin.chen@sunplusct.com>
-+ *  Lennox Wu <lennox.wu@sunplusct.com>
-+ *
-+ * This program is free software; you can redistribute it and/or modify
-+ * it under the terms of the GNU General Public License as published by
-+ * the Free Software Foundation; either version 2 of the License, or
-+ * (at your option) any later version.
-+ *
-+ * This program is distributed in the hope that it will be useful,
-+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
-+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-+ * GNU General Public License for more details.
-+ *
-+ * You should have received a copy of the GNU General Public License
-+ * along with this program; if not, see the file COPYING, or write
-+ * to the Free Software Foundation, Inc.,
-+ * 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
-+ */
-+
-+#include <linux/interrupt.h>
-+#include <linux/clocksource.h>
-+#include <linux/clockchips.h>
-+#include <asm/scoreregs.h>
-+
-+int timer_interrupt(int irq, void *dev_id)
-+{
-+       struct clock_event_device *evdev = dev_id;
-+
-+       __raw_writel(1, P_TIMER0_CPP_REG);      /* clear timer interrupt 
-flag */
-+       evdev->event_handler(evdev);
-+
-+       return IRQ_HANDLED;
-+}
-+
-+static struct irqaction timer_irq = {
-+       .handler = timer_interrupt,
-+       .flags = IRQF_DISABLED | IRQF_TIMER,
-+       .mask = CPU_MASK_NONE,
-+       .name = "timer",
++ **/
++struct plat_max3100 {
++	int loopback;
++	int crystal;
++	void (*max3100_hw_suspend) (int suspend);
++	int poll_time;
 +};
 +
-+static int comparator_next_event(unsigned long delta,
-+               struct clock_event_device *evdev)
-+{
-+       unsigned long   flags;
-+
-+       raw_local_irq_save(flags);
-+
-+       __raw_writel((TMR_M_PERIODIC | TMR_IE_ENABLE), P_TIMER0_CTRL);
-+       __raw_writel(delta, P_TIMER0_PRELOAD);
-+       __raw_writel(__raw_readl(P_TIMER0_CTRL) | TMR_ENABLE, 
-P_TIMER0_CTRL);
-+
-+       raw_local_irq_restore(flags);
-+
-+       return 0;
-+}
-+
-+static void comparator_mode(enum clock_event_mode mode,
-+               struct clock_event_device *evdev)
-+{
-+       unsigned long   flags;
-+
-+       switch (mode) {
-+       case CLOCK_EVT_MODE_PERIODIC:
-+               raw_local_irq_save(flags);
-+               __raw_writel((TMR_M_PERIODIC | TMR_IE_ENABLE), 
-P_TIMER0_CTRL);
-+               __raw_writel(SYSTEM_CLOCK/100, P_TIMER0_PRELOAD);
-+               __raw_writel(__raw_readl(P_TIMER0_CTRL) | TMR_ENABLE, 
-P_TIMER0_CTRL);
-+               raw_local_irq_restore(flags);
-+               break;
-+       case CLOCK_EVT_MODE_ONESHOT:
-+       case CLOCK_EVT_MODE_RESUME:
-+       case CLOCK_EVT_MODE_UNUSED:
-+       case CLOCK_EVT_MODE_SHUTDOWN:
-+               break;
-+       default:
-+               BUG();
-+       }
-+}
-+
-+static struct clock_event_device comparator = {
-+       .name           = "avr32_comparator",
-+       .features       = CLOCK_EVT_FEAT_PERIODIC | 
-CLOCK_EVT_FEAT_ONESHOT,
-+       .shift          = 16,
-+       .set_next_event = comparator_next_event,
-+       .set_mode       = comparator_mode,
-+};
-+
-+static u32 score_tick_cnt;
-+
-+static cycle_t score_read_clk(void)
-+{
-+       unsigned long flags;
-+
-+       local_irq_save(flags);
-+       score_tick_cnt += SYSTEM_CLOCK/100;
-+       local_irq_restore(flags);
-+
-+       return score_tick_cnt;
-+}
-+
-+static struct clocksource score_clk = {
-+       .name   = "timer",
-+       .rating = 250,
-+       .read   = score_read_clk,
-+       .shift  = 20,
-+       .mask   = CLOCKSOURCE_MASK(32),
-+       .flags  = CLOCK_SOURCE_IS_CONTINUOUS,
-+};
-+
-+void __init time_init(void)
-+{
-+       xtime.tv_sec = mktime(2009, 1, 1, 0, 0, 0);
-+       xtime.tv_nsec = 0;
-+
-+       set_normalized_timespec(&wall_to_monotonic, -xtime.tv_sec, 
--xtime.tv_nsec);
-+
-+       /* disable timer, timer interrupt enable */
-+       __raw_writel((TMR_M_PERIODIC | TMR_IE_ENABLE), P_TIMER0_CTRL);
-+       __raw_writel(SYSTEM_CLOCK/100, P_TIMER0_PRELOAD);       /* 10ms */
-+
-+       /* start timer */
-+       __raw_writel(__raw_readl(P_TIMER0_CTRL) | TMR_ENABLE, 
-P_TIMER0_CTRL);
-+
-+       score_clk.mult = clocksource_hz2mult(SYSTEM_CLOCK, 
-score_clk.shift);
-+       clocksource_register(&score_clk);
-+
-+       /* setup COMPARE clockevent */
-+       comparator.mult = div_sc(SYSTEM_CLOCK, NSEC_PER_SEC, 
-comparator.shift);
-+       comparator.max_delta_ns = clockevent_delta2ns((u32)~0, 
-&comparator);
-+       comparator.min_delta_ns = clockevent_delta2ns(50, &comparator) + 
-1;
-+       comparator.cpumask = cpumask_of(0);
-+
-+       timer_irq.dev_id = &comparator;
-+       setup_irq(IRQ_TIMER , &timer_irq);
-+
-+       clockevents_register_device(&comparator);
-+}
++#endif
+-- 
+1.5.6.5
+
+Signed-off-by: Christian Pellegrin <chripell@evolware.org>
+---
+ include/linux/serial_core.h |    3 ---
+ 1 files changed, 0 insertions(+), 3 deletions(-)
+
+diff --git a/include/linux/serial_core.h b/include/linux/serial_core.h
+index ec3df6c..57a97e5 100644
+--- a/include/linux/serial_core.h
++++ b/include/linux/serial_core.h
+@@ -167,9 +167,6 @@
+ /* MAX3100 */
+ #define PORT_MAX3100    86
+ 
+-/* MAX3100 */
+-#define PORT_MAX3100    83
+-
+ #ifdef __KERNEL__
+ 
+ #include <linux/compiler.h>
+-- 
+1.5.6.5
+
