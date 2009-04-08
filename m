@@ -1,96 +1,80 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764616AbZDHMT0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933397AbZDHMUL@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764616AbZDHMT0 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 8 Apr 2009 08:19:26 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933863AbZDHMS6
+	id S933397AbZDHMUL (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 8 Apr 2009 08:20:11 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759304AbZDHMTw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 8 Apr 2009 08:18:58 -0400
-Received: from leb.cs.unibo.it ([130.136.1.102]:37932 "EHLO leb.cs.unibo.it"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S933837AbZDHMS4 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 8 Apr 2009 08:18:56 -0400
-Date: Wed, 8 Apr 2009 14:18:51 +0200
-From: Renzo Davoli <renzo@cs.unibo.it>
-To: =?iso-8859-1?Q?Am=E9rico?= Wang <xiyou.wangcong@gmail.com>
-Cc: linux-kernel@vger.kernel.org, Jeff Dike <jdike@addtoit.com>,
-       user-mode-linux-devel@lists.sourceforge.net, mtk.manpages@gmail.com,
-       Roland McGrath <roland@redhat.com>
-Subject: Re: [PATCH 0/2] ptrace_vm: ptrace for syscall emulation virtual
-	machines
-Message-ID: <20090408121851.GE24173@cs.unibo.it>
-References: <20090204080236.GA17452@cs.unibo.it> <20090310214436.GC5213@cs.unibo.it> <20090316074520.GC3360@hack> <20090324234753.GH22695@cs.unibo.it> <20090329163228.GE7671@hack> <20090404101708.GG4203@cs.unibo.it> <20090407173646.GL12226@hack>
+	Wed, 8 Apr 2009 08:19:52 -0400
+Received: from mail-bw0-f169.google.com ([209.85.218.169]:52269 "EHLO
+	mail-bw0-f169.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1758915AbZDHMTu convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 8 Apr 2009 08:19:50 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=googlemail.com; s=gamma;
+        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
+         :cc:content-type:content-transfer-encoding;
+        b=k0YJndXChxx/jNEJOMQh8bCU/SDZsWl++GzFWphade1TfLyPIpTCA3xzkiKy5Me00c
+         3iMDhjGdZS8q6dkAatEDrZOwPz/U9GEomntY7+e89m5kgO+4QTLmCoroPxs2ShcWzmFn
+         eHvKvFvsnU6zkONo6bvxd5nwqYrhjPWK+8Wmc=
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090407173646.GL12226@hack>
-User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
+In-Reply-To: <1239189748-11703-37-git-send-email-jwjstone@fastmail.fm>
+References: <1239189748-11703-1-git-send-email-jwjstone@fastmail.fm>
+	 <1239189748-11703-29-git-send-email-jwjstone@fastmail.fm>
+	 <1239189748-11703-30-git-send-email-jwjstone@fastmail.fm>
+	 <1239189748-11703-31-git-send-email-jwjstone@fastmail.fm>
+	 <1239189748-11703-32-git-send-email-jwjstone@fastmail.fm>
+	 <1239189748-11703-33-git-send-email-jwjstone@fastmail.fm>
+	 <1239189748-11703-34-git-send-email-jwjstone@fastmail.fm>
+	 <1239189748-11703-35-git-send-email-jwjstone@fastmail.fm>
+	 <1239189748-11703-36-git-send-email-jwjstone@fastmail.fm>
+	 <1239189748-11703-37-git-send-email-jwjstone@fastmail.fm>
+Date: Wed, 8 Apr 2009 14:19:47 +0200
+Message-ID: <36ca99e90904080519s2996a423yfe7eca91a411c8c1@mail.gmail.com>
+Subject: Re: [PATCH 36/56] ocfs2: Remove void casts
+From: Bert Wesarg <bert.wesarg@googlemail.com>
+To: Jack Stone <jwjstone@fastmail.fm>
+Cc: linux-kernel@vger.kernel.org, jeff@garzik.org,
+       kernel-janitors@vger.kernel.org
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> > #endif
-> > #ifdef PTRACE_SINGLEBLOCK
-> >   case PTRACE_SINGLEBLOCK:
-> > #endif
-> > #ifdef PTRACE_SYSEMU
-> >   case PTRACE_SYSEMU:
-> >   case PTRACE_SYSEMU_SINGLESTEP:
-> > #endif
-> >   case PTRACE_SYSCALL:
-> >   case PTRACE_CONT:
-> >     return ptrace_resume(child, request, 0, data);
-> >+/* statements added for PTRACE_VM management */
-> >+#ifdef PTRACE_VM
-> >+  case PTRACE_VM:
-> >+#ifdef PTRACE_VM_SINGLESTEP
-> >+  case PTRACE_VM_SINGLESTEP:
-> >+#endif
-> >+#ifdef PTRACE_VM_SINGLEBLOCK
-> >+  case PTRACE_VM_SINGLEBLOCK:
-> >+#endif
-> >+    return ptrace_resume(child, PTRACE_VM_TAGS_MAPPING(request), addr, data);
-> >+#endif
-> >....
-> >  
-> 
-> Hmmm, I see your points. Thanks for your analysis.
-> 
-The "resume tags" SYSCALL, SINGLESTEP/SINGLEBLOCK, CONT give to ptrace
-the command to resume and indicate when ptrace must stop next time.
-The VM_SKIPCALL, VM_SKIPEXIT tags refer to the current system call.
-The two sets are independent, orthogonal.
+On Wed, Apr 8, 2009 at 13:22, Jack Stone <jwjstone@fastmail.fm> wrote:
+> Remove uneeded void casts
+>
+> Signed-Off-By: Jack Stone <jwjstone@fastmail.fm>
+> ---
+>  fs/ocfs2/dlm/dlmmaster.c |   10 ++++------
+>  1 files changed, 4 insertions(+), 6 deletions(-)
+>
+> diff --git a/fs/ocfs2/dlm/dlmmaster.c b/fs/ocfs2/dlm/dlmmaster.c
+> index f8b653f..e4c2f5b 100644
+> --- a/fs/ocfs2/dlm/dlmmaster.c
+> +++ b/fs/ocfs2/dlm/dlmmaster.c
+> @@ -2455,7 +2453,7 @@ static int dlm_migrate_lockres(struct dlm_ctxt *dlm,
+>                goto leave;
+>        }
+>
+> -       mle = (struct dlm_master_list_entry *) kmem_cache_alloc(dlm_mle_cache,
+> +       mle = kmem_cache_alloc(dlm_mle_cache,
+>                                                                GFP_NOFS);
+Flag.
 
-I may want to skip this system call and stop either at the next system call
-or at the next block, instruction or never.
-As usual, everything is possible with or without some tags, the difference
-in in this case in terms of clearness of the interface.
+>        if (!mle) {
+>                mlog_errno(ret);
+> @@ -3036,7 +3034,7 @@ int dlm_migrate_request_handler(struct o2net_msg *msg, u32 len, void *data,
+>        hash = dlm_lockid_hash(name, namelen);
+>
+>        /* preallocate.. if this fails, abort */
+> -       mle = (struct dlm_master_list_entry *) kmem_cache_alloc(dlm_mle_cache,
+> +       mle = kmem_cache_alloc(dlm_mle_cache,
+>                                                         GFP_NOFS);
+Flag.
 
-If we'd provide only a PTRACE_VM call (namely a PTRACE_VM_SYSCALL)
-to resume up to the next syscall it was not possible to use it 
-to implement a virtualized "ptrace".
-The virtual ptrace call may need to stop the process after an instruction
-or a block as it was requested to do so.
-In this case the VM monitor should use PTRACE_SINGLE* without the
-VM_SKIP* optimization (maybe faking the execution of a getpid
-to skip a system call, like in the old times of User mode Linux).
-For a similar reason PTRACE_SYSEMY_SINGLESTEP was added in the kernel.
-
-WHy we should make life harder to VM monitor designer?
-
-We could also have a unique PTRACE_VM tag and encode both
-SYSCALL/SINGLESTEP/SINGLEBLOCK/BLOCK
-and
-SKIPCALL/SKIPEXIT
-in different bits inside the addr field.
-
-Again, this is a trick to use just one tag.
-It is a matter of values.
-Efficiency is the meaning of this patch, so it is a conditio
-sine qua non.
-Apart from efficiency, what do we want most?
-Clearness of interface design?
-Back compatibility for very improbable cases?
-
-I bet on the former, usually it is an insurance for the future.
-
-	renzo
+>
+>        if (!mle) {
+> --
+Bert
