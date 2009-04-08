@@ -1,63 +1,121 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932250AbZDHPAs@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932862AbZDHPB2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932250AbZDHPAs (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 8 Apr 2009 11:00:48 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762412AbZDHO7y
+	id S932862AbZDHPB2 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 8 Apr 2009 11:01:28 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932602AbZDHPAn
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 8 Apr 2009 10:59:54 -0400
-Received: from srv5.dvmed.net ([207.36.208.214]:42986 "EHLO mail.dvmed.net"
+	Wed, 8 Apr 2009 11:00:43 -0400
+Received: from mx2.mail.elte.hu ([157.181.151.9]:32862 "EHLO mx2.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S932142AbZDHO7w (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 8 Apr 2009 10:59:52 -0400
-Message-ID: <49DCBBE2.4050506@garzik.org>
-Date: Wed, 08 Apr 2009 10:59:46 -0400
-From: Jeff Garzik <jeff@garzik.org>
-User-Agent: Thunderbird 2.0.0.21 (X11/20090320)
+	id S932598AbZDHPAm (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 8 Apr 2009 11:00:42 -0400
+Date: Wed, 8 Apr 2009 16:59:53 +0200
+From: Ingo Molnar <mingo@elte.hu>
+To: Masami Hiramatsu <mhiramat@redhat.com>
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+       Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>,
+       Ananth N Mavinakayanahalli <ananth@in.ibm.com>,
+       LKML <linux-kernel@vger.kernel.org>,
+       systemtap-ml <systemtap@sources.redhat.com>
+Subject: Re: [BUGFIX][PATCH -tip] x86: fix text_poke to handle highmem pages
+Message-ID: <20090408145953.GP12931@elte.hu>
+References: <49D76FFF.6020202@redhat.com> <20090404154230.GB2451@Krystal> <49D7A6DF.8080804@redhat.com> <49D7AF26.5030808@redhat.com> <49D82987.5090003@redhat.com> <49DA37CB.4020901@redhat.com> <20090408123133.GE18581@elte.hu> <49DCBB53.2020202@redhat.com>
 MIME-Version: 1.0
-To: Mark Lord <liml@rtr.ca>
-CC: Matthew Wilcox <willy@linux.intel.com>, linux-ide@vger.kernel.org,
-       linux-kernel@vger.kernel.org, jgarzik@redhat.com,
-       David Woodhouse <David.Woodhouse@intel.com>
-Subject: Re: [PATCH 4/5] ide: Add support for TRIM
-References: <1238683047-13588-1-git-send-email-willy@linux.intel.com> <1238683047-13588-2-git-send-email-willy@linux.intel.com> <1238683047-13588-3-git-send-email-willy@linux.intel.com> <1238683047-13588-4-git-send-email-willy@linux.intel.com> <49DCB5A5.7040100@rtr.ca>
-In-Reply-To: <49DCB5A5.7040100@rtr.ca>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 7bit
-X-Spam-Score: -4.4 (----)
-X-Spam-Report: SpamAssassin version 3.2.5 on srv5.dvmed.net summary:
-	Content analysis details:   (-4.4 points, 5.0 required)
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <49DCBB53.2020202@redhat.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Mark Lord wrote:
-> Matthew Wilcox wrote:
->> From: David Woodhouse <David.Woodhouse@intel.com>
->>
->> Signed-off-by: David Woodhouse <David.Woodhouse@intel.com>
->> [modified to reduce amount of special casing needed for discard]
->> Signed-off-by: Matthew Wilcox <willy@linux.intel.com>
->> ---
-> ..
->> +    task->tf.command = ATA_CMD_DSM;
->> +    task->tf.feature = ATA_DSM_TRIM;
->> +    task->tf.hob_feature = 0x00;
->> +    task->tf.nsect = size / 512;
->> +    task->tf.hob_nsect = (size / 512) >> 8;
-> ..
+
+* Masami Hiramatsu <mhiramat@redhat.com> wrote:
+
+> Ingo Molnar wrote:
+> > * Masami Hiramatsu <mhiramat@redhat.com> wrote:
+> > 
+> >> @@ -514,27 +515,39 @@ void *__kprobes text_poke(void *addr, const void *opcode, size_t len)
+> >>  {
+> >>  	unsigned long flags;
+> >>  	char *vaddr;
+> >> -	struct page *pages[2];
+> >> +	struct page *page;
+> >>  	int i;
+> >> +	unsigned long endp = ((unsigned long)addr + len) & PAGE_MASK;
+> >>
+> >> -	if (!core_kernel_text((unsigned long)addr)) {
+> >> -		pages[0] = vmalloc_to_page(addr);
+> >> -		pages[1] = vmalloc_to_page(addr + PAGE_SIZE);
+> >> -	} else {
+> >> -		pages[0] = virt_to_page(addr);
+> >> -		WARN_ON(!PageReserved(pages[0]));
+> >> -		pages[1] = virt_to_page(addr + PAGE_SIZE);
+> >> +	/*
+> >> +	 * If the written range covers 2 pages, we'll split it, because
+> >> +	 * vmalloc pages are not always continuous -- e.g. 1st page is
+> >> +	 * lowmem and 2nd page is highmem.
+> >> +	 */
+> >> +	if (((unsigned long)addr & PAGE_MASK) != endp) {
+> >> +		text_poke(addr, opcode, endp - (unsigned long)addr);
+> >> +		addr =  (void *)endp;
+> >> +		opcode = (char *)opcode + (endp - (unsigned long)addr);
+> >> +		len -= endp - (unsigned long)addr;
+> >>  	}
+> >> -	BUG_ON(!pages[0]);
+> >> +
+> >> +	if (!core_kernel_text((unsigned long)addr))
+> >> +		page = vmalloc_to_page(addr);
+> >> +	else
+> >> +		page = virt_to_page(addr);
+> > 
+> > hm, the bug is upstream now. And your fix turns a 
+> > supposed-to-be-simpler kmap based patching thing back into something 
+> > fragile looking again. We might be better off with a revert - or we 
+> > do a real clean patch.
+> > 
+> > Firstly, that core_kernel_text() distinction above looks 
+> > artificially open-coded - dont we have a proper, generic 
+> > "look-up-the-page" variant in the MM somewhere?
 > 
-> Matthew (or others),
+> Actually, vmalloc_to_page() is generic one. It decodes
+> the kernel page table directly to find struct page *.
+> virt_to_page() is just a short-cut api.
 > 
-> Could you perhaps explain what the purpose of the data portion
-> of this command is for?  The draft ATA spec I have here has mangled
-> text in the description -- like it's missing a crucial sentence there.
+> > 
+> >> +	BUG_ON(!page);
+> >>  	local_irq_save(flags);
+> >> -	set_fixmap(FIX_TEXT_POKE0, page_to_phys(pages[0]));
+> >> -	if (pages[1])
+> >> -		set_fixmap(FIX_TEXT_POKE1, page_to_phys(pages[1]));
+> >> -	vaddr = (char *)fix_to_virt(FIX_TEXT_POKE0);
+> >> +	if (PageHighMem(page))
+> >> +		vaddr = kmap_atomic(page, KM_TEXT_POKE);
+> >> +	else {
+> >> +		set_fixmap(FIX_TEXT_POKE, page_to_phys(page));
+> >> +		vaddr = (char *)fix_to_virt(FIX_TEXT_POKE);
+> >> +	}
+> > 
+> > that too looks artificially complex. Why cannot we kmap lowmem pages 
+> > too? If the API isnt available on !HIGHMEM kernels .. then the 
+> > solution is to make it available, not to branch our way around it.
 > 
-> So it's not obvious exactly why this command even needs data to
-> be transfered.
+> Hmm, why don't we enhance fixmap to handle highmem pages?
+> (e.g. adding set_fixmap_page())
+> Since kmap is only for highmem kernels, I think changing it will effects
+> more users...
+> 
+> Thank you,
 
-It's a list of LBA ranges, like the NV-cache stuff recently added.
+Sure, whichever way looks more logical to you - my only condition is 
+that it should result in a clean patch! :-)
 
-	Jeff
-
-
-
+	Ingo
