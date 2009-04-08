@@ -1,120 +1,87 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762086AbZDHF3v@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761621AbZDHFas@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762086AbZDHF3v (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 8 Apr 2009 01:29:51 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758686AbZDHF3k
+	id S1761621AbZDHFas (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 8 Apr 2009 01:30:48 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754546AbZDHFaj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 8 Apr 2009 01:29:40 -0400
-Received: from e23smtp06.au.ibm.com ([202.81.31.148]:58210 "EHLO
-	e23smtp06.au.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750871AbZDHF3k (ORCPT
+	Wed, 8 Apr 2009 01:30:39 -0400
+Received: from wf-out-1314.google.com ([209.85.200.171]:57423 "EHLO
+	wf-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753179AbZDHFaj (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 8 Apr 2009 01:29:40 -0400
-Date: Wed, 8 Apr 2009 10:59:04 +0530
-From: Balbir Singh <balbir@linux.vnet.ibm.com>
-To: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-Cc: "linux-mm@kvack.org" <linux-mm@kvack.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       "lizf@cn.fujitsu.com" <lizf@cn.fujitsu.com>,
-       Rik van Riel <riel@surriel.com>, Bharata B Rao <bharata.rao@in.ibm.com>,
-       Dhaval Giani <dhaval@linux.vnet.ibm.com>,
-       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
-Subject: Re: [RFI] Shared accounting for memory resource controller
-Message-ID: <20090408052904.GY7082@balbir.in.ibm.com>
-Reply-To: balbir@linux.vnet.ibm.com
-References: <20090407063722.GQ7082@balbir.in.ibm.com> <20090407160014.8c545c3c.kamezawa.hiroyu@jp.fujitsu.com> <20090407071825.GR7082@balbir.in.ibm.com> <20090407163331.8e577170.kamezawa.hiroyu@jp.fujitsu.com> <20090407080355.GS7082@balbir.in.ibm.com> <20090407172419.a5f318b9.kamezawa.hiroyu@jp.fujitsu.com>
+	Wed, 8 Apr 2009 01:30:39 -0400
+Message-ID: <49DC367A.90603@gawab.com>
+Date: Tue, 07 Apr 2009 22:30:34 -0700
+From: Justin Madru <jdm64@gawab.com>
+User-Agent: Thunderbird 2.0.0.21 (X11/20090319)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-Content-Disposition: inline
-In-Reply-To: <20090407172419.a5f318b9.kamezawa.hiroyu@jp.fujitsu.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+To: lkml <linux-kernel@vger.kernel.org>
+Subject: 2.6.30-rc1: invalid opcode with call trace
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-* KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com> [2009-04-07 17:24:19]:
+Hello,
 
-> On Tue, 7 Apr 2009 13:33:55 +0530
-> Balbir Singh <balbir@linux.vnet.ibm.com> wrote:
-> 
-> > * KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com> [2009-04-07 16:33:31]:
-> > 
-> > > On Tue, 7 Apr 2009 12:48:25 +0530
-> > > Balbir Singh <balbir@linux.vnet.ibm.com> wrote:
-> > > 
-> > > > * KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com> [2009-04-07 16:00:14]:
-> > > > 
-> > > > > On Tue, 7 Apr 2009 12:07:22 +0530
-> > > > > Balbir Singh <balbir@linux.vnet.ibm.com> wrote:
-> > > > > 
-> > > > > > Hi, All,
-> > > > > > 
-> > > > > > This is a request for input for the design of shared page accounting for
-> > > > > > the memory resource controller, here is what I have so far
-> > > > > > 
-> > > > > 
-> > > > > In my first impression, I think simple counting is impossible.
-> > > > > IOW, "usage count" and "shared or not" is very different problem.
-> > > > > 
-> > > > > Assume a page and its page_cgroup.
-> > > > > 
-> > > > > Case 1)
-> > > > >   1. a page is mapped by process-X under group-A
-> > > > >   2. its mapped by process-Y in group-B (now, shared and charged under group-A)
-> > > > >   3. move process-X to group-B
-> > > > >   4. now the page is not shared.
-> > > > > 
-> > > > 
-> > > > By shared I don't mean only between cgroups, it could be a page shared
-> > > > in the same cgroup
-> > > > 
-> > > Hmm, is it good information ?
-> > > 
-> > > Such kind of information can be calucated by
-> > > ==
-> > >    rss = 0;
-> > >    for_each_process_under_cgroup() {
-> > >        mm = tsk->mm
-> > >        rss += mm->anon_rss;
-> > >    }
-> > >    some_of_all_rss = rss;
-> > >    
-> > >    shared_ratio = mem_cgrou->rss *100 / some_of_all_rss.
-> > > ==
-> > >    if 100%, all anon memory are not shared.
-> > >
-> > 
-> > Why only anon? 
-> 
-> no serious intention.
-> Just because you wrote "expect the user to account all cached pages as shared" ;)
->
+Testing 2.6.30-rc1,
+While booting I get the following call trace about an invalid opcode.
 
-OK, I noticed another thing, our RSS accounting is not RSS per-se, it
-includes only anon RSS, file backed pages are accounted as cached.
-I'll send out a patch to see if we can include anon RSS as well.
- 
-> > This seems like a good idea, except when we have a page
-> > charged to a cgroup and the task that charged it has migrated, in that
-> > case sum_of_all_rss will be 0.
-> > 
-> Yes. But we don't move pages at task-move under expectation that moved
-> process will call fork() soon.
-> "task move" has its own problem, so ignoring it for now is a choice.
-> That kind of troubls can be treated when we fixes "task move".
-> (or fix "task move" first.)
-> 
-> Thanks,
-> -Kame
-> 
-> --
-> To unsubscribe, send a message with 'unsubscribe linux-mm' in
-> the body to majordomo@kvack.org.  For more info on Linux MM,
-> see: http://www.linux-mm.org/ .
-> Don't email: <a href=mailto:"dont@kvack.org"> email@kvack.org </a>
-> 
-> 
+ACPI: SSDT 3f6d4134 00244 (v01  PmRef  Cpu0Ist 00003000 INTL 20050624)
+ACPI: SSDT 3f6d3ee9 001C6 (v01  PmRef  Cpu0Cst 00003001 INTL 20050624)
+ACPI: CPU0 (power states: C1[C1] C2[C2] C3[C3])
+processor ACPI_CPU:00: registered as cooling_device0
+ACPI: Processor [CPU0] (supports 8 throttling states)
+ACPI: SSDT 3f6d4378 000C4 (v01  PmRef  Cpu1Ist 00003000 INTL 20050624)
+ACPI: SSDT 3f6d40af 00085 (v01  PmRef  Cpu1Cst 00003000 INTL 20050624)
+ACPI: CPU1 (power states: C1[C1] C2[C2] C3[C3])
+processor ACPI_CPU:01: registered as cooling_device1
+ACPI: Processor [CPU1] (supports 8 throttling states)
+input: Lid Switch as /devices/LNXSYSTM:00/device:00/PNP0C0D:00/input/input1
+ACPI: Lid Switch [LID]
+input: Power Button (CM) as 
+/devices/LNXSYSTM:00/device:00/PNP0C0C:00/input/input2
+ACPI: Power Button (CM) [PBTN]
+ACPI: AC Adapter [AC] (on-line)
+input: Sleep Button (CM) as 
+/devices/LNXSYSTM:00/device:00/PNP0C0E:00/input/input3
+ACPI: Sleep Button (CM) [SBTN]
+ACPI: Battery Slot [BAT0] (battery present)
+invalid opcode: 0000 [#1] PREEMPT SMP
+last sysfs file: /sys/devices/virtual/vtconsole/vtcon0/uevent
+Modules linked in: snd_pcm battery ac button processor intel_agp 
+snd_page_alloc reiserfs crc32 sr_mod cdrom sg firewire_ohci 
+firewire_core crc_itu_t ata_piix ehci_hcd uhci_hcd usbcore thermal fan
 
--- 
-	Balbir
+Pid: 1760, comm: async/0 Not tainted (2.6.30-rc1-git #1) 
+MM061                           
+EIP: 0060:[<f80fb02c>] EFLAGS: 00010286 CPU: 1
+EIP is at 0xf80fb02c
+EAX: 00000000 EBX: 00000216 ECX: 00000000 EDX: 00000000
+ESI: f68fb320 EDI: 00000001 EBP: f7117f88 ESP: f7117f88
+ DS: 007b ES: 007b FS: 00d8 GS: 0000 SS: 0068
+Process async/0 (pid: 1760, ti=f7117000 task=f6935390 task.ti=f7117000)
+Stack:
+ f7117fd0 c015e612 f7117fa8 c0129cf9 f7073bb0 00000000 f693560c f6935390
+ 00000286 f7117fd0 00000000 f6935390 c012fb20 f704efbc c04f22dc 00000000
+ c015e540 00000000 f7117fe0 c015558c c0155550 00000000 00000000 c0103f5f
+Call Trace:
+ [<c015e612>] ? async_thread+0xd2/0x240
+ [<c0129cf9>] ? schedule_tail+0xd9/0x110
+ [<c012fb20>] ? default_wake_function+0x0/0x10
+ [<c015e540>] ? async_thread+0x0/0x240
+ [<c015558c>] ? kthread+0x3c/0x70
+ [<c0155550>] ? kthread+0x0/0x70
+ [<c0103f5f>] ? kernel_thread_helper+0x7/0x18
+Code: 00 00 89 5d f4 8d 9e 88 00 00 00 89 7d fc 89 4d e8 e8 fc ff ff ff 
+8b be 98 00 00 00 39 df 74 57 89 f8 e8 fc ff ff ff 89 d8 e8 fc <ff> ff 
+ff 8b 4d e8 89 f2 8b 45 ec c7 04 24 01 00 00 00 e8 3d c9
+EIP: [<f80fb02c>] 0xf80fb02c SS:ESP 0068:f7117f88
+---[ end trace fefef3dd1f6b4bcf ]---
+sdhci: Secure Digital Host Controller Interface driver
+sdhci: Copyright(c) Pierre Ossman
+
+Justin Madru
+
+
