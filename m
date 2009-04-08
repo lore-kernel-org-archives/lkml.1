@@ -1,136 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755450AbZDHWiB@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755413AbZDHWog@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755450AbZDHWiB (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 8 Apr 2009 18:38:01 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755259AbZDHWhm
+	id S1755413AbZDHWog (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 8 Apr 2009 18:44:36 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754734AbZDHWoW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 8 Apr 2009 18:37:42 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:41612 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1755371AbZDHWhk (ORCPT
+	Wed, 8 Apr 2009 18:44:22 -0400
+Received: from hrndva-omtalb.mail.rr.com ([71.74.56.123]:46399 "EHLO
+	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754740AbZDHWoV (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 8 Apr 2009 18:37:40 -0400
-Date: Wed, 8 Apr 2009 15:34:28 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Jens Axboe <jens.axboe@oracle.com>
-Cc: Theodore Tso <tytso@mit.edu>, linux-kernel@vger.kernel.org,
-       linux-ext4@vger.kernel.org, jack@suse.cz
-Subject: Re: [PATCH] block_write_full_page: switch synchronous writes to use
-  WRITE_SYNC_PLUG
-Message-Id: <20090408153428.6195a442.akpm@linux-foundation.org>
-In-Reply-To: <20090408080844.GW5178@kernel.dk>
-References: <20090406232141.ebdb426a.akpm@linux-foundation.org>
-	<20090406235052.1ea47513.akpm@linux-foundation.org>
-	<20090407070835.GM5178@kernel.dk>
-	<20090407002313.fcdd1da0.akpm@linux-foundation.org>
-	<20090407075732.GO5178@kernel.dk>
-	<20090407190913.GA31723@mit.edu>
-	<20090407193239.GE5178@kernel.dk>
-	<20090407214421.GA7031@mit.edu>
-	<20090407221933.GB7031@mit.edu>
-	<20090407160944.de3c5139.akpm@linux-foundation.org>
-	<20090408080844.GW5178@kernel.dk>
-X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.5; x86_64-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Wed, 8 Apr 2009 18:44:21 -0400
+Date: Wed, 8 Apr 2009 18:44:18 -0400 (EDT)
+From: Steven Rostedt <rostedt@goodmis.org>
+X-X-Sender: rostedt@gandalf.stny.rr.com
+To: "Luck, Tony" <tony.luck@intel.com>
+cc: Frederic Weisbecker <fweisbec@gmail.com>, Ingo Molnar <mingo@elte.hu>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>,
+       "tglx@linutronix.de" <tglx@linutronix.de>,
+       Jason Baron <jbaron@redhat.com>, "Frank Ch. Eigler" <fche@redhat.com>,
+       Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>,
+       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
+       Lai Jiangshan <laijs@cn.fujitsu.com>,
+       Jiaying Zhang <jiayingz@google.com>, Michael Rubin <mrubin@google.com>,
+       Martin Bligh <mbligh@google.com>, Michael Davidson <md@google.com>
+Subject: RE: [PATCH] tracing/syscalls: use a dedicated file header
+In-Reply-To: <57C9024A16AD2D4C97DC78E552063EA39B2F707D@orsmsx505.amr.corp.intel.com>
+Message-ID: <alpine.DEB.2.00.0904081842500.12259@gandalf.stny.rr.com>
+References: <1236955332-10133-1-git-send-email-fweisbec@gmail.com> <1236955332-10133-2-git-send-email-fweisbec@gmail.com> <12c511ca0904061455k3f8a9cc8r25b7930f257ed922@mail.gmail.com> <20090408184058.GB6017@nowhere>
+ <57C9024A16AD2D4C97DC78E552063EA39B2F707D@orsmsx505.amr.corp.intel.com>
+User-Agent: Alpine 2.00 (DEB 1167 2008-08-23)
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 8 Apr 2009 10:08:44 +0200 Jens Axboe <jens.axboe@oracle.com> wrote:
 
-> > So how does WRITE_SYNC_PLUG differ from WRITE, and what effect does
-> > this change have upon kernel behaviour?
+
+On Wed, 8 Apr 2009, Luck, Tony wrote:
+
+> > Tony, can you tell me if the patch below fixes your build?
+> > Thanks!
 > 
-> How about something like this. Comments welcome.
+> Frederic,
+> 
+> Yes ... works great.  Builds are OK with and without CONFIG_IA32_SUPPORT.
+> Kernel with CONFIG_IA32_SUPPORT=y boots fine and can run x86 (32-bit) binaries.
+> 
+> Acked-by: Tony Luck <tony.luck@intel.com>
 
-It's lovely.
+Great! I'll pull it into my repo and get it ready to send to tip.
 
-> Should we move this to
-> a dedicated header file? fs.h is amazingly cluttered as it is.
+Is it OK to add a:
 
-Sometime, perhaps.
+Reported-Tested-and-Acked-by: Tony Luck <tony.luck@intel.com>
 
-> diff --git a/include/linux/fs.h b/include/linux/fs.h
-> index 562d285..6b6597a 100644
-> --- a/include/linux/fs.h
-> +++ b/include/linux/fs.h
-> @@ -87,6 +87,57 @@ struct inodes_stat_t {
->   */
->  #define FMODE_NOCMTIME		((__force fmode_t)2048)
->  
-> +/*
-> + * The below are the various read and write types that we support. Some of
-> + * them include behavioral modifiers that send information down to the
-> + * block layer and IO scheduler. Terminology:
-> + *
-> + *	The block layer uses device plugging to defer IO a little bit, in
-> + *	the hope that we will see more IO very shortly. This increases
-> + *	coalescing of adjacent IO and thus reduces the number of IOs we
-> + *	have to send to the device. It also allows for better queuing,
-> + *	if the IO isn't mergeable. If the caller is going to be waiting
-> + *	for the IO, then he must ensure that the device is unplugged so
-> + *	that the IO is dispatched to the driver.
-> + *
-> + *	All IO is handled async in Linux. This is fine for background
-> + *	writes, but for reads or writes that someone waits for completion
-> + *	on, we want to notify the block layer and IO scheduler so that they
-> + *	know about it. That allows them to make better scheduling
-> + *	decisions. So when the below references 'sync' and 'async', it
-> + *	is referencing this priority hint.
-> + *
-> + * With that in mind, the available types are:
-> + *
-> + * READ			A normal read operation. Device will be plugged.
-> + * READ_SYNC		A synchronous read. Device is not plugged, caller can
-> + *			immediately wait on this read without caring about
-> + *			unplugging.
-> + * READA		Used for read-ahead operations. Lower priority, and the
-> + *			 block layer could (in theory) choose to ignore this
-> + *			request if it runs into resource problems.
-> + * WRITE		A normal async write. Device will be plugged.
-> + * SWRITE		Like WRITE, but a special case for ll_rw_block() that
-> + *			tells it to lock the buffer first. Normally a buffer
-> + *			must be locked before doing IO.
-> + * WRITE_SYNC_PLUG	Synchronous write. Identical to WRITE, but passes down
-> + *			the hint that someone will be waiting on this IO
-> + *			shortly.
-
->From the text, I'd expect WRITE_SYNC_PLUG to, err, unplug!
-
-> + * WRITE_SYNC		Like WRITE_SYNC_PLUG, but also unplugs the device
-> + *			immediately after submission. The write equivalent
-> + *			of READ_SYNC.
-
-But this contradicts my expectation.
-
-So what does WRITE_SYNC_PLUG really do dofferent from WRITE?
-
-> + * WRITE_ODIRECT	Special case write for O_DIRECT only.
-> + * SWRITE_SYNC
-> + * SWRITE_SYNC_PLUG	Like WRITE_SYNC/WRITE_SYNC_PLUG, but locks the buffer.
-> + *			See SWRITE.
-> + * WRITE_BARRIER	Like WRITE, but tells the block layer that all
-> + *			previously submitted writes must be safely on storage
-> + *			before this one is started. Also guarantees that when
-> + *			this write is complete, it itself is also safely on
-> + *			storage. Prevents reordering of writes on both sides
-> + *			of this IO.
-> + *
-> + */
->  #define RW_MASK		1
->  #define RWA_MASK	2
->  #define READ 0
-> @@ -102,6 +153,11 @@ struct inodes_stat_t {
->  			(SWRITE | (1 << BIO_RW_SYNCIO) | (1 << BIO_RW_NOIDLE))
->  #define SWRITE_SYNC	(SWRITE_SYNC_PLUG | (1 << BIO_RW_UNPLUG))
->  #define WRITE_BARRIER	(WRITE | (1 << BIO_RW_BARRIER))
-> +
-> +/*
-> + * These aren't really reads or writes, they pass down information about
-> + * parts of device that are now unused by the file system.
-> + */
->  #define DISCARD_NOBARRIER (1 << BIO_RW_DISCARD)
->  #define DISCARD_BARRIER ((1 << BIO_RW_DISCARD) | (1 << BIO_RW_BARRIER))
+-- Steve
 
