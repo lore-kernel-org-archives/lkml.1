@@ -1,87 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761621AbZDHFas@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762214AbZDHFb5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761621AbZDHFas (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 8 Apr 2009 01:30:48 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754546AbZDHFaj
+	id S1762214AbZDHFb5 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 8 Apr 2009 01:31:57 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753968AbZDHFbq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 8 Apr 2009 01:30:39 -0400
-Received: from wf-out-1314.google.com ([209.85.200.171]:57423 "EHLO
-	wf-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753179AbZDHFaj (ORCPT
+	Wed, 8 Apr 2009 01:31:46 -0400
+Received: from wa-out-1112.google.com ([209.85.146.176]:12748 "EHLO
+	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752841AbZDHFbp convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 8 Apr 2009 01:30:39 -0400
-Message-ID: <49DC367A.90603@gawab.com>
-Date: Tue, 07 Apr 2009 22:30:34 -0700
-From: Justin Madru <jdm64@gawab.com>
-User-Agent: Thunderbird 2.0.0.21 (X11/20090319)
+	Wed, 8 Apr 2009 01:31:45 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
+         :cc:content-type:content-transfer-encoding;
+        b=gbliqg6TToPVgZlcA/akQOmVuUS0ge3+UO3/FqSlCqM6DATeie21bI4CjpNREKZ7lb
+         WYNHYu7vKSXN2nQmcnBKJooaII6R94Cv9he7fV2RgzMYPfoVTFL+lVQXwIgiiorR850b
+         zhKD9f2041UXyDirDmXY/d7EUafc5wjRSvP48=
 MIME-Version: 1.0
-To: lkml <linux-kernel@vger.kernel.org>
-Subject: 2.6.30-rc1: invalid opcode with call trace
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+In-Reply-To: <49DC3357.3030703@garzik.org>
+References: <20090407232247.GA16086@havoc.gtf.org>
+	 <20090407232331.GA16190@havoc.gtf.org>
+	 <3fb94e50904072213n637525b1w4b032544dcef3618@mail.gmail.com>
+	 <49DC3357.3030703@garzik.org>
+Date: Wed, 8 Apr 2009 11:01:44 +0530
+Message-ID: <3fb94e50904072231o71224227t340760518ebe76b8@mail.gmail.com>
+Subject: Re: [PATCH 2/2] sata_sil: disable DMA engine in ->freeze
+From: Sagar Borikar <sagar.borikar@gmail.com>
+To: Jeff Garzik <jeff@garzik.org>
+Cc: linux-ide@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>,
+       Alan Cox <alan@lxorguk.ukuu.org.uk>, d.harrison@sutus.com
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hello,
+Yes!
 
-Testing 2.6.30-rc1,
-While booting I get the following call trace about an invalid opcode.
+Thanks again
 
-ACPI: SSDT 3f6d4134 00244 (v01  PmRef  Cpu0Ist 00003000 INTL 20050624)
-ACPI: SSDT 3f6d3ee9 001C6 (v01  PmRef  Cpu0Cst 00003001 INTL 20050624)
-ACPI: CPU0 (power states: C1[C1] C2[C2] C3[C3])
-processor ACPI_CPU:00: registered as cooling_device0
-ACPI: Processor [CPU0] (supports 8 throttling states)
-ACPI: SSDT 3f6d4378 000C4 (v01  PmRef  Cpu1Ist 00003000 INTL 20050624)
-ACPI: SSDT 3f6d40af 00085 (v01  PmRef  Cpu1Cst 00003000 INTL 20050624)
-ACPI: CPU1 (power states: C1[C1] C2[C2] C3[C3])
-processor ACPI_CPU:01: registered as cooling_device1
-ACPI: Processor [CPU1] (supports 8 throttling states)
-input: Lid Switch as /devices/LNXSYSTM:00/device:00/PNP0C0D:00/input/input1
-ACPI: Lid Switch [LID]
-input: Power Button (CM) as 
-/devices/LNXSYSTM:00/device:00/PNP0C0C:00/input/input2
-ACPI: Power Button (CM) [PBTN]
-ACPI: AC Adapter [AC] (on-line)
-input: Sleep Button (CM) as 
-/devices/LNXSYSTM:00/device:00/PNP0C0E:00/input/input3
-ACPI: Sleep Button (CM) [SBTN]
-ACPI: Battery Slot [BAT0] (battery present)
-invalid opcode: 0000 [#1] PREEMPT SMP
-last sysfs file: /sys/devices/virtual/vtconsole/vtcon0/uevent
-Modules linked in: snd_pcm battery ac button processor intel_agp 
-snd_page_alloc reiserfs crc32 sr_mod cdrom sg firewire_ohci 
-firewire_core crc_itu_t ata_piix ehci_hcd uhci_hcd usbcore thermal fan
+Sagar
 
-Pid: 1760, comm: async/0 Not tainted (2.6.30-rc1-git #1) 
-MM061                           
-EIP: 0060:[<f80fb02c>] EFLAGS: 00010286 CPU: 1
-EIP is at 0xf80fb02c
-EAX: 00000000 EBX: 00000216 ECX: 00000000 EDX: 00000000
-ESI: f68fb320 EDI: 00000001 EBP: f7117f88 ESP: f7117f88
- DS: 007b ES: 007b FS: 00d8 GS: 0000 SS: 0068
-Process async/0 (pid: 1760, ti=f7117000 task=f6935390 task.ti=f7117000)
-Stack:
- f7117fd0 c015e612 f7117fa8 c0129cf9 f7073bb0 00000000 f693560c f6935390
- 00000286 f7117fd0 00000000 f6935390 c012fb20 f704efbc c04f22dc 00000000
- c015e540 00000000 f7117fe0 c015558c c0155550 00000000 00000000 c0103f5f
-Call Trace:
- [<c015e612>] ? async_thread+0xd2/0x240
- [<c0129cf9>] ? schedule_tail+0xd9/0x110
- [<c012fb20>] ? default_wake_function+0x0/0x10
- [<c015e540>] ? async_thread+0x0/0x240
- [<c015558c>] ? kthread+0x3c/0x70
- [<c0155550>] ? kthread+0x0/0x70
- [<c0103f5f>] ? kernel_thread_helper+0x7/0x18
-Code: 00 00 89 5d f4 8d 9e 88 00 00 00 89 7d fc 89 4d e8 e8 fc ff ff ff 
-8b be 98 00 00 00 39 df 74 57 89 f8 e8 fc ff ff ff 89 d8 e8 fc <ff> ff 
-ff 8b 4d e8 89 f2 8b 45 ec c7 04 24 01 00 00 00 e8 3d c9
-EIP: [<f80fb02c>] 0xf80fb02c SS:ESP 0068:f7117f88
----[ end trace fefef3dd1f6b4bcf ]---
-sdhci: Secure Digital Host Controller Interface driver
-sdhci: Copyright(c) Pierre Ossman
-
-Justin Madru
-
-
+On Wed, Apr 8, 2009 at 10:47 AM, Jeff Garzik <jeff@garzik.org> wrote:
+> Sagar Borikar wrote:
+>>
+>> This patch works for our platform.
+>
+> Did you try both patches together?  Both are required for the solution.
+>
+>        Jeff
+>
+>
+>
+>
