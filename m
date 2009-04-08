@@ -1,48 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932071AbZDHGdf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932344AbZDHGeF@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932071AbZDHGdf (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 8 Apr 2009 02:33:35 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757346AbZDHGdZ
+	id S932344AbZDHGeF (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 8 Apr 2009 02:34:05 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762325AbZDHGdr
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 8 Apr 2009 02:33:25 -0400
-Received: from kroah.org ([198.145.64.141]:41140 "EHLO coco.kroah.org"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1760147AbZDHGdY (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 8 Apr 2009 02:33:24 -0400
-Date: Tue, 7 Apr 2009 23:31:03 -0700
-From: Greg KH <greg@kroah.com>
-To: Adrian Bunk <bunk@kernel.org>
-Cc: Lasse Kliemann 
-	<lasse-gmane-linux-kernel-2009@mail.plastictree.net>,
-       linux-kernel@vger.kernel.org, Thomas Meyer <thomas@m3y3r.de>,
-       stable@kernel.org
-Subject: Re: [stable] Where to find news on 2.6.27.x?
-Message-ID: <20090408063103.GB20675@kroah.com>
-References: <loom.20090405T124156-250@post.gmane.org> <20090408050309.GA5384@localhost.pp.htv.fi>
+	Wed, 8 Apr 2009 02:33:47 -0400
+Received: from srv5.dvmed.net ([207.36.208.214]:54838 "EHLO mail.dvmed.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1760855AbZDHGdq (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 8 Apr 2009 02:33:46 -0400
+Message-ID: <49DC4545.5020702@pobox.com>
+Date: Wed, 08 Apr 2009 02:33:41 -0400
+From: Jeff Garzik <jgarzik@pobox.com>
+User-Agent: Thunderbird 2.0.0.21 (X11/20090320)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090408050309.GA5384@localhost.pp.htv.fi>
-User-Agent: Mutt/1.5.19 (2009-01-05)
+To: Sergei Shtylyov <sshtylyov@ru.mvista.com>
+CC: linux-ide@vger.kernel.org, linux-kernel@vger.kernel.org,
+       alan@lxorguk.ukuu.org.uk
+Subject: Re: [PATCH 2/2 resend] libata-sff: avoid byte swapping in ata_sff_data_xfer()
+References: <200902152230.38271.sshtylyov@ru.mvista.com>
+In-Reply-To: <200902152230.38271.sshtylyov@ru.mvista.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
+X-Spam-Score: -4.4 (----)
+X-Spam-Report: SpamAssassin version 3.2.5 on srv5.dvmed.net summary:
+	Content analysis details:   (-4.4 points, 5.0 required)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Apr 08, 2009 at 08:03:09AM +0300, Adrian Bunk wrote:
-> On Sun, Apr 05, 2009 at 12:49:58PM +0000, Lasse Kliemann wrote:
+Sergei Shtylyov wrote:
+> Handling of the trailing byte in ata_sff_data_xfer() is suboptimal bacause:
 > 
-> > Where can I find news on the 2.6.27.x series?
-> > 
-> > Is it still maintained, and if so, how would I notice when it is over?
-> >...
+> - it always initializes the padding buffer to 0 which is not really needed in
+>   both the read and write cases;
 > 
-> First of all sorry that I was silent recently, I had to take a timeou 
-> from kernel development.
+> - it has to use memcpy() to transfer a single byte from/to the padding buffer;
 > 
-> It will still be maintained for years.
+> - it uses io{read|write}16() accessors which swap bytes on the big endian CPUs
+>   and so have to additionally convert the data from/to the little endian format
+>   instead of using io{read|write}16_rep() accessors which are not supposed to
+>   change the byte ordering.
 > 
-> Whenever Greg will say he'll stop maintaining it, I'll take over 
-> maintainership.
+> Signed-off-by: Sergei Shtylyov <sshtylyov@ru.mvista.com>
 
-I'm still maintaining it :)
+applied
+
 
