@@ -1,90 +1,99 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934872AbZDHRIX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934897AbZDHRIq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934872AbZDHRIX (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 8 Apr 2009 13:08:23 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934728AbZDHRG6
+	id S934897AbZDHRIq (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 8 Apr 2009 13:08:46 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934844AbZDHRHk
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 8 Apr 2009 13:06:58 -0400
-Received: from mail-fx0-f158.google.com ([209.85.220.158]:64866 "EHLO
-	mail-fx0-f158.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S934404AbZDHRGW (ORCPT
+	Wed, 8 Apr 2009 13:07:40 -0400
+Received: from rcsinet12.oracle.com ([148.87.113.124]:35522 "EHLO
+	rgminet12.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S934834AbZDHRHi (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 8 Apr 2009 13:06:22 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=googlemail.com; s=gamma;
-        h=mime-version:reply-to:in-reply-to:references:date:message-id
-         :subject:from:to:cc:content-type:content-transfer-encoding;
-        b=TAnUCMcgqvsE0lzzekEDbrFVBkMT8+nNJmoZpKjaYdhxLmqBWoiYEiKd8qY2VaN6v2
-         YOzNXMUmH02MAGeOC7Q8XukRvQfkYgnUCX8PbWDjkMHbNkJ8TtmRpLnBr1isx0zN7I1O
-         pGLM505vN5AogiAtlevIs7lfrvp4QysEJkAXc=
-MIME-Version: 1.0
-Reply-To: alan-jenkins@tuffmail.co.uk
-In-Reply-To: <49DCB976.4020200@lwfinger.net>
-References: <49DC2DF5.3010603@lwfinger.net> <49DC31EA.8050208@linux.intel.com>
-	 <200904081631.09150.rusty@rustcorp.com.au>
-	 <49DCB976.4020200@lwfinger.net>
-Date: Wed, 8 Apr 2009 18:06:18 +0100
-Message-ID: <9b2b86520904081006m6e6b5276v834c3565b0f6f4c7@mail.gmail.com>
-Subject: Re: Regression in 2.6.30-rc1 since commit acae0515 - wireless broken
-From: Alan Jenkins <sourcejedi.lkml@googlemail.com>
-To: Larry Finger <Larry.Finger@lwfinger.net>
-Cc: Rusty Russell <rusty@rustcorp.com.au>,
-       Arjan van de Ven <arjan@linux.intel.com>,
-       LKML <linux-kernel@vger.kernel.org>, "Rafael J. Wysocki" <rjw@sisk.pl>,
-       wireless <linux-wireless@vger.kernel.org>
-Content-Type: text/plain; charset=ISO-8859-1
+	Wed, 8 Apr 2009 13:07:38 -0400
+Subject: Re: [PATCH] [13/16] POISON: The high level memory error handler in
+ the VM
+From: Chris Mason <chris.mason@oracle.com>
+To: Andi Kleen <andi@firstfloor.org>
+Cc: hugh@veritas.com, npiggin@suse.de, riel@redhat.com,
+       lee.schermerhorn@hp.com, akpm@linux-foundation.org,
+       linux-kernel@vger.kernel.org, linux-mm@kvack.org, x86@kernel.org
+In-Reply-To: <20090407151010.E72A91D0471@basil.firstfloor.org>
+References: <20090407509.382219156@firstfloor.org>
+	 <20090407151010.E72A91D0471@basil.firstfloor.org>
+Content-Type: text/plain
+Date: Wed, 08 Apr 2009 13:03:59 -0400
+Message-Id: <1239210239.28688.15.camel@think.oraclecorp.com>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.24.1 
 Content-Transfer-Encoding: 7bit
+X-Source-IP: acsmt707.oracle.com [141.146.40.85]
+X-Auth-Type: Internal IP
+X-CT-RefId: str=0001.0A01020A.49DCD911.0033:SCFMA4539814,ss=1,fgs=0
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 4/8/09, Larry Finger <Larry.Finger@lwfinger.net> wrote:
-> Rusty Russell wrote:
->> On Wednesday 08 April 2009 14:41:06 Arjan van de Ven wrote:
->>> Larry Finger wrote:
->>>> The most recent pulls of the Linux-2.6 git tree has broken wireless. The
->>>> problem
->>>> was bisected with commit acae05156551fd7528fbb616271e672789388e3c,
->>>> entitled
->>>> "module: create a request_module_nowait()", indicated as the faulty
->>>> change. This
->>>> is seen with driver b43 on my system, and 2 reports for driver iwlagn:
->>>> http://marc.info/?l=linux-wireless&m=123916157630571&w=2 and
->>>> http://marc.info/?l=linux-wireless&m=123913015021457&w=2.
->>>>
->>>> For b43, the logged error messages are:
->>> rusty... I still suspect your "int to bool" conversion stuff ;-)
->>
->> One way to find out.  Here's the reversion:
->>
->> diff --git a/include/linux/kmod.h b/include/linux/kmod.h
->> --- a/include/linux/kmod.h
->> +++ b/include/linux/kmod.h
->> @@ -29,12 +29,10 @@
->>  #ifdef CONFIG_MODULES
->>  /* modprobe exit status on success, -ve on error.  Return value
->>   * usually useless though. */
->> -extern int __request_module(bool wait, const char *name, ...) \
->
-> The patch did not fix the problem. The symptoms are the same.
->
-> Larry
+On Tue, 2009-04-07 at 17:10 +0200, Andi Kleen wrote:
+> This patch adds the high level memory handler that poisons pages. 
+> It is portable code and lives in mm/memory-failure.c
 
-Hi, I can confirm this bug on ath5k.
+I think this is an important feature, thanks for doing all this work
+Andi.
 
-Something is very wrong with request_module(), this is just the most
-obvious symptom.  It also seems to affect libusual (loading
-usb-storage) and FAT (loading NLS modules).
+> Index: linux/mm/memory-failure.c
+> ===================================================================
+> --- /dev/null	1970-01-01 00:00:00.000000000 +0000
+> +++ linux/mm/memory-failure.c	2009-04-07 16:39:39.000000000 +0200
+> +
+> +/*
+> + * Clean (or cleaned) page cache page.
+> + */
+> +static int me_pagecache_clean(struct page *p)
+> +{
+> +	struct address_space *mapping;
+> +
+> +	if (PagePrivate(p))
+> +		do_invalidatepage(p, 0);
+> +	mapping = page_mapping(p);
+> +	if (mapping) {
+> +		if (!remove_mapping(mapping, p))
+> +			return FAILED;
+> +	}
+> +	return RECOVERED;
+> +}
+> +
+> +/*
+> + * Dirty cache page page
+> + * Issues: when the error hit a hole page the error is not properly
+> + * propagated.
+> + */
+> +static int me_pagecache_dirty(struct page *p)
+> +{
+> +	struct address_space *mapping = page_mapping(p);
+> +
+> +	SetPageError(p);
+> +	/* TBD: print more information about the file. */
+> +	printk(KERN_ERR "MCE: Hardware memory corruption on dirty file page: write error\n");
+> +	if (mapping) {
+> +		/* CHECKME: does that report the error in all cases? */
+> +		mapping_set_error(mapping, EIO);
+> +	}
+> +	if (PagePrivate(p)) {
+> +		if (try_to_release_page(p, GFP_KERNEL)) {
 
-If I hotplug my wireless device, it then loads correctly.  So I'm
-guessing wireless modules e.g. encryption modules get loaded too
-asynchronously.   I.e. on boot, the  sub-modules are loaded too late.
-But when I hotplug the device, the modules are already loaded.
+So, try_to_release_page returns 1 when it works.  I know this only
+because I have to read it every time to remember ;)
 
-Same with FAT - it fails on first attempt to mount because of missing
-NLS module, then works on second mount,
+try_to_release_page is also very likely to fail if the page is dirty or
+under writeback.  At the end of the day, we'll probably need a call into
+the FS to tell it a given page isn't coming back, and to clean it at all
+cost.
 
-I agree that commit looks like it should be a no-op though :-).
-I will try to confirm the OP's bisection by reverting the commit, acae0515.
+invalidatepage is close, but ext3/reiserfs will keep the buffer heads
+and let the page->mapping go to null in an ugly data=ordered corner
+case.  The buffer heads pin the page and it won't be freed until the IO
+is done.
 
-Alan
+-chris
+
+
