@@ -1,85 +1,126 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760274AbZDHIbr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762383AbZDHIdl@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760274AbZDHIbr (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 8 Apr 2009 04:31:47 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752438AbZDHIba
+	id S1762383AbZDHIdl (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 8 Apr 2009 04:33:41 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751426AbZDHIdY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 8 Apr 2009 04:31:30 -0400
-Received: from casper.infradead.org ([85.118.1.10]:47968 "EHLO
-	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753083AbZDHIb3 (ORCPT
+	Wed, 8 Apr 2009 04:33:24 -0400
+Received: from e33.co.us.ibm.com ([32.97.110.151]:47584 "EHLO
+	e33.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754560AbZDHIdW (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 8 Apr 2009 04:31:29 -0400
-Subject: Re: Linux 2.6.30-rc1 boot failure on ia64 w/ QLA12160.  Bisected.
-From: David Woodhouse <dwmw2@infradead.org>
-To: Robin Holt <holt@sgi.com>
-Cc: Jaswinder Singh Rajput <jaswinderrajput@gmail.com>,
-       James Bottomley <James.Bottomley@HansenPartnership.com>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>
-In-Reply-To: <20090408042734.GD10768@sgi.com>
-References: <alpine.LFD.2.00.0904071700170.4583@localhost.localdomain>
-	 <20090408042734.GD10768@sgi.com>
-Content-Type: text/plain
-Date: Wed, 08 Apr 2009 01:31:19 -0700
-Message-Id: <1239179479.3411.4.camel@macbook.infradead.org>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.26.0 (2.26.0-2.fc11) 
-Content-Transfer-Encoding: 7bit
-X-SRS-Rewrite: SMTP reverse-path rewritten from <dwmw2@infradead.org> by casper.infradead.org
-	See http://www.infradead.org/rpr.html
+	Wed, 8 Apr 2009 04:33:22 -0400
+Date: Wed, 8 Apr 2009 14:03:27 +0530
+From: Bharata B Rao <bharata@linux.vnet.ibm.com>
+To: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+Cc: linux-kernel@vger.kernel.org, Balbir Singh <balbir@linux.vnet.ibm.com>,
+       Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: [PATCH] memcg: Fix documentation
+Message-ID: <20090408083327.GE4069@in.ibm.com>
+Reply-To: bharata@linux.vnet.ibm.com
+References: <20090408071817.GD4069@in.ibm.com> <20090408162528.97b20427.kamezawa.hiroyu@jp.fujitsu.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20090408162528.97b20427.kamezawa.hiroyu@jp.fujitsu.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 2009-04-07 at 23:27 -0500, Robin Holt wrote:
-> On and ia64 system with a QLA12160 adapter, my boot fails with:
+On Wed, Apr 08, 2009 at 04:25:28PM +0900, KAMEZAWA Hiroyuki wrote:
+> Thank you, very helpful. but some nitpicks.
+> 
+> 
+> On Wed, 8 Apr 2009 12:48:17 +0530
+> Bharata B Rao <bharata@linux.vnet.ibm.com> wrote:
+> 
+> > memcg: Fix documentation.
+> > 
+> > The description about various statistics from memory.stat is not accurate
+> > and confusing at times.
+> > 
+> > Correct this along with a few other minor cleanups.
+> > 
+> > Signed-off-by: Bharata B Rao <bharata@linux.vnet.ibm.com>
+> > Cc: Balbir Singh <balbir@linux.vnet.ibm.com>
+> > Cc: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+> > Cc: Andrew Morton <akpm@linux-foundation.org>
+> > ---
+> >  Documentation/cgroups/memory.txt |   50 +++++++++++++++++++++------------------
+> >  1 file changed, 28 insertions(+), 22 deletions(-)
+> > 
+> > --- a/Documentation/cgroups/memory.txt
+> > +++ b/Documentation/cgroups/memory.txt
+> > @@ -6,15 +6,14 @@ used here with the memory controller tha
+> >  
+> >  Salient features
+> >  
+> > -a. Enable control of both RSS (mapped) and Page Cache (unmapped) pages
+> > +a. Enable control of RSS (mapped), Page Cache (unmapped) and Swap cache
+> > +   (unmapped) pages.
+>       Enable control of Anonymous memory, Page Cache and Swap Cache. 
+> ?
 
-Thanks for the report. After successful feedback from Jeremy, I've added
-the commit below to git://git.infradead.org/~dwmw2/firmware-2.6.git,
-which I asked Linus to pull already on Monday...
+I feel without the terms 'mapped' and 'unmaapped', the story of the memory
+controller is not complete :)
 
->From 0ce49d6da993adf8b17b7f3ed9805ade14a6a6f3 Mon Sep 17 00:00:00 2001
-From: David Woodhouse <David.Woodhouse@intel.com>
-Date: Wed, 8 Apr 2009 01:22:36 -0700
-Subject: [PATCH] qla1280: Fix off-by-some error in firmware loading.
+> 
+> >  b. The infrastructure allows easy addition of other types of memory to control
+> >  c. Provides *zero overhead* for non memory controller users
+> >  d. Provides a double LRU: global memory pressure causes reclaim from the
+> >     global LRU; a cgroup on hitting a limit, reclaims from the per
+> >     cgroup LRU
+> >  
+> > -NOTE: Swap Cache (unmapped) is not accounted now.
+> > -
+> >  Benefits and Purpose of the memory controller
+> >  
+> >  The memory controller isolates the memory behaviour of a group of tasks
+> > @@ -290,34 +289,41 @@ will be charged as a new owner of it.
+> >    moved to the parent. If you want to avoid that, force_empty will be useful.
+> >  
+> >  5.2 stat file
+> > -  memory.stat file includes following statistics (now)
+> > -	cache			- # of pages from page-cache and shmem.
+> > -	rss			- # of pages from anonymous memory.
+> > -	pgpgin			- # of event of charging
+> > -	pgpgout			- # of event of uncharging
+> > -	active_anon		- # of pages on active lru of anon, shmem.
+> > -	inactive_anon 		- # of pages on active lru of anon, shmem
+> > -	active_file		- # of pages on active lru of file-cache
+> > -	inactive_file		- # of pages on inactive lru of file cache
+> > -	unevictable		- # of pages cannot be reclaimed.(mlocked etc)
+> > -
+> > -	Below is depend on CONFIG_DEBUG_VM.
+> > -	inactive_ratio		- VM inernal parameter. (see mm/page_alloc.c)
+> > -	recent_rotated_anon	- VM internal parameter. (see mm/vmscan.c)
+> > -	recent_rotated_file	- VM internal parameter. (see mm/vmscan.c)
+> > -	recent_scanned_anon 	- VM internal parameter. (see mm/vmscan.c)
+> > -	recent_scanned_file 	- VM internal parameter. (see mm/vmscan.c)
+> >  
+> > -  Memo:
+> > +memory.stat file includes following statistics
+> > +
+> > +cache		- # of bytes of page-cache memory.
+> > +rss		- # of bytes of anonymous memory.
+>                     This includes # of swap cache.
 
-We were calculating the wrong address for the start of the data.
+Ok, will add that.
 
-Signed-off-by: David Woodhouse <David.Woodhouse@intel.com>
-Tested-by: Jeremy Higdon <jeremy@sgi.com>
----
- drivers/scsi/qla1280.c |    4 ++--
- 1 files changed, 2 insertions(+), 2 deletions(-)
+> 
+> > +pgpgin		- # of pages paged in (equivalent to # of charging events).
+> > +pgpgout		- # of pages paged out (equivalent to # of uncharging events).
+> > +active_anon	- # of bytes of anonymous memory on active lru list.
+>                                 anonymous memory + shared memory(tmpfs) + SwapCache.
 
-diff --git a/drivers/scsi/qla1280.c b/drivers/scsi/qla1280.c
-index 351b56c..d030db9 100644
---- a/drivers/scsi/qla1280.c
-+++ b/drivers/scsi/qla1280.c
-@@ -1663,7 +1663,7 @@ qla1280_load_firmware_pio(struct scsi_qla_host *ha)
- 
- 	/* Load RISC code. */
- 	risc_address = ha->fwstart;
--	fw_data = (const __le16 *)&fw->data[4];
-+	fw_data = (const __le16 *)&fw->data[6];
- 	risc_code_size = (fw->size - 6) / 2;
- 
- 	for (i = 0; i < risc_code_size; i++) {
-@@ -1722,7 +1722,7 @@ qla1280_load_firmware_dma(struct scsi_qla_host *ha)
- 
- 	/* Load RISC code. */
- 	risc_address = ha->fwstart;
--	fw_data = (const __le16 *)&fw->data[4];
-+	fw_data = (const __le16 *)&fw->data[6];
- 	risc_code_size = (fw->size - 6) / 2;
- 
- 	dprintk(1, "%s: DMA RISC code (%i) words\n",
--- 
-1.6.2.2
+Ok.
 
+>                           Seeing acitive/inactive_file, how about swap-backed memory ?
 
+Not sure what you are hinting at here.
 
--- 
-David Woodhouse                            Open Source Technology Centre
-David.Woodhouse@intel.com                              Intel Corporation
+Will post a new patch with the above changes. Thanks for your review.
 
+Regards,
+Bharata.
