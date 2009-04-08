@@ -1,56 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762214AbZDHFb5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756472AbZDHFhT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762214AbZDHFb5 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 8 Apr 2009 01:31:57 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753968AbZDHFbq
+	id S1756472AbZDHFhT (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 8 Apr 2009 01:37:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752918AbZDHFhE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 8 Apr 2009 01:31:46 -0400
-Received: from wa-out-1112.google.com ([209.85.146.176]:12748 "EHLO
-	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752841AbZDHFbp convert rfc822-to-8bit (ORCPT
+	Wed, 8 Apr 2009 01:37:04 -0400
+Received: from wf-out-1314.google.com ([209.85.200.168]:5028 "EHLO
+	wf-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752841AbZDHFhD (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 8 Apr 2009 01:31:45 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
-         :cc:content-type:content-transfer-encoding;
-        b=gbliqg6TToPVgZlcA/akQOmVuUS0ge3+UO3/FqSlCqM6DATeie21bI4CjpNREKZ7lb
-         WYNHYu7vKSXN2nQmcnBKJooaII6R94Cv9he7fV2RgzMYPfoVTFL+lVQXwIgiiorR850b
-         zhKD9f2041UXyDirDmXY/d7EUafc5wjRSvP48=
+	Wed, 8 Apr 2009 01:37:03 -0400
+Message-ID: <49DC37F0.2040408@gawab.com>
+Date: Tue, 07 Apr 2009 22:36:48 -0700
+From: Justin Madru <jdm64@gawab.com>
+User-Agent: Thunderbird 2.0.0.21 (X11/20090319)
 MIME-Version: 1.0
-In-Reply-To: <49DC3357.3030703@garzik.org>
-References: <20090407232247.GA16086@havoc.gtf.org>
-	 <20090407232331.GA16190@havoc.gtf.org>
-	 <3fb94e50904072213n637525b1w4b032544dcef3618@mail.gmail.com>
-	 <49DC3357.3030703@garzik.org>
-Date: Wed, 8 Apr 2009 11:01:44 +0530
-Message-ID: <3fb94e50904072231o71224227t340760518ebe76b8@mail.gmail.com>
-Subject: Re: [PATCH 2/2] sata_sil: disable DMA engine in ->freeze
-From: Sagar Borikar <sagar.borikar@gmail.com>
-To: Jeff Garzik <jeff@garzik.org>
-Cc: linux-ide@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>,
-       Alan Cox <alan@lxorguk.ukuu.org.uk>, d.harrison@sutus.com
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 8BIT
+To: lkml <linux-kernel@vger.kernel.org>
+Subject: 2.6.30-rc1: intel 3945 no wireless
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Yes!
+Hi,
 
-Thanks again
+Decided to test out .30-rc1, but I've run into some bugs.
+My intel 3945 wireless card doesn't work. Bellow is the relevant 
+portions of dmesg
+The full dmesg and config can be found at: 
+http://jdserver.homelinux.org/bugreports/003/
 
-Sagar
+iwl3945: Intel(R) PRO/Wireless 3945ABG/BG Network Connection driver for 
+Linux, 1.2.26ks
+iwl3945: Copyright(c) 2003-2009 Intel Corporation
+iwl3945 0000:0b:00.0: PCI INT A -> GSI 16 (level, low) -> IRQ 16
+iwl3945 0000:0b:00.0: setting latency timer to 64
+input: SynPS/2 Synaptics TouchPad as 
+/devices/platform/i8042/serio1/input/input6
+iwl3945 0000:0b:00.0: Tunable channels: 11 802.11bg, 13 802.11a channels
+iwl3945 0000:0b:00.0: Detected Intel Wireless WiFi Link 3945ABG
+  alloc irq_desc for 26 on cpu 0 node 0
+  alloc kstat_irqs on cpu 0 node 0
+iwl3945 0000:0b:00.0: irq 26 for MSI/MSI-X
+phy0: Selected rate control algorithm 'iwl-3945-rs'
+input: HDA Intel Mic at Ext Right Jack as 
+/devices/pci0000:00/0000:00:1b.0/input/input7
+input: HDA Intel HP Out at Ext Right Jack as 
+/devices/pci0000:00/0000:00:1b.0/input/input8
+phy0: Failed to initialize wep: -2
+iwl3945 0000:0b:00.0: Failed to register hw (error -2)
+iwl3945 0000:0b:00.0: PCI INT A disabled
+iwl3945: probe of 0000:0b:00.0 failed with error -2
 
-On Wed, Apr 8, 2009 at 10:47 AM, Jeff Garzik <jeff@garzik.org> wrote:
-> Sagar Borikar wrote:
->>
->> This patch works for our platform.
->
-> Did you try both patches together?  Both are required for the solution.
->
->        Jeff
->
->
->
->
+Justin Madru
