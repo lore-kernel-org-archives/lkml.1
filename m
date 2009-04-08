@@ -1,54 +1,44 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754532AbZDHWHp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754655AbZDHWJg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754532AbZDHWHp (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 8 Apr 2009 18:07:45 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752554AbZDHWHf
+	id S1754655AbZDHWJg (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 8 Apr 2009 18:09:36 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752371AbZDHWJX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 8 Apr 2009 18:07:35 -0400
-Received: from 136-022.dsl.LABridge.com ([206.117.136.22]:1515 "EHLO
-	mail.perches.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751895AbZDHWHe (ORCPT
+	Wed, 8 Apr 2009 18:09:23 -0400
+Received: from bombadil.infradead.org ([18.85.46.34]:50518 "EHLO
+	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751883AbZDHWJW (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 8 Apr 2009 18:07:34 -0400
-Subject: Re: [PATCH 54/56] x86: Remove void casts
-From: Joe Perches <joe@perches.com>
-To: Jack Stone <jwjstone@fastmail.fm>
-Cc: Ingo Molnar <mingo@elte.hu>, Andrew Morton <akpm@linux-foundation.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Bert Wesarg <bert.wesarg@googlemail.com>, linux-kernel@vger.kernel.org,
-       jeff@garzik.org, kernel-janitors@vger.kernel.org
-In-Reply-To: <49DD0D02.3030604@fastmail.fm>
-References: <36ca99e90904080518qf81b483h6ed2bc9752ee0d1e@mail.gmail.com>
-	 <49DCAE97.8040602@fastmail.fm> <20090408140637.GC12931@elte.hu>
-	 <49DCB140.7000603@fastmail.fm> <20090408144055.GH12931@elte.hu>
-	 <49DCB8C5.4090108@fastmail.fm> <20090408144842.GK12931@elte.hu>
-	 <49DCBA61.8060507@fastmail.fm> <20090408145715.GO12931@elte.hu>
-	 <49DCBBDF.4040603@fastmail.fm> <20090408151644.GQ12931@elte.hu>
-	 <49DD0D02.3030604@fastmail.fm>
-Content-Type: text/plain
-Date: Wed, 08 Apr 2009 15:06:00 -0700
-Message-Id: <1239228360.32205.14.camel@localhost>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.24.2-1.2mdv2009.0 
-Content-Transfer-Encoding: 7bit
+	Wed, 8 Apr 2009 18:09:22 -0400
+Date: Wed, 8 Apr 2009 18:09:21 -0400
+From: Kyle McMartin <kyle@mcmartin.ca>
+To: Alexander Beregalov <a.beregalov@gmail.com>
+Cc: linux-parisc@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>,
+       Kernel Testers List <kernel-testers@vger.kernel.org>
+Subject: Re: 2.6.30-rc1: parisc: system hangs on boot at __schedule()
+Message-ID: <20090408220921.GF7372@bombadil.infradead.org>
+References: <a4423d670904080603w50face2fl87cd16bd7967cb5d@mail.gmail.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <a4423d670904080603w50face2fl87cd16bd7967cb5d@mail.gmail.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 2009-04-08 at 21:45 +0100, Jack Stone wrote:
-> That has already been done. Someone just so happened to submit
-> such a patch today.
-> http://marc.info/?l=linux-kernel&m=123916809504492&w=2
+On Wed, Apr 08, 2009 at 05:03:04PM +0400, Alexander Beregalov wrote:
+> Hi
+> 
+> Machine is HP j6000.
+> CPU(s): 2 x PA8700 (PCX-W2) at 750.000000 MHz
+> 
+> gcc version 4.3.3 (Gentoo 4.3.3-r2 p1.1, pie-10.1.5)
+> 
+> 
+> Machine hangs before starting rc scripts, but SysRq and C-A-Del work.
+> 
+> All tasks are at __schedule+0x268/0x7bc:
+> 
 
-It's been floating around for awhile now.
-
-If you're using git send-email, you could try adding
---cc-cmd "scripts/get_maintainer.pl patchfile" 
-
-Here are some descriptions of available options
-http://lkml.org/lkml/2008/10/27/479
-
-Let me know how it works for you.
-
-cheers, Joe
-
+.config?
