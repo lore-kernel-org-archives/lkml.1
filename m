@@ -1,58 +1,104 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754732AbZDHWKw@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754863AbZDHWLW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754732AbZDHWKw (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 8 Apr 2009 18:10:52 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752371AbZDHWKm
+	id S1754863AbZDHWLW (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 8 Apr 2009 18:11:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753624AbZDHWLA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 8 Apr 2009 18:10:42 -0400
-Received: from zcars04e.nortel.com ([47.129.242.56]:50558 "EHLO
-	zcars04e.nortel.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751883AbZDHWKl (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 8 Apr 2009 18:10:41 -0400
-Message-ID: <49DD20DA.3020902@nortel.com>
-Date: Wed, 08 Apr 2009 16:10:34 -0600
-From: "Chris Friesen" <cfriesen@nortel.com>
-User-Agent: Thunderbird 2.0.0.21 (X11/20090302)
-MIME-Version: 1.0
-To: Rick Jones <rick.jones2@hp.com>
-CC: linux-kernel@vger.kernel.org,
-       Linux Network Development list <netdev@vger.kernel.org>
-Subject: Re: dhcp-based netboot over jumbo-frame network?
-References: <49DCE470.9060109@nortel.com> <49DCF7E2.2060304@hp.com>
-In-Reply-To: <49DCF7E2.2060304@hp.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+	Wed, 8 Apr 2009 18:11:00 -0400
+Received: from sh.osrg.net ([192.16.179.4]:60041 "EHLO sh.osrg.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752371AbZDHWK7 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 8 Apr 2009 18:10:59 -0400
+Date: Thu, 9 Apr 2009 07:10:32 +0900
+To: jeremy@goop.org
+Cc: fujita.tomonori@lab.ntt.co.jp, galak@kernel.crashing.org,
+       hch@infradead.org, linux-kernel@vger.kernel.org, mingo@elte.hu,
+       ian.campbell@citrix.com, beckyb@kernel.crashing.org
+Subject: Re: [PATCH 4/7] swiotlb: Allow arch override of
+ address_needs_mapping
+From: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
+In-Reply-To: <49DD1D6B.6030001@goop.org>
+References: <7366A4DE-6848-4AF6-AA33-6BD89B0A5153@kernel.crashing.org>
+	<20090409061444G.fujita.tomonori@lab.ntt.co.jp>
+	<49DD1D6B.6030001@goop.org>
+Mime-Version: 1.0
+Content-Type: Text/Plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
-X-OriginalArrivalTime: 08 Apr 2009 22:10:36.0287 (UTC) FILETIME=[D7DBA0F0:01C9B896]
+Message-Id: <20090409071032M.fujita.tomonori@lab.ntt.co.jp>
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-3.0 (sh.osrg.net [192.16.179.4]); Thu, 09 Apr 2009 07:10:32 +0900 (JST)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Rick Jones wrote:
-> Chris Friesen wrote:
+On Wed, 08 Apr 2009 14:55:55 -0700
+Jeremy Fitzhardinge <jeremy@goop.org> wrote:
 
->> We have an existing system that loads a bare kernel using tftp, then 
->> mounts a rootfs via NFS.  The wrinkle is that this is on a jumbo-frame 
->> enabled network, so somehow the MTU needs to be set before mounting the 
->> rootfs.
+> FUJITA Tomonori wrote:
+> > On Wed, 8 Apr 2009 15:56:32 -0500
+> > Kumar Gala <galak@kernel.crashing.org> wrote:
+> >
+> >   
+> >> On Apr 8, 2009, at 3:38 PM, Christoph Hellwig wrote:
+> >>
+> >>     
+> >>> On Wed, Apr 08, 2009 at 09:09:18AM -0500, Kumar Gala wrote:
+> >>>       
+> >>>> From: Becky Bruce <beckyb@kernel.crashing.org>
+> >>>>
+> >>>> Some architectures require additional checking to determine
+> >>>> if a device can dma to an address and need to provide their
+> >>>> own address_needs_mapping..
+> >>>>         
+> >>> Shouldn't we just move it completely to the arch?  I think that ia64  
+> >>> and
+> >>> x86 currently use the same one is more of an accident.
+> >>>       
+> >> It seems like the swiotlb code uses __weak for a number of things:
+> >>
+> >> lib/swiotlb.c:void * __weak __init swiotlb_alloc_boot(size_t size,  
+> >> unsigned long nslabs)
+> >> lib/swiotlb.c:void * __weak swiotlb_alloc(unsigned order, unsigned  
+> >> long nslabs)
+> >> lib/swiotlb.c:dma_addr_t __weak swiotlb_phys_to_bus(struct device  
+> >> *hwdev, phys_addr_t paddr)
+> >> lib/swiotlb.c:phys_addr_t __weak swiotlb_bus_to_phys(struct device  
+> >> *hwdev, dma_addr_t baddr)
+> >> lib/swiotlb.c:void * __weak swiotlb_bus_to_virt(struct device *hwdev,  
+> >> dma_addr_t address)
+> >> lib/swiotlb.c:int __weak swiotlb_arch_address_needs_mapping(struct  
+> >> device *hwdev,
+> >> lib/swiotlb.c:int __weak swiotlb_arch_range_needs_mapping(phys_addr_t  
+> >> paddr, size_t size)
+> >>
+> >> instead of #ifndef HAVE_ARCH_<FOO>.  Not sure if there is a historical  
+> >> reason for that.
+> >>     
+> >
+> > ia64 and x86_64 use swiotlb but neither need this function. And
+> > neither need any above __weak. They were added for dom0 support.
+> > Yeah, swiotlb is much cleaner and better if we don't add dom0 support.
+> >   
 > 
-> Why?  Is the NFS mount not TCP?  If it is TCP, then the TCP MSS exchange will 
-> provide you cover as it will (should) cause TCP in the NFS server to segment to 
-> the MSS option your system with the then-smaller MTU sends.
-> 
-> I would think that only if the NFS mount is UDP that you would have a problem 
-> with the system initially booting with a small MTU.
+> Some architectures need non-trivial bus<->phys conversion routines, etc, 
 
-Currently it uses the default, which is udp.  I might be able to get 
-them to try TCP.  Thanks for the suggestion.
+Only Xen needs such conversion for swiotlb.
 
->> In a previous version we patched ipconfig.c to support the DHCP option 
->> to specify the MTU value, but I'm wondering about the "proper" way to do 
->> this on current kernels.
-> 
-> Was the change submitted to upstream and rejected?
 
-The change was submitted (not by us) back in the 2.6.10 timeframe, and 
-was rejected with the suggestion to use initramfs.
+> so either we can require it that all architectures wishing to use 
+> swiotlb define these functions, or have weak default functions that can 
+> be overridden by architectures where necessary.
 
-Chris
+Can you give an example? I don't think IA64, X86_64 or POWER (which
+will use swiotlb) need any __weak functions. If you say other archs
+could use swiotlb, please tell me how they need these __weak.
+
+
+> This isn't a specific Xen dom0 requirement, except that enabling it in 
+
+Yes, it is.
+
+
+> the config will override these functions (but now in a Xen-only file, 
+> rather than affecting the normal x86 pci-swiotlb.c).
+
+And again, x86' pci-swiotlb is much cleaner without dom0 support.
