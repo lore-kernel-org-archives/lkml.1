@@ -1,159 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756078AbZDHAKn@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758302AbZDHAK7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756078AbZDHAKn (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 7 Apr 2009 20:10:43 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752866AbZDHAKc
+	id S1758302AbZDHAK7 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 7 Apr 2009 20:10:59 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757359AbZDHAKj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 7 Apr 2009 20:10:32 -0400
-Received: from relay3.sgi.com ([192.48.156.57]:36821 "EHLO relay.sgi.com"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1752588AbZDHAKc (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 7 Apr 2009 20:10:32 -0400
-Date: Tue, 7 Apr 2009 19:10:29 -0500
-From: Russ Anderson <rja@sgi.com>
-To: linux-kernel@vger.kernel.org, linux-mm@kvack.org, x86@kernel.org
-Cc: Russ Anderson <rja@sgi.com>
-Subject: [PATCH 0/2] Migrate data off physical pages with corrected memory errors
-Message-ID: <20090408001029.GA27170@sgi.com>
-Reply-To: Russ Anderson <rja@sgi.com>
+	Tue, 7 Apr 2009 20:10:39 -0400
+Received: from chilli.pcug.org.au ([203.10.76.44]:34420 "EHLO smtps.tip.net.au"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1757211AbZDHAKi (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 7 Apr 2009 20:10:38 -0400
+Date: Wed, 8 Apr 2009 10:10:32 +1000
+From: Stephen Rothwell <sfr@canb.auug.org.au>
+To: Alan Cox <alan@lxorguk.ukuu.org.uk>
+Cc: linux-next@vger.kernel.org, Christian Pellegrin <chripell@gmail.com>,
+       LKML <linux-kernel@vger.kernel.org>,
+       Linus <torvalds@linux-foundation.org>,
+       Andrew Morton <akpm@linux-foundation.org>
+Subject: linux-next: origin tree build failure
+Message-Id: <20090408101032.75afd7af.sfr@canb.auug.org.au>
+X-Mailer: Sylpheed 2.6.0 (GTK+ 2.14.7; i486-pc-linux-gnu)
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-User-Agent: Mutt/1.4.2.2i
+Content-Type: multipart/signed; protocol="application/pgp-signature";
+ micalg="PGP-SHA1";
+ boundary="Signature=_Wed__8_Apr_2009_10_10_32_+1000_kwpSavlbI9d0X+3o"
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Purpose:
+--Signature=_Wed__8_Apr_2009_10_10_32_+1000_kwpSavlbI9d0X+3o
+Content-Type: text/plain; charset=US-ASCII
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-	Physical memory with corrected errors may decay over time into
-	uncorrectable errors.  The purpose of this patch is to move the
-	data off pages with correctable memory errors before the memory
-	goes bad.
+Hi Alan,
 
-	This patch set applies on top of Andi Kleen's POISON patch set.
+Today's linux-next build (x86_64 allmodconfig) failed like this:
 
-The patches:
+make[3]: *** No rule to make target `drivers/serial/max3100.c', needed by `=
+drivers/serial/max3100.o'.  Stop.
 
-  [1/2] Avoid putting a bad page back on the LRU.
+The commit 1dcb884ca8048efb4ce2999d367c26369ab2227c ("Add support for the
+MAX3100 SPI UART.") added everything except the file above.
 
-	Avoid putting a bad page back on the LRU after migrating the
-	data to a new page.  The reference count on the bad page is
-	not decremented to zero to avoid it being reallocated.
+I have reverted that commit for today.
+--=20
+Cheers,
+Stephen Rothwell                    sfr@canb.auug.org.au
+http://www.canb.auug.org.au/~sfr/
 
-  [2/3] Call migration code on correctable errors
+--Signature=_Wed__8_Apr_2009_10_10_32_+1000_kwpSavlbI9d0X+3o
+Content-Type: application/pgp-signature
 
-	This patch has ia64 specific changes.  It connects the CPE
-	handler to the page migration code.  It is implemented as a kernel
-	loadable module, similar to the mca recovery code (mca_recovery.ko),
-	so that it can be removed to turn off the feature.  Create
-	/sys/kernel/badram to print page discard information and to free
-	bad pages.
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.9 (GNU/Linux)
 
-Comments:
+iEYEARECAAYFAknb63gACgkQjjKRsyhoI8yyagCcCzjURscJhT/PBR3T+fAi+uKB
+tTQAnjcr+ewGrImFpIjzPamCLiUevA/G
+=JVc0
+-----END PGP SIGNATURE-----
 
-	There is always an issue of how agressive the code should be on
-	migrating pages.  This patch uses /sys/firmware/badram/migrate_threshold
-	to adjust the number of correctable errors before migrating a 
-	page.
-
-	Only pages that can be isolated on the LRU are migrated.  Other
-	pages, such as compound pages, are not migrated.  That functionality
-	could be a future enhancement.
-
-	/sys/kernel/badram/bad_pages is used to display information about
-	the bad memory.  The interface can be used to free pages marked bad.
-
-Sample output:
-
-	This is sample output from a system with a DIMM that has correctable
-	errors at many addresses.
-
-	linux> ls /sys/firmware/badram/
-	bad_pages  cmc_polling_threshold  cpe_polling_threshold  migrate_threshold
-
-	linux> cat /sys/firmware/badram/bad_pages
-	Memory marked bad:        704 kB
-	Pages marked bad:         11
-	Unable to isolate on LRU: 1
-	Unable to migrate:        0
-	Already marked bad:       2
-	Already on list:          0
-	List of bad physical pages
- 	  0x06871110000 0x06014820000 0x26003b20000 0x26005380000 0x26005390000
- 	  0x260053a0000 0x260053b0000 0x260052f0000 0x26004bf0000 0x26004af0000
- 	  0x26005330000
-
-
-		// Free one of the pages
-	linux> echo 0x06014820000 > /sys/firmware/badram/bad_pages
-
-		// 10 pages remain on the list
-	linux> cat /sys/firmware/badram/bad_pages
-	Memory marked bad:        640 kB
-	Pages marked bad:         10
-	Unable to isolate on LRU: 1
-	Unable to migrate:        0
-	Already marked bad:       2
-	Already on list:          0
-	List of bad physical pages
- 	  0x06871110000 0x26003b20000 0x26005380000 0x26005390000 0x260053a0000
- 	  0x260053b0000 0x260052f0000 0x26004bf0000 0x26004af0000 0x26005330000
-
-		// Free all the bad pages
-	linux> echo 0 > /sys/firmware/badram/bad_pages
-
-		// All the pages are freed
-	linux> cat /sys/firmware/badram/bad_pages
-	Memory marked bad:        0 kB
-	Pages marked bad:         0
-	Unable to isolate on LRU: 1
-	Unable to migrate:        0
-	Already marked bad:       2
-	Already on list:          0
-	List of bad physical pages
-
-
-
-Flow of the code description (while testing on IA64):
-
-	1) A user level application test program allocates memory and
-	   passes the virtual address of the memory to the error injection
-	   driver.
-
-	2) The error injection driver converts the virtual address to
-	   physical, functions the Altix hardware to modify the ECC for the
-	   physical page, creating a correctable error, and returns to the
-	   user application.
-
-	3) The user application reads the memory.
-
-	4) The Altix hardware detects the correctable error and interrupts
-	   prom.  SAL builds a CPU error record, then sends a CPE 
-	   interrupt to linux.
-
-	5) The linux CPE handler calls the cpe_migrate module (if installed).
-
-	6) cpe_setup_migrate parses the physical address from the CPE record
-	   and adds the address to the migrate list (if not already on the
-	   list) and wakes up a kernel thread (cpe_process_queue).
-
-	7) cpe_process_queue checks if the threshold has been exceeded and 
-	   calls ia64_mca_cpe_move_page.
-
-	8) ia64_mca_cpe_move_page validates the physical address, converts
-	   to page, sets PG_memerror flag and calls the migration code
-	   (migrate_prep(), isolate_lru_page(), and migrate_pages().  If the
-	   page migrates successfully, the bad page is added to badpagelist.
-
-	9) Because PG_Poison is set, the bad page is not added back on the LRU
-	   by avoiding calls to move_to_lru().  Avoiding move_to_lru() prevents
-	   the page count from being decremented to zero.
-
-	10) If the page fails to migrate, PG_Poison is cleared and the page 
-	   returned to the LRU.  If another correctable error occurs on the
-	   page another attempt will be made to migrate it.
-
--- 
-Russ Anderson, OS RAS/Partitioning Project Lead  
-SGI - Silicon Graphics Inc          rja@sgi.com
+--Signature=_Wed__8_Apr_2009_10_10_32_+1000_kwpSavlbI9d0X+3o--
