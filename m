@@ -1,23 +1,23 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762580AbZDHHHC@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762685AbZDHHHh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762580AbZDHHHC (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 8 Apr 2009 03:07:02 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758439AbZDHHGu
+	id S1762685AbZDHHHh (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 8 Apr 2009 03:07:37 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758439AbZDHHH1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 8 Apr 2009 03:06:50 -0400
-Received: from cn.fujitsu.com ([222.73.24.84]:55165 "EHLO song.cn.fujitsu.com"
+	Wed, 8 Apr 2009 03:07:27 -0400
+Received: from cn.fujitsu.com ([222.73.24.84]:53699 "EHLO song.cn.fujitsu.com"
 	rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org with ESMTP
-	id S1760458AbZDHHGt (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 8 Apr 2009 03:06:49 -0400
-Message-ID: <49DC4D32.5030301@cn.fujitsu.com>
-Date: Wed, 08 Apr 2009 15:07:30 +0800
+	id S1762128AbZDHHH0 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 8 Apr 2009 03:07:26 -0400
+Message-ID: <49DC4D54.3020001@cn.fujitsu.com>
+Date: Wed, 08 Apr 2009 15:08:04 +0800
 From: Li Zefan <lizf@cn.fujitsu.com>
 User-Agent: Thunderbird 2.0.0.9 (X11/20071115)
 MIME-Version: 1.0
-To: Greg KH <greg@kroah.com>
+To: felixb@sgi.com
 CC: LKML <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>
-Subject: [PATCH 3/6] sysfs: use memdup_user()
+       Andrew Morton <akpm@linux-foundation.org>, xfs@oss.sgi.com
+Subject: [PATCH 4/6] xfs: use memdup_user()
 References: <49DC4CC0.9050805@cn.fujitsu.com>
 In-Reply-To: <49DC4CC0.9050805@cn.fujitsu.com>
 Content-Type: text/plain; charset=UTF-8
@@ -26,44 +26,94 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Remove open-coded memdup_user().
+Remove open-coded memdup_user()
 
 Signed-off-by: Li Zefan <lizf@cn.fujitsu.com>
 ---
- fs/sysfs/bin.c |   13 +++----------
- 1 files changed, 3 insertions(+), 10 deletions(-)
+ fs/xfs/linux-2.6/xfs_ioctl.c   |   23 +++++++----------------
+ fs/xfs/linux-2.6/xfs_ioctl32.c |   12 ++++--------
+ 2 files changed, 11 insertions(+), 24 deletions(-)
 
-diff --git a/fs/sysfs/bin.c b/fs/sysfs/bin.c
-index 93e0c02..9345806 100644
---- a/fs/sysfs/bin.c
-+++ b/fs/sysfs/bin.c
-@@ -157,14 +157,9 @@ static ssize_t write(struct file *file, const char __user *userbuf,
- 			count = size - offs;
- 	}
+diff --git a/fs/xfs/linux-2.6/xfs_ioctl.c b/fs/xfs/linux-2.6/xfs_ioctl.c
+index d0b4994..34eaab6 100644
+--- a/fs/xfs/linux-2.6/xfs_ioctl.c
++++ b/fs/xfs/linux-2.6/xfs_ioctl.c
+@@ -489,17 +489,12 @@ xfs_attrmulti_attr_set(
+ 	if (len > XATTR_SIZE_MAX)
+ 		return EINVAL;
  
--	temp = kmalloc(count, GFP_KERNEL);
--	if (!temp)
--		return -ENOMEM;
+-	kbuf = kmalloc(len, GFP_KERNEL);
+-	if (!kbuf)
+-		return ENOMEM;
 -
--	if (copy_from_user(temp, userbuf, count)) {
--		count = -EFAULT;
--		goto out_free;
--	}
-+	temp = memdup_user(userbuf, count);
-+	if (IS_ERR(temp))
-+		return PTR_ERR(temp);
+-	if (copy_from_user(kbuf, ubuf, len))
+-		goto out_kfree;
++	kbuf = memdup_user(ubuf, len);
++	if (IS_ERR(kbuf))
++		return PTR_ERR(kbuf);
  
- 	mutex_lock(&bb->mutex);
+ 	error = xfs_attr_set(XFS_I(inode), name, kbuf, len, flags);
  
-@@ -176,8 +171,6 @@ static ssize_t write(struct file *file, const char __user *userbuf,
- 	if (count > 0)
- 		*off = offs + count;
- 
--out_free:
--	kfree(temp);
- 	return count;
+- out_kfree:
+-	kfree(kbuf);
+ 	return error;
  }
  
+@@ -540,20 +535,16 @@ xfs_attrmulti_by_handle(
+ 	if (!size || size > 16 * PAGE_SIZE)
+ 		goto out_dput;
+ 
+-	error = ENOMEM;
+-	ops = kmalloc(size, GFP_KERNEL);
+-	if (!ops)
++	ops = memdup_user(am_hreq.ops, size);
++	if (IS_ERR(ops)) {
++		error = PTR_ERR(ops);
+ 		goto out_dput;
+-
+-	error = EFAULT;
+-	if (copy_from_user(ops, am_hreq.ops, size))
+-		goto out_kfree_ops;
++	}
+ 
+ 	attr_name = kmalloc(MAXNAMELEN, GFP_KERNEL);
+ 	if (!attr_name)
+ 		goto out_kfree_ops;
+ 
+-
+ 	error = 0;
+ 	for (i = 0; i < am_hreq.opcount; i++) {
+ 		ops[i].am_error = strncpy_from_user(attr_name,
+diff --git a/fs/xfs/linux-2.6/xfs_ioctl32.c b/fs/xfs/linux-2.6/xfs_ioctl32.c
+index c70c4e3..0882d16 100644
+--- a/fs/xfs/linux-2.6/xfs_ioctl32.c
++++ b/fs/xfs/linux-2.6/xfs_ioctl32.c
+@@ -427,20 +427,16 @@ xfs_compat_attrmulti_by_handle(
+ 	if (!size || size > 16 * PAGE_SIZE)
+ 		goto out_dput;
+ 
+-	error = ENOMEM;
+-	ops = kmalloc(size, GFP_KERNEL);
+-	if (!ops)
++	ops = memdup_user(compat_ptr(am_hreq.ops), size);
++	if (IS_ERR(ops)) {
++		error = PTR_ERR(ops);
+ 		goto out_dput;
+-
+-	error = EFAULT;
+-	if (copy_from_user(ops, compat_ptr(am_hreq.ops), size))
+-		goto out_kfree_ops;
++	}
+ 
+ 	attr_name = kmalloc(MAXNAMELEN, GFP_KERNEL);
+ 	if (!attr_name)
+ 		goto out_kfree_ops;
+ 
+-
+ 	error = 0;
+ 	for (i = 0; i < am_hreq.opcount; i++) {
+ 		ops[i].am_error = strncpy_from_user(attr_name,
 -- 
 1.5.4.rc3
+
 
