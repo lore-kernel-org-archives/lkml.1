@@ -1,100 +1,103 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752578AbZDHKjV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759060AbZDHKmW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752578AbZDHKjV (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 8 Apr 2009 06:39:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753103AbZDHKjA
+	id S1759060AbZDHKmW (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 8 Apr 2009 06:42:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750894AbZDHKmL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 8 Apr 2009 06:39:00 -0400
-Received: from mail-fx0-f158.google.com ([209.85.220.158]:46306 "EHLO
-	mail-fx0-f158.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751736AbZDHKi6 (ORCPT
+	Wed, 8 Apr 2009 06:42:11 -0400
+Received: from mailgate4.9netweb.it ([66.71.190.73]:58563 "EHLO
+	mailgate4.9netweb.it" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750725AbZDHKmK (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 8 Apr 2009 06:38:58 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:date:message-id:subject:from:to:cc:content-type
-         :content-transfer-encoding;
-        b=RbEZBvNLI6a4ZlS7bixF7DnV2j+xDooDYQK8sSUiz2mnnkZl0BJKSfU03ys351O8hs
-         ZcxwHMF3JHHY5pQIbB+TuwP03R5z+rdwv5BaZT8noSz5NTMGfFHXFeZsh4NQvilnzuGp
-         kptH+6dxKXr4rwBoBwlLDW/uKiL8Ei/W+MTno=
+	Wed, 8 Apr 2009 06:42:10 -0400
+X-Greylist: delayed 2054 seconds by postgrey-1.27 at vger.kernel.org; Wed, 08 Apr 2009 06:42:10 EDT
+Message-ID: <49DC7754.4030404@evidence.eu.com>
+Date: Wed, 08 Apr 2009 12:07:16 +0200
+From: Claudio Scordino <claudio@evidence.eu.com>
+User-Agent: Thunderbird 2.0.0.21 (X11/20090318)
 MIME-Version: 1.0
-Date: Wed, 8 Apr 2009 14:38:56 +0400
-Message-ID: <208cbae30904080338x749800b0o392886ab023018b6@mail.gmail.com>
-Subject: commit "ACPI: battery: asynchronous init" brokes my boot up process
-From: Alexey Klimov <klimov.linux@gmail.com>
-To: Arjan van de Ven <arjan@linux.intel.com>
-Cc: linux-kernel@vger.kernel.org, len.brown@intel.com,
-       linux-acpi@vger.kernel.org
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+To: Jesper Nilsson <Jesper.Nilsson@axis.com>, starvik@axis.com
+Cc: Alan Cox <alan@lxorguk.ukuu.org.uk>,
+       Hinko Kocevar <hinko.kocevar@cetrtapot.si>,
+       Janez Cufer <janez.cufer@cetrtapot.si>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Linux Kernel <linux-kernel@vger.kernel.org>, dev-etrax@axis.com,
+       adobriyan@gmail.com
+Subject: [PATCH] Fix broken compilation of Cris serial driver
+Content-Type: multipart/mixed;
+ boundary="------------080205010708070108040309"
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hello,
+This is a multi-part message in MIME format.
+--------------080205010708070108040309
+Content-Type: text/plain; charset=ISO-8859-15; format=flowed
+Content-Transfer-Encoding: 7bit
 
-I don't know if i do right thing creating this letter but looks like
-this commit 0f66af530116e9f4dd97f328d91718b56a6fc5a4 "ACPI: battery:
-asynchronous init" brokes my boot up process. My machine is pentium-m
-cpu, Gentoo, gcc 4.3.3-r2.
-When openRC started and i got something like "Processing udev
-events(?)" (i can't see exactly words) i got this:
+Hi,
 
-ACPI: Battery Slot [BAT1] (battery present)
-BUG: unable to handle kernel paging request at f8530030
-IP: [<f8530030>] 0xf8530030
-*pde = 37288067 *pte = 00000000
-Oops: 0000 [#1]
-last sysfs file: /sys/devices/pnp0/00:07/id
-Modules linked in: ehci_hcd(+) sg container(+) battery uhci_hcd
-thermal button ac usbhid hid cpufreq_ondemand acpi_cpufreq
-snd_seq_dummy snd_seq_oss snd_seq_midi_event snd_seq snd_seq_device
-snd_pcm_oss snd_mixer_oss snd_intel8x0 snd_ac97_codec ac97_bus snd_pcm
-snd_timer snd soundcore snd_page_alloc usbcore rtc_cmos rtc_core
-rtc_lib
+    compilation of cris serial driver on 2.6.30-rc1 is broken since 
+commit number 0f043a81ebe84be3576667f04fdda481609e3816 removed the 
+read_proc field from the tty_driver structure.
 
-Pid: 913, comm: async/0 Not tainted (2.6.29 #34) TravelMate 2350
-EIP: 0060:[<f8530030>] EFLAGS: 00010246 CPU: 0
-EIP is at 0xf8530030
-EAX: 00000000 EBX: 00000216 ECX: 00000001 EDX: 00000000
-ESI: c0129c47 EDI: f64bb5a0 EBP: 00000000 ESP: f660dfb0
- DS: 007b ES: 007b FS: 0000 GS: 0000 SS: 0068
-Process async/0 (pid: 913, ti=f660d000 task=f6574d40 task.ti=f660d000)
-Stack:
- c0129d1e f7035f88 00000296 00000000 f6574d40 c0115dd2 f7035fc8 c0369bc0
- 00000000 00000000 c0125c76 c0125c40 00000000 c0102f23 f7035f7c 00000000
- 00000000 00000000 00005067 003c8067
-Call Trace:
- [<c0129d1e>] ? async_thread+0xd7/0x1a8
- [<c0115dd2>] ? default_wake_function+0x0/0x8
- [<c0125c76>] ? kthread+0x36/0x5a
- [<c0125c40>] ? kthread+0x0/0x5a
- [<c0102f23>] ? kernel_thread_helper+0x7/0x10
-Code:  Bad EIP value.
-EIP: [<f8530030>] 0xf8530030 SS:ESP 0068:f660dfb0
-CR2: 00000000f8530030
----[ end trace d9fadf449e253313 ]---
-ehci_hcd 0000:00:1d.7: irq 23, io mem 0xf0080000
-ehci_hcd 0000:00:1d.7: USB 2.0 started, EHCI 1.00
-usb usb4: New USB device found, idVendor=1d6b, idProduct=0002
-usb usb4: New USB device strings: Mfr=3, Product=2, SerialNumber=1
+The patch in attachment may fix the problem. Please check it very 
+carefully: I don't have hardware to make any test.
 
-And boot up process freezes when system tries to restart udev later.
-I didn't  have this issue in 2.6.29-git12. It presented in
-2.6.29-git15 and 2.6.30-rc1.
-Firstly i thought that there is conflict(or race) with usb modules,
-and i tried to unplug all my usb devices before reboot, but issue
-still present in 2.6.30-rc1.
+Regards,
 
-Well, then i removed many apci modules like button, fan, battery,
-thermal and finally figured out that battery module is buggy on my
-system.
-I cancel changes provided by this commit in drivers/acpi/battery.c
-file and re-compiled modules. Boot up started to works fine.
+           Claudio
 
-Probably this happens due to: 1) cos my notebook too old and battery
-isn't works long, 2) Gentoo' boot up process is bad.
-May be kernel option in menuconfig can be appropriate?
+--------------080205010708070108040309
+Content-Type: text/x-diff;
+ name="0001-Fix-remove-read_proc-field-from-cris-serial-driver.patch"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline;
+ filename*0="0001-Fix-remove-read_proc-field-from-cris-serial-driver.patc";
+ filename*1="h"
 
+From: Claudio Scordino <claudio@evidence.eu.com>
+
+Commit number 0f043a81ebe84be3576667f04fdda481609e3816 removed the read_proc
+field from the tty_driver structure.
+
+This broke cris serial driver compilation.
+
+Signed-off-by: Claudio Scordino <claudio@evidence.eu.com>
+---
+ drivers/serial/crisv10.c |    3 ++-
+ 1 files changed, 2 insertions(+), 1 deletions(-)
+
+diff --git a/drivers/serial/crisv10.c b/drivers/serial/crisv10.c
+index 7ba7d70..a331e40 100644
+--- a/drivers/serial/crisv10.c
++++ b/drivers/serial/crisv10.c
+@@ -27,6 +27,7 @@ static char *serial_version = "$Revision: 1.25 $";
+ #include <linux/kernel.h>
+ #include <linux/mutex.h>
+ #include <linux/bitops.h>
++#include <linux/proc_fs.h>
+ 
+ #include <asm/io.h>
+ #include <asm/irq.h>
+@@ -4425,7 +4426,6 @@ static const struct tty_operations rs_ops = {
+ 	.break_ctl = rs_break,
+ 	.send_xchar = rs_send_xchar,
+ 	.wait_until_sent = rs_wait_until_sent,
+-	.read_proc = rs_read_proc,
+ 	.tiocmget = rs_tiocmget,
+ 	.tiocmset = rs_tiocmset
+ };
+@@ -4490,6 +4490,7 @@ rs_init(void)
+ 	if (tty_register_driver(driver))
+ 		panic("Couldn't register serial driver\n");
+ 	/* do some initializing for the separate ports */
++	driver->proc_entry->read_proc = rs_read_proc;
+ 
+ 	for (i = 0, info = rs_table; i < NR_PORTS; i++,info++) {
+ 		if (info->enabled) {
 -- 
-Best regards, Klimov Alexey
+1.5.4.3
+
+
+--------------080205010708070108040309--
