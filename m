@@ -1,49 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764387AbZDHTOU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764916AbZDHTQK@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764387AbZDHTOU (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 8 Apr 2009 15:14:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757912AbZDHTOB
+	id S1764916AbZDHTQK (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 8 Apr 2009 15:16:10 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752997AbZDHTPw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 8 Apr 2009 15:14:01 -0400
-Received: from palinux.external.hp.com ([192.25.206.14]:44085 "EHLO
-	mail.parisc-linux.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755565AbZDHTOA (ORCPT
+	Wed, 8 Apr 2009 15:15:52 -0400
+Received: from g4t0015.houston.hp.com ([15.201.24.18]:38102 "EHLO
+	g4t0015.houston.hp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752618AbZDHTPv (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 8 Apr 2009 15:14:00 -0400
-Date: Wed, 8 Apr 2009 13:13:59 -0600
-From: Matthew Wilcox <matthew@wil.cx>
-To: Jeff Garzik <jeff@garzik.org>
-Cc: linux-ide@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH] libata: Prepare for hard drives w/ non-512 sector sizes
-Message-ID: <20090408191359.GM20983@parisc-linux.org>
-References: <20090408065955.GA29845@havoc.gtf.org> <20090408183243.GK20983@parisc-linux.org> <49DCF14F.1060407@garzik.org> <20090408185639.GL20983@parisc-linux.org> <49DCF61E.2000703@garzik.org>
+	Wed, 8 Apr 2009 15:15:51 -0400
+Message-ID: <49DCF7E2.2060304@hp.com>
+Date: Wed, 08 Apr 2009 12:15:46 -0700
+From: Rick Jones <rick.jones2@hp.com>
+User-Agent: Mozilla/5.0 (X11; U; HP-UX 9000/785; en-US; rv:1.7.13) Gecko/20060601
+X-Accept-Language: en-us, en
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <49DCF61E.2000703@garzik.org>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+To: Chris Friesen <cfriesen@nortel.com>
+CC: linux-kernel@vger.kernel.org,
+       Linux Network Development list <netdev@vger.kernel.org>
+Subject: Re: dhcp-based netboot over jumbo-frame network?
+References: <49DCE470.9060109@nortel.com>
+In-Reply-To: <49DCE470.9060109@nortel.com>
+Content-Type: text/plain; charset=us-ascii; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Apr 08, 2009 at 03:08:14PM -0400, Jeff Garzik wrote:
-> Matthew Wilcox wrote:
-> >?!  Are you referring to the one incident where you asked me if I had
-> >any patches for 2.6.30, I pointed at the TRIM patches and you quibbled
-> >that I hadn't reposted the updates, only a git tree?
+Chris Friesen wrote:
 > 
-> On multiple occasions.  You're the only one I have to poke to get 
-> updates on pending libata patches, in some cases, patches that really 
-> should have gone upstream long ago.
+> Hi all,
+> 
+> We have an existing system that loads a bare kernel using tftp, then 
+> mounts a rootfs via NFS.  The wrinkle is that this is on a jumbo-frame 
+> enabled network, so somehow the MTU needs to be set before mounting the 
+> rootfs.
 
-I send patches and get no feedback from the maintainer (you).  So I
-work on other things instead.  The 4k sector size support is largely
-theoretical anyway, given that every _SATA_ vendor I've heard from is
-planning on doing 4k physical / 512 byte logical sectors.  SAS is a
-different matter, but is irrelevant to this series of patches.
+Why?  Is the NFS mount not TCP?  If it is TCP, then the TCP MSS exchange will 
+provide you cover as it will (should) cause TCP in the NFS server to segment to 
+the MSS option your system with the then-smaller MTU sends.
 
--- 
-Matthew Wilcox				Intel Open Source Technology Centre
-"Bill, look, we understand that you're interested in selling us this
-operating system, but compare it to ours.  We can't possibly take such
-a retrograde step."
+I would think that only if the NFS mount is UDP that you would have a problem 
+with the system initially booting with a small MTU.
+
+> In a previous version we patched ipconfig.c to support the DHCP option 
+> to specify the MTU value, but I'm wondering about the "proper" way to do 
+> this on current kernels.
+
+Was the change submitted to upstream and rejected?
+
+rick jones
