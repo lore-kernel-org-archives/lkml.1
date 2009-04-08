@@ -1,79 +1,71 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932862AbZDHOAo@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762164AbZDHOBu@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932862AbZDHOAo (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 8 Apr 2009 10:00:44 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759040AbZDHOAX
+	id S1762164AbZDHOBu (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 8 Apr 2009 10:01:50 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757609AbZDHOBg
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 8 Apr 2009 10:00:23 -0400
-Received: from out2.smtp.messagingengine.com ([66.111.4.26]:48600 "EHLO
-	out2.smtp.messagingengine.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1765525AbZDHOAU (ORCPT
+	Wed, 8 Apr 2009 10:01:36 -0400
+Received: from miranda.se.axis.com ([193.13.178.8]:52065 "EHLO
+	miranda.se.axis.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754596AbZDHOBf (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 8 Apr 2009 10:00:20 -0400
-X-Sasl-enc: BT4XwKPO3kyjHGCCD+b6rd9xhLFnEuNdt3MO6MP4MbIz 1239199219
-Message-ID: <49DCADF1.6030003@fastmail.fm>
-Date: Wed, 08 Apr 2009 15:00:17 +0100
-From: Jack Stone <jwjstone@fastmail.fm>
-User-Agent: Thunderbird 2.0.0.21 (X11/20090325)
+	Wed, 8 Apr 2009 10:01:35 -0400
+Date: Wed, 8 Apr 2009 16:00:04 +0200
+From: Jesper Nilsson <Jesper.Nilsson@axis.com>
+To: Alexey Dobriyan <adobriyan@gmail.com>
+Cc: Claudio Scordino <claudio@evidence.eu.com>,
+       Mikael Starvik <mikael.starvik@axis.com>,
+       Alan Cox <alan@lxorguk.ukuu.org.uk>,
+       Hinko Kocevar <hinko.kocevar@cetrtapot.si>,
+       Janez Cufer <janez.cufer@cetrtapot.si>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Linux Kernel <linux-kernel@vger.kernel.org>,
+       dev-etrax <dev-etrax@axis.com>
+Subject: Re: [PATCH] Fix broken compilation of Cris serial driver
+Message-ID: <20090408140003.GK8115@axis.com>
+References: <49DC7754.4030404@evidence.eu.com> <20090408105701.GH8115@axis.com> <20090408125122.GA2814@x200.localdomain>
 MIME-Version: 1.0
-To: Bert Wesarg <bert.wesarg@googlemail.com>
-CC: linux-kernel@vger.kernel.org, jeff@garzik.org,
-       kernel-janitors@vger.kernel.org
-Subject: Re: [PATCH 53/56] usb: Remove void casts
-References: <1239189748-11703-1-git-send-email-jwjstone@fastmail.fm>	 <1239189748-11703-46-git-send-email-jwjstone@fastmail.fm>	 <1239189748-11703-47-git-send-email-jwjstone@fastmail.fm>	 <1239189748-11703-48-git-send-email-jwjstone@fastmail.fm>	 <1239189748-11703-49-git-send-email-jwjstone@fastmail.fm>	 <1239189748-11703-50-git-send-email-jwjstone@fastmail.fm>	 <1239189748-11703-51-git-send-email-jwjstone@fastmail.fm>	 <1239189748-11703-52-git-send-email-jwjstone@fastmail.fm>	 <1239189748-11703-53-git-send-email-jwjstone@fastmail.fm>	 <1239189748-11703-54-git-send-email-jwjstone@fastmail.fm> <36ca99e90904080511r5f02717h6fbf7bc63b7ffcf9@mail.gmail.com>
-In-Reply-To: <36ca99e90904080511r5f02717h6fbf7bc63b7ffcf9@mail.gmail.com>
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20090408125122.GA2814@x200.localdomain>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Fixed patch
+On Wed, Apr 08, 2009 at 02:51:22PM +0200, Alexey Dobriyan wrote:
+> On Wed, Apr 08, 2009 at 12:57:01PM +0200, Jesper Nilsson wrote:
+> > On Wed, Apr 08, 2009 at 12:07:16PM +0200, Claudio Scordino wrote:
+> > >     compilation of cris serial driver on 2.6.30-rc1 is broken since 
+> > > commit number 0f043a81ebe84be3576667f04fdda481609e3816 removed the 
+> > > read_proc field from the tty_driver structure.
+> > > 
+> > > The patch in attachment may fix the problem. Please check it very 
+> > > carefully: I don't have hardware to make any test.
+> 
+> > > -	.read_proc = rs_read_proc,
+> > >  	.tiocmget = rs_tiocmget,
+> > >  	.tiocmset = rs_tiocmset
+> > >  };
+> > > @@ -4490,6 +4490,7 @@ rs_init(void)
+> > >  	if (tty_register_driver(driver))
+> > >  		panic("Couldn't register serial driver\n");
+> > >  	/* do some initializing for the separate ports */
+> > > +	driver->proc_entry->read_proc = rs_read_proc;
+> > 
+> > Is this the recommended way to convert proc handling?
+> 
+> No.
 
-Thanks,
+Ok, that's what I thought.
 
-Jack
+> > I find no other serial driver that does it this way...
+> 
+> ->read_proc effectively went away.
 
---
+...so what do we use as a replacement, is it .proc_fops
+or anything else?
 
-usb: Remove void casts
-
-From: Jack Stone <jwjstone@fastmail.fm>
-
-Remove uneeded void casts
-
-Signed-Off-By: Jack Stone <jwjstone@fastmail.fm>
----
-
- drivers/usb/host/ehci-dbg.c |    2 +-
- drivers/usb/host/ehci-mem.c |    3 +--
- 2 files changed, 2 insertions(+), 3 deletions(-)
-
-diff --git a/drivers/usb/host/ehci-dbg.c b/drivers/usb/host/ehci-dbg.c
-index 7f4ace7..abfc31f 100644
---- a/drivers/usb/host/ehci-dbg.c
-+++ b/drivers/usb/host/ehci-dbg.c
-@@ -832,7 +832,7 @@ static int fill_buffer(struct debug_buffer *buf)
-     int ret = 0;
- 
-     if (!buf->output_buf)
--        buf->output_buf = (char *)vmalloc(buf->alloc_size);
-+        buf->output_buf = vmalloc(buf->alloc_size);
- 
-     if (!buf->output_buf) {
-         ret = -ENOMEM;
-diff --git a/drivers/usb/host/ehci-mem.c b/drivers/usb/host/ehci-mem.c
-index 10d5291..df5334f 100644
---- a/drivers/usb/host/ehci-mem.c
-+++ b/drivers/usb/host/ehci-mem.c
-@@ -83,8 +83,7 @@ static struct ehci_qh *ehci_qh_alloc (struct ehci_hcd
-*ehci, gfp_t flags)
-     struct ehci_qh        *qh;
-     dma_addr_t        dma;
- 
--    qh = (struct ehci_qh *)
--        dma_pool_alloc (ehci->qh_pool, flags, &dma);
-+    qh = dma_pool_alloc (ehci->qh_pool, flags, &dma);
-     if (!qh)
-         return qh;
- 
+/^JN - Jesper Nilsson
+-- 
+               Jesper Nilsson -- jesper.nilsson@axis.com
