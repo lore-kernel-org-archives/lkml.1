@@ -1,21 +1,21 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756153AbZDHXIh@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754760AbZDHXI5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756153AbZDHXIh (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 8 Apr 2009 19:08:37 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754116AbZDHXIU
+	id S1754760AbZDHXI5 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 8 Apr 2009 19:08:57 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755924AbZDHXIX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 8 Apr 2009 19:08:20 -0400
-Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:43668
+	Wed, 8 Apr 2009 19:08:23 -0400
+Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:43670
 	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
-	by vger.kernel.org with ESMTP id S1753964AbZDHXIT (ORCPT
+	by vger.kernel.org with ESMTP id S1754775AbZDHXIV (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 8 Apr 2009 19:08:19 -0400
-Date: Wed, 08 Apr 2009 16:08:09 -0700 (PDT)
-Message-Id: <20090408.160809.197973352.davem@davemloft.net>
+	Wed, 8 Apr 2009 19:08:21 -0400
+Date: Wed, 08 Apr 2009 16:08:11 -0700 (PDT)
+Message-Id: <20090408.160811.93427992.davem@davemloft.net>
 To: torvalds@linux-foundation.org
-CC: akpm@linux-foundation.org, netdev@vger.kernel.org,
+CC: akpm@linux-foundation.org, sparclinux@vger.kernel.org,
        linux-kernel@vger.kernel.org
-Subject: [GIT]: Networking
+Subject: [GIT]: Sparc
 From: David Miller <davem@davemloft.net>
 X-Mailer: Mew version 6.2.51 on Emacs 22.1 / Mule 5.0 (SAKAKI)
 Mime-Version: 1.0
@@ -26,10 +26,8 @@ List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-A build fix here, a chip reset fix there, and the new
-virtual-function IGB driver from Intel.
-
-Plus three netfilter bug fixes from Patrick McHardy.
+Section mismatch fixes, plus hook up the new preadv/pwritev
+system calls.
 
 Please pull, thanks a lot!
 
@@ -39,81 +37,27 @@ The following changes since commit 577c9c456f0e1371cbade38eaf91ae8e8a308555:
 
 are available in the git repository at:
 
-  master.kernel.org:/pub/scm/linux/kernel/git/davem/net-2.6.git master
+  master.kernel.org:/pub/scm/linux/kernel/git/davem/sparc-2.6.git master
 
-Alex Riesen (1):
-      netfilter: fix selection of "LED" target in netfilter
+David S. Miller (7):
+      sparc64: get_cells() can't be marked __init
+      sparc64: Fix section mismatch warnings in power driver.
+      sparc64: Fix section mismatch warnings in PCI controller drivers.
+      sparc: Fix section mismatch warnings in cs4231 sound driver.
+      serial: sunsu: sunsu_kbd_ms_init needs to be __devinit
+      sparc64: add_node_ranges() must be __init
+      sparc: Hook up sys_preadv and sys_pwritev
 
-Alexander Duyck (2):
-      igbvf: add new driver to support 82576 virtual functions
-      igb: remove sysfs entry that was used to set the number of vfs
-
-Bastian Blank (1):
-      bnx2: Don't use reserved names
-
-Dan Carpenter (1):
-      niu: Fix error handling
-
-David S. Miller (2):
-      Merge branch 'master' of git://git.kernel.org/.../kaber/nf-2.6
-      niu: Fix unused variable warning.
-
-Eric Dumazet (1):
-      netfilter: ip6tables regression fix
-
-Florian Fainelli (1):
-      r6040: set MODULE_VERSION
-
-Lennert Buytenhek (1):
-      mv643xx_eth: don't reset the rx coal timer on interface up
-
-Pablo Neira Ayuso (1):
-      netfilter: ctnetlink: fix regression in expectation handling
-
-Randy Dunlap (1):
-      ethoc: fix library build errors
-
-Sascha Hauer (1):
-      FEC driver: add missing #endif
-
-Steve Glendinning (1):
-      smsc911x: correct debugging message on mii read timeout
-
-Yang Hongyang (1):
-      drivers/net/eql.c: Fix a dev leakage.
-
- drivers/net/Kconfig                         |   23 +
- drivers/net/Makefile                        |    1 +
- drivers/net/bnx2.c                          |   26 +-
- drivers/net/eql.c                           |    2 +
- drivers/net/fec.c                           |    1 +
- drivers/net/igb/igb_main.c                  |  159 +-
- drivers/net/igbvf/Makefile                  |   38 +
- drivers/net/igbvf/defines.h                 |  125 ++
- drivers/net/igbvf/ethtool.c                 |  540 +++++
- drivers/net/igbvf/igbvf.h                   |  335 +++
- drivers/net/igbvf/mbx.c                     |  350 ++++
- drivers/net/igbvf/mbx.h                     |   75 +
- drivers/net/igbvf/netdev.c                  | 2919 +++++++++++++++++++++++++++
- drivers/net/igbvf/regs.h                    |  108 +
- drivers/net/igbvf/vf.c                      |  398 ++++
- drivers/net/igbvf/vf.h                      |  265 +++
- drivers/net/mv643xx_eth.c                   |    4 +-
- drivers/net/niu.c                           |    3 +-
- drivers/net/r6040.c                         |    1 +
- drivers/net/smsc911x.c                      |    2 +-
- include/net/netfilter/nf_conntrack_expect.h |    5 +-
- net/ipv6/netfilter/ip6_tables.c             |    2 +
- net/netfilter/Kconfig                       |    2 +-
- net/netfilter/nf_conntrack_expect.c         |   30 +-
- 24 files changed, 5266 insertions(+), 148 deletions(-)
- create mode 100644 drivers/net/igbvf/Makefile
- create mode 100644 drivers/net/igbvf/defines.h
- create mode 100644 drivers/net/igbvf/ethtool.c
- create mode 100644 drivers/net/igbvf/igbvf.h
- create mode 100644 drivers/net/igbvf/mbx.c
- create mode 100644 drivers/net/igbvf/mbx.h
- create mode 100644 drivers/net/igbvf/netdev.c
- create mode 100644 drivers/net/igbvf/regs.h
- create mode 100644 drivers/net/igbvf/vf.c
- create mode 100644 drivers/net/igbvf/vf.h
+ arch/sparc/include/asm/unistd.h  |    4 +++-
+ arch/sparc/kernel/of_device_64.c |    3 +--
+ arch/sparc/kernel/pci_fire.c     |    4 ++--
+ arch/sparc/kernel/pci_psycho.c   |    8 ++++----
+ arch/sparc/kernel/pci_sabre.c    |    8 ++++----
+ arch/sparc/kernel/pci_sun4v.c    |   14 +++++++-------
+ arch/sparc/kernel/power.c        |    2 +-
+ arch/sparc/kernel/systbls_32.S   |    2 +-
+ arch/sparc/kernel/systbls_64.S   |    4 ++--
+ arch/sparc/mm/init_64.c          |    8 ++++----
+ drivers/serial/sunsu.c           |    2 +-
+ sound/sparc/cs4231.c             |   28 ++++++++++++++--------------
+ 12 files changed, 44 insertions(+), 43 deletions(-)
