@@ -1,66 +1,47 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762133AbZDHFpy@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762229AbZDHFqZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762133AbZDHFpy (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 8 Apr 2009 01:45:54 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761433AbZDHFpk
+	id S1762229AbZDHFqZ (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 8 Apr 2009 01:46:25 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758369AbZDHFqO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 8 Apr 2009 01:45:40 -0400
-Received: from brick.kernel.dk ([93.163.65.50]:54532 "EHLO kernel.dk"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1758135AbZDHFpj (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 8 Apr 2009 01:45:39 -0400
-Date: Wed, 8 Apr 2009 07:45:37 +0200
-From: Jens Axboe <jens.axboe@oracle.com>
-To: Jeff Garzik <jeff@garzik.org>
-Cc: Boaz Harrosh <bharrosh@panasas.com>, LKML <linux-kernel@vger.kernel.org>,
-       linux-scsi@vger.kernel.org, linux-fsdevel@vger.kernel.org,
-       Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: [PATCH] osdblk: a Linux block device for OSD objects
-Message-ID: <20090408054537.GI5178@kernel.dk>
-References: <20090402015455.GA14087@havoc.gtf.org> <20090403094909.GQ5178@kernel.dk> <49D5DDDE.9090407@garzik.org> <49D8856E.3090903@panasas.com> <49DBFDE1.9010303@garzik.org>
+	Wed, 8 Apr 2009 01:46:14 -0400
+Received: from g4t0014.houston.hp.com ([15.201.24.17]:22853 "EHLO
+	g4t0014.houston.hp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757890AbZDHFqN (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 8 Apr 2009 01:46:13 -0400
+Date: Tue, 7 Apr 2009 23:46:12 -0600
+From: Alex Chiang <achiang@hp.com>
+To: Robin Holt <holt@sgi.com>
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+       linux-kernel <linux-kernel@vger.kernel.org>, linux-ia64@vger.kernel.org
+Subject: Re: cross-compilers
+Message-ID: <20090408054612.GA6744@ldl.fc.hp.com>
+References: <20090408003921.GA5054@ldl.fc.hp.com> <20090408010331.GB10768@sgi.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <49DBFDE1.9010303@garzik.org>
+In-Reply-To: <20090408010331.GB10768@sgi.com>
+User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Apr 07 2009, Jeff Garzik wrote:
-> Boaz Harrosh wrote:
->> On 04/03/2009 12:58 PM, Jeff Garzik wrote:
->>> Jens Axboe wrote:
->>>> This wont work, GFP_NOIO inside the queue lock. You are also only
->>>> cloning the front bio, what happens if you have > 1 bio on the request?
->>>> You seem to dequeue the request and complete all of it, regardless of
->>>> whether bio->bi_size == blk_rq_bytes(rq). I'm assuming you have to clone
->>>> because of how the osd_req_{read,write} works, so I'd suggest storing
->>>> the byte size in your osdblk_request and only completing that in
->>>> osdblk_end_request(). Then do a rq_for_each_bio() look in there, and
->>>> only dequeue if you manage to start an osd request for each of them,
->>>> THEN moving on to the next request.
->>
->> There is nothing preventing from issuing a linked bio list. The only thing
->> is that osd_read/write looks at the first bio for total size.
->> If the first bio->bi_size does not specify the full length of the chain
->> then we should add another parameter to osd_read/write for that.
->>
->> The original idea was to specifically allow chained bios.
->>
->> Please advise?
->
-> As passed to us from the block layer, there is nothing special about the  
-> size of the first bio, AFAIK.
->
-> This seems like a libosd bug?  If you want to support chained bio's, I  
-> would presume you would either walk the list and sum all sizes, or in  
-> some other way input the total request size?
+* Robin Holt <holt@sgi.com>:
+> Don't know if this answers your problem, but I use the tools from
+> emdebian and they do not suffer from the problems you list below.
 
-Completely agree, if you want to support passing in a chain, you better
-make the first bio just part of the chain (not some header bio).
+Wow, this seems _much_ simpler. Once you get the toolchain
+installed, all you have to do is set ARCH and CROSS_COMPILE
+appropriately?
 
-And Jeff, you still have that bio_clone() bug in your v2 posting.
+I guess the question remains for Andrew. Since I pretty much did
+all the work needed to update his cross-compiler repo, is there
+still value in it?
 
--- 
-Jens Axboe
+Or shall we just recommend emdebian to everyone? :)
+
+Thanks.
+
+/ac
 
