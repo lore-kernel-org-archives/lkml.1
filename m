@@ -1,61 +1,84 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753964AbZDHWbv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755297AbZDHWcW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753964AbZDHWbv (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 8 Apr 2009 18:31:51 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752845AbZDHWbm
+	id S1755297AbZDHWcW (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 8 Apr 2009 18:32:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754028AbZDHWcM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 8 Apr 2009 18:31:42 -0400
-Received: from iolanthe.rowland.org ([192.131.102.54]:41176 "HELO
-	iolanthe.rowland.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with SMTP id S1751676AbZDHWbl (ORCPT
+	Wed, 8 Apr 2009 18:32:12 -0400
+Received: from smtp-out.google.com ([216.239.33.17]:1340 "EHLO
+	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753973AbZDHWcK (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 8 Apr 2009 18:31:41 -0400
-Date: Wed, 8 Apr 2009 18:31:40 -0400 (EDT)
-From: Alan Stern <stern@rowland.harvard.edu>
-X-X-Sender: stern@iolanthe.rowland.org
-To: Alan Jenkins <alan-jenkins@tuffmail.co.uk>
-cc: usb-storage@lists.one-eyed-alien.net,
-       Kernel Testers List <kernel-testers@vger.kernel.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: usual_tables: module license 'unspecified' taints kernel.
-In-Reply-To: <49DCD481.1050104@tuffmail.co.uk>
-Message-ID: <Pine.LNX.4.44L0.0904081829050.3138-100000@iolanthe.rowland.org>
+	Wed, 8 Apr 2009 18:32:10 -0400
+DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
+	h=date:from:to:subject:message-id:user-agent:mime-version:content-type;
+	b=cBeq658E5rD5ufAW2uBi19RXwMF/bIrulnsVwo2oetbfR29vFyd2ROBdhMkR7hows
+	TPihTcAvXOvbhiT6IggKg==
+Date: Wed, 8 Apr 2009 15:29:43 -0700 (PDT)
+From: Paul Turner <pjt@google.com>
+To: mingo@elte.hu, peterz@infradead.org, linux-kernel@vger.kernel.org
+Subject: sched: remove redundant hierarchy walk in check_preempt_wakeup
+Message-ID: <alpine.DEB.1.00.0904081520320.30317@kitami.corp.google.com>
+User-Agent: Alpine 1.00 (DEB 882 2007-12-20)
 MIME-Version: 1.0
 Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 8 Apr 2009, Alan Jenkins wrote:
+Hi Ingo, Peter,
 
-> Hi, I see this regression in v2.6.30-rc1.  I end up with a module 
-> "usual_tables.ko", which is loaded on boot and causes the kernel to 
-> complain about an unspecified license.  See subject for the exact error 
-> message.
-> 
-> I have
-> 
-> CONFIG_USB_STORAGE=m
-> CONFIG_USB_LIBUSUAL=y
+In check_preempt_wakeup we walk up until both entities are queued on the
+same cfs_rq.  After the iteration of vruntime vs wall-clock pre-emption 
+changes the current check now checks at every level of the tree above 
+this.  However, unless I'm missing something at this point they should
+have a common parent.
 
-This looks like a mistake in the Makefile.  Does the patch below fix
-the problem?
+Thanks,
 
-Alan Stern
+- Paul
 
+--
 
-Index: usb-2.6/drivers/usb/storage/Makefile
-===================================================================
---- usb-2.6.orig/drivers/usb/storage/Makefile
-+++ usb-2.6/drivers/usb/storage/Makefile
-@@ -17,7 +17,8 @@ usb-storage-objs :=	scsiglue.o protocol.
- ifeq ($(CONFIG_USB_LIBUSUAL),)
- 	usb-storage-objs	+= usual-tables.o
- else
--	obj-$(CONFIG_USB)	+= libusual.o usual-tables.o
-+	obj-$(CONFIG_USB)	+= usb-libusual.o
-+	usb-libusual-objs	:= libusual.o usual-tables.o
- endif
+sched: remove redundant hierarchy walk in check_preempt_wakeup
+
+Under group scheduling we traverse up until we are at common siblings to make
+the wakeup comparison on.
+
+At this point however, they should have the same parent so continuing to check
+up the tree is redundant.
+
+Signed-off-by: Paul Turner <pjt@google.com>
+---
+ kernel/sched_fair.c |   13 +++----------
+ 1 files changed, 3 insertions(+), 10 deletions(-)
+
+diff --git a/kernel/sched_fair.c b/kernel/sched_fair.c
+index 3816f21..5f9650e 100644
+--- a/kernel/sched_fair.c
++++ b/kernel/sched_fair.c
+@@ -1487,17 +1487,10 @@ static void check_preempt_wakeup(struct rq *rq, struct task_struct *p, int sync)
  
- obj-$(CONFIG_USB_STORAGE_ALAUDA)	+= ums-alauda.o
+ 	find_matching_se(&se, &pse);
+ 
+-	while (se) {
+-		BUG_ON(!pse);
++	BUG_ON(!pse);
+ 
+-		if (wakeup_preempt_entity(se, pse) == 1) {
+-			resched_task(curr);
+-			break;
+-		}
+-
+-		se = parent_entity(se);
+-		pse = parent_entity(pse);
+-	}
++	if (wakeup_preempt_entity(se, pse) == 1)
++		resched_task(curr);
+ }
+ 
+ static struct task_struct *pick_next_task_fair(struct rq *rq)
+-- 
+1.5.4.3
 
+	
