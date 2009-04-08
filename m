@@ -1,73 +1,83 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764530AbZDHVKg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763857AbZDHVOf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764530AbZDHVKg (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 8 Apr 2009 17:10:36 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756809AbZDHVK0
+	id S1763857AbZDHVOf (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 8 Apr 2009 17:14:35 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760450AbZDHVOY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 8 Apr 2009 17:10:26 -0400
-Received: from ogre.sisk.pl ([217.79.144.158]:35391 "EHLO ogre.sisk.pl"
+	Wed, 8 Apr 2009 17:14:24 -0400
+Received: from blaine.gmane.org ([80.91.229.8]:50302 "EHLO hugh.gmane.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755627AbZDHVKZ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 8 Apr 2009 17:10:25 -0400
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-To: Ingo Molnar <mingo@elte.hu>
-Subject: Re: [PATCH 6/6] x86: unify power/cpu_(32|64).c
-Date: Wed, 8 Apr 2009 23:10:19 +0200
-User-Agent: KMail/1.11.2 (Linux/2.6.29-rjw; KDE/4.2.2; x86_64; ; )
-Cc: Pavel Machek <pavel@ucw.cz>, Sergio Luis <sergio@larces.uece.br>,
-       "Linux-kernel Mailing List" <linux-kernel@vger.kernel.org>,
-       Lauro Salmito <laurosalmito@gmail.com>,
-       x86 Maintainers <x86@kernel.org>
-References: <49D71EEE.30600@larces.uece.br> <200904042304.25088.rjw@sisk.pl> <20090408123413.GF18581@elte.hu>
-In-Reply-To: <20090408123413.GF18581@elte.hu>
+	id S1756947AbZDHVOX (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 8 Apr 2009 17:14:23 -0400
+X-Originating-IP: [69.76.240.125]
+Message-ID: <49DD136B.50300@lwfinger.net>
+Date: Wed, 08 Apr 2009 16:13:15 -0500
+From: Larry Finger <Larry.Finger@lwfinger.net>
+User-Agent: Thunderbird 2.0.0.19 (X11/20081227)
 MIME-Version: 1.0
-Content-Type: Text/Plain;
-  charset="iso-8859-1"
+To: Andreas Schwab <schwab@linux-m68k.org>
+CC: public-alan-jenkins-cCz0Lq7MMjm9FHfhHBbuYA@hugh.gmane.org,
+       Larry Finger 
+	<public-Larry.Finger-tQ5ms3gMjBLk1uMJSBkQmQ@hugh.gmane.org>,
+       Rusty Russell 
+	<public-rusty-8n+1lVoiYb80n/F98K4Iww@hugh.gmane.org>,
+       Arjan van de Ven 
+	<public-arjan-VuQAYsv1563Yd54FQh9/CA@hugh.gmane.org>,
+       LKML <public-linux-kernel-u79uwXL29TY76Z2rM5mHXA@hugh.gmane.org>,
+       "Rafael J. Wysocki" <public-rjw-KKrjLPT3xs0@hugh.gmane.org>,
+       wireless 
+	<public-linux-wireless-u79uwXL29TY76Z2rM5mHXA@hugh.gmane.org>
+Subject: Re: Regression in 2.6.30-rc1 since commit acae0515 - wireless broken
+References: <49DC2DF5.3010603@lwfinger.net> <49DC31EA.8050208@linux.intel.com>	<200904081631.09150.rusty@rustcorp.com.au>	<49DCB976.4020200@lwfinger.net>	<9b2b86520904081006m6e6b5276v834c3565b0f6f4c7@mail.gmail.com> <m2fxgi6hdq.fsf@igel.home>
+In-Reply-To: <m2fxgi6hdq.fsf@igel.home>
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200904082310.19870.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wednesday 08 April 2009, Ingo Molnar wrote:
-> 
-> * Rafael J. Wysocki <rjw@sisk.pl> wrote:
-> 
-> > On Monday 30 March 2009, Pavel Machek wrote:
-> > > Hi!
-> > > 
-> > > > x86: unify power/cpu_(32|64).c
-> > > > 
-> > > > This is the last unification step. Here we do remove one of the files
-> > > > and rename the left one as cpu.c, as both are now the same.
-> > > > Also update power/Makefile, telling it to build cpu.o, instead of
-> > > > cpu_(32|64).o
-> > > > 
-> > > > Signed-off-by: Sergio Luis <sergio@larces.uece.br>
-> > > > Signed-off-by: Lauro Salmito <laurosalmito@gmail.com>
-> > > 
-> > > 
-> > > Whole series looks ok to me.
-> > > 
-> > > Acked-by: Pavel Machek <pavel@ucw.cz>
-> > 
-> > However, there's no way it can go in before 2.6.30 final.
-> 
-> Correct.
-> 
-> > I'm reviewing it at the moment.
-> 
-> Feel free to queue these bits up in your tree - it's largely related 
-> to your area anyway.
 
-I will, thanks.
 
-> That way you can stage it in the most robust way. You have a stable
-> (append-only) Git tree for suspend/resume bits, which propagates into
-> linux-next, correct?
+Andreas Schwab wrote:
+> 
+> 
+> Alan Jenkins <sourcejedi.lkml-gM/Ye1E23mwN+BqQ9rBEUg@public.gmane.org>
+> writes:
+> 
+>> I agree that commit looks like it should be a no-op though :-).
+> 
+> But it isn't.
+> 
+> Andreas.
+> 
+> ---
+> Fix try_then_request_module to use waiting __request_module again.
+> 
+> Signed-off-by: Andreas Schwab <schwab@linux-m68k.org>
+> ---
+>  include/linux/kmod.h |    2 +-
+>  1 file changed, 1 insertion(+), 1 deletion(-)
+> 
+> Index: linux-2.6.30-rc1/include/linux/kmod.h
+> ===================================================================
+> --- linux-2.6.30-rc1.orig/include/linux/kmod.h	2009-04-08 12:47:54.000000000 +0200
+> +++ linux-2.6.30-rc1/include/linux/kmod.h	2009-04-08 17:39:35.000000000 +0200
+> @@ -34,7 +34,7 @@ extern int __request_module(bool wait, c
+>  #define request_module(mod...) __request_module(true, mod)
+>  #define request_module_nowait(mod...) __request_module(false, mod)
+>  #define try_then_request_module(x, mod...) \
+> -	((x) ?: (__request_module(false, mod), (x)))
+> +	((x) ?: (__request_module(true, mod), (x)))
+>  #else
+>  static inline int request_module(const char *name, ...) { return -ENOSYS; }
+>  static inline int request_module_nowait(const char *name, ...) { return -ENOSYS; }
+> 
 
-Yes, I do.
+Bingo. The above patch fixes my system. Andreas, you have a much sharper eye
+than I do.
 
-Best,
-Rafael
+Feel free to add a Tested-by: Larry Finger <Larry.Finger@lwfinger.net> if you wish.
+
+Larry
+
+
