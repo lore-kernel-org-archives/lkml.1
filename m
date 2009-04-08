@@ -1,64 +1,421 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751975AbZDHHM2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761429AbZDHHMp@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751975AbZDHHM2 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 8 Apr 2009 03:12:28 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762361AbZDHHMG
+	id S1761429AbZDHHMp (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 8 Apr 2009 03:12:45 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762506AbZDHHMJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 8 Apr 2009 03:12:06 -0400
-Received: from rv-out-0506.google.com ([209.85.198.239]:37134 "EHLO
-	rv-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1761778AbZDHHMD (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 8 Apr 2009 03:12:03 -0400
-Message-ID: <49DC4E3A.6040809@gawab.com>
-Date: Wed, 08 Apr 2009 00:11:54 -0700
-From: Justin Madru <jdm64@gawab.com>
-User-Agent: Thunderbird 2.0.0.21 (X11/20090319)
+	Wed, 8 Apr 2009 03:12:09 -0400
+Received: from relay2.sgi.com ([192.48.179.30]:45363 "EHLO relay.sgi.com"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1755971AbZDHHMH (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 8 Apr 2009 03:12:07 -0400
+Date: Wed, 8 Apr 2009 02:12:04 -0500
+From: Robin Holt <holt@sgi.com>
+To: Michael Chan <mchan@broadcom.com>
+Cc: "'Robin Holt'" <holt@sgi.com>, Matthew Carlson <mcarlson@broadcom.com>,
+       "David S. Miller" <davem@davemloft.net>,
+       Benjamin Li <benli@broadcom.com>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>
+Subject: Re: Linux 2.6.30-rc1 tg3 endian issues with MAC addresses on
+	BCM5701.  Bisected.
+Message-ID: <20090408071204.GG10768@sgi.com>
+References: <20090408053721.GE10768@sgi.com> <C27F8246C663564A84BB7AB343977242176F6BF106@IRVEXCHCCR01.corp.ad.broadcom.com> <20090408062559.GF10768@sgi.com>
 MIME-Version: 1.0
-To: Jens Axboe <jens.axboe@oracle.com>
-CC: Ingo Molnar <mingo@elte.hu>, Arjan van de Ven <arjan@infradead.org>,
-       lkml <linux-kernel@vger.kernel.org>, "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: 2.6.30-rc1: invalid opcode with call trace
-References: <49DC367A.90603@gawab.com> <20090408063240.GQ5178@kernel.dk> <20090408064733.GA16984@elte.hu> <20090408065201.GA6490@elte.hu> <20090408065352.GR5178@kernel.dk>
-In-Reply-To: <20090408065352.GR5178@kernel.dk>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20090408062559.GF10768@sgi.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Jens Axboe wrote:
-> On Wed, Apr 08 2009, Ingo Molnar wrote:
->   
->> * Ingo Molnar <mingo@elte.hu> wrote:
->>
->>     
->>> I too have an async hang/crash, on an old-style SCSI (aic7xxx) box 
->>> - hang log attached below.
->>> [...]
->>>
->>> ( Full bootlog attached below as well - i'm sending the config as a 
->>>   reply as this mail is close to lkml size limits already. )
->>>       
->> Config attached.
->>
->>  known bad  : v2.6.29-9854-gd508afb
->>  known good : v2.6.29
->>
->> Suspected commit introducing the regression:
->>
->>  9710794: async: remove the temporary (2.6.29) "async is off by default" code
->>
->> (i'll now try a revert of this.)
->>     
->
-> That's what I figured was the culprit as well, but that does not really
-> tell us anything about what part of async.c is buggy :-)
->
->   
-In my case, the system doesn't hang or anything, it continues to boot 
-into a working system (except for no wireless and usb).
-The only thing is that shutting down doesn't work. I have to hold the 
-power button because it hangs on shutdown.
+git-bisect points at:
 
-Justin Madru
+[holt@attica 20090408-tg3]$ git-bisect good
+e4f341103e4a2b35f56a0f89802f1b1448e8d04b is first bad commit
+commit e4f341103e4a2b35f56a0f89802f1b1448e8d04b
+Author: Matt Carlson <mcarlson@broadcom.com>
+Date:   Wed Feb 25 14:25:00 2009 +0000
+
+    tg3: Invert nvram_read() and nvram_read_swab()
+    
+    This patch removes the blind byteswap of NVRAM data as it is read in.
+    To preserve the logic at the call sites, this patch also inverts every
+    call to tg3_nvram_read() and tg3_nvram_read_swab().  The call swap gets
+    confusing within tg3_nvram_read_le() (LE is a misnomer), but the reader
+    should be able to convince himself / herself that the resulting behavior
+    is still unchanged.
+    
+    Signed-off-by: Matt Carlson <mcarlson@broadcom.com>
+    Signed-off-by: Benjamin Li <benli@broadcom.com>
+    Signed-off-by: Michael Chan <mchan@broadcom.com>
+    Signed-off-by: David S. Miller <davem@davemloft.net>
+
+:040000 040000 847eba840b1c0fceeb2378dc3b0fb8c1628f441d 80c40390c38976d0ca9cdb59d21bc39c145aa9ce M      drivers
+
+On Wed, Apr 08, 2009 at 01:25:59AM -0500, Robin Holt wrote:
+> On Tue, Apr 07, 2009 at 10:54:33PM -0700, Michael Chan wrote:
+> > Robin Holt wrote:
+> > 
+> > > Booting an ia64 box with a tg3 adapter results in no network.
+> > >  If I look
+> > > at the MAC address of the adapter, it has changed radically from the
+> > > original MAC.  The original MAC continues to be reported by EFI and
+> > > booting an old kernel gets the correct MAC.
+> > >
+> > > Good MAC:     08:00:69:13:E6:3C
+> > > Bad MAC:      00:00:3C:E6:13:69 (recreated from memory)
+> > 
+> > Looks like endian swapped.  Can you provide the entire tg3 signon
+> > string?  Please also dump the beginning part of the nvram:
+> > 
+> > ethtool -e eth0 length 0x90
+> 
+> >From a good boot (2.6.27):
+> tg3.c:v3.94 (August 14, 2008)
+> tg3 0006:00:01.0: PCI INT A -> GSI 65 (level, low) -> IRQ 65
+> eth0: Tigon3 [partno(9210292) rev 2003 PHY(5704)] (PCIX:133MHz:64-bit) 10/100/1000Base-T Ethernet 00:e0:ed:08:6c:18
+> eth0: RXcsums[1] LinkChgREG[0] MIirq[0] ASF[0] WireSpeed[1] TSOcap[1]
+> eth0: dma_rwctrl[769f4000] dma_mask[64-bit] tg3 0006:00:01.1: PCI INT B -> GSI 66 (level, low) -> IRQ 66
+> eth1: Tigon3 [partno(9210292) rev 2003 PHY(5704)] (PCIX:133MHz:64-bit) 10/100/1000Base-T Ethernet 00:e0:ed:08:6c:19
+> eth1: RXcsums[1] LinkChgREG[0] MIirq[0] ASF[0] WireSpeed[1] TSOcap[1]
+> eth1: dma_rwctrl[769f4000] dma_mask[64-bit]
+> tg3 0001:00:04.0: PCI INT A -> GSI 62 (level, low) -> IRQ 62
+> eth2: Tigon3 [partno(030-1771-000) rev 0105 PHY(5701)] (PCI:66MHz:64-bit) 10/100/1000Base-T Ethernet 08:00:69:13:e6:3c
+> eth2: RXcsums[1] LinkChgREG[0] MIirq[0] ASF[0] WireSpeed[1] TSOcap[0]
+> 
+> ethtool -e eth2 length 0x90
+> Address   	Data
+> ----------	----
+> 0x00000000	0x66
+> 0x00000001	0x99
+> 0x00000002	0x55
+> 0x00000003	0xaa
+> 0x00000004	0x08
+> 0x00000005	0x00
+> 0x00000006	0x00
+> 0x00000007	0x00
+> 0x00000008	0x00
+> 0x00000009	0x00
+> 0x0000000a	0x02
+> 0x0000000b	0xa5
+> 0x0000000c	0x00
+> 0x0000000d	0x00
+> 0x0000000e	0x02
+> 0x0000000f	0x00
+> 0x00000010	0x08
+> 0x00000011	0xdf
+> 0x00000012	0x2a
+> 0x00000013	0xb1
+> 0x00000014	0x00
+> 0x00000015	0x01
+> 0x00000016	0x00
+> 0x00000017	0x00
+> 0x00000018	0x00
+> 0x00000019	0x00
+> 0x0000001a	0x3c
+> 0x0000001b	0x00
+> 0x0000001c	0x00
+> 0x0000001d	0x00
+> 0x0000001e	0x10
+> 0x0000001f	0x00
+> 0x00000020	0x00
+> 0x00000021	0x00
+> 0x00000022	0x00
+> 0x00000023	0x00
+> 0x00000024	0x00
+> 0x00000025	0x00
+> 0x00000026	0x00
+> 0x00000027	0x00
+> 0x00000028	0x00
+> 0x00000029	0x00
+> 0x0000002a	0x00
+> 0x0000002b	0x00
+> 0x0000002c	0x00
+> 0x0000002d	0x00
+> 0x0000002e	0x00
+> 0x0000002f	0x00
+> 0x00000030	0x00
+> 0x00000031	0x00
+> 0x00000032	0x00
+> 0x00000033	0x00
+> 0x00000034	0x00
+> 0x00000035	0x00
+> 0x00000036	0x00
+> 0x00000037	0x00
+> 0x00000038	0x00
+> 0x00000039	0x00
+> 0x0000003a	0x00
+> 0x0000003b	0x00
+> 0x0000003c	0x00
+> 0x0000003d	0x00
+> 0x0000003e	0x00
+> 0x0000003f	0x00
+> 0x00000040	0x00
+> 0x00000041	0x00
+> 0x00000042	0x00
+> 0x00000043	0x00
+> 0x00000044	0x00
+> 0x00000045	0x00
+> 0x00000046	0x00
+> 0x00000047	0x00
+> 0x00000048	0x00
+> 0x00000049	0x00
+> 0x0000004a	0x00
+> 0x0000004b	0x00
+> 0x0000004c	0x00
+> 0x0000004d	0x00
+> 0x0000004e	0x00
+> 0x0000004f	0x00
+> 0x00000050	0x00
+> 0x00000051	0x00
+> 0x00000052	0x00
+> 0x00000053	0x00
+> 0x00000054	0x00
+> 0x00000055	0x00
+> 0x00000056	0x00
+> 0x00000057	0x00
+> 0x00000058	0x00
+> 0x00000059	0x00
+> 0x0000005a	0x00
+> 0x0000005b	0x00
+> 0x0000005c	0x00
+> 0x0000005d	0x00
+> 0x0000005e	0x00
+> 0x0000005f	0x00
+> 0x00000060	0x00
+> 0x00000061	0x00
+> 0x00000062	0x00
+> 0x00000063	0x00
+> 0x00000064	0x00
+> 0x00000065	0x00
+> 0x00000066	0x00
+> 0x00000067	0x00
+> 0x00000068	0x00
+> 0x00000069	0x00
+> 0x0000006a	0x00
+> 0x0000006b	0x00
+> 0x0000006c	0x00
+> 0x0000006d	0x00
+> 0x0000006e	0x00
+> 0x0000006f	0x00
+> 0x00000070	0x00
+> 0x00000071	0x00
+> 0x00000072	0x00
+> 0x00000073	0x00
+> 0x00000074	0x43
+> 0x00000075	0x00
+> 0x00000076	0x00
+> 0x00000077	0x8c
+> 0x00000078	0x00
+> 0x00000079	0x00
+> 0x0000007a	0x00
+> 0x0000007b	0x01
+> 0x0000007c	0x00
+> 0x0000007d	0x00
+> 0x0000007e	0x08
+> 0x0000007f	0x00
+> 0x00000080	0x69
+> 0x00000081	0x13
+> 0x00000082	0xe6
+> 0x00000083	0x3c
+> 0x00000084	0x33
+> 0x00000085	0x43
+> 0x00000086	0x39
+> 0x00000087	0x39
+> 0x00000088	0x36
+> 0x00000089	0x42
+> 0x0000008a	0x2d
+> 0x0000008b	0x54
+> 0x0000008c	0x00
+> 0x0000008d	0x00
+> 0x0000008e	0x00
+> 0x0000008f	0x00
+> 
+> 
+> >From bad boot (v2.6.30-rc1):
+> tg3.c:v3.98 (February 25, 2009)
+> tg3 0006:00:01.0: PCI INT A -> GSI 65 (level, low) -> IRQ 65
+> tg3 0006:00:01.0: PME# disabled
+> eth0: Tigon3 [partno(9210292) rev 2003] (PCIX:133MHz:64-bit) MAC address 00:e0:ed:08:6c:18
+> eth0: attached PHY is 5704 (10/100/1000Base-T Ethernet) (WireSpeed[1])
+> eth0: RXcsums[1] LinkChgREG[0] MIirq[0] ASF[0] TSOcap[1]
+> eth0: dma_rwctrl[769f4000] dma_mask[64-bit]
+> tg3 0006:00:01.1: PCI INT B -> GSI 66 (level, low) -> IRQ 66
+> tg3 0006:00:01.1: PME# disabled
+> eth1: Tigon3 [partno(9210292) rev 2003] (PCIX:133MHz:64-bit) MAC address 00:e0:ed:08:6c:19
+> eth1: attached PHY is 5704 (10/100/1000Base-T Ethernet) (WireSpeed[1])
+> eth1: RXcsums[1] LinkChgREG[0] MIirq[0] ASF[0] TSOcap[1]
+> eth1: dma_rwctrl[769f4000] dma_mask[64-bit]
+> tg3 0001:00:04.0: PCI INT A -> GSI 62 (level, low) -> IRQ 62
+> tg3 0001:00:04.0: PME# disabled
+> eth2: Tigon3 [partno(030-1771-000) rev 0105] (PCI:66MHz:64-bit) MAC address 00:00:3c:e6:13:69
+> eth2: attached PHY is 5701 (10/100/1000Base-T Ethernet) (WireSpeed[1])
+> eth2: RXcsums[1] LinkChgREG[0] MIirq[0] ASF[0] TSOcap[0]
+> eth2: dma_rwctrl[76ff3f0f] dma_mask[64-bit]
+> 
+> ethtool -e eth2 length 0x90
+> Address   	Data
+> ----------	----
+> 0x00000000	0x66
+> 0x00000001	0x99
+> 0x00000002	0x55
+> 0x00000003	0xaa
+> 0x00000004	0x08
+> 0x00000005	0x00
+> 0x00000006	0x30
+> 0x00000007	0x00
+> 0x00000008	0x00
+> 0x00000009	0x00
+> 0x0000000a	0x03
+> 0x0000000b	0x15
+> 0x0000000c	0x00
+> 0x0000000d	0x00
+> 0x0000000e	0x02
+> 0x0000000f	0xf8
+> 0x00000010	0xaf
+> 0x00000011	0xfc
+> 0x00000012	0x24
+> 0x00000013	0xb1
+> 0x00000014	0x00
+> 0x00000015	0x01
+> 0x00000016	0x00
+> 0x00000017	0x00
+> 0x00000018	0x00
+> 0x00000019	0x00
+> 0x0000001a	0x3d
+> 0x0000001b	0xaa
+> 0x0000001c	0x00
+> 0x0000001d	0x00
+> 0x0000001e	0x1f
+> 0x0000001f	0xb0
+> 0x00000020	0x00
+> 0x00000021	0x00
+> 0x00000022	0x00
+> 0x00000023	0x00
+> 0x00000024	0x00
+> 0x00000025	0x00
+> 0x00000026	0x00
+> 0x00000027	0x00
+> 0x00000028	0x00
+> 0x00000029	0x00
+> 0x0000002a	0x00
+> 0x0000002b	0x00
+> 0x0000002c	0x00
+> 0x0000002d	0x00
+> 0x0000002e	0x00
+> 0x0000002f	0x00
+> 0x00000030	0x00
+> 0x00000031	0x00
+> 0x00000032	0x00
+> 0x00000033	0x00
+> 0x00000034	0x00
+> 0x00000035	0x00
+> 0x00000036	0x00
+> 0x00000037	0x00
+> 0x00000038	0x00
+> 0x00000039	0x00
+> 0x0000003a	0x00
+> 0x0000003b	0x00
+> 0x0000003c	0x00
+> 0x0000003d	0x00
+> 0x0000003e	0x00
+> 0x0000003f	0x00
+> 0x00000040	0x00
+> 0x00000041	0x00
+> 0x00000042	0x00
+> 0x00000043	0x00
+> 0x00000044	0x00
+> 0x00000045	0x00
+> 0x00000046	0x00
+> 0x00000047	0x00
+> 0x00000048	0x00
+> 0x00000049	0x00
+> 0x0000004a	0x00
+> 0x0000004b	0x00
+> 0x0000004c	0x00
+> 0x0000004d	0x00
+> 0x0000004e	0x00
+> 0x0000004f	0x00
+> 0x00000050	0x00
+> 0x00000051	0x00
+> 0x00000052	0x00
+> 0x00000053	0x00
+> 0x00000054	0x00
+> 0x00000055	0x00
+> 0x00000056	0x00
+> 0x00000057	0x00
+> 0x00000058	0x00
+> 0x00000059	0x00
+> 0x0000005a	0x00
+> 0x0000005b	0x00
+> 0x0000005c	0x00
+> 0x0000005d	0x00
+> 0x0000005e	0x00
+> 0x0000005f	0x00
+> 0x00000060	0x00
+> 0x00000061	0x00
+> 0x00000062	0x00
+> 0x00000063	0x00
+> 0x00000064	0x00
+> 0x00000065	0x00
+> 0x00000066	0x00
+> 0x00000067	0x00
+> 0x00000068	0x00
+> 0x00000069	0x00
+> 0x0000006a	0x00
+> 0x0000006b	0x00
+> 0x0000006c	0x00
+> 0x0000006d	0x00
+> 0x0000006e	0x00
+> 0x0000006f	0x00
+> 0x00000070	0x00
+> 0x00000071	0x00
+> 0x00000072	0x00
+> 0x00000073	0x00
+> 0x00000074	0x43
+> 0x00000075	0x00
+> 0x00000076	0x00
+> 0x00000077	0x8c
+> 0x00000078	0x00
+> 0x00000079	0x20
+> 0x0000007a	0x61
+> 0x0000007b	0x10
+> 0x0000007c	0x00
+> 0x0000007d	0x00
+> 0x0000007e	0x00
+> 0x0000007f	0xe0
+> 0x00000080	0xed
+> 0x00000081	0x08
+> 0x00000082	0x6c
+> 0x00000083	0x18
+> 0x00000084	0x39
+> 0x00000085	0x32
+> 0x00000086	0x31
+> 0x00000087	0x30
+> 0x00000088	0x32
+> 0x00000089	0x39
+> 0x0000008a	0x32
+> 0x0000008b	0x00
+> 0x0000008c	0x00
+> 0x0000008d	0x00
+> 0x0000008e	0x00
+> 0x0000008f	0x00
+> 
+> 
+> > > If I set the MAC using ifconfig, then everything works normally.
+> > >
+> > 
+> > The bad MAC address that has been swapped is also a valid MAC address
+> > and should still work though.
+> 
+> Our network dhcp servers on this test network only hand out IPs to known
+> MACs so we detect situations like this.
+> 
+> Robin
+> --
+> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> Please read the FAQ at  http://www.tux.org/lkml/
