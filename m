@@ -1,83 +1,149 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762902AbZDHIGO@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757550AbZDHIJH@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762902AbZDHIGO (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 8 Apr 2009 04:06:14 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761876AbZDHIFU
+	id S1757550AbZDHIJH (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 8 Apr 2009 04:09:07 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754874AbZDHIIs
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 8 Apr 2009 04:05:20 -0400
-Received: from fgwmail6.fujitsu.co.jp ([192.51.44.36]:42188 "EHLO
-	fgwmail6.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1762050AbZDHIFN (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 8 Apr 2009 04:05:13 -0400
-Date: Wed, 8 Apr 2009 17:03:41 +0900
-From: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-To: balbir@linux.vnet.ibm.com
-Cc: "linux-mm@kvack.org" <linux-mm@kvack.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       "lizf@cn.fujitsu.com" <lizf@cn.fujitsu.com>,
-       Rik van Riel <riel@surriel.com>, Bharata B Rao <bharata.rao@in.ibm.com>,
-       Dhaval Giani <dhaval@linux.vnet.ibm.com>,
-       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
-Subject: Re: [RFI] Shared accounting for memory resource controller
-Message-Id: <20090408170341.437c215b.kamezawa.hiroyu@jp.fujitsu.com>
-In-Reply-To: <20090408074809.GF7082@balbir.in.ibm.com>
-References: <20090407071825.GR7082@balbir.in.ibm.com>
-	<20090407163331.8e577170.kamezawa.hiroyu@jp.fujitsu.com>
-	<20090407080355.GS7082@balbir.in.ibm.com>
-	<20090407172419.a5f318b9.kamezawa.hiroyu@jp.fujitsu.com>
-	<20090408052904.GY7082@balbir.in.ibm.com>
-	<20090408151529.fd6626c2.kamezawa.hiroyu@jp.fujitsu.com>
-	<20090408070401.GC7082@balbir.in.ibm.com>
-	<20090408160733.4813cb8d.kamezawa.hiroyu@jp.fujitsu.com>
-	<20090408071115.GD7082@balbir.in.ibm.com>
-	<20090408161824.26f47077.kamezawa.hiroyu@jp.fujitsu.com>
-	<20090408074809.GF7082@balbir.in.ibm.com>
-Organization: FUJITSU Co. LTD.
-X-Mailer: Sylpheed 2.5.0 (GTK+ 2.10.14; i686-pc-mingw32)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Wed, 8 Apr 2009 04:08:48 -0400
+Received: from brick.kernel.dk ([93.163.65.50]:54637 "EHLO kernel.dk"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753133AbZDHIIp (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 8 Apr 2009 04:08:45 -0400
+Date: Wed, 8 Apr 2009 10:08:44 +0200
+From: Jens Axboe <jens.axboe@oracle.com>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: Theodore Tso <tytso@mit.edu>, linux-kernel@vger.kernel.org,
+       linux-ext4@vger.kernel.org, jack@suse.cz
+Subject: Re: [PATCH] block_write_full_page: switch synchronous writes to
+	use  WRITE_SYNC_PLUG
+Message-ID: <20090408080844.GW5178@kernel.dk>
+References: <20090406232141.ebdb426a.akpm@linux-foundation.org> <20090406235052.1ea47513.akpm@linux-foundation.org> <20090407070835.GM5178@kernel.dk> <20090407002313.fcdd1da0.akpm@linux-foundation.org> <20090407075732.GO5178@kernel.dk> <20090407190913.GA31723@mit.edu> <20090407193239.GE5178@kernel.dk> <20090407214421.GA7031@mit.edu> <20090407221933.GB7031@mit.edu> <20090407160944.de3c5139.akpm@linux-foundation.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20090407160944.de3c5139.akpm@linux-foundation.org>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 8 Apr 2009 13:18:09 +0530
-Balbir Singh <balbir@linux.vnet.ibm.com> wrote:
-
-> > > 3. Using the above, we can then try to (using an algorithm you
-> > > proposed), try to do some work for figuring out the shared percentage.
-> > > 
-> > This is the point. At last. Why "# of shared pages" is important ?
+On Tue, Apr 07 2009, Andrew Morton wrote:
+> On Tue, 7 Apr 2009 18:19:33 -0400
+> Theodore Tso <tytso@mit.edu> wrote:
+> 
+> > Now that we have a distinction between WRITE_SYNC and WRITE_SYNC_PLUG,
+> > use WRITE_SYNC_PLUG in __block_write_full_page() to avoid unplugging
+> > the block device I/O queue between each page that gets flushed out.
+> > 
+> > The upstream callers of block_write_full_page() which wait for the
+> > writes to finish call wait_on_buffer(), wait_on_writeback_range()
+> > (which ultimately calls sync_page(), which calls
+> > blk_run_backing_dev(), which will unplug the device queue), and so on.
 > > 
 > 
-> I posted this in my motivation yesterday. # of shared pages can help
-> plan the system better and the size of the cgroup. A cgroup might have
-> small usage_in_bytes but large number of shared pages. We need a
-> metric that can help figure out the fair usage of the cgroup.
+> <sob>
 > 
-I don't fully understand but NR_FILE_MAPPED is an information in /proc/meminfo.
-I personally think I want to support information in /proc/meminfo per memcg.
+> > 
+> > We should get this applied to avoid any performance regressions
+> > resulting from commit a64c8610.
+> > 
+> >  fs/buffer.c |    3 ++-
+> >  1 files changed, 2 insertions(+), 1 deletions(-)
+> > 
+> > diff --git a/fs/buffer.c b/fs/buffer.c
+> > index 977e12a..95b5390 100644
+> > --- a/fs/buffer.c
+> > +++ b/fs/buffer.c
+> > @@ -1646,7 +1646,8 @@ static int __block_write_full_page(struct inode *inode, struct page *page,
+> >  	struct buffer_head *bh, *head;
+> >  	const unsigned blocksize = 1 << inode->i_blkbits;
+> >  	int nr_underway = 0;
+> > -	int write_op = (wbc->sync_mode == WB_SYNC_ALL ? WRITE_SYNC : WRITE);
+> > +	int write_op = (wbc->sync_mode == WB_SYNC_ALL ?
+> > +			WRITE_SYNC_PLUG : WRITE);
+> >  
+> >  	BUG_ON(!PageLocked(page));
+> 
+> So how does WRITE_SYNC_PLUG differ from WRITE, and what effect does
+> this change have upon kernel behaviour?
 
-Hmm ? then, if you add a hook, it seems
-== mm/rmap.c
- 689 void page_add_file_rmap(struct page *page)
- 690 {
- 691         if (atomic_inc_and_test(&page->_mapcount))
- 692                 __inc_zone_page_state(page, NR_FILE_MAPPED);
- 693 }
-==  page_remove_rmap(struct page *page)
- 739                 __dec_zone_page_state(page,
- 740                         PageAnon(page) ? NR_ANON_PAGES : NR_FILE_MAPPED);
-==
+How about something like this. Comments welcome. Should we move this to
+a dedicated header file? fs.h is amazingly cluttered as it is.
 
-Is good place to go, maybe.
+diff --git a/include/linux/fs.h b/include/linux/fs.h
+index 562d285..6b6597a 100644
+--- a/include/linux/fs.h
++++ b/include/linux/fs.h
+@@ -87,6 +87,57 @@ struct inodes_stat_t {
+  */
+ #define FMODE_NOCMTIME		((__force fmode_t)2048)
+ 
++/*
++ * The below are the various read and write types that we support. Some of
++ * them include behavioral modifiers that send information down to the
++ * block layer and IO scheduler. Terminology:
++ *
++ *	The block layer uses device plugging to defer IO a little bit, in
++ *	the hope that we will see more IO very shortly. This increases
++ *	coalescing of adjacent IO and thus reduces the number of IOs we
++ *	have to send to the device. It also allows for better queuing,
++ *	if the IO isn't mergeable. If the caller is going to be waiting
++ *	for the IO, then he must ensure that the device is unplugged so
++ *	that the IO is dispatched to the driver.
++ *
++ *	All IO is handled async in Linux. This is fine for background
++ *	writes, but for reads or writes that someone waits for completion
++ *	on, we want to notify the block layer and IO scheduler so that they
++ *	know about it. That allows them to make better scheduling
++ *	decisions. So when the below references 'sync' and 'async', it
++ *	is referencing this priority hint.
++ *
++ * With that in mind, the available types are:
++ *
++ * READ			A normal read operation. Device will be plugged.
++ * READ_SYNC		A synchronous read. Device is not plugged, caller can
++ *			immediately wait on this read without caring about
++ *			unplugging.
++ * READA		Used for read-ahead operations. Lower priority, and the
++ *			 block layer could (in theory) choose to ignore this
++ *			request if it runs into resource problems.
++ * WRITE		A normal async write. Device will be plugged.
++ * SWRITE		Like WRITE, but a special case for ll_rw_block() that
++ *			tells it to lock the buffer first. Normally a buffer
++ *			must be locked before doing IO.
++ * WRITE_SYNC_PLUG	Synchronous write. Identical to WRITE, but passes down
++ *			the hint that someone will be waiting on this IO
++ *			shortly.
++ * WRITE_SYNC		Like WRITE_SYNC_PLUG, but also unplugs the device
++ *			immediately after submission. The write equivalent
++ *			of READ_SYNC.
++ * WRITE_ODIRECT	Special case write for O_DIRECT only.
++ * SWRITE_SYNC
++ * SWRITE_SYNC_PLUG	Like WRITE_SYNC/WRITE_SYNC_PLUG, but locks the buffer.
++ *			See SWRITE.
++ * WRITE_BARRIER	Like WRITE, but tells the block layer that all
++ *			previously submitted writes must be safely on storage
++ *			before this one is started. Also guarantees that when
++ *			this write is complete, it itself is also safely on
++ *			storage. Prevents reordering of writes on both sides
++ *			of this IO.
++ *
++ */
+ #define RW_MASK		1
+ #define RWA_MASK	2
+ #define READ 0
+@@ -102,6 +153,11 @@ struct inodes_stat_t {
+ 			(SWRITE | (1 << BIO_RW_SYNCIO) | (1 << BIO_RW_NOIDLE))
+ #define SWRITE_SYNC	(SWRITE_SYNC_PLUG | (1 << BIO_RW_UNPLUG))
+ #define WRITE_BARRIER	(WRITE | (1 << BIO_RW_BARRIER))
++
++/*
++ * These aren't really reads or writes, they pass down information about
++ * parts of device that are now unused by the file system.
++ */
+ #define DISCARD_NOBARRIER (1 << BIO_RW_DISCARD)
+ #define DISCARD_BARRIER ((1 << BIO_RW_DISCARD) | (1 << BIO_RW_BARRIER))
+ 
 
-page->page_cgroup->mem_cgroup-> inc/dec counter ?
-
-Maybe the patch itself will be simple, overhead is unknown..
-
-Thanks,
--Kame
+-- 
+Jens Axboe
 
