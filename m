@@ -1,53 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762146AbZDHFow@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762133AbZDHFpy@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762146AbZDHFow (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 8 Apr 2009 01:44:52 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760058AbZDHFol
+	id S1762133AbZDHFpy (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 8 Apr 2009 01:45:54 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761433AbZDHFpk
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 8 Apr 2009 01:44:41 -0400
-Received: from mx2.redhat.com ([66.187.237.31]:35380 "EHLO mx2.redhat.com"
+	Wed, 8 Apr 2009 01:45:40 -0400
+Received: from brick.kernel.dk ([93.163.65.50]:54532 "EHLO kernel.dk"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1759868AbZDHFok (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 8 Apr 2009 01:44:40 -0400
-Message-ID: <49DC39EE.1070606@redhat.com>
-Date: Wed, 08 Apr 2009 08:45:18 +0300
-From: Avi Kivity <avi@redhat.com>
-User-Agent: Thunderbird 2.0.0.21 (X11/20090320)
+	id S1758135AbZDHFpj (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 8 Apr 2009 01:45:39 -0400
+Date: Wed, 8 Apr 2009 07:45:37 +0200
+From: Jens Axboe <jens.axboe@oracle.com>
+To: Jeff Garzik <jeff@garzik.org>
+Cc: Boaz Harrosh <bharrosh@panasas.com>, LKML <linux-kernel@vger.kernel.org>,
+       linux-scsi@vger.kernel.org, linux-fsdevel@vger.kernel.org,
+       Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: [PATCH] osdblk: a Linux block device for OSD objects
+Message-ID: <20090408054537.GI5178@kernel.dk>
+References: <20090402015455.GA14087@havoc.gtf.org> <20090403094909.GQ5178@kernel.dk> <49D5DDDE.9090407@garzik.org> <49D8856E.3090903@panasas.com> <49DBFDE1.9010303@garzik.org>
 MIME-Version: 1.0
-To: "H. Peter Anvin" <hpa@zytor.com>
-CC: Glauber Costa <glommer@redhat.com>, kvm@vger.kernel.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] do not keep interrupt window closed by sti in real mode
-References: <1239161017-7398-1-git-send-email-glommer@redhat.com> <49DC24C2.7000608@zytor.com>
-In-Reply-To: <49DC24C2.7000608@zytor.com>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <49DBFDE1.9010303@garzik.org>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-H. Peter Anvin wrote:
-> Glauber Costa wrote:
->   
->> While in real mode, sti does not block interrupts from the subsequent
->> instruction. This is stated at Intel SDM Volume 2b, page 4-432
->>     
+On Tue, Apr 07 2009, Jeff Garzik wrote:
+> Boaz Harrosh wrote:
+>> On 04/03/2009 12:58 PM, Jeff Garzik wrote:
+>>> Jens Axboe wrote:
+>>>> This wont work, GFP_NOIO inside the queue lock. You are also only
+>>>> cloning the front bio, what happens if you have > 1 bio on the request?
+>>>> You seem to dequeue the request and complete all of it, regardless of
+>>>> whether bio->bi_size == blk_rq_bytes(rq). I'm assuming you have to clone
+>>>> because of how the osd_req_{read,write} works, so I'd suggest storing
+>>>> the byte size in your osdblk_request and only completing that in
+>>>> osdblk_end_request(). Then do a rq_for_each_bio() look in there, and
+>>>> only dequeue if you manage to start an osd request for each of them,
+>>>> THEN moving on to the next request.
+>>
+>> There is nothing preventing from issuing a linked bio list. The only thing
+>> is that osd_read/write looks at the first bio for total size.
+>> If the first bio->bi_size does not specify the full length of the chain
+>> then we should add another parameter to osd_read/write for that.
+>>
+>> The original idea was to specifically allow chained bios.
+>>
+>> Please advise?
 >
-> I don't see how you're getting that idea from the STI documentation --
-> and I am quite sure that that is not the case.  Quite on the contrary.
-> The only differences between protected mode and real mode has to do with
-> the handling of VIF when CPL=3 (this rather naturally falls out if one
-> considers CPL=0 in real mode).
->   
+> As passed to us from the block layer, there is nothing special about the  
+> size of the first bio, AFAIK.
+>
+> This seems like a libosd bug?  If you want to support chained bio's, I  
+> would presume you would either walk the list and sum all sizes, or in  
+> some other way input the total request size?
 
-I'm guessing the problem is due to the second instruction.  We don't 
-clear the 'blocked by interrupt shadow' flag when we emulate, which 
-extends interrupt shadow by one more instruction.  If the instruction 
-sequence is 'sti hlt' we end in an inconsistent state.
+Completely agree, if you want to support passing in a chain, you better
+make the first bio just part of the chain (not some header bio).
 
-
+And Jeff, you still have that bio_clone() bug in your v2 posting.
 
 -- 
-I have a truly marvellous patch that fixes the bug which this
-signature is too narrow to contain.
+Jens Axboe
 
