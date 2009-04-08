@@ -1,55 +1,83 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756260AbZDHEyl@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756083AbZDHFAe@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756260AbZDHEyl (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 8 Apr 2009 00:54:41 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752273AbZDHEyb
+	id S1756083AbZDHFAe (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 8 Apr 2009 01:00:34 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752996AbZDHFAZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 8 Apr 2009 00:54:31 -0400
-Received: from fmailhost03.isp.att.net ([207.115.11.53]:38921 "EHLO
-	fmailhost03.isp.att.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750871AbZDHEya (ORCPT
+	Wed, 8 Apr 2009 01:00:25 -0400
+Received: from fgwmail7.fujitsu.co.jp ([192.51.44.37]:46166 "EHLO
+	fgwmail7.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752656AbZDHFAY (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 8 Apr 2009 00:54:30 -0400
-X-Originating-IP: [69.76.240.125]
-Message-ID: <49DC2DF5.3010603@lwfinger.net>
-Date: Tue, 07 Apr 2009 23:54:13 -0500
-From: Larry Finger <Larry.Finger@lwfinger.net>
-User-Agent: Thunderbird 2.0.0.19 (X11/20081227)
+	Wed, 8 Apr 2009 01:00:24 -0400
+Message-ID: <49DC2F5D.1010401@jp.fujitsu.com>
+Date: Wed, 08 Apr 2009 14:00:13 +0900
+From: Hidetoshi Seto <seto.hidetoshi@jp.fujitsu.com>
+User-Agent: Thunderbird 2.0.0.21 (Windows/20090302)
 MIME-Version: 1.0
-To: Arjan van de Ven <arjan@linux.intel.com>
-CC: LKML <linux-kernel@vger.kernel.org>, "Rafael J. Wysocki" <rjw@sisk.pl>,
-       wireless <linux-wireless@vger.kernel.org>,
-       Rusty Russell <rusty@rustcorp.com.au>
-Subject: Regression in 2.6.30-rc1 since commit acae0515 - wireless broken
-Content-Type: text/plain; charset=ISO-8859-1
+To: Andi Kleen <andi@firstfloor.org>
+CC: hpa@zytor.com, linux-kernel@vger.kernel.org, mingo@elte.hu,
+       tglx@linutronix.de
+Subject: Re: [PATCH] [6/28] x86: MCE: Add machine check exception count in
+ /proc/interrupts
+References: <20090407507.636692542@firstfloor.org> <20090407150747.21C711D046E@basil.firstfloor.org>
+In-Reply-To: <20090407150747.21C711D046E@basil.firstfloor.org>
+Content-Type: text/plain; charset=ISO-2022-JP
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-The most recent pulls of the Linux-2.6 git tree has broken wireless. The problem
-was bisected with commit acae05156551fd7528fbb616271e672789388e3c, entitled
-"module: create a request_module_nowait()", indicated as the faulty change. This
-is seen with driver b43 on my system, and 2 reports for driver iwlagn:
-http://marc.info/?l=linux-wireless&m=123916157630571&w=2 and
-http://marc.info/?l=linux-wireless&m=123913015021457&w=2.
+Andi Kleen wrote:
+> @@ -96,6 +97,12 @@
+>  	seq_printf(p, "  Threshold APIC interrupts\n");
+>  # endif
+>  #endif
+> +#if defined(CONFIG_X86_MCE) && defined(CONFIG_X86_64)
+> +	seq_printf(p, "%*s: ", prec, "MCE");
+> +	for_each_online_cpu(j)
+> +		seq_printf(p, "%10u ", per_cpu(mce_exception_count, j));
+> +	seq_printf(p, "  Machine check exceptions\n");
+> +#endif
+>  	seq_printf(p, "%*s: %10u\n", prec, "ERR", atomic_read(&irq_err_count));
+>  #if defined(CONFIG_X86_IO_APIC)
+>  	seq_printf(p, "%*s: %10u\n", prec, "MIS", atomic_read(&irq_mis_count));
 
-For b43, the logged error messages are:
+How about unifying ifdefs?
+The patched code will be:
 
-phy0: Failed to initialize wep: -2
-b43: probe of ssb0:0 failed with error -2
+#ifdef CONFIG_X86_MCE
+        seq_printf(p, "%*s: ", prec, "TRM");
+        for_each_online_cpu(j)
+                seq_printf(p, "%10u ", irq_stats(j)->irq_thermal_count);
+        seq_printf(p, "  Thermal event interrupts\n");
+# ifdef CONFIG_X86_64
+        seq_printf(p, "%*s: ", prec, "THR");
+        for_each_online_cpu(j)
+                seq_printf(p, "%10u ", irq_stats(j)->irq_threshold_count);
+        seq_printf(p, "  Threshold APIC interrupts\n");
+# endif
+#endif
+#if defined(CONFIG_X86_MCE) && defined(CONFIG_X86_64)
+        seq_printf(p, "%*s: ", prec, "MCE");
+        for_each_online_cpu(j)
+                seq_printf(p, "%10u ", per_cpu(mce_exception_count, j));
+        seq_printf(p, "  Machine check exceptions\n");
+#endif
 
-With this driver, module ssb is selected from the PCI ID. It then loads b43,
-which triggers the loading of rfkill, mac80211, cfg80211, led-class, and
-input-polldev. It appears that the nowait method is killing the chain somewhere.
-If I unload and reload b43, then all these modules load correctly and wireless
-works.
+> @@ -163,6 +170,9 @@
+>  {
+>  	u64 sum = irq_stats(cpu)->__nmi_count;
+>  
+> +#if defined(CONFIG_X86_MCE) && defined(CONFIG_X86_64)
+> +	sum += per_cpu(mce_exception_count, cpu);
+> +#endif
+>  #ifdef CONFIG_X86_LOCAL_APIC
+>  	sum += irq_stats(cpu)->apic_timer_irqs;
+>  	sum += irq_stats(cpu)->irq_spurious_count;
 
-If this commit is reverted, wireless works OK.
-
-I will be happy to try any patches to make request_module_nowait() work with
-wireless networking.
-
-Larry
+Ditto.
 
 
+Thanks,
+H.Seto
