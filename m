@@ -1,50 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753422AbZDHDRv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753599AbZDHD1W@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753422AbZDHDRv (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 7 Apr 2009 23:17:51 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751287AbZDHDRl
+	id S1753599AbZDHD1W (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 7 Apr 2009 23:27:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751930AbZDHD1L
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 7 Apr 2009 23:17:41 -0400
-Received: from ozlabs.org ([203.10.76.45]:37119 "EHLO ozlabs.org"
+	Tue, 7 Apr 2009 23:27:11 -0400
+Received: from mx2.redhat.com ([66.187.237.31]:51209 "EHLO mx2.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750902AbZDHDRl (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 7 Apr 2009 23:17:41 -0400
-From: Rusty Russell <rusty@rustcorp.com.au>
-To: Peter Zijlstra <a.p.zijlstra@chello.nl>
-Subject: Re: pm-hibernate : possible circular locking dependency detected
-Date: Wed, 8 Apr 2009 12:47:08 +0930
-User-Agent: KMail/1.11.2 (Linux/2.6.27-11-generic; KDE/4.2.2; i686; ; )
-Cc: Ingo Molnar <mingo@elte.hu>, "Rafael J. Wysocki" <rjw@sisk.pl>,
-       Ming Lei <tom.leiming@gmail.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       "Linux-pm mailing list" <linux-pm@lists.linux-foundation.org>,
-       Linux Kernel List <linux-kernel@vger.kernel.org>,
-       Gautham R Shenoy <ego@in.ibm.com>
-References: <d82e647a0904050253n31bd2654s9b216465eec4d038@mail.gmail.com> <200904071356.29914.rusty@rustcorp.com.au> <1239087953.798.5513.camel@twins>
-In-Reply-To: <1239087953.798.5513.camel@twins>
-MIME-Version: 1.0
-Content-Type: Text/Plain;
-  charset="iso-8859-15"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200904081247.08712.rusty@rustcorp.com.au>
+	id S1751620AbZDHD1K (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 7 Apr 2009 23:27:10 -0400
+From: Glauber Costa <glommer@redhat.com>
+To: kvm@vger.kernel.org
+Cc: linux-kernel@vger.kernel.org, avi@redhat.com
+Subject: [PATCH] do not keep interrupt window closed by sti in real mode
+Date: Wed,  8 Apr 2009 00:23:37 -0300
+Message-Id: <1239161017-7398-1-git-send-email-glommer@redhat.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tuesday 07 April 2009 16:35:53 Peter Zijlstra wrote:
-> On Tue, 2009-04-07 at 13:56 +0930, Rusty Russell wrote:
-> > Looks like this will be fixed by Andrew's work-on-cpu-in-own-thread
-> > patch which I just put out the pull request for.
-> 
-> Would it make sense to teach it about a short-circuit like:
-> 
-> work_on_cpu() {
-> 
->   if (cpumask_weight(current->cpus_allowed) == 1 && 
->       smp_processor_id() == cpu)
->     return do_work_right_here();
+While in real mode, sti does not block interrupts from the subsequent
+instruction. This is stated at Intel SDM Volume 2b, page 4-432
 
-Does that happen much?  I guess put a counter in and see?
+Without this patch, I cannot boot gpxe option roms at vmx machines.
+This is described at https://bugzilla.redhat.com/show_bug.cgi?id=494469
 
-Rusty.
+Signed-off-by: Glauber Costa <glommer@redhat.com>
+---
+ arch/x86/kvm/vmx.c |    9 +++++----
+ 1 files changed, 5 insertions(+), 4 deletions(-)
+
+diff --git a/arch/x86/kvm/vmx.c b/arch/x86/kvm/vmx.c
+index c6997c0..51e0b8a 100644
+--- a/arch/x86/kvm/vmx.c
++++ b/arch/x86/kvm/vmx.c
+@@ -2490,18 +2490,19 @@ static void vmx_inject_nmi(struct kvm_vcpu *vcpu)
+ static void vmx_update_window_states(struct kvm_vcpu *vcpu)
+ {
+ 	u32 guest_intr = vmcs_read32(GUEST_INTERRUPTIBILITY_INFO);
++	int rmode = vcpu->arch.rmode.active;
+ 
+ 	vcpu->arch.nmi_window_open =
+-		!(guest_intr & (GUEST_INTR_STATE_STI |
+-				GUEST_INTR_STATE_MOV_SS |
++		(rmode || !(guest_intr & GUEST_INTR_STATE_STI)) &&
++		!(guest_intr & (GUEST_INTR_STATE_MOV_SS |
+ 				GUEST_INTR_STATE_NMI));
+ 	if (!cpu_has_virtual_nmis() && to_vmx(vcpu)->soft_vnmi_blocked)
+ 		vcpu->arch.nmi_window_open = 0;
+ 
+ 	vcpu->arch.interrupt_window_open =
+ 		((vmcs_readl(GUEST_RFLAGS) & X86_EFLAGS_IF) &&
+-		 !(guest_intr & (GUEST_INTR_STATE_STI |
+-				 GUEST_INTR_STATE_MOV_SS)));
++		(rmode || !(guest_intr & GUEST_INTR_STATE_STI)) &&
++		 !(guest_intr & GUEST_INTR_STATE_MOV_SS));
+ }
+ 
+ static int vmx_interrupt_allowed(struct kvm_vcpu *vcpu)
+-- 
+1.6.2
+
