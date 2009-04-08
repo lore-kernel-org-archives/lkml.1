@@ -1,147 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757214AbZDHXtz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756879AbZDHX5v@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757214AbZDHXtz (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 8 Apr 2009 19:49:55 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754355AbZDHXtp
+	id S1756879AbZDHX5v (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 8 Apr 2009 19:57:51 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755980AbZDHX5l
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 8 Apr 2009 19:49:45 -0400
-Received: from rcsinet12.oracle.com ([148.87.113.124]:47078 "EHLO
-	rgminet12.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754028AbZDHXtn (ORCPT
+	Wed, 8 Apr 2009 19:57:41 -0400
+Received: from fgwmail6.fujitsu.co.jp ([192.51.44.36]:59109 "EHLO
+	fgwmail6.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755853AbZDHX5k (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 8 Apr 2009 19:49:43 -0400
-Message-ID: <49DD380B.5080101@oracle.com>
-Date: Wed, 08 Apr 2009 16:49:31 -0700
-From: Randy Dunlap <randy.dunlap@oracle.com>
-Organization: Oracle Linux Engineering
-User-Agent: Thunderbird 2.0.0.6 (X11/20070801)
-MIME-Version: 1.0
-To: Larry Finger <Larry.Finger@lwfinger.net>
-CC: alan-jenkins@tuffmail.co.uk, Rusty Russell <rusty@rustcorp.com.au>,
-       Arjan van de Ven <arjan@linux.intel.com>,
-       LKML <linux-kernel@vger.kernel.org>, "Rafael J. Wysocki" <rjw@sisk.pl>,
-       wireless <linux-wireless@vger.kernel.org>
-Subject: Re: Regression in 2.6.30-rc1 since commit acae0515 - wireless broken
-References: <49DC2DF5.3010603@lwfinger.net> <49DC31EA.8050208@linux.intel.com>	 <200904081631.09150.rusty@rustcorp.com.au>	 <49DCB976.4020200@lwfinger.net> <9b2b86520904081006m6e6b5276v834c3565b0f6f4c7@mail.gmail.com> <49DCDF9E.8000605@lwfinger.net>
-In-Reply-To: <49DCDF9E.8000605@lwfinger.net>
-Content-Type: text/plain; charset=ISO-8859-1
+	Wed, 8 Apr 2009 19:57:40 -0400
+Date: Thu, 9 Apr 2009 08:56:08 +0900
+From: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+To: bharata@linux.vnet.ibm.com
+Cc: linux-kernel@vger.kernel.org, Balbir Singh <balbir@linux.vnet.ibm.com>,
+       Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: [PATCH] memcg: Fix documentation
+Message-Id: <20090409085608.7912886f.kamezawa.hiroyu@jp.fujitsu.com>
+In-Reply-To: <20090408093401.GF4069@in.ibm.com>
+References: <20090408071817.GD4069@in.ibm.com>
+	<20090408162528.97b20427.kamezawa.hiroyu@jp.fujitsu.com>
+	<20090408093401.GF4069@in.ibm.com>
+Organization: FUJITSU Co. LTD.
+X-Mailer: Sylpheed 2.5.0 (GTK+ 2.10.14; i686-pc-mingw32)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-X-Source-IP: acsmt701.oracle.com [141.146.40.71]
-X-Auth-Type: Internal IP
-X-CT-RefId: str=0001.0A010202.49DD37FB.016C:SCFMA4539814,ss=1,fgs=0
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Larry Finger wrote:
-> Alan Jenkins wrote:
->> On 4/8/09, Larry Finger <Larry.Finger@lwfinger.net> wrote:
->>
->> Something is very wrong with request_module(), this is just the most
->> obvious symptom.  It also seems to affect libusual (loading
->> usb-storage) and FAT (loading NLS modules).
->>
->> If I hotplug my wireless device, it then loads correctly.  So I'm
->> guessing wireless modules e.g. encryption modules get loaded too
->> asynchronously.   I.e. on boot, the  sub-modules are loaded too late.
->> But when I hotplug the device, the modules are already loaded.
->>
->> Same with FAT - it fails on first attempt to mount because of missing
->> NLS module, then works on second mount,
->>
->> I agree that commit looks like it should be a no-op though :-).
->> I will try to confirm the OP's bisection by reverting the commit, acae0515.
+On Wed, 8 Apr 2009 15:04:01 +0530
+Bharata B Rao <bharata@linux.vnet.ibm.com> wrote:
+
+> On Wed, Apr 08, 2009 at 04:25:28PM +0900, KAMEZAWA Hiroyuki wrote:
+> > Thank you, very helpful. but some nitpicks.
+> > 
+> > 
+> > On Wed, 8 Apr 2009 12:48:17 +0530
+> > Bharata B Rao <bharata@linux.vnet.ibm.com> wrote:
+> > 
+> > > memcg: Fix documentation.
+> > > 
+> > > The description about various statistics from memory.stat is not accurate
+> > > and confusing at times.
+> > > 
+> > > +active_anon	- # of bytes of anonymous memory on active lru list.
+> >                                 anonymous memory + shared memory(tmpfs) + SwapCache.
 > 
-> I added printk's to the entry and exit from __request_module and obtained the
-> following:
+> Since these stats are for user consumption, I think we need not explicitly
+> mention the inclusion of tmpfs pages here. What do you think ?
 > 
-> module: __request_module entered for module snd-hda-codec-id:14f15051
-> module: loading module snd-hda-codec-id:14f15051 - call_usermodehelper returned 0
-> module: __request_module entered for module ecb(arc4)
-> module: loading module ecb(arc4) - call_usermodehelper returned 256
-> module: __request_module entered for module ecb
-> module: loading module ecb - call_usermodehelper returned 0
-> module: __request_module entered for module char-major-4-68
-> module: loading module char-major-4-68 - call_usermodehelper returned 256
-> module: __request_module entered for module char-major-4
-> module: loading module char-major-4 - call_usermodehelper returned 256
-> module: __request_module entered for module char-major-4-69
-> module: loading module char-major-4-69 - call_usermodehelper returned 256
-> module: __request_module entered for module char-major-4
-> module: loading module char-major-4 - call_usermodehelper returned 256
-> module: __request_module entered for module char-major-4-70
-> module: loading module char-major-4-70 - call_usermodehelper returned 256
-> module: __request_module entered for module char-major-4
-> module: loading module char-major-4 - call_usermodehelper returned 256
-> module: __request_module entered for module char-major-4-71
-> module: loading module char-major-4-71 - call_usermodehelper returned 256
-> module: __request_module entered for module char-major-4
-> module: loading module char-major-4 - call_usermodehelper returned 256
-> module: __request_module entered for module net-pf-10
-> module: loading module net-pf-10 - call_usermodehelper returned 256
-> module: __request_module entered for module net-pf-10
-> module: loading module net-pf-10 - call_usermodehelper returned 256
-> module: __request_module entered for module net-pf-10
-> module: loading module net-pf-10 - call_usermodehelper returned 256
-> module: __request_module entered for module net-pf-10
-> module: loading module net-pf-10 - call_usermodehelper returned 256
-> module: __request_module entered for module net-pf-10
-> module: loading module net-pf-10 - call_usermodehelper returned 256
-> module: __request_module entered for module net-pf-10
-> module: loading module net-pf-10 - call_usermodehelper returned 256
-> module: __request_module entered for module net-pf-10
-> module: loading module net-pf-10 - call_usermodehelper returned 256
-> module: __request_module entered for module net-pf-10
-> module: loading module net-pf-10 - call_usermodehelper returned 256
-> module: __request_module entered for module net-pf-10
-> module: loading module net-pf-10 - call_usermodehelper returned 256
-> module: __request_module entered for module net-pf-10
-> module: loading module net-pf-10 - call_usermodehelper returned 256
-> module: __request_module entered for module net-pf-10
-> module: loading module net-pf-10 - call_usermodehelper returned 256
-> module: __request_module entered for module net-pf-10
-> module: loading module net-pf-10 - call_usermodehelper returned 256
-> module: __request_module entered for module net-pf-10
-> module: loading module net-pf-10 - call_usermodehelper returned 256
-> module: __request_module entered for module net-pf-10
-> module: __request_module entered for module net-pf-10
-> module: loading module net-pf-10 - call_usermodehelper returned 256
-> module: loading module net-pf-10 - call_usermodehelper returned 256
-> module: __request_module entered for module net-pf-10
-> module: loading module net-pf-10 - call_usermodehelper returned 256
-> module: __request_module entered for module net-pf-10
-> module: loading module net-pf-10 - call_usermodehelper returned 256
-> module: __request_module entered for module net-pf-10
-> module: loading module net-pf-10 - call_usermodehelper returned 256
-> module: __request_module entered for module net-pf-10
-> module: loading module net-pf-10 - call_usermodehelper returned 256
-> module: __request_module entered for module net-pf-10
-> module: loading module net-pf-10 - call_usermodehelper returned 256
-> module: __request_module entered for module net-pf-10
-> module: loading module net-pf-10 - call_usermodehelper returned 256
-> 
-> According to the description of the routine, it should return 0 on success and a
-> negative number for an error. Where do the values of "256" mean?
+Maybe it's better.
+Anyway, this information is the same to what /proc/meminfo shows.
 
-Here's a quick explanation (Linus explained this to me 6-8 years ago;
-I bet his was better than mine, but I can't find his).
+Thanks,
+-Kame
 
-256 = 0x0100
-
-Inside the kernel, a program's exit code/status is split into 2 8-bit fields,
-so this exit status is (0x01, 0x00).  The low 8 bits (0x00 in this example)
-store an internal code for why the program is exiting (or did exit).  E.g.:
-
-0xlow_7_bits = 0 => exited, exit status is in "high" 8 bits
-else 0x80 bit set => core dumped, else killed, with exit status in low 7 bits
-
-
-So it looks like /sbin/modprobe exited with an exit status of 1...
-whatever that means (fatal error or usage() printed or module not found).
-
-
-See kernel/[signal.c & exit.c] for uses of 0x80...
-
-HTH.
--- 
-~Randy
