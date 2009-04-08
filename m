@@ -1,64 +1,82 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762920AbZDHKn5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763396AbZDHKo2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762920AbZDHKn5 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 8 Apr 2009 06:43:57 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762732AbZDHKng
+	id S1763396AbZDHKo2 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 8 Apr 2009 06:44:28 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762944AbZDHKnt
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 8 Apr 2009 06:43:36 -0400
-Received: from one.firstfloor.org ([213.235.205.2]:55028 "EHLO
-	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1762697AbZDHKnf (ORCPT
+	Wed, 8 Apr 2009 06:43:49 -0400
+Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:58819
+	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
+	by vger.kernel.org with ESMTP id S1750894AbZDHKns (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 8 Apr 2009 06:43:35 -0400
-To: Hidetoshi Seto <seto.hidetoshi@jp.fujitsu.com>
-Cc: hpa@zytor.com, linux-kernel@vger.kernel.org, mingo@elte.hu,
-       tglx@linutronix.de
-Subject: Re: [PATCH] [1/4] x86: MCE: Make polling timer interval per CPU
-From: Andi Kleen <andi@firstfloor.org>
-References: <20090407506.675031434@firstfloor.org>
-	<20090407150654.071D21D046E@basil.firstfloor.org>
-	<49DC1D7E.4010802@jp.fujitsu.com>
-Date: Wed, 08 Apr 2009 12:43:28 +0200
-In-Reply-To: <49DC1D7E.4010802@jp.fujitsu.com> (Hidetoshi Seto's message of "Wed, 08 Apr 2009 12:43:58 +0900")
-Message-ID: <877i1va0j3.fsf@basil.nowhere.org>
-User-Agent: Gnus/5.1008 (Gnus v5.10.8) Emacs/22.3 (gnu/linux)
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	Wed, 8 Apr 2009 06:43:48 -0400
+Date: Wed, 08 Apr 2009 03:43:38 -0700 (PDT)
+Message-Id: <20090408.034338.12312943.davem@davemloft.net>
+To: giszo.k@gmail.com
+Cc: linux-kernel@vger.kernel.org
+Subject: Re: 2.6.29.1 sparc64 boot failure
+From: David Miller <davem@davemloft.net>
+In-Reply-To: <bbf811740904080338l6c23cd21r7d4d8bed73d6d8da@mail.gmail.com>
+References: <bbf811740904080338l6c23cd21r7d4d8bed73d6d8da@mail.gmail.com>
+X-Mailer: Mew version 6.2.51 on Emacs 22.1 / Mule 5.0 (SAKAKI)
+Mime-Version: 1.0
+Content-Type: Text/Plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hidetoshi Seto <seto.hidetoshi@jp.fujitsu.com> writes:
->>  
->> @@ -632,14 +633,14 @@
->>  static void mce_init_timer(void)
->>  {
->>  	struct timer_list *t = &__get_cpu_var(mce_timer);
->> +	int *n = &__get_cpu_var(next_interval);
->>  
->> -	/* data race harmless because everyone sets to the same value */
->> -	if (!next_interval)
->> -		next_interval = check_interval * HZ;
->> -	if (!next_interval)
->
-> [plan A]
-> Add
-> 	if (!check_interval)
-> 		return;
->
-> Or...
->
->> +	if (!*n)
->> +		*n = check_interval * HZ;
->> +	if (!*n)
->>  		return;
+From: Zoltan Kovacs <giszo.k@gmail.com>
+Date: Wed, 8 Apr 2009 12:38:19 +0200
 
+> Hi,
+> 
+> I just tried to put the latest kernel (2.6.29.1) to my Sun Fire V250
+> sparc server machine.
+> 
+> When I booted the system with the new kernel it just failed with the
+> following error message:
+> "kernel BUG at /usr/src/linux-2.6.29.1/arch/sparc/include/asm/tlb_64.h:48!"
+> 
+> The full boot log and kernel config is attached to the mail.
 
-The !*n will return for check_interval == 0 because 0*HZ is still 0 so it should be 
-equivalent. Did I miss something?
+Known problem, patch already posted and submitted to -stable:
 
--Andi
+sparc64: Fix bug in ("sparc64: Flush TLB before releasing pages.")
 
+[ No upstream commit, this regression was added only to 2.6.29.1 ]
 
+Unfortunately I merged an earlier version of commit
+b6816b706138c3870f03115071872cad824f90b4 ("sparc64: Flush TLB before
+releasing pages.") than what I actually tested and merged upstream.
+
+Simply diffing asm/tlb_64.h in Linus's tree vs. what ended up in
+2.6.29.1 confirms this.
+
+Sync things up to fix BUG() triggers some users are seeing.
+
+Reported-by: Dennis Gilmore <dennis@ausil.us>
+Signed-off-by: David S. Miller <davem@davemloft.net>
+---
+ arch/sparc/include/asm/tlb_64.h |    4 ++--
+ 1 files changed, 2 insertions(+), 2 deletions(-)
+
+diff --git a/arch/sparc/include/asm/tlb_64.h b/arch/sparc/include/asm/tlb_64.h
+index 0aaa086..ee38e73 100644
+--- a/arch/sparc/include/asm/tlb_64.h
++++ b/arch/sparc/include/asm/tlb_64.h
+@@ -57,9 +57,9 @@ static inline struct mmu_gather *tlb_gather_mmu(struct mm_struct *mm, unsigned i
+ 
+ static inline void tlb_flush_mmu(struct mmu_gather *mp)
+ {
++	if (!mp->fullmm)
++		flush_tlb_pending();
+ 	if (mp->need_flush) {
+-		if (!mp->fullmm)
+-			flush_tlb_pending();
+ 		free_pages_and_swap_cache(mp->pages, mp->pages_nr);
+ 		mp->pages_nr = 0;
+ 		mp->need_flush = 0;
 -- 
-ak@linux.intel.com -- Speaking for myself only.
+1.6.2.2
+
