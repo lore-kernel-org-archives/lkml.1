@@ -1,22 +1,22 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933684AbZDHMLR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761362AbZDHMLj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933684AbZDHMLR (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 8 Apr 2009 08:11:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933410AbZDHMA4
+	id S1761362AbZDHMLj (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 8 Apr 2009 08:11:39 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933414AbZDHMA6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 8 Apr 2009 08:00:56 -0400
-Received: from brick.kernel.dk ([93.163.65.50]:48997 "EHLO kernel.dk"
+	Wed, 8 Apr 2009 08:00:58 -0400
+Received: from brick.kernel.dk ([93.163.65.50]:48991 "EHLO kernel.dk"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S933407AbZDHMAi (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 8 Apr 2009 08:00:38 -0400
+	id S933394AbZDHMAh (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 8 Apr 2009 08:00:37 -0400
 From: Jens Axboe <jens.axboe@oracle.com>
 To: linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org
 Cc: chris.mason@oracle.com, david@fromorbit.com, hch@infradead.org,
        akpm@linux-foundation.org, jack@suse.cz,
        Jens Axboe <jens.axboe@oracle.com>
-Subject: [PATCH 13/13] writeback: ensure consistency for generic_sync_sb_inodes() with WB_SYNC_ALL
-Date: Wed,  8 Apr 2009 14:00:16 +0200
-Message-Id: <1239192016-19857-14-git-send-email-jens.axboe@oracle.com>
+Subject: [PATCH 11/13] writeback: add name to backing_dev_info
+Date: Wed,  8 Apr 2009 14:00:14 +0200
+Message-Id: <1239192016-19857-12-git-send-email-jens.axboe@oracle.com>
 X-Mailer: git-send-email 1.6.2.2.446.gfbdc0
 In-Reply-To: <1239192016-19857-1-git-send-email-jens.axboe@oracle.com>
 References: <1239192016-19857-1-git-send-email-jens.axboe@oracle.com>
@@ -24,278 +24,234 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-If WB_SYNC_ALL is given, we must block waiting for any bdi/wb to become
-available and flush our data. Switch the bdi_list protection to SRCU
-instead of RCU so that we can do that.
+Just for testing purposes, to be able to easier track who does what.
 
 Signed-off-by: Jens Axboe <jens.axboe@oracle.com>
 ---
- fs/fs-writeback.c           |   49 +++++++++++++++++++++++++++++--------------
- include/linux/backing-dev.h |   12 ++++++++-
- mm/backing-dev.c            |   23 ++++++++++++--------
- mm/page-writeback.c         |    4 +-
- 4 files changed, 59 insertions(+), 29 deletions(-)
+ block/blk-core.c            |    1 +
+ drivers/block/aoe/aoeblk.c  |    1 +
+ drivers/char/mem.c          |    1 +
+ fs/btrfs/disk-io.c          |    1 +
+ fs/char_dev.c               |    1 +
+ fs/configfs/inode.c         |    1 +
+ fs/fuse/inode.c             |    1 +
+ fs/hugetlbfs/inode.c        |    1 +
+ fs/nfs/client.c             |    1 +
+ fs/ocfs2/dlm/dlmfs.c        |    1 +
+ fs/ramfs/inode.c            |    1 +
+ fs/sysfs/inode.c            |    1 +
+ fs/ubifs/super.c            |    1 +
+ include/linux/backing-dev.h |    2 ++
+ kernel/cgroup.c             |    1 +
+ mm/backing-dev.c            |    1 +
+ mm/swap_state.c             |    1 +
+ 17 files changed, 18 insertions(+), 0 deletions(-)
 
-diff --git a/fs/fs-writeback.c b/fs/fs-writeback.c
-index 1d25d3a..0492399 100644
---- a/fs/fs-writeback.c
-+++ b/fs/fs-writeback.c
-@@ -50,11 +50,18 @@ static void generic_sync_wb_inodes(struct bdi_writeback *wb,
-  * unless they implement their own.  Which is somewhat inefficient, as this
-  * may prevent concurrent writeback against multiple devices.
+diff --git a/block/blk-core.c b/block/blk-core.c
+index 07ab754..226e9da 100644
+--- a/block/blk-core.c
++++ b/block/blk-core.c
+@@ -517,6 +517,7 @@ struct request_queue *blk_alloc_queue_node(gfp_t gfp_mask, int node_id)
+ 
+ 	q->backing_dev_info.unplug_io_fn = blk_backing_dev_unplug;
+ 	q->backing_dev_info.unplug_io_data = q;
++	q->backing_dev_info.name = "block";
+ 	err = bdi_init(&q->backing_dev_info);
+ 	if (err) {
+ 		kmem_cache_free(blk_requestq_cachep, q);
+diff --git a/drivers/block/aoe/aoeblk.c b/drivers/block/aoe/aoeblk.c
+index 2307a27..0efb8fc 100644
+--- a/drivers/block/aoe/aoeblk.c
++++ b/drivers/block/aoe/aoeblk.c
+@@ -265,6 +265,7 @@ aoeblk_gdalloc(void *vp)
+ 	}
+ 
+ 	blk_queue_make_request(&d->blkq, aoeblk_make_request);
++	d->blkq.backing_dev_info.name = "aoe";
+ 	if (bdi_init(&d->blkq.backing_dev_info))
+ 		goto err_mempool;
+ 	spin_lock_irqsave(&d->lock, flags);
+diff --git a/drivers/char/mem.c b/drivers/char/mem.c
+index 3586b3b..45b485f 100644
+--- a/drivers/char/mem.c
++++ b/drivers/char/mem.c
+@@ -847,6 +847,7 @@ static const struct file_operations zero_fops = {
+  * - permits private mappings, "copies" are taken of the source of zeros
   */
--static int writeback_acquire(struct bdi_writeback *wb)
-+static bool writeback_acquire(struct bdi_writeback *wb, int wait)
- {
- 	struct backing_dev_info *bdi = wb->bdi;
+ static struct backing_dev_info zero_bdi = {
++	.name		= "char/mem",
+ 	.capabilities	= BDI_CAP_MAP_COPY,
+ };
  
--	return !test_and_set_bit(wb->nr, &bdi->wb_active);
-+	if (!test_and_set_bit(wb->nr, &bdi->wb_active))
-+		return 1;
-+	if (!wait)
-+		return 0;
-+
-+	wait_on_bit_lock(&bdi->wb_active, wb->nr, bdi_sched_wait,
-+				TASK_UNINTERRUPTIBLE);
-+	return 1;
- }
- 
- /**
-@@ -82,12 +89,15 @@ static void writeback_release(struct bdi_writeback *wb)
- }
- 
- static void wb_start_writeback(struct bdi_writeback *wb, struct super_block *sb,
--			       long nr_pages)
-+			       long nr_pages, int wait)
- {
- 	if (!wb_has_dirty_io(wb))
- 		return;
- 
--	if (writeback_acquire(wb)) {
-+	/*
-+	 * Wait is set, block waiting for the device to become available
-+	 */
-+	if (writeback_acquire(wb, wait)) {
- 		wb->nr_pages = nr_pages;
- 		wb->sb = sb;
- 
-@@ -100,7 +110,7 @@ static void wb_start_writeback(struct bdi_writeback *wb, struct super_block *sb,
- }
- 
- int bdi_start_writeback(struct backing_dev_info *bdi, struct super_block *sb,
--			 long nr_pages)
-+			 long nr_pages, int wait)
- {
- 	struct bdi_writeback *wb;
- 
-@@ -114,14 +124,14 @@ int bdi_start_writeback(struct backing_dev_info *bdi, struct super_block *sb,
- 	}
- 
- 	if (!bdi_wblist_needs_lock(bdi))
--		wb_start_writeback(&bdi->wb, sb, nr_pages);
-+		wb_start_writeback(&bdi->wb, sb, nr_pages, wait);
- 	else {
- 		int idx;
- 
- 		idx = srcu_read_lock(&bdi->srcu);
- 
- 		list_for_each_entry_rcu(wb, &bdi->wb_list, list)
--			wb_start_writeback(wb, sb, nr_pages);
-+			wb_start_writeback(wb, sb, nr_pages, wait);
- 
- 		srcu_read_unlock(&bdi->srcu, idx);
- 	}
-@@ -244,7 +254,7 @@ long wb_do_writeback(struct bdi_writeback *wb)
- 	 *  pdflush style writeout.
- 	 *
- 	 */
--	if (writeback_acquire(wb))
-+	if (writeback_acquire(wb, 0))
- 		nr_pages = wb_kupdated(wb);
- 	else
- 		nr_pages = wb_writeback(wb);
-@@ -295,21 +305,21 @@ int bdi_writeback_task(struct bdi_writeback *wb)
- 	return 0;
- }
- 
--void bdi_writeback_all(struct super_block *sb, long nr_pages)
-+void bdi_writeback_all(struct super_block *sb, long nr_pages, int wait)
- {
- 	struct backing_dev_info *bdi;
-+	int idx;
- 
--	rcu_read_lock();
--
-+	idx = srcu_read_lock(&bdi_srcu);
- restart:
- 	list_for_each_entry_rcu(bdi, &bdi_list, bdi_list) {
- 		if (!bdi_has_dirty_io(bdi))
- 			continue;
--		if (bdi_start_writeback(bdi, sb, nr_pages))
-+		if (bdi_start_writeback(bdi, sb, nr_pages, wait))
- 			goto restart;
- 	}
- 
--	rcu_read_unlock();
-+	srcu_read_unlock(&bdi_srcu, idx);
- }
- 
- /*
-@@ -828,12 +838,19 @@ void generic_sync_bdi_inodes(struct super_block *sb,
- void generic_sync_sb_inodes(struct super_block *sb,
- 				struct writeback_control *wbc)
- {
-+	const int sync_all = wbc->sync_mode == WB_SYNC_ALL;
-+
-+	/*
-+	 * Kick off the specified bdi, if given, or all of them. If sync_all
-+	 * is true, then this is a blocking operation and we must make sure
-+	 * to wait for any device that is currently doing a writeback operation.
-+	 */
- 	if (wbc->bdi)
--		bdi_start_writeback(wbc->bdi, sb, 0);
-+		bdi_start_writeback(wbc->bdi, sb, 0, sync_all);
- 	else
--		bdi_writeback_all(sb, 0);
-+		bdi_writeback_all(sb, 0, sync_all);
- 
--	if (wbc->sync_mode == WB_SYNC_ALL) {
-+	if (sync_all) {
- 		struct inode *inode, *old_inode = NULL;
- 
- 		spin_lock(&inode_lock);
-diff --git a/include/linux/backing-dev.h b/include/linux/backing-dev.h
-index c7c1ed6..8ab2429 100644
---- a/include/linux/backing-dev.h
-+++ b/include/linux/backing-dev.h
-@@ -14,6 +14,7 @@
- #include <linux/kernel.h>
- #include <linux/fs.h>
- #include <linux/srcu.h>
-+#include <linux/sched.h>
- #include <asm/atomic.h>
- 
- struct page;
-@@ -105,15 +106,22 @@ int bdi_register(struct backing_dev_info *bdi, struct device *parent,
- int bdi_register_dev(struct backing_dev_info *bdi, dev_t dev);
- void bdi_unregister(struct backing_dev_info *bdi);
- int bdi_start_writeback(struct backing_dev_info *bdi, struct super_block *sb,
--			 long nr_pages);
-+			 long nr_pages, int wait);
- int bdi_writeback_task(struct bdi_writeback *wb);
--void bdi_writeback_all(struct super_block *sb, long nr_pages);
-+void bdi_writeback_all(struct super_block *sb, long nr_pages, int wait);
- void bdi_add_default_flusher_task(struct backing_dev_info *bdi);
- void bdi_add_flusher_task(struct backing_dev_info *bdi);
- int bdi_has_dirty_io(struct backing_dev_info *bdi);
- 
- extern spinlock_t bdi_lock;
- extern struct list_head bdi_list;
-+extern struct srcu_struct bdi_srcu;
-+
-+static inline int bdi_sched_wait(void *word)
-+{
-+	schedule();
-+	return 0;
-+}
- 
- static inline int wb_is_default_task(struct bdi_writeback *wb)
- {
-diff --git a/mm/backing-dev.c b/mm/backing-dev.c
-index 9d6ac11..8ee7b55 100644
---- a/mm/backing-dev.c
-+++ b/mm/backing-dev.c
-@@ -29,6 +29,7 @@ static struct class *bdi_class;
- DEFINE_SPINLOCK(bdi_lock);
- LIST_HEAD(bdi_list);
- LIST_HEAD(bdi_pending_list);
-+struct srcu_struct bdi_srcu;
- 
- #ifdef CONFIG_DEBUG_FS
- #include <linux/debugfs.h>
-@@ -220,10 +221,19 @@ static int __init default_bdi_init(void)
+diff --git a/fs/btrfs/disk-io.c b/fs/btrfs/disk-io.c
+index 3c91484..ec19a90 100644
+--- a/fs/btrfs/disk-io.c
++++ b/fs/btrfs/disk-io.c
+@@ -1374,6 +1374,7 @@ static int setup_bdi(struct btrfs_fs_info *info, struct backing_dev_info *bdi)
  {
  	int err;
  
-+	err = init_srcu_struct(&bdi_srcu);
-+	if (err)
-+		return err;
-+
- 	err = bdi_init(&default_backing_dev_info);
- 	if (!err)
- 		bdi_register(&default_backing_dev_info, NULL, "default");
++	bdi->name = "btrfs";
+ 	bdi->capabilities = BDI_CAP_MAP_COPY;
+ 	err = bdi_init(bdi);
+ 	if (err)
+diff --git a/fs/char_dev.c b/fs/char_dev.c
+index 38f7122..350ef9c 100644
+--- a/fs/char_dev.c
++++ b/fs/char_dev.c
+@@ -32,6 +32,7 @@
+  * - no readahead or I/O queue unplugging required
+  */
+ struct backing_dev_info directly_mappable_cdev_bdi = {
++	.name = "char",
+ 	.capabilities	= (
+ #ifdef CONFIG_MMU
+ 		/* permit private copies of the data to be taken */
+diff --git a/fs/configfs/inode.c b/fs/configfs/inode.c
+index 5d349d3..9a266cd 100644
+--- a/fs/configfs/inode.c
++++ b/fs/configfs/inode.c
+@@ -46,6 +46,7 @@ static const struct address_space_operations configfs_aops = {
+ };
  
-+	if (err) {
-+		bdi_destroy(&default_backing_dev_info);
-+		cleanup_srcu_struct(&bdi_srcu);
-+	}
-+
- 	return err;
- }
- subsys_initcall(default_bdi_init);
-@@ -473,12 +483,6 @@ static void bdi_add_to_pending(struct rcu_head *head)
- 	wake_up(&default_backing_dev_info.wb.wait);
+ static struct backing_dev_info configfs_backing_dev_info = {
++	.name		= "configfs",
+ 	.ra_pages	= 0,	/* No readahead */
+ 	.capabilities	= BDI_CAP_NO_ACCT_AND_WRITEBACK,
+ };
+diff --git a/fs/fuse/inode.c b/fs/fuse/inode.c
+index 459b73d..21ed16c 100644
+--- a/fs/fuse/inode.c
++++ b/fs/fuse/inode.c
+@@ -481,6 +481,7 @@ int fuse_conn_init(struct fuse_conn *fc, struct super_block *sb)
+ 	INIT_LIST_HEAD(&fc->bg_queue);
+ 	INIT_LIST_HEAD(&fc->entry);
+ 	atomic_set(&fc->num_waiting, 0);
++	fc->bdi.name = "fuse";
+ 	fc->bdi.ra_pages = (VM_MAX_READAHEAD * 1024) / PAGE_CACHE_SIZE;
+ 	fc->bdi.unplug_io_fn = default_unplug_io_fn;
+ 	/* fuse does it's own writeback accounting */
+diff --git a/fs/hugetlbfs/inode.c b/fs/hugetlbfs/inode.c
+index 23a3c76..91816c7 100644
+--- a/fs/hugetlbfs/inode.c
++++ b/fs/hugetlbfs/inode.c
+@@ -44,6 +44,7 @@ static const struct inode_operations hugetlbfs_dir_inode_operations;
+ static const struct inode_operations hugetlbfs_inode_operations;
+ 
+ static struct backing_dev_info hugetlbfs_backing_dev_info = {
++	.name		= "hugetlbfs",
+ 	.ra_pages	= 0,	/* No readahead */
+ 	.capabilities	= BDI_CAP_NO_ACCT_AND_WRITEBACK,
+ };
+diff --git a/fs/nfs/client.c b/fs/nfs/client.c
+index 75c9cd2..3a26d06 100644
+--- a/fs/nfs/client.c
++++ b/fs/nfs/client.c
+@@ -836,6 +836,7 @@ static void nfs_server_set_fsinfo(struct nfs_server *server, struct nfs_fsinfo *
+ 		server->rsize = NFS_MAX_FILE_IO_SIZE;
+ 	server->rpages = (server->rsize + PAGE_CACHE_SIZE - 1) >> PAGE_CACHE_SHIFT;
+ 
++	server->backing_dev_info.name = "nfs";
+ 	server->backing_dev_info.ra_pages = server->rpages * NFS_MAX_READAHEAD;
+ 
+ 	if (server->wsize > max_rpc_payload)
+diff --git a/fs/ocfs2/dlm/dlmfs.c b/fs/ocfs2/dlm/dlmfs.c
+index 1c9efb4..02bf178 100644
+--- a/fs/ocfs2/dlm/dlmfs.c
++++ b/fs/ocfs2/dlm/dlmfs.c
+@@ -325,6 +325,7 @@ clear_fields:
  }
  
--static int sched_wait(void *word)
--{
--	schedule();
--	return 0;
--}
--
- static void bdi_add_one_flusher_task(struct backing_dev_info *bdi,
- 				     int(*func)(struct backing_dev_info *))
- {
-@@ -513,7 +517,7 @@ static void bdi_add_one_flusher_task(struct backing_dev_info *bdi,
+ static struct backing_dev_info dlmfs_backing_dev_info = {
++	.name		= "ocfs2-dlmfs",
+ 	.ra_pages	= 0,	/* No readahead */
+ 	.capabilities	= BDI_CAP_NO_ACCT_AND_WRITEBACK,
+ };
+diff --git a/fs/ramfs/inode.c b/fs/ramfs/inode.c
+index 3a6b193..5a24199 100644
+--- a/fs/ramfs/inode.c
++++ b/fs/ramfs/inode.c
+@@ -46,6 +46,7 @@ static const struct super_operations ramfs_ops;
+ static const struct inode_operations ramfs_dir_inode_operations;
  
- static int flusher_add_helper_block(struct backing_dev_info *bdi)
- {
--	wait_on_bit_lock(&bdi->state, BDI_pending, sched_wait,
-+	wait_on_bit_lock(&bdi->state, BDI_pending, bdi_sched_wait,
- 				TASK_UNINTERRUPTIBLE);
- 	return 0;
- }
-@@ -620,7 +624,8 @@ static void bdi_wb_shutdown(struct backing_dev_info *bdi)
- 	 * If setup is pending, wait for that to complete first
- 	 * Make sure nobody finds us on the bdi_list anymore
+ static struct backing_dev_info ramfs_backing_dev_info = {
++	.name		= "ramfs",
+ 	.ra_pages	= 0,	/* No readahead */
+ 	.capabilities	= BDI_CAP_NO_ACCT_AND_WRITEBACK |
+ 			  BDI_CAP_MAP_DIRECT | BDI_CAP_MAP_COPY |
+diff --git a/fs/sysfs/inode.c b/fs/sysfs/inode.c
+index 555f0ff..e57f98e 100644
+--- a/fs/sysfs/inode.c
++++ b/fs/sysfs/inode.c
+@@ -29,6 +29,7 @@ static const struct address_space_operations sysfs_aops = {
+ };
+ 
+ static struct backing_dev_info sysfs_backing_dev_info = {
++	.name		= "sysfs",
+ 	.ra_pages	= 0,	/* No readahead */
+ 	.capabilities	= BDI_CAP_NO_ACCT_AND_WRITEBACK,
+ };
+diff --git a/fs/ubifs/super.c b/fs/ubifs/super.c
+index faa44f9..2a63dce 100644
+--- a/fs/ubifs/super.c
++++ b/fs/ubifs/super.c
+@@ -1923,6 +1923,7 @@ static int ubifs_fill_super(struct super_block *sb, void *data, int silent)
+ 	 *
+ 	 * Read-ahead will be disabled because @c->bdi.ra_pages is 0.
  	 */
--	wait_on_bit(&bdi->state, BDI_pending, sched_wait, TASK_UNINTERRUPTIBLE);
-+	wait_on_bit(&bdi->state, BDI_pending, bdi_sched_wait,
-+			TASK_UNINTERRUPTIBLE);
++	c->bdi.name = "ubifs",
+ 	c->bdi.capabilities = BDI_CAP_MAP_COPY;
+ 	c->bdi.unplug_io_fn = default_unplug_io_fn;
+ 	err  = bdi_init(&c->bdi);
+diff --git a/include/linux/backing-dev.h b/include/linux/backing-dev.h
+index ce23ec7..a343719 100644
+--- a/include/linux/backing-dev.h
++++ b/include/linux/backing-dev.h
+@@ -72,6 +72,8 @@ struct backing_dev_info {
+ 	void (*unplug_io_fn)(struct backing_dev_info *, struct page *);
+ 	void *unplug_io_data;
  
- 	/*
- 	 * Make sure nobody finds us on the bdi_list anymore
-@@ -633,7 +638,7 @@ static void bdi_wb_shutdown(struct backing_dev_info *bdi)
- 	 * Now make sure that anybody who is currently looking at us from
- 	 * the bdi_list iteration have exited.
- 	 */
--	synchronize_rcu();
-+	synchronize_srcu(&bdi_srcu);
++	char *name;
++
+ 	struct percpu_counter bdi_stat[NR_BDI_STAT_ITEMS];
  
- 	/*
- 	 * Finally, kill the kernel threads. We don't need to be RCU
-diff --git a/mm/page-writeback.c b/mm/page-writeback.c
-index e71e3c2..bac4ad6 100644
---- a/mm/page-writeback.c
-+++ b/mm/page-writeback.c
-@@ -581,7 +581,7 @@ static void balance_dirty_pages(struct address_space *mapping)
- 			(!laptop_mode && (global_page_state(NR_FILE_DIRTY)
- 					  + global_page_state(NR_UNSTABLE_NFS)
- 					  > background_thresh)))
--		bdi_start_writeback(bdi, NULL, 0);
-+		bdi_start_writeback(bdi, NULL, 0, 0);
- }
+ 	struct prop_local_percpu completions;
+diff --git a/kernel/cgroup.c b/kernel/cgroup.c
+index 382109b..b4ed39a 100644
+--- a/kernel/cgroup.c
++++ b/kernel/cgroup.c
+@@ -598,6 +598,7 @@ static struct inode_operations cgroup_dir_inode_operations;
+ static struct file_operations proc_cgroupstats_operations;
  
- void set_page_dirty_balance(struct page *page, int page_mkwrite)
-@@ -675,7 +675,7 @@ int wakeup_flusher_threads(long nr_pages)
- 	if (nr_pages == 0)
- 		nr_pages = global_page_state(NR_FILE_DIRTY) +
- 				global_page_state(NR_UNSTABLE_NFS);
--	bdi_writeback_all(NULL, nr_pages);
-+	bdi_writeback_all(NULL, nr_pages, 0);
- 	return 0;
- }
+ static struct backing_dev_info cgroup_backing_dev_info = {
++	.name		= "cgroup",
+ 	.capabilities	= BDI_CAP_NO_ACCT_AND_WRITEBACK,
+ };
  
+diff --git a/mm/backing-dev.c b/mm/backing-dev.c
+index a45b7d9..f86f9cc 100644
+--- a/mm/backing-dev.c
++++ b/mm/backing-dev.c
+@@ -17,6 +17,7 @@ void default_unplug_io_fn(struct backing_dev_info *bdi, struct page *page)
+ EXPORT_SYMBOL(default_unplug_io_fn);
+ 
+ struct backing_dev_info default_backing_dev_info = {
++	.name		= "default",
+ 	.ra_pages	= VM_MAX_READAHEAD * 1024 / PAGE_CACHE_SIZE,
+ 	.state		= 0,
+ 	.capabilities	= BDI_CAP_MAP_COPY | BDI_CAP_FLUSH_FORKER,
+diff --git a/mm/swap_state.c b/mm/swap_state.c
+index 3ecea98..323da00 100644
+--- a/mm/swap_state.c
++++ b/mm/swap_state.c
+@@ -34,6 +34,7 @@ static const struct address_space_operations swap_aops = {
+ };
+ 
+ static struct backing_dev_info swap_backing_dev_info = {
++	.name		= "swap",
+ 	.capabilities	= BDI_CAP_NO_ACCT_AND_WRITEBACK | BDI_CAP_SWAP_BACKED,
+ 	.unplug_io_fn	= swap_unplug_io_fn,
+ };
 -- 
 1.6.2.2.446.gfbdc0
 
