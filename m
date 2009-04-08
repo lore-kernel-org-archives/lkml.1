@@ -1,49 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760431AbZDHOkd@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760072AbZDHOlW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760431AbZDHOkd (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 8 Apr 2009 10:40:33 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754856AbZDHOkX
+	id S1760072AbZDHOlW (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 8 Apr 2009 10:41:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756445AbZDHOlF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 8 Apr 2009 10:40:23 -0400
-Received: from smtprelay05.ispgateway.de ([80.67.18.43]:58595 "EHLO
-	smtprelay05.ispgateway.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752790AbZDHOkW (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 8 Apr 2009 10:40:22 -0400
-Message-ID: <49DCB75A.1010005@ladisch.de>
-Date: Wed, 08 Apr 2009 16:40:26 +0200
-From: Clemens Ladisch <clemens@ladisch.de>
-User-Agent: Thunderbird 2.0.0.21 (Windows/20090302)
+	Wed, 8 Apr 2009 10:41:05 -0400
+Received: from mx3.mail.elte.hu ([157.181.1.138]:57561 "EHLO mx3.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1755044AbZDHOlC (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 8 Apr 2009 10:41:02 -0400
+Date: Wed, 8 Apr 2009 16:40:55 +0200
+From: Ingo Molnar <mingo@elte.hu>
+To: Jack Stone <jwjstone@fastmail.fm>
+Cc: Bert Wesarg <bert.wesarg@googlemail.com>, linux-kernel@vger.kernel.org,
+       jeff@garzik.org, kernel-janitors@vger.kernel.org
+Subject: Re: [PATCH 54/56] x86: Remove void casts
+Message-ID: <20090408144055.GH12931@elte.hu>
+References: <1239189748-11703-50-git-send-email-jwjstone@fastmail.fm> <1239189748-11703-51-git-send-email-jwjstone@fastmail.fm> <1239189748-11703-52-git-send-email-jwjstone@fastmail.fm> <1239189748-11703-53-git-send-email-jwjstone@fastmail.fm> <1239189748-11703-54-git-send-email-jwjstone@fastmail.fm> <1239189748-11703-55-git-send-email-jwjstone@fastmail.fm> <36ca99e90904080518qf81b483h6ed2bc9752ee0d1e@mail.gmail.com> <49DCAE97.8040602@fastmail.fm> <20090408140637.GC12931@elte.hu> <49DCB140.7000603@fastmail.fm>
 MIME-Version: 1.0
-To: Justin Mattock <justinmattock@gmail.com>
-CC: "Rafael J. Wysocki" <rjw@sisk.pl>, Takashi Iwai <tiwai@suse.de>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       alsa-devel@alsa-project.org
-Subject: Re: no sound with the new imac
-References: <dd18b0c30904080023r5e915af1rdbb5333d57e49188@mail.gmail.com> <200904081016.32752.rjw@sisk.pl>
-In-Reply-To: <200904081016.32752.rjw@sisk.pl>
 Content-Type: text/plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
-X-Df-Sender: linux-kernel@cl.domainfactory-kunde.de
+Content-Disposition: inline
+In-Reply-To: <49DCB140.7000603@fastmail.fm>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.5
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Rafael J. Wysocki wrote:
-> Takashi, what's the appropriate list for ALSA-related things?
 
-alsa-devel (Takashi is on vacation until after the Easter weekend).
+* Jack Stone <jwjstone@fastmail.fm> wrote:
 
-> On Wednesday 08 April 2009, Justin Mattock wrote:
-> > Can somebody point me in the right direction
-> > to creating the correct pin numbers etc...
-> > for the new imac so I can have sound.
+> Ingo Molnar wrote:
+> > * Jack Stone <jwjstone@fastmail.fm> wrote:
+> >
+> >   
+> >> Fixed patch
+> >>
+> >> Thanks,
+> >>     
+> >
+> > Hm, what was fixed?
+> >   
+> I removed casts on pointer arithmetic which probably still needed to be
+> there to do the arithmetic properly.
 
-What kernel version are you using?  Are there any messages in the
-system log when you load the snd-hda-intel driver?  What model do you
-mean with "the new imac"?  What are the contents of
-/proc/asound/card0/codec#0?
+... which pretty much proves the point that these patches should not 
+go via any "trivial" tree.
 
+Those additions of mmu pointers you did were outright lethal, i 
+doubt this stuff could have booted on both 32-bit and 64-bit x86.
 
-Best regards,
-Clemens
+Please dont do this. Or if you do, please double check your change 
+and double check that the relevant vmlinux disassembly is still bit 
+for bit the same.
+
+	Ingo
