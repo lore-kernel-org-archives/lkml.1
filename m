@@ -1,97 +1,95 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1765935AbZDHOGE@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933103AbZDHOGb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1765935AbZDHOGE (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 8 Apr 2009 10:06:04 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1764133AbZDHOFr
+	id S933103AbZDHOGb (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 8 Apr 2009 10:06:31 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1765887AbZDHOFs
 	(ORCPT <rfc822;linux-kernel-outgoing>);
+	Wed, 8 Apr 2009 10:05:48 -0400
+Received: from mx2.mail.elte.hu ([157.181.151.9]:51581 "EHLO mx2.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1760072AbZDHOFr (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
 	Wed, 8 Apr 2009 10:05:47 -0400
-Received: from fk-out-0910.google.com ([209.85.128.187]:51681 "EHLO
-	fk-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1759371AbZDHOFq convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 8 Apr 2009 10:05:46 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
-         :cc:content-type:content-transfer-encoding;
-        b=QFGDgsMf8FxwnqDy74NXaBpYSK7t06dWUxcwoxE7oAW0owzR6MAn38VPtiI79lDTJG
-         bl1qlNeXqhoZx2Ny2xmYRch8auUENGnCE/1eOFlSzIONgyCJLVAng8qfO7IUD57KA3Xe
-         6Xym7kitcKtF6IqcQuprvJS78j8fXz+7jVFG8=
+Date: Wed, 8 Apr 2009 16:05:21 +0200
+From: Ingo Molnar <mingo@elte.hu>
+To: Kumar Gala <galak@kernel.crashing.org>
+Cc: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>,
+       beckyb@kernel.crashing.org, linux-kernel@vger.kernel.org,
+       jeremy@goop.org, ian.campbell@citrix.com
+Subject: Re: [PATCH 5/7] swiotlb: (re)Create swiotlb_unmap_single
+Message-ID: <20090408140521.GB12931@elte.hu>
+References: <77EA4458-602F-4DA9-B7E7-E48B5B0DCF91@kernel.crashing.org> <20090408022241U.fujita.tomonori@lab.ntt.co.jp> <726BF449-4F7A-472D-AC5A-D8218B61210B@kernel.crashing.org> <20090408031541G.fujita.tomonori@lab.ntt.co.jp> <20090408124322.GG18581@elte.hu> <C650C751-B5D8-4FA5-87E1-CF20D596F3B7@kernel.crashing.org>
 MIME-Version: 1.0
-In-Reply-To: <49DCAC88.7010500@fastmail.fm>
-References: <1239189748-11703-1-git-send-email-jwjstone@fastmail.fm>
-	 <1239189748-11703-15-git-send-email-jwjstone@fastmail.fm>
-	 <1239189748-11703-16-git-send-email-jwjstone@fastmail.fm>
-	 <1239189748-11703-17-git-send-email-jwjstone@fastmail.fm>
-	 <1239189748-11703-18-git-send-email-jwjstone@fastmail.fm>
-	 <1239189748-11703-19-git-send-email-jwjstone@fastmail.fm>
-	 <1239189748-11703-20-git-send-email-jwjstone@fastmail.fm>
-	 <1239189748-11703-21-git-send-email-jwjstone@fastmail.fm>
-	 <36ca99e90904080439u7098d2feka5dd39f8ab6a470c@mail.gmail.com>
-	 <49DCAC88.7010500@fastmail.fm>
-Date: Wed, 8 Apr 2009 15:05:43 +0100
-Message-ID: <87a5b0800904080705n74829b75l8becfd6e7d1a321f@mail.gmail.com>
-Subject: Re: [PATCH 20/56] inflate: Remove void casts
-From: Will Newton <will.newton@gmail.com>
-To: Jack Stone <jwjstone@fastmail.fm>
-Cc: Bert Wesarg <bert.wesarg@googlemail.com>, linux-kernel@vger.kernel.org,
-       jeff@garzik.org, kernel-janitors@vger.kernel.org
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 8BIT
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <C650C751-B5D8-4FA5-87E1-CF20D596F3B7@kernel.crashing.org>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Apr 8, 2009 at 2:54 PM, Jack Stone <jwjstone@fastmail.fm> wrote:
-> Heres the fixed patch
->
-> Thanks,
->
-> Jack
->
-> --
->
-> inflate: Remove void casts
->
-> From: Jack Stone <jwjstone@fastmail.fm>
->
-> Remove uneeded void casts
->
-> Signed-Off-By: Jack Stone <jwjstone@fastmail.fm>
-> ---
->
->  lib/inflate.c |    5 ++---
->  1 files changed, 2 insertions(+), 3 deletions(-)
->
-> diff --git a/lib/inflate.c b/lib/inflate.c
-> index 1a8e8a9..1eb0cd8 100644
-> --- a/lib/inflate.c
-> +++ b/lib/inflate.c
-> @@ -249,7 +249,7 @@ static void *malloc(int size)
->
->        malloc_ptr = (malloc_ptr + 3) & ~3;     /* Align */
->
-> -       p = (void *)malloc_ptr;
-> +       p = malloc_ptr;
->        malloc_ptr += size;
 
-Won't this cause a "assignment makes pointer from integer without a
-cast" warning?
+* Kumar Gala <galak@kernel.crashing.org> wrote:
 
->        if (free_mem_end_ptr && malloc_ptr >= free_mem_end_ptr)
-> @@ -481,8 +481,7 @@ DEBG1("3 ");
->         z = 1 << j;             /* table entries for j-bit table */
 >
->         /* allocate and link in new table */
-> -        if ((q = (struct huft *)malloc((z + 1)*sizeof(struct huft))) ==
-> -            (struct huft *)NULL)
-> +        if ((q = malloc((z + 1)*sizeof(struct huft))) == NULL)
->         {
->           if (h)
->             huft_free(u[0]);
-> --
-> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
-> Please read the FAQ at  http://www.tux.org/lkml/
+> On Apr 8, 2009, at 7:43 AM, Ingo Molnar wrote:
 >
+>>
+>> * FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp> wrote:
+>>
+>>>> Same here.  It makes it easier for us to work on the powerpc arch
+>>>> specific changes for .31 if we can get these into .30.  What are you
+>>>> looking at for .31?
+>>>
+>>> I need to finish the dma_mapping_ops cleanups and cross-arch
+>>> unification stuff:
+>>>
+>>> http://marc.info/?l=linux-kernel&m=123827903216314&w=2
+>>>
+>>> But the changes to swiotlb is minor. BTW, I have the patches for
+>>> powerpc too.
+>>>
+>>>> Ingo, any comments on that?
+>>
+>> if it's genuine fixes we can do it post-rc1, but it looks a tad wide
+>> for that:
+>>
+>> arch/x86/kernel/pci-swiotlb.c |    2 +-
+>> include/linux/swiotlb.h       |    3 +-
+>> lib/swiotlb.c                 |  115 +++++++++++++++++++++ 
+>> +-------------------
+>>
+>> the patches came right in the merge window - that's too late for
+>> IOMMU bits, the patch cutoff is generally the beginning of the merge
+>> window. (Which was on March 23 in this window)
+>
+> Fair.
+>
+>> But i can queue them up in the .31 queue if it has all the Acks from
+>> you folks. Becky, mind resending the latest version, with all the
+>> acks in place?
+>
+> I can do this in Becky's abscense this week.  The only "acks" I've 
+> seen are from FUJITA Tomonori.
+
+_your_ ack (or signoff) counts too - so to me it's plural :-)
+
+> Can we ask there be a unique swiotlb branch in your tree to make 
+> it easier for us to continue additional swiotlb work as well as 
+> arch specific work.
+
+yes - tip:core/iommu is already distinct from tip:x86/iommu and is 
+intended for such more generic patches. It has no patches pending 
+right now (it just got all merged upstream) - so please use an 
+upstream base - 2.6.30-rc1 would be a good starting point.
+
+Thanks,
+
+	Ingo
