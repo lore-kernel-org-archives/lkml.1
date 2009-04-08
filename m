@@ -1,76 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761370AbZDHHUL@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762715AbZDHHUx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761370AbZDHHUL (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 8 Apr 2009 03:20:11 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753634AbZDHHT4
+	id S1762715AbZDHHUx (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 8 Apr 2009 03:20:53 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754049AbZDHHUk
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 8 Apr 2009 03:19:56 -0400
-Received: from fgwmail5.fujitsu.co.jp ([192.51.44.35]:34580 "EHLO
-	fgwmail5.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753395AbZDHHTz (ORCPT
+	Wed, 8 Apr 2009 03:20:40 -0400
+Received: from mail-bw0-f169.google.com ([209.85.218.169]:56506 "EHLO
+	mail-bw0-f169.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752805AbZDHHUj (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 8 Apr 2009 03:19:55 -0400
-Date: Wed, 8 Apr 2009 16:18:24 +0900
-From: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-To: balbir@linux.vnet.ibm.com
-Cc: "linux-mm@kvack.org" <linux-mm@kvack.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       "lizf@cn.fujitsu.com" <lizf@cn.fujitsu.com>,
-       Rik van Riel <riel@surriel.com>, Bharata B Rao <bharata.rao@in.ibm.com>,
-       Dhaval Giani <dhaval@linux.vnet.ibm.com>,
-       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
-Subject: Re: [RFI] Shared accounting for memory resource controller
-Message-Id: <20090408161824.26f47077.kamezawa.hiroyu@jp.fujitsu.com>
-In-Reply-To: <20090408071115.GD7082@balbir.in.ibm.com>
-References: <20090407063722.GQ7082@balbir.in.ibm.com>
-	<20090407160014.8c545c3c.kamezawa.hiroyu@jp.fujitsu.com>
-	<20090407071825.GR7082@balbir.in.ibm.com>
-	<20090407163331.8e577170.kamezawa.hiroyu@jp.fujitsu.com>
-	<20090407080355.GS7082@balbir.in.ibm.com>
-	<20090407172419.a5f318b9.kamezawa.hiroyu@jp.fujitsu.com>
-	<20090408052904.GY7082@balbir.in.ibm.com>
-	<20090408151529.fd6626c2.kamezawa.hiroyu@jp.fujitsu.com>
-	<20090408070401.GC7082@balbir.in.ibm.com>
-	<20090408160733.4813cb8d.kamezawa.hiroyu@jp.fujitsu.com>
-	<20090408071115.GD7082@balbir.in.ibm.com>
-Organization: FUJITSU Co. LTD.
-X-Mailer: Sylpheed 2.5.0 (GTK+ 2.10.14; i686-pc-mingw32)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Wed, 8 Apr 2009 03:20:39 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
+         :cc:content-type:content-transfer-encoding;
+        b=UYmIuaa18/iV/9F3OPu3+5YxvuSNZRoTgU/7GepvSXo1fby+lwi54tcuUUmXQNA1+4
+         UMUltdKyMnojZKb2KZuT4Wr/+3Vf+QL8DPtl4zB0VOaeWuyW69qRgKSnXrh0y1urpKbd
+         ut1kvuTzx02swO4vLIfIg2jwfxcpmBDCnjgNk=
+MIME-Version: 1.0
+In-Reply-To: <b7997bdf0904071248t48fed168r7fa21b421c74358a@mail.gmail.com>
+References: <b7997bdf0904071248t48fed168r7fa21b421c74358a@mail.gmail.com>
+Date: Wed, 8 Apr 2009 09:20:37 +0200
+Message-ID: <19f34abd0904080020l4f013b58va37c452b91831f85@mail.gmail.com>
+Subject: Re: splice lost data
+From: Vegard Nossum <vegard.nossum@gmail.com>
+To: xinglp <xinglp@gmail.com>
+Cc: linux-kernel@vger.kernel.org
+Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 8 Apr 2009 12:41:15 +0530
-Balbir Singh <balbir@linux.vnet.ibm.com> wrote:
+2009/4/7 xinglp <xinglp@gmail.com>:
+> 2.6.29.1 in VM
+>
+> When recv data more than 8K (1024*8) bytes at once, data lost happen.
+>
 
-> * KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com> [2009-04-08 16:07:33]:
-> 1. First our rss in memory.stat is confusing, we should call it anon
-> RSS
-ok. but ....changing current interface ?
+Don't know if this is related to the problem you report, but your code is buggy.
 
-> 2. We need to add file rss, this is sort of inline with the
-> information we export per process file_rss and anon_rss
+You're checking errno before you know that splice() returned -1. Now,
+I don't know the actual implementation, but as with most system calls,
+the interface specifies only that errno is updated when the function
+returns -1:
 
-maybe good. *but* active/incative ratio in lru file cache is good estimation for this.
+       "On error, splice() returns -1 and errno is set to indicate the
+error." (man 2 splice)
 
-> 3. Using the above, we can then try to (using an algorithm you
-> proposed), try to do some work for figuring out the shared percentage.
-> 
-This is the point. At last. Why "# of shared pages" is important ?
+You're also not checking explicitly for the return value 0, which
+would possibly also not set errno (i.e. you're using perror() in the
+case where splice() returned 0).
 
-I wonder it's better to add new stat file as memory.cacheinfo which helps
-following kind of commands.
+Please let me know if this fixes your problem!
 
-  #cacheinfo /cgroups/memory/group01/
-       /usr/lib/libc.so.1     30pages
-       /var/log/messages      1 pages
-       /tmp/xxxxxx            20 pages
-       .....
-       .....
 
-Thanks,
--Kame
+Vegard
 
+-- 
+"The animistic metaphor of the bug that maliciously sneaked in while
+the programmer was not looking is intellectually dishonest as it
+disguises that the error is the programmer's own creation."
+	-- E. W. Dijkstra, EWD1036
