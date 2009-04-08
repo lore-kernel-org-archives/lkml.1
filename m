@@ -1,72 +1,71 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762370AbZDHGIU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762477AbZDHGIv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762370AbZDHGIU (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 8 Apr 2009 02:08:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760786AbZDHGIE
+	id S1762477AbZDHGIv (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 8 Apr 2009 02:08:51 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760786AbZDHGIj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 8 Apr 2009 02:08:04 -0400
-Received: from fg-out-1718.google.com ([72.14.220.158]:30472 "EHLO
-	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1760323AbZDHGIC (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 8 Apr 2009 02:08:02 -0400
-Message-ID: <49DC3F3F.4000009@petalogix.com>
-Date: Wed, 08 Apr 2009 08:07:59 +0200
-From: Michal Simek <michal.simek@petalogix.com>
-Reply-To: michal.simek@petalogix.com
-User-Agent: Thunderbird 2.0.0.18 (X11/20081120)
+	Wed, 8 Apr 2009 02:08:39 -0400
+Received: from brick.kernel.dk ([93.163.65.50]:38800 "EHLO kernel.dk"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1760732AbZDHGIh (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 8 Apr 2009 02:08:37 -0400
+Date: Wed, 8 Apr 2009 08:08:35 +0200
+From: Jens Axboe <jens.axboe@oracle.com>
+To: Jeff Garzik <jeff@garzik.org>
+Cc: Boaz Harrosh <bharrosh@panasas.com>, LKML <linux-kernel@vger.kernel.org>,
+       linux-scsi@vger.kernel.org, linux-fsdevel@vger.kernel.org,
+       Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: [PATCH] osdblk: a Linux block device for OSD objects
+Message-ID: <20090408060835.GL5178@kernel.dk>
+References: <20090402015455.GA14087@havoc.gtf.org> <20090403094909.GQ5178@kernel.dk> <49D5DDDE.9090407@garzik.org> <49D8856E.3090903@panasas.com> <49DBFDE1.9010303@garzik.org> <20090408054537.GI5178@kernel.dk> <49DC3DF6.6090903@garzik.org>
 MIME-Version: 1.0
-To: Linus Torvalds <torvalds@linux-foundation.org>
-CC: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
-       John Williams <john.williams@petalogix.com>,
-       John Linn <John.Linn@xilinx.com>
-Subject: Re: Linux 2.6.30-rc1
-References: <alpine.LFD.2.00.0904071700170.4583@localhost.localdomain>
-In-Reply-To: <alpine.LFD.2.00.0904071700170.4583@localhost.localdomain>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <49DC3DF6.6090903@garzik.org>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Linus,
-> Other? Arch updates - amainly rm, powerpc, sh and x86. Firmware updates. 
-> And lots and lots of driver updates, including some more core 
-> suspend/resume changes (hopefully the last really fundamental ones). 
+On Wed, Apr 08 2009, Jeff Garzik wrote:
+> Jens Axboe wrote:
+>> On Tue, Apr 07 2009, Jeff Garzik wrote:
+>>> Boaz Harrosh wrote:
+>>>> On 04/03/2009 12:58 PM, Jeff Garzik wrote:
+>>>>> Jens Axboe wrote:
+>>>>>> This wont work, GFP_NOIO inside the queue lock. You are also only
+>>>>>> cloning the front bio, what happens if you have > 1 bio on the request?
+>>>>>> You seem to dequeue the request and complete all of it, regardless of
+>>>>>> whether bio->bi_size == blk_rq_bytes(rq). I'm assuming you have to clone
+>>>>>> because of how the osd_req_{read,write} works, so I'd suggest storing
+>>>>>> the byte size in your osdblk_request and only completing that in
+>>>>>> osdblk_end_request(). Then do a rq_for_each_bio() look in there, and
+>>>>>> only dequeue if you manage to start an osd request for each of them,
+>>>>>> THEN moving on to the next request.
+>>>> There is nothing preventing from issuing a linked bio list. The only thing
+>>>> is that osd_read/write looks at the first bio for total size.
+>>>> If the first bio->bi_size does not specify the full length of the chain
+>>>> then we should add another parameter to osd_read/write for that.
+>>>>
+>>>> The original idea was to specifically allow chained bios.
+>>>>
+>>>> Please advise?
+>>> As passed to us from the block layer, there is nothing special about 
+>>> the  size of the first bio, AFAIK.
+>>>
+>>> This seems like a libosd bug?  If you want to support chained bio's, 
+>>> I  would presume you would either walk the list and sum all sizes, or 
+>>> in  some other way input the total request size?
+>>
+>> Completely agree, if you want to support passing in a chain, you better
+>> make the first bio just part of the chain (not some header bio).
+>>
+>> And Jeff, you still have that bio_clone() bug in your v2 posting.
 >
->   
-I would like to ask again if you can pull new Microblaze arch to your
-tree. All patches go
-to arch/microblaze folder (+ one change in serial Kconfig). Ingo
-reviewed all patches.
-Ingo told me that you are just busy and you added Microblaze at the end
-you huge merge list. I was OK with it
-and wait and I see that Microblaze wasn't there.
-My request is in LKML from 28.3.2008. We sent you some private email but
-we don't have any your response.
-Thomas Gleixner wrote you private email too. Do you have any response?
-I am going to send you my request in special email again.
+> Yep, that was noted in the patch description as "The major remaining  
+> pre-merge FIXME" :)
 
-Is that anything wrong with Microblaze or don't you want to add new arch?
-
-Thanks,
-Michal
-
-
-> Go out and try it,
->
-> 		Linus
-> --
-> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
-> Please read the FAQ at  http://www.tux.org/lkml/
->   
-
+Indeed it is, sorry for missing that :-)
 
 -- 
-Michal Simek, Ing. (M.Eng)
-PetaLogix - Linux Solutions for a Reconfigurable World
-w: www.petalogix.com p: +61-7-30090663,+42-0-721842854 f: +61-7-30090663
+Jens Axboe
 
