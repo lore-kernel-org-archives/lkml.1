@@ -1,102 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757627AbZDHK6T@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759519AbZDHLBT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757627AbZDHK6T (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 8 Apr 2009 06:58:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752785AbZDHK6E
+	id S1759519AbZDHLBT (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 8 Apr 2009 07:01:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752298AbZDHLBD
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 8 Apr 2009 06:58:04 -0400
-Received: from miranda.se.axis.com ([193.13.178.8]:49148 "EHLO
-	miranda.se.axis.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751435AbZDHK6C (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 8 Apr 2009 06:58:02 -0400
-Date: Wed, 8 Apr 2009 12:57:01 +0200
-From: Jesper Nilsson <Jesper.Nilsson@axis.com>
-To: Claudio Scordino <claudio@evidence.eu.com>
-Cc: Mikael Starvik <mikael.starvik@axis.com>,
-       Alan Cox <alan@lxorguk.ukuu.org.uk>,
-       Hinko Kocevar <hinko.kocevar@cetrtapot.si>,
-       Janez Cufer <janez.cufer@cetrtapot.si>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Linux Kernel <linux-kernel@vger.kernel.org>,
-       dev-etrax <dev-etrax@axis.com>,
-       "adobriyan@gmail.com" <adobriyan@gmail.com>
-Subject: Re: [PATCH] Fix broken compilation of Cris serial driver
-Message-ID: <20090408105701.GH8115@axis.com>
-References: <49DC7754.4030404@evidence.eu.com>
+	Wed, 8 Apr 2009 07:01:03 -0400
+Received: from mx2.mail.elte.hu ([157.181.151.9]:49353 "EHLO mx2.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751116AbZDHLBC (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 8 Apr 2009 07:01:02 -0400
+Date: Wed, 8 Apr 2009 13:00:37 +0200
+From: Ingo Molnar <mingo@elte.hu>
+To: David Woodhouse <dwmw2@infradead.org>
+Cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
+       Steven Rostedt <rostedt@goodmis.org>
+Subject: Re: intel-iommu: Add for_each_iommu() and for_each_active_iommu()
+	macros
+Message-ID: <20090408110037.GD17321@elte.hu>
+References: <200904062159.n36Lx1OJ001967@hera.kernel.org> <20090406175918.c38654b2.akpm@linux-foundation.org> <1239066583.22733.258.camel@macbook.infradead.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <49DC7754.4030404@evidence.eu.com>
+In-Reply-To: <1239066583.22733.258.camel@macbook.infradead.org>
 User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Apr 08, 2009 at 12:07:16PM +0200, Claudio Scordino wrote:
-> Hi,
-> 
->     compilation of cris serial driver on 2.6.30-rc1 is broken since 
-> commit number 0f043a81ebe84be3576667f04fdda481609e3816 removed the 
-> read_proc field from the tty_driver structure.
-> 
-> The patch in attachment may fix the problem. Please check it very 
-> carefully: I don't have hardware to make any test.
-> 
-> Regards,
-> 
->            Claudio
 
-Content-Description: 0001-Fix-remove-read_proc-field-from-cris-serial-driver.patch
-> From: Claudio Scordino <claudio@evidence.eu.com>
+* David Woodhouse <dwmw2@infradead.org> wrote:
+
+> On Mon, 2009-04-06 at 17:59 -0700, Andrew Morton wrote:
+> > 
+> > Three days old?  Never been in linux-next afaict.
+> > 
+> > Please don't do that.
 > 
-> Commit number 0f043a81ebe84be3576667f04fdda481609e3816 removed the read_proc
-> field from the tty_driver structure.
-> 
-> This broke cris serial driver compilation.
-> 
-> Signed-off-by: Claudio Scordino <claudio@evidence.eu.com>
-> ---
->  drivers/serial/crisv10.c |    3 ++-
->  1 files changed, 2 insertions(+), 1 deletions(-)
-> 
-> diff --git a/drivers/serial/crisv10.c b/drivers/serial/crisv10.c
-> index 7ba7d70..a331e40 100644
-> --- a/drivers/serial/crisv10.c
-> +++ b/drivers/serial/crisv10.c
-> @@ -27,6 +27,7 @@ static char *serial_version = "$Revision: 1.25 $";
->  #include <linux/kernel.h>
->  #include <linux/mutex.h>
->  #include <linux/bitops.h>
-> +#include <linux/proc_fs.h>
->  
->  #include <asm/io.h>
->  #include <asm/irq.h>
-> @@ -4425,7 +4426,6 @@ static const struct tty_operations rs_ops = {
->  	.break_ctl = rs_break,
->  	.send_xchar = rs_send_xchar,
->  	.wait_until_sent = rs_wait_until_sent,
-> -	.read_proc = rs_read_proc,
->  	.tiocmget = rs_tiocmget,
->  	.tiocmset = rs_tiocmset
->  };
-> @@ -4490,6 +4490,7 @@ rs_init(void)
->  	if (tty_register_driver(driver))
->  		panic("Couldn't register serial driver\n");
->  	/* do some initializing for the separate ports */
-> +	driver->proc_entry->read_proc = rs_read_proc;
+> Sorry about that. There was some confusion about whether it was 
+> going via Ingo's or my tree, and it ended up in neither. It 
+> depended on certain things in Ingo's tree, so I couldn't easily 
+> add it to my tree any earlier.
 
-Is this the recommended way to convert proc handling?
-I find no other serial driver that does it this way...
+Well, they could have ended up in the x86 tree or in the IOMMU tree, 
+but the patches were all very late and went through various review 
+rounds with me so they had no chance to end up there in a finished 
+state before the merge window.
 
-I was looking at using the proc_fops instead, but that is a
-much larger change.
+I didnt mind you pushing them to Linus separately and gave an 
+Acked-by for the bits and for that merge route, but all the usual 
+protocols still have to be followed if you do that: review, testing, 
+proper exposure.
 
-I will try to test your patch and if it works I'll push it
-through the CRIS tree.
-
-Thanks,
-
-/^JN - Jesper Nilsson
--- 
-               Jesper Nilsson -- jesper.nilsson@axis.com
+	Ingo
