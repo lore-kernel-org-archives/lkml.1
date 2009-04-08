@@ -1,93 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932320AbZDHGcx@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932071AbZDHGdf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932320AbZDHGcx (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 8 Apr 2009 02:32:53 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760147AbZDHGcn
+	id S932071AbZDHGdf (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 8 Apr 2009 02:33:35 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757346AbZDHGdZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 8 Apr 2009 02:32:43 -0400
-Received: from brick.kernel.dk ([93.163.65.50]:45651 "EHLO kernel.dk"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1758164AbZDHGcm (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 8 Apr 2009 02:32:42 -0400
-Date: Wed, 8 Apr 2009 08:32:40 +0200
-From: Jens Axboe <jens.axboe@oracle.com>
-To: Justin Madru <jdm64@gawab.com>
-Cc: lkml <linux-kernel@vger.kernel.org>, arjan@linux.intel.com
-Subject: Re: 2.6.30-rc1: invalid opcode with call trace
-Message-ID: <20090408063240.GQ5178@kernel.dk>
-References: <49DC367A.90603@gawab.com>
+	Wed, 8 Apr 2009 02:33:25 -0400
+Received: from kroah.org ([198.145.64.141]:41140 "EHLO coco.kroah.org"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1760147AbZDHGdY (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 8 Apr 2009 02:33:24 -0400
+Date: Tue, 7 Apr 2009 23:31:03 -0700
+From: Greg KH <greg@kroah.com>
+To: Adrian Bunk <bunk@kernel.org>
+Cc: Lasse Kliemann 
+	<lasse-gmane-linux-kernel-2009@mail.plastictree.net>,
+       linux-kernel@vger.kernel.org, Thomas Meyer <thomas@m3y3r.de>,
+       stable@kernel.org
+Subject: Re: [stable] Where to find news on 2.6.27.x?
+Message-ID: <20090408063103.GB20675@kroah.com>
+References: <loom.20090405T124156-250@post.gmane.org> <20090408050309.GA5384@localhost.pp.htv.fi>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <49DC367A.90603@gawab.com>
+In-Reply-To: <20090408050309.GA5384@localhost.pp.htv.fi>
+User-Agent: Mutt/1.5.19 (2009-01-05)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Apr 07 2009, Justin Madru wrote:
-> Hello,
->
-> Testing 2.6.30-rc1,
-> While booting I get the following call trace about an invalid opcode.
->
-> ACPI: SSDT 3f6d4134 00244 (v01  PmRef  Cpu0Ist 00003000 INTL 20050624)
-> ACPI: SSDT 3f6d3ee9 001C6 (v01  PmRef  Cpu0Cst 00003001 INTL 20050624)
-> ACPI: CPU0 (power states: C1[C1] C2[C2] C3[C3])
-> processor ACPI_CPU:00: registered as cooling_device0
-> ACPI: Processor [CPU0] (supports 8 throttling states)
-> ACPI: SSDT 3f6d4378 000C4 (v01  PmRef  Cpu1Ist 00003000 INTL 20050624)
-> ACPI: SSDT 3f6d40af 00085 (v01  PmRef  Cpu1Cst 00003000 INTL 20050624)
-> ACPI: CPU1 (power states: C1[C1] C2[C2] C3[C3])
-> processor ACPI_CPU:01: registered as cooling_device1
-> ACPI: Processor [CPU1] (supports 8 throttling states)
-> input: Lid Switch as /devices/LNXSYSTM:00/device:00/PNP0C0D:00/input/input1
-> ACPI: Lid Switch [LID]
-> input: Power Button (CM) as  
-> /devices/LNXSYSTM:00/device:00/PNP0C0C:00/input/input2
-> ACPI: Power Button (CM) [PBTN]
-> ACPI: AC Adapter [AC] (on-line)
-> input: Sleep Button (CM) as  
-> /devices/LNXSYSTM:00/device:00/PNP0C0E:00/input/input3
-> ACPI: Sleep Button (CM) [SBTN]
-> ACPI: Battery Slot [BAT0] (battery present)
-> invalid opcode: 0000 [#1] PREEMPT SMP
-> last sysfs file: /sys/devices/virtual/vtconsole/vtcon0/uevent
-> Modules linked in: snd_pcm battery ac button processor intel_agp  
-> snd_page_alloc reiserfs crc32 sr_mod cdrom sg firewire_ohci  
-> firewire_core crc_itu_t ata_piix ehci_hcd uhci_hcd usbcore thermal fan
->
-> Pid: 1760, comm: async/0 Not tainted (2.6.30-rc1-git #1) MM061            
->                EIP: 0060:[<f80fb02c>] EFLAGS: 00010286 CPU: 1
-> EIP is at 0xf80fb02c
-> EAX: 00000000 EBX: 00000216 ECX: 00000000 EDX: 00000000
-> ESI: f68fb320 EDI: 00000001 EBP: f7117f88 ESP: f7117f88
-> DS: 007b ES: 007b FS: 00d8 GS: 0000 SS: 0068
-> Process async/0 (pid: 1760, ti=f7117000 task=f6935390 task.ti=f7117000)
-> Stack:
-> f7117fd0 c015e612 f7117fa8 c0129cf9 f7073bb0 00000000 f693560c f6935390
-> 00000286 f7117fd0 00000000 f6935390 c012fb20 f704efbc c04f22dc 00000000
-> c015e540 00000000 f7117fe0 c015558c c0155550 00000000 00000000 c0103f5f
-> Call Trace:
-> [<c015e612>] ? async_thread+0xd2/0x240
-> [<c0129cf9>] ? schedule_tail+0xd9/0x110
-> [<c012fb20>] ? default_wake_function+0x0/0x10
-> [<c015e540>] ? async_thread+0x0/0x240
-> [<c015558c>] ? kthread+0x3c/0x70
-> [<c0155550>] ? kthread+0x0/0x70
-> [<c0103f5f>] ? kernel_thread_helper+0x7/0x18
-> Code: 00 00 89 5d f4 8d 9e 88 00 00 00 89 7d fc 89 4d e8 e8 fc ff ff ff  
-> 8b be 98 00 00 00 39 df 74 57 89 f8 e8 fc ff ff ff 89 d8 e8 fc <ff> ff  
-> ff 8b 4d e8 89 f2 8b 45 ec c7 04 24 01 00 00 00 e8 3d c9
-> EIP: [<f80fb02c>] 0xf80fb02c SS:ESP 0068:f7117f88
-> ---[ end trace fefef3dd1f6b4bcf ]---
-> sdhci: Secure Digital Host Controller Interface driver
-> sdhci: Copyright(c) Pierre Ossman
+On Wed, Apr 08, 2009 at 08:03:09AM +0300, Adrian Bunk wrote:
+> On Sun, Apr 05, 2009 at 12:49:58PM +0000, Lasse Kliemann wrote:
+> 
+> > Where can I find news on the 2.6.27.x series?
+> > 
+> > Is it still maintained, and if so, how would I notice when it is over?
+> >...
+> 
+> First of all sorry that I was silent recently, I had to take a timeou 
+> from kernel development.
+> 
+> It will still be maintained for years.
+> 
+> Whenever Greg will say he'll stop maintaining it, I'll take over 
+> maintainership.
 
-My x60 gets the exact same oops, 100% repeatable. I then added the
-initcall_debug boot option to get a closer look at what was crapping
-out, but then it works fine. So it smells like a race somewhere. Didn't
-look further.
-
--- 
-Jens Axboe
+I'm still maintaining it :)
 
