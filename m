@@ -1,91 +1,117 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S936414AbZDJLwC@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S936785AbZDJLwg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S936414AbZDJLwC (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 10 Apr 2009 07:52:02 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S935264AbZDJLvl
+	id S936785AbZDJLwg (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 10 Apr 2009 07:52:36 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S936048AbZDJLvm
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 10 Apr 2009 07:51:41 -0400
-Received: from wine.ocn.ne.jp ([122.1.235.145]:59025 "EHLO smtp.wine.ocn.ne.jp"
+	Fri, 10 Apr 2009 07:51:42 -0400
+Received: from wine.ocn.ne.jp ([122.1.235.145]:58901 "EHLO smtp.wine.ocn.ne.jp"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S935892AbZDJLvi (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 10 Apr 2009 07:51:38 -0400
-Message-Id: <20090408133524.395437925@I-love.SAKURA.ne.jp>
-References: <20090408133126.180521064@I-love.SAKURA.ne.jp>
+	id S936062AbZDJLvj (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 10 Apr 2009 07:51:39 -0400
+Message-Id: <20090408133126.180521064@I-love.SAKURA.ne.jp>
 User-Agent: quilt/0.46-1
-Date: Wed, 08 Apr 2009 22:31:27 +0900
+Date: Wed, 08 Apr 2009 22:31:26 +0900
 From: Tetsuo Handa <penguin-kernel@I-love.SAKURA.ne.jp>
 To: jmorris@namei.org
-Cc: linux-security-module@vger.kernel.org, linux-kernel@vger.kernel.org,
-       Kentaro Takeda <takedakn@nttdata.co.jp>,
-       Tetsuo Handa <penguin-kernel@I-love.SAKURA.ne.jp>,
-       Toshiharu Harada <haradats@nttdata.co.jp>
-Subject: [TOMOYO 1/2] tomoyo: add Documentation/tomoyo.txt
-Content-Disposition: inline; filename=tomoyo-documentation.patch
+Cc: linux-security-module@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: [TOMOYO 0/2] Final patches for kenrel 2.6.30.
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Signed-off-by: Kentaro Takeda <takedakn@nttdata.co.jp>
-Signed-off-by: Tetsuo Handa <penguin-kernel@I-love.SAKURA.ne.jp>
-Signed-off-by: Toshiharu Harada <haradats@nttdata.co.jp>
----
- Documentation/tomoyo.txt |   52 +++++++++++++++++++++++++++++++++++++++++++++++
- 1 file changed, 52 insertions(+)
+TOMOYO Linux was merged into the mainline in 2.6.29-git1.
 
---- /dev/null
-+++ linux-2.6.30-rc1/Documentation/tomoyo.txt
-@@ -0,0 +1,52 @@
-+--- What is TOMOYO? ---
-+
-+TOMOYO is a name-based MAC extension (LSM module) for the Linux kernel.
-+
-+LiveCD-based tutorials are available at
-+http://tomoyo.sourceforge.jp/en/1.6.x/1st-step/ubuntu8.04-live/
-+http://tomoyo.sourceforge.jp/en/1.6.x/1st-step/centos5-live/ .
-+Though these tutorials use non-LSM version of TOMOYO, they are useful for you
-+to know what TOMOYO is.
-+
-+--- How to enable TOMOYO? ---
-+
-+Build the kernel with CONFIG_SECURITY_TOMOYO=y and pass "security=tomoyo" to
-+kernel's command line.
-+
-+Please see http://tomoyo.sourceforge.jp/en/2.2.x/ for details.
-+
-+--- Where are documentations? ---
-+
-+Materials we prepared for seminars and symposiums are available at
-+http://sourceforge.jp/projects/tomoyo/docs/?category_id=532&language_id=1 .
-+Below lists are chosen from three aspects.
-+
-+What is TOMOYO?
-+  TOMOYO Linux Overview
-+    http://sourceforge.jp/projects/tomoyo/docs/lca2009-takeda.pdf
-+  TOMOYO Linux: pragmatic and manageable security for Linux
-+    http://sourceforge.jp/projects/tomoyo/docs/freedomhectaipei-tomoyo.pdf
-+  TOMOYO Linux: A Practical Method to Understand and Protect Your Own Linux Box
-+    http://sourceforge.jp/projects/tomoyo/docs/PacSec2007-en-no-demo.pdf
-+
-+What can TOMOYO do?
-+  Deep inside TOMOYO Linux
-+    http://sourceforge.jp/projects/tomoyo/docs/lca2009-kumaneko.pdf
-+  The role of "pathname based access control" in security.
-+    http://sourceforge.jp/projects/tomoyo/docs/lfj2008-bof.pdf
-+
-+History of TOMOYO?
-+  Realities of Mainlining
-+    http://sourceforge.jp/projects/tomoyo/docs/lfj2008.pdf
-+
-+--- What is future plan? ---
-+
-+We believe that inode based security and name based security are complementary
-+and both should be used together. But unfortunately, so far, we cannot enable
-+multiple LSM modules at the same time. We feel sorry that you have to give up
-+SELinux/SMACK/AppArmor etc. when you want to use TOMOYO.
-+
-+We hope that LSM becomes stackable in future. Meanwhile, you can use non-LSM
-+version of TOMOYO, available at http://tomoyo.sourceforge.jp/en/1.6.x/ .
-+LSM version of TOMOYO is a subset of non-LSM version of TOMOYO. We are planning
-+to port non-LSM version's functionalities to LSM versions.
+We thank Satoru Ueda for giving us opportunities to have presentations at CE
+Linux Forum's Japan Technical Jamboree. This was the first event that we were
+taught what the mainline is.
 
--- 
+We thank Hirotaka Yoshioka for giving us opportunities to have presentations at
+YLUG kernel code reading party. This was the very event that we were
+foreordained to challenge the mainline. Without this event, we would not have
+started the challenge for the mainline.
+
+We thank James Morris for coming to Linux Foundation Japan Symposium #8 and
+Linux Conf Au 2009 and understanding why name based security is needed.
+
+We thank Casey Schaufler for proving that new security modules can merge into
+the mainline.
+
+We thank Stephen Smalley for coming to Ottawa Linux Symposium 2007/2008 and
+giving us a critical comment that extricated ourselves from our stagnation.
+
+We thank Andrew Morton for listening to our problem when we were blocked by
+the lack of new LSM hooks.
+
+We thank Al Viro for accepting new LSM hooks which made TOMOYO possible to
+merge into the mainline.
+
+We thank Crispin Cowan for proposing AppArmor. We were able to have a chance to
+understand why name based security is regarded as an inferior solution.
+We continued the name based security, with our belief that inode based security
+and name based security are complementary and both should be used together.
+The gate for name based security opened. Go for it!
+
+We thank Turbolinux for adopting TOMOYO into Turbolinux's products.
+
+We thank Mandriva Linux for adopting TOMOYO into Mandriva Linux's products.
+
+We thank Hideaki Yoshifuji for giving us advices on how to negotiate.
+
+We thank Motohiro Kosaki for giving us advices on how to write patch comments.
+
+We thank Fumihito Yoshida for supporting TOMOYO in Ubuntu.
+
+We thank Hideki Yamane for supporting TOMOYO in Debian.
+
+We thank Naohiro Aota for supporting TOMOYO in Gentoo.
+
+We thank Ken-ichi Akimoto for supporting TOMOYO in Natures Linux.
+
+We thank Vadim Korschok for using TOMOYO on Hardened Gentoo.
+
+We thank Hiroshi Shinji for using TOMOYO on embedded systems and
+requesting new features and helping debugging.
+
+We thank Toru Hirasaka for developing TOMOYO's GUI policy editor.
+
+We thank Yoshihiro Kusuno for enhancing TOMOYO's CUI policy editor.
+
+We thank Masafumi Tanaka for drawing posters and developing demonstration
+movies.
+
+We thank Akira Igarashi for drawing TOMOYO's logo and drawing many
+illustrations for presentations.
+
+We thank Kohei Kaigai for coordinating various open source events.
+
+We thank Japan Secure Operating System Users Group for giving us opportunities
+to familiarize SELinux, TOMOYO, AppArmor, LIDS etc. in Japan.
+
+We thank anonymous users giving us suggestions and comments and feature
+requests on 2ch.net and sourceforge.jp and blogs. TOMOYO achieved 30,000
+downloads since the release of TOMOYO Linux version 1.0 on 2005/11/11.
+
+We thank Dragos Ruiu for giving us opportunities to have presentations at
+PacSec conference 2007/2008.
+
+We thank Jonathan Corbet for writing many articles on TOMOYO at LWN.net ever
+since Embedded Linux Conference 2007.
+
+We thank CLAMP for creating Card Captor Sakura. TOMOYO's idea was taken from
+the Sakura's happy world.
+
+We thank SourceForge.jp for providing us storages and services.
+
+We thank NTT DATA CORPORATION for supporting us in development of TOMOYO.
+
+We thank Linus Torvalds for allowing us to join the Linux community.
+
+With many more thanks, we would like to release this snapshot as TOMOYO Linux
+version 2.2.0. Thank you for waiting.
+
+--
+Kentaro Takeda
+Tetsuo Handa
+Toshiharu Harada
+
