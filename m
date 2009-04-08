@@ -1,53 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754265AbZDHDhl@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756252AbZDHDmi@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754265AbZDHDhl (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 7 Apr 2009 23:37:41 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753539AbZDHDh3
+	id S1756252AbZDHDmi (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 7 Apr 2009 23:42:38 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752412AbZDHDm3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 7 Apr 2009 23:37:29 -0400
-Received: from yw-out-2324.google.com ([74.125.46.31]:61829 "EHLO
-	yw-out-2324.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753321AbZDHDh2 (ORCPT
+	Tue, 7 Apr 2009 23:42:29 -0400
+Received: from smtprelay10.ispgateway.de ([80.67.29.24]:54248 "EHLO
+	smtprelay10.ispgateway.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752403AbZDHDm2 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 7 Apr 2009 23:37:28 -0400
-Message-Id: <6F1ECC5B-A247-4328-892E-1620FF5E2172@mirell.org>
-From: Mark Miller <mark@mirell.org>
-To: linux-kernel@vger.kernel.org
-Content-Type: text/plain; charset=US-ASCII; format=flowed; delsp=yes
+	Tue, 7 Apr 2009 23:42:28 -0400
+From: Ingo Oeser <ioe-lkml@rameria.de>
+To: Russ Anderson <rja@sgi.com>
+Subject: Re: [PATCH 1/2] Avoid putting a bad page back on the LRU
+Date: Wed, 8 Apr 2009 05:43:15 +0200
+User-Agent: KMail/1.11.0 (Linux/2.6.27-11-generic; KDE/4.2.0; x86_64; ; )
+Cc: linux-kernel@vger.kernel.org, linux-mm@kvack.org, x86@kernel.org,
+       Andi Kleen <andi@firstfloor.org>
+References: <20090408001133.GB27170@sgi.com>
+In-Reply-To: <20090408001133.GB27170@sgi.com>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
-Mime-Version: 1.0 (Apple Message framework v930.3)
-Subject: Versatile PB Board Support for ARMv6 and ARMv7
-Date: Tue, 7 Apr 2009 22:37:25 -0500
-Cc: Embedded Linux mailing list <linux-embedded@vger.kernel.org>,
-       qemu-devel@nongnu.org
-X-Mailer: Apple Mail (2.930.3)
+Content-Disposition: inline
+Message-Id: <200904080543.16454.ioe-lkml@rameria.de>
+X-Df-Sender: 849595
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-(Apologies if this appeared twice for some. My mail client was  
-misbehaving and sending HTML messages)
+Hi Russ,
 
-In late October 2008, according to the git logs, the methodology for  
-selecting a processor on several boards, at least the Versatile PB  
-board was changed so that it automatically selects CPU_ARM926T as a  
-hidden symbol.
+On Wednesday 08 April 2009, Russ Anderson wrote:
+> --- linux-next.orig/mm/migrate.c	2009-04-07 18:32:12.781949840 -0500
+> +++ linux-next/mm/migrate.c	2009-04-07 18:34:19.169736260 -0500
+> @@ -693,6 +696,26 @@ unlock:
+>   		 * restored.
+>   		 */
+>   		list_del(&page->lru);
+> +#ifdef CONFIG_MEMORY_FAILURE
+> +		if (PagePoison(page)) {
+> +			if (rc == 0)
+> +				/*
+> +				 * A page with a memory error that has
+> +				 * been migrated will not be moved to
+> +				 * the LRU.
+> +				 */
+> +				goto move_newpage;
+> +			else
+> +				/*
+> +				 * The page failed to migrate and will not
+> +				 * be added to the bad page list.  Clearing
+> +				 * the error bit will allow another attempt
+> +				 * to migrate if it gets another correctable
+> +				 * error.
+> +				 */
+> +				ClearPagePoison(page);
 
-The reason I have a question, is since QEMU currently can emulate a  
-Versatile PB board with other processors than just the ARM926T (Such  
-as the ARM1136 (ARMv6) and Cortex-A8 (ARMv7), is there a good way to  
-allow that in the mainstream kernel? Previously the patch was to just  
-add extra potential dependencies on CPU_V6 and CPU_V7, so that by  
-selecting MACH_VERSATILE_PB, you could select ARMv6/v7 support.
+Clearing the flag doesn't change the fact, that this page is representing 
+permanently bad RAM.
 
-Currently I'm just deleting the select statement, and having all the  
-CPUs appear, as no longer hidden symbols. My question is, what is the  
-best way to allow for other processors for this board in Kconfig, so  
-it could be submitted to the mainstream kernel?
-
--- 
-Mark A. Miller
-mark@mirell.org
+What about removing it from the LRU and adding it to a bad RAM list in every case?
+After hot swapping the physical RAM banks it could be moved back, not before.
 
 
+Best Regards
 
+Ingo Oeser
