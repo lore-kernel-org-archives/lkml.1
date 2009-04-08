@@ -1,117 +1,89 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760853AbZDHJNY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763686AbZDHJO3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760853AbZDHJNY (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 8 Apr 2009 05:13:24 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757461AbZDHJNO
+	id S1763686AbZDHJO3 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 8 Apr 2009 05:14:29 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757293AbZDHJOT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 8 Apr 2009 05:13:14 -0400
-Received: from brick.kernel.dk ([93.163.65.50]:60821 "EHLO kernel.dk"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755602AbZDHJNN (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 8 Apr 2009 05:13:13 -0400
-Date: Wed, 8 Apr 2009 11:13:11 +0200
-From: Jens Axboe <jens.axboe@oracle.com>
-To: Jos Houtman <jos@hyves.nl>
-Cc: Wu Fengguang <fengguang.wu@intel.com>, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 0/7] Per-bdi writeback flusher threads
-Message-ID: <20090408091311.GY5178@kernel.dk>
-References: <20090408062056.GP5178@kernel.dk> <C60233A2.EEB9%jos@hyves.nl>
+	Wed, 8 Apr 2009 05:14:19 -0400
+Received: from mx1.auerswald.de ([212.185.163.234]:3039 "EHLO
+	mail.auerswald.de" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1753655AbZDHJOS convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 8 Apr 2009 05:14:18 -0400
+From: Wolfgang =?iso-8859-15?q?M=FCes?= <wolfgang.mues@auerswald.de>
+Organization: Auerswald GmbH & Co. KG
+To: Pierre Ossman <drzeus@drzeus.cx>
+Subject: [PATCH] mmc_spi: speedup for slow cards, less wear-out
+Date: Wed, 8 Apr 2009 10:14:07 +0100
+User-Agent: KMail/1.9.10
+Cc: "Andrew Morton" <akpm@linux-foundation.org>,
+       "Matt Fleming" <matt@console-pimps.org>,
+       "David Brownell" <dbrownell@users.sourceforge.net>,
+       "Mike Frysinger" <vapier.adi@gmail.com>, linux-kernel@vger.kernel.org
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <C60233A2.EEB9%jos@hyves.nl>
+Message-Id: <200904081114.07653.wolfgang.mues@auerswald.de>
+Content-Type: text/plain;
+  charset="iso-8859-15"
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Apr 08 2009, Jos Houtman wrote:
-> >> 
-> >> Hi Jos, you said that this simple patch solved the problem, however you
-> >> mentioned somehow suboptimal performance. Can you elaborate that?  So
-> >> that I can push or improve it.
-> >> 
-> >> Thanks,
-> >> Fengguang
-> >> ---
-> >>  fs/fs-writeback.c |    3 ++-
-> >>  1 file changed, 2 insertions(+), 1 deletion(-)
-> >> 
-> >> --- mm.orig/fs/fs-writeback.c
-> >> +++ mm/fs/fs-writeback.c
-> >> @@ -325,7 +325,8 @@ __sync_single_inode(struct inode *inode,
-> >>                                * soon as the queue becomes uncongested.
-> >>                                */
-> >>                               inode->i_state |= I_DIRTY_PAGES;
-> >> -                             if (wbc->nr_to_write <= 0) {
-> >> +                             if (wbc->nr_to_write <= 0 ||
-> >> +                                 wbc->encountered_congestion) {
-> >>                                       /*
-> >>                                        * slice used up: queue for next turn
-> >>                                        */
-> >> 
-> >>> But the second problem seen in that thread, a write-starve-read problem does
-> >>> not seem to solved. In this problem the writes of the writeback algorithm
-> >>> starve the ongoing reads, no matter what io-scheduler is picked.
-> > 
-> > What kind of SSD drive are you using? Does it support queuing or not?
-> 
-> First Jens his question: We use the MTRON PRO 7500 ( MTRON MSP-SATA75 ) with
-> 64GB and 128GB and I don't know whether it supports queuing or not. How can
-> I check? The data-sheet doesn't mention NCQ, if you meant that.
+From: Wolfgang Muees <wolfgang.mues@auerswald.de>
 
-They do not. The MTRONs are in the "crap" ssd category, irregardless of
-their (seemingly undeserved) high price tag. I tested a few of them some
-months ago and was less than impressed. It still sits behind a crap pata
-bridge and its random write performance was abysmal.
+o Speedup for slow cards by transfering more data at once.
+  This patch also reduces the amount of wear-out of the flash
+  blocks because fewer partial blocks are written.  
 
-So in general I find it quite weird that the writeback cannot keep up,
-there's not that much to keep up with. I'm guessing it's because of the
-quirky nature of the device when it comes to writes.
+Signed-off-by: Wolfgang Muees <wolfgang.mues@auerswald.de>
 
-As to the other problem, we usually do quite well on read-vs-write
-workloads. CFQ performs great for those, if I test the current
-2.6.30-rc1 kernel, a read goes at > 90% of full performance with a
+---
 
-dd if=/dev/zero of=foo bs=1M
+diff -uprN 2_6_29_rc7_patch1253467/drivers/mmc/host/mmc_spi.c 2_6_29_rc7_patch_wearout_speedup/drivers/mmc/host/mmc_spi.c
+--- 2_6_29_rc7_patch1253467/drivers/mmc/host/mmc_spi.c	2009-04-07 17:19:21.000000000 +0200
++++ 2_6_29_rc7_patch_wearout_speedup/drivers/mmc/host/mmc_spi.c	2009-04-08 11:11:20.000000000 +0200
+@@ -97,6 +97,14 @@
+  */
+ #define r1b_timeout		(HZ * 3)
+ 
++/* One of the critical speed parameters is the amount of data which may
++ * be transfered in one command. If this value is too low, the SD card
++ * controller has to do multiple partial block writes (argggh!). With
++ * today (2008) SD cards there is little speed gain if we transfer more
++ * than 64 KBytes at a time. So use this value until there is any indication
++ * that we should do more here.
++ */
++#define MMC_SPI_BLOCKSATONCE	128
+ 
+ /****************************************************************************/
+ 
+@@ -1366,6 +1374,10 @@ static int mmc_spi_probe(struct spi_devi
+ 
+ 	mmc->ops = &mmc_spi_ops;
+ 	mmc->max_blk_size = MMC_SPI_BLOCKSIZE;
++	mmc->max_hw_segs = MMC_SPI_BLOCKSATONCE;
++	mmc->max_phys_segs = MMC_SPI_BLOCKSATONCE;
++	mmc->max_req_size = MMC_SPI_BLOCKSATONCE * MMC_SPI_BLOCKSIZE;
++	mmc->max_blk_count = MMC_SPI_BLOCKSATONCE;
+ 
+ 	mmc->caps = MMC_CAP_SPI;
+ 
+---
+regards
 
-running in the background. On both NCQ and non-NCQ drives. Could you try
-2.6.30-rc1, just in case it works better for you? At least CFQ will
-behave better there in any case. AS should work fine for that as well,
-but don't expect very good read-vs-write performance with deadline or
-noop. Doing some sort of anticipation is crucial to get that right.
-
-What kind of read workload are you running? May small files, big files,
-one big file, or?
-
-> Background: 
-> The machines that have these problems are databases, with large datasets
-> that need to read quite a lot of data from disk (as it won't fit in
-> filecache). These write-bursts lock queries that normally take only a few ms
-> up to a several seconds. As a result of this lockup a backlog is created,
-> and in our current database setup the backlog is actively purged. Forcing a
-> reconnect to the same set of suffering database servers, further increasing
-> the load. 
-
-OK, so I'm guessing it's bursty smallish reads. That is the hardest
-case. If your MTRON has a write cache, it's very possible that by the
-time we stop the writes and issue the read, the device takes a long time
-to service that read. And if we then mix reads and writes, it's
-basically impossible to get any sort of interactiveness out of it. With
-the second rate SSD devices, you probably need to tweak the IO
-scheduling a bit to make that work well. If you try 2.6.30-rc1, you
-could try and set 'slice_async_rq' to 1 and slice_async to 5 in
-/sys/block/sda/queue/iosched/ (or sdX whatever is your device) with CFQ
-and see if that makes a difference. If the device is really slow,
-perhaps try and increase slice_idle as well.
-
-> But I would be really glad if I could just use the deadline scheduler to do
-> 1 write for every 10 reads and make the write-expire timeout very high.
-
-It wont help a lot because of the dependent nature of the reads you are
-doing. By the time you issue 1 read and it completes and until you issue
-the next read, you could very well have sent enough writes to the device
-that the next read will take equally long to complete.
-
+i. A. Wolfgang Mües
 -- 
-Jens Axboe
-
+Auerswald GmbH & Co. KG
+Hardware Development
+Telefon: +49 (0)5306 9219 0
+Telefax: +49 (0)5306 9219 94 
+E-Mail: Wolfgang.Mues@Auerswald.de
+Web: http://www.auerswald.de
+ 
+--------------------------------------------------------------
+Auerswald GmbH & Co. KG, Vor den Grashöfen 1, 38162 Cremlingen
+Registriert beim AG Braunschweig HRA 13289
+p.h.G Auerswald Geschäftsführungsges. mbH
+Registriert beim AG Braunschweig HRB 7463
+Geschäftsführer: Dipl-Ing. Gerhard Auerswald
