@@ -1,50 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764366AbZDHUrV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764632AbZDHUuF@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764366AbZDHUrV (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 8 Apr 2009 16:47:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757809AbZDHUrF
+	id S1764632AbZDHUuF (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 8 Apr 2009 16:50:05 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760805AbZDHUtu
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 8 Apr 2009 16:47:05 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:59954 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1752017AbZDHUrC (ORCPT
+	Wed, 8 Apr 2009 16:49:50 -0400
+Received: from mail-qy0-f118.google.com ([209.85.221.118]:45626 "EHLO
+	mail-qy0-f118.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757671AbZDHUtt (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 8 Apr 2009 16:47:02 -0400
-Date: Wed, 8 Apr 2009 13:44:23 -0700 (PDT)
-From: Linus Torvalds <torvalds@linux-foundation.org>
-X-X-Sender: torvalds@localhost.localdomain
-To: Christian Borntraeger <borntraeger@de.ibm.com>
-cc: Roland McGrath <roland@redhat.com>,
-       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] ptrace: checkpatch fixes
-In-Reply-To: <200904082157.54134.borntraeger@de.ibm.com>
-Message-ID: <alpine.LFD.2.00.0904081341090.4583@localhost.localdomain>
-References: <20090408062106.39EE0FC3E5@magilla.sf.frob.com> <alpine.LFD.2.00.0904081007530.4583@localhost.localdomain> <200904082157.54134.borntraeger@de.ibm.com>
-User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
+	Wed, 8 Apr 2009 16:49:49 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
+         :cc:content-type:content-transfer-encoding;
+        b=x3/bQVDfGNQAlI3BmBzIoS/lpuhEICEC59SvUQtc+/Uk37GiRk0I/L094gPatsTjQK
+         GXyvu7F2yphCbbusXSATVIhv7P+zoBsKzVQtvc9NqFd8rky7MW7UXxyeqW8thWmfdgLB
+         lRgJ2B52MPwqdfD3fi8NzOJ66yiq8NgCXc7ZE=
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+In-Reply-To: <20090408125037.549C1FC351@magilla.sf.frob.com>
+References: <20090408062106.39EE0FC3E5@magilla.sf.frob.com>
+	 <ce0170d90904080026x4e292ce7sfae4eea70eb386cd@mail.gmail.com>
+	 <20090408125037.549C1FC351@magilla.sf.frob.com>
+Date: Wed, 8 Apr 2009 17:49:46 -0300
+Message-ID: <ce0170d90904081349t3dbe2750u8dac243e1b729e2b@mail.gmail.com>
+Subject: Re: [PATCH] ptrace: checkpatch fixes
+From: Sergio Luis <eeeesti@gmail.com>
+To: Roland McGrath <roland@redhat.com>
+Cc: Linus Torvalds <torvalds@linux-foundation.org>,
+       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Wed, Apr 8, 2009 at 9:50 AM, Roland McGrath <roland@redhat.com> wrote:
+>> silly question, but... how do you verify that? is there any tool under
+>> scripts/ that do that comparison?
+>
+> I didn't use any script, there might be done, I don't know.
+> I compared "objdump -rd" output on the .o file before and after, using diff.
+>
+>
+> Thanks,
+> Roland
+>
 
+Ah, I see. I had written a silly objdiff scritp that was using objdump
+-D output for comparison, and there were a few differences, that's why
+I was wondering what would be the right way to verify that.
 
-On Wed, 8 Apr 2009, Christian Borntraeger wrote:
-> 
-> Isnt checkpatch just following what is written down in the Documentation 
-> folder? Maybe adopting the following part of CodingStyle and add more 
-> examples for good and bad would give the checkpatch authors a better 
-> idea about your intent.
-
-The thing is, it's true that it's good if things fit in 80 columns.
-
-But _splitting_ lines isn't the answer. Making code simpler is, but 
-somehow the 80-column warning never causes that to happen - instead people 
-just split.
-
-And yes, I guess we should remove the language saying so. It's not from 
-my original coding stule, it was added later by others, and came through 
-Andrew (commit 560362dafe4de60db70f2c298a53f4613453a78b: "[PATCH] 
-Codingstyle update" in the historical Linux archive).
-
-			Linus
+Thanks,
+Sergio.
