@@ -1,22 +1,22 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760717AbZDHFVN@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760882AbZDHFVc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760717AbZDHFVN (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 8 Apr 2009 01:21:13 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759949AbZDHFUV
+	id S1760882AbZDHFVc (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 8 Apr 2009 01:21:32 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760113AbZDHFUY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 8 Apr 2009 01:20:21 -0400
-Received: from 136-022.dsl.LABridge.com ([206.117.136.22]:4362 "EHLO
+	Wed, 8 Apr 2009 01:20:24 -0400
+Received: from 136-022.dsl.LABridge.com ([206.117.136.22]:4359 "EHLO
 	mail.perches.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756951AbZDHFUS (ORCPT
+	with ESMTP id S1752543AbZDHFUT (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 8 Apr 2009 01:20:18 -0400
+	Wed, 8 Apr 2009 01:20:19 -0400
 From: Joe Perches <joe@perches.com>
 To: Linus Torvalds <torvalds@linux-foundation.org>,
        Andrew Morton <akpm@kernel.org>
 Cc: linux-kernel@vger.kernel.org
-Subject: [PATCH 03/10] MAINTAINERS - Standardize style
-Date: Tue,  7 Apr 2009 22:17:45 -0700
-Message-Id: <1239167872-8179-4-git-send-email-joe@perches.com>
+Subject: [PATCH 01/10] Add scripts/get_maintainer.pl
+Date: Tue,  7 Apr 2009 22:17:43 -0700
+Message-Id: <1239167872-8179-2-git-send-email-joe@perches.com>
 X-Mailer: git-send-email 1.6.0.2
 In-Reply-To: <1239167872-8179-1-git-send-email-joe@perches.com>
 References: <1239167872-8179-1-git-send-email-joe@perches.com>
@@ -24,328 +24,571 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Use one email address per line
-Remove file patterns from section names
-Use tab after :
+A script to parse file pattern information in MAINTAINERS
+and return selected information about a file or patch
+
+usage: scripts/get_maintainer.pl [options] patchfile
+       scripts/get_maintainer.pl [options] -f file
+version: 0.14
+
+MAINTAINERS field selection options:
+  --email => print email address(es) if any
+    --git => include git "*-by:" signers in commit count order
+    --git-chief-penguins => include (Linus Torvalds)
+    --git-min-signatures => number of signatures required (default: 1)
+    --git-max-maintainers => maximum maintainers to add (default: 5)
+    --git-since => git history to use (default: 1-year-ago)
+    --m => include maintainer(s) if any
+    --n => include name 'Full Name <addr@domain.tld>'
+    --l => include list(s) if any
+    --s => include subscriber only list(s) if any
+  --scm => print SCM tree(s) if any
+  --status => print status if any
+  --subsystem => print subsystem name if any
+  --web => print website(s) if any
+
+Output type options:
+  --separator [, ] => separator for multiple entries on 1 line
+  --multiline => print 1 entry per line
+
+Default options:
+  [--email --git --m --n --l --multiline]
+
+Other options:
+  --version => show version
+  --help => show this help information
 
 Signed-off-by: Joe Perches <joe@perches.com>
+Acked-by: Pavel Machek <pavel@ucw.cz>
 ---
- MAINTAINERS |  127 ++++++++++++++++++++++++++++++++++-------------------------
- 1 files changed, 73 insertions(+), 54 deletions(-)
+ scripts/get_maintainer.pl |  518 +++++++++++++++++++++++++++++++++++++++++++++
+ 1 files changed, 518 insertions(+), 0 deletions(-)
+ create mode 100755 scripts/get_maintainer.pl
 
-diff --git a/MAINTAINERS b/MAINTAINERS
-index a8034dd..007f2fa 100644
---- a/MAINTAINERS
-+++ b/MAINTAINERS
-@@ -377,7 +377,7 @@ F:	include/linux/agp*
- 
- AHA152X SCSI DRIVER
- P:	Juergen E. Fischer
--M:	Juergen Fischer <fischer@norbit.de>
-+M:	fischer@norbit.de
- L:	linux-scsi@vger.kernel.org
- S:	Maintained
- F:	drivers/scsi/aha152x*
-@@ -460,10 +460,10 @@ F:	arch/x86/kernel/amd_iommu*.c
- F:	arch/x86/include/asm/amd_iommu*.h
- 
- AMD MICROCODE UPDATE SUPPORT
--P:      Andreas Herrmann
--M:      andeas.herrmann3@amd.com
--L:      amd64-microcode@amd64.org
--S:      Supported
-+P:	Andreas Herrmann
-+M:	andeas.herrmann3@amd.com
-+L:	amd64-microcode@amd64.org
-+S:	Supported
- F:	arch/x86/kernel/microcode_amd.c
- 
- AMS (Apple Motion Sensor) DRIVER
-@@ -743,10 +743,10 @@ W:	http://hackndev.com
- S:	Maintained
- 
- ARM/PALMZ72 SUPPORT
--P:     Sergey Lapin
--M:     slapin@ossfans.org
--W:     http://hackndev.com
--S:     Maintained
-+P:	Sergey Lapin
-+M:	slapin@ossfans.org
-+W:	http://hackndev.com
-+S:	Maintained
- 
- ARM/PLEB SUPPORT
- P:	Peter Chubb
-@@ -807,11 +807,11 @@ L:	linux-arm-kernel@lists.arm.linux.org.uk (subscribers-only)
- S:	Maintained
- 
- ARM/NUVOTON W90X900 ARM ARCHITECTURE
--P:      Wan ZongShun
--M:      mcuos.com@gmail.com
--L:      linux-arm-kernel@lists.arm.linux.org.uk (subscribers-only)
--W:      http://www.mcuos.com
--S:      Maintained
-+P:	Wan ZongShun
-+M:	mcuos.com@gmail.com
-+L:	linux-arm-kernel@lists.arm.linux.org.uk (subscribers-only)
-+W:	http://www.mcuos.com
-+S:	Maintained
- 
- ARPD SUPPORT
- P:	Jonathan Layes
-@@ -1546,8 +1546,10 @@ S:	Maintained
- F:	sound/pci/cs5535audio/
- 
- CX18 VIDEO4LINUX DRIVER
--P:	Hans Verkuil, Andy Walls
--M:	hverkuil@xs4all.nl, awalls@radix.net
-+P:	Hans Verkuil
-+M:	hverkuil@xs4all.nl
-+P:	Andy Walls
-+M:	awalls@radix.net
- L:	ivtv-devel@ivtvdriver.org
- L:	ivtv-users@ivtvdriver.org
- L:	linux-media@vger.kernel.org
-@@ -1795,7 +1797,7 @@ L:	linux-acpi@vger.kernel.org
- S:	Supported
- F:	drivers/acpi/dock.c
- 
--DOCUMENTATION (/Documentation directory)
-+DOCUMENTATION
- P:	Randy Dunlap
- M:	rdunlap@xenotime.net
- L:	linux-doc@vger.kernel.org
-@@ -1865,7 +1867,9 @@ F:	drivers/serial/dz.*
- 
- EATA-DMA SCSI DRIVER
- P:	Michael Neuffer
--L:	linux-eata@i-connect.net, linux-scsi@vger.kernel.org
-+M:	mike@i-Connect.Net
-+L:	linux-eata@i-connect.net
-+L:	linux-scsi@vger.kernel.org
- S:	Maintained
- F:	drivers/scsi/eata*
- 
-@@ -1879,7 +1883,8 @@ F:	drivers/scsi/eata.c
- EATA-PIO SCSI DRIVER
- P:	Michael Neuffer
- M:	mike@i-Connect.Net
--L:	linux-eata@i-connect.net, linux-scsi@vger.kernel.org
-+L:	linux-eata@i-connect.net
-+L:	linux-scsi@vger.kernel.org
- S:	Maintained
- F:	drivers/scsi/eata_pio.*
- 
-@@ -1894,8 +1899,10 @@ F:	include/linux/netfilter_bridge/ebt_*.h
- F:	net/bridge/netfilter/ebt*.c
- 
- ECRYPT FILE SYSTEM
--P:	Tyler Hicks, Dustin Kirkland
--M:	tyhicks@linux.vnet.ibm.com, kirkland@canonical.com
-+P:	Tyler Hicks
-+M:	tyhicks@linux.vnet.ibm.com
-+M:	Dustin Kirkland
-+P:	kirkland@canonical.com
- L:	ecryptfs-devel@lists.launchpad.net
- W:	https://launchpad.net/ecryptfs
- S:	Supported
-@@ -2028,7 +2035,9 @@ F:	drivers/scsi/lpfc/
- 
- EPSON 1355 FRAMEBUFFER DRIVER
- P:	Christopher Hoover
--M:	ch@murgatroid.com, ch@hpl.hp.com
-+M:	ch@murgatroid.com
-+P:	Christopher Hoover
-+M:	ch@hpl.hp.com
- S:	Maintained
- F:	drivers/video/epson1355fb.c
- 
-@@ -2069,8 +2078,12 @@ F:	fs/ext2/
- F:	include/linux/ext2*
- 
- EXT3 FILE SYSTEM
--P:	Stephen Tweedie, Andrew Morton
--M:	sct@redhat.com, akpm@linux-foundation.org, adilger@sun.com
-+P:	Stephen Tweedie
-+M:	sct@redhat.com
-+P:	Andrew Morton
-+M:	akpm@linux-foundation.org
-+P:	Andreas Dilger
-+M:	adilger@sun.com
- L:	linux-ext4@vger.kernel.org
- S:	Maintained
- F:	Documentation/filesystems/ext3.txt
-@@ -2079,7 +2092,9 @@ F:	include/linux/ext3*
- 
- EXT4 FILE SYSTEM
- P:	Theodore Ts'o
--M:	tytso@mit.edu, adilger@sun.com
-+M:	tytso@mit.edu
-+P:	Andreas Dilger
-+M:	adilger@sun.com
- L:	linux-ext4@vger.kernel.org
- W:	http://ext4.wiki.kernel.org
- S:	Maintained
-@@ -2131,9 +2146,11 @@ M:	riku.vipio@iki.fi
- L:	lm-sensors@lm-sensors.org
- S:	Maintained
- 
--FIREWIRE SUBSYSTEM (drivers/firewire, <linux/firewire*.h>)
--P:	Kristian Hoegsberg, Stefan Richter
--M:	krh@redhat.com, stefanr@s5r6.in-berlin.de
-+FIREWIRE SUBSYSTEM
-+P:	Kristian Hoegsberg
-+M:	krh@redhat.com
-+P:	Stefan Richter
-+M:	stefanr@s5r6.in-berlin.de
- L:	linux1394-devel@lists.sourceforge.net
- W:	http://www.linux1394.org/
- T:	git kernel.org:/pub/scm/linux/kernel/git/ieee1394/linux1394-2.6.git
-@@ -2563,7 +2580,7 @@ M:	perex@perex.cz
- S:	Maintained
- F:	drivers/net/hp100.*
- 
--HPET:	High Precision Event Timers driver (drivers/char/hpet.c)
-+HPET:	High Precision Event Timers driver
- P:	Clemens Ladisch
- M:	clemens@ladisch.de
- S:	Maintained
-@@ -2583,7 +2600,7 @@ P:	Vojtech Pavlik
- M:	vojtech@suse.cz
- S:	Maintained
- 
--HPET:	ACPI hpet.c
-+HPET:	ACPI
- P:	Bob Picco
- M:	bob.picco@hp.com
- S:	Maintained
-@@ -2596,7 +2613,7 @@ W:	http://artax.karlin.mff.cuni.cz/~mikulas/vyplody/hpfs/index-e.cgi
- S:	Maintained
- F:	fs/hpfs/
- 
--HSO	3G Modem Driver (hso.c)
-+HSO 3G MODEM DRIVER
- P:	Denis Joseph Barrow
- M:	d.barow@option.com
- W:	http://www.pharscape.org
-@@ -2714,7 +2731,7 @@ L:	linux-pm@lists.linux-foundation.org
- S:	Supported
- F:	drivers/idle/i7300_idle.c
- 
--IEEE 1394 SUBSYSTEM (drivers/ieee1394)
-+IEEE 1394 SUBSYSTEM
- P:	Ben Collins
- M:	ben.collins@ubuntu.com
- P:	Stefan Richter
-@@ -2725,7 +2742,7 @@ T:	git kernel.org:/pub/scm/linux/kernel/git/ieee1394/linux1394-2.6.git
- S:	Maintained
- F:	drivers/ieee1394/
- 
--IEEE 1394 RAW I/O DRIVER (raw1394)
-+IEEE 1394 RAW I/O DRIVER
- P:	Dan Dennedy
- M:	dan@dennedy.org
- P:	Stefan Richter
-@@ -3109,8 +3126,10 @@ F:	include/linux/jffs2.h
- F:	include/mtd/jffs2-user.h
- 
- JOURNALLING LAYER FOR BLOCK DEVICES (JBD)
--P:	Stephen Tweedie, Andrew Morton
--M:	sct@redhat.com, akpm@linux-foundation.org
-+P:	Stephen Tweedie
-+M:	sct@redhat.com
-+P:	Andrew Morton
-+M:	akpm@linux-foundation.org
- L:	linux-ext4@vger.kernel.org
- S:	Maintained
- F:	fs/jbd*/
-@@ -3158,7 +3177,7 @@ L:	autofs@linux.kernel.org
- S:	Maintained
- F:	fs/autofs4/
- 
--KERNEL BUILD (kbuild: Makefile, scripts/Makefile.*)
-+KERNEL BUILD
- P:	Sam Ravnborg
- M:	sam@ravnborg.org
- T:	git kernel.org:/pub/scm/linux/kernel/git/sam/kbuild-next.git
-@@ -4668,16 +4687,16 @@ S:	Maintained
- F:	drivers/net/wireless/rtl818*
- 
- RTL8187 WIRELESS DRIVER
--P:	 Herton Ronaldo Krzesinski
--M:      herton@mandriva.com.br
--P:      Hin-Tak Leung
--M       htl10@users.sourceforge.net
--P:      Larry Finger
--M:      Larry.Finger@lwfinger.net
--L:      linux-wireless@vger.kernel.org
--W:      http://linuxwireless.org/
--T:      git kernel.org:/pub/scm/linux/kernel/git/linville/wireless-testing.git
--S:      Maintained
-+P:	Herton Ronaldo Krzesinski
-+M:	herton@mandriva.com.br
-+P:	Hin-Tak Leung
-+M:	htl10@users.sourceforge.net
-+P:	Larry Finger
-+M:	Larry.Finger@lwfinger.net
-+L:	linux-wireless@vger.kernel.org
-+W:	http://linuxwireless.org/
-+T:	git kernel.org:/pub/scm/linux/kernel/git/linville/wireless-testing.git
-+S:	Maintained
- F:	drivers/net/wireless/rtl818x/rtl8187*
- 
- S3 SAVAGE FRAMEBUFFER DRIVER
-@@ -4871,7 +4890,6 @@ S:	Maintained
- F:	drivers/mmc/host/sdhci.*
- 
- SECURITY SUBSYSTEM
--F:	security/
- P:	James Morris
- M:	jmorris@namei.org
- L:	linux-kernel@vger.kernel.org
-@@ -4879,6 +4897,7 @@ L:	linux-security-module@vger.kernel.org (suggested Cc:)
- T:	git kernel.org:pub/scm/linux/kernel/git/jmorris/security-testing-2.6.git
- W:	http://security.wiki.kernel.org/
- S:	Supported
-+F:	security/
- 
- SECURITY CONTACT
- P:	Security Officers
-@@ -4893,7 +4912,7 @@ M:	jmorris@namei.org
- P:	Eric Paris
- M:	eparis@parisplace.org
- L:	linux-kernel@vger.kernel.org (kernel issues)
--L: 	selinux@tycho.nsa.gov (subscribers-only, general discussion)
-+L:	selinux@tycho.nsa.gov (subscribers-only, general discussion)
- W:	http://selinuxproject.org
- T:	git kernel.org:pub/scm/linux/kernel/git/jmorris/security-testing-2.6.git
- S:	Supported
-@@ -4917,11 +4936,11 @@ S:	Supported
- SERVER ENGINES 10Gbps NIC - BladeEngine 2 DRIVER
- P:	Sathya Perla
- M:	sathyap@serverengines.com
--P:      Subbu Seetharaman
--M:      subbus@serverengines.com
--L:      netdev@vger.kernel.org
--W:      http://www.serverengines.com
--S:      Supported
-+P:	Subbu Seetharaman
-+M:	subbus@serverengines.com
-+L:	netdev@vger.kernel.org
-+W:	http://www.serverengines.com
-+S:	Supported
- F:	drivers/net/benet/
- 
- SFC NETWORK DRIVER
-@@ -5190,7 +5209,7 @@ F:	arch/sparc/
- SPECIALIX IO8+ MULTIPORT SERIAL CARD DRIVER
- P:	Roger Wolff
- M:	R.E.Wolff@BitWizard.nl
--L:	linux-kernel@vger.kernel.org ?
-+L:	linux-kernel@vger.kernel.org
- S:	Supported
- F:	Documentation/serial/specialix.txt
- F:	drivers/char/specialix*
+diff --git a/scripts/get_maintainer.pl b/scripts/get_maintainer.pl
+new file mode 100755
+index 0000000..0f3c0a5
+--- /dev/null
++++ b/scripts/get_maintainer.pl
+@@ -0,0 +1,518 @@
++#!/usr/bin/perl -w
++# (c) 2007, Joe Perches <joe@perches.com>
++#           created from checkpatch.pl
++#
++# Print selected MAINTAINERS information for
++# the files modified in a patch or for a file
++#
++# usage: perl scripts/get_maintainers.pl [OPTIONS] <patch>
++#        perl scripts/get_maintainers.pl [OPTIONS] -f <file>
++#
++# Licensed under the terms of the GNU GPL License version 2
++
++use strict;
++
++my $P = $0;
++my $V = '0.14';
++
++use Getopt::Long qw(:config no_auto_abbrev);
++
++my $lk_path = "./";
++my $email = 1;
++my $email_usename = 1;
++my $email_maintainer = 1;
++my $email_list = 1;
++my $email_subscriber_list = 0;
++my $email_git = 1;
++my $email_git_penguin_chiefs = 0;
++my $email_git_min_signatures = 1;
++my $email_git_max_maintainers = 5;
++my $email_git_since = "1-year-ago";
++my $output_multiline = 1;
++my $output_separator = ", ";
++my $scm = 0;
++my $web = 0;
++my $subsystem = 0;
++my $status = 0;
++my $onefile = 0;
++my $version = 0;
++my $help = 0;
++
++my $exit = 0;
++
++my @penguin_chief = ();
++push(@penguin_chief,"Linus Torvalds:torvalds\@linux-foundation.org");
++#Andrew wants in on most everything - 2009/01/14
++#push(@penguin_chief,"Andrew Morton:akpm\@linux-foundation.org");
++
++my @penguin_chief_names = ();
++foreach my $chief (@penguin_chief) {
++    if ($chief =~ m/^(.*):(.*)/) {
++	my $chief_name = $1;
++	my $chief_addr = $2;
++	push(@penguin_chief_names, $chief_name);
++    }
++}
++my $penguin_chiefs = "\(" . join("|",@penguin_chief_names) . "\)";
++
++if (!GetOptions(
++		'email!' => \$email,
++		'git!' => \$email_git,
++		'git-chief-penguins!' => \$email_git_penguin_chiefs,
++		'git-min-signatures=i' => \$email_git_min_signatures,
++		'git-max-maintainers=i' => \$email_git_max_maintainers,
++		'git-since=s' => \$email_git_since,
++		'm!' => \$email_maintainer,
++		'n!' => \$email_usename,
++		'l!' => \$email_list,
++		's!' => \$email_subscriber_list,
++		'multiline!' => \$output_multiline,
++		'separator=s' => \$output_separator,
++		'subsystem!' => \$subsystem,
++		'status!' => \$status,
++		'scm!' => \$scm,
++		'web!' => \$web,
++		'f|file' => \$onefile,
++		'v|version' => \$version,
++		'h|help' => \$help,
++		)) {
++    usage();
++    die "$P: invalid argument\n";
++}
++
++if ($help != 0) {
++    usage();
++    exit 0;
++}
++
++if ($version != 0) {
++    print("${P} ${V}\n");
++    exit 0;
++}
++
++my $infile = $ARGV[0];
++
++if ($#ARGV < 0) {
++    usage();
++    die "$P: argument missing: patchfile or -f file please\n";
++}
++
++my $selections = $email + $scm + $status + $subsystem + $web;
++if ($selections == 0) {
++    usage();
++    die "$P:  Missing required option: email, scm, status, subsystem or web\n";
++}
++
++if ($email && ($email_maintainer + $email_list + $email_subscriber_list
++	       + $email_git + $email_git_penguin_chiefs) == 0) {
++    usage();
++    die "$P: Please select at least 1 email option\n";
++}
++
++if (!top_of_kernel_tree($lk_path)) {
++    die "$P: The current directory does not appear to be "
++	. "a linux kernel source tree.\n";
++}
++
++## Read MAINTAINERS for type/value pairs
++
++my @typevalue = ();
++open(MAINT, "<${lk_path}MAINTAINERS") || die "$P: Can't open MAINTAINERS\n";
++while (<MAINT>) {
++    my $line = $_;
++
++    if ($line =~ m/^(\C):\s*(.*)/) {
++	my $type = $1;
++	my $value = $2;
++
++	##Filename pattern matching
++	if ($type eq "F" || $type eq "X") {
++	    $value =~ s@\.@\\\.@g;       ##Convert . to \.
++	    $value =~ s/\*/\.\*/g;       ##Convert * to .*
++	    $value =~ s/\?/\./g;         ##Convert ? to .
++	}
++	push(@typevalue, "$type:$value");
++    } elsif (!/^(\s)*$/) {
++	$line =~ s/\n$//g;
++	push(@typevalue, $line);
++    }
++}
++close(MAINT);
++
++## use the filename on the command line or find the filenames in the patchfile
++
++my @files = ();
++
++if ($onefile) {
++    if (!(-f $infile)) {
++	die "$P: file '${infile}' not found\n";
++    }
++    push(@files, $infile);
++} else {
++    open(PATCH, "<$infile") or die "$P: Can't open ${infile}\n";
++    while (<PATCH>) {
++	if (m/^\+\+\+\s+(\S+)/) {
++	    my $file = $1;
++	    $file =~ s@^[^/]*/@@;
++	    $file =~ s@\n@@;
++	    push(@files, $file);
++	}
++    }
++    close(PATCH);
++    my $file_cnt = @files;
++    if ($file_cnt == 0) {
++	print STDERR "$P: file '${infile}' doesn't appear to be a patch.  "
++	    . "Add -f to options?\n";
++    }
++    @files = sort_and_uniq(@files);
++}
++
++my @email_to = ();
++my @scm = ();
++my @web = ();
++my @subsystem = ();
++my @status = ();
++
++# Find responsible parties
++
++foreach my $file (@files) {
++
++#Do not match excluded file patterns
++
++    my $exclude = 0;
++    foreach my $line (@typevalue) {
++	if ($line =~ m/^(\C):(.*)/) {
++	    my $type = $1;
++	    my $value = $2;
++	    if ($type eq 'X') {
++		if (file_match_pattern($file, $value)) {
++		    $exclude = 1;
++		}
++	    }
++	}
++    }
++
++    if (!$exclude) {
++	my $tvi = 0;
++	foreach my $line (@typevalue) {
++	    if ($line =~ m/^(\C):(.*)/) {
++		my $type = $1;
++		my $value = $2;
++		if ($type eq 'F') {
++		    if (file_match_pattern($file, $value)) {
++			add_categories($tvi);
++		    }
++		}
++	    }
++	    $tvi++;
++	}
++    }
++
++    if ($email_git) {
++	recent_git_signoffs($file);
++    }
++
++}
++
++if ($email_git_penguin_chiefs) {
++    foreach my $chief (@penguin_chief) {
++	if ($chief =~ m/^(.*):(.*)/) {
++	    my $chief_name = $1;
++	    my $chief_addr = $2;
++	    if ($email_usename) {
++		push(@email_to, format_email($chief_name, $chief_addr));
++	    } else {
++		push(@email_to, $chief_addr);
++	    }
++	}
++    }
++}
++
++if ($email) {
++    my $address_cnt = @email_to;
++    if ($address_cnt == 0 && $email_list) {
++	push(@email_to, "linux-kernel\@vger.kernel.org");
++    }
++
++#Don't sort email address list, but do remove duplicates
++    @email_to = uniq(@email_to);
++    output(@email_to);
++}
++
++if ($scm) {
++    if (!$onefile) {
++	@scm = sort_and_uniq(@scm);
++    }
++    output(@scm);
++}
++
++if ($status) {
++    if (!$onefile) {
++	@status = sort_and_uniq(@status);
++    }
++    output(@status);
++}
++
++if ($subsystem) {
++    if (!$onefile) {
++	@subsystem = sort_and_uniq(@subsystem);
++    }
++    output(@subsystem);
++}
++
++if ($web) {
++    if (!$onefile) {
++	@web = sort_and_uniq(@web);
++    }
++    output(@web);
++}
++
++exit($exit);
++
++sub file_match_pattern {
++    my ($file, $pattern) = @_;
++    if (substr($pattern, -1) eq "/") {
++	if ($file =~ m@^$pattern@) {
++	    return 1;
++	}
++    } else {
++	if ($file =~ m@^$pattern@) {
++	    my $s1 = ($file =~ tr@/@@);
++	    my $s2 = ($pattern =~ tr@/@@);
++	    if ($s1 == $s2) {
++		return 1;
++	    }
++	}
++    }
++    return 0;
++}
++
++sub usage {
++    print <<EOT;
++usage: $P [options] patchfile
++       $P [options] -f file
++version: $V
++
++MAINTAINER field selection options:
++  --email => print email address(es) if any
++    --git => include recent git \*-by: signers
++    --git-chief-penguins => include ${penguin_chiefs}
++    --git-min-signatures => number of signatures required (default: 1)
++    --git-max-maintainers => maximum maintainers to add (default: 5)
++    --git-since => git history to use (default: 1-year-ago)
++    --m => include maintainer(s) if any
++    --n => include name 'Full Name <addr\@domain.tld>'
++    --l => include list(s) if any
++    --s => include subscriber only list(s) if any
++  --scm => print SCM tree(s) if any
++  --status => print status if any
++  --subsystem => print subsystem name if any
++  --web => print website(s) if any
++
++Output type options:
++  --separator [, ] => separator for multiple entries on 1 line
++  --multiline => print 1 entry per line
++
++Default options:
++  [--email --git --m --l --multiline]
++
++Other options:
++  --version -> show version
++  --help => show this help information
++
++EOT
++}
++
++sub top_of_kernel_tree {
++	my ($lk_path) = @_;
++
++	if ($lk_path ne "" && substr($lk_path,length($lk_path)-1,1) ne "/") {
++	    $lk_path .= "/";
++	}
++	if (   (-f "${lk_path}COPYING")
++	    && (-f "${lk_path}CREDITS")
++	    && (-f "${lk_path}Kbuild")
++	    && (-f "${lk_path}MAINTAINERS")
++	    && (-f "${lk_path}Makefile")
++	    && (-f "${lk_path}README")
++	    && (-d "${lk_path}Documentation")
++	    && (-d "${lk_path}arch")
++	    && (-d "${lk_path}include")
++	    && (-d "${lk_path}drivers")
++	    && (-d "${lk_path}fs")
++	    && (-d "${lk_path}init")
++	    && (-d "${lk_path}ipc")
++	    && (-d "${lk_path}kernel")
++	    && (-d "${lk_path}lib")
++	    && (-d "${lk_path}scripts")) {
++		return 1;
++	}
++	return 0;
++}
++
++sub format_email {
++    my ($name, $email) = @_;
++
++    $name =~ s/^\s+|\s+$//g;
++    $email =~ s/^\s+|\s+$//g;
++
++    my $formatted_email = "";
++
++    if ($name =~ /[^a-z0-9 \.\-]/i) {    ##has "must quote" chars
++	$name =~ s/(?<!\\)"/\\"/g;       ##escape quotes
++	$formatted_email = "\"${name}\"\ \<${email}\>";
++    } else {
++	$formatted_email = "${name} \<${email}\>";
++    }
++    return $formatted_email;
++}
++
++sub add_categories {
++    my ($index) = @_;
++
++    $index = $index - 1;
++    while ($index >= 0) {
++	my $tv = $typevalue[$index];
++	if ($tv =~ m/^(\C):(.*)/) {
++	    my $ptype = $1;
++	    my $pvalue = $2;
++	    if ($ptype eq "L") {
++		my $subscr = $pvalue;
++		if ($subscr =~ m/\s*\(subscribers-only\)/) {
++		    if ($email_subscriber_list) {
++			$subscr =~ s/\s*\(subscribers-only\)//g;
++			push(@email_to, $subscr);
++		    }
++		} else {
++		    if ($email_list) {
++			push(@email_to, $pvalue);
++		    }
++		}
++	    } elsif ($ptype eq "M") {
++		if ($email_maintainer) {
++		    if ($index >= 0) {
++			my $tv = $typevalue[$index - 1];
++			if ($tv =~ m/^(\C):(.*)/) {
++			    if ($1 eq "P" && $email_usename) {
++				push(@email_to, format_email($2, $pvalue));
++			    } else {
++				push(@email_to, $pvalue);
++			    }
++			}
++		    } else {
++			push(@email_to, $pvalue);
++		    }
++		}
++	    } elsif ($ptype eq "T") {
++		push(@scm, $pvalue);
++	    } elsif ($ptype eq "W") {
++		push(@web, $pvalue);
++	    } elsif ($ptype eq "S") {
++		push(@status, $pvalue);
++	    }
++
++	    $index--;
++	} else {
++	    push(@subsystem,$tv);
++	    $index = -1;
++	}
++    }
++}
++
++sub which {
++    my ($bin) = @_;
++
++    foreach my $path (split /:/, $ENV{PATH}) {
++	if (-e "$path/$bin") {
++	    return "$path/$bin";
++	}
++    }
++
++    return "";
++}
++
++sub recent_git_signoffs {
++    my ($file) = @_;
++
++    my $sign_offs = "";
++    my $cmd = "";
++    my $output = "";
++    my $count = 0;
++    my @lines = ();
++
++    if (which("git") eq "") {
++	die("$P: git not found.  Add --nogit to options?\n");
++    }
++
++    $cmd = "git log --since=${email_git_since} -- ${file}";
++    $cmd .= " | grep -P '^    [-A-Za-z]+by:.*\\\@'";
++    if (!$email_git_penguin_chiefs) {
++	$cmd .= " | grep -E -v \"${penguin_chiefs}\"";
++    }
++    $cmd .= " | sort | uniq -c | sort -rn";
++
++    $output = `${cmd}`;
++    $output =~ s/^\s*//gm;
++
++    @lines = split("\n", $output);
++    foreach my $line (@lines) {
++	if ($line =~ m/([0-9]+)\s+([-A-Za-z]+by:)\s+(.*)/) {
++	    my $sign_offs = $1;
++	    $line = $3;
++	    $count++;
++	    if ($sign_offs < $email_git_min_signatures ||
++	        $count > $email_git_max_maintainers) {
++		last;
++	    }
++	} else {
++	    die("$P: Unexpected git output: ${line}\n");
++	}
++	if ($line =~ m/(.*) <(.*)>/) {
++	    my $git_name = $1;
++	    my $git_addr = $2;
++	    $git_name =~ tr/^\"//;
++	    $git_name =~ tr/\"$//;
++	    if ($email_usename) {
++		push(@email_to, format_email($git_name, $git_addr));
++	    } else {
++		push(@email_to, $git_addr);
++	    }
++	} elsif ($line =~ m/<(.*)>/) {
++	    my $git_addr = $1;
++	    push(@email_to, $git_addr);
++	} else {
++	    push(@email_to, $line);
++	}
++    }
++    return $output;
++}
++
++sub uniq {
++    my @parms = @_;
++
++    my %saw;
++    @parms = grep(!$saw{$_}++, @parms);
++    return @parms;
++}
++
++sub sort_and_uniq {
++    my @parms = @_;
++
++    my %saw;
++    @parms = sort @parms;
++    @parms = grep(!$saw{$_}++, @parms);
++    return @parms;
++}
++
++sub output {
++    my @parms = @_;
++
++    if ($output_multiline) {
++	foreach my $line (@parms) {
++	    print("${line}\n");
++	}
++    } else {
++	print(join($output_separator, @parms));
++	print("\n");
++    }
++}
 -- 
 1.6.0.2
 
