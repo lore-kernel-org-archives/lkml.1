@@ -1,165 +1,131 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762478AbZDHIOw@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763132AbZDHIPW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762478AbZDHIOw (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 8 Apr 2009 04:14:52 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761841AbZDHIOP
+	id S1763132AbZDHIPW (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 8 Apr 2009 04:15:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762331AbZDHIOR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 8 Apr 2009 04:14:15 -0400
-Received: from mail-qy0-f118.google.com ([209.85.221.118]:58883 "EHLO
-	mail-qy0-f118.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1761794AbZDHIOG (ORCPT
+	Wed, 8 Apr 2009 04:14:17 -0400
+Received: from smtp-68.nebula.fi ([83.145.220.68]:47590 "EHLO
+	smtp-68.nebula.fi" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1761156AbZDHIOJ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 8 Apr 2009 04:14:06 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=subject:from:to:cc:in-reply-to:references:content-type:date
-         :message-id:mime-version:x-mailer:content-transfer-encoding;
-        b=f4Z1eDVGxBvsQP3UmqpDLSGNTpJK3NYoCs2DkTL2o0r1f8BzUr3oz/Q5TQAtfyIG+B
-         hz2tAF1fL76ld8g1FUdZqAISzbEbhaq0pkEmWhksKFbWkyDYG3QYrC8s/1kzKVm3bkT+
-         SNwcgEUNbvIJ2ennlZ0bmtP5gVSjP9h9c7FxQ=
-Subject: Re: [PATCH] tracing/filters: use ring_buffer_discard_commit() in
- filter_check_discard()
-From: Tom Zanussi <tzanussi@gmail.com>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: linux-kernel <linux-kernel@vger.kernel.org>,
-       Steven Rostedt <rostedt@goodmis.org>, fweisbec@gmail.com
-In-Reply-To: <20090407130854.GA17992@elte.hu>
-References: <1239083415.7220.45.camel@tropicana>
-	 <20090407130854.GA17992@elte.hu>
-Content-Type: text/plain
-Date: Wed, 08 Apr 2009 03:14:01 -0500
-Message-Id: <1239178441.10295.34.camel@tropicana>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.24.1 
-Content-Transfer-Encoding: 7bit
+	Wed, 8 Apr 2009 04:14:09 -0400
+From: Pekka Enberg <penberg@cs.helsinki.fi>
+To: greg@kroah.com
+Cc: linux-kernel@vger.kernel.org, Pavel Machek <pavel@ucw.cz>
+Subject: [PATCH 01/11] w35und: replace switch error handling with gotos in wb35_hw_init()
+Date: Wed,  8 Apr 2009 11:13:56 +0300
+Message-Id: <1239178446-12893-1-git-send-email-penberg@cs.helsinki.fi>
+X-Mailer: git-send-email 1.5.6.3
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 2009-04-07 at 15:08 +0200, Ingo Molnar wrote:
-> * Tom Zanussi <tzanussi@gmail.com> wrote:
-> 
-> > This patch changes filter_check_discard() to make use of the new 
-> > ring_buffer_discard_commit() function and modifies the current 
-> > users to call the old commit function in the non-discard case.  It 
-> > also introduces a version of filter_check_discard() that uses the 
-> > global trace buffer (filter_current_check_discard()) for those 
-> > cases.
-> 
-> Nice!
-> 
-> I've merged it into tip/tracing/filters but it cannot go into 
-> tip/master yet due to build failures. I fixed the obvious typo 
-> problem (find the fix below) but punted on this one for now:
-> 
->  kernel/built-in.o: In function `filter_check_discard':
->  trace.c:(.text+0x613fc): undefined reference to  `filter_match_preds'
->  kernel/built-in.o: In function `trace_vprintk':
->  (.text+0x6154f): undefined reference to `event_print'
->  kernel/built-in.o: In function `trace_vbprintk':
->  (.text+0x61717): undefined reference to `event_bprint'
->  kernel/built-in.o: In function `__ftrace_trace_stack':
-> 
-> config attached.
-> 
-> 	Ingo
-> 
-> Index: linux/kernel/trace/trace_branch.c
-> ===================================================================
-> --- linux.orig/kernel/trace/trace_branch.c
-> +++ linux/kernel/trace/trace_branch.c
-> @@ -74,7 +74,7 @@ probe_likely_condition(struct ftrace_bra
->  	entry->line = f->line;
->  	entry->correct = val == expect;
->  
-> -	if !(filter_check_discard(call, entry, event))
-> +	if (!(filter_check_discard(call, entry, tr->buffer, event)))
->  		ring_buffer_unlock_commit(tr->buffer, event);
->  
->   out:
-> 
+Impact: cleanup
 
-Wow, I can't believe I missed that - didn't have CONFIG_BRANCH_TRACE on
-I guess.
+This patch replaces the switch-based error handling in wb35_hw_init()
+with regular gotos.
 
-As for the other errors, it's the CONFIG_EVENT_TRACER not being turned
-on again.  I think the tracing config patch below would be a better
-solution than the one I previously posted...
-
-It adds a new config option, CONFIG_EVENT_TRACING that gets selected
-when CONFIG_TRACING is selected and adds everything needed by the stuff
-in trace_export - basically all the event tracing support needed by e.g.
-bprint, minus the actual events, which are only included if
-CONFIG_EVENT_TRACER is selected.  So CONFIG_EVENT_TRACER can be used to
-turn on or off the generated events (what I think of as the 'event
-tracer'), while CONFIG_EVENT_TRACING turns on or off the base event
-tracing support used by both the event tracer and the other things such
-as bprint that can't be configured out. 
-
-Signed-off-by: Tom Zanussi <tzanussi@gmail.com>
-
+Cc: Pavel Machek <pavel@ucw.cz>
+Signed-off-by: Pekka Enberg <penberg@cs.helsinki.fi>
 ---
- include/asm-generic/vmlinux.lds.h |    2 +-
- kernel/trace/Kconfig              |    4 ++++
- kernel/trace/Makefile             |    6 +++---
- 3 files changed, 8 insertions(+), 4 deletions(-)
+ drivers/staging/winbond/wbusb.c |   36 ++++++++++--------------------------
+ 1 files changed, 10 insertions(+), 26 deletions(-)
 
-diff --git a/include/asm-generic/vmlinux.lds.h b/include/asm-generic/vmlinux.lds.h
-index 7fa660f..7e9b1e9 100644
---- a/include/asm-generic/vmlinux.lds.h
-+++ b/include/asm-generic/vmlinux.lds.h
-@@ -61,7 +61,7 @@
- #define BRANCH_PROFILE()
- #endif
+diff --git a/drivers/staging/winbond/wbusb.c b/drivers/staging/winbond/wbusb.c
+index 12934a3..1c6e0c4 100644
+--- a/drivers/staging/winbond/wbusb.c
++++ b/drivers/staging/winbond/wbusb.c
+@@ -178,15 +178,15 @@ static const struct ieee80211_ops wbsoft_ops = {
+ // conf_tx: hal_set_cwmin()/hal_set_cwmax;
+ };
  
--#ifdef CONFIG_EVENT_TRACER
-+#ifdef CONFIG_EVENT_TRACING
- #define FTRACE_EVENTS()	VMLINUX_SYMBOL(__start_ftrace_events) = .;	\
- 			*(_ftrace_events)				\
- 			VMLINUX_SYMBOL(__stop_ftrace_events) = .;
-diff --git a/kernel/trace/Kconfig b/kernel/trace/Kconfig
-index 23b96eb..644606e 100644
---- a/kernel/trace/Kconfig
-+++ b/kernel/trace/Kconfig
-@@ -48,6 +48,9 @@ config FTRACE_NMI_ENTER
-        depends on HAVE_FTRACE_NMI_ENTER
-        default y
+-static unsigned char wb35_hw_init(struct ieee80211_hw *hw)
++static int wb35_hw_init(struct ieee80211_hw *hw)
+ {
+ 	struct wbsoft_priv *priv = hw->priv;
+ 	struct hw_data *	pHwData;
+ 	u8		*pMacAddr;
+ 	u8		*pMacAddr2;
+-	u32		InitStep = 0;
+ 	u8		EEPROM_region;
+ 	u8		HwRadioOff;
++	int err;
  
-+config EVENT_TRACING
-+	bool
-+
- config TRACING
- 	bool
- 	select DEBUG_FS
-@@ -56,6 +59,7 @@ config TRACING
- 	select TRACEPOINTS
- 	select NOP_TRACER
- 	select BINARY_PRINTF
-+	select EVENT_TRACING
+ 	//
+ 	// Setting default value for Linux
+@@ -209,10 +209,11 @@ static unsigned char wb35_hw_init(struct ieee80211_hw *hw)
+ 	priv->sLocalPara.WepKeyDetectTimerCount= 2 * 100; /// 2 seconds
  
- #
- # Minimum requirements an architecture has to meet for us to
-diff --git a/kernel/trace/Makefile b/kernel/trace/Makefile
-index 2630f51..3ad367e 100644
---- a/kernel/trace/Makefile
-+++ b/kernel/trace/Makefile
-@@ -40,11 +40,11 @@ obj-$(CONFIG_POWER_TRACER) += trace_power.o
- obj-$(CONFIG_KMEMTRACE) += kmemtrace.o
- obj-$(CONFIG_WORKQUEUE_TRACER) += trace_workqueue.o
- obj-$(CONFIG_BLK_DEV_IO_TRACE)	+= blktrace.o
--obj-$(CONFIG_EVENT_TRACER) += trace_events.o
-+obj-$(CONFIG_EVENT_TRACING) += trace_events.o
- obj-$(CONFIG_EVENT_TRACER) += events.o
--obj-$(CONFIG_EVENT_TRACER) += trace_export.o
-+obj-$(CONFIG_EVENT_TRACING) += trace_export.o
- obj-$(CONFIG_FTRACE_SYSCALLS) += trace_syscalls.o
- obj-$(CONFIG_EVENT_PROFILE) += trace_event_profile.o
--obj-$(CONFIG_EVENT_TRACER) += trace_events_filter.o
-+obj-$(CONFIG_EVENT_TRACING) += trace_events_filter.o
+ 	// Initial USB hal
+-	InitStep = 1;
+ 	pHwData = &priv->sHwData;
+-	if (!hal_init_hardware(hw))
++	if (!hal_init_hardware(hw)) {
++		err = -EINVAL;
+ 		goto error;
++	}
  
- libftrace-y := ftrace.o
+ 	EEPROM_region = hal_get_region_from_EEPROM( pHwData );
+ 	if (EEPROM_region != REGION_AUTO)
+@@ -229,21 +230,12 @@ static unsigned char wb35_hw_init(struct ieee80211_hw *hw)
+ 	if (hal_software_set(pHwData) & 0x00000001)
+ 		priv->sLocalPara.boAntennaDiversity = true;
+ 
+-	//
+-	// For TS module
+-	//
+-	InitStep = 2;
+-
+ 	// For MDS module
+-	InitStep = 3;
+ 	Mds_initial(priv);
+ 
+ 	//=======================================
+ 	// Initialize the SME, SCAN, MLME, ROAM
+ 	//=======================================
+-	InitStep = 4;
+-	InitStep = 5;
+-	InitStep = 6;
+ 
+ 	// If no user-defined address in the registry, use the addresss "burned" on the NIC instead.
+ 	pMacAddr = priv->sLocalPara.ThisMacAddress;
+@@ -277,19 +269,12 @@ static unsigned char wb35_hw_init(struct ieee80211_hw *hw)
+ 	hal_driver_init_OK(pHwData) = 1; // Notify hal that the driver is ready now.
+ 	//set a tx power for reference.....
+ //	sme_set_tx_power_level(priv, 12);	FIXME?
+-	return true;
++	return 0;
+ 
+ error:
+-	switch (InitStep) {
+-	case 5:
+-	case 4:
+-	case 3: Mds_Destroy( priv );
+-	case 2:
+-	case 1: hal_halt( pHwData, NULL );
+-	case 0: break;
+-	}
++	hal_halt(pHwData, NULL);
+ 
+-	return false;
++	return err;
+ }
+ 
+ static int wb35_probe(struct usb_interface *intf, const struct usb_device_id *id_table)
+@@ -341,10 +326,9 @@ static int wb35_probe(struct usb_interface *intf, const struct usb_device_id *id
+ 		pWbUsb->IsUsb20 = 1;
+ 	}
+ 
+-	if (!wb35_hw_init(dev)) {
+-		err = -EINVAL;
++	err = wb35_hw_init(dev);
++	if (err)
+ 		goto error_free_hw;
+-	}
+ 
+ 	SET_IEEE80211_DEV(dev, &udev->dev);
+ 	{
 -- 
 1.5.6.3
-
-
 
