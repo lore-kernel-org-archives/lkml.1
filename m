@@ -1,87 +1,86 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932911AbZDHPqV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933641AbZDHPrI@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932911AbZDHPqV (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 8 Apr 2009 11:46:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756652AbZDHPqE
+	id S933641AbZDHPrI (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 8 Apr 2009 11:47:08 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758824AbZDHPqv
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 8 Apr 2009 11:46:04 -0400
-Received: from mail-fx0-f158.google.com ([209.85.220.158]:60547 "EHLO
-	mail-fx0-f158.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752485AbZDHPqD (ORCPT
+	Wed, 8 Apr 2009 11:46:51 -0400
+Received: from 136-022.dsl.LABridge.com ([206.117.136.22]:1096 "EHLO
+	mail.perches.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755748AbZDHPqu (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 8 Apr 2009 11:46:03 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:references:mime-version
-         :content-type:content-disposition:in-reply-to:user-agent;
-        b=t0CzLuk4QtxANzj/EGASGIedI+cHiYnx9od/PAB+IBfhE7YzbaZH0KFwPFZF4/W1Fy
-         M23HTPbzxfenvliKT4XizfNaIdcIvmSK2BwUxfT0+sbroQN0KMyy3wkdFZwvzNAf/WSU
-         JDBQeoartLQMATq+ZX8EM5wMGs9buHYLrEUoo=
-Date: Wed, 8 Apr 2009 19:45:58 +0400
-From: Cyrill Gorcunov <gorcunov@gmail.com>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: "H. Peter Anvin" <hpa@zytor.com>, Thomas Gleixner <tglx@linutronix.de>,
-       LKML <linux-kernel@vger.kernel.org>,
-       Suresh Siddha <suresh.b.siddha@intel.com>
-Subject: Re: [PATCH -tip] x86: do_IRQ - send EOI for x86-32 on irq without
-	handler v2
-Message-ID: <20090408154558.GC7556@lenovo>
-References: <20090408145017.GB7556@lenovo> <20090408145218.GM12931@elte.hu>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090408145218.GM12931@elte.hu>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+	Wed, 8 Apr 2009 11:46:50 -0400
+Subject: Re: [PATCH 02/10] MAINTAINERS - Add file patterns
+From: Joe Perches <joe@perches.com>
+To: Geert Uytterhoeven <geert@linux-m68k.org>
+Cc: Linus Torvalds <torvalds@linux-foundation.org>,
+       Andrew Morton <akpm@kernel.org>, linux-kernel@vger.kernel.org,
+       linux-m68k@vger.kernel.org, Joshua Thompson <funaho@jurai.org>
+In-Reply-To: <10f740e80904072359n49ab104fjc545fa9f4617d5ad@mail.gmail.com>
+References: <1239167872-8179-1-git-send-email-joe@perches.com>
+	 <1239167872-8179-3-git-send-email-joe@perches.com>
+	 <10f740e80904072359n49ab104fjc545fa9f4617d5ad@mail.gmail.com>
+Content-Type: text/plain
+Date: Wed, 08 Apr 2009 08:44:27 -0700
+Message-Id: <1239205467.32726.40.camel@localhost>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.24.2-1.2mdv2009.0 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-[Ingo Molnar - Wed, Apr 08, 2009 at 04:52:18PM +0200]
-| 
-| * Cyrill Gorcunov <gorcunov@openvz.org> wrote:
-| 
-| > Ingo, I think introducing additional dummy here would be a bit 
-| > expencive -- a number of callers of ack_APIC_irq just should not 
-| > check for disable_apic since it's not needed. disable_apic is to 
-| > depend on CONFIG_X86_LOCAL_APIC rather then CONFIG_X86_64 
-| > actually. So make it then. Or you mean something else? Like new 
-| > apic->write_eoi operation? (I'm a bit tired so brain is a half 
-| > functional now :)
-| 
-| no, i meant a dummy apic->write() method in the !apic case. Check 
-| what ack_APIC_irq() does internally.
-| 
-| 	Ingo
-|
+On Wed, 2009-04-08 at 08:59 +0200, Geert Uytterhoeven wrote:
+> On Wed, Apr 8, 2009 at 07:17, Joe Perches <joe@perches.com> wrote:
+> >  M68K ARCHITECTURE
+> You can add drivers/zorro/ (Amiga Zorro bus) there, too
+> >  M68K ON APPLE MACINTOSH
+> That would be arch/m68k/mac/
 
-Of course I saw how ack_APIC_irq implemented :) It's already guarded
-by CONFIG_X86_LOCAL_APIC and I could just move check for disable_apic
-right here (ie it could be like
+commit 9cd0444bdf1476798f118cc6e4abe3f3072a3f76
+Author: Joe Perches <joe@perches.com>
+Date:   Wed Apr 8 08:39:56 2009 -0700
 
-static inline void ack_APIC_irq(void)
-{
-#ifdef CONFIG_X86_LOCAL_APIC
-	/*
-	 * ack_APIC_irq() actually gets compiled as a single instruction
-	 * ... yummie.
-	 */
+    MAINTAINERS - Update M68K patterns
+    
+    Signed-off-by: Joe Perches <joe@perches.com>
+---
+ MAINTAINERS |    2 ++
+ 1 files changed, 2 insertions(+), 0 deletions(-)
 
-	if (!disable_apic)
-		/* Docs say use 0 for future compatibility */
-		apic_write(APIC_EOI, 0);
-#endif
-}
+diff --git a/MAINTAINERS b/MAINTAINERS
+index 34c7903..b663cea 100644
+--- a/MAINTAINERS
++++ b/MAINTAINERS
+@@ -3510,27 +3510,29 @@ F:	include/asm-m32r/
+ M68K ARCHITECTURE
+ P:	Geert Uytterhoeven
+ M:	geert@linux-m68k.org
+ P:	Roman Zippel
+ M:	zippel@linux-m68k.org
+ L:	linux-m68k@lists.linux-m68k.org
+ W:	http://www.linux-m68k.org/
+ T:	git git://git.kernel.org/pub/scm/linux/kernel/git/geert/linux-m68k.git
+ S:	Maintained
+ F:	arch/m68k/
++F:	drivers/zorro/
+ 
+ M68K ON APPLE MACINTOSH
+ P:	Joshua Thompson
+ M:	funaho@jurai.org
+ W:	http://www.mac.linux-m68k.org/
+ L:	linux-m68k@lists.linux-m68k.org
+ S:	Maintained
++F:	arch/m68k/mac/
+ 
+ M68K ON HP9000/300
+ P:	Philip Blundell
+ M:	philb@gnu.org
+ W:	http://www.tazenda.demon.co.uk/phil/linux-hp
+ S:	Maintained
+ F:	arch/m68k/hp300/
+ 
+ MAC80211
+ P:	Johannes Berg
 
-but what is bothering me is that a number of ack_APIC_irq callers
-will pass execution with always disable_apic=0 and as result
-this checking would be just spedning cycles for free.
 
-So Ingo, it seems I miss something on what you mean. apic->write is already
-called only for CONFIG_X86_LOCAL_APIC here as well and the arguable
-point is where to check for disable_apic variable. But do_IRQ is a
-special case (wrt to say smp_apic_timer_interrupt or setup_local_APIC.
-I mean as example -- setup_local_APIC is not even called for disable_apic=1).
-
-/me: scratching the head heavily
-
-        Cyrill
