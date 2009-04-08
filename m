@@ -1,51 +1,71 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933886AbZDHQiK@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934214AbZDHQih@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933886AbZDHQiK (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 8 Apr 2009 12:38:10 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755313AbZDHQhx
+	id S934214AbZDHQih (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 8 Apr 2009 12:38:37 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934039AbZDHQiV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 8 Apr 2009 12:37:53 -0400
-Received: from hrndva-omtalb.mail.rr.com ([71.74.56.125]:63914 "EHLO
-	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754724AbZDHQhx (ORCPT
+	Wed, 8 Apr 2009 12:38:21 -0400
+Received: from rcsinet12.oracle.com ([148.87.113.124]:35799 "EHLO
+	rgminet12.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1765712AbZDHQiU (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 8 Apr 2009 12:37:53 -0400
-Date: Wed, 8 Apr 2009 12:37:48 -0400 (EDT)
-From: Steven Rostedt <rostedt@goodmis.org>
-X-X-Sender: rostedt@gandalf.stny.rr.com
-To: Ingo Molnar <mingo@elte.hu>
-cc: linux kernel <linux-kernel@vger.kernel.org>,
-       Frederic Weisbecker <fweisbec@gmail.com>,
-       Tim Bird <tim.bird@am.sony.com>, Ingo Molnar <mingo@redhat.com>,
-       Abhishek Sagar <sagar.abhishek@gmail.com>,
-       Peter Zijlstra <peterz@infradead.org>,
-       Thomas Gleixner <tglx@linutronix.de>
-Subject: Re: [PATCH][GIT PULL] x86, function-graph: only save return values
- on x86_64
-In-Reply-To: <20090408160915.GD16759@elte.hu>
-Message-ID: <alpine.DEB.2.00.0904081234550.5797@gandalf.stny.rr.com>
-References: <49C936CA.8070800@am.sony.com> <20090324213618.GC5975@nowhere> <20090324214846.GB29509@elte.hu> <20090324215738.GD5975@nowhere> <alpine.DEB.2.00.0903251153500.5675@gandalf.stny.rr.com> <alpine.DEB.2.00.0903251625490.5675@gandalf.stny.rr.com>
- <20090408160915.GD16759@elte.hu>
-User-Agent: Alpine 2.00 (DEB 1167 2008-08-23)
+	Wed, 8 Apr 2009 12:38:20 -0400
+Message-ID: <49DCD287.3090203@oracle.com>
+Date: Wed, 08 Apr 2009 09:36:23 -0700
+From: Randy Dunlap <randy.dunlap@oracle.com>
+Organization: Oracle Linux Engineering
+User-Agent: Thunderbird 2.0.0.6 (X11/20070801)
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+To: Ingo Molnar <mingo@elte.hu>
+CC: Mauro Carvalho Chehab <mchehab@redhat.com>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
+       linux-media@vger.kernel.org, "Rafael J. Wysocki" <rjw@sisk.pl>
+Subject: Re: [-rc1 build failure] cx231xx-audio.c:(.text+0xd4e43): undefined
+ reference to `snd_card_free'
+References: <20090406215632.3eb96373@pedra.chehab.org> <20090408075642.GA2462@elte.hu>
+In-Reply-To: <20090408075642.GA2462@elte.hu>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
+X-Source-IP: acsmt707.oracle.com [141.146.40.85]
+X-Auth-Type: Internal IP
+X-CT-RefId: str=0001.0A010206.49DCD27B.006C:SCFMA4539814,ss=1,fgs=0
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-
-On Wed, 8 Apr 2009, Ingo Molnar wrote:
-
+Ingo Molnar wrote:
+> * Mauro Carvalho Chehab <mchehab@redhat.com> wrote:
 > 
-> (replying to old mail - working down my awful email backlog)
+>>  drivers/media/video/cx231xx/Kconfig               |   35 +
+>>  drivers/media/video/cx231xx/Makefile              |   14 +
 > 
-> do we still need this for -tip?
+> FYI, there's a new build breakage here:
 > 
+>  drivers/built-in.o: In function `cx231xx_audio_fini':
+>  cx231xx-audio.c:(.text+0xd4e43): undefined reference to `snd_card_free'
+>  drivers/built-in.o: In function `cx231xx_audio_isocirq':
+>  cx231xx-audio.c:(.text+0xd4fb7): undefined reference to `snd_pcm_link_rwlock'
+>  cx231xx-audio.c:(.text+0xd5021): undefined reference to `snd_pcm_link_rwlock'
+>  cx231xx-audio.c:(.text+0xd50bb): undefined reference to `snd_pcm_period_elapsed'
+>  drivers/built-in.o: In function `snd_cx231xx_capture_open':
+> 
+> config attached.
+> 
+> I suspect the key problem is that sound is modular while cx231xx is 
+> built-in:
+> 
+>  CONFIG_SOUND=m
+>  CONFIG_VIDEO_CX231XX=y
+>  CONFIG_VIDEO_CX231XX_ALSA=y
+> 
+> This has a similar pattern to past build breakages in this area.
+> 
+> 	Ingo
 
-I've ran it without issues. It will help speed up the function graph 
-tracer since it removes a bunch of copies at every function call. But I 
-would test it in your work suite, since I only tested it on two boxes.
+patch posted yesterday:
+http://lkml.org/lkml/2009/4/7/400
 
--- Steve
 
+-- 
+~Randy
