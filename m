@@ -1,52 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763933AbZDHJuk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763336AbZDHJwU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763933AbZDHJuk (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 8 Apr 2009 05:50:40 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763528AbZDHJuO
+	id S1763336AbZDHJwU (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 8 Apr 2009 05:52:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757494AbZDHJwH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 8 Apr 2009 05:50:14 -0400
-Received: from one.firstfloor.org ([213.235.205.2]:45468 "EHLO
-	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1758843AbZDHJuM (ORCPT
+	Wed, 8 Apr 2009 05:52:07 -0400
+Received: from casper.infradead.org ([85.118.1.10]:41138 "EHLO
+	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756499AbZDHJwF (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 8 Apr 2009 05:50:12 -0400
-To: Alex Chiang <achiang@hp.com>
-Cc: Robin Holt <holt@sgi.com>, Andrew Morton <akpm@linux-foundation.org>,
-       linux-kernel <linux-kernel@vger.kernel.org>, linux-ia64@vger.kernel.org
-Subject: Re: cross-compilers
-From: Andi Kleen <andi@firstfloor.org>
-References: <20090408003921.GA5054@ldl.fc.hp.com>
-	<20090408010331.GB10768@sgi.com> <20090408054612.GA6744@ldl.fc.hp.com>
-Date: Wed, 08 Apr 2009 11:50:08 +0200
-In-Reply-To: <20090408054612.GA6744@ldl.fc.hp.com> (Alex Chiang's message of "Tue, 7 Apr 2009 23:46:12 -0600")
-Message-ID: <87myara2zz.fsf@basil.nowhere.org>
-User-Agent: Gnus/5.1008 (Gnus v5.10.8) Emacs/22.3 (gnu/linux)
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	Wed, 8 Apr 2009 05:52:05 -0400
+Subject: Re: [PATCH]kernel/sched_fair.c: the comment of the
+ calc_delta_fair() maybe not correctly
+From: Peter Zijlstra <peterz@infradead.org>
+To: "figo.zhang" <figo.zhang@kolorific.com>
+Cc: =?ISO-8859-1?Q?Am=E9rico?= Wang <xiyou.wangcong@gmail.com>, mingo@elte.hu,
+       linux-kernel@vger.kernel.org, rdunlap@xenotime.net
+In-Reply-To: <20090408022723.22EC7F50054@mail.kolorific.com>
+References: <20090407063306.64659F50054@mail.kolorific.com>
+	 <20090407165736.GI12226@hack>
+	 <20090408022723.22EC7F50054@mail.kolorific.com>
+Content-Type: text/plain
+Content-Transfer-Encoding: 7bit
+Date: Wed, 08 Apr 2009 11:53:45 +0200
+Message-Id: <1239184425.24828.1373.camel@twins>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.26.0 
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Alex Chiang <achiang@hp.com> writes:
+On Wed, 2009-04-08 at 10:27 +0800, figo.zhang wrote:
+> the comment of the calc_delta_fair() maybe not correctly, should be
+> delta *= NICE_0_LOAD/se->load
+> 
+> Signed-off-by: figo.zhang <figo.zhang@kolorific.com>
+> 
+> diff --git a/kernel/sched_fair.c b/kernel/sched_fair.c
+> index 3816f21..5134b45 100644
+> --- a/kernel/sched_fair.c
+> +++ b/kernel/sched_fair.c
+> @@ -386,7 +386,7 @@ int sched_nr_latency_handler(struct ctl_table
+> *table, int write, #endif
+>  
+>  /*
+> - * delta /= w
+> + * delta *= NICE_0_LOAD/se->load
+>   */
+>  static inline unsigned long
+>  calc_delta_fair(unsigned long delta, struct sched_entity *se)
 
-> * Robin Holt <holt@sgi.com>:
->> Don't know if this answers your problem, but I use the tools from
->> emdebian and they do not suffer from the problems you list below.
->
-> Wow, this seems _much_ simpler. Once you get the toolchain
-> installed, all you have to do is set ARCH and CROSS_COMPILE
-> appropriately?
->
-> I guess the question remains for Andrew. Since I pretty much did
-> all the work needed to update his cross-compiler repo, is there
-> still value in it?
->
-> Or shall we just recommend emdebian to everyone? :)
+The comment is conceptually correct.
 
-SUSE also has cross-gcc-* rpms. Typically for icecream, but they're
-relatively easy to extract into native format.
+NICE_0_LOAD := 1 and se->load := w, ergo, delta /= w.
 
--Andi
 
--- 
-ak@linux.intel.com -- Speaking for myself only.
