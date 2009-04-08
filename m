@@ -1,160 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757015AbZDHXkd@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754535AbZDHXpc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757015AbZDHXkd (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 8 Apr 2009 19:40:33 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755631AbZDHXkQ
+	id S1754535AbZDHXpc (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 8 Apr 2009 19:45:32 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755617AbZDHXpV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 8 Apr 2009 19:40:16 -0400
-Received: from thunk.org ([69.25.196.29]:55097 "EHLO thunker.thunk.org"
+	Wed, 8 Apr 2009 19:45:21 -0400
+Received: from ozlabs.org ([203.10.76.45]:37930 "EHLO ozlabs.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755155AbZDHXkN (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 8 Apr 2009 19:40:13 -0400
-To: torvalds@linuxfoundation.org
-Cc: Linux Kernel Developers List <linux-kernel@vger.kernel.org>,
-       Ext4 Developers List <linux-ext4@vger.kernel.org>
-Subject: [GIT PULL] Ext3 latency fixes
-From: "Theodore Ts'o" <tytso@mit.edu>
-Phone: (781) 391-3464
-Message-Id: <E1LrhNF-0002zd-BG@closure.thunk.org>
-Date: Wed, 08 Apr 2009 19:40:05 -0400
-X-SA-Exim-Connect-IP: <locally generated>
-X-SA-Exim-Mail-From: tytso@mit.edu
-X-SA-Exim-Scanned: No (on thunker.thunk.org); SAEximRunCond expanded to false
+	id S1755269AbZDHXpU (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 8 Apr 2009 19:45:20 -0400
+From: Rusty Russell <rusty@rustcorp.com.au>
+To: Peter Zijlstra <a.p.zijlstra@chello.nl>
+Subject: Re: pm-hibernate : possible circular locking dependency detected
+Date: Thu, 9 Apr 2009 09:15:17 +0930
+User-Agent: KMail/1.11.2 (Linux/2.6.27-11-generic; KDE/4.2.2; i686; ; )
+Cc: Ingo Molnar <mingo@elte.hu>, "Rafael J. Wysocki" <rjw@sisk.pl>,
+       Ming Lei <tom.leiming@gmail.com>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       "Linux-pm mailing list" <linux-pm@lists.linux-foundation.org>,
+       Linux Kernel List <linux-kernel@vger.kernel.org>,
+       Gautham R Shenoy <ego@in.ibm.com>
+References: <d82e647a0904050253n31bd2654s9b216465eec4d038@mail.gmail.com> <200904081247.08712.rusty@rustcorp.com.au> <1239194906.13185.93.camel@twins>
+In-Reply-To: <1239194906.13185.93.camel@twins>
+MIME-Version: 1.0
+Content-Type: Text/Plain;
+  charset="iso-8859-15"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200904090915.18644.rusty@rustcorp.com.au>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Linus,
+On Wednesday 08 April 2009 22:18:26 Peter Zijlstra wrote:
+> On Wed, 2009-04-08 at 12:47 +0930, Rusty Russell wrote:
+> > On Tuesday 07 April 2009 16:35:53 Peter Zijlstra wrote:
+> > > On Tue, 2009-04-07 at 13:56 +0930, Rusty Russell wrote:
+> > > > Looks like this will be fixed by Andrew's work-on-cpu-in-own-thread
+> > > > patch which I just put out the pull request for.
+> > > 
+> > > Would it make sense to teach it about a short-circuit like:
+> > > 
+> > > work_on_cpu() {
+> > > 
+> > >   if (cpumask_weight(current->cpus_allowed) == 1 && 
+> > >       smp_processor_id() == cpu)
+> > >     return do_work_right_here();
+> > 
+> > Does that happen much?  I guess put a counter in and see?
+> 
+> Ego spotted the case where cpufreq calls it from an cpu-affine
+> workqueue, it seems to me in that case its desirable to have the
+> short-cut, and currently that's needed for correctness too as it will
+> generate this circular lock thingy.
 
-Please pull from: 
+Well, the correctness issue is fixed by Andrew's work_on_cpu-via-new-thread
+patch (hmm, which Linus hasn't taken, re-xmitting).
 
-git://git.kernel.org/pub/scm/linux/kernel/git/tytso/ext4.git ext3-latency-fixes
+So it's really a pure optimization.
 
-One of these patches fixes a performance regression caused by a64c8610,
-which unplugged the write queue after every page write.  Now that Jens
-added WRITE_SYNC_PLUG.the patch causes us to use it instead of
-WRITE_SYNC, to avoid the implicit unplugging.  These patches also seem
-to further improbve ext3 latency, especially during the "sync" command
-in Linus's write-big-file-and-sync workload.
-
-In addition, I have a patch from Jan that avoids starting a transaction
-unnecessarily for the data=writepage case.
-
-						- Ted
-
-Jan Kara (1):
-      ext3: Try to avoid starting a transaction in writepage for data=writepage
-
-Theodore Ts'o (1):
-      block_write_full_page: switch synchronous writes to use WRITE_SYNC_PLUG
-
- fs/buffer.c     |   13 ++++++++++++-
- fs/ext3/inode.c |   23 ++++++++++++++++++-----
- 2 files changed, 30 insertions(+), 6 deletions(-)
-
-
-commit 430db323fae7665da721768949ade6304811c648
-Author: Jan Kara <jack@suse.cz>
-Date:   Tue Apr 7 18:25:01 2009 -0400
-
-    ext3: Try to avoid starting a transaction in writepage for data=writepage
-    
-    This does the same as commit 9e80d407736161d9b8b0c5a0d44f786e44c322ea
-    (avoid starting a transaction when no block allocation is needed)
-    but for data=writeback mode of ext3. We also cleanup the data=ordered
-    case a bit to stick to coding style...
-    
-    Signed-off-by: Jan Kara <jack@suse.cz>
-    Signed-off-by: "Theodore Ts'o" <tytso@mit.edu>
-
-diff --git a/fs/ext3/inode.c b/fs/ext3/inode.c
-index 466a332..fcfa243 100644
---- a/fs/ext3/inode.c
-+++ b/fs/ext3/inode.c
-@@ -1521,12 +1521,16 @@ static int ext3_ordered_writepage(struct page *page,
- 	if (!page_has_buffers(page)) {
- 		create_empty_buffers(page, inode->i_sb->s_blocksize,
- 				(1 << BH_Dirty)|(1 << BH_Uptodate));
--	} else if (!walk_page_buffers(NULL, page_buffers(page), 0, PAGE_CACHE_SIZE, NULL, buffer_unmapped)) {
--		/* Provide NULL instead of get_block so that we catch bugs if buffers weren't really mapped */
--		return block_write_full_page(page, NULL, wbc);
-+		page_bufs = page_buffers(page);
-+	} else {
-+		page_bufs = page_buffers(page);
-+		if (!walk_page_buffers(NULL, page_bufs, 0, PAGE_CACHE_SIZE,
-+				       NULL, buffer_unmapped)) {
-+			/* Provide NULL get_block() to catch bugs if buffers
-+			 * weren't really mapped */
-+			return block_write_full_page(page, NULL, wbc);
-+		}
- 	}
--	page_bufs = page_buffers(page);
--
- 	handle = ext3_journal_start(inode, ext3_writepage_trans_blocks(inode));
- 
- 	if (IS_ERR(handle)) {
-@@ -1581,6 +1585,15 @@ static int ext3_writeback_writepage(struct page *page,
- 	if (ext3_journal_current_handle())
- 		goto out_fail;
- 
-+	if (page_has_buffers(page)) {
-+		if (!walk_page_buffers(NULL, page_buffers(page), 0,
-+				      PAGE_CACHE_SIZE, NULL, buffer_unmapped)) {
-+			/* Provide NULL get_block() to catch bugs if buffers
-+			 * weren't really mapped */
-+			return block_write_full_page(page, NULL, wbc);
-+		}
-+	}
-+
- 	handle = ext3_journal_start(inode, ext3_writepage_trans_blocks(inode));
- 	if (IS_ERR(handle)) {
- 		ret = PTR_ERR(handle);
-
-commit 6e34eeddf7deec1444bbddab533f03f520d8458c
-Author: Theodore Ts'o <tytso@mit.edu>
-Date:   Tue Apr 7 18:12:43 2009 -0400
-
-    block_write_full_page: switch synchronous writes to use WRITE_SYNC_PLUG
-    
-    Now that we have a distinction between WRITE_SYNC and WRITE_SYNC_PLUG,
-    use WRITE_SYNC_PLUG in __block_write_full_page() to avoid unplugging
-    the block device I/O queue between each page that gets flushed out.
-    
-    Otherwise, when we run sync() or fsync() and we need to write out a
-    large number of pages, the block device queue will get unplugged
-    between for every page that is flushed out, which will be a pretty
-    serious performance regression caused by commit a64c8610.
-    
-    Signed-off-by: "Theodore Ts'o" <tytso@mit.edu>
-
-diff --git a/fs/buffer.c b/fs/buffer.c
-index 6e35762..13edf7a 100644
---- a/fs/buffer.c
-+++ b/fs/buffer.c
-@@ -1596,6 +1596,16 @@ EXPORT_SYMBOL(unmap_underlying_metadata);
-  * locked buffer.   This only can happen if someone has written the buffer
-  * directly, with submit_bh().  At the address_space level PageWriteback
-  * prevents this contention from occurring.
-+ *
-+ * If block_write_full_page() is called with wbc->sync_mode ==
-+ * WB_SYNC_ALL, the writes are posted using WRITE_SYNC_PLUG; this
-+ * causes the writes to be flagged as synchronous writes, but the
-+ * block device queue will NOT be unplugged, since usually many pages
-+ * will be pushed to the out before the higher-level caller actually
-+ * waits for the writes to be completed.  The various wait functions,
-+ * such as wait_on_writeback_range() will ultimately call sync_page()
-+ * which will ultimately call blk_run_backing_dev(), which will end up
-+ * unplugging the device queue.
-  */
- static int __block_write_full_page(struct inode *inode, struct page *page,
- 			get_block_t *get_block, struct writeback_control *wbc)
-@@ -1606,7 +1616,8 @@ static int __block_write_full_page(struct inode *inode, struct page *page,
- 	struct buffer_head *bh, *head;
- 	const unsigned blocksize = 1 << inode->i_blkbits;
- 	int nr_underway = 0;
--	int write_op = (wbc->sync_mode == WB_SYNC_ALL ? WRITE_SYNC : WRITE);
-+	int write_op = (wbc->sync_mode == WB_SYNC_ALL ?
-+			WRITE_SYNC_PLUG : WRITE);
- 
- 	BUG_ON(!PageLocked(page));
- 
+Cheers,
+Rusty.
