@@ -1,68 +1,159 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759674AbZDGX5f@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756078AbZDHAKn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759674AbZDGX5f (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 7 Apr 2009 19:57:35 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755593AbZDGX4l
+	id S1756078AbZDHAKn (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 7 Apr 2009 20:10:43 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752866AbZDHAKc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 7 Apr 2009 19:56:41 -0400
-Received: from norsk5.dsl.xmission.com ([166.70.24.44]:22498 "EHLO
-	master.douglaskthompson.com" rhost-flags-OK-OK-OK-FAIL)
-	by vger.kernel.org with ESMTP id S1754260AbZDGX4j (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 7 Apr 2009 19:56:39 -0400
-Date: Tue, 07 Apr 2009 17:45:50 -0600
-From: dougthompson@xmission.com
-To: khali@linux-fr.org, qingtao.cao@windriver.com, jharan@Brocade.COM,
-       dougthompson@xmission.com, linux-kernel@vger.kernel.org,
-       akpm@linux-foundation.org
-Subject: [PATCH 2/3] edac: fix local pci_write_bits32
-Message-ID: <49dbe5ae.HYnkazVjNjfmhjJe%dougthompson@xmission.com>
-User-Agent: Heirloom mailx 12.2 01/07/07
-MIME-Version: 1.0
+	Tue, 7 Apr 2009 20:10:32 -0400
+Received: from relay3.sgi.com ([192.48.156.57]:36821 "EHLO relay.sgi.com"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1752588AbZDHAKc (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 7 Apr 2009 20:10:32 -0400
+Date: Tue, 7 Apr 2009 19:10:29 -0500
+From: Russ Anderson <rja@sgi.com>
+To: linux-kernel@vger.kernel.org, linux-mm@kvack.org, x86@kernel.org
+Cc: Russ Anderson <rja@sgi.com>
+Subject: [PATCH 0/2] Migrate data off physical pages with corrected memory errors
+Message-ID: <20090408001029.GA27170@sgi.com>
+Reply-To: Russ Anderson <rja@sgi.com>
+Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+User-Agent: Mutt/1.4.2.2i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From:  Jeff Haran <jharan@Brocade.COM>
+Purpose:
 
-Fix the edac local pci_write_bits32 to properly note the 'escape' mask
-if all ones in a 32-bit word.
+	Physical memory with corrected errors may decay over time into
+	uncorrectable errors.  The purpose of this patch is to move the
+	data off pages with correctable memory errors before the memory
+	goes bad.
 
-Currently no consumer of this function uses that mask, so danger to
-existing code. 
+	This patch set applies on top of Andi Kleen's POISON patch set.
+
+The patches:
+
+  [1/2] Avoid putting a bad page back on the LRU.
+
+	Avoid putting a bad page back on the LRU after migrating the
+	data to a new page.  The reference count on the bad page is
+	not decremented to zero to avoid it being reallocated.
+
+  [2/3] Call migration code on correctable errors
+
+	This patch has ia64 specific changes.  It connects the CPE
+	handler to the page migration code.  It is implemented as a kernel
+	loadable module, similar to the mca recovery code (mca_recovery.ko),
+	so that it can be removed to turn off the feature.  Create
+	/sys/kernel/badram to print page discard information and to free
+	bad pages.
+
+Comments:
+
+	There is always an issue of how agressive the code should be on
+	migrating pages.  This patch uses /sys/firmware/badram/migrate_threshold
+	to adjust the number of correctable errors before migrating a 
+	page.
+
+	Only pages that can be isolated on the LRU are migrated.  Other
+	pages, such as compound pages, are not migrated.  That functionality
+	could be a future enhancement.
+
+	/sys/kernel/badram/bad_pages is used to display information about
+	the bad memory.  The interface can be used to free pages marked bad.
+
+Sample output:
+
+	This is sample output from a system with a DIMM that has correctable
+	errors at many addresses.
+
+	linux> ls /sys/firmware/badram/
+	bad_pages  cmc_polling_threshold  cpe_polling_threshold  migrate_threshold
+
+	linux> cat /sys/firmware/badram/bad_pages
+	Memory marked bad:        704 kB
+	Pages marked bad:         11
+	Unable to isolate on LRU: 1
+	Unable to migrate:        0
+	Already marked bad:       2
+	Already on list:          0
+	List of bad physical pages
+ 	  0x06871110000 0x06014820000 0x26003b20000 0x26005380000 0x26005390000
+ 	  0x260053a0000 0x260053b0000 0x260052f0000 0x26004bf0000 0x26004af0000
+ 	  0x26005330000
 
 
-Signed-off-by:  Jeff Haran <jharan@Brocade.COM>
-Signed-off-by:  Doug Thompson <dougthompson@xmission.com>
----
- edac_core.h |   12 ++++++++++--
- 1 file changed, 10 insertions(+), 2 deletions(-)
+		// Free one of the pages
+	linux> echo 0x06014820000 > /sys/firmware/badram/bad_pages
 
-Index: linux-2.6.29/drivers/edac/edac_core.h
-===================================================================
---- linux-2.6.29.orig/drivers/edac/edac_core.h
-+++ linux-2.6.29/drivers/edac/edac_core.h
-@@ -767,11 +767,19 @@ static inline void pci_write_bits16(stru
- 	pci_write_config_word(pdev, offset, value);
- }
- 
--/* write all or some bits in a dword-register*/
-+/*
-+ * pci_write_bits32
-+ *
-+ * edac local routine to do pci_write_config_dword, but adds
-+ * a mask parameter. If mask is all ones, ignore the mask.
-+ * Otherwise utilize the mask to isolate specified bits
-+ *
-+ * write all or some bits in a dword-register
-+ */
- static inline void pci_write_bits32(struct pci_dev *pdev, int offset,
- 				    u32 value, u32 mask)
- {
--	if (mask != 0xffff) {
-+	if (mask != 0xffffffff) {
- 		u32 buf;
- 
- 		pci_read_config_dword(pdev, offset, &buf);
+		// 10 pages remain on the list
+	linux> cat /sys/firmware/badram/bad_pages
+	Memory marked bad:        640 kB
+	Pages marked bad:         10
+	Unable to isolate on LRU: 1
+	Unable to migrate:        0
+	Already marked bad:       2
+	Already on list:          0
+	List of bad physical pages
+ 	  0x06871110000 0x26003b20000 0x26005380000 0x26005390000 0x260053a0000
+ 	  0x260053b0000 0x260052f0000 0x26004bf0000 0x26004af0000 0x26005330000
+
+		// Free all the bad pages
+	linux> echo 0 > /sys/firmware/badram/bad_pages
+
+		// All the pages are freed
+	linux> cat /sys/firmware/badram/bad_pages
+	Memory marked bad:        0 kB
+	Pages marked bad:         0
+	Unable to isolate on LRU: 1
+	Unable to migrate:        0
+	Already marked bad:       2
+	Already on list:          0
+	List of bad physical pages
+
+
+
+Flow of the code description (while testing on IA64):
+
+	1) A user level application test program allocates memory and
+	   passes the virtual address of the memory to the error injection
+	   driver.
+
+	2) The error injection driver converts the virtual address to
+	   physical, functions the Altix hardware to modify the ECC for the
+	   physical page, creating a correctable error, and returns to the
+	   user application.
+
+	3) The user application reads the memory.
+
+	4) The Altix hardware detects the correctable error and interrupts
+	   prom.  SAL builds a CPU error record, then sends a CPE 
+	   interrupt to linux.
+
+	5) The linux CPE handler calls the cpe_migrate module (if installed).
+
+	6) cpe_setup_migrate parses the physical address from the CPE record
+	   and adds the address to the migrate list (if not already on the
+	   list) and wakes up a kernel thread (cpe_process_queue).
+
+	7) cpe_process_queue checks if the threshold has been exceeded and 
+	   calls ia64_mca_cpe_move_page.
+
+	8) ia64_mca_cpe_move_page validates the physical address, converts
+	   to page, sets PG_memerror flag and calls the migration code
+	   (migrate_prep(), isolate_lru_page(), and migrate_pages().  If the
+	   page migrates successfully, the bad page is added to badpagelist.
+
+	9) Because PG_Poison is set, the bad page is not added back on the LRU
+	   by avoiding calls to move_to_lru().  Avoiding move_to_lru() prevents
+	   the page count from being decremented to zero.
+
+	10) If the page fails to migrate, PG_Poison is cleared and the page 
+	   returned to the LRU.  If another correctable error occurs on the
+	   page another attempt will be made to migrate it.
+
+-- 
+Russ Anderson, OS RAS/Partitioning Project Lead  
+SGI - Silicon Graphics Inc          rja@sgi.com
