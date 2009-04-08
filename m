@@ -1,50 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763972AbZDHJka@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763312AbZDHJrd@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763972AbZDHJka (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 8 Apr 2009 05:40:30 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757706AbZDHJkO
+	id S1763312AbZDHJrd (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 8 Apr 2009 05:47:33 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757347AbZDHJrX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 8 Apr 2009 05:40:14 -0400
-Received: from mx3.mail.elte.hu ([157.181.1.138]:36740 "EHLO mx3.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756110AbZDHJkM (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 8 Apr 2009 05:40:12 -0400
-Date: Wed, 8 Apr 2009 11:39:56 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: "Han, Weidong" <weidong.han@intel.com>
-Cc: "'Len Brown'" <lenb@kernel.org>,
-       "Woodhouse, David" <david.woodhouse@intel.com>,
-       "'Linux Kernel Mailing List'" <linux-kernel@vger.kernel.org>,
-       "'Jesse Barnes'" <jbarnes@virtuousgeek.org>
-Subject: Re: 2.6.30-rc1 build failure - drivers/pci/dmar.o
-Message-ID: <20090408093956.GC26121@elte.hu>
-References: <alpine.LFD.2.00.0904072224590.4799@localhost.localdomain> <715D42877B251141A38726ABF5CABF2C01A2F7C978@pdsmsx503.ccr.corp.intel.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <715D42877B251141A38726ABF5CABF2C01A2F7C978@pdsmsx503.ccr.corp.intel.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+	Wed, 8 Apr 2009 05:47:23 -0400
+Received: from viefep19-int.chello.at ([62.179.121.39]:20104 "EHLO
+	viefep19-int.chello.at" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755770AbZDHJrW (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 8 Apr 2009 05:47:22 -0400
+X-SourceIP: 213.93.53.227
+Subject: Re: [BUG 2.6.29] NMI watchdog triggered in rb_insert_color called
+ from enqueue_hrtimer
+From: Peter Zijlstra <a.p.zijlstra@chello.nl>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: Mikael Pettersson <mikpe@it.uu.se>, linux-kernel@vger.kernel.org,
+       tglx@linutronix.de
+In-Reply-To: <20090408092452.GA26121@elte.hu>
+References: <18908.27242.966881.409415@pilspetsen.it.uu.se>
+	 <20090408092452.GA26121@elte.hu>
+Content-Type: text/plain
+Date: Wed, 08 Apr 2009 11:49:05 +0200
+Message-Id: <1239184146.24828.1366.camel@twins>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.26.0 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Wed, 2009-04-08 at 11:24 +0200, Ingo Molnar wrote:
+> * Mikael Pettersson <mikpe@it.uu.se> wrote:
+> 
+> > Less than an hour after updating a dual Opteron 8384 box from 
+> > 2.6.29-rc6 (which it had been running for weeks) to 2.6.29 final 
+> > it died with the following watchdog-detected lockup:
+> 
+> Could you please check whether this is the bug fixed by:
+> 
+>   7f1e2ca: hrtimer: fix rq->lock inversion (again)
 
-* Han, Weidong <weidong.han@intel.com> wrote:
+Doesn't look like rq->lock recursion, but its worth a try.
 
-> It's found and fixed by Ingo and David yesterday. The patch is 
-> posted belew. Ingo said he applied it to x86/urgent and will get 
-> it to Linus.
+Also, hrtimer_wakeup() isn't a self-rearming timer, so its unlikely to
+get stuck in a loop, oddness.
 
-i missed -rc1 with that (wanted to wait out more build tests - these 
-Kconfig dependencies are twisted) - will probably send it later 
-today.
-
-	Ingo
