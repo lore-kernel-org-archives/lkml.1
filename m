@@ -1,130 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763719AbZDHUSh@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761396AbZDHUU1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763719AbZDHUSh (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 8 Apr 2009 16:18:37 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756608AbZDHUSW
+	id S1761396AbZDHUU1 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 8 Apr 2009 16:20:27 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754683AbZDHUUK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 8 Apr 2009 16:18:22 -0400
-Received: from mail-ew0-f165.google.com ([209.85.219.165]:39616 "EHLO
-	mail-ew0-f165.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751228AbZDHUSU (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 8 Apr 2009 16:18:20 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
-         :content-type:content-transfer-encoding;
-        b=CdQ1JpsAVvs56jJKhmShDzC+tVo51nAAV5bJSQMC9p8MbpXyrvwG4+eX96UlsjRjgn
-         u44hqF+PDIx1B4m5WLH+jlN71fFxUgZV/U9Q8+VyNdYkMER+y+2gWS/bBxmvla2INnO0
-         2af3vs/CVt8YxkOCzCBA7OKzcfDoxvypUcCnI=
+	Wed, 8 Apr 2009 16:20:10 -0400
+Received: from hera.kernel.org ([140.211.167.34]:60317 "EHLO hera.kernel.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754145AbZDHUUJ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 8 Apr 2009 16:20:09 -0400
+Message-ID: <49DD068F.8040102@kernel.org>
+Date: Wed, 08 Apr 2009 13:18:23 -0700
+From: Tejun Heo <tj@kernel.org>
+User-Agent: Thunderbird 2.0.0.19 (X11/20081227)
 MIME-Version: 1.0
-In-Reply-To: <20090408195610.GA5447@fancy-poultry.org>
-References: <4dcf7d360901301355l7ed26a5aob7ef6d79d9607b6b@mail.gmail.com>
-	 <20090204004003.26068f72@werewolf.home>
-	 <200902071858.40146.jk-lkml@sci.fi>
-	 <4e5e476b0904081218i29871702qc8bacb680c51ec2c@mail.gmail.com>
-	 <20090408195610.GA5447@fancy-poultry.org>
-Date: Wed, 8 Apr 2009 22:18:18 +0200
-Message-ID: <4e5e476b0904081318h4445556am1a6b0a49c6175719@mail.gmail.com>
-Subject: Re: SSD and IO schedulers
-From: Corrado Zoccolo <czoccolo@gmail.com>
-To: linux-kernel@vger.kernel.org, Corrado Zoccolo <czoccolo@gmail.com>,
-       =?UTF-8?B?Si5BLiBNYWdhbGzDs24=?= <jamagallon@ono.com>,
-       Jan Knutar <jk-lkml@sci.fi>
-Content-Type: text/plain; charset=UTF-8
+To: Ivan Kokshaysky <ink@jurassic.park.msu.ru>
+CC: Martin Schwidefsky <schwidefsky@de.ibm.com>, Ingo Molnar <mingo@elte.hu>,
+       rusty@rustcorp.com.au, tglx@linutronix.de, x86@kernel.org,
+       linux-kernel@vger.kernel.org, hpa@zytor.com,
+       Paul Mundt <lethal@linux-sh.org>, rmk@arm.linux.org.uk,
+       starvik@axis.com, ralf@linux-mips.org, davem@davemloft.net,
+       cooloney@kernel.org, kyle@mcmartin.ca, matthew@wil.cx,
+       grundler@parisc-linux.org, takata@linux-m32r.org,
+       benh@kernel.crashing.org, rth@twiddle.net, heiko.carstens@de.ibm.com
+Subject: Re: [GIT RFC] percpu: use dynamic percpu allocator as the default
+ percpu allocator
+References: <49D2B04D.4070604@kernel.org> <20090401101054.0a4b187d@skybase> <49D3231D.2040403@kernel.org> <20090401103257.12c2517e@skybase> <49D32B96.3060102@kernel.org> <20090401130731.785714c5@skybase> <49D41B79.60708@kernel.org> <20090402072418.GA14071@jurassic.park.msu.ru> <20090402131341.08ef4184@skybase> <49D558CE.9090608@kernel.org> <20090407160940.GA31956@jurassic.park.msu.ru>
+In-Reply-To: <20090407160940.GA31956@jurassic.park.msu.ru>
+X-Enigmail-Version: 0.95.7
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Wed, 08 Apr 2009 20:17:55 +0000 (UTC)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Well, that's not an usual workload for netbooks, where most SSDs are
-currently deployed.
-For usual workloads, that are mostly read, cfq has lower performance
-both in throughput and in latency than deadline.
+Hello,
 
-Corrado
+Ivan Kokshaysky wrote:
+> On Fri, Apr 03, 2009 at 09:31:10AM +0900, Tejun Heo wrote:
+>> Can STATIC_DEFINE_PER_CPU() be made to work?  It's not pretty but if
+>> that's the only sensible way to reach uniform static/dynamic handling,
+>> I suppose we can ignore the slight ugliness.
+> 
+> Well, I've got a workaround that has zero impact on common code (patch
+> appended).
+> 
+> The idea is that we can effectively discard the "static" specifier
+> by declaring a dummy variable right before actual per-cpu variable
+> definition:
+> 
+> #define DEFINE_PER_CPU_SECTION(type, name, section)			\
+> 	__attribute__((__section__(".garbage"), __unused__))		\
+> 		char __dummy__##name;					\
+> 	__attribute__((__section__(PER_CPU_BASE_SECTION section)))	\
+> 		__weak __typeof__(type) per_cpu__##name
 
-2009/4/8 Heinz Diehl <htd@fancy-poultry.org>:
-> On 08.04.2009, Corrado Zoccolo wrote:
->
->> I found that elevator=deadline performs much better than noop for
->> writes, and almost as well for reads
-> [....]
->
-> The DL elevator has slightly more throughput than cfq and anticipatory,
-> but is almost unusuable under load.
->
-> Running Theodore Ts'os "fsync-tester" while doing Linus' torture test
-> "while : ; do time sh -c "dd if=/dev/zero of=bigfile bs=8M count=256 ; sync; rm bigfile"; done"
-> shows it clearly:
->
-> mount: /dev/sda4 on /home type xfs (rw,noatime,logbsize=256k,logbufs=2,nobarrier)
-> Kernel 2.6.29.1 (vanilla)
->
-> with cfq:
->
-> htd@liesel:~/!> ./fsync-tester
-> fsync time: 0.7640
-> fsync time: 0.6166
-> fsync time: 1.2830
-> fsync time: 0.4273
-> fsync time: 1.1693
-> fsync time: 1.7466
-> fsync time: 1.2477
-> fsync time: 1.9411
-> fsync time: 1.9636
-> fsync time: 1.9065
-> fsync time: 1.1561
-> fsync time: 1.8267
-> fsync time: 0.2431
-> fsync time: 0.2898
-> fsync time: 0.2394
-> fsync time: 0.4309
-> fsync time: 1.5699
-> fsync time: 0.3742
-> fsync time: 1.3194
-> fsync time: 1.9442
-> fsync time: 1.0899
-> fsync time: 1.9443
-> fsync time: 1.0062
->
-> with dl:
->
-> fsync time: 10.5853
-> fsync time: 10.3339
-> fsync time: 5.3374
-> fsync time: 6.5707
-> fsync time: 10.6095
-> fsync time: 4.1154
-> fsync time: 4.9604
-> fsync time: 10.5325
-> fsync time: 10.4543
-> fsync time: 10.4970
-> fsync time: 10.5570
-> fsync time: 5.2717
-> fsync time: 10.5619
-> fsync time: 5.3058
-> fsync time: 3.1019
-> fsync time: 5.1504
-> fsync time: 5.7564
-> fsync time: 10.5998
-> fsync time: 4.0895
->
->
-> Regards, Heinz.
->
->
+Nice.  I think .discard would suit better for the dummy variable tho
+(x86 discards the section and it seems to be more common name with
+ldscript using /DISCARD/ identifier for things to throw away).  Also,
+it seems like if two different files happen to use static percpu
+variables with the same name, they would end up sharing it, right?
+That looks a tad bit dangerous.
 
-
+Thanks.
 
 -- 
-__________________________________________________________________________
-
-dott. Corrado Zoccolo                          mailto:czoccolo@gmail.com
-PhD - Department of Computer Science - University of Pisa, Italy
---------------------------------------------------------------------------
-The self-confidence of a warrior is not the self-confidence of the average
-man. The average man seeks certainty in the eyes of the onlooker and calls
-that self-confidence. The warrior seeks impeccability in his own eyes and
-calls that humbleness.
-                               Tales of Power - C. Castaneda
+tejun
