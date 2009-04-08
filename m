@@ -1,81 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756894AbZDHGqF@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753103AbZDHGq5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756894AbZDHGqF (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 8 Apr 2009 02:46:05 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752438AbZDHGpx
+	id S1753103AbZDHGq5 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 8 Apr 2009 02:46:57 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750999AbZDHGqr
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 8 Apr 2009 02:45:53 -0400
-Received: from cn.fujitsu.com ([222.73.24.84]:57208 "EHLO song.cn.fujitsu.com"
-	rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org with ESMTP
-	id S1752211AbZDHGpx (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 8 Apr 2009 02:45:53 -0400
-Message-ID: <49DC481F.4020608@cn.fujitsu.com>
-Date: Wed, 08 Apr 2009 14:45:51 +0800
-From: Yang Hongyang <yanghy@cn.fujitsu.com>
-User-Agent: Thunderbird 2.0.0.17 (X11/20081009)
+	Wed, 8 Apr 2009 02:46:47 -0400
+Received: from one.firstfloor.org ([213.235.205.2]:47063 "EHLO
+	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750772AbZDHGqq (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 8 Apr 2009 02:46:46 -0400
+To: Ingo Oeser <ioe-lkml@rameria.de>
+Cc: Russ Anderson <rja@sgi.com>, linux-kernel@vger.kernel.org,
+       linux-mm@kvack.org, x86@kernel.org
+Subject: Re: [PATCH 1/2] Avoid putting a bad page back on the LRU
+From: Andi Kleen <andi@firstfloor.org>
+References: <20090408001133.GB27170@sgi.com>
+	<200904080543.16454.ioe-lkml@rameria.de>
+Date: Wed, 08 Apr 2009 08:46:41 +0200
+In-Reply-To: <200904080543.16454.ioe-lkml@rameria.de> (Ingo Oeser's message of "Wed, 8 Apr 2009 05:43:15 +0200")
+Message-ID: <87r603abhq.fsf@basil.nowhere.org>
+User-Agent: Gnus/5.1008 (Gnus v5.10.8) Emacs/22.3 (gnu/linux)
 MIME-Version: 1.0
-To: Ingo Molnar <mingo@elte.hu>
-CC: Alan Cox <alan@lxorguk.ukuu.org.uk>,
-       Christian Pellegrin <chripell@gmail.com>, torvalds@linux-foundation.org,
-       linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: [-rc1, build bug] Re: [PATCH 05/11] Add support for the MAX3100
- SPI UART.
-References: <20090407154715.18020.44616.stgit@t61.ukuu.org.uk> <20090407154840.18020.82549.stgit@t61.ukuu.org.uk> <20090408061811.GA22767@elte.hu>
-In-Reply-To: <20090408061811.GA22767@elte.hu>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Ingo Molnar wrote:
-> * Alan Cox <alan@lxorguk.ukuu.org.uk> wrote:
-> 
->> From: Christian Pellegrin <chripell@gmail.com>
->>
->> (akpm: queued pending confirmation of the new major number)
->>
->> [randy.dunlap@oracle.com: select SERIAL_CORE]
->> Signed-off-by: Christian Pellegrin <chripell@fsfe.org>
->> Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
->> Signed-off-by: Alan Cox <alan@lxorguk.ukuu.org.uk>
->> ---
->>
->>  drivers/serial/Kconfig      |    7 +++++++
->>  drivers/serial/Makefile     |    1 +
->>  include/linux/serial_core.h |    3 +++
->>  3 files changed, 11 insertions(+), 0 deletions(-)
-> 
-> This is now upstream as:
-> 
->   1dcb884: Add support for the MAX3100 SPI UART.
-> 
-> i'm not sure whether it has been reported already, but the new 
-> driver does not even build:
-> 
->    CHK     include/linux/compile.h
->  make[2]: *** No rule to make target `drivers/serial/max3100.o', needed by `drivers/serial/built-in.o'.  Stop.
->  make[1]: *** [drivers/serial] Error 2
->  make[1]: *** Waiting for unfinished jobs....
+Ingo Oeser <ioe-lkml@rameria.de> writes:
+>
+> Clearing the flag doesn't change the fact, that this page is representing 
+> permanently bad RAM.
 
-I hit the same build error just now...
+Yes, you cannot ever clear a Poison flag, at least not without a special
+hardware mechanism that clears the hardware poison too (but that has
+other issues in Linux too). Otherwise you would die later.
 
-> 
-> ... and it has no chance to build, because the commit adds no 
-> max3100.c driver file, at all.
-> 
-> The straight revert of 1dcb884 got the build going.
-> 
-> 	Ingo
-> --
-> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
-> Please read the FAQ at  http://www.tux.org/lkml/
-> 
-> 
+> What about removing it from the LRU and adding it to a bad RAM list in every case?
 
+That is what memory_failure() already should be doing. Except there's no list
+currently.
 
+> After hot swapping the physical RAM banks it could be moved back, not before.
+
+Linux doesn't really support that. That is at least not when it's OS visible.
+
+-Andi
 -- 
-Regards
-Yang Hongyang
+ak@linux.intel.com -- Speaking for myself only.
