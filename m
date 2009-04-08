@@ -1,40 +1,39 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760155AbZDHUcX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761696AbZDHUdV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760155AbZDHUcX (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 8 Apr 2009 16:32:23 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754259AbZDHUcL
+	id S1761696AbZDHUdV (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 8 Apr 2009 16:33:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756936AbZDHUdJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 8 Apr 2009 16:32:11 -0400
-Received: from bombadil.infradead.org ([18.85.46.34]:50855 "EHLO
-	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752398AbZDHUcL (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 8 Apr 2009 16:32:11 -0400
-Date: Wed, 8 Apr 2009 16:32:09 -0400
-From: Christoph Hellwig <hch@infradead.org>
-To: Oleg Drokin <green@linuxhacker.ru>
-Cc: linux-fsdevel@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] Separate out common fstatat code into vfs_fstatat
-Message-ID: <20090408203209.GA14342@infradead.org>
-References: <20090408160541.GA1812319@fiona.linuxhacker.ru>
+	Wed, 8 Apr 2009 16:33:09 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:33566 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754259AbZDHUdI (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 8 Apr 2009 16:33:08 -0400
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090408160541.GA1812319@fiona.linuxhacker.ru>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-SRS-Rewrite: SMTP reverse-path rewritten from <hch@infradead.org> by bombadil.infradead.org
-	See http://www.infradead.org/rpr.html
+Content-Transfer-Encoding: 7bit
+From: Roland McGrath <roland@redhat.com>
+To: Sergio Luis <eeeesti@gmail.com>
+X-Fcc: ~/Mail/linus
+Cc: Linus Torvalds <torvalds@linux-foundation.org>,
+       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] ptrace: checkpatch fixes
+In-Reply-To: Sergio Luis's message of  Wednesday, 8 April 2009 04:26:08 -0300 <ce0170d90904080026x4e292ce7sfae4eea70eb386cd@mail.gmail.com>
+References: <20090408062106.39EE0FC3E5@magilla.sf.frob.com>
+	<ce0170d90904080026x4e292ce7sfae4eea70eb386cd@mail.gmail.com>
+Emacs: no job too big... no job.
+Message-Id: <20090408125037.549C1FC351@magilla.sf.frob.com>
+Date: Wed,  8 Apr 2009 05:50:37 -0700 (PDT)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Apr 08, 2009 at 08:05:42PM +0400, Oleg Drokin wrote:
-> This is a version incorporating Christoph's suggestion.
-> 
-> Separate out common *fstatat functionality into a single function
-> instead of duplicating it all over the code.
+> silly question, but... how do you verify that? is there any tool under
+> scripts/ that do that comparison?
 
-Looks good to me.
+I didn't use any script, there might be done, I don't know.
+I compared "objdump -rd" output on the .o file before and after, using diff.
 
 
-Reviewed-by: Christoph Hellwig <hch@lst.de>
+Thanks,
+Roland
