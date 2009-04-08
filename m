@@ -1,52 +1,43 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934277AbZDHQqU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932434AbZDHQyp@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934277AbZDHQqU (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 8 Apr 2009 12:46:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751614AbZDHQqJ
+	id S932434AbZDHQyp (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 8 Apr 2009 12:54:45 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757457AbZDHQyf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 8 Apr 2009 12:46:09 -0400
-Received: from earthlight.etchedpixels.co.uk ([81.2.110.250]:48668 "EHLO
-	www.etchedpixels.co.uk" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1751415AbZDHQqI (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 8 Apr 2009 12:46:08 -0400
-Date: Wed, 8 Apr 2009 17:47:16 +0100
-From: Alan Cox <alan@lxorguk.ukuu.org.uk>
-To: Ed Schouten <ed@FreeBSD.org>
-Cc: linux-kernel@vger.kernel.org
-Subject: Re: Inconsistency between PTY read() return values
-Message-ID: <20090408174716.6474af70@lxorguk.ukuu.org.uk>
-In-Reply-To: <20090408143631.GH32098@hoeg.nl>
-References: <20090408143631.GH32098@hoeg.nl>
-X-Mailer: Claws Mail 3.7.0 (GTK+ 2.14.7; x86_64-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Wed, 8 Apr 2009 12:54:35 -0400
+Received: from kroah.org ([198.145.64.141]:58989 "EHLO coco.kroah.org"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1757130AbZDHQyf (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 8 Apr 2009 12:54:35 -0400
+Date: Wed, 8 Apr 2009 09:51:10 -0700
+From: Greg KH <greg@kroah.com>
+To: Joe Perches <joe@perches.com>
+Cc: Linus Torvalds <torvalds@linux-foundation.org>,
+       Andrew Morton <akpm@kernel.org>, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 02/10] MAINTAINERS - Add file patterns
+Message-ID: <20090408165110.GA32400@kroah.com>
+References: <1239167872-8179-1-git-send-email-joe@perches.com> <1239167872-8179-3-git-send-email-joe@perches.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1239167872-8179-3-git-send-email-joe@perches.com>
+User-Agent: Mutt/1.5.19 (2009-01-05)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> 	-1
-> 	read: Input/output error
-> 
-> I looked through the standards and it seems the POSIX onlinepubs don't
-> mention the behaviour of pseudo-terminal master file descriptors at all.
-> This means it would even be valid of we return 0x1337 or something.
-> 
-> But still, I think it's a little inconsistent. Most programmers would
-> expect pseudo-terminal master file descriptors to behave somewhat
-> similar to TTYs, even though they don't need to be. When you try to
+On Tue, Apr 07, 2009 at 10:17:44PM -0700, Joe Perches wrote:
+>  DRIVER CORE, KOBJECTS, AND SYSFS
+>  P:	Greg Kroah-Hartman
+>  M:	gregkh@suse.de
+>  L:	linux-kernel@vger.kernel.org
+>  T:	quilt kernel.org/pub/linux/kernel/people/gregkh/gregkh-2.6/
+>  S:	Supported
+> +F:	Documentation/kobject.txt
+> +F:	drivers/base/core.c
 
-I would argue that TTYs do behave this way. We treat the disconnect as a
-hang up event. BSD sees it as EOF, Linux as hangup.
+That should be drivers/base*
 
-> perform a read() on the TTY after the master file descriptor gets
-> closed, you get an end-of-file. You only get an EIO when trying to write
-> to this descriptor.
-> 
-> Would it be hard to change the Linux TTY code to behave the same?
+thanks,
 
-Probably not vastly so, but given it has been this way for over ten years
-and causes no problems I don't think it makes sense to do so.
-
-Alan
+greg k-h
