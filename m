@@ -1,64 +1,83 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764572AbZDHU6V@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764191AbZDHVCV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764572AbZDHU6V (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 8 Apr 2009 16:58:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756473AbZDHU6H
+	id S1764191AbZDHVCV (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 8 Apr 2009 17:02:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756947AbZDHVCK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 8 Apr 2009 16:58:07 -0400
-Received: from gate.crashing.org ([63.228.1.57]:41239 "EHLO gate.crashing.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755520AbZDHU6G (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 8 Apr 2009 16:58:06 -0400
-Cc: linux-kernel@vger.kernel.org, mingo@elte.hu, jeremy@goop.org,
-       fujita.tomonori@lab.ntt.co.jp, ian.campbell@citrix.com,
-       beckyb@kernel.crashing.org
-Message-Id: <7366A4DE-6848-4AF6-AA33-6BD89B0A5153@kernel.crashing.org>
-From: Kumar Gala <galak@kernel.crashing.org>
-To: Christoph Hellwig <hch@infradead.org>
-In-Reply-To: <20090408203823.GA14985@infradead.org>
-Content-Type: text/plain; charset=US-ASCII; format=flowed; delsp=yes
+	Wed, 8 Apr 2009 17:02:10 -0400
+Received: from outbound-sin.frontbridge.com ([207.46.51.80]:13361 "EHLO
+	SG2EHSOBE002.bigfish.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755169AbZDHVCI (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 8 Apr 2009 17:02:08 -0400
+X-BigFish: VPS-2(zz936fKzz1202hzzz32i6bh61h)
+X-Spam-TCS-SCL: 0:0
+X-WSS-ID: 0KHSVQW-01-E6D-01
+From: Mark Langsdorf <mark.langsdorf@amd.com>
+To: Andrew Morton <akpm@linux-foundation.org>
+Subject: [PATCH] Enable GART-IOMMU only after setting up protection methods
+Date: Wed, 8 Apr 2009 16:08:55 -0500
+User-Agent: KMail/1.9.10
+CC: linux-kernel@vger.kernel.org, Ingo Molnar <mingo@elte.hu>
+References: <200903171457.25582.mark.langsdorf@amd.com>
+In-Reply-To: <200903171457.25582.mark.langsdorf@amd.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
-Mime-Version: 1.0 (Apple Message framework v930.3)
-Subject: Re: [PATCH 4/7] swiotlb: Allow arch override of address_needs_mapping
-Date: Wed, 8 Apr 2009 15:56:32 -0500
-References: <1239199761-22886-1-git-send-email-galak@kernel.crashing.org> <1239199761-22886-2-git-send-email-galak@kernel.crashing.org> <1239199761-22886-3-git-send-email-galak@kernel.crashing.org> <1239199761-22886-4-git-send-email-galak@kernel.crashing.org> <1239199761-22886-5-git-send-email-galak@kernel.crashing.org> <20090408203823.GA14985@infradead.org>
-X-Mailer: Apple Mail (2.930.3)
+Content-Disposition: inline
+Message-ID: <200904081608.55746.mark.langsdorf@amd.com>
+X-OriginalArrivalTime: 08 Apr 2009 21:01:53.0926 (UTC) FILETIME=[3EBD4260:01C9B88D]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+The current code to set up the GART as an IOMMU enables GART
+translations before it removes the aperture from the kernel
+memory map, sets the GART PTEs to UC, sets up the guard and
+scratch pages, or does a wbinvd().  This leaves the possibility
+of cache aliasing open and can cause system crashes.
 
-On Apr 8, 2009, at 3:38 PM, Christoph Hellwig wrote:
+Re-order the code and add tlbflush so as to enable the 
+GART translations only after all safeguards are in place and
+the tlb has been flushed.
 
-> On Wed, Apr 08, 2009 at 09:09:18AM -0500, Kumar Gala wrote:
->> From: Becky Bruce <beckyb@kernel.crashing.org>
->>
->> Some architectures require additional checking to determine
->> if a device can dma to an address and need to provide their
->> own address_needs_mapping..
->
-> Shouldn't we just move it completely to the arch?  I think that ia64  
-> and
-> x86 currently use the same one is more of an accident.
+AMD has tested this patch and seen no adverse effects.
 
-It seems like the swiotlb code uses __weak for a number of things:
+Signed-off-by: Mark Langsdorf <mark.langsdorf@amd.com>
 
-lib/swiotlb.c:void * __weak __init swiotlb_alloc_boot(size_t size,  
-unsigned long nslabs)
-lib/swiotlb.c:void * __weak swiotlb_alloc(unsigned order, unsigned  
-long nslabs)
-lib/swiotlb.c:dma_addr_t __weak swiotlb_phys_to_bus(struct device  
-*hwdev, phys_addr_t paddr)
-lib/swiotlb.c:phys_addr_t __weak swiotlb_bus_to_phys(struct device  
-*hwdev, dma_addr_t baddr)
-lib/swiotlb.c:void * __weak swiotlb_bus_to_virt(struct device *hwdev,  
-dma_addr_t address)
-lib/swiotlb.c:int __weak swiotlb_arch_address_needs_mapping(struct  
-device *hwdev,
-lib/swiotlb.c:int __weak swiotlb_arch_range_needs_mapping(phys_addr_t  
-paddr, size_t size)
+diff -r 0d1744c7acc7 arch/x86/kernel/pci-gart_64.c
+--- a/arch/x86/kernel/pci-gart_64.c	Fri Mar 27 16:47:28 2009 -0500
++++ b/arch/x86/kernel/pci-gart_64.c	Mon Mar 30 15:05:47 2009 -0500
+@@ -38,6 +38,7 @@
+ #include <asm/swiotlb.h>
+ #include <asm/dma.h>
+ #include <asm/k8.h>
++#include <asm/tlbflush.h>
+ 
+ static unsigned long iommu_bus_base;	/* GART remapping area (physical) */
+ static unsigned long iommu_size;	/* size of remapping area bytes */
+@@ -682,9 +683,9 @@
+ 	if (set_memory_uc((unsigned long)gatt, gatt_size >> PAGE_SHIFT))
+ 		panic("Could not set GART PTEs to uncacheable pages");
+ 
++	wbinvd();
++
+ 	agp_gatt_table = gatt;
+-
+-	enable_gart_translations();
+ 
+ 	error = sysdev_class_register(&gart_sysdev_class);
+ 	if (!error)
+@@ -855,6 +856,11 @@
+ 	for (i = EMERGENCY_PAGES; i < iommu_pages; i++)
+ 		iommu_gatt_base[i] = gart_unmapped_entry;
+ 
++	wbinvd();
++	flush_tlb_all();
++
++	enable_gart_translations();
++
+ 	flush_gart();
+ 	dma_ops = &gart_dma_ops;
+ }
 
-instead of #ifndef HAVE_ARCH_<FOO>.  Not sure if there is a historical  
-reason for that.
-
-- k
