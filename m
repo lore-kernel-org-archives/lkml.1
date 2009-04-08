@@ -1,86 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933665AbZDHOS7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759371AbZDHOWE@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933665AbZDHOS7 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 8 Apr 2009 10:18:59 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933653AbZDHOOj
+	id S1759371AbZDHOWE (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 8 Apr 2009 10:22:04 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752400AbZDHOVv
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 8 Apr 2009 10:14:39 -0400
-Received: from bombadil.infradead.org ([18.85.46.34]:55578 "EHLO
-	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S932585AbZDHOOh (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 8 Apr 2009 10:14:37 -0400
-Date: Wed, 8 Apr 2009 11:13:44 -0300
-From: Mauro Carvalho Chehab <mchehab@infradead.org>
-To: Joe Perches <joe@perches.com>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Andrew Morton <akpm@kernel.org>, LKML <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH 02/10] MAINTAINERS - Add file patterns
-Message-ID: <20090408111344.56818f9e@pedra.chehab.org>
-In-Reply-To: <1239167872-8179-3-git-send-email-joe@perches.com>
-References: <1239167872-8179-1-git-send-email-joe@perches.com>
-	<1239167872-8179-3-git-send-email-joe@perches.com>
-X-Mailer: Claws Mail 3.3.1 (GTK+ 2.10.4; x86_64-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
-X-SRS-Rewrite: SMTP reverse-path rewritten from <mchehab@infradead.org> by bombadil.infradead.org
-	See http://www.infradead.org/rpr.html
+	Wed, 8 Apr 2009 10:21:51 -0400
+Received: from mx2.mail.elte.hu ([157.181.151.9]:50111 "EHLO mx2.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751835AbZDHOVu (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 8 Apr 2009 10:21:50 -0400
+Date: Wed, 8 Apr 2009 16:21:31 +0200
+From: Ingo Molnar <mingo@elte.hu>
+To: Kumar Gala <galak@kernel.crashing.org>
+Cc: linux-kernel@vger.kernel.org, jeremy@goop.org,
+       fujita.tomonori@lab.ntt.co.jp, ian.campbell@citrix.com,
+       beckyb@kernel.crashing.org
+Subject: Re: [PATCH V3 0/7] swiotlb: changes for powerpc/highmem
+Message-ID: <20090408142131.GE12931@elte.hu>
+References: <1239199761-22886-1-git-send-email-galak@kernel.crashing.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1239199761-22886-1-git-send-email-galak@kernel.crashing.org>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue,  7 Apr 2009 22:17:44 -0700
-Joe Perches <joe@perches.com> wrote:
 
-> Better description of file pattern tag "F:"
-> Add file exclusion tag "X:"
-> Add patterns to sections
-> 
-> Signed-off-by: Joe Perches <joe@perches.com>
+* Kumar Gala <galak@kernel.crashing.org> wrote:
 
->  DVB SUBSYSTEM AND DRIVERS
->  P:	LinuxTV.org Project
->  M:	linux-media@vger.kernel.org
->  W:	http://linuxtv.org/
->  T:	git kernel.org:/pub/scm/linux/kernel/git/mchehab/linux-2.6.git
->  S:	Maintained
-> +F:	Documentation/dvb/
-> +F:	drivers/media/dvb/
-> +F:	drivers/media/common/saa7146*.c
-> +F:	include/linux/dvb/
+> This is a repost of Becky's patches from the v2 version.  The only 
+> change is to incorporate feedback on "Create swiotlb_unmap_single" 
+> an to add Ack by FUJITA Tomonori for patches that have been 
+> reviewed.
 
->  VIDEO FOR LINUX (V4L)
->  P:	Mauro Carvalho Chehab
->  M:	mchehab@infradead.org
->  L:	linux-media@vger.kernel.org
->  W:	http://linuxtv.org
->  T:	git kernel.org:/pub/scm/linux/kernel/git/mchehab/linux-2.6.git
->  S:	Maintained
-> +F:	Documentation/video4linux/
-> +F:	drivers/media/video/
-> +F:	drivers/media/radio/
-> +F:	include/linux/videodev.h
-> +F:	include/linux/videodev2.h
-> +F:	include/media/
+thanks - picked them up.
 
-For those two:
-Acked-by: Mauro Carvalho Chehab <mchehab@redhat.com>
+This commit:
 
-While those two entries are correct, they don't cover all files, since there
-are other common drivers and core modules shared between both subsystems. For
-example, the tuner and IR files are under drivers/media/common.
+  dd6b02f: swiotlb: map_page fix for highmem systems
 
-IMO, we should add a more generic entry to cover both. Something like:
+should perhaps go into an urgent track for .30 too? Jeremy, does Xen 
+already make use of the swiotlb? (it does not right now AFAICS but 
+.30 mergs of Xen might, so it would be good for them to have this 
+fix.)
 
-MEDIA INPUT INFRASTRUCTURE (V4L/DVB)
-P:	Mauro Carvalho Chehab
-M:	mchehab@infradead.org
-L:	linux-media@vger.kernel.org
-W:	http://linuxtv.org
-T:	git kernel.org:/pub/scm/linux/kernel/git/mchehab/linux-2.6.git
-S:	Maintained
-F:	drivers/media
-
-Cheers,
-Mauro
+	Ingo
