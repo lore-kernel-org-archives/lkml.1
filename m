@@ -1,263 +1,273 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763167AbZDHUFb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764088AbZDHUGl@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763167AbZDHUFb (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 8 Apr 2009 16:05:31 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756459AbZDHUFP
+	id S1764088AbZDHUGl (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 8 Apr 2009 16:06:41 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759074AbZDHUG2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 8 Apr 2009 16:05:15 -0400
-Received: from havoc.gtf.org ([69.61.125.42]:52479 "EHLO havoc.gtf.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756236AbZDHUFN (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 8 Apr 2009 16:05:13 -0400
-Date: Wed, 8 Apr 2009 16:05:11 -0400
-From: Jeff Garzik <jeff@garzik.org>
-To: linux-ide@vger.kernel.org
-Cc: LKML <linux-kernel@vger.kernel.org>
-Subject: [PATCH] sata_sx4: refresh and convert to new EH
-Message-ID: <20090408200511.GA24071@havoc.gtf.org>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-User-Agent: Mutt/1.4.2.2i
+	Wed, 8 Apr 2009 16:06:28 -0400
+Received: from smtp-out.google.com ([216.239.33.17]:50041 "EHLO
+	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756459AbZDHUG1 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 8 Apr 2009 16:06:27 -0400
+DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
+	h=mime-version:date:message-id:subject:from:to:content-type:
+	content-transfer-encoding:x-system-of-record;
+	b=TJH0W4NxENZxvnGRTuCKI0ueOGfuuE5JQwBVNJEvmoyjcikxIz7BTh2LNNkD8wm7G
+	JEG6BdVoZLB4T/EtnInkg==
+MIME-Version: 1.0
+Date: Wed, 8 Apr 2009 13:06:23 -0700
+Message-ID: <604427e00904081306vd7f2671x7b5ec8baf2b9bf58@mail.gmail.com>
+Subject: [PATCH][1/2]page_fault retry with NOPAGE_RETRY
+From: Ying Han <yinghan@google.com>
+To: linux-mm@kvack.org, linux-kernel <linux-kernel@vger.kernel.org>,
+       akpm <akpm@linux-foundation.org>, torvalds@linux-foundation.org,
+       Ingo Molnar <mingo@elte.hu>, Mike Waychison <mikew@google.com>,
+       Rohit Seth <rohitseth@google.com>, Hugh Dickins <hugh@veritas.com>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>,
+       "H. Peter Anvin" <hpa@zytor.com>,
+       =?ISO-8859-1?Q?T=F6r=F6k_Edwin?= <edwintorok@gmail.com>,
+       Lee Schermerhorn <lee.schermerhorn@hp.com>,
+       Nick Piggin <npiggin@suse.de>, Wu Fengguang <fengguang.wu@intel.com>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
+X-System-Of-Record: true
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+support for FAULT_FLAG_RETRY with no user change:
 
-I reviewed and refreshed libata-dev.git#new-eh, now renamed to #sx4.
+Signed-off-by: Ying Han <yinghan@google.com>
+              Mike Waychison <mikew@google.com>
 
-Several bugs and missing pieces in the new-EH conversion were addressed
-(often by copying highly similar code from sata_promise, a highly
-similar chip)
-
-The only thing left is some "it still works" testing...  any takers?
-
-
+ include/linux/fs.h  |    2 +-
+ include/linux/mm.h  |    2 +
+ mm/filemap.c        |   72 ++++++++++++++++++++++++++++++++++++++++++++++++--
+ mm/memory.c         |   33 +++++++++++++++++------
 
 
-commit 51aca756268d405fb7cbfc887c55c92185e03b53
-Author: Jeff Garzik <jeff@garzik.org>
-Date:   Wed Apr 8 16:02:18 2009 -0400
+diff --git a/include/linux/fs.h b/include/linux/fs.h
+index 4a853ef..29c2c39 100644
+--- a/include/linux/fs.h
++++ b/include/linux/fs.h
+@@ -793,7 +793,7 @@ struct file_ra_state {
+ 					   there are only # of pages ahead */
 
-    [libata] sata_sx4: convert to new exception handling methods
-    
-    Signed-off-by: Jeff Garzik <jgarzik@redhat.com>
-
-diff --git a/drivers/ata/sata_sx4.c b/drivers/ata/sata_sx4.c
-index dce3dcc..1ce98af 100644
---- a/drivers/ata/sata_sx4.c
-+++ b/drivers/ata/sata_sx4.c
-@@ -213,8 +213,9 @@ struct pdc_host_priv {
- 
- 
- static int pdc_sata_init_one(struct pci_dev *pdev, const struct pci_device_id *ent);
--static void pdc_eng_timeout(struct ata_port *ap);
--static void pdc_20621_phy_reset(struct ata_port *ap);
-+static void pdc_error_handler(struct ata_port *ap);
-+static void pdc_freeze(struct ata_port *ap);
-+static void pdc_thaw(struct ata_port *ap);
- static int pdc_port_start(struct ata_port *ap);
- static void pdc20621_qc_prep(struct ata_queued_cmd *qc);
- static void pdc_tf_load_mmio(struct ata_port *ap, const struct ata_taskfile *tf);
-@@ -233,6 +234,10 @@ static void pdc20621_put_to_dimm(struct ata_host *host,
- 				 void *psource, u32 offset, u32 size);
- static void pdc20621_irq_clear(struct ata_port *ap);
- static unsigned int pdc20621_qc_issue(struct ata_queued_cmd *qc);
-+static int pdc_softreset(struct ata_link *link, unsigned int *class,
-+			 unsigned long deadline);
-+static void pdc_post_internal_cmd(struct ata_queued_cmd *qc);
-+static int pdc_check_atapi_dma(struct ata_queued_cmd *qc);
- 
- 
- static struct scsi_host_template pdc_sata_sht = {
-@@ -243,20 +248,24 @@ static struct scsi_host_template pdc_sata_sht = {
- 
- /* TODO: inherit from base port_ops after converting to new EH */
- static struct ata_port_operations pdc_20621_ops = {
--	.sff_tf_load		= pdc_tf_load_mmio,
--	.sff_tf_read		= ata_sff_tf_read,
--	.sff_check_status	= ata_sff_check_status,
--	.sff_exec_command	= pdc_exec_command_mmio,
--	.sff_dev_select		= ata_sff_dev_select,
--	.phy_reset		= pdc_20621_phy_reset,
-+	.inherits		= &ata_sff_port_ops,
-+
-+	.check_atapi_dma	= pdc_check_atapi_dma,
- 	.qc_prep		= pdc20621_qc_prep,
- 	.qc_issue		= pdc20621_qc_issue,
--	.qc_fill_rtf		= ata_sff_qc_fill_rtf,
--	.sff_data_xfer		= ata_sff_data_xfer,
--	.eng_timeout		= pdc_eng_timeout,
--	.sff_irq_clear		= pdc20621_irq_clear,
--	.sff_irq_on		= ata_sff_irq_on,
-+
-+	.freeze			= pdc_freeze,
-+	.thaw			= pdc_thaw,
-+	.softreset		= pdc_softreset,
-+	.error_handler		= pdc_error_handler,
-+	.lost_interrupt		= ATA_OP_NULL,
-+	.post_internal_cmd	= pdc_post_internal_cmd,
-+
- 	.port_start		= pdc_port_start,
-+
-+	.sff_tf_load		= pdc_tf_load_mmio,
-+	.sff_exec_command	= pdc_exec_command_mmio,
-+	.sff_irq_clear		= pdc20621_irq_clear,
+ 	unsigned int ra_pages;		/* Maximum readahead window */
+-	int mmap_miss;			/* Cache miss stat for mmap accesses */
++	unsigned int mmap_miss;		/* Cache miss stat for mmap accesses */
+ 	loff_t prev_pos;		/* Cache last read() position */
  };
- 
- static const struct ata_port_info pdc_port_info[] = {
-@@ -310,14 +319,6 @@ static int pdc_port_start(struct ata_port *ap)
- 	return 0;
- }
- 
--static void pdc_20621_phy_reset(struct ata_port *ap)
--{
--	VPRINTK("ENTER\n");
--	ap->cbl = ATA_CBL_SATA;
--	ata_port_probe(ap);
--	ata_bus_reset(ap);
--}
--
- static inline void pdc20621_ata_sg(struct ata_taskfile *tf, u8 *buf,
- 				   unsigned int portno,
- 					   unsigned int total_len)
-@@ -859,40 +860,115 @@ static irqreturn_t pdc20621_interrupt(int irq, void *dev_instance)
- 	return IRQ_RETVAL(handled);
- }
- 
--static void pdc_eng_timeout(struct ata_port *ap)
-+static void pdc_freeze(struct ata_port *ap)
- {
--	u8 drv_stat;
--	struct ata_host *host = ap->host;
--	struct ata_queued_cmd *qc;
--	unsigned long flags;
-+	void __iomem *mmio = ap->ioaddr.cmd_addr;
-+	u32 tmp;
- 
--	DPRINTK("ENTER\n");
-+	/* FIXME: if all 4 ATA engines are stopped, also stop HDMA engine */
- 
--	spin_lock_irqsave(&host->lock, flags);
-+	tmp = readl(mmio + PDC_CTLSTAT);
-+	tmp |= PDC_MASK_INT;
-+	tmp &= ~PDC_DMA_ENABLE;
-+	writel(tmp, mmio + PDC_CTLSTAT);
-+	readl(mmio + PDC_CTLSTAT); /* flush */
-+}
- 
--	qc = ata_qc_from_tag(ap, ap->link.active_tag);
-+static void pdc_thaw(struct ata_port *ap)
+
+diff --git a/include/linux/mm.h b/include/linux/mm.h
+index ffee2f7..5a134a9 100644
+--- a/include/linux/mm.h
++++ b/include/linux/mm.h
+@@ -144,6 +144,7 @@ extern pgprot_t protection_map[16];
+
+ #define FAULT_FLAG_WRITE	0x01	/* Fault was a write access */
+ #define FAULT_FLAG_NONLINEAR	0x02	/* Fault was via a nonlinear mapping */
++#define FAULT_FLAG_RETRY	0x04	/* Retry major fault */
+
+
+ /*
+@@ -690,6 +691,7 @@ static inline int page_mapped(struct page *page)
+
+ #define VM_FAULT_MINOR	0 /* For backwards compat. Remove me quickly. */
+
++#define VM_FAULT_RETRY	0x0010
+ #define VM_FAULT_OOM	0x0001
+ #define VM_FAULT_SIGBUS	0x0002
+ #define VM_FAULT_MAJOR	0x0004
+diff --git a/mm/filemap.c b/mm/filemap.c
+index f3e5f89..6eb7c36 100644
+--- a/mm/filemap.c
++++ b/mm/filemap.c
+@@ -714,6 +714,58 @@ repeat:
+ EXPORT_SYMBOL(find_lock_page);
+
+ /**
++ * find_lock_page_retry - locate, pin and lock a pagecache page
++ * @mapping: the address_space to search
++ * @offset: the page index
++ * @vma: vma in which the fault was taken
++ * @ppage: zero if page not present, otherwise point to the page in pagecache
++ * @retry: 1 indicate caller tolerate a retry.
++ *
++ * If retry flag is on, and page is already locked by someone else, return
++ * a hint of retry and leave *ppage untouched.
++ *
++ * Return *ppage==NULL if page is not in pagecache. Otherwise return *ppage
++ * points to the page in the pagecache with ret=VM_FAULT_RETRY indicate a
++ * hint to caller for retry, or ret=0 which means page is succefully
++ * locked.
++ */
++unsigned find_lock_page_retry(struct address_space *mapping, pgoff_t offset,
++				struct vm_area_struct *vma, struct page **ppage,
++				int retry)
 +{
-+	void __iomem *mmio = ap->ioaddr.cmd_addr;
-+	void __iomem *mmio_base;
-+	u32 tmp;
- 
--	switch (qc->tf.protocol) {
--	case ATA_PROT_DMA:
--	case ATA_PROT_NODATA:
--		ata_port_printk(ap, KERN_ERR, "command timeout\n");
--		qc->err_mask |= __ac_err_mask(ata_wait_idle(ap));
--		break;
-+	/* FIXME: start HDMA engine, if zero ATA engines running */
- 
--	default:
--		drv_stat = ata_sff_busy_wait(ap, ATA_BUSY | ATA_DRQ, 1000);
-+	/* reading SEQ mask register clears IRQ */
-+	mmio_base = ap->host->iomap[PDC_MMIO_BAR] + PDC_CHIP0_OFS;
-+	readl(mmio_base + PDC_20621_SEQMASK);
- 
--		ata_port_printk(ap, KERN_ERR,
--				"unknown timeout, cmd 0x%x stat 0x%x\n",
--				qc->tf.command, drv_stat);
-+	/* turn IRQ back on */
-+	tmp = readl(mmio + PDC_CTLSTAT);
-+	tmp &= ~PDC_MASK_INT;
-+	writel(tmp, mmio + PDC_CTLSTAT);
-+	readl(mmio + PDC_CTLSTAT); /* flush */
++	unsigned int ret = 0;
++	struct page *page;
++
++repeat:
++	page = find_get_page(mapping, offset);
++	if (page) {
++		if (!retry)
++			lock_page(page);
++		else {
++			if (!trylock_page(page)) {
++				struct mm_struct *mm = vma->vm_mm;
++
++				up_read(&mm->mmap_sem);
++				wait_on_page_locked(page);
++				down_read(&mm->mmap_sem);
++
++				page_cache_release(page);
++				return VM_FAULT_RETRY;
++			}
++		}
++		if (unlikely(page->mapping != mapping)) {
++			unlock_page(page);
++			page_cache_release(page);
++			goto repeat;
++		}
++		VM_BUG_ON(page->index != offset);
++	}
++	*ppage = page;
++	return ret;
 +}
- 
--		qc->err_mask |= ac_err_mask(drv_stat);
--		break;
-+static void pdc_reset_port(struct ata_port *ap)
-+{
-+	void __iomem *mmio = ap->ioaddr.cmd_addr + PDC_CTLSTAT;
-+	unsigned int i;
-+	u32 tmp;
++EXPORT_SYMBOL(find_lock_page_retry);
 +
-+	/* FIXME: handle HDMA copy engine */
++/**
+  * find_or_create_page - locate or add a pagecache page
+  * @mapping: the page's address_space
+  * @index: the page's index into the mapping
+@@ -1444,6 +1496,8 @@ int filemap_fault(struct vm_area_struct *vma, struct vm_
+ 	pgoff_t size;
+ 	int did_readaround = 0;
+ 	int ret = 0;
++	int retry_flag = vmf->flags & FAULT_FLAG_RETRY;
++	int retry_ret;
+
+ 	size = (i_size_read(inode) + PAGE_CACHE_SIZE - 1) >> PAGE_CACHE_SHIFT;
+ 	if (vmf->pgoff >= size)
+@@ -1458,6 +1512,7 @@ int filemap_fault(struct vm_area_struct *vma, struct vm_
+ 	 */
+ retry_find:
+ 	page = find_lock_page(mapping, vmf->pgoff);
 +
-+	for (i = 11; i > 0; i--) {
-+		tmp = readl(mmio);
-+		if (tmp & PDC_RESET)
-+			break;
-+
-+		udelay(100);
-+
-+		tmp |= PDC_RESET;
-+		writel(tmp, mmio);
+ 	/*
+ 	 * For sequential accesses, we use the generic readahead logic.
+ 	 */
+@@ -1465,7 +1520,13 @@ retry_find:
+ 		if (!page) {
+ 			page_cache_sync_readahead(mapping, ra, file,
+ 							   vmf->pgoff, 1);
+-			page = find_lock_page(mapping, vmf->pgoff);
++			retry_ret = find_lock_page_retry(mapping, vmf->pgoff,
++						vma, &page, retry_flag);
++			if (retry_ret == VM_FAULT_RETRY) {
++				/* counteract the followed retry hit */
++				ra->mmap_miss++;
++				return retry_ret;
++			}
+ 			if (!page)
+ 				goto no_cached_page;
+ 		}
+@@ -1504,7 +1565,14 @@ retry_find:
+ 				start = vmf->pgoff - ra_pages / 2;
+ 			do_page_cache_readahead(mapping, file, start, ra_pages);
+ 		}
+-		page = find_lock_page(mapping, vmf->pgoff);
++retry_find_retry:
++		retry_ret = find_lock_page_retry(mapping, vmf->pgoff,
++				vma, &page, retry_flag);
++		if (retry_ret == VM_FAULT_RETRY) {
++			/* counteract the followed retry hit */
++			ra->mmap_miss++;
++			return retry_ret;
++		}
+ 		if (!page)
+ 			goto no_cached_page;
  	}
- 
--	spin_unlock_irqrestore(&host->lock, flags);
--	ata_eh_qc_complete(qc);
--	DPRINTK("EXIT\n");
-+	tmp &= ~PDC_RESET;
-+	writel(tmp, mmio);
-+	readl(mmio);	/* flush */
-+}
+@@ -1548,7 +1616,7 @@ no_cached_page:
+ 	 * meantime, we'll just come back here and read it again.
+ 	 */
+ 	if (error >= 0)
+-		goto retry_find;
++		goto retry_find_retry;
+
+ 	/*
+ 	 * An error return from page_cache_read can result if the
+diff --git a/mm/memory.c b/mm/memory.c
+index 164951c..5e215c9 100644
+--- a/mm/memory.c
++++ b/mm/memory.c
+@@ -2467,6 +2467,13 @@ static int __do_fault(struct mm_struct *mm, struct vm_a
+ 	vmf.page = NULL;
+
+ 	ret = vma->vm_ops->fault(vma, &vmf);
 +
-+static int pdc_softreset(struct ata_link *link, unsigned int *class,
-+			 unsigned long deadline)
-+{
-+	pdc_reset_port(link->ap);
-+	return ata_sff_softreset(link, class, deadline);
-+}
++	/* page may be available, but we have to restart the process
++	 * because mmap_sem was dropped during the ->fault
++	 */
++	if (ret & VM_FAULT_RETRY)
++		return ret;
 +
-+static void pdc_error_handler(struct ata_port *ap)
-+{
-+	if (!(ap->pflags & ATA_PFLAG_FROZEN))
-+		pdc_reset_port(ap);
-+
-+	ata_std_error_handler(ap);
-+}
-+
-+static void pdc_post_internal_cmd(struct ata_queued_cmd *qc)
-+{
-+	struct ata_port *ap = qc->ap;
-+
-+	/* make DMA engine forget about the failed command */
-+	if (qc->flags & ATA_QCFLAG_FAILED)
-+		pdc_reset_port(ap);
-+}
-+
-+static int pdc_check_atapi_dma(struct ata_queued_cmd *qc)
-+{
-+	u8 *scsicmd = qc->scsicmd->cmnd;
-+	int pio = 1; /* atapi dma off by default */
-+
-+	/* Whitelist commands that may use DMA. */
-+	switch (scsicmd[0]) {
-+	case WRITE_12:
-+	case WRITE_10:
-+	case WRITE_6:
-+	case READ_12:
-+	case READ_10:
-+	case READ_6:
-+	case 0xad: /* READ_DVD_STRUCTURE */
-+	case 0xbe: /* READ_CD */
-+		pio = 0;
-+	}
-+	/* -45150 (FFFF4FA2) to -1 (FFFFFFFF) shall use PIO mode */
-+	if (scsicmd[0] == WRITE_10) {
-+		unsigned int lba =
-+			(scsicmd[2] << 24) |
-+			(scsicmd[3] << 16) |
-+			(scsicmd[4] << 8) |
-+			scsicmd[5];
-+		if (lba >= 0xFFFF4FA2)
-+			pio = 1;
-+	}
-+	return pio;
+ 	if (unlikely(ret & (VM_FAULT_ERROR | VM_FAULT_NOPAGE)))
+ 		return ret;
+
+@@ -2611,8 +2618,10 @@ static int do_linear_fault(struct mm_struct *mm, struct
+ {
+ 	pgoff_t pgoff = (((address & PAGE_MASK)
+ 			- vma->vm_start) >> PAGE_SHIFT) + vma->vm_pgoff;
+-	unsigned int flags = (write_access ? FAULT_FLAG_WRITE : 0);
++	int write = write_access & ~FAULT_FLAG_RETRY;
++	unsigned int flags = (write ? FAULT_FLAG_WRITE : 0);
+
++	flags |= (write_access & FAULT_FLAG_RETRY);
+ 	pte_unmap(page_table);
+ 	return __do_fault(mm, vma, address, pmd, pgoff, flags, orig_pte);
  }
- 
- static void pdc_tf_load_mmio(struct ata_port *ap, const struct ata_taskfile *tf)
+@@ -2726,26 +2735,32 @@ int handle_mm_fault(struct mm_struct *mm, struct vm_ar
+ 	pud_t *pud;
+ 	pmd_t *pmd;
+ 	pte_t *pte;
++	int ret;
+
+ 	__set_current_state(TASK_RUNNING);
+
+-	count_vm_event(PGFAULT);
+-
+-	if (unlikely(is_vm_hugetlb_page(vma)))
+-		return hugetlb_fault(mm, vma, address, write_access);
++	if (unlikely(is_vm_hugetlb_page(vma))) {
++		ret = hugetlb_fault(mm, vma, address, write_access);
++		goto out;
++	}
+
++	ret = VM_FAULT_OOM;
+ 	pgd = pgd_offset(mm, address);
+ 	pud = pud_alloc(mm, pgd, address);
+ 	if (!pud)
+-		return VM_FAULT_OOM;
++		goto out;
+ 	pmd = pmd_alloc(mm, pud, address);
+ 	if (!pmd)
+-		return VM_FAULT_OOM;
++		goto out;
+ 	pte = pte_alloc_map(mm, pmd, address);
+ 	if (!pte)
+-		return VM_FAULT_OOM;
++		goto out;
+
+-	return handle_pte_fault(mm, vma, address, pte, pmd, write_access);
++	ret = handle_pte_fault(mm, vma, address, pte, pmd, write_access);
++out:
++	if (!(ret & VM_FAULT_RETRY))
++		count_vm_event(PGFAULT);
++	return ret;
+ }
+
+ #ifndef __PAGETABLE_PUD_FOLDED
