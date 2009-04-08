@@ -1,107 +1,80 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933030AbZDHTyX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761003AbZDHTz3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933030AbZDHTyX (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 8 Apr 2009 15:54:23 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759352AbZDHTyK
+	id S1761003AbZDHTz3 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 8 Apr 2009 15:55:29 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760105AbZDHTzG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 8 Apr 2009 15:54:10 -0400
-Received: from moutng.kundenserver.de ([212.227.126.188]:61481 "EHLO
-	moutng.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1758160AbZDHTyI (ORCPT
+	Wed, 8 Apr 2009 15:55:06 -0400
+Received: from palinux.external.hp.com ([192.25.206.14]:34792 "EHLO
+	mail.parisc-linux.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1759352AbZDHTzF (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 8 Apr 2009 15:54:08 -0400
-Date: Wed, 8 Apr 2009 21:56:10 +0200
-From: Heinz Diehl <htd@fancy-poultry.org>
-To: linux-kernel@vger.kernel.org
-Cc: Corrado Zoccolo <czoccolo@gmail.com>,
-       =?iso-8859-1?Q?J=2EA=2E_Magall=F3n?= <jamagallon@ono.com>,
-       Jan Knutar <jk-lkml@sci.fi>
-Subject: Re: SSD and IO schedulers
-Message-ID: <20090408195610.GA5447@fancy-poultry.org>
-Reply-To: linux-kernel@vger.kernel.org
-Mail-Followup-To: linux-kernel@vger.kernel.org,
-	Corrado Zoccolo <czoccolo@gmail.com>,
-	=?iso-8859-1?Q?J=2EA=2E_Magall=F3n?= <jamagallon@ono.com>,
-	Jan Knutar <jk-lkml@sci.fi>
-References: <4dcf7d360901301355l7ed26a5aob7ef6d79d9607b6b@mail.gmail.com> <20090204004003.26068f72@werewolf.home> <200902071858.40146.jk-lkml@sci.fi> <4e5e476b0904081218i29871702qc8bacb680c51ec2c@mail.gmail.com>
+	Wed, 8 Apr 2009 15:55:05 -0400
+Date: Wed, 8 Apr 2009 13:54:48 -0600
+From: Matthew Wilcox <matthew@wil.cx>
+To: "Mike Miller (OS Dev)" <mikem@beardog.cca.cpqcorp.net>
+Cc: LKML-SCSI <linux-scsi@vger.kernel.org>,
+       LKML <linux-kernel@vger.kernel.org>, mike.miller@hp.com
+Subject: Re: READ CAPACITY (16) failing
+Message-ID: <20090408195447.GP20983@parisc-linux.org>
+References: <20090408194357.GA15043@beardog.cca.cpqcorp.net>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <4e5e476b0904081218i29871702qc8bacb680c51ec2c@mail.gmail.com>
-Organization: private site
-User-Agent: Mutt/1.5.19+20090405 (GNU/Linux)
-X-Provags-ID: V01U2FsdGVkX19Y/l5ANLhTUk4/0ZtyCqRJ81g3JyZXGtp3x6W
- HM5ToSJynGA68JTCDPDQhZUYLM+KdXZts0H1KYn6cZfOYY5TDG
- TWc7KCIv5E2rlUSET+1BQuWyhC1bgePqM81ZURUhfk=
+In-Reply-To: <20090408194357.GA15043@beardog.cca.cpqcorp.net>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 08.04.2009, Corrado Zoccolo wrote: 
+On Wed, Apr 08, 2009 at 02:43:57PM -0500, Mike Miller (OS Dev) wrote:
+> I'm working on the HP Smart Array SCSI driver (hpsa) and I'm seeing the
+> following failures:
+> 
+> hpsa1: <0x3230> at PCI 0000:02:00.0 IRQ 76 using DAC
+> scsi4 : hpsa
+> scsi 4:0:0:0: Direct-Access     HP       LOGICAL VOLUME   5.20 PQ: 0 ANSI: 5
+> sd 4:0:0:0: Attached scsi generic sg4 type 0
+> sd 4:0:0:0: [sdd] READ CAPACITY(16) failed
+> sd 4:0:0:0: [sdd] Result: hostbyte=DID_ABORT driverbyte=DRIVER_OK
+> sd 4:0:0:0: [sdd] Sense not available.
+> hpsa: cp ffff8800cf400000 has check condition: unknown type: Sense: 0x5,
+> ASC: 0x20, ASCQ: 0x0, Returning result: 0x2, cmd=[a0 00 00 00 00 00 00 00 10
+> 00]
 
-> I found that elevator=deadline performs much better than noop for
-> writes, and almost as well for reads
-[....]
+> The READ CAPACITY failures are what I'm concerned about. I can't seem to track
+> down why that's failing.
+> I've tried printing out the_result from sd but it's not printing out. I'm
+> assuming that anytime I load the driver it goes thru sd.
+> 
+> 	if (the_result) {
+> 		sense_valid = scsi_sense_valid(&sshdr);
+> 		if (sense_valid &&
+> 			sshdr.sense_key == ILLEGAL_REQUEST &&
+> 			(sshdr.asc == 0x20 || sshdr.asc == 0x24) &&
+> 			sshdr.ascq == 0x00)
+> 			/* Invalid Command Operation Code or
+> 			 * Invalid Field in CDB, just retry
+> 			 * silently with RC10 */
+> 			return -EINVAL;
+> 		}
+> 	retries--;
+> 	} while (the_result && retries);
+> 	printk(KERN_WARNING "sd-mfm: the_result = %d\n", the_result);
 
-The DL elevator has slightly more throughput than cfq and anticipatory,
-but is almost unusuable under load.
+Probably the device you're testing against doesn't support RC16, which
+is fine.  But for some reason, we're not getting valid sense data back
+from the device.  Now, there's two responses to this that seem rational
+to me:
 
-Running Theodore Ts'os "fsync-tester" while doing Linus' torture test 
-"while : ; do time sh -c "dd if=/dev/zero of=bigfile bs=8M count=256 ; sync; rm bigfile"; done"
-shows it clearly:
+ - In sd.c, if the drive has returned no/invalid sense data, try RC10
+   silently, just like the 0x20 / 0x24 ASC case.
+ - Find out why this drive doesn't report valid sense data when attached
+   to hpsa.  I assume it does report valid sense data when attached to
+   some other scsi card?
 
-mount: /dev/sda4 on /home type xfs (rw,noatime,logbsize=256k,logbufs=2,nobarrier)
-Kernel 2.6.29.1 (vanilla)
-
-with cfq:
-
-htd@liesel:~/!> ./fsync-tester
-fsync time: 0.7640
-fsync time: 0.6166
-fsync time: 1.2830
-fsync time: 0.4273
-fsync time: 1.1693
-fsync time: 1.7466
-fsync time: 1.2477
-fsync time: 1.9411
-fsync time: 1.9636
-fsync time: 1.9065
-fsync time: 1.1561
-fsync time: 1.8267
-fsync time: 0.2431
-fsync time: 0.2898
-fsync time: 0.2394
-fsync time: 0.4309
-fsync time: 1.5699
-fsync time: 0.3742
-fsync time: 1.3194
-fsync time: 1.9442
-fsync time: 1.0899
-fsync time: 1.9443
-fsync time: 1.0062
-
-with dl:
-
-fsync time: 10.5853
-fsync time: 10.3339
-fsync time: 5.3374
-fsync time: 6.5707
-fsync time: 10.6095
-fsync time: 4.1154
-fsync time: 4.9604
-fsync time: 10.5325
-fsync time: 10.4543
-fsync time: 10.4970
-fsync time: 10.5570
-fsync time: 5.2717
-fsync time: 10.5619
-fsync time: 5.3058
-fsync time: 3.1019
-fsync time: 5.1504
-fsync time: 5.7564
-fsync time: 10.5998
-fsync time: 4.0895
-
-
-Regards, Heinz.
-
+-- 
+Matthew Wilcox				Intel Open Source Technology Centre
+"Bill, look, we understand that you're interested in selling us this
+operating system, but compare it to ours.  We can't possibly take such
+a retrograde step."
