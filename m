@@ -1,57 +1,45 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934106AbZDHSFc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934888AbZDHSIU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934106AbZDHSFc (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 8 Apr 2009 14:05:32 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754968AbZDHSFU
+	id S934888AbZDHSIU (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 8 Apr 2009 14:08:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753649AbZDHSIK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 8 Apr 2009 14:05:20 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:44868 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1754616AbZDHSFS (ORCPT
+	Wed, 8 Apr 2009 14:08:10 -0400
+Received: from earthlight.etchedpixels.co.uk ([81.2.110.250]:36401 "EHLO
+	www.etchedpixels.co.uk" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1753356AbZDHSII (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 8 Apr 2009 14:05:18 -0400
-Date: Wed, 8 Apr 2009 11:02:07 -0700 (PDT)
-From: Linus Torvalds <torvalds@linux-foundation.org>
-X-X-Sender: torvalds@localhost.localdomain
-To: Adrian Bunk <bunk@kernel.org>
-cc: Alan Cox <alan@lxorguk.ukuu.org.uk>, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] tty: MAX3100
-In-Reply-To: <20090408175455.GA6721@localhost.pp.htv.fi>
-Message-ID: <alpine.LFD.2.00.0904081101290.4583@localhost.localdomain>
-References: <20090408114427.28788.50640.stgit@t61.ukuu.org.uk> <20090408175455.GA6721@localhost.pp.htv.fi>
-User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Wed, 8 Apr 2009 14:08:08 -0400
+Date: Wed, 8 Apr 2009 19:09:16 +0100
+From: Alan Cox <alan@lxorguk.ukuu.org.uk>
+To: Ed Schouten <ed@FreeBSD.org>
+Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: Inconsistency between PTY read() return values
+Message-ID: <20090408190916.0c213aba@lxorguk.ukuu.org.uk>
+In-Reply-To: <20090408175603.GI32098@hoeg.nl>
+References: <20090408143631.GH32098@hoeg.nl>
+	<20090408174716.6474af70@lxorguk.ukuu.org.uk>
+	<20090408175603.GI32098@hoeg.nl>
+X-Mailer: Claws Mail 3.7.0 (GTK+ 2.14.7; x86_64-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Wed, 8 Apr 2009 19:56:03 +0200
+Ed Schouten <ed@FreeBSD.org> wrote:
 
-
-On Wed, 8 Apr 2009, Adrian Bunk wrote:
-
-> On Wed, Apr 08, 2009 at 12:44:52PM +0100, Alan Cox wrote:
-> > Thou shalt remember to use 'git add' or there will errors and wrath from on
-> > list and much wailing and gnashing of teeth.
-> > 
-> > Signed-off-by: Alan "I'm hiding" Cox <alan@lxorguk.ukuu.org.uk>
-> > ---
-> > 
-> >  drivers/serial/max3100.c |  927 ++++++++++++++++++++++++++++++++++++++++++++++
-> >  1 files changed, 927 insertions(+), 0 deletions(-)
-> >  create mode 100644 drivers/serial/max3100.c
-> >...
-> > --- /dev/null
-> > +++ b/drivers/serial/max3100.c
-> >...
-> > +#include <linux/serial_max3100.h>
-> >...
+> Hi Alan,
 > 
-> Thou shalt remember to also send the header file.
+> * Alan Cox <alan@lxorguk.ukuu.org.uk> wrote:
+> > I would argue that TTYs do behave this way. We treat the disconnect as a
+> > hang up event. BSD sees it as EOF, Linux as hangup.
+> 
+> Would you mind explaining me the difference? I thought a modem
+> disconnect implies an end-of-file condition? 
 
-LOL.
-
-Alan, try "git status". I wonder how many other files you have hiding in 
-there..
-
-			Linus
+A modem disconnect is a hang up which is quite different to an EOF and is
+effectively a security barrier as well (existing users of the tty port
+lose access to it aka revoke())
