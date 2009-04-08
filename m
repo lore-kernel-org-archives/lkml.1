@@ -1,74 +1,94 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933842AbZDHTh4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933158AbZDHToS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933842AbZDHTh4 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 8 Apr 2009 15:37:56 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933158AbZDHThD
+	id S933158AbZDHToS (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 8 Apr 2009 15:44:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756242AbZDHTn5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 8 Apr 2009 15:37:03 -0400
-Received: from fg-out-1718.google.com ([72.14.220.153]:3032 "EHLO
-	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S933303AbZDHThA (ORCPT
+	Wed, 8 Apr 2009 15:43:57 -0400
+Received: from g4t0017.houston.hp.com ([15.201.24.20]:32254 "EHLO
+	g4t0017.houston.hp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755213AbZDHTn4 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 8 Apr 2009 15:37:00 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=sender:date:from:to:cc:subject:message-id:mime-version:content-type
-         :content-disposition:user-agent;
-        b=a6iKhYFamdU8BJI48VH3MqmnfvT0n3UixSii1W/MqyX0hUfLi5rvkg8pdRF6B7nPqv
-         2WkfWLn2YO6f9MrJrmLCVchFIFdiOD/KjEi2E7N02syqhC5lDMwLZyyBbD6up6J6HHJj
-         n9sVQV4CMAKyMj9TSyizsCJfq4u65vsGjIO7A=
-Date: Wed, 8 Apr 2009 23:36:56 +0400
-From: Cyrill Gorcunov <gorcunov@openvz.org>
-To: Ingo Molnar <mingo@elte.hu>, "H. Peter Anvin" <hpa@zytor.com>,
-       Thomas Gleixner <tglx@linutronix.de>
-Cc: LKML <linux-kernel@vger.kernel.org>, Yinghai Lu <yhlu.kernel@gmail.com>
-Subject: [PATCH -tip] x86: do_IRQ - send EOI for x86-32 on irq without
-	handler v3
-Message-ID: <20090408193656.GI7556@lenovo>
-MIME-Version: 1.0
+	Wed, 8 Apr 2009 15:43:56 -0400
+Date: Wed, 8 Apr 2009 14:43:57 -0500
+From: "Mike Miller (OS Dev)" <mikem@beardog.cca.cpqcorp.net>
+To: LKML-SCSI <linux-scsi@vger.kernel.org>,
+       LKML <linux-kernel@vger.kernel.org>
+Cc: mike.miller@hp.com
+Subject: READ CAPACITY (16) failing
+Message-ID: <20090408194357.GA15043@beardog.cca.cpqcorp.net>
+Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-User-Agent: Mutt/1.5.18 (2008-05-17)
+User-Agent: Mutt/1.5.9i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-For X86-32 if IRQ has no handler it remains non-Ack'ed
-even if APIC is not requested for being disabled.
+Hello,
+I'm working on the HP Smart Array SCSI driver (hpsa) and I'm seeing the
+following failures:
 
-Since disable_apic depends on CONFIG_X86_LOCAL_APIC rather
-then CONFIG_X86_64 we could bring tiny fix here.
+hpsa1: <0x3230> at PCI 0000:02:00.0 IRQ 76 using DAC
+scsi4 : hpsa
+scsi 4:0:0:0: Direct-Access     HP       LOGICAL VOLUME   5.20 PQ: 0 ANSI: 5
+sd 4:0:0:0: Attached scsi generic sg4 type 0
+sd 4:0:0:0: [sdd] READ CAPACITY(16) failed
+sd 4:0:0:0: [sdd] Result: hostbyte=DID_ABORT driverbyte=DRIVER_OK
+sd 4:0:0:0: [sdd] Sense not available.
+hpsa: cp ffff8800cf400000 has check condition: unknown type: Sense: 0x5,
+ASC: 0x20, ASCQ: 0x0, Returning result: 0x2, cmd=[a0 00 00 00 00 00 00 00 10
+00]
+sd 4:0:0:0: [sdd] 213196320 512-byte hardware sectors: (109 GB/101 GiB)
+sd 4:0:0:0: [sdd] Write Protect is off
+sd 4:0:0:0: [sdd] Mode Sense: 6b 00 00 08
+sd 4:0:0:0: [sdd] Write cache: disabled, read cache: enabled, doesn't
+support DPO or FUA
+sd 4:0:0:0: [sdd] READ CAPACITY(16) failed
+sd 4:0:0:0: [sdd] Result: hostbyte=DID_ABORT driverbyte=DRIVER_OK
+sd 4:0:0:0: [sdd] Sense not available.
+ sdd: sdd1
+sd 4:0:0:0: [sdd] Attached SCSI disk
+scsi 4:1:0:0: RAID              HP       P400             5.20 PQ: 0 ANSI: 0
+scsi 4:1:0:0: Attached scsi generic sg5 type 12
 
-Signed-off-by: Cyrill Gorcunov <gorcunov@openvz.org>
----
- arch/x86/kernel/irq.c |   10 ++++++++--
- 1 file changed, 8 insertions(+), 2 deletions(-)
+The illegal request is coming from smartd and probably doesn't mean anything
+in this context since SA doesn't support the SCSI Report LUNs command. The
+READ CAPACITY failures are what I'm concerned about. I can't seem to track
+down why that's failing.
+I've tried printing out the_result from sd but it's not printing out. I'm
+assuming that anytime I load the driver it goes thru sd.
 
-Ingo it's an interim fix.
+	if (the_result) {
+		sense_valid = scsi_sense_valid(&sshdr);
+		if (sense_valid &&
+			sshdr.sense_key == ILLEGAL_REQUEST &&
+			(sshdr.asc == 0x20 || sshdr.asc == 0x24) &&
+			sshdr.ascq == 0x00)
+			/* Invalid Command Operation Code or
+			 * Invalid Field in CDB, just retry
+			 * silently with RC10 */
+			return -EINVAL;
+		}
+	retries--;
+	} while (the_result && retries);
+	printk(KERN_WARNING "sd-mfm: the_result = %d\n", the_result);
 
-I didn't manage yet to implement what you proposed
-(marked http://lkml.org/lkml/2009/4/8/549).
+sd reports:
+sd 4:0:0:0: [sdd] Result: hostbyte=DID_ABORT driverbyte=DRIVER_OK
 
-Index: linux-2.6.git/arch/x86/kernel/irq.c
-=====================================================================
---- linux-2.6.git.orig/arch/x86/kernel/irq.c
-+++ linux-2.6.git/arch/x86/kernel/irq.c
-@@ -223,10 +223,16 @@ unsigned int __irq_entry do_IRQ(struct p
- 	irq = __get_cpu_var(vector_irq)[vector];
- 
- 	if (!handle_irq(irq, regs)) {
--#ifdef CONFIG_X86_64
-+		/*
-+		 * FIXME: Actually we could go further and replace
-+		 * ack_APIC_irq->apic_write->apic->write with a NOP
-+		 * operation as only disable_apic is set and happily call
-+		 * ack_APIC_irq after that without any tests
-+		 */
-+#ifdef CONFIG_X86_LOCAL_APIC
- 		if (!disable_apic)
--			ack_APIC_irq();
- #endif
-+			ack_APIC_irq();
- 
- 		if (printk_ratelimit())
- 			printk(KERN_EMERG "%s: %d.%d No irq handler for vector (irq %d)\n",
+>From the controllers serial port I see:
+
+[04/08 14:31:09]Ctlr SCSI Request, Illegal CDB Opcode=0x0
+[04/08 14:37:28]Volume SCSI Request, Illegal CDB Opcode=0xa0
+
+when the driver loads. I guess the TUR is coming from sd. But neither of
+these indicate why the READ CAPACITY (16) failed.
+
+I've also tried printing out the command status from the driver but it only
+shows a check condition with no sense.
+
+Any ideas? Or is there not enough info here?
+
+Thanks,
+mikem
