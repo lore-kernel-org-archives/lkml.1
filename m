@@ -1,79 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760173AbZDHHBZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758937AbZDHHD7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760173AbZDHHBZ (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 8 Apr 2009 03:01:25 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754264AbZDHHBN
+	id S1758937AbZDHHD7 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 8 Apr 2009 03:03:59 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751435AbZDHHDt
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 8 Apr 2009 03:01:13 -0400
-Received: from ozlabs.org ([203.10.76.45]:34557 "EHLO ozlabs.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752211AbZDHHBM (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 8 Apr 2009 03:01:12 -0400
-From: Rusty Russell <rusty@rustcorp.com.au>
-To: Arjan van de Ven <arjan@linux.intel.com>
-Subject: Re: Regression in 2.6.30-rc1 since commit acae0515 - wireless broken
-Date: Wed, 8 Apr 2009 16:31:08 +0930
-User-Agent: KMail/1.11.2 (Linux/2.6.27-11-generic; KDE/4.2.2; i686; ; )
-Cc: Larry Finger <Larry.Finger@lwfinger.net>,
-       LKML <linux-kernel@vger.kernel.org>, "Rafael J. Wysocki" <rjw@sisk.pl>,
-       wireless <linux-wireless@vger.kernel.org>
-References: <49DC2DF5.3010603@lwfinger.net> <49DC31EA.8050208@linux.intel.com>
-In-Reply-To: <49DC31EA.8050208@linux.intel.com>
-MIME-Version: 1.0
-Content-Type: Text/Plain;
-  charset="iso-8859-1"
+	Wed, 8 Apr 2009 03:03:49 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:52709 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1750772AbZDHHDt (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 8 Apr 2009 03:03:49 -0400
+Date: Wed, 8 Apr 2009 00:00:18 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Andi Kleen <andi@firstfloor.org>
+Cc: linux-kernel@vger.kernel.org, linux-mm@kvack.org, x86@kernel.org
+Subject: Re: [PATCH] [2/16] POISON: Add page flag for poisoned pages
+Message-Id: <20090408000018.9567a5fa.akpm@linux-foundation.org>
+In-Reply-To: <20090408062441.GF17934@one.firstfloor.org>
+References: <20090407509.382219156@firstfloor.org>
+	<20090407150958.BA68F1D046D@basil.firstfloor.org>
+	<20090407221421.890f27a6.akpm@linux-foundation.org>
+	<20090408062441.GF17934@one.firstfloor.org>
+X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.5; x86_64-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200904081631.09150.rusty@rustcorp.com.au>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wednesday 08 April 2009 14:41:06 Arjan van de Ven wrote:
-> Larry Finger wrote:
-> > The most recent pulls of the Linux-2.6 git tree has broken wireless. The problem
-> > was bisected with commit acae05156551fd7528fbb616271e672789388e3c, entitled
-> > "module: create a request_module_nowait()", indicated as the faulty change. This
-> > is seen with driver b43 on my system, and 2 reports for driver iwlagn:
-> > http://marc.info/?l=linux-wireless&m=123916157630571&w=2 and
-> > http://marc.info/?l=linux-wireless&m=123913015021457&w=2.
+On Wed, 8 Apr 2009 08:24:41 +0200 Andi Kleen <andi@firstfloor.org> wrote:
+
+> On Tue, Apr 07, 2009 at 10:14:21PM -0700, Andrew Morton wrote:
+> > On Tue,  7 Apr 2009 17:09:58 +0200 (CEST) Andi Kleen <andi@firstfloor.org> wrote:
 > > 
-> > For b43, the logged error messages are:
+> > > Poisoned pages need special handling in the VM and shouldn't be touched 
+> > > again. This requires a new page flag. Define it here.
+> > 
+> > I wish this patchset didn't change/abuse the well-understood meaning of
+> > the word "poison".
 > 
-> rusty... I still suspect your "int to bool" conversion stuff ;-)
+> Sorry, that's the terminology on the hardware side.
+> 
+> If there's much confusion I could rename it HwPoison or somesuch?
 
-One way to find out.  Here's the reversion:
+I understand that'd be a PITA but I suspect it would be best,
+long-term.  Having this conflict in core MM is really pretty bad.
 
-diff --git a/include/linux/kmod.h b/include/linux/kmod.h
---- a/include/linux/kmod.h
-+++ b/include/linux/kmod.h
-@@ -29,12 +29,10 @@
- #ifdef CONFIG_MODULES
- /* modprobe exit status on success, -ve on error.  Return value
-  * usually useless though. */
--extern int __request_module(bool wait, const char *name, ...) \
--	__attribute__((format(printf, 2, 3)));
--#define request_module(mod...) __request_module(true, mod)
--#define request_module_nowait(mod...) __request_module(false, mod)
--#define try_then_request_module(x, mod...) \
--	((x) ?: (__request_module(false, mod), (x)))
-+extern int __request_module(int wait, const char *name, ...) __attribute__ ((format (printf, 2, 3)));
-+#define request_module(mod...) __request_module(1, mod)
-+#define request_module_nowait(mod...) __request_module(0, mod)
-+#define try_then_request_module(x, mod...) ((x) ?: (__request_module(0, mod), (x)))
- #else
- static inline int request_module(const char *name, ...) { return -ENOSYS; }
- static inline int request_module_nowait(const char *name, ...) { return -ENOSYS; }
-diff --git a/kernel/kmod.c b/kernel/kmod.c
---- a/kernel/kmod.c
-+++ b/kernel/kmod.c
-@@ -64,7 +64,8 @@ char modprobe_path[KMOD_PATH_LEN] = "/sb
-  * If module auto-loading support is disabled then this function
-  * becomes a no-operation.
-  */
--int __request_module(bool wait, const char *fmt, ...)
-+
-+int __request_module(int wait, const char *fmt, ...)
- {
- 	va_list args;
- 	char module_name[MODULE_NAME_LEN];
+> > > The page flags wars seem to be over, so it shouldn't be a problem
+> > > to get a new one. I hope.
+> > 
+> > They are?  How did it all get addressed?
+> 
+> Allowing 64bit to use more and using [V]SPARSEMAP to limit flags
+> use for zones. I think.
+
+Nobody ever seems to be able to work out how many we actually have
+left.
+
