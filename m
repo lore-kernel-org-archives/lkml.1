@@ -1,65 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932639AbZDHVdP@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932428AbZDHViW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932639AbZDHVdP (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 8 Apr 2009 17:33:15 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1765443AbZDHVcw
+	id S932428AbZDHViW (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 8 Apr 2009 17:38:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756810AbZDHViL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 8 Apr 2009 17:32:52 -0400
-Received: from sorrow.cyrius.com ([65.19.161.204]:51462 "EHLO
-	sorrow.cyrius.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1765209AbZDHVcu (ORCPT
+	Wed, 8 Apr 2009 17:38:11 -0400
+Received: from pfepb.post.tele.dk ([195.41.46.236]:38914 "EHLO
+	pfepb.post.tele.dk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757818AbZDHViK (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 8 Apr 2009 17:32:50 -0400
-Date: Wed, 8 Apr 2009 14:32:40 -0700
-From: Martin Michlmayr <tbm@cyrius.com>
-To: Alexander Beregalov <a.beregalov@gmail.com>
-Cc: LKML <linux-kernel@vger.kernel.org>, rathamahata@php4.ru,
-       linux-fsdevel@vger.kernel.org, akpm@linux-foundation.org
-Subject: Re: [PATCH] befs: fix build on parisc
-Message-ID: <20090408213240.GA12401@deprecation.cyrius.com>
-References: <a4423d670904010632h35a20b8er8003578b5075189d@mail.gmail.com>
-MIME-Version: 1.0
+	Wed, 8 Apr 2009 17:38:10 -0400
+Date: Wed, 8 Apr 2009 23:40:14 +0200
+From: Sam Ravnborg <sam@ravnborg.org>
+To: David Howells <dhowells@redhat.com>
+Cc: jeremy@goop.org, mingo@elte.hu, akpm@linux-foundation.org, x86@kernel.org,
+       linux-kernel@vger.kernel.org, a.p.zijlstra@chello.nl,
+       nickpiggin@yahoo.com.au, tglx@linutronix.de, ysato@users.sourceforge.jp
+Subject: Re: [PATCH] FRV: Use <asm-generic/pgtable.h> in NOMMU mode
+Message-ID: <20090408214014.GA10366@uranus.ravnborg.org>
+References: <20090408205610.GA9970@uranus.ravnborg.org> <20090408184455.GB332@uranus.ravnborg.org> <21081.1239214221@redhat.com> <20090408183011.24150.43310.stgit@warthog.procyon.org.uk> <24317.1239216477@redhat.com> <26753.1239225955@redhat.com>
+Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <a4423d670904010632h35a20b8er8003578b5075189d@mail.gmail.com>
-User-Agent: Mutt/1.5.19 (2009-01-05)
+In-Reply-To: <26753.1239225955@redhat.com>
+User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-* Alexander Beregalov <a.beregalov@gmail.com> [2009-04-01 17:32]:
-> Fix this build error on parisc:
-> fs/befs/super.c:85: error: 'PAGE_SIZE' undeclared
-
-Same on ARM and MIPS, and your patch fixes it.  I hope this will go in
-soon.
-
-Tested-by: Martin Michlmayr <tbm@cyrius.com>
-
-> Signed-off-by: Alexander Beregalov <a.beregalov@gmail.com>
-> ---
+On Wed, Apr 08, 2009 at 10:25:55PM +0100, David Howells wrote:
+> Sam Ravnborg <sam@ravnborg.org> wrote:
 > 
->  fs/befs/super.c |    1 +
->  1 files changed, 1 insertions(+), 0 deletions(-)
+> > > > Any change we can have these header files moved before too
+> > > > many patches are queued?
+> > > 
+> > > Sure.  Do you have patches to move FRV and MN10300 headers?
+> > 
+> > For frv it is as simple as:
+> > 
+> > mkdir -p arch/frv/include/asm
+> > git mv include/asm-frv/* arch/frv/include/asm
+> > git commit
 > 
-> diff --git a/fs/befs/super.c b/fs/befs/super.c
-> index 41f2b4d..ca40f82 100644
-> --- a/fs/befs/super.c
-> +++ b/fs/befs/super.c
-> @@ -8,6 +8,7 @@
->   */
+> The thing I really detest about doing this is this:
 > 
->  #include <linux/fs.h>
-> +#include <asm/page.h> /* for PAGE_SIZE */
+> 	warthog>git-log -M arch/frv/include/asm/pgtable.h | cat
+> 	commit 2203e07b4ba1d1113ab80e7c51062f6994a62d3a
+> 	Author: David Howells <dhowells@redhat.com>
+> 	Date:   Wed Apr 8 22:20:14 2009 +0100
 > 
->  #include "befs.h"
->  #include "super.h"
-> --
-> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
-> Please read the FAQ at  http://www.tux.org/lkml/
+> 	    FRV: Move to arch/frv/include/asm/
+> 
+> 	    Move from include/asm-frv/ to arch/frv/include/asm/.
+> 
+> 	    Signed-off-by: David Howells <dhowells@redhat.com>
+> 	warthog>
+> 
+> So much for the old history:
+> 
+> 	warthog>git-log include/asm-frv/pgtable.h | grep ^commit | wc -l
+> 	20
+> 	warthog>
 
--- 
-Martin Michlmayr
-http://www.cyrius.com/
+--follow is needed to follow renames when doing git log.
+
+It is not that the history is lost - but hidden a bit.
+
+	Sam
