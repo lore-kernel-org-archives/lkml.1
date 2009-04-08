@@ -1,137 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753700AbZDHWa3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753964AbZDHWbv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753700AbZDHWa3 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 8 Apr 2009 18:30:29 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751676AbZDHWaS
+	id S1753964AbZDHWbv (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 8 Apr 2009 18:31:51 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752845AbZDHWbm
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 8 Apr 2009 18:30:18 -0400
-Received: from rv-out-0506.google.com ([209.85.198.235]:33790 "EHLO
-	rv-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750908AbZDHWaQ convert rfc822-to-8bit (ORCPT
+	Wed, 8 Apr 2009 18:31:42 -0400
+Received: from iolanthe.rowland.org ([192.131.102.54]:41176 "HELO
+	iolanthe.rowland.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with SMTP id S1751676AbZDHWbl (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 8 Apr 2009 18:30:16 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
-         :cc:content-type:content-transfer-encoding;
-        b=lWU37MscFXHI3rC5jQWr4iYu5mD+ODqjj2IBxwLiKcGkuMQyFBwdFbOQDgwJ130rKB
-         ZqJ+3ANU/6g8O0mF+QhZzFWPQUEaL3BQw19M+JabI6O38HEa1Dr23+7ccPfCTfF3Erdy
-         7HXNq9pI+/6Ph6RwlYew3D+1lk7G6NuNc2YfA=
+	Wed, 8 Apr 2009 18:31:41 -0400
+Date: Wed, 8 Apr 2009 18:31:40 -0400 (EDT)
+From: Alan Stern <stern@rowland.harvard.edu>
+X-X-Sender: stern@iolanthe.rowland.org
+To: Alan Jenkins <alan-jenkins@tuffmail.co.uk>
+cc: usb-storage@lists.one-eyed-alien.net,
+       Kernel Testers List <kernel-testers@vger.kernel.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: usual_tables: module license 'unspecified' taints kernel.
+In-Reply-To: <49DCD481.1050104@tuffmail.co.uk>
+Message-ID: <Pine.LNX.4.44L0.0904081829050.3138-100000@iolanthe.rowland.org>
 MIME-Version: 1.0
-In-Reply-To: <20090408210735.GD11159@us.ibm.com>
-References: <20090408210735.GD11159@us.ibm.com>
-Date: Wed, 8 Apr 2009 15:30:15 -0700
-Message-ID: <86802c440904081530i1b83e19ayddebd8b2f6d413af@mail.gmail.com>
-Subject: Re: [PATCH 2/3] [BUGFIX] x86/x86_64: fix CPU offlining triggered 
-	inactive device IRQ interrruption
-From: Yinghai Lu <yhlu.kernel@gmail.com>
-To: Gary Hade <garyhade@us.ibm.com>
-Cc: mingo@elte.hu, mingo@redhat.com, tglx@linutronix.de, hpa@zytor.com,
-       x86@kernel.org, linux-kernel@vger.kernel.org, lcm@us.ibm.com
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 8BIT
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Apr 8, 2009 at 2:07 PM, Gary Hade <garyhade@us.ibm.com> wrote:
-> Impact: Eliminates a race that can leave the system in an
->        unusable state
->
-> During rapid offlining of multiple CPUs there is a chance
-> that an IRQ affinity move destination CPU will be offlined
-> before the IRQ affinity move initiated during the offlining
-> of a previous CPU completes.  This can happen when the device
-> is not very active and thus fails to generate the IRQ that is
-> needed to complete the IRQ affinity move before the move
-> destination CPU is offlined.  When this happens there is an
-> -EBUSY return from __assign_irq_vector() during the offlining
-> of the IRQ move destination CPU which prevents initiation of
-> a new IRQ affinity move operation to an online CPU.  This
-> leaves the IRQ affinity set to an offlined CPU.
->
-> I have been able to reproduce the problem on some of our
-> systems using the following script.  When the system is idle
-> the problem often reproduces during the first CPU offlining
-> sequence.
->
-> #!/bin/sh
->
-> SYS_CPU_DIR=/sys/devices/system/cpu
-> VICTIM_IRQ=25
-> IRQ_MASK=f0
->
-> iteration=0
-> while true; do
->  echo $iteration
->  echo $IRQ_MASK > /proc/irq/$VICTIM_IRQ/smp_affinity
->  for cpudir in $SYS_CPU_DIR/cpu[1-9] $SYS_CPU_DIR/cpu??; do
->    echo 0 > $cpudir/online
->  done
->  for cpudir in $SYS_CPU_DIR/cpu[1-9] $SYS_CPU_DIR/cpu??; do
->    echo 1 > $cpudir/online
->  done
->  iteration=`expr $iteration + 1`
-> done
->
-> The proposed fix takes advantage of the fact that when all
-> CPUs in the old domain are offline there is nothing to be done
-> by send_cleanup_vector() during the affinity move completion.
-> So, we simply avoid setting cfg->move_in_progress preventing
-> the above mentioned -EBUSY return from __assign_irq_vector().
-> This allows initiation of a new IRQ affinity move to a CPU
-> that is not going offline.
->
-> Signed-off-by: Gary Hade <garyhade@us.ibm.com>
->
-> ---
->  arch/x86/kernel/apic/io_apic.c |   11 ++++++++---
->  1 file changed, 8 insertions(+), 3 deletions(-)
->
-> Index: linux-2.6.30-rc1/arch/x86/kernel/apic/io_apic.c
-> ===================================================================
-> --- linux-2.6.30-rc1.orig/arch/x86/kernel/apic/io_apic.c        2009-04-08 09:23:00.000000000 -0700
-> +++ linux-2.6.30-rc1/arch/x86/kernel/apic/io_apic.c     2009-04-08 09:23:16.000000000 -0700
-> @@ -363,7 +363,8 @@ set_extra_move_desc(struct irq_desc *des
->        struct irq_cfg *cfg = desc->chip_data;
->
->        if (!cfg->move_in_progress) {
-> -               /* it means that domain is not changed */
-> +               /* it means that domain has not changed or all CPUs
-> +                * in old domain are offline */
->                if (!cpumask_intersects(desc->affinity, mask))
->                        cfg->move_desc_pending = 1;
->        }
-> @@ -1262,8 +1263,11 @@ next:
->                current_vector = vector;
->                current_offset = offset;
->                if (old_vector) {
-> -                       cfg->move_in_progress = 1;
->                        cpumask_copy(cfg->old_domain, cfg->domain);
-> +                       if (cpumask_intersects(cfg->old_domain,
-> +                                              cpu_online_mask)) {
-> +                               cfg->move_in_progress = 1;
-> +                       }
->                }
->                for_each_cpu_and(new_cpu, tmp_mask, cpu_online_mask)
->                        per_cpu(vector_irq, new_cpu)[vector] = irq;
-> @@ -2492,7 +2496,8 @@ static void irq_complete_move(struct irq
->                if (likely(!cfg->move_desc_pending))
->                        return;
->
-> -               /* domain has not changed, but affinity did */
-> +               /* domain has not changed or all CPUs in old domain
-> +                * are offline, but affinity changed */
->                me = smp_processor_id();
->                if (cpumask_test_cpu(me, desc->affinity)) {
->                        *descp = desc = move_irq_desc(desc, me);
-> --
+On Wed, 8 Apr 2009, Alan Jenkins wrote:
 
-so you mean during __assign_irq_vector(), cpu_online_mask get updated?
-with your patch, how about that it just happen right after you check
-that second time.
+> Hi, I see this regression in v2.6.30-rc1.  I end up with a module 
+> "usual_tables.ko", which is loaded on boot and causes the kernel to 
+> complain about an unspecified license.  See subject for the exact error 
+> message.
+> 
+> I have
+> 
+> CONFIG_USB_STORAGE=m
+> CONFIG_USB_LIBUSUAL=y
 
-it seems we are missing some lock_vector_lock() on the remove cpu from
-online mask.
+This looks like a mistake in the Makefile.  Does the patch below fix
+the problem?
 
-YH
+Alan Stern
+
+
+Index: usb-2.6/drivers/usb/storage/Makefile
+===================================================================
+--- usb-2.6.orig/drivers/usb/storage/Makefile
++++ usb-2.6/drivers/usb/storage/Makefile
+@@ -17,7 +17,8 @@ usb-storage-objs :=	scsiglue.o protocol.
+ ifeq ($(CONFIG_USB_LIBUSUAL),)
+ 	usb-storage-objs	+= usual-tables.o
+ else
+-	obj-$(CONFIG_USB)	+= libusual.o usual-tables.o
++	obj-$(CONFIG_USB)	+= usb-libusual.o
++	usb-libusual-objs	:= libusual.o usual-tables.o
+ endif
+ 
+ obj-$(CONFIG_USB_STORAGE_ALAUDA)	+= ums-alauda.o
+
