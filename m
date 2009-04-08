@@ -1,92 +1,94 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761443AbZDHHn7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762238AbZDHHpV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761443AbZDHHn7 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 8 Apr 2009 03:43:59 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753538AbZDHHnq
+	id S1762238AbZDHHpV (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 8 Apr 2009 03:45:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756920AbZDHHpE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 8 Apr 2009 03:43:46 -0400
-Received: from relay3.sgi.com ([192.48.156.57]:33847 "EHLO relay.sgi.com"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1751316AbZDHHnp (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 8 Apr 2009 03:43:45 -0400
-Date: Wed, 8 Apr 2009 00:43:42 -0700
-From: Jeremy Higdon <jeremy@sgi.com>
-To: Jaswinder Singh Rajput <jaswinder@kernel.org>
-Cc: James Bottomley <James.Bottomley@HansenPartnership.com>,
-       scsi <linux-scsi@vger.kernel.org>, LKML <linux-kernel@vger.kernel.org>,
-       Jes Sorensen <jes@sgi.com>, David Woodhouse <dwmw2@infradead.org>,
-       holt@sgi.com
-Subject: Re: [PATCH 1/2 scsi-misc] qla1280: use request_firmware
-Message-ID: <20090408074342.GA3919@sgi.com>
-References: <1238654083.4940.8.camel@ht.satnam> <1238654959.4940.12.camel@ht.satnam>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1238654959.4940.12.camel@ht.satnam>
-User-Agent: Mutt/1.4.1i
+	Wed, 8 Apr 2009 03:45:04 -0400
+Received: from rv-out-0506.google.com ([209.85.198.232]:40503 "EHLO
+	rv-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752615AbZDHHpB convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 8 Apr 2009 03:45:01 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
+         :cc:content-type:content-transfer-encoding;
+        b=x4Hj/NX1G61xhxksq2ODe7lEYXr+sFEExo6EoVPjcxzUqCqfJXpK4OHbiybpZcffg6
+         VfwFHX2eI4kXywXCvlGx9CXQyTdPyAS9PzxnSiZCkQpYs/4zAohvW/Ybx6ADOQER2Q3H
+         1aOS16J4LPoss9e8jNcjjzHrQFfT1DwhFbpVE=
+MIME-Version: 1.0
+In-Reply-To: <20090408163440.4442dc3c.kamezawa.hiroyu@jp.fujitsu.com>
+References: <20090407063722.GQ7082@balbir.in.ibm.com>
+	 <20090407172419.a5f318b9.kamezawa.hiroyu@jp.fujitsu.com>
+	 <20090408052904.GY7082@balbir.in.ibm.com>
+	 <20090408151529.fd6626c2.kamezawa.hiroyu@jp.fujitsu.com>
+	 <20090408070401.GC7082@balbir.in.ibm.com>
+	 <20090408160733.4813cb8d.kamezawa.hiroyu@jp.fujitsu.com>
+	 <20090408071115.GD7082@balbir.in.ibm.com>
+	 <20090408161824.26f47077.kamezawa.hiroyu@jp.fujitsu.com>
+	 <344eb09a0904080031y4406c001n584725b87024755@mail.gmail.com>
+	 <20090408163440.4442dc3c.kamezawa.hiroyu@jp.fujitsu.com>
+Date: Wed, 8 Apr 2009 13:15:01 +0530
+Message-ID: <344eb09a0904080045s94c792dmc2250aaf39c09222@mail.gmail.com>
+Subject: Re: [RFI] Shared accounting for memory resource controller
+From: Bharata B Rao <bharata.rao@gmail.com>
+To: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+Cc: balbir@linux.vnet.ibm.com, "linux-mm@kvack.org" <linux-mm@kvack.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       "lizf@cn.fujitsu.com" <lizf@cn.fujitsu.com>,
+       Rik van Riel <riel@surriel.com>, Bharata B Rao <bharata.rao@in.ibm.com>,
+       Dhaval Giani <dhaval@linux.vnet.ibm.com>,
+       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Apr 02, 2009 at 12:19:19PM +0530, Jaswinder Singh Rajput wrote:
-> It seems LKML is rejected old email because of big size. so I am CC LKML
-> after deleting firmware blobs:
-> 
-> From: Jaswinder Singh Rajput <jaswinderrajput@gmail.com>
-> Date: Thu, 2 Apr 2009 11:13:17 +0530
-> Subject: [PATCH] qla1280: use request_firmware
-> 
-> Firmware blob is little endian looks like this...
->         unsigned char  Version1
->         unsigned char  Version2
->         unsigned char  Version3
->         unsigned char  Padding
->         unsigned short start_address
-> 	unsigned short data
+On Wed, Apr 8, 2009 at 1:04 PM, KAMEZAWA Hiroyuki
+<kamezawa.hiroyu@jp.fujitsu.com> wrote:
+> On Wed, 8 Apr 2009 13:01:15 +0530
+> Bharata B Rao <bharata.rao@gmail.com> wrote:
+>
+>> On Wed, Apr 8, 2009 at 12:48 PM, KAMEZAWA Hiroyuki
+>> <kamezawa.hiroyu@jp.fujitsu.com> wrote:
+>> >
+>> > On Wed, 8 Apr 2009 12:41:15 +0530
+>> > Balbir Singh <balbir@linux.vnet.ibm.com> wrote:
+>> > > 3. Using the above, we can then try to (using an algorithm you
+>> > > proposed), try to do some work for figuring out the shared percentage.
+>> > >
+>> > This is the point. At last. Why "# of shared pages" is important ?
+>> >
+>> > I wonder it's better to add new stat file as memory.cacheinfo which helps
+>> > following kind of commands.
+>> >
+>> >  #cacheinfo /cgroups/memory/group01/
+>> >       /usr/lib/libc.so.1     30pages
+>> >       /var/log/messages      1 pages
+>> >       /tmp/xxxxxx            20 pages
+>>
+>> Can I suggest that we don't add new files for additional stats and try
+>> as far as possible to include them in <controller>.stat file. Please
+>> note that we have APIs in libcgroup library which can return
+>> statistics from controllers associated with a cgroup and these APIs
+>> assume that stats are part of <controller>.stat file.
+>>
+> Hmm ? Is there generic assumption as all cgroup has "stat" file ?
 
-This patch causes a problem.  It looks as though the firmware file may be
-incorrectly built for at least 12160.  We get a checksum error from the
-ISP12160 when it does the checksum:
+No. But I would think if any controller has any stats to export, it
+would do so via <controller>.stat file.
 
-qla1280 0001:00:03.0: firmware: using built-in firmware qlogic/12160.bin
-qla1280_mailbox_command: Command failed, mailbox0 = 0x0007, mailbox_out0 = 0x4003, istatus = 0x6000
-m0 4003, m1 b141, m2 5555, m3 aa55
-m4 55aa, m5 a5a5, m6 5a5a, m7 2525
-scsi(0): RISC checksum failed.
-scsi(0): initialize: pci probe failed!
-qla1x160: Failed to initialize adapter
+> And libcgroup cause bug if the new entry is added to stat file ?
 
+No. It can cope with new entries being added to stat file as long as
+they appear as (name, value) pairs.
 
->From qla1280_start_firmware():
-        /* Verify checksum of loaded RISC code. */
-        mb[0] = MBC_VERIFY_CHECKSUM;
-        /* mb[1] = ql12_risc_code_addr01; */
-        mb[1] = ha->fwstart;
-        err = qla1280_mailbox_command(ha, BIT_1 | BIT_0, mb);
-        if (err) {
-                printk(KERN_ERR "scsi(%li): RISC checksum failed.\n", ha->host_no);
-                return err;
-        }
+> (IOW, libcgroup can't ignore new entry added ?)
 
-jeremy
+It won't ignore, but can read the new stat.
 
-
-> Signed-off-by: Jaswinder Singh Rajput <jaswinderrajput@gmail.com>
-> ---
->  drivers/scsi/ql1040_fw.h       | 2130 ----------------------------------------
->  drivers/scsi/ql12160_fw.h      | 1811 ----------------------------------
->  drivers/scsi/ql1280_fw.h       | 2048 --------------------------------------
->  drivers/scsi/qla1280.c         |  114 ++-
->  drivers/scsi/qla1280.h         |    6 +
->  firmware/Makefile              |    2 +
->  firmware/WHENCE                |   13 +
->  firmware/qlogic/1040.bin.ihex  | 2111 +++++++++++++++++++++++++++++++++++++++
->  firmware/qlogic/12160.bin.ihex | 1771 +++++++++++++++++++++++++++++++++
->  firmware/qlogic/1280.bin.ihex  | 2008 +++++++++++++++++++++++++++++++++++++
->  10 files changed, 5985 insertions(+), 6029 deletions(-)
->  delete mode 100644 drivers/scsi/ql1040_fw.h
->  delete mode 100644 drivers/scsi/ql12160_fw.h
->  delete mode 100644 drivers/scsi/ql1280_fw.h
->  create mode 100644 firmware/qlogic/1040.bin.ihex
->  create mode 100644 firmware/qlogic/12160.bin.ihex
->  create mode 100644 firmware/qlogic/1280.bin.ihex
+Regards,
+Bharata.
