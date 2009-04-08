@@ -1,390 +1,93 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762638AbZDHG07@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932320AbZDHGcx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762638AbZDHG07 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 8 Apr 2009 02:26:59 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762553AbZDHG0M
+	id S932320AbZDHGcx (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 8 Apr 2009 02:32:53 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760147AbZDHGcn
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 8 Apr 2009 02:26:12 -0400
-Received: from relay3.sgi.com ([192.48.156.57]:54336 "EHLO relay.sgi.com"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1761529AbZDHG0I (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 8 Apr 2009 02:26:08 -0400
-Date: Wed, 8 Apr 2009 01:25:59 -0500
-From: Robin Holt <holt@sgi.com>
-To: Michael Chan <mchan@broadcom.com>
-Cc: "'Robin Holt'" <holt@sgi.com>, Matthew Carlson <mcarlson@broadcom.com>,
-       "David S. Miller" <davem@davemloft.net>,
-       Benjamin Li <benli@broadcom.com>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>
-Subject: Re: Linux 2.6.30-rc1
-Message-ID: <20090408062559.GF10768@sgi.com>
-References: <20090408053721.GE10768@sgi.com> <C27F8246C663564A84BB7AB343977242176F6BF106@IRVEXCHCCR01.corp.ad.broadcom.com>
+	Wed, 8 Apr 2009 02:32:43 -0400
+Received: from brick.kernel.dk ([93.163.65.50]:45651 "EHLO kernel.dk"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1758164AbZDHGcm (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 8 Apr 2009 02:32:42 -0400
+Date: Wed, 8 Apr 2009 08:32:40 +0200
+From: Jens Axboe <jens.axboe@oracle.com>
+To: Justin Madru <jdm64@gawab.com>
+Cc: lkml <linux-kernel@vger.kernel.org>, arjan@linux.intel.com
+Subject: Re: 2.6.30-rc1: invalid opcode with call trace
+Message-ID: <20090408063240.GQ5178@kernel.dk>
+References: <49DC367A.90603@gawab.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <C27F8246C663564A84BB7AB343977242176F6BF106@IRVEXCHCCR01.corp.ad.broadcom.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+In-Reply-To: <49DC367A.90603@gawab.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Apr 07, 2009 at 10:54:33PM -0700, Michael Chan wrote:
-> Robin Holt wrote:
-> 
-> > Booting an ia64 box with a tg3 adapter results in no network.
-> >  If I look
-> > at the MAC address of the adapter, it has changed radically from the
-> > original MAC.  The original MAC continues to be reported by EFI and
-> > booting an old kernel gets the correct MAC.
-> >
-> > Good MAC:     08:00:69:13:E6:3C
-> > Bad MAC:      00:00:3C:E6:13:69 (recreated from memory)
-> 
-> Looks like endian swapped.  Can you provide the entire tg3 signon
-> string?  Please also dump the beginning part of the nvram:
-> 
-> ethtool -e eth0 length 0x90
+On Tue, Apr 07 2009, Justin Madru wrote:
+> Hello,
+>
+> Testing 2.6.30-rc1,
+> While booting I get the following call trace about an invalid opcode.
+>
+> ACPI: SSDT 3f6d4134 00244 (v01  PmRef  Cpu0Ist 00003000 INTL 20050624)
+> ACPI: SSDT 3f6d3ee9 001C6 (v01  PmRef  Cpu0Cst 00003001 INTL 20050624)
+> ACPI: CPU0 (power states: C1[C1] C2[C2] C3[C3])
+> processor ACPI_CPU:00: registered as cooling_device0
+> ACPI: Processor [CPU0] (supports 8 throttling states)
+> ACPI: SSDT 3f6d4378 000C4 (v01  PmRef  Cpu1Ist 00003000 INTL 20050624)
+> ACPI: SSDT 3f6d40af 00085 (v01  PmRef  Cpu1Cst 00003000 INTL 20050624)
+> ACPI: CPU1 (power states: C1[C1] C2[C2] C3[C3])
+> processor ACPI_CPU:01: registered as cooling_device1
+> ACPI: Processor [CPU1] (supports 8 throttling states)
+> input: Lid Switch as /devices/LNXSYSTM:00/device:00/PNP0C0D:00/input/input1
+> ACPI: Lid Switch [LID]
+> input: Power Button (CM) as  
+> /devices/LNXSYSTM:00/device:00/PNP0C0C:00/input/input2
+> ACPI: Power Button (CM) [PBTN]
+> ACPI: AC Adapter [AC] (on-line)
+> input: Sleep Button (CM) as  
+> /devices/LNXSYSTM:00/device:00/PNP0C0E:00/input/input3
+> ACPI: Sleep Button (CM) [SBTN]
+> ACPI: Battery Slot [BAT0] (battery present)
+> invalid opcode: 0000 [#1] PREEMPT SMP
+> last sysfs file: /sys/devices/virtual/vtconsole/vtcon0/uevent
+> Modules linked in: snd_pcm battery ac button processor intel_agp  
+> snd_page_alloc reiserfs crc32 sr_mod cdrom sg firewire_ohci  
+> firewire_core crc_itu_t ata_piix ehci_hcd uhci_hcd usbcore thermal fan
+>
+> Pid: 1760, comm: async/0 Not tainted (2.6.30-rc1-git #1) MM061            
+>                EIP: 0060:[<f80fb02c>] EFLAGS: 00010286 CPU: 1
+> EIP is at 0xf80fb02c
+> EAX: 00000000 EBX: 00000216 ECX: 00000000 EDX: 00000000
+> ESI: f68fb320 EDI: 00000001 EBP: f7117f88 ESP: f7117f88
+> DS: 007b ES: 007b FS: 00d8 GS: 0000 SS: 0068
+> Process async/0 (pid: 1760, ti=f7117000 task=f6935390 task.ti=f7117000)
+> Stack:
+> f7117fd0 c015e612 f7117fa8 c0129cf9 f7073bb0 00000000 f693560c f6935390
+> 00000286 f7117fd0 00000000 f6935390 c012fb20 f704efbc c04f22dc 00000000
+> c015e540 00000000 f7117fe0 c015558c c0155550 00000000 00000000 c0103f5f
+> Call Trace:
+> [<c015e612>] ? async_thread+0xd2/0x240
+> [<c0129cf9>] ? schedule_tail+0xd9/0x110
+> [<c012fb20>] ? default_wake_function+0x0/0x10
+> [<c015e540>] ? async_thread+0x0/0x240
+> [<c015558c>] ? kthread+0x3c/0x70
+> [<c0155550>] ? kthread+0x0/0x70
+> [<c0103f5f>] ? kernel_thread_helper+0x7/0x18
+> Code: 00 00 89 5d f4 8d 9e 88 00 00 00 89 7d fc 89 4d e8 e8 fc ff ff ff  
+> 8b be 98 00 00 00 39 df 74 57 89 f8 e8 fc ff ff ff 89 d8 e8 fc <ff> ff  
+> ff 8b 4d e8 89 f2 8b 45 ec c7 04 24 01 00 00 00 e8 3d c9
+> EIP: [<f80fb02c>] 0xf80fb02c SS:ESP 0068:f7117f88
+> ---[ end trace fefef3dd1f6b4bcf ]---
+> sdhci: Secure Digital Host Controller Interface driver
+> sdhci: Copyright(c) Pierre Ossman
 
->From a good boot (2.6.27):
-tg3.c:v3.94 (August 14, 2008)
-tg3 0006:00:01.0: PCI INT A -> GSI 65 (level, low) -> IRQ 65
-eth0: Tigon3 [partno(9210292) rev 2003 PHY(5704)] (PCIX:133MHz:64-bit) 10/100/1000Base-T Ethernet 00:e0:ed:08:6c:18
-eth0: RXcsums[1] LinkChgREG[0] MIirq[0] ASF[0] WireSpeed[1] TSOcap[1]
-eth0: dma_rwctrl[769f4000] dma_mask[64-bit] tg3 0006:00:01.1: PCI INT B -> GSI 66 (level, low) -> IRQ 66
-eth1: Tigon3 [partno(9210292) rev 2003 PHY(5704)] (PCIX:133MHz:64-bit) 10/100/1000Base-T Ethernet 00:e0:ed:08:6c:19
-eth1: RXcsums[1] LinkChgREG[0] MIirq[0] ASF[0] WireSpeed[1] TSOcap[1]
-eth1: dma_rwctrl[769f4000] dma_mask[64-bit]
-tg3 0001:00:04.0: PCI INT A -> GSI 62 (level, low) -> IRQ 62
-eth2: Tigon3 [partno(030-1771-000) rev 0105 PHY(5701)] (PCI:66MHz:64-bit) 10/100/1000Base-T Ethernet 08:00:69:13:e6:3c
-eth2: RXcsums[1] LinkChgREG[0] MIirq[0] ASF[0] WireSpeed[1] TSOcap[0]
+My x60 gets the exact same oops, 100% repeatable. I then added the
+initcall_debug boot option to get a closer look at what was crapping
+out, but then it works fine. So it smells like a race somewhere. Didn't
+look further.
 
-ethtool -e eth2 length 0x90
-Address   	Data
-----------	----
-0x00000000	0x66
-0x00000001	0x99
-0x00000002	0x55
-0x00000003	0xaa
-0x00000004	0x08
-0x00000005	0x00
-0x00000006	0x00
-0x00000007	0x00
-0x00000008	0x00
-0x00000009	0x00
-0x0000000a	0x02
-0x0000000b	0xa5
-0x0000000c	0x00
-0x0000000d	0x00
-0x0000000e	0x02
-0x0000000f	0x00
-0x00000010	0x08
-0x00000011	0xdf
-0x00000012	0x2a
-0x00000013	0xb1
-0x00000014	0x00
-0x00000015	0x01
-0x00000016	0x00
-0x00000017	0x00
-0x00000018	0x00
-0x00000019	0x00
-0x0000001a	0x3c
-0x0000001b	0x00
-0x0000001c	0x00
-0x0000001d	0x00
-0x0000001e	0x10
-0x0000001f	0x00
-0x00000020	0x00
-0x00000021	0x00
-0x00000022	0x00
-0x00000023	0x00
-0x00000024	0x00
-0x00000025	0x00
-0x00000026	0x00
-0x00000027	0x00
-0x00000028	0x00
-0x00000029	0x00
-0x0000002a	0x00
-0x0000002b	0x00
-0x0000002c	0x00
-0x0000002d	0x00
-0x0000002e	0x00
-0x0000002f	0x00
-0x00000030	0x00
-0x00000031	0x00
-0x00000032	0x00
-0x00000033	0x00
-0x00000034	0x00
-0x00000035	0x00
-0x00000036	0x00
-0x00000037	0x00
-0x00000038	0x00
-0x00000039	0x00
-0x0000003a	0x00
-0x0000003b	0x00
-0x0000003c	0x00
-0x0000003d	0x00
-0x0000003e	0x00
-0x0000003f	0x00
-0x00000040	0x00
-0x00000041	0x00
-0x00000042	0x00
-0x00000043	0x00
-0x00000044	0x00
-0x00000045	0x00
-0x00000046	0x00
-0x00000047	0x00
-0x00000048	0x00
-0x00000049	0x00
-0x0000004a	0x00
-0x0000004b	0x00
-0x0000004c	0x00
-0x0000004d	0x00
-0x0000004e	0x00
-0x0000004f	0x00
-0x00000050	0x00
-0x00000051	0x00
-0x00000052	0x00
-0x00000053	0x00
-0x00000054	0x00
-0x00000055	0x00
-0x00000056	0x00
-0x00000057	0x00
-0x00000058	0x00
-0x00000059	0x00
-0x0000005a	0x00
-0x0000005b	0x00
-0x0000005c	0x00
-0x0000005d	0x00
-0x0000005e	0x00
-0x0000005f	0x00
-0x00000060	0x00
-0x00000061	0x00
-0x00000062	0x00
-0x00000063	0x00
-0x00000064	0x00
-0x00000065	0x00
-0x00000066	0x00
-0x00000067	0x00
-0x00000068	0x00
-0x00000069	0x00
-0x0000006a	0x00
-0x0000006b	0x00
-0x0000006c	0x00
-0x0000006d	0x00
-0x0000006e	0x00
-0x0000006f	0x00
-0x00000070	0x00
-0x00000071	0x00
-0x00000072	0x00
-0x00000073	0x00
-0x00000074	0x43
-0x00000075	0x00
-0x00000076	0x00
-0x00000077	0x8c
-0x00000078	0x00
-0x00000079	0x00
-0x0000007a	0x00
-0x0000007b	0x01
-0x0000007c	0x00
-0x0000007d	0x00
-0x0000007e	0x08
-0x0000007f	0x00
-0x00000080	0x69
-0x00000081	0x13
-0x00000082	0xe6
-0x00000083	0x3c
-0x00000084	0x33
-0x00000085	0x43
-0x00000086	0x39
-0x00000087	0x39
-0x00000088	0x36
-0x00000089	0x42
-0x0000008a	0x2d
-0x0000008b	0x54
-0x0000008c	0x00
-0x0000008d	0x00
-0x0000008e	0x00
-0x0000008f	0x00
+-- 
+Jens Axboe
 
-
->From bad boot (v2.6.30-rc1):
-tg3.c:v3.98 (February 25, 2009)
-tg3 0006:00:01.0: PCI INT A -> GSI 65 (level, low) -> IRQ 65
-tg3 0006:00:01.0: PME# disabled
-eth0: Tigon3 [partno(9210292) rev 2003] (PCIX:133MHz:64-bit) MAC address 00:e0:ed:08:6c:18
-eth0: attached PHY is 5704 (10/100/1000Base-T Ethernet) (WireSpeed[1])
-eth0: RXcsums[1] LinkChgREG[0] MIirq[0] ASF[0] TSOcap[1]
-eth0: dma_rwctrl[769f4000] dma_mask[64-bit]
-tg3 0006:00:01.1: PCI INT B -> GSI 66 (level, low) -> IRQ 66
-tg3 0006:00:01.1: PME# disabled
-eth1: Tigon3 [partno(9210292) rev 2003] (PCIX:133MHz:64-bit) MAC address 00:e0:ed:08:6c:19
-eth1: attached PHY is 5704 (10/100/1000Base-T Ethernet) (WireSpeed[1])
-eth1: RXcsums[1] LinkChgREG[0] MIirq[0] ASF[0] TSOcap[1]
-eth1: dma_rwctrl[769f4000] dma_mask[64-bit]
-tg3 0001:00:04.0: PCI INT A -> GSI 62 (level, low) -> IRQ 62
-tg3 0001:00:04.0: PME# disabled
-eth2: Tigon3 [partno(030-1771-000) rev 0105] (PCI:66MHz:64-bit) MAC address 00:00:3c:e6:13:69
-eth2: attached PHY is 5701 (10/100/1000Base-T Ethernet) (WireSpeed[1])
-eth2: RXcsums[1] LinkChgREG[0] MIirq[0] ASF[0] TSOcap[0]
-eth2: dma_rwctrl[76ff3f0f] dma_mask[64-bit]
-
-ethtool -e eth2 length 0x90
-Address   	Data
-----------	----
-0x00000000	0x66
-0x00000001	0x99
-0x00000002	0x55
-0x00000003	0xaa
-0x00000004	0x08
-0x00000005	0x00
-0x00000006	0x30
-0x00000007	0x00
-0x00000008	0x00
-0x00000009	0x00
-0x0000000a	0x03
-0x0000000b	0x15
-0x0000000c	0x00
-0x0000000d	0x00
-0x0000000e	0x02
-0x0000000f	0xf8
-0x00000010	0xaf
-0x00000011	0xfc
-0x00000012	0x24
-0x00000013	0xb1
-0x00000014	0x00
-0x00000015	0x01
-0x00000016	0x00
-0x00000017	0x00
-0x00000018	0x00
-0x00000019	0x00
-0x0000001a	0x3d
-0x0000001b	0xaa
-0x0000001c	0x00
-0x0000001d	0x00
-0x0000001e	0x1f
-0x0000001f	0xb0
-0x00000020	0x00
-0x00000021	0x00
-0x00000022	0x00
-0x00000023	0x00
-0x00000024	0x00
-0x00000025	0x00
-0x00000026	0x00
-0x00000027	0x00
-0x00000028	0x00
-0x00000029	0x00
-0x0000002a	0x00
-0x0000002b	0x00
-0x0000002c	0x00
-0x0000002d	0x00
-0x0000002e	0x00
-0x0000002f	0x00
-0x00000030	0x00
-0x00000031	0x00
-0x00000032	0x00
-0x00000033	0x00
-0x00000034	0x00
-0x00000035	0x00
-0x00000036	0x00
-0x00000037	0x00
-0x00000038	0x00
-0x00000039	0x00
-0x0000003a	0x00
-0x0000003b	0x00
-0x0000003c	0x00
-0x0000003d	0x00
-0x0000003e	0x00
-0x0000003f	0x00
-0x00000040	0x00
-0x00000041	0x00
-0x00000042	0x00
-0x00000043	0x00
-0x00000044	0x00
-0x00000045	0x00
-0x00000046	0x00
-0x00000047	0x00
-0x00000048	0x00
-0x00000049	0x00
-0x0000004a	0x00
-0x0000004b	0x00
-0x0000004c	0x00
-0x0000004d	0x00
-0x0000004e	0x00
-0x0000004f	0x00
-0x00000050	0x00
-0x00000051	0x00
-0x00000052	0x00
-0x00000053	0x00
-0x00000054	0x00
-0x00000055	0x00
-0x00000056	0x00
-0x00000057	0x00
-0x00000058	0x00
-0x00000059	0x00
-0x0000005a	0x00
-0x0000005b	0x00
-0x0000005c	0x00
-0x0000005d	0x00
-0x0000005e	0x00
-0x0000005f	0x00
-0x00000060	0x00
-0x00000061	0x00
-0x00000062	0x00
-0x00000063	0x00
-0x00000064	0x00
-0x00000065	0x00
-0x00000066	0x00
-0x00000067	0x00
-0x00000068	0x00
-0x00000069	0x00
-0x0000006a	0x00
-0x0000006b	0x00
-0x0000006c	0x00
-0x0000006d	0x00
-0x0000006e	0x00
-0x0000006f	0x00
-0x00000070	0x00
-0x00000071	0x00
-0x00000072	0x00
-0x00000073	0x00
-0x00000074	0x43
-0x00000075	0x00
-0x00000076	0x00
-0x00000077	0x8c
-0x00000078	0x00
-0x00000079	0x20
-0x0000007a	0x61
-0x0000007b	0x10
-0x0000007c	0x00
-0x0000007d	0x00
-0x0000007e	0x00
-0x0000007f	0xe0
-0x00000080	0xed
-0x00000081	0x08
-0x00000082	0x6c
-0x00000083	0x18
-0x00000084	0x39
-0x00000085	0x32
-0x00000086	0x31
-0x00000087	0x30
-0x00000088	0x32
-0x00000089	0x39
-0x0000008a	0x32
-0x0000008b	0x00
-0x0000008c	0x00
-0x0000008d	0x00
-0x0000008e	0x00
-0x0000008f	0x00
-
-
-> > If I set the MAC using ifconfig, then everything works normally.
-> >
-> 
-> The bad MAC address that has been swapped is also a valid MAC address
-> and should still work though.
-
-Our network dhcp servers on this test network only hand out IPs to known
-MACs so we detect situations like this.
-
-Robin
