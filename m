@@ -1,65 +1,74 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763462AbZDHN0e@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1765482AbZDHN1r@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763462AbZDHN0e (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 8 Apr 2009 09:26:34 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1764963AbZDHN0U
+	id S1765482AbZDHN1r (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 8 Apr 2009 09:27:47 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758598AbZDHN1a
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 8 Apr 2009 09:26:20 -0400
-Received: from mx3.mail.elte.hu ([157.181.1.138]:41248 "EHLO mx3.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756954AbZDHN0T (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 8 Apr 2009 09:26:19 -0400
-Date: Wed, 8 Apr 2009 15:25:58 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: Cyrill Gorcunov <gorcunov@openvz.org>, Yinghai Lu <yinghai@kernel.org>
-Cc: Thomas Gleixner <tglx@linutronix.de>, "H. Peter Anvin" <hpa@zytor.com>,
-       LKML <linux-kernel@vger.kernel.org>,
-       Suresh Siddha <suresh.b.siddha@intel.com>
-Subject: Re: [PATCH -tip] x86: do_IRQ - send EOI for x86-32 on irq without
-	handler
-Message-ID: <20090408132558.GA1141@elte.hu>
-References: <20090403185729.GC12273@localhost> <20090408130217.GL18581@elte.hu>
+	Wed, 8 Apr 2009 09:27:30 -0400
+Received: from bombadil.infradead.org ([18.85.46.34]:58057 "EHLO
+	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754969AbZDHN13 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 8 Apr 2009 09:27:29 -0400
+Date: Wed, 8 Apr 2009 09:27:28 -0400
+From: Christoph Hellwig <hch@infradead.org>
+To: Oleg Drokin <green@linuxhacker.ru>
+Cc: linux-fsdevel@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] Separate out common fstatat code
+Message-ID: <20090408132727.GB5957@infradead.org>
+References: <20090408055411.GA1615245@fiona.linuxhacker.ru>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <20090408130217.GL18581@elte.hu>
+In-Reply-To: <20090408055411.GA1615245@fiona.linuxhacker.ru>
 User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+X-SRS-Rewrite: SMTP reverse-path rewritten from <hch@infradead.org> by bombadil.infradead.org
+	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-* Ingo Molnar <mingo@elte.hu> wrote:
-
+On Wed, Apr 08, 2009 at 09:54:11AM +0400, Oleg Drokin wrote:
+> Hello!
 > 
-> * Cyrill Gorcunov <gorcunov@openvz.org> wrote:
+>    It seems we have way too many copy&pasted fstatat code elsewhere which
+>    might not have been a problem until now, but with all the changes
+>    with "stat light" now and who knows what other additions in there in
+>    the future, it really helps if we have only one copy of the code.
 > 
-> > For X86-32 if IRQ has no handler it remains non-Ack'ed
-> > even if APIC is not requested for being disabled.
-> > Fix it.
-> 
-> nice fix. Did you observe any real hangs in such a situation, or is 
-> this via code review?
+>    Hence this patch adds fstatat_common() that fills struct kstat with
+>    proper values and does all the AT flags parsing that's needed and
+>    then calls all the proper underlying functions, what's left to the
+>    caller now is to only copy filled out kstat buffer to the final
+>    destination.
 
-more stuff needs fixing here first:
+Looks good and like a merge candidate even without any statlite-like
+syscall.
 
-arch/x86/kernel/irq.c: In function ‘do_IRQ’:
-arch/x86/kernel/irq.c:226: error: ‘disable_apic’ undeclared (first use in this function)
-arch/x86/kernel/irq.c:226: error: (Each undeclared identifier is reported only once
-arch/x86/kernel/irq.c:226: error: for each function it appears in.)
+But I would call it vfs_fstatat, not fstatat_common.
 
-like making 'disable_apic' available everywhere.
+> --- linux-2.6.29.orig/arch/arm/kernel/sys_oabi-compat.c	2009-04-08 01:31:41.000000000 -0400
+> +++ linux-2.6.29/arch/arm/kernel/sys_oabi-compat.c	2009-04-08 01:41:59.000000000 -0400
+> @@ -176,20 +176,12 @@
+>  				   int flag)
+>  {
+>  	struct kstat stat;
+> +	int error;
+>  
+> +	error = fstatat_common(dfd, filename, &stat, flag);
+>  	if (!error)
+> +		error = cp_oldabi_stat64(&stat, statbuf);
+>  
+>  	return error;
 
-Or better yet: introduce a dummy apic->write() method in the 
-disable_apic=1 case so we can call a straight ack_APIC_irq().
+Also a 
 
-	Ingo
+	error = vfs_fstatat(dfd, filename, &stat, flag);
+	if (error)
+		return error;
+	return cp_oldabi_stat64(&stat, statbuf);
+
+would looks slightly cleaner than that.
+
+(Same for the various other duplicates)
+
