@@ -1,131 +1,141 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762269AbZDHO67@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759551AbZDHO7r@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762269AbZDHO67 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 8 Apr 2009 10:58:59 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753538AbZDHO6s
+	id S1759551AbZDHO7r (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 8 Apr 2009 10:59:47 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755022AbZDHO7g
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 8 Apr 2009 10:58:48 -0400
-Received: from mx2.redhat.com ([66.187.237.31]:55760 "EHLO mx2.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753822AbZDHO6r (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 8 Apr 2009 10:58:47 -0400
-Message-ID: <49DCBB53.2020202@redhat.com>
-Date: Wed, 08 Apr 2009 07:57:23 -0700
-From: Masami Hiramatsu <mhiramat@redhat.com>
+	Wed, 8 Apr 2009 10:59:36 -0400
+Received: from mail-bw0-f169.google.com ([209.85.218.169]:33334 "EHLO
+	mail-bw0-f169.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755629AbZDHO7f (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 8 Apr 2009 10:59:35 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:user-agent:mime-version:to:cc:subject
+         :content-type;
+        b=glcsBPBuVgeYQVgCX8OIhv+3kOft8zUPaxJsCUntOXOCK7G1Ll2gsbLNlOxY9yd9tM
+         pq7gV9lUyTp6ldm1VSdg0StAqa1t4Ey1mCT6TCgyBiTbXffUe5Zot9VC0Lj1sio/zFLL
+         3QUmXUXfzlISa+hidGSBiUwVT0UYyF6stZt14=
+Message-ID: <49DCBBD3.60707@gmail.com>
+Date: Wed, 08 Apr 2009 16:59:31 +0200
+From: Uros Bizjak <ubizjak@gmail.com>
 User-Agent: Thunderbird 2.0.0.21 (X11/20090320)
 MIME-Version: 1.0
-To: Ingo Molnar <mingo@elte.hu>
-CC: Andrew Morton <akpm@linux-foundation.org>,
-       Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>,
-       Ananth N Mavinakayanahalli <ananth@in.ibm.com>,
-       LKML <linux-kernel@vger.kernel.org>,
-       systemtap-ml <systemtap@sources.redhat.com>
-Subject: Re: [BUGFIX][PATCH -tip] x86: fix text_poke to handle highmem pages
-References: <49D76FFF.6020202@redhat.com> <20090404154230.GB2451@Krystal> <49D7A6DF.8080804@redhat.com> <49D7AF26.5030808@redhat.com> <49D82987.5090003@redhat.com> <49DA37CB.4020901@redhat.com> <20090408123133.GE18581@elte.hu>
-In-Reply-To: <20090408123133.GE18581@elte.hu>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+To: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+CC: "Ingo Molnar" <mingo@elte.hu>, x86@kernel.org
+Subject: [PATCH v2, x86 CPA]: Add selfsnoop support
+Content-Type: multipart/mixed;
+ boundary="------------080203090206050105050509"
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Ingo Molnar wrote:
-> * Masami Hiramatsu <mhiramat@redhat.com> wrote:
-> 
->> @@ -514,27 +515,39 @@ void *__kprobes text_poke(void *addr, const void *opcode, size_t len)
->>  {
->>  	unsigned long flags;
->>  	char *vaddr;
->> -	struct page *pages[2];
->> +	struct page *page;
->>  	int i;
->> +	unsigned long endp = ((unsigned long)addr + len) & PAGE_MASK;
->>
->> -	if (!core_kernel_text((unsigned long)addr)) {
->> -		pages[0] = vmalloc_to_page(addr);
->> -		pages[1] = vmalloc_to_page(addr + PAGE_SIZE);
->> -	} else {
->> -		pages[0] = virt_to_page(addr);
->> -		WARN_ON(!PageReserved(pages[0]));
->> -		pages[1] = virt_to_page(addr + PAGE_SIZE);
->> +	/*
->> +	 * If the written range covers 2 pages, we'll split it, because
->> +	 * vmalloc pages are not always continuous -- e.g. 1st page is
->> +	 * lowmem and 2nd page is highmem.
->> +	 */
->> +	if (((unsigned long)addr & PAGE_MASK) != endp) {
->> +		text_poke(addr, opcode, endp - (unsigned long)addr);
->> +		addr =  (void *)endp;
->> +		opcode = (char *)opcode + (endp - (unsigned long)addr);
->> +		len -= endp - (unsigned long)addr;
->>  	}
->> -	BUG_ON(!pages[0]);
->> +
->> +	if (!core_kernel_text((unsigned long)addr))
->> +		page = vmalloc_to_page(addr);
->> +	else
->> +		page = virt_to_page(addr);
-> 
-> hm, the bug is upstream now. And your fix turns a 
-> supposed-to-be-simpler kmap based patching thing back into something 
-> fragile looking again. We might be better off with a revert - or we 
-> do a real clean patch.
-> 
-> Firstly, that core_kernel_text() distinction above looks 
-> artificially open-coded - dont we have a proper, generic 
-> "look-up-the-page" variant in the MM somewhere?
+This is a multi-part message in MIME format.
+--------------080203090206050105050509
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 
-Actually, vmalloc_to_page() is generic one. It decodes
-the kernel page table directly to find struct page *.
-virt_to_page() is just a short-cut api.
+Hello!
 
-> 
->> +	BUG_ON(!page);
->>  	local_irq_save(flags);
->> -	set_fixmap(FIX_TEXT_POKE0, page_to_phys(pages[0]));
->> -	if (pages[1])
->> -		set_fixmap(FIX_TEXT_POKE1, page_to_phys(pages[1]));
->> -	vaddr = (char *)fix_to_virt(FIX_TEXT_POKE0);
->> +	if (PageHighMem(page))
->> +		vaddr = kmap_atomic(page, KM_TEXT_POKE);
->> +	else {
->> +		set_fixmap(FIX_TEXT_POKE, page_to_phys(page));
->> +		vaddr = (char *)fix_to_virt(FIX_TEXT_POKE);
->> +	}
-> 
-> that too looks artificially complex. Why cannot we kmap lowmem pages 
-> too? If the API isnt available on !HIGHMEM kernels .. then the 
-> solution is to make it available, not to branch our way around it.
+This is second variant of a selfsnoop support for recent x86 CPUs. The 
+patch is effectively a one-liner and avoids calling clflush and wbinvd 
+to invalidate caches when CPU supports selfsnoop.
 
-Hmm, why don't we enhance fixmap to handle highmem pages?
-(e.g. adding set_fixmap_page())
-Since kmap is only for highmem kernels, I think changing it will effects
-more users...
+The patch applies to current git and -tip trees. This patch was tested 
+on Ubuntu 2.6.29.1 kernel:
 
-Thank you,
+processor    : 0
+vendor_id    : GenuineIntel
+cpu family    : 15
+model        : 1
+model name    : Intel(R) Pentium(R) 4 CPU 1.60GHz
+stepping    : 2
+cpu MHz        : 1594.873
+cache size    : 256 KB
+fdiv_bug    : no
+hlt_bug        : no
+f00f_bug    : no
+coma_bug    : no
+fpu        : yes
+fpu_exception    : yes
+cpuid level    : 2
+wp        : yes
+flags        : fpu vme de pse tsc msr pae mce cx8 apic sep mtrr pge mca 
+cmov pat pse36 clflush dts acpi
+ mmx fxsr sse sse2 ss ht tm up pebs bts sync_rdtsc
+bogomips    : 3194.10
+clflush size    : 64
 
-> 
->>  	memcpy(&vaddr[(unsigned long)addr & ~PAGE_MASK], opcode, len);
->> -	clear_fixmap(FIX_TEXT_POKE0);
->> -	if (pages[1])
->> -		clear_fixmap(FIX_TEXT_POKE1);
->> +	if (PageHighMem(page))
->> +		kunmap_atomic(vaddr, KM_TEXT_POKE);
->> +	else
->> +		clear_fixmap(FIX_TEXT_POKE);
-> 
-> ditto.
-> 
-> Thanks,
-> 
-> 	Ingo
+with CONFIG_CPA_DEBUG. Relevant self-test lines from the boot log are:
 
--- 
-Masami Hiramatsu
+Apr  8 14:46:57 ubuntudsp kernel: [    1.861293] Write protecting the 
+kernel text: 3988k
+Apr  8 14:46:57 ubuntudsp kernel: [    1.861298] Testing CPA: Reverting 
+c1000000-c13e5000
+Apr  8 14:46:57 ubuntudsp kernel: [    1.861412] Testing CPA: write 
+protecting again
+Apr  8 14:46:57 ubuntudsp kernel: [    1.861610] Write protecting the 
+kernel read-only data: 1776k
+Apr  8 14:46:57 ubuntudsp kernel: [    1.861615] Testing CPA: undo 
+c13e5000-c15a1000
+Apr  8 14:46:57 ubuntudsp kernel: [    1.861665] Testing CPA: write 
+protecting again
+Apr  8 14:46:57 ubuntudsp kernel: [    1.898397] exe used greatest stack 
+depth: 6808 bytes left
+...
+Apr  8 14:47:03 ubuntudsp kernel: [   30.771018] CPA self-test:
+Apr  8 14:47:03 ubuntudsp kernel: [   30.771228]  4k 4992 large 155 gb 0 
+x 5147[c0000000-e7f7f000] miss 0
+Apr  8 14:47:03 ubuntudsp kernel: [   30.786583]  4k 148352 large 15 gb 
+0 x 148367[c0000000-e7f7f000] miss 0
+Apr  8 14:47:03 ubuntudsp kernel: [   30.793998]  4k 148352 large 15 gb 
+0 x 148367[c0000000-e7f7f000] miss 0
+Apr  8 14:47:03 ubuntudsp kernel: [   30.794010] ok.
 
-Software Engineer
-Hitachi Computer Products (America) Inc.
-Software Solutions Division
+The patched kernel was used on my workstation for my daily work for 
+several days (XWin, heavily compilations, IPTV, internet browsing) and I 
+didn't found any problems with the patched kernel.
 
-e-mail: mhiramat@redhat.com
+Signed-off-by: Uros Bizjak <ubizjak@gmail.com>
 
+
+--------------080203090206050105050509
+Content-Type: text/plain;
+ name="p.diff"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline;
+ filename="p.diff"
+
+diff --git a/arch/x86/include/asm/cpufeature.h b/arch/x86/include/asm/cpufeature.h
+index 0beba0d..267f3ca 100644
+--- a/arch/x86/include/asm/cpufeature.h
++++ b/arch/x86/include/asm/cpufeature.h
+@@ -242,6 +242,7 @@ extern const char * const x86_power_flags[32];
+ #define cpu_has_x2apic		boot_cpu_has(X86_FEATURE_X2APIC)
+ #define cpu_has_xsave		boot_cpu_has(X86_FEATURE_XSAVE)
+ #define cpu_has_hypervisor	boot_cpu_has(X86_FEATURE_HYPERVISOR)
++#define cpu_has_selfsnoop	boot_cpu_has(X86_FEATURE_SELFSNOOP)
+ 
+ #if defined(CONFIG_X86_INVLPG) || defined(CONFIG_X86_64)
+ # define cpu_has_invlpg		1
+diff --git a/arch/x86/mm/pageattr.c b/arch/x86/mm/pageattr.c
+index d71e1b6..bbca9d2 100644
+--- a/arch/x86/mm/pageattr.c
++++ b/arch/x86/mm/pageattr.c
+@@ -875,10 +875,10 @@ static int change_page_attr_set_clr(unsigned long *addr, int numpages,
+ 		goto out;
+ 
+ 	/*
+-	 * No need to flush, when we did not set any of the caching
+-	 * attributes:
++	 * No need to flush when CPU supports self snoop or
++	 * when we did not set any of the caching attributes:
+ 	 */
+-	cache = cache_attr(mask_set);
++	cache = cpu_has_selfsnoop ? 0 : cache_attr(mask_set);
+ 
+ 	/*
+ 	 * On success we use clflush, when the CPU supports it to
+
+--------------080203090206050105050509--
