@@ -1,54 +1,106 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761904AbZDHJC0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762700AbZDHJDW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761904AbZDHJC0 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 8 Apr 2009 05:02:26 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752635AbZDHJCR
+	id S1762700AbZDHJDW (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 8 Apr 2009 05:03:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752635AbZDHJDH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 8 Apr 2009 05:02:17 -0400
-Received: from cn.fujitsu.com ([222.73.24.84]:58094 "EHLO song.cn.fujitsu.com"
-	rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org with ESMTP
-	id S1751751AbZDHJCR (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 8 Apr 2009 05:02:17 -0400
-Message-ID: <49DC6751.30308@cn.fujitsu.com>
-Date: Wed, 08 Apr 2009 16:58:57 +0800
-From: Zhaolei <zhaolei@cn.fujitsu.com>
-User-Agent: Thunderbird 2.0.0.6 (Windows/20070728)
+	Wed, 8 Apr 2009 05:03:07 -0400
+Received: from e28smtp09.in.ibm.com ([59.145.155.9]:46110 "EHLO
+	e28smtp09.in.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754550AbZDHJDG (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 8 Apr 2009 05:03:06 -0400
+Date: Wed, 8 Apr 2009 14:32:33 +0530
+From: Balbir Singh <balbir@linux.vnet.ibm.com>
+To: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+Cc: "linux-mm@kvack.org" <linux-mm@kvack.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       "lizf@cn.fujitsu.com" <lizf@cn.fujitsu.com>,
+       Rik van Riel <riel@surriel.com>, Bharata B Rao <bharata.rao@in.ibm.com>,
+       Dhaval Giani <dhaval@linux.vnet.ibm.com>,
+       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
+Subject: Re: [RFI] Shared accounting for memory resource controller
+Message-ID: <20090408090233.GH7082@balbir.in.ibm.com>
+Reply-To: balbir@linux.vnet.ibm.com
+References: <20090408052904.GY7082@balbir.in.ibm.com> <20090408151529.fd6626c2.kamezawa.hiroyu@jp.fujitsu.com> <20090408070401.GC7082@balbir.in.ibm.com> <20090408160733.4813cb8d.kamezawa.hiroyu@jp.fujitsu.com> <20090408071115.GD7082@balbir.in.ibm.com> <20090408161824.26f47077.kamezawa.hiroyu@jp.fujitsu.com> <20090408074809.GF7082@balbir.in.ibm.com> <20090408170341.437c215b.kamezawa.hiroyu@jp.fujitsu.com> <20090408084952.GG7082@balbir.in.ibm.com> <20090408175409.eb0818db.kamezawa.hiroyu@jp.fujitsu.com>
 MIME-Version: 1.0
-To: Steven Rostedt <rostedt@goodmis.org>
-CC: Frederic Weisbecker <fweisbec@gmail.com>, linux-kernel@vger.kernel.org
-Subject: [PATCH 1/2] Make __stringify support variable argument macro
-Content-Type: text/plain; charset=GB2312
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=iso-8859-1
+Content-Disposition: inline
+In-Reply-To: <20090408175409.eb0818db.kamezawa.hiroyu@jp.fujitsu.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-For example:
-__stringify(__entry->irq, __entry->ret) will convert it to:
-"REC->irq, REC->ret"
+* KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com> [2009-04-08 17:54:09]:
 
-It also support single argument as old macro.
+> On Wed, 8 Apr 2009 14:19:52 +0530
+> Balbir Singh <balbir@linux.vnet.ibm.com> wrote:
+> 
+> > * KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com> [2009-04-08 17:03:41]:
+> > 
+> > > On Wed, 8 Apr 2009 13:18:09 +0530
+> > > Balbir Singh <balbir@linux.vnet.ibm.com> wrote:
+> > > 
+> > > > > > 3. Using the above, we can then try to (using an algorithm you
+> > > > > > proposed), try to do some work for figuring out the shared percentage.
+> > > > > > 
+> > > > > This is the point. At last. Why "# of shared pages" is important ?
+> > > > > 
+> > > > 
+> > > > I posted this in my motivation yesterday. # of shared pages can help
+> > > > plan the system better and the size of the cgroup. A cgroup might have
+> > > > small usage_in_bytes but large number of shared pages. We need a
+> > > > metric that can help figure out the fair usage of the cgroup.
+> > > > 
+> > > I don't fully understand but NR_FILE_MAPPED is an information in /proc/meminfo.
+> > > I personally think I want to support information in /proc/meminfo per memcg.
+> > > 
+> > > Hmm ? then, if you add a hook, it seems
+> > > == mm/rmap.c
+> > >  689 void page_add_file_rmap(struct page *page)
+> > >  690 {
+> > >  691         if (atomic_inc_and_test(&page->_mapcount))
+> > >  692                 __inc_zone_page_state(page, NR_FILE_MAPPED);
+> > >  693 }
+> > > ==  page_remove_rmap(struct page *page)
+> > >  739                 __dec_zone_page_state(page,
+> > >  740                         PageAnon(page) ? NR_ANON_PAGES : NR_FILE_MAPPED);
+> > > ==
+> > > 
+> > > Is good place to go, maybe.
+> > > 
+> > > page->page_cgroup->mem_cgroup-> inc/dec counter ?
+> > > 
+> > > Maybe the patch itself will be simple, overhead is unknown..
+> > 
+> > I thought of the same thing, but then moved to the following
+> > 
+> > ... mem_cgroup_charge_statistics(..) {
+> >  if (page_mapcount(page) == 0 && page_is_file_cache(page))
+> >     __mem_cgroup_stat_add_safe(cpustat, MEM_CGROUP_STAT_FILE_RSS, val);
+> > 
+> > But I've not yet tested the end result
+> > 
+> I think 
+>  - at uncharge:
+>    charge_statistics is only called when FILE CACHE is removed from radix-tree.
+>    mem_cgroup_uncharge() is called only when PageAnon(page).
 
-Signed-off-by: Zhao Lei <zhaolei@cn.fujitsu.com>
----
- include/linux/stringify.h |    4 ++--
- 1 files changed, 2 insertions(+), 2 deletions(-)
+Good point, I missed it, testing would have caught it.
 
-diff --git a/include/linux/stringify.h b/include/linux/stringify.h
-index 0b43883..841cec8 100644
---- a/include/linux/stringify.h
-+++ b/include/linux/stringify.h
-@@ -6,7 +6,7 @@
-  * converts to "bar".
-  */
- 
--#define __stringify_1(x)	#x
--#define __stringify(x)		__stringify_1(x)
-+#define __stringify_1(x...)	#x
-+#define __stringify(x...)	__stringify_1(x)
- 
- #endif	/* !__LINUX_STRINGIFY_H */
+>  - at charge:
+>    charge_statistics is only called when FILE CACHE is added to radix-tree.
+> 
+> This "checking only radix-tree insert/delete" help us to remove most of overheads
+> on FILE CACHE.
+> 
+> So, adding new hooks to page_add_file_rmap() and page_remove_rmap()
+> is a way to go. (and easy to understand because we account it at the same time
+> NR_FILE_MAPPED is modified.)
+
+Agreed.
+
 -- 
-1.5.5.3
-
-
+	Balbir
