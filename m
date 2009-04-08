@@ -1,58 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763065AbZDHJDi@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758473AbZDHJFb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763065AbZDHJDi (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 8 Apr 2009 05:03:38 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755684AbZDHJDY
+	id S1758473AbZDHJFb (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 8 Apr 2009 05:05:31 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755343AbZDHJFV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 8 Apr 2009 05:03:24 -0400
-Received: from cn.fujitsu.com ([222.73.24.84]:56829 "EHLO song.cn.fujitsu.com"
-	rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org with ESMTP
-	id S1759431AbZDHJDW (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 8 Apr 2009 05:03:22 -0400
-Message-ID: <49DC679D.2090901@cn.fujitsu.com>
-Date: Wed, 08 Apr 2009 17:00:13 +0800
-From: Zhaolei <zhaolei@cn.fujitsu.com>
-User-Agent: Thunderbird 2.0.0.6 (Windows/20070728)
+	Wed, 8 Apr 2009 05:05:21 -0400
+Received: from mx2.mail.elte.hu ([157.181.151.9]:35994 "EHLO mx2.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753241AbZDHJFU (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 8 Apr 2009 05:05:20 -0400
+Date: Wed, 8 Apr 2009 11:04:53 +0200
+From: Ingo Molnar <mingo@elte.hu>
+To: Li Zefan <lizf@cn.fujitsu.com>
+Cc: mingo@redhat.com, hpa@zytor.com, acme@redhat.com,
+       linux-kernel@vger.kernel.org, alan.brunelle@hp.com,
+       jens.axboe@oracle.com, tglx@linutronix.de,
+       linux-tip-commits@vger.kernel.org
+Subject: Re: [tip:tracing/blktrace-v2] blktrace: fix a bug in
+	blk_msg_write()
+Message-ID: <20090408090453.GC12283@elte.hu>
+References: <49D5BB56.7000807@cn.fujitsu.com> <tip-48cefde3c17bbf37fee99e2889bcc718e5805dfa@git.kernel.org> <49DBFEB0.9080308@cn.fujitsu.com>
 MIME-Version: 1.0
-To: Steven Rostedt <rostedt@goodmis.org>
-CC: Frederic Weisbecker <fweisbec@gmail.com>, linux-kernel@vger.kernel.org
-Subject: [PATCH 2/2] ftrace: Output REC->var instead of __entry->var for trace
- format
-References: <49DC6751.30308@cn.fujitsu.com>
-In-Reply-To: <49DC6751.30308@cn.fujitsu.com>
-Content-Type: text/plain; charset=GB2312
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <49DBFEB0.9080308@cn.fujitsu.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-print fmt: "irq=%d return=%s", __entry->irq, __entry->ret ? \"handled\" : \"unhandled\"
 
-"__entry" should be convert to "REC" by __stringify() macro.
+* Li Zefan <lizf@cn.fujitsu.com> wrote:
 
-Signed-off-by: Zhao Lei <zhaolei@cn.fujitsu.com>
----
- kernel/trace/trace_events_stage_2.h |    4 ++--
- 1 files changed, 2 insertions(+), 2 deletions(-)
+> Hi Ingo,
+> 
+> Though Carl <chlunde@ping.uio.no>'s patch has been applied,
+> (a4b3ada83d06554d307dd54abdc62b2e5648264a), this patch hasn't
+> been dropped, thus the code in -tip looks like:
+> 
+> static ssize_t blk_msg_write(...)
+> {
+> 	...
+>         if (copy_from_user(msg, buffer, count)) {
+>                 kfree(msg);
+>                 return -EFAULT;
+>         }
+>         msg[count] = '\0';	<---
+> 
+>         msg[count] = '\0';	<---
+> 	...
+> }
 
-diff --git a/kernel/trace/trace_events_stage_2.h b/kernel/trace/trace_events_stage_2.h
-index 9e47c39..d694a8a 100644
---- a/kernel/trace/trace_events_stage_2.h
-+++ b/kernel/trace/trace_events_stage_2.h
-@@ -108,10 +108,10 @@ ftrace_raw_output_##call(struct trace_iterator *iter, int flags)	\
- 		return 0;
- 
- #undef __entry
--#define __entry "REC"
-+#define __entry REC
- 
- #undef TP_printk
--#define TP_printk(fmt, args...) "%s, %s\n", #fmt, #args
-+#define TP_printk(fmt, args...) "%s, %s\n", #fmt, __stringify(args)
- 
- #undef TRACE_EVENT
- #define TRACE_EVENT(call, proto, args, tstruct, assign, print)		\
--- 
-1.5.5.3
+indeed - that's a (harmless) merge artifact in tip/master, it has 
+not propagated into the tracing topics and will go away on the next 
+reintegration.
 
+Thanks for letting me know, i'll keep an eye on it.
 
+	Ingo
