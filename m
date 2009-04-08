@@ -1,47 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764263AbZDHKrD@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764289AbZDHKrd@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764263AbZDHKrD (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 8 Apr 2009 06:47:03 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1764139AbZDHKqR
+	id S1764289AbZDHKrd (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 8 Apr 2009 06:47:33 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755348AbZDHKqd
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 8 Apr 2009 06:46:17 -0400
-Received: from mga03.intel.com ([143.182.124.21]:36436 "EHLO mga03.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1764128AbZDHKqP convert rfc822-to-8bit (ORCPT
+	Wed, 8 Apr 2009 06:46:33 -0400
+Received: from mailgate6.9netweb.it ([66.71.190.69]:47669 "EHLO
+	mailgate6.9netweb.it" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1764248AbZDHKqc (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 8 Apr 2009 06:46:15 -0400
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.39,344,1235980800"; 
-   d="scan'208";a="129216104"
-From: "Han, Weidong" <weidong.han@intel.com>
-To: Ingo Molnar <mingo@elte.hu>, David Woodhouse <dwmw2@infradead.org>,
-       "Kay, Allen M" <allen.m.kay@intel.com>,
-       "Yu, Fenghua" <fenghua.yu@intel.com>,
-       "Siddha, Suresh B" <suresh.b.siddha@intel.com>
-CC: "iommu@lists.linux-foundation.org" <iommu@lists.linux-foundation.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Date: Wed, 8 Apr 2009 18:44:23 +0800
-Subject: [PATCH 0/2] early enable intr-remap and fix intr-remap resume
-Thread-Topic: [PATCH 0/2] early enable intr-remap and fix intr-remap resume
-Thread-Index: Acm4NvrwsAr8sF10TmWq7zTbMq8Paw==
-Message-ID: <715D42877B251141A38726ABF5CABF2C01A2F7CAF7@pdsmsx503.ccr.corp.intel.com>
-Accept-Language: en-US
-Content-Language: en-US
-X-MS-Has-Attach: 
-X-MS-TNEF-Correlator: 
-acceptlanguage: en-US
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 8BIT
+	Wed, 8 Apr 2009 06:46:32 -0400
+Message-ID: <49DC8061.9060803@evidence.eu.com>
+Date: Wed, 08 Apr 2009 12:45:53 +0200
+From: Claudio Scordino <claudio@evidence.eu.com>
+User-Agent: Thunderbird 2.0.0.21 (X11/20090318)
 MIME-Version: 1.0
+To: Mikael Starvik <mikael.starvik@axis.com>
+Cc: Jesper Nilsson <jesper.nilsson@axis.com>,
+       Alan Cox <alan@lxorguk.ukuu.org.uk>,
+       Hinko Kocevar <hinko.kocevar@cetrtapot.si>,
+       Janez Cufer <janez.cufer@cetrtapot.si>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Linux Kernel <linux-kernel@vger.kernel.org>,
+       dev-etrax <dev-etrax@axis.com>,
+       "adobriyan@gmail.com" <adobriyan@gmail.com>
+Subject: Re: [PATCH] Fix broken compilation of Cris serial driver
+References: <49DC7754.4030404@evidence.eu.com> <4BEA3FF3CAA35E408EA55C7BE2E61D053B06F59AF3@xmail3.se.axis.com>
+In-Reply-To: <4BEA3FF3CAA35E408EA55C7BE2E61D053B06F59AF3@xmail3.se.axis.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Interrupt remapping is decoupled from x2apic. Enables interrupt remapping early before io-apic and x2apic setup to avoid compatibility interrupts, because it's late to eanble interrupt remapping in init_dmars where io-apic interrupts are set and in compatibility mode.
+Mikael Starvik ha scritto:
+> Looks ok, go ahead and commit!
 
-In lapic_resume, it shouldn't check x2apic before resume interrupt remapping. Otherwise, interrupt remapping won't be resumed when x2apic is not enabled.
+Please, give me more information about to do that: I was expecting 
+that you would merge it in your own tree.
 
-The patchset can be applied on the tip linux.
+The merge window has been closed but I suppose it does not apply to 
+this patch since at the moment the driver does not even compile. So we 
+should fix it before 2.6.30.
 
-Regards,
-Weidong
+Should I send the patch to some specific maintainer ?
+
+Will someone see the patch posted to LKML and will merge it ?
+
+Will Alan take over this patch as he did for my previous one ?
+
+Many thanks,
+
+          Claudio
