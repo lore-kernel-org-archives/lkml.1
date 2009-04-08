@@ -1,111 +1,119 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760855AbZDHQVV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760806AbZDHQWn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760855AbZDHQVV (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 8 Apr 2009 12:21:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753276AbZDHQVH
+	id S1760806AbZDHQWn (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 8 Apr 2009 12:22:43 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753784AbZDHQWe
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 8 Apr 2009 12:21:07 -0400
-Received: from fg-out-1718.google.com ([72.14.220.156]:9655 "EHLO
-	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752939AbZDHQVE (ORCPT
+	Wed, 8 Apr 2009 12:22:34 -0400
+Received: from g4t0016.houston.hp.com ([15.201.24.19]:28589 "EHLO
+	g4t0016.houston.hp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753729AbZDHQWd (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 8 Apr 2009 12:21:04 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:references:mime-version
-         :content-type:content-disposition:in-reply-to:user-agent;
-        b=V+5pNnepPzwbJhiamv/CeXMFlF2fwX3r3K5BnDztUqDiEqbnR69FofrQOJF9c5GUcD
-         8vOZpw0p/aIuW8/i/0t97EgOsdvFCjDZbrfuC89yULhC6551iWpALNpQxjRmV8UALZ1Y
-         W4QN0XXk3pn3WSuOOanbmXaO73tBM5bhQQ3H4=
-Date: Wed, 8 Apr 2009 20:21:01 +0400
-From: Cyrill Gorcunov <gorcunov@gmail.com>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: "H. Peter Anvin" <hpa@zytor.com>, Thomas Gleixner <tglx@linutronix.de>,
-       LKML <linux-kernel@vger.kernel.org>,
-       Suresh Siddha <suresh.b.siddha@intel.com>
-Subject: Re: [PATCH -tip] x86: do_IRQ - send EOI for x86-32 on irq without
-	handler v2
-Message-ID: <20090408162101.GD7556@lenovo>
-References: <20090408145017.GB7556@lenovo> <20090408145218.GM12931@elte.hu> <20090408154558.GC7556@lenovo> <20090408155500.GD3741@elte.hu>
+	Wed, 8 Apr 2009 12:22:33 -0400
+Date: Wed, 8 Apr 2009 10:23:12 -0600
+From: dann frazier <dannf@hp.com>
+To: Brian Maly <bmaly@redhat.com>
+Cc: "H. Peter Anvin" <h.peter.anvin@intel.com>, linux-kernel@vger.kernel.org,
+       akpm@linux-foundation.org, ying.huang@intel.com
+Subject: Re: [PATCH] rtc: add x86 support for rtc-efi
+Message-ID: <20090408162311.GC17985@ldl.fc.hp.com>
+References: <49DA40B9.2060804@redhat.com> <49DA817E.8040705@intel.com> <49DA8875.5050009@redhat.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20090408155500.GD3741@elte.hu>
+In-Reply-To: <49DA8875.5050009@redhat.com>
 User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-[Ingo Molnar - Wed, Apr 08, 2009 at 05:55:00PM +0200]
-| 
-| * Cyrill Gorcunov <gorcunov@gmail.com> wrote:
-| 
-| > [Ingo Molnar - Wed, Apr 08, 2009 at 04:52:18PM +0200]
-| > | 
-| > | * Cyrill Gorcunov <gorcunov@openvz.org> wrote:
-| > | 
-| > | > Ingo, I think introducing additional dummy here would be a bit 
-| > | > expencive -- a number of callers of ack_APIC_irq just should not 
-| > | > check for disable_apic since it's not needed. disable_apic is to 
-| > | > depend on CONFIG_X86_LOCAL_APIC rather then CONFIG_X86_64 
-| > | > actually. So make it then. Or you mean something else? Like new 
-| > | > apic->write_eoi operation? (I'm a bit tired so brain is a half 
-| > | > functional now :)
-| > | 
-| > | no, i meant a dummy apic->write() method in the !apic case. Check 
-| > | what ack_APIC_irq() does internally.
-| > | 
-| > | 	Ingo
-| > |
-| > 
-| > Of course I saw how ack_APIC_irq implemented :) It's already guarded
-| > by CONFIG_X86_LOCAL_APIC and I could just move check for disable_apic
-| > right here (ie it could be like
-| > 
-| > static inline void ack_APIC_irq(void)
-| > {
-| > #ifdef CONFIG_X86_LOCAL_APIC
-| > 	/*
-| > 	 * ack_APIC_irq() actually gets compiled as a single instruction
-| > 	 * ... yummie.
-| > 	 */
-| > 
-| > 	if (!disable_apic)
-| > 		/* Docs say use 0 for future compatibility */
-| > 		apic_write(APIC_EOI, 0);
-| > #endif
-| > }
-| > 
-| > but what is bothering me is that a number of ack_APIC_irq callers
-| > will pass execution with always disable_apic=0 and as result
-| > this checking would be just spedning cycles for free.
-| > 
-| > So Ingo, it seems I miss something on what you mean. apic->write 
-| > is already called only for CONFIG_X86_LOCAL_APIC here as well and 
-| > the arguable point is where to check for disable_apic variable. 
-| > But do_IRQ is a special case (wrt to say smp_apic_timer_interrupt 
-| > or setup_local_APIC. I mean as example -- setup_local_APIC is not 
-| > even called for disable_apic=1).
-| > 
-| > /me: scratching the head heavily
-| 
-| You should look into how apic_write() is implemented. It is a call 
-| to apic->write().
-| 
-| So my suggestion is that you could implement a freely callable 
-| ack_APIC_irq() by replacing the apic->write() method with a NOP 
-| method in the apic-disabled case.
-| 
-| Does that sound good to you?
-| 
-| 	Ingo
-|
+Acked-by: dann frazier <dannf@hp.com>
 
-Ah, Ingo, now I see what you mean :)
+On Mon, Apr 06, 2009 at 06:55:49PM -0400, Brian Maly wrote:
+> re-post of the patch, both as inline and as an attachment (which  
+> hopefully wont cause confusion).
+>
+>
+> --- a/drivers/rtc/Kconfig    2009-03-26 12:39:59.000000000 -0400
+> +++ b/drivers/rtc/Kconfig    2009-04-06 18:46:58.000000000 -0400
+> @@ -442,7 +442,7 @@ config RTC_DRV_DS1742
+>
+> config RTC_DRV_EFI
+>     tristate "EFI RTC"
+> -    depends on IA64
+> +   depends on EFI
+>     help
+>       If you say yes here you will get support for the EFI
+>       Real Time Clock.
+> --- a/arch/x86/kernel/time_32.c    2009-03-12 22:39:28.000000000 -0400
+> +++ b/arch/x86/kernel/time_32.c    2009-03-26 13:06:10.000000000 -0400
+> @@ -32,6 +32,7 @@
+> #include <linux/interrupt.h>
+> #include <linux/time.h>
+> #include <linux/mca.h>
+> +#include <linux/platform_device.h>
+>
+> #include <asm/arch_hooks.h>
+> #include <asm/hpet.h>
+> @@ -135,3 +136,21 @@ void __init time_init(void)
+>     tsc_init();
+>     late_time_init = choose_time_init();
+> }
+> +
+> +
+> +#ifdef CONFIG_RTC_DRV_EFI
+> +static struct platform_device rtc_efi_dev = {
+> +    .name = "rtc-efi",
+> +    .id = -1,
+> +};
+> +
+> +static int __init rtc_init(void)
+> +{
+> +    if (platform_device_register(&rtc_efi_dev) < 0)
+> +        printk(KERN_ERR "unable to register rtc device...\n");
+> +
+> +    /* not necessarily an error */
+> +    return 0;
+> +}
+> +module_init(rtc_init);
+> +#endif
+> --- a/arch/x86/kernel/time_64.c    2009-03-12 22:39:28.000000000 -0400
+> +++ b/arch/x86/kernel/time_64.c    2009-03-26 13:06:19.000000000 -0400
+> @@ -18,6 +18,7 @@
+> #include <linux/time.h>
+> #include <linux/mca.h>
+> #include <linux/nmi.h>
+> +#include <linux/platform_device.h>
+>
+> #include <asm/i8253.h>
+> #include <asm/hpet.h>
+> @@ -135,3 +136,20 @@ void __init time_init(void)
+>
+>     late_time_init = choose_time_init();
+> }
+> +
+> +#ifdef CONFIG_RTC_DRV_EFI
+> +static struct platform_device rtc_efi_dev = {
+> +    .name = "rtc-efi",
+> +    .id = -1,
+> +};
+> +
+> +static int __init rtc_init(void)
+> +{
+> +    if (platform_device_register(&rtc_efi_dev) < 0)
+> +        printk(KERN_ERR "unable to register rtc device...\n");
+> +
+> +    /* not necessarily an error */
+> +    return 0;
+> +}
+> +module_init(rtc_init);
+> +#endif
+>
+> --------------------------------------------------------------------------------------------
+>
 
-You should only say me like -- implement dynamic apic->write
-depending on disabled_apic, now it's clear :-)
 
-Will do.
- 
-        Cyrill
+
+-- 
+dann frazier
+
