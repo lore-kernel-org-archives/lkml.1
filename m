@@ -1,77 +1,85 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762104AbZDHI2j@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760274AbZDHIbr@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762104AbZDHI2j (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 8 Apr 2009 04:28:39 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762033AbZDHI2U
+	id S1760274AbZDHIbr (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 8 Apr 2009 04:31:47 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752438AbZDHIba
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 8 Apr 2009 04:28:20 -0400
-Received: from hera.kernel.org ([140.211.167.34]:46796 "EHLO hera.kernel.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751423AbZDHI2S (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 8 Apr 2009 04:28:18 -0400
-Date: Wed, 8 Apr 2009 08:27:36 GMT
-From: Tetsuo Handa <penguin-kernel@I-love.SAKURA.ne.jp>
-To: linux-tip-commits@vger.kernel.org
-Cc: linux-kernel@vger.kernel.org, hpa@zytor.com, mingo@redhat.com,
-       penguin-kernel@I-love.SAKURA.ne.jp, tglx@linutronix.de, mingo@elte.hu,
-       penguin-kernel@I-love.SAKURA.ne.jp
-Reply-To: mingo@redhat.com, hpa@zytor.com, linux-kernel@vger.kernel.org,
-       penguin-kernel@I-love.SAKURA.ne.jp, tglx@linutronix.de,
-       penguin-kernel@I-love.SAKURA.ne.jp, mingo@elte.hu
-In-Reply-To: <200904080505.n3855hcn017109@www262.sakura.ne.jp>
-References: <200904080505.n3855hcn017109@www262.sakura.ne.jp>
-Subject: [tip:tracing/urgent] tracing: append a comma to INIT_FTRACE_GRAPH
-Message-ID: <tip-f876d346e3807647b1de411de6a86c44821896ca@git.kernel.org>
-Git-Commit-ID: f876d346e3807647b1de411de6a86c44821896ca
-X-Mailer: tip-git-log-daemon
-MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Disposition: inline
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Wed, 08 Apr 2009 08:27:40 +0000 (UTC)
+	Wed, 8 Apr 2009 04:31:30 -0400
+Received: from casper.infradead.org ([85.118.1.10]:47968 "EHLO
+	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753083AbZDHIb3 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 8 Apr 2009 04:31:29 -0400
+Subject: Re: Linux 2.6.30-rc1 boot failure on ia64 w/ QLA12160.  Bisected.
+From: David Woodhouse <dwmw2@infradead.org>
+To: Robin Holt <holt@sgi.com>
+Cc: Jaswinder Singh Rajput <jaswinderrajput@gmail.com>,
+       James Bottomley <James.Bottomley@HansenPartnership.com>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>
+In-Reply-To: <20090408042734.GD10768@sgi.com>
+References: <alpine.LFD.2.00.0904071700170.4583@localhost.localdomain>
+	 <20090408042734.GD10768@sgi.com>
+Content-Type: text/plain
+Date: Wed, 08 Apr 2009 01:31:19 -0700
+Message-Id: <1239179479.3411.4.camel@macbook.infradead.org>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.26.0 (2.26.0-2.fc11) 
+Content-Transfer-Encoding: 7bit
+X-SRS-Rewrite: SMTP reverse-path rewritten from <dwmw2@infradead.org> by casper.infradead.org
+	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Commit-ID:  f876d346e3807647b1de411de6a86c44821896ca
-Gitweb:     http://git.kernel.org/tip/f876d346e3807647b1de411de6a86c44821896ca
-Author:     Tetsuo Handa <penguin-kernel@i-love.sakura.ne.jp>
-AuthorDate: Wed, 8 Apr 2009 14:05:43 +0900
-Committer:  Ingo Molnar <mingo@elte.hu>
-CommitDate: Wed, 8 Apr 2009 10:25:25 +0200
+On Tue, 2009-04-07 at 23:27 -0500, Robin Holt wrote:
+> On and ia64 system with a QLA12160 adapter, my boot fails with:
 
-tracing: append a comma to INIT_FTRACE_GRAPH
+Thanks for the report. After successful feedback from Jeremy, I've added
+the commit below to git://git.infradead.org/~dwmw2/firmware-2.6.git,
+which I asked Linus to pull already on Monday...
 
-Impact: dont break future extensions of INIT_TASK
+>From 0ce49d6da993adf8b17b7f3ed9805ade14a6a6f3 Mon Sep 17 00:00:00 2001
+From: David Woodhouse <David.Woodhouse@intel.com>
+Date: Wed, 8 Apr 2009 01:22:36 -0700
+Subject: [PATCH] qla1280: Fix off-by-some error in firmware loading.
 
-While not a problem right now, due to lack of a comma, build fails if
-elements are appended to INIT_TASK() macro in development code:
+We were calculating the wrong address for the start of the data.
 
- arch/x86/kernel/init_task.c:33: error: request for member `XXXXXXXXXX' in something not a structure or union
- arch/x86/kernel/init_task.c:33: error: initializer element is not constant
- arch/x86/kernel/init_task.c:33: error: (near initialization for `init_task.ret_stack')
- make[1]: *** [arch/x86/kernel/init_task.o] Error 1
- make: *** [arch/x86/kernel] Error 2
-
-Signed-off-by: Tetsuo Handa <penguin-kernel@I-love.SAKURA.ne.jp>
-Cc: srostedt@redhat.com
-LKML-Reference: <200904080505.n3855hcn017109@www262.sakura.ne.jp>
-Signed-off-by: Ingo Molnar <mingo@elte.hu>
-
-
+Signed-off-by: David Woodhouse <David.Woodhouse@intel.com>
+Tested-by: Jeremy Higdon <jeremy@sgi.com>
 ---
- include/linux/ftrace.h |    2 +-
- 1 files changed, 1 insertions(+), 1 deletions(-)
+ drivers/scsi/qla1280.c |    4 ++--
+ 1 files changed, 2 insertions(+), 2 deletions(-)
 
-diff --git a/include/linux/ftrace.h b/include/linux/ftrace.h
-index da5405d..ff112a8 100644
---- a/include/linux/ftrace.h
-+++ b/include/linux/ftrace.h
-@@ -357,7 +357,7 @@ struct ftrace_graph_ret {
- #ifdef CONFIG_FUNCTION_GRAPH_TRACER
+diff --git a/drivers/scsi/qla1280.c b/drivers/scsi/qla1280.c
+index 351b56c..d030db9 100644
+--- a/drivers/scsi/qla1280.c
++++ b/drivers/scsi/qla1280.c
+@@ -1663,7 +1663,7 @@ qla1280_load_firmware_pio(struct scsi_qla_host *ha)
  
- /* for init task */
--#define INIT_FTRACE_GRAPH		.ret_stack = NULL
-+#define INIT_FTRACE_GRAPH		.ret_stack = NULL,
+ 	/* Load RISC code. */
+ 	risc_address = ha->fwstart;
+-	fw_data = (const __le16 *)&fw->data[4];
++	fw_data = (const __le16 *)&fw->data[6];
+ 	risc_code_size = (fw->size - 6) / 2;
  
- /*
-  * Stack of return addresses for functions
+ 	for (i = 0; i < risc_code_size; i++) {
+@@ -1722,7 +1722,7 @@ qla1280_load_firmware_dma(struct scsi_qla_host *ha)
+ 
+ 	/* Load RISC code. */
+ 	risc_address = ha->fwstart;
+-	fw_data = (const __le16 *)&fw->data[4];
++	fw_data = (const __le16 *)&fw->data[6];
+ 	risc_code_size = (fw->size - 6) / 2;
+ 
+ 	dprintk(1, "%s: DMA RISC code (%i) words\n",
+-- 
+1.6.2.2
+
+
+
+-- 
+David Woodhouse                            Open Source Technology Centre
+David.Woodhouse@intel.com                              Intel Corporation
+
