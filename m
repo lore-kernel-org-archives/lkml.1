@@ -1,44 +1,45 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758747AbZDHFJj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759283AbZDHFLh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758747AbZDHFJj (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 8 Apr 2009 01:09:39 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757960AbZDHFJP
+	id S1759283AbZDHFLh (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 8 Apr 2009 01:11:37 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752918AbZDHFL1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 8 Apr 2009 01:09:15 -0400
-Received: from moutng.kundenserver.de ([212.227.126.187]:61664 "EHLO
-	moutng.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757630AbZDHFJO (ORCPT
+	Wed, 8 Apr 2009 01:11:27 -0400
+Received: from mga05.intel.com ([192.55.52.89]:40508 "EHLO
+	fmsmga101.fm.intel.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1752543AbZDHFL0 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 8 Apr 2009 01:09:14 -0400
-Date: Tue, 7 Apr 2009 22:09:09 -0700 (PDT)
-From: Christian Kujau <lists@nerdbynature.de>
-To: Kevin Bowling <kevin.bowling@gmail.com>
-cc: LKML <linux-kernel@vger.kernel.org>, jeremy@xensource.com
-Subject: Re: Linux 2.6.30-rc1
-In-Reply-To: <grh204$1mj$1@ger.gmane.org>
-Message-ID: <alpine.DEB.2.01.0904072207320.6162@bogon.housecafe.de>
-References: <alpine.LFD.2.00.0904071700170.4583@localhost.localdomain> <grh204$1mj$1@ger.gmane.org>
-User-Agent: Alpine 2.01 (DEB 1184 2008-12-16)
+	Wed, 8 Apr 2009 01:11:26 -0400
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.39,342,1235980800"; 
+   d="scan'208";a="679749732"
+Message-ID: <49DC31EA.8050208@linux.intel.com>
+Date: Tue, 07 Apr 2009 22:11:06 -0700
+From: Arjan van de Ven <arjan@linux.intel.com>
+User-Agent: Thunderbird 2.0.0.21 (Windows/20090302)
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-X-Provags-ID: V01U2FsdGVkX1+jZq6U3pP3NsYM+qw1aUUP8jRPVYaKLRyRqEK
- LsjeZSbIed9372QBSsP4A+v5OG3VEMIYJ8+BYzciio9LlexNU9
- sbrtDFyDiKg06Gi1upOjw==
+To: Larry Finger <Larry.Finger@lwfinger.net>
+CC: LKML <linux-kernel@vger.kernel.org>, "Rafael J. Wysocki" <rjw@sisk.pl>,
+       wireless <linux-wireless@vger.kernel.org>,
+       Rusty Russell <rusty@rustcorp.com.au>
+Subject: Re: Regression in 2.6.30-rc1 since commit acae0515 - wireless broken
+References: <49DC2DF5.3010603@lwfinger.net>
+In-Reply-To: <49DC2DF5.3010603@lwfinger.net>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-[cc'ing Jeremy]
+Larry Finger wrote:
+> The most recent pulls of the Linux-2.6 git tree has broken wireless. The problem
+> was bisected with commit acae05156551fd7528fbb616271e672789388e3c, entitled
+> "module: create a request_module_nowait()", indicated as the faulty change. This
+> is seen with driver b43 on my system, and 2 reports for driver iwlagn:
+> http://marc.info/?l=linux-wireless&m=123916157630571&w=2 and
+> http://marc.info/?l=linux-wireless&m=123913015021457&w=2.
+> 
+> For b43, the logged error messages are:
 
-On Tue, 7 Apr 2009, Kevin Bowling wrote:
-> I was really hoping some of the Xen dom0 patches would be merged to lessen 
-> the load as time goes on an prevent a large Xen dump all at once.  Is there 
-> any reason NONE of these patches made it upstream this round, or the past 
-> few for the matter?
-
-/me was interested in this as well, Jeremy - can you comment on that?
-
-Thanks,
-Christian.
--- 
-Bruce Schneier has an Olympic-sized entropy pool.
+rusty... I still suspect your "int to bool" conversion stuff ;-)
+the rest is pretty close to syntactic noop
