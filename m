@@ -1,50 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934695AbZDHSnH@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S935183AbZDHSoT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934695AbZDHSnH (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 8 Apr 2009 14:43:07 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763775AbZDHSmx
+	id S935183AbZDHSoT (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 8 Apr 2009 14:44:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1765701AbZDHSn4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 8 Apr 2009 14:42:53 -0400
-Received: from pfepb.post.tele.dk ([195.41.46.236]:49976 "EHLO
-	pfepb.post.tele.dk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752397AbZDHSmv (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 8 Apr 2009 14:42:51 -0400
-Date: Wed, 8 Apr 2009 20:44:55 +0200
-From: Sam Ravnborg <sam@ravnborg.org>
-To: David Howells <dhowells@redhat.com>
-Cc: jeremy@goop.org, mingo@elte.hu, akpm@linux-foundation.org, x86@kernel.org,
-       linux-kernel@vger.kernel.org, a.p.zijlstra@chello.nl,
-       nickpiggin@yahoo.com.au, tglx@linutronix.de, ysato@users.sourceforge.jp
-Subject: Re: [PATCH] FRV: Use <asm-generic/pgtable.h> in NOMMU mode
-Message-ID: <20090408184455.GB332@uranus.ravnborg.org>
-References: <21081.1239214221@redhat.com> <20090408183011.24150.43310.stgit@warthog.procyon.org.uk>
+	Wed, 8 Apr 2009 14:43:56 -0400
+Received: from 82-117-125-11.tcdsl.calypso.net ([82.117.125.11]:47288 "EHLO
+	smtp.ossman.eu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753357AbZDHSnz (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 8 Apr 2009 14:43:55 -0400
+Date: Wed, 8 Apr 2009 20:43:50 +0200
+From: Pierre Ossman <drzeus-mmc@drzeus.cx>
+To: Adrian Hunter <adrian.hunter@nokia.com>
+Cc: "Lavinen Jarkko (Nokia-M/Helsinki)" <jarkko.lavinen@nokia.com>,
+       LKML <linux-kernel@vger.kernel.org>,
+       linux-omap Mailing List <linux-omap@vger.kernel.org>,
+       Tony Lindgren <tony@atomide.com>
+Subject: Re: [PATCH] HSMMC: mmc_omap_irq: Do not expect cmd/data to be
+ non-null when CC/TC occurs
+Message-ID: <20090408204350.3b675823@mjolnir.ossman.eu>
+In-Reply-To: <49DC5DD8.2070208@nokia.com>
+References: <49DC5DD8.2070208@nokia.com>
+X-Mailer: Claws Mail 3.7.1 (GTK+ 2.16.0; x86_64-redhat-linux-gnu)
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090408183011.24150.43310.stgit@warthog.procyon.org.uk>
-User-Agent: Mutt/1.4.2.1i
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Apr 08, 2009 at 07:30:11PM +0100, David Howells wrote:
-> asm-frv/pgtable.h could just #include <asm-generic/pgtable.h> in NOMMU mode
-> rather than #defining macros for lazy MMU and CPU stuff.
+On Wed, 08 Apr 2009 11:18:32 +0300
+Adrian Hunter <adrian.hunter@nokia.com> wrote:
+
+> From: Jarkko Lavinen <jarkko.lavinen@nokia.com>
 > 
-> Signed-off-by: David Howells <dhowells@redhat.com>
+> With spurious interrupt cmd can be null even when we have CC
+> set in irq status.
+> 
+> Fixes: NB#106295 - prevent potential kernel crash in the MMC driver
+> 
+> Signed-off-by: Jarkko Lavinen <jarkko.lavinen@nokia.com>
+> Signed-off-by: Adrian Hunter <adrian.hunter@nokia.com>
 > ---
-> 
->  include/asm-frv/pgtable.h |    6 ++----
->  1 files changed, 2 insertions(+), 4 deletions(-)
-> 
-> 
-> diff --git a/include/asm-frv/pgtable.h b/include/asm-frv/pgtable.h
-> index e16fdb1..3323301 100644
-> --- a/include/asm-frv/pgtable.h
-> +++ b/include/asm-frv/pgtable.h
 
-Any change we can have these header files moved before too
-many patches are queued?
+Queued.
 
-	Sam
+-- 
+     -- Pierre Ossman
+
+  Linux kernel, MMC maintainer        http://www.kernel.org
+  rdesktop, core developer          http://www.rdesktop.org
+  TigerVNC, core developer          http://www.tigervnc.org
+
+  WARNING: This correspondence is being monitored by the
+  Swedish government. Make sure your server uses encryption
+  for SMTP traffic and consider using PGP for end-to-end
+  encryption.
