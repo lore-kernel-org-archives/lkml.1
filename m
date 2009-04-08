@@ -1,71 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934142AbZDHQNU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934237AbZDHQNq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934142AbZDHQNU (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 8 Apr 2009 12:13:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1765991AbZDHQLH
+	id S934237AbZDHQNq (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 8 Apr 2009 12:13:46 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934075AbZDHQMU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 8 Apr 2009 12:11:07 -0400
-Received: from hera.kernel.org ([140.211.167.34]:55439 "EHLO hera.kernel.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S933884AbZDHQLE (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 8 Apr 2009 12:11:04 -0400
-Date: Wed, 8 Apr 2009 16:10:00 GMT
-From: Alan Cox <alan@lxorguk.ukuu.org.uk>
-To: linux-tip-commits@vger.kernel.org
-Cc: linux-kernel@vger.kernel.org, hpa@zytor.com, mingo@redhat.com,
-       tglx@linutronix.de, alan@lxorguk.ukuu.org.uk, mingo@elte.hu
-Reply-To: mingo@redhat.com, hpa@zytor.com, linux-kernel@vger.kernel.org,
-       tglx@linutronix.de, alan@lxorguk.ukuu.org.uk, mingo@elte.hu
-In-Reply-To: <20090326204524.4454.8776.stgit@localhost.localdomain>
-References: <20090326204524.4454.8776.stgit@localhost.localdomain>
-Subject: [tip:x86/urgent] x86: DMI match for the Dell DXP061 as it needs BIOS reboot
-Message-ID: <tip-c5da9a2bb24a7928c39495cdabf98d3f7931bde5@git.kernel.org>
-Git-Commit-ID: c5da9a2bb24a7928c39495cdabf98d3f7931bde5
-X-Mailer: tip-git-log-daemon
+	Wed, 8 Apr 2009 12:12:20 -0400
+Received: from terminus.zytor.com ([198.137.202.10]:55530 "EHLO
+	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S934061AbZDHQMS (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 8 Apr 2009 12:12:18 -0400
+Message-ID: <49DCCCCB.9000201@zytor.com>
+Date: Wed, 08 Apr 2009 09:11:55 -0700
+From: "H. Peter Anvin" <hpa@zytor.com>
+User-Agent: Thunderbird 2.0.0.19 (X11/20090105)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Disposition: inline
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Wed, 08 Apr 2009 16:10:07 +0000 (UTC)
+To: Glauber Costa <glommer@redhat.com>
+CC: kvm@vger.kernel.org, linux-kernel@vger.kernel.org, avi@redhat.com
+Subject: Re: [PATCH] do not keep interrupt window closed by sti in real mode
+References: <1239161017-7398-1-git-send-email-glommer@redhat.com> <49DC24C2.7000608@zytor.com> <20090408145545.GA25323@poweredge.glommer>
+In-Reply-To: <20090408145545.GA25323@poweredge.glommer>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Commit-ID:  c5da9a2bb24a7928c39495cdabf98d3f7931bde5
-Gitweb:     http://git.kernel.org/tip/c5da9a2bb24a7928c39495cdabf98d3f7931bde5
-Author:     Alan Cox <alan@lxorguk.ukuu.org.uk>
-AuthorDate: Thu, 26 Mar 2009 20:45:28 +0000
-Committer:  Ingo Molnar <mingo@elte.hu>
-CommitDate: Wed, 8 Apr 2009 17:53:27 +0200
+Glauber Costa wrote:
+> 
+> I get the idea from the pseudocode in sti description.
+> It says:
+> IF PE = 0 (* Executing in real-address mode *)
+>     THEN
+>         IF <- 1; (* Set Interrupt Flag *)
+>     ELSE (* Executing in protected mode or virtual-8086 mode *)
+> 
+> There is no mention to any other activity besides setting the if flag.
 
-x86: DMI match for the Dell DXP061 as it needs BIOS reboot
+But the same is true for the protected mode side of the instruction 
+description!
 
-Closes http://bugzilla.kernel.org/show_bug.cgi?12901
+> Also, sti is used extensively in many places like the linux kernel for the
+> guest, and it works just fine in kvm. So I was led to believe that real mode
+> in fact behaving differently.
 
-Signed-off-by: Alan Cox <alan@lxorguk.ukuu.org.uk>
-LKML-Reference: <20090326204524.4454.8776.stgit@localhost.localdomain>
-Signed-off-by: Ingo Molnar <mingo@elte.hu>
+The difference is that at least under current Intel VT, VT only handles 
+protected mode -- the real mode runs purely in the interpreter.
 
+> I'll take a look at avi's suggestion.
 
----
- arch/x86/kernel/reboot.c |    8 ++++++++
- 1 files changed, 8 insertions(+), 0 deletions(-)
-
-diff --git a/arch/x86/kernel/reboot.c b/arch/x86/kernel/reboot.c
-index 2aef36d..1340dad 100644
---- a/arch/x86/kernel/reboot.c
-+++ b/arch/x86/kernel/reboot.c
-@@ -224,6 +224,14 @@ static struct dmi_system_id __initdata reboot_dmi_table[] = {
- 			DMI_MATCH(DMI_PRODUCT_NAME, "Dell XPS710"),
- 		},
- 	},
-+	{	/* Handle problems with rebooting on Dell DXP061 */
-+		.callback = set_bios_reboot,
-+		.ident = "Dell DXP061",
-+		.matches = {
-+			DMI_MATCH(DMI_SYS_VENDOR, "Dell Inc."),
-+			DMI_MATCH(DMI_PRODUCT_NAME, "Dell DXP061"),
-+		},
-+	},
- 	{ }
- };
- 
+	-hpa
