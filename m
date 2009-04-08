@@ -1,72 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934695AbZDHRq1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933938AbZDHRsl@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934695AbZDHRq1 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 8 Apr 2009 13:46:27 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752439AbZDHRqR
+	id S933938AbZDHRsl (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 8 Apr 2009 13:48:41 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751794AbZDHRs1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 8 Apr 2009 13:46:17 -0400
-Received: from mail-fx0-f158.google.com ([209.85.220.158]:55508 "EHLO
-	mail-fx0-f158.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751885AbZDHRqQ (ORCPT
+	Wed, 8 Apr 2009 13:48:27 -0400
+Received: from sj-iport-6.cisco.com ([171.71.176.117]:29634 "EHLO
+	sj-iport-6.cisco.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751251AbZDHRs0 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 8 Apr 2009 13:46:16 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=googlemail.com; s=gamma;
-        h=message-id:date:from:user-agent:x-accept-language:mime-version:to
-         :cc:subject:references:in-reply-to:x-enigmail-version:content-type
-         :content-transfer-encoding;
-        b=HT8zoeXkgnilpR2DjLySeX0IRvnoogRHLOsD1Tg/L27Ojyhrvmo9fJjysBEzRPprOk
-         fpn1eahCsHI9bW3iSDaWhtXXvA9Y2wP0ShttjwehB4QKhwrZjD6qW03T1j8xTSqoxtBx
-         i/bs5lIKn7aiQtWJgzAd2Qu4B/P3DAORQpTyY=
-Message-ID: <49DCE2E3.7050700@googlemail.com>
-Date: Wed, 08 Apr 2009 19:46:11 +0200
-From: Michael Riepe <michael.riepe@googlemail.com>
-User-Agent: Mozilla/5.0 (X11; U; Linux i686 (x86_64); en-US; rv:1.7.13) Gecko/20060417
-X-Accept-Language: de-de, de, en-us, en
+	Wed, 8 Apr 2009 13:48:26 -0400
+X-IronPort-AV: E=Sophos;i="4.39,345,1235952000"; 
+   d="scan'208";a="282634850"
+From: Roland Dreier <rdreier@cisco.com>
+To: Jack Stone <jwjstone@fastmail.fm>
+Cc: linux-kernel@vger.kernel.org, jeff@garzik.org,
+       kernel-janitors@vger.kernel.org
+Subject: Re: [PATCH 17/56] infiniband: Remove void casts
+References: <1239189748-11703-1-git-send-email-jwjstone@fastmail.fm>
+	<1239189748-11703-2-git-send-email-jwjstone@fastmail.fm>
+	<1239189748-11703-3-git-send-email-jwjstone@fastmail.fm>
+	<1239189748-11703-4-git-send-email-jwjstone@fastmail.fm>
+	<1239189748-11703-5-git-send-email-jwjstone@fastmail.fm>
+	<1239189748-11703-6-git-send-email-jwjstone@fastmail.fm>
+	<1239189748-11703-7-git-send-email-jwjstone@fastmail.fm>
+	<1239189748-11703-8-git-send-email-jwjstone@fastmail.fm>
+	<1239189748-11703-9-git-send-email-jwjstone@fastmail.fm>
+	<1239189748-11703-10-git-send-email-jwjstone@fastmail.fm>
+	<1239189748-11703-11-git-send-email-jwjstone@fastmail.fm>
+	<1239189748-11703-12-git-send-email-jwjstone@fastmail.fm>
+	<1239189748-11703-13-git-send-email-jwjstone@fastmail.fm>
+	<1239189748-11703-14-git-send-email-jwjstone@fastmail.fm>
+	<1239189748-11703-15-git-send-email-jwjstone@fastmail.fm>
+	<1239189748-11703-16-git-send-email-jwjstone@fastmail.fm>
+	<1239189748-11703-17-git-send-email-jwjstone@fastmail.fm>
+	<1239189748-11703-18-git-send-email-jwjstone@fastmail.fm>
+X-Message-Flag: Warning: May contain useful information
+Date: Wed, 08 Apr 2009 10:48:22 -0700
+In-Reply-To: <1239189748-11703-18-git-send-email-jwjstone@fastmail.fm> (Jack
+	Stone's message of "Wed, 8 Apr 2009 12:21:49 +0100")
+Message-ID: <ada7i1v6nq1.fsf@cisco.com>
+User-Agent: Gnus/5.13 (Gnus v5.13) Emacs/23.0.60 (gnu/linux)
 MIME-Version: 1.0
-To: Robert Schwebel <r.schwebel@pengutronix.de>
-CC: linux-kernel@vger.kernel.org, Ingo Molnar <mingo@elte.hu>,
-       tglx@linutronix.de
-Subject: Re: Identifying Intel Atom Z500PT
-References: <20090407222144.GU5367@pengutronix.de>
-In-Reply-To: <20090407222144.GU5367@pengutronix.de>
-X-Enigmail-Version: 0.91.0.0
 Content-Type: text/plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
+X-OriginalArrivalTime: 08 Apr 2009 17:48:22.0542 (UTC) FILETIME=[35D0AAE0:01C9B872]
+Authentication-Results: syd-dkim-1; header.From=rdreier@cisco.com; dkim=pass (
+	sig from cisco.com/syddkim1002 verified; ); 
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi!
+Will review and take via my tree... at first glance all look OK.
 
-Robert Schwebel wrote:
-> Does anyone have an idea how to properly identify an Atom Z500PT cpu?
-> The get_model_name() mechanics in arch/x86/kernel/cpu/common.c uses
-> cpuid() to find out about the brand id, which is "Genuine Intel(R) CPU"
-> with family 6 and model 28.
-
-Family 6, model 28, stepping 2 seems to be common to all current Atoms
--- my 330 reports the same. There are some flags, however, that
-currently only appear in the Z series, e.g. vmx is not available on the
-230/330/N270. To differentiate between the latter, you could look for
-64-bit support (which is missing in the N270) and the number of cores.
-Besides that, the 230/330 models lack the speedstep feature.
-
-I don't know if there's a way to distinguish a -P model from a -PT
-model. But from a software point of view, they should be identical anyway.
-
-> Below is the output of /proc/cpuinfo on that box:
-> 
-> root@phyCORE:~ cat /proc/cpuinfo | grep model | head -n 2
-> model           : 28
-> model name      : Genuine Intel(R) CPU        @ 1.10GHz
-
-Strange - the 330 reports:
-
-model name      : Intel(R) Atom(TM) CPU  330   @ 1.60GHz
-
-(running 2.6.29).
-
--- 
-Michael "Tired" Riepe <michael.riepe@googlemail.com>
-X-Tired: Each morning I get up I die a little
+Thanks,
+  Roland
