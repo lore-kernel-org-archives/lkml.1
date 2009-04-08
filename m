@@ -1,25 +1,25 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932636AbZDHLii@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764868AbZDHLjM@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932636AbZDHLii (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 8 Apr 2009 07:38:38 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932121AbZDHL1q
+	id S1764868AbZDHLjM (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 8 Apr 2009 07:39:12 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932148AbZDHL1s
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 8 Apr 2009 07:27:46 -0400
-Received: from out2.smtp.messagingengine.com ([66.111.4.26]:37856 "EHLO
+	Wed, 8 Apr 2009 07:27:48 -0400
+Received: from out2.smtp.messagingengine.com ([66.111.4.26]:47447 "EHLO
 	out2.smtp.messagingengine.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1764129AbZDHL1l (ORCPT
+	by vger.kernel.org with ESMTP id S1764676AbZDHL1n (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 8 Apr 2009 07:27:41 -0400
-X-Sasl-enc: KtsO4ETjF6C0iCF9pZhd2lJiOE/FFXjl5/NvHZFL/peD 1239190060
+	Wed, 8 Apr 2009 07:27:43 -0400
+X-Sasl-enc: y3/aN7hjNmREyVFqQK5uWP3gNa8T2lyAPzmsQoSiaXFh 1239190061
 From: Jack Stone <jwjstone@fastmail.fm>
 To: linux-kernel@vger.kernel.org
 Cc: jeff@garzik.org, kernel-janitors@vger.kernel.org,
        Jack Stone <jwjstone@fastmail.fm>
-Subject: [PATCH 39/56] powerpc: Remove void casts
-Date: Wed,  8 Apr 2009 12:22:11 +0100
-Message-Id: <1239189748-11703-40-git-send-email-jwjstone@fastmail.fm>
+Subject: [PATCH 40/56] proc: Remove void casts
+Date: Wed,  8 Apr 2009 12:22:12 +0100
+Message-Id: <1239189748-11703-41-git-send-email-jwjstone@fastmail.fm>
 X-Mailer: git-send-email 1.5.4.3
-In-Reply-To: <1239189748-11703-39-git-send-email-jwjstone@fastmail.fm>
+In-Reply-To: <1239189748-11703-40-git-send-email-jwjstone@fastmail.fm>
 References: <>
  <1239189748-11703-1-git-send-email-jwjstone@fastmail.fm>
  <1239189748-11703-2-git-send-email-jwjstone@fastmail.fm>
@@ -60,6 +60,7 @@ References: <>
  <1239189748-11703-37-git-send-email-jwjstone@fastmail.fm>
  <1239189748-11703-38-git-send-email-jwjstone@fastmail.fm>
  <1239189748-11703-39-git-send-email-jwjstone@fastmail.fm>
+ <1239189748-11703-40-git-send-email-jwjstone@fastmail.fm>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
@@ -68,22 +69,22 @@ Remove uneeded void casts
 
 Signed-Off-By: Jack Stone <jwjstone@fastmail.fm>
 ---
- arch/powerpc/sysdev/fsl_soc.c |    2 +-
+ fs/proc/inode.c |    2 +-
  1 files changed, 1 insertions(+), 1 deletions(-)
 
-diff --git a/arch/powerpc/sysdev/fsl_soc.c b/arch/powerpc/sysdev/fsl_soc.c
-index afe8dbc..f63d668 100644
---- a/arch/powerpc/sysdev/fsl_soc.c
-+++ b/arch/powerpc/sysdev/fsl_soc.c
-@@ -186,7 +186,7 @@ static int __init of_add_fixed_phys(void)
- 	struct fixed_phy_status status = {};
+diff --git a/fs/proc/inode.c b/fs/proc/inode.c
+index d78ade3..2e18f67 100644
+--- a/fs/proc/inode.c
++++ b/fs/proc/inode.c
+@@ -74,7 +74,7 @@ static struct inode *proc_alloc_inode(struct super_block *sb)
+ 	struct proc_inode *ei;
+ 	struct inode *inode;
  
- 	for_each_node_by_name(np, "ethernet") {
--		fixed_link  = (u32 *)of_get_property(np, "fixed-link", NULL);
-+		fixed_link  = of_get_property(np, "fixed-link", NULL);
- 		if (!fixed_link)
- 			continue;
- 
+-	ei = (struct proc_inode *)kmem_cache_alloc(proc_inode_cachep, GFP_KERNEL);
++	ei = kmem_cache_alloc(proc_inode_cachep, GFP_KERNEL);
+ 	if (!ei)
+ 		return NULL;
+ 	ei->pid = NULL;
 -- 
 1.5.4.3
 
