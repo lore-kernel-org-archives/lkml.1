@@ -1,72 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934033AbZDHP2F@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934109AbZDHP2w@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934033AbZDHP2F (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 8 Apr 2009 11:28:05 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933647AbZDHP01
+	id S934109AbZDHP2w (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 8 Apr 2009 11:28:52 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933858AbZDHP0w
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 8 Apr 2009 11:26:27 -0400
-Received: from hera.kernel.org ([140.211.167.34]:52414 "EHLO hera.kernel.org"
+	Wed, 8 Apr 2009 11:26:52 -0400
+Received: from thunk.org ([69.25.196.29]:47150 "EHLO thunker.thunk.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S933422AbZDHP0X (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 8 Apr 2009 11:26:23 -0400
-Date: Wed, 8 Apr 2009 15:24:43 GMT
-From: Becky Bruce <beckyb@kernel.crashing.org>
-To: linux-tip-commits@vger.kernel.org
-Cc: linux-kernel@vger.kernel.org, hpa@zytor.com, mingo@redhat.com,
-       galak@kernel.crashing.org, fujita.tomonori@lab.ntt.co.jp,
-       tglx@linutronix.de, beckyb@kernel.crashing.org, mingo@elte.hu
-Reply-To: mingo@redhat.com, hpa@zytor.com, linux-kernel@vger.kernel.org,
-       fujita.tomonori@lab.ntt.co.jp, galak@kernel.crashing.org,
-       tglx@linutronix.de, beckyb@kernel.crashing.org, mingo@elte.hu
-In-Reply-To: <1239199761-22886-3-git-send-email-galak@kernel.crashing.org>
-References: <1239199761-22886-3-git-send-email-galak@kernel.crashing.org>
-Subject: [tip:core/iommu] swiotlb: fix compile warning
-Message-ID: <tip-67131ad0514d7105b55003a0506209cf1bba3f00@git.kernel.org>
-Git-Commit-ID: 67131ad0514d7105b55003a0506209cf1bba3f00
-X-Mailer: tip-git-log-daemon
+	id S933855AbZDHP0v (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 8 Apr 2009 11:26:51 -0400
+Date: Wed, 8 Apr 2009 11:26:37 -0400
+From: Theodore Tso <tytso@mit.edu>
+To: Jens Axboe <jens.axboe@oracle.com>
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+       Linux Kernel Developers List <linux-kernel@vger.kernel.org>,
+       Ext4 Developers List <linux-ext4@vger.kernel.org>, jack@suse.cz
+Subject: Re: [PATCH] block_write_full_page: switch synchronous writes to
+	use  WRITE_SYNC_PLUG
+Message-ID: <20090408152637.GB14895@mit.edu>
+Mail-Followup-To: Theodore Tso <tytso@mit.edu>,
+	Jens Axboe <jens.axboe@oracle.com>,
+	Andrew Morton <akpm@linux-foundation.org>,
+	Linux Kernel Developers List <linux-kernel@vger.kernel.org>,
+	Ext4 Developers List <linux-ext4@vger.kernel.org>, jack@suse.cz
+References: <20090406232141.ebdb426a.akpm@linux-foundation.org> <20090406235052.1ea47513.akpm@linux-foundation.org> <20090407070835.GM5178@kernel.dk> <20090407002313.fcdd1da0.akpm@linux-foundation.org> <20090407075732.GO5178@kernel.dk> <20090407190913.GA31723@mit.edu> <20090407193239.GE5178@kernel.dk> <20090407214421.GA7031@mit.edu> <20090407221933.GB7031@mit.edu> <20090408060033.GK5178@kernel.dk>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Wed, 08 Apr 2009 15:24:46 +0000 (UTC)
+In-Reply-To: <20090408060033.GK5178@kernel.dk>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-SA-Exim-Connect-IP: <locally generated>
+X-SA-Exim-Mail-From: tytso@mit.edu
+X-SA-Exim-Scanned: No (on thunker.thunk.org); SAEximRunCond expanded to false
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Commit-ID:  67131ad0514d7105b55003a0506209cf1bba3f00
-Gitweb:     http://git.kernel.org/tip/67131ad0514d7105b55003a0506209cf1bba3f00
-Author:     Becky Bruce <beckyb@kernel.crashing.org>
-AuthorDate: Wed, 8 Apr 2009 09:09:16 -0500
-Committer:  Ingo Molnar <mingo@elte.hu>
-CommitDate: Wed, 8 Apr 2009 16:18:35 +0200
+On Wed, Apr 08, 2009 at 08:00:33AM +0200, Jens Axboe wrote:
+> 
+> I think you should comment on why we don't need to do the actual unplug.
+> See what I added in fs/jbd/commit.c:journal_commit_transaction():
+> 
+>         /*
+>          * Use plugged writes here, since we want to submit several
+>          * before we unplug the device. We don't do explicit
+>          * unplugging in here, instead we rely on sync_buffer() doing
+>          * the unplug for us.
+>          */
 
-swiotlb: fix compile warning
+OK, agreed.  I'll add a comment explaining what is going on in the
+patch; better there than in the commit log.
 
-Squash a build warning seen on 32-bit powerpc caused by
-calling min() with 2 different types. Use min_t() instead.
-
-Signed-off-by: Becky Bruce <beckyb@kernel.crashing.org>
-Acked-by: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
-Signed-off-by: Kumar Gala <galak@kernel.crashing.org>
-Cc: jeremy@goop.org
-Cc: ian.campbell@citrix.com
-LKML-Reference: <1239199761-22886-3-git-send-email-galak@kernel.crashing.org>
-Signed-off-by: Ingo Molnar <mingo@elte.hu>
-
-
----
- lib/swiotlb.c |    2 +-
- 1 files changed, 1 insertions(+), 1 deletions(-)
-
-diff --git a/lib/swiotlb.c b/lib/swiotlb.c
-index 170cf56..4fd6a76 100644
---- a/lib/swiotlb.c
-+++ b/lib/swiotlb.c
-@@ -341,7 +341,7 @@ static void swiotlb_bounce(phys_addr_t phys, char *dma_addr, size_t size,
- 		unsigned long flags;
- 
- 		while (size) {
--			sz = min(PAGE_SIZE - offset, size);
-+			sz = min_t(size_t, PAGE_SIZE - offset, size);
- 
- 			local_irq_save(flags);
- 			buffer = kmap_atomic(pfn_to_page(pfn),
+					- Ted
