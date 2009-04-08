@@ -1,59 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752633AbZDHV4l@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753615AbZDHV5t@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752633AbZDHV4l (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 8 Apr 2009 17:56:41 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752345AbZDHV4L
+	id S1753615AbZDHV5t (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 8 Apr 2009 17:57:49 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752590AbZDHV5d
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 8 Apr 2009 17:56:11 -0400
-Received: from e31.co.us.ibm.com ([32.97.110.149]:42217 "EHLO
-	e31.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752637AbZDHV4J (ORCPT
+	Wed, 8 Apr 2009 17:57:33 -0400
+Received: from smtpfb1-g21.free.fr ([212.27.42.9]:33983 "EHLO
+	smtpfb1-g21.free.fr" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752517AbZDHV5c (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 8 Apr 2009 17:56:09 -0400
-Date: Wed, 8 Apr 2009 16:55:58 -0500
-From: "Serge E. Hallyn" <serue@us.ibm.com>
-To: lkml <linux-kernel@vger.kernel.org>
-Cc: linux-security-module@vger.kernel.org, David Howells <dhowells@redhat.com>,
-       Andrew Morgan <morgan@kernel.org>, stable@kernel.org
-Subject: [PATCH 1/1] cap_prctl: don't set error to 0 at 'no_change'
-Message-ID: <20090408215558.GA15250@us.ibm.com>
+	Wed, 8 Apr 2009 17:57:32 -0400
+Message-ID: <2c6601c9b894$756e4000$f9b5a8c0@pii350>
+From: "Gilles Espinasse" <g.esp@free.fr>
+To: "Robin Getz" <rgetz@blackfin.uclinux.org>,
+       "Chris Peterson" <cpeterso@cpeterso.com>
+Cc: "Matt Mackall" <mpm@selenic.com>, <netdev@vger.kernel.org>,
+       <linux-kernel@vger.kernel.org>
+References: <200904061430.26276.rgetz@blackfin.uclinux.org> <1239116251.14392.133.camel@calx> <a24804730904071439g4cc1779bi1ebaf814d370708c@mail.gmail.com> <200904071830.38081.rgetz@blackfin.uclinux.org>
+Subject: Re: IRQF_SAMPLE_RANDOM question...
+Date: Wed, 8 Apr 2009 23:53:30 +0200
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-User-Agent: Mutt/1.5.18 (2008-05-17)
+Content-Type: text/plain;
+	charset="utf-8"
+Content-Transfer-Encoding: 7bit
+X-Priority: 3
+X-MSMail-Priority: Normal
+X-Mailer: Microsoft Outlook Express 6.00.2800.1933
+X-MimeOLE: Produced By Microsoft MimeOLE V6.00.2800.1933
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-One-liner: capsh --print is broken without this patch.
 
-In certain cases, cap_prctl returns error > 0 for success.  However,
-the 'no_change' label was always setting error to 0.  As a result,
-for example, 'prctl(CAP_BSET_READ, N)' would always return 0.
-It should return 1 if a process has N in its bounding set (as
-by default it does).
+----- Original Message ----- 
+From: "Robin Getz" <rgetz@blackfin.uclinux.org>
+To: "Chris Peterson" <cpeterso@cpeterso.com>
+Cc: "Matt Mackall" <mpm@selenic.com>; <netdev@vger.kernel.org>;
+<linux-kernel@vger.kernel.org>
+Sent: Wednesday, April 08, 2009 12:30 AM
+Subject: Re: IRQF_SAMPLE_RANDOM question...
 
-I'm keeping the no_change label even though it's now functionally
-the same as 'error'.
 
-Signed-off-by: Serge Hallyn <serue@us.ibm.com>
-Acked-by: David Howells <dhowells@redhat.com>
----
- security/commoncap.c |    1 -
- 1 files changed, 0 insertions(+), 1 deletions(-)
+>
+> on embedded and server - it is likely most of ps (except load) will be
+pretty
+> stable - even vmstat - might be on more stable than you think on
+embedded -
+> which starts processes, allocates memory, and then just runs forever.....
+>
+After the topic on that subject in May, I find clrngd
+http://ipsec.pl/files/ipsec/clrngd-1.0.3.tar.gz
 
-diff --git a/security/commoncap.c b/security/commoncap.c
-index 7cd61a5..beac025 100644
---- a/security/commoncap.c
-+++ b/security/commoncap.c
-@@ -916,7 +916,6 @@ changed:
- 	return commit_creds(new);
- 
- no_change:
--	error = 0;
- error:
- 	abort_creds(new);
- 	return error;
--- 
-1.5.6.3
+That's a small C program that feed /dev/random
+Readme say :
+"This daemon attempts to collect real randomness from fluctuations of
+high-frequency clocks on a PC's mainboard. The basic assumption is that
+mainboard and CPU are clocked by two separate physical clocks."
+
+Shortly tested, look to work for me.
+How large is this basic assumption true, on x86, on other arch?
+
+Gilles
 
