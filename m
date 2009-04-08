@@ -1,27 +1,27 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753715AbZDHHZ0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758399AbZDHHZr@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753715AbZDHHZ0 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 8 Apr 2009 03:25:26 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751567AbZDHHZE
+	id S1758399AbZDHHZr (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 8 Apr 2009 03:25:47 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757775AbZDHHZN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 8 Apr 2009 03:25:04 -0400
-Received: from 219-87-157-169.static.tfn.net.tw ([219.87.157.169]:55293 "EHLO
+	Wed, 8 Apr 2009 03:25:13 -0400
+Received: from 219-87-157-169.static.tfn.net.tw ([219.87.157.169]:55302 "EHLO
 	mswedge2.sunplus.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752786AbZDHHY7 (ORCPT
+	with ESMTP id S1751423AbZDHHZF (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 8 Apr 2009 03:24:59 -0400
+	Wed, 8 Apr 2009 03:25:05 -0400
 To: linux-arch@vger.kernel.org, linux-kernel@vger.kernel.org
 Cc: torvalds@linux-foundation.org, Arnd Bergmann <arnd@arndb.de>,
        Sam Ravnborg <sam@ravnborg.org>, Thomas Gleixner <tglx@linutronix.de>,
        Kyle McMartin <kyle@mcmartin.ca>
 MIME-Version: 1.0
-Subject: [PATCH 2/14] score - New architecure port to SunplusCT S+CORE
+Subject: [PATCH 3/14] score - New architecure port to SunplusCT S+CORE
 X-Mailer: Lotus Notes Release 6.5 September 26, 2003
-Message-ID: <OF522DF4EC.299F045D-ON48257592.00284C5F-48257592.00289156@sunplusct.com>
+Message-ID: <OFB4C04512.1940B13F-ON48257592.0028600F-48257592.0028AAF4@sunplusct.com>
 From: liqin.chen@sunplusct.com
-Date: Wed, 8 Apr 2009 15:21:00 +0800
-X-MIMETrack: Serialize by Router on ctmail01/SunplusCT(Release 7.0.3FP1|February 24, 2008) at 2009/04/08 ?? 03:20:58,
-	Serialize complete at 2009/04/08 ?? 03:20:58
+Date: Wed, 8 Apr 2009 15:22:03 +0800
+X-MIMETrack: Serialize by Router on ctmail01/SunplusCT(Release 7.0.3FP1|February 24, 2008) at 2009/04/08 ?? 03:22:04,
+	Serialize complete at 2009/04/08 ?? 03:22:04
 Content-Type: text/plain; charset="US-ASCII"
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
@@ -29,1121 +29,1330 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 From: Chen Liqin <liqin.chen@sunplusct.com>
 
-asm/asm.h, asm/atomic.h, asm/auxvec.h, asm/bitops.h, asm/bug.h,
-asm/bugs.h, asm/byteorder.h, asm/cacheflush.h, asm/cache.h
-and asm/checksum.h for the score architecture.
+asm/cputime.h, asm/current.h, asm/delay.h, asm/device.h, asm/div64.h,
+asm/dma.h, asm/dma-mapping.h, asm/elf.h, asm/emergency-restart.h, 
+asm/errno.h,
+asm/fb.h, asm/fcntl.h, asm/fixmap.h, asm/futex.h, asm/hardirq.h, 
+asm/hw_irq.h,
+asm/ioctl.h, asm/ioctls.h, asm/io.h, asm/ipcbuf.h, asm/irqflags.h, 
+asm/irq.h,
+asm/irq_regs.h, asm/Kbuild and asm/kdebug.h for the score architecture.
 
 Signed off by: Chen Liqin <liqin.chen@sunplusct.com>
 Signed off by: Lennox Wu <lennox.wu@sunplusct.com>
 --
 
 diff -uprN -x linux-2.6-git.ori/Documentation/dontdiff 
-linux-2.6-git.ori/arch/score/include/asm/asm.h 
-linux-2.6-git.new/arch/score/include/asm/asm.h
---- linux-2.6-git.ori/arch/score/include/asm/asm.h      1970-01-01 
+linux-2.6-git.ori/arch/score/include/asm/cputime.h 
+linux-2.6-git.new/arch/score/include/asm/cputime.h
+--- linux-2.6-git.ori/arch/score/include/asm/cputime.h  1970-01-01 
 08:00:00.000000000 +0800
-+++ linux-2.6-git.new/arch/score/include/asm/asm.h      2009-04-03 
-16:54:08.000000000 +0800
-@@ -0,0 +1,161 @@
-+#ifndef __SCORE_ASM_H
-+#define __SCORE_ASM_H
++++ linux-2.6-git.new/arch/score/include/asm/cputime.h  2009-03-13 
+14:26:33.000000000 +0800
+@@ -0,0 +1,6 @@
++#ifndef __SCORE_CPUTIME_H
++#define __SCORE_CPUTIME_H
 +
-+#include <asm/asm-offsets.h>
++#include <asm-generic/cputime.h>
 +
-+#ifdef __ASSEMBLY__
-+
-+.macro SAVE_ALL
-+       mfcr    r30, cr0
-+       mv      r31, r0
-+       nop
-+       /* if UMs == 1, change stack. */
-+       slli.c  r30, r30, 28
-+       bpl     8f
-+       la      r31, kernelsp
-+       lw      r31, [r31]
-+8:
-+       mv      r30, r0
-+       addri   r0, r31, -PT_SIZE
-+
-+       sw      r30, [r0, PT_R0]
-+       .set    r1
-+       sw      r1, [r0, PT_R1]
-+       .set    nor1
-+       sw      r2, [r0, PT_R2]
-+       sw      r3, [r0, PT_R3]
-+       sw      r4, [r0, PT_R4]
-+       sw      r5, [r0, PT_R5]
-+       sw      r6, [r0, PT_R6]
-+       sw      r7, [r0, PT_R7]
-+
-+       sw      r8, [r0, PT_R8]
-+       sw      r9, [r0, PT_R9]
-+       sw      r10, [r0, PT_R10]
-+       sw      r11, [r0, PT_R11]
-+       sw      r12, [r0, PT_R12]
-+       sw      r13, [r0, PT_R13]
-+       sw      r14, [r0, PT_R14]
-+       sw      r15, [r0, PT_R15]
-+
-+       sw      r16, [r0, PT_R16]
-+       sw      r17, [r0, PT_R17]
-+       sw      r18, [r0, PT_R18]
-+       sw      r19, [r0, PT_R19]
-+       sw      r20, [r0, PT_R20]
-+       sw      r21, [r0, PT_R21]
-+       sw      r22, [r0, PT_R22]
-+       sw      r23, [r0, PT_R23]
-+
-+       sw      r24, [r0, PT_R24]
-+       sw      r25, [r0, PT_R25]
-+       sw      r25, [r0, PT_R25]
-+       sw      r26, [r0, PT_R26]
-+       sw      r27, [r0, PT_R27]
-+
-+       sw      r28, [r0, PT_R28]
-+       sw      r29, [r0, PT_R29]
-+       orri    r28, r0, 0x1fff
-+       li      r31, 0x00001fff
-+       xor     r28, r28, r31
-+
-+       mfcehl  r30, r31
-+       sw      r30, [r0, PT_CEH]
-+       sw      r31, [r0, PT_CEL]
-+
-+       mfcr    r31, cr0
-+       sw      r31, [r0, PT_PSR]
-+
-+       mfcr    r31, cr1
-+       sw      r31, [r0, PT_CONDITION]
-+
-+       mfcr    r31, cr2
-+       sw      r31, [r0, PT_ECR]
-+ 
-+       mfcr    r31, cr5
-+       srli    r31, r31, 1
-+       slli    r31, r31, 1
-+       sw      r31, [r0, PT_EPC]
-+.endm
-+
-+.macro RESTORE_ALL_AND_RET
-+       mfcr    r30, cr0
-+       srli    r30, r30, 1
-+       slli    r30, r30, 1
-+       mtcr    r30, cr0
-+       nop
-+       nop
-+       nop
-+       nop
-+       nop
-+
-+       .set    r1
-+       ldis    r1, 0x00ff
-+       and     r30, r30, r1
-+       not     r1, r1
-+       lw      r31, [r0, PT_PSR]
-+       and     r31, r31, r1
-+       .set    nor1
-+       or      r31, r31, r30
-+       mtcr    r31, cr0
-+       nop
-+       nop
-+       nop
-+       nop
-+       nop
-+
-+       lw      r30, [r0, PT_CONDITION]
-+       mtcr    r30, cr1
-+       nop
-+       nop
-+       nop
-+       nop
-+       nop
-+
-+       lw      r30, [r0, PT_CEH]
-+       lw      r31, [r0, PT_CEL]
-+       mtcehl  r30, r31
-+
-+       .set    r1
-+       lw      r1, [r0, PT_R1]
-+       .set    nor1
-+       lw      r2, [r0, PT_R2]
-+       lw      r3, [r0, PT_R3]
-+       lw      r4, [r0, PT_R4]
-+       lw      r5, [r0, PT_R5]
-+       lw      r6, [r0, PT_R6]
-+       lw      r7, [r0, PT_R7]
-+
-+       lw      r8, [r0, PT_R8]
-+       lw      r9, [r0, PT_R9]
-+       lw      r10, [r0, PT_R10]
-+       lw      r11, [r0, PT_R11]
-+       lw      r12, [r0, PT_R12]
-+       lw      r13, [r0, PT_R13]
-+       lw      r14, [r0, PT_R14]
-+       lw      r15, [r0, PT_R15]
-+
-+       lw      r16, [r0, PT_R16]
-+       lw      r17, [r0, PT_R17]
-+       lw      r18, [r0, PT_R18]
-+       lw      r19, [r0, PT_R19]
-+       lw      r20, [r0, PT_R20]
-+       lw      r21, [r0, PT_R21]
-+       lw      r22, [r0, PT_R22]
-+       lw      r23, [r0, PT_R23]
-+
-+       lw      r24, [r0, PT_R24]
-+       lw      r25, [r0, PT_R25]
-+       lw      r26, [r0, PT_R26]
-+       lw      r27, [r0, PT_R27]
-+       lw      r28, [r0, PT_R28]
-+       lw      r29, [r0, PT_R29]
-+
-+       lw      r30, [r0, PT_EPC]
-+       lw      r0, [r0, PT_R0]
-+       mtcr    r30, cr5
-+       rte
-+.endm
-+
-+#endif /* __ASSEMBLY__ */
-+#endif /* __SCORE_ASM_H */
++#endif /* __SCORE_CPUTIME_H */
 diff -uprN -x linux-2.6-git.ori/Documentation/dontdiff 
-linux-2.6-git.ori/arch/score/include/asm/atomic.h 
-linux-2.6-git.new/arch/score/include/asm/atomic.h
---- linux-2.6-git.ori/arch/score/include/asm/atomic.h   1970-01-01 
+linux-2.6-git.ori/arch/score/include/asm/current.h 
+linux-2.6-git.new/arch/score/include/asm/current.h
+--- linux-2.6-git.ori/arch/score/include/asm/current.h  1970-01-01 
 08:00:00.000000000 +0800
-+++ linux-2.6-git.new/arch/score/include/asm/atomic.h   2009-04-07 
-20:12:22.000000000 +0800
-@@ -0,0 +1,240 @@
-+#ifndef _SCORE_ATOMIC_H
-+#define _SCORE_ATOMIC_H
++++ linux-2.6-git.new/arch/score/include/asm/current.h  2009-04-07 
+20:18:06.000000000 +0800
+@@ -0,0 +1,15 @@
++#ifndef __SCORE_CURRENT_H
++#define __SCORE_CURRENT_H
 +
-+#include <linux/irqflags.h>
-+#include <asm/system.h>
++#include <linux/thread_info.h>
 +
-+#define ATOMIC_INIT(i)         {(i)}
++struct task_struct;
 +
-+/*
-+ * atomic_read - read atomic variable
-+ * @v: pointer of type atomic_t
-+ *
-+ * Atomically reads the value of @v.
-+ */
-+#define atomic_read(v)         ((v)->counter)
-+
-+/*
-+ * atomic_set - set atomic variable
-+ * @v: pointer of type atomic_t
-+ * @i: required value
-+ *
-+ * Atomically sets the value of @v to @i.
-+ */
-+#define atomic_set(v, i)       ((v)->counter = (i))
-+
-+/*
-+ * atomic_add - add integer to atomic variable
-+ * @i: integer value to add
-+ * @v: pointer of type atomic_t
-+ *
-+ * Atomically adds @i to @v.
-+ */
-+static inline void atomic_add(int i, atomic_t *v)
++static inline struct task_struct *get_current(void)
 +{
-+       unsigned long flags;
-+
-+       raw_local_irq_save(flags);
-+       v->counter += i;
-+       raw_local_irq_restore(flags);
++       return current_thread_info()->task;
 +}
 +
-+/*
-+ * atomic_sub - subtract the atomic variable
-+ * @i: integer value to subtract
-+ * @v: pointer of type atomic_t
-+ *
-+ * Atomically subtracts @i from @v.
-+ */
-+static inline void atomic_sub(int i, atomic_t *v)
-+{
-+       unsigned long flags;
++#define current                get_current()
 +
-+       raw_local_irq_save(flags);
-+       v->counter -= i;
-+       raw_local_irq_restore(flags);
-+}
-+
-+/*
-+ * Same as above, but return the result value
-+ */
-+static inline int atomic_add_return(int i, atomic_t *v)
-+{
-+       unsigned long flags;
-+       int temp;
-+
-+       raw_local_irq_save(flags);
-+       temp = v->counter;
-+       temp += i;
-+       v->counter = temp;
-+       raw_local_irq_restore(flags);
-+
-+       return temp;
-+}
-+
-+static inline int atomic_sub_return(int i, atomic_t *v)
-+{
-+       unsigned long flags;
-+       int temp;
-+
-+       raw_local_irq_save(flags);
-+       temp = v->counter;
-+       temp -= i;
-+       v->counter = temp;
-+       raw_local_irq_restore(flags);
-+
-+       return temp;
-+}
-+
-+/*
-+ * atomic_sub_if_positive - conditionally subtract integer from atomic 
-variable
-+ * @i: integer value to subtract
-+ * @v: pointer of type atomic_t
-+ *
-+ * Atomically test @v and subtract @i if @v is greater or equal than @i.
-+ * The function returns the old value of @v minus @i.
-+ */
-+static inline int atomic_sub_if_positive(int i, atomic_t *v)
-+{
-+       unsigned long result;
-+       unsigned long flags;
-+
-+       raw_local_irq_save(flags);
-+       result = v->counter;
-+       result -= i;
-+       if (result >= 0)
-+               v->counter = result;
-+       raw_local_irq_restore(flags);
-+
-+       return result;
-+}
-+
-+static inline int atomic_cmpxchg(atomic_t *v, int old, int new)
-+{
-+       unsigned long flags;
-+       int prev;
-+
-+       raw_local_irq_save(flags);
-+       prev = atomic_read(v);
-+       if (prev == old)
-+               atomic_set(v, new);
-+       raw_local_irq_restore(flags);
-+       return prev;
-+}
-+
-+static inline int atomic_xchg(atomic_t *v, int new)
-+{
-+       unsigned long flags;
-+       int prev;
-+
-+       raw_local_irq_save(flags);
-+       prev = atomic_read(v);
-+       atomic_set(v, new);
-+       raw_local_irq_restore(flags);
-+       return prev;
-+}
-+
-+/**
-+ * atomic_add_unless - add unless the number is a given value
-+ * @v: pointer of type atomic_t
-+ * @a: the amount to add to v...
-+ * @u: ...unless v is equal to u.
-+ *
-+ * Atomically adds @a to @v, so long as it was not @u.
-+ * Returns non-zero if @v was not @u, and zero otherwise.
-+ */
-+static inline int atomic_add_unless(atomic_t *v, int a, int u)
-+{
-+       int c, old;
-+       c = atomic_read(v);
-+       for (;;) {
-+               if (unlikely(c == (u)))
-+                       break;
-+               old = atomic_cmpxchg((v), c, c + (a));
-+               if (likely(old == c))
-+                       break;
-+               c = old;
-+       }
-+       return c != (u);
-+}
-+
-+#define atomic_inc_not_zero(v) atomic_add_unless((v), 1, 0)
-+
-+#define atomic_dec_return(v) atomic_sub_return(1, (v))
-+#define atomic_inc_return(v) atomic_add_return(1, (v))
-+
-+/*
-+ * atomic_sub_and_test - subtract value from variable and test result
-+ * @i: integer value to subtract
-+ * @v: pointer of type atomic_t
-+ *
-+ * Atomically subtracts @i from @v and returns
-+ * true if the result is zero, or false for all
-+ * other cases.
-+ */
-+#define atomic_sub_and_test(i, v) (atomic_sub_return((i), (v)) == 0)
-+
-+/*
-+ * atomic_inc_and_test - increment and test
-+ * @v: pointer of type atomic_t
-+ *
-+ * Atomically increments @v by 1
-+ * and returns true if the result is zero, or false for all
-+ * other cases.
-+ */
-+#define atomic_inc_and_test(v) (atomic_inc_return(v) == 0)
-+
-+/*
-+ * atomic_dec_and_test - decrement by 1 and test
-+ * @v: pointer of type atomic_t
-+ *
-+ * Atomically decrements @v by 1 and
-+ * returns true if the result is 0, or false for all other
-+ * cases.
-+ */
-+#define atomic_dec_and_test(v) (atomic_sub_return(1, (v)) == 0)
-+
-+/*
-+ * atomic_dec_if_positive - decrement by 1 if old value positive
-+ * @v: pointer of type atomic_t
-+ */
-+#define atomic_dec_if_positive(v)      atomic_sub_if_positive(1, v)
-+
-+/*
-+ * atomic_inc - increment atomic variable
-+ * @v: pointer of type atomic_t
-+ *
-+ * Atomically increments @v by 1.
-+ */
-+#define atomic_inc(v) atomic_add(1, (v))
-+
-+/*
-+ * atomic_dec - decrement and test
-+ * @v: pointer of type atomic_t
-+ *
-+ * Atomically decrements @v by 1.
-+ */
-+#define atomic_dec(v) atomic_sub(1, (v))
-+
-+/*
-+ * atomic_add_negative - add and test if negative
-+ * @v: pointer of type atomic_t
-+ * @i: integer value to add
-+ *
-+ * Atomically adds @i to @v and returns true
-+ * if the result is negative, or false when
-+ * result is greater than or equal to zero.
-+ */
-+#define atomic_add_negative(i, v) (atomic_add_return(i, (v)) < 0)
-+
-+/*
-+ * atomic*_return operations are serializing but not the non-*_return
-+ * versions.
-+ */
-+#define smp_mb__before_atomic_dec()    barrier()
-+#define smp_mb__after_atomic_dec()     barrier()
-+#define smp_mb__before_atomic_inc()    barrier()
-+#define smp_mb__after_atomic_inc()     barrier()
-+
-+#include <asm-generic/atomic.h>
-+#endif /* _SCORE_ATOMIC_H */
++#endif /* __SCORE_CURRENT_H */
 diff -uprN -x linux-2.6-git.ori/Documentation/dontdiff 
-linux-2.6-git.ori/arch/score/include/asm/auxvec.h 
-linux-2.6-git.new/arch/score/include/asm/auxvec.h
---- linux-2.6-git.ori/arch/score/include/asm/auxvec.h   1970-01-01 
+linux-2.6-git.ori/arch/score/include/asm/delay.h 
+linux-2.6-git.new/arch/score/include/asm/delay.h
+--- linux-2.6-git.ori/arch/score/include/asm/delay.h    1970-01-01 
 08:00:00.000000000 +0800
-+++ linux-2.6-git.new/arch/score/include/asm/auxvec.h   2009-04-03 
-16:54:39.000000000 +0800
-@@ -0,0 +1,4 @@
-+#ifndef _SCORE_AUXVEC_H
-+#define _SCORE_AUXVEC_H
++++ linux-2.6-git.new/arch/score/include/asm/delay.h    2009-04-03 
+16:57:44.000000000 +0800
+@@ -0,0 +1,37 @@
++#ifndef __SCORE_DELAY_H
++#define __SCORE_DELAY_H
 +
-+#endif /* _SCORE_AUXVEC_H */
-diff -uprN -x linux-2.6-git.ori/Documentation/dontdiff 
-linux-2.6-git.ori/arch/score/include/asm/bitops.h 
-linux-2.6-git.new/arch/score/include/asm/bitops.h
---- linux-2.6-git.ori/arch/score/include/asm/bitops.h   1970-01-01 
-08:00:00.000000000 +0800
-+++ linux-2.6-git.new/arch/score/include/asm/bitops.h   2009-04-03 
-16:55:04.000000000 +0800
-@@ -0,0 +1,253 @@
-+#ifndef _SCORE_BITOPS_H
-+#define _SCORE_BITOPS_H
++#include <linux/param.h>
 +
-+#ifndef _LINUX_BITOPS_H
-+#error only <linux/bitops.h> can be included directly
++static inline void __delay(unsigned long loops)
++{}
++
++/*
++ * Division by multiplication: you don't have to worry about
++ * loss of precision.
++ *
++ * Use only for very small delays ( < 1 msec).  Should probably use a
++ * lookup table, really, as the multiplications take much too long with
++ * short delays.  This is a "reasonable" implementation, though (and the
++ * first constant multiplications gets optimized away if the delay is
++ * a constant)
++ */
++
++static inline void __udelay(unsigned long usecs, unsigned long lpj)
++{
++       __delay(usecs);
++}
++
++#define __udelay_val   1
++#define udelay(usecs) __udelay((usecs), __udelay_val)
++
++/* make sure "usecs *= ..." in udelay do not overflow. */
++#if HZ >= 1000
++#define MAX_UDELAY_MS  1
++#elif HZ <= 200
++#define MAX_UDELAY_MS  5
++#else
++#define MAX_UDELAY_MS  (1000 / HZ)
 +#endif
 +
-+#include <linux/compiler.h>
-+#include <linux/irqflags.h>
-+#include <linux/types.h>
++#endif /* __SCORE_DELAY_H */
+diff -uprN -x linux-2.6-git.ori/Documentation/dontdiff 
+linux-2.6-git.ori/arch/score/include/asm/device.h 
+linux-2.6-git.new/arch/score/include/asm/device.h
+--- linux-2.6-git.ori/arch/score/include/asm/device.h   1970-01-01 
+08:00:00.000000000 +0800
++++ linux-2.6-git.new/arch/score/include/asm/device.h   2009-03-13 
+14:26:33.000000000 +0800
+@@ -0,0 +1,2 @@
++#include <asm-generic/device.h>
++
+diff -uprN -x linux-2.6-git.ori/Documentation/dontdiff 
+linux-2.6-git.ori/arch/score/include/asm/div64.h 
+linux-2.6-git.new/arch/score/include/asm/div64.h
+--- linux-2.6-git.ori/arch/score/include/asm/div64.h    1970-01-01 
+08:00:00.000000000 +0800
++++ linux-2.6-git.new/arch/score/include/asm/div64.h    2009-04-03 
+16:57:55.000000000 +0800
+@@ -0,0 +1,6 @@
++#ifndef __SCORE_DIV64_H
++#define __SCORE_DIV64_H
++
++#include <asm-generic/div64.h>
++
++#endif /* __SCORE_DIV64_H */
+diff -uprN -x linux-2.6-git.ori/Documentation/dontdiff 
+linux-2.6-git.ori/arch/score/include/asm/dma.h 
+linux-2.6-git.new/arch/score/include/asm/dma.h
+--- linux-2.6-git.ori/arch/score/include/asm/dma.h      1970-01-01 
+08:00:00.000000000 +0800
++++ linux-2.6-git.new/arch/score/include/asm/dma.h      2009-04-08 
+09:02:35.000000000 +0800
+@@ -0,0 +1,17 @@
++#ifndef __SCORE_DMA_H
++#define __SCORE_DMA_H
++
++#include <linux/spinlock.h>            /* And spinlocks */
++#include <linux/delay.h>
++
 +#include <asm/system.h>
-+#include <asm/byteorder.h>
++#include <asm/io.h>                    /* need byte IO */
 +
-+#define SZLONG_LOG 5
-+#define SZLONG_MASK 31UL
++#define MAX_DMA_ADDRESS                (PAGE_OFFSET + 0x01000000)
 +
-+/*
-+ * clear_bit() doesn't provide any barrier for the compiler.
-+ */
-+#define smp_mb__before_clear_bit()     barrier()
-+#define smp_mb__after_clear_bit()      barrier()
++/* reserve a DMA channel */
++extern int request_dma(unsigned int dmanr, const char *device_id);
++/* release it again */
++extern void free_dma(unsigned int dmanr);
 +
-+/*
-+ * set_bit - Atomically set a bit in memory
-+ * @nr: the bit to set
-+ * @addr: the address to start counting from
-+ *
-+ * This function is atomic and may not be reordered.  See __set_bit()
-+ * if you do not require the atomic guarantees.
-+ * Note that @nr may be almost arbitrarily large; this function is not
-+ * restricted to acting on a single-word quantity.
-+ */
-+static inline void set_bit(unsigned long nr, volatile unsigned long 
-*addr)
-+{
-+       unsigned short bit = nr & SZLONG_MASK;
++#endif /* __SCORE_DMA_H */
+diff -uprN -x linux-2.6-git.ori/Documentation/dontdiff 
+linux-2.6-git.ori/arch/score/include/asm/dma-mapping.h 
+linux-2.6-git.new/arch/score/include/asm/dma-mapping.h
+--- linux-2.6-git.ori/arch/score/include/asm/dma-mapping.h      1970-01-01 
+08:00:00.000000000 +0800
++++ linux-2.6-git.new/arch/score/include/asm/dma-mapping.h      2009-04-03 
+16:58:15.000000000 +0800
+@@ -0,0 +1,51 @@
++#ifndef __SCORE_DMA_MAPPING_H
++#define __SCORE_DMA_MAPPING_H
 +
-+       volatile unsigned long *a = addr;
-+       unsigned long mask;
-+       unsigned long flags;
++#include <asm/scatterlist.h>
++#include <asm/cache.h>
 +
-+       a += nr >> SZLONG_LOG;
-+       mask = 1UL << bit;
-+       raw_local_irq_save(flags);
-+       *a |= mask;
-+       raw_local_irq_restore(flags);
-+}
++void *dma_alloc_noncoherent(struct device *dev, size_t size,
++       dma_addr_t *dma_handle, gfp_t flag);
 +
-+/*
-+ * clear_bit - Clears a bit in memory
-+ * @nr: Bit to clear
-+ * @addr: Address to start counting from
-+ *
-+ * clear_bit() is atomic and may not be reordered.  However, it does
-+ * not contain a memory barrier, so if it is used for locking purposes,
-+ * you should call smp_mb__before_clear_bit() and/or 
-smp_mb__after_clear_bit()
-+ * in order to ensure changes are visible on other processors.
-+ */
-+static inline void clear_bit(unsigned long nr, volatile unsigned long 
-*addr)
-+{
-+       unsigned short bit = nr & SZLONG_MASK;
++void dma_free_noncoherent(struct device *dev, size_t size,
++       void *vaddr, dma_addr_t dma_handle);
 +
-+       volatile unsigned long *a = addr;
-+       unsigned long mask;
-+       unsigned long flags;
++void *dma_alloc_coherent(struct device *dev, size_t size,
++       dma_addr_t *dma_handle, gfp_t flag);
 +
-+       a += nr >> SZLONG_LOG;
-+       mask = 1UL << bit;
-+       raw_local_irq_save(flags);
-+       *a &= ~mask;
-+       raw_local_irq_restore(flags);
-+}
++void dma_free_coherent(struct device *dev, size_t size,
++       void *vaddr, dma_addr_t dma_handle);
 +
-+/*
-+ * clear_bit_unlock - Clears a bit in memory
-+ * @nr: Bit to clear
-+ * @addr: Address to start counting from
-+ *
-+ * clear_bit() is atomic and implies release semantics before the memory
-+ * operation. It can be used for an unlock.
-+ */
-+static inline void
-+clear_bit_unlock(unsigned long nr, volatile unsigned long *addr)
-+{
-+       clear_bit(nr, addr);
-+}
++extern dma_addr_t dma_map_single(struct device *dev, void *ptr, size_t 
+size,
++       enum dma_data_direction direction);
++extern void dma_unmap_single(struct device *dev, dma_addr_t dma_addr,
++       size_t size, enum dma_data_direction direction);
++extern int dma_map_sg(struct device *dev, struct scatterlist *sg, int 
+nents,
++       enum dma_data_direction direction);
++extern dma_addr_t dma_map_page(struct device *dev, struct page *page,
++       unsigned long offset, size_t size, enum dma_data_direction 
+direction);
++extern void dma_unmap_page(struct device *dev, dma_addr_t dma_address,
++       size_t size, enum dma_data_direction direction);
++extern void dma_unmap_sg(struct device *dev, struct scatterlist *sg,
++       int nhwentries, enum dma_data_direction direction);
++extern void dma_sync_single_for_cpu(struct device *dev, dma_addr_t 
+dma_handle,
++       size_t size, enum dma_data_direction direction);
++extern void dma_sync_single_for_device(struct device *dev,
++       dma_addr_t dma_handle, size_t size, enum dma_data_direction 
+direction);
++extern void dma_sync_single_range_for_cpu(struct device *dev,
++       dma_addr_t dma_handle, unsigned long offset, size_t size,
++       enum dma_data_direction direction);
++extern void dma_sync_single_range_for_device(struct device *dev,
++       dma_addr_t dma_handle, unsigned long offset, size_t size,
++       enum dma_data_direction direction);
++extern void dma_sync_sg_for_cpu(struct device *dev, struct scatterlist 
+*sg,
++       int nelems, enum dma_data_direction direction);
++extern void dma_sync_sg_for_device(struct device *dev, struct scatterlist 
+*sg,
++       int nelems, enum dma_data_direction direction);
++extern int dma_mapping_error(struct device *dev, dma_addr_t dma_addr);
++extern int dma_supported(struct device *dev, u64 mask);
++extern int dma_is_consistent(struct device *dev, dma_addr_t dma_addr);
++extern void dma_cache_sync(struct device *dev, void *vaddr, size_t size,
++       enum dma_data_direction direction);
 +
-+/*
-+ * change_bit - Toggle a bit in memory
-+ * @nr: Bit to change
-+ * @addr: Address to start counting from
-+ *
-+ * change_bit() is atomic and may not be reordered.
-+ * Note that @nr may be almost arbitrarily large; this function is not
-+ * restricted to acting on a single-word quantity.
-+ */
-+static inline void change_bit(unsigned long nr, volatile unsigned long 
-*addr)
-+{
-+       unsigned short bit = nr & SZLONG_MASK;
-+       volatile unsigned long *a = addr;
-+       unsigned long mask;
-+       unsigned long flags;
++#endif /* __SCORE_DMA_MAPPING_H */
+diff -uprN -x linux-2.6-git.ori/Documentation/dontdiff 
+linux-2.6-git.ori/arch/score/include/asm/elf.h 
+linux-2.6-git.new/arch/score/include/asm/elf.h
+--- linux-2.6-git.ori/arch/score/include/asm/elf.h      1970-01-01 
+08:00:00.000000000 +0800
++++ linux-2.6-git.new/arch/score/include/asm/elf.h      2009-04-07 
+20:19:45.000000000 +0800
+@@ -0,0 +1,119 @@
++#ifndef __SCORE_ELF_H
++#define __SCORE_ELF_H
 +
-+       a += nr >> SZLONG_LOG;
-+       mask = 1UL << bit;
-+       raw_local_irq_save(flags);
-+       *a ^= mask;
-+       raw_local_irq_restore(flags);
-+}
++/* ELF register definitions */
++#define ELF_NGREG      45
++#define ELF_NFPREG     33
++#define EM_SCORE7      135
 +
-+/*
-+ * test_and_set_bit - Set a bit and return its old value
-+ * @nr: Bit to set
-+ * @addr: Address to count from
-+ *
-+ * This operation is atomic and cannot be reordered.
-+ * It also implies a memory barrier.
-+ */
-+static inline int
-+test_and_set_bit(unsigned long nr, volatile unsigned long *addr)
-+{
-+       unsigned short bit = nr & SZLONG_MASK;
-+       unsigned long res;
-+       volatile unsigned long *a = addr;
-+       unsigned long mask;
-+       unsigned long flags;
++/* Relocation types. */
++#define R_SCORE_NONE           0
++#define R_SCORE_HI16           1
++#define R_SCORE_LO16           2
++#define R_SCORE_BCMP           3
++#define R_SCORE_24             4
++#define R_SCORE_PC19           5
++#define R_SCORE16_11           6
++#define R_SCORE16_PC8          7
++#define R_SCORE_ABS32          8
++#define R_SCORE_ABS16          9
++#define R_SCORE_DUMMY2         10
++#define R_SCORE_GP15           11
++#define R_SCORE_GNU_VTINHERIT  12
++#define R_SCORE_GNU_VTENTRY    13
++#define R_SCORE_GOT15          14
++#define R_SCORE_GOT_LO16       15
++#define R_SCORE_CALL15         16
++#define R_SCORE_GPREL32                17
++#define R_SCORE_REL32          18
++#define R_SCORE_DUMMY_HI16     19
++#define R_SCORE_IMM30          20
++#define R_SCORE_IMM32          21
 +
-+       a += nr >> SZLONG_LOG;
-+       mask = 1UL << bit;
-+       raw_local_irq_save(flags);
-+       res = (mask & *a);
-+       *a |= mask;
-+       raw_local_irq_restore(flags);
 +
-+       return res != 0;
-+}
++typedef unsigned long elf_greg_t;
++typedef elf_greg_t elf_gregset_t[ELF_NGREG];
++
++typedef double elf_fpreg_t;
++typedef elf_fpreg_t elf_fpregset_t[ELF_NFPREG];
 +
 +/*
-+ * test_and_set_bit_lock - Set a bit and return its old value
-+ * @nr: Bit to set
-+ * @addr: Address to count from
-+ *
-+ * This operation is atomic and implies acquire ordering semantics
-+ * after the memory operation.
++ * This is used to ensure we don't load something for the wrong 
+architecture.
 + */
-+static inline int
-+test_and_set_bit_lock(unsigned long nr, volatile unsigned long *addr)
-+{
-+       unsigned short bit = nr & SZLONG_MASK;
-+       unsigned long res;
-+       volatile unsigned long *a = addr;
-+       unsigned long mask;
-+       unsigned long flags;
-+
-+       a += nr >> SZLONG_LOG;
-+       mask = 1UL << bit;
-+       raw_local_irq_save(flags);
-+       res = (mask & *a);
-+       *a |= mask;
-+       raw_local_irq_restore(flags);
-+
-+       return res != 0;
-+}
-+/*
-+ * test_and_clear_bit - Clear a bit and return its old value
-+ * @nr: Bit to clear
-+ * @addr: Address to count from
-+ *
-+ * This operation is atomic and cannot be reordered.
-+ * It also implies a memory barrier.
-+ */
-+static inline int
-+test_and_clear_bit(unsigned long nr, volatile unsigned long *addr)
-+{
-+       unsigned short bit = nr & SZLONG_MASK;
-+       unsigned long res;
-+       volatile unsigned long *a = addr;
-+       unsigned long mask;
-+       unsigned long flags;
-+
-+       a += nr >> SZLONG_LOG;
-+       mask = 1UL << bit;
-+       raw_local_irq_save(flags);
-+       res = (mask & *a);
-+       *a &= ~mask;
-+       raw_local_irq_restore(flags);
-+
-+       return res != 0;
-+}
++#define elf_check_arch(hdr)                            \
++({                                                     \
++       int __res = 1;                                  \
++       struct elfhdr *__h = (hdr);                     \
++                                                       \
++       if (__h->e_ident[EI_CLASS] != ELFCLASS32)       \
++               __res = 0;                              \
++                                                       \
++       __res;                                          \
++})
 +
 +/*
-+ * test_and_change_bit - Change a bit and return its old value
-+ * @nr: Bit to change
-+ * @addr: Address to count from
-+ *
-+ * This operation is atomic and cannot be reordered.
-+ * It also implies a memory barrier.
++ * These are used to set parameters in the core dumps.
 + */
-+static inline int
-+test_and_change_bit(unsigned long nr, volatile unsigned long *addr)
-+{
-+       unsigned short bit = nr & SZLONG_MASK;
-+       unsigned long res;
-+       volatile unsigned long *a = addr;
-+       unsigned long mask;
-+       unsigned long flags;
-+
-+       a += nr >> SZLONG_LOG;
-+       mask = 1UL << bit;
-+       raw_local_irq_save(flags);
-+       res = (mask & *a);
-+       *a ^= mask;
-+       raw_local_irq_restore(flags);
-+
-+       return res != 0;
-+}
-+
-+#include <asm-generic/bitops/non-atomic.h>
++#define ELF_CLASS      ELFCLASS32
 +
 +/*
-+ * __clear_bit_unlock - Clears a bit in memory
-+ * @nr: Bit to clear
-+ * @addr: Address to start counting from
-+ *
-+ * __clear_bit() is non-atomic and implies release semantics before the 
-memory
-+ * operation. It can be used for an unlock if no other CPUs can 
-concurrently
-+ * modify other bits in the word.
++ * These are used to set parameters in the core dumps.
 + */
-+static inline void
-+__clear_bit_unlock(unsigned long nr, volatile unsigned long *addr)
-+{
-+       __clear_bit(nr, addr);
-+}
++#define ELF_DATA       ELFDATA2LSB
++#define ELF_ARCH       EM_SCORE7
 +
-+#include <asm-generic/bitops/__ffs.h>
-+#include <asm-generic/bitops/__fls.h>
-+#include <asm-generic/bitops/ffs.h>
-+#include <asm-generic/bitops/fls.h>
-+#include <asm-generic/bitops/fls64.h>
++#define SET_PERSONALITY(ex)                                            \
++do {                                                                   \
++       set_personality(PER_LINUX);                                     \
++} while (0)
 +
-+#include <asm-generic/bitops/ffz.h>
-+#include <asm-generic/bitops/find.h>
++struct task_struct;
++struct pt_regs;
++
++extern void elf_dump_regs(elf_greg_t *, struct pt_regs *regs);
++extern int dump_task_regs(struct task_struct *, elf_gregset_t *);
++
++#define ELF_CORE_COPY_REGS(elf_regs, regs)             \
++       elf_dump_regs((elf_greg_t *)&(elf_regs), regs);
++#define ELF_CORE_COPY_TASK_REGS(tsk, elf_regs) dump_task_regs(tsk, 
+elf_regs)
++
++#define USE_ELF_CORE_DUMP
++#define ELF_EXEC_PAGESIZE      PAGE_SIZE
++
++/* This yields a mask that user programs can use to figure out what
++   instruction set this cpu supports.  This could be done in userspace,
++   but it's not easy, and we've already done it here.  */
++
++#define ELF_HWCAP      (0)
++
++/* This yields a string that ld.so will use to load implementation
++   specific libraries for optimization.  This is more specific in
++   intent than poking at uname or /proc/cpuinfo.
++
++   For the moment, we have only optimizations for the Intel generations,
++   but that could change... */
++
++#define ELF_PLATFORM   (NULL)
++
++#define ELF_PLAT_INIT(_r, load_addr)                                   \
++do {                                                                   \
++       _r->regs[1] = _r->regs[2] = _r->regs[3] = _r->regs[4] = 0;      \
++       _r->regs[5] = _r->regs[6] = _r->regs[7] = _r->regs[8] = 0;      \
++       _r->regs[9] = _r->regs[10] = _r->regs[11] = _r->regs[12] = 0;   \
++       _r->regs[13] = _r->regs[14] = _r->regs[15] = _r->regs[16] = 0;  \
++       _r->regs[17] = _r->regs[18] = _r->regs[19] = _r->regs[20] = 0;  \
++       _r->regs[21] = _r->regs[22] = _r->regs[23] = _r->regs[24] = 0;  \
++       _r->regs[25] = _r->regs[26] = _r->regs[27] = _r->regs[28] = 0;  \
++       _r->regs[30] = _r->regs[31] = 0;                                \
++} while (0)
++
++/* This is the location that an ET_DYN program is loaded if exec'ed. 
+Typical
++   use of this is to invoke "./ld.so someprog" to test out a new version 
+of
++   the loader.  We need to make sure that it is out of the way of the 
+program
++   that it will "exec", and that there is sufficient room for the brk. */
++
++#ifndef ELF_ET_DYN_BASE
++#define ELF_ET_DYN_BASE                (TASK_SIZE / 3 * 2)
++#endif
++
++#endif /* __SCORE_ELF_H */
+diff -uprN -x linux-2.6-git.ori/Documentation/dontdiff 
+linux-2.6-git.ori/arch/score/include/asm/emergency-restart.h 
+linux-2.6-git.new/arch/score/include/asm/emergency-restart.h
+--- linux-2.6-git.ori/arch/score/include/asm/emergency-restart.h 
+1970-01-01 08:00:00.000000000 +0800
++++ linux-2.6-git.new/arch/score/include/asm/emergency-restart.h 
+2009-04-03 16:58:33.000000000 +0800
+@@ -0,0 +1,6 @@
++#ifndef __SCORE_EMERGENCY_RESTART_H
++#define __SCORE_EMERGENCY_RESTART_H
++
++#include <asm-generic/emergency-restart.h>
++
++#endif /* __SCORE_EMERGENCY_RESTART_H */
+diff -uprN -x linux-2.6-git.ori/Documentation/dontdiff 
+linux-2.6-git.ori/arch/score/include/asm/errno.h 
+linux-2.6-git.new/arch/score/include/asm/errno.h
+--- linux-2.6-git.ori/arch/score/include/asm/errno.h    1970-01-01 
+08:00:00.000000000 +0800
++++ linux-2.6-git.new/arch/score/include/asm/errno.h    2009-04-03 
+16:58:42.000000000 +0800
+@@ -0,0 +1,124 @@
++#ifndef __SCORE_ERRNO_H
++#define __SCORE_ERRNO_H
++
++/*
++ * These error numbers are intended to be SCORE ABI compatible
++ */
++
++#include <asm-generic/errno-base.h>
++
++#define        ENOMSG          35      /* No message of desired type */
++#define        EIDRM           36      /* Identifier removed */
++#define        ECHRNG          37      /* Channel number out of range */
++#define        EL2NSYNC        38      /* Level 2 not synchronized */
++#define        EL3HLT          39      /* Level 3 halted */
++#define        EL3RST          40      /* Level 3 reset */
++#define        ELNRNG          41      /* Link number out of range */
++#define        EUNATCH         42      /* Protocol driver not attached */
++#define        ENOCSI          43      /* No CSI structure available */
++#define        EL2HLT          44      /* Level 2 halted */
++#define        EDEADLK         45      /* Resource deadlock would occur 
+*/
++#define        ENOLCK          46      /* No record locks available */
++#define        EBADE           50      /* Invalid exchange */
++#define        EBADR           51      /* Invalid request descriptor */
++#define        EXFULL          52      /* Exchange full */
++#define        ENOANO          53      /* No anode */
++#define        EBADRQC         54      /* Invalid request code */
++#define        EBADSLT         55      /* Invalid slot */
++#define        EDEADLOCK       56      /* File locking deadlock error */
++#define        EBFONT          59      /* Bad font file format */
++#define        ENOSTR          60      /* Device not a stream */
++#define        ENODATA         61      /* No data available */
++#define        ETIME           62      /* Timer expired */
++#define        ENOSR           63      /* Out of streams resources */
++#define        ENONET          64      /* Machine is not on the network 
+*/
++#define        ENOPKG          65      /* Package not installed */
++#define        EREMOTE         66      /* Object is remote */
++#define        ENOLINK         67      /* Link has been severed */
++#define        EADV            68      /* Advertise error */
++#define        ESRMNT          69      /* Srmount error */
++#define        ECOMM           70      /* Communication error on send */
++#define        EPROTO          71      /* Protocol error */
++#define        EDOTDOT         73      /* RFS specific error */
++#define        EMULTIHOP       74      /* Multihop attempted */
++#define        EBADMSG         77      /* Not a data message */
++#define        ENAMETOOLONG    78      /* File name too long */
++#define        EOVERFLOW       79      /* Value too large for defined 
+data type */
++#define        ENOTUNIQ        80      /* Name not unique on network */
++#define        EBADFD          81      /* File descriptor in bad state */
++#define        EREMCHG         82      /* Remote address changed */
++#define        ELIBACC         83      /* Can not access a needed shared 
+library */
++#define        ELIBBAD         84      /* Accessing a corrupted shared 
+library */
++#define        ELIBSCN         85      /* .lib section in a.out corrupted 
+*/
++#define        ELIBMAX         86      /* Attempting to link in too many 
+shared libraries */
++#define        ELIBEXEC        87      /* Cannot exec a shared library 
+directly */
++#define        EILSEQ          88      /* Illegal byte sequence */
++#define        ENOSYS          89      /* Function not implemented */
++#define        ELOOP           90      /* Too many symbolic links 
+encountered */
++#define        ERESTART        91      /* Interrupted system call should 
+be restarted */
++#define        ESTRPIPE        92      /* Streams pipe error */
++#define        ENOTEMPTY       93      /* Directory not empty */
++#define        EUSERS          94      /* Too many users */
++#define        ENOTSOCK        95      /* Socket operation on non-socket 
+*/
++#define        EDESTADDRREQ    96      /* Destination address required */
++#define        EMSGSIZE        97      /* Message too long */
++#define        EPROTOTYPE      98      /* Protocol wrong type for socket 
+*/
++#define        ENOPROTOOPT     99      /* Protocol not available */
++#define        EPROTONOSUPPORT 120     /* Protocol not supported */
++#define        ESOCKTNOSUPPORT 121     /* Socket type not supported */
++#define        EOPNOTSUPP      122     /* Operation not supported on 
+transport endpoint */
++#define        EPFNOSUPPORT    123     /* Protocol family not supported 
+*/
++#define        EAFNOSUPPORT    124     /* Address family not supported by 
+protocol */
++#define        EADDRINUSE      125     /* Address already in use */
++#define        EADDRNOTAVAIL   126     /* Cannot assign requested address 
+*/
++#define        ENETDOWN        127     /* Network is down */
++#define        ENETUNREACH     128     /* Network is unreachable */
++#define        ENETRESET       129     /* Network dropped connection 
+because of reset */
++#define        ECONNABORTED    130     /* Software caused connection 
+abort */
++#define        ECONNRESET      131     /* Connection reset by peer */
++#define        ENOBUFS         132     /* No buffer space available */
++#define        EISCONN         133     /* Transport endpoint is already 
+connected */
++#define        ENOTCONN        134     /* Transport endpoint is not 
+connected */
++#define        EUCLEAN         135     /* Structure needs cleaning */
++#define        ENOTNAM         137     /* Not a XENIX named type file */
++#define        ENAVAIL         138     /* No XENIX semaphores available 
+*/
++#define        EISNAM          139     /* Is a named type file */
++#define        EREMOTEIO       140     /* Remote I/O error */
++#define        EINIT           141     /* Reserved */
++#define        EREMDEV         142     /* Error 142 */
++#define        ESHUTDOWN       143     /* Cannot send after transport 
+endpoint shutdown */
++#define        ETOOMANYREFS    144     /* Too many references: cannot 
+splice */
++#define        ETIMEDOUT       145     /* Connection timed out */
++#define        ECONNREFUSED    146     /* Connection refused */
++#define        EHOSTDOWN       147     /* Host is down */
++#define        EHOSTUNREACH    148     /* No route to host */
++#define        EWOULDBLOCK     EAGAIN  /* Operation would block */
++#define        EALREADY        149     /* Operation already in progress 
+*/
++#define        EINPROGRESS     150     /* Operation now in progress */
++#define        ESTALE          151     /* Stale NFS file handle */
++#define        ECANCELED       158     /* AIO operation canceled */
++
++/*
++ * These error are Linux extensions.
++ */
++#define        ENOMEDIUM       159     /* No medium found */
++#define        EMEDIUMTYPE     160     /* Wrong medium type */
++#define        ENOKEY          161     /* Required key not available */
++#define        EKEYEXPIRED     162     /* Key has expired */
++#define        EKEYREVOKED     163     /* Key has been revoked */
++#define        EKEYREJECTED    164     /* Key was rejected by service */
++
++/* for robust mutexes */
++#define        EOWNERDEAD      165     /* Owner died */
++#define        ENOTRECOVERABLE 166     /* State not recoverable */
++
++#define EDQUOT         1133    /* Quota exceeded */
 +
 +#ifdef __KERNEL__
 +
-+#include <asm-generic/bitops/sched.h>
-+#include <asm-generic/bitops/hweight.h>
-+#include <asm-generic/bitops/ext2-non-atomic.h>
-+#include <asm-generic/bitops/ext2-atomic.h>
-+#include <asm-generic/bitops/minix.h>
++/* The biggest error number defined here or in <linux/errno.h>. */
++#define EMAXERRNO      1133
 +
 +#endif /* __KERNEL__ */
 +
-+#endif /* _SCORE_BITOPS_H */
++#endif /* __SCORE_ERRNO_H */
 diff -uprN -x linux-2.6-git.ori/Documentation/dontdiff 
-linux-2.6-git.ori/arch/score/include/asm/bug.h 
-linux-2.6-git.new/arch/score/include/asm/bug.h
---- linux-2.6-git.ori/arch/score/include/asm/bug.h      1970-01-01 
+linux-2.6-git.ori/arch/score/include/asm/fb.h 
+linux-2.6-git.new/arch/score/include/asm/fb.h
+--- linux-2.6-git.ori/arch/score/include/asm/fb.h       1970-01-01 
 08:00:00.000000000 +0800
-+++ linux-2.6-git.new/arch/score/include/asm/bug.h      2009-04-03 
-16:55:20.000000000 +0800
-@@ -0,0 +1,6 @@
-+#ifndef __SCORE_BUG_H
-+#define __SCORE_BUG_H
++++ linux-2.6-git.new/arch/score/include/asm/fb.h       2009-04-03 
+16:58:55.000000000 +0800
+@@ -0,0 +1,18 @@
++#ifndef __SCORE_FB_H_
++#define __SCORE_FB_H_
 +
-+#include <asm-generic/bug.h>
++#include <linux/fb.h>
++#include <linux/fs.h>
 +
-+#endif /* __SCORE_BUG_H */
-diff -uprN -x linux-2.6-git.ori/Documentation/dontdiff 
-linux-2.6-git.ori/arch/score/include/asm/bugs.h 
-linux-2.6-git.new/arch/score/include/asm/bugs.h
---- linux-2.6-git.ori/arch/score/include/asm/bugs.h     1970-01-01 
-08:00:00.000000000 +0800
-+++ linux-2.6-git.new/arch/score/include/asm/bugs.h     2009-04-03 
-16:56:16.000000000 +0800
-@@ -0,0 +1,7 @@
-+#ifndef __SCORE_BUGS_H
-+#define __SCORE_BUGS_H
++#include <asm/page.h>
 +
-+static inline void check_bugs(void)
++static inline void fb_pgprotect(struct file *file, struct vm_area_struct 
+*vma,
++                               unsigned long off)
 +{}
 +
-+#endif /* __SCORE_BUGS_H */
-diff -uprN -x linux-2.6-git.ori/Documentation/dontdiff 
-linux-2.6-git.ori/arch/score/include/asm/byteorder.h 
-linux-2.6-git.new/arch/score/include/asm/byteorder.h
---- linux-2.6-git.ori/arch/score/include/asm/byteorder.h        1970-01-01 
-08:00:00.000000000 +0800
-+++ linux-2.6-git.new/arch/score/include/asm/byteorder.h        2009-04-03 
-16:56:46.000000000 +0800
-@@ -0,0 +1,6 @@
-+#ifndef __SCORE_BYTEORDER_H
-+#define __SCORE_BYTEORDER_H
-+
-+#include <linux/byteorder/little_endian.h>
-+
-+#endif /* __SCORE_BYTEORDER_H */
-diff -uprN -x linux-2.6-git.ori/Documentation/dontdiff 
-linux-2.6-git.ori/arch/score/include/asm/cacheflush.h 
-linux-2.6-git.new/arch/score/include/asm/cacheflush.h
---- linux-2.6-git.ori/arch/score/include/asm/cacheflush.h       1970-01-01 
-08:00:00.000000000 +0800
-+++ linux-2.6-git.new/arch/score/include/asm/cacheflush.h       2009-04-07 
-20:15:35.000000000 +0800
-@@ -0,0 +1,85 @@
-+#ifndef __SCORE_CACHEFLUSH_H
-+#define __SCORE_CACHEFLUSH_H
-+
-+/* Keep includes the same across arches.  */
-+#include <linux/mm.h>
-+
-+/* Cache flushing:
-+ *
-+ *  - flush_cache_all() flushes entire cache
-+ *  - flush_cache_mm(mm) flushes the specified mm context's cache lines
-+ *  - flush_cache_dup mm(mm) handles cache flushing when forking
-+ *  - flush_cache_page(mm, vmaddr, pfn) flushes a single page
-+ *  - flush_cache_range(vma, start, end) flushes a range of pages
-+ *  - flush_icache_range(start, end) flush a range of instructions
-+ *  - flush_dcache_page(pg) flushes(wback&invalidates) a page for dcache
-+ *
-+ *  - flush_cache_sigtramp() flush signal trampoline
-+ *  - flush_icache_all() flush the entire instruction cache
-+ *  - flush_data_cache_page() flushes a page from the data cache
-+ */
-+extern void (*flush_cache_all)(void);
-+extern void (*__flush_cache_all)(void);
-+extern void (*flush_cache_mm)(struct mm_struct *mm);
-+extern void (*flush_cache_range)(struct vm_area_struct *vma,
-+                                unsigned long start, unsigned long end);
-+extern void (*flush_cache_page)(struct vm_area_struct *vma,
-+                                unsigned long page, unsigned long pfn);
-+extern void __flush_dcache_page(struct page *page);
-+
-+#define flush_cache_dup_mm(mm)                 do {} while (0)
-+#define flush_dcache_page(page)                        do {} while (0)
-+#define flush_dcache_mmap_lock(mapping)                do {} while (0)
-+#define flush_dcache_mmap_unlock(mapping)      do {} while (0)
-+
-+extern void (*flush_icache_range)(unsigned long start, unsigned long 
-end);
-+
-+static inline void flush_icache_page(struct vm_area_struct *vma,
-+       struct page *page)
++static inline int fb_is_primary_device(struct fb_info *info)
 +{
-+       if (vma->vm_flags & VM_EXEC) {
-+               void *v = page_address(page);
-+               flush_icache_range((unsigned long) v,
-+                                  (unsigned long) v + PAGE_SIZE);
-+       }
++       return 0;
 +}
 +
-+extern void (*flush_icache_range)(unsigned long start, unsigned long 
-end);
-+extern void (*__flush_cache_vmap)(void);
-+extern void (*__flush_cache_vunmap)(void);
++#endif /* __SCORE_FB_H_ */
+diff -uprN -x linux-2.6-git.ori/Documentation/dontdiff 
+linux-2.6-git.ori/arch/score/include/asm/fcntl.h 
+linux-2.6-git.new/arch/score/include/asm/fcntl.h
+--- linux-2.6-git.ori/arch/score/include/asm/fcntl.h    1970-01-01 
+08:00:00.000000000 +0800
++++ linux-2.6-git.new/arch/score/include/asm/fcntl.h    2009-04-03 
+16:59:02.000000000 +0800
+@@ -0,0 +1,47 @@
++#ifndef __SCORE_FCNTL_H
++#define __SCORE_FCNTL_H
 +
-+static inline void flush_cache_vmap(unsigned long start, unsigned long 
-end)
-+{}
++#define O_APPEND       0x0008
++#define O_SYNC         0x0010
++#define O_NONBLOCK     0x0080
++#define O_CREAT                0x0100  /* not fcntl */
++#define O_TRUNC                0x0200  /* not fcntl */
++#define O_EXCL         0x0400  /* not fcntl */
++#define O_NOCTTY       0x0800  /* not fcntl */
++#define FASYNC         0x1000  /* fcntl, for BSD compatibility */
++#define O_LARGEFILE    0x2000  /* allow large file opens */
++#define O_DIRECT       0x8000  /* direct disk access hint */
 +
-+static inline void flush_cache_vunmap(unsigned long start, unsigned long 
-end)
-+{}
++#define F_GETLK                14
++#define F_SETLK                6
++#define F_SETLKW       7
 +
-+#define copy_from_user_page(vma, page, vaddr, dst, src, len) \
-+       memcpy(dst, src, len)
++#define F_SETOWN       24      /* for sockets. */
++#define F_GETOWN       23      /* for sockets. */
 +
-+#define copy_to_user_page(vma, page, vaddr, dst, src, len)     \
-+       do {                                                    \
-+               memcpy(dst, src, len);                          \
-+               if ((vma->vm_flags & VM_EXEC))                  \
-+                       flush_cache_page(vma, vaddr, page_to_pfn(page));\
-+       } while (0)
-+
-+extern void (*flush_cache_sigtramp)(unsigned long addr);
-+extern void (*flush_icache_all)(void);
-+extern void (*local_flush_data_cache_page)(void *addr);
-+extern void (*flush_data_cache_page)(unsigned long addr);
++#define F_GETLK64      33      /* using 'struct flock64' */
++#define F_SETLK64      34
++#define F_SETLKW64     35
 +
 +/*
-+ * This flag is used to indicate that the page pointed to by a pte
-+ * is dirty and requires cleaning before returning it to the user.
++ * The flavours of struct flock.  "struct flock" is the ABI compliant
++ * variant.  Finally struct flock64 is the LFS variant of struct flock. 
+As
++ * a historic accident and inconsistence with the ABI definition it 
+doesn't
++ * contain all the same fields as struct flock.
 + */
-+#define PG_dcache_dirty                        PG_arch_1
 +
-+#define Page_dcache_dirty(page)                \
-+       test_bit(PG_dcache_dirty, &(page)->flags)
-+#define SetPageDcacheDirty(page)       \
-+       set_bit(PG_dcache_dirty, &(page)->flags)
-+#define ClearPageDcacheDirty(page)     \
-+       clear_bit(PG_dcache_dirty, &(page)->flags)
++struct flock {
++       short   l_type;
++       short   l_whence;
++       off_t   l_start;
++       off_t   l_len;
++       long    l_sysid;
++       __kernel_pid_t l_pid;
++       long    pad[4];
++};
 +
-+#endif /* __SCORE_CACHEFLUSH_H */
++#define HAVE_ARCH_STRUCT_FLOCK
++
++#include <asm-generic/fcntl.h>
++
++#endif /* __SCORE_FCNTL_H */
 diff -uprN -x linux-2.6-git.ori/Documentation/dontdiff 
-linux-2.6-git.ori/arch/score/include/asm/cache.h 
-linux-2.6-git.new/arch/score/include/asm/cache.h
---- linux-2.6-git.ori/arch/score/include/asm/cache.h    1970-01-01 
+linux-2.6-git.ori/arch/score/include/asm/fixmap.h 
+linux-2.6-git.new/arch/score/include/asm/fixmap.h
+--- linux-2.6-git.ori/arch/score/include/asm/fixmap.h   1970-01-01 
 08:00:00.000000000 +0800
-+++ linux-2.6-git.new/arch/score/include/asm/cache.h    2009-04-08 
-10:27:16.000000000 +0800
++++ linux-2.6-git.new/arch/score/include/asm/fixmap.h   2009-04-08 
+09:04:00.000000000 +0800
+@@ -0,0 +1,87 @@
++#ifndef __SCORE_FIXMAP_H
++#define __SCORE_FIXMAP_H
++
++#include <asm/page.h>
++
++#define PHY_RAM_BASE           0x00000000
++#define PHY_IO_BASE            0x10000000
++
++#define VIRTUAL_RAM_BASE       0xa0000000
++#define VIRTUAL_IO_BASE                0xb0000000
++
++#define RAM_SPACE_SIZE         0x10000000
++#define IO_SPACE_SIZE          0x10000000
++
++/* Kernel unmapped, cached 512MB  */
++#define KSEG1                  0xa0000000
++
++/*
++ * Here we define all the compile-time 'special' virtual
++ * addresses. The point is to have a constant address at
++ * compile time, but to set the physical address only
++ * in the boot process. We allocate these special  addresses
++ * from the end of virtual memory (0xfffff000) backwards.
++ * Also this lets us do fail-safe vmalloc(), we
++ * can guarantee that these special addresses and
++ * vmalloc()-ed addresses never overlap.
++ *
++ * these 'compile-time allocated' memory buffers are
++ * fixed-size 4k pages. (or larger if used with an increment
++ * highger than 1) use fixmap_set(idx,phys) to associate
++ * physical memory with fixmap indices.
++ *
++ * TLB entries of such buffers will not be flushed across
++ * task switches.
++ */
++
++/*
++ * on UP currently we will have no trace of the fixmap mechanizm,
++ * no page table allocations, etc. This might change in the
++ * future, say framebuffers for the console driver(s) could be
++ * fix-mapped?
++ */
++enum fixed_addresses {
++#define FIX_N_COLOURS 8
++       FIX_CMAP_BEGIN,
++       FIX_CMAP_END = FIX_CMAP_BEGIN + FIX_N_COLOURS,
++       __end_of_fixed_addresses
++};
++
++/*
++ * used by vmalloc.c.
++ *
++ * Leave one empty page between vmalloc'ed areas and
++ * the start of the fixmap, and leave one page empty
++ * at the top of mem..
++ */
++#define FIXADDR_TOP    ((unsigned long)(long)(int)0xfefe0000)
++#define FIXADDR_SIZE   (__end_of_fixed_addresses << PAGE_SHIFT)
++#define FIXADDR_START  (FIXADDR_TOP - FIXADDR_SIZE)
++
++#define __fix_to_virt(x)       (FIXADDR_TOP - ((x) << PAGE_SHIFT))
++#define __virt_to_fix(x)       ((FIXADDR_TOP - ((x)&PAGE_MASK)) >> 
+PAGE_SHIFT)
++
++extern void __this_fixmap_does_not_exist(void);
++
++/*
++ * 'index to address' translation. If anyone tries to use the idx
++ * directly without tranlation, we catch the bug with a NULL-deference
++ * kernel oops. Illegal ranges of incoming indices are caught too.
++ */
++static inline unsigned long fix_to_virt(const unsigned int idx)
++{
++       return __fix_to_virt(idx);
++}
++
++static inline unsigned long virt_to_fix(const unsigned long vaddr)
++{
++       return __virt_to_fix(vaddr);
++}
++
++/*
++ * Called from pgtable_init()
++ */
++extern void fixrange_init(unsigned long start, unsigned long end,
++                       pgd_t *pgd_base);
++
++#endif
+diff -uprN -x linux-2.6-git.ori/Documentation/dontdiff 
+linux-2.6-git.ori/arch/score/include/asm/futex.h 
+linux-2.6-git.new/arch/score/include/asm/futex.h
+--- linux-2.6-git.ori/arch/score/include/asm/futex.h    1970-01-01 
+08:00:00.000000000 +0800
++++ linux-2.6-git.new/arch/score/include/asm/futex.h    2009-04-03 
+16:59:26.000000000 +0800
+@@ -0,0 +1,6 @@
++#ifndef __SCORE_FUTEX_H
++#define __SCORE_FUTEX_H
++
++#include <asm-generic/futex.h>
++
++#endif /* __SCORE_FUTEX_H */
+diff -uprN -x linux-2.6-git.ori/Documentation/dontdiff 
+linux-2.6-git.ori/arch/score/include/asm/hardirq.h 
+linux-2.6-git.new/arch/score/include/asm/hardirq.h
+--- linux-2.6-git.ori/arch/score/include/asm/hardirq.h  1970-01-01 
+08:00:00.000000000 +0800
++++ linux-2.6-git.new/arch/score/include/asm/hardirq.h  2009-04-08 
+10:11:29.000000000 +0800
 @@ -0,0 +1,16 @@
-+#ifndef __SCORE_CACHE_H
-+#define __SCORE_CACHE_H
++#ifndef __SCORE_HARDIRQ_H
++#define __SCORE_HARDIRQ_H
 +
-+/* Primary cache parameters. Cache Line Size*/
-+/* Score7 chache line size:4 words*/
-+#define ICACHE_LSIZE           16
-+#define DCACHE_LSIZE           16
++#include <linux/threads.h>
++#include <linux/irq.h>
 +
-+#define L1_CACHE_SHIFT         4
-+#define L1_CACHE_BYTES         (1 << L1_CACHE_SHIFT)
++typedef struct {
++       unsigned int __softirq_pending;
++} ____cacheline_aligned irq_cpustat_t;
 +
-+void s7_flush_cache_all(void);
-+void s7_flush_dcache_all(void);
-+void s7_flush_icache_all(void);
++/* Standard mappings for irq_cpustat_t above */
++#include <linux/irq_cpustat.h>
 +
-+#endif /* __SCORE_CACHE_H */
++extern void ack_bad_irq(unsigned int irq);
++
++#endif /* __SCORE_HARDIRQ_H */
 diff -uprN -x linux-2.6-git.ori/Documentation/dontdiff 
-linux-2.6-git.ori/arch/score/include/asm/checksum.h 
-linux-2.6-git.new/arch/score/include/asm/checksum.h
---- linux-2.6-git.ori/arch/score/include/asm/checksum.h 1970-01-01 
+linux-2.6-git.ori/arch/score/include/asm/hw_irq.h 
+linux-2.6-git.new/arch/score/include/asm/hw_irq.h
+--- linux-2.6-git.ori/arch/score/include/asm/hw_irq.h   1970-01-01 
 08:00:00.000000000 +0800
-+++ linux-2.6-git.new/arch/score/include/asm/checksum.h 2009-04-07 
-20:17:19.000000000 +0800
-@@ -0,0 +1,236 @@
-+#ifndef __SCORE_CHECKSUM_H
-+#define __SCORE_CHECKSUM_H
++++ linux-2.6-git.new/arch/score/include/asm/hw_irq.h   2009-04-03 
+16:59:44.000000000 +0800
+@@ -0,0 +1,8 @@
++#ifndef ___SCORE_HW_IRQ_H
++#define ___SCORE_HW_IRQ_H
 +
-+#include <linux/in6.h>
++#include <asm/atomic.h>
 +
-+#include <asm/uaccess.h>
++extern atomic_t irq_err_count;
 +
-+/*
-+ * computes the checksum of a memory block at buff, length len,
-+ * and adds in "sum" (32-bit)
-+ *
-+ * returns a 32-bit number suitable for feeding into itself
-+ * or csum_tcpudp_magic
-+ *
-+ * this function must be called with even lengths, except
-+ * for the last fragment, which may be odd
-+ *
-+ * it's best to have buff aligned on a 32-bit boundary
-+ */
-+unsigned int csum_partial(const void *buff, int len, __wsum sum);
-+unsigned int csum_partial_copy_from_user(const char *src, char *dst, int 
-len,
-+                                        unsigned int sum, int *csum_err);
-+unsigned int csum_partial_copy(const char *src, char *dst,
-+                                        int len, unsigned int sum);
++#endif /* ___SCORE_HW_IRQ_H */
+diff -uprN -x linux-2.6-git.ori/Documentation/dontdiff 
+linux-2.6-git.ori/arch/score/include/asm/ioctl.h 
+linux-2.6-git.new/arch/score/include/asm/ioctl.h
+--- linux-2.6-git.ori/arch/score/include/asm/ioctl.h    1970-01-01 
+08:00:00.000000000 +0800
++++ linux-2.6-git.new/arch/score/include/asm/ioctl.h    2009-04-03 
+17:35:33.000000000 +0800
+@@ -0,0 +1,6 @@
++#ifndef __SCORE_IOCTL_H
++#define __SCORE_IOCTL_H
 +
-+/*
-+ * this is a new version of the above that records errors it finds in 
-*errp,
-+ * but continues and zeros the rest of the buffer.
-+ */
++#include <asm-generic/ioctl.h>
 +
-+/*
-+ * Copy and checksum to user
-+ */
-+#define HAVE_CSUM_COPY_USER
-+static inline
-+__wsum csum_and_copy_to_user(const void *src, void __user *dst, int len,
-+                               __wsum sum, int *err_ptr)
++#endif /* __SCORE_IOCTL_H */
+diff -uprN -x linux-2.6-git.ori/Documentation/dontdiff 
+linux-2.6-git.ori/arch/score/include/asm/ioctls.h 
+linux-2.6-git.new/arch/score/include/asm/ioctls.h
+--- linux-2.6-git.ori/arch/score/include/asm/ioctls.h   1970-01-01 
+08:00:00.000000000 +0800
++++ linux-2.6-git.new/arch/score/include/asm/ioctls.h   2009-04-07 
+20:20:31.000000000 +0800
+@@ -0,0 +1,87 @@
++#ifndef ___SCORE_SCORE_IOCTLS_H
++#define ___SCORE_SCORE_IOCTLS_H
++
++#include <asm/ioctl.h>
++
++/* 0x54 is just a magic number to make these relatively unique ('T') */
++
++#define TCGETS         0x5401
++#define TCSETS         0x5402 /* Clashes with SNDCTL_TMR_START sound 
+ioctl */
++#define TCSETSW                0x5403
++#define TCSETSF                0x5404
++#define TCGETA         0x5405
++#define TCSETA         0x5406
++#define TCSETAW                0x5407
++#define TCSETAF                0x5408
++#define TCSBRK         0x5409
++#define TCXONC         0x540A
++#define TCFLSH         0x540B
++#define TIOCEXCL       0x540C
++#define TIOCNXCL       0x540D
++#define TIOCSCTTY      0x540E
++#define TIOCGPGRP      0x540F
++#define TIOCSPGRP      0x5410
++#define TIOCOUTQ       0x5411
++#define TIOCSTI                0x5412
++#define TIOCGWINSZ     0x5413
++#define TIOCSWINSZ     0x5414
++#define TIOCMGET       0x5415
++#define TIOCMBIS       0x5416
++#define TIOCMBIC       0x5417
++#define TIOCMSET       0x5418
++#define TIOCGSOFTCAR   0x5419
++#define TIOCSSOFTCAR   0x541A
++#define FIONREAD       0x541B
++#define TIOCINQ                FIONREAD
++#define TIOCLINUX      0x541C
++#define TIOCCONS       0x541D
++#define TIOCGSERIAL    0x541E
++#define TIOCSSERIAL    0x541F
++#define TIOCPKT                0x5420
++#define FIONBIO                0x5421
++#define TIOCNOTTY      0x5422
++#define TIOCSETD       0x5423
++#define TIOCGETD       0x5424
++#define TCSBRKP                0x5425  /* Needed for POSIX tcsendbreak() 
+*/
++/* #define TIOCTTYGSTRUCT 0x5426 - Former debugging-only ioctl */
++#define TIOCSBRK       0x5427  /* BSD compatibility */
++#define TIOCCBRK       0x5428  /* BSD compatibility */
++#define TIOCGSID       0x5429  /* Return the session ID of FD */
++#define TCGETS2                _IOR('T', 0x2A, struct termios2)
++#define TCSETS2                _IOW('T', 0x2B, struct termios2)
++#define TCSETSW2       _IOW('T', 0x2C, struct termios2)
++#define TCSETSF2       _IOW('T', 0x2D, struct termios2)
++#define TIOCGPTN       _IOR('T', 0x30, unsigned int) /* Get Pty Number 
+(of pty-mux device) */
++#define TIOCSPTLCK     _IOW('T', 0x31, int)    /* Lock/unlock Pty */
++
++#define FIONCLEX       0x5450
++#define FIOCLEX                0x5451
++#define FIOASYNC       0x5452
++#define TIOCSERCONFIG  0x5453
++#define TIOCSERGWILD   0x5454
++#define TIOCSERSWILD   0x5455
++#define TIOCGLCKTRMIOS 0x5456
++#define TIOCSLCKTRMIOS 0x5457
++#define TIOCSERGSTRUCT 0x5458 /* For debugging only */
++#define TIOCSERGETLSR  0x5459 /* Get line status register */
++#define TIOCSERGETMULTI 0x545A /* Get multiport config */
++#define TIOCSERSETMULTI 0x545B /* Set multiport config */
++
++#define TIOCMIWAIT     0x545C  /* wait for a change on serial input 
+line(s) */
++#define TIOCGICOUNT    0x545D  /* read serial port inline interrupt 
+counts */
++#define TIOCGHAYESESP  0x545E  /* Get Hayes ESP configuration */
++#define TIOCSHAYESESP  0x545F  /* Set Hayes ESP configuration */
++#define FIOQSIZE       0x5460
++
++/* Used for packet mode */
++#define TIOCPKT_DATA            0
++#define TIOCPKT_FLUSHREAD       1
++#define TIOCPKT_FLUSHWRITE      2
++#define TIOCPKT_STOP            4
++#define TIOCPKT_START           8
++#define TIOCPKT_NOSTOP         16
++#define TIOCPKT_DOSTOP         32
++
++#define TIOCSER_TEMT   0x01    /* Transmitter physically empty */
++
++#endif /* ___SCORE_SCORE_IOCTLS_H */
+diff -uprN -x linux-2.6-git.ori/Documentation/dontdiff 
+linux-2.6-git.ori/arch/score/include/asm/io.h 
+linux-2.6-git.new/arch/score/include/asm/io.h
+--- linux-2.6-git.ori/arch/score/include/asm/io.h       1970-01-01 
+08:00:00.000000000 +0800
++++ linux-2.6-git.new/arch/score/include/asm/io.h       2009-04-07 
+20:22:48.000000000 +0800
+@@ -0,0 +1,196 @@
++#ifndef __SCORE_IO_H
++#define __SCORE_IO_H
++
++#include <linux/compiler.h>
++#include <linux/kernel.h>
++#include <linux/types.h>
++
++#include <asm/byteorder.h>
++#include <asm-generic/iomap.h>
++#include <asm/page.h>
++#include <asm/pgtable-bits.h>
++#include <asm/processor.h>
++#include <asm/string.h>
++
++#if defined(CONFIG_SWAP_IO_SPACE) && defined(__SCOREEB__)
++#define __ioswab16(x) swab16(x)
++#define __ioswab32(x) swab32(x)
++#else
++#define __ioswab16(x) (x)
++#define __ioswab32(x) (x)
++#endif
++
++#define readb(addr)            (*(volatile unsigned char *)addr)
++#define readw(addr)            __ioswab16(*(volatile unsigned short 
+*)addr)
++#define readl(addr)            __ioswab32(*(volatile unsigned int *)addr)
++#define writeb(b, addr)                (*(volatile unsigned char *)addr = 
+(b))
++#define writew(b, addr)                (*(volatile unsigned short *)addr 
+= __ioswab16(b))
++#define writel(b, addr)                (*(volatile unsigned int *)addr = 
+__ioswab32(b))
++
++#define __raw_readb(addr)      (*(volatile unsigned char *)addr)
++#define __raw_readw(addr)      (*(volatile unsigned short *)addr)
++#define __raw_readl(addr)      (*(volatile unsigned int *)addr)
++#define __raw_readq(addr)      (*(volatile unsigned long long *)addr)
++#define __raw_writeb(b, addr)  (*(volatile unsigned char *)addr = (b))
++#define __raw_writew(b, addr)  (*(volatile unsigned short *)addr = (b))
++#define __raw_writel(b, addr)  (*(volatile unsigned int *)addr = (b))
++#define __raw_writeq(b, addr)  (*(volatile unsigned long long *)addr = 
+(b))
++
++#define inb(port)              __inb(port)
++#define inw(port)              __inw(port)
++#define inl(port)              __inl(port)
++#define outb(val, port)                (*(volatile u8 *)port = val)
++#define outw(val, port)                (*(volatile u16 *)port = val)
++#define outl(val, port)                (*(volatile u32 *)port = val)
++
++#define inb_p(port)            __inb_p(port)
++#define inw_p(port)            __inw_p(port)
++#define inl_p(port)            __inl_p(port)
++#define outb_p(val, port)      (*(volatile u8 *)port = val)
++#define outw_p(val, port)      (*(volatile u16 *)port = val)
++#define outl_p(val, port)      (*(volatile u32 *)port = val)
++
++#define insb(port, addr, count)                __insb(port, addr, count)
++#define insw(port, addr, count)                __insw(port, addr, count)
++#define insl(port, addr, count)                __insl(port, addr, count)
++#define outsb(port, addr, count)       __outsb(port, addr, count)
++#define outsw(port, addr, count)       __outsw(port, addr, count)
++#define outsl(port, addr, count)       __outsl(port, addr, count)
++
++static inline unsigned char __inb(unsigned long port)
 +{
-+       sum = csum_partial(src, len, sum);
-+       if (copy_to_user(dst, src, len)) {
-+               *err_ptr = -EFAULT;
-+               return (__force __wsum) -1; /* invalid checksum */
++       return *(volatile u8 *)(port);
++}
++
++static inline unsigned short __inw(unsigned long port)
++{
++       return *(volatile u16 *)(port);
++}
++
++static inline unsigned int __inl(unsigned long port)
++{
++       return *(volatile u32 *)(port);
++}
++
++static inline unsigned char __inb_p(unsigned long port)
++{
++       u8 __val;
++       __val = *(volatile u8 *)(port);
++       return __val;
++}
++
++static inline unsigned short __inw_p(unsigned long port)
++{
++       u16 __val;
++       __val = *(volatile u16 *)(port);
++       return __val;
++}
++
++static inline unsigned long __inl_p(unsigned long port)
++{
++       u32 __val;
++       __val = *(volatile u32 *)(port);
++       return __val;
++}
++
++static inline void
++__insb(unsigned long port, void *addr, unsigned long count)
++{
++       while (count--) {
++               *(u8 *)addr = inb(port);
++               addr++;
 +       }
-+       return sum;
 +}
 +
-+
-+#define csum_partial_copy_nocheck csum_partial_copy
-+/*
-+ *     Fold a partial checksum without adding pseudo headers
-+ */
-+
-+static inline __sum16 csum_fold(__wsum sum)
++static inline void
++__insw(unsigned long port, void *addr, unsigned long count)
 +{
-+       /* the while loop is unnecessary really, it's always enough with 
-two
-+          iterations */
-+       __asm__ __volatile__(
-+               ".set volatile\n\t"
-+               ".set\tr1\n\t"
-+               "slli\tr1,%0, 16\n\t"
-+               "add\t%0,%0, r1\n\t"
-+               "cmp.c\tr1, %0\n\t"
-+               "srli\t%0, %0, 16\n\t"
-+               "bleu\t1f\n\t"
-+               "addi\t%0, 0x1\n\t"
-+               "1:ldi\tr30, 0xffff\n\t"
-+               "xor\t%0, %0, r30\n\t"
-+               "slli\t%0, %0, 16\n\t"
-+               "srli\t%0, %0, 16\n\t"
-+               ".set\tnor1\n\t"
-+               ".set optimize\n\t"
-+               : "=r" (sum)
-+               : "0" (sum));
-+       return sum;
++       while (count--) {
++               *(u16 *)addr = inw(port);
++               addr += 2;
++       }
 +}
 +
++static inline void
++__insl(unsigned long port, void *addr, unsigned long count)
++{
++       while (count--) {
++               *(u32 *)addr = inl(port);
++               addr += 4;
++       }
++}
++
++static inline void
++__outsb(unsigned long port, void *addr, unsigned long count)
++{
++       while (count--) {
++               outb(*(u8 *)addr, port);
++               addr++;
++       }
++}
++
++static inline void
++__outsw(unsigned long port, void *addr, unsigned long count)
++{
++       while (count--) {
++               outb(*(u16 *)addr, port);
++               addr += 2;
++       }
++}
++
++
++static inline void
++__outsl(unsigned long port, void *addr, unsigned long count)
++{
++       while (count--) {
++               outb(*(u32 *)addr, port);
++               addr += 4;
++       }
++}
++
++#define IO_SPACE_LIMIT 0xffff
++#define xlate_dev_mem_ptr(p)   __va(p)
++#define xlate_dev_kmem_ptr(p)  p
++
++static inline void
++memset_io(volatile void __iomem *addr, unsigned char val, int count)
++{
++       memset((void __force *)addr, val, count);
++}
++
++static inline void
++memcpy_fromio(void *dst, const volatile void __iomem *src, int count)
++{
++       memcpy(dst, (void __force *)src, count);
++}
++
++static inline void
++memcpy_toio(volatile void __iomem *dst, const void *src, int count)
++{
++       memcpy((void __force *)dst, src, count);
++}
++
++#define isa_page_to_bus page_to_phys
++
 +/*
-+ *     This is a version of ip_compute_csum() optimized for IP headers,
-+ *     which always checksum on 4 octet boundaries.
++ * However PCI ones are not necessarily 1:1 and therefore these 
+interfaces
++ * are forbidden in portable PCI drivers.
 + *
-+ *     By Jorge Cwik <jorge@laser.satlink.net>, adapted for linux by
-+ *     Arnt Gulbrandsen.
++ * Allow them for x86 for legacy drivers, though.
 + */
-+static inline __sum16 ip_fast_csum(const void *iph, unsigned int ihl)
-+{
-+       unsigned int sum;
-+       unsigned long dummy;
-+
-+       __asm__ __volatile__(
-+               ".set volatile\n\t"
-+               ".set\tnor1\n\t"
-+               "lw\t%0, [%1]\n\t"
-+               "subri\t%2, %2, 4\n\t"
-+               "slli\t%2, %2, 2\n\t"
-+               "lw\t%3, [%1, 4]\n\t"
-+               "add\t%2, %2, %1\n\t"
-+               "add\t%0, %0, %3\n\t"
-+               "cmp.c\t%3, %0\n\t"
-+               "lw\t%3, [%1, 8]\n\t"
-+               "bleu\t1f\n\t"
-+               "addi\t%0, 0x1\n\t"
-+               "1:\n\t"
-+               "add\t%0, %0, %3\n\t"
-+               "cmp.c\t%3, %0\n\t"
-+               "lw\t%3, [%1, 12]\n\t"
-+               "bleu\t1f\n\t"
-+               "addi\t%0, 0x1\n\t"
-+               "1:add\t%0, %0, %3\n\t"
-+               "cmp.c\t%3, %0\n\t"
-+               "bleu\t1f\n\t"
-+               "addi\t%0, 0x1\n"
-+
-+               "1:\tlw\t%3, [%1, 16]\n\t"
-+               "addi\t%1, 4\n\t"
-+               "add\t%0, %0, %3\n\t"
-+               "cmp.c\t%3, %0\n\t"
-+               "bleu\t2f\n\t"
-+               "addi\t%0, 0x1\n"
-+               "2:cmp.c\t%2, %1\n\t"
-+               "bne\t1b\n\t"
-+
-+               ".set\tr1\n\t"
-+               ".set optimize\n\t"
-+               : "=&r" (sum), "=&r" (iph), "=&r" (ihl), "=&r" (dummy)
-+               : "1" (iph), "2" (ihl));
-+
-+       return csum_fold(sum);
-+}
-+
-+static inline __wsum
-+csum_tcpudp_nofold(__be32 saddr, __be32 daddr, unsigned short len,
-+                       unsigned short proto, __wsum sum)
-+{
-+       unsigned long tmp = (ntohs(len) << 16) + proto * 256;
-+       __asm__ __volatile__(
-+               ".set volatile\n\t"
-+               "add\t%0, %0, %2\n\t"
-+               "cmp.c\t%2, %0\n\t"
-+               "bleu\t1f\n\t"
-+               "addi\t%0, 0x1\n\t"
-+               "1:\n\t"
-+               "add\t%0, %0, %3\n\t"
-+               "cmp.c\t%3, %0\n\t"
-+               "bleu\t1f\n\t"
-+               "addi\t%0, 0x1\n\t"
-+               "1:\n\t"
-+               "add\t%0, %0, %4\n\t"
-+               "cmp.c\t%4, %0\n\t"
-+               "bleu\t1f\n\t"
-+               "addi\t%0, 0x1\n\t"
-+               "1:\n\t"
-+               ".set optimize\n\t"
-+               : "=r" (sum)
-+               : "0" (daddr), "r"(saddr),
-+               "r" (tmp),
-+               "r" (sum));
-+       return sum;
-+}
++#define virt_to_bus virt_to_phys
++#define bus_to_virt phys_to_virt
 +
 +/*
-+ * computes the checksum of the TCP/UDP pseudo-header
-+ * returns a 16-bit checksum, already complemented
++ * Change "struct page" to physical address.
 + */
-+static inline __sum16
-+csum_tcpudp_magic(__be32 saddr, __be32 daddr, unsigned short len,
-+                       unsigned short proto, __wsum sum)
-+{
-+       return csum_fold(csum_tcpudp_nofold(saddr, daddr, len, proto, 
-sum));
-+}
++#define page_to_phys(page)     ((dma_addr_t)page_to_pfn(page) << 
+PAGE_SHIFT)
++
++extern void __iomem *__ioremap(unsigned long offset, unsigned long size, 
+unsigned long flags);
++extern void __iounmap(const volatile void __iomem *addr);
++
++#define ioremap(offset, size)          __ioremap((offset), (size), 
+_CACHE_UNCACHED)
++#define ioremap_nocache(offset, size)  __ioremap((offset), (size), 
+_CACHE_UNCACHED)
++#define iounmap(offset)                        __iounmap(offset)
++
++#endif /* __SCORE_IO_H */
+diff -uprN -x linux-2.6-git.ori/Documentation/dontdiff 
+linux-2.6-git.ori/arch/score/include/asm/ipcbuf.h 
+linux-2.6-git.new/arch/score/include/asm/ipcbuf.h
+--- linux-2.6-git.ori/arch/score/include/asm/ipcbuf.h   1970-01-01 
+08:00:00.000000000 +0800
++++ linux-2.6-git.new/arch/score/include/asm/ipcbuf.h   2009-04-07 
+20:23:32.000000000 +0800
+@@ -0,0 +1,29 @@
++#ifndef _SCORE_IPCBUF_H
++#define _SCORE_IPCBUF_H
++
++#include <linux/types.h>
 +
 +/*
-+ * this routine is used for miscellaneous IP-like checksums, mainly
-+ * in icmp.c
++ * The ipc64_perm structure for alpha architecture.
++ * Note extra padding because this structure is passed back and forth
++ * between kernel and user space.
++ *
++ * Pad space is left for:
++ * - 32-bit seq
++ * - 2 miscellaneous 64-bit values
 + */
 +
-+static inline unsigned short ip_compute_csum(const void *buff, int len)
-+{
-+       return csum_fold(csum_partial(buff, len, 0));
++struct ipc64_perm {
++       __kernel_key_t  key;
++       __kernel_uid_t  uid;
++       __kernel_gid_t  gid;
++       __kernel_uid_t  cuid;
++       __kernel_gid_t  cgid;
++       __kernel_mode_t mode;
++       __u32 seq;
++       __u32 __pad1;
++       __u32 __unused1;
++       __u32 __unused2;
++};
++
++#endif /* _SCORE_IPCBUF_H */
+diff -uprN -x linux-2.6-git.ori/Documentation/dontdiff 
+linux-2.6-git.ori/arch/score/include/asm/irqflags.h 
+linux-2.6-git.new/arch/score/include/asm/irqflags.h
+--- linux-2.6-git.ori/arch/score/include/asm/irqflags.h 1970-01-01 
+08:00:00.000000000 +0800
++++ linux-2.6-git.new/arch/score/include/asm/irqflags.h 2009-04-07 
+20:24:34.000000000 +0800
+@@ -0,0 +1,111 @@
++#ifndef __SCORE_IRQFLAGS_H
++#define __SCORE_IRQFLAGS_H
++
++#ifndef __ASSEMBLY__
++
++#define raw_local_irq_save(x)                  \
++{                                              \
++       __asm__ __volatile__(                   \
++               "mfcr   r8, cr0;"               \
++               "li     r9, 0xfffffffe;"        \
++               "nop;"                          \
++               "mv     %0, r8;"                \
++               "and    r8, r8, r9;"            \
++               "mtcr   r8, cr0;"               \
++               "nop;"                          \
++               "nop;"                          \
++               "nop;"                          \
++               "nop;"                          \
++               "nop;"                          \
++               "ldi    r9, 0x1;"               \
++               "and    %0, %0, r9;"            \
++               : "=r" (x)                      \
++               :                               \
++               : "r8", "r9"                    \
++               );                              \
 +}
 +
-+#define _HAVE_ARCH_IPV6_CSUM
-+static inline __sum16 csum_ipv6_magic(const struct in6_addr *saddr,
-+                                       const struct in6_addr *daddr,
-+                                       __u32 len, unsigned short proto,
-+                                       __wsum sum)
-+{
-+       __asm__ __volatile__(
-+               ".set\tnoreorder\t\t\t# csum_ipv6_magic\n\t"
-+               ".set\tnoat\n\t"
-+               "addu\t%0, %5\t\t\t# proto (long in network byte 
-order)\n\t"
-+               "sltu\t$1, %0, %5\n\t"
-+               "addu\t%0, $1\n\t"
-+               "addu\t%0, %6\t\t\t# csum\n\t"
-+               "sltu\t$1, %0, %6\n\t"
-+               "lw\t%1, 0(%2)\t\t\t# four words source address\n\t"
-+               "addu\t%0, $1\n\t"
-+               "addu\t%0, %1\n\t"
-+               "sltu\t$1, %0, %1\n\t"
-+               "lw\t%1, 4(%2)\n\t"
-+               "addu\t%0, $1\n\t"
-+               "addu\t%0, %1\n\t"
-+               "sltu\t$1, %0, %1\n\t"
-+               "lw\t%1, 8(%2)\n\t"
-+               "addu\t%0, $1\n\t"
-+               "addu\t%0, %1\n\t"
-+               "sltu\t$1, %0, %1\n\t"
-+               "lw\t%1, 12(%2)\n\t"
-+               "addu\t%0, $1\n\t"
-+               "addu\t%0, %1\n\t"
-+               "sltu\t$1, %0, %1\n\t"
-+               "lw\t%1, 0(%3)\n\t"
-+               "addu\t%0, $1\n\t"
-+               "addu\t%0, %1\n\t"
-+               "sltu\t$1, %0, %1\n\t"
-+               "lw\t%1, 4(%3)\n\t"
-+               "addu\t%0, $1\n\t"
-+               "addu\t%0, %1\n\t"
-+               "sltu\t$1, %0, %1\n\t"
-+               "lw\t%1, 8(%3)\n\t"
-+               "addu\t%0, $1\n\t"
-+               "addu\t%0, %1\n\t"
-+               "sltu\t$1, %0, %1\n\t"
-+               "lw\t%1, 12(%3)\n\t"
-+               "addu\t%0, $1\n\t"
-+               "addu\t%0, %1\n\t"
-+               "sltu\t$1, %0, %1\n\t"
-+               "addu\t%0, $1\t\t\t# Add final carry\n\t"
-+               ".set\tnoat\n\t"
-+               ".set\tnoreorder"
-+               : "=r" (sum), "=r" (proto)
-+               : "r" (saddr), "r" (daddr),
-+                 "0" (htonl(len)), "1" (htonl(proto)), "r" (sum));
-+
-+       return csum_fold(sum);
++#define raw_local_irq_restore(x)               \
++{                                              \
++       __asm__ __volatile__(                   \
++               "mfcr   r8, cr0;"               \
++               "ldi    r9, 0x1;"               \
++               "and    %0, %0, r9;"            \
++               "or     r8, r8, %0;"            \
++               "mtcr   r8, cr0;"               \
++               "nop;"                          \
++               "nop;"                          \
++               "nop;"                          \
++               "nop;"                          \
++               "nop;"                          \
++               :                               \
++               : "r"(x)                        \
++               : "r8", "r9"                    \
++               );                              \
 +}
-+#endif /* __SCORE_CHECKSUM_H */
++
++#define raw_local_irq_enable(void)             \
++{                                              \
++       __asm__ __volatile__(                   \
++               "mfcr\tr8,cr0;"                 \
++               "nop;"                          \
++               "nop;"                          \
++               "ori\tr8,0x1;"                  \
++               "mtcr\tr8,cr0;"                 \
++               "nop;"                          \
++               "nop;"                          \
++               "nop;"                          \
++               "nop;"                          \
++               "nop;"                          \
++               :                               \
++               :                               \
++               : "r8");                        \
++}
++
++#define raw_local_irq_disable(void)            \
++{                                              \
++       __asm__ __volatile__(                   \
++               "mfcr\tr8,cr0;"                 \
++               "nop;"                          \
++               "nop;"                          \
++               "srli\tr8,r8,1;"                \
++               "slli\tr8,r8,1;"                \
++               "mtcr\tr8,cr0;"                 \
++               "nop;"                          \
++               "nop;"                          \
++               "nop;"                          \
++               "nop;"                          \
++               "nop;"                          \
++               :                               \
++               :                               \
++               : "r8");                        \
++}
++
++#define raw_local_save_flags(x)                        \
++{                                              \
++       __asm__ __volatile__(                   \
++               "mfcr   r8, cr0;"               \
++               "nop;"                          \
++               "nop;"                          \
++               "mv     %0, r8;"                \
++               "nop;"                          \
++               "nop;"                          \
++               "nop;"                          \
++               "nop;"                          \
++               "nop;"                          \
++               "ldi    r9, 0x1;"               \
++               "and    %0, %0, r9;"            \
++               : "=r" (x)                      \
++               :                               \
++               : "r8", "r9"                    \
++               );                              \
++}
++
++static inline int raw_irqs_disabled_flags(unsigned long flags)
++{
++       return !(flags & 1);
++}
++
++#endif
++
++#endif /* __SCORE_IRQFLAGS_H */
+diff -uprN -x linux-2.6-git.ori/Documentation/dontdiff 
+linux-2.6-git.ori/arch/score/include/asm/irq.h 
+linux-2.6-git.new/arch/score/include/asm/irq.h
+--- linux-2.6-git.ori/arch/score/include/asm/irq.h      1970-01-01 
+08:00:00.000000000 +0800
++++ linux-2.6-git.new/arch/score/include/asm/irq.h      2009-04-03 
+17:00:22.000000000 +0800
+@@ -0,0 +1,34 @@
++#ifndef __SCORE_IRQ_H
++#define __SCORE_IRQ_H
++
++#define EXCEPTION_VECTOR_BASE_ADDR     0xa0000000
++#define VECTOR_ADDRESS_OFFSET_MODE4    0
++#define VECTOR_ADDRESS_OFFSET_MODE16   1
++
++#define DEBUG_VECTOR_SIZE              (0x4)
++#define DEBUG_VECTOR_BASE_ADDR         ((EXCEPTION_VECTOR_BASE_ADDR) + 
+0x1fc)
++
++#define GENERAL_VECTOR_SIZE            (0x10)
++#define GENERAL_VECTOR_BASE_ADDR       ((EXCEPTION_VECTOR_BASE_ADDR) + 
+0x200)
++
++#define NR_IRQS        64
++#define IRQ_VECTOR_SIZE                        (0x10)
++#define IRQ_VECTOR_BASE_ADDR           ((EXCEPTION_VECTOR_BASE_ADDR) + 
+0x210)
++#define IRQ_VECTOR_END_ADDR            ((EXCEPTION_VECTOR_BASE_ADDR) + 
+0x5f0)
++
++#define irq_canonicalize(irq)  (irq)
++
++#define P_INT_PNDL             0x95F50000
++#define P_INT_PNDH             0x95F50004
++#define P_INT_PRIORITY_M       0x95F50008
++#define P_INT_PRIORITY_SG0     0x95F50010
++#define P_INT_PRIORITY_SG1     0x95F50014
++#define P_INT_PRIORITY_SG2     0x95F50018
++#define P_INT_PRIORITY_SG3     0x95F5001C
++#define P_INT_MASKL            0x95F50020
++#define P_INT_MASKH            0x95F50024
++
++#define IRQ_TIMER (7)  /* IRQ  number of SPG300 */
++
++extern void interrupt_exception_vector(void);
++#endif /* __SCORE_IRQ_H */
+diff -uprN -x linux-2.6-git.ori/Documentation/dontdiff 
+linux-2.6-git.ori/arch/score/include/asm/irq_regs.h 
+linux-2.6-git.new/arch/score/include/asm/irq_regs.h
+--- linux-2.6-git.ori/arch/score/include/asm/irq_regs.h 1970-01-01 
+08:00:00.000000000 +0800
++++ linux-2.6-git.new/arch/score/include/asm/irq_regs.h 2009-04-03 
+17:00:34.000000000 +0800
+@@ -0,0 +1,11 @@
++#ifndef __SCORE_IRQ_REGS_H
++#define __SCORE_IRQ_REGS_H
++
++#include <linux/thread_info.h>
++
++static inline struct pt_regs *get_irq_regs(void)
++{
++       return current_thread_info()->regs;
++}
++
++#endif /* __SCORE_IRQ_REGS_H */
+diff -uprN -x linux-2.6-git.ori/Documentation/dontdiff 
+linux-2.6-git.ori/arch/score/include/asm/Kbuild 
+linux-2.6-git.new/arch/score/include/asm/Kbuild
+--- linux-2.6-git.ori/arch/score/include/asm/Kbuild     1970-01-01 
+08:00:00.000000000 +0800
++++ linux-2.6-git.new/arch/score/include/asm/Kbuild     2009-03-13 
+14:26:33.000000000 +0800
+@@ -0,0 +1,3 @@
++include include/asm-generic/Kbuild.asm
++
++header-y +=
+diff -uprN -x linux-2.6-git.ori/Documentation/dontdiff 
+linux-2.6-git.ori/arch/score/include/asm/kdebug.h 
+linux-2.6-git.new/arch/score/include/asm/kdebug.h
+--- linux-2.6-git.ori/arch/score/include/asm/kdebug.h   1970-01-01 
+08:00:00.000000000 +0800
++++ linux-2.6-git.new/arch/score/include/asm/kdebug.h   2009-04-03 
+17:00:49.000000000 +0800
+@@ -0,0 +1,13 @@
++#ifndef __SCORE_KDEBUG_H
++#define __SCORE_KDEBUG_H
++
++#include <linux/notifier.h>
++
++enum die_val {
++       DIE_OOPS = 1,
++       DIE_FP,
++       DIE_TRAP,
++       DIE_RI,
++};
++
++#endif /* __SCORE_KDEBUG_H */
