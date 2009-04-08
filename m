@@ -1,62 +1,103 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933103AbZDHPL3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933611AbZDHPLu@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933103AbZDHPL3 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 8 Apr 2009 11:11:29 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763997AbZDHPKy
+	id S933611AbZDHPLu (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 8 Apr 2009 11:11:50 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933071AbZDHPKz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 8 Apr 2009 11:10:54 -0400
-Received: from [212.69.161.110] ([212.69.161.110]:60921 "EHLO
+	Wed, 8 Apr 2009 11:10:55 -0400
+Received: from [212.69.161.110] ([212.69.161.110]:60923 "EHLO
 	mail09.linbit.com" rhost-flags-FAIL-FAIL-OK-OK) by vger.kernel.org
-	with ESMTP id S932543AbZDHPKx convert rfc822-to-8bit (ORCPT
+	with ESMTP id S932926AbZDHPKx convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
 	Wed, 8 Apr 2009 11:10:53 -0400
 From: Philipp Reisner <philipp.reisner@linbit.com>
 Organization: LINBIT
 To: Nikanth K <nikanth@gmail.com>
-Subject: Re: [PATCH 01/12] DRBD: lru_cache
-Date: Wed, 8 Apr 2009 17:09:54 +0200
+Subject: Re: [PATCH 03/12] DRBD: bitmap
+Date: Wed, 8 Apr 2009 17:09:56 +0200
 User-Agent: KMail/1.11.0 (Linux/2.6.27-11-generic; KDE/4.2.0; i686; ; )
 Cc: linux-kernel@vger.kernel.org, gregkh@suse.de,
        Nikanth Karthikesan <knikanth@suse.de>
-References: <1237823287-12734-1-git-send-email-philipp.reisner@linbit.com> <1237823287-12734-2-git-send-email-philipp.reisner@linbit.com> <807b3a220904080315r7277dd68t1abd08b6c5a830dd@mail.gmail.com>
-In-Reply-To: <807b3a220904080315r7277dd68t1abd08b6c5a830dd@mail.gmail.com>
+References: <1237823287-12734-1-git-send-email-philipp.reisner@linbit.com> <1237823287-12734-4-git-send-email-philipp.reisner@linbit.com> <807b3a220904080316s587ce988qdb47f231c8e90fbc@mail.gmail.com>
+In-Reply-To: <807b3a220904080316s587ce988qdb47f231c8e90fbc@mail.gmail.com>
 X-OTRS-FollowUp-SenderType: agent
 MIME-Version: 1.0
 Content-Type: text/plain;
   charset="utf-8"
 Content-Transfer-Encoding: 8BIT
 Content-Disposition: inline
-Message-Id: <200904081709.55481.philipp.reisner@linbit.com>
+Message-Id: <200904081709.57289.philipp.reisner@linbit.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wednesday 08 April 2009 12:15:13 Nikanth K wrote:
+On Wednesday 08 April 2009 12:16:11 Nikanth K wrote:
 > On Mon, Mar 23, 2009 at 9:17 PM, Philipp Reisner
 >
 > <philipp.reisner@linbit.com> wrote:
-> > +/* this is developers aid only! */
-> > +#define PARANOIA_ENTRY() BUG_ON(test_and_set_bit(__LC_PARANOIA,
-> > &lc->flags)) +#define PARANOIA_LEAVE() do { clear_bit(__LC_PARANOIA,
-> > &lc->flags); smp_mb__after_clear_bit(); } while (0) +#define RETURN(x...)
-> >     do { PARANOIA_LEAVE(); return x ; } while (0) +
+> > +/* definition of bits in bm_flags */
+> > +#define BM_LOCKED 0
+> > +#define BM_MD_IO_ERROR (BITS_PER_LONG-1) /* 31? 63? */
 >
-> The PARANOIA_LEAVE is used for void functions, so RETURN can be
-> changed to take a simple non-variadic argument. Or empty RETURN()
-> could be used everywhere instead of mixing PARANOIA_LEAVE() and
-> RETURN(). Just to make it consistent.
-
-Ok, using the RETURN() now everywhere.
-
-> Also this could be made as nop based on some config debug option?
+> Wonder whether this should be made same for 32-bit as well as 64-bit?
+> Especially for x86_64 as the machine can become 32-bit to 64-bit or
+> vice-versa after reboot.
 >
 
-It is a very cheap debugging code, setting and clearing a single bit, just
-to make sure the function calls of the lru-cache API are used in the right
-order.
+This is only a bitnumber for an in memory flag word (bm_flags). 
+I changed that to 
 
-Since it is that cheap I decided to have it permanently in, but if 
-I get that hint twice, I will change it into a config debug option.
+#define BM_LOCKED       0
+#define BM_MD_IO_ERROR  1
+
+What was before was just unnecessary complex.
+
+>
+> <snip>
+>
+> > +#if 0
+> > +#define catch_oob_access_start() do {  \
+> > +       do {                            \
+> > +               if ((bm-p_addr) >= PAGE_SIZE/sizeof(long)) { \
+> > +                       printk(KERN_ALERT "drbd_bitmap.c:%u %s: p_addr:%p
+> > bm:%p %d\n", \ +                                       __LINE__ ,
+> > __func__ , p_addr, bm, (bm-p_addr)); \ +                       break;    
+> >      \
+> > +               }
+> > +#define catch_oob_access_end() \
+> > +       } while (0); } while (0)
+> > +#else
+> > +#define catch_oob_access_start() do {
+> > +#define catch_oob_access_end() } while (0)
+> > +#endif
+> > +
+>
+> Probably should be changed to be based on a config debug option?
+
+I removed the macro definitions as well as these macro invocations.
+They where used to find bugs years ago. Unnecessary nowadays.
+
+> <snip>
+>
+> > +/*
+> > + * since (b->bm_bits % BITS_PER_LONG) != 0,
+> > + * this masks out the remaining bits.
+> > + * Rerturns the number of bits cleared.
+> > + */
+> > +STATIC int bm_clear_surplus(struct drbd_bitmap *b)
+> > +{
+> > +       const unsigned long mask = (1UL << (b->bm_bits &
+> > (BITS_PER_LONG-1))) - 1;
+>
+> Should BM_MD_IO_ERROR be used instead of  (BITS_PER_LONG-1)?
+> Or at least this deserves a macro as it is used in many places.
+>
+
+Well, BITS_PER_LONG is now used in two functions only (after I
+removed that from the definition of BM_MD_IO_ERROR). I will leave
+it open coded, as it is now.
+
+Thanks for these comments!
 
 -Phil
 -- 
