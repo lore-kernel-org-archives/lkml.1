@@ -1,290 +1,123 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932781AbZDHQGB@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761220AbZDHQJr@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932781AbZDHQGB (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 8 Apr 2009 12:06:01 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754252AbZDHQFq
+	id S1761220AbZDHQJr (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 8 Apr 2009 12:09:47 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752705AbZDHQJh
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 8 Apr 2009 12:05:46 -0400
-Received: from linuxhacker.ru ([217.76.32.60]:47948 "EHLO fiona.linuxhacker.ru"
+	Wed, 8 Apr 2009 12:09:37 -0400
+Received: from mx3.mail.elte.hu ([157.181.1.138]:57377 "EHLO mx3.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752080AbZDHQFo (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 8 Apr 2009 12:05:44 -0400
-Date: Wed, 8 Apr 2009 20:05:42 +0400
-From: Oleg Drokin <green@linuxhacker.ru>
-To: linux-fsdevel@vger.kernel.org
-Cc: linux-kernel@vger.kernel.org
-Subject: [PATCH] Separate out common fstatat code into vfs_fstatat
-Message-ID: <20090408160541.GA1812319@fiona.linuxhacker.ru>
+	id S1752732AbZDHQJg (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 8 Apr 2009 12:09:36 -0400
+Date: Wed, 8 Apr 2009 18:09:15 +0200
+From: Ingo Molnar <mingo@elte.hu>
+To: Steven Rostedt <rostedt@goodmis.org>
+Cc: linux kernel <linux-kernel@vger.kernel.org>,
+       Frederic Weisbecker <fweisbec@gmail.com>,
+       Tim Bird <tim.bird@am.sony.com>, Ingo Molnar <mingo@redhat.com>,
+       Abhishek Sagar <sagar.abhishek@gmail.com>,
+       Peter Zijlstra <peterz@infradead.org>,
+       Thomas Gleixner <tglx@linutronix.de>
+Subject: Re: [PATCH][GIT PULL] x86, function-graph: only save return values
+	on x86_64
+Message-ID: <20090408160915.GD16759@elte.hu>
+References: <49C936CA.8070800@am.sony.com> <20090324213618.GC5975@nowhere> <20090324214846.GB29509@elte.hu> <20090324215738.GD5975@nowhere> <alpine.DEB.2.00.0903251153500.5675@gandalf.stny.rr.com> <alpine.DEB.2.00.0903251625490.5675@gandalf.stny.rr.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
+In-Reply-To: <alpine.DEB.2.00.0903251625490.5675@gandalf.stny.rr.com>
 User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.5
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This is a version incorporating Christoph's suggestion.
 
-Separate out common *fstatat functionality into a single function
-instead of duplicating it all over the code.
+(replying to old mail - working down my awful email backlog)
 
-Signed-off-by: Oleg Drokin <green@linuxhacker.ru>
+do we still need this for -tip?
 
- arch/arm/kernel/sys_oabi-compat.c |   19 +++---------
- arch/s390/kernel/compat_linux.c   |   18 +++---------
- arch/sparc/kernel/sys_sparc32.c   |   19 +++---------
- arch/x86/ia32/sys_ia32.c          |   19 +++---------
- fs/compat.c                       |   19 +++---------
- fs/stat.c                         |   56 +++++++++++++++++++-------------------
- include/linux/fs.h                |    1 
- 7 files changed, 54 insertions(+), 97 deletions(-)
+	Ingo
 
-Index: linux-2.6.29/arch/arm/kernel/sys_oabi-compat.c
-===================================================================
---- linux-2.6.29.orig/arch/arm/kernel/sys_oabi-compat.c	2009-04-08 01:47:52.000000000 -0400
-+++ linux-2.6.29/arch/arm/kernel/sys_oabi-compat.c	2009-04-08 11:44:30.000000000 -0400
-@@ -176,21 +176,12 @@
- 				   int flag)
- {
- 	struct kstat stat;
--	int error = -EINVAL;
-+	int error;
- 
--	if ((flag & ~AT_SYMLINK_NOFOLLOW) != 0)
--		goto out;
--
--	if (flag & AT_SYMLINK_NOFOLLOW)
--		error = vfs_lstat_fd(dfd, filename, &stat);
--	else
--		error = vfs_stat_fd(dfd, filename, &stat);
--
--	if (!error)
--	error = cp_oldabi_stat64(&stat, statbuf);
--
--out:
--	return error;
-+	error = vfs_fstatat(dfd, filename, &stat, flag);
-+	if (error)
-+		return error;
-+	return cp_oldabi_stat64(&stat, statbuf);
- }
- 
- struct oabi_flock64 {
-Index: linux-2.6.29/arch/s390/kernel/compat_linux.c
-===================================================================
---- linux-2.6.29.orig/arch/s390/kernel/compat_linux.c	2009-04-08 01:47:52.000000000 -0400
-+++ linux-2.6.29/arch/s390/kernel/compat_linux.c	2009-04-08 11:44:38.000000000 -0400
-@@ -702,20 +702,12 @@
- 				struct stat64_emu31 __user* statbuf, int flag)
- {
- 	struct kstat stat;
--	int error = -EINVAL;
-+	int error;
- 
--	if ((flag & ~AT_SYMLINK_NOFOLLOW) != 0)
--		goto out;
--
--	if (flag & AT_SYMLINK_NOFOLLOW)
--		error = vfs_lstat_fd(dfd, filename, &stat);
--	else
--		error = vfs_stat_fd(dfd, filename, &stat);
--
--	if (!error)
--		error = cp_stat64(statbuf, &stat);
--out:
--	return error;
-+	error = vfs_fstatat(dfd, filename, &stat, flag);
-+	if (error)
-+		return error;
-+	return cp_stat64(statbuf, &stat);
- }
- 
- /*
-Index: linux-2.6.29/arch/sparc/kernel/sys_sparc32.c
-===================================================================
---- linux-2.6.29.orig/arch/sparc/kernel/sys_sparc32.c	2009-04-08 01:47:52.000000000 -0400
-+++ linux-2.6.29/arch/sparc/kernel/sys_sparc32.c	2009-04-08 11:44:47.000000000 -0400
-@@ -206,21 +206,12 @@
- 		struct compat_stat64 __user * statbuf, int flag)
- {
- 	struct kstat stat;
--	int error = -EINVAL;
--
--	if ((flag & ~AT_SYMLINK_NOFOLLOW) != 0)
--		goto out;
--
--	if (flag & AT_SYMLINK_NOFOLLOW)
--		error = vfs_lstat_fd(dfd, filename, &stat);
--	else
--		error = vfs_stat_fd(dfd, filename, &stat);
--
--	if (!error)
--		error = cp_compat_stat64(&stat, statbuf);
-+	int error;
- 
--out:
--	return error;
-+	error = vfs_fstatat(dfd, filename, &stat, flag);
-+	if (error)
-+		return error;
-+	return cp_compat_stat64(&stat, statbuf);
- }
- 
- asmlinkage long compat_sys_sysfs(int option, u32 arg1, u32 arg2)
-Index: linux-2.6.29/arch/x86/ia32/sys_ia32.c
-===================================================================
---- linux-2.6.29.orig/arch/x86/ia32/sys_ia32.c	2009-04-08 01:47:52.000000000 -0400
-+++ linux-2.6.29/arch/x86/ia32/sys_ia32.c	2009-04-08 11:44:54.000000000 -0400
-@@ -129,21 +129,12 @@
- 			      struct stat64 __user *statbuf, int flag)
- {
- 	struct kstat stat;
--	int error = -EINVAL;
-+	int error;
- 
--	if ((flag & ~AT_SYMLINK_NOFOLLOW) != 0)
--		goto out;
--
--	if (flag & AT_SYMLINK_NOFOLLOW)
--		error = vfs_lstat_fd(dfd, filename, &stat);
--	else
--		error = vfs_stat_fd(dfd, filename, &stat);
--
--	if (!error)
--		error = cp_stat64(statbuf, &stat);
--
--out:
--	return error;
-+	error = vfs_fstatat(dfd, filename, &stat, flag);
-+	if (error)
-+		return error;
-+	return cp_stat64(statbuf, &stat);
- }
- 
- /*
-Index: linux-2.6.29/fs/compat.c
-===================================================================
---- linux-2.6.29.orig/fs/compat.c	2009-04-08 01:47:52.000000000 -0400
-+++ linux-2.6.29/fs/compat.c	2009-04-08 11:44:17.000000000 -0400
-@@ -203,21 +203,12 @@
- 		struct compat_stat __user *statbuf, int flag)
- {
- 	struct kstat stat;
--	int error = -EINVAL;
--
--	if ((flag & ~AT_SYMLINK_NOFOLLOW) != 0)
--		goto out;
--
--	if (flag & AT_SYMLINK_NOFOLLOW)
--		error = vfs_lstat_fd(dfd, filename, &stat);
--	else
--		error = vfs_stat_fd(dfd, filename, &stat);
--
--	if (!error)
--		error = cp_compat_stat(&stat, statbuf);
-+	int error;
- 
--out:
--	return error;
-+	error = vfs_fstatat(dfd, filename, &stat, flag);
-+	if (error)
-+		return error;
-+	return cp_compat_stat(&stat, statbuf);
- }
- #endif
- 
-Index: linux-2.6.29/fs/stat.c
-===================================================================
---- linux-2.6.29.orig/fs/stat.c	2009-04-08 01:47:52.000000000 -0400
-+++ linux-2.6.29/fs/stat.c	2009-04-08 11:47:19.000000000 -0400
-@@ -109,6 +109,24 @@
- 
- EXPORT_SYMBOL(vfs_fstat);
- 
-+int vfs_fstatat(int dfd, char __user *filename, struct kstat *stat, int flag)
-+{
-+	int error = -EINVAL;
-+
-+	if ((flag & ~AT_SYMLINK_NOFOLLOW) != 0)
-+		goto out;
-+
-+	if (flag & AT_SYMLINK_NOFOLLOW)
-+		error = vfs_lstat_fd(dfd, filename, stat);
-+	else
-+		error = vfs_stat_fd(dfd, filename, stat);
-+out:
-+	return error;
-+}
-+
-+EXPORT_SYMBOL(vfs_fstatat);
-+
-+
- #ifdef __ARCH_WANT_OLD_STAT
- 
- /*
-@@ -264,21 +282,12 @@
- 		struct stat __user *, statbuf, int, flag)
- {
- 	struct kstat stat;
--	int error = -EINVAL;
--
--	if ((flag & ~AT_SYMLINK_NOFOLLOW) != 0)
--		goto out;
--
--	if (flag & AT_SYMLINK_NOFOLLOW)
--		error = vfs_lstat_fd(dfd, filename, &stat);
--	else
--		error = vfs_stat_fd(dfd, filename, &stat);
--
--	if (!error)
--		error = cp_new_stat(&stat, statbuf);
-+	int error;
- 
--out:
--	return error;
-+	error = vfs_fstatat(dfd, filename, &stat, flag);
-+	if (error)
-+		return error;
-+	return cp_new_stat(&stat, statbuf);
- }
- #endif
- 
-@@ -404,21 +413,12 @@
- 		struct stat64 __user *, statbuf, int, flag)
- {
- 	struct kstat stat;
--	int error = -EINVAL;
--
--	if ((flag & ~AT_SYMLINK_NOFOLLOW) != 0)
--		goto out;
--
--	if (flag & AT_SYMLINK_NOFOLLOW)
--		error = vfs_lstat_fd(dfd, filename, &stat);
--	else
--		error = vfs_stat_fd(dfd, filename, &stat);
--
--	if (!error)
--		error = cp_new_stat64(&stat, statbuf);
-+	int error;
- 
--out:
--	return error;
-+	error = vfs_fstatat(dfd, filename, &stat, flag);
-+	if (error)
-+		return error;
-+	return cp_new_stat64(&stat, statbuf);
- }
- #endif /* __ARCH_WANT_STAT64 */
- 
-Index: linux-2.6.29/include/linux/fs.h
-===================================================================
---- linux-2.6.29.orig/include/linux/fs.h	2009-04-08 01:47:52.000000000 -0400
-+++ linux-2.6.29/include/linux/fs.h	2009-04-08 11:47:38.000000000 -0400
-@@ -2075,6 +2075,7 @@
- extern int vfs_stat_fd(int dfd, char __user *, struct kstat *);
- extern int vfs_lstat_fd(int dfd, char __user *, struct kstat *);
- extern int vfs_fstat(unsigned int, struct kstat *);
-+extern int vfs_fstatat(int , char __user *, struct kstat *, int);
- 
- extern int do_vfs_ioctl(struct file *filp, unsigned int fd, unsigned int cmd,
- 		    unsigned long arg);
+* Steven Rostedt <rostedt@goodmis.org> wrote:
+
+> 
+> Ingo,
+> 
+> Please pull the latest tip/tracing/function-graph tree, which can be found at:
+> 
+>   git://git.kernel.org/pub/scm/linux/kernel/git/rostedt/linux-2.6-trace.git
+> tip/tracing/function-graph
+> 
+> 
+> Steven Rostedt (1):
+>       x86, function-graph: only save return values on x86_64
+> 
+> ----
+>  arch/x86/kernel/entry_64.S |   19 +++----------------
+>  1 files changed, 3 insertions(+), 16 deletions(-)
+> ---------------------------
+> commit d5b754b2208b1c22691a7cd5d1a65398b5973d74
+> Author: Steven Rostedt <srostedt@redhat.com>
+> Date:   Wed Mar 25 14:30:04 2009 -0400
+> 
+>     x86, function-graph: only save return values on x86_64
+>     
+>     Impact: speed up
+>     
+>     The return to handler portion of the function graph tracer should only
+>     need to save the return values. The caller already saved off the
+>     registers that the callee can modify. The returning function already
+>     saved the registers it modified. When we call our own trace function
+>     it too will save the registers that the callee must restore.
+>     
+>     There's no reason to save off anything more that the registers used
+>     to return the values.
+>     
+>     Note, I did a complete kernel build with this modification and the
+>     function graph tracer running on x86_64.
+>     
+>     Signed-off-by: Steven Rostedt <srostedt@redhat.com>
+> 
+> diff --git a/arch/x86/kernel/entry_64.S b/arch/x86/kernel/entry_64.S
+> index a331ec3..1ac9986 100644
+> --- a/arch/x86/kernel/entry_64.S
+> +++ b/arch/x86/kernel/entry_64.S
+> @@ -147,27 +147,14 @@ END(ftrace_graph_caller)
+>  GLOBAL(return_to_handler)
+>  	subq  $80, %rsp
+>  
+> +	/* Save the return values */
+>  	movq %rax, (%rsp)
+> -	movq %rcx, 8(%rsp)
+> -	movq %rdx, 16(%rsp)
+> -	movq %rsi, 24(%rsp)
+> -	movq %rdi, 32(%rsp)
+> -	movq %r8, 40(%rsp)
+> -	movq %r9, 48(%rsp)
+> -	movq %r10, 56(%rsp)
+> -	movq %r11, 64(%rsp)
+> +	movq %rdx, 8(%rsp)
+>  
+>  	call ftrace_return_to_handler
+>  
+>  	movq %rax, 72(%rsp)
+> -	movq 64(%rsp), %r11
+> -	movq 56(%rsp), %r10
+> -	movq 48(%rsp), %r9
+> -	movq 40(%rsp), %r8
+> -	movq 32(%rsp), %rdi
+> -	movq 24(%rsp), %rsi
+> -	movq 16(%rsp), %rdx
+> -	movq 8(%rsp), %rcx
+> +	movq 8(%rsp), %rdx
+>  	movq (%rsp), %rax
+>  	addq $72, %rsp
+>  	retq
