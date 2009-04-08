@@ -1,21 +1,21 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763628AbZDHISI@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763666AbZDHISc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763628AbZDHISI (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 8 Apr 2009 04:18:08 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760602AbZDHIO2
+	id S1763666AbZDHISc (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 8 Apr 2009 04:18:32 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762987AbZDHIO3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 8 Apr 2009 04:14:28 -0400
-Received: from smtp-68.nebula.fi ([83.145.220.68]:47890 "EHLO
+	Wed, 8 Apr 2009 04:14:29 -0400
+Received: from smtp-68.nebula.fi ([83.145.220.68]:47893 "EHLO
 	smtp-68.nebula.fi" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1762514AbZDHIOS (ORCPT
+	with ESMTP id S1762590AbZDHIOT (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 8 Apr 2009 04:14:18 -0400
+	Wed, 8 Apr 2009 04:14:19 -0400
 From: Pekka Enberg <penberg@cs.helsinki.fi>
 To: greg@kroah.com
 Cc: linux-kernel@vger.kernel.org, Pavel Machek <pavel@ucw.cz>
-Subject: [PATCH 06/11] w35und: simplify hal_init_hardware() and hal_halt()
-Date: Wed,  8 Apr 2009 11:14:01 +0300
-Message-Id: <1239178446-12893-6-git-send-email-penberg@cs.helsinki.fi>
+Subject: [PATCH 08/11] w35und: inline hal_set_phy_type() to wb35_hw_init()
+Date: Wed,  8 Apr 2009 11:14:03 +0300
+Message-Id: <1239178446-12893-8-git-send-email-penberg@cs.helsinki.fi>
 X-Mailer: git-send-email 1.5.6.3
 In-Reply-To: <1239178446-12893-1-git-send-email-penberg@cs.helsinki.fi>
 References: <1239178446-12893-1-git-send-email-penberg@cs.helsinki.fi>
@@ -25,99 +25,80 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 Impact: cleanup
 
-Now that hal_halt() is called from wb35_hw_halt() only where
-->InitialResource is always set to 4, we can simplify
-hal_init_hardware() and hal_halt().
+The hal_set_phy_type() is called in wb35_hw_init() only so inline the
+function there. Also remove a redundant assignment of ->phy_type to
+RF_WB_242_1.
 
 Cc: Pavel Machek <pavel@ucw.cz>
 Signed-off-by: Pekka Enberg <penberg@cs.helsinki.fi>
 ---
- drivers/staging/winbond/wbhal_s.h |    1 -
- drivers/staging/winbond/wbusb.c   |   29 +++++++++++------------------
- 2 files changed, 11 insertions(+), 19 deletions(-)
+ drivers/staging/winbond/wbhal.c   |    5 -----
+ drivers/staging/winbond/wbhal_f.h |    1 -
+ drivers/staging/winbond/wbusb.c   |    8 +++-----
+ 3 files changed, 3 insertions(+), 11 deletions(-)
 
-diff --git a/drivers/staging/winbond/wbhal_s.h b/drivers/staging/winbond/wbhal_s.h
-index acfebf0..16d0e6f 100644
---- a/drivers/staging/winbond/wbhal_s.h
-+++ b/drivers/staging/winbond/wbhal_s.h
-@@ -401,7 +401,6 @@ struct hw_data {
+diff --git a/drivers/staging/winbond/wbhal.c b/drivers/staging/winbond/wbhal.c
+index 6f1964c..14253f0 100644
+--- a/drivers/staging/winbond/wbhal.c
++++ b/drivers/staging/winbond/wbhal.c
+@@ -145,11 +145,6 @@ unsigned char hal_idle(struct hw_data * pHwData)
  
- 	// For surprise remove
- 	u32	SurpriseRemove; // 0: Normal 1: Surprise remove
--	u8	InitialResource;
- 	u8	IsKeyPreSet;
- 	u8	CalOneTime; // 20060630.1
+ 	return true;
+ }
+-//---------------------------------------------------------------------------------------------------
+-void hal_set_phy_type(  struct hw_data * pHwData,  u8 PhyType )
+-{
+-	pHwData->phy_type = PhyType;
+-}
  
+ void hal_set_radio_mode( struct hw_data * pHwData,  unsigned char radio_off)
+ {
+diff --git a/drivers/staging/winbond/wbhal_f.h b/drivers/staging/winbond/wbhal_f.h
+index d51709f..bdea22f 100644
+--- a/drivers/staging/winbond/wbhal_f.h
++++ b/drivers/staging/winbond/wbhal_f.h
+@@ -42,7 +42,6 @@ void hal_set_accept_multicast(  struct hw_data * pHwData,  u8 enable );
+ void hal_set_accept_beacon(  struct hw_data * pHwData,  u8 enable );
+ void hal_stop(  struct hw_data * pHwData );
+ void hal_start_tx0(  struct hw_data * pHwData );
+-void hal_set_phy_type(  struct hw_data * pHwData,  u8 PhyType );
+ #define hal_get_cwmin( _A ) ( (_A)->cwmin )
+ void hal_set_cwmax(  struct hw_data * pHwData,  u16 cwin_max );
+ #define hal_get_cwmax( _A ) ( (_A)->cwmax )
 diff --git a/drivers/staging/winbond/wbusb.c b/drivers/staging/winbond/wbusb.c
-index b1ef30a..5dc1ba6 100644
+index fad3b99..742bf7d 100644
 --- a/drivers/staging/winbond/wbusb.c
 +++ b/drivers/staging/winbond/wbusb.c
-@@ -178,19 +178,6 @@ static const struct ieee80211_ops wbsoft_ops = {
- // conf_tx: hal_set_cwmin()/hal_set_cwmax;
- };
- 
--static void hal_halt(struct hw_data *pHwData, void *ppa_data)
--{
--	switch( pHwData->InitialResource )
--	{
--		case 4:
--		case 3: del_timer_sync(&pHwData->LEDTimer);
--			msleep(100); // Wait for Timer DPC exit 940623.2
--			Wb35Rx_destroy( pHwData ); // Release the Rx
--		case 2: Wb35Tx_destroy( pHwData ); // Release the Tx
--		case 1: Wb35Reg_destroy( pHwData ); // Release the Wb35 Regisster resources
--	}
--}
--
- static void hal_led_control(unsigned long data)
+@@ -504,7 +504,7 @@ error_reg_destroy:
+ static int wb35_hw_init(struct ieee80211_hw *hw)
  {
- 	struct wbsoft_priv *adapter = (struct wbsoft_priv *) data;
-@@ -486,19 +473,15 @@ static int hal_init_hardware(struct ieee80211_hw *hw)
- 	pHwData->MaxReceiveLifeTime = DEFAULT_MSDU_LIFE_TIME; // Setting Rx maximum MSDU life time
- 	pHwData->FragmentThreshold = DEFAULT_FRAGMENT_THRESHOLD; // Setting default fragment threshold
- 
--	pHwData->InitialResource = 1;
- 	if (!Wb35Reg_initial(pHwData))
- 		goto error_reg_destroy;
- 
--	pHwData->InitialResource = 2;
- 	if (!Wb35Tx_initial(pHwData))
- 		goto error_tx_destroy;
- 
--	pHwData->InitialResource = 3;
- 	if (!Wb35Rx_initial(pHwData))
- 		goto error_rx_destroy;
- 
--	pHwData->InitialResource = 4;
- 	init_timer(&pHwData->LEDTimer);
- 	pHwData->LEDTimer.function = hal_led_control;
- 	pHwData->LEDTimer.data = (unsigned long) priv;
-@@ -714,6 +697,16 @@ error:
- 	return err;
- }
- 
-+static void hal_halt(struct hw_data *pHwData)
-+{
-+	del_timer_sync(&pHwData->LEDTimer);
-+	/* XXX: Wait for Timer DPC exit. */
-+	msleep(100);
-+	Wb35Rx_destroy(pHwData);
-+	Wb35Tx_destroy(pHwData);
-+	Wb35Reg_destroy(pHwData);
-+}
+ 	struct wbsoft_priv *priv = hw->priv;
+-	struct hw_data *	pHwData;
++	struct hw_data *	pHwData = &priv->sHwData;
+ 	u8		*pMacAddr;
+ 	u8		*pMacAddr2;
+ 	u8		EEPROM_region;
+@@ -516,18 +516,16 @@ static int wb35_hw_init(struct ieee80211_hw *hw)
+ 	priv->sLocalPara.bMacOperationMode = MODE_802_11_BG;
+ 	priv->Mds.TxRTSThreshold = DEFAULT_RTSThreshold;
+ 	priv->Mds.TxFragmentThreshold = DEFAULT_FRAGMENT_THRESHOLD;
+-	hal_set_phy_type( &priv->sHwData, RF_WB_242_1 );
+ 	priv->sLocalPara.MTUsize = MAX_ETHERNET_PACKET_SIZE;
+ 	priv->sLocalPara.bPreambleMode = AUTO_MODE;
+ 	priv->sLocalPara.RadioOffStatus.boSwRadioOff = false;
+-	pHwData = &priv->sHwData;
+-	hal_set_phy_type( pHwData, RF_DECIDE_BY_INF );
 +
- static void wb35_hw_halt(struct wbsoft_priv *adapter)
- {
- 	Mds_Destroy( adapter );
-@@ -726,7 +719,7 @@ static void wb35_hw_halt(struct wbsoft_priv *adapter)
- 	msleep(100);// Waiting Irp completed
++	pHwData->phy_type = RF_DECIDE_BY_INF;
  
- 	// Halt the HAL
--	hal_halt(&adapter->sHwData, NULL);
-+	hal_halt(&adapter->sHwData);
- }
+ 	priv->sLocalPara.bWepKeyError= false;
+ 	priv->sLocalPara.bToSelfPacketReceived = false;
+ 	priv->sLocalPara.WepKeyDetectTimerCount= 2 * 100; /* 2 seconds */
  
- 
+-	pHwData = &priv->sHwData;
+ 	err = hal_init_hardware(hw);
+ 	if (err)
+ 		goto error;
 -- 
 1.5.6.3
 
