@@ -1,25 +1,25 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932797AbZDHLmk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932875AbZDHLnp@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932797AbZDHLmk (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 8 Apr 2009 07:42:40 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932233AbZDHL2G
+	id S932875AbZDHLnp (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 8 Apr 2009 07:43:45 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932125AbZDHL2L
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 8 Apr 2009 07:28:06 -0400
-Received: from out2.smtp.messagingengine.com ([66.111.4.26]:37856 "EHLO
+	Wed, 8 Apr 2009 07:28:11 -0400
+Received: from out2.smtp.messagingengine.com ([66.111.4.26]:40273 "EHLO
 	out2.smtp.messagingengine.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S932202AbZDHL1x (ORCPT
+	by vger.kernel.org with ESMTP id S932147AbZDHL1r (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 8 Apr 2009 07:27:53 -0400
-X-Sasl-enc: 5RjOnmSbqi0AnEJp197kBFlP1YQqTrlH5IGL7kTczhyZ 1239190072
+	Wed, 8 Apr 2009 07:27:47 -0400
+X-Sasl-enc: MAnW9zjlqBdieSZop4SnSoQRtK9vzlfdo34zMEhxYfYV 1239190066
 From: Jack Stone <jwjstone@fastmail.fm>
 To: linux-kernel@vger.kernel.org
 Cc: jeff@garzik.org, kernel-janitors@vger.kernel.org,
        Jack Stone <jwjstone@fastmail.fm>
-Subject: [PATCH 49/56] sparc: Remove void casts
-Date: Wed,  8 Apr 2009 12:22:21 +0100
-Message-Id: <1239189748-11703-50-git-send-email-jwjstone@fastmail.fm>
+Subject: [PATCH 44/56] scripts: Remove void casts
+Date: Wed,  8 Apr 2009 12:22:16 +0100
+Message-Id: <1239189748-11703-45-git-send-email-jwjstone@fastmail.fm>
 X-Mailer: git-send-email 1.5.4.3
-In-Reply-To: <1239189748-11703-49-git-send-email-jwjstone@fastmail.fm>
+In-Reply-To: <1239189748-11703-44-git-send-email-jwjstone@fastmail.fm>
 References: <>
  <1239189748-11703-1-git-send-email-jwjstone@fastmail.fm>
  <1239189748-11703-2-git-send-email-jwjstone@fastmail.fm>
@@ -65,11 +65,6 @@ References: <>
  <1239189748-11703-42-git-send-email-jwjstone@fastmail.fm>
  <1239189748-11703-43-git-send-email-jwjstone@fastmail.fm>
  <1239189748-11703-44-git-send-email-jwjstone@fastmail.fm>
- <1239189748-11703-45-git-send-email-jwjstone@fastmail.fm>
- <1239189748-11703-46-git-send-email-jwjstone@fastmail.fm>
- <1239189748-11703-47-git-send-email-jwjstone@fastmail.fm>
- <1239189748-11703-48-git-send-email-jwjstone@fastmail.fm>
- <1239189748-11703-49-git-send-email-jwjstone@fastmail.fm>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
@@ -78,87 +73,22 @@ Remove uneeded void casts
 
 Signed-Off-By: Jack Stone <jwjstone@fastmail.fm>
 ---
- arch/sparc/kernel/iommu.c     |    2 +-
- arch/sparc/kernel/signal32.c  |    6 ++----
- arch/sparc/kernel/signal_32.c |    6 ++----
- arch/sparc/kernel/signal_64.c |    3 +--
- 4 files changed, 6 insertions(+), 11 deletions(-)
+ scripts/pnmtologo.c |    2 +-
+ 1 files changed, 1 insertions(+), 1 deletions(-)
 
-diff --git a/arch/sparc/kernel/iommu.c b/arch/sparc/kernel/iommu.c
-index d8900e1..792c0e8 100644
---- a/arch/sparc/kernel/iommu.c
-+++ b/arch/sparc/kernel/iommu.c
-@@ -220,7 +220,7 @@ int iommu_table_init(struct iommu *iommu, int tsbsize,
- 		printk(KERN_ERR "IOMMU: Error, gfp(tsb) failed.\n");
- 		goto out_free_dummy_page;
- 	}
--	iommu->page_table = (iopte_t *)page_address(page);
-+	iommu->page_table = page_address(page);
+diff --git a/scripts/pnmtologo.c b/scripts/pnmtologo.c
+index 6aa2a24..1c34675 100644
+--- a/scripts/pnmtologo.c
++++ b/scripts/pnmtologo.c
+@@ -154,7 +154,7 @@ static void read_image(void)
+     logo_height = get_number(fp);
  
- 	for (i = 0; i < num_tsb_entries; i++)
- 		iopte_make_dummy(iommu, &iommu->page_table[i]);
-diff --git a/arch/sparc/kernel/signal32.c b/arch/sparc/kernel/signal32.c
-index ba5b09a..432a0ad 100644
---- a/arch/sparc/kernel/signal32.c
-+++ b/arch/sparc/kernel/signal32.c
-@@ -468,8 +468,7 @@ static void setup_frame32(struct k_sigaction *ka, struct pt_regs *regs,
- 	if (!(current_thread_info()->fpsaved[0] & FPRS_FEF))
- 		sigframe_size -= sizeof(__siginfo_fpu_t);
- 
--	sf = (struct signal_frame32 __user *)
--		get_sigframe(&ka->sa, regs, sigframe_size);
-+	sf = get_sigframe(&ka->sa, regs, sigframe_size);
- 	
- 	if (invalid_frame_pointer(sf, sigframe_size))
- 		goto sigill;
-@@ -603,8 +602,7 @@ static void setup_rt_frame32(struct k_sigaction *ka, struct pt_regs *regs,
- 	if (!(current_thread_info()->fpsaved[0] & FPRS_FEF))
- 		sigframe_size -= sizeof(__siginfo_fpu_t);
- 
--	sf = (struct rt_signal_frame32 __user *)
--		get_sigframe(&ka->sa, regs, sigframe_size);
-+	sf = get_sigframe(&ka->sa, regs, sigframe_size);
- 	
- 	if (invalid_frame_pointer(sf, sigframe_size))
- 		goto sigill;
-diff --git a/arch/sparc/kernel/signal_32.c b/arch/sparc/kernel/signal_32.c
-index 181d069..45ef48e 100644
---- a/arch/sparc/kernel/signal_32.c
-+++ b/arch/sparc/kernel/signal_32.c
-@@ -326,8 +326,7 @@ static void setup_frame(struct k_sigaction *ka, struct pt_regs *regs,
- 	if (!used_math())
- 		sigframe_size -= sizeof(__siginfo_fpu_t);
- 
--	sf = (struct signal_frame __user *)
--		get_sigframe(&ka->sa, regs, sigframe_size);
-+	sf = get_sigframe(&ka->sa, regs, sigframe_size);
- 
- 	if (invalid_frame_pointer(sf, sigframe_size))
- 		goto sigill_and_return;
-@@ -402,8 +401,7 @@ static void setup_rt_frame(struct k_sigaction *ka, struct pt_regs *regs,
- 	sigframe_size = RT_ALIGNEDSZ;
- 	if (!used_math())
- 		sigframe_size -= sizeof(__siginfo_fpu_t);
--	sf = (struct rt_signal_frame __user *)
--		get_sigframe(&ka->sa, regs, sigframe_size);
-+	sf = get_sigframe(&ka->sa, regs, sigframe_size);
- 	if (invalid_frame_pointer(sf, sigframe_size))
- 		goto sigill;
- 	if (current_thread_info()->w_saved != 0)
-diff --git a/arch/sparc/kernel/signal_64.c b/arch/sparc/kernel/signal_64.c
-index ec82d76..638bfe6 100644
---- a/arch/sparc/kernel/signal_64.c
-+++ b/arch/sparc/kernel/signal_64.c
-@@ -422,8 +422,7 @@ setup_rt_frame(struct k_sigaction *ka, struct pt_regs *regs,
- 	if (!(current_thread_info()->fpsaved[0] & FPRS_FEF))
- 		sigframe_size -= sizeof(__siginfo_fpu_t);
- 
--	sf = (struct rt_signal_frame __user *)
--		get_sigframe(ka, regs, sigframe_size);
-+	sf = get_sigframe(ka, regs, sigframe_size);
- 	
- 	if (invalid_frame_pointer (sf, sigframe_size))
- 		goto sigill;
+     /* allocate image data */
+-    logo_data = (struct color **)malloc(logo_height*sizeof(struct color *));
++    logo_data = malloc(logo_height*sizeof(struct color *));
+     if (!logo_data)
+ 	die("%s\n", strerror(errno));
+     for (i = 0; i < logo_height; i++) {
 -- 
 1.5.4.3
 
