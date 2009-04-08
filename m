@@ -1,273 +1,73 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764088AbZDHUGl@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S935289AbZDHUHU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764088AbZDHUGl (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 8 Apr 2009 16:06:41 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759074AbZDHUG2
+	id S935289AbZDHUHU (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 8 Apr 2009 16:07:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S935230AbZDHUGo
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 8 Apr 2009 16:06:28 -0400
-Received: from smtp-out.google.com ([216.239.33.17]:50041 "EHLO
-	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756459AbZDHUG1 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 8 Apr 2009 16:06:27 -0400
-DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
-	h=mime-version:date:message-id:subject:from:to:content-type:
-	content-transfer-encoding:x-system-of-record;
-	b=TJH0W4NxENZxvnGRTuCKI0ueOGfuuE5JQwBVNJEvmoyjcikxIz7BTh2LNNkD8wm7G
-	JEG6BdVoZLB4T/EtnInkg==
-MIME-Version: 1.0
-Date: Wed, 8 Apr 2009 13:06:23 -0700
-Message-ID: <604427e00904081306vd7f2671x7b5ec8baf2b9bf58@mail.gmail.com>
-Subject: [PATCH][1/2]page_fault retry with NOPAGE_RETRY
-From: Ying Han <yinghan@google.com>
-To: linux-mm@kvack.org, linux-kernel <linux-kernel@vger.kernel.org>,
-       akpm <akpm@linux-foundation.org>, torvalds@linux-foundation.org,
-       Ingo Molnar <mingo@elte.hu>, Mike Waychison <mikew@google.com>,
-       Rohit Seth <rohitseth@google.com>, Hugh Dickins <hugh@veritas.com>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       "H. Peter Anvin" <hpa@zytor.com>,
-       =?ISO-8859-1?Q?T=F6r=F6k_Edwin?= <edwintorok@gmail.com>,
-       Lee Schermerhorn <lee.schermerhorn@hp.com>,
-       Nick Piggin <npiggin@suse.de>, Wu Fengguang <fengguang.wu@intel.com>
-Content-Type: text/plain; charset=ISO-8859-1
+	Wed, 8 Apr 2009 16:06:44 -0400
+Received: from relay3.sgi.com ([192.48.156.57]:39435 "EHLO relay.sgi.com"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S935225AbZDHUGm (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 8 Apr 2009 16:06:42 -0400
+Cc: Li Zefan <lizf@cn.fujitsu.com>, Andrew Morton <akpm@linux-foundation.org>,
+       LKML <linux-kernel@vger.kernel.org>, xfs@oss.sgi.com
+Message-Id: <ACCF081B-8013-487F-A4FC-1B18B44D8F52@sgi.com>
+From: Felix Blyakher <felixb@sgi.com>
+To: Christoph Hellwig <hch@infradead.org>
+In-Reply-To: <20090408132254.GA5957@infradead.org>
+Content-Type: text/plain; charset=US-ASCII; format=flowed; delsp=yes
 Content-Transfer-Encoding: 7bit
-X-System-Of-Record: true
+Mime-Version: 1.0 (Apple Message framework v926)
+Subject: Re: [PATCH 4/6] xfs: use memdup_user()
+Date: Wed, 8 Apr 2009 15:06:40 -0500
+References: <49DC4CC0.9050805@cn.fujitsu.com> <49DC4D54.3020001@cn.fujitsu.com> <20090408132254.GA5957@infradead.org>
+X-Mailer: Apple Mail (2.926)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-support for FAULT_FLAG_RETRY with no user change:
 
-Signed-off-by: Ying Han <yinghan@google.com>
-              Mike Waychison <mikew@google.com>
+On Apr 8, 2009, at 8:22 AM, Christoph Hellwig wrote:
 
- include/linux/fs.h  |    2 +-
- include/linux/mm.h  |    2 +
- mm/filemap.c        |   72 ++++++++++++++++++++++++++++++++++++++++++++++++--
- mm/memory.c         |   33 +++++++++++++++++------
+> On Wed, Apr 08, 2009 at 03:08:04PM +0800, Li Zefan wrote:
+>> Remove open-coded memdup_user()
+>>
+>> Signed-off-by: Li Zefan <lizf@cn.fujitsu.com>
+>> ---
+>> fs/xfs/linux-2.6/xfs_ioctl.c   |   23 +++++++----------------
+>> fs/xfs/linux-2.6/xfs_ioctl32.c |   12 ++++--------
+>> 2 files changed, 11 insertions(+), 24 deletions(-)
+>>
+>> diff --git a/fs/xfs/linux-2.6/xfs_ioctl.c b/fs/xfs/linux-2.6/ 
+>> xfs_ioctl.c
+>> index d0b4994..34eaab6 100644
+>> --- a/fs/xfs/linux-2.6/xfs_ioctl.c
+>> +++ b/fs/xfs/linux-2.6/xfs_ioctl.c
+>> @@ -489,17 +489,12 @@ xfs_attrmulti_attr_set(
+>> 	if (len > XATTR_SIZE_MAX)
+>> 		return EINVAL;
+>>
+>> -	kbuf = kmalloc(len, GFP_KERNEL);
+>> -	if (!kbuf)
+>> -		return ENOMEM;
+>> -
+>> -	if (copy_from_user(kbuf, ubuf, len))
+>> -		goto out_kfree;
+>> +	kbuf = memdup_user(ubuf, len);
+>> +	if (IS_ERR(kbuf))
+>> +		return PTR_ERR(kbuf);
+>
+> wouldn't NULL be a better error return for this kind of interface,
+> matching kmalloc?
+>
+>
+> Otherwise the patch looks good to me.
+>
+> Reviewed-by: Christoph Hellwig <hch@lst.de>
 
+Looks good to me too.
 
-diff --git a/include/linux/fs.h b/include/linux/fs.h
-index 4a853ef..29c2c39 100644
---- a/include/linux/fs.h
-+++ b/include/linux/fs.h
-@@ -793,7 +793,7 @@ struct file_ra_state {
- 					   there are only # of pages ahead */
+Reviewed-by: Felix Blyakher <felixb@sgi.com>
 
- 	unsigned int ra_pages;		/* Maximum readahead window */
--	int mmap_miss;			/* Cache miss stat for mmap accesses */
-+	unsigned int mmap_miss;		/* Cache miss stat for mmap accesses */
- 	loff_t prev_pos;		/* Cache last read() position */
- };
+p.s. Replying to reply as I couldn't find the original post.
 
-diff --git a/include/linux/mm.h b/include/linux/mm.h
-index ffee2f7..5a134a9 100644
---- a/include/linux/mm.h
-+++ b/include/linux/mm.h
-@@ -144,6 +144,7 @@ extern pgprot_t protection_map[16];
-
- #define FAULT_FLAG_WRITE	0x01	/* Fault was a write access */
- #define FAULT_FLAG_NONLINEAR	0x02	/* Fault was via a nonlinear mapping */
-+#define FAULT_FLAG_RETRY	0x04	/* Retry major fault */
-
-
- /*
-@@ -690,6 +691,7 @@ static inline int page_mapped(struct page *page)
-
- #define VM_FAULT_MINOR	0 /* For backwards compat. Remove me quickly. */
-
-+#define VM_FAULT_RETRY	0x0010
- #define VM_FAULT_OOM	0x0001
- #define VM_FAULT_SIGBUS	0x0002
- #define VM_FAULT_MAJOR	0x0004
-diff --git a/mm/filemap.c b/mm/filemap.c
-index f3e5f89..6eb7c36 100644
---- a/mm/filemap.c
-+++ b/mm/filemap.c
-@@ -714,6 +714,58 @@ repeat:
- EXPORT_SYMBOL(find_lock_page);
-
- /**
-+ * find_lock_page_retry - locate, pin and lock a pagecache page
-+ * @mapping: the address_space to search
-+ * @offset: the page index
-+ * @vma: vma in which the fault was taken
-+ * @ppage: zero if page not present, otherwise point to the page in pagecache
-+ * @retry: 1 indicate caller tolerate a retry.
-+ *
-+ * If retry flag is on, and page is already locked by someone else, return
-+ * a hint of retry and leave *ppage untouched.
-+ *
-+ * Return *ppage==NULL if page is not in pagecache. Otherwise return *ppage
-+ * points to the page in the pagecache with ret=VM_FAULT_RETRY indicate a
-+ * hint to caller for retry, or ret=0 which means page is succefully
-+ * locked.
-+ */
-+unsigned find_lock_page_retry(struct address_space *mapping, pgoff_t offset,
-+				struct vm_area_struct *vma, struct page **ppage,
-+				int retry)
-+{
-+	unsigned int ret = 0;
-+	struct page *page;
-+
-+repeat:
-+	page = find_get_page(mapping, offset);
-+	if (page) {
-+		if (!retry)
-+			lock_page(page);
-+		else {
-+			if (!trylock_page(page)) {
-+				struct mm_struct *mm = vma->vm_mm;
-+
-+				up_read(&mm->mmap_sem);
-+				wait_on_page_locked(page);
-+				down_read(&mm->mmap_sem);
-+
-+				page_cache_release(page);
-+				return VM_FAULT_RETRY;
-+			}
-+		}
-+		if (unlikely(page->mapping != mapping)) {
-+			unlock_page(page);
-+			page_cache_release(page);
-+			goto repeat;
-+		}
-+		VM_BUG_ON(page->index != offset);
-+	}
-+	*ppage = page;
-+	return ret;
-+}
-+EXPORT_SYMBOL(find_lock_page_retry);
-+
-+/**
-  * find_or_create_page - locate or add a pagecache page
-  * @mapping: the page's address_space
-  * @index: the page's index into the mapping
-@@ -1444,6 +1496,8 @@ int filemap_fault(struct vm_area_struct *vma, struct vm_
- 	pgoff_t size;
- 	int did_readaround = 0;
- 	int ret = 0;
-+	int retry_flag = vmf->flags & FAULT_FLAG_RETRY;
-+	int retry_ret;
-
- 	size = (i_size_read(inode) + PAGE_CACHE_SIZE - 1) >> PAGE_CACHE_SHIFT;
- 	if (vmf->pgoff >= size)
-@@ -1458,6 +1512,7 @@ int filemap_fault(struct vm_area_struct *vma, struct vm_
- 	 */
- retry_find:
- 	page = find_lock_page(mapping, vmf->pgoff);
-+
- 	/*
- 	 * For sequential accesses, we use the generic readahead logic.
- 	 */
-@@ -1465,7 +1520,13 @@ retry_find:
- 		if (!page) {
- 			page_cache_sync_readahead(mapping, ra, file,
- 							   vmf->pgoff, 1);
--			page = find_lock_page(mapping, vmf->pgoff);
-+			retry_ret = find_lock_page_retry(mapping, vmf->pgoff,
-+						vma, &page, retry_flag);
-+			if (retry_ret == VM_FAULT_RETRY) {
-+				/* counteract the followed retry hit */
-+				ra->mmap_miss++;
-+				return retry_ret;
-+			}
- 			if (!page)
- 				goto no_cached_page;
- 		}
-@@ -1504,7 +1565,14 @@ retry_find:
- 				start = vmf->pgoff - ra_pages / 2;
- 			do_page_cache_readahead(mapping, file, start, ra_pages);
- 		}
--		page = find_lock_page(mapping, vmf->pgoff);
-+retry_find_retry:
-+		retry_ret = find_lock_page_retry(mapping, vmf->pgoff,
-+				vma, &page, retry_flag);
-+		if (retry_ret == VM_FAULT_RETRY) {
-+			/* counteract the followed retry hit */
-+			ra->mmap_miss++;
-+			return retry_ret;
-+		}
- 		if (!page)
- 			goto no_cached_page;
- 	}
-@@ -1548,7 +1616,7 @@ no_cached_page:
- 	 * meantime, we'll just come back here and read it again.
- 	 */
- 	if (error >= 0)
--		goto retry_find;
-+		goto retry_find_retry;
-
- 	/*
- 	 * An error return from page_cache_read can result if the
-diff --git a/mm/memory.c b/mm/memory.c
-index 164951c..5e215c9 100644
---- a/mm/memory.c
-+++ b/mm/memory.c
-@@ -2467,6 +2467,13 @@ static int __do_fault(struct mm_struct *mm, struct vm_a
- 	vmf.page = NULL;
-
- 	ret = vma->vm_ops->fault(vma, &vmf);
-+
-+	/* page may be available, but we have to restart the process
-+	 * because mmap_sem was dropped during the ->fault
-+	 */
-+	if (ret & VM_FAULT_RETRY)
-+		return ret;
-+
- 	if (unlikely(ret & (VM_FAULT_ERROR | VM_FAULT_NOPAGE)))
- 		return ret;
-
-@@ -2611,8 +2618,10 @@ static int do_linear_fault(struct mm_struct *mm, struct
- {
- 	pgoff_t pgoff = (((address & PAGE_MASK)
- 			- vma->vm_start) >> PAGE_SHIFT) + vma->vm_pgoff;
--	unsigned int flags = (write_access ? FAULT_FLAG_WRITE : 0);
-+	int write = write_access & ~FAULT_FLAG_RETRY;
-+	unsigned int flags = (write ? FAULT_FLAG_WRITE : 0);
-
-+	flags |= (write_access & FAULT_FLAG_RETRY);
- 	pte_unmap(page_table);
- 	return __do_fault(mm, vma, address, pmd, pgoff, flags, orig_pte);
- }
-@@ -2726,26 +2735,32 @@ int handle_mm_fault(struct mm_struct *mm, struct vm_ar
- 	pud_t *pud;
- 	pmd_t *pmd;
- 	pte_t *pte;
-+	int ret;
-
- 	__set_current_state(TASK_RUNNING);
-
--	count_vm_event(PGFAULT);
--
--	if (unlikely(is_vm_hugetlb_page(vma)))
--		return hugetlb_fault(mm, vma, address, write_access);
-+	if (unlikely(is_vm_hugetlb_page(vma))) {
-+		ret = hugetlb_fault(mm, vma, address, write_access);
-+		goto out;
-+	}
-
-+	ret = VM_FAULT_OOM;
- 	pgd = pgd_offset(mm, address);
- 	pud = pud_alloc(mm, pgd, address);
- 	if (!pud)
--		return VM_FAULT_OOM;
-+		goto out;
- 	pmd = pmd_alloc(mm, pud, address);
- 	if (!pmd)
--		return VM_FAULT_OOM;
-+		goto out;
- 	pte = pte_alloc_map(mm, pmd, address);
- 	if (!pte)
--		return VM_FAULT_OOM;
-+		goto out;
-
--	return handle_pte_fault(mm, vma, address, pte, pmd, write_access);
-+	ret = handle_pte_fault(mm, vma, address, pte, pmd, write_access);
-+out:
-+	if (!(ret & VM_FAULT_RETRY))
-+		count_vm_event(PGFAULT);
-+	return ret;
- }
-
- #ifndef __PAGETABLE_PUD_FOLDED
