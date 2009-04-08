@@ -1,83 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1765204AbZDHOvU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1765588AbZDHOv4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1765204AbZDHOvU (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 8 Apr 2009 10:51:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763968AbZDHOu7
+	id S1765588AbZDHOv4 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 8 Apr 2009 10:51:56 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763968AbZDHOvj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 8 Apr 2009 10:50:59 -0400
-Received: from mx2.mail.elte.hu ([157.181.151.9]:39897 "EHLO mx2.mail.elte.hu"
+	Wed, 8 Apr 2009 10:51:39 -0400
+Received: from mx2.redhat.com ([66.187.237.31]:51213 "EHLO mx2.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753438AbZDHOu6 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 8 Apr 2009 10:50:58 -0400
-Date: Wed, 8 Apr 2009 16:50:41 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: Rakib Mullick <rakib.mullick@gmail.com>,
-       Cyrill Gorcunov <gorcunov@openvz.org>,
-       Thomas Gleixner <tglx@linutronix.de>, "H. Peter Anvin" <hpa@zytor.com>
-Cc: LKML <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: [PATCH] x86,apic: Checking kernel option before
-	detect_init_APIC()
-Message-ID: <20090408145041.GL12931@elte.hu>
-References: <b9df5fa10903271825g62b95e62p6e7006f0594e2c4b@mail.gmail.com>
+	id S1765031AbZDHOvi (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 8 Apr 2009 10:51:38 -0400
+Date: Wed, 8 Apr 2009 11:55:45 -0300
+From: Glauber Costa <glommer@redhat.com>
+To: "H. Peter Anvin" <hpa@zytor.com>
+Cc: kvm@vger.kernel.org, linux-kernel@vger.kernel.org, avi@redhat.com
+Subject: Re: [PATCH] do not keep interrupt window closed by sti in real mode
+Message-ID: <20090408145545.GA25323@poweredge.glommer>
+References: <1239161017-7398-1-git-send-email-glommer@redhat.com> <49DC24C2.7000608@zytor.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <b9df5fa10903271825g62b95e62p6e7006f0594e2c4b@mail.gmail.com>
+In-Reply-To: <49DC24C2.7000608@zytor.com>
 User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-* Rakib Mullick <rakib.mullick@gmail.com> wrote:
-
-> Impact: cleanup
+On Tue, Apr 07, 2009 at 09:14:58PM -0700, H. Peter Anvin wrote:
+> Glauber Costa wrote:
+> > While in real mode, sti does not block interrupts from the subsequent
+> > instruction. This is stated at Intel SDM Volume 2b, page 4-432
 > 
-> Before calling detect_init_APIC(), check whether apic is disabled 
-> from kernel option or not.
+> I don't see how you're getting that idea from the STI documentation --
+> and I am quite sure that that is not the case.  Quite on the contrary.
+> The only differences between protected mode and real mode has to do with
+> the handling of VIF when CPL=3 (this rather naturally falls out if one
+> considers CPL=0 in real mode).
 > 
-> Thanks.
+> The text is:
 > 
-> Signed-off-by: Rakib Mullick <rakib.mullick@gmail.com>
+> "If protected-mode virtual interrupts are not enabled, STI sets the
+> interrupt flag (IF) in the EFLAGS register. After the IF flag is set,
+> the processor begins responding to external, maskable interrupts after
+> the next instruction is executed. The delayed effect of this instruction
+> is provided to allow interrupts to be enabled just before returning from
+> a procedure (or subroutine). For instance, if an STI instruction is
+> followed by an RET instruction, the RET instruction is allowed to
+> execute before external interrupts are recognized1. If the STI
+> instruction is followed by a CLI instruction (which clears the IF flag),
+> the effect of the STI instruction is negated."
 > 
-> --- linus/arch/x86/kernel/apic.c	2009-03-26 06:26:31.000000000 +0600
-> +++ rakib/arch/x86/kernel/apic.c	2009-03-26 20:47:50.116376200 +0600
-> @@ -1429,10 +1429,6 @@ static int __init detect_init_APIC(void)
->  {
->  	u32 h, l, features;
-> 
-> -	/* Disabled by kernel option? */
-> -	if (disable_apic)
-> -		return -1;
-> -
->  	switch (boot_cpu_data.x86_vendor) {
->  	case X86_VENDOR_AMD:
->  		if ((boot_cpu_data.x86 == 6 && boot_cpu_data.x86_model > 1) ||
-> @@ -1543,8 +1539,9 @@ void __init init_apic_mappings(void)
->  	 * If no local APIC can be found then set up a fake all
->  	 * zeroes page to simulate the local APIC and another
->  	 * one for the IO-APIC.
-> +	 * Check apic is disabled from kernel option or not.
->  	 */
-> -	if (!smp_found_config && detect_init_APIC()) {
-> +	if (!smp_found_config && (disable_apic || detect_init_APIC())) {
->  		apic_phys = (unsigned long) alloc_bootmem_pages(PAGE_SIZE);
->  		apic_phys = __pa(apic_phys);
->  	} else
+> Obviously, in real mode, "protected-mode virtual interrupts" are not
+> enabled, as is also confirmed by Table 4-5.
 
-Hm, are you sure this is a cleanup only? (i.e. no side-effects)
+I get the idea from the pseudocode in sti description.
+It says:
+IF PE = 0 (* Executing in real-address mode *)
+    THEN
+        IF <- 1; (* Set Interrupt Flag *)
+    ELSE (* Executing in protected mode or virtual-8086 mode *)
 
-Also, even if it's a pure cleanup, wouldnt it be even cleaner to 
-propagate this check into detect_init_APIC() - and thus get rid of 
-the open-coded disable_apic check altogether?
+There is no mention to any other activity besides setting the if flag.
+Also, sti is used extensively in many places like the linux kernel for the
+guest, and it works just fine in kvm. So I was led to believe that real mode
+in fact behaving differently.
 
-	Ingo
+I'll take a look at avi's suggestion.
+
