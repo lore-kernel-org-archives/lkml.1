@@ -1,73 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S935289AbZDHUHU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S935322AbZDHUHv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S935289AbZDHUHU (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 8 Apr 2009 16:07:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S935230AbZDHUGo
+	id S935322AbZDHUHv (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 8 Apr 2009 16:07:51 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S935253AbZDHUGq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 8 Apr 2009 16:06:44 -0400
-Received: from relay3.sgi.com ([192.48.156.57]:39435 "EHLO relay.sgi.com"
+	Wed, 8 Apr 2009 16:06:46 -0400
+Received: from kroah.org ([198.145.64.141]:52669 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S935225AbZDHUGm (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 8 Apr 2009 16:06:42 -0400
-Cc: Li Zefan <lizf@cn.fujitsu.com>, Andrew Morton <akpm@linux-foundation.org>,
-       LKML <linux-kernel@vger.kernel.org>, xfs@oss.sgi.com
-Message-Id: <ACCF081B-8013-487F-A4FC-1B18B44D8F52@sgi.com>
-From: Felix Blyakher <felixb@sgi.com>
-To: Christoph Hellwig <hch@infradead.org>
-In-Reply-To: <20090408132254.GA5957@infradead.org>
-Content-Type: text/plain; charset=US-ASCII; format=flowed; delsp=yes
-Content-Transfer-Encoding: 7bit
-Mime-Version: 1.0 (Apple Message framework v926)
-Subject: Re: [PATCH 4/6] xfs: use memdup_user()
-Date: Wed, 8 Apr 2009 15:06:40 -0500
-References: <49DC4CC0.9050805@cn.fujitsu.com> <49DC4D54.3020001@cn.fujitsu.com> <20090408132254.GA5957@infradead.org>
-X-Mailer: Apple Mail (2.926)
+	id S932510AbZDHUGo (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 8 Apr 2009 16:06:44 -0400
+Date: Wed, 8 Apr 2009 10:11:35 -0700
+From: Greg KH <greg@kroah.com>
+To: Joe Perches <joe@perches.com>
+Cc: Linus Torvalds <torvalds@linux-foundation.org>,
+       Andrew Morton <akpm@kernel.org>, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 02/10] MAINTAINERS - Add file patterns
+Message-ID: <20090408171135.GA2625@kroah.com>
+References: <1239167872-8179-1-git-send-email-joe@perches.com> <1239167872-8179-3-git-send-email-joe@perches.com> <20090408165110.GA32400@kroah.com> <1239210475.32726.44.camel@localhost>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1239210475.32726.44.camel@localhost>
+User-Agent: Mutt/1.5.19 (2009-01-05)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Wed, Apr 08, 2009 at 10:07:55AM -0700, Joe Perches wrote:
+> On Wed, 2009-04-08 at 09:51 -0700, Greg KH wrote:
+> > On Tue, Apr 07, 2009 at 10:17:44PM -0700, Joe Perches wrote:
+> > >  DRIVER CORE, KOBJECTS, AND SYSFS
+> > >  P:	Greg Kroah-Hartman
+> > >  M:	gregkh@suse.de
+> > >  L:	linux-kernel@vger.kernel.org
+> > >  T:	quilt kernel.org/pub/linux/kernel/people/gregkh/gregkh-2.6/
+> > >  S:	Supported
+> > > +F:	Documentation/kobject.txt
+> > > +F:	drivers/base/core.c
+> > 
+> > That should be drivers/base*
+> 
+> OK.  You'll also get changes in drivers/base/power/
 
-On Apr 8, 2009, at 8:22 AM, Christoph Hellwig wrote:
+That's fine, those usually go through my tree to Linus as it is.
 
-> On Wed, Apr 08, 2009 at 03:08:04PM +0800, Li Zefan wrote:
->> Remove open-coded memdup_user()
->>
->> Signed-off-by: Li Zefan <lizf@cn.fujitsu.com>
->> ---
->> fs/xfs/linux-2.6/xfs_ioctl.c   |   23 +++++++----------------
->> fs/xfs/linux-2.6/xfs_ioctl32.c |   12 ++++--------
->> 2 files changed, 11 insertions(+), 24 deletions(-)
->>
->> diff --git a/fs/xfs/linux-2.6/xfs_ioctl.c b/fs/xfs/linux-2.6/ 
->> xfs_ioctl.c
->> index d0b4994..34eaab6 100644
->> --- a/fs/xfs/linux-2.6/xfs_ioctl.c
->> +++ b/fs/xfs/linux-2.6/xfs_ioctl.c
->> @@ -489,17 +489,12 @@ xfs_attrmulti_attr_set(
->> 	if (len > XATTR_SIZE_MAX)
->> 		return EINVAL;
->>
->> -	kbuf = kmalloc(len, GFP_KERNEL);
->> -	if (!kbuf)
->> -		return ENOMEM;
->> -
->> -	if (copy_from_user(kbuf, ubuf, len))
->> -		goto out_kfree;
->> +	kbuf = memdup_user(ubuf, len);
->> +	if (IS_ERR(kbuf))
->> +		return PTR_ERR(kbuf);
->
-> wouldn't NULL be a better error return for this kind of interface,
-> matching kmalloc?
->
->
-> Otherwise the patch looks good to me.
->
-> Reviewed-by: Christoph Hellwig <hch@lst.de>
+To limit it to only one file in drivers/base/ is incorrect no matter
+what, there are other files in there that I work on :)
 
-Looks good to me too.
+> Here it is now...
 
-Reviewed-by: Felix Blyakher <felixb@sgi.com>
+Looks good to me.
 
-p.s. Replying to reply as I couldn't find the original post.
+thanks,
 
+greg k-h
