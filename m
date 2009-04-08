@@ -1,287 +1,90 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754904AbZDHRHv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934872AbZDHRIX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754904AbZDHRHv (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 8 Apr 2009 13:07:51 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934853AbZDHRGt
+	id S934872AbZDHRIX (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 8 Apr 2009 13:08:23 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934728AbZDHRG6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 8 Apr 2009 13:06:49 -0400
-Received: from hera.kernel.org ([140.211.167.34]:38277 "EHLO hera.kernel.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S934849AbZDHRGr (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 8 Apr 2009 13:06:47 -0400
-Date: Wed, 8 Apr 2009 17:03:42 GMT
-From: Christoph Lameter <cl@linux.com>
-To: linux-tip-commits@vger.kernel.org
-Cc: linux-kernel@vger.kernel.org, hpa@zytor.com, mingo@redhat.com,
-       torvalds@linux-foundation.org, schwidefsky@de.ibm.com,
-       lethal@linux-sh.org, cl@linux.com, npiggin@suse.de, tj@kernel.org,
-       tglx@linutronix.de, mingo@elte.hu
-Reply-To: mingo@redhat.com, hpa@zytor.com, linux-kernel@vger.kernel.org,
-       torvalds@linux-foundation.org, schwidefsky@de.ibm.com, cl@linux.com,
-       lethal@linux-sh.org, npiggin@suse.de, tj@kernel.org, tglx@linutronix.de,
-       mingo@elte.hu
-In-Reply-To: <49D43D58.4050102@kernel.org>
-References: <49D43D58.4050102@kernel.org>
-Subject: [tip:core/percpu] percpu: remove rbtree and use page->index instead
-Message-ID: <tip-e1b9aa3f47242e757c776a3771bb6613e675bf9c@git.kernel.org>
-Git-Commit-ID: e1b9aa3f47242e757c776a3771bb6613e675bf9c
-X-Mailer: tip-git-log-daemon
+	Wed, 8 Apr 2009 13:06:58 -0400
+Received: from mail-fx0-f158.google.com ([209.85.220.158]:64866 "EHLO
+	mail-fx0-f158.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S934404AbZDHRGW (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 8 Apr 2009 13:06:22 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=googlemail.com; s=gamma;
+        h=mime-version:reply-to:in-reply-to:references:date:message-id
+         :subject:from:to:cc:content-type:content-transfer-encoding;
+        b=TAnUCMcgqvsE0lzzekEDbrFVBkMT8+nNJmoZpKjaYdhxLmqBWoiYEiKd8qY2VaN6v2
+         YOzNXMUmH02MAGeOC7Q8XukRvQfkYgnUCX8PbWDjkMHbNkJ8TtmRpLnBr1isx0zN7I1O
+         pGLM505vN5AogiAtlevIs7lfrvp4QysEJkAXc=
 MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Disposition: inline
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Wed, 08 Apr 2009 17:03:44 +0000 (UTC)
+Reply-To: alan-jenkins@tuffmail.co.uk
+In-Reply-To: <49DCB976.4020200@lwfinger.net>
+References: <49DC2DF5.3010603@lwfinger.net> <49DC31EA.8050208@linux.intel.com>
+	 <200904081631.09150.rusty@rustcorp.com.au>
+	 <49DCB976.4020200@lwfinger.net>
+Date: Wed, 8 Apr 2009 18:06:18 +0100
+Message-ID: <9b2b86520904081006m6e6b5276v834c3565b0f6f4c7@mail.gmail.com>
+Subject: Re: Regression in 2.6.30-rc1 since commit acae0515 - wireless broken
+From: Alan Jenkins <sourcejedi.lkml@googlemail.com>
+To: Larry Finger <Larry.Finger@lwfinger.net>
+Cc: Rusty Russell <rusty@rustcorp.com.au>,
+       Arjan van de Ven <arjan@linux.intel.com>,
+       LKML <linux-kernel@vger.kernel.org>, "Rafael J. Wysocki" <rjw@sisk.pl>,
+       wireless <linux-wireless@vger.kernel.org>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Commit-ID:  e1b9aa3f47242e757c776a3771bb6613e675bf9c
-Gitweb:     http://git.kernel.org/tip/e1b9aa3f47242e757c776a3771bb6613e675bf9c
-Author:     Christoph Lameter <cl@linux.com>
-AuthorDate: Thu, 2 Apr 2009 13:21:44 +0900
-Committer:  Ingo Molnar <mingo@elte.hu>
-CommitDate: Wed, 8 Apr 2009 18:31:31 +0200
+On 4/8/09, Larry Finger <Larry.Finger@lwfinger.net> wrote:
+> Rusty Russell wrote:
+>> On Wednesday 08 April 2009 14:41:06 Arjan van de Ven wrote:
+>>> Larry Finger wrote:
+>>>> The most recent pulls of the Linux-2.6 git tree has broken wireless. The
+>>>> problem
+>>>> was bisected with commit acae05156551fd7528fbb616271e672789388e3c,
+>>>> entitled
+>>>> "module: create a request_module_nowait()", indicated as the faulty
+>>>> change. This
+>>>> is seen with driver b43 on my system, and 2 reports for driver iwlagn:
+>>>> http://marc.info/?l=linux-wireless&m=123916157630571&w=2 and
+>>>> http://marc.info/?l=linux-wireless&m=123913015021457&w=2.
+>>>>
+>>>> For b43, the logged error messages are:
+>>> rusty... I still suspect your "int to bool" conversion stuff ;-)
+>>
+>> One way to find out.  Here's the reversion:
+>>
+>> diff --git a/include/linux/kmod.h b/include/linux/kmod.h
+>> --- a/include/linux/kmod.h
+>> +++ b/include/linux/kmod.h
+>> @@ -29,12 +29,10 @@
+>>  #ifdef CONFIG_MODULES
+>>  /* modprobe exit status on success, -ve on error.  Return value
+>>   * usually useless though. */
+>> -extern int __request_module(bool wait, const char *name, ...) \
+>
+> The patch did not fix the problem. The symptoms are the same.
+>
+> Larry
 
-percpu: remove rbtree and use page->index instead
+Hi, I can confirm this bug on ath5k.
 
-Impact: use page->index for addr to chunk mapping instead of dedicated rbtree
+Something is very wrong with request_module(), this is just the most
+obvious symptom.  It also seems to affect libusual (loading
+usb-storage) and FAT (loading NLS modules).
 
-The rbtree is used to determine the chunk from the virtual address.
-However, we can already determine the page struct from a virtual
-address and there are several unused fields in page struct used by
-vmalloc.  Use the index field to store a pointer to the chunk. Then
-there is no need anymore for an rbtree.
+If I hotplug my wireless device, it then loads correctly.  So I'm
+guessing wireless modules e.g. encryption modules get loaded too
+asynchronously.   I.e. on boot, the  sub-modules are loaded too late.
+But when I hotplug the device, the modules are already loaded.
 
-tj: * s/(set|get)_chunk/pcpu_\1_page_chunk/
+Same with FAT - it fails on first attempt to mount because of missing
+NLS module, then works on second mount,
 
-    * Drop inline from the above two functions and moved them upwards
-      so that they are with other simple helpers.
+I agree that commit looks like it should be a no-op though :-).
+I will try to confirm the OP's bisection by reverting the commit, acae0515.
 
-    * Initial pages might not (actually most of the time don't) live
-      in the vmalloc area.  With the previous patch to manually
-      reverse-map both first chunks, this is no longer an issue.
-      Removed pcpu_set_chunk() call on initial pages.
-
-Signed-off-by: Christoph Lameter <cl@linux.com>
-Signed-off-by: Tejun Heo <tj@kernel.org>
-Cc: Martin Schwidefsky <schwidefsky@de.ibm.com>
-Cc: rusty@rustcorp.com.au
-Cc: Paul Mundt <lethal@linux-sh.org>
-Cc: rmk@arm.linux.org.uk
-Cc: starvik@axis.com
-Cc: ralf@linux-mips.org
-Cc: davem@davemloft.net
-Cc: cooloney@kernel.org
-Cc: kyle@mcmartin.ca
-Cc: matthew@wil.cx
-Cc: grundler@parisc-linux.org
-Cc: takata@linux-m32r.org
-Cc: benh@kernel.crashing.org
-Cc: rth@twiddle.net
-Cc: ink@jurassic.park.msu.ru
-Cc: heiko.carstens@de.ibm.com
-Cc: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: Nick Piggin <npiggin@suse.de>
-LKML-Reference: <49D43D58.4050102@kernel.org>
-Signed-off-by: Ingo Molnar <mingo@elte.hu>
-
-
----
- mm/percpu.c |  100 ++++++++++++-----------------------------------------------
- 1 files changed, 20 insertions(+), 80 deletions(-)
-
-diff --git a/mm/percpu.c b/mm/percpu.c
-index bf1bf1f..c0b2c1a 100644
---- a/mm/percpu.c
-+++ b/mm/percpu.c
-@@ -23,7 +23,7 @@
-  * Allocation is done in offset-size areas of single unit space.  Ie,
-  * an area of 512 bytes at 6k in c1 occupies 512 bytes at 6k of c1:u0,
-  * c1:u1, c1:u2 and c1:u3.  Percpu access can be done by configuring
-- * percpu base registers UNIT_SIZE apart.
-+ * percpu base registers pcpu_unit_size apart.
-  *
-  * There are usually many small percpu allocations many of them as
-  * small as 4 bytes.  The allocator organizes chunks into lists
-@@ -38,8 +38,8 @@
-  * region and negative allocated.  Allocation inside a chunk is done
-  * by scanning this map sequentially and serving the first matching
-  * entry.  This is mostly copied from the percpu_modalloc() allocator.
-- * Chunks are also linked into a rb tree to ease address to chunk
-- * mapping during free.
-+ * Chunks can be determined from the address using the index field
-+ * in the page struct. The index field contains a pointer to the chunk.
-  *
-  * To use this allocator, arch code should do the followings.
-  *
-@@ -61,7 +61,6 @@
- #include <linux/mutex.h>
- #include <linux/percpu.h>
- #include <linux/pfn.h>
--#include <linux/rbtree.h>
- #include <linux/slab.h>
- #include <linux/spinlock.h>
- #include <linux/vmalloc.h>
-@@ -88,7 +87,6 @@
- 
- struct pcpu_chunk {
- 	struct list_head	list;		/* linked to pcpu_slot lists */
--	struct rb_node		rb_node;	/* key is chunk->vm->addr */
- 	int			free_size;	/* free bytes in the chunk */
- 	int			contig_hint;	/* max contiguous size hint */
- 	struct vm_struct	*vm;		/* mapped vmalloc region */
-@@ -133,7 +131,7 @@ static int pcpu_reserved_chunk_limit;
-  * There are two locks - pcpu_alloc_mutex and pcpu_lock.  The former
-  * protects allocation/reclaim paths, chunks and chunk->page arrays.
-  * The latter is a spinlock and protects the index data structures -
-- * chunk slots, rbtree, chunks and area maps in chunks.
-+ * chunk slots, chunks and area maps in chunks.
-  *
-  * During allocation, pcpu_alloc_mutex is kept locked all the time and
-  * pcpu_lock is grabbed and released as necessary.  All actual memory
-@@ -152,7 +150,6 @@ static DEFINE_MUTEX(pcpu_alloc_mutex);	/* protects whole alloc and reclaim */
- static DEFINE_SPINLOCK(pcpu_lock);	/* protects index data structures */
- 
- static struct list_head *pcpu_slot __read_mostly; /* chunk list slots */
--static struct rb_root pcpu_addr_root = RB_ROOT;	/* chunks by address */
- 
- /* reclaim work to release fully free chunks, scheduled from free path */
- static void pcpu_reclaim(struct work_struct *work);
-@@ -203,6 +200,18 @@ static bool pcpu_chunk_page_occupied(struct pcpu_chunk *chunk,
- 	return *pcpu_chunk_pagep(chunk, 0, page_idx) != NULL;
- }
- 
-+/* set the pointer to a chunk in a page struct */
-+static void pcpu_set_page_chunk(struct page *page, struct pcpu_chunk *pcpu)
-+{
-+	page->index = (unsigned long)pcpu;
-+}
-+
-+/* obtain pointer to a chunk from a page struct */
-+static struct pcpu_chunk *pcpu_get_page_chunk(struct page *page)
-+{
-+	return (struct pcpu_chunk *)page->index;
-+}
-+
- /**
-  * pcpu_mem_alloc - allocate memory
-  * @size: bytes to allocate
-@@ -269,40 +278,9 @@ static void pcpu_chunk_relocate(struct pcpu_chunk *chunk, int oslot)
- 	}
- }
- 
--static struct rb_node **pcpu_chunk_rb_search(void *addr,
--					     struct rb_node **parentp)
--{
--	struct rb_node **p = &pcpu_addr_root.rb_node;
--	struct rb_node *parent = NULL;
--	struct pcpu_chunk *chunk;
--
--	while (*p) {
--		parent = *p;
--		chunk = rb_entry(parent, struct pcpu_chunk, rb_node);
--
--		if (addr < chunk->vm->addr)
--			p = &(*p)->rb_left;
--		else if (addr > chunk->vm->addr)
--			p = &(*p)->rb_right;
--		else
--			break;
--	}
--
--	if (parentp)
--		*parentp = parent;
--	return p;
--}
--
- /**
-- * pcpu_chunk_addr_search - search for chunk containing specified address
-- * @addr: address to search for
-- *
-- * Look for chunk which might contain @addr.  More specifically, it
-- * searchs for the chunk with the highest start address which isn't
-- * beyond @addr.
-- *
-- * CONTEXT:
-- * pcpu_lock.
-+ * pcpu_chunk_addr_search - determine chunk containing specified address
-+ * @addr: address for which the chunk needs to be determined.
-  *
-  * RETURNS:
-  * The address of the found chunk.
-@@ -310,8 +288,6 @@ static struct rb_node **pcpu_chunk_rb_search(void *addr,
- static struct pcpu_chunk *pcpu_chunk_addr_search(void *addr)
- {
- 	void *first_start = pcpu_first_chunk->vm->addr;
--	struct rb_node *n, *parent;
--	struct pcpu_chunk *chunk;
- 
- 	/* is it in the first chunk? */
- 	if (addr >= first_start && addr < first_start + pcpu_chunk_size) {
-@@ -321,42 +297,7 @@ static struct pcpu_chunk *pcpu_chunk_addr_search(void *addr)
- 		return pcpu_first_chunk;
- 	}
- 
--	/* nah... search the regular ones */
--	n = *pcpu_chunk_rb_search(addr, &parent);
--	if (!n) {
--		/* no exactly matching chunk, the parent is the closest */
--		n = parent;
--		BUG_ON(!n);
--	}
--	chunk = rb_entry(n, struct pcpu_chunk, rb_node);
--
--	if (addr < chunk->vm->addr) {
--		/* the parent was the next one, look for the previous one */
--		n = rb_prev(n);
--		BUG_ON(!n);
--		chunk = rb_entry(n, struct pcpu_chunk, rb_node);
--	}
--
--	return chunk;
--}
--
--/**
-- * pcpu_chunk_addr_insert - insert chunk into address rb tree
-- * @new: chunk to insert
-- *
-- * Insert @new into address rb tree.
-- *
-- * CONTEXT:
-- * pcpu_lock.
-- */
--static void pcpu_chunk_addr_insert(struct pcpu_chunk *new)
--{
--	struct rb_node **p, *parent;
--
--	p = pcpu_chunk_rb_search(new->vm->addr, &parent);
--	BUG_ON(*p);
--	rb_link_node(&new->rb_node, parent, p);
--	rb_insert_color(&new->rb_node, &pcpu_addr_root);
-+	return pcpu_get_page_chunk(vmalloc_to_page(addr));
- }
- 
- /**
-@@ -768,6 +709,7 @@ static int pcpu_populate_chunk(struct pcpu_chunk *chunk, int off, int size)
- 						  alloc_mask, 0);
- 			if (!*pagep)
- 				goto err;
-+			pcpu_set_page_chunk(*pagep, chunk);
- 		}
- 	}
- 
-@@ -892,7 +834,6 @@ restart:
- 
- 	spin_lock_irq(&pcpu_lock);
- 	pcpu_chunk_relocate(chunk, -1);
--	pcpu_chunk_addr_insert(chunk);
- 	goto restart;
- 
- area_found:
-@@ -981,7 +922,6 @@ static void pcpu_reclaim(struct work_struct *work)
- 		if (chunk == list_first_entry(head, struct pcpu_chunk, list))
- 			continue;
- 
--		rb_erase(&chunk->rb_node, &pcpu_addr_root);
- 		list_move(&chunk->list, &todo);
- 	}
- 
+Alan
