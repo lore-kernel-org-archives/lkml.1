@@ -1,97 +1,138 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932588AbZDHTWJ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763094AbZDHTfj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932588AbZDHTWJ (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 8 Apr 2009 15:22:09 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760046AbZDHTVw
+	id S1763094AbZDHTfj (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 8 Apr 2009 15:35:39 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757538AbZDHTf1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 8 Apr 2009 15:21:52 -0400
-Received: from bear.ext.ti.com ([192.94.94.41]:45072 "EHLO bear.ext.ti.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754903AbZDHTVv (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 8 Apr 2009 15:21:51 -0400
-From: "Hunter, Jon" <jon-hunter@ti.com>
-To: "Pallipadi, Venkatesh" <venkatesh.pallipadi@intel.com>
-CC: Andrew Morton <akpm@linux-foundation.org>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       Thomas Gleixner <tglx@linutronics.de>
-Date: Wed, 8 Apr 2009 14:20:54 -0500
-Subject: RE: [RFC] Dynamic Tick and Deferrable Timer Support
-Thread-Topic: [RFC] Dynamic Tick and Deferrable Timer Support
-Thread-Index: AcmArpYfQGI0iT+YRciR77NvDqGzKg3zaLww
-Message-ID: <7B4574D56E4ADF438756313E9A172A87319DD3DC@dlee01.ent.ti.com>
-References: <CF7665F795A4BE438425FE728CEACFA302F2436B52@dlee01.ent.ti.com>
-	 <20090114221624.76ee8aa4.akpm@linux-foundation.org>
-	 <7B4574D56E4ADF438756313E9A172A872CB8232E@dlee01.ent.ti.com>
-	 <7E82351C108FA840AB1866AC776AEC46471B9452@orsmsx505.amr.corp.intel.com>
-	 <7B4574D56E4ADF438756313E9A172A872CB82749@dlee01.ent.ti.com>
- <1233081369.28350.68.camel@jamoon.sc.intel.com>
-In-Reply-To: <1233081369.28350.68.camel@jamoon.sc.intel.com>
-Accept-Language: en-US
-Content-Language: en-US
-X-MS-Has-Attach: 
-X-MS-TNEF-Correlator: 
-acceptlanguage: en-US
-Content-Type: text/plain; charset="utf-8"
+	Wed, 8 Apr 2009 15:35:27 -0400
+Received: from fg-out-1718.google.com ([72.14.220.154]:4395 "EHLO
+	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755633AbZDHTf0 convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 8 Apr 2009 15:35:26 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:date:message-id:subject:from:to:content-type
+         :content-transfer-encoding;
+        b=vNTcq02t1mJPA7TdXhyrHqMVWSs8H4FihgSJtYrcrS3VGUr2et1BQ1FmKiKrxkQdle
+         LGwomrjJfq8Mrf/ivntLOoOx3ajgXfJl026LAgAG6jD7yl338txhM9tz3zhuOSItHU0S
+         GXM+Z0V/xxRmyUD3CYEsG7dDAywt01QrNJX9o=
 MIME-Version: 1.0
+Date: Wed, 8 Apr 2009 21:35:23 +0200
+Message-ID: <8db1092f0904081235x58081f1by842ab45ad861e294@mail.gmail.com>
+Subject: [2.6.30-rc1] device-mapper: table: 254:0: crypt: Error allocating 
+	crypto tfm
+From: Maciej Rutecki <maciej.rutecki@gmail.com>
+To: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       "Rafael J. Wysocki" <rjw@sisk.pl>, herbert@gondor.apana.org.au,
+       davem@davemloft.net, linux-crypto@vger.kernel.org
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
-Content-Transfer-Encoding: 8bit
-X-MIME-Autoconverted: from base64 to 8bit by alpha.home.local id n38JMDqu001857
 
+Kernel 2.6.30.1
 
+I try mount encrypted partition:
+root@zlom:/home/maciek# cryptsetup create secret /dev/sda6
+Enter passphrase:
+Command failed: device-mapper: reload ioctl failed: Z≈Çy argument
 
-> -----Original Message-----
-> From: Pallipadi, Venkatesh [mailto:venkatesh.pallipadi@intel.com]
-> Sent: Tuesday, January 27, 2009 12:36 PM
-> To: Hunter, Jon
-> Cc: Andrew Morton; linux-kernel@vger.kernel.org; Thomas Gleixner
-> Subject: RE: [RFC] Dynamic Tick and Deferrable Timer Support
-> 
-> On Mon, 2009-01-26 at 13:41 -0800, Hunter, Jon wrote:
-> > Pallipadi, Venkatesh <mailto:venkatesh.pallipadi@intel.com> wrote on
-> Monday, January 26, 2009 1:48 PM:
-> >
-> > > I looked at your patch earlier, but I was concerned about few
-> > > things and wanted to spend some more time on it. So, I did
-> > > not reply earlier.
-> >
-> > No problem, I was not sure how clear my original email was :-)
-> >
-> > > The potential issues I see:
-> > > - May be a bit theoritcal, as this may not happen in reality.
-> > > But, with your change, if all the timers happen to be
-> > > defrrable, timer wheel never advances and none of the timers
-> > > expire. Not sure whether we need to handle this cleanly
-> > > somehow or assume that not all the timers will be deferrable.
-> >
-> > So my understanding is, and please correct me if I am wrong, but as long
-> as there is a timer interrupt then the timer wheel will advanced and all
-> deferred timer functions will get executed. If that is the case then we
-> should always be guaranteed a timer interrupt due to the implementation of
-> the dynamic tick.
-> >
-> > The dynamic tick defines a maximum sleep period, max_delta_ns, which is
-> a member of the "clock_event_device" structure. This governs the maximum
-> time you could be asleep/idle for. Currently, the variable,
-> "max_delta_ns", is defined as a 32-bit type (long) and for most
-> architectures, if not all, this is configured by calling function
-> "clockevent_delta2ns()". The maximum value that "max_delta_ns" can be
-Pallipadi, Venkatesh wrote: 
+"Z≈Çy argument"="Bad argument"
 
-> Ok. ÔªøThinking about it a bit more, I think we can push this patch along.
-> Thomas/Andrew, can one of you pick up this patch..
-> 
-> Thanks,
-> Venki
-> 
-> Acked-by: Venkatesh Pallipadi <venkatesh.pallipadi@intel.com>
-> 
+Dmesg shows:
+[  193.421463] device-mapper: table: 254:0: crypt: Error allocating crypto tfm
+[  193.421471] device-mapper: ioctl: error adding target to table
+[  193.465318] device-mapper: ioctl: device doesn't appear to be in
+the dev hash table
 
-Hi Andrew, Thomas,
+BUT, I try again:
+root@zlom:/home/maciek# cryptsetup create secret /dev/sda6
+Enter passphrase:
+root@zlom:/home/maciek# mount /mnt/sec/
+root@zlom:/home/maciek# df -h | grep sec
+/dev/mapper/secret     89G   42G   43G  50% /mnt/sec
 
-Sorry to respond to this old thread, however, I wanted to see if you had any feedback on this patch. Let me know if you would like me to re-post. 
+Then it works.
 
-Cheers
-Jon
-ˇÙË∫{.n«+â∑üÆâ≠Ü+%äÀˇ±È›∂•äwˇ∫{.n«+â∑•ä{±˛G´ùÈˇä{ay∫ á⁄ôÎ,j≠¢f£¢∑höèÔÅÍˇëÍÁz_ËÆ(≠Èöéä›¢j"ù˙∂mßˇˇæ´˛G´ùÈˇ¢∏?ô®Ë≠⁄&£¯ß~è·∂iOïÊ¨z∑övÿ^∂mßˇˇ√ˇ∂Ïˇ¢∏?ñI•
+root@zlom:/home/maciek# cat /proc/crypto
+name         : cbc(aes)
+driver       : cbc(aes-asm)
+module       : kernel
+priority     : 200
+refcnt       : 2
+selftest     : passed
+type         : givcipher
+async        : yes
+blocksize    : 16
+min keysize  : 16
+max keysize  : 32
+ivsize       : 16
+geniv        : chainiv
+
+name         : cbc(aes)
+driver       : cbc(aes-asm)
+module       : cbc
+priority     : 200
+refcnt       : 2
+selftest     : passed
+type         : blkcipher
+blocksize    : 16
+min keysize  : 16
+max keysize  : 32
+ivsize       : 16
+geniv        : <default>
+
+name         : aes
+driver       : aes-asm
+module       : aes_i586
+priority     : 200
+refcnt       : 2
+selftest     : passed
+type         : cipher
+blocksize    : 16
+min keysize  : 16
+max keysize  : 32
+
+name         : aes
+driver       : aes-generic
+module       : aes_generic
+priority     : 100
+refcnt       : 1
+selftest     : passed
+type         : cipher
+blocksize    : 16
+min keysize  : 16
+max keysize  : 32
+
+name         : stdrng
+driver       : krng
+module       : kernel
+priority     : 200
+refcnt       : 2
+selftest     : passed
+type         : rng
+seedsize     : 0
+
+name         : md5
+driver       : md5-generic
+module       : kernel
+priority     : 0
+refcnt       : 1
+selftest     : passed
+type         : shash
+blocksize    : 64
+digestsize   : 16
+descsize     : 88
+
+Any else information is needed?
+
+Config:
+http://unixy.pl/maciek/download/kernel/2.6.30-rc1/pc/config-2.6.30-rc1.txt
+
+dmesg:
+http://unixy.pl/maciek/download/kernel/2.6.30-rc1/pc/dmesg.txt
+-- 
+Maciej Rutecki
+http://www.maciek.unixy.pl
