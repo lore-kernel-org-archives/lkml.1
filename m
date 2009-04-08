@@ -1,78 +1,86 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933985AbZDHOT0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933665AbZDHOS7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933985AbZDHOT0 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 8 Apr 2009 10:19:26 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933948AbZDHOSZ
+	id S933665AbZDHOS7 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 8 Apr 2009 10:18:59 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933653AbZDHOOj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 8 Apr 2009 10:18:25 -0400
-Received: from mail-fx0-f158.google.com ([209.85.220.158]:54838 "EHLO
-	mail-fx0-f158.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753247AbZDHOSY convert rfc822-to-8bit (ORCPT
+	Wed, 8 Apr 2009 10:14:39 -0400
+Received: from bombadil.infradead.org ([18.85.46.34]:55578 "EHLO
+	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S932585AbZDHOOh (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 8 Apr 2009 10:18:24 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
-         :cc:content-type:content-transfer-encoding;
-        b=jfmvnf4jvToHy1jCZEK8MxsLaO8efq59d0vPuleTfj6LN1gah55U4xKKLMFEdqKaGQ
-         iIk938Q/Gakuo+OFh54oBKRCrIevQGxZ8NnOAiS5a9CJAjghiLpbxnvcTE3kgUju1rDV
-         ah3KuNhyKau9jRUFXPOH2ABs0kZkO87nCTPGc=
-MIME-Version: 1.0
-In-Reply-To: <49DCB0BA.70606@fastmail.fm>
-References: <1239189748-11703-1-git-send-email-jwjstone@fastmail.fm>
-	 <1239189748-11703-17-git-send-email-jwjstone@fastmail.fm>
-	 <1239189748-11703-18-git-send-email-jwjstone@fastmail.fm>
-	 <1239189748-11703-19-git-send-email-jwjstone@fastmail.fm>
-	 <1239189748-11703-20-git-send-email-jwjstone@fastmail.fm>
-	 <1239189748-11703-21-git-send-email-jwjstone@fastmail.fm>
-	 <36ca99e90904080439u7098d2feka5dd39f8ab6a470c@mail.gmail.com>
-	 <49DCAC88.7010500@fastmail.fm>
-	 <87a5b0800904080705n74829b75l8becfd6e7d1a321f@mail.gmail.com>
-	 <49DCB0BA.70606@fastmail.fm>
-Date: Wed, 8 Apr 2009 15:18:22 +0100
-Message-ID: <87a5b0800904080718y424776b2u6f505192408dbbbd@mail.gmail.com>
-Subject: Re: [PATCH 20/56] inflate: Remove void casts
-From: Will Newton <will.newton@gmail.com>
-To: Jack Stone <jwjstone@fastmail.fm>
-Cc: Bert Wesarg <bert.wesarg@googlemail.com>, linux-kernel@vger.kernel.org,
-       jeff@garzik.org, kernel-janitors@vger.kernel.org
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 8BIT
+	Wed, 8 Apr 2009 10:14:37 -0400
+Date: Wed, 8 Apr 2009 11:13:44 -0300
+From: Mauro Carvalho Chehab <mchehab@infradead.org>
+To: Joe Perches <joe@perches.com>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Andrew Morton <akpm@kernel.org>, LKML <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH 02/10] MAINTAINERS - Add file patterns
+Message-ID: <20090408111344.56818f9e@pedra.chehab.org>
+In-Reply-To: <1239167872-8179-3-git-send-email-joe@perches.com>
+References: <1239167872-8179-1-git-send-email-joe@perches.com>
+	<1239167872-8179-3-git-send-email-joe@perches.com>
+X-Mailer: Claws Mail 3.3.1 (GTK+ 2.10.4; x86_64-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
+X-SRS-Rewrite: SMTP reverse-path rewritten from <mchehab@infradead.org> by bombadil.infradead.org
+	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Apr 8, 2009 at 3:12 PM, Jack Stone <jwjstone@fastmail.fm> wrote:
-> Will Newton wrote:
->> On Wed, Apr 8, 2009 at 2:54 PM, Jack Stone <jwjstone@fastmail.fm> wrote:
->>
->>>  lib/inflate.c |    5 ++---
->>>  1 files changed, 2 insertions(+), 3 deletions(-)
->>>
->>> diff --git a/lib/inflate.c b/lib/inflate.c
->>> index 1a8e8a9..1eb0cd8 100644
->>> --- a/lib/inflate.c
->>> +++ b/lib/inflate.c
->>> @@ -249,7 +249,7 @@ static void *malloc(int size)
->>>
->>>        malloc_ptr = (malloc_ptr + 3) & ~3;     /* Align */
->>
->>> -       p = (void *)malloc_ptr;
->>> +       p = malloc_ptr;
->>>        malloc_ptr += size;
->>>
->>
->> Won't this cause a "assignment makes pointer from integer without a
->> cast" warning?
-> I don't think so. The cast had no effect as both malloc_ptr and p are
-> declared as void *. The later += size
-> does pointer arithmetic.
+On Tue,  7 Apr 2009 22:17:44 -0700
+Joe Perches <joe@perches.com> wrote:
 
-static unsigned long malloc_ptr;
+> Better description of file pattern tag "F:"
+> Add file exclusion tag "X:"
+> Add patterns to sections
+> 
+> Signed-off-by: Joe Perches <joe@perches.com>
 
-Please compile test your code.
+>  DVB SUBSYSTEM AND DRIVERS
+>  P:	LinuxTV.org Project
+>  M:	linux-media@vger.kernel.org
+>  W:	http://linuxtv.org/
+>  T:	git kernel.org:/pub/scm/linux/kernel/git/mchehab/linux-2.6.git
+>  S:	Maintained
+> +F:	Documentation/dvb/
+> +F:	drivers/media/dvb/
+> +F:	drivers/media/common/saa7146*.c
+> +F:	include/linux/dvb/
 
-> Thanks,
->
-> Jack
->
+>  VIDEO FOR LINUX (V4L)
+>  P:	Mauro Carvalho Chehab
+>  M:	mchehab@infradead.org
+>  L:	linux-media@vger.kernel.org
+>  W:	http://linuxtv.org
+>  T:	git kernel.org:/pub/scm/linux/kernel/git/mchehab/linux-2.6.git
+>  S:	Maintained
+> +F:	Documentation/video4linux/
+> +F:	drivers/media/video/
+> +F:	drivers/media/radio/
+> +F:	include/linux/videodev.h
+> +F:	include/linux/videodev2.h
+> +F:	include/media/
+
+For those two:
+Acked-by: Mauro Carvalho Chehab <mchehab@redhat.com>
+
+While those two entries are correct, they don't cover all files, since there
+are other common drivers and core modules shared between both subsystems. For
+example, the tuner and IR files are under drivers/media/common.
+
+IMO, we should add a more generic entry to cover both. Something like:
+
+MEDIA INPUT INFRASTRUCTURE (V4L/DVB)
+P:	Mauro Carvalho Chehab
+M:	mchehab@infradead.org
+L:	linux-media@vger.kernel.org
+W:	http://linuxtv.org
+T:	git kernel.org:/pub/scm/linux/kernel/git/mchehab/linux-2.6.git
+S:	Maintained
+F:	drivers/media
+
+Cheers,
+Mauro
