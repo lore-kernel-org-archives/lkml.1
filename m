@@ -1,368 +1,116 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S935019AbZDHRMZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S935035AbZDHRM4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S935019AbZDHRMZ (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 8 Apr 2009 13:12:25 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934680AbZDHRKv
+	id S935035AbZDHRM4 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 8 Apr 2009 13:12:56 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S935026AbZDHRMb
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 8 Apr 2009 13:10:51 -0400
-Received: from hera.kernel.org ([140.211.167.34]:57506 "EHLO hera.kernel.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S934650AbZDHRKs (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 8 Apr 2009 13:10:48 -0400
-Date: Wed, 8 Apr 2009 17:10:07 GMT
-From: Peter Zijlstra <a.p.zijlstra@chello.nl>
-To: linux-tip-commits@vger.kernel.org
-Cc: linux-kernel@vger.kernel.org, paulus@samba.org, hpa@zytor.com,
-       mingo@redhat.com, a.p.zijlstra@chello.nl, tglx@linutronix.de,
-       cjashfor@linux.vnet.ibm.com, mingo@elte.hu
-Reply-To: mingo@redhat.com, hpa@zytor.com, paulus@samba.org,
-       linux-kernel@vger.kernel.org, a.p.zijlstra@chello.nl,
-       tglx@linutronix.de, cjashfor@linux.vnet.ibm.com, mingo@elte.hu
-In-Reply-To: <20090408130409.394816925@chello.nl>
-References: <20090408130409.394816925@chello.nl>
-Subject: [tip:perfcounters/core] perf_counter: allow for data addresses to be recorded
-Message-ID: <tip-78f13e9525ba777da25c4ddab89f28e9366a8b7c@git.kernel.org>
-Git-Commit-ID: 78f13e9525ba777da25c4ddab89f28e9366a8b7c
-X-Mailer: tip-git-log-daemon
+	Wed, 8 Apr 2009 13:12:31 -0400
+Received: from mail-ew0-f165.google.com ([209.85.219.165]:37558 "EHLO
+	mail-ew0-f165.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S935021AbZDHRM2 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 8 Apr 2009 13:12:28 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:date:message-id:subject:from:to:content-type
+         :content-transfer-encoding;
+        b=P81briJVKzM4xeJgqSoZsNAelFh3qKJYU1HSXNyfq6RZ38eyTtd+lHmUaYGQ9vBj/a
+         bqmC9Izef/QQ2mHuKjYmoIVzEIS2mJqQfuqyCPcp5euhKhWicXCv6NWmWKP99tFiH9Nl
+         Hzc3Cz7w2CN1UB2dMNjOs/aw+QpDK5o+ljK88=
 MIME-Version: 1.0
+Date: Wed, 8 Apr 2009 21:12:25 +0400
+Message-ID: <a4423d670904081012j30ad104etefeee0c8c682aca9@mail.gmail.com>
+Subject: 2.6.30-rc1 cannot boot: scsi/async
+From: Alexander Beregalov <a.beregalov@gmail.com>
+To: LKML <linux-kernel@vger.kernel.org>,
+       Kernel Testers List <kernel-testers@vger.kernel.org>,
+       linux-scsi@vger.kernel.org
 Content-Type: text/plain; charset=UTF-8
-Content-Disposition: inline
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Wed, 08 Apr 2009 17:10:09 +0000 (UTC)
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Commit-ID:  78f13e9525ba777da25c4ddab89f28e9366a8b7c
-Gitweb:     http://git.kernel.org/tip/78f13e9525ba777da25c4ddab89f28e9366a8b7c
-Author:     Peter Zijlstra <a.p.zijlstra@chello.nl>
-AuthorDate: Wed, 8 Apr 2009 15:01:33 +0200
-Committer:  Ingo Molnar <mingo@elte.hu>
-CommitDate: Wed, 8 Apr 2009 19:05:56 +0200
+Hi
 
-perf_counter: allow for data addresses to be recorded
+It is 2*2 SMP system, x86_64.
 
-Paul suggested we allow for data addresses to be recorded along with
-the traditional IPs as power can provide these.
-
-For now, only the software pagefault events provide data addresses,
-but in the future power might as well for some events.
-
-x86 doesn't seem capable of providing this atm.
-
-Signed-off-by: Peter Zijlstra <a.p.zijlstra@chello.nl>
-Cc: Paul Mackerras <paulus@samba.org>
-Cc: Corey Ashford <cjashfor@linux.vnet.ibm.com>
-LKML-Reference: <20090408130409.394816925@chello.nl>
-Signed-off-by: Ingo Molnar <mingo@elte.hu>
-
-
----
- arch/powerpc/kernel/perf_counter.c |    2 +-
- arch/powerpc/mm/fault.c            |    8 ++++--
- arch/x86/kernel/cpu/perf_counter.c |    2 +-
- arch/x86/mm/fault.c                |    8 ++++--
- include/linux/perf_counter.h       |   14 ++++++----
- kernel/perf_counter.c              |   46 ++++++++++++++++++++++-------------
- 6 files changed, 49 insertions(+), 31 deletions(-)
-
-diff --git a/arch/powerpc/kernel/perf_counter.c b/arch/powerpc/kernel/perf_counter.c
-index 0697ade..c9d019f 100644
---- a/arch/powerpc/kernel/perf_counter.c
-+++ b/arch/powerpc/kernel/perf_counter.c
-@@ -749,7 +749,7 @@ static void record_and_restart(struct perf_counter *counter, long val,
- 	 * Finally record data if requested.
- 	 */
- 	if (record)
--		perf_counter_overflow(counter, 1, regs);
-+		perf_counter_overflow(counter, 1, regs, 0);
- }
- 
- /*
-diff --git a/arch/powerpc/mm/fault.c b/arch/powerpc/mm/fault.c
-index 17bbf6f..ac0e112 100644
---- a/arch/powerpc/mm/fault.c
-+++ b/arch/powerpc/mm/fault.c
-@@ -171,7 +171,7 @@ int __kprobes do_page_fault(struct pt_regs *regs, unsigned long address,
- 		die("Weird page fault", regs, SIGSEGV);
- 	}
- 
--	perf_swcounter_event(PERF_COUNT_PAGE_FAULTS, 1, 0, regs);
-+	perf_swcounter_event(PERF_COUNT_PAGE_FAULTS, 1, 0, regs, address);
- 
- 	/* When running in the kernel we expect faults to occur only to
- 	 * addresses in user space.  All other faults represent errors in the
-@@ -312,7 +312,8 @@ good_area:
- 	}
- 	if (ret & VM_FAULT_MAJOR) {
- 		current->maj_flt++;
--		perf_swcounter_event(PERF_COUNT_PAGE_FAULTS_MAJ, 1, 0, regs);
-+		perf_swcounter_event(PERF_COUNT_PAGE_FAULTS_MAJ, 1, 0,
-+				     regs, address);
- #ifdef CONFIG_PPC_SMLPAR
- 		if (firmware_has_feature(FW_FEATURE_CMO)) {
- 			preempt_disable();
-@@ -322,7 +323,8 @@ good_area:
- #endif
- 	} else {
- 		current->min_flt++;
--		perf_swcounter_event(PERF_COUNT_PAGE_FAULTS_MIN, 1, 0, regs);
-+		perf_swcounter_event(PERF_COUNT_PAGE_FAULTS_MIN, 1, 0,
-+				     regs, address);
- 	}
- 	up_read(&mm->mmap_sem);
- 	return 0;
-diff --git a/arch/x86/kernel/cpu/perf_counter.c b/arch/x86/kernel/cpu/perf_counter.c
-index 1116a41..0fcbaab 100644
---- a/arch/x86/kernel/cpu/perf_counter.c
-+++ b/arch/x86/kernel/cpu/perf_counter.c
-@@ -800,7 +800,7 @@ again:
- 			continue;
- 
- 		perf_save_and_restart(counter);
--		if (perf_counter_overflow(counter, nmi, regs))
-+		if (perf_counter_overflow(counter, nmi, regs, 0))
- 			__pmc_generic_disable(counter, &counter->hw, bit);
- 	}
- 
-diff --git a/arch/x86/mm/fault.c b/arch/x86/mm/fault.c
-index f2d3324..6f9df2b 100644
---- a/arch/x86/mm/fault.c
-+++ b/arch/x86/mm/fault.c
-@@ -1045,7 +1045,7 @@ do_page_fault(struct pt_regs *regs, unsigned long error_code)
- 	if (unlikely(error_code & PF_RSVD))
- 		pgtable_bad(regs, error_code, address);
- 
--	perf_swcounter_event(PERF_COUNT_PAGE_FAULTS, 1, 0, regs);
-+	perf_swcounter_event(PERF_COUNT_PAGE_FAULTS, 1, 0, regs, address);
- 
- 	/*
- 	 * If we're in an interrupt, have no user context or are running
-@@ -1142,10 +1142,12 @@ good_area:
- 
- 	if (fault & VM_FAULT_MAJOR) {
- 		tsk->maj_flt++;
--		perf_swcounter_event(PERF_COUNT_PAGE_FAULTS_MAJ, 1, 0, regs);
-+		perf_swcounter_event(PERF_COUNT_PAGE_FAULTS_MAJ, 1, 0,
-+				     regs, address);
- 	} else {
- 		tsk->min_flt++;
--		perf_swcounter_event(PERF_COUNT_PAGE_FAULTS_MIN, 1, 0, regs);
-+		perf_swcounter_event(PERF_COUNT_PAGE_FAULTS_MIN, 1, 0,
-+				     regs, address);
- 	}
- 
- 	check_v8086_mode(regs, address, tsk);
-diff --git a/include/linux/perf_counter.h b/include/linux/perf_counter.h
-index 8bd1be5..c22363a 100644
---- a/include/linux/perf_counter.h
-+++ b/include/linux/perf_counter.h
-@@ -101,8 +101,9 @@ enum perf_counter_record_format {
- 	PERF_RECORD_IP		= 1U << 0,
- 	PERF_RECORD_TID		= 1U << 1,
- 	PERF_RECORD_TIME	= 1U << 2,
--	PERF_RECORD_GROUP	= 1U << 3,
--	PERF_RECORD_CALLCHAIN	= 1U << 4,
-+	PERF_RECORD_ADDR	= 1U << 3,
-+	PERF_RECORD_GROUP	= 1U << 4,
-+	PERF_RECORD_CALLCHAIN	= 1U << 5,
- };
- 
- /*
-@@ -251,6 +252,7 @@ enum perf_event_type {
- 	 * 	{ u64			ip;	  } && PERF_RECORD_IP
- 	 * 	{ u32			pid, tid; } && PERF_RECORD_TID
- 	 * 	{ u64			time;     } && PERF_RECORD_TIME
-+	 * 	{ u64			addr;     } && PERF_RECORD_ADDR
- 	 *
- 	 * 	{ u64			nr;
- 	 * 	  { u64 event, val; } 	cnt[nr];  } && PERF_RECORD_GROUP
-@@ -537,7 +539,7 @@ extern int hw_perf_group_sched_in(struct perf_counter *group_leader,
- extern void perf_counter_update_userpage(struct perf_counter *counter);
- 
- extern int perf_counter_overflow(struct perf_counter *counter,
--				 int nmi, struct pt_regs *regs);
-+				 int nmi, struct pt_regs *regs, u64 addr);
- /*
-  * Return 1 for a software counter, 0 for a hardware counter
-  */
-@@ -547,7 +549,7 @@ static inline int is_software_counter(struct perf_counter *counter)
- 		perf_event_type(&counter->hw_event) != PERF_TYPE_HARDWARE;
- }
- 
--extern void perf_swcounter_event(u32, u64, int, struct pt_regs *);
-+extern void perf_swcounter_event(u32, u64, int, struct pt_regs *, u64);
- 
- extern void perf_counter_mmap(unsigned long addr, unsigned long len,
- 			      unsigned long pgoff, struct file *file);
-@@ -584,8 +586,8 @@ static inline int perf_counter_task_disable(void)	{ return -EINVAL; }
- static inline int perf_counter_task_enable(void)	{ return -EINVAL; }
- 
- static inline void
--perf_swcounter_event(u32 event, u64 nr, int nmi, struct pt_regs *regs)	{ }
--
-+perf_swcounter_event(u32 event, u64 nr, int nmi,
-+		     struct pt_regs *regs, u64 addr)			{ }
- 
- static inline void
- perf_counter_mmap(unsigned long addr, unsigned long len,
-diff --git a/kernel/perf_counter.c b/kernel/perf_counter.c
-index 4dc8600..321c57e 100644
---- a/kernel/perf_counter.c
-+++ b/kernel/perf_counter.c
-@@ -800,7 +800,7 @@ void perf_counter_task_sched_out(struct task_struct *task, int cpu)
- 	update_context_time(ctx);
- 
- 	regs = task_pt_regs(task);
--	perf_swcounter_event(PERF_COUNT_CONTEXT_SWITCHES, 1, 1, regs);
-+	perf_swcounter_event(PERF_COUNT_CONTEXT_SWITCHES, 1, 1, regs, 0);
- 	__perf_counter_sched_out(ctx, cpuctx);
- 
- 	cpuctx->task_ctx = NULL;
-@@ -1810,7 +1810,7 @@ static void perf_output_end(struct perf_output_handle *handle)
- }
- 
- static void perf_counter_output(struct perf_counter *counter,
--				int nmi, struct pt_regs *regs)
-+				int nmi, struct pt_regs *regs, u64 addr)
- {
- 	int ret;
- 	u64 record_type = counter->hw_event.record_type;
-@@ -1860,6 +1860,11 @@ static void perf_counter_output(struct perf_counter *counter,
- 		header.size += sizeof(u64);
- 	}
- 
-+	if (record_type & PERF_RECORD_ADDR) {
-+		header.type |= PERF_RECORD_ADDR;
-+		header.size += sizeof(u64);
-+	}
-+
- 	if (record_type & PERF_RECORD_GROUP) {
- 		header.type |= PERF_RECORD_GROUP;
- 		header.size += sizeof(u64) +
-@@ -1892,6 +1897,9 @@ static void perf_counter_output(struct perf_counter *counter,
- 	if (record_type & PERF_RECORD_TIME)
- 		perf_output_put(&handle, time);
- 
-+	if (record_type & PERF_RECORD_ADDR)
-+		perf_output_put(&handle, addr);
-+
- 	if (record_type & PERF_RECORD_GROUP) {
- 		struct perf_counter *leader, *sub;
- 		u64 nr = counter->nr_siblings;
-@@ -2158,7 +2166,7 @@ void perf_counter_munmap(unsigned long addr, unsigned long len,
-  */
- 
- int perf_counter_overflow(struct perf_counter *counter,
--			  int nmi, struct pt_regs *regs)
-+			  int nmi, struct pt_regs *regs, u64 addr)
- {
- 	int events = atomic_read(&counter->event_limit);
- 	int ret = 0;
-@@ -2175,7 +2183,7 @@ int perf_counter_overflow(struct perf_counter *counter,
- 			perf_counter_disable(counter);
- 	}
- 
--	perf_counter_output(counter, nmi, regs);
-+	perf_counter_output(counter, nmi, regs, addr);
- 	return ret;
- }
- 
-@@ -2240,7 +2248,7 @@ static enum hrtimer_restart perf_swcounter_hrtimer(struct hrtimer *hrtimer)
- 		regs = task_pt_regs(current);
- 
- 	if (regs) {
--		if (perf_counter_overflow(counter, 0, regs))
-+		if (perf_counter_overflow(counter, 0, regs, 0))
- 			ret = HRTIMER_NORESTART;
- 	}
- 
-@@ -2250,11 +2258,11 @@ static enum hrtimer_restart perf_swcounter_hrtimer(struct hrtimer *hrtimer)
- }
- 
- static void perf_swcounter_overflow(struct perf_counter *counter,
--				    int nmi, struct pt_regs *regs)
-+				    int nmi, struct pt_regs *regs, u64 addr)
- {
- 	perf_swcounter_update(counter);
- 	perf_swcounter_set_period(counter);
--	if (perf_counter_overflow(counter, nmi, regs))
-+	if (perf_counter_overflow(counter, nmi, regs, addr))
- 		/* soft-disable the counter */
- 		;
- 
-@@ -2286,16 +2294,17 @@ static int perf_swcounter_match(struct perf_counter *counter,
- }
- 
- static void perf_swcounter_add(struct perf_counter *counter, u64 nr,
--			       int nmi, struct pt_regs *regs)
-+			       int nmi, struct pt_regs *regs, u64 addr)
- {
- 	int neg = atomic64_add_negative(nr, &counter->hw.count);
- 	if (counter->hw.irq_period && !neg)
--		perf_swcounter_overflow(counter, nmi, regs);
-+		perf_swcounter_overflow(counter, nmi, regs, addr);
- }
- 
- static void perf_swcounter_ctx_event(struct perf_counter_context *ctx,
- 				     enum perf_event_types type, u32 event,
--				     u64 nr, int nmi, struct pt_regs *regs)
-+				     u64 nr, int nmi, struct pt_regs *regs,
-+				     u64 addr)
- {
- 	struct perf_counter *counter;
- 
-@@ -2305,7 +2314,7 @@ static void perf_swcounter_ctx_event(struct perf_counter_context *ctx,
- 	rcu_read_lock();
- 	list_for_each_entry_rcu(counter, &ctx->event_list, event_entry) {
- 		if (perf_swcounter_match(counter, type, event, regs))
--			perf_swcounter_add(counter, nr, nmi, regs);
-+			perf_swcounter_add(counter, nr, nmi, regs, addr);
- 	}
- 	rcu_read_unlock();
- }
-@@ -2325,7 +2334,8 @@ static int *perf_swcounter_recursion_context(struct perf_cpu_context *cpuctx)
- }
- 
- static void __perf_swcounter_event(enum perf_event_types type, u32 event,
--				   u64 nr, int nmi, struct pt_regs *regs)
-+				   u64 nr, int nmi, struct pt_regs *regs,
-+				   u64 addr)
- {
- 	struct perf_cpu_context *cpuctx = &get_cpu_var(perf_cpu_context);
- 	int *recursion = perf_swcounter_recursion_context(cpuctx);
-@@ -2336,10 +2346,11 @@ static void __perf_swcounter_event(enum perf_event_types type, u32 event,
- 	(*recursion)++;
- 	barrier();
- 
--	perf_swcounter_ctx_event(&cpuctx->ctx, type, event, nr, nmi, regs);
-+	perf_swcounter_ctx_event(&cpuctx->ctx, type, event,
-+				 nr, nmi, regs, addr);
- 	if (cpuctx->task_ctx) {
- 		perf_swcounter_ctx_event(cpuctx->task_ctx, type, event,
--				nr, nmi, regs);
-+					 nr, nmi, regs, addr);
- 	}
- 
- 	barrier();
-@@ -2349,9 +2360,10 @@ out:
- 	put_cpu_var(perf_cpu_context);
- }
- 
--void perf_swcounter_event(u32 event, u64 nr, int nmi, struct pt_regs *regs)
-+void
-+perf_swcounter_event(u32 event, u64 nr, int nmi, struct pt_regs *regs, u64 addr)
- {
--	__perf_swcounter_event(PERF_TYPE_SOFTWARE, event, nr, nmi, regs);
-+	__perf_swcounter_event(PERF_TYPE_SOFTWARE, event, nr, nmi, regs, addr);
- }
- 
- static void perf_swcounter_read(struct perf_counter *counter)
-@@ -2548,7 +2560,7 @@ void perf_tpcounter_event(int event_id)
- 	if (!regs)
- 		regs = task_pt_regs(current);
- 
--	__perf_swcounter_event(PERF_TYPE_TRACEPOINT, event_id, 1, 1, regs);
-+	__perf_swcounter_event(PERF_TYPE_TRACEPOINT, event_id, 1, 1, regs, 0);
- }
- 
- extern int ftrace_profile_enable(int);
+INFO: task async/0:1073 blocked for more than 120 seconds.
+"echo 0 > /proc/sys/kernel/hung_task_timeout_secs" disables this message.
+async/0       D 0000000000000000  6312  1073      2
+ ffff88007ed91cd0 0000000000000046 0000000000000006 0000000000000000
+ ffff88007ed91c40 000000000000d988 00000000001d2040 0000000000000000
+ ffff88007f5c1300 ffff88007f7d8000 ffff88007f5c1690 0000000000000000
+Call Trace:
+ [<ffffffff802832ed>] ? trace_hardirqs_on_caller+0x18d/0x1f0
+ [<ffffffff80283370>] ? trace_hardirqs_on+0x20/0x40
+ [<ffffffff806d53e6>] schedule+0x26/0x60
+ [<ffffffff80275825>] async_synchronize_cookie_domain+0x85/0x160
+ [<ffffffff8026cd70>] ? autoremove_wake_function+0x0/0x60
+ [<ffffffff80275923>] async_synchronize_cookie+0x23/0x40
+ [<ffffffff8027596c>] async_synchronize_full+0x2c/0x70
+ [<ffffffff8058a0c8>] scsi_complete_async_scans+0x88/0x140
+ [<ffffffff8058c985>] __scsi_add_device+0x105/0x140
+ [<ffffffff805aefb2>] ata_scsi_scan_host+0xc2/0x1f0
+ [<ffffffff805aafd6>] async_port_probe+0xc6/0x110
+ [<ffffffff806d8fa5>] ? _spin_unlock_irqrestore+0x55/0xb0
+ [<ffffffff8027563a>] async_thread+0x11a/0x280
+ [<ffffffff802460a0>] ? default_wake_function+0x0/0x40
+ [<ffffffff80275520>] ? async_thread+0x0/0x280
+ [<ffffffff8026c8dc>] kthread+0x5c/0xb0
+ [<ffffffff8020cafa>] child_rip+0xa/0x20
+ [<ffffffff8020c4c0>] ? restore_args+0x0/0x30
+ [<ffffffff8026c880>] ? kthread+0x0/0xb0
+ [<ffffffff8020caf0>] ? child_rip+0x0/0x20
+1 lock held by async/0/1073:
+ #0:  (&shost->scan_mutex){+.+.+.}, at: [<ffffffff8058c94a>]
+__scsi_add_device+0xca/0x140
+INFO: task async/1:1076 blocked for more than 120 seconds.
+"echo 0 > /proc/sys/kernel/hung_task_timeout_secs" disables this message.
+async/1       D 0000000000000001  6552  1076      2
+ ffff88007ed97dc0 0000000000000046 ffff88007ed97d00 ffffffff8027fb01
+ 00000000000001d2 000000000000d988 00000000001d2040 0000000000000002
+ ffff88007ed98000 ffff88007f7db900 ffff88007ed98390 000000027ed97eb0
+Call Trace:
+ [<ffffffff8027fb01>] ? put_lock_stats+0x21/0x60
+ [<ffffffff802832ed>] ? trace_hardirqs_on_caller+0x18d/0x1f0
+ [<ffffffff80283370>] ? trace_hardirqs_on+0x20/0x40
+ [<ffffffff806d53e6>] schedule+0x26/0x60
+ [<ffffffff80275825>] async_synchronize_cookie_domain+0x85/0x160
+ [<ffffffff8026cd70>] ? autoremove_wake_function+0x0/0x60
+ [<ffffffff80275923>] async_synchronize_cookie+0x23/0x40
+ [<ffffffff805ab000>] async_port_probe+0xf0/0x110
+ [<ffffffff806d8fa5>] ? _spin_unlock_irqrestore+0x55/0xb0
+ [<ffffffff8027563a>] async_thread+0x11a/0x280
+ [<ffffffff802460a0>] ? default_wake_function+0x0/0x40
+ [<ffffffff80275520>] ? async_thread+0x0/0x280
+ [<ffffffff8026c8dc>] kthread+0x5c/0xb0
+ [<ffffffff8020cafa>] child_rip+0xa/0x20
+ [<ffffffff8020c4c0>] ? restore_args+0x0/0x30
+ [<ffffffff8026c880>] ? kthread+0x0/0xb0
+ [<ffffffff8020caf0>] ? child_rip+0x0/0x20
+no locks held by async/1/1076.
+INFO: task swapper:1 blocked for more than 120 seconds.
+"echo 0 > /proc/sys/kernel/hung_task_timeout_secs" disables this message.
+swapper       D 0000000000000000  3336     1      0
+ ffff88007f427dd0 0000000000000046 ffff88007f427d10 ffffffff8027fb01
+ 0000000000000145 000000000000d988 00000000001d2040 0000000000000000
+ ffff88007f448000 ffffffff808744a0 ffff88007f448390 00000000808c9fe0
+Call Trace:
+ [<ffffffff8027fb01>] ? put_lock_stats+0x21/0x60
+ [<ffffffff802832ed>] ? trace_hardirqs_on_caller+0x18d/0x1f0
+ [<ffffffff80283370>] ? trace_hardirqs_on+0x20/0x40
+ [<ffffffff806d53e6>] schedule+0x26/0x60
+ [<ffffffff80275825>] async_synchronize_cookie_domain+0x85/0x160
+ [<ffffffff8026cd70>] ? autoremove_wake_function+0x0/0x60
+ [<ffffffff80275923>] async_synchronize_cookie+0x23/0x40
+ [<ffffffff8027596c>] async_synchronize_full+0x2c/0x70
+ [<ffffffff805758bf>] wait_for_device_probe+0x8f/0xc0
+ [<ffffffff8026cd70>] ? autoremove_wake_function+0x0/0x60
+ [<ffffffff808d865f>] prepare_namespace+0x2a/0x179
+ [<ffffffff808d78c6>] kernel_init+0x1e9/0x250
+ [<ffffffff8020cafa>] child_rip+0xa/0x20
+ [<ffffffff8020c4c0>] ? restore_args+0x0/0x30
+ [<ffffffff808d76dd>] ? kernel_init+0x0/0x250
+ [<ffffffff8020caf0>] ? child_rip+0x0/0x20
+no locks held by swapper/1.
