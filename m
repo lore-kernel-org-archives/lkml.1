@@ -1,61 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932903AbZDHNLr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1765563AbZDHNMY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932903AbZDHNLr (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 8 Apr 2009 09:11:47 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1765503AbZDHNJI
+	id S1765563AbZDHNMY (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 8 Apr 2009 09:12:24 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1764654AbZDHNJu
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 8 Apr 2009 09:09:08 -0400
-Received: from ns.firmix.at ([62.141.48.66]:1630 "EHLO ns.firmix.at"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1765166AbZDHNJE (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 8 Apr 2009 09:09:04 -0400
-Subject: Re: the different effect of system call fork()
-From: Bernd Petrovitsch <bernd@firmix.at>
-To: Sino <szj087@gmail.com>
-Cc: linux-kernel@vger.kernel.org
-In-Reply-To: <cab3445d0904080553k6fc67498s73cb5b7c661ff0b@mail.gmail.com>
-References: <cab3445d0904080553k6fc67498s73cb5b7c661ff0b@mail.gmail.com>
+	Wed, 8 Apr 2009 09:09:50 -0400
+Received: from mga06.intel.com ([134.134.136.21]:35062 "EHLO
+	orsmga101.jf.intel.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1765286AbZDHNJt (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 8 Apr 2009 09:09:49 -0400
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.39,344,1235980800"; 
+   d="scan'208";a="504669198"
+Subject: Re: leds: just ignore invalid GPIOs in leds-gpio
+From: Richard Purdie <rpurdie@linux.intel.com>
+To: David Brownell <david-b@pacbell.net>
+Cc: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>,
+       Linux Kernel Development <linux-kernel@vger.kernel.org>
+In-Reply-To: <200904071751.49507.david-b@pacbell.net>
+References: <200904062059.n36Kxlum026774@hera.kernel.org>
+	 <alpine.LRH.2.00.0904071359010.23019@vixen.sonytel.be>
+	 <200904071751.49507.david-b@pacbell.net>
 Content-Type: text/plain
-Organization: Firmix Software GmbH
-Date: Wed, 08 Apr 2009 15:08:48 +0200
-Message-Id: <1239196128.5031.3.camel@spike.firmix.at>
+Date: Wed, 08 Apr 2009 14:09:45 +0100
+Message-Id: <1239196186.5339.28.camel@dax.rpnet.com>
 Mime-Version: 1.0
-X-Mailer: Evolution 2.12.3 (2.12.3-8.el5_2.3) 
+X-Mailer: Evolution 2.12.1 
 Content-Transfer-Encoding: 7bit
-X-Firmix-Scanned-By: MIMEDefang 2.56 on ns.firmix.at
-X-Firmix-Spam-Score: -1.044 () AWL,SPF_HELO_PASS,SPF_PASS
-X-Firmix-Spam-Status: No, hits=-1.044 required=5
-X-Spam-Score: -1.044 () AWL,SPF_HELO_PASS,SPF_PASS
-X-Firmix-Envelope-From: <bernd@firmix.at>
-X-Firmix-Envelope-To: <linux-kernel@vger.kernel.org>
-Content-Disposition: inline
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi!
 
-On Wed, 2009-04-08 at 20:53 +0800, Sino wrote:
-[...]
-> I don't know whether this is the right place for this email, but I
-
-It's probably not.
-
-> post it here since it concerns the system call of fork.
-> here is my fwo source code.
+On Tue, 2009-04-07 at 17:51 -0700, David Brownell wrote:
+> On Tuesday 07 April 2009, Geert Uytterhoeven wrote:
+> > | drivers/leds/leds-gpio.c:85: warning: 'return' with no value, in function
+> > | returning non-void
+> > 
+> > So what should we return here? -ENODEV? -EINVAL? Anything else?
 > 
-> //fork1.cc
-[...]
->    if (pid_t pid = fork() < 0)
+> Success:  0.  The point is to ignore them, not fail!
+> 
+> 
+> See the appended.
 
-I don't think that this line does what you want it to do.
-Hint: Using a "pid_t" for the boolean result for a comparison seems
-strange at best.
+Agreed. I wondered about returning ENODEV and then catching it in the
+calling functions but that doesn't work out as very clear code. I'll
+queue and submit this.
 
-	Bernd
--- 
-Firmix Software GmbH                   http://www.firmix.at/
-mobil: +43 664 4416156                 fax: +43 1 7890849-55
-          Embedded Linux Development and Services
+Cheers,
+
+Richard
 
 
