@@ -1,99 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759078AbZDHCzY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753422AbZDHDRv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759078AbZDHCzY (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 7 Apr 2009 22:55:24 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754014AbZDHCzJ
+	id S1753422AbZDHDRv (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 7 Apr 2009 23:17:51 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751287AbZDHDRl
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 7 Apr 2009 22:55:09 -0400
-Received: from e39.co.us.ibm.com ([32.97.110.160]:43255 "EHLO
-	e39.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753833AbZDHCzI (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 7 Apr 2009 22:55:08 -0400
-Date: Tue, 7 Apr 2009 21:55:05 -0500
-From: "Serge E. Hallyn" <serue@us.ibm.com>
-To: Li Zefan <lizf@cn.fujitsu.com>
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       LKML <linux-kernel@vger.kernel.org>,
-       Linux Containers <containers@lists.linux-foundation.org>
-Subject: Re: [PATCH] devcgroup: skip superfluous checks when found the
-	DEV_ALL elem
-Message-ID: <20090408025505.GA28159@us.ibm.com>
-References: <49DAE8E4.2030106@cn.fujitsu.com>
+	Tue, 7 Apr 2009 23:17:41 -0400
+Received: from ozlabs.org ([203.10.76.45]:37119 "EHLO ozlabs.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750902AbZDHDRl (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 7 Apr 2009 23:17:41 -0400
+From: Rusty Russell <rusty@rustcorp.com.au>
+To: Peter Zijlstra <a.p.zijlstra@chello.nl>
+Subject: Re: pm-hibernate : possible circular locking dependency detected
+Date: Wed, 8 Apr 2009 12:47:08 +0930
+User-Agent: KMail/1.11.2 (Linux/2.6.27-11-generic; KDE/4.2.2; i686; ; )
+Cc: Ingo Molnar <mingo@elte.hu>, "Rafael J. Wysocki" <rjw@sisk.pl>,
+       Ming Lei <tom.leiming@gmail.com>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       "Linux-pm mailing list" <linux-pm@lists.linux-foundation.org>,
+       Linux Kernel List <linux-kernel@vger.kernel.org>,
+       Gautham R Shenoy <ego@in.ibm.com>
+References: <d82e647a0904050253n31bd2654s9b216465eec4d038@mail.gmail.com> <200904071356.29914.rusty@rustcorp.com.au> <1239087953.798.5513.camel@twins>
+In-Reply-To: <1239087953.798.5513.camel@twins>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: Text/Plain;
+  charset="iso-8859-15"
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <49DAE8E4.2030106@cn.fujitsu.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+Message-Id: <200904081247.08712.rusty@rustcorp.com.au>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Quoting Li Zefan (lizf@cn.fujitsu.com):
-> While walking through the whitelist, if the DEV_ALL item is found,
-> no more check is needed.
-
-Right, because the DEV_ALL item always has all permissions.
-
-
-> Signed-off-by: Li Zefan <lizf@cn.fujitsu.com>
-
-Acked-by: Serge Hallyn <serue@us.ibm.com>
-
-thanks,
--serge
-
-> ---
->  security/device_cgroup.c |   10 ++++++----
->  1 files changed, 6 insertions(+), 4 deletions(-)
+On Tuesday 07 April 2009 16:35:53 Peter Zijlstra wrote:
+> On Tue, 2009-04-07 at 13:56 +0930, Rusty Russell wrote:
+> > Looks like this will be fixed by Andrew's work-on-cpu-in-own-thread
+> > patch which I just put out the pull request for.
 > 
-> diff --git a/security/device_cgroup.c b/security/device_cgroup.c
-> index 5fda7df..b8186ba 100644
-> --- a/security/device_cgroup.c
-> +++ b/security/device_cgroup.c
-> @@ -490,7 +490,7 @@ int devcgroup_inode_permission(struct inode *inode, int mask)
+> Would it make sense to teach it about a short-circuit like:
 > 
->  	list_for_each_entry_rcu(wh, &dev_cgroup->whitelist, list) {
->  		if (wh->type & DEV_ALL)
-> -			goto acc_check;
-> +			goto found;
->  		if ((wh->type & DEV_BLOCK) && !S_ISBLK(inode->i_mode))
->  			continue;
->  		if ((wh->type & DEV_CHAR) && !S_ISCHR(inode->i_mode))
-> @@ -499,11 +499,12 @@ int devcgroup_inode_permission(struct inode *inode, int mask)
->  			continue;
->  		if (wh->minor != ~0 && wh->minor != iminor(inode))
->  			continue;
-> -acc_check:
-> +
->  		if ((mask & MAY_WRITE) && !(wh->access & ACC_WRITE))
->  			continue;
->  		if ((mask & MAY_READ) && !(wh->access & ACC_READ))
->  			continue;
-> +found:
->  		rcu_read_unlock();
->  		return 0;
->  	}
-> @@ -527,7 +528,7 @@ int devcgroup_inode_mknod(int mode, dev_t dev)
+> work_on_cpu() {
 > 
->  	list_for_each_entry_rcu(wh, &dev_cgroup->whitelist, list) {
->  		if (wh->type & DEV_ALL)
-> -			goto acc_check;
-> +			goto found;
->  		if ((wh->type & DEV_BLOCK) && !S_ISBLK(mode))
->  			continue;
->  		if ((wh->type & DEV_CHAR) && !S_ISCHR(mode))
-> @@ -536,9 +537,10 @@ int devcgroup_inode_mknod(int mode, dev_t dev)
->  			continue;
->  		if (wh->minor != ~0 && wh->minor != MINOR(dev))
->  			continue;
-> -acc_check:
-> +
->  		if (!(wh->access & ACC_MKNOD))
->  			continue;
-> +found:
->  		rcu_read_unlock();
->  		return 0;
->  	}
-> -- 
-> 1.5.4.rc3
+>   if (cpumask_weight(current->cpus_allowed) == 1 && 
+>       smp_processor_id() == cpu)
+>     return do_work_right_here();
+
+Does that happen much?  I guess put a counter in and see?
+
+Rusty.
