@@ -1,96 +1,72 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764430AbZDHMgz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764727AbZDHMh3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764430AbZDHMgz (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 8 Apr 2009 08:36:55 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754615AbZDHMgp
+	id S1764727AbZDHMh3 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 8 Apr 2009 08:37:29 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755205AbZDHMhH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 8 Apr 2009 08:36:45 -0400
-Received: from miranda.se.axis.com ([193.13.178.8]:54999 "EHLO
-	miranda.se.axis.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753814AbZDHMgp (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 8 Apr 2009 08:36:45 -0400
-Date: Wed, 8 Apr 2009 14:35:37 +0200
-From: Jesper Nilsson <jesper.nilsson@axis.com>
-To: Jack Stone <jwjstone@fastmail.fm>
-Cc: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       "jeff@garzik.org" <jeff@garzik.org>,
-       "kernel-janitors@vger.kernel.org" <kernel-janitors@vger.kernel.org>
-Subject: Re: [PATCH 08/56] cris: Remove void casts
-Message-ID: <20090408123537.GI8115@axis.com>
-References: <1239189748-11703-1-git-send-email-jwjstone@fastmail.fm> <1239189748-11703-2-git-send-email-jwjstone@fastmail.fm> <1239189748-11703-3-git-send-email-jwjstone@fastmail.fm> <1239189748-11703-4-git-send-email-jwjstone@fastmail.fm> <1239189748-11703-5-git-send-email-jwjstone@fastmail.fm> <1239189748-11703-6-git-send-email-jwjstone@fastmail.fm> <1239189748-11703-7-git-send-email-jwjstone@fastmail.fm> <1239189748-11703-8-git-send-email-jwjstone@fastmail.fm> <1239189748-11703-9-git-send-email-jwjstone@fastmail.fm>
+	Wed, 8 Apr 2009 08:37:07 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:54693 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754615AbZDHMhF (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 8 Apr 2009 08:37:05 -0400
+Date: Wed, 8 Apr 2009 08:36:38 -0400 (EDT)
+From: Mikulas Patocka <mpatocka@redhat.com>
+X-X-Sender: mpatocka@hs20-bc2-1.build.redhat.com
+To: Theodore Tso <tytso@mit.edu>
+cc: Ric Wheeler <rwheeler@redhat.com>, Jens Axboe <jens.axboe@oracle.com>,
+       device-mapper development <dm-devel@redhat.com>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       ak@linux.intel.com, "MASON, CHRISTOPHER" <CHRIS.MASON@oracle.com>
+Subject: Re: [dm-devel] Barriers still not passing on simple dm devices...
+In-Reply-To: <20090405012839.GF7553@mit.edu>
+Message-ID: <Pine.LNX.4.64.0904080821060.28196@hs20-bc2-1.build.redhat.com>
+References: <20090324150517.GX27476@kernel.dk>
+ <Pine.LNX.4.64.0903251106520.27750@hs20-bc2-1.build.redhat.com>
+ <20090325152751.GV27476@kernel.dk> <Pine.LNX.4.64.0903251825310.8027@hs20-bc2-1.build.redhat.com>
+ <20090326084205.GG27476@kernel.dk> <Pine.LNX.4.64.0903302314500.6158@hs20-bc2-1.build.redhat.com>
+ <20090331104933.GJ5178@kernel.dk> <Pine.LNX.4.64.0904021923040.19415@hs20-bc2-1.build.redhat.com>
+ <20090403081131.GP5178@kernel.dk> <49D77AC3.3020207@redhat.com>
+ <20090405012839.GF7553@mit.edu>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1239189748-11703-9-git-send-email-jwjstone@fastmail.fm>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Apr 08, 2009 at 01:21:40PM +0200, Jack Stone wrote:
-> Remove uneeded void casts
->
-> Signed-Off-By: Jack Stone <jwjstone@fastmail.fm>
+> Even now, the reason why ext3 doesn't have barriers enabled by default
+> (although we did make them the default for ext4) is because Andrew
+> doesn't believe Chris's replication case is likely to be true for most
+> users in practice, and he's concerned about the performance
+> degradation of barriers.  He's basically depending on the fact that
+> "usually" you can get away without using barriers.  Sigh....
 
+What is the performance degradation of barriers?
 
-Thanks, I'm adding the following patch to the CRIS tree:
+If the disk doesn't have write cache, performance of barrier-filesystem 
+should be equal or better than performance of the same filesystem not 
+using barriers. If barriers degrade performance, there is something 
+seriously broken, either in the filesystem (XFS...) or in the block layer.
 
+If the disk has write cache and you disable barriers, you might get some 
+performance improvement. But you are getting this performance improvement 
+from the fact that the disk illegaly reorders writes that should be 
+ordered. And you are going to damage your data on power failure.
 
-From: Jack Stone <jwjstone@fastmail.fm>
+--- definitely, very few admins want this "high-performance & damage" 
+setup (maybe for /tmp or /var/log?) --- such condition sould be only 
+enabled with admin fully knowning what's going on. And where should the 
+admin get the knowledge?
 
-Remove uneeded void casts
+In hdparm manpage, there is just:
+-W     Get/set the IDE/SATA drive's write-caching feature.
 
-Signed-off-by: Jack Stone <jwjstone@fastmail.fm>
-Signed-off-by: Jesper Nilsson <jesper.nilsson@axis.com>
+> 						- Ted
+> 
+> P.S.  Of course, distributions should feel free to consider changing
+> the default on their kernels.  SLES has already if memory serves
+> correctly.  I don't know if RHEL has yet.
 
---
- cryptocop.c |   14 ++++++++++----
- 1 file changed, 10 insertions(+), 4 deletions(-)
+RHEL doesn't enable write cache by default. And doesn't use barriers (it 
+uses lvm2/device mapper and they won't get through).
 
-diff --git a/arch/cris/arch-v32/drivers/cryptocop.c b/arch/cris/arch-v32/drivers/cryptocop.c
-index 67c61ea..beb914d 100644
---- a/arch/cris/arch-v32/drivers/cryptocop.c
-+++ b/arch/cris/arch-v32/drivers/cryptocop.c
-@@ -2455,7 +2455,8 @@ static int map_pages_to_iovec(struct iovec *iov, int iovlen, int *iovix, struct
- 			DEBUG_API(printk("map_page_to_iovec: *pageix=%d >= nopages=%d\n", *pageix, nopages));
- 			return 0;
- 		}
--		iov[*iovix].iov_base = (unsigned char*)page_address(pages[*pageix]) + *pageoffset;
-+		iov[*iovix].iov_base =
-+			page_address(pages[*pageix]) + *pageoffset;
- 		tmplen = PAGE_SIZE - *pageoffset;
- 		if (tmplen < map_length){
- 			(*pageoffset) = 0;
-@@ -2780,16 +2781,21 @@ static int cryptocop_ioctl_process(struct inode *inode, struct file *filp, unsig
- 		size_t tmplen = cop->tfrm_op.inlen;
- 
- 		cop->tfrm_op.indata[0].iov_len = PAGE_SIZE - ((unsigned long int)(oper.indata + prev_ix) & ~PAGE_MASK);
--		cop->tfrm_op.indata[0].iov_base = (unsigned char*)page_address(inpages[0]) + ((unsigned long int)(oper.indata + prev_ix) & ~PAGE_MASK);
-+		cop->tfrm_op.indata[0].iov_base = page_address(inpages[0]) +
-+			((unsigned long int)(oper.indata + prev_ix) &
-+			~PAGE_MASK);
- 		tmplen -= cop->tfrm_op.indata[0].iov_len;
- 		for (i = 1; i<noinpages; i++){
- 			cop->tfrm_op.indata[i].iov_len = tmplen < PAGE_SIZE ? tmplen : PAGE_SIZE;
--			cop->tfrm_op.indata[i].iov_base = (unsigned char*)page_address(inpages[i]);
-+			cop->tfrm_op.indata[i].iov_base =
-+				page_address(inpages[i]);
- 			tmplen -= PAGE_SIZE;
- 		}
- 	} else {
- 		cop->tfrm_op.indata[0].iov_len = oper.inlen - prev_ix;
--		cop->tfrm_op.indata[0].iov_base = (unsigned char*)page_address(inpages[0]) + ((unsigned long int)(oper.indata + prev_ix) & ~PAGE_MASK);
-+		cop->tfrm_op.indata[0].iov_base = page_address(inpages[0]) +
-+			((unsigned long int)(oper.indata + prev_ix) &
-+			~PAGE_MASK);
- 	}
- 
- 	iovlen = nooutpages + 6;
-
-A small nit: If you're going to change stylistic issues please
-run it through checkpatch and fix them all.
-
-/^JN - Jesper Nilsson
--- 
-               Jesper Nilsson -- jesper.nilsson@axis.com
+Mikulas
