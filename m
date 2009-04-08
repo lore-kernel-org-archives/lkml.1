@@ -1,77 +1,104 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760982AbZDHAwB@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760800AbZDHAza@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760982AbZDHAwB (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 7 Apr 2009 20:52:01 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758328AbZDHAvw
+	id S1760800AbZDHAza (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 7 Apr 2009 20:55:30 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754546AbZDHAzQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 7 Apr 2009 20:51:52 -0400
-Received: from smtp124.sbc.mail.sp1.yahoo.com ([69.147.64.97]:46207 "HELO
-	smtp124.sbc.mail.sp1.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1757048AbZDHAvv (ORCPT
+	Tue, 7 Apr 2009 20:55:16 -0400
+Received: from xc.sipsolutions.net ([83.246.72.84]:40227 "EHLO
+	sipsolutions.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753293AbZDHAzO (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 7 Apr 2009 20:51:51 -0400
-DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
-  s=s1024; d=pacbell.net;
-  h=Received:X-YMail-OSG:X-Yahoo-Newman-Property:From:To:Subject:Date:User-Agent:Cc:References:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Content-Disposition:Message-Id;
-  b=KjkeXlKJRt3tFxblUoHHl1qBWAh2ldp0TGDhDTML7Mx6+ZQbHsDbSKU9+wIz9TICs9ANE8SMPOomNfxLs+I5ZuG9nCLIddyulEEpJHCIIKM48xiDA232ZD541vZWrKMTVTU/3gNiOkzPCGDWf+2H+en6Uz09wEN8KzV79UJEh9g=  ;
-X-YMail-OSG: h1SSWrIVM1kSBytmw.ySFzn2SmsteVQhLUoGjTED.sjU.Z3V29C.fcWZa..eLg5cG94.17FFqa5OHdR4GFDvbDbmdfXg99NGaI0RxPtA4w5UidgiSu6a6gU6KSQImZkxinfQenXVlMceqwJIXyxoAbNioOERb3YiC0PXx6w6LvzhQXmJbOL_XCoEVUHaCw3.IA.eBsCBpFfdAN5O1_FJnG4KeZAqmObNX_WkJJvpZHgVx1wlt4HOT7PBq8w0ZD_18.PyVi8ZchD_De70T3EV2K_0KkbQWU0A18JkwJL0Yv87Z3a_Q2zsHTExlECGOSzDUUBl0fK9VVapCsdRyWQ4B2.I4Fu6gw--
-X-Yahoo-Newman-Property: ymail-3
-From: David Brownell <david-b@pacbell.net>
-To: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>
-Subject: Re: leds: just ignore invalid GPIOs in leds-gpio
-Date: Tue, 7 Apr 2009 17:51:49 -0700
-User-Agent: KMail/1.9.10
-Cc: Richard Purdie <rpurdie@linux.intel.com>,
-       Linux Kernel Development <linux-kernel@vger.kernel.org>
-References: <200904062059.n36Kxlum026774@hera.kernel.org> <alpine.LRH.2.00.0904071359010.23019@vixen.sonytel.be>
-In-Reply-To: <alpine.LRH.2.00.0904071359010.23019@vixen.sonytel.be>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200904071751.49507.david-b@pacbell.net>
+	Tue, 7 Apr 2009 20:55:14 -0400
+Subject: Re: [Bug #12490] ath5k related kernel panic in 2.6.29-rc1
+From: Johannes Berg <johannes@sipsolutions.net>
+To: Bob Copeland <me@bobcopeland.com>
+Cc: "Rafael J. Wysocki" <rjw@sisk.pl>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Kernel Testers List <kernel-testers@vger.kernel.org>,
+       "Sergey S. Kostyliov" <rathamahata@gmail.com>,
+       Felix Fietkau <nbd@openwrt.org>
+In-Reply-To: <20090408004644.GB28096@hash.localnet>
+References: <n4io5wq70ZO.A.gzG.rFn2JB@chimera>
+	 <AsKNxFx2juN.A.GaD.UJn2JB@chimera> <20090407024021.GA26739@hash.localnet>
+	 <1239098625.22453.6.camel@johannes.local>
+	 <20090408004644.GB28096@hash.localnet>
+Content-Type: multipart/signed; micalg="pgp-sha1"; protocol="application/pgp-signature"; boundary="=-NLHk8h7izYX30T5hLc7z"
+Date: Wed, 08 Apr 2009 02:54:32 +0200
+Message-Id: <1239152072.8456.39.camel@johannes.local>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.24.5 
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tuesday 07 April 2009, Geert Uytterhoeven wrote:
-> | drivers/leds/leds-gpio.c:85: warning: 'return' with no value, in function
-> | returning non-void
-> 
-> So what should we return here? -ENODEV? -EINVAL? Anything else?
 
-Success:  0.  The point is to ignore them, not fail!
+--=-NLHk8h7izYX30T5hLc7z
+Content-Type: text/plain
+Content-Transfer-Encoding: quoted-printable
 
+On Tue, 2009-04-07 at 20:46 -0400, Bob Copeland wrote:
+> On Tue, Apr 07, 2009 at 12:03:45PM +0200, Johannes Berg wrote:
+> >=20
+> > > Anyway here's a patch to buy some time.  Johannes, would this be
+> > > an acceptable band-aid for now?
+> >=20
+> > This is going to make it print two warnings for one occurrence of the
+> > problem though. I'd much prefer to put something into minstrel.c to
+> > catch when _it_ returns bogus values and in that case return 0, that wa=
+y
+> > at least the bandaid is restricted to the code it patches up.
+>=20
+> Ok, then maybe something like this?
+>=20
+> I think this covers most of the bases: if the driver is returning crap or
+> the ->cb gets corrupted, it'll get caught in tx_status.  If minstrel
+> stuffs a -1 in the first slot for any other reason we'll get a warning
+> before get_tx_rate and a hopefully valid index gets substituted.
 
-See the appended.
+Yeah, that looks nicer, thanks.
 
-- Dave
+> diff --git a/net/mac80211/rc80211_minstrel.c b/net/mac80211/rc80211_minst=
+rel.c
+> index 3824990..1cf7152 100644
+> --- a/net/mac80211/rc80211_minstrel.c
+> +++ b/net/mac80211/rc80211_minstrel.c
+> @@ -181,6 +181,11 @@ minstrel_tx_status(void *priv, struct ieee80211_supp=
+orted_band *sband,
+>  		if (ar[i].idx < 0)
+>  			break;
+> =20
+> +		if (WARN(ar[i].idx >=3D mi->n_rates,
+> +		    "minstrel: invalid rate report %d (n=3D%d)\n",
+> +		    ar[i].idx, mi->n_rates))
+> +			break;
 
-========== CUT HERE
-From: David Brownell <dbrownell@users.sourceforge.net>
+It might be easier to print this in hex -- that way things like 0x6b are
+more apparent?
 
-Fix build problems with leds-gpio:
+johannes
 
-  CC      drivers/leds/leds-gpio.o
-drivers/leds/leds-gpio.c: In function 'create_gpio_led':
-drivers/leds/leds-gpio.c:85: warning: 'return' with no value, in function returning non-void
+--=-NLHk8h7izYX30T5hLc7z
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: This is a digitally signed message part
 
-Signed-off-by: David Brownell <dbrownell@users.sourceforge.net>
+-----BEGIN PGP SIGNATURE-----
+Comment: Johannes Berg (powerbook)
 
----
- drivers/leds/leds-gpio.c |    8 ++++++--
- 1 file changed, 6 insertions(+), 2 deletions(-)
+iQIcBAABAgAGBQJJ2/XFAAoJEKVg1VMiehFYk64P/3cmAf3w0CrNkhKeTs4HDLQz
+kBpw84EzpHbeMpAOj0UyUzVKOBvjnmpF1nEXlU4rKJjHV3KI/UaFh+OpyAMpeaaI
+utePrXvVKwX727YtXE2VgJtB9zhObjqlNSlYcVD9J876CCbGhPOZOzDCnRDKLNzs
+aOTMWJHzGDAozHp1LvMieOqtF0qOwIWRlmGELuzv1Ws0g9cSjcXvmlH3a+qTDrco
+QgZgeiu032dTrCaYyRsWcqNHsWDqf+0V1zDfCrXrvI3Ug6WbheCdF34ARNfOEYEY
+tP+kbcGO0IxamRiwtF0AY1d/kwq7CwNuJaEu+Hbjg12ygp9MXylRCSjx7xZvzzBE
+SIvp55znT8qELS4qpL3UnBAdNQxxrx92y91h342lfWEyMpUVzOkrkqSqOClGKc++
+WmrxtWlPRjzx9rzijLTDqlVg+wqfNnnY1RlQgBG5p9LPi1lwtGMReeiJk70c+Siw
+bvb60/6wgVM2MU2e4DC7FcEE7QVGUjLrqxPulihrSBBGP6ffI81uX9vJN0l8Kp3t
+fTzkoBrUodhhHG+shYOclY7c5jH1DswhlrkMHXclslbp9Tx5GRXEQllBL3jRnx0+
+gH35eN9HDhgJTD/zGsN7aqBnW54b1JrloaVUeCDVSP5gBuf2gtAodx8Cj9SorBgV
+xTd6o2XH7Kt4BzBgkrge
+=3lxA
+-----END PGP SIGNATURE-----
 
---- a/drivers/leds/leds-gpio.c
-+++ b/drivers/leds/leds-gpio.c
-@@ -82,7 +84,7 @@ static int __devinit create_gpio_led(con
- 	if (!gpio_is_valid(template->gpio)) {
- 		printk(KERN_INFO "Skipping unavilable LED gpio %d (%s)\n", 
- 				template->gpio, template->name);
--		return;
-+		return 0;
- 	}
- 
- 	ret = gpio_request(template->gpio, template->name);
+--=-NLHk8h7izYX30T5hLc7z--
 
