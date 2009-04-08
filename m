@@ -1,52 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934237AbZDHQNq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934247AbZDHQOW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934237AbZDHQNq (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 8 Apr 2009 12:13:46 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934075AbZDHQMU
+	id S934247AbZDHQOW (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 8 Apr 2009 12:14:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934242AbZDHQNj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 8 Apr 2009 12:12:20 -0400
-Received: from terminus.zytor.com ([198.137.202.10]:55530 "EHLO
-	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S934061AbZDHQMS (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 8 Apr 2009 12:12:18 -0400
-Message-ID: <49DCCCCB.9000201@zytor.com>
-Date: Wed, 08 Apr 2009 09:11:55 -0700
-From: "H. Peter Anvin" <hpa@zytor.com>
-User-Agent: Thunderbird 2.0.0.19 (X11/20090105)
+	Wed, 8 Apr 2009 12:13:39 -0400
+Received: from mx2.redhat.com ([66.187.237.31]:52087 "EHLO mx2.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S934195AbZDHQNi (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 8 Apr 2009 12:13:38 -0400
+Date: Wed, 8 Apr 2009 12:12:52 -0400
+From: Jason Baron <jbaron@redhat.com>
+To: greg@kroah.com
+Cc: linux-kernel@vger.kernel.org, gnb@sgi.com
+Subject: [PATCH] remove pr_fmt() from dynamic_dev_dbg() printk
+Message-ID: <20090408161252.GA3125@redhat.com>
 MIME-Version: 1.0
-To: Glauber Costa <glommer@redhat.com>
-CC: kvm@vger.kernel.org, linux-kernel@vger.kernel.org, avi@redhat.com
-Subject: Re: [PATCH] do not keep interrupt window closed by sti in real mode
-References: <1239161017-7398-1-git-send-email-glommer@redhat.com> <49DC24C2.7000608@zytor.com> <20090408145545.GA25323@poweredge.glommer>
-In-Reply-To: <20090408145545.GA25323@poweredge.glommer>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Glauber Costa wrote:
-> 
-> I get the idea from the pseudocode in sti description.
-> It says:
-> IF PE = 0 (* Executing in real-address mode *)
->     THEN
->         IF <- 1; (* Set Interrupt Flag *)
->     ELSE (* Executing in protected mode or virtual-8086 mode *)
-> 
-> There is no mention to any other activity besides setting the if flag.
+hi,
 
-But the same is true for the protected mode side of the instruction 
-description!
+When pr_fmt() was added to the pr_debug() code, we added it not only to the
+dynamic_pr_debug() function, but also to the dynamic_dev_dbg() funciton.
+However, dev_dbg() doesn't make use of pr_fmt(), so neither should
+dynamic_dev_dbg().
 
-> Also, sti is used extensively in many places like the linux kernel for the
-> guest, and it works just fine in kvm. So I was led to believe that real mode
-> in fact behaving differently.
+thanks,
 
-The difference is that at least under current Intel VT, VT only handles 
-protected mode -- the real mode runs purely in the interpreter.
+-Jason
 
-> I'll take a look at avi's suggestion.
+Signed-off-by: Jason Baron <jbaron@redhat.com>
 
-	-hpa
+---
+ dynamic_debug.h |    2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+
+diff --git a/include/linux/dynamic_debug.h b/include/linux/dynamic_debug.h
+index baabf33..a0d9422 100644
+--- a/include/linux/dynamic_debug.h
++++ b/include/linux/dynamic_debug.h
+@@ -70,7 +70,7 @@ extern int ddebug_remove_module(char *mod_name);
+ 		DEBUG_HASH2, __LINE__, _DPRINTK_FLAGS_DEFAULT };	\
+ 	if (__dynamic_dbg_enabled(descriptor))				\
+ 			dev_printk(KERN_DEBUG, dev,			\
+-					KBUILD_MODNAME ": " pr_fmt(fmt),\
++					KBUILD_MODNAME ": " fmt,	\
+ 					##__VA_ARGS__);			\
+ 	} while (0)
+ 
