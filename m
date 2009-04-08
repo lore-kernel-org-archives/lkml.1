@@ -1,162 +1,91 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934722AbZDHR5r@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1765621AbZDHSAG@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934722AbZDHR5r (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 8 Apr 2009 13:57:47 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758354AbZDHR5f
+	id S1765621AbZDHSAG (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 8 Apr 2009 14:00:06 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755559AbZDHR7v
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 8 Apr 2009 13:57:35 -0400
-Received: from mx2.redhat.com ([66.187.237.31]:41122 "EHLO mx2.redhat.com"
+	Wed, 8 Apr 2009 13:59:51 -0400
+Received: from mx3.mail.elte.hu ([157.181.1.138]:35062 "EHLO mx3.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1757964AbZDHR5e (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 8 Apr 2009 13:57:34 -0400
-From: Glauber Costa <glommer@redhat.com>
-To: kvm@vger.kernel.org
-Cc: linux-kernel@vger.kernel.org, avi@redhat.com,
-       "H. Peter Anvin" <hpa@zytor.com>
-Subject: [PATCH] disable interrupt shadow state for emulated instruction
-Date: Wed,  8 Apr 2009 13:57:32 -0400
-Message-Id: <1239213452-5966-1-git-send-email-glommer@redhat.com>
+	id S1754904AbZDHR7u (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 8 Apr 2009 13:59:50 -0400
+Date: Wed, 8 Apr 2009 19:58:50 +0200
+From: Ingo Molnar <mingo@elte.hu>
+To: Bart Van Assche <bart.vanassche@gmail.com>
+Cc: Steven Rostedt <srostedt@redhat.com>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       LKML <linux-kernel@vger.kernel.org>
+Subject: Re: [2.6.29] Fix for enabling branch profiling makes sparse
+	unusable
+Message-ID: <20090408175850.GA1158@elte.hu>
+References: <200904051620.02311.bart.vanassche@gmail.com> <e2e108260904081029u621e46bbmc95cff280f70085c@mail.gmail.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=iso-8859-1
+Content-Disposition: inline
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <e2e108260904081029u621e46bbmc95cff280f70085c@mail.gmail.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-we currently unblock shadow interrupt state when we skip an instruction,
-but failing to do so when we actually emulate one. This blocks interrupts
-in key instruction blocks, in particular sti; hlt; sequences
 
-Without this patch, I cannot boot gpxe option roms at vmx machines.
-This is described at https://bugzilla.redhat.com/show_bug.cgi?id=494469
+* Bart Van Assche <bart.vanassche@gmail.com> wrote:
 
-Signed-off-by: Glauber Costa <glommer@redhat.com>
-CC: H. Peter Anvin <hpa@zytor.com>
-CC: Avi Kivity <avi@redhat.com>
----
- arch/x86/include/asm/kvm_host.h |    1 +
- arch/x86/kvm/svm.c              |   12 ++++++++++--
- arch/x86/kvm/vmx.c              |   29 +++++++++++++++++++----------
- arch/x86/kvm/x86.c              |    2 ++
- 4 files changed, 32 insertions(+), 12 deletions(-)
+> On Sun, Apr 5, 2009 at 4:20 PM, Bart Van Assche
+> <bart.vanassche@gmail.com> wrote:
+> > One of the changes between kernels 2.6.28 and 2.6.29 is that a branch profiler
+> > has been added for if() statements. Unfortunately this patch makes the sparse
+> > output unusable with CONFIG_TRACE_BRANCH_PROFILING=y: when branch profiling is
+> > enabled, sparse prints so much false positives that the real issues are no
+> > longer visible. This behavior can be reproduced as follows:
+> > * enable CONFIG_TRACE_BRANCH_PROFILING, e.g. by running make allyesconfig or
+> >  make allmodconfig.
+> > * run make C=2
+> >
+> > Result: a huge number of the following sparse warnings.
+> > ...
+> > include/linux/cpumask.h:547:2: warning: symbol '______r' shadows an earlier one
+> > include/linux/cpumask.h:547:2: originally declared here
+> > ...
+> >
+> > The patch below fixes this by disabling branch profiling while analyzing the
+> > kernel code with sparse.
+> >
+> > See also:
+> > * http://lkml.org/lkml/2008/11/21/18
+> > * http://bugzilla.kernel.org/show_bug.cgi?id=12925
+> >
+> > Signed-off-by: Bart Van Assche <bart.vanassche@gmail.com>
+> >
+> > --- orig/linux-2.6.29/include/linux/compiler.h  2009-03-23 19:12:14.000000000 -0400
+> > +++ linux-2.6.29/include/linux/compiler.h       2009-03-24 08:46:46.000000000 -0400
+> > @@ -75,7 +75,8 @@ struct ftrace_branch_data {
+> >  * Note: DISABLE_BRANCH_PROFILING can be used by special lowlevel code
+> >  * to disable branch tracing on a per file basis.
+> >  */
+> > -#if defined(CONFIG_TRACE_BRANCH_PROFILING) && !defined(DISABLE_BRANCH_PROFILING)
+> > +#if defined(CONFIG_TRACE_BRANCH_PROFILING) \
+> > +    && !defined(DISABLE_BRANCH_PROFILING) && !defined(__CHECKER__)
+> >  void ftrace_likely_update(struct ftrace_branch_data *f, int val, int expect);
+> >
+> >  #define likely_notrace(x)      __builtin_expect(!!(x), 1)
+> 
+> (ping)
+> 
+> Hello,
+> 
+> Is there any chance the above patch will get included in the 2.6.30 kernel ?
 
-diff --git a/arch/x86/include/asm/kvm_host.h b/arch/x86/include/asm/kvm_host.h
-index 3fc4623..0890a6e 100644
---- a/arch/x86/include/asm/kvm_host.h
-+++ b/arch/x86/include/asm/kvm_host.h
-@@ -513,6 +513,7 @@ struct kvm_x86_ops {
- 	void (*run)(struct kvm_vcpu *vcpu, struct kvm_run *run);
- 	int (*handle_exit)(struct kvm_run *run, struct kvm_vcpu *vcpu);
- 	void (*skip_emulated_instruction)(struct kvm_vcpu *vcpu);
-+	void (*block_interrupt_shadow)(struct kvm_vcpu *vcpu);
- 	void (*patch_hypercall)(struct kvm_vcpu *vcpu,
- 				unsigned char *hypercall_addr);
- 	int (*get_irq)(struct kvm_vcpu *vcpu);
-diff --git a/arch/x86/kvm/svm.c b/arch/x86/kvm/svm.c
-index 3ffb695..d303e86 100644
---- a/arch/x86/kvm/svm.c
-+++ b/arch/x86/kvm/svm.c
-@@ -210,6 +210,14 @@ static int is_external_interrupt(u32 info)
- 	return info == (SVM_EVTINJ_VALID | SVM_EVTINJ_TYPE_INTR);
- }
- 
-+static void svm_block_interrupt_shadow(struct kvm_vcpu *vcpu)
-+{
-+	struct vcpu_svm *svm = to_svm(vcpu);
-+
-+	svm->vmcb->control.int_state &= ~SVM_INTERRUPT_SHADOW_MASK;
-+	vcpu->arch.interrupt_window_open = (svm->vcpu.arch.hflags & HF_GIF_MASK);
-+}
-+
- static void skip_emulated_instruction(struct kvm_vcpu *vcpu)
- {
- 	struct vcpu_svm *svm = to_svm(vcpu);
-@@ -223,9 +231,8 @@ static void skip_emulated_instruction(struct kvm_vcpu *vcpu)
- 		       __func__, kvm_rip_read(vcpu), svm->next_rip);
- 
- 	kvm_rip_write(vcpu, svm->next_rip);
--	svm->vmcb->control.int_state &= ~SVM_INTERRUPT_SHADOW_MASK;
- 
--	vcpu->arch.interrupt_window_open = (svm->vcpu.arch.hflags & HF_GIF_MASK);
-+	svm_block_interrupt_shadow(vcpu);
- }
- 
- static int has_svm(void)
-@@ -2660,6 +2667,7 @@ static struct kvm_x86_ops svm_x86_ops = {
- 	.run = svm_vcpu_run,
- 	.handle_exit = handle_exit,
- 	.skip_emulated_instruction = skip_emulated_instruction,
-+	.block_interrupt_shadow = svm_block_interrupt_shadow,
- 	.patch_hypercall = svm_patch_hypercall,
- 	.get_irq = svm_get_irq,
- 	.set_irq = svm_set_irq,
-diff --git a/arch/x86/kvm/vmx.c b/arch/x86/kvm/vmx.c
-index c6997c0..cee38e4 100644
---- a/arch/x86/kvm/vmx.c
-+++ b/arch/x86/kvm/vmx.c
-@@ -736,26 +736,34 @@ static void vmx_set_rflags(struct kvm_vcpu *vcpu, unsigned long rflags)
- 	vmcs_writel(GUEST_RFLAGS, rflags);
- }
- 
-+static void vmx_block_interrupt_shadow(struct kvm_vcpu *vcpu)
-+{
-+	/*
-+	 * We emulated an instruction, so temporary interrupt blocking
-+	 * should be removed, if set.
-+	 */
-+	u32 interruptibility = vmcs_read32(GUEST_INTERRUPTIBILITY_INFO);
-+	u32 interruptibility_mask = ((GUEST_INTR_STATE_STI | GUEST_INTR_STATE_MOV_SS));
-+
-+	if (interruptibility & interruptibility_mask)
-+		vmcs_write32(GUEST_INTERRUPTIBILITY_INFO,
-+			     interruptibility & ~interruptibility_mask);
-+	vcpu->arch.interrupt_window_open = 1;
-+}
-+
- static void skip_emulated_instruction(struct kvm_vcpu *vcpu)
- {
- 	unsigned long rip;
--	u32 interruptibility;
- 
- 	rip = kvm_rip_read(vcpu);
- 	rip += vmcs_read32(VM_EXIT_INSTRUCTION_LEN);
- 	kvm_rip_write(vcpu, rip);
- 
--	/*
--	 * We emulated an instruction, so temporary interrupt blocking
--	 * should be removed, if set.
--	 */
--	interruptibility = vmcs_read32(GUEST_INTERRUPTIBILITY_INFO);
--	if (interruptibility & 3)
--		vmcs_write32(GUEST_INTERRUPTIBILITY_INFO,
--			     interruptibility & ~3);
--	vcpu->arch.interrupt_window_open = 1;
-+	/* skipping an emulated instruction also counts */
-+	vmx_block_interrupt_shadow(vcpu);
- }
- 
-+
- static void vmx_queue_exception(struct kvm_vcpu *vcpu, unsigned nr,
- 				bool has_error_code, u32 error_code)
- {
-@@ -3727,6 +3735,7 @@ static struct kvm_x86_ops vmx_x86_ops = {
- 	.run = vmx_vcpu_run,
- 	.handle_exit = vmx_handle_exit,
- 	.skip_emulated_instruction = skip_emulated_instruction,
-+	.block_interrupt_shadow = vmx_block_interrupt_shadow,
- 	.patch_hypercall = vmx_patch_hypercall,
- 	.get_irq = vmx_get_irq,
- 	.set_irq = vmx_inject_irq,
-diff --git a/arch/x86/kvm/x86.c b/arch/x86/kvm/x86.c
-index 0bb4131..8fa83b9 100644
---- a/arch/x86/kvm/x86.c
-+++ b/arch/x86/kvm/x86.c
-@@ -2414,6 +2414,8 @@ int emulate_instruction(struct kvm_vcpu *vcpu,
- 
- 	r = x86_emulate_insn(&vcpu->arch.emulate_ctxt, &emulate_ops);
- 
-+	kvm_x86_ops->block_interrupt_shadow(vcpu);
-+
- 	if (vcpu->arch.pio.string)
- 		return EMULATE_DO_MMIO;
- 
--- 
-1.5.6.6
+it already is part of .30-rc1, see 
+d9ad8bc0ca823705413f75b50c442a88cc518b35.
 
+	Ingo
