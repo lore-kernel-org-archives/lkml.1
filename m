@@ -1,75 +1,113 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1765880AbZDHN52@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932306AbZDHN56@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1765880AbZDHN52 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 8 Apr 2009 09:57:28 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1765714AbZDHN5M
+	id S932306AbZDHN56 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 8 Apr 2009 09:57:58 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758349AbZDHN5l
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 8 Apr 2009 09:57:12 -0400
-Received: from fg-out-1718.google.com ([72.14.220.155]:65001 "EHLO
-	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753754AbZDHN5K (ORCPT
+	Wed, 8 Apr 2009 09:57:41 -0400
+Received: from out2.smtp.messagingengine.com ([66.111.4.26]:44280 "EHLO
+	out2.smtp.messagingengine.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1758700AbZDHN5k (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 8 Apr 2009 09:57:10 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:references:mime-version
-         :content-type:content-disposition:content-transfer-encoding
-         :in-reply-to:user-agent;
-        b=mDka+sEXkmg4PHTa9YifPDbk/D0LKHOfjtn2qsrZOTp4eaMHgIpFUdBmV1WuQAGyr0
-         yyr7/5s8LwIhtunjzN2Z6RauNNuyasEy/y3KuxWD6IbW9Z9U5tTMAccwqfAmi61+GsAL
-         8M3Mu3PccPsZTNE+Had5hX8bqlJ+NkhuD+y94=
-Date: Wed, 8 Apr 2009 17:57:05 +0400
-From: Cyrill Gorcunov <gorcunov@gmail.com>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: Yinghai Lu <yinghai@kernel.org>, Thomas Gleixner <tglx@linutronix.de>,
-       "H. Peter Anvin" <hpa@zytor.com>, LKML <linux-kernel@vger.kernel.org>,
-       Suresh Siddha <suresh.b.siddha@intel.com>
-Subject: Re: [PATCH -tip] x86: do_IRQ - send EOI for x86-32 on irq without
-	handler
-Message-ID: <20090408135705.GA7556@lenovo>
-References: <20090403185729.GC12273@localhost> <20090408130217.GL18581@elte.hu> <20090408132558.GA1141@elte.hu>
+	Wed, 8 Apr 2009 09:57:40 -0400
+X-Sasl-enc: lx4qleQWcFz6BOke9d6qVSKKeYoG7Yd2kfb/ctTbpAZg 1239199058
+Message-ID: <49DCAD50.6070601@fastmail.fm>
+Date: Wed, 08 Apr 2009 14:57:36 +0100
+From: Jack Stone <jwjstone@fastmail.fm>
+User-Agent: Thunderbird 2.0.0.21 (X11/20090325)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <20090408132558.GA1141@elte.hu>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+To: Bert Wesarg <bert.wesarg@googlemail.com>
+CC: linux-kernel@vger.kernel.org, jeff@garzik.org,
+       kernel-janitors@vger.kernel.org
+Subject: Re: [PATCH 51/56] sysv: Remove void casts
+References: <1239189748-11703-1-git-send-email-jwjstone@fastmail.fm>	 <1239189748-11703-44-git-send-email-jwjstone@fastmail.fm>	 <1239189748-11703-45-git-send-email-jwjstone@fastmail.fm>	 <1239189748-11703-46-git-send-email-jwjstone@fastmail.fm>	 <1239189748-11703-47-git-send-email-jwjstone@fastmail.fm>	 <1239189748-11703-48-git-send-email-jwjstone@fastmail.fm>	 <1239189748-11703-49-git-send-email-jwjstone@fastmail.fm>	 <1239189748-11703-50-git-send-email-jwjstone@fastmail.fm>	 <1239189748-11703-51-git-send-email-jwjstone@fastmail.fm>	 <1239189748-11703-52-git-send-email-jwjstone@fastmail.fm> <36ca99e90904080502w1a9d703dg49a872b5539c3a9f@mail.gmail.com>
+In-Reply-To: <36ca99e90904080502w1a9d703dg49a872b5539c3a9f@mail.gmail.com>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-[Ingo Molnar - Wed, Apr 08, 2009 at 03:25:58PM +0200]
-| 
-| * Ingo Molnar <mingo@elte.hu> wrote:
-| 
-| > 
-| > * Cyrill Gorcunov <gorcunov@openvz.org> wrote:
-| > 
-| > > For X86-32 if IRQ has no handler it remains non-Ack'ed
-| > > even if APIC is not requested for being disabled.
-| > > Fix it.
-| > 
-| > nice fix. Did you observe any real hangs in such a situation, or is 
-| > this via code review?
+Fixed patch
 
-Code review
+Thanks,
 
-| 
-| more stuff needs fixing here first:
-| 
-| arch/x86/kernel/irq.c: In function ‘do_IRQ’:
-| arch/x86/kernel/irq.c:226: error: ‘disable_apic’ undeclared (first use in this function)
-| arch/x86/kernel/irq.c:226: error: (Each undeclared identifier is reported only once
-| arch/x86/kernel/irq.c:226: error: for each function it appears in.)
-| 
-| like making 'disable_apic' available everywhere.
-| 
-| Or better yet: introduce a dummy apic->write() method in the 
-| disable_apic=1 case so we can call a straight ack_APIC_irq().
-| 
-| 	Ingo
-| 
+Jack
 
-Ugh! Thanks Ingo! Will check and fix!
+--
 
-        Cyrill
+sysv: Remove void casts
+
+From: Jack Stone <jwjstone@fastmail.fm>
+
+Remove uneeded void casts
+
+Signed-Off-By: Jack Stone <jwjstone@fastmail.fm>
+---
+
+ fs/sysv/dir.c |   12 ++++++------
+ 1 files changed, 6 insertions(+), 6 deletions(-)
+
+diff --git a/fs/sysv/dir.c b/fs/sysv/dir.c
+index 56f6552..73b70a5 100644
+--- a/fs/sysv/dir.c
++++ b/fs/sysv/dir.c
+@@ -87,7 +87,7 @@ static int sysv_readdir(struct file * filp, void *
+dirent, filldir_t filldir)
+ 
+         if (IS_ERR(page))
+             continue;
+-        kaddr = (char *)page_address(page);
++        kaddr = page_address(page);
+         de = (struct sysv_dir_entry *)(kaddr+offset);
+         limit = kaddr + PAGE_CACHE_SIZE - SYSV_DIRSIZE;
+         for ( ;(char*)de <= limit; de++) {
+@@ -157,7 +157,7 @@ struct sysv_dir_entry *sysv_find_entry(struct dentry
+*dentry, struct page **res_
+         char *kaddr;
+         page = dir_get_page(dir, n);
+         if (!IS_ERR(page)) {
+-            kaddr = (char*)page_address(page);
++            kaddr = page_address(page);
+             de = (struct sysv_dir_entry *) kaddr;
+             kaddr += PAGE_CACHE_SIZE - SYSV_DIRSIZE;
+             for ( ; (char *) de <= kaddr ; de++) {
+@@ -201,7 +201,7 @@ int sysv_add_link(struct dentry *dentry, struct
+inode *inode)
+         err = PTR_ERR(page);
+         if (IS_ERR(page))
+             goto out;
+-        kaddr = (char*)page_address(page);
++        kaddr = page_address(page);
+         de = (struct sysv_dir_entry *)kaddr;
+         kaddr += PAGE_CACHE_SIZE - SYSV_DIRSIZE;
+         while ((char *)de <= kaddr) {
+@@ -244,7 +244,7 @@ int sysv_delete_entry(struct sysv_dir_entry *de,
+struct page *page)
+ {
+     struct address_space *mapping = page->mapping;
+     struct inode *inode = (struct inode*)mapping->host;
+-    char *kaddr = (char*)page_address(page);
++    char *kaddr = page_address(page);
+     loff_t pos = page_offset(page) + (char *)de - kaddr;
+     int err;
+ 
+@@ -278,7 +278,7 @@ int sysv_make_empty(struct inode *inode, struct
+inode *dir)
+     }
+     kmap(page);
+ 
+-    base = (char*)page_address(page);
++    base = page_address(page);
+     memset(base, 0, PAGE_CACHE_SIZE);
+ 
+     de = (struct sysv_dir_entry *) base;
+@@ -312,7 +312,7 @@ int sysv_empty_dir(struct inode * inode)
+         if (IS_ERR(page))
+             continue;
+ 
+-        kaddr = (char *)page_address(page);
++        kaddr = page_address(page);
+         de = (struct sysv_dir_entry *)kaddr;
+         kaddr += PAGE_CACHE_SIZE-SYSV_DIRSIZE;
+ 
