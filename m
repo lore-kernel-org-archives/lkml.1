@@ -1,137 +1,100 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759352AbZDHH2a@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763084AbZDHH16@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759352AbZDHH2a (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 8 Apr 2009 03:28:30 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762933AbZDHH1b
+	id S1763084AbZDHH16 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 8 Apr 2009 03:27:58 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762484AbZDHH11
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 8 Apr 2009 03:27:31 -0400
-Received: from mail-bw0-f169.google.com ([209.85.218.169]:34852 "EHLO
-	mail-bw0-f169.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1762955AbZDHH1a convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 8 Apr 2009 03:27:30 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
-         :cc:content-type:content-transfer-encoding;
-        b=eXVjjCLK2tVZfRbMc/sg3hfxbQGYxillptAXpmjgPTiHANXR3pnDwFSN+oK9MPP+l5
-         GOFRY3vji4O8rEn7YLXJwIWkI137LEbjlFUjaESCxqVaBoP1cMJjXTxjh5Sh+Fyehqdb
-         bPvD82YTri33YGyGXv60XrkLOmPc8tzpyDvJI=
+	Wed, 8 Apr 2009 03:27:27 -0400
+Received: from cn.fujitsu.com ([222.73.24.84]:65226 "EHLO song.cn.fujitsu.com"
+	rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org with ESMTP
+	id S1762867AbZDHH1Z (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 8 Apr 2009 03:27:25 -0400
+Message-ID: <49DC51C6.1090103@cn.fujitsu.com>
+Date: Wed, 08 Apr 2009 15:27:02 +0800
+From: Wang Chen <wangchen@cn.fujitsu.com>
+User-Agent: Thunderbird 2.0.0.21 (Windows/20090302)
 MIME-Version: 1.0
-In-Reply-To: <20090408064733.GA16984@elte.hu>
-References: <49DC367A.90603@gawab.com> <20090408063240.GQ5178@kernel.dk>
-	 <20090408064733.GA16984@elte.hu>
-Date: Wed, 8 Apr 2009 09:27:28 +0200
-Message-ID: <19f34abd0904080027h5b7d2acfp7fdf774e67917175@mail.gmail.com>
-Subject: Re: 2.6.30-rc1: invalid opcode with call trace
-From: Vegard Nossum <vegard.nossum@gmail.com>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: Jens Axboe <jens.axboe@oracle.com>, Arjan van de Ven <arjan@infradead.org>,
-       Justin Madru <jdm64@gawab.com>, lkml <linux-kernel@vger.kernel.org>,
-       "Rafael J. Wysocki" <rjw@sisk.pl>
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8BIT
+To: Alessandro Suardi <alessandro.suardi@gmail.com>,
+       Rusty Russell <rusty@rustcorp.com.au>, Ingo Molnar <mingo@elte.hu>
+CC: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
+Subject: Re: Microcode driver causing WARNING in 2.6.29-git13/14 on Dell E6400
+References: <5a4c581d0904070407k6ba559bcra4a79b5e3e49725f@mail.gmail.com>
+In-Reply-To: <5a4c581d0904070407k6ba559bcra4a79b5e3e49725f@mail.gmail.com>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-2009/4/8 Ingo Molnar <mingo@elte.hu>:
->
-> * Jens Axboe <jens.axboe@oracle.com> wrote:
->
->> On Tue, Apr 07 2009, Justin Madru wrote:
->> > Hello,
->> >
->> > Testing 2.6.30-rc1,
->> > While booting I get the following call trace about an invalid opcode.
->> >
->> > ACPI: SSDT 3f6d4134 00244 (v01  PmRef  Cpu0Ist 00003000 INTL 20050624)
->> > ACPI: SSDT 3f6d3ee9 001C6 (v01  PmRef  Cpu0Cst 00003001 INTL 20050624)
->> > ACPI: CPU0 (power states: C1[C1] C2[C2] C3[C3])
->> > processor ACPI_CPU:00: registered as cooling_device0
->> > ACPI: Processor [CPU0] (supports 8 throttling states)
->> > ACPI: SSDT 3f6d4378 000C4 (v01  PmRef  Cpu1Ist 00003000 INTL 20050624)
->> > ACPI: SSDT 3f6d40af 00085 (v01  PmRef  Cpu1Cst 00003000 INTL 20050624)
->> > ACPI: CPU1 (power states: C1[C1] C2[C2] C3[C3])
->> > processor ACPI_CPU:01: registered as cooling_device1
->> > ACPI: Processor [CPU1] (supports 8 throttling states)
->> > input: Lid Switch as /devices/LNXSYSTM:00/device:00/PNP0C0D:00/input/input1
->> > ACPI: Lid Switch [LID]
->> > input: Power Button (CM) as
->> > /devices/LNXSYSTM:00/device:00/PNP0C0C:00/input/input2
->> > ACPI: Power Button (CM) [PBTN]
->> > ACPI: AC Adapter [AC] (on-line)
->> > input: Sleep Button (CM) as
->> > /devices/LNXSYSTM:00/device:00/PNP0C0E:00/input/input3
->> > ACPI: Sleep Button (CM) [SBTN]
->> > ACPI: Battery Slot [BAT0] (battery present)
->> > invalid opcode: 0000 [#1] PREEMPT SMP
->> > last sysfs file: /sys/devices/virtual/vtconsole/vtcon0/uevent
->> > Modules linked in: snd_pcm battery ac button processor intel_agp
->> > snd_page_alloc reiserfs crc32 sr_mod cdrom sg firewire_ohci
->> > firewire_core crc_itu_t ata_piix ehci_hcd uhci_hcd usbcore thermal fan
->> >
->> > Pid: 1760, comm: async/0 Not tainted (2.6.30-rc1-git #1) MM061
->> >                EIP: 0060:[<f80fb02c>] EFLAGS: 00010286 CPU: 1
->> > EIP is at 0xf80fb02c
->> > EAX: 00000000 EBX: 00000216 ECX: 00000000 EDX: 00000000
->> > ESI: f68fb320 EDI: 00000001 EBP: f7117f88 ESP: f7117f88
->> > DS: 007b ES: 007b FS: 00d8 GS: 0000 SS: 0068
->> > Process async/0 (pid: 1760, ti=f7117000 task=f6935390 task.ti=f7117000)
->> > Stack:
->> > f7117fd0 c015e612 f7117fa8 c0129cf9 f7073bb0 00000000 f693560c f6935390
->> > 00000286 f7117fd0 00000000 f6935390 c012fb20 f704efbc c04f22dc 00000000
->> > c015e540 00000000 f7117fe0 c015558c c0155550 00000000 00000000 c0103f5f
->> > Call Trace:
->> > [<c015e612>] ? async_thread+0xd2/0x240
->> > [<c0129cf9>] ? schedule_tail+0xd9/0x110
->> > [<c012fb20>] ? default_wake_function+0x0/0x10
->> > [<c015e540>] ? async_thread+0x0/0x240
->> > [<c015558c>] ? kthread+0x3c/0x70
->> > [<c0155550>] ? kthread+0x0/0x70
->> > [<c0103f5f>] ? kernel_thread_helper+0x7/0x18
->> > Code: 00 00 89 5d f4 8d 9e 88 00 00 00 89 7d fc 89 4d e8 e8 fc ff ff ff
->> > 8b be 98 00 00 00 39 df 74 57 89 f8 e8 fc ff ff ff 89 d8 e8 fc <ff> ff
->> > ff 8b 4d e8 89 f2 8b 45 ec c7 04 24 01 00 00 00 e8 3d c9
->> > EIP: [<f80fb02c>] 0xf80fb02c SS:ESP 0068:f7117f88
->> > ---[ end trace fefef3dd1f6b4bcf ]---
->> > sdhci: Secure Digital Host Controller Interface driver
->> > sdhci: Copyright(c) Pierre Ossman
->>
->> My x60 gets the exact same oops, 100% repeatable. I then added the
->> initcall_debug boot option to get a closer look at what was
->> crapping out, but then it works fine. So it smells like a race
->> somewhere. Didn't look further.
->
-> I too have an async hang/crash, on an old-style SCSI (aic7xxx) box -
-> hang log attached below.
->
-> No other -tip testbox is showing async related crashes, so i think
-> it's hardware (and driver) specific, not an async core problem.
->
-> ( but then again, we never expected the async bootup code to be
->  problematic in the core, most of the complications were at the
->  driver level. )
->
-> Note that it's not a crash but a boot hang - so it might be two
-> separate regressions.
->
-> ( Full bootlog attached below as well - i'm sending the config as a
->  reply as this mail is close to lkml size limits already. )
+Alessandro Suardi said the following on 2009-4-7 19:07:
+> Dell Latitude E6400, F10-uptodate as of yesterday, 2.6.29-git14 plus
+>  Vegard Nossum's fix to acpi/battery.c to allow booting (this specific
+>  WARNING was also printed during -git13 boot, which would eventually
+>  hang prior to Vegard's patch).
+> 
+> dmesg excerpt:
+> 
+> 
+> 
+> Adding 4096532k swap on /dev/sda5.  Priority:-1 extents:1 across:4096532k
+> SELinux: initialized (dev binfmt_misc, type binfmt_misc), uses genfs_contexts
+> platform microcode: firmware: requesting intel-ucode/06-17-06
+> platform microcode: firmware: requesting intel-ucode/06-17-06
+> Microcode Update Driver: v2.00 <tigran@aivazian.fsnet.co.uk>, Peter Oruba
+> ------------[ cut here ]------------
+> WARNING: at fs/sysfs/group.c:138 sysfs_remove_group+0x60/0xef()
+> Hardware name: Latitude E6400
+> sysfs group ffffffffa0136850 not found for kobject 'cpu0'
+> Modules linked in: microcode(-) snd_hda_codec_intelhdmi snd_hda_intel
+> snd_hda_codec snd_hwdep snd_seq_dummy snd_seq_oss snd_seq_midi_event
+> snd_seq snd_seq_device snd_pcm_oss snd_mixer_oss snd_pcm snd_timer snd
+> battery pcspkr video dell_laptop firewire_ohci rfkill i2c_i801 ac
+> firewire_core dcdbas soundcore usb_storage crc_itu_t output i2c_core
+> joydev snd_page_alloc [last unloaded: scsi_wait_scan]
+> Pid: 2570, comm: rmmod Not tainted 2.6.29-git14 #1
+> Call Trace:
+>  [<ffffffff81047c2e>] warn_slowpath+0xcc/0x11c
+>  [<ffffffff811b4fd5>] ? kobject_release+0x6d/0x8c
+>  [<ffffffff811b4f68>] ? kobject_release+0x0/0x8c
+>  [<ffffffff8113f208>] sysfs_remove_group+0x60/0xef
+>  [<ffffffffa01344b4>] mc_sysdev_remove+0x42/0x5f [microcode]
+>  [<ffffffff8125970b>] sysdev_driver_unregister+0x6c/0xb8
+>  [<ffffffffa0134f9a>] microcode_exit+0x47/0x87 [microcode]
+>  [<ffffffff81075317>] sys_delete_module+0x1cb/0x246
+>  [<ffffffff813c2b09>] ? trace_hardirqs_on_thunk+0x3a/0x3c
+>  [<ffffffff8100bf6b>] system_call_fastpath+0x16/0x1b
+> ---[ end trace 13427fb4ef873fae ]---
+> ------------[ cut here ]------------
+> WARNING: at fs/sysfs/group.c:138 sysfs_remove_group+0x60/0xef()
+> Hardware name: Latitude E6400
+> sysfs group ffffffffa0136850 not found for kobject 'cpu1'
+> Modules linked in: microcode(-) snd_hda_codec_intelhdmi snd_hda_intel
+> snd_hda_codec snd_hwdep snd_seq_dummy snd_seq_oss snd_seq_midi_event
+> snd_seq snd_seq_device snd_pcm_oss snd_mixer_oss snd_pcm snd_timer snd
+> battery pcspkr video dell_laptop firewire_ohci rfkill i2c_i801 ac
+> firewire_core dcdbas soundcore usb_storage crc_itu_t output i2c_core
+> joydev snd_page_alloc [last unloaded: scsi_wait_scan]
+> Pid: 2570, comm: rmmod Tainted: G        W  2.6.29-git14 #1
+> Call Trace:
+>  [<ffffffff81047c2e>] warn_slowpath+0xcc/0x11c
+>  [<ffffffff811b4fd5>] ? kobject_release+0x6d/0x8c
+>  [<ffffffff811b4f68>] ? kobject_release+0x0/0x8c
+>  [<ffffffff8113f208>] sysfs_remove_group+0x60/0xef
+>  [<ffffffffa01344b4>] mc_sysdev_remove+0x42/0x5f [microcode]
+>  [<ffffffff8125970b>] sysdev_driver_unregister+0x6c/0xb8
+>  [<ffffffffa0134f9a>] microcode_exit+0x47/0x87 [microcode]
+>  [<ffffffff81075317>] sys_delete_module+0x1cb/0x246
+>  [<ffffffff813c2b09>] ? trace_hardirqs_on_thunk+0x3a/0x3c
+>  [<ffffffff8100bf6b>] system_call_fastpath+0x16/0x1b
+> ---[ end trace 13427fb4ef873faf ]---
+> Microcode Update Driver: v2.00 removed.
+> 
+> 
+> System seems to work at the moment (apart from unrelated X/VT
+>  issues I plan to report in a detailed fashion by the end of this week).
+> 
 
-Would you please try this patch? It has the same symptoms as a few
-other reports, only that this is 32-bit (and that makes it a bit
-different).
+I encounter this warning too.
+Seems commit af5c820a3169e81af869c113e18ec7588836cd50 intends to hunt
+this warning when microcode_init_cpu() failed.
 
-http://marc.info/?l=linux-kernel&m=123909566829773&w=2
-
-I think Len Brown has applied it to the ACPI tree already.
-
-
-Vegard
-
--- 
-"The animistic metaphor of the bug that maliciously sneaked in while
-the programmer was not looking is intellectually dishonest as it
-disguises that the error is the programmer's own creation."
-	-- E. W. Dijkstra, EWD1036
