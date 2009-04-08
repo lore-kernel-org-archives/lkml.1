@@ -1,75 +1,47 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756069AbZDHXCU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756193AbZDHXCn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756069AbZDHXCU (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 8 Apr 2009 19:02:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755848AbZDHXBp
+	id S1756193AbZDHXCn (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 8 Apr 2009 19:02:43 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756036AbZDHXCF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 8 Apr 2009 19:01:45 -0400
-Received: from sh.osrg.net ([192.16.179.4]:41584 "EHLO sh.osrg.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755885AbZDHXBo (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 8 Apr 2009 19:01:44 -0400
-Date: Thu, 9 Apr 2009 08:01:18 +0900
-To: jeremy@goop.org
-Cc: fujita.tomonori@lab.ntt.co.jp, galak@kernel.crashing.org,
-       hch@infradead.org, linux-kernel@vger.kernel.org, mingo@elte.hu,
-       ian.campbell@citrix.com, beckyb@kernel.crashing.org
-Subject: Re: [PATCH 4/7] swiotlb: Allow arch override of
- address_needs_mapping
-From: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
-In-Reply-To: <49DD270A.6060506@goop.org>
-References: <49DD1D6B.6030001@goop.org>
-	<20090409071032M.fujita.tomonori@lab.ntt.co.jp>
-	<49DD270A.6060506@goop.org>
+	Wed, 8 Apr 2009 19:02:05 -0400
+Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:46008
+	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
+	by vger.kernel.org with ESMTP id S1756020AbZDHXCD (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 8 Apr 2009 19:02:03 -0400
+Date: Wed, 08 Apr 2009 16:01:52 -0700 (PDT)
+Message-Id: <20090408.160152.56341911.davem@davemloft.net>
+To: mschmidt@redhat.com
+Cc: netdev@vger.kernel.org, linux-kernel@vger.kernel.org,
+       shemminger@vyatta.com
+Subject: Re: [PATCH] skge: fix occasional BUG during MTU change
+From: David Miller <davem@davemloft.net>
+In-Reply-To: <20090407183623.7545bb0b@leela>
+References: <20090407183623.7545bb0b@leela>
+X-Mailer: Mew version 6.2.51 on Emacs 22.1 / Mule 5.0 (SAKAKI)
 Mime-Version: 1.0
 Content-Type: Text/Plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
-Message-Id: <20090409080143C.fujita.tomonori@lab.ntt.co.jp>
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-3.0 (sh.osrg.net [192.16.179.4]); Thu, 09 Apr 2009 08:01:19 +0900 (JST)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 08 Apr 2009 15:36:58 -0700
-Jeremy Fitzhardinge <jeremy@goop.org> wrote:
+From: Michal Schmidt <mschmidt@redhat.com>
+Date: Tue, 7 Apr 2009 18:36:23 +0200
 
-> FUJITA Tomonori wrote:
-> >> Some architectures need non-trivial bus<->phys conversion routines, etc, 
-> >>     
-> >
-> > Only Xen needs such conversion for swiotlb.
-> >   
+> The BUG_ON(skge->tx_ring.to_use != skge->tx_ring.to_clean) in skge_up()
+> was sometimes observed when setting MTU.
 > 
-> Becky's patches of last week also added __weak annotations to 
-> swiotlb_bus_to_virt, virt_to_bus and bus_to_phys; added the hwdev 
-> parameter to swiotlb_bus_to_phys; and added a weak 
-> swiotlb_arch_address_needs_mapping.  I assume that was needed because 
-> powerpc needs non-trivial implementations for those functions.
-
-Hmm, what she added are wrappers of virt_to_bus and bus_to_virt. We
-can remove these and directly use virt_to_bus and bus_to_virt.
-
-About __weak address_needs_mapping function, as I said, removing it
-and using dma_map_ops is a proper solution.
-
-
-> >> so either we can require it that all architectures wishing to use 
-> >> swiotlb define these functions, or have weak default functions that can 
-> >> be overridden by architectures where necessary.
-> >>     
-> >
-> > Can you give an example? I don't think IA64, X86_64 or POWER (which
-> > will use swiotlb) need any __weak functions. If you say other archs
-> > could use swiotlb, please tell me how they need these __weak.
-> >   
+> skge_down() disables the TX queue, but then reenables it by mistake via
+> skge_tx_clean().
+> Fix it by moving the waking of the queue from skge_tx_clean() to the
+> other caller. And to make sure start_xmit is not in progress on another
+> CPU, skge_down() should call netif_tx_disable().
 > 
-> As I said, Becky's patches added hooks in many of the places we added 
-> them for Xen.  I assume that's because powerpc needs them; I have not 
-> seen the arch/powerpc side of those changes.
+> The bug was reported to me by Jiri Jilek whose Debian system sometimes
+> failed to boot. He tested the patch and the bug did not happen anymore.
 > 
->     J
-> --
-> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
-> Please read the FAQ at  http://www.tux.org/lkml/
+> Signed-off-by: Michal Schmidt <mschmidt@redhat.com>
+
+Stephen, an ACK possibly?
