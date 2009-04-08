@@ -1,59 +1,99 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1765633AbZDHNiI@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1765675AbZDHNij@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1765633AbZDHNiI (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 8 Apr 2009 09:38:08 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1765566AbZDHNhZ
+	id S1765675AbZDHNij (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 8 Apr 2009 09:38:39 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760822AbZDHNiG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 8 Apr 2009 09:37:25 -0400
-Received: from miranda.se.axis.com ([193.13.178.8]:50929 "EHLO
-	miranda.se.axis.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1765451AbZDHNhX (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 8 Apr 2009 09:37:23 -0400
-Date: Wed, 8 Apr 2009 15:36:19 +0200
-From: Jesper Nilsson <jesper.nilsson@axis.com>
-To: Bert Wesarg <bert.wesarg@googlemail.com>
-Cc: Jack Stone <jwjstone@fastmail.fm>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       "jeff@garzik.org" <jeff@garzik.org>,
-       "kernel-janitors@vger.kernel.org" <kernel-janitors@vger.kernel.org>
-Subject: Re: [PATCH 08/56] cris: Remove void casts
-Message-ID: <20090408133619.GJ8115@axis.com>
-References: <1239189748-11703-1-git-send-email-jwjstone@fastmail.fm> <1239189748-11703-2-git-send-email-jwjstone@fastmail.fm> <1239189748-11703-3-git-send-email-jwjstone@fastmail.fm> <1239189748-11703-4-git-send-email-jwjstone@fastmail.fm> <1239189748-11703-5-git-send-email-jwjstone@fastmail.fm> <1239189748-11703-6-git-send-email-jwjstone@fastmail.fm> <1239189748-11703-7-git-send-email-jwjstone@fastmail.fm> <1239189748-11703-8-git-send-email-jwjstone@fastmail.fm> <1239189748-11703-9-git-send-email-jwjstone@fastmail.fm> <36ca99e90904080534g54a1d4f3ue782b8598d238090@mail.gmail.com>
+	Wed, 8 Apr 2009 09:38:06 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:35311 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1765632AbZDHNiF (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 8 Apr 2009 09:38:05 -0400
+Date: Wed, 8 Apr 2009 09:37:56 -0400 (EDT)
+From: Mikulas Patocka <mpatocka@redhat.com>
+X-X-Sender: mpatocka@hs20-bc2-1.build.redhat.com
+To: Jens Axboe <jens.axboe@oracle.com>
+cc: device-mapper development <dm-devel@redhat.com>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       ak@linux.intel.com, "MASON, CHRISTOPHER" <CHRIS.MASON@oracle.com>
+Subject: Re: [dm-devel] Barriers still not passing on simple dm devices...
+In-Reply-To: <20090403081131.GP5178@kernel.dk>
+Message-ID: <Pine.LNX.4.64.0904080855340.28196@hs20-bc2-1.build.redhat.com>
+References: <20090324143034.GW27476@kernel.dk>
+ <Pine.LNX.4.64.0903241033070.4088@hs20-bc2-1.build.redhat.com>
+ <20090324150517.GX27476@kernel.dk> <Pine.LNX.4.64.0903251106520.27750@hs20-bc2-1.build.redhat.com>
+ <20090325152751.GV27476@kernel.dk> <Pine.LNX.4.64.0903251825310.8027@hs20-bc2-1.build.redhat.com>
+ <20090326084205.GG27476@kernel.dk> <Pine.LNX.4.64.0903302314500.6158@hs20-bc2-1.build.redhat.com>
+ <20090331104933.GJ5178@kernel.dk> <Pine.LNX.4.64.0904021923040.19415@hs20-bc2-1.build.redhat.com>
+ <20090403081131.GP5178@kernel.dk>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <36ca99e90904080534g54a1d4f3ue782b8598d238090@mail.gmail.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Apr 08, 2009 at 02:34:12PM +0200, Bert Wesarg wrote:
-> On Wed, Apr 8, 2009 at 13:21, Jack Stone <jwjstone@fastmail.fm> wrote:
-> > Remove uneeded void casts
-> >
-> > Signed-Off-By: Jack Stone <jwjstone@fastmail.fm>
-> > ---
-> >  arch/cris/arch-v32/drivers/cryptocop.c |    8 ++++----
-> >  1 files changed, 4 insertions(+), 4 deletions(-)
-> >
-> > diff --git a/arch/cris/arch-v32/drivers/cryptocop.c b/arch/cris/arch-v32/drivers/cryptocop.c
-> > index 67c61ea..5d20327 100644
-> > --- a/arch/cris/arch-v32/drivers/cryptocop.c
-> > +++ b/arch/cris/arch-v32/drivers/cryptocop.c
-> > @@ -2455,7 +2455,7 @@ static int map_pages_to_iovec(struct iovec *iov, int iovlen, int *iovix, struct
-> >                        DEBUG_API(printk("map_page_to_iovec: *pageix=%d >= nopages=%d\n", *pageix, nopages));
-> >                        return 0;
-> >                }
-> > -               iov[*iovix].iov_base = (unsigned char*)page_address(pages[*pageix]) + *pageoffset;
-> > +               iov[*iovix].iov_base = page_address(pages[*pageix]) + *pageoffset;
-> Pointer arithmetic or intended cast (to avoid warnings for void
-> pointer arithmetic).
+> > So I'm wondering why Linux developers designed a barrier interface with 
+> > complex specification, complex implementation and the interface is useless 
+> > to provide any request ordering and it's no better than q->issue_flush_fn 
+> > method or whatever was there beffore. Obviously, the whole barrier thing 
+> > was designed by a person who never used it in a filesystem.
+> 
+> That's not quite true, it was done in conjunction with file system
+> people.
+> ...
+> Nobody was interested in barriers when they were done. Nobody.
 
-Good catch. I think I'll drop the patch for now.
+That's a contradiction :-)
 
-/^JN - Jesper Nilsson
--- 
-               Jesper Nilsson -- jesper.nilsson@axis.com
+
+Some times ago I wrote a piece of code that uses barriers for performance 
+enhancement 
+(http://artax.karlin.mff.cuni.cz/~mikulas/spadfs/download/spadfs-0.9.10.tar.gz).
+
+The used trick is basically to take a lock that prevents filesystem-wide 
+updates, submit remaining writes (don't wait), submit the barrier that 
+causes transition to new generation (don't wait) and release the lock. The 
+lock is held for minimum time, no IO is waited for inside the lock. This 
+trick can't be done without barriers, without barriers you'd have to wait 
+inside the lock.
+
+And the requirement for this code is that barriers are supported for the 
+whole lifetime of the filesystem --- which is what the Linux kernel 
+doesn't support! If barrier support is lost, consistency is damaged. 
+
+With barriers, the code does [submit A, submit barrier B, submit C].
+If you don't have barriers, you must modify this sequence to: [submit A, 
+wait for A endio, submit B, wait for B endio, submit C]
+
+--- and now you are getting the point why failing barriers can't ever work 
+--- by the time request B completes, you find out that the device lost 
+barrier support and you realize that you should have inserted the waits in 
+the past --- but it's too late, there is no way to insert them 
+retroactively.
+
+AFAIK this is the only piece of code that uses barriers to improve 
+performance. All the other filesystems use barriers just as a way to flush 
+cache and don't overlap barrier request with any other requests.
+
+So there are two ways:
+
+- either support only what all in-kernel filesystems do. Using barrier 
+reqiests to flush hw cache. You can remove support for barriers with data, 
+leave just zero-data barrier, you can remove ordering restrictions. 
+In-kernel filesystems never overlap barrier with another metadata request 
+(see above why such overlap can't work), so you can freely reorder 
+zero-data barriers and simplify the code ... because all the requests that 
+could be submitted in paralel with the barrier are either for different 
+partition or non-metadata requests to the same partition from prefetch, 
+direct io or so.
+
+- or you can allow barriers to be used for purposes as I did. And then, 
+there must be clean indicator "this device supports barriers 
+*and*will*support*them*in*the*future*". Currently there is no such 
+indicator.
+
+Mikulas
+
+> -- 
+> Jens Axboe
+> 
