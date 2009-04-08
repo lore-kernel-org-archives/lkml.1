@@ -1,50 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752345AbZDHWGR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754532AbZDHWHp@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752345AbZDHWGR (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 8 Apr 2009 18:06:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752007AbZDHWF5
+	id S1754532AbZDHWHp (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 8 Apr 2009 18:07:45 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752554AbZDHWHf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 8 Apr 2009 18:05:57 -0400
-Received: from mail-gx0-f160.google.com ([209.85.217.160]:49806 "EHLO
-	mail-gx0-f160.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751627AbZDHWF4 (ORCPT
+	Wed, 8 Apr 2009 18:07:35 -0400
+Received: from 136-022.dsl.LABridge.com ([206.117.136.22]:1515 "EHLO
+	mail.perches.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751895AbZDHWHe (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 8 Apr 2009 18:05:56 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
-         :cc:content-type:content-transfer-encoding;
-        b=K96wy3A3CDLLUb5zyRJoNWktsmXJpFLKGldjamFdOQe4ccMAy3qb+MRleEK8Q+ek3F
-         lgSdNQ7CQuJ6D4PINLYthoCePBHjUk35D//8lTka/3U5lgPnwEjxdTQtRIlqOAHUAjgD
-         Mw18W3z50pz6gHwh0jm8jWpmS5bStKxhbshWw=
-MIME-Version: 1.0
-In-Reply-To: <49DCDF1F.5050805@xandros.com>
-References: <3d2f29dc0904071551xadea34ajd2c177380ced4fef@mail.gmail.com>
-	 <49DCDF1F.5050805@xandros.com>
-Date: Wed, 8 Apr 2009 18:05:55 -0400
-Message-ID: <3d2f29dc0904081505l4e0203a0q25144d200164c82a@mail.gmail.com>
-Subject: Re: Weird freezes with 2.6.28/29
-From: Chris Howie <cdhowie@gmail.com>
-To: Woody Suwalski <woodys@xandros.com>
-Cc: linux-kernel@vger.kernel.org
-Content-Type: text/plain; charset=UTF-8
+	Wed, 8 Apr 2009 18:07:34 -0400
+Subject: Re: [PATCH 54/56] x86: Remove void casts
+From: Joe Perches <joe@perches.com>
+To: Jack Stone <jwjstone@fastmail.fm>
+Cc: Ingo Molnar <mingo@elte.hu>, Andrew Morton <akpm@linux-foundation.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Bert Wesarg <bert.wesarg@googlemail.com>, linux-kernel@vger.kernel.org,
+       jeff@garzik.org, kernel-janitors@vger.kernel.org
+In-Reply-To: <49DD0D02.3030604@fastmail.fm>
+References: <36ca99e90904080518qf81b483h6ed2bc9752ee0d1e@mail.gmail.com>
+	 <49DCAE97.8040602@fastmail.fm> <20090408140637.GC12931@elte.hu>
+	 <49DCB140.7000603@fastmail.fm> <20090408144055.GH12931@elte.hu>
+	 <49DCB8C5.4090108@fastmail.fm> <20090408144842.GK12931@elte.hu>
+	 <49DCBA61.8060507@fastmail.fm> <20090408145715.GO12931@elte.hu>
+	 <49DCBBDF.4040603@fastmail.fm> <20090408151644.GQ12931@elte.hu>
+	 <49DD0D02.3030604@fastmail.fm>
+Content-Type: text/plain
+Date: Wed, 08 Apr 2009 15:06:00 -0700
+Message-Id: <1239228360.32205.14.camel@localhost>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.24.2-1.2mdv2009.0 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Apr 8, 2009 at 1:30 PM, Woody Suwalski <woodys@xandros.com> wrote:
-> I am getting similar problem on Dell 4x00 laptops caused by loading
-> processor.ko.
-> If I use nocst=1 option, systems are OK.
+On Wed, 2009-04-08 at 21:45 +0100, Jack Stone wrote:
+> That has already been done. Someone just so happened to submit
+> such a patch today.
+> http://marc.info/?l=linux-kernel&m=123916809504492&w=2
 
-Thanks, this has eliminated the second freeze (where I must hold down
-a key to allow boot to proceed) but I still have to hit the power
-button to get the initial boot going.
+It's been floating around for awhile now.
 
-Getting closer!
+If you're using git send-email, you could try adding
+--cc-cmd "scripts/get_maintainer.pl patchfile" 
 
--- 
-Chris Howie
-http://www.chrishowie.com
-http://en.wikipedia.org/wiki/User:Crazycomputers
+Here are some descriptions of available options
+http://lkml.org/lkml/2008/10/27/479
+
+Let me know how it works for you.
+
+cheers, Joe
+
