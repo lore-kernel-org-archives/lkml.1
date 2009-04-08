@@ -1,103 +1,72 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759060AbZDHKmW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755706AbZDHKnV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759060AbZDHKmW (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 8 Apr 2009 06:42:22 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750894AbZDHKmL
+	id S1755706AbZDHKnV (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 8 Apr 2009 06:43:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756958AbZDHKnH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 8 Apr 2009 06:42:11 -0400
-Received: from mailgate4.9netweb.it ([66.71.190.73]:58563 "EHLO
-	mailgate4.9netweb.it" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750725AbZDHKmK (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 8 Apr 2009 06:42:10 -0400
-X-Greylist: delayed 2054 seconds by postgrey-1.27 at vger.kernel.org; Wed, 08 Apr 2009 06:42:10 EDT
-Message-ID: <49DC7754.4030404@evidence.eu.com>
-Date: Wed, 08 Apr 2009 12:07:16 +0200
-From: Claudio Scordino <claudio@evidence.eu.com>
-User-Agent: Thunderbird 2.0.0.21 (X11/20090318)
+	Wed, 8 Apr 2009 06:43:07 -0400
+Received: from hera.kernel.org ([140.211.167.34]:56226 "EHLO hera.kernel.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750894AbZDHKnF (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 8 Apr 2009 06:43:05 -0400
+Date: Wed, 8 Apr 2009 10:42:30 GMT
+From: Paul Mackerras <paulus@samba.org>
+To: linux-tip-commits@vger.kernel.org
+Cc: linux-kernel@vger.kernel.org, paulus@samba.org, hpa@zytor.com,
+       mingo@redhat.com, a.p.zijlstra@chello.nl, tglx@linutronix.de,
+       mingo@elte.hu
+Reply-To: mingo@redhat.com, hpa@zytor.com, paulus@samba.org,
+       linux-kernel@vger.kernel.org, a.p.zijlstra@chello.nl,
+       tglx@linutronix.de, mingo@elte.hu
+In-Reply-To: <18908.31922.411398.147810@cargo.ozlabs.ibm.com>
+References: <18908.31922.411398.147810@cargo.ozlabs.ibm.com>
+Subject: [tip:perfcounters/core] perf_counter: fix powerpc build
+Message-ID: <tip-dc66270b51a62b1a6888d5309229e638a305c47b@git.kernel.org>
+Git-Commit-ID: dc66270b51a62b1a6888d5309229e638a305c47b
+X-Mailer: tip-git-log-daemon
 MIME-Version: 1.0
-To: Jesper Nilsson <Jesper.Nilsson@axis.com>, starvik@axis.com
-Cc: Alan Cox <alan@lxorguk.ukuu.org.uk>,
-       Hinko Kocevar <hinko.kocevar@cetrtapot.si>,
-       Janez Cufer <janez.cufer@cetrtapot.si>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Linux Kernel <linux-kernel@vger.kernel.org>, dev-etrax@axis.com,
-       adobriyan@gmail.com
-Subject: [PATCH] Fix broken compilation of Cris serial driver
-Content-Type: multipart/mixed;
- boundary="------------080205010708070108040309"
+Content-Type: text/plain; charset=UTF-8
+Content-Disposition: inline
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Wed, 08 Apr 2009 10:42:32 +0000 (UTC)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This is a multi-part message in MIME format.
---------------080205010708070108040309
-Content-Type: text/plain; charset=ISO-8859-15; format=flowed
-Content-Transfer-Encoding: 7bit
+Commit-ID:  dc66270b51a62b1a6888d5309229e638a305c47b
+Gitweb:     http://git.kernel.org/tip/dc66270b51a62b1a6888d5309229e638a305c47b
+Author:     Paul Mackerras <paulus@samba.org>
+AuthorDate: Wed, 8 Apr 2009 20:30:10 +1000
+Committer:  Ingo Molnar <mingo@elte.hu>
+CommitDate: Wed, 8 Apr 2009 12:39:27 +0200
 
-Hi,
+perf_counter: fix powerpc build
 
-    compilation of cris serial driver on 2.6.30-rc1 is broken since 
-commit number 0f043a81ebe84be3576667f04fdda481609e3816 removed the 
-read_proc field from the tty_driver structure.
+Commit 4af4998b ("perf_counter: rework context time") changed struct
+perf_counter_context to have a 'time' field instead of a 'time_now'
+field, but neglected to fix the place in the powerpc perf_counter.c
+where the time_now field was accessed.  This fixes it.
 
-The patch in attachment may fix the problem. Please check it very 
-carefully: I don't have hardware to make any test.
+Signed-off-by: Paul Mackerras <paulus@samba.org>
+Cc: Peter Zijlstra <a.p.zijlstra@chello.nl>
+LKML-Reference: <18908.31922.411398.147810@cargo.ozlabs.ibm.com>
+Signed-off-by: Ingo Molnar <mingo@elte.hu>
 
-Regards,
 
-           Claudio
-
---------------080205010708070108040309
-Content-Type: text/x-diff;
- name="0001-Fix-remove-read_proc-field-from-cris-serial-driver.patch"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline;
- filename*0="0001-Fix-remove-read_proc-field-from-cris-serial-driver.patc";
- filename*1="h"
-
-From: Claudio Scordino <claudio@evidence.eu.com>
-
-Commit number 0f043a81ebe84be3576667f04fdda481609e3816 removed the read_proc
-field from the tty_driver structure.
-
-This broke cris serial driver compilation.
-
-Signed-off-by: Claudio Scordino <claudio@evidence.eu.com>
 ---
- drivers/serial/crisv10.c |    3 ++-
- 1 files changed, 2 insertions(+), 1 deletions(-)
+ arch/powerpc/kernel/perf_counter.c |    3 +--
+ 1 files changed, 1 insertions(+), 2 deletions(-)
 
-diff --git a/drivers/serial/crisv10.c b/drivers/serial/crisv10.c
-index 7ba7d70..a331e40 100644
---- a/drivers/serial/crisv10.c
-+++ b/drivers/serial/crisv10.c
-@@ -27,6 +27,7 @@ static char *serial_version = "$Revision: 1.25 $";
- #include <linux/kernel.h>
- #include <linux/mutex.h>
- #include <linux/bitops.h>
-+#include <linux/proc_fs.h>
- 
- #include <asm/io.h>
- #include <asm/irq.h>
-@@ -4425,7 +4426,6 @@ static const struct tty_operations rs_ops = {
- 	.break_ctl = rs_break,
- 	.send_xchar = rs_send_xchar,
- 	.wait_until_sent = rs_wait_until_sent,
--	.read_proc = rs_read_proc,
- 	.tiocmget = rs_tiocmget,
- 	.tiocmset = rs_tiocmset
- };
-@@ -4490,6 +4490,7 @@ rs_init(void)
- 	if (tty_register_driver(driver))
- 		panic("Couldn't register serial driver\n");
- 	/* do some initializing for the separate ports */
-+	driver->proc_entry->read_proc = rs_read_proc;
- 
- 	for (i = 0, info = rs_table; i < NR_PORTS; i++,info++) {
- 		if (info->enabled) {
--- 
-1.5.4.3
-
-
---------------080205010708070108040309--
+diff --git a/arch/powerpc/kernel/perf_counter.c b/arch/powerpc/kernel/perf_counter.c
+index f88c35d..0e56513 100644
+--- a/arch/powerpc/kernel/perf_counter.c
++++ b/arch/powerpc/kernel/perf_counter.c
+@@ -457,8 +457,7 @@ static void counter_sched_in(struct perf_counter *counter, int cpu)
+ {
+ 	counter->state = PERF_COUNTER_STATE_ACTIVE;
+ 	counter->oncpu = cpu;
+-	counter->tstamp_running += counter->ctx->time_now -
+-		counter->tstamp_stopped;
++	counter->tstamp_running += counter->ctx->time - counter->tstamp_stopped;
+ 	if (is_software_counter(counter))
+ 		counter->hw_ops->enable(counter);
+ }
