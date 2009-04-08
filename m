@@ -1,54 +1,113 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934294AbZDHQ4l@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934166AbZDHQ7X@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934294AbZDHQ4l (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 8 Apr 2009 12:56:41 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754259AbZDHQ43
+	id S934166AbZDHQ7X (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 8 Apr 2009 12:59:23 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756946AbZDHQ7K
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 8 Apr 2009 12:56:29 -0400
-Received: from fg-out-1718.google.com ([72.14.220.154]:35802 "EHLO
-	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753951AbZDHQ41 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 8 Apr 2009 12:56:27 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=googlemail.com; s=gamma;
-        h=sender:message-id:date:from:user-agent:mime-version:to:cc:subject
-         :references:in-reply-to:content-type:content-transfer-encoding;
-        b=UE+ah1LEyvvN2lNKmIqRvnnfV6rMPyPiVWfTMXDZTJex9FP8YP7ultLudHKkAEwJAu
-         HnG3y7k5z3DQxmktNEL+h/7j5xDo0w1IvJfNOCcBL1hSptzIQL/0J0a3659tVQU0pBUS
-         nvQIKx5RFx/8NwWZV6bLHDiz/H4Z6z1iKKl/0=
-Message-ID: <49DCD738.1080002@tuffmail.co.uk>
-Date: Wed, 08 Apr 2009 17:56:24 +0100
-From: Alan Jenkins <alan-jenkins@tuffmail.co.uk>
-User-Agent: Thunderbird 2.0.0.21 (X11/20090318)
+	Wed, 8 Apr 2009 12:59:10 -0400
+Received: from hera.kernel.org ([140.211.167.34]:60348 "EHLO hera.kernel.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752518AbZDHQ7I (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 8 Apr 2009 12:59:08 -0400
+Date: Wed, 8 Apr 2009 16:57:32 GMT
+From: Peter Zijlstra <a.p.zijlstra@chello.nl>
+To: linux-tip-commits@vger.kernel.org
+Cc: linux-kernel@vger.kernel.org, paulus@samba.org, hpa@zytor.com,
+       mingo@redhat.com, a.p.zijlstra@chello.nl, tglx@linutronix.de,
+       cjashfor@linux.vnet.ibm.com, mingo@elte.hu
+Reply-To: mingo@redhat.com, hpa@zytor.com, paulus@samba.org,
+       linux-kernel@vger.kernel.org, a.p.zijlstra@chello.nl,
+       tglx@linutronix.de, cjashfor@linux.vnet.ibm.com, mingo@elte.hu
+In-Reply-To: <20090408130408.681326666@chello.nl>
+References: <20090408130408.681326666@chello.nl>
+Subject: [tip:perfcounters/core] perf_counter: fix NMI race in task clock
+Message-ID: <tip-e30e08f65c7ef6c230424264f09c3d53f117f58b@git.kernel.org>
+Git-Commit-ID: e30e08f65c7ef6c230424264f09c3d53f117f58b
+X-Mailer: tip-git-log-daemon
 MIME-Version: 1.0
-To: Alan Stern <stern@rowland.harvard.edu>
-CC: usb-storage@lists.one-eyed-alien.net,
-       Kernel Testers List <kernel-testers@vger.kernel.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: usual_tables: module license 'unspecified' taints kernel.
-References: <49DCD481.1050104@tuffmail.co.uk>
-In-Reply-To: <49DCD481.1050104@tuffmail.co.uk>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=UTF-8
+Content-Disposition: inline
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Wed, 08 Apr 2009 16:57:35 +0000 (UTC)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Alan Jenkins wrote:
-> Hi, I see this regression in v2.6.30-rc1.  I end up with a module
-> "usual_tables.ko", which is loaded on boot and causes the kernel to
-> complain about an unspecified license.  See subject for the exact
-> error message.
->
-> I have
->
-> CONFIG_USB_STORAGE=m
-> CONFIG_USB_LIBUSUAL=y
->
+Commit-ID:  e30e08f65c7ef6c230424264f09c3d53f117f58b
+Gitweb:     http://git.kernel.org/tip/e30e08f65c7ef6c230424264f09c3d53f117f58b
+Author:     Peter Zijlstra <a.p.zijlstra@chello.nl>
+AuthorDate: Wed, 8 Apr 2009 15:01:25 +0200
+Committer:  Ingo Molnar <mingo@elte.hu>
+CommitDate: Wed, 8 Apr 2009 18:53:27 +0200
 
-> Also, usb-storage doesn't seem to get loaded automatically, as it did
-> in 2.6.29 with the same configs.
->
-Hmm, seems someone else broke request_module().  So don't worry about
-this last issue - I'm sure it will get fixed :-).
+perf_counter: fix NMI race in task clock
+
+We should not be updating ctx->time from NMI context, work around that.
+
+Signed-off-by: Peter Zijlstra <a.p.zijlstra@chello.nl>
+Cc: Paul Mackerras <paulus@samba.org>
+Cc: Corey Ashford <cjashfor@linux.vnet.ibm.com>
+LKML-Reference: <20090408130408.681326666@chello.nl>
+Signed-off-by: Ingo Molnar <mingo@elte.hu>
+
+
+---
+ kernel/perf_counter.c |   25 ++++++++++++++++---------
+ 1 files changed, 16 insertions(+), 9 deletions(-)
+
+diff --git a/kernel/perf_counter.c b/kernel/perf_counter.c
+index 863703b..84a3908 100644
+--- a/kernel/perf_counter.c
++++ b/kernel/perf_counter.c
+@@ -319,8 +319,6 @@ static void __perf_counter_disable(void *info)
+ 
+ 	spin_lock_irqsave(&ctx->lock, flags);
+ 
+-	update_context_time(ctx);
+-
+ 	/*
+ 	 * If the counter is on, turn it off.
+ 	 * If it is in error state, leave it in error state.
+@@ -2335,13 +2333,11 @@ static const struct hw_perf_counter_ops perf_ops_cpu_clock = {
+  * Software counter: task time clock
+  */
+ 
+-static void task_clock_perf_counter_update(struct perf_counter *counter)
++static void task_clock_perf_counter_update(struct perf_counter *counter, u64 now)
+ {
+-	u64 prev, now;
++	u64 prev;
+ 	s64 delta;
+ 
+-	now = counter->ctx->time;
+-
+ 	prev = atomic64_xchg(&counter->hw.prev_count, now);
+ 	delta = now - prev;
+ 	atomic64_add(delta, &counter->count);
+@@ -2369,13 +2365,24 @@ static int task_clock_perf_counter_enable(struct perf_counter *counter)
+ static void task_clock_perf_counter_disable(struct perf_counter *counter)
+ {
+ 	hrtimer_cancel(&counter->hw.hrtimer);
+-	task_clock_perf_counter_update(counter);
++	task_clock_perf_counter_update(counter, counter->ctx->time);
++
+ }
+ 
+ static void task_clock_perf_counter_read(struct perf_counter *counter)
+ {
+-	update_context_time(counter->ctx);
+-	task_clock_perf_counter_update(counter);
++	u64 time;
++
++	if (!in_nmi()) {
++		update_context_time(counter->ctx);
++		time = counter->ctx->time;
++	} else {
++		u64 now = perf_clock();
++		u64 delta = now - counter->ctx->timestamp;
++		time = counter->ctx->time + delta;
++	}
++
++	task_clock_perf_counter_update(counter, time);
+ }
+ 
+ static const struct hw_perf_counter_ops perf_ops_task_clock = {
