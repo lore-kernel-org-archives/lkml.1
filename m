@@ -1,22 +1,22 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933846AbZDHMKp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933684AbZDHMLR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933846AbZDHMKp (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 8 Apr 2009 08:10:45 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933397AbZDHMAy
+	id S933684AbZDHMLR (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 8 Apr 2009 08:11:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933410AbZDHMA4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 8 Apr 2009 08:00:54 -0400
-Received: from brick.kernel.dk ([93.163.65.50]:48930 "EHLO kernel.dk"
+	Wed, 8 Apr 2009 08:00:56 -0400
+Received: from brick.kernel.dk ([93.163.65.50]:48997 "EHLO kernel.dk"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S933400AbZDHMAW (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 8 Apr 2009 08:00:22 -0400
+	id S933407AbZDHMAi (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 8 Apr 2009 08:00:38 -0400
 From: Jens Axboe <jens.axboe@oracle.com>
 To: linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org
 Cc: chris.mason@oracle.com, david@fromorbit.com, hch@infradead.org,
        akpm@linux-foundation.org, jack@suse.cz,
        Jens Axboe <jens.axboe@oracle.com>
-Subject: [PATCH 07/13] writeback: include default_backing_dev_info in writeback
-Date: Wed,  8 Apr 2009 14:00:10 +0200
-Message-Id: <1239192016-19857-8-git-send-email-jens.axboe@oracle.com>
+Subject: [PATCH 13/13] writeback: ensure consistency for generic_sync_sb_inodes() with WB_SYNC_ALL
+Date: Wed,  8 Apr 2009 14:00:16 +0200
+Message-Id: <1239192016-19857-14-git-send-email-jens.axboe@oracle.com>
 X-Mailer: git-send-email 1.6.2.2.446.gfbdc0
 In-Reply-To: <1239192016-19857-1-git-send-email-jens.axboe@oracle.com>
 References: <1239192016-19857-1-git-send-email-jens.axboe@oracle.com>
@@ -24,185 +24,277 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-We see dirty inodes there occasionally, so better be safe and write them
-out.
+If WB_SYNC_ALL is given, we must block waiting for any bdi/wb to become
+available and flush our data. Switch the bdi_list protection to SRCU
+instead of RCU so that we can do that.
 
 Signed-off-by: Jens Axboe <jens.axboe@oracle.com>
 ---
- fs/fs-writeback.c         |   60 ++++++++++++++++++++++++++------------------
- include/linux/writeback.h |    1 +
- mm/backing-dev.c          |   31 ++++++++++++++---------
- 3 files changed, 55 insertions(+), 37 deletions(-)
+ fs/fs-writeback.c           |   49 +++++++++++++++++++++++++++++--------------
+ include/linux/backing-dev.h |   12 ++++++++-
+ mm/backing-dev.c            |   23 ++++++++++++--------
+ mm/page-writeback.c         |    4 +-
+ 4 files changed, 59 insertions(+), 29 deletions(-)
 
 diff --git a/fs/fs-writeback.c b/fs/fs-writeback.c
-index 756714f..bcca7c1 100644
+index 1d25d3a..0492399 100644
 --- a/fs/fs-writeback.c
 +++ b/fs/fs-writeback.c
-@@ -34,6 +34,10 @@
+@@ -50,11 +50,18 @@ static void generic_sync_wb_inodes(struct bdi_writeback *wb,
+  * unless they implement their own.  Which is somewhat inefficient, as this
+  * may prevent concurrent writeback against multiple devices.
   */
- int nr_pdflush_threads = 0;
- 
-+static void generic_sync_wb_inodes(struct bdi_writeback *wb,
-+				   struct super_block *sb,
-+				   struct writeback_control *wbc);
-+
- /**
-  * writeback_acquire - attempt to get exclusive writeback access to a device
-  * @bdi: the device's backing_dev_info structure
-@@ -149,7 +153,7 @@ int bdi_start_writeback(struct backing_dev_info *bdi, struct super_block *sb,
-  * older_than_this takes precedence over nr_to_write.  So we'll only write back
-  * all dirty pages if they are all attached to "old" mappings.
-  */
--static void wb_kupdated(struct bdi_writeback *wb)
-+void wb_kupdated(struct bdi_writeback *wb)
+-static int writeback_acquire(struct bdi_writeback *wb)
++static bool writeback_acquire(struct bdi_writeback *wb, int wait)
  {
- 	long nr_to_write;
- 	struct writeback_control wbc = {
-@@ -177,11 +181,7 @@ static void wb_kupdated(struct bdi_writeback *wb)
- 	}
+ 	struct backing_dev_info *bdi = wb->bdi;
+ 
+-	return !test_and_set_bit(wb->nr, &bdi->wb_active);
++	if (!test_and_set_bit(wb->nr, &bdi->wb_active))
++		return 1;
++	if (!wait)
++		return 0;
++
++	wait_on_bit_lock(&bdi->wb_active, wb->nr, bdi_sched_wait,
++				TASK_UNINTERRUPTIBLE);
++	return 1;
  }
  
--static void generic_sync_wb_inodes(struct bdi_writeback *wb,
--				   struct super_block *sb,
--				   struct writeback_control *wbc);
--
--static void wb_writeback(struct bdi_writeback *wb)
-+void wb_writeback(struct bdi_writeback *wb)
+ /**
+@@ -82,12 +89,15 @@ static void writeback_release(struct bdi_writeback *wb)
+ }
+ 
+ static void wb_start_writeback(struct bdi_writeback *wb, struct super_block *sb,
+-			       long nr_pages)
++			       long nr_pages, int wait)
  {
- 	struct writeback_control wbc = {
- 		.bdi			= wb->bdi,
-@@ -217,6 +217,34 @@ static void wb_writeback(struct bdi_writeback *wb)
+ 	if (!wb_has_dirty_io(wb))
+ 		return;
+ 
+-	if (writeback_acquire(wb)) {
++	/*
++	 * Wait is set, block waiting for the device to become available
++	 */
++	if (writeback_acquire(wb, wait)) {
+ 		wb->nr_pages = nr_pages;
+ 		wb->sb = sb;
+ 
+@@ -100,7 +110,7 @@ static void wb_start_writeback(struct bdi_writeback *wb, struct super_block *sb,
+ }
+ 
+ int bdi_start_writeback(struct backing_dev_info *bdi, struct super_block *sb,
+-			 long nr_pages)
++			 long nr_pages, int wait)
+ {
+ 	struct bdi_writeback *wb;
+ 
+@@ -114,14 +124,14 @@ int bdi_start_writeback(struct backing_dev_info *bdi, struct super_block *sb,
+ 	}
+ 
+ 	if (!bdi_wblist_needs_lock(bdi))
+-		wb_start_writeback(&bdi->wb, sb, nr_pages);
++		wb_start_writeback(&bdi->wb, sb, nr_pages, wait);
+ 	else {
+ 		int idx;
+ 
+ 		idx = srcu_read_lock(&bdi->srcu);
+ 
+ 		list_for_each_entry_rcu(wb, &bdi->wb_list, list)
+-			wb_start_writeback(wb, sb, nr_pages);
++			wb_start_writeback(wb, sb, nr_pages, wait);
+ 
+ 		srcu_read_unlock(&bdi->srcu, idx);
+ 	}
+@@ -244,7 +254,7 @@ long wb_do_writeback(struct bdi_writeback *wb)
+ 	 *  pdflush style writeout.
+ 	 *
+ 	 */
+-	if (writeback_acquire(wb))
++	if (writeback_acquire(wb, 0))
+ 		nr_pages = wb_kupdated(wb);
+ 	else
+ 		nr_pages = wb_writeback(wb);
+@@ -295,21 +305,21 @@ int bdi_writeback_task(struct bdi_writeback *wb)
+ 	return 0;
+ }
+ 
+-void bdi_writeback_all(struct super_block *sb, long nr_pages)
++void bdi_writeback_all(struct super_block *sb, long nr_pages, int wait)
+ {
+ 	struct backing_dev_info *bdi;
++	int idx;
+ 
+-	rcu_read_lock();
+-
++	idx = srcu_read_lock(&bdi_srcu);
+ restart:
+ 	list_for_each_entry_rcu(bdi, &bdi_list, bdi_list) {
+ 		if (!bdi_has_dirty_io(bdi))
+ 			continue;
+-		if (bdi_start_writeback(bdi, sb, nr_pages))
++		if (bdi_start_writeback(bdi, sb, nr_pages, wait))
+ 			goto restart;
+ 	}
+ 
+-	rcu_read_unlock();
++	srcu_read_unlock(&bdi_srcu, idx);
  }
  
  /*
-+ * This will be inlined in bdi_writeback_task() once we get rid of any
-+ * dirty inodes on the default_backing_dev_info
-+ */
-+void wb_do_writeback(struct bdi_writeback *wb)
-+{
+@@ -828,12 +838,19 @@ void generic_sync_bdi_inodes(struct super_block *sb,
+ void generic_sync_sb_inodes(struct super_block *sb,
+ 				struct writeback_control *wbc)
+ {
++	const int sync_all = wbc->sync_mode == WB_SYNC_ALL;
++
 +	/*
-+	 * We get here in two cases:
-+	 *
-+	 *  schedule_timeout() returned because the dirty writeback
-+	 *  interval has elapsed. If that happens, we will be able
-+	 *  to acquire the writeback lock and will proceed to do
-+	 *  kupdated style writeout.
-+	 *
-+	 *  Someone called bdi_start_writeback(), which will acquire
-+	 *  the writeback lock. This means our writeback_acquire()
-+	 *  below will fail and we call into bdi_pdflush() for
-+	 *  pdflush style writeout.
-+	 *
++	 * Kick off the specified bdi, if given, or all of them. If sync_all
++	 * is true, then this is a blocking operation and we must make sure
++	 * to wait for any device that is currently doing a writeback operation.
 +	 */
-+	if (writeback_acquire(wb))
-+		wb_kupdated(wb);
-+	else
-+		wb_writeback(wb);
+ 	if (wbc->bdi)
+-		bdi_start_writeback(wbc->bdi, sb, 0);
++		bdi_start_writeback(wbc->bdi, sb, 0, sync_all);
+ 	else
+-		bdi_writeback_all(sb, 0);
++		bdi_writeback_all(sb, 0, sync_all);
+ 
+-	if (wbc->sync_mode == WB_SYNC_ALL) {
++	if (sync_all) {
+ 		struct inode *inode, *old_inode = NULL;
+ 
+ 		spin_lock(&inode_lock);
+diff --git a/include/linux/backing-dev.h b/include/linux/backing-dev.h
+index c7c1ed6..8ab2429 100644
+--- a/include/linux/backing-dev.h
++++ b/include/linux/backing-dev.h
+@@ -14,6 +14,7 @@
+ #include <linux/kernel.h>
+ #include <linux/fs.h>
+ #include <linux/srcu.h>
++#include <linux/sched.h>
+ #include <asm/atomic.h>
+ 
+ struct page;
+@@ -105,15 +106,22 @@ int bdi_register(struct backing_dev_info *bdi, struct device *parent,
+ int bdi_register_dev(struct backing_dev_info *bdi, dev_t dev);
+ void bdi_unregister(struct backing_dev_info *bdi);
+ int bdi_start_writeback(struct backing_dev_info *bdi, struct super_block *sb,
+-			 long nr_pages);
++			 long nr_pages, int wait);
+ int bdi_writeback_task(struct bdi_writeback *wb);
+-void bdi_writeback_all(struct super_block *sb, long nr_pages);
++void bdi_writeback_all(struct super_block *sb, long nr_pages, int wait);
+ void bdi_add_default_flusher_task(struct backing_dev_info *bdi);
+ void bdi_add_flusher_task(struct backing_dev_info *bdi);
+ int bdi_has_dirty_io(struct backing_dev_info *bdi);
+ 
+ extern spinlock_t bdi_lock;
+ extern struct list_head bdi_list;
++extern struct srcu_struct bdi_srcu;
 +
-+	writeback_release(wb);
++static inline int bdi_sched_wait(void *word)
++{
++	schedule();
++	return 0;
 +}
-+
-+/*
-  * Handle writeback of dirty data for the device backed by this bdi. Also
-  * wakes up periodically and does kupdated style flushing.
-  */
-@@ -231,26 +259,8 @@ int bdi_writeback_task(struct bdi_writeback *wb)
- 		schedule_timeout(wait_jiffies);
- 		try_to_freeze();
  
--		/*
--		 * We get here in two cases:
--		 *
--		 *  schedule_timeout() returned because the dirty writeback
--		 *  interval has elapsed. If that happens, we will be able
--		 *  to acquire the writeback lock and will proceed to do
--		 *  kupdated style writeout.
--		 *
--		 *  Someone called bdi_start_writeback(), which will acquire
--		 *  the writeback lock. This means our writeback_acquire()
--		 *  below will fail and we call into bdi_pdflush() for
--		 *  pdflush style writeout.
--		 *
--		 */
--		if (writeback_acquire(wb))
--			wb_kupdated(wb);
--		else
--			wb_writeback(wb);
-+		wb_do_writeback(wb);
- 
--		writeback_release(wb);
- 		finish_wait(&wb->wait, &wait);
- 	}
- 
-diff --git a/include/linux/writeback.h b/include/linux/writeback.h
-index f241794..2e08bbd 100644
---- a/include/linux/writeback.h
-+++ b/include/linux/writeback.h
-@@ -69,6 +69,7 @@ void writeback_inodes(struct writeback_control *wbc);
- int inode_wait(void *);
- void sync_inodes_sb(struct super_block *, int wait);
- void sync_inodes(int wait);
-+void wb_do_writeback(struct bdi_writeback *wb);
- 
- /* writeback.h requires fs.h; it, too, is not included from here. */
- static inline void wait_on_inode(struct inode *inode)
+ static inline int wb_is_default_task(struct bdi_writeback *wb)
+ {
 diff --git a/mm/backing-dev.c b/mm/backing-dev.c
-index 4ebcc49..9707545 100644
+index 9d6ac11..8ee7b55 100644
 --- a/mm/backing-dev.c
 +++ b/mm/backing-dev.c
-@@ -357,14 +357,6 @@ static int bdi_forker_task(void *ptr)
- 		struct bdi_writeback *wb;
- 		DEFINE_WAIT(wait);
+@@ -29,6 +29,7 @@ static struct class *bdi_class;
+ DEFINE_SPINLOCK(bdi_lock);
+ LIST_HEAD(bdi_list);
+ LIST_HEAD(bdi_pending_list);
++struct srcu_struct bdi_srcu;
  
--		/*
--		 * Should never trigger on the default bdi
--		 */
--		if (wb_has_dirty_io(me)) {
--			bdi_flush_io(me->bdi);
--			WARN_ON(1);
--		}
+ #ifdef CONFIG_DEBUG_FS
+ #include <linux/debugfs.h>
+@@ -220,10 +221,19 @@ static int __init default_bdi_init(void)
+ {
+ 	int err;
+ 
++	err = init_srcu_struct(&bdi_srcu);
++	if (err)
++		return err;
++
+ 	err = bdi_init(&default_backing_dev_info);
+ 	if (!err)
+ 		bdi_register(&default_backing_dev_info, NULL, "default");
+ 
++	if (err) {
++		bdi_destroy(&default_backing_dev_info);
++		cleanup_srcu_struct(&bdi_srcu);
++	}
++
+ 	return err;
+ }
+ subsys_initcall(default_bdi_init);
+@@ -473,12 +483,6 @@ static void bdi_add_to_pending(struct rcu_head *head)
+ 	wake_up(&default_backing_dev_info.wb.wait);
+ }
+ 
+-static int sched_wait(void *word)
+-{
+-	schedule();
+-	return 0;
+-}
 -
- 		prepare_to_wait(&me->wait, &wait, TASK_INTERRUPTIBLE);
+ static void bdi_add_one_flusher_task(struct backing_dev_info *bdi,
+ 				     int(*func)(struct backing_dev_info *))
+ {
+@@ -513,7 +517,7 @@ static void bdi_add_one_flusher_task(struct backing_dev_info *bdi,
  
- 		smp_mb();
-@@ -372,6 +364,21 @@ static int bdi_forker_task(void *ptr)
- 			schedule();
+ static int flusher_add_helper_block(struct backing_dev_info *bdi)
+ {
+-	wait_on_bit_lock(&bdi->state, BDI_pending, sched_wait,
++	wait_on_bit_lock(&bdi->state, BDI_pending, bdi_sched_wait,
+ 				TASK_UNINTERRUPTIBLE);
+ 	return 0;
+ }
+@@ -620,7 +624,8 @@ static void bdi_wb_shutdown(struct backing_dev_info *bdi)
+ 	 * If setup is pending, wait for that to complete first
+ 	 * Make sure nobody finds us on the bdi_list anymore
+ 	 */
+-	wait_on_bit(&bdi->state, BDI_pending, sched_wait, TASK_UNINTERRUPTIBLE);
++	wait_on_bit(&bdi->state, BDI_pending, bdi_sched_wait,
++			TASK_UNINTERRUPTIBLE);
  
- 		finish_wait(&me->wait, &wait);
-+
-+		/*
-+		 * Ideally we'd like not to see any dirty inodes on the
-+		 * default_backing_dev_info. Until these are tracked down,
-+		 * perform the same writeback here that bdi_writeback_task
-+		 * does. For logic, see comment in
-+		 * fs/fs-writeback.c:bdi_writeback_task()
-+		 */
-+		if (wb_has_dirty_io(me))
-+			wb_do_writeback(me);
-+
-+		/*
-+		 * This is our real job - check for pending entries in
-+		 * bdi_pending_list, and create the tasks that got added
-+		 */
- repeat:
- 		bdi = NULL;
- 		spin_lock_bh(&bdi_lock);
-@@ -544,12 +551,12 @@ int bdi_register(struct backing_dev_info *bdi, struct device *parent,
- 			ret = -ENOMEM;
- 			goto exit;
- 		}
--	} else {
--		spin_lock_bh(&bdi_lock);
--		list_add_tail_rcu(&bdi->bdi_list, &bdi_list);
--		spin_unlock_bh(&bdi_lock);
- 	}
+ 	/*
+ 	 * Make sure nobody finds us on the bdi_list anymore
+@@ -633,7 +638,7 @@ static void bdi_wb_shutdown(struct backing_dev_info *bdi)
+ 	 * Now make sure that anybody who is currently looking at us from
+ 	 * the bdi_list iteration have exited.
+ 	 */
+-	synchronize_rcu();
++	synchronize_srcu(&bdi_srcu);
  
-+	spin_lock_bh(&bdi_lock);
-+	list_add_tail_rcu(&bdi->bdi_list, &bdi_list);
-+	spin_unlock_bh(&bdi_lock);
-+
- 	bdi->dev = dev;
- 	bdi_debug_register(bdi, dev_name(dev));
+ 	/*
+ 	 * Finally, kill the kernel threads. We don't need to be RCU
+diff --git a/mm/page-writeback.c b/mm/page-writeback.c
+index e71e3c2..bac4ad6 100644
+--- a/mm/page-writeback.c
++++ b/mm/page-writeback.c
+@@ -581,7 +581,7 @@ static void balance_dirty_pages(struct address_space *mapping)
+ 			(!laptop_mode && (global_page_state(NR_FILE_DIRTY)
+ 					  + global_page_state(NR_UNSTABLE_NFS)
+ 					  > background_thresh)))
+-		bdi_start_writeback(bdi, NULL, 0);
++		bdi_start_writeback(bdi, NULL, 0, 0);
+ }
+ 
+ void set_page_dirty_balance(struct page *page, int page_mkwrite)
+@@ -675,7 +675,7 @@ int wakeup_flusher_threads(long nr_pages)
+ 	if (nr_pages == 0)
+ 		nr_pages = global_page_state(NR_FILE_DIRTY) +
+ 				global_page_state(NR_UNSTABLE_NFS);
+-	bdi_writeback_all(NULL, nr_pages);
++	bdi_writeback_all(NULL, nr_pages, 0);
+ 	return 0;
+ }
  
 -- 
 1.6.2.2.446.gfbdc0
