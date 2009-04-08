@@ -1,81 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756403AbZDHIXM@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762195AbZDHIXm@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756403AbZDHIXM (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 8 Apr 2009 04:23:12 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763605AbZDHIR1
+	id S1762195AbZDHIXm (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 8 Apr 2009 04:23:42 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763618AbZDHISG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 8 Apr 2009 04:17:27 -0400
-Received: from mx2.mail.elte.hu ([157.181.151.9]:48126 "EHLO mx2.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1761466AbZDHIRZ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 8 Apr 2009 04:17:25 -0400
-Date: Wed, 8 Apr 2009 10:17:11 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: Arkadiusz Miskiewicz <a.miskiewicz@gmail.com>
-Cc: "Pallipadi, Venkatesh" <venkatesh.pallipadi@intel.com>,
-       "Siddha, Suresh B" <suresh.b.siddha@intel.com>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       Jesse Barnes <jbarnes@virtuousgeek.org>
-Subject: Re: 2.6.29 git master and PAT problems
-Message-ID: <20090408081711.GA4938@elte.hu>
-References: <200903302317.04515.a.miskiewicz@gmail.com> <200904071112.28949.a.miskiewicz@gmail.com> <20090408013008.GA6696@linux-os.sc.intel.com> <200904080928.34580.a.miskiewicz@gmail.com>
+	Wed, 8 Apr 2009 04:18:06 -0400
+Received: from smtp.nokia.com ([192.100.122.230]:27081 "EHLO
+	mgw-mx03.nokia.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1763616AbZDHISD (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 8 Apr 2009 04:18:03 -0400
+Message-ID: <49DC5DD8.2070208@nokia.com>
+Date: Wed, 08 Apr 2009 11:18:32 +0300
+From: Adrian Hunter <adrian.hunter@nokia.com>
+User-Agent: Thunderbird 2.0.0.19 (X11/20090105)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <200904080928.34580.a.miskiewicz@gmail.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: 0.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=0.5 required=5.9 tests=BAYES_00,URIBL_BLACK autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
-	2.0 URIBL_BLACK            Contains an URL listed in the URIBL blacklist
-	[URIs: tremolous.net]
+To: Pierre Ossman <drzeus-mmc@drzeus.cx>
+CC: "Lavinen Jarkko (Nokia-M/Helsinki)" <jarkko.lavinen@nokia.com>,
+       LKML <linux-kernel@vger.kernel.org>,
+       linux-omap Mailing List <linux-omap@vger.kernel.org>,
+       Tony Lindgren <tony@atomide.com>
+Subject: [PATCH] HSMMC: mmc_omap_irq: Do not expect cmd/data to be non-null
+ when CC/TC occurs
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
+X-OriginalArrivalTime: 08 Apr 2009 08:17:31.0002 (UTC) FILETIME=[764E6DA0:01C9B822]
+X-Nokia-AV: Clean
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+From: Jarkko Lavinen <jarkko.lavinen@nokia.com>
 
-* Arkadiusz Miskiewicz <a.miskiewicz@gmail.com> wrote:
+With spurious interrupt cmd can be null even when we have CC
+set in irq status.
 
-> On Wednesday 08 of April 2009, Pallipadi, Venkatesh wrote:
-> > On Tue, Apr 07, 2009 at 02:12:28AM -0700, Arkadiusz Miskiewicz wrote:
-> > > On Tuesday 07 of April 2009, Pallipadi, Venkatesh wrote:
-> > > > On Thu, 2009-04-02 at 00:12 -0700, Arkadiusz Miskiewicz wrote:
-> > > >
-> > > > I was finally able to reproduce the problem of "freeing invalid
-> > > > memtype" with upstream git kernel (commit 0221c81b1b) + latest xf86
-> > > > intel driver. But, with upstream + the patch I had sent you earlier in
-> > > > this thread (http://marc.info/?l=linux-kernel&m=123863345520617&w=2) I
-> > > > don't see those freeing invalid memtype errors anymore.
-> > > >
-> > > > Can you please double check with current git and that patch and let me
-> > > > know if you are still seeing the problem.
-> > >
-> > > Latest linus tree + that patch (it's really applied here), xserver 1.6,
-> > > libdrm from git master, intel driver from git master, previously mesa 7.4
-> > > (and 7.5 snap currently), tremolous.net 1.1.0 game (tremolous-smp
-> > > binary), GM45 gpu.
-> > >
-> > > To reproduce I just need to run tremolous-smp and connect to some map.
-> > > When map finishes loading I instantly get:
-> [...]
-> 
-> > OK. One more test patch below, applies over linus's git and you can ignore
-> > the earlier patch. The patch below should get rid of the problem and
-> > as it removes the track/untrack of vm_insert_pfn completely. This will
-> > also eliminate the overhead of hundreds or thousands of entries in
-> > pat_memtype_list. Can you please test it.
-> 
-> With this patch I'm no longer able to reproduce problem. Thanks!
+Fixes: NB#106295 - prevent potential kernel crash in the MMC driver
 
-Great, thanks!
+Signed-off-by: Jarkko Lavinen <jarkko.lavinen@nokia.com>
+Signed-off-by: Adrian Hunter <adrian.hunter@nokia.com>
+---
+ drivers/mmc/host/omap_hsmmc.c |    2 +-
+ 1 files changed, 1 insertions(+), 1 deletions(-)
 
-Venki, mind sending a patch with a proper changelog, Reported-by, 
-Tested-by tags, with Nick and Andrew Cc:-ed for the memory.c bits, 
-etc.?
-
-	Ingo
+diff --git a/drivers/mmc/host/omap_hsmmc.c b/drivers/mmc/host/omap_hsmmc.c
+index d183be6..0268992 100644
+--- a/drivers/mmc/host/omap_hsmmc.c
++++ b/drivers/mmc/host/omap_hsmmc.c
+@@ -490,7 +490,7 @@ static irqreturn_t mmc_omap_irq(int irq, void *dev_id)
+ 
+ 	OMAP_HSMMC_WRITE(host->base, STAT, status);
+ 
+-	if (end_cmd || (status & CC))
++	if (end_cmd || ((status & CC) && host->cmd))
+ 		mmc_omap_cmd_done(host, host->cmd);
+ 	if (end_trans || (status & TC))
+ 		mmc_omap_xfer_done(host, data);
+-- 
+1.5.6.3
