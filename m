@@ -1,63 +1,162 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755927AbZDHXiS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756823AbZDHXif@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755927AbZDHXiS (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 8 Apr 2009 19:38:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755552AbZDHXiD
+	id S1756823AbZDHXif (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 8 Apr 2009 19:38:35 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755946AbZDHXiE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 8 Apr 2009 19:38:03 -0400
-Received: from sh.osrg.net ([192.16.179.4]:60291 "EHLO sh.osrg.net"
+	Wed, 8 Apr 2009 19:38:04 -0400
+Received: from e9.ny.us.ibm.com ([32.97.182.139]:50628 "EHLO e9.ny.us.ibm.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755502AbZDHXiB (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 8 Apr 2009 19:38:01 -0400
-Date: Thu, 9 Apr 2009 08:37:29 +0900
-To: jeremy@goop.org
-Cc: fujita.tomonori@lab.ntt.co.jp, galak@kernel.crashing.org,
-       hch@infradead.org, linux-kernel@vger.kernel.org, mingo@elte.hu,
-       ian.campbell@citrix.com, beckyb@kernel.crashing.org
-Subject: Re: [PATCH 4/7] swiotlb: Allow arch override of
- address_needs_mapping
-From: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
-In-Reply-To: <49DD3041.8020808@goop.org>
-References: <49DD270A.6060506@goop.org>
-	<20090409080143C.fujita.tomonori@lab.ntt.co.jp>
-	<49DD3041.8020808@goop.org>
-Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
-Message-Id: <20090409083752I.fujita.tomonori@lab.ntt.co.jp>
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-3.0 (sh.osrg.net [192.16.179.4]); Thu, 09 Apr 2009 08:37:29 +0900 (JST)
+	id S1754535AbZDHXiD (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 8 Apr 2009 19:38:03 -0400
+Date: Wed, 8 Apr 2009 16:37:58 -0700
+From: Gary Hade <garyhade@us.ibm.com>
+To: Yinghai Lu <yhlu.kernel@gmail.com>
+Cc: Gary Hade <garyhade@us.ibm.com>, mingo@elte.hu, mingo@redhat.com,
+       tglx@linutronix.de, hpa@zytor.com, x86@kernel.org,
+       linux-kernel@vger.kernel.org, lcm@us.ibm.com
+Subject: Re: [PATCH 2/3] [BUGFIX] x86/x86_64: fix CPU offlining triggered
+	inactive device IRQ interrruption
+Message-ID: <20090408233758.GB14412@us.ibm.com>
+References: <20090408210735.GD11159@us.ibm.com> <86802c440904081530i1b83e19ayddebd8b2f6d413af@mail.gmail.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=iso-8859-1
+Content-Disposition: inline
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <86802c440904081530i1b83e19ayddebd8b2f6d413af@mail.gmail.com>
+User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 08 Apr 2009 16:16:17 -0700
-Jeremy Fitzhardinge <jeremy@goop.org> wrote:
-
-> FUJITA Tomonori wrote:
-> >> Becky's patches of last week also added __weak annotations to 
-> >> swiotlb_bus_to_virt, virt_to_bus and bus_to_phys; added the hwdev 
-> >> parameter to swiotlb_bus_to_phys; and added a weak 
-> >> swiotlb_arch_address_needs_mapping.  I assume that was needed because 
-> >> powerpc needs non-trivial implementations for those functions.
-> >>     
+On Wed, Apr 08, 2009 at 03:30:15PM -0700, Yinghai Lu wrote:
+> On Wed, Apr 8, 2009 at 2:07 PM, Gary Hade <garyhade@us.ibm.com> wrote:
+> > Impact: Eliminates a race that can leave the system in an
+> >        unusable state
 > >
-> > Hmm, what she added are wrappers of virt_to_bus and bus_to_virt. We
-> > can remove these and directly use virt_to_bus and bus_to_virt.
-> >   
+> > During rapid offlining of multiple CPUs there is a chance
+> > that an IRQ affinity move destination CPU will be offlined
+> > before the IRQ affinity move initiated during the offlining
+> > of a previous CPU completes.  This can happen when the device
+> > is not very active and thus fails to generate the IRQ that is
+> > needed to complete the IRQ affinity move before the move
+> > destination CPU is offlined.  When this happens there is an
+> > -EBUSY return from __assign_irq_vector() during the offlining
+> > of the IRQ move destination CPU which prevents initiation of
+> > a new IRQ affinity move operation to an online CPU.  This
+> > leaves the IRQ affinity set to an offlined CPU.
+> >
+> > I have been able to reproduce the problem on some of our
+> > systems using the following script.  When the system is idle
+> > the problem often reproduces during the first CPU offlining
+> > sequence.
+> >
+> > #!/bin/sh
+> >
+> > SYS_CPU_DIR=/sys/devices/system/cpu
+> > VICTIM_IRQ=25
+> > IRQ_MASK=f0
+> >
+> > iteration=0
+> > while true; do
+> >  echo $iteration
+> >  echo $IRQ_MASK > /proc/irq/$VICTIM_IRQ/smp_affinity
+> >  for cpudir in $SYS_CPU_DIR/cpu[1-9] $SYS_CPU_DIR/cpu??; do
+> >    echo 0 > $cpudir/online
+> >  done
+> >  for cpudir in $SYS_CPU_DIR/cpu[1-9] $SYS_CPU_DIR/cpu??; do
+> >    echo 1 > $cpudir/online
+> >  done
+> >  iteration=`expr $iteration + 1`
+> > done
+> >
+> > The proposed fix takes advantage of the fact that when all
+> > CPUs in the old domain are offline there is nothing to be done
+> > by send_cleanup_vector() during the affinity move completion.
+> > So, we simply avoid setting cfg->move_in_progress preventing
+> > the above mentioned -EBUSY return from __assign_irq_vector().
+> > This allows initiation of a new IRQ affinity move to a CPU
+> > that is not going offline.
+> >
+> > Signed-off-by: Gary Hade <garyhade@us.ibm.com>
+> >
+> > ---
+> >  arch/x86/kernel/apic/io_apic.c |   11 ++++++++---
+> >  1 file changed, 8 insertions(+), 3 deletions(-)
+> >
+> > Index: linux-2.6.30-rc1/arch/x86/kernel/apic/io_apic.c
+> > ===================================================================
+> > --- linux-2.6.30-rc1.orig/arch/x86/kernel/apic/io_apic.c        2009-04-08 09:23:00.000000000 -0700
+> > +++ linux-2.6.30-rc1/arch/x86/kernel/apic/io_apic.c     2009-04-08 09:23:16.000000000 -0700
+> > @@ -363,7 +363,8 @@ set_extra_move_desc(struct irq_desc *des
+> >        struct irq_cfg *cfg = desc->chip_data;
+> >
+> >        if (!cfg->move_in_progress) {
+> > -               /* it means that domain is not changed */
+> > +               /* it means that domain has not changed or all CPUs
+> > +                * in old domain are offline */
+> >                if (!cpumask_intersects(desc->affinity, mask))
+> >                        cfg->move_desc_pending = 1;
+> >        }
+> > @@ -1262,8 +1263,11 @@ next:
+> >                current_vector = vector;
+> >                current_offset = offset;
+> >                if (old_vector) {
+> > -                       cfg->move_in_progress = 1;
+> >                        cpumask_copy(cfg->old_domain, cfg->domain);
+> > +                       if (cpumask_intersects(cfg->old_domain,
+> > +                                              cpu_online_mask)) {
+> > +                               cfg->move_in_progress = 1;
+> > +                       }
+> >                }
+> >                for_each_cpu_and(new_cpu, tmp_mask, cpu_online_mask)
+> >                        per_cpu(vector_irq, new_cpu)[vector] = irq;
+> > @@ -2492,7 +2496,8 @@ static void irq_complete_move(struct irq
+> >                if (likely(!cfg->move_desc_pending))
+> >                        return;
+> >
+> > -               /* domain has not changed, but affinity did */
+> > +               /* domain has not changed or all CPUs in old domain
+> > +                * are offline, but affinity changed */
+> >                me = smp_processor_id();
+> >                if (cpumask_test_cpu(me, desc->affinity)) {
+> >                        *descp = desc = move_irq_desc(desc, me);
+> > --
 > 
-> In general those interfaces are deprecated.  Are we un-deprecating 
-> them?  Or do you mean adding virt<->bus to dma_ops?
+> so you mean during __assign_irq_vector(), cpu_online_mask get updated?
 
-Hmm, these interfaces are wrong for drivers surely because they can't
-handle dma mapping properly. However, they are exactly what swiotlb
-needs (swiotlb doesn't need to care about dma mapping). Until 2.6.28,
-swiotlb has used them. They are with IA64, X86_64 and PPC_32, I think.
+No, the CPU being offlined is removed from cpu_online_mask 
+earlier via a call to remove_cpu_from_maps() from
+cpu_disable_common().  This happens just before fixup_irqs()
+is called.
 
-
-> > About __weak address_needs_mapping function, as I said, removing it
-> > and using dma_map_ops is a proper solution.
-> >   
+> with your patch, how about that it just happen right after you check
+> that second time.
 > 
-> Fine.  Could swiotlb_alloc() just call dma_alloc_coherent() too?
+> it seems we are missing some lock_vector_lock() on the remove cpu from
+> online mask.
 
-I'm not sure what you mean. And I don't think ppc wants swiotlb_alloc.
+The remove_cpu_from_maps() call in cpu_disable_common() is vector
+lock protected:
+void cpu_disable_common(void)
+{
+               < snip >
+	/* It's now safe to remove this processor from the online map */
+	lock_vector_lock();
+	remove_cpu_from_maps(cpu);
+	unlock_vector_lock();
+	fixup_irqs();
+}
+
+Is this what you meant?
+
+Gary
+
+-- 
+Gary Hade
+System x Enablement
+IBM Linux Technology Center
+503-578-4503  IBM T/L: 775-4503
+garyhade@us.ibm.com
+http://www.ibm.com/linux/ltc
+
