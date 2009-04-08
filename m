@@ -1,77 +1,76 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764392AbZDHSjl@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932686AbZDHSk2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764392AbZDHSjl (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 8 Apr 2009 14:39:41 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1764394AbZDHSjI
+	id S932686AbZDHSk2 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 8 Apr 2009 14:40:28 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932451AbZDHSjb
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 8 Apr 2009 14:39:08 -0400
-Received: from 82-117-125-11.tcdsl.calypso.net ([82.117.125.11]:34686 "EHLO
-	smtp.ossman.eu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1764329AbZDHSjG (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 8 Apr 2009 14:39:06 -0400
-Date: Wed, 8 Apr 2009 20:39:01 +0200
-From: Pierre Ossman <pierre@ossman.eu>
-To: Wolfgang =?UTF-8?B?TcO8ZXM=?= <wolfgang.mues@auerswald.de>
-Cc: "Andrew Morton" <akpm@linux-foundation.org>,
-       "Matt Fleming" <matt@console-pimps.org>,
-       "David Brownell" <dbrownell@users.sourceforge.net>,
-       "Mike Frysinger" <vapier.adi@gmail.com>, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 4/7 revised II] mmc_spi: do not check CID and CSD blocks
- with CRC16
-Message-ID: <20090408203901.4aa8dffc@mjolnir.ossman.eu>
-In-Reply-To: <200904071548.17091.wolfgang.mues@auerswald.de>
-References: <200904071548.17091.wolfgang.mues@auerswald.de>
-X-Mailer: Claws Mail 3.7.1 (GTK+ 2.16.0; x86_64-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: multipart/signed; micalg=PGP-SHA1; protocol="application/pgp-signature"; boundary="=_freyr.ossman.eu-25952-1239215941-0001-2"
+	Wed, 8 Apr 2009 14:39:31 -0400
+Received: from fg-out-1718.google.com ([72.14.220.157]:47280 "EHLO
+	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S932272AbZDHSj2 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 8 Apr 2009 14:39:28 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:to:cc:subject:message-id:references:mime-version
+         :content-type:content-disposition:in-reply-to:user-agent;
+        b=DgCrbQNTbk2HKbytGS2I7sMQVxSfS9J+Fm/ExbmtUyA88sibaQjglhiFiT6SkxBr36
+         ZghDDSxnb94z7Q6I5iOlO7vLJh65MmPGldOu65+aWh0S9qUI4Q4cSzaOgKUJ1X2ANhiO
+         kuBIJ8E5aADtihmDTHq7tbzug5kv5rPGLQuR8=
+Date: Wed, 8 Apr 2009 22:39:24 +0400
+From: Cyrill Gorcunov <gorcunov@gmail.com>
+To: mingo@redhat.com, hpa@zytor.com, linux-kernel@vger.kernel.org,
+       yinghai@kernel.org, tglx@linutronix.de, mingo@elte.hu
+Cc: linux-tip-commits@vger.kernel.org
+Subject: Re: [tip:x86/apic] x86: make wakeup_secondary_cpu_via_init static
+Message-ID: <20090408183924.GF7556@lenovo>
+References: <49D6A692.6040400@kernel.org> <tip-cdc1cb0d4445f39561a65204d26f89365f917550@git.kernel.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <tip-cdc1cb0d4445f39561a65204d26f89365f917550@git.kernel.org>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This is a MIME-formatted message.  If you see this text it means that your
-E-mail software does not support MIME-formatted messages.
+[Yinghai Lu - Wed, Apr 08, 2009 at 01:00:32PM +0000]
+| Commit-ID:  cdc1cb0d4445f39561a65204d26f89365f917550
+| Gitweb:     http://git.kernel.org/tip/cdc1cb0d4445f39561a65204d26f89365f917550
+| Author:     Yinghai Lu <yinghai@kernel.org>
+| AuthorDate: Fri, 3 Apr 2009 17:15:14 -0700
+| Committer:  Ingo Molnar <mingo@elte.hu>
+| CommitDate: Wed, 8 Apr 2009 14:50:28 +0200
+| 
+| x86: make wakeup_secondary_cpu_via_init static
+| 
+| Impact: cleanup
+| 
+| Signed-off-by: Yinghai Lu <yinghai@kernel.org>
+| LKML-Reference: <49D6A692.6040400@kernel.org>
+| Signed-off-by: Ingo Molnar <mingo@elte.hu>
+| 
+| 
+| ---
+|  arch/x86/kernel/smpboot.c |    2 +-
+|  1 files changed, 1 insertions(+), 1 deletions(-)
+| 
+| diff --git a/arch/x86/kernel/smpboot.c b/arch/x86/kernel/smpboot.c
+| index 58d24ef..bddf2cc 100644
+| --- a/arch/x86/kernel/smpboot.c
+| +++ b/arch/x86/kernel/smpboot.c
+| @@ -538,7 +538,7 @@ wakeup_secondary_cpu_via_nmi(int logical_apicid, unsigned long start_eip)
+|  	return (send_status | accept_status);
+|  }
+|  
+| -int __devinit
+| +static int __devinit
+|  wakeup_secondary_cpu_via_init(int phys_apicid, unsigned long start_eip)
+|  {
+|  	unsigned long send_status, accept_status = 0;
 
---=_freyr.ossman.eu-25952-1239215941-0001-2
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: quoted-printable
+Hi Yinghai,
 
-On Tue, 7 Apr 2009 14:48:16 +0100
-Wolfgang M=C3=BCes <wolfgang.mues@auerswald.de> wrote:
+just curious why it's not __cpuinit? Did I miss something?
 
-> From: Wolfgang Muees <wolfgang.mues@auerswald.de>
->=20
-> o Some cards are not able to calculate a valid CRC16 value
->   for CID and CSD reads (CRC for 512 byte data blocks is OK).
->   By moving the CRC enable after the read of CID and CSD, these
->   cards can be used. This patch was tested with a faulty 8 GByte
->   takeMS Class 6 SDHC card. This patch was suggested by
->   Pierre Ossman <drzeus@drzeus.cx>.
->=20
-> Signed-off-by: Wolfgang Muees <wolfgang.mues@auerswald.de>
->=20
-
-Queued.
-
-Thanks
---=20
-     -- Pierre Ossman
-
-  WARNING: This correspondence is being monitored by the
-  Swedish government. Make sure your server uses encryption
-  for SMTP traffic and consider using PGP for end-to-end
-  encryption.
-
---=_freyr.ossman.eu-25952-1239215941-0001-2
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: attachment; filename=signature.asc
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v2.0.11 (GNU/Linux)
-
-iEYEARECAAYFAknc70cACgkQ7b8eESbyJLizcQCgy5qDvEApgR2QsRmj9tfZnPSD
-+zAAnip+xjfQeFlGzFgHQXX/qmWYiP28
-=yxN7
------END PGP SIGNATURE-----
-
---=_freyr.ossman.eu-25952-1239215941-0001-2--
+       Cyrill
