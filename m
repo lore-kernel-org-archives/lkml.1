@@ -1,53 +1,71 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763798AbZDHJg2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763327AbZDHJjx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763798AbZDHJg2 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 8 Apr 2009 05:36:28 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755093AbZDHJgT
+	id S1763327AbZDHJjx (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 8 Apr 2009 05:39:53 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756110AbZDHJjn
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 8 Apr 2009 05:36:19 -0400
-Received: from one.firstfloor.org ([213.235.205.2]:41330 "EHLO
+	Wed, 8 Apr 2009 05:39:43 -0400
+Received: from one.firstfloor.org ([213.235.205.2]:36849 "EHLO
 	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751268AbZDHJgS (ORCPT
+	with ESMTP id S1755143AbZDHJjm (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 8 Apr 2009 05:36:18 -0400
-Date: Wed, 8 Apr 2009 11:38:34 +0200
+	Wed, 8 Apr 2009 05:39:42 -0400
+Date: Wed, 8 Apr 2009 11:41:59 +0200
 From: Andi Kleen <andi@firstfloor.org>
-To: Andrew Morton <akpm@linux-foundation.org>
+To: Minchan Kim <minchan.kim@gmail.com>
 Cc: Andi Kleen <andi@firstfloor.org>, linux-kernel@vger.kernel.org,
        linux-mm@kvack.org, x86@kernel.org
-Subject: Re: [PATCH] [2/16] POISON: Add page flag for poisoned pages
-Message-ID: <20090408093834.GJ17934@one.firstfloor.org>
-References: <20090407509.382219156@firstfloor.org> <20090407150958.BA68F1D046D@basil.firstfloor.org> <20090407221421.890f27a6.akpm@linux-foundation.org> <20090408062441.GF17934@one.firstfloor.org> <20090408000018.9567a5fa.akpm@linux-foundation.org>
+Subject: Re: [PATCH] [3/16] POISON: Handle poisoned pages in page free
+Message-ID: <20090408094159.GK17934@one.firstfloor.org>
+References: <20090407509.382219156@firstfloor.org> <20090407150959.C099D1D046E@basil.firstfloor.org> <28c262360904071621j5bdd8e33u1fbd8534d177a941@mail.gmail.com> <20090408065121.GI17934@one.firstfloor.org> <28c262360904080039l65c381edn106484c88f1c5819@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=iso-8859-1
 Content-Disposition: inline
-In-Reply-To: <20090408000018.9567a5fa.akpm@linux-foundation.org>
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <28c262360904080039l65c381edn106484c88f1c5819@mail.gmail.com>
 User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Apr 08, 2009 at 12:00:18AM -0700, Andrew Morton wrote:
-> On Wed, 8 Apr 2009 08:24:41 +0200 Andi Kleen <andi@firstfloor.org> wrote:
+On Wed, Apr 08, 2009 at 04:39:17PM +0900, Minchan Kim wrote:
+> On Wed, Apr 8, 2009 at 3:51 PM, Andi Kleen <andi@firstfloor.org> wrote:
+> >> >
+> >> >        /*
+> >> > +        * Page may have been marked bad before process is freeing it.
+> >> > +        * Make sure it is not put back into the free page lists.
+> >> > +        */
+> >> > +       if (PagePoison(page)) {
+> >> > +               /* check more flags here... */
+> >>
+> >> How about adding WARNING with some information(ex, pfn, flags..).
+> >
+> > The memory_failure() code is already quite chatty. Don't think more
+> > noise is needed currently.
 > 
-> > On Tue, Apr 07, 2009 at 10:14:21PM -0700, Andrew Morton wrote:
-> > > On Tue,  7 Apr 2009 17:09:58 +0200 (CEST) Andi Kleen <andi@firstfloor.org> wrote:
-> > > 
-> > > > Poisoned pages need special handling in the VM and shouldn't be touched 
-> > > > again. This requires a new page flag. Define it here.
-> > > 
-> > > I wish this patchset didn't change/abuse the well-understood meaning of
-> > > the word "poison".
-> > 
-> > Sorry, that's the terminology on the hardware side.
-> > 
-> > If there's much confusion I could rename it HwPoison or somesuch?
+> Sure.
 > 
-> I understand that'd be a PITA but I suspect it would be best,
-> long-term.  Having this conflict in core MM is really pretty bad.
+> > Or are you worrying about the case where a page gets corrupted
+> > by software and suddenly has Poison bits set? (e.g. 0xff everywhere).
+> > That would deserve a printk, but I'm not sure how to reliably test for
+> > that. After all a lot of flag combinations are valid.
+> 
+> I misunderstood your code.
+> That's because you add the code in bad_page.
+> 
+> As you commented, your intention was to prevent bad page from returning buddy.
+> Is right ?
 
-Ok. I'll rename it to HWPoison().
+Yes. Well actually it should not happen anymore. Perhaps I should
+make it a BUG()
+
+> If it is right, how about adding prevention code to free_pages_check ?
+> Now, bad_page is for showing the information that why it is bad page
+> I don't like emergency exit in bad_page.
+
+There's already one in there, so i just reused that one. It was a convenient
+way to keep things out of the fast path
 
 -Andi
--- 
+
 ak@linux.intel.com -- Speaking for myself only.
