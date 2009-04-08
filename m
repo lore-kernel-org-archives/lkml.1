@@ -1,80 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1765959AbZDHOyL@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764451AbZDHO4D@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1765959AbZDHOyL (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 8 Apr 2009 10:54:11 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932161AbZDHOxk
+	id S1764451AbZDHO4D (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 8 Apr 2009 10:56:03 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754248AbZDHOzu
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 8 Apr 2009 10:53:40 -0400
-Received: from g5t0007.atlanta.hp.com ([15.192.0.44]:5164 "EHLO
-	g5t0007.atlanta.hp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1763019AbZDHOxi (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 8 Apr 2009 10:53:38 -0400
-Date: Wed, 8 Apr 2009 09:53:38 -0500
-From: "Mike Miller (OS Dev)" <mikem@beardog.cca.cpqcorp.net>
-To: Jens Axboe <jens.axboe@oracle.com>
+	Wed, 8 Apr 2009 10:55:50 -0400
+Received: from mx3.mail.elte.hu ([157.181.1.138]:53256 "EHLO mx3.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751330AbZDHOzu (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 8 Apr 2009 10:55:50 -0400
+Date: Wed, 8 Apr 2009 16:54:40 +0200
+From: Ingo Molnar <mingo@elte.hu>
+To: Jeremy Fitzhardinge <jeremy@goop.org>
 Cc: Andrew Morton <akpm@linux-foundation.org>,
-       LKML <linux-kernel@vger.kernel.org>,
-       LKML-SCSI <linux-scsi@vger.kernel.org>, andrew.patterson@hp.com,
-       mike.miller@hp.com, kay.sievers@vrfy.org
-Subject: Re: [PATCH 1/1] cciss: resubmit export uid, model, vendor, rev to sysfs
-Message-ID: <20090408145338.GA3998@beardog.cca.cpqcorp.net>
-References: <20090407180411.GA4324@beardog.cca.cpqcorp.net> <20090408061901.GN5178@kernel.dk> <20090408081337.GX5178@kernel.dk>
-Mime-Version: 1.0
+       the arch/x86 maintainers <x86@kernel.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>,
+       Nick Piggin <nickpiggin@yahoo.com.au>,
+       Thomas Gleixner <tglx@linutronix.de>
+Subject: Re: [PATCH] Allow preemption during lazy mmu updates
+Message-ID: <20090408145440.GN12931@elte.hu>
+References: <1238176963-21093-1-git-send-email-jeremy@goop.org>
+MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20090408081337.GX5178@kernel.dk>
-User-Agent: Mutt/1.5.9i
+In-Reply-To: <1238176963-21093-1-git-send-email-jeremy@goop.org>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.5
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Apr 08, 2009 at 10:13:37AM +0200, Jens Axboe wrote:
-> On Wed, Apr 08 2009, Jens Axboe wrote:
-> > On Tue, Apr 07 2009, Mike Miller (OS Dev) wrote:
-> > > Patch 1 of 1 resubmit
-> > > 
-> > > cciss: add cciss driver sysfs entries
-> > > 
-> > > This patch adds sysfs entries to the cciss driver needed for the
-> > > dm/multipath tools. A file for vendor, model, rev, and unique_id are
-> > > added for each logical drive under directory
-> > > /sys/bus/pci/devices/<dev>/ccissX/cXdY. Where X = the controller (or
-> > > host) number and Y is the logical drive number. A link from
-> > > /sys/bus/pci/devices/<dev>/ccissX/cXdY/block:cciss!cXdY to
-> > > /sys/block/cciss!cXdY/device is also created.
-> > > 
-> > > From: Andrew Patterson <andrew.patterson@hp.com>
-> > 
-> > You want to put that at the top of the email, so you have
-> > {from,description,signed-offs} in that order.
-> > 
-> > The patch looks fine to me, but my sysfs foo is very weak though. CC'ing
-> > Kay, perhaps he can help take a quick look at this.
-> 
-> It doesn't apply to 2.6.30-rc1:
-> 
-> patching file Documentation/ABI/testing/sysfs-bus-pci-devices-cciss
-> patching file drivers/block/cciss.c
-> Hunk #1 succeeded at 437 (offset 3 lines).
-> Hunk #2 succeeded at 1518 (offset 20 lines).
-> Hunk #3 succeeded at 1597 (offset 20 lines).
-> Hunk #4 succeeded at 1688 (offset 20 lines).
-> Hunk #5 succeeded at 1739 (offset 20 lines).
-> Hunk #6 succeeded at 1816 (offset 20 lines).
-> Hunk #7 succeeded at 1825 (offset 20 lines).
-> Hunk #8 succeeded at 1950 (offset 20 lines).
-> Hunk #9 succeeded at 3956 with fuzz 2 (offset 93 lines).
-> Hunk #10 succeeded at 4108 (offset 98 lines).
-> Hunk #11 succeeded at 4220 (offset 101 lines).
-> patching file drivers/block/cciss.h
-> Hunk #3 FAILED at 131.
-> 1 out of 3 hunks FAILED -- saving rejects to file
-> drivers/block/cciss.h.rej
-> 
-My apologies, I built this against 2.6.29 not thinking that my other
-changes had been merged.
 
-But it looks like Kay has issues with the patch. Andrew P.?
+* Jeremy Fitzhardinge <jeremy@goop.org> wrote:
 
--- mikem
+>  include/asm-frv/pgtable.h          |    4 +-
+
+Needs the ack of the FRV arch maintainer both for content and for 
+flow (i.e. via x86 tree). If any second thoughts are expressed about 
+the flow then this needs to go on separate tracks.
+
+>  include/asm-generic/pgtable.h      |   21 +++++++------
+
+Needs the ack of arch maintainers in general and a linux-arch 
+cross-post.
+
+>  kernel/sched.c                     |    2 -
+
+Needs the ack of ... oh, never mind - this one is fine i guess ;-)
+
+	Ingo
