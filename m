@@ -1,89 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763686AbZDHJO3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763883AbZDHJO7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763686AbZDHJO3 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 8 Apr 2009 05:14:29 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757293AbZDHJOT
+	id S1763883AbZDHJO7 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 8 Apr 2009 05:14:59 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758182AbZDHJOt
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 8 Apr 2009 05:14:19 -0400
-Received: from mx1.auerswald.de ([212.185.163.234]:3039 "EHLO
-	mail.auerswald.de" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1753655AbZDHJOS convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 8 Apr 2009 05:14:18 -0400
-From: Wolfgang =?iso-8859-15?q?M=FCes?= <wolfgang.mues@auerswald.de>
-Organization: Auerswald GmbH & Co. KG
-To: Pierre Ossman <drzeus@drzeus.cx>
-Subject: [PATCH] mmc_spi: speedup for slow cards, less wear-out
-Date: Wed, 8 Apr 2009 10:14:07 +0100
-User-Agent: KMail/1.9.10
-Cc: "Andrew Morton" <akpm@linux-foundation.org>,
-       "Matt Fleming" <matt@console-pimps.org>,
-       "David Brownell" <dbrownell@users.sourceforge.net>,
-       "Mike Frysinger" <vapier.adi@gmail.com>, linux-kernel@vger.kernel.org
+	Wed, 8 Apr 2009 05:14:49 -0400
+Received: from mx2.mail.elte.hu ([157.181.151.9]:44114 "EHLO mx2.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1757608AbZDHJOs (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 8 Apr 2009 05:14:48 -0400
+Date: Wed, 8 Apr 2009 11:14:32 +0200
+From: Ingo Molnar <mingo@elte.hu>
+To: Tom Zanussi <tzanussi@gmail.com>
+Cc: linux-kernel <linux-kernel@vger.kernel.org>,
+       Steven Rostedt <rostedt@goodmis.org>, fweisbec@gmail.com
+Subject: Re: [PATCH v2] tracing/filters: use ring_buffer_discard_commit()
+	in filter_check_discard()
+Message-ID: <20090408091432.GA10381@elte.hu>
+References: <1239178554.10295.36.camel@tropicana> <20090408084405.GA12283@elte.hu> <20090408085635.GA6203@elte.hu>
 MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Message-Id: <200904081114.07653.wolfgang.mues@auerswald.de>
-Content-Type: text/plain;
-  charset="iso-8859-15"
-Content-Transfer-Encoding: 8BIT
+In-Reply-To: <20090408085635.GA6203@elte.hu>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Wolfgang Muees <wolfgang.mues@auerswald.de>
 
-o Speedup for slow cards by transfering more data at once.
-  This patch also reduces the amount of wear-out of the flash
-  blocks because fewer partial blocks are written.  
+* Ingo Molnar <mingo@elte.hu> wrote:
 
-Signed-off-by: Wolfgang Muees <wolfgang.mues@auerswald.de>
+> * Ingo Molnar <mingo@elte.hu> wrote:
+> 
+> > * Tom Zanussi <tzanussi@gmail.com> wrote:
+> > 
+> > > This patch changes filter_check_discard() to make use of the new 
+> > > ring_buffer_discard_commit() function and modifies the current 
+> > > users to call the old commit function in the non-discard case.  It 
+> > > also introduces a version of filter_check_discard() that uses the 
+> > > global trace buffer (filter_current_check_discard()) for those 
+> > > cases.
+> > > 
+> > > v2 changes:
+> > > 
+> > > - fix compile error noticed by Ingo Molnar
+> > > 
+> > > Signed-off-by: Tom Zanussi <tzanussi@gmail.com>
+> > 
+> > Thanks Tom, i've applied it to tip:tracing/filters and i've started 
+> > testing it.
+> 
+> still has build failures:
+> 
+> kernel/built-in.o: In function `filter_check_discard':
+> trace.c:(.text+0x5b057): undefined reference to `filter_match_preds'
 
----
+ah, i'll try your other patch as well that separates the event 
+infrastructre from the event-tracer.
 
-diff -uprN 2_6_29_rc7_patch1253467/drivers/mmc/host/mmc_spi.c 2_6_29_rc7_patch_wearout_speedup/drivers/mmc/host/mmc_spi.c
---- 2_6_29_rc7_patch1253467/drivers/mmc/host/mmc_spi.c	2009-04-07 17:19:21.000000000 +0200
-+++ 2_6_29_rc7_patch_wearout_speedup/drivers/mmc/host/mmc_spi.c	2009-04-08 11:11:20.000000000 +0200
-@@ -97,6 +97,14 @@
-  */
- #define r1b_timeout		(HZ * 3)
- 
-+/* One of the critical speed parameters is the amount of data which may
-+ * be transfered in one command. If this value is too low, the SD card
-+ * controller has to do multiple partial block writes (argggh!). With
-+ * today (2008) SD cards there is little speed gain if we transfer more
-+ * than 64 KBytes at a time. So use this value until there is any indication
-+ * that we should do more here.
-+ */
-+#define MMC_SPI_BLOCKSATONCE	128
- 
- /****************************************************************************/
- 
-@@ -1366,6 +1374,10 @@ static int mmc_spi_probe(struct spi_devi
- 
- 	mmc->ops = &mmc_spi_ops;
- 	mmc->max_blk_size = MMC_SPI_BLOCKSIZE;
-+	mmc->max_hw_segs = MMC_SPI_BLOCKSATONCE;
-+	mmc->max_phys_segs = MMC_SPI_BLOCKSATONCE;
-+	mmc->max_req_size = MMC_SPI_BLOCKSATONCE * MMC_SPI_BLOCKSIZE;
-+	mmc->max_blk_count = MMC_SPI_BLOCKSATONCE;
- 
- 	mmc->caps = MMC_CAP_SPI;
- 
----
-regards
-
-i. A. Wolfgang Mües
--- 
-Auerswald GmbH & Co. KG
-Hardware Development
-Telefon: +49 (0)5306 9219 0
-Telefax: +49 (0)5306 9219 94 
-E-Mail: Wolfgang.Mues@Auerswald.de
-Web: http://www.auerswald.de
- 
---------------------------------------------------------------
-Auerswald GmbH & Co. KG, Vor den Grashöfen 1, 38162 Cremlingen
-Registriert beim AG Braunschweig HRA 13289
-p.h.G Auerswald Geschäftsführungsges. mbH
-Registriert beim AG Braunschweig HRB 7463
-Geschäftsführer: Dipl-Ing. Gerhard Auerswald
+	Ingo
