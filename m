@@ -1,62 +1,160 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758302AbZDHAK7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759967AbZDHALr@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758302AbZDHAK7 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 7 Apr 2009 20:10:59 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757359AbZDHAKj
+	id S1759967AbZDHALr (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 7 Apr 2009 20:11:47 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757526AbZDHALf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 7 Apr 2009 20:10:39 -0400
-Received: from chilli.pcug.org.au ([203.10.76.44]:34420 "EHLO smtps.tip.net.au"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1757211AbZDHAKi (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 7 Apr 2009 20:10:38 -0400
-Date: Wed, 8 Apr 2009 10:10:32 +1000
-From: Stephen Rothwell <sfr@canb.auug.org.au>
-To: Alan Cox <alan@lxorguk.ukuu.org.uk>
-Cc: linux-next@vger.kernel.org, Christian Pellegrin <chripell@gmail.com>,
-       LKML <linux-kernel@vger.kernel.org>,
-       Linus <torvalds@linux-foundation.org>,
-       Andrew Morton <akpm@linux-foundation.org>
-Subject: linux-next: origin tree build failure
-Message-Id: <20090408101032.75afd7af.sfr@canb.auug.org.au>
-X-Mailer: Sylpheed 2.6.0 (GTK+ 2.14.7; i486-pc-linux-gnu)
+	Tue, 7 Apr 2009 20:11:35 -0400
+Received: from relay3.sgi.com ([192.48.156.57]:36840 "EHLO relay.sgi.com"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1755059AbZDHALe (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 7 Apr 2009 20:11:34 -0400
+Date: Tue, 7 Apr 2009 19:11:33 -0500
+From: Russ Anderson <rja@sgi.com>
+To: linux-kernel@vger.kernel.org, linux-mm@kvack.org, x86@kernel.org
+Cc: Russ Anderson <rja@sgi.com>
+Subject: [PATCH 1/2] Avoid putting a bad page back on the LRU
+Message-ID: <20090408001133.GB27170@sgi.com>
+Reply-To: Russ Anderson <rja@sgi.com>
 Mime-Version: 1.0
-Content-Type: multipart/signed; protocol="application/pgp-signature";
- micalg="PGP-SHA1";
- boundary="Signature=_Wed__8_Apr_2009_10_10_32_+1000_kwpSavlbI9d0X+3o"
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+User-Agent: Mutt/1.4.2.2i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---Signature=_Wed__8_Apr_2009_10_10_32_+1000_kwpSavlbI9d0X+3o
-Content-Type: text/plain; charset=US-ASCII
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+Prevent a page with a physical memory error from being placed back
+on the LRU.  This patch applies on top of Andi Kleen's POISON
+patchset.
 
-Hi Alan,
 
-Today's linux-next build (x86_64 allmodconfig) failed like this:
+Signed-off-by: Russ Anderson <rja@sgi.com>
 
-make[3]: *** No rule to make target `drivers/serial/max3100.c', needed by `=
-drivers/serial/max3100.o'.  Stop.
+---
+ include/linux/page-flags.h |    8 +++++++-
+ mm/migrate.c               |   39 ++++++++++++++++++++++++++++++++++++++-
+ 2 files changed, 45 insertions(+), 2 deletions(-)
 
-The commit 1dcb884ca8048efb4ce2999d367c26369ab2227c ("Add support for the
-MAX3100 SPI UART.") added everything except the file above.
-
-I have reverted that commit for today.
---=20
-Cheers,
-Stephen Rothwell                    sfr@canb.auug.org.au
-http://www.canb.auug.org.au/~sfr/
-
---Signature=_Wed__8_Apr_2009_10_10_32_+1000_kwpSavlbI9d0X+3o
-Content-Type: application/pgp-signature
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.9 (GNU/Linux)
-
-iEYEARECAAYFAknb63gACgkQjjKRsyhoI8yyagCcCzjURscJhT/PBR3T+fAi+uKB
-tTQAnjcr+ewGrImFpIjzPamCLiUevA/G
-=JVc0
------END PGP SIGNATURE-----
-
---Signature=_Wed__8_Apr_2009_10_10_32_+1000_kwpSavlbI9d0X+3o--
+Index: linux-next/mm/migrate.c
+===================================================================
+--- linux-next.orig/mm/migrate.c	2009-04-07 18:32:12.781949840 -0500
++++ linux-next/mm/migrate.c	2009-04-07 18:34:19.169736260 -0500
+@@ -72,6 +72,7 @@ int putback_lru_pages(struct list_head *
+ 	}
+ 	return count;
+ }
++EXPORT_SYMBOL(isolate_lru_page);
+ 
+ /*
+  * Restore a potential migration pte to a working pte entry
+@@ -139,6 +140,7 @@ static void remove_migration_pte(struct 
+ out:
+ 	pte_unmap_unlock(ptep, ptl);
+ }
++EXPORT_SYMBOL(migrate_prep);
+ 
+ /*
+  * Note that remove_file_migration_ptes will only work on regular mappings,
+@@ -161,6 +163,7 @@ static void remove_file_migration_ptes(s
+ 
+ 	spin_unlock(&mapping->i_mmap_lock);
+ }
++EXPORT_SYMBOL(putback_lru_pages);
+ 
+ /*
+  * Must hold mmap_sem lock on at least one of the vmas containing
+@@ -693,6 +696,26 @@ unlock:
+  		 * restored.
+  		 */
+  		list_del(&page->lru);
++#ifdef CONFIG_MEMORY_FAILURE
++		if (PagePoison(page)) {
++			if (rc == 0)
++				/*
++				 * A page with a memory error that has
++				 * been migrated will not be moved to
++				 * the LRU.
++				 */
++				goto move_newpage;
++			else
++				/*
++				 * The page failed to migrate and will not
++				 * be added to the bad page list.  Clearing
++				 * the error bit will allow another attempt
++				 * to migrate if it gets another correctable
++				 * error.
++				 */
++				ClearPagePoison(page);
++		}
++#endif
+ 		putback_lru_page(page);
+ 	}
+ 
+@@ -736,7 +759,7 @@ int migrate_pages(struct list_head *from
+ 	struct page *page;
+ 	struct page *page2;
+ 	int swapwrite = current->flags & PF_SWAPWRITE;
+-	int rc;
++	int rc = 0;
+ 
+ 	if (!swapwrite)
+ 		current->flags |= PF_SWAPWRITE;
+@@ -765,6 +788,19 @@ int migrate_pages(struct list_head *from
+ 			}
+ 		}
+ 	}
++
++#ifdef CONFIG_MEMORY_FAILURE
++	if (rc != 0)
++		list_for_each_entry_safe(page, page2, from, lru)
++			if (PagePoison(page))
++				/*
++				 * The page failed to migrate.  Clearing
++				 * the error bit will allow another attempt
++				 * to migrate if it gets another correctable
++				 * error.
++				 */
++				ClearPagePoison(page);
++#endif
+ 	rc = 0;
+ out:
+ 	if (!swapwrite)
+@@ -777,6 +813,7 @@ out:
+ 
+ 	return nr_failed + retry;
+ }
++EXPORT_SYMBOL(migrate_pages);
+ 
+ #ifdef CONFIG_NUMA
+ /*
+Index: linux-next/include/linux/page-flags.h
+===================================================================
+--- linux-next.orig/include/linux/page-flags.h	2009-04-07 18:32:12.789950956 -0500
++++ linux-next/include/linux/page-flags.h	2009-04-07 18:34:19.197737925 -0500
+@@ -169,15 +169,21 @@ static inline int TestSetPage##uname(str
+ static inline int TestClearPage##uname(struct page *page)		\
+ 		{ return test_and_clear_bit(PG_##lname, &page->flags); }
+ 
++#define PAGEFLAGMASK(uname, lname)					\
++static inline int PAGEMASK_##uname(void)				\
++		{ return (1 << PG_##lname); }
+ 
+ #define PAGEFLAG(uname, lname) TESTPAGEFLAG(uname, lname)		\
+-	SETPAGEFLAG(uname, lname) CLEARPAGEFLAG(uname, lname)
++	SETPAGEFLAG(uname, lname) CLEARPAGEFLAG(uname, lname)		\
++	PAGEFLAGMASK(uname, lname)
+ 
+ #define __PAGEFLAG(uname, lname) TESTPAGEFLAG(uname, lname)		\
+ 	__SETPAGEFLAG(uname, lname)  __CLEARPAGEFLAG(uname, lname)
+ 
+ #define PAGEFLAG_FALSE(uname) 						\
+ static inline int Page##uname(struct page *page) 			\
++			{ return 0; }					\
++static inline int PAGEMASK_##uname(void)				\
+ 			{ return 0; }
+ 
+ #define TESTSCFLAG(uname, lname)					\
+-- 
+Russ Anderson, OS RAS/Partitioning Project Lead  
+SGI - Silicon Graphics Inc          rja@sgi.com
