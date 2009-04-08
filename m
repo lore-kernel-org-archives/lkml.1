@@ -1,41 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751296AbZDHELi@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751979AbZDHEP3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751296AbZDHELi (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 8 Apr 2009 00:11:38 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750785AbZDHEL2
+	id S1751979AbZDHEP3 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 8 Apr 2009 00:15:29 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751058AbZDHEPR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 8 Apr 2009 00:11:28 -0400
-Received: from ozlabs.org ([203.10.76.45]:58282 "EHLO ozlabs.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750776AbZDHEL1 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 8 Apr 2009 00:11:27 -0400
-From: Rusty Russell <rusty@rustcorp.com.au>
-To: Alexander Beregalov <a.beregalov@gmail.com>
-Subject: Re: Next April 7 : x86 allmodconfig failure [kernel/module.c]
-Date: Wed, 8 Apr 2009 13:41:22 +0930
-User-Agent: KMail/1.11.2 (Linux/2.6.27-11-generic; KDE/4.2.2; i686; ; )
-Cc: subrata@linux.vnet.ibm.com, linux-next@vger.kernel.org,
-       LKML <linux-kernel@vger.kernel.org>,
-       Stephen Rothwell <sfr@canb.auug.org.au>,
-       Sachin P Sant <sachinp@linux.vnet.ibm.com>, Kees Cook <kees@ubuntu.com>,
-       James Morris <jmorris@namei.org>
-References: <1239103297.5300.24.camel@subratamodak.linux.ibm.com> <1239103411.5300.26.camel@subratamodak.linux.ibm.com> <a4423d670904070425y1d38579dv34ba8681c77e43e4@mail.gmail.com>
-In-Reply-To: <a4423d670904070425y1d38579dv34ba8681c77e43e4@mail.gmail.com>
+	Wed, 8 Apr 2009 00:15:17 -0400
+Received: from terminus.zytor.com ([198.137.202.10]:51334 "EHLO
+	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750706AbZDHEPP (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 8 Apr 2009 00:15:15 -0400
+Message-ID: <49DC24C2.7000608@zytor.com>
+Date: Tue, 07 Apr 2009 21:14:58 -0700
+From: "H. Peter Anvin" <hpa@zytor.com>
+User-Agent: Thunderbird 2.0.0.14 (X11/20080501)
 MIME-Version: 1.0
-Content-Type: Text/Plain;
-  charset="utf-8"
+To: Glauber Costa <glommer@redhat.com>
+CC: kvm@vger.kernel.org, linux-kernel@vger.kernel.org, avi@redhat.com
+Subject: Re: [PATCH] do not keep interrupt window closed by sti in real mode
+References: <1239161017-7398-1-git-send-email-glommer@redhat.com>
+In-Reply-To: <1239161017-7398-1-git-send-email-glommer@redhat.com>
+Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200904081341.23208.rusty@rustcorp.com.au>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tuesday 07 April 2009 20:55:05 Alexander Beregalov wrote:
-> Patch is already sent
-> http://patchwork.kernel.org/patch/16535/
+Glauber Costa wrote:
+> While in real mode, sti does not block interrupts from the subsequent
+> instruction. This is stated at Intel SDM Volume 2b, page 4-432
 
-But why have I never seen this patch in the first place?
+I don't see how you're getting that idea from the STI documentation --
+and I am quite sure that that is not the case.  Quite on the contrary.
+The only differences between protected mode and real mode has to do with
+the handling of VIF when CPL=3 (this rather naturally falls out if one
+considers CPL=0 in real mode).
 
-James, do you want me to take it?
-Rusty.
+The text is:
+
+"If protected-mode virtual interrupts are not enabled, STI sets the
+interrupt flag (IF) in the EFLAGS register. After the IF flag is set,
+the processor begins responding to external, maskable interrupts after
+the next instruction is executed. The delayed effect of this instruction
+is provided to allow interrupts to be enabled just before returning from
+a procedure (or subroutine). For instance, if an STI instruction is
+followed by an RET instruction, the RET instruction is allowed to
+execute before external interrupts are recognized1. If the STI
+instruction is followed by a CLI instruction (which clears the IF flag),
+the effect of the STI instruction is negated."
+
+Obviously, in real mode, "protected-mode virtual interrupts" are not
+enabled, as is also confirmed by Table 4-5.
+
+	-hpa
+
+-- 
+H. Peter Anvin, Intel Open Source Technology Center
+I work for Intel.  I don't speak on their behalf.
+
