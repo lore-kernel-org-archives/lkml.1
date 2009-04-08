@@ -1,132 +1,116 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763140AbZDHIwc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763440AbZDHIzw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763140AbZDHIwc (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 8 Apr 2009 04:52:32 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761615AbZDHIvh
+	id S1763440AbZDHIzw (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 8 Apr 2009 04:55:52 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756451AbZDHIzl
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 8 Apr 2009 04:51:37 -0400
-Received: from smtp-68.nebula.fi ([83.145.220.68]:60976 "EHLO
-	smtp-68.nebula.fi" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1762499AbZDHIv1 (ORCPT
+	Wed, 8 Apr 2009 04:55:41 -0400
+Received: from fgwmail6.fujitsu.co.jp ([192.51.44.36]:44923 "EHLO
+	fgwmail6.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753570AbZDHIzk (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 8 Apr 2009 04:51:27 -0400
-From: Pekka Enberg <penberg@cs.helsinki.fi>
-To: greg@kroah.com
-Cc: linux-kernel@vger.kernel.org, Pavel Machek <pavel@ucw.cz>
-Subject: [PATCH 4/4] w35und: merge rest of wbhal.c to phy_calibration.c
-Date: Wed,  8 Apr 2009 11:51:22 +0300
-Message-Id: <1239180682-22860-4-git-send-email-penberg@cs.helsinki.fi>
-X-Mailer: git-send-email 1.5.6.3
-In-Reply-To: <1239180682-22860-1-git-send-email-penberg@cs.helsinki.fi>
-References: <1239180682-22860-1-git-send-email-penberg@cs.helsinki.fi>
+	Wed, 8 Apr 2009 04:55:40 -0400
+Date: Wed, 8 Apr 2009 17:54:09 +0900
+From: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+To: balbir@linux.vnet.ibm.com
+Cc: "linux-mm@kvack.org" <linux-mm@kvack.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       "lizf@cn.fujitsu.com" <lizf@cn.fujitsu.com>,
+       Rik van Riel <riel@surriel.com>, Bharata B Rao <bharata.rao@in.ibm.com>,
+       Dhaval Giani <dhaval@linux.vnet.ibm.com>,
+       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
+Subject: Re: [RFI] Shared accounting for memory resource controller
+Message-Id: <20090408175409.eb0818db.kamezawa.hiroyu@jp.fujitsu.com>
+In-Reply-To: <20090408084952.GG7082@balbir.in.ibm.com>
+References: <20090407080355.GS7082@balbir.in.ibm.com>
+	<20090407172419.a5f318b9.kamezawa.hiroyu@jp.fujitsu.com>
+	<20090408052904.GY7082@balbir.in.ibm.com>
+	<20090408151529.fd6626c2.kamezawa.hiroyu@jp.fujitsu.com>
+	<20090408070401.GC7082@balbir.in.ibm.com>
+	<20090408160733.4813cb8d.kamezawa.hiroyu@jp.fujitsu.com>
+	<20090408071115.GD7082@balbir.in.ibm.com>
+	<20090408161824.26f47077.kamezawa.hiroyu@jp.fujitsu.com>
+	<20090408074809.GF7082@balbir.in.ibm.com>
+	<20090408170341.437c215b.kamezawa.hiroyu@jp.fujitsu.com>
+	<20090408084952.GG7082@balbir.in.ibm.com>
+Organization: FUJITSU Co. LTD.
+X-Mailer: Sylpheed 2.5.0 (GTK+ 2.10.14; i686-pc-mingw32)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Impact: cleanup
+On Wed, 8 Apr 2009 14:19:52 +0530
+Balbir Singh <balbir@linux.vnet.ibm.com> wrote:
 
-The remaining functions are local to phy_calibration.c so move them
-there and remove wbhal.c.
+> * KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com> [2009-04-08 17:03:41]:
+> 
+> > On Wed, 8 Apr 2009 13:18:09 +0530
+> > Balbir Singh <balbir@linux.vnet.ibm.com> wrote:
+> > 
+> > > > > 3. Using the above, we can then try to (using an algorithm you
+> > > > > proposed), try to do some work for figuring out the shared percentage.
+> > > > > 
+> > > > This is the point. At last. Why "# of shared pages" is important ?
+> > > > 
+> > > 
+> > > I posted this in my motivation yesterday. # of shared pages can help
+> > > plan the system better and the size of the cgroup. A cgroup might have
+> > > small usage_in_bytes but large number of shared pages. We need a
+> > > metric that can help figure out the fair usage of the cgroup.
+> > > 
+> > I don't fully understand but NR_FILE_MAPPED is an information in /proc/meminfo.
+> > I personally think I want to support information in /proc/meminfo per memcg.
+> > 
+> > Hmm ? then, if you add a hook, it seems
+> > == mm/rmap.c
+> >  689 void page_add_file_rmap(struct page *page)
+> >  690 {
+> >  691         if (atomic_inc_and_test(&page->_mapcount))
+> >  692                 __inc_zone_page_state(page, NR_FILE_MAPPED);
+> >  693 }
+> > ==  page_remove_rmap(struct page *page)
+> >  739                 __dec_zone_page_state(page,
+> >  740                         PageAnon(page) ? NR_ANON_PAGES : NR_FILE_MAPPED);
+> > ==
+> > 
+> > Is good place to go, maybe.
+> > 
+> > page->page_cgroup->mem_cgroup-> inc/dec counter ?
+> > 
+> > Maybe the patch itself will be simple, overhead is unknown..
+> 
+> I thought of the same thing, but then moved to the following
+> 
+> ... mem_cgroup_charge_statistics(..) {
+>  if (page_mapcount(page) == 0 && page_is_file_cache(page))
+>     __mem_cgroup_stat_add_safe(cpustat, MEM_CGROUP_STAT_FILE_RSS, val);
+> 
+> But I've not yet tested the end result
+> 
+I think 
+ - at uncharge:
+   charge_statistics is only called when FILE CACHE is removed from radix-tree.
+   mem_cgroup_uncharge() is called only when PageAnon(page).
+ - at charge:
+   charge_statistics is only called when FILE CACHE is added to radix-tree.
 
-Cc: Pavel Machek <pavel@ucw.cz>
-Signed-off-by: Pekka Enberg <penberg@cs.helsinki.fi>
----
- drivers/staging/winbond/Makefile          |    1 -
- drivers/staging/winbond/phy_calibration.c |   19 +++++++++++++++++++
- drivers/staging/winbond/wbhal.c           |   20 --------------------
- drivers/staging/winbond/wbhal_f.h         |    4 ----
- 4 files changed, 19 insertions(+), 25 deletions(-)
- delete mode 100644 drivers/staging/winbond/wbhal.c
+This "checking only radix-tree insert/delete" help us to remove most of overheads
+on FILE CACHE.
 
-diff --git a/drivers/staging/winbond/Makefile b/drivers/staging/winbond/Makefile
-index b49c973..fb2b7d4 100644
---- a/drivers/staging/winbond/Makefile
-+++ b/drivers/staging/winbond/Makefile
-@@ -7,7 +7,6 @@ w35und-objs :=			\
- 	wb35reg.o		\
- 	wb35rx.o		\
- 	wb35tx.o		\
--	wbhal.o			\
- 	wbusb.o			\
- 
- 
-diff --git a/drivers/staging/winbond/phy_calibration.c b/drivers/staging/winbond/phy_calibration.c
-index af8c01e..8c56962 100644
---- a/drivers/staging/winbond/phy_calibration.c
-+++ b/drivers/staging/winbond/phy_calibration.c
-@@ -340,6 +340,25 @@ void _sin_cos(s32 angle, s32 *sin, s32 *cos)
-     }
- }
- 
-+static unsigned char hal_get_dxx_reg(struct hw_data *pHwData, u16 number, u32 * pValue)
-+{
-+	if (number < 0x1000)
-+		number += 0x1000;
-+	return Wb35Reg_ReadSync(pHwData, number, pValue);
-+}
-+#define hw_get_dxx_reg( _A, _B, _C ) hal_get_dxx_reg( _A, _B, (u32 *)_C )
-+
-+static unsigned char hal_set_dxx_reg(struct hw_data *pHwData, u16 number, u32 value)
-+{
-+	unsigned char ret;
-+
-+	if (number < 0x1000)
-+		number += 0x1000;
-+	ret = Wb35Reg_WriteSync(pHwData, number, value);
-+	return ret;
-+}
-+#define hw_set_dxx_reg( _A, _B, _C ) hal_set_dxx_reg( _A, _B, (u32)_C )
-+
- 
- void _reset_rx_cal(struct hw_data *phw_data)
- {
-diff --git a/drivers/staging/winbond/wbhal.c b/drivers/staging/winbond/wbhal.c
-deleted file mode 100644
-index b9a6e38..0000000
---- a/drivers/staging/winbond/wbhal.c
-+++ /dev/null
-@@ -1,20 +0,0 @@
--#include "sysdef.h"
--#include "wbhal_f.h"
--#include "wblinux_f.h"
--
--unsigned char hal_get_dxx_reg(struct hw_data *pHwData, u16 number, u32 * pValue)
--{
--	if (number < 0x1000)
--		number += 0x1000;
--	return Wb35Reg_ReadSync(pHwData, number, pValue);
--}
--
--unsigned char hal_set_dxx_reg(struct hw_data *pHwData, u16 number, u32 value)
--{
--	unsigned char ret;
--
--	if (number < 0x1000)
--		number += 0x1000;
--	ret = Wb35Reg_WriteSync(pHwData, number, value);
--	return ret;
--}
-diff --git a/drivers/staging/winbond/wbhal_f.h b/drivers/staging/winbond/wbhal_f.h
-index fd1d3c2..bfdf05d 100644
---- a/drivers/staging/winbond/wbhal_f.h
-+++ b/drivers/staging/winbond/wbhal_f.h
-@@ -52,8 +52,6 @@ u32 hal_get_bss_pk_cnt(  struct hw_data * pHwData );
- 
- #define PHY_DEBUG( msg, args... )
- 
--unsigned char hal_get_dxx_reg(  struct hw_data * pHwData,  u16 number,  u32 * pValue );
--unsigned char hal_set_dxx_reg(  struct hw_data * pHwData,  u16 number,  u32 value );
- #define hal_get_time_count( _P )	(_P->time_count/10)	// return 100ms count
- #define hal_detect_error( _P )		(_P->WbUsb.DetectCount)
- 
-@@ -68,7 +66,5 @@ unsigned char hal_set_dxx_reg(  struct hw_data * pHwData,  u16 number,  u32 valu
- #define hal_join_request_stop(_A)
- #define hw_get_cxx_reg( _A, _B, _C )
- #define hw_set_cxx_reg( _A, _B, _C )
--#define hw_get_dxx_reg( _A, _B, _C )	hal_get_dxx_reg( _A, _B, (u32 *)_C )
--#define hw_set_dxx_reg( _A, _B, _C )	hal_set_dxx_reg( _A, _B, (u32)_C )
- 
- 
--- 
-1.5.6.3
+So, adding new hooks to page_add_file_rmap() and page_remove_rmap()
+is a way to go. (and easy to understand because we account it at the same time
+NR_FILE_MAPPED is modified.)
+
+
+Thanks,
+-Kame
+
+
+
+
+
 
