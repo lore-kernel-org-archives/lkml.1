@@ -1,251 +1,89 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759547AbZDHB7y@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759290AbZDHCGt@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759547AbZDHB7y (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 7 Apr 2009 21:59:54 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757516AbZDHB7e
+	id S1759290AbZDHCGt (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 7 Apr 2009 22:06:49 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750894AbZDHCGk
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 7 Apr 2009 21:59:34 -0400
-Received: from mga09.intel.com ([134.134.136.24]:27668 "EHLO mga09.intel.com"
+	Tue, 7 Apr 2009 22:06:40 -0400
+Received: from mail001.aei.ca ([206.123.6.130]:39404 "EHLO mail001.aei.ca"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1757935AbZDHB7c (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 7 Apr 2009 21:59:32 -0400
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.39,340,1235980800"; 
-   d="asc'?scan'208";a="401285307"
-Subject: [PATH 2/2] kvm userspace: Add MCE simulation to kvm
-From: Huang Ying <ying.huang@intel.com>
-To: avi@redhat.com
-Cc: kvm@vger.kernel.org, linux-kernel@vger.kernel.org,
-       Andi Kleen <andi@firstfloor.org>
-Content-Type: multipart/signed; micalg="pgp-sha1"; protocol="application/pgp-signature"; boundary="=-4T6BwCzRKLp300A1vmXi"
-Date: Wed, 08 Apr 2009 09:59:30 +0800
-Message-Id: <1239155970.6384.9.camel@yhuang-dev.sh.intel.com>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.24.5 
+	id S1755816AbZDHCGj (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 7 Apr 2009 22:06:39 -0400
+From: Ed Tomlinson <edt@aei.ca>
+To: linux-kernel@vger.kernel.org
+Subject: [2.6.30-rc1] NULL pointer dereference
+Date: Tue, 7 Apr 2009 22:06:28 -0400
+User-Agent: KMail/1.11.1 (Linux/2.6.30-rc1-crc; KDE/4.2.1; x86_64; ; )
+Cc: David Miller <davem@davemloft.net>, netdev@vger.kernel.org
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200904072206.29396.edt@aei.ca>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Hi,
 
---=-4T6BwCzRKLp300A1vmXi
-Content-Type: text/plain
-Content-Transfer-Encoding: quoted-printable
+I got tired of rebuilding the drm and radeon modules to support my R600 card so I decided to
+try .30-rc.  It lasted about 30 minutes then I got the exception below when start a freenet node.
 
-- MCE features is initialized when VCPU is initialized according to CPUID.
-- A monitor command "mce" is added to inject a MCE.
+The ipv6 interface is supplied by www.sixxs.org but my tunnel broker is currently down so aside
+from the local link address on eth0 (and locl) there are no ipv6 intefaces on my box.
 
-Signed-off-by: Huang Ying <ying.huang@intel.com>
+Hope this helps,
+Ed Tomlinson
 
----
- libkvm/libkvm-x86.c    |   10 ++++++++++
- libkvm/libkvm.h        |    2 ++
- qemu/monitor.c         |   26 ++++++++++++++++++++++++++
- qemu/qemu-kvm-x86.c    |   22 +++++++++++++++++++++-
- qemu/qemu-kvm.c        |   26 ++++++++++++++++++++++++++
- qemu/qemu-kvm.h        |    4 ++++
- qemu/target-i386/cpu.h |    3 +++
- 7 files changed, 92 insertions(+), 1 deletion(-)
-
---- a/qemu/monitor.c
-+++ b/qemu/monitor.c
-@@ -1556,6 +1556,31 @@ static void do_info_status(Monitor *mon)
- }
-=20
-=20
-+#if defined(TARGET_I386) || defined(TARGET_X86_64)
-+static void do_inject_mce(Monitor *mon,
-+			  int cpu_index, int bank,
-+			  unsigned status_hi, unsigned status_lo,
-+			  unsigned mcg_status_hi, unsigned mcg_status_lo,
-+			  unsigned addr_hi, unsigned addr_lo,
-+			  unsigned misc_hi, unsigned misc_lo)
-+{
-+	CPUState *env;
-+	struct kvm_x86_mce mce =3D {
-+		.bank =3D bank,
-+		.status =3D ((uint64_t)status_hi << 32) | status_lo,
-+		.mcg_status =3D ((uint64_t)mcg_status_hi << 32) | mcg_status_lo,
-+		.addr =3D ((uint64_t)addr_hi << 32) | addr_lo,
-+		.misc =3D ((uint64_t)misc_hi << 32) | misc_lo,
-+	};
-+
-+	for (env =3D first_cpu; env !=3D NULL; env =3D env->next_cpu)
-+		if (env->cpu_index =3D=3D cpu_index && env->mcg_cap) {
-+			kvm_inject_x86_mce(env, &mce);
-+			break;
-+		}
-+}
-+#endif
-+
- static void do_balloon(Monitor *mon, int value)
- {
-     ram_addr_t target =3D value;
-@@ -1757,6 +1782,7 @@ static const mon_cmd_t mon_cmds[] =3D {
-       "[tap,user,socket,vde] options", "add host VLAN client" },
-     { "host_net_remove", "is", net_host_device_remove,
-       "vlan_id name", "remove host VLAN client" },
-+    { "mce", "iillll", do_inject_mce, "cpu bank status mcgstatus addr misc=
-", "inject a MCE on the given CPU"},
- #endif
-     { "balloon", "i", do_balloon,
-       "target", "request VM to change it's memory allocation (in MB)" },
---- a/libkvm/libkvm-x86.c
-+++ b/libkvm/libkvm-x86.c
-@@ -379,6 +379,16 @@ int kvm_set_msrs(kvm_context_t kvm, int=20
-     return r;
- }
-=20
-+int kvm_setup_mce(kvm_context_t kvm, int vcpu, uint64_t *mcg_cap)
-+{
-+    return ioctl(kvm->vcpu_fd[vcpu], KVM_X86_SETUP_MCE, mcg_cap);
-+}
-+
-+int kvm_set_mce(kvm_context_t kvm, int vcpu, struct kvm_x86_mce *m)
-+{
-+    return ioctl(kvm->vcpu_fd[vcpu], KVM_X86_SET_MCE, m);
-+}
-+
- static void print_seg(FILE *file, const char *name, struct kvm_segment *se=
-g)
- {
-     	fprintf(stderr,
---- a/libkvm/libkvm.h
-+++ b/libkvm/libkvm.h
-@@ -27,6 +27,8 @@ typedef struct kvm_context *kvm_context_
- struct kvm_msr_list *kvm_get_msr_list(kvm_context_t);
- int kvm_get_msrs(kvm_context_t, int vcpu, struct kvm_msr_entry *msrs, int =
-n);
- int kvm_set_msrs(kvm_context_t, int vcpu, struct kvm_msr_entry *msrs, int =
-n);
-+int kvm_setup_mce(kvm_context_t, int vcpu, uint64_t *mcg_cap);
-+int kvm_set_mce(kvm_context_t, int vcpu, struct kvm_x86_mce *mce);
- #endif
-=20
- /*!
---- a/qemu/qemu-kvm-x86.c
-+++ b/qemu/qemu-kvm-x86.c
-@@ -457,6 +457,15 @@ void kvm_arch_save_regs(CPUState *env)
-     }
- }
-=20
-+void kvm_arch_inject_x86_mce(CPUState *env, struct kvm_x86_mce *mce)
-+{
-+    int rc;
-+
-+    rc =3D kvm_set_mce(kvm_context, env->cpu_index, mce);
-+    if (rc =3D=3D -1)
-+	perror("kvm_set_mce FAILED");
-+}
-+
- static void do_cpuid_ent(struct kvm_cpuid_entry2 *e, uint32_t function,
-                          uint32_t count, CPUState *env)
- {
-@@ -510,7 +519,7 @@ int kvm_arch_qemu_init_env(CPUState *cen
-     struct kvm_cpuid_entry2 *pv_ent;
-     uint32_t signature[3];
- #endif
--    int cpuid_nent =3D 0;
-+    int cpuid_nent =3D 0, family;
-     CPUState copy;
-     uint32_t i, j, limit;
-=20
-@@ -566,6 +575,17 @@ int kvm_arch_qemu_init_env(CPUState *cen
- 	do_cpuid_ent(&cpuid_ent[cpuid_nent++], i, 0, &copy);
-=20
-     kvm_setup_cpuid2(kvm_context, cenv->cpu_index, cpuid_nent, cpuid_ent);
-+
-+#define MCG_CAP_DEF	0x904
-+
-+    if (((cenv->cpuid_version >> 8)&0xF) >=3D 6 &&
-+	(cenv->cpuid_features&(CPUID_MCE|CPUID_MCA)) =3D=3D (CPUID_MCE|CPUID_MCA)=
-) {
-+	    uint64_t mcg_cap =3D MCG_CAP_DEF;
-+	    if (kvm_setup_mce(kvm_context, cenv->cpu_index, &mcg_cap))
-+		    perror("kvm_setup_mce FAILED");
-+	    cenv->mcg_cap =3D mcg_cap;
-+    }
-+
-     return 0;
- }
-=20
---- a/qemu/qemu-kvm.h
-+++ b/qemu/qemu-kvm.h
-@@ -74,6 +74,8 @@ int kvm_arch_try_push_interrupts(void *o
- void kvm_arch_push_nmi(void *opaque);
- void kvm_arch_update_regs_for_sipi(CPUState *env);
- void kvm_arch_cpu_reset(CPUState *env);
-+struct kvm_x86_mce;
-+void kvm_arch_inject_x86_mce(CPUState *env, struct kvm_x86_mce *mce);
-=20
- struct kvm_guest_debug;
- struct kvm_debug_exit_arch;
-@@ -233,4 +235,6 @@ static inline void cpu_synchronize_state
-     }
- }
-=20
-+void kvm_inject_x86_mce(CPUState *env, struct kvm_x86_mce *mce);
-+
- #endif
---- a/qemu/qemu-kvm.c
-+++ b/qemu/qemu-kvm.c
-@@ -198,6 +198,32 @@ void kvm_save_registers(CPUState *env)
-         on_vcpu(env, kvm_do_save_registers, env);
- }
-=20
-+#if defined(TARGET_I386) || defined(TARGET_X86_64)
-+struct kvm_x86_mce_data
-+{
-+	CPUState *env;
-+	struct kvm_x86_mce *mce;
-+};
-+
-+static void kvm_do_inject_x86_mce(void *_data)
-+{
-+	struct kvm_x86_mce_data *data =3D _data;
-+
-+	kvm_arch_inject_x86_mce(data->env, data->mce);
-+}
-+
-+void kvm_inject_x86_mce(CPUState *env, struct kvm_x86_mce *mce)
-+{
-+	struct kvm_x86_mce_data data;
-+
-+	if (kvm_enabled()) {
-+		data.env =3D env;
-+		data.mce =3D mce;
-+		on_vcpu(env, kvm_do_inject_x86_mce, &data);
-+	}
-+}
-+#endif
-+
- int kvm_cpu_exec(CPUState *env)
- {
-     int r;
---- a/qemu/target-i386/cpu.h
-+++ b/qemu/target-i386/cpu.h
-@@ -661,6 +661,9 @@ typedef struct CPUX86State {
-         uint64_t mask;
-     } mtrr_var[8];
-=20
-+    /* MCE capability */
-+    uint64_t mcg_cap;
-+
- #ifdef USE_KQEMU
-     int kqemu_enabled;
-     int last_io_time;
-
-
---=-4T6BwCzRKLp300A1vmXi
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: This is a digitally signed message part
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.9 (GNU/Linux)
-
-iEYEABECAAYFAkncBP4ACgkQKhFGF+eHlpghCQCgotwqtPd2Ovrd291ng5GACLaP
-6XQAn0RUvQV1i67yEzqax1J7ZrUsMTtN
-=3vqq
------END PGP SIGNATURE-----
-
---=-4T6BwCzRKLp300A1vmXi--
+[ 1982.214334] BUG: unable to handle kernel NULL pointer dereference at 0000000000000062
+[ 1982.215132] IP: [<ffffffff805d7d61>] ipv4_rcv_saddr_equal+0x61/0x70
+[ 1982.215132] PGD 1495d6067 PUD 0
+[ 1982.215132] Oops: 0000 [#1] PREEMPT SMP
+[ 1982.215132] last sysfs file: /sys/devices/pci0000:00/0000:00:01.0/0000:01:05.0/enable
+[ 1982.215132] CPU 1
+[ 1982.215132] Modules linked in: btrfs zlib_deflate zlib_inflate crc32c libcrc32c radeon drm bridge stp rfcomm llc bnep l2cap bluet]
+[ 1982.338205] Pid: 21779, comm: java Not tainted 2.6.30-rc1-crc #1 System Product Name
+[ 1982.338205] RIP: 0010:[<ffffffff805d7d61>]  [<ffffffff805d7d61>] ipv4_rcv_saddr_equal+0x61/0x70
+[ 1982.338205] RSP: 0018:ffff880122d21d28  EFLAGS: 00010246
+[ 1982.338205] RAX: 0000000000000000 RBX: 0000000000001000 RCX: 00000000000e1000
+[ 1982.338205] RDX: 0000000000000000 RSI: ffff8801250da840 RDI: ffff880147cf8000
+[ 1982.338205] RBP: ffff880122d21d38 R08: 0000000000000000 R09: 000000000100007f
+[ 1982.338205] R10: ffff88015f4a85c8 R11: 0000000000000001 R12: ffff8801250da840
+[ 1982.338205] R13: ffff8801250da8d8 R14: 0000000000000000 R15: ffff880147cf8000
+[ 1982.338205] FS:  00007f2da29f6950(0000) GS:ffff880028059000(0000) knlGS:0000000000000000
+[ 1982.338205] CS:  0010 DS: 0000 ES: 0000 CR0: 0000000080050033
+[ 1982.338205] CR2: 0000000000000062 CR3: 000000013f1f1000 CR4: 00000000000006e0
+[ 1982.338205] DR0: 0000000000000000 DR1: 0000000000000000 DR2: 0000000000000000
+[ 1982.338205] DR3: 0000000000000000 DR6: 00000000ffff0ff0 DR7: 0000000000000400
+[ 1982.338205] Process java (pid: 21779, threadinfo ffff880122d20000, task ffff8801310ec4a0)
+[ 1982.840593] Stack:
+[ 1982.840593]  ffff880122d21d58 0000000057ae6420 ffff880122d21d98 ffffffffa033847b
+[ 1982.847599]  0000000000007918 00000000805bafe5 ffff880147cf85a8 00000000ffffffff
+[ 1982.847599]  0000000057ae6420 ffff8801250da858 ffff880147cf8000 ffff88015f279180
+[ 1982.847599] Call Trace:
+[ 1982.847599]  [<ffffffffa033847b>] ipv6_rcv_saddr_equal+0x1bb/0x250 [ipv6]
+[ 1982.847599]  [<ffffffffa03505a8>] inet6_csk_bind_conflict+0x88/0xd0 [ipv6]
+[ 1982.847599]  [<ffffffff805bb18e>] inet_csk_get_port+0x1ee/0x400
+[ 1982.847599]  [<ffffffffa0319b7f>] inet6_bind+0x1cf/0x3a0 [ipv6]
+[ 1982.847599]  [<ffffffff8056d17c>] ? sockfd_lookup_light+0x3c/0xd0
+[ 1982.847599]  [<ffffffff8056ed49>] sys_bind+0x89/0x100
+[ 1982.847599]  [<ffffffff80613ea2>] ? trace_hardirqs_on_thunk+0x3a/0x3c
+[ 1982.847599]  [<ffffffff8020bf9b>] system_call_fastpath+0x16/0x1b
+[ 1982.847599] Code: 39 c2 0f 94 c0 0f b6 d0 eb 05 ba 01 00 00 00 89 d0 48 8b 55 f8 65 48 33 14 25 28 00 00 00 75 14 c9 c3 48 8b 86
+[ 1982.847599] RIP  [<ffffffff805d7d61>] ipv4_rcv_saddr_equal+0x61/0x70
+[ 1982.847599]  RSP <ffff880122d21d28>
+[ 1982.847599] CR2: 0000000000000062
+[ 1983.173477] ---[ end trace a12cea0f8928336a ]---
+[ 1983.187700] Kernel panic - not syncing: Fatal exception in interrupt
+[ 1983.207275] Pid: 21779, comm: java Tainted: G      D    2.6.30-rc1-crc #1
+[ 1983.228189] Call Trace:
+[ 1983.235712]  [<ffffffff8060f5a1>] panic+0xc1/0x190
+[ 1983.250470]  [<ffffffff8020c96d>] ? restore_args+0x0/0x30
+[ 1983.267104]  [<ffffffff80252fcb>] ? oops_exit+0x3b/0x60
+[ 1983.283201]  [<ffffffff80616046>] oops_end+0xb6/0xd0
+[ 1983.283205]  [<ffffffff80230970>] no_context+0x110/0x290
+[ 1983.283208]  [<ffffffff80230c7d>] __bad_area_nosemaphore+0x18d/0x230
+[ 1983.283212]  [<ffffffff80618129>] ? sub_preempt_count+0x69/0x70
+[ 1983.283216]  [<ffffffff8061468a>] ? _spin_lock_irqsave+0x3a/0x70
 
