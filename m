@@ -1,100 +1,42 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760700AbZDHPza@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762350AbZDHP5M@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760700AbZDHPza (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 8 Apr 2009 11:55:30 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754002AbZDHPzR
+	id S1762350AbZDHP5M (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 8 Apr 2009 11:57:12 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760855AbZDHP4y
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 8 Apr 2009 11:55:17 -0400
-Received: from mx3.mail.elte.hu ([157.181.1.138]:56652 "EHLO mx3.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752716AbZDHPzP (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 8 Apr 2009 11:55:15 -0400
-Date: Wed, 8 Apr 2009 17:55:00 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: Cyrill Gorcunov <gorcunov@gmail.com>
-Cc: "H. Peter Anvin" <hpa@zytor.com>, Thomas Gleixner <tglx@linutronix.de>,
-       LKML <linux-kernel@vger.kernel.org>,
-       Suresh Siddha <suresh.b.siddha@intel.com>
-Subject: Re: [PATCH -tip] x86: do_IRQ - send EOI for x86-32 on irq without
-	handler v2
-Message-ID: <20090408155500.GD3741@elte.hu>
-References: <20090408145017.GB7556@lenovo> <20090408145218.GM12931@elte.hu> <20090408154558.GC7556@lenovo>
+	Wed, 8 Apr 2009 11:56:54 -0400
+Received: from mail.pikewerks.com ([24.96.136.236]:52405 "EHLO
+	mail.pikewerks.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1758777AbZDHP4x (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 8 Apr 2009 11:56:53 -0400
+Message-ID: <49DCC936.70509@pikewerks.com>
+Date: Wed, 08 Apr 2009 08:56:38 -0700
+From: Matt Klein <matt.klein@pikewerks.com>
+User-Agent: Thunderbird 2.0.0.21 (Windows/20090302)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090408154558.GC7556@lenovo>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+To: Peter Zijlstra <peterz@infradead.org>
+CC: linux-kernel@vger.kernel.org, Nick Piggin <nickpiggin@yahoo.com.au>
+Subject: Re: Cached IO Synchronization Question
+References: <49DA7498.3050000@pikewerks.com> <1239204217.4557.2590.camel@laptop>
+In-Reply-To: <1239204217.4557.2590.camel@laptop>
+X-Enigmail-Version: 0.95.7
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-* Cyrill Gorcunov <gorcunov@gmail.com> wrote:
-
-> [Ingo Molnar - Wed, Apr 08, 2009 at 04:52:18PM +0200]
-> | 
-> | * Cyrill Gorcunov <gorcunov@openvz.org> wrote:
-> | 
-> | > Ingo, I think introducing additional dummy here would be a bit 
-> | > expencive -- a number of callers of ack_APIC_irq just should not 
-> | > check for disable_apic since it's not needed. disable_apic is to 
-> | > depend on CONFIG_X86_LOCAL_APIC rather then CONFIG_X86_64 
-> | > actually. So make it then. Or you mean something else? Like new 
-> | > apic->write_eoi operation? (I'm a bit tired so brain is a half 
-> | > functional now :)
-> | 
-> | no, i meant a dummy apic->write() method in the !apic case. Check 
-> | what ack_APIC_irq() does internally.
-> | 
-> | 	Ingo
-> |
 > 
-> Of course I saw how ack_APIC_irq implemented :) It's already guarded
-> by CONFIG_X86_LOCAL_APIC and I could just move check for disable_apic
-> right here (ie it could be like
+> Note how do_generic_file_read() checks PageUptodate() and does a
+> lock_page_killable() in case its not.
 > 
-> static inline void ack_APIC_irq(void)
-> {
-> #ifdef CONFIG_X86_LOCAL_APIC
-> 	/*
-> 	 * ack_APIC_irq() actually gets compiled as a single instruction
-> 	 * ... yummie.
-> 	 */
 > 
-> 	if (!disable_apic)
-> 		/* Docs say use 0 for future compatibility */
-> 		apic_write(APIC_EOI, 0);
-> #endif
-> }
 > 
-> but what is bothering me is that a number of ack_APIC_irq callers
-> will pass execution with always disable_apic=0 and as result
-> this checking would be just spedning cycles for free.
-> 
-> So Ingo, it seems I miss something on what you mean. apic->write 
-> is already called only for CONFIG_X86_LOCAL_APIC here as well and 
-> the arguable point is where to check for disable_apic variable. 
-> But do_IRQ is a special case (wrt to say smp_apic_timer_interrupt 
-> or setup_local_APIC. I mean as example -- setup_local_APIC is not 
-> even called for disable_apic=1).
-> 
-> /me: scratching the head heavily
 
-You should look into how apic_write() is implemented. It is a call 
-to apic->write().
+As far as I can tell there is nothing to prevent the page from becoming
+out of date (or someone doing a full page cached write) after the
+PageUptodate() check returns up to date.
 
-So my suggestion is that you could implement a freely callable 
-ack_APIC_irq() by replacing the apic->write() method with a NOP 
-method in the apic-disabled case.
-
-Does that sound good to you?
-
-	Ingo
+So I have concluded that cached read/write interleaving is not
+synchronized. This is the behavior found on Windows.
