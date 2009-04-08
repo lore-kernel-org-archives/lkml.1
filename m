@@ -1,103 +1,112 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933049AbZDHOHn@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933071AbZDHOIK@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933049AbZDHOHn (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 8 Apr 2009 10:07:43 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933142AbZDHOGc
+	id S933071AbZDHOIK (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 8 Apr 2009 10:08:10 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932606AbZDHOGn
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 8 Apr 2009 10:06:32 -0400
-Received: from brick.kernel.dk ([93.163.65.50]:41961 "EHLO kernel.dk"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S933163AbZDHOGb (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 8 Apr 2009 10:06:31 -0400
-Date: Wed, 8 Apr 2009 16:06:29 +0200
-From: Jens Axboe <jens.axboe@oracle.com>
-To: Mikulas Patocka <mpatocka@redhat.com>
-Cc: device-mapper development <dm-devel@redhat.com>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       ak@linux.intel.com, "MASON, CHRISTOPHER" <CHRIS.MASON@oracle.com>
-Subject: Re: [dm-devel] Barriers still not passing on simple dm devices...
-Message-ID: <20090408140629.GC5178@kernel.dk>
-References: <20090324150517.GX27476@kernel.dk> <Pine.LNX.4.64.0903251106520.27750@hs20-bc2-1.build.redhat.com> <20090325152751.GV27476@kernel.dk> <Pine.LNX.4.64.0903251825310.8027@hs20-bc2-1.build.redhat.com> <20090326084205.GG27476@kernel.dk> <Pine.LNX.4.64.0903302314500.6158@hs20-bc2-1.build.redhat.com> <20090331104933.GJ5178@kernel.dk> <Pine.LNX.4.64.0904021923040.19415@hs20-bc2-1.build.redhat.com> <20090403081131.GP5178@kernel.dk> <Pine.LNX.4.64.0904080855340.28196@hs20-bc2-1.build.redhat.com>
+	Wed, 8 Apr 2009 10:06:43 -0400
+Received: from out2.smtp.messagingengine.com ([66.111.4.26]:58986 "EHLO
+	out2.smtp.messagingengine.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S933205AbZDHOGl (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 8 Apr 2009 10:06:41 -0400
+X-Sasl-enc: 9hYmZuzdcWk0Gr3ieNg/IGTq4EnCIAkxeQ7jUXEuC9TO 1239199600
+Message-ID: <49DCAF6D.6080704@fastmail.fm>
+Date: Wed, 08 Apr 2009 15:06:37 +0100
+From: Jack Stone <jwjstone@fastmail.fm>
+User-Agent: Thunderbird 2.0.0.21 (X11/20090325)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <Pine.LNX.4.64.0904080855340.28196@hs20-bc2-1.build.redhat.com>
+To: Bert Wesarg <bert.wesarg@googlemail.com>
+CC: linux-kernel@vger.kernel.org, jeff@garzik.org,
+       kernel-janitors@vger.kernel.org
+Subject: Re: [PATCH 29/56] irda: Remove void casts
+References: <1239189748-11703-1-git-send-email-jwjstone@fastmail.fm>	 <1239189748-11703-22-git-send-email-jwjstone@fastmail.fm>	 <1239189748-11703-23-git-send-email-jwjstone@fastmail.fm>	 <1239189748-11703-24-git-send-email-jwjstone@fastmail.fm>	 <1239189748-11703-25-git-send-email-jwjstone@fastmail.fm>	 <1239189748-11703-26-git-send-email-jwjstone@fastmail.fm>	 <1239189748-11703-27-git-send-email-jwjstone@fastmail.fm>	 <1239189748-11703-28-git-send-email-jwjstone@fastmail.fm>	 <1239189748-11703-29-git-send-email-jwjstone@fastmail.fm>	 <1239189748-11703-30-git-send-email-jwjstone@fastmail.fm> <36ca99e90904080531p5167e7f6j12617436084fabfa@mail.gmail.com>
+In-Reply-To: <36ca99e90904080531p5167e7f6j12617436084fabfa@mail.gmail.com>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Apr 08 2009, Mikulas Patocka wrote:
-> > > So I'm wondering why Linux developers designed a barrier interface with 
-> > > complex specification, complex implementation and the interface is useless 
-> > > to provide any request ordering and it's no better than q->issue_flush_fn 
-> > > method or whatever was there beffore. Obviously, the whole barrier thing 
-> > > was designed by a person who never used it in a filesystem.
-> > 
-> > That's not quite true, it was done in conjunction with file system
-> > people.
-> > ...
-> > Nobody was interested in barriers when they were done. Nobody.
-> 
-> That's a contradiction :-)
+Fixed patch
 
-So we have sunk to this level now, snip and edit citing?
+Thanks,
 
-> 
-> Some times ago I wrote a piece of code that uses barriers for performance 
-> enhancement 
-> (http://artax.karlin.mff.cuni.cz/~mikulas/spadfs/download/spadfs-0.9.10.tar.gz).
-> 
-> The used trick is basically to take a lock that prevents filesystem-wide 
-> updates, submit remaining writes (don't wait), submit the barrier that 
-> causes transition to new generation (don't wait) and release the lock. The 
-> lock is held for minimum time, no IO is waited for inside the lock. This 
-> trick can't be done without barriers, without barriers you'd have to wait 
-> inside the lock.
-> 
-> And the requirement for this code is that barriers are supported for the 
-> whole lifetime of the filesystem --- which is what the Linux kernel 
-> doesn't support! If barrier support is lost, consistency is damaged. 
-> 
-> With barriers, the code does [submit A, submit barrier B, submit C].
-> If you don't have barriers, you must modify this sequence to: [submit A, 
-> wait for A endio, submit B, wait for B endio, submit C]
-> 
-> --- and now you are getting the point why failing barriers can't ever work 
-> --- by the time request B completes, you find out that the device lost 
-> barrier support and you realize that you should have inserted the waits in 
-> the past --- but it's too late, there is no way to insert them 
-> retroactively.
-> 
-> AFAIK this is the only piece of code that uses barriers to improve 
-> performance. All the other filesystems use barriers just as a way to flush 
-> cache and don't overlap barrier request with any other requests.
-> 
-> So there are two ways:
-> 
-> - either support only what all in-kernel filesystems do. Using barrier 
-> reqiests to flush hw cache. You can remove support for barriers with data, 
-> leave just zero-data barrier, you can remove ordering restrictions. 
-> In-kernel filesystems never overlap barrier with another metadata request 
-> (see above why such overlap can't work), so you can freely reorder 
-> zero-data barriers and simplify the code ... because all the requests that 
-> could be submitted in paralel with the barrier are either for different 
-> partition or non-metadata requests to the same partition from prefetch, 
-> direct io or so.
-> 
-> - or you can allow barriers to be used for purposes as I did. And then, 
-> there must be clean indicator "this device supports barriers 
-> *and*will*support*them*in*the*future*". Currently there is no such 
-> indicator.
+Jack
 
-I'm about to leave, so I wont comment on the above. But the below is
-basically what we pretend right now, and I think that is perfectly fine.
-If you go and reconfigure your device and it suddenly doesn't support
-barriers anymore, call the doctor and tell him that your foot hurts when
-you slam it in the door. Don't do that, it's pretty simple. We already
-agreed to kill the -EOPNOTSUPP and just pretend it always works, with a
-notifier that we MAY not be safe. Not much point in harping the same
-thing over and over again.
+--
 
--- 
-Jens Axboe
+irda: Remove void casts
 
+From: Jack Stone <jwjstone@fastmail.fm>
+
+Remove uneeded void casts
+
+Signed-Off-By: Jack Stone <jwjstone@fastmail.fm>
+---
+
+ net/irda/discovery.c         |    4 ++--
+ net/irda/ircomm/ircomm_lmp.c |    2 +-
+ net/irda/iriap.c             |    2 +-
+ net/irda/irnet/irnet_irda.c  |    3 +--
+ 4 files changed, 5 insertions(+), 6 deletions(-)
+
+diff --git a/net/irda/discovery.c b/net/irda/discovery.c
+index a6f99b5..7fdc346 100644
+--- a/net/irda/discovery.c
++++ b/net/irda/discovery.c
+@@ -130,11 +130,11 @@ void irlmp_add_discovery_log(hashbin_t *cachelog,
+hashbin_t *log)
+      * no need to lock it.
+      * We just need to lock the global log in irlmp_add_discovery().
+      */
+-    discovery = (discovery_t *) hashbin_remove_first(log);
++    discovery = hashbin_remove_first(log);
+     while (discovery != NULL) {
+         irlmp_add_discovery(cachelog, discovery);
+ 
+-        discovery = (discovery_t *) hashbin_remove_first(log);
++        discovery = hashbin_remove_first(log);
+     }
+ 
+     /* Delete the now empty log */
+diff --git a/net/irda/ircomm/ircomm_lmp.c b/net/irda/ircomm/ircomm_lmp.c
+index 67c99d2..6245b45 100644
+--- a/net/irda/ircomm/ircomm_lmp.c
++++ b/net/irda/ircomm/ircomm_lmp.c
+@@ -152,7 +152,7 @@ static void ircomm_lmp_flow_control(struct sk_buff *skb)
+ 
+     line = cb->line;
+ 
+-    self = (struct ircomm_cb *) hashbin_lock_find(ircomm, line, NULL);
++    self = hashbin_lock_find(ircomm, line, NULL);
+     if (!self) {
+         IRDA_DEBUG(2, "%s(), didn't find myself\n", __func__ );
+         return;
+diff --git a/net/irda/iriap.c b/net/irda/iriap.c
+index 4a105dc..12cb0e9 100644
+--- a/net/irda/iriap.c
++++ b/net/irda/iriap.c
+@@ -251,7 +251,7 @@ void iriap_close(struct iriap_cb *self)
+         self->lsap = NULL;
+     }
+ 
+-    entry = (struct iriap_cb *) hashbin_remove(iriap, (long) self, NULL);
++    entry = hashbin_remove(iriap, (long) self, NULL);
+     IRDA_ASSERT(entry == self, return;);
+ 
+     __iriap_close(self);
+diff --git a/net/irda/irnet/irnet_irda.c b/net/irda/irnet/irnet_irda.c
+index cf9a4b5..3a89247 100644
+--- a/net/irda/irnet/irnet_irda.c
++++ b/net/irda/irnet/irnet_irda.c
+@@ -766,8 +766,7 @@ irnet_find_socket(irnet_socket *    self)
+    * requested that nickname */
+   if(err == 0)
+     {
+-      new = (irnet_socket *) hashbin_find(irnet_server.list,
+-                      0, self->rname);
++      new = hashbin_find(irnet_server.list, 0, self->rname);
+       if(new)
+     DEBUG(IRDA_SERV_INFO, "Socket 0x%p matches rname ``%s''.\n",
+           new, new->rname);
