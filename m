@@ -1,57 +1,44 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934193AbZDHPal@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934215AbZDHPbG@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934193AbZDHPal (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 8 Apr 2009 11:30:41 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933873AbZDHP17
+	id S934215AbZDHPbG (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 8 Apr 2009 11:31:06 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934150AbZDHP34
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 8 Apr 2009 11:27:59 -0400
-Received: from cantor2.suse.de ([195.135.220.15]:41297 "EHLO mx2.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S934067AbZDHP16 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 8 Apr 2009 11:27:58 -0400
-Date: Wed, 8 Apr 2009 17:27:55 +0200
-From: Jan Kara <jack@suse.cz>
-To: Christoph Hellwig <hch@lst.de>
-Cc: linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] quota: remove obsolete comments in fs/quota/Makefile
-Message-ID: <20090408152755.GA4164@duck.suse.cz>
-References: <20090407161006.GC11384@lst.de>
+	Wed, 8 Apr 2009 11:29:56 -0400
+Received: from caffeine.csclub.uwaterloo.ca ([129.97.134.17]:53099 "EHLO
+	caffeine.csclub.uwaterloo.ca" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S934163AbZDHP3y (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 8 Apr 2009 11:29:54 -0400
+Date: Wed, 8 Apr 2009 11:29:53 -0400
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: Alex Chiang <achiang@hp.com>, Robin Holt <holt@sgi.com>,
+       linux-kernel <linux-kernel@vger.kernel.org>, linux-ia64@vger.kernel.org
+Subject: Re: cross-compilers
+Message-ID: <20090408152953.GF3797@csclub.uwaterloo.ca>
+References: <20090408003921.GA5054@ldl.fc.hp.com> <20090408010331.GB10768@sgi.com> <20090408054612.GA6744@ldl.fc.hp.com> <20090407225457.86f8a458.akpm@linux-foundation.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20090407161006.GC11384@lst.de>
-User-Agent: Mutt/1.5.17 (2007-11-01)
+In-Reply-To: <20090407225457.86f8a458.akpm@linux-foundation.org>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+From: lsorense@csclub.uwaterloo.ca (Lennart Sorensen)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue 07-04-09 18:10:06, Christoph Hellwig wrote:
-> Get rid of useless comments and the equally useless obj-y
-> initialization.
-> 
-> 
-> Signed-off-by: Christoph Hellwig <hch@lst.de>
-  Merged. Thanks.
+On Tue, Apr 07, 2009 at 10:54:57PM -0700, Andrew Morton wrote:
+> That sounds suspiciously like "thou shalt use debian".  I was so
+> traumatised by dselect ten years ago that I don't think I could afford
+> the therapy bills.
 
-								Honza
+I hate dselect.  I like debian though.
 
-> Index: linux-2.6/fs/quota/Makefile
-> ===================================================================
-> --- linux-2.6.orig/fs/quota/Makefile	2009-04-05 17:50:41.785445246 +0200
-> +++ linux-2.6/fs/quota/Makefile	2009-04-05 17:50:49.686570459 +0200
-> @@ -1,12 +1,3 @@
-> -#
-> -# Makefile for the Linux filesystems.
-> -#
-> -# 14 Sep 2000, Christoph Hellwig <hch@infradead.org>
-> -# Rewritten to use lists instead of if-statements.
-> -#
-> -
-> -obj-y :=
-> -
->  obj-$(CONFIG_QUOTA)		+= dquot.o
->  obj-$(CONFIG_QFMT_V1)		+= quota_v1.o
->  obj-$(CONFIG_QFMT_V2)		+= quota_v2.o
+Fortunately dselect is history.  It had one of the worst interfaces I
+have ever dealt with.
+
+So I have no problem with everyone using debian.  I am sure the non
+debian users do have a problem with that.
+
 -- 
-Jan Kara <jack@suse.cz>
-SUSE Labs, CR
+Len Sorensen
