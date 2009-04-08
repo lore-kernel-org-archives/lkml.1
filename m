@@ -1,39 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758686AbZDHFTu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760101AbZDHFUg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758686AbZDHFTu (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 8 Apr 2009 01:19:50 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752918AbZDHFTk
+	id S1760101AbZDHFUg (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 8 Apr 2009 01:20:36 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758275AbZDHFUT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 8 Apr 2009 01:19:40 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:52721 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1753644AbZDHFTj (ORCPT
+	Wed, 8 Apr 2009 01:20:19 -0400
+Received: from 136-022.dsl.LABridge.com ([206.117.136.22]:4360 "EHLO
+	mail.perches.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754130AbZDHFUR (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 8 Apr 2009 01:19:39 -0400
-Date: Tue, 7 Apr 2009 22:15:42 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Andi Kleen <andi@firstfloor.org>
-Cc: linux-kernel@vger.kernel.org, linux-mm@kvack.org, x86@kernel.org
-Subject: Re: [PATCH] [0/16] POISON: Intro
-Message-Id: <20090407221542.91cd3c42.akpm@linux-foundation.org>
-In-Reply-To: <20090407509.382219156@firstfloor.org>
-References: <20090407509.382219156@firstfloor.org>
-X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.5; x86_64-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Wed, 8 Apr 2009 01:20:17 -0400
+From: Joe Perches <joe@perches.com>
+To: Linus Torvalds <torvalds@linux-foundation.org>,
+       Andrew Morton <akpm@kernel.org>
+Cc: linux-kernel@vger.kernel.org
+Subject: [PATCH 04/10] MAINTAINERS - Remove HP Fibre Channel HBA no longer in tree
+Date: Tue,  7 Apr 2009 22:17:46 -0700
+Message-Id: <1239167872-8179-5-git-send-email-joe@perches.com>
+X-Mailer: git-send-email 1.6.0.2
+In-Reply-To: <1239167872-8179-1-git-send-email-joe@perches.com>
+References: <1239167872-8179-1-git-send-email-joe@perches.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue,  7 Apr 2009 17:09:56 +0200 (CEST) Andi Kleen <andi@firstfloor.org> wrote:
+Signed-off-by: Joe Perches <joe@perches.com>
+---
+ MAINTAINERS |    6 ------
+ 1 files changed, 0 insertions(+), 6 deletions(-)
 
-> Upcoming Intel CPUs have support for recovering from some memory errors. This
-> requires the OS to declare a page "poisoned", kill the processes associated
-> with it and avoid using it in the future. This patchkit implements
-> the necessary infrastructure in the VM.
+diff --git a/MAINTAINERS b/MAINTAINERS
+index 007f2fa..09d503f 100644
+--- a/MAINTAINERS
++++ b/MAINTAINERS
+@@ -2460,12 +2460,6 @@ S:	Maintained
+ F:	Documentation/serial/hayes-esp.txt
+ F:	drivers/char/esp.c
+ 
+-HEWLETT-PACKARD FIBRE CHANNEL 64-bit/66MHz PCI non-intelligent HBA
+-P:	Chirag Kantharia
+-M:	chirag.kantharia@hp.com
+-L:	iss_storagedev@hp.com
+-S:	Maintained
+-
+ HEWLETT-PACKARD SMART2 RAID DRIVER
+ P:	Chirag Kantharia
+ M:	chirag.kantharia@hp.com
+-- 
+1.6.0.2
 
-If the page is clean then we can just toss it and grab a new one from
-backing store without killing anyone.
-
-Does the patchset do that?
