@@ -1,85 +1,170 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934528AbZDHRVW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934051AbZDHR2Z@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934528AbZDHRVW (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 8 Apr 2009 13:21:22 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754601AbZDHRVH
+	id S934051AbZDHR2Z (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 8 Apr 2009 13:28:25 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757417AbZDHR2N
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 8 Apr 2009 13:21:07 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:60931 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1752877AbZDHRVG (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 8 Apr 2009 13:21:06 -0400
-Date: Wed, 8 Apr 2009 10:19:36 -0700 (PDT)
-From: Linus Torvalds <torvalds@linux-foundation.org>
-X-X-Sender: torvalds@localhost.localdomain
-To: Roland McGrath <roland@redhat.com>
-cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] ptrace: checkpatch fixes
-In-Reply-To: <20090408062106.39EE0FC3E5@magilla.sf.frob.com>
-Message-ID: <alpine.LFD.2.00.0904081007530.4583@localhost.localdomain>
-References: <20090408062106.39EE0FC3E5@magilla.sf.frob.com>
-User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
+	Wed, 8 Apr 2009 13:28:13 -0400
+Received: from rtr.ca ([76.10.145.34]:40939 "EHLO mail.rtr.ca"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753520AbZDHR2L (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 8 Apr 2009 13:28:11 -0400
+Message-ID: <49DCDEA9.2020502@rtr.ca>
+Date: Wed, 08 Apr 2009 13:28:09 -0400
+From: Mark Lord <lkml@rtr.ca>
+Organization: Real-Time Remedies Inc.
+User-Agent: Thunderbird 2.0.0.21 (X11/20090318)
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+To: Dmitry Torokhov <dmitry.torokhov@gmail.com>
+Cc: linux-kernel@vger.kernel.org, linux-input@vger.kernel.org
+Subject: Input driver for Twinhan USB 6253:0100 remote control 
+References: <20090408072935.GA27920@dtor-d630.eng.vmware.com>
+In-Reply-To: <20090408072935.GA27920@dtor-d630.eng.vmware.com>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Dmitry,
+
+I briefly had access to a Twinhan remote control (for Mythtv et al.)
+and cobbled something together quickly to make it work.
+
+But I really don't understand the new hid/input stuff,
+so this is undoubtedly a total abomination to your eyes. :)
+
+But if somebody could give *exact* and *detailed* instructions as
+to what to do to make it "fit" the new model better, then I may still
+have time (before I have to return it) to clean things up enough.
+
+I don't want to hear about 80-column limits,
+but rather how to properly integrate this into
+the newly refurbished hid stuff. 
+
+Have a look.  Currently it's just this single source file,
+which has to be loaded before usbhid (not on the quirks list there yet).
 
 
-On Tue, 7 Apr 2009, Roland McGrath wrote:
->
-> This fixes all the checkpatch --file complaints about kernel/ptrace.c
-> and also removes an unused #include.  I've verified that there are no
-> changes to the compiled code on x86_64.
 
-Please don't bother with that insane "line length" option when using 
-"--file". At least not if the "fix" is to just mindlessly split the line. 
-That is _never_ a fix.
+/*
+ *  HID driver for Twinhan remote control
+ *
+ *  Copyright (c) 2009 Mark Lord
+ *
+ * This program is free software; you can redistribute it and/or modify it
+ * under the terms of the GNU General Public License as published by the Free
+ * Software Foundation; either version 2 of the License, or (at your option)
+ * any later version.
+ */
 
-Changes like these:
+#include <linux/device.h>
+#include <linux/input.h>
+#include <linux/hid.h>
+#include <linux/module.h>
 
-> -int ptrace_readdata(struct task_struct *tsk, unsigned long src, char __user *dst, int len)
-> +int ptrace_readdata(struct task_struct *tsk, unsigned long src,
-> +		    char __user *dst, int len)
+#ifndef HID_USB_DEVICE
+#error "This driver requires a 2.6.28 (or higher) Linux kernel"
+#endif
 
-> -int ptrace_writedata(struct task_struct *tsk, char __user *src, unsigned long dst, int len)
-> +int ptrace_writedata(struct task_struct *tsk, char __user *src,
-> +		     unsigned long dst, int len)
+/* See /usr/include/linux/input.h for all possible KEY_* definitions */
 
->  	case PTRACE_GETEVENTMSG:
-> -		ret = put_user(child->ptrace_message, (unsigned long __user *) data);
-> +		ret = put_user(child->ptrace_message,
-> +			       (unsigned long __user *) data);
+static unsigned int twinhan_keymap (unsigned int key)
+{
+	switch (key) {
+	case 0x04: key = KEY_RESERVED   ; break; // Teletext	()
+	case 0x06: key = KEY_ESC        ; break; // Recall	(myth Escape/Cancel/Back)
+	case 0x08: key = KEY_S          ; break; // EPG		(myth guide)
+	case 0x0c: key = KEY_HOME       ; break; // Rewind	(myth commskip back)
+	case 0x0e: key = KEY_P          ; break; // Preview	(myth playback)
+	case 0x0f: key = KEY_F3         ; break; // RecordList	(myth DVD root menu)
+	case 0x10: key = KEY_F9         ; break; // Mute	(myth mute ??)
+	case 0x11: key = KEY_END        ; break; // Forward	(myth commskip forward)
+	case 0x13: key = KEY_RESERVED   ; break; // Capture	()
+	case 0x17: key = KEY_P          ; break; // Pause	(myth Pause)
+	case 0x19: key = KEY_M          ; break; // Favorite	(myth Menu)
+	case 0x1d: key = KEY_W          ; break; // FullScreen	(myth aspect ratio zoom)
+	case 0x1e: key = KEY_1          ; break; // 1		(myth 1)
+	case 0x1f: key = KEY_2          ; break; // 2		(myth 2)
+	case 0x20: key = KEY_3          ; break; // 3		(myth 3)
+	case 0x21: key = KEY_4          ; break; // 4		(myth 4)
+	case 0x22: key = KEY_5          ; break; // 5		(myth 5)
+	case 0x23: key = KEY_6          ; break; // 6		(myth 6)
+	case 0x24: key = KEY_7          ; break; // 7		(myth 7)
+	case 0x25: key = KEY_8          ; break; // 8		(myth 8)
+	case 0x26: key = KEY_9          ; break; // 9		(myth 9)
+	case 0x27: key = KEY_0          ; break; // 0		(myth 0)
+	case 0x29: key = KEY_ESC        ; break; // Cancel	(myth Escape/Cancel/Back)
+	case 0x28: key = KEY_ENTER      ; break; // Play	(myth Okay/Play)
+	case 0x2b: key = KEY_RESERVED   ; break; // Tab		()
+	case 0x3f: key = KEY_F2         ; break; // Power	(myth function key 2)
+	case 0x4a: key = KEY_R          ; break; // Record	(myth record)
+	case 0x4b: key = KEY_UP         ; break; // Up/CH+	(myth up)
+	case 0x4d: key = KEY_B          ; break; // Stop	(myth adjust audio sync)
+	case 0x4e: key = KEY_DOWN       ; break; // Down/CH-	(myth down)
+	case 0x51: key = KEY_LEFT       ; break; // Left/VOL-	(myth left)
+	case 0x52: key = KEY_RIGHT      ; break; // Right/VOL+	(myth right)
+	//case 0xe0:	// excess code from Power button
+	//case 0xe1:	// excess code from Power,Left,Right buttons
+	//case 0xe2:	// excess code from Power button
+	//case 0xef:	// excess code from Power button
+	default:   key = KEY_RESERVED   ; break; // ignored
+	}
+	return key;
+}
 
-just make the code harder to 'grep'.
+static int twinhan_event(struct hid_device *hdev, struct hid_field *field,
+			 struct hid_usage *usage, __s32 value)
+{
+	struct input_dev *input = field->hidinput->input;
+	static unsigned int last_key = 0;
+	unsigned int key;
+	int ret = 0;
 
-Yes, at some point you have to split lines, but that point is not 80
-columns any more.  The advantage of getting the whole line when grepping
-for function names much outweighs the downside of somebody using those
-old 80x24 green phosphorous vt52's.
+	if (!(hdev->claimed & HID_CLAIMED_INPUT) || !field->hidinput || !usage->type)
+		return 0;
+	if ((usage->hid & HID_USAGE_PAGE) != HID_UP_KEYBOARD)
+		return 0;
 
-[ The same thing very much goes for complex if-statements etc.  If
-  people can't stand the long lines, the primary solution would be to
-  turn a complex conditional into a helper inline functions, or to fix
-  excessive indentation by splitting up functions.
+	if (last_key) {
+		input_event(input, usage->type, last_key, 0);
+		last_key = 0;
+		ret = 1;
+	}
+	if (value) {
+		unsigned int val = usage->hid & HID_USAGE;
+		key = twinhan_keymap(val);
+		if (key) {
+			input_event(input, usage->type, key, 1);
+			last_key = key;
+		}
+		ret = 1;
+	}
+	return ret;
+}
 
-  In the above case, the last one could perhaps have been handled
-  creating a new variable for and moving the cast to the initialiser,
-  for example. Is it worth it to avoid a 85-column line? Probably not.
+static const struct hid_device_id twinhan_devices[] = {
+	{ HID_USB_DEVICE(0x6253, 0x0100) },
+	{ }
+};
+MODULE_DEVICE_TABLE(hid, twinhan_devices);
 
-  And some lines just end up long.  I think 100 characters may be a
-  more reasonable limit for "too long", but quite frankly, it depends on
-  the line.
+static struct hid_driver twinhan_driver = {
+	.name		= "twinhan",
+	.id_table	= twinhan_devices,
+	.event		= twinhan_event,
+};
 
-  So I think 'checkpatch' is pure crap in this area, and I've told
-  people so before, and they keep telling me that it has relaxed it's
-  idiotic warnings, but that is apparently just a lie. ]
+static int twinhan_init(void)
+{
+	return hid_register_driver(&twinhan_driver);
+}
 
-Oh well.  If I actually read perl, I could parse what the hell those
-80-character rules are in checkpath.  It already has random "it's ok if
-X" stuff.  But it never seems to really have any "oh, but splitting is
-worse" logic. 
+static void twinhan_exit(void)
+{
+	hid_unregister_driver(&twinhan_driver);
+}
 
-			Linus
+module_init(twinhan_init);
+module_exit(twinhan_exit);
+MODULE_LICENSE("GPL");
