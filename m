@@ -1,122 +1,119 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761949AbZDHFl4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761654AbZDHFnv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761949AbZDHFl4 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 8 Apr 2009 01:41:56 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757131AbZDHFlp
+	id S1761654AbZDHFnv (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 8 Apr 2009 01:43:51 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756338AbZDHFnm
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 8 Apr 2009 01:41:45 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:41693 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1757883AbZDHFln (ORCPT
+	Wed, 8 Apr 2009 01:43:42 -0400
+Received: from wf-out-1314.google.com ([209.85.200.173]:9593 "EHLO
+	wf-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752918AbZDHFnl (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 8 Apr 2009 01:41:43 -0400
-Date: Tue, 7 Apr 2009 22:38:28 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Justin Madru <jdm64@gawab.com>
-Cc: lkml <linux-kernel@vger.kernel.org>, linux-scsi@vger.kernel.org,
-       linux-usb@vger.kernel.org, Arjan van de Ven <arjan@infradead.org>
-Subject: Re: 2.6.30-rc1: OOPS on usb disk insert
-Message-Id: <20090407223828.c9d2cb75.akpm@linux-foundation.org>
-In-Reply-To: <49DC3094.5010607@gawab.com>
-References: <49DC3094.5010607@gawab.com>
-X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.5; x86_64-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Wed, 8 Apr 2009 01:43:41 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:date:message-id:subject:from:to:content-type
+         :content-transfer-encoding;
+        b=kI1HHZsgJeE6uB4KNdgKSMswZ2LaIkBhBLudxJu1QrOebAP5poTYw5bsgqBtpfpoCv
+         SSfGRWJaMCbKTCexX47VU8oEaNMwSk9ytXpU+kwzUu41joG737NqBgUEA5VXGUoEumQk
+         e26fzHkvQRJUGTWN5TI5mLYgUisdbf5AJC43o=
+MIME-Version: 1.0
+Date: Wed, 8 Apr 2009 11:13:40 +0530
+Message-ID: <241b8f7b0904072243u448de4c5x6dc4b7c5c77f4eec@mail.gmail.com>
+Subject: Building uClinux -- Problem....
+From: Prabhu Chawandi <prabhu.chavandi@gmail.com>
+To: linux-kernel@vger.kernel.org
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-(cc linux-scsi and linux-usb)
+Hi All,
 
-On Tue, 07 Apr 2009 22:05:24 -0700 Justin Madru <jdm64@gawab.com> wrote:
+   I am building the linux version 2.6.12-4.0 for my customized STB...
 
-> Hello,
-> 
-> Testing out .30-rc1 and usb devises don't work. I insert my flash disk 
-> and get this oops.
-> More information (dmesg, config, etc.) at 
-> http://jdserver.homelinux.org/bugreports/003/
+I am copying the Uclinux from the fresh checked out sand box...   and
+building...
 
-It looks the async code blew up.
+I am getting build error as .. If I  Just make mv and build I wont get
+any problem .... Can anybosy help to relolve ...
 
-> usb 5-3: new high speed USB device using ehci_hcd and address 2
-> usb 5-3: configuration #1 chosen from 1 choice
-> Initializing USB Mass Storage driver...
-> scsi2 : SCSI emulation for USB Mass Storage devices
-> usb-storage: device found at 2
-> usb-storage: waiting for device to settle before scanning
-> usbcore: registered new interface driver usb-storage
-> USB Mass Storage support registered.
-> usb-storage: device scan complete
-> scsi 2:0:0:0: Direct-Access     SanDisk  Cruzer Micro     8.01 PQ: 0 
-> ANSI: 0 CCS
-> BUG: unable to handle kernel NULL pointer dereference at (null)
-> IP: [<(null)>] (null)
+make -f Makefile
 
-The kernel tried to execute code at 0x00000000
+make[3]: Entering directory
+`/export/home/chawanp1/B343/release/Thirdparty/siliconvendor/broadcom/os/linux/rootfs/uclinux-2.6.12-4.0/user/bash'
 
-> *pde = 00000000
-> Oops: 0000 [#2] PREEMPT SMP
-> last sysfs file: 
-> /sys/devices/pci0000:00/0000:00:1e.0/0000:03:00.0/ssb0:0/net/eth0/statistics/collisions
-> Modules linked in: usb_storage i915 cfbcopyarea cfbimgblt cfbfillrect 
-> binfmt_misc acpi_cpufreq container sbs cpufreq_powersave pci_slot 
-> cpufreq_stats cpufreq_userspace sbshc cpufreq_conservative ext3 jbd 
-> mbcache firewire_sbp2 ecb cryptomgr aead pcompress crypto_blkcipher 
-> crypto_hash crypto_algapi dell_laptop snd_hda_codec_idt evdev iwl3945 
-> iwlcore rfkill sdhci_pci dcdbas video backlight rtc_cmos snd_hda_intel 
-> fb output sdhci rtc_core rtc_lib mac80211 snd_hda_codec snd_hwdep 
-> snd_pcm_oss snd_mixer_oss mmc_core psmouse snd_pcm battery ac button 
-> processor intel_agp snd_page_alloc reiserfs crc32 sr_mod cdrom sg 
-> firewire_ohci firewire_core crc_itu_t ata_piix ehci_hcd uhci_hcd usbcore 
-> thermal fan
-> 
-> Pid: 5579, comm: scsi_scan_2 Tainted: G      D    (2.6.30-rc1-git #1) 
-> MM061                          
-> EIP: 0060:[<00000000>] EFLAGS: 00010046 CPU: 0
-> EIP is at 0x0
-> EAX: f7117fb0 EBX: f7117fb0 ECX: 00000000 EDX: 00000003
-> ESI: b8023874 EDI: 00000000 EBP: e4432dd4 ESP: e4432dac
->  DS: 007b ES: 007b FS: 00d8 GS: 0000 SS: 0068
-> Process scsi_scan_2 (pid: 5579, ti=e4432000 task=ee7b3bb0 task.ti=e4432000)
-> Stack:
->  c012a8af 00000000 00000001 00000003 c04f22d8 00000282 c04f22dc 00000005
->  00000000 ee42ea20 e4432e00 c015e8b9 00000000 c0240d8d c04f22f8 f6527b00
->  c02ff2d0 00000080 ffffffff f6527b00 e445c60e e4432e08 c015e93d e4432e44
-> Call Trace:
->  [<c012a8af>] ? __wake_up+0x4f/0x80
->  [<c015e8b9>] ? __async_schedule+0x139/0x1a0
->  [<c0240d8d>] ? ida_pre_get+0x11d/0x150
->  [<c02ff2d0>] ? sd_probe_async+0x0/0x270
->  [<c015e93d>] ? async_schedule+0xd/0x10
->  [<c02ff748>] ? sd_probe+0x208/0x2a0
->  [<c02e6df6>] ? really_probe+0x156/0x220
->  [<c02e6fbc>] ? __device_attach+0x4c/0x60
->  [<c02e5b0b>] ? bus_for_each_drv+0x5b/0x80
->  [<c02e6c7b>] ? device_attach+0xeb/0x110
->  [<c02e6f70>] ? __device_attach+0x0/0x60
->  [<c02e5a7f>] ? bus_attach_device+0x3f/0x70
->  [<c02e442e>] ? device_add+0x65e/0x830
->  [<c02ea8e0>] ? transport_configure+0x0/0x30
->  [<c02fb3b2>] ? scsi_sysfs_add_sdev+0x62/0x2a0
->  [<c0241592>] ? kobject_get+0x12/0x20
->  [<c02f779d>] ? scsi_finish_async_scan+0x11d/0x160
->  [<c02f9920>] ? do_scan_async+0x0/0x90
->  [<c02f9978>] ? do_scan_async+0x58/0x90
->  [<c02f9920>] ? do_scan_async+0x0/0x90
->  [<c015558c>] ? kthread+0x3c/0x70
->  [<c0155550>] ? kthread+0x0/0x70
->  [<c0103f5f>] ? kernel_thread_helper+0x7/0x18
-> Code:  Bad EIP value.
-> EIP: [<00000000>] 0x0 SS:ESP 0068:e4432dac
-> CR2: 0000000000000000
+cd . && autoconf
 
-The trace appears to be claiming that kernel/async.c:async_new.func is
-NULL.
+cat: _distribution: No such file or directory
 
-But it cannot be - it's initialised at compilation time.  Unless
-something scribbled on it of course.
+cat: _patchlevel: No such file or directory
 
-Cute.  This might require a bisection search unless someone can see
-something which I missed?
+configure.in:272: warning: AC_CANONICAL_HOST invoked multiple times
+
+autoconf/specific.m4:363: AC_CYGWIN is expanded from...
+
+configure.in:272: the top level
+
+configure.in:273: warning: AC_CANONICAL_HOST invoked multiple times
+
+autoconf/specific.m4:393: AC_MINGW32 is expanded from...
+
+configure.in:273: the top level
+
+/bin/sh ./config.status --recheck
+
+running /bin/sh ./configure  --target=mipsel-linux
+--host=i386-pc-linux-gnu --build=i386-pc-linux-gnu
+--prefix=/export/home/chawanp1/B343/release/Thirdparty/siliconvendor/broadcom/os/linux/rootfs/uclinux-2.6.12-4.0/romfs/
+--includedir=/export/home/chawanp1/B343/release/Thirdparty/siliconvendor/broadcom/os/linux/rootfs/uclinux-2.6.12-4.0/user/bash/uClibc/include/
+--libdir=/export/home/chawanp1/B343/release/Thirdparty/siliconvendor/broadcom/os/linux/rootfs/uclinux-2.6.12-4.0/romfs/lib/
+--srcdir=. --cache-file=cross-build/config.cache.brcmstb.mipsel
+--no-create --no-recursion
+
+configure: loading cache cross-build/config.cache.brcmstb.mipsel
+
+checking build system type... (cached) i386-pc-linux-gnu
+
+checking host system type... (cached) i386-pc-linux-gnu
+
+Beginning configuration for bash-BASHPATCH= for i386-pc-linux-gnu
+
+checking for i386-pc-linux-gnu-gcc... (cached) mipsel-linux-gcc
+
+checking for C compiler default output file name... a.out
+
+checking whether the C compiler works... configure: error: cannot run
+C compiled programs.
+
+If you meant to cross compile, use `--host'.
+
+See `config.log' for more details.
+
+make[3]: *** [config.status] Error 1
+
+make[3]: Leaving directory
+`/export/home/chawanp1/B343/release/Thirdparty/siliconvendor/broadcom/os/linux/rootfs/uclinux-2.6.12-4.0/user/bash'
+
+make[2]: *** [all] Error 2
+
+make[2]: Leaving directory
+`/export/home/chawanp1/B343/release/Thirdparty/siliconvendor/broadcom/os/linux/rootfs/uclinux-2.6.12-4.0/user/bash'
+
+make[1]: *** [all] Error 2
+
+make[1]: Leaving directory
+`/export/home/chawanp1/B343/release/Thirdparty/siliconvendor/broadcom/os/linux/rootfs/uclinux-2.6.12-4.0/user'
+
+make: *** [subdirs] Error 1
+
+make: Leaving directory
+`/export/home/chawanp1/B343/release/Thirdparty/siliconvendor/broadcom/os/linux/rootfs/uclinux-2.6.12-4.0'
+
+make: *** [/export/home/chawanp1/B343/release/Thirdparty/siliconvendor/broadcom/os/linux/rootfs/uclinux-2.6.12-4.0/images/7401c0/vmlinuz]
+Error 2
+
+
+Thanks In advance
+Prabhu
