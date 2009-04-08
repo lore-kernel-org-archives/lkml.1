@@ -1,64 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753615AbZDHV5t@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753995AbZDHV6d@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753615AbZDHV5t (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 8 Apr 2009 17:57:49 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752590AbZDHV5d
+	id S1753995AbZDHV6d (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 8 Apr 2009 17:58:33 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751740AbZDHV6T
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 8 Apr 2009 17:57:33 -0400
-Received: from smtpfb1-g21.free.fr ([212.27.42.9]:33983 "EHLO
-	smtpfb1-g21.free.fr" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752517AbZDHV5c (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 8 Apr 2009 17:57:32 -0400
-Message-ID: <2c6601c9b894$756e4000$f9b5a8c0@pii350>
-From: "Gilles Espinasse" <g.esp@free.fr>
-To: "Robin Getz" <rgetz@blackfin.uclinux.org>,
-       "Chris Peterson" <cpeterso@cpeterso.com>
-Cc: "Matt Mackall" <mpm@selenic.com>, <netdev@vger.kernel.org>,
-       <linux-kernel@vger.kernel.org>
-References: <200904061430.26276.rgetz@blackfin.uclinux.org> <1239116251.14392.133.camel@calx> <a24804730904071439g4cc1779bi1ebaf814d370708c@mail.gmail.com> <200904071830.38081.rgetz@blackfin.uclinux.org>
-Subject: Re: IRQF_SAMPLE_RANDOM question...
-Date: Wed, 8 Apr 2009 23:53:30 +0200
+	Wed, 8 Apr 2009 17:58:19 -0400
+Received: from brm-mailgate-2.brocade.com ([144.49.197.3]:3616 "EHLO
+	brm-mailgate-2.brocade.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1752590AbZDHV6S convert rfc822-to-8bit
+	(ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 8 Apr 2009 17:58:18 -0400
+X-MimeOLE: Produced By Microsoft Exchange V6.5
+Content-class: urn:content-classes:message
 MIME-Version: 1.0
 Content-Type: text/plain;
-	charset="utf-8"
-Content-Transfer-Encoding: 7bit
-X-Priority: 3
-X-MSMail-Priority: Normal
-X-Mailer: Microsoft Outlook Express 6.00.2800.1933
-X-MimeOLE: Produced By Microsoft MimeOLE V6.00.2800.1933
+	charset="us-ascii"
+Content-Transfer-Encoding: 8BIT
+Subject: bug in drivers/edac/mpc85xx_edac.c:mpc85xx_mc_check() ?
+Date: Wed, 8 Apr 2009 14:57:42 -0700
+Message-ID: <57AC2FA1761300418C7AB8F3EA493C9702C5F200@HQ-EXCH-5.corp.brocade.com>
+X-MS-Has-Attach: 
+X-MS-TNEF-Correlator: 
+Thread-Topic: bug in drivers/edac/mpc85xx_edac.c:mpc85xx_mc_check() ?
+Thread-Index: Acm4lQp/520fvHxRSN2NDaRoPxya+Q==
+From: "Jeff Haran" <jharan@Brocade.COM>
+To: <linux-kernel@vger.kernel.org>
+X-OriginalArrivalTime: 08 Apr 2009 21:58:17.0167 (UTC) FILETIME=[1F4EDDF0:01C9B895]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Hi,
 
------ Original Message ----- 
-From: "Robin Getz" <rgetz@blackfin.uclinux.org>
-To: "Chris Peterson" <cpeterso@cpeterso.com>
-Cc: "Matt Mackall" <mpm@selenic.com>; <netdev@vger.kernel.org>;
-<linux-kernel@vger.kernel.org>
-Sent: Wednesday, April 08, 2009 12:30 AM
-Subject: Re: IRQF_SAMPLE_RANDOM question...
+Recent versions of this function start off with:
 
+static void mpc85xx_mc_check(struct mem_ctl_info *mci)
+{
+    struct mpc85xx_mc_pdata *pdata = mci->pvt_info;
+    ...
 
->
-> on embedded and server - it is likely most of ps (except load) will be
-pretty
-> stable - even vmstat - might be on more stable than you think on
-embedded -
-> which starts processes, allocates memory, and then just runs forever.....
->
-After the topic on that subject in May, I find clrngd
-http://ipsec.pl/files/ipsec/clrngd-1.0.3.tar.gz
+    err_detect = in_be32(pdata->mc_vbase + MPC85XX_MC_ERR_DETECT);
+    if (err_detect)
+        return;
 
-That's a small C program that feed /dev/random
-Readme say :
-"This daemon attempts to collect real randomness from fluctuations of
-high-frequency clocks on a PC's mainboard. The basic assumption is that
-mainboard and CPU are clocked by two separate physical clocks."
+    ...
+}
 
-Shortly tested, look to work for me.
-How large is this basic assumption true, on x86, on other arch?
+My reading of the Freescale 8548E Manual leads me to conclude that the
+Memory Error Detect register (ERR_DETECT) will have various bits set if
+the memory controller has detected an error since the last time it was
+cleared. If no memory error has occurred, the register will contain 0.
 
-Gilles
+Perhaps I am missing something very basic, but it seem to me that the
+above "if" should be:
 
+    if (!err_detect)
+        return;
+
+as the existing code would seem to read "if any errors have occurred,
+ignore them", though perhaps testing has demonstrated that the Freescale
+manual is in error.
+
+Please include this email address in responses as I do not subscribe.
+
+Thanks,
+
+Jeff Haran
+Brocade
