@@ -1,113 +1,84 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761126AbZDHCan@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759905AbZDHCeS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761126AbZDHCan (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 7 Apr 2009 22:30:43 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755090AbZDHCac
+	id S1759905AbZDHCeS (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 7 Apr 2009 22:34:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754959AbZDHCeD
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 7 Apr 2009 22:30:32 -0400
-Received: from mga14.intel.com ([143.182.124.37]:44115 "EHLO mga14.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753706AbZDHCab (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 7 Apr 2009 22:30:31 -0400
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.39,341,1235980800"; 
-   d="scan'208";a="129064453"
-Date: Wed, 8 Apr 2009 10:29:55 +0800
-From: Wu Fengguang <fengguang.wu@intel.com>
-To: Ying Han <yinghan@google.com>
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       LKML <linux-kernel@vger.kernel.org>,
-       "linux-fsdevel@vger.kernel.org" <linux-fsdevel@vger.kernel.org>,
-       "linux-mm@kvack.org" <linux-mm@kvack.org>
-Subject: Re: [PATCH 03/14] mm: remove FAULT_FLAG_RETRY dead code
-Message-ID: <20090408022955.GA15993@localhost>
-References: <20090407071729.233579162@intel.com> <20090407072133.053995305@intel.com> <604427e00904071303g1d092eabp59fca0713ddacf82@mail.gmail.com> <20090407232700.GB5607@localhost> <604427e00904071817n767122byb439043e8a228011@mail.gmail.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <604427e00904071817n767122byb439043e8a228011@mail.gmail.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+	Tue, 7 Apr 2009 22:34:03 -0400
+Received: from 69-30-77-85.dq1sn.easystreet.com ([69.30.77.85]:35291 "EHLO
+	kingsolver.anholt.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754694AbZDHCeC (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 7 Apr 2009 22:34:02 -0400
+Subject: Re: Regression X Hangs at bootup -- PATCH
+From: Eric Anholt <eric@anholt.net>
+To: Florian Mickler <florian@mickler.org>
+Cc: LKML <linux-kernel@vger.kernel.org>, jbarnes@virtuousgeek.org,
+       airlied@linux.ie, keithp@keithp.com
+In-Reply-To: <20090407221425.3dc1831e@schatten>
+References: <20090406225541.0e1e043b@schatten>
+	 <1239069835.31656.109.camel@gaiman.anholt.net>
+	 <20090407092346.058d19a0@schatten>
+	 <1239121300.9617.0.camel@gaiman.anholt.net>
+	 <20090407221425.3dc1831e@schatten>
+Content-Type: multipart/signed; micalg="pgp-sha1"; protocol="application/pgp-signature"; boundary="=-v+2CDLp/AhxkfRZpHIQ5"
+Date: Tue, 07 Apr 2009 19:33:59 -0700
+Message-Id: <1239158039.19045.6.camel@gaiman.anholt.net>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.24.5 
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Ying Han,
 
-On Wed, Apr 08, 2009 at 09:17:26AM +0800, Ying Han wrote:
-> On Tue, Apr 7, 2009 at 4:27 PM, Wu Fengguang <fengguang.wu@intel.com> wrote:
-> > On Wed, Apr 08, 2009 at 04:03:36AM +0800, Ying Han wrote:
-> >> On Tue, Apr 7, 2009 at 12:17 AM, Wu Fengguang <fengguang.wu@intel.com> wrote:
-> >> > Cc: Ying Han <yinghan@google.com>
-> >> > Signed-off-by: Wu Fengguang <fengguang.wu@intel.com>
-> >> > ---
-> >> >  mm/memory.c |    4 +---
-> >> >  1 file changed, 1 insertion(+), 3 deletions(-)
-> >> >
-> >> > --- mm.orig/mm/memory.c
-> >> > +++ mm/mm/memory.c
-> >> > @@ -2766,10 +2766,8 @@ static int do_linear_fault(struct mm_str
-> >> >  {
-> >> >        pgoff_t pgoff = (((address & PAGE_MASK)
-> >> >                        - vma->vm_start) >> PAGE_SHIFT) + vma->vm_pgoff;
-> >> > -       int write = write_access & ~FAULT_FLAG_RETRY;
-> >> > -       unsigned int flags = (write ? FAULT_FLAG_WRITE : 0);
-> >> > +       unsigned int flags = (write_access ? FAULT_FLAG_WRITE : 0);
-> >> >
-> >> > -       flags |= (write_access & FAULT_FLAG_RETRY);
-> >> >        pte_unmap(page_table);
-> >> >        return __do_fault(mm, vma, address, pmd, pgoff, flags, orig_pte);
-> >> >  }
-> >> So, we got rid of FAULT_FLAG_RETRY flag?
-> >
-> > Seems yes for the current mm tree, see the following two commits.
-> >
-> > I did this patch on seeing 761fe7bc8193b7. But a closer look
-> > indicates that the following two patches disable the filemap
-> > VM_FAULT_RETRY part totally...
-> >
-> > Anyway, if these two patches are to be reverted somehow(I guess yes),
-> > this patch shall be _ignored_.
-> >
-> > btw, do you have any test case and performance numbers for
-> > FAULT_FLAG_RETRY? And possible overheads for (the worst case)
-> > sparse random mmap reads on a sparse file?  I cannot find any
-> > in your changelogs..
-> 
-> here is the benchmark i posted on [V1] but somehow missed in [V2] describtion
-> 
-> Benchmarks:
-> case 1. one application has a high count of threads each faulting in
-> different pages of a hugefile. Benchmark indicate that this double data
-> structure walking in case of major fault results in << 1% performance hit.
-> 
-> case 2. add another thread in the above application which in a tight loop of
-> mmap()/munmap(). Here we measure loop count in the new thread while other
-> threads doing the same amount of work as case one. we got << 3% performance
-> hit on the Complete Time(benchmark value for case one) and 10% performance
-> improvement on the mmap()/munmap() counter.
-> 
-> This patch helps a lot in cases we have writer which is waitting behind all
-> readers, so it could execute much faster.
-> 
+--=-v+2CDLp/AhxkfRZpHIQ5
+Content-Type: text/plain
+Content-Transfer-Encoding: quoted-printable
 
-Just tested the sparse-random-read-on-sparse-file case, and found the
-performance impact to be 0.4% (8.706s vs 8.744s). Kind of acceptable.
+On Tue, 2009-04-07 at 22:14 +0200, Florian Mickler wrote:
+> On Tue, 07 Apr 2009 09:21:40 -0700
+> Eric Anholt <eric@anholt.net> wrote:
+>=20
+>=20
+> > drm_free's other arguments are unused memory debug leftovers.  I've
+> > got a patch I need to push at airlied to remove
+> > drm_malloc/drm_calloc/drm_free.
+> >=20
+> in that case it is of course a non issue. but would you mind=20
+> to add a note like 'this adds a memleak to i915_gem_put_relocs_to_user
+> which will be fixed in a followup patch', or just rebase it onto that
+> patch?=20
 
-without FAULT_FLAG_RETRY:
-iotrace.rb --load stride-100 --mplay /mnt/btrfs-ram/sparse  3.28s user 5.39s system 99% cpu 8.692 total
-iotrace.rb --load stride-100 --mplay /mnt/btrfs-ram/sparse  3.17s user 5.54s system 99% cpu 8.742 total
-iotrace.rb --load stride-100 --mplay /mnt/btrfs-ram/sparse  3.18s user 5.48s system 99% cpu 8.684 total
+Just to be clear, there is no memleak:
 
-FAULT_FLAG_RETRY:
-iotrace.rb --load stride-100 --mplay /mnt/btrfs-ram/sparse  3.18s user 5.63s system 99% cpu 8.825 total
-iotrace.rb --load stride-100 --mplay /mnt/btrfs-ram/sparse  3.22s user 5.47s system 99% cpu 8.718 total
-iotrace.rb --load stride-100 --mplay /mnt/btrfs-ram/sparse  3.13s user 5.55s system 99% cpu 8.690 total
+/** Wrapper around kfree() */
+static __inline__ void drm_free(void *pt, size_t size, int area)
+{
+	kfree(pt);
+}
 
-In the above faked workload, the mmap read page offsets are loaded from
-stride-100 and performed on /mnt/btrfs-ram/sparse, which are created by:
+The arg would only get used if DRM_DEBUG_MEMORY was set, but there's no
+way in the kernel to do so.  I don't think anybody's used it in years,
+and I'm sure there would be broken drm_free arguments since it's
+untested.  It was never very useful even back in the day, since most
+everything ended up lumped under DRM_MEM_DRIVER.
 
-                seq 0 100 1000000 > stride-100
-                dd if=/dev/zero of=/mnt/btrfs-ram/sparse bs=1M count=1 seek=1024000
+--=20
+Eric Anholt
+eric@anholt.net                         eric.anholt@intel.com
 
-Thanks,
-Fengguang
+
+
+--=-v+2CDLp/AhxkfRZpHIQ5
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: This is a digitally signed message part
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.9 (GNU/Linux)
+
+iEYEABECAAYFAkncDRQACgkQHUdvYGzw6vcr0wCcDRvMEBPClQISfymfwkqiFAht
+LGwAnjOBfyJItLka7GDO7lYpCKdgh78Y
+=mPrW
+-----END PGP SIGNATURE-----
+
+--=-v+2CDLp/AhxkfRZpHIQ5--
