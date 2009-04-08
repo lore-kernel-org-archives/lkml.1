@@ -1,27 +1,27 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758399AbZDHHZr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756919AbZDHH03@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758399AbZDHHZr (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 8 Apr 2009 03:25:47 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757775AbZDHHZN
+	id S1756919AbZDHH03 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 8 Apr 2009 03:26:29 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760528AbZDHHZ6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 8 Apr 2009 03:25:13 -0400
-Received: from 219-87-157-169.static.tfn.net.tw ([219.87.157.169]:55302 "EHLO
+	Wed, 8 Apr 2009 03:25:58 -0400
+Received: from 219-87-157-169.static.tfn.net.tw ([219.87.157.169]:55402 "EHLO
 	mswedge2.sunplus.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751423AbZDHHZF (ORCPT
+	with ESMTP id S1759836AbZDHHZy (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 8 Apr 2009 03:25:05 -0400
+	Wed, 8 Apr 2009 03:25:54 -0400
 To: linux-arch@vger.kernel.org, linux-kernel@vger.kernel.org
 Cc: torvalds@linux-foundation.org, Arnd Bergmann <arnd@arndb.de>,
        Sam Ravnborg <sam@ravnborg.org>, Thomas Gleixner <tglx@linutronix.de>,
        Kyle McMartin <kyle@mcmartin.ca>
 MIME-Version: 1.0
-Subject: [PATCH 3/14] score - New architecure port to SunplusCT S+CORE
+Subject: [PATCH 4/14] score - New architecure port to SunplusCT S+CORE
 X-Mailer: Lotus Notes Release 6.5 September 26, 2003
-Message-ID: <OFB4C04512.1940B13F-ON48257592.0028600F-48257592.0028AAF4@sunplusct.com>
+Message-ID: <OF37DA4769.A6BC9B10-ON48257592.00287E6E-48257592.0028CC22@sunplusct.com>
 From: liqin.chen@sunplusct.com
-Date: Wed, 8 Apr 2009 15:22:03 +0800
-X-MIMETrack: Serialize by Router on ctmail01/SunplusCT(Release 7.0.3FP1|February 24, 2008) at 2009/04/08 ?? 03:22:04,
-	Serialize complete at 2009/04/08 ?? 03:22:04
+Date: Wed, 8 Apr 2009 15:23:28 +0800
+X-MIMETrack: Serialize by Router on ctmail01/SunplusCT(Release 7.0.3FP1|February 24, 2008) at 2009/04/08 ?? 03:23:29,
+	Serialize complete at 2009/04/08 ?? 03:23:29
 Content-Type: text/plain; charset="US-ASCII"
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
@@ -29,1330 +29,1369 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 From: Chen Liqin <liqin.chen@sunplusct.com>
 
-asm/cputime.h, asm/current.h, asm/delay.h, asm/device.h, asm/div64.h,
-asm/dma.h, asm/dma-mapping.h, asm/elf.h, asm/emergency-restart.h, 
-asm/errno.h,
-asm/fb.h, asm/fcntl.h, asm/fixmap.h, asm/futex.h, asm/hardirq.h, 
-asm/hw_irq.h,
-asm/ioctl.h, asm/ioctls.h, asm/io.h, asm/ipcbuf.h, asm/irqflags.h, 
-asm/irq.h,
-asm/irq_regs.h, asm/Kbuild and asm/kdebug.h for the score architecture.
+asm/kmap_types.h, asm/linkage.h, asm/local.h, asm/mman.h, 
+asm/mmu_context.h,
+asm/mmu.h, asm/module.h, asm/msgbuf.h, asm/mutex.h, asm/page.h, 
+asm/param.h,
+asm/pci.h, asm/percpu.h, asm/pgalloc.h, asm/pgtable-32.h, 
+asm/pgtable-bits.h,
+asm/pgtable.h, asm/poll.h, asm/posix_types.h and asm/processor.h
+for the score architecture.
 
 Signed off by: Chen Liqin <liqin.chen@sunplusct.com>
 Signed off by: Lennox Wu <lennox.wu@sunplusct.com>
 --
 
 diff -uprN -x linux-2.6-git.ori/Documentation/dontdiff 
-linux-2.6-git.ori/arch/score/include/asm/cputime.h 
-linux-2.6-git.new/arch/score/include/asm/cputime.h
---- linux-2.6-git.ori/arch/score/include/asm/cputime.h  1970-01-01 
+linux-2.6-git.ori/arch/score/include/asm/kmap_types.h 
+linux-2.6-git.new/arch/score/include/asm/kmap_types.h
+--- linux-2.6-git.ori/arch/score/include/asm/kmap_types.h       1970-01-01 
 08:00:00.000000000 +0800
-+++ linux-2.6-git.new/arch/score/include/asm/cputime.h  2009-03-13 
-14:26:33.000000000 +0800
-@@ -0,0 +1,6 @@
-+#ifndef __SCORE_CPUTIME_H
-+#define __SCORE_CPUTIME_H
++++ linux-2.6-git.new/arch/score/include/asm/kmap_types.h       2009-04-03 
+17:01:04.000000000 +0800
+@@ -0,0 +1,21 @@
++#ifndef __SCORE_KMAP_TYPES_H
++#define __SCORE_KMAP_TYPES_H
 +
-+#include <asm-generic/cputime.h>
++enum km_type {
++       KM_BOUNCE_READ,
++       KM_SKB_SUNRPC_DATA,
++       KM_SKB_DATA_SOFTIRQ,
++       KM_USER0,
++       KM_USER1,
++       KM_BIO_SRC_IRQ,
++       KM_BIO_DST_IRQ,
++       KM_PTE0,
++       KM_PTE1,
++       KM_IRQ0,
++       KM_IRQ1,
++       KM_SOFTIRQ0,
++       KM_SOFTIRQ1,
++       KM_TYPE_NR
++};
 +
-+#endif /* __SCORE_CPUTIME_H */
-diff -uprN -x linux-2.6-git.ori/Documentation/dontdiff 
-linux-2.6-git.ori/arch/score/include/asm/current.h 
-linux-2.6-git.new/arch/score/include/asm/current.h
---- linux-2.6-git.ori/arch/score/include/asm/current.h  1970-01-01 
-08:00:00.000000000 +0800
-+++ linux-2.6-git.new/arch/score/include/asm/current.h  2009-04-07 
-20:18:06.000000000 +0800
-@@ -0,0 +1,15 @@
-+#ifndef __SCORE_CURRENT_H
-+#define __SCORE_CURRENT_H
-+
-+#include <linux/thread_info.h>
-+
-+struct task_struct;
-+
-+static inline struct task_struct *get_current(void)
-+{
-+       return current_thread_info()->task;
-+}
-+
-+#define current                get_current()
-+
-+#endif /* __SCORE_CURRENT_H */
-diff -uprN -x linux-2.6-git.ori/Documentation/dontdiff 
-linux-2.6-git.ori/arch/score/include/asm/delay.h 
-linux-2.6-git.new/arch/score/include/asm/delay.h
---- linux-2.6-git.ori/arch/score/include/asm/delay.h    1970-01-01 
-08:00:00.000000000 +0800
-+++ linux-2.6-git.new/arch/score/include/asm/delay.h    2009-04-03 
-16:57:44.000000000 +0800
-@@ -0,0 +1,37 @@
-+#ifndef __SCORE_DELAY_H
-+#define __SCORE_DELAY_H
-+
-+#include <linux/param.h>
-+
-+static inline void __delay(unsigned long loops)
-+{}
-+
-+/*
-+ * Division by multiplication: you don't have to worry about
-+ * loss of precision.
-+ *
-+ * Use only for very small delays ( < 1 msec).  Should probably use a
-+ * lookup table, really, as the multiplications take much too long with
-+ * short delays.  This is a "reasonable" implementation, though (and the
-+ * first constant multiplications gets optimized away if the delay is
-+ * a constant)
-+ */
-+
-+static inline void __udelay(unsigned long usecs, unsigned long lpj)
-+{
-+       __delay(usecs);
-+}
-+
-+#define __udelay_val   1
-+#define udelay(usecs) __udelay((usecs), __udelay_val)
-+
-+/* make sure "usecs *= ..." in udelay do not overflow. */
-+#if HZ >= 1000
-+#define MAX_UDELAY_MS  1
-+#elif HZ <= 200
-+#define MAX_UDELAY_MS  5
-+#else
-+#define MAX_UDELAY_MS  (1000 / HZ)
 +#endif
-+
-+#endif /* __SCORE_DELAY_H */
 diff -uprN -x linux-2.6-git.ori/Documentation/dontdiff 
-linux-2.6-git.ori/arch/score/include/asm/device.h 
-linux-2.6-git.new/arch/score/include/asm/device.h
---- linux-2.6-git.ori/arch/score/include/asm/device.h   1970-01-01 
+linux-2.6-git.ori/arch/score/include/asm/linkage.h 
+linux-2.6-git.new/arch/score/include/asm/linkage.h
+--- linux-2.6-git.ori/arch/score/include/asm/linkage.h  1970-01-01 
 08:00:00.000000000 +0800
-+++ linux-2.6-git.new/arch/score/include/asm/device.h   2009-03-13 
-14:26:33.000000000 +0800
-@@ -0,0 +1,2 @@
-+#include <asm-generic/device.h>
++++ linux-2.6-git.new/arch/score/include/asm/linkage.h  2009-04-03 
+17:01:17.000000000 +0800
+@@ -0,0 +1,4 @@
++#ifndef __SCORE_LINKAGE_H
++#define __SCORE_LINKAGE_H
 +
++#endif
 diff -uprN -x linux-2.6-git.ori/Documentation/dontdiff 
-linux-2.6-git.ori/arch/score/include/asm/div64.h 
-linux-2.6-git.new/arch/score/include/asm/div64.h
---- linux-2.6-git.ori/arch/score/include/asm/div64.h    1970-01-01 
+linux-2.6-git.ori/arch/score/include/asm/local.h 
+linux-2.6-git.new/arch/score/include/asm/local.h
+--- linux-2.6-git.ori/arch/score/include/asm/local.h    1970-01-01 
 08:00:00.000000000 +0800
-+++ linux-2.6-git.new/arch/score/include/asm/div64.h    2009-04-03 
-16:57:55.000000000 +0800
++++ linux-2.6-git.new/arch/score/include/asm/local.h    2009-04-03 
+17:01:32.000000000 +0800
 @@ -0,0 +1,6 @@
-+#ifndef __SCORE_DIV64_H
-+#define __SCORE_DIV64_H
++#ifndef __SCORE_LOCAL_H
++#define __SCORE_LOCAL_H
 +
-+#include <asm-generic/div64.h>
++#include <asm-generic/local.h>
 +
-+#endif /* __SCORE_DIV64_H */
++#endif /* __SCORE_LOCAL_H */
 diff -uprN -x linux-2.6-git.ori/Documentation/dontdiff 
-linux-2.6-git.ori/arch/score/include/asm/dma.h 
-linux-2.6-git.new/arch/score/include/asm/dma.h
---- linux-2.6-git.ori/arch/score/include/asm/dma.h      1970-01-01 
+linux-2.6-git.ori/arch/score/include/asm/mman.h 
+linux-2.6-git.new/arch/score/include/asm/mman.h
+--- linux-2.6-git.ori/arch/score/include/asm/mman.h     1970-01-01 
 08:00:00.000000000 +0800
-+++ linux-2.6-git.new/arch/score/include/asm/dma.h      2009-04-08 
-09:02:35.000000000 +0800
-@@ -0,0 +1,17 @@
-+#ifndef __SCORE_DMA_H
-+#define __SCORE_DMA_H
-+
-+#include <linux/spinlock.h>            /* And spinlocks */
-+#include <linux/delay.h>
-+
-+#include <asm/system.h>
-+#include <asm/io.h>                    /* need byte IO */
-+
-+#define MAX_DMA_ADDRESS                (PAGE_OFFSET + 0x01000000)
-+
-+/* reserve a DMA channel */
-+extern int request_dma(unsigned int dmanr, const char *device_id);
-+/* release it again */
-+extern void free_dma(unsigned int dmanr);
-+
-+#endif /* __SCORE_DMA_H */
-diff -uprN -x linux-2.6-git.ori/Documentation/dontdiff 
-linux-2.6-git.ori/arch/score/include/asm/dma-mapping.h 
-linux-2.6-git.new/arch/score/include/asm/dma-mapping.h
---- linux-2.6-git.ori/arch/score/include/asm/dma-mapping.h      1970-01-01 
-08:00:00.000000000 +0800
-+++ linux-2.6-git.new/arch/score/include/asm/dma-mapping.h      2009-04-03 
-16:58:15.000000000 +0800
-@@ -0,0 +1,51 @@
-+#ifndef __SCORE_DMA_MAPPING_H
-+#define __SCORE_DMA_MAPPING_H
-+
-+#include <asm/scatterlist.h>
-+#include <asm/cache.h>
-+
-+void *dma_alloc_noncoherent(struct device *dev, size_t size,
-+       dma_addr_t *dma_handle, gfp_t flag);
-+
-+void dma_free_noncoherent(struct device *dev, size_t size,
-+       void *vaddr, dma_addr_t dma_handle);
-+
-+void *dma_alloc_coherent(struct device *dev, size_t size,
-+       dma_addr_t *dma_handle, gfp_t flag);
-+
-+void dma_free_coherent(struct device *dev, size_t size,
-+       void *vaddr, dma_addr_t dma_handle);
-+
-+extern dma_addr_t dma_map_single(struct device *dev, void *ptr, size_t 
-size,
-+       enum dma_data_direction direction);
-+extern void dma_unmap_single(struct device *dev, dma_addr_t dma_addr,
-+       size_t size, enum dma_data_direction direction);
-+extern int dma_map_sg(struct device *dev, struct scatterlist *sg, int 
-nents,
-+       enum dma_data_direction direction);
-+extern dma_addr_t dma_map_page(struct device *dev, struct page *page,
-+       unsigned long offset, size_t size, enum dma_data_direction 
-direction);
-+extern void dma_unmap_page(struct device *dev, dma_addr_t dma_address,
-+       size_t size, enum dma_data_direction direction);
-+extern void dma_unmap_sg(struct device *dev, struct scatterlist *sg,
-+       int nhwentries, enum dma_data_direction direction);
-+extern void dma_sync_single_for_cpu(struct device *dev, dma_addr_t 
-dma_handle,
-+       size_t size, enum dma_data_direction direction);
-+extern void dma_sync_single_for_device(struct device *dev,
-+       dma_addr_t dma_handle, size_t size, enum dma_data_direction 
-direction);
-+extern void dma_sync_single_range_for_cpu(struct device *dev,
-+       dma_addr_t dma_handle, unsigned long offset, size_t size,
-+       enum dma_data_direction direction);
-+extern void dma_sync_single_range_for_device(struct device *dev,
-+       dma_addr_t dma_handle, unsigned long offset, size_t size,
-+       enum dma_data_direction direction);
-+extern void dma_sync_sg_for_cpu(struct device *dev, struct scatterlist 
-*sg,
-+       int nelems, enum dma_data_direction direction);
-+extern void dma_sync_sg_for_device(struct device *dev, struct scatterlist 
-*sg,
-+       int nelems, enum dma_data_direction direction);
-+extern int dma_mapping_error(struct device *dev, dma_addr_t dma_addr);
-+extern int dma_supported(struct device *dev, u64 mask);
-+extern int dma_is_consistent(struct device *dev, dma_addr_t dma_addr);
-+extern void dma_cache_sync(struct device *dev, void *vaddr, size_t size,
-+       enum dma_data_direction direction);
-+
-+#endif /* __SCORE_DMA_MAPPING_H */
-diff -uprN -x linux-2.6-git.ori/Documentation/dontdiff 
-linux-2.6-git.ori/arch/score/include/asm/elf.h 
-linux-2.6-git.new/arch/score/include/asm/elf.h
---- linux-2.6-git.ori/arch/score/include/asm/elf.h      1970-01-01 
-08:00:00.000000000 +0800
-+++ linux-2.6-git.new/arch/score/include/asm/elf.h      2009-04-07 
-20:19:45.000000000 +0800
-@@ -0,0 +1,119 @@
-+#ifndef __SCORE_ELF_H
-+#define __SCORE_ELF_H
-+
-+/* ELF register definitions */
-+#define ELF_NGREG      45
-+#define ELF_NFPREG     33
-+#define EM_SCORE7      135
-+
-+/* Relocation types. */
-+#define R_SCORE_NONE           0
-+#define R_SCORE_HI16           1
-+#define R_SCORE_LO16           2
-+#define R_SCORE_BCMP           3
-+#define R_SCORE_24             4
-+#define R_SCORE_PC19           5
-+#define R_SCORE16_11           6
-+#define R_SCORE16_PC8          7
-+#define R_SCORE_ABS32          8
-+#define R_SCORE_ABS16          9
-+#define R_SCORE_DUMMY2         10
-+#define R_SCORE_GP15           11
-+#define R_SCORE_GNU_VTINHERIT  12
-+#define R_SCORE_GNU_VTENTRY    13
-+#define R_SCORE_GOT15          14
-+#define R_SCORE_GOT_LO16       15
-+#define R_SCORE_CALL15         16
-+#define R_SCORE_GPREL32                17
-+#define R_SCORE_REL32          18
-+#define R_SCORE_DUMMY_HI16     19
-+#define R_SCORE_IMM30          20
-+#define R_SCORE_IMM32          21
-+
-+
-+typedef unsigned long elf_greg_t;
-+typedef elf_greg_t elf_gregset_t[ELF_NGREG];
-+
-+typedef double elf_fpreg_t;
-+typedef elf_fpreg_t elf_fpregset_t[ELF_NFPREG];
++++ linux-2.6-git.new/arch/score/include/asm/mman.h     2009-04-03 
+17:01:40.000000000 +0800
+@@ -0,0 +1,69 @@
++#ifndef __SCORE_MMAN_H
++#define __SCORE_MMAN_H
 +
 +/*
-+ * This is used to ensure we don't load something for the wrong 
-architecture.
++ * Protections are chosen from these bits, OR'd together.  The
++ * implementation does not necessarily support PROT_EXEC or PROT_WRITE
++ * without PROT_READ.  The only guarantees are that no writing will be
++ * allowed without PROT_WRITE and no access will be allowed for 
+PROT_NONE.
 + */
-+#define elf_check_arch(hdr)                            \
-+({                                                     \
-+       int __res = 1;                                  \
-+       struct elfhdr *__h = (hdr);                     \
-+                                                       \
-+       if (__h->e_ident[EI_CLASS] != ELFCLASS32)       \
-+               __res = 0;                              \
-+                                                       \
-+       __res;                                          \
-+})
++#define PROT_NONE      0x00            /* page can not be accessed */
++#define PROT_READ      0x01            /* page can be read */
++#define PROT_WRITE     0x02            /* page can be written */
++#define PROT_EXEC      0x04            /* page can be executed */
++#define PROT_SEM       0x10            /* page may be used for atomic ops 
+*/
++#define PROT_GROWSDOWN 0x01000000      /* mprotect flag: extend change to 
+start of growsdown vma */
++#define PROT_GROWSUP   0x02000000      /* mprotect flag: extend change to 
+end of growsup vma */
 +
 +/*
-+ * These are used to set parameters in the core dumps.
++ * Flags for mmap
 + */
-+#define ELF_CLASS      ELFCLASS32
++#define MAP_SHARED     0x001           /* Share changes */
++#define MAP_PRIVATE    0x002           /* Changes are private */
++#define MAP_TYPE       0x00f           /* Mask for type of mapping */
++#define MAP_FIXED      0x010           /* Interpret addr exactly */
++
++/* not used by linux, but here to make sure we don't clash with ABI 
+defines */
++#define MAP_RENAME     0x020           /* Assign page to file */
++#define MAP_AUTOGROW   0x040           /* File may grow by writing */
++#define MAP_LOCAL      0x080           /* Copy on fork/sproc */
++#define MAP_AUTORSRV   0x100           /* Logical swap reserved on demand 
+*/
++
++/* These are linux-specific */
++#define MAP_NORESERVE  0x0400          /* don't check for reservations */
++#define MAP_ANONYMOUS  0x0800          /* don't use a file */
++#define MAP_GROWSDOWN  0x1000          /* stack-like segment */
++#define MAP_DENYWRITE  0x2000          /* ETXTBSY */
++#define MAP_EXECUTABLE 0x4000          /* mark it as an executable */
++#define MAP_LOCKED     0x8000          /* pages are locked */
++#define MAP_POPULATE   0x10000         /* populate (prefault) pagetables 
+*/
++#define MAP_NONBLOCK   0x20000         /* do not block on IO */
 +
 +/*
-+ * These are used to set parameters in the core dumps.
++ * Flags for msync
 + */
-+#define ELF_DATA       ELFDATA2LSB
-+#define ELF_ARCH       EM_SCORE7
++#define MS_ASYNC       0x0001          /* sync memory asynchronously */
++#define MS_INVALIDATE  0x0002          /* invalidate mappings & caches */
++#define MS_SYNC                0x0004          /* synchronous memory sync 
+*/
 +
-+#define SET_PERSONALITY(ex)                                            \
-+do {                                                                   \
-+       set_personality(PER_LINUX);                                     \
++/*
++ * Flags for mlockall
++ */
++#define MCL_CURRENT    1               /* lock all current mappings */
++#define MCL_FUTURE     2               /* lock all future mappings */
++
++#define MADV_NORMAL    0               /* no further special treatment */
++#define MADV_RANDOM    1               /* expect random page references 
+*/
++#define MADV_SEQUENTIAL        2               /* expect sequential page 
+references */
++#define MADV_WILLNEED  3               /* will need these pages */
++#define MADV_DONTNEED  4               /* don't need these pages */
++
++/* common parameters: try to keep these consistent across architectures 
+*/
++#define MADV_REMOVE    9               /* remove these pages & resources 
+*/
++#define MADV_DONTFORK  10              /* don't inherit across fork */
++#define MADV_DOFORK    11              /* do inherit across fork */
++
++/* compatibility flags */
++#define MAP_FILE       0
++
++#endif /* __SCORE_MMAN_H */
+diff -uprN -x linux-2.6-git.ori/Documentation/dontdiff 
+linux-2.6-git.ori/arch/score/include/asm/mmu_context.h 
+linux-2.6-git.new/arch/score/include/asm/mmu_context.h
+--- linux-2.6-git.ori/arch/score/include/asm/mmu_context.h      1970-01-01 
+08:00:00.000000000 +0800
++++ linux-2.6-git.new/arch/score/include/asm/mmu_context.h      2009-04-08 
+11:04:39.000000000 +0800
+@@ -0,0 +1,108 @@
++#ifndef __SCORE_MMU_CONTEXT_H
++#define __SCORE_MMU_CONTEXT_H
++
++#include <linux/errno.h>
++#include <linux/sched.h>
++#include <linux/slab.h>
++#include <asm/cacheflush.h>
++#include <asm-generic/mm_hooks.h>
++#include <asm/tlbflush.h>
++#include <asm/scoreregs.h>
++
++/*
++ * For the fast tlb miss handlers, we keep a per cpu array of pointers
++ * to the current pgd for each processor. Also, the proc. id is stuffed
++ * into the context register.
++ */
++extern unsigned long asid_cache;
++extern unsigned long pgd_current;
++
++#define TLBMISS_HANDLER_SETUP_PGD(pgd) (pgd_current = (unsigned 
+long)(pgd))
++
++#define TLBMISS_HANDLER_SETUP()                                \
++do {                                                   \
++       write_c0_context(0);                            \
++       TLBMISS_HANDLER_SETUP_PGD(swapper_pg_dir)       \
 +} while (0)
 +
-+struct task_struct;
-+struct pt_regs;
-+
-+extern void elf_dump_regs(elf_greg_t *, struct pt_regs *regs);
-+extern int dump_task_regs(struct task_struct *, elf_gregset_t *);
-+
-+#define ELF_CORE_COPY_REGS(elf_regs, regs)             \
-+       elf_dump_regs((elf_greg_t *)&(elf_regs), regs);
-+#define ELF_CORE_COPY_TASK_REGS(tsk, elf_regs) dump_task_regs(tsk, 
-elf_regs)
-+
-+#define USE_ELF_CORE_DUMP
-+#define ELF_EXEC_PAGESIZE      PAGE_SIZE
-+
-+/* This yields a mask that user programs can use to figure out what
-+   instruction set this cpu supports.  This could be done in userspace,
-+   but it's not easy, and we've already done it here.  */
-+
-+#define ELF_HWCAP      (0)
-+
-+/* This yields a string that ld.so will use to load implementation
-+   specific libraries for optimization.  This is more specific in
-+   intent than poking at uname or /proc/cpuinfo.
-+
-+   For the moment, we have only optimizations for the Intel generations,
-+   but that could change... */
-+
-+#define ELF_PLATFORM   (NULL)
-+
-+#define ELF_PLAT_INIT(_r, load_addr)                                   \
-+do {                                                                   \
-+       _r->regs[1] = _r->regs[2] = _r->regs[3] = _r->regs[4] = 0;      \
-+       _r->regs[5] = _r->regs[6] = _r->regs[7] = _r->regs[8] = 0;      \
-+       _r->regs[9] = _r->regs[10] = _r->regs[11] = _r->regs[12] = 0;   \
-+       _r->regs[13] = _r->regs[14] = _r->regs[15] = _r->regs[16] = 0;  \
-+       _r->regs[17] = _r->regs[18] = _r->regs[19] = _r->regs[20] = 0;  \
-+       _r->regs[21] = _r->regs[22] = _r->regs[23] = _r->regs[24] = 0;  \
-+       _r->regs[25] = _r->regs[26] = _r->regs[27] = _r->regs[28] = 0;  \
-+       _r->regs[30] = _r->regs[31] = 0;                                \
-+} while (0)
-+
-+/* This is the location that an ET_DYN program is loaded if exec'ed. 
-Typical
-+   use of this is to invoke "./ld.so someprog" to test out a new version 
-of
-+   the loader.  We need to make sure that it is out of the way of the 
-program
-+   that it will "exec", and that there is sufficient room for the brk. */
-+
-+#ifndef ELF_ET_DYN_BASE
-+#define ELF_ET_DYN_BASE                (TASK_SIZE / 3 * 2)
-+#endif
-+
-+#endif /* __SCORE_ELF_H */
-diff -uprN -x linux-2.6-git.ori/Documentation/dontdiff 
-linux-2.6-git.ori/arch/score/include/asm/emergency-restart.h 
-linux-2.6-git.new/arch/score/include/asm/emergency-restart.h
---- linux-2.6-git.ori/arch/score/include/asm/emergency-restart.h 
-1970-01-01 08:00:00.000000000 +0800
-+++ linux-2.6-git.new/arch/score/include/asm/emergency-restart.h 
-2009-04-03 16:58:33.000000000 +0800
-@@ -0,0 +1,6 @@
-+#ifndef __SCORE_EMERGENCY_RESTART_H
-+#define __SCORE_EMERGENCY_RESTART_H
-+
-+#include <asm-generic/emergency-restart.h>
-+
-+#endif /* __SCORE_EMERGENCY_RESTART_H */
-diff -uprN -x linux-2.6-git.ori/Documentation/dontdiff 
-linux-2.6-git.ori/arch/score/include/asm/errno.h 
-linux-2.6-git.new/arch/score/include/asm/errno.h
---- linux-2.6-git.ori/arch/score/include/asm/errno.h    1970-01-01 
-08:00:00.000000000 +0800
-+++ linux-2.6-git.new/arch/score/include/asm/errno.h    2009-04-03 
-16:58:42.000000000 +0800
-@@ -0,0 +1,124 @@
-+#ifndef __SCORE_ERRNO_H
-+#define __SCORE_ERRNO_H
-+
 +/*
-+ * These error numbers are intended to be SCORE ABI compatible
++ *  All unused by hardware upper bits will be considered
++ *  as a software asid extension.
 + */
++#define ASID_VERSION_MASK  0xfffff000
++#define ASID_FIRST_VERSION 0x1000
 +
-+#include <asm-generic/errno-base.h>
++                               /* PEVN    --------- VPN ---------- 
+--ASID--- -NA- */
++#define ASID_INC       0x10    /* binary: 0000 0000 0000 0000 0000 0000 
+0001 0000 */
++#define ASID_MASK      0xff0   /* binary: 0000 0000 0000 0000 0000 1111 
+1111 0000 */
 +
-+#define        ENOMSG          35      /* No message of desired type */
-+#define        EIDRM           36      /* Identifier removed */
-+#define        ECHRNG          37      /* Channel number out of range */
-+#define        EL2NSYNC        38      /* Level 2 not synchronized */
-+#define        EL3HLT          39      /* Level 3 halted */
-+#define        EL3RST          40      /* Level 3 reset */
-+#define        ELNRNG          41      /* Link number out of range */
-+#define        EUNATCH         42      /* Protocol driver not attached */
-+#define        ENOCSI          43      /* No CSI structure available */
-+#define        EL2HLT          44      /* Level 2 halted */
-+#define        EDEADLK         45      /* Resource deadlock would occur 
-*/
-+#define        ENOLCK          46      /* No record locks available */
-+#define        EBADE           50      /* Invalid exchange */
-+#define        EBADR           51      /* Invalid request descriptor */
-+#define        EXFULL          52      /* Exchange full */
-+#define        ENOANO          53      /* No anode */
-+#define        EBADRQC         54      /* Invalid request code */
-+#define        EBADSLT         55      /* Invalid slot */
-+#define        EDEADLOCK       56      /* File locking deadlock error */
-+#define        EBFONT          59      /* Bad font file format */
-+#define        ENOSTR          60      /* Device not a stream */
-+#define        ENODATA         61      /* No data available */
-+#define        ETIME           62      /* Timer expired */
-+#define        ENOSR           63      /* Out of streams resources */
-+#define        ENONET          64      /* Machine is not on the network 
-*/
-+#define        ENOPKG          65      /* Package not installed */
-+#define        EREMOTE         66      /* Object is remote */
-+#define        ENOLINK         67      /* Link has been severed */
-+#define        EADV            68      /* Advertise error */
-+#define        ESRMNT          69      /* Srmount error */
-+#define        ECOMM           70      /* Communication error on send */
-+#define        EPROTO          71      /* Protocol error */
-+#define        EDOTDOT         73      /* RFS specific error */
-+#define        EMULTIHOP       74      /* Multihop attempted */
-+#define        EBADMSG         77      /* Not a data message */
-+#define        ENAMETOOLONG    78      /* File name too long */
-+#define        EOVERFLOW       79      /* Value too large for defined 
-data type */
-+#define        ENOTUNIQ        80      /* Name not unique on network */
-+#define        EBADFD          81      /* File descriptor in bad state */
-+#define        EREMCHG         82      /* Remote address changed */
-+#define        ELIBACC         83      /* Can not access a needed shared 
-library */
-+#define        ELIBBAD         84      /* Accessing a corrupted shared 
-library */
-+#define        ELIBSCN         85      /* .lib section in a.out corrupted 
-*/
-+#define        ELIBMAX         86      /* Attempting to link in too many 
-shared libraries */
-+#define        ELIBEXEC        87      /* Cannot exec a shared library 
-directly */
-+#define        EILSEQ          88      /* Illegal byte sequence */
-+#define        ENOSYS          89      /* Function not implemented */
-+#define        ELOOP           90      /* Too many symbolic links 
-encountered */
-+#define        ERESTART        91      /* Interrupted system call should 
-be restarted */
-+#define        ESTRPIPE        92      /* Streams pipe error */
-+#define        ENOTEMPTY       93      /* Directory not empty */
-+#define        EUSERS          94      /* Too many users */
-+#define        ENOTSOCK        95      /* Socket operation on non-socket 
-*/
-+#define        EDESTADDRREQ    96      /* Destination address required */
-+#define        EMSGSIZE        97      /* Message too long */
-+#define        EPROTOTYPE      98      /* Protocol wrong type for socket 
-*/
-+#define        ENOPROTOOPT     99      /* Protocol not available */
-+#define        EPROTONOSUPPORT 120     /* Protocol not supported */
-+#define        ESOCKTNOSUPPORT 121     /* Socket type not supported */
-+#define        EOPNOTSUPP      122     /* Operation not supported on 
-transport endpoint */
-+#define        EPFNOSUPPORT    123     /* Protocol family not supported 
-*/
-+#define        EAFNOSUPPORT    124     /* Address family not supported by 
-protocol */
-+#define        EADDRINUSE      125     /* Address already in use */
-+#define        EADDRNOTAVAIL   126     /* Cannot assign requested address 
-*/
-+#define        ENETDOWN        127     /* Network is down */
-+#define        ENETUNREACH     128     /* Network is unreachable */
-+#define        ENETRESET       129     /* Network dropped connection 
-because of reset */
-+#define        ECONNABORTED    130     /* Software caused connection 
-abort */
-+#define        ECONNRESET      131     /* Connection reset by peer */
-+#define        ENOBUFS         132     /* No buffer space available */
-+#define        EISCONN         133     /* Transport endpoint is already 
-connected */
-+#define        ENOTCONN        134     /* Transport endpoint is not 
-connected */
-+#define        EUCLEAN         135     /* Structure needs cleaning */
-+#define        ENOTNAM         137     /* Not a XENIX named type file */
-+#define        ENAVAIL         138     /* No XENIX semaphores available 
-*/
-+#define        EISNAM          139     /* Is a named type file */
-+#define        EREMOTEIO       140     /* Remote I/O error */
-+#define        EINIT           141     /* Reserved */
-+#define        EREMDEV         142     /* Error 142 */
-+#define        ESHUTDOWN       143     /* Cannot send after transport 
-endpoint shutdown */
-+#define        ETOOMANYREFS    144     /* Too many references: cannot 
-splice */
-+#define        ETIMEDOUT       145     /* Connection timed out */
-+#define        ECONNREFUSED    146     /* Connection refused */
-+#define        EHOSTDOWN       147     /* Host is down */
-+#define        EHOSTUNREACH    148     /* No route to host */
-+#define        EWOULDBLOCK     EAGAIN  /* Operation would block */
-+#define        EALREADY        149     /* Operation already in progress 
-*/
-+#define        EINPROGRESS     150     /* Operation now in progress */
-+#define        ESTALE          151     /* Stale NFS file handle */
-+#define        ECANCELED       158     /* AIO operation canceled */
++#define cpu_context(cpu, mm)   ((mm)->context[cpu])
++#define cpu_asid(cpu, mm)      (cpu_context((cpu), (mm)) & ASID_MASK)
++#define asid_cache(cpu)                (asid_cache)
 +
-+/*
-+ * These error are Linux extensions.
-+ */
-+#define        ENOMEDIUM       159     /* No medium found */
-+#define        EMEDIUMTYPE     160     /* Wrong medium type */
-+#define        ENOKEY          161     /* Required key not available */
-+#define        EKEYEXPIRED     162     /* Key has expired */
-+#define        EKEYREVOKED     163     /* Key has been revoked */
-+#define        EKEYREJECTED    164     /* Key was rejected by service */
-+
-+/* for robust mutexes */
-+#define        EOWNERDEAD      165     /* Owner died */
-+#define        ENOTRECOVERABLE 166     /* State not recoverable */
-+
-+#define EDQUOT         1133    /* Quota exceeded */
-+
-+#ifdef __KERNEL__
-+
-+/* The biggest error number defined here or in <linux/errno.h>. */
-+#define EMAXERRNO      1133
-+
-+#endif /* __KERNEL__ */
-+
-+#endif /* __SCORE_ERRNO_H */
-diff -uprN -x linux-2.6-git.ori/Documentation/dontdiff 
-linux-2.6-git.ori/arch/score/include/asm/fb.h 
-linux-2.6-git.new/arch/score/include/asm/fb.h
---- linux-2.6-git.ori/arch/score/include/asm/fb.h       1970-01-01 
-08:00:00.000000000 +0800
-+++ linux-2.6-git.new/arch/score/include/asm/fb.h       2009-04-03 
-16:58:55.000000000 +0800
-@@ -0,0 +1,18 @@
-+#ifndef __SCORE_FB_H_
-+#define __SCORE_FB_H_
-+
-+#include <linux/fb.h>
-+#include <linux/fs.h>
-+
-+#include <asm/page.h>
-+
-+static inline void fb_pgprotect(struct file *file, struct vm_area_struct 
-*vma,
-+                               unsigned long off)
++static inline void enter_lazy_tlb(struct mm_struct *mm, struct 
+task_struct *tsk)
 +{}
 +
-+static inline int fb_is_primary_device(struct fb_info *info)
++static inline void
++get_new_mmu_context(struct mm_struct *mm, unsigned long cpu)
 +{
++       unsigned long asid = asid_cache(0);
++
++       if (!((asid = asid + ASID_INC) & ASID_MASK)) {
++               local_flush_tlb_all();          /* start new asid cycle */
++               if (!asid)                      /* fix version if needed 
+*/
++                       asid = ASID_FIRST_VERSION;
++       }
++       cpu_context(0, mm) = asid_cache(0) = asid;
++}
++
++/*
++ * Initialize the context related info for a new mm_struct
++ * instance.
++ */
++static inline int
++init_new_context(struct task_struct *tsk, struct mm_struct *mm)
++{
++       cpu_context(0, mm) = 0;
 +       return 0;
 +}
 +
-+#endif /* __SCORE_FB_H_ */
-diff -uprN -x linux-2.6-git.ori/Documentation/dontdiff 
-linux-2.6-git.ori/arch/score/include/asm/fcntl.h 
-linux-2.6-git.new/arch/score/include/asm/fcntl.h
---- linux-2.6-git.ori/arch/score/include/asm/fcntl.h    1970-01-01 
-08:00:00.000000000 +0800
-+++ linux-2.6-git.new/arch/score/include/asm/fcntl.h    2009-04-03 
-16:59:02.000000000 +0800
-@@ -0,0 +1,47 @@
-+#ifndef __SCORE_FCNTL_H
-+#define __SCORE_FCNTL_H
-+
-+#define O_APPEND       0x0008
-+#define O_SYNC         0x0010
-+#define O_NONBLOCK     0x0080
-+#define O_CREAT                0x0100  /* not fcntl */
-+#define O_TRUNC                0x0200  /* not fcntl */
-+#define O_EXCL         0x0400  /* not fcntl */
-+#define O_NOCTTY       0x0800  /* not fcntl */
-+#define FASYNC         0x1000  /* fcntl, for BSD compatibility */
-+#define O_LARGEFILE    0x2000  /* allow large file opens */
-+#define O_DIRECT       0x8000  /* direct disk access hint */
-+
-+#define F_GETLK                14
-+#define F_SETLK                6
-+#define F_SETLKW       7
-+
-+#define F_SETOWN       24      /* for sockets. */
-+#define F_GETOWN       23      /* for sockets. */
-+
-+#define F_GETLK64      33      /* using 'struct flock64' */
-+#define F_SETLK64      34
-+#define F_SETLKW64     35
-+
-+/*
-+ * The flavours of struct flock.  "struct flock" is the ABI compliant
-+ * variant.  Finally struct flock64 is the LFS variant of struct flock. 
-As
-+ * a historic accident and inconsistence with the ABI definition it 
-doesn't
-+ * contain all the same fields as struct flock.
-+ */
-+
-+struct flock {
-+       short   l_type;
-+       short   l_whence;
-+       off_t   l_start;
-+       off_t   l_len;
-+       long    l_sysid;
-+       __kernel_pid_t l_pid;
-+       long    pad[4];
-+};
-+
-+#define HAVE_ARCH_STRUCT_FLOCK
-+
-+#include <asm-generic/fcntl.h>
-+
-+#endif /* __SCORE_FCNTL_H */
-diff -uprN -x linux-2.6-git.ori/Documentation/dontdiff 
-linux-2.6-git.ori/arch/score/include/asm/fixmap.h 
-linux-2.6-git.new/arch/score/include/asm/fixmap.h
---- linux-2.6-git.ori/arch/score/include/asm/fixmap.h   1970-01-01 
-08:00:00.000000000 +0800
-+++ linux-2.6-git.new/arch/score/include/asm/fixmap.h   2009-04-08 
-09:04:00.000000000 +0800
-@@ -0,0 +1,87 @@
-+#ifndef __SCORE_FIXMAP_H
-+#define __SCORE_FIXMAP_H
-+
-+#include <asm/page.h>
-+
-+#define PHY_RAM_BASE           0x00000000
-+#define PHY_IO_BASE            0x10000000
-+
-+#define VIRTUAL_RAM_BASE       0xa0000000
-+#define VIRTUAL_IO_BASE                0xb0000000
-+
-+#define RAM_SPACE_SIZE         0x10000000
-+#define IO_SPACE_SIZE          0x10000000
-+
-+/* Kernel unmapped, cached 512MB  */
-+#define KSEG1                  0xa0000000
-+
-+/*
-+ * Here we define all the compile-time 'special' virtual
-+ * addresses. The point is to have a constant address at
-+ * compile time, but to set the physical address only
-+ * in the boot process. We allocate these special  addresses
-+ * from the end of virtual memory (0xfffff000) backwards.
-+ * Also this lets us do fail-safe vmalloc(), we
-+ * can guarantee that these special addresses and
-+ * vmalloc()-ed addresses never overlap.
-+ *
-+ * these 'compile-time allocated' memory buffers are
-+ * fixed-size 4k pages. (or larger if used with an increment
-+ * highger than 1) use fixmap_set(idx,phys) to associate
-+ * physical memory with fixmap indices.
-+ *
-+ * TLB entries of such buffers will not be flushed across
-+ * task switches.
-+ */
-+
-+/*
-+ * on UP currently we will have no trace of the fixmap mechanizm,
-+ * no page table allocations, etc. This might change in the
-+ * future, say framebuffers for the console driver(s) could be
-+ * fix-mapped?
-+ */
-+enum fixed_addresses {
-+#define FIX_N_COLOURS 8
-+       FIX_CMAP_BEGIN,
-+       FIX_CMAP_END = FIX_CMAP_BEGIN + FIX_N_COLOURS,
-+       __end_of_fixed_addresses
-+};
-+
-+/*
-+ * used by vmalloc.c.
-+ *
-+ * Leave one empty page between vmalloc'ed areas and
-+ * the start of the fixmap, and leave one page empty
-+ * at the top of mem..
-+ */
-+#define FIXADDR_TOP    ((unsigned long)(long)(int)0xfefe0000)
-+#define FIXADDR_SIZE   (__end_of_fixed_addresses << PAGE_SHIFT)
-+#define FIXADDR_START  (FIXADDR_TOP - FIXADDR_SIZE)
-+
-+#define __fix_to_virt(x)       (FIXADDR_TOP - ((x) << PAGE_SHIFT))
-+#define __virt_to_fix(x)       ((FIXADDR_TOP - ((x)&PAGE_MASK)) >> 
-PAGE_SHIFT)
-+
-+extern void __this_fixmap_does_not_exist(void);
-+
-+/*
-+ * 'index to address' translation. If anyone tries to use the idx
-+ * directly without tranlation, we catch the bug with a NULL-deference
-+ * kernel oops. Illegal ranges of incoming indices are caught too.
-+ */
-+static inline unsigned long fix_to_virt(const unsigned int idx)
++static inline void switch_mm(struct mm_struct *prev, struct mm_struct 
+*next,
++                               struct task_struct *tsk)
 +{
-+       return __fix_to_virt(idx);
-+}
++       unsigned long flags;
 +
-+static inline unsigned long virt_to_fix(const unsigned long vaddr)
-+{
-+       return __virt_to_fix(vaddr);
++       local_irq_save(flags);
++       if ((cpu_context(0, next) ^ asid_cache(0)) & ASID_VERSION_MASK)
++               get_new_mmu_context(next, 0);
++       set_PEVN(cpu_context(0, next));
++       TLBMISS_HANDLER_SETUP_PGD(next->pgd);
++       local_irq_restore(flags);
 +}
 +
 +/*
-+ * Called from pgtable_init()
++ * Destroy context related info for an mm_struct that is about
++ * to be put to rest.
 + */
-+extern void fixrange_init(unsigned long start, unsigned long end,
-+                       pgd_t *pgd_base);
++static inline void destroy_context(struct mm_struct *mm)
++{}
 +
-+#endif
++#define deactivate_mm(tsk, mm) do {} while (0)
++
++/*
++ * After we have set current->mm to a new value, this activates
++ * the context for the new mm so we see the new mappings.
++ */
++static inline void
++activate_mm(struct mm_struct *prev, struct mm_struct *next)
++{
++       unsigned long flags;
++
++       local_irq_save(flags);
++       get_new_mmu_context(next, 0);
++       set_PEVN(cpu_context(0, next));
++       TLBMISS_HANDLER_SETUP_PGD(next->pgd);
++       local_irq_restore(flags);
++}
++
++#endif /* __SCORE_MMU_CONTEXT_H */
 diff -uprN -x linux-2.6-git.ori/Documentation/dontdiff 
-linux-2.6-git.ori/arch/score/include/asm/futex.h 
-linux-2.6-git.new/arch/score/include/asm/futex.h
---- linux-2.6-git.ori/arch/score/include/asm/futex.h    1970-01-01 
+linux-2.6-git.ori/arch/score/include/asm/mmu.h 
+linux-2.6-git.new/arch/score/include/asm/mmu.h
+--- linux-2.6-git.ori/arch/score/include/asm/mmu.h      1970-01-01 
 08:00:00.000000000 +0800
-+++ linux-2.6-git.new/arch/score/include/asm/futex.h    2009-04-03 
-16:59:26.000000000 +0800
++++ linux-2.6-git.new/arch/score/include/asm/mmu.h      2009-04-08 
+10:51:34.000000000 +0800
 @@ -0,0 +1,6 @@
-+#ifndef __SCORE_FUTEX_H
-+#define __SCORE_FUTEX_H
++#ifndef __SCORE_MMU_H
++#define __SCORE_MMU_H
 +
-+#include <asm-generic/futex.h>
++typedef unsigned long mm_context_t[NR_CPUS];
 +
-+#endif /* __SCORE_FUTEX_H */
++#endif /* __SCORE_MMU_H */
 diff -uprN -x linux-2.6-git.ori/Documentation/dontdiff 
-linux-2.6-git.ori/arch/score/include/asm/hardirq.h 
-linux-2.6-git.new/arch/score/include/asm/hardirq.h
---- linux-2.6-git.ori/arch/score/include/asm/hardirq.h  1970-01-01 
+linux-2.6-git.ori/arch/score/include/asm/module.h 
+linux-2.6-git.new/arch/score/include/asm/module.h
+--- linux-2.6-git.ori/arch/score/include/asm/module.h   1970-01-01 
 08:00:00.000000000 +0800
-+++ linux-2.6-git.new/arch/score/include/asm/hardirq.h  2009-04-08 
-10:11:29.000000000 +0800
-@@ -0,0 +1,16 @@
-+#ifndef __SCORE_HARDIRQ_H
-+#define __SCORE_HARDIRQ_H
++++ linux-2.6-git.new/arch/score/include/asm/module.h   2009-04-03 
+17:02:05.000000000 +0800
+@@ -0,0 +1,45 @@
++#ifndef __SCORE_MODULE_H
++#define __SCORE_MODULE_H
 +
-+#include <linux/threads.h>
-+#include <linux/irq.h>
++#include <linux/list.h>
++#include <asm/uaccess.h>
 +
-+typedef struct {
-+       unsigned int __softirq_pending;
-+} ____cacheline_aligned irq_cpustat_t;
++struct mod_arch_specific {
++       /* Data Bus Error exception tables */
++       struct list_head dbe_list;
++       const struct exception_table_entry *dbe_start;
++       const struct exception_table_entry *dbe_end;
++};
 +
-+/* Standard mappings for irq_cpustat_t above */
-+#include <linux/irq_cpustat.h>
++typedef uint8_t Elf64_Byte;            /* Type for a 8-bit quantity. */
 +
-+extern void ack_bad_irq(unsigned int irq);
++#define Elf_Shdr       Elf32_Shdr
++#define Elf_Sym                Elf32_Sym
++#define Elf_Ehdr       Elf32_Ehdr
++#define Elf_Addr       Elf32_Addr
 +
-+#endif /* __SCORE_HARDIRQ_H */
-diff -uprN -x linux-2.6-git.ori/Documentation/dontdiff 
-linux-2.6-git.ori/arch/score/include/asm/hw_irq.h 
-linux-2.6-git.new/arch/score/include/asm/hw_irq.h
---- linux-2.6-git.ori/arch/score/include/asm/hw_irq.h   1970-01-01 
-08:00:00.000000000 +0800
-+++ linux-2.6-git.new/arch/score/include/asm/hw_irq.h   2009-04-03 
-16:59:44.000000000 +0800
-@@ -0,0 +1,8 @@
-+#ifndef ___SCORE_HW_IRQ_H
-+#define ___SCORE_HW_IRQ_H
-+
-+#include <asm/atomic.h>
-+
-+extern atomic_t irq_err_count;
-+
-+#endif /* ___SCORE_HW_IRQ_H */
-diff -uprN -x linux-2.6-git.ori/Documentation/dontdiff 
-linux-2.6-git.ori/arch/score/include/asm/ioctl.h 
-linux-2.6-git.new/arch/score/include/asm/ioctl.h
---- linux-2.6-git.ori/arch/score/include/asm/ioctl.h    1970-01-01 
-08:00:00.000000000 +0800
-+++ linux-2.6-git.new/arch/score/include/asm/ioctl.h    2009-04-03 
-17:35:33.000000000 +0800
-@@ -0,0 +1,6 @@
-+#ifndef __SCORE_IOCTL_H
-+#define __SCORE_IOCTL_H
-+
-+#include <asm-generic/ioctl.h>
-+
-+#endif /* __SCORE_IOCTL_H */
-diff -uprN -x linux-2.6-git.ori/Documentation/dontdiff 
-linux-2.6-git.ori/arch/score/include/asm/ioctls.h 
-linux-2.6-git.new/arch/score/include/asm/ioctls.h
---- linux-2.6-git.ori/arch/score/include/asm/ioctls.h   1970-01-01 
-08:00:00.000000000 +0800
-+++ linux-2.6-git.new/arch/score/include/asm/ioctls.h   2009-04-07 
-20:20:31.000000000 +0800
-@@ -0,0 +1,87 @@
-+#ifndef ___SCORE_SCORE_IOCTLS_H
-+#define ___SCORE_SCORE_IOCTLS_H
-+
-+#include <asm/ioctl.h>
-+
-+/* 0x54 is just a magic number to make these relatively unique ('T') */
-+
-+#define TCGETS         0x5401
-+#define TCSETS         0x5402 /* Clashes with SNDCTL_TMR_START sound 
-ioctl */
-+#define TCSETSW                0x5403
-+#define TCSETSF                0x5404
-+#define TCGETA         0x5405
-+#define TCSETA         0x5406
-+#define TCSETAW                0x5407
-+#define TCSETAF                0x5408
-+#define TCSBRK         0x5409
-+#define TCXONC         0x540A
-+#define TCFLSH         0x540B
-+#define TIOCEXCL       0x540C
-+#define TIOCNXCL       0x540D
-+#define TIOCSCTTY      0x540E
-+#define TIOCGPGRP      0x540F
-+#define TIOCSPGRP      0x5410
-+#define TIOCOUTQ       0x5411
-+#define TIOCSTI                0x5412
-+#define TIOCGWINSZ     0x5413
-+#define TIOCSWINSZ     0x5414
-+#define TIOCMGET       0x5415
-+#define TIOCMBIS       0x5416
-+#define TIOCMBIC       0x5417
-+#define TIOCMSET       0x5418
-+#define TIOCGSOFTCAR   0x5419
-+#define TIOCSSOFTCAR   0x541A
-+#define FIONREAD       0x541B
-+#define TIOCINQ                FIONREAD
-+#define TIOCLINUX      0x541C
-+#define TIOCCONS       0x541D
-+#define TIOCGSERIAL    0x541E
-+#define TIOCSSERIAL    0x541F
-+#define TIOCPKT                0x5420
-+#define FIONBIO                0x5421
-+#define TIOCNOTTY      0x5422
-+#define TIOCSETD       0x5423
-+#define TIOCGETD       0x5424
-+#define TCSBRKP                0x5425  /* Needed for POSIX tcsendbreak() 
-*/
-+/* #define TIOCTTYGSTRUCT 0x5426 - Former debugging-only ioctl */
-+#define TIOCSBRK       0x5427  /* BSD compatibility */
-+#define TIOCCBRK       0x5428  /* BSD compatibility */
-+#define TIOCGSID       0x5429  /* Return the session ID of FD */
-+#define TCGETS2                _IOR('T', 0x2A, struct termios2)
-+#define TCSETS2                _IOW('T', 0x2B, struct termios2)
-+#define TCSETSW2       _IOW('T', 0x2C, struct termios2)
-+#define TCSETSF2       _IOW('T', 0x2D, struct termios2)
-+#define TIOCGPTN       _IOR('T', 0x30, unsigned int) /* Get Pty Number 
-(of pty-mux device) */
-+#define TIOCSPTLCK     _IOW('T', 0x31, int)    /* Lock/unlock Pty */
-+
-+#define FIONCLEX       0x5450
-+#define FIOCLEX                0x5451
-+#define FIOASYNC       0x5452
-+#define TIOCSERCONFIG  0x5453
-+#define TIOCSERGWILD   0x5454
-+#define TIOCSERSWILD   0x5455
-+#define TIOCGLCKTRMIOS 0x5456
-+#define TIOCSLCKTRMIOS 0x5457
-+#define TIOCSERGSTRUCT 0x5458 /* For debugging only */
-+#define TIOCSERGETLSR  0x5459 /* Get line status register */
-+#define TIOCSERGETMULTI 0x545A /* Get multiport config */
-+#define TIOCSERSETMULTI 0x545B /* Set multiport config */
-+
-+#define TIOCMIWAIT     0x545C  /* wait for a change on serial input 
-line(s) */
-+#define TIOCGICOUNT    0x545D  /* read serial port inline interrupt 
-counts */
-+#define TIOCGHAYESESP  0x545E  /* Get Hayes ESP configuration */
-+#define TIOCSHAYESESP  0x545F  /* Set Hayes ESP configuration */
-+#define FIOQSIZE       0x5460
-+
-+/* Used for packet mode */
-+#define TIOCPKT_DATA            0
-+#define TIOCPKT_FLUSHREAD       1
-+#define TIOCPKT_FLUSHWRITE      2
-+#define TIOCPKT_STOP            4
-+#define TIOCPKT_START           8
-+#define TIOCPKT_NOSTOP         16
-+#define TIOCPKT_DOSTOP         32
-+
-+#define TIOCSER_TEMT   0x01    /* Transmitter physically empty */
-+
-+#endif /* ___SCORE_SCORE_IOCTLS_H */
-diff -uprN -x linux-2.6-git.ori/Documentation/dontdiff 
-linux-2.6-git.ori/arch/score/include/asm/io.h 
-linux-2.6-git.new/arch/score/include/asm/io.h
---- linux-2.6-git.ori/arch/score/include/asm/io.h       1970-01-01 
-08:00:00.000000000 +0800
-+++ linux-2.6-git.new/arch/score/include/asm/io.h       2009-04-07 
-20:22:48.000000000 +0800
-@@ -0,0 +1,196 @@
-+#ifndef __SCORE_IO_H
-+#define __SCORE_IO_H
-+
-+#include <linux/compiler.h>
-+#include <linux/kernel.h>
-+#include <linux/types.h>
-+
-+#include <asm/byteorder.h>
-+#include <asm-generic/iomap.h>
-+#include <asm/page.h>
-+#include <asm/pgtable-bits.h>
-+#include <asm/processor.h>
-+#include <asm/string.h>
-+
-+#if defined(CONFIG_SWAP_IO_SPACE) && defined(__SCOREEB__)
-+#define __ioswab16(x) swab16(x)
-+#define __ioswab32(x) swab32(x)
++#ifdef CONFIG_MODULES
++/* Given an address, look for it in the exception tables. */
++const struct exception_table_entry *search_module_dbetables(unsigned long 
+addr);
 +#else
-+#define __ioswab16(x) (x)
-+#define __ioswab32(x) (x)
++/* Given an address, look for it in the exception tables. */
++static inline const struct exception_table_entry
++*search_module_dbetables(unsigned long addr)
++{
++       return NULL;
++}
 +#endif
 +
-+#define readb(addr)            (*(volatile unsigned char *)addr)
-+#define readw(addr)            __ioswab16(*(volatile unsigned short 
-*)addr)
-+#define readl(addr)            __ioswab32(*(volatile unsigned int *)addr)
-+#define writeb(b, addr)                (*(volatile unsigned char *)addr = 
-(b))
-+#define writew(b, addr)                (*(volatile unsigned short *)addr 
-= __ioswab16(b))
-+#define writel(b, addr)                (*(volatile unsigned int *)addr = 
-__ioswab32(b))
++#ifdef CONFIG_CPU_SCORE7
++#define MODULE_PROC_FAMILY "SCORE7"
++#else
++#error MODULE_PROC_FAMILY undefined for your processor configuration
++#endif
 +
-+#define __raw_readb(addr)      (*(volatile unsigned char *)addr)
-+#define __raw_readw(addr)      (*(volatile unsigned short *)addr)
-+#define __raw_readl(addr)      (*(volatile unsigned int *)addr)
-+#define __raw_readq(addr)      (*(volatile unsigned long long *)addr)
-+#define __raw_writeb(b, addr)  (*(volatile unsigned char *)addr = (b))
-+#define __raw_writew(b, addr)  (*(volatile unsigned short *)addr = (b))
-+#define __raw_writel(b, addr)  (*(volatile unsigned int *)addr = (b))
-+#define __raw_writeq(b, addr)  (*(volatile unsigned long long *)addr = 
-(b))
++#define MODULE_KERNEL_TYPE "32BIT "
++#define MODULE_KERNEL_SMTC ""
 +
-+#define inb(port)              __inb(port)
-+#define inw(port)              __inw(port)
-+#define inl(port)              __inl(port)
-+#define outb(val, port)                (*(volatile u8 *)port = val)
-+#define outw(val, port)                (*(volatile u16 *)port = val)
-+#define outl(val, port)                (*(volatile u32 *)port = val)
++#define MODULE_ARCH_VERMAGIC \
++       MODULE_PROC_FAMILY MODULE_KERNEL_TYPE MODULE_KERNEL_SMTC
 +
-+#define inb_p(port)            __inb_p(port)
-+#define inw_p(port)            __inw_p(port)
-+#define inl_p(port)            __inl_p(port)
-+#define outb_p(val, port)      (*(volatile u8 *)port = val)
-+#define outw_p(val, port)      (*(volatile u16 *)port = val)
-+#define outl_p(val, port)      (*(volatile u32 *)port = val)
-+
-+#define insb(port, addr, count)                __insb(port, addr, count)
-+#define insw(port, addr, count)                __insw(port, addr, count)
-+#define insl(port, addr, count)                __insl(port, addr, count)
-+#define outsb(port, addr, count)       __outsb(port, addr, count)
-+#define outsw(port, addr, count)       __outsw(port, addr, count)
-+#define outsl(port, addr, count)       __outsl(port, addr, count)
-+
-+static inline unsigned char __inb(unsigned long port)
-+{
-+       return *(volatile u8 *)(port);
-+}
-+
-+static inline unsigned short __inw(unsigned long port)
-+{
-+       return *(volatile u16 *)(port);
-+}
-+
-+static inline unsigned int __inl(unsigned long port)
-+{
-+       return *(volatile u32 *)(port);
-+}
-+
-+static inline unsigned char __inb_p(unsigned long port)
-+{
-+       u8 __val;
-+       __val = *(volatile u8 *)(port);
-+       return __val;
-+}
-+
-+static inline unsigned short __inw_p(unsigned long port)
-+{
-+       u16 __val;
-+       __val = *(volatile u16 *)(port);
-+       return __val;
-+}
-+
-+static inline unsigned long __inl_p(unsigned long port)
-+{
-+       u32 __val;
-+       __val = *(volatile u32 *)(port);
-+       return __val;
-+}
-+
-+static inline void
-+__insb(unsigned long port, void *addr, unsigned long count)
-+{
-+       while (count--) {
-+               *(u8 *)addr = inb(port);
-+               addr++;
-+       }
-+}
-+
-+static inline void
-+__insw(unsigned long port, void *addr, unsigned long count)
-+{
-+       while (count--) {
-+               *(u16 *)addr = inw(port);
-+               addr += 2;
-+       }
-+}
-+
-+static inline void
-+__insl(unsigned long port, void *addr, unsigned long count)
-+{
-+       while (count--) {
-+               *(u32 *)addr = inl(port);
-+               addr += 4;
-+       }
-+}
-+
-+static inline void
-+__outsb(unsigned long port, void *addr, unsigned long count)
-+{
-+       while (count--) {
-+               outb(*(u8 *)addr, port);
-+               addr++;
-+       }
-+}
-+
-+static inline void
-+__outsw(unsigned long port, void *addr, unsigned long count)
-+{
-+       while (count--) {
-+               outb(*(u16 *)addr, port);
-+               addr += 2;
-+       }
-+}
-+
-+
-+static inline void
-+__outsl(unsigned long port, void *addr, unsigned long count)
-+{
-+       while (count--) {
-+               outb(*(u32 *)addr, port);
-+               addr += 4;
-+       }
-+}
-+
-+#define IO_SPACE_LIMIT 0xffff
-+#define xlate_dev_mem_ptr(p)   __va(p)
-+#define xlate_dev_kmem_ptr(p)  p
-+
-+static inline void
-+memset_io(volatile void __iomem *addr, unsigned char val, int count)
-+{
-+       memset((void __force *)addr, val, count);
-+}
-+
-+static inline void
-+memcpy_fromio(void *dst, const volatile void __iomem *src, int count)
-+{
-+       memcpy(dst, (void __force *)src, count);
-+}
-+
-+static inline void
-+memcpy_toio(volatile void __iomem *dst, const void *src, int count)
-+{
-+       memcpy((void __force *)dst, src, count);
-+}
-+
-+#define isa_page_to_bus page_to_phys
-+
-+/*
-+ * However PCI ones are not necessarily 1:1 and therefore these 
-interfaces
-+ * are forbidden in portable PCI drivers.
-+ *
-+ * Allow them for x86 for legacy drivers, though.
-+ */
-+#define virt_to_bus virt_to_phys
-+#define bus_to_virt phys_to_virt
-+
-+/*
-+ * Change "struct page" to physical address.
-+ */
-+#define page_to_phys(page)     ((dma_addr_t)page_to_pfn(page) << 
-PAGE_SHIFT)
-+
-+extern void __iomem *__ioremap(unsigned long offset, unsigned long size, 
-unsigned long flags);
-+extern void __iounmap(const volatile void __iomem *addr);
-+
-+#define ioremap(offset, size)          __ioremap((offset), (size), 
-_CACHE_UNCACHED)
-+#define ioremap_nocache(offset, size)  __ioremap((offset), (size), 
-_CACHE_UNCACHED)
-+#define iounmap(offset)                        __iounmap(offset)
-+
-+#endif /* __SCORE_IO_H */
++#endif /* __SCORE_MODULE_H */
 diff -uprN -x linux-2.6-git.ori/Documentation/dontdiff 
-linux-2.6-git.ori/arch/score/include/asm/ipcbuf.h 
-linux-2.6-git.new/arch/score/include/asm/ipcbuf.h
---- linux-2.6-git.ori/arch/score/include/asm/ipcbuf.h   1970-01-01 
+linux-2.6-git.ori/arch/score/include/asm/msgbuf.h 
+linux-2.6-git.new/arch/score/include/asm/msgbuf.h
+--- linux-2.6-git.ori/arch/score/include/asm/msgbuf.h   1970-01-01 
 08:00:00.000000000 +0800
-+++ linux-2.6-git.new/arch/score/include/asm/ipcbuf.h   2009-04-07 
-20:23:32.000000000 +0800
-@@ -0,0 +1,29 @@
-+#ifndef _SCORE_IPCBUF_H
-+#define _SCORE_IPCBUF_H
++++ linux-2.6-git.new/arch/score/include/asm/msgbuf.h   2009-04-03 
+17:37:37.000000000 +0800
+@@ -0,0 +1,33 @@
++#ifndef __SCORE_SCORE_MSGBUF_H
++#define __SCORE_SCORE_MSGBUF_H
 +
 +#include <linux/types.h>
 +
 +/*
-+ * The ipc64_perm structure for alpha architecture.
++ * The msqid64_ds structure for the SCORE architecture.
 + * Note extra padding because this structure is passed back and forth
 + * between kernel and user space.
 + *
 + * Pad space is left for:
-+ * - 32-bit seq
-+ * - 2 miscellaneous 64-bit values
++ * - extension of time_t to 64-bit on 32-bitsystem to solve the y2038 
+problem
++ * - 2 miscellaneous unsigned long values
 + */
 +
-+struct ipc64_perm {
-+       __kernel_key_t  key;
-+       __kernel_uid_t  uid;
-+       __kernel_gid_t  gid;
-+       __kernel_uid_t  cuid;
-+       __kernel_gid_t  cgid;
-+       __kernel_mode_t mode;
-+       __u32 seq;
-+       __u32 __pad1;
-+       __u32 __unused1;
-+       __u32 __unused2;
++struct msqid64_ds {
++       struct ipc64_perm msg_perm;
++       __kernel_time_t msg_stime;      /* last msgsnd time */
++       u32 __unused1;
++       __kernel_time_t msg_rtime;      /* last msgrcv time */
++       u32 __unused2;
++       __kernel_time_t msg_ctime;      /* last change time */
++       u32 __unused3;
++       u32 msg_cbytes;                 /* current number of bytes on 
+queue */
++       u32 msg_qnum;                   /* number of messages in queue */
++       u32 msg_qbytes;                 /* max number of bytes on queue */
++       __kernel_pid_t  msg_lspid;      /* pid of last msgsnd */
++       __kernel_pid_t  msg_lrpid;      /* last receive pid */
++       u32 __unused4;
++       u32 __unused5;
 +};
 +
-+#endif /* _SCORE_IPCBUF_H */
++#endif /* __SCORE_SCORE_MSGBUF_H */
 diff -uprN -x linux-2.6-git.ori/Documentation/dontdiff 
-linux-2.6-git.ori/arch/score/include/asm/irqflags.h 
-linux-2.6-git.new/arch/score/include/asm/irqflags.h
---- linux-2.6-git.ori/arch/score/include/asm/irqflags.h 1970-01-01 
+linux-2.6-git.ori/arch/score/include/asm/mutex.h 
+linux-2.6-git.new/arch/score/include/asm/mutex.h
+--- linux-2.6-git.ori/arch/score/include/asm/mutex.h    1970-01-01 
 08:00:00.000000000 +0800
-+++ linux-2.6-git.new/arch/score/include/asm/irqflags.h 2009-04-07 
-20:24:34.000000000 +0800
-@@ -0,0 +1,111 @@
-+#ifndef __SCORE_IRQFLAGS_H
-+#define __SCORE_IRQFLAGS_H
++++ linux-2.6-git.new/arch/score/include/asm/mutex.h    2009-03-13 
+14:26:33.000000000 +0800
+@@ -0,0 +1 @@
++#include <asm-generic/mutex-dec.h>
+diff -uprN -x linux-2.6-git.ori/Documentation/dontdiff 
+linux-2.6-git.ori/arch/score/include/asm/page.h 
+linux-2.6-git.new/arch/score/include/asm/page.h
+--- linux-2.6-git.ori/arch/score/include/asm/page.h     1970-01-01 
+08:00:00.000000000 +0800
++++ linux-2.6-git.new/arch/score/include/asm/page.h     2009-04-07 
+20:26:50.000000000 +0800
+@@ -0,0 +1,113 @@
++#ifndef __SCORE_PAGE_H
++#define __SCORE_PAGE_H
++
++#define PHYS_OFFSET            (0UL)
++#define PAGE_OFFSET            (0xA0000000UL)
++
++/*
++ * PAGE_SHIFT determines the page size
++ */
++#define PAGE_SHIFT     12
++#define PAGE_SIZE      (1UL << PAGE_SHIFT)
++#define PAGE_MASK      (~((1 << PAGE_SHIFT) - 1))
 +
 +#ifndef __ASSEMBLY__
 +
-+#define raw_local_irq_save(x)                  \
-+{                                              \
-+       __asm__ __volatile__(                   \
-+               "mfcr   r8, cr0;"               \
-+               "li     r9, 0xfffffffe;"        \
-+               "nop;"                          \
-+               "mv     %0, r8;"                \
-+               "and    r8, r8, r9;"            \
-+               "mtcr   r8, cr0;"               \
-+               "nop;"                          \
-+               "nop;"                          \
-+               "nop;"                          \
-+               "nop;"                          \
-+               "nop;"                          \
-+               "ldi    r9, 0x1;"               \
-+               "and    %0, %0, r9;"            \
-+               : "=r" (x)                      \
-+               :                               \
-+               : "r8", "r9"                    \
-+               );                              \
-+}
++#include <linux/pfn.h>
++#include <asm/io.h>
 +
-+#define raw_local_irq_restore(x)               \
-+{                                              \
-+       __asm__ __volatile__(                   \
-+               "mfcr   r8, cr0;"               \
-+               "ldi    r9, 0x1;"               \
-+               "and    %0, %0, r9;"            \
-+               "or     r8, r8, %0;"            \
-+               "mtcr   r8, cr0;"               \
-+               "nop;"                          \
-+               "nop;"                          \
-+               "nop;"                          \
-+               "nop;"                          \
-+               "nop;"                          \
-+               :                               \
-+               : "r"(x)                        \
-+               : "r8", "r9"                    \
-+               );                              \
-+}
++extern void build_clear_page(void);
++extern void build_copy_page(void);
 +
-+#define raw_local_irq_enable(void)             \
-+{                                              \
-+       __asm__ __volatile__(                   \
-+               "mfcr\tr8,cr0;"                 \
-+               "nop;"                          \
-+               "nop;"                          \
-+               "ori\tr8,0x1;"                  \
-+               "mtcr\tr8,cr0;"                 \
-+               "nop;"                          \
-+               "nop;"                          \
-+               "nop;"                          \
-+               "nop;"                          \
-+               "nop;"                          \
-+               :                               \
-+               :                               \
-+               : "r8");                        \
-+}
++/*
++ * It's normally defined only for FLATMEM config but it's
++ * used in our early mem init code for all memory models.
++ * So always define it.
++ */
++#define ARCH_PFN_OFFSET                PFN_UP(PHYS_OFFSET)
 +
-+#define raw_local_irq_disable(void)            \
-+{                                              \
-+       __asm__ __volatile__(                   \
-+               "mfcr\tr8,cr0;"                 \
-+               "nop;"                          \
-+               "nop;"                          \
-+               "srli\tr8,r8,1;"                \
-+               "slli\tr8,r8,1;"                \
-+               "mtcr\tr8,cr0;"                 \
-+               "nop;"                          \
-+               "nop;"                          \
-+               "nop;"                          \
-+               "nop;"                          \
-+               "nop;"                          \
-+               :                               \
-+               :                               \
-+               : "r8");                        \
-+}
++#define clear_page(page)       memset((void *)(page), 0, PAGE_SIZE)
++#define copy_page(to, from)    memcpy((to), (from), PAGE_SIZE)
 +
-+#define raw_local_save_flags(x)                        \
-+{                                              \
-+       __asm__ __volatile__(                   \
-+               "mfcr   r8, cr0;"               \
-+               "nop;"                          \
-+               "nop;"                          \
-+               "mv     %0, r8;"                \
-+               "nop;"                          \
-+               "nop;"                          \
-+               "nop;"                          \
-+               "nop;"                          \
-+               "nop;"                          \
-+               "ldi    r9, 0x1;"               \
-+               "and    %0, %0, r9;"            \
-+               : "=r" (x)                      \
-+               :                               \
-+               : "r8", "r9"                    \
-+               );                              \
-+}
++#define clear_user_page(page, vaddr, pg)       clear_page(page)
++#define copy_user_page(to, from, vaddr, pg)    copy_page(to, from)
 +
-+static inline int raw_irqs_disabled_flags(unsigned long flags)
++/*
++ * These are used to make use of C type-checking..
++ */
++typedef struct { unsigned long pte; } pte_t;
++#define pte_val(x)     ((x).pte)
++#define __pte(x)       ((pte_t) {(x)})
++typedef struct page    *pgtable_t;
++
++/*
++ * Finall the top of the hierarchy, the pgd
++ */
++typedef struct { unsigned long pgd; } pgd_t;
++#define pgd_val(x)     ((x).pgd)
++#define __pgd(x)       ((pgd_t) {(x)})
++
++/*
++ * Manipulate page protection bits
++ */
++typedef struct { unsigned long pgprot; } pgprot_t;
++#define pgprot_val(x)  ((x).pgprot)
++#define __pgprot(x)    ((pgprot_t) {(x)})
++
++/*
++ *     virt_to_phys    -       map virtual addresses to physical
++ *     @address: address to remap
++ *
++ *     The returned physical address is the physical (CPU) mapping for
++ *     the memory address given. It is only valid to use this function on
++ *     addresses directly mapped or allocated via kmalloc.
++ *
++ *     This function does not give bus mappings for DMA transfers. In
++ *     almost all conceivable cases a device driver should not be using
++ *     this function
++ */
++static inline unsigned long virt_to_phys(volatile const void *address)
 +{
-+       return !(flags & 1);
++       return (unsigned long)address - PAGE_OFFSET + PHYS_OFFSET;
 +}
 +
++/*
++ *     phys_to_virt    -       map physical address to virtual
++ *     @address: address to remap
++ *
++ *     The returned virtual address is a current CPU mapping for
++ *     the memory address given. It is only valid to use this function on
++ *     addresses that have a kernel mapping
++ *
++ *     This function does not handle bus mappings for DMA transfers. In
++ *     almost all conceivable cases a device driver should not be using
++ *     this function
++ */
++static inline void *phys_to_virt(unsigned long address)
++{
++       return (void *)(address + PAGE_OFFSET - PHYS_OFFSET);
++}
++#endif /* !__ASSEMBLY__ */
++
++/*
++ * __pa()/__va() should be used only during mem init.
++ */
++
++#define __pa(x)                ((unsigned long) (x) - PAGE_OFFSET + 
+PHYS_OFFSET)
++#define __va(x)                ((void *)((unsigned long) (x) + 
+PAGE_OFFSET - PHYS_OFFSET))
++#define __pa_symbol(x) __pa(RELOC_HIDE((unsigned long) (x), 0))
++
++#define pfn_to_kaddr(pfn)      __va((pfn) << PAGE_SHIFT)
++#define pfn_valid(pfn)         ((pfn) >= ARCH_PFN_OFFSET && (pfn) < 
+max_mapnr)
++
++#define virt_to_page(kaddr)    pfn_to_page(PFN_DOWN(virt_to_phys(kaddr)))
++#define virt_addr_valid(kaddr) pfn_valid(PFN_DOWN(virt_to_phys(kaddr)))
++
++#define VM_DATA_DEFAULT_FLAGS  (VM_READ | VM_WRITE | VM_EXEC | \
++                                VM_MAYREAD | VM_MAYWRITE | VM_MAYEXEC)
++
++#include <asm-generic/memory_model.h>
++#include <asm-generic/page.h>
++
++#define HIGHMEM_START  (0x20000000)
++#endif /* __SCORE_PAGE_H */
+diff -uprN -x linux-2.6-git.ori/Documentation/dontdiff 
+linux-2.6-git.ori/arch/score/include/asm/param.h 
+linux-2.6-git.new/arch/score/include/asm/param.h
+--- linux-2.6-git.ori/arch/score/include/asm/param.h    1970-01-01 
+08:00:00.000000000 +0800
++++ linux-2.6-git.new/arch/score/include/asm/param.h    2009-04-03 
+17:02:30.000000000 +0800
+@@ -0,0 +1,22 @@
++#ifndef __SCORE_PARAM_H
++#define __SCORE_PARAM_H
++
++#ifdef __KERNEL__
++# define HZ            CONFIG_HZ       /* Internal kernel timer frequency 
+*/
++# define USER_HZ       100             /* .. some user interfaces are in 
+"ticks" */
++# define CLOCKS_PER_SEC        (USER_HZ)       /* like times() */
 +#endif
 +
-+#endif /* __SCORE_IRQFLAGS_H */
++#ifndef HZ
++#define HZ 100
++#endif
++
++#define EXEC_PAGESIZE  65536
++
++#ifndef NOGROUP
++#define NOGROUP                (-1)
++#endif
++
++#define MAXHOSTNAMELEN 64      /* max length of hostname */
++
++#endif /* __SCORE_PARAM_H */
 diff -uprN -x linux-2.6-git.ori/Documentation/dontdiff 
-linux-2.6-git.ori/arch/score/include/asm/irq.h 
-linux-2.6-git.new/arch/score/include/asm/irq.h
---- linux-2.6-git.ori/arch/score/include/asm/irq.h      1970-01-01 
+linux-2.6-git.ori/arch/score/include/asm/pci.h 
+linux-2.6-git.new/arch/score/include/asm/pci.h
+--- linux-2.6-git.ori/arch/score/include/asm/pci.h      1970-01-01 
 08:00:00.000000000 +0800
-+++ linux-2.6-git.new/arch/score/include/asm/irq.h      2009-04-03 
-17:00:22.000000000 +0800
-@@ -0,0 +1,34 @@
-+#ifndef __SCORE_IRQ_H
-+#define __SCORE_IRQ_H
++++ linux-2.6-git.new/arch/score/include/asm/pci.h      2009-04-03 
+17:02:37.000000000 +0800
+@@ -0,0 +1,6 @@
++#ifndef __SCORE_PCI_H
++#define __SCORE_PCI_H
 +
-+#define EXCEPTION_VECTOR_BASE_ADDR     0xa0000000
-+#define VECTOR_ADDRESS_OFFSET_MODE4    0
-+#define VECTOR_ADDRESS_OFFSET_MODE16   1
++#include <linux/mm.h>
 +
-+#define DEBUG_VECTOR_SIZE              (0x4)
-+#define DEBUG_VECTOR_BASE_ADDR         ((EXCEPTION_VECTOR_BASE_ADDR) + 
-0x1fc)
-+
-+#define GENERAL_VECTOR_SIZE            (0x10)
-+#define GENERAL_VECTOR_BASE_ADDR       ((EXCEPTION_VECTOR_BASE_ADDR) + 
-0x200)
-+
-+#define NR_IRQS        64
-+#define IRQ_VECTOR_SIZE                        (0x10)
-+#define IRQ_VECTOR_BASE_ADDR           ((EXCEPTION_VECTOR_BASE_ADDR) + 
-0x210)
-+#define IRQ_VECTOR_END_ADDR            ((EXCEPTION_VECTOR_BASE_ADDR) + 
-0x5f0)
-+
-+#define irq_canonicalize(irq)  (irq)
-+
-+#define P_INT_PNDL             0x95F50000
-+#define P_INT_PNDH             0x95F50004
-+#define P_INT_PRIORITY_M       0x95F50008
-+#define P_INT_PRIORITY_SG0     0x95F50010
-+#define P_INT_PRIORITY_SG1     0x95F50014
-+#define P_INT_PRIORITY_SG2     0x95F50018
-+#define P_INT_PRIORITY_SG3     0x95F5001C
-+#define P_INT_MASKL            0x95F50020
-+#define P_INT_MASKH            0x95F50024
-+
-+#define IRQ_TIMER (7)  /* IRQ  number of SPG300 */
-+
-+extern void interrupt_exception_vector(void);
-+#endif /* __SCORE_IRQ_H */
++#endif /* __SCORE_PCI_H */
 diff -uprN -x linux-2.6-git.ori/Documentation/dontdiff 
-linux-2.6-git.ori/arch/score/include/asm/irq_regs.h 
-linux-2.6-git.new/arch/score/include/asm/irq_regs.h
---- linux-2.6-git.ori/arch/score/include/asm/irq_regs.h 1970-01-01 
+linux-2.6-git.ori/arch/score/include/asm/percpu.h 
+linux-2.6-git.new/arch/score/include/asm/percpu.h
+--- linux-2.6-git.ori/arch/score/include/asm/percpu.h   1970-01-01 
 08:00:00.000000000 +0800
-+++ linux-2.6-git.new/arch/score/include/asm/irq_regs.h 2009-04-03 
-17:00:34.000000000 +0800
-@@ -0,0 +1,11 @@
-+#ifndef __SCORE_IRQ_REGS_H
-+#define __SCORE_IRQ_REGS_H
++++ linux-2.6-git.new/arch/score/include/asm/percpu.h   2009-04-03 
+17:02:46.000000000 +0800
+@@ -0,0 +1,6 @@
++#ifndef __SCORE_PERCPU_H
++#define __SCORE_PERCPU_H
 +
-+#include <linux/thread_info.h>
++#include <asm-generic/percpu.h>
 +
-+static inline struct pt_regs *get_irq_regs(void)
++#endif /* __SCORE_PERCPU_H */
+diff -uprN -x linux-2.6-git.ori/Documentation/dontdiff 
+linux-2.6-git.ori/arch/score/include/asm/pgalloc.h 
+linux-2.6-git.new/arch/score/include/asm/pgalloc.h
+--- linux-2.6-git.ori/arch/score/include/asm/pgalloc.h  1970-01-01 
+08:00:00.000000000 +0800
++++ linux-2.6-git.new/arch/score/include/asm/pgalloc.h  2009-04-07 
+20:27:26.000000000 +0800
+@@ -0,0 +1,96 @@
++#ifndef __SCORE_PGALLOC_H
++#define __SCORE_PGALLOC_H
++
++#include <linux/mm.h>
++#include <linux/sched.h>
++
++extern void pagetable_init(void);
++
++static inline void pmd_populate_kernel(struct mm_struct *mm, pmd_t *pmd,
++       pte_t *pte)
 +{
-+       return current_thread_info()->regs;
++       set_pmd(pmd, __pmd((unsigned long)pte));
 +}
 +
-+#endif /* __SCORE_IRQ_REGS_H */
++static inline void pmd_populate(struct mm_struct *mm, pmd_t *pmd,
++       pgtable_t pte)
++{
++       set_pmd(pmd, __pmd((unsigned long)page_address(pte)));
++}
++
++#define pmd_pgtable(pmd)       pmd_page(pmd)
++
++/*
++ * Initialize a new pmd table with invalid pointers.
++ */
++extern void pmd_init(unsigned long page, unsigned long pagetable);
++
++
++/*
++ * Initialize a new pgd / pmd table with invalid pointers.
++ */
++extern void pgd_init(unsigned long page);
++
++static inline pgd_t *pgd_alloc(struct mm_struct *mm)
++{
++       pgd_t *ret, *init;
++
++       ret = (pgd_t *) __get_free_pages(GFP_KERNEL, PGD_ORDER);
++       if (ret) {
++               init = pgd_offset(&init_mm, 0UL);
++               pgd_init((unsigned long)ret);
++               memcpy(ret + USER_PTRS_PER_PGD, init + USER_PTRS_PER_PGD,
++                      (PTRS_PER_PGD - USER_PTRS_PER_PGD) * 
+sizeof(pgd_t));
++       }
++
++       return ret;
++}
++
++static inline void pgd_free(struct mm_struct *mm, pgd_t *pgd)
++{
++       free_pages((unsigned long)pgd, PGD_ORDER);
++}
++
++static inline pte_t *pte_alloc_one_kernel(struct mm_struct *mm,
++       unsigned long address)
++{
++       pte_t *pte;
++
++       pte = (pte_t *) 
+__get_free_pages(GFP_KERNEL|__GFP_REPEAT|__GFP_ZERO, PTE_ORDER);
++
++       return pte;
++}
++
++static inline struct page *pte_alloc_one(struct mm_struct *mm,
++       unsigned long address)
++{
++       struct page *pte;
++
++       pte = alloc_pages(GFP_KERNEL | __GFP_REPEAT, PTE_ORDER);
++       if (pte) {
++               clear_highpage(pte);
++               pgtable_page_ctor(pte);
++       }
++       return pte;
++}
++
++static inline void pte_free_kernel(struct mm_struct *mm, pte_t *pte)
++{
++       free_pages((unsigned long)pte, PTE_ORDER);
++}
++
++static inline void pte_free(struct mm_struct *mm, pgtable_t pte)
++{
++       pgtable_page_dtor(pte);
++       __free_pages(pte, PTE_ORDER);
++}
++
++#define __pte_free_tlb(tlb, pte)                       \
++do {                                                   \
++       pgtable_page_dtor(pte);                         \
++       tlb_remove_page((tlb), pte);                    \
++} while (0)
++
++#define check_pgt_cache()              do {} while (0)
++
++#endif /* __SCORE_PGALLOC_H */
 diff -uprN -x linux-2.6-git.ori/Documentation/dontdiff 
-linux-2.6-git.ori/arch/score/include/asm/Kbuild 
-linux-2.6-git.new/arch/score/include/asm/Kbuild
---- linux-2.6-git.ori/arch/score/include/asm/Kbuild     1970-01-01 
+linux-2.6-git.ori/arch/score/include/asm/pgtable-32.h 
+linux-2.6-git.new/arch/score/include/asm/pgtable-32.h
+--- linux-2.6-git.ori/arch/score/include/asm/pgtable-32.h       1970-01-01 
 08:00:00.000000000 +0800
-+++ linux-2.6-git.new/arch/score/include/asm/Kbuild     2009-03-13 
-14:26:33.000000000 +0800
-@@ -0,0 +1,3 @@
-+include include/asm-generic/Kbuild.asm
++++ linux-2.6-git.new/arch/score/include/asm/pgtable-32.h       2009-04-08 
+11:12:17.000000000 +0800
+@@ -0,0 +1,114 @@
++#ifndef __SCORE_PGTABLE_32_H
++#define __SCORE_PGTABLE_32_H
 +
-+header-y +=
++#include <linux/const.h>
++#include <asm-generic/pgtable-nopmd.h>
++#include <asm/fixmap.h>
++
++/* PGDIR_SHIFT determines what a third-level page table entry can map */
++#define PGDIR_SHIFT    22
++#define PGDIR_SIZE     (_AC(1, UL) << PGDIR_SHIFT)
++#define PGDIR_MASK     (~(PGDIR_SIZE - 1))
++
++/*
++ * Entries per page directory level: we use two-level, so
++ * we don't really have any PUD/PMD directory physically.
++ */
++#define PGD_ORDER      0
++#define PTE_ORDER      0
++
++#define PTRS_PER_PGD   1024
++#define PTRS_PER_PTE   1024
++
++#define USER_PTRS_PER_PGD      (0x80000000UL/PGDIR_SIZE)
++#define FIRST_USER_ADDRESS     0
++
++#define VMALLOC_START          (0xc0000000UL)
++
++#define PKMAP_BASE             (0xfd000000UL)
++
++#define VMALLOC_END            (FIXADDR_START - 2*PAGE_SIZE)
++
++#define pte_ERROR(e) \
++       printk("%s:%d: bad pte %08lx.\n", __FILE__, __LINE__, pte_val(e))
++#define pgd_ERROR(e) \
++       printk("%s:%d: bad pgd %08lx.\n", __FILE__, __LINE__, pgd_val(e))
++
++extern void load_pgd(unsigned long pg_dir);
++extern pte_t invalid_pte_table[PAGE_SIZE/sizeof(pte_t)];
++
++/*
++ * Empty pgd/pmd entries point to the invalid_pte_table.
++ */
++static inline int pmd_none(pmd_t pmd)
++{
++       return pmd_val(pmd) == (unsigned long) invalid_pte_table;
++}
++
++#define pmd_bad(pmd)           (pmd_val(pmd) & ~PAGE_MASK)
++
++static inline int pmd_present(pmd_t pmd)
++{
++       return pmd_val(pmd) != (unsigned long) invalid_pte_table;
++}
++
++static inline void pmd_clear(pmd_t *pmdp)
++{
++       pmd_val(*pmdp) = ((unsigned long) invalid_pte_table);
++}
++
++#define pte_page(x)            pfn_to_page(pte_pfn(x))
++#define pte_pfn(x)             ((unsigned long)((x).pte >> PAGE_SHIFT))
++#define pfn_pte(pfn, prot)     __pte(((unsigned long long)(pfn) << 
+PAGE_SHIFT) | pgprot_val(prot))
++
++#define __pgd_offset(address)  pgd_index(address)
++#define __pud_offset(address)  (((address) >> PUD_SHIFT) & 
+(PTRS_PER_PUD-1))
++#define __pmd_offset(address)  (((address) >> PMD_SHIFT) & 
+(PTRS_PER_PMD-1))
++
++/* to find an entry in a kernel page-table-directory */
++#define pgd_offset_k(address)  pgd_offset(&init_mm, address)
++#define pgd_index(address)     (((address) >> PGDIR_SHIFT) & 
+(PTRS_PER_PGD-1))
++
++/* to find an entry in a page-table-directory */
++#define pgd_offset(mm, addr)   ((mm)->pgd + pgd_index(addr))
++
++/* Find an entry in the third-level page table.. */
++#define __pte_offset(address)                                          \
++       (((address) >> PAGE_SHIFT) & (PTRS_PER_PTE - 1))
++#define pte_offset(dir, address)                                       \
++       ((pte_t *) pmd_page_vaddr(*(dir)) + __pte_offset(address))
++#define pte_offset_kernel(dir, address) \
++       ((pte_t *) pmd_page_vaddr(*(dir)) + __pte_offset(address))
++
++#define pte_offset_map(dir, address)                                   \
++       ((pte_t *)page_address(pmd_page(*(dir))) + __pte_offset(address))
++#define pte_offset_map_nested(dir, address)                            \
++       ((pte_t *)page_address(pmd_page(*(dir))) + __pte_offset(address))
++#define pte_unmap(pte) ((void)(pte))
++#define pte_unmap_nested(pte) ((void)(pte))
++
++
++/*
++ * Swap entries must have VALID and GLOBAL bits cleared.
++ * _PAGE_PRESENT is bit 9
++ * _PAGE_FILE is bit 10
++ * These bits must be 0.
++ */
++#define __swp_type(x)          ((x).val & 0x1f)
++#define __swp_offset(x)        ((x).val >> 11)
++#define __swp_entry(type, offset) ((swp_entry_t){(type) | ((offset) << 
+11)})
++
++/*
++ * Bits 9(_PAGE_PRESENT) and 10(_PAGE_FILE)are taken, split up 30 bits of 
+offset into this range:
++ */
++#define PTE_FILE_MAX_BITS      30
++
++#define pte_to_pgoff(_pte)     (((_pte).pte & 0x1ff) | (((_pte).pte >> 
+11) << 9))
++
++#define pgoff_to_pte(off)      ((pte_t) {((off) & 0x1ff) | \
++                                (((off) >> 9) << 11) | _PAGE_FILE})
++
++#define __pte_to_swp_entry(pte)        ((swp_entry_t) { pte_val(pte)})
++#define __swp_entry_to_pte(x)  ((pte_t) {(x).val})
++
++#endif /* __SCORE_PGTABLE_32_H */
 diff -uprN -x linux-2.6-git.ori/Documentation/dontdiff 
-linux-2.6-git.ori/arch/score/include/asm/kdebug.h 
-linux-2.6-git.new/arch/score/include/asm/kdebug.h
---- linux-2.6-git.ori/arch/score/include/asm/kdebug.h   1970-01-01 
+linux-2.6-git.ori/arch/score/include/asm/pgtable-bits.h 
+linux-2.6-git.new/arch/score/include/asm/pgtable-bits.h
+--- linux-2.6-git.ori/arch/score/include/asm/pgtable-bits.h     1970-01-01 
 08:00:00.000000000 +0800
-+++ linux-2.6-git.new/arch/score/include/asm/kdebug.h   2009-04-03 
-17:00:49.000000000 +0800
-@@ -0,0 +1,13 @@
-+#ifndef __SCORE_KDEBUG_H
-+#define __SCORE_KDEBUG_H
++++ linux-2.6-git.new/arch/score/include/asm/pgtable-bits.h     2009-04-03 
+17:03:09.000000000 +0800
+@@ -0,0 +1,28 @@
++#ifndef __SCORE_PGTABLE_BITS_H
++#define __SCORE_PGTABLE_BITS_H
 +
-+#include <linux/notifier.h>
++#define _PAGE_ACCESSED                 (1<<5)  /* implemented in software 
+*/
++#define _PAGE_READ                     (1<<6)  /* implemented in software 
+*/
++#define _PAGE_WRITE                    (1<<7)  /* implemented in software 
+*/
++#define _PAGE_PRESENT                  (1<<9)  /* implemented in software 
+*/
++#define _PAGE_MODIFIED                 (1<<10) /* implemented in software 
+*/
++#define _PAGE_FILE                     (1<<10)
 +
-+enum die_val {
-+       DIE_OOPS = 1,
-+       DIE_FP,
-+       DIE_TRAP,
-+       DIE_RI,
++#define _PAGE_GLOBAL                   (1<<0)
++#define _PAGE_VALID                    (1<<1)
++#define _PAGE_SILENT_READ              (1<<1)  /* synonym */
++#define _PAGE_DIRTY                    (1<<2)  /* Write bit */
++#define _PAGE_SILENT_WRITE             (1<<2)
++#define _PAGE_CACHE                    (1<<3)  /* cache */
++#define _CACHE_MASK                    (1<<3)
++#define _PAGE_BUFFERABLE               (1<<4)  /*Fallow Spec. */
++#define _PAGE_BIG                      (1<<8)  /* Big page (64KB) */
++
++#define _CACHE_UNCACHED                        (1<<11) /*implemented in 
+software*/
++
++#define __READABLE     (_PAGE_READ | _PAGE_SILENT_READ | _PAGE_ACCESSED)
++#define __WRITEABLE    (_PAGE_WRITE | _PAGE_SILENT_WRITE | 
+_PAGE_MODIFIED)
++#define _PAGE_CHG_MASK (PAGE_MASK | _PAGE_ACCESSED | _PAGE_MODIFIED | 
+_PAGE_CACHE)
++#define PAGE_CACHABLE_DEFAULT  _PAGE_CACHE
++
++#endif /* __SCORE_PGTABLE_BITS_H */
+diff -uprN -x linux-2.6-git.ori/Documentation/dontdiff 
+linux-2.6-git.ori/arch/score/include/asm/pgtable.h 
+linux-2.6-git.new/arch/score/include/asm/pgtable.h
+--- linux-2.6-git.ori/arch/score/include/asm/pgtable.h  1970-01-01 
+08:00:00.000000000 +0800
++++ linux-2.6-git.new/arch/score/include/asm/pgtable.h  2009-04-07 
+20:30:35.000000000 +0800
+@@ -0,0 +1,208 @@
++#ifndef __SCORE_PGTABLE_H
++#define __SCORE_PGTABLE_H
++
++#include <asm/pgtable-bits.h>
++#include <asm/pgtable-32.h>
++#include <asm/io.h>
++
++struct mm_struct;
++struct vm_area_struct;
++
++#define PAGE_NONE      __pgprot(_PAGE_PRESENT | _PAGE_CACHE)
++#define PAGE_SHARED    __pgprot(_PAGE_PRESENT | _PAGE_READ | _PAGE_WRITE 
+| \
++                               _PAGE_CACHE)
++#define PAGE_COPY      __pgprot(_PAGE_PRESENT | _PAGE_READ | _PAGE_CACHE)
++#define PAGE_READONLY  __pgprot(_PAGE_PRESENT | _PAGE_READ | _PAGE_CACHE)
++#define PAGE_KERNEL    __pgprot(_PAGE_PRESENT | __READABLE | __WRITEABLE 
+| \
++                                _PAGE_GLOBAL | _PAGE_CACHE)
++#define PAGE_KERNEL_UNCACHED __pgprot(_PAGE_PRESENT | __READABLE | \
++                       __WRITEABLE | _PAGE_GLOBAL & ~_PAGE_CACHE)
++
++/*
++ * Dummy values to fill the table in mmap.c
++ * The real values will be generated at runtime
++ */
++#define __P000 __pgprot(0)
++#define __P001 __pgprot(0)
++#define __P010 __pgprot(0)
++#define __P011 __pgprot(0)
++#define __P100 __pgprot(0)
++#define __P101 __pgprot(0)
++#define __P110 __pgprot(0)
++#define __P111 __pgprot(0)
++
++#define __S000 __pgprot(0)
++#define __S001 __pgprot(0)
++#define __S010 __pgprot(0)
++#define __S011 __pgprot(0)
++#define __S100 __pgprot(0)
++#define __S101 __pgprot(0)
++#define __S110 __pgprot(0)
++#define __S111 __pgprot(0)
++
++/*
++ * ZERO_PAGE is a global shared page that is always zero; used
++ * for zero-mapped memory areas etc..
++ */
++
++extern unsigned long empty_zero_page;
++extern unsigned long zero_page_mask;
++extern unsigned long pgd_current;
++
++#define ZERO_PAGE(vaddr) \
++       (virt_to_page((void *)(empty_zero_page + \
++        (((unsigned long)(vaddr)) & zero_page_mask))))
++
++extern void paging_init(void);
++
++/*
++ * Conversion functions: convert a page and protection to a page entry,
++ * and a page entry and page directory to the page they refer to.
++ */
++#define pmd_phys(pmd)          virt_to_phys((void *)pmd_val(pmd))
++#define pmd_page(pmd)          (pfn_to_page(pmd_phys(pmd) >> PAGE_SHIFT))
++#define pmd_page_vaddr(pmd)    pmd_val(pmd)
++
++#define pte_none(pte)          (!(pte_val(pte) & ~_PAGE_GLOBAL))
++#define pte_present(pte)       (pte_val(pte) & _PAGE_PRESENT)
++
++/*
++ * Certain architectures need to do special things when pte's
++ * within a page table are directly modified.  Thus, the following
++ * hook is made available.
++ */
++static inline void set_pte(pte_t *ptep, pte_t pteval)
++{
++       *ptep = pteval;
++}
++
++#define set_pte_at(mm, addr, ptep, pteval) set_pte(ptep, pteval)
++
++static inline void pte_clear(struct mm_struct *mm, unsigned long addr, 
+pte_t *ptep)
++{
++       set_pte_at(mm, addr, ptep, __pte(0));
++}
++
++/*
++ * (pmds are folded into puds so this doesn't get actually called,
++ * but the define is needed for a generic inline function.)
++ */
++#define set_pmd(pmdptr, pmdval) do { *(pmdptr) = (pmdval); } while (0)
++
++#define PGD_T_LOG2     (__builtin_ffs(sizeof(pgd_t)) - 1)
++#define PMD_T_LOG2     (__builtin_ffs(sizeof(pmd_t)) - 1)
++#define PTE_T_LOG2     (__builtin_ffs(sizeof(pte_t)) - 1)
++
++/*
++ * We used to declare this array with size but gcc 3.3 and older are not 
+able
++ * to find that this expression is a constant, so the size is dropped.
++ */
++extern pgd_t swapper_pg_dir[];
++
++/*
++ * The following only work if pte_present() is true.
++ * Undefined behaviour if not..
++ */
++static inline int pte_write(pte_t pte) { return pte_val(pte) & 
+_PAGE_WRITE; }
++static inline int pte_dirty(pte_t pte) { return pte_val(pte) & 
+_PAGE_MODIFIED; }
++static inline int pte_young(pte_t pte) { return pte_val(pte) & 
+_PAGE_ACCESSED; }
++static inline int pte_file(pte_t pte)  { return pte_val(pte) & 
+_PAGE_FILE; }
++
++static inline pte_t pte_wrprotect(pte_t pte)
++{
++       pte_val(pte) &= ~(_PAGE_WRITE | _PAGE_SILENT_WRITE);
++       return pte;
++}
++
++static inline pte_t pte_mkclean(pte_t pte)
++{
++       pte_val(pte) &= ~(_PAGE_MODIFIED|_PAGE_SILENT_WRITE);
++       return pte;
++}
++
++static inline pte_t pte_mkold(pte_t pte)
++{
++       pte_val(pte) &= ~(_PAGE_ACCESSED|_PAGE_SILENT_READ);
++       return pte;
++}
++
++static inline pte_t pte_mkwrite(pte_t pte)
++{
++       pte_val(pte) |= _PAGE_WRITE;
++       if (pte_val(pte) & _PAGE_MODIFIED)
++               pte_val(pte) |= _PAGE_SILENT_WRITE;
++       return pte;
++}
++
++static inline pte_t pte_mkdirty(pte_t pte)
++{
++       pte_val(pte) |= _PAGE_MODIFIED;
++       if (pte_val(pte) & _PAGE_WRITE)
++               pte_val(pte) |= _PAGE_SILENT_WRITE;
++       return pte;
++}
++
++static inline pte_t pte_mkyoung(pte_t pte)
++{
++       pte_val(pte) |= _PAGE_ACCESSED;
++       if (pte_val(pte) & _PAGE_READ)
++               pte_val(pte) |= _PAGE_SILENT_READ;
++       return pte;
++}
++
++static inline int pte_special(pte_t pte)       { return 0; }
++static inline pte_t pte_mkspecial(pte_t pte)   { return pte; }
++
++/*
++ * Macro to make mark a page protection value as "uncacheable".  Note
++ * that "protection" is really a misnomer here as the protection value
++ * contains the memory attribute bits, dirty bits, and various other
++ * bits as well.
++ */
++#define pgprot_noncached pgprot_noncached
++
++static inline pgprot_t pgprot_noncached(pgprot_t _prot)
++{
++       unsigned long prot = pgprot_val(_prot);
++
++       prot = (prot & ~_CACHE_MASK);
++
++       return __pgprot(prot);
++}
++
++/*
++ * Conversion functions: convert a page and protection to a page entry,
++ * and a page entry and page directory to the page they refer to.
++ */
++#define mk_pte(page, pgprot)   pfn_pte(page_to_pfn(page), (pgprot))
++
++static inline pte_t pte_modify(pte_t pte, pgprot_t newprot)
++{
++       return __pte((pte_val(pte) & _PAGE_CHG_MASK) | 
+pgprot_val(newprot));
++}
++
++extern void __update_tlb(struct vm_area_struct *vma, unsigned long 
+address,
++       pte_t pte);
++extern void __update_cache(struct vm_area_struct *vma, unsigned long 
+address,
++       pte_t pte);
++
++static inline void update_mmu_cache(struct vm_area_struct *vma,
++       unsigned long address, pte_t pte)
++{
++       __update_tlb(vma, address, pte);
++       __update_cache(vma, address, pte);
++}
++
++#define kern_addr_valid(addr)  (1)
++
++#define io_remap_pfn_range(vma, vaddr, pfn, size, prot)                \
++               remap_pfn_range(vma, vaddr, pfn, size, prot)
++
++#include <asm-generic/pgtable.h>
++
++/*
++ * No page table caches to initialise
++ */
++#define pgtable_cache_init()   do {} while (0)
++
++#endif /* __SCORE_PGTABLE_H */
+diff -uprN -x linux-2.6-git.ori/Documentation/dontdiff 
+linux-2.6-git.ori/arch/score/include/asm/poll.h 
+linux-2.6-git.new/arch/score/include/asm/poll.h
+--- linux-2.6-git.ori/arch/score/include/asm/poll.h     1970-01-01 
+08:00:00.000000000 +0800
++++ linux-2.6-git.new/arch/score/include/asm/poll.h     2009-04-03 
+17:03:25.000000000 +0800
+@@ -0,0 +1,9 @@
++#ifndef __SCORE_POLL_H
++#define __SCORE_POLL_H
++
++#define POLLWRNORM     POLLOUT
++#define POLLWRBAND     0x0100
++
++#include <asm-generic/poll.h>
++
++#endif /* __SCORE_POLL_H */
+diff -uprN -x linux-2.6-git.ori/Documentation/dontdiff 
+linux-2.6-git.ori/arch/score/include/asm/posix_types.h 
+linux-2.6-git.new/arch/score/include/asm/posix_types.h
+--- linux-2.6-git.ori/arch/score/include/asm/posix_types.h      1970-01-01 
+08:00:00.000000000 +0800
++++ linux-2.6-git.new/arch/score/include/asm/posix_types.h      2009-04-07 
+21:43:55.000000000 +0800
+@@ -0,0 +1,117 @@
++#ifndef __SCORE_POSIX_TYPES_H
++#define __SCORE_POSIX_TYPES_H
++
++/*
++ * This file is generally used by user-level software, so you need to
++ * be a little careful about namespace pollution etc.  Also, we cannot
++ * assume GCC is being used.
++ */
++
++typedef unsigned long  __kernel_ino_t;
++typedef unsigned int   __kernel_mode_t;
++typedef unsigned long  __kernel_nlink_t;
++typedef long           __kernel_off_t;
++typedef int            __kernel_pid_t;
++typedef int            __kernel_ipc_pid_t;
++typedef unsigned int   __kernel_uid_t;
++typedef unsigned int   __kernel_gid_t;
++typedef unsigned int   __kernel_size_t;
++typedef int            __kernel_ssize_t;
++typedef int            __kernel_ptrdiff_t;
++typedef long           __kernel_time_t;
++typedef long           __kernel_suseconds_t;
++typedef long           __kernel_clock_t;
++typedef int            __kernel_timer_t;
++typedef int            __kernel_clockid_t;
++typedef long           __kernel_daddr_t;
++typedef char           *__kernel_caddr_t;
++
++typedef unsigned short __kernel_uid16_t;
++typedef unsigned short __kernel_gid16_t;
++typedef unsigned int   __kernel_uid32_t;
++typedef unsigned int   __kernel_gid32_t;
++typedef __kernel_uid_t __kernel_old_uid_t;
++typedef __kernel_gid_t __kernel_old_gid_t;
++typedef unsigned int   __kernel_old_dev_t;
++
++#ifdef __GNUC__
++typedef long long      __kernel_loff_t;
++#endif
++
++typedef struct {
++       long    val[2];
++} __kernel_fsid_t;
++
++#if defined(__KERNEL__)
++
++#undef __FD_SET
++static inline void __FD_SET(unsigned long __fd, __kernel_fd_set 
+*__fdsetp)
++{
++       unsigned long __tmp = __fd / __NFDBITS;
++       unsigned long __rem = __fd % __NFDBITS;
++       __fdsetp->fds_bits[__tmp] |= (1UL<<__rem);
++}
++
++#undef __FD_CLR
++static inline void __FD_CLR(unsigned long __fd, __kernel_fd_set 
+*__fdsetp)
++{
++       unsigned long __tmp = __fd / __NFDBITS;
++       unsigned long __rem = __fd % __NFDBITS;
++       __fdsetp->fds_bits[__tmp] &= ~(1UL<<__rem);
++}
++
++#undef __FD_ISSET
++static inline int __FD_ISSET(unsigned long __fd, const __kernel_fd_set 
+*__p)
++{
++       unsigned long __tmp = __fd / __NFDBITS;
++       unsigned long __rem = __fd % __NFDBITS;
++       return (__p->fds_bits[__tmp] & (1UL<<__rem)) != 0;
++}
++
++/*
++ * This will unroll the loop for the normal constant case (8 ints,
++ * for a 256-bit fd_set)
++ */
++#undef __FD_ZERO
++static inline void __FD_ZERO(__kernel_fd_set *__p)
++{
++       unsigned long *__tmp = __p->fds_bits;
++       int __i;
++
++       if (__builtin_constant_p(__FDSET_LONGS)) {
++               switch (__FDSET_LONGS) {
++               case 16:
++                       __tmp[0] = 0; __tmp[1] = 0;
++                       __tmp[2] = 0; __tmp[3] = 0;
++                       __tmp[4] = 0; __tmp[5] = 0;
++                       __tmp[6] = 0; __tmp[7] = 0;
++                       __tmp[8] = 0; __tmp[9] = 0;
++                       __tmp[10] = 0; __tmp[11] = 0;
++                       __tmp[12] = 0; __tmp[13] = 0;
++                       __tmp[14] = 0; __tmp[15] = 0;
++                       return;
++
++               case 8:
++                       __tmp[0] = 0; __tmp[1] = 0;
++                       __tmp[2] = 0; __tmp[3] = 0;
++                       __tmp[4] = 0; __tmp[5] = 0;
++                       __tmp[6] = 0; __tmp[7] = 0;
++                       return;
++
++               case 4:
++                       __tmp[0] = 0; __tmp[1] = 0;
++                       __tmp[2] = 0; __tmp[3] = 0;
++                       return;
++               }
++       }
++       __i = __FDSET_LONGS;
++       while (__i) {
++               __i--;
++               *__tmp = 0;
++               __tmp++;
++       }
++}
++
++#endif /* defined(__KERNEL__) */
++
++#endif /* __SCORE_POSIX_TYPES_H */
+diff -uprN -x linux-2.6-git.ori/Documentation/dontdiff 
+linux-2.6-git.ori/arch/score/include/asm/processor.h 
+linux-2.6-git.new/arch/score/include/asm/processor.h
+--- linux-2.6-git.ori/arch/score/include/asm/processor.h        1970-01-01 
+08:00:00.000000000 +0800
++++ linux-2.6-git.new/arch/score/include/asm/processor.h        2009-04-08 
+11:13:35.000000000 +0800
+@@ -0,0 +1,119 @@
++#ifndef __SCORE_PROCESSOR_H
++#define __SCORE_PROCESSOR_H
++
++#include <linux/cpumask.h>
++#include <linux/threads.h>
++
++#define SZREG  4
++
++/*
++ * Return current * instruction pointer ("program counter").
++ */
++#define current_text_addr() ({ __label__ _l; _l: &&_l; })
++
++/*
++ * System setup and hardware flags..
++ */
++extern void (*cpu_wait)(void);
++
++/*
++ * User space process size: 2GB. This is hardcoded into a few places,
++ * so don't change it unless you know what you are doing.
++ */
++#define TASK_SIZE      0x7fff8000UL
++#define STACK_TOP      TASK_SIZE
++
++/*
++ * This decides where the kernel will search for a free chunk of vm
++ * space during mmap's.
++ */
++#define TASK_UNMAPPED_BASE     ((TASK_SIZE / 3) & ~(PAGE_SIZE))
++
++#ifdef __KERNEL__
++#define STACK_TOP_MAX  TASK_SIZE
++#endif
++
++#define INIT_CPUMASK {{0, } }
++
++typedef struct {
++       unsigned long seg;
++} mm_segment_t;
++
++#define ARCH_MIN_TASKALIGN     8
++
++/*
++ * If you change thread_struct remember to change the #defines below too!
++ */
++struct thread_struct {
++       unsigned long reg0, reg2, reg3;
++       unsigned long reg12, reg13, reg14, reg15, reg16;
++       unsigned long reg17, reg18, reg19, reg20, reg21;
++
++       unsigned long cp0_psr;
++
++       unsigned long cp0_ema;          /* Last user fault */
++       unsigned long cp0_badvaddr;     /* Last user fault */
++       unsigned long cp0_baduaddr;     /* Last kernel fault accessing 
+USEG */
++       unsigned long error_code;
++       unsigned long trap_no;
++
++       unsigned long mflags;
++       unsigned long reg29;
++
++       unsigned long single_step;
++       unsigned long ss_nextcnt;
++
++       unsigned long insn1_type;
++       unsigned long addr1;
++       unsigned long insn1;
++
++       unsigned long insn2_type;
++       unsigned long addr2;
++       unsigned long insn2;
++
++       mm_segment_t current_ds;
 +};
 +
-+#endif /* __SCORE_KDEBUG_H */
++#define INIT_THREAD {                                          \
++       .reg0                   = 0,                            \
++       .reg2                   = 0,                            \
++       .reg3                   = 0,                            \
++       .reg12                  = 0,                            \
++       .reg13                  = 0,                            \
++       .reg14                  = 0,                            \
++       .reg15                  = 0,                            \
++       .reg16                  = 0,                            \
++       .reg17                  = 0,                            \
++       .reg18                  = 0,                            \
++       .reg19                  = 0,                            \
++       .reg20                  = 0,                            \
++       .reg21                  = 0,                            \
++       /*                                                      \
++        * Saved cp0 stuff                                      \
++        */                                                     \
++       .cp0_psr                = 0,                            \
++       .error_code             = 0,                            \
++       .trap_no                = 0,                            \
++}
++
++struct task_struct;
++
++#define release_thread(thread) do {} while (0)
++#define prepare_to_copy(tsk)   do {} while (0)
++
++extern long kernel_thread(int (*fn)(void *), void *arg, unsigned long 
+flags);
++extern unsigned long thread_saved_pc(struct task_struct *tsk);
++extern void start_thread(struct pt_regs *regs, unsigned long pc, unsigned 
+long sp);
++extern unsigned long get_wchan(struct task_struct *p);
++
++#define __KSTK_TOS(tsk)                ((unsigned 
+long)task_stack_page(tsk) + THREAD_SIZE - 32)
++#define task_pt_regs(tsk)      ((struct pt_regs *)__KSTK_TOS(tsk) - 1)
++
++#define KSTK_EIP(tsk)          (task_pt_regs(tsk)->cp0_epc)
++#define KSTK_ESP(tsk)          (task_pt_regs(tsk)->regs[29])
++
++#define cpu_relax()            barrier()
++#define return_address()                                       \
++({__asm__ __volatile__("" : : : "r3"); __builtin_return_address(0); })
++
++#endif /* __SCORE_PROCESSOR_H */
