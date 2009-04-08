@@ -1,126 +1,46 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932134AbZDHGWu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932189AbZDHGYS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932134AbZDHGWu (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 8 Apr 2009 02:22:50 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762572AbZDHGW3
+	id S932189AbZDHGYS (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 8 Apr 2009 02:24:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761843AbZDHGYG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 8 Apr 2009 02:22:29 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:38796 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1762665AbZDHGW1 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 8 Apr 2009 02:22:27 -0400
-MIME-Version: 1.0
+	Wed, 8 Apr 2009 02:24:06 -0400
+Received: from one.firstfloor.org ([213.235.205.2]:48509 "EHLO
+	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757131AbZDHGYF (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 8 Apr 2009 02:24:05 -0400
+Date: Wed, 8 Apr 2009 08:26:21 +0200
+From: Andi Kleen <andi@firstfloor.org>
+To: Russ Anderson <rja@sgi.com>
+Cc: Andi Kleen <andi@firstfloor.org>, linux-kernel@vger.kernel.org,
+       linux-mm@kvack.org, x86@kernel.org
+Subject: Re: [PATCH] [2/16] POISON: Add page flag for poisoned pages
+Message-ID: <20090408062621.GG17934@one.firstfloor.org>
+References: <20090407509.382219156@firstfloor.org> <20090407150958.BA68F1D046D@basil.firstfloor.org> <20090408002941.GA14041@sgi.com>
+Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
-From: Roland McGrath <roland@redhat.com>
-To: Linus Torvalds <torvalds@linux-foundation.org>,
-       Andrew Morton <akpm@linux-foundation.org>
-Cc: linux-kernel@vger.kernel.org
-Subject: [PATCH] ptrace: checkpatch fixes
-X-Fcc: ~/Mail/linus
-Emacs: Our Lady of Perpetual Garbage Collection
-Message-Id: <20090408062106.39EE0FC3E5@magilla.sf.frob.com>
-Date: Tue,  7 Apr 2009 23:21:06 -0700 (PDT)
+Content-Disposition: inline
+In-Reply-To: <20090408002941.GA14041@sgi.com>
+User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This fixes all the checkpatch --file complaints about kernel/ptrace.c
-and also removes an unused #include.  I've verified that there are no
-changes to the compiled code on x86_64.
+> > @@ -104,6 +107,9 @@
+> >  #ifdef CONFIG_IA64_UNCACHED_ALLOCATOR
+> >  	PG_uncached,		/* Page has been mapped as uncached */
+> >  #endif
+> > +#ifdef CONFIG_MEMORY_FAILURE
+> 
+> Is it necessary to have this under CONFIG_MEMORY_FAILURE?
 
-Signed-off-by: Roland McGrath <roland@redhat.com>
----
- kernel/ptrace.c |   25 +++++++++++++------------
- 1 files changed, 13 insertions(+), 12 deletions(-)
+That was mainly so that !MEMORY_FAILURE 32bits NUMA architectures who
+might not use sparsemap/vsparsemap get a few more zone bits in page flags
+to play with. Not sure those really exist, so it might be indeed
+redundant, but it seemed safer.
 
-diff --git a/kernel/ptrace.c b/kernel/ptrace.c
-index aaad0ec..dbe79ef 100644
---- a/kernel/ptrace.c
-+++ b/kernel/ptrace.c
-@@ -21,9 +21,7 @@
- #include <linux/audit.h>
- #include <linux/pid_namespace.h>
- #include <linux/syscalls.h>
--
--#include <asm/pgtable.h>
--#include <asm/uaccess.h>
-+#include <linux/uaccess.h>
- 
- 
- /*
-@@ -48,7 +46,7 @@ void __ptrace_link(struct task_struct *child, struct task_struct *new_parent)
- 	list_add(&child->ptrace_entry, &new_parent->ptraced);
- 	child->parent = new_parent;
- }
-- 
-+
- /*
-  * Turn a tracing stop into a normal stop now, since with no tracer there
-  * would be no way to wake it up with SIGCONT or SIGKILL.  If there was a
-@@ -173,7 +171,7 @@ bool ptrace_may_access(struct task_struct *task, unsigned int mode)
- 	task_lock(task);
- 	err = __ptrace_may_access(task, mode);
- 	task_unlock(task);
--	return (!err ? true : false);
-+	return !err;
- }
- 
- int ptrace_attach(struct task_struct *task)
-@@ -338,7 +336,8 @@ void exit_ptrace(struct task_struct *tracer)
- 	}
- }
- 
--int ptrace_readdata(struct task_struct *tsk, unsigned long src, char __user *dst, int len)
-+int ptrace_readdata(struct task_struct *tsk, unsigned long src,
-+		    char __user *dst, int len)
- {
- 	int copied = 0;
- 
-@@ -358,12 +357,13 @@ int ptrace_readdata(struct task_struct *tsk, unsigned long src, char __user *dst
- 		copied += retval;
- 		src += retval;
- 		dst += retval;
--		len -= retval;			
-+		len -= retval;
- 	}
- 	return copied;
- }
- 
--int ptrace_writedata(struct task_struct *tsk, char __user *src, unsigned long dst, int len)
-+int ptrace_writedata(struct task_struct *tsk, char __user *src,
-+		     unsigned long dst, int len)
- {
- 	int copied = 0;
- 
-@@ -383,7 +383,7 @@ int ptrace_writedata(struct task_struct *tsk, char __user *src, unsigned long ds
- 		copied += retval;
- 		src += retval;
- 		dst += retval;
--		len -= retval;			
-+		len -= retval;
- 	}
- 	return copied;
- }
-@@ -496,9 +496,9 @@ static int ptrace_resume(struct task_struct *child, long request, long data)
- 		if (unlikely(!arch_has_single_step()))
- 			return -EIO;
- 		user_enable_single_step(child);
--	}
--	else
-+	} else {
- 		user_disable_single_step(child);
-+	}
- 
- 	child->exit_code = data;
- 	wake_up_process(child);
-@@ -527,7 +527,8 @@ int ptrace_request(struct task_struct *child, long request,
- 		ret = ptrace_setoptions(child, data);
- 		break;
- 	case PTRACE_GETEVENTMSG:
--		ret = put_user(child->ptrace_message, (unsigned long __user *) data);
-+		ret = put_user(child->ptrace_message,
-+			       (unsigned long __user *) data);
- 		break;
- 
- 	case PTRACE_GETSIGINFO:
+
+-Andi
+-- 
+ak@linux.intel.com -- Speaking for myself only.
