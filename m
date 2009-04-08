@@ -1,68 +1,80 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762786AbZDHHJA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762838AbZDHHJZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762786AbZDHHJA (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 8 Apr 2009 03:09:00 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760876AbZDHHIt
+	id S1762838AbZDHHJZ (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 8 Apr 2009 03:09:25 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762761AbZDHHJJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 8 Apr 2009 03:08:49 -0400
-Received: from cn.fujitsu.com ([222.73.24.84]:60542 "EHLO song.cn.fujitsu.com"
-	rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org with ESMTP
-	id S1759175AbZDHHIs (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 8 Apr 2009 03:08:48 -0400
-Message-ID: <49DC4DA9.5060401@cn.fujitsu.com>
-Date: Wed, 08 Apr 2009 15:09:29 +0800
-From: Li Zefan <lizf@cn.fujitsu.com>
-User-Agent: Thunderbird 2.0.0.9 (X11/20071115)
-MIME-Version: 1.0
-To: tyhicks@linux.vnet.ibm.com
-CC: LKML <linux-kernel@vger.kernel.org>,
+	Wed, 8 Apr 2009 03:09:09 -0400
+Received: from fgwmail6.fujitsu.co.jp ([192.51.44.36]:39034 "EHLO
+	fgwmail6.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1760876AbZDHHJH (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 8 Apr 2009 03:09:07 -0400
+Date: Wed, 8 Apr 2009 16:07:33 +0900
+From: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+To: balbir@linux.vnet.ibm.com
+Cc: "linux-mm@kvack.org" <linux-mm@kvack.org>,
        Andrew Morton <akpm@linux-foundation.org>,
-       ecryptfs-devel@lists.launchpad.net
-Subject: [PATCH 6/6] ecryptfs: use memdup_user()
-References: <49DC4CC0.9050805@cn.fujitsu.com>
-In-Reply-To: <49DC4CC0.9050805@cn.fujitsu.com>
-Content-Type: text/plain; charset=UTF-8
+       "lizf@cn.fujitsu.com" <lizf@cn.fujitsu.com>,
+       Rik van Riel <riel@surriel.com>, Bharata B Rao <bharata.rao@in.ibm.com>,
+       Dhaval Giani <dhaval@linux.vnet.ibm.com>,
+       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
+Subject: Re: [RFI] Shared accounting for memory resource controller
+Message-Id: <20090408160733.4813cb8d.kamezawa.hiroyu@jp.fujitsu.com>
+In-Reply-To: <20090408070401.GC7082@balbir.in.ibm.com>
+References: <20090407063722.GQ7082@balbir.in.ibm.com>
+	<20090407160014.8c545c3c.kamezawa.hiroyu@jp.fujitsu.com>
+	<20090407071825.GR7082@balbir.in.ibm.com>
+	<20090407163331.8e577170.kamezawa.hiroyu@jp.fujitsu.com>
+	<20090407080355.GS7082@balbir.in.ibm.com>
+	<20090407172419.a5f318b9.kamezawa.hiroyu@jp.fujitsu.com>
+	<20090408052904.GY7082@balbir.in.ibm.com>
+	<20090408151529.fd6626c2.kamezawa.hiroyu@jp.fujitsu.com>
+	<20090408070401.GC7082@balbir.in.ibm.com>
+Organization: FUJITSU Co. LTD.
+X-Mailer: Sylpheed 2.5.0 (GTK+ 2.10.14; i686-pc-mingw32)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Remove open-coded memdup_user().
+On Wed, 8 Apr 2009 12:34:01 +0530
+Balbir Singh <balbir@linux.vnet.ibm.com> wrote:
 
-Signed-off-by: Li Zefan <lizf@cn.fujitsu.com>
----
- fs/ecryptfs/miscdev.c |   15 +++++----------
- 1 files changed, 5 insertions(+), 10 deletions(-)
+> * KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com> [2009-04-08 15:15:29]:
+> 
+> > On Wed, 8 Apr 2009 10:59:04 +0530
+> > Balbir Singh <balbir@linux.vnet.ibm.com> wrote:
+> > 
+> > 
+> > > > no serious intention.
+> > > > Just because you wrote "expect the user to account all cached pages as shared" ;)
+> > > >
+> > > 
+> > > OK, I noticed another thing, our RSS accounting is not RSS per-se, it
+> > > includes only anon RSS, file backed pages are accounted as cached.
+> > > I'll send out a patch to see if we can include anon RSS as well.
+> > >  
+> > 
+> > I think we can't do it in memcg layer without new-hook because file caches
+> > are added to radix-tree before mapped.
+> > 
+> > mm struct has anon_rss and file_rss coutners. Then, you can show
+> > sum of total maps of file pages. maybe.
+> >
+> 
+> Yes, correct and that is a hook worth adding, IMHO. Better statistics
+> are critical and it will also help us with the shared memory
+> accounting. Without that we can't account for file rss in the memory
+> cgroup. 
+> 
+Finally, you'll be asked  "is it necessary ?", if the cost is big.
+>From my point of view, I can't see what new information it will give us.
+But maybe useful because the user can avoid some calculation.
 
-diff --git a/fs/ecryptfs/miscdev.c b/fs/ecryptfs/miscdev.c
-index a67fea6..dda3c58 100644
---- a/fs/ecryptfs/miscdev.c
-+++ b/fs/ecryptfs/miscdev.c
-@@ -418,18 +418,13 @@ ecryptfs_miscdev_write(struct file *file, const char __user *buf,
- 
- 	if (count == 0)
- 		goto out;
--	data = kmalloc(count, GFP_KERNEL);
--	if (!data) {
--		printk(KERN_ERR "%s: Out of memory whilst attempting to "
--		       "kmalloc([%zd], GFP_KERNEL)\n", __func__, count);
-+
-+	data = memdup_user(buf, count);
-+	if (IS_ERR(data)) {
-+		printk(KERN_ERR "%s: memdup_user returned error [%ld]\n",
-+		       __func__, PTR_ERR(data));
- 		goto out;
- 	}
--	rc = copy_from_user(data, buf, count);
--	if (rc) {
--		printk(KERN_ERR "%s: copy_from_user returned error [%d]\n",
--		       __func__, rc);
--		goto out_free;
--	}
- 	sz = count;
- 	i = 0;
- 	switch (data[i++]) {
--- 
-1.5.4.rc3
-
+Cheers,
+-Kame
 
