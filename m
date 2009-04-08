@@ -1,100 +1,137 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763084AbZDHH16@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760319AbZDHH1Y@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763084AbZDHH16 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 8 Apr 2009 03:27:58 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762484AbZDHH11
+	id S1760319AbZDHH1Y (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 8 Apr 2009 03:27:24 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759066AbZDHH1A
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 8 Apr 2009 03:27:27 -0400
-Received: from cn.fujitsu.com ([222.73.24.84]:65226 "EHLO song.cn.fujitsu.com"
-	rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org with ESMTP
-	id S1762867AbZDHH1Z (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 8 Apr 2009 03:27:25 -0400
-Message-ID: <49DC51C6.1090103@cn.fujitsu.com>
-Date: Wed, 08 Apr 2009 15:27:02 +0800
-From: Wang Chen <wangchen@cn.fujitsu.com>
-User-Agent: Thunderbird 2.0.0.21 (Windows/20090302)
-MIME-Version: 1.0
-To: Alessandro Suardi <alessandro.suardi@gmail.com>,
-       Rusty Russell <rusty@rustcorp.com.au>, Ingo Molnar <mingo@elte.hu>
-CC: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
-Subject: Re: Microcode driver causing WARNING in 2.6.29-git13/14 on Dell E6400
-References: <5a4c581d0904070407k6ba559bcra4a79b5e3e49725f@mail.gmail.com>
-In-Reply-To: <5a4c581d0904070407k6ba559bcra4a79b5e3e49725f@mail.gmail.com>
-Content-Type: text/plain; charset=ISO-8859-1
+	Wed, 8 Apr 2009 03:27:00 -0400
+Received: from fgwmail7.fujitsu.co.jp ([192.51.44.37]:52130 "EHLO
+	fgwmail7.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1758681AbZDHH07 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 8 Apr 2009 03:26:59 -0400
+Date: Wed, 8 Apr 2009 16:25:28 +0900
+From: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+To: bharata@linux.vnet.ibm.com
+Cc: linux-kernel@vger.kernel.org, Balbir Singh <balbir@linux.vnet.ibm.com>,
+       Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: [PATCH] memcg: Fix documentation
+Message-Id: <20090408162528.97b20427.kamezawa.hiroyu@jp.fujitsu.com>
+In-Reply-To: <20090408071817.GD4069@in.ibm.com>
+References: <20090408071817.GD4069@in.ibm.com>
+Organization: FUJITSU Co. LTD.
+X-Mailer: Sylpheed 2.5.0 (GTK+ 2.10.14; i686-pc-mingw32)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Alessandro Suardi said the following on 2009-4-7 19:07:
-> Dell Latitude E6400, F10-uptodate as of yesterday, 2.6.29-git14 plus
->  Vegard Nossum's fix to acpi/battery.c to allow booting (this specific
->  WARNING was also printed during -git13 boot, which would eventually
->  hang prior to Vegard's patch).
-> 
-> dmesg excerpt:
-> 
-> 
-> 
-> Adding 4096532k swap on /dev/sda5.  Priority:-1 extents:1 across:4096532k
-> SELinux: initialized (dev binfmt_misc, type binfmt_misc), uses genfs_contexts
-> platform microcode: firmware: requesting intel-ucode/06-17-06
-> platform microcode: firmware: requesting intel-ucode/06-17-06
-> Microcode Update Driver: v2.00 <tigran@aivazian.fsnet.co.uk>, Peter Oruba
-> ------------[ cut here ]------------
-> WARNING: at fs/sysfs/group.c:138 sysfs_remove_group+0x60/0xef()
-> Hardware name: Latitude E6400
-> sysfs group ffffffffa0136850 not found for kobject 'cpu0'
-> Modules linked in: microcode(-) snd_hda_codec_intelhdmi snd_hda_intel
-> snd_hda_codec snd_hwdep snd_seq_dummy snd_seq_oss snd_seq_midi_event
-> snd_seq snd_seq_device snd_pcm_oss snd_mixer_oss snd_pcm snd_timer snd
-> battery pcspkr video dell_laptop firewire_ohci rfkill i2c_i801 ac
-> firewire_core dcdbas soundcore usb_storage crc_itu_t output i2c_core
-> joydev snd_page_alloc [last unloaded: scsi_wait_scan]
-> Pid: 2570, comm: rmmod Not tainted 2.6.29-git14 #1
-> Call Trace:
->  [<ffffffff81047c2e>] warn_slowpath+0xcc/0x11c
->  [<ffffffff811b4fd5>] ? kobject_release+0x6d/0x8c
->  [<ffffffff811b4f68>] ? kobject_release+0x0/0x8c
->  [<ffffffff8113f208>] sysfs_remove_group+0x60/0xef
->  [<ffffffffa01344b4>] mc_sysdev_remove+0x42/0x5f [microcode]
->  [<ffffffff8125970b>] sysdev_driver_unregister+0x6c/0xb8
->  [<ffffffffa0134f9a>] microcode_exit+0x47/0x87 [microcode]
->  [<ffffffff81075317>] sys_delete_module+0x1cb/0x246
->  [<ffffffff813c2b09>] ? trace_hardirqs_on_thunk+0x3a/0x3c
->  [<ffffffff8100bf6b>] system_call_fastpath+0x16/0x1b
-> ---[ end trace 13427fb4ef873fae ]---
-> ------------[ cut here ]------------
-> WARNING: at fs/sysfs/group.c:138 sysfs_remove_group+0x60/0xef()
-> Hardware name: Latitude E6400
-> sysfs group ffffffffa0136850 not found for kobject 'cpu1'
-> Modules linked in: microcode(-) snd_hda_codec_intelhdmi snd_hda_intel
-> snd_hda_codec snd_hwdep snd_seq_dummy snd_seq_oss snd_seq_midi_event
-> snd_seq snd_seq_device snd_pcm_oss snd_mixer_oss snd_pcm snd_timer snd
-> battery pcspkr video dell_laptop firewire_ohci rfkill i2c_i801 ac
-> firewire_core dcdbas soundcore usb_storage crc_itu_t output i2c_core
-> joydev snd_page_alloc [last unloaded: scsi_wait_scan]
-> Pid: 2570, comm: rmmod Tainted: G        W  2.6.29-git14 #1
-> Call Trace:
->  [<ffffffff81047c2e>] warn_slowpath+0xcc/0x11c
->  [<ffffffff811b4fd5>] ? kobject_release+0x6d/0x8c
->  [<ffffffff811b4f68>] ? kobject_release+0x0/0x8c
->  [<ffffffff8113f208>] sysfs_remove_group+0x60/0xef
->  [<ffffffffa01344b4>] mc_sysdev_remove+0x42/0x5f [microcode]
->  [<ffffffff8125970b>] sysdev_driver_unregister+0x6c/0xb8
->  [<ffffffffa0134f9a>] microcode_exit+0x47/0x87 [microcode]
->  [<ffffffff81075317>] sys_delete_module+0x1cb/0x246
->  [<ffffffff813c2b09>] ? trace_hardirqs_on_thunk+0x3a/0x3c
->  [<ffffffff8100bf6b>] system_call_fastpath+0x16/0x1b
-> ---[ end trace 13427fb4ef873faf ]---
-> Microcode Update Driver: v2.00 removed.
-> 
-> 
-> System seems to work at the moment (apart from unrelated X/VT
->  issues I plan to report in a detailed fashion by the end of this week).
-> 
+Thank you, very helpful. but some nitpicks.
 
-I encounter this warning too.
-Seems commit af5c820a3169e81af869c113e18ec7588836cd50 intends to hunt
-this warning when microcode_init_cpu() failed.
+
+On Wed, 8 Apr 2009 12:48:17 +0530
+Bharata B Rao <bharata@linux.vnet.ibm.com> wrote:
+
+> memcg: Fix documentation.
+> 
+> The description about various statistics from memory.stat is not accurate
+> and confusing at times.
+> 
+> Correct this along with a few other minor cleanups.
+> 
+> Signed-off-by: Bharata B Rao <bharata@linux.vnet.ibm.com>
+> Cc: Balbir Singh <balbir@linux.vnet.ibm.com>
+> Cc: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+> Cc: Andrew Morton <akpm@linux-foundation.org>
+> ---
+>  Documentation/cgroups/memory.txt |   50 +++++++++++++++++++++------------------
+>  1 file changed, 28 insertions(+), 22 deletions(-)
+> 
+> --- a/Documentation/cgroups/memory.txt
+> +++ b/Documentation/cgroups/memory.txt
+> @@ -6,15 +6,14 @@ used here with the memory controller tha
+>  
+>  Salient features
+>  
+> -a. Enable control of both RSS (mapped) and Page Cache (unmapped) pages
+> +a. Enable control of RSS (mapped), Page Cache (unmapped) and Swap cache
+> +   (unmapped) pages.
+      Enable control of Anonymous memory, Page Cache and Swap Cache. 
+?
+
+>  b. The infrastructure allows easy addition of other types of memory to control
+>  c. Provides *zero overhead* for non memory controller users
+>  d. Provides a double LRU: global memory pressure causes reclaim from the
+>     global LRU; a cgroup on hitting a limit, reclaims from the per
+>     cgroup LRU
+>  
+> -NOTE: Swap Cache (unmapped) is not accounted now.
+> -
+>  Benefits and Purpose of the memory controller
+>  
+>  The memory controller isolates the memory behaviour of a group of tasks
+> @@ -290,34 +289,41 @@ will be charged as a new owner of it.
+>    moved to the parent. If you want to avoid that, force_empty will be useful.
+>  
+>  5.2 stat file
+> -  memory.stat file includes following statistics (now)
+> -	cache			- # of pages from page-cache and shmem.
+> -	rss			- # of pages from anonymous memory.
+> -	pgpgin			- # of event of charging
+> -	pgpgout			- # of event of uncharging
+> -	active_anon		- # of pages on active lru of anon, shmem.
+> -	inactive_anon 		- # of pages on active lru of anon, shmem
+> -	active_file		- # of pages on active lru of file-cache
+> -	inactive_file		- # of pages on inactive lru of file cache
+> -	unevictable		- # of pages cannot be reclaimed.(mlocked etc)
+> -
+> -	Below is depend on CONFIG_DEBUG_VM.
+> -	inactive_ratio		- VM inernal parameter. (see mm/page_alloc.c)
+> -	recent_rotated_anon	- VM internal parameter. (see mm/vmscan.c)
+> -	recent_rotated_file	- VM internal parameter. (see mm/vmscan.c)
+> -	recent_scanned_anon 	- VM internal parameter. (see mm/vmscan.c)
+> -	recent_scanned_file 	- VM internal parameter. (see mm/vmscan.c)
+>  
+> -  Memo:
+> +memory.stat file includes following statistics
+> +
+> +cache		- # of bytes of page-cache memory.
+> +rss		- # of bytes of anonymous memory.
+                    This includes # of swap cache.
+
+> +pgpgin		- # of pages paged in (equivalent to # of charging events).
+> +pgpgout		- # of pages paged out (equivalent to # of uncharging events).
+> +active_anon	- # of bytes of anonymous memory on active lru list.
+                                anonymous memory + shared memory(tmpfs) + SwapCache.
+                          Seeing acitive/inactive_file, how about swap-backed memory ?
+
+> +inactive_anon	- # of bytes of anonymous memory on inactive lru list. 
+> +active_file	- # of bytes of file-backed memory on active lru list.
+> +inactive_file	- # of bytes of file-backed memory on inactive lru list.
+> +unevictable	- # of bytes of memory that cannot be reclaimed (mlocked etc).
+> +
+> +The following additional stats are dependent on CONFIG_DEBUG_VM.
+> +
+> +inactive_ratio		- VM inernal parameter. (see mm/page_alloc.c)
+> +recent_rotated_anon	- VM internal parameter. (see mm/vmscan.c)
+> +recent_rotated_file	- VM internal parameter. (see mm/vmscan.c)
+> +recent_scanned_anon	- VM internal parameter. (see mm/vmscan.c)
+> +recent_scanned_file	- VM internal parameter. (see mm/vmscan.c)
+> +
+> +Memo:
+>  	recent_rotated means recent frequency of lru rotation.
+>  	recent_scanned means recent # of scans to lru.
+>  	showing for better debug please see the code for meanings.
+>  
+> +Note:
+> +	Only anonymous memory is listed as part of 'rss' stat. This should
+> +	not be confused with the true 'resident set size' or the amount of
+> +	physical memory used by the cgroup.
+        To know the real value of resident-set-size, plz check each process's
+        anon_rss and file_rss. per-cgroup rss accounting is not done now.
+
+Thanks,
+-Kame
 
