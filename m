@@ -1,51 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756041AbZDHXdW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755927AbZDHXiS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756041AbZDHXdW (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 8 Apr 2009 19:33:22 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753573AbZDHXdM
+	id S1755927AbZDHXiS (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 8 Apr 2009 19:38:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755552AbZDHXiD
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 8 Apr 2009 19:33:12 -0400
-Received: from 136-022.dsl.LABridge.com ([206.117.136.22]:1602 "EHLO
-	mail.perches.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753378AbZDHXdM (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 8 Apr 2009 19:33:12 -0400
-Subject: RE: [PATCH] tracing/syscalls: use a dedicated file header
-From: Joe Perches <joe@perches.com>
-To: "Luck, Tony" <tony.luck@intel.com>
-Cc: Steven Rostedt <rostedt@goodmis.org>,
-       Frederic Weisbecker <fweisbec@gmail.com>, Ingo Molnar <mingo@elte.hu>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       "tglx@linutronix.de" <tglx@linutronix.de>,
-       Jason Baron <jbaron@redhat.com>, "Frank Ch. Eigler" <fche@redhat.com>,
-       Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>,
-       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
-       Lai Jiangshan <laijs@cn.fujitsu.com>,
-       Jiaying Zhang <jiayingz@google.com>, Michael Rubin <mrubin@google.com>,
-       Martin Bligh <mbligh@google.com>, Michael Davidson <md@google.com>
-In-Reply-To: <57C9024A16AD2D4C97DC78E552063EA39B2F73F4@orsmsx505.amr.corp.intel.com>
-References: <1236955332-10133-1-git-send-email-fweisbec@gmail.com>
-	 <1236955332-10133-2-git-send-email-fweisbec@gmail.com>
-	 <12c511ca0904061455k3f8a9cc8r25b7930f257ed922@mail.gmail.com>
-	 <20090408184058.GB6017@nowhere>
-	 <57C9024A16AD2D4C97DC78E552063EA39B2F707D@orsmsx505.amr.corp.intel.com>
-	 <alpine.DEB.2.00.0904081842500.12259@gandalf.stny.rr.com>
-	 <57C9024A16AD2D4C97DC78E552063EA39B2F73F4@orsmsx505.amr.corp.intel.com>
-Content-Type: text/plain
-Date: Wed, 08 Apr 2009 16:32:48 -0700
-Message-Id: <1239233568.32205.25.camel@localhost>
+	Wed, 8 Apr 2009 19:38:03 -0400
+Received: from sh.osrg.net ([192.16.179.4]:60291 "EHLO sh.osrg.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1755502AbZDHXiB (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 8 Apr 2009 19:38:01 -0400
+Date: Thu, 9 Apr 2009 08:37:29 +0900
+To: jeremy@goop.org
+Cc: fujita.tomonori@lab.ntt.co.jp, galak@kernel.crashing.org,
+       hch@infradead.org, linux-kernel@vger.kernel.org, mingo@elte.hu,
+       ian.campbell@citrix.com, beckyb@kernel.crashing.org
+Subject: Re: [PATCH 4/7] swiotlb: Allow arch override of
+ address_needs_mapping
+From: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
+In-Reply-To: <49DD3041.8020808@goop.org>
+References: <49DD270A.6060506@goop.org>
+	<20090409080143C.fujita.tomonori@lab.ntt.co.jp>
+	<49DD3041.8020808@goop.org>
 Mime-Version: 1.0
-X-Mailer: Evolution 2.24.2-1.2mdv2009.0 
+Content-Type: Text/Plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
+Message-Id: <20090409083752I.fujita.tomonori@lab.ntt.co.jp>
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-3.0 (sh.osrg.net [192.16.179.4]); Thu, 09 Apr 2009 08:37:29 +0900 (JST)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 2009-04-08 at 16:08 -0700, Luck, Tony wrote:
-> Here's the current list with frequency counts:
+On Wed, 08 Apr 2009 16:16:17 -0700
+Jeremy Fitzhardinge <jeremy@goop.org> wrote:
 
-It's case sensitive.  Try the "-By:"'s too.
+> FUJITA Tomonori wrote:
+> >> Becky's patches of last week also added __weak annotations to 
+> >> swiotlb_bus_to_virt, virt_to_bus and bus_to_phys; added the hwdev 
+> >> parameter to swiotlb_bus_to_phys; and added a weak 
+> >> swiotlb_arch_address_needs_mapping.  I assume that was needed because 
+> >> powerpc needs non-trivial implementations for those functions.
+> >>     
+> >
+> > Hmm, what she added are wrappers of virt_to_bus and bus_to_virt. We
+> > can remove these and directly use virt_to_bus and bus_to_virt.
+> >   
+> 
+> In general those interfaces are deprecated.  Are we un-deprecating 
+> them?  Or do you mean adding virt<->bus to dma_ops?
 
-My favorite is:  Brown-Paper-Bag-Worn-By
+Hmm, these interfaces are wrong for drivers surely because they can't
+handle dma mapping properly. However, they are exactly what swiotlb
+needs (swiotlb doesn't need to care about dma mapping). Until 2.6.28,
+swiotlb has used them. They are with IA64, X86_64 and PPC_32, I think.
 
+
+> > About __weak address_needs_mapping function, as I said, removing it
+> > and using dma_map_ops is a proper solution.
+> >   
+> 
+> Fine.  Could swiotlb_alloc() just call dma_alloc_coherent() too?
+
+I'm not sure what you mean. And I don't think ppc wants swiotlb_alloc.
