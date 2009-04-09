@@ -1,54 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S935911AbZDIWrA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759082AbZDIW6U@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S935911AbZDIWrA (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 9 Apr 2009 18:47:00 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759070AbZDIWqt
+	id S1759082AbZDIW6U (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 9 Apr 2009 18:58:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751486AbZDIW6J
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 9 Apr 2009 18:46:49 -0400
-Received: from mail.issp.bas.bg ([195.96.236.10]:51736 "EHLO mail.issp.bas.bg"
+	Thu, 9 Apr 2009 18:58:09 -0400
+Received: from ogre.sisk.pl ([217.79.144.158]:42085 "EHLO ogre.sisk.pl"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1757274AbZDIWqt (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 9 Apr 2009 18:46:49 -0400
-X-Greylist: delayed 704 seconds by postgrey-1.27 at vger.kernel.org; Thu, 09 Apr 2009 18:46:48 EDT
-From: Marin Mitov <mitov@issp.bas.bg>
-Organization: Institute of Solid State Physics
-To: linux-kernel@vger.kernel.org
-Subject: [PATCH]Silencing warning: passing argument 1 of 'get_new_cred' discards qualifiers from pointer target type
-Date: Fri, 10 Apr 2009 01:46:28 +0300
-User-Agent: KMail/1.9.10
-Cc: David Howells <dhowells@redhat.com>
+	id S1753538AbZDIW6I (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 9 Apr 2009 18:58:08 -0400
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+To: Arjan van de Ven <arjan@linux.intel.com>, Takashi Iwai <tiwai@suse.de>
+Subject: [2.6.30-rc1-git2 regressions] Hibernation broken and (minor but annoying) audio problem
+Date: Fri, 10 Apr 2009 00:57:41 +0200
+User-Agent: KMail/1.11.2 (Linux/2.6.30-rc1-rjw; KDE/4.2.2; x86_64; ; )
+Cc: LKML <linux-kernel@vger.kernel.org>,
+       pm list <linux-pm@lists.linux-foundation.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Andrew Morton <akpm@linux-foundation.org>
 MIME-Version: 1.0
-Content-Type: text/plain;
+Content-Type: Text/Plain;
   charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-Message-Id: <200904100146.28826.mitov@issp.bas.bg>
+Message-Id: <200904100057.43827.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi all,
+Hi,
 
-I do not know if that is worth the effort, but...
+I'm seeing two problems with -git from today.
 
-Silencing warning: passing argument 1 of 'get_new_cred' discards qualifiers from pointer target type
+First, resume from hibernation is apparently broken if the storage driver
+handling the resume device is modular.  If it is compiled statically into
+the kernel, the resume works correctly.  I guess this is a consequence of the
+async changes (Arjan, please help).
 
-The proposed change is similar to that used in put_cred() function (few lines lower)
+Second, KDE4 on openSUSE 11.1 sometimes fails to handle audio correctly after
+a fresh boot.  Everything seems to work, but there's no sound at all.  It is
+sufficient to close the X session and start the desktop environment again to
+make it work, though (may that be async too? ;-)).  The hardware in question is
+Intel Corporation 82801G (ICH7 Family) High Definition Audio Controller
+(rev 02) and the driver is snd_hda_intel.
 
-The patch is against 2.6.30-rc1, but should apply to 2.6.29(.1) too.
-
-Signed-off-by: Marin Mitov mitov@issp.bas.bg
-=============================================================
---- a/include/linux/cred.h	2009-04-05 19:59:19.000000000 +0300
-+++ b/include/linux/cred.h	2009-04-05 22:49:22.000000000 +0300
-@@ -185,7 +185,9 @@
-  */
- static inline const struct cred *get_cred(const struct cred *cred)
- {
--	return get_new_cred((struct cred *) cred);
-+	struct cred *_cred = (struct cred *) cred;
-+
-+	return get_new_cred(_cred);
- }
- 
- /**
+Thanks,
+Rafael
