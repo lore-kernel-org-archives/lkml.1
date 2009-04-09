@@ -1,64 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S936034AbZDISTv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S935260AbZDISXe@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S936034AbZDISTv (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 9 Apr 2009 14:19:51 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758006AbZDISTl
+	id S935260AbZDISXe (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 9 Apr 2009 14:23:34 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756879AbZDISXX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 9 Apr 2009 14:19:41 -0400
-Received: from one.firstfloor.org ([213.235.205.2]:38569 "EHLO
-	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757457AbZDISTk (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 9 Apr 2009 14:19:40 -0400
-Date: Thu, 9 Apr 2009 20:22:04 +0200
-From: Andi Kleen <andi@firstfloor.org>
-To: Imre Gergely <gimre@narancs.net>
-Cc: linux-kernel@vger.kernel.org
-Subject: Re: Finding lost memory + kernel messages explained
-Message-ID: <20090409182204.GN14687@one.firstfloor.org>
-References: <49DDB609.8050405@narancs.net> <87y6ua86f4.fsf@basil.nowhere.org> <49DDF2FF.9030501@narancs.net>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <49DDF2FF.9030501@narancs.net>
-User-Agent: Mutt/1.4.2.1i
+	Thu, 9 Apr 2009 14:23:23 -0400
+Received: from hera.kernel.org ([140.211.167.34]:57560 "EHLO hera.kernel.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1756636AbZDISXW (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 9 Apr 2009 14:23:22 -0400
+Message-ID: <49DE3CBE.8030607@kernel.org>
+Date: Thu, 09 Apr 2009 11:21:50 -0700
+From: Tejun Heo <tj@kernel.org>
+User-Agent: Thunderbird 2.0.0.19 (X11/20081227)
+MIME-Version: 1.0
+To: Jeff Garzik <jeff@garzik.org>
+CC: Linus Torvalds <torvalds@linux-foundation.org>,
+       Arjan van de Ven <arjan@infradead.org>, Mark Lord <lkml@rtr.ca>,
+       Theodore Tso <tytso@mit.edu>, Jens Axboe <jens.axboe@oracle.com>,
+       Linux Kernel Developers List <linux-kernel@vger.kernel.org>,
+       Linux IDE mailing list <linux-ide@vger.kernel.org>,
+       George Spelvin <linux@horizon.com>
+Subject: Re: [PATCH libata: add SSD detection hueristic; move SSD setup to
+ ata_dev_configure (was Re: [GIT PULL] Ext3 latency fixes)
+References: <alpine.LFD.2.00.0904031150190.4015@localhost.localdomain> <alpine.LFD.2.00.0904031329410.7007@localhost.localdomain> <20090404135719.GA9812@mit.edu> <20090404151649.GE5178@kernel.dk> <alpine.LFD.2.00.0904040854470.3915@localhost.localdomain> <20090404173412.GF5178@kernel.dk> <alpine.LFD.2.00.0904041039230.3915@localhost.localdomain> <20090404180108.GH5178@kernel.dk> <20090404232222.GA7480@mit.edu> <20090404163349.20df1208@infradead.org> <20090405001005.GA7553@mit.edu> <alpine.LFD.2.00.0904050927580.4023@localhost.localdomain> <49D8E71F.6000703@rtr.ca> <49D91B31.90300@garzik.org> <20090405164831.7ad01c20@infradead.org> <49D99775.9030104@garzik.org> <alpine.LFD.2.00.0904071107500.27889@localhost.localdomain> <49DBAC42.4040003@garzik.org>
+In-Reply-To: <49DBAC42.4040003@garzik.org>
+X-Enigmail-Version: 0.95.7
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Thu, 09 Apr 2009 18:21:14 +0000 (UTC)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-cc to mailing list restored. please don't drop this.
-
-On Thu, Apr 09, 2009 at 04:07:11PM +0300, Imre Gergely wrote:
-> Andi Kleen wrote:
-> >Imre Gergely <gimre@narancs.net> writes:
-> >>That would be around 3896MB. My question is: where does the memory go?
-> >>Is it normal to 'lose' that much (~130MB) ?
-> >
-> >I wrote a paper about this topic some time ago.
-> >
-> >http://halobates.de/memory.pdf
-> >http://halobates.de/memorywaste.pdf
+Jeff Garzik wrote:
+> ata_id_string() or ata_id_c_string() is what you want.
 > 
-> I tried to understand what you wrote there a bit, but it's still pretty 
-> confusing ;)
-
-Modern hardware is complicated.
-
-> [    0.004000] Memory: 3980848k/5177344k available (3115k kernel code, 
-> 147212k reserved, 1573k data, 540k init)
+> But yeah, we see what you're trying to illustrate.
 > 
-> There seems to be 5GB of memory, I don't understand where this is coming 
-> from. There is a gap in the mapping 
+> For internal reasons, it is better to detect and set up SSD details in
+> ata_dev_configure(), where we detect and configure other ATA details.
+> 
+> I've attached an example patch, compiled-tested only.
+> 
+> If we wanted to get more fancy, we could extend the strn_pattern_cmp()
+> function in libata to accept wildcard '*' prefixes, as well as suffixes.
+>  That would make it easy to auto-configure future ATA devices based on
+> the product id (such as "G.SKILL 128GB SSD").
 
-PCs have memory holes below 1MB and below 4GB. The 4GB hole can be
-rather large because it contains IO mappings for all devices.
+There was an shell globbing patch floating around which would be
+pretty nice to have for pattern matchings like this.  cc'ing the patch
+author.  George, what happened to the patch?
 
-(lines 16 and 17 in dmesg output on 
-> the pastebin), but why? And what's that 147212k reserved?
-
-The paper explains all this.
-
--Andi
+Thanks.
 
 -- 
-ak@linux.intel.com -- Speaking for m1yself only.
+tejun
