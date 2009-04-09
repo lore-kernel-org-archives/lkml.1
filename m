@@ -1,73 +1,72 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S936198AbZDITR4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S936304AbZDITTd@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S936198AbZDITR4 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 9 Apr 2009 15:17:56 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S935840AbZDITRn
+	id S936304AbZDITTd (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 9 Apr 2009 15:19:33 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1765427AbZDITTX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 9 Apr 2009 15:17:43 -0400
-Received: from mx2.redhat.com ([66.187.237.31]:54122 "EHLO mx2.redhat.com"
+	Thu, 9 Apr 2009 15:19:23 -0400
+Received: from gw.goop.org ([64.81.55.164]:57183 "EHLO mail.goop.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S935167AbZDITRm (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 9 Apr 2009 15:17:42 -0400
-From: Jarod Wilson <jarod@redhat.com>
-Organization: Red Hat, Inc.
-To: Neil Horman <nhorman@redhat.com>
-Subject: Re: [PATCH] add self-tests for rfc4309(ccm(aes))
-Date: Thu, 9 Apr 2009 15:16:53 -0400
-User-Agent: KMail/1.11.2 (Linux/2.6.29.1-54.fc11.x86_64; KDE/4.2.2; x86_64; ; )
-Cc: linux-crypto@vger.kernel.org, linux-kernel@vger.kernel.org,
-       Herbert Xu <herbert.xu@redhat.com>
-References: <200904091434.59639.jarod@redhat.com> <20090409185204.GA6758@hmsreliant.think-freely.org>
-In-Reply-To: <20090409185204.GA6758@hmsreliant.think-freely.org>
+	id S1752522AbZDITTW (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 9 Apr 2009 15:19:22 -0400
+Message-ID: <49DE4A37.3080702@goop.org>
+Date: Thu, 09 Apr 2009 12:19:19 -0700
+From: Jeremy Fitzhardinge <jeremy@goop.org>
+User-Agent: Thunderbird 2.0.0.21 (X11/20090320)
 MIME-Version: 1.0
-Content-Type: Text/Plain;
-  charset="iso-8859-1"
+To: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
+CC: galak@kernel.crashing.org, hch@infradead.org, linux-kernel@vger.kernel.org,
+       mingo@elte.hu, ian.campbell@citrix.com, beckyb@kernel.crashing.org
+Subject: Re: [PATCH 4/7] swiotlb: Allow arch override of address_needs_mapping
+References: <49DD3041.8020808@goop.org>	<20090409083752I.fujita.tomonori@lab.ntt.co.jp>	<49DD3C9C.7060101@goop.org> <20090410033357S.fujita.tomonori@lab.ntt.co.jp>
+In-Reply-To: <20090410033357S.fujita.tomonori@lab.ntt.co.jp>
+X-Enigmail-Version: 0.95.6
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200904091516.57048.jarod@redhat.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thursday 09 April 2009 14:52:04 Neil Horman wrote:
-> On Thu, Apr 09, 2009 at 02:34:59PM -0400, Jarod Wilson wrote:
-> > Patch is against current cryptodev-2.6 tree, successfully tested via
-> > 'modprobe tcrypt type=45'. The number of test vectors might be a bit
-> > excessive, but I tried to hit a wide range of combinations of varying
-> > key sizes, associate data lengths, input lengths and pass/fail.
-> > 
-> > Signed-off-by: Jarod Wilson <jarod@redhat.com>
-> > 
-> >  
-> ><snip>
-> 
-> > +/*
-> > + * rfc4309 says section 8 contains test vectors, only, it doesn't, and NIST
-> > + * Special Publication 800-38C's test vectors use nonce lengths our rfc4309
-> > + * implementation doesn't support. The following are taken from fips cavs
-> > + * fax files on hand at Red Hat.
-> > + *
-> > + * nb: actual key lengths are (klen - 3), the last 3 bytes are actually
-> > + * part of the nonce which combine w/the iv, but need to be input this way.
-> > + */
-> 
-> RFC4309 section 8 actually says the test vectors you can use are here:
-> http://www.ietf.org/rfc/rfc3610.txt
-> in RFC3610 section 8.
+FUJITA Tomonori wrote:
+>> Well, Becky's patches also added the hwdev argument to them, so 
+>> presumably the powerpc implementation needs that (different 
+>> devices/buses have differing views of physical memory, I guess).
+>>     
+>
+> Until I see the ppc specific swiotlb patchset, I'm not sure but I
+> think that we can remove phys_to_bus in swiotlb.
+>   
 
-Oh, I'm dense, didn't correctly parse that 4309 was referring back to 3610
-for the actual test vectors. I'll see what I can do with those...
+Kumar's comment was: "For our SoC chips we don't need any mapping 
+between phys & bus.  However something like PCI does have a mapping (a 
+simple offset)."
 
-> I don't think theres anything wrong with the vectors
-> your're using below, but you may want to add the vectors from 3610 just to
-> imrpove the testing.
+Kumar, could a single system have different phys<->bus mappings on a 
+single system, or could it differ from device to device (or bus to bus)?
 
-I think I'd drop some of the ones in the initial patch in favor of adding
-some from 3610, rather than simply adding more. The coverage is already
-pretty good, increasing the number of vectors shouldn't really be necessary,
-but it would definitely be nice to have vectors that are already publicly
-published and verified.
+> Even if we need phys_to_bus, we can remove the rest of __weak tricks
+> for only dom0. And we can make phys_to_bus arch-specific. Then we
+> don't need any __weak tricks in swiotlb (and x86's swiotlb). dom0
+> support adds many hacks to swiotlb.
+>   
 
--- 
-Jarod Wilson
-jarod@redhat.com
+Well, we'd still need a way to do hook the swiotlb_alloc(_boot) 
+allocation.  At the moment its effectively arch-specific because x86 
+only uses swiotlb_alloc_boot(), and ia64 only uses swiotlb_alloc().  One 
+option would be to simply make that function arch-defined, which would 
+remove the need for any kind of override mechanism in lib/swiotlb; that 
+would match the handling of phys_to_bus.  And its more appealing if we 
+manage to drop swiotlb_alloc_boot, so there's only a single function for 
+the arches to worry about.
+
+> Yeah, ISA DMA comment is misleading. swiotlb can't handle it. And it
+> doesn't need to handle it because the block layer can thanks to
+> the bouncing (the network layer does the similar, I think).
+>
+> As you said, we could remove the latter though I'm not sure.
+>   
+
+It would take a bit of rearranging the x86 swiotlb/iommu init sequence, 
+but I don't think it would be too complex.  I'll look into it.
+
+    J
