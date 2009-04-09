@@ -1,138 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764980AbZDIR73@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934547AbZDISHW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764980AbZDIR73 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 9 Apr 2009 13:59:29 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760466AbZDIR7R
+	id S934547AbZDISHW (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 9 Apr 2009 14:07:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759020AbZDISHB
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 9 Apr 2009 13:59:17 -0400
-Received: from brick.kernel.dk ([93.163.65.50]:38886 "EHLO kernel.dk"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1759082AbZDIR7P (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 9 Apr 2009 13:59:15 -0400
-Date: Thu, 9 Apr 2009 19:59:14 +0200
-From: Jens Axboe <jens.axboe@oracle.com>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: Theodore Tso <tytso@mit.edu>, linux-kernel@vger.kernel.org,
-       linux-ext4@vger.kernel.org, jack@suse.cz
-Subject: Re: [PATCH] block_write_full_page: switch synchronous writes to
-	use   WRITE_SYNC_PLUG
-Message-ID: <20090409175914.GJ5178@kernel.dk>
-References: <20090407070835.GM5178@kernel.dk> <20090407002313.fcdd1da0.akpm@linux-foundation.org> <20090407075732.GO5178@kernel.dk> <20090407190913.GA31723@mit.edu> <20090407193239.GE5178@kernel.dk> <20090407214421.GA7031@mit.edu> <20090407221933.GB7031@mit.edu> <20090407160944.de3c5139.akpm@linux-foundation.org> <20090408080844.GW5178@kernel.dk> <20090408153428.6195a442.akpm@linux-foundation.org>
+	Thu, 9 Apr 2009 14:07:01 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:42430 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1758849AbZDISHA (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 9 Apr 2009 14:07:00 -0400
+Date: Thu, 9 Apr 2009 11:04:56 -0700 (PDT)
+From: Linus Torvalds <torvalds@linux-foundation.org>
+X-X-Sender: torvalds@localhost.localdomain
+To: David Howells <dhowells@redhat.com>
+cc: akpm@linux-foundation.org, sam@ravnborg.org, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 2/2] FRV: Move to arch/frv/include/asm/
+In-Reply-To: <alpine.LFD.2.00.0904091042240.4583@localhost.localdomain>
+Message-ID: <alpine.LFD.2.00.0904091056480.4583@localhost.localdomain>
+References: <20090409163255.22778.39921.stgit@warthog.procyon.org.uk> <20090409163300.22778.92061.stgit@warthog.procyon.org.uk> <alpine.LFD.2.00.0904091042240.4583@localhost.localdomain>
+User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090408153428.6195a442.akpm@linux-foundation.org>
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Apr 08 2009, Andrew Morton wrote:
-> On Wed, 8 Apr 2009 10:08:44 +0200 Jens Axboe <jens.axboe@oracle.com> wrote:
-> 
-> > > So how does WRITE_SYNC_PLUG differ from WRITE, and what effect does
-> > > this change have upon kernel behaviour?
-> > 
-> > How about something like this. Comments welcome.
-> 
-> It's lovely.
-> 
-> > Should we move this to
-> > a dedicated header file? fs.h is amazingly cluttered as it is.
-> 
-> Sometime, perhaps.
-> 
-> > diff --git a/include/linux/fs.h b/include/linux/fs.h
-> > index 562d285..6b6597a 100644
-> > --- a/include/linux/fs.h
-> > +++ b/include/linux/fs.h
-> > @@ -87,6 +87,57 @@ struct inodes_stat_t {
-> >   */
-> >  #define FMODE_NOCMTIME		((__force fmode_t)2048)
-> >  
-> > +/*
-> > + * The below are the various read and write types that we support. Some of
-> > + * them include behavioral modifiers that send information down to the
-> > + * block layer and IO scheduler. Terminology:
-> > + *
-> > + *	The block layer uses device plugging to defer IO a little bit, in
-> > + *	the hope that we will see more IO very shortly. This increases
-> > + *	coalescing of adjacent IO and thus reduces the number of IOs we
-> > + *	have to send to the device. It also allows for better queuing,
-> > + *	if the IO isn't mergeable. If the caller is going to be waiting
-> > + *	for the IO, then he must ensure that the device is unplugged so
-> > + *	that the IO is dispatched to the driver.
-> > + *
-> > + *	All IO is handled async in Linux. This is fine for background
-> > + *	writes, but for reads or writes that someone waits for completion
-> > + *	on, we want to notify the block layer and IO scheduler so that they
-> > + *	know about it. That allows them to make better scheduling
-> > + *	decisions. So when the below references 'sync' and 'async', it
-> > + *	is referencing this priority hint.
-> > + *
-> > + * With that in mind, the available types are:
-> > + *
-> > + * READ			A normal read operation. Device will be plugged.
-> > + * READ_SYNC		A synchronous read. Device is not plugged, caller can
-> > + *			immediately wait on this read without caring about
-> > + *			unplugging.
-> > + * READA		Used for read-ahead operations. Lower priority, and the
-> > + *			 block layer could (in theory) choose to ignore this
-> > + *			request if it runs into resource problems.
-> > + * WRITE		A normal async write. Device will be plugged.
-> > + * SWRITE		Like WRITE, but a special case for ll_rw_block() that
-> > + *			tells it to lock the buffer first. Normally a buffer
-> > + *			must be locked before doing IO.
-> > + * WRITE_SYNC_PLUG	Synchronous write. Identical to WRITE, but passes down
-> > + *			the hint that someone will be waiting on this IO
-> > + *			shortly.
-> 
-> From the text, I'd expect WRITE_SYNC_PLUG to, err, unplug!
 
-You are still mixing up the sync hint and unplugging. I'll expand it a
-bit, I guess.
 
-> > + * WRITE_SYNC		Like WRITE_SYNC_PLUG, but also unplugs the device
-> > + *			immediately after submission. The write equivalent
-> > + *			of READ_SYNC.
+On Thu, 9 Apr 2009, Linus Torvalds wrote:
 > 
-> But this contradicts my expectation.
-> 
-> So what does WRITE_SYNC_PLUG really do dofferent from WRITE?
+> When the revolution comes, and the people who haven't converted to git get 
+> sent to the gulags, we'll make "-M" the default.
 
-It tells the IO scheduler that this write is really sync, not async.
-The key difference between the two is as written - the sync one will
-have someone waiting for its completion. What the IO scheduler does with
-the flag is its own business. In reality it means that the write is
-expedited, whereas async writes are done somewhat more lazily.
+Side note: in the meantime, if you know that you only work with the people 
+who have already gone through the re-education program and will not need 
+to be reported to the Office of non-Git Behavior Correction, you can add 
+this to your ~/.gitconfig (or do it per-repository in .git/config if you 
+work with lesser quality people on some of your stuff):
 
-> > + * WRITE_ODIRECT	Special case write for O_DIRECT only.
-> > + * SWRITE_SYNC
-> > + * SWRITE_SYNC_PLUG	Like WRITE_SYNC/WRITE_SYNC_PLUG, but locks the buffer.
-> > + *			See SWRITE.
-> > + * WRITE_BARRIER	Like WRITE, but tells the block layer that all
-> > + *			previously submitted writes must be safely on storage
-> > + *			before this one is started. Also guarantees that when
-> > + *			this write is complete, it itself is also safely on
-> > + *			storage. Prevents reordering of writes on both sides
-> > + *			of this IO.
-> > + *
-> > + */
-> >  #define RW_MASK		1
-> >  #define RWA_MASK	2
-> >  #define READ 0
-> > @@ -102,6 +153,11 @@ struct inodes_stat_t {
-> >  			(SWRITE | (1 << BIO_RW_SYNCIO) | (1 << BIO_RW_NOIDLE))
-> >  #define SWRITE_SYNC	(SWRITE_SYNC_PLUG | (1 << BIO_RW_UNPLUG))
-> >  #define WRITE_BARRIER	(WRITE | (1 << BIO_RW_BARRIER))
-> > +
-> > +/*
-> > + * These aren't really reads or writes, they pass down information about
-> > + * parts of device that are now unused by the file system.
-> > + */
-> >  #define DISCARD_NOBARRIER (1 << BIO_RW_DISCARD)
-> >  #define DISCARD_BARRIER ((1 << BIO_RW_DISCARD) | (1 << BIO_RW_BARRIER))
-> 
+	[diff]
+		renames
 
--- 
-Jens Axboe
+(or even "renames=copy" to get not just rename, but also copy-detection 
+done automatically - but that can be quite a bit more expensive, and the 
+upsides aren't as huge. But sometimes the copy detection is really very 
+interesting, because it has occasionally found some really interesting 
+patterns when people create new files).
 
+[ Final note: I know, I know, my own release patches are done without -M. 
+
+  It's horrible, and I feel bad about it every time, but the thing is, I 
+  expect that people who actually want to download tar-balls and patches 
+  to update their kernel are in the stone age, so I do those without 
+  rename detection very much on purpose.
+
+  So in this case do as I say, not as I do. ]
+
+			Linus
