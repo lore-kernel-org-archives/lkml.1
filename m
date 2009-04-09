@@ -1,81 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933600AbZDIMqr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933706AbZDIMvd@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933600AbZDIMqr (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 9 Apr 2009 08:46:47 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1764266AbZDIMqf
+	id S933706AbZDIMvd (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 9 Apr 2009 08:51:33 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761775AbZDIMvU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 9 Apr 2009 08:46:35 -0400
-Received: from mail-bw0-f169.google.com ([209.85.218.169]:44827 "EHLO
-	mail-bw0-f169.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752616AbZDIMqd convert rfc822-to-8bit (ORCPT
+	Thu, 9 Apr 2009 08:51:20 -0400
+Received: from earthlight.etchedpixels.co.uk ([81.2.110.250]:38778 "EHLO
+	www.etchedpixels.co.uk" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1761395AbZDIMvU (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 9 Apr 2009 08:46:33 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
-         :cc:content-type:content-transfer-encoding;
-        b=WmDh49iHuUPFk1o3qtY9XwRLXLMZww/tJeEV1UgoQN+45kLnC9e0GfPcSMWEvGD0td
-         HHCy3Df7ZMhpTX/STOtU3phEdquZoXH9hZdUVPFeQjfgTmJ5jAhhl9PGGwI2cEd7w75e
-         kEsHaaXRxdOdEpK0IcHx7twOT33bh03pYrOOQ=
-MIME-Version: 1.0
-In-Reply-To: <20090409023547.GA1878@gondor.apana.org.au>
-References: <8db1092f0904081235x58081f1by842ab45ad861e294@mail.gmail.com>
-	 <20090409021804.GA1756@gondor.apana.org.au>
-	 <20090409023547.GA1878@gondor.apana.org.au>
-Date: Thu, 9 Apr 2009 14:46:29 +0200
-Message-ID: <8db1092f0904090546j54ac6759i9c36f214ce1109bc@mail.gmail.com>
-Subject: Re: [2.6.30-rc1] device-mapper: table: 254:0: crypt: Error allocating 
-	crypto tfm
-From: Maciej Rutecki <maciej.rutecki@gmail.com>
-To: Herbert Xu <herbert@gondor.apana.org.au>
-Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       "Rafael J. Wysocki" <rjw@sisk.pl>, davem@davemloft.net,
-       linux-crypto@vger.kernel.org, arjan@linux.intel.com,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Rusty Russell <rusty@rustcorp.com.au>, Jiri Slaby <jirislaby@gmail.com>
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8BIT
+	Thu, 9 Apr 2009 08:51:20 -0400
+Date: Thu, 9 Apr 2009 13:51:23 +0100
+From: Alan Cox <alan@lxorguk.ukuu.org.uk>
+To: Jean Delvare <khali@linux-fr.org>
+Cc: Jack Stone <jwjstone@fastmail.fm>, linux-kernel@vger.kernel.org,
+       jeff@garzik.org, kernel-janitors@vger.kernel.org
+Subject: Re: [PATCH 13/56] i2c: Remove void casts
+Message-ID: <20090409135123.36e6415b@lxorguk.ukuu.org.uk>
+In-Reply-To: <20090409144334.4c283ef2@hyperion.delvare>
+References: <1239189748-11703-1-git-send-email-jwjstone@fastmail.fm>
+	<1239189748-11703-2-git-send-email-jwjstone@fastmail.fm>
+	<1239189748-11703-3-git-send-email-jwjstone@fastmail.fm>
+	<1239189748-11703-4-git-send-email-jwjstone@fastmail.fm>
+	<1239189748-11703-14-git-send-email-jwjstone@fastmail.fm>
+	<20090409144334.4c283ef2@hyperion.delvare>
+X-Mailer: Claws Mail 3.7.0 (GTK+ 2.14.7; x86_64-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-2009/4/9 Herbert Xu <herbert@gondor.apana.org.au>:
-[...]
+On Thu, 9 Apr 2009 14:43:34 +0200
+Jean Delvare <khali@linux-fr.org> wrote:
 
-Yes, patch helps. Thanks
+> Hi Jack,
+> 
+> On Wed,  8 Apr 2009 12:21:45 +0100, Jack Stone wrote:
+> > Remove uneeded void casts
+> > 
+> > Signed-Off-By: Jack Stone <jwjstone@fastmail.fm>
+> 
+> WARNING: Signed-off-by: is the preferred form
 
-Tested-by Maciej Rutecki <maciej.rutecki@gmail.com>
+Nothing actually cares, and if anyone does then we have software for the
+mindless purpose of changing the case of words
 
-> Signed-off-by: Herbert Xu <herbert@gondor.apana.org.au>
->
-> diff --git a/include/linux/kmod.h b/include/linux/kmod.h
-> index d5fa565..384ca8b 100644
-> --- a/include/linux/kmod.h
-> +++ b/include/linux/kmod.h
-> @@ -34,7 +34,7 @@ extern int __request_module(bool wait, const char *name, ...) \
->  #define request_module(mod...) __request_module(true, mod)
->  #define request_module_nowait(mod...) __request_module(false, mod)
->  #define try_then_request_module(x, mod...) \
-> -       ((x) ?: (__request_module(false, mod), (x)))
-> +       ((x) ?: (__request_module(true, mod), (x)))
->  #else
->  static inline int request_module(const char *name, ...) { return -ENOSYS; }
->  static inline int request_module_nowait(const char *name, ...) { return -ENOSYS; }
->
-> Thanks,
-> --
-> Visit Openswan at http://www.openswan.org/
-> Email: Herbert Xu ~{PmV>HI~} <herbert@gondor.apana.org.au>
-> Home Page: http://gondor.apana.org.au/~herbert/
-> PGP Key: http://gondor.apana.org.au/~herbert/pubkey.txt
-> --
-> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
-> Please read the FAQ at  http://www.tux.org/lkml/
->
-
--- 
-Maciej Rutecki
-http://www.maciek.unixy.pl
+Alan
