@@ -1,87 +1,84 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933980AbZDIKjQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934089AbZDIKjy@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933980AbZDIKjQ (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 9 Apr 2009 06:39:16 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933847AbZDIKi3
+	id S934089AbZDIKjy (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 9 Apr 2009 06:39:54 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933950AbZDIKjL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 9 Apr 2009 06:38:29 -0400
-Received: from out2.smtp.messagingengine.com ([66.111.4.26]:49045 "EHLO
-	out2.smtp.messagingengine.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S933519AbZDIKi1 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 9 Apr 2009 06:38:27 -0400
-X-Sasl-enc: MTx/EK5E/vt19WIOPqKwuF/GNMBKfANs+pXbPald4Avt 1239273390
-Message-ID: <49DDCFAB.2030508@fastmail.fm>
-Date: Thu, 09 Apr 2009 11:36:27 +0100
-From: Jack Stone <jwjstone@fastmail.fm>
-User-Agent: Thunderbird 2.0.0.21 (X11/20090325)
+	Thu, 9 Apr 2009 06:39:11 -0400
+Received: from tundra.namei.org ([65.99.196.166]:3837 "EHLO tundra.namei.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S933979AbZDIKjJ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 9 Apr 2009 06:39:09 -0400
+Date: Thu, 9 Apr 2009 20:39:02 +1000 (EST)
+From: James Morris <jmorris@namei.org>
+To: Andi Kleen <andi@firstfloor.org>
+cc: linux-kernel@vger.kernel.org, linux-security-module@vger.kernel.org
+Subject: Re: WARNING at linux/security.h:1889 expand_downwards
+In-Reply-To: <20090409102416.GA21280@basil.nowhere.org>
+Message-ID: <alpine.LRH.2.00.0904092038180.15132@tundra.namei.org>
+References: <20090409102416.GA21280@basil.nowhere.org>
+User-Agent: Alpine 2.00 (LRH 1167 2008-08-23)
 MIME-Version: 1.0
-To: Bert Wesarg <bert.wesarg@googlemail.com>
-CC: linux-kernel@vger.kernel.org, jeff@garzik.org,
-       kernel-janitors@vger.kernel.org, gregkh@suse.de
-Subject: Re: [PATCH 53/56] usb: Remove void casts
-References: <1239189748-11703-1-git-send-email-jwjstone@fastmail.fm>	 <1239189748-11703-46-git-send-email-jwjstone@fastmail.fm>	 <1239189748-11703-47-git-send-email-jwjstone@fastmail.fm>	 <1239189748-11703-48-git-send-email-jwjstone@fastmail.fm>	 <1239189748-11703-49-git-send-email-jwjstone@fastmail.fm>	 <1239189748-11703-50-git-send-email-jwjstone@fastmail.fm>	 <1239189748-11703-51-git-send-email-jwjstone@fastmail.fm>	 <1239189748-11703-52-git-send-email-jwjstone@fastmail.fm>	 <1239189748-11703-53-git-send-email-jwjstone@fastmail.fm>	 <1239189748-11703-54-git-send-email-jwjstone@fastmail.fm> <36ca99e90904080511r5f02717h6fbf7bc63b7ffcf9@mail.gmail.com> <49DCADF1.6030003@fastmail.fm>
-In-Reply-To: <49DCADF1.6030003@fastmail.fm>
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-[Added maintainer CC]
-Jack Stone wrote:
-> Fixed patch
->
-> Thanks,
->
-> Jack
->
+On Thu, 9 Apr 2009, Andi Kleen wrote:
+
+> 
+> Haven't seen this one on kerneloops.org, so let's post it.
+> 
+> I get this warning all the time on one of my test boxes at boot with 2.6.30rc1
+> 
+> Config is at http://halobates.de/config1
+> 
+> -Andi
+> 
+
+I think it's the same as http://lkml.org/lkml/2009/3/25/596
+
+Likely harmless, but not sure why it's only now appearing.
+
+> 
+> Freeing unused kernel memory: 600k freed
+> ------------[ cut here ]------------
+> WARNING: at /home/ak/lsrc/newmce/linux/include/linux/security.h:1889 expand_downwards+0xee/0x179()
+> Hardware name: MS-7383
+> Modules linked in:
+> Pid: 3110, comm: khelper Not tainted 2.6.30-rc1 #68
+> Call Trace:
+>  [<ffffffff8023d333>] warn_slowpath+0xd3/0x10f
+>  [<ffffffff802a0129>] ? expand_downwards+0x3c/0x179
+>  [<ffffffff802a01db>] expand_downwards+0xee/0x179
+>  [<ffffffff802a02b2>] find_extend_vma+0x41/0x6b
+>  [<ffffffff8029cbee>] __get_user_pages+0x7f/0x3f9
+>  [<ffffffff8029cf9a>] get_user_pages+0x32/0x34
+>  [<ffffffff802bec23>] get_arg_page+0x4b/0xab
+>  [<ffffffff802bee6c>] copy_strings+0xfe/0x1e1
+>  [<ffffffff802c02e6>] do_execve+0x1c6/0x378
+>  [<ffffffff8020a579>] sys_execve+0x3e/0x60
+>  [<ffffffff8020cbf8>] kernel_execve+0x68/0xd0
+>  [<ffffffff8024cca8>] ? ____call_usermodehelper+0x145/0x150
+>  [<ffffffff8020cb7a>] child_rip+0xa/0x20
+>  [<ffffffff8020c53c>] ? restore_args+0x0/0x30
+>  [<ffffffff8024cb63>] ? ____call_usermodehelper+0x0/0x150
+>  [<ffffffff8020cb70>] ? child_rip+0x0/0x20
+> ---[ end trace 270f2814994f6bd3 ]---
+> eth0: no IPv6 routers present
+> 
+> -Andi
+> 
+> 
+> -- 
+> ak@linux.intel.com -- Speaking for myself only.
 > --
->
-> usb: Remove void casts
->
-> From: Jack Stone <jwjstone@fastmail.fm>
->
-> Remove uneeded void casts
->
-> Signed-Off-By: Jack Stone <jwjstone@fastmail.fm>
-> ---
->
->  drivers/usb/host/ehci-dbg.c |    2 +-
->  drivers/usb/host/ehci-mem.c |    3 +--
->  2 files changed, 2 insertions(+), 3 deletions(-)
->
-> diff --git a/drivers/usb/host/ehci-dbg.c b/drivers/usb/host/ehci-dbg.c
-> index 7f4ace7..abfc31f 100644
-> --- a/drivers/usb/host/ehci-dbg.c
-> +++ b/drivers/usb/host/ehci-dbg.c
-> @@ -832,7 +832,7 @@ static int fill_buffer(struct debug_buffer *buf)
->      int ret = 0;
->  
->      if (!buf->output_buf)
-> -        buf->output_buf = (char *)vmalloc(buf->alloc_size);
-> +        buf->output_buf = vmalloc(buf->alloc_size);
->  
->      if (!buf->output_buf) {
->          ret = -ENOMEM;
-> diff --git a/drivers/usb/host/ehci-mem.c b/drivers/usb/host/ehci-mem.c
-> index 10d5291..df5334f 100644
-> --- a/drivers/usb/host/ehci-mem.c
-> +++ b/drivers/usb/host/ehci-mem.c
-> @@ -83,8 +83,7 @@ static struct ehci_qh *ehci_qh_alloc (struct ehci_hcd
-> *ehci, gfp_t flags)
->      struct ehci_qh        *qh;
->      dma_addr_t        dma;
->  
-> -    qh = (struct ehci_qh *)
-> -        dma_pool_alloc (ehci->qh_pool, flags, &dma);
-> +    qh = dma_pool_alloc (ehci->qh_pool, flags, &dma);
->      if (!qh)
->          return qh;
->  
-> --
-> To unsubscribe from this list: send the line "unsubscribe kernel-janitors" in
+> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
 > the body of a message to majordomo@vger.kernel.org
 > More majordomo info at  http://vger.kernel.org/majordomo-info.html
->   
+> Please read the FAQ at  http://www.tux.org/lkml/
+> 
 
+-- 
+James Morris
+<jmorris@namei.org>
