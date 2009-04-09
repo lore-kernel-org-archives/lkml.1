@@ -1,21 +1,21 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932130AbZDIFkg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762712AbZDIFk5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932130AbZDIFkg (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 9 Apr 2009 01:40:36 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761388AbZDIFhx
+	id S1762712AbZDIFk5 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 9 Apr 2009 01:40:57 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761436AbZDIFhz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 9 Apr 2009 01:37:53 -0400
-Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:58077
+	Thu, 9 Apr 2009 01:37:55 -0400
+Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:58079
 	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
-	by vger.kernel.org with ESMTP id S1761133AbZDIFhu (ORCPT
+	by vger.kernel.org with ESMTP id S1761341AbZDIFhx (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 9 Apr 2009 01:37:50 -0400
-Date: Wed, 08 Apr 2009 22:37:40 -0700 (PDT)
-Message-Id: <20090408.223740.87522039.davem@davemloft.net>
+	Thu, 9 Apr 2009 01:37:53 -0400
+Date: Wed, 08 Apr 2009 22:37:43 -0700 (PDT)
+Message-Id: <20090408.223743.101682480.davem@davemloft.net>
 To: tj@kernel.org
 CC: sparclinux@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: [PATCH 6/12]: sparc64: Refactor MDESC cpu scanning code using an
- iterator.
+Subject: [PATCH 7/12]: sparc: Call OF and MD cpu scanning explicitly from
+ paging_init()
 From: David Miller <davem@davemloft.net>
 X-Mailer: Mew version 6.2.51 on Emacs 22.1 / Mule 5.0 (SAKAKI)
 Mime-Version: 1.0
@@ -26,269 +26,104 @@ List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
+We need to split up the cpu present mask setup from the cpu_data
+initialization, and this is a first step towards that.
+
 Signed-off-by: David S. Miller <davem@davemloft.net>
 ---
- arch/sparc/include/asm/mdesc.h |    1 +
- arch/sparc/kernel/mdesc.c      |  146 ++++++++++++++++++++++++----------------
- 2 files changed, 90 insertions(+), 57 deletions(-)
+ arch/sparc/include/asm/prom.h   |    1 +
+ arch/sparc/kernel/mdesc.c       |    4 ----
+ arch/sparc/kernel/prom.h        |    1 -
+ arch/sparc/kernel/prom_common.c |    2 --
+ arch/sparc/mm/init_32.c         |    1 +
+ arch/sparc/mm/init_64.c         |    5 ++++-
+ 6 files changed, 6 insertions(+), 8 deletions(-)
 
-diff --git a/arch/sparc/include/asm/mdesc.h b/arch/sparc/include/asm/mdesc.h
-index 1acc727..8f8a520 100644
---- a/arch/sparc/include/asm/mdesc.h
-+++ b/arch/sparc/include/asm/mdesc.h
-@@ -72,6 +72,7 @@ struct mdesc_notifier_client {
- extern void mdesc_register_notifier(struct mdesc_notifier_client *client);
+diff --git a/arch/sparc/include/asm/prom.h b/arch/sparc/include/asm/prom.h
+index 1b15212..be8d7aa 100644
+--- a/arch/sparc/include/asm/prom.h
++++ b/arch/sparc/include/asm/prom.h
+@@ -87,6 +87,7 @@ extern int of_node_to_nid(struct device_node *dp);
  
- extern void mdesc_fill_in_cpu_data(cpumask_t mask);
-+extern void mdesc_populate_present_mask(cpumask_t *mask);
+ extern void prom_build_devicetree(void);
+ extern void of_populate_present_mask(void);
++extern void of_fill_in_cpu_data(void);
  
- extern void sun4v_mdesc_init(void);
- 
+ /* Dummy ref counting routines - to be implemented later */
+ static inline struct device_node *of_node_get(struct device_node *node)
 diff --git a/arch/sparc/kernel/mdesc.c b/arch/sparc/kernel/mdesc.c
-index f0e6ed2..f50af3f 100644
+index f50af3f..602cbb7 100644
 --- a/arch/sparc/kernel/mdesc.c
 +++ b/arch/sparc/kernel/mdesc.c
-@@ -574,7 +574,7 @@ static void __init report_platform_properties(void)
- 	mdesc_release(hp);
- }
- 
--static void __devinit fill_in_one_cache(cpuinfo_sparc *c,
-+static void __cpuinit fill_in_one_cache(cpuinfo_sparc *c,
- 					struct mdesc_handle *hp,
- 					u64 mp)
+@@ -919,7 +919,6 @@ void __init sun4v_mdesc_init(void)
  {
-@@ -619,8 +619,7 @@ static void __devinit fill_in_one_cache(cpuinfo_sparc *c,
- 	}
- }
+ 	struct mdesc_handle *hp;
+ 	unsigned long len, real_len, status;
+-	cpumask_t mask;
  
--static void __devinit mark_core_ids(struct mdesc_handle *hp, u64 mp,
--				    int core_id)
-+static void __cpuinit mark_core_ids(struct mdesc_handle *hp, u64 mp, int core_id)
- {
- 	u64 a;
+ 	(void) sun4v_mach_desc(0UL, 0UL, &len);
  
-@@ -653,7 +652,7 @@ static void __devinit mark_core_ids(struct mdesc_handle *hp, u64 mp,
- 	}
- }
+@@ -943,7 +942,4 @@ void __init sun4v_mdesc_init(void)
+ 	cur_mdesc = hp;
  
--static void __devinit set_core_ids(struct mdesc_handle *hp)
-+static void __cpuinit set_core_ids(struct mdesc_handle *hp)
- {
- 	int idx;
- 	u64 mp;
-@@ -678,8 +677,7 @@ static void __devinit set_core_ids(struct mdesc_handle *hp)
- 	}
- }
- 
--static void __devinit mark_proc_ids(struct mdesc_handle *hp, u64 mp,
--				    int proc_id)
-+static void __cpuinit mark_proc_ids(struct mdesc_handle *hp, u64 mp, int proc_id)
- {
- 	u64 a;
- 
-@@ -698,8 +696,7 @@ static void __devinit mark_proc_ids(struct mdesc_handle *hp, u64 mp,
- 	}
- }
- 
--static void __devinit __set_proc_ids(struct mdesc_handle *hp,
--				     const char *exec_unit_name)
-+static void __cpuinit __set_proc_ids(struct mdesc_handle *hp, const char *exec_unit_name)
- {
- 	int idx;
- 	u64 mp;
-@@ -720,13 +717,13 @@ static void __devinit __set_proc_ids(struct mdesc_handle *hp,
- 	}
- }
- 
--static void __devinit set_proc_ids(struct mdesc_handle *hp)
-+static void __cpuinit set_proc_ids(struct mdesc_handle *hp)
- {
- 	__set_proc_ids(hp, "exec_unit");
- 	__set_proc_ids(hp, "exec-unit");
- }
- 
--static void __devinit get_one_mondo_bits(const u64 *p, unsigned int *mask,
-+static void __cpuinit get_one_mondo_bits(const u64 *p, unsigned int *mask,
- 					 unsigned char def)
- {
- 	u64 val;
-@@ -745,7 +742,7 @@ use_default:
- 	*mask = ((1U << def) * 64U) - 1U;
- }
- 
--static void __devinit get_mondo_data(struct mdesc_handle *hp, u64 mp,
-+static void __cpuinit get_mondo_data(struct mdesc_handle *hp, u64 mp,
- 				     struct trap_per_cpu *tb)
- {
- 	const u64 *val;
-@@ -763,23 +760,15 @@ static void __devinit get_mondo_data(struct mdesc_handle *hp, u64 mp,
- 	get_one_mondo_bits(val, &tb->nonresum_qmask, 2);
- }
- 
--void __cpuinit mdesc_fill_in_cpu_data(cpumask_t mask)
-+static void * __cpuinit mdesc_iterate_over_cpus(void *(*func)(struct mdesc_handle *, u64, int, void *), void *arg, cpumask_t *mask)
- {
- 	struct mdesc_handle *hp = mdesc_grab();
-+	void *ret = NULL;
- 	u64 mp;
- 
--	ncpus_probed = 0;
- 	mdesc_for_each_node_by_name(hp, mp, "cpu") {
- 		const u64 *id = mdesc_get_property(hp, mp, "id", NULL);
--		const u64 *cfreq = mdesc_get_property(hp, mp, "clock-frequency", NULL);
--		struct trap_per_cpu *tb;
--		cpuinfo_sparc *c;
--		int cpuid;
--		u64 a;
+ 	report_platform_properties();
 -
--		ncpus_probed++;
+-	cpus_setall(mask);
+-	mdesc_fill_in_cpu_data(mask);
+ }
+diff --git a/arch/sparc/kernel/prom.h b/arch/sparc/kernel/prom.h
+index bb0f0fd..453397f 100644
+--- a/arch/sparc/kernel/prom.h
++++ b/arch/sparc/kernel/prom.h
+@@ -22,7 +22,6 @@ static inline int is_root_node(const struct device_node *dp)
+ 
+ extern char *build_path_component(struct device_node *dp);
+ extern void of_console_init(void);
+-extern void of_fill_in_cpu_data(void);
+ 
+ extern unsigned int prom_early_allocated;
+ 
+diff --git a/arch/sparc/kernel/prom_common.c b/arch/sparc/kernel/prom_common.c
+index ff7b591..0fb5789 100644
+--- a/arch/sparc/kernel/prom_common.c
++++ b/arch/sparc/kernel/prom_common.c
+@@ -313,6 +313,4 @@ void __init prom_build_devicetree(void)
+ 
+ 	printk("PROM: Built device tree with %u bytes of memory.\n",
+ 	       prom_early_allocated);
 -
--		cpuid = *id;
-+		int cpuid = *id;
+-	of_fill_in_cpu_data();
+ }
+diff --git a/arch/sparc/mm/init_32.c b/arch/sparc/mm/init_32.c
+index cbb282d..26bb391 100644
+--- a/arch/sparc/mm/init_32.c
++++ b/arch/sparc/mm/init_32.c
+@@ -358,6 +358,7 @@ void __init paging_init(void)
+ 	protection_map[15] = PAGE_SHARED;
+ 	btfixup();
+ 	prom_build_devicetree();
++	of_fill_in_cpu_data();
+ 	device_scan();
+ }
  
- #ifdef CONFIG_SMP
- 		if (cpuid >= NR_CPUS) {
-@@ -788,62 +777,105 @@ void __cpuinit mdesc_fill_in_cpu_data(cpumask_t mask)
- 			       cpuid, NR_CPUS);
- 			continue;
- 		}
--		if (!cpu_isset(cpuid, mask))
--			continue;
--#else
--		/* On uniprocessor we only want the values for the
--		 * real physical cpu the kernel booted onto, however
--		 * cpu_data() only has one entry at index 0.
--		 */
--		if (cpuid != real_hard_smp_processor_id())
-+		if (!cpu_isset(cpuid, *mask))
- 			continue;
--		cpuid = 0;
- #endif
+diff --git a/arch/sparc/mm/init_64.c b/arch/sparc/mm/init_64.c
+index f26a352..c589d6e 100644
+--- a/arch/sparc/mm/init_64.c
++++ b/arch/sparc/mm/init_64.c
+@@ -1806,9 +1806,12 @@ void __init paging_init(void)
+ 	real_setup_per_cpu_areas();
  
--		c = &cpu_data(cpuid);
--		c->clock_tick = *cfreq;
-+		ret = func(hp, mp, cpuid, arg);
-+		if (ret)
-+			goto out;
+ 	prom_build_devicetree();
++	of_fill_in_cpu_data();
+ 
+-	if (tlb_type == hypervisor)
++	if (tlb_type == hypervisor) {
+ 		sun4v_mdesc_init();
++		mdesc_fill_in_cpu_data(CPU_MASK_ALL);
 +	}
-+out:
-+	mdesc_release(hp);
-+	return ret;
-+}
  
--		tb = &trap_block[cpuid];
--		get_mondo_data(hp, mp, tb);
-+static void * __cpuinit record_one_cpu(struct mdesc_handle *hp, u64 mp, int cpuid, void *arg)
-+{
-+	ncpus_probed++;
-+#ifdef CONFIG_SMP
-+	set_cpu_present(cpuid, true);
-+#endif
-+	return NULL;
-+}
- 
--		mdesc_for_each_arc(a, hp, mp, MDESC_ARC_TYPE_FWD) {
--			u64 j, t = mdesc_arc_target(hp, a);
--			const char *t_name;
-+void __cpuinit mdesc_populate_present_mask(cpumask_t *mask)
-+{
-+	if (tlb_type != hypervisor)
-+		return;
- 
--			t_name = mdesc_node_name(hp, t);
--			if (!strcmp(t_name, "cache")) {
--				fill_in_one_cache(c, hp, t);
--				continue;
--			}
-+	ncpus_probed = 0;
-+	mdesc_iterate_over_cpus(record_one_cpu, NULL, mask);
-+}
- 
--			mdesc_for_each_arc(j, hp, t, MDESC_ARC_TYPE_FWD) {
--				u64 n = mdesc_arc_target(hp, j);
--				const char *n_name;
-+static void * __cpuinit fill_in_one_cpu(struct mdesc_handle *hp, u64 mp, int cpuid, void *arg)
-+{
-+	const u64 *cfreq = mdesc_get_property(hp, mp, "clock-frequency", NULL);
-+	struct trap_per_cpu *tb;
-+	cpuinfo_sparc *c;
-+	u64 a;
- 
--				n_name = mdesc_node_name(hp, n);
--				if (!strcmp(n_name, "cache"))
--					fill_in_one_cache(c, hp, n);
--			}
-+#ifndef CONFIG_SMP
-+	/* On uniprocessor we only want the values for the
-+	 * real physical cpu the kernel booted onto, however
-+	 * cpu_data() only has one entry at index 0.
-+	 */
-+	if (cpuid != real_hard_smp_processor_id())
-+		return NULL;
-+	cpuid = 0;
-+#endif
-+
-+	c = &cpu_data(cpuid);
-+	c->clock_tick = *cfreq;
-+
-+	tb = &trap_block[cpuid];
-+	get_mondo_data(hp, mp, tb);
-+
-+	mdesc_for_each_arc(a, hp, mp, MDESC_ARC_TYPE_FWD) {
-+		u64 j, t = mdesc_arc_target(hp, a);
-+		const char *t_name;
-+
-+		t_name = mdesc_node_name(hp, t);
-+		if (!strcmp(t_name, "cache")) {
-+			fill_in_one_cache(c, hp, t);
-+			continue;
- 		}
- 
--#ifdef CONFIG_SMP
--		cpu_set(cpuid, cpu_present_map);
--#endif
-+		mdesc_for_each_arc(j, hp, t, MDESC_ARC_TYPE_FWD) {
-+			u64 n = mdesc_arc_target(hp, j);
-+			const char *n_name;
- 
--		c->core_id = 0;
--		c->proc_id = -1;
-+			n_name = mdesc_node_name(hp, n);
-+			if (!strcmp(n_name, "cache"))
-+				fill_in_one_cache(c, hp, n);
-+		}
- 	}
- 
-+	c->core_id = 0;
-+	c->proc_id = -1;
-+
-+	return NULL;
-+}
-+
-+void __cpuinit mdesc_fill_in_cpu_data(cpumask_t mask)
-+{
-+	struct mdesc_handle *hp;
-+
-+	mdesc_populate_present_mask(&mask);
-+	mdesc_iterate_over_cpus(fill_in_one_cpu, NULL, &mask);
-+
- #ifdef CONFIG_SMP
- 	sparc64_multi_core = 1;
- #endif
- 
-+	hp = mdesc_grab();
-+
- 	set_core_ids(hp);
- 	set_proc_ids(hp);
- 
--	smp_fill_in_sib_core_maps();
--
- 	mdesc_release(hp);
-+
-+	smp_fill_in_sib_core_maps();
- }
- 
- static ssize_t mdesc_read(struct file *file, char __user *buf,
+ 	/* Once the OF device tree and MDESC have been setup, we know
+ 	 * the list of possible cpus.  Therefore we can allocate the
 -- 
 1.6.2.2
 
