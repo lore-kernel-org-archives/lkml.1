@@ -1,24 +1,24 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S936989AbZDIWjw@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S937089AbZDIWkj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S936989AbZDIWjw (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 9 Apr 2009 18:39:52 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S936824AbZDIWim
+	id S937089AbZDIWkj (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 9 Apr 2009 18:40:39 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S936344AbZDIWio
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 9 Apr 2009 18:38:42 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:60357 "EHLO
+	Thu, 9 Apr 2009 18:38:44 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:43691 "EHLO
 	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S936887AbZDIWil (ORCPT
+	by vger.kernel.org with ESMTP id S936887AbZDIWin (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 9 Apr 2009 18:38:41 -0400
-Date: Thu, 9 Apr 2009 15:37:06 -0700
+	Thu, 9 Apr 2009 18:38:43 -0400
+Date: Thu, 9 Apr 2009 15:37:09 -0700
 From: Andrew Morton <akpm@linux-foundation.org>
 To: steiner@sgi.com
 Cc: linux-kernel@vger.kernel.org
-Subject: Re: [patch 02/13] GRU - dump chiplet state
-Message-Id: <20090409153706.e1c1d3a3.akpm@linux-foundation.org>
-In-Reply-To: <20090406161011.421626000@sgi.com>
+Subject: Re: [patch 03/13] GRU - dynamic allocation of kernel contexts
+Message-Id: <20090409153709.96fb4d96.akpm@linux-foundation.org>
+In-Reply-To: <20090406161011.887146000@sgi.com>
 References: <20090406160809.278924000@sgi.com>
-	<20090406161011.421626000@sgi.com>
+	<20090406161011.887146000@sgi.com>
 X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
 Mime-Version: 1.0
 Content-Type: text/plain; charset=US-ASCII
@@ -27,39 +27,29 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 06 Apr 2009 11:08:11 -0500
+On Mon, 06 Apr 2009 11:08:12 -0500
 steiner@sgi.com wrote:
 
-> From: Jack Steiner <steiner@sgi.com>
-> 
-> Add support for dumpping the state of an entire GRU chiplet.
-> 
-> ...
->
-> +static int gru_user_copy_handle(void __user **dp, void *s)
-> +{
-> +	if (copy_to_user(*(void __user **)dp, s, GRU_HANDLE_BYTES))
-
-the typecast appears to be unneeded?
-
-> +		return -1;
-> +	*dp += GRU_HANDLE_BYTES;
-> +	return 0;
-> +}
-> +
->
-> ...
->
-> --- linux.orig/drivers/misc/sgi-gru/grutables.h	2009-03-04 10:49:00.000000000 -0600
-> +++ linux/drivers/misc/sgi-gru/grutables.h	2009-03-04 10:50:44.000000000 -0600
-> @@ -554,6 +554,12 @@ struct gru_blade_state {
+> @@ -803,12 +803,13 @@ again:
+>  	}
 >  
->  /* Lock hierarchy checking enabled only in emulator */
->  
-> +/* 0 = lock failed, 1 = locked */
-> +static inline int __trylock_handle(void *h)
-> +{
-> +	return !test_and_set_bit(1, h);
-> +}
+>  	if (!gts->ts_gru) {
+> -		if (!gru_assign_gru_context(gts)) {
+> +		if (!gru_assign_gru_context(gts, blade_id)) {
+>  			mutex_unlock(&gts->ts_ctxlock);
+>  			preempt_enable();
 
-It would be safer were this header to include bitops.h.
+It's strange (but not buggy) to do the operations in this order.
+
+	preempt_enable();
+	mutex_unlock(...);
+
+would be more natural.
+
+>  			schedule_timeout(GRU_ASSIGN_DELAY);  /* true hack ZZZ */
+
+afacit the hack doesn't do anything because the caller is still in
+state TASK_RUNNING.
+
+
+> +			blade_id = uv_numa_blade_id();
