@@ -1,136 +1,81 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761368AbZDIFbV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761512AbZDIFbo@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761368AbZDIFbV (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 9 Apr 2009 01:31:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758383AbZDIFbM
+	id S1761512AbZDIFbo (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 9 Apr 2009 01:31:44 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759408AbZDIFbb
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 9 Apr 2009 01:31:12 -0400
-Received: from hera.kernel.org ([140.211.167.34]:58983 "EHLO hera.kernel.org"
+	Thu, 9 Apr 2009 01:31:31 -0400
+Received: from hera.kernel.org ([140.211.167.34]:59017 "EHLO hera.kernel.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1758196AbZDIFbK (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 9 Apr 2009 01:31:10 -0400
-Date: Thu, 9 Apr 2009 05:30:35 GMT
-From: Paul Mackerras <paulus@samba.org>
+	id S1758894AbZDIFb3 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 9 Apr 2009 01:31:29 -0400
+Date: Thu, 9 Apr 2009 05:30:47 GMT
+From: Li Zefan <lizf@cn.fujitsu.com>
 To: linux-tip-commits@vger.kernel.org
-Cc: linux-kernel@vger.kernel.org, paulus@samba.org, hpa@zytor.com,
-       mingo@redhat.com, a.p.zijlstra@chello.nl, tglx@linutronix.de,
-       mingo@elte.hu
-Reply-To: mingo@redhat.com, hpa@zytor.com, paulus@samba.org,
-       linux-kernel@vger.kernel.org, a.p.zijlstra@chello.nl,
-       tglx@linutronix.de, mingo@elte.hu
-In-Reply-To: <18909.31952.873098.336615@cargo.ozlabs.ibm.com>
-References: <18909.31952.873098.336615@cargo.ozlabs.ibm.com>
-Subject: [tip:perfcounters/core] perf_counter: powerpc: add nmi_enter/nmi_exit calls
-Message-ID: <tip-1d79dfed02582ef84f50e9abf5f29209673404ca@git.kernel.org>
-Git-Commit-ID: 1d79dfed02582ef84f50e9abf5f29209673404ca
+Cc: linux-kernel@vger.kernel.org, mathieu.desnoyers@polymtl.ca, hpa@zytor.com,
+       mingo@redhat.com, lizf@cn.fujitsu.com, fweisbec@gmail.com,
+       rostedt@goodmis.org, pq@iki.fi, tglx@linutronix.de, mingo@elte.hu
+Reply-To: mingo@redhat.com, hpa@zytor.com, mathieu.desnoyers@polymtl.ca,
+       linux-kernel@vger.kernel.org, fweisbec@gmail.com, rostedt@goodmis.org,
+       lizf@cn.fujitsu.com, pq@iki.fi, tglx@linutronix.de, mingo@elte.hu
+In-Reply-To: <49DD6E2B.6090200@cn.fujitsu.com>
+References: <49DD6E2B.6090200@cn.fujitsu.com>
+Subject: [tip:tracing/urgent] tracing: consolidate documents
+Message-ID: <tip-66bb74888eb4bef4ba7c87c931ecb7ecca3a240c@git.kernel.org>
+Git-Commit-ID: 66bb74888eb4bef4ba7c87c931ecb7ecca3a240c
 X-Mailer: tip-git-log-daemon
 MIME-Version: 1.0
 Content-Type: text/plain; charset=UTF-8
 Content-Disposition: inline
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Thu, 09 Apr 2009 05:30:37 +0000 (UTC)
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Thu, 09 Apr 2009 05:30:49 +0000 (UTC)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Commit-ID:  1d79dfed02582ef84f50e9abf5f29209673404ca
-Gitweb:     http://git.kernel.org/tip/1d79dfed02582ef84f50e9abf5f29209673404ca
-Author:     Paul Mackerras <paulus@samba.org>
-AuthorDate: Thu, 9 Apr 2009 14:42:56 +1000
+Commit-ID:  66bb74888eb4bef4ba7c87c931ecb7ecca3a240c
+Gitweb:     http://git.kernel.org/tip/66bb74888eb4bef4ba7c87c931ecb7ecca3a240c
+Author:     Li Zefan <lizf@cn.fujitsu.com>
+AuthorDate: Thu, 9 Apr 2009 11:40:27 +0800
 Committer:  Ingo Molnar <mingo@elte.hu>
-CommitDate: Thu, 9 Apr 2009 07:16:53 +0200
+CommitDate: Thu, 9 Apr 2009 07:28:10 +0200
 
-perf_counter: powerpc: add nmi_enter/nmi_exit calls
+tracing: consolidate documents
 
-Impact: powerpc bug fix
+Move kmemtrace.txt, tracepoints.txt, ftrace.txt and mmiotrace.txt to
+the new trace/ directory.
 
-Now that the core is using in_nmi() (added in e30e08f6, "perf_counter:
-fix NMI race in task clock"), we need the powerpc perf_counter_interrupt
-to call nmi_enter() and nmi_exit() in those cases where the interrupt
-happens when interrupts are soft-disabled.
+I didnt find any references to those documents in both source
+files and documents, so no extra work needs to be done.
 
-If interrupts were soft-enabled, we can treat it as a regular interrupt
-and do irq_enter/irq_exit around the whole routine. This lets us get rid
-of the test_perf_counter_pending() call at the end of
-perf_counter_interrupt, thus simplifying things a little.
-
-Signed-off-by: Paul Mackerras <paulus@samba.org>
-Cc: Peter Zijlstra <a.p.zijlstra@chello.nl>
-LKML-Reference: <18909.31952.873098.336615@cargo.ozlabs.ibm.com>
+Signed-off-by: Li Zefan <lizf@cn.fujitsu.com>
+Acked-by: Pekka Paalanen <pq@iki.fi>
+Cc: Steven Rostedt <rostedt@goodmis.org>
+Cc: Frederic Weisbecker <fweisbec@gmail.com>
+Cc: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
+LKML-Reference: <49DD6E2B.6090200@cn.fujitsu.com>
 Signed-off-by: Ingo Molnar <mingo@elte.hu>
 
 
 ---
- arch/powerpc/kernel/perf_counter.c |   31 +++++++++++++++++--------------
- 1 files changed, 17 insertions(+), 14 deletions(-)
+ Documentation/{ => trace}/ftrace.txt           |    0
+ Documentation/{vm => trace}/kmemtrace.txt      |    0
+ Documentation/{tracers => trace}/mmiotrace.txt |    0
+ Documentation/{ => trace}/tracepoints.txt      |    0
+ 4 files changed, 0 insertions(+), 0 deletions(-)
 
-diff --git a/arch/powerpc/kernel/perf_counter.c b/arch/powerpc/kernel/perf_counter.c
-index c9d019f..bd76d0f 100644
---- a/arch/powerpc/kernel/perf_counter.c
-+++ b/arch/powerpc/kernel/perf_counter.c
-@@ -714,7 +714,7 @@ hw_perf_counter_init(struct perf_counter *counter)
-  * here so there is no possibility of being interrupted.
-  */
- static void record_and_restart(struct perf_counter *counter, long val,
--			       struct pt_regs *regs)
-+			       struct pt_regs *regs, int nmi)
- {
- 	s64 prev, delta, left;
- 	int record = 0;
-@@ -749,7 +749,7 @@ static void record_and_restart(struct perf_counter *counter, long val,
- 	 * Finally record data if requested.
- 	 */
- 	if (record)
--		perf_counter_overflow(counter, 1, regs, 0);
-+		perf_counter_overflow(counter, nmi, regs, 0);
- }
- 
- /*
-@@ -762,6 +762,17 @@ static void perf_counter_interrupt(struct pt_regs *regs)
- 	struct perf_counter *counter;
- 	long val;
- 	int found = 0;
-+	int nmi;
-+
-+	/*
-+	 * If interrupts were soft-disabled when this PMU interrupt
-+	 * occurred, treat it as an NMI.
-+	 */
-+	nmi = !regs->softe;
-+	if (nmi)
-+		nmi_enter();
-+	else
-+		irq_enter();
- 
- 	for (i = 0; i < cpuhw->n_counters; ++i) {
- 		counter = cpuhw->counter[i];
-@@ -769,7 +780,7 @@ static void perf_counter_interrupt(struct pt_regs *regs)
- 		if ((int)val < 0) {
- 			/* counter has overflowed */
- 			found = 1;
--			record_and_restart(counter, val, regs);
-+			record_and_restart(counter, val, regs, nmi);
- 		}
- 	}
- 
-@@ -796,18 +807,10 @@ static void perf_counter_interrupt(struct pt_regs *regs)
- 	 */
- 	mtspr(SPRN_MMCR0, cpuhw->mmcr[0]);
- 
--	/*
--	 * If we need a wakeup, check whether interrupts were soft-enabled
--	 * when we took the interrupt.  If they were, we can wake stuff up
--	 * immediately; otherwise we'll have do the wakeup when interrupts
--	 * get soft-enabled.
--	 */
--	if (test_perf_counter_pending() && regs->softe) {
--		irq_enter();
--		clear_perf_counter_pending();
--		perf_counter_do_pending();
-+	if (nmi)
-+		nmi_exit();
-+	else
- 		irq_exit();
--	}
- }
- 
- void hw_perf_counter_setup(int cpu)
+diff --git a/Documentation/ftrace.txt b/Documentation/trace/ftrace.txt
+similarity index 100%
+rename from Documentation/ftrace.txt
+rename to Documentation/trace/ftrace.txt
+diff --git a/Documentation/vm/kmemtrace.txt b/Documentation/trace/kmemtrace.txt
+similarity index 100%
+rename from Documentation/vm/kmemtrace.txt
+rename to Documentation/trace/kmemtrace.txt
+diff --git a/Documentation/tracers/mmiotrace.txt b/Documentation/trace/mmiotrace.txt
+similarity index 100%
+rename from Documentation/tracers/mmiotrace.txt
+rename to Documentation/trace/mmiotrace.txt
+diff --git a/Documentation/tracepoints.txt b/Documentation/trace/tracepoints.txt
+similarity index 100%
+rename from Documentation/tracepoints.txt
+rename to Documentation/trace/tracepoints.txt
