@@ -1,128 +1,89 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934578AbZDIPTq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933902AbZDIPWq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934578AbZDIPTq (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 9 Apr 2009 11:19:46 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757222AbZDIPTd
+	id S933902AbZDIPWq (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 9 Apr 2009 11:22:46 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759142AbZDIPWf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 9 Apr 2009 11:19:33 -0400
-Received: from ogre.sisk.pl ([217.79.144.158]:40625 "EHLO ogre.sisk.pl"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754172AbZDIPTc (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 9 Apr 2009 11:19:32 -0400
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-To: Maxim Levitsky <maximlevitsky@gmail.com>
-Subject: Re: [BISECTED] [REGRESSION] can't anymore even do a s2ram-s2disk-s2ram cycle on acer aspire 5720G
-Date: Thu, 9 Apr 2009 17:19:36 +0200
-User-Agent: KMail/1.11.2 (Linux/2.6.29-rjw; KDE/4.2.2; x86_64; ; )
-Cc: Alan Stern <stern@rowland.harvard.edu>,
-       "linux-kernel" <linux-kernel@vger.kernel.org>,
-       "linux-usb" <linux-usb@vger.kernel.org>
-References: <1239061976.4705.16.camel@maxim-laptop> <1239278795.7235.8.camel@maxim-laptop> <1239287005.27888.1.camel@maxim-laptop>
-In-Reply-To: <1239287005.27888.1.camel@maxim-laptop>
-MIME-Version: 1.0
-Content-Type: Text/Plain;
-  charset="iso-8859-2"
-Content-Transfer-Encoding: 7bit
+	Thu, 9 Apr 2009 11:22:35 -0400
+Received: from g1t0028.austin.hp.com ([15.216.28.35]:7662 "EHLO
+	g1t0028.austin.hp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757222AbZDIPWe (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 9 Apr 2009 11:22:34 -0400
+Date: Thu, 9 Apr 2009 10:22:35 -0500
+From: "Mike Miller (OS Dev)" <mikem@beardog.cca.cpqcorp.net>
+To: Matthew Wilcox <matthew@wil.cx>
+Cc: LKML-SCSI <linux-scsi@vger.kernel.org>,
+       LKML <linux-kernel@vger.kernel.org>, mike.miller@hp.com
+Subject: Re: READ CAPACITY (16) failing
+Message-ID: <20090409152235.GB15043@beardog.cca.cpqcorp.net>
+References: <20090408194357.GA15043@beardog.cca.cpqcorp.net> <20090408195447.GP20983@parisc-linux.org>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Message-Id: <200904091719.36709.rjw@sisk.pl>
+In-Reply-To: <20090408195447.GP20983@parisc-linux.org>
+User-Agent: Mutt/1.5.9i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thursday 09 April 2009, Maxim Levitsky wrote:
-> On Thu, 2009-04-09 at 15:06 +0300, Maxim Levitsky wrote:
-> > On Tue, 2009-04-07 at 17:24 +0200, Rafael J. Wysocki wrote:
-> > > On Tuesday 07 April 2009, Maxim Levitsky wrote:
-> > > > Hi,
-> > > 
-> > > Hi,
-> > > 
-> > > > This is first time, I am actually happy about a regression....
-> > > > 
-> > > > I have a notebook, aspire 5720G that fails to do two suspends to ram in
-> > > > row.
-> > > > 
-> > > > for example I can do s2ram->s2disk->s2ram->...
-> > > > but can't s2ram->s2ram.
-> > > > 
-> > > > Well that at least was the situation till now.
-> > > > Also there is no way to debug this - bios doesn't pass control back to
-> > > > linux on failed resume. I tried probably every guess I could come with.
-> > > > 
-> > > > Now, after a commit a0d4922da2e4ccb0973095d8d29f36f6b1b5f703 which I
-> > > > finally bisected, I can't anymore do two suspends to ram at all,
-> > > > regardless of suspend to disk in between. Also bios doesn't pass control
-> > > > when resume fails.
-> > > 
-> > > I wonder what happens if the in-between s2disk is in the "shutdown" mode.
-> > > Theoretically, it should work as a cold boot, so the second s2ram should work
-> > > in this case.
-> > > 
-> > > > I actually did 3 bisects, as I had to find fixes to 2 more s2ram bugs
-> > > > that were fixed.
-> > > > the fixes are:
-> > > > 
-> > > > a0e280e0f33f6c859a235fb69a875ed8f3420388
-> > > > 1e70c7f7a9d4a3d2cc78b40e1d7768d99cd79899
-> > > 
-> > > Commit a0d4922da2e4ccb0973095d8d29f36f6b1b5f703 has been modified quite a bit
-> > > by some later commits due to regressions it introduced.
-> > > 
-> > > > Now, why I am happy about this:
-> > > > It seems that a suspend cycle changes something that explodes on next
-> > > > resume. a s2disk cycle cleared this, but not anymore, thus the poison
-> > > > must be somehow connected to the
-> > > > a0d4922da2e4ccb0973095d8d29f36f6b1b5f703
-> > > 
-> > > Hint: it would be a lot easier to read the message if you included the subjects
-> > > of the commits too. :-)
-> > > 
-> > Sure, sorry ;-)
+On Wed, Apr 08, 2009 at 01:54:48PM -0600, Matthew Wilcox wrote:
+> On Wed, Apr 08, 2009 at 02:43:57PM -0500, Mike Miller (OS Dev) wrote:
+> > I'm working on the HP Smart Array SCSI driver (hpsa) and I'm seeing the
+> > following failures:
 > > 
-> > > > PCI state?? I tried restoring it from saved file, (created on suspend)
-> > > > but this didn't help.
-> > > > (Only a single register, which looks like a clear or write register
-> > > > changed).
-> > > > 
-> > > > 
-> > > > Also this commits narrows down the search, now it is clear that this is
-> > > > usb related. No wonder bios pokes at usb on resume and stalls.....
-> > > > 
-> > > > 
-> > > > It could even be connected to bios handoff, maybe we don't do that on
-> > > > resume?
-> > > > 
-> > > > (Note: this regression is present all way to latest -git)
-> > > 
-> > > I'm not sure if we really should consider this as a regression.  s2ram clearly
-> > > didn't work correctly on your machine before and the s2disk in between
-> > > is not really relevant here IMO.
-> > Yet, this allowed me at least lalf the time to do s2ram.
-> > s2disk eats battery, if I suspend the system for short time
+> > hpsa1: <0x3230> at PCI 0000:02:00.0 IRQ 76 using DAC
+> > scsi4 : hpsa
+> > scsi 4:0:0:0: Direct-Access     HP       LOGICAL VOLUME   5.20 PQ: 0 ANSI: 5
+> > sd 4:0:0:0: Attached scsi generic sg4 type 0
+> > sd 4:0:0:0: [sdd] READ CAPACITY(16) failed
+> > sd 4:0:0:0: [sdd] Result: hostbyte=DID_ABORT driverbyte=DRIVER_OK
+> > sd 4:0:0:0: [sdd] Sense not available.
+> > hpsa: cp ffff8800cf400000 has check condition: unknown type: Sense: 0x5,
+> > ASC: 0x20, ASCQ: 0x0, Returning result: 0x2, cmd=[a0 00 00 00 00 00 00 00 10
+> > 00]
+> 
+> > The READ CAPACITY failures are what I'm concerned about. I can't seem to track
+> > down why that's failing.
+> > I've tried printing out the_result from sd but it's not printing out. I'm
+> > assuming that anytime I load the driver it goes thru sd.
 > > 
-> > 
-> > > 
-> > > > What do you think?
-> > > 
-> > > Well, not much apart from the observation that the problem with s2ram on your
-> > > machine is probably related to USB.  In fact, on Intel chipsets there seem to
-> > > be some strange links between the USB controllers (most notably EHCI) and
-> > > the core chipset that don't appear to be well documented and this may be the
-> > > case in which they show up.  Dunno.
-> > 
-> > Sorry for late reply,
-> > 
-> > I now semi-bisected, the change inside this patch.
-> > 
-> > First, UHCI doesn't affect anything.
-> > 
-> > Then, if I move 'late' suspend functions inside normal ones, everything
-> > returns works like it used to be (I need to retest this statement, I did
-> > other changes too).
-> Yep, just moving content of late suspend and content of early resume to
-> normal suspend/resume functions fixes this issue.
+> > 	if (the_result) {
+> > 		sense_valid = scsi_sense_valid(&sshdr);
+> > 		if (sense_valid &&
+> > 			sshdr.sense_key == ILLEGAL_REQUEST &&
+> > 			(sshdr.asc == 0x20 || sshdr.asc == 0x24) &&
+> > 			sshdr.ascq == 0x00)
+> > 			/* Invalid Command Operation Code or
+> > 			 * Invalid Field in CDB, just retry
+> > 			 * silently with RC10 */
+> > 			return -EINVAL;
+> > 		}
+> > 	retries--;
+> > 	} while (the_result && retries);
+> > 	printk(KERN_WARNING "sd-mfm: the_result = %d\n", the_result);
+> 
+> Probably the device you're testing against doesn't support RC16, which
+> is fine.  But for some reason, we're not getting valid sense data back
+> from the device.  Now, there's two responses to this that seem rational
+> to me:
+> 
+>  - In sd.c, if the drive has returned no/invalid sense data, try RC10
+>    silently, just like the 0x20 / 0x24 ASC case.
+>  - Find out why this drive doesn't report valid sense data when attached
+>    to hpsa.  I assume it does report valid sense data when attached to
+>    some other scsi card?
 
-If I understand correctly, you're referring to the USB controller suspend and
-resume callbacks, is that correct?
+If I connect to another card everything seems to work OK. But, the
+controllers I'm testing with DO support RC16. If I load the cciss driver I
+can see my large volumes with no problems. I've also bugged the firmware
+folks and according to them RC16 is supported.
 
-Rafael
+WRT the TUR failing, if this controller message is accurate it looks like
+the TUR is being sent to the controller and not the logical volumes.
+
+[04/08 14:31:09]Ctlr SCSI Request, Illegal CDB Opcode=0x0
+
+Wonder why that would be the case.
+
+-- mikem
