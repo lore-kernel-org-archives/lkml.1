@@ -1,90 +1,102 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761579AbZDIGrH@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763679AbZDIGsP@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761579AbZDIGrH (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 9 Apr 2009 02:47:07 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753374AbZDIGqv
+	id S1763679AbZDIGsP (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 9 Apr 2009 02:48:15 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760056AbZDIGrx
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 9 Apr 2009 02:46:51 -0400
-Received: from rv-out-0506.google.com ([209.85.198.228]:53978 "EHLO
-	rv-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752911AbZDIGqt (ORCPT
+	Thu, 9 Apr 2009 02:47:53 -0400
+Received: from acsinet12.oracle.com ([141.146.126.234]:45151 "EHLO
+	acsinet12.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756219AbZDIGrw (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 9 Apr 2009 02:46:49 -0400
-Message-ID: <49DD99CD.4090201@gawab.com>
-Date: Wed, 08 Apr 2009 23:46:37 -0700
-From: Justin Madru <jdm64@gawab.com>
-User-Agent: Thunderbird 2.0.0.21 (X11/20090319)
-MIME-Version: 1.0
-To: Kay Sievers <kay.sievers@vrfy.org>
-CC: Andrew Morton <akpm@linux-foundation.org>,
-       lkml <linux-kernel@vger.kernel.org>, linux-scsi@vger.kernel.org,
-       linux-usb@vger.kernel.org, Arjan van de Ven <arjan@infradead.org>
-Subject: Re: 2.6.30-rc1: OOPS on usb disk insert
-References: <49DC3094.5010607@gawab.com> <20090407223828.c9d2cb75.akpm@linux-foundation.org> 	<49DC3F1F.9040306@gawab.com> <ac3eb2510904080625m228ddc4dl611c3c5c368fab2a@mail.gmail.com>
-In-Reply-To: <ac3eb2510904080625m228ddc4dl611c3c5c368fab2a@mail.gmail.com>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 7bit
+	Thu, 9 Apr 2009 02:47:52 -0400
+From: Wenji Huang <wenji.huang@oracle.com>
+To: linux-kbuild@vger.kernel.org
+Cc: linux-kernel@vger.kernel.org, tytso@MIT.EDU, elena.zannoni@oracle.com,
+       Wenji Huang <wenji.huang@oracle.com>
+Subject: [PATCH 1/1] Separate the debuginfo out from kbuild
+Date: Wed,  8 Apr 2009 22:06:21 -0400
+Message-Id: <1239242781-7983-1-git-send-email-wenji.huang@oracle.com>
+X-Mailer: git-send-email 1.5.6
+X-Source-IP: acsmt353.oracle.com [141.146.40.153]
+X-Auth-Type: Internal IP
+X-CT-RefId: str=0001.0A090201.49DD9A13.00B9:SCFMA4539814,ss=1,fgs=0
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Kay Sievers wrote:
-> On Tue, Apr 7, 2009 at 23:07, Justin Madru <jdm64@gawab.com> wrote:
->   
->> Andrew Morton wrote:
->>     
->>> On Tue, 07 Apr 2009 22:05:24 -0700 Justin Madru <jdm64@gawab.com> wrote:
->>>       
->
->   
->>>> Testing out .30-rc1 and usb devises don't work. I insert my flash disk
->>>> and get this oops.
->>>>         
->
->   
->>> The trace appears to be claiming that kernel/async.c:async_new.func is
->>> NULL.
->>>
->>> But it cannot be - it's initialised at compilation time.  Unless
->>> something scribbled on it of course.
->>>       
->
-> I've seen async problems with other subsystem too, maybe caused by a
-> corruption which is fixed by:
->   http://patchwork.kernel.org/patch/16776/
->
->   -static void __init acpi_battery_init_async(void *unused, ...
->   +static void acpi_battery_init_async(void *unused, ...
->
-> Kay
->
->   
-I've applied the following patches (to try to fix other bugs) and I no 
-longer get a BUG/OOPS
-although the patches might have not been the cause of the fix, but 
-inserting the disk still doesn't works.
+This patch will add "make debug_info" to split debuginfo files. The
+separate debug files are under debug directory of building tree.
 
-http://patchwork.kernel.org/patch/17199/
-http://patchwork.kernel.org/patch/17025/
-http://patchwork.kernel.org/patch/17039/
+It is based on two considerations:
+   * The debuginfo extracting machinery could be integrated into the
+     kbuild system. This way it's not just done via RPM macros. So
+     generating debuginfo RPMS or something alike can be simplified
+     and standardized, also distribution independent.
+   * Reduce the size of current file which mixes executable and
+     debug sections. For example, 7% off for vmlinux.
 
-It now complains of: FAT: IO charset cp437 not found
-Which I've found a work around by:
+Signed-off-by: Wenji Huang <wenji.huang@oracle.com>
+---
+ Makefile                 |   14 ++++++++++++++
+ scripts/Makefile.modpost |   12 ++++++++++++
+ 2 files changed, 26 insertions(+), 0 deletions(-)
 
-<insert flash disk>
-syslog complains: FAT: IO charset cp437 not found
-sudo modprobe -r nls_cp437
-sudo modprobe -i nls_cp437
-<remove then reinsert flash disk>
-syslog complains: FAT: IO charset iso8859_1 not found
-sudo modprobe -r nls_iso8859_1
-sudo modprobe -i nls_iso8859_1
-<insert flash disk>
-profit!!
-
-So, I have to insert the disk 3 times before it works. although after 
-that it just works, until I reboot and I have to repeat the unload/load 
-modules.
-
-Justin Madru
+diff --git a/Makefile b/Makefile
+index e5ad5fd..0df7581 100644
+--- a/Makefile
++++ b/Makefile
+@@ -832,6 +832,19 @@ define rule_vmlinux-modpost
+ 	$(Q)echo 'cmd_$@ := $(cmd_vmlinux-modpost)' > $(dot-target).cmd
+ endef
+ 
++quiet_cmd_vmlinux_debug = GEN     $<.debug
++      cmd_vmlinux_debug = mkdir -p debug;         \
++                          $(OBJCOPY) --only-keep-debug         \
++                                     $< debug/$<.debug
++targets += vmlinux.debug
++
++PHONY += debug_info
++debug_info: vmlinux FORCE
++ifdef CONFIG_DEBUG_INFO
++	$(call if_changed,vmlinux_debug)
++	$(Q)$(MAKE) -f $(srctree)/scripts/Makefile.modpost $@
++endif
++
+ # vmlinux image - including updated kernel symbols
+ vmlinux: $(vmlinux-lds) $(vmlinux-init) $(vmlinux-main) vmlinux.o $(kallsyms.o) FORCE
+ ifdef CONFIG_HEADERS_CHECK
+@@ -1278,6 +1291,7 @@ help:
+ 	@echo  '  all		  - Build all targets marked with [*]'
+ 	@echo  '* vmlinux	  - Build the bare kernel'
+ 	@echo  '* modules	  - Build all modules'
++	@echo  '  debug_info      - Extract debug info to debug directory'
+ 	@echo  '  modules_install - Install all modules to INSTALL_MOD_PATH (default: /)'
+ 	@echo  '  firmware_install- Install all firmware to INSTALL_FW_PATH'
+ 	@echo  '                    (default: $$(INSTALL_MOD_PATH)/lib/firmware)'
+diff --git a/scripts/Makefile.modpost b/scripts/Makefile.modpost
+index f4053dc..c120261 100644
+--- a/scripts/Makefile.modpost
++++ b/scripts/Makefile.modpost
+@@ -137,6 +137,18 @@ $(modules): %.ko :%.o %.mod.o FORCE
+ 
+ targets += $(modules)
+ 
++modules-debug := $(modules:.ko=.ko.debug)
++quiet_cmd_debug_ko = GEN     $@
++      cmd_debug_ko = mkdir -p debug/$(dir $@);                         \
++                    $(OBJCOPY) --only-keep-debug $< debug/$@
++targets += $(modules-debug)
++
++debug_info: $(modules-debug) FORCE
++
++ifdef CONFIG_DEBUG_INFO
++$(modules-debug): $(modules) FORCE
++	$(call if_changed,debug_ko)
++endif
+ 
+ # Add FORCE to the prequisites of a target to force it to be always rebuilt.
+ # ---------------------------------------------------------------------------
+-- 
+1.5.6
 
