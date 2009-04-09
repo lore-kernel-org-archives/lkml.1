@@ -1,99 +1,181 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758972AbZDIIOO@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758584AbZDIITr@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758972AbZDIIOO (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 9 Apr 2009 04:14:14 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754068AbZDIIN5
+	id S1758584AbZDIITr (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 9 Apr 2009 04:19:47 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756097AbZDIIT3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 9 Apr 2009 04:13:57 -0400
-Received: from mx2.redhat.com ([66.187.237.31]:48134 "EHLO mx2.redhat.com"
+	Thu, 9 Apr 2009 04:19:29 -0400
+Received: from mga03.intel.com ([143.182.124.21]:27034 "EHLO mga03.intel.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753996AbZDIINy (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 9 Apr 2009 04:13:54 -0400
-Subject: Re: Multiple Tracers
-From: Steven Whitehouse <swhiteho@redhat.com>
-To: Tom Zanussi <tzanussi@gmail.com>
-Cc: Ingo Molnar <mingo@elte.hu>,
-       =?ISO-8859-1?Q?Fr=E9d=E9ric?= Weisbecker <fweisbec@gmail.com>,
-       rostedt@goodmis.org, linux-kernel@vger.kernel.org, mingo@redhat.com,
-       axboe@kernel.dk
-In-Reply-To: <1239255478.6839.64.camel@tropicana>
-References: <1239197703.3359.25.camel@localhost.localdomain>
-	 <20090408135312.GR18581@elte.hu>
-	 <1239199899.3359.39.camel@localhost.localdomain>
-	 <20090408142413.GF12931@elte.hu>  <1239255478.6839.64.camel@tropicana>
-Content-Type: text/plain
-Organization: Red Hat UK Ltd
-Date: Thu, 09 Apr 2009 09:15:09 +0100
-Message-Id: <1239264909.3373.4.camel@localhost.localdomain>
-Mime-Version: 1.0
-Content-Transfer-Encoding: 7bit
+	id S1755112AbZDIIT1 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 9 Apr 2009 04:19:27 -0400
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.40,159,1239001200"; 
+   d="scan'208";a="129614386"
+Date: Thu, 9 Apr 2009 16:17:34 +0800
+From: Wu Fengguang <fengguang.wu@intel.com>
+To: Ying Han <yinghan@google.com>
+Cc: "linux-mm@kvack.org" <linux-mm@kvack.org>,
+       linux-kernel <linux-kernel@vger.kernel.org>,
+       akpm <akpm@linux-foundation.org>,
+       "torvalds@linux-foundation.org" <torvalds@linux-foundation.org>,
+       Ingo Molnar <mingo@elte.hu>, Mike Waychison <mikew@google.com>,
+       Rohit Seth <rohitseth@google.com>, Hugh Dickins <hugh@veritas.com>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>,
+       "H. Peter Anvin" <hpa@zytor.com>,
+       =?utf-8?B?VMO2csO2aw==?= Edwin <edwintorok@gmail.com>,
+       Lee Schermerhorn <lee.schermerhorn@hp.com>,
+       Nick Piggin <npiggin@suse.de>
+Subject: Re: [PATCH][2/2]page_fault retry with NOPAGE_RETRY
+Message-ID: <20090409081734.GC31527@localhost>
+References: <604427e00904081302g1e3e4923kd61ceac5de72ccb2@mail.gmail.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <604427e00904081302g1e3e4923kd61ceac5de72ccb2@mail.gmail.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
-
-On Thu, 2009-04-09 at 00:37 -0500, Tom Zanussi wrote:
-> Hi,
+On Thu, Apr 09, 2009 at 04:02:43AM +0800, Ying Han wrote:
+> x86 support:
 > 
-> On Wed, 2009-04-08 at 16:24 +0200, Ingo Molnar wrote:
-> > * Steven Whitehouse <swhiteho@redhat.com> wrote:
-> > 
-> > > Hi,
-> > > 
-> > > On Wed, 2009-04-08 at 15:53 +0200, Ingo Molnar wrote:
-> > > > * Steven Whitehouse <swhiteho@redhat.com> wrote:
-> > > > 
-> > > > > Hi,
-> > > > > 
-> > > > > A little while back I posted a RFC patch which added gfs2 glock 
-> > > > > tracing to blktrace. There was a suggestion that I should look 
-> > > > > instead at the generic tracing code and add a new tracer, but I've 
-> > > > > come up with a couple of issues along the way.
-> > > > > 
-> > > > > I think from what I can see that its only possible to run a single 
-> > > > > tracer at once, so running blktrace (for example) would preclude 
-> > > > > me from also tracing gfs2's glocks at the same time. Also, I can 
-> > > > > see no mechanism by which I could ensure the sequencing between 
-> > > > > the blktrace and glock traces other than exporting the blktrace 
-> > > > > sequence number, even if running multiple tracers at the same time 
-> > > > > was possible.
-> > > > 
-> > > > There's a recent addition: the EVENT_TRACE() facility. Would that 
-> > > > suit your purposes?
-> > > > 
-> > > > 	Ingo
-> > > 
-> > > If I can get both blktrace and glock trace info from it, then yes. 
-> > > I thought that the blktrace output went either via the original 
-> > > relayfs path, or via its own tracer so that it wasn't possible to 
-> > > use it and the event trace facility at the same time, unless I use 
-> > > blktrace via relayfs. From what I've read I thought that probably 
-> > > the relayfs interface for blktrace might eventually be removed in 
-> > > favour of the generic tracing interface, but I'm not 100% sure of 
-> > > that, so perhaps someone can confirm the plans in that area?
-> > 
-> > Tom Zanussi (Cc:-ed) recently converted the blktrace tracepoints to 
-> > a tracing framework - and i think much of that could be reused to 
-> > add EVENT_TRACE() tracepoints to blktrace too.
-> > 
-> > Tom, what's your take on this?
-> > 
-> > In general, this is the direction we want to take: EVENT_TRACE() 
-> > tracepoints that can be used in a generic way, in any tracer.
-> > 
+> Signed-off-by: Ying Han <yinghan@google.com>
+> 	       Mike Waychison <mikew@google.com>
+>
+> arch/x86/mm/fault.c |   20 ++++++++++++++
 > 
-> Yeah, the EVENT_TRACE() tracepoints can be mixed any way you want by
-> just enabling the ones you want to see:
 > 
-[lots of useful explanation cut here]
+> diff --git a/arch/x86/mm/fault.c b/arch/x86/mm/fault.c
+> index 31e8730..0ec60a1 100644
+> --- a/arch/x86/mm/fault.c
+> +++ b/arch/x86/mm/fault.c
+> @@ -591,6 +591,7 @@ void __kprobes do_page_fault(struct pt_regs *regs, unsigne
+>  #ifdef CONFIG_X86_64
+>  	unsigned long flags;
+>  #endif
+> +	unsigned int retry_flag = FAULT_FLAG_RETRY;
+> 
+>  	tsk = current;
+>  	mm = tsk->mm;
+> @@ -689,6 +690,7 @@ again:
+>  		down_read(&mm->mmap_sem);
+>  	}
+> 
+> +retry:
+>  	vma = find_vma(mm, address);
+>  	if (!vma)
+>  		goto bad_area;
+> @@ -715,6 +717,7 @@ again:
+>  good_area:
+>  	si_code = SEGV_ACCERR;
+>  	write = 0;
+> +	write |= retry_flag;
+>  	switch (error_code & (PF_PROT|PF_WRITE)) {
+>  	default:	/* 3: write, present */
+>  		/* fall through */
+        case PF_WRITE:          /* write, not present */
+                if (!(vma->vm_flags & VM_WRITE))
+                        goto bad_area;
+                write++;
 
-Thanks for the low down on this. Thats exactly what I need to know to
-answer my question. I will continue to work on trace events support for
-GFS2 and when I'm done with that, I may look at other things such as
-blktrace if nobody has beaten me to it in the mean time,
+This looks flaky, since 'write' is now some combination of bit fields.
+How about merging 'retry_flag' and 'write' into 'flags' like this?
 
-Steve.
-
-
-
+Thanks,
+Fengguang
+---
+diff --git a/arch/x86/mm/fault.c b/arch/x86/mm/fault.c
+index c76ef1d..2500ab6 100644
+--- a/arch/x86/mm/fault.c
++++ b/arch/x86/mm/fault.c
+@@ -587,10 +587,11 @@ void __kprobes do_page_fault(struct pt_regs *regs, unsigned long error_code)
+ 	struct mm_struct *mm;
+ 	struct vm_area_struct *vma;
+ 	unsigned long address;
+-	int write, si_code;
++	unsigned int flags = FAULT_FLAG_RETRY;
++	int si_code;
+ 	int fault;
+ #ifdef CONFIG_X86_64
+-	unsigned long flags;
++	unsigned long oops_flags;
+ 	int sig;
+ #endif
+ 
+@@ -694,6 +695,7 @@ void __kprobes do_page_fault(struct pt_regs *regs, unsigned long error_code)
+ 		down_read(&mm->mmap_sem);
+ 	}
+ 
++retry:
+ 	vma = find_vma(mm, address);
+ 	if (!vma)
+ 		goto bad_area;
+@@ -719,14 +721,13 @@ void __kprobes do_page_fault(struct pt_regs *regs, unsigned long error_code)
+  */
+ good_area:
+ 	si_code = SEGV_ACCERR;
+-	write = 0;
+ 	switch (error_code & (PF_PROT|PF_WRITE)) {
+ 	default:	/* 3: write, present */
+ 		/* fall through */
+ 	case PF_WRITE:		/* write, not present */
+ 		if (!(vma->vm_flags & VM_WRITE))
+ 			goto bad_area;
+-		write++;
++		flags |= VM_FAULT_WRITE;
+ 		break;
+ 	case PF_PROT:		/* read, present */
+ 		goto bad_area;
+@@ -740,7 +741,7 @@ good_area:
+ 	 * make sure we exit gracefully rather than endlessly redo
+ 	 * the fault.
+ 	 */
+-	fault = handle_mm_fault(mm, vma, address, write);
++	fault = handle_mm_fault(mm, vma, address, flags);
+ 	if (unlikely(fault & VM_FAULT_ERROR)) {
+ 		if (fault & VM_FAULT_OOM)
+ 			goto out_of_memory;
+@@ -748,6 +749,23 @@ good_area:
+ 			goto do_sigbus;
+ 		BUG();
+ 	}
++
++	/*
++	 * Here we retry fault once and switch to synchronous mode. The
++	 * main reason is to prevent us from the cases of starvation.
++	 * The retry logic open a starvation hole in which case pages might
++	 * be removed or changed after the retry.
++	 */
++	if (fault & VM_FAULT_RETRY) {
++		if (flags & FAULT_FLAG_RETRY) {
++			flags &= ~FAULT_FLAG_RETRY;
++			tsk->maj_flt++;
++			tsk->min_flt--;
++			goto retry;
++		}
++		BUG();
++	}
++
+ 	if (fault & VM_FAULT_MAJOR)
+ 		tsk->maj_flt++;
+ 	else
+@@ -840,7 +858,7 @@ no_context:
+ #ifdef CONFIG_X86_32
+ 	bust_spinlocks(1);
+ #else
+-	flags = oops_begin();
++	oops_flags = oops_begin();
+ #endif
+ 
+ 	show_fault_oops(regs, error_code, address);
+@@ -859,7 +877,7 @@ no_context:
+ 		sig = 0;
+ 	/* Executive summary in case the body of the oops scrolled away */
+ 	printk(KERN_EMERG "CR2: %016lx\n", address);
+-	oops_end(flags, regs, sig);
++	oops_end(oops_flags, regs, sig);
+ #endif
+ 
+ out_of_memory:
