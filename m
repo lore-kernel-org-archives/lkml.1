@@ -1,49 +1,115 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756715AbZDISOk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S935607AbZDISPj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756715AbZDISOk (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 9 Apr 2009 14:14:40 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756165AbZDISO2
+	id S935607AbZDISPj (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 9 Apr 2009 14:15:39 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760129AbZDISPG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 9 Apr 2009 14:14:28 -0400
-Received: from zeniv.linux.org.uk ([195.92.253.2]:55191 "EHLO
-	ZenIV.linux.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754882AbZDISO1 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 9 Apr 2009 14:14:27 -0400
-Date: Thu, 9 Apr 2009 19:13:29 +0100
-From: Al Viro <viro@ZenIV.linux.org.uk>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: David Howells <dhowells@redhat.com>, akpm@linux-foundation.org,
-       sam@ravnborg.org, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 2/2] FRV: Move to arch/frv/include/asm/
-Message-ID: <20090409181328.GD26366@ZenIV.linux.org.uk>
-References: <20090409163255.22778.39921.stgit@warthog.procyon.org.uk> <20090409163300.22778.92061.stgit@warthog.procyon.org.uk> <alpine.LFD.2.00.0904091042240.4583@localhost.localdomain>
+	Thu, 9 Apr 2009 14:15:06 -0400
+Received: from hera.kernel.org ([140.211.167.34]:54194 "EHLO hera.kernel.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1756788AbZDISPD (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 9 Apr 2009 14:15:03 -0400
+Date: Thu, 9 Apr 2009 18:12:33 GMT
+From: Heiko Carstens <heiko.carstens@de.ibm.com>
+To: linux-tip-commits@vger.kernel.org
+Cc: linux-kernel@vger.kernel.org, hpa@zytor.com, mingo@redhat.com,
+       a.p.zijlstra@chello.nl, schwidefsky@de.ibm.com, borntraeger@de.ibm.com,
+       heiko.carstens@de.ibm.com, tglx@linutronix.de, mingo@elte.hu
+Reply-To: mingo@redhat.com, hpa@zytor.com, linux-kernel@vger.kernel.org,
+       a.p.zijlstra@chello.nl, schwidefsky@de.ibm.com,
+       heiko.carstens@de.ibm.com, tglx@linutronix.de, borntraeger@de.ibm.com,
+       mingo@elte.hu
+In-Reply-To: <20090409184834.7a0df7b2@osiris.boeblingen.de.ibm.com>
+References: <20090409184834.7a0df7b2@osiris.boeblingen.de.ibm.com>
+Subject: [tip:core/urgent] mutex: have non-spinning mutexes on s390 by default
+Message-ID: <tip-36cd3c9f925b9307236505ae7ad1ad7ac4d4357c@git.kernel.org>
+Git-Commit-ID: 36cd3c9f925b9307236505ae7ad1ad7ac4d4357c
+X-Mailer: tip-git-log-daemon
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=UTF-8
 Content-Disposition: inline
-In-Reply-To: <alpine.LFD.2.00.0904091042240.4583@localhost.localdomain>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Thu, 09 Apr 2009 18:12:36 +0000 (UTC)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Apr 09, 2009 at 10:51:16AM -0700, Linus Torvalds wrote:
-> 
-> 
-> On Thu, 9 Apr 2009, David Howells wrote:
-> >
-> > Move arch headers from include/asm-frv/ to arch/frv/include/asm/.
-> > 
-> > Signed-off-by: David Howells <dhowells@redhat.com>
-> 
-> I'm not going to apply this one either. This one at least has the deletes, 
-> but Christ, look at that patch!
-> 
-> Please use "-M" when creating diffs for sending to me, so that the diffs 
-> are rename diffs, and so that you can _see_ that they are renames. No, 
-> it's not the git default, but that's because there are still too many crap 
-> SCM's out there, and too many people using "patch".
+Commit-ID:  36cd3c9f925b9307236505ae7ad1ad7ac4d4357c
+Gitweb:     http://git.kernel.org/tip/36cd3c9f925b9307236505ae7ad1ad7ac4d4357c
+Author:     Heiko Carstens <heiko.carstens@de.ibm.com>
+AuthorDate: Thu, 9 Apr 2009 18:48:34 +0200
+Committer:  Ingo Molnar <mingo@elte.hu>
+CommitDate: Thu, 9 Apr 2009 19:28:24 +0200
 
-We can teach patch(1) to handle those - apparently agruen has resurrected
-development lately (git://git.savannah.gnu.org/patch.git), so it might
-be possible without usual latency problems...
+mutex: have non-spinning mutexes on s390 by default
+
+Impact: performance regression fix for s390
+
+The adaptive spinning mutexes will not always do what one would expect on
+virtualized architectures like s390. Especially the cpu_relax() loop in
+mutex_spin_on_owner might hurt if the mutex holding cpu has been scheduled
+away by the hypervisor.
+
+We would end up in a cpu_relax() loop when there is no chance that the
+state of the mutex changes until the target cpu has been scheduled again by
+the hypervisor.
+
+For that reason we should change the default behaviour to no-spin on s390.
+
+We do have an instruction which allows to yield the current cpu in favour of
+a different target cpu. Also we have an instruction which allows us to figure
+out if the target cpu is physically backed.
+
+However we need to do some performance tests until we can come up with
+a solution that will do the right thing on s390.
+
+Signed-off-by: Heiko Carstens <heiko.carstens@de.ibm.com>
+Acked-by: Peter Zijlstra <a.p.zijlstra@chello.nl>
+Cc: Martin Schwidefsky <schwidefsky@de.ibm.com>
+Cc: Christian Borntraeger <borntraeger@de.ibm.com>
+LKML-Reference: <20090409184834.7a0df7b2@osiris.boeblingen.de.ibm.com>
+Signed-off-by: Ingo Molnar <mingo@elte.hu>
+
+
+---
+ arch/Kconfig      |    3 +++
+ arch/s390/Kconfig |    1 +
+ kernel/mutex.c    |    3 ++-
+ 3 files changed, 6 insertions(+), 1 deletions(-)
+
+diff --git a/arch/Kconfig b/arch/Kconfig
+index dc81b34..78a35e9 100644
+--- a/arch/Kconfig
++++ b/arch/Kconfig
+@@ -109,3 +109,6 @@ config HAVE_CLK
+ 
+ config HAVE_DMA_API_DEBUG
+ 	bool
++
++config HAVE_DEFAULT_NO_SPIN_MUTEXES
++	bool
+diff --git a/arch/s390/Kconfig b/arch/s390/Kconfig
+index dcb667c..2eca5fe 100644
+--- a/arch/s390/Kconfig
++++ b/arch/s390/Kconfig
+@@ -82,6 +82,7 @@ config S390
+ 	select USE_GENERIC_SMP_HELPERS if SMP
+ 	select HAVE_SYSCALL_WRAPPERS
+ 	select HAVE_FUNCTION_TRACER
++	select HAVE_DEFAULT_NO_SPIN_MUTEXES
+ 	select HAVE_OPROFILE
+ 	select HAVE_KPROBES
+ 	select HAVE_KRETPROBES
+diff --git a/kernel/mutex.c b/kernel/mutex.c
+index 5d79781..507cf2b 100644
+--- a/kernel/mutex.c
++++ b/kernel/mutex.c
+@@ -148,7 +148,8 @@ __mutex_lock_common(struct mutex *lock, long state, unsigned int subclass,
+ 
+ 	preempt_disable();
+ 	mutex_acquire(&lock->dep_map, subclass, 0, ip);
+-#if defined(CONFIG_SMP) && !defined(CONFIG_DEBUG_MUTEXES)
++#if defined(CONFIG_SMP) && !defined(CONFIG_DEBUG_MUTEXES) && \
++    !defined(CONFIG_HAVE_DEFAULT_NO_SPIN_MUTEXES)
+ 	/*
+ 	 * Optimistic spinning.
+ 	 *
