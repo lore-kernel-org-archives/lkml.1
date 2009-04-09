@@ -1,69 +1,306 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758873AbZDIDTS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758989AbZDIDUH@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758873AbZDIDTS (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 8 Apr 2009 23:19:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757351AbZDIDTB
+	id S1758989AbZDIDUH (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 8 Apr 2009 23:20:07 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755573AbZDIDTw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 8 Apr 2009 23:19:01 -0400
-Received: from cn.fujitsu.com ([222.73.24.84]:53340 "EHLO song.cn.fujitsu.com"
-	rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org with ESMTP
-	id S1757325AbZDIDTA (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 8 Apr 2009 23:19:00 -0400
-Message-ID: <49DD694C.8020902@cn.fujitsu.com>
-Date: Thu, 09 Apr 2009 11:19:40 +0800
-From: Li Zefan <lizf@cn.fujitsu.com>
-User-Agent: Thunderbird 2.0.0.9 (X11/20071115)
+	Wed, 8 Apr 2009 23:19:52 -0400
+Received: from hera.kernel.org ([140.211.167.34]:33914 "EHLO hera.kernel.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1755160AbZDIDTv (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 8 Apr 2009 23:19:51 -0400
+Date: Thu, 9 Apr 2009 03:18:51 GMT
+From: Gary Hade <garyhade@us.ibm.com>
+To: linux-tip-commits@vger.kernel.org
+Cc: linux-kernel@vger.kernel.org, hpa@zytor.com, mingo@redhat.com,
+       garyhade@us.ibm.com, tglx@linutronix.de, mingo@elte.hu
+Reply-To: mingo@redhat.com, hpa@zytor.com, linux-kernel@vger.kernel.org,
+       garyhade@us.ibm.com, tglx@linutronix.de, mingo@elte.hu
+In-Reply-To: <20090408210725.GC11159@us.ibm.com>
+References: <20090408210725.GC11159@us.ibm.com>
+Subject: [tip:x86/apic] x86: consolidate SMP code in io_apic.c
+Message-ID: <tip-e85abf8f432bb2a13733ab7609fbb8e1500af51d@git.kernel.org>
+Git-Commit-ID: e85abf8f432bb2a13733ab7609fbb8e1500af51d
+X-Mailer: tip-git-log-daemon
 MIME-Version: 1.0
-To: Ingo Molnar <mingo@elte.hu>
-CC: Jens Axboe <jens.axboe@oracle.com>,
-       Arnaldo Carvalho de Melo <acme@redhat.com>,
-       LKML <linux-kernel@vger.kernel.org>
-Subject: [PATCH] blktrace: pass the right pointer to kfree()
 Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Thu, 09 Apr 2009 03:18:54 +0000 (UTC)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-If passing a string with leading white spaces to strstrip(),
-the returned ptr != the original ptr.
+Commit-ID:  e85abf8f432bb2a13733ab7609fbb8e1500af51d
+Gitweb:     http://git.kernel.org/tip/e85abf8f432bb2a13733ab7609fbb8e1500af51d
+Author:     Gary Hade <garyhade@us.ibm.com>
+AuthorDate: Wed, 8 Apr 2009 14:07:25 -0700
+Committer:  Ingo Molnar <mingo@elte.hu>
+CommitDate: Thu, 9 Apr 2009 05:13:57 +0200
 
-This bug was introduced by me.
+x86: consolidate SMP code in io_apic.c
 
-Signed-off-by: Li Zefan <lizf@cn.fujitsu.com>
+Impact: Cleanup
+
+Reorganizes the code in arch/x86/kernel/io_apic.c by
+combining two '#ifdef CONFIG_SMP' regions.  In addition
+to making the code easier to understand the first
+'#ifdef CONFIG_SMP' region is moved to a location later
+in the file which will reduce the need for function
+forward declarations when the code subsequently revised.
+
+The only changes other than relocating code to a different
+position in the file were the removal of the assign_irq_vector()
+forward declaration which was no longer needed and some line
+length reduction formatting changes.
+
+Signed-off-by: Gary Hade <garyhade@us.ibm.com>
+Cc: lcm@us.ibm.com
+LKML-Reference: <20090408210725.GC11159@us.ibm.com>
+Signed-off-by: Ingo Molnar <mingo@elte.hu>
+
+
 ---
- kernel/trace/blktrace.c |   10 +++++-----
- 1 files changed, 5 insertions(+), 5 deletions(-)
+ arch/x86/kernel/apic/io_apic.c |  223 +++++++++++++++++++--------------------
+ 1 files changed, 109 insertions(+), 114 deletions(-)
 
-diff --git a/kernel/trace/blktrace.c b/kernel/trace/blktrace.c
-index b32ff44..921ef5d 100644
---- a/kernel/trace/blktrace.c
-+++ b/kernel/trace/blktrace.c
-@@ -1377,12 +1377,12 @@ static int blk_trace_str2mask(const char *str)
- {
- 	int i;
- 	int mask = 0;
--	char *s, *token;
-+	char *buf, *s, *token;
- 
--	s = kstrdup(str, GFP_KERNEL);
--	if (s == NULL)
-+	buf = kstrdup(str, GFP_KERNEL);
-+	if (buf == NULL)
- 		return -ENOMEM;
--	s = strstrip(s);
-+	s = strstrip(buf);
- 
- 	while (1) {
- 		token = strsep(&s, ",");
-@@ -1403,7 +1403,7 @@ static int blk_trace_str2mask(const char *str)
- 			break;
- 		}
- 	}
--	kfree(s);
-+	kfree(buf);
- 
- 	return mask;
+diff --git a/arch/x86/kernel/apic/io_apic.c b/arch/x86/kernel/apic/io_apic.c
+index 767fe7e..7c9d045 100644
+--- a/arch/x86/kernel/apic/io_apic.c
++++ b/arch/x86/kernel/apic/io_apic.c
+@@ -518,120 +518,6 @@ static void ioapic_mask_entry(int apic, int pin)
+ 	spin_unlock_irqrestore(&ioapic_lock, flags);
  }
--- 
-1.5.4.rc3
+ 
+-#ifdef CONFIG_SMP
+-static void send_cleanup_vector(struct irq_cfg *cfg)
+-{
+-	cpumask_var_t cleanup_mask;
+-
+-	if (unlikely(!alloc_cpumask_var(&cleanup_mask, GFP_ATOMIC))) {
+-		unsigned int i;
+-		cfg->move_cleanup_count = 0;
+-		for_each_cpu_and(i, cfg->old_domain, cpu_online_mask)
+-			cfg->move_cleanup_count++;
+-		for_each_cpu_and(i, cfg->old_domain, cpu_online_mask)
+-			apic->send_IPI_mask(cpumask_of(i), IRQ_MOVE_CLEANUP_VECTOR);
+-	} else {
+-		cpumask_and(cleanup_mask, cfg->old_domain, cpu_online_mask);
+-		cfg->move_cleanup_count = cpumask_weight(cleanup_mask);
+-		apic->send_IPI_mask(cleanup_mask, IRQ_MOVE_CLEANUP_VECTOR);
+-		free_cpumask_var(cleanup_mask);
+-	}
+-	cfg->move_in_progress = 0;
+-}
+-
+-static void __target_IO_APIC_irq(unsigned int irq, unsigned int dest, struct irq_cfg *cfg)
+-{
+-	int apic, pin;
+-	struct irq_pin_list *entry;
+-	u8 vector = cfg->vector;
+-
+-	entry = cfg->irq_2_pin;
+-	for (;;) {
+-		unsigned int reg;
+-
+-		if (!entry)
+-			break;
+-
+-		apic = entry->apic;
+-		pin = entry->pin;
+-		/*
+-		 * With interrupt-remapping, destination information comes
+-		 * from interrupt-remapping table entry.
+-		 */
+-		if (!irq_remapped(irq))
+-			io_apic_write(apic, 0x11 + pin*2, dest);
+-		reg = io_apic_read(apic, 0x10 + pin*2);
+-		reg &= ~IO_APIC_REDIR_VECTOR_MASK;
+-		reg |= vector;
+-		io_apic_modify(apic, 0x10 + pin*2, reg);
+-		if (!entry->next)
+-			break;
+-		entry = entry->next;
+-	}
+-}
+-
+-static int
+-assign_irq_vector(int irq, struct irq_cfg *cfg, const struct cpumask *mask);
+-
+-/*
+- * Either sets desc->affinity to a valid value, and returns
+- * ->cpu_mask_to_apicid of that, or returns BAD_APICID and
+- * leaves desc->affinity untouched.
+- */
+-static unsigned int
+-set_desc_affinity(struct irq_desc *desc, const struct cpumask *mask)
+-{
+-	struct irq_cfg *cfg;
+-	unsigned int irq;
+-
+-	if (!cpumask_intersects(mask, cpu_online_mask))
+-		return BAD_APICID;
+-
+-	irq = desc->irq;
+-	cfg = desc->chip_data;
+-	if (assign_irq_vector(irq, cfg, mask))
+-		return BAD_APICID;
+-
+-	/* check that before desc->addinity get updated */
+-	set_extra_move_desc(desc, mask);
+-
+-	cpumask_copy(desc->affinity, mask);
+-
+-	return apic->cpu_mask_to_apicid_and(desc->affinity, cfg->domain);
+-}
+-
+-static void
+-set_ioapic_affinity_irq_desc(struct irq_desc *desc, const struct cpumask *mask)
+-{
+-	struct irq_cfg *cfg;
+-	unsigned long flags;
+-	unsigned int dest;
+-	unsigned int irq;
+-
+-	irq = desc->irq;
+-	cfg = desc->chip_data;
+-
+-	spin_lock_irqsave(&ioapic_lock, flags);
+-	dest = set_desc_affinity(desc, mask);
+-	if (dest != BAD_APICID) {
+-		/* Only the high 8 bits are valid. */
+-		dest = SET_APIC_LOGICAL_ID(dest);
+-		__target_IO_APIC_irq(irq, dest, cfg);
+-	}
+-	spin_unlock_irqrestore(&ioapic_lock, flags);
+-}
+-
+-static void
+-set_ioapic_affinity_irq(unsigned int irq, const struct cpumask *mask)
+-{
+-	struct irq_desc *desc;
+-
+-	desc = irq_to_desc(irq);
+-
+-	set_ioapic_affinity_irq_desc(desc, mask);
+-}
+-#endif /* CONFIG_SMP */
+-
+ /*
+  * The common case is 1:1 IRQ<->pin mappings. Sometimes there are
+  * shared ISA-space IRQs, so we have to support them. We are super
+@@ -2360,6 +2246,115 @@ static int ioapic_retrigger_irq(unsigned int irq)
+  */
+ 
+ #ifdef CONFIG_SMP
++static void send_cleanup_vector(struct irq_cfg *cfg)
++{
++	cpumask_var_t cleanup_mask;
++
++	if (unlikely(!alloc_cpumask_var(&cleanup_mask, GFP_ATOMIC))) {
++		unsigned int i;
++		cfg->move_cleanup_count = 0;
++		for_each_cpu_and(i, cfg->old_domain, cpu_online_mask)
++			cfg->move_cleanup_count++;
++		for_each_cpu_and(i, cfg->old_domain, cpu_online_mask)
++			apic->send_IPI_mask(cpumask_of(i), IRQ_MOVE_CLEANUP_VECTOR);
++	} else {
++		cpumask_and(cleanup_mask, cfg->old_domain, cpu_online_mask);
++		cfg->move_cleanup_count = cpumask_weight(cleanup_mask);
++		apic->send_IPI_mask(cleanup_mask, IRQ_MOVE_CLEANUP_VECTOR);
++		free_cpumask_var(cleanup_mask);
++	}
++	cfg->move_in_progress = 0;
++}
++
++static void
++__target_IO_APIC_irq(unsigned int irq, unsigned int dest, struct irq_cfg *cfg)
++{
++	int apic, pin;
++	struct irq_pin_list *entry;
++	u8 vector = cfg->vector;
++
++	entry = cfg->irq_2_pin;
++	for (;;) {
++		unsigned int reg;
++
++		if (!entry)
++			break;
++
++		apic = entry->apic;
++		pin = entry->pin;
++		/*
++		 * With interrupt-remapping, destination information comes
++		 * from interrupt-remapping table entry.
++		 */
++		if (!irq_remapped(irq))
++			io_apic_write(apic, 0x11 + pin*2, dest);
++		reg = io_apic_read(apic, 0x10 + pin*2);
++		reg &= ~IO_APIC_REDIR_VECTOR_MASK;
++		reg |= vector;
++		io_apic_modify(apic, 0x10 + pin*2, reg);
++		if (!entry->next)
++			break;
++		entry = entry->next;
++	}
++}
++
++/*
++ * Either sets desc->affinity to a valid value, and returns
++ * ->cpu_mask_to_apicid of that, or returns BAD_APICID and
++ * leaves desc->affinity untouched.
++ */
++static unsigned int
++set_desc_affinity(struct irq_desc *desc, const struct cpumask *mask)
++{
++	struct irq_cfg *cfg;
++	unsigned int irq;
++
++	if (!cpumask_intersects(mask, cpu_online_mask))
++		return BAD_APICID;
++
++	irq = desc->irq;
++	cfg = desc->chip_data;
++	if (assign_irq_vector(irq, cfg, mask))
++		return BAD_APICID;
++
++	/* check that before desc->addinity get updated */
++	set_extra_move_desc(desc, mask);
++
++	cpumask_copy(desc->affinity, mask);
++
++	return apic->cpu_mask_to_apicid_and(desc->affinity, cfg->domain);
++}
++
++static void
++set_ioapic_affinity_irq_desc(struct irq_desc *desc, const struct cpumask *mask)
++{
++	struct irq_cfg *cfg;
++	unsigned long flags;
++	unsigned int dest;
++	unsigned int irq;
++
++	irq = desc->irq;
++	cfg = desc->chip_data;
++
++	spin_lock_irqsave(&ioapic_lock, flags);
++	dest = set_desc_affinity(desc, mask);
++	if (dest != BAD_APICID) {
++		/* Only the high 8 bits are valid. */
++		dest = SET_APIC_LOGICAL_ID(dest);
++		__target_IO_APIC_irq(irq, dest, cfg);
++	}
++	spin_unlock_irqrestore(&ioapic_lock, flags);
++}
++
++static void
++set_ioapic_affinity_irq(unsigned int irq, const struct cpumask *mask)
++{
++	struct irq_desc *desc;
++
++	desc = irq_to_desc(irq);
++
++	set_ioapic_affinity_irq_desc(desc, mask);
++}
+ 
+ #ifdef CONFIG_INTR_REMAP
+ 
