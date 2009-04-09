@@ -1,57 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757154AbZDIP77@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761658AbZDIQMA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757154AbZDIP77 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 9 Apr 2009 11:59:59 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756613AbZDIP7u
+	id S1761658AbZDIQMA (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 9 Apr 2009 12:12:00 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756976AbZDIQLt
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 9 Apr 2009 11:59:50 -0400
-Received: from casper.infradead.org ([85.118.1.10]:51640 "EHLO
-	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751268AbZDIP7u (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 9 Apr 2009 11:59:50 -0400
-Subject: Re: Linux 2.6.30-rc1 boot failure on ia64 w/ QLA12160.  Bisected.
-From: David Woodhouse <dwmw2@infradead.org>
-To: Jaswinder Singh Rajput <jaswinder@kernel.org>
-Cc: Robin Holt <holt@sgi.com>,
-       Jaswinder Singh Rajput <jaswinderrajput@gmail.com>,
-       James Bottomley <James.Bottomley@HansenPartnership.com>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>
-In-Reply-To: <1239291835.3296.16.camel@ht.satnam>
-References: <alpine.LFD.2.00.0904071700170.4583@localhost.localdomain>
-	 <20090408042734.GD10768@sgi.com>
-	 <1239179479.3411.4.camel@macbook.infradead.org>
-	 <1239291835.3296.16.camel@ht.satnam>
-Content-Type: text/plain
-Date: Thu, 09 Apr 2009 08:59:32 -0700
-Message-Id: <1239292772.2974.18.camel@macbook.infradead.org>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.26.0 (2.26.0-2.fc11) 
+	Thu, 9 Apr 2009 12:11:49 -0400
+Received: from mx2.redhat.com ([66.187.237.31]:37892 "EHLO mx2.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1757273AbZDIQLs (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 9 Apr 2009 12:11:48 -0400
+Organization: Red Hat UK Ltd. Registered Address: Red Hat UK Ltd, Amberley
+	Place, 107-111 Peascod Street, Windsor, Berkshire, SI4 1TE, United
+	Kingdom.
+	Registered in England and Wales under Company Registration No. 3798903
+From: David Howells <dhowells@redhat.com>
+Subject: [PATCH] Subject: [PATCH] [afs] BUG to BUG_ON changes
+To: torvalds@osdl.org, akpm@linux-foundation.org
+Cc: linux-kernel@vger.kernel.org, Stoyan Gaydarov <stoyboyker@gmail.com>,
+       David Howells <dhowells@redhat.com>
+Date: Thu, 09 Apr 2009 17:10:28 +0100
+Message-ID: <20090409161028.5196.63282.stgit@warthog.procyon.org.uk>
+User-Agent: StGIT/0.14.3
+MIME-Version: 1.0
+Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7bit
-X-SRS-Rewrite: SMTP reverse-path rewritten from <dwmw2@infradead.org> by casper.infradead.org
-	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 2009-04-09 at 21:13 +0530, Jaswinder Singh Rajput wrote:
-> Hello David,
-> 
-> On Wed, 2009-04-08 at 01:31 -0700, David Woodhouse wrote:
-> > On Tue, 2009-04-07 at 23:27 -0500, Robin Holt wrote:
-> > > On and ia64 system with a QLA12160 adapter, my boot fails with:
-> > 
-> > Thanks for the report. After successful feedback from Jeremy, I've added
-> > the commit below to git://git.infradead.org/~dwmw2/firmware-2.6.git,
-> > which I asked Linus to pull already on Monday...
-> 
-> you have updated the tree, so better send new pull request to Linus to
-> avoid any confusions :-)
+From: Stoyan Gaydarov <stoyboyker@gmail.com>
 
-The URL is above; he's clever enough to work it out. If he still hasn't
-pulled it by the time I get home, I'll send another request.
+Signed-off-by: Stoyan Gaydarov <stoyboyker@gmail.com>
+Signed-off-by: David Howells <dhowells@redhat.com>
+---
 
--- 
-dwmw2
+ fs/afs/netdevices.c |    3 +--
+ 1 files changed, 1 insertions(+), 2 deletions(-)
+
+
+diff --git a/fs/afs/netdevices.c b/fs/afs/netdevices.c
+index 49f1894..7ad3650 100644
+--- a/fs/afs/netdevices.c
++++ b/fs/afs/netdevices.c
+@@ -20,8 +20,7 @@ int afs_get_MAC_address(u8 *mac, size_t maclen)
+ 	struct net_device *dev;
+ 	int ret = -ENODEV;
+ 
+-	if (maclen != ETH_ALEN)
+-		BUG();
++	BUG_ON(maclen != ETH_ALEN);
+ 
+ 	rtnl_lock();
+ 	dev = __dev_getfirstbyhwtype(&init_net, ARPHRD_ETHER);
 
