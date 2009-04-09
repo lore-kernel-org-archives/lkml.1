@@ -1,80 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S936665AbZDIU3i@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S936669AbZDIUcO@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S936665AbZDIU3i (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 9 Apr 2009 16:29:38 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762252AbZDIU33
+	id S936669AbZDIUcO (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 9 Apr 2009 16:32:14 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S936386AbZDIUbx
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 9 Apr 2009 16:29:29 -0400
-Received: from gate.crashing.org ([63.228.1.57]:48202 "EHLO gate.crashing.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1761949AbZDIU33 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 9 Apr 2009 16:29:29 -0400
-Cc: oleg@redhat.com, linux-kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>
-Message-Id: <0D6A6388-C12F-4066-84B8-155381D14504@kernel.crashing.org>
-From: Kumar Gala <galak@kernel.crashing.org>
-To: Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com>
-In-Reply-To: <20090409194912.GA30645@us.ibm.com>
-Content-Type: text/plain; charset=US-ASCII; format=flowed; delsp=yes
-Content-Transfer-Encoding: 7bit
-Mime-Version: 1.0 (Apple Message framework v930.3)
-Subject: Re: LTP 20080131 causes defunct processes w/2.6.30-rc1 (possible ptrace issue?)
-Date: Thu, 9 Apr 2009 15:28:31 -0500
-References: <0CA2FBE3-C50C-4503-9134-6DA1C6965743@kernel.crashing.org> <0D4C1952-792C-4AFF-8969-1EF5386FDAB9@kernel.crashing.org> <20090409194912.GA30645@us.ibm.com>
-X-Mailer: Apple Mail (2.930.3)
+	Thu, 9 Apr 2009 16:31:53 -0400
+Received: from g4t0017.houston.hp.com ([15.201.24.20]:34862 "EHLO
+	g4t0017.houston.hp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S936363AbZDIUbx (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 9 Apr 2009 16:31:53 -0400
+Date: Thu, 9 Apr 2009 14:31:51 -0600
+From: Alex Chiang <achiang@hp.com>
+To: Helge Deller <deller@gmx.de>
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+       Tony Breeds <tony@bakeyournoodle.com>, Robin Holt <holt@sgi.com>,
+       linux-kernel <linux-kernel@vger.kernel.org>, linux-ia64@vger.kernel.org
+Subject: Re: cross-compilers
+Message-ID: <20090409203151.GA2770@ldl.fc.hp.com>
+References: <20090408003921.GA5054@ldl.fc.hp.com> <20090408010331.GB10768@sgi.com> <20090408054612.GA6744@ldl.fc.hp.com> <20090407225457.86f8a458.akpm@linux-foundation.org> <20090409003308.GK16602@bilbo.ozlabs.org> <20090408174443.79e71503.akpm@linux-foundation.org> <20090409005521.GA22364@ldl.fc.hp.com> <49DE597B.6090104@gmx.de>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <49DE597B.6090104@gmx.de>
+User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+* Helge Deller <deller@gmx.de>:
+> Alex Chiang wrote:
+> >> Several people have made suggestions but I don't think I've
+> >> yet seen anything which is download-and-go.
+> > 
+> > This is what I plan on doing with Vegard. I've already sent
+> > him mail offline.
+> 
+> Any chance to add cross compilers for linux-parisc and
+> linux-parisc64 as well?
 
-On Apr 9, 2009, at 2:49 PM, Sukadev Bhattiprolu wrote:
+I can try.
 
-> Kumar Gala [galak@kernel.crashing.org] wrote:
->>
->> On Apr 9, 2009, at 10:43 AM, Kumar Gala wrote:
->>
->>> I'm seeing some weird behavior in 2.6.30-rc1 that didn't exist in  
->>> 2.6.29.
->>> We have a slightly older LTP version (20080131) that we run on some
->>> embedded PPC boards.  If I run the syscall tests on 2.6.29 things  
->>> pass as
->
-> Will try to repro on a normal machine, but can you attach the /proc/ 
-> pid/status
-> (and possibly the stack) of the parent of the 'recv01' ?
+I'm about to leave on a two-week holiday so it'll be a while.
 
-Name:   recv01
-State:  Z (zombie)
-Tgid:   2449
-Pid:    2449
-PPid:   1
-TracerPid:      0
-Uid:    0       0       0       0
-Gid:    0       0       0       0
-FDSize: 0
-Groups: 0 1 2 3 4 6 10
-Threads:        1
-SigQ:   8/16384
-SigPnd: 0000000000000000
-ShdPnd: 0000000000004100
-SigBlk: 0000000000000000
-SigIgn: 0000000000000000
-SigCgt: 0000000000000000
-CapInh: 0000000000000000
-CapPrm: fffffffffffffeff
-CapEff: fffffffffffffeff
-CapBnd: fffffffffffffeff
-voluntary_ctxt_switches:        6
-nonvoluntary_ctxt_switches:     0
+Thanks.
 
-If you have suggestion on how to dump the stack I can provide that as  
-well.
+/ac
 
-> If the parent is 'init', is there anything special about the init on  
-> your board
-> or on the simulator - like are you running the tests in a container ?
-
-Its an old init from fedora 3 or something like that.  Its not running  
-in any special way (not container, no hypervisor, etc.)
-
-- k
