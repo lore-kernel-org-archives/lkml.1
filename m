@@ -1,95 +1,100 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S935983AbZDIQsA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S936062AbZDIQtK@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S935983AbZDIQsA (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 9 Apr 2009 12:48:00 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S936545AbZDIQqq
+	id S936062AbZDIQtK (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 9 Apr 2009 12:49:10 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753358AbZDIQsk
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 9 Apr 2009 12:46:46 -0400
-Received: from victor.provo.novell.com ([137.65.250.26]:54041 "EHLO
-	victor.provo.novell.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S936540AbZDIQqo (ORCPT
+	Thu, 9 Apr 2009 12:48:40 -0400
+Received: from mtagate1.de.ibm.com ([195.212.17.161]:36677 "EHLO
+	mtagate1.de.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S935359AbZDIQsi (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 9 Apr 2009 12:46:44 -0400
-Message-ID: <49DE26EE.9030402@novell.com>
-Date: Thu, 09 Apr 2009 12:48:46 -0400
-From: Gregory Haskins <ghaskins@novell.com>
-User-Agent: Thunderbird 2.0.0.19 (X11/20081227)
-MIME-Version: 1.0
-To: avi@redhat.com
-CC: linux-kernel@vger.kernel.org, agraf@suse.de, pmullaney@novell.com,
-       pmorreale@novell.com, anthony@codemonkey.ws, rusty@rustcorp.com.au,
-       netdev@vger.kernel.org, kvm@vger.kernel.org, bhutchings@solarflare.com,
-       andi@firstfloor.org, gregkh@suse.de, herber@gondor.apana.org.au,
-       chrisw@sous-sol.org, shemminger@vyatta.com
-Subject: Re: [RFC PATCH v2 00/19] virtual-bus
-References: <20090409155200.32740.19358.stgit@dev.haskins.net>
-In-Reply-To: <20090409155200.32740.19358.stgit@dev.haskins.net>
-X-Enigmail-Version: 0.95.7
-OpenPGP: id=D8195319
-Content-Type: multipart/signed; micalg=pgp-sha1;
- protocol="application/pgp-signature";
- boundary="------------enig107B4FFA0C0392E5505599D7"
+	Thu, 9 Apr 2009 12:48:38 -0400
+Date: Thu, 9 Apr 2009 18:48:34 +0200
+From: Heiko Carstens <heiko.carstens@de.ibm.com>
+To: Peter Zijlstra <peterz@infradead.org>, Ingo Molnar <mingo@elte.hu>
+Cc: Heiko Carstens <heiko.carstens@de.ibm.com>,
+       Martin Schwidefsky <schwidefsky@de.ibm.com>,
+       Christian Borntraeger <borntraeger@de.ibm.com>,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] mutex: have non-spinning mutexes on s390 by default
+Message-ID: <20090409184834.7a0df7b2@osiris.boeblingen.de.ibm.com>
+In-Reply-To: <20090409181404.71ac2988@osiris.boeblingen.de.ibm.com>
+References: <20090409174758.74abec87@osiris.boeblingen.de.ibm.com>
+	<1239292496.7647.607.camel@twins>
+	<20090409181404.71ac2988@osiris.boeblingen.de.ibm.com>
+X-Mailer: Claws Mail 3.5.0 (GTK+ 2.14.7; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This is an OpenPGP/MIME signed message (RFC 2440 and 3156)
---------------enig107B4FFA0C0392E5505599D7
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: quoted-printable
+Updated Patch below:
 
-Avi,
+Subject: [PATCH] mutex: have non-spinning mutexes on s390 by default
 
-Gregory Haskins wrote:
->
-> Todo:
-> *) Develop some kind of hypercall registration mechanism for KVM so tha=
-t
->    we can use that as an integration point instead of directly hooking
->    kvm hypercalls
->  =20
+From: Heiko Carstens <heiko.carstens@de.ibm.com>
 
-What would you like to see here?  I now remember why I removed the
-original patch I had for registration...it requires some kind of
-discovery mechanism on its own.  Note that this is hard, but I figured
-it would make the overall series simpler if I didn't go this route and
-instead just integrated with a statically allocated vector.  That being
-said, I have no problem adding this back in but figure we should discuss
-the approach so I don't go down a rat-hole ;)
+The adaptive spinning mutexes will not always do what one would expect on
+virtualized architectures like s390. Especially the cpu_relax() loop in
+mutex_spin_on_owner might hurt if the mutex holding cpu has been scheduled
+away by the hypervisor.
+We would end up in a cpu_relax() loop when there is no chance that the
+state of the mutex changes until the target cpu has been scheduled again by
+the hypervisor.
+For that reason we should change the default behaviour to no-spin on s390.
 
-So, one thing we could do is use a string-identifier to discover
-hypercall resources.  In this model, we would have one additional
-hypercall registered with kvm (in addition to the mmu-ops, etc) called
-KVM_HC_DYNHC or something like that.  The support for DYNHC could be
-indicated in the cpuid (much like I do with the RESET, DYNIRQ, and VBUS
-support today.   When hypercall provides register, the could provide a
-string such as "vbus", and they would be allocated a hypercall id.=20
-Likewise, the HC_DYNHC interface would allow a guest to query the cpuid
-for the DYNHC feature, and then query the HC_DYNHC vector for a string
-to hc# translation.  If the provider is not present, we return -1 for
-the hc#, otherwise we return the one that was allocated.
+We do have an instruction which allows to yield the current cpu in favour of
+a different target cpu. Also we have an instruction which allows us to figure
+out if the target cpu is physically backed.
 
-I know how you feel about string-ids in general, but I am not quite sure
-how to design this otherwise without it looking eerily similar to what I
-already have (which is registering a new HC vector in kvm_para.h)
+However we need to do some performance tests until we can come up with
+a solution that will do the right thing on s390.
 
-Thoughts?
+Cc: Peter Zijlstra <a.p.zijlstra@chello.nl>
+Signed-off-by: Heiko Carstens <heiko.carstens@de.ibm.com>
+---
+ arch/Kconfig      |    3 +++
+ arch/s390/Kconfig |    1 +
+ kernel/mutex.c    |    3 ++-
+ 3 files changed, 6 insertions(+), 1 deletion(-)
 
--Greg
-
-
---------------enig107B4FFA0C0392E5505599D7
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: OpenPGP digital signature
-Content-Disposition: attachment; filename="signature.asc"
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v2.0.9 (GNU/Linux)
-Comment: Using GnuPG with SUSE - http://enigmail.mozdev.org
-
-iEYEARECAAYFAkneJu4ACgkQlOSOBdgZUxnKlQCfUC3aBrggFJnxvaRiKGjavnqB
-ZHIAmgKAWrK7O20p7s149z/K4vjDMQPt
-=laVP
------END PGP SIGNATURE-----
-
---------------enig107B4FFA0C0392E5505599D7--
+Index: linux-2.6/arch/Kconfig
+===================================================================
+--- linux-2.6.orig/arch/Kconfig
++++ linux-2.6/arch/Kconfig
+@@ -109,3 +109,6 @@ config HAVE_CLK
+ 
+ config HAVE_DMA_API_DEBUG
+ 	bool
++
++config HAVE_DEFAULT_NO_SPIN_MUTEXES
++	bool
+Index: linux-2.6/arch/s390/Kconfig
+===================================================================
+--- linux-2.6.orig/arch/s390/Kconfig
++++ linux-2.6/arch/s390/Kconfig
+@@ -82,6 +82,7 @@ config S390
+ 	select USE_GENERIC_SMP_HELPERS if SMP
+ 	select HAVE_SYSCALL_WRAPPERS
+ 	select HAVE_FUNCTION_TRACER
++	select HAVE_DEFAULT_NO_SPIN_MUTEXES
+ 	select HAVE_OPROFILE
+ 	select HAVE_KPROBES
+ 	select HAVE_KRETPROBES
+Index: linux-2.6/kernel/mutex.c
+===================================================================
+--- linux-2.6.orig/kernel/mutex.c
++++ linux-2.6/kernel/mutex.c
+@@ -148,7 +148,8 @@ __mutex_lock_common(struct mutex *lock, 
+ 
+ 	preempt_disable();
+ 	mutex_acquire(&lock->dep_map, subclass, 0, ip);
+-#if defined(CONFIG_SMP) && !defined(CONFIG_DEBUG_MUTEXES)
++#if defined(CONFIG_SMP) && !defined(CONFIG_DEBUG_MUTEXES) && \
++    !defined(CONFIG_HAVE_DEFAULT_NO_SPIN_MUTEXES)
+ 	/*
+ 	 * Optimistic spinning.
+ 	 *
