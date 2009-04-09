@@ -1,117 +1,84 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932084AbZDISpc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933918AbZDISqM@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932084AbZDISpc (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 9 Apr 2009 14:45:32 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756889AbZDISpV
+	id S933918AbZDISqM (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 9 Apr 2009 14:46:12 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1764356AbZDISpu
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 9 Apr 2009 14:45:21 -0400
-Received: from moutng.kundenserver.de ([212.227.126.187]:60323 "EHLO
-	moutng.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756245AbZDISpT (ORCPT
+	Thu, 9 Apr 2009 14:45:50 -0400
+Received: from norsk5.dsl.xmission.com ([166.70.24.44]:22425 "EHLO
+	master.douglaskthompson.com" rhost-flags-OK-OK-OK-FAIL)
+	by vger.kernel.org with ESMTP id S1756889AbZDISpu (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 9 Apr 2009 14:45:19 -0400
-Message-ID: <49DE4243.5060004@vlnb.net>
-Date: Thu, 09 Apr 2009 22:45:23 +0400
-From: Vladislav Bolkhovitin <vst@vlnb.net>
-User-Agent: Thunderbird 2.0.0.21 (X11/20090320)
+	Thu, 9 Apr 2009 14:45:50 -0400
+Date: Thu, 09 Apr 2009 12:45:48 -0600
+From: dougthompson@xmission.com
+To: khali@linux-fr.org, dougthompson@xmission.com,
+       linux-kernel@vger.kernel.org, akpm@linux-foundation.org
+Subject: [PATCH 1/1] edac: new fix worktodo to proper cast
+Message-ID: <49de425c.Crgzs57fqLG2PZss%dougthompson@xmission.com>
+User-Agent: Heirloom mailx 12.2 01/07/07
 MIME-Version: 1.0
-To: Tomasz Chmielewski <mangoo@wpkg.org>
-CC: Bart Van Assche <bart.vanassche@gmail.com>, linux-kernel@vger.kernel.org,
-       linux-scsi@vger.kernel.org, iscsitarget-devel@lists.sourceforge.net,
-       James Bottomley <James.Bottomley@hansenpartnership.com>,
-       scst-devel <scst-devel@lists.sourceforge.net>, stgt@vger.kernel.org
-Subject: Re: [Scst-devel] [ANNOUNCE]: Comparison of features sets between
- 	different SCSI targets (SCST, STGT, IET, LIO)
-References: <49D7AD54.4060408@vlnb.net> <49D7B122.50103@wpkg.org> <e2e108260904050429lcd1870ag6656f36a170ccab3@mail.gmail.com> <49D9D9A0.40106@wpkg.org> <49DA33EF.3020700@vlnb.net> <49DA49AA.1060106@wpkg.org>
-In-Reply-To: <49DA49AA.1060106@wpkg.org>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Type: text/plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
-X-Provags-ID: V01U2FsdGVkX19phsOaFfWs8lD2rcyxM8bzl37hCckGDNE/SEo
- /DLbFXAxZhlzBZEIOrUyfRFYV248pcRC45n2XT2Qrs9yIT4u9Z
- pQXP8sv/cRtKQDUkeTuxg==
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+From: Jean Delvare <khali@linux-fr.org>
 
+The edac-core driver includes code which assumes that the work_struct
+which is included in every delayed_work is the first member of that
+structure. This is currently the case but might change in the future,
+so use to_delayed_work() instead, which doesn't make such an
+assumption.
 
-Tomasz Chmielewski, on 04/06/2009 10:27 PM wrote:
-> Vladislav Bolkhovitin schrieb:
-> 
->>> Encrypted device was created with the following additional options 
->>> passed to cryptsetup
->>> (it provides the most performance on systems where CPU is a 
->>> bottleneck, but with decreased
->>> security when compared to default options):
->>>
->>> -c aes-ecb-plain -s 128
->>>
->>>
->>> Generally, CPU on the target was a bottleneck, so I also tested the 
->>> load on target.
->>>
->>>
->>> md0, crypt columns - averages from dd
->>> us, sy, id, wa - averages from vmstat
->>>
->>>
->>> 1. Disk speeds on the target
->>>
->>> Raw performance: 102.17 MB/s
->>> Raw performance (encrypted):  50.21 MB/s
->>>
->>>
->>> 2. Read-ahead on the initiator: 256 (default); md0, crypt - MB/s
->>>
->>>                            md0   us  sy  id  wa  | crypt   us  sy  id  
->>> wa  STGT                      50.63   4% 45% 18% 33% | 32.52    3% 62% 
->>> 16% 19%
->>> SCST (debug + no patches) 43.75   0% 26% 30% 44% | 42.05    0% 84%  1% 
->>> 15%
->>> SCST (fullperf + patches) 45.18   0% 25% 33% 42% | 44.12    0% 81%  2% 
->>> 17%
->>>
->>>
->>> 3. Read-ahead on the initiator: 16384; md0, crypt - MB/s
->>>
->>>                            md0   us  sy  id  wa  | crypt   us  sy  id  
->>> wa  STGT                      56.43   3% 55%  2% 40% | 46.90    3% 
->>> 90%  3%  4%
->>> SCST (debug + no patches) 73.85   0% 58%  1% 41% | 42.70    0% 85%  0% 
->>> 15%
->>> SCST (fullperf + patches) 76.27   0% 63%  1% 36% | 42.52    0% 85%  0% 
->>> 15%
->> Good! You proved that:
->>
->> 1. SCST is capable to work much better than STGT: 35% for md and 37% for 
->> crypt considering maximum values.
->>
->> 2. Default read-ahead size isn't appropriate for remote data access 
->> cases and should be increased. I slowly have been discussing it in past 
->> few months with Wu Fengguang, the read-ahead maintainer.
-> 
-> Note that crypt performance for SCST was worse than that of STGT for 
-> large read-ahead values.
-> Also, SCST performance on crypt device was more or less the same with 
-> 256 and 16384 readahead values. I wonder why performance didn't increase 
-> here while increasing readahead values?
+linux-2.6.30-rc1 has the to_delayed_work() function that will allow
+this patch to work
 
-This is a very big topic. In short, increasing RA alone isn't 
-sufficient, because, while the bigger value transferred over the uplink, 
-the backend storage can get rotated too far, so, to continue reading 
-data from it, there will be a need to wait for that rotation completed.
+Signed-off-by: Jean Delvare <khali@linux-fr.org>
+Signed-off-by: Doug Thompson <dougthompson@xmission.com>
+---
+drivers/edac/edac_device.c |    2 +-
+drivers/edac/edac_mc.c     |    2 +-
+drivers/edac/edac_pci.c    |    2 +-
+3 files changed, 3 insertions(+), 3 deletions(-)
 
-Try together with the RA increase also decrease max_sectors_kb to 128K 
-or even to 64K.
-
-Also, the above actions done on the target can also be quite positive.
-
-> Could anyone recheck if it's the same on some other system?
-> 
->> Which IO scheduler on the target did you use? I guess, deadline? If so, 
->> you should try with CFQ as well.
-> 
-> I used CFQ.
-
-You didn't apply io_context-XXX.patch, correct? With it you should see a 
-  noticeable increase, like in http://scst.sourceforge.net/vl_res.txt.
+Index: linux-2.6.30-rc1/drivers/edac/edac_device.c
+===================================================================
+--- linux-2.6.30-rc1.orig/drivers/edac/edac_device.c
++++ linux-2.6.30-rc1/drivers/edac/edac_device.c
+@@ -389,7 +389,7 @@ static void del_edac_device_from_global_
+  */
+ static void edac_device_workq_function(struct work_struct *work_req)
+ {
+-	struct delayed_work *d_work = (struct delayed_work *)work_req;
++	struct delayed_work *d_work = to_delayed_work(work_req);
+ 	struct edac_device_ctl_info *edac_dev = to_edac_device_ctl_work(d_work);
+ 
+ 	mutex_lock(&device_ctls_mutex);
+Index: linux-2.6.30-rc1/drivers/edac/edac_mc.c
+===================================================================
+--- linux-2.6.30-rc1.orig/drivers/edac/edac_mc.c
++++ linux-2.6.30-rc1/drivers/edac/edac_mc.c
+@@ -260,7 +260,7 @@ static int edac_mc_assert_error_check_an
+  */
+ static void edac_mc_workq_function(struct work_struct *work_req)
+ {
+-	struct delayed_work *d_work = (struct delayed_work *)work_req;
++	struct delayed_work *d_work = to_delayed_work(work_req);
+ 	struct mem_ctl_info *mci = to_edac_mem_ctl_work(d_work);
+ 
+ 	mutex_lock(&mem_ctls_mutex);
+Index: linux-2.6.30-rc1/drivers/edac/edac_pci.c
+===================================================================
+--- linux-2.6.30-rc1.orig/drivers/edac/edac_pci.c
++++ linux-2.6.30-rc1/drivers/edac/edac_pci.c
+@@ -233,7 +233,7 @@ EXPORT_SYMBOL_GPL(edac_pci_find);
+  */
+ static void edac_pci_workq_function(struct work_struct *work_req)
+ {
+-	struct delayed_work *d_work = (struct delayed_work *)work_req;
++	struct delayed_work *d_work = to_delayed_work(work_req);
+ 	struct edac_pci_ctl_info *pci = to_edac_pci_ctl_work(d_work);
+ 	int msec;
+ 	unsigned long delay;
