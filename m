@@ -1,21 +1,21 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S935435AbZDIPh2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S935455AbZDIPjX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S935435AbZDIPh2 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 9 Apr 2009 11:37:28 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757026AbZDIPhL
+	id S935455AbZDIPjX (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 9 Apr 2009 11:39:23 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760885AbZDIPjN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 9 Apr 2009 11:37:11 -0400
-Received: from mx3.mail.elte.hu ([157.181.1.138]:48979 "EHLO mx3.mail.elte.hu"
+	Thu, 9 Apr 2009 11:39:13 -0400
+Received: from mx3.mail.elte.hu ([157.181.1.138]:49256 "EHLO mx3.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1757740AbZDIPhJ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 9 Apr 2009 11:37:09 -0400
-Date: Thu, 9 Apr 2009 17:36:44 +0200
+	id S1760335AbZDIPjN (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 9 Apr 2009 11:39:13 -0400
+Date: Thu, 9 Apr 2009 17:39:01 +0200
 From: Ingo Molnar <mingo@elte.hu>
 To: Linus Torvalds <torvalds@linux-foundation.org>
 Cc: linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
        Thomas Gleixner <tglx@linutronix.de>
-Subject: [GIT PULL] core fixes
-Message-ID: <20090409153644.GA19326@elte.hu>
+Subject: [GIT PULL] irq fixes
+Message-ID: <20090409153901.GA19681@elte.hu>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
@@ -25,7 +25,7 @@ X-ELTE-SpamScore: -1.5
 X-ELTE-SpamLevel: 
 X-ELTE-SpamCheck: no
 X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.5
 	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
 	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
@@ -34,82 +34,64 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 Linus,
 
-Please pull the latest core-fixes-for-linus git tree from:
+Please pull the latest irq-fixes-for-linus git tree from:
 
-   git://git.kernel.org/pub/scm/linux/kernel/git/tip/linux-2.6-tip.git core-fixes-for-linus
+   git://git.kernel.org/pub/scm/linux/kernel/git/tip/linux-2.6-tip.git irq-fixes-for-linus
 
  Thanks,
 
 	Ingo
 
 ------------------>
-Darren Hart (1):
-      futex: comment requeue key reference semantics
-
-Zhaolei (1):
-      printk: fix wrong format string iter for printk
+Yinghai Lu (1):
+      irq: fix cpumask memory leak on offstack cpumask kernels
 
 
- kernel/futex.c |    7 ++++++-
- lib/vsprintf.c |   16 ----------------
- 2 files changed, 6 insertions(+), 17 deletions(-)
+ include/linux/irq.h       |   14 ++++++++++++++
+ kernel/irq/numa_migrate.c |    1 +
+ 2 files changed, 15 insertions(+), 0 deletions(-)
 
-diff --git a/kernel/futex.c b/kernel/futex.c
-index 6b50a02..eef8cd2 100644
---- a/kernel/futex.c
-+++ b/kernel/futex.c
-@@ -883,7 +883,12 @@ retry_private:
- out_unlock:
- 	double_unlock_hb(hb1, hb2);
+diff --git a/include/linux/irq.h b/include/linux/irq.h
+index 974890b..99d147e 100644
+--- a/include/linux/irq.h
++++ b/include/linux/irq.h
+@@ -482,6 +482,16 @@ static inline void init_copy_desc_masks(struct irq_desc *old_desc,
+ #endif
+ }
  
--	/* drop_futex_key_refs() must be called outside the spinlocks. */
-+	/*
-+	 * drop_futex_key_refs() must be called outside the spinlocks. During
-+	 * the requeue we moved futex_q's from the hash bucket at key1 to the
-+	 * one at key2 and updated their key pointer.  We no longer need to
-+	 * hold the references to key1.
-+	 */
- 	while (--drop_count >= 0)
- 		drop_futex_key_refs(&key1);
++static inline void free_desc_masks(struct irq_desc *old_desc,
++				   struct irq_desc *new_desc)
++{
++	free_cpumask_var(old_desc->affinity);
++
++#ifdef CONFIG_GENERIC_PENDING_IRQ
++	free_cpumask_var(old_desc->pending_mask);
++#endif
++}
++
+ #else /* !CONFIG_SMP */
  
-diff --git a/lib/vsprintf.c b/lib/vsprintf.c
-index be3001f..7536ace 100644
---- a/lib/vsprintf.c
-+++ b/lib/vsprintf.c
-@@ -1051,13 +1051,6 @@ int vsnprintf(char *buf, size_t size, const char *fmt, va_list args)
- 			if (str < end)
- 				*str = '%';
- 			++str;
--			if (*fmt) {
--				if (str < end)
--					*str = *fmt;
--				++str;
--			} else {
--				--fmt;
--			}
- 			break;
+ static inline bool init_alloc_desc_masks(struct irq_desc *desc, int cpu,
+@@ -495,6 +505,10 @@ static inline void init_copy_desc_masks(struct irq_desc *old_desc,
+ {
+ }
  
- 		case FORMAT_TYPE_NRCHARS: {
-@@ -1339,8 +1332,6 @@ do {									\
- 			break;
++static inline void free_desc_masks(struct irq_desc *old_desc,
++				   struct irq_desc *new_desc)
++{
++}
+ #endif	/* CONFIG_SMP */
  
- 		case FORMAT_TYPE_INVALID:
--			if (!*fmt)
--				--fmt;
- 			break;
+ #endif /* _LINUX_IRQ_H */
+diff --git a/kernel/irq/numa_migrate.c b/kernel/irq/numa_migrate.c
+index 243d612..44bbdcb 100644
+--- a/kernel/irq/numa_migrate.c
++++ b/kernel/irq/numa_migrate.c
+@@ -54,6 +54,7 @@ static bool init_copy_one_irq_desc(int irq, struct irq_desc *old_desc,
+ static void free_one_irq_desc(struct irq_desc *old_desc, struct irq_desc *desc)
+ {
+ 	free_kstat_irqs(old_desc, desc);
++	free_desc_masks(old_desc, desc);
+ 	arch_free_chip_data(old_desc, desc);
+ }
  
- 		case FORMAT_TYPE_NRCHARS: {
-@@ -1523,13 +1514,6 @@ int bstr_printf(char *buf, size_t size, const char *fmt, const u32 *bin_buf)
- 			if (str < end)
- 				*str = '%';
- 			++str;
--			if (*fmt) {
--				if (str < end)
--					*str = *fmt;
--				++str;
--			} else {
--				--fmt;
--			}
- 			break;
- 
- 		case FORMAT_TYPE_NRCHARS:
