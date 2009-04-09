@@ -1,61 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757222AbZDIOzX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934915AbZDIOzm@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757222AbZDIOzX (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 9 Apr 2009 10:55:23 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761428AbZDIOzE
+	id S934915AbZDIOzm (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 9 Apr 2009 10:55:42 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934760AbZDIOzP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 9 Apr 2009 10:55:04 -0400
-Received: from bear.ext.ti.com ([192.94.94.41]:40619 "EHLO bear.ext.ti.com"
+	Thu, 9 Apr 2009 10:55:15 -0400
+Received: from cantor2.suse.de ([195.135.220.15]:44961 "EHLO mx2.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1760626AbZDIOzD (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 9 Apr 2009 10:55:03 -0400
-Message-ID: <49DE0C36.4070507@ti.com>
-Date: Thu, 9 Apr 2009 09:54:46 -0500
-From: Jon Hunter <jon-hunter@ti.com>
-User-Agent: Thunderbird 2.0.0.19 (Windows/20081209)
+	id S934751AbZDIOzO (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 9 Apr 2009 10:55:14 -0400
+Date: Thu, 9 Apr 2009 07:47:36 -0700
+From: Greg KH <gregkh@suse.de>
+To: fangxiaozhi 00110321 <huananhu@huawei.com>
+Cc: linux-usb@vger.kernel.org, linux-kernel@vger.kernel.org, greg@kroah.com
+Subject: Re: The problems for driver module loading
+Message-ID: <20090409144736.GA7351@suse.de>
+References: <fad7ab4fac82c.ac82cfad7ab4f@huawei.com>
 MIME-Version: 1.0
-To: <linux-kernel@vger.kernel.org>
-CC: <venkatesh.pallipadi@intel.com>
-Subject: [PATCH] Allow deferrable timers for intervals tv2-tv5 to be deferred
-Content-Type: text/plain; charset="ISO-8859-1"; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <fad7ab4fac82c.ac82cfad7ab4f@huawei.com>
+User-Agent: Mutt/1.5.19 (2009-01-05)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-In the current kernel implementation only kernel timers for time 
-interval tv1 are being deferred. This patch allows any timer that is 
-configured as deferrable to be defer regardless of time interval.
+On Thu, Apr 09, 2009 at 04:39:52PM +0800, fangxiaozhi 00110321 wrote:
+> Dear All:
+> 
+> I am sorry, I want to know is there the feature of priority (PRI) for
+> kernel driver loading in Linux, such as in Windows or Mac OS.
 
-This patch was previously discussed on another the thread [1] and Ack'ed 
-  by Venki Pallipadi the author of the original deferrable timer patch.
+No, Linux does not have that.  It is really a "first driver
+loaded/linked that wants to grab the driver, wins."
 
-Venki, could you also ack this patch for confirmation?
+> I develop an independent ECM driver for our standard ECM ether device.
+> And then I install it on some Linux system, such as OpenSUSE 11.0 or
+> Fedora 10. 
 
-Cheers
-Jon
+Why a separate driver?  Why not just modify the existing one?
 
-[1] http://marc.info/?l=linux-kernel&m=123196343531966&w=2
+> But in these systems, they also have a built-in ECM driver
+> cdc_ether.ko. So, while I plug in our device, then the system often
+> attaches cdc_ether.ko driver for our device, but not attaching ours.
+> 
+> Because cdc_ether.ko driver can not support our QMI protocol, so we
+> want the Linux system can always attach our driver to our device, but
+> not cdc_ether.ko driver.
+> 
+>    How can I do for this? 
 
+Add a blacklist entry in the cdc_ether driver.
 
-Signed-off-by: Jon Hunter <jon-hunter@ti.com>
----
-  kernel/timer.c |    3 +++
-  1 files changed, 3 insertions(+), 0 deletions(-)
+Or, from userspace, unbind the device from cdc_ether and bind it to your
+device.  This can easily be done in userspace through sysfs using a
+script triggered from udev.
 
-diff --git a/kernel/timer.c b/kernel/timer.c
-index b455556..6ab6e96 100644
---- a/kernel/timer.c
-+++ b/kernel/timer.c
-@@ -1012,6 +1012,9 @@ cascade:
-  		index = slot = timer_jiffies & TVN_MASK;
-  		do {
-  			list_for_each_entry(nte, varp->vec + slot, entry) {
-+				if (tbase_get_deferrable(nte->base))
-+					continue;
-+
-  				found = 1;
-  				if (time_before(nte->expires, expires))
-  					expires = nte->expires;
--- 
-1.6.1
+Do you have a pointer to your driver anywhere?
+
+thanks,
+
+greg k-h
