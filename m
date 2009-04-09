@@ -1,57 +1,101 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1765889AbZDIM0w@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932401AbZDIM1d@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1765889AbZDIM0w (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 9 Apr 2009 08:26:52 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751911AbZDIM0n
+	id S932401AbZDIM1d (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 9 Apr 2009 08:27:33 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751911AbZDIM1Y
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 9 Apr 2009 08:26:43 -0400
-Received: from LION.seas.upenn.edu ([158.130.12.194]:60928 "EHLO
-	lion.seas.upenn.edu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751482AbZDIM0n (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 9 Apr 2009 08:26:43 -0400
-X-Greylist: delayed 672 seconds by postgrey-1.27 at vger.kernel.org; Thu, 09 Apr 2009 08:26:42 EDT
-Message-ID: <49DDE69B.6050504@seas.upenn.edu>
-Date: Thu, 09 Apr 2009 08:14:19 -0400
-From: Rafi Rubin <rafi@seas.upenn.edu>
-User-Agent: Mozilla-Thunderbird 2.0.0.19 (X11/20090103)
+	Thu, 9 Apr 2009 08:27:24 -0400
+Received: from 8bytes.org ([88.198.83.132]:44840 "EHLO 8bytes.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1758596AbZDIM1X (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 9 Apr 2009 08:27:23 -0400
+Date: Thu, 9 Apr 2009 14:27:20 +0200
+From: Joerg Roedel <joro@8bytes.org>
+To: Mark Langsdorf <mark.langsdorf@amd.com>
+Cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
+       Ingo Molnar <mingo@elte.hu>
+Subject: Re: [PATCH] Enable GART-IOMMU only after setting up protection
+	methods
+Message-ID: <20090409122720.GB12440@8bytes.org>
+References: <200903171457.25582.mark.langsdorf@amd.com> <200904081608.55746.mark.langsdorf@amd.com>
 MIME-Version: 1.0
-To: =?ISO-8859-1?Q?=C9ric_Piel?= <eric.piel@tremplin-utc.net>
-CC: Matthew Garrett <mjg@redhat.com>, mjg59@srcf.ucam.org,
-       Len Brown <len.brown@intel.com>, linux-kernel@vger.kernel.org
-Subject: [PATCH] Comments for additional keys for dell-wmi
-References: <200904082116.n38LG4Df012420@ampersand.seas.upenn.edu> <49DDB053.4010809@tremplin-utc.net>
-In-Reply-To: <49DDB053.4010809@tremplin-utc.net>
-X-Enigmail-Version: 0.95.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <200904081608.55746.mark.langsdorf@amd.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Commenting rotation events, in lieu of appropriate self commenting key names in input.h.
+On Wed, Apr 08, 2009 at 04:08:55PM -0500, Mark Langsdorf wrote:
+> The current code to set up the GART as an IOMMU enables GART
+> translations before it removes the aperture from the kernel
+> memory map, sets the GART PTEs to UC, sets up the guard and
+> scratch pages, or does a wbinvd().  This leaves the possibility
+> of cache aliasing open and can cause system crashes.
 
-Signed-off-by: Rafi Rubin <rafi@seas.upenn.edu>
----
- drivers/platform/x86/dell-wmi.c |    4 ++--
- 1 files changed, 2 insertions(+), 2 deletions(-)
+This patch looks broken.  I don't think that there are any aliasing
+problems in the existing code.  Can you elaborate were do you see these
+problems? Is there any existing bug report for this?
 
-diff --git a/drivers/platform/x86/dell-wmi.c b/drivers/platform/x86/dell-wmi.c
-index b76ef49..2d4f718 100644
---- a/drivers/platform/x86/dell-wmi.c
-+++ b/drivers/platform/x86/dell-wmi.c
-@@ -50,8 +50,8 @@ enum { KE_KEY, KE_SW, KE_END };
+> Re-order the code and add tlbflush so as to enable the 
+> GART translations only after all safeguards are in place and
+> the tlb has been flushed.
+> 
+> AMD has tested this patch and seen no adverse effects.
+> 
+> Signed-off-by: Mark Langsdorf <mark.langsdorf@amd.com>
+> 
+> diff -r 0d1744c7acc7 arch/x86/kernel/pci-gart_64.c
+> --- a/arch/x86/kernel/pci-gart_64.c	Fri Mar 27 16:47:28 2009 -0500
+> +++ b/arch/x86/kernel/pci-gart_64.c	Mon Mar 30 15:05:47 2009 -0500
+> @@ -38,6 +38,7 @@
+>  #include <asm/swiotlb.h>
+>  #include <asm/dma.h>
+>  #include <asm/k8.h>
+> +#include <asm/tlbflush.h>
+>  
+>  static unsigned long iommu_bus_base;	/* GART remapping area (physical) */
+>  static unsigned long iommu_size;	/* size of remapping area bytes */
+> @@ -682,9 +683,9 @@
+>  	if (set_memory_uc((unsigned long)gatt, gatt_size >> PAGE_SHIFT))
+>  		panic("Could not set GART PTEs to uncacheable pages");
+>  
+> +	wbinvd();
+> +
+>  	agp_gatt_table = gatt;
+> -
+> -	enable_gart_translations();
 
- static struct key_entry dell_wmi_keymap[] = {
-        {KE_KEY, 0xe045, KEY_PROG1},
--       {KE_KEY, 0xe046, KEY_PROG2},
--       {KE_KEY, 0xe047, KEY_PROG3},
-+       {KE_KEY, 0xe046, KEY_PROG2},     /* Going to tablet mode */
-+       {KE_KEY, 0xe047, KEY_PROG3},     /* Coming from tablet mode */
-        {KE_END, 0}
- };
+To enable the GART here has the advantage that all other CPUs are not
+yet up. Since the GATT has only non-present entries there is no cache
+aliasing problem here. If you enable it later you need to flush the
+cache on _all_ CPUs and not just the CPU where the GART initialization
+code runs.
 
--- 
-1.6.2.1
+>  
+>  	error = sysdev_class_register(&gart_sysdev_class);
+>  	if (!error)
+> @@ -855,6 +856,11 @@
+>  	for (i = EMERGENCY_PAGES; i < iommu_pages; i++)
+>  		iommu_gatt_base[i] = gart_unmapped_entry;
+>  
+> +	wbinvd();
 
-`
+Why a wbinvd() here? A few lines above is already one.
+
+> +	flush_tlb_all();
+
+Same with TLB flush. The set_memory_np() function does that for us.
+
+> +
+> +	enable_gart_translations();
+> +
+
+If we change the enablement logic like done in this patch you need to
+invalidate the caches on _all_ cpus. I don't think this is necessary if
+we just enable all GARTs when only the boot cpu is up.
+
+>  	flush_gart();
+>  	dma_ops = &gart_dma_ops;
+>  }
