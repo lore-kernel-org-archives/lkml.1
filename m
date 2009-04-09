@@ -1,233 +1,117 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753457AbZDIAPZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757430AbZDIAPo@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753457AbZDIAPZ (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 8 Apr 2009 20:15:25 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751261AbZDIAPJ
+	id S1757430AbZDIAPo (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 8 Apr 2009 20:15:44 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757057AbZDIAP3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 8 Apr 2009 20:15:09 -0400
-Received: from hrndva-omtalb.mail.rr.com ([71.74.56.124]:55188 "EHLO
-	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750706AbZDIAPG (ORCPT
+	Wed, 8 Apr 2009 20:15:29 -0400
+Received: from rcsinet12.oracle.com ([148.87.113.124]:41038 "EHLO
+	rgminet12.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757209AbZDIAP2 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 8 Apr 2009 20:15:06 -0400
-Date: Wed, 8 Apr 2009 20:15:04 -0400 (EDT)
-From: Steven Rostedt <rostedt@goodmis.org>
-X-X-Sender: rostedt@gandalf.stny.rr.com
-To: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-cc: "Luck, Tony" <tony.luck@intel.com>,
-       Frederic Weisbecker <fweisbec@gmail.com>, Ingo Molnar <mingo@elte.hu>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       "tglx@linutronix.de" <tglx@linutronix.de>,
-       Jason Baron <jbaron@redhat.com>, "Frank Ch. Eigler" <fche@redhat.com>,
-       Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>,
-       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
-       Lai Jiangshan <laijs@cn.fujitsu.com>,
-       Jiaying Zhang <jiayingz@google.com>, Michael Rubin <mrubin@google.com>,
-       Martin Bligh <mbligh@google.com>, Michael Davidson <md@google.com>
-Subject: [GIT PULL][PATCH] tracing/syscalls: use a dedicated file header
-In-Reply-To: <57C9024A16AD2D4C97DC78E552063EA39B2F707D@orsmsx505.amr.corp.intel.com>
-Message-ID: <alpine.DEB.2.00.0904082013200.16430@gandalf.stny.rr.com>
-References: <1236955332-10133-1-git-send-email-fweisbec@gmail.com> <1236955332-10133-2-git-send-email-fweisbec@gmail.com> <12c511ca0904061455k3f8a9cc8r25b7930f257ed922@mail.gmail.com> <20090408184058.GB6017@nowhere>
- <57C9024A16AD2D4C97DC78E552063EA39B2F707D@orsmsx505.amr.corp.intel.com>
-User-Agent: Alpine 2.00 (DEB 1167 2008-08-23)
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Wed, 8 Apr 2009 20:15:28 -0400
+Subject: Re: [2.6.30-rc1] gpf in btrfs during shutdown
+From: Chris Mason <chris.mason@oracle.com>
+To: Ed Tomlinson <edt@aei.ca>
+Cc: linux-kernel <linux-kernel@vger.kernel.org>
+In-Reply-To: <200904081948.02742.edt@aei.ca>
+References: <1238787179.24082.7.camel@think.oraclecorp.com>
+	 <200904081948.02742.edt@aei.ca>
+Content-Type: text/plain
+Date: Wed, 08 Apr 2009 20:14:54 -0400
+Message-Id: <1239236094.7365.1.camel@think.oraclecorp.com>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.24.1 
+Content-Transfer-Encoding: 7bit
+X-Source-IP: acsmt704.oracle.com [141.146.40.82]
+X-Auth-Type: Internal IP
+X-CT-RefId: str=0001.0A010207.49DD3E18.00C5:SCFMA4539814,ss=1,fgs=0
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Wed, 2009-04-08 at 19:48 -0400, Ed Tomlinson wrote:
 
-Ingo,
+> 
+> Chris,
+> 
+> Just go the following gpf during shutdown runing 2.6.30-rc1 on amd64 on a kernel built with gcc 4.3.3
+> 
+> * Unmounting filesystems ...[75813.573941] EXT4-fs: mballoc: 313285 blocks 3098 reqs (2001 success)
+> [75813.593628] EXT4-fs: mballoc: 1312 extents scanned, 438 goal hits, 1063 2^N hits, 0 breaks, 0 lost
+> [75813.621386] EXT4-fs: mballoc: 1551 generated and it took 21437865
+> [75813.640246] EXT4-fs: mballoc: 364104 preallocated, 204441 discarded
+> [75813.685443] general protection fault: 0000 [#1] PREEMPT SMP
+> [75813.698277] last sysfs file: /sys/devices/pci0000:00/0000:00:01.0/0000:01:05.0/enable
+> [75813.698277] CPU 1
+> [75813.698277] Modules linked in: btrfs/etc/init.d/halt zlib_deflate zlib_inflate crc32c libcrc32c radeon drm bridge stp llc bnep rf]
+> .sh: line 90:  6[75813.698277] Pid: 6768, comm: umount Not tainted 2.6.30-rc1-crc #1 System Product Name
+> 768 Segmentation[75813.698277] RIP: 0010:[<ffffffff8030e3a7>]  [<ffffffff8030e3a7>] kmem_cache_alloc+0x77/0x210
+>  fault      umou[75813.698277] RSP: 0018:ffff8801466514a8  EFLAGS: 00010046
+> nt "${x}" >&/dev[75813.698277] RAX: 0000000000000000 RBX: ffff880028066b40 RCX: ffff88015f3444a0
+> /null
 
-Please pull the latest tip/tracing/core tree, which can be found at:
+That's not supposed to happen.  Do you have slab (or slub) debug
+enabled? 
 
-  git://git.kernel.org/pub/scm/linux/kernel/git/rostedt/linux-2.6-trace.git
-tip/tracing/core
+-chris
 
-
-Frederic Weisbecker (1):
-      tracing/syscalls: use a dedicated file header
-
-----
- arch/x86/kernel/ftrace.c      |    2 ++
- arch/x86/kernel/ptrace.c      |    2 ++
- include/linux/ftrace.h        |   29 -----------------------------
- include/linux/syscalls.h      |    2 +-
- include/trace/syscall.h       |   35 +++++++++++++++++++++++++++++++++++
- kernel/trace/trace_syscalls.c |    2 +-
- 6 files changed, 41 insertions(+), 31 deletions(-)
----------------------------
-commit e733d7da21b91da7cf593ca16523b60ae38f32fb
-Author: Frederic Weisbecker <fweisbec@gmail.com>
-Date:   Wed Apr 8 20:26:11 2009 +0200
-
-    tracing/syscalls: use a dedicated file header
-    
-    Impact: fix a build error on IA64
-    
-    Building a kernel on ia64 might trigger the following crash:
-    
-    CC      arch/ia64/ia32/sys_ia32.o
-    In file included from arch/ia64/ia32/sys_ia32.c:55:
-    arch/ia64/ia32/ia32priv.h:290:1: warning: "elf_check_arch" redefined
-    In file included from include/linux/elf.h:7,
-                     from include/linux/module.h:14,
-                     from include/linux/ftrace.h:8,
-                     from include/linux/syscalls.h:68,
-                     from arch/ia64/ia32/sys_ia32.c:18:
-    /home/aegl/generic-smp/arch/ia64/include/asm/elf.h:19:1: warning: this
-    is the location of the previous definition
-    In file included from arch/ia64/ia32/sys_ia32.c:55:
-    arch/ia64/ia32/ia32priv.h:295:1: warning: "ELF_CLASS" redefined
-    In file included from include/linux/elf.h:7,
-                     from include/linux/module.h:14,
-                     from include/linux/ftrace.h:8,
-                     from include/linux/syscalls.h:68,
-                     from arch/ia64/ia32/sys_ia32.c:18:
-    
-    sys_ia32.c includes linux/syscalls.h which in turn includes linux/ftrace.h
-    to import the syscalls tracing prototypes.
-    But including ftrace.h can pull too much things for a low level file,
-    especially on ia64 where the ia32 private headers conflict with higher level
-    headers.
-    
-    Now we isolate the syscall tracing headers in their own lightweight file.
-    
-    [ moved placement of #include <trace/syscall.h - Steven Rostedt ]
-    
-    Reported-Tested-and-Acked-by: Tony Luck <tony.luck@intel.com>
-    Signed-off-by: Frederic Weisbecker <fweisbec@gmail.com>
-    LKML-Reference: <20090408184058.GB6017@nowhere>
-    Signed-off-by: Steven Rostedt <rostedt@goodmis.org>
-
-diff --git a/arch/x86/kernel/ftrace.c b/arch/x86/kernel/ftrace.c
-index 70a10ca..18dfa30 100644
---- a/arch/x86/kernel/ftrace.c
-+++ b/arch/x86/kernel/ftrace.c
-@@ -18,6 +18,8 @@
- #include <linux/init.h>
- #include <linux/list.h>
- 
-+#include <trace/syscall.h>
-+
- #include <asm/cacheflush.h>
- #include <asm/ftrace.h>
- #include <asm/nops.h>
-diff --git a/arch/x86/kernel/ptrace.c b/arch/x86/kernel/ptrace.c
-index fe9345c..46609cc 100644
---- a/arch/x86/kernel/ptrace.c
-+++ b/arch/x86/kernel/ptrace.c
-@@ -23,6 +23,8 @@
- #include <linux/signal.h>
- #include <linux/ftrace.h>
- 
-+#include <trace/syscall.h>
-+
- #include <asm/uaccess.h>
- #include <asm/pgtable.h>
- #include <asm/system.h>
-diff --git a/include/linux/ftrace.h b/include/linux/ftrace.h
-index 6aea54d..a5fa36d 100644
---- a/include/linux/ftrace.h
-+++ b/include/linux/ftrace.h
-@@ -510,33 +510,4 @@ static inline void trace_hw_branch_oops(void) {}
- 
- #endif /* CONFIG_HW_BRANCH_TRACER */
- 
--/*
-- * A syscall entry in the ftrace syscalls array.
-- *
-- * @name: name of the syscall
-- * @nb_args: number of parameters it takes
-- * @types: list of types as strings
-- * @args: list of args as strings (args[i] matches types[i])
-- */
--struct syscall_metadata {
--	const char	*name;
--	int		nb_args;
--	const char	**types;
--	const char	**args;
--};
--
--#ifdef CONFIG_FTRACE_SYSCALLS
--extern void arch_init_ftrace_syscalls(void);
--extern struct syscall_metadata *syscall_nr_to_meta(int nr);
--extern void start_ftrace_syscalls(void);
--extern void stop_ftrace_syscalls(void);
--extern void ftrace_syscall_enter(struct pt_regs *regs);
--extern void ftrace_syscall_exit(struct pt_regs *regs);
--#else
--static inline void start_ftrace_syscalls(void) { }
--static inline void stop_ftrace_syscalls(void) { }
--static inline void ftrace_syscall_enter(struct pt_regs *regs) { }
--static inline void ftrace_syscall_exit(struct pt_regs *regs) { }
--#endif
--
- #endif /* _LINUX_FTRACE_H */
-diff --git a/include/linux/syscalls.h b/include/linux/syscalls.h
-index 6470f74..dabe4ad 100644
---- a/include/linux/syscalls.h
-+++ b/include/linux/syscalls.h
-@@ -65,7 +65,7 @@ struct old_linux_dirent;
- #include <asm/signal.h>
- #include <linux/quota.h>
- #include <linux/key.h>
--#include <linux/ftrace.h>
-+#include <trace/syscall.h>
- 
- #define __SC_DECL1(t1, a1)	t1 a1
- #define __SC_DECL2(t2, a2, ...) t2 a2, __SC_DECL1(__VA_ARGS__)
-diff --git a/include/trace/syscall.h b/include/trace/syscall.h
-new file mode 100644
-index 0000000..27d1d31
---- /dev/null
-+++ b/include/trace/syscall.h
-@@ -0,0 +1,35 @@
-+#ifndef _TRACE_SYSCALL_H
-+#define _TRACE_SYSCALL_H
-+
-+#include <asm/ptrace.h>
-+
-+/*
-+ * A syscall entry in the ftrace syscalls array.
-+ *
-+ * @name: name of the syscall
-+ * @nb_args: number of parameters it takes
-+ * @types: list of types as strings
-+ * @args: list of args as strings (args[i] matches types[i])
-+ */
-+struct syscall_metadata {
-+	const char	*name;
-+	int		nb_args;
-+	const char	**types;
-+	const char	**args;
-+};
-+
-+#ifdef CONFIG_FTRACE_SYSCALLS
-+extern void arch_init_ftrace_syscalls(void);
-+extern struct syscall_metadata *syscall_nr_to_meta(int nr);
-+extern void start_ftrace_syscalls(void);
-+extern void stop_ftrace_syscalls(void);
-+extern void ftrace_syscall_enter(struct pt_regs *regs);
-+extern void ftrace_syscall_exit(struct pt_regs *regs);
-+#else
-+static inline void start_ftrace_syscalls(void) { }
-+static inline void stop_ftrace_syscalls(void) { }
-+static inline void ftrace_syscall_enter(struct pt_regs *regs) { }
-+static inline void ftrace_syscall_exit(struct pt_regs *regs) { }
-+#endif
-+
-+#endif /* _TRACE_SYSCALL_H */
-diff --git a/kernel/trace/trace_syscalls.c b/kernel/trace/trace_syscalls.c
-index a2a3af2..5e57964 100644
---- a/kernel/trace/trace_syscalls.c
-+++ b/kernel/trace/trace_syscalls.c
-@@ -1,5 +1,5 @@
-+#include <trace/syscall.h>
- #include <linux/kernel.h>
--#include <linux/ftrace.h>
- #include <asm/syscall.h>
- 
- #include "trace_output.h"
-
+> [75813.698277] RDX: 0000000000000000 RSI: 0000000000000000 RDI: ffffffff80847330
+> [75813.698277] RBP: ffff8801466514e8 R08: 00000035c2309000 R09: 0000000000000002
+> [75813.698277] R10: 0000000000001000 R11: 0000000000000001 R12: ff880153891480ff
+> [75813.698277] R13: 0000000000000246 R14: ffffffff8088ca58 R15: 0000000000000080
+> [75813.698277] FS:  00007f6dd9cc0740(0000) GS:ffff880028059000(0000) knlGS:0000000000000000
+> [75813.698277] CS:  0010 DS: 0000 ES: 0000 CR0: 000000008005003b
+> [75813.698277] CR2: 00007f6dd964e000 CR3: 00000001425fd000 CR4: 00000000000006e0
+> [75813.698277] DR0: 0000000000000000 DR1: 0000000000000000 DR2: 0000000000000000
+> [75813.698277] DR3: 0000000000000000 DR6: 00000000ffff0ff0 DR7: 0000000000000400
+> [75813.698277] Process umount (pid: 6768, threadinfo ffff880146650000, task ffff88015f3444a0)
+> [75813.698277] Stack:
+> [75813.698277]  0000005000e7f0b0 0000000000e7f0b0 0000000000e7f0b0 0000000000000000
+> [75813.698277]  0000000000000060 0000000000000051 ffff88013cd073c0 ffff88013cd078a0
+> [75813.698277]  ffff8801466515a8 ffffffffa04e1365 000000000000be2d 0000000000000000
+> [75813.698277] Call Trace:
+> [75813.698277]  [<ffffffffa04e1365>] btrfs_update_delayed_ref+0x245/0x490 [btrfs]
+> [75813.698277]  [<ffffffff8043a8e0>] ? sort+0x160/0x250
+> [75813.698277]  [<ffffffffa048befc>] __btrfs_update_extent_ref+0x6c/0xb0 [btrfs]
+> [75813.698277]  [<ffffffff80610f94>] ? _cond_resched+0x44/0xa0
+> [75813.698277]  [<ffffffffa0491ab3>] btrfs_inc_ref+0x6c3/0x7d0 [btrfs][75813.698277]  [<ffffffffa048e7bc>] ? btrfs_init_new_buffer+0x11c/0x180 [btrfs]
+> [75813.698277]  [<ffffffffa04c7b84>] ? write_extent_buffer+0x114/0x330 [btrfs]
+> [75813.698277]  [<ffffffffa048be90>] ? __btrfs_update_extent_ref+0x0/0xb0 [btrfs]
+> [75813.698277]  [<ffffffff80618129>] ? sub_preempt_count+0x69/0x70
+> [75813.698277]  [<ffffffffa04815fa>] __btrfs_cow_block+0x58a/0xbc0 [btrfs]
+> [75813.698277]  [<ffffffffa0481d39>] btrfs_cow_block+0x109/0x270 [btrfs]
+> [75813.698277]  [<ffffffffa04877f2>] btrfs_search_slot+0x202/0x880 [btrfs]
+> [75813.698277]  [<ffffffffa048a458>] lookup_extent_backref+0x68/0x160 [btrfs]
+> [75813.698277]  [<ffffffff80618129>] ? sub_preempt_count+0x69/0x70
+> [75813.698277]  [<ffffffffa048c91d>] __btrfs_free_extent+0x18d/0x950 [btrfs]
+> [75813.698277]  [<ffffffff80618129>] ? sub_preempt_count+0x69/0x70
+> [75813.698277]  [<ffffffff80618191>] ? add_preempt_count+0x61/0x70
+> [75813.698277]  [<ffffffffa048d35d>] run_one_delayed_ref+0x27d/0x2c0 [btrfs]
+> [75813.698277]  [<ffffffffa048e8f6>] run_clustered_refs+0xd6/0x250 [btrfs]
+> [75813.698277]  [<ffffffffa048eb46>] btrfs_run_delayed_refs+0xd6/0x2b0 [btrfs]
+> [75813.698277]  [<ffffffffa04a4244>] btrfs_commit_tree_roots+0xb4/0x2f0 [btrfs]
+> [75813.698277]  [<ffffffffa04a4e0b>] btrfs_commit_transaction+0x5cb/0xa00 [btrfs]
+> [75813.698277]  [<ffffffff802724d0>] ? autoremove_wake_function+0x0/0x70
+> [75813.698277]  [<ffffffffa04a3315>] ? start_transaction+0x125/0x170 [btrfs]
+> [75813.698277]  [<ffffffffa047cd66>] btrfs_sync_fs+0x66/0xb0 [btrfs]
+> [75813.698277]  [<ffffffff803177a6>] __fsync_super+0x66/0xa0
+> [75813.698277]  [<ffffffff80317805>] fsync_super+0x25/0x50
+> [75813.698277]  [<ffffffff80317a7e>] generic_shutdown_super+0x3e/0x170
+> [75813.698277]  [<ffffffff80317c55>] kill_anon_super+0x25/0x70
+> [75813.698277]  [<ffffffff80318189>] deactivate_super+0x69/0xa0
+> [75813.698277]  [<ffffffff8033502c>] mntput_no_expire+0x1ac/0x1e0
+> [75813.698277]  [<ffffffff80335466>] sys_umount+0x76/0x3e0
+> [75813.698277]  [<ffffffff8020bf9b>] system_call_fastpath+0x16/0x1b
+> [75813.698277] Code: 8b 9c c6 e8 00 00 00 48 83 3b 00 44 8b 7b 18 0f 84 77 01 00 00 31 d2 31 f6 48 c7 c7 30 73 84 80 e8 ff 2d fb ff
+> [75813.698277] RIP  [<ffffffff8030e3a7>] kmem_cache_alloc+0x77/0x210
+> [75813.698277]  RSP <ffff8801466514a8>
+> [75813.698277] ---[ end trace a92f79fb0023c3c1 ]---
+> 
+> Followed by many more...
+> 
+> Hope this helps,
+> Ed Tomlinson
+> 
+> 
 
