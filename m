@@ -1,65 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1765919AbZDIJ6O@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932326AbZDIJ6t@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1765919AbZDIJ6O (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 9 Apr 2009 05:58:14 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1765816AbZDIJ5J
+	id S932326AbZDIJ6t (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 9 Apr 2009 05:58:49 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1765405AbZDIJ5K
 	(ORCPT <rfc822;linux-kernel-outgoing>);
+	Thu, 9 Apr 2009 05:57:10 -0400
+Received: from out2.smtp.messagingengine.com ([66.111.4.26]:48551 "EHLO
+	out2.smtp.messagingengine.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1765813AbZDIJ5J (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
 	Thu, 9 Apr 2009 05:57:09 -0400
-Received: from brick.kernel.dk ([93.163.65.50]:32802 "EHLO kernel.dk"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1765788AbZDIJ5I (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 9 Apr 2009 05:57:08 -0400
-Date: Thu, 9 Apr 2009 11:57:06 +0200
-From: Jens Axboe <jens.axboe@oracle.com>
-To: "Zhang, Yanmin" <yanmin_zhang@linux.intel.com>
-Cc: LKML <linux-kernel@vger.kernel.org>
-Subject: Re: tiobench read 50% regression with 2.6.30-rc1
-Message-ID: <20090409095706.GD5178@kernel.dk>
-References: <1239265763.2567.769.camel@ymzhang>
+X-Sasl-enc: tU2IdAaKBenILXQf8LF1zwPLwA4GTfL5Uzs5dG44bP5+ 1239271028
+Message-ID: <49DDC670.4080904@fastmail.fm>
+Date: Thu, 09 Apr 2009 10:57:04 +0100
+From: Jack Stone <jwjstone@fastmail.fm>
+User-Agent: Thunderbird 2.0.0.21 (X11/20090325)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1239265763.2567.769.camel@ymzhang>
+To: linux-kernel@vger.kernel.org
+CC: jeff@garzik.org, kernel-janitors@vger.kernel.org, bzolnier@gmail.com
+Subject: Re: [PATCH 15/56] ide: Remove void casts
+References: <> <1239189748-11703-1-git-send-email-jwjstone@fastmail.fm> <1239189748-11703-2-git-send-email-jwjstone@fastmail.fm> <1239189748-11703-3-git-send-email-jwjstone@fastmail.fm> <1239189748-11703-4-git-send-email-jwjstone@fastmail.fm> <1239189748-11703-5-git-send-email-jwjstone@fastmail.fm> <1239189748-11703-6-git-send-email-jwjstone@fastmail.fm> <1239189748-11703-7-git-send-email-jwjstone@fastmail.fm> <1239189748-11703-8-git-send-email-jwjstone@fastmail.fm> <1239189748-11703-9-git-send-email-jwjstone@fastmail.fm> <1239189748-11703-10-git-send-email-jwjstone@fastmail.fm> <1239189748-11703-11-git-send-email-jwjstone@fastmail.fm> <1239189748-11703-12-git-send-email-jwjstone@fastmail.fm> <1239189748-11703-13-git-send-email-jwjstone@fastmail.fm> <1239189748-11703-14-git-send-email-jwjstone@fastmail.fm> <1239189748-11703-15-git-send-email-jwjstone@fastmail.fm> <1239189748-11703-16-git-send-email-jwjstone@fastmail.fm>
+In-Reply-To: <1239189748-11703-16-git-send-email-jwjstone@fastmail.fm>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Apr 09 2009, Zhang, Yanmin wrote:
-> Comparing with 2.6.29's result, tiobench (read) has about 50% regression
-> with 2.6.30-rc1 on all my machines. Bisect down to below patch.
-> 
-> b029195dda0129b427c6e579a3bb3ae752da3a93 is first bad commit
-> commit b029195dda0129b427c6e579a3bb3ae752da3a93
-> Author: Jens Axboe <jens.axboe@oracle.com>
-> Date:   Tue Apr 7 11:38:31 2009 +0200
-> 
->     cfq-iosched: don't let idling interfere with plugging
->     
->     When CFQ is waiting for a new request from a process, currently it'll
->     immediately restart queuing when it sees such a request. This doesn't
->     work very well with streamed IO, since we then end up splitting IO
->     that would otherwise have been merged nicely. For a simple dd test,
->     this causes 10x as many requests to be issued as we should have.
->     Normally this goes unnoticed due to the low overhead of requests
->     at the device side, but some hardware is very sensitive to request
->     sizes and there it can cause big slow downs.
-> 
-> 
-> 
-> Command to start the testing:
-> #tiotest -k0 -k1 -k3 -f 80 -t 32
-> 
-> It's a multi-threaded program and starts 32 threads. Every thread does I/O
-> on its own 80MB file.
-
-It's not a huge surprise that we regressed there. I'll get this fixed up
-next week. Can you I talk you into trying to change the 'quantum' sysfs
-variable for the drive? It's in /sys/block/xxx/queue/iosched where xxx
-is your drive(s). It's set to 4, if you could try progressively larger
-settings and retest, that would help get things started.
-
-Thanks!
-
--- 
-Jens Axboe
+[Added maintainer CC]
+Jack Stone wrote:
+> Remove uneeded void casts
+>
+> Signed-Off-By: Jack Stone <jwjstone@fastmail.fm>
+> ---
+>  drivers/ide/pmac.c |    2 +-
+>  1 files changed, 1 insertions(+), 1 deletions(-)
+>
+> diff --git a/drivers/ide/pmac.c b/drivers/ide/pmac.c
+> index 052b9bf..f76e4e6 100644
+> --- a/drivers/ide/pmac.c
+> +++ b/drivers/ide/pmac.c
+> @@ -1682,7 +1682,7 @@ static int __devinit pmac_ide_init_dma(ide_hwif_t *hwif,
+>  	 * The +2 is +1 for the stop command and +1 to allow for
+>  	 * aligning the start address to a multiple of 16 bytes.
+>  	 */
+> -	pmif->dma_table_cpu = (struct dbdma_cmd*)pci_alloc_consistent(
+> +	pmif->dma_table_cpu = pci_alloc_consistent(
+>  		dev,
+>  		(MAX_DCMDS + 2) * sizeof(struct dbdma_cmd),
+>  		&hwif->dmatable_dma);
+>   
 
