@@ -1,119 +1,83 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761592AbZDIGL5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762614AbZDIGNY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761592AbZDIGL5 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 9 Apr 2009 02:11:57 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754440AbZDIGLr
+	id S1762614AbZDIGNY (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 9 Apr 2009 02:13:24 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754440AbZDIGNP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 9 Apr 2009 02:11:47 -0400
-Received: from cn.fujitsu.com ([222.73.24.84]:65093 "EHLO song.cn.fujitsu.com"
-	rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org with ESMTP
-	id S1754004AbZDIGLr (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 9 Apr 2009 02:11:47 -0400
-Message-ID: <49DD90D2.5020604@cn.fujitsu.com>
-Date: Thu, 09 Apr 2009 14:08:18 +0800
-From: Zhaolei <zhaolei@cn.fujitsu.com>
-User-Agent: Thunderbird 2.0.0.6 (Windows/20070728)
+	Thu, 9 Apr 2009 02:13:15 -0400
+Received: from hera.kernel.org ([140.211.167.34]:38158 "EHLO hera.kernel.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753952AbZDIGNO (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 9 Apr 2009 02:13:14 -0400
+Date: Thu, 9 Apr 2009 06:12:29 GMT
+From: Stephen Rothwell <sfr@canb.auug.org.au>
+To: linux-tip-commits@vger.kernel.org
+Cc: linux-kernel@vger.kernel.org, dvhltc@us.ibm.com, hpa@zytor.com,
+       mingo@redhat.com, davem@davemloft.net, tglx@linutronix.de,
+       sfr@canb.auug.org.au, mingo@elte.hu
+Reply-To: mingo@redhat.com, hpa@zytor.com, dvhltc@us.ibm.com,
+       linux-kernel@vger.kernel.org, davem@davemloft.net, tglx@linutronix.de,
+       sfr@canb.auug.org.au, mingo@elte.hu
+In-Reply-To: <20090409151722.c8eabb56.sfr@canb.auug.org.au>
+References: <20090409151722.c8eabb56.sfr@canb.auug.org.au>
+Subject: [tip:core/futexes] sparc64: extend TI_RESTART_BLOCK space by 8 bytes
+Message-ID: <tip-d2de688891909b148efe83a6fc9520a9cd6015f0@git.kernel.org>
+Git-Commit-ID: d2de688891909b148efe83a6fc9520a9cd6015f0
+X-Mailer: tip-git-log-daemon
 MIME-Version: 1.0
-To: "Steven Rostedt ;" <rostedt@goodmis.org>,
-       Frederic Weisbecker <fweisbec@gmail.com>,
-       Tom Zanussi <tzanussi@gmail.com>, Ingo Molnar <mingo@elte.hu>
-CC: linux-kernel@vger.kernel.org
-Subject: [PATCH] Tracepoint: Make skb tracepoint use TRACE_EVENT macro
-Content-Type: text/plain; charset=GB2312
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=UTF-8
+Content-Disposition: inline
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Thu, 09 Apr 2009 06:12:31 +0000 (UTC)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-TRACE_EVENT is more unify and generic for define a tracepoint.
-It also add ftrace support for this tracepoint.
+Commit-ID:  d2de688891909b148efe83a6fc9520a9cd6015f0
+Gitweb:     http://git.kernel.org/tip/d2de688891909b148efe83a6fc9520a9cd6015f0
+Author:     Stephen Rothwell <sfr@canb.auug.org.au>
+AuthorDate: Thu, 9 Apr 2009 15:17:22 +1000
+Committer:  Ingo Molnar <mingo@elte.hu>
+CommitDate: Thu, 9 Apr 2009 08:09:50 +0200
 
-Signed-off-by: Zhao Lei <zhaolei@cn.fujitsu.com>
+sparc64: extend TI_RESTART_BLOCK space by 8 bytes
+
+Impact: build fix
+
+Today's linux-next build (sparc64 defconfig) failed like this:
+
+  arch/sparc/kernel/built-in.o: In function `trap_init':
+  (.init.text+0x4): undefined reference to `thread_info_offsets_are_bolixed_dave'
+
+Caused by commit 52400ba946759af28442dee6265c5c0180ac7122 ("futex: add
+requeue_pi functionality") (from the tip-core tree) which changed the
+size of struct restart_block.
+
+Shift TI_KUNA_REGS and TI_KUNA_INSN up by 8 bytes to make space for the
+larger restart block.
+
+Signed-off-by: Stephen Rothwell <sfr@canb.auug.org.au>
+Acked-by: "David S. Miller" <davem@davemloft.net>
+Cc: Darren Hart <dvhltc@us.ibm.com>
+LKML-Reference: <20090409151722.c8eabb56.sfr@canb.auug.org.au>
+Signed-off-by: Ingo Molnar <mingo@elte.hu>
+
+
 ---
- include/trace/skb.h               |    4 +--
- include/trace/skb_event_types.h   |   38 +++++++++++++++++++++++++++++++++++++
- include/trace/trace_event_types.h |    1 +
- include/trace/trace_events.h      |    1 +
- 4 files changed, 41 insertions(+), 3 deletions(-)
- create mode 100644 include/trace/skb_event_types.h
+ arch/sparc/include/asm/thread_info_64.h |    4 ++--
+ 1 files changed, 2 insertions(+), 2 deletions(-)
 
-diff --git a/include/trace/skb.h b/include/trace/skb.h
-index b66206d..d2de717 100644
---- a/include/trace/skb.h
-+++ b/include/trace/skb.h
-@@ -4,8 +4,6 @@
- #include <linux/skbuff.h>
- #include <linux/tracepoint.h>
+diff --git a/arch/sparc/include/asm/thread_info_64.h b/arch/sparc/include/asm/thread_info_64.h
+index 639ac80..6586572 100644
+--- a/arch/sparc/include/asm/thread_info_64.h
++++ b/arch/sparc/include/asm/thread_info_64.h
+@@ -102,8 +102,8 @@ struct thread_info {
+ #define TI_KERN_CNTD1	0x00000488
+ #define TI_PCR		0x00000490
+ #define TI_RESTART_BLOCK 0x00000498
+-#define TI_KUNA_REGS	0x000004c0
+-#define TI_KUNA_INSN	0x000004c8
++#define TI_KUNA_REGS	0x000004c8
++#define TI_KUNA_INSN	0x000004d0
+ #define TI_FPREGS	0x00000500
  
--DECLARE_TRACE(kfree_skb,
--	TP_PROTO(struct sk_buff *skb, void *location),
--	TP_ARGS(skb, location));
-+#include <trace/skb_event_types.h>
- 
- #endif
-diff --git a/include/trace/skb_event_types.h b/include/trace/skb_event_types.h
-new file mode 100644
-index 0000000..4a1c504
---- /dev/null
-+++ b/include/trace/skb_event_types.h
-@@ -0,0 +1,38 @@
-+
-+/* use <trace/skb.h> instead */
-+#ifndef TRACE_EVENT
-+# error Do not include this file directly.
-+# error Unless you know what you are doing.
-+#endif
-+
-+#undef TRACE_SYSTEM
-+#define TRACE_SYSTEM skb
-+
-+/*
-+ * Tracepoint for free an sk_buff:
-+ */
-+TRACE_EVENT(kfree_skb,
-+
-+	TP_PROTO(struct sk_buff *skb, void *location),
-+
-+	TP_ARGS(skb, location),
-+
-+	TP_STRUCT__entry(
-+		__field(	void *,		skbaddr		)
-+		__field(	unsigned short,	protocol	)
-+		__field(	void *,		location	)
-+	),
-+
-+	TP_fast_assign(
-+		__entry->skbaddr = skb;
-+		if (skb) {
-+			__entry->protocol = ntohs(skb->protocol);
-+		}
-+		__entry->location = location;
-+	),
-+
-+	TP_printk("skbaddr=%p protocol=%u location=%p",
-+		__entry->skbaddr, __entry->protocol, __entry->location)
-+);
-+
-+#undef TRACE_SYSTEM
-diff --git a/include/trace/trace_event_types.h b/include/trace/trace_event_types.h
-index df56f56..33b6bfc 100644
---- a/include/trace/trace_event_types.h
-+++ b/include/trace/trace_event_types.h
-@@ -3,3 +3,4 @@
- #include <trace/sched_event_types.h>
- #include <trace/irq_event_types.h>
- #include <trace/lockdep_event_types.h>
-+#include <trace/skb_event_types.h>
-diff --git a/include/trace/trace_events.h b/include/trace/trace_events.h
-index fd13750..0e2aa80 100644
---- a/include/trace/trace_events.h
-+++ b/include/trace/trace_events.h
-@@ -3,3 +3,4 @@
- #include <trace/sched.h>
- #include <trace/irq.h>
- #include <trace/lockdep.h>
-+#include <trace/skb.h>
--- 
-1.5.5.3
-
-
+ /* We embed this in the uppermost byte of thread_info->flags */
