@@ -1,73 +1,91 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S936869AbZDIV56@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S936786AbZDIV7T@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S936869AbZDIV56 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 9 Apr 2009 17:57:58 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762495AbZDIV5s
+	id S936786AbZDIV7T (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 9 Apr 2009 17:59:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758819AbZDIV7D
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 9 Apr 2009 17:57:48 -0400
-Received: from atrey.karlin.mff.cuni.cz ([195.113.26.193]:48381 "EHLO
-	atrey.karlin.mff.cuni.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1759910AbZDIV5r (ORCPT
+	Thu, 9 Apr 2009 17:59:03 -0400
+Received: from sj-iport-3.cisco.com ([171.71.176.72]:14723 "EHLO
+	sj-iport-3.cisco.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755918AbZDIV7A (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 9 Apr 2009 17:57:47 -0400
-Date: Fri, 10 Apr 2009 00:00:43 +0200
-From: Pavel Machek <pavel@ucw.cz>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: Alan Cox <alan@lxorguk.ukuu.org.uk>, Matthew Garrett <mjg@redhat.com>,
-       Theodore Tso <tytso@mit.edu>, Ingo Molnar <mingo@elte.hu>,
-       Jan Kara <jack@suse.cz>, Andrew Morton <akpm@linux-foundation.org>,
-       Arjan van de Ven <arjan@infradead.org>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>, Nick Piggin <npiggin@suse.de>,
-       Jens Axboe <jens.axboe@oracle.com>, David Rees <drees76@gmail.com>,
-       Jesper Krogh <jesper@krogh.cc>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Oleg Nesterov <oleg@redhat.com>, Roland McGrath <roland@redhat.com>
-Subject: Re: [PATCH 2/2] Make relatime default
-Message-ID: <20090409220043.GD3269@elf.ucw.cz>
-References: <20090326170714.GF6239@mit.edu> <alpine.LFD.2.00.0903261015050.3032@localhost.localdomain> <20090326174956.GB7198@srcf.ucam.org> <20090326175314.GC7198@srcf.ucam.org> <20090326184838.26166549@lxorguk.ukuu.org.uk> <alpine.LFD.2.00.0903261525560.3032@localhost.localdomain> <20090409194624.GB1403@ucw.cz> <alpine.LFD.2.00.0904091343110.4583@localhost.localdomain> <20090409211501.GC3269@elf.ucw.cz> <alpine.LFD.2.00.0904091419140.4583@localhost.localdomain>
+	Thu, 9 Apr 2009 17:59:00 -0400
+X-IronPort-AV: E=Sophos;i="4.40,163,1238976000"; 
+   d="scan'208";a="152151291"
+From: Roland Dreier <rdreier@cisco.com>
+To: torvalds@linux-foundation.org, akpm@linux-foundation.org
+Cc: linux-kernel@vger.kernel.org, general@lists.openfabrics.org
+Subject: [GIT PULL] please pull infiniband.git
+X-Message-Flag: Warning: May contain useful information
+Date: Thu, 09 Apr 2009 14:58:59 -0700
+Message-ID: <adabpr54hgc.fsf@cisco.com>
+User-Agent: Gnus/5.13 (Gnus v5.13) Emacs/23.0.60 (gnu/linux)
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <alpine.LFD.2.00.0904091419140.4583@localhost.localdomain>
-X-Warning: Reading this can be dangerous to your mental health.
-User-Agent: Mutt/1.5.18 (2008-05-17)
+X-OriginalArrivalTime: 09 Apr 2009 21:58:59.0448 (UTC) FILETIME=[62EC2F80:01C9B95E]
+Authentication-Results: sj-dkim-1; header.From=rdreier@cisco.com; dkim=pass (
+	sig from cisco.com/sjdkim1004 verified; ); 
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu 2009-04-09 14:20:40, Linus Torvalds wrote:
-> 
-> 
-> On Thu, 9 Apr 2009, Pavel Machek wrote:
-> > 
-> > Well, stat() syscall no longer returns sane value in st_atime, while
-> > all the userland stayed the same; only kernel changed. I believe that
-> > is ABI change.
-> 
-> No. 
-> 
-> If you want the old abi, use "strictatime" in your /etc/fstime.
-  ~~~~~~~~~~~~~~~~~~~~~~~~
+Linus, please pull from
 
-So you agree it is an ABI change :-).
+    master.kernel.org:/pub/scm/linux/kernel/git/roland/infiniband.git for-linus
 
-> No ABI changed. Just the default mount options changed to be what most 
-> people (especially non-specialists) would likely want.
+This tree is also available from kernel.org mirrors at:
 
-Maybe.
+    git://git.kernel.org/pub/scm/linux/kernel/git/roland/infiniband.git for-linus
 
-But lets see what awaits me with 2.6.30-rc1 update:
+This will get a batch of changes for -rc2, mostly low-level hardware
+driver fixes with a few other miscellaneous fixes and an IPoIB
+documentation update.
 
-root@amd:~# mount /data -oremount,noatime
-root@amd:~# mount /data -oremount,strictatime
-mount: /data not mounted already, or bad option
+Chien Tung (3):
+      RDMA/nes: Fix SFP+ PHY initialization
+      RDMA/nes: Add wide_ppm_offset parm for switch compatibility
+      RDMA/nes: Add support for new SFP+ PHY
 
-...oh no, my mount is too old. My mount seems to be up-to-date with
-debian testing. Should I have to install mount from sources just to
-keep the compatible system settings?
+Don Wood (1):
+      RDMA/nes: Fix incorrect casts on 32-bit architectures
 
-There has to be a better way.
-									Pavel
--- 
-(english) http://www.livejournal.com/~pavelmachek
-(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
+Faisal Latif (2):
+      RDMA/nes: Fix error handling issues
+      RDMA/nes: Fix nes_nic_cm_xmit() error handling
+
+Or Gerlitz (1):
+      IPoIB: Document newish features
+
+Roland Dreier (4):
+      IB/mlx4: Use pgprot_writecombine() for BlueFlame pages
+      mlx4_core: Don't leak mailbox for SET_PORT on Ethernet ports
+      IPoIB: Avoid free_netdev() BUG when destroying a child interface
+      Merge branches 'cma', 'cxgb3', 'ipoib', 'mlx4' and 'nes' into for-next
+
+Steve Wise (2):
+      RDMA/cxgb3: Handle EEH events
+      RDMA/cxgb3: Release dependent resources only when endpoint memory is freed.
+
+Yossi Etigin (2):
+      RDMA/cma: Use rate from IPoIB broadcast when joining IPoIB multicast groups
+      RDMA/cma: Create cm id even when IB port is down
+
+ Documentation/infiniband/ipoib.txt        |   45 ++++
+ drivers/infiniband/core/cma.c             |   45 +++-
+ drivers/infiniband/hw/cxgb3/cxio_hal.c    |   10 +-
+ drivers/infiniband/hw/cxgb3/cxio_hal.h    |    6 +
+ drivers/infiniband/hw/cxgb3/iwch.c        |   11 +-
+ drivers/infiniband/hw/cxgb3/iwch.h        |    5 +
+ drivers/infiniband/hw/cxgb3/iwch_cm.c     |  116 ++++++---
+ drivers/infiniband/hw/cxgb3/iwch_cm.h     |    3 +-
+ drivers/infiniband/hw/cxgb3/iwch_qp.c     |    4 +-
+ drivers/infiniband/hw/mlx4/main.c         |    3 +-
+ drivers/infiniband/hw/nes/nes.h           |    4 +-
+ drivers/infiniband/hw/nes/nes_cm.c        |   22 +-
+ drivers/infiniband/hw/nes/nes_cm.h        |    1 -
+ drivers/infiniband/hw/nes/nes_hw.c        |  389 ++++++++++++++---------------
+ drivers/infiniband/hw/nes/nes_hw.h        |    2 +
+ drivers/infiniband/hw/nes/nes_nic.c       |   52 +++--
+ drivers/infiniband/ulp/ipoib/ipoib_vlan.c |   25 ++-
+ drivers/net/mlx4/port.c                   |    5 +-
+ 18 files changed, 442 insertions(+), 306 deletions(-)
