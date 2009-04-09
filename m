@@ -1,59 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S937170AbZDIXG6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S937005AbZDIXKE@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S937170AbZDIXG6 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 9 Apr 2009 19:06:58 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757432AbZDIXGt
+	id S937005AbZDIXKE (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 9 Apr 2009 19:10:04 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757951AbZDIXJw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 9 Apr 2009 19:06:49 -0400
-Received: from terminus.zytor.com ([198.137.202.10]:35215 "EHLO
-	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755652AbZDIXGs (ORCPT
+	Thu, 9 Apr 2009 19:09:52 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:34943 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1757203AbZDIXJw (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 9 Apr 2009 19:06:48 -0400
-Message-ID: <49DE7F79.4030106@zytor.com>
-Date: Thu, 09 Apr 2009 16:06:33 -0700
-From: "H. Peter Anvin" <hpa@zytor.com>
-User-Agent: Thunderbird 2.0.0.19 (X11/20090105)
+	Thu, 9 Apr 2009 19:09:52 -0400
+Date: Thu, 9 Apr 2009 16:06:48 -0700 (PDT)
+From: Linus Torvalds <torvalds@linux-foundation.org>
+X-X-Sender: torvalds@localhost.localdomain
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+cc: Arjan van de Ven <arjan@linux.intel.com>, Takashi Iwai <tiwai@suse.de>,
+       LKML <linux-kernel@vger.kernel.org>,
+       pm list <linux-pm@lists.linux-foundation.org>,
+       Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: [2.6.30-rc1-git2 regressions] Hibernation broken and (minor but
+ annoying) audio problem
+In-Reply-To: <200904100057.43827.rjw@sisk.pl>
+Message-ID: <alpine.LFD.2.00.0904091605080.4583@localhost.localdomain>
+References: <200904100057.43827.rjw@sisk.pl>
+User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
 MIME-Version: 1.0
-To: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-CC: Thomas Gleixner <tglx@linutronix.de>, "H. Peter Anvin" <hpa@zytor.com>
-Subject: [PATCH 0/6] x86, setup: "glove box" BIOS interrupts
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This is a patchset to "glove box" off BIOS interrupts in the x86 setup
-code, thus hopefully dealing once and for all with the problems of
-BIOSes touching registers they shouldn't.
 
-The concept is simple: we manipulate a register image in memory, then
-swap it in immediately before calling the BIOS, and then switch the
-register file back.  All BIOS interrupts are channeled through this path.
 
-The increase in size is about 8% or ~1.3K in the maximal case.
+On Fri, 10 Apr 2009, Rafael J. Wysocki wrote:
+> 
+> I'm seeing two problems with -git from today.
 
-  arch/x86/boot/Makefile                   |    5 +-
-  arch/x86/boot/a20.c                      |    9 +-
-  arch/x86/boot/apm.c                      |   76 +++++--------
-  arch/x86/boot/bioscall.S                 |   82 +++++++++++++
-  arch/x86/boot/boot.h                     |   48 ++++++++
-  arch/x86/boot/edd.c                      |   71 +++++-------
-  arch/x86/boot/header.S                   |    2 +-
-  arch/x86/boot/main.c                     |   39 ++++---
-  arch/x86/boot/mca.c                      |   27 ++---
-  arch/x86/boot/memory.c                   |   81 +++++++-------
-  arch/x86/boot/regs.c                     |   29 +++++
-  arch/x86/boot/setup.ld                   |    6 +
-  arch/x86/boot/tty.c                      |   52 +++++----
-  arch/x86/boot/video-bios.c               |   27 ++---
-  arch/x86/boot/video-vesa.c               |  137 ++++++++++------------
-  arch/x86/boot/video-vga.c                |   95 +++++++++------
-  arch/x86/boot/video.c                    |   42 +++----
-  arch/x86/boot/video.h                    |   14 ---
-  arch/x86/kernel/acpi/realmode/Makefile   |    2 +-
-  arch/x86/kernel/acpi/realmode/bioscall.S |    1 +
-  arch/x86/kernel/acpi/realmode/regs.c     |    1 +
-  21 files changed, 490 insertions(+), 356 deletions(-)
+When today? A number of people apparently had module problems before 
+commit 97c18e2c7a8e36d2d83d50ee070314aadac73a11 ("module: 
+try_then_request_module must wait").
 
+If you don't have that one, then that might explain both problems, in that 
+a "second try" would work for modules (your sound issue), and that 
+compiling things in would obviously avoid it (your storage driver thing).
+
+But if you _do_ have that, then it's obviously something else ;)
+
+		Linus
