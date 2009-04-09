@@ -1,154 +1,96 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755583AbZDINmg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756749AbZDINrk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755583AbZDINmg (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 9 Apr 2009 09:42:36 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752078AbZDINm1
+	id S1756749AbZDINrk (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 9 Apr 2009 09:47:40 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752585AbZDINrb
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 9 Apr 2009 09:42:27 -0400
-Received: from devils.ext.ti.com ([198.47.26.153]:34108 "EHLO
-	devils.ext.ti.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752075AbZDINm0 convert rfc822-to-8bit (ORCPT
+	Thu, 9 Apr 2009 09:47:31 -0400
+Received: from wa4ehsobe005.messaging.microsoft.com ([216.32.181.15]:5376 "EHLO
+	WA4EHSOBE006.bigfish.com" rhost-flags-OK-OK-OK-FAIL)
+	by vger.kernel.org with ESMTP id S1752561AbZDINra (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 9 Apr 2009 09:42:26 -0400
-From: "Narnakaje, Snehaprabha" <nsnehaprabha@ti.com>
-To: Thomas Gleixner <tglx@linutronix.de>
-CC: David Brownell <david-b@pacbell.net>,
-       "davinci-linux-open-source@linux.davincidsp.com" 
-	<davinci-linux-open-source@linux.davincidsp.com>,
-       "linux-mtd@lists.infradead.org" <linux-mtd@lists.infradead.org>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
-Date: Thu, 9 Apr 2009 08:41:56 -0500
-Subject: RE: [PATCH] MTD-NAND: Changes to read_page APIs to support
- NAND_ECC_HW_SYNDROME mode on TI DaVinci DM355
-Thread-Topic: [PATCH] MTD-NAND: Changes to read_page APIs to support
- NAND_ECC_HW_SYNDROME mode on TI DaVinci DM355
-Thread-Index: Acm3ueQ1pWX7sGNcSGa2b22FaJqvNwBXIoJw
-Message-ID: <7A436F7769CA33409C6B44B358BFFF0CFFB1EB1B@dlee02.ent.ti.com>
-References: <1238601784-9563-1-git-send-email-nsnehaprabha@ti.com>
- <200904051556.05368.david-b@pacbell.net>
- <alpine.LFD.2.00.0904070042300.21577@localhost.localdomain>
- <200904061849.23110.david-b@pacbell.net>
- <7A436F7769CA33409C6B44B358BFFF0CFFAA90C0@dlee02.ent.ti.com>
- <alpine.LFD.2.00.0904071831550.21577@localhost.localdomain>
- <7A436F7769CA33409C6B44B358BFFF0CFFAA9253@dlee02.ent.ti.com>
- <alpine.LFD.2.00.0904072123320.21577@localhost.localdomain>
-In-Reply-To: <alpine.LFD.2.00.0904072123320.21577@localhost.localdomain>
-Accept-Language: en-US
-Content-Language: en-US
-X-MS-Has-Attach: 
-X-MS-TNEF-Correlator: 
-acceptlanguage: en-US
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 8BIT
+	Thu, 9 Apr 2009 09:47:30 -0400
+X-BigFish: VPS-14(zz936eQ4015M936fKzz1202hzzz32i6bh43j61h)
+X-Spam-TCS-SCL: 0:0
+X-FB-SS: 5,
+X-WSS-ID: 0KHU6AM-01-NFP-01
+Date: Thu, 9 Apr 2009 15:47:10 +0200
+From: Andreas Herrmann <andreas.herrmann3@amd.com>
+To: Ingo Molnar <mingo@elte.hu>
+CC: Mark Langsdorf <mark.langsdorf@amd.com>, "H. Peter Anvin" <hpa@zytor.com>,
+       Ingo Molnar <mingo@redhat.com>, Thomas Gleixner <tglx@linutronix.de>,
+       linux-kernel@vger.kernel.org
+Subject: [PATCH v2] x86: cacheinfo: complete L2/L3 Cache and TLB
+	associativity field definitions
+Message-ID: <20090409134710.GA8026@alberich.amd.com>
+References: <20090402100756.GN5740@alberich.amd.com> <20090402103008.GA10828@elte.hu>
 MIME-Version: 1.0
+Content-Type: text/plain; charset="us-ascii"
+Content-Disposition: inline
+In-Reply-To: <20090402103008.GA10828@elte.hu>
+User-Agent: Mutt/1.5.16 (2007-06-09)
+X-OriginalArrivalTime: 09 Apr 2009 13:47:11.0240 (UTC) FILETIME=[AEA8F880:01C9B919]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Thomas,
 
-> -----Original Message-----
-> From: Thomas Gleixner [mailto:tglx@linutronix.de]
-> Sent: Tuesday, April 07, 2009 3:48 PM
-> To: Narnakaje, Snehaprabha
-> Cc: David Brownell; davinci-linux-open-source@linux.davincidsp.com; linux-
-> mtd@lists.infradead.org; linux-kernel@vger.kernel.org
-> Subject: RE: [PATCH] MTD-NAND: Changes to read_page APIs to support
-> NAND_ECC_HW_SYNDROME mode on TI DaVinci DM355
-> 
-> On Tue, 7 Apr 2009, Narnakaje, Snehaprabha wrote:
-> > > > On DaVinci DM355 device, we need to pass the ecc code/syndrome
-> > > > extracted from OOB area, in order to read the HW ECC for each data
-> > > > chunk. This is where we differ from NAND_ECC_HW mode.
-> > >
-> > > I have to admit that I'm slightly confused. Is the below description
-> > > correct?
-> > >
-> > > On write you generate the ECC via hardware and store it in the OOB
-> > > area, right ?
-> 
-> Your mailer still does not insert line breaks at around 78 chars.
-> 
-> > Yes. For a large page (e.g. 2K+64), ECC should be stored in the
-> > 64bytes OOB region. The NAND controller on DaVinci DM355 device is
-> > capable of generating HW ECC (4-bit) for every 512bytes. This means,
-> > we have 4 eccsteps. The ECC should be generated by the HW for every
-> > 512byte chunk write and stored temporarily in a buffer until all 4
-> > eccsteps have been tried. The ECC from the temporary buffer is then
-> > written to the OOB area.
-> 
-> That's exactly what NAND_ECC_HW does.
-> 
-> > >
-> > > On read you read the oob data first and extract the ECC. Then you feed
-> > > the extracted ECC into the HW generator and read the data. Is this
-> > > correct ?
-> 
-> > Almost, read OOB, read data and then feed the extracted ECC into HW
-> > generator. Read the ECC status to see any correction required on the
-> > read data. Again, reading data, feeding the extracted ECC into HW
-> > generator and the correction will have to be repeated for # of times
-> > - eccsteps.
-> 
-> Ok.
-> 
-> > >
-> > > > The read_page/write_page APIs for NAND_ECC_HW_SYNDROME have the
-> > > > other problem that David mentioned - overwriting NAND manufacturers
-> > > > bad block meta data, when used with large page NAND chips. These
-> > > > APIs do not handle the "eccsteps" properly. The OOB is read/written
-> > > > after every data chunk, thus you actually have overwritten the
-> > > > factory bad block information, when these APIs handle the last data
-> > > > chunk. OOB should be read/written after the entire data (a page) is
-> > > > read/written.
-> > >
-> > > Again, that is _how_ the NAND_ECC_HW_SYNDROME functions work. And if
-> > > your hardware needs a completely different mode, then we need to
-> > > analyse what's the best solution for it.
-> 
-> > Based on the description above, NAND_ECC_HW_SYNDROME fitted well,
-> 
-> No, it does not fit well.
-> 
-> > with the exception of overriding the read_page/write_page APIs (to
-> > fix the bugs mentioned above). I have not sent the actual NAND
-> 
-> Those are not bugs. You abused that interface and now you claim it has
-> bugs. It does _not_. You introduced the bugs by using a function for
-> something it was never designed for.
-> 
-> > driver to the linux-mtd yet, since the initial version (supported
-> > only 1-bit HW ECC) submitted by David Brownell was still in review
-> > (no comments and not approved yet). While coming up with read_page
-> > API in the DaVinci NAND driver, we realized the need to pass "page"
-> > parameter. The read_page API in the DaVinci NAND driver required to
-> > call chip->cmdfunc to adjust the read location (page vs. OOB). The
-> > "page" parameter has to be passed to the chip->cmdfunc.
-> 
-> This is the wrong approach.
-> 
-> What you need is a NAND_ECC_HW_OOB_FIRST mode, which uses the
-> NAND_ECC_HW write function and implements a separate read function
-> which reads the oob and then reads the data chunks.
+See "CPUID Specification" (AMD Publication #: 25481, Rev. 2.28, April 2008)
 
-OK, I will come up with the new ECC mode with the separate read_page handler.
+Signed-off-by: Andreas Herrmann <andreas.herrmann3@amd.com>
+---
+ arch/x86/kernel/cpu/intel_cacheinfo.c |   16 ++++++++++++----
+ 1 files changed, 12 insertions(+), 4 deletions(-)
 
-However, I am still not clear on how I can avoid the change to read_page handler definition to pass page. This new read_page handler does require it, if it has to call the cmdfunc to adjust the read pointer to OOB area. Basically, I am referring to the code snippet below -
+This patch applies on top of the changes sent with
 
-...
-/* Read the OOB area first */
-chip->cmdfunc(mtd, NAND_CMD_READOOB, 0, page);
-chip->read_buf(mtd, oob, mtd->oobsize);
-chip->cmdfunc(mtd, NAND_CMD_READ0, 0, page);
-...
+  [PATCH 0/8] x86: cacheinfo: cache_disable fixes/cleanup
 
-The function that calls read_page handler has already called the cmdfunc to adjust the read pointer to the beginning of the page. The read_page handler for the new ECC mode will have to re-adjust the read pointer to read the OOB first.
+Please apply.
 
-Thanks
-Sneha
 
-> 
-> Thanks,
-> 
-> 	tglx
+Thanks,
+
+Andreas
+
+
+diff --git a/arch/x86/kernel/cpu/intel_cacheinfo.c b/arch/x86/kernel/cpu/intel_cacheinfo.c
+index 47e4fb4..3329347 100644
+--- a/arch/x86/kernel/cpu/intel_cacheinfo.c
++++ b/arch/x86/kernel/cpu/intel_cacheinfo.c
+@@ -200,10 +200,17 @@ union l3_cache {
+ };
+ 
+ static const unsigned short __cpuinitconst assocs[] = {
+-	[1] = 1, [2] = 2, [4] = 4, [6] = 8,
+-	[8] = 16, [0xa] = 32, [0xb] = 48,
++	[1] = 1,
++	[2] = 2,
++	[4] = 4,
++	[6] = 8,
++	[8] = 16,
++	[0xa] = 32,
++	[0xb] = 48,
+ 	[0xc] = 64,
+-	[0xf] = 0xffff // ??
++	[0xd] = 96,
++	[0xe] = 128,
++	[0xf] = 0xffff // fully associative - no way to show this currently
+ };
+ 
+ static const unsigned char __cpuinitconst levels[] = { 1, 1, 2, 3 };
+@@ -264,7 +271,8 @@ amd_cpuid4(int leaf, union _cpuid4_leaf_eax *eax,
+ 	eax->split.type = types[leaf];
+ 	eax->split.level = levels[leaf];
+ 	if (leaf == 3)
+-		eax->split.num_threads_sharing = current_cpu_data.x86_max_cores - 1;
++		eax->split.num_threads_sharing =
++			current_cpu_data.x86_max_cores - 1;
+ 	else
+ 		eax->split.num_threads_sharing = 0;
+ 	eax->split.num_cores_on_die = current_cpu_data.x86_max_cores - 1;
+-- 
+1.6.2
+
+
 
