@@ -1,96 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754897AbZDIDui@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759501AbZDIDvi@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754897AbZDIDui (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 8 Apr 2009 23:50:38 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758971AbZDIDuG
+	id S1759501AbZDIDvi (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 8 Apr 2009 23:51:38 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758369AbZDIDv2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 8 Apr 2009 23:50:06 -0400
-Received: from main.gmane.org ([80.91.229.2]:35321 "EHLO ciao.gmane.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1758845AbZDIDuE (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 8 Apr 2009 23:50:04 -0400
-X-Injected-Via-Gmane: http://gmane.org/
-To: linux-kernel@vger.kernel.org
-From: Ryan Hill <dirtyepic@gentoo.org>
-Subject: Re: Error: freeing invalid memtype
-Date: Wed, 8 Apr 2009 21:00:13 -0600
-Message-ID: <20090408210013.62e878c6@halo.dirtyepic.sk.ca>
-References: <49C03208.6050603@gmail.com>
-	<1237399938.4529.208.camel@localhost.localdomain>
-	<49C572CC.6090704@gmail.com>
-	<20090323190720.GA16831@linux-os.sc.intel.com>
-	<49C95C66.2050100@gmail.com>
-	<20090324222516.GA4292@elte.hu>
-Mime-Version: 1.0
-Content-Type: multipart/signed; boundary="Sig_/ysoNmJ5A9hYqFS6=iJW0PeP";
- protocol="application/pgp-signature"; micalg=PGP-SHA1
-X-Complaints-To: usenet@ger.gmane.org
-X-Gmane-NNTP-Posting-Host: s0106001f3b27dbf9.mj.shawcable.net
-X-Newsreader: Claws Mail 3.7.1 (GTK+ 2.14.7; x86_64-pc-linux-gnu)
+	Wed, 8 Apr 2009 23:51:28 -0400
+Received: from cn.fujitsu.com ([222.73.24.84]:63191 "EHLO song.cn.fujitsu.com"
+	rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org with ESMTP
+	id S1758119AbZDIDv1 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 8 Apr 2009 23:51:27 -0400
+Message-ID: <49DD70E0.9080302@cn.fujitsu.com>
+Date: Thu, 09 Apr 2009 11:52:00 +0800
+From: Li Zefan <lizf@cn.fujitsu.com>
+User-Agent: Thunderbird 2.0.0.9 (X11/20071115)
+MIME-Version: 1.0
+To: Ingo Molnar <mingo@elte.hu>
+CC: Steven Rostedt <rostedt@goodmis.org>,
+       Frederic Weisbecker <fweisbec@gmail.com>,
+       LKML <linux-kernel@vger.kernel.org>,
+       Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>,
+       Pekka Paalanen <pq@iki.fi>
+Subject: [PATCH][RESEND] tracing: consolidate documents
+References: <49DD6E2B.6090200@cn.fujitsu.com>
+In-Reply-To: <49DD6E2B.6090200@cn.fujitsu.com>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---Sig_/ysoNmJ5A9hYqFS6=iJW0PeP
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: quoted-printable
+Move tracepoints.txt, ftrace.txt and mmiotrace.txt to the new
+directory trace/
 
-On Tue, 24 Mar 2009 23:25:16 +0100
-Ingo Molnar <mingo@elte.hu> wrote:
+I don't find any references to those documents in both source
+files and documents, so no extra work needs to be done.
 
-> No, there was no fix in this area mainline, so it's this patch. I've=20
-> queued up the fix for the .30 merge window with a -stable backport=20
-> tag - so it will show up in .29.1 or .29.2 if it remains=20
-> problem-free.
->=20
-> Thanks a lot for your testing! Below is the final commit.
+Signed-off-by: Li Zefan <lizf@cn.fujitsu.com>
+---
 
-I'm running 2.6.29.1 which has this patch but I'm still seeing an insane
-number of these.  I can't trigger them just by running glxinfo like
-Kevin, however opening a few tabs containing large images in firefox does t=
-he
-trick and also freezes my system for about a minute.
+Fix a typo in changelog, and CC more people.
 
-cat /debug/x86/pat_memtype_list before the bug gives me ~17000 lines, of th=
-e form
+---
+ Documentation/{ => trace}/ftrace.txt           |    0 
+ Documentation/{tracers => trace}/mmiotrace.txt |    0 
+ Documentation/{ => trace}/tracepoints.txt      |    0 
+ 3 files changed, 0 insertions(+), 0 deletions(-)
+ rename Documentation/{ => trace}/ftrace.txt (100%)
+ rename Documentation/{tracers => trace}/mmiotrace.txt (100%)
+ rename Documentation/{ => trace}/tracepoints.txt (100%)
 
-write-combining @ 0xeff70000-0xeff71000
-write-combining @ 0xeff71000-0xeff72000
-write-combining @ 0xeff72000-0xeff73000
-write-combining @ 0xeff73000-0xeff74000
-write-combining @ 0xeff74000-0xeff75000
-write-combining @ 0xeff75000-0xeff76000
-write-combining @ 0xeff76000-0xeff77000
-write-combining @ 0xeff77000-0xeff78000
-write-combining @ 0xeff78000-0xeff79000
-write-combining @ 0xeff79000-0xeff7a000
-
-checking pat_memtype_list after triggering the bug produced ~25000 lines, so
-I'm thinking a diff isn't really helpful.
-
-you can find my kernel log @
-http://dev.gentoo.org/~dirtyepic/misc/logs/20090508-kern.log
-
-what other info do you need?
-
-
---=20
-gcc-porting,                                      by design, by neglect
-treecleaner,                              for a fact or just for effect
-wxwidgets @ gentoo     EFFD 380E 047A 4B51 D2BD C64F 8AA8 8346 F9A4 0662
-
---Sig_/ysoNmJ5A9hYqFS6=iJW0PeP
-Content-Type: application/pgp-signature; name=signature.asc
-Content-Disposition: attachment; filename=signature.asc
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v2.0.11 (GNU/Linux)
-
-iEYEARECAAYFAkndZMIACgkQiqiDRvmkBmL9YACeNElxaKhnFStSAlVk49bxfDP+
-zbcAoJ84dkvZdH9ZMuAeCUIcenQKQ8MV
-=S1o5
------END PGP SIGNATURE-----
-
---Sig_/ysoNmJ5A9hYqFS6=iJW0PeP--
-
+diff --git a/Documentation/ftrace.txt b/Documentation/trace/ftrace.txt
+similarity index 100%
+rename from Documentation/ftrace.txt
+rename to Documentation/trace/ftrace.txt
+diff --git a/Documentation/tracers/mmiotrace.txt b/Documentation/trace/mmiotrace.txt
+similarity index 100%
+rename from Documentation/tracers/mmiotrace.txt
+rename to Documentation/trace/mmiotrace.txt
+diff --git a/Documentation/tracepoints.txt b/Documentation/trace/tracepoints.txt
+similarity index 100%
+rename from Documentation/tracepoints.txt
+rename to Documentation/trace/tracepoints.txt
+-- 
+1.5.4.rc3
 
