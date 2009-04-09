@@ -1,101 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932401AbZDIM1d@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1765685AbZDIMaE@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932401AbZDIM1d (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 9 Apr 2009 08:27:33 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751911AbZDIM1Y
+	id S1765685AbZDIMaE (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 9 Apr 2009 08:30:04 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759518AbZDIM3u
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 9 Apr 2009 08:27:24 -0400
-Received: from 8bytes.org ([88.198.83.132]:44840 "EHLO 8bytes.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1758596AbZDIM1X (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 9 Apr 2009 08:27:23 -0400
-Date: Thu, 9 Apr 2009 14:27:20 +0200
-From: Joerg Roedel <joro@8bytes.org>
-To: Mark Langsdorf <mark.langsdorf@amd.com>
-Cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
-       Ingo Molnar <mingo@elte.hu>
-Subject: Re: [PATCH] Enable GART-IOMMU only after setting up protection
-	methods
-Message-ID: <20090409122720.GB12440@8bytes.org>
-References: <200903171457.25582.mark.langsdorf@amd.com> <200904081608.55746.mark.langsdorf@amd.com>
+	Thu, 9 Apr 2009 08:29:50 -0400
+Received: from mail-fx0-f158.google.com ([209.85.220.158]:63489 "EHLO
+	mail-fx0-f158.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1758111AbZDIM3t (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 9 Apr 2009 08:29:49 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=googlemail.com; s=gamma;
+        h=mime-version:reply-to:in-reply-to:references:date:message-id
+         :subject:from:to:cc:content-type:content-transfer-encoding;
+        b=FVpkim0hVIVjeyi1fAq1aPTCaWqbgHPoOmHtQssE+Fu9iGXqoFFsc0j0rHMh3leXxo
+         QwMR6S3eUxNnMewjgqXef2UB0g8bXwGYfCmVSvEwrxQLLM7Jzzw8kgSFdw55syucBaxo
+         AgD6xyd6eWaurXPH5bC7cNPffs0J01I/N96Nk=
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <200904081608.55746.mark.langsdorf@amd.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+Reply-To: alan-jenkins@tuffmail.co.uk
+In-Reply-To: <49DDD83F.507@tuffmail.co.uk>
+References: <49DDD83F.507@tuffmail.co.uk>
+Date: Thu, 9 Apr 2009 13:29:47 +0100
+Message-ID: <9b2b86520904090529u4586906ei878967c2636417be@mail.gmail.com>
+Subject: Re: Regression: First hibernation attempt fails
+From: Alan Jenkins <sourcejedi.lkml@googlemail.com>
+To: linux-pm@lists.linux-foundation.org
+Cc: Kernel Testers List <kernel-testers@vger.kernel.org>,
+       linux-kernel <linux-kernel@vger.kernel.org>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Apr 08, 2009 at 04:08:55PM -0500, Mark Langsdorf wrote:
-> The current code to set up the GART as an IOMMU enables GART
-> translations before it removes the aperture from the kernel
-> memory map, sets the GART PTEs to UC, sets up the guard and
-> scratch pages, or does a wbinvd().  This leaves the possibility
-> of cache aliasing open and can cause system crashes.
+On 4/9/09, Alan Jenkins <alan-jenkins@tuffmail.co.uk> wrote:
+> Yet another issue in 2.6.30-rc1 which was not present in 2.6.29 :-).  I
+> wonder if it rings any bells?
+>
+> On my laptop (EEE 4G), the first attempt at hibernation fails.
+> Subsequent attempts succeed.
+>
+> If I use s2disk as normal, I see "snapshotting system", then before it
+> gets to write out the image, it aborts and switches back to X.   I can't
+> see any error message, even if I check the log with "dmesg".
+>
+> If I use "echo disk > /sys/power/state", echo reports the error "Cannot
+> allocate memory".
+>
+> This only happens if I've logged in to X first.  In fact, I narrowed it
+> down to gnome-power-manager.  If I kill gnome-power-manager beforehand,
+> then it doesn't happen.
 
-This patch looks broken.  I don't think that there are any aliasing
-problems in the existing code.  Can you elaborate were do you see these
-problems? Is there any existing bug report for this?
-
-> Re-order the code and add tlbflush so as to enable the 
-> GART translations only after all safeguards are in place and
-> the tlb has been flushed.
-> 
-> AMD has tested this patch and seen no adverse effects.
-> 
-> Signed-off-by: Mark Langsdorf <mark.langsdorf@amd.com>
-> 
-> diff -r 0d1744c7acc7 arch/x86/kernel/pci-gart_64.c
-> --- a/arch/x86/kernel/pci-gart_64.c	Fri Mar 27 16:47:28 2009 -0500
-> +++ b/arch/x86/kernel/pci-gart_64.c	Mon Mar 30 15:05:47 2009 -0500
-> @@ -38,6 +38,7 @@
->  #include <asm/swiotlb.h>
->  #include <asm/dma.h>
->  #include <asm/k8.h>
-> +#include <asm/tlbflush.h>
->  
->  static unsigned long iommu_bus_base;	/* GART remapping area (physical) */
->  static unsigned long iommu_size;	/* size of remapping area bytes */
-> @@ -682,9 +683,9 @@
->  	if (set_memory_uc((unsigned long)gatt, gatt_size >> PAGE_SHIFT))
->  		panic("Could not set GART PTEs to uncacheable pages");
->  
-> +	wbinvd();
-> +
->  	agp_gatt_table = gatt;
-> -
-> -	enable_gart_translations();
-
-To enable the GART here has the advantage that all other CPUs are not
-yet up. Since the GATT has only non-present entries there is no cache
-aliasing problem here. If you enable it later you need to flush the
-cache on _all_ CPUs and not just the CPU where the GART initialization
-code runs.
-
->  
->  	error = sysdev_class_register(&gart_sysdev_class);
->  	if (!error)
-> @@ -855,6 +856,11 @@
->  	for (i = EMERGENCY_PAGES; i < iommu_pages; i++)
->  		iommu_gatt_base[i] = gart_unmapped_entry;
->  
-> +	wbinvd();
-
-Why a wbinvd() here? A few lines above is already one.
-
-> +	flush_tlb_all();
-
-Same with TLB flush. The set_memory_np() function does that for us.
-
-> +
-> +	enable_gart_translations();
-> +
-
-If we change the enablement logic like done in this patch you need to
-invalidate the caches on _all_ cpus. I don't think this is necessary if
-we just enable all GARTs when only the boot cpu is up.
-
->  	flush_gart();
->  	dma_ops = &gart_dma_ops;
->  }
+Hmm... killing g-p-m doesn't seem to affect this any more, perhaps I
+spoke too soon.  But not logging into X still avoids it.
