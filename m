@@ -1,54 +1,92 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762155AbZDIG0W@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763981AbZDIG1c@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762155AbZDIG0W (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 9 Apr 2009 02:26:22 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755548AbZDIG0O
+	id S1763981AbZDIG1c (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 9 Apr 2009 02:27:32 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754983AbZDIG1W
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 9 Apr 2009 02:26:14 -0400
-Received: from fgwmail6.fujitsu.co.jp ([192.51.44.36]:46441 "EHLO
-	fgwmail6.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755885AbZDIG0N (ORCPT
+	Thu, 9 Apr 2009 02:27:22 -0400
+Received: from pfepa.post.tele.dk ([195.41.46.235]:50345 "EHLO
+	pfepa.post.tele.dk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754440AbZDIG1V (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 9 Apr 2009 02:26:13 -0400
-Date: Thu, 9 Apr 2009 15:24:36 +0900
-From: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-To: bharata@linux.vnet.ibm.com
-Cc: linux-kernel@vger.kernel.org, Balbir Singh <balbir@linux.vnet.ibm.com>,
-       Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: [PATCH take2] memcg: Fix documentation
-Message-Id: <20090409152436.e05991a5.kamezawa.hiroyu@jp.fujitsu.com>
-In-Reply-To: <20090409062254.GC3346@in.ibm.com>
-References: <20090409062254.GC3346@in.ibm.com>
-Organization: FUJITSU Co. LTD.
-X-Mailer: Sylpheed 2.5.0 (GTK+ 2.10.14; i686-pc-mingw32)
+	Thu, 9 Apr 2009 02:27:21 -0400
+Date: Thu, 9 Apr 2009 08:29:24 +0200
+From: Sam Ravnborg <sam@ravnborg.org>
+To: David Miller <davem@davemloft.net>
+Cc: tj@kernel.org, sparclinux@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 5/12]: sparc64: Refactor OBP cpu scanning code using an iterator.
+Message-ID: <20090409062924.GA14255@uranus.ravnborg.org>
+References: <20090408.223738.63750701.davem@davemloft.net>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20090408.223738.63750701.davem@davemloft.net>
+User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 9 Apr 2009 11:52:54 +0530
-Bharata B Rao <bharata@linux.vnet.ibm.com> wrote:
+On Wed, Apr 08, 2009 at 10:37:38PM -0700, David Miller wrote:
+> 
+> Signed-off-by: David S. Miller <davem@davemloft.net>
+> ---
+>  arch/sparc/include/asm/prom.h |    1 +
+>  arch/sparc/kernel/prom_64.c   |  235 ++++++++++++++++++++++-------------------
+>  2 files changed, 127 insertions(+), 109 deletions(-)
+> 
+> diff --git a/arch/sparc/include/asm/prom.h b/arch/sparc/include/asm/prom.h
+> index 900d447..1b15212 100644
+> --- a/arch/sparc/include/asm/prom.h
+> +++ b/arch/sparc/include/asm/prom.h
+> @@ -86,6 +86,7 @@ extern int of_node_to_nid(struct device_node *dp);
+>  #endif
+>  
+>  extern void prom_build_devicetree(void);
+> +extern void of_populate_present_mask(void);
+>  
+>  /* Dummy ref counting routines - to be implemented later */
+>  static inline struct device_node *of_node_get(struct device_node *node)
+> diff --git a/arch/sparc/kernel/prom_64.c b/arch/sparc/kernel/prom_64.c
+> index ca55c70..04b518d 100644
+> --- a/arch/sparc/kernel/prom_64.c
+> +++ b/arch/sparc/kernel/prom_64.c
+> @@ -374,75 +374,26 @@ static const char *get_mid_prop(void)
+>  	return (tlb_type == spitfire ? "upa-portid" : "portid");
+>  }
+>  
+> -struct device_node *of_find_node_by_cpuid(int cpuid)
+> -{
+> -	struct device_node *dp;
+> -	const char *mid_prop = get_mid_prop();
+> -
+> -	for_each_node_by_type(dp, "cpu") {
+> -		int id = of_getintprop_default(dp, mid_prop, -1);
+> -		const char *this_mid_prop = mid_prop;
+> -
+> -		if (id < 0) {
+> -			this_mid_prop = "cpuid";
+> -			id = of_getintprop_default(dp, this_mid_prop, -1);
+> -		}
+> -
+> -		if (id < 0) {
+> -			prom_printf("OF: Serious problem, cpu lacks "
+> -				    "%s property", this_mid_prop);
+> -			prom_halt();
+> -		}
+> -		if (cpuid == id)
+> -			return dp;
+> -	}
+> -	return NULL;
+> -}
+> -
+> -void __init of_fill_in_cpu_data(void)
+> +static void *of_iterate_over_cpus(void *(*func)(struct device_node *, int, void *), void *arg)
 
-> Here is the version of the memory controller documentation fix patch
-> which addresses some of the comments given by Kamezawa.
-> 
-> Andrew, Could you please take this in ? This is against latest mmotm.
-> 
-> Regards,
-> Bharata.
-> 
-> memcg: Fix documentation.
-> 
-> The description about various statistics from memory.stat is not accurate
-> and confusing at times.
-> 
-> Correct this along with a few other minor cleanups.
-> 
-> Signed-off-by: Bharata B Rao <bharata@linux.vnet.ibm.com>
-> Acked-by: Balbir Singh <balbir@linux.vnet.ibm.com>
+You never pass a "void *" as argument to this iterator.
+It seems cleaner to use a long or even an int as this is closer
+to the typical usage, and one can always pass a '0' when the
+argument is not used.
 
-Acked-by: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+I have not looked through all patches yet so it may come later.
 
-
+	Sam
