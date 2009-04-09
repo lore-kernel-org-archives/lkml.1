@@ -1,51 +1,71 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934951AbZDIO4I@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S935035AbZDIO6f@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934951AbZDIO4I (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 9 Apr 2009 10:56:08 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934771AbZDIOz0
+	id S935035AbZDIO6f (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 9 Apr 2009 10:58:35 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755127AbZDIO6V
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 9 Apr 2009 10:55:26 -0400
-Received: from one.firstfloor.org ([213.235.205.2]:43434 "EHLO
-	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S934538AbZDIOzY (ORCPT
+	Thu, 9 Apr 2009 10:58:21 -0400
+Received: from ausxipps301.us.dell.com ([143.166.148.223]:60723 "EHLO
+	ausxipps301.us.dell.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753781AbZDIO6U (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 9 Apr 2009 10:55:24 -0400
-Date: Thu, 9 Apr 2009 16:57:46 +0200
-From: Andi Kleen <andi@firstfloor.org>
-To: Chris Mason <chris.mason@oracle.com>
-Cc: Andi Kleen <andi@firstfloor.org>, hugh@veritas.com, npiggin@suse.de,
-       riel@redhat.com, lee.schermerhorn@hp.com, akpm@linux-foundation.org,
-       linux-kernel@vger.kernel.org, linux-mm@kvack.org, x86@kernel.org
-Subject: Re: [PATCH] [13/16] POISON: The high level memory error handler in the VM II
-Message-ID: <20090409145746.GK14687@one.firstfloor.org>
-References: <20090407509.382219156@firstfloor.org> <20090407151010.E72A91D0471@basil.firstfloor.org> <1239210239.28688.15.camel@think.oraclecorp.com> <20090409072949.GF14687@one.firstfloor.org> <20090409075805.GG14687@one.firstfloor.org> <1239283829.23150.34.camel@think.oraclecorp.com> <20090409140257.GI14687@one.firstfloor.org> <1239287859.23150.57.camel@think.oraclecorp.com>
+	Thu, 9 Apr 2009 10:58:20 -0400
+Date: Thu, 9 Apr 2009 09:58:19 -0500
+From: Matt Domsch <Matt_Domsch@dell.com>
+To: David Miller <davem@davemloft.net>
+Cc: netdev@vger.kernel.org, linux-hotplug@vger.kernel.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: Network Device Naming mechanism and policy
+Message-ID: <20090409145818.GA13155@auslistsprd01.us.dell.com>
+References: <20090324154617.GA16332@auslistsprd01.us.dell.com> <20090324.155756.214460004.davem@davemloft.net>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <1239287859.23150.57.camel@think.oraclecorp.com>
-User-Agent: Mutt/1.4.2.1i
+In-Reply-To: <20090324.155756.214460004.davem@davemloft.net>
+User-Agent: Mutt/1.5.11
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> Even though try_to_releasepage only checks page_writeback() the lower
-> filesystems all bail on dirty pages or dirty buffers (see the checks
-> done by try_to_free_buffers).
+On Tue, Mar 24, 2009 at 03:57:56PM -0700, David Miller wrote:
+> From: Matt Domsch <Matt_Domsch@dell.com>
+> Date: Tue, 24 Mar 2009 10:46:17 -0500
 > 
-> It looks like the only way we have to clean a page and all the buffers
-> in it is the invalidatepage call.  But that doesn't return success or
-> failure, so maybe invalidatepage followed by releasepage?
-
-Ok. I'll poke at it more.
-
+> > Problem: Users expect on-motherboard NICs to be named eth0..ethN.
+> > This can be difficult to achieve.
 > 
-> I'll have to read harder next week, the FS invalidatepage may expect
-> truncate to be the only caller.
+> I learned a long time ago that eth0 et al. have zero meaning.
+> 
+> If the system firmware folks gave us topology information with respect
+> to these things, we could export something that tools such as
+> NetworkManager, iproute2, etc. could use.
+> 
+> For example, if we were told that PCI device "domain:bus:dev:fn" has
+> string label "Onboard Ethernet 0" then we could present that to the
+> user.
+> 
+> Changing how the actual network device name is determined is going to
+> have zero traction.
 
-I have to be careful with locks; another lock would deadlock. Ok
-I could drop the page lock temporarily, but that would be somewhat
-risky of someone else coming in unexpectedly.
 
--Andi
+David, would you be opposed to the additional device names being done
+as device nodes in userspace, as several people suggested?
+
+/sys/devices/*/net/ifindex already exports the netlink device index.
+It would be trivial to add a /sys/devices/*/net/dev file, with
+<major>:<minor> for a device, where <minor> = ifindex.
+
+Then udev could then maintain /dev/net/by-{mac,path,...} as symlinks
+to /dev/net/$kernelname.
+
+Tools such as iproute's 'ip' could then be extended to look up their
+'dev' argument by /dev path, resolve the symlink to name, get the device node, and
+open the socket with the minor number / index (as normal).
+
+Thanks,
+Matt
+
 -- 
-ak@linux.intel.com -- Speaking for myself only.
+Matt Domsch
+Linux Technology Strategist, Dell Office of the CTO
+linux.dell.com & www.dell.com/linux
