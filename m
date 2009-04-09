@@ -1,181 +1,99 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758584AbZDIITr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758455AbZDIIWY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758584AbZDIITr (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 9 Apr 2009 04:19:47 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756097AbZDIIT3
+	id S1758455AbZDIIWY (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 9 Apr 2009 04:22:24 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758116AbZDIIWK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 9 Apr 2009 04:19:29 -0400
-Received: from mga03.intel.com ([143.182.124.21]:27034 "EHLO mga03.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755112AbZDIIT1 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 9 Apr 2009 04:19:27 -0400
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.40,159,1239001200"; 
-   d="scan'208";a="129614386"
-Date: Thu, 9 Apr 2009 16:17:34 +0800
-From: Wu Fengguang <fengguang.wu@intel.com>
-To: Ying Han <yinghan@google.com>
-Cc: "linux-mm@kvack.org" <linux-mm@kvack.org>,
-       linux-kernel <linux-kernel@vger.kernel.org>,
-       akpm <akpm@linux-foundation.org>,
-       "torvalds@linux-foundation.org" <torvalds@linux-foundation.org>,
-       Ingo Molnar <mingo@elte.hu>, Mike Waychison <mikew@google.com>,
-       Rohit Seth <rohitseth@google.com>, Hugh Dickins <hugh@veritas.com>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       "H. Peter Anvin" <hpa@zytor.com>,
-       =?utf-8?B?VMO2csO2aw==?= Edwin <edwintorok@gmail.com>,
-       Lee Schermerhorn <lee.schermerhorn@hp.com>,
-       Nick Piggin <npiggin@suse.de>
-Subject: Re: [PATCH][2/2]page_fault retry with NOPAGE_RETRY
-Message-ID: <20090409081734.GC31527@localhost>
-References: <604427e00904081302g1e3e4923kd61ceac5de72ccb2@mail.gmail.com>
+	Thu, 9 Apr 2009 04:22:10 -0400
+Received: from mail-in-03.arcor-online.net ([151.189.21.43]:48233 "EHLO
+	mail-in-03.arcor-online.net" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1757980AbZDIIWH convert rfc822-to-8bit
+	(ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 9 Apr 2009 04:22:07 -0400
+X-DKIM: Sendmail DKIM Filter v2.8.2 mail-in-05.arcor-online.net 55005332ACD
+Message-ID: <21685897.1239265325322.JavaMail.ngmail@webmail14.arcor-online.net>
+Date: Thu, 9 Apr 2009 10:22:05 +0200 (CEST)
+From: "M. Koehrer" <mathias_koehrer@arcor.de>
+To: linux-kernel@vger.kernel.org
+Subject: Issue with clock_nanosleep(), TIMER_ABSTIME and
+ CONFIG_CC_OPTIMIZE_FOR_SIZE not set
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <604427e00904081302g1e3e4923kd61ceac5de72ccb2@mail.gmail.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 8BIT
+X-ngMessageSubType: MessageSubType_MAIL
+X-WebmailclientIP: 213.68.15.100
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Apr 09, 2009 at 04:02:43AM +0800, Ying Han wrote:
-> x86 support:
-> 
-> Signed-off-by: Ying Han <yinghan@google.com>
-> 	       Mike Waychison <mikew@google.com>
->
-> arch/x86/mm/fault.c |   20 ++++++++++++++
-> 
-> 
-> diff --git a/arch/x86/mm/fault.c b/arch/x86/mm/fault.c
-> index 31e8730..0ec60a1 100644
-> --- a/arch/x86/mm/fault.c
-> +++ b/arch/x86/mm/fault.c
-> @@ -591,6 +591,7 @@ void __kprobes do_page_fault(struct pt_regs *regs, unsigne
->  #ifdef CONFIG_X86_64
->  	unsigned long flags;
->  #endif
-> +	unsigned int retry_flag = FAULT_FLAG_RETRY;
-> 
->  	tsk = current;
->  	mm = tsk->mm;
-> @@ -689,6 +690,7 @@ again:
->  		down_read(&mm->mmap_sem);
->  	}
-> 
-> +retry:
->  	vma = find_vma(mm, address);
->  	if (!vma)
->  		goto bad_area;
-> @@ -715,6 +717,7 @@ again:
->  good_area:
->  	si_code = SEGV_ACCERR;
->  	write = 0;
-> +	write |= retry_flag;
->  	switch (error_code & (PF_PROT|PF_WRITE)) {
->  	default:	/* 3: write, present */
->  		/* fall through */
-        case PF_WRITE:          /* write, not present */
-                if (!(vma->vm_flags & VM_WRITE))
-                        goto bad_area;
-                write++;
+Hi all!
+I am using kernel 2.6.29.1 from kernel.org on a Debian 5.0 (Lenny) system (Intel Core2Quad).
+GCC is 4.3.2
+I have not set CONFIG_CC_OPT_SIZE.
 
-This looks flaky, since 'write' is now some combination of bit fields.
-How about merging 'retry_flag' and 'write' into 'flags' like this?
+When I use clock_nanosleep with TIMER_ABSTIME with gdb and stop the execution by CTRL-C,
+I cannot continue the execution of my program when it interrupted the clock_nanosleep call.
 
-Thanks,
-Fengguang
----
-diff --git a/arch/x86/mm/fault.c b/arch/x86/mm/fault.c
-index c76ef1d..2500ab6 100644
---- a/arch/x86/mm/fault.c
-+++ b/arch/x86/mm/fault.c
-@@ -587,10 +587,11 @@ void __kprobes do_page_fault(struct pt_regs *regs, unsigned long error_code)
- 	struct mm_struct *mm;
- 	struct vm_area_struct *vma;
- 	unsigned long address;
--	int write, si_code;
-+	unsigned int flags = FAULT_FLAG_RETRY;
-+	int si_code;
- 	int fault;
- #ifdef CONFIG_X86_64
--	unsigned long flags;
-+	unsigned long oops_flags;
- 	int sig;
- #endif
- 
-@@ -694,6 +695,7 @@ void __kprobes do_page_fault(struct pt_regs *regs, unsigned long error_code)
- 		down_read(&mm->mmap_sem);
- 	}
- 
-+retry:
- 	vma = find_vma(mm, address);
- 	if (!vma)
- 		goto bad_area;
-@@ -719,14 +721,13 @@ void __kprobes do_page_fault(struct pt_regs *regs, unsigned long error_code)
-  */
- good_area:
- 	si_code = SEGV_ACCERR;
--	write = 0;
- 	switch (error_code & (PF_PROT|PF_WRITE)) {
- 	default:	/* 3: write, present */
- 		/* fall through */
- 	case PF_WRITE:		/* write, not present */
- 		if (!(vma->vm_flags & VM_WRITE))
- 			goto bad_area;
--		write++;
-+		flags |= VM_FAULT_WRITE;
- 		break;
- 	case PF_PROT:		/* read, present */
- 		goto bad_area;
-@@ -740,7 +741,7 @@ good_area:
- 	 * make sure we exit gracefully rather than endlessly redo
- 	 * the fault.
- 	 */
--	fault = handle_mm_fault(mm, vma, address, write);
-+	fault = handle_mm_fault(mm, vma, address, flags);
- 	if (unlikely(fault & VM_FAULT_ERROR)) {
- 		if (fault & VM_FAULT_OOM)
- 			goto out_of_memory;
-@@ -748,6 +749,23 @@ good_area:
- 			goto do_sigbus;
- 		BUG();
- 	}
-+
-+	/*
-+	 * Here we retry fault once and switch to synchronous mode. The
-+	 * main reason is to prevent us from the cases of starvation.
-+	 * The retry logic open a starvation hole in which case pages might
-+	 * be removed or changed after the retry.
-+	 */
-+	if (fault & VM_FAULT_RETRY) {
-+		if (flags & FAULT_FLAG_RETRY) {
-+			flags &= ~FAULT_FLAG_RETRY;
-+			tsk->maj_flt++;
-+			tsk->min_flt--;
-+			goto retry;
-+		}
-+		BUG();
-+	}
-+
- 	if (fault & VM_FAULT_MAJOR)
- 		tsk->maj_flt++;
- 	else
-@@ -840,7 +858,7 @@ no_context:
- #ifdef CONFIG_X86_32
- 	bust_spinlocks(1);
- #else
--	flags = oops_begin();
-+	oops_flags = oops_begin();
- #endif
- 
- 	show_fault_oops(regs, error_code, address);
-@@ -859,7 +877,7 @@ no_context:
- 		sig = 0;
- 	/* Executive summary in case the body of the oops scrolled away */
- 	printk(KERN_EMERG "CR2: %016lx\n", address);
--	oops_end(flags, regs, sig);
-+	oops_end(oops_flags, regs, sig);
- #endif
- 
- out_of_memory:
+When I set the kernel config parameter CONFIG_CC_OPT_SIZE everything is fine.
+There seems to be an optimization issue that is related to the clock_nanosleep system call.
+
+Some more remarks:
+When I use relative times (mode set to 0) everything works fine in both cases.
+CONFIG_TICK_ONESHOT=y
+CONFIG_HIGH_RES_TIMERS=y
+
+
+Here is my tiny test program that demonstrates the behaviour:
+Let it run in gdb, interrupt it (CTRL-C) and try to continue "c".
+
+***************** BEGIN ************************
+#define _GNU_SOURCE
+#include <stdio.h>
+#include <time.h>
+#include <unistd.h>
+#include <sys/syscall.h>
+#include <linux/unistd.h>
+
+const clockid_t CLOCK_TO_USE=CLOCK_MONOTONIC;
+static int clock_nanosleep2(clockid_t clock_id, int flags, const struct timespec *req,
+                struct timespec *rem)
+{
+    return syscall(__NR_clock_nanosleep, clock_id, flags, req, rem);
+}
+
+int main(void)
+{
+    int i;
+    struct timespec ts;
+    clock_gettime(CLOCK_TO_USE, &ts);
+
+    for (i=0; i<=1000; i++)
+    {
+        ts.tv_sec++;
+        clock_nanosleep2(CLOCK_TO_USE, TIMER_ABSTIME, &ts, NULL);
+        // clock_nanosleep(CLOCK_TO_USE, TIMER_ABSTIME, &ts, NULL);
+        printf("%i\n",i);
+    }
+
+    return 0;
+}
+
+/* Build with
+   gcc test_clock_nanosleep.c -g -Wall -lrt
+*/
+**************** END *******************
+
+Thanks for all feedback on that issue
+
+Regards
+
+Mathias
+
+-- 
+Mathias Koehrer
+mathias_koehrer@arcor.de
+
+
+Zerreißen Sie die Netze der Phisher, Hacker und Betrüger!
+Ihre Internet-Sicherheits-Seiten auf Arcor.de bieten alle Infos und Hilfsmittel, die Sie zum sicheren Surfen brauchen! Play it safe!
+http://www.arcor.de/footer-sicherheit/
