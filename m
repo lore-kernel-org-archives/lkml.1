@@ -1,81 +1,44 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761512AbZDIFbo@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755548AbZDIFho@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761512AbZDIFbo (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 9 Apr 2009 01:31:44 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759408AbZDIFbb
+	id S1755548AbZDIFho (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 9 Apr 2009 01:37:44 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752738AbZDIFhb
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 9 Apr 2009 01:31:31 -0400
-Received: from hera.kernel.org ([140.211.167.34]:59017 "EHLO hera.kernel.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1758894AbZDIFb3 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 9 Apr 2009 01:31:29 -0400
-Date: Thu, 9 Apr 2009 05:30:47 GMT
-From: Li Zefan <lizf@cn.fujitsu.com>
-To: linux-tip-commits@vger.kernel.org
-Cc: linux-kernel@vger.kernel.org, mathieu.desnoyers@polymtl.ca, hpa@zytor.com,
-       mingo@redhat.com, lizf@cn.fujitsu.com, fweisbec@gmail.com,
-       rostedt@goodmis.org, pq@iki.fi, tglx@linutronix.de, mingo@elte.hu
-Reply-To: mingo@redhat.com, hpa@zytor.com, mathieu.desnoyers@polymtl.ca,
-       linux-kernel@vger.kernel.org, fweisbec@gmail.com, rostedt@goodmis.org,
-       lizf@cn.fujitsu.com, pq@iki.fi, tglx@linutronix.de, mingo@elte.hu
-In-Reply-To: <49DD6E2B.6090200@cn.fujitsu.com>
-References: <49DD6E2B.6090200@cn.fujitsu.com>
-Subject: [tip:tracing/urgent] tracing: consolidate documents
-Message-ID: <tip-66bb74888eb4bef4ba7c87c931ecb7ecca3a240c@git.kernel.org>
-Git-Commit-ID: 66bb74888eb4bef4ba7c87c931ecb7ecca3a240c
-X-Mailer: tip-git-log-daemon
-MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Disposition: inline
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Thu, 09 Apr 2009 05:30:49 +0000 (UTC)
+	Thu, 9 Apr 2009 01:37:31 -0400
+Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:58060
+	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
+	by vger.kernel.org with ESMTP id S1752061AbZDIFhb (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 9 Apr 2009 01:37:31 -0400
+Date: Wed, 08 Apr 2009 22:37:19 -0700 (PDT)
+Message-Id: <20090408.223719.61587584.davem@davemloft.net>
+To: tj@kernel.org
+CC: sparclinux@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: [PATCH 0/12]: Sparc64 dynamic per-cpu support.
+From: David Miller <davem@davemloft.net>
+X-Mailer: Mew version 6.2.51 on Emacs 22.1 / Mule 5.0 (SAKAKI)
+Mime-Version: 1.0
+Content-Type: Text/Plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Commit-ID:  66bb74888eb4bef4ba7c87c931ecb7ecca3a240c
-Gitweb:     http://git.kernel.org/tip/66bb74888eb4bef4ba7c87c931ecb7ecca3a240c
-Author:     Li Zefan <lizf@cn.fujitsu.com>
-AuthorDate: Thu, 9 Apr 2009 11:40:27 +0800
-Committer:  Ingo Molnar <mingo@elte.hu>
-CommitDate: Thu, 9 Apr 2009 07:28:10 +0200
 
-tracing: consolidate documents
+This patch set converts sparc64 over to use the dynamic per-cpu stuff.
 
-Move kmemtrace.txt, tracepoints.txt, ftrace.txt and mmiotrace.txt to
-the new trace/ directory.
+Most of the work is the boring task of getting rid of the special
+"real_setup_per_cpu_areas()" sparc64 uses to setup the per-cpu areas
+before bootmem is available.  We needed to do this because we
+initialized the cpu possible map at the same time as the stuff stored
+in the per-cpu cpu_data array.
 
-I didnt find any references to those documents in both source
-files and documents, so no extra work needs to be done.
+So we split those tasks up.  Otherwise we wouldn't be able to convert
+to dynamic per-cpu because that stuff requires that bootmem and the
+page structs are ready to use.
 
-Signed-off-by: Li Zefan <lizf@cn.fujitsu.com>
-Acked-by: Pekka Paalanen <pq@iki.fi>
-Cc: Steven Rostedt <rostedt@goodmis.org>
-Cc: Frederic Weisbecker <fweisbec@gmail.com>
-Cc: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
-LKML-Reference: <49DD6E2B.6090200@cn.fujitsu.com>
-Signed-off-by: Ingo Molnar <mingo@elte.hu>
+For now I'm using the draconian unoptimized x86 NUMA remap scheme.  I
+really want to do this better because it is insanely suboptimal on
+Niagara chips where in some cases 8 cpus share the same physical TLB.
 
-
----
- Documentation/{ => trace}/ftrace.txt           |    0
- Documentation/{vm => trace}/kmemtrace.txt      |    0
- Documentation/{tracers => trace}/mmiotrace.txt |    0
- Documentation/{ => trace}/tracepoints.txt      |    0
- 4 files changed, 0 insertions(+), 0 deletions(-)
-
-diff --git a/Documentation/ftrace.txt b/Documentation/trace/ftrace.txt
-similarity index 100%
-rename from Documentation/ftrace.txt
-rename to Documentation/trace/ftrace.txt
-diff --git a/Documentation/vm/kmemtrace.txt b/Documentation/trace/kmemtrace.txt
-similarity index 100%
-rename from Documentation/vm/kmemtrace.txt
-rename to Documentation/trace/kmemtrace.txt
-diff --git a/Documentation/tracers/mmiotrace.txt b/Documentation/trace/mmiotrace.txt
-similarity index 100%
-rename from Documentation/tracers/mmiotrace.txt
-rename to Documentation/trace/mmiotrace.txt
-diff --git a/Documentation/tracepoints.txt b/Documentation/trace/tracepoints.txt
-similarity index 100%
-rename from Documentation/tracepoints.txt
-rename to Documentation/trace/tracepoints.txt
+This is against Linus's current tree and it's also in sparc-next-2.6
