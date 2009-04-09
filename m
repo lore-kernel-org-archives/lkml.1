@@ -1,70 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1765023AbZDILz6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764864AbZDIMCm@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1765023AbZDILz6 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 9 Apr 2009 07:55:58 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756745AbZDILzt
+	id S1764864AbZDIMCm (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 9 Apr 2009 08:02:42 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760567AbZDIMCc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 9 Apr 2009 07:55:49 -0400
-Received: from hera.kernel.org ([140.211.167.34]:57563 "EHLO hera.kernel.org"
+	Thu, 9 Apr 2009 08:02:32 -0400
+Received: from aun.it.uu.se ([130.238.12.36]:37861 "EHLO aun.it.uu.se"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754895AbZDILzs (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 9 Apr 2009 07:55:48 -0400
-Message-ID: <49DDE1B5.4070407@kernel.org>
-Date: Thu, 09 Apr 2009 04:53:25 -0700
-From: Tejun Heo <tj@kernel.org>
-User-Agent: Thunderbird 2.0.0.19 (X11/20081227)
+	id S1760435AbZDIMCb (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 9 Apr 2009 08:02:31 -0400
 MIME-Version: 1.0
-To: Ivan Kokshaysky <ink@jurassic.park.msu.ru>
-CC: Martin Schwidefsky <schwidefsky@de.ibm.com>, Ingo Molnar <mingo@elte.hu>,
-       rusty@rustcorp.com.au, tglx@linutronix.de, x86@kernel.org,
-       linux-kernel@vger.kernel.org, hpa@zytor.com,
-       Paul Mundt <lethal@linux-sh.org>, rmk@arm.linux.org.uk,
-       starvik@axis.com, ralf@linux-mips.org, davem@davemloft.net,
-       cooloney@kernel.org, kyle@mcmartin.ca, matthew@wil.cx,
-       grundler@parisc-linux.org, takata@linux-m32r.org,
-       benh@kernel.crashing.org, rth@twiddle.net, heiko.carstens@de.ibm.com
-Subject: Re: [GIT RFC] percpu: use dynamic percpu allocator as the default
- percpu allocator
-References: <49D3231D.2040403@kernel.org> <20090401103257.12c2517e@skybase> <49D32B96.3060102@kernel.org> <20090401130731.785714c5@skybase> <49D41B79.60708@kernel.org> <20090402072418.GA14071@jurassic.park.msu.ru> <20090402131341.08ef4184@skybase> <49D558CE.9090608@kernel.org> <20090407160940.GA31956@jurassic.park.msu.ru> <49DD068F.8040102@kernel.org> <20090409094713.GA6538@jurassic.park.msu.ru>
-In-Reply-To: <20090409094713.GA6538@jurassic.park.msu.ru>
-X-Enigmail-Version: 0.95.7
 Content-Type: text/plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Thu, 09 Apr 2009 11:52:50 +0000 (UTC)
+Message-ID: <18909.58298.579959.482372@pilspetsen.it.uu.se>
+Date: Thu, 9 Apr 2009 14:02:02 +0200
+From: Mikael Pettersson <mikpe@it.uu.se>
+To: Mikael Pettersson <mikpe@it.uu.se>
+Cc: Ingo Molnar <mingo@elte.hu>, Peter Zijlstra <a.p.zijlstra@chello.nl>,
+       linux-kernel@vger.kernel.org, tglx@linutronix.de
+Subject: Re: [BUG 2.6.29] NMI watchdog triggered in rb_insert_color called
+	from enqueue_hrtimer
+In-Reply-To: <18908.35477.227662.637308@pilspetsen.it.uu.se>
+References: <18908.27242.966881.409415@pilspetsen.it.uu.se>
+	<20090408092452.GA26121@elte.hu>
+	<18908.35477.227662.637308@pilspetsen.it.uu.se>
+X-Mailer: VM 7.17 under Emacs 20.7.1
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hello, Ivan.
+Mikael Pettersson writes:
+ > Ingo Molnar writes:
+ >  > 
+ >  > * Mikael Pettersson <mikpe@it.uu.se> wrote:
+ >  > 
+ >  > > Less than an hour after updating a dual Opteron 8384 box from 
+ >  > > 2.6.29-rc6 (which it had been running for weeks) to 2.6.29 final 
+ >  > > it died with the following watchdog-detected lockup:
+ >  > 
+ >  > Could you please check whether this is the bug fixed by:
+ >  > 
+ >  >   7f1e2ca: hrtimer: fix rq->lock inversion (again)
+ > 
+ > I am testing this now and will let you know how it goes.
 
-Ivan Kokshaysky wrote:
->> it seems like if two different files happen to use static percpu
->> variables with the same name, they would end up sharing it, right?
->> That looks a tad bit dangerous.
-> 
-> True. One of possible solutions is to add another dummy variable,
-> like this:
-> 
-> #define DEFINE_PER_CPU_SECTION(type, name, section)			\
-> 	__attribute__((__section__(".discard"), __unused__))		\
-> 		char __dummy__##name;					\
-> +	__attribute__((__section__(".discard")))			\
-> +		char __per_cpu_multiple_def__##name;			\
-> 	__attribute__((__section__(PER_CPU_BASE_SECTION section)))	\
-> 		__weak __typeof__(type) per_cpu__##name
-> 
-> so in that situation we'll get a link failure.
+The machine has now been running 2.6.29 plus that fix for more
+than 24 hours with no problems. Previously it oopsed and hung
+within an hour on two separate attempts to run 2.6.29 vanilla.
 
-Hmmm... yeah, I agree not allowing common static names is the lesser
-poison here.  It's generally a good idea to use uniquely
-distinguisible identifier for static symbols anyway to help debugging.
-If this limitation is acceptable, I think we should also add the dup
-build failure thing to the generic definition too tho so that such
-cases can be discovered before they hit alpha and s390 later.
+Thanks,
 
-Any objections?
-
-Thanks.
-
--- 
-tejun
+/Mikael
