@@ -1,60 +1,38 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S936904AbZDIWir@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759886AbZDIWjU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S936904AbZDIWir (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 9 Apr 2009 18:38:47 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760444AbZDIWid
+	id S1759886AbZDIWjU (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 9 Apr 2009 18:39:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S936314AbZDIWif
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 9 Apr 2009 18:38:33 -0400
-Received: from srv5.dvmed.net ([207.36.208.214]:44769 "EHLO mail.dvmed.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752946AbZDIWic (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 9 Apr 2009 18:38:32 -0400
-Message-ID: <49DE78E4.2060201@garzik.org>
-Date: Thu, 09 Apr 2009 18:38:28 -0400
-From: Jeff Garzik <jeff@garzik.org>
-User-Agent: Thunderbird 2.0.0.21 (X11/20090320)
-MIME-Version: 1.0
-To: Marin Mitov <mitov@issp.bas.bg>
-CC: linux-kernel@vger.kernel.org
-Subject: Re: [PATCH]Silencing warning: 'host' may be used uninitialized in
- this function
-References: <200904100133.58556.mitov@issp.bas.bg>
-In-Reply-To: <200904100133.58556.mitov@issp.bas.bg>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+	Thu, 9 Apr 2009 18:38:35 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:48415 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S935503AbZDIWie (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 9 Apr 2009 18:38:34 -0400
+Date: Thu, 9 Apr 2009 15:37:01 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: steiner@sgi.com
+Cc: linux-kernel@vger.kernel.org
+Subject: Re: [patch 00/13] GRU - GRU Driver updates
+Message-Id: <20090409153701.d8bf4c20.akpm@linux-foundation.org>
+In-Reply-To: <20090406160809.278924000@sgi.com>
+References: <20090406160809.278924000@sgi.com>
+X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-X-Spam-Score: -4.4 (----)
-X-Spam-Report: SpamAssassin version 3.2.5 on srv5.dvmed.net summary:
-	Content analysis details:   (-4.4 points, 5.0 required)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Marin Mitov wrote:
-> Hi all,
-> 
-> I do not know if that is worth the effort, but...
-> 
-> Silencing:  warning: 'host' may be used uninitialized in this function
-> It is a false positive.
-> 
-> The patch is against 2.6.30-rc1, but should apply to 2.6.29(.1) too.
-> 
-> Signed-off-by: Marin Mitov mitov@issp.bas.bg
-> ================================================
-> --- a/drivers/ata/sata_via.c	2009-04-05 22:59:26.000000000 +0300
-> +++ b/drivers/ata/sata_via.c	2009-04-06 00:07:25.000000000 +0300
-> @@ -566,7 +566,7 @@
->  	static int printed_version;
->  	unsigned int i;
->  	int rc;
-> -	struct ata_host *host;
-> +	struct ata_host *host = host;
->  	int board_id = (int) ent->driver_data;
->  	const unsigned *bar_sizes;
+On Mon, 06 Apr 2009 11:08:09 -0500
+steiner@sgi.com wrote:
 
-we use the uninitialized_var() macro for false positives.
+> 
+> This patchset is a collection of patches to the GRU driver.
+> All changes are internal to the driver and have no effect
+> on the core kernel or interfaces to/from the core kernel.
 
-	Jeff
-
-
+Do you believe that any of these should go into 2.6.30, or earlier?
 
