@@ -1,81 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756984AbZDICgS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758504AbZDICge@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756984AbZDICgS (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 8 Apr 2009 22:36:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755405AbZDICf7
+	id S1758504AbZDICge (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 8 Apr 2009 22:36:34 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757495AbZDICgP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 8 Apr 2009 22:35:59 -0400
-Received: from rhun.apana.org.au ([64.62.148.172]:41648 "EHLO
-	arnor.apana.org.au" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1752518AbZDICf6 (ORCPT
+	Wed, 8 Apr 2009 22:36:15 -0400
+Received: from rcsinet12.oracle.com ([148.87.113.124]:64129 "EHLO
+	rgminet12.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755997AbZDICgO (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 8 Apr 2009 22:35:58 -0400
-Date: Thu, 9 Apr 2009 10:35:47 +0800
-From: Herbert Xu <herbert@gondor.apana.org.au>
-To: Maciej Rutecki <maciej.rutecki@gmail.com>
-Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       "Rafael J. Wysocki" <rjw@sisk.pl>, davem@davemloft.net,
-       linux-crypto@vger.kernel.org, arjan@linux.intel.com,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Rusty Russell <rusty@rustcorp.com.au>, Jiri Slaby <jirislaby@gmail.com>
-Subject: Re: [2.6.30-rc1] device-mapper: table: 254:0: crypt: Error
-	allocating crypto tfm
-Message-ID: <20090409023547.GA1878@gondor.apana.org.au>
-References: <8db1092f0904081235x58081f1by842ab45ad861e294@mail.gmail.com> <20090409021804.GA1756@gondor.apana.org.au>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090409021804.GA1756@gondor.apana.org.au>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+	Wed, 8 Apr 2009 22:36:14 -0400
+Subject: Re: [2.6.30-rc1] gpf in btrfs during shutdown
+From: Chris Mason <chris.mason@oracle.com>
+To: Ed Tomlinson <edt@aei.ca>
+Cc: linux-kernel <linux-kernel@vger.kernel.org>
+In-Reply-To: <200904082155.54736.edt@aei.ca>
+References: <1238787179.24082.7.camel@think.oraclecorp.com>
+	 <200904081948.02742.edt@aei.ca>
+	 <1239236094.7365.1.camel@think.oraclecorp.com>
+	 <200904082155.54736.edt@aei.ca>
+Content-Type: text/plain
+Date: Wed, 08 Apr 2009 22:36:02 -0400
+Message-Id: <1239244562.14512.0.camel@think.oraclecorp.com>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.24.1 
+Content-Transfer-Encoding: 7bit
+X-Source-IP: acsmt700.oracle.com [141.146.40.70]
+X-Auth-Type: Internal IP
+X-CT-RefId: str=0001.0A010206.49DD5F17.0054:SCFMA4539814,ss=1,fgs=0
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Apr 09, 2009 at 10:18:04AM +0800, Herbert Xu wrote:
->
-> It looks like try_then_request_module has been broken such that it
-> returns without waiting for the module to complete loading.  I'm
-> looking into it.
+On Wed, 2009-04-08 at 21:55 -0400, Ed Tomlinson wrote:
+> On Wednesday 08 April 2009 20:14:54 Chris Mason wrote:
+> > On Wed, 2009-04-08 at 19:48 -0400, Ed Tomlinson wrote:
+> > 
+> > > 
+> > > Chris,
+> > > 
+> > > Just go the following gpf during shutdown runing 2.6.30-rc1 on amd64 on a kernel built with gcc 4.3.3
+> > > 
+> > > * Unmounting filesystems ...[75813.573941] EXT4-fs: mballoc: 313285 blocks 3098 reqs (2001 success)
+> > > [75813.593628] EXT4-fs: mballoc: 1312 extents scanned, 438 goal hits, 1063 2^N hits, 0 breaks, 0 lost
+> > > [75813.621386] EXT4-fs: mballoc: 1551 generated and it took 21437865
+> > > [75813.640246] EXT4-fs: mballoc: 364104 preallocated, 204441 discarded
+> > > [75813.685443] general protection fault: 0000 [#1] PREEMPT SMP
+> > > [75813.698277] last sysfs file: /sys/devices/pci0000:00/0000:00:01.0/0000:01:05.0/enable
+> > > [75813.698277] CPU 1
+> > > [75813.698277] Modules linked in: btrfs/etc/init.d/halt zlib_deflate zlib_inflate crc32c libcrc32c radeon drm bridge stp llc bnep rf]
+> > > .sh: line 90:  6[75813.698277] Pid: 6768, comm: umount Not tainted 2.6.30-rc1-crc #1 System Product Name
+> > > 768 Segmentation[75813.698277] RIP: 0010:[<ffffffff8030e3a7>]  [<ffffffff8030e3a7>] kmem_cache_alloc+0x77/0x210
+> > >  fault      umou[75813.698277] RSP: 0018:ffff8801466514a8  EFLAGS: 00010046
+> > > nt "${x}" >&/dev[75813.698277] RAX: 0000000000000000 RBX: ffff880028066b40 RCX: ffff88015f3444a0
+> > > /null
+> > 
+> > That's not supposed to happen.  Do you have slab (or slub) debug
+> > enabled? 
+> 
+> I am using slub without debugging enabled.  I've attached my config incase it will help.
+> 
 
-OK, it's caused by
+Please enable slub debug, lets see what it turns up.
 
-commit acae05156551fd7528fbb616271e672789388e3c
-Author: Arjan van de Ven <arjan@linux.intel.com>
-Date:   Sun Feb 8 10:42:01 2009 -0800
+-chris
 
-    module: create a request_module_nowait()
 
-This should fix it.
-
-module: try_then_request_module must wait
-
-Since the whole point of try_then_request_module is to retry
-the operation after a module has been loaded, we must wait for
-the module to fully load.
-
-Otherwise all sort of things start breaking, e.g., you won't
-be able to read your encrypted disks on the first attempt.
-
-Signed-off-by: Herbert Xu <herbert@gondor.apana.org.au>
-
-diff --git a/include/linux/kmod.h b/include/linux/kmod.h
-index d5fa565..384ca8b 100644
---- a/include/linux/kmod.h
-+++ b/include/linux/kmod.h
-@@ -34,7 +34,7 @@ extern int __request_module(bool wait, const char *name, ...) \
- #define request_module(mod...) __request_module(true, mod)
- #define request_module_nowait(mod...) __request_module(false, mod)
- #define try_then_request_module(x, mod...) \
--	((x) ?: (__request_module(false, mod), (x)))
-+	((x) ?: (__request_module(true, mod), (x)))
- #else
- static inline int request_module(const char *name, ...) { return -ENOSYS; }
- static inline int request_module_nowait(const char *name, ...) { return -ENOSYS; }
-
-Thanks,
--- 
-Visit Openswan at http://www.openswan.org/
-Email: Herbert Xu ~{PmV>HI~} <herbert@gondor.apana.org.au>
-Home Page: http://gondor.apana.org.au/~herbert/
-PGP Key: http://gondor.apana.org.au/~herbert/pubkey.txt
