@@ -1,147 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S936028AbZDISSj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S936034AbZDISTv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S936028AbZDISSj (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 9 Apr 2009 14:18:39 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S935899AbZDISSL
+	id S936034AbZDISTv (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 9 Apr 2009 14:19:51 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758006AbZDISTl
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 9 Apr 2009 14:18:11 -0400
-Received: from wf-out-1314.google.com ([209.85.200.175]:21791 "EHLO
-	wf-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S935891AbZDISSI (ORCPT
+	Thu, 9 Apr 2009 14:19:41 -0400
+Received: from one.firstfloor.org ([213.235.205.2]:38569 "EHLO
+	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757457AbZDISTk (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 9 Apr 2009 14:18:08 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=sender:date:from:to:cc:subject:message-id:mime-version:content-type
-         :content-disposition:user-agent;
-        b=bgWKIene63UxvyGP2Td0bXwnI8B5mHCxGhKvmul7eyG4l+ZZ8VJXX5FQOzS0baKUTJ
-         Ey47seewMpb0MU5b0/5HmtL2ZoInH7o2IgtQDlpCPsPkHqbZ5dUDQ7/UwOB7mgs5w8jP
-         om9Dm/xVniGLE7vtMuSxQefusqn34YPa+V4Sc=
-Date: Thu, 9 Apr 2009 22:18:02 +0400
-From: Cyrill Gorcunov <gorcunov@openvz.org>
-To: Ingo Molnar <mingo@elte.hu>, "H. Peter Anvin" <hpa@zytor.com>,
-       Thomas Gleixner <tglx@linutronix.de>
-Cc: LKML <linux-kernel@vger.kernel.org>, Andi Kleen <andi@firstfloor.org>,
-       "Maciej W. Rozycki" <macro@linux-mips.org>,
-       Yinghai Lu <yhlu.kernel@gmail.com>
-Subject: [RFC -tip] x86: do_IRQ - send APIC EOI for x86-32 on irq without
-	handler v3
-Message-ID: <20090409181802.GC7558@lenovo>
-MIME-Version: 1.0
+	Thu, 9 Apr 2009 14:19:40 -0400
+Date: Thu, 9 Apr 2009 20:22:04 +0200
+From: Andi Kleen <andi@firstfloor.org>
+To: Imre Gergely <gimre@narancs.net>
+Cc: linux-kernel@vger.kernel.org
+Subject: Re: Finding lost memory + kernel messages explained
+Message-ID: <20090409182204.GN14687@one.firstfloor.org>
+References: <49DDB609.8050405@narancs.net> <87y6ua86f4.fsf@basil.nowhere.org> <49DDF2FF.9030501@narancs.net>
+Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-User-Agent: Mutt/1.5.18 (2008-05-17)
+In-Reply-To: <49DDF2FF.9030501@narancs.net>
+User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Impact: bugfix, cleanup
+cc to mailing list restored. please don't drop this.
 
-We should send APIC EOI if it's enabled only.
-Since the same is needed for ack_bad_irq
-we just introduce ack_APIC_irq_safe which in
-turn check if we have APIC properly installed
-and initialized and do EOI then.
+On Thu, Apr 09, 2009 at 04:07:11PM +0300, Imre Gergely wrote:
+> Andi Kleen wrote:
+> >Imre Gergely <gimre@narancs.net> writes:
+> >>That would be around 3896MB. My question is: where does the memory go?
+> >>Is it normal to 'lose' that much (~130MB) ?
+> >
+> >I wrote a paper about this topic some time ago.
+> >
+> >http://halobates.de/memory.pdf
+> >http://halobates.de/memorywaste.pdf
+> 
+> I tried to understand what you wrote there a bit, but it's still pretty 
+> confusing ;)
 
-Also a tiny cleanup: use pr_... macros and
-add printk_ratelimit for ack_bad_irq to eliminate
-possible storm on screwed hardware.
+Modern hardware is complicated.
 
-Signed-off-by: Cyrill Gorcunov <gorcunov@openvz.org>
----
+> [    0.004000] Memory: 3980848k/5177344k available (3115k kernel code, 
+> 147212k reserved, 1573k data, 540k init)
+> 
+> There seems to be 5GB of memory, I don't understand where this is coming 
+> from. There is a gap in the mapping 
 
-Ingo, I've checked the sources and as far as I see
-we could NOP'ify apic->write indeed but I have
-an internal feeling that this will bring us more problem
-in future (for example it could be the following scenario:
-some screwed APIC would require cleaning of LVT's or
-IRR after resume regardless if it was initialized
-or not at all). Mostly I mean that the idea of making
-apic->write NOP'ified is quite elegant indeed but
-cut off the subset of apic operations (we need
-apic->read anyway) somehow bothering me from inside :)
+PCs have memory holes below 1MB and below 4GB. The 4GB hole can be
+rather large because it contains IO mappings for all devices.
 
-CC'ed a number of people I know were involved in
-this area.
+(lines 16 and 17 in dmesg output on 
+> the pastebin), but why? And what's that 147212k reserved?
 
-On the other hand I could make a testing patch for
-nop'fied ->write operation so we could check if
-it bring any problems in real tests. Thoughts?
+The paper explains all this.
 
- arch/x86/include/asm/apic.h |   10 +++++++++-
- arch/x86/kernel/irq.c       |   18 ++++++------------
- 2 files changed, 15 insertions(+), 13 deletions(-)
+-Andi
 
-Index: linux-2.6.git/arch/x86/include/asm/apic.h
-=====================================================================
---- linux-2.6.git.orig/arch/x86/include/asm/apic.h
-+++ linux-2.6.git/arch/x86/include/asm/apic.h
-@@ -392,7 +392,6 @@ static inline u32 safe_apic_wait_icr_idl
- 	return apic->safe_wait_icr_idle();
- }
- 
--
- static inline void ack_APIC_irq(void)
- {
- #ifdef CONFIG_X86_LOCAL_APIC
-@@ -406,6 +405,15 @@ static inline void ack_APIC_irq(void)
- #endif
- }
- 
-+/* Ack APIC irq if it's enabled only */
-+static inline void ack_APIC_irq_safe(void)
-+{
-+#ifdef CONFIG_X86_LOCAL_APIC
-+	if (cpu_has_apic)
-+		ack_APIC_irq();
-+#endif
-+}
-+
- static inline unsigned default_get_apic_id(unsigned long x)
- {
- 	unsigned int ver = GET_APIC_VERSION(apic_read(APIC_LVR));
-Index: linux-2.6.git/arch/x86/kernel/irq.c
-=====================================================================
---- linux-2.6.git.orig/arch/x86/kernel/irq.c
-+++ linux-2.6.git/arch/x86/kernel/irq.c
-@@ -24,9 +24,9 @@ void (*generic_interrupt_extension)(void
-  */
- void ack_bad_irq(unsigned int irq)
- {
--	printk(KERN_ERR "unexpected IRQ trap at vector %02x\n", irq);
-+	if (printk_ratelimit())
-+		pr_err("unexpected IRQ trap at vector %02x\n", irq);
- 
--#ifdef CONFIG_X86_LOCAL_APIC
- 	/*
- 	 * Currently unexpected vectors happen only on SMP and APIC.
- 	 * We _must_ ack these because every local APIC has only N
-@@ -36,9 +36,7 @@ void ack_bad_irq(unsigned int irq)
- 	 * completely.
- 	 * But only ack when the APIC is enabled -AK
- 	 */
--	if (cpu_has_apic)
--		ack_APIC_irq();
--#endif
-+	ack_APIC_irq_safe();
- }
- 
- #define irq_stats(x)		(&per_cpu(irq_stat, x))
-@@ -223,14 +221,10 @@ unsigned int __irq_entry do_IRQ(struct p
- 	irq = __get_cpu_var(vector_irq)[vector];
- 
- 	if (!handle_irq(irq, regs)) {
--#ifdef CONFIG_X86_64
--		if (!disable_apic)
--			ack_APIC_irq();
--#endif
--
-+		ack_APIC_irq_safe();
- 		if (printk_ratelimit())
--			printk(KERN_EMERG "%s: %d.%d No irq handler for vector (irq %d)\n",
--			       __func__, smp_processor_id(), vector, irq);
-+			pr_emerg("%s: %d.%d No irq handler for vector (irq %d)\n",
-+				__func__, smp_processor_id(), vector, irq);
- 	}
- 
- 	irq_exit();
+-- 
+ak@linux.intel.com -- Speaking for m1yself only.
