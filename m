@@ -1,52 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761386AbZDILgf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757245AbZDILiO@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761386AbZDILgf (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 9 Apr 2009 07:36:35 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753154AbZDILg0
+	id S1757245AbZDILiO (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 9 Apr 2009 07:38:14 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752401AbZDILh5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 9 Apr 2009 07:36:26 -0400
-Received: from qw-out-2122.google.com ([74.125.92.27]:17706 "EHLO
-	qw-out-2122.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751042AbZDILgZ (ORCPT
+	Thu, 9 Apr 2009 07:37:57 -0400
+Received: from casper.infradead.org ([85.118.1.10]:40685 "EHLO
+	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752144AbZDILh4 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 9 Apr 2009 07:36:25 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:date:message-id:subject:from:to:cc:content-type
-         :content-transfer-encoding;
-        b=gidl0j3L/R6F86VMZRzLUuo/mH8DCfAMmBCbaCur951sVE6guH/4Z9PxKLZacNahEy
-         ZF9DZsyftMUZUHq9Le5zHGIrkk/MRfuh3Iy3B/KxlPvLrVKl1EXptmnYbyBNUXeivSwy
-         zW05cyYBjqNCdW964Ow1Z+ZN6MVxA9LrQwqLU=
-MIME-Version: 1.0
-Date: Thu, 9 Apr 2009 19:36:24 +0800
-Message-ID: <f17812d70904090436kd03744brca4a4bc4b85bba8@mail.gmail.com>
-Subject: [REGRESSION] commit 66c1ca0: {fbmem: fix fb_info->lock and 
-	mm->mmap_sem ...} causes Xfbdev not working
-From: Eric Miao <eric.y.miao@gmail.com>
-To: LKML <linux-kernel@vger.kernel.org>
-Cc: Andrea Righi <righi.andrea@gmail.com>,
-       Geert Uytterhoeven <geert@linux-m68k.org>,
-       Krzysztof Helt <krzysztof.h1@poczta.fm>
-Content-Type: text/plain; charset=UTF-8
+	Thu, 9 Apr 2009 07:37:56 -0400
+Subject: Re: [RFC] Static/Runtime CPU/IO bound scheduling polices based on
+ CPU(s) to support complete spectrum of tasks
+From: Peter Zijlstra <peterz@infradead.org>
+To: Jaswinder Singh Rajput <jaswinder@kernel.org>
+Cc: Andi Kleen <andi@firstfloor.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Ingo Molnar <mingo@elte.hu>, Andrew Morton <akpm@linux-foundation.org>,
+       David Woodhouse <dwmw2@infradead.org>,
+       David Miller <davem@davemloft.net>,
+       Steven Rostedt <rostedt@goodmis.org>,
+       LKML <linux-kernel@vger.kernel.org>,
+       Thomas Gleixner <tglx@linutronix.de>, "H. Peter Anvin" <hpa@kernel.org>,
+       Alan Cox <alan@lxorguk.ukuu.org.uk>
+In-Reply-To: <1239272776.3028.11.camel@ht.satnam>
+References: <1239099931.4773.25.camel@ht.satnam>
+	 <20090407105835.GP17934@one.firstfloor.org>
+	 <1239103951.4773.29.camel@ht.satnam>  <1239272776.3028.11.camel@ht.satnam>
+Content-Type: text/plain
 Content-Transfer-Encoding: 7bit
+Date: Thu, 09 Apr 2009 13:38:19 +0200
+Message-Id: <1239277099.7647.345.camel@twins>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.26.0 
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This happens on my Marvell PXA310-based Littleton platform with
-Angstrom Distribution. The offending paths are many:
+On Thu, 2009-04-09 at 15:56 +0530, Jaswinder Singh Rajput wrote:
+> On Tue, 2009-04-07 at 17:02 +0530, Jaswinder Singh Rajput wrote:
+> > On Tue, 2009-04-07 at 12:58 +0200, Andi Kleen wrote:
+> > > On Tue, Apr 07, 2009 at 03:55:31PM +0530, Jaswinder Singh Rajput wrote:
+> > > > I am planning to prepare the followings:
+> > > 
+> > > This seems all quite vague. Perhaps it would be good if you started
+> > > with a clear definition what problem you're trying to solve.
+> > > 
+> > 
+> 
+> I do not surprise, if this approach seems vague to many developers
+> because this is many years ahead of time.
 
-FBIOPUT_VSCREENINFO:
-  lock_fb_info()
-  --> fb_set_var()
-    --> fb_notifier_call_chain() [FBINFO_MISC_USEREVENT]
-      --> fbcon_event_notifier() [FB_EVENT_MODE_CHANGE]
-        --> lock_fb_info()
+Yes, or not.
 
-OK, now hang. I'd suggest a clean fix to the original assumption of
-circular locking
-issue and revert this commit first.
+For partitioning we have cpusets, for scheduler policies we have
+sched_setscheduler().
 
--- 
-Cheers
-- eric
+The only thing we do not have are deadline schedulers, but people are
+working on that -- its a rather complex piece of work.
+
+The rest of you babbling is hand-waving about heuristics.
