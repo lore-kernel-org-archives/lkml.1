@@ -1,116 +1,138 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758795AbZDIR5U@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764980AbZDIR73@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758795AbZDIR5U (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 9 Apr 2009 13:57:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757499AbZDIR5J
+	id S1764980AbZDIR73 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 9 Apr 2009 13:59:29 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760466AbZDIR7R
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 9 Apr 2009 13:57:09 -0400
-Received: from mx2.redhat.com ([66.187.237.31]:60384 "EHLO mx2.redhat.com"
+	Thu, 9 Apr 2009 13:59:17 -0400
+Received: from brick.kernel.dk ([93.163.65.50]:38886 "EHLO kernel.dk"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756914AbZDIR5I (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 9 Apr 2009 13:57:08 -0400
-Message-ID: <49DE3695.6040800@redhat.com>
-Date: Thu, 09 Apr 2009 10:55:33 -0700
-From: Masami Hiramatsu <mhiramat@redhat.com>
-User-Agent: Thunderbird 2.0.0.21 (X11/20090320)
+	id S1759082AbZDIR7P (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 9 Apr 2009 13:59:15 -0400
+Date: Thu, 9 Apr 2009 19:59:14 +0200
+From: Jens Axboe <jens.axboe@oracle.com>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: Theodore Tso <tytso@mit.edu>, linux-kernel@vger.kernel.org,
+       linux-ext4@vger.kernel.org, jack@suse.cz
+Subject: Re: [PATCH] block_write_full_page: switch synchronous writes to
+	use   WRITE_SYNC_PLUG
+Message-ID: <20090409175914.GJ5178@kernel.dk>
+References: <20090407070835.GM5178@kernel.dk> <20090407002313.fcdd1da0.akpm@linux-foundation.org> <20090407075732.GO5178@kernel.dk> <20090407190913.GA31723@mit.edu> <20090407193239.GE5178@kernel.dk> <20090407214421.GA7031@mit.edu> <20090407221933.GB7031@mit.edu> <20090407160944.de3c5139.akpm@linux-foundation.org> <20090408080844.GW5178@kernel.dk> <20090408153428.6195a442.akpm@linux-foundation.org>
 MIME-Version: 1.0
-To: Ingo Molnar <mingo@elte.hu>,
-       Linus Torvalds <torvalds@linux-foundation.org>
-CC: Andrew Morton <akpm@linux-foundation.org>,
-       Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>,
-       Ananth N Mavinakayanahalli <ananth@in.ibm.com>,
-       LKML <linux-kernel@vger.kernel.org>,
-       systemtap-ml <systemtap@sources.redhat.com>,
-       Gary Hade <garyhade@us.ibm.com>
-Subject: [BUGFIX][PATCH] x86: fix set_fixmap to use phys_addr_t
-References: <49D76FFF.6020202@redhat.com> <20090404154230.GB2451@Krystal> <49D7A6DF.8080804@redhat.com> <49D7AF26.5030808@redhat.com> <49D82987.5090003@redhat.com> <49DA37CB.4020901@redhat.com> <20090408123133.GE18581@elte.hu> <49DCBB53.2020202@redhat.com> <20090408145953.GP12931@elte.hu>
-In-Reply-To: <20090408145953.GP12931@elte.hu>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20090408153428.6195a442.akpm@linux-foundation.org>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Use phys_addr_t for receiving a physical address argument
-instead of unsigned long. This allows fixmap to handle
-pages higher than 4GB on x86-32.
+On Wed, Apr 08 2009, Andrew Morton wrote:
+> On Wed, 8 Apr 2009 10:08:44 +0200 Jens Axboe <jens.axboe@oracle.com> wrote:
+> 
+> > > So how does WRITE_SYNC_PLUG differ from WRITE, and what effect does
+> > > this change have upon kernel behaviour?
+> > 
+> > How about something like this. Comments welcome.
+> 
+> It's lovely.
+> 
+> > Should we move this to
+> > a dedicated header file? fs.h is amazingly cluttered as it is.
+> 
+> Sometime, perhaps.
+> 
+> > diff --git a/include/linux/fs.h b/include/linux/fs.h
+> > index 562d285..6b6597a 100644
+> > --- a/include/linux/fs.h
+> > +++ b/include/linux/fs.h
+> > @@ -87,6 +87,57 @@ struct inodes_stat_t {
+> >   */
+> >  #define FMODE_NOCMTIME		((__force fmode_t)2048)
+> >  
+> > +/*
+> > + * The below are the various read and write types that we support. Some of
+> > + * them include behavioral modifiers that send information down to the
+> > + * block layer and IO scheduler. Terminology:
+> > + *
+> > + *	The block layer uses device plugging to defer IO a little bit, in
+> > + *	the hope that we will see more IO very shortly. This increases
+> > + *	coalescing of adjacent IO and thus reduces the number of IOs we
+> > + *	have to send to the device. It also allows for better queuing,
+> > + *	if the IO isn't mergeable. If the caller is going to be waiting
+> > + *	for the IO, then he must ensure that the device is unplugged so
+> > + *	that the IO is dispatched to the driver.
+> > + *
+> > + *	All IO is handled async in Linux. This is fine for background
+> > + *	writes, but for reads or writes that someone waits for completion
+> > + *	on, we want to notify the block layer and IO scheduler so that they
+> > + *	know about it. That allows them to make better scheduling
+> > + *	decisions. So when the below references 'sync' and 'async', it
+> > + *	is referencing this priority hint.
+> > + *
+> > + * With that in mind, the available types are:
+> > + *
+> > + * READ			A normal read operation. Device will be plugged.
+> > + * READ_SYNC		A synchronous read. Device is not plugged, caller can
+> > + *			immediately wait on this read without caring about
+> > + *			unplugging.
+> > + * READA		Used for read-ahead operations. Lower priority, and the
+> > + *			 block layer could (in theory) choose to ignore this
+> > + *			request if it runs into resource problems.
+> > + * WRITE		A normal async write. Device will be plugged.
+> > + * SWRITE		Like WRITE, but a special case for ll_rw_block() that
+> > + *			tells it to lock the buffer first. Normally a buffer
+> > + *			must be locked before doing IO.
+> > + * WRITE_SYNC_PLUG	Synchronous write. Identical to WRITE, but passes down
+> > + *			the hint that someone will be waiting on this IO
+> > + *			shortly.
+> 
+> From the text, I'd expect WRITE_SYNC_PLUG to, err, unplug!
 
-Signed-off-by: Masami Hiramatsu <mhiramat@redhat.com>
-Cc: Ingo Molnar <mingo@elte.hu>
-Cc: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
----
+You are still mixing up the sync hint and unplugging. I'll expand it a
+bit, I guess.
 
- arch/x86/include/asm/fixmap.h   |    4 ++--
- arch/x86/include/asm/paravirt.h |    4 ++--
- arch/x86/mm/pgtable.c           |    3 ++-
- arch/x86/xen/mmu.c              |    2 +-
- 4 files changed, 7 insertions(+), 6 deletions(-)
+> > + * WRITE_SYNC		Like WRITE_SYNC_PLUG, but also unplugs the device
+> > + *			immediately after submission. The write equivalent
+> > + *			of READ_SYNC.
+> 
+> But this contradicts my expectation.
+> 
+> So what does WRITE_SYNC_PLUG really do dofferent from WRITE?
 
+It tells the IO scheduler that this write is really sync, not async.
+The key difference between the two is as written - the sync one will
+have someone waiting for its completion. What the IO scheduler does with
+the flag is its own business. In reality it means that the write is
+expedited, whereas async writes are done somewhat more lazily.
 
-diff --git a/arch/x86/include/asm/fixmap.h b/arch/x86/include/asm/fixmap.h
-index 81937a5..2d81af3 100644
---- a/arch/x86/include/asm/fixmap.h
-+++ b/arch/x86/include/asm/fixmap.h
-@@ -151,11 +151,11 @@ extern pte_t *pkmap_page_table;
+> > + * WRITE_ODIRECT	Special case write for O_DIRECT only.
+> > + * SWRITE_SYNC
+> > + * SWRITE_SYNC_PLUG	Like WRITE_SYNC/WRITE_SYNC_PLUG, but locks the buffer.
+> > + *			See SWRITE.
+> > + * WRITE_BARRIER	Like WRITE, but tells the block layer that all
+> > + *			previously submitted writes must be safely on storage
+> > + *			before this one is started. Also guarantees that when
+> > + *			this write is complete, it itself is also safely on
+> > + *			storage. Prevents reordering of writes on both sides
+> > + *			of this IO.
+> > + *
+> > + */
+> >  #define RW_MASK		1
+> >  #define RWA_MASK	2
+> >  #define READ 0
+> > @@ -102,6 +153,11 @@ struct inodes_stat_t {
+> >  			(SWRITE | (1 << BIO_RW_SYNCIO) | (1 << BIO_RW_NOIDLE))
+> >  #define SWRITE_SYNC	(SWRITE_SYNC_PLUG | (1 << BIO_RW_UNPLUG))
+> >  #define WRITE_BARRIER	(WRITE | (1 << BIO_RW_BARRIER))
+> > +
+> > +/*
+> > + * These aren't really reads or writes, they pass down information about
+> > + * parts of device that are now unused by the file system.
+> > + */
+> >  #define DISCARD_NOBARRIER (1 << BIO_RW_DISCARD)
+> >  #define DISCARD_BARRIER ((1 << BIO_RW_DISCARD) | (1 << BIO_RW_BARRIER))
+> 
 
- void __native_set_fixmap(enum fixed_addresses idx, pte_t pte);
- void native_set_fixmap(enum fixed_addresses idx,
--		       unsigned long phys, pgprot_t flags);
-+		       phys_addr_t phys, pgprot_t flags);
-
- #ifndef CONFIG_PARAVIRT
- static inline void __set_fixmap(enum fixed_addresses idx,
--				unsigned long phys, pgprot_t flags)
-+				phys_addr_t phys, pgprot_t flags)
- {
- 	native_set_fixmap(idx, phys, flags);
- }
-diff --git a/arch/x86/include/asm/paravirt.h b/arch/x86/include/asm/paravirt.h
-index 7727aa8..378e369 100644
---- a/arch/x86/include/asm/paravirt.h
-+++ b/arch/x86/include/asm/paravirt.h
-@@ -347,7 +347,7 @@ struct pv_mmu_ops {
- 	/* Sometimes the physical address is a pfn, and sometimes its
- 	   an mfn.  We can tell which is which from the index. */
- 	void (*set_fixmap)(unsigned /* enum fixed_addresses */ idx,
--			   unsigned long phys, pgprot_t flags);
-+			   phys_addr_t phys, pgprot_t flags);
- };
-
- struct raw_spinlock;
-@@ -1432,7 +1432,7 @@ static inline void arch_leave_lazy_mmu_mode(void)
- void arch_flush_lazy_mmu_mode(void);
-
- static inline void __set_fixmap(unsigned /* enum fixed_addresses */ idx,
--				unsigned long phys, pgprot_t flags)
-+				phys_addr_t phys, pgprot_t flags)
- {
- 	pv_mmu_ops.set_fixmap(idx, phys, flags);
- }
-diff --git a/arch/x86/mm/pgtable.c b/arch/x86/mm/pgtable.c
-index 7a4d6ee..8e43bdd 100644
---- a/arch/x86/mm/pgtable.c
-+++ b/arch/x86/mm/pgtable.c
-@@ -347,7 +347,8 @@ void __native_set_fixmap(enum fixed_addresses idx, pte_t pte)
- 	fixmaps_set++;
- }
-
--void native_set_fixmap(enum fixed_addresses idx, unsigned long phys, pgprot_t flags)
-+void native_set_fixmap(enum fixed_addresses idx, phys_addr_t phys,
-+		       pgprot_t flags)
- {
- 	__native_set_fixmap(idx, pfn_pte(phys >> PAGE_SHIFT, flags));
- }
-diff --git a/arch/x86/xen/mmu.c b/arch/x86/xen/mmu.c
-index db3802f..2a81838 100644
---- a/arch/x86/xen/mmu.c
-+++ b/arch/x86/xen/mmu.c
-@@ -1750,7 +1750,7 @@ __init pgd_t *xen_setup_kernel_pagetable(pgd_t *pgd,
- }
- #endif	/* CONFIG_X86_64 */
-
--static void xen_set_fixmap(unsigned idx, unsigned long phys, pgprot_t prot)
-+static void xen_set_fixmap(unsigned idx, phys_addr_t phys, pgprot_t prot)
- {
- 	pte_t pte;
+-- 
+Jens Axboe
 
