@@ -1,21 +1,21 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932301AbZDIFla@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755336AbZDIFlx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932301AbZDIFla (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 9 Apr 2009 01:41:30 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761287AbZDIFh7
+	id S1755336AbZDIFlx (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 9 Apr 2009 01:41:53 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761477AbZDIFiE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 9 Apr 2009 01:37:59 -0400
-Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:58081
+	Thu, 9 Apr 2009 01:38:04 -0400
+Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:58083
 	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
-	by vger.kernel.org with ESMTP id S1761220AbZDIFh6 (ORCPT
+	by vger.kernel.org with ESMTP id S1761220AbZDIFiA (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 9 Apr 2009 01:37:58 -0400
-Date: Wed, 08 Apr 2009 22:37:48 -0700 (PDT)
-Message-Id: <20090408.223748.69543906.davem@davemloft.net>
+	Thu, 9 Apr 2009 01:38:00 -0400
+Date: Wed, 08 Apr 2009 22:37:51 -0700 (PDT)
+Message-Id: <20090408.223751.51368318.davem@davemloft.net>
 To: tj@kernel.org
 CC: sparclinux@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: [PATCH 8/12]: sparc64: Make mdesc_fill_in_cpu_data take a
- cpumask_t pointer.
+Subject: [PATCH 9/12]: sparc64: Defer cpu_data() setup until end of per-cpu
+ data initialization.
 From: David Miller <davem@davemloft.net>
 X-Mailer: Mew version 6.2.51 on Emacs 22.1 / Mule 5.0 (SAKAKI)
 Mime-Version: 1.0
@@ -28,71 +28,91 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 Signed-off-by: David S. Miller <davem@davemloft.net>
 ---
- arch/sparc/include/asm/mdesc.h |    2 +-
- arch/sparc/kernel/ds.c         |    2 +-
- arch/sparc/kernel/mdesc.c      |    6 +++---
- arch/sparc/mm/init_64.c        |    2 +-
- 4 files changed, 6 insertions(+), 6 deletions(-)
+ arch/sparc/kernel/ds.c      |    1 +
+ arch/sparc/kernel/mdesc.c   |    1 -
+ arch/sparc/kernel/prom_64.c |    1 -
+ arch/sparc/kernel/smp_64.c  |    4 ++++
+ arch/sparc/mm/init_64.c     |   12 ++++--------
+ 5 files changed, 9 insertions(+), 10 deletions(-)
 
-diff --git a/arch/sparc/include/asm/mdesc.h b/arch/sparc/include/asm/mdesc.h
-index 8f8a520..9faa046 100644
---- a/arch/sparc/include/asm/mdesc.h
-+++ b/arch/sparc/include/asm/mdesc.h
-@@ -71,7 +71,7 @@ struct mdesc_notifier_client {
- 
- extern void mdesc_register_notifier(struct mdesc_notifier_client *client);
- 
--extern void mdesc_fill_in_cpu_data(cpumask_t mask);
-+extern void mdesc_fill_in_cpu_data(cpumask_t *mask);
- extern void mdesc_populate_present_mask(cpumask_t *mask);
- 
- extern void sun4v_mdesc_init(void);
 diff --git a/arch/sparc/kernel/ds.c b/arch/sparc/kernel/ds.c
-index 90350f8..51b05c4 100644
+index 51b05c4..4a700f4 100644
 --- a/arch/sparc/kernel/ds.c
 +++ b/arch/sparc/kernel/ds.c
-@@ -544,7 +544,7 @@ static int __cpuinit dr_cpu_configure(struct ds_info *dp,
+@@ -544,6 +544,7 @@ static int __cpuinit dr_cpu_configure(struct ds_info *dp,
  			     resp_len, ncpus, mask,
  			     DR_CPU_STAT_CONFIGURED);
  
--	mdesc_fill_in_cpu_data(*mask);
-+	mdesc_fill_in_cpu_data(mask);
++	mdesc_populate_present_mask(mask);
+ 	mdesc_fill_in_cpu_data(mask);
  
  	for_each_cpu_mask(cpu, *mask) {
- 		int err;
 diff --git a/arch/sparc/kernel/mdesc.c b/arch/sparc/kernel/mdesc.c
-index 602cbb7..6d2015e 100644
+index 6d2015e..938da19 100644
 --- a/arch/sparc/kernel/mdesc.c
 +++ b/arch/sparc/kernel/mdesc.c
-@@ -857,12 +857,12 @@ static void * __cpuinit fill_in_one_cpu(struct mdesc_handle *hp, u64 mp, int cpu
- 	return NULL;
- }
- 
--void __cpuinit mdesc_fill_in_cpu_data(cpumask_t mask)
-+void __cpuinit mdesc_fill_in_cpu_data(cpumask_t *mask)
+@@ -861,7 +861,6 @@ void __cpuinit mdesc_fill_in_cpu_data(cpumask_t *mask)
  {
  	struct mdesc_handle *hp;
  
--	mdesc_populate_present_mask(&mask);
--	mdesc_iterate_over_cpus(fill_in_one_cpu, NULL, &mask);
-+	mdesc_populate_present_mask(mask);
-+	mdesc_iterate_over_cpus(fill_in_one_cpu, NULL, mask);
+-	mdesc_populate_present_mask(mask);
+ 	mdesc_iterate_over_cpus(fill_in_one_cpu, NULL, mask);
  
  #ifdef CONFIG_SMP
- 	sparc64_multi_core = 1;
+diff --git a/arch/sparc/kernel/prom_64.c b/arch/sparc/kernel/prom_64.c
+index 04b518d..f65d623 100644
+--- a/arch/sparc/kernel/prom_64.c
++++ b/arch/sparc/kernel/prom_64.c
+@@ -537,7 +537,6 @@ void __init of_fill_in_cpu_data(void)
+ 	if (tlb_type == hypervisor)
+ 		return;
+ 
+-	of_populate_present_mask();
+ 	of_iterate_over_cpus(fill_in_one_cpu, NULL);
+ 
+ 	smp_fill_in_sib_core_maps();
+diff --git a/arch/sparc/kernel/smp_64.c b/arch/sparc/kernel/smp_64.c
+index 022e5e0..73f5538 100644
+--- a/arch/sparc/kernel/smp_64.c
++++ b/arch/sparc/kernel/smp_64.c
+@@ -1399,4 +1399,8 @@ void __init real_setup_per_cpu_areas(void)
+ 
+ 	/* Setup %g5 for the boot cpu.  */
+ 	__local_per_cpu_offset = __per_cpu_offset(smp_processor_id());
++
++	of_fill_in_cpu_data();
++	if (tlb_type == hypervisor)
++		mdesc_fill_in_cpu_data(CPU_MASK_ALL_PTR);
+ }
 diff --git a/arch/sparc/mm/init_64.c b/arch/sparc/mm/init_64.c
-index c589d6e..87fea94 100644
+index 87fea94..785f0a2 100644
 --- a/arch/sparc/mm/init_64.c
 +++ b/arch/sparc/mm/init_64.c
-@@ -1810,7 +1810,7 @@ void __init paging_init(void)
+@@ -1799,20 +1799,16 @@ void __init paging_init(void)
+ 	if (tlb_type == hypervisor)
+ 		sun4v_ktsb_register();
+ 
+-	/* We must setup the per-cpu areas before we pull in the
+-	 * PROM and the MDESC.  The code there fills in cpu and
+-	 * other information into per-cpu data structures.
+-	 */
+-	real_setup_per_cpu_areas();
+-
+ 	prom_build_devicetree();
+-	of_fill_in_cpu_data();
++	of_populate_present_mask();
  
  	if (tlb_type == hypervisor) {
  		sun4v_mdesc_init();
--		mdesc_fill_in_cpu_data(CPU_MASK_ALL);
-+		mdesc_fill_in_cpu_data(CPU_MASK_ALL_PTR);
+-		mdesc_fill_in_cpu_data(CPU_MASK_ALL_PTR);
++		mdesc_populate_present_mask(CPU_MASK_ALL_PTR);
  	}
  
++	real_setup_per_cpu_areas();
++
  	/* Once the OF device tree and MDESC have been setup, we know
+ 	 * the list of possible cpus.  Therefore we can allocate the
+ 	 * IRQ stacks.
 -- 
 1.6.2.2
 
