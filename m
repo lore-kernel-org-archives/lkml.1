@@ -1,113 +1,92 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760721AbZDIEwW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760804AbZDIExp@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760721AbZDIEwW (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 9 Apr 2009 00:52:22 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752096AbZDIEwK
+	id S1760804AbZDIExp (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 9 Apr 2009 00:53:45 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758934AbZDIExg
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 9 Apr 2009 00:52:10 -0400
-Received: from sycorax.lbl.gov ([128.3.11.121]:36395 "EHLO sycorax.lbl.gov"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750985AbZDIEwI (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 9 Apr 2009 00:52:08 -0400
-X-Greylist: delayed 666 seconds by postgrey-1.27 at vger.kernel.org; Thu, 09 Apr 2009 00:52:08 EDT
-From: Alex Romosan <romosan@sycorax.lbl.gov>
-To: Larry Finger <Larry.Finger@lwfinger.net>
-Cc: Andrew Morton <akpm@linux-foundation.org>, Justin Madru <jdm64@gawab.com>,
-       lkml <linux-kernel@vger.kernel.org>, linux-wireless@vger.kernel.org
-Subject: Re: 2.6.30-rc1: intel 3945 no wireless
-References: <49DC37F0.2040408@gawab.com>
-	<20090408201414.9161568f.akpm@linux-foundation.org>
-	<49DD6BF7.3040400@lwfinger.net>
-Date: Wed, 08 Apr 2009 21:39:47 -0700
-In-Reply-To: <49DD6BF7.3040400@lwfinger.net> (message from Larry Finger on
-	Wed, 08 Apr 2009 22:31:03 -0500)
-Message-ID: <87myaql9t8.fsf@sycorax.lbl.gov>
-User-Agent: Gnus/5.110006 (No Gnus v0.6) Emacs/22.2 (gnu/linux)
+	Thu, 9 Apr 2009 00:53:36 -0400
+Received: from fgwmail6.fujitsu.co.jp ([192.51.44.36]:42954 "EHLO
+	fgwmail6.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755019AbZDIExf convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 9 Apr 2009 00:53:35 -0400
+From: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
+To: Neil Brown <neilb@suse.de>, Greg Kroah-Hartman <gregkh@suse.de>,
+       LKML <linux-kernel@vger.kernel.org>, Al Viro <viro@ZenIV.linux.org.uk>,
+       Ram Pai <linuxram@us.ibm.com>, Miklos Szeredi <mszeredi@suse.cz>
+Subject: [PATCH v2 1/2] sysfs poll keep the poll rule of regular file.
+Cc: kosaki.motohiro@jp.fujitsu.com
+In-Reply-To: <20090409092302.8D8A.A69D9226@jp.fujitsu.com>
+References: <18909.15904.704697.734477@notabene.brown> <20090409092302.8D8A.A69D9226@jp.fujitsu.com>
+Message-Id: <20090409134916.B3E6.A69D9226@jp.fujitsu.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset="US-ASCII"
+Content-Transfer-Encoding: 8BIT
+X-Mailer: Becky! ver. 2.50 [ja]
+Date: Thu,  9 Apr 2009 13:53:22 +0900 (JST)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Larry Finger <Larry.Finger@lwfinger.net> writes:
 
-> Andrew Morton wrote:
->> (cc linux-wireless)
->> 
->> On Tue, 07 Apr 2009 22:36:48 -0700 Justin Madru <jdm64@gawab.com> wrote:
->> 
->>> Hi,
->>>
->>> Decided to test out .30-rc1, but I've run into some bugs.
->>> My intel 3945 wireless card doesn't work. Bellow is the relevant 
->>> portions of dmesg
->>> The full dmesg and config can be found at: 
->>> http://jdserver.homelinux.org/bugreports/003/
->>>
->>> iwl3945: Intel(R) PRO/Wireless 3945ABG/BG Network Connection driver for 
->>> Linux, 1.2.26ks
->>> iwl3945: Copyright(c) 2003-2009 Intel Corporation
->>> iwl3945 0000:0b:00.0: PCI INT A -> GSI 16 (level, low) -> IRQ 16
->>> iwl3945 0000:0b:00.0: setting latency timer to 64
->>> input: SynPS/2 Synaptics TouchPad as 
->>> /devices/platform/i8042/serio1/input/input6
->>> iwl3945 0000:0b:00.0: Tunable channels: 11 802.11bg, 13 802.11a channels
->>> iwl3945 0000:0b:00.0: Detected Intel Wireless WiFi Link 3945ABG
->>>   alloc irq_desc for 26 on cpu 0 node 0
->>>   alloc kstat_irqs on cpu 0 node 0
->>> iwl3945 0000:0b:00.0: irq 26 for MSI/MSI-X
->>> phy0: Selected rate control algorithm 'iwl-3945-rs'
->>> input: HDA Intel Mic at Ext Right Jack as 
->>> /devices/pci0000:00/0000:00:1b.0/input/input7
->>> input: HDA Intel HP Out at Ext Right Jack as 
->>> /devices/pci0000:00/0000:00:1b.0/input/input8
->>> phy0: Failed to initialize wep: -2
->>> iwl3945 0000:0b:00.0: Failed to register hw (error -2)
->>> iwl3945 0000:0b:00.0: PCI INT A disabled
->>> iwl3945: probe of 0000:0b:00.0 failed with error -2
->>>
->> 
->> I assume this is a regression?  2.6.29 was OK?
->
-> See the discussion in the thread containing
-> http://marc.info/?l=linux-kernel&m=123922531327539&w=2. This one also contains
-> the fix that was accepted by Rusty Russell.
+Currently, following test programs don't finished.
 
-i have the same problem. 2.6.29 was fine, 2.6.30-rc1 doesn't work. i
-tried applying the above mentioned patch but it didn't make any
-difference. at any rate, i have iwl3945 compiled in the kernel and not
-as a module and i don't use wep. this is the relevant part from syslog:
+% ruby -e '
+Thread.new { sleep }
+File.read("/sys/devices/system/cpu/cpu0/cpufreq/scaling_available_frequencies")
+'
 
-iwl3945 0000:03:00.0: firmware: requesting iwlwifi-3945-2.ucode
-iwl3945 0000:03:00.0: loaded firmware version 15.28.2.8
-Registered led device: iwl-phy0::radio
-Registered led device: iwl-phy0::assoc
-Registered led device: iwl-phy0::RX
-Registered led device: iwl-phy0::TX
-wlan0: authenticate with AP XX:XX:XX:XX:XX:XX
-wlan0: authenticate with AP XX:XX:XX:XX:XX:XX
-iwl3945 0000:03:00.0: Microcode SW error detected. Restarting 0x82000008.
-iwl3945 0000:03:00.0: Error Reply type 0x00000005 cmd REPLY_PHY_CALIBRATION_CMD (0xB0) seq 0x013A ser 0x004E0000
-Registered led device: iwl-phy0::radio
-Registered led device: iwl-phy0::assoc
-Registered led device: iwl-phy0::RX
-Registered led device: iwl-phy0::TX
-wlan0: authenticate with AP XX:XX:XX:XX:XX:XX
-wlan0: authentication with AP XX:XX:XX:XX:XX:XX timed out
+strace expose the reason.
 
-looking through the logs i also noticed this:
-
-REISERFS warning (device sda4): jdm-20004 reiserfs_delete_xattrs: Couldn't delete all xattrs (-13)
-
-REISERFS warning (device sda4): jdm-20004 reiserfs_delete_xattrs: Couldn't delete all xattrs (-13)
-
-REISERFS warning (device sda2): jdm-20004 reiserfs_delete_xattrs: Couldn't delete all xattrs (-13)
-
---alex--
+...
+open("/sys/devices/system/cpu/cpu0/cpufreq/scaling_available_frequencies", O_RDONLY|O_LARGEFILE) = 3
+ioctl(3, SNDCTL_TMR_TIMEBASE or TCGETS, 0xbf9fa6b8) = -1 ENOTTY (Inappropriate ioctl for device)
+fstat64(3, {st_mode=S_IFREG|0444, st_size=4096, ...}) = 0
+_llseek(3, 0, [0], SEEK_CUR)            = 0
+select(4, [3], NULL, NULL, NULL)        = 1 (in [3])
+read(3, "1400000 1300000 1200000 1100000 1"..., 4096) = 62
+select(4, [3], NULL, NULL, NULL
 
 
--- 
-| I believe the moment is at hand when, by a paranoiac and active |
-|  advance of the mind, it will be possible (simultaneously with  |
-|  automatism and other passive states) to systematize confusion  |
-|  and thus to help to discredit completely the world of reality. |
+Because Ruby (the scripting language) VM assume select system-call against regular file don't block.
+it because SUSv3 says "Regular files shall always poll TRUE for reading and writing".
+    see http://www.opengroup.org/onlinepubs/009695399/functions/poll.html
+it seems valid assumption.
+
+But sysfs_poll() don't keep this rule although sysfs file can read and write always.
+
+This patch restore proper poll behavior to sysfs.
+/sys/block/md*/md/sync_action polling application and another sysfs updating sensitive
+application still can use POLLERR and POLLPRI.
+
+
+
+Cc: Neil Brown <neilb@suse.de>
+Cc: Greg Kroah-Hartman <gregkh@suse.de>
+Signed-off-by: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
+--
+ fs/sysfs/file.c |    4 ++--
+ 1 files changed, 2 insertions(+), 2 deletions(-)
+
+diff --git a/fs/sysfs/file.c b/fs/sysfs/file.c
+index 289c43a..4a302f8 100644
+--- a/fs/sysfs/file.c
++++ b/fs/sysfs/file.c
+@@ -446,11 +446,11 @@ static unsigned int sysfs_poll(struct file *filp, poll_table *wait)
+ 	if (buffer->event != atomic_read(&od->event))
+ 		goto trigger;
+ 
+-	return 0;
++	return DEFAULT_POLLMASK;
+ 
+  trigger:
+ 	buffer->needs_read_fill = 1;
+-	return POLLERR|POLLPRI;
++	return DEFAULT_POLLMASK|POLLERR|POLLPRI;
+ }
+ 
+ void sysfs_notify_dirent(struct sysfs_dirent *sd)
+
+
+
+
