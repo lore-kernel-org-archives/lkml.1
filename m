@@ -1,68 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S935842AbZDIPyY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757154AbZDIP77@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S935842AbZDIPyY (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 9 Apr 2009 11:54:24 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S935805AbZDIPxn
+	id S1757154AbZDIP77 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 9 Apr 2009 11:59:59 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756613AbZDIP7u
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 9 Apr 2009 11:53:43 -0400
-Received: from NaN.false.org ([208.75.86.248]:50553 "EHLO nan.false.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S935809AbZDIPxm (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 9 Apr 2009 11:53:42 -0400
-X-Greylist: delayed 1420 seconds by postgrey-1.27 at vger.kernel.org; Thu, 09 Apr 2009 11:53:41 EDT
-Date: Thu, 9 Apr 2009 11:29:57 -0400
-From: Daniel Jacobowitz <dan@debian.org>
-To: Catalin Marinas <catalin.marinas@arm.com>
-Cc: Tim Bird <tim.bird@am.sony.com>,
-       Russell King - ARM Linux <linux@arm.linux.org.uk>,
-       Frederic Weisbecker <fweisbec@gmail.com>,
-       Abhishek Sagar <sagar.abhishek@gmail.com>,
-       linux-arm-kernel <linux-arm-kernel@lists.arm.linux.org.uk>,
-       linux kernel <linux-kernel@vger.kernel.org>,
-       Steven Rostedt <rostedt@goodmis.org>, Ingo Molnar <mingo@redhat.com>,
-       Uwe =?iso-8859-1?Q?Kleine-K=F6nig?= 
-	<u.kleine-koenig@pengutronix.de>
-Subject: Re: Anyone working on ftrace function graph support on ARM?
-Message-ID: <20090409152957.GA7236@caradoc.them.org>
-Mail-Followup-To: Catalin Marinas <catalin.marinas@arm.com>,
-	Tim Bird <tim.bird@am.sony.com>,
-	Russell King - ARM Linux <linux@arm.linux.org.uk>,
-	Frederic Weisbecker <fweisbec@gmail.com>,
-	Abhishek Sagar <sagar.abhishek@gmail.com>,
-	linux-arm-kernel <linux-arm-kernel@lists.arm.linux.org.uk>,
-	linux kernel <linux-kernel@vger.kernel.org>,
-	Steven Rostedt <rostedt@goodmis.org>,
-	Ingo Molnar <mingo@redhat.com>,
-	Uwe =?iso-8859-1?Q?Kleine-K=F6nig?= <u.kleine-koenig@pengutronix.de>
-References: <49C936CA.8070800@am.sony.com> <20090324213618.GC5975@nowhere> <49C95EAF.7030901@gmail.com> <20090324224857.GE5975@nowhere> <20090325084248.GF4697@n2100.arm.linux.org.uk> <49CA5CFF.8090908@am.sony.com> <1238158688.9698.16.camel@pc1117.cambridge.arm.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1238158688.9698.16.camel@pc1117.cambridge.arm.com>
-User-Agent: Mutt/1.5.17 (2008-05-11)
+	Thu, 9 Apr 2009 11:59:50 -0400
+Received: from casper.infradead.org ([85.118.1.10]:51640 "EHLO
+	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751268AbZDIP7u (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 9 Apr 2009 11:59:50 -0400
+Subject: Re: Linux 2.6.30-rc1 boot failure on ia64 w/ QLA12160.  Bisected.
+From: David Woodhouse <dwmw2@infradead.org>
+To: Jaswinder Singh Rajput <jaswinder@kernel.org>
+Cc: Robin Holt <holt@sgi.com>,
+       Jaswinder Singh Rajput <jaswinderrajput@gmail.com>,
+       James Bottomley <James.Bottomley@HansenPartnership.com>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>
+In-Reply-To: <1239291835.3296.16.camel@ht.satnam>
+References: <alpine.LFD.2.00.0904071700170.4583@localhost.localdomain>
+	 <20090408042734.GD10768@sgi.com>
+	 <1239179479.3411.4.camel@macbook.infradead.org>
+	 <1239291835.3296.16.camel@ht.satnam>
+Content-Type: text/plain
+Date: Thu, 09 Apr 2009 08:59:32 -0700
+Message-Id: <1239292772.2974.18.camel@macbook.infradead.org>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.26.0 (2.26.0-2.fc11) 
+Content-Transfer-Encoding: 7bit
+X-SRS-Rewrite: SMTP reverse-path rewritten from <dwmw2@infradead.org> by casper.infradead.org
+	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Sorry for the late reply, I'm way behind on list mail.
-
-On Fri, Mar 27, 2009 at 12:58:08PM +0000, Catalin Marinas wrote:
-> Anyway, the EABI toolchain I have (from CodeSourcery) generates
-> something like below with -pg for both ARM and Thumb code (so that it
-> doesn't rely on the frame pointer):
+On Thu, 2009-04-09 at 21:13 +0530, Jaswinder Singh Rajput wrote:
+> Hello David,
 > 
-> 	push	{lr}
-> 	bl	__gnu_mcount_nc
+> On Wed, 2009-04-08 at 01:31 -0700, David Woodhouse wrote:
+> > On Tue, 2009-04-07 at 23:27 -0500, Robin Holt wrote:
+> > > On and ia64 system with a QLA12160 adapter, my boot fails with:
+> > 
+> > Thanks for the report. After successful feedback from Jeremy, I've added
+> > the commit below to git://git.infradead.org/~dwmw2/firmware-2.6.git,
+> > which I asked Linus to pull already on Monday...
 > 
-> I think this will be (was?) merged into the mainline gcc for ARM. The
-> -pg option is still incompatible with -fomit-frame-pointer but maybe it
-> shouldn't be anymore.
+> you have updated the tree, so better send new pull request to Linus to
+> avoid any confusions :-)
 
-Was merged.  It'll be in GCC 4.4 and is in our current Lite releases;
-it was created to solve precisely this problem.  It should be easy to
-apply to an older GCC release if desired, but it's not in existing
-FSF releases.
+The URL is above; he's clever enough to work it out. If he still hasn't
+pulled it by the time I get home, I'll send another request.
 
 -- 
-Daniel Jacobowitz
-CodeSourcery
+dwmw2
+
