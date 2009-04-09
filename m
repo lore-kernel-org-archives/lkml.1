@@ -1,53 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760189AbZDIHML@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758845AbZDIHU1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760189AbZDIHML (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 9 Apr 2009 03:12:11 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755666AbZDIHLz
+	id S1758845AbZDIHU1 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 9 Apr 2009 03:20:27 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755537AbZDIHUQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 9 Apr 2009 03:11:55 -0400
-Received: from one.firstfloor.org ([213.235.205.2]:42224 "EHLO
+	Thu, 9 Apr 2009 03:20:16 -0400
+Received: from one.firstfloor.org ([213.235.205.2]:41738 "EHLO
 	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755537AbZDIHLz (ORCPT
+	with ESMTP id S1753524AbZDIHUP (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 9 Apr 2009 03:11:55 -0400
-Date: Thu, 9 Apr 2009 09:14:13 +0200
+	Thu, 9 Apr 2009 03:20:15 -0400
+Date: Thu, 9 Apr 2009 09:22:36 +0200
 From: Andi Kleen <andi@firstfloor.org>
-To: Hidetoshi Seto <seto.hidetoshi@jp.fujitsu.com>
-Cc: Andi Kleen <andi@firstfloor.org>, ying.huang@intel.com, hpa@zytor.com,
-       linux-kernel@vger.kernel.org, mingo@elte.hu, tglx@linutronix.de
-Subject: Re: [PATCH] [3/4] x86: MCE: Improve mce_get_rip
-Message-ID: <20090409071413.GD14687@one.firstfloor.org>
-References: <20090407506.675031434@firstfloor.org> <20090407150656.43E161D046D@basil.firstfloor.org> <49DC5D11.4060505@jp.fujitsu.com> <87eiw3a29h.fsf@basil.nowhere.org> <49DD80B4.5060301@jp.fujitsu.com>
+To: Roland Dreier <rdreier@cisco.com>
+Cc: Andi Kleen <andi@firstfloor.org>,
+       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
+       linux-mm@kvack.org, x86@kernel.org
+Subject: Re: [PATCH] [0/16] POISON: Intro
+Message-ID: <20090409072236.GE14687@one.firstfloor.org>
+References: <20090407509.382219156@firstfloor.org> <20090407221542.91cd3c42.akpm@linux-foundation.org> <20090408061539.GD17934@one.firstfloor.org> <adafxgj6old.fsf@cisco.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <49DD80B4.5060301@jp.fujitsu.com>
+In-Reply-To: <adafxgj6old.fsf@cisco.com>
 User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Apr 09, 2009 at 01:59:32PM +0900, Hidetoshi Seto wrote:
-> >> I guess it would make much sense if we stop mixing RIP and EIP and rename
-> >> the mce_get_rip() to mce_get_eip(), and the rip_msr to eip_msr too.
-> > 
-> > Ok fair enough.  I admit the code was always a bit dubious.
-> > 
-> >> And then it would be acceptable if we print RIP with "!INEXACT!" annotation
-> >> instead of printing precise EIP in case of RIPV=0 but EIPV=1.
-> > 
-> > Please send a patch to do all that.
+On Wed, Apr 08, 2009 at 10:29:34AM -0700, Roland Dreier wrote:
+>  > [1] I didn't consider that one high priority since production
+>  > systems with long uptime shouldn't have much free memory.
 > 
-> I will.
-> 
-> A trivial question is if you unified 32/64bit mce codes, would you
-> like to print only "IP %02x:<%016Lx>", or "RIP ..." and "EIP ..." ?
+> Surely there are windows after a big job exits where lots of memory
+> might be free.  Not sure how big those windows are in practice but it
+> does seem if a process using 128GB exits then it might take a while
+> before that memory all gets used again.
 
-I would prefer to pt in RIP in both cases, simply because i fear breaking
-parsers. I think the 32bit users will survive if their instruction
-pointer is reported as "RIP" too.
+Yes, it's definitely something to be fixed at some point.
+Basically just needs a new entry point into the page_alloc
+buddy allocator to unfree a page. The more tricky part
+is actually finding a good injector design for testing for it,
+there's no natural race free way to get a free page.
 
 -Andi
-
 -- 
 ak@linux.intel.com -- Speaking for myself only.
