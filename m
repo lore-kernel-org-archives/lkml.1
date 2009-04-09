@@ -1,133 +1,276 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S936262AbZDITEi@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S935873AbZDITJX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S936262AbZDITEi (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 9 Apr 2009 15:04:38 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S935522AbZDITEV
+	id S935873AbZDITJX (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 9 Apr 2009 15:09:23 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755521AbZDITJL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 9 Apr 2009 15:04:21 -0400
-Received: from cantor.suse.de ([195.135.220.2]:60635 "EHLO mx1.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S932512AbZDITET (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 9 Apr 2009 15:04:19 -0400
-Date: Thu, 9 Apr 2009 21:04:00 +0200
-From: Jan Kara <jack@suse.cz>
-To: Chris Mason <chris.mason@oracle.com>
-Cc: Linus Torvalds <torvalds@linux-foundation.org>,
-       "Theodore Ts'o" <tytso@mit.edu>,
-       Linux Kernel Developers List <linux-kernel@vger.kernel.org>,
-       Ext4 Developers List <linux-ext4@vger.kernel.org>
-Subject: Re: [GIT PULL] Ext3 latency fixes
-Message-ID: <20090409190400.GA3886@duck.suse.cz>
-References: <E1LrhNF-0002zd-BG@closure.thunk.org> <alpine.LFD.2.00.0904090836060.4583@localhost.localdomain> <1239294219.31257.10.camel@think.oraclecorp.com> <20090409174932.GD26552@atrey.karlin.mff.cuni.cz> <1239300603.31257.26.camel@think.oraclecorp.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1239300603.31257.26.camel@think.oraclecorp.com>
-User-Agent: Mutt/1.5.17 (2007-11-01)
+	Thu, 9 Apr 2009 15:09:11 -0400
+Received: from casper.infradead.org ([85.118.1.10]:46481 "EHLO
+	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1760719AbZDITJJ (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 9 Apr 2009 15:09:09 -0400
+Subject: Re: [PATCH] firmware: speed up request_firmware()
+From: David Woodhouse <dwmw2@infradead.org>
+To: Ira Snyder <iws@ovro.caltech.edu>
+Cc: Alan Cox <alan@lxorguk.ukuu.org.uk>, Andrey Borzenkov <arvidjaar@mail.ru>,
+       linux-kernel@vger.kernel.org
+In-Reply-To: <20090128203421.GC31107@ovro.caltech.edu>
+References: <20090128180446.GB31107@ovro.caltech.edu>
+	 <E1LSFhF-0002OC-00.arvidjaar-mail-ru@mx5.mail.ru>
+	 <20090128194534.457d58cd@lxorguk.ukuu.org.uk>
+	 <20090128203421.GC31107@ovro.caltech.edu>
+Content-Type: text/plain
+Date: Thu, 09 Apr 2009 12:08:57 -0700
+Message-Id: <1239304137.2974.29.camel@macbook.infradead.org>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.26.0 (2.26.0-2.fc11) 
+Content-Transfer-Encoding: 7bit
+X-SRS-Rewrite: SMTP reverse-path rewritten from <dwmw2@infradead.org> by casper.infradead.org
+	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu 09-04-09 14:10:03, Chris Mason wrote:
-> On Thu, 2009-04-09 at 19:49 +0200, Jan Kara wrote:
-> > > On Thu, 2009-04-09 at 08:49 -0700, Linus Torvalds wrote:
-> > > > 
-> > > > On Wed, 8 Apr 2009, Theodore Ts'o wrote:
-> > > > > 
-> > > > > One of these patches fixes a performance regression caused by a64c8610,
-> > > > > which unplugged the write queue after every page write.  Now that Jens
-> > > > > added WRITE_SYNC_PLUG.the patch causes us to use it instead of
-> > > > > WRITE_SYNC, to avoid the implicit unplugging.  These patches also seem
-> > > > > to further improbve ext3 latency, especially during the "sync" command
-> > > > > in Linus's write-big-file-and-sync workload.
-> > > > 
-> > > > So here's a question and a untested _conceptual_ patch. 
-> > > > 
-> > > > The kind of writeback mode I'd personally prefer would be more of a 
-> > > > mixture of the current "data=writeback" and "data=ordered" modes, with 
-> > > > something of the best of both worlds. I'd like the data writeback to get 
-> > > > _started_ when the journal is written to disk, but I'd like it to not 
-> > > > block journal updates.
-> > > > 
-> > > > IOW, it wouldn't be "strictly ordered", but at the same time it wouldn't 
-> > > > be totally unordered either.
-> > > > 
-> > > 
-> > > I started working on the xfs style i_size updates last night, and here's
-> > > my current (most definitely broken) proof of concept.  I call it
-> > > data=guarded.
-> > > 
-> > > In guarded mode the on disk i_size is not updated until after the data
-> > > writes are complete.  I've got a per FS work queue and I'm abusing
-> > > bh->b_private as a list pointer.  So, what happens is:
-> > > 
-> > > * writepage sets up the buffer with the guarded end_io handler
-> > > 
-> > > * The end_io handler puts the buffer onto the per-sb list of guarded
-> > > buffers and then it kicks the work queue
-> > > 
-> > > * The workqueue updates the on disk i_size to the min of the end of the
-> > > buffer or the in-memory i_size, and then it logs the inode.
-> > > 
-> > > * Then the regular async bh end_io handler is called to end writeback on
-> > > the page.
-> > > 
-> > > One big gotcha is that we starting a transaction while a page is
-> > > writeback.  It means that anyone who waits for writeback to finish on
-> > > the datapage with a transaction running could deadlock against the work
-> > > queue func trying to start a transaction.
-> >   For ext3 I don't think anyone waits for PageWriteback with a
-> > transaction open. We definitely don't do it from ext3 code and generic
-> > code does usually sequence like:
-> >   lock_page(page);
-> >   ...
-> >   wait_on_page_writeback(page)
+On Wed, 2009-01-28 at 12:34 -0800, Ira Snyder wrote:
+> On Wed, Jan 28, 2009 at 07:45:34PM +0000, Alan Cox wrote:
+> > > Some drivers cache firmware in memory. Doubing the amount of needed memory 
+> > > definitely would not be the best idea. Check drivers/net/wireless for 
+> > > examples.
 > > 
-> >   and because lock ordering is page_lock < transaction start, we
-> > shouldn't have transaction open at that point.
-> >   But with ext4 it may be different - there, the lock ordering is
-> > transaction start > page_lock and so above code could well have
-> > transaction started.
-> >   Wouldn't it actually be better to update i_size when the page is
-> > fully written out after we clear PG_writeback as you write below?
-> 
-> It would, but then we have to take a ref on the inode and risk iput
-> leading to inode deletion in the handler that is supposed to be doing IO
-> completion.  It's icky either way ;)
-  Yeah, I though something like this could happen... I had a similar
-problem in JBD2 where kjournald could be the last to drop inode reference.
-In the end I've solved it by waiting in clear_inode() until the commit code
-is done with the inode (and the commit code does not hold any reference
-against the inode).
-
-> The nice part with doing it before writeback is that we know that when
-> we wait for page writeback, we don't also have to wait for i_size update
-> to be finished.
-> 
-> If we go this route and it gets copied to ext4, we can weigh our options
-> I guess.
-> 
-> >   One thing which does not seem to be handled is that your code can
-> > happily race with truncate. So IO completion could reset i_size which
-> > has been just set by truncate. And I'm not sure how to handle this
-> > effectively. Generally I'm not sure how much this is going to cost...
+> > A lot of drivers could perfectly happily exist with a simple iterator
+> > helper and being returned sg lists of pages. It seems that for big
+> > firmwares at least there is a root cause which is deeper than how you
+> > grow your vmalloc buffer.
 > > 
 > 
-> Yeah, I was worried about that.  What ends up happening is the setattr
-> call sets the disk i_size and then calls inode_setattr, who calls
-> vmtruncate who actually waits on the writeback.
+> An sg list of pages would be perfect for my usage. I didn't want to
+> change an existing kernel interface, so I just made the easiest change
+> that worked for me.
 > 
-> Then, we wander into the ext3 truncate who resets disk i_size down
-> again.  It's a pretty strange window of updates, but I was thinking it
-> would work to cut down i_size, wait on IO, then cut it down again in
-> setattr.
-> 
-> Once we wait on all IO past the new in-memory i_size, writepage won't
-> send any more down.  So updating disk i_size after the wait should be
-> enough.
-  Yes, this should work. But it's a bit nasty...
+> Another thing that could be done is trimming the vmalloc() down to the
+> exact size needed after the firmware has finished loading. That would
+> still waste memory until the copy from userspace is finished, though.
 
-								Honza
+Or you just allocate individual pages one at a time as you're copying
+the data in from userspace, then vmap() them once you're _done_.
+
+We could potentially extend this to allow drivers to say "I only need an
+array of pages, not contiguous VM space", but that comes later.
+
+This approach has the benefit that we can force the virtual mapping of
+the firmware image to be read-only -- one step up from making it 'const'
+as we did already.
+
+> I'd be happy to test patches anyone comes up with.
+
+Totally untested here...
+
+diff --git a/drivers/base/firmware_class.c b/drivers/base/firmware_class.c
+index d3a59c6..bf151cd 100644
+--- a/drivers/base/firmware_class.c
++++ b/drivers/base/firmware_class.c
+@@ -17,7 +17,7 @@
+ #include <linux/bitops.h>
+ #include <linux/mutex.h>
+ #include <linux/kthread.h>
+-
++#include <linux/highmem.h>
+ #include <linux/firmware.h>
+ #include "base.h"
+ 
+@@ -45,7 +45,10 @@ struct firmware_priv {
+ 	struct bin_attribute attr_data;
+ 	struct firmware *fw;
+ 	unsigned long status;
+-	int alloc_size;
++	struct page **pages;
++	int nr_pages;
++	int page_array_size;
++	const char *vdata;
+ 	struct timer_list timeout;
+ };
+ 
+@@ -141,6 +144,7 @@ static ssize_t firmware_loading_store(struct device *dev,
+ {
+ 	struct firmware_priv *fw_priv = dev_get_drvdata(dev);
+ 	int loading = simple_strtol(buf, NULL, 10);
++	int i;
+ 
+ 	switch (loading) {
+ 	case 1:
+@@ -151,13 +155,30 @@ static ssize_t firmware_loading_store(struct device *dev,
+ 		}
+ 		vfree(fw_priv->fw->data);
+ 		fw_priv->fw->data = NULL;
++		for (i = 0; i < fw_priv->nr_pages; i++)
++			__free_page(fw_priv->pages[i]);
++		kfree(fw_priv->pages);
++		fw_priv->pages = NULL;
++		fw_priv->page_array_size = 0;
++		fw_priv->nr_pages = 0;
+ 		fw_priv->fw->size = 0;
+-		fw_priv->alloc_size = 0;
+ 		set_bit(FW_STATUS_LOADING, &fw_priv->status);
+ 		mutex_unlock(&fw_lock);
+ 		break;
+ 	case 0:
+ 		if (test_bit(FW_STATUS_LOADING, &fw_priv->status)) {
++			vfree(fw_priv->fw->data);
++			fw_priv->fw->data = vmap(fw_priv->pages,
++						 fw_priv->nr_pages,
++						 0, PAGE_KERNEL_RO);
++			if (!fw_priv->fw->data) {
++				dev_err(dev, "%s: vmap() failed\n", __func__);
++				goto err;
++			}
++			/* Pages will be freed by vfree() */
++			fw_priv->pages = NULL;
++			fw_priv->page_array_size = 0;
++			fw_priv->nr_pages = 0;
+ 			complete(&fw_priv->completion);
+ 			clear_bit(FW_STATUS_LOADING, &fw_priv->status);
+ 			break;
+@@ -167,6 +188,7 @@ static ssize_t firmware_loading_store(struct device *dev,
+ 		dev_err(dev, "%s: unexpected value (%d)\n", __func__, loading);
+ 		/* fallthrough */
+ 	case -1:
++	err:
+ 		fw_load_abort(fw_priv);
+ 		break;
+ 	}
+@@ -191,8 +213,28 @@ firmware_data_read(struct kobject *kobj, struct bin_attribute *bin_attr,
+ 		ret_count = -ENODEV;
+ 		goto out;
+ 	}
+-	ret_count = memory_read_from_buffer(buffer, count, &offset,
+-						fw->data, fw->size);
++	if (offset > fw->size)
++		return 0;
++	if (count > fw->size - offset)
++		count = fw->size - offset;
++
++	ret_count = count;
++
++	while (count) {
++		void *page_data;
++		int page_nr = offset >> PAGE_SHIFT;
++		int page_ofs = offset & (PAGE_SIZE-1);
++		int page_cnt = min(PAGE_SIZE - page_ofs, PAGE_SIZE);
++
++		page_data = kmap(fw_priv->pages[page_nr]);
++
++		memcpy(buffer, page_data + page_ofs, page_cnt);
++
++		kunmap(page_data);
++		buffer += page_cnt;
++		offset += page_cnt;
++		count -= page_cnt;
++	}
+ out:
+ 	mutex_unlock(&fw_lock);
+ 	return ret_count;
+@@ -201,27 +243,39 @@ out:
+ static int
+ fw_realloc_buffer(struct firmware_priv *fw_priv, int min_size)
+ {
+-	u8 *new_data;
+-	int new_size = fw_priv->alloc_size;
++	int pages_needed = ALIGN(min_size, PAGE_SIZE) >> PAGE_SHIFT;
++
++	/* If the array of pages is too small, grow it... */
++	if (fw_priv->page_array_size < pages_needed) {
++		int new_array_size = min(pages_needed,
++					 fw_priv->page_array_size * 2);
++		struct page **new_pages;
++
++		new_pages = kmalloc(new_array_size * sizeof(void *),
++				    GFP_KERNEL);
++		if (!new_pages) {
++			fw_load_abort(fw_priv);
++			return -ENOMEM;
++		}
++		memcpy(new_pages, fw_priv->pages,
++		       fw_priv->page_array_size * sizeof(void *));
++		memset(&new_pages[fw_priv->page_array_size], 0, sizeof(void *) *
++		       (new_array_size - fw_priv->page_array_size));
++		kfree(fw_priv->pages);
++		fw_priv->pages = new_pages;
++		fw_priv->page_array_size = new_array_size;
++	}
+ 
+-	if (min_size <= fw_priv->alloc_size)
+-		return 0;
++	while (fw_priv->nr_pages < pages_needed) {
++		fw_priv->pages[fw_priv->nr_pages] =
++			alloc_page(GFP_KERNEL | __GFP_HIGHMEM);
+ 
+-	new_size = ALIGN(min_size, PAGE_SIZE);
+-	new_data = vmalloc(new_size);
+-	if (!new_data) {
+-		printk(KERN_ERR "%s: unable to alloc buffer\n", __func__);
+-		/* Make sure that we don't keep incomplete data */
+-		fw_load_abort(fw_priv);
+-		return -ENOMEM;
+-	}
+-	fw_priv->alloc_size = new_size;
+-	if (fw_priv->fw->data) {
+-		memcpy(new_data, fw_priv->fw->data, fw_priv->fw->size);
+-		vfree(fw_priv->fw->data);
++		if (!fw_priv->pages[fw_priv->nr_pages]) {
++			fw_load_abort(fw_priv);
++			return -ENOMEM;
++		}
++		fw_priv->nr_pages++;
+ 	}
+-	fw_priv->fw->data = new_data;
+-	BUG_ON(min_size > fw_priv->alloc_size);
+ 	return 0;
+ }
+ 
+@@ -258,10 +312,25 @@ firmware_data_write(struct kobject *kobj, struct bin_attribute *bin_attr,
+ 	if (retval)
+ 		goto out;
+ 
+-	memcpy((u8 *)fw->data + offset, buffer, count);
+-
+-	fw->size = max_t(size_t, offset + count, fw->size);
+ 	retval = count;
++
++	while (count) {
++		void *page_data;
++		int page_nr = offset >> PAGE_SHIFT;
++		int page_ofs = offset & (PAGE_SIZE-1);
++		int page_cnt = min(PAGE_SIZE - page_ofs, PAGE_SIZE);
++
++		page_data = kmap(fw_priv->pages[page_nr]);
++
++		memcpy(page_data + page_ofs, buffer, page_cnt);
++
++		kunmap(page_data);
++		buffer += page_cnt;
++		offset += page_cnt;
++		count -= page_cnt;
++	}
++
++	fw->size = max_t(size_t, offset, fw->size);
+ out:
+ 	mutex_unlock(&fw_lock);
+ 	return retval;
+@@ -277,7 +346,11 @@ static struct bin_attribute firmware_attr_data_tmpl = {
+ static void fw_dev_release(struct device *dev)
+ {
+ 	struct firmware_priv *fw_priv = dev_get_drvdata(dev);
++	int i;
+ 
++	for (i = 0; i < fw_priv->nr_pages; i++)
++		__free_page(fw_priv->pages[i]);
++	kfree(fw_priv->pages);
+ 	kfree(fw_priv);
+ 	kfree(dev);
+ 
+
 -- 
-Jan Kara <jack@suse.cz>
-SUSE Labs, CR
+David Woodhouse                            Open Source Technology Centre
+David.Woodhouse@intel.com                              Intel Corporation
+
