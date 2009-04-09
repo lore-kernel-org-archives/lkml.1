@@ -1,87 +1,101 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932765AbZDIRof@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S935360AbZDIRpa@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932765AbZDIRof (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 9 Apr 2009 13:44:35 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755055AbZDIRoX
+	id S935360AbZDIRpa (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 9 Apr 2009 13:45:30 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758534AbZDIRpR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 9 Apr 2009 13:44:23 -0400
-Received: from brick.kernel.dk ([93.163.65.50]:46573 "EHLO kernel.dk"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753397AbZDIRoW (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 9 Apr 2009 13:44:22 -0400
-Date: Thu, 9 Apr 2009 19:44:21 +0200
-From: Jens Axboe <jens.axboe@oracle.com>
-To: Sachin Sant <sachinp@in.ibm.com>
-Cc: linuxppc-dev@ozlabs.org, Stephen Rothwell <sfr@canb.auug.org.au>,
-       linux-next@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>
-Subject: Re: [CFQ/OOPS]  rb_erase with April 9 next tree
-Message-ID: <20090409174420.GG5178@kernel.dk>
-References: <20090409163305.8c7a0371.sfr@canb.auug.org.au> <49DE1969.1000709@in.ibm.com> <20090409172918.GE5178@kernel.dk>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090409172918.GE5178@kernel.dk>
+	Thu, 9 Apr 2009 13:45:17 -0400
+Received: from 136-022.dsl.LABridge.com ([206.117.136.22]:2576 "EHLO
+	mail.perches.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755055AbZDIRpQ (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 9 Apr 2009 13:45:16 -0400
+Subject: Re: [PATCH 02/10] MAINTAINERS - Add file patterns
+From: Joe Perches <joe@perches.com>
+To: Timur Tabi <timur@freescale.com>
+Cc: Linus Torvalds <torvalds@linux-foundation.org>,
+       Andrew Morton <akpm@kernel.org>, linux-kernel@vger.kernel.org
+In-Reply-To: <ed82fe3e0904090842l357c6ee9yab8a99a384ca4089@mail.gmail.com>
+References: <1239167872-8179-1-git-send-email-joe@perches.com>
+	 <1239167872-8179-3-git-send-email-joe@perches.com>
+	 <ed82fe3e0904090842l357c6ee9yab8a99a384ca4089@mail.gmail.com>
+Content-Type: text/plain
+Date: Thu, 09 Apr 2009 10:42:08 -0700
+Message-Id: <1239298928.29975.1.camel@localhost>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.24.2-1.2mdv2009.0 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Apr 09 2009, Jens Axboe wrote:
-> On Thu, Apr 09 2009, Sachin Sant wrote:
-> > I had Next 09 booted on a powerpc box and was compiling a kernel.
-> > That's when i ran into this oops.
-> >
-> > Unable to handle kernel paging request for data at address 0x00000010.
-> > Faulting instruction address: 0xc0000000002ee1b0...................
-> > 0:mon> e
-> > cpu 0x0: Vector: 300 (Data Access) at [c0000000d6cf63c0]
-> >    pc: c0000000002ee1b0: .rb_erase+0x16c/0x3b4
-> >    lr: c0000000002e14d0: .cfq_prio_tree_add+0x58/0x120
-> >    sp: c0000000d6cf6640
-> >   msr: 8000000000009032
-> >   dar: 10
-> > dsisr: 40000000
-> >  current = 0xc0000000fbdf5880
-> >  paca    = 0xc000000000a92300
-> >   pid   = 1867, comm = ld
-> > 0:mon> t
-> > [c0000000d6cf66d0] c0000000002e14d0 .cfq_prio_tree_add+0x58/0x120
-> > [c0000000d6cf6770] c0000000002e16c8 .__cfq_slice_expired+0xc8/0x11c
-> > [c0000000d6cf6800] c0000000002e3920 .cfq_insert_request+0x374/0x3f4
-> > [c0000000d6cf68a0] c0000000002cf448 .elv_insert+0x234/0x348
-> > [c0000000d6cf6940] c0000000002d3348 .__make_request+0x514/0x5b0
-> > [c0000000d6cf6a00] c0000000002d1348 .generic_make_request+0x430/0x4c8
-> > [c0000000d6cf6b30] c0000000002d14dc .submit_bio+0xfc/0x124
-> > [c0000000d6cf6bf0] c000000000156998 .submit_bh+0x14c/0x198
-> > [c0000000d6cf6c80] c00000000015ba78 .block_read_full_page+0x394/0x40c
-> > [c0000000d6cf7180] c000000000163080 .do_mpage_readpage+0x680/0x688
-> > [c0000000d6cf7690] c000000000163200 .mpage_readpages+0x104/0x190
-> > [c0000000d6cf77f0] c0000000001e2aac .ext3_readpages+0x28/0x40
-> > [c0000000d6cf7870] c0000000000ebd20 .__do_page_cache_readahead+0x180/0x278
-> > [c0000000d6cf7960] c0000000000ec16c .ondemand_readahead+0x1ac/0x1d8
-> > [c0000000d6cf7a00] c0000000000e1f28 .generic_file_aio_read+0x260/0x6b0
-> > [c0000000d6cf7b40] c000000000129f74 .do_sync_read+0xcc/0x130
-> > [c0000000d6cf7ce0] c00000000012af44 .vfs_read+0xd0/0x1bc
-> > [c0000000d6cf7d80] c00000000012b138 .SyS_read+0x58/0xa0
-> > [c0000000d6cf7e30] c0000000000084ac syscall_exit+0x0/0x40
+On Thu, 2009-04-09 at 10:42 -0500, Timur Tabi wrote:
+> On Wed, Apr 8, 2009 at 12:17 AM, Joe Perches <joe@perches.com> wrote:
 > 
-> Just ran into this myself, too. I'll pull that bad patch from -next
-> asap. I wont be able to fix this before next week.
+> >  CIRRUS LOGIC CS4270 SOUND DRIVER
+> >  P:     Timur Tabi
+> >  M:     timur@freescale.com
+> >  L:     alsa-devel@alsa-project.org
+> >  S:     Supported
+> > +F:     sound/soc/codecs/cs4270*
+> > +F:     sound/soc/fsl/mpc8610_hpcd.c
+> 
+> mpc8610_hpcd.c is not part of the CS4270 driver.  It's only cs4270*
+> 
+> >  FREESCALE SOC SOUND DRIVERS
+> >  P:     Timur Tabi
+> >  M:     timur@freescale.com
+> >  L:     alsa-devel@alsa-project.org
+> >  L:     linuxppc-dev@ozlabs.org
+> >  S:     Supported
+> > +F:     sound/soc/fsl/
+> 
+> This takes care of mpc8610_hpcd.c, but it also includes
+> mpc5200_psc_i2s.c and soc-of-simple.c, which are not mine.
 
-Can you see if this fixes it for you?
+How about:
 
-diff --git a/block/cfq-iosched.c b/block/cfq-iosched.c
-index e01b103..64de5c0 100644
---- a/block/cfq-iosched.c
-+++ b/block/cfq-iosched.c
-@@ -1654,6 +1654,7 @@ retry:
- 		}
+commit a781e5eab0dcb10e5b9b6665f6bb8baa196c11b5
+Author: Joe Perches <joe@perches.com>
+Date:   Thu Apr 9 10:39:22 2009 -0700
+
+    MAINTAINERS - Update Freescale sound patterns
+    
+    Signed-off-by: Joe Perches <joe@perches.com>
+
+diff --git a/MAINTAINERS b/MAINTAINERS
+index 233895f..8fb51fb 100644
+--- a/MAINTAINERS
++++ b/MAINTAINERS
+@@ -1359,13 +1359,12 @@ F:	drivers/usb/host/ohci-ep93xx.c
+ CIRRUS LOGIC CS4270 SOUND DRIVER
+ P:	Timur Tabi
+ M:	timur@freescale.com
+ L:	alsa-devel@alsa-project.org
+ S:	Supported
+ F:	sound/soc/codecs/cs4270*
+-F:	sound/soc/fsl/mpc8610_hpcd.c
  
- 		RB_CLEAR_NODE(&cfqq->rb_node);
-+		RB_CLEAR_NODE(&cfqq->p_node);
- 		INIT_LIST_HEAD(&cfqq->fifo);
+ CIRRUS LOGIC CS4280/CS461x SOUNDDRIVER
+ P:	Cirrus Logic Corporation (kernel 2.2 driver)
+ M:	Cirrus Logic Corporation, Thomas Woller <twoller@crystal.cirrus.com>
+ P:	Nils Faerber (port to kernel 2.4)
+ M:	Nils Faerber <nils@kernelconcepts.de>
+@@ -2247,13 +2246,14 @@ F:	drivers/serial/ucc_uart.c
+ FREESCALE SOC SOUND DRIVERS
+ P:	Timur Tabi
+ M:	timur@freescale.com
+ L:	alsa-devel@alsa-project.org
+ L:	linuxppc-dev@ozlabs.org
+ S:	Supported
+-F:	sound/soc/fsl/
++F:	sound/soc/fsl/fsl*
++F:	sound/soc/fsl/mpc8610_hpcd.c
  
- 		atomic_set(&cfqq->ref, 0);
+ FREEVXFS FILESYSTEM
+ P:	Christoph Hellwig
+ M:	hch@infradead.org
+ W:	ftp://ftp.openlinux.org/pub/people/hch/vxfs
+ S:	Maintained
 
--- 
-Jens Axboe
 
