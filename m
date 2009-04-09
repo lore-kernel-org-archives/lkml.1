@@ -1,304 +1,470 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S935394AbZDIQVu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S935297AbZDIQ3S@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S935394AbZDIQVu (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 9 Apr 2009 12:21:50 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934884AbZDIQVd
+	id S935297AbZDIQ3S (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 9 Apr 2009 12:29:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757154AbZDIQ2i
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 9 Apr 2009 12:21:33 -0400
-Received: from smtp-out.google.com ([216.239.33.17]:9954 "EHLO
-	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S935366AbZDIQVb (ORCPT
+	Thu, 9 Apr 2009 12:28:38 -0400
+Received: from victor.provo.novell.com ([137.65.250.26]:43262 "EHLO
+	victor.provo.novell.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755132AbZDIQ2g (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 9 Apr 2009 12:21:31 -0400
-DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
-	h=mime-version:in-reply-to:references:date:message-id:subject:from:to:
-	cc:content-type:content-transfer-encoding:x-system-of-record;
-	b=xIyDSItknStUteWLpnd5plxwcNnefHmMeI3cZmbEYbPhubvrcjuM/Sb1DOrBn/6dZ
-	j2bvAcjWgq+jlDWMg6QsQ==
+	Thu, 9 Apr 2009 12:28:36 -0400
+From: Gregory Haskins <ghaskins@novell.com>
+Subject: [RFC PATCH v2 01/19] shm-signal: shared-memory signals
+To: linux-kernel@vger.kernel.org
+Cc: agraf@suse.de, pmullaney@novell.com, pmorreale@novell.com,
+       anthony@codemonkey.ws, rusty@rustcorp.com.au, netdev@vger.kernel.org,
+       kvm@vger.kernel.org, avi@redhat.com, bhutchings@solarflare.com,
+       andi@firstfloor.org, gregkh@suse.de, herber@gondor.apana.org.au,
+       chrisw@sous-sol.org, shemminger@vyatta.com
+Date: Thu, 09 Apr 2009 12:30:46 -0400
+Message-ID: <20090409163046.32740.31982.stgit@dev.haskins.net>
+In-Reply-To: <20090409155200.32740.19358.stgit@dev.haskins.net>
+References: <20090409155200.32740.19358.stgit@dev.haskins.net>
+User-Agent: StGIT/0.14.3
 MIME-Version: 1.0
-In-Reply-To: <20090409074741.GB31527@localhost>
-References: <604427e00904081302m7b29c538u7781cd8f4dd576f2@mail.gmail.com>
-	 <20090409074741.GB31527@localhost>
-Date: Thu, 9 Apr 2009 09:21:25 -0700
-Message-ID: <604427e00904090921y365d01bfsf650fec7a9d5e55e@mail.gmail.com>
-Subject: Re: [PATCH][1/2]page_fault retry with NOPAGE_RETRY
-From: Ying Han <yinghan@google.com>
-To: Wu Fengguang <fengguang.wu@intel.com>
-Cc: "linux-mm@kvack.org" <linux-mm@kvack.org>,
-       linux-kernel <linux-kernel@vger.kernel.org>,
-       akpm <akpm@linux-foundation.org>,
-       "torvalds@linux-foundation.org" <torvalds@linux-foundation.org>,
-       Ingo Molnar <mingo@elte.hu>, Mike Waychison <mikew@google.com>,
-       Rohit Seth <rohitseth@google.com>, Hugh Dickins <hugh@veritas.com>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       "H. Peter Anvin" <hpa@zytor.com>,
-       =?ISO-8859-1?Q?T=F6r=F6k_Edwin?= <edwintorok@gmail.com>,
-       Lee Schermerhorn <lee.schermerhorn@hp.com>,
-       Nick Piggin <npiggin@suse.de>
-Content-Type: text/plain; charset=ISO-8859-1
+Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7bit
-X-System-Of-Record: true
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Apr 9, 2009 at 12:47 AM, Wu Fengguang <fengguang.wu@intel.com> wrote:
-> On Thu, Apr 09, 2009 at 04:02:35AM +0800, Ying Han wrote:
->> support for FAULT_FLAG_RETRY with no user change:
->
-> A better changelog is desired, otherwise:
->
-> Signed-off-by: Wu Fengguang <fengguang.wu@intel.com>
->
->> Signed-off-by: Ying Han <yinghan@google.com>
->>              Mike Waychison <mikew@google.com>
->>
->>  include/linux/fs.h  |    2 +-
->>  include/linux/mm.h  |    2 +
->>  mm/filemap.c        |   72 ++++++++++++++++++++++++++++++++++++++++++++++++--
->>  mm/memory.c         |   33 +++++++++++++++++------
->>
->>
->> diff --git a/include/linux/fs.h b/include/linux/fs.h
->> index 4a853ef..29c2c39 100644
->> --- a/include/linux/fs.h
->> +++ b/include/linux/fs.h
->> @@ -793,7 +793,7 @@ struct file_ra_state {
->>                                          there are only # of pages ahead */
->>
->>       unsigned int ra_pages;          /* Maximum readahead window */
->> -     int mmap_miss;                  /* Cache miss stat for mmap accesses */
->> +     unsigned int mmap_miss;         /* Cache miss stat for mmap accesses */
->>       loff_t prev_pos;                /* Cache last read() position */
->>  };
->>
->> diff --git a/include/linux/mm.h b/include/linux/mm.h
->> index ffee2f7..5a134a9 100644
->> --- a/include/linux/mm.h
->> +++ b/include/linux/mm.h
->> @@ -144,6 +144,7 @@ extern pgprot_t protection_map[16];
->>
->>  #define FAULT_FLAG_WRITE     0x01    /* Fault was a write access */
->>  #define FAULT_FLAG_NONLINEAR 0x02    /* Fault was via a nonlinear mapping */
->> +#define FAULT_FLAG_RETRY     0x04    /* Retry major fault */
->>
->>
->>  /*
->> @@ -690,6 +691,7 @@ static inline int page_mapped(struct page *page)
->>
->>  #define VM_FAULT_MINOR       0 /* For backwards compat. Remove me quickly. */
->>
->> +#define VM_FAULT_RETRY       0x0010
->>  #define VM_FAULT_OOM 0x0001
->>  #define VM_FAULT_SIGBUS      0x0002
->>  #define VM_FAULT_MAJOR       0x0004
->
-> Why not append VM_FAULT_RETRY here, and indent the _OOM line?
->
->> diff --git a/mm/filemap.c b/mm/filemap.c
->> index f3e5f89..6eb7c36 100644
->> --- a/mm/filemap.c
->> +++ b/mm/filemap.c
->> @@ -714,6 +714,58 @@ repeat:
->>  EXPORT_SYMBOL(find_lock_page);
->>
->>  /**
->> + * find_lock_page_retry - locate, pin and lock a pagecache page
->> + * @mapping: the address_space to search
->> + * @offset: the page index
->> + * @vma: vma in which the fault was taken
->> + * @ppage: zero if page not present, otherwise point to the page in pagecache
->> + * @retry: 1 indicate caller tolerate a retry.
->> + *
->> + * If retry flag is on, and page is already locked by someone else, return
->> + * a hint of retry and leave *ppage untouched.
->> + *
->> + * Return *ppage==NULL if page is not in pagecache. Otherwise return *ppage
->> + * points to the page in the pagecache with ret=VM_FAULT_RETRY indicate a
->> + * hint to caller for retry, or ret=0 which means page is succefully
->> + * locked.
->> + */
->> +unsigned find_lock_page_retry(struct address_space *mapping, pgoff_t offset,
->> +                             struct vm_area_struct *vma, struct page **ppage,
->> +                             int retry)
->> +{
->> +     unsigned int ret = 0;
->> +     struct page *page;
->> +
->> +repeat:
->> +     page = find_get_page(mapping, offset);
->> +     if (page) {
->> +             if (!retry)
->> +                     lock_page(page);
->> +             else {
->> +                     if (!trylock_page(page)) {
->> +                             struct mm_struct *mm = vma->vm_mm;
->> +
->> +                             up_read(&mm->mmap_sem);
->> +                             wait_on_page_locked(page);
->> +                             down_read(&mm->mmap_sem);
->> +
->> +                             page_cache_release(page);
->> +                             return VM_FAULT_RETRY;
->> +                     }
->> +             }
->> +             if (unlikely(page->mapping != mapping)) {
->> +                     unlock_page(page);
->> +                     page_cache_release(page);
->> +                     goto repeat;
->> +             }
->> +             VM_BUG_ON(page->index != offset);
->> +     }
->> +     *ppage = page;
->> +     return ret;
->> +}
->> +EXPORT_SYMBOL(find_lock_page_retry);
->> +
->> +/**
->>   * find_or_create_page - locate or add a pagecache page
->>   * @mapping: the page's address_space
->>   * @index: the page's index into the mapping
->> @@ -1444,6 +1496,8 @@ int filemap_fault(struct vm_area_struct *vma, struct vm_
->>       pgoff_t size;
->>       int did_readaround = 0;
->>       int ret = 0;
->> +     int retry_flag = vmf->flags & FAULT_FLAG_RETRY;
->> +     int retry_ret;
->>
->>       size = (i_size_read(inode) + PAGE_CACHE_SIZE - 1) >> PAGE_CACHE_SHIFT;
->>       if (vmf->pgoff >= size)
->> @@ -1458,6 +1512,7 @@ int filemap_fault(struct vm_area_struct *vma, struct vm_
->>        */
->>  retry_find:
->>       page = find_lock_page(mapping, vmf->pgoff);
->> +
->>       /*
->>        * For sequential accesses, we use the generic readahead logic.
->>        */
->> @@ -1465,7 +1520,13 @@ retry_find:
->>               if (!page) {
->>                       page_cache_sync_readahead(mapping, ra, file,
->>                                                          vmf->pgoff, 1);
->> -                     page = find_lock_page(mapping, vmf->pgoff);
->> +                     retry_ret = find_lock_page_retry(mapping, vmf->pgoff,
->> +                                             vma, &page, retry_flag);
->> +                     if (retry_ret == VM_FAULT_RETRY) {
->> +                             /* counteract the followed retry hit */
->> +                             ra->mmap_miss++;
->
-> Please don't relocate the comment...because that will break my
-> following patches(mainly Linus' filemap cleanups), which will
-> _heavily_ rework these chunks anyway. And make a hard time for Andrew
-> to merge them.
+This interface provides a bidirectional shared-memory based signaling
+mechanism.  It can be used by any entities which desire efficient
+communication via shared memory.  The implementation details of the
+signaling are abstracted so that they may transcend a wide variety
+of locale boundaries (e.g. userspace/kernel, guest/host, etc).
 
-then how you force the 80 character lines?
->
->> +                             return retry_ret;
->> +                     }
->
->>                       if (!page)
->>                               goto no_cached_page;
->>               }
->> @@ -1504,7 +1565,14 @@ retry_find:
->>                               start = vmf->pgoff - ra_pages / 2;
->>                       do_page_cache_readahead(mapping, file, start, ra_pages);
->>               }
->> -             page = find_lock_page(mapping, vmf->pgoff);
->> +retry_find_retry:
->> +             retry_ret = find_lock_page_retry(mapping, vmf->pgoff,
->> +                             vma, &page, retry_flag);
->> +             if (retry_ret == VM_FAULT_RETRY) {
->> +                     /* counteract the followed retry hit */
->> +                     ra->mmap_miss++;
->
-> ditto
->
-> Thanks,
-> Fengguang
->
->> +                     return retry_ret;
->> +             }
->>               if (!page)
->>                       goto no_cached_page;
->>       }
->> @@ -1548,7 +1616,7 @@ no_cached_page:
->>        * meantime, we'll just come back here and read it again.
->>        */
->>       if (error >= 0)
->> -             goto retry_find;
->> +             goto retry_find_retry;
->>
->>       /*
->>        * An error return from page_cache_read can result if the
->> diff --git a/mm/memory.c b/mm/memory.c
->> index 164951c..5e215c9 100644
->> --- a/mm/memory.c
->> +++ b/mm/memory.c
->> @@ -2467,6 +2467,13 @@ static int __do_fault(struct mm_struct *mm, struct vm_a
->>       vmf.page = NULL;
->>
->>       ret = vma->vm_ops->fault(vma, &vmf);
->> +
->> +     /* page may be available, but we have to restart the process
->> +      * because mmap_sem was dropped during the ->fault
->> +      */
->> +     if (ret & VM_FAULT_RETRY)
->> +             return ret;
->> +
->>       if (unlikely(ret & (VM_FAULT_ERROR | VM_FAULT_NOPAGE)))
->>               return ret;
->>
->> @@ -2611,8 +2618,10 @@ static int do_linear_fault(struct mm_struct *mm, struct
->>  {
->>       pgoff_t pgoff = (((address & PAGE_MASK)
->>                       - vma->vm_start) >> PAGE_SHIFT) + vma->vm_pgoff;
->> -     unsigned int flags = (write_access ? FAULT_FLAG_WRITE : 0);
->> +     int write = write_access & ~FAULT_FLAG_RETRY;
->> +     unsigned int flags = (write ? FAULT_FLAG_WRITE : 0);
->>
->> +     flags |= (write_access & FAULT_FLAG_RETRY);
->>       pte_unmap(page_table);
->>       return __do_fault(mm, vma, address, pmd, pgoff, flags, orig_pte);
->>  }
->> @@ -2726,26 +2735,32 @@ int handle_mm_fault(struct mm_struct *mm, struct vm_ar
->>       pud_t *pud;
->>       pmd_t *pmd;
->>       pte_t *pte;
->> +     int ret;
->>
->>       __set_current_state(TASK_RUNNING);
->>
->> -     count_vm_event(PGFAULT);
->> -
->> -     if (unlikely(is_vm_hugetlb_page(vma)))
->> -             return hugetlb_fault(mm, vma, address, write_access);
->> +     if (unlikely(is_vm_hugetlb_page(vma))) {
->> +             ret = hugetlb_fault(mm, vma, address, write_access);
->> +             goto out;
->> +     }
->>
->> +     ret = VM_FAULT_OOM;
->>       pgd = pgd_offset(mm, address);
->>       pud = pud_alloc(mm, pgd, address);
->>       if (!pud)
->> -             return VM_FAULT_OOM;
->> +             goto out;
->>       pmd = pmd_alloc(mm, pud, address);
->>       if (!pmd)
->> -             return VM_FAULT_OOM;
->> +             goto out;
->>       pte = pte_alloc_map(mm, pmd, address);
->>       if (!pte)
->> -             return VM_FAULT_OOM;
->> +             goto out;
->>
->> -     return handle_pte_fault(mm, vma, address, pte, pmd, write_access);
->> +     ret = handle_pte_fault(mm, vma, address, pte, pmd, write_access);
->> +out:
->> +     if (!(ret & VM_FAULT_RETRY))
->> +             count_vm_event(PGFAULT);
->> +     return ret;
->>  }
->>
->>  #ifndef __PAGETABLE_PUD_FOLDED
->
+The shm_signal mechanism supports event masking as well as spurious
+event delivery mitigation.
+
+Signed-off-by: Gregory Haskins <ghaskins@novell.com>
+---
+
+ include/linux/shm_signal.h |  188 ++++++++++++++++++++++++++++++++++++++++++++
+ lib/Kconfig                |   10 ++
+ lib/Makefile               |    1 
+ lib/shm_signal.c           |  186 ++++++++++++++++++++++++++++++++++++++++++++
+ 4 files changed, 385 insertions(+), 0 deletions(-)
+ create mode 100644 include/linux/shm_signal.h
+ create mode 100644 lib/shm_signal.c
+
+diff --git a/include/linux/shm_signal.h b/include/linux/shm_signal.h
+new file mode 100644
+index 0000000..a65e54e
+--- /dev/null
++++ b/include/linux/shm_signal.h
+@@ -0,0 +1,188 @@
++/*
++ * Copyright 2009 Novell.  All Rights Reserved.
++ *
++ * Author:
++ *      Gregory Haskins <ghaskins@novell.com>
++ *
++ * This file is free software; you can redistribute it and/or modify
++ * it under the terms of version 2 of the GNU General Public License
++ * as published by the Free Software Foundation.
++ *
++ * This program is distributed in the hope that it will be useful,
++ * but WITHOUT ANY WARRANTY; without even the implied warranty of
++ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
++ * GNU General Public License for more details.
++ *
++ * You should have received a copy of the GNU General Public License
++ * along with this program; if not, write to the Free Software Foundation,
++ * Inc., 51 Franklin St, Fifth Floor, Boston, MA 02110-1301, USA.
++ */
++
++#ifndef _LINUX_SHM_SIGNAL_H
++#define _LINUX_SHM_SIGNAL_H
++
++#include <asm/types.h>
++
++/*
++ *---------
++ * The following structures represent data that is shared across boundaries
++ * which may be quite disparate from one another (e.g. Windows vs Linux,
++ * 32 vs 64 bit, etc).  Therefore, care has been taken to make sure they
++ * present data in a manner that is independent of the environment.
++ *-----------
++ */
++
++#define SHM_SIGNAL_MAGIC 0x58fa39df
++#define SHM_SIGNAL_VER   1
++
++struct shm_signal_irq {
++	__u8                  enabled;
++	__u8                  pending;
++	__u8                  dirty;
++};
++
++enum shm_signal_locality {
++	shm_locality_north,
++	shm_locality_south,
++};
++
++struct shm_signal_desc {
++	__u32                 magic;
++	__u32                 ver;
++	struct shm_signal_irq irq[2];
++};
++
++/* --- END SHARED STRUCTURES --- */
++
++#ifdef __KERNEL__
++
++#include <linux/interrupt.h>
++
++struct shm_signal_notifier {
++	void (*signal)(struct shm_signal_notifier *);
++};
++
++struct shm_signal;
++
++struct shm_signal_ops {
++	int      (*inject)(struct shm_signal *s);
++	void     (*fault)(struct shm_signal *s, const char *fmt, ...);
++	void     (*release)(struct shm_signal *s);
++};
++
++enum {
++	shm_signal_in_wakeup,
++};
++
++struct shm_signal {
++	atomic_t                    refs;
++	spinlock_t                  lock;
++	enum shm_signal_locality    locale;
++	unsigned long               flags;
++	struct shm_signal_ops      *ops;
++	struct shm_signal_desc     *desc;
++	struct shm_signal_notifier *notifier;
++	struct tasklet_struct       deferred_notify;
++};
++
++#define SHM_SIGNAL_FAULT(s, fmt, args...)  \
++  ((s)->ops->fault ? (s)->ops->fault((s), fmt, ## args) : panic(fmt, ## args))
++
++ /*
++  * These functions should only be used internally
++  */
++void _shm_signal_release(struct shm_signal *s);
++void _shm_signal_wakeup(struct shm_signal *s);
++
++/**
++ * shm_signal_init() - initialize an SHM_SIGNAL
++ * @s:        SHM_SIGNAL context
++ *
++ * Initializes SHM_SIGNAL context before first use
++ *
++ **/
++void shm_signal_init(struct shm_signal *s);
++
++/**
++ * shm_signal_get() - acquire an SHM_SIGNAL context reference
++ * @s:        SHM_SIGNAL context
++ *
++ **/
++static inline struct shm_signal *shm_signal_get(struct shm_signal *s)
++{
++	atomic_inc(&s->refs);
++
++	return s;
++}
++
++/**
++ * shm_signal_put() - release an SHM_SIGNAL context reference
++ * @s:        SHM_SIGNAL context
++ *
++ **/
++static inline void shm_signal_put(struct shm_signal *s)
++{
++	if (atomic_dec_and_test(&s->refs))
++		_shm_signal_release(s);
++}
++
++/**
++ * shm_signal_enable() - enables local notifications on an SHM_SIGNAL
++ * @s:        SHM_SIGNAL context
++ * @flags:      Reserved for future use, must be 0
++ *
++ * Enables/unmasks the registered notifier (if applicable) to receive wakeups
++ * whenever the remote side performs an shm_signal() operation. A notification
++ * will be dispatched immediately if any pending signals have already been
++ * issued prior to invoking this call.
++ *
++ * This is synonymous with unmasking an interrupt.
++ *
++ * Returns: success = 0, <0 = ERRNO
++ *
++ **/
++int shm_signal_enable(struct shm_signal *s, int flags);
++
++/**
++ * shm_signal_disable() - disable local notifications on an SHM_SIGNAL
++ * @s:        SHM_SIGNAL context
++ * @flags:      Reserved for future use, must be 0
++ *
++ * Disables/masks the registered shm_signal_notifier (if applicable) from
++ * receiving any further notifications.  Any subsequent calls to shm_signal()
++ * by the remote side will update the shm as dirty, but will not traverse the
++ * locale boundary and will not invoke the notifier callback.  Signals
++ * delivered while masked will be deferred until shm_signal_enable() is
++ * invoked.
++ *
++ * This is synonymous with masking an interrupt
++ *
++ * Returns: success = 0, <0 = ERRNO
++ *
++ **/
++int shm_signal_disable(struct shm_signal *s, int flags);
++
++/**
++ * shm_signal_inject() - notify the remote side about shm changes
++ * @s:        SHM_SIGNAL context
++ * @flags:      Reserved for future use, must be 0
++ *
++ * Marks the shm state as "dirty" and, if enabled, will traverse
++ * a locale boundary to inject a remote notification.  The remote
++ * side controls whether the notification should be delivered via
++ * the shm_signal_enable/disable() interface.
++ *
++ * The specifics of how to traverse a locale boundary are abstracted
++ * by the shm_signal_ops->signal() interface and provided by a particular
++ * implementation.  However, typically going north to south would be
++ * something like a syscall/hypercall, and going south to north would be
++ * something like a posix-signal/guest-interrupt.
++ *
++ * Returns: success = 0, <0 = ERRNO
++ *
++ **/
++int shm_signal_inject(struct shm_signal *s, int flags);
++
++#endif /* __KERNEL__ */
++
++#endif /* _LINUX_SHM_SIGNAL_H */
+diff --git a/lib/Kconfig b/lib/Kconfig
+index 03c2c24..32d82fe 100644
+--- a/lib/Kconfig
++++ b/lib/Kconfig
+@@ -174,4 +174,14 @@ config DISABLE_OBSOLETE_CPUMASK_FUNCTIONS
+        bool "Disable obsolete cpumask functions" if DEBUG_PER_CPU_MAPS
+        depends on EXPERIMENTAL && BROKEN
+ 
++config SHM_SIGNAL
++	boolean "SHM Signal - Generic shared-memory signaling mechanism"
++	default n
++	help
++	 Provides a shared-memory based signaling mechansim to indicate
++         memory-dirty notifications between two end-points.
++
++	 If unsure, say N
++
++
+ endmenu
+diff --git a/lib/Makefile b/lib/Makefile
+index 32b0e64..bc36327 100644
+--- a/lib/Makefile
++++ b/lib/Makefile
+@@ -71,6 +71,7 @@ obj-$(CONFIG_TEXTSEARCH_BM) += ts_bm.o
+ obj-$(CONFIG_TEXTSEARCH_FSM) += ts_fsm.o
+ obj-$(CONFIG_SMP) += percpu_counter.o
+ obj-$(CONFIG_AUDIT_GENERIC) += audit.o
++obj-$(CONFIG_SHM_SIGNAL) += shm_signal.o
+ 
+ obj-$(CONFIG_SWIOTLB) += swiotlb.o
+ obj-$(CONFIG_IOMMU_HELPER) += iommu-helper.o
+diff --git a/lib/shm_signal.c b/lib/shm_signal.c
+new file mode 100644
+index 0000000..fa1770c
+--- /dev/null
++++ b/lib/shm_signal.c
+@@ -0,0 +1,186 @@
++/*
++ * Copyright 2009 Novell.  All Rights Reserved.
++ *
++ * See include/linux/shm_signal.h for documentation
++ *
++ * Author:
++ *      Gregory Haskins <ghaskins@novell.com>
++ *
++ * This file is free software; you can redistribute it and/or modify
++ * it under the terms of version 2 of the GNU General Public License
++ * as published by the Free Software Foundation.
++ *
++ * This program is distributed in the hope that it will be useful,
++ * but WITHOUT ANY WARRANTY; without even the implied warranty of
++ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
++ * GNU General Public License for more details.
++ *
++ * You should have received a copy of the GNU General Public License
++ * along with this program; if not, write to the Free Software Foundation,
++ * Inc., 51 Franklin St, Fifth Floor, Boston, MA 02110-1301, USA.
++ */
++
++#include <linux/module.h>
++#include <linux/interrupt.h>
++#include <linux/shm_signal.h>
++
++int shm_signal_enable(struct shm_signal *s, int flags)
++{
++	struct shm_signal_irq *irq = &s->desc->irq[s->locale];
++	unsigned long iflags;
++
++	spin_lock_irqsave(&s->lock, iflags);
++
++	irq->enabled = 1;
++	wmb();
++
++	if ((irq->dirty || irq->pending)
++	    && !test_bit(shm_signal_in_wakeup, &s->flags)) {
++		rmb();
++		tasklet_schedule(&s->deferred_notify);
++	}
++
++	spin_unlock_irqrestore(&s->lock, iflags);
++
++	return 0;
++}
++EXPORT_SYMBOL_GPL(shm_signal_enable);
++
++int shm_signal_disable(struct shm_signal *s, int flags)
++{
++	struct shm_signal_irq *irq = &s->desc->irq[s->locale];
++
++	irq->enabled = 0;
++	wmb();
++
++	return 0;
++}
++EXPORT_SYMBOL_GPL(shm_signal_disable);
++
++/*
++ * signaling protocol:
++ *
++ * each side of the shm_signal has an "irq" structure with the following
++ * fields:
++ *
++ *    - enabled: controlled by shm_signal_enable/disable() to mask/unmask
++ *               the notification locally
++ *    - dirty:   indicates if the shared-memory is dirty or clean.  This
++ *               is updated regardless of the enabled/pending state so that
++ *               the state is always accurately tracked.
++ *    - pending: indicates if a signal is pending to the remote locale.
++ *               This allows us to determine if a remote-notification is
++ *               already in flight to optimize spurious notifications away.
++ */
++int shm_signal_inject(struct shm_signal *s, int flags)
++{
++	/* Load the irq structure from the other locale */
++	struct shm_signal_irq *irq = &s->desc->irq[!s->locale];
++
++	/*
++	 * We always mark the remote side as dirty regardless of whether
++	 * they need to be notified.
++	 */
++	irq->dirty = 1;
++	wmb();   /* dirty must be visible before we test the pending state */
++
++	if (irq->enabled && !irq->pending) {
++		rmb();
++
++		/*
++		 * If the remote side has enabled notifications, and we do
++		 * not see a notification pending, we must inject a new one.
++		 */
++		irq->pending = 1;
++		wmb(); /* make it visible before we do the injection */
++
++		s->ops->inject(s);
++	}
++
++	return 0;
++}
++EXPORT_SYMBOL_GPL(shm_signal_inject);
++
++void _shm_signal_wakeup(struct shm_signal *s)
++{
++	struct shm_signal_irq *irq = &s->desc->irq[s->locale];
++	int dirty;
++	unsigned long flags;
++
++	spin_lock_irqsave(&s->lock, flags);
++
++	__set_bit(shm_signal_in_wakeup, &s->flags);
++
++	/*
++	 * The outer loop protects against race conditions between
++	 * irq->dirty and irq->pending updates
++	 */
++	while (irq->enabled && (irq->dirty || irq->pending)) {
++
++		/*
++		 * Run until we completely exhaust irq->dirty (it may
++		 * be re-dirtied by the remote side while we are in the
++		 * callback).  We let "pending" remain untouched until we have
++		 * processed them all so that the remote side knows we do not
++		 * need a new notification (yet).
++		 */
++		do {
++			irq->dirty = 0;
++			/* the unlock is an implicit wmb() for dirty = 0 */
++			spin_unlock_irqrestore(&s->lock, flags);
++
++			if (s->notifier)
++				s->notifier->signal(s->notifier);
++
++			spin_lock_irqsave(&s->lock, flags);
++			dirty = irq->dirty;
++			rmb();
++
++		} while (irq->enabled && dirty);
++
++		barrier();
++
++		/*
++		 * We can finally acknowledge the notification by clearing
++		 * "pending" after all of the dirty memory has been processed
++		 * Races against this clearing are handled by the outer loop.
++		 * Subsequent iterations of this loop will execute with
++		 * pending=0 potentially leading to future spurious
++		 * notifications, but this is an acceptable tradeoff as this
++		 * will be rare and harmless.
++		 */
++		irq->pending = 0;
++		wmb();
++
++	}
++
++	__clear_bit(shm_signal_in_wakeup, &s->flags);
++	spin_unlock_irqrestore(&s->lock, flags);
++
++}
++EXPORT_SYMBOL_GPL(_shm_signal_wakeup);
++
++void _shm_signal_release(struct shm_signal *s)
++{
++	s->ops->release(s);
++}
++EXPORT_SYMBOL_GPL(_shm_signal_release);
++
++static void
++deferred_notify(unsigned long data)
++{
++	struct shm_signal *s = (struct shm_signal *)data;
++
++	_shm_signal_wakeup(s);
++}
++
++void shm_signal_init(struct shm_signal *s)
++{
++	memset(s, 0, sizeof(*s));
++	atomic_set(&s->refs, 1);
++	spin_lock_init(&s->lock);
++	tasklet_init(&s->deferred_notify,
++		     deferred_notify,
++		     (unsigned long)s);
++}
++EXPORT_SYMBOL_GPL(shm_signal_init);
+
