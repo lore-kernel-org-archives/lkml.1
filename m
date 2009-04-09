@@ -1,21 +1,20 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755636AbZDIFik@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762009AbZDIFjK@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755636AbZDIFik (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 9 Apr 2009 01:38:40 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755863AbZDIFhg
+	id S1762009AbZDIFjK (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 9 Apr 2009 01:39:10 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760330AbZDIFhq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 9 Apr 2009 01:37:36 -0400
-Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:58066
+	Thu, 9 Apr 2009 01:37:46 -0400
+Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:58069
 	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
-	by vger.kernel.org with ESMTP id S1754494AbZDIFhd (ORCPT
+	by vger.kernel.org with ESMTP id S1753952AbZDIFho (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 9 Apr 2009 01:37:33 -0400
-Date: Wed, 08 Apr 2009 22:37:23 -0700 (PDT)
-Message-Id: <20090408.223723.228486159.davem@davemloft.net>
+	Thu, 9 Apr 2009 01:37:44 -0400
+Date: Wed, 08 Apr 2009 22:37:35 -0700 (PDT)
+Message-Id: <20090408.223735.11213840.davem@davemloft.net>
 To: tj@kernel.org
 CC: sparclinux@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: [PATCH 2/12]: sparc64: Move trap_block[] definitions into a new
- header file.
+Subject: [PATCH 3/12]: sparc64: Store per-cpu offset in trap_block[]
 From: David Miller <davem@davemloft.net>
 X-Mailer: Mew version 6.2.51 on Emacs 22.1 / Mule 5.0 (SAKAKI)
 Mime-Version: 1.0
@@ -26,448 +25,179 @@ List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-Later we're going to want to get at these definitions from
-asm/percpu.h and that's not possible via cpudata.h because
-of the set of dependencies the non-trap_block[] stuff has.
+Surprisingly this actually makes LOAD_PER_CPU_BASE() a little
+more efficient.
 
 Signed-off-by: David S. Miller <davem@davemloft.net>
 ---
- arch/sparc/include/asm/cpudata_64.h |  197 +---------------------------------
- arch/sparc/include/asm/trap_block.h |  207 +++++++++++++++++++++++++++++++++++
- 2 files changed, 208 insertions(+), 196 deletions(-)
- create mode 100644 arch/sparc/include/asm/trap_block.h
+ arch/sparc/include/asm/percpu_64.h  |    6 +++---
+ arch/sparc/include/asm/trap_block.h |   14 +++++++-------
+ arch/sparc/kernel/head_64.S         |   22 ----------------------
+ arch/sparc/kernel/smp_64.c          |   18 +++++++-----------
+ arch/sparc/kernel/traps_64.c        |    5 ++++-
+ 5 files changed, 21 insertions(+), 44 deletions(-)
 
-diff --git a/arch/sparc/include/asm/cpudata_64.h b/arch/sparc/include/asm/cpudata_64.h
-index c58d87b..926397d 100644
---- a/arch/sparc/include/asm/cpudata_64.h
-+++ b/arch/sparc/include/asm/cpudata_64.h
-@@ -6,9 +6,6 @@
- #ifndef _SPARC64_CPUDATA_H
- #define _SPARC64_CPUDATA_H
+diff --git a/arch/sparc/include/asm/percpu_64.h b/arch/sparc/include/asm/percpu_64.h
+index bee6459..c0ab102 100644
+--- a/arch/sparc/include/asm/percpu_64.h
++++ b/arch/sparc/include/asm/percpu_64.h
+@@ -7,12 +7,12 @@ register unsigned long __local_per_cpu_offset asm("g5");
  
--#include <asm/hypervisor.h>
--#include <asm/asi.h>
--
- #ifndef __ASSEMBLY__
+ #ifdef CONFIG_SMP
  
- #include <linux/percpu.h>
-@@ -38,202 +35,10 @@ DECLARE_PER_CPU(cpuinfo_sparc, __cpu_data);
- #define cpu_data(__cpu)		per_cpu(__cpu_data, (__cpu))
- #define local_cpu_data()	__get_cpu_var(__cpu_data)
++#include <asm/trap_block.h>
++
+ extern void real_setup_per_cpu_areas(void);
  
--/* Trap handling code needs to get at a few critical values upon
-- * trap entry and to process TSB misses.  These cannot be in the
-- * per_cpu() area as we really need to lock them into the TLB and
-- * thus make them part of the main kernel image.  As a result we
-- * try to make this as small as possible.
-- *
-- * This is padded out and aligned to 64-bytes to avoid false sharing
-- * on SMP.
-- */
--
--/* If you modify the size of this structure, please update
-- * TRAP_BLOCK_SZ_SHIFT below.
-- */
--struct thread_info;
--struct trap_per_cpu {
--/* D-cache line 1: Basic thread information, cpu and device mondo queues */
--	struct thread_info	*thread;
--	unsigned long		pgd_paddr;
--	unsigned long		cpu_mondo_pa;
--	unsigned long		dev_mondo_pa;
--
--/* D-cache line 2: Error Mondo Queue and kernel buffer pointers */
--	unsigned long		resum_mondo_pa;
--	unsigned long		resum_kernel_buf_pa;
--	unsigned long		nonresum_mondo_pa;
--	unsigned long		nonresum_kernel_buf_pa;
--
--/* Dcache lines 3, 4, 5, and 6: Hypervisor Fault Status */
--	struct hv_fault_status	fault_info;
--
--/* Dcache line 7: Physical addresses of CPU send mondo block and CPU list.  */
--	unsigned long		cpu_mondo_block_pa;
--	unsigned long		cpu_list_pa;
--	unsigned long		tsb_huge;
--	unsigned long		tsb_huge_temp;
--
--/* Dcache line 8: IRQ work list, and keep trap_block a power-of-2 in size.  */
--	unsigned long		irq_worklist_pa;
--	unsigned int		cpu_mondo_qmask;
--	unsigned int		dev_mondo_qmask;
--	unsigned int		resum_qmask;
--	unsigned int		nonresum_qmask;
+-extern unsigned long __per_cpu_base;
+-extern unsigned long __per_cpu_shift;
+ #define __per_cpu_offset(__cpu) \
+-	(__per_cpu_base + ((unsigned long)(__cpu) << __per_cpu_shift))
++	(trap_block[(__cpu)].__per_cpu_base)
+ #define per_cpu_offset(x) (__per_cpu_offset(x))
+ 
+ #define __my_cpu_offset __local_per_cpu_offset
+diff --git a/arch/sparc/include/asm/trap_block.h b/arch/sparc/include/asm/trap_block.h
+index 68fd9ee..7e26b2d 100644
+--- a/arch/sparc/include/asm/trap_block.h
++++ b/arch/sparc/include/asm/trap_block.h
+@@ -48,7 +48,7 @@ struct trap_per_cpu {
+ 	unsigned int		dev_mondo_qmask;
+ 	unsigned int		resum_qmask;
+ 	unsigned int		nonresum_qmask;
 -	unsigned long		__unused;
--} __attribute__((aligned(64)));
--extern struct trap_per_cpu trap_block[NR_CPUS];
--extern void init_cur_cpu_trap(struct thread_info *);
--extern void setup_tba(void);
--extern int ncpus_probed;
- extern const struct seq_operations cpuinfo_op;
++	unsigned long		__per_cpu_base;
+ } __attribute__((aligned(64)));
+ extern struct trap_per_cpu trap_block[NR_CPUS];
+ extern void init_cur_cpu_trap(struct thread_info *);
+@@ -101,6 +101,7 @@ extern struct sun4v_2insn_patch_entry __sun4v_2insn_patch,
+ #define TRAP_PER_CPU_DEV_MONDO_QMASK	0xec
+ #define TRAP_PER_CPU_RESUM_QMASK	0xf0
+ #define TRAP_PER_CPU_NONRESUM_QMASK	0xf4
++#define TRAP_PER_CPU_PER_CPU_BASE	0xf8
  
--extern unsigned long real_hard_smp_processor_id(void);
--
--struct cpuid_patch_entry {
--	unsigned int	addr;
--	unsigned int	cheetah_safari[4];
--	unsigned int	cheetah_jbus[4];
--	unsigned int	starfire[4];
--	unsigned int	sun4v[4];
--};
--extern struct cpuid_patch_entry __cpuid_patch, __cpuid_patch_end;
--
--struct sun4v_1insn_patch_entry {
--	unsigned int	addr;
--	unsigned int	insn;
--};
--extern struct sun4v_1insn_patch_entry __sun4v_1insn_patch,
--	__sun4v_1insn_patch_end;
--
--struct sun4v_2insn_patch_entry {
--	unsigned int	addr;
--	unsigned int	insns[2];
--};
--extern struct sun4v_2insn_patch_entry __sun4v_2insn_patch,
--	__sun4v_2insn_patch_end;
--
- #endif /* !(__ASSEMBLY__) */
+ #define TRAP_BLOCK_SZ_SHIFT		8
  
--#define TRAP_PER_CPU_THREAD		0x00
--#define TRAP_PER_CPU_PGD_PADDR		0x08
--#define TRAP_PER_CPU_CPU_MONDO_PA	0x10
--#define TRAP_PER_CPU_DEV_MONDO_PA	0x18
--#define TRAP_PER_CPU_RESUM_MONDO_PA	0x20
--#define TRAP_PER_CPU_RESUM_KBUF_PA	0x28
--#define TRAP_PER_CPU_NONRESUM_MONDO_PA	0x30
--#define TRAP_PER_CPU_NONRESUM_KBUF_PA	0x38
--#define TRAP_PER_CPU_FAULT_INFO		0x40
--#define TRAP_PER_CPU_CPU_MONDO_BLOCK_PA	0xc0
--#define TRAP_PER_CPU_CPU_LIST_PA	0xc8
--#define TRAP_PER_CPU_TSB_HUGE		0xd0
--#define TRAP_PER_CPU_TSB_HUGE_TEMP	0xd8
--#define TRAP_PER_CPU_IRQ_WORKLIST_PA	0xe0
--#define TRAP_PER_CPU_CPU_MONDO_QMASK	0xe8
--#define TRAP_PER_CPU_DEV_MONDO_QMASK	0xec
--#define TRAP_PER_CPU_RESUM_QMASK	0xf0
--#define TRAP_PER_CPU_NONRESUM_QMASK	0xf4
--
--#define TRAP_BLOCK_SZ_SHIFT		8
--
--#include <asm/scratchpad.h>
--
--#define __GET_CPUID(REG)				\
--	/* Spitfire implementation (default). */	\
--661:	ldxa		[%g0] ASI_UPA_CONFIG, REG;	\
--	srlx		REG, 17, REG;			\
--	 and		REG, 0x1f, REG;			\
--	nop;						\
--	.section	.cpuid_patch, "ax";		\
--	/* Instruction location. */			\
--	.word		661b;				\
--	/* Cheetah Safari implementation. */		\
--	ldxa		[%g0] ASI_SAFARI_CONFIG, REG;	\
--	srlx		REG, 17, REG;			\
--	and		REG, 0x3ff, REG;		\
--	nop;						\
--	/* Cheetah JBUS implementation. */		\
--	ldxa		[%g0] ASI_JBUS_CONFIG, REG;	\
--	srlx		REG, 17, REG;			\
--	and		REG, 0x1f, REG;			\
--	nop;						\
--	/* Starfire implementation. */			\
--	sethi		%hi(0x1fff40000d0 >> 9), REG;	\
--	sllx		REG, 9, REG;			\
--	or		REG, 0xd0, REG;			\
--	lduwa		[REG] ASI_PHYS_BYPASS_EC_E, REG;\
--	/* sun4v implementation. */			\
--	mov		SCRATCHPAD_CPUID, REG;		\
--	ldxa		[REG] ASI_SCRATCHPAD, REG;	\
--	nop;						\
--	nop;						\
--	.previous;
--
--#ifdef CONFIG_SMP
--
--#define TRAP_LOAD_TRAP_BLOCK(DEST, TMP)		\
--	__GET_CPUID(TMP)			\
--	sethi	%hi(trap_block), DEST;		\
--	sllx	TMP, TRAP_BLOCK_SZ_SHIFT, TMP;	\
--	or	DEST, %lo(trap_block), DEST;	\
--	add	DEST, TMP, DEST;		\
--
--/* Clobbers TMP, current address space PGD phys address into DEST.  */
--#define TRAP_LOAD_PGD_PHYS(DEST, TMP)		\
--	TRAP_LOAD_TRAP_BLOCK(DEST, TMP)		\
--	ldx	[DEST + TRAP_PER_CPU_PGD_PADDR], DEST;
--
--/* Clobbers TMP, loads local processor's IRQ work area into DEST.  */
--#define TRAP_LOAD_IRQ_WORK_PA(DEST, TMP)	\
--	TRAP_LOAD_TRAP_BLOCK(DEST, TMP)		\
--	add	DEST, TRAP_PER_CPU_IRQ_WORKLIST_PA, DEST;
--
--/* Clobbers TMP, loads DEST with current thread info pointer.  */
--#define TRAP_LOAD_THREAD_REG(DEST, TMP)		\
--	TRAP_LOAD_TRAP_BLOCK(DEST, TMP)		\
--	ldx	[DEST + TRAP_PER_CPU_THREAD], DEST;
--
--/* Given the current thread info pointer in THR, load the per-cpu
-- * area base of the current processor into DEST.  REG1, REG2, and REG3 are
-- * clobbered.
-- *
-- * You absolutely cannot use DEST as a temporary in this code.  The
-- * reason is that traps can happen during execution, and return from
-- * trap will load the fully resolved DEST per-cpu base.  This can corrupt
-- * the calculations done by the macro mid-stream.
-- */
--#define LOAD_PER_CPU_BASE(DEST, THR, REG1, REG2, REG3)	\
--	lduh	[THR + TI_CPU], REG1;			\
+@@ -172,12 +173,11 @@ extern struct sun4v_2insn_patch_entry __sun4v_2insn_patch,
+  */
+ #define LOAD_PER_CPU_BASE(DEST, THR, REG1, REG2, REG3)	\
+ 	lduh	[THR + TI_CPU], REG1;			\
 -	sethi	%hi(__per_cpu_shift), REG3;		\
 -	sethi	%hi(__per_cpu_base), REG2;		\
 -	ldx	[REG3 + %lo(__per_cpu_shift)], REG3;	\
 -	ldx	[REG2 + %lo(__per_cpu_base)], REG2;	\
 -	sllx	REG1, REG3, REG3;			\
 -	add	REG3, REG2, DEST;
--
--#else
--
--#define TRAP_LOAD_TRAP_BLOCK(DEST, TMP)		\
--	sethi	%hi(trap_block), DEST;		\
--	or	DEST, %lo(trap_block), DEST;	\
--
--/* Uniprocessor versions, we know the cpuid is zero.  */
--#define TRAP_LOAD_PGD_PHYS(DEST, TMP)		\
--	TRAP_LOAD_TRAP_BLOCK(DEST, TMP)		\
--	ldx	[DEST + TRAP_PER_CPU_PGD_PADDR], DEST;
--
--/* Clobbers TMP, loads local processor's IRQ work area into DEST.  */
--#define TRAP_LOAD_IRQ_WORK_PA(DEST, TMP)	\
--	TRAP_LOAD_TRAP_BLOCK(DEST, TMP)		\
--	add	DEST, TRAP_PER_CPU_IRQ_WORKLIST_PA, DEST;
--
--#define TRAP_LOAD_THREAD_REG(DEST, TMP)		\
--	TRAP_LOAD_TRAP_BLOCK(DEST, TMP)		\
--	ldx	[DEST + TRAP_PER_CPU_THREAD], DEST;
--
--/* No per-cpu areas on uniprocessor, so no need to load DEST.  */
--#define LOAD_PER_CPU_BASE(DEST, THR, REG1, REG2, REG3)
--
--#endif /* !(CONFIG_SMP) */
-+#include <asm/trap_block.h>
++	sethi	%hi(trap_block), REG2;			\
++	sllx	REG1, TRAP_BLOCK_SZ_SHIFT, REG1;	\
++	or	REG2, %lo(trap_block), REG2;		\
++	add	REG2, REG1, REG2;			\
++	ldx	[REG2 + TRAP_PER_CPU_PER_CPU_BASE], DEST;
  
- #endif /* _SPARC64_CPUDATA_H */
-diff --git a/arch/sparc/include/asm/trap_block.h b/arch/sparc/include/asm/trap_block.h
-new file mode 100644
-index 0000000..68fd9ee
---- /dev/null
-+++ b/arch/sparc/include/asm/trap_block.h
-@@ -0,0 +1,207 @@
-+#ifndef _SPARC_TRAP_BLOCK_H
-+#define _SPARC_TRAP_BLOCK_H
-+
-+#include <asm/hypervisor.h>
-+#include <asm/asi.h>
-+
-+#ifndef __ASSEMBLY__
-+
-+/* Trap handling code needs to get at a few critical values upon
-+ * trap entry and to process TSB misses.  These cannot be in the
-+ * per_cpu() area as we really need to lock them into the TLB and
-+ * thus make them part of the main kernel image.  As a result we
-+ * try to make this as small as possible.
-+ *
-+ * This is padded out and aligned to 64-bytes to avoid false sharing
-+ * on SMP.
-+ */
-+
-+/* If you modify the size of this structure, please update
-+ * TRAP_BLOCK_SZ_SHIFT below.
-+ */
-+struct thread_info;
-+struct trap_per_cpu {
-+/* D-cache line 1: Basic thread information, cpu and device mondo queues */
-+	struct thread_info	*thread;
-+	unsigned long		pgd_paddr;
-+	unsigned long		cpu_mondo_pa;
-+	unsigned long		dev_mondo_pa;
-+
-+/* D-cache line 2: Error Mondo Queue and kernel buffer pointers */
-+	unsigned long		resum_mondo_pa;
-+	unsigned long		resum_kernel_buf_pa;
-+	unsigned long		nonresum_mondo_pa;
-+	unsigned long		nonresum_kernel_buf_pa;
-+
-+/* Dcache lines 3, 4, 5, and 6: Hypervisor Fault Status */
-+	struct hv_fault_status	fault_info;
-+
-+/* Dcache line 7: Physical addresses of CPU send mondo block and CPU list.  */
-+	unsigned long		cpu_mondo_block_pa;
-+	unsigned long		cpu_list_pa;
-+	unsigned long		tsb_huge;
-+	unsigned long		tsb_huge_temp;
-+
-+/* Dcache line 8: IRQ work list, and keep trap_block a power-of-2 in size.  */
-+	unsigned long		irq_worklist_pa;
-+	unsigned int		cpu_mondo_qmask;
-+	unsigned int		dev_mondo_qmask;
-+	unsigned int		resum_qmask;
-+	unsigned int		nonresum_qmask;
-+	unsigned long		__unused;
-+} __attribute__((aligned(64)));
-+extern struct trap_per_cpu trap_block[NR_CPUS];
-+extern void init_cur_cpu_trap(struct thread_info *);
-+extern void setup_tba(void);
-+extern int ncpus_probed;
-+
-+extern unsigned long real_hard_smp_processor_id(void);
-+
-+struct cpuid_patch_entry {
-+	unsigned int	addr;
-+	unsigned int	cheetah_safari[4];
-+	unsigned int	cheetah_jbus[4];
-+	unsigned int	starfire[4];
-+	unsigned int	sun4v[4];
-+};
-+extern struct cpuid_patch_entry __cpuid_patch, __cpuid_patch_end;
-+
-+struct sun4v_1insn_patch_entry {
-+	unsigned int	addr;
-+	unsigned int	insn;
-+};
-+extern struct sun4v_1insn_patch_entry __sun4v_1insn_patch,
-+	__sun4v_1insn_patch_end;
-+
-+struct sun4v_2insn_patch_entry {
-+	unsigned int	addr;
-+	unsigned int	insns[2];
-+};
-+extern struct sun4v_2insn_patch_entry __sun4v_2insn_patch,
-+	__sun4v_2insn_patch_end;
-+
-+
-+#endif /* !(__ASSEMBLY__) */
-+
-+#define TRAP_PER_CPU_THREAD		0x00
-+#define TRAP_PER_CPU_PGD_PADDR		0x08
-+#define TRAP_PER_CPU_CPU_MONDO_PA	0x10
-+#define TRAP_PER_CPU_DEV_MONDO_PA	0x18
-+#define TRAP_PER_CPU_RESUM_MONDO_PA	0x20
-+#define TRAP_PER_CPU_RESUM_KBUF_PA	0x28
-+#define TRAP_PER_CPU_NONRESUM_MONDO_PA	0x30
-+#define TRAP_PER_CPU_NONRESUM_KBUF_PA	0x38
-+#define TRAP_PER_CPU_FAULT_INFO		0x40
-+#define TRAP_PER_CPU_CPU_MONDO_BLOCK_PA	0xc0
-+#define TRAP_PER_CPU_CPU_LIST_PA	0xc8
-+#define TRAP_PER_CPU_TSB_HUGE		0xd0
-+#define TRAP_PER_CPU_TSB_HUGE_TEMP	0xd8
-+#define TRAP_PER_CPU_IRQ_WORKLIST_PA	0xe0
-+#define TRAP_PER_CPU_CPU_MONDO_QMASK	0xe8
-+#define TRAP_PER_CPU_DEV_MONDO_QMASK	0xec
-+#define TRAP_PER_CPU_RESUM_QMASK	0xf0
-+#define TRAP_PER_CPU_NONRESUM_QMASK	0xf4
-+
-+#define TRAP_BLOCK_SZ_SHIFT		8
-+
-+#include <asm/scratchpad.h>
-+
-+#define __GET_CPUID(REG)				\
-+	/* Spitfire implementation (default). */	\
-+661:	ldxa		[%g0] ASI_UPA_CONFIG, REG;	\
-+	srlx		REG, 17, REG;			\
-+	 and		REG, 0x1f, REG;			\
-+	nop;						\
-+	.section	.cpuid_patch, "ax";		\
-+	/* Instruction location. */			\
-+	.word		661b;				\
-+	/* Cheetah Safari implementation. */		\
-+	ldxa		[%g0] ASI_SAFARI_CONFIG, REG;	\
-+	srlx		REG, 17, REG;			\
-+	and		REG, 0x3ff, REG;		\
-+	nop;						\
-+	/* Cheetah JBUS implementation. */		\
-+	ldxa		[%g0] ASI_JBUS_CONFIG, REG;	\
-+	srlx		REG, 17, REG;			\
-+	and		REG, 0x1f, REG;			\
-+	nop;						\
-+	/* Starfire implementation. */			\
-+	sethi		%hi(0x1fff40000d0 >> 9), REG;	\
-+	sllx		REG, 9, REG;			\
-+	or		REG, 0xd0, REG;			\
-+	lduwa		[REG] ASI_PHYS_BYPASS_EC_E, REG;\
-+	/* sun4v implementation. */			\
-+	mov		SCRATCHPAD_CPUID, REG;		\
-+	ldxa		[REG] ASI_SCRATCHPAD, REG;	\
-+	nop;						\
-+	nop;						\
-+	.previous;
-+
-+#ifdef CONFIG_SMP
-+
-+#define TRAP_LOAD_TRAP_BLOCK(DEST, TMP)		\
-+	__GET_CPUID(TMP)			\
-+	sethi	%hi(trap_block), DEST;		\
-+	sllx	TMP, TRAP_BLOCK_SZ_SHIFT, TMP;	\
-+	or	DEST, %lo(trap_block), DEST;	\
-+	add	DEST, TMP, DEST;		\
-+
-+/* Clobbers TMP, current address space PGD phys address into DEST.  */
-+#define TRAP_LOAD_PGD_PHYS(DEST, TMP)		\
-+	TRAP_LOAD_TRAP_BLOCK(DEST, TMP)		\
-+	ldx	[DEST + TRAP_PER_CPU_PGD_PADDR], DEST;
-+
-+/* Clobbers TMP, loads local processor's IRQ work area into DEST.  */
-+#define TRAP_LOAD_IRQ_WORK_PA(DEST, TMP)	\
-+	TRAP_LOAD_TRAP_BLOCK(DEST, TMP)		\
-+	add	DEST, TRAP_PER_CPU_IRQ_WORKLIST_PA, DEST;
-+
-+/* Clobbers TMP, loads DEST with current thread info pointer.  */
-+#define TRAP_LOAD_THREAD_REG(DEST, TMP)		\
-+	TRAP_LOAD_TRAP_BLOCK(DEST, TMP)		\
-+	ldx	[DEST + TRAP_PER_CPU_THREAD], DEST;
-+
-+/* Given the current thread info pointer in THR, load the per-cpu
-+ * area base of the current processor into DEST.  REG1, REG2, and REG3 are
-+ * clobbered.
-+ *
-+ * You absolutely cannot use DEST as a temporary in this code.  The
-+ * reason is that traps can happen during execution, and return from
-+ * trap will load the fully resolved DEST per-cpu base.  This can corrupt
-+ * the calculations done by the macro mid-stream.
-+ */
-+#define LOAD_PER_CPU_BASE(DEST, THR, REG1, REG2, REG3)	\
-+	lduh	[THR + TI_CPU], REG1;			\
-+	sethi	%hi(__per_cpu_shift), REG3;		\
-+	sethi	%hi(__per_cpu_base), REG2;		\
-+	ldx	[REG3 + %lo(__per_cpu_shift)], REG3;	\
-+	ldx	[REG2 + %lo(__per_cpu_base)], REG2;	\
-+	sllx	REG1, REG3, REG3;			\
-+	add	REG3, REG2, DEST;
-+
-+#else
-+
-+#define TRAP_LOAD_TRAP_BLOCK(DEST, TMP)		\
-+	sethi	%hi(trap_block), DEST;		\
-+	or	DEST, %lo(trap_block), DEST;	\
-+
-+/* Uniprocessor versions, we know the cpuid is zero.  */
-+#define TRAP_LOAD_PGD_PHYS(DEST, TMP)		\
-+	TRAP_LOAD_TRAP_BLOCK(DEST, TMP)		\
-+	ldx	[DEST + TRAP_PER_CPU_PGD_PADDR], DEST;
-+
-+/* Clobbers TMP, loads local processor's IRQ work area into DEST.  */
-+#define TRAP_LOAD_IRQ_WORK_PA(DEST, TMP)	\
-+	TRAP_LOAD_TRAP_BLOCK(DEST, TMP)		\
-+	add	DEST, TRAP_PER_CPU_IRQ_WORKLIST_PA, DEST;
-+
-+#define TRAP_LOAD_THREAD_REG(DEST, TMP)		\
-+	TRAP_LOAD_TRAP_BLOCK(DEST, TMP)		\
-+	ldx	[DEST + TRAP_PER_CPU_THREAD], DEST;
-+
-+/* No per-cpu areas on uniprocessor, so no need to load DEST.  */
-+#define LOAD_PER_CPU_BASE(DEST, THR, REG1, REG2, REG3)
-+
-+#endif /* !(CONFIG_SMP) */
-+
-+#endif /* _SPARC_TRAP_BLOCK_H */
+ #else
+ 
+diff --git a/arch/sparc/kernel/head_64.S b/arch/sparc/kernel/head_64.S
+index 3a1b7bf..619b4b7 100644
+--- a/arch/sparc/kernel/head_64.S
++++ b/arch/sparc/kernel/head_64.S
+@@ -641,28 +641,6 @@ tlb_fixup_done:
+ 	/* Not reached... */
+ 
+ 1:
+-	/* If we boot on a non-zero cpu, all of the per-cpu
+-	 * variable references we make before setting up the
+-	 * per-cpu areas will use a bogus offset.  Put a
+-	 * compensating factor into __per_cpu_base to handle
+-	 * this cleanly.
+-	 *
+-	 * What the per-cpu code calculates is:
+-	 *
+-	 *	__per_cpu_base + (cpu << __per_cpu_shift)
+-	 *
+-	 * These two variables are zero initially, so to
+-	 * make it all cancel out to zero we need to put
+-	 * "0 - (cpu << 0)" into __per_cpu_base so that the
+-	 * above formula evaluates to zero.
+-	 *
+-	 * We cannot even perform a printk() until this stuff
+-	 * is setup as that calls cpu_clock() which uses
+-	 * per-cpu variables.
+-	 */
+-	sub	%g0, %o0, %o1
+-	sethi	%hi(__per_cpu_base), %o2
+-	stx	%o1, [%o2 + %lo(__per_cpu_base)]
+ #else
+ 	mov	0, %o0
+ #endif
+diff --git a/arch/sparc/kernel/smp_64.c b/arch/sparc/kernel/smp_64.c
+index 662fea2..022e5e0 100644
+--- a/arch/sparc/kernel/smp_64.c
++++ b/arch/sparc/kernel/smp_64.c
+@@ -1371,23 +1371,17 @@ void smp_send_stop(void)
+ {
+ }
+ 
+-unsigned long __per_cpu_base __read_mostly;
+-unsigned long __per_cpu_shift __read_mostly;
+-
+-EXPORT_SYMBOL(__per_cpu_base);
+-EXPORT_SYMBOL(__per_cpu_shift);
+-
+ void __init real_setup_per_cpu_areas(void)
+ {
+-	unsigned long paddr, goal, size, i;
++	unsigned long base, shift, paddr, goal, size, i;
+ 	char *ptr;
+ 
+ 	/* Copy section for each CPU (we discard the original) */
+ 	goal = PERCPU_ENOUGH_ROOM;
+ 
+-	__per_cpu_shift = PAGE_SHIFT;
++	shift = PAGE_SHIFT;
+ 	for (size = PAGE_SIZE; size < goal; size <<= 1UL)
+-		__per_cpu_shift++;
++		shift++;
+ 
+ 	paddr = lmb_alloc(size * NR_CPUS, PAGE_SIZE);
+ 	if (!paddr) {
+@@ -1396,10 +1390,12 @@ void __init real_setup_per_cpu_areas(void)
+ 	}
+ 
+ 	ptr = __va(paddr);
+-	__per_cpu_base = ptr - __per_cpu_start;
++	base = ptr - __per_cpu_start;
+ 
+-	for (i = 0; i < NR_CPUS; i++, ptr += size)
++	for (i = 0; i < NR_CPUS; i++, ptr += size) {
++		__per_cpu_offset(i) = base + (i * size);
+ 		memcpy(ptr, __per_cpu_start, __per_cpu_end - __per_cpu_start);
++	}
+ 
+ 	/* Setup %g5 for the boot cpu.  */
+ 	__local_per_cpu_offset = __per_cpu_offset(smp_processor_id());
+diff --git a/arch/sparc/kernel/traps_64.c b/arch/sparc/kernel/traps_64.c
+index d809c4e..d073aab 100644
+--- a/arch/sparc/kernel/traps_64.c
++++ b/arch/sparc/kernel/traps_64.c
+@@ -2509,6 +2509,7 @@ void do_getpsr(struct pt_regs *regs)
+ }
+ 
+ struct trap_per_cpu trap_block[NR_CPUS];
++EXPORT_SYMBOL(trap_block);
+ 
+ /* This can get invoked before sched_init() so play it super safe
+  * and use hard_smp_processor_id().
+@@ -2592,7 +2593,9 @@ void __init trap_init(void)
+ 	    (TRAP_PER_CPU_RESUM_QMASK !=
+ 	     offsetof(struct trap_per_cpu, resum_qmask)) ||
+ 	    (TRAP_PER_CPU_NONRESUM_QMASK !=
+-	     offsetof(struct trap_per_cpu, nonresum_qmask)))
++	     offsetof(struct trap_per_cpu, nonresum_qmask)) ||
++	    (TRAP_PER_CPU_PER_CPU_BASE !=
++	     offsetof(struct trap_per_cpu, __per_cpu_base)))
+ 		trap_per_cpu_offsets_are_bolixed_dave();
+ 
+ 	if ((TSB_CONFIG_TSB !=
 -- 
 1.6.2.2
 
