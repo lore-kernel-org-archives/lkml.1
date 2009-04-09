@@ -1,43 +1,71 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761293AbZDIFYx@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760784AbZDIF3p@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761293AbZDIFYx (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 9 Apr 2009 01:24:53 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760009AbZDIFYi
+	id S1760784AbZDIF3p (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 9 Apr 2009 01:29:45 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755636AbZDIF3g
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 9 Apr 2009 01:24:38 -0400
-Received: from mx2.redhat.com ([66.187.237.31]:55424 "EHLO mx2.redhat.com"
+	Thu, 9 Apr 2009 01:29:36 -0400
+Received: from mx3.mail.elte.hu ([157.181.1.138]:47220 "EHLO mx3.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1759979AbZDIFYg (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 9 Apr 2009 01:24:36 -0400
-Date: Wed, 8 Apr 2009 23:23:44 -0600
-From: Pete Zaitcev <zaitcev@redhat.com>
-To: "John Stoffel" <john@stoffel.org>
-Cc: Jarek Poplawski <jarkao2@gmail.com>, linux-kernel@vger.kernel.org,
-       netdev@vger.kernel.org, linux-usb@vger.kernel.org, zaitcev@redhat.com
-Subject: Re: usb_mon oops Re: tcpdump crashes 2.6.29.1 (and 2.6.29-rc5)
-Message-Id: <20090408232344.afed8103.zaitcev@redhat.com>
-In-Reply-To: <18908.42166.404232.721757@stoffel.org>
-References: <18906.49779.243047.207639@stoffel.org>
-	<20090407120022.GA6519@ff.dom.local>
-	<18907.28788.965069.573489@stoffel.org>
-	<20090407130403.e0061a8d.zaitcev@redhat.com>
-	<18908.42166.404232.721757@stoffel.org>
-Organization: Red Hat, Inc.
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	id S1754758AbZDIF3g (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 9 Apr 2009 01:29:36 -0400
+Date: Thu, 9 Apr 2009 07:29:12 +0200
+From: Ingo Molnar <mingo@elte.hu>
+To: Pekka Enberg <penberg@cs.helsinki.fi>
+Cc: Li Zefan <lizf@cn.fujitsu.com>,
+       Eduard - Gabriel Munteanu <eduard.munteanu@linux360.ro>,
+       Steven Rostedt <rostedt@goodmis.org>,
+       Frederic Weisbecker <fweisbec@gmail.com>,
+       LKML <linux-kernel@vger.kernel.org>,
+       Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>,
+       Pekka Paalanen <pq@iki.fi>
+Subject: Re: [PATCH][RESEND] tracing: consolidate documents
+Message-ID: <20090409052912.GG5352@elte.hu>
+References: <49DD6E2B.6090200@cn.fujitsu.com> <49DD70E0.9080302@cn.fujitsu.com> <49DD728D.8030608@cn.fujitsu.com> <20090409041319.GE20692@elte.hu> <84144f020904082216hfb5f5ene87781f9aaf7e76c@mail.gmail.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <84144f020904082216hfb5f5ene87781f9aaf7e76c@mail.gmail.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 8 Apr 2009 09:20:54 -0400, "John Stoffel" <john@stoffel.org> wrote:
 
-> Well I think that usbmon is probably at fault here for trusting
-> drivers too much and not doing any sanity checking. []
+* Pekka Enberg <penberg@cs.helsinki.fi> wrote:
 
-By the way, please send me a full dmesg from the affected system
-and kernel. Any post-boot dmesg will do: I only want to see if
-IOMMU is active, where the aperture is, and if 0x20a15cc0 is a
-valid physical address.
+> On Thu, Apr 9, 2009 at 7:13 AM, Ingo Molnar <mingo@elte.hu> wrote:
+> >
+> > * Li Zefan <lizf@cn.fujitsu.com> wrote:
+> >
+> >> Li Zefan wrote:
+> >> > Move tracepoints.txt, ftrace.txt and mmiotrace.txt to the new
+> >> > directory trace/
+> >> >
+> >>
+> >> Should we also move kmemtrace.txt to trace/, or leave it in vm/?
+> >
+> > Eduard, Pekka, any preferences?
+> >
+> > Are symbolic links in Documentation/ frowned upon? I think it would
+> > be best to have the file in both places:
+> >
+> > We do want to direct people interested in Documentation/vm/ to
+> > kmemtrace ... and we do want to let people who are interested in
+> > Documentation/trace/ that there's kmemtrace.
+> >
+> > Tracing and instrumentation is generally a multi-subsystem thing.
+> 
+> I'm not sure a symbolic link is necessary. Just put it under trace/.
 
--- Pete
+ok - i've amended the commit and have added your Ack - thanks!
+
+	Ingo
