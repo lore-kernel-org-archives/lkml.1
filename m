@@ -1,54 +1,81 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754003AbZDIC00@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756984AbZDICgS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754003AbZDIC00 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 8 Apr 2009 22:26:26 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755298AbZDIC0N
+	id S1756984AbZDICgS (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 8 Apr 2009 22:36:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755405AbZDICf7
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 8 Apr 2009 22:26:13 -0400
-Received: from yx-out-2324.google.com ([74.125.44.29]:54387 "EHLO
-	yx-out-2324.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753584AbZDIC0M convert rfc822-to-8bit (ORCPT
+	Wed, 8 Apr 2009 22:35:59 -0400
+Received: from rhun.apana.org.au ([64.62.148.172]:41648 "EHLO
+	arnor.apana.org.au" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1752518AbZDICf6 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 8 Apr 2009 22:26:12 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:sender:in-reply-to:references:date
-         :x-google-sender-auth:message-id:subject:from:to:cc:content-type
-         :content-transfer-encoding;
-        b=kxvT9Qczl4QhysB9pFk9gwx2skgu00i1JNBAfSeDp/CrzjxQazGp42pzZsT1FkcWta
-         uqHkzBBpd1h/Oyqmu9Ffy06b+W4voQYZl8pi+Wn2l8NTfeIbMk1LfPdQGq/Z7+VvAgt7
-         DYr+jMKBl1uH6g3wtYgMQTVffj+44KnefDbcA=
+	Wed, 8 Apr 2009 22:35:58 -0400
+Date: Thu, 9 Apr 2009 10:35:47 +0800
+From: Herbert Xu <herbert@gondor.apana.org.au>
+To: Maciej Rutecki <maciej.rutecki@gmail.com>
+Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       "Rafael J. Wysocki" <rjw@sisk.pl>, davem@davemloft.net,
+       linux-crypto@vger.kernel.org, arjan@linux.intel.com,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Rusty Russell <rusty@rustcorp.com.au>, Jiri Slaby <jirislaby@gmail.com>
+Subject: Re: [2.6.30-rc1] device-mapper: table: 254:0: crypt: Error
+	allocating crypto tfm
+Message-ID: <20090409023547.GA1878@gondor.apana.org.au>
+References: <8db1092f0904081235x58081f1by842ab45ad861e294@mail.gmail.com> <20090409021804.GA1756@gondor.apana.org.au>
 MIME-Version: 1.0
-In-Reply-To: <75761e1f53ed07c43a977d98b54d6467d8896530.1239165870.git.tony@bakeyournoodle.com>
-References: <75761e1f53ed07c43a977d98b54d6467d8896530.1239165870.git.tony@bakeyournoodle.com>
-Date: Wed, 8 Apr 2009 19:26:08 -0700
-X-Google-Sender-Auth: 5ed2f16a7ae150da
-Message-ID: <9929d2390904081926m6176d705y481085318a930087@mail.gmail.com>
-Subject: Re: [E1000-devel] [PATCH] Be explict with what we are !'ing in 
-	ixgbe_sfp_config_module_task()
-From: Jeff Kirsher <jeffrey.t.kirsher@intel.com>
-To: Tony Breeds <tony@bakeyournoodle.com>
-Cc: netdev@vger.kernel.org, linux-kernel@vger.kernel.org,
-       e1000-devel@lists.sourceforge.net
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8BIT
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20090409021804.GA1756@gondor.apana.org.au>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Apr 7, 2009 at 9:44 PM, Tony Breeds <tony@bakeyournoodle.com> wrote:
-> GCC warns:
-> drivers/net/ixgbe/ixgbe_main.c: In function 'ixgbe_sfp_config_module_task':
-> drivers/net/ixgbe/ixgbe_main.c:3920: warning: suggest parentheses around operand of '!' or change '&' to '&&' or '!' to '~'
+On Thu, Apr 09, 2009 at 10:18:04AM +0800, Herbert Xu wrote:
 >
-> Which I think is right.  Bracket to remove ambiguity.
->
-> Signed-off-by: Tony Breeds <tony@bakeyournoodle.com>
-> ---
+> It looks like try_then_request_module has been broken such that it
+> returns without waiting for the module to complete loading.  I'm
+> looking into it.
 
-Thanks, I will add it to my queue of ixgbe patches.
-Remember to CC netdev mailing list for networking patches.
+OK, it's caused by
 
+commit acae05156551fd7528fbb616271e672789388e3c
+Author: Arjan van de Ven <arjan@linux.intel.com>
+Date:   Sun Feb 8 10:42:01 2009 -0800
+
+    module: create a request_module_nowait()
+
+This should fix it.
+
+module: try_then_request_module must wait
+
+Since the whole point of try_then_request_module is to retry
+the operation after a module has been loaded, we must wait for
+the module to fully load.
+
+Otherwise all sort of things start breaking, e.g., you won't
+be able to read your encrypted disks on the first attempt.
+
+Signed-off-by: Herbert Xu <herbert@gondor.apana.org.au>
+
+diff --git a/include/linux/kmod.h b/include/linux/kmod.h
+index d5fa565..384ca8b 100644
+--- a/include/linux/kmod.h
++++ b/include/linux/kmod.h
+@@ -34,7 +34,7 @@ extern int __request_module(bool wait, const char *name, ...) \
+ #define request_module(mod...) __request_module(true, mod)
+ #define request_module_nowait(mod...) __request_module(false, mod)
+ #define try_then_request_module(x, mod...) \
+-	((x) ?: (__request_module(false, mod), (x)))
++	((x) ?: (__request_module(true, mod), (x)))
+ #else
+ static inline int request_module(const char *name, ...) { return -ENOSYS; }
+ static inline int request_module_nowait(const char *name, ...) { return -ENOSYS; }
+
+Thanks,
 -- 
-Cheers,
-Jeff
+Visit Openswan at http://www.openswan.org/
+Email: Herbert Xu ~{PmV>HI~} <herbert@gondor.apana.org.au>
+Home Page: http://gondor.apana.org.au/~herbert/
+PGP Key: http://gondor.apana.org.au/~herbert/pubkey.txt
