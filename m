@@ -1,55 +1,81 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S937379AbZDIX1Y@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S937436AbZDIXcn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S937379AbZDIX1Y (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 9 Apr 2009 19:27:24 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S935766AbZDIX1M
+	id S937436AbZDIXcn (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 9 Apr 2009 19:32:43 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761999AbZDIXce
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 9 Apr 2009 19:27:12 -0400
-Received: from mx2.redhat.com ([66.187.237.31]:44672 "EHLO mx2.redhat.com"
+	Thu, 9 Apr 2009 19:32:34 -0400
+Received: from mail.issp.bas.bg ([195.96.236.10]:42136 "EHLO mail.issp.bas.bg"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S936969AbZDIX1L (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 9 Apr 2009 19:27:11 -0400
-Organization: Red Hat UK Ltd. Registered Address: Red Hat UK Ltd, Amberley
-	Place, 107-111 Peascod Street, Windsor, Berkshire, SI4 1TE, United
-	Kingdom.
-	Registered in England and Wales under Company Registration No. 3798903
-From: David Howells <dhowells@redhat.com>
-In-Reply-To: <20090409232157.13220.63863.stgit@warthog.procyon.org.uk>
-References: <20090409232157.13220.63863.stgit@warthog.procyon.org.uk> <20090409232152.13220.28141.stgit@warthog.procyon.org.uk>
-Cc: dhowells@redhat.com, torvalds@osdl.org, akpm@linux-foundation.org,
-       sam@ravnborg.org, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 2/2] FRV: Move to arch/frv/include/asm/
-Date: Fri, 10 Apr 2009 00:25:58 +0100
-Message-ID: <13314.1239319558@redhat.com>
-To: unlisted-recipients:; (no To-header on input)
+	id S1760718AbZDIXcd (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 9 Apr 2009 19:32:33 -0400
+From: Marin Mitov <mitov@issp.bas.bg>
+Organization: Institute of Solid State Physics
+To: Jeff Garzik <jeff@garzik.org>
+Subject: Re: [PATCH]Silencing warning: 'host' may be used uninitialized in this function
+Date: Fri, 10 Apr 2009 02:31:32 +0300
+User-Agent: KMail/1.9.10
+Cc: linux-kernel@vger.kernel.org
+References: <200904100133.58556.mitov@issp.bas.bg> <49DE78E4.2060201@garzik.org>
+In-Reply-To: <49DE78E4.2060201@garzik.org>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200904100231.32307.mitov@issp.bas.bg>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-David Howells <dhowells@redhat.com> wrote:
+On Friday 10 April 2009 01:38:28 am Jeff Garzik wrote:
+> Marin Mitov wrote:
+> > Hi all,
+> > 
+> > I do not know if that is worth the effort, but...
+> > 
+> > Silencing:  warning: 'host' may be used uninitialized in this function
+> > It is a false positive.
+> > 
+> > The patch is against 2.6.30-rc1, but should apply to 2.6.29(.1) too.
+> > 
+> > Signed-off-by: Marin Mitov mitov@issp.bas.bg
+> > ================================================
+> > --- a/drivers/ata/sata_via.c	2009-04-05 22:59:26.000000000 +0300
+> > +++ b/drivers/ata/sata_via.c	2009-04-06 00:07:25.000000000 +0300
+> > @@ -566,7 +566,7 @@
+> >  	static int printed_version;
+> >  	unsigned int i;
+> >  	int rc;
+> > -	struct ata_host *host;
+> > +	struct ata_host *host = host;
+> >  	int board_id = (int) ent->driver_data;
+> >  	const unsigned *bar_sizes;
+> 
+> we use the uninitialized_var() macro for false positives.
+> 
+> 	Jeff
+> 
+ 
+Well, changed and resubmitted.
 
-> diff --git a/arch/frv/include/asm/Kbuild b/arch/frv/include/asm/Kbuild
-> new file mode 100644
-> index 0000000..0f8956d
-> --- /dev/null
-> +++ b/arch/frv/include/asm/Kbuild
-> @@ -0,0 +1,5 @@
-> +include include/asm-generic/Kbuild.asm
-> +
-> +header-y += registers.h
-> +
-> +unifdef-y += termios.h
-> diff --git a/arch/frv/include/asm/atomic.h b/arch/frv/include/asm/atomic.h
-> new file mode 100644
-> index 0000000..296c35c
-> --- /dev/null
-> +++ b/arch/frv/include/asm/atomic.h
-> @@ -0,0 +1,198 @@
-> +/* atomic.h: atomic operation emulation for FR-V
-> + *
-> ...
+Marin Mitov
 
-Grrr...  It didn't do that when I emailed it to myself.  Seems there's some
-more python magic I need to figure out.
+Silencing: " warning: 'host' may be used uninitialized in this function"
 
-David
+The patch is against 2.6.30-rc1, but should apply to 2.6.29(.1) too.
+
+Signed-off-by: Marin Mitov mitov@issp.bas.bg
+================================================
+--- a/drivers/ata/sata_via.c	2009-04-05 22:59:26.000000000 +0300
++++ b/drivers/ata/sata_via.c	2009-04-06 00:07:25.000000000 +0300
+@@ -566,7 +566,7 @@
+ 	static int printed_version;
+ 	unsigned int i;
+ 	int rc;
+-	struct ata_host *host;
++	struct ata_host *uninitialized_var(host);
+ 	int board_id = (int) ent->driver_data;
+ 	const unsigned *bar_sizes;
+ 
+
