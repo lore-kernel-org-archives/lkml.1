@@ -1,160 +1,185 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751484AbZDIEBP@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753064AbZDIEBh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751484AbZDIEBP (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 9 Apr 2009 00:01:15 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750767AbZDIEAv
+	id S1753064AbZDIEBh (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 9 Apr 2009 00:01:37 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751537AbZDIEA4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 9 Apr 2009 00:00:51 -0400
-Received: from mx2.redhat.com ([66.187.237.31]:38735 "EHLO mx2.redhat.com"
+	Thu, 9 Apr 2009 00:00:56 -0400
+Received: from mx2.redhat.com ([66.187.237.31]:38743 "EHLO mx2.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750717AbZDIEAu (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 9 Apr 2009 00:00:50 -0400
+	id S1751289AbZDIEAy (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 9 Apr 2009 00:00:54 -0400
 From: Izik Eidus <ieidus@redhat.com>
 To: akpm@linux-foundation.org
 Cc: linux-kernel@vger.kernel.org, kvm@vger.kernel.org, linux-mm@kvack.org,
        avi@redhat.com, aarcange@redhat.com, chrisw@redhat.com,
        mtosatti@redhat.com, hugh@veritas.com, kamezawa.hiroyu@jp.fujitsu.com,
        Izik Eidus <ieidus@redhat.com>
-Subject: [PATCH 3/4] add replace_page(): change the page pte is pointing to.
-Date: Thu,  9 Apr 2009 06:58:40 +0300
-Message-Id: <1239249521-5013-4-git-send-email-ieidus@redhat.com>
-In-Reply-To: <1239249521-5013-3-git-send-email-ieidus@redhat.com>
+Subject: [PATCH 1/4] MMU_NOTIFIERS: add set_pte_at_notify()
+Date: Thu,  9 Apr 2009 06:58:38 +0300
+Message-Id: <1239249521-5013-2-git-send-email-ieidus@redhat.com>
+In-Reply-To: <1239249521-5013-1-git-send-email-ieidus@redhat.com>
 References: <1239249521-5013-1-git-send-email-ieidus@redhat.com>
- <1239249521-5013-2-git-send-email-ieidus@redhat.com>
- <1239249521-5013-3-git-send-email-ieidus@redhat.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-replace_page() allow changing the mapping of pte from one physical page
-into diffrent physical page.
+this macro allow setting the pte in the shadow page tables directly
+instead of flushing the shadow page table entry and then get vmexit in
+order to set it.
 
-this function is working by removing oldpage from the rmap and calling
-put_page on it, and by setting the pte to point into newpage and by
-inserting it to the rmap using page_add_file_rmap().
+This function is optimzation for kvm/users of mmu_notifiers for COW
+pages, it is useful for kvm when ksm is used beacuse it allow kvm
+not to have to recive VMEXIT and only then map the shared page into
+the mmu shadow pages, but instead map it directly at the same time
+linux map the page into the host page table.
 
-note: newpage must be non anonymous page, the reason for this is:
-replace_page() is built to allow mapping one page into more than one
-virtual addresses, the mapping of this page can happen in diffrent
-offsets inside each vma, and therefore we cannot trust the page->index
-anymore.
+this mmu notifer macro is working by calling to callback that will map
+directly the physical page into the shadow page tables.
 
-the side effect of this issue is that newpage cannot be anything but
-kernel allocated page that is not swappable.
+(users of mmu_notifiers that didnt implement the set_pte_at_notify()
+call back will just recive the mmu_notifier_invalidate_page callback)
 
 Signed-off-by: Izik Eidus <ieidus@redhat.com>
 ---
- include/linux/mm.h |    5 +++
- mm/memory.c        |   80 ++++++++++++++++++++++++++++++++++++++++++++++++++++
- 2 files changed, 85 insertions(+), 0 deletions(-)
+ include/linux/mmu_notifier.h |   34 ++++++++++++++++++++++++++++++++++
+ mm/memory.c                  |   10 ++++++++--
+ mm/mmu_notifier.c            |   20 ++++++++++++++++++++
+ 3 files changed, 62 insertions(+), 2 deletions(-)
 
-diff --git a/include/linux/mm.h b/include/linux/mm.h
-index bff1f0d..7a831ce 100644
---- a/include/linux/mm.h
-+++ b/include/linux/mm.h
-@@ -1240,6 +1240,11 @@ int vm_insert_pfn(struct vm_area_struct *vma, unsigned long addr,
- int vm_insert_mixed(struct vm_area_struct *vma, unsigned long addr,
- 			unsigned long pfn);
+diff --git a/include/linux/mmu_notifier.h b/include/linux/mmu_notifier.h
+index b77486d..8bb245f 100644
+--- a/include/linux/mmu_notifier.h
++++ b/include/linux/mmu_notifier.h
+@@ -61,6 +61,15 @@ struct mmu_notifier_ops {
+ 				 struct mm_struct *mm,
+ 				 unsigned long address);
  
-+#if defined(CONFIG_KSM) || defined(CONFIG_KSM_MODULE)
-+int replace_page(struct vm_area_struct *vma, struct page *oldpage,
-+		 struct page *newpage, pte_t orig_pte, pgprot_t prot);
-+#endif
++	/* 
++	* change_pte is called in cases that pte mapping into page is changed
++	* for example when ksm mapped pte to point into a new shared page.
++	*/
++	void (*change_pte)(struct mmu_notifier *mn,
++			   struct mm_struct *mm,
++			   unsigned long address,
++			   pte_t pte);
 +
- struct page *follow_page(struct vm_area_struct *, unsigned long address,
- 			unsigned int foll_flags);
- #define FOLL_WRITE	0x01	/* check pte is writable */
+ 	/*
+ 	 * Before this is invoked any secondary MMU is still ok to
+ 	 * read/write to the page previously pointed to by the Linux
+@@ -154,6 +163,8 @@ extern void __mmu_notifier_mm_destroy(struct mm_struct *mm);
+ extern void __mmu_notifier_release(struct mm_struct *mm);
+ extern int __mmu_notifier_clear_flush_young(struct mm_struct *mm,
+ 					  unsigned long address);
++extern void __mmu_notifier_change_pte(struct mm_struct *mm, 
++				      unsigned long address, pte_t pte);
+ extern void __mmu_notifier_invalidate_page(struct mm_struct *mm,
+ 					  unsigned long address);
+ extern void __mmu_notifier_invalidate_range_start(struct mm_struct *mm,
+@@ -175,6 +186,13 @@ static inline int mmu_notifier_clear_flush_young(struct mm_struct *mm,
+ 	return 0;
+ }
+ 
++static inline void mmu_notifier_change_pte(struct mm_struct *mm,
++					   unsigned long address, pte_t pte)
++{
++	if (mm_has_notifiers(mm))
++		__mmu_notifier_change_pte(mm, address, pte);
++}
++
+ static inline void mmu_notifier_invalidate_page(struct mm_struct *mm,
+ 					  unsigned long address)
+ {
+@@ -236,6 +254,16 @@ static inline void mmu_notifier_mm_destroy(struct mm_struct *mm)
+ 	__young;							\
+ })
+ 
++#define set_pte_at_notify(__mm, __address, __ptep, __pte)		\
++({									\
++	struct mm_struct *___mm = __mm;					\
++	unsigned long ___address = __address;				\
++	pte_t ___pte = __pte;						\
++									\
++	set_pte_at(__mm, __address, __ptep, ___pte);			\
++	mmu_notifier_change_pte(___mm, ___address, ___pte);		\
++})
++
+ #else /* CONFIG_MMU_NOTIFIER */
+ 
+ static inline void mmu_notifier_release(struct mm_struct *mm)
+@@ -248,6 +276,11 @@ static inline int mmu_notifier_clear_flush_young(struct mm_struct *mm,
+ 	return 0;
+ }
+ 
++static inline void mmu_notifier_change_pte(struct mm_struct *mm,
++					   unsigned long address, pte_t pte)
++{
++}
++
+ static inline void mmu_notifier_invalidate_page(struct mm_struct *mm,
+ 					  unsigned long address)
+ {
+@@ -273,6 +306,7 @@ static inline void mmu_notifier_mm_destroy(struct mm_struct *mm)
+ 
+ #define ptep_clear_flush_young_notify ptep_clear_flush_young
+ #define ptep_clear_flush_notify ptep_clear_flush
++#define set_pte_at_notify set_pte_at
+ 
+ #endif /* CONFIG_MMU_NOTIFIER */
+ 
 diff --git a/mm/memory.c b/mm/memory.c
-index 1e1a14b..d6e53c2 100644
+index cf6873e..1e1a14b 100644
 --- a/mm/memory.c
 +++ b/mm/memory.c
-@@ -1567,6 +1567,86 @@ int vm_insert_mixed(struct vm_area_struct *vma, unsigned long addr,
+@@ -2051,9 +2051,15 @@ gotten:
+ 		 * seen in the presence of one thread doing SMC and another
+ 		 * thread doing COW.
+ 		 */
+-		ptep_clear_flush_notify(vma, address, page_table);
++		ptep_clear_flush(vma, address, page_table);
+ 		page_add_new_anon_rmap(new_page, vma, address);
+-		set_pte_at(mm, address, page_table, entry);
++		/*
++		 * We call here the notify macro beacuse in cases of using
++		 * secondary mmu page table like kvm shadow page, tables we want
++		 * the new page to be mapped directly into the secondary page
++		 * table
++		 */
++		set_pte_at_notify(mm, address, page_table, entry);
+ 		update_mmu_cache(vma, address, entry);
+ 		if (old_page) {
+ 			/*
+diff --git a/mm/mmu_notifier.c b/mm/mmu_notifier.c
+index 5f4ef02..c3e8779 100644
+--- a/mm/mmu_notifier.c
++++ b/mm/mmu_notifier.c
+@@ -99,6 +99,26 @@ int __mmu_notifier_clear_flush_young(struct mm_struct *mm,
+ 	return young;
  }
- EXPORT_SYMBOL(vm_insert_mixed);
  
-+#if defined(CONFIG_KSM) || defined(CONFIG_KSM_MODULE)
-+
-+/**
-+ * replace_page - replace page in vma with new page
-+ * @vma:      vma that hold the pte oldpage is pointed by.
-+ * @oldpage:  the page we are replacing with newpage
-+ * @newpage:  the page we replace oldpage with
-+ * @orig_pte: the original value of the pte
-+ * @prot: page protection bits
-+ *
-+ * Returns 0 on success, -EFAULT on failure.
-+ *
-+ * Note: @newpage must not be an anonymous page because replace_page() does
-+ * not change the mapping of @newpage to have the same values as @oldpage.
-+ * @newpage can be mapped in several vmas at different offsets (page->index).
-+ */
-+int replace_page(struct vm_area_struct *vma, struct page *oldpage,
-+		 struct page *newpage, pte_t orig_pte, pgprot_t prot)
++void __mmu_notifier_change_pte(struct mm_struct *mm, unsigned long address,
++			       pte_t pte)
 +{
-+	struct mm_struct *mm = vma->vm_mm;
-+	pgd_t *pgd;
-+	pud_t *pud;
-+	pmd_t *pmd;
-+	pte_t *ptep;
-+	spinlock_t *ptl;
-+	unsigned long addr;
-+	int ret;
++	struct mmu_notifier *mn;
++	struct hlist_node *n;
 +
-+	BUG_ON(PageAnon(newpage));
-+
-+	ret = -EFAULT;
-+	addr = page_address_in_vma(oldpage, vma);
-+	if (addr == -EFAULT)
-+		goto out;
-+
-+	pgd = pgd_offset(mm, addr);
-+	if (!pgd_present(*pgd))
-+		goto out;
-+
-+	pud = pud_offset(pgd, addr);
-+	if (!pud_present(*pud))
-+		goto out;
-+
-+	pmd = pmd_offset(pud, addr);
-+	if (!pmd_present(*pmd))
-+		goto out;
-+
-+	ptep = pte_offset_map_lock(mm, pmd, addr, &ptl);
-+	if (!ptep)
-+		goto out;
-+
-+	if (!pte_same(*ptep, orig_pte)) {
-+		pte_unmap_unlock(ptep, ptl);
-+		goto out;
++	rcu_read_lock();
++	hlist_for_each_entry_rcu(mn, n, &mm->mmu_notifier_mm->list, hlist) {
++		if (mn->ops->change_pte)
++			mn->ops->change_pte(mn, mm, address, pte);
++		/* 
++		 * some drivers dont have change_pte and therefor we must call
++		 * for invalidate_page in that case
++		 */
++		else if (mn->ops->invalidate_page)
++			mn->ops->invalidate_page(mn, mm, address);
 +	}
-+
-+	ret = 0;
-+	get_page(newpage);
-+	page_add_file_rmap(newpage);
-+
-+	flush_cache_page(vma, addr, pte_pfn(*ptep));
-+	ptep_clear_flush(vma, addr, ptep);
-+	set_pte_at_notify(mm, addr, ptep, mk_pte(newpage, prot));
-+
-+	page_remove_rmap(oldpage);
-+	if (PageAnon(oldpage)) {
-+		dec_mm_counter(mm, anon_rss);
-+		inc_mm_counter(mm, file_rss);
-+	}
-+	put_page(oldpage);
-+
-+	pte_unmap_unlock(ptep, ptl);
-+
-+out:
-+	return ret;
++	rcu_read_unlock();
 +}
-+EXPORT_SYMBOL_GPL(replace_page);
 +
-+#endif
-+
- /*
-  * maps a range of physical memory into the requested pages. the old
-  * mappings are removed. any references to nonexistent pages results
+ void __mmu_notifier_invalidate_page(struct mm_struct *mm,
+ 					  unsigned long address)
+ {
 -- 
 1.5.6.5
 
