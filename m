@@ -1,72 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S936304AbZDITTd@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S936051AbZDIT1R@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S936304AbZDITTd (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 9 Apr 2009 15:19:33 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1765427AbZDITTX
+	id S936051AbZDIT1R (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 9 Apr 2009 15:27:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934073AbZDIT05
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 9 Apr 2009 15:19:23 -0400
-Received: from gw.goop.org ([64.81.55.164]:57183 "EHLO mail.goop.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752522AbZDITTW (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 9 Apr 2009 15:19:22 -0400
-Message-ID: <49DE4A37.3080702@goop.org>
-Date: Thu, 09 Apr 2009 12:19:19 -0700
-From: Jeremy Fitzhardinge <jeremy@goop.org>
-User-Agent: Thunderbird 2.0.0.21 (X11/20090320)
+	Thu, 9 Apr 2009 15:26:57 -0400
+Received: from gerard.telenet-ops.be ([195.130.132.48]:33187 "EHLO
+	gerard.telenet-ops.be" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1760658AbZDIT04 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 9 Apr 2009 15:26:56 -0400
+Date: Thu, 9 Apr 2009 21:26:50 +0200 (CEST)
+From: Geert Uytterhoeven <geert@linux-m68k.org>
+To: Ming Lei <tom.leiming@gmail.com>, Greg Kroah-Hartman <gregkh@suse.de>,
+       "James E.J. Bottomley" <James.Bottomley@HansenPartnership.com>
+cc: Linux/m68k <linux-m68k@vger.kernel.org>, linux-scsi@vger.kernel.org,
+       Linux Kernel Development <linux-kernel@vger.kernel.org>
+Subject: [PATCH] scsi: a4000 - Correct driver unregistration in case of
+ failure
+Message-ID: <Pine.LNX.4.64.0904092125540.22008@anakin>
 MIME-Version: 1.0
-To: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
-CC: galak@kernel.crashing.org, hch@infradead.org, linux-kernel@vger.kernel.org,
-       mingo@elte.hu, ian.campbell@citrix.com, beckyb@kernel.crashing.org
-Subject: Re: [PATCH 4/7] swiotlb: Allow arch override of address_needs_mapping
-References: <49DD3041.8020808@goop.org>	<20090409083752I.fujita.tomonori@lab.ntt.co.jp>	<49DD3C9C.7060101@goop.org> <20090410033357S.fujita.tomonori@lab.ntt.co.jp>
-In-Reply-To: <20090410033357S.fujita.tomonori@lab.ntt.co.jp>
-X-Enigmail-Version: 0.95.6
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-FUJITA Tomonori wrote:
->> Well, Becky's patches also added the hwdev argument to them, so 
->> presumably the powerpc implementation needs that (different 
->> devices/buses have differing views of physical memory, I guess).
->>     
->
-> Until I see the ppc specific swiotlb patchset, I'm not sure but I
-> think that we can remove phys_to_bus in swiotlb.
->   
+commit 7a192ec334cab9fafe3a8665a65af398b0e24730 ("platform driver: fix
+incorrect use of 'platform_bus_type' with 'struct device_driver') turned a
+driver_UNregister into platform_driver_REGISTER. Correct this to
+platform_driver_UNregister.
 
-Kumar's comment was: "For our SoC chips we don't need any mapping 
-between phys & bus.  However something like PCI does have a mapping (a 
-simple offset)."
+Signed-off-by: Geert Uytterhoeven <geert@linux-m68k.org>
+---
+ drivers/scsi/a4000t.c |    2 +-
+ 1 files changed, 1 insertions(+), 1 deletions(-)
 
-Kumar, could a single system have different phys<->bus mappings on a 
-single system, or could it differ from device to device (or bus to bus)?
+diff --git a/drivers/scsi/a4000t.c b/drivers/scsi/a4000t.c
+index 61af3d9..e3519fa 100644
+--- a/drivers/scsi/a4000t.c
++++ b/drivers/scsi/a4000t.c
+@@ -129,7 +129,7 @@ static int __init a4000t_scsi_init(void)
+ 	a4000t_scsi_device = platform_device_register_simple("a4000t-scsi",
+ 			-1, NULL, 0);
+ 	if (IS_ERR(a4000t_scsi_device)) {
+-		platform_driver_register(&a4000t_scsi_driver);
++		platform_driver_unregister(&a4000t_scsi_driver);
+ 		return PTR_ERR(a4000t_scsi_device);
+ 	}
+ 
+-- 
+1.6.2.1
 
-> Even if we need phys_to_bus, we can remove the rest of __weak tricks
-> for only dom0. And we can make phys_to_bus arch-specific. Then we
-> don't need any __weak tricks in swiotlb (and x86's swiotlb). dom0
-> support adds many hacks to swiotlb.
->   
+Gr{oetje,eeting}s,
 
-Well, we'd still need a way to do hook the swiotlb_alloc(_boot) 
-allocation.  At the moment its effectively arch-specific because x86 
-only uses swiotlb_alloc_boot(), and ia64 only uses swiotlb_alloc().  One 
-option would be to simply make that function arch-defined, which would 
-remove the need for any kind of override mechanism in lib/swiotlb; that 
-would match the handling of phys_to_bus.  And its more appealing if we 
-manage to drop swiotlb_alloc_boot, so there's only a single function for 
-the arches to worry about.
+						Geert
 
-> Yeah, ISA DMA comment is misleading. swiotlb can't handle it. And it
-> doesn't need to handle it because the block layer can thanks to
-> the bouncing (the network layer does the similar, I think).
->
-> As you said, we could remove the latter though I'm not sure.
->   
+--
+Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
 
-It would take a bit of rearranging the x86 swiotlb/iommu init sequence, 
-but I don't think it would be too complex.  I'll look into it.
-
-    J
+In personal conversations with technical people, I call myself a hacker. But
+when I'm talking to journalists I just say "programmer" or something like that.
+							    -- Linus Torvalds
