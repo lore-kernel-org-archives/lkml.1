@@ -1,62 +1,33 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758423AbZDIIlk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759654AbZDIIpA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758423AbZDIIlk (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 9 Apr 2009 04:41:40 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753230AbZDIIlX
+	id S1759654AbZDIIpA (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 9 Apr 2009 04:45:00 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754882AbZDIIol
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 9 Apr 2009 04:41:23 -0400
-Received: from cantor2.suse.de ([195.135.220.15]:34172 "EHLO mx2.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753861AbZDIIlV (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 9 Apr 2009 04:41:21 -0400
-To: Arjan van de Ven <arjan@linux.intel.com>
-Subject: [PATCH] Fix compiler warning unused clean_rootfs when CONFIG_BLK_DEV_RAM is not defined
-Cc: Linus Torvalds <torvalds@linux-foundation.org>,
-       "H. Peter Anvin" <hpa@zytor.com>, Andrew Morton <akpm@osdl.org>,
-       linux-kernel@vger.kernel.org
-Content-Disposition: inline
-From: Nikanth Karthikesan <knikanth@suse.de>
-Organization: suse.de
-Date: Thu, 9 Apr 2009 14:08:55 +0530
+	Thu, 9 Apr 2009 04:44:41 -0400
+Received: from yx-out-2324.google.com ([74.125.44.28]:23453 "EHLO
+	yx-out-2324.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753393AbZDIIoj (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 9 Apr 2009 04:44:39 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:date:message-id:subject:from:to:content-type
+         :content-transfer-encoding;
+        b=F7j11o6gjVprwHfn7/VqByngT3MzKEguW64sorQqTqKJpZIVNIKhSxlov9mQIs+L0z
+         ZVf/2VvJh95epZ7BMz1dbgZW9H8zBg0tiLDs90KKDs8vUt7QcbtvpobrMuenJKBWxEAW
+         lVUMqp99jIy+jB1exLgNXf7blcLmgWbtjKjPM=
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
+Date: Thu, 9 Apr 2009 16:44:38 +0800
+Message-ID: <b7997bdf0904090144g66548dftefe8c933116a8b2d@mail.gmail.com>
+Subject: b44: constantly "powering down PHY" during high network
+From: xinglp <xinglp@gmail.com>
+To: linux-kernel@vger.kernel.org
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
-Message-Id: <200904091408.56401.knikanth@suse.de>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Resending as I missed the list, earlier.
-
-Thanks
-Nikanth
-
-Fix gcc warning, "unused clean_rootfs", when CONFIG_BLK_DEV_RAM not defined.
-
-Signed-off-by: Nikanth Karthikesan <knikanth@suse.de>
-
----
-diff --git a/init/initramfs.c b/init/initramfs.c
-index 80cd713..e44f2d9 100644
---- a/init/initramfs.c
-+++ b/init/initramfs.c
-@@ -515,6 +515,7 @@ skip:
- 	initrd_end = 0;
- }
- 
-+#ifdef CONFIG_BLK_DEV_RAM
- #define BUF_SIZE 1024
- static void __init clean_rootfs(void)
- {
-@@ -561,6 +562,7 @@ static void __init clean_rootfs(void)
- 	sys_close(fd);
- 	kfree(buf);
- }
-+#endif
- 
- static int __init populate_rootfs(void)
- {
-
-
-
+b44: constantly "powering down PHY" during high network
+I can reproduce it when I initiate 10K connection to remote server.
