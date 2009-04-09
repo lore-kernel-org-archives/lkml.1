@@ -1,64 +1,77 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932535AbZDINHt@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760366AbZDINNs@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932535AbZDINHt (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 9 Apr 2009 09:07:49 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760186AbZDINHk
+	id S1760366AbZDINNs (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 9 Apr 2009 09:13:48 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760117AbZDINNj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 9 Apr 2009 09:07:40 -0400
-Received: from va3ehsobe004.messaging.microsoft.com ([216.32.180.14]:44364
-	"EHLO VA3EHSOBE004.bigfish.com" rhost-flags-OK-OK-OK-FAIL)
-	by vger.kernel.org with ESMTP id S1760723AbZDINHj (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 9 Apr 2009 09:07:39 -0400
-X-BigFish: VPS-6(z34a4jz936eQzz1202hzzz32i6bh65h)
-X-Spam-TCS-SCL: 4:0
-X-WSS-ID: 0KHU4GH-02-NRU-01
-Date: Thu, 9 Apr 2009 15:07:29 +0200
-From: Andreas Herrmann <andreas.herrmann3@amd.com>
-To: Ingo Molnar <mingo@elte.hu>, "H. Peter Anvin" <hpa@zytor.com>
-CC: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
-       Mark Langsdorf <mark.langsdorf@amd.com>
-Subject: [PATCH 4/8] x86: cacheinfo: correct return value when
-	cache_disable feature is not active
-Message-ID: <20090409130729.GH31527@alberich.amd.com>
-References: <20090409125659.GD31527@alberich.amd.com>
+	Thu, 9 Apr 2009 09:13:39 -0400
+Received: from mx2.redhat.com ([66.187.237.31]:54450 "EHLO mx2.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1755921AbZDINNj (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 9 Apr 2009 09:13:39 -0400
+Date: Thu, 9 Apr 2009 10:13:10 -0300
+From: Arnaldo Carvalho de Melo <acme@redhat.com>
+To: Li Zefan <lizf@cn.fujitsu.com>
+Cc: Ingo Molnar <mingo@elte.hu>, Jens Axboe <jens.axboe@oracle.com>,
+       LKML <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH] blktrace: pass the right pointer to kfree()
+Message-ID: <20090409131310.GC24946@ghostprotocols.net>
+References: <49DD694C.8020902@cn.fujitsu.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20090409125659.GD31527@alberich.amd.com>
-User-Agent: Mutt/1.5.16 (2007-06-09)
-X-OriginalArrivalTime: 09 Apr 2009 13:07:29.0813 (UTC) FILETIME=[23380C50:01C9B914]
+In-Reply-To: <49DD694C.8020902@cn.fujitsu.com>
+X-Url: http://oops.ghostprotocols.net:81/blog
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Impact: bug fix
+Em Thu, Apr 09, 2009 at 11:19:40AM +0800, Li Zefan escreveu:
+> If passing a string with leading white spaces to strstrip(),
+> the returned ptr != the original ptr.
+> 
+> This bug was introduced by me.
+> 
+> Signed-off-by: Li Zefan <lizf@cn.fujitsu.com>
 
-If user writes to "cache_disable" attribute on a CPU that does not support
-this feature, the process hangs due to an invalid return value in
-store_cache_disable().
+I hadn't noticed that strstrip was added, oops.
 
-CC: Mark Langsdorf <mark.langsdorf@amd.com>
-Signed-off-by: Andreas Herrmann <andreas.herrmann3@amd.com>
----
- arch/x86/kernel/cpu/intel_cacheinfo.c |    2 +-
- 1 files changed, 1 insertions(+), 1 deletions(-)
+Acked-by: Arnaldo Carvalho de Melo <acme@redhat.com>
 
-diff --git a/arch/x86/kernel/cpu/intel_cacheinfo.c b/arch/x86/kernel/cpu/intel_cacheinfo.c
-index 3973506..9dac235 100644
---- a/arch/x86/kernel/cpu/intel_cacheinfo.c
-+++ b/arch/x86/kernel/cpu/intel_cacheinfo.c
-@@ -771,7 +771,7 @@ store_cache_disable(struct _cpuid4_info *this_leaf, const char *buf,
- 	unsigned int ret, index, val;
- 
- 	if (!this_leaf->can_disable)
--		return 0;
-+		return -EINVAL;
- 
- 	if (strlen(buf) > 15)
- 		return -EINVAL;
--- 
-1.6.2
-
-
-
+> ---
+>  kernel/trace/blktrace.c |   10 +++++-----
+>  1 files changed, 5 insertions(+), 5 deletions(-)
+> 
+> diff --git a/kernel/trace/blktrace.c b/kernel/trace/blktrace.c
+> index b32ff44..921ef5d 100644
+> --- a/kernel/trace/blktrace.c
+> +++ b/kernel/trace/blktrace.c
+> @@ -1377,12 +1377,12 @@ static int blk_trace_str2mask(const char *str)
+>  {
+>  	int i;
+>  	int mask = 0;
+> -	char *s, *token;
+> +	char *buf, *s, *token;
+>  
+> -	s = kstrdup(str, GFP_KERNEL);
+> -	if (s == NULL)
+> +	buf = kstrdup(str, GFP_KERNEL);
+> +	if (buf == NULL)
+>  		return -ENOMEM;
+> -	s = strstrip(s);
+> +	s = strstrip(buf);
+>  
+>  	while (1) {
+>  		token = strsep(&s, ",");
+> @@ -1403,7 +1403,7 @@ static int blk_trace_str2mask(const char *str)
+>  			break;
+>  		}
+>  	}
+> -	kfree(s);
+> +	kfree(buf);
+>  
+>  	return mask;
+>  }
+> -- 
+> 1.5.4.rc3
