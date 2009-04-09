@@ -1,69 +1,116 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758276AbZDIRJo@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759569AbZDIRMZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758276AbZDIRJo (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 9 Apr 2009 13:09:44 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755327AbZDIRJd
+	id S1759569AbZDIRMZ (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 9 Apr 2009 13:12:25 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752885AbZDIRMM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 9 Apr 2009 13:09:33 -0400
-Received: from wf-out-1314.google.com ([209.85.200.169]:31944 "EHLO
-	wf-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752588AbZDIRJc (ORCPT
+	Thu, 9 Apr 2009 13:12:12 -0400
+Received: from hrndva-omtalb.mail.rr.com ([71.74.56.125]:59692 "EHLO
+	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751840AbZDIRMM (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 9 Apr 2009 13:09:32 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:date:message-id:subject:from:to:content-type
-         :content-transfer-encoding;
-        b=vEMMZfGLyndPG0NYWU9LlJ2LiuqoOjMa7kMEwzpG0eMsood9M9apQka5hb/ZGbr2YN
-         pR37R+sSaqMVmsLmavNciFCU0Afy+RNtuP12NNpd0wq3XXlTNKlou3rqHG9AaISdNIR6
-         Z0qpURQDIGHJeNblTzjJkUbAMHBCBoEgOFzxc=
+	Thu, 9 Apr 2009 13:12:12 -0400
+Date: Thu, 09 Apr 2009 12:11:55 -0500
+From: Larry Finger <Larry.Finger@lwfinger.net>
+To: davem@davemloft.net
+Cc: netdev@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: [PATCH] kaweth: Clean up code
+Message-ID: <49de2c5b.LWVli5E5/g9YVwyP%Larry.Finger@lwfinger.net>
+User-Agent: Heirloom mailx 12.2 01/07/07
 MIME-Version: 1.0
-Date: Thu, 9 Apr 2009 13:09:31 -0400
-Message-ID: <f9be06770904091009v4a8074edv94c26525406de432@mail.gmail.com>
-Subject: Proposal for safe/unsafe atomic rename()
-From: Karl Pickett <karl.pickett@gmail.com>
-To: linux-kernel@vger.kernel.org, linux-ext4@vger.kernel.org
-Content-Type: text/plain; charset=ISO-8859-1
+Content-Type: text/plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This is only regarding open(TMP_FILE),close(),rename() - not about
-directly overwriting an existing file which to me is clearly not safe
-and a different issue.
+The driver kaweth yields a -EBUSY error when starting, and a -ETIME
+error when shutting down. These errors are avoided, and the RX status
+is further checked for other potential errors.
 
-I think the safe atomic rename semantics by default are important.
-Most files on my disk I regard as critical after a crash.  Only a few,
-in tmp, can be sacrificed safety.   Now if these semantics are too
-onerous for certain apps, I have a proposal to disable it.
+Signed-off-by: Larry Finger <Larry.Finger@lwfinger.net>
+---
 
-fcntl(fd, F_SET_ATOMIC_RENAME) (int)
-Only allowed to set to 0.  Once set to 0, can not be restored to 1,
-which doesn't make much sense and seems easier to implement. (I could
-easily be wrong).
+DaveM,
 
-fcntl(fd, F_GET_ATOMIC_RENAME) (int)
-Ext3/4 could return 1 here for all newly opened files.  If you set to
-0 (above), then this call would return 0 as well.
+This patch is resubmitted as requested now that 2.6.30-rc1 is released.
+It is 2.6.31 material as the main change is to eliminate two trivial
+log messages.
 
-I have a daemon that, when prompted by a UI, writes a report out to
-/tmp/report.tmp and renames it to /tmp/report.  Then the UI opens
-/tmp/report and displays it to the user.  Clearly after a crash I
-don't care if /tmp/report is 0 length because it's always regenerated
-by the gui poking the daemon first.  It would also be very easy for
-me, if I thought it would help performance, to put a one line
-fcntl(SET_ATOMIC_RENAME, 0) to get that extra bit of speed during any
-checkpointing.
+Larry
+---
 
-I think the fcntl is easiest when dealing with multiple layers of
-software, and not always being able to intercept the low level open()
-call.
-Also, if the performance difference is so onerous 1 fcntl isn't going
-to be a problem.
-
-There may be a better word than "Atomic".  Maybe "Safe",  "Robust",
-"NoEatMyData", ...
-
--- 
-Karl Pickett
+Index: wireless-testing/drivers/net/usb/kaweth.c
+===================================================================
+--- wireless-testing.orig/drivers/net/usb/kaweth.c
++++ wireless-testing/drivers/net/usb/kaweth.c
+@@ -31,7 +31,6 @@
+  ****************************************************************/
+ 
+ /* TODO:
+- * Fix in_interrupt() problem
+  * Develop test procedures for USB net interfaces
+  * Run test procedures
+  * Fix bugs from previous two steps
+@@ -606,14 +605,30 @@ static void kaweth_usb_receive(struct ur
+ 
+ 	struct sk_buff *skb;
+ 
+-	if(unlikely(status == -ECONNRESET || status == -ESHUTDOWN))
+-	/* we are killed - set a flag and wake the disconnect handler */
+-	{
++	if (unlikely(status == -EPIPE)) {
++		kaweth->stats.rx_errors++;
+ 		kaweth->end = 1;
+ 		wake_up(&kaweth->term_wait);
++		dbg("Status was -EPIPE.");
+ 		return;
+ 	}
+-
++	if (unlikely(status == -ECONNRESET || status == -ESHUTDOWN)) {
++		/* we are killed - set a flag and wake the disconnect handler */
++		kaweth->end = 1;
++		wake_up(&kaweth->term_wait);
++		dbg("Status was -ECONNRESET or -ESHUTDOWN.");
++		return;
++	}
++	if (unlikely(status == -EPROTO || status == -ETIME ||
++		     status == -EILSEQ)) {
++		kaweth->stats.rx_errors++;
++		dbg("Status was -EPROTO, -ETIME, or -EILSEQ.");
++		return;
++	}
++	if (unlikely(status == -EOVERFLOW)) {
++		kaweth->stats.rx_errors++;
++		dbg("Status was -EOVERFLOW.");
++	}
+ 	spin_lock(&kaweth->device_lock);
+ 	if (IS_BLOCKED(kaweth->status)) {
+ 		spin_unlock(&kaweth->device_lock);
+@@ -883,13 +898,16 @@ static void kaweth_set_rx_mode(struct ne
+  ****************************************************************/
+ static void kaweth_async_set_rx_mode(struct kaweth_device *kaweth)
+ {
++	int result;
+ 	__u16 packet_filter_bitmap = kaweth->packet_filter_bitmap;
++
+ 	kaweth->packet_filter_bitmap = 0;
+ 	if (packet_filter_bitmap == 0)
+ 		return;
+ 
+-	{
+-	int result;
++	if (in_interrupt())
++		return;
++
+ 	result = kaweth_control(kaweth,
+ 				usb_sndctrlpipe(kaweth->dev, 0),
+ 				KAWETH_COMMAND_SET_PACKET_FILTER,
+@@ -906,7 +924,6 @@ static void kaweth_async_set_rx_mode(str
+ 	else {
+ 		dbg("Set Rx mode to %d", packet_filter_bitmap);
+ 	}
+-	}
+ }
+ 
+ /****************************************************************
