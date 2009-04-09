@@ -1,67 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758134AbZDIApd@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757940AbZDIAsE@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758134AbZDIApd (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 8 Apr 2009 20:45:33 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755580AbZDIApY
+	id S1757940AbZDIAsE (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 8 Apr 2009 20:48:04 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756168AbZDIArw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 8 Apr 2009 20:45:24 -0400
-Received: from a-sasl-fastnet.sasl.smtp.pobox.com ([207.106.133.19]:44278 "EHLO
-	sasl.smtp.pobox.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753498AbZDIApX (ORCPT
+	Wed, 8 Apr 2009 20:47:52 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:47478 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1753682AbZDIArv (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 8 Apr 2009 20:45:23 -0400
-Date: Wed, 8 Apr 2009 19:45:12 -0500
-From: Nathan Lynch <ntl@pobox.com>
-To: linux-kernel@vger.kernel.org
-Cc: containers@lists.linux-foundation.org, linux-pm@lists.linux-foundation.org,
-       Ingo Molnar <mingo@elte.hu>, Andrew Morton <akpm@linux-foundation.org>,
-       Matt Helsley <matthltc@us.ibm.com>
-Subject: [PATCH/RFC] do not count frozen tasks toward load
-Message-ID: <20090408194512.47a99b95@manatee.lan>
-X-Mailer: Claws Mail 3.7.0 (GTK+ 2.14.7; x86_64-redhat-linux-gnu)
+	Wed, 8 Apr 2009 20:47:51 -0400
+Date: Wed, 8 Apr 2009 17:44:43 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Tony Breeds <tony@bakeyournoodle.com>
+Cc: Alex Chiang <achiang@hp.com>, Robin Holt <holt@sgi.com>,
+       linux-kernel <linux-kernel@vger.kernel.org>, linux-ia64@vger.kernel.org
+Subject: Re: cross-compilers
+Message-Id: <20090408174443.79e71503.akpm@linux-foundation.org>
+In-Reply-To: <20090409003308.GK16602@bilbo.ozlabs.org>
+References: <20090408003921.GA5054@ldl.fc.hp.com>
+	<20090408010331.GB10768@sgi.com>
+	<20090408054612.GA6744@ldl.fc.hp.com>
+	<20090407225457.86f8a458.akpm@linux-foundation.org>
+	<20090409003308.GK16602@bilbo.ozlabs.org>
+X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.5; x86_64-redhat-linux-gnu)
 Mime-Version: 1.0
 Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-X-Pobox-Relay-ID: B4906714-249F-11DE-9DFF-BB14ECB1AA3C-04752483!a-sasl-fastnet.pobox.com
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Freezing tasks via the cgroup freezer causes the load average to climb
-because the freezer's current implementation puts frozen tasks in
-uninterruptible sleep (D state).
+On Thu, 9 Apr 2009 10:33:08 +1000 Tony Breeds <tony@bakeyournoodle.com> wrote:
 
-Some applications which perform job-scheduling functions consult the
-load average when making decisions.  If a cgroup is frozen, the load
-average does not provide a useful measure of the system's utilization
-to such applications.  This is especially inconvenient if the job
-scheduler employs the cgroup freezer as a mechanism for preempting low
-priority jobs.  Contrast this with using SIGSTOP for the same purpose:
-the stopped tasks do not count toward system load.
+> On Tue, Apr 07, 2009 at 10:54:57PM -0700, Andrew Morton wrote:
+> 
+> > We would benefit very much from having someone who actually maintains a
+> > suite of cross-compilers for kernel developers.
+> 
+> I build wont say maintain many of the cross compilers used for linux-next.  I
+> can place them somehere.
 
-Change task_contributes_to_load() to return false if the task is
-frozen.  This results in /proc/loadavg behavior that better meets
-users' expectations.
+Please do.
 
-Signed-off-by: Nathan Lynch <ntl@pobox.com>
----
- include/linux/sched.h |    3 ++-
- 1 files changed, 2 insertions(+), 1 deletions(-)
-
-diff --git a/include/linux/sched.h b/include/linux/sched.h
-index 011db2f..f8af167 100644
---- a/include/linux/sched.h
-+++ b/include/linux/sched.h
-@@ -202,7 +202,8 @@ extern unsigned long long time_sync_thresh;
- #define task_is_stopped_or_traced(task)	\
- 			((task->state & (__TASK_STOPPED | __TASK_TRACED)) != 0)
- #define task_contributes_to_load(task)	\
--				((task->state & TASK_UNINTERRUPTIBLE) != 0)
-+				((task->state & TASK_UNINTERRUPTIBLE) != 0 && \
-+				 (task->flags & PF_FROZEN) == 0)
- 
- #define __set_task_state(tsk, state_value)		\
- 	do { (tsk)->state = (state_value); } while (0)
--- 
-1.6.0.6
+Several people have made suggestions but I don't think I've yet seen
+anything which is download-and-go.  Many of them appear to be ways of
+tricking people into installing distributions which include dselect,
+but I'm awake to their little games.
 
