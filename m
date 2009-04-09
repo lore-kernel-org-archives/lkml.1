@@ -1,92 +1,78 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760804AbZDIExp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760554AbZDIE6S@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760804AbZDIExp (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 9 Apr 2009 00:53:45 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758934AbZDIExg
+	id S1760554AbZDIE6S (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 9 Apr 2009 00:58:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754659AbZDIE6G
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 9 Apr 2009 00:53:36 -0400
-Received: from fgwmail6.fujitsu.co.jp ([192.51.44.36]:42954 "EHLO
+	Thu, 9 Apr 2009 00:58:06 -0400
+Received: from fgwmail6.fujitsu.co.jp ([192.51.44.36]:43166 "EHLO
 	fgwmail6.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755019AbZDIExf convert rfc822-to-8bit (ORCPT
+	with ESMTP id S1753503AbZDIE6D (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 9 Apr 2009 00:53:35 -0400
+	Thu, 9 Apr 2009 00:58:03 -0400
 From: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
 To: Neil Brown <neilb@suse.de>, Greg Kroah-Hartman <gregkh@suse.de>,
        LKML <linux-kernel@vger.kernel.org>, Al Viro <viro@ZenIV.linux.org.uk>,
        Ram Pai <linuxram@us.ibm.com>, Miklos Szeredi <mszeredi@suse.cz>
-Subject: [PATCH v2 1/2] sysfs poll keep the poll rule of regular file.
+Subject: [PATCH v2 2/2] mounts_poll() make consistent to mdstat_poll
 Cc: kosaki.motohiro@jp.fujitsu.com
-In-Reply-To: <20090409092302.8D8A.A69D9226@jp.fujitsu.com>
-References: <18909.15904.704697.734477@notabene.brown> <20090409092302.8D8A.A69D9226@jp.fujitsu.com>
-Message-Id: <20090409134916.B3E6.A69D9226@jp.fujitsu.com>
+In-Reply-To: <20090409134916.B3E6.A69D9226@jp.fujitsu.com>
+References: <20090409092302.8D8A.A69D9226@jp.fujitsu.com> <20090409134916.B3E6.A69D9226@jp.fujitsu.com>
+Message-Id: <20090409135633.B3E9.A69D9226@jp.fujitsu.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="US-ASCII"
-Content-Transfer-Encoding: 8BIT
+Content-Transfer-Encoding: 7bit
 X-Mailer: Becky! ver. 2.50 [ja]
-Date: Thu,  9 Apr 2009 13:53:22 +0900 (JST)
+Date: Thu,  9 Apr 2009 13:57:59 +0900 (JST)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+In recently sysfs_poll discussion, Neil Brown pointed out /proc/mounts also should
+be fixed.
 
-Currently, following test programs don't finished.
+SUSv3 says "Regular files shall always poll TRUE for reading and writing".
+  see http://www.opengroup.org/onlinepubs/009695399/functions/poll.html
 
-% ruby -e '
-Thread.new { sleep }
-File.read("/sys/devices/system/cpu/cpu0/cpufreq/scaling_available_frequencies")
-'
+Then, mounts_poll()'s default should be "POLLIN | POLLRDNORM".
+it mean always readable.
 
-strace expose the reason.
-
-...
-open("/sys/devices/system/cpu/cpu0/cpufreq/scaling_available_frequencies", O_RDONLY|O_LARGEFILE) = 3
-ioctl(3, SNDCTL_TMR_TIMEBASE or TCGETS, 0xbf9fa6b8) = -1 ENOTTY (Inappropriate ioctl for device)
-fstat64(3, {st_mode=S_IFREG|0444, st_size=4096, ...}) = 0
-_llseek(3, 0, [0], SEEK_CUR)            = 0
-select(4, [3], NULL, NULL, NULL)        = 1 (in [3])
-read(3, "1400000 1300000 1200000 1100000 1"..., 4096) = 62
-select(4, [3], NULL, NULL, NULL
+In addition, event trigger should use "POLLERR | POLLPRI" instead POLLERR.
+it makes consistent to mdstat_poll() and sysfs_poll(). and, select(2) can
+handle POLLPRI easily.
 
 
-Because Ruby (the scripting language) VM assume select system-call against regular file don't block.
-it because SUSv3 says "Regular files shall always poll TRUE for reading and writing".
-    see http://www.opengroup.org/onlinepubs/009695399/functions/poll.html
-it seems valid assumption.
-
-But sysfs_poll() don't keep this rule although sysfs file can read and write always.
-
-This patch restore proper poll behavior to sysfs.
-/sys/block/md*/md/sync_action polling application and another sysfs updating sensitive
-application still can use POLLERR and POLLPRI.
-
-
-
-Cc: Neil Brown <neilb@suse.de>
-Cc: Greg Kroah-Hartman <gregkh@suse.de>
+Reported-by: Neil Brown <neilb@suse.de>
 Signed-off-by: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
+Cc: Ram Pai <linuxram@us.ibm.com>
+Cc: Miklos Szeredi <mszeredi@suse.cz>
+Cc: Al Viro <viro@zeniv.linux.org.uk>
+Cc: Greg Kroah-Hartman <gregkh@suse.de>
 --
- fs/sysfs/file.c |    4 ++--
+ fs/proc/base.c |    4 ++--
  1 files changed, 2 insertions(+), 2 deletions(-)
 
-diff --git a/fs/sysfs/file.c b/fs/sysfs/file.c
-index 289c43a..4a302f8 100644
---- a/fs/sysfs/file.c
-+++ b/fs/sysfs/file.c
-@@ -446,11 +446,11 @@ static unsigned int sysfs_poll(struct file *filp, poll_table *wait)
- 	if (buffer->event != atomic_read(&od->event))
- 		goto trigger;
+diff --git a/fs/proc/base.c b/fs/proc/base.c
+index f715597..aa763ab 100644
+--- a/fs/proc/base.c
++++ b/fs/proc/base.c
+@@ -648,14 +648,14 @@ static unsigned mounts_poll(struct file *file, poll_table *wait)
+ {
+ 	struct proc_mounts *p = file->private_data;
+ 	struct mnt_namespace *ns = p->ns;
+-	unsigned res = 0;
++	unsigned res = POLLIN | POLLRDNORM;
  
--	return 0;
-+	return DEFAULT_POLLMASK;
+ 	poll_wait(file, &ns->poll, wait);
  
-  trigger:
- 	buffer->needs_read_fill = 1;
--	return POLLERR|POLLPRI;
-+	return DEFAULT_POLLMASK|POLLERR|POLLPRI;
- }
+ 	spin_lock(&vfsmount_lock);
+ 	if (p->event != ns->event) {
+ 		p->event = ns->event;
+-		res = POLLERR;
++		res |= POLLERR | POLLPRI;
+ 	}
+ 	spin_unlock(&vfsmount_lock);
  
- void sysfs_notify_dirent(struct sysfs_dirent *sd)
-
 
 
 
