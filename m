@@ -1,64 +1,87 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S936224AbZDITe0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934234AbZDIToz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S936224AbZDITe0 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 9 Apr 2009 15:34:26 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933648AbZDITeP
+	id S934234AbZDIToz (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 9 Apr 2009 15:44:55 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758221AbZDIToo
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 9 Apr 2009 15:34:15 -0400
-Received: from one.firstfloor.org ([213.235.205.2]:60628 "EHLO
-	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757327AbZDITeO (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 9 Apr 2009 15:34:14 -0400
-Date: Thu, 9 Apr 2009 21:36:35 +0200
-From: Andi Kleen <andi@firstfloor.org>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: Linus Torvalds <torvalds@linux-foundation.org>,
-       Andi Kleen <andi@firstfloor.org>,
-       Frederic Weisbecker <fweisbec@gmail.com>,
-       LKML <linux-kernel@vger.kernel.org>, Jeff Mahoney <jeffm@suse.com>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       ReiserFS Development List <reiserfs-devel@vger.kernel.org>,
-       Bron Gondwana <brong@fastmail.fm>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Alexander Viro <viro@zeniv.linux.org.uk>
-Subject: Re: [PATCH] reiserfs: kill-the-BKL
-Message-ID: <20090409193635.GO14687@one.firstfloor.org>
-References: <1239070789-13354-1-git-send-email-fweisbec@gmail.com> <87tz4x97uq.fsf@basil.nowhere.org> <alpine.LFD.2.00.0904090831000.4583@localhost.localdomain> <20090409184022.GA2665@elte.hu>
+	Thu, 9 Apr 2009 15:44:44 -0400
+Received: from sh.osrg.net ([192.16.179.4]:52091 "EHLO sh.osrg.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1758144AbZDIToo (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 9 Apr 2009 15:44:44 -0400
+Date: Fri, 10 Apr 2009 04:43:55 +0900
+To: jeremy@goop.org
+Cc: fujita.tomonori@lab.ntt.co.jp, galak@kernel.crashing.org,
+       hch@infradead.org, linux-kernel@vger.kernel.org, mingo@elte.hu,
+       ian.campbell@citrix.com, beckyb@kernel.crashing.org
+Subject: Re: [PATCH 4/7] swiotlb: Allow arch override of
+ address_needs_mapping
+From: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
+In-Reply-To: <49DE4A37.3080702@goop.org>
+References: <49DD3C9C.7060101@goop.org>
+	<20090410033357S.fujita.tomonori@lab.ntt.co.jp>
+	<49DE4A37.3080702@goop.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090409184022.GA2665@elte.hu>
-User-Agent: Mutt/1.4.2.1i
+Content-Type: Text/Plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
+Message-Id: <20090410044403M.fujita.tomonori@lab.ntt.co.jp>
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-3.0 (sh.osrg.net [192.16.179.4]); Fri, 10 Apr 2009 04:43:56 +0900 (JST)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> Using a mutex seems like the sane choice here. I'd advocate spinlocks 
-> for a new filesystem any day (but even there it's a fine choice to have 
-> a mutex, if top of the line scalability is not an issue).
+On Thu, 09 Apr 2009 12:19:19 -0700
+Jeremy Fitzhardinge <jeremy@goop.org> wrote:
+
+> FUJITA Tomonori wrote:
+> >> Well, Becky's patches also added the hwdev argument to them, so 
+> >> presumably the powerpc implementation needs that (different 
+> >> devices/buses have differing views of physical memory, I guess).
+> >>     
+> >
+> > Until I see the ppc specific swiotlb patchset, I'm not sure but I
+> > think that we can remove phys_to_bus in swiotlb.
+> >   
 > 
-> But for a legacy filesystem like reiser3, which depended on the BKL 
+> Kumar's comment was: "For our SoC chips we don't need any mapping 
+> between phys & bus.  However something like PCI does have a mapping (a 
+> simple offset)."
 
-reiser3 is much more widely used in the user base than a lot of "non 
-legacy" file systems. It's very likely it has significantly
-more users than ext4 for example. Remember that it was the default file system
-for a major distribution until very recently. I also got a few
-reiser3 fs still around, it tended to perform very well
-on kernel hacker workloads.
+I meant that swiotlb doesn't need to use phys_to_bus stuff. But I as
+said, I'm not sure until I see the ppc swiotlb code.
 
-Given all that I think the current performance penalties Frederic reports
-are not acceptable. Dropping BKL is not a cause in itself, but should
-just improve performance.
 
-> auto-dropping on schedule() it would be rather fragile to use spinlocks, 
-> and it would take forever to validate the result. 
+> Kumar, could a single system have different phys<->bus mappings on a 
+> single system, or could it differ from device to device (or bus to bus)?
+> 
+> > Even if we need phys_to_bus, we can remove the rest of __weak tricks
+> > for only dom0. And we can make phys_to_bus arch-specific. Then we
+> > don't need any __weak tricks in swiotlb (and x86's swiotlb). dom0
+> > support adds many hacks to swiotlb.
+> >   
+> 
+> Well, we'd still need a way to do hook the swiotlb_alloc(_boot) 
+> allocation.  At the moment its effectively arch-specific because x86 
+> only uses swiotlb_alloc_boot(), and ia64 only uses swiotlb_alloc().  One 
+> option would be to simply make that function arch-defined, which would 
+> remove the need for any kind of override mechanism in lib/swiotlb; that 
+> would match the handling of phys_to_bus.  And its more appealing if we 
+> manage to drop swiotlb_alloc_boot, so there's only a single function for 
+> the arches to worry about.
+> 
+> > Yeah, ISA DMA comment is misleading. swiotlb can't handle it. And it
+> > doesn't need to handle it because the block layer can thanks to
+> > the bouncing (the network layer does the similar, I think).
+> >
+> > As you said, we could remove the latter though I'm not sure.
+> >   
+> 
+> It would take a bit of rearranging the x86 swiotlb/iommu init sequence, 
+> but I don't think it would be too complex.  I'll look into it.
 
-Not convinced it would be that hard. It could be probably done with some 
-straight forward static code analysis. And after that since there's
-not much development going anymore it's unlikely to break again.
+Unfortunately, not that simple. IA64_64 and x86 share the iommu init
+sequence. So you need to look at both. I put some cleanups on it in
+30-rc1. But I need to do more cleanups.
 
--Andi
 
--- 
-ak@linux.intel.com -- Speaking for myself only.
+
