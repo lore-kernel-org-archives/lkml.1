@@ -1,15 +1,15 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764770AbZDIJzv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1765405AbZDIJ40@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764770AbZDIJzv (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 9 Apr 2009 05:55:51 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1764381AbZDIJzO
+	id S1765405AbZDIJ40 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 9 Apr 2009 05:56:26 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763741AbZDIJzT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 9 Apr 2009 05:55:14 -0400
-Received: from hera.kernel.org ([140.211.167.34]:40699 "EHLO hera.kernel.org"
+	Thu, 9 Apr 2009 05:55:19 -0400
+Received: from hera.kernel.org ([140.211.167.34]:40704 "EHLO hera.kernel.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1763098AbZDIJzM (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 9 Apr 2009 05:55:12 -0400
-Date: Thu, 9 Apr 2009 09:54:32 GMT
+	id S1765290AbZDIJzS (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 9 Apr 2009 05:55:18 -0400
+Date: Thu, 9 Apr 2009 09:54:44 GMT
 From: Peter Zijlstra <a.p.zijlstra@chello.nl>
 To: linux-tip-commits@vger.kernel.org
 Cc: linux-kernel@vger.kernel.org, paulus@samba.org, hpa@zytor.com,
@@ -18,127 +18,108 @@ Cc: linux-kernel@vger.kernel.org, paulus@samba.org, hpa@zytor.com,
 Reply-To: mingo@redhat.com, hpa@zytor.com, paulus@samba.org,
        linux-kernel@vger.kernel.org, a.p.zijlstra@chello.nl,
        tglx@linutronix.de, cjashfor@linux.vnet.ibm.com, mingo@elte.hu
-In-Reply-To: <20090409085524.427173196@chello.nl>
-References: <20090409085524.427173196@chello.nl>
-Subject: [tip:perfcounters/core] perf_counter: optimize mmap/comm tracking
-Message-ID: <tip-9ee318a7825929bc3734110b83ae8e20e53d9de3@git.kernel.org>
-Git-Commit-ID: 9ee318a7825929bc3734110b83ae8e20e53d9de3
+In-Reply-To: <20090409085524.514046352@chello.nl>
+References: <20090409085524.514046352@chello.nl>
+Subject: [tip:perfcounters/core] perf_counter: sysctl for system wide perf counters
+Message-ID: <tip-1ccd15497869f3ed83b5225d410df53a96e52757@git.kernel.org>
+Git-Commit-ID: 1ccd15497869f3ed83b5225d410df53a96e52757
 X-Mailer: tip-git-log-daemon
 MIME-Version: 1.0
 Content-Type: text/plain; charset=UTF-8
 Content-Disposition: inline
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Thu, 09 Apr 2009 09:54:34 +0000 (UTC)
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Thu, 09 Apr 2009 09:54:46 +0000 (UTC)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Commit-ID:  9ee318a7825929bc3734110b83ae8e20e53d9de3
-Gitweb:     http://git.kernel.org/tip/9ee318a7825929bc3734110b83ae8e20e53d9de3
+Commit-ID:  1ccd15497869f3ed83b5225d410df53a96e52757
+Gitweb:     http://git.kernel.org/tip/1ccd15497869f3ed83b5225d410df53a96e52757
 Author:     Peter Zijlstra <a.p.zijlstra@chello.nl>
-AuthorDate: Thu, 9 Apr 2009 10:53:44 +0200
+AuthorDate: Thu, 9 Apr 2009 10:53:45 +0200
 Committer:  Ingo Molnar <mingo@elte.hu>
-CommitDate: Thu, 9 Apr 2009 11:50:43 +0200
+CommitDate: Thu, 9 Apr 2009 11:50:52 +0200
 
-perf_counter: optimize mmap/comm tracking
+perf_counter: sysctl for system wide perf counters
 
-Impact: performance optimization
+Impact: add sysctl for paranoid/relaxed perfcounters policy
 
-The mmap/comm tracking code does quite a lot of work before it discovers
-there's no interest in it, avoid that by keeping a counter.
+Allow the use of system wide perf counters to everybody, but provide
+a sysctl to disable it for the paranoid security minded.
 
 Signed-off-by: Peter Zijlstra <a.p.zijlstra@chello.nl>
 Cc: Paul Mackerras <paulus@samba.org>
 Cc: Corey Ashford <cjashfor@linux.vnet.ibm.com>
-LKML-Reference: <20090409085524.427173196@chello.nl>
+LKML-Reference: <20090409085524.514046352@chello.nl>
 Signed-off-by: Ingo Molnar <mingo@elte.hu>
 
 
 ---
- kernel/perf_counter.c |   39 ++++++++++++++++++++++++++++++++++++---
- 1 files changed, 36 insertions(+), 3 deletions(-)
+ include/linux/perf_counter.h |    2 ++
+ kernel/perf_counter.c        |    4 +++-
+ kernel/sysctl.c              |   11 +++++++++++
+ 3 files changed, 16 insertions(+), 1 deletions(-)
 
+diff --git a/include/linux/perf_counter.h b/include/linux/perf_counter.h
+index c22363a..9814328 100644
+--- a/include/linux/perf_counter.h
++++ b/include/linux/perf_counter.h
+@@ -568,6 +568,8 @@ struct perf_callchain_entry {
+ 
+ extern struct perf_callchain_entry *perf_callchain(struct pt_regs *regs);
+ 
++extern int sysctl_perf_counter_priv;
++
+ #else
+ static inline void
+ perf_counter_task_sched_in(struct task_struct *task, int cpu)		{ }
 diff --git a/kernel/perf_counter.c b/kernel/perf_counter.c
-index b07195b..76376ec 100644
+index 76376ec..7efb7eb 100644
 --- a/kernel/perf_counter.c
 +++ b/kernel/perf_counter.c
-@@ -38,6 +38,10 @@ int perf_max_counters __read_mostly = 1;
- static int perf_reserved_percpu __read_mostly;
- static int perf_overcommit __read_mostly = 1;
+@@ -42,6 +42,8 @@ static atomic_t nr_mmap_tracking __read_mostly;
+ static atomic_t nr_munmap_tracking __read_mostly;
+ static atomic_t nr_comm_tracking __read_mostly;
  
-+static atomic_t nr_mmap_tracking __read_mostly;
-+static atomic_t nr_munmap_tracking __read_mostly;
-+static atomic_t nr_comm_tracking __read_mostly;
++int sysctl_perf_counter_priv __read_mostly; /* do we need to be privileged */
 +
  /*
   * Mutex for (sysadmin-configurable) counter reservations:
   */
-@@ -1186,6 +1190,13 @@ static void free_counter(struct perf_counter *counter)
- {
- 	perf_pending_sync(counter);
+@@ -1132,7 +1134,7 @@ static struct perf_counter_context *find_get_context(pid_t pid, int cpu)
+ 	 */
+ 	if (cpu != -1) {
+ 		/* Must be root to operate on a CPU counter: */
+-		if (!capable(CAP_SYS_ADMIN))
++		if (sysctl_perf_counter_priv && !capable(CAP_SYS_ADMIN))
+ 			return ERR_PTR(-EACCES);
  
-+	if (counter->hw_event.mmap)
-+		atomic_dec(&nr_mmap_tracking);
-+	if (counter->hw_event.munmap)
-+		atomic_dec(&nr_munmap_tracking);
-+	if (counter->hw_event.comm)
-+		atomic_dec(&nr_comm_tracking);
-+
- 	if (counter->destroy)
- 		counter->destroy(counter);
+ 		if (cpu < 0 || cpu > num_possible_cpus())
+diff --git a/kernel/sysctl.c b/kernel/sysctl.c
+index 4286b62..8ba4578 100644
+--- a/kernel/sysctl.c
++++ b/kernel/sysctl.c
+@@ -49,6 +49,7 @@
+ #include <linux/reboot.h>
+ #include <linux/ftrace.h>
+ #include <linux/slow-work.h>
++#include <linux/perf_counter.h>
  
-@@ -2005,7 +2016,12 @@ static void perf_counter_comm_event(struct perf_comm_event *comm_event)
- 
- void perf_counter_comm(struct task_struct *task)
- {
--	struct perf_comm_event comm_event = {
-+	struct perf_comm_event comm_event;
-+
-+	if (!atomic_read(&nr_comm_tracking))
-+		return;
-+       
-+	comm_event = (struct perf_comm_event){
- 		.task	= task,
- 		.event  = {
- 			.header = { .type = PERF_EVENT_COMM, },
-@@ -2128,7 +2144,12 @@ got_name:
- void perf_counter_mmap(unsigned long addr, unsigned long len,
- 		       unsigned long pgoff, struct file *file)
- {
--	struct perf_mmap_event mmap_event = {
-+	struct perf_mmap_event mmap_event;
-+
-+	if (!atomic_read(&nr_mmap_tracking))
-+		return;
-+
-+	mmap_event = (struct perf_mmap_event){
- 		.file   = file,
- 		.event  = {
- 			.header = { .type = PERF_EVENT_MMAP, },
-@@ -2146,7 +2167,12 @@ void perf_counter_mmap(unsigned long addr, unsigned long len,
- void perf_counter_munmap(unsigned long addr, unsigned long len,
- 			 unsigned long pgoff, struct file *file)
- {
--	struct perf_mmap_event mmap_event = {
-+	struct perf_mmap_event mmap_event;
-+
-+	if (!atomic_read(&nr_munmap_tracking))
-+		return;
-+
-+	mmap_event = (struct perf_mmap_event){
- 		.file   = file,
- 		.event  = {
- 			.header = { .type = PERF_EVENT_MUNMAP, },
-@@ -2725,6 +2751,13 @@ done:
- 
- 	counter->hw_ops = hw_ops;
- 
-+	if (counter->hw_event.mmap)
-+		atomic_inc(&nr_mmap_tracking);
-+	if (counter->hw_event.munmap)
-+		atomic_inc(&nr_munmap_tracking);
-+	if (counter->hw_event.comm)
-+		atomic_inc(&nr_comm_tracking);
-+
- 	return counter;
- }
- 
+ #include <asm/uaccess.h>
+ #include <asm/processor.h>
+@@ -920,6 +921,16 @@ static struct ctl_table kern_table[] = {
+ 		.child		= slow_work_sysctls,
+ 	},
+ #endif
++#ifdef CONFIG_PERF_COUNTERS
++	{
++		.ctl_name	= CTL_UNNUMBERED,
++		.procname	= "perf_counter_privileged",
++		.data		= &sysctl_perf_counter_priv,
++		.maxlen		= sizeof(sysctl_perf_counter_priv),
++		.mode		= 0644,
++		.proc_handler	= &proc_dointvec,
++	},
++#endif
+ /*
+  * NOTE: do not add new entries to this table unless you have read
+  * Documentation/sysctl/ctl_unnumbered.txt
