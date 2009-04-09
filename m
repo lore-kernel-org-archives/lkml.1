@@ -1,99 +1,158 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934227AbZDINAr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933422AbZDINBZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934227AbZDINAr (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 9 Apr 2009 09:00:47 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933137AbZDINAb
+	id S933422AbZDINBZ (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 9 Apr 2009 09:01:25 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934301AbZDINA5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 9 Apr 2009 09:00:31 -0400
-Received: from lug-owl.de ([195.71.106.12]:56819 "EHLO lug-owl.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1759951AbZDINA3 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 9 Apr 2009 09:00:29 -0400
-X-Greylist: delayed 469 seconds by postgrey-1.27 at vger.kernel.org; Thu, 09 Apr 2009 09:00:28 EDT
-Date: Thu, 9 Apr 2009 14:52:37 +0200
-From: Jan-Benedict Glaw <jbglaw@lug-owl.de>
-To: Alex Chiang <achiang@hp.com>
-Cc: Andrew Morton <akpm@linux-foundation.org>, Robin Holt <holt@sgi.com>,
-       linux-kernel <linux-kernel@vger.kernel.org>, linux-ia64@vger.kernel.org
-Subject: Re: cross-compilers
-Message-ID: <20090409125237.GD7921@lug-owl.de>
-Mail-Followup-To: Alex Chiang <achiang@hp.com>,
-	Andrew Morton <akpm@linux-foundation.org>,
-	Robin Holt <holt@sgi.com>,
-	linux-kernel <linux-kernel@vger.kernel.org>,
-	linux-ia64@vger.kernel.org
-References: <20090408003921.GA5054@ldl.fc.hp.com> <20090408010331.GB10768@sgi.com> <20090408054612.GA6744@ldl.fc.hp.com> <20090407225457.86f8a458.akpm@linux-foundation.org> <20090408173332.GB20187@ldl.fc.hp.com>
+	Thu, 9 Apr 2009 09:00:57 -0400
+Received: from mail-qy0-f118.google.com ([209.85.221.118]:42132 "EHLO
+	mail-qy0-f118.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S933137AbZDINAz (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 9 Apr 2009 09:00:55 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:date:message-id:subject:from:to:cc:content-type
+         :content-transfer-encoding;
+        b=ovc9WPstP9dnqBir8LOY4oujViTxk+5tBYDenG0YgzlVozQcSrBVFcffoGHe5S6Kkx
+         dTQkj6fmauojst15hgwPklfIXQpzkMqf5+oa5NAhQIinNpQx2xIMTqKPk02n7UJqOVvf
+         3bHj5eIsngD3JJ7udfRdyPxtBsKUn06k6koWs=
 MIME-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha1;
-	protocol="application/pgp-signature"; boundary="zNngJsVJxur72n6A"
-Content-Disposition: inline
-In-Reply-To: <20090408173332.GB20187@ldl.fc.hp.com>
-X-Operating-System: Linux mail 2.6.18-5-686 
-X-gpg-fingerprint: 250D 3BCF 7127 0D8C A444  A961 1DBD 5E75 8399 E1BB
-X-gpg-key: wwwkeys.de.pgp.net
-X-Echelon-Enable: howto poison arsenous mail psychological biological
-	nuclear warfare test the bombastical terror of flooding the spy
-	listeners explosion sex drugs and rock'n'roll
-X-TKUeV: howto poison arsenous mail psychological biological nuclear
-	warfare test the bombastical terror of flooding the spy listeners
-	explosion sex drugs and rock'n'roll
-X-message-flag: Please send plain text messages only. Do not send HTML
-	emails. Thank you. 
-User-Agent: Mutt/1.5.18 (2008-05-17)
+Date: Thu, 9 Apr 2009 18:30:53 +0530
+Message-ID: <9debc4410904090600k3250cc9y5c713c1b0ef6d16b@mail.gmail.com>
+Subject: [PATCH] cacheflush system call not returning -EINVAL
+From: Maxin John <maxin.john@gmail.com>
+To: linux-kernel@vger.kernel.org
+Cc: kernel-janitors@vger.kernel.org, ralf@linux-mips.org
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Hi,
 
---zNngJsVJxur72n6A
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+cacheflush man page states that cacheflush() will set  EINVAL if cache
+parameter is not one of ICACHE, DCACHE, or BCACHE.
+In order to confirm this behavior, I have executed the below listed
+program (cacheflush_check.c) in Toshiba RBTX4937 board (MIPS) with
+2.6.29.1 kernel.
 
-On Wed, 2009-04-08 11:33:32 -0600, Alex Chiang <achiang@hp.com> wrote:
-> * Andrew Morton <akpm@linux-foundation.org>:
-> > On Tue, 7 Apr 2009 23:46:12 -0600 Alex Chiang <achiang@hp.com> wrote:
-> > > * Robin Holt <holt@sgi.com>:
-> > > > Don't know if this answers your problem, but I use the tools from
-> > > > emdebian and they do not suffer from the problems you list below.
-> > >=20
-> > > Wow, this seems _much_ simpler. Once you get the toolchain
-> > > installed, all you have to do is set ARCH and CROSS_COMPILE
-> > > appropriately?
-> > >=20
-> > > I guess the question remains for Andrew. Since I pretty much did
-> > > all the work needed to update his cross-compiler repo, is there
-> > > still value in it?
-> >=20
-> > We would benefit very much from having someone who actually maintains a
-> > suite of cross-compilers for kernel developers.
-> =20
-> Ok, I'll work with Vegard on this.
+=================================================================
+ /*
+  *  cacheflush_check.c
+  *
+  *  Description:
+  * Tests EINVAL error of cacheflush system call
+  *
+  *  Expected behaviour:
+  * cacheflush() should return -EINVAL when cache parameter is not one
+of ICACHE, DCACHE, or BCACHE.
+  *
+  */
 
-Is anybody building GCC trunk for the targets on a daily basis? I do
-build vax-linux (kernel-only) cross compilers quite often and the
-build script could probably also handle other targets.
+#include <sys/syscall.h>
+#include <unistd.h>
+#include <stdio.h>
+#include <stdlib.h>
+#include <errno.h>
+#if defined __mips__
+#include <asm/cachectl.h>
 
-MfG, JBG
+int cacheflush(char *addr, int nbytes, int cache)
+{
+        return syscall(__NR_cacheflush, addr, nbytes, cache);
+}
+#endif /* __mips__ */
 
---=20
-      Jan-Benedict Glaw      jbglaw@lug-owl.de              +49-172-7608481
-  Signature of:                        Lauf nicht vor Deinem Gl=C3=BCck dav=
-on:
-  the second  :                             Es k=C3=B6nnte hinter Dir stehe=
-n!
 
---zNngJsVJxur72n6A
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: Digital signature
-Content-Disposition: inline
+int main()
+{
+        /* cacheflush man page states that cacheflush() is only
+applicable to MIPS architecture */
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.9 (GNU/Linux)
+        char *addr = NULL;
 
-iEYEARECAAYFAknd75UACgkQHb1edYOZ4bu0oACeJviGNvw1zHejrg2+ROOdYKCf
-Jf0AoI+18AjE8jtw4DdxmJcvlBGiJBhm
-=zqtr
------END PGP SIGNATURE-----
+        /* Create some user address range */
+        addr = malloc(getpagesize());
+        if (addr == NULL) {
+                printf("Malloc error\n");
+                exit(-1);
+        }
 
---zNngJsVJxur72n6A--
+        /* Invokes cacheflush() with proper parameters */
+        cacheflush(addr, getpagesize(), ICACHE);
+        cacheflush(addr, getpagesize(), DCACHE);
+        cacheflush(addr, getpagesize(), BCACHE);
+
+       /* Tests whether cacheflush() returns -EINVAL */
+        if (cacheflush(addr, getpagesize(), 0) < 0) {
+                if (errno == EINVAL) {
+                        printf("cacheflush EINVAL : TEST PASS\n");
+                        exit(0);
+                } else {
+                        printf("cacheflush EINVAL : TEST FAIL\n");
+                }
+        }
+        printf("cacheflush EINVAL : TEST FAIL\n");
+        return -1;
+}
+=======================================================
+
+I have observed that the test failed when executed in target board.
+
+-bash-3.2# ./cacheflush_err_check
+cacheflush EINVAL : TEST FAIL
+
+I have checked the 'arch/mips/mm/cache.c' and observed that the
+cacheflush() implementation is not setting EINVAL.
+So, I have modified this file by including these two lines for EINVAL.
+ if ( (cache != ICACHE) && (cache != DCACHE) && (cache != BCACHE) )
+            return -EINVAL;
+
+After this modification, I have straced the cacheflush_check program
+with the modified kernel:
+strace ./cacheflush_check
+....
+set_thread_area(0x2aacd3e0)             = 0
+mprotect(0x2ac1a000, 28672, PROT_READ)  = 0
+mprotect(0x2aad4000, 4096, PROT_READ)   = 0
+brk(0)                                  = 0x411000
+brk(0x432000)                           = 0x432000
+syscall(0x1033, 0x411050, 0x1000, 0x1, 0x418e90, 0x2aac5280, 0x418e90,
+0x2aad4ef0) = 0
+syscall(0x1033, 0x411050, 0x1000, 0x2, 0x418e90, 0x2aac5280, 0x418e90,
+0x2aad4ef0) = 0
+syscall(0x1033, 0x411050, 0x1000, 0x3, 0x418e90, 0x2aac5280, 0x418e90,
+0x2aad4ef0) = 0
+syscall(0x1033, 0x411050, 0x1000, 0, 0x418e90, 0x2aac5280, 0x418e90,
+0x2aad4ef0) = -1 EINVAL (Invalid argument)
+fstat64(1, {st_mode=S_IFCHR|0600, st_rdev=makedev(136, 0), ...}) = 0
+old_mmap(NULL, 65536, PROT_READ|PROT_WRITE, MAP_PRIVATE|MAP_ANONYMOUS,
+-1, 0) = 0x2ac2a000
+....
+
+The test passes when executed in the modified kernel.I have tested
+this patch and seen no adverse effects.
+Cheers,
+
+Signed-off-by: Maxin B. John <maxinbjohn@gmail.com>
+
+--------
+diff -uNr linux-2.6.29.1/arch/mips/mm/cache.c
+linux-2.6.29.1-a/arch/mips/mm/cache.c
+--- linux-2.6.29.1/arch/mips/mm/cache.c 2009-04-03 02:25:27.000000000 +0530
++++ linux-2.6.29.1-a/arch/mips/mm/cache.c       2009-04-09
+18:24:50.000000000 +0530
+@@ -64,6 +64,10 @@
+ {
+        if (bytes == 0)
+                return 0;
++
++       if ( (cache != ICACHE) && (cache != DCACHE) && (cache != BCACHE) )
++                return -EINVAL;
++
+        if (!access_ok(VERIFY_WRITE, (void __user *) addr, bytes))
+                return -EFAULT;
+
+----------
