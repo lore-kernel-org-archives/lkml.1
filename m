@@ -1,50 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933706AbZDIMvd@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932516AbZDIMyt@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933706AbZDIMvd (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 9 Apr 2009 08:51:33 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761775AbZDIMvU
+	id S932516AbZDIMyt (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 9 Apr 2009 08:54:49 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761547AbZDIMyk
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 9 Apr 2009 08:51:20 -0400
-Received: from earthlight.etchedpixels.co.uk ([81.2.110.250]:38778 "EHLO
-	www.etchedpixels.co.uk" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1761395AbZDIMvU (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 9 Apr 2009 08:51:20 -0400
-Date: Thu, 9 Apr 2009 13:51:23 +0100
-From: Alan Cox <alan@lxorguk.ukuu.org.uk>
-To: Jean Delvare <khali@linux-fr.org>
-Cc: Jack Stone <jwjstone@fastmail.fm>, linux-kernel@vger.kernel.org,
-       jeff@garzik.org, kernel-janitors@vger.kernel.org
-Subject: Re: [PATCH 13/56] i2c: Remove void casts
-Message-ID: <20090409135123.36e6415b@lxorguk.ukuu.org.uk>
-In-Reply-To: <20090409144334.4c283ef2@hyperion.delvare>
-References: <1239189748-11703-1-git-send-email-jwjstone@fastmail.fm>
-	<1239189748-11703-2-git-send-email-jwjstone@fastmail.fm>
-	<1239189748-11703-3-git-send-email-jwjstone@fastmail.fm>
-	<1239189748-11703-4-git-send-email-jwjstone@fastmail.fm>
-	<1239189748-11703-14-git-send-email-jwjstone@fastmail.fm>
-	<20090409144334.4c283ef2@hyperion.delvare>
-X-Mailer: Claws Mail 3.7.0 (GTK+ 2.14.7; x86_64-redhat-linux-gnu)
+	Thu, 9 Apr 2009 08:54:40 -0400
+Received: from hera.kernel.org ([140.211.167.34]:45763 "EHLO hera.kernel.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1760909AbZDIMyj (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 9 Apr 2009 08:54:39 -0400
+Subject: [PATCH -tip] x86: process.c declare sys_fork and sys_vfork before
+ they get used
+From: Jaswinder Singh Rajput <jaswinder@kernel.org>
+To: Ingo Molnar <mingo@elte.hu>, x86 maintainers <x86@kernel.org>,
+       LKML <linux-kernel@vger.kernel.org>
+Content-Type: text/plain
+Date: Thu, 09 Apr 2009 18:24:19 +0530
+Message-Id: <1239281659.11859.21.camel@ht.satnam>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+X-Mailer: Evolution 2.24.5 (2.24.5-1.fc10) 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 9 Apr 2009 14:43:34 +0200
-Jean Delvare <khali@linux-fr.org> wrote:
+Impact: fix sparse warnings:
+  arch/x86/kernel/process.c:230:5: warning: symbol 'sys_fork' was not declared. Should it be static?
+  arch/x86/kernel/process.c:245:5: warning: symbol 'sys_vfork' was not declared. Should it be static?
 
-> Hi Jack,
-> 
-> On Wed,  8 Apr 2009 12:21:45 +0100, Jack Stone wrote:
-> > Remove uneeded void casts
-> > 
-> > Signed-Off-By: Jack Stone <jwjstone@fastmail.fm>
-> 
-> WARNING: Signed-off-by: is the preferred form
+Signed-off-by: Jaswinder Singh Rajput <jaswinderrajput@gmail.com>
+---
+ arch/x86/kernel/process.c |    1 +
+ 1 files changed, 1 insertions(+), 0 deletions(-)
 
-Nothing actually cares, and if anyone does then we have software for the
-mindless purpose of changing the case of words
+diff --git a/arch/x86/kernel/process.c b/arch/x86/kernel/process.c
+index 1d71442..4d397ce 100644
+--- a/arch/x86/kernel/process.c
++++ b/arch/x86/kernel/process.c
+@@ -15,6 +15,7 @@
+ #include <asm/uaccess.h>
+ #include <asm/i387.h>
+ #include <asm/ds.h>
++#include <asm/syscalls.h>		/* sys_fork, sys_vfork */
+ 
+ unsigned long idle_halt;
+ EXPORT_SYMBOL(idle_halt);
+-- 
+1.6.0.6
 
-Alan
+
+
