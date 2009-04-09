@@ -1,92 +1,81 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762409AbZDINZp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762141AbZDINcf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762409AbZDINZp (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 9 Apr 2009 09:25:45 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756723AbZDINZb
+	id S1762141AbZDINcf (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 9 Apr 2009 09:32:35 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759139AbZDINc0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 9 Apr 2009 09:25:31 -0400
-Received: from srv5.dvmed.net ([207.36.208.214]:34184 "EHLO mail.dvmed.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753468AbZDINZa (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 9 Apr 2009 09:25:30 -0400
-Message-ID: <49DDF744.1090209@garzik.org>
-Date: Thu, 09 Apr 2009 09:25:24 -0400
-From: Jeff Garzik <jeff@garzik.org>
-User-Agent: Thunderbird 2.0.0.21 (X11/20090320)
+	Thu, 9 Apr 2009 09:32:26 -0400
+Received: from tx2ehsobe004.messaging.microsoft.com ([65.55.88.14]:8762 "EHLO
+	TX2EHSOBE008.bigfish.com" rhost-flags-OK-OK-OK-FAIL)
+	by vger.kernel.org with ESMTP id S1758748AbZDINcZ (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 9 Apr 2009 09:32:25 -0400
+X-BigFish: VPS-32(z34a4jz13e6S936eQ936fKzz1202hzz5eeeTz32i6bh)
+X-FB-SS: 5,13,
+X-WSS-ID: 0KHU5LC-02-0RI-01
+Date: Thu, 9 Apr 2009 15:31:53 +0200
+From: Andreas Herrmann <andreas.herrmann3@amd.com>
+To: Ingo Molnar <mingo@elte.hu>, "H. Peter Anvin" <hpa@zytor.com>
+CC: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
+       Mark Langsdorf <mark.langsdorf@amd.com>
+Subject: [PATCH 8/8] x86/docs: add description for cache_disable sysfs
+	interface
+Message-ID: <20090409133153.GL31527@alberich.amd.com>
+References: <20090409125659.GD31527@alberich.amd.com>
 MIME-Version: 1.0
-To: Mark Lord <liml@rtr.ca>, Tejun Heo <htejun@gmail.com>
-CC: Alan Cox <alan@lxorguk.ukuu.org.uk>, linux-ide@vger.kernel.org,
-       linux-scsi <linux-scsi@vger.kernel.org>,
-       LKML <linux-kernel@vger.kernel.org>
-Subject: Re: [PROPOSED] ata: Report 16/32bit PIO as best we can
-References: <20090409133221.18202.63779.stgit@t61.ukuu.org.uk> <49DDF1EB.2060200@rtr.ca>
-In-Reply-To: <49DDF1EB.2060200@rtr.ca>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 7bit
-X-Spam-Score: -4.4 (----)
-X-Spam-Report: SpamAssassin version 3.2.5 on srv5.dvmed.net summary:
-	Content analysis details:   (-4.4 points, 5.0 required)
+Content-Type: text/plain; charset="us-ascii"
+Content-Disposition: inline
+In-Reply-To: <20090409125659.GD31527@alberich.amd.com>
+User-Agent: Mutt/1.5.16 (2007-06-09)
+X-OriginalArrivalTime: 09 Apr 2009 13:31:54.0296 (UTC) FILETIME=[8C1E6B80:01C9B917]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Mark Lord wrote:
-> Alan Cox wrote:
->> Something like this then ?
->>
->>
->> The legacy old IDE API for this is a bit primitive so we try and map 
->> stuff
->> sensibly onto it.
->>
->> - Add flags2 as we ran out of flags
->> - Set PIO over DMA devices to report 32bit
->> - Add ability to change the PIO32 settings if the controller permits it
->> - Add that functionality into the sff drivers
->> - Add that functionality into the VLB legacy driver
->> - Turn on the 32bit PIO on the ninja32 and add support there
->>
->> Signed-off-by: Alan Cox <alan@linux.intel.com>
-> ..
-> 
-> By all means go ahead with something like this,
-> and thanks for doing it, Alan.
-> 
-> But.. these do look rather suspiciously like sysfs attrs to me.
-> 
-> We didn't have a sysfs in the IDE days (so Gadi added the klunky
-> procfs "settings" thing for there), but we do now.
-> 
-> I'm happy to update hdparm to check sysfs if that's where this
-> ends up, or to do almost nothing for it if we stick with the ioctls.
+From: Mark Langsdorf <mark.langsdorf@amd.com>
 
-hmmm, Tejun's storage summit presentation would be quite relevant at 
-this juncture :)
+Signed-off-by: Mark Langsdorf <mark.langsdorf@amd.com>
+Signed-off-by: Andreas Herrmann <andreas.herrmann3@amd.com>
+---
+ .../ABI/testing/sysfs-devices-cache_disable        |   18 ++++++++++++++++++
+ 1 files changed, 18 insertions(+), 0 deletions(-)
+ create mode 100644 Documentation/ABI/testing/sysfs-devices-cache_disable
 
-The short answer:  we need a control mechanism for tasks such SATA PHY 
-twiddling, host controller reset, host controller configuration 
-(set/clear 32-bit I/O in this example), ...
+Oops, shouldn't Date and KernelVersion be adapted to reflect 2.6.30
+and say June 2009.
 
-sysfs attrs are desired for this, but we've held off largely because 
-this is all intertwined with the long term direction of "storage model", 
-"transport protocol" and libata's eventual move away from strict SCSI 
-dependency.
+I don't know.
 
-I think the best place for sysfs attr attachment is an ata_transport 
-module, something that's needed to be written for quite a while.  You 
-can see some of the eventual direction in scsi_transport_*.[ch] and 
-raid_class.c.
+Regards,
+Andreas
 
-Eventually I hope to reach a point where the current crop of SATA+SAS 
-controllers out in the field (e.g. mvsas) will attach to 
-scsi_transport_sas or ata_transport, depending on controller port 
-configuration and attached device(s).  And for the sake of users' 
-sanity, a single utility should be used to configure a SATA+SAS 
-controller port.  Requiring use of hdparm when the port is in SATA mode, 
-and sg_* when the port is in SAS mode, is a bit annoying.
 
-	Jeff
-
+diff --git a/Documentation/ABI/testing/sysfs-devices-cache_disable b/Documentation/ABI/testing/sysfs-devices-cache_disable
+new file mode 100644
+index 0000000..175bb4f
+--- /dev/null
++++ b/Documentation/ABI/testing/sysfs-devices-cache_disable
+@@ -0,0 +1,18 @@
++What:      /sys/devices/system/cpu/cpu*/cache/index*/cache_disable_X
++Date:      August 2008
++KernelVersion:	2.6.27
++Contact:	mark.langsdorf@amd.com
++Description:	These files exist in every cpu's cache index directories.
++		There are currently 2 cache_disable_# files in each
++		directory.  Reading from these files on a supported
++		processor will return that cache disable index value
++		for that processor and node.  Writing to one of these
++		files will cause the specificed cache index to be disabled.
++
++		Currently, only AMD Family 10h Processors support cache index
++		disable, and only for their L3 caches.  See the BIOS and
++		Kernel Developer's Guide at
++		http://www.amd.com/us-en/assets/content_type/white_papers_and_tech_docs/31116-Public-GH-BKDG_3.20_2-4-09.pdf
++		for formatting information and other details on the
++		cache index disable.
++Users:    joachim.deguara@amd.com
+-- 
+1.6.2
 
 
 
