@@ -1,61 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S936922AbZDIW6k@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S937170AbZDIW7g@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S936922AbZDIW6k (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 9 Apr 2009 18:58:40 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758075AbZDIW6Z
+	id S937170AbZDIW7g (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 9 Apr 2009 18:59:36 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754017AbZDIW7Z
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 9 Apr 2009 18:58:25 -0400
-Received: from mx0.towertech.it ([213.215.222.73]:40559 "HELO mx0.towertech.it"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
-	id S936951AbZDIW6Y (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 9 Apr 2009 18:58:24 -0400
-Date: Fri, 10 Apr 2009 00:58:20 +0200
-From: Alessandro Zummo <alessandro.zummo@towertech.it>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: Atsushi Nemoto <anemo@mba.ocn.ne.jp>, rtc-linux@googlegroups.com,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] rtc: Make rtc_update_irq callable with irqs enabled
-Message-ID: <20090410005820.4fcfcc1f@i1501.lan.towertech.it>
-In-Reply-To: <20090409153921.04b6384c.akpm@linux-foundation.org>
-References: <1239036633-10032-1-git-send-email-anemo@mba.ocn.ne.jp>
-	<20090409153921.04b6384c.akpm@linux-foundation.org>
-Organization: Tower Technologies
-X-Mailer: Sylpheed
-X-This-Is-A-Real-Message: Yes
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Thu, 9 Apr 2009 18:59:25 -0400
+Received: from mail.issp.bas.bg ([195.96.236.10]:38604 "EHLO mail.issp.bas.bg"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1758111AbZDIW7Z (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 9 Apr 2009 18:59:25 -0400
+From: Marin Mitov <mitov@issp.bas.bg>
+Organization: Institute of Solid State Physics
+To: linux-kernel@vger.kernel.org
+Subject: [PATCH]Silencing warning: 'host' may be used uninitialized in this function
+Date: Fri, 10 Apr 2009 01:33:58 +0300
+User-Agent: KMail/1.9.10
+Cc: Jeff Garzik <jeff@garzik.org>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="us-ascii"
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200904100133.58556.mitov@issp.bas.bg>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 9 Apr 2009 15:39:21 -0700
-Andrew Morton <akpm@linux-foundation.org> wrote:
+Hi all,
 
-> > The rtc_update_irq() might be called with irqs enabled, if a interrupt
-> > handler was registered without IRQF_DISABLED.  
-> 
-> Why?  What are the consequences of not merging the patch?  Is it a
-> bugfix?  If so, what are the user-visible effects of the bug?
+I do not know if that is worth the effort, but...
 
- rtc_update_irq() is called by a driver, and a driver
- is supposed to know when it's doing the call.
+Silencing:  warning: 'host' may be used uninitialized in this function
+It is a false positive.
 
- The driver can either use IRQF_DISABLED or disable the
- interrupts in some other ways. 
+The patch is against 2.6.30-rc1, but should apply to 2.6.29(.1) too.
 
- I also suspect this is some legacy we are carrying on, 
- so it's better to leave the decision on the interrupt
- handling to the driver itself.
-
- Unless I'm missing something.
-
--- 
-
- Best regards,
-
- Alessandro Zummo,
-  Tower Technologies - Torino, Italy
-
-  http://www.towertech.it
-
+Signed-off-by: Marin Mitov mitov@issp.bas.bg
+================================================
+--- a/drivers/ata/sata_via.c	2009-04-05 22:59:26.000000000 +0300
++++ b/drivers/ata/sata_via.c	2009-04-06 00:07:25.000000000 +0300
+@@ -566,7 +566,7 @@
+ 	static int printed_version;
+ 	unsigned int i;
+ 	int rc;
+-	struct ata_host *host;
++	struct ata_host *host = host;
+ 	int board_id = (int) ent->driver_data;
+ 	const unsigned *bar_sizes;
+ 
