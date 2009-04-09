@@ -1,227 +1,123 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S936981AbZDIWMp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S936976AbZDIWNS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S936981AbZDIWMp (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 9 Apr 2009 18:12:45 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1764535AbZDIWLV
+	id S936976AbZDIWNS (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 9 Apr 2009 18:13:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1765663AbZDIWLW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 9 Apr 2009 18:11:21 -0400
-Received: from mga01.intel.com ([192.55.52.88]:36773 "EHLO mga01.intel.com"
+	Thu, 9 Apr 2009 18:11:22 -0400
+Received: from mga02.intel.com ([134.134.136.20]:3719 "EHLO mga02.intel.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756573AbZDIWLU (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	id S1756846AbZDIWLU (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
 	Thu, 9 Apr 2009 18:11:20 -0400
 X-ExtLoop1: 1
 X-IronPort-AV: E=Sophos;i="4.40,163,1239001200"; 
-   d="scan'208";a="680329606"
-Message-Id: <20090409212708.653222000@intel.com>
+   d="scan'208";a="505147732"
+Message-Id: <20090409212708.939936000@intel.com>
 References: <20090409212646.511925000@intel.com>
 User-Agent: quilt/0.46-1
-Date: Thu, 09 Apr 2009 14:26:49 -0700
+Date: Thu, 09 Apr 2009 14:26:51 -0700
 From: venkatesh.pallipadi@intel.com
 To: mingo@elte.hu, tglx@linutronix.de, hpa@zytor.com
-Cc: linux-kernel@vger.kernel.org,
-       Venkatesh Pallipadi <venkatesh.pallipadi@intel.com>,
-       Suresh Siddha <suresh.b.siddha@intel.com>
-Subject: [patch 3/6] x86, PAT: Handle faults cleanly in set_memory_ APIs
-Content-Disposition: inline; filename=0003-x86-PAT-Handle-faults-cleanly-in-set_memory_-APIs.patch
+Cc: linux-kernel@vger.kernel.org, Suresh Siddha <suresh.b.siddha@intel.com>,
+       Venkatesh Pallipadi <venkatesh.pallipadi@intel.com>
+Subject: [patch 5/6] x86, PAT: Consolidate code in pat_x_mtrr_type() and reserve_memtype()
+Content-Disposition: inline; filename=0005-x86-PAT-Consolidate-code-in-pat_x_mtrr_type-and.patch
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Handle faults and do proper cleanups in set_memory_*() functions. In
-some cases, these functions were not doing proper free on failure paths.
+From: Suresh Siddha <suresh.b.siddha@intel.com>
+Subject: [patch 5/6] x86, PAT: Consolidate code in pat_x_mtrr_type() and reserve_memtype()
 
-With the changes to tracking memtype of RAM pages in struct page instead
-of pat list, we do not need the changes in commits c5e147. This patch
-reverts that change.
+Fix pat_x_mtrr_type() to use UC_MINUS when the mtrr type return UC. This
+is to be  consistent with ioremap() and ioremap_nocache() which uses
+UC_MINUS.
 
-Signed-off-by: Venkatesh Pallipadi <venkatesh.pallipadi@intel.com>
+Consolidate the code such that reserve_memtype() also uses
+pat_x_mtrr_type() when the caller doesn't specify any special attribute
+(non WB attribute).
+
 Signed-off-by: Suresh Siddha <suresh.b.siddha@intel.com>
+Signed-off-by: Venkatesh Pallipadi <venkatesh.pallipadi@intel.com>
 ---
- arch/x86/mm/pageattr.c |  113 +++++++++++++++++++++++++++--------------------
- 1 files changed, 65 insertions(+), 48 deletions(-)
+ arch/x86/mm/ioremap.c |    3 ++-
+ arch/x86/mm/pat.c     |   35 +++++++++++++----------------------
+ 2 files changed, 15 insertions(+), 23 deletions(-)
 
-diff --git a/arch/x86/mm/pageattr.c b/arch/x86/mm/pageattr.c
-index 38dc61f..3226504 100644
---- a/arch/x86/mm/pageattr.c
-+++ b/arch/x86/mm/pageattr.c
-@@ -931,52 +931,56 @@ int _set_memory_uc(unsigned long addr, int numpages)
- 
- int set_memory_uc(unsigned long addr, int numpages)
- {
-+	int ret;
-+
- 	/*
- 	 * for now UC MINUS. see comments in ioremap_nocache()
+diff --git a/arch/x86/mm/ioremap.c b/arch/x86/mm/ioremap.c
+index 329387e..d4c4b2c 100644
+--- a/arch/x86/mm/ioremap.c
++++ b/arch/x86/mm/ioremap.c
+@@ -375,7 +375,8 @@ static void __iomem *ioremap_default(resource_size_t phys_addr,
+ 	 * - UC_MINUS for non-WB-able memory with no other conflicting mappings
+ 	 * - Inherit from confliting mappings otherwise
  	 */
--	if (reserve_memtype(__pa(addr), __pa(addr) + numpages * PAGE_SIZE,
--			    _PAGE_CACHE_UC_MINUS, NULL))
--		return -EINVAL;
-+	ret = reserve_memtype(__pa(addr), __pa(addr) + numpages * PAGE_SIZE,
-+			    _PAGE_CACHE_UC_MINUS, NULL);
-+	if (ret)
-+		goto out_err;
-+
-+	ret = _set_memory_uc(addr, numpages);
-+	if (ret)
-+		goto out_free;
-+
-+	return 0;
+-	err = reserve_memtype(phys_addr, phys_addr + size, -1, &flags);
++	err = reserve_memtype(phys_addr, phys_addr + size,
++				_PAGE_CACHE_WB, &flags);
+ 	if (err < 0)
+ 		return NULL;
  
--	return _set_memory_uc(addr, numpages);
-+out_free:
-+	free_memtype(__pa(addr), __pa(addr) + numpages * PAGE_SIZE);
-+out_err:
-+	return ret;
- }
- EXPORT_SYMBOL(set_memory_uc);
+diff --git a/arch/x86/mm/pat.c b/arch/x86/mm/pat.c
+index 95d3b1a..3c8624c 100644
+--- a/arch/x86/mm/pat.c
++++ b/arch/x86/mm/pat.c
+@@ -182,10 +182,10 @@ static unsigned long pat_x_mtrr_type(u64 start, u64 end, unsigned long req_type)
+ 		u8 mtrr_type;
  
- int set_memory_array_uc(unsigned long *addr, int addrinarray)
- {
--	unsigned long start;
--	unsigned long end;
--	int i;
-+	int i, j;
-+	int ret;
+ 		mtrr_type = mtrr_type_lookup(start, end);
+-		if (mtrr_type == MTRR_TYPE_UNCACHABLE)
+-			return _PAGE_CACHE_UC;
+-		if (mtrr_type == MTRR_TYPE_WRCOMB)
+-			return _PAGE_CACHE_WC;
++		if (mtrr_type != MTRR_TYPE_WRBACK)
++			return _PAGE_CACHE_UC_MINUS;
 +
- 	/*
- 	 * for now UC MINUS. see comments in ioremap_nocache()
- 	 */
- 	for (i = 0; i < addrinarray; i++) {
--		start = __pa(addr[i]);
--		for (end = start + PAGE_SIZE; i < addrinarray - 1; end += PAGE_SIZE) {
--			if (end != __pa(addr[i + 1]))
--				break;
--			i++;
--		}
--		if (reserve_memtype(start, end, _PAGE_CACHE_UC_MINUS, NULL))
--			goto out;
-+		ret = reserve_memtype(__pa(addr[i]), __pa(addr[i]) + PAGE_SIZE,
-+					_PAGE_CACHE_UC_MINUS, NULL);
-+		if (ret)
-+			goto out_free;
++		return _PAGE_CACHE_WB;
  	}
  
--	return change_page_attr_set(addr, addrinarray,
-+	ret = change_page_attr_set(addr, addrinarray,
- 				    __pgprot(_PAGE_CACHE_UC_MINUS), 1);
--out:
--	for (i = 0; i < addrinarray; i++) {
--		unsigned long tmp = __pa(addr[i]);
+ 	return req_type;
+@@ -352,23 +352,13 @@ int reserve_memtype(u64 start, u64 end, unsigned long req_type,
+ 		return 0;
+ 	}
+ 
+-	if (req_type == -1) {
+-		/*
+-		 * Call mtrr_lookup to get the type hint. This is an
+-		 * optimization for /dev/mem mmap'ers into WB memory (BIOS
+-		 * tools and ACPI tools). Use WB request for WB memory and use
+-		 * UC_MINUS otherwise.
+-		 */
+-		u8 mtrr_type = mtrr_type_lookup(start, end);
 -
--		if (tmp == start)
--			break;
--		for (end = tmp + PAGE_SIZE; i < addrinarray - 1; end += PAGE_SIZE) {
--			if (end != __pa(addr[i + 1]))
--				break;
--			i++;
--		}
--		free_memtype(tmp, end);
+-		if (mtrr_type == MTRR_TYPE_WRBACK)
+-			actual_type = _PAGE_CACHE_WB;
+-		else
+-			actual_type = _PAGE_CACHE_UC_MINUS;
+-	} else {
+-		actual_type = pat_x_mtrr_type(start, end,
+-					      req_type & _PAGE_CACHE_MASK);
 -	}
--	return -EINVAL;
-+	if (ret)
-+		goto out_free;
-+
-+	return 0;
-+
-+out_free:
-+	for (j = 0; j < i; j++)
-+		free_memtype(__pa(addr[j]), __pa(addr[j]) + PAGE_SIZE);
-+
-+	return ret;
- }
- EXPORT_SYMBOL(set_memory_array_uc);
++	/*
++	 * Call mtrr_lookup to get the type hint. This is an
++	 * optimization for /dev/mem mmap'ers into WB memory (BIOS
++	 * tools and ACPI tools). Use WB request for WB memory and use
++	 * UC_MINUS otherwise.
++	 */
++	actual_type = pat_x_mtrr_type(start, end, req_type & _PAGE_CACHE_MASK);
  
-@@ -988,14 +992,26 @@ int _set_memory_wc(unsigned long addr, int numpages)
- 
- int set_memory_wc(unsigned long addr, int numpages)
- {
-+	int ret;
-+
- 	if (!pat_enabled)
- 		return set_memory_uc(addr, numpages);
- 
--	if (reserve_memtype(__pa(addr), __pa(addr) + numpages * PAGE_SIZE,
--		_PAGE_CACHE_WC, NULL))
--		return -EINVAL;
-+	ret = reserve_memtype(__pa(addr), __pa(addr) + numpages * PAGE_SIZE,
-+		_PAGE_CACHE_WC, NULL);
-+	if (ret)
-+		goto out_err;
- 
--	return _set_memory_wc(addr, numpages);
-+	ret = _set_memory_wc(addr, numpages);
-+	if (ret)
-+		goto out_free;
-+
-+	return 0;
-+
-+out_free:
-+	free_memtype(__pa(addr), __pa(addr) + numpages * PAGE_SIZE);
-+out_err:
-+	return ret;
- }
- EXPORT_SYMBOL(set_memory_wc);
- 
-@@ -1007,9 +1023,14 @@ int _set_memory_wb(unsigned long addr, int numpages)
- 
- int set_memory_wb(unsigned long addr, int numpages)
- {
--	int ret = _set_memory_wb(addr, numpages);
-+	int ret;
-+
-+	ret = _set_memory_wb(addr, numpages);
-+	if (ret)
-+		return ret;
-+
- 	free_memtype(__pa(addr), __pa(addr) + numpages * PAGE_SIZE);
--	return ret;
-+	return 0;
- }
- EXPORT_SYMBOL(set_memory_wb);
- 
-@@ -1020,19 +1041,13 @@ int set_memory_array_wb(unsigned long *addr, int addrinarray)
- 
- 	ret = change_page_attr_clear(addr, addrinarray,
- 				      __pgprot(_PAGE_CACHE_MASK), 1);
-+	if (ret)
-+		return ret;
- 
--	for (i = 0; i < addrinarray; i++) {
--		unsigned long start = __pa(addr[i]);
--		unsigned long end;
-+	for (i = 0; i < addrinarray; i++)
-+		free_memtype(__pa(addr[i]), __pa(addr[i]) + PAGE_SIZE);
- 
--		for (end = start + PAGE_SIZE; i < addrinarray - 1; end += PAGE_SIZE) {
--			if (end != __pa(addr[i + 1]))
--				break;
--			i++;
--		}
--		free_memtype(start, end);
--	}
--	return ret;
-+	return 0;
- }
- EXPORT_SYMBOL(set_memory_array_wb);
- 
-@@ -1125,6 +1140,8 @@ int set_pages_array_wb(struct page **pages, int addrinarray)
- 
- 	retval = cpa_clear_pages_array(pages, addrinarray,
- 			__pgprot(_PAGE_CACHE_MASK));
-+	if (retval)
-+		return retval;
- 
- 	for (i = 0; i < addrinarray; i++) {
- 		start = (unsigned long)page_address(pages[i]);
-@@ -1132,7 +1149,7 @@ int set_pages_array_wb(struct page **pages, int addrinarray)
- 		free_memtype(start, end);
+ 	if (new_type)
+ 		*new_type = actual_type;
+@@ -587,7 +577,8 @@ int phys_mem_access_prot_allowed(struct file *file, unsigned long pfn,
+ 	if (flags != -1) {
+ 		retval = reserve_memtype(offset, offset + size, flags, NULL);
+ 	} else {
+-		retval = reserve_memtype(offset, offset + size, -1, &flags);
++		retval = reserve_memtype(offset, offset + size,
++					_PAGE_CACHE_WB, &flags);
  	}
  
--	return retval;
-+	return 0;
- }
- EXPORT_SYMBOL(set_pages_array_wb);
- 
+ 	if (retval < 0)
 -- 
 1.6.0.6
 
