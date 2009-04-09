@@ -1,76 +1,74 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932657AbZDIV0A@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1765529AbZDIV15@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932657AbZDIV0A (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 9 Apr 2009 17:26:00 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756120AbZDIVZv
+	id S1765529AbZDIV15 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 9 Apr 2009 17:27:57 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760133AbZDIV1q
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 9 Apr 2009 17:25:51 -0400
-Received: from rcsinet12.oracle.com ([148.87.113.124]:39932 "EHLO
-	rgminet12.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751329AbZDIVZu (ORCPT
+	Thu, 9 Apr 2009 17:27:46 -0400
+Received: from fg-out-1718.google.com ([72.14.220.159]:44829 "EHLO
+	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1759016AbZDIV1o (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 9 Apr 2009 17:25:50 -0400
-Message-ID: <49DE676C.6030802@oracle.com>
-Date: Thu, 09 Apr 2009 14:23:56 -0700
-From: Randy Dunlap <randy.dunlap@oracle.com>
-Organization: Oracle Linux Engineering
-User-Agent: Thunderbird 2.0.0.6 (X11/20070801)
-MIME-Version: 1.0
-To: Linus Torvalds <torvalds@linux-foundation.org>
-CC: David Howells <dhowells@redhat.com>, akpm@linux-foundation.org,
-       sam@ravnborg.org, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 2/2] FRV: Move to arch/frv/include/asm/
-References: <alpine.LFD.2.00.0904091042240.4583@localhost.localdomain> <20090409163255.22778.39921.stgit@warthog.procyon.org.uk> <20090409163300.22778.92061.stgit@warthog.procyon.org.uk> <11730.1239311156@redhat.com> <alpine.LFD.2.00.0904091412060.4583@localhost.localdomain>
-In-Reply-To: <alpine.LFD.2.00.0904091412060.4583@localhost.localdomain>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
-X-Source-IP: acsmt702.oracle.com [141.146.40.80]
-X-Auth-Type: Internal IP
-X-CT-RefId: str=0001.0A0B0209.49DE675A.007D:SCFMA4539814,ss=1,fgs=0
+	Thu, 9 Apr 2009 17:27:44 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=from:to:cc:subject:date:message-id:x-mailer;
+        b=usrLLjYEg9hrVG2i8bomHig4lapsMKJpm+yBOfQuNrEbSux9aNkMnE819VjpW6Hkvs
+         u0tyCPqRo6SoNjE/So40M/DVSRbLuEySA0sQvfTE3RpMrr3TkUz2UljOKx132UAh+akN
+         BBmnP5YXVGM8Z7prSuop+LsItrHOYBI6IwMmU=
+From: Frederic Weisbecker <fweisbec@gmail.com>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: LKML <linux-kernel@vger.kernel.org>,
+       Frederic Weisbecker <fweisbec@gmail.com>,
+       Peter Zijlstra <peterz@infradead.org>
+Subject: [PATCH 1/2] lockdep: warn about lockdep disabling after kernel taint
+Date: Thu,  9 Apr 2009 23:27:39 +0200
+Message-Id: <1239312460-13396-1-git-send-email-fweisbec@gmail.com>
+X-Mailer: git-send-email 1.6.1
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Linus Torvalds wrote:
-> 
-> On Thu, 9 Apr 2009, David Howells wrote:
->> I should've used:
->>
->> 	stg mail -diff-opts=-M
->>
->> it would appear.  I wonder if this should be the default.
-> 
-> Ahh. I've never used stg. It seems to have some bad defaults.
-> 
-> Also, depending on exactly what "stg" does, it is entirely possible that 
-> adding that
-> 
-> 	[diff]
-> 		renames
-> 
-> to your .gitconfig won't help: those kinds of default configuration values 
-> are (very much on purpose) ignored for certain low-level git commands, 
-> exactly so that you can do reliable scripting without having to worry 
-> about some user-specific config files.
-> 
->> Note that
->>
->> 	git-diff -M HEAD^ HEAD
->>
->> does not make output that looks like yours.  It's missing the:
->>
->> 	 {include/asm-frv => arch/frv/include/asm}/Kbuild   |    0
->> 	 {include/asm-frv => arch/frv/include/asm}/atomic.h |    0
-> 
-> Those come from "--summary", which summarizes file creation, deletion and 
-> movement. Almost always combined with "--stat", but apparently the 
-> "--stat" part is again in that "stg mail" script.
+Impact: provide useful missing info for developers
 
-David:  Documentation/SubmittingPatches:/git diff/ =>
+Kernel taint can occur in several situations such as warnings,
+load of prorietary or staging modules, bad page, etc...
 
-'Please use "git diff -M --stat --summary" to generate the diffstat:
-the -M enables rename detection, and the summary enables a summary of
-new/deleted or renamed files.'
+But when such taint happens, a developer might still be working on
+the kernel, expecting that lockdep is still enabled. But a taint
+disables lockdep without ever warning about it.
+Such a kernel behaviour doesn't really help for kernel development.
 
+This patch adds this missing warning.
+
+Since the taint is done most of the time after the main message that
+explain the real source issue, it seems safe to warn about it inside
+add_taint() so that it appears at last, without hurting the main
+information.
+
+Signed-off-by: Frederic Weisbecker <fweisbec@gmail.com>
+
+diff --git a/kernel/panic.c b/kernel/panic.c
+index 3fd8c5b..9e7420a 100644
+--- a/kernel/panic.c
++++ b/kernel/panic.c
+@@ -213,8 +213,14 @@ unsigned long get_taint(void)
+ 
+ void add_taint(unsigned flag)
+ {
+-	/* can't trust the integrity of the kernel anymore: */
+-	debug_locks = 0;
++	/*
++	 * Can't trust the integrity of the kernel anymore.
++	 * We don't call directly debug_locks_off() because the issue
++	 * is not necessarily serious enough to set oops_in_progress to 1
++	 */
++	if (xchg(&debug_locks, 0))
++		printk(KERN_WARNING "Disabling lockdep due to kernel taint\n");
++
+ 	set_bit(flag, &tainted_mask);
+ }
+ EXPORT_SYMBOL(add_taint);
 -- 
-~Randy
+1.6.1
+
