@@ -1,83 +1,84 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934322AbZDIQOU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1765042AbZDIQP4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934322AbZDIQOU (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 9 Apr 2009 12:14:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757404AbZDIQOK
+	id S1765042AbZDIQP4 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 9 Apr 2009 12:15:56 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754233AbZDIQPq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 9 Apr 2009 12:14:10 -0400
-Received: from mtagate8.de.ibm.com ([195.212.29.157]:57678 "EHLO
-	mtagate8.de.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756140AbZDIQOJ (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 9 Apr 2009 12:14:09 -0400
-Date: Thu, 9 Apr 2009 18:14:04 +0200
-From: Heiko Carstens <heiko.carstens@de.ibm.com>
-To: Peter Zijlstra <peterz@infradead.org>
-Cc: Ingo Molnar <mingo@elte.hu>, Martin Schwidefsky <schwidefsky@de.ibm.com>,
-       Christian Borntraeger <borntraeger@de.ibm.com>,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] mutex: have non-spinning mutexes on s390 by default
-Message-ID: <20090409181404.71ac2988@osiris.boeblingen.de.ibm.com>
-In-Reply-To: <1239292496.7647.607.camel@twins>
-References: <20090409174758.74abec87@osiris.boeblingen.de.ibm.com>
-	<1239292496.7647.607.camel@twins>
-X-Mailer: Claws Mail 3.5.0 (GTK+ 2.14.7; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Thu, 9 Apr 2009 12:15:46 -0400
+Received: from mx2.redhat.com ([66.187.237.31]:43257 "EHLO mx2.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753504AbZDIQPp (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 9 Apr 2009 12:15:45 -0400
+Organization: Red Hat UK Ltd. Registered Address: Red Hat UK Ltd, Amberley
+	Place, 107-111 Peascod Street, Windsor, Berkshire, SI4 1TE, United
+	Kingdom.
+	Registered in England and Wales under Company Registration No. 3798903
+From: David Howells <dhowells@redhat.com>
+Subject: [PATCH] Subject: [PATCH] KEYS: Handle there being no fallback
+	destination keyring for request_key()
+To: torvalds@osdl.org, akpm@linux-foundation.org
+Cc: dhowells@redhat.com, jlayton@redhat.com, linux-kernel@vger.kernel.org
+Date: Thu, 09 Apr 2009 17:14:05 +0100
+Message-ID: <20090409161405.5329.86573.stgit@warthog.procyon.org.uk>
+User-Agent: StGIT/0.14.3
+MIME-Version: 1.0
+Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 09 Apr 2009 17:54:56 +0200
-Peter Zijlstra <peterz@infradead.org> wrote:
+When request_key() is called, without there being any standard process
+keyrings on which to fall back if a destination keyring is not specified, an
+oops is liable to occur when construct_alloc_key() calls down_write() on
+dest_keyring's semaphore.
 
-> > Index: linux-2.6/kernel/sched_features.h
-> > ===================================================================
-> > --- linux-2.6.orig/kernel/sched_features.h
-> > +++ linux-2.6/kernel/sched_features.h
-> > @@ -14,4 +14,8 @@ SCHED_FEAT(LB_WAKEUP_UPDATE, 1)
-> >  SCHED_FEAT(ASYM_EFF_LOAD, 1)
-> >  SCHED_FEAT(WAKEUP_OVERLAP, 0)
-> >  SCHED_FEAT(LAST_BUDDY, 1)
-> > +#ifdef CONFIG_HAVE_DEFAULT_NO_SPIN_MUTEXES
-> > +SCHED_FEAT(OWNER_SPIN, 0)
-> > +#else
-> >  SCHED_FEAT(OWNER_SPIN, 1)
-> > +#endif
-> 
-> Hmm, I'd rather have you'd make the whole block in __mutex_lock_common
-> go away on that CONFIG thingy.
+Due to function inlining this may be seen as an oops in down_write() as called
+from request_key_and_link().
 
-Sure, I can do that.
+This situation crops up during boot, where request_key() is called from within
+the kernel (such as in CIFS mounts) where nobody is actually logged in, and so
+PAM has not had a chance to create a session keyring and user keyrings to act
+as the fallback.
 
-> Would be nice though to get something working on s390, does it have a
-> monitor wait like ins where it can properly sleep so that another
-> virtual host can run?
-> 
-> If so, we could possibly do a monitor wait on the lock owner field
-> instead of spinning.
+To fix this, make construct_alloc_key() not attempt to cache a key if there is
+no fallback key if no destination keyring is given specifically.
 
-What we now have: the cpu_relax() implementation on s390 will yield the
-current (virtual) cpu and give it back to the hypervisor. If the
-hypervisor has nothing else to schedule or for fairness reasons decides
-that this cpu has to run again it will be scheduled again.
-One roundtrip (exit/reenter) is quite expensive (~1200 cycles).
+Signed-off-by: David Howells <dhowells@redhat.com>
+Tested-by: Jeff Layton <jlayton@redhat.com>
+---
 
-We also have a directed yield where you can tell the hypervisor "don't
-schedule me again until cpu x was has been scheduled".
+ security/keys/request_key.c |    9 ++++++---
+ 1 files changed, 6 insertions(+), 3 deletions(-)
 
-And we have an IPI (signal processer with order code sense running)
-which examines if the target cpu is actually physically backed. That's
-in the order of ~80 cycles. At least that's what I just measured with
-two hypervisors running below my Linux kernel.
 
-So the idea for the spinning loop would be to additionaly test if the
-targer cpu is physically backed. If it is we could happily spin and
-sense again, more or less like the current code does.
-Now the question is what do we do if it isn't backed? Yield the current
-cpu in favour of the target cpu or just make the current process sleep
-and schedule a different one?
-For that I'd like to have performance numbers before we go in any
-direction.. It might take some time to get the numbers since it's not
-easy to get a slot for performance measurements.
+diff --git a/security/keys/request_key.c b/security/keys/request_key.c
+index 22a3158..03fe63e 100644
+--- a/security/keys/request_key.c
++++ b/security/keys/request_key.c
+@@ -311,7 +311,8 @@ static int construct_alloc_key(struct key_type *type,
+ 
+ 	set_bit(KEY_FLAG_USER_CONSTRUCT, &key->flags);
+ 
+-	down_write(&dest_keyring->sem);
++	if (dest_keyring)
++		down_write(&dest_keyring->sem);
+ 
+ 	/* attach the key to the destination keyring under lock, but we do need
+ 	 * to do another check just in case someone beat us to it whilst we
+@@ -322,10 +323,12 @@ static int construct_alloc_key(struct key_type *type,
+ 	if (!IS_ERR(key_ref))
+ 		goto key_already_present;
+ 
+-	__key_link(dest_keyring, key);
++	if (dest_keyring)
++		__key_link(dest_keyring, key);
+ 
+ 	mutex_unlock(&key_construction_mutex);
+-	up_write(&dest_keyring->sem);
++	if (dest_keyring)
++		up_write(&dest_keyring->sem);
+ 	mutex_unlock(&user->cons_lock);
+ 	*_key = key;
+ 	kleave(" = 0 [%d]", key_serial(key));
+
