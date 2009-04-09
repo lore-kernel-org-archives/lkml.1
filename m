@@ -1,63 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S937331AbZDIXnX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S935816AbZDIXqv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S937331AbZDIXnX (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 9 Apr 2009 19:43:23 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755611AbZDIXnM
+	id S935816AbZDIXqv (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 9 Apr 2009 19:46:51 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759572AbZDIXqm
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 9 Apr 2009 19:43:12 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:44056 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1754522AbZDIXnL (ORCPT
+	Thu, 9 Apr 2009 19:46:42 -0400
+Received: from acsinet11.oracle.com ([141.146.126.233]:31294 "EHLO
+	acsinet11.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757432AbZDIXql (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 9 Apr 2009 19:43:11 -0400
-Date: Thu, 9 Apr 2009 16:39:48 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: =?ISO-8859-1?Q?J=F6rn?= Engel <joern@logfs.org>
-Cc: matthieu.castet@parrot.com, linux-kernel@vger.kernel.org, arnd@arndb.de,
-       tarmigan@gmail.com
-Subject: Re: [PATCH][Checkstack] Don't censor output
-Message-Id: <20090409163948.b39e40cd.akpm@linux-foundation.org>
-In-Reply-To: <20090406211146.GA10231@logfs.org>
-References: <20090406211146.GA10231@logfs.org>
-X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Thu, 9 Apr 2009 19:46:41 -0400
+From: Andy Grover <andy.grover@oracle.com>
+To: linux-kernel@vger.kernel.org
+Cc: mingo@redhat.com, npiggin@suse.de, akpm@linux-foundation.org
+Subject: [PATCH 1/1] x86: Document get_user_pages_fast()
+Date: Thu,  9 Apr 2009 16:45:29 -0700
+Message-Id: <1239320729-3262-1-git-send-email-andy.grover@oracle.com>
+X-Mailer: git-send-email 1.5.6.3
+X-Source-IP: acsmt701.oracle.com [141.146.40.71]
+X-Auth-Type: Internal IP
+X-CT-RefId: str=0001.0A010201.49DE88A0.01D1:SCFMA4539814,ss=1,fgs=0
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 6 Apr 2009 23:11:46 +0200
-J__rn Engel <joern@logfs.org> wrote:
+While better than get_user_pages(), the usage of gupf(),
+especially the return values and the fact that it can
+potentially only partially pin the range, warranted some
+documentation.
 
-> Subject: [PATCH][Checkstack] Don't censor output
+Signed-off-by: Andy Grover <andy.grover@oracle.com>
+---
+ arch/x86/mm/gup.c |   16 ++++++++++++++++
+ 1 files changed, 16 insertions(+), 0 deletions(-)
 
-Please use the form
-
-	subsytem-identifier: what-i-did-to-it
-
-so
-
-	[patch] checkstack: don't censor output
-
-would suit here.
-
-> Date: Mon, 6 Apr 2009 23:11:46 +0200
-> User-Agent: Mutt/1.5.13 (2006-08-11)
-> 
-> For reasons that neither Arnd nor I can remember, the s390 port of
-> checkstack happened to ignore stack frames below 300 and above 10000
-> bytes.  Later on the same effect - arguably a bug - was copied into the
-> arm, ia64, mips and sh64 ports.
-> 
-> Fixing it also makes the regular expressions shorter and simpler.
-> 
->  scripts/checkstack.pl |   12 ++++++------
->  1 file changed, 6 insertions(+), 6 deletions(-)
-> 
-> --- debuggerhead/scripts/checkstack.pl~checkstack	2008-03-05 12:14:05.000000000 +0100
-> +++ debuggerhead/scripts/checkstack.pl	2008-11-04 20:38:08.000000000 +0100
-
-The patch fails to apply, yet nobody has changed checkstack.pl in ages.
-I think you're tricking me.
+diff --git a/arch/x86/mm/gup.c b/arch/x86/mm/gup.c
+index be54176..6340cef 100644
+--- a/arch/x86/mm/gup.c
++++ b/arch/x86/mm/gup.c
+@@ -219,6 +219,22 @@ static int gup_pud_range(pgd_t pgd, unsigned long addr, unsigned long end,
+ 	return 1;
+ }
+ 
++/**
++ * get_user_pages_fast() - pin user pages in memory
++ * @start:	starting user address
++ * @nr_pages:	number of pages from start to pin
++ * @write:	whether pages will be written to
++ * @pages:	array that receives pointers to the pages pinned.
++ * 		Should be at least nr_pages long.
++ *
++ * Attempt to pin user pages in memory without taking mm->mmap_sem.
++ * If not successful, it will fall back to taking the lock and
++ * calling get_user_pages().
++ *
++ * Returns number of pages pinned. This may be fewer than the number
++ * requested. If nr_pages is 0 or negative, returns 0. If no pages
++ * were pinned, returns -errno.
++ */
+ int get_user_pages_fast(unsigned long start, int nr_pages, int write,
+ 			struct page **pages)
+ {
+-- 
+1.5.6.3
 
