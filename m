@@ -1,25 +1,25 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S936003AbZDIQgY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S936030AbZDIQgq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S936003AbZDIQgY (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 9 Apr 2009 12:36:24 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S935507AbZDIQ3o
+	id S936030AbZDIQgq (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 9 Apr 2009 12:36:46 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S935505AbZDIQ3v
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 9 Apr 2009 12:29:44 -0400
-Received: from victor.provo.novell.com ([137.65.250.26]:49982 "EHLO
+	Thu, 9 Apr 2009 12:29:51 -0400
+Received: from victor.provo.novell.com ([137.65.250.26]:58844 "EHLO
 	victor.provo.novell.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S935488AbZDIQ3j (ORCPT
+	with ESMTP id S935521AbZDIQ3q (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 9 Apr 2009 12:29:39 -0400
+	Thu, 9 Apr 2009 12:29:46 -0400
 From: Gregory Haskins <ghaskins@novell.com>
-Subject: [RFC PATCH v2 12/19] venettap: add scatter-gather support
+Subject: [RFC PATCH v2 14/19] kvm: add a reset capability
 To: linux-kernel@vger.kernel.org
 Cc: agraf@suse.de, pmullaney@novell.com, pmorreale@novell.com,
        anthony@codemonkey.ws, rusty@rustcorp.com.au, netdev@vger.kernel.org,
        kvm@vger.kernel.org, avi@redhat.com, bhutchings@solarflare.com,
        andi@firstfloor.org, gregkh@suse.de, herber@gondor.apana.org.au,
        chrisw@sous-sol.org, shemminger@vyatta.com
-Date: Thu, 09 Apr 2009 12:31:44 -0400
-Message-ID: <20090409163144.32740.66106.stgit@dev.haskins.net>
+Date: Thu, 09 Apr 2009 12:31:55 -0400
+Message-ID: <20090409163155.32740.50340.stgit@dev.haskins.net>
 In-Reply-To: <20090409155200.32740.19358.stgit@dev.haskins.net>
 References: <20090409155200.32740.19358.stgit@dev.haskins.net>
 User-Agent: StGIT/0.14.3
@@ -30,329 +30,140 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+We need a way to detect if a VM is reset later in the series, so lets
+add a capability for userspace to signal a VM reset down to the kernel.
+
 Signed-off-by: Gregory Haskins <ghaskins@novell.com>
 ---
 
- drivers/vbus/devices/venet-tap.c |  235 +++++++++++++++++++++++++++++++++++++-
- 1 files changed, 228 insertions(+), 7 deletions(-)
+ arch/x86/kvm/x86.c       |    1 +
+ include/linux/kvm.h      |    2 ++
+ include/linux/kvm_host.h |    6 ++++++
+ virt/kvm/kvm_main.c      |   36 ++++++++++++++++++++++++++++++++++++
+ 4 files changed, 45 insertions(+), 0 deletions(-)
 
-diff --git a/drivers/vbus/devices/venet-tap.c b/drivers/vbus/devices/venet-tap.c
-index 148e2c8..a1f2dc6 100644
---- a/drivers/vbus/devices/venet-tap.c
-+++ b/drivers/vbus/devices/venet-tap.c
-@@ -81,6 +81,13 @@ enum {
- 	TX_IOQ_CONGESTED,
- };
- 
-+struct venettap;
-+
-+struct venettap_rx_ops {
-+	int (*decode)(struct venettap *priv, void *ptr, int len);
-+	int (*import)(struct venettap *, struct sk_buff *, void *, int);
-+};
-+
- struct venettap {
- 	spinlock_t                   lock;
- 	unsigned char                hmac[ETH_ALEN]; /* host-mac */
-@@ -108,7 +115,13 @@ struct venettap {
- 		struct vbus_memctx          *ctx;
- 		struct venettap_queue        rxq;
- 		struct venettap_queue        txq;
-+		struct venettap_rx_ops      *rx_ops;
- 		wait_queue_head_t            rx_empty;
-+		struct {
-+			struct venet_sg     *desc;
-+			size_t               len;
-+			int                  enabled:1;
-+		} sg;
- 		int                          connected:1;
- 		int                          opened:1;
- 		int                          link:1;
-@@ -290,6 +303,183 @@ venettap_change_mtu(struct net_device *dev, int new_mtu)
- }
+diff --git a/arch/x86/kvm/x86.c b/arch/x86/kvm/x86.c
+index 758b7a1..9b0a649 100644
+--- a/arch/x86/kvm/x86.c
++++ b/arch/x86/kvm/x86.c
+@@ -971,6 +971,7 @@ int kvm_dev_ioctl_check_extension(long ext)
+ 	case KVM_CAP_NOP_IO_DELAY:
+ 	case KVM_CAP_MP_STATE:
+ 	case KVM_CAP_SYNC_MMU:
++	case KVM_CAP_RESET:
+ 		r = 1;
+ 		break;
+ 	case KVM_CAP_COALESCED_MMIO:
+diff --git a/include/linux/kvm.h b/include/linux/kvm.h
+index 0424326..7ffd8f5 100644
+--- a/include/linux/kvm.h
++++ b/include/linux/kvm.h
+@@ -396,6 +396,7 @@ struct kvm_trace_rec {
+ #ifdef __KVM_HAVE_USER_NMI
+ #define KVM_CAP_USER_NMI 22
+ #endif
++#define KVM_CAP_RESET 23
  
  /*
-+ * ---------------------------
-+ * Scatter-Gather support
-+ * ---------------------------
-+ */
-+
-+/* assumes reference to priv->vbus.conn held */
-+static int
-+venettap_sg_decode(struct venettap *priv, void *ptr, int len)
-+{
-+	struct venet_sg *vsg;
-+	struct vbus_memctx *ctx;
-+	int ret;
-+
-+	/*
-+	 * SG is enabled, so we need to pull in the venet_sg
-+	 * header before we can interpret the rest of the
-+	 * packet
-+	 *
-+	 * FIXME: Make sure this is not too big
-+	 */
-+	if (unlikely(len > priv->vbus.sg.len)) {
-+		kfree(priv->vbus.sg.desc);
-+		priv->vbus.sg.desc = kzalloc(len, GFP_KERNEL);
-+	}
-+
-+	vsg = priv->vbus.sg.desc;
-+	ctx = priv->vbus.ctx;
-+
-+	ret = ctx->ops->copy_from(ctx, vsg, ptr, len);
-+	BUG_ON(ret);
-+
-+	/*
-+	 * Non GSO type packets should be constrained by the MTU setting
-+	 * on the host
-+	 */
-+	if (!(vsg->flags & VENET_SG_FLAG_GSO)
-+	    && (vsg->len > (priv->netif.dev->mtu + ETH_HLEN)))
-+		return -1;
-+
-+	return vsg->len;
-+}
-+
-+/*
-+ * venettap_sg_import - import an skb in scatter-gather mode
-+ *
-+ * assumes reference to priv->vbus.conn held
-+ */
-+static int
-+venettap_sg_import(struct venettap *priv, struct sk_buff *skb,
-+		   void *ptr, int len)
-+{
-+	struct venet_sg *vsg = priv->vbus.sg.desc;
-+	struct vbus_memctx *ctx = priv->vbus.ctx;
-+	int remain = len;
-+	int ret;
-+	int i;
-+
-+	PDEBUG("Importing %d bytes in %d segments\n", len, vsg->count);
-+
-+	for (i = 0; i < vsg->count; i++) {
-+		struct venet_iov *iov = &vsg->iov[i];
-+
-+		if (remain < iov->len)
-+			return -EINVAL;
-+
-+		PDEBUG("Segment %d: %p/%d\n", i, iov->ptr, iov->len);
-+
-+		ret = ctx->ops->copy_from(ctx, skb_tail_pointer(skb),
-+					 (void *)iov->ptr,
-+					 iov->len);
-+		if (ret)
-+			return -EFAULT;
-+
-+		skb_put(skb, iov->len);
-+		remain -= iov->len;
-+	}
-+
-+	if (vsg->flags & VENET_SG_FLAG_NEEDS_CSUM
-+	    && !skb_partial_csum_set(skb, vsg->csum.start, vsg->csum.offset))
-+		return -EINVAL;
-+
-+	if (vsg->flags & VENET_SG_FLAG_GSO) {
-+		struct skb_shared_info *sinfo = skb_shinfo(skb);
-+
-+		PDEBUG("GSO packet detected\n");
-+
-+		switch (vsg->gso.type) {
-+		case VENET_GSO_TYPE_TCPV4:
-+			sinfo->gso_type = SKB_GSO_TCPV4;
-+			break;
-+		case VENET_GSO_TYPE_TCPV6:
-+			sinfo->gso_type = SKB_GSO_TCPV6;
-+			break;
-+		case VENET_GSO_TYPE_UDP:
-+			sinfo->gso_type = SKB_GSO_UDP;
-+			break;
-+		default:
-+			PDEBUG("Illegal GSO type: %d\n", vsg->gso.type);
-+			priv->netif.stats.rx_frame_errors++;
-+			kfree_skb(skb);
-+			return -EINVAL;
-+		}
-+
-+		if (vsg->flags & VENET_SG_FLAG_ECN)
-+			sinfo->gso_type |= SKB_GSO_TCP_ECN;
-+
-+		sinfo->gso_size = vsg->gso.size;
-+		if (skb_shinfo(skb)->gso_size == 0) {
-+			PDEBUG("Illegal GSO size: %d\n", vsg->gso.size);
-+			priv->netif.stats.rx_frame_errors++;
-+			kfree_skb(skb);
-+			return -EINVAL;
-+		}
-+
-+		/* Header must be checked, and gso_segs computed. */
-+		skb_shinfo(skb)->gso_type |= SKB_GSO_DODGY;
-+		skb_shinfo(skb)->gso_segs = 0;
-+	}
-+
-+	return 0;
-+}
-+
-+static struct venettap_rx_ops venettap_sg_rx_ops = {
-+	.decode = venettap_sg_decode,
-+	.import = venettap_sg_import,
-+};
-+
-+/*
-+ * ---------------------------
-+ * Flat (non Scatter-Gather) support
-+ * ---------------------------
-+ */
-+
-+/* assumes reference to priv->vbus.conn held */
-+static int
-+venettap_flat_decode(struct venettap *priv, void *ptr, int len)
-+{
-+	size_t maxlen = priv->netif.dev->mtu + ETH_HLEN;
-+
-+	if (len > maxlen)
-+		return -1;
-+
-+	/*
-+	 * If SG is *not* enabled, the length is simply the
-+	 * descriptor length
-+	 */
-+
-+	return len;
-+}
-+
-+/*
-+ * venettap_rx_flat - import an skb in non scatter-gather mode
-+ *
-+ * assumes reference to priv->vbus.conn held
-+ */
-+static int
-+venettap_flat_import(struct venettap *priv, struct sk_buff *skb,
-+		     void *ptr, int len)
-+{
-+	struct vbus_memctx *ctx = priv->vbus.ctx;
-+	int ret;
-+
-+	ret = ctx->ops->copy_from(ctx, skb_tail_pointer(skb), ptr, len);
-+	if (ret)
-+		return -EFAULT;
-+
-+	skb_put(skb, len);
-+
-+	return 0;
-+}
-+
-+static struct venettap_rx_ops venettap_flat_rx_ops = {
-+	.decode = venettap_flat_decode,
-+	.import = venettap_flat_import,
-+};
-+
-+/*
-  * The poll implementation.
-  */
- static int
-@@ -303,6 +493,7 @@ venettap_rx(struct venettap *priv)
- 	int                         ret;
- 	unsigned long               flags;
- 	struct vbus_connection     *conn;
-+	struct venettap_rx_ops     *rx_ops;
+  * ioctls for VM fds
+@@ -429,6 +430,7 @@ struct kvm_trace_rec {
+ 				   struct kvm_assigned_pci_dev)
+ #define KVM_ASSIGN_IRQ _IOR(KVMIO, 0x70, \
+ 			    struct kvm_assigned_irq)
++#define KVM_RESET	          _IO(KVMIO,  0x67)
  
- 	PDEBUG("polling...\n");
+ /*
+  * ioctls for vcpu fds
+diff --git a/include/linux/kvm_host.h b/include/linux/kvm_host.h
+index bf6f703..506eca1 100644
+--- a/include/linux/kvm_host.h
++++ b/include/linux/kvm_host.h
+@@ -17,6 +17,7 @@
+ #include <linux/preempt.h>
+ #include <linux/marker.h>
+ #include <linux/msi.h>
++#include <linux/notifier.h>
+ #include <asm/signal.h>
  
-@@ -326,6 +517,8 @@ venettap_rx(struct venettap *priv)
- 	ioq = priv->vbus.rxq.queue;
- 	ctx = priv->vbus.ctx;
- 
-+	rx_ops = priv->vbus.rx_ops;
+ #include <linux/kvm.h>
+@@ -132,6 +133,8 @@ struct kvm {
+ 	unsigned long mmu_notifier_seq;
+ 	long mmu_notifier_count;
+ #endif
 +
- 	spin_unlock_irqrestore(&priv->lock, flags);
++	struct raw_notifier_head reset_notifier; /* triggers when VM reboots */
+ };
  
- 	/* We want to iterate on the head of the in-use index */
-@@ -340,11 +533,14 @@ venettap_rx(struct venettap *priv)
- 	 * the north side
- 	 */
- 	while (iter.desc->sown) {
--		size_t len = iter.desc->len;
--		size_t maxlen = priv->netif.dev->mtu + ETH_HLEN;
- 		struct sk_buff *skb = NULL;
-+		size_t len;
+ /* The guest did something we don't support. */
+@@ -158,6 +161,9 @@ void kvm_exit(void);
+ void kvm_get_kvm(struct kvm *kvm);
+ void kvm_put_kvm(struct kvm *kvm);
+ 
++int kvm_reset_notifier_register(struct kvm *kvm, struct notifier_block *nb);
++int kvm_reset_notifier_unregister(struct kvm *kvm, struct notifier_block *nb);
 +
-+		len = rx_ops->decode(priv,
-+				     (void *)iter.desc->ptr,
-+				     iter.desc->len);
- 
--		if (unlikely(len > maxlen)) {
-+		if (unlikely(len < 0)) {
- 			priv->netif.stats.rx_errors++;
- 			priv->netif.stats.rx_length_errors++;
- 			goto next;
-@@ -362,10 +558,8 @@ venettap_rx(struct venettap *priv)
- 		/* align IP on 16B boundary */
- 		skb_reserve(skb, 2);
- 
--		ret = ctx->ops->copy_from(ctx, skb->data,
--					 (void *)iter.desc->ptr,
--					 len);
--		if (unlikely(ret)) {
-+		ret = rx_ops->import(priv, skb, (void *)iter.desc->ptr, len);
-+		if (unlikely(ret < 0)) {
- 			priv->netif.stats.rx_errors++;
- 			goto next;
- 		}
-@@ -846,6 +1040,23 @@ venettap_macquery(struct venettap *priv, void *data, unsigned long len)
- 	return 0;
+ #define HPA_MSB ((sizeof(hpa_t) * 8) - 1)
+ #define HPA_ERR_MASK ((hpa_t)1 << HPA_MSB)
+ static inline int is_error_hpa(hpa_t hpa) { return hpa >> HPA_MSB; }
+diff --git a/virt/kvm/kvm_main.c b/virt/kvm/kvm_main.c
+index 29a667c..fca2d25 100644
+--- a/virt/kvm/kvm_main.c
++++ b/virt/kvm/kvm_main.c
+@@ -868,6 +868,8 @@ static struct kvm *kvm_create_vm(void)
+ #ifdef KVM_COALESCED_MMIO_PAGE_OFFSET
+ 	kvm_coalesced_mmio_init(kvm);
+ #endif
++	RAW_INIT_NOTIFIER_HEAD(&kvm->reset_notifier);
++
+ out:
+ 	return kvm;
+ }
+@@ -1485,6 +1487,35 @@ void mark_page_dirty(struct kvm *kvm, gfn_t gfn)
+ 	}
  }
  
-+static u32
-+venettap_negcap_sg(struct venettap *priv, u32 requested)
++static void kvm_notify_reset(struct kvm *kvm)
 +{
-+	u32 available = VENET_CAP_SG|VENET_CAP_TSO4|VENET_CAP_TSO6
-+		|VENET_CAP_ECN;
-+	u32 ret;
++	mutex_lock(&kvm->lock);
++	raw_notifier_call_chain(&kvm->reset_notifier, 0, kvm);
++	mutex_unlock(&kvm->lock);
++}
 +
-+	ret = available & requested;
++int kvm_reset_notifier_register(struct kvm *kvm, struct notifier_block *nb)
++{
++	int ret;
 +
-+	if (ret & VENET_CAP_SG) {
-+		priv->vbus.sg.enabled = true;
-+		priv->vbus.rx_ops = &venettap_sg_rx_ops;
-+	}
++	mutex_lock(&kvm->lock);
++	ret = raw_notifier_chain_register(&kvm->reset_notifier, nb);
++	mutex_unlock(&kvm->lock);
++
++	return ret;
++}
++
++int kvm_reset_notifier_unregister(struct kvm *kvm, struct notifier_block *nb)
++{
++	int ret;
++
++	mutex_lock(&kvm->lock);
++	ret = raw_notifier_chain_unregister(&kvm->reset_notifier, nb);
++	mutex_unlock(&kvm->lock);
 +
 +	return ret;
 +}
 +
  /*
-  * Negotiate Capabilities - This function is provided so that the
-  * interface may be extended without breaking ABI compatability
-@@ -873,6 +1084,9 @@ venettap_negcap(struct venettap *priv, void *data, unsigned long len)
- 		return -EFAULT;
- 
- 	switch (caps.gid) {
-+	case VENET_CAP_GROUP_SG:
-+		caps.bits = venettap_negcap_sg(priv, caps.bits);
-+		break;
- 	default:
- 		caps.bits = 0;
+  * The vCPU has executed a HLT instruction with in-kernel mode enabled.
+  */
+@@ -1929,6 +1960,11 @@ static long kvm_vm_ioctl(struct file *filp,
  		break;
-@@ -1057,6 +1271,12 @@ venettap_vlink_release(struct vbus_connection *conn)
- 	vbus_memctx_put(priv->vbus.ctx);
- 
- 	kobject_put(priv->vbus.dev.kobj);
-+
-+	priv->vbus.sg.enabled = false;
-+	priv->vbus.rx_ops = &venettap_flat_rx_ops;
-+	kfree(priv->vbus.sg.desc);
-+	priv->vbus.sg.desc = NULL;
-+	priv->vbus.sg.len = 0;
- }
- 
- static struct vbus_connection_ops venettap_vbus_link_ops = {
-@@ -1336,6 +1556,7 @@ venettap_device_create(struct vbus_devclass *dc,
- 	_vdev->ops             = &venettap_device_ops;
- 	_vdev->attrs           = &venettap_attr_group;
- 
-+	priv->vbus.rx_ops      = &venettap_flat_rx_ops;
- 	init_waitqueue_head(&priv->vbus.rx_empty);
- 
- 	/*
+ 	}
+ #endif
++	case KVM_RESET: {
++		kvm_notify_reset(kvm);
++		r = 0;
++		break;
++	}
+ 	default:
+ 		r = kvm_arch_vm_ioctl(filp, ioctl, arg);
+ 	}
 
