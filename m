@@ -1,115 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760729AbZDIEnT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760006AbZDIEoV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760729AbZDIEnT (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 9 Apr 2009 00:43:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753549AbZDIEnI
+	id S1760006AbZDIEoV (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 9 Apr 2009 00:44:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758885AbZDIEoK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 9 Apr 2009 00:43:08 -0400
-Received: from bilbo.ozlabs.org ([203.10.76.25]:37854 "EHLO bilbo.ozlabs.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753244AbZDIEnH (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 9 Apr 2009 00:43:07 -0400
+	Thu, 9 Apr 2009 00:44:10 -0400
+Received: from rv-out-0506.google.com ([209.85.198.233]:51920 "EHLO
+	rv-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755943AbZDIEoH convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 9 Apr 2009 00:44:07 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
+         :cc:content-type:content-transfer-encoding;
+        b=XeDMYFxAQHqEtSgQySuBMyFTQy38enxArNHMjKlKE/0msOIiC6KCpsXPFDdD/jDFBc
+         wfhAPIvuobLJC0H+45qdkASKe4VSeh4hmXjmOSI+Ze4s4EX573n5sJmt4iBRt0CnoBwo
+         P/2VeeZwsQy70+jodKEXO2Pz91w+tesyhxgLU=
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
-Message-ID: <18909.31952.873098.336615@cargo.ozlabs.ibm.com>
-Date: Thu, 9 Apr 2009 14:42:56 +1000
-From: Paul Mackerras <paulus@samba.org>
-To: Ingo Molnar <mingo@elte.hu>, Peter Zijlstra <a.p.zijlstra@chello.nl>
-CC: linux-kernel@vger.kernel.org
-Subject: [PATCH] perf_counter: powerpc: add nmi_enter/nmi_exit calls
-X-Mailer: VM 8.0.9 under Emacs 22.2.1 (i486-pc-linux-gnu)
+In-Reply-To: <200904081608.55746.mark.langsdorf@amd.com>
+References: <200903171457.25582.mark.langsdorf@amd.com>
+	 <200904081608.55746.mark.langsdorf@amd.com>
+Date: Wed, 8 Apr 2009 21:44:07 -0700
+Message-ID: <86802c440904082144m54e2dba5n6c89624481fb5fa1@mail.gmail.com>
+Subject: Re: [PATCH] Enable GART-IOMMU only after setting up protection 
+	methods
+From: Yinghai Lu <yhlu.kernel@gmail.com>
+To: Mark Langsdorf <mark.langsdorf@amd.com>
+Cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
+       Ingo Molnar <mingo@elte.hu>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Impact: powerpc bug fix
+On Wed, Apr 8, 2009 at 2:08 PM, Mark Langsdorf <mark.langsdorf@amd.com> wrote:
+> The current code to set up the GART as an IOMMU enables GART
+> translations before it removes the aperture from the kernel
+> memory map, sets the GART PTEs to UC, sets up the guard and
+> scratch pages, or does a wbinvd().  This leaves the possibility
+> of cache aliasing open and can cause system crashes.
+>
+> Re-order the code and add tlbflush so as to enable the
+> GART translations only after all safeguards are in place and
+> the tlb has been flushed.
+>
+> AMD has tested this patch and seen no adverse effects.
 
-Now that the core is using in_nmi() (added in e30e08f6, "perf_counter:
-fix NMI race in task clock"), we need the powerpc perf_counter_interrupt
-to call nmi_enter() and nmi_exit() in those cases where the interrupt
-happens when interrupts are soft-disabled.  If interrupts were
-soft-enabled, we can treat it as a regular interrupt and do
-irq_enter/irq_exit around the whole routine.  This lets us get rid
-of the test_perf_counter_pending() call at the end of
-perf_counter_interrupt, thus simplifying things a little.
+how about system with AGP card and more than 4g system RAM?
 
-Signed-off-by: Paul Mackerras <paulus@samba.org>
----
- arch/powerpc/kernel/perf_counter.c |   31 +++++++++++++++++--------------
- 1 files changed, 17 insertions(+), 14 deletions(-)
+also it seems flush_gart() in init_k8_gatt() and gart_iommu_init()
+could be removed?
 
-diff --git a/arch/powerpc/kernel/perf_counter.c b/arch/powerpc/kernel/perf_counter.c
-index c9d019f..bd76d0f 100644
---- a/arch/powerpc/kernel/perf_counter.c
-+++ b/arch/powerpc/kernel/perf_counter.c
-@@ -714,7 +714,7 @@ hw_perf_counter_init(struct perf_counter *counter)
-  * here so there is no possibility of being interrupted.
-  */
- static void record_and_restart(struct perf_counter *counter, long val,
--			       struct pt_regs *regs)
-+			       struct pt_regs *regs, int nmi)
- {
- 	s64 prev, delta, left;
- 	int record = 0;
-@@ -749,7 +749,7 @@ static void record_and_restart(struct perf_counter *counter, long val,
- 	 * Finally record data if requested.
- 	 */
- 	if (record)
--		perf_counter_overflow(counter, 1, regs, 0);
-+		perf_counter_overflow(counter, nmi, regs, 0);
- }
- 
- /*
-@@ -762,6 +762,17 @@ static void perf_counter_interrupt(struct pt_regs *regs)
- 	struct perf_counter *counter;
- 	long val;
- 	int found = 0;
-+	int nmi;
-+
-+	/*
-+	 * If interrupts were soft-disabled when this PMU interrupt
-+	 * occurred, treat it as an NMI.
-+	 */
-+	nmi = !regs->softe;
-+	if (nmi)
-+		nmi_enter();
-+	else
-+		irq_enter();
- 
- 	for (i = 0; i < cpuhw->n_counters; ++i) {
- 		counter = cpuhw->counter[i];
-@@ -769,7 +780,7 @@ static void perf_counter_interrupt(struct pt_regs *regs)
- 		if ((int)val < 0) {
- 			/* counter has overflowed */
- 			found = 1;
--			record_and_restart(counter, val, regs);
-+			record_and_restart(counter, val, regs, nmi);
- 		}
- 	}
- 
-@@ -796,18 +807,10 @@ static void perf_counter_interrupt(struct pt_regs *regs)
- 	 */
- 	mtspr(SPRN_MMCR0, cpuhw->mmcr[0]);
- 
--	/*
--	 * If we need a wakeup, check whether interrupts were soft-enabled
--	 * when we took the interrupt.  If they were, we can wake stuff up
--	 * immediately; otherwise we'll have do the wakeup when interrupts
--	 * get soft-enabled.
--	 */
--	if (test_perf_counter_pending() && regs->softe) {
--		irq_enter();
--		clear_perf_counter_pending();
--		perf_counter_do_pending();
-+	if (nmi)
-+		nmi_exit();
-+	else
- 		irq_exit();
--	}
- }
- 
- void hw_perf_counter_setup(int cpu)
--- 
-1.5.6.3
-
+YH
