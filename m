@@ -1,53 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1765229AbZDIJy3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932130AbZDIJyv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1765229AbZDIJy3 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 9 Apr 2009 05:54:29 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759559AbZDIJxw
+	id S932130AbZDIJyv (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 9 Apr 2009 05:54:51 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759446AbZDIJyR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 9 Apr 2009 05:53:52 -0400
-Received: from out2.smtp.messagingengine.com ([66.111.4.26]:43729 "EHLO
-	out2.smtp.messagingengine.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1754939AbZDIJxv (ORCPT
+	Thu, 9 Apr 2009 05:54:17 -0400
+Received: from yw-out-2324.google.com ([74.125.46.29]:61587 "EHLO
+	yw-out-2324.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1765000AbZDIJyO (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 9 Apr 2009 05:53:51 -0400
-X-Sasl-enc: 7TXEtxsaKtkV0C2S5aJPgLIlZwpSzBkWmGHM6QFg6/mT 1239270829
-Message-ID: <49DDC5AA.9090808@fastmail.fm>
-Date: Thu, 09 Apr 2009 10:53:46 +0100
-From: Jack Stone <jwjstone@fastmail.fm>
-User-Agent: Thunderbird 2.0.0.21 (X11/20090325)
+	Thu, 9 Apr 2009 05:54:14 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=googlemail.com; s=gamma;
+        h=sender:message-id:date:from:user-agent:mime-version:to:cc:subject
+         :references:in-reply-to:content-type:content-transfer-encoding;
+        b=ngqig4jn9YY7TwSfXFagrw3BNEPiUjvfUZq1VvkPYEtfI5vCdw+UNH8ivHfGoLMSX0
+         WOnj31YDQ1K5V3shEFoK4c+XiromPA6CMysPCO6L7PHuA3SHu05PS3vZ1dsQNL8GLEib
+         KsdUEaRnyDnKLAX5mri9z4q4raJMwK3WEn6UE=
+Message-ID: <49DDC5BF.8070205@tuffmail.co.uk>
+Date: Thu, 09 Apr 2009 10:54:07 +0100
+From: Alan Jenkins <alan-jenkins@tuffmail.co.uk>
+User-Agent: Thunderbird 2.0.0.21 (X11/20090318)
 MIME-Version: 1.0
-To: linux-kernel@vger.kernel.org
-CC: jeff@garzik.org, kernel-janitors@vger.kernel.org, hch@infradead.org
-Subject: Re: [PATCH 11/56] freevxfs: Remove void casts
-References: <> <1239189748-11703-1-git-send-email-jwjstone@fastmail.fm> <1239189748-11703-2-git-send-email-jwjstone@fastmail.fm> <1239189748-11703-3-git-send-email-jwjstone@fastmail.fm> <1239189748-11703-4-git-send-email-jwjstone@fastmail.fm> <1239189748-11703-5-git-send-email-jwjstone@fastmail.fm> <1239189748-11703-6-git-send-email-jwjstone@fastmail.fm> <1239189748-11703-7-git-send-email-jwjstone@fastmail.fm> <1239189748-11703-8-git-send-email-jwjstone@fastmail.fm> <1239189748-11703-9-git-send-email-jwjstone@fastmail.fm> <1239189748-11703-10-git-send-email-jwjstone@fastmail.fm> <1239189748-11703-11-git-send-email-jwjstone@fastmail.fm> <1239189748-11703-12-git-send-email-jwjstone@fastmail.fm>
-In-Reply-To: <1239189748-11703-12-git-send-email-jwjstone@fastmail.fm>
+To: Alan Stern <stern@rowland.harvard.edu>
+CC: usb-storage@lists.one-eyed-alien.net,
+       Kernel Testers List <kernel-testers@vger.kernel.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: usual_tables: module license 'unspecified' taints kernel.
+References: <Pine.LNX.4.44L0.0904081829050.3138-100000@iolanthe.rowland.org>
+In-Reply-To: <Pine.LNX.4.44L0.0904081829050.3138-100000@iolanthe.rowland.org>
 Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-[Added maintainer CC]
-Jack Stone wrote:
-> Remove uneeded void casts
+Alan Stern wrote:
+> On Wed, 8 Apr 2009, Alan Jenkins wrote:
 >
-> Signed-Off-By: Jack Stone <jwjstone@fastmail.fm>
-> ---
->  fs/freevxfs/vxfs_inode.c |    2 +-
->  1 files changed, 1 insertions(+), 1 deletions(-)
+>   
+>> Hi, I see this regression in v2.6.30-rc1.  I end up with a module 
+>> "usual_tables.ko", which is loaded on boot and causes the kernel to 
+>> complain about an unspecified license.  See subject for the exact error 
+>> message.
+>>
+>> I have
+>>
+>> CONFIG_USB_STORAGE=m
+>> CONFIG_USB_LIBUSUAL=y
+>>     
 >
-> diff --git a/fs/freevxfs/vxfs_inode.c b/fs/freevxfs/vxfs_inode.c
-> index 03a6ea5..9811217 100644
-> --- a/fs/freevxfs/vxfs_inode.c
-> +++ b/fs/freevxfs/vxfs_inode.c
-> @@ -138,7 +138,7 @@ __vxfs_iget(ino_t ino, struct inode *ilistp)
->  	if (!IS_ERR(pp)) {
->  		struct vxfs_inode_info	*vip;
->  		struct vxfs_dinode	*dip;
-> -		caddr_t			kaddr = (char *)page_address(pp);
-> +		caddr_t			kaddr = page_address(pp);
->  
->  		if (!(vip = kmem_cache_alloc(vxfs_inode_cachep, GFP_KERNEL)))
->  			goto fail;
+> This looks like a mistake in the Makefile.  Does the patch below fix
+> the problem?
+>
+> Alan Stern
 >   
 
+Yes.  Thanks!
