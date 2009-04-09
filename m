@@ -1,118 +1,117 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763924AbZDISmB@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932084AbZDISpc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763924AbZDISmB (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 9 Apr 2009 14:42:01 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754142AbZDISlr
+	id S932084AbZDISpc (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 9 Apr 2009 14:45:32 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756889AbZDISpV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 9 Apr 2009 14:41:47 -0400
-Received: from web50107.mail.re2.yahoo.com ([206.190.38.35]:48868 "HELO
-	web50107.mail.re2.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1756295AbZDISlq convert rfc822-to-8bit
-	(ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 9 Apr 2009 14:41:46 -0400
-DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
-  s=s1024; d=yahoo.com;
-  h=Message-ID:X-YMail-OSG:Received:X-Mailer:Date:From:Subject:To:Cc:MIME-Version:Content-Type:Content-Transfer-Encoding;
-  b=m3QaXO+J1eBYFlrkNxUVGMOYWSISB0d5OuVEqVj7b7xfrNj1uS/nWflR/Cpve5ao/THPwWuruCyBIw+f5Srubx/r1cTMHePlVwadmAZL2DZ8o9RhQfIrE+/p1j+RM2rrClw/vI6SbnxopZCLBp/K+Anne8rg79S3aPnlVO9+Qms=;
-Message-ID: <112180.11800.qm@web50107.mail.re2.yahoo.com>
-X-YMail-OSG: z.MuUiAVM1lKdqRaWidOrYah3rCfxLBcZumZEfotskLwAlxIhzxC.iXMpdAA05IaS7O1feFp75gohhO.Wm3LW.fvss8g9P_yereSZod_uHzxXZfOkccoytp1W0OaTXpvTfWWP5yX2BWL4GiMhKbAMGlj2cDA3Tfa8SUl.5xoc0Ugy92ehZG1KoDktspSXR9yYVMW67h0iesV1sT5UrLnl0B6EgMZWeUut2.A9vXcmIkkn8_cTYjG0O_AP1cx40gR7uJaSnbUcO_VXQzPOzCYMLXMT.SbUJOirTt_kPWz3DVhr_63uWPCZTFrwXMSL69M
-X-Mailer: YahooMailClassic/5.2.15 YahooMailWebService/0.7.289.10
-Date: Thu, 9 Apr 2009 11:41:44 -0700 (PDT)
-From: Doug Thompson <norsk5@yahoo.com>
-Subject: Re: [PATCH] x86,edac: fix for compiler error in traps.c
-To: Steven Rostedt <rostedt@goodmis.org>,
-       Andrew Morton <akpm@linux-foundation.org>
-Cc: Ingo Molnar <mingo@elte.hu>, LKML <linux-kernel@vger.kernel.org>
+	Thu, 9 Apr 2009 14:45:21 -0400
+Received: from moutng.kundenserver.de ([212.227.126.187]:60323 "EHLO
+	moutng.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756245AbZDISpT (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 9 Apr 2009 14:45:19 -0400
+Message-ID: <49DE4243.5060004@vlnb.net>
+Date: Thu, 09 Apr 2009 22:45:23 +0400
+From: Vladislav Bolkhovitin <vst@vlnb.net>
+User-Agent: Thunderbird 2.0.0.21 (X11/20090320)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-Content-Transfer-Encoding: 8BIT
+To: Tomasz Chmielewski <mangoo@wpkg.org>
+CC: Bart Van Assche <bart.vanassche@gmail.com>, linux-kernel@vger.kernel.org,
+       linux-scsi@vger.kernel.org, iscsitarget-devel@lists.sourceforge.net,
+       James Bottomley <James.Bottomley@hansenpartnership.com>,
+       scst-devel <scst-devel@lists.sourceforge.net>, stgt@vger.kernel.org
+Subject: Re: [Scst-devel] [ANNOUNCE]: Comparison of features sets between
+ 	different SCSI targets (SCST, STGT, IET, LIO)
+References: <49D7AD54.4060408@vlnb.net> <49D7B122.50103@wpkg.org> <e2e108260904050429lcd1870ag6656f36a170ccab3@mail.gmail.com> <49D9D9A0.40106@wpkg.org> <49DA33EF.3020700@vlnb.net> <49DA49AA.1060106@wpkg.org>
+In-Reply-To: <49DA49AA.1060106@wpkg.org>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
+X-Provags-ID: V01U2FsdGVkX19phsOaFfWs8lD2rcyxM8bzl37hCckGDNE/SEo
+ /DLbFXAxZhlzBZEIOrUyfRFYV248pcRC45n2XT2Qrs9yIT4u9Z
+ pQXP8sv/cRtKQDUkeTuxg==
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
---- On Wed, 4/8/09, Andrew Morton <akpm@linux-foundation.org> wrote:
 
-> From: Andrew Morton <akpm@linux-foundation.org>
-> Subject: Re: [PATCH] x86,edac: fix for compiler error in traps.c
-> To: "Steven Rostedt" <rostedt@goodmis.org>
-> Cc: "Ingo Molnar" <mingo@elte.hu>, "LKML" <linux-kernel@vger.kernel.org>, "Doug Thompson" <norsk5@yahoo.com>
-> Date: Wednesday, April 8, 2009, 6:48 PM
-> On Wed, 8 Apr 2009 20:06:53 -0400
-> (EDT) Steven Rostedt <rostedt@goodmis.org>
-> wrote:
+Tomasz Chmielewski, on 04/06/2009 10:27 PM wrote:
+> Vladislav Bolkhovitin schrieb:
 > 
-> > 
-> > Impact: compile fix
-> > 
-> >  I got this compile failure on both
-> tip/tracing/core as well as on 
-> >  v2.6.30-rc1.
-> >  
-> >    LD      .tmp_vmlinux1
-> >  arch/x86/kernel/built-in.o: In function
-> `do_nmi':
-> >  (.text+0x3c18): undefined reference to
-> `edac_handler_set'
-> >  arch/x86/kernel/built-in.o: In function
-> `do_nmi':
-> >  (.text+0x3c48): undefined reference to
-> `edac_atomic_assert_error'
-> >  make: *** [.tmp_vmlinux1] Error 1
-> >  [root@bxrhel51 linux-trace.git]# grep
-> edac_handler_set 
-> >  [root@bxrhel51 linux-trace.git]# Grep
-> edac_handler_set '*.[ch]'
-> >  find .  -name "*.[ch]" ! -type d  |
-> xargs grep  "edac_handler_set"
-> >  ./arch/x86/kernel/traps.c:    if
-> (edac_handler_set()) {
-> >  ./include/linux/edac.h:extern int
-> edac_handler_set(void);
-> >  ./drivers/edac/edac_stub.c:int
-> edac_handler_set(void)
-> > 
-> ./drivers/edac/edac_stub.c:EXPORT_SYMBOL_GPL(edac_handler_set);
-> >  
-> > This patch seems to fix it.
-> > 
-> > Signed-off-by: Steven Rostedt <rostedt@goodmis.org>
-> > 
-> > diff --git a/drivers/edac/Makefile
-> b/drivers/edac/Makefile
-> > index a5fdcf0..cc2bcb4 100644
-> > --- a/drivers/edac/Makefile
-> > +++ b/drivers/edac/Makefile
-> > @@ -7,7 +7,7 @@
-> >  #
-> >  
-> >  
-> > -obj-$(CONFIG_EDAC)   
->         := edac_stub.o
-> > +obj-$(CONFIG_EDAC)   
->         += edac_stub.o
-> >  obj-$(CONFIG_EDAC_MM_EDAC)   
->     += edac_core.o
-> >  
-> >  edac_core-objs    := edac_mc.o
-> edac_device.o edac_mc_sysfs.o edac_pci_sysfs.o
+>>> Encrypted device was created with the following additional options 
+>>> passed to cryptsetup
+>>> (it provides the most performance on systems where CPU is a 
+>>> bottleneck, but with decreased
+>>> security when compared to default options):
+>>>
+>>> -c aes-ecb-plain -s 128
+>>>
+>>>
+>>> Generally, CPU on the target was a bottleneck, so I also tested the 
+>>> load on target.
+>>>
+>>>
+>>> md0, crypt columns - averages from dd
+>>> us, sy, id, wa - averages from vmstat
+>>>
+>>>
+>>> 1. Disk speeds on the target
+>>>
+>>> Raw performance: 102.17 MB/s
+>>> Raw performance (encrypted):  50.21 MB/s
+>>>
+>>>
+>>> 2. Read-ahead on the initiator: 256 (default); md0, crypt - MB/s
+>>>
+>>>                            md0   us  sy  id  wa  | crypt   us  sy  id  
+>>> wa  STGT                      50.63   4% 45% 18% 33% | 32.52    3% 62% 
+>>> 16% 19%
+>>> SCST (debug + no patches) 43.75   0% 26% 30% 44% | 42.05    0% 84%  1% 
+>>> 15%
+>>> SCST (fullperf + patches) 45.18   0% 25% 33% 42% | 44.12    0% 81%  2% 
+>>> 17%
+>>>
+>>>
+>>> 3. Read-ahead on the initiator: 16384; md0, crypt - MB/s
+>>>
+>>>                            md0   us  sy  id  wa  | crypt   us  sy  id  
+>>> wa  STGT                      56.43   3% 55%  2% 40% | 46.90    3% 
+>>> 90%  3%  4%
+>>> SCST (debug + no patches) 73.85   0% 58%  1% 41% | 42.70    0% 85%  0% 
+>>> 15%
+>>> SCST (fullperf + patches) 76.27   0% 63%  1% 36% | 42.52    0% 85%  0% 
+>>> 15%
+>> Good! You proved that:
+>>
+>> 1. SCST is capable to work much better than STGT: 35% for md and 37% for 
+>> crypt considering maximum values.
+>>
+>> 2. Default read-ahead size isn't appropriate for remote data access 
+>> cases and should be increased. I slowly have been discussing it in past 
+>> few months with Wu Fengguang, the read-ahead maintainer.
 > 
-> OK, thanks, I'll send that Linuswards asap.
+> Note that crypt performance for SCST was worse than that of STGT for 
+> large read-ahead values.
+> Also, SCST performance on crypt device was more or less the same with 
+> 256 and 16384 readahead values. I wonder why performance didn't increase 
+> here while increasing readahead values?
+
+This is a very big topic. In short, increasing RA alone isn't 
+sufficient, because, while the bigger value transferred over the uplink, 
+the backend storage can get rotated too far, so, to continue reading 
+data from it, there will be a need to wait for that rotation completed.
+
+Try together with the RA increase also decrease max_sectors_kb to 128K 
+or even to 64K.
+
+Also, the above actions done on the target can also be quite positive.
+
+> Could anyone recheck if it's the same on some other system?
 > 
-> I guess it could/should be
+>> Which IO scheduler on the target did you use? I guess, deadline? If so, 
+>> you should try with CFQ as well.
 > 
->     obj-y += edac_stub.o
-> 
-> because CONFIG_EDAC is known to be true in
-> drivers/edac/.  But that's
-> just a consistency/style thing for Doug to scratch his head
-> over ;)
+> I used CFQ.
 
-I had determined (long ago) that := was a first instance initialization. I could be (probably was) wrong on that. I saw that in other files as well as reading the docs (me read em?).
-
-edac_stub.o is targeted to be IN the kernel via the CONFIG_EDAC object file, since that is a boolean switch. It is a different builtin lib from the modules of edac. It is a relay set of functions and interfaces.
-
-thanks for checking up on it
-
-doug t
-
+You didn't apply io_context-XXX.patch, correct? With it you should see a 
+  noticeable increase, like in http://scst.sourceforge.net/vl_res.txt.
