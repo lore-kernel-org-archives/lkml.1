@@ -1,71 +1,77 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S936923AbZDIWLr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S936944AbZDIWMN@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S936923AbZDIWLr (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 9 Apr 2009 18:11:47 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761207AbZDIWLU
+	id S936944AbZDIWMN (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 9 Apr 2009 18:12:13 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762536AbZDIWLV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 9 Apr 2009 18:11:20 -0400
-Received: from mga01.intel.com ([192.55.52.88]:36773 "EHLO mga01.intel.com"
+	Thu, 9 Apr 2009 18:11:21 -0400
+Received: from mga14.intel.com ([143.182.124.37]:53531 "EHLO mga14.intel.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751618AbZDIWLT (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	id S1751716AbZDIWLT (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
 	Thu, 9 Apr 2009 18:11:19 -0400
 X-ExtLoop1: 1
 X-IronPort-AV: E=Sophos;i="4.40,163,1239001200"; 
-   d="scan'208";a="446627395"
-Message-Id: <20090409212708.373330000@intel.com>
+   d="scan'208";a="129892092"
+Message-Id: <20090409212708.512280000@intel.com>
 References: <20090409212646.511925000@intel.com>
 User-Agent: quilt/0.46-1
-Date: Thu, 09 Apr 2009 14:26:47 -0700
+Date: Thu, 09 Apr 2009 14:26:48 -0700
 From: venkatesh.pallipadi@intel.com
 To: mingo@elte.hu, tglx@linutronix.de, hpa@zytor.com
-Cc: linux-kernel@vger.kernel.org, Suresh Siddha <suresh.b.siddha@intel.com>,
-       Venkatesh Pallipadi <venkatesh.pallipadi@intel.com>
-Subject: [patch 1/6] x86, CPA: Change idmap attribute before ioremap attribute setup
-Content-Disposition: inline; filename=0001-x86-CPA-Change-idmap-attribute-before-ioremap-attr.patch
+Cc: linux-kernel@vger.kernel.org,
+       Venkatesh Pallipadi <venkatesh.pallipadi@intel.com>,
+       Suresh Siddha <suresh.b.siddha@intel.com>
+Subject: [patch 2/6] x86, PAT: Change order of cpa and free in set_memory_wb
+Content-Disposition: inline; filename=0002-x86-PAT-Change-order-of-cpa-and-free-in-set_memory.patch
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Suresh Siddha <suresh.b.siddha@intel.com>
-Subject: [patch 1/6] x86, CPA: Change idmap attribute before ioremap attribute setup
+To be free of aliasing due to races, set_memory_* interfaces should
+follow ordering of reserving, changing memtype to UC/WC, changing
+memtype back to WB followed by free.
 
-Change the identity mapping with the requested attribute first, before
-we setup the virtual memory mapping with the new requested attribute.
-This makes sure that there is no window when identity map'ed attribute
-may disagree with ioremap range on the attribute type.
-This also avoids doing cpa on the ioremap'ed address twice (first in
-ioremap_page_range and then in ioremap_change_attr using vaddr), and
-should improve ioremap performance a bit.
-
-Signed-off-by: Suresh Siddha <suresh.b.siddha@intel.com>
 Signed-off-by: Venkatesh Pallipadi <venkatesh.pallipadi@intel.com>
+Signed-off-by: Suresh Siddha <suresh.b.siddha@intel.com>
 ---
- arch/x86/mm/ioremap.c |    7 ++++---
- 1 files changed, 4 insertions(+), 3 deletions(-)
+ arch/x86/mm/pageattr.c |   11 +++++++----
+ 1 files changed, 7 insertions(+), 4 deletions(-)
 
-diff --git a/arch/x86/mm/ioremap.c b/arch/x86/mm/ioremap.c
-index 0dfa09d..329387e 100644
---- a/arch/x86/mm/ioremap.c
-+++ b/arch/x86/mm/ioremap.c
-@@ -280,15 +280,16 @@ static void __iomem *__ioremap_caller(resource_size_t phys_addr,
- 		return NULL;
- 	area->phys_addr = phys_addr;
- 	vaddr = (unsigned long) area->addr;
--	if (ioremap_page_range(vaddr, vaddr + size, phys_addr, prot)) {
-+
-+	if (kernel_map_sync_memtype(phys_addr, size, prot_val)) {
- 		free_memtype(phys_addr, phys_addr + size);
- 		free_vm_area(area);
- 		return NULL;
- 	}
+diff --git a/arch/x86/mm/pageattr.c b/arch/x86/mm/pageattr.c
+index 1224865..38dc61f 100644
+--- a/arch/x86/mm/pageattr.c
++++ b/arch/x86/mm/pageattr.c
+@@ -1007,15 +1007,19 @@ int _set_memory_wb(unsigned long addr, int numpages)
  
--	if (ioremap_change_attr(vaddr, size, prot_val) < 0) {
-+	if (ioremap_page_range(vaddr, vaddr + size, phys_addr, prot)) {
- 		free_memtype(phys_addr, phys_addr + size);
--		vunmap(area->addr);
-+		free_vm_area(area);
- 		return NULL;
+ int set_memory_wb(unsigned long addr, int numpages)
+ {
++	int ret = _set_memory_wb(addr, numpages);
+ 	free_memtype(__pa(addr), __pa(addr) + numpages * PAGE_SIZE);
+-
+-	return _set_memory_wb(addr, numpages);
++	return ret;
+ }
+ EXPORT_SYMBOL(set_memory_wb);
+ 
+ int set_memory_array_wb(unsigned long *addr, int addrinarray)
+ {
+ 	int i;
++	int ret;
++
++	ret = change_page_attr_clear(addr, addrinarray,
++				      __pgprot(_PAGE_CACHE_MASK), 1);
+ 
+ 	for (i = 0; i < addrinarray; i++) {
+ 		unsigned long start = __pa(addr[i]);
+@@ -1028,8 +1032,7 @@ int set_memory_array_wb(unsigned long *addr, int addrinarray)
+ 		}
+ 		free_memtype(start, end);
  	}
+-	return change_page_attr_clear(addr, addrinarray,
+-				      __pgprot(_PAGE_CACHE_MASK), 1);
++	return ret;
+ }
+ EXPORT_SYMBOL(set_memory_array_wb);
  
 -- 
 1.6.0.6
