@@ -1,68 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759896AbZDIVAS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761144AbZDIVAq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759896AbZDIVAS (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 9 Apr 2009 17:00:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758519AbZDIU75
+	id S1761144AbZDIVAq (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 9 Apr 2009 17:00:46 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760743AbZDIVAY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 9 Apr 2009 16:59:57 -0400
-Received: from smtp-out.google.com ([216.239.45.13]:6857 "EHLO
-	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1758434AbZDIU74 (ORCPT
+	Thu, 9 Apr 2009 17:00:24 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:38118 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1760325AbZDIVAW (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 9 Apr 2009 16:59:56 -0400
-DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
-	h=mime-version:in-reply-to:references:date:message-id:subject:from:to:
-	cc:content-type:content-transfer-encoding:x-system-of-record;
-	b=np4l4AZBTnu5KSKNLdkAQY2rEgbZ4vqN5wQEJzcberkPKcwtbgqaVbsPF8YBl9gNu
-	RiB2J+OHWHzdRAG+bhTRA==
-MIME-Version: 1.0
-In-Reply-To: <20090409133030.a7ea94c7.akpm@linux-foundation.org>
-References: <1238715399-22172-1-git-send-email-jack@suse.cz>
-	 <a4a7801d0904031738h68bf6218lfd3349ca50f46642@mail.gmail.com>
-	 <20090406102329.GD31189@duck.suse.cz>
-	 <20090409133030.a7ea94c7.akpm@linux-foundation.org>
-Date: Thu, 9 Apr 2009 13:59:50 -0700
-Message-ID: <604427e00904091359t3e068ffm1868d164824fb575@mail.gmail.com>
-Subject: Re: [PATCH] ext2: Fix data corruption for racing writes
-From: Ying Han <yinghan@google.com>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: Jan Kara <jack@suse.cz>, yinghan@gmail.com, linux-ext4@vger.kernel.org,
-       linux-kernel@vger.kernel.org, nickpiggin@yahoo.com.au
-Content-Type: text/plain; charset=ISO-8859-1
+	Thu, 9 Apr 2009 17:00:22 -0400
+Date: Thu, 9 Apr 2009 13:58:03 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Alexander Beregalov <a.beregalov@gmail.com>
+Cc: jeffm@suse.com, reiserfs-devel@vger.kernel.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] reiserfs: fix printk format warning
+Message-Id: <20090409135803.2c011dee.akpm@linux-foundation.org>
+In-Reply-To: <20090403013437.GA29003@orion>
+References: <20090403013437.GA29003@orion>
+X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-X-System-Of-Record: true
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Apr 9, 2009 at 1:30 PM, Andrew Morton <akpm@linux-foundation.org> wrote:
-> On Mon, 6 Apr 2009 12:23:29 +0200
-> Jan Kara <jack@suse.cz> wrote:
->
->> >
->> > I tried this patch and seems i got deadlock on the truncate_mutex.
->> > Here is the message after enabling lockdep. I pasted the same message
->> > on the origianal thread.
->>
->> ...
->>
->>   I don't think this is a deadlock (or is the machine hung?). The thread
->> was just waiting for a long time. I'd think that you'll occasionally get
->> exactly the same message even without my patch if you stress the machine
->> like you do.
->>
->
-> Well, it's easy to tell the difference
->
-> deadlock: system never recovers
-> long-sucky-delay: system eventually recovers.
->
-> Which was it??
-Guess i have to retest it. I didn't wait long enough to see what
-happened on the machine. However, i do see the machine got rebooted
-later, but i am not sure what is the reason it is got reboot.
+On Fri, 3 Apr 2009 05:34:37 +0400
+Alexander Beregalov <a.beregalov@gmail.com> wrote:
 
-I will rerun the patch and keep an eye on it this time.
+> Fix following warning message
+> fs/reiserfs/procfs.c:393: warning: format '%u' expects type 'unsigned int', but argument 22 has type 'long unsigned int'
+> introduced in 600ed4167
+> (reiserfs: audit transaction ids to always be unsigned ints)
+> 
+> Signed-off-by: Alexander Beregalov <a.beregalov@gmail.com>
+> ---
+> 
+>  include/linux/reiserfs_fs_sb.h |    2 +-
+>  1 files changed, 1 insertions(+), 1 deletions(-)
+> 
+> diff --git a/include/linux/reiserfs_fs_sb.h b/include/linux/reiserfs_fs_sb.h
+> index 5621d87..1d1594a 100644
+> --- a/include/linux/reiserfs_fs_sb.h
+> +++ b/include/linux/reiserfs_fs_sb.h
+> @@ -193,7 +193,7 @@ struct reiserfs_journal {
+>  	atomic_t j_wcount;	/* count of writers for current commit */
+>  	unsigned long j_bcount;	/* batch count. allows turning X transactions into 1 */
+>  	unsigned long j_first_unflushed_offset;	/* first unflushed transactions offset */
+> -	unsigned long j_last_flush_trans_id;	/* last fully flushed journal timestamp */
+> +	unsigned int j_last_flush_trans_id;	/* last fully flushed journal timestamp */
+>  	struct buffer_head *j_header_bh;
+>  
+>  	time_t j_trans_start_time;	/* time this transaction started */
 
---Ying
->
+Yes, looking at the code I think it does want to be a u32.
+
+
