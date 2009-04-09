@@ -1,68 +1,90 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759089AbZDIH3b@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759382AbZDIHbv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759089AbZDIH3b (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 9 Apr 2009 03:29:31 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756551AbZDIH3U
+	id S1759382AbZDIHbv (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 9 Apr 2009 03:31:51 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756431AbZDIHbm
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 9 Apr 2009 03:29:20 -0400
-Received: from mail-ew0-f165.google.com ([209.85.219.165]:65257 "EHLO
-	mail-ew0-f165.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756419AbZDIH3T convert rfc822-to-8bit (ORCPT
+	Thu, 9 Apr 2009 03:31:42 -0400
+Received: from tomts10.bellnexxia.net ([209.226.175.54]:33159 "EHLO
+	tomts10-srv.bellnexxia.net" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1755936AbZDIHbl (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 9 Apr 2009 03:29:19 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:sender:in-reply-to:references:date
-         :x-google-sender-auth:message-id:subject:from:to:content-type
-         :content-transfer-encoding;
-        b=mzmwxfiYIJSfBKoKYnNig3i/rQ71o2hIxZNuEMTKZwRT9/Zd0JGvNWi19g22OwKEf3
-         7yPwGRLL1Kijt0t712R6kPp571z3jzhFqIgXkCXVCjpO80jo543JuLhwlZjS6LOXrNsC
-         IJxP3phOU1C0N3cFq/V1EgNzCEZS29NJHWdXo=
-MIME-Version: 1.0
-In-Reply-To: <20090409003308.GK16602@bilbo.ozlabs.org>
-References: <20090408003921.GA5054@ldl.fc.hp.com>
-	 <20090408010331.GB10768@sgi.com> <20090408054612.GA6744@ldl.fc.hp.com>
-	 <20090407225457.86f8a458.akpm@linux-foundation.org>
-	 <20090409003308.GK16602@bilbo.ozlabs.org>
-Date: Thu, 9 Apr 2009 09:29:17 +0200
-X-Google-Sender-Auth: 80b57b92929c4239
-Message-ID: <10f740e80904090029j15451862ne6479d20ac704991@mail.gmail.com>
-Subject: Re: cross-compilers
-From: Geert Uytterhoeven <geert@linux-m68k.org>
-To: Andrew Morton <akpm@linux-foundation.org>, Alex Chiang <achiang@hp.com>,
-       Robin Holt <holt@sgi.com>, linux-kernel <linux-kernel@vger.kernel.org>,
-       linux-ia64@vger.kernel.org
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8BIT
+	Thu, 9 Apr 2009 03:31:41 -0400
+X-IronPort-Anti-Spam-Filtered: true
+X-IronPort-Anti-Spam-Result: Ar4FAOc/3UlMQW1W/2dsb2JhbACBUsxdgjyBPwY
+Date: Thu, 9 Apr 2009 03:26:38 -0400
+From: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
+To: mingo@redhat.com, hpa@zytor.com, linux-kernel@vger.kernel.org,
+       fweisbec@gmail.com, rostedt@goodmis.org, lizf@cn.fujitsu.com, pq@iki.fi,
+       tglx@linutronix.de, mingo@elte.hu
+Cc: linux-tip-commits@vger.kernel.org
+Subject: Re: [tip:tracing/urgent] tracing: consolidate documents
+Message-ID: <20090409072638.GA20913@Krystal>
+References: <49DD6E2B.6090200@cn.fujitsu.com> <tip-9f690b04fdf3fa5d7d6abab0bfd8628c3b91d503@git.kernel.org>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+In-Reply-To: <tip-9f690b04fdf3fa5d7d6abab0bfd8628c3b91d503@git.kernel.org>
+X-Editor: vi
+X-Info: http://krystal.dyndns.org:8080
+X-Operating-System: Linux/2.6.21.3-grsec (i686)
+X-Uptime: 03:26:17 up 40 days,  3:52,  1 user,  load average: 0.67, 0.41,
+	0.21
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Apr 9, 2009 at 02:33, Tony Breeds <tony@bakeyournoodle.com> wrote:
-> On Tue, Apr 07, 2009 at 10:54:57PM -0700, Andrew Morton wrote:
->> We would benefit very much from having someone who actually maintains a
->> suite of cross-compilers for kernel developers.
->
-> I build wont say maintain many of the cross compilers used for linux-next.  I
-> can place them somehere.  They're kernel only as I don't build libc.
+* Li Zefan (lizf@cn.fujitsu.com) wrote:
+> Commit-ID:  9f690b04fdf3fa5d7d6abab0bfd8628c3b91d503
+> Gitweb:     http://git.kernel.org/tip/9f690b04fdf3fa5d7d6abab0bfd8628c3b91d503
+> Author:     Li Zefan <lizf@cn.fujitsu.com>
+> AuthorDate: Thu, 9 Apr 2009 11:40:27 +0800
+> Committer:  Ingo Molnar <mingo@elte.hu>
+> CommitDate: Thu, 9 Apr 2009 05:54:42 +0200
+> 
+> tracing: consolidate documents
+> 
+> Move tracepoints.txt, ftrace.txt and mmiotrace.txt to the new
+> directory trace/.
+> 
 
-Any chance m68k-unknown-linux-gnu-gcc 4.0.2 can be updated, so we get proper
-m68k allmodconfig coverage again? Recently we had some allmodconfig breakage
-in mainline (not limited to m68k though) for stuff that had been in
--next, but was
-never tried with m68k allmodconfig due to the ICE, while I could reproduce it.
+We should probably move markers.txt while we are at it.
 
-Mine is gcc version 4.1.2 20061115 (prerelease) (Debian 4.1.1-21), so
-far no ICEs
-when not trying randconfig (strange that randconfig triggers those).
+Mathieu
 
-Gr{oetje,eeting}s,
+> I didnt find any references to those documents in both source
+> files and documents, so no extra work needs to be done.
+> 
+> Signed-off-by: Li Zefan <lizf@cn.fujitsu.com>
+> Cc: Steven Rostedt <rostedt@goodmis.org>
+> Cc: Frederic Weisbecker <fweisbec@gmail.com>
+> Cc: Pekka Paalanen <pq@iki.fi>
+> Cc: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
+> LKML-Reference: <49DD6E2B.6090200@cn.fujitsu.com>
+> Signed-off-by: Ingo Molnar <mingo@elte.hu>
+> 
+> 
+> ---
+>  Documentation/{ => trace}/ftrace.txt           |    0
+>  Documentation/{tracers => trace}/mmiotrace.txt |    0
+>  Documentation/{ => trace}/tracepoints.txt      |    0
+>  3 files changed, 0 insertions(+), 0 deletions(-)
+> 
+> diff --git a/Documentation/ftrace.txt b/Documentation/trace/ftrace.txt
+> similarity index 100%
+> rename from Documentation/ftrace.txt
+> rename to Documentation/trace/ftrace.txt
+> diff --git a/Documentation/tracers/mmiotrace.txt b/Documentation/trace/mmiotrace.txt
+> similarity index 100%
+> rename from Documentation/tracers/mmiotrace.txt
+> rename to Documentation/trace/mmiotrace.txt
+> diff --git a/Documentation/tracepoints.txt b/Documentation/trace/tracepoints.txt
+> similarity index 100%
+> rename from Documentation/tracepoints.txt
+> rename to Documentation/trace/tracepoints.txt
 
-						Geert
-
---
-Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
-
-In personal conversations with technical people, I call myself a hacker. But
-when I'm talking to journalists I just say "programmer" or something like that.
-							    -- Linus Torvalds
+-- 
+Mathieu Desnoyers
+OpenPGP key fingerprint: 8CD5 52C3 8E3C 4140 715F  BA06 3F25 A8FE 3BAE 9A68
