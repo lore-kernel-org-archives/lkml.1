@@ -1,59 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760752AbZDII3H@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758423AbZDIIlk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760752AbZDII3H (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 9 Apr 2009 04:29:07 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758292AbZDII2u
+	id S1758423AbZDIIlk (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 9 Apr 2009 04:41:40 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753230AbZDIIlX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 9 Apr 2009 04:28:50 -0400
-Received: from mga05.intel.com ([192.55.52.89]:18544 "EHLO
-	fmsmga101.fm.intel.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1754781AbZDII2t (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 9 Apr 2009 04:28:49 -0400
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.40,159,1239001200"; 
-   d="scan'208";a="446413773"
-Subject: tiobench read 50% regression with 2.6.30-rc1
-From: "Zhang, Yanmin" <yanmin_zhang@linux.intel.com>
-To: Jens Axboe <jens.axboe@oracle.com>
-Cc: LKML <linux-kernel@vger.kernel.org>
-Content-Type: text/plain
-Date: Thu, 09 Apr 2009 16:29:23 +0800
-Message-Id: <1239265763.2567.769.camel@ymzhang>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.22.1 (2.22.1-2.fc9) 
+	Thu, 9 Apr 2009 04:41:23 -0400
+Received: from cantor2.suse.de ([195.135.220.15]:34172 "EHLO mx2.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753861AbZDIIlV (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 9 Apr 2009 04:41:21 -0400
+To: Arjan van de Ven <arjan@linux.intel.com>
+Subject: [PATCH] Fix compiler warning unused clean_rootfs when CONFIG_BLK_DEV_RAM is not defined
+Cc: Linus Torvalds <torvalds@linux-foundation.org>,
+       "H. Peter Anvin" <hpa@zytor.com>, Andrew Morton <akpm@osdl.org>,
+       linux-kernel@vger.kernel.org
+Content-Disposition: inline
+From: Nikanth Karthikesan <knikanth@suse.de>
+Organization: suse.de
+Date: Thu, 9 Apr 2009 14:08:55 +0530
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
+Message-Id: <200904091408.56401.knikanth@suse.de>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Comparing with 2.6.29's result, tiobench (read) has about 50% regression
-with 2.6.30-rc1 on all my machines. Bisect down to below patch.
+Resending as I missed the list, earlier.
 
-b029195dda0129b427c6e579a3bb3ae752da3a93 is first bad commit
-commit b029195dda0129b427c6e579a3bb3ae752da3a93
-Author: Jens Axboe <jens.axboe@oracle.com>
-Date:   Tue Apr 7 11:38:31 2009 +0200
+Thanks
+Nikanth
 
-    cfq-iosched: don't let idling interfere with plugging
-    
-    When CFQ is waiting for a new request from a process, currently it'll
-    immediately restart queuing when it sees such a request. This doesn't
-    work very well with streamed IO, since we then end up splitting IO
-    that would otherwise have been merged nicely. For a simple dd test,
-    this causes 10x as many requests to be issued as we should have.
-    Normally this goes unnoticed due to the low overhead of requests
-    at the device side, but some hardware is very sensitive to request
-    sizes and there it can cause big slow downs.
+Fix gcc warning, "unused clean_rootfs", when CONFIG_BLK_DEV_RAM not defined.
 
+Signed-off-by: Nikanth Karthikesan <knikanth@suse.de>
 
+---
+diff --git a/init/initramfs.c b/init/initramfs.c
+index 80cd713..e44f2d9 100644
+--- a/init/initramfs.c
++++ b/init/initramfs.c
+@@ -515,6 +515,7 @@ skip:
+ 	initrd_end = 0;
+ }
+ 
++#ifdef CONFIG_BLK_DEV_RAM
+ #define BUF_SIZE 1024
+ static void __init clean_rootfs(void)
+ {
+@@ -561,6 +562,7 @@ static void __init clean_rootfs(void)
+ 	sys_close(fd);
+ 	kfree(buf);
+ }
++#endif
+ 
+ static int __init populate_rootfs(void)
+ {
 
-Command to start the testing:
-#tiotest -k0 -k1 -k3 -f 80 -t 32
-
-It's a multi-threaded program and starts 32 threads. Every thread does I/O
-on its own 80MB file.
-
-yanmin
 
 
