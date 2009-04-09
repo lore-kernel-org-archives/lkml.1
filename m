@@ -1,71 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757952AbZDIB2T@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757918AbZDIBiU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757952AbZDIB2T (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 8 Apr 2009 21:28:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754620AbZDIB2I
+	id S1757918AbZDIBiU (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 8 Apr 2009 21:38:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754687AbZDIBiI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 8 Apr 2009 21:28:08 -0400
-Received: from rcsinet13.oracle.com ([148.87.113.125]:48847 "EHLO
-	rgminet13.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754357AbZDIB2H (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 8 Apr 2009 21:28:07 -0400
-Subject: Re: [dm-devel] Barriers still not passing on simple dm devices...
-From: Chris Mason <chris.mason@oracle.com>
-To: Mikulas Patocka <mpatocka@redhat.com>
-Cc: Jens Axboe <jens.axboe@oracle.com>,
-       device-mapper development <dm-devel@redhat.com>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       ak@linux.intel.com
-In-Reply-To: <Pine.LNX.4.64.0904080855340.28196@hs20-bc2-1.build.redhat.com>
-References: <20090324143034.GW27476@kernel.dk>
-	 <Pine.LNX.4.64.0903241033070.4088@hs20-bc2-1.build.redhat.com>
-	 <20090324150517.GX27476@kernel.dk>
-	 <Pine.LNX.4.64.0903251106520.27750@hs20-bc2-1.build.redhat.com>
-	 <20090325152751.GV27476@kernel.dk>
-	 <Pine.LNX.4.64.0903251825310.8027@hs20-bc2-1.build.redhat.com>
-	 <20090326084205.GG27476@kernel.dk>
-	 <Pine.LNX.4.64.0903302314500.6158@hs20-bc2-1.build.redhat.com>
-	 <20090331104933.GJ5178@kernel.dk>
-	 <Pine.LNX.4.64.0904021923040.19415@hs20-bc2-1.build.redhat.com>
-	 <20090403081131.GP5178@kernel.dk>
-	 <Pine.LNX.4.64.0904080855340.28196@hs20-bc2-1.build.redhat.com>
+	Wed, 8 Apr 2009 21:38:08 -0400
+Received: from mail1.radix.net ([207.192.128.31]:53385 "EHLO mail1.radix.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752254AbZDIBiH (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 8 Apr 2009 21:38:07 -0400
+Subject: Re: When is a wake_up() not a wake up?
+From: Andy Walls <awalls@radix.net>
+To: Trent Piepho <xyzzy@speakeasy.org>
+Cc: Linux Kernel <linux-kernel@vger.kernel.org>, linux-media@vger.kernel.org
+In-Reply-To: <Pine.LNX.4.58.0904040356210.5134@shell2.speakeasy.net>
+References: <1238798924.3130.72.camel@palomino.walls.org>
+	 <Pine.LNX.4.58.0904040356210.5134@shell2.speakeasy.net>
 Content-Type: text/plain
-Date: Wed, 08 Apr 2009 21:27:20 -0400
-Message-Id: <1239240440.11220.3.camel@think.oraclecorp.com>
+Date: Wed, 08 Apr 2009 22:38:46 -0400
+Message-Id: <1239244727.19075.34.camel@palomino.walls.org>
 Mime-Version: 1.0
-X-Mailer: Evolution 2.24.1 
+X-Mailer: Evolution 2.24.1 (2.24.1-2.fc10) 
 Content-Transfer-Encoding: 7bit
-X-Source-IP: acsmt703.oracle.com [141.146.40.81]
-X-Auth-Type: Internal IP
-X-CT-RefId: str=0001.0A010202.49DD4F11.00C9:SCFMA4539814,ss=1,fgs=0
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 2009-04-08 at 09:37 -0400, Mikulas Patocka wrote:
-
-> So there are two ways:
+On Sat, 2009-04-04 at 04:07 -0700, Trent Piepho wrote:
+> On Fri, 3 Apr 2009, Andy Walls wrote:
+> > 1. A work queue thread or read() call needs to send a command to the
+> > CX23418 using the cx18_api_call() function
+> > 2. It fills out a mailbox with a command for the CX23418
+> > 3. It prepares to wait, just in case a wait is needed
+> > 4. A SW1 interrupt is sent to the CX23418 telling it a mailbox is ready
+> > 5. The ack filed in the mailbox, a PCI MMIO location, is checked to see
+> > if the mailbox was ack'ed already
+> > 6. If not, schedule_timeout() for up to 10 msecs (a near eternity...)
+> > 7. Clean up the wait and move on
 > 
-> - either support only what all in-kernel filesystems do. Using barrier 
-> reqiests to flush hw cache. You can remove support for barriers with data, 
-> leave just zero-data barrier, you can remove ordering restrictions. 
-> In-kernel filesystems never overlap barrier with another metadata request 
-> (see above why such overlap can't work), so you can freely reorder 
-> zero-data barriers and simplify the code ... because all the requests that 
-> could be submitted in paralel with the barrier are either for different 
-> partition or non-metadata requests to the same partition from prefetch, 
-> direct io or so.
+> 10ms isn't that long.  With a 100 HZ kernel it's only one jiffie.  The
+> shortest time msleep() can sleep on a 100 HZ kernel is 20 ms.
 > 
-> - or you can allow barriers to be used for purposes as I did. And then, 
-> there must be clean indicator "this device supports barriers 
-> *and*will*support*them*in*the*future*". Currently there is no such 
-> indicator.
+> Is it possible that it's simply taking more than 10 ms for your process to
+> get run?
 
-I'm afraid expecting barriers forever in the future isn't completely
-compatible with dm or md.  Both of these allow the storage to change
-over time, and the filesystem needs to handle this without corruptions.
+After some testing with fine grained timestamps as you suggested, that
+indeed appears to be the case.
 
--chris
+For the high volume API command I care about, in 6097 out of 6100
+samples, the firmware acknowledgment interrupt comes back in and the
+process is awakened back to TASK_RUNNABLE in under 150 us.  0 out of
+6100 samples finished the wakeup to TASK_RUNNABLE faster than 55 us.
+However, I had 22 samples, where coming back from schedule_timeout()
+took 10 msec or greater, despite the wakeup happening in under 150 us.
 
+So the simple answer is to poll the ack field of the mailbox, with some
+50 us busy waits perhaps, for this one high volume API command.
+
+Regards,
+Andy
 
