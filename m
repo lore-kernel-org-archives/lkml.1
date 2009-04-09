@@ -1,63 +1,80 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759163AbZDIBD1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755941AbZDIBP1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759163AbZDIBD1 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 8 Apr 2009 21:03:27 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755808AbZDIBDR
+	id S1755941AbZDIBP1 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 8 Apr 2009 21:15:27 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752994AbZDIBPN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 8 Apr 2009 21:03:17 -0400
-Received: from mail.crca.org.au ([67.207.131.56]:37794 "EHLO crca.org.au"
+	Wed, 8 Apr 2009 21:15:13 -0400
+Received: from mx2.redhat.com ([66.187.237.31]:45848 "EHLO mx2.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752813AbZDIBDQ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 8 Apr 2009 21:03:16 -0400
-X-Greylist: delayed 417 seconds by postgrey-1.27 at vger.kernel.org; Wed, 08 Apr 2009 21:03:16 EDT
-X-Bogosity: Ham, spamicity=0.000000
-Subject: Re: [PATCH/RFC] do not count frozen tasks toward load
-From: Nigel Cunningham <ncunningham-lkml@crca.org.au>
-Reply-To: ncunningham-lkml@crca.org.au
-To: Nathan Lynch <ntl@pobox.com>
-Cc: linux-kernel@vger.kernel.org, containers@lists.linux-foundation.org,
-       linux-pm@lists.linux-foundation.org, Ingo Molnar <mingo@elte.hu>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Matt Helsley <matthltc@us.ibm.com>
-In-Reply-To: <20090408194512.47a99b95@manatee.lan>
-References: <20090408194512.47a99b95@manatee.lan>
-Content-Type: text/plain
-Date: Thu, 09 Apr 2009 10:56:07 +1000
-Message-Id: <1239238567.14883.2.camel@nigel-laptop>
+	id S1752223AbZDIBPL (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 8 Apr 2009 21:15:11 -0400
+Date: Thu, 9 Apr 2009 02:14:24 +0100
+From: Alasdair G Kergon <agk@redhat.com>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: dm-devel@redhat.com, linux-kernel@vger.kernel.org,
+       Kiyoshi Ueda <k-ueda@ct.jp.nec.com>,
+       "Jun'ichi Nomura" <j-nomura@ce.jp.nec.com>,
+       Mikulas Patocka <mpatocka@redhat.com>, Neil Brown <neilb@suse.de>,
+       Milan Broz <mbroz@redhat.com>,
+       "Martin K. Petersen" <martin.petersen@oracle.com>
+Subject: [git pull] device-mapper fixes for 2.6.30-rc2
+Message-ID: <20090409011424.GP5098@agk.fab.redhat.com>
+Mail-Followup-To: Linus Torvalds <torvalds@linux-foundation.org>,
+	dm-devel@redhat.com, linux-kernel@vger.kernel.org,
+	Kiyoshi Ueda <k-ueda@ct.jp.nec.com>,
+	Jun'ichi Nomura <j-nomura@ce.jp.nec.com>,
+	Mikulas Patocka <mpatocka@redhat.com>, Neil Brown <neilb@suse.de>,
+	Milan Broz <mbroz@redhat.com>,
+	"Martin K. Petersen" <martin.petersen@oracle.com>
 Mime-Version: 1.0
-X-Mailer: Evolution 2.24.3 
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+User-Agent: Mutt/1.4.1i
+Organization: Red Hat UK Ltd. Registered in England and Wales, number 03798903. Registered Office: Amberley Place, 107-111 Peascod Street, Windsor, Berkshire, SL4 1TE.
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi.
+Please pull from:
 
-On Wed, 2009-04-08 at 19:45 -0500, Nathan Lynch wrote:
-> Freezing tasks via the cgroup freezer causes the load average to climb
-> because the freezer's current implementation puts frozen tasks in
-> uninterruptible sleep (D state).
-> 
-> Some applications which perform job-scheduling functions consult the
-> load average when making decisions.  If a cgroup is frozen, the load
-> average does not provide a useful measure of the system's utilization
-> to such applications.  This is especially inconvenient if the job
-> scheduler employs the cgroup freezer as a mechanism for preempting low
-> priority jobs.  Contrast this with using SIGSTOP for the same purpose:
-> the stopped tasks do not count toward system load.
-> 
-> Change task_contributes_to_load() to return false if the task is
-> frozen.  This results in /proc/loadavg behavior that better meets
-> users' expectations.
+  master.kernel.org:/pub/scm/linux/kernel/git/agk/linux-2.6-dm.git master
 
-Sounds great to me - TuxOnIce has had code to save and restore the load
-average for ages because of the same issue. This is much better because
-it gets to the root of the problem.
+to get the following device-mapper fixes for 2.6.30-rc2:
 
-I'll apply it here, give it a test and hopefully give you an Acked-by
-shortly.
+1) Fix a kcopyd race.
+2) Support bio integrity.
+3) Support barrier bios such that dm will no longer issue -EOPNOTSUPP in
+response to an unsupported barrier but will instead emulate the barrier
+internally.  This finally gets us the long-overdue replacement for the
+issue_flush_fn that was removed oh-I-can't-remember-when...
+(Split into 7 bisectable patches for readability.)
 
-Regards,
+Alasdair G Kergon (3):
+      dm: rearrange dm_wq_work
+      dm: split DMF_BLOCK_IO flag into two
+      dm: simplify dm_request loop
 
-Nigel
+Martin K. Petersen (1):
+      dm: add integrity support
 
+Mikulas Patocka (6):
+      dm: remove limited barrier support
+      dm: rework queueing and suspension
+      dm: remove dm_request loop
+      dm: implement basic barrier support
+      dm kcopyd: prepare for callback race fix
+      dm kcopyd: fix callback race
+
+ drivers/md/dm-ioctl.c         |   21 +++++
+ drivers/md/dm-kcopyd.c        |   23 +++--
+ drivers/md/dm-linear.c        |    1 -
+ drivers/md/dm-table.c         |   59 ++++++++----
+ drivers/md/dm.c               |  199 +++++++++++++++++++++++++++++------------
+ drivers/md/dm.h               |    1 -
+ include/linux/device-mapper.h |    1 -
+ 7 files changed, 218 insertions(+), 87 deletions(-)
+ 
+Alasdair
+-- 
+agk@redhat.com
