@@ -1,50 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757940AbZDIAsE@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758337AbZDIAso@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757940AbZDIAsE (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 8 Apr 2009 20:48:04 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756168AbZDIArw
+	id S1758337AbZDIAso (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 8 Apr 2009 20:48:44 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757224AbZDIAsf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 8 Apr 2009 20:47:52 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:47478 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1753682AbZDIArv (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 8 Apr 2009 20:47:51 -0400
-Date: Wed, 8 Apr 2009 17:44:43 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Tony Breeds <tony@bakeyournoodle.com>
-Cc: Alex Chiang <achiang@hp.com>, Robin Holt <holt@sgi.com>,
-       linux-kernel <linux-kernel@vger.kernel.org>, linux-ia64@vger.kernel.org
-Subject: Re: cross-compilers
-Message-Id: <20090408174443.79e71503.akpm@linux-foundation.org>
-In-Reply-To: <20090409003308.GK16602@bilbo.ozlabs.org>
-References: <20090408003921.GA5054@ldl.fc.hp.com>
-	<20090408010331.GB10768@sgi.com>
-	<20090408054612.GA6744@ldl.fc.hp.com>
-	<20090407225457.86f8a458.akpm@linux-foundation.org>
-	<20090409003308.GK16602@bilbo.ozlabs.org>
-X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.5; x86_64-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Wed, 8 Apr 2009 20:48:35 -0400
+Received: from cn.fujitsu.com ([222.73.24.84]:49376 "EHLO song.cn.fujitsu.com"
+	rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org with ESMTP
+	id S1756168AbZDIAse (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 8 Apr 2009 20:48:34 -0400
+Message-ID: <2EAA5B9CE11E4D62AB83F83D5CB25C17@zhaoleiwin>
+From: "Zhaolei" <zhaolei@cn.fujitsu.com>
+To: "Ingo Molnar" <mingo@elte.hu>
+Cc: "Steven Rostedt" <rostedt@goodmis.org>,
+       "Frederic Weisbecker" <fweisbec@gmail.com>,
+       <linux-kernel@vger.kernel.org>
+References: <49DC6751.30308@cn.fujitsu.com> <49DC679D.2090901@cn.fujitsu.com> <20090408120627.GA17179@elte.hu>
+Subject: Re: [PATCH 2/2] ftrace: Output REC->var instead of __entry->varfor trace format
+Date: Thu, 9 Apr 2009 08:45:23 +0800
+MIME-Version: 1.0
+Content-Type: text/plain;
+	charset="ISO-8859-1"
+X-Priority: 3
+X-MSMail-Priority: Normal
+X-Mailer: Microsoft Outlook Express 6.00.2900.5512
+X-MimeOLE: Produced By Microsoft MimeOLE V6.00.2900.5579
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
+Content-Transfer-Encoding: 8bit
+X-MIME-Autoconverted: from base64 to 8bit by alpha.home.local id n390mnqu005299
 
-On Thu, 9 Apr 2009 10:33:08 +1000 Tony Breeds <tony@bakeyournoodle.com> wrote:
-
-> On Tue, Apr 07, 2009 at 10:54:57PM -0700, Andrew Morton wrote:
+* From: "Ingo Molnar" <mingo@elte.hu>
 > 
-> > We would benefit very much from having someone who actually maintains a
-> > suite of cross-compilers for kernel developers.
+> * Zhaolei <zhaolei@cn.fujitsu.com> wrote:
 > 
-> I build wont say maintain many of the cross compilers used for linux-next.  I
-> can place them somehere.
+>> print fmt: "irq=%d return=%s", __entry->irq, __entry->ret ? \"handled\" : \"unhandled\"
+>> 
+>> "__entry" should be convert to "REC" by __stringify() macro.
+>> 
+>> Signed-off-by: Zhao Lei <zhaolei@cn.fujitsu.com>
+>> ---
+>>  kernel/trace/trace_events_stage_2.h |    4 ++--
+>>  1 files changed, 2 insertions(+), 2 deletions(-)
+> 
+> good fix, but it is causing build trouble when applied to latest 
+> tip/master:
+> 
+> include/trace/sched_event_types.h:257:1: error: macro "__stringify" 
+> passed 3 arguments, but takes just 1
+Hello, Ingo
 
-Please do.
+I tested this patch before send, but haven't see this error.
+env is: gcc version 4.1.2 20070626 (Red Hat 4.1.2-14)
 
-Several people have made suggestions but I don't think I've yet seen
-anything which is download-and-go.  Many of them appear to be ways of
-tricking people into installing distributions which include dselect,
-but I'm awake to their little games.
+This patch need on top of my previous one:
+[PATCH 1/2] Make __stringify support variable argument macro
+Maybe this is the reason.
 
+Thanks
+Zhaolei
+
+> 
+> see: http://people.redhat.com/mingo/tip.git/README
+> 
+> Ingo
+> 
+>ÿôèº{.nÇ+‰·Ÿ®‰­†+%ŠËÿ±éİ¶¥Šwÿº{.nÇ+‰·¥Š{±şG«éÿŠ{ayºÊ‡Ú™ë,j­¢f£¢·hšïêÿ‘êçz_è®(­éšŠİ¢j"ú¶m§ÿÿ¾«şG«éÿ¢¸?™¨è­Ú&£ø§~á¶iO•æ¬z·švØ^¶m§ÿÿÃÿ¶ìÿ¢¸?–I¥
