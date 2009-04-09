@@ -1,276 +1,204 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S935873AbZDITJX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S935575AbZDITRZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S935873AbZDITJX (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 9 Apr 2009 15:09:23 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755521AbZDITJL
+	id S935575AbZDITRZ (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 9 Apr 2009 15:17:25 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762092AbZDITRP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 9 Apr 2009 15:09:11 -0400
-Received: from casper.infradead.org ([85.118.1.10]:46481 "EHLO
-	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1760719AbZDITJJ (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 9 Apr 2009 15:09:09 -0400
-Subject: Re: [PATCH] firmware: speed up request_firmware()
-From: David Woodhouse <dwmw2@infradead.org>
-To: Ira Snyder <iws@ovro.caltech.edu>
-Cc: Alan Cox <alan@lxorguk.ukuu.org.uk>, Andrey Borzenkov <arvidjaar@mail.ru>,
-       linux-kernel@vger.kernel.org
-In-Reply-To: <20090128203421.GC31107@ovro.caltech.edu>
-References: <20090128180446.GB31107@ovro.caltech.edu>
-	 <E1LSFhF-0002OC-00.arvidjaar-mail-ru@mx5.mail.ru>
-	 <20090128194534.457d58cd@lxorguk.ukuu.org.uk>
-	 <20090128203421.GC31107@ovro.caltech.edu>
-Content-Type: text/plain
-Date: Thu, 09 Apr 2009 12:08:57 -0700
-Message-Id: <1239304137.2974.29.camel@macbook.infradead.org>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.26.0 (2.26.0-2.fc11) 
-Content-Transfer-Encoding: 7bit
-X-SRS-Rewrite: SMTP reverse-path rewritten from <dwmw2@infradead.org> by casper.infradead.org
-	See http://www.infradead.org/rpr.html
+	Thu, 9 Apr 2009 15:17:15 -0400
+Received: from e5.ny.us.ibm.com ([32.97.182.145]:56011 "EHLO e5.ny.us.ibm.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1761630AbZDITRO (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 9 Apr 2009 15:17:14 -0400
+Date: Thu, 9 Apr 2009 12:17:08 -0700
+From: Gary Hade <garyhade@us.ibm.com>
+To: Yinghai Lu <yhlu.kernel@gmail.com>
+Cc: Gary Hade <garyhade@us.ibm.com>, mingo@elte.hu, mingo@redhat.com,
+       tglx@linutronix.de, hpa@zytor.com, x86@kernel.org,
+       linux-kernel@vger.kernel.org, lcm@us.ibm.com
+Subject: Re: [PATCH 2/3] [BUGFIX] x86/x86_64: fix CPU offlining triggered
+	inactive device IRQ interrruption
+Message-ID: <20090409191707.GA7247@us.ibm.com>
+References: <20090408210735.GD11159@us.ibm.com> <86802c440904081530i1b83e19ayddebd8b2f6d413af@mail.gmail.com> <20090408233758.GB14412@us.ibm.com> <86802c440904081658v4d8a3a80jdd51e27e0f8e0a6d@mail.gmail.com> <86802c440904081659l1ec30838l99fcb9c693363d00@mail.gmail.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=iso-8859-1
+Content-Disposition: inline
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <86802c440904081659l1ec30838l99fcb9c693363d00@mail.gmail.com>
+User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 2009-01-28 at 12:34 -0800, Ira Snyder wrote:
-> On Wed, Jan 28, 2009 at 07:45:34PM +0000, Alan Cox wrote:
-> > > Some drivers cache firmware in memory. Doubing the amount of needed memory 
-> > > definitely would not be the best idea. Check drivers/net/wireless for 
-> > > examples.
-> > 
-> > A lot of drivers could perfectly happily exist with a simple iterator
-> > helper and being returned sg lists of pages. It seems that for big
-> > firmwares at least there is a root cause which is deeper than how you
-> > grow your vmalloc buffer.
-> > 
-> 
-> An sg list of pages would be perfect for my usage. I didn't want to
-> change an existing kernel interface, so I just made the easiest change
-> that worked for me.
-> 
-> Another thing that could be done is trimming the vmalloc() down to the
-> exact size needed after the firmware has finished loading. That would
-> still waste memory until the copy from userspace is finished, though.
+On Wed, Apr 08, 2009 at 04:59:35PM -0700, Yinghai Lu wrote:
+> On Wed, Apr 8, 2009 at 4:58 PM, Yinghai Lu <yhlu.kernel@gmail.com> wrote:
+> > On Wed, Apr 8, 2009 at 4:37 PM, Gary Hade <garyhade@us.ibm.com> wrote:
+> >> On Wed, Apr 08, 2009 at 03:30:15PM -0700, Yinghai Lu wrote:
+> >>> On Wed, Apr 8, 2009 at 2:07 PM, Gary Hade <garyhade@us.ibm.com> wrote:
+> >>> > Impact: Eliminates a race that can leave the system in an
+> >>> >        unusable state
+> >>> >
+> >>> > During rapid offlining of multiple CPUs there is a chance
+> >>> > that an IRQ affinity move destination CPU will be offlined
+> >>> > before the IRQ affinity move initiated during the offlining
+> >>> > of a previous CPU completes.  This can happen when the device
+> >>> > is not very active and thus fails to generate the IRQ that is
+> >>> > needed to complete the IRQ affinity move before the move
+> >>> > destination CPU is offlined.  When this happens there is an
+> >>> > -EBUSY return from __assign_irq_vector() during the offlining
+> >>> > of the IRQ move destination CPU which prevents initiation of
+> >>> > a new IRQ affinity move operation to an online CPU.  This
+> >>> > leaves the IRQ affinity set to an offlined CPU.
+> >>> >
+> >>> > I have been able to reproduce the problem on some of our
+> >>> > systems using the following script.  When the system is idle
+> >>> > the problem often reproduces during the first CPU offlining
+> >>> > sequence.
+> >>> >
+> >>> > #!/bin/sh
+> >>> >
+> >>> > SYS_CPU_DIR=/sys/devices/system/cpu
+> >>> > VICTIM_IRQ=25
+> >>> > IRQ_MASK=f0
+> >>> >
+> >>> > iteration=0
+> >>> > while true; do
+> >>> >  echo $iteration
+> >>> >  echo $IRQ_MASK > /proc/irq/$VICTIM_IRQ/smp_affinity
+> >>> >  for cpudir in $SYS_CPU_DIR/cpu[1-9] $SYS_CPU_DIR/cpu??; do
+> >>> >    echo 0 > $cpudir/online
+> >>> >  done
+> >>> >  for cpudir in $SYS_CPU_DIR/cpu[1-9] $SYS_CPU_DIR/cpu??; do
+> >>> >    echo 1 > $cpudir/online
+> >>> >  done
+> >>> >  iteration=`expr $iteration + 1`
+> >>> > done
+> >>> >
+> >>> > The proposed fix takes advantage of the fact that when all
+> >>> > CPUs in the old domain are offline there is nothing to be done
+> >>> > by send_cleanup_vector() during the affinity move completion.
+> >>> > So, we simply avoid setting cfg->move_in_progress preventing
+> >>> > the above mentioned -EBUSY return from __assign_irq_vector().
+> >>> > This allows initiation of a new IRQ affinity move to a CPU
+> >>> > that is not going offline.
+> >>> >
+> >>> > Signed-off-by: Gary Hade <garyhade@us.ibm.com>
+> >>> >
+> >>> > ---
+> >>> >  arch/x86/kernel/apic/io_apic.c |   11 ++++++++---
+> >>> >  1 file changed, 8 insertions(+), 3 deletions(-)
+> >>> >
+> >>> > Index: linux-2.6.30-rc1/arch/x86/kernel/apic/io_apic.c
+> >>> > ===================================================================
+> >>> > --- linux-2.6.30-rc1.orig/arch/x86/kernel/apic/io_apic.c        2009-04-08 09:23:00.000000000 -0700
+> >>> > +++ linux-2.6.30-rc1/arch/x86/kernel/apic/io_apic.c     2009-04-08 09:23:16.000000000 -0700
+> >>> > @@ -363,7 +363,8 @@ set_extra_move_desc(struct irq_desc *des
+> >>> >        struct irq_cfg *cfg = desc->chip_data;
+> >>> >
+> >>> >        if (!cfg->move_in_progress) {
+> >>> > -               /* it means that domain is not changed */
+> >>> > +               /* it means that domain has not changed or all CPUs
+> >>> > +                * in old domain are offline */
+> >>> >                if (!cpumask_intersects(desc->affinity, mask))
+> >>> >                        cfg->move_desc_pending = 1;
+> >>> >        }
+> >>> > @@ -1262,8 +1263,11 @@ next:
+> >>> >                current_vector = vector;
+> >>> >                current_offset = offset;
+> >>> >                if (old_vector) {
+> >>> > -                       cfg->move_in_progress = 1;
+> >>> >                        cpumask_copy(cfg->old_domain, cfg->domain);
+> >>> > +                       if (cpumask_intersects(cfg->old_domain,
+> >>> > +                                              cpu_online_mask)) {
+> >>> > +                               cfg->move_in_progress = 1;
+> >>> > +                       }
+> >>> >                }
+> >>> >                for_each_cpu_and(new_cpu, tmp_mask, cpu_online_mask)
+> >>> >                        per_cpu(vector_irq, new_cpu)[vector] = irq;
+> >>> > @@ -2492,7 +2496,8 @@ static void irq_complete_move(struct irq
+> >>> >                if (likely(!cfg->move_desc_pending))
+> >>> >                        return;
+> >>> >
+> >>> > -               /* domain has not changed, but affinity did */
+> >>> > +               /* domain has not changed or all CPUs in old domain
+> >>> > +                * are offline, but affinity changed */
+> >>> >                me = smp_processor_id();
+> >>> >                if (cpumask_test_cpu(me, desc->affinity)) {
+> >>> >                        *descp = desc = move_irq_desc(desc, me);
+> >>> > --
+> >>>
+> >>> so you mean during __assign_irq_vector(), cpu_online_mask get updated?
+> >>
+> >> No, the CPU being offlined is removed from cpu_online_mask
+> >> earlier via a call to remove_cpu_from_maps() from
+> >> cpu_disable_common().  This happens just before fixup_irqs()
+> >> is called.
+> >>
+> >>> with your patch, how about that it just happen right after you check
+> >>> that second time.
+> >>>
+> >>> it seems we are missing some lock_vector_lock() on the remove cpu from
+> >>> online mask.
+> >>
+> >> The remove_cpu_from_maps() call in cpu_disable_common() is vector
+> >> lock protected:
+> >> void cpu_disable_common(void)
+> >> {
+> >>               < snip >
+> >>        /* It's now safe to remove this processor from the online map */
+> >>        lock_vector_lock();
+> >>        remove_cpu_from_maps(cpu);
+> >>        unlock_vector_lock();
+> >>        fixup_irqs();
+> >> }
+> >
+> >
+> > __assign_irq_vector always has vector_lock locked...
 
-Or you just allocate individual pages one at a time as you're copying
-the data in from userspace, then vmap() them once you're _done_.
+OK, I see the 'vector_lock' spin_lock_irqsave/spin_unlock_irqrestore
+surrounding the __assign_irq_vector call in assign_irq_vector.
 
-We could potentially extend this to allow drivers to say "I only need an
-array of pages, not contiguous VM space", but that comes later.
+> > so cpu_online_mask will not changed during,
 
-This approach has the benefit that we can force the virtual mapping of
-the firmware image to be read-only -- one step up from making it 'const'
-as we did already.
+I understand that this 'vector_lock' acquisition prevents
+multiple simultaneous executions of __assign_irq_vector but
+does that really prevent another thread executing outside 
+__assign_irq_vector (or outside other 'vector_lock' serialized
+code) from modifying cpu_online_mask?
 
-> I'd be happy to test patches anyone comes up with.
+Isn't it really 'cpu_add_remove_lock' (also held when 
+__assign_irq_vector() is called in the context of a CPU add
+or remove) that is used for this purpose?
 
-Totally untested here...
+> > why do you need to check that again in __assign_irq_vector ?
 
-diff --git a/drivers/base/firmware_class.c b/drivers/base/firmware_class.c
-index d3a59c6..bf151cd 100644
---- a/drivers/base/firmware_class.c
-+++ b/drivers/base/firmware_class.c
-@@ -17,7 +17,7 @@
- #include <linux/bitops.h>
- #include <linux/mutex.h>
- #include <linux/kthread.h>
--
-+#include <linux/highmem.h>
- #include <linux/firmware.h>
- #include "base.h"
- 
-@@ -45,7 +45,10 @@ struct firmware_priv {
- 	struct bin_attribute attr_data;
- 	struct firmware *fw;
- 	unsigned long status;
--	int alloc_size;
-+	struct page **pages;
-+	int nr_pages;
-+	int page_array_size;
-+	const char *vdata;
- 	struct timer_list timeout;
- };
- 
-@@ -141,6 +144,7 @@ static ssize_t firmware_loading_store(struct device *dev,
- {
- 	struct firmware_priv *fw_priv = dev_get_drvdata(dev);
- 	int loading = simple_strtol(buf, NULL, 10);
-+	int i;
- 
- 	switch (loading) {
- 	case 1:
-@@ -151,13 +155,30 @@ static ssize_t firmware_loading_store(struct device *dev,
- 		}
- 		vfree(fw_priv->fw->data);
- 		fw_priv->fw->data = NULL;
-+		for (i = 0; i < fw_priv->nr_pages; i++)
-+			__free_page(fw_priv->pages[i]);
-+		kfree(fw_priv->pages);
-+		fw_priv->pages = NULL;
-+		fw_priv->page_array_size = 0;
-+		fw_priv->nr_pages = 0;
- 		fw_priv->fw->size = 0;
--		fw_priv->alloc_size = 0;
- 		set_bit(FW_STATUS_LOADING, &fw_priv->status);
- 		mutex_unlock(&fw_lock);
- 		break;
- 	case 0:
- 		if (test_bit(FW_STATUS_LOADING, &fw_priv->status)) {
-+			vfree(fw_priv->fw->data);
-+			fw_priv->fw->data = vmap(fw_priv->pages,
-+						 fw_priv->nr_pages,
-+						 0, PAGE_KERNEL_RO);
-+			if (!fw_priv->fw->data) {
-+				dev_err(dev, "%s: vmap() failed\n", __func__);
-+				goto err;
-+			}
-+			/* Pages will be freed by vfree() */
-+			fw_priv->pages = NULL;
-+			fw_priv->page_array_size = 0;
-+			fw_priv->nr_pages = 0;
- 			complete(&fw_priv->completion);
- 			clear_bit(FW_STATUS_LOADING, &fw_priv->status);
- 			break;
-@@ -167,6 +188,7 @@ static ssize_t firmware_loading_store(struct device *dev,
- 		dev_err(dev, "%s: unexpected value (%d)\n", __func__, loading);
- 		/* fallthrough */
- 	case -1:
-+	err:
- 		fw_load_abort(fw_priv);
- 		break;
- 	}
-@@ -191,8 +213,28 @@ firmware_data_read(struct kobject *kobj, struct bin_attribute *bin_attr,
- 		ret_count = -ENODEV;
- 		goto out;
- 	}
--	ret_count = memory_read_from_buffer(buffer, count, &offset,
--						fw->data, fw->size);
-+	if (offset > fw->size)
-+		return 0;
-+	if (count > fw->size - offset)
-+		count = fw->size - offset;
-+
-+	ret_count = count;
-+
-+	while (count) {
-+		void *page_data;
-+		int page_nr = offset >> PAGE_SHIFT;
-+		int page_ofs = offset & (PAGE_SIZE-1);
-+		int page_cnt = min(PAGE_SIZE - page_ofs, PAGE_SIZE);
-+
-+		page_data = kmap(fw_priv->pages[page_nr]);
-+
-+		memcpy(buffer, page_data + page_ofs, page_cnt);
-+
-+		kunmap(page_data);
-+		buffer += page_cnt;
-+		offset += page_cnt;
-+		count -= page_cnt;
-+	}
- out:
- 	mutex_unlock(&fw_lock);
- 	return ret_count;
-@@ -201,27 +243,39 @@ out:
- static int
- fw_realloc_buffer(struct firmware_priv *fw_priv, int min_size)
- {
--	u8 *new_data;
--	int new_size = fw_priv->alloc_size;
-+	int pages_needed = ALIGN(min_size, PAGE_SIZE) >> PAGE_SHIFT;
-+
-+	/* If the array of pages is too small, grow it... */
-+	if (fw_priv->page_array_size < pages_needed) {
-+		int new_array_size = min(pages_needed,
-+					 fw_priv->page_array_size * 2);
-+		struct page **new_pages;
-+
-+		new_pages = kmalloc(new_array_size * sizeof(void *),
-+				    GFP_KERNEL);
-+		if (!new_pages) {
-+			fw_load_abort(fw_priv);
-+			return -ENOMEM;
-+		}
-+		memcpy(new_pages, fw_priv->pages,
-+		       fw_priv->page_array_size * sizeof(void *));
-+		memset(&new_pages[fw_priv->page_array_size], 0, sizeof(void *) *
-+		       (new_array_size - fw_priv->page_array_size));
-+		kfree(fw_priv->pages);
-+		fw_priv->pages = new_pages;
-+		fw_priv->page_array_size = new_array_size;
-+	}
- 
--	if (min_size <= fw_priv->alloc_size)
--		return 0;
-+	while (fw_priv->nr_pages < pages_needed) {
-+		fw_priv->pages[fw_priv->nr_pages] =
-+			alloc_page(GFP_KERNEL | __GFP_HIGHMEM);
- 
--	new_size = ALIGN(min_size, PAGE_SIZE);
--	new_data = vmalloc(new_size);
--	if (!new_data) {
--		printk(KERN_ERR "%s: unable to alloc buffer\n", __func__);
--		/* Make sure that we don't keep incomplete data */
--		fw_load_abort(fw_priv);
--		return -ENOMEM;
--	}
--	fw_priv->alloc_size = new_size;
--	if (fw_priv->fw->data) {
--		memcpy(new_data, fw_priv->fw->data, fw_priv->fw->size);
--		vfree(fw_priv->fw->data);
-+		if (!fw_priv->pages[fw_priv->nr_pages]) {
-+			fw_load_abort(fw_priv);
-+			return -ENOMEM;
-+		}
-+		fw_priv->nr_pages++;
- 	}
--	fw_priv->fw->data = new_data;
--	BUG_ON(min_size > fw_priv->alloc_size);
- 	return 0;
- }
- 
-@@ -258,10 +312,25 @@ firmware_data_write(struct kobject *kobj, struct bin_attribute *bin_attr,
- 	if (retval)
- 		goto out;
- 
--	memcpy((u8 *)fw->data + offset, buffer, count);
--
--	fw->size = max_t(size_t, offset + count, fw->size);
- 	retval = count;
-+
-+	while (count) {
-+		void *page_data;
-+		int page_nr = offset >> PAGE_SHIFT;
-+		int page_ofs = offset & (PAGE_SIZE-1);
-+		int page_cnt = min(PAGE_SIZE - page_ofs, PAGE_SIZE);
-+
-+		page_data = kmap(fw_priv->pages[page_nr]);
-+
-+		memcpy(page_data + page_ofs, buffer, page_cnt);
-+
-+		kunmap(page_data);
-+		buffer += page_cnt;
-+		offset += page_cnt;
-+		count -= page_cnt;
-+	}
-+
-+	fw->size = max_t(size_t, offset, fw->size);
- out:
- 	mutex_unlock(&fw_lock);
- 	return retval;
-@@ -277,7 +346,11 @@ static struct bin_attribute firmware_attr_data_tmpl = {
- static void fw_dev_release(struct device *dev)
- {
- 	struct firmware_priv *fw_priv = dev_get_drvdata(dev);
-+	int i;
- 
-+	for (i = 0; i < fw_priv->nr_pages; i++)
-+		__free_page(fw_priv->pages[i]);
-+	kfree(fw_priv->pages);
- 	kfree(fw_priv);
- 	kfree(dev);
- 
+Because that is where the cfg->move_in_progress flag was
+being set.
+
+Is there some reason that the content of cpu_online_mask
+cannot be trusted at this location?
+
+If all the CPUs in the old domain are offline doesn't
+that imply that we got to that location in response to
+a CPU offline request?
+
+> >
+> looks like you need to clear move_in_progress in fixup_irqs()
+
+This would be a difficult since I believe the code is
+currently partitioned in a manner that prevents access to
+irq_cfg records from functions defined in arch/x86/kernel/irq_32.c
+and arch/x86/kernel/irq_64.c.  It also doesn't feel right to
+allow cfg->move_in_progress to be set in __assign_irq_vector
+and then clear it in fixup_irqs().
+
+Gary
 
 -- 
-David Woodhouse                            Open Source Technology Centre
-David.Woodhouse@intel.com                              Intel Corporation
+Gary Hade
+System x Enablement
+IBM Linux Technology Center
+503-578-4503  IBM T/L: 775-4503
+garyhade@us.ibm.com
+http://www.ibm.com/linux/ltc
+
 
