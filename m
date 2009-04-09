@@ -1,89 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764081AbZDIFny@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760261AbZDIFuZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764081AbZDIFny (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 9 Apr 2009 01:43:54 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762873AbZDIFla
+	id S1760261AbZDIFuZ (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 9 Apr 2009 01:50:25 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754114AbZDIFuI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 9 Apr 2009 01:41:30 -0400
-Received: from hera.kernel.org ([140.211.167.34]:49676 "EHLO hera.kernel.org"
+	Thu, 9 Apr 2009 01:50:08 -0400
+Received: from bilbo.ozlabs.org ([203.10.76.25]:48071 "EHLO bilbo.ozlabs.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S932374AbZDIFl2 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 9 Apr 2009 01:41:28 -0400
-Date: Thu, 9 Apr 2009 05:39:32 GMT
-From: Nathan Lynch <ntl@pobox.com>
-To: linux-tip-commits@vger.kernel.org
-Cc: linux-kernel@vger.kernel.org, hpa@zytor.com, mingo@redhat.com,
-       matthltc@us.ibm.com, nigel@tuxonice.net, akpm@linux-foundation.org,
-       stable@kernel.org, tglx@linutronix.de, ntl@pobox.com, mingo@elte.hu
-Reply-To: mingo@redhat.com, hpa@zytor.com, linux-kernel@vger.kernel.org,
-       matthltc@us.ibm.com, nigel@tuxonice.net, akpm@linux-foundation.org,
-       stable@kernel.org, tglx@linutronix.de, ntl@pobox.com, mingo@elte.hu
-In-Reply-To: <20090408194512.47a99b95@manatee.lan>
-References: <20090408194512.47a99b95@manatee.lan>
-Subject: [tip:sched/urgent] sched: do not count frozen tasks toward load
-Message-ID: <tip-e3c8ca8336707062f3f7cb1cd7e6b3c753baccdd@git.kernel.org>
-Git-Commit-ID: e3c8ca8336707062f3f7cb1cd7e6b3c753baccdd
-X-Mailer: tip-git-log-daemon
+	id S1752682AbZDIFuH (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 9 Apr 2009 01:50:07 -0400
 MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Disposition: inline
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Thu, 09 Apr 2009 05:39:36 +0000 (UTC)
+Content-Type: text/plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
+Message-ID: <18909.35969.369573.720803@cargo.ozlabs.ibm.com>
+Date: Thu, 9 Apr 2009 15:49:53 +1000
+From: Paul Mackerras <paulus@samba.org>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: Peter Zijlstra <a.p.zijlstra@chello.nl>, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] perf_counter: powerpc: add nmi_enter/nmi_exit calls
+In-Reply-To: <20090409052002.GE5352@elte.hu>
+References: <18909.31952.873098.336615@cargo.ozlabs.ibm.com>
+	<20090409052002.GE5352@elte.hu>
+X-Mailer: VM 8.0.9 under Emacs 22.2.1 (i486-pc-linux-gnu)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Commit-ID:  e3c8ca8336707062f3f7cb1cd7e6b3c753baccdd
-Gitweb:     http://git.kernel.org/tip/e3c8ca8336707062f3f7cb1cd7e6b3c753baccdd
-Author:     Nathan Lynch <ntl@pobox.com>
-AuthorDate: Wed, 8 Apr 2009 19:45:12 -0500
-Committer:  Ingo Molnar <mingo@elte.hu>
-CommitDate: Thu, 9 Apr 2009 07:37:02 +0200
+Ingo Molnar writes:
 
-sched: do not count frozen tasks toward load
+> I'm wondering, what was the real impact? Was it a crash or some 
+> other misbehavior? This impact line:
+> 
+> 	Impact: powerpc bug fix
+> 
+> is a bit too generic to be useful in practice. Something like:
+> 
+> 	Impact: fix stuck NMIs on powerpc
+> 	Impact: fix NMI crash on powerpc
+> 
+> would have been more descriptive about the real, hands-on impact of 
+> this patch.
 
-Freezing tasks via the cgroup freezer causes the load average to climb
-because the freezer's current implementation puts frozen tasks in
-uninterruptible sleep (D state).
+I was looking at Peter's patches and I noticed he used in_nmi(), and I
+wondered "what's that?", so I went looking and found it, and realized
+that I needed to be calling nmi_enter/exit for it to work.  I never
+actually booted a kernel that had the patch to use in_nmi() but not my
+patch to call nmi_enter/exit.
 
-Some applications which perform job-scheduling functions consult the
-load average when making decisions.  If a cgroup is frozen, the load
-average does not provide a useful measure of the system's utilization
-to such applications.  This is especially inconvenient if the job
-scheduler employs the cgroup freezer as a mechanism for preempting low
-priority jobs.  Contrast this with using SIGSTOP for the same purpose:
-the stopped tasks do not count toward system load.
+The impact would have been that in_nmi() always returned 0, so I
+expect that I would have seen deadlocks and/or memory corruption had I
+booted a kernel without my fix.
 
-Change task_contributes_to_load() to return false if the task is
-frozen.  This results in /proc/loadavg behavior that better meets
-users' expectations.
-
-Signed-off-by: Nathan Lynch <ntl@pobox.com>
-Acked-by: Andrew Morton <akpm@linux-foundation.org>
-Acked-by: Nigel Cunningham <nigel@tuxonice.net>
-Tested-by: Nigel Cunningham <nigel@tuxonice.net>
-Cc: <stable@kernel.org>
-Cc: containers@lists.linux-foundation.org
-Cc: linux-pm@lists.linux-foundation.org
-Cc: Matt Helsley <matthltc@us.ibm.com>
-LKML-Reference: <20090408194512.47a99b95@manatee.lan>
-Signed-off-by: Ingo Molnar <mingo@elte.hu>
-
-
----
- include/linux/sched.h |    3 ++-
- 1 files changed, 2 insertions(+), 1 deletions(-)
-
-diff --git a/include/linux/sched.h b/include/linux/sched.h
-index 98e1fe5..b4c38bc 100644
---- a/include/linux/sched.h
-+++ b/include/linux/sched.h
-@@ -205,7 +205,8 @@ extern unsigned long long time_sync_thresh;
- #define task_is_stopped_or_traced(task)	\
- 			((task->state & (__TASK_STOPPED | __TASK_TRACED)) != 0)
- #define task_contributes_to_load(task)	\
--				((task->state & TASK_UNINTERRUPTIBLE) != 0)
-+				((task->state & TASK_UNINTERRUPTIBLE) != 0 && \
-+				 (task->flags & PF_FROZEN) == 0)
- 
- #define __set_task_state(tsk, state_value)		\
- 	do { (tsk)->state = (state_value); } while (0)
+Paul.
