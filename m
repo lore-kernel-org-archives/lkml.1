@@ -1,132 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761398AbZDISLf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764288AbZDISMl@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761398AbZDISLf (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 9 Apr 2009 14:11:35 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754912AbZDISLX
+	id S1764288AbZDISMl (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 9 Apr 2009 14:12:41 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753445AbZDISM0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 9 Apr 2009 14:11:23 -0400
-Received: from acsinet11.oracle.com ([141.146.126.233]:33106 "EHLO
-	acsinet11.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754441AbZDISLW (ORCPT
+	Thu, 9 Apr 2009 14:12:26 -0400
+Received: from rv-out-0506.google.com ([209.85.198.238]:34123 "EHLO
+	rv-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753066AbZDISMZ convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 9 Apr 2009 14:11:22 -0400
-Subject: Re: [GIT PULL] Ext3 latency fixes
-From: Chris Mason <chris.mason@oracle.com>
-To: Jan Kara <jack@suse.cz>
-Cc: Linus Torvalds <torvalds@linux-foundation.org>,
-       "Theodore Ts'o" <tytso@mit.edu>,
-       Linux Kernel Developers List <linux-kernel@vger.kernel.org>,
-       Ext4 Developers List <linux-ext4@vger.kernel.org>
-In-Reply-To: <20090409174932.GD26552@atrey.karlin.mff.cuni.cz>
-References: <E1LrhNF-0002zd-BG@closure.thunk.org>
-	 <alpine.LFD.2.00.0904090836060.4583@localhost.localdomain>
-	 <1239294219.31257.10.camel@think.oraclecorp.com>
-	 <20090409174932.GD26552@atrey.karlin.mff.cuni.cz>
-Content-Type: text/plain
-Date: Thu, 09 Apr 2009 14:10:03 -0400
-Message-Id: <1239300603.31257.26.camel@think.oraclecorp.com>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.24.1 
-Content-Transfer-Encoding: 7bit
-X-Source-IP: acsmt707.oracle.com [141.146.40.85]
-X-Auth-Type: Internal IP
-X-CT-RefId: str=0001.0A010203.49DE3A05.0248:SCFMA4539814,ss=1,fgs=0
+	Thu, 9 Apr 2009 14:12:25 -0400
+MIME-Version: 1.0
+In-Reply-To: <1239300433.19984.270.camel@grinch>
+References: <20090407180411.GA4324@beardog.cca.cpqcorp.net> 
+	<20090408061901.GN5178@kernel.dk> <ac3eb2510904080526h36673aa7qb5d530df33a60104@mail.gmail.com> 
+	<1239258160.19984.217.camel@grinch> <ac3eb2510904090719n730dededp54b25390a9087a79@mail.gmail.com> 
+	<1239296221.19984.218.camel@grinch> <ac3eb2510904091005q13e5b5a1j3907de22ad3df70c@mail.gmail.com> 
+	<1239300433.19984.270.camel@grinch>
+From: Kay Sievers <kay.sievers@vrfy.org>
+Date: Thu, 9 Apr 2009 11:12:09 -0700
+Message-ID: <ac3eb2510904091112p4d4cc491o703ead8b93d0b45f@mail.gmail.com>
+Subject: Re: [PATCH 1/1] cciss: resubmit export uid, model, vendor, rev to 
+	sysfs
+To: Andrew Patterson <andrew.patterson@hp.com>
+Cc: ens Axboe <jens.axboe@oracle.com>,
+       "Mike Miller (OS Dev)" <mikem@beardog.cca.cpqcorp.net>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       LKML <linux-kernel@vger.kernel.org>,
+       LKML-SCSI <linux-scsi@vger.kernel.org>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 2009-04-09 at 19:49 +0200, Jan Kara wrote:
-> > On Thu, 2009-04-09 at 08:49 -0700, Linus Torvalds wrote:
-> > > 
-> > > On Wed, 8 Apr 2009, Theodore Ts'o wrote:
-> > > > 
-> > > > One of these patches fixes a performance regression caused by a64c8610,
-> > > > which unplugged the write queue after every page write.  Now that Jens
-> > > > added WRITE_SYNC_PLUG.the patch causes us to use it instead of
-> > > > WRITE_SYNC, to avoid the implicit unplugging.  These patches also seem
-> > > > to further improbve ext3 latency, especially during the "sync" command
-> > > > in Linus's write-big-file-and-sync workload.
-> > > 
-> > > So here's a question and a untested _conceptual_ patch. 
-> > > 
-> > > The kind of writeback mode I'd personally prefer would be more of a 
-> > > mixture of the current "data=writeback" and "data=ordered" modes, with 
-> > > something of the best of both worlds. I'd like the data writeback to get 
-> > > _started_ when the journal is written to disk, but I'd like it to not 
-> > > block journal updates.
-> > > 
-> > > IOW, it wouldn't be "strictly ordered", but at the same time it wouldn't 
-> > > be totally unordered either.
-> > > 
-> > 
-> > I started working on the xfs style i_size updates last night, and here's
-> > my current (most definitely broken) proof of concept.  I call it
-> > data=guarded.
-> > 
-> > In guarded mode the on disk i_size is not updated until after the data
-> > writes are complete.  I've got a per FS work queue and I'm abusing
-> > bh->b_private as a list pointer.  So, what happens is:
-> > 
-> > * writepage sets up the buffer with the guarded end_io handler
-> > 
-> > * The end_io handler puts the buffer onto the per-sb list of guarded
-> > buffers and then it kicks the work queue
-> > 
-> > * The workqueue updates the on disk i_size to the min of the end of the
-> > buffer or the in-memory i_size, and then it logs the inode.
-> > 
-> > * Then the regular async bh end_io handler is called to end writeback on
-> > the page.
-> > 
-> > One big gotcha is that we starting a transaction while a page is
-> > writeback.  It means that anyone who waits for writeback to finish on
-> > the datapage with a transaction running could deadlock against the work
-> > queue func trying to start a transaction.
->   For ext3 I don't think anyone waits for PageWriteback with a
-> transaction open. We definitely don't do it from ext3 code and generic
-> code does usually sequence like:
->   lock_page(page);
->   ...
->   wait_on_page_writeback(page)
-> 
->   and because lock ordering is page_lock < transaction start, we
-> shouldn't have transaction open at that point.
->   But with ext4 it may be different - there, the lock ordering is
-> transaction start > page_lock and so above code could well have
-> transaction started.
->   Wouldn't it actually be better to update i_size when the page is
-> fully written out after we clear PG_writeback as you write below?
+On Thu, Apr 9, 2009 at 11:07, Andrew Patterson <andrew.patterson@hp.com> wrote:
+> On Thu, 2009-04-09 at 10:05 -0700, Kay Sievers wrote:
 
-It would, but then we have to take a ref on the inode and risk iput
-leading to inode deletion in the handler that is supposed to be doing IO
-completion.  It's icky either way ;)
+>> The block device needs a parent, please assign the cciss bus device.
+>> It's the driverfs_dev in the genhd struct.
+>>
+>
+> This is already done in cciss_add_disk():
+>
+>        disk->fops = &cciss_fops;
+>        disk->private_data = &h->drv[drv_index];
+>        disk->driverfs_dev = &h->drv[drv_index].dev;
+>
+> I think my problem is I was assigning cciss_bus_type to the controller,
+> not the block device. I have fixed that.
 
-The nice part with doing it before writeback is that we know that when
-we wait for page writeback, we don't also have to wait for i_size update
-to be finished.
+> # /sbin/udevadm info --attribute-walk "--path=/block/cciss!c0d0"
 
-If we go this route and it gets copied to ext4, we can weigh our options
-I guess.
+>  looking at parent device
+> '/devices/pci0000:4f/0000:4f:00.0/0000:50:00.0/0000:51:04.0/0000:8b:00.0/cciss0':
+>    KERNELS=="cciss0"
+>    SUBSYSTEMS==""
 
->   One thing which does not seem to be handled is that your code can
-> happily race with truncate. So IO completion could reset i_size which
-> has been just set by truncate. And I'm not sure how to handle this
-> effectively. Generally I'm not sure how much this is going to cost...
-> 
+This device also needs the cciss bus_type assigned, so the subsystem
+becomes cciss, and it also shows up in /sys/bus/cciss/devices/.
 
-Yeah, I was worried about that.  What ends up happening is the setattr
-call sets the disk i_size and then calls inode_setattr, who calls
-vmtruncate who actually waits on the writeback.
+Other than that, the sysfs hierarchy looks fine.
 
-Then, we wander into the ext3 truncate who resets disk i_size down
-again.  It's a pretty strange window of updates, but I was thinking it
-would work to cut down i_size, wait on IO, then cut it down again in
-setattr.
-
-Once we wait on all IO past the new in-memory i_size, writepage won't
-send any more down.  So updating disk i_size after the wait should be
-enough.
-
--chris
-
-
+Thanks,
+Kay
