@@ -1,25 +1,26 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S936201AbZDIQlm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S936005AbZDIQmL@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S936201AbZDIQlm (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 9 Apr 2009 12:41:42 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S935720AbZDIQba
+	id S936005AbZDIQmL (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 9 Apr 2009 12:42:11 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S935365AbZDIQ3X
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 9 Apr 2009 12:31:30 -0400
-Received: from victor.provo.novell.com ([137.65.250.26]:38270 "EHLO
+	Thu, 9 Apr 2009 12:29:23 -0400
+Received: from victor.provo.novell.com ([137.65.250.26]:50622 "EHLO
 	victor.provo.novell.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S935485AbZDIQ3j (ORCPT
+	with ESMTP id S935256AbZDIQ3R (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 9 Apr 2009 12:29:39 -0400
+	Thu, 9 Apr 2009 12:29:17 -0400
 From: Gregory Haskins <ghaskins@novell.com>
-Subject: [RFC PATCH v2 11/19] venet: add scatter-gather support
+Subject: [RFC PATCH v2 08/19] venet: add the ABI definitions for an 802.x
+	packet interface
 To: linux-kernel@vger.kernel.org
 Cc: agraf@suse.de, pmullaney@novell.com, pmorreale@novell.com,
        anthony@codemonkey.ws, rusty@rustcorp.com.au, netdev@vger.kernel.org,
        kvm@vger.kernel.org, avi@redhat.com, bhutchings@solarflare.com,
        andi@firstfloor.org, gregkh@suse.de, herber@gondor.apana.org.au,
        chrisw@sous-sol.org, shemminger@vyatta.com
-Date: Thu, 09 Apr 2009 12:31:39 -0400
-Message-ID: <20090409163139.32740.18111.stgit@dev.haskins.net>
+Date: Thu, 09 Apr 2009 12:31:23 -0400
+Message-ID: <20090409163123.32740.53213.stgit@dev.haskins.net>
 In-Reply-To: <20090409155200.32740.19358.stgit@dev.haskins.net>
 References: <20090409155200.32740.19358.stgit@dev.haskins.net>
 User-Agent: StGIT/0.14.3
@@ -33,383 +34,61 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 Signed-off-by: Gregory Haskins <ghaskins@novell.com>
 ---
 
- drivers/net/vbus-enet.c |  249 +++++++++++++++++++++++++++++++++++++++++++++--
- include/linux/venet.h   |   39 +++++++
- 2 files changed, 275 insertions(+), 13 deletions(-)
+ include/linux/venet.h |   47 +++++++++++++++++++++++++++++++++++++++++++++++
+ 1 files changed, 47 insertions(+), 0 deletions(-)
+ create mode 100644 include/linux/venet.h
 
-diff --git a/drivers/net/vbus-enet.c b/drivers/net/vbus-enet.c
-index 3779f77..2a190e0 100644
---- a/drivers/net/vbus-enet.c
-+++ b/drivers/net/vbus-enet.c
-@@ -42,6 +42,8 @@ static int rx_ringlen = 256;
- module_param(rx_ringlen, int, 0444);
- static int tx_ringlen = 256;
- module_param(tx_ringlen, int, 0444);
-+static int sg_enabled = 1;
-+module_param(sg_enabled, int, 0444);
- 
- #undef PDEBUG             /* undef it, just in case */
- #ifdef VBUS_ENET_DEBUG
-@@ -63,8 +65,17 @@ struct vbus_enet_priv {
- 	struct vbus_enet_queue     rxq;
- 	struct vbus_enet_queue     txq;
- 	struct tasklet_struct      txtask;
-+	struct {
-+		int                sg:1;
-+		int                tso:1;
-+		int                ufo:1;
-+		int                tso6:1;
-+		int                ecn:1;
-+	} flags;
- };
- 
-+static void vbus_enet_tx_reap(struct vbus_enet_priv *priv, int force);
-+
- static struct vbus_enet_priv *
- napi_to_priv(struct napi_struct *napi)
- {
-@@ -198,6 +209,93 @@ rx_teardown(struct vbus_enet_priv *priv)
- 	}
- }
- 
-+static int
-+tx_setup(struct vbus_enet_priv *priv)
-+{
-+	struct ioq *ioq = priv->txq.queue;
-+	struct ioq_iterator iter;
-+	int i;
-+	int ret;
-+
-+	if (!priv->flags.sg)
-+		/*
-+		 * There is nothing to do for a ring that is not using
-+		 * scatter-gather
-+		 */
-+		return 0;
-+
-+	ret = ioq_iter_init(ioq, &iter, ioq_idxtype_valid, 0);
-+	BUG_ON(ret < 0);
-+
-+	ret = ioq_iter_seek(&iter, ioq_seek_set, 0, 0);
-+	BUG_ON(ret < 0);
-+
-+	/*
-+	 * Now populate each descriptor with an empty SG descriptor
-+	 */
-+	for (i = 0; i < tx_ringlen; i++) {
-+		struct venet_sg *vsg;
-+		size_t iovlen = sizeof(struct venet_iov) * (MAX_SKB_FRAGS-1);
-+		size_t len = sizeof(*vsg) + iovlen;
-+
-+		vsg = kzalloc(len, GFP_KERNEL);
-+		if (!vsg)
-+			return -ENOMEM;
-+
-+		iter.desc->cookie = (u64)vsg;
-+		iter.desc->len    = len;
-+		iter.desc->ptr    = (u64)__pa(vsg);
-+
-+		ret = ioq_iter_seek(&iter, ioq_seek_next, 0, 0);
-+		BUG_ON(ret < 0);
-+	}
-+
-+	return 0;
-+}
-+
-+static void
-+tx_teardown(struct vbus_enet_priv *priv)
-+{
-+	struct ioq *ioq = priv->txq.queue;
-+	struct ioq_iterator iter;
-+	int ret;
-+
-+	/* forcefully free all outstanding transmissions */
-+	vbus_enet_tx_reap(priv, 1);
-+
-+	if (!priv->flags.sg)
-+		/*
-+		 * There is nothing else to do for a ring that is not using
-+		 * scatter-gather
-+		 */
-+		return;
-+
-+	ret = ioq_iter_init(ioq, &iter, ioq_idxtype_valid, 0);
-+	BUG_ON(ret < 0);
-+
-+	/* seek to position 0 */
-+	ret = ioq_iter_seek(&iter, ioq_seek_set, 0, 0);
-+	BUG_ON(ret < 0);
-+
-+	/*
-+	 * free each valid descriptor
-+	 */
-+	while (iter.desc->cookie) {
-+		struct venet_sg *vsg = (struct venet_sg *)iter.desc->cookie;
-+
-+		iter.desc->valid = 0;
-+		wmb();
-+
-+		iter.desc->ptr = 0;
-+		iter.desc->cookie = 0;
-+
-+		ret = ioq_iter_seek(&iter, ioq_seek_next, 0, 0);
-+		BUG_ON(ret < 0);
-+
-+		kfree(vsg);
-+	}
-+}
-+
- /*
-  * Open and close
-  */
-@@ -402,14 +500,67 @@ vbus_enet_tx_start(struct sk_buff *skb, struct net_device *dev)
- 	BUG_ON(ret < 0);
- 	BUG_ON(iter.desc->sown);
- 
--	/*
--	 * We simply put the skb right onto the ring.  We will get an interrupt
--	 * later when the data has been consumed and we can reap the pointers
--	 * at that time
--	 */
--	iter.desc->cookie = (u64)skb;
--	iter.desc->len = (u64)skb->len;
--	iter.desc->ptr = (u64)__pa(skb->data);
-+	if (priv->flags.sg) {
-+		struct venet_sg *vsg = (struct venet_sg *)iter.desc->cookie;
-+		struct scatterlist sgl[MAX_SKB_FRAGS+1];
-+		struct scatterlist *sg;
-+		int count, maxcount = ARRAY_SIZE(sgl);
-+
-+		sg_init_table(sgl, maxcount);
-+
-+		memset(vsg, 0, sizeof(*vsg));
-+
-+		vsg->cookie = (u64)skb;
-+		vsg->len    = skb->len;
-+
-+		if (skb->ip_summed == CHECKSUM_PARTIAL) {
-+			vsg->flags      |= VENET_SG_FLAG_NEEDS_CSUM;
-+			vsg->csum.start  = skb->csum_start - skb_headroom(skb);
-+			vsg->csum.offset = skb->csum_offset;
-+		}
-+
-+		if (skb_is_gso(skb)) {
-+			struct skb_shared_info *sinfo = skb_shinfo(skb);
-+
-+			vsg->flags |= VENET_SG_FLAG_GSO;
-+
-+			vsg->gso.hdrlen = skb_transport_header(skb) - skb->data;
-+			vsg->gso.size = sinfo->gso_size;
-+			if (sinfo->gso_type & SKB_GSO_TCPV4)
-+				vsg->gso.type = VENET_GSO_TYPE_TCPV4;
-+			else if (sinfo->gso_type & SKB_GSO_TCPV6)
-+				vsg->gso.type = VENET_GSO_TYPE_TCPV6;
-+			else if (sinfo->gso_type & SKB_GSO_UDP)
-+				vsg->gso.type = VENET_GSO_TYPE_UDP;
-+			else
-+				panic("Virtual-Ethernet: unknown GSO type " \
-+				      "0x%x\n", sinfo->gso_type);
-+
-+			if (sinfo->gso_type & SKB_GSO_TCP_ECN)
-+				vsg->flags |= VENET_SG_FLAG_ECN;
-+		}
-+
-+		count = skb_to_sgvec(skb, sgl, 0, skb->len);
-+
-+		BUG_ON(count > maxcount);
-+
-+		for (sg = &sgl[0]; sg; sg = sg_next(sg)) {
-+			struct venet_iov *iov = &vsg->iov[vsg->count++];
-+
-+			iov->len = sg->length;
-+			iov->ptr = (u64)sg_phys(sg);
-+		}
-+
-+	} else {
-+		/*
-+		 * non scatter-gather mode: simply put the skb right onto the
-+		 * ring.
-+		 */
-+		iter.desc->cookie = (u64)skb;
-+		iter.desc->len = (u64)skb->len;
-+		iter.desc->ptr = (u64)__pa(skb->data);
-+	}
-+
- 	iter.desc->valid  = 1;
- 
- 	priv->dev->stats.tx_packets++;
-@@ -465,7 +616,17 @@ vbus_enet_tx_reap(struct vbus_enet_priv *priv, int force)
- 	 * owned by the south-side
- 	 */
- 	while (iter.desc->valid && (!iter.desc->sown || force)) {
--		struct sk_buff *skb = (struct sk_buff *)iter.desc->cookie;
-+		struct sk_buff *skb;
-+
-+		if (priv->flags.sg) {
-+			struct venet_sg *vsg;
-+
-+			vsg = (struct venet_sg *)iter.desc->cookie;
-+			skb = (struct sk_buff *)vsg->cookie;
-+
-+		} else {
-+			skb = (struct sk_buff *)iter.desc->cookie;
-+		}
- 
- 		PDEBUG("%lld: completed sending %d bytes\n",
- 		       priv->vdev->id, skb->len);
-@@ -546,6 +707,47 @@ tx_isr(struct ioq_notifier *notifier)
-        tasklet_schedule(&priv->txtask);
- }
- 
-+static int
-+vbus_enet_negcap(struct vbus_enet_priv *priv)
-+{
-+	int ret;
-+	struct venet_capabilities caps;
-+
-+	memset(&caps, 0, sizeof(caps));
-+
-+	if (sg_enabled) {
-+		caps.gid = VENET_CAP_GROUP_SG;
-+		caps.bits |= (VENET_CAP_SG|VENET_CAP_TSO4|VENET_CAP_TSO6
-+			      |VENET_CAP_ECN|VENET_CAP_UFO);
-+	}
-+
-+	ret = devcall(priv, VENET_FUNC_NEGCAP, &caps, sizeof(caps));
-+	if (ret < 0)
-+		return ret;
-+
-+	if (caps.bits & VENET_CAP_SG) {
-+		priv->flags.sg = true;
-+
-+		if (caps.bits & VENET_CAP_TSO4)
-+			priv->flags.tso = true;
-+		if (caps.bits & VENET_CAP_TSO6)
-+			priv->flags.tso6 = true;
-+		if (caps.bits & VENET_CAP_UFO)
-+			priv->flags.ufo = true;
-+		if (caps.bits & VENET_CAP_ECN)
-+			priv->flags.ecn = true;
-+
-+		printk(KERN_INFO "VBUSENET %lld: " \
-+		       "Detected GSO features %s%s%s%s\n", priv->vdev->id,
-+		       priv->flags.tso  ? "t" : "-",
-+		       priv->flags.tso6 ? "T" : "-",
-+		       priv->flags.ufo  ? "u" : "-",
-+		       priv->flags.ecn  ? "e" : "-");
-+	}
-+
-+	return 0;
-+}
-+
- static const struct net_device_ops vbus_enet_netdev_ops = {
- 	.ndo_open          = vbus_enet_open,
- 	.ndo_stop          = vbus_enet_stop,
-@@ -582,12 +784,21 @@ vbus_enet_probe(struct vbus_device_proxy *vdev)
- 	priv->dev  = dev;
- 	priv->vdev = vdev;
- 
-+	ret = vbus_enet_negcap(priv);
-+	if (ret < 0) {
-+		printk(KERN_INFO "VENET: Error negotiating capabilities for " \
-+		       "%lld\n",
-+		       priv->vdev->id);
-+		goto out_free;
-+	}
-+
- 	tasklet_init(&priv->txtask, deferred_tx_isr, (unsigned long)priv);
- 
- 	queue_init(priv, &priv->rxq, VENET_QUEUE_RX, rx_ringlen, rx_isr);
- 	queue_init(priv, &priv->txq, VENET_QUEUE_TX, tx_ringlen, tx_isr);
- 
- 	rx_setup(priv);
-+	tx_setup(priv);
- 
- 	ioq_notify_enable(priv->rxq.queue, 0);  /* enable interrupts */
- 	ioq_notify_enable(priv->txq.queue, 0);
-@@ -607,6 +818,22 @@ vbus_enet_probe(struct vbus_device_proxy *vdev)
- 
- 	dev->features |= NETIF_F_HIGHDMA;
- 
-+	if (priv->flags.sg) {
-+		dev->features |= NETIF_F_SG|NETIF_F_HW_CSUM|NETIF_F_FRAGLIST;
-+
-+		if (priv->flags.tso)
-+			dev->features |= NETIF_F_TSO;
-+
-+		if (priv->flags.ufo)
-+			dev->features |= NETIF_F_UFO;
-+
-+		if (priv->flags.tso6)
-+			dev->features |= NETIF_F_TSO6;
-+
-+		if (priv->flags.ecn)
-+			dev->features |= NETIF_F_TSO_ECN;
-+	}
-+
- 	ret = register_netdev(dev);
- 	if (ret < 0) {
- 		printk(KERN_INFO "VENET: error %i registering device \"%s\"\n",
-@@ -634,9 +861,9 @@ vbus_enet_remove(struct vbus_device_proxy *vdev)
- 	napi_disable(&priv->napi);
- 
- 	rx_teardown(priv);
--	vbus_enet_tx_reap(priv, 1);
--
- 	ioq_put(priv->rxq.queue);
-+
-+	tx_teardown(priv);
- 	ioq_put(priv->txq.queue);
- 
- 	dev->ops->close(dev, 0);
 diff --git a/include/linux/venet.h b/include/linux/venet.h
-index ef6b199..1c96b90 100644
---- a/include/linux/venet.h
+new file mode 100644
+index 0000000..ef6b199
+--- /dev/null
 +++ b/include/linux/venet.h
-@@ -35,8 +35,43 @@ struct venet_capabilities {
- 	__u32 bits;
- };
- 
--/* CAPABILITIES-GROUP 0 */
--/* #define VENET_CAP_FOO    0   (No capabilities defined yet, for now) */
-+#define VENET_CAP_GROUP_SG 0
+@@ -0,0 +1,47 @@
++/*
++ * Copyright 2008 Novell.  All Rights Reserved.
++ *
++ * Virtual-Ethernet adapter
++ *
++ * Author:
++ *      Gregory Haskins <ghaskins@novell.com>
++ *
++ * This file is free software; you can redistribute it and/or modify
++ * it under the terms of version 2 of the GNU General Public License
++ * as published by the Free Software Foundation.
++ *
++ * This program is distributed in the hope that it will be useful,
++ * but WITHOUT ANY WARRANTY; without even the implied warranty of
++ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
++ * GNU General Public License for more details.
++ *
++ * You should have received a copy of the GNU General Public License
++ * along with this program; if not, write to the Free Software Foundation,
++ * Inc., 51 Franklin St, Fifth Floor, Boston, MA 02110-1301, USA.
++ */
 +
-+/* CAPABILITIES-GROUP SG */
-+#define VENET_CAP_SG     (1 << 0)
-+#define VENET_CAP_TSO4   (1 << 1)
-+#define VENET_CAP_TSO6   (1 << 2)
-+#define VENET_CAP_ECN    (1 << 3)
-+#define VENET_CAP_UFO    (1 << 4)
++#ifndef _LINUX_VENET_H
++#define _LINUX_VENET_H
 +
-+struct venet_iov {
-+	__u32 len;
-+	__u64 ptr;
++#define VENET_VERSION 1
++
++#define VENET_TYPE "virtual-ethernet"
++
++#define VENET_QUEUE_RX 0
++#define VENET_QUEUE_TX 1
++
++struct venet_capabilities {
++	__u32 gid;
++	__u32 bits;
 +};
 +
-+#define VENET_SG_FLAG_NEEDS_CSUM (1 << 0)
-+#define VENET_SG_FLAG_GSO        (1 << 1)
-+#define VENET_SG_FLAG_ECN        (1 << 2)
++/* CAPABILITIES-GROUP 0 */
++/* #define VENET_CAP_FOO    0   (No capabilities defined yet, for now) */
 +
-+struct venet_sg {
-+	__u64            cookie;
-+	__u32            flags;
-+	__u32            len;     /* total length of all iovs */
-+	struct {
-+		__u16    start;	  /* csum starting position */
-+		__u16    offset;  /* offset to place csum */
-+	} csum;
-+	struct {
-+#define VENET_GSO_TYPE_TCPV4	0	/* IPv4 TCP (TSO) */
-+#define VENET_GSO_TYPE_UDP	1	/* IPv4 UDP (UFO) */
-+#define VENET_GSO_TYPE_TCPV6	2	/* IPv6 TCP */
-+		__u8     type;
-+		__u16    hdrlen;
-+		__u16    size;
-+	} gso;
-+	__u32            count;   /* nr of iovs */
-+	struct venet_iov iov[1];
-+};
- 
- #define VENET_FUNC_LINKUP   0
- #define VENET_FUNC_LINKDOWN 1
++#define VENET_FUNC_LINKUP   0
++#define VENET_FUNC_LINKDOWN 1
++#define VENET_FUNC_MACQUERY 2
++#define VENET_FUNC_NEGCAP   3 /* negotiate capabilities */
++#define VENET_FUNC_FLUSHRX  4
++
++#endif /* _LINUX_VENET_H */
 
