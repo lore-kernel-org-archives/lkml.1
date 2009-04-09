@@ -1,67 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757527AbZDIAAT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756218AbZDIACw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757527AbZDIAAT (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 8 Apr 2009 20:00:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757479AbZDHX7w
+	id S1756218AbZDIACw (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 8 Apr 2009 20:02:52 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753498AbZDIACl
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 8 Apr 2009 19:59:52 -0400
-Received: from bld-mail05.adl2.internode.on.net ([203.16.214.69]:56271 "EHLO
-	mail.internode.on.net" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1757403AbZDHX7u (ORCPT
+	Wed, 8 Apr 2009 20:02:41 -0400
+Received: from fmailhost02.isp.att.net ([207.115.11.52]:36663 "EHLO
+	fmailhost02.isp.att.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754583AbZDIACl (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 8 Apr 2009 19:59:50 -0400
-X-Greylist: delayed 927 seconds by postgrey-1.27 at vger.kernel.org; Wed, 08 Apr 2009 19:59:49 EDT
-Date: Thu, 9 Apr 2009 09:44:08 +1000
-From: Dave Chinner <david@fromorbit.com>
-To: Mikulas Patocka <mpatocka@redhat.com>
-Cc: Jens Axboe <jens.axboe@oracle.com>,
-       device-mapper development <dm-devel@redhat.com>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       ak@linux.intel.com, "MASON, CHRISTOPHER" <CHRIS.MASON@oracle.com>
-Subject: Re: [dm-devel] Barriers still not passing on simple dm devices...
-Message-ID: <20090408234408.GA16929@discord.disaster>
-References: <20090324150517.GX27476@kernel.dk> <Pine.LNX.4.64.0903251106520.27750@hs20-bc2-1.build.redhat.com> <20090325152751.GV27476@kernel.dk> <Pine.LNX.4.64.0903251825310.8027@hs20-bc2-1.build.redhat.com> <20090326084205.GG27476@kernel.dk> <Pine.LNX.4.64.0903302314500.6158@hs20-bc2-1.build.redhat.com> <20090331104933.GJ5178@kernel.dk> <Pine.LNX.4.64.0904021923040.19415@hs20-bc2-1.build.redhat.com> <20090403081131.GP5178@kernel.dk> <Pine.LNX.4.64.0904080855340.28196@hs20-bc2-1.build.redhat.com>
+	Wed, 8 Apr 2009 20:02:41 -0400
+X-Originating-IP: [69.76.240.125]
+Message-ID: <49DD3B0F.2080108@lwfinger.net>
+Date: Wed, 08 Apr 2009 19:02:23 -0500
+From: Larry Finger <Larry.Finger@lwfinger.net>
+User-Agent: Thunderbird 2.0.0.19 (X11/20081227)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <Pine.LNX.4.64.0904080855340.28196@hs20-bc2-1.build.redhat.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+To: Randy Dunlap <randy.dunlap@oracle.com>
+CC: alan-jenkins@tuffmail.co.uk, Rusty Russell <rusty@rustcorp.com.au>,
+       Arjan van de Ven <arjan@linux.intel.com>,
+       LKML <linux-kernel@vger.kernel.org>, "Rafael J. Wysocki" <rjw@sisk.pl>,
+       wireless <linux-wireless@vger.kernel.org>
+Subject: Re: Regression in 2.6.30-rc1 since commit acae0515 - wireless broken
+References: <49DC2DF5.3010603@lwfinger.net> <49DC31EA.8050208@linux.intel.com>	 <200904081631.09150.rusty@rustcorp.com.au>	 <49DCB976.4020200@lwfinger.net> <9b2b86520904081006m6e6b5276v834c3565b0f6f4c7@mail.gmail.com> <49DCDF9E.8000605@lwfinger.net> <49DD380B.5080101@oracle.com>
+In-Reply-To: <49DD380B.5080101@oracle.com>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Apr 08, 2009 at 09:37:56AM -0400, Mikulas Patocka wrote:
-> The used trick is basically to take a lock that prevents filesystem-wide 
-> updates, submit remaining writes (don't wait), submit the barrier that 
-> causes transition to new generation (don't wait) and release the lock. The 
-> lock is held for minimum time, no IO is waited for inside the lock. This 
-> trick can't be done without barriers, without barriers you'd have to wait 
-> inside the lock.
+Randy Dunlap wrote:
+> 
+> Here's a quick explanation (Linus explained this to me 6-8 years ago;
+> I bet his was better than mine, but I can't find his).
+> 
+> 256 = 0x0100
+> 
+> Inside the kernel, a program's exit code/status is split into 2 8-bit fields,
+> so this exit status is (0x01, 0x00).  The low 8 bits (0x00 in this example)
+> store an internal code for why the program is exiting (or did exit).  E.g.:
+> 
+> 0xlow_7_bits = 0 => exited, exit status is in "high" 8 bits
+> else 0x80 bit set => core dumped, else killed, with exit status in low 7 bits
+> 
+> 
+> So it looks like /sbin/modprobe exited with an exit status of 1...
+> whatever that means (fatal error or usage() printed or module not found).
+> 
+> 
+> See kernel/[signal.c & exit.c] for uses of 0x80...
 
-Woo! You just described the technique XFS uses to guarantee
-ordering of metadata and log IO (i.e. asynchronous barriers). ;)
+Thanks for the explanation. In all the cases where the returned value was
+0x0100, the corresponding module does not exist. The comment is still wrong, but
+at least non-zero is an error.
 
-> AFAIK this is the only piece of code that uses barriers to improve 
-> performance. All the other filesystems use barriers just as a way to flush 
-> cache and don't overlap barrier request with any other requests.
+Larry
 
-The problem is, disks often slow down when you issue barriers. It
-doesn't matter what purpose you are using barriers for, they change
-the order in which the disk would retire the I/O and hence that
-changes performance. Issue enough barriers and performance will
-drop noticably.
-
-In the case of XFS, we need to guarantee ordering of every single
-log write w.r.t. metadata writeback. Hence barriers are issued
-relatively frequently (several a second) and so disks operate at
-spindle speed rather than cache speed.  It is the frequency of
-barrier IO that slows XFS down, not the way they are implemented.
-Your technique will show exactly the same behaviour if you issue
-barriers frequently enough.
-
-Cheers,
-
-Dave.
--- 
-Dave Chinner
-dgc@evostor.com
