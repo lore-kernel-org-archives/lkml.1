@@ -1,49 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S936669AbZDIUcO@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S936697AbZDIUe7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S936669AbZDIUcO (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 9 Apr 2009 16:32:14 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S936386AbZDIUbx
+	id S936697AbZDIUe7 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 9 Apr 2009 16:34:59 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S936344AbZDIUes
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 9 Apr 2009 16:31:53 -0400
-Received: from g4t0017.houston.hp.com ([15.201.24.20]:34862 "EHLO
-	g4t0017.houston.hp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S936363AbZDIUbx (ORCPT
+	Thu, 9 Apr 2009 16:34:48 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:41357 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1762291AbZDIUep (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 9 Apr 2009 16:31:53 -0400
-Date: Thu, 9 Apr 2009 14:31:51 -0600
-From: Alex Chiang <achiang@hp.com>
-To: Helge Deller <deller@gmx.de>
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       Tony Breeds <tony@bakeyournoodle.com>, Robin Holt <holt@sgi.com>,
-       linux-kernel <linux-kernel@vger.kernel.org>, linux-ia64@vger.kernel.org
-Subject: Re: cross-compilers
-Message-ID: <20090409203151.GA2770@ldl.fc.hp.com>
-References: <20090408003921.GA5054@ldl.fc.hp.com> <20090408010331.GB10768@sgi.com> <20090408054612.GA6744@ldl.fc.hp.com> <20090407225457.86f8a458.akpm@linux-foundation.org> <20090409003308.GK16602@bilbo.ozlabs.org> <20090408174443.79e71503.akpm@linux-foundation.org> <20090409005521.GA22364@ldl.fc.hp.com> <49DE597B.6090104@gmx.de>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <49DE597B.6090104@gmx.de>
-User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
+	Thu, 9 Apr 2009 16:34:45 -0400
+Date: Thu, 9 Apr 2009 13:30:30 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Jan Kara <jack@suse.cz>
+Cc: yinghan@gmail.com, linux-ext4@vger.kernel.org,
+       linux-kernel@vger.kernel.org, yinghan@google.com,
+       nickpiggin@yahoo.com.au
+Subject: Re: [PATCH] ext2: Fix data corruption for racing writes
+Message-Id: <20090409133030.a7ea94c7.akpm@linux-foundation.org>
+In-Reply-To: <20090406102329.GD31189@duck.suse.cz>
+References: <1238715399-22172-1-git-send-email-jack@suse.cz>
+	<a4a7801d0904031738h68bf6218lfd3349ca50f46642@mail.gmail.com>
+	<20090406102329.GD31189@duck.suse.cz>
+X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-* Helge Deller <deller@gmx.de>:
-> Alex Chiang wrote:
-> >> Several people have made suggestions but I don't think I've
-> >> yet seen anything which is download-and-go.
+On Mon, 6 Apr 2009 12:23:29 +0200
+Jan Kara <jack@suse.cz> wrote:
+
 > > 
-> > This is what I plan on doing with Vegard. I've already sent
-> > him mail offline.
-> 
-> Any chance to add cross compilers for linux-parisc and
-> linux-parisc64 as well?
+> > I tried this patch and seems i got deadlock on the truncate_mutex.
+> > Here is the message after enabling lockdep. I pasted the same message
+> > on the origianal thread.
+>
+> ...
+>
+>   I don't think this is a deadlock (or is the machine hung?). The thread
+> was just waiting for a long time. I'd think that you'll occasionally get
+> exactly the same message even without my patch if you stress the machine
+> like you do.
+>  
 
-I can try.
+Well, it's easy to tell the difference
 
-I'm about to leave on a two-week holiday so it'll be a while.
+deadlock: system never recovers
+long-sucky-delay: system eventually recovers.
 
-Thanks.
-
-/ac
-
+Which was it??
