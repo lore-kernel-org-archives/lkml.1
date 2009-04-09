@@ -1,75 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S937131AbZDIWml@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S935911AbZDIWrA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S937131AbZDIWml (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 9 Apr 2009 18:42:41 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761961AbZDIWmb
+	id S935911AbZDIWrA (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 9 Apr 2009 18:47:00 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759070AbZDIWqt
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 9 Apr 2009 18:42:31 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:54474 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1761466AbZDIWma (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 9 Apr 2009 18:42:30 -0400
-Date: Thu, 9 Apr 2009 15:39:21 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Atsushi Nemoto <anemo@mba.ocn.ne.jp>
-Cc: a.zummo@towertech.it, rtc-linux@googlegroups.com,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] rtc: Make rtc_update_irq callable with irqs enabled
-Message-Id: <20090409153921.04b6384c.akpm@linux-foundation.org>
-In-Reply-To: <1239036633-10032-1-git-send-email-anemo@mba.ocn.ne.jp>
-References: <1239036633-10032-1-git-send-email-anemo@mba.ocn.ne.jp>
-X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Thu, 9 Apr 2009 18:46:49 -0400
+Received: from mail.issp.bas.bg ([195.96.236.10]:51736 "EHLO mail.issp.bas.bg"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1757274AbZDIWqt (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 9 Apr 2009 18:46:49 -0400
+X-Greylist: delayed 704 seconds by postgrey-1.27 at vger.kernel.org; Thu, 09 Apr 2009 18:46:48 EDT
+From: Marin Mitov <mitov@issp.bas.bg>
+Organization: Institute of Solid State Physics
+To: linux-kernel@vger.kernel.org
+Subject: [PATCH]Silencing warning: passing argument 1 of 'get_new_cred' discards qualifiers from pointer target type
+Date: Fri, 10 Apr 2009 01:46:28 +0300
+User-Agent: KMail/1.9.10
+Cc: David Howells <dhowells@redhat.com>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="us-ascii"
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200904100146.28826.mitov@issp.bas.bg>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue,  7 Apr 2009 01:50:31 +0900
-Atsushi Nemoto <anemo@mba.ocn.ne.jp> wrote:
+Hi all,
 
-> The rtc_update_irq() might be called with irqs enabled, if a interrupt
-> handler was registered without IRQF_DISABLED.
+I do not know if that is worth the effort, but...
 
-Why?  What are the consequences of not merging the patch?  Is it a
-bugfix?  If so, what are the user-visible effects of the bug?
+Silencing warning: passing argument 1 of 'get_new_cred' discards qualifiers from pointer target type
 
-See, I need to decide if this patch is needed in 2.6.30 (and earlier),
-but the changelog doesn't include enough info to make that decision.
+The proposed change is similar to that used in put_cred() function (few lines lower)
 
-> Use spin_lock_irqsave/spin_unlock_irqrestore instead of
-> spin_lock/spin_unlock.
-> 
-> Signed-off-by: Atsushi Nemoto <anemo@mba.ocn.ne.jp>
-> ---
->  drivers/rtc/interface.c |   10 ++++++----
->  1 files changed, 6 insertions(+), 4 deletions(-)
-> 
-> diff --git a/drivers/rtc/interface.c b/drivers/rtc/interface.c
-> index 4348c4b..a8641f7 100644
-> --- a/drivers/rtc/interface.c
-> +++ b/drivers/rtc/interface.c
-> @@ -376,14 +376,16 @@ EXPORT_SYMBOL_GPL(rtc_update_irq_enable);
->  void rtc_update_irq(struct rtc_device *rtc,
->  		unsigned long num, unsigned long events)
->  {
-> -	spin_lock(&rtc->irq_lock);
-> +	unsigned long flags;
-> +
-> +	spin_lock_irqsave(&rtc->irq_lock, flags);
->  	rtc->irq_data = (rtc->irq_data + (num << 8)) | events;
-> -	spin_unlock(&rtc->irq_lock);
-> +	spin_unlock_irqrestore(&rtc->irq_lock, flags);
->  
-> -	spin_lock(&rtc->irq_task_lock);
-> +	spin_lock_irqsave(&rtc->irq_task_lock, flags);
->  	if (rtc->irq_task)
->  		rtc->irq_task->func(rtc->irq_task->private_data);
-> -	spin_unlock(&rtc->irq_task_lock);
-> +	spin_unlock_irqrestore(&rtc->irq_task_lock, flags);
->  
->  	wake_up_interruptible(&rtc->irq_queue);
->  	kill_fasync(&rtc->async_queue, SIGIO, POLL_IN);
+The patch is against 2.6.30-rc1, but should apply to 2.6.29(.1) too.
 
+Signed-off-by: Marin Mitov mitov@issp.bas.bg
+=============================================================
+--- a/include/linux/cred.h	2009-04-05 19:59:19.000000000 +0300
++++ b/include/linux/cred.h	2009-04-05 22:49:22.000000000 +0300
+@@ -185,7 +185,9 @@
+  */
+ static inline const struct cred *get_cred(const struct cred *cred)
+ {
+-	return get_new_cred((struct cred *) cred);
++	struct cred *_cred = (struct cred *) cred;
++
++	return get_new_cred(_cred);
+ }
+ 
+ /**
