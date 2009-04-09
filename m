@@ -1,237 +1,89 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764144AbZDIFng@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764081AbZDIFny@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764144AbZDIFng (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 9 Apr 2009 01:43:36 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755396AbZDIFiN
+	id S1764081AbZDIFny (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 9 Apr 2009 01:43:54 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762873AbZDIFla
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 9 Apr 2009 01:38:13 -0400
-Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:58089
-	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
-	by vger.kernel.org with ESMTP id S1761394AbZDIFiI (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 9 Apr 2009 01:38:08 -0400
-Date: Wed, 08 Apr 2009 22:37:58 -0700 (PDT)
-Message-Id: <20090408.223758.81953207.davem@davemloft.net>
-To: tj@kernel.org
-CC: sparclinux@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: [PATCH 12/12]: sparc64: Use new dynamic per-cpu allocator.
-From: David Miller <davem@davemloft.net>
-X-Mailer: Mew version 6.2.51 on Emacs 22.1 / Mule 5.0 (SAKAKI)
-Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
+	Thu, 9 Apr 2009 01:41:30 -0400
+Received: from hera.kernel.org ([140.211.167.34]:49676 "EHLO hera.kernel.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S932374AbZDIFl2 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 9 Apr 2009 01:41:28 -0400
+Date: Thu, 9 Apr 2009 05:39:32 GMT
+From: Nathan Lynch <ntl@pobox.com>
+To: linux-tip-commits@vger.kernel.org
+Cc: linux-kernel@vger.kernel.org, hpa@zytor.com, mingo@redhat.com,
+       matthltc@us.ibm.com, nigel@tuxonice.net, akpm@linux-foundation.org,
+       stable@kernel.org, tglx@linutronix.de, ntl@pobox.com, mingo@elte.hu
+Reply-To: mingo@redhat.com, hpa@zytor.com, linux-kernel@vger.kernel.org,
+       matthltc@us.ibm.com, nigel@tuxonice.net, akpm@linux-foundation.org,
+       stable@kernel.org, tglx@linutronix.de, ntl@pobox.com, mingo@elte.hu
+In-Reply-To: <20090408194512.47a99b95@manatee.lan>
+References: <20090408194512.47a99b95@manatee.lan>
+Subject: [tip:sched/urgent] sched: do not count frozen tasks toward load
+Message-ID: <tip-e3c8ca8336707062f3f7cb1cd7e6b3c753baccdd@git.kernel.org>
+Git-Commit-ID: e3c8ca8336707062f3f7cb1cd7e6b3c753baccdd
+X-Mailer: tip-git-log-daemon
+MIME-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
+Content-Disposition: inline
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Thu, 09 Apr 2009 05:39:36 +0000 (UTC)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Commit-ID:  e3c8ca8336707062f3f7cb1cd7e6b3c753baccdd
+Gitweb:     http://git.kernel.org/tip/e3c8ca8336707062f3f7cb1cd7e6b3c753baccdd
+Author:     Nathan Lynch <ntl@pobox.com>
+AuthorDate: Wed, 8 Apr 2009 19:45:12 -0500
+Committer:  Ingo Molnar <mingo@elte.hu>
+CommitDate: Thu, 9 Apr 2009 07:37:02 +0200
 
-Signed-off-by: David S. Miller <davem@davemloft.net>
+sched: do not count frozen tasks toward load
+
+Freezing tasks via the cgroup freezer causes the load average to climb
+because the freezer's current implementation puts frozen tasks in
+uninterruptible sleep (D state).
+
+Some applications which perform job-scheduling functions consult the
+load average when making decisions.  If a cgroup is frozen, the load
+average does not provide a useful measure of the system's utilization
+to such applications.  This is especially inconvenient if the job
+scheduler employs the cgroup freezer as a mechanism for preempting low
+priority jobs.  Contrast this with using SIGSTOP for the same purpose:
+the stopped tasks do not count toward system load.
+
+Change task_contributes_to_load() to return false if the task is
+frozen.  This results in /proc/loadavg behavior that better meets
+users' expectations.
+
+Signed-off-by: Nathan Lynch <ntl@pobox.com>
+Acked-by: Andrew Morton <akpm@linux-foundation.org>
+Acked-by: Nigel Cunningham <nigel@tuxonice.net>
+Tested-by: Nigel Cunningham <nigel@tuxonice.net>
+Cc: <stable@kernel.org>
+Cc: containers@lists.linux-foundation.org
+Cc: linux-pm@lists.linux-foundation.org
+Cc: Matt Helsley <matthltc@us.ibm.com>
+LKML-Reference: <20090408194512.47a99b95@manatee.lan>
+Signed-off-by: Ingo Molnar <mingo@elte.hu>
+
+
 ---
- arch/sparc/Kconfig         |    3 +
- arch/sparc/kernel/smp_64.c |  165 +++++++++++++++++++++++++++++++++++++++++---
- 2 files changed, 159 insertions(+), 9 deletions(-)
+ include/linux/sched.h |    3 ++-
+ 1 files changed, 2 insertions(+), 1 deletions(-)
 
-diff --git a/arch/sparc/Kconfig b/arch/sparc/Kconfig
-index cc12cd4..2185cf9 100644
---- a/arch/sparc/Kconfig
-+++ b/arch/sparc/Kconfig
-@@ -93,6 +93,9 @@ config AUDIT_ARCH
- config HAVE_SETUP_PER_CPU_AREA
- 	def_bool y if SPARC64
+diff --git a/include/linux/sched.h b/include/linux/sched.h
+index 98e1fe5..b4c38bc 100644
+--- a/include/linux/sched.h
++++ b/include/linux/sched.h
+@@ -205,7 +205,8 @@ extern unsigned long long time_sync_thresh;
+ #define task_is_stopped_or_traced(task)	\
+ 			((task->state & (__TASK_STOPPED | __TASK_TRACED)) != 0)
+ #define task_contributes_to_load(task)	\
+-				((task->state & TASK_UNINTERRUPTIBLE) != 0)
++				((task->state & TASK_UNINTERRUPTIBLE) != 0 && \
++				 (task->flags & PF_FROZEN) == 0)
  
-+config HAVE_DYNAMIC_PER_CPU_AREA
-+	def_bool y if SPARC64
-+
- config GENERIC_HARDIRQS_NO__DO_IRQ
- 	bool
- 	def_bool y if SPARC64
-diff --git a/arch/sparc/kernel/smp_64.c b/arch/sparc/kernel/smp_64.c
-index 168025f..f1c8208 100644
---- a/arch/sparc/kernel/smp_64.c
-+++ b/arch/sparc/kernel/smp_64.c
-@@ -21,6 +21,7 @@
- #include <linux/jiffies.h>
- #include <linux/profile.h>
- #include <linux/bootmem.h>
-+#include <linux/vmalloc.h>
- #include <linux/cpu.h>
- 
- #include <asm/head.h>
-@@ -1371,19 +1372,165 @@ void smp_send_stop(void)
- {
- }
- 
-+/**
-+ * pcpu_alloc_bootmem - NUMA friendly alloc_bootmem wrapper for percpu
-+ * @cpu: cpu to allocate for
-+ * @size: size allocation in bytes
-+ * @align: alignment
-+ *
-+ * Allocate @size bytes aligned at @align for cpu @cpu.  This wrapper
-+ * does the right thing for NUMA regardless of the current
-+ * configuration.
-+ *
-+ * RETURNS:
-+ * Pointer to the allocated area on success, NULL on failure.
-+ */
-+static void * __init pcpu_alloc_bootmem(unsigned int cpu, unsigned long size,
-+					unsigned long align)
-+{
-+	const unsigned long goal = __pa(MAX_DMA_ADDRESS);
-+#ifdef CONFIG_NEED_MULTIPLE_NODES
-+	int node = cpu_to_node(cpu);
-+	void *ptr;
-+
-+	if (!node_online(node) || !NODE_DATA(node)) {
-+		ptr = __alloc_bootmem(size, align, goal);
-+		pr_info("cpu %d has no node %d or node-local memory\n",
-+			cpu, node);
-+		pr_debug("per cpu data for cpu%d %lu bytes at %016lx\n",
-+			 cpu, size, __pa(ptr));
-+	} else {
-+		ptr = __alloc_bootmem_node(NODE_DATA(node),
-+					   size, align, goal);
-+		pr_debug("per cpu data for cpu%d %lu bytes on node%d at "
-+			 "%016lx\n", cpu, size, node, __pa(ptr));
-+	}
-+	return ptr;
-+#else
-+	return __alloc_bootmem(size, align, goal);
-+#endif
-+}
-+
-+static size_t pcpur_size __initdata;
-+static void **pcpur_ptrs __initdata;
-+
-+static struct page * __init pcpur_get_page(unsigned int cpu, int pageno)
-+{
-+	size_t off = (size_t)pageno << PAGE_SHIFT;
-+
-+	if (off >= pcpur_size)
-+		return NULL;
-+
-+	return virt_to_page(pcpur_ptrs[cpu] + off);
-+}
-+
-+#define PCPU_CHUNK_SIZE (4UL * 1024UL * 1024UL)
-+
-+static void __init pcpu_map_range(unsigned long start, unsigned long end,
-+				  struct page *page)
-+{
-+	unsigned long pfn = page_to_pfn(page);
-+	unsigned long pte_base;
-+
-+	BUG_ON((pfn<<PAGE_SHIFT)&(PCPU_CHUNK_SIZE - 1UL));
-+
-+	pte_base = (_PAGE_VALID | _PAGE_SZ4MB_4U |
-+		    _PAGE_CP_4U | _PAGE_CV_4U |
-+		    _PAGE_P_4U | _PAGE_W_4U);
-+	if (tlb_type == hypervisor)
-+		pte_base = (_PAGE_VALID | _PAGE_SZ4MB_4V |
-+			    _PAGE_CP_4V | _PAGE_CV_4V |
-+			    _PAGE_P_4V | _PAGE_W_4V);
-+
-+	while (start < end) {
-+		pgd_t *pgd = pgd_offset_k(start);
-+		unsigned long this_end;
-+		pud_t *pud;
-+		pmd_t *pmd;
-+		pte_t *pte;
-+
-+		pud = pud_offset(pgd, start);
-+		if (pud_none(*pud)) {
-+			pmd_t *new;
-+
-+			new = __alloc_bootmem(PAGE_SIZE, PAGE_SIZE, PAGE_SIZE);
-+			pud_populate(&init_mm, pud, new);
-+		}
-+
-+		pmd = pmd_offset(pud, start);
-+		if (!pmd_present(*pmd)) {
-+			pte_t *new;
-+
-+			new = __alloc_bootmem(PAGE_SIZE, PAGE_SIZE, PAGE_SIZE);
-+			pmd_populate_kernel(&init_mm, pmd, new);
-+		}
-+
-+		pte = pte_offset_kernel(pmd, start);
-+		this_end = (start + PMD_SIZE) & PMD_MASK;
-+		if (this_end > end)
-+			this_end = end;
-+
-+		while (start < this_end) {
-+			unsigned long paddr = pfn << PAGE_SHIFT;
-+
-+			pte_val(*pte) = (paddr | pte_base);
-+
-+			start += PAGE_SIZE;
-+			pte++;
-+			pfn++;
-+		}
-+	}
-+}
-+
- void __init setup_per_cpu_areas(void)
- {
--	unsigned long size, i, nr_possible_cpus = num_possible_cpus();
--	char *ptr;
-+	size_t dyn_size, static_size = __per_cpu_end - __per_cpu_start;
-+	static struct vm_struct vm;
-+	unsigned long delta, cpu;
-+	size_t pcpu_unit_size;
-+	size_t ptrs_size;
-+
-+	pcpur_size = PFN_ALIGN(static_size + PERCPU_MODULE_RESERVE +
-+			       PERCPU_DYNAMIC_RESERVE);
-+	dyn_size = pcpur_size - static_size - PERCPU_MODULE_RESERVE;
-+
-+
-+	ptrs_size = PFN_ALIGN(num_possible_cpus() * sizeof(pcpur_ptrs[0]));
-+	pcpur_ptrs = alloc_bootmem(ptrs_size);
-+
-+	for_each_possible_cpu(cpu) {
-+		pcpur_ptrs[cpu] = pcpu_alloc_bootmem(cpu, PCPU_CHUNK_SIZE,
-+						     PCPU_CHUNK_SIZE);
-+
-+		free_bootmem(__pa(pcpur_ptrs[cpu] + pcpur_size),
-+			     PCPU_CHUNK_SIZE - pcpur_size);
-+
-+		memcpy(pcpur_ptrs[cpu], __per_cpu_load, static_size);
-+	}
-+
-+	/* allocate address and map */
-+	vm.flags = VM_ALLOC;
-+	vm.size = num_possible_cpus() * PCPU_CHUNK_SIZE;
-+	vm_area_register_early(&vm, PCPU_CHUNK_SIZE);
-+
-+	for_each_possible_cpu(cpu) {
-+		unsigned long start = (unsigned long) vm.addr;
-+		unsigned long end;
-+
-+		start += cpu * PCPU_CHUNK_SIZE;
-+		end = start + PCPU_CHUNK_SIZE;
-+		pcpu_map_range(start, end, virt_to_page(pcpur_ptrs[cpu]));
-+	}
-+
-+	pcpu_unit_size = pcpu_setup_first_chunk(pcpur_get_page, static_size,
-+						PERCPU_MODULE_RESERVE, dyn_size,
-+						PCPU_CHUNK_SIZE, vm.addr, NULL);
- 
--	/* Copy section for each CPU (we discard the original) */
--	size = ALIGN(PERCPU_ENOUGH_ROOM, PAGE_SIZE);
--	ptr = alloc_bootmem_pages(size * nr_possible_cpus);
-+	free_bootmem(__pa(pcpur_ptrs), ptrs_size);
- 
--	for_each_possible_cpu(i) {
--		__per_cpu_offset(i) = ptr - __per_cpu_start;
--		memcpy(ptr, __per_cpu_start, __per_cpu_end - __per_cpu_start);
--		ptr += size;
-+	delta = (unsigned long)pcpu_base_addr - (unsigned long)__per_cpu_start;
-+	for_each_possible_cpu(cpu) {
-+		__per_cpu_offset(cpu) = delta + cpu * pcpu_unit_size;
- 	}
- 
- 	/* Setup %g5 for the boot cpu.  */
--- 
-1.6.2.2
-
+ #define __set_task_state(tsk, state_value)		\
+ 	do { (tsk)->state = (state_value); } while (0)
