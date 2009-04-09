@@ -1,67 +1,99 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759941AbZDIEX1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759351AbZDIEcK@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759941AbZDIEX1 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 9 Apr 2009 00:23:27 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756959AbZDIEXL
+	id S1759351AbZDIEcK (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 9 Apr 2009 00:32:10 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752611AbZDIEby
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 9 Apr 2009 00:23:11 -0400
-Received: from nwd2mail10.analog.com ([137.71.25.55]:51478 "EHLO
-	nwd2mail10.analog.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756775AbZDIEXJ (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 9 Apr 2009 00:23:09 -0400
-X-IronPort-AV: E=Sophos;i="4.40,158,1238990400"; 
-   d="scan'208";a="86026906"
-From: Robin Getz <rgetz@blackfin.uclinux.org>
-Organization: Blackfin uClinux org
-To: "Chris Friesen" <cfriesen@nortel.com>
-Subject: Re: IRQF_SAMPLE_RANDOM question...
-Date: Thu, 9 Apr 2009 00:24:42 -0400
-User-Agent: KMail/1.9.5
-CC: "Gilles Espinasse" <g.esp@free.fr>,
-       "Chris Peterson" <cpeterso@cpeterso.com>,
-       "Matt Mackall" <mpm@selenic.com>, netdev@vger.kernel.org,
-       linux-kernel@vger.kernel.org
-References: <200904061430.26276.rgetz@blackfin.uclinux.org> <2c6601c9b894$756e4000$f9b5a8c0@pii350> <49DD3036.4020107@nortel.com>
-In-Reply-To: <49DD3036.4020107@nortel.com>
+	Thu, 9 Apr 2009 00:31:54 -0400
+Received: from mx3.mail.elte.hu ([157.181.1.138]:42215 "EHLO mx3.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752189AbZDIEby (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 9 Apr 2009 00:31:54 -0400
+Date: Thu, 9 Apr 2009 06:30:53 +0200
+From: Ingo Molnar <mingo@elte.hu>
+To: Sam Ravnborg <sam@ravnborg.org>, Andrew Morton <akpm@linux-foundation.org>
+Cc: Huang Weiyi <weiyi.huang@gmail.com>, mingo@redhat.com, hpa@zytor.com,
+       x86@kernel.org, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 4/8] x86: remove dupilcated #include
+Message-ID: <20090409043053.GG20692@elte.hu>
+References: <1239009605-1796-1-git-send-email-weiyi.huang@gmail.com> <20090408122121.GB18581@elte.hu> <20090408135803.GA21624@uranus.ravnborg.org> <20090408141228.GD12931@elte.hu> <20090408184305.GA332@uranus.ravnborg.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Message-ID: <200904090024.42951.rgetz@blackfin.uclinux.org>
-X-OriginalArrivalTime: 09 Apr 2009 04:22:26.0563 (UTC) FILETIME=[C9D19530:01C9B8CA]
+In-Reply-To: <20090408184305.GA332@uranus.ravnborg.org>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.5
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed 8 Apr 2009 19:16, Chris Friesen pondered:
-> Gilles Espinasse wrote:
+
+* Sam Ravnborg <sam@ravnborg.org> wrote:
+
+> > > 
+> > > I assume you are aware that when you minimize the # of include 
+> > > file in the various .c files, then you implicitly add dependency 
+> > > on the includes the individual .h files have.
+> > 
+> > Yes. Look at the commit -tip that does the above change (also 
+> > attached below):
+> > 
+> >   a2bcd47: x86/mm: further cleanups of fault.c's include file section
+> > 
+> > that commit uncovered a masked-until-then dependency bug in one of 
+> > the x86 include files.
 > 
-> > Readme say :
-> > "This daemon attempts to collect real randomness from fluctuations of
-> > high-frequency clocks on a PC's mainboard. The basic assumption is that
-> > mainboard and CPU are clocked by two separate physical clocks."
+> We have plenty of header files that needs other header files to be
+> included in order to build.
 > 
-> > How large is this basic assumption true, on x86, on other arch?
+> I tried to do a simple build check with a i386 defconfig.
+> It revealed that the appended list of header files did not build.
 > 
-> Isn't the cpu frequency normally a phase-locked multiple of the 
-> mainboard bus frequency?
+> What I did was to create a simple:
+> 
+> module.h.c file containing:
+> #include <linux/module.h>
+> 
+> And then I used kbuild to build the file,
+> adding "obj-y += module.h.o" to Kbuild.
+> 
+> I did so for all header files in include/linux/
+> and result was that 172 header files failed to build.
+> 
+> Some of these was expected since they are not supposed to be
+> included direct. But the rest should build have
+> build with no errors?
+> 
+> I can automate the above included some way to say which header files
+> we should NOT build.
+> But eliminating the includes that are not needed is a bigger challenge
+> and also the biggest win :-(
+> Is it worthwhile to make the header files buildable alone?
 
-Yes - typically they are the same.
+I think it is definitely worthwile, for a couple of reasons:
 
-However - I have tested clrngd out on a Blackfin, and found it gave an 
-excessively high load - but it did give ok results. 77% of the time (659/848 
-times) it provided results that passed it's built in FIPS test. It did die a 
-few times (if the FIPS tests fails 5 times in a row clrngd aborts).
+ - a data type definition that does not even build if included in a 
+   .c file is broken, almost by definition. If it happens to build 
+   in its current include file environment that's just a hidden bug, 
+   nothing more.
 
-I was going to write my own (based on a similar architecture) - but use the 
-RTC clock and the main clock - since those actually would be different 
-physical crystals - and the accuracy of low cost 32kHz crystals is crappy  
-(typically measureable with a high enough core clock).
+ - having such a check would simplify header dependency hell removal 
+   efforts _immensely_. I could remove a suspect looking #include 
+   line from a header and build with your check - that would be a
+   pretty good mechanism to drive header file simplification
+   efforts. (Human review goes only so far and it has failed to
+   reach its goal in the past 15 years, as it only addressed the
+   most obvious excesses.)
 
-But I think delays of cache misses/flushes will dominate things anyway - which 
-is why clrngd works today on systems which are using the same clock source. 
-(but since it will be RTC interrupt driven, vs while(1){} like clrngd - the 
-load will be much lower).
+If we are too broken right now then maybe make it only available to 
+someone explicitly interested in it, via make 
+CONFIG_DEBUG_HEADER_DEPENDENCIES=y or so?
 
--Robin
+	Ingo
