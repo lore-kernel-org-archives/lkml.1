@@ -1,82 +1,45 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S936554AbZDIUSx@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S935959AbZDIUYo@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S936554AbZDIUSx (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 9 Apr 2009 16:18:53 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S936607AbZDIUSa
+	id S935959AbZDIUYo (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 9 Apr 2009 16:24:44 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761559AbZDIUYd
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 9 Apr 2009 16:18:30 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:59443 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S936617AbZDIUS3 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 9 Apr 2009 16:18:29 -0400
-Date: Thu, 9 Apr 2009 13:15:56 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Krzysztof Halasa <khc@pm.waw.pl>
-Cc: david-b@pacbell.net, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] fix RTC-CMOS message, now with SOB
-Message-Id: <20090409131556.07c8eed9.akpm@linux-foundation.org>
-In-Reply-To: <m3bprcusdw.fsf@intrepid.localdomain>
-References: <m3vdpnvvzt.fsf@intrepid.localdomain>
-	<m3r60bvvrg.fsf@intrepid.localdomain>
-	<200904041102.07751.david-b@pacbell.net>
-	<m3bprcusdw.fsf@intrepid.localdomain>
-X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Thu, 9 Apr 2009 16:24:33 -0400
+Received: from mail.gmx.net ([213.165.64.20]:56116 "HELO mail.gmx.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
+	id S1759977AbZDIUYc (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 9 Apr 2009 16:24:32 -0400
+X-Authenticated: #1045983
+X-Provags-ID: V01U2FsdGVkX193gU4G9fV33X/lFROf5WPScu+0GOCk5G/aDHbLiJ
+	tDnfDKLRr+3J0J
+Message-ID: <49DE597B.6090104@gmx.de>
+Date: Thu, 09 Apr 2009 22:24:27 +0200
+From: Helge Deller <deller@gmx.de>
+User-Agent: Thunderbird 2.0.0.21 (X11/20090320)
+MIME-Version: 1.0
+To: Alex Chiang <achiang@hp.com>
+CC: Andrew Morton <akpm@linux-foundation.org>,
+       Tony Breeds <tony@bakeyournoodle.com>, Robin Holt <holt@sgi.com>,
+       linux-kernel <linux-kernel@vger.kernel.org>, linux-ia64@vger.kernel.org
+Subject: Re: cross-compilers
+References: <20090408003921.GA5054@ldl.fc.hp.com> <20090408010331.GB10768@sgi.com> <20090408054612.GA6744@ldl.fc.hp.com> <20090407225457.86f8a458.akpm@linux-foundation.org> <20090409003308.GK16602@bilbo.ozlabs.org> <20090408174443.79e71503.akpm@linux-foundation.org> <20090409005521.GA22364@ldl.fc.hp.com>
+In-Reply-To: <20090409005521.GA22364@ldl.fc.hp.com>
+X-Enigmail-Version: 0.95.7
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
+X-Y-GMX-Trusted: 0
+X-FuHaFi: 0.76
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, 04 Apr 2009 21:32:27 +0200
-Krzysztof Halasa <khc@pm.waw.pl> wrote:
-
-> +		        (cmos_rtc.mon_alrm ? "alarms up to one year" :
-> +		                cmos_rtc.day_alrm ? "alarms up to one month" :
-> +		                        "alarms up to one day") :
-> +		        "no alarms";
+Alex Chiang wrote:
+>> Several people have made suggestions but I don't think I've yet
+>> seen anything which is download-and-go.
 > 
-> Feel free to use the following or your own version as long as the
-> resulting message is correct.
-> Thanks.
-> 
-> Signed-off-by: Krzysztof Ha__asa <khc@pm.waw.pl>
+> This is what I plan on doing with Vegard. I've already sent him
+> mail offline.
 
-Please resend the full changelog (possibly with updates) with each
-updated version of a patch.
+Any chance to add cross compilers for linux-parisc and linux-parisc64 as well?
 
-> --- a/drivers/rtc/rtc-cmos.c
-> +++ b/drivers/rtc/rtc-cmos.c
-> @@ -794,17 +794,15 @@ cmos_do_probe(struct device *dev, struct resource *ports, int rtc_irq)
->  		goto cleanup2;
->  	}
->  
-> -	pr_info("%s: alarms up to one %s%s, %zd bytes nvram%s\n",
-> -			cmos_rtc.rtc->dev.bus_id,
-> -			is_valid_irq(rtc_irq)
-> -				?  (cmos_rtc.mon_alrm
-> -					? "year"
-> -					: (cmos_rtc.day_alrm
-> -						? "month" : "day"))
-> -				: "no",
-> -			cmos_rtc.century ? ", y3k" : "",
-> -			nvram.size,
-> -			is_hpet_enabled() ? ", hpet irqs" : "");
-> +	pr_info("%s: %s%s, %zd bytes nvram%s\n",
-> +		cmos_rtc.rtc->dev.bus_id,
-> +		!is_valid_irq(rtc_irq) ? "no alarms" :
-> +			cmos_rtc.mon_alrm ? "alarms up to one year" :
-> +			cmos_rtc.day_alrm ? "alarms up to one month" :
-> +			"alarms up to one day",
-> +		cmos_rtc.century ? ", y3k" : "",
-> +		nvram.size,
-> +		is_hpet_enabled() ? ", hpet irqs" : "");
->  
->  	return 0;
-
-The patch doesn't apply to current kernels (the driver core guys have
-been running rampant again, methinks).  Please redo, retest, resend?
-
-Thanks.
-
+Helge
