@@ -1,48 +1,44 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762199AbZDIXeL@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S935565AbZDIXix@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762199AbZDIXeL (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 9 Apr 2009 19:34:11 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754017AbZDIXdz
+	id S935565AbZDIXix (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 9 Apr 2009 19:38:53 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754017AbZDIXin
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 9 Apr 2009 19:33:55 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:48189 "EHLO
+	Thu, 9 Apr 2009 19:38:43 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:51763 "EHLO
 	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751486AbZDIXdy (ORCPT
+	by vger.kernel.org with ESMTP id S1752097AbZDIXim (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 9 Apr 2009 19:33:54 -0400
-Date: Thu, 9 Apr 2009 16:31:38 -0700 (PDT)
-From: Linus Torvalds <torvalds@linux-foundation.org>
-X-X-Sender: torvalds@localhost.localdomain
-To: David Howells <dhowells@redhat.com>
-cc: Andrew Morton <akpm@linux-foundation.org>, sam@ravnborg.org,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH 2/2] FRV: Move to arch/frv/include/asm/
-In-Reply-To: <20090409232157.13220.63863.stgit@warthog.procyon.org.uk>
-Message-ID: <alpine.LFD.2.00.0904091628580.4583@localhost.localdomain>
-References: <20090409232152.13220.28141.stgit@warthog.procyon.org.uk> <20090409232157.13220.63863.stgit@warthog.procyon.org.uk>
-User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Thu, 9 Apr 2009 19:38:42 -0400
+Date: Thu, 9 Apr 2009 16:36:10 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Hugh Dickins <hugh@veritas.com>
+Cc: yur@emcraft.com, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 2/3] shmem: respect MAX_LFS_FILESIZE
+Message-Id: <20090409163610.8619bfc7.akpm@linux-foundation.org>
+In-Reply-To: <Pine.LNX.4.64.0904062155090.21044@blonde.anvils>
+References: <Pine.LNX.4.64.0904062151250.21044@blonde.anvils>
+	<Pine.LNX.4.64.0904062155090.21044@blonde.anvils>
+X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Mon, 6 Apr 2009 21:56:13 +0100 (BST)
+Hugh Dickins <hugh@veritas.com> wrote:
 
+> Question: couldn't the 32-bit kernel's MAX_LFS_FILESIZE be almost doubled?
+> It limits the pagecache index to a signed long, but we use an unsigned long.
 
-On Fri, 10 Apr 2009, David Howells wrote:
->
-> Move arch headers from include/asm-frv/ to arch/frv/include/asm/.
+I expect it would be OK, yes.  The only failure mode I can think of is
+if someone is using signed long as a pagecache index and I'd be pretty
+surprised if we've made that mistake anywhere.  The potential for goofs
+is higher down in filesystems, but they shouldn't be using pagecache
+indices much at all.
 
-David, please _look_ at your patches before sending them out.
+Of course it does invite people to write applications which then fail
+on older kernels, but such is life.
 
-Sure, you got the diffstat/summary right, but look at the patch itself - 
-it doesn't actually match what you claimed to send out, and has it all as 
-file creates/deletes, and so your email is - once more - over half a meg 
-in size.
-
-Yes, yes, I can apply it, and it will all end up being the same thing, but 
-what I'm looking for is the knowledge that you can send out proper 
-patches, so that future file moves don't have this. So I don't want to 
-apply it before I know that the process works. Right now it doesn't.
-
-		Linus
