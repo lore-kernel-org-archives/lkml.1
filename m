@@ -1,83 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932118AbZDIWZx@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S936647AbZDIWce@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932118AbZDIWZx (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 9 Apr 2009 18:25:53 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1764357AbZDIWZm
+	id S936647AbZDIWce (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 9 Apr 2009 18:32:34 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758633AbZDIWcY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 9 Apr 2009 18:25:42 -0400
-Received: from mga14.intel.com ([143.182.124.37]:20055 "EHLO mga14.intel.com"
+	Thu, 9 Apr 2009 18:32:24 -0400
+Received: from chilli.pcug.org.au ([203.10.76.44]:43980 "EHLO smtps.tip.net.au"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1757707AbZDIWZl (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 9 Apr 2009 18:25:41 -0400
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.40,163,1239001200"; 
-   d="scan'208";a="129896625"
-Subject: [patch] x64: fix FPU corruption with signals and preemption
-From: Suresh Siddha <suresh.b.siddha@intel.com>
-Reply-To: suresh.b.siddha@intel.com
-To: hpa@linux.intel.com, mingo@elte.hu, tglx@linutronix.de
-Cc: linux-kernel@vger.kernel.org, stable@kernel.org
-Content-Type: text/plain
-Organization: Intel Corp
-Date: Thu, 09 Apr 2009 15:24:34 -0700
-Message-Id: <1239315874.27006.8026.camel@localhost.localdomain>
+	id S1752429AbZDIWcX (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 9 Apr 2009 18:32:23 -0400
+Date: Fri, 10 Apr 2009 08:32:09 +1000
+From: Stephen Rothwell <sfr@canb.auug.org.au>
+To: Darren Hart <dvhltc@us.ibm.com>
+Cc: mingo@redhat.com, hpa@zytor.com, linux-kernel@vger.kernel.org,
+       davem@davemloft.net, tglx@linutronix.de, mingo@elte.hu,
+       linux-tip-commits@vger.kernel.org
+Subject: Re: [tip:core/futexes] sparc64: extend TI_RESTART_BLOCK space by 8
+ bytes
+Message-Id: <20090410083209.03dbd756.sfr@canb.auug.org.au>
+In-Reply-To: <49DE12DD.1040802@us.ibm.com>
+References: <20090409151722.c8eabb56.sfr@canb.auug.org.au>
+	<tip-d2de688891909b148efe83a6fc9520a9cd6015f0@git.kernel.org>
+	<49DE12DD.1040802@us.ibm.com>
+X-Mailer: Sylpheed 2.6.0 (GTK+ 2.14.7; i486-pc-linux-gnu)
 Mime-Version: 1.0
-X-Mailer: Evolution 2.24.1 (2.24.1-2.fc10) 
-Content-Transfer-Encoding: 7bit
+Content-Type: multipart/signed; protocol="application/pgp-signature";
+ micalg="PGP-SHA1";
+ boundary="Signature=_Fri__10_Apr_2009_08_32_09_+1000_ws2BUGWRQOzAJuyO"
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Suresh Siddha <suresh.b.siddha@intel.com>
-Subject: x64: fix FPU corruption with signals and preemption
+--Signature=_Fri__10_Apr_2009_08_32_09_+1000_ws2BUGWRQOzAJuyO
+Content-Type: text/plain; charset=US-ASCII
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-Impact: fix FPU state corruption
+Hi Darren,
 
-In 64bit signal delivery path, clear_used_math() was happening before saving
-the current active FPU state on to the user stack for signal handling. Between
-clear_used_math() and the state store on to the user stack, potentially we
-can get a page fault for the user address and can block. Infact, while testing
-we were hitting the might_fault() in __clear_user() which can do a schedule().
+On Thu, 09 Apr 2009 08:23:09 -0700 Darren Hart <dvhltc@us.ibm.com> wrote:
+>
+> Also, I noticed the following embedded in the definition of the=20
+> structure, does enabling this option also break sparc64 builds?
+>=20
+> #ifdef CONFIG_COMPAT
+> 			struct compat_timespec __user *compat_rmtp;
+> #endif
 
-At a later point in time, we will schedule back into this process and
-resume the save state (using "xsave/fxsave" instruction) which can lead
-to DNA fault. And as used_math was cleared before, we will reinit the FP state
-in the DNA fault and continue. This reinit will result in loosing the
-FPU state of the process.
+Sparc64 would always have CONFIG_COMPAT enabled.
 
-Move clear_used_math() to a point after the FPU state has been stored
-onto the user stack.
+--=20
+Cheers,
+Stephen Rothwell                    sfr@canb.auug.org.au
+http://www.canb.auug.org.au/~sfr/
 
-This issue is present from a long time (even before the xsave changes
-and the x86 merge). But it can easily be exposed in 2.6.28.x and 2.6.29.x
-series because of the __clear_user() in this path, which has an explicit
-__cond_resched() leading to a context switch with CONFIG_PREEMPT_VOLUNTARY.
+--Signature=_Fri__10_Apr_2009_08_32_09_+1000_ws2BUGWRQOzAJuyO
+Content-Type: application/pgp-signature
 
-Signed-off-by: Suresh Siddha <suresh.b.siddha@intel.com>
-Cc: stable@kernel.org			[2.6.28.x, 2.6.29.x]
----
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.9 (GNU/Linux)
 
-Index: tip/arch/x86/kernel/xsave.c
-===================================================================
---- tip.orig/arch/x86/kernel/xsave.c
-+++ tip/arch/x86/kernel/xsave.c
-@@ -89,7 +89,7 @@ int save_i387_xstate(void __user *buf)
- 
- 	if (!used_math())
- 		return 0;
--	clear_used_math(); /* trigger finit */
-+
- 	if (task_thread_info(tsk)->status & TS_USEDFPU) {
- 		/*
- 	 	 * Start with clearing the user buffer. This will present a
-@@ -114,6 +114,8 @@ int save_i387_xstate(void __user *buf)
- 			return -1;
- 	}
- 
-+	clear_used_math(); /* trigger finit */
-+
- 	if (task_thread_info(tsk)->status & TS_XSAVE) {
- 		struct _fpstate __user *fx = buf;
- 		struct _xstate __user *x = buf;
+iEYEARECAAYFAkned2kACgkQjjKRsyhoI8y0rgCgnqsU9hGsM74rbFsp6j2GtCfV
+ruIAoIxlEWs8ZpScD8pi+M36G3qr2sqh
+=n/Y2
+-----END PGP SIGNATURE-----
 
-
+--Signature=_Fri__10_Apr_2009_08_32_09_+1000_ws2BUGWRQOzAJuyO--
