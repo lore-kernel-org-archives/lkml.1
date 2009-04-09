@@ -1,73 +1,160 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759671AbZDID7A@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751484AbZDIEBP@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759671AbZDID7A (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 8 Apr 2009 23:59:00 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758963AbZDID6s
+	id S1751484AbZDIEBP (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 9 Apr 2009 00:01:15 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750767AbZDIEAv
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 8 Apr 2009 23:58:48 -0400
-Received: from mx3.mail.elte.hu ([157.181.1.138]:50625 "EHLO mx3.mail.elte.hu"
+	Thu, 9 Apr 2009 00:00:51 -0400
+Received: from mx2.redhat.com ([66.187.237.31]:38735 "EHLO mx2.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1757984AbZDID6r (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 8 Apr 2009 23:58:47 -0400
-Date: Thu, 9 Apr 2009 05:58:39 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: Steven Rostedt <rostedt@goodmis.org>, Sam Ravnborg <sam@ravnborg.org>
-Cc: LKML <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: [PATCH] x86,edac: fix for compiler error in traps.c
-Message-ID: <20090409035839.GC20692@elte.hu>
-References: <alpine.DEB.2.00.0904081954530.16430@gandalf.stny.rr.com> <alpine.DEB.2.00.0904082004070.16430@gandalf.stny.rr.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <alpine.DEB.2.00.0904082004070.16430@gandalf.stny.rr.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.5
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+	id S1750717AbZDIEAu (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 9 Apr 2009 00:00:50 -0400
+From: Izik Eidus <ieidus@redhat.com>
+To: akpm@linux-foundation.org
+Cc: linux-kernel@vger.kernel.org, kvm@vger.kernel.org, linux-mm@kvack.org,
+       avi@redhat.com, aarcange@redhat.com, chrisw@redhat.com,
+       mtosatti@redhat.com, hugh@veritas.com, kamezawa.hiroyu@jp.fujitsu.com,
+       Izik Eidus <ieidus@redhat.com>
+Subject: [PATCH 3/4] add replace_page(): change the page pte is pointing to.
+Date: Thu,  9 Apr 2009 06:58:40 +0300
+Message-Id: <1239249521-5013-4-git-send-email-ieidus@redhat.com>
+In-Reply-To: <1239249521-5013-3-git-send-email-ieidus@redhat.com>
+References: <1239249521-5013-1-git-send-email-ieidus@redhat.com>
+ <1239249521-5013-2-git-send-email-ieidus@redhat.com>
+ <1239249521-5013-3-git-send-email-ieidus@redhat.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+replace_page() allow changing the mapping of pte from one physical page
+into diffrent physical page.
 
-* Steven Rostedt <rostedt@goodmis.org> wrote:
+this function is working by removing oldpage from the rmap and calling
+put_page on it, and by setting the pte to point into newpage and by
+inserting it to the rmap using page_add_file_rmap().
 
-> Impact: compile fix
-> 
->  I got this compile failure on both tip/tracing/core as well as on 
->  v2.6.30-rc1.
->  
->    LD      .tmp_vmlinux1
->  arch/x86/kernel/built-in.o: In function `do_nmi':
->  (.text+0x3c18): undefined reference to `edac_handler_set'
->  arch/x86/kernel/built-in.o: In function `do_nmi':
->  (.text+0x3c48): undefined reference to `edac_atomic_assert_error'
->  make: *** [.tmp_vmlinux1] Error 1
->  [root@bxrhel51 linux-trace.git]# grep edac_handler_set 
->  [root@bxrhel51 linux-trace.git]# Grep edac_handler_set '*.[ch]'
->  find .  -name "*.[ch]" ! -type d  | xargs grep  "edac_handler_set"
->  ./arch/x86/kernel/traps.c:	if (edac_handler_set()) {
->  ./include/linux/edac.h:extern int edac_handler_set(void);
->  ./drivers/edac/edac_stub.c:int edac_handler_set(void)
->  ./drivers/edac/edac_stub.c:EXPORT_SYMBOL_GPL(edac_handler_set);
->  
-> This patch seems to fix it.
+note: newpage must be non anonymous page, the reason for this is:
+replace_page() is built to allow mapping one page into more than one
+virtual addresses, the mapping of this page can happen in diffrent
+offsets inside each vma, and therefore we cannot trust the page->index
+anymore.
 
-> -obj-$(CONFIG_EDAC)			:= edac_stub.o
-> +obj-$(CONFIG_EDAC)			+= edac_stub.o
->  obj-$(CONFIG_EDAC_MM_EDAC)		+= edac_core.o
+the side effect of this issue is that newpage cannot be anything but
+kernel allocated page that is not swappable.
 
-It's weird that this breaks for you. What other bit of the kernel 
-introduces CONFIG_EDAC rules?
+Signed-off-by: Izik Eidus <ieidus@redhat.com>
+---
+ include/linux/mm.h |    5 +++
+ mm/memory.c        |   80 ++++++++++++++++++++++++++++++++++++++++++++++++++++
+ 2 files changed, 85 insertions(+), 0 deletions(-)
 
-And it's clean to start driver rules with the := assignment and then 
-append to them via +=. The initial += should not be needed.
+diff --git a/include/linux/mm.h b/include/linux/mm.h
+index bff1f0d..7a831ce 100644
+--- a/include/linux/mm.h
++++ b/include/linux/mm.h
+@@ -1240,6 +1240,11 @@ int vm_insert_pfn(struct vm_area_struct *vma, unsigned long addr,
+ int vm_insert_mixed(struct vm_area_struct *vma, unsigned long addr,
+ 			unsigned long pfn);
+ 
++#if defined(CONFIG_KSM) || defined(CONFIG_KSM_MODULE)
++int replace_page(struct vm_area_struct *vma, struct page *oldpage,
++		 struct page *newpage, pte_t orig_pte, pgprot_t prot);
++#endif
++
+ struct page *follow_page(struct vm_area_struct *, unsigned long address,
+ 			unsigned int foll_flags);
+ #define FOLL_WRITE	0x01	/* check pte is writable */
+diff --git a/mm/memory.c b/mm/memory.c
+index 1e1a14b..d6e53c2 100644
+--- a/mm/memory.c
++++ b/mm/memory.c
+@@ -1567,6 +1567,86 @@ int vm_insert_mixed(struct vm_area_struct *vma, unsigned long addr,
+ }
+ EXPORT_SYMBOL(vm_insert_mixed);
+ 
++#if defined(CONFIG_KSM) || defined(CONFIG_KSM_MODULE)
++
++/**
++ * replace_page - replace page in vma with new page
++ * @vma:      vma that hold the pte oldpage is pointed by.
++ * @oldpage:  the page we are replacing with newpage
++ * @newpage:  the page we replace oldpage with
++ * @orig_pte: the original value of the pte
++ * @prot: page protection bits
++ *
++ * Returns 0 on success, -EFAULT on failure.
++ *
++ * Note: @newpage must not be an anonymous page because replace_page() does
++ * not change the mapping of @newpage to have the same values as @oldpage.
++ * @newpage can be mapped in several vmas at different offsets (page->index).
++ */
++int replace_page(struct vm_area_struct *vma, struct page *oldpage,
++		 struct page *newpage, pte_t orig_pte, pgprot_t prot)
++{
++	struct mm_struct *mm = vma->vm_mm;
++	pgd_t *pgd;
++	pud_t *pud;
++	pmd_t *pmd;
++	pte_t *ptep;
++	spinlock_t *ptl;
++	unsigned long addr;
++	int ret;
++
++	BUG_ON(PageAnon(newpage));
++
++	ret = -EFAULT;
++	addr = page_address_in_vma(oldpage, vma);
++	if (addr == -EFAULT)
++		goto out;
++
++	pgd = pgd_offset(mm, addr);
++	if (!pgd_present(*pgd))
++		goto out;
++
++	pud = pud_offset(pgd, addr);
++	if (!pud_present(*pud))
++		goto out;
++
++	pmd = pmd_offset(pud, addr);
++	if (!pmd_present(*pmd))
++		goto out;
++
++	ptep = pte_offset_map_lock(mm, pmd, addr, &ptl);
++	if (!ptep)
++		goto out;
++
++	if (!pte_same(*ptep, orig_pte)) {
++		pte_unmap_unlock(ptep, ptl);
++		goto out;
++	}
++
++	ret = 0;
++	get_page(newpage);
++	page_add_file_rmap(newpage);
++
++	flush_cache_page(vma, addr, pte_pfn(*ptep));
++	ptep_clear_flush(vma, addr, ptep);
++	set_pte_at_notify(mm, addr, ptep, mk_pte(newpage, prot));
++
++	page_remove_rmap(oldpage);
++	if (PageAnon(oldpage)) {
++		dec_mm_counter(mm, anon_rss);
++		inc_mm_counter(mm, file_rss);
++	}
++	put_page(oldpage);
++
++	pte_unmap_unlock(ptep, ptl);
++
++out:
++	return ret;
++}
++EXPORT_SYMBOL_GPL(replace_page);
++
++#endif
++
+ /*
+  * maps a range of physical memory into the requested pages. the old
+  * mappings are removed. any references to nonexistent pages results
+-- 
+1.5.6.5
 
-Are you sure you have a pristine build environment?
-
-	Ingo
