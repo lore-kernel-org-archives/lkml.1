@@ -1,73 +1,154 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762421AbZDINeT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755583AbZDINmg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762421AbZDINeT (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 9 Apr 2009 09:34:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760529AbZDINeG
+	id S1755583AbZDINmg (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 9 Apr 2009 09:42:36 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752078AbZDINm1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 9 Apr 2009 09:34:06 -0400
-Received: from rcsinet13.oracle.com ([148.87.113.125]:25068 "EHLO
-	rgminet13.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1758034AbZDINeF (ORCPT
+	Thu, 9 Apr 2009 09:42:27 -0400
+Received: from devils.ext.ti.com ([198.47.26.153]:34108 "EHLO
+	devils.ext.ti.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752075AbZDINm0 convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 9 Apr 2009 09:34:05 -0400
-Subject: Re: [PATCH] [13/16] POISON: The high level memory error handler in
- the VM II
-From: Chris Mason <chris.mason@oracle.com>
-To: Andi Kleen <andi@firstfloor.org>
-Cc: hugh@veritas.com, npiggin@suse.de, riel@redhat.com,
-       lee.schermerhorn@hp.com, akpm@linux-foundation.org,
-       linux-kernel@vger.kernel.org, linux-mm@kvack.org, x86@kernel.org
-In-Reply-To: <20090409075805.GG14687@one.firstfloor.org>
-References: <20090407509.382219156@firstfloor.org>
-	 <20090407151010.E72A91D0471@basil.firstfloor.org>
-	 <1239210239.28688.15.camel@think.oraclecorp.com>
-	 <20090409072949.GF14687@one.firstfloor.org>
-	 <20090409075805.GG14687@one.firstfloor.org>
-Content-Type: text/plain
-Date: Thu, 09 Apr 2009 09:30:29 -0400
-Message-Id: <1239283829.23150.34.camel@think.oraclecorp.com>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.24.1 
-Content-Transfer-Encoding: 7bit
-X-Source-IP: acsmt707.oracle.com [141.146.40.85]
-X-Auth-Type: Internal IP
-X-CT-RefId: str=0001.0A090202.49DDF87B.01BD:SCFMA4539814,ss=1,fgs=0
+	Thu, 9 Apr 2009 09:42:26 -0400
+From: "Narnakaje, Snehaprabha" <nsnehaprabha@ti.com>
+To: Thomas Gleixner <tglx@linutronix.de>
+CC: David Brownell <david-b@pacbell.net>,
+       "davinci-linux-open-source@linux.davincidsp.com" 
+	<davinci-linux-open-source@linux.davincidsp.com>,
+       "linux-mtd@lists.infradead.org" <linux-mtd@lists.infradead.org>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
+Date: Thu, 9 Apr 2009 08:41:56 -0500
+Subject: RE: [PATCH] MTD-NAND: Changes to read_page APIs to support
+ NAND_ECC_HW_SYNDROME mode on TI DaVinci DM355
+Thread-Topic: [PATCH] MTD-NAND: Changes to read_page APIs to support
+ NAND_ECC_HW_SYNDROME mode on TI DaVinci DM355
+Thread-Index: Acm3ueQ1pWX7sGNcSGa2b22FaJqvNwBXIoJw
+Message-ID: <7A436F7769CA33409C6B44B358BFFF0CFFB1EB1B@dlee02.ent.ti.com>
+References: <1238601784-9563-1-git-send-email-nsnehaprabha@ti.com>
+ <200904051556.05368.david-b@pacbell.net>
+ <alpine.LFD.2.00.0904070042300.21577@localhost.localdomain>
+ <200904061849.23110.david-b@pacbell.net>
+ <7A436F7769CA33409C6B44B358BFFF0CFFAA90C0@dlee02.ent.ti.com>
+ <alpine.LFD.2.00.0904071831550.21577@localhost.localdomain>
+ <7A436F7769CA33409C6B44B358BFFF0CFFAA9253@dlee02.ent.ti.com>
+ <alpine.LFD.2.00.0904072123320.21577@localhost.localdomain>
+In-Reply-To: <alpine.LFD.2.00.0904072123320.21577@localhost.localdomain>
+Accept-Language: en-US
+Content-Language: en-US
+X-MS-Has-Attach: 
+X-MS-TNEF-Correlator: 
+acceptlanguage: en-US
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 8BIT
+MIME-Version: 1.0
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 2009-04-09 at 09:58 +0200, Andi Kleen wrote:
-> Double checked the try_to_release_page logic. My assumption was that the 
-> writeback case could never trigger, because during write back the page
-> should be locked and so it's excluded with the earlier lock_page_nosync().
+Thomas,
+
+> -----Original Message-----
+> From: Thomas Gleixner [mailto:tglx@linutronix.de]
+> Sent: Tuesday, April 07, 2009 3:48 PM
+> To: Narnakaje, Snehaprabha
+> Cc: David Brownell; davinci-linux-open-source@linux.davincidsp.com; linux-
+> mtd@lists.infradead.org; linux-kernel@vger.kernel.org
+> Subject: RE: [PATCH] MTD-NAND: Changes to read_page APIs to support
+> NAND_ECC_HW_SYNDROME mode on TI DaVinci DM355
 > 
-> Is that a correct assumption?
+> On Tue, 7 Apr 2009, Narnakaje, Snehaprabha wrote:
+> > > > On DaVinci DM355 device, we need to pass the ecc code/syndrome
+> > > > extracted from OOB area, in order to read the HW ECC for each data
+> > > > chunk. This is where we differ from NAND_ECC_HW mode.
+> > >
+> > > I have to admit that I'm slightly confused. Is the below description
+> > > correct?
+> > >
+> > > On write you generate the ECC via hardware and store it in the OOB
+> > > area, right ?
+> 
+> Your mailer still does not insert line breaks at around 78 chars.
+> 
+> > Yes. For a large page (e.g. 2K+64), ECC should be stored in the
+> > 64bytes OOB region. The NAND controller on DaVinci DM355 device is
+> > capable of generating HW ECC (4-bit) for every 512bytes. This means,
+> > we have 4 eccsteps. The ECC should be generated by the HW for every
+> > 512byte chunk write and stored temporarily in a buffer until all 4
+> > eccsteps have been tried. The ECC from the temporary buffer is then
+> > written to the OOB area.
+> 
+> That's exactly what NAND_ECC_HW does.
+> 
+> > >
+> > > On read you read the oob data first and extract the ECC. Then you feed
+> > > the extracted ECC into the HW generator and read the data. Is this
+> > > correct ?
+> 
+> > Almost, read OOB, read data and then feed the extracted ECC into HW
+> > generator. Read the ECC status to see any correction required on the
+> > read data. Again, reading data, feeding the extracted ECC into HW
+> > generator and the correction will have to be repeated for # of times
+> > - eccsteps.
+> 
+> Ok.
+> 
+> > >
+> > > > The read_page/write_page APIs for NAND_ECC_HW_SYNDROME have the
+> > > > other problem that David mentioned - overwriting NAND manufacturers
+> > > > bad block meta data, when used with large page NAND chips. These
+> > > > APIs do not handle the "eccsteps" properly. The OOB is read/written
+> > > > after every data chunk, thus you actually have overwritten the
+> > > > factory bad block information, when these APIs handle the last data
+> > > > chunk. OOB should be read/written after the entire data (a page) is
+> > > > read/written.
+> > >
+> > > Again, that is _how_ the NAND_ECC_HW_SYNDROME functions work. And if
+> > > your hardware needs a completely different mode, then we need to
+> > > analyse what's the best solution for it.
+> 
+> > Based on the description above, NAND_ECC_HW_SYNDROME fitted well,
+> 
+> No, it does not fit well.
+> 
+> > with the exception of overriding the read_page/write_page APIs (to
+> > fix the bugs mentioned above). I have not sent the actual NAND
+> 
+> Those are not bugs. You abused that interface and now you claim it has
+> bugs. It does _not_. You introduced the bugs by using a function for
+> something it was never designed for.
+> 
+> > driver to the linux-mtd yet, since the initial version (supported
+> > only 1-bit HW ECC) submitted by David Brownell was still in review
+> > (no comments and not approved yet). While coming up with read_page
+> > API in the DaVinci NAND driver, we realized the need to pass "page"
+> > parameter. The read_page API in the DaVinci NAND driver required to
+> > call chip->cmdfunc to adjust the read location (page vs. OOB). The
+> > "page" parameter has to be passed to the chip->cmdfunc.
+> 
+> This is the wrong approach.
+> 
+> What you need is a NAND_ECC_HW_OOB_FIRST mode, which uses the
+> NAND_ECC_HW write function and implements a separate read function
+> which reads the oob and then reads the data chunks.
 
-Yes, the page won't become writeback when you're holding the page lock.
-But, the FS usually thinks of try_to_releasepage as a polite request.
-It might fail internally for a bunch of reasons.
+OK, I will come up with the new ECC mode with the separate read_page handler.
 
-To make things even more fun, the page won't become writeback magically,
-but ext3 and reiser maintain lists of buffer heads for data=ordered, and
-they do the data=ordered IO on the buffer heads directly.  writepage is
-never called and the page lock is never taken, but the buffer heads go
-to disk.  I don't think any of the other filesystems do it this way.
+However, I am still not clear on how I can avoid the change to read_page handler definition to pass page. This new read_page handler does require it, if it has to call the cmdfunc to adjust the read pointer to OOB area. Basically, I am referring to the code snippet below -
 
-At least for Ext3 (and reiser3), try_to_releasepage is required to fail
-for some data=ordered corner cases, and the only way it'll end up
-passing is if you commit the transaction (which writes the buffer_head)
-and try again.  Even invalidatepage will just end up setting
-page->mapping to null but leaving the page around for ext3 to finish
-processing.
+...
+/* Read the OOB area first */
+chip->cmdfunc(mtd, NAND_CMD_READOOB, 0, page);
+chip->read_buf(mtd, oob, mtd->oobsize);
+chip->cmdfunc(mtd, NAND_CMD_READ0, 0, page);
+...
 
-If we really want the page gone, we'll have to tell the FS
-drop-this-or-else....sorry, its some ugly stuff.
+The function that calls read_page handler has already called the cmdfunc to adjust the read pointer to the beginning of the page. The read_page handler for the new ECC mode will have to re-adjust the read pointer to read the OOB first.
 
-The good news is, it is pretty rare.  I wouldn't hold up the whole patch
-set just for this problem.  We could document the future fun required
-and fix the return value check and concentrate on something other than
-this ugly corner ;)
+Thanks
+Sneha
 
--chris
-
+> 
+> Thanks,
+> 
+> 	tglx
 
