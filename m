@@ -1,97 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S935455AbZDIPjX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S935055AbZDIPlb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S935455AbZDIPjX (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 9 Apr 2009 11:39:23 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760885AbZDIPjN
+	id S935055AbZDIPlb (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 9 Apr 2009 11:41:31 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755422AbZDIPlS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 9 Apr 2009 11:39:13 -0400
-Received: from mx3.mail.elte.hu ([157.181.1.138]:49256 "EHLO mx3.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1760335AbZDIPjN (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 9 Apr 2009 11:39:13 -0400
-Date: Thu, 9 Apr 2009 17:39:01 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
-       Thomas Gleixner <tglx@linutronix.de>
-Subject: [GIT PULL] irq fixes
-Message-ID: <20090409153901.GA19681@elte.hu>
+	Thu, 9 Apr 2009 11:41:18 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:60010 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751329AbZDIPlR (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 9 Apr 2009 11:41:17 -0400
+Date: Thu, 9 Apr 2009 08:35:22 -0700 (PDT)
+From: Linus Torvalds <torvalds@linux-foundation.org>
+X-X-Sender: torvalds@localhost.localdomain
+To: Andi Kleen <andi@firstfloor.org>
+cc: Frederic Weisbecker <fweisbec@gmail.com>,
+       LKML <linux-kernel@vger.kernel.org>, Jeff Mahoney <jeffm@suse.com>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>,
+       ReiserFS Development List <reiserfs-devel@vger.kernel.org>,
+       Bron Gondwana <brong@fastmail.fm>,
+       Andrew Morton <akpm@linux-foundation.org>, Ingo Molnar <mingo@elte.hu>,
+       Alexander Viro <viro@zeniv.linux.org.uk>
+Subject: Re: [PATCH] reiserfs: kill-the-BKL
+In-Reply-To: <87tz4x97uq.fsf@basil.nowhere.org>
+Message-ID: <alpine.LFD.2.00.0904090831000.4583@localhost.localdomain>
+References: <1239070789-13354-1-git-send-email-fweisbec@gmail.com> <87tz4x97uq.fsf@basil.nowhere.org>
+User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.5
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Linus,
-
-Please pull the latest irq-fixes-for-linus git tree from:
-
-   git://git.kernel.org/pub/scm/linux/kernel/git/tip/linux-2.6-tip.git irq-fixes-for-linus
-
- Thanks,
-
-	Ingo
-
------------------->
-Yinghai Lu (1):
-      irq: fix cpumask memory leak on offstack cpumask kernels
 
 
- include/linux/irq.h       |   14 ++++++++++++++
- kernel/irq/numa_migrate.c |    1 +
- 2 files changed, 15 insertions(+), 0 deletions(-)
+On Thu, 9 Apr 2009, Andi Kleen wrote:
+>
+> You have to be very careful with this. Mutexes can be slower than
+> spinlocks (and the new BKL is a spinlock) in some situations, they
+> typically schedule much more etc., which can be costly.
 
-diff --git a/include/linux/irq.h b/include/linux/irq.h
-index 974890b..99d147e 100644
---- a/include/linux/irq.h
-+++ b/include/linux/irq.h
-@@ -482,6 +482,16 @@ static inline void init_copy_desc_masks(struct irq_desc *old_desc,
- #endif
- }
- 
-+static inline void free_desc_masks(struct irq_desc *old_desc,
-+				   struct irq_desc *new_desc)
-+{
-+	free_cpumask_var(old_desc->affinity);
-+
-+#ifdef CONFIG_GENERIC_PENDING_IRQ
-+	free_cpumask_var(old_desc->pending_mask);
-+#endif
-+}
-+
- #else /* !CONFIG_SMP */
- 
- static inline bool init_alloc_desc_masks(struct irq_desc *desc, int cpu,
-@@ -495,6 +505,10 @@ static inline void init_copy_desc_masks(struct irq_desc *old_desc,
- {
- }
- 
-+static inline void free_desc_masks(struct irq_desc *old_desc,
-+				   struct irq_desc *new_desc)
-+{
-+}
- #endif	/* CONFIG_SMP */
- 
- #endif /* _LINUX_IRQ_H */
-diff --git a/kernel/irq/numa_migrate.c b/kernel/irq/numa_migrate.c
-index 243d612..44bbdcb 100644
---- a/kernel/irq/numa_migrate.c
-+++ b/kernel/irq/numa_migrate.c
-@@ -54,6 +54,7 @@ static bool init_copy_one_irq_desc(int irq, struct irq_desc *old_desc,
- static void free_one_irq_desc(struct irq_desc *old_desc, struct irq_desc *desc)
- {
- 	free_kstat_irqs(old_desc, desc);
-+	free_desc_masks(old_desc, desc);
- 	arch_free_chip_data(old_desc, desc);
- }
- 
+Actually, with the new adaptive spinning, that basically shouldn't be true 
+any more. Or rather, you should need some really bad/unlucky situation for 
+it to scheduler more than necessary, and if the locker _acts_ like a 
+spinlock (ie it doesn't block while holding the lock), performance should 
+approach a spinlock.
+
+That said, there are definitely reasons why a mutex can be slower than the 
+BKL, and the whole "BKL gets implicitly dropped at sleep time" is very 
+high on that list of reasons. The sleeping patterns can be _very_ 
+different with a mutex than with a BKL.
+
+> Better would be to use spinlocks if possible. I guess you just would
+> need to find all sleep points and wrap them with lock dropping?
+
+I do agree that a filesystem should try to avoid sleeping locks if at all 
+possible, especially on the paths that the VM uses for writeback. But on 
+the other hand, I think the issue with reiserfs is just the bad latencies 
+that the BKL can cause, and then it doesn't matter.
+
+			Linus
