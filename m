@@ -1,25 +1,25 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S936068AbZDIQh2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S936097AbZDIQiA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S936068AbZDIQh2 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 9 Apr 2009 12:37:28 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S935544AbZDIQaC
+	id S936097AbZDIQiA (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 9 Apr 2009 12:38:00 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S935561AbZDIQaX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 9 Apr 2009 12:30:02 -0400
-Received: from victor.provo.novell.com ([137.65.250.26]:53527 "EHLO
+	Thu, 9 Apr 2009 12:30:23 -0400
+Received: from victor.provo.novell.com ([137.65.250.26]:57509 "EHLO
 	victor.provo.novell.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S935525AbZDIQ3y (ORCPT
+	with ESMTP id S935473AbZDIQ36 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 9 Apr 2009 12:29:54 -0400
+	Thu, 9 Apr 2009 12:29:58 -0400
 From: Gregory Haskins <ghaskins@novell.com>
-Subject: [RFC PATCH v2 15/19] kvm: add dynamic IRQ support
+Subject: [RFC PATCH v2 16/19] kvm: Add VBUS support to the host
 To: linux-kernel@vger.kernel.org
 Cc: agraf@suse.de, pmullaney@novell.com, pmorreale@novell.com,
        anthony@codemonkey.ws, rusty@rustcorp.com.au, netdev@vger.kernel.org,
        kvm@vger.kernel.org, avi@redhat.com, bhutchings@solarflare.com,
        andi@firstfloor.org, gregkh@suse.de, herber@gondor.apana.org.au,
        chrisw@sous-sol.org, shemminger@vyatta.com
-Date: Thu, 09 Apr 2009 12:32:00 -0400
-Message-ID: <20090409163200.32740.90490.stgit@dev.haskins.net>
+Date: Thu, 09 Apr 2009 12:32:05 -0400
+Message-ID: <20090409163205.32740.60958.stgit@dev.haskins.net>
 In-Reply-To: <20090409155200.32740.19358.stgit@dev.haskins.net>
 References: <20090409155200.32740.19358.stgit@dev.haskins.net>
 User-Agent: StGIT/0.14.3
@@ -30,204 +30,257 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This patch provides the ability to dynamically declare and map an
-interrupt-request handle to an x86 8-bit vector.
-
-Problem Statement: Emulated devices (such as PCI, ISA, etc) have
-interrupt routing done via standard PC mechanisms (MP-table, ACPI,
-etc).  However, we also want to support a new class of devices
-which exist in a new virtualized namespace and therefore should
-not try to piggyback on these emulated mechanisms.  Rather, we
-create a way to dynamically register interrupt resources that
-acts indepent of the emulated counterpart.
-
-On x86, a simplistic view of the interrupt model is that each core
-has a local-APIC which can recieve messages from APIC-compliant
-routing devices (such as IO-APIC and MSI) regarding details about
-an interrupt (such as which vector to raise).  These routing devices
-are controlled by the OS so they may translate a physical event
-(such as "e1000: raise an RX interrupt") to a logical destination
-(such as "inject IDT vector 46 on core 3").  A dynirq is a virtual
-implementation of such a router (think of it as a virtual-MSI, but
-without the coupling to an existing standard, such as PCI).
-
-The model is simple: A guest OS can allocate the mapping of "IRQ"
-handle to "vector/core" in any way it sees fit, and provide this
-information to the dynirq module running in the host.  The assigned
-IRQ then becomes the sole handle needed to inject an IDT vector
-to the guest from a host.  A host entity that wishes to raise an
-interrupt simple needs to call kvm_inject_dynirq(irq) and the routing
-is performed transparently.
+This patch adds support for guest access to a VBUS assigned to the same
+context as the VM.  It utilizes a IOQ+IRQ to move events from host->guest,
+and provides a hypercall interface to move events guest->host.
 
 Signed-off-by: Gregory Haskins <ghaskins@novell.com>
 ---
 
- arch/x86/Kconfig                |    5 +
- arch/x86/Makefile               |    3 
- arch/x86/include/asm/kvm_host.h |    9 +
- arch/x86/include/asm/kvm_para.h |   11 +
+ arch/x86/include/asm/kvm_para.h |    1 
+ arch/x86/kvm/Kconfig            |    9 
  arch/x86/kvm/Makefile           |    3 
- arch/x86/kvm/dynirq.c           |  329 +++++++++++++++++++++++++++++++++++++++
- arch/x86/kvm/guest/Makefile     |    2 
- arch/x86/kvm/guest/dynirq.c     |   95 +++++++++++
- arch/x86/kvm/x86.c              |    6 +
+ arch/x86/kvm/x86.c              |    6 
+ arch/x86/kvm/x86.h              |   12 
  include/linux/kvm.h             |    1 
- include/linux/kvm_guest.h       |    7 +
- include/linux/kvm_host.h        |    1 
- include/linux/kvm_para.h        |    1 
- 13 files changed, 472 insertions(+), 1 deletions(-)
- create mode 100644 arch/x86/kvm/dynirq.c
- create mode 100644 arch/x86/kvm/guest/Makefile
- create mode 100644 arch/x86/kvm/guest/dynirq.c
- create mode 100644 include/linux/kvm_guest.h
+ include/linux/kvm_host.h        |   20 +
+ include/linux/kvm_para.h        |   59 ++
+ virt/kvm/kvm_main.c             |    1 
+ virt/kvm/vbus.c                 | 1307 +++++++++++++++++++++++++++++++++++++++
+ 10 files changed, 1419 insertions(+), 0 deletions(-)
+ create mode 100644 virt/kvm/vbus.c
 
-diff --git a/arch/x86/Kconfig b/arch/x86/Kconfig
-index 3fca247..91fefd5 100644
---- a/arch/x86/Kconfig
-+++ b/arch/x86/Kconfig
-@@ -446,6 +446,11 @@ config KVM_GUEST
- 	 This option enables various optimizations for running under the KVM
- 	 hypervisor.
- 
-+config KVM_GUEST_DYNIRQ
-+       bool "KVM Dynamic IRQ support"
-+       depends on KVM_GUEST
-+       default y
-+
- source "arch/x86/lguest/Kconfig"
- 
- config PARAVIRT
-diff --git a/arch/x86/Makefile b/arch/x86/Makefile
-index d1a47ad..d788815 100644
---- a/arch/x86/Makefile
-+++ b/arch/x86/Makefile
-@@ -147,6 +147,9 @@ core-$(CONFIG_XEN) += arch/x86/xen/
- # lguest paravirtualization support
- core-$(CONFIG_LGUEST_GUEST) += arch/x86/lguest/
- 
-+# kvm paravirtualization support
-+core-$(CONFIG_KVM_GUEST) += arch/x86/kvm/guest/
-+
- core-y += arch/x86/kernel/
- core-y += arch/x86/mm/
- 
-diff --git a/arch/x86/include/asm/kvm_host.h b/arch/x86/include/asm/kvm_host.h
-index 730843d..9ae398a 100644
---- a/arch/x86/include/asm/kvm_host.h
-+++ b/arch/x86/include/asm/kvm_host.h
-@@ -346,6 +346,12 @@ struct kvm_mem_alias {
- 	gfn_t target_gfn;
- };
- 
-+struct kvm_dynirq {
-+	spinlock_t lock;
-+	struct rb_root map;
-+	struct kvm *kvm;
-+};
-+
- struct kvm_arch{
- 	int naliases;
- 	struct kvm_mem_alias aliases[KVM_ALIAS_SLOTS];
-@@ -363,6 +369,7 @@ struct kvm_arch{
- 	struct iommu_domain *iommu_domain;
- 	struct kvm_pic *vpic;
- 	struct kvm_ioapic *vioapic;
-+	struct kvm_dynirq *dynirq;
- 	struct kvm_pit *vpit;
- 	struct hlist_head irq_ack_notifier_list;
- 	int vapics_in_nmi_mode;
-@@ -519,6 +526,8 @@ int emulator_write_phys(struct kvm_vcpu *vcpu, gpa_t gpa,
- 			  const void *val, int bytes);
- int kvm_pv_mmu_op(struct kvm_vcpu *vcpu, unsigned long bytes,
- 		  gpa_t addr, unsigned long *ret);
-+int kvm_dynirq_hc(struct kvm_vcpu *vcpu, int nr, gpa_t gpa, size_t len);
-+void kvm_free_dynirq(struct kvm *kvm);
- 
- extern bool tdp_enabled;
- 
 diff --git a/arch/x86/include/asm/kvm_para.h b/arch/x86/include/asm/kvm_para.h
-index b8a3305..fba210e 100644
+index fba210e..19d81e0 100644
 --- a/arch/x86/include/asm/kvm_para.h
 +++ b/arch/x86/include/asm/kvm_para.h
-@@ -13,6 +13,7 @@
- #define KVM_FEATURE_CLOCKSOURCE		0
+@@ -14,6 +14,7 @@
  #define KVM_FEATURE_NOP_IO_DELAY	1
  #define KVM_FEATURE_MMU_OP		2
-+#define KVM_FEATURE_DYNIRQ		3
+ #define KVM_FEATURE_DYNIRQ		3
++#define KVM_FEATURE_VBUS                4
  
  #define MSR_KVM_WALL_CLOCK  0x11
  #define MSR_KVM_SYSTEM_TIME 0x12
-@@ -45,6 +46,16 @@ struct kvm_mmu_op_release_pt {
- 	__u64 pt_phys;
- };
+diff --git a/arch/x86/kvm/Kconfig b/arch/x86/kvm/Kconfig
+index b81125f..875e96e 100644
+--- a/arch/x86/kvm/Kconfig
++++ b/arch/x86/kvm/Kconfig
+@@ -64,6 +64,15 @@ config KVM_TRACE
+ 	  relayfs.  Note the ABI is not considered stable and will be
+ 	  modified in future updates.
  
-+/* Operations for KVM_HC_DYNIRQ */
-+#define KVM_DYNIRQ_OP_SET   1
-+#define KVM_DYNIRQ_OP_CLEAR 2
++config KVM_HOST_VBUS
++       bool "KVM virtual-bus (VBUS) host-side support"
++       depends on KVM
++       select VBUS
++       default n
++       ---help---
++          This option enables host-side support for accessing virtual-bus
++	  devices.
 +
-+struct kvm_dynirq_set {
-+	__u32 irq;
-+	__u32 vec;  /* x86 IDT vector */
-+	__u32 dest; /* 0-based vcpu id */
-+};
-+
- #ifdef __KERNEL__
- #include <asm/processor.h>
- 
+ # OK, it's a little counter-intuitive to do this, but it puts it neatly under
+ # the virtualization menu.
+ source drivers/lguest/Kconfig
 diff --git a/arch/x86/kvm/Makefile b/arch/x86/kvm/Makefile
-index d3ec292..d5676f5 100644
+index d5676f5..f749ec9 100644
 --- a/arch/x86/kvm/Makefile
 +++ b/arch/x86/kvm/Makefile
-@@ -14,9 +14,10 @@ endif
- EXTRA_CFLAGS += -Ivirt/kvm -Iarch/x86/kvm
+@@ -15,6 +15,9 @@ EXTRA_CFLAGS += -Ivirt/kvm -Iarch/x86/kvm
  
  kvm-objs := $(common-objs) x86.o mmu.o x86_emulate.o i8259.o irq.o lapic.o \
--	i8254.o
-+	i8254.o dynirq.o
+ 	i8254.o dynirq.o
++ifeq ($(CONFIG_KVM_HOST_VBUS),y)
++kvm-objs += $(addprefix ../../../virt/kvm/, vbus.o)
++endif
  obj-$(CONFIG_KVM) += kvm.o
  kvm-intel-objs = vmx.o
  obj-$(CONFIG_KVM_INTEL) += kvm-intel.o
- kvm-amd-objs = svm.o
- obj-$(CONFIG_KVM_AMD) += kvm-amd.o
+diff --git a/arch/x86/kvm/x86.c b/arch/x86/kvm/x86.c
+index e24f0a5..2369d84 100644
+--- a/arch/x86/kvm/x86.c
++++ b/arch/x86/kvm/x86.c
+@@ -996,6 +996,9 @@ int kvm_dev_ioctl_check_extension(long ext)
+ 	case KVM_CAP_CLOCKSOURCE:
+ 		r = boot_cpu_has(X86_FEATURE_CONSTANT_TSC);
+ 		break;
++	case KVM_CAP_VBUS:
++		r = kvm_vbus_support();
++		break;
+ 	default:
+ 		r = 0;
+ 		break;
+@@ -2688,6 +2691,9 @@ int kvm_emulate_hypercall(struct kvm_vcpu *vcpu)
+ 	case KVM_HC_DYNIRQ:
+ 		ret = kvm_dynirq_hc(vcpu, a0, a1, a2);
+ 		break;
++	case KVM_HC_VBUS:
++		ret = kvm_vbus_hc(vcpu, a0, a1, a2);
++		break;
+ 	default:
+ 		ret = -KVM_ENOSYS;
+ 		break;
+diff --git a/arch/x86/kvm/x86.h b/arch/x86/kvm/x86.h
+index 6a4be78..b6c682b 100644
+--- a/arch/x86/kvm/x86.h
++++ b/arch/x86/kvm/x86.h
+@@ -3,6 +3,18 @@
+ 
+ #include <linux/kvm_host.h>
+ 
++#ifdef CONFIG_KVM_HOST_VBUS
++static inline int kvm_vbus_support(void)
++{
++    return 1;
++}
++#else
++static inline int kvm_vbus_support(void)
++{
++    return 0;
++}
++#endif
 +
-diff --git a/arch/x86/kvm/dynirq.c b/arch/x86/kvm/dynirq.c
+ static inline void kvm_clear_exception_queue(struct kvm_vcpu *vcpu)
+ {
+ 	vcpu->arch.exception.pending = false;
+diff --git a/include/linux/kvm.h b/include/linux/kvm.h
+index 349d273..077daac 100644
+--- a/include/linux/kvm.h
++++ b/include/linux/kvm.h
+@@ -398,6 +398,7 @@ struct kvm_trace_rec {
+ #endif
+ #define KVM_CAP_RESET 23
+ #define KVM_CAP_DYNIRQ 24
++#define KVM_CAP_VBUS 25
+ 
+ /*
+  * ioctls for VM fds
+diff --git a/include/linux/kvm_host.h b/include/linux/kvm_host.h
+index bec9b35..757f998 100644
+--- a/include/linux/kvm_host.h
++++ b/include/linux/kvm_host.h
+@@ -120,6 +120,9 @@ struct kvm {
+ 	struct list_head vm_list;
+ 	struct kvm_io_bus mmio_bus;
+ 	struct kvm_io_bus pio_bus;
++#ifdef CONFIG_KVM_HOST_VBUS
++	struct kvm_vbus *kvbus;
++#endif
+ 	struct kvm_vm_stat stat;
+ 	struct kvm_arch arch;
+ 	atomic_t users_count;
+@@ -471,4 +474,21 @@ static inline int mmu_notifier_retry(struct kvm_vcpu *vcpu, unsigned long mmu_se
+ }
+ #endif
+ 
++#ifdef CONFIG_KVM_HOST_VBUS
++
++int kvm_vbus_hc(struct kvm_vcpu *vcpu, int nr, gpa_t gpa, size_t len);
++void kvm_vbus_release(struct kvm_vbus *kvbus);
++
++#else /* CONFIG_KVM_HOST_VBUS */
++
++static inline int
++kvm_vbus_hc(struct kvm_vcpu *vcpu, int nr, gpa_t gpa, size_t len)
++{
++	return -EINVAL;
++}
++
++#define kvm_vbus_release(kvbus) do {} while (0)
++
++#endif /* CONFIG_KVM_HOST_VBUS */
++
+ #endif
+diff --git a/include/linux/kvm_para.h b/include/linux/kvm_para.h
+index a2de904..ca5203c 100644
+--- a/include/linux/kvm_para.h
++++ b/include/linux/kvm_para.h
+@@ -17,6 +17,65 @@
+ #define KVM_HC_VAPIC_POLL_IRQ		1
+ #define KVM_HC_MMU_OP			2
+ #define KVM_HC_DYNIRQ			3
++#define KVM_HC_VBUS			4
++
++/* Payload of KVM_HC_VBUS */
++#define KVM_VBUS_MAGIC   0x27fdab45
++#define KVM_VBUS_VERSION 1
++
++enum kvm_vbus_op{
++	KVM_VBUS_OP_BUSOPEN,
++	KVM_VBUS_OP_BUSREG,
++	KVM_VBUS_OP_DEVOPEN,
++	KVM_VBUS_OP_DEVCLOSE,
++	KVM_VBUS_OP_DEVCALL,
++	KVM_VBUS_OP_DEVSHM,
++	KVM_VBUS_OP_SHMSIGNAL,
++};
++
++struct kvm_vbus_busopen {
++	__u32 magic;
++	__u32 version;
++	__u64 capabilities;
++};
++
++struct kvm_vbus_eventqreg {
++	__u32 irq;
++	__u32 count;
++	__u64 ring;
++	__u64 data;
++};
++
++struct kvm_vbus_busreg {
++	__u32 count;  /* supporting multiple queues allows for prio, etc */
++	struct kvm_vbus_eventqreg eventq[1];
++};
++
++enum kvm_vbus_eventid {
++	KVM_VBUS_EVENT_DEVADD,
++	KVM_VBUS_EVENT_DEVDROP,
++	KVM_VBUS_EVENT_SHMSIGNAL,
++	KVM_VBUS_EVENT_SHMCLOSE,
++};
++
++#define VBUS_MAX_DEVTYPE_LEN 128
++
++struct kvm_vbus_add_event {
++	__u64  id;
++	char type[VBUS_MAX_DEVTYPE_LEN];
++};
++
++struct kvm_vbus_handle_event {
++	__u64 handle;
++};
++
++struct kvm_vbus_event {
++	__u32 eventid;
++	union {
++		struct kvm_vbus_add_event    add;
++		struct kvm_vbus_handle_event handle;
++	} data;
++};
+ 
+ /*
+  * hypercalls use architecture specific
+diff --git a/virt/kvm/kvm_main.c b/virt/kvm/kvm_main.c
+index fca2d25..2e4ba8b 100644
+--- a/virt/kvm/kvm_main.c
++++ b/virt/kvm/kvm_main.c
+@@ -942,6 +942,7 @@ static int kvm_vm_release(struct inode *inode, struct file *filp)
+ {
+ 	struct kvm *kvm = filp->private_data;
+ 
++	kvm_vbus_release(kvm->kvbus);
+ 	kvm_put_kvm(kvm);
+ 	return 0;
+ }
+diff --git a/virt/kvm/vbus.c b/virt/kvm/vbus.c
 new file mode 100644
-index 0000000..54162dd
+index 0000000..17b3392
 --- /dev/null
-+++ b/arch/x86/kvm/dynirq.c
-@@ -0,0 +1,329 @@
++++ b/virt/kvm/vbus.c
+@@ -0,0 +1,1307 @@
 +/*
 + * Copyright 2009 Novell.  All Rights Reserved.
-+ *
-+ * Dynamic-Interrupt-Request (dynirq): This module provides the ability
-+ * to dynamically declare and map an interrupt-request handle to an
-+ * x86 8-bit vector.
-+ *
-+ * Problem Statement: Emulated devices (such as PCI, ISA, etc) have
-+ * interrupt routing done via standard PC mechanisms (MP-table, ACPI,
-+ * etc).  However, we also want to support a new class of devices
-+ * which exist in a new virtualized namespace and therefore should
-+ * not try to piggyback on these emulated mechanisms.  Rather, we
-+ * create a way to dynamically register interrupt resources that
-+ * acts indepent of the emulated counterpart.
-+ *
-+ * On x86, a simplistic view of the interrupt model is that each core
-+ * has a local-APIC which can recieve messages from APIC-compliant
-+ * routing devices (such as IO-APIC and MSI) regarding details about
-+ * an interrupt (such as which vector to raise).  These routing devices
-+ * are controlled by the OS so they may translate a physical event
-+ * (such as "e1000: raise an RX interrupt") to a logical destination
-+ * (such as "inject IDT vector 46 on core 3").  A dynirq is a virtual
-+ * implementation of such a router (think of it as a virtual-MSI, but
-+ * without the coupling to an existing standard, such as PCI).
-+ *
-+ * The model is simple: A guest OS can allocate the mapping of "IRQ"
-+ * handle to "vector/core" in any way it sees fit, and provide this
-+ * information to the dynirq module running in the host.  The assigned
-+ * IRQ then becomes the sole handle needed to inject an IDT vector
-+ * to the guest from a host.  A host entity that wishes to raise an
-+ * interrupt simple needs to call kvm_inject_dynirq(irq) and the routing
-+ * is performed transparently.
 + *
 + * Author:
 + *	Gregory Haskins <ghaskins@novell.com>
@@ -245,228 +298,1249 @@ index 0000000..54162dd
 + * along with this program; if not, write to the Free Software Foundation,
 + * Inc., 51 Franklin St, Fifth Floor, Boston, MA 02110-1301, USA.
 + */
++
 +#include <linux/module.h>
 +#include <linux/rbtree.h>
-+#include <linux/mutex.h>
++#include <linux/spinlock.h>
++#include <linux/highmem.h>
++#include <linux/workqueue.h>
 +#include <linux/mm.h>
 +#include <linux/vmalloc.h>
++#include <linux/ioq.h>
 +
 +#include <linux/kvm.h>
 +#include <linux/kvm_host.h>
 +#include <linux/kvm_para.h>
-+#include <linux/workqueue.h>
-+#include <linux/hardirq.h>
++#include <linux/vbus.h>
++#include <linux/vbus_client.h>
 +
-+#include "lapic.h"
++#undef PDEBUG
++#ifdef KVMVBUS_DEBUG
++#include <linux/ftrace.h>
++#  define PDEBUG(fmt, args...) ftrace_printk(fmt, ## args)
++#else
++#  define PDEBUG(fmt, args...)
++#endif
 +
-+struct dynirq {
-+	struct kvm_dynirq *parent;
-+	unsigned int       irq;
-+	unsigned short     vec;
-+	unsigned int       dest;
-+	struct rb_node     node;
-+	struct work_struct work;
++struct kvm_vbus_eventq {
++	spinlock_t          lock;
++	struct ioq         *ioq;
++	struct ioq_notifier notifier;
++	struct list_head    backlog;
++	struct {
++		u64         gpa;
++		size_t      len;
++		void       *ptr;
++	} ringdata;
++	struct work_struct  work;
++	int                 backpressure:1;
 +};
 +
-+static inline struct dynirq *
-+to_dynirq(struct rb_node *node)
++enum kvm_vbus_state {
++	kvm_vbus_state_init,
++	kvm_vbus_state_registration,
++	kvm_vbus_state_running,
++};
++
++struct kvm_vbus {
++	struct mutex	        lock;
++	enum kvm_vbus_state     state;
++	struct kvm             *kvm;
++	struct vbus            *vbus;
++	struct vbus_client     *client;
++	struct kvm_vbus_eventq  eventq;
++	struct work_struct      destruct;
++	struct vbus_memctx     *ctx;
++	struct {
++		struct notifier_block vbus;
++		struct notifier_block reset;
++	} notify;
++};
++
++struct vbus_client *to_client(struct kvm_vcpu *vcpu)
 +{
-+	return node ? container_of(node, struct dynirq, node) : NULL;
++	return vcpu ? vcpu->kvm->kvbus->client : NULL;
++}
++
++static void*
++kvm_vmap(struct kvm *kvm, gpa_t gpa, size_t len)
++{
++	struct page **page_list;
++	void *ptr = NULL;
++	unsigned long addr;
++	off_t offset;
++	size_t npages;
++	int ret;
++
++	addr = gfn_to_hva(kvm, gpa >> PAGE_SHIFT);
++
++	offset = offset_in_page(gpa);
++	npages = PAGE_ALIGN(len + offset) >> PAGE_SHIFT;
++
++	if (npages > (PAGE_SIZE / sizeof(struct page *)))
++		return NULL;
++
++	page_list = (struct page **) __get_free_page(GFP_KERNEL);
++	if (!page_list)
++		return NULL;
++
++	ret = get_user_pages_fast(addr, npages, 1, page_list);
++	if (ret < 0)
++		goto out;
++
++	down_write(&current->mm->mmap_sem);
++
++	ptr = vmap(page_list, npages, VM_MAP, PAGE_KERNEL);
++	if (ptr)
++		current->mm->locked_vm += npages;
++
++	up_write(&current->mm->mmap_sem);
++
++	ptr = ptr+offset;
++
++out:
++	free_page((unsigned long)page_list);
++
++	return ptr;
++}
++
++static void
++kvm_vunmap(void *ptr)
++{
++	/* FIXME: do we need to adjust current->mm->locked_vm? */
++	vunmap((void *)((unsigned long)ptr & PAGE_MASK));
++}
++
++/*
++ * -----------------
++ * kvm_shm routines
++ * -----------------
++ */
++
++struct kvm_shm {
++	struct kvm_vbus   *kvbus;
++	struct vbus_shm    shm;
++};
++
++static void
++kvm_shm_release(struct vbus_shm *shm)
++{
++	struct kvm_shm *_shm = container_of(shm, struct kvm_shm, shm);
++
++	kvm_vunmap(_shm->shm.ptr);
++	kfree(_shm);
++}
++
++static struct vbus_shm_ops kvm_shm_ops = {
++	.release = kvm_shm_release,
++};
++
++static int
++kvm_shm_map(struct kvm_vbus *kvbus, __u64 ptr, __u32 len, struct kvm_shm **kshm)
++{
++	struct kvm_shm *_shm;
++	void *vmap;
++
++	if (!can_do_mlock())
++		return -EPERM;
++
++	_shm = kzalloc(sizeof(*_shm), GFP_KERNEL);
++	if (!_shm)
++		return -ENOMEM;
++
++	_shm->kvbus = kvbus;
++
++	vmap = kvm_vmap(kvbus->kvm, ptr, len);
++	if (!vmap) {
++		kfree(_shm);
++		return -EFAULT;
++	}
++
++	vbus_shm_init(&_shm->shm, &kvm_shm_ops, vmap, len);
++
++	*kshm = _shm;
++
++	return 0;
++}
++
++/*
++ * -----------------
++ * vbus_memctx routines
++ * -----------------
++ */
++
++struct kvm_memctx {
++	struct kvm *kvm;
++	struct vbus_memctx *taskmem;
++	struct vbus_memctx ctx;
++};
++
++static struct kvm_memctx *to_kvm_memctx(struct vbus_memctx *ctx)
++{
++	return container_of(ctx, struct kvm_memctx, ctx);
++}
++
++
++static unsigned long
++kvm_memctx_copy_to(struct vbus_memctx *ctx, void *dst, const void *src,
++	       unsigned long n)
++{
++	struct kvm_memctx *kvm_memctx = to_kvm_memctx(ctx);
++	struct vbus_memctx *tm = kvm_memctx->taskmem;
++	gpa_t gpa = (gpa_t)dst;
++	unsigned long addr;
++	int offset;
++
++	addr = gfn_to_hva(kvm_memctx->kvm, gpa >> PAGE_SHIFT);
++	offset = offset_in_page(gpa);
++
++	return tm->ops->copy_to(tm, (void *)(addr + offset), src, n);
++}
++
++static unsigned long
++kvm_memctx_copy_from(struct vbus_memctx *ctx, void *dst, const void *src,
++		  unsigned long n)
++{
++	struct kvm_memctx *kvm_memctx = to_kvm_memctx(ctx);
++	struct vbus_memctx *tm = kvm_memctx->taskmem;
++	gpa_t gpa = (gpa_t)src;
++	unsigned long addr;
++	int offset;
++
++	addr = gfn_to_hva(kvm_memctx->kvm, gpa >> PAGE_SHIFT);
++	offset = offset_in_page(gpa);
++
++	return tm->ops->copy_from(tm, dst, (void *)(addr + offset), n);
++}
++
++static void
++kvm_memctx_release(struct vbus_memctx *ctx)
++{
++	struct kvm_memctx *kvm_memctx = to_kvm_memctx(ctx);
++
++	vbus_memctx_put(kvm_memctx->taskmem);
++	kvm_put_kvm(kvm_memctx->kvm);
++
++	kfree(kvm_memctx);
++}
++
++static struct vbus_memctx_ops kvm_memctx_ops = {
++	.copy_to   = &kvm_memctx_copy_to,
++	.copy_from = &kvm_memctx_copy_from,
++	.release   = &kvm_memctx_release,
++};
++
++struct vbus_memctx *kvm_memctx_alloc(struct kvm *kvm)
++{
++	struct kvm_memctx *kvm_memctx;
++
++	kvm_memctx = kzalloc(sizeof(*kvm_memctx), GFP_KERNEL);
++	if (!kvm_memctx)
++		return NULL;
++
++	kvm_get_kvm(kvm);
++	kvm_memctx->kvm = kvm;
++
++	kvm_memctx->taskmem = task_memctx_alloc(current);
++	vbus_memctx_init(&kvm_memctx->ctx, &kvm_memctx_ops);
++
++	return &kvm_memctx->ctx;
++}
++
++/*
++ * -----------------
++ * general routines
++ * -----------------
++ */
++
++static int
++_signal_init(struct kvm *kvm, struct shm_signal_desc *desc,
++	     struct shm_signal *signal, struct shm_signal_ops *ops)
++{
++	if (desc->magic != SHM_SIGNAL_MAGIC)
++		return -EINVAL;
++
++	if (desc->ver != SHM_SIGNAL_VER)
++		return -EINVAL;
++
++	shm_signal_init(signal);
++
++	signal->locale    = shm_locality_south;
++	signal->ops       = ops;
++	signal->desc      = desc;
++
++	return 0;
++}
++
++static struct kvm_vbus_event *
++event_ptr_translate(struct kvm_vbus_eventq *eventq, u64 ptr)
++{
++	u64 off = ptr - eventq->ringdata.gpa;
++
++	if ((ptr < eventq->ringdata.gpa)
++	    || (off > (eventq->ringdata.len - sizeof(struct kvm_vbus_event))))
++		return NULL;
++
++	return eventq->ringdata.ptr + off;
++}
++
++/*
++ * ------------------
++ * event-object code
++ * ------------------
++ */
++
++struct _event {
++	atomic_t              refs;
++	struct list_head      list;
++	struct kvm_vbus_event data;
++};
++
++static void
++_event_init(struct _event *event)
++{
++	memset(event, 0, sizeof(*event));
++	atomic_set(&event->refs, 1);
++	INIT_LIST_HEAD(&event->list);
++}
++
++static void
++_event_get(struct _event *event)
++{
++	atomic_inc(&event->refs);
++}
++
++static inline void
++_event_put(struct _event *event)
++{
++	if (atomic_dec_and_test(&event->refs))
++		kfree(event);
++}
++
++/*
++ * ------------------
++ * event-inject code
++ * ------------------
++ */
++
++static struct kvm_vbus_eventq *notify_to_eventq(struct ioq_notifier *notifier)
++{
++	return container_of(notifier, struct kvm_vbus_eventq, notifier);
++}
++
++static struct kvm_vbus_eventq *work_to_eventq(struct work_struct *work)
++{
++	return container_of(work, struct kvm_vbus_eventq, work);
++}
++
++/*
++ * This is invoked by the guest whenever they signal our eventq when
++ * we have notifications enabled
++ */
++static void
++eventq_notify(struct ioq_notifier *notifier)
++{
++	struct kvm_vbus_eventq *eventq = notify_to_eventq(notifier);
++	unsigned long           flags;
++
++	spin_lock_irqsave(&eventq->lock, flags);
++
++	if (!ioq_full(eventq->ioq, ioq_idxtype_inuse)) {
++		eventq->backpressure = false;
++		ioq_notify_disable(eventq->ioq, 0);
++		schedule_work(&eventq->work);
++	}
++
++	spin_unlock_irqrestore(&eventq->lock, flags);
++}
++
++static void
++events_flush(struct kvm_vbus_eventq *eventq)
++{
++	struct ioq_iterator     iter;
++	int                     ret;
++	unsigned long           flags;
++	struct _event          *_event, *tmp;
++	int                     dirty = 0;
++
++	spin_lock_irqsave(&eventq->lock, flags);
++
++	/* We want to iterate on the tail of the in-use index */
++	ret = ioq_iter_init(eventq->ioq, &iter, ioq_idxtype_inuse, 0);
++	BUG_ON(ret < 0);
++
++	ret = ioq_iter_seek(&iter, ioq_seek_tail, 0, 0);
++	BUG_ON(ret < 0);
++
++	list_for_each_entry_safe(_event, tmp, &eventq->backlog, list) {
++		struct kvm_vbus_event *ev;
++
++		if (!iter.desc->sown) {
++			eventq->backpressure = true;
++			ioq_notify_enable(eventq->ioq, 0);
++			break;
++		}
++
++		if (iter.desc->len < sizeof(*ev)) {
++			SHM_SIGNAL_FAULT(eventq->ioq->signal,
++					 "Desc too small on eventq: %p: %d<%d",
++					 iter.desc->ptr,
++					 iter.desc->len, sizeof(*ev));
++			break;
++		}
++
++		ev = event_ptr_translate(eventq, iter.desc->ptr);
++		if (!ev) {
++			SHM_SIGNAL_FAULT(eventq->ioq->signal,
++					 "Invalid address on eventq: %p",
++					 iter.desc->ptr);
++			break;
++		}
++
++		memcpy(ev, &_event->data, sizeof(*ev));
++
++		list_del_init(&_event->list);
++		_event_put(_event);
++
++		ret = ioq_iter_push(&iter, 0);
++		BUG_ON(ret < 0);
++
++		dirty = 1;
++	}
++
++	spin_unlock_irqrestore(&eventq->lock, flags);
++
++	/*
++	 * Signal the IOQ outside of the spinlock so that we can potentially
++	 * directly inject this interrupt instead of deferring it
++	 */
++	if (dirty)
++		ioq_signal(eventq->ioq, 0);
 +}
 +
 +static int
-+map_add(struct rb_root *root, struct dynirq *entry)
++event_inject(struct kvm_vbus_eventq *eventq, struct _event *_event)
 +{
-+	int		ret = 0;
-+	struct rb_node **new, *parent = NULL;
-+	struct rb_node *node = &entry->node;
++	unsigned long flags;
 +
-+	new  = &(root->rb_node);
++	if (!list_empty(&_event->list))
++		return -EBUSY;
 +
-+	/* Figure out where to put new node */
-+	while (*new) {
-+		int val;
++	spin_lock_irqsave(&eventq->lock, flags);
++	list_add_tail(&_event->list, &eventq->backlog);
++	spin_unlock_irqrestore(&eventq->lock, flags);
 +
-+		parent = *new;
++	events_flush(eventq);
 +
-+		val = to_dynirq(node)->irq - to_dynirq(*new)->irq;
-+		if (val < 0)
-+			new = &((*new)->rb_left);
-+		else if (val > 0)
-+			new = &((*new)->rb_right);
-+		else {
-+			ret = -EEXIST;
-+			break;
-+		}
-+	}
++	return 0;
++}
 +
-+	if (!ret) {
-+		/* Add new node and rebalance tree. */
-+		rb_link_node(node, parent, new);
-+		rb_insert_color(node, root);
-+	}
++static void
++eventq_reinject(struct work_struct *work)
++{
++	struct kvm_vbus_eventq *eventq = work_to_eventq(work);
++
++	events_flush(eventq);
++}
++
++/*
++ * devadd/drop are in the slow path and are rare enough that we will
++ * simply allocate memory for the event from the heap
++ */
++static int
++devadd_inject(struct kvm_vbus_eventq *eventq, const char *type, u64 id)
++{
++	struct _event *_event;
++	struct kvm_vbus_add_event *ae;
++	int ret;
++
++	_event = kmalloc(sizeof(*_event), GFP_KERNEL);
++	if (!_event)
++		return -ENOMEM;
++
++	_event_init(_event);
++
++	_event->data.eventid = KVM_VBUS_EVENT_DEVADD;
++	ae = (struct kvm_vbus_add_event *)&_event->data.data;
++	ae->id = id;
++	strncpy(ae->type, type, VBUS_MAX_DEVTYPE_LEN);
++
++	ret = event_inject(eventq, _event);
++	if (ret < 0)
++		_event_put(_event);
 +
 +	return ret;
 +}
 +
-+static struct dynirq *
-+map_find(struct rb_root *root, unsigned int key)
++/*
++ * "handle" events are used to send any kind of event that simply
++ * uses a handle as a parameter.  This includes things like DEVDROP
++ * and SHMSIGNAL, etc.
++ */
++static struct _event *
++handle_event_alloc(u64 id, u64 handle)
 +{
-+	struct rb_node *node;
++	struct _event *_event;
++	struct kvm_vbus_handle_event *he;
 +
-+	node = root->rb_node;
++	_event = kmalloc(sizeof(*_event), GFP_KERNEL);
++	if (!_event)
++		return NULL;
 +
-+	while (node) {
-+		int val;
++	_event_init(_event);
++	_event->data.eventid = id;
 +
-+		val = key - to_dynirq(node)->irq;
-+		if (val < 0)
-+			node = node->rb_left;
-+		else if (val > 0)
-+			node = node->rb_right;
-+		else
-+			break;
-+	}
++	he = (struct kvm_vbus_handle_event *)&_event->data.data;
++	he->handle = handle;
 +
-+	return to_dynirq(node);
-+}
-+
-+static void
-+dynirq_add(struct kvm_dynirq *dynirq, struct dynirq *entry)
-+{
-+	unsigned long flags;
-+	int ret;
-+
-+	spin_lock_irqsave(&dynirq->lock, flags);
-+	ret = map_add(&dynirq->map, entry);
-+	spin_unlock_irqrestore(&dynirq->lock, flags);
-+}
-+
-+static struct dynirq *
-+dynirq_find(struct kvm_dynirq *dynirq, int irq)
-+{
-+	struct dynirq *entry;
-+	unsigned long flags;
-+
-+	spin_lock_irqsave(&dynirq->lock, flags);
-+	entry = map_find(&dynirq->map, irq);
-+	spin_unlock_irqrestore(&dynirq->lock, flags);
-+
-+	return entry;
++	return _event;
 +}
 +
 +static int
-+_kvm_inject_dynirq(struct kvm *kvm, struct dynirq *entry)
++devdrop_inject(struct kvm_vbus_eventq *eventq, u64 id)
 +{
-+	struct kvm_vcpu *vcpu;
++	struct _event *_event;
 +	int ret;
 +
-+	mutex_lock(&kvm->lock);
++	_event = handle_event_alloc(KVM_VBUS_EVENT_DEVDROP, id);
++	if (!_event)
++		return -ENOMEM;
 +
-+	vcpu = kvm->vcpus[entry->dest];
-+	if (!vcpu) {
-+		ret = -ENOENT;
++	ret = event_inject(eventq, _event);
++	if (ret < 0)
++		_event_put(_event);
++
++	return ret;
++}
++
++static struct kvm_vbus_eventq *
++prio_to_eventq(struct kvm_vbus *kvbus, int prio)
++{
++	/*
++	 * NOTE: priority is ignored for now...all events aggregate onto a
++	 * single queue
++	 */
++
++	return &kvbus->eventq;
++}
++
++/*
++ * -----------------
++ * event ioq
++ *
++ * This queue is used by the infrastructure to transmit events (such as
++ * "new device", or "signal an ioq") to the guest.  We do this so that
++ * we minimize the number of hypercalls required to inject an event.
++ * In theory, the guest only needs to process a single interrupt vector
++ * and it doesnt require switching back to host context since the state
++ * is placed within the ring
++ * -----------------
++ */
++
++struct eventq_signal {
++	struct kvm_vbus   *kvbus;
++	struct vbus_shm   *shm;
++	struct shm_signal  signal;
++	int                irq;
++};
++
++static struct eventq_signal *signal_to_eventq(struct shm_signal *signal)
++{
++       return container_of(signal, struct eventq_signal, signal);
++}
++
++static int
++eventq_signal_inject(struct shm_signal *signal)
++{
++	struct eventq_signal *_signal = signal_to_eventq(signal);
++	struct kvm *kvm = _signal->kvbus->kvm;
++
++	/* Inject an interrupt to the guest */
++	kvm_inject_dynirq(kvm, _signal->irq);
++
++	return 0;
++}
++
++static void
++eventq_signal_release(struct shm_signal *signal)
++{
++	struct eventq_signal *_signal = signal_to_eventq(signal);
++
++	vbus_shm_put(_signal->shm);
++	kfree(_signal);
++}
++
++static struct shm_signal_ops eventq_signal_ops = {
++	.inject  = eventq_signal_inject,
++	.release = eventq_signal_release,
++};
++
++static int
++_eventq_attach(struct kvm_vbus *kvbus, __u32 count, __u64 ptr, int irq,
++	       struct ioq **ioq)
++{
++	struct ioq_ring_head *desc;
++	struct eventq_signal *_signal = NULL;
++	struct kvm_shm *_shm = NULL;
++	size_t len = IOQ_HEAD_DESC_SIZE(count);
++	int ret;
++
++	ret = kvm_shm_map(kvbus, ptr, len, &_shm);
++	if (ret < 0)
++		return ret;
++
++	_signal = kzalloc(sizeof(*_signal), GFP_KERNEL);
++	if (!_signal) {
++		ret = -ENOMEM;
++		goto error;
++	}
++
++	desc = _shm->shm.ptr;
++
++	ret = _signal_init(kvbus->kvm,
++			   &desc->signal,
++			   &_signal->signal,
++			   &eventq_signal_ops);
++	if (ret < 0) {
++		kfree(_signal);
++		_signal = NULL;
++		goto error;
++	}
++
++	_signal->kvbus = kvbus;
++	_signal->irq   = irq;
++	_signal->shm   = &_shm->shm;
++	vbus_shm_get(&_shm->shm); /* dropped when the signal releases */
++
++	/* FIXME: we should make maxcount configurable */
++	ret = vbus_shm_ioq_attach(&_shm->shm, &_signal->signal, 2048, ioq);
++	if (ret < 0)
++		goto error;
++
++	return 0;
++
++error:
++	if (_signal)
++		shm_signal_put(&_signal->signal);
++
++	if (_shm)
++		vbus_shm_put(&_shm->shm);
++
++	return ret;
++}
++
++/*
++ * -----------------
++ * device_signal routines
++ *
++ * This is the more standard signal that is allocated to communicate
++ * with a specific device's shm region
++ * -----------------
++ */
++
++struct device_signal {
++	struct kvm_vbus   *kvbus;
++	struct vbus_shm   *shm;
++	struct shm_signal  signal;
++	struct _event     *inject;
++	int                prio;
++	u64                handle;
++};
++
++static struct device_signal *to_dsig(struct shm_signal *signal)
++{
++       return container_of(signal, struct device_signal, signal);
++}
++
++static void
++_device_signal_inject(struct device_signal *_signal)
++{
++	struct kvm_vbus_eventq *eventq;
++	int ret;
++
++	eventq = prio_to_eventq(_signal->kvbus, _signal->prio);
++
++	ret = event_inject(eventq, _signal->inject);
++	if (ret < 0)
++		_event_put(_signal->inject);
++}
++
++static int
++device_signal_inject(struct shm_signal *signal)
++{
++	struct device_signal *_signal = to_dsig(signal);
++
++	_event_get(_signal->inject); /* will be dropped by injection code */
++	_device_signal_inject(_signal);
++
++	return 0;
++}
++
++static void
++device_signal_release(struct shm_signal *signal)
++{
++	struct device_signal *_signal = to_dsig(signal);
++	struct kvm_vbus_eventq *eventq;
++	unsigned long flags;
++
++	eventq = prio_to_eventq(_signal->kvbus, _signal->prio);
++
++	/*
++	 * Change the event-type while holding the lock so we do not race
++	 * with any potential threads already processing the queue
++	 */
++	spin_lock_irqsave(&eventq->lock, flags);
++	_signal->inject->data.eventid = KVM_VBUS_EVENT_SHMCLOSE;
++	spin_unlock_irqrestore(&eventq->lock, flags);
++
++	/*
++	 * do not take a reference to event..last will be dropped once
++	 * transmitted.
++	 */
++	_device_signal_inject(_signal);
++
++	vbus_shm_put(_signal->shm);
++	kfree(_signal);
++}
++
++static struct shm_signal_ops device_signal_ops = {
++	.inject  = device_signal_inject,
++	.release = device_signal_release,
++};
++
++static int
++device_signal_alloc(struct kvm_vbus *kvbus, struct vbus_shm *shm,
++		    u32 offset, u32 prio, u64 cookie,
++		    struct device_signal **dsignal)
++{
++	struct device_signal *_signal;
++	int ret;
++
++	_signal = kzalloc(sizeof(*_signal), GFP_KERNEL);
++	if (!_signal)
++		return -ENOMEM;
++
++	ret = _signal_init(kvbus->kvm, shm->ptr + offset,
++			   &_signal->signal,
++			   &device_signal_ops);
++	if (ret < 0) {
++		kfree(_signal);
++		return ret;
++	}
++
++	_signal->inject = handle_event_alloc(KVM_VBUS_EVENT_SHMSIGNAL, cookie);
++	if (!_signal->inject) {
++		shm_signal_put(&_signal->signal);
++		return -ENOMEM;
++	}
++
++	_signal->kvbus  = kvbus;
++	_signal->shm    = shm;
++	_signal->prio   = prio;
++	vbus_shm_get(shm); /* dropped when the signal is released */
++
++	*dsignal = _signal;
++
++	return 0;
++}
++
++/*
++ * ------------------
++ * notifiers
++ * ------------------
++ */
++
++/*
++ * This is called whenever our associated vbus emits an event.  We inject
++ * these events at the highest logical priority
++ */
++static int
++vbus_notifier(struct notifier_block *nb, unsigned long nr, void *data)
++{
++	struct kvm_vbus *kvbus = container_of(nb, struct kvm_vbus, notify.vbus);
++	struct kvm_vbus_eventq *eventq = prio_to_eventq(kvbus, 0);
++
++	switch (nr) {
++	case VBUS_EVENT_DEVADD: {
++		struct vbus_event_devadd *ev = data;
++
++		devadd_inject(eventq, ev->type, ev->id);
++		break;
++	}
++	case VBUS_EVENT_DEVDROP: {
++		unsigned long id = *(unsigned long *)data;
++
++		devdrop_inject(eventq, id);
++		break;
++	}
++	default:
++		break;
++	}
++
++	return 0;
++}
++
++static void
++deferred_destruct(struct work_struct *work)
++{
++	struct kvm_vbus *kvbus = container_of(work, struct kvm_vbus, destruct);
++
++	kvm_vbus_release(kvbus);
++}
++
++/*
++ * This is called if the guest reboots...we should release our association
++ * with the vbus (if any)
++ */
++static int
++reset_notifier(struct notifier_block *nb, unsigned long nr, void *data)
++{
++	struct kvm_vbus *kvbus = container_of(nb, struct kvm_vbus,
++					      notify.reset);
++
++	schedule_work(&kvbus->destruct);
++	kvbus->kvm->kvbus = NULL;
++
++	return NOTIFY_DONE;
++}
++
++static int
++kvm_vbus_eventq_attach(struct kvm_vbus *kvbus, struct kvm_vbus_eventq *eventq,
++		      u32 count, u64 ring, u64 data, int irq)
++{
++	struct ioq *ioq;
++	size_t len;
++	void *ptr;
++	int ret;
++
++	if (eventq->ioq)
++		return -EINVAL;
++
++	ret = _eventq_attach(kvbus, count, ring, irq, &ioq);
++	if (ret < 0)
++		return ret;
++
++	/*
++	 * We are going to pre-vmap the eventq data for performance reasons
++	 */
++	len = count * sizeof(struct kvm_vbus_event);
++	ptr =  kvm_vmap(kvbus->kvm, data, len);
++	if (!ptr) {
++		ioq_put(ioq);
++		return -EFAULT;
++	}
++
++	spin_lock_init(&eventq->lock);
++	eventq->ioq = ioq;
++	INIT_WORK(&eventq->work, eventq_reinject);
++
++	eventq->notifier.signal = eventq_notify;
++	ioq->notifier = &eventq->notifier;
++
++	INIT_LIST_HEAD(&eventq->backlog);
++
++	eventq->ringdata.len = len;
++	eventq->ringdata.gpa = data;
++	eventq->ringdata.ptr = ptr;
++
++	return 0;
++}
++
++static void
++kvm_vbus_eventq_detach(struct kvm_vbus_eventq *eventq)
++{
++	if (eventq->ioq)
++		ioq_put(eventq->ioq);
++
++	if (eventq->ringdata.ptr)
++		kvm_vunmap(eventq->ringdata.ptr);
++}
++
++static int
++kvm_vbus_alloc(struct kvm_vcpu *vcpu)
++{
++	struct vbus *vbus = task_vbus_get(current);
++	struct vbus_client *client;
++	struct kvm_vbus *kvbus;
++	int ret;
++
++	if (!vbus)
++		return -EPERM;
++
++	client = vbus_client_attach(vbus);
++	if (!client) {
++		vbus_put(vbus);
++		return -ENOMEM;
++	}
++
++	kvbus = kzalloc(sizeof(*kvbus), GFP_KERNEL);
++	if (!kvbus) {
++		vbus_put(vbus);
++		vbus_client_put(client);
++		return -ENOMEM;
++	}
++
++	mutex_init(&kvbus->lock);
++	kvbus->state = kvm_vbus_state_registration;
++	kvbus->kvm = vcpu->kvm;
++	kvbus->vbus = vbus;
++	kvbus->client = client;
++
++	vcpu->kvm->kvbus = kvbus;
++
++	INIT_WORK(&kvbus->destruct, deferred_destruct);
++	kvbus->ctx = kvm_memctx_alloc(vcpu->kvm);
++
++	kvbus->notify.vbus.notifier_call = vbus_notifier;
++	kvbus->notify.vbus.priority = 0;
++
++	kvbus->notify.reset.notifier_call = reset_notifier;
++	kvbus->notify.reset.priority = 0;
++
++	ret = kvm_reset_notifier_register(vcpu->kvm, &kvbus->notify.reset);
++	if (ret < 0) {
++		kvm_vbus_release(kvbus);
++		return ret;
++	}
++
++	return 0;
++}
++
++void
++kvm_vbus_release(struct kvm_vbus *kvbus)
++{
++	if (!kvbus)
++		return;
++
++	if (kvbus->ctx)
++		vbus_memctx_put(kvbus->ctx);
++
++	kvm_vbus_eventq_detach(&kvbus->eventq);
++
++	if (kvbus->client)
++		vbus_client_put(kvbus->client);
++
++	if (kvbus->vbus) {
++		vbus_notifier_unregister(kvbus->vbus, &kvbus->notify.vbus);
++		vbus_put(kvbus->vbus);
++	}
++
++	kvm_reset_notifier_unregister(kvbus->kvm, &kvbus->notify.reset);
++
++	flush_scheduled_work();
++
++	kvbus->kvm->kvbus = NULL;
++
++	kfree(kvbus);
++}
++
++/*
++ * ------------------
++ * hypercall implementation
++ * ------------------
++ */
++
++static int
++hc_busopen(struct kvm_vcpu *vcpu, void *data)
++{
++	struct kvm_vbus_busopen *args = data;
++
++	if (vcpu->kvm->kvbus)
++		return -EEXIST;
++
++	if (args->magic != KVM_VBUS_MAGIC)
++		return -EINVAL;
++
++	if (args->version != KVM_VBUS_VERSION)
++		return -EINVAL;
++
++	args->capabilities = 0;
++
++	return kvm_vbus_alloc(vcpu);
++}
++
++static int
++hc_busreg(struct kvm_vcpu *vcpu, void *data)
++{
++	struct kvm_vbus_busreg *args = data;
++	struct kvm_vbus_eventqreg *qreg = &args->eventq[0];
++	struct kvm_vbus *kvbus = vcpu->kvm->kvbus;
++	int ret;
++
++	if (args->count != 1)
++		return -EINVAL;
++
++	ret = kvm_vbus_eventq_attach(kvbus,
++				     &kvbus->eventq,
++				     qreg->count,
++				     qreg->ring,
++				     qreg->data,
++				     qreg->irq);
++	if (ret < 0)
++		return ret;
++
++	ret = vbus_notifier_register(kvbus->vbus, &kvbus->notify.vbus);
++	if (ret < 0)
++		return ret;
++
++	kvbus->state = kvm_vbus_state_running;
++
++	return 0;
++}
++
++static int
++hc_deviceopen(struct kvm_vcpu *vcpu, void *data)
++{
++	struct vbus_deviceopen *args = data;
++	struct kvm_vbus *kvbus = vcpu->kvm->kvbus;
++	struct vbus_client *c = kvbus->client;
++
++	return c->ops->deviceopen(c, kvbus->ctx,
++				  args->devid, args->version, &args->handle);
++}
++
++static int
++hc_deviceclose(struct kvm_vcpu *vcpu, void *data)
++{
++	__u64 devh = *(__u64 *)data;
++	struct vbus_client *c = to_client(vcpu);
++
++	return c->ops->deviceclose(c, devh);
++}
++
++static int
++hc_devicecall(struct kvm_vcpu *vcpu, void *data)
++{
++	struct vbus_devicecall *args = data;
++	struct vbus_client *c = to_client(vcpu);
++
++	return c->ops->devicecall(c, args->devh, args->func,
++				  (void *)args->datap, args->len, args->flags);
++}
++
++static int
++hc_deviceshm(struct kvm_vcpu *vcpu, void *data)
++{
++	struct vbus_deviceshm *args = data;
++	struct kvm_vbus *kvbus = vcpu->kvm->kvbus;
++	struct vbus_client *c = to_client(vcpu);
++	struct device_signal *_signal = NULL;
++	struct shm_signal *signal = NULL;
++	struct kvm_shm *_shm;
++	u64 handle;
++	int ret;
++
++	ret = kvm_shm_map(kvbus, args->datap, args->len, &_shm);
++	if (ret < 0)
++		return ret;
++
++	/*
++	 * Establishing a signal is optional
++	 */
++	if (args->signal.offset != -1) {
++		ret = device_signal_alloc(kvbus, &_shm->shm,
++					  args->signal.offset,
++					  args->signal.prio,
++					  args->signal.cookie,
++					  &_signal);
++		if (ret < 0)
++			goto out;
++
++		signal = &_signal->signal;
++	}
++
++	ret = c->ops->deviceshm(c, args->devh, args->id,
++				&_shm->shm, signal,
++				args->flags, &handle);
++	if (ret < 0)
++		goto out;
++
++	args->handle = handle;
++	if (_signal)
++		_signal->handle = handle;
++
++	return 0;
++
++out:
++	if (signal)
++		shm_signal_put(signal);
++
++	vbus_shm_put(&_shm->shm);
++	return ret;
++}
++
++static int
++hc_shmsignal(struct kvm_vcpu *vcpu, void *data)
++{
++	__u64 handle = *(__u64 *)data;
++	struct kvm_vbus *kvbus;
++	struct vbus_client *c = to_client(vcpu);
++
++	/* A non-zero handle is targeted at a device's shm */
++	if (handle)
++		return c->ops->shmsignal(c, handle);
++
++	kvbus = vcpu->kvm->kvbus;
++
++	/* A null handle is signaling our eventq */
++	_shm_signal_wakeup(kvbus->eventq.ioq->signal);
++
++	return 0;
++}
++
++struct hc_op {
++	int nr;
++	int len;
++	int dirty;
++	int (*func)(struct kvm_vcpu *vcpu, void *args);
++};
++
++static struct hc_op _hc_busopen = {
++	.nr = KVM_VBUS_OP_BUSOPEN,
++	.len = sizeof(struct kvm_vbus_busopen),
++	.dirty = 1,
++	.func = &hc_busopen,
++};
++
++static struct hc_op _hc_busreg = {
++	.nr = KVM_VBUS_OP_BUSREG,
++	.len = sizeof(struct kvm_vbus_busreg),
++	.func = &hc_busreg,
++};
++
++static struct hc_op _hc_devopen = {
++	.nr = KVM_VBUS_OP_DEVOPEN,
++	.len = sizeof(struct vbus_deviceopen),
++	.dirty = 1,
++	.func = &hc_deviceopen,
++};
++
++static struct hc_op _hc_devclose = {
++	.nr = KVM_VBUS_OP_DEVCLOSE,
++	.len = sizeof(u64),
++	.func = &hc_deviceclose,
++};
++
++static struct hc_op _hc_devcall = {
++	.nr = KVM_VBUS_OP_DEVCALL,
++	.len = sizeof(struct vbus_devicecall),
++	.func = &hc_devicecall,
++};
++
++static struct hc_op _hc_devshm = {
++	.nr = KVM_VBUS_OP_DEVSHM,
++	.len = sizeof(struct vbus_deviceshm),
++	.dirty = 1,
++	.func = &hc_deviceshm,
++};
++
++static struct hc_op _hc_shmsignal = {
++	.nr = KVM_VBUS_OP_SHMSIGNAL,
++	.len = sizeof(u64),
++	.func = &hc_shmsignal,
++};
++
++static struct hc_op *hc_ops[] = {
++	&_hc_busopen,
++	&_hc_busreg,
++	&_hc_devopen,
++	&_hc_devclose,
++	&_hc_devcall,
++	&_hc_devshm,
++	&_hc_shmsignal,
++	NULL,
++};
++
++static int
++hc_execute_indirect(struct kvm_vcpu *vcpu, struct hc_op *op, gpa_t gpa)
++{
++	struct kvm *kvm  = vcpu->kvm;
++	char       *args = NULL;
++	int         ret;
++
++	BUG_ON(!op->len);
++
++	args = kmalloc(op->len, GFP_KERNEL);
++	if (!args)
++		return -ENOMEM;
++
++	ret = kvm_read_guest(kvm, gpa, args, op->len);
++	if (ret < 0)
++		goto out;
++
++	ret = op->func(vcpu, args);
++
++	if (ret >= 0 && op->dirty)
++		ret = kvm_write_guest(kvm, gpa, args, op->len);
++
++out:
++	kfree(args);
++
++	return ret;
++}
++
++static int
++hc_execute_direct(struct kvm_vcpu *vcpu, struct hc_op *op, gpa_t gpa)
++{
++	struct kvm  *kvm   = vcpu->kvm;
++	void        *args;
++	char        *kaddr;
++	struct page *page;
++	int          ret;
++
++	page = gfn_to_page(kvm, gpa >> PAGE_SHIFT);
++	if (page == bad_page) {
++		ret = -EINVAL;
 +		goto out;
 +	}
 +
-+	ret = kvm_apic_set_irq(vcpu, entry->vec, 1);
++	kaddr = kmap(page);
++	if (!kaddr) {
++		ret = -EINVAL;
++		goto out;
++	}
++
++	args = kaddr + offset_in_page(gpa);
++
++	ret = op->func(vcpu, args);
 +
 +out:
-+	mutex_unlock(&kvm->lock);
++	if (kaddr)
++		kunmap(kaddr);
++
++	if (ret >= 0 && op->dirty)
++		kvm_release_page_dirty(page);
++	else
++		kvm_release_page_clean(page);
 +
 +	return ret;
 +}
 +
-+static void
-+deferred_inject_dynirq(struct work_struct *work)
-+{
-+	struct dynirq *entry = container_of(work, struct dynirq, work);
-+	struct kvm_dynirq *dynirq = entry->parent;
-+	struct kvm *kvm = dynirq->kvm;
-+
-+	_kvm_inject_dynirq(kvm, entry);
-+}
-+
-+int
-+kvm_inject_dynirq(struct kvm *kvm, int irq)
-+{
-+	struct kvm_dynirq *dynirq = kvm->arch.dynirq;
-+	struct dynirq *entry;
-+
-+	entry = dynirq_find(dynirq, irq);
-+	if (!entry)
-+		return -EINVAL;
-+
-+	if (preemptible())
-+		return _kvm_inject_dynirq(kvm, entry);
-+
-+	schedule_work(&entry->work);
-+	return 0;
-+}
-+
 +static int
-+hc_set(struct kvm_vcpu *vcpu, gpa_t gpa, size_t len)
++hc_execute(struct kvm_vcpu *vcpu, struct hc_op *op, gpa_t gpa, size_t len)
 +{
-+	struct kvm_dynirq_set args;
-+	struct kvm_dynirq    *dynirq = vcpu->kvm->arch.dynirq;
-+	struct dynirq        *entry;
-+	int                   ret;
-+
-+	if (len != sizeof(args))
++	if (len != op->len)
 +		return -EINVAL;
 +
-+	ret = kvm_read_guest(vcpu->kvm, gpa, &args, len);
-+	if (ret < 0)
-+		return ret;
++	/*
++	 * Execute-immediate if there is no data
++	 */
++	if (!len)
++		return op->func(vcpu, NULL);
 +
-+	if (args.dest >= KVM_MAX_VCPUS)
-+		return -EINVAL;
++	/*
++	 * We will need to copy the arguments in the unlikely case that the
++	 * gpa pointer crosses a page boundary
++	 *
++	 * FIXME: Is it safe to assume PAGE_SIZE is relevant to gpa?
++	 */
++	if (unlikely(len && (offset_in_page(gpa) + len) > PAGE_SIZE))
++		return hc_execute_indirect(vcpu, op, gpa);
 +
-+	entry = dynirq_find(dynirq, args.irq);
-+	if (!entry) {
-+		entry = kzalloc(sizeof(*entry), GFP_KERNEL);
-+		INIT_WORK(&entry->work, deferred_inject_dynirq);
-+	} else
-+		rb_erase(&entry->node, &dynirq->map);
-+
-+	entry->irq  = args.irq;
-+	entry->vec  = args.vec;
-+	entry->dest = args.dest;
-+
-+	dynirq_add(dynirq, entry);
-+
-+	return 0;
-+}
-+
-+static int
-+hc_clear(struct kvm_vcpu *vcpu, gpa_t gpa, size_t len)
-+{
-+	struct kvm_dynirq *dynirq = vcpu->kvm->arch.dynirq;
-+	struct dynirq *entry;
-+	unsigned long flags;
-+	u32 irq;
-+	int ret;
-+
-+	if (len != sizeof(irq))
-+		return -EINVAL;
-+
-+	ret = kvm_read_guest(vcpu->kvm, gpa, &irq, len);
-+	if (ret < 0)
-+		return ret;
-+
-+	spin_lock_irqsave(&dynirq->lock, flags);
-+
-+	entry = map_find(&dynirq->map, irq);
-+	if (entry)
-+		rb_erase(&entry->node, &dynirq->map);
-+
-+	spin_unlock_irqrestore(&dynirq->lock, flags);
-+
-+	if (!entry)
-+		return -ENOENT;
-+
-+	kfree(entry);
-+	return 0;
++	/*
++	 * Otherwise just execute with zero-copy by mapping the arguments
++	 */
++	return hc_execute_direct(vcpu, op, gpa);
 +}
 +
 +/*
@@ -474,245 +1548,42 @@ index 0000000..54162dd
 + * a pointer to the arguments in arg[1], and the argument length in arg[2]
 + */
 +int
-+kvm_dynirq_hc(struct kvm_vcpu *vcpu, int nr, gpa_t gpa, size_t len)
++kvm_vbus_hc(struct kvm_vcpu *vcpu, int nr, gpa_t gpa, size_t len)
 +{
-+	int ret = -EINVAL;
++	struct kvm_vbus *kvbus = vcpu->kvm->kvbus;
++	enum kvm_vbus_state state = kvbus ? kvbus->state : kvm_vbus_state_init;
++	int i;
 +
-+	mutex_lock(&vcpu->kvm->lock);
++	PDEBUG("nr=%d, state=%d\n", nr, state);
 +
-+	if (unlikely(!vcpu->kvm->arch.dynirq)) {
-+		struct kvm_dynirq *dynirq;
-+
-+		dynirq = kzalloc(sizeof(*dynirq), GFP_KERNEL);
-+		if (!dynirq)
-+			return -ENOMEM;
-+
-+		spin_lock_init(&dynirq->lock);
-+		dynirq->map = RB_ROOT;
-+		dynirq->kvm = vcpu->kvm;
-+		vcpu->kvm->arch.dynirq = dynirq;
-+	}
-+
-+	switch (nr) {
-+	case KVM_DYNIRQ_OP_SET:
-+		ret = hc_set(vcpu, gpa, len);
++	switch (state) {
++	case kvm_vbus_state_init:
++		if (nr != KVM_VBUS_OP_BUSOPEN) {
++			PDEBUG("expected BUSOPEN\n");
++			return -EINVAL;
++		}
 +		break;
-+	case KVM_DYNIRQ_OP_CLEAR:
-+		ret = hc_clear(vcpu, gpa, len);
++	case kvm_vbus_state_registration:
++		if (nr != KVM_VBUS_OP_BUSREG) {
++			PDEBUG("expected BUSREG\n");
++			return -EINVAL;
++		}
 +		break;
 +	default:
-+		ret = -EINVAL;
 +		break;
 +	}
 +
-+	mutex_unlock(&vcpu->kvm->lock);
++	for (i = 0; i < ARRAY_SIZE(hc_ops); i++) {
++		struct hc_op *op = hc_ops[i];
 +
-+	return ret;
-+}
++		if (op->nr != nr)
++			continue;
 +
-+void
-+kvm_free_dynirq(struct kvm *kvm)
-+{
-+	struct kvm_dynirq *dynirq = kvm->arch.dynirq;
-+	struct rb_node *node;
-+
-+	while ((node = rb_first(&dynirq->map))) {
-+		struct dynirq *entry = to_dynirq(node);
-+
-+		rb_erase(node, &dynirq->map);
-+		kfree(entry);
++		return hc_execute(vcpu, op, gpa, len);
 +	}
 +
-+	kfree(dynirq);
++	PDEBUG("error: no matching function for nr=%d\n", nr);
++
++	return -EINVAL;
 +}
-diff --git a/arch/x86/kvm/guest/Makefile b/arch/x86/kvm/guest/Makefile
-new file mode 100644
-index 0000000..de8f824
---- /dev/null
-+++ b/arch/x86/kvm/guest/Makefile
-@@ -0,0 +1,2 @@
-+
-+obj-$(CONFIG_KVM_GUEST_DYNIRQ) += dynirq.o
-\ No newline at end of file
-diff --git a/arch/x86/kvm/guest/dynirq.c b/arch/x86/kvm/guest/dynirq.c
-new file mode 100644
-index 0000000..a5cf55e
---- /dev/null
-+++ b/arch/x86/kvm/guest/dynirq.c
-@@ -0,0 +1,95 @@
-+#include <linux/module.h>
-+#include <linux/irq.h>
-+#include <linux/kvm.h>
-+#include <linux/kvm_para.h>
-+
-+#include <asm/irq.h>
-+#include <asm/apic.h>
-+
-+/*
-+ * -----------------------
-+ * Dynamic-IRQ support
-+ * -----------------------
-+ */
-+
-+static int dynirq_set(int irq, int dest)
-+{
-+	struct kvm_dynirq_set op = {
-+		.irq  = irq,
-+		.vec  = irq_to_vector(irq),
-+		.dest = dest,
-+	};
-+
-+	return kvm_hypercall3(KVM_HC_DYNIRQ, KVM_DYNIRQ_OP_SET,
-+			      __pa(&op), sizeof(op));
-+}
-+
-+static void dynirq_chip_noop(unsigned int irq)
-+{
-+}
-+
-+static void dynirq_chip_eoi(unsigned int irq)
-+{
-+	ack_APIC_irq();
-+}
-+
-+struct irq_chip kvm_irq_chip = {
-+	.name		= "KVM-DYNIRQ",
-+	.mask		= dynirq_chip_noop,
-+	.unmask		= dynirq_chip_noop,
-+	.eoi		= dynirq_chip_eoi,
-+};
-+
-+int create_kvm_dynirq(int cpu)
-+{
-+	const cpumask_t *mask = get_cpu_mask(cpu);
-+	int irq;
-+	int ret;
-+
-+	ret = kvm_para_has_feature(KVM_FEATURE_DYNIRQ);
-+	if (!ret)
-+		return -ENOENT;
-+
-+	irq = create_irq();
-+	if (irq < 0)
-+		return -ENOSPC;
-+
-+#ifdef CONFIG_SMP
-+	ret = set_irq_affinity(irq, *mask);
-+	if (ret < 0)
-+		goto error;
-+#endif
-+
-+	set_irq_chip_and_handler_name(irq,
-+				      &kvm_irq_chip,
-+				      handle_percpu_irq,
-+				      "apiceoi");
-+
-+	ret = dynirq_set(irq, cpu);
-+	if (ret < 0)
-+		goto error;
-+
-+	return irq;
-+
-+error:
-+	destroy_irq(irq);
-+
-+	return ret;
-+}
-+EXPORT_SYMBOL_GPL(create_kvm_dynirq);
-+
-+int destroy_kvm_dynirq(int irq)
-+{
-+	__u32 _irq = irq;
-+
-+	if (kvm_para_has_feature(KVM_FEATURE_DYNIRQ))
-+		kvm_hypercall3(KVM_HC_DYNIRQ,
-+			       KVM_DYNIRQ_OP_CLEAR,
-+			       __pa(&_irq),
-+			       sizeof(_irq));
-+
-+	destroy_irq(irq);
-+
-+	return 0;
-+}
-+EXPORT_SYMBOL_GPL(destroy_kvm_dynirq);
-diff --git a/arch/x86/kvm/x86.c b/arch/x86/kvm/x86.c
-index 9b0a649..e24f0a5 100644
---- a/arch/x86/kvm/x86.c
-+++ b/arch/x86/kvm/x86.c
-@@ -972,6 +972,7 @@ int kvm_dev_ioctl_check_extension(long ext)
- 	case KVM_CAP_MP_STATE:
- 	case KVM_CAP_SYNC_MMU:
- 	case KVM_CAP_RESET:
-+	case KVM_CAP_DYNIRQ:
- 		r = 1;
- 		break;
- 	case KVM_CAP_COALESCED_MMIO:
-@@ -2684,6 +2685,9 @@ int kvm_emulate_hypercall(struct kvm_vcpu *vcpu)
- 	case KVM_HC_MMU_OP:
- 		r = kvm_pv_mmu_op(vcpu, a0, hc_gpa(vcpu, a1, a2), &ret);
- 		break;
-+	case KVM_HC_DYNIRQ:
-+		ret = kvm_dynirq_hc(vcpu, a0, a1, a2);
-+		break;
- 	default:
- 		ret = -KVM_ENOSYS;
- 		break;
-@@ -4141,6 +4145,8 @@ void kvm_arch_destroy_vm(struct kvm *kvm)
- 	kvm_free_pit(kvm);
- 	kfree(kvm->arch.vpic);
- 	kfree(kvm->arch.vioapic);
-+	if (kvm->arch.dynirq)
-+		kvm_free_dynirq(kvm);
- 	kvm_free_vcpus(kvm);
- 	kvm_free_physmem(kvm);
- 	if (kvm->arch.apic_access_page)
-diff --git a/include/linux/kvm.h b/include/linux/kvm.h
-index 7ffd8f5..349d273 100644
---- a/include/linux/kvm.h
-+++ b/include/linux/kvm.h
-@@ -397,6 +397,7 @@ struct kvm_trace_rec {
- #define KVM_CAP_USER_NMI 22
- #endif
- #define KVM_CAP_RESET 23
-+#define KVM_CAP_DYNIRQ 24
- 
- /*
-  * ioctls for VM fds
-diff --git a/include/linux/kvm_guest.h b/include/linux/kvm_guest.h
-new file mode 100644
-index 0000000..7dd7930
---- /dev/null
-+++ b/include/linux/kvm_guest.h
-@@ -0,0 +1,7 @@
-+#ifndef __LINUX_KVM_GUEST_H
-+#define __LINUX_KVM_GUEST_H
-+
-+extern int create_kvm_dynirq(int cpu);
-+extern int destroy_kvm_dynirq(int irq);
-+
-+#endif /* __LINUX_KVM_GUEST_H */
-diff --git a/include/linux/kvm_host.h b/include/linux/kvm_host.h
-index 506eca1..bec9b35 100644
---- a/include/linux/kvm_host.h
-+++ b/include/linux/kvm_host.h
-@@ -297,6 +297,7 @@ int kvm_cpu_get_interrupt(struct kvm_vcpu *v);
- int kvm_cpu_has_interrupt(struct kvm_vcpu *v);
- int kvm_cpu_has_pending_timer(struct kvm_vcpu *vcpu);
- void kvm_vcpu_kick(struct kvm_vcpu *vcpu);
-+int kvm_inject_dynirq(struct kvm *kvm, int irq);
- 
- int kvm_is_mmio_pfn(pfn_t pfn);
- 
-diff --git a/include/linux/kvm_para.h b/include/linux/kvm_para.h
-index 3ddce03..a2de904 100644
---- a/include/linux/kvm_para.h
-+++ b/include/linux/kvm_para.h
-@@ -16,6 +16,7 @@
- 
- #define KVM_HC_VAPIC_POLL_IRQ		1
- #define KVM_HC_MMU_OP			2
-+#define KVM_HC_DYNIRQ			3
- 
- /*
-  * hypercalls use architecture specific
 
