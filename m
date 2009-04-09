@@ -1,191 +1,44 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933781AbZDINTY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932697AbZDINXJ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933781AbZDINTY (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 9 Apr 2009 09:19:24 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759481AbZDINTH
+	id S932697AbZDINXJ (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 9 Apr 2009 09:23:09 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756370AbZDINWy
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 9 Apr 2009 09:19:07 -0400
-Received: from tx2ehsobe005.messaging.microsoft.com ([65.55.88.15]:46832 "EHLO
-	TX2EHSOBE009.bigfish.com" rhost-flags-OK-OK-OK-FAIL)
-	by vger.kernel.org with ESMTP id S1760186AbZDINTF (ORCPT
+	Thu, 9 Apr 2009 09:22:54 -0400
+Received: from stinky.trash.net ([213.144.137.162]:52522 "EHLO
+	stinky.trash.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753241AbZDINWx (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 9 Apr 2009 09:19:05 -0400
-X-BigFish: VPS-4(z34a4jz936eQzz1202hzzz32i6bh43j)
-X-WSS-ID: 0KHU4ZA-02-07V-01
-Date: Thu, 9 Apr 2009 15:18:49 +0200
-From: Andreas Herrmann <andreas.herrmann3@amd.com>
-To: Ingo Molnar <mingo@elte.hu>, "H. Peter Anvin" <hpa@zytor.com>
-CC: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
-       Mark Langsdorf <mark.langsdorf@amd.com>
-Subject: [PATCH 6/8] x86: cacheinfo: replace sysfs interface for
-	cache_disable feature
-Message-ID: <20090409131849.GJ31527@alberich.amd.com>
-References: <20090409125659.GD31527@alberich.amd.com>
+	Thu, 9 Apr 2009 09:22:53 -0400
+Message-ID: <49DDF6A3.5080304@trash.net>
+Date: Thu, 09 Apr 2009 15:22:43 +0200
+From: Patrick McHardy <kaber@trash.net>
+User-Agent: Mozilla-Thunderbird 2.0.0.19 (X11/20090103)
 MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Disposition: inline
-In-Reply-To: <20090409125659.GD31527@alberich.amd.com>
-User-Agent: Mutt/1.5.16 (2007-06-09)
-X-OriginalArrivalTime: 09 Apr 2009 13:18:50.0244 (UTC) FILETIME=[B8C99440:01C9B915]
+To: Herbert Xu <herbert@gondor.apana.org.au>
+CC: Maciej Rutecki <maciej.rutecki@gmail.com>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       "Rafael J. Wysocki" <rjw@sisk.pl>, davem@davemloft.net,
+       linux-crypto@vger.kernel.org, arjan@linux.intel.com,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Rusty Russell <rusty@rustcorp.com.au>, Jiri Slaby <jirislaby@gmail.com>
+Subject: Re: [2.6.30-rc1] device-mapper: table: 254:0: crypt: Error	allocating
+ crypto tfm
+References: <8db1092f0904081235x58081f1by842ab45ad861e294@mail.gmail.com> <20090409021804.GA1756@gondor.apana.org.au> <20090409023547.GA1878@gondor.apana.org.au> <8db1092f0904090546j54ac6759i9c36f214ce1109bc@mail.gmail.com> <49DDF2AF.50308@trash.net> <20090409131805.GA2059@gondor.apana.org.au>
+In-Reply-To: <20090409131805.GA2059@gondor.apana.org.au>
+Content-Type: text/plain; charset=ISO-8859-15; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Mark Langsdorf <mark.langsdorf@amd.com>
+Herbert Xu wrote:
+> On Thu, Apr 09, 2009 at 03:05:51PM +0200, Patrick McHardy wrote:
+>> It also seems to fix a netfilter problem with modules not loaded
+>> automatically anymore.
+> 
+> They should still autoload, but now you need to retry the operation
+> manually :)
 
-Impact: replace sysfs attribute
-
-Current interface violates against "one-value-per-sysfs-attribute
-rule". This patch replaces current attribute with two attributes --
-one for each L3 Cache Index Disable register.
-
-Signed-off-by: Mark Langsdorf <mark.langsdorf@amd.com>
-Signed-off-by: Andreas Herrmann <andreas.herrmann3@amd.com>
----
- arch/x86/kernel/cpu/intel_cacheinfo.c |   90 ++++++++++++++++----------------
- 1 files changed, 45 insertions(+), 45 deletions(-)
-
-diff --git a/arch/x86/kernel/cpu/intel_cacheinfo.c b/arch/x86/kernel/cpu/intel_cacheinfo.c
-index 50f7b88..55d134f 100644
---- a/arch/x86/kernel/cpu/intel_cacheinfo.c
-+++ b/arch/x86/kernel/cpu/intel_cacheinfo.c
-@@ -697,73 +697,69 @@ static ssize_t show_type(struct _cpuid4_info *this_leaf, char *buf)
- #define to_object(k)	container_of(k, struct _index_kobject, kobj)
- #define to_attr(a)	container_of(a, struct _cache_attr, attr)
- 
--static ssize_t show_cache_disable(struct _cpuid4_info *this_leaf, char *buf)
-+static ssize_t show_cache_disable(struct _cpuid4_info *this_leaf, char *buf,
-+				  unsigned int index)
- {
--	const struct cpumask *mask = to_cpumask(this_leaf->shared_cpu_map);
--	int node = cpu_to_node(cpumask_first(mask));
--	struct pci_dev *dev = NULL;
--	ssize_t ret = 0;
--	int i;
-+	int cpu = cpumask_first(to_cpumask(this_leaf->shared_cpu_map));
-+	int node = cpu_to_node(cpu);
-+	struct pci_dev *dev = node_to_k8_nb_misc(node);
-+	unsigned int reg = 0;
- 
- 	if (!this_leaf->can_disable)
--		return sprintf(buf, "Feature not enabled\n");
--
--	dev = node_to_k8_nb_misc(node);
--	if (!dev) {
--		printk(KERN_ERR "Attempting AMD northbridge operation on a system with no northbridge\n");
- 		return -EINVAL;
--	}
- 
--	for (i = 0; i < 2; i++) {
--		unsigned int reg;
-+	if (!dev)
-+		return -EINVAL;
- 
--		pci_read_config_dword(dev, 0x1BC + i * 4, &reg);
-+	pci_read_config_dword(dev, 0x1BC + index * 4, &reg);
-+	return sprintf(buf, "%x\n", reg);
-+}
- 
--		ret += sprintf(buf, "%sEntry: %d\n", buf, i);
--		ret += sprintf(buf, "%sReads:  %s\tNew Entries: %s\n",  
--			buf,
--			reg & 0x80000000 ? "Disabled" : "Allowed",
--			reg & 0x40000000 ? "Disabled" : "Allowed");
--		ret += sprintf(buf, "%sSubCache: %x\tIndex: %x\n",
--			buf, (reg & 0x30000) >> 16, reg & 0xfff);
--	}
--	return ret;
-+#define SHOW_CACHE_DISABLE(index)					\
-+static ssize_t								\
-+show_cache_disable_##index(struct _cpuid4_info *this_leaf, char *buf)  	\
-+{									\
-+	return show_cache_disable(this_leaf, buf, index);		\
- }
-+SHOW_CACHE_DISABLE(0)
-+SHOW_CACHE_DISABLE(1)
- 
--static ssize_t
--store_cache_disable(struct _cpuid4_info *this_leaf, const char *buf,
--		    size_t count)
-+static ssize_t store_cache_disable(struct _cpuid4_info *this_leaf,
-+	const char *buf, size_t count, unsigned int index)
- {
--	const struct cpumask *mask = to_cpumask(this_leaf->shared_cpu_map);
--	int node = cpu_to_node(cpumask_first(mask));
--	struct pci_dev *dev = NULL;
--	unsigned int ret, index, val;
-+	int cpu = cpumask_first(to_cpumask(this_leaf->shared_cpu_map));
-+	int node = cpu_to_node(cpu);
-+	struct pci_dev *dev = node_to_k8_nb_misc(node);
-+	unsigned long val = 0;
- 
- 	if (!this_leaf->can_disable)
- 		return -EINVAL;
- 
--	if (strlen(buf) > 15)
--		return -EINVAL;
-+	if (!capable(CAP_SYS_ADMIN))
-+		return -EPERM;
- 
--	ret = sscanf(buf, "%x %x", &index, &val);
--	if (ret != 2)
--		return -EINVAL;
--	if (index > 1)
-+	if (!dev)
- 		return -EINVAL;
- 
--	val |= 0xc0000000;
--	dev = node_to_k8_nb_misc(node);
--	if (!dev) {
--		printk(KERN_ERR "Attempting AMD northbridge operation on a system with no northbridge\n");
-+	if (strict_strtoul(buf, 10, &val) < 0)
- 		return -EINVAL;
--	}
- 
-+	val |= 0xc0000000;
- 	pci_write_config_dword(dev, 0x1BC + index * 4, val & ~0x40000000);
- 	wbinvd();
- 	pci_write_config_dword(dev, 0x1BC + index * 4, val);
-+	return count;
-+}
- 
--	return 1;
-+#define STORE_CACHE_DISABLE(index)					\
-+static ssize_t								\
-+store_cache_disable_##index(struct _cpuid4_info *this_leaf,	     	\
-+			    const char *buf, size_t count)		\
-+{									\
-+	return store_cache_disable(this_leaf, buf, count, index);	\
- }
-+STORE_CACHE_DISABLE(0)
-+STORE_CACHE_DISABLE(1)
- 
- struct _cache_attr {
- 	struct attribute attr;
-@@ -785,7 +781,10 @@ define_one_ro(size);
- define_one_ro(shared_cpu_map);
- define_one_ro(shared_cpu_list);
- 
--static struct _cache_attr cache_disable = __ATTR(cache_disable, 0644, show_cache_disable, store_cache_disable);
-+static struct _cache_attr cache_disable_0 = __ATTR(cache_disable_0, 0644,
-+		show_cache_disable_0, store_cache_disable_0);
-+static struct _cache_attr cache_disable_1 = __ATTR(cache_disable_1, 0644,
-+		show_cache_disable_1, store_cache_disable_1);
- 
- static struct attribute * default_attrs[] = {
- 	&type.attr,
-@@ -797,7 +796,8 @@ static struct attribute * default_attrs[] = {
- 	&size.attr,
- 	&shared_cpu_map.attr,
- 	&shared_cpu_list.attr,
--	&cache_disable.attr,
-+	&cache_disable_0.attr,
-+	&cache_disable_1.attr,
- 	NULL
- };
- 
--- 
-1.6.2
-
-
-
+Right, the second attempt succeeded :)
