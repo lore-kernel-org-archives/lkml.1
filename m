@@ -1,26 +1,26 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760901AbZDIJmB@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760841AbZDIJnX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760901AbZDIJmB (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 9 Apr 2009 05:42:01 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758324AbZDIJlv
+	id S1760841AbZDIJnX (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 9 Apr 2009 05:43:23 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758806AbZDIJnD
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 9 Apr 2009 05:41:51 -0400
-Received: from out2.smtp.messagingengine.com ([66.111.4.26]:38781 "EHLO
+	Thu, 9 Apr 2009 05:43:03 -0400
+Received: from out2.smtp.messagingengine.com ([66.111.4.26]:37215 "EHLO
 	out2.smtp.messagingengine.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1757050AbZDIJlv (ORCPT
+	by vger.kernel.org with ESMTP id S1758324AbZDIJnB (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 9 Apr 2009 05:41:51 -0400
-X-Sasl-enc: sGtySd7mpgAB97BregZaFh7/zIO7clJ4aVoRIkuigh5o 1239270110
-Message-ID: <49DDC2DB.4090504@fastmail.fm>
-Date: Thu, 09 Apr 2009 10:41:47 +0100
+	Thu, 9 Apr 2009 05:43:01 -0400
+X-Sasl-enc: ow791Uhr3GQCQC57w+b7xO3kSw3KYrijJpGtPQTiajbh 1239270180
+Message-ID: <49DDC321.60509@fastmail.fm>
+Date: Thu, 09 Apr 2009 10:42:57 +0100
 From: Jack Stone <jwjstone@fastmail.fm>
 User-Agent: Thunderbird 2.0.0.21 (X11/20090325)
 MIME-Version: 1.0
 To: linux-kernel@vger.kernel.org
-CC: jeff@garzik.org, kernel-janitors@vger.kernel.org, rth@twiddle.net
-Subject: Re: [PATCH 02/56] alpha: Remove void casts
-References: <> <1239189748-11703-1-git-send-email-jwjstone@fastmail.fm> <1239189748-11703-2-git-send-email-jwjstone@fastmail.fm> <1239189748-11703-3-git-send-email-jwjstone@fastmail.fm>
-In-Reply-To: <1239189748-11703-3-git-send-email-jwjstone@fastmail.fm>
+CC: jeff@garzik.org, kernel-janitors@vger.kernel.org, chas@cmf.nrl.navy.mil
+Subject: Re: [PATCH 03/56] atm: Remove void casts
+References: <> <1239189748-11703-1-git-send-email-jwjstone@fastmail.fm> <1239189748-11703-2-git-send-email-jwjstone@fastmail.fm> <1239189748-11703-3-git-send-email-jwjstone@fastmail.fm> <1239189748-11703-4-git-send-email-jwjstone@fastmail.fm>
+In-Reply-To: <1239189748-11703-4-git-send-email-jwjstone@fastmail.fm>
 Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
@@ -33,21 +33,21 @@ Jack Stone wrote:
 >
 > Signed-Off-By: Jack Stone <jwjstone@fastmail.fm>
 > ---
->  arch/alpha/boot/bootpz.c |    2 +-
+>  drivers/atm/lanai.c |    2 +-
 >  1 files changed, 1 insertions(+), 1 deletions(-)
 >
-> diff --git a/arch/alpha/boot/bootpz.c b/arch/alpha/boot/bootpz.c
-> index 1036b51..6e7af60 100644
-> --- a/arch/alpha/boot/bootpz.c
-> +++ b/arch/alpha/boot/bootpz.c
-> @@ -129,7 +129,7 @@ pal_init(void)
->  	pcb_va->flags = 1;
->  	pcb_va->res1 = 0;
->  	pcb_va->res2 = 0;
-> -	pcb_pa = (struct pcb_struct *)find_pa((unsigned long)pcb_va);
-> +	pcb_pa = find_pa((unsigned long)pcb_va);
->  
->  	/*
->  	 * a0 = 2 (OSF)
+> diff --git a/drivers/atm/lanai.c b/drivers/atm/lanai.c
+> index cf97c34..2c9d0da 100644
+> --- a/drivers/atm/lanai.c
+> +++ b/drivers/atm/lanai.c
+> @@ -1459,7 +1459,7 @@ static int __devinit vcc_table_allocate(struct lanai_dev *lanai)
+>  	return (lanai->vccs == NULL) ? -ENOMEM : 0;
+>  #else
+>  	int bytes = (lanai->num_vci) * sizeof(struct lanai_vcc *);
+> -	lanai->vccs = (struct lanai_vcc **) vmalloc(bytes);
+> +	lanai->vccs = vmalloc(bytes);
+>  	if (unlikely(lanai->vccs == NULL))
+>  		return -ENOMEM;
+>  	memset(lanai->vccs, 0, bytes);
 >   
 
