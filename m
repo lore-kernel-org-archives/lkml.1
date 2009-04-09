@@ -1,64 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758831AbZDIDQZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758873AbZDIDTS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758831AbZDIDQZ (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 8 Apr 2009 23:16:25 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754804AbZDIDQP
+	id S1758873AbZDIDTS (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 8 Apr 2009 23:19:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757351AbZDIDTB
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 8 Apr 2009 23:16:15 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:53456 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1752638AbZDIDQO (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 8 Apr 2009 23:16:14 -0400
-Date: Wed, 8 Apr 2009 20:14:14 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Justin Madru <jdm64@gawab.com>
-Cc: lkml <linux-kernel@vger.kernel.org>, linux-wireless@vger.kernel.org
-Subject: Re: 2.6.30-rc1: intel 3945 no wireless
-Message-Id: <20090408201414.9161568f.akpm@linux-foundation.org>
-In-Reply-To: <49DC37F0.2040408@gawab.com>
-References: <49DC37F0.2040408@gawab.com>
-X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.5; x86_64-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Wed, 8 Apr 2009 23:19:01 -0400
+Received: from cn.fujitsu.com ([222.73.24.84]:53340 "EHLO song.cn.fujitsu.com"
+	rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org with ESMTP
+	id S1757325AbZDIDTA (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 8 Apr 2009 23:19:00 -0400
+Message-ID: <49DD694C.8020902@cn.fujitsu.com>
+Date: Thu, 09 Apr 2009 11:19:40 +0800
+From: Li Zefan <lizf@cn.fujitsu.com>
+User-Agent: Thunderbird 2.0.0.9 (X11/20071115)
+MIME-Version: 1.0
+To: Ingo Molnar <mingo@elte.hu>
+CC: Jens Axboe <jens.axboe@oracle.com>,
+       Arnaldo Carvalho de Melo <acme@redhat.com>,
+       LKML <linux-kernel@vger.kernel.org>
+Subject: [PATCH] blktrace: pass the right pointer to kfree()
+Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-(cc linux-wireless)
+If passing a string with leading white spaces to strstrip(),
+the returned ptr != the original ptr.
 
-On Tue, 07 Apr 2009 22:36:48 -0700 Justin Madru <jdm64@gawab.com> wrote:
+This bug was introduced by me.
 
-> Hi,
-> 
-> Decided to test out .30-rc1, but I've run into some bugs.
-> My intel 3945 wireless card doesn't work. Bellow is the relevant 
-> portions of dmesg
-> The full dmesg and config can be found at: 
-> http://jdserver.homelinux.org/bugreports/003/
-> 
-> iwl3945: Intel(R) PRO/Wireless 3945ABG/BG Network Connection driver for 
-> Linux, 1.2.26ks
-> iwl3945: Copyright(c) 2003-2009 Intel Corporation
-> iwl3945 0000:0b:00.0: PCI INT A -> GSI 16 (level, low) -> IRQ 16
-> iwl3945 0000:0b:00.0: setting latency timer to 64
-> input: SynPS/2 Synaptics TouchPad as 
-> /devices/platform/i8042/serio1/input/input6
-> iwl3945 0000:0b:00.0: Tunable channels: 11 802.11bg, 13 802.11a channels
-> iwl3945 0000:0b:00.0: Detected Intel Wireless WiFi Link 3945ABG
->   alloc irq_desc for 26 on cpu 0 node 0
->   alloc kstat_irqs on cpu 0 node 0
-> iwl3945 0000:0b:00.0: irq 26 for MSI/MSI-X
-> phy0: Selected rate control algorithm 'iwl-3945-rs'
-> input: HDA Intel Mic at Ext Right Jack as 
-> /devices/pci0000:00/0000:00:1b.0/input/input7
-> input: HDA Intel HP Out at Ext Right Jack as 
-> /devices/pci0000:00/0000:00:1b.0/input/input8
-> phy0: Failed to initialize wep: -2
-> iwl3945 0000:0b:00.0: Failed to register hw (error -2)
-> iwl3945 0000:0b:00.0: PCI INT A disabled
-> iwl3945: probe of 0000:0b:00.0 failed with error -2
-> 
+Signed-off-by: Li Zefan <lizf@cn.fujitsu.com>
+---
+ kernel/trace/blktrace.c |   10 +++++-----
+ 1 files changed, 5 insertions(+), 5 deletions(-)
 
-I assume this is a regression?  2.6.29 was OK?
+diff --git a/kernel/trace/blktrace.c b/kernel/trace/blktrace.c
+index b32ff44..921ef5d 100644
+--- a/kernel/trace/blktrace.c
++++ b/kernel/trace/blktrace.c
+@@ -1377,12 +1377,12 @@ static int blk_trace_str2mask(const char *str)
+ {
+ 	int i;
+ 	int mask = 0;
+-	char *s, *token;
++	char *buf, *s, *token;
+ 
+-	s = kstrdup(str, GFP_KERNEL);
+-	if (s == NULL)
++	buf = kstrdup(str, GFP_KERNEL);
++	if (buf == NULL)
+ 		return -ENOMEM;
+-	s = strstrip(s);
++	s = strstrip(buf);
+ 
+ 	while (1) {
+ 		token = strsep(&s, ",");
+@@ -1403,7 +1403,7 @@ static int blk_trace_str2mask(const char *str)
+ 			break;
+ 		}
+ 	}
+-	kfree(s);
++	kfree(buf);
+ 
+ 	return mask;
+ }
+-- 
+1.5.4.rc3
