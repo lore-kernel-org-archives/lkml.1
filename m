@@ -1,123 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S936976AbZDIWNS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S937049AbZDIWNr@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S936976AbZDIWNS (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 9 Apr 2009 18:13:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1765663AbZDIWLW
+	id S937049AbZDIWNr (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 9 Apr 2009 18:13:47 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932947AbZDIWLX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 9 Apr 2009 18:11:22 -0400
-Received: from mga02.intel.com ([134.134.136.20]:3719 "EHLO mga02.intel.com"
+	Thu, 9 Apr 2009 18:11:23 -0400
+Received: from mga14.intel.com ([143.182.124.37]:53531 "EHLO mga14.intel.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756846AbZDIWLU (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	id S1759770AbZDIWLU (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
 	Thu, 9 Apr 2009 18:11:20 -0400
 X-ExtLoop1: 1
 X-IronPort-AV: E=Sophos;i="4.40,163,1239001200"; 
-   d="scan'208";a="505147732"
-Message-Id: <20090409212708.939936000@intel.com>
+   d="scan'208";a="129892097"
+Message-Id: <20090409212708.797481000@intel.com>
 References: <20090409212646.511925000@intel.com>
 User-Agent: quilt/0.46-1
-Date: Thu, 09 Apr 2009 14:26:51 -0700
+Date: Thu, 09 Apr 2009 14:26:50 -0700
 From: venkatesh.pallipadi@intel.com
 To: mingo@elte.hu, tglx@linutronix.de, hpa@zytor.com
-Cc: linux-kernel@vger.kernel.org, Suresh Siddha <suresh.b.siddha@intel.com>,
-       Venkatesh Pallipadi <venkatesh.pallipadi@intel.com>
-Subject: [patch 5/6] x86, PAT: Consolidate code in pat_x_mtrr_type() and reserve_memtype()
-Content-Disposition: inline; filename=0005-x86-PAT-Consolidate-code-in-pat_x_mtrr_type-and.patch
+Cc: linux-kernel@vger.kernel.org,
+       Venkatesh Pallipadi <venkatesh.pallipadi@intel.com>,
+       Suresh Siddha <suresh.b.siddha@intel.com>
+Subject: [patch 4/6] x86, PAT: Changing memtype to WC ensuring no WB alias
+Content-Disposition: inline; filename=0004-x86-PAT-Changing-memtype-to-WC-ensuring-no-WB-alia.patch
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Suresh Siddha <suresh.b.siddha@intel.com>
-Subject: [patch 5/6] x86, PAT: Consolidate code in pat_x_mtrr_type() and reserve_memtype()
+As per SDM, there should not be any aliasing of a WC with any cacheable
+type across CPUs. That is if one CPU is changing the identity map
+memtype to _WC, no other CPU at the time of this change should not have a
+TLB for this page that carries a WB attribute. SDM suggests to make the
+page not present. But for that we will have to handle any page faults
+that can potentially happen due to these pages being not present.
 
-Fix pat_x_mtrr_type() to use UC_MINUS when the mtrr type return UC. This
-is to be  consistent with ioremap() and ioremap_nocache() which uses
-UC_MINUS.
+Other way to deal with this without having any WB mapping is to change
+the page first to UC and then to WC. This ensures that we meet the SDM
+requirement of no cacheable alais to WC page. This also has same or
+lower overhead than marking the page not present and making it present
+later.
 
-Consolidate the code such that reserve_memtype() also uses
-pat_x_mtrr_type() when the caller doesn't specify any special attribute
-(non WB attribute).
-
-Signed-off-by: Suresh Siddha <suresh.b.siddha@intel.com>
 Signed-off-by: Venkatesh Pallipadi <venkatesh.pallipadi@intel.com>
+Signed-off-by: Suresh Siddha <suresh.b.siddha@intel.com>
 ---
- arch/x86/mm/ioremap.c |    3 ++-
- arch/x86/mm/pat.c     |   35 +++++++++++++----------------------
- 2 files changed, 15 insertions(+), 23 deletions(-)
 
-diff --git a/arch/x86/mm/ioremap.c b/arch/x86/mm/ioremap.c
-index 329387e..d4c4b2c 100644
---- a/arch/x86/mm/ioremap.c
-+++ b/arch/x86/mm/ioremap.c
-@@ -375,7 +375,8 @@ static void __iomem *ioremap_default(resource_size_t phys_addr,
- 	 * - UC_MINUS for non-WB-able memory with no other conflicting mappings
- 	 * - Inherit from confliting mappings otherwise
- 	 */
--	err = reserve_memtype(phys_addr, phys_addr + size, -1, &flags);
-+	err = reserve_memtype(phys_addr, phys_addr + size,
-+				_PAGE_CACHE_WB, &flags);
- 	if (err < 0)
- 		return NULL;
+diff --git a/arch/x86/mm/pageattr.c b/arch/x86/mm/pageattr.c
+index 3226504..4fa8996 100644
+--- a/arch/x86/mm/pageattr.c
++++ b/arch/x86/mm/pageattr.c
+@@ -986,8 +986,15 @@ EXPORT_SYMBOL(set_memory_array_uc);
  
-diff --git a/arch/x86/mm/pat.c b/arch/x86/mm/pat.c
-index 95d3b1a..3c8624c 100644
---- a/arch/x86/mm/pat.c
-+++ b/arch/x86/mm/pat.c
-@@ -182,10 +182,10 @@ static unsigned long pat_x_mtrr_type(u64 start, u64 end, unsigned long req_type)
- 		u8 mtrr_type;
- 
- 		mtrr_type = mtrr_type_lookup(start, end);
--		if (mtrr_type == MTRR_TYPE_UNCACHABLE)
--			return _PAGE_CACHE_UC;
--		if (mtrr_type == MTRR_TYPE_WRCOMB)
--			return _PAGE_CACHE_WC;
-+		if (mtrr_type != MTRR_TYPE_WRBACK)
-+			return _PAGE_CACHE_UC_MINUS;
+ int _set_memory_wc(unsigned long addr, int numpages)
+ {
+-	return change_page_attr_set(&addr, numpages,
++	int ret;
++	ret = change_page_attr_set(&addr, numpages,
++				    __pgprot(_PAGE_CACHE_UC_MINUS), 0);
 +
-+		return _PAGE_CACHE_WB;
- 	}
++	if (!ret) {
++		ret = change_page_attr_set(&addr, numpages,
+ 				    __pgprot(_PAGE_CACHE_WC), 0);
++	}
++	return ret;
+ }
  
- 	return req_type;
-@@ -352,23 +352,13 @@ int reserve_memtype(u64 start, u64 end, unsigned long req_type,
- 		return 0;
- 	}
- 
--	if (req_type == -1) {
--		/*
--		 * Call mtrr_lookup to get the type hint. This is an
--		 * optimization for /dev/mem mmap'ers into WB memory (BIOS
--		 * tools and ACPI tools). Use WB request for WB memory and use
--		 * UC_MINUS otherwise.
--		 */
--		u8 mtrr_type = mtrr_type_lookup(start, end);
--
--		if (mtrr_type == MTRR_TYPE_WRBACK)
--			actual_type = _PAGE_CACHE_WB;
--		else
--			actual_type = _PAGE_CACHE_UC_MINUS;
--	} else {
--		actual_type = pat_x_mtrr_type(start, end,
--					      req_type & _PAGE_CACHE_MASK);
--	}
-+	/*
-+	 * Call mtrr_lookup to get the type hint. This is an
-+	 * optimization for /dev/mem mmap'ers into WB memory (BIOS
-+	 * tools and ACPI tools). Use WB request for WB memory and use
-+	 * UC_MINUS otherwise.
-+	 */
-+	actual_type = pat_x_mtrr_type(start, end, req_type & _PAGE_CACHE_MASK);
- 
- 	if (new_type)
- 		*new_type = actual_type;
-@@ -587,7 +577,8 @@ int phys_mem_access_prot_allowed(struct file *file, unsigned long pfn,
- 	if (flags != -1) {
- 		retval = reserve_memtype(offset, offset + size, flags, NULL);
- 	} else {
--		retval = reserve_memtype(offset, offset + size, -1, &flags);
-+		retval = reserve_memtype(offset, offset + size,
-+					_PAGE_CACHE_WB, &flags);
- 	}
- 
- 	if (retval < 0)
+ int set_memory_wc(unsigned long addr, int numpages)
 -- 
 1.6.0.6
 
