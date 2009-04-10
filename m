@@ -1,91 +1,177 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S938802AbZDJPVH@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S938891AbZDJPW3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S938802AbZDJPVH (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 10 Apr 2009 11:21:07 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S938668AbZDJPUt
+	id S938891AbZDJPW3 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 10 Apr 2009 11:22:29 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S938884AbZDJPWP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 10 Apr 2009 11:20:49 -0400
-Received: from yw-out-2324.google.com ([74.125.46.28]:64770 "EHLO
-	yw-out-2324.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S938692AbZDJPUr (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 10 Apr 2009 11:20:47 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=sender:date:from:to:cc:subject:message-id:references:mime-version
-         :content-type:content-disposition:in-reply-to:user-agent;
-        b=is3AvVRjG+Cx/cpJKf2JY/E1tIs2PBFQSoE5dbtdvXjRPIJG288SFOVArF9lRI0v0v
-         GvNFJGB0LXZbXrTpUdyaji0ODLze8SzuKnr4YDWJEgvGDj12sN9u1mDU+hIagz222Lyc
-         lxiSfbiZvjN1C9LpQHHMUUQjh6iFAYh2VBoIU=
-Date: Fri, 10 Apr 2009 18:21:22 +0300
-From: Eduard - Gabriel Munteanu <eduard.munteanu@linux360.ro>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: Zhaolei <zhaolei@cn.fujitsu.com>, Pekka Enberg <penberg@cs.helsinki.fi>,
-       Steven Rostedt <rostedt@goodmis.org>,
-       Frederic Weisbecker <fweisbec@gmail.com>,
-       Tom Zanussi <tzanussi@gmail.com>, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 1/2] ftrace: Separate include/trace/kmemtrace.h to
-	kmemtrace part and tracepoint part
-Message-ID: <20090410152121.GA5505@localhost>
-References: <49DEE68A.5040902@cn.fujitsu.com> <20090410110303.GB21506@elte.hu>
+	Fri, 10 Apr 2009 11:22:15 -0400
+Received: from mx2.redhat.com ([66.187.237.31]:38086 "EHLO mx2.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S938273AbZDJPWM (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 10 Apr 2009 11:22:12 -0400
+Message-ID: <49DF63C3.7000406@redhat.com>
+Date: Fri, 10 Apr 2009 08:20:35 -0700
+From: Masami Hiramatsu <mhiramat@redhat.com>
+User-Agent: Thunderbird 2.0.0.21 (X11/20090320)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090410110303.GB21506@elte.hu>
-User-Agent: Mutt/1.5.16 (2007-06-09)
+To: mingo@redhat.com, hpa@zytor.com, mathieu.desnoyers@polymtl.ca,
+       linux-kernel@vger.kernel.org, torvalds@linux-foundation.org,
+       ananth@in.ibm.com, garyhade@us.ibm.com, akpm@linux-foundation.org,
+       tglx@linutronix.de, mhiramat@redhat.com, systemtap@sources.redhat.com,
+       mingo@elte.hu
+CC: linux-tip-commits@vger.kernel.org
+Subject: Re: [tip:x86/urgent] x86: fix set_fixmap to use phys_addr_t
+References: <49DE3695.6040800@redhat.com> <tip-189cdc2b41fce3a780a6f3aa963cc4e8114aec6b@git.kernel.org>
+In-Reply-To: <tip-189cdc2b41fce3a780a6f3aa963cc4e8114aec6b@git.kernel.org>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Apr 10, 2009 at 01:03:03PM +0200, Ingo Molnar wrote:
+Masami Hiramatsu wrote:
+> Commit-ID:  189cdc2b41fce3a780a6f3aa963cc4e8114aec6b
+> Gitweb:     http://git.kernel.org/tip/189cdc2b41fce3a780a6f3aa963cc4e8114aec6b
+> Author:     Masami Hiramatsu <mhiramat@redhat.com>
+> AuthorDate: Thu, 9 Apr 2009 10:55:33 -0700
+> Committer:  Ingo Molnar <mingo@elte.hu>
+> CommitDate: Fri, 10 Apr 2009 15:52:59 +0200
 > 
-> * Zhaolei <zhaolei@cn.fujitsu.com> wrote:
+> x86: fix set_fixmap to use phys_addr_t
 > 
-> > Current kmemtrace.h is used both as header file of kmemtrace and kmem's
-> > tracepoints definition.
-> > Tracepoints' definition file may be used by other code, and should only have
-> > definition of tracepoint.
-> > 
-> > We can separate include/trace/kmemtrace.h into 2 files:
-> >   include/linux/kmemtrace.h: header file for kmemtrace
-> >   include/trace/kmem.h:      definition of kmem tracepoints
-> > 
-> > Signed-off-by: Zhao Lei <zhaolei@cn.fujitsu.com>
-> > ---
-> >  include/linux/kmemtrace.h             |   25 +++++++++++++++++++++++++
-> >  include/linux/slab_def.h              |    2 +-
-> >  include/linux/slub_def.h              |    2 +-
-> >  include/trace/{kmemtrace.h => kmem.h} |   25 +++----------------------
-> >  init/main.c                           |    2 +-
-> >  kernel/trace/kmemtrace.c              |    2 +-
-> >  kernel/trace/trace.h                  |    2 +-
-> >  mm/slab.c                             |    2 +-
-> >  mm/slob.c                             |    2 +-
-> >  mm/slub.c                             |    2 +-
-> >  10 files changed, 36 insertions(+), 30 deletions(-)
-> >  create mode 100644 include/linux/kmemtrace.h
-> >  rename include/trace/{kmemtrace.h => kmem.h} (78%)
+> Impact: fix kprobes crash on 32-bit with RAM above 4G
 > 
-> Pekka, Eduard, do you agree with these two patches? Converting those 
-> tracepoints to TRACE_EVENT() is really nice. The above include file 
-> restructuring makes sense too - it separates tracepoint definition 
-> from the plugin init method.
+> Use phys_addr_t for receiving a physical address argument
+> instead of unsigned long. This allows fixmap to handle
+> pages higher than 4GB on x86-32.
 > 
-> 	Ingo
+> Signed-off-by: Masami Hiramatsu <mhiramat@redhat.com>
+> Acked-by: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
 
-Yes, these two patches look great. The first one makes the kmem
-tracepoints usable by other things (e.g. kmemcheck) in a
-kmemtrace-independent fashion, which is nice. Thanks, Zhao.
+I thought I had to update ioremap.c too...
+Anyway, here is the ioremap.c update. If you think it is useful,
+please merge it.
 
-One thing I don't actually get is why have kmem_event_types.h separate
-from kmem.h, but it's not really an issue, I see other tracers doing the
-same thing. Other than that, it looks fine although I didn't test. Here's
-the ack if you need it:
+Thank you,
+----
 
-Acked-by: Eduard - Gabriel Munteanu <eduard.munteanu@linux360.ro>
+x86: fix early_ioremap and early_set_fixmap to handle over 4G pages
 
-Pekka?
+From: Masami Hiramatsu <mhiramat@redhat.com>
+
+Impact: Allow early_ioremap to handle over 4G pages
+
+Use phys_addr_t and resource_size_t for receiving a physical
+address argument instead of unsigned long in early_set_fixmap
+and early_ioremap. This allows early_ioremap to handle
+pages higher than 4GB on x86-32 with PAE.
+
+Signed-off-by: Masami Hiramatsu <mhiramat@redhat.com>
+Cc: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
+Cc: Ingo Molnar <mingo@elte.hu>
+---
+
+ arch/x86/include/asm/io.h |    6 ++++--
+ arch/x86/mm/ioremap.c     |   23 +++++++++++++----------
+ 2 files changed, 17 insertions(+), 12 deletions(-)
 
 
-	Eduard
+diff --git a/arch/x86/include/asm/io.h b/arch/x86/include/asm/io.h
+index e5383e3..7373932 100644
+--- a/arch/x86/include/asm/io.h
++++ b/arch/x86/include/asm/io.h
+@@ -193,8 +193,10 @@ extern void __iomem *ioremap_wc(resource_size_t offset, unsigned long size);
+  */
+ extern void early_ioremap_init(void);
+ extern void early_ioremap_reset(void);
+-extern void __iomem *early_ioremap(unsigned long offset, unsigned long size);
+-extern void __iomem *early_memremap(unsigned long offset, unsigned long size);
++extern void __iomem *early_ioremap(resource_size_t phys_addr,
++				   unsigned long size);
++extern void __iomem *early_memremap(resource_size_t phys_addr,
++				    unsigned long size);
+ extern void early_iounmap(void __iomem *addr, unsigned long size);
+
+ #define IO_SPACE_LIMIT 0xffff
+diff --git a/arch/x86/mm/ioremap.c b/arch/x86/mm/ioremap.c
+index 0dfa09d..09daebf 100644
+--- a/arch/x86/mm/ioremap.c
++++ b/arch/x86/mm/ioremap.c
+@@ -547,7 +547,7 @@ void __init early_ioremap_reset(void)
+ }
+
+ static void __init __early_set_fixmap(enum fixed_addresses idx,
+-				   unsigned long phys, pgprot_t flags)
++				      phys_addr_t phys, pgprot_t flags)
+ {
+ 	unsigned long addr = __fix_to_virt(idx);
+ 	pte_t *pte;
+@@ -566,7 +566,7 @@ static void __init __early_set_fixmap(enum fixed_addresses idx,
+ }
+
+ static inline void __init early_set_fixmap(enum fixed_addresses idx,
+-					   unsigned long phys, pgprot_t prot)
++					   phys_addr_t phys, pgprot_t prot)
+ {
+ 	if (after_paging_init)
+ 		__set_fixmap(idx, phys, prot);
+@@ -607,9 +607,10 @@ static int __init check_early_ioremap_leak(void)
+ late_initcall(check_early_ioremap_leak);
+
+ static void __init __iomem *
+-__early_ioremap(unsigned long phys_addr, unsigned long size, pgprot_t prot)
++__early_ioremap(resource_size_t phys_addr, unsigned long size, pgprot_t prot)
+ {
+-	unsigned long offset, last_addr;
++	unsigned long offset;
++	resource_size_t last_addr;
+ 	unsigned int nrpages;
+ 	enum fixed_addresses idx0, idx;
+ 	int i, slot;
+@@ -625,15 +626,15 @@ __early_ioremap(unsigned long phys_addr, unsigned long size, pgprot_t prot)
+ 	}
+
+ 	if (slot < 0) {
+-		printk(KERN_INFO "early_iomap(%08lx, %08lx) not found slot\n",
+-			 phys_addr, size);
++		printk(KERN_INFO "early_iomap(%08llx, %08lx) not found slot\n",
++			 (u64)phys_addr, size);
+ 		WARN_ON(1);
+ 		return NULL;
+ 	}
+
+ 	if (early_ioremap_debug) {
+-		printk(KERN_INFO "early_ioremap(%08lx, %08lx) [%d] => ",
+-		       phys_addr, size, slot);
++		printk(KERN_INFO "early_ioremap(%08llx, %08lx) [%d] => ",
++		       (u64)phys_addr, size, slot);
+ 		dump_stack();
+ 	}
+
+@@ -680,13 +681,15 @@ __early_ioremap(unsigned long phys_addr, unsigned long size, pgprot_t prot)
+ }
+
+ /* Remap an IO device */
+-void __init __iomem *early_ioremap(unsigned long phys_addr, unsigned long size)
++void __init __iomem *
++early_ioremap(resource_size_t phys_addr, unsigned long size)
+ {
+ 	return __early_ioremap(phys_addr, size, PAGE_KERNEL_IO);
+ }
+
+ /* Remap memory */
+-void __init __iomem *early_memremap(unsigned long phys_addr, unsigned long size)
++void __init __iomem *
++early_memremap(resource_size_t phys_addr, unsigned long size)
+ {
+ 	return __early_ioremap(phys_addr, size, PAGE_KERNEL);
+ }
+-- 
+Masami Hiramatsu
+
+Software Engineer
+Hitachi Computer Products (America) Inc.
+Software Solutions Division
+
+e-mail: mhiramat@redhat.com
 
