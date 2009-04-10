@@ -1,62 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S939596AbZDJShl@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S939240AbZDJSor@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S939596AbZDJShl (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 10 Apr 2009 14:37:41 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S936422AbZDJSha
+	id S939240AbZDJSor (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 10 Apr 2009 14:44:47 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762038AbZDJSoh
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 10 Apr 2009 14:37:30 -0400
-Received: from 82-117-125-11.tcdsl.calypso.net ([82.117.125.11]:35484 "EHLO
-	smtp.ossman.eu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S936105AbZDJSh3 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 10 Apr 2009 14:37:29 -0400
-Date: Fri, 10 Apr 2009 20:37:26 +0200
-From: Pierre Ossman <drzeus-mmc@drzeus.cx>
-To: JosephChan@via.com.tw
-Cc: linux-kernel@vger.kernel.org, arnd@arndb.de, ben-linux@fluff.org
-Subject: Re: [Patch 1/1 v5] via-sdmmc: VIA MSP card reader driver support
-Message-ID: <20090410203726.62a2848a@mjolnir.ossman.eu>
-In-Reply-To: <20090410203520.6e43acb2@mjolnir.ossman.eu>
-References: <C80EF34A3D2E494DBAF9AC29C7AE4EB808EBD84A@exchtp03.taipei.via.com.tw>
-	<20090410203520.6e43acb2@mjolnir.ossman.eu>
-X-Mailer: Claws Mail 3.7.1 (GTK+ 2.16.0; x86_64-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Fri, 10 Apr 2009 14:44:37 -0400
+Received: from hera.kernel.org ([140.211.167.34]:39270 "EHLO hera.kernel.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752434AbZDJSog (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 10 Apr 2009 14:44:36 -0400
+Message-ID: <49DF935E.8030607@kernel.org>
+Date: Fri, 10 Apr 2009 11:43:42 -0700
+From: Tejun Heo <tj@kernel.org>
+User-Agent: Thunderbird 2.0.0.19 (X11/20081227)
+MIME-Version: 1.0
+To: Linus Torvalds <torvalds@linux-foundation.org>
+CC: Ivan Kokshaysky <ink@jurassic.park.msu.ru>,
+       Al Viro <viro@ZenIV.linux.org.uk>, Ingo Molnar <mingo@elte.hu>,
+       Mike Travis <travis@sgi.com>,
+       Christoph Lameter <cl@linux-foundation.org>,
+       Heiko Carstens <heiko.carstens@de.ibm.com>,
+       Martin Schwidefsky <schwidefsky@de.ibm.com>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH] unbreak alpha percpu
+References: <20090410151224.GM26366@ZenIV.linux.org.uk> <20090410154704.GN26366@ZenIV.linux.org.uk> <alpine.LFD.2.00.0904100915010.4583@localhost.localdomain> <20090410165030.GQ26366@ZenIV.linux.org.uk> <20090410170507.GR26366@ZenIV.linux.org.uk> <20090410171415.GA6033@ZenIV.linux.org.uk> <20090410180532.GA4419@jurassic.park.msu.ru> <alpine.LFD.2.00.0904101118470.4583@localhost.localdomain>
+In-Reply-To: <alpine.LFD.2.00.0904101118470.4583@localhost.localdomain>
+X-Enigmail-Version: 0.95.7
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Fri, 10 Apr 2009 18:43:02 +0000 (UTC)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 10 Apr 2009 20:35:20 +0200
-Pierre Ossman <drzeus-mmc@drzeus.cx> wrote:
-
-> On Wed, 1 Apr 2009 10:24:02 +0800
-> JosephChan@via.com.tw wrote:
+Linus Torvalds wrote:
 > 
-> > Hi all,
-> > 
-> > The following patch provides VIA MSP SD/MMC card reader driver support.
-> > This patch is based on 2.6.29 kernel.
-> > Thanks to Pierre's suggestions.
-> > Please feel free to contact me if any problem. Thanks in advanced.
-> > 
-> > In addition, the SPEC is available in VX800 Programming guide (Device 13 Function 0) on http://linux.via.com.tw
-> > 
+> On Fri, 10 Apr 2009, Ivan Kokshaysky wrote:
+>> Actually, all of this has been discussed on lkml; here is the latest
+>> variant that makes everybody more or less happy, at least there are
+>> no objections from percpu folks and Martin (similar fix should work
+>> for s390 as well).
 > 
-> Looking good. There's just a few minor things. See below.
-> 
+> Is there any reason why this version of DEFINE_PER_CPU_SECTION wouldn't 
+> work on _any_ architecture? IOW, do we even need the #ifdef's and 
+> per-arch #define?
 
-And then there's also the matter of a MAINTAINERS entry so I know who
-to shout at if there's any issues with this driver in the future. ;)
+It should work for all archs but only alpha and s390 require __weak__
+and other archs can use actual static or global definitions, but then
+again we'll need to add the __per_cpu_multiple_def_ thing to make sure
+no two static definitions clash anyway, so there isn't much point in
+keeping things separate.
 
-Rgds
+I was waiting for responses on the original thread.  Is everyone okay
+with having the 'static per-cpu variables in different compile units
+can't have the same name' restriction?
+
+Thanks.
+
 -- 
-     -- Pierre Ossman
-
-  Linux kernel, MMC maintainer        http://www.kernel.org
-  rdesktop, core developer          http://www.rdesktop.org
-  TigerVNC, core developer          http://www.tigervnc.org
-
-  WARNING: This correspondence is being monitored by the
-  Swedish government. Make sure your server uses encryption
-  for SMTP traffic and consider using PGP for end-to-end
-  encryption.
+tejun
