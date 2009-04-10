@@ -1,75 +1,81 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934480AbZDJTfd@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S935775AbZDJTgY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934480AbZDJTfd (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 10 Apr 2009 15:35:33 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933666AbZDJTfI
+	id S935775AbZDJTgY (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 10 Apr 2009 15:36:24 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932522AbZDJTgB
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 10 Apr 2009 15:35:08 -0400
-Received: from fg-out-1718.google.com ([72.14.220.159]:45088 "EHLO
-	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S932643AbZDJTfG (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 10 Apr 2009 15:35:06 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
-         :cc:content-type:content-transfer-encoding;
-        b=PhOMIEK0pYqk4+8+uyVQmmfPvJt47s1HDcV6QZ59uQkzJetYebQVM/nc60wXlBcapv
-         eZb8EnCDGe2Hu6v0bH6EgpKgZvRHVbKctr8Br5+zsA7CTY4WVU//TfL1dZP6AuRaGxuu
-         hSPqAMdvIIxFtZq3RBAMoDFQWu48vHB+86gIg=
+	Fri, 10 Apr 2009 15:36:01 -0400
+Received: from mx3.mail.elte.hu ([157.181.1.138]:47831 "EHLO mx3.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1759222AbZDJTgB (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 10 Apr 2009 15:36:01 -0400
+Date: Fri, 10 Apr 2009 21:34:44 +0200
+From: Ingo Molnar <mingo@elte.hu>
+To: Tejun Heo <tj@kernel.org>
+Cc: Linus Torvalds <torvalds@linux-foundation.org>,
+       Ivan Kokshaysky <ink@jurassic.park.msu.ru>,
+       Al Viro <viro@ZenIV.linux.org.uk>, Mike Travis <travis@sgi.com>,
+       Christoph Lameter <cl@linux-foundation.org>,
+       Heiko Carstens <heiko.carstens@de.ibm.com>,
+       Martin Schwidefsky <schwidefsky@de.ibm.com>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH] unbreak alpha percpu
+Message-ID: <20090410193444.GA18039@elte.hu>
+References: <20090410151224.GM26366@ZenIV.linux.org.uk> <20090410154704.GN26366@ZenIV.linux.org.uk> <alpine.LFD.2.00.0904100915010.4583@localhost.localdomain> <20090410165030.GQ26366@ZenIV.linux.org.uk> <20090410170507.GR26366@ZenIV.linux.org.uk> <20090410171415.GA6033@ZenIV.linux.org.uk> <20090410180532.GA4419@jurassic.park.msu.ru> <alpine.LFD.2.00.0904101118470.4583@localhost.localdomain> <49DF935E.8030607@kernel.org> <49DF97D0.9090506@kernel.org>
 MIME-Version: 1.0
-In-Reply-To: <20090410162915.GA27805@elf.ucw.cz>
-References: <20090410103429.GA31367@elf.ucw.cz>
-	 <f17812d70904100350l19fa7493ma9c4695d49d19398@mail.gmail.com>
-	 <1239360967.14324.2.camel@brutus> <20090410162915.GA27805@elf.ucw.cz>
-Date: Fri, 10 Apr 2009 23:35:04 +0400
-Message-ID: <bc64b4640904101235l37b17da9hf52b8c841741dadd@mail.gmail.com>
-Subject: Re: 2.6.30-rc1: touchscreen BUG() on spitz
-From: Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>
-To: Pavel Machek <pavel@ucw.cz>
-Cc: Daniel Ribeiro <drwyrm@gmail.com>, Eric Miao <eric.y.miao@gmail.com>,
-       rpurdie@rpsys.net, lenz@cs.wisc.edu,
-       kernel list <linux-kernel@vger.kernel.org>,
-       Russell King <rmk@arm.linux.org.uk>, Dirk@opfer-online.de,
-       arminlitzel@web.de, Cyril Hrubis <metan@ucw.cz>, thommycheck@gmail.com,
-       linux-arm-kernel <linux-arm-kernel@lists.arm.linux.org.uk>,
-       omegamoon@gmail.com, Peter Zijlstra <a.p.zijlstra@chello.nl>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <49DF97D0.9090506@kernel.org>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-2009/4/10 Pavel Machek <pavel@ucw.cz>:
-> Hi!
->
->> > > After update to 2.6.30-rc1, sharp zaurus c-3000 fails to boot with
->> > > white screen (with stripes). That's a regression w.r.t. 2.6.29.
->> >
->> > What kind of white stripes? Does it look like the LCD controller
->> > stops working or something.
->> >
->> > There is a regression which caused X server hang during bootup,
->> > with commit id 66c1ca0, which you can revert and have another
->> > try.
->>
->> As spitz also use cs_control for pxa2xx_spi, i believe that this is the
->> same issue i found wednesday.
->>
->> See the "Kernel freeze caused by
->> a7bb3909b3293d503211d7f6af8ed62c1644b686" thread.
->
-> Ok, I'll try changing ASSERT->DEASSERT and see what happens. Hmm, it
-> now boots, with these messages:
->
-> WARNING: at kernel/irq/handle.c:366
-> BUG: IRQ handler called from non-hardirq context!
->
-> just after loading touchscreen device.
 
-Try reverting 044d408409cc4e1bc75c886e27ca85c270db104c as
-software resent IRQs are sent from tasklet context, not from hardirq.
+* Tejun Heo <tj@kernel.org> wrote:
 
--- 
-With best wishes
-Dmitry
+> Long term, I think what Ivan proposed with a bit of addition so 
+> that combination of DECLARE_PER_CPU() and static DEFINE_PER_CPU() 
+> triggers compile error but I think it's better to do it when 
+> converting non-x86 archs to dynamic percpu allocator which is 
+> scheduled for the next merge window.  For the time being, how 
+> about just moving the generic percpu_*() accessors to 
+> linux/percpu.h?  asm-generic/percpu.h is meant to carry generic 
+> stuff for low level stuff - declarations, definitions and pointer 
+> offset calculation and so on but not for generic interface.
+> 
+> I currently can't build or test stuff so the patch is not tested 
+> at all.  Ingo, can you please test whether this would work?
+
+Yes - but i'm somewhat confused - i frequently cross-built Alpha and 
+other architectures as well.
+
+So exactly what problem do we have here - has some devel tree grown 
+new use of these APIs in generic code, without waiting for all 
+arches to be properly converted?
+
+(sounds of rummaging around)
+
+Oh drat:
+
+| commit 4e69489a0ac11a9b62a25923975bfc370a30eae5
+| Author: Eric Dumazet <dada1@cosmosbay.com>
+| Date:   Sat Apr 4 16:41:09 2009 -0700
+|
+|     socket: use percpu_add() while updating sockets_in_use
+
+Now i understand the rush ...
+
+Yes, moving the APIs to the generic header should properly expose 
+the wrapped default implementations. I'll test your patch in a 
+minute.
+
+	Ingo
