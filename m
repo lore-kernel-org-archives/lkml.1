@@ -1,96 +1,80 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752290AbZDJXgy@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752926AbZDJXjh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752290AbZDJXgy (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 10 Apr 2009 19:36:54 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750788AbZDJXgp
+	id S1752926AbZDJXjh (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 10 Apr 2009 19:39:37 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750788AbZDJXj1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 10 Apr 2009 19:36:45 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:58081 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1750784AbZDJXgo (ORCPT
+	Fri, 10 Apr 2009 19:39:27 -0400
+Received: from zeniv.linux.org.uk ([195.92.253.2]:43576 "EHLO
+	ZenIV.linux.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750745AbZDJXj0 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 10 Apr 2009 19:36:44 -0400
-Date: Fri, 10 Apr 2009 16:34:13 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Wu Fengguang <fengguang.wu@intel.com>
-Cc: linux-kernel@vger.kernel.org, npiggin@suse.de,
-       torvalds@linux-foundation.org, fengguang.wu@intel.com,
-       yinghan@google.com
-Subject: Re: [PATCH 7/9] readahead: sequential mmap readahead
-Message-Id: <20090410163413.a014bde0.akpm@linux-foundation.org>
-In-Reply-To: <20090410061254.719205499@intel.com>
-References: <20090410060957.442203404@intel.com>
-	<20090410061254.719205499@intel.com>
-X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Fri, 10 Apr 2009 19:39:26 -0400
+Date: Sat, 11 Apr 2009 00:39:20 +0100
+From: Al Viro <viro@ZenIV.linux.org.uk>
+To: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
+Cc: Tetsuo Handa <penguin-kernel@I-love.SAKURA.ne.jp>,
+       linux-kernel@vger.kernel.org, hugh@veritas.com, jmorris@namei.org,
+       akpm@linux-foundation.org
+Subject: Re: [2.6.30-rc1] RCU detected CPU 1 stall
+Message-ID: <20090410233919.GS26366@ZenIV.linux.org.uk>
+References: <200904080057.n380vZAH051872@www262.sakura.ne.jp> <20090410142203.GA6719@linux.vnet.ibm.com> <20090410150353.GL26366@ZenIV.linux.org.uk> <20090410153229.GB6719@linux.vnet.ibm.com> <200904110608.IED21123.FQOVMtSOOHFFLJ@I-love.SAKURA.ne.jp> <20090410231245.GF6719@linux.vnet.ibm.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20090410231245.GF6719@linux.vnet.ibm.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 10 Apr 2009 14:10:04 +0800
-Wu Fengguang <fengguang.wu@intel.com> wrote:
+On Fri, Apr 10, 2009 at 04:12:45PM -0700, Paul E. McKenney wrote:
+> On Sat, Apr 11, 2009 at 06:08:54AM +0900, Tetsuo Handa wrote:
+> > Hello.
+> > 
+> > Paul E. McKenney wrote:
+> > > Tetsuo, how many tasks did you have on this machine?
+> > I didn't count how many tasks were running on this machine.
+> > But the number of tasks should be very low, for this happened during
+> > the boot stage of Debian Sarge.
+> > 
+> > 30 seconds ago from the first stalled message
+> > 
+> > [   41.415158] INFO: RCU detected CPU 1 stall (t=4294902646/2500 jiffies)
+> > [   41.417332] Pid: 3487, comm: khelper Tainted: G        W  2.6.30-rc1 #1
+> > [   41.417332] Call Trace:
+> > 
+> > the system was doing
+> > 
+> > [   10.555521] kjournald starting.  Commit interval 5 seconds
+> > [   10.556727] EXT3 FS on sdb1, internal journal
+> > [   10.556727] EXT3-fs: recovery complete.
+> > [   10.557585] EXT3-fs: mounted filesystem with writeback data mode.
+> > /dev/sdb1 on /usr/src/all type ext3 (rw,noatime,nodiratime)
+> > Detecting hardware: agpgart pcnet32 piix BusLogic ide_scsi
+> > Skipping unavailable/built-in agpgart module.
+> > pcnet32 disabled in configuration.
+> > Skipping unavailable/built-in piix module.
+> > Skipping unavailable/built-in BusLogic module.
+> > Skipping unavailable/built-in ide_scsi module.
+> > Running 0dns-down to make sure resolv.conf is ok...done.
+> > Setting up networking...done.
+> > Starting hotplug subsystem:
+> >    pci     
+> >      ignoring pci display device 00:0f.0
+> > [   16.727603] ------------[ cut here ]------------
+> > [   16.729910] WARNING: at security/security.c:217 security_vm_enough_memory+0xa0/0xb0()
+> > 
+> > > Though I too find it hard to believe that there were enough to chew up
+> > > two minutes.  Maybe the list got corrupted so that it has a loop?
+> > 
+> > I powered off the machine after two minutes, for I thought the loop
+> > was infinite.
+> 
+> Is this reproducible?  If so, any chance you could try bisecting?
 
-> Auto-detect sequential mmap reads and do readahead for them.
-> 
-> The sequential mmap readahead will be triggered when
-> - sync readahead: it's a major fault and (prev_offset == offset-1);
-> - async readahead: minor fault on PG_readahead page with valid readahead state.
-> 
-> The benefits of doing readahead instead of read-around:
-> - less I/O wait thanks to async readahead
-> - double real I/O size and no more cache hits
-> 
-> The single stream case is improved a little.
-> For 100,000 sequential mmap reads:
-> 
->                                     user       system    cpu        total
-> (1-1)  plain -mm, 128KB readaround: 3.224      2.554     48.40%     11.838
-> (1-2)  plain -mm, 256KB readaround: 3.170      2.392     46.20%     11.976
-> (2)  patched -mm, 128KB readahead:  3.117      2.448     47.33%     11.607
-> 
-> The patched (2) has smallest total time, since it has no cache hit overheads
-> and less I/O block time(thanks to async readahead). Here the I/O size
-> makes no much difference, since there's only one single stream.
-> 
-> Note that (1-1)'s real I/O size is 64KB and (1-2)'s real I/O size is 128KB,
-> since the half of the read-around pages will be readahead cache hits.
-> 
-> This is going to make _real_ differences for _concurrent_ IO streams.
-> 
-> Cc: Nick Piggin <npiggin@suse.de>
-> Cc: Linus Torvalds <torvalds@linux-foundation.org>
-> Signed-off-by: Wu Fengguang <fengguang.wu@intel.com>
-> ---
->  mm/filemap.c |    3 ++-
->  1 file changed, 2 insertions(+), 1 deletion(-)
-> 
-> --- mm.orig/mm/filemap.c
-> +++ mm/mm/filemap.c
-> @@ -1471,7 +1471,8 @@ static void do_sync_mmap_readahead(struc
->  	if (VM_RandomReadHint(vma))
->  		return;
->  
-> -	if (VM_SequentialReadHint(vma)) {
-> +	if (VM_SequentialReadHint(vma) ||
-> +			offset - 1 == (ra->prev_pos >> PAGE_CACHE_SHIFT)) {
->  		page_cache_sync_readahead(mapping, ra, file, offset, 1);
->  		return;
->  	}
-> 
+If that's execve() hang, we probably have something->fs->lock stuck.
+I don't see any likely candidates, but...
 
-We've always believed that readaround was beneficial for more random
-access patterns - classically faulting in an executable.  Although I
-don't recall that this belief was very well substantiated.
-
-(The best results I ever got was by doing readaround and setting the
-size to a few MB, so we slurp the entire executable into memory in one
-hit.  lol.)
-
-So my question is: what is the probability that this change will
-inadvertently cause a randomish-access workload to fall into readahead
-(rather than readaround) mode, and what is the impact when this
-happens?
-
-
+I'd really love to see results of repeated alt-sysrq-p/alt-sysrq-l, just
+to see where was it actually spinning.
