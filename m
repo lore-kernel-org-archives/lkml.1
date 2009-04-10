@@ -1,66 +1,86 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763453AbZDJOES@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S938353AbZDJOEh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763453AbZDJOES (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 10 Apr 2009 10:04:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755860AbZDJOD6
+	id S938353AbZDJOEh (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 10 Apr 2009 10:04:37 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S935889AbZDJOEM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 10 Apr 2009 10:03:58 -0400
-Received: from LION.seas.upenn.edu ([158.130.12.194]:40400 "EHLO
-	lion.seas.upenn.edu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754040AbZDJOD6 (ORCPT
+	Fri, 10 Apr 2009 10:04:12 -0400
+Received: from fg-out-1718.google.com ([72.14.220.152]:40816 "EHLO
+	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1763852AbZDJOEK (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 10 Apr 2009 10:03:58 -0400
-Message-ID: <49DF51B7.4070009@seas.upenn.edu>
-Date: Fri, 10 Apr 2009 10:03:35 -0400
-From: Rafi Rubin <rafi@seas.upenn.edu>
-User-Agent: Mozilla-Thunderbird 2.0.0.19 (X11/20090103)
+	Fri, 10 Apr 2009 10:04:10 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=googlemail.com; s=gamma;
+        h=sender:message-id:date:from:user-agent:mime-version:to:cc:subject
+         :references:in-reply-to:content-type:content-transfer-encoding;
+        b=DrtZoGLFOe2hociZD4AGJtw3apdN4BnZ0K+VoYpFLY7TWciczNwYrHX7mxpdJ7nLV+
+         px/1pBvG7WbaJz7T2Nw6G0q9Rdb8lkszQK77fdpWysAd1swyYa+cX9hZPyq1wQ3OIXHt
+         ORdlbH2f17HXSteFBTAj5uyxQER2oWqJMldIw=
+Message-ID: <49DF51D6.9080000@tuffmail.co.uk>
+Date: Fri, 10 Apr 2009 15:04:06 +0100
+From: Alan Jenkins <alan-jenkins@tuffmail.co.uk>
+User-Agent: Thunderbird 2.0.0.21 (X11/20090318)
 MIME-Version: 1.0
-To: =?ISO-8859-1?Q?=C9ric_Piel?= <E.A.B.Piel@tudelft.nl>
-CC: Matthew Garrett <mjg@redhat.com>, Len Brown <len.brown@intel.com>,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] Additional keys for dell-wmi
-References: <200904082116.n38LG4Df012420@ampersand.seas.upenn.edu> <20090409153203.GB17194@srcf.ucam.org> <49DF26EB.4040106@tudelft.nl>
-In-Reply-To: <49DF26EB.4040106@tudelft.nl>
-X-Enigmail-Version: 0.95.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 8bit
+To: Jens Axboe <jens.axboe@oracle.com>
+CC: Pavel Machek <pavel@ucw.cz>, linux-pm@lists.linux-foundation.org,
+       Kernel Testers List <kernel-testers@vger.kernel.org>,
+       linux-kernel <linux-kernel@vger.kernel.org>,
+       "Rafael J. Wysocki" <rjw@sisk.pl>
+Subject: [BISECTED] Regression: First hibernation attempt fails
+References: <49DDD83F.507@tuffmail.co.uk> <20090410092318.GB30093@elf.ucw.cz> <49DF289D.5070604@tuffmail.co.uk> <20090410112115.GA2513@elf.ucw.cz> <49DF2EE6.20203@tuffmail.co.uk>
+In-Reply-To: <49DF2EE6.20203@tuffmail.co.uk>
+Content-Type: text/plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Éric Piel wrote:
-> Matthew Garrett schreef:
->> On Wed, Apr 08, 2009 at 05:16:04PM -0400, Rafi Rubin wrote:
->>
->>>  static struct key_entry dell_wmi_keymap[] = {
->>>  	{KE_KEY, 0xe045, KEY_PROG1},
->>> +	{KE_KEY, 0xe046, KEY_PROG2},
->>> +	{KE_KEY, 0xe047, KEY_PROG3},
->> Would this make more sense as a switch? That way userspace can know what 
->> state the screen is in.
->>
-> Indeed, that seems more logical. And in addition, there is a switch
-> called SW_TABLET_MODE, which would fit perfectly.
-> I guess at initialisation you can consider it is in standard mode, and
-> actually sort out the real state on the first event received.
-> 
-> Eric
+Alan Jenkins wrote:
+> Pavel Machek wrote:
+>   
+>> On Fri 2009-04-10 12:08:13, Alan Jenkins wrote:
+>>   
+>>     
+>>> Pavel Machek wrote:
+>>>     
+>>>       
+>>>> On Thu 2009-04-09 12:13:03, Alan Jenkins wrote:
+>>>>   
+>>>>       
+>>>>         
+>>>>> Yet another issue in 2.6.30-rc1 which was not present in 2.6.29 :-).  I
+>>>>> wonder if it rings any bells?
+>>>>>
+>>>>> On my laptop (EEE 4G), the first attempt at hibernation fails. 
+>>>>> Subsequent attempts succeed.
+>>>>>
+>>>>> If I use s2disk as normal, I see "snapshotting system", then before it
+>>>>> gets to write out the image, it aborts and switches back to X.   I can't
+>>>>> see any error message, even if I check the log with "dmesg".
+>>>>>
+>>>>> If I use "echo disk > /sys/power/state", echo reports the error "Cannot
+>>>>> allocate memory".
+>>>>>
+>>>>> This only happens if I've logged in to X first.  In fact, I narrowed it
+>>>>> down to gnome-power-manager.  If I kill gnome-power-manager beforehand,
+>>>>> then it doesn't happen.
+>>>>>         
+>>>>>           
+>>>> Anything interesting in dmesg?      
+>>>>         
 
-Yeah, I noticed SW_TABLET_MODE after Matthew suggested using the switch and have been trying to
-figure out how to use it?  Forgive my ignorance here, I've never knowingly used an ev switch, any
-suggestions about how to monitor and check the state?  I don't see anything come out of the input
-event node.
+>>> Nothing obvious. I've attached my latest at
+>>> <http://bugzilla.kernel.org/show_bug.cgi?id=13058>.
+>>>       
 
-Anyway, even if we use a switch, is there any particular reason not to send a key stroke down to the
-event device as well?  In my case I already had window manager based hotkeys setup to handle the
-"rotate screen" button (that is actually a button).  And by sending the events as key strokes, its
-very easy to catch and handle, and the action just goes to the active console, which I consider
-desirable.
+Bisection succeeded:
 
-I tend to prefer mechanism that don't require extra convolutions and daemons to handle things like
-this.  For example I've helped setup a thinkpad where the prevailing solution was to catch the hinge
-rotation with acpid which pushes a message through dbus which is captured by a daemon the user runs
-as part of their X session.  Needless to say that's a bit more of a pain and a bit more sensitive to
-change in the winds.
+1faa16d22877f4839bd433547d770c676d1d964c
+"block: change the request allocation/congestion logic to be sync/async
+based"
 
-Rafi
+If I revert the commit, it fixes my bug.
+
+Regards
+Alan
