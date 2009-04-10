@@ -1,285 +1,363 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S938417AbZDJN0T@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S938307AbZDJN3g@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S938417AbZDJN0T (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 10 Apr 2009 09:26:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763019AbZDJN0E
+	id S938307AbZDJN3g (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 10 Apr 2009 09:29:36 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1764633AbZDJN3Y
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 10 Apr 2009 09:26:04 -0400
-Received: from relay2.sgi.com ([192.48.179.30]:42779 "EHLO relay.sgi.com"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1761560AbZDJN0B (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 10 Apr 2009 09:26:01 -0400
-Date: Fri, 10 Apr 2009 08:26:00 -0500
-From: Jack Steiner <steiner@sgi.com>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: linux-kernel@vger.kernel.org
-Subject: Re: [patch 12/13] GRU - update gru kernel self tests
-Message-ID: <20090410132600.GC18113@sgi.com>
-References: <20090406160809.278924000@sgi.com> <20090406161015.670990000@sgi.com> <20090409153715.f77bfbd4.akpm@linux-foundation.org>
-Mime-Version: 1.0
+	Fri, 10 Apr 2009 09:29:24 -0400
+Received: from mail-bw0-f169.google.com ([209.85.218.169]:37239 "EHLO
+	mail-bw0-f169.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755549AbZDJN3X (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 10 Apr 2009 09:29:23 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:to:cc:subject:message-id:references:mime-version
+         :content-type:content-disposition:in-reply-to:user-agent;
+        b=HmuFF5gL8exvFO7maK6u0tm8JwcK5n7zMXFtgDJCYET8rmesUMmA/2O4Zp8has+DCP
+         dauZOJt9813TaGVfWlOqyYhoA45y11fvvVhVwY7TEyK8u7YQkhHdZPIcGAVMdCOlSv/O
+         tsUJjRgdELiybhGjB4aQbdDJiNQfp7lnmOoLs=
+Date: Fri, 10 Apr 2009 15:29:17 +0200
+From: Frederic Weisbecker <fweisbec@gmail.com>
+To: Zhaolei <zhaolei@cn.fujitsu.com>
+Cc: Steven Rostedt <rostedt@goodmis.org>, Tom Zanussi <tzanussi@gmail.com>,
+       Ingo Molnar <mingo@elte.hu>, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 2/2] tracepoint: Make kmem tracepoint use TRACE_EVENT
+	macro
+Message-ID: <20090410132916.GB5988@nowhere>
+References: <49DEE68A.5040902@cn.fujitsu.com> <49DEE6DA.80600@cn.fujitsu.com>
+MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20090409153715.f77bfbd4.akpm@linux-foundation.org>
-User-Agent: Mutt/1.4.2.2i
+In-Reply-To: <49DEE6DA.80600@cn.fujitsu.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Change the kernel self tests that can be optionally executed on
-GRU initialization. This is primarily for testing.
-
-Eliminate the BUG statements on failure and return bad status.
-Add ioctl interface to execute the tests on demand.
-
-Signed-off-by: Jack Steiner <steiner@sgi.com>
-
-
----
-
-Add fixes suggested by Andrew.
+On Fri, Apr 10, 2009 at 02:27:38PM +0800, Zhaolei wrote:
+> TRACE_EVENT is more unify and generic for define a tracepoint.
+> It also add ftrace support for this tracepoint.
+> 
+> Signed-off-by: Zhao Lei <zhaolei@cn.fujitsu.com>
+> ---
 
 
- drivers/misc/sgi-gru/grufile.c      |    3 
- drivers/misc/sgi-gru/grukservices.c |  150 ++++++++++++++++++++++++++++++++----
- drivers/misc/sgi-gru/grulib.h       |    3 
- drivers/misc/sgi-gru/grutables.h    |    2 
- 4 files changed, 142 insertions(+), 16 deletions(-)
+Nice!
+It would be good to also propagate this conversion to some other tracers.
+It think about power, workqueue and block tracers.
 
-Index: linux/drivers/misc/sgi-gru/grufile.c
-===================================================================
---- linux.orig/drivers/misc/sgi-gru/grufile.c	2009-04-10 07:40:42.000000000 -0500
-+++ linux/drivers/misc/sgi-gru/grufile.c	2009-04-10 07:40:46.000000000 -0500
-@@ -250,6 +250,9 @@ static long gru_file_unlocked_ioctl(stru
- 	case GRU_USER_CALL_OS:
- 		err = gru_handle_user_call_os(arg);
- 		break;
-+	case GRU_KTEST:
-+		err = gru_ktest(arg);
-+		break;
- 	case GRU_GET_CONFIG_INFO:
- 		err = gru_get_config_info(arg);
- 		break;
-Index: linux/drivers/misc/sgi-gru/grukservices.c
-===================================================================
---- linux.orig/drivers/misc/sgi-gru/grukservices.c	2009-04-10 07:40:45.000000000 -0500
-+++ linux/drivers/misc/sgi-gru/grukservices.c	2009-04-10 07:45:25.000000000 -0500
-@@ -846,13 +846,14 @@ EXPORT_SYMBOL_GPL(gru_copy_gpa);
- /* ------------------- KERNEL QUICKTESTS RUN AT STARTUP ----------------*/
- /* 	Temp - will delete after we gain confidence in the GRU		*/
- 
--int quicktest(void)
-+static int quicktest0(unsigned long arg)
- {
- 	unsigned long word0;
- 	unsigned long word1;
- 	void *cb;
- 	void *dsr;
- 	unsigned long *p;
-+	int ret = -EIO;
- 
- 	if (gru_get_cpu_resources(GRU_CACHE_LINE_BYTES, &cb, &dsr))
- 		return MQE_BUG_NO_RESOURCES;
-@@ -861,26 +862,148 @@ int quicktest(void)
- 	word1 = 0;
- 
- 	gru_vload(cb, uv_gpa(&word0), gru_get_tri(dsr), XTYPE_DW, 1, 1, IMA);
--	if (gru_wait(cb) != CBS_IDLE)
--		BUG();
-+	if (gru_wait(cb) != CBS_IDLE) {
-+		printk(KERN_DEBUG "GRU quicktest0: CBR failure 1\n");
-+		goto done;
-+	}
- 
--	if (*p != MAGIC)
--		BUG();
-+	if (*p != MAGIC) {
-+		printk(KERN_DEBUG "GRU: quicktest0 bad magic 0x%lx\n", *p);
-+		goto done;
-+	}
- 	gru_vstore(cb, uv_gpa(&word1), gru_get_tri(dsr), XTYPE_DW, 1, 1, IMA);
--	if (gru_wait(cb) != CBS_IDLE)
--		BUG();
--	gru_free_cpu_resources(cb, dsr);
-+	if (gru_wait(cb) != CBS_IDLE) {
-+		printk(KERN_DEBUG "GRU quicktest0: CBR failure 2\n");
-+		goto done;
-+	}
- 
- 	if (word0 != word1 || word1 != MAGIC) {
--		printk
--		    ("GRU quicktest err: found 0x%lx, expected 0x%lx\n",
-+		printk(KERN_DEBUG
-+		       "GRU quicktest0 err: found 0x%lx, expected 0x%lx\n",
- 		     word1, MAGIC);
--		BUG();		/* ZZZ should not be fatal */
-+		goto done;
- 	}
-+	ret = 0;
- 
--	return 0;
-+done:
-+	gru_free_cpu_resources(cb, dsr);
-+	return ret;
- }
- 
-+#define ALIGNUP(p, q)	((void *)(((unsigned long)(p) + (q) - 1) & ~(q - 1)))
-+
-+static int quicktest1(unsigned long arg)
-+{
-+	struct gru_message_queue_desc mqd;
-+	void *p, *mq;
-+	unsigned long *dw;
-+	int i, ret = -EIO;
-+	char mes[GRU_CACHE_LINE_BYTES], *m;
-+
-+	/* Need  1K cacheline aligned that does not cross page boundary */
-+	p = kmalloc(4096, 0);
-+	mq = ALIGNUP(p, 1024);
-+	memset(mes, 0xee, sizeof(mes));
-+	dw = mq;
-+
-+	gru_create_message_queue(&mqd, mq, 8 * GRU_CACHE_LINE_BYTES, 0, 0, 0);
-+	for (i = 0; i < 6; i++) {
-+		mes[8] = i;
-+		do {
-+			ret = gru_send_message_gpa(&mqd, mes, sizeof(mes));
-+		} while (ret == MQE_CONGESTION);
-+		if (ret)
-+			break;
-+	}
-+	if (ret != MQE_QUEUE_FULL || i != 4)
-+		goto done;
-+
-+	for (i = 0; i < 6; i++) {
-+		m = gru_get_next_message(&mqd);
-+		if (!m || m[8] != i)
-+			break;
-+		gru_free_message(&mqd, m);
-+	}
-+	ret = (i == 4) ? 0 : -EIO;
-+
-+done:
-+	kfree(p);
-+	return ret;
-+}
-+
-+static int quicktest2(unsigned long arg)
-+{
-+	static DECLARE_COMPLETION(cmp);
-+	unsigned long han;
-+	int blade_id = 0;
-+	int numcb = 4;
-+	int ret = 0;
-+	unsigned long *buf;
-+	void *cb0, *cb;
-+	int i, k, istatus, bytes;
-+
-+	bytes = numcb * 4 * 8;
-+	buf = kmalloc(bytes, GFP_KERNEL);
-+	if (!buf)
-+		return -ENOMEM;
-+
-+	ret = -EBUSY;
-+	han = gru_reserve_async_resources(blade_id, numcb, 0, &cmp);
-+	if (!han)
-+		goto done;
-+
-+	gru_lock_async_resource(han, &cb0, NULL);
-+	memset(buf, 0xee, bytes);
-+	for (i = 0; i < numcb; i++)
-+		gru_vset(cb0 + i * GRU_HANDLE_STRIDE, uv_gpa(&buf[i * 4]), 0,
-+				XTYPE_DW, 4, 1, IMA_INTERRUPT);
-+
-+	ret = 0;
-+	for (k = 0; k < numcb; k++) {
-+		gru_wait_async_cbr(han);
-+		for (i = 0; i < numcb; i++) {
-+			cb = cb0 + i * GRU_HANDLE_STRIDE;
-+			istatus = gru_check_status(cb);
-+			if (istatus == CBS_ACTIVE)
-+				continue;
-+			if (istatus == CBS_EXCEPTION)
-+				ret = -EFAULT;
-+			else if (buf[i] || buf[i + 1] || buf[i + 2] ||
-+					buf[i + 3])
-+				ret = -EIO;
-+		}
-+	}
-+	BUG_ON(cmp.done);
-+
-+	gru_unlock_async_resource(han);
-+	gru_release_async_resources(han);
-+done:
-+	kfree(buf);
-+	return ret;
-+}
-+
-+/*
-+ * Debugging only. User hook for various kernel tests
-+ * of driver & gru.
-+ */
-+int gru_ktest(unsigned long arg)
-+{
-+	int ret = -EINVAL;
-+
-+	switch (arg & 0xff) {
-+	case 0:
-+		ret = quicktest0(arg);
-+		break;
-+	case 1:
-+		ret = quicktest1(arg);
-+		break;
-+	case 2:
-+		ret = quicktest2(arg);
-+		break;
-+	}
-+	return ret;
-+
-+}
- 
- int gru_kservices_init(struct gru_state *gru)
- {
-@@ -891,9 +1014,6 @@ int gru_kservices_init(struct gru_state 
- 		return 0;
- 
- 	init_rwsem(&bs->bs_kgts_sema);
--
--	if (gru_options & GRU_QUICKLOOK)
--		quicktest();
- 	return 0;
- }
- 
-Index: linux/drivers/misc/sgi-gru/grulib.h
-===================================================================
---- linux.orig/drivers/misc/sgi-gru/grulib.h	2009-04-10 07:32:13.000000000 -0500
-+++ linux/drivers/misc/sgi-gru/grulib.h	2009-04-10 07:40:46.000000000 -0500
-@@ -56,6 +56,9 @@
- /* Get some config options (primarily for tests & emulator) */
- #define GRU_GET_CONFIG_INFO		_IOWR(GRU_IOCTL_NUM, 51, void *)
- 
-+/* Various kernel self-tests */
-+#define GRU_KTEST			_IOWR(GRU_IOCTL_NUM, 52, void *)
-+
- #define CONTEXT_WINDOW_BYTES(th)        (GRU_GSEG_PAGESIZE * (th))
- #define THREAD_POINTER(p, th)		(p + GRU_GSEG_PAGESIZE * (th))
- 
-Index: linux/drivers/misc/sgi-gru/grutables.h
-===================================================================
---- linux.orig/drivers/misc/sgi-gru/grutables.h	2009-04-10 07:40:45.000000000 -0500
-+++ linux/drivers/misc/sgi-gru/grutables.h	2009-04-10 07:40:46.000000000 -0500
-@@ -258,7 +258,6 @@ extern struct mcs_op_statistic mcs_op_st
- 
- #define OPT_DPRINT	1
- #define OPT_STATS	2
--#define GRU_QUICKLOOK	4
- 
- 
- #define IRQ_GRU			110	/* Starting IRQ number for interrupts */
-@@ -662,6 +661,7 @@ extern int gru_fault(struct vm_area_stru
- extern struct gru_mm_struct *gru_register_mmu_notifier(void);
- extern void gru_drop_mmu_notifier(struct gru_mm_struct *gms);
- 
-+extern int gru_ktest(unsigned long arg);
- extern void gru_flush_tlb_range(struct gru_mm_struct *gms, unsigned long start,
- 					unsigned long len);
- 
+I may have some time to work on the workqueue tracer soon.
+
+Another idea: I plan to provide an "enable" file per trace event subsystem
+so that we can quickly toggle a whole batch of event tracing for
+any targeted subsystem.
+
+Ingo also suggested a quick toggle for all events. As an end result, me
+would have a hierarchical level of enable files:
+
+./events
+	enable
+	subsys1/
+		enable
+		subsys1_event1/
+			enable
+			....
+		subsys1_event2/
+		...
+	subsys2/
+		enable
+		subsys2_event1/
+		subsys2_event2/
+		...
+	...
+
+I will work on it.
+The root enable file will be only useful for quick regression tests anyway. We will
+have some suprises.... :-)
+
+Thanks,
+Frederic.
+
+
+
+>  include/trace/kmem.h              |   39 +-------
+>  include/trace/kmem_event_types.h  |  193 +++++++++++++++++++++++++++++++++++++
+>  include/trace/trace_event_types.h |    1 +
+>  include/trace/trace_events.h      |    1 +
+>  4 files changed, 197 insertions(+), 37 deletions(-)
+>  create mode 100644 include/trace/kmem_event_types.h
+> 
+> diff --git a/include/trace/kmem.h b/include/trace/kmem.h
+> index 24d2519..46efc24 100644
+> --- a/include/trace/kmem.h
+> +++ b/include/trace/kmem.h
+> @@ -1,44 +1,9 @@
+>  #ifndef _TRACE_KMEM_H
+>  #define _TRACE_KMEM_H
+>  
+> -#include <linux/tracepoint.h>
+>  #include <linux/types.h>
+> +#include <linux/tracepoint.h>
+>  
+> -DECLARE_TRACE(kmalloc,
+> -	      TP_PROTO(unsigned long call_site,
+> -		      const void *ptr,
+> -		      size_t bytes_req,
+> -		      size_t bytes_alloc,
+> -		      gfp_t gfp_flags),
+> -	      TP_ARGS(call_site, ptr, bytes_req, bytes_alloc, gfp_flags));
+> -DECLARE_TRACE(kmem_cache_alloc,
+> -	      TP_PROTO(unsigned long call_site,
+> -		      const void *ptr,
+> -		      size_t bytes_req,
+> -		      size_t bytes_alloc,
+> -		      gfp_t gfp_flags),
+> -	      TP_ARGS(call_site, ptr, bytes_req, bytes_alloc, gfp_flags));
+> -DECLARE_TRACE(kmalloc_node,
+> -	      TP_PROTO(unsigned long call_site,
+> -		      const void *ptr,
+> -		      size_t bytes_req,
+> -		      size_t bytes_alloc,
+> -		      gfp_t gfp_flags,
+> -		      int node),
+> -	      TP_ARGS(call_site, ptr, bytes_req, bytes_alloc, gfp_flags, node));
+> -DECLARE_TRACE(kmem_cache_alloc_node,
+> -	      TP_PROTO(unsigned long call_site,
+> -		      const void *ptr,
+> -		      size_t bytes_req,
+> -		      size_t bytes_alloc,
+> -		      gfp_t gfp_flags,
+> -		      int node),
+> -	      TP_ARGS(call_site, ptr, bytes_req, bytes_alloc, gfp_flags, node));
+> -DECLARE_TRACE(kfree,
+> -	      TP_PROTO(unsigned long call_site, const void *ptr),
+> -	      TP_ARGS(call_site, ptr));
+> -DECLARE_TRACE(kmem_cache_free,
+> -	      TP_PROTO(unsigned long call_site, const void *ptr),
+> -	      TP_ARGS(call_site, ptr));
+> +#include <trace/kmem_event_types.h>
+>  
+>  #endif /* _TRACE_KMEM_H */
+> diff --git a/include/trace/kmem_event_types.h b/include/trace/kmem_event_types.h
+> new file mode 100644
+> index 0000000..4ff420f
+> --- /dev/null
+> +++ b/include/trace/kmem_event_types.h
+> @@ -0,0 +1,193 @@
+> +
+> +/* use <trace/kmem.h> instead */
+> +#ifndef TRACE_EVENT
+> +# error Do not include this file directly.
+> +# error Unless you know what you are doing.
+> +#endif
+> +
+> +#undef TRACE_SYSTEM
+> +#define TRACE_SYSTEM kmem
+> +
+> +TRACE_EVENT(kmalloc,
+> +
+> +	TP_PROTO(unsigned long call_site,
+> +		 const void *ptr,
+> +		 size_t bytes_req,
+> +		 size_t bytes_alloc,
+> +		 gfp_t gfp_flags),
+> +
+> +	TP_ARGS(call_site, ptr, bytes_req, bytes_alloc, gfp_flags),
+> +
+> +	TP_STRUCT__entry(
+> +		__field(	unsigned long,	call_site	)
+> +		__field(	const void *,	ptr		)
+> +		__field(	size_t,		bytes_req	)
+> +		__field(	size_t,		bytes_alloc	)
+> +		__field(	gfp_t,		gfp_flags	)
+> +	),
+> +
+> +	TP_fast_assign(
+> +		__entry->call_site	= call_site;
+> +		__entry->ptr		= ptr;
+> +		__entry->bytes_req	= bytes_req;
+> +		__entry->bytes_alloc	= bytes_alloc;
+> +		__entry->gfp_flags	= gfp_flags;
+> +	),
+> +
+> +	TP_printk("call_site=%lx ptr=%p bytes_req=%zu bytes_alloc=%zu gfp_flags=%08x",
+> +		__entry->call_site,
+> +		__entry->ptr,
+> +		__entry->bytes_req,
+> +		__entry->bytes_alloc,
+> +		__entry->gfp_flags)
+> +);
+> +
+> +TRACE_EVENT(kmem_cache_alloc,
+> +
+> +	TP_PROTO(unsigned long call_site,
+> +		 const void *ptr,
+> +		 size_t bytes_req,
+> +		 size_t bytes_alloc,
+> +		 gfp_t gfp_flags),
+> +
+> +	TP_ARGS(call_site, ptr, bytes_req, bytes_alloc, gfp_flags),
+> +
+> +	TP_STRUCT__entry(
+> +		__field(	unsigned long,	call_site	)
+> +		__field(	const void *,	ptr		)
+> +		__field(	size_t,		bytes_req	)
+> +		__field(	size_t,		bytes_alloc	)
+> +		__field(	gfp_t,		gfp_flags	)
+> +	),
+> +
+> +	TP_fast_assign(
+> +		__entry->call_site	= call_site;
+> +		__entry->ptr		= ptr;
+> +		__entry->bytes_req	= bytes_req;
+> +		__entry->bytes_alloc	= bytes_alloc;
+> +		__entry->gfp_flags	= gfp_flags;
+> +	),
+> +
+> +	TP_printk("call_site=%lx ptr=%p bytes_req=%zu bytes_alloc=%zu gfp_flags=%08x",
+> +		__entry->call_site,
+> +		__entry->ptr,
+> +		__entry->bytes_req,
+> +		__entry->bytes_alloc,
+> +		__entry->gfp_flags)
+> +);
+> +
+> +TRACE_EVENT(kmalloc_node,
+> +
+> +	TP_PROTO(unsigned long call_site,
+> +		 const void *ptr,
+> +		 size_t bytes_req,
+> +		 size_t bytes_alloc,
+> +		 gfp_t gfp_flags,
+> +		 int node),
+> +
+> +	TP_ARGS(call_site, ptr, bytes_req, bytes_alloc, gfp_flags, node),
+> +
+> +	TP_STRUCT__entry(
+> +		__field(	unsigned long,	call_site	)
+> +		__field(	const void *,	ptr		)
+> +		__field(	size_t,		bytes_req	)
+> +		__field(	size_t,		bytes_alloc	)
+> +		__field(	gfp_t,		gfp_flags	)
+> +		__field(	int,		node		)
+> +	),
+> +
+> +	TP_fast_assign(
+> +		__entry->call_site	= call_site;
+> +		__entry->ptr		= ptr;
+> +		__entry->bytes_req	= bytes_req;
+> +		__entry->bytes_alloc	= bytes_alloc;
+> +		__entry->gfp_flags	= gfp_flags;
+> +		__entry->node		= node;
+> +	),
+> +
+> +	TP_printk("call_site=%lx ptr=%p bytes_req=%zu bytes_alloc=%zu gfp_flags=%08x node=%d",
+> +		__entry->call_site,
+> +		__entry->ptr,
+> +		__entry->bytes_req,
+> +		__entry->bytes_alloc,
+> +		__entry->gfp_flags,
+> +		__entry->node)
+> +);
+> +
+> +TRACE_EVENT(kmem_cache_alloc_node,
+> +
+> +	TP_PROTO(unsigned long call_site,
+> +		 const void *ptr,
+> +		 size_t bytes_req,
+> +		 size_t bytes_alloc,
+> +		 gfp_t gfp_flags,
+> +		 int node),
+> +
+> +	TP_ARGS(call_site, ptr, bytes_req, bytes_alloc, gfp_flags, node),
+> +
+> +	TP_STRUCT__entry(
+> +		__field(	unsigned long,	call_site	)
+> +		__field(	const void *,	ptr		)
+> +		__field(	size_t,		bytes_req	)
+> +		__field(	size_t,		bytes_alloc	)
+> +		__field(	gfp_t,		gfp_flags	)
+> +		__field(	int,		node		)
+> +	),
+> +
+> +	TP_fast_assign(
+> +		__entry->call_site	= call_site;
+> +		__entry->ptr		= ptr;
+> +		__entry->bytes_req	= bytes_req;
+> +		__entry->bytes_alloc	= bytes_alloc;
+> +		__entry->gfp_flags	= gfp_flags;
+> +		__entry->node		= node;
+> +	),
+> +
+> +	TP_printk("call_site=%lx ptr=%p bytes_req=%zu bytes_alloc=%zu gfp_flags=%08x node=%d",
+> +		__entry->call_site,
+> +		__entry->ptr,
+> +		__entry->bytes_req,
+> +		__entry->bytes_alloc,
+> +		__entry->gfp_flags,
+> +		__entry->node)
+> +);
+> +
+> +TRACE_EVENT(kfree,
+> +
+> +	TP_PROTO(unsigned long call_site, const void *ptr),
+> +
+> +	TP_ARGS(call_site, ptr),
+> +
+> +	TP_STRUCT__entry(
+> +		__field(	unsigned long,	call_site	)
+> +		__field(	const void *,	ptr		)
+> +	),
+> +
+> +	TP_fast_assign(
+> +		__entry->call_site	= call_site;
+> +		__entry->ptr		= ptr;
+> +	),
+> +
+> +	TP_printk("call_site=%lx ptr=%p", __entry->call_site, __entry->ptr)
+> +);
+> +
+> +TRACE_EVENT(kmem_cache_free,
+> +
+> +	TP_PROTO(unsigned long call_site, const void *ptr),
+> +
+> +	TP_ARGS(call_site, ptr),
+> +
+> +	TP_STRUCT__entry(
+> +		__field(	unsigned long,	call_site	)
+> +		__field(	const void *,	ptr		)
+> +	),
+> +
+> +	TP_fast_assign(
+> +		__entry->call_site	= call_site;
+> +		__entry->ptr		= ptr;
+> +	),
+> +
+> +	TP_printk("call_site=%lx ptr=%p", __entry->call_site, __entry->ptr)
+> +);
+> +
+> +#undef TRACE_SYSTEM
+> diff --git a/include/trace/trace_event_types.h b/include/trace/trace_event_types.h
+> index 33b6bfc..552a50e 100644
+> --- a/include/trace/trace_event_types.h
+> +++ b/include/trace/trace_event_types.h
+> @@ -4,3 +4,4 @@
+>  #include <trace/irq_event_types.h>
+>  #include <trace/lockdep_event_types.h>
+>  #include <trace/skb_event_types.h>
+> +#include <trace/kmem_event_types.h>
+> diff --git a/include/trace/trace_events.h b/include/trace/trace_events.h
+> index 0e2aa80..13d6b85 100644
+> --- a/include/trace/trace_events.h
+> +++ b/include/trace/trace_events.h
+> @@ -4,3 +4,4 @@
+>  #include <trace/irq.h>
+>  #include <trace/lockdep.h>
+>  #include <trace/skb.h>
+> +#include <trace/kmem.h>
+> -- 
+> 1.5.5.3
+> 
+> 
+
