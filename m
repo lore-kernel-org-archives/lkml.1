@@ -1,137 +1,86 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S938699AbZDJOKK@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754678AbZDJOWV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S938699AbZDJOKK (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 10 Apr 2009 10:10:10 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753001AbZDJOJ5
+	id S1754678AbZDJOWV (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 10 Apr 2009 10:22:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752958AbZDJOWH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 10 Apr 2009 10:09:57 -0400
-Received: from hera.kernel.org ([140.211.167.34]:32817 "EHLO hera.kernel.org"
+	Fri, 10 Apr 2009 10:22:07 -0400
+Received: from e3.ny.us.ibm.com ([32.97.182.143]:48600 "EHLO e3.ny.us.ibm.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751728AbZDJOJz (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 10 Apr 2009 10:09:55 -0400
-Date: Fri, 10 Apr 2009 14:06:37 GMT
-From: Masami Hiramatsu <mhiramat@redhat.com>
-To: linux-tip-commits@vger.kernel.org
-Cc: linux-kernel@vger.kernel.org, mathieu.desnoyers@polymtl.ca, hpa@zytor.com,
-       mingo@redhat.com, torvalds@linux-foundation.org, ananth@in.ibm.com,
-       garyhade@us.ibm.com, akpm@linux-foundation.org, tglx@linutronix.de,
-       mhiramat@redhat.com, mingo@elte.hu, systemtap@sources.redhat.com
-Reply-To: mingo@redhat.com, hpa@zytor.com, mathieu.desnoyers@polymtl.ca,
-       linux-kernel@vger.kernel.org, torvalds@linux-foundation.org,
-       ananth@in.ibm.com, garyhade@us.ibm.com, akpm@linux-foundation.org,
-       tglx@linutronix.de, mhiramat@redhat.com, systemtap@sources.redhat.com,
-       mingo@elte.hu
-In-Reply-To: <49DE3695.6040800@redhat.com>
-References: <49DE3695.6040800@redhat.com>
-Subject: [tip:x86/urgent] x86: fix set_fixmap to use phys_addr_t
-Message-ID: <tip-189cdc2b41fce3a780a6f3aa963cc4e8114aec6b@git.kernel.org>
-Git-Commit-ID: 189cdc2b41fce3a780a6f3aa963cc4e8114aec6b
-X-Mailer: tip-git-log-daemon
+	id S1750823AbZDJOWG (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 10 Apr 2009 10:22:06 -0400
+Date: Fri, 10 Apr 2009 07:22:03 -0700
+From: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
+To: Tetsuo Handa <penguin-kernel@i-love.sakura.ne.jp>
+Cc: linux-kernel@vger.kernel.org, viro@zeniv.linux.org.uk, hugh@veritas.com,
+       jmorris@namei.org, akpm@linux-foundation.org
+Subject: Re: [2.6.30-rc1] RCU detected CPU 1 stall
+Message-ID: <20090410142203.GA6719@linux.vnet.ibm.com>
+Reply-To: paulmck@linux.vnet.ibm.com
+References: <200904080057.n380vZAH051872@www262.sakura.ne.jp>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Fri, 10 Apr 2009 14:06:39 +0000 (UTC)
+In-Reply-To: <200904080057.n380vZAH051872@www262.sakura.ne.jp>
+User-Agent: Mutt/1.5.15+20070412 (2007-04-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Commit-ID:  189cdc2b41fce3a780a6f3aa963cc4e8114aec6b
-Gitweb:     http://git.kernel.org/tip/189cdc2b41fce3a780a6f3aa963cc4e8114aec6b
-Author:     Masami Hiramatsu <mhiramat@redhat.com>
-AuthorDate: Thu, 9 Apr 2009 10:55:33 -0700
-Committer:  Ingo Molnar <mingo@elte.hu>
-CommitDate: Fri, 10 Apr 2009 15:52:59 +0200
+On Wed, Apr 08, 2009 at 09:57:35AM +0900, Tetsuo Handa wrote:
+> Hello.
+> 
+> I got this.
+> 
+> [  161.653269] INFO: RCU detected CPU 1 stall (t=4294932711/32565 jiffies)
+> [  161.655376] Pid: 3487, comm: khelper Tainted: G        W  2.6.30-rc1 #1
+> [  161.655376] Call Trace:
+> [  161.659680]  [<c015949d>] ? printk+0x1d/0x30
+> [  161.659680]  [<c01b38b5>] print_cpu_stall+0x45/0xa0
+> [  161.663377]  [<c01b39f8>] check_cpu_stall+0xe8/0x190
+> [  161.667409]  [<c01ad59d>] ? get_timestamp+0xd/0x20
+> [  161.667409]  [<c01b43ab>] __rcu_pending+0x1b/0x160
+> [  161.671679]  [<c01b451e>] rcu_pending+0x2e/0x70
+> [  161.675680]  [<c01692ab>] update_process_times+0x3b/0x80
+> [  161.675680]  [<c018bcf0>] tick_periodic+0x40/0x90
+> [  161.679710]  [<c018bd5e>] tick_handle_periodic+0x1e/0xa0
+> [  161.679710]  [<c01045e0>] ? apic_timer_interrupt+0x28/0x34
+> [  161.683721]  [<c012215f>] local_apic_timer_interrupt+0x6f/0x80
+> [  161.687390]  [<c0161184>] ? irq_enter+0x14/0x60
+> [  161.691702]  [<c05e7d83>] smp_apic_timer_interrupt+0x33/0x42
+> [  161.691702]  [<c01045e7>] apic_timer_interrupt+0x2f/0x34
+> [  161.695378]  [<c0225da4>] ? __bprm_mm_init+0xe4/0x120
+> [  161.699377]  [<c0379c3d>] ? __get_user_4+0x11/0x17
+> [  161.699377]  [<c0225f4e>] ? count+0x3e/0xb0
+> [  161.703696]  [<c0228554>] do_execve+0x5f4/0x890
+> [  161.707390]  [<c022bd8b>] ? getname+0x6b/0xa0
+> [  161.707390]  [<c010237e>] sys_execve+0x5e/0xb0
+> [  161.711705]  [<c0103d19>] syscall_call+0x7/0xb
+> [  161.711705]  [<c010aee4>] ? kernel_execve+0x24/0x30
+> [  161.715395]  [<c0172b6f>] ? ____call_usermodehelper+0xff/0x170
+> [  161.719736]  [<c0172a70>] ? ____call_usermodehelper+0x0/0x170
+> [  161.723726]  [<c0104707>] ? kernel_thread_helper+0x7/0x10
+> 
+> Config is at http://I-love.SAKURA.ne.jp/tmp/config-2.6.30-rc1
+> Full log is at http://I-love.SAKURA.ne.jp/tmp/dmesg-2.6.30-rc1.txt
 
-x86: fix set_fixmap to use phys_addr_t
+CONFIG_PREEMPT_NONE=y
+CONFIG_CLASSIC_RCU=y
+CONFIG_HZ_250=y
 
-Impact: fix kprobes crash on 32-bit with RAM above 4G
+Hmmmm...  This indicates that CPU 1 was spinning in the kernel for
+a long time.  At 250 HZ, 32,565 jiffies is 130 seconds, or just over
+two -minutes-.  Ouch!!!
 
-Use phys_addr_t for receiving a physical address argument
-instead of unsigned long. This allows fixmap to handle
-pages higher than 4GB on x86-32.
+The interrupt happened on the stalled CPU, so we know that interrupts
+were enabled.  Because we have CONFIG_PREEMPT_NONE=y, there is no
+preemption, so preemption need not be disabled.  This could be due
+to lock contention, or even a simple infinite loop.
 
-Signed-off-by: Masami Hiramatsu <mhiramat@redhat.com>
-Acked-by: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
-Cc: Andrew Morton <akpm@linux-foundation.org>
-Cc: Ananth N Mavinakayanahalli <ananth@in.ibm.com>
-Cc: systemtap-ml <systemtap@sources.redhat.com>
-Cc: Gary Hade <garyhade@us.ibm.com>
-Cc: Linus Torvalds <torvalds@linux-foundation.org>
-LKML-Reference: <49DE3695.6040800@redhat.com>
-Signed-off-by: Ingo Molnar <mingo@elte.hu>
+The timer interrupt (apic_timer_interrupt) occurred in either
+__bprm_mm_init(), __get_user_4(), count(), or do_execve().  There
+have been some recent changes around check_unsafe_exec() -- any
+possibility that these introduced excessive lock contention or
+an infinite loop?  Ditto for the recent security fixes?
 
-
----
- arch/x86/include/asm/fixmap.h   |    4 ++--
- arch/x86/include/asm/paravirt.h |    4 ++--
- arch/x86/mm/pgtable.c           |    3 ++-
- arch/x86/xen/mmu.c              |    2 +-
- 4 files changed, 7 insertions(+), 6 deletions(-)
-
-diff --git a/arch/x86/include/asm/fixmap.h b/arch/x86/include/asm/fixmap.h
-index 81937a5..2d81af3 100644
---- a/arch/x86/include/asm/fixmap.h
-+++ b/arch/x86/include/asm/fixmap.h
-@@ -151,11 +151,11 @@ extern pte_t *pkmap_page_table;
- 
- void __native_set_fixmap(enum fixed_addresses idx, pte_t pte);
- void native_set_fixmap(enum fixed_addresses idx,
--		       unsigned long phys, pgprot_t flags);
-+		       phys_addr_t phys, pgprot_t flags);
- 
- #ifndef CONFIG_PARAVIRT
- static inline void __set_fixmap(enum fixed_addresses idx,
--				unsigned long phys, pgprot_t flags)
-+				phys_addr_t phys, pgprot_t flags)
- {
- 	native_set_fixmap(idx, phys, flags);
- }
-diff --git a/arch/x86/include/asm/paravirt.h b/arch/x86/include/asm/paravirt.h
-index 7727aa8..378e369 100644
---- a/arch/x86/include/asm/paravirt.h
-+++ b/arch/x86/include/asm/paravirt.h
-@@ -347,7 +347,7 @@ struct pv_mmu_ops {
- 	/* Sometimes the physical address is a pfn, and sometimes its
- 	   an mfn.  We can tell which is which from the index. */
- 	void (*set_fixmap)(unsigned /* enum fixed_addresses */ idx,
--			   unsigned long phys, pgprot_t flags);
-+			   phys_addr_t phys, pgprot_t flags);
- };
- 
- struct raw_spinlock;
-@@ -1432,7 +1432,7 @@ static inline void arch_leave_lazy_mmu_mode(void)
- void arch_flush_lazy_mmu_mode(void);
- 
- static inline void __set_fixmap(unsigned /* enum fixed_addresses */ idx,
--				unsigned long phys, pgprot_t flags)
-+				phys_addr_t phys, pgprot_t flags)
- {
- 	pv_mmu_ops.set_fixmap(idx, phys, flags);
- }
-diff --git a/arch/x86/mm/pgtable.c b/arch/x86/mm/pgtable.c
-index 5b7c7c8..7aa03a5 100644
---- a/arch/x86/mm/pgtable.c
-+++ b/arch/x86/mm/pgtable.c
-@@ -345,7 +345,8 @@ void __native_set_fixmap(enum fixed_addresses idx, pte_t pte)
- 	fixmaps_set++;
- }
- 
--void native_set_fixmap(enum fixed_addresses idx, unsigned long phys, pgprot_t flags)
-+void native_set_fixmap(enum fixed_addresses idx, phys_addr_t phys,
-+		       pgprot_t flags)
- {
- 	__native_set_fixmap(idx, pfn_pte(phys >> PAGE_SHIFT, flags));
- }
-diff --git a/arch/x86/xen/mmu.c b/arch/x86/xen/mmu.c
-index db3802f..2a81838 100644
---- a/arch/x86/xen/mmu.c
-+++ b/arch/x86/xen/mmu.c
-@@ -1750,7 +1750,7 @@ __init pgd_t *xen_setup_kernel_pagetable(pgd_t *pgd,
- }
- #endif	/* CONFIG_X86_64 */
- 
--static void xen_set_fixmap(unsigned idx, unsigned long phys, pgprot_t prot)
-+static void xen_set_fixmap(unsigned idx, phys_addr_t phys, pgprot_t prot)
- {
- 	pte_t pte;
- 
+						Thanx, Paul
