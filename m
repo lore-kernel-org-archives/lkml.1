@@ -1,357 +1,100 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S939531AbZDJSej@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S939229AbZDJSff@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S939531AbZDJSej (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 10 Apr 2009 14:34:39 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S937293AbZDJSe2
+	id S939229AbZDJSff (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 10 Apr 2009 14:35:35 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S937772AbZDJSfY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 10 Apr 2009 14:34:28 -0400
-Received: from hera.kernel.org ([140.211.167.34]:49786 "EHLO hera.kernel.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1765860AbZDJSe1 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 10 Apr 2009 14:34:27 -0400
-Subject: Re: [git-pull -tip] x86: declaration patches
-From: Jaswinder Singh Rajput <jaswinder@kernel.org>
-To: Sam Ravnborg <sam@ravnborg.org>
-Cc: Ingo Molnar <mingo@elte.hu>, x86 maintainers <x86@kernel.org>,
-       LKML <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Andi Kleen <andi@firstfloor.org>, Thomas Gleixner <tglx@linutronix.de>
-In-Reply-To: <20090410172925.GA24446@uranus.ravnborg.org>
-References: <1239381184.23116.5.camel@ht.satnam>
-	 <20090410172925.GA24446@uranus.ravnborg.org>
-Content-Type: text/plain
-Date: Sat, 11 Apr 2009 00:03:10 +0530
-Message-Id: <1239388390.3169.43.camel@ht.satnam>
+	Fri, 10 Apr 2009 14:35:24 -0400
+Received: from 82-117-125-11.tcdsl.calypso.net ([82.117.125.11]:41897 "EHLO
+	smtp.ossman.eu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S937293AbZDJSfY (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 10 Apr 2009 14:35:24 -0400
+Date: Fri, 10 Apr 2009 20:35:20 +0200
+From: Pierre Ossman <drzeus-mmc@drzeus.cx>
+To: JosephChan@via.com.tw
+Cc: linux-kernel@vger.kernel.org, arnd@arndb.de, ben-linux@fluff.org
+Subject: Re: [Patch 1/1 v5] via-sdmmc: VIA MSP card reader driver support
+Message-ID: <20090410203520.6e43acb2@mjolnir.ossman.eu>
+In-Reply-To: <C80EF34A3D2E494DBAF9AC29C7AE4EB808EBD84A@exchtp03.taipei.via.com.tw>
+References: <C80EF34A3D2E494DBAF9AC29C7AE4EB808EBD84A@exchtp03.taipei.via.com.tw>
+X-Mailer: Claws Mail 3.7.1 (GTK+ 2.16.0; x86_64-redhat-linux-gnu)
 Mime-Version: 1.0
-X-Mailer: Evolution 2.24.5 (2.24.5-1.fc10) 
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 2009-04-10 at 19:29 +0200, Sam Ravnborg wrote:
+On Wed, 1 Apr 2009 10:24:02 +0800
+JosephChan@via.com.tw wrote:
 
-> The above is a lot ifdefs just to:
-> 1) use asmlinkage only on 64 bit
-> 2) hide the prototype if do not implement the function
+> Hi all,
 > 
-> Is there any relevant cost associated with asmlinkage or could we just make it
-> always asmlinkage?
+> The following patch provides VIA MSP SD/MMC card reader driver support.
+> This patch is based on 2.6.29 kernel.
+> Thanks to Pierre's suggestions.
+> Please feel free to contact me if any problem. Thanks in advanced.
+> 
+> In addition, the SPEC is available in VX800 Programming guide (Device 13 Function 0) on http://linux.via.com.tw
 > 
 
-Ok fixed asmlinkage issue.
+Looking good. There's just a few minor things. See below.
 
-and also fixed thomas's comment issue.
+> +
+> +nodata:
+> +	if (cmd->opcode == MMC_STOP_TRANSMISSION)
+> +		cmdctrl |= VIA_CRDR_SDCTRL_STOP;
+> +
 
-So here is new pull request:
-The following changes since commit 7fd61bdf06572f1ca681aa35f5c86531a821ea75:
-  Ingo Molnar (1):
-        Merge branch 'x86/urgent'
+I didn't check this part properly the last time. I'm assuming you're
+telling the hardware that this is a command that terminates a data
+transmission? If so, you cannot check the opcode like that. There might
+be other stop commands.
 
-are available in the git repository at:
+What you need to do is to either pass another parameter to your
+function when you're calling it with data->stop, or simply have a test
+in there if cmd == data->stop (or mrq->stop, whichever is most
+convenient).
 
-  git://git.kernel.org/pub/scm/linux/kernel/git/jaswinder/linux-2.6-tip.git master
+> +
+> +	if (ios->clock >= 40000000)
+> +		clock = PCI_CLK_48M;
+> +	else if (ios->clock >= 30000000)
+> +		clock = PCI_CLK_33M;
+> +	else if (ios->clock >= 20000000)
+> +		clock = PCI_CLK_24M;
+> +	else if (ios->clock >= 15000000)
+> +		clock = PCI_CLK_16M;
+> +	else if (ios->clock >= 10000000)
+> +		clock = PCI_CLK_12M;
+> +	else if (ios->clock >=  5000000)
+> +		clock = PCI_CLK_8M;
+> +	else
+> +		clock = PCI_CLK_375K;
+> +
 
-Jaswinder Singh Rajput (8):
-      x86: irq.c declare smp_generic_interrupt before they get used
-      x86: syscalls.h update declarations due to unifications
-      x86: process.c declare sys_fork and sys_vfork before they get used
-      x86: tsc.c rename tsc_khz shadow variable
-      x86: apic/probe_32.c declare apic_default before they get used
-      x86: apic/nmi.c prev_nmi_count should be unsigned
-      x86: apic/io_apic.c declare smp_irq_move_cleanup_interrupt before they get used
-      x86: mm/init.c declare direct_gbpages and free_initrd_mem before they get used
+This looks a bit strange. Why are you not comparing with the clock
+frequency you'll be setting?
 
- arch/x86/include/asm/apic.h       |    3 ++
- arch/x86/include/asm/hw_irq.h     |    4 +++
- arch/x86/include/asm/pgtable.h    |    2 +
- arch/x86/include/asm/pgtable_64.h |    6 -----
- arch/x86/include/asm/syscalls.h   |   45 +++++++++++++++++++-----------------
- arch/x86/kernel/apic/io_apic.c    |    1 +
- arch/x86/kernel/apic/nmi.c        |    2 +-
- arch/x86/kernel/apic/probe_32.c   |    1 -
- arch/x86/kernel/irq.c             |    1 +
- arch/x86/kernel/process.c         |    1 +
- arch/x86/kernel/tsc.c             |    8 +++---
- arch/x86/mm/init.c                |    1 +
- 12 files changed, 42 insertions(+), 33 deletions(-)
+> +
+> +	mmc->f_min = VIA_CRDR_MIN_CLOCK;
+> +	mmc->f_max = VIA_CRDR_MAX_CLOCK;
+> +	mmc->ocr_avail = MMC_VDD_32_33 | MMC_VDD_33_34 | MMC_VDD_165_195;
+> +	mmc->caps = MMC_CAP_4_BIT_DATA;
 
-Complete diff:
-diff --git a/arch/x86/include/asm/apic.h b/arch/x86/include/asm/apic.h
-index 42f2f83..5773660 100644
---- a/arch/x86/include/asm/apic.h
-+++ b/arch/x86/include/asm/apic.h
-@@ -478,6 +478,9 @@ static inline unsigned int read_apic_id(void)
- extern void default_setup_apic_routing(void);
- 
- #ifdef CONFIG_X86_32
-+
-+extern struct apic apic_default;
-+
- /*
-  * Set up the logical destination ID.
-  *
-diff --git a/arch/x86/include/asm/hw_irq.h b/arch/x86/include/asm/hw_irq.h
-index 7309c0a..beeb208 100644
---- a/arch/x86/include/asm/hw_irq.h
-+++ b/arch/x86/include/asm/hw_irq.h
-@@ -81,7 +81,11 @@ extern void eisa_set_level_irq(unsigned int irq);
- /* SMP */
- extern void smp_apic_timer_interrupt(struct pt_regs *);
- extern void smp_spurious_interrupt(struct pt_regs *);
-+extern void smp_generic_interrupt(struct pt_regs *);
- extern void smp_error_interrupt(struct pt_regs *);
-+#ifdef CONFIG_X86_IO_APIC
-+extern asmlinkage void smp_irq_move_cleanup_interrupt(void);
-+#endif
- #ifdef CONFIG_SMP
- extern void smp_reschedule_interrupt(struct pt_regs *);
- extern void smp_call_function_interrupt(struct pt_regs *);
-diff --git a/arch/x86/include/asm/pgtable.h b/arch/x86/include/asm/pgtable.h
-index 205f6a9..577485b 100644
---- a/arch/x86/include/asm/pgtable.h
-+++ b/arch/x86/include/asm/pgtable.h
-@@ -510,6 +510,8 @@ static inline int pte_hidden(pte_t pte)
- 
- #ifndef __ASSEMBLY__
- 
-+extern int direct_gbpages;
-+
- /* local pte updates need not use xchg for locking */
- static inline pte_t native_local_ptep_get_and_clear(pte_t *ptep)
- {
-diff --git a/arch/x86/include/asm/pgtable_64.h b/arch/x86/include/asm/pgtable_64.h
-index 6b87bc6..abde308 100644
---- a/arch/x86/include/asm/pgtable_64.h
-+++ b/arch/x86/include/asm/pgtable_64.h
-@@ -25,10 +25,6 @@ extern pgd_t init_level4_pgt[];
- 
- extern void paging_init(void);
- 
--#endif /* !__ASSEMBLY__ */
--
--#ifndef __ASSEMBLY__
--
- #define pte_ERROR(e)					\
- 	printk("%s:%d: bad pte %p(%016lx).\n",		\
- 	       __FILE__, __LINE__, &(e), pte_val(e))
-@@ -135,8 +131,6 @@ static inline int pgd_large(pgd_t pgd) { return 0; }
- 
- #define update_mmu_cache(vma, address, pte) do { } while (0)
- 
--extern int direct_gbpages;
--
- /* Encode and de-code a swap entry */
- #if _PAGE_BIT_FILE < _PAGE_BIT_PROTNONE
- #define SWP_TYPE_BITS (_PAGE_BIT_FILE - _PAGE_BIT_PRESENT - 1)
-diff --git a/arch/x86/include/asm/syscalls.h b/arch/x86/include/asm/syscalls.h
-index 7043408..372b76e 100644
---- a/arch/x86/include/asm/syscalls.h
-+++ b/arch/x86/include/asm/syscalls.h
-@@ -1,7 +1,7 @@
- /*
-  * syscalls.h - Linux syscall interfaces (arch-specific)
-  *
-- * Copyright (c) 2008 Jaswinder Singh
-+ * Copyright (c) 2008 Jaswinder Singh Rajput
-  *
-  * This file is released under the GPLv2.
-  * See the file COPYING for more details.
-@@ -12,50 +12,55 @@
- 
- #include <linux/compiler.h>
- #include <linux/linkage.h>
--#include <linux/types.h>
- #include <linux/signal.h>
-+#include <linux/types.h>
- 
- /* Common in X86_32 and X86_64 */
- /* kernel/ioport.c */
- asmlinkage long sys_ioperm(unsigned long, unsigned long, int);
- 
-+/* kernel/process.c */
-+int sys_fork(struct pt_regs *);
-+int sys_vfork(struct pt_regs *);
-+
- /* kernel/ldt.c */
- asmlinkage int sys_modify_ldt(int, void __user *, unsigned long);
- 
-+/* kernel/signal.c */
-+long sys_rt_sigreturn(struct pt_regs *);
-+
- /* kernel/tls.c */
- asmlinkage int sys_set_thread_area(struct user_desc __user *);
- asmlinkage int sys_get_thread_area(struct user_desc __user *);
- 
- /* X86_32 only */
- #ifdef CONFIG_X86_32
-+/* kernel/ioport.c */
-+long sys_iopl(struct pt_regs *);
-+
- /* kernel/process_32.c */
--int sys_fork(struct pt_regs *);
- int sys_clone(struct pt_regs *);
--int sys_vfork(struct pt_regs *);
- int sys_execve(struct pt_regs *);
- 
--/* kernel/signal_32.c */
-+/* kernel/signal.c */
- asmlinkage int sys_sigsuspend(int, int, old_sigset_t);
- asmlinkage int sys_sigaction(int, const struct old_sigaction __user *,
- 			     struct old_sigaction __user *);
- int sys_sigaltstack(struct pt_regs *);
- unsigned long sys_sigreturn(struct pt_regs *);
--long sys_rt_sigreturn(struct pt_regs *);
--
--/* kernel/ioport.c */
--long sys_iopl(struct pt_regs *);
- 
- /* kernel/sys_i386_32.c */
-+struct mmap_arg_struct;
-+struct sel_arg_struct;
-+struct oldold_utsname;
-+struct old_utsname;
-+
- asmlinkage long sys_mmap2(unsigned long, unsigned long, unsigned long,
- 			  unsigned long, unsigned long, unsigned long);
--struct mmap_arg_struct;
- asmlinkage int old_mmap(struct mmap_arg_struct __user *);
--struct sel_arg_struct;
- asmlinkage int old_select(struct sel_arg_struct __user *);
- asmlinkage int sys_ipc(uint, int, int, int, void __user *, long);
--struct old_utsname;
- asmlinkage int sys_uname(struct old_utsname __user *);
--struct oldold_utsname;
- asmlinkage int sys_olduname(struct oldold_utsname __user *);
- 
- /* kernel/vm86_32.c */
-@@ -65,29 +70,27 @@ int sys_vm86(struct pt_regs *);
- #else /* CONFIG_X86_32 */
- 
- /* X86_64 only */
-+/* kernel/ioport.c */
-+asmlinkage long sys_iopl(unsigned int, struct pt_regs *);
-+
- /* kernel/process_64.c */
--asmlinkage long sys_fork(struct pt_regs *);
- asmlinkage long sys_clone(unsigned long, unsigned long,
- 			  void __user *, void __user *,
- 			  struct pt_regs *);
--asmlinkage long sys_vfork(struct pt_regs *);
- asmlinkage long sys_execve(char __user *, char __user * __user *,
- 			   char __user * __user *,
- 			   struct pt_regs *);
- long sys_arch_prctl(int, unsigned long);
- 
--/* kernel/ioport.c */
--asmlinkage long sys_iopl(unsigned int, struct pt_regs *);
--
--/* kernel/signal_64.c */
-+/* kernel/signal.c */
- asmlinkage long sys_sigaltstack(const stack_t __user *, stack_t __user *,
- 				struct pt_regs *);
--long sys_rt_sigreturn(struct pt_regs *);
- 
- /* kernel/sys_x86_64.c */
-+struct new_utsname;
-+
- asmlinkage long sys_mmap(unsigned long, unsigned long, unsigned long,
- 			 unsigned long, unsigned long, unsigned long);
--struct new_utsname;
- asmlinkage long sys_uname(struct new_utsname __user *);
- 
- #endif /* CONFIG_X86_32 */
-diff --git a/arch/x86/kernel/apic/io_apic.c b/arch/x86/kernel/apic/io_apic.c
-index 8499000..156ae14 100644
---- a/arch/x86/kernel/apic/io_apic.c
-+++ b/arch/x86/kernel/apic/io_apic.c
-@@ -59,6 +59,7 @@
- #include <asm/setup.h>
- #include <asm/irq_remapping.h>
- #include <asm/hpet.h>
-+#include <asm/hw_irq.h>
- #include <asm/uv/uv_hub.h>
- #include <asm/uv/uv_irq.h>
- 
-diff --git a/arch/x86/kernel/apic/nmi.c b/arch/x86/kernel/apic/nmi.c
-index d6bd624..0205631 100644
---- a/arch/x86/kernel/apic/nmi.c
-+++ b/arch/x86/kernel/apic/nmi.c
-@@ -104,7 +104,7 @@ static __init void nmi_cpu_busy(void *data)
- }
- #endif
- 
--static void report_broken_nmi(int cpu, int *prev_nmi_count)
-+static void report_broken_nmi(int cpu, unsigned int *prev_nmi_count)
- {
- 	printk(KERN_CONT "\n");
- 
-diff --git a/arch/x86/kernel/apic/probe_32.c b/arch/x86/kernel/apic/probe_32.c
-index 01eda2a..440a8bc 100644
---- a/arch/x86/kernel/apic/probe_32.c
-+++ b/arch/x86/kernel/apic/probe_32.c
-@@ -160,7 +160,6 @@ extern struct apic apic_summit;
- extern struct apic apic_bigsmp;
- extern struct apic apic_es7000;
- extern struct apic apic_es7000_cluster;
--extern struct apic apic_default;
- 
- struct apic *apic = &apic_default;
- EXPORT_SYMBOL_GPL(apic);
-diff --git a/arch/x86/kernel/irq.c b/arch/x86/kernel/irq.c
-index 9be593f..74fcb3b 100644
---- a/arch/x86/kernel/irq.c
-+++ b/arch/x86/kernel/irq.c
-@@ -12,6 +12,7 @@
- #include <asm/io_apic.h>
- #include <asm/irq.h>
- #include <asm/idle.h>
-+#include <asm/hw_irq.h>
- 
- atomic_t irq_err_count;
- 
-diff --git a/arch/x86/kernel/process.c b/arch/x86/kernel/process.c
-index 1d71442..e915045 100644
---- a/arch/x86/kernel/process.c
-+++ b/arch/x86/kernel/process.c
-@@ -15,6 +15,7 @@
- #include <asm/uaccess.h>
- #include <asm/i387.h>
- #include <asm/ds.h>
-+#include <asm/syscalls.h>
- 
- unsigned long idle_halt;
- EXPORT_SYMBOL(idle_halt);
-diff --git a/arch/x86/kernel/tsc.c b/arch/x86/kernel/tsc.c
-index 7a567eb..a8dc0d0 100644
---- a/arch/x86/kernel/tsc.c
-+++ b/arch/x86/kernel/tsc.c
-@@ -384,13 +384,13 @@ unsigned long native_calibrate_tsc(void)
- {
- 	u64 tsc1, tsc2, delta, ref1, ref2;
- 	unsigned long tsc_pit_min = ULONG_MAX, tsc_ref_min = ULONG_MAX;
--	unsigned long flags, latch, ms, fast_calibrate, tsc_khz;
-+	unsigned long flags, latch, ms, fast_calibrate, hv_tsc_khz;
- 	int hpet = is_hpet_enabled(), i, loopmin;
- 
--	tsc_khz = get_hypervisor_tsc_freq();
--	if (tsc_khz) {
-+	hv_tsc_khz = get_hypervisor_tsc_freq();
-+	if (hv_tsc_khz) {
- 		printk(KERN_INFO "TSC: Frequency read from the hypervisor\n");
--		return tsc_khz;
-+		return hv_tsc_khz;
- 	}
- 
- 	local_irq_save(flags);
-diff --git a/arch/x86/mm/init.c b/arch/x86/mm/init.c
-index 51ae5ea..4e49613 100644
---- a/arch/x86/mm/init.c
-+++ b/arch/x86/mm/init.c
-@@ -1,3 +1,4 @@
-+#include <linux/initrd.h>
- #include <linux/ioport.h>
- #include <linux/swap.h>
- 
+You also need to set the bits stating if the controller supports the
+high-speed SD and/or MMC mode, otherwise the core won't go over 25/20
+MHz.
 
+Rgds
+-- 
+     -- Pierre Ossman
 
+  Linux kernel, MMC maintainer        http://www.kernel.org
+  rdesktop, core developer          http://www.rdesktop.org
+  TigerVNC, core developer          http://www.tigervnc.org
+
+  WARNING: This correspondence is being monitored by the
+  Swedish government. Make sure your server uses encryption
+  for SMTP traffic and consider using PGP for end-to-end
+  encryption.
