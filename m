@@ -1,30 +1,30 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763642AbZDJCcV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1765270AbZDJCc7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763642AbZDJCcV (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 9 Apr 2009 22:32:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758474AbZDJCcJ
+	id S1765270AbZDJCc7 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 9 Apr 2009 22:32:59 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757228AbZDJCcr
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 9 Apr 2009 22:32:09 -0400
-Received: from fg-out-1718.google.com ([72.14.220.157]:39386 "EHLO
+	Thu, 9 Apr 2009 22:32:47 -0400
+Received: from fg-out-1718.google.com ([72.14.220.159]:37038 "EHLO
 	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755194AbZDJCcF (ORCPT
+	with ESMTP id S1757005AbZDJCcq (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 9 Apr 2009 22:32:05 -0400
+	Thu, 9 Apr 2009 22:32:46 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
         h=date:from:to:cc:subject:message-id:mime-version:content-type
          :content-disposition:user-agent;
-        b=CLdsfOF6+9VlOsAwoy7kQ24iIn5DDb7nnchn6OwBa5gSbC3lCCyvcIoUntEsRuVf51
-         KQURCW+PP/rTEQ0JOUsblHCH2vaPQ+yJxkX93TVT7zVbSQxYfi37G+sTfttCDjTgyRA6
-         UJF+xcv8Ol0mpRXMHmz6DSoEajRs4oysKIl7E=
-Date: Fri, 10 Apr 2009 06:32:07 +0400
+        b=nHjJ59/i8UYdFCe1UXBjcMsOKNTYuVIf5mM2U/WM0DhbA+IezLEBysBQX7VeyJGrnA
+         w/+Uekf2GE2l02ufgCdqMTdMNEFoHpQfAHOKNfpXxY0GtCDwBdoyuHcSgOvRYskL4F0+
+         XhFVsHoMxgqy3z6mvorI3dxmndd8mP8KfZP2g=
+Date: Fri, 10 Apr 2009 06:32:48 +0400
 From: Alexey Dobriyan <adobriyan@gmail.com>
 To: akpm@linux-foundation.org, containers@lists.linux-foundation.org
 Cc: xemul@parallels.com, serue@us.ibm.com, dave@linux.vnet.ibm.com,
        mingo@elte.hu, orenl@cs.columbia.edu, hch@infradead.org,
        torvalds@linux-foundation.org, linux-kernel@vger.kernel.org
-Subject: [PATCH 00/30] C/R OpenVZ/Virtuozzo style
-Message-ID: <20090410023207.GA27788@x200.localdomain>
+Subject: [PATCH 01/30] headers: fixup cred.h, ipc_namespace.h
+Message-ID: <20090410023248.GB27788@x200.localdomain>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
@@ -33,13 +33,34 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This is to show how we see C/R and to provoke discussion on number of
-important issues (mounts, ...).
+cred.h uses __init
+ipc_namespace.h uses kern_ipc_perm.
 
-This is small part of long-awaited to be cleanuped code.
+Signed-off-by: Alexey Dobriyan <adobriyan@gmail.com>
+---
 
-It's able to restore busyloop on i386 and x86_64 and restore i386
-busyloop on x86_64. It wasn't tested much more than that.
+ include/linux/cred.h          |    1 +
+ include/linux/ipc_namespace.h |    2 ++
+ 2 files changed, 3 insertions(+)
 
-I'm currently starting formal testsuite, otherwise it's whack-a-mole
-game and formal TODO list (a huge one).
+--- a/include/linux/cred.h
++++ b/include/linux/cred.h
+@@ -13,6 +13,7 @@
+ #define _LINUX_CRED_H
+ 
+ #include <linux/capability.h>
++#include <linux/init.h>
+ #include <linux/key.h>
+ #include <asm/atomic.h>
+ 
+--- a/include/linux/ipc_namespace.h
++++ b/include/linux/ipc_namespace.h
+@@ -6,6 +6,8 @@
+ #include <linux/rwsem.h>
+ #include <linux/notifier.h>
+ 
++struct kern_ipc_perm;
++
+ /*
+  * ipc namespace events
+  */
