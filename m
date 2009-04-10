@@ -1,67 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934734AbZDJQkR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933001AbZDJQsB@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934734AbZDJQkR (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 10 Apr 2009 12:40:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751319AbZDJQkA
+	id S933001AbZDJQsB (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 10 Apr 2009 12:48:01 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758276AbZDJQrv
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 10 Apr 2009 12:40:00 -0400
-Received: from 82-117-125-11.tcdsl.calypso.net ([82.117.125.11]:35750 "EHLO
-	smtp.ossman.eu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751309AbZDJQj7 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 10 Apr 2009 12:39:59 -0400
-Date: Fri, 10 Apr 2009 18:39:55 +0200
-From: Pierre Ossman <drzeus-mmc@drzeus.cx>
-To: Jorg Schummer <ext-jorg.2.schummer@nokia.com>
-Cc: linux-kernel@vger.kernel.org,
-       Jorg Schummer <ext-jorg.2.schummer@nokia.com>
-Subject: Re: [PATCH 1/1] MMC: core/core.c: mmc_rescan detects card change in
- one run
-Message-ID: <20090410183955.011c4d65@mjolnir.ossman.eu>
-In-Reply-To: <1238511081-24570-1-git-send-email-ext-jorg.2.schummer@nokia.com>
-References: <20090303095530.65923117@mjolnir.ossman.eu>
-	<1238511081-24570-1-git-send-email-ext-jorg.2.schummer@nokia.com>
-X-Mailer: Claws Mail 3.7.1 (GTK+ 2.16.0; x86_64-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Fri, 10 Apr 2009 12:47:51 -0400
+Received: from mtoichi12.ns.itscom.net ([219.110.2.182]:42624 "EHLO
+	mtoichi12.ns.itscom.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751938AbZDJQrv (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 10 Apr 2009 12:47:51 -0400
+From: hooanon05@yahoo.co.jp
+Subject: Re: [RFC Aufs2 #5 28/29] export lookup functions 
+To: Christoph Hellwig <hch@infradead.org>
+Cc: linux-kernel@vger.kernel.org, greg@kroah.com,
+       linux-fsdevel@vger.kernel.org
+In-Reply-To: <20090410162849.GA28377@infradead.org>
+References: <1239346963-30953-1-git-send-email-hooanon05@yahoo.co.jp> <1239346963-30953-29-git-send-email-hooanon05@yahoo.co.jp> <20090410162849.GA28377@infradead.org>
+Date: Sat, 11 Apr 2009 01:47:15 +0900
+Message-ID: <7612.1239382035@jrobl>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 31 Mar 2009 17:51:21 +0300
-Jorg Schummer <ext-jorg.2.schummer@nokia.com> wrote:
 
-> With this patch, mmc_rescan can detect the removal of an mmc card and
-> the insertion of (possibly another) card in the same run. This means
-> that a card change can be detected without having to call
-> mmc_detect_change multiple times.
-> 
-> This change generalises the core such that it can be easily used by
-> hosts which provide a mechanism to detect only the presence of a card
-> reader cover, which has to be taken off in order to insert a card. Other
-> hosts ("card detect" or "MMC_CAP_NEEDS_POLL") each receive an event when
-> a card is removed and when a card is inserted, so it is sufficient for
-> them if mmc_rescan handles only one event at a time. "Cover detect"
-> hosts, however, only receive events about the cover status. This means
-> that between 2 subsequent events, both a card removal and a card
-> insertion can occur. In this case, the pre-patch version of mmc_rescan
-> would only detect the removal of the previous card but not the insertion
-> of the new card.
-> 
-> Signed-off-by: Jorg Schummer <ext-jorg.2.schummer@nokia.com>
-> ---
+Christoph Hellwig:
+> Strong NACK to all these exports, no one has any buesiness looking at
+> these.
 
-Queued, thanks.
+Will you tell me why?
+If you have ever discussed exporting lookup_hash(), then please tell me
+its URL or something.
 
-Rgds
--- 
-     -- Pierre Ossman
+lookup_hash is necessary for aufs since,
 
-  Linux kernel, MMC maintainer        http://www.kernel.org
-  rdesktop, core developer          http://www.rdesktop.org
-  TigerVNC, core developer          http://www.tigervnc.org
+(from the mail "Subject: [RFC Aufs2 #5 01/29] aufs documents")
++Lookup in a Branch
++----------------------------------------------------------------------
++Since aufs has a character of sub-VFS (see Introduction), it operates
++lookup for branches as VFS does. It may be a heavy work. Generally
++speaking struct nameidata is a bigger structure and includes many
++information. But almost all lookup operation in aufs is the simplest
++case, ie. lookup only an entry directly connected to its parent. Digging
++down the directory hierarchy is unnecessary.
++
++VFS has a function lookup_one_len() for that use, but it is not usable
++for a branch filesystem which requires struct nameidata. So aufs
++implements a simple lookup wrapper function. When a branch filesystem
++allows NULL as nameidata, it calls lookup_one_len(). Otherwise it builds
++a simplest nameidata and calls lookup_hash().
++Here aufs applies "a principle in NFSD", ie. if the filesystem supports
++NFS-export, then it has to support NULL as a nameidata parameter for
++->create(), ->lookup() and ->d_revalidate(). So the lookup wrapper in
++aufs tests if ->s_export_op in the branch is NULL or not.
 
-  WARNING: This correspondence is being monitored by the
-  Swedish government. Make sure your server uses encryption
-  for SMTP traffic and consider using PGP for end-to-end
-  encryption.
+
+J. R. Okajima
