@@ -1,96 +1,84 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933749AbZDJW25@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752120AbZDJW3f@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933749AbZDJW25 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 10 Apr 2009 18:28:57 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752720AbZDJW2j
+	id S1752120AbZDJW3f (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 10 Apr 2009 18:29:35 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759131AbZDJW3W
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 10 Apr 2009 18:28:39 -0400
-Received: from bedivere.hansenpartnership.com ([66.63.167.143]:46409 "EHLO
-	bedivere.hansenpartnership.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1750935AbZDJW2i (ORCPT
+	Fri, 10 Apr 2009 18:29:22 -0400
+Received: from e36.co.us.ibm.com ([32.97.110.154]:46495 "EHLO
+	e36.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752686AbZDJW3V (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 10 Apr 2009 18:28:38 -0400
-Subject: Re: READ CAPACITY (16) failing
-From: James Bottomley <James.Bottomley@HansenPartnership.com>
-To: "Mike Miller (OS Dev)" <mikem@beardog.cca.cpqcorp.net>
-Cc: Matthew Wilcox <matthew@wil.cx>, LKML-SCSI <linux-scsi@vger.kernel.org>,
-       LKML <linux-kernel@vger.kernel.org>, mike.miller@hp.com
-In-Reply-To: <20090410193134.GA2615@beardog.cca.cpqcorp.net>
-References: <20090408194357.GA15043@beardog.cca.cpqcorp.net>
-	 <20090408195447.GP20983@parisc-linux.org>
-	 <20090410193134.GA2615@beardog.cca.cpqcorp.net>
-Content-Type: text/plain
-Date: Fri, 10 Apr 2009 15:28:38 -0700
-Message-Id: <1239402518.3393.9.camel@mulgrave>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.22.3.1 (2.22.3.1-1.fc9) 
-Content-Transfer-Encoding: 7bit
+	Fri, 10 Apr 2009 18:29:21 -0400
+Date: Fri, 10 Apr 2009 17:29:16 -0500
+From: "Serge E. Hallyn" <serue@us.ibm.com>
+To: Alexey Dobriyan <adobriyan@gmail.com>
+Cc: akpm@linux-foundation.org, containers@lists.linux-foundation.org,
+       xemul@parallels.com, dave@linux.vnet.ibm.com, mingo@elte.hu,
+       orenl@cs.columbia.edu, hch@infradead.org, torvalds@linux-foundation.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 04/30] ipcns: add create_ipc_ns()
+Message-ID: <20090410222916.GA13873@us.ibm.com>
+References: <20090410023358.GE27788@x200.localdomain>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20090410023358.GE27788@x200.localdomain>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 2009-04-10 at 14:31 -0500, Mike Miller (OS Dev) wrote:
-> On Wed, Apr 08, 2009 at 01:54:48PM -0600, Matthew Wilcox wrote:
-> > On Wed, Apr 08, 2009 at 02:43:57PM -0500, Mike Miller (OS Dev) wrote:
-> > > I'm working on the HP Smart Array SCSI driver (hpsa) and I'm seeing the
-> > > following failures:
-> > > 
-> > > hpsa1: <0x3230> at PCI 0000:02:00.0 IRQ 76 using DAC
-> > > scsi4 : hpsa
-> > > scsi 4:0:0:0: Direct-Access     HP       LOGICAL VOLUME   5.20 PQ: 0 ANSI: 5
-> > > sd 4:0:0:0: Attached scsi generic sg4 type 0
-> > > sd 4:0:0:0: [sdd] READ CAPACITY(16) failed
-> > > sd 4:0:0:0: [sdd] Result: hostbyte=DID_ABORT driverbyte=DRIVER_OK
-> > > sd 4:0:0:0: [sdd] Sense not available.
-> > > hpsa: cp ffff8800cf400000 has check condition: unknown type: Sense: 0x5,
-> > > ASC: 0x20, ASCQ: 0x0, Returning result: 0x2, cmd=[a0 00 00 00 00 00 00 00 10
-> > > 00]
-> > 
-> > > The READ CAPACITY failures are what I'm concerned about. I can't seem to track
-> > > down why that's failing.
-> > > I've tried printing out the_result from sd but it's not printing out. I'm
-> > > assuming that anytime I load the driver it goes thru sd.
-> > > 
-> > > 	if (the_result) {
-> > > 		sense_valid = scsi_sense_valid(&sshdr);
-> > > 		if (sense_valid &&
-> > > 			sshdr.sense_key == ILLEGAL_REQUEST &&
-> > > 			(sshdr.asc == 0x20 || sshdr.asc == 0x24) &&
-> > > 			sshdr.ascq == 0x00)
-> > > 			/* Invalid Command Operation Code or
-> > > 			 * Invalid Field in CDB, just retry
-> > > 			 * silently with RC10 */
-> > > 			return -EINVAL;
-> > > 		}
-> > > 	retries--;
-> > > 	} while (the_result && retries);
-> > > 	printk(KERN_WARNING "sd-mfm: the_result = %d\n", the_result);
-> > 
-> > Probably the device you're testing against doesn't support RC16, which
-> > is fine.  But for some reason, we're not getting valid sense data back
-> > from the device.  Now, there's two responses to this that seem rational
-> > to me:
-> > 
-> >  - In sd.c, if the drive has returned no/invalid sense data, try RC10
-> >    silently, just like the 0x20 / 0x24 ASC case.
-> >  - Find out why this drive doesn't report valid sense data when attached
-> >    to hpsa.  I assume it does report valid sense data when attached to
-> >    some other scsi card?
+Quoting Alexey Dobriyan (adobriyan@gmail.com):
+> clone_ipc_ns() is misnamed, it doesn't clone anything and doesn't uses passed
+> parameter. Rename it.
 > 
-> Me again,
-> The controllers do support RC16. After some more work it looks like RC16 is
-> never getting to the driver. I'm snooping the CDB's of all requests as well
-> as the completions from the driver and I never see a 0x9e. I do see the
-> RC10 (0x25) though, so I think my debug is right.
+> create_ipc_ns() will be used by C/R to create ipcns on restart.
 > 
-> Why would I never the see the command in the driver?
+> Signed-off-by: Alexey Dobriyan <adobriyan@gmail.com>
 
-Because your devices are reporting compliance to a standard before RC16
-was implemented (we have a check in sd_try_rc16_first() to see if you
-comply to higher than SBC-2).  Then, after you've failed this, if you
-don't return the conventional 0xffffffff to RC10, we never retry with
-RC16.
+Acked-by: Serge Hallyn <serue@us.ibm.com>
 
-James
-
-
+> ---
+> 
+>  include/linux/ipc_namespace.h |    1 +
+>  ipc/namespace.c               |    9 ++-------
+>  2 files changed, 3 insertions(+), 7 deletions(-)
+> 
+> --- a/include/linux/ipc_namespace.h
+> +++ b/include/linux/ipc_namespace.h
+> @@ -97,6 +97,7 @@ static inline int mq_init_ns(struct ipc_namespace *ns) { return 0; }
+> 
+>  #if defined(CONFIG_IPC_NS)
+>  extern void free_ipc_ns(struct ipc_namespace *ns);
+> +struct ipc_namespace *create_ipc_ns(void);
+>  extern struct ipc_namespace *copy_ipcs(unsigned long flags,
+>  				       struct ipc_namespace *ns);
+>  extern void free_ipcs(struct ipc_namespace *ns, struct ipc_ids *ids,
+> --- a/ipc/namespace.c
+> +++ b/ipc/namespace.c
+> @@ -14,7 +14,7 @@
+> 
+>  #include "util.h"
+> 
+> -static struct ipc_namespace *clone_ipc_ns(struct ipc_namespace *old_ns)
+> +struct ipc_namespace *create_ipc_ns(void)
+>  {
+>  	struct ipc_namespace *ns;
+>  	int err;
+> @@ -48,14 +48,9 @@ static struct ipc_namespace *clone_ipc_ns(struct ipc_namespace *old_ns)
+> 
+>  struct ipc_namespace *copy_ipcs(unsigned long flags, struct ipc_namespace *ns)
+>  {
+> -	struct ipc_namespace *new_ns;
+> -
+>  	if (!(flags & CLONE_NEWIPC))
+>  		return get_ipc_ns(ns);
+> -
+> -	new_ns = clone_ipc_ns(ns);
+> -
+> -	return new_ns;
+> +	return create_ipc_ns();
+>  }
+> 
+>  /*
