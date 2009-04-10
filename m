@@ -1,69 +1,133 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760211AbZDJUH1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932132AbZDJUJf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760211AbZDJUH1 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 10 Apr 2009 16:07:27 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757269AbZDJUHE
+	id S932132AbZDJUJf (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 10 Apr 2009 16:09:35 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752264AbZDJUJ0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 10 Apr 2009 16:07:04 -0400
-Received: from hera.kernel.org ([140.211.167.34]:50355 "EHLO hera.kernel.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754990AbZDJUHB (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 10 Apr 2009 16:07:01 -0400
-Date: Fri, 10 Apr 2009 20:06:36 GMT
-From: Darren Hart <dvhltc@us.ibm.com>
-To: linux-tip-commits@vger.kernel.org
-Cc: linux-kernel@vger.kernel.org, dvhltc@us.ibm.com, hpa@zytor.com,
-       mingo@redhat.com, williams@redhat.com, tglx@linutronix.de
-Reply-To: mingo@redhat.com, hpa@zytor.com, dvhltc@us.ibm.com,
-       linux-kernel@vger.kernel.org, williams@redhat.com, tglx@linutronix.de
-In-Reply-To: <20090410165005.14342.16973.stgit@Aeon>
-References: <20090410165005.14342.16973.stgit@Aeon>
-Subject: [tip:core/futexes] futex: fix futex_wait_setup key handling
-Message-ID: <tip-a5a2a0c7fa039c59619bc908b3b1ed24734d442a@git.kernel.org>
-Git-Commit-ID: a5a2a0c7fa039c59619bc908b3b1ed24734d442a
-X-Mailer: tip-git-log-daemon
+	Fri, 10 Apr 2009 16:09:26 -0400
+Received: from e38.co.us.ibm.com ([32.97.110.159]:57536 "EHLO
+	e38.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752043AbZDJUJZ (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 10 Apr 2009 16:09:25 -0400
+Date: Fri, 10 Apr 2009 13:09:19 -0700
+From: Gary Hade <garyhade@us.ibm.com>
+To: "Eric W. Biederman" <ebiederm@xmission.com>
+Cc: Gary Hade <garyhade@us.ibm.com>, mingo@elte.hu, mingo@redhat.com,
+       tglx@linutronix.de, hpa@zytor.com, x86@kernel.org,
+       linux-kernel@vger.kernel.org, lcm@us.ibm.com
+Subject: Re: [PATCH 2/3] [BUGFIX] x86/x86_64: fix CPU offlining triggered
+	inactive device IRQ interrruption
+Message-ID: <20090410200919.GA7242@us.ibm.com>
+References: <20090408210735.GD11159@us.ibm.com> <m1r601fg9l.fsf@fess.ebiederm.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Fri, 10 Apr 2009 20:06:38 +0000 (UTC)
+In-Reply-To: <m1r601fg9l.fsf@fess.ebiederm.org>
+User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Commit-ID:  a5a2a0c7fa039c59619bc908b3b1ed24734d442a
-Gitweb:     http://git.kernel.org/tip/a5a2a0c7fa039c59619bc908b3b1ed24734d442a
-Author:     Darren Hart <dvhltc@us.ibm.com>
-AuthorDate: Fri, 10 Apr 2009 09:50:05 -0700
-Committer:  Thomas Gleixner <tglx@linutronix.de>
-CommitDate: Fri, 10 Apr 2009 22:04:24 +0200
+On Thu, Apr 09, 2009 at 06:29:10PM -0700, Eric W. Biederman wrote:
+> Gary Hade <garyhade@us.ibm.com> writes:
+> 
+> > Impact: Eliminates a race that can leave the system in an
+> >         unusable state
+> >
+> > During rapid offlining of multiple CPUs there is a chance
+> > that an IRQ affinity move destination CPU will be offlined
+> > before the IRQ affinity move initiated during the offlining
+> > of a previous CPU completes.  This can happen when the device
+> > is not very active and thus fails to generate the IRQ that is
+> > needed to complete the IRQ affinity move before the move
+> > destination CPU is offlined.  When this happens there is an
+> > -EBUSY return from __assign_irq_vector() during the offlining
+> > of the IRQ move destination CPU which prevents initiation of
+> > a new IRQ affinity move operation to an online CPU.  This
+> > leaves the IRQ affinity set to an offlined CPU.
+> >
+> > I have been able to reproduce the problem on some of our
+> > systems using the following script.  When the system is idle
+> > the problem often reproduces during the first CPU offlining
+> > sequence.
+> 
+> You appear to be focusing on the IBM x460 and x3835.
 
-futex: fix futex_wait_setup key handling
+True.  I have also observed IRQ interruptions on an IBM x3950 M2
+which I believe, but am not certain, were due to the other
+"I/O redirection table register write with Remote IRR bit set"
+caused problem.
 
-If the get_futex_key() call were to fail, the existing code would
-try and put_futex_key() prior to returning.  This patch makes sure
-we only put_futex_key() if get_futex_key() succeeded.
+I intend to do more testing on the x3950 M2 and other
+IBM System x servers but I unfortunately do not currently
+have access to any Intel based non-IBM MP servers.  I was
+hoping that my testing request might at least get some
+others interested in running the simple test script on their
+systems and reporting their results.  Have you perhaps tried
+the test on any of the Intel based MP systems that you have
+access to?
 
-Reported-by: Clark Williams <williams@redhat.com>
-Signed-off-by: Darren Hart <dvhltc@us.ibm.com>
-LKML-Reference: <20090410165005.14342.16973.stgit@Aeon>
-Signed-off-by: Thomas Gleixner <tglx@linutronix.de>
+> Can you describe
+> what kind of interrupt setup you are running.
 
+Being somewhat of a ioapic neophyte I am not exactly sure
+what you are asking for here.  This is ioapic information
+logged during boot if that helps at all.
+x3850:
+    ACPI: IOAPIC (id[0x0f] address[0xfec00000] gsi_base[0])
+    IOAPIC[0]: apic_id 15, version 0, address 0xfec00000, GSI 0-35
+    ACPI: IOAPIC (id[0x0e] address[0xfec01000] gsi_base[36])
+    IOAPIC[1]: apic_id 14, version 0, address 0xfec01000, GSI 36-71
+x460:
+    ACPI: IOAPIC (id[0x0f] address[0xfec00000] gsi_base[0])
+    IOAPIC[0]: apic_id 15, version 17, address 0xfec00000, GSI 0-35
+    ACPI: IOAPIC (id[0x0e] address[0xfec01000] gsi_base[36])
+    IOAPIC[1]: apic_id 14, version 17, address 0xfec01000, GSI 36-71
+    ACPI: IOAPIC (id[0x0d] address[0xfec02000] gsi_base[72])
+    IOAPIC[2]: apic_id 13, version 17, address 0xfec02000, GSI 72-107
+    ACPI: IOAPIC (id[0x0c] address[0xfec03000] gsi_base[108])
+    IOAPIC[3]: apic_id 12, version 17, address 0xfec03000, GSI 108-143
 
+> 
+> You may be the first person to actually hit the problems with cpu offlining
+> and irq migration that have theoretically been present for a long.
 
----
- kernel/futex.c |    2 +-
- 1 files changed, 1 insertions(+), 1 deletions(-)
+Your "Safely cleanup an irq after moving it" changes have been
+present in mainline for quite some time so I have been thinking
+about this as well.
 
-diff --git a/kernel/futex.c b/kernel/futex.c
-index 041bf3a..6d2daa4 100644
---- a/kernel/futex.c
-+++ b/kernel/futex.c
-@@ -1668,7 +1668,7 @@ retry:
- 	q->key = FUTEX_KEY_INIT;
- 	ret = get_futex_key(uaddr, fshared, &q->key);
- 	if (unlikely(ret != 0))
--		goto out;
-+		return ret;
- 
- retry_private:
- 	*hb = queue_lock(q);
+I can certainly understand why it may not be very likely
+for users to see the "I/O redirection table register write
+with Remote IRR bit set" caused problem.  It has actually
+been fairly difficult to reproduce.  I very much doubt that
+there are many users out there that would be continuously offlining
+and onlining all the offlineable CPUs from a script or program on
+a heavily loaded system.  IMO, this would _not_ be a very common
+useage scenario.  The test script that I provided usually performs
+many CPU offline/online iterations before the problem is triggered.
+A much more likely useage scenario, for which there is already code
+in ack_apic_level() to avoid the problem, would be IRQ affinity
+adjustments requested from user level (e.g. by the irqbalance daemon)
+on a very active system.
+
+It is less clear to me why users have not been reporting the
+idle system race but I suspect that
+  - script or program driven offlining of multiple CPUs
+    may not be very common
+  - the actual affinity on an idle system is usually set to
+    cpu0 which is always online
+
+I am glad you are looking at this since I know it involves code
+that you should be quite familiar with.  Thanks!
+
+Gary
+
+-- 
+Gary Hade
+System x Enablement
+IBM Linux Technology Center
+503-578-4503  IBM T/L: 775-4503
+garyhade@us.ibm.com
+http://www.ibm.com/linux/ltc
+
