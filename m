@@ -1,48 +1,92 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S939432AbZDJS1f@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S939427AbZDJS3w@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S939432AbZDJS1f (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 10 Apr 2009 14:27:35 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S937542AbZDJS0z
+	id S939427AbZDJS3w (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 10 Apr 2009 14:29:52 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S937293AbZDJS3m
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 10 Apr 2009 14:26:55 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:50415 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S939001AbZDJS0x (ORCPT
+	Fri, 10 Apr 2009 14:29:42 -0400
+Received: from mail-fx0-f158.google.com ([209.85.220.158]:52186 "EHLO
+	mail-fx0-f158.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S932520AbZDJS3l (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 10 Apr 2009 14:26:53 -0400
-Date: Fri, 10 Apr 2009 11:20:11 -0700 (PDT)
-From: Linus Torvalds <torvalds@linux-foundation.org>
-X-X-Sender: torvalds@localhost.localdomain
-To: Ivan Kokshaysky <ink@jurassic.park.msu.ru>
-cc: Al Viro <viro@ZenIV.linux.org.uk>, Ingo Molnar <mingo@elte.hu>,
-       Tejun Heo <tj@kernel.org>, Mike Travis <travis@sgi.com>,
-       Christoph Lameter <cl@linux-foundation.org>,
-       Heiko Carstens <heiko.carstens@de.ibm.com>,
-       Martin Schwidefsky <schwidefsky@de.ibm.com>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH] unbreak alpha percpu
-In-Reply-To: <20090410180532.GA4419@jurassic.park.msu.ru>
-Message-ID: <alpine.LFD.2.00.0904101118470.4583@localhost.localdomain>
-References: <20090410151224.GM26366@ZenIV.linux.org.uk> <20090410154704.GN26366@ZenIV.linux.org.uk> <alpine.LFD.2.00.0904100915010.4583@localhost.localdomain> <20090410165030.GQ26366@ZenIV.linux.org.uk> <20090410170507.GR26366@ZenIV.linux.org.uk>
- <20090410171415.GA6033@ZenIV.linux.org.uk> <20090410180532.GA4419@jurassic.park.msu.ru>
-User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
+	Fri, 10 Apr 2009 14:29:41 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:to:cc:subject:message-id:references:mime-version
+         :content-type:content-disposition:in-reply-to:user-agent;
+        b=sYg4Echa0vwr10RhoRCSbiJoSkNmXjUzDGNYBGAjTRQkEXVEoycFU5ic/5XhjW9+uU
+         yBQxNRQTiUcLgaab9ofWbctYBPsWqTJ46JjM659FKyHiONHn1NQcbrUC2c/JY9UMUwBT
+         R+yb59SbQ66k6Inq721P+cWs4dUN/mb+wyjfs=
+Date: Fri, 10 Apr 2009 20:29:37 +0200
+From: Frederic Weisbecker <fweisbec@gmail.com>
+To: Alessio Igor Bogani <abogani@texware.it>
+Cc: Ingo Molnar <mingo@elte.hu>, Jonathan Corbet <corbet@lwn.net>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>,
+       LKML <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH] remove the BKL: remove "BKL auto-drop" assumption from
+	nfs3_rpc_wrapper()
+Message-ID: <20090410182936.GA6018@nowhere>
+References: <1239381281-11282-1-git-send-email-abogani@texware.it>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1239381281-11282-1-git-send-email-abogani@texware.it>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-
-On Fri, 10 Apr 2009, Ivan Kokshaysky wrote:
+On Fri, Apr 10, 2009 at 06:34:41PM +0200, Alessio Igor Bogani wrote:
+> Fix nfs3_rpc_wrapper()'s "schedule() drops the BKL automatically" assumption,
+> when schedule_timeout_killable() does not do that it can lock up.
 > 
-> Actually, all of this has been discussed on lkml; here is the latest
-> variant that makes everybody more or less happy, at least there are
-> no objections from percpu folks and Martin (similar fix should work
-> for s390 as well).
+> Signed-off-by: Alessio Igor Bogani <abogani@texware.it>
 
-Is there any reason why this version of DEFINE_PER_CPU_SECTION wouldn't 
-work on _any_ architecture? IOW, do we even need the #ifdef's and 
-per-arch #define?
 
-			Linus
+Hi Alessio,
+
+Btw, does it fix the lockdep message you've seen while mounting
+an nfs point?
+
+Thanks,
+Frederic.
+
+
+> ---
+>  fs/nfs/nfs3proc.c |    7 +++++++
+>  1 files changed, 7 insertions(+), 0 deletions(-)
+> 
+> diff --git a/fs/nfs/nfs3proc.c b/fs/nfs/nfs3proc.c
+> index d0cc5ce..d91047c 100644
+> --- a/fs/nfs/nfs3proc.c
+> +++ b/fs/nfs/nfs3proc.c
+> @@ -17,6 +17,7 @@
+>  #include <linux/nfs_page.h>
+>  #include <linux/lockd/bind.h>
+>  #include <linux/nfs_mount.h>
+> +#include <linux/smp_lock.h>
+>  
+>  #include "iostat.h"
+>  #include "internal.h"
+> @@ -28,11 +29,17 @@ static int
+>  nfs3_rpc_wrapper(struct rpc_clnt *clnt, struct rpc_message *msg, int flags)
+>  {
+>  	int res;
+> +	int bkl = kernel_locked();
+> +
+>  	do {
+>  		res = rpc_call_sync(clnt, msg, flags);
+>  		if (res != -EJUKEBOX)
+>  			break;
+> +		if (bkl)
+> +			unlock_kernel();
+>  		schedule_timeout_killable(NFS_JUKEBOX_RETRY_TIME);
+> +		if (bkl)
+> +			lock_kernel();
+>  		res = -ERESTARTSYS;
+>  	} while (!fatal_signal_pending(current));
+>  	return res;
+> -- 
+> 1.6.0.4
+> 
+
