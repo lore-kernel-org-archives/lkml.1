@@ -1,84 +1,97 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S936389AbZDJNvn@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763476AbZDJN4Z@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S936389AbZDJNvn (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 10 Apr 2009 09:51:43 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762512AbZDJNve
+	id S1763476AbZDJN4Z (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 10 Apr 2009 09:56:25 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754040AbZDJN4P
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 10 Apr 2009 09:51:34 -0400
-Received: from mx2.mail.elte.hu ([157.181.151.9]:51554 "EHLO mx2.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1762124AbZDJNvd (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 10 Apr 2009 09:51:33 -0400
-Date: Fri, 10 Apr 2009 15:51:02 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: Brian Maly <bmaly@redhat.com>, h.peter.anvin@intel.com,
-       linux-kernel@vger.kernel.org, dannf@hp.com, ying.huang@intel.com
-Subject: Re: [PATCH] rtc: add x86 support for rtc-efi
-Message-ID: <20090410135102.GB24809@elte.hu>
-References: <49DA40B9.2060804@redhat.com> <49DA817E.8040705@intel.com> <49DA8875.5050009@redhat.com> <20090409161803.f79c0b64.akpm@linux-foundation.org>
+	Fri, 10 Apr 2009 09:56:15 -0400
+Received: from rv-out-0506.google.com ([209.85.198.230]:42672 "EHLO
+	rv-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753592AbZDJN4O (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 10 Apr 2009 09:56:14 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:to:cc:subject:message-id:references:mime-version
+         :content-type:content-disposition:in-reply-to:user-agent;
+        b=sDAFlvqs5PONs/D3D/wvhil/Pl9++o6tS6mSnt9srLKeFjXX2T109+KFjL5NiZcb/u
+         69m524aLxcf8gZk1EOThobuGChAQa0rkB0+085FYfUYWGgF9C3pfMBhR2KaWwQU7EBYb
+         pxWOu6SbVnqJjmzI2vaU64SeTsIjMuMwe3LAQ=
+Date: Fri, 10 Apr 2009 17:56:06 +0400
+From: Cyrill Gorcunov <gorcunov@gmail.com>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: "H. Peter Anvin" <hpa@zytor.com>, Thomas Gleixner <tglx@linutronix.de>,
+       LKML <linux-kernel@vger.kernel.org>, Andi Kleen <andi@firstfloor.org>,
+       "Maciej W. Rozycki" <macro@linux-mips.org>,
+       Yinghai Lu <yhlu.kernel@gmail.com>
+Subject: Re: [RFC -tip] x86: do_IRQ - send APIC EOI for x86-32 on irq
+	without handler v3
+Message-ID: <20090410135606.GA8204@lenovo>
+References: <20090409181802.GC7558@lenovo> <20090410122750.GR21506@elte.hu>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20090409161803.f79c0b64.akpm@linux-foundation.org>
+In-Reply-To: <20090410122750.GR21506@elte.hu>
 User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+[Ingo Molnar - Fri, Apr 10, 2009 at 02:27:50PM +0200]
+| 
+| * Cyrill Gorcunov <gorcunov@openvz.org> wrote:
+| 
+| > Ingo, I've checked the sources and as far as I see
+| > we could NOP'ify apic->write indeed but I have
+| > an internal feeling that this will bring us more problem
+| > in future (for example it could be the following scenario:
+| > some screwed APIC would require cleaning of LVT's or
+| > IRR after resume regardless if it was initialized
+| > or not at all). Mostly I mean that the idea of making
+| > apic->write NOP'ified is quite elegant indeed but
+| > cut off the subset of apic operations (we need
+| > apic->read anyway) somehow bothering me from inside :)
+| 
+| it's as if assigned a special type of 'dummy apic' struct apic. It 
+| wont cause problems down the line: we use the new APIC driver 
+| infrastructure to abstract out quirks.
 
-* Andrew Morton <akpm@linux-foundation.org> wrote:
+Well, it's not that new actually :-)
 
-> On Mon, 06 Apr 2009 18:55:49 -0400
-> Brian Maly <bmaly@redhat.com> wrote:
-> 
-> > re-post of the patch, both as inline and as an attachment (which 
-> > hopefully wont cause confusion).
-> > 
-> 
-> Normally it does confuse me horridly because I get two copies of the
-> same patch, which applies happily with `patch --dry-run', but dies
-> horridly with `patch --for-real'.  But I was warned...
-> 
-> In future, please include a full copy of the (possibly modified)
-> changelog with each iteration of a patch.
-> 
-> As this patch is mostly-x86 I tossed it onto my for-Ingo pile.
-> 
-> 
-> From: Brian Maly <bmaly@redhat.com>
-> 
-> Add support for rtc-efi (RTC Class Driver for EFI-based systems) to x86.
-> 
-> This patch has been tested and works perfectly on every x86 EFI system I
-> could find, though all have been EL64 systems.  I would appreciate any
-> testing feedback from EL32 systems from anyone that has one and can test.
-> 
-> Signed-off-by: Brian Maly <bmaly@redhat.com>
-> Acked-by: dann frazier <dannf@hp.com>
-> Cc: Alessandro Zummo <a.zummo@towertech.it>
-> Cc: David Brownell <david-b@pacbell.net>
-> Cc: Ingo Molnar <mingo@elte.hu>
-> Cc: Thomas Gleixner <tglx@linutronix.de>
-> Cc: "H. Peter Anvin" <hpa@zytor.com>
-> Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
-> ---
-> 
->  arch/x86/kernel/time_32.c |   19 +++++++++++++++++++
->  arch/x86/kernel/time_64.c |   18 ++++++++++++++++++
->  drivers/rtc/Kconfig       |    2 +-
->  3 files changed, 38 insertions(+), 1 deletion(-)
+| 
+| one small detail:
+| 
+| > +/* Ack APIC irq if it's enabled only */
+| > +static inline void ack_APIC_irq_safe(void)
+| > +{
+| > +#ifdef CONFIG_X86_LOCAL_APIC
+| > +	if (cpu_has_apic)
+| > +		ack_APIC_irq();
+| > +#endif
+| 
+| we dont need the cpu_has_apic check there, do we? In the 
+| !cpu_has_apic the ->write method should be a dummy.
 
-Hm, it would be nice to first unify the relevant bits of 
-arch/x86/kernel/time_{32|64}.c into arch/x86/kernel/time.c, and then 
-we can apply such patches without duplicative effects.
+Yes. In case you're talking about it'll not be needed
+(we will find earlier whether cpu_has_apic or not).
 
-	Ingo
+| 
+| > -#ifdef CONFIG_X86_64
+| > -		if (!disable_apic)
+| > -			ack_APIC_irq();
+| > -#endif
+| > -
+| > +		ack_APIC_irq_safe();
+| 
+| Please keep the ack_APIC_irq() name - it is inherently safe to call 
+| it if we always give it a meaningful ->write method.
+| 
+| 	Ingo
+| 
+
+Ok, I think we eventually try to NOP'ify apic->write method
+so this patch is plainly not needed (thanks for comments!).
+
+Will back with new patch.
+
+        Cyrill
