@@ -1,70 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763151AbZDJOru@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761996AbZDJPER@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763151AbZDJOru (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 10 Apr 2009 10:47:50 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755302AbZDJOrk
+	id S1761996AbZDJPER (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 10 Apr 2009 11:04:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757906AbZDJPED
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 10 Apr 2009 10:47:40 -0400
-Received: from fg-out-1718.google.com ([72.14.220.152]:49501 "EHLO
-	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752204AbZDJOrj convert rfc822-to-8bit (ORCPT
+	Fri, 10 Apr 2009 11:04:03 -0400
+Received: from zeniv.linux.org.uk ([195.92.253.2]:39412 "EHLO
+	ZenIV.linux.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756927AbZDJPEB (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 10 Apr 2009 10:47:39 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
-         :cc:content-type:content-transfer-encoding;
-        b=TcL7XINKkSir8i+fQwOCn4khlesMbDN7Z76GHTGjSAx4P9zJhlzZtSBX/42GrvSDn2
-         TlpvIY0nVZL1k/a9NSUP8luTcaRoWrK+BcP2lWRs1IpadD5LqxpVSq91xQwmOdgBouLp
-         0ovMaf3tajbq0QSGoDrhqPrmKBvkSAbpwR07k=
+	Fri, 10 Apr 2009 11:04:01 -0400
+Date: Fri, 10 Apr 2009 16:03:53 +0100
+From: Al Viro <viro@ZenIV.linux.org.uk>
+To: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
+Cc: Tetsuo Handa <penguin-kernel@i-love.sakura.ne.jp>,
+       linux-kernel@vger.kernel.org, hugh@veritas.com, jmorris@namei.org,
+       akpm@linux-foundation.org
+Subject: Re: [2.6.30-rc1] RCU detected CPU 1 stall
+Message-ID: <20090410150353.GL26366@ZenIV.linux.org.uk>
+References: <200904080057.n380vZAH051872@www262.sakura.ne.jp> <20090410142203.GA6719@linux.vnet.ibm.com>
 MIME-Version: 1.0
-In-Reply-To: <alpine.LFD.2.00.0904101329170.21577@localhost.localdomain>
-References: <8db1092f0904070037q426fd8dcx4aa48c70e40b5d6c@mail.gmail.com>
-	 <20090409212028.7b2aa88c.akpm@linux-foundation.org>
-	 <8db1092f0904100340g7b7eb310y805e8680a32e3ac8@mail.gmail.com>
-	 <alpine.LFD.2.00.0904101329170.21577@localhost.localdomain>
-Date: Fri, 10 Apr 2009 16:47:36 +0200
-Message-ID: <8db1092f0904100747w297a0daas9ebd05486d06e706@mail.gmail.com>
-Subject: Re: [2.6.29-git12] BUG: scheduling while atomic: swapper/0/0x10000100
-From: Maciej Rutecki <maciej.rutecki@gmail.com>
-To: Thomas Gleixner <tglx@linutronix.de>
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       linux-bluetooth@vger.kernel.org, marcel@holtmann.org
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8BIT
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20090410142203.GA6719@linux.vnet.ibm.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-2009/4/10 Thomas Gleixner <tglx@linutronix.de>:
-> On Fri, 10 Apr 2009, Maciej Rutecki wrote:
->
->> 2009/4/10 Andrew Morton <akpm@linux-foundation.org>
->>
->> > Did this get fixed?
->>
->> On 2.6.30-rc1-git3 still the same:
->> [  162.541793] BUG: scheduling while atomic: swapper/0/0x10000100
->
-> Yikes.
->
-> 0x10000100
->       ^----- softirq count leaked.
->
-> We have a check for that in do_softirq, but none in do_IRQ. Can you
-> please apply the patch below and test whether it triggers ?
+On Fri, Apr 10, 2009 at 07:22:03AM -0700, Paul E. McKenney wrote:
 
-When I try connect with bluetooth, and connecting hangs, very often I
-observe high load of cpu, and system was very unresponsive. ksoftirqd
-has up to 100% load:
-http://unixy.pl/maciek/download/kernel/2.6.30-rc1-git3/laptop/img_0002.jpg
+> Hmmmm...  This indicates that CPU 1 was spinning in the kernel for
+> a long time.  At 250 HZ, 32,565 jiffies is 130 seconds, or just over
+> two -minutes-.  Ouch!!!
+> 
+> The interrupt happened on the stalled CPU, so we know that interrupts
+> were enabled.  Because we have CONFIG_PREEMPT_NONE=y, there is no
+> preemption, so preemption need not be disabled.  This could be due
+> to lock contention, or even a simple infinite loop.
+> 
+> The timer interrupt (apic_timer_interrupt) occurred in either
+> __bprm_mm_init(), __get_user_4(), count(), or do_execve().  There
+> have been some recent changes around check_unsafe_exec() -- any
+> possibility that these introduced excessive lock contention or
+> an infinite loop?  Ditto for the recent security fixes?
 
-After this I reboot laptop.
-
->From syslog:
-http://unixy.pl/maciek/download/kernel/2.6.30-rc1-git3/laptop/syslog.txt
-
--- 
-Maciej Rutecki
-http://www.maciek.unixy.pl
+Oh, joy... the loop in there is this:
+        for (t = next_thread(p); t != p; t = next_thread(t)) {
+                if (t->fs == p->fs)
+                        n_fs++;
+        }
+I find it hard to believe that it can take two minutes, though.
