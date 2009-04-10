@@ -1,58 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933001AbZDJQsB@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S935381AbZDJQu1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933001AbZDJQsB (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 10 Apr 2009 12:48:01 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758276AbZDJQrv
+	id S935381AbZDJQu1 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 10 Apr 2009 12:50:27 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762149AbZDJQuP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 10 Apr 2009 12:47:51 -0400
-Received: from mtoichi12.ns.itscom.net ([219.110.2.182]:42624 "EHLO
-	mtoichi12.ns.itscom.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751938AbZDJQrv (ORCPT
+	Fri, 10 Apr 2009 12:50:15 -0400
+Received: from e32.co.us.ibm.com ([32.97.110.150]:40702 "EHLO
+	e32.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1760304AbZDJQuO (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 10 Apr 2009 12:47:51 -0400
-From: hooanon05@yahoo.co.jp
-Subject: Re: [RFC Aufs2 #5 28/29] export lookup functions 
-To: Christoph Hellwig <hch@infradead.org>
-Cc: linux-kernel@vger.kernel.org, greg@kroah.com,
-       linux-fsdevel@vger.kernel.org
-In-Reply-To: <20090410162849.GA28377@infradead.org>
-References: <1239346963-30953-1-git-send-email-hooanon05@yahoo.co.jp> <1239346963-30953-29-git-send-email-hooanon05@yahoo.co.jp> <20090410162849.GA28377@infradead.org>
-Date: Sat, 11 Apr 2009 01:47:15 +0900
-Message-ID: <7612.1239382035@jrobl>
+	Fri, 10 Apr 2009 12:50:14 -0400
+From: Darren Hart <dvhltc@us.ibm.com>
+Subject: [tip PATCH V2] futex: fix futex_wait_setup key handling
+To: linux-kernel@vger.kernel.org
+Cc: Darren Hart <dvhltc@us.ibm.com>, Thomas Gleixner <tglx@linutronix.de>,
+       Ingo Molnar <mingo@elte.hu>
+Date: Fri, 10 Apr 2009 09:50:05 -0700
+Message-ID: <20090410165005.14342.16973.stgit@Aeon>
+User-Agent: StGIT/0.14.2
+MIME-Version: 1.0
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+If the get_futex_key() call were to fail, the existing code would
+try and put_futex_key() prior to returning.  This patch makes sure
+we only put_futex_key() if get_futex_key() succeeded.
 
-Christoph Hellwig:
-> Strong NACK to all these exports, no one has any buesiness looking at
-> these.
+Please apply to -rt and to tip:/core/futexes.
 
-Will you tell me why?
-If you have ever discussed exporting lookup_hash(), then please tell me
-its URL or something.
+Reported-by: Clark Williams <williams@redhat.com>
+Signed-off-by: Darren Hart <dvhltc@us.ibm.com>
+Cc: Thomas Gleixner <tglx@linutronix.de>
+Cc: Ingo Molnar <mingo@elte.hu>
+---
 
-lookup_hash is necessary for aufs since,
+ kernel/futex.c |    2 +-
+ 1 files changed, 1 insertions(+), 1 deletions(-)
 
-(from the mail "Subject: [RFC Aufs2 #5 01/29] aufs documents")
-+Lookup in a Branch
-+----------------------------------------------------------------------
-+Since aufs has a character of sub-VFS (see Introduction), it operates
-+lookup for branches as VFS does. It may be a heavy work. Generally
-+speaking struct nameidata is a bigger structure and includes many
-+information. But almost all lookup operation in aufs is the simplest
-+case, ie. lookup only an entry directly connected to its parent. Digging
-+down the directory hierarchy is unnecessary.
-+
-+VFS has a function lookup_one_len() for that use, but it is not usable
-+for a branch filesystem which requires struct nameidata. So aufs
-+implements a simple lookup wrapper function. When a branch filesystem
-+allows NULL as nameidata, it calls lookup_one_len(). Otherwise it builds
-+a simplest nameidata and calls lookup_hash().
-+Here aufs applies "a principle in NFSD", ie. if the filesystem supports
-+NFS-export, then it has to support NULL as a nameidata parameter for
-+->create(), ->lookup() and ->d_revalidate(). So the lookup wrapper in
-+aufs tests if ->s_export_op in the branch is NULL or not.
+diff --git a/kernel/futex.c b/kernel/futex.c
+index 185c981..47520d2 100644
+--- a/kernel/futex.c
++++ b/kernel/futex.c
+@@ -1645,7 +1645,7 @@ retry:
+ 	q->key = FUTEX_KEY_INIT;
+ 	ret = get_futex_key(uaddr, fshared, &q->key);
+ 	if (unlikely(ret != 0))
+-		goto out;
++		return ret;
+ 
+ retry_private:
+ 	*hb = queue_lock(q);
 
-
-J. R. Okajima
