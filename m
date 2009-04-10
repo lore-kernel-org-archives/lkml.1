@@ -1,28 +1,29 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762381AbZDJIth@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762255AbZDJIzS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762381AbZDJIth (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 10 Apr 2009 04:49:37 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755704AbZDJIt1
+	id S1762255AbZDJIzS (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 10 Apr 2009 04:55:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754449AbZDJIzA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 10 Apr 2009 04:49:27 -0400
-Received: from mx2.mail.elte.hu ([157.181.151.9]:58153 "EHLO mx2.mail.elte.hu"
+	Fri, 10 Apr 2009 04:55:00 -0400
+Received: from mx2.mail.elte.hu ([157.181.151.9]:40660 "EHLO mx2.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752595AbZDJItZ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 10 Apr 2009 04:49:25 -0400
-Date: Fri, 10 Apr 2009 10:47:47 +0200
+	id S1753869AbZDJIy7 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 10 Apr 2009 04:54:59 -0400
+Date: Fri, 10 Apr 2009 10:53:05 +0200
 From: Ingo Molnar <mingo@elte.hu>
-To: Alexey Dobriyan <adobriyan@gmail.com>
+To: Alexey Dobriyan <adobriyan@gmail.com>, Matt Helsley <matthltc@us.ibm.com>,
+       yamamoto@valinux.co.jp, Peter Zijlstra <a.p.zijlstra@chello.nl>
 Cc: akpm@linux-foundation.org, containers@lists.linux-foundation.org,
        xemul@parallels.com, serue@us.ibm.com, dave@linux.vnet.ibm.com,
        orenl@cs.columbia.edu, hch@infradead.org, torvalds@linux-foundation.org,
        linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 01/30] headers: fixup cred.h, ipc_namespace.h
-Message-ID: <20090410084747.GB17962@elte.hu>
-References: <20090410023248.GB27788@x200.localdomain>
+Subject: Re: [PATCH 02/30] Remove struct mm_struct::exe_file et al
+Message-ID: <20090410085305.GC17962@elte.hu>
+References: <20090410023312.GC27788@x200.localdomain>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20090410023248.GB27788@x200.localdomain>
+In-Reply-To: <20090410023312.GC27788@x200.localdomain>
 User-Agent: Mutt/1.5.18 (2008-05-17)
 X-ELTE-VirusStatus: clean
 X-ELTE-SpamScore: -1.5
@@ -39,79 +40,35 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 * Alexey Dobriyan <adobriyan@gmail.com> wrote:
 
-> cred.h uses __init
-> ipc_namespace.h uses kern_ipc_perm.
+> Commit 925d1c401fa6cfd0df5d2e37da8981494ccdec07 aka "procfs task 
+> exe symlink". introduced struct mm_struct::exe_file and struct 
+> mm_struct::num_exe_file_vmas.
 > 
-> Signed-off-by: Alexey Dobriyan <adobriyan@gmail.com>
-> ---
-> 
->  include/linux/cred.h          |    1 +
->  include/linux/ipc_namespace.h |    2 ++
->  2 files changed, 3 insertions(+)
-> 
-> --- a/include/linux/cred.h
-> +++ b/include/linux/cred.h
-> @@ -13,6 +13,7 @@
->  #define _LINUX_CRED_H
->  
->  #include <linux/capability.h>
-> +#include <linux/init.h>
->  #include <linux/key.h>
->  #include <asm/atomic.h>
->  
-> --- a/include/linux/ipc_namespace.h
-> +++ b/include/linux/ipc_namespace.h
-> @@ -6,6 +6,8 @@
->  #include <linux/rwsem.h>
->  #include <linux/notifier.h>
->  
-> +struct kern_ipc_perm;
-> +
+> The rationale is weak: unifying MMU and no-MMU version of 
+> /proc/*/exe code. For this a) struct mm_struct becomes bigger, b) 
+> mmap/munmap/exit become slower, c) patch adds more code than 
+> removes in fact.
 
-Please, not yet another forward declaration...
+Hm, nommu unification was not the only effect of that original 
+patch.
 
-I believe this should be cleaned up properly, instead of sprinkling 
-the kernel with random placed forward declarations.
+The other effect was to introduce a managed 'which is the first 
+executable vma in the mm' abstraction in struct mm. Your patch 
+removes that abstraction and re-introduces a linear ->vma_next walk:
 
-In a cleanly structured piace of code there's rarely any need for 
-forward declarations like this. There's two basic header types 
-needed:
+> +	down_read(&mm->mmap_sem);
+> +	for (vma = mm->mmap; vma; vma = vma->vm_next) {
+> +		if ((vma->vm_flags & VM_EXECUTABLE) && vma->vm_file) {
 
-   foo_types.h       declares all the data types and constants
-                     [no complex inline functions]
+Which can walk along thousands (or tens of thousands) of vmas until 
+it finds the first executable vma. For example on PIE binaries it's 
+quite possible to have a lot of non-PROT_EXEC vmas before the first 
+EXEC vma is met.
 
-   foo.h             externs, complex inlines
-
-foo.h includes all foo_types.h and bar_types.h headers it needs.
-
-The foo_types.h file includes all other bar_types.h headers it 
-depends on for its data type definitions.
-
-foo_types.h never includes a bar.h file.
-
-The end result will be a clean hieararchy of data types, separated 
-from methods. Complex inlines dont create the incestous 
-cross-dependency hell anymore and dont contaminate the foo_types.h 
-files.
-
-Yes, this is quite a bit of work, but this has been done before for 
-several complex headers so it's possible to do it. Also, you 
-namespace guys compounded this particular IPC headers sub-problem to 
-begin with:
-
- | commit ae5e1b22f17983da929a0d0178896269e19da186
- | Author: Pavel Emelyanov <xemul@openvz.org>
- | Date:   Fri Feb 8 04:18:22 2008 -0800
- |
- |     namespaces: move the IPC namespace under IPC_NS option
-
-So when touching the IPC header code please clean it up all 
-properly. We need separate ipc_types.h and ipc.h headers with clean 
-rules and a clean, consistent looking total presentation.
-
-To borrow a recent phrase of hch, right now when i look at all the 
-ipc related headers it looks like as if a cat barfed all over the 
-place ;-)
+So your revert reintroduces that linear walk. It might not matter 
+much (/proc/*/exe might be sufficiently uninteresting in practice to 
+not deserve an optimization), but it's still worth a mention and a 
+discussion in the changelog.
 
 Thanks,
 
