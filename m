@@ -1,87 +1,75 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S936806AbZDJDqW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933275AbZDJDxm@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S936806AbZDJDqW (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 9 Apr 2009 23:46:22 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760774AbZDJDqH
+	id S933275AbZDJDxm (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 9 Apr 2009 23:53:42 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763242AbZDJDxc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 9 Apr 2009 23:46:07 -0400
-Received: from mga06.intel.com ([134.134.136.21]:55794 "EHLO
-	orsmga101.jf.intel.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1756126AbZDJDqG (ORCPT
+	Thu, 9 Apr 2009 23:53:32 -0400
+Received: from e31.co.us.ibm.com ([32.97.110.149]:46500 "EHLO
+	e31.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1763100AbZDJDxb (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 9 Apr 2009 23:46:06 -0400
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.40,164,1239001200"; 
-   d="scan'208";a="401958756"
-Subject: Re: [PATCH 0/13] Per-bdi writeback flusher threads #3
-From: "Zhang, Yanmin" <yanmin_zhang@linux.intel.com>
-To: Jens Axboe <jens.axboe@oracle.com>
-Cc: linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org,
-       chris.mason@oracle.com, david@fromorbit.com, hch@infradead.org,
-       akpm@linux-foundation.org, jack@suse.cz
-In-Reply-To: <1239192016-19857-1-git-send-email-jens.axboe@oracle.com>
-References: <1239192016-19857-1-git-send-email-jens.axboe@oracle.com>
-Content-Type: text/plain
-Date: Fri, 10 Apr 2009 11:46:39 +0800
-Message-Id: <1239335199.2567.784.camel@ymzhang>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.22.1 (2.22.1-2.fc9) 
-Content-Transfer-Encoding: 7bit
+	Thu, 9 Apr 2009 23:53:31 -0400
+Date: Thu, 9 Apr 2009 20:53:28 -0700
+From: Matt Helsley <matthltc@us.ibm.com>
+To: Alexey Dobriyan <adobriyan@gmail.com>
+Cc: akpm@linux-foundation.org, containers@lists.linux-foundation.org,
+       xemul@parallels.com, linux-kernel@vger.kernel.org,
+       dave@linux.vnet.ibm.com, hch@infradead.org, mingo@elte.hu,
+       torvalds@linux-foundation.org
+Subject: Re: [PATCH 09/30] x86_64: ifdef out struct thread_struct::ip
+Message-ID: <20090410035328.GB29496@us.ibm.com>
+References: <20090410023522.GJ27788@x200.localdomain>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20090410023522.GJ27788@x200.localdomain>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 2009-04-08 at 14:00 +0200, Jens Axboe wrote:
-> Hi,
+On Fri, Apr 10, 2009 at 06:35:22AM +0400, Alexey Dobriyan wrote:
+> struct thread_struct::ip isn't used on x86_64, struct pt_regs::ip is used
+> instead. 
 > 
-> This is the third version of the patchset. Changes since v2:
-Jens,
+> kgdb should be reading 0, but I can't check it.
+> 
+> Signed-off-by: Alexey Dobriyan <adobriyan@gmail.com>
+> ---
+> 
+>  arch/x86/include/asm/processor.h |    2 ++
+>  arch/x86/kernel/kgdb.c           |    2 +-
+>  2 files changed, 3 insertions(+), 1 deletion(-)
+> 
+> --- a/arch/x86/include/asm/processor.h
+> +++ b/arch/x86/include/asm/processor.h
+> @@ -421,7 +421,9 @@ struct thread_struct {
+>  	unsigned short		fsindex;
+>  	unsigned short		gsindex;
+>  #endif
+> +#ifdef CONFIG_X86_32
+>  	unsigned long		ip;
+> +#endif
+>  #ifdef CONFIG_X86_64
+>  	unsigned long		fs;
+>  #endif
 
-The patchset forgets kernel/sysctl.c part, so the compilation link fails.
+Do these make struct thread_struct behave better in cachelines (smaller,
+less aliasing)? Can we really fit more in the slab du jour?
 
-Yanmin
+Otherwise it seems like we're littering these structs with #ifdefs
+and not really saving anything. If these #ifdefs don't save any space why not 
+just put in a comment:
 
-> 
-> - Dropped some of the prep patches, since they are now in mainline.
->   Unfortunately we grew another pdflush_operation() user (emergency thaw),
->   so I had to introduce a new prep patch for that.
-> 
-> - Fix the data consistency issue in generic_sync_sb_inodes() with
->   WB_SYNC_ALL that Jan Kara pointed out. I had to switch bdi_list
->   to SRCU protection for this. I pondered using a mutex for bdi_lock,
->   but that does not work with the pending list <-> active list
->   RCU callback scheme.
-> 
-> - Fix race in bdi task removal, we need to synchronize_rcu() before
->   doing the wb task kill, not after. This ensures that once we do the
->   task kill, nobody is accessing our bdi anymore.
-> 
-> - Separate default wb task creation from filesystem initiated task
->   additions. The former can be racy and should check the pending bit
->   only to see whether it should proceed, the latter should block waiting
->   for previous task additions to finish.
-> 
-> - Move the bdi_cap_flusher_forker() back in the series to where the
->   BDI_CAP_FLUSH_FORKER flag was introduced.
-> 
-> - Fix a problem where the first incremental step ended up writing back
->   all the dirty inodes on a bdi, not just the ones belonging to a
->   specific super_block. Only a problem after the first patch, the 2nd
->   patch in the series got it right again. (Thanks Jan Kara).
-> 
-> - Allow writeback tasks to exit, if the bdi has been idle for a certain
->   period of time. The lazy create will recreate them if we see dirty
->   inodes on the bdi later on.
-> 
-> - btrfs must register its fs_info bdi, or direct writeback will not work
->   as intended. Also kill capabilities inherit from
->   default_backing_dev_info and fix failure to check bdi_init() return
->   value.
-> 
-> The branch can be pulled from:
-> 
-> git://git.kernel.dk/linux-2.6-block.git writeback
-> 
-> Or these patches can be applied directly to 2.6.30-rc1.
-> 
+>  	unsigned long		ip; /* Used only on i386 */
 
+Or maybe even:
+
+	union {
+	  	unsigned long		ip; /* Used only on i386 */
+	  	unsigned long		fs; /* Used only on x86_64 */
+	};
+
+Cheers,
+	-Matt Helsley
