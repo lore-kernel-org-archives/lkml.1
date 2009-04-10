@@ -1,73 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S935384AbZDJUF1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760211AbZDJUH1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S935384AbZDJUF1 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 10 Apr 2009 16:05:27 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757269AbZDJUFI
+	id S1760211AbZDJUH1 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 10 Apr 2009 16:07:27 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757269AbZDJUHE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 10 Apr 2009 16:05:08 -0400
-Received: from acsinet11.oracle.com ([141.146.126.233]:50745 "EHLO
-	acsinet11.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756505AbZDJUFH (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 10 Apr 2009 16:05:07 -0400
-Message-ID: <49DFA64E.6040800@oracle.com>
-Date: Fri, 10 Apr 2009 13:04:30 -0700
-From: Randy Dunlap <randy.dunlap@oracle.com>
-Organization: Oracle Linux Engineering
-User-Agent: Thunderbird 2.0.0.6 (X11/20070801)
+	Fri, 10 Apr 2009 16:07:04 -0400
+Received: from hera.kernel.org ([140.211.167.34]:50355 "EHLO hera.kernel.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754990AbZDJUHB (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 10 Apr 2009 16:07:01 -0400
+Date: Fri, 10 Apr 2009 20:06:36 GMT
+From: Darren Hart <dvhltc@us.ibm.com>
+To: linux-tip-commits@vger.kernel.org
+Cc: linux-kernel@vger.kernel.org, dvhltc@us.ibm.com, hpa@zytor.com,
+       mingo@redhat.com, williams@redhat.com, tglx@linutronix.de
+Reply-To: mingo@redhat.com, hpa@zytor.com, dvhltc@us.ibm.com,
+       linux-kernel@vger.kernel.org, williams@redhat.com, tglx@linutronix.de
+In-Reply-To: <20090410165005.14342.16973.stgit@Aeon>
+References: <20090410165005.14342.16973.stgit@Aeon>
+Subject: [tip:core/futexes] futex: fix futex_wait_setup key handling
+Message-ID: <tip-a5a2a0c7fa039c59619bc908b3b1ed24734d442a@git.kernel.org>
+Git-Commit-ID: a5a2a0c7fa039c59619bc908b3b1ed24734d442a
+X-Mailer: tip-git-log-daemon
 MIME-Version: 1.0
-To: Andrew Morton <akpm@linux-foundation.org>
-CC: Randy Dunlap <randy.dunlap@oracle.com>, linux-kernel@vger.kernel.org,
-       hugh@veritas.com
-Subject: Re: mmotm 2009-04-10-02-21 uploaded (shmem)
-References: <200904100922.n3A9MOIV013828@imap1.linux-foundation.org>	<49DFA3B3.3080003@oracle.com> <20090410130009.caf2285b.akpm@linux-foundation.org>
-In-Reply-To: <20090410130009.caf2285b.akpm@linux-foundation.org>
 Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
-X-Source-IP: acsmt703.oracle.com [141.146.40.81]
-X-Auth-Type: Internal IP
-X-CT-RefId: str=0001.0A010209.49DFA638.01A1:SCFMA4539814,ss=1,fgs=0
+Content-Disposition: inline
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Fri, 10 Apr 2009 20:06:38 +0000 (UTC)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Andrew Morton wrote:
-> On Fri, 10 Apr 2009 12:53:23 -0700
-> Randy Dunlap <randy.dunlap@oracle.com> wrote:
-> 
->> akpm@linux-foundation.org wrote:
->>> The mm-of-the-moment snapshot 2009-04-10-02-21 has been uploaded to
->>>
->>>    http://userweb.kernel.org/~akpm/mmotm/
->>>
->>> and will soon be available at
->>>
->>>    git://git.zen-sources.org/zen/mmotm.git
->>>
->>> It contains the following patches against 2.6.30-rc1:
->>
->> I get a few of these build errors, but I don't see why.
->> (config attached)
->>
->>
->> mm/shmem.c: In function 'shmem_file_setup':
->> mm/shmem.c:2622: error: 'PAGE_CACHE_SIZE' undeclared (first use in this function)
-> 
-> Thanks.
-> 
-> --- a/mm/shmem.c~shmem-respect-max_lfs_filesize-fix
-> +++ a/mm/shmem.c
-> @@ -24,6 +24,7 @@
->  #include <linux/init.h>
->  #include <linux/vfs.h>
->  #include <linux/mount.h>
-> +#include <linux/pagemap.h>
->  #include <linux/file.h>
->  #include <linux/mm.h>
->  #include <linux/module.h>
+Commit-ID:  a5a2a0c7fa039c59619bc908b3b1ed24734d442a
+Gitweb:     http://git.kernel.org/tip/a5a2a0c7fa039c59619bc908b3b1ed24734d442a
+Author:     Darren Hart <dvhltc@us.ibm.com>
+AuthorDate: Fri, 10 Apr 2009 09:50:05 -0700
+Committer:  Thomas Gleixner <tglx@linutronix.de>
+CommitDate: Fri, 10 Apr 2009 22:04:24 +0200
 
-Just move that #include up from under the #ifdef CONFIG_SHMEM then.
+futex: fix futex_wait_setup key handling
+
+If the get_futex_key() call were to fail, the existing code would
+try and put_futex_key() prior to returning.  This patch makes sure
+we only put_futex_key() if get_futex_key() succeeded.
+
+Reported-by: Clark Williams <williams@redhat.com>
+Signed-off-by: Darren Hart <dvhltc@us.ibm.com>
+LKML-Reference: <20090410165005.14342.16973.stgit@Aeon>
+Signed-off-by: Thomas Gleixner <tglx@linutronix.de>
 
 
--- 
-~Randy
+
+---
+ kernel/futex.c |    2 +-
+ 1 files changed, 1 insertions(+), 1 deletions(-)
+
+diff --git a/kernel/futex.c b/kernel/futex.c
+index 041bf3a..6d2daa4 100644
+--- a/kernel/futex.c
++++ b/kernel/futex.c
+@@ -1668,7 +1668,7 @@ retry:
+ 	q->key = FUTEX_KEY_INIT;
+ 	ret = get_futex_key(uaddr, fshared, &q->key);
+ 	if (unlikely(ret != 0))
+-		goto out;
++		return ret;
+ 
+ retry_private:
+ 	*hb = queue_lock(q);
