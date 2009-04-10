@@ -1,363 +1,104 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S938307AbZDJN3g@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S938447AbZDJN37@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S938307AbZDJN3g (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 10 Apr 2009 09:29:36 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1764633AbZDJN3Y
+	id S938447AbZDJN37 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 10 Apr 2009 09:29:59 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S938444AbZDJN3d
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 10 Apr 2009 09:29:24 -0400
-Received: from mail-bw0-f169.google.com ([209.85.218.169]:37239 "EHLO
-	mail-bw0-f169.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755549AbZDJN3X (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 10 Apr 2009 09:29:23 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:references:mime-version
-         :content-type:content-disposition:in-reply-to:user-agent;
-        b=HmuFF5gL8exvFO7maK6u0tm8JwcK5n7zMXFtgDJCYET8rmesUMmA/2O4Zp8has+DCP
-         dauZOJt9813TaGVfWlOqyYhoA45y11fvvVhVwY7TEyK8u7YQkhHdZPIcGAVMdCOlSv/O
-         tsUJjRgdELiybhGjB4aQbdDJiNQfp7lnmOoLs=
-Date: Fri, 10 Apr 2009 15:29:17 +0200
-From: Frederic Weisbecker <fweisbec@gmail.com>
-To: Zhaolei <zhaolei@cn.fujitsu.com>
-Cc: Steven Rostedt <rostedt@goodmis.org>, Tom Zanussi <tzanussi@gmail.com>,
-       Ingo Molnar <mingo@elte.hu>, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 2/2] tracepoint: Make kmem tracepoint use TRACE_EVENT
-	macro
-Message-ID: <20090410132916.GB5988@nowhere>
-References: <49DEE68A.5040902@cn.fujitsu.com> <49DEE6DA.80600@cn.fujitsu.com>
+	Fri, 10 Apr 2009 09:29:33 -0400
+Received: from mga03.intel.com ([143.182.124.21]:16507 "EHLO mga03.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S938215AbZDJN3c (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 10 Apr 2009 09:29:32 -0400
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.40,166,1239001200"; 
+   d="scan'208";a="130107964"
+Date: Fri, 10 Apr 2009 21:29:03 +0800
+From: Wu Fengguang <fengguang.wu@intel.com>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: Vladislav Bolkhovitin <vst@vlnb.net>, LKML <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH 1/3] radix-tree: add radix_tree_next_hole()
+Message-ID: <20090410132902.GA6965@localhost>
+References: <20090410131247.764370473@intel.com> <20090410131358.730461070@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <49DEE6DA.80600@cn.fujitsu.com>
+In-Reply-To: <20090410131358.730461070@intel.com>
 User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Apr 10, 2009 at 02:27:38PM +0800, Zhaolei wrote:
-> TRACE_EVENT is more unify and generic for define a tracepoint.
-> It also add ftrace support for this tracepoint.
+Heh silly mistake: the title should say radix_tree_prev_hole()
+and the changelog should be 'counterpart of radix_tree_next_hole()'.
+
+Will resubmit this one...
+
+On Fri, Apr 10, 2009 at 09:12:48PM +0800, Wu, Fengguang wrote:
+> The counterpart of radix_tree_prev_hole(). To be used by context readahead.
 > 
-> Signed-off-by: Zhao Lei <zhaolei@cn.fujitsu.com>
+> Signed-off-by: Wu Fengguang <fengguang.wu@intel.com>
 > ---
-
-
-Nice!
-It would be good to also propagate this conversion to some other tracers.
-It think about power, workqueue and block tracers.
-
-I may have some time to work on the workqueue tracer soon.
-
-Another idea: I plan to provide an "enable" file per trace event subsystem
-so that we can quickly toggle a whole batch of event tracing for
-any targeted subsystem.
-
-Ingo also suggested a quick toggle for all events. As an end result, me
-would have a hierarchical level of enable files:
-
-./events
-	enable
-	subsys1/
-		enable
-		subsys1_event1/
-			enable
-			....
-		subsys1_event2/
-		...
-	subsys2/
-		enable
-		subsys2_event1/
-		subsys2_event2/
-		...
-	...
-
-I will work on it.
-The root enable file will be only useful for quick regression tests anyway. We will
-have some suprises.... :-)
-
-Thanks,
-Frederic.
-
-
-
->  include/trace/kmem.h              |   39 +-------
->  include/trace/kmem_event_types.h  |  193 +++++++++++++++++++++++++++++++++++++
->  include/trace/trace_event_types.h |    1 +
->  include/trace/trace_events.h      |    1 +
->  4 files changed, 197 insertions(+), 37 deletions(-)
->  create mode 100644 include/trace/kmem_event_types.h
+> ---
+>  include/linux/radix-tree.h |    2 +
+>  lib/radix-tree.c           |   37 +++++++++++++++++++++++++++++++++++
+>  2 files changed, 39 insertions(+)
 > 
-> diff --git a/include/trace/kmem.h b/include/trace/kmem.h
-> index 24d2519..46efc24 100644
-> --- a/include/trace/kmem.h
-> +++ b/include/trace/kmem.h
-> @@ -1,44 +1,9 @@
->  #ifndef _TRACE_KMEM_H
->  #define _TRACE_KMEM_H
+> --- mm.orig/lib/radix-tree.c
+> +++ mm/lib/radix-tree.c
+> @@ -666,6 +666,43 @@ unsigned long radix_tree_next_hole(struc
+>  }
+>  EXPORT_SYMBOL(radix_tree_next_hole);
 >  
-> -#include <linux/tracepoint.h>
->  #include <linux/types.h>
-> +#include <linux/tracepoint.h>
->  
-> -DECLARE_TRACE(kmalloc,
-> -	      TP_PROTO(unsigned long call_site,
-> -		      const void *ptr,
-> -		      size_t bytes_req,
-> -		      size_t bytes_alloc,
-> -		      gfp_t gfp_flags),
-> -	      TP_ARGS(call_site, ptr, bytes_req, bytes_alloc, gfp_flags));
-> -DECLARE_TRACE(kmem_cache_alloc,
-> -	      TP_PROTO(unsigned long call_site,
-> -		      const void *ptr,
-> -		      size_t bytes_req,
-> -		      size_t bytes_alloc,
-> -		      gfp_t gfp_flags),
-> -	      TP_ARGS(call_site, ptr, bytes_req, bytes_alloc, gfp_flags));
-> -DECLARE_TRACE(kmalloc_node,
-> -	      TP_PROTO(unsigned long call_site,
-> -		      const void *ptr,
-> -		      size_t bytes_req,
-> -		      size_t bytes_alloc,
-> -		      gfp_t gfp_flags,
-> -		      int node),
-> -	      TP_ARGS(call_site, ptr, bytes_req, bytes_alloc, gfp_flags, node));
-> -DECLARE_TRACE(kmem_cache_alloc_node,
-> -	      TP_PROTO(unsigned long call_site,
-> -		      const void *ptr,
-> -		      size_t bytes_req,
-> -		      size_t bytes_alloc,
-> -		      gfp_t gfp_flags,
-> -		      int node),
-> -	      TP_ARGS(call_site, ptr, bytes_req, bytes_alloc, gfp_flags, node));
-> -DECLARE_TRACE(kfree,
-> -	      TP_PROTO(unsigned long call_site, const void *ptr),
-> -	      TP_ARGS(call_site, ptr));
-> -DECLARE_TRACE(kmem_cache_free,
-> -	      TP_PROTO(unsigned long call_site, const void *ptr),
-> -	      TP_ARGS(call_site, ptr));
-> +#include <trace/kmem_event_types.h>
->  
->  #endif /* _TRACE_KMEM_H */
-> diff --git a/include/trace/kmem_event_types.h b/include/trace/kmem_event_types.h
-> new file mode 100644
-> index 0000000..4ff420f
-> --- /dev/null
-> +++ b/include/trace/kmem_event_types.h
-> @@ -0,0 +1,193 @@
+> +/**
+> + *	radix_tree_prev_hole    -    find the prev hole (not-present entry)
+> + *	@root:		tree root
+> + *	@index:		index key
+> + *	@max_scan:	maximum range to search
+> + *
+> + *	Search backwards in the range [max(index-max_scan+1, 0), index]
+> + *	for the first hole.
+> + *
+> + *	Returns: the index of the hole if found, otherwise returns an index
+> + *	outside of the set specified (in which case 'index - return >= max_scan'
+> + *	will be true). In rare cases of wrap-around, LONG_MAX will be returned.
+> + *
+> + *	radix_tree_next_hole may be called under rcu_read_lock. However, like
+> + *	radix_tree_gang_lookup, this will not atomically search a snapshot of
+> + *	the tree at a single point in time. For example, if a hole is created
+> + *	at index 10, then subsequently a hole is created at index 5,
+> + *	radix_tree_prev_hole covering both indexes may return 5 if called under
+> + *	rcu_read_lock.
+> + */
+> +unsigned long radix_tree_prev_hole(struct radix_tree_root *root,
+> +				   unsigned long index, unsigned long max_scan)
+> +{
+> +	unsigned long i;
 > +
-> +/* use <trace/kmem.h> instead */
-> +#ifndef TRACE_EVENT
-> +# error Do not include this file directly.
-> +# error Unless you know what you are doing.
-> +#endif
+> +	for (i = 0; i < max_scan; i++) {
+> +		if (!radix_tree_lookup(root, index))
+> +			break;
+> +		index--;
+> +		if (index == LONG_MAX)
+> +			break;
+> +	}
 > +
-> +#undef TRACE_SYSTEM
-> +#define TRACE_SYSTEM kmem
+> +	return index;
+> +}
+> +EXPORT_SYMBOL(radix_tree_prev_hole);
 > +
-> +TRACE_EVENT(kmalloc,
-> +
-> +	TP_PROTO(unsigned long call_site,
-> +		 const void *ptr,
-> +		 size_t bytes_req,
-> +		 size_t bytes_alloc,
-> +		 gfp_t gfp_flags),
-> +
-> +	TP_ARGS(call_site, ptr, bytes_req, bytes_alloc, gfp_flags),
-> +
-> +	TP_STRUCT__entry(
-> +		__field(	unsigned long,	call_site	)
-> +		__field(	const void *,	ptr		)
-> +		__field(	size_t,		bytes_req	)
-> +		__field(	size_t,		bytes_alloc	)
-> +		__field(	gfp_t,		gfp_flags	)
-> +	),
-> +
-> +	TP_fast_assign(
-> +		__entry->call_site	= call_site;
-> +		__entry->ptr		= ptr;
-> +		__entry->bytes_req	= bytes_req;
-> +		__entry->bytes_alloc	= bytes_alloc;
-> +		__entry->gfp_flags	= gfp_flags;
-> +	),
-> +
-> +	TP_printk("call_site=%lx ptr=%p bytes_req=%zu bytes_alloc=%zu gfp_flags=%08x",
-> +		__entry->call_site,
-> +		__entry->ptr,
-> +		__entry->bytes_req,
-> +		__entry->bytes_alloc,
-> +		__entry->gfp_flags)
-> +);
-> +
-> +TRACE_EVENT(kmem_cache_alloc,
-> +
-> +	TP_PROTO(unsigned long call_site,
-> +		 const void *ptr,
-> +		 size_t bytes_req,
-> +		 size_t bytes_alloc,
-> +		 gfp_t gfp_flags),
-> +
-> +	TP_ARGS(call_site, ptr, bytes_req, bytes_alloc, gfp_flags),
-> +
-> +	TP_STRUCT__entry(
-> +		__field(	unsigned long,	call_site	)
-> +		__field(	const void *,	ptr		)
-> +		__field(	size_t,		bytes_req	)
-> +		__field(	size_t,		bytes_alloc	)
-> +		__field(	gfp_t,		gfp_flags	)
-> +	),
-> +
-> +	TP_fast_assign(
-> +		__entry->call_site	= call_site;
-> +		__entry->ptr		= ptr;
-> +		__entry->bytes_req	= bytes_req;
-> +		__entry->bytes_alloc	= bytes_alloc;
-> +		__entry->gfp_flags	= gfp_flags;
-> +	),
-> +
-> +	TP_printk("call_site=%lx ptr=%p bytes_req=%zu bytes_alloc=%zu gfp_flags=%08x",
-> +		__entry->call_site,
-> +		__entry->ptr,
-> +		__entry->bytes_req,
-> +		__entry->bytes_alloc,
-> +		__entry->gfp_flags)
-> +);
-> +
-> +TRACE_EVENT(kmalloc_node,
-> +
-> +	TP_PROTO(unsigned long call_site,
-> +		 const void *ptr,
-> +		 size_t bytes_req,
-> +		 size_t bytes_alloc,
-> +		 gfp_t gfp_flags,
-> +		 int node),
-> +
-> +	TP_ARGS(call_site, ptr, bytes_req, bytes_alloc, gfp_flags, node),
-> +
-> +	TP_STRUCT__entry(
-> +		__field(	unsigned long,	call_site	)
-> +		__field(	const void *,	ptr		)
-> +		__field(	size_t,		bytes_req	)
-> +		__field(	size_t,		bytes_alloc	)
-> +		__field(	gfp_t,		gfp_flags	)
-> +		__field(	int,		node		)
-> +	),
-> +
-> +	TP_fast_assign(
-> +		__entry->call_site	= call_site;
-> +		__entry->ptr		= ptr;
-> +		__entry->bytes_req	= bytes_req;
-> +		__entry->bytes_alloc	= bytes_alloc;
-> +		__entry->gfp_flags	= gfp_flags;
-> +		__entry->node		= node;
-> +	),
-> +
-> +	TP_printk("call_site=%lx ptr=%p bytes_req=%zu bytes_alloc=%zu gfp_flags=%08x node=%d",
-> +		__entry->call_site,
-> +		__entry->ptr,
-> +		__entry->bytes_req,
-> +		__entry->bytes_alloc,
-> +		__entry->gfp_flags,
-> +		__entry->node)
-> +);
-> +
-> +TRACE_EVENT(kmem_cache_alloc_node,
-> +
-> +	TP_PROTO(unsigned long call_site,
-> +		 const void *ptr,
-> +		 size_t bytes_req,
-> +		 size_t bytes_alloc,
-> +		 gfp_t gfp_flags,
-> +		 int node),
-> +
-> +	TP_ARGS(call_site, ptr, bytes_req, bytes_alloc, gfp_flags, node),
-> +
-> +	TP_STRUCT__entry(
-> +		__field(	unsigned long,	call_site	)
-> +		__field(	const void *,	ptr		)
-> +		__field(	size_t,		bytes_req	)
-> +		__field(	size_t,		bytes_alloc	)
-> +		__field(	gfp_t,		gfp_flags	)
-> +		__field(	int,		node		)
-> +	),
-> +
-> +	TP_fast_assign(
-> +		__entry->call_site	= call_site;
-> +		__entry->ptr		= ptr;
-> +		__entry->bytes_req	= bytes_req;
-> +		__entry->bytes_alloc	= bytes_alloc;
-> +		__entry->gfp_flags	= gfp_flags;
-> +		__entry->node		= node;
-> +	),
-> +
-> +	TP_printk("call_site=%lx ptr=%p bytes_req=%zu bytes_alloc=%zu gfp_flags=%08x node=%d",
-> +		__entry->call_site,
-> +		__entry->ptr,
-> +		__entry->bytes_req,
-> +		__entry->bytes_alloc,
-> +		__entry->gfp_flags,
-> +		__entry->node)
-> +);
-> +
-> +TRACE_EVENT(kfree,
-> +
-> +	TP_PROTO(unsigned long call_site, const void *ptr),
-> +
-> +	TP_ARGS(call_site, ptr),
-> +
-> +	TP_STRUCT__entry(
-> +		__field(	unsigned long,	call_site	)
-> +		__field(	const void *,	ptr		)
-> +	),
-> +
-> +	TP_fast_assign(
-> +		__entry->call_site	= call_site;
-> +		__entry->ptr		= ptr;
-> +	),
-> +
-> +	TP_printk("call_site=%lx ptr=%p", __entry->call_site, __entry->ptr)
-> +);
-> +
-> +TRACE_EVENT(kmem_cache_free,
-> +
-> +	TP_PROTO(unsigned long call_site, const void *ptr),
-> +
-> +	TP_ARGS(call_site, ptr),
-> +
-> +	TP_STRUCT__entry(
-> +		__field(	unsigned long,	call_site	)
-> +		__field(	const void *,	ptr		)
-> +	),
-> +
-> +	TP_fast_assign(
-> +		__entry->call_site	= call_site;
-> +		__entry->ptr		= ptr;
-> +	),
-> +
-> +	TP_printk("call_site=%lx ptr=%p", __entry->call_site, __entry->ptr)
-> +);
-> +
-> +#undef TRACE_SYSTEM
-> diff --git a/include/trace/trace_event_types.h b/include/trace/trace_event_types.h
-> index 33b6bfc..552a50e 100644
-> --- a/include/trace/trace_event_types.h
-> +++ b/include/trace/trace_event_types.h
-> @@ -4,3 +4,4 @@
->  #include <trace/irq_event_types.h>
->  #include <trace/lockdep_event_types.h>
->  #include <trace/skb_event_types.h>
-> +#include <trace/kmem_event_types.h>
-> diff --git a/include/trace/trace_events.h b/include/trace/trace_events.h
-> index 0e2aa80..13d6b85 100644
-> --- a/include/trace/trace_events.h
-> +++ b/include/trace/trace_events.h
-> @@ -4,3 +4,4 @@
->  #include <trace/irq.h>
->  #include <trace/lockdep.h>
->  #include <trace/skb.h>
-> +#include <trace/kmem.h>
+>  static unsigned int
+>  __lookup(struct radix_tree_node *slot, void ***results, unsigned long index,
+>  	unsigned int max_items, unsigned long *next_index)
+> --- mm.orig/include/linux/radix-tree.h
+> +++ mm/include/linux/radix-tree.h
+> @@ -167,6 +167,8 @@ radix_tree_gang_lookup_slot(struct radix
+>  			unsigned long first_index, unsigned int max_items);
+>  unsigned long radix_tree_next_hole(struct radix_tree_root *root,
+>  				unsigned long index, unsigned long max_scan);
+> +unsigned long radix_tree_prev_hole(struct radix_tree_root *root,
+> +				unsigned long index, unsigned long max_scan);
+>  int radix_tree_preload(gfp_t gfp_mask);
+>  void radix_tree_init(void);
+>  void *radix_tree_tag_set(struct radix_tree_root *root,
+> 
 > -- 
-> 1.5.5.3
-> 
-> 
-
