@@ -1,62 +1,74 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S937535AbZDJP0D@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757704AbZDJPbn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S937535AbZDJP0D (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 10 Apr 2009 11:26:03 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763852AbZDJPZw
+	id S1757704AbZDJPbn (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 10 Apr 2009 11:31:43 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750863AbZDJPbc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 10 Apr 2009 11:25:52 -0400
-Received: from fire-ce0.netis.ru ([193.233.48.99]:63173 "EHLO fire.netis.ru"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750840AbZDJPZv (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 10 Apr 2009 11:25:51 -0400
-X-Greylist: delayed 717 seconds by postgrey-1.27 at vger.kernel.org; Fri, 10 Apr 2009 11:25:51 EDT
-Date: Fri, 10 Apr 2009 19:12:35 +0400
-From: "Alexander V. Lukyanov" <lav@yar.ru>
-To: linux-kernel@vger.kernel.org
-Subject: 2.6.29.1 vs 2.6.27.21 ext4 performance problem
-Message-ID: <20090410151235.GA9690@proxy>
+	Fri, 10 Apr 2009 11:31:32 -0400
+Received: from mail-out.m-online.net ([212.18.0.9]:47568 "EHLO
+	mail-out.m-online.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750761AbZDJPbb (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 10 Apr 2009 11:31:31 -0400
+From: Andreas Schwab <schwab@linux-m68k.org>
+To: tom.leiming@gmail.com
+Cc: kay.sievers@vrfy.org, greg@kroah.com, cornelia.huck@de.ibm.com,
+       linux-kernel@vger.kernel.org, arjan@linux.intel.com
+Subject: Re: [PATCH] driver core: check bus->match without holding device lock(v2)
+References: <1232551667-4829-1-git-send-email-tom.leiming@gmail.com>
+X-Yow: I always liked FLAG DAY!!
+Date: Fri, 10 Apr 2009 17:31:24 +0200
+In-Reply-To: <1232551667-4829-1-git-send-email-tom.leiming@gmail.com> (tom
+	leiming's message of "Wed, 21 Jan 2009 23:27:47 +0800")
+Message-ID: <m2fxggle43.fsf@igel.home>
+User-Agent: Gnus/5.13 (Gnus v5.13) Emacs/23.0.92 (gnu/linux)
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-NETIS-MailScanner-Information: Please contact NETIS Telecom for more information <info@netis.ru> (+7 4852 797797)
-X-NETIS-MailScanner-ID: n3AFCZPB004411
-X-NETIS-MailScanner: Found to be clean
-X-NETIS-MailScanner-SpamCheck: not spam, SpamAssassin (not cached, score=0,
-	required 6, autolearn=disabled)
-X-NETIS-MailScanner-From: root@proxy.yar.ru
-X-NETIS-MailScanner-To: linux-kernel@vger.kernel.org
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-I have a server that is busy reading and writing several disks with ext4 fs.
-After booting 2.6.29.1 kernel I have noticed significant increase in read rate.
-I measure the read rate using a script which reads sysfs byte and access counts
-and calculates average per second.
+tom.leiming@gmail.com writes:
 
-Here is the output of the script from 2.6.29.1 kernel:
+> +static inline int driver_match_device(struct device_driver *drv,
+> +				      struct device *dev)
+> +{
+> +	return drv->bus->match && drv->bus->match(dev, drv);
+> +}
 
-sda: read-rate=58932   (r=4163)
-sdb: read-rate=2570440 (r=40763)
-sdc: read-rate=3320403 (r=52756)
-sdd: read-rate=3199639 (r=52885)
-SUM: read-rate=9149414 (r=150567)
+This logic is wrong.  !(a && !b) <=> !a || b, not a && b
 
-And this is output from 2.6.27.21:
+A bus that does not have a match function now never matches, whereas
+previously it would always match.  This breaks aoa-soundbus.
 
-sda: read-rate=32768   (r=4096)
-sdb: read-rate=204800  (r=24576)
-sdc: read-rate=204800  (r=22528)
-sdd: read-rate=704512  (r=45056)
-SUM: read-rate=1146880 (r=96256)
+Andreas.
+---
+driver core: Fix logic in driver_match_device
 
-The rate is in bytes per second, "r" is accesses per second.
-One can notice that the access rate is similar (the work load on the server is
-basically the same), but byte rate is much higher.
+A bus that does not have a match function always matches.  This fixes
+49b420a13ff9 ("driver core: check bus->match without holding device
+lock").
 
-I don't yet know what causes this reading increase. Any ideas?
+Signed-off-by: Andreas Schwab <schwab@linux-m68k.org>
+---
+ drivers/base/base.h |    2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/drivers/base/base.h b/drivers/base/base.h
+index ddc9749..087e911 100644
+--- a/drivers/base/base.h
++++ b/drivers/base/base.h
+@@ -115,7 +115,7 @@ extern int driver_probe_device(struct device_driver *drv, struct device *dev);
+ static inline int driver_match_device(struct device_driver *drv,
+ 				      struct device *dev)
+ {
+-	return drv->bus->match && drv->bus->match(dev, drv);
++	return !drv->bus->match || drv->bus->match(dev, drv);
+ }
+ 
+ extern void sysdev_shutdown(void);
 
 -- 
-   Alexander.
-
+Andreas Schwab, schwab@linux-m68k.org
+GPG Key fingerprint = 58CA 54C7 6D53 942B 1756  01D3 44D5 214B 8276 4ED5
+"And now for something completely different."
