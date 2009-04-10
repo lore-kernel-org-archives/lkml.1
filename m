@@ -1,55 +1,75 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760997AbZDJC3M@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761929AbZDJCb2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760997AbZDJC3M (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 9 Apr 2009 22:29:12 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752568AbZDJC2x
+	id S1761929AbZDJCb2 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 9 Apr 2009 22:31:28 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755331AbZDJCbQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 9 Apr 2009 22:28:53 -0400
-Received: from waste.org ([66.93.16.53]:58831 "EHLO waste.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756239AbZDJC2w (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 9 Apr 2009 22:28:52 -0400
-Subject: Re: IRQF_SAMPLE_RANDOM question...
-From: Matt Mackall <mpm@selenic.com>
-To: Chris Peterson <cpeterso@cpeterso.com>
-Cc: Robin Getz <rgetz@blackfin.uclinux.org>, netdev@vger.kernel.org,
-       linux-kernel@vger.kernel.org
-In-Reply-To: <a24804730904091829k167668f1y6e546693b2f8e5da@mail.gmail.com>
-References: <200904061430.26276.rgetz@blackfin.uclinux.org>
-	 <200904071744.17727.rgetz@blackfin.uclinux.org>
-	 <1239220294.31467.55.camel@calx>
-	 <200904090954.54601.rgetz@blackfin.uclinux.org>
-	 <1239296459.31467.142.camel@calx>
-	 <a24804730904091829k167668f1y6e546693b2f8e5da@mail.gmail.com>
-Content-Type: text/plain
-Date: Thu, 09 Apr 2009 19:27:19 -0700
-Message-Id: <1239330439.3342.2.camel@calx>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.24.5 
-Content-Transfer-Encoding: 7bit
+	Thu, 9 Apr 2009 22:31:16 -0400
+Received: from charlotte.tuxdriver.com ([70.61.120.58]:43380 "EHLO
+	smtp.tuxdriver.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752568AbZDJCbP (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 9 Apr 2009 22:31:15 -0400
+Date: Thu, 9 Apr 2009 22:31:08 -0400
+From: Neil Horman <nhorman@tuxdriver.com>
+To: Jarod Wilson <jarod@redhat.com>
+Cc: Neil Horman <nhorman@redhat.com>, linux-crypto@vger.kernel.org,
+       linux-kernel@vger.kernel.org, Herbert Xu <herbert.xu@redhat.com>
+Subject: Re: [PATCH] add self-tests for rfc4309(ccm(aes))
+Message-ID: <20090410023108.GA7933@localhost.localdomain>
+References: <200904091434.59639.jarod@redhat.com> <20090409185204.GA6758@hmsreliant.think-freely.org> <200904091516.57048.jarod@redhat.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <200904091516.57048.jarod@redhat.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-Spam-Score: -1.4 (-)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 2009-04-09 at 18:29 -0700, Chris Peterson wrote:
-> > Hmm, this is a purely internal interface. Not sure if we need to bother
-> > with scheduling it. My plan was to simply get the new code in and sweep
-> > the kernel.
+On Thu, Apr 09, 2009 at 03:16:53PM -0400, Jarod Wilson wrote:
+> On Thursday 09 April 2009 14:52:04 Neil Horman wrote:
+> > On Thu, Apr 09, 2009 at 02:34:59PM -0400, Jarod Wilson wrote:
+> > > Patch is against current cryptodev-2.6 tree, successfully tested via
+> > > 'modprobe tcrypt type=45'. The number of test vectors might be a bit
+> > > excessive, but I tried to hit a wide range of combinations of varying
+> > > key sizes, associate data lengths, input lengths and pass/fail.
+> > > 
+> > > Signed-off-by: Jarod Wilson <jarod@redhat.com>
+> > > 
+> > >  
+> > ><snip>
+> > 
+> > > +/*
+> > > + * rfc4309 says section 8 contains test vectors, only, it doesn't, and NIST
+> > > + * Special Publication 800-38C's test vectors use nonce lengths our rfc4309
+> > > + * implementation doesn't support. The following are taken from fips cavs
+> > > + * fax files on hand at Red Hat.
+> > > + *
+> > > + * nb: actual key lengths are (klen - 3), the last 3 bytes are actually
+> > > + * part of the nonce which combine w/the iv, but need to be input this way.
+> > > + */
+> > 
+> > RFC4309 section 8 actually says the test vectors you can use are here:
+> > http://www.ietf.org/rfc/rfc3610.txt
+> > in RFC3610 section 8.
 > 
-> Matt, sounds like you're volunteering? :)
+> Oh, I'm dense, didn't correctly parse that 4309 was referring back to 3610
+> for the actual test vectors. I'll see what I can do with those...
 > 
-> >From my understanding, the roadmap looks something like:
+Its easy to miss.  It referrs to the RFC in an endnote by reference.
+
+> > I don't think theres anything wrong with the vectors
+> > your're using below, but you may want to add the vectors from 3610 just to
+> > imrpove the testing.
 > 
-> 1. Add checkpatch warning about IRQF_SAMPLE_RANDOM
-> 2. Add any new add_*_randomness() functions (e.g. RTC and main clocks?
-> Serial or USB interrupts?)
-> 3. Remove IRQF_SAMPLE_RANDOM macro (and checkpatch warning)
-> 4. Add "pragmatic entropy accounting model"?
+> I think I'd drop some of the ones in the initial patch in favor of adding
+> some from 3610, rather than simply adding more. The coverage is already
+> pretty good, increasing the number of vectors shouldn't really be necessary,
+> but it would definitely be nice to have vectors that are already publicly
+> published and verified.
+> 
+ACK to that.
 
-Yeah, I just sat down with Ted Tso this evening and hashed out a new
-design. More to come.
-
--- 
-http://selenic.com : development and support for Mercurial and Linux
-
-
+> 
