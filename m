@@ -1,64 +1,240 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756023AbZDJAua@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755519AbZDJAxj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756023AbZDJAua (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 9 Apr 2009 20:50:30 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752165AbZDJAuU
+	id S1755519AbZDJAxj (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 9 Apr 2009 20:53:39 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753546AbZDJAxa
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 9 Apr 2009 20:50:20 -0400
-Received: from cn.fujitsu.com ([222.73.24.84]:65410 "EHLO song.cn.fujitsu.com"
-	rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org with ESMTP
-	id S1751280AbZDJAuT (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 9 Apr 2009 20:50:19 -0400
-Message-ID: <49DE97EF.7080208@cn.fujitsu.com>
-Date: Fri, 10 Apr 2009 08:50:55 +0800
-From: Li Zefan <lizf@cn.fujitsu.com>
-User-Agent: Thunderbird 2.0.0.9 (X11/20071115)
+	Thu, 9 Apr 2009 20:53:30 -0400
+Received: from e5.ny.us.ibm.com ([32.97.182.145]:41845 "EHLO e5.ny.us.ibm.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752165AbZDJAx3 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 9 Apr 2009 20:53:29 -0400
+Date: Thu, 9 Apr 2009 17:53:24 -0700
+From: Gary Hade <garyhade@us.ibm.com>
+To: Yinghai Lu <yhlu.kernel@gmail.com>
+Cc: Gary Hade <garyhade@us.ibm.com>,
+       "Eric W. Biederman" <ebiederm@xmission.com>, mingo@elte.hu,
+       mingo@redhat.com, tglx@linutronix.de, hpa@zytor.com, x86@kernel.org,
+       linux-kernel@vger.kernel.org, lcm@us.ibm.com
+Subject: Re: [PATCH 2/3] [BUGFIX] x86/x86_64: fix CPU offlining triggered
+	inactive device IRQ interrruption
+Message-ID: <20090410005324.GB7247@us.ibm.com>
+References: <20090408210735.GD11159@us.ibm.com> <86802c440904081530i1b83e19ayddebd8b2f6d413af@mail.gmail.com> <20090408233758.GB14412@us.ibm.com> <86802c440904081658v4d8a3a80jdd51e27e0f8e0a6d@mail.gmail.com> <86802c440904081659l1ec30838l99fcb9c693363d00@mail.gmail.com> <20090409191707.GA7247@us.ibm.com> <86802c440904091538m70de6f4y901dbcbb97ceb70f@mail.gmail.com>
 MIME-Version: 1.0
-To: Ingo Molnar <mingo@elte.hu>
-CC: Steven Rostedt <rostedt@goodmis.org>,
-       Frederic Weisbecker <fweisbec@gmail.com>,
-       Pekka Enberg <penberg@cs.helsinki.fi>, Pekka Paalanen <pq@iki.fi>,
-       eduard.munteanu@linux360.ro, LKML <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH] tracing: fix document references
-References: <49DE9764.1090004@cn.fujitsu.com>
-In-Reply-To: <49DE9764.1090004@cn.fujitsu.com>
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=iso-8859-1
+Content-Disposition: inline
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <86802c440904091538m70de6f4y901dbcbb97ceb70f@mail.gmail.com>
+User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-CC: LKML
+On Thu, Apr 09, 2009 at 03:38:04PM -0700, Yinghai Lu wrote:
+> On Thu, Apr 9, 2009 at 12:17 PM, Gary Hade <garyhade@us.ibm.com> wrote:
+> > On Wed, Apr 08, 2009 at 04:59:35PM -0700, Yinghai Lu wrote:
+> >> On Wed, Apr 8, 2009 at 4:58 PM, Yinghai Lu <yhlu.kernel@gmail.com> wrote:
+> >> > On Wed, Apr 8, 2009 at 4:37 PM, Gary Hade <garyhade@us.ibm.com> wrote:
+> >> >> On Wed, Apr 08, 2009 at 03:30:15PM -0700, Yinghai Lu wrote:
+> >> >>> On Wed, Apr 8, 2009 at 2:07 PM, Gary Hade <garyhade@us.ibm.com> wrote:
+> >> >>> > Impact: Eliminates a race that can leave the system in an
+> >> >>> >        unusable state
+> >> >>> >
+> >> >>> > During rapid offlining of multiple CPUs there is a chance
+> >> >>> > that an IRQ affinity move destination CPU will be offlined
+> >> >>> > before the IRQ affinity move initiated during the offlining
+> >> >>> > of a previous CPU completes.  This can happen when the device
+> >> >>> > is not very active and thus fails to generate the IRQ that is
+> >> >>> > needed to complete the IRQ affinity move before the move
+> >> >>> > destination CPU is offlined.  When this happens there is an
+> >> >>> > -EBUSY return from __assign_irq_vector() during the offlining
+> >> >>> > of the IRQ move destination CPU which prevents initiation of
+> >> >>> > a new IRQ affinity move operation to an online CPU.  This
+> >> >>> > leaves the IRQ affinity set to an offlined CPU.
+> >> >>> >
+> >> >>> > I have been able to reproduce the problem on some of our
+> >> >>> > systems using the following script.  When the system is idle
+> >> >>> > the problem often reproduces during the first CPU offlining
+> >> >>> > sequence.
+> >> >>> >
+> >> >>> > #!/bin/sh
+> >> >>> >
+> >> >>> > SYS_CPU_DIR=/sys/devices/system/cpu
+> >> >>> > VICTIM_IRQ=25
+> >> >>> > IRQ_MASK=f0
+> >> >>> >
+> >> >>> > iteration=0
+> >> >>> > while true; do
+> >> >>> >  echo $iteration
+> >> >>> >  echo $IRQ_MASK > /proc/irq/$VICTIM_IRQ/smp_affinity
+> >> >>> >  for cpudir in $SYS_CPU_DIR/cpu[1-9] $SYS_CPU_DIR/cpu??; do
+> >> >>> >    echo 0 > $cpudir/online
+> >> >>> >  done
+> >> >>> >  for cpudir in $SYS_CPU_DIR/cpu[1-9] $SYS_CPU_DIR/cpu??; do
+> >> >>> >    echo 1 > $cpudir/online
+> >> >>> >  done
+> >> >>> >  iteration=`expr $iteration + 1`
+> >> >>> > done
+> >> >>> >
+> >> >>> > The proposed fix takes advantage of the fact that when all
+> >> >>> > CPUs in the old domain are offline there is nothing to be done
+> >> >>> > by send_cleanup_vector() during the affinity move completion.
+> >> >>> > So, we simply avoid setting cfg->move_in_progress preventing
+> >> >>> > the above mentioned -EBUSY return from __assign_irq_vector().
+> >> >>> > This allows initiation of a new IRQ affinity move to a CPU
+> >> >>> > that is not going offline.
+> >> >>> >
+> >> >>> > Signed-off-by: Gary Hade <garyhade@us.ibm.com>
+> >> >>> >
+> >> >>> > ---
+> >> >>> >  arch/x86/kernel/apic/io_apic.c |   11 ++++++++---
+> >> >>> >  1 file changed, 8 insertions(+), 3 deletions(-)
+> >> >>> >
+> >> >>> > Index: linux-2.6.30-rc1/arch/x86/kernel/apic/io_apic.c
+> >> >>> > ===================================================================
+> >> >>> > --- linux-2.6.30-rc1.orig/arch/x86/kernel/apic/io_apic.c        2009-04-08 09:23:00.000000000 -0700
+> >> >>> > +++ linux-2.6.30-rc1/arch/x86/kernel/apic/io_apic.c     2009-04-08 09:23:16.000000000 -0700
+> >> >>> > @@ -363,7 +363,8 @@ set_extra_move_desc(struct irq_desc *des
+> >> >>> >        struct irq_cfg *cfg = desc->chip_data;
+> >> >>> >
+> >> >>> >        if (!cfg->move_in_progress) {
+> >> >>> > -               /* it means that domain is not changed */
+> >> >>> > +               /* it means that domain has not changed or all CPUs
+> >> >>> > +                * in old domain are offline */
+> >> >>> >                if (!cpumask_intersects(desc->affinity, mask))
+> >> >>> >                        cfg->move_desc_pending = 1;
+> >> >>> >        }
+> >> >>> > @@ -1262,8 +1263,11 @@ next:
+> >> >>> >                current_vector = vector;
+> >> >>> >                current_offset = offset;
+> >> >>> >                if (old_vector) {
+> >> >>> > -                       cfg->move_in_progress = 1;
+> >> >>> >                        cpumask_copy(cfg->old_domain, cfg->domain);
+> >> >>> > +                       if (cpumask_intersects(cfg->old_domain,
+> >> >>> > +                                              cpu_online_mask)) {
+> >> >>> > +                               cfg->move_in_progress = 1;
+> >> >>> > +                       }
+> >> >>> >                }
+> >> >>> >                for_each_cpu_and(new_cpu, tmp_mask, cpu_online_mask)
+> >> >>> >                        per_cpu(vector_irq, new_cpu)[vector] = irq;
+> >> >>> > @@ -2492,7 +2496,8 @@ static void irq_complete_move(struct irq
+> >> >>> >                if (likely(!cfg->move_desc_pending))
+> >> >>> >                        return;
+> >> >>> >
+> >> >>> > -               /* domain has not changed, but affinity did */
+> >> >>> > +               /* domain has not changed or all CPUs in old domain
+> >> >>> > +                * are offline, but affinity changed */
+> >> >>> >                me = smp_processor_id();
+> >> >>> >                if (cpumask_test_cpu(me, desc->affinity)) {
+> >> >>> >                        *descp = desc = move_irq_desc(desc, me);
+> >> >>> > --
+> >> >>>
+> >> >>> so you mean during __assign_irq_vector(), cpu_online_mask get updated?
+> >> >>
+> >> >> No, the CPU being offlined is removed from cpu_online_mask
+> >> >> earlier via a call to remove_cpu_from_maps() from
+> >> >> cpu_disable_common().  This happens just before fixup_irqs()
+> >> >> is called.
+> >> >>
+> >> >>> with your patch, how about that it just happen right after you check
+> >> >>> that second time.
+> >> >>>
+> >> >>> it seems we are missing some lock_vector_lock() on the remove cpu from
+> >> >>> online mask.
+> >> >>
+> >> >> The remove_cpu_from_maps() call in cpu_disable_common() is vector
+> >> >> lock protected:
+> >> >> void cpu_disable_common(void)
+> >> >> {
+> >> >>               < snip >
+> >> >>        /* It's now safe to remove this processor from the online map */
+> >> >>        lock_vector_lock();
+> >> >>        remove_cpu_from_maps(cpu);
+> >> >>        unlock_vector_lock();
+> >> >>        fixup_irqs();
+> >> >> }
+> >> >
+> >> >
+> >> > __assign_irq_vector always has vector_lock locked...
+> >
+> > OK, I see the 'vector_lock' spin_lock_irqsave/spin_unlock_irqrestore
+> > surrounding the __assign_irq_vector call in assign_irq_vector.
+> >
+> >> > so cpu_online_mask will not changed during,
+> >
+> > I understand that this 'vector_lock' acquisition prevents
+> > multiple simultaneous executions of __assign_irq_vector but
+> > does that really prevent another thread executing outside
+> > __assign_irq_vector (or outside other 'vector_lock' serialized
+> > code) from modifying cpu_online_mask?
+> >
+> > Isn't it really 'cpu_add_remove_lock' (also held when
+> > __assign_irq_vector() is called in the context of a CPU add
+> > or remove) that is used for this purpose?
+> >
+> >> > why do you need to check that again in __assign_irq_vector ?
+> >
+> > Because that is where the cfg->move_in_progress flag was
+> > being set.
+> >
+> > Is there some reason that the content of cpu_online_mask
+> > cannot be trusted at this location?
+> >
+> > If all the CPUs in the old domain are offline doesn't
+> > that imply that we got to that location in response to
+> > a CPU offline request?
+> >
+> >> >
+> >> looks like you need to clear move_in_progress in fixup_irqs()
+> >
+> > This would be a difficult since I believe the code is
+> > currently partitioned in a manner that prevents access to
+> > irq_cfg records from functions defined in arch/x86/kernel/irq_32.c
+> > and arch/x86/kernel/irq_64.c.  It also doesn't feel right to
+> > allow cfg->move_in_progress to be set in __assign_irq_vector
+> > and then clear it in fixup_irqs().
+> 
+> it looks before fixup_irqs() cpu_online_mask get updated,
 
-Li Zefan wrote:
-> When moving documents to Documentation/trace/, I forgot to
-> grep Kconfig to find out those references.
+Correct.  It is updated during the remove_cpu_from_maps()
+call from cpu_disable_common() that preceeds the fixup_irqs()
+call from cpu_disable_common().
+
+> and before irq_complete_move get called.
+
+Also correct but it should be noted that irq_complete_move()
+executes on an IRQ affinity move destination CPU which, depending
+on how quickly the device generates the next IRQ, may not happen
+before the IRQ affinity move destination CPU(s) are offlined.
+
 > 
-> Signed-off-by: Li Zefan <lizf@cn.fujitsu.com>
-> ---
->  kernel/trace/Kconfig |    4 ++--
->  1 files changed, 2 insertions(+), 2 deletions(-)
-> 
-> diff --git a/kernel/trace/Kconfig b/kernel/trace/Kconfig
-> index 2246141..417d198 100644
-> --- a/kernel/trace/Kconfig
-> +++ b/kernel/trace/Kconfig
-> @@ -312,7 +312,7 @@ config KMEMTRACE
->  	  and profile kernel code.
->  
->  	  This requires an userspace application to use. See
-> -	  Documentation/vm/kmemtrace.txt for more information.
-> +	  Documentation/trace/kmemtrace.txt for more information.
->  
->  	  Saying Y will make the kernel somewhat larger and slower. However,
->  	  if you disable kmemtrace at run-time or boot-time, the performance
-> @@ -403,7 +403,7 @@ config MMIOTRACE
->  	  implementation and works via page faults. Tracing is disabled by
->  	  default and can be enabled at run-time.
->  
-> -	  See Documentation/tracers/mmiotrace.txt.
-> +	  See Documentation/trace/mmiotrace.txt.
->  	  If you are not helping to develop drivers, say N.
->  
->  config MMIOTRACE_TEST
+> so we could fixup_irqs to  clear move_in_progress and cleanup percpu
+> vector_irq ...
+
+If you are suggesting that the send_cleanup_vector() work
+deferred to an IRQ affinity move destination CPU be performed
+instead by code running on the CPU being removed, I considered
+that before discovering the justification for the current design.
+   http://lkml.org/lkml/2007/2/23/92
+
+I also played around with using send_IPI_mask() to send
+cfg->vector to the IRQ affinity move destination CPU(s) to
+assure that cfg->move_in_progress would get cleared before
+those CPU(s) were offlined.  This appeared to work, however,
+it seemed like a hack and I wasn't sure how to deal with the
+unhandled interrupts.
+
+I then discovered that send_cleanup_vector() wasn't sending
+IRQ_MOVE_CLEANUP_VECTOR to any CPU when all CPUs in the old
+domain were offline.  This led me to the proposed fix.
+
+Gary
+
+-- 
+Gary Hade
+System x Enablement
+IBM Linux Technology Center
+503-578-4503  IBM T/L: 775-4503
+garyhade@us.ibm.com
+http://www.ibm.com/linux/ltc
 
