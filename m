@@ -1,46 +1,44 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S939268AbZDJRxx@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S939278AbZDJRyc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S939268AbZDJRxx (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 10 Apr 2009 13:53:53 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1764532AbZDJRxo
+	id S939278AbZDJRyc (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 10 Apr 2009 13:54:32 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1765888AbZDJRyU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 10 Apr 2009 13:53:44 -0400
-Received: from mail-gx0-f160.google.com ([209.85.217.160]:56751 "EHLO
-	mail-gx0-f160.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1759620AbZDJRxn (ORCPT
+	Fri, 10 Apr 2009 13:54:20 -0400
+Received: from atrey.karlin.mff.cuni.cz ([195.113.26.193]:49385 "EHLO
+	atrey.karlin.mff.cuni.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754441AbZDJRyT (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 10 Apr 2009 13:53:43 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:sender:in-reply-to:references:from:date
-         :x-google-sender-auth:message-id:subject:to:cc:content-type
-         :content-transfer-encoding;
-        b=WRKcjb9ij7Ez+sTtFmzpGaMJ5Zw6uxKTmKAHVzvXQh4U612Q+hZxqJ8vPkqQyxeiMk
-         Aw7qoVfHSUn9IPQ4Dcv4oIh2sKBq5pvVM9TWqilQYvjSSvRooGBcjRHBnaUulrGb63XQ
-         YeonB/VXgEi8CHEIY8H8r+IQSr0fP98z2SJLk=
+	Fri, 10 Apr 2009 13:54:19 -0400
+Date: Fri, 10 Apr 2009 19:57:23 +0200
+From: Pavel Machek <pavel@ucw.cz>
+To: "Theodore Ts'o" <tytso@mit.edu>
+Cc: linux-kernel@vger.kernel.org
+Subject: Re: suspend-to-ram broken on X61 thinkpads in 2.6.30-rc1?
+Message-ID: <20090410175723.GA20983@elf.ucw.cz>
+References: <E1Ls9pZ-0004IF-FZ@closure.thunk.org>
 MIME-Version: 1.0
-In-Reply-To: <1239385015.3169.15.camel@ht.satnam>
-References: <1239385015.3169.15.camel@ht.satnam>
-From: Ray Lee <ray-lk@madrabbit.org>
-Date: Fri, 10 Apr 2009 10:53:27 -0700
-X-Google-Sender-Auth: e72c7ea77aa145c5
-Message-ID: <2c0942db0904101053g3a7a3d6bh50c0501a1bb73af@mail.gmail.com>
-Subject: Re: [PATCH -tip] x86: acpi/sleep.c saved_magic fix overflow
-To: Jaswinder Singh Rajput <jaswinder@kernel.org>
-Cc: Ingo Molnar <mingo@elte.hu>, x86 maintainers <x86@kernel.org>,
-       Pavel Machek <pavel@ucw.cz>, LKML <linux-kernel@vger.kernel.org>
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <E1Ls9pZ-0004IF-FZ@closure.thunk.org>
+X-Warning: Reading this can be dangerous to your mental health.
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Apr 10, 2009 at 10:36 AM, Jaswinder Singh Rajput
-<jaswinder@kernel.org> wrote:
-> Impact: fix overflow
->
-> Constant 0x123456789abcdef0 is so big for a long.
-> So using saved_magic 0x12345678 for both 32 and 64 bit.
->
+On Fri 2009-04-10 02:03:13, Theodore Ts'o wrote:
+> Hi, has anyone else noticed that suspend-to-ram seems to have gotten
+> broken in 2.6.30-rc1, sometime during last half of the merge window?
+> I've been at a conference all of this past week, so I haven't had time
+> to bisect it yet.  I was wondering if anyone else had noticed and
+> figured out what was going wrong.  Symptoms are that the suspend "moon"
+> starts flashing and the system never manages to put itself to sleep.  
 
-Uhm, what? saved_magic is a long, which is 64 bits wide on on 64 bit systems.
+s2ram seems to work ok for me on thinkpad x60... Maybe it is
+hw-dependend, mut maybe it is just a kernel config...
+
+									Pavel
+-- 
+(english) http://www.livejournal.com/~pavelmachek
+(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
