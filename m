@@ -1,229 +1,357 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S939332AbZDJSdO@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S939531AbZDJSej@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S939332AbZDJSdO (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 10 Apr 2009 14:33:14 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1765860AbZDJScz
+	id S939531AbZDJSej (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 10 Apr 2009 14:34:39 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S937293AbZDJSe2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 10 Apr 2009 14:32:55 -0400
-Received: from hera.kernel.org ([140.211.167.34]:49729 "EHLO hera.kernel.org"
+	Fri, 10 Apr 2009 14:34:28 -0400
+Received: from hera.kernel.org ([140.211.167.34]:49786 "EHLO hera.kernel.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1763054AbZDJScy (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 10 Apr 2009 14:32:54 -0400
-Date: Fri, 10 Apr 2009 18:30:36 GMT
-From: Masami Hiramatsu <mhiramat@redhat.com>
-To: linux-tip-commits@vger.kernel.org
-Cc: linux-kernel@vger.kernel.org, mathieu.desnoyers@polymtl.ca, hpa@zytor.com,
-       mingo@redhat.com, torvalds@linux-foundation.org, ananth@in.ibm.com,
-       garyhade@us.ibm.com, akpm@linux-foundation.org, tglx@linutronix.de,
-       mhiramat@redhat.com, mingo@elte.hu, systemtap@sources.redhat.com
-Reply-To: mingo@redhat.com, hpa@zytor.com, mathieu.desnoyers@polymtl.ca,
-       linux-kernel@vger.kernel.org, torvalds@linux-foundation.org,
-       ananth@in.ibm.com, garyhade@us.ibm.com, akpm@linux-foundation.org,
-       tglx@linutronix.de, mhiramat@redhat.com, systemtap@sources.redhat.com,
-       mingo@elte.hu
-In-Reply-To: <49DE3695.6040800@redhat.com>
-References: <49DE3695.6040800@redhat.com>
-Subject: [tip:x86/urgent] x86: fix set_fixmap to use phys_addr_t
-Message-ID: <tip-9b987aeb4a7bc42a3eb8361030b820b0263c31f1@git.kernel.org>
-Git-Commit-ID: 9b987aeb4a7bc42a3eb8361030b820b0263c31f1
-X-Mailer: tip-git-log-daemon
-MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Disposition: inline
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Fri, 10 Apr 2009 18:30:39 +0000 (UTC)
+	id S1765860AbZDJSe1 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 10 Apr 2009 14:34:27 -0400
+Subject: Re: [git-pull -tip] x86: declaration patches
+From: Jaswinder Singh Rajput <jaswinder@kernel.org>
+To: Sam Ravnborg <sam@ravnborg.org>
+Cc: Ingo Molnar <mingo@elte.hu>, x86 maintainers <x86@kernel.org>,
+       LKML <linux-kernel@vger.kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Andi Kleen <andi@firstfloor.org>, Thomas Gleixner <tglx@linutronix.de>
+In-Reply-To: <20090410172925.GA24446@uranus.ravnborg.org>
+References: <1239381184.23116.5.camel@ht.satnam>
+	 <20090410172925.GA24446@uranus.ravnborg.org>
+Content-Type: text/plain
+Date: Sat, 11 Apr 2009 00:03:10 +0530
+Message-Id: <1239388390.3169.43.camel@ht.satnam>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.24.5 (2.24.5-1.fc10) 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Commit-ID:  9b987aeb4a7bc42a3eb8361030b820b0263c31f1
-Gitweb:     http://git.kernel.org/tip/9b987aeb4a7bc42a3eb8361030b820b0263c31f1
-Author:     Masami Hiramatsu <mhiramat@redhat.com>
-AuthorDate: Thu, 9 Apr 2009 10:55:33 -0700
-Committer:  Ingo Molnar <mingo@elte.hu>
-CommitDate: Fri, 10 Apr 2009 20:27:13 +0200
+On Fri, 2009-04-10 at 19:29 +0200, Sam Ravnborg wrote:
 
-x86: fix set_fixmap to use phys_addr_t
+> The above is a lot ifdefs just to:
+> 1) use asmlinkage only on 64 bit
+> 2) hide the prototype if do not implement the function
+> 
+> Is there any relevant cost associated with asmlinkage or could we just make it
+> always asmlinkage?
+> 
 
-Impact: fix kprobes crash on 32-bit with RAM above 4G
+Ok fixed asmlinkage issue.
 
-Use phys_addr_t for receiving a physical address argument
-instead of unsigned long. This allows fixmap to handle
-pages higher than 4GB on x86-32.
+and also fixed thomas's comment issue.
 
-Signed-off-by: Masami Hiramatsu <mhiramat@redhat.com>
-Acked-by: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
-Cc: Andrew Morton <akpm@linux-foundation.org>
-Cc: Ananth N Mavinakayanahalli <ananth@in.ibm.com>
-Cc: systemtap-ml <systemtap@sources.redhat.com>
-Cc: Gary Hade <garyhade@us.ibm.com>
-Cc: Linus Torvalds <torvalds@linux-foundation.org>
-LKML-Reference: <49DE3695.6040800@redhat.com>
-Signed-off-by: Ingo Molnar <mingo@elte.hu>
+So here is new pull request:
+The following changes since commit 7fd61bdf06572f1ca681aa35f5c86531a821ea75:
+  Ingo Molnar (1):
+        Merge branch 'x86/urgent'
 
+are available in the git repository at:
 
----
- arch/x86/include/asm/fixmap.h   |    4 ++--
- arch/x86/include/asm/io.h       |    6 ++++--
- arch/x86/include/asm/paravirt.h |    4 ++--
- arch/x86/mm/ioremap.c           |   23 +++++++++++++----------
- arch/x86/mm/pgtable.c           |    3 ++-
- arch/x86/xen/mmu.c              |    2 +-
- 6 files changed, 24 insertions(+), 18 deletions(-)
+  git://git.kernel.org/pub/scm/linux/kernel/git/jaswinder/linux-2.6-tip.git master
 
-diff --git a/arch/x86/include/asm/fixmap.h b/arch/x86/include/asm/fixmap.h
-index 81937a5..2d81af3 100644
---- a/arch/x86/include/asm/fixmap.h
-+++ b/arch/x86/include/asm/fixmap.h
-@@ -151,11 +151,11 @@ extern pte_t *pkmap_page_table;
+Jaswinder Singh Rajput (8):
+      x86: irq.c declare smp_generic_interrupt before they get used
+      x86: syscalls.h update declarations due to unifications
+      x86: process.c declare sys_fork and sys_vfork before they get used
+      x86: tsc.c rename tsc_khz shadow variable
+      x86: apic/probe_32.c declare apic_default before they get used
+      x86: apic/nmi.c prev_nmi_count should be unsigned
+      x86: apic/io_apic.c declare smp_irq_move_cleanup_interrupt before they get used
+      x86: mm/init.c declare direct_gbpages and free_initrd_mem before they get used
+
+ arch/x86/include/asm/apic.h       |    3 ++
+ arch/x86/include/asm/hw_irq.h     |    4 +++
+ arch/x86/include/asm/pgtable.h    |    2 +
+ arch/x86/include/asm/pgtable_64.h |    6 -----
+ arch/x86/include/asm/syscalls.h   |   45 +++++++++++++++++++-----------------
+ arch/x86/kernel/apic/io_apic.c    |    1 +
+ arch/x86/kernel/apic/nmi.c        |    2 +-
+ arch/x86/kernel/apic/probe_32.c   |    1 -
+ arch/x86/kernel/irq.c             |    1 +
+ arch/x86/kernel/process.c         |    1 +
+ arch/x86/kernel/tsc.c             |    8 +++---
+ arch/x86/mm/init.c                |    1 +
+ 12 files changed, 42 insertions(+), 33 deletions(-)
+
+Complete diff:
+diff --git a/arch/x86/include/asm/apic.h b/arch/x86/include/asm/apic.h
+index 42f2f83..5773660 100644
+--- a/arch/x86/include/asm/apic.h
++++ b/arch/x86/include/asm/apic.h
+@@ -478,6 +478,9 @@ static inline unsigned int read_apic_id(void)
+ extern void default_setup_apic_routing(void);
  
- void __native_set_fixmap(enum fixed_addresses idx, pte_t pte);
- void native_set_fixmap(enum fixed_addresses idx,
--		       unsigned long phys, pgprot_t flags);
-+		       phys_addr_t phys, pgprot_t flags);
+ #ifdef CONFIG_X86_32
++
++extern struct apic apic_default;
++
+ /*
+  * Set up the logical destination ID.
+  *
+diff --git a/arch/x86/include/asm/hw_irq.h b/arch/x86/include/asm/hw_irq.h
+index 7309c0a..beeb208 100644
+--- a/arch/x86/include/asm/hw_irq.h
++++ b/arch/x86/include/asm/hw_irq.h
+@@ -81,7 +81,11 @@ extern void eisa_set_level_irq(unsigned int irq);
+ /* SMP */
+ extern void smp_apic_timer_interrupt(struct pt_regs *);
+ extern void smp_spurious_interrupt(struct pt_regs *);
++extern void smp_generic_interrupt(struct pt_regs *);
+ extern void smp_error_interrupt(struct pt_regs *);
++#ifdef CONFIG_X86_IO_APIC
++extern asmlinkage void smp_irq_move_cleanup_interrupt(void);
++#endif
+ #ifdef CONFIG_SMP
+ extern void smp_reschedule_interrupt(struct pt_regs *);
+ extern void smp_call_function_interrupt(struct pt_regs *);
+diff --git a/arch/x86/include/asm/pgtable.h b/arch/x86/include/asm/pgtable.h
+index 205f6a9..577485b 100644
+--- a/arch/x86/include/asm/pgtable.h
++++ b/arch/x86/include/asm/pgtable.h
+@@ -510,6 +510,8 @@ static inline int pte_hidden(pte_t pte)
  
- #ifndef CONFIG_PARAVIRT
- static inline void __set_fixmap(enum fixed_addresses idx,
--				unsigned long phys, pgprot_t flags)
-+				phys_addr_t phys, pgprot_t flags)
+ #ifndef __ASSEMBLY__
+ 
++extern int direct_gbpages;
++
+ /* local pte updates need not use xchg for locking */
+ static inline pte_t native_local_ptep_get_and_clear(pte_t *ptep)
  {
- 	native_set_fixmap(idx, phys, flags);
+diff --git a/arch/x86/include/asm/pgtable_64.h b/arch/x86/include/asm/pgtable_64.h
+index 6b87bc6..abde308 100644
+--- a/arch/x86/include/asm/pgtable_64.h
++++ b/arch/x86/include/asm/pgtable_64.h
+@@ -25,10 +25,6 @@ extern pgd_t init_level4_pgt[];
+ 
+ extern void paging_init(void);
+ 
+-#endif /* !__ASSEMBLY__ */
+-
+-#ifndef __ASSEMBLY__
+-
+ #define pte_ERROR(e)					\
+ 	printk("%s:%d: bad pte %p(%016lx).\n",		\
+ 	       __FILE__, __LINE__, &(e), pte_val(e))
+@@ -135,8 +131,6 @@ static inline int pgd_large(pgd_t pgd) { return 0; }
+ 
+ #define update_mmu_cache(vma, address, pte) do { } while (0)
+ 
+-extern int direct_gbpages;
+-
+ /* Encode and de-code a swap entry */
+ #if _PAGE_BIT_FILE < _PAGE_BIT_PROTNONE
+ #define SWP_TYPE_BITS (_PAGE_BIT_FILE - _PAGE_BIT_PRESENT - 1)
+diff --git a/arch/x86/include/asm/syscalls.h b/arch/x86/include/asm/syscalls.h
+index 7043408..372b76e 100644
+--- a/arch/x86/include/asm/syscalls.h
++++ b/arch/x86/include/asm/syscalls.h
+@@ -1,7 +1,7 @@
+ /*
+  * syscalls.h - Linux syscall interfaces (arch-specific)
+  *
+- * Copyright (c) 2008 Jaswinder Singh
++ * Copyright (c) 2008 Jaswinder Singh Rajput
+  *
+  * This file is released under the GPLv2.
+  * See the file COPYING for more details.
+@@ -12,50 +12,55 @@
+ 
+ #include <linux/compiler.h>
+ #include <linux/linkage.h>
+-#include <linux/types.h>
+ #include <linux/signal.h>
++#include <linux/types.h>
+ 
+ /* Common in X86_32 and X86_64 */
+ /* kernel/ioport.c */
+ asmlinkage long sys_ioperm(unsigned long, unsigned long, int);
+ 
++/* kernel/process.c */
++int sys_fork(struct pt_regs *);
++int sys_vfork(struct pt_regs *);
++
+ /* kernel/ldt.c */
+ asmlinkage int sys_modify_ldt(int, void __user *, unsigned long);
+ 
++/* kernel/signal.c */
++long sys_rt_sigreturn(struct pt_regs *);
++
+ /* kernel/tls.c */
+ asmlinkage int sys_set_thread_area(struct user_desc __user *);
+ asmlinkage int sys_get_thread_area(struct user_desc __user *);
+ 
+ /* X86_32 only */
+ #ifdef CONFIG_X86_32
++/* kernel/ioport.c */
++long sys_iopl(struct pt_regs *);
++
+ /* kernel/process_32.c */
+-int sys_fork(struct pt_regs *);
+ int sys_clone(struct pt_regs *);
+-int sys_vfork(struct pt_regs *);
+ int sys_execve(struct pt_regs *);
+ 
+-/* kernel/signal_32.c */
++/* kernel/signal.c */
+ asmlinkage int sys_sigsuspend(int, int, old_sigset_t);
+ asmlinkage int sys_sigaction(int, const struct old_sigaction __user *,
+ 			     struct old_sigaction __user *);
+ int sys_sigaltstack(struct pt_regs *);
+ unsigned long sys_sigreturn(struct pt_regs *);
+-long sys_rt_sigreturn(struct pt_regs *);
+-
+-/* kernel/ioport.c */
+-long sys_iopl(struct pt_regs *);
+ 
+ /* kernel/sys_i386_32.c */
++struct mmap_arg_struct;
++struct sel_arg_struct;
++struct oldold_utsname;
++struct old_utsname;
++
+ asmlinkage long sys_mmap2(unsigned long, unsigned long, unsigned long,
+ 			  unsigned long, unsigned long, unsigned long);
+-struct mmap_arg_struct;
+ asmlinkage int old_mmap(struct mmap_arg_struct __user *);
+-struct sel_arg_struct;
+ asmlinkage int old_select(struct sel_arg_struct __user *);
+ asmlinkage int sys_ipc(uint, int, int, int, void __user *, long);
+-struct old_utsname;
+ asmlinkage int sys_uname(struct old_utsname __user *);
+-struct oldold_utsname;
+ asmlinkage int sys_olduname(struct oldold_utsname __user *);
+ 
+ /* kernel/vm86_32.c */
+@@ -65,29 +70,27 @@ int sys_vm86(struct pt_regs *);
+ #else /* CONFIG_X86_32 */
+ 
+ /* X86_64 only */
++/* kernel/ioport.c */
++asmlinkage long sys_iopl(unsigned int, struct pt_regs *);
++
+ /* kernel/process_64.c */
+-asmlinkage long sys_fork(struct pt_regs *);
+ asmlinkage long sys_clone(unsigned long, unsigned long,
+ 			  void __user *, void __user *,
+ 			  struct pt_regs *);
+-asmlinkage long sys_vfork(struct pt_regs *);
+ asmlinkage long sys_execve(char __user *, char __user * __user *,
+ 			   char __user * __user *,
+ 			   struct pt_regs *);
+ long sys_arch_prctl(int, unsigned long);
+ 
+-/* kernel/ioport.c */
+-asmlinkage long sys_iopl(unsigned int, struct pt_regs *);
+-
+-/* kernel/signal_64.c */
++/* kernel/signal.c */
+ asmlinkage long sys_sigaltstack(const stack_t __user *, stack_t __user *,
+ 				struct pt_regs *);
+-long sys_rt_sigreturn(struct pt_regs *);
+ 
+ /* kernel/sys_x86_64.c */
++struct new_utsname;
++
+ asmlinkage long sys_mmap(unsigned long, unsigned long, unsigned long,
+ 			 unsigned long, unsigned long, unsigned long);
+-struct new_utsname;
+ asmlinkage long sys_uname(struct new_utsname __user *);
+ 
+ #endif /* CONFIG_X86_32 */
+diff --git a/arch/x86/kernel/apic/io_apic.c b/arch/x86/kernel/apic/io_apic.c
+index 8499000..156ae14 100644
+--- a/arch/x86/kernel/apic/io_apic.c
++++ b/arch/x86/kernel/apic/io_apic.c
+@@ -59,6 +59,7 @@
+ #include <asm/setup.h>
+ #include <asm/irq_remapping.h>
+ #include <asm/hpet.h>
++#include <asm/hw_irq.h>
+ #include <asm/uv/uv_hub.h>
+ #include <asm/uv/uv_irq.h>
+ 
+diff --git a/arch/x86/kernel/apic/nmi.c b/arch/x86/kernel/apic/nmi.c
+index d6bd624..0205631 100644
+--- a/arch/x86/kernel/apic/nmi.c
++++ b/arch/x86/kernel/apic/nmi.c
+@@ -104,7 +104,7 @@ static __init void nmi_cpu_busy(void *data)
  }
-diff --git a/arch/x86/include/asm/io.h b/arch/x86/include/asm/io.h
-index e5383e3..7373932 100644
---- a/arch/x86/include/asm/io.h
-+++ b/arch/x86/include/asm/io.h
-@@ -193,8 +193,10 @@ extern void __iomem *ioremap_wc(resource_size_t offset, unsigned long size);
-  */
- extern void early_ioremap_init(void);
- extern void early_ioremap_reset(void);
--extern void __iomem *early_ioremap(unsigned long offset, unsigned long size);
--extern void __iomem *early_memremap(unsigned long offset, unsigned long size);
-+extern void __iomem *early_ioremap(resource_size_t phys_addr,
-+				   unsigned long size);
-+extern void __iomem *early_memremap(resource_size_t phys_addr,
-+				    unsigned long size);
- extern void early_iounmap(void __iomem *addr, unsigned long size);
+ #endif
  
- #define IO_SPACE_LIMIT 0xffff
-diff --git a/arch/x86/include/asm/paravirt.h b/arch/x86/include/asm/paravirt.h
-index 7727aa8..378e369 100644
---- a/arch/x86/include/asm/paravirt.h
-+++ b/arch/x86/include/asm/paravirt.h
-@@ -347,7 +347,7 @@ struct pv_mmu_ops {
- 	/* Sometimes the physical address is a pfn, and sometimes its
- 	   an mfn.  We can tell which is which from the index. */
- 	void (*set_fixmap)(unsigned /* enum fixed_addresses */ idx,
--			   unsigned long phys, pgprot_t flags);
-+			   phys_addr_t phys, pgprot_t flags);
- };
- 
- struct raw_spinlock;
-@@ -1432,7 +1432,7 @@ static inline void arch_leave_lazy_mmu_mode(void)
- void arch_flush_lazy_mmu_mode(void);
- 
- static inline void __set_fixmap(unsigned /* enum fixed_addresses */ idx,
--				unsigned long phys, pgprot_t flags)
-+				phys_addr_t phys, pgprot_t flags)
+-static void report_broken_nmi(int cpu, int *prev_nmi_count)
++static void report_broken_nmi(int cpu, unsigned int *prev_nmi_count)
  {
- 	pv_mmu_ops.set_fixmap(idx, phys, flags);
- }
-diff --git a/arch/x86/mm/ioremap.c b/arch/x86/mm/ioremap.c
-index 0dfa09d..09daebf 100644
---- a/arch/x86/mm/ioremap.c
-+++ b/arch/x86/mm/ioremap.c
-@@ -547,7 +547,7 @@ void __init early_ioremap_reset(void)
- }
+ 	printk(KERN_CONT "\n");
  
- static void __init __early_set_fixmap(enum fixed_addresses idx,
--				   unsigned long phys, pgprot_t flags)
-+				      phys_addr_t phys, pgprot_t flags)
- {
- 	unsigned long addr = __fix_to_virt(idx);
- 	pte_t *pte;
-@@ -566,7 +566,7 @@ static void __init __early_set_fixmap(enum fixed_addresses idx,
- }
+diff --git a/arch/x86/kernel/apic/probe_32.c b/arch/x86/kernel/apic/probe_32.c
+index 01eda2a..440a8bc 100644
+--- a/arch/x86/kernel/apic/probe_32.c
++++ b/arch/x86/kernel/apic/probe_32.c
+@@ -160,7 +160,6 @@ extern struct apic apic_summit;
+ extern struct apic apic_bigsmp;
+ extern struct apic apic_es7000;
+ extern struct apic apic_es7000_cluster;
+-extern struct apic apic_default;
  
- static inline void __init early_set_fixmap(enum fixed_addresses idx,
--					   unsigned long phys, pgprot_t prot)
-+					   phys_addr_t phys, pgprot_t prot)
- {
- 	if (after_paging_init)
- 		__set_fixmap(idx, phys, prot);
-@@ -607,9 +607,10 @@ static int __init check_early_ioremap_leak(void)
- late_initcall(check_early_ioremap_leak);
+ struct apic *apic = &apic_default;
+ EXPORT_SYMBOL_GPL(apic);
+diff --git a/arch/x86/kernel/irq.c b/arch/x86/kernel/irq.c
+index 9be593f..74fcb3b 100644
+--- a/arch/x86/kernel/irq.c
++++ b/arch/x86/kernel/irq.c
+@@ -12,6 +12,7 @@
+ #include <asm/io_apic.h>
+ #include <asm/irq.h>
+ #include <asm/idle.h>
++#include <asm/hw_irq.h>
  
- static void __init __iomem *
--__early_ioremap(unsigned long phys_addr, unsigned long size, pgprot_t prot)
-+__early_ioremap(resource_size_t phys_addr, unsigned long size, pgprot_t prot)
+ atomic_t irq_err_count;
+ 
+diff --git a/arch/x86/kernel/process.c b/arch/x86/kernel/process.c
+index 1d71442..e915045 100644
+--- a/arch/x86/kernel/process.c
++++ b/arch/x86/kernel/process.c
+@@ -15,6 +15,7 @@
+ #include <asm/uaccess.h>
+ #include <asm/i387.h>
+ #include <asm/ds.h>
++#include <asm/syscalls.h>
+ 
+ unsigned long idle_halt;
+ EXPORT_SYMBOL(idle_halt);
+diff --git a/arch/x86/kernel/tsc.c b/arch/x86/kernel/tsc.c
+index 7a567eb..a8dc0d0 100644
+--- a/arch/x86/kernel/tsc.c
++++ b/arch/x86/kernel/tsc.c
+@@ -384,13 +384,13 @@ unsigned long native_calibrate_tsc(void)
  {
--	unsigned long offset, last_addr;
-+	unsigned long offset;
-+	resource_size_t last_addr;
- 	unsigned int nrpages;
- 	enum fixed_addresses idx0, idx;
- 	int i, slot;
-@@ -625,15 +626,15 @@ __early_ioremap(unsigned long phys_addr, unsigned long size, pgprot_t prot)
+ 	u64 tsc1, tsc2, delta, ref1, ref2;
+ 	unsigned long tsc_pit_min = ULONG_MAX, tsc_ref_min = ULONG_MAX;
+-	unsigned long flags, latch, ms, fast_calibrate, tsc_khz;
++	unsigned long flags, latch, ms, fast_calibrate, hv_tsc_khz;
+ 	int hpet = is_hpet_enabled(), i, loopmin;
+ 
+-	tsc_khz = get_hypervisor_tsc_freq();
+-	if (tsc_khz) {
++	hv_tsc_khz = get_hypervisor_tsc_freq();
++	if (hv_tsc_khz) {
+ 		printk(KERN_INFO "TSC: Frequency read from the hypervisor\n");
+-		return tsc_khz;
++		return hv_tsc_khz;
  	}
  
- 	if (slot < 0) {
--		printk(KERN_INFO "early_iomap(%08lx, %08lx) not found slot\n",
--			 phys_addr, size);
-+		printk(KERN_INFO "early_iomap(%08llx, %08lx) not found slot\n",
-+			 (u64)phys_addr, size);
- 		WARN_ON(1);
- 		return NULL;
- 	}
+ 	local_irq_save(flags);
+diff --git a/arch/x86/mm/init.c b/arch/x86/mm/init.c
+index 51ae5ea..4e49613 100644
+--- a/arch/x86/mm/init.c
++++ b/arch/x86/mm/init.c
+@@ -1,3 +1,4 @@
++#include <linux/initrd.h>
+ #include <linux/ioport.h>
+ #include <linux/swap.h>
  
- 	if (early_ioremap_debug) {
--		printk(KERN_INFO "early_ioremap(%08lx, %08lx) [%d] => ",
--		       phys_addr, size, slot);
-+		printk(KERN_INFO "early_ioremap(%08llx, %08lx) [%d] => ",
-+		       (u64)phys_addr, size, slot);
- 		dump_stack();
- 	}
- 
-@@ -680,13 +681,15 @@ __early_ioremap(unsigned long phys_addr, unsigned long size, pgprot_t prot)
- }
- 
- /* Remap an IO device */
--void __init __iomem *early_ioremap(unsigned long phys_addr, unsigned long size)
-+void __init __iomem *
-+early_ioremap(resource_size_t phys_addr, unsigned long size)
- {
- 	return __early_ioremap(phys_addr, size, PAGE_KERNEL_IO);
- }
- 
- /* Remap memory */
--void __init __iomem *early_memremap(unsigned long phys_addr, unsigned long size)
-+void __init __iomem *
-+early_memremap(resource_size_t phys_addr, unsigned long size)
- {
- 	return __early_ioremap(phys_addr, size, PAGE_KERNEL);
- }
-diff --git a/arch/x86/mm/pgtable.c b/arch/x86/mm/pgtable.c
-index 5b7c7c8..7aa03a5 100644
---- a/arch/x86/mm/pgtable.c
-+++ b/arch/x86/mm/pgtable.c
-@@ -345,7 +345,8 @@ void __native_set_fixmap(enum fixed_addresses idx, pte_t pte)
- 	fixmaps_set++;
- }
- 
--void native_set_fixmap(enum fixed_addresses idx, unsigned long phys, pgprot_t flags)
-+void native_set_fixmap(enum fixed_addresses idx, phys_addr_t phys,
-+		       pgprot_t flags)
- {
- 	__native_set_fixmap(idx, pfn_pte(phys >> PAGE_SHIFT, flags));
- }
-diff --git a/arch/x86/xen/mmu.c b/arch/x86/xen/mmu.c
-index db3802f..2a81838 100644
---- a/arch/x86/xen/mmu.c
-+++ b/arch/x86/xen/mmu.c
-@@ -1750,7 +1750,7 @@ __init pgd_t *xen_setup_kernel_pagetable(pgd_t *pgd,
- }
- #endif	/* CONFIG_X86_64 */
- 
--static void xen_set_fixmap(unsigned idx, unsigned long phys, pgprot_t prot)
-+static void xen_set_fixmap(unsigned idx, phys_addr_t phys, pgprot_t prot)
- {
- 	pte_t pte;
- 
+
+
