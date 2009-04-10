@@ -1,73 +1,89 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759705AbZDJPvN@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759385AbZDJP73@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759705AbZDJPvN (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 10 Apr 2009 11:51:13 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754584AbZDJPu4
+	id S1759385AbZDJP73 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 10 Apr 2009 11:59:29 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754508AbZDJP7T
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 10 Apr 2009 11:50:56 -0400
-Received: from nwd2mail10.analog.com ([137.71.25.55]:47095 "EHLO
-	nwd2mail10.analog.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754363AbZDJPuz (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 10 Apr 2009 11:50:55 -0400
-X-IronPort-AV: E=Sophos;i="4.40,168,1238990400"; 
-   d="scan'208";a="86108690"
-From: Robin Getz <rgetz@blackfin.uclinux.org>
-Organization: Blackfin uClinux org
-To: linux-kernel@vger.kernel.org, linux-doc@vger.kernel.org
-Subject: [PATCH 01/01] - Add IRQF_SAMPLE_RANDOM to the feature-removal-schedule.txt (deprecated) list
-Date: Fri, 10 Apr 2009 11:53:09 -0400
-User-Agent: KMail/1.9.5
-CC: "Theodore Tso" <tytso@mit.edu>, "Matt Mackall" <mpm@selenic.com>,
-       "Andrew Morton" <akpm@linux-foundation.org>, mtk.manpages@gmail.com,
-       "Randy Dunlap" <randy.dunlap@oracle.com>
+	Fri, 10 Apr 2009 11:59:19 -0400
+Received: from lug-owl.de ([195.71.106.12]:52420 "EHLO lug-owl.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751191AbZDJP7S (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 10 Apr 2009 11:59:18 -0400
+Date: Fri, 10 Apr 2009 17:59:16 +0200
+From: Jan-Benedict Glaw <jbglaw@lug-owl.de>
+To: Sam Ravnborg <sam@ravnborg.org>
+Cc: Mike Frysinger <vapier.adi@gmail.com>,
+       Andrew Morton <akpm@linux-foundation.org>, Alex Chiang <achiang@hp.com>,
+       Robin Holt <holt@sgi.com>, linux-kernel <linux-kernel@vger.kernel.org>,
+       linux-ia64@vger.kernel.org
+Subject: Re: cross-compilers
+Message-ID: <20090410155916.GH7921@lug-owl.de>
+Mail-Followup-To: Sam Ravnborg <sam@ravnborg.org>,
+	Mike Frysinger <vapier.adi@gmail.com>,
+	Andrew Morton <akpm@linux-foundation.org>,
+	Alex Chiang <achiang@hp.com>, Robin Holt <holt@sgi.com>,
+	linux-kernel <linux-kernel@vger.kernel.org>,
+	linux-ia64@vger.kernel.org
+References: <20090408010331.GB10768@sgi.com> <20090408054612.GA6744@ldl.fc.hp.com> <20090407225457.86f8a458.akpm@linux-foundation.org> <20090409003308.GK16602@bilbo.ozlabs.org> <20090408174443.79e71503.akpm@linux-foundation.org> <20090409215207.GN16602@bilbo.ozlabs.org> <20090409234750.GE7921@lug-owl.de> <20090410101220.GF7921@lug-owl.de> <8bd0f97a0904100319kb16c81bs596341e016cc41a@mail.gmail.com> <20090410104913.GA21483@uranus.ravnborg.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
+Content-Type: multipart/signed; micalg=pgp-sha1;
+	protocol="application/pgp-signature"; boundary="PN3BvWO2pAtZiyQU"
 Content-Disposition: inline
-Message-ID: <200904101153.09416.rgetz@blackfin.uclinux.org>
-X-OriginalArrivalTime: 10 Apr 2009 15:50:49.0578 (UTC) FILETIME=[1EBF44A0:01C9B9F4]
+In-Reply-To: <20090410104913.GA21483@uranus.ravnborg.org>
+X-Operating-System: Linux mail 2.6.18-5-686 
+X-gpg-fingerprint: 250D 3BCF 7127 0D8C A444  A961 1DBD 5E75 8399 E1BB
+X-gpg-key: wwwkeys.de.pgp.net
+X-Echelon-Enable: howto poison arsenous mail psychological biological
+	nuclear warfare test the bombastical terror of flooding the spy
+	listeners explosion sex drugs and rock'n'roll
+X-TKUeV: howto poison arsenous mail psychological biological nuclear
+	warfare test the bombastical terror of flooding the spy listeners
+	explosion sex drugs and rock'n'roll
+X-message-flag: Please send plain text messages only. Do not send HTML
+	emails. Thank you. 
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-This adds IRQF_SAMPLE_RANDOM to the feature-removal (deprecated) list since 
-most of the IRQF_SAMPLE_RANDOM users are technically bogus as entropy sources 
-in the kernel's current entropy model.
+--PN3BvWO2pAtZiyQU
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-Signed-off-by: Robin Getz <rgetz@blackfin.uclinux.org>
+On Fri, 2009-04-10 12:49:13 +0200, Sam Ravnborg <sam@ravnborg.org> wrote:
+> On Fri, Apr 10, 2009 at 06:19:21AM -0400, Mike Frysinger wrote:
 
----
+> I'm after a one-stop place where we can locate cross compilers
+> for all architectures that Linux supports so it is a much simpler
+> task to actaully try to build our changes for as many architectures
+> as we supports.
+>=20
+> And please host them on kernel.org - preferably as an update
+> of Vegards pages.
 
-This was discussed on the lkml the past few days, which started here:
-http://lkml.org/lkml/2009/4/6/283
+Known-working compilers, or the current latest-and-greatest for
+testing? I can provide the HEAD compilers easily.
 
- Documentation/feature-removal-schedule.txt2 |   14 ++++++++++++++
- 1 file changed, 14 insertions(+)
+MfG, JBG
 
---- Documentation/feature-removal-schedule.txt	
-+++ Documentation/feature-removal-schedule.txt
-@@ -6,6 +6,20 @@
- 
- ---------------------------
- 
-+What:	IRQF_SAMPLE_RANDOM
-+Check:	IRQF_SAMPLE_RANDOM
-+When:	July 2009
-+
-+Why:	Many of IRQF_SAMPLE_RANDOM users are technically bogus as entropy
-+	sources in the kernel's current entropy model. To resolve this, every
-+	input point to the kernel's entropy pool needs to better document the
-+	type of entropy source it actually is. This will be replaced with
-+	additional add_*_randomness functions in drivers/char/random.c
-+
-+Who:	Robin Getz <rgetz@blackfin.uclinux.org> & Matt Mackall <mpm@selenic.com>
-+
-+---------------------------
-+
- What:	The ieee80211_regdom module parameter
- When:	March 2010 / desktop catchup
- 
+--=20
+      Jan-Benedict Glaw      jbglaw@lug-owl.de              +49-172-7608481
+  Signature of:                          Zensur im Internet? Nein danke!
+  the second  :
 
----
+--PN3BvWO2pAtZiyQU
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: Digital signature
+Content-Disposition: inline
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.9 (GNU/Linux)
+
+iEYEARECAAYFAknfbNQACgkQHb1edYOZ4buiLQCfXjFs8FFGq3O9ef2sv+0ffhBw
+pXYAoI4kmkvkJatQHzYzmqcPtCO8v1go
+=+vyF
+-----END PGP SIGNATURE-----
+
+--PN3BvWO2pAtZiyQU--
