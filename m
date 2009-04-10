@@ -1,103 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934107AbZDJLRp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S935555AbZDJLS0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934107AbZDJLRp (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 10 Apr 2009 07:17:45 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759871AbZDJLRe
+	id S935555AbZDJLS0 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 10 Apr 2009 07:18:26 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763477AbZDJLSO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 10 Apr 2009 07:17:34 -0400
-Received: from mail-fx0-f158.google.com ([209.85.220.158]:42552 "EHLO
-	mail-fx0-f158.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757909AbZDJLRb (ORCPT
+	Fri, 10 Apr 2009 07:18:14 -0400
+Received: from atrey.karlin.mff.cuni.cz ([195.113.26.193]:44211 "EHLO
+	atrey.karlin.mff.cuni.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1759871AbZDJLSN (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 10 Apr 2009 07:17:31 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:references:mime-version
-         :content-type:content-disposition:in-reply-to:user-agent;
-        b=Ry/yTsl7yBRS0eCSz0pn6ZyTOGXllTxOnPu7XhrEiBp/nQtB5ldCd7QXrRa1FOIxAB
-         bxP8NOTFDRor4A5v5ZWhKQuCVzjnnuZ3xbPBERllfbM/RlveeDln3xivb43MKjGam0v5
-         JyX9wA4zPpai96aHe6/N6DSuXjw3OgjJjGc2c=
-Date: Fri, 10 Apr 2009 15:17:33 +0400
-From: Alexey Dobriyan <adobriyan@gmail.com>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: Matt Helsley <matthltc@us.ibm.com>, Tejun Heo <tj@kernel.org>,
-       Jeremy Fitzhardinge <jeremy@goop.org>, akpm@linux-foundation.org,
-       containers@lists.linux-foundation.org, xemul@parallels.com,
-       linux-kernel@vger.kernel.org, dave@linux.vnet.ibm.com,
-       hch@infradead.org, torvalds@linux-foundation.org
-Subject: Re: [PATCH 09/30] x86_64: ifdef out struct thread_struct::ip
-Message-ID: <20090410111733.GA3311@x200.localdomain>
-References: <20090410023522.GJ27788@x200.localdomain> <20090410035328.GB29496@us.ibm.com> <20090410091931.GF17962@elte.hu>
+	Fri, 10 Apr 2009 07:18:13 -0400
+Date: Fri, 10 Apr 2009 13:21:15 +0200
+From: Pavel Machek <pavel@ucw.cz>
+To: Alan Jenkins <alan-jenkins@tuffmail.co.uk>
+Cc: linux-pm@lists.linux-foundation.org,
+       Kernel Testers List <kernel-testers@vger.kernel.org>,
+       linux-kernel <linux-kernel@vger.kernel.org>,
+       "Rafael J. Wysocki" <rjw@sisk.pl>
+Subject: Re: [linux-pm] Regression: First hibernation attempt fails
+Message-ID: <20090410112115.GA2513@elf.ucw.cz>
+References: <49DDD83F.507@tuffmail.co.uk> <20090410092318.GB30093@elf.ucw.cz> <49DF289D.5070604@tuffmail.co.uk>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20090410091931.GF17962@elte.hu>
+In-Reply-To: <49DF289D.5070604@tuffmail.co.uk>
+X-Warning: Reading this can be dangerous to your mental health.
 User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Apr 10, 2009 at 11:19:31AM +0200, Ingo Molnar wrote:
+On Fri 2009-04-10 12:08:13, Alan Jenkins wrote:
+> Pavel Machek wrote:
+> > On Thu 2009-04-09 12:13:03, Alan Jenkins wrote:
+> >   
+> >> Yet another issue in 2.6.30-rc1 which was not present in 2.6.29 :-).  I
+> >> wonder if it rings any bells?
+> >>
+> >> On my laptop (EEE 4G), the first attempt at hibernation fails. 
+> >> Subsequent attempts succeed.
+> >>
+> >> If I use s2disk as normal, I see "snapshotting system", then before it
+> >> gets to write out the image, it aborts and switches back to X.   I can't
+> >> see any error message, even if I check the log with "dmesg".
+> >>
+> >> If I use "echo disk > /sys/power/state", echo reports the error "Cannot
+> >> allocate memory".
+> >>
+> >> This only happens if I've logged in to X first.  In fact, I narrowed it
+> >> down to gnome-power-manager.  If I kill gnome-power-manager beforehand,
+> >> then it doesn't happen.
+> >
+> > Anything interesting in dmesg?
 > 
-> * Matt Helsley <matthltc@us.ibm.com> wrote:
-> 
-> > On Fri, Apr 10, 2009 at 06:35:22AM +0400, Alexey Dobriyan wrote:
-> > > struct thread_struct::ip isn't used on x86_64, struct pt_regs::ip is used
-> > > instead. 
-> > > 
-> > > kgdb should be reading 0, but I can't check it.
-> > > 
-> > > Signed-off-by: Alexey Dobriyan <adobriyan@gmail.com>
-> > > ---
-> > > 
-> > >  arch/x86/include/asm/processor.h |    2 ++
-> > >  arch/x86/kernel/kgdb.c           |    2 +-
-> > >  2 files changed, 3 insertions(+), 1 deletion(-)
-> > > 
-> > > --- a/arch/x86/include/asm/processor.h
-> > > +++ b/arch/x86/include/asm/processor.h
-> > > @@ -421,7 +421,9 @@ struct thread_struct {
-> > >  	unsigned short		fsindex;
-> > >  	unsigned short		gsindex;
-> > >  #endif
-> > > +#ifdef CONFIG_X86_32
-> > >  	unsigned long		ip;
-> > > +#endif
-> > >  #ifdef CONFIG_X86_64
-> > >  	unsigned long		fs;
-> > >  #endif
-> > 
-> > Do these make struct thread_struct behave better in cachelines 
-> > (smaller, less aliasing)? Can we really fit more in the slab du 
-> > jour?
-> > 
-> > Otherwise it seems like we're littering these structs with #ifdefs 
-> > and not really saving anything. [...]
-> 
-> Removing fields always saves memory (even if it does not show up 
-> currently due to allocators cache-aligning sizes).
-> 
-> But the #ifdef ugliness is a real worry.
+> Nothing obvious. I've attached my latest at
+> <http://bugzilla.kernel.org/show_bug.cgi?id=13058>.
 
-You should have thought about it when i386/x86_64 unification was
-introduced.
-
-pagefault code was full of ifdefs (it's less now), and this is trivial
-ifdef in a header.
-
-> > [...] If these #ifdefs don't save any 
-> > space why not just put in a comment:
-> > 
-> > >  	unsigned long		ip; /* Used only on i386 */
-> 
-> Yes.
-> 
-> > Or maybe even:
-> > 
-> > 	union {
-> > 	  	unsigned long		ip; /* Used only on i386 */
-> > 	  	unsigned long		fs; /* Used only on x86_64 */
-> > 	};
-> 
-> Maybe. If this ever gets misunderstood somewhere in platform code we 
-> will get ugly failure modes and zero compiler help.
+Ok, next theory was that some module stuff is responsible (IIRC, from
+the lists). Can you try with everything-built-in (no modules) kernel?
+									Pavel
+-- 
+(english) http://www.livejournal.com/~pavelmachek
+(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
