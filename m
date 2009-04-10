@@ -1,86 +1,75 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934332AbZDJTbs@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934480AbZDJTfd@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934332AbZDJTbs (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 10 Apr 2009 15:31:48 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762777AbZDJTbf
+	id S934480AbZDJTfd (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 10 Apr 2009 15:35:33 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933666AbZDJTfI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 10 Apr 2009 15:31:35 -0400
-Received: from g4t0015.houston.hp.com ([15.201.24.18]:24950 "EHLO
-	g4t0015.houston.hp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757922AbZDJTbd (ORCPT
+	Fri, 10 Apr 2009 15:35:08 -0400
+Received: from fg-out-1718.google.com ([72.14.220.159]:45088 "EHLO
+	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S932643AbZDJTfG (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 10 Apr 2009 15:31:33 -0400
-Date: Fri, 10 Apr 2009 14:31:34 -0500
-From: "Mike Miller (OS Dev)" <mikem@beardog.cca.cpqcorp.net>
-To: Matthew Wilcox <matthew@wil.cx>
-Cc: LKML-SCSI <linux-scsi@vger.kernel.org>,
-       LKML <linux-kernel@vger.kernel.org>, mike.miller@hp.com,
-       James Bottomley <james.bottomley@hansenpartnership.com>
-Subject: Re: READ CAPACITY (16) failing
-Message-ID: <20090410193134.GA2615@beardog.cca.cpqcorp.net>
-References: <20090408194357.GA15043@beardog.cca.cpqcorp.net> <20090408195447.GP20983@parisc-linux.org>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090408195447.GP20983@parisc-linux.org>
-User-Agent: Mutt/1.5.9i
+	Fri, 10 Apr 2009 15:35:06 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
+         :cc:content-type:content-transfer-encoding;
+        b=PhOMIEK0pYqk4+8+uyVQmmfPvJt47s1HDcV6QZ59uQkzJetYebQVM/nc60wXlBcapv
+         eZb8EnCDGe2Hu6v0bH6EgpKgZvRHVbKctr8Br5+zsA7CTY4WVU//TfL1dZP6AuRaGxuu
+         hSPqAMdvIIxFtZq3RBAMoDFQWu48vHB+86gIg=
+MIME-Version: 1.0
+In-Reply-To: <20090410162915.GA27805@elf.ucw.cz>
+References: <20090410103429.GA31367@elf.ucw.cz>
+	 <f17812d70904100350l19fa7493ma9c4695d49d19398@mail.gmail.com>
+	 <1239360967.14324.2.camel@brutus> <20090410162915.GA27805@elf.ucw.cz>
+Date: Fri, 10 Apr 2009 23:35:04 +0400
+Message-ID: <bc64b4640904101235l37b17da9hf52b8c841741dadd@mail.gmail.com>
+Subject: Re: 2.6.30-rc1: touchscreen BUG() on spitz
+From: Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>
+To: Pavel Machek <pavel@ucw.cz>
+Cc: Daniel Ribeiro <drwyrm@gmail.com>, Eric Miao <eric.y.miao@gmail.com>,
+       rpurdie@rpsys.net, lenz@cs.wisc.edu,
+       kernel list <linux-kernel@vger.kernel.org>,
+       Russell King <rmk@arm.linux.org.uk>, Dirk@opfer-online.de,
+       arminlitzel@web.de, Cyril Hrubis <metan@ucw.cz>, thommycheck@gmail.com,
+       linux-arm-kernel <linux-arm-kernel@lists.arm.linux.org.uk>,
+       omegamoon@gmail.com, Peter Zijlstra <a.p.zijlstra@chello.nl>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Apr 08, 2009 at 01:54:48PM -0600, Matthew Wilcox wrote:
-> On Wed, Apr 08, 2009 at 02:43:57PM -0500, Mike Miller (OS Dev) wrote:
-> > I'm working on the HP Smart Array SCSI driver (hpsa) and I'm seeing the
-> > following failures:
-> > 
-> > hpsa1: <0x3230> at PCI 0000:02:00.0 IRQ 76 using DAC
-> > scsi4 : hpsa
-> > scsi 4:0:0:0: Direct-Access     HP       LOGICAL VOLUME   5.20 PQ: 0 ANSI: 5
-> > sd 4:0:0:0: Attached scsi generic sg4 type 0
-> > sd 4:0:0:0: [sdd] READ CAPACITY(16) failed
-> > sd 4:0:0:0: [sdd] Result: hostbyte=DID_ABORT driverbyte=DRIVER_OK
-> > sd 4:0:0:0: [sdd] Sense not available.
-> > hpsa: cp ffff8800cf400000 has check condition: unknown type: Sense: 0x5,
-> > ASC: 0x20, ASCQ: 0x0, Returning result: 0x2, cmd=[a0 00 00 00 00 00 00 00 10
-> > 00]
-> 
-> > The READ CAPACITY failures are what I'm concerned about. I can't seem to track
-> > down why that's failing.
-> > I've tried printing out the_result from sd but it's not printing out. I'm
-> > assuming that anytime I load the driver it goes thru sd.
-> > 
-> > 	if (the_result) {
-> > 		sense_valid = scsi_sense_valid(&sshdr);
-> > 		if (sense_valid &&
-> > 			sshdr.sense_key == ILLEGAL_REQUEST &&
-> > 			(sshdr.asc == 0x20 || sshdr.asc == 0x24) &&
-> > 			sshdr.ascq == 0x00)
-> > 			/* Invalid Command Operation Code or
-> > 			 * Invalid Field in CDB, just retry
-> > 			 * silently with RC10 */
-> > 			return -EINVAL;
-> > 		}
-> > 	retries--;
-> > 	} while (the_result && retries);
-> > 	printk(KERN_WARNING "sd-mfm: the_result = %d\n", the_result);
-> 
-> Probably the device you're testing against doesn't support RC16, which
-> is fine.  But for some reason, we're not getting valid sense data back
-> from the device.  Now, there's two responses to this that seem rational
-> to me:
-> 
->  - In sd.c, if the drive has returned no/invalid sense data, try RC10
->    silently, just like the 0x20 / 0x24 ASC case.
->  - Find out why this drive doesn't report valid sense data when attached
->    to hpsa.  I assume it does report valid sense data when attached to
->    some other scsi card?
+2009/4/10 Pavel Machek <pavel@ucw.cz>:
+> Hi!
+>
+>> > > After update to 2.6.30-rc1, sharp zaurus c-3000 fails to boot with
+>> > > white screen (with stripes). That's a regression w.r.t. 2.6.29.
+>> >
+>> > What kind of white stripes? Does it look like the LCD controller
+>> > stops working or something.
+>> >
+>> > There is a regression which caused X server hang during bootup,
+>> > with commit id 66c1ca0, which you can revert and have another
+>> > try.
+>>
+>> As spitz also use cs_control for pxa2xx_spi, i believe that this is the
+>> same issue i found wednesday.
+>>
+>> See the "Kernel freeze caused by
+>> a7bb3909b3293d503211d7f6af8ed62c1644b686" thread.
+>
+> Ok, I'll try changing ASSERT->DEASSERT and see what happens. Hmm, it
+> now boots, with these messages:
+>
+> WARNING: at kernel/irq/handle.c:366
+> BUG: IRQ handler called from non-hardirq context!
+>
+> just after loading touchscreen device.
 
-Me again,
-The controllers do support RC16. After some more work it looks like RC16 is
-never getting to the driver. I'm snooping the CDB's of all requests as well
-as the completions from the driver and I never see a 0x9e. I do see the
-RC10 (0x25) though, so I think my debug is right.
+Try reverting 044d408409cc4e1bc75c886e27ca85c270db104c as
+software resent IRQs are sent from tasklet context, not from hardirq.
 
-Why would I never the see the command in the driver?
-
--- mikem
+-- 
+With best wishes
+Dmitry
