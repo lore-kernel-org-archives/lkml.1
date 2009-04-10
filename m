@@ -1,85 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751875AbZDJENr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752852AbZDJEOV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751875AbZDJENr (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 10 Apr 2009 00:13:47 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750745AbZDJENi
+	id S1752852AbZDJEOV (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 10 Apr 2009 00:14:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751315AbZDJEOF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 10 Apr 2009 00:13:38 -0400
-Received: from hera.kernel.org ([140.211.167.34]:49379 "EHLO hera.kernel.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750730AbZDJENh (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 10 Apr 2009 00:13:37 -0400
-Subject: Re: [PATCH 09/30] x86_64: ifdef out struct thread_struct::ip
-From: Jaswinder Singh Rajput <jaswinder@kernel.org>
-To: Matt Helsley <matthltc@us.ibm.com>
-Cc: Alexey Dobriyan <adobriyan@gmail.com>, akpm@linux-foundation.org,
-       containers@lists.linux-foundation.org, xemul@parallels.com,
-       linux-kernel@vger.kernel.org, dave@linux.vnet.ibm.com,
-       hch@infradead.org, mingo@elte.hu, torvalds@linux-foundation.org
-In-Reply-To: <20090410035328.GB29496@us.ibm.com>
-References: <20090410023522.GJ27788@x200.localdomain>
-	 <20090410035328.GB29496@us.ibm.com>
-Content-Type: text/plain
-Date: Fri, 10 Apr 2009 09:40:39 +0530
-Message-Id: <1239336639.3036.20.camel@ht.satnam>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.24.5 (2.24.5-1.fc10) 
+	Fri, 10 Apr 2009 00:14:05 -0400
+Received: from fgwmail6.fujitsu.co.jp ([192.51.44.36]:49494 "EHLO
+	fgwmail6.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751206AbZDJEOE (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 10 Apr 2009 00:14:04 -0400
+From: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
+To: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
+Subject: Re: [PATCH 1/1] Document get_user_pages_fast()
+Cc: kosaki.motohiro@jp.fujitsu.com, Andrew Morton <akpm@linux-foundation.org>,
+       Andy Grover <andy.grover@oracle.com>, linux-kernel@vger.kernel.org,
+       mingo@redhat.com, npiggin@suse.de
+In-Reply-To: <20090410121923.7939.A69D9226@jp.fujitsu.com>
+References: <20090409201309.db1c2c52.akpm@linux-foundation.org> <20090410121923.7939.A69D9226@jp.fujitsu.com>
+Message-Id: <20090410131200.793C.A69D9226@jp.fujitsu.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset="US-ASCII"
 Content-Transfer-Encoding: 7bit
+X-Mailer: Becky! ver. 2.50 [ja]
+Date: Fri, 10 Apr 2009 13:13:59 +0900 (JST)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 2009-04-09 at 20:53 -0700, Matt Helsley wrote:
-> On Fri, Apr 10, 2009 at 06:35:22AM +0400, Alexey Dobriyan wrote:
-> > struct thread_struct::ip isn't used on x86_64, struct pt_regs::ip is used
-> > instead. 
+> > > and Cow change owner process.
 > > 
-> > kgdb should be reading 0, but I can't check it.
-> > 
-> > Signed-off-by: Alexey Dobriyan <adobriyan@gmail.com>
-> > ---
-> > 
-> >  arch/x86/include/asm/processor.h |    2 ++
-> >  arch/x86/kernel/kgdb.c           |    2 +-
-> >  2 files changed, 3 insertions(+), 1 deletion(-)
-> > 
-> > --- a/arch/x86/include/asm/processor.h
-> > +++ b/arch/x86/include/asm/processor.h
-> > @@ -421,7 +421,9 @@ struct thread_struct {
-> >  	unsigned short		fsindex;
-> >  	unsigned short		gsindex;
-> >  #endif
-> > +#ifdef CONFIG_X86_32
-> >  	unsigned long		ip;
-> > +#endif
-> >  #ifdef CONFIG_X86_64
-> >  	unsigned long		fs;
-> >  #endif
+> > hm.  buggy userspace? Why is that a problem from a kernel perspective?
 > 
-> Do these make struct thread_struct behave better in cachelines (smaller,
-> less aliasing)? Can we really fit more in the slab du jour?
-> 
-> Otherwise it seems like we're littering these structs with #ifdefs
-> and not really saving anything. If these #ifdefs don't save any space why not 
-> just put in a comment:
-> 
-> >  	unsigned long		ip; /* Used only on i386 */
-> 
-> Or maybe even:
-> 
-> 	union {
-> 	  	unsigned long		ip; /* Used only on i386 */
-> 	  	unsigned long		fs; /* Used only on x86_64 */
-> 	};
-> 
+> We already started to discuttion in "[PATCH] fork vs gup(-fast) fix" thread.
+> but this is very difficult problem. it is still in progress ;)
 
-Can we do it like this:
-  	unsigned long		ip_fs; /* ip: i386, fs: x86_64 */
+note:
+access_process_vm() tell us right get_user_pages() usage.
+mmap_sem prevent fork in critical section. then it don't have cow risk.
 
-I am using same variable for both cases, or we can use some better name than ip_fs.
-I am assuming either it is i386 or x86_64 machine ;-)
 
---
-JSR
+
+> > > Yes, current all gup caller have serious bug. especially direct-io, aio, bio
+> > > are broken.
+
 
 
