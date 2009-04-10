@@ -1,74 +1,44 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S936792AbZDJUru@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933567AbZDJUsU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S936792AbZDJUru (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 10 Apr 2009 16:47:50 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932317AbZDJUrd
+	id S933567AbZDJUsU (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 10 Apr 2009 16:48:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S937666AbZDJUrr
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 10 Apr 2009 16:47:33 -0400
-Received: from mail-fx0-f158.google.com ([209.85.220.158]:40923 "EHLO
-	mail-fx0-f158.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S937107AbZDJUrb (ORCPT
+	Fri, 10 Apr 2009 16:47:47 -0400
+Received: from atrey.karlin.mff.cuni.cz ([195.113.26.193]:33650 "EHLO
+	atrey.karlin.mff.cuni.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S937306AbZDJUrq (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 10 Apr 2009 16:47:31 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:user-agent:mime-version:to:cc:subject
-         :content-type:content-transfer-encoding;
-        b=oRyh7lq24Ph/VOHvjn8+mNqxYK+CWEwSJyb0oNmFW0gBlgnx+oNqPXgPdQ3zC6YNiY
-         CzyqkFDr+0gf86YogDR+/+uAXOwVbxULa1taEuOH+XbW1t9Dtk7+3ChdDCumYDipAnne
-         l1/4jIVDyjbYHVJxrAaZj+kH8jdgJPhxi7YXg=
-Message-ID: <49DFB055.6070405@gmail.com>
-Date: Fri, 10 Apr 2009 22:47:17 +0200
-From: Marcin Slusarz <marcin.slusarz@gmail.com>
-User-Agent: Thunderbird 2.0.0.21 (X11/20090302)
+	Fri, 10 Apr 2009 16:47:46 -0400
+Date: Fri, 10 Apr 2009 22:50:50 +0200
+From: Pavel Machek <pavel@ucw.cz>
+To: Joe Perches <joe@perches.com>
+Cc: Linus Torvalds <torvalds@linux-foundation.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       LKML <linux-kernel@vger.kernel.org>
+Subject: Re: [GIT PULL] MAINTAINERS - Add file patterns and script to parse
+	them
+Message-ID: <20090410205049.GC23364@elf.ucw.cz>
+References: <1239396087.12402.34.camel@localhost>
 MIME-Version: 1.0
-To: "H. Peter Anvin" <hpa@linux.intel.com>, Ingo Molnar <mingo@elte.hu>,
-       Thomas Gleixner <tglx@linutronix.de>
-CC: LKML <linux-kernel@vger.kernel.org>
-Subject: [PATCH] x86: fix wrong section of pat_disable & make it static
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1239396087.12402.34.camel@localhost>
+X-Warning: Reading this can be dangerous to your mental health.
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-pat_disable cannot be __cpuinit anymore because it's called from pat_init
-and the callchain looks like this:
-pat_disable [cpuinit] <- pat_init <- generic_set_all <-
- ipi_handler <- set_mtrr <- (other non init/cpuinit functions)
+On Fri 2009-04-10 13:41:27, Joe Perches wrote:
+> Now in a git repository.
+> Let me know if I stuffed it up.
+> 
+> Signed-off-by: Joe Perches <joe@perches.com> 
 
-WARNING: arch/x86/mm/built-in.o(.text+0x449e): Section mismatch in reference
-from the function pat_init() to the function .cpuinit.text:pat_disable()
-The function pat_init() references
-the function __cpuinit pat_disable().
-This is often because pat_init lacks a __cpuinit
-annotation or the annotation of pat_disable is wrong.
+Still crossing fingers for this to get in...
+								Pavel
 
-Non CONFIG_X86_PAT version of pat_disable is static inline, so this version
-can be static too (and there are no callers outside of this file).
-
-Signed-off-by: Marcin Slusarz <marcin.slusarz@gmail.com>
-Cc: H. Peter Anvin <hpa@linux.intel.com>
-Cc: Ingo Molnar <mingo@elte.hu>
-Cc: Thomas Gleixner <tglx@linutronix.de>
----
- arch/x86/mm/pat.c |    2 +-
- 1 files changed, 1 insertions(+), 1 deletions(-)
-
-diff --git a/arch/x86/mm/pat.c b/arch/x86/mm/pat.c
-index 640339e..c009a24 100644
---- a/arch/x86/mm/pat.c
-+++ b/arch/x86/mm/pat.c
-@@ -31,7 +31,7 @@
- #ifdef CONFIG_X86_PAT
- int __read_mostly pat_enabled = 1;
- 
--void __cpuinit pat_disable(const char *reason)
-+static inline void pat_disable(const char *reason)
- {
- 	pat_enabled = 0;
- 	printk(KERN_INFO "%s\n", reason);
 -- 
-1.6.0.6
-
-
+(english) http://www.livejournal.com/~pavelmachek
+(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
