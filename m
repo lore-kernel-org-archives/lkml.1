@@ -1,69 +1,109 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761695AbZDJJ6o@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754691AbZDJJ73@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761695AbZDJJ6o (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 10 Apr 2009 05:58:44 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754225AbZDJJ6d
+	id S1754691AbZDJJ73 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 10 Apr 2009 05:59:29 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751875AbZDJJ7T
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 10 Apr 2009 05:58:33 -0400
-Received: from www.tglx.de ([62.245.132.106]:35986 "EHLO www.tglx.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751634AbZDJJ6c (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 10 Apr 2009 05:58:32 -0400
-Date: Fri, 10 Apr 2009 11:57:25 +0200 (CEST)
-From: Thomas Gleixner <tglx@linutronix.de>
-To: Eric Miao <eric.y.miao@gmail.com>
-cc: mingo@redhat.com, hpa@zytor.com, linux-kernel@vger.kernel.org,
-       a.p.zijlstra@chello.nl, akpm@linux-foundation.org, mingo@elte.hu,
-       linux-tip-commits@vger.kernel.org
-Subject: Re: [tip:irq/genirq] genirq: assert that irq handlers are indeed
- running in hardirq context
-In-Reply-To: <f17812d70904100011g65c582bcg32a530afd8e9a82d@mail.gmail.com>
-Message-ID: <alpine.LFD.2.00.0904101156360.21577@localhost.localdomain>
-References: <1236006812.5330.632.camel@laptop>  <tip-044d408409cc4e1bc75c886e27ca85c270db104c@git.kernel.org> <f17812d70904100011g65c582bcg32a530afd8e9a82d@mail.gmail.com>
-User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
+	Fri, 10 Apr 2009 05:59:19 -0400
+Received: from wf-out-1314.google.com ([209.85.200.172]:46275 "EHLO
+	wf-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751491AbZDJJ7S convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 10 Apr 2009 05:59:18 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:from:date:message-id:subject:to:cc:content-type
+         :content-transfer-encoding;
+        b=gjBZBZkJ0sWtlQAGB5TIpoEiJ/ZQNocT6z6EYrD4+urU5g+w8tN0M9IZ0V5aHJ8SMg
+         aAgcdAwTtgwyO0DKfwVTyseRv7Rv/1rKSzkYQsj6azQdSGVED4MQLt7DaiBxzgPGhfKL
+         Yyrsj2VXcimlyO1/3eih4EOM93agwRbjBtLtM=
 MIME-Version: 1.0
-Content-Type: MULTIPART/MIXED; BOUNDARY="8323328-1115216407-1239357447=:21577"
+From: Kim Kyuwon <chammoru@gmail.com>
+Date: Fri, 10 Apr 2009 18:59:02 +0900
+Message-ID: <4d34a0a70904100259w3a21e45ex1bf51c3faa05477@mail.gmail.com>
+Subject: [PATCH 1/3] leds: fix led-bd2802 errors while resuming
+To: LKML <linux-kernel@vger.kernel.org>
+Cc: Richard Purdie <rpurdie@rpsys.net>,
+       =?EUC-KR?B?udqw5rnO?= <kyungmin.park@samsung.com>
+Content-Type: text/plain; charset=EUC-KR
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-  This message is in MIME format.  The first part should be readable text,
-  while the remaining parts are likely unreadable without MIME-aware tools.
+LED_CORE_SUSPENDRESUME flag is not needed in the bd2802 driver,
+because all works for suspend/resume is done in bd2802_suspend and
+bd2802_suspend functions.
+And this patch allows bd2802 to be configured again when it resumes
+from suspend.
 
---8323328-1115216407-1239357447=:21577
-Content-Type: TEXT/PLAIN; charset=UTF-8
-Content-Transfer-Encoding: 8BIT
+Signed-off-by: Kim Kyuwon <q1.kim@samsung.com>
+---
+ drivers/leds/leds-bd2802.c |    8 +-------
+ 1 files changed, 1 insertions(+), 7 deletions(-)
 
-On Fri, 10 Apr 2009, Eric Miao wrote:
-> On Tue, Mar 3, 2009 at 7:15 AM, Peter Zijlstra <a.p.zijlstra@chello.nl> wrote:
-> > Commit-ID:  044d408409cc4e1bc75c886e27ca85c270db104c
-> > Gitweb:     http://git.kernel.org/tip/044d408409cc4e1bc75c886e27ca85c270db104c
-> > Author:     Peter Zijlstra <a.p.zijlstra@chello.nl>
-> > AuthorDate: Mon, 2 Mar 2009 16:13:32 +0100
-> > Commit:     Ingo Molnar <mingo@elte.hu>
-> > CommitDate: Tue, 3 Mar 2009 00:05:45 +0100
-> >
-> > genirq: assert that irq handlers are indeed running in hardirq context
-> >
-> > Make sure the genirq layer handlers are indeed running handlers
-> > in hardirq context. That is the genirq expectation and doing
-> > anything else is broken.
-> >
-> > Signed-off-by: Peter Zijlstra <a.p.zijlstra@chello.nl>
-> > Cc: Andrew Morton <akpm@linux-foundation.org>
-> > LKML-Reference: <1236006812.5330.632.camel@laptop>
-> > Signed-off-by: Ingo Molnar <mingo@elte.hu>
-> >
-> 
-> OK, now this gave me the warning below and it looks resend_irqs()
-> and resend_tasklet are somehow found guilty and doing wrong, as
-> the comment of this commit suggested, yet I'm not sure if this makes
-> sense:
+diff --git a/drivers/leds/leds-bd2802.c b/drivers/leds/leds-bd2802.c
+index 4149ecb..6832b9f 100644
+--- a/drivers/leds/leds-bd2802.c
++++ b/drivers/leds/leds-bd2802.c
+@@ -538,7 +538,6 @@ static int bd2802_register_led_classdev(struct
+bd2802_led *led)
+ 	led->cdev_led1r.brightness = LED_OFF;
+ 	led->cdev_led1r.brightness_set = bd2802_set_led1r_brightness;
+ 	led->cdev_led1r.blink_set = bd2802_set_led1r_blink;
+-	led->cdev_led1r.flags |= LED_CORE_SUSPENDRESUME;
 
-No, it doesn't. We didn't think about the resend tasklet. I'm going to
-fix it.
+ 	ret = led_classdev_register(&led->client->dev, &led->cdev_led1r);
+ 	if (ret < 0) {
+@@ -551,7 +550,6 @@ static int bd2802_register_led_classdev(struct
+bd2802_led *led)
+ 	led->cdev_led1g.brightness = LED_OFF;
+ 	led->cdev_led1g.brightness_set = bd2802_set_led1g_brightness;
+ 	led->cdev_led1g.blink_set = bd2802_set_led1g_blink;
+-	led->cdev_led1g.flags |= LED_CORE_SUSPENDRESUME;
 
-Thanks,
+ 	ret = led_classdev_register(&led->client->dev, &led->cdev_led1g);
+ 	if (ret < 0) {
+@@ -564,7 +562,6 @@ static int bd2802_register_led_classdev(struct
+bd2802_led *led)
+ 	led->cdev_led1b.brightness = LED_OFF;
+ 	led->cdev_led1b.brightness_set = bd2802_set_led1b_brightness;
+ 	led->cdev_led1b.blink_set = bd2802_set_led1b_blink;
+-	led->cdev_led1b.flags |= LED_CORE_SUSPENDRESUME;
 
-	tglx
---8323328-1115216407-1239357447=:21577--
+ 	ret = led_classdev_register(&led->client->dev, &led->cdev_led1b);
+ 	if (ret < 0) {
+@@ -577,7 +574,6 @@ static int bd2802_register_led_classdev(struct
+bd2802_led *led)
+ 	led->cdev_led2r.brightness = LED_OFF;
+ 	led->cdev_led2r.brightness_set = bd2802_set_led2r_brightness;
+ 	led->cdev_led2r.blink_set = bd2802_set_led2r_blink;
+-	led->cdev_led2r.flags |= LED_CORE_SUSPENDRESUME;
+
+ 	ret = led_classdev_register(&led->client->dev, &led->cdev_led2r);
+ 	if (ret < 0) {
+@@ -590,7 +586,6 @@ static int bd2802_register_led_classdev(struct
+bd2802_led *led)
+ 	led->cdev_led2g.brightness = LED_OFF;
+ 	led->cdev_led2g.brightness_set = bd2802_set_led2g_brightness;
+ 	led->cdev_led2g.blink_set = bd2802_set_led2g_blink;
+-	led->cdev_led2g.flags |= LED_CORE_SUSPENDRESUME;
+
+ 	ret = led_classdev_register(&led->client->dev, &led->cdev_led2g);
+ 	if (ret < 0) {
+@@ -723,8 +718,7 @@ static int bd2802_resume(struct i2c_client *client)
+ 	struct bd2802_led *led = i2c_get_clientdata(client);
+
+ 	if (!bd2802_is_all_off(led) || led->adf_on) {
+-		gpio_set_value(led->pdata->reset_gpio, 1);
+-		udelay(100);
++		bd2802_reset_cancel(led);
+ 		bd2802_restore_state(led);
+ 	}
+
+-- 
+1.5.2.5
+
+
+-- 
+Kyuwon (�Կ�)
