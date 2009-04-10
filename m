@@ -1,133 +1,72 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932132AbZDJUJf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761130AbZDJUMT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932132AbZDJUJf (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 10 Apr 2009 16:09:35 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752264AbZDJUJ0
+	id S1761130AbZDJUMT (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 10 Apr 2009 16:12:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756516AbZDJUMD
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 10 Apr 2009 16:09:26 -0400
-Received: from e38.co.us.ibm.com ([32.97.110.159]:57536 "EHLO
-	e38.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752043AbZDJUJZ (ORCPT
+	Fri, 10 Apr 2009 16:12:03 -0400
+Received: from atrey.karlin.mff.cuni.cz ([195.113.26.193]:60960 "EHLO
+	atrey.karlin.mff.cuni.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753240AbZDJUMB (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 10 Apr 2009 16:09:25 -0400
-Date: Fri, 10 Apr 2009 13:09:19 -0700
-From: Gary Hade <garyhade@us.ibm.com>
-To: "Eric W. Biederman" <ebiederm@xmission.com>
-Cc: Gary Hade <garyhade@us.ibm.com>, mingo@elte.hu, mingo@redhat.com,
-       tglx@linutronix.de, hpa@zytor.com, x86@kernel.org,
-       linux-kernel@vger.kernel.org, lcm@us.ibm.com
-Subject: Re: [PATCH 2/3] [BUGFIX] x86/x86_64: fix CPU offlining triggered
-	inactive device IRQ interrruption
-Message-ID: <20090410200919.GA7242@us.ibm.com>
-References: <20090408210735.GD11159@us.ibm.com> <m1r601fg9l.fsf@fess.ebiederm.org>
+	Fri, 10 Apr 2009 16:12:01 -0400
+Date: Fri, 10 Apr 2009 22:15:04 +0200
+From: Pavel Machek <pavel@ucw.cz>
+To: Jaswinder Singh Rajput <jaswinder@kernel.org>
+Cc: Sam Ravnborg <sam@ravnborg.org>, Ingo Molnar <mingo@elte.hu>,
+       x86 maintainers <x86@kernel.org>, LKML <linux-kernel@vger.kernel.org>,
+       josh@freedesktop.org
+Subject: Re: [PATCH -tip] x86: acpi/sleep.c saved_magic fix overflow
+Message-ID: <20090410201504.GA23364@elf.ucw.cz>
+References: <1239385015.3169.15.camel@ht.satnam> <20090410175545.GB16843@elf.ucw.cz> <20090410191334.GA25336@uranus.ravnborg.org> <1239391016.3169.49.camel@ht.satnam> <20090410192939.GB25551@uranus.ravnborg.org> <1239392981.5943.1.camel@localhost.localdomain>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <m1r601fg9l.fsf@fess.ebiederm.org>
-User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
+In-Reply-To: <1239392981.5943.1.camel@localhost.localdomain>
+X-Warning: Reading this can be dangerous to your mental health.
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Apr 09, 2009 at 06:29:10PM -0700, Eric W. Biederman wrote:
-> Gary Hade <garyhade@us.ibm.com> writes:
+On Sat 2009-04-11 01:19:41, Jaswinder Singh Rajput wrote:
+> On Fri, 2009-04-10 at 21:29 +0200, Sam Ravnborg wrote:
+> > On Sat, Apr 11, 2009 at 12:46:56AM +0530, Jaswinder Singh Rajput wrote:
+> > > Sorry, I was confused by this sparse warning on 64 bit box:
+> > > 
+> > > CHECK   arch/x86/kernel/acpi/sleep.c
+> > >  arch/x86/kernel/acpi/sleep.c:107:16: warning: constant 0x123456789abcdef0 is so big it is long
+> > > 
+> > > atleast I found problem in sparse ;-)
+> > 
+> > Sparse tells you that the constant is so big it is long - correct.
+> > So rather than being implicit appending an L would make sparse happy.
+> > 
+> > So please use the constant 0x123456789abcdef0L and I think sparse is silenced.
+> > And code/functionality is the same.
+> > 
 > 
-> > Impact: Eliminates a race that can leave the system in an
-> >         unusable state
-> >
-> > During rapid offlining of multiple CPUs there is a chance
-> > that an IRQ affinity move destination CPU will be offlined
-> > before the IRQ affinity move initiated during the offlining
-> > of a previous CPU completes.  This can happen when the device
-> > is not very active and thus fails to generate the IRQ that is
-> > needed to complete the IRQ affinity move before the move
-> > destination CPU is offlined.  When this happens there is an
-> > -EBUSY return from __assign_irq_vector() during the offlining
-> > of the IRQ move destination CPU which prevents initiation of
-> > a new IRQ affinity move operation to an online CPU.  This
-> > leaves the IRQ affinity set to an offlined CPU.
-> >
-> > I have been able to reproduce the problem on some of our
-> > systems using the following script.  When the system is idle
-> > the problem often reproduces during the first CPU offlining
-> > sequence.
+> Yes, this fixes the sparse warning, Thanks :-)
+
+Acked-by: Pavel Machek <pavel@ucw.cz>
+
+> diff --git a/arch/x86/kernel/acpi/sleep.c b/arch/x86/kernel/acpi/sleep.c
+> index 7c243a2..3445d0f 100644
+> --- a/arch/x86/kernel/acpi/sleep.c
+> +++ b/arch/x86/kernel/acpi/sleep.c
+> @@ -104,7 +104,7 @@ int acpi_save_state_mem(void)
+>         initial_gs = per_cpu_offset(smp_processor_id());
+>  #endif
+>         initial_code = (unsigned long)wakeup_long64;
+> -       saved_magic = 0x123456789abcdef0;
+> +       saved_magic = 0x123456789abcdef0L;
+>  #endif /* CONFIG_64BIT */
+>  
+>         return 0;
 > 
-> You appear to be focusing on the IBM x460 and x3835.
-
-True.  I have also observed IRQ interruptions on an IBM x3950 M2
-which I believe, but am not certain, were due to the other
-"I/O redirection table register write with Remote IRR bit set"
-caused problem.
-
-I intend to do more testing on the x3950 M2 and other
-IBM System x servers but I unfortunately do not currently
-have access to any Intel based non-IBM MP servers.  I was
-hoping that my testing request might at least get some
-others interested in running the simple test script on their
-systems and reporting their results.  Have you perhaps tried
-the test on any of the Intel based MP systems that you have
-access to?
-
-> Can you describe
-> what kind of interrupt setup you are running.
-
-Being somewhat of a ioapic neophyte I am not exactly sure
-what you are asking for here.  This is ioapic information
-logged during boot if that helps at all.
-x3850:
-    ACPI: IOAPIC (id[0x0f] address[0xfec00000] gsi_base[0])
-    IOAPIC[0]: apic_id 15, version 0, address 0xfec00000, GSI 0-35
-    ACPI: IOAPIC (id[0x0e] address[0xfec01000] gsi_base[36])
-    IOAPIC[1]: apic_id 14, version 0, address 0xfec01000, GSI 36-71
-x460:
-    ACPI: IOAPIC (id[0x0f] address[0xfec00000] gsi_base[0])
-    IOAPIC[0]: apic_id 15, version 17, address 0xfec00000, GSI 0-35
-    ACPI: IOAPIC (id[0x0e] address[0xfec01000] gsi_base[36])
-    IOAPIC[1]: apic_id 14, version 17, address 0xfec01000, GSI 36-71
-    ACPI: IOAPIC (id[0x0d] address[0xfec02000] gsi_base[72])
-    IOAPIC[2]: apic_id 13, version 17, address 0xfec02000, GSI 72-107
-    ACPI: IOAPIC (id[0x0c] address[0xfec03000] gsi_base[108])
-    IOAPIC[3]: apic_id 12, version 17, address 0xfec03000, GSI 108-143
-
+> --
 > 
-> You may be the first person to actually hit the problems with cpu offlining
-> and irq migration that have theoretically been present for a long.
-
-Your "Safely cleanup an irq after moving it" changes have been
-present in mainline for quite some time so I have been thinking
-about this as well.
-
-I can certainly understand why it may not be very likely
-for users to see the "I/O redirection table register write
-with Remote IRR bit set" caused problem.  It has actually
-been fairly difficult to reproduce.  I very much doubt that
-there are many users out there that would be continuously offlining
-and onlining all the offlineable CPUs from a script or program on
-a heavily loaded system.  IMO, this would _not_ be a very common
-useage scenario.  The test script that I provided usually performs
-many CPU offline/online iterations before the problem is triggered.
-A much more likely useage scenario, for which there is already code
-in ack_apic_level() to avoid the problem, would be IRQ affinity
-adjustments requested from user level (e.g. by the irqbalance daemon)
-on a very active system.
-
-It is less clear to me why users have not been reporting the
-idle system race but I suspect that
-  - script or program driven offlining of multiple CPUs
-    may not be very common
-  - the actual affinity on an idle system is usually set to
-    cpu0 which is always online
-
-I am glad you are looking at this since I know it involves code
-that you should be quite familiar with.  Thanks!
-
-Gary
 
 -- 
-Gary Hade
-System x Enablement
-IBM Linux Technology Center
-503-578-4503  IBM T/L: 775-4503
-garyhade@us.ibm.com
-http://www.ibm.com/linux/ltc
-
+(english) http://www.livejournal.com/~pavelmachek
+(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
