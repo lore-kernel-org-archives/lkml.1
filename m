@@ -1,44 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933567AbZDJUsU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S938244AbZDJUtT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933567AbZDJUsU (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 10 Apr 2009 16:48:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S937666AbZDJUrr
+	id S938244AbZDJUtT (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 10 Apr 2009 16:49:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1764065AbZDJUs6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 10 Apr 2009 16:47:47 -0400
-Received: from atrey.karlin.mff.cuni.cz ([195.113.26.193]:33650 "EHLO
-	atrey.karlin.mff.cuni.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S937306AbZDJUrq (ORCPT
+	Fri, 10 Apr 2009 16:48:58 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:50734 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1762589AbZDJUs5 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 10 Apr 2009 16:47:46 -0400
-Date: Fri, 10 Apr 2009 22:50:50 +0200
-From: Pavel Machek <pavel@ucw.cz>
-To: Joe Perches <joe@perches.com>
-Cc: Linus Torvalds <torvalds@linux-foundation.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       LKML <linux-kernel@vger.kernel.org>
-Subject: Re: [GIT PULL] MAINTAINERS - Add file patterns and script to parse
-	them
-Message-ID: <20090410205049.GC23364@elf.ucw.cz>
-References: <1239396087.12402.34.camel@localhost>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1239396087.12402.34.camel@localhost>
-X-Warning: Reading this can be dangerous to your mental health.
-User-Agent: Mutt/1.5.18 (2008-05-17)
+	Fri, 10 Apr 2009 16:48:57 -0400
+Date: Fri, 10 Apr 2009 13:47:16 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Jack Steiner <steiner@sgi.com>
+Cc: linux-kernel@vger.kernel.org
+Subject: Re: [patch 00/13] GRU - GRU Driver updates
+Message-Id: <20090410134716.69c08ff9.akpm@linux-foundation.org>
+In-Reply-To: <20090410123111.GA9897@sgi.com>
+References: <20090406160809.278924000@sgi.com>
+	<20090409153701.d8bf4c20.akpm@linux-foundation.org>
+	<20090410123111.GA9897@sgi.com>
+X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri 2009-04-10 13:41:27, Joe Perches wrote:
-> Now in a git repository.
-> Let me know if I stuffed it up.
+On Fri, 10 Apr 2009 07:31:11 -0500
+Jack Steiner <steiner@sgi.com> wrote:
+
+> On Thu, Apr 09, 2009 at 03:37:01PM -0700, Andrew Morton wrote:
+> > On Mon, 06 Apr 2009 11:08:09 -0500
+> > steiner@sgi.com wrote:
+> > 
+> > > 
+> > > This patchset is a collection of patches to the GRU driver.
+> > > All changes are internal to the driver and have no effect
+> > > on the core kernel or interfaces to/from the core kernel.
+> > 
+> > Do you believe that any of these should go into 2.6.30, or earlier?
 > 
-> Signed-off-by: Joe Perches <joe@perches.com> 
+> The patches are desirable for 2.6.30 but nothing earlier.
 
-Still crossing fingers for this to get in...
-								Pavel
+Everyone "desires" that their patches be merged immediately ;)
 
--- 
-(english) http://www.livejournal.com/~pavelmachek
-(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
+After -rc1 we're really only looking for bugfixes and regression fixes.
+But afaict the only patch in this series which matches that guideline
+is gru-bug-fixes-for-gru-exception-handling.patch?
