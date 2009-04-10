@@ -1,105 +1,92 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752195AbZDJVBZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751533AbZDJVEc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752195AbZDJVBZ (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 10 Apr 2009 17:01:25 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751054AbZDJVBP
+	id S1751533AbZDJVEc (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 10 Apr 2009 17:04:32 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751256AbZDJVER
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 10 Apr 2009 17:01:15 -0400
-Received: from 82-117-125-11.tcdsl.calypso.net ([82.117.125.11]:36113 "EHLO
-	smtp.ossman.eu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751132AbZDJVBO (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 10 Apr 2009 17:01:14 -0400
-Date: Fri, 10 Apr 2009 23:01:11 +0200
-From: Pierre Ossman <drzeus-mmc@drzeus.cx>
-To: "Cai, Cliff" <Cliff.Cai@analog.com>
-Cc: "Bryan Wu" <cooloney@kernel.org>, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] mmc: align data size for host which only supports
- power-of-2 block
-Message-ID: <20090410230111.75619035@mjolnir.ossman.eu>
-In-Reply-To: <0F1B54C89D5F954D8535DB252AF412FA03D4261F@chinexm1.ad.analog.com>
-References: <20090405210900.644a81bb@mjolnir.ossman.eu>
-	<0F1B54C89D5F954D8535DB252AF412FA03D4261F@chinexm1.ad.analog.com>
-X-Mailer: Claws Mail 3.7.1 (GTK+ 2.16.0; x86_64-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Fri, 10 Apr 2009 17:04:17 -0400
+Received: from smtp.infotech.no ([82.134.31.41]:51554 "EHLO
+	elrond2.infotech.no" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751054AbZDJVEQ (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 10 Apr 2009 17:04:16 -0400
+Message-ID: <49DFB447.5040009@interlog.com>
+Date: Fri, 10 Apr 2009 17:04:07 -0400
+From: Douglas Gilbert <dgilbert@interlog.com>
+Reply-To: dgilbert@interlog.com
+User-Agent: Thunderbird 2.0.0.21 (X11/20090318)
+MIME-Version: 1.0
+To: "Mike Miller (OS Dev)" <mikem@beardog.cca.cpqcorp.net>
+CC: Matthew Wilcox <matthew@wil.cx>, LKML-SCSI <linux-scsi@vger.kernel.org>,
+       LKML <linux-kernel@vger.kernel.org>, mike.miller@hp.com,
+       James Bottomley <james.bottomley@hansenpartnership.com>
+Subject: Re: READ CAPACITY (16) failing
+References: <20090408194357.GA15043@beardog.cca.cpqcorp.net> <20090408195447.GP20983@parisc-linux.org> <20090410193134.GA2615@beardog.cca.cpqcorp.net>
+In-Reply-To: <20090410193134.GA2615@beardog.cca.cpqcorp.net>
+Content-Type: text/plain; charset=us-ascii; format=flowed
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 7 Apr 2009 16:34:37 +0800
-"Cai, Cliff" <Cliff.Cai@analog.com> wrote:
-
->  
+Mike Miller (OS Dev) wrote:
+> On Wed, Apr 08, 2009 at 01:54:48PM -0600, Matthew Wilcox wrote:
+>> On Wed, Apr 08, 2009 at 02:43:57PM -0500, Mike Miller (OS Dev) wrote:
+>>> I'm working on the HP Smart Array SCSI driver (hpsa) and I'm seeing the
+>>> following failures:
+>>>
+>>> hpsa1: <0x3230> at PCI 0000:02:00.0 IRQ 76 using DAC
+>>> scsi4 : hpsa
+>>> scsi 4:0:0:0: Direct-Access     HP       LOGICAL VOLUME   5.20 PQ: 0 ANSI: 5
+>>> sd 4:0:0:0: Attached scsi generic sg4 type 0
+>>> sd 4:0:0:0: [sdd] READ CAPACITY(16) failed
+>>> sd 4:0:0:0: [sdd] Result: hostbyte=DID_ABORT driverbyte=DRIVER_OK
+>>> sd 4:0:0:0: [sdd] Sense not available.
+>>> hpsa: cp ffff8800cf400000 has check condition: unknown type: Sense: 0x5,
+>>> ASC: 0x20, ASCQ: 0x0, Returning result: 0x2, cmd=[a0 00 00 00 00 00 00 00 10
+>>> 00]
+>>> The READ CAPACITY failures are what I'm concerned about. I can't seem to track
+>>> down why that's failing.
+>>> I've tried printing out the_result from sd but it's not printing out. I'm
+>>> assuming that anytime I load the driver it goes thru sd.
+>>>
+>>> 	if (the_result) {
+>>> 		sense_valid = scsi_sense_valid(&sshdr);
+>>> 		if (sense_valid &&
+>>> 			sshdr.sense_key == ILLEGAL_REQUEST &&
+>>> 			(sshdr.asc == 0x20 || sshdr.asc == 0x24) &&
+>>> 			sshdr.ascq == 0x00)
+>>> 			/* Invalid Command Operation Code or
+>>> 			 * Invalid Field in CDB, just retry
+>>> 			 * silently with RC10 */
+>>> 			return -EINVAL;
+>>> 		}
+>>> 	retries--;
+>>> 	} while (the_result && retries);
+>>> 	printk(KERN_WARNING "sd-mfm: the_result = %d\n", the_result);
+>> Probably the device you're testing against doesn't support RC16, which
+>> is fine.  But for some reason, we're not getting valid sense data back
+>> from the device.  Now, there's two responses to this that seem rational
+>> to me:
+>>
+>>  - In sd.c, if the drive has returned no/invalid sense data, try RC10
+>>    silently, just like the 0x20 / 0x24 ASC case.
+>>  - Find out why this drive doesn't report valid sense data when attached
+>>    to hpsa.  I assume it does report valid sense data when attached to
+>>    some other scsi card?
 > 
-> >-----Original Message-----
-> >From: Pierre Ossman [mailto:drzeus-mmc@drzeus.cx] 
-> >Sent: Monday, April 06, 2009 3:09 AM
-> >To: Cai, Cliff
-> >Cc: Bryan Wu; linux-kernel@vger.kernel.org
-> >Subject: Re: [PATCH] mmc: align data size for host which only 
-> >supports power-of-2 block
-> >
-> >On Thu, 26 Mar 2009 10:22:54 +0800
-> >"Cai, Cliff" <Cliff.Cai@analog.com> wrote:
-> >
-> >> >
-> >> >mmc_align_data_size() shouldn't be adjusting the size to 
-> >something it 
-> >> >can easily determine that it's invalid.
-> >> 
-> >> Should I create a new function to do the power-of-2 adjustment?
-> >> Or any ideal way to do it?
-> >
-> >That function is the correct place. My point was that we need 
-> >to check after the adjustment that we didn't violate any of 
-> >the other restrictions the driver has set. If we do, we should 
-> >just return the original value.
+> Me again,
+> The controllers do support RC16. After some more work it looks like RC16 is
+> never getting to the driver. I'm snooping the CDB's of all requests as well
+> as the completions from the driver and I never see a 0x9e. I do see the
+> RC10 (0x25) though, so I think my debug is right.
 > 
-> What are other restrictions?I don't see any other restrictions on data
-> size in current host driver
-> Except 4 byte alignment.
-> 
+> Why would I never the see the command in the driver?
 
-The ones that are in the mmc_host structure:
+struct Scsi_host::max_cmd_len < 16 would be one reason but
+one would expect an indicative message in the log.
 
-        /* host specific block data */
-        unsigned int            max_seg_size;   /* see blk_queue_max_segment_size */
-        unsigned short          max_hw_segs;    /* see blk_queue_max_hw_segments */
-        unsigned short          max_phys_segs;  /* see blk_queue_max_phys_segments */
-        unsigned short          unused;
-        unsigned int            max_req_size;   /* maximum number of bytes in one req */
-        unsigned int            max_blk_size;   /* maximum size of one mmc block */
-        unsigned int            max_blk_count;  /* maximum number of blocks in one req */
+Does a 'sg_readcap --long -vvv <device>' give you any further
+information?
 
-If you adjust a transfer from 1100 bytes to 2048, that could exceed the
-limit of 2047 bytes some controllers have.
-
-> 
-> >> Otherwise,the SDH almost can't be used as sdio host.
-> >
-> >Unfortunately I think this controller will be very unsuitable 
-> >as an SDIO controller anyway with that restriction.
-> 
-> Yes,But since we need to support some SDIO devices according to our
-> customers'
-> Requests ,I think we have no other choice of this.
-> 
-
-They should be prepared for the fact that many SDIO devices cannot be
-made to work with a controller with these bugs though. The function
-you're modifying is only to optimise the transfer and is not mandatory
-for SDIO drivers to call in any way.
-
-Rgds
--- 
-     -- Pierre Ossman
-
-  Linux kernel, MMC maintainer        http://www.kernel.org
-  rdesktop, core developer          http://www.rdesktop.org
-  TigerVNC, core developer          http://www.tigervnc.org
-
-  WARNING: This correspondence is being monitored by the
-  Swedish government. Make sure your server uses encryption
-  for SMTP traffic and consider using PGP for end-to-end
-  encryption.
+Doug Gilbert
