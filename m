@@ -1,77 +1,82 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932672AbZDJTRY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763659AbZDJTVn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932672AbZDJTRY (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 10 Apr 2009 15:17:24 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757175AbZDJTRN
+	id S1763659AbZDJTVn (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 10 Apr 2009 15:21:43 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756502AbZDJTVc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 10 Apr 2009 15:17:13 -0400
-Received: from hera.kernel.org ([140.211.167.34]:57721 "EHLO hera.kernel.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755972AbZDJTRN (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 10 Apr 2009 15:17:13 -0400
-Subject: Re: [PATCH -tip] x86: acpi/sleep.c saved_magic fix overflow
-From: Jaswinder Singh Rajput <jaswinder@kernel.org>
-To: Sam Ravnborg <sam@ravnborg.org>
-Cc: Pavel Machek <pavel@ucw.cz>, Ingo Molnar <mingo@elte.hu>,
-       x86 maintainers <x86@kernel.org>, LKML <linux-kernel@vger.kernel.org>,
-       josh@freedesktop.org
-In-Reply-To: <20090410191334.GA25336@uranus.ravnborg.org>
-References: <1239385015.3169.15.camel@ht.satnam>
-	 <20090410175545.GB16843@elf.ucw.cz>
-	 <20090410191334.GA25336@uranus.ravnborg.org>
-Content-Type: text/plain
-Date: Sat, 11 Apr 2009 00:46:56 +0530
-Message-Id: <1239391016.3169.49.camel@ht.satnam>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.24.5 (2.24.5-1.fc10) 
-Content-Transfer-Encoding: 7bit
+	Fri, 10 Apr 2009 15:21:32 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:56204 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751449AbZDJTVc (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 10 Apr 2009 15:21:32 -0400
+Date: Fri, 10 Apr 2009 12:17:41 -0700 (PDT)
+From: Linus Torvalds <torvalds@linux-foundation.org>
+X-X-Sender: torvalds@localhost.localdomain
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+cc: linux-pm@lists.linux-foundation.org, Takashi Iwai <tiwai@suse.de>,
+       Arjan van de Ven <arjan@linux.intel.com>,
+       LKML <linux-kernel@vger.kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>, Ingo Molnar <mingo@elte.hu>
+Subject: Re: [linux-pm] [2.6.30-rc1-git2 regressions] Hibernation broken and
+ (minor but annoying) audio problem
+In-Reply-To: <200904102058.36018.rjw@sisk.pl>
+Message-ID: <alpine.LFD.2.00.0904101204350.4583@localhost.localdomain>
+References: <200904100057.43827.rjw@sisk.pl> <alpine.LFD.2.00.0904091605080.4583@localhost.localdomain> <200904101439.43480.rjw@sisk.pl> <200904102058.36018.rjw@sisk.pl>
+User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 2009-04-10 at 21:13 +0200, Sam Ravnborg wrote:
-> On Fri, Apr 10, 2009 at 07:55:45PM +0200, Pavel Machek wrote:
-> > On Fri 2009-04-10 23:06:55, Jaswinder Singh Rajput wrote:
-> > > Impact: fix overflow
-> > 
-> > > Constant 0x123456789abcdef0 is so big for a long.
-> > > So using saved_magic 0x12345678 for both 32 and 64 bit.
-> > 
-> > Have you tested the patch? I have feeling that this is tested from
-> > assembly... Plus it is only set to long constant on 64-bit, so I don't
-> > think you are fixing anything. And if your code is correct the
-> > variable is write only...
+
+
+On Fri, 10 Apr 2009, Rafael J. Wysocki wrote:
 > 
-> $ git grep saved_magic
-> kernel/acpi/sleep.c:    saved_magic = 0x12345678;
-> kernel/acpi/sleep.c:    saved_magic = 0x123456789abcdef0;
-> kernel/acpi/sleep.h:extern long saved_magic;
-> kernel/acpi/wakeup_32.S:        movl    %cs:saved_magic, %eax
-> kernel/acpi/wakeup_32.S:ENTRY(saved_magic)      .long   0
-> kernel/acpi/wakeup_64.S:        movq    saved_magic, %rax
-> kernel/acpi/wakeup_64.S:ENTRY(saved_magic)      .quad   0
-> 
-> 
-> wakeup_32.S:
->         movl    %cs:saved_magic, %eax
->         cmpl    $0x12345678, %eax
-> 
-> wakeup_64.S:
->         movq    saved_magic, %rax
->         movq    $0x123456789abcdef0, %rdx
-> 
-> So patch is obviously bogus.
-> 
+> I've just verified that the resume-after-hibernation issue goes away after
+> reverting commit 9710794383ee5008d67f1a6613a4717bf6de47bc
+> (async: remove the temporary (2.6.29) "async is off by default" code) , so it
+> is async-related.
 
-Sorry, I was confused by this sparse warning on 64 bit box:
+Arjan? Clearly all the necessary fixes weren't found..
 
-CHECK   arch/x86/kernel/acpi/sleep.c
- arch/x86/kernel/acpi/sleep.c:107:16: warning: constant 0x123456789abcdef0 is so big it is long
+There _is_ a module loading problem wrt initmem - I think you found that 
+and we added a hack for it for the ACPI battery driver. I wonder if we're 
+hitting a similar issue now with module discovery: modules that use 
+"async_schedule()" to do their discovery asynchronously are now not 
+necessarily fully "done" when the module is loaded. 
 
-atleast I found problem in sparse ;-)
+And so, anything that expected the devices to be available after module 
+load (like they used to) would be screwed.
 
---
-JSR
+IOW, maybe something like the totally untested patch appended here (that 
+should also allow us to make the ACPI battery code to go back to using 
+__init).
 
+As usual, I'm not using modules, so what do I know.
 
+> The audio issue still remains after the revert, so it is really different.
 
+Ok, probably something from Takashi..
+
+		Linus
+
+---
+ kernel/module.c |    3 +++
+ 1 files changed, 3 insertions(+), 0 deletions(-)
+
+diff --git a/kernel/module.c b/kernel/module.c
+index 05f014e..e797812 100644
+--- a/kernel/module.c
++++ b/kernel/module.c
+@@ -2388,6 +2388,9 @@ SYSCALL_DEFINE3(init_module, void __user *, umod,
+ 	blocking_notifier_call_chain(&module_notify_list,
+ 				     MODULE_STATE_LIVE, mod);
+ 
++	/* We need to finish all async code before the module init sequence is done */
++	async_synchronize_full();
++
+ 	mutex_lock(&module_mutex);
+ 	/* Drop initial reference. */
+ 	module_put(mod);
