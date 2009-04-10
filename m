@@ -1,44 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S937376AbZDJWIt@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S938640AbZDJWJU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S937376AbZDJWIt (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 10 Apr 2009 18:08:49 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755224AbZDJWIj
+	id S938640AbZDJWJU (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 10 Apr 2009 18:09:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S936052AbZDJWIq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 10 Apr 2009 18:08:39 -0400
-Received: from mx2.redhat.com ([66.187.237.31]:50385 "EHLO mx2.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1763123AbZDJWIi (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 10 Apr 2009 18:08:38 -0400
-Organization: Red Hat UK Ltd. Registered Address: Red Hat UK Ltd, Amberley
-	Place, 107-111 Peascod Street, Windsor, Berkshire, SI4 1TE, United
-	Kingdom.
-	Registered in England and Wales under Company Registration No. 3798903
-From: David Howells <dhowells@redhat.com>
-In-Reply-To: <20090410192529.GA25551@uranus.ravnborg.org>
-References: <20090410192529.GA25551@uranus.ravnborg.org> <19057.1239370935@redhat.com>
-To: Linus Torvalds <torvalds@linux-foundation.org>,
-       Sam Ravnborg <sam@ravnborg.org>
-Cc: dhowells@redhat.com, akpm@linux-foundation.org, linux-am33-list@redhat.com,
-       linux-kernel@vger.kernel.org
-Subject: [GIT PULL] MN10300: Remove obsolete include/asm-mn10300/.gitignore
-Date: Fri, 10 Apr 2009 23:07:17 +0100
-Message-ID: <21602.1239401237@redhat.com>
+	Fri, 10 Apr 2009 18:08:46 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:49832 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S938153AbZDJWIp (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 10 Apr 2009 18:08:45 -0400
+Date: Fri, 10 Apr 2009 15:06:14 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Kevin Cernekee <kpc.mtd@gmail.com>
+Cc: dwmw2@infradead.org, linux-kernel@vger.kernel.org,
+       linux-mtd@lists.infradead.org
+Subject: Re: [PATCH 2/4] [MTD] Add MEMERASE64 ioctl for >4GiB devices
+Message-Id: <20090410150614.b2c6f7ab.akpm@linux-foundation.org>
+In-Reply-To: <a95a62fe0904082252h41afa872j2ef6fb9d1d76dc27@mail.gmail.com>
+References: <a95a62fe0904082252h41afa872j2ef6fb9d1d76dc27@mail.gmail.com>
+X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Wed, 8 Apr 2009 22:52:28 -0700
+Kevin Cernekee <kpc.mtd@gmail.com> wrote:
 
-The following changes since commit d848223808c5d21e1b3cea090047e34722c6254b:
-  Linus Torvalds (1):
-        Merge git://git.kernel.org/.../dhowells/linux-2.6-mn10300
+> Subject: [PATCH 2/4] [MTD] Add MEMERASE64 ioctl for >4GiB devices
 
-are available in the git repository at:
+triviata:
 
-  git://git.kernel.org/pub/scm/linux/kernel/git/dhowells/linux-2.6-mn10300.git master
+The text inside [] is usually removed by the patch recipient - the []
+denotes transient information such as "patch" and the kernel version,
+etc.
 
-David Howells (1):
-      MN10300: Remove obsolete .gitignore from include/asm-mn10300
+The preferred form for patch titles is
 
- include/asm-mn10300/.gitignore |    2 --
- 1 files changed, 0 insertions(+), 2 deletions(-)
- delete mode 100644 include/asm-mn10300/.gitignore
+	subsytem-identifier: what-i-did-to-it
+
+so this patch should have been
+
+	mtd: add MEMERASE64 ioctl for >4GiB devices
+
+> 
+> @@ -427,20 +428,32 @@ static int mtd_ioctl(struct inode *inode, struct
+> file *file,
+
+Your email client is wordwrapping the text.
