@@ -1,177 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S938891AbZDJPW3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S938961AbZDJPXA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S938891AbZDJPW3 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 10 Apr 2009 11:22:29 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S938884AbZDJPWP
+	id S938961AbZDJPXA (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 10 Apr 2009 11:23:00 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S938884AbZDJPWk
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 10 Apr 2009 11:22:15 -0400
-Received: from mx2.redhat.com ([66.187.237.31]:38086 "EHLO mx2.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S938273AbZDJPWM (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 10 Apr 2009 11:22:12 -0400
-Message-ID: <49DF63C3.7000406@redhat.com>
-Date: Fri, 10 Apr 2009 08:20:35 -0700
-From: Masami Hiramatsu <mhiramat@redhat.com>
-User-Agent: Thunderbird 2.0.0.21 (X11/20090320)
+	Fri, 10 Apr 2009 11:22:40 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:59084 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S938936AbZDJPWj (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 10 Apr 2009 11:22:39 -0400
+Date: Fri, 10 Apr 2009 08:21:17 -0700 (PDT)
+From: Linus Torvalds <torvalds@linux-foundation.org>
+X-X-Sender: torvalds@localhost.localdomain
+To: Alan Cox <alan@lxorguk.ukuu.org.uk>
+cc: linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] tty: MAX3100
+In-Reply-To: <20090408114427.28788.50640.stgit@t61.ukuu.org.uk>
+Message-ID: <alpine.LFD.2.00.0904100808350.4583@localhost.localdomain>
+References: <20090408114427.28788.50640.stgit@t61.ukuu.org.uk>
+User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
 MIME-Version: 1.0
-To: mingo@redhat.com, hpa@zytor.com, mathieu.desnoyers@polymtl.ca,
-       linux-kernel@vger.kernel.org, torvalds@linux-foundation.org,
-       ananth@in.ibm.com, garyhade@us.ibm.com, akpm@linux-foundation.org,
-       tglx@linutronix.de, mhiramat@redhat.com, systemtap@sources.redhat.com,
-       mingo@elte.hu
-CC: linux-tip-commits@vger.kernel.org
-Subject: Re: [tip:x86/urgent] x86: fix set_fixmap to use phys_addr_t
-References: <49DE3695.6040800@redhat.com> <tip-189cdc2b41fce3a780a6f3aa963cc4e8114aec6b@git.kernel.org>
-In-Reply-To: <tip-189cdc2b41fce3a780a6f3aa963cc4e8114aec6b@git.kernel.org>
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Masami Hiramatsu wrote:
-> Commit-ID:  189cdc2b41fce3a780a6f3aa963cc4e8114aec6b
-> Gitweb:     http://git.kernel.org/tip/189cdc2b41fce3a780a6f3aa963cc4e8114aec6b
-> Author:     Masami Hiramatsu <mhiramat@redhat.com>
-> AuthorDate: Thu, 9 Apr 2009 10:55:33 -0700
-> Committer:  Ingo Molnar <mingo@elte.hu>
-> CommitDate: Fri, 10 Apr 2009 15:52:59 +0200
-> 
-> x86: fix set_fixmap to use phys_addr_t
-> 
-> Impact: fix kprobes crash on 32-bit with RAM above 4G
-> 
-> Use phys_addr_t for receiving a physical address argument
-> instead of unsigned long. This allows fixmap to handle
-> pages higher than 4GB on x86-32.
-> 
-> Signed-off-by: Masami Hiramatsu <mhiramat@redhat.com>
-> Acked-by: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
-
-I thought I had to update ioremap.c too...
-Anyway, here is the ioremap.c update. If you think it is useful,
-please merge it.
-
-Thank you,
-----
-
-x86: fix early_ioremap and early_set_fixmap to handle over 4G pages
-
-From: Masami Hiramatsu <mhiramat@redhat.com>
-
-Impact: Allow early_ioremap to handle over 4G pages
-
-Use phys_addr_t and resource_size_t for receiving a physical
-address argument instead of unsigned long in early_set_fixmap
-and early_ioremap. This allows early_ioremap to handle
-pages higher than 4GB on x86-32 with PAE.
-
-Signed-off-by: Masami Hiramatsu <mhiramat@redhat.com>
-Cc: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
-Cc: Ingo Molnar <mingo@elte.hu>
----
-
- arch/x86/include/asm/io.h |    6 ++++--
- arch/x86/mm/ioremap.c     |   23 +++++++++++++----------
- 2 files changed, 17 insertions(+), 12 deletions(-)
 
 
-diff --git a/arch/x86/include/asm/io.h b/arch/x86/include/asm/io.h
-index e5383e3..7373932 100644
---- a/arch/x86/include/asm/io.h
-+++ b/arch/x86/include/asm/io.h
-@@ -193,8 +193,10 @@ extern void __iomem *ioremap_wc(resource_size_t offset, unsigned long size);
-  */
- extern void early_ioremap_init(void);
- extern void early_ioremap_reset(void);
--extern void __iomem *early_ioremap(unsigned long offset, unsigned long size);
--extern void __iomem *early_memremap(unsigned long offset, unsigned long size);
-+extern void __iomem *early_ioremap(resource_size_t phys_addr,
-+				   unsigned long size);
-+extern void __iomem *early_memremap(resource_size_t phys_addr,
-+				    unsigned long size);
- extern void early_iounmap(void __iomem *addr, unsigned long size);
+Btw, Alan, since you're working on those tty drivers, one thing I thought 
+I'd ask you is whether you'd be interested in moving the tty drivers to a 
+subdirectory of their own.
 
- #define IO_SPACE_LIMIT 0xffff
-diff --git a/arch/x86/mm/ioremap.c b/arch/x86/mm/ioremap.c
-index 0dfa09d..09daebf 100644
---- a/arch/x86/mm/ioremap.c
-+++ b/arch/x86/mm/ioremap.c
-@@ -547,7 +547,7 @@ void __init early_ioremap_reset(void)
- }
+>From a quick unscientific count, it looks like of the 271 files in 
+drivers/char, about 90 are tty/console-related (done by "git grep -l 
+'\<tty\>'"), and the rest are pretty random (either literally about random 
+hardware or about agp or just odd stuff).
 
- static void __init __early_set_fixmap(enum fixed_addresses idx,
--				   unsigned long phys, pgprot_t flags)
-+				      phys_addr_t phys, pgprot_t flags)
- {
- 	unsigned long addr = __fix_to_virt(idx);
- 	pte_t *pte;
-@@ -566,7 +566,7 @@ static void __init __early_set_fixmap(enum fixed_addresses idx,
- }
+So I'm wondering if it would make sense to do a drivers/tty for the core 
+tty (ldisc, tty_io etc) stuff, and perhaps move some of the non-core 
+(serial) drivers into drivers/serial.
 
- static inline void __init early_set_fixmap(enum fixed_addresses idx,
--					   unsigned long phys, pgprot_t prot)
-+					   phys_addr_t phys, pgprot_t prot)
- {
- 	if (after_paging_init)
- 		__set_fixmap(idx, phys, prot);
-@@ -607,9 +607,10 @@ static int __init check_early_ioremap_leak(void)
- late_initcall(check_early_ioremap_leak);
+I don't know, for example, why drivers/char/stallion.c is not in 
+drivers/serial. Just historical reasons, or an actual reason?
 
- static void __init __iomem *
--__early_ioremap(unsigned long phys_addr, unsigned long size, pgprot_t prot)
-+__early_ioremap(resource_size_t phys_addr, unsigned long size, pgprot_t prot)
- {
--	unsigned long offset, last_addr;
-+	unsigned long offset;
-+	resource_size_t last_addr;
- 	unsigned int nrpages;
- 	enum fixed_addresses idx0, idx;
- 	int i, slot;
-@@ -625,15 +626,15 @@ __early_ioremap(unsigned long phys_addr, unsigned long size, pgprot_t prot)
- 	}
+Not a big deal, just wondering.
 
- 	if (slot < 0) {
--		printk(KERN_INFO "early_iomap(%08lx, %08lx) not found slot\n",
--			 phys_addr, size);
-+		printk(KERN_INFO "early_iomap(%08llx, %08lx) not found slot\n",
-+			 (u64)phys_addr, size);
- 		WARN_ON(1);
- 		return NULL;
- 	}
-
- 	if (early_ioremap_debug) {
--		printk(KERN_INFO "early_ioremap(%08lx, %08lx) [%d] => ",
--		       phys_addr, size, slot);
-+		printk(KERN_INFO "early_ioremap(%08llx, %08lx) [%d] => ",
-+		       (u64)phys_addr, size, slot);
- 		dump_stack();
- 	}
-
-@@ -680,13 +681,15 @@ __early_ioremap(unsigned long phys_addr, unsigned long size, pgprot_t prot)
- }
-
- /* Remap an IO device */
--void __init __iomem *early_ioremap(unsigned long phys_addr, unsigned long size)
-+void __init __iomem *
-+early_ioremap(resource_size_t phys_addr, unsigned long size)
- {
- 	return __early_ioremap(phys_addr, size, PAGE_KERNEL_IO);
- }
-
- /* Remap memory */
--void __init __iomem *early_memremap(unsigned long phys_addr, unsigned long size)
-+void __init __iomem *
-+early_memremap(resource_size_t phys_addr, unsigned long size)
- {
- 	return __early_ioremap(phys_addr, size, PAGE_KERNEL);
- }
--- 
-Masami Hiramatsu
-
-Software Engineer
-Hitachi Computer Products (America) Inc.
-Software Solutions Division
-
-e-mail: mhiramat@redhat.com
-
+			Linus
