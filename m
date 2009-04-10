@@ -1,180 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934340AbZDJLt1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S936020AbZDJLt4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934340AbZDJLt1 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 10 Apr 2009 07:49:27 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932584AbZDJLtN
+	id S936020AbZDJLt4 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 10 Apr 2009 07:49:56 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1764340AbZDJLti
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 10 Apr 2009 07:49:13 -0400
-Received: from havoc.gtf.org ([69.61.125.42]:35632 "EHLO havoc.gtf.org"
+	Fri, 10 Apr 2009 07:49:38 -0400
+Received: from mx3.mail.elte.hu ([157.181.1.138]:54556 "EHLO mx3.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1764820AbZDJLtK (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 10 Apr 2009 07:49:10 -0400
-Date: Fri, 10 Apr 2009 07:49:08 -0400
-From: Jeff Garzik <jeff@garzik.org>
-To: LKML <linux-kernel@vger.kernel.org>, linux-scsi@vger.kernel.org
-Cc: linux-fsdevel@vger.kernel.org, axboe@kernel.dk,
-       Andrew Morton <akpm@linux-foundation.org>,
-       James.Bottomley@HansenPartnership.com, bharrosh@panasas.com,
-       osd-dev@open-osd.org
-Subject: [PATCH 2/3] osd_initiator: support bio chains
-Message-ID: <20090410114908.GB10602@havoc.gtf.org>
-References: <20090402015455.GA14087@havoc.gtf.org> <20090407225302.GA14248@havoc.gtf.org> <20090410114821.GA10602@havoc.gtf.org>
-Mime-Version: 1.0
+	id S1760799AbZDJLtg (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 10 Apr 2009 07:49:36 -0400
+Date: Fri, 10 Apr 2009 13:49:01 +0200
+From: Ingo Molnar <mingo@elte.hu>
+To: Pavel Machek <pavel@ucw.cz>
+Cc: Avi Kivity <avi@redhat.com>, mingo@redhat.com, hpa@zytor.com,
+       linux-kernel@vger.kernel.org, tglx@linutronix.de, hpa@linux.intel.com,
+       rjw@sisk.pl, linux-tip-commits@vger.kernel.org,
+       Linus Torvalds <torvalds@linux-foundation.org>
+Subject: Re: [tip:x86/setup] x86, setup: "glove box" BIOS calls --
+	infrastructure
+Message-ID: <20090410114901.GJ21506@elte.hu>
+References: <49DE7F79.4030106@zytor.com> <tip-7a734e7dd93b9aea08ed51036a9a0e2c9dfd8dac@git.kernel.org> <20090410080444.GC16512@elf.ucw.cz> <20090410103934.GA21506@elte.hu> <20090410104648.GA31516@elf.ucw.cz> <20090410112546.GD21506@elte.hu> <20090410113824.GA18823@elf.ucw.cz>
+MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20090410114821.GA10602@havoc.gtf.org>
-User-Agent: Mutt/1.4.2.2i
+In-Reply-To: <20090410113824.GA18823@elf.ucw.cz>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.5
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-Signed-off-by: Jeff Garzik <jgarzik@redhat.com>
----
- drivers/scsi/osd/osd_initiator.c |   83 +++++++++++++++++++++++++++++++--------
- 1 file changed, 67 insertions(+), 16 deletions(-)
+* Pavel Machek <pavel@ucw.cz> wrote:
 
-diff --git a/drivers/scsi/osd/osd_initiator.c b/drivers/scsi/osd/osd_initiator.c
-index 2a5f077..2d35d65 100644
---- a/drivers/scsi/osd/osd_initiator.c
-+++ b/drivers/scsi/osd/osd_initiator.c
-@@ -709,14 +709,36 @@ EXPORT_SYMBOL(osd_req_remove_object);
- 	struct osd_obj_id *first, struct osd_obj_id_list *list, unsigned nelem);
- */
- 
-+static unsigned int bio_chain_size(struct bio *bio)
-+{
-+	unsigned int chain_size = 0;
-+
-+	while (bio) {
-+		chain_size += bio->bi_size;
-+		bio = bio->bi_next;
-+	}
-+
-+	return chain_size;
-+}
-+
- void osd_req_write(struct osd_request *or,
- 	const struct osd_obj_id *obj, struct bio *bio, u64 offset)
- {
--	_osd_req_encode_common(or, OSD_ACT_WRITE, obj, offset, bio->bi_size);
-+	unsigned int chain_size = 0;
-+	struct bio *tmp_bio = bio;
-+
-+	while (tmp_bio) {
-+		chain_size += tmp_bio->bi_size;
-+		tmp_bio->bi_rw |= (1 << BIO_RW);
-+
-+		tmp_bio = tmp_bio->bi_next;
-+	}
-+
-+	_osd_req_encode_common(or, OSD_ACT_WRITE, obj, offset, chain_size);
- 	WARN_ON(or->out.bio || or->out.total_bytes);
--	bio->bi_rw |= (1 << BIO_RW);
-+
- 	or->out.bio = bio;
--	or->out.total_bytes = bio->bi_size;
-+	or->out.total_bytes = chain_size;
- }
- EXPORT_SYMBOL(osd_req_write);
- 
-@@ -747,11 +769,21 @@ EXPORT_SYMBOL(osd_req_flush_object);
- void osd_req_read(struct osd_request *or,
- 	const struct osd_obj_id *obj, struct bio *bio, u64 offset)
- {
--	_osd_req_encode_common(or, OSD_ACT_READ, obj, offset, bio->bi_size);
-+	unsigned int chain_size = 0;
-+	struct bio *tmp_bio = bio;
-+
-+	while (tmp_bio) {
-+		chain_size += tmp_bio->bi_size;
-+		tmp_bio->bi_rw &= ~(1 << BIO_RW);
-+
-+		tmp_bio = tmp_bio->bi_next;
-+	}
-+
-+	_osd_req_encode_common(or, OSD_ACT_READ, obj, offset, chain_size);
- 	WARN_ON(or->in.bio || or->in.total_bytes);
--	bio->bi_rw &= ~(1 << BIO_RW);
-+
- 	or->in.bio = bio;
--	or->in.total_bytes = bio->bi_size;
-+	or->in.total_bytes = chain_size;
- }
- EXPORT_SYMBOL(osd_req_read);
- 
-@@ -1176,7 +1208,7 @@ static int _osd_req_finalize_data_integrity(struct osd_request *or,
- 		unsigned pad;
- 
- 		or->out_data_integ.data_bytes = cpu_to_be64(
--			or->out.bio ? or->out.bio->bi_size : 0);
-+			or->out.bio ? bio_chain_size(or->out.bio) : 0);
- 		or->out_data_integ.set_attributes_bytes = cpu_to_be64(
- 			or->set_attr.total_bytes);
- 		or->out_data_integ.get_attributes_bytes = cpu_to_be64(
-@@ -1269,6 +1301,7 @@ int osd_finalize_request(struct osd_request *or,
- 	struct osd_cdb_head *cdbh = osd_cdb_head(&or->cdb);
- 	bool has_in, has_out;
- 	int ret;
-+	struct bio *bio, *tmp;
- 
- 	if (options & OSD_REQ_FUA)
- 		cdbh->options |= OSD_CDB_FUA;
-@@ -1292,23 +1325,40 @@ int osd_finalize_request(struct osd_request *or,
- 	}
- 
- 	if (or->out.bio) {
--		ret = blk_rq_append_bio(or->request->q, or->out.req,
--					or->out.bio);
--		if (ret) {
--			OSD_DEBUG("blk_rq_append_bio out failed\n");
--			return ret;
-+		bio = or->out.bio;
-+		while (bio) {
-+			tmp = bio;
-+			bio = bio->bi_next;
-+
-+			ret = blk_rq_append_bio(or->request->q, or->out.req,
-+						tmp);
-+			if (ret) {
-+				OSD_DEBUG("blk_rq_append_bio out failed\n");
-+				return ret;
-+			}
- 		}
- 		OSD_DEBUG("out bytes=%llu (bytes_req=%u)\n",
- 			_LLU(or->out.total_bytes), or->out.req->data_len);
-+
-+		or->out.bio = NULL;
- 	}
- 	if (or->in.bio) {
--		ret = blk_rq_append_bio(or->request->q, or->in.req, or->in.bio);
--		if (ret) {
--			OSD_DEBUG("blk_rq_append_bio in failed\n");
--			return ret;
-+		bio = or->in.bio;
-+		while (bio) {
-+			tmp = bio;
-+			bio = bio->bi_next;
-+
-+			ret = blk_rq_append_bio(or->request->q, or->in.req,
-+						tmp);
-+			if (ret) {
-+				OSD_DEBUG("blk_rq_append_bio in failed\n");
-+				return ret;
-+			}
- 		}
- 		OSD_DEBUG("in bytes=%llu (bytes_req=%u)\n",
- 			_LLU(or->in.total_bytes), or->in.req->data_len);
-+
-+		or->in.bio = NULL;
- 	}
- 
- 	or->out.pad_buff = sg_out_pad_buffer;
-@@ -1618,6 +1668,7 @@ void osd_sec_sign_cdb(struct osd_cdb *ocdb __unused, const u8 *cap_key __unused)
- void osd_sec_sign_data(void *data_integ __unused,
- 		       struct bio *bio __unused, const u8 *cap_key __unused)
- {
-+	/* NOTE: bio is a linked list */
- }
- 
- /*
+> > "BIOS people" are operating in a completely different culture. 
+> > Time to market, hardware workarounds, short-term 
+> > differentiators, secret bootstrap sequences and code compactness 
+> > are king in that space. Code quality is dead last in the list. I 
+> > strongly doubt that given the radically conflicting priorities a 
+> > reasonable dialogue can be established.
+> 
+> "BIOS people" control stuff like SMM mode. We can workaround some 
+> BIOS problems, but definitely not all of them.
+> 
+> For servers, I guess Linux has enough of market share that we 
+> could certify known-good servers (and maybe warn against 
+> known-bad).
+
+Server space is somewhat less of a problem BIOS quality wise: the 
+design cycles are longer, the features are more complex and the 
+profit margins are higher - which all results in saner practices and 
+more care. They even do server BIOS fixes for Linux.
+
+The problem are the "Does it boot Windows? Ship it, forget it, 
+buldoze the factory" kind of desktop operations.
+
+	Ingo
