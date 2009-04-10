@@ -1,81 +1,443 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932553AbZDJQQa@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1765697AbZDJQSK@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932553AbZDJQQa (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 10 Apr 2009 12:16:30 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751873AbZDJQQT
+	id S1765697AbZDJQSK (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 10 Apr 2009 12:18:10 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756294AbZDJQRx
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 10 Apr 2009 12:16:19 -0400
-Received: from fg-out-1718.google.com ([72.14.220.159]:5471 "EHLO
-	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751716AbZDJQQS (ORCPT
+	Fri, 10 Apr 2009 12:17:53 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:58622 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751636AbZDJQRw (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 10 Apr 2009 12:16:18 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:date:message-id:subject:from:to:content-type
-         :content-transfer-encoding;
-        b=Oe1ME+ZcnM7kMZMXZLBvRLWbGKPtbdBXgzMF4nGPHjdndP5ljdVlSTfLQ2qlcXKLhT
-         Lp3+7CFIzTKZRmq5OdwhIlF2cznop8dKo5/pc7lXtnsuCp8bbSsgA2Jo2xd5rgrtRgCE
-         Cr/NOGzECv6PkgjjXHqcrdtloPZtwl9l26/rs=
+	Fri, 10 Apr 2009 12:17:52 -0400
+Date: Fri, 10 Apr 2009 09:09:53 -0700 (PDT)
+From: Linus Torvalds <torvalds@linux-foundation.org>
+X-X-Sender: torvalds@localhost.localdomain
+To: Wu Fengguang <fengguang.wu@intel.com>
+cc: Andrew Morton <akpm@linux-foundation.org>, Ying Han <yinghan@google.com>,
+       "linux-mm@kvack.org" <linux-mm@kvack.org>,
+       linux-kernel <linux-kernel@vger.kernel.org>,
+       Ingo Molnar <mingo@elte.hu>, Mike Waychison <mikew@google.com>,
+       Rohit Seth <rohitseth@google.com>, Hugh Dickins <hugh@veritas.com>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>,
+       "H. Peter Anvin" <hpa@zytor.com>,
+       =?ISO-8859-15?Q?T=F6r=F6k_Edwin?= <edwintorok@gmail.com>,
+       Lee Schermerhorn <lee.schermerhorn@hp.com>,
+       Nick Piggin <npiggin@suse.de>
+Subject: [PATCH 2/2] Move FAULT_FLAG_xyz into handle_mm_fault() callers
+In-Reply-To: <alpine.LFD.2.00.0904100835150.4583@localhost.localdomain>
+Message-ID: <alpine.LFD.2.00.0904100904250.4583@localhost.localdomain>
+References: <604427e00904081302m7b29c538u7781cd8f4dd576f2@mail.gmail.com> <20090409230205.310c68a7.akpm@linux-foundation.org> <20090410073042.GB21149@localhost> <alpine.LFD.2.00.0904100835150.4583@localhost.localdomain>
+User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
 MIME-Version: 1.0
-Date: Fri, 10 Apr 2009 18:16:16 +0200
-Message-ID: <15d0b9b20904100916u3ff85ff5gd7a989120b7c048f@mail.gmail.com>
-Subject: Additional USB identifier for otus driver [WN111v2]
-From: Daniele Napolitano <dnax88@gmail.com>
-To: linux-kernel@vger.kernel.org, linux-wireless@vger.kernel.org,
-       akpm@linux-foundation.org, gregkh@suse.de
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This is a patch for Otus driver [Atheros 9k series] that provide
-support for WN111v2 USB 802.11n
-adapter.
 
-Otus sources tree: OAL/Otus/Linux
+From: Linus Torvalds <torvalds@linux-foundation.org>
+Date: Fri, 10 Apr 2009 09:01:23 -0700
 
---- zdusb.h.orig	2009-04-10 17:48:17.620423000 +0200
-+++ zdusb.h	2009-04-10 17:54:41.356419568 +0200
-@@ -26,5 +26,9 @@
+This allows the callers to now pass down the full set of FAULT_FLAG_xyz
+flags to handle_mm_fault().  All callers have been (mechanically)
+converted to the new calling convention, there's almost certainly room
+for architectures to clean up their code and then add FAULT_FLAG_RETRY
+when that support is added.
 
+Signed-off-by: Linus Torvalds <torvalds@linux-foundation.org>
+---
 
- #define VENDOR_DLINK            0x07D1  //Dlink
+Again - untested. Not compiled. Might well rape your pets and just 
+otherwise act badly. It's also a very mechanical conversion, ie I 
+explicitly did
 
- #define PRODUCT_DWA160A         0x3C10
+-       fault = handle_mm_fault(mm, vma, addr & PAGE_MASK, fsr & (1 << 11));
++       fault = handle_mm_fault(mm, vma, addr & PAGE_MASK, (fsr & (1 << 11)) ? FAULT_FLAG_WRITE : 0);
 
-+
-+#define VENDOR_NETGEAR          0x0846  //NetGear
-+#define PRODUCT_WNDA3100        0x9010
-+#define PRODUCT_WN111v2         0x9001
+rather than doing some cleanup while there.
 
+The point is, once we do this, now you really pass FAULT_FLAG_xyz 
+everywhere, and now it's trivial to add FAULT_FLAG_RETRY without horribly 
+ugly or hacky code.
 
+For example, before, I think Wu's code would have failed on ARM if 
+FAULT_FLAG_RETRY just happened to be (1 << 11), because back when we 
+passed in "zero or non-zero", ARM would literally pass in (1 << 11) or 0 
+for "write_access".
+
+Now we explicitly pass in a nice FAULT_FLAG_WRITE or 0.
+
+ arch/alpha/mm/fault.c                   |    2 +-
+ arch/arm/mm/fault.c                     |    2 +-
+ arch/avr32/mm/fault.c                   |    2 +-
+ arch/cris/mm/fault.c                    |    2 +-
+ arch/frv/mm/fault.c                     |    2 +-
+ arch/ia64/mm/fault.c                    |    2 +-
+ arch/m32r/mm/fault.c                    |    2 +-
+ arch/m68k/mm/fault.c                    |    2 +-
+ arch/mips/mm/fault.c                    |    2 +-
+ arch/mn10300/mm/fault.c                 |    2 +-
+ arch/parisc/mm/fault.c                  |    2 +-
+ arch/powerpc/mm/fault.c                 |    2 +-
+ arch/powerpc/platforms/cell/spu_fault.c |    2 +-
+ arch/s390/lib/uaccess_pt.c              |    2 +-
+ arch/s390/mm/fault.c                    |    2 +-
+ arch/sh/mm/fault_32.c                   |    2 +-
+ arch/sh/mm/tlbflush_64.c                |    2 +-
+ arch/sparc/mm/fault_32.c                |    4 ++--
+ arch/sparc/mm/fault_64.c                |    2 +-
+ arch/um/kernel/trap.c                   |    2 +-
+ arch/x86/mm/fault.c                     |    2 +-
+ arch/xtensa/mm/fault.c                  |    2 +-
+ include/linux/mm.h                      |    4 ++--
+ mm/memory.c                             |    8 ++++----
+ 24 files changed, 29 insertions(+), 29 deletions(-)
+
+diff --git a/arch/alpha/mm/fault.c b/arch/alpha/mm/fault.c
+index 4829f96..00a31de 100644
+--- a/arch/alpha/mm/fault.c
++++ b/arch/alpha/mm/fault.c
+@@ -146,7 +146,7 @@ do_page_fault(unsigned long address, unsigned long mmcsr,
+ 	/* If for any reason at all we couldn't handle the fault,
+ 	   make sure we exit gracefully rather than endlessly redo
+ 	   the fault.  */
+-	fault = handle_mm_fault(mm, vma, address, cause > 0);
++	fault = handle_mm_fault(mm, vma, address, cause > 0 ? FAULT_FLAG_WRITE : 0);
+ 	up_read(&mm->mmap_sem);
+ 	if (unlikely(fault & VM_FAULT_ERROR)) {
+ 		if (fault & VM_FAULT_OOM)
+diff --git a/arch/arm/mm/fault.c b/arch/arm/mm/fault.c
+index 0455557..6fdcbb7 100644
+--- a/arch/arm/mm/fault.c
++++ b/arch/arm/mm/fault.c
+@@ -208,7 +208,7 @@ good_area:
+ 	 * than endlessly redo the fault.
+ 	 */
+ survive:
+-	fault = handle_mm_fault(mm, vma, addr & PAGE_MASK, fsr & (1 << 11));
++	fault = handle_mm_fault(mm, vma, addr & PAGE_MASK, (fsr & (1 << 11)) ? FAULT_FLAG_WRITE : 0);
+ 	if (unlikely(fault & VM_FAULT_ERROR)) {
+ 		if (fault & VM_FAULT_OOM)
+ 			goto out_of_memory;
+diff --git a/arch/avr32/mm/fault.c b/arch/avr32/mm/fault.c
+index 62d4abb..b61d86d 100644
+--- a/arch/avr32/mm/fault.c
++++ b/arch/avr32/mm/fault.c
+@@ -133,7 +133,7 @@ good_area:
+ 	 * fault.
+ 	 */
+ survive:
+-	fault = handle_mm_fault(mm, vma, address, writeaccess);
++	fault = handle_mm_fault(mm, vma, address, writeaccess ? FAULT_FLAG_WRITE : 0);
+ 	if (unlikely(fault & VM_FAULT_ERROR)) {
+ 		if (fault & VM_FAULT_OOM)
+ 			goto out_of_memory;
+diff --git a/arch/cris/mm/fault.c b/arch/cris/mm/fault.c
+index c4c76db..f925115 100644
+--- a/arch/cris/mm/fault.c
++++ b/arch/cris/mm/fault.c
+@@ -163,7 +163,7 @@ do_page_fault(unsigned long address, struct pt_regs *regs,
+ 	 * the fault.
+ 	 */
+ 
+-	fault = handle_mm_fault(mm, vma, address, writeaccess & 1);
++	fault = handle_mm_fault(mm, vma, address, (writeaccess & 1) ? FAULT_FLAG_WRITE : 0);
+ 	if (unlikely(fault & VM_FAULT_ERROR)) {
+ 		if (fault & VM_FAULT_OOM)
+ 			goto out_of_memory;
+diff --git a/arch/frv/mm/fault.c b/arch/frv/mm/fault.c
+index 05093d4..30f5d10 100644
+--- a/arch/frv/mm/fault.c
++++ b/arch/frv/mm/fault.c
+@@ -163,7 +163,7 @@ asmlinkage void do_page_fault(int datammu, unsigned long esr0, unsigned long ear
+ 	 * make sure we exit gracefully rather than endlessly redo
+ 	 * the fault.
+ 	 */
+-	fault = handle_mm_fault(mm, vma, ear0, write);
++	fault = handle_mm_fault(mm, vma, ear0, write ? FAULT_FLAG_WRITE : 0);
+ 	if (unlikely(fault & VM_FAULT_ERROR)) {
+ 		if (fault & VM_FAULT_OOM)
+ 			goto out_of_memory;
+diff --git a/arch/ia64/mm/fault.c b/arch/ia64/mm/fault.c
+index 23088be..19261a9 100644
+--- a/arch/ia64/mm/fault.c
++++ b/arch/ia64/mm/fault.c
+@@ -154,7 +154,7 @@ ia64_do_page_fault (unsigned long address, unsigned long isr, struct pt_regs *re
+ 	 * sure we exit gracefully rather than endlessly redo the
+ 	 * fault.
+ 	 */
+-	fault = handle_mm_fault(mm, vma, address, (mask & VM_WRITE) != 0);
++	fault = handle_mm_fault(mm, vma, address, (mask & VM_WRITE) ? FAULT_FLAG_WRITE : 0);
+ 	if (unlikely(fault & VM_FAULT_ERROR)) {
+ 		/*
+ 		 * We ran out of memory, or some other thing happened
+diff --git a/arch/m32r/mm/fault.c b/arch/m32r/mm/fault.c
+index 4a71df4..7274b47 100644
+--- a/arch/m32r/mm/fault.c
++++ b/arch/m32r/mm/fault.c
+@@ -196,7 +196,7 @@ survive:
+ 	 */
+ 	addr = (address & PAGE_MASK);
+ 	set_thread_fault_code(error_code);
+-	fault = handle_mm_fault(mm, vma, addr, write);
++	fault = handle_mm_fault(mm, vma, addr, write ? FAULT_FLAG_WRITE : 0);
+ 	if (unlikely(fault & VM_FAULT_ERROR)) {
+ 		if (fault & VM_FAULT_OOM)
+ 			goto out_of_memory;
+diff --git a/arch/m68k/mm/fault.c b/arch/m68k/mm/fault.c
+index f493f03..d0e35cf 100644
+--- a/arch/m68k/mm/fault.c
++++ b/arch/m68k/mm/fault.c
+@@ -155,7 +155,7 @@ good_area:
+ 	 */
+ 
+  survive:
+-	fault = handle_mm_fault(mm, vma, address, write);
++	fault = handle_mm_fault(mm, vma, address, write ? FAULT_FLAG_WRITE : 0);
+ #ifdef DEBUG
+ 	printk("handle_mm_fault returns %d\n",fault);
  #endif
-
-
---- zdusb.c.orig	2009-04-10 17:48:17.620423000 +0200
-+++ zdusb.c	2009-04-10 17:53:15.316421516 +0200
-@@ -36,7 +36,8 @@
- static struct usb_device_id zd1221_ids [] = {
-
- 	{ USB_DEVICE(VENDOR_ATHR, PRODUCT_AR9170) },
-
-         { USB_DEVICE(VENDOR_DLINK, PRODUCT_DWA160A) },
-
--	{ USB_DEVICE(0x0846, 0x9010) },
-
-+	{ USB_DEVICE(VENDOR_NETGEAR, PRODUCT_WNDA3100) },
-+	{ USB_DEVICE(VENDOR_NETGEAR, PRODUCT_WN111v2) },
-
- 	{ }					/* Terminating entry */
-
- };
-
-
-
-
+diff --git a/arch/mips/mm/fault.c b/arch/mips/mm/fault.c
+index 55767ad..6751ce9 100644
+--- a/arch/mips/mm/fault.c
++++ b/arch/mips/mm/fault.c
+@@ -102,7 +102,7 @@ good_area:
+ 	 * make sure we exit gracefully rather than endlessly redo
+ 	 * the fault.
+ 	 */
+-	fault = handle_mm_fault(mm, vma, address, write);
++	fault = handle_mm_fault(mm, vma, address, write ? FAULT_FLAG_WRITE : 0);
+ 	if (unlikely(fault & VM_FAULT_ERROR)) {
+ 		if (fault & VM_FAULT_OOM)
+ 			goto out_of_memory;
+diff --git a/arch/mn10300/mm/fault.c b/arch/mn10300/mm/fault.c
+index 33cf250..a62e1e1 100644
+--- a/arch/mn10300/mm/fault.c
++++ b/arch/mn10300/mm/fault.c
+@@ -258,7 +258,7 @@ good_area:
+ 	 * make sure we exit gracefully rather than endlessly redo
+ 	 * the fault.
+ 	 */
+-	fault = handle_mm_fault(mm, vma, address, write);
++	fault = handle_mm_fault(mm, vma, address, write ? FAULT_FLAG_WRITE : 0);
+ 	if (unlikely(fault & VM_FAULT_ERROR)) {
+ 		if (fault & VM_FAULT_OOM)
+ 			goto out_of_memory;
+diff --git a/arch/parisc/mm/fault.c b/arch/parisc/mm/fault.c
+index 92c7fa4..bfb6dd6 100644
+--- a/arch/parisc/mm/fault.c
++++ b/arch/parisc/mm/fault.c
+@@ -202,7 +202,7 @@ good_area:
+ 	 * fault.
+ 	 */
+ 
+-	fault = handle_mm_fault(mm, vma, address, (acc_type & VM_WRITE) != 0);
++	fault = handle_mm_fault(mm, vma, address, (acc_type & VM_WRITE) ? FAULT_FLAG_WRITE : 0);
+ 	if (unlikely(fault & VM_FAULT_ERROR)) {
+ 		/*
+ 		 * We hit a shared mapping outside of the file, or some
+diff --git a/arch/powerpc/mm/fault.c b/arch/powerpc/mm/fault.c
+index 7699394..e2bf1ee 100644
+--- a/arch/powerpc/mm/fault.c
++++ b/arch/powerpc/mm/fault.c
+@@ -299,7 +299,7 @@ good_area:
+ 	 * the fault.
+ 	 */
+  survive:
+-	ret = handle_mm_fault(mm, vma, address, is_write);
++	ret = handle_mm_fault(mm, vma, address, is_write ? FAULT_FLAG_WRITE : 0);
+ 	if (unlikely(ret & VM_FAULT_ERROR)) {
+ 		if (ret & VM_FAULT_OOM)
+ 			goto out_of_memory;
+diff --git a/arch/powerpc/platforms/cell/spu_fault.c b/arch/powerpc/platforms/cell/spu_fault.c
+index 95d8dad..d06ba87 100644
+--- a/arch/powerpc/platforms/cell/spu_fault.c
++++ b/arch/powerpc/platforms/cell/spu_fault.c
+@@ -70,7 +70,7 @@ int spu_handle_mm_fault(struct mm_struct *mm, unsigned long ea,
+ 	}
+ 
+ 	ret = 0;
+-	*flt = handle_mm_fault(mm, vma, ea, is_write);
++	*flt = handle_mm_fault(mm, vma, ea, is_write ? FAULT_FLAG_WRITE : 0);
+ 	if (unlikely(*flt & VM_FAULT_ERROR)) {
+ 		if (*flt & VM_FAULT_OOM) {
+ 			ret = -ENOMEM;
+diff --git a/arch/s390/lib/uaccess_pt.c b/arch/s390/lib/uaccess_pt.c
+index b0b84c3..cb5d59e 100644
+--- a/arch/s390/lib/uaccess_pt.c
++++ b/arch/s390/lib/uaccess_pt.c
+@@ -66,7 +66,7 @@ static int __handle_fault(struct mm_struct *mm, unsigned long address,
+ 	}
+ 
+ survive:
+-	fault = handle_mm_fault(mm, vma, address, write_access);
++	fault = handle_mm_fault(mm, vma, address, write_access ? FAULT_FLAG_WRITE : 0);
+ 	if (unlikely(fault & VM_FAULT_ERROR)) {
+ 		if (fault & VM_FAULT_OOM)
+ 			goto out_of_memory;
+diff --git a/arch/s390/mm/fault.c b/arch/s390/mm/fault.c
+index 833e836..31456fa 100644
+--- a/arch/s390/mm/fault.c
++++ b/arch/s390/mm/fault.c
+@@ -351,7 +351,7 @@ good_area:
+ 	 * make sure we exit gracefully rather than endlessly redo
+ 	 * the fault.
+ 	 */
+-	fault = handle_mm_fault(mm, vma, address, write);
++	fault = handle_mm_fault(mm, vma, address, write ? FAULT_FLAG_WRITE : 0);
+ 	if (unlikely(fault & VM_FAULT_ERROR)) {
+ 		if (fault & VM_FAULT_OOM) {
+ 			up_read(&mm->mmap_sem);
+diff --git a/arch/sh/mm/fault_32.c b/arch/sh/mm/fault_32.c
+index 31a33eb..09ef52a 100644
+--- a/arch/sh/mm/fault_32.c
++++ b/arch/sh/mm/fault_32.c
+@@ -133,7 +133,7 @@ good_area:
+ 	 * the fault.
+ 	 */
+ survive:
+-	fault = handle_mm_fault(mm, vma, address, writeaccess);
++	fault = handle_mm_fault(mm, vma, address, writeaccess ? FAULT_FLAG_WRITE : 0);
+ 	if (unlikely(fault & VM_FAULT_ERROR)) {
+ 		if (fault & VM_FAULT_OOM)
+ 			goto out_of_memory;
+diff --git a/arch/sh/mm/tlbflush_64.c b/arch/sh/mm/tlbflush_64.c
+index 7876997..fcbb6e1 100644
+--- a/arch/sh/mm/tlbflush_64.c
++++ b/arch/sh/mm/tlbflush_64.c
+@@ -187,7 +187,7 @@ good_area:
+ 	 * the fault.
+ 	 */
+ survive:
+-	fault = handle_mm_fault(mm, vma, address, writeaccess);
++	fault = handle_mm_fault(mm, vma, address, writeaccess ? FAULT_FLAG_WRITE : 0);
+ 	if (unlikely(fault & VM_FAULT_ERROR)) {
+ 		if (fault & VM_FAULT_OOM)
+ 			goto out_of_memory;
+diff --git a/arch/sparc/mm/fault_32.c b/arch/sparc/mm/fault_32.c
+index 12e447f..a5e30c6 100644
+--- a/arch/sparc/mm/fault_32.c
++++ b/arch/sparc/mm/fault_32.c
+@@ -241,7 +241,7 @@ good_area:
+ 	 * make sure we exit gracefully rather than endlessly redo
+ 	 * the fault.
+ 	 */
+-	fault = handle_mm_fault(mm, vma, address, write);
++	fault = handle_mm_fault(mm, vma, address, write ? FAULT_FLAG_WRITE : 0);
+ 	if (unlikely(fault & VM_FAULT_ERROR)) {
+ 		if (fault & VM_FAULT_OOM)
+ 			goto out_of_memory;
+@@ -484,7 +484,7 @@ good_area:
+ 		if(!(vma->vm_flags & (VM_READ | VM_EXEC)))
+ 			goto bad_area;
+ 	}
+-	switch (handle_mm_fault(mm, vma, address, write)) {
++	switch (handle_mm_fault(mm, vma, address, write ? FAULT_FLAG_WRITE : 0)) {
+ 	case VM_FAULT_SIGBUS:
+ 	case VM_FAULT_OOM:
+ 		goto do_sigbus;
+diff --git a/arch/sparc/mm/fault_64.c b/arch/sparc/mm/fault_64.c
+index 4ab8993..e5620b2 100644
+--- a/arch/sparc/mm/fault_64.c
++++ b/arch/sparc/mm/fault_64.c
+@@ -398,7 +398,7 @@ good_area:
+ 			goto bad_area;
+ 	}
+ 
+-	fault = handle_mm_fault(mm, vma, address, (fault_code & FAULT_CODE_WRITE));
++	fault = handle_mm_fault(mm, vma, address, (fault_code & FAULT_CODE_WRITE) ? FAULT_FLAG_WRITE : 0);
+ 	if (unlikely(fault & VM_FAULT_ERROR)) {
+ 		if (fault & VM_FAULT_OOM)
+ 			goto out_of_memory;
+diff --git a/arch/um/kernel/trap.c b/arch/um/kernel/trap.c
+index 7384d8a..637c650 100644
+--- a/arch/um/kernel/trap.c
++++ b/arch/um/kernel/trap.c
+@@ -65,7 +65,7 @@ good_area:
+ 	do {
+ 		int fault;
+ 
+-		fault = handle_mm_fault(mm, vma, address, is_write);
++		fault = handle_mm_fault(mm, vma, address, is_write ? FAULT_FLAG_WRITE : 0);
+ 		if (unlikely(fault & VM_FAULT_ERROR)) {
+ 			if (fault & VM_FAULT_OOM) {
+ 				goto out_of_memory;
+diff --git a/arch/x86/mm/fault.c b/arch/x86/mm/fault.c
+index a03b727..65a07ba 100644
+--- a/arch/x86/mm/fault.c
++++ b/arch/x86/mm/fault.c
+@@ -1130,7 +1130,7 @@ good_area:
+ 	 * make sure we exit gracefully rather than endlessly redo
+ 	 * the fault:
+ 	 */
+-	fault = handle_mm_fault(mm, vma, address, write);
++	fault = handle_mm_fault(mm, vma, address, write ? FAULT_FLAG_WRITE : 0);
+ 
+ 	if (unlikely(fault & VM_FAULT_ERROR)) {
+ 		mm_fault_error(regs, error_code, address, fault);
+diff --git a/arch/xtensa/mm/fault.c b/arch/xtensa/mm/fault.c
+index bdd860d..bc07333 100644
+--- a/arch/xtensa/mm/fault.c
++++ b/arch/xtensa/mm/fault.c
+@@ -106,7 +106,7 @@ good_area:
+ 	 * the fault.
+ 	 */
+ survive:
+-	fault = handle_mm_fault(mm, vma, address, is_write);
++	fault = handle_mm_fault(mm, vma, address, is_write ? FAULT_FLAG_WRITE : 0);
+ 	if (unlikely(fault & VM_FAULT_ERROR)) {
+ 		if (fault & VM_FAULT_OOM)
+ 			goto out_of_memory;
+diff --git a/include/linux/mm.h b/include/linux/mm.h
+index bff1f0d..3f207d1 100644
+--- a/include/linux/mm.h
++++ b/include/linux/mm.h
+@@ -810,11 +810,11 @@ extern int vmtruncate_range(struct inode * inode, loff_t offset, loff_t end);
+ 
+ #ifdef CONFIG_MMU
+ extern int handle_mm_fault(struct mm_struct *mm, struct vm_area_struct *vma,
+-			unsigned long address, int write_access);
++			unsigned long address, unsigned int flags);
+ #else
+ static inline int handle_mm_fault(struct mm_struct *mm,
+ 			struct vm_area_struct *vma, unsigned long address,
+-			int write_access)
++			unsigned int flags)
+ {
+ 	/* should never happen if there's no MMU */
+ 	BUG();
+diff --git a/mm/memory.c b/mm/memory.c
+index 9050bae..383dc0b 100644
+--- a/mm/memory.c
++++ b/mm/memory.c
+@@ -1310,8 +1310,9 @@ int __get_user_pages(struct task_struct *tsk, struct mm_struct *mm,
+ 			cond_resched();
+ 			while (!(page = follow_page(vma, start, foll_flags))) {
+ 				int ret;
+-				ret = handle_mm_fault(mm, vma, start,
+-						foll_flags & FOLL_WRITE);
++
++				/* FOLL_WRITE matches FAULT_FLAG_WRITE! */
++				ret = handle_mm_fault(mm, vma, start, foll_flags & FOLL_WRITE);
+ 				if (ret & VM_FAULT_ERROR) {
+ 					if (ret & VM_FAULT_OOM)
+ 						return i ? i : -ENOMEM;
+@@ -2864,13 +2865,12 @@ unlock:
+  * By the time we get here, we already hold the mm semaphore
+  */
+ int handle_mm_fault(struct mm_struct *mm, struct vm_area_struct *vma,
+-		unsigned long address, int write_access)
++		unsigned long address, unsigned int flags)
+ {
+ 	pgd_t *pgd;
+ 	pud_t *pud;
+ 	pmd_t *pmd;
+ 	pte_t *pte;
+-	unsigned int flags = write_access ? FAULT_FLAG_WRITE : 0;
+ 
+ 	__set_current_state(TASK_RUNNING);
+ 
 -- 
-Daniele "DnaX" Napolitano
-https://launchpad.net/~dnax88
-http://dnax.netsons.org/
+1.6.2.2.471.g6da14.dirty
+
