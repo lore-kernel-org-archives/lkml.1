@@ -1,312 +1,105 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S937499AbZDJAZv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932615AbZDJAeh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S937499AbZDJAZv (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 9 Apr 2009 20:25:51 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754079AbZDJAZl
+	id S932615AbZDJAeh (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 9 Apr 2009 20:34:37 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754456AbZDJAeY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 9 Apr 2009 20:25:41 -0400
-Received: from mga03.intel.com ([143.182.124.21]:7833 "EHLO mga03.intel.com"
+	Thu, 9 Apr 2009 20:34:24 -0400
+Received: from mail001.aei.ca ([206.123.6.130]:37417 "EHLO mail001.aei.ca"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753194AbZDJAZl (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 9 Apr 2009 20:25:41 -0400
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.40,164,1239001200"; 
-   d="scan'208";a="129934548"
-Date: Fri, 10 Apr 2009 08:25:06 +0800
-From: Wu Fengguang <fengguang.wu@intel.com>
-To: Ying Han <yinghan@google.com>
-Cc: "linux-mm@kvack.org" <linux-mm@kvack.org>,
-       linux-kernel <linux-kernel@vger.kernel.org>,
-       akpm <akpm@linux-foundation.org>,
-       "torvalds@linux-foundation.org" <torvalds@linux-foundation.org>,
-       Ingo Molnar <mingo@elte.hu>, Mike Waychison <mikew@google.com>,
-       Rohit Seth <rohitseth@google.com>, Hugh Dickins <hugh@veritas.com>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       "H. Peter Anvin" <hpa@zytor.com>,
-       =?utf-8?B?VMO2csO2aw==?= Edwin <edwintorok@gmail.com>,
-       Lee Schermerhorn <lee.schermerhorn@hp.com>,
-       Nick Piggin <npiggin@suse.de>
-Subject: Re: [PATCH][1/2]page_fault retry with NOPAGE_RETRY
-Message-ID: <20090410002505.GA6831@localhost>
-References: <604427e00904081302m7b29c538u7781cd8f4dd576f2@mail.gmail.com> <20090409074741.GB31527@localhost> <604427e00904090921y365d01bfsf650fec7a9d5e55e@mail.gmail.com>
+	id S1753341AbZDJAeX (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 9 Apr 2009 20:34:23 -0400
+From: Ed Tomlinson <edt@aei.ca>
+To: Vlad Yasevich <vladislav.yasevich@hp.com>
+Subject: Re: [2.6.30-rc1] NULL pointer dereference
+Date: Thu, 9 Apr 2009 20:34:17 -0400
+User-Agent: KMail/1.11.1 (Linux/2.6.30-rc1-crc; KDE/4.2.1; x86_64; ; )
+Cc: linux-kernel@vger.kernel.org, David Miller <davem@davemloft.net>,
+       netdev@vger.kernel.org
+References: <200904072206.29396.edt@aei.ca> <49DCB0E2.2060302@hp.com>
+In-Reply-To: <49DCB0E2.2060302@hp.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain;
+  charset="iso-8859-15"
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <604427e00904090921y365d01bfsf650fec7a9d5e55e@mail.gmail.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+Message-Id: <200904092034.17988.edt@aei.ca>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Apr 10, 2009 at 12:21:25AM +0800, Ying Han wrote:
-> On Thu, Apr 9, 2009 at 12:47 AM, Wu Fengguang <fengguang.wu@intel.com> wrote:
-> > On Thu, Apr 09, 2009 at 04:02:35AM +0800, Ying Han wrote:
-> >> support for FAULT_FLAG_RETRY with no user change:
-> >
-> > A better changelog is desired, otherwise:
-> >
-> > Signed-off-by: Wu Fengguang <fengguang.wu@intel.com>
-> >
-> >> Signed-off-by: Ying Han <yinghan@google.com>
-> >>              Mike Waychison <mikew@google.com>
-> >>
-> >>  include/linux/fs.h  |    2 +-
-> >>  include/linux/mm.h  |    2 +
-> >>  mm/filemap.c        |   72 ++++++++++++++++++++++++++++++++++++++++++++++++--
-> >>  mm/memory.c         |   33 +++++++++++++++++------
-> >>
-> >>
-> >> diff --git a/include/linux/fs.h b/include/linux/fs.h
-> >> index 4a853ef..29c2c39 100644
-> >> --- a/include/linux/fs.h
-> >> +++ b/include/linux/fs.h
-> >> @@ -793,7 +793,7 @@ struct file_ra_state {
-> >>                                          there are only # of pages ahead */
-> >>
-> >>       unsigned int ra_pages;          /* Maximum readahead window */
-> >> -     int mmap_miss;                  /* Cache miss stat for mmap accesses */
-> >> +     unsigned int mmap_miss;         /* Cache miss stat for mmap accesses */
-> >>       loff_t prev_pos;                /* Cache last read() position */
-> >>  };
-> >>
-> >> diff --git a/include/linux/mm.h b/include/linux/mm.h
-> >> index ffee2f7..5a134a9 100644
-> >> --- a/include/linux/mm.h
-> >> +++ b/include/linux/mm.h
-> >> @@ -144,6 +144,7 @@ extern pgprot_t protection_map[16];
-> >>
-> >>  #define FAULT_FLAG_WRITE     0x01    /* Fault was a write access */
-> >>  #define FAULT_FLAG_NONLINEAR 0x02    /* Fault was via a nonlinear mapping */
-> >> +#define FAULT_FLAG_RETRY     0x04    /* Retry major fault */
-> >>
-> >>
-> >>  /*
-> >> @@ -690,6 +691,7 @@ static inline int page_mapped(struct page *page)
-> >>
-> >>  #define VM_FAULT_MINOR       0 /* For backwards compat. Remove me quickly. */
-> >>
-> >> +#define VM_FAULT_RETRY       0x0010
-> >>  #define VM_FAULT_OOM 0x0001
-> >>  #define VM_FAULT_SIGBUS      0x0002
-> >>  #define VM_FAULT_MAJOR       0x0004
-> >
-> > Why not append VM_FAULT_RETRY here, and indent the _OOM line?
-> >
-> >> diff --git a/mm/filemap.c b/mm/filemap.c
-> >> index f3e5f89..6eb7c36 100644
-> >> --- a/mm/filemap.c
-> >> +++ b/mm/filemap.c
-> >> @@ -714,6 +714,58 @@ repeat:
-> >>  EXPORT_SYMBOL(find_lock_page);
-> >>
-> >>  /**
-> >> + * find_lock_page_retry - locate, pin and lock a pagecache page
-> >> + * @mapping: the address_space to search
-> >> + * @offset: the page index
-> >> + * @vma: vma in which the fault was taken
-> >> + * @ppage: zero if page not present, otherwise point to the page in pagecache
-> >> + * @retry: 1 indicate caller tolerate a retry.
-> >> + *
-> >> + * If retry flag is on, and page is already locked by someone else, return
-> >> + * a hint of retry and leave *ppage untouched.
-> >> + *
-> >> + * Return *ppage==NULL if page is not in pagecache. Otherwise return *ppage
-> >> + * points to the page in the pagecache with ret=VM_FAULT_RETRY indicate a
-> >> + * hint to caller for retry, or ret=0 which means page is succefully
-> >> + * locked.
-> >> + */
-> >> +unsigned find_lock_page_retry(struct address_space *mapping, pgoff_t offset,
-> >> +                             struct vm_area_struct *vma, struct page **ppage,
-> >> +                             int retry)
-> >> +{
-> >> +     unsigned int ret = 0;
-> >> +     struct page *page;
-> >> +
-> >> +repeat:
-> >> +     page = find_get_page(mapping, offset);
-> >> +     if (page) {
-> >> +             if (!retry)
-> >> +                     lock_page(page);
-> >> +             else {
-> >> +                     if (!trylock_page(page)) {
-> >> +                             struct mm_struct *mm = vma->vm_mm;
-> >> +
-> >> +                             up_read(&mm->mmap_sem);
-> >> +                             wait_on_page_locked(page);
-> >> +                             down_read(&mm->mmap_sem);
-> >> +
-> >> +                             page_cache_release(page);
-> >> +                             return VM_FAULT_RETRY;
-> >> +                     }
-> >> +             }
-> >> +             if (unlikely(page->mapping != mapping)) {
-> >> +                     unlock_page(page);
-> >> +                     page_cache_release(page);
-> >> +                     goto repeat;
-> >> +             }
-> >> +             VM_BUG_ON(page->index != offset);
-> >> +     }
-> >> +     *ppage = page;
-> >> +     return ret;
-> >> +}
-> >> +EXPORT_SYMBOL(find_lock_page_retry);
-> >> +
-> >> +/**
-> >>   * find_or_create_page - locate or add a pagecache page
-> >>   * @mapping: the page's address_space
-> >>   * @index: the page's index into the mapping
-> >> @@ -1444,6 +1496,8 @@ int filemap_fault(struct vm_area_struct *vma, struct vm_
-> >>       pgoff_t size;
-> >>       int did_readaround = 0;
-> >>       int ret = 0;
-> >> +     int retry_flag = vmf->flags & FAULT_FLAG_RETRY;
-> >> +     int retry_ret;
-> >>
-> >>       size = (i_size_read(inode) + PAGE_CACHE_SIZE - 1) >> PAGE_CACHE_SHIFT;
-> >>       if (vmf->pgoff >= size)
-> >> @@ -1458,6 +1512,7 @@ int filemap_fault(struct vm_area_struct *vma, struct vm_
-> >>        */
-> >>  retry_find:
-> >>       page = find_lock_page(mapping, vmf->pgoff);
-> >> +
-> >>       /*
-> >>        * For sequential accesses, we use the generic readahead logic.
-> >>        */
-> >> @@ -1465,7 +1520,13 @@ retry_find:
-> >>               if (!page) {
-> >>                       page_cache_sync_readahead(mapping, ra, file,
-> >>                                                          vmf->pgoff, 1);
-> >> -                     page = find_lock_page(mapping, vmf->pgoff);
-> >> +                     retry_ret = find_lock_page_retry(mapping, vmf->pgoff,
-> >> +                                             vma, &page, retry_flag);
-> >> +                     if (retry_ret == VM_FAULT_RETRY) {
-> >> +                             /* counteract the followed retry hit */
-> >> +                             ra->mmap_miss++;
-> >
-> > Please don't relocate the comment...because that will break my
-> > following patches(mainly Linus' filemap cleanups), which will
-> > _heavily_ rework these chunks anyway. And make a hard time for Andrew
-> > to merge them.
+On Wednesday 08 April 2009 10:12:50 Vlad Yasevich wrote:
+> Ed Tomlinson wrote:
+> > Hi,
+> > 
+> > I got tired of rebuilding the drm and radeon modules to support my R600 card so I decided to
+> > try .30-rc.  It lasted about 30 minutes then I got the exception below when start a freenet node.
+> > 
+> > The ipv6 interface is supplied by www.sixxs.org but my tunnel broker is currently down so aside
+> > from the local link address on eth0 (and locl) there are no ipv6 intefaces on my box.
+> > 
+> > Hope this helps,
+> > Ed Tomlinson
+> > 
+> > [ 1982.214334] BUG: unable to handle kernel NULL pointer dereference at 0000000000000062
+> > [ 1982.215132] IP: [<ffffffff805d7d61>] ipv4_rcv_saddr_equal+0x61/0x70
+> > [ 1982.215132] PGD 1495d6067 PUD 0
+> > [ 1982.215132] Oops: 0000 [#1] PREEMPT SMP
+> > [ 1982.215132] last sysfs file: /sys/devices/pci0000:00/0000:00:01.0/0000:01:05.0/enable
+> > [ 1982.215132] CPU 1
+> > [ 1982.215132] Modules linked in: btrfs zlib_deflate zlib_inflate crc32c libcrc32c radeon drm bridge stp rfcomm llc bnep l2cap bluet]
+> > [ 1982.338205] Pid: 21779, comm: java Not tainted 2.6.30-rc1-crc #1 System Product Name
+> > [ 1982.338205] RIP: 0010:[<ffffffff805d7d61>]  [<ffffffff805d7d61>] ipv4_rcv_saddr_equal+0x61/0x70
+> > [ 1982.338205] RSP: 0018:ffff880122d21d28  EFLAGS: 00010246
+> > [ 1982.338205] RAX: 0000000000000000 RBX: 0000000000001000 RCX: 00000000000e1000
+> > [ 1982.338205] RDX: 0000000000000000 RSI: ffff8801250da840 RDI: ffff880147cf8000
+> > [ 1982.338205] RBP: ffff880122d21d38 R08: 0000000000000000 R09: 000000000100007f
+> > [ 1982.338205] R10: ffff88015f4a85c8 R11: 0000000000000001 R12: ffff8801250da840
+> > [ 1982.338205] R13: ffff8801250da8d8 R14: 0000000000000000 R15: ffff880147cf8000
+> > [ 1982.338205] FS:  00007f2da29f6950(0000) GS:ffff880028059000(0000) knlGS:0000000000000000
+> > [ 1982.338205] CS:  0010 DS: 0000 ES: 0000 CR0: 0000000080050033
+> > [ 1982.338205] CR2: 0000000000000062 CR3: 000000013f1f1000 CR4: 00000000000006e0
+> > [ 1982.338205] DR0: 0000000000000000 DR1: 0000000000000000 DR2: 0000000000000000
+> > [ 1982.338205] DR3: 0000000000000000 DR6: 00000000ffff0ff0 DR7: 0000000000000400
+> > [ 1982.338205] Process java (pid: 21779, threadinfo ffff880122d20000, task ffff8801310ec4a0)
+> > [ 1982.840593] Stack:
+> > [ 1982.840593]  ffff880122d21d58 0000000057ae6420 ffff880122d21d98 ffffffffa033847b
+> > [ 1982.847599]  0000000000007918 00000000805bafe5 ffff880147cf85a8 00000000ffffffff
+> > [ 1982.847599]  0000000057ae6420 ffff8801250da858 ffff880147cf8000 ffff88015f279180
+> > [ 1982.847599] Call Trace:
+> > [ 1982.847599]  [<ffffffffa033847b>] ipv6_rcv_saddr_equal+0x1bb/0x250 [ipv6]
+> > [ 1982.847599]  [<ffffffffa03505a8>] inet6_csk_bind_conflict+0x88/0xd0 [ipv6]
+> > [ 1982.847599]  [<ffffffff805bb18e>] inet_csk_get_port+0x1ee/0x400
+> > [ 1982.847599]  [<ffffffffa0319b7f>] inet6_bind+0x1cf/0x3a0 [ipv6]
+> > [ 1982.847599]  [<ffffffff8056d17c>] ? sockfd_lookup_light+0x3c/0xd0
+> > [ 1982.847599]  [<ffffffff8056ed49>] sys_bind+0x89/0x100
+> > [ 1982.847599]  [<ffffffff80613ea2>] ? trace_hardirqs_on_thunk+0x3a/0x3c
+> > [ 1982.847599]  [<ffffffff8020bf9b>] system_call_fastpath+0x16/0x1b
+> > [ 1982.847599] Code: 39 c2 0f 94 c0 0f b6 d0 eb 05 ba 01 00 00 00 89 d0 48 8b 55 f8 65 48 33 14 25 28 00 00 00 75 14 c9 c3 48 8b 86
+> > [ 1982.847599] RIP  [<ffffffff805d7d61>] ipv4_rcv_saddr_equal+0x61/0x70
+> > [ 1982.847599]  RSP <ffff880122d21d28>
+> > [ 1982.847599] CR2: 0000000000000062
+> > [ 1983.173477] ---[ end trace a12cea0f8928336a ]---
+> > [ 1983.187700] Kernel panic - not syncing: Fatal exception in interrupt
+> > [ 1983.207275] Pid: 21779, comm: java Tainted: G      D    2.6.30-rc1-crc #1
+> > [ 1983.228189] Call Trace:
+> > [ 1983.235712]  [<ffffffff8060f5a1>] panic+0xc1/0x190
+> > [ 1983.250470]  [<ffffffff8020c96d>] ? restore_args+0x0/0x30
+> > [ 1983.267104]  [<ffffffff80252fcb>] ? oops_exit+0x3b/0x60
+> > [ 1983.283201]  [<ffffffff80616046>] oops_end+0xb6/0xd0
+> > [ 1983.283205]  [<ffffffff80230970>] no_context+0x110/0x290
+> > [ 1983.283208]  [<ffffffff80230c7d>] __bad_area_nosemaphore+0x18d/0x230
+> > [ 1983.283212]  [<ffffffff80618129>] ? sub_preempt_count+0x69/0x70
+> > [ 1983.283216]  [<ffffffff8061468a>] ? _spin_lock_irqsave+0x3a/0x70
+> > 
 > 
-> then how you force the 80 character lines?
+> Thanks for letting us know.  I am testing a patch right now.  Give it a try
+> when you get a chance.  It it works correctly, I'll resubmit with attribution.
 
-The above line will be removed by my following patch, and...
+I have been running a script to start and stop freenet every 10 minutes.  Its been going
+over 10 hours without problem.  Think this has fixed the problem.
 
-> >
-> >> +                             return retry_ret;
-> >> +                     }
-> >
-> >>                       if (!page)
-> >>                               goto no_cached_page;
-> >>               }
-> >> @@ -1504,7 +1565,14 @@ retry_find:
-> >>                               start = vmf->pgoff - ra_pages / 2;
-> >>                       do_page_cache_readahead(mapping, file, start, ra_pages);
-> >>               }
-> >> -             page = find_lock_page(mapping, vmf->pgoff);
-> >> +retry_find_retry:
-> >> +             retry_ret = find_lock_page_retry(mapping, vmf->pgoff,
-> >> +                             vma, &page, retry_flag);
-> >> +             if (retry_ret == VM_FAULT_RETRY) {
-> >> +                     /* counteract the followed retry hit */
-> >> +                     ra->mmap_miss++;
-> >
+ACK Ed Tomlinson <edt@aei.ca>
 
-...this line can have the comment within 80 column, and will be kept
-by my patch.
-
-Thanks,
-Fengguang
-
-
-> > ditto
-> >
-> > Thanks,
-> > Fengguang
-> >
-> >> +                     return retry_ret;
-> >> +             }
-> >>               if (!page)
-> >>                       goto no_cached_page;
-> >>       }
-> >> @@ -1548,7 +1616,7 @@ no_cached_page:
-> >>        * meantime, we'll just come back here and read it again.
-> >>        */
-> >>       if (error >= 0)
-> >> -             goto retry_find;
-> >> +             goto retry_find_retry;
-> >>
-> >>       /*
-> >>        * An error return from page_cache_read can result if the
-> >> diff --git a/mm/memory.c b/mm/memory.c
-> >> index 164951c..5e215c9 100644
-> >> --- a/mm/memory.c
-> >> +++ b/mm/memory.c
-> >> @@ -2467,6 +2467,13 @@ static int __do_fault(struct mm_struct *mm, struct vm_a
-> >>       vmf.page = NULL;
-> >>
-> >>       ret = vma->vm_ops->fault(vma, &vmf);
-> >> +
-> >> +     /* page may be available, but we have to restart the process
-> >> +      * because mmap_sem was dropped during the ->fault
-> >> +      */
-> >> +     if (ret & VM_FAULT_RETRY)
-> >> +             return ret;
-> >> +
-> >>       if (unlikely(ret & (VM_FAULT_ERROR | VM_FAULT_NOPAGE)))
-> >>               return ret;
-> >>
-> >> @@ -2611,8 +2618,10 @@ static int do_linear_fault(struct mm_struct *mm, struct
-> >>  {
-> >>       pgoff_t pgoff = (((address & PAGE_MASK)
-> >>                       - vma->vm_start) >> PAGE_SHIFT) + vma->vm_pgoff;
-> >> -     unsigned int flags = (write_access ? FAULT_FLAG_WRITE : 0);
-> >> +     int write = write_access & ~FAULT_FLAG_RETRY;
-> >> +     unsigned int flags = (write ? FAULT_FLAG_WRITE : 0);
-> >>
-> >> +     flags |= (write_access & FAULT_FLAG_RETRY);
-> >>       pte_unmap(page_table);
-> >>       return __do_fault(mm, vma, address, pmd, pgoff, flags, orig_pte);
-> >>  }
-> >> @@ -2726,26 +2735,32 @@ int handle_mm_fault(struct mm_struct *mm, struct vm_ar
-> >>       pud_t *pud;
-> >>       pmd_t *pmd;
-> >>       pte_t *pte;
-> >> +     int ret;
-> >>
-> >>       __set_current_state(TASK_RUNNING);
-> >>
-> >> -     count_vm_event(PGFAULT);
-> >> -
-> >> -     if (unlikely(is_vm_hugetlb_page(vma)))
-> >> -             return hugetlb_fault(mm, vma, address, write_access);
-> >> +     if (unlikely(is_vm_hugetlb_page(vma))) {
-> >> +             ret = hugetlb_fault(mm, vma, address, write_access);
-> >> +             goto out;
-> >> +     }
-> >>
-> >> +     ret = VM_FAULT_OOM;
-> >>       pgd = pgd_offset(mm, address);
-> >>       pud = pud_alloc(mm, pgd, address);
-> >>       if (!pud)
-> >> -             return VM_FAULT_OOM;
-> >> +             goto out;
-> >>       pmd = pmd_alloc(mm, pud, address);
-> >>       if (!pmd)
-> >> -             return VM_FAULT_OOM;
-> >> +             goto out;
-> >>       pte = pte_alloc_map(mm, pmd, address);
-> >>       if (!pte)
-> >> -             return VM_FAULT_OOM;
-> >> +             goto out;
-> >>
-> >> -     return handle_pte_fault(mm, vma, address, pte, pmd, write_access);
-> >> +     ret = handle_pte_fault(mm, vma, address, pte, pmd, write_access);
-> >> +out:
-> >> +     if (!(ret & VM_FAULT_RETRY))
-> >> +             count_vm_event(PGFAULT);
-> >> +     return ret;
-> >>  }
-> >>
-> >>  #ifndef __PAGETABLE_PUD_FOLDED
-> >
+Thanks
+Ed
