@@ -1,202 +1,83 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762150AbZDJQGJ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761959AbZDJQKS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762150AbZDJQGJ (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 10 Apr 2009 12:06:09 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759355AbZDJQFx
+	id S1761959AbZDJQKS (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 10 Apr 2009 12:10:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759385AbZDJQKA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 10 Apr 2009 12:05:53 -0400
-Received: from bc.sympatico.ca ([209.226.175.184]:60530 "EHLO
-	tomts22-srv.bellnexxia.net" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1756294AbZDJQFw (ORCPT
+	Fri, 10 Apr 2009 12:10:00 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:45529 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1758122AbZDJQKA (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 10 Apr 2009 12:05:52 -0400
-X-IronPort-Anti-Spam-Filtered: true
-X-IronPort-Anti-Spam-Result: AukFABsK30lMQW1W/2dsb2JhbACBUclygjyBPwY
-Date: Fri, 10 Apr 2009 12:05:48 -0400
-From: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
-To: Masami Hiramatsu <mhiramat@redhat.com>
-Cc: mingo@redhat.com, hpa@zytor.com, linux-kernel@vger.kernel.org,
-       torvalds@linux-foundation.org, ananth@in.ibm.com, garyhade@us.ibm.com,
-       akpm@linux-foundation.org, tglx@linutronix.de,
-       systemtap@sources.redhat.com, mingo@elte.hu,
-       linux-tip-commits@vger.kernel.org
-Subject: Re: [tip:x86/urgent] x86: fix set_fixmap to use phys_addr_t
-Message-ID: <20090410160547.GA31132@Krystal>
-References: <49DE3695.6040800@redhat.com> <tip-189cdc2b41fce3a780a6f3aa963cc4e8114aec6b@git.kernel.org> <49DF63C3.7000406@redhat.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-In-Reply-To: <49DF63C3.7000406@redhat.com>
-X-Editor: vi
-X-Info: http://krystal.dyndns.org:8080
-X-Operating-System: Linux/2.6.21.3-grsec (i686)
-X-Uptime: 12:02:32 up 41 days, 12:28,  2 users,  load average: 0.22, 0.30,
-	0.22
-User-Agent: Mutt/1.5.18 (2008-05-17)
+	Fri, 10 Apr 2009 12:10:00 -0400
+Date: Fri, 10 Apr 2009 09:01:18 -0700 (PDT)
+From: Linus Torvalds <torvalds@linux-foundation.org>
+X-X-Sender: torvalds@localhost.localdomain
+To: Wu Fengguang <fengguang.wu@intel.com>
+cc: Andrew Morton <akpm@linux-foundation.org>, Ying Han <yinghan@google.com>,
+       "linux-mm@kvack.org" <linux-mm@kvack.org>,
+       linux-kernel <linux-kernel@vger.kernel.org>,
+       Ingo Molnar <mingo@elte.hu>, Mike Waychison <mikew@google.com>,
+       Rohit Seth <rohitseth@google.com>, Hugh Dickins <hugh@veritas.com>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>,
+       "H. Peter Anvin" <hpa@zytor.com>,
+       =?ISO-8859-15?Q?T=F6r=F6k_Edwin?= <edwintorok@gmail.com>,
+       Lee Schermerhorn <lee.schermerhorn@hp.com>,
+       Nick Piggin <npiggin@suse.de>
+Subject: Re: [PATCH][1/2]page_fault retry with NOPAGE_RETRY
+In-Reply-To: <20090410073042.GB21149@localhost>
+Message-ID: <alpine.LFD.2.00.0904100835150.4583@localhost.localdomain>
+References: <604427e00904081302m7b29c538u7781cd8f4dd576f2@mail.gmail.com> <20090409230205.310c68a7.akpm@linux-foundation.org> <20090410073042.GB21149@localhost>
+User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-* Masami Hiramatsu (mhiramat@redhat.com) wrote:
-> Masami Hiramatsu wrote:
-> > Commit-ID:  189cdc2b41fce3a780a6f3aa963cc4e8114aec6b
-> > Gitweb:     http://git.kernel.org/tip/189cdc2b41fce3a780a6f3aa963cc4e8114aec6b
-> > Author:     Masami Hiramatsu <mhiramat@redhat.com>
-> > AuthorDate: Thu, 9 Apr 2009 10:55:33 -0700
-> > Committer:  Ingo Molnar <mingo@elte.hu>
-> > CommitDate: Fri, 10 Apr 2009 15:52:59 +0200
+
+
+On Fri, 10 Apr 2009, Wu Fengguang wrote:
+
+> On Fri, Apr 10, 2009 at 02:02:05PM +0800, Andrew Morton wrote:
+> 
+> > Can we please redo this as:
 > > 
-> > x86: fix set_fixmap to use phys_addr_t
 > > 
-> > Impact: fix kprobes crash on 32-bit with RAM above 4G
+> > 	int write;
+> > 	unsigned int flags;
 > > 
-> > Use phys_addr_t for receiving a physical address argument
-> > instead of unsigned long. This allows fixmap to handle
-> > pages higher than 4GB on x86-32.
-> > 
-> > Signed-off-by: Masami Hiramatsu <mhiramat@redhat.com>
-> > Acked-by: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
+> > 	/*
+> > 	 * Big fat comment explaining the next three lines goes here
+> > 	 */
 > 
-> I thought I had to update ioremap.c too...
-> Anyway, here is the ioremap.c update. If you think it is useful,
-> please merge it.
-> 
-> Thank you,
-> ----
-> 
-> x86: fix early_ioremap and early_set_fixmap to handle over 4G pages
-> 
-> From: Masami Hiramatsu <mhiramat@redhat.com>
-> 
-> Impact: Allow early_ioremap to handle over 4G pages
-> 
-> Use phys_addr_t and resource_size_t for receiving a physical
-> address argument instead of unsigned long in early_set_fixmap
-> and early_ioremap. This allows early_ioremap to handle
-> pages higher than 4GB on x86-32 with PAE.
-> 
-> Signed-off-by: Masami Hiramatsu <mhiramat@redhat.com>
-> Cc: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
-> Cc: Ingo Molnar <mingo@elte.hu>
-> ---
-> 
->  arch/x86/include/asm/io.h |    6 ++++--
->  arch/x86/mm/ioremap.c     |   23 +++++++++++++----------
->  2 files changed, 17 insertions(+), 12 deletions(-)
-> 
-> 
-> diff --git a/arch/x86/include/asm/io.h b/arch/x86/include/asm/io.h
-> index e5383e3..7373932 100644
-> --- a/arch/x86/include/asm/io.h
-> +++ b/arch/x86/include/asm/io.h
-> @@ -193,8 +193,10 @@ extern void __iomem *ioremap_wc(resource_size_t offset, unsigned long size);
->   */
->  extern void early_ioremap_init(void);
->  extern void early_ioremap_reset(void);
-> -extern void __iomem *early_ioremap(unsigned long offset, unsigned long size);
-> -extern void __iomem *early_memremap(unsigned long offset, unsigned long size);
-> +extern void __iomem *early_ioremap(resource_size_t phys_addr,
-> +				   unsigned long size);
-> +extern void __iomem *early_memremap(resource_size_t phys_addr,
-> +				    unsigned long size);
+> Basically it's doing a
+>         (is_write_access  | FAULT_FLAG_RETRY) =>
+>         (FAULT_FLAG_WRITE | FAULT_FLAG_RETRY)
+> by extracting the bool part:
+> > 	write = write_access & ~FAULT_FLAG_RETRY;
+> convert bool to a bit flag:
+> > 	unsigned int flags = (write ? FAULT_FLAG_WRITE : 0);
 
+The point is, we shouldn't do that. 
 
-Nitpick : those second lines are not aligned with each other. The rest
-has my
+Your code is confused, because it uses "write_access" as if it had the old 
+behaviour (boolean to say "write") _plus_ the new behavior (bitmask to say 
+"retry"), and that's just wrong.
 
-Acked-by: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
+Just get rid of "write_access" entirely, and switch it over to something 
+that is a pure bitmask.
 
-Thanks !
+Yes, it means a couple of new preliminary patches that switch all callers 
+of handle_mm_fault() over to using the VM_FLAGS, but that's not a big 
+deal.
 
-Mathieu
+I'm following up this email with two _example_ patches. They are untested, 
+but they look sane. I'd like the series to _start_ with these, and then 
+you can pass FAULT_FLAGS_WRITE | FAULT_FLAGS_RETRY down to 
+handle_mm_fault() cleanly.
 
->  extern void early_iounmap(void __iomem *addr, unsigned long size);
-> 
->  #define IO_SPACE_LIMIT 0xffff
-> diff --git a/arch/x86/mm/ioremap.c b/arch/x86/mm/ioremap.c
-> index 0dfa09d..09daebf 100644
-> --- a/arch/x86/mm/ioremap.c
-> +++ b/arch/x86/mm/ioremap.c
-> @@ -547,7 +547,7 @@ void __init early_ioremap_reset(void)
->  }
-> 
->  static void __init __early_set_fixmap(enum fixed_addresses idx,
-> -				   unsigned long phys, pgprot_t flags)
-> +				      phys_addr_t phys, pgprot_t flags)
->  {
->  	unsigned long addr = __fix_to_virt(idx);
->  	pte_t *pte;
-> @@ -566,7 +566,7 @@ static void __init __early_set_fixmap(enum fixed_addresses idx,
->  }
-> 
->  static inline void __init early_set_fixmap(enum fixed_addresses idx,
-> -					   unsigned long phys, pgprot_t prot)
-> +					   phys_addr_t phys, pgprot_t prot)
->  {
->  	if (after_paging_init)
->  		__set_fixmap(idx, phys, prot);
-> @@ -607,9 +607,10 @@ static int __init check_early_ioremap_leak(void)
->  late_initcall(check_early_ioremap_leak);
-> 
->  static void __init __iomem *
-> -__early_ioremap(unsigned long phys_addr, unsigned long size, pgprot_t prot)
-> +__early_ioremap(resource_size_t phys_addr, unsigned long size, pgprot_t prot)
->  {
-> -	unsigned long offset, last_addr;
-> +	unsigned long offset;
-> +	resource_size_t last_addr;
->  	unsigned int nrpages;
->  	enum fixed_addresses idx0, idx;
->  	int i, slot;
-> @@ -625,15 +626,15 @@ __early_ioremap(unsigned long phys_addr, unsigned long size, pgprot_t prot)
->  	}
-> 
->  	if (slot < 0) {
-> -		printk(KERN_INFO "early_iomap(%08lx, %08lx) not found slot\n",
-> -			 phys_addr, size);
-> +		printk(KERN_INFO "early_iomap(%08llx, %08lx) not found slot\n",
-> +			 (u64)phys_addr, size);
->  		WARN_ON(1);
->  		return NULL;
->  	}
-> 
->  	if (early_ioremap_debug) {
-> -		printk(KERN_INFO "early_ioremap(%08lx, %08lx) [%d] => ",
-> -		       phys_addr, size, slot);
-> +		printk(KERN_INFO "early_ioremap(%08llx, %08lx) [%d] => ",
-> +		       (u64)phys_addr, size, slot);
->  		dump_stack();
->  	}
-> 
-> @@ -680,13 +681,15 @@ __early_ioremap(unsigned long phys_addr, unsigned long size, pgprot_t prot)
->  }
-> 
->  /* Remap an IO device */
-> -void __init __iomem *early_ioremap(unsigned long phys_addr, unsigned long size)
-> +void __init __iomem *
-> +early_ioremap(resource_size_t phys_addr, unsigned long size)
->  {
->  	return __early_ioremap(phys_addr, size, PAGE_KERNEL_IO);
->  }
-> 
->  /* Remap memory */
-> -void __init __iomem *early_memremap(unsigned long phys_addr, unsigned long size)
-> +void __init __iomem *
-> +early_memremap(resource_size_t phys_addr, unsigned long size)
->  {
->  	return __early_ioremap(phys_addr, size, PAGE_KERNEL);
->  }
-> -- 
-> Masami Hiramatsu
-> 
-> Software Engineer
-> Hitachi Computer Products (America) Inc.
-> Software Solutions Division
-> 
-> e-mail: mhiramat@redhat.com
-> 
+Hmm? Note the _untested_ part on the patches to follow. It was done very 
+mechanically, and the patches look sane, but .. !!!
 
--- 
-Mathieu Desnoyers
-OpenPGP key fingerprint: 8CD5 52C3 8E3C 4140 715F  BA06 3F25 A8FE 3BAE 9A68
+			Linus
