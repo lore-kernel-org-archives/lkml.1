@@ -1,75 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S939363AbZDJSK6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S939335AbZDJSNx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S939363AbZDJSK6 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 10 Apr 2009 14:10:58 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S935751AbZDJSKq
+	id S939335AbZDJSNx (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 10 Apr 2009 14:13:53 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933875AbZDJSNm
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 10 Apr 2009 14:10:46 -0400
-Received: from smtp-out.google.com ([216.239.33.17]:47789 "EHLO
-	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1760084AbZDJSKp (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 10 Apr 2009 14:10:45 -0400
-DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
-	h=mime-version:in-reply-to:references:date:message-id:subject:from:to:
-	cc:content-type:content-transfer-encoding:x-system-of-record;
-	b=fmnhYC5XMNwhGbLrSE7B9MJDdsQ/XKNCvdGMRnXWk4UGa+jrYbXThpO5CiUbZhhzp
-	Q6fIeavIgnNL5r4ulsiLQ==
+	Fri, 10 Apr 2009 14:13:42 -0400
+Received: from www.tglx.de ([62.245.132.106]:42636 "EHLO www.tglx.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1765864AbZDJSNm (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 10 Apr 2009 14:13:42 -0400
+Date: Fri, 10 Apr 2009 20:11:46 +0200 (CEST)
+From: Thomas Gleixner <tglx@linutronix.de>
+To: Jaswinder Singh Rajput <jaswinder@kernel.org>
+cc: Ingo Molnar <mingo@elte.hu>, x86 maintainers <x86@kernel.org>,
+       LKML <linux-kernel@vger.kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Andi Kleen <andi@firstfloor.org>
+Subject: Re: [git-pull -tip] x86: declaration patches
+In-Reply-To: <1239384111.3169.13.camel@ht.satnam>
+Message-ID: <alpine.LFD.2.00.0904102010220.21577@localhost.localdomain>
+References: <1239381184.23116.5.camel@ht.satnam>  <alpine.LFD.2.00.0904101849060.21577@localhost.localdomain> <1239384111.3169.13.camel@ht.satnam>
+User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
 MIME-Version: 1.0
-In-Reply-To: <604427e00904091359t3e068ffm1868d164824fb575@mail.gmail.com>
-References: <1238715399-22172-1-git-send-email-jack@suse.cz>
-	 <a4a7801d0904031738h68bf6218lfd3349ca50f46642@mail.gmail.com>
-	 <20090406102329.GD31189@duck.suse.cz>
-	 <20090409133030.a7ea94c7.akpm@linux-foundation.org>
-	 <604427e00904091359t3e068ffm1868d164824fb575@mail.gmail.com>
-Date: Fri, 10 Apr 2009 11:10:41 -0700
-Message-ID: <604427e00904101110j68e0bd31t885e5d60b8842d80@mail.gmail.com>
-Subject: Re: [PATCH] ext2: Fix data corruption for racing writes
-From: Ying Han <yinghan@google.com>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: Jan Kara <jack@suse.cz>, yinghan@gmail.com, linux-ext4@vger.kernel.org,
-       linux-kernel@vger.kernel.org, nickpiggin@yahoo.com.au
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
-X-System-Of-Record: true
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Apr 9, 2009 at 1:59 PM, Ying Han <yinghan@google.com> wrote:
-> On Thu, Apr 9, 2009 at 1:30 PM, Andrew Morton <akpm@linux-foundation.org> wrote:
->> On Mon, 6 Apr 2009 12:23:29 +0200
->> Jan Kara <jack@suse.cz> wrote:
->>
->>> >
->>> > I tried this patch and seems i got deadlock on the truncate_mutex.
->>> > Here is the message after enabling lockdep. I pasted the same message
->>> > on the origianal thread.
->>>
->>> ...
->>>
->>>   I don't think this is a deadlock (or is the machine hung?). The thread
->>> was just waiting for a long time. I'd think that you'll occasionally get
->>> exactly the same message even without my patch if you stress the machine
->>> like you do.
->>>
->>
->> Well, it's easy to tell the difference
->>
->> deadlock: system never recovers
->> long-sucky-delay: system eventually recovers.
->>
->> Which was it??
-> Guess i have to retest it. I didn't wait long enough to see what
-> happened on the machine. However, i do see the machine got rebooted
-> later, but i am not sure what is the reason it is got reboot.
->
-> I will rerun the patch and keep an eye on it this time.
+On Fri, 10 Apr 2009, Jaswinder Singh Rajput wrote:
 
-Ok, i rerun the patch and i don't see the message poping this time and
-the machine is up healthy.
+> On Fri, 2009-04-10 at 18:51 +0200, Thomas Gleixner wrote:
+> > On Fri, 10 Apr 2009, Jaswinder Singh Rajput wrote:
+> > >  #endif /* CONFIG_X86_32 */
+> > > diff --git a/arch/x86/kernel/apic/io_apic.c b/arch/x86/kernel/apic/io_apic.c
+> > > index 8499000..d1bac67 100644
+> > > --- a/arch/x86/kernel/apic/io_apic.c
+> > > +++ b/arch/x86/kernel/apic/io_apic.c
+> > > @@ -59,6 +59,7 @@
+> > >  #include <asm/setup.h>
+> > >  #include <asm/irq_remapping.h>
+> > >  #include <asm/hpet.h>
+> > > +#include <asm/hw_irq.h>		/* smp_irq_move_cleanup_interrupt */
+> > 
+> >   Can we please avoid these useless comments all over the place ?
+> > 
+> 
+> I kept these intentionally because few of these declarations I have
+> already fixed earlier.
+> For example during process.c unification work developers forget to
+> include and fix syscalls.h :
 
->
-> --Ying
->>
->
+And how does such a comment help not to forget anything ? It's useless
+information and just irritating to read like all end of line comments.
+
+Thanks,
+
+	tglx
