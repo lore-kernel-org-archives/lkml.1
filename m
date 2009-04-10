@@ -1,30 +1,30 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934571AbZDJCfv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934900AbZDJCgZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934571AbZDJCfv (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 9 Apr 2009 22:35:51 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933570AbZDJCeq
+	id S934900AbZDJCgZ (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 9 Apr 2009 22:36:25 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934012AbZDJCfI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 9 Apr 2009 22:34:46 -0400
-Received: from mail-fx0-f158.google.com ([209.85.220.158]:58520 "EHLO
-	mail-fx0-f158.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S932986AbZDJCep (ORCPT
+	Thu, 9 Apr 2009 22:35:08 -0400
+Received: from fg-out-1718.google.com ([72.14.220.155]:51909 "EHLO
+	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S933997AbZDJCfG (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 9 Apr 2009 22:34:45 -0400
+	Thu, 9 Apr 2009 22:35:06 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
         h=date:from:to:cc:subject:message-id:mime-version:content-type
          :content-disposition:user-agent;
-        b=Qk7sORUmcgwf8tMU0WoFHKBai/eOmkBGT0JesvDgtCooqURJ5UleoSzPOXSRcWnH2o
-         R4mRHIPYTTaz3TOrSAPrhIo7daJP0CH48bQZxkXNCAsotL/HFeBiSqJEOROvHPW9RK0W
-         x+Lyhwj0xrpatv+XcZmI5TeK3XnLaECDlpmec=
-Date: Fri, 10 Apr 2009 06:34:48 +0400
+        b=b2Iga1bowJJJ0vLpao1Ot2nsgvx7hTvCI8xsAowk181RvrcDlAUsQdbEljx+BjRH+f
+         AcZSSj6gzZgcRq7FdP3zjG2aAQZFafuL8VjURlfGVOOwt49rtogcUBvs2A59cIA8dfYs
+         Gv2RZEjHuYNfqF4byvWvY0f98wQjojky9Xpsg=
+Date: Fri, 10 Apr 2009 06:35:08 +0400
 From: Alexey Dobriyan <adobriyan@gmail.com>
 To: akpm@linux-foundation.org, containers@lists.linux-foundation.org
 Cc: xemul@parallels.com, serue@us.ibm.com, dave@linux.vnet.ibm.com,
        mingo@elte.hu, orenl@cs.columbia.edu, hch@infradead.org,
        torvalds@linux-foundation.org, linux-kernel@vger.kernel.org
-Subject: [PATCH 07/30] netns: extract net_create()
-Message-ID: <20090410023448.GH27788@x200.localdomain>
+Subject: [PATCH 08/30] i386: ifdef out struct thread_struct::fs
+Message-ID: <20090410023508.GI27788@x200.localdomain>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
@@ -33,83 +33,38 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-net_create() will be used by C/R code to create fresh netns on restart.
+After commit 464d1a78fbf8cf6c7fd970e7b3e2db50a320ce28 aka
+"[PATCH] i386: Convert i386 PDA code to use %fs"
+%fs saved during context switch moved from thread_struct to pt_regs.
+
+Ifdef out it on i386.
+
+I don't understand why .fs (OK, .gs first) initializer was added, kernel
+clearly stopped touching it after the patch.
 
 Signed-off-by: Alexey Dobriyan <adobriyan@gmail.com>
 ---
 
- include/net/net_namespace.h |    1 +
- net/core/net_namespace.c    |   44 ++++++++++++++++++++------------------------
- 2 files changed, 21 insertions(+), 24 deletions(-)
+ arch/x86/include/asm/processor.h |    3 ++-
+ 1 file changed, 2 insertions(+), 1 deletion(-)
 
---- a/include/net/net_namespace.h
-+++ b/include/net/net_namespace.h
-@@ -107,6 +107,7 @@ static inline struct net *copy_net_ns(unsigned long flags, struct net *net_ns)
- extern struct list_head net_namespace_list;
- 
- #ifdef CONFIG_NET_NS
-+struct net *net_create(void);
- extern void __put_net(struct net *net);
- 
- static inline struct net *get_net(struct net *net)
---- a/net/core/net_namespace.c
-+++ b/net/core/net_namespace.c
-@@ -115,38 +115,34 @@ static void net_free(struct net *net)
- 	kmem_cache_free(net_cachep, net);
+--- a/arch/x86/include/asm/processor.h
++++ b/arch/x86/include/asm/processor.h
+@@ -422,7 +422,9 @@ struct thread_struct {
+ 	unsigned short		gsindex;
+ #endif
+ 	unsigned long		ip;
++#ifdef CONFIG_X86_64
+ 	unsigned long		fs;
++#endif
+ 	unsigned long		gs;
+ 	/* Hardware debugging registers: */
+ 	unsigned long		debugreg0;
+@@ -868,7 +870,6 @@ static inline void spin_lock_prefetch(const void *x)
+ 	.vm86_info		= NULL,					  \
+ 	.sysenter_cs		= __KERNEL_CS,				  \
+ 	.io_bitmap_ptr		= NULL,					  \
+-	.fs			= __KERNEL_PERCPU,			  \
  }
  
--struct net *copy_net_ns(unsigned long flags, struct net *old_net)
-+struct net *net_create(void)
- {
--	struct net *new_net = NULL;
--	int err;
--
--	if (!(flags & CLONE_NEWNET))
--		return get_net(old_net);
--
--	err = -ENOMEM;
--	new_net = net_alloc();
--	if (!new_net)
--		goto out_err;
-+	struct net *net;
-+	int rv;
- 
-+	net = net_alloc();
-+	if (!net)
-+		return ERR_PTR(-ENOMEM);
- 	mutex_lock(&net_mutex);
--	err = setup_net(new_net);
--	if (!err) {
-+	rv = setup_net(net);
-+	if (rv == 0) {
- 		rtnl_lock();
--		list_add_tail(&new_net->list, &net_namespace_list);
-+		list_add_tail(&net->list, &net_namespace_list);
- 		rtnl_unlock();
- 	}
- 	mutex_unlock(&net_mutex);
-+	if (rv < 0) {
-+		net_free(net);
-+		return ERR_PTR(rv);
-+	}
-+	return net;
-+}
- 
--	if (err)
--		goto out_free;
--out:
--	return new_net;
--
--out_free:
--	net_free(new_net);
--out_err:
--	new_net = ERR_PTR(err);
--	goto out;
-+struct net *copy_net_ns(unsigned long flags, struct net *old_net)
-+{
-+	if (!(flags & CLONE_NEWNET))
-+		return get_net(old_net);
-+	return net_create();
- }
- 
- static void cleanup_net(struct work_struct *work)
+ /*
