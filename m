@@ -1,47 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934710AbZDJJxU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934069AbZDJJxr@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934710AbZDJJxU (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 10 Apr 2009 05:53:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755031AbZDJJxG
+	id S934069AbZDJJxr (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 10 Apr 2009 05:53:47 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934089AbZDJJxZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 10 Apr 2009 05:53:06 -0400
-Received: from rv-out-0506.google.com ([209.85.198.229]:23489 "EHLO
-	rv-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754600AbZDJJxD convert rfc822-to-8bit (ORCPT
+	Fri, 10 Apr 2009 05:53:25 -0400
+Received: from cassiel.sirena.org.uk ([80.68.93.111]:48351 "EHLO
+	cassiel.sirena.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S934919AbZDJJxW (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 10 Apr 2009 05:53:03 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:from:date:message-id:subject:to:cc:content-type
-         :content-transfer-encoding;
-        b=fZsufW5Ddt8DJzaozdSJvZcIEu16Vfd5Cuf64ZCh6Rp/UoW/ZdFxmQCH6oyH2MkAJS
-         tpyGZh+csWVxQxhZBgDWKvWtnOmfVwAPRCdT4D7hnpXhDPUVLMJ2ZjZn7wwfhyD3Oqrd
-         GMIP/KL28zMRi4FcbEkxCPHkZoblBz3X+F7XY=
-MIME-Version: 1.0
-From: Kim Kyuwon <chammoru@gmail.com>
-Date: Fri, 10 Apr 2009 18:52:47 +0900
-Message-ID: <4d34a0a70904100252j635a1ed6ydc402a79ea1a2ce8@mail.gmail.com>
-Subject: [PATCH 0/3] leds: leds-bd2802 fixes
-To: LKML <linux-kernel@vger.kernel.org>
-Cc: Richard Purdie <rpurdie@rpsys.net>,
-       =?EUC-KR?B?udqw5rnO?= <kyungmin.park@samsung.com>
-Content-Type: text/plain; charset=EUC-KR
-Content-Transfer-Encoding: 8BIT
+	Fri, 10 Apr 2009 05:53:22 -0400
+From: Mark Brown <broonie@opensource.wolfsonmicro.com>
+To: Dmitry Torokhov <dmitry.torokhov@gmail.com>,
+       Jiri Slaby <jirislaby@gmail.com>
+Cc: linux-input@vger.kernel.org, linux-kernel@vger.kernel.org,
+       Mark Brown <broonie@opensource.wolfsonmicro.com>
+Date: Fri, 10 Apr 2009 10:53:12 +0100
+Message-Id: <1239357192-27726-2-git-send-email-broonie@opensource.wolfsonmicro.com>
+X-Mailer: git-send-email 1.5.6.3
+In-Reply-To: <1239357192-27726-1-git-send-email-broonie@opensource.wolfsonmicro.com>
+References: <1239357192-27726-1-git-send-email-broonie@opensource.wolfsonmicro.com>
+X-SA-Exim-Connect-IP: 82.41.28.43
+X-SA-Exim-Mail-From: broonie@sirena.org.uk
+Subject: [PATCH] Input: Don't use IRQF_SAMPLE_RANDOM in wm97xx driver
+X-SA-Exim-Version: 4.2.1 (built Wed, 25 Jun 2008 17:14:11 +0000)
+X-SA-Exim-Scanned: Yes (on cassiel.sirena.org.uk)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi all,
+The input core will add entropy to the pool without this flag being
+used.
 
-It was nice that I could add my driver(leds-bd2802.c) to mainline.
+Signed-off-by: Mark Brown <broonie@opensource.wolfsonmicro.com>
+---
+ drivers/input/touchscreen/wm97xx-core.c |    3 +--
+ 1 files changed, 1 insertions(+), 2 deletions(-)
 
-I'm sending a few patches that fix some errors and add new features
-
-your comments appreciated.
-
- drivers/leds/leds-bd2802.c |   96 ++++++++++++++++++++++++++++++++++----------
- 1 files changed, 75 insertions(+), 21 deletions(-)
-
-Regards,
+diff --git a/drivers/input/touchscreen/wm97xx-core.c b/drivers/input/touchscreen/wm97xx-core.c
+index cec480b..69af838 100644
+--- a/drivers/input/touchscreen/wm97xx-core.c
++++ b/drivers/input/touchscreen/wm97xx-core.c
+@@ -370,8 +370,7 @@ static int wm97xx_init_pen_irq(struct wm97xx *wm)
+ 	 * provided. */
+ 	BUG_ON(!wm->mach_ops->irq_enable);
+ 
+-	if (request_irq(wm->pen_irq, wm97xx_pen_interrupt,
+-			IRQF_SHARED | IRQF_SAMPLE_RANDOM,
++	if (request_irq(wm->pen_irq, wm97xx_pen_interrupt, IRQF_SHARED,
+ 			"wm97xx-pen", wm)) {
+ 		dev_err(wm->dev,
+ 			"Failed to register pen down interrupt, polling");
 -- 
-Kyuwon (±Ô¿ø)
+1.5.6.3
+
