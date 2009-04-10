@@ -1,224 +1,187 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761007AbZDJPf0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761254AbZDJPrT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761007AbZDJPf0 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 10 Apr 2009 11:35:26 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757567AbZDJPfD
+	id S1761254AbZDJPrT (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 10 Apr 2009 11:47:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755302AbZDJPrI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 10 Apr 2009 11:35:03 -0400
-Received: from mail-fx0-f158.google.com ([209.85.220.158]:51074 "EHLO
-	mail-fx0-f158.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754699AbZDJPe7 (ORCPT
+	Fri, 10 Apr 2009 11:47:08 -0400
+Received: from zeniv.linux.org.uk ([195.92.253.2]:44759 "EHLO
+	ZenIV.linux.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750840AbZDJPrG (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 10 Apr 2009 11:34:59 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=googlemail.com; s=gamma;
-        h=sender:message-id:date:from:user-agent:mime-version:to:cc:subject
-         :content-type;
-        b=H7/vVNgWy7JK5H5Nq0HQwxiFwDuf7aDOufkUCcXVnbJO6IT3k0mPCjdgfyTPdWm1sD
-         OKSDmL/IVX+oaaD1iJ3cjBO17tsKQ1tpKruK9gtPeuJpYWsOZGV6WzfuieYA0iYES4se
-         QnGdKxAQDsjtL8c1UqbSqymstzsJnBmeKJ7Gk=
-Message-ID: <49DF6835.9040501@tuffmail.co.uk>
-Date: Fri, 10 Apr 2009 16:39:33 +0100
-From: Alan Jenkins <alan-jenkins@tuffmail.co.uk>
-User-Agent: Mozilla-Thunderbird 2.0.0.19 (X11/20090103)
+	Fri, 10 Apr 2009 11:47:06 -0400
+Date: Fri, 10 Apr 2009 16:47:04 +0100
+From: Al Viro <viro@ZenIV.linux.org.uk>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] unbreak alpha percpu
+Message-ID: <20090410154704.GN26366@ZenIV.linux.org.uk>
+References: <20090410151224.GM26366@ZenIV.linux.org.uk>
 MIME-Version: 1.0
-To: linux-acpi@vger.kernel.org
-CC: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Kernel Testers List <kernel-testers@vger.kernel.org>
-Subject: Regression: 20 ACPI interrupts per second on EEEPC 4G
-Content-Type: multipart/mixed;
- boundary="------------080501080405070107050804"
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20090410151224.GM26366@ZenIV.linux.org.uk>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This is a multi-part message in MIME format.
---------------080501080405070107050804
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+On Fri, Apr 10, 2009 at 04:12:24PM +0100, Al Viro wrote:
+> asm-generic/percpu.h is *NOT* included by every asm/percpu.h out there.
+> Namely, alpha can't use it since it needs the var name in
+> SHIFT_PERCPU_PTR - &per_cpu_var(var) won't do at all.  So adding stuff
+> to asm-generic/percpu.h and expecting it to be picked by everything
+> is not going to work.
+> 
+> Frankly, I'd rather have SHIFT_PERCPU_PTR() calling conventions changed,
+> but for now the patch below will do.
+> 
+> Signed-off-by: Al Viro <viro@zeniv.linux.org.uk>
 
-On latest git, powertop shows 20 ACPI interrupts per second.  
-Previously, this was closer to 1 per second.  See attached output (a vs 
-b, "a" is from 2.6.29-rc8).
+Alternative patch (changing SHIFT_PERCPU_PTR() arguments and switching
+alpha to asm-generic/percpu.h) would be this (only build-tested, though):
 
-This is from a pretty sparse KDE desktop.  Normally I run 
-gnome-power-manager, but I killed it to make sure that wasn't causing 
-any problems.
-
-alan@alan-eeepc:/sys/firmware/acpi/interrupts$ grep -v "invalid" *
-error:       0
-ff_gbl_lock:       0    enabled
-ff_pwr_btn:       0     enabled
-ff_rt_clk:       0      disabled
-gpe03:       0  disabled
-gpe04:       0  disabled
-gpe05:       0  disabled
-gpe09:       0  disabled
-gpe0B:       0  disabled
-gpe0C:       0  disabled
-gpe0D:       0  disabled
-gpe0E:       0  disabled
-gpe18:   60975  enabled
-gpe_all:   60975
-sci:   60975
-
-which I presume means lots of EC interrupts.
-
-[    0.134068] ACPI: EC: GPE = 0x18, I/O: command/status = 0x66, data = 0x62
-
-Any ideas?
-
-Thanks
-Alan
-
---------------080501080405070107050804
-Content-Type: text/plain;
- name="a"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline;
- filename="a"
-
-PowerTOP 1.11   (C) 2007, 2008 Intel Corporation 
-
-Collecting data for 100 seconds 
-
-
-Cn	          Avg residency
-C0 (cpu running)        ( 0.0%)
-polling		  0.0ms ( 0.0%)
-C1		  0.1ms ( 0.0%)
-C2		  0.0ms ( 0.0%)
-C3		 93.5ms (100.0%)
-P-states (frequencies)
-Wakeups-from-idle per second : 10.7	interval: 100.0s
-no ACPI power usage estimate available
-Top causes for wakeups:
-  17.0% (  2.0)       <interrupt> : ehci_hcd:usb1, uhci_hcd:usb2 
-  15.1% (  1.8)       <interrupt> : extra timer interrupt 
-  12.7% (  1.5)             udevd : ehci_work (ehci_watchdog) 
-   8.6% (  1.0)              Xorg : schedule_hrtimeout_range (hrtimer_wakeup) 
-   8.5% (  1.0)          kwrapper : do_nanosleep (hrtimer_wakeup) 
-   8.5% (  1.0)              kwin : schedule_hrtimeout_range (hrtimer_wakeup) 
-   8.5% (  1.0)   USB device  1-5 : UB6225 (ENE) 
-   4.2% (  0.5)   hald-addon-stor : schedule_hrtimeout_range (hrtimer_wakeup) 
-   2.4% (  0.3)       <interrupt> : ata_piix 
-   2.1% (  0.2)    NetworkManager : atl2_open (atl2_watchdog) 
-   1.8% (  0.2)       <interrupt> : acpi 
-   1.7% (  0.2)              kded : schedule_hrtimeout_range (hrtimer_wakeup) 
-   1.7% (  0.2)     <kernel core> : page_writeback_init (wb_timer_fn) 
-   1.6% (  0.2)              init : schedule_hrtimeout_range (hrtimer_wakeup) 
-   1.0% (  0.1)   <kernel module> : neigh_table_init_no_netlink (neigh_periodic_timer) 
-   1.0% (  0.1)     <kernel core> : neigh_table_init_no_netlink (neigh_periodic_timer) 
-   0.8% (  0.1)         ssh-agent : schedule_hrtimeout_range (hrtimer_wakeup) 
-   0.8% (  0.1)         klauncher : schedule_hrtimeout_range (hrtimer_wakeup) 
-   0.3% (  0.0)   <kernel module> : acpi_thermal_check (acpi_thermal_run) 
-   0.3% (  0.0)       scsi_scan_2 : blk_add_timer (blk_rq_timed_out_timer) 
-   0.3% (  0.0)     <kernel core> : blk_add_timer (blk_rq_timed_out_timer) 
-   0.3% (  0.0)              hald : schedule_hrtimeout_range (hrtimer_wakeup) 
-   0.2% (  0.0)          kdesktop : schedule_hrtimeout_range (hrtimer_wakeup) 
-   0.2% (  0.0)     <kernel core> : queue_delayed_work (delayed_work_timer_fn) 
-   0.2% (  0.0)            kicker : schedule_hrtimeout_range (hrtimer_wakeup) 
-   0.1% (  0.0)       <interrupt> : PS/2 keyboard/mouse/touchpad 
-   0.1% (  0.0)              cron : do_nanosleep (hrtimer_wakeup) 
-   0.1% (  0.0)     <kernel core> : addrconf_verify (addrconf_verify) 
-   0.1% (  0.0)     <kernel core> : inet_initpeers (peer_check_expire) 
-   0.1% (  0.0)          rsyslogd : futex_wait (hrtimer_wakeup) 
-
-A USB device is active 100.0% of the time:
-USB device  1-5 : UB6225 (ENE)
-
-Suggestion: Enable USB autosuspend by pressing the U key or adding 
-usbcore.autosuspend=1 to the kernel command line in the grub config
-
-Suggestion: increase the VM dirty writeback time from 4.99 to 15 seconds with:
-  echo 1500 > /proc/sys/vm/dirty_writeback_centisecs 
-This wakes the disk up less frequently for background VM activity
-
-Suggestion: Disable 'hal' from polling your cdrom with:  
-hal-disable-polling --device /dev/cdrom 'hal' is the component that auto-opens a
-window if you plug in a CD but disables SATA power saving from kicking in.
-
-Recent USB suspend statistics
-Active  Device name
-100.0%	USB device  1-5 : UB6225 (ENE)
-  0.0%	USB device usb5 : UHCI Host Controller (Linux 2.6.29-rc8eeepc uhci_hcd)
-  0.0%	USB device usb4 : UHCI Host Controller (Linux 2.6.29-rc8eeepc uhci_hcd)
-  0.0%	USB device usb3 : UHCI Host Controller (Linux 2.6.29-rc8eeepc uhci_hcd)
-  0.0%	USB device usb2 : UHCI Host Controller (Linux 2.6.29-rc8eeepc uhci_hcd)
-100.0%	USB device usb1 : EHCI Host Controller (Linux 2.6.29-rc8eeepc ehci_hcd)
-
---------------080501080405070107050804
-Content-Type: text/plain;
- name="b"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline;
- filename="b"
-
-PowerTOP 1.11   (C) 2007, 2008 Intel Corporation 
-
-Collecting data for 100 seconds 
-
-
-Cn	          Avg residency
-C0 (cpu running)        ( 0.3%)
-polling		  0.0ms ( 0.0%)
-C1		  0.0ms ( 0.0%)
-C2		  1.1ms ( 0.0%)
-C3		 42.1ms (99.7%)
-P-states (frequencies)
-Wakeups-from-idle per second : 23.9	interval: 100.0s
-no ACPI power usage estimate available
-Top causes for wakeups:
-  64.2% ( 19.7)       <interrupt> : acpi 
-  10.6% (  3.3)          events/0 : queue_delayed_work (delayed_work_timer_fn) 
-   9.0% (  2.8)       <interrupt> : extra timer interrupt 
-   3.4% (  1.0)              kwin : hrtimer_start_range_ns (hrtimer_wakeup) 
-   3.3% (  1.0)              Xorg : hrtimer_start_range_ns (hrtimer_wakeup) 
-   3.3% (  1.0)          kwrapper : hrtimer_start_range_ns (hrtimer_wakeup) 
-   0.8% (  0.2)       <interrupt> : ata_piix 
-   0.8% (  0.2)    NetworkManager : atl2_open (atl2_watchdog) 
-   0.7% (  0.2)     <kernel core> : page_writeback_init (wb_timer_fn) 
-   0.7% (  0.2)              kded : hrtimer_start_range_ns (hrtimer_wakeup) 
-   0.6% (  0.2)              init : hrtimer_start_range_ns (hrtimer_wakeup) 
-   0.4% (  0.1)     <kernel core> : add_timer (neigh_periodic_timer) 
-   0.4% (  0.1)   <kernel module> : add_timer (neigh_periodic_timer) 
-   0.3% (  0.1)         ssh-agent : hrtimer_start_range_ns (hrtimer_wakeup) 
-   0.3% (  0.1)          kdesktop : hrtimer_start_range_ns (hrtimer_wakeup) 
-   0.2% (  0.1)           konsole : hrtimer_start_range_ns (hrtimer_wakeup) 
-   0.2% (  0.1)   knetworkmanager : hrtimer_start_range_ns (hrtimer_wakeup) 
-   0.2% (  0.1)              kmix : hrtimer_start_range_ns (hrtimer_wakeup) 
-   0.1% (  0.0)            kicker : hrtimer_start_range_ns (hrtimer_wakeup) 
-   0.1% (  0.0)              hald : hrtimer_start_range_ns (hrtimer_wakeup) 
-   0.1% (  0.0)           async/1 : blk_add_timer (blk_rq_timed_out_timer) 
-   0.1% (  0.0)           pdflush : blk_plug_device (blk_unplug_timeout) 
-   0.1% (  0.0)     <kernel core> : queue_delayed_work (delayed_work_timer_fn) 
-   0.0% (  0.0)       <interrupt> : PS/2 keyboard/mouse/touchpad 
-   0.0% (  0.0)       <interrupt> : uhci_hcd:usb5, HDA Intel, i915@pci:0000:00:02.0 
-   0.0% (  0.0)   <kernel module> : queue_delayed_work (delayed_work_timer_fn) 
-   0.0% (  0.0)         hd-audio0 : schedule_timeout_uninterruptible (process_timeout) 
-   0.0% (  0.0)              cron : hrtimer_start_range_ns (hrtimer_wakeup) 
-   0.0% (  0.0)          rsyslogd : hrtimer_start_range_ns (hrtimer_wakeup) 
-   0.0% (  0.0)        khungtaskd : schedule_timeout_interruptible (process_timeout) 
-   0.0% (  0.0)   <kernel module> : add_timer (addrconf_verify) 
-   0.0% (  0.0)     <kernel core> : add_timer (peer_check_expire) 
-
-A USB device is active 100.0% of the time:
-USB device  1-5 : UB6225 (ENE)
-
-Suggestion: Enable USB autosuspend by pressing the U key or adding 
-usbcore.autosuspend=1 to the kernel command line in the grub config
-
-Suggestion: increase the VM dirty writeback time from 5.00 to 15 seconds with:
-  echo 1500 > /proc/sys/vm/dirty_writeback_centisecs 
-This wakes the disk up less frequently for background VM activity
-
-Recent USB suspend statistics
-Active  Device name
-100.0%	USB device  1-5 : UB6225 (ENE)
-  0.0%	USB device usb5 : UHCI Host Controller (Linux 2.6.30-rc1eeepc uhci_hcd)
-  0.0%	USB device usb4 : UHCI Host Controller (Linux 2.6.30-rc1eeepc uhci_hcd)
-  0.0%	USB device usb3 : UHCI Host Controller (Linux 2.6.30-rc1eeepc uhci_hcd)
-  0.0%	USB device usb2 : UHCI Host Controller (Linux 2.6.30-rc1eeepc uhci_hcd)
-100.0%	USB device usb1 : EHCI Host Controller (Linux 2.6.30-rc1eeepc ehci_hcd)
-
---------------080501080405070107050804--
+diff --git a/arch/alpha/include/asm/percpu.h b/arch/alpha/include/asm/percpu.h
+index 3495e8e..1c52a2d 100644
+--- a/arch/alpha/include/asm/percpu.h
++++ b/arch/alpha/include/asm/percpu.h
+@@ -3,33 +3,8 @@
+ #include <linux/compiler.h>
+ #include <linux/threads.h>
+ 
+-/*
+- * Determine the real variable name from the name visible in the
+- * kernel sources.
+- */
+-#define per_cpu_var(var) per_cpu__##var
+-
+ #ifdef CONFIG_SMP
+-
+-/*
+- * per_cpu_offset() is the offset that has to be added to a
+- * percpu variable to get to the instance for a certain processor.
+- */
+-extern unsigned long __per_cpu_offset[NR_CPUS];
+-
+-#define per_cpu_offset(x) (__per_cpu_offset[x])
+-
+-#define __my_cpu_offset per_cpu_offset(raw_smp_processor_id())
+-#ifdef CONFIG_DEBUG_PREEMPT
+-#define my_cpu_offset per_cpu_offset(smp_processor_id())
+-#else
+-#define my_cpu_offset __my_cpu_offset
+-#endif
+-
+-#ifndef MODULE
+-#define SHIFT_PERCPU_PTR(var, offset) RELOC_HIDE(&per_cpu_var(var), (offset))
+-#define PER_CPU_ATTRIBUTES
+-#else
++#ifdef MODULE
+ /*
+  * To calculate addresses of locally defined variables, GCC uses 32-bit
+  * displacement from the GP. Which doesn't work for per cpu variables in
+@@ -39,40 +14,15 @@ extern unsigned long __per_cpu_offset[NR_CPUS];
+  * ldq instruction with a 'literal' relocation.
+  */
+ #define SHIFT_PERCPU_PTR(var, offset) ({		\
+-	extern int simple_identifier_##var(void);	\
+ 	unsigned long __ptr, tmp_gp;			\
+ 	asm (  "br	%1, 1f		  	      \n\
+ 	1:	ldgp	%1, 0(%1)	    	      \n\
+ 		ldq %0, per_cpu__" #var"(%1)\t!literal"		\
+ 		: "=&r"(__ptr), "=&r"(tmp_gp));		\
+ 	(typeof(&per_cpu_var(var)))(__ptr + (offset)); })
+-
+-#define PER_CPU_ATTRIBUTES	__used
+-
+ #endif /* MODULE */
+-
+-/*
+- * A percpu variable may point to a discarded regions. The following are
+- * established ways to produce a usable pointer from the percpu variable
+- * offset.
+- */
+-#define per_cpu(var, cpu) \
+-	(*SHIFT_PERCPU_PTR(var, per_cpu_offset(cpu)))
+-#define __get_cpu_var(var) \
+-	(*SHIFT_PERCPU_PTR(var, my_cpu_offset))
+-#define __raw_get_cpu_var(var) \
+-	(*SHIFT_PERCPU_PTR(var, __my_cpu_offset))
+-
+-#else /* ! SMP */
+-
+-#define per_cpu(var, cpu)		(*((void)(cpu), &per_cpu_var(var)))
+-#define __get_cpu_var(var)		per_cpu_var(var)
+-#define __raw_get_cpu_var(var)		per_cpu_var(var)
+-
+-#define PER_CPU_ATTRIBUTES
+-
+ #endif /* SMP */
+ 
+-#define DECLARE_PER_CPU(type, name) extern __typeof__(type) per_cpu_var(name)
++#include <asm-generic/percpu.h>
+ 
+ #endif /* __ALPHA_PERCPU_H */
+diff --git a/arch/s390/include/asm/percpu.h b/arch/s390/include/asm/percpu.h
+index 408d60b..6a71d73 100644
+--- a/arch/s390/include/asm/percpu.h
++++ b/arch/s390/include/asm/percpu.h
+@@ -13,20 +13,18 @@
+  */
+ #if defined(__s390x__) && defined(MODULE)
+ 
+-#define SHIFT_PERCPU_PTR(ptr,offset) (({			\
+-	extern int simple_identifier_##var(void);	\
++#define SHIFT_PERCPU_PTR(var,offset) (({			\
+ 	unsigned long *__ptr;				\
+ 	asm ( "larl %0, %1@GOTENT"		\
+-	    : "=a" (__ptr) : "X" (ptr) );		\
+-	(typeof(ptr))((*__ptr) + (offset));	}))
++	    : "=a" (__ptr) : "X" (&per_cpu_var(var)) );		\
++	(typeof(&per_cpu_var(var)))((*__ptr) + (offset));	}))
+ 
+ #else
+ 
+-#define SHIFT_PERCPU_PTR(ptr, offset) (({				\
+-	extern int simple_identifier_##var(void);		\
++#define SHIFT_PERCPU_PTR(var, offset) (({				\
+ 	unsigned long __ptr;					\
+-	asm ( "" : "=a" (__ptr) : "0" (ptr) );			\
+-	(typeof(ptr)) (__ptr + (offset)); }))
++	asm ( "" : "=a" (__ptr) : "0" (&per_cpu_var(var)) );			\
++	(typeof(&per_cpu_var(var))) (__ptr + (offset)); }))
+ 
+ #endif
+ 
+diff --git a/include/asm-generic/percpu.h b/include/asm-generic/percpu.h
+index 00f45ff..7463700 100644
+--- a/include/asm-generic/percpu.h
++++ b/include/asm-generic/percpu.h
+@@ -42,10 +42,10 @@ extern unsigned long __per_cpu_offset[NR_CPUS];
+ /*
+  * Add a offset to a pointer but keep the pointer as is.
+  *
+- * Only S390 provides its own means of moving the pointer.
++ * Only S390 and Alpha provide their own means of moving the pointer.
+  */
+ #ifndef SHIFT_PERCPU_PTR
+-#define SHIFT_PERCPU_PTR(__p, __offset)	RELOC_HIDE((__p), (__offset))
++#define SHIFT_PERCPU_PTR(__v, __offset)	RELOC_HIDE(&per_cpu_var(__v), (__offset))
+ #endif
+ 
+ /*
+@@ -54,11 +54,11 @@ extern unsigned long __per_cpu_offset[NR_CPUS];
+  * offset.
+  */
+ #define per_cpu(var, cpu) \
+-	(*SHIFT_PERCPU_PTR(&per_cpu_var(var), per_cpu_offset(cpu)))
++	(*SHIFT_PERCPU_PTR(var, per_cpu_offset(cpu)))
+ #define __get_cpu_var(var) \
+-	(*SHIFT_PERCPU_PTR(&per_cpu_var(var), my_cpu_offset))
++	(*SHIFT_PERCPU_PTR(var, my_cpu_offset))
+ #define __raw_get_cpu_var(var) \
+-	(*SHIFT_PERCPU_PTR(&per_cpu_var(var), __my_cpu_offset))
++	(*SHIFT_PERCPU_PTR(var, __my_cpu_offset))
+ 
+ 
+ #ifdef CONFIG_HAVE_SETUP_PER_CPU_AREA
