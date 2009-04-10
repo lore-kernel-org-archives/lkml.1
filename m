@@ -1,64 +1,76 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S935062AbZDJK4Y@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764892AbZDJLBV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S935062AbZDJK4Y (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 10 Apr 2009 06:56:24 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1764197AbZDJK4M
+	id S1764892AbZDJLBV (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 10 Apr 2009 07:01:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756531AbZDJLBL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 10 Apr 2009 06:56:12 -0400
-Received: from mail-gx0-f160.google.com ([209.85.217.160]:40219 "EHLO
-	mail-gx0-f160.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1762390AbZDJK4L (ORCPT
+	Fri, 10 Apr 2009 07:01:11 -0400
+Received: from mailservice.tudelft.nl ([130.161.131.5]:31973 "EHLO
+	mailservice.tudelft.nl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756023AbZDJLBJ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 10 Apr 2009 06:56:11 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=subject:from:to:cc:in-reply-to:references:content-type:date
-         :message-id:mime-version:x-mailer:content-transfer-encoding;
-        b=Hel2kVXSZBT73BtH3ArTMMst3faWUOPE3jdeOeiT/ywTWIb7pxORbH6Kn3fjfDw0O6
-         LQe/4lO8OkL5gw0ItuvWksRazeQ25n/e0Boyo9La1/wU0k5u12UFQkFHhqhuB4Bz4Ag1
-         2yeLmvf0zm5NTwxCqkK8Se2WnJUC5H1oZONsI=
-Subject: Re: 2.6.30-rc1: white screen during boot (regression) on spitz
-From: Daniel Ribeiro <drwyrm@gmail.com>
-To: Pavel Machek <pavel@ucw.cz>
-Cc: Eric Miao <eric.y.miao@gmail.com>, rpurdie@rpsys.net, lenz@cs.wisc.edu,
-       kernel list <linux-kernel@vger.kernel.org>,
-       Russell King <rmk@arm.linux.org.uk>, Dirk@opfer-online.de,
-       arminlitzel@web.de, Cyril Hrubis <metan@ucw.cz>, thommycheck@gmail.com,
-       linux-arm-kernel <linux-arm-kernel@lists.arm.linux.org.uk>,
-       dbaryshkov@gmail.com, omegamoon@gmail.com
-In-Reply-To: <f17812d70904100350l19fa7493ma9c4695d49d19398@mail.gmail.com>
-References: <20090410103429.GA31367@elf.ucw.cz>
-	 <f17812d70904100350l19fa7493ma9c4695d49d19398@mail.gmail.com>
-Content-Type: text/plain; charset="UTF-8"
-Date: Fri, 10 Apr 2009 07:56:07 -0300
-Message-Id: <1239360967.14324.2.camel@brutus>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.24.3 
-Content-Transfer-Encoding: 8bit
+	Fri, 10 Apr 2009 07:01:09 -0400
+X-Spam-Flag: NO
+X-Spam-Score: -12.589
+Message-ID: <49DF26EB.4040106@tudelft.nl>
+Date: Fri, 10 Apr 2009 13:00:59 +0200
+From: =?ISO-8859-1?Q?=C9ric_Piel?= <E.A.B.Piel@tudelft.nl>
+User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.8.1.21) Gecko/20090319 Mandriva/2.0.0.21-1mdv2009.1 (2009.1) Thunderbird/2.0.0.21 Mnenhy/0.7.5.0
+MIME-Version: 1.0
+To: Matthew Garrett <mjg@redhat.com>
+Cc: Rafi Rubin <rafi@seas.upenn.edu>, Len Brown <len.brown@intel.com>,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] Additional keys for dell-wmi
+References: <200904082116.n38LG4Df012420@ampersand.seas.upenn.edu> <20090409153203.GB17194@srcf.ucam.org>
+In-Reply-To: <20090409153203.GB17194@srcf.ucam.org>
+Content-Type: multipart/mixed;
+ boundary="------------040609080009050404050601"
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Em Sex, 2009-04-10 às 18:50 +0800, Eric Miao escreveu:
-> On Fri, Apr 10, 2009 at 6:34 PM, Pavel Machek <pavel@ucw.cz> wrote:
-> > Hi!
-> >
-> > After update to 2.6.30-rc1, sharp zaurus c-3000 fails to boot with
-> > white screen (with stripes). That's a regression w.r.t. 2.6.29.
+This is a multi-part message in MIME format.
+--------------040609080009050404050601
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
+
+Matthew Garrett schreef:
+> On Wed, Apr 08, 2009 at 05:16:04PM -0400, Rafi Rubin wrote:
 > 
-> What kind of white stripes? Does it look like the LCD controller
-> stops working or something.
+>>  static struct key_entry dell_wmi_keymap[] = {
+>>  	{KE_KEY, 0xe045, KEY_PROG1},
+>> +	{KE_KEY, 0xe046, KEY_PROG2},
+>> +	{KE_KEY, 0xe047, KEY_PROG3},
 > 
-> There is a regression which caused X server hang during bootup,
-> with commit id 66c1ca0, which you can revert and have another
-> try.
+> Would this make more sense as a switch? That way userspace can know what 
+> state the screen is in.
+> 
+Indeed, that seems more logical. And in addition, there is a switch
+called SW_TABLET_MODE, which would fit perfectly.
+I guess at initialisation you can consider it is in standard mode, and
+actually sort out the real state on the first event received.
 
-As spitz also use cs_control for pxa2xx_spi, i believe that this is the
-same issue i found wednesday.
+Eric
 
-See the "Kernel freeze caused by
-a7bb3909b3293d503211d7f6af8ed62c1644b686" thread.
+--------------040609080009050404050601
+Content-Type: text/x-vcard; charset=utf-8;
+ name="E_A_B_Piel.vcf"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: attachment;
+ filename="E_A_B_Piel.vcf"
 
--- 
-Daniel Ribeiro
+begin:vcard
+fn;quoted-printable:=C3=89ric Piel
+n;quoted-printable:Piel;=C3=89ric
+org:Technical University of Delft;Software Engineering Research Group
+adr:HB 08.080;;Mekelweg 4;Delft;;2628 CD;The Netherlands
+email;internet:E.A.B.Piel@tudelft.nl
+tel;work:+31 15 278 6338
+tel;cell:+31 6 2437 9135
+x-mozilla-html:FALSE
+url:http://pieleric.free.fr
+version:2.1
+end:vcard
 
+
+--------------040609080009050404050601--
