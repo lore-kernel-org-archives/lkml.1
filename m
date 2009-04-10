@@ -1,185 +1,117 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933785AbZDJUaG@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754030AbZDJUbh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933785AbZDJUaG (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 10 Apr 2009 16:30:06 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758499AbZDJU3s
+	id S1754030AbZDJUbh (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 10 Apr 2009 16:31:37 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S936227AbZDJUan
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 10 Apr 2009 16:29:48 -0400
-Received: from rv-out-0506.google.com ([209.85.198.224]:55174 "EHLO
-	rv-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757067AbZDJU3q (ORCPT
+	Fri, 10 Apr 2009 16:30:43 -0400
+Received: from mail-fx0-f158.google.com ([209.85.220.158]:55206 "EHLO
+	mail-fx0-f158.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S936385AbZDJUak (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 10 Apr 2009 16:29:46 -0400
+	Fri, 10 Apr 2009 16:30:40 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:references:mime-version
-         :content-type:content-disposition:in-reply-to:user-agent;
-        b=WqSkJbNGEmui3u1aQIsRYoKXFUg1aqovLQT086zyM2XtQqqFIdOl+oAdUWh96R+cD1
-         9MvAH8OAR6lQ1fM/u1GHzlwjNL60G2wXblLdkDz+KSEmIvJG5RtuQwmTkA+ZCa02r9Ds
-         0P+Q9VlN0XgZRjL5jP2V8c/BMOyU0WqsXNROQ=
-Date: Sat, 11 Apr 2009 00:29:42 +0400
-From: Cyrill Gorcunov <gorcunov@gmail.com>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: "H. Peter Anvin" <hpa@zytor.com>, Thomas Gleixner <tglx@linutronix.de>,
-       LKML <linux-kernel@vger.kernel.org>, Andi Kleen <andi@firstfloor.org>,
-       "Maciej W. Rozycki" <macro@linux-mips.org>,
-       Yinghai Lu <yhlu.kernel@gmail.com>
-Subject: Re: [RFC -tip] x86: do_IRQ - send APIC EOI for x86-32 on irq
-	without handler v3
-Message-ID: <20090410202941.GF8204@lenovo>
-References: <20090409181802.GC7558@lenovo> <20090410122750.GR21506@elte.hu> <20090410135606.GA8204@lenovo> <20090410140023.GA29090@elte.hu>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090410140023.GA29090@elte.hu>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+        h=subject:from:to:cc:in-reply-to:references:content-type:date
+         :message-id:mime-version:x-mailer:content-transfer-encoding;
+        b=Ls2rzF7bRdfOnN23UOLLr6pkK14fL39S5JzI5Vxl9yjgwCRfm++w8ZV+glfrYWKWBR
+         3jCugm0Snuj3EoOn2OsPLa30UWJlBfy3YTqv/YpKfneuSeEGc/Pgmd4DXQBhTqmwN/l9
+         aL9wo0rhhAOEIk81lUpO83UBLLqJv+y+WE5NA=
+Subject: Re: attempt to scan fails (device busy) if essid/ssid was changed
+ recently
+From: Maxim Levitsky <maximlevitsky@gmail.com>
+To: Johannes Berg <johannes@sipsolutions.net>
+Cc: linux-wireless <linux-wireless@vger.kernel.org>,
+       linux-kernel <linux-kernel@vger.kernel.org>
+In-Reply-To: <1239136637.7475.57.camel@johannes.local>
+References: <1239062401.4705.23.camel@maxim-laptop>
+	 (sfid-20090407_020013_939126_90578556)  <1239092296.22453.1.camel@johannes.local>
+	 <1239108689.15015.3.camel@maxim-laptop>
+	 (sfid-20090407_145137_740898_8D0C40FD)  <1239109001.22453.40.camel@johannes.local>
+	 <1239109497.15015.12.camel@maxim-laptop>
+	 (sfid-20090407_150534_375314_4DA28551)  <1239110010.22453.41.camel@johannes.local>
+	 <1239110412.15015.23.camel@maxim-laptop>
+	 (sfid-20090407_152021_060436_AEF9110F)  <1239110860.4084.0.camel@johannes.local>
+	 <1239112310.15015.25.camel@maxim-laptop>
+	 <1239135878.17958.11.camel@maxim-laptop>
+	 (sfid-20090407_222443_633750_085B264D)  <1239136637.7475.57.camel@johannes.local>
+Content-Type: text/plain
+Date: Fri, 10 Apr 2009 23:30:34 +0300
+Message-Id: <1239395434.13792.3.camel@maxim-laptop>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.24.3 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-[Ingo Molnar - Fri, Apr 10, 2009 at 04:00:23PM +0200]
-| 
-| * Cyrill Gorcunov <gorcunov@gmail.com> wrote:
-| 
-| > [Ingo Molnar - Fri, Apr 10, 2009 at 02:27:50PM +0200]
-| > | 
-| > | * Cyrill Gorcunov <gorcunov@openvz.org> wrote:
-| > | 
-| > | > Ingo, I've checked the sources and as far as I see
-| > | > we could NOP'ify apic->write indeed but I have
-| > | > an internal feeling that this will bring us more problem
-| > | > in future (for example it could be the following scenario:
-| > | > some screwed APIC would require cleaning of LVT's or
-| > | > IRR after resume regardless if it was initialized
-| > | > or not at all). Mostly I mean that the idea of making
-| > | > apic->write NOP'ified is quite elegant indeed but
-| > | > cut off the subset of apic operations (we need
-| > | > apic->read anyway) somehow bothering me from inside :)
-| > | 
-| > | it's as if assigned a special type of 'dummy apic' struct apic. It 
-| > | wont cause problems down the line: we use the new APIC driver 
-| > | infrastructure to abstract out quirks.
-| > 
-| > Well, it's not that new actually :-)
-| 
-| Yeah, i mean the new unified/modernized code in 2.6.30-to-be.
-| 
-| > | 
-| > | one small detail:
-| > | 
-| > | > +/* Ack APIC irq if it's enabled only */
-| > | > +static inline void ack_APIC_irq_safe(void)
-| > | > +{
-| > | > +#ifdef CONFIG_X86_LOCAL_APIC
-| > | > +	if (cpu_has_apic)
-| > | > +		ack_APIC_irq();
-| > | > +#endif
-| > | 
-| > | we dont need the cpu_has_apic check there, do we? In the 
-| > | !cpu_has_apic the ->write method should be a dummy.
-| > 
-| > Yes. In case you're talking about it'll not be needed
-| > (we will find earlier whether cpu_has_apic or not).
-| 
-| yeah.
-| 
-| 	Ingo
-| 
+On Tue, 2009-04-07 at 22:37 +0200, Johannes Berg wrote:
+> On Tue, 2009-04-07 at 23:24 +0300, Maxim Levitsky wrote:
+> 
+> > First I get this in kernel logs:
+> > 
+> > 
+> > > [   29.971903] WARNING:
+> > at /home/maxim/software/kernel/linux-2.6/net/wireless/core.h:79
+> > nl80211_send_wiphy+0x8bd/0xa20 [cfg80211]()
+> 
+> Eh, I don't think that is present in a recent wireless tree.
 
-Ingo,
+It is.
 
-I think you meant something like the patch below. It's
-not finished yet -- I need to find out right place for
-calling freshly introduced apic_disable_write_op.
-Will continue tomorrow.
+I have just compiled iwlwifi.git tree, and same message is there:
 
-But even having it not completed yet I would like to
-get some feedbackabout code structure in general.
 
-        Cyrill
----
- arch/x86/include/asm/apic.h |   10 ++++++++++
- arch/x86/kernel/apic/apic.c |    6 ++++++
- arch/x86/kernel/irq.c       |   10 ++--------
- 3 files changed, 18 insertions(+), 8 deletions(-)
 
-Index: linux-2.6.git/arch/x86/include/asm/apic.h
-=====================================================================
---- linux-2.6.git.orig/arch/x86/include/asm/apic.h
-+++ linux-2.6.git/arch/x86/include/asm/apic.h
-@@ -106,6 +106,7 @@ extern void native_apic_wait_icr_idle(vo
- extern u32 native_safe_apic_wait_icr_idle(void);
- extern void native_apic_icr_write(u32 low, u32 id);
- extern u64 native_apic_icr_read(void);
-+extern void native_apic_write_dummy(u32 reg, u32 v);
- 
- #define EIM_8BIT_APIC_ID	0
- #define EIM_32BIT_APIC_ID	1
-@@ -372,6 +373,15 @@ static inline void apic_write(u32 reg, u
- 	apic->write(reg, val);
- }
- 
-+/*
-+ * right after this call apic->write doesn't do anything
-+ * note that there is no restore operation it works one way
-+ */
-+static inline void apic_disable_write_op(void)
-+{
-+	apic->write = native_apic_write_dummy;
-+}
-+
- static inline u64 apic_icr_read(void)
- {
- 	return apic->icr_read();
-Index: linux-2.6.git/arch/x86/kernel/apic/apic.c
-=====================================================================
---- linux-2.6.git.orig/arch/x86/kernel/apic/apic.c
-+++ linux-2.6.git/arch/x86/kernel/apic/apic.c
-@@ -210,6 +210,12 @@ static int modern_apic(void)
- 	return lapic_get_version() >= 0x14;
- }
- 
-+/*
-+ * bare function to substitute write operation
-+ * and it's _that_ fast :)
-+ */
-+void native_apic_write_dummy(u32 reg, u32 v) { }
-+
- void native_apic_wait_icr_idle(void)
- {
- 	while (apic_read(APIC_ICR) & APIC_ICR_BUSY)
-Index: linux-2.6.git/arch/x86/kernel/irq.c
-=====================================================================
---- linux-2.6.git.orig/arch/x86/kernel/irq.c
-+++ linux-2.6.git/arch/x86/kernel/irq.c
-@@ -27,7 +27,6 @@ void ack_bad_irq(unsigned int irq)
- 	if (printk_ratelimit())
- 		pr_err("unexpected IRQ trap at vector %02x\n", irq);
- 
--#ifdef CONFIG_X86_LOCAL_APIC
- 	/*
- 	 * Currently unexpected vectors happen only on SMP and APIC.
- 	 * We _must_ ack these because every local APIC has only N
-@@ -37,9 +36,7 @@ void ack_bad_irq(unsigned int irq)
- 	 * completely.
- 	 * But only ack when the APIC is enabled -AK
- 	 */
--	if (cpu_has_apic)
--		ack_APIC_irq();
--#endif
-+	ack_APIC_irq();
- }
- 
- #define irq_stats(x)		(&per_cpu(irq_stat, x))
-@@ -224,10 +221,7 @@ unsigned int __irq_entry do_IRQ(struct p
- 	irq = __get_cpu_var(vector_irq)[vector];
- 
- 	if (!handle_irq(irq, regs)) {
--#ifdef CONFIG_X86_64
--		if (!disable_apic)
--			ack_APIC_irq();
--#endif
-+		ack_APIC_irq();
- 
- 		if (printk_ratelimit())
- 			pr_emerg("%s: %d.%d No irq handler for vector (irq %d)\n",
+> [ 1666.298390] ------------[ cut here ]------------
+> [ 1666.298395] WARNING: at /home/maxim/software/kernel/linux-2.6/net/wireless/core.h:79 nl80211_send_wiphy+0x8bd/0xa20 [cfg80211]()
+> [ 1666.298399] Hardware name: Aspire 5720     
+> [ 1666.298402] Modules linked in: af_packet nfsd exportfs ipv6 nfs lockd nfs_acl auth_rpcgss sunrpc cpufreq_powersave cpufreq_conservative cpufreq_userspace acpi_cpufreq coretemp sbp2 joydev uvcvideo iwl3945 videodev v4l1_compat v4l2_compat_ioctl32 iwlcore rfkill snd_hda_codec_realtek snd_hda_intel snd_hda_codec mac80211 snd_hwdep ehci_hcd psmouse video iTCO_wdt lib80211 tg3 snd_pcm_oss snd_mixer_oss usbcore output evdev iTCO_vendor_support nvidia(P) cfg80211 libphy serio_raw snd_pcm snd_timer ricoh_mmc sdhci_pci sdhci ohci1394 ata_piix snd_page_alloc ext3 jbd mbcache fuse ahci libata
+> [ 1666.298473] Pid: 13164, comm: wpa_supplicant Tainted: P           2.6.29-wl #19
+> [ 1666.298477] Call Trace:
+> [ 1666.298490]  [<ffffffff80241320>] warn_slowpath+0xd0/0x130
+> [ 1666.298504]  [<ffffffffa00f9ac6>] ? nl80211_get_wiphy+0x56/0xd0 [cfg80211]
+> [ 1666.298512]  [<ffffffff802a8263>] ? __alloc_pages_internal+0xe3/0x4f0
+> [ 1666.298525]  [<ffffffffa00f965d>] nl80211_send_wiphy+0x8bd/0xa20 [cfg80211]
+> [ 1666.298537]  [<ffffffffa00f9ac6>] ? nl80211_get_wiphy+0x56/0xd0 [cfg80211]
+> [ 1666.298542]  [<ffffffff802a86ee>] ? __get_free_pages+0x1e/0x60
+> [ 1666.298550]  [<ffffffff804a59ae>] ? __alloc_skb+0x6e/0x140
+> [ 1666.298562]  [<ffffffffa00f9ae4>] nl80211_get_wiphy+0x74/0xd0 [cfg80211]
+> [ 1666.298569]  [<ffffffff804c5986>] genl_rcv_msg+0x1b6/0x1f0
+> [ 1666.298575]  [<ffffffff804c57d0>] ? genl_rcv_msg+0x0/0x1f0
+> [ 1666.298582]  [<ffffffff804c4839>] netlink_rcv_skb+0x89/0xb0
+> [ 1666.298586]  [<ffffffff804c57b7>] genl_rcv+0x27/0x40
+> [ 1666.298592]  [<ffffffff804c4234>] netlink_unicast+0x2c4/0x2e0
+> [ 1666.298597]  [<ffffffff804a59ae>] ? __alloc_skb+0x6e/0x140
+> [ 1666.298603]  [<ffffffff804c4464>] netlink_sendmsg+0x214/0x310
+> [ 1666.298609]  [<ffffffff8049ceb7>] sock_sendmsg+0x127/0x140
+> [ 1666.298616]  [<ffffffff80258c20>] ? autoremove_wake_function+0x0/0x40
+> [ 1666.298622]  [<ffffffff8023bc60>] ? wake_up_process+0x10/0x20
+> [ 1666.298629]  [<ffffffff80535c74>] ? __mutex_unlock_slowpath+0x44/0x50
+> [ 1666.298635]  [<ffffffff80535c0e>] ? mutex_unlock+0xe/0x10
+> [ 1666.298641]  [<ffffffff804b8900>] ? __rtnl_unlock+0x10/0x20
+> [ 1666.298647]  [<ffffffff8049dd17>] ? move_addr_to_kernel+0x57/0x60
+> [ 1666.298652]  [<ffffffff804a6e7c>] ? verify_iovec+0x3c/0xd0
+> [ 1666.298657]  [<ffffffff8049d059>] sys_sendmsg+0x189/0x320
+> [ 1666.298663]  [<ffffffff804ffd14>] ? inet_ioctl+0x94/0xc0
+> [ 1666.298668]  [<ffffffff8049bf56>] ? sock_ioctl+0x66/0x270
+> [ 1666.298675]  [<ffffffff802dfd21>] ? vfs_ioctl+0x31/0xa0
+> [ 1666.298680]  [<ffffffff802dfe18>] ? do_vfs_ioctl+0x88/0x580
+> [ 1666.298686]  [<ffffffff802d20c9>] ? __fput+0x169/0x1e0
+> [ 1666.298692]  [<ffffffff8020c5db>] system_call_fastpath+0x16/0x1b
+> [ 1666.298696] ---[ end trace 24eb07dee6e9ca52 ]---
+> 
+> 
+
+On top of that I need to note that NM doesn't show signal strenghts correctly.
+Instead it shows 100% for all AP except the current active one.
+
+This is iwl3945 driver from iwlwifi-git of today.
+Plus I use latest -git of wpa_supplicant, and NM
+
+
+Best regards,
+	Maxim Levitsky
+
+
+
