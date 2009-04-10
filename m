@@ -1,54 +1,44 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754161AbZDJEib@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755088AbZDJErQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754161AbZDJEib (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 10 Apr 2009 00:38:31 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751747AbZDJEiV
+	id S1755088AbZDJErQ (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 10 Apr 2009 00:47:16 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753412AbZDJEq5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 10 Apr 2009 00:38:21 -0400
-Received: from fgwmail6.fujitsu.co.jp ([192.51.44.36]:50437 "EHLO
-	fgwmail6.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751187AbZDJEiU (ORCPT
+	Fri, 10 Apr 2009 00:46:57 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:60290 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751996AbZDJEq4 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 10 Apr 2009 00:38:20 -0400
-Message-ID: <49DECD2F.6060708@jp.fujitsu.com>
-Date: Fri, 10 Apr 2009 13:38:07 +0900
-From: Hidetoshi Seto <seto.hidetoshi@jp.fujitsu.com>
-User-Agent: Thunderbird 2.0.0.21 (Windows/20090302)
-MIME-Version: 1.0
-To: Andi Kleen <andi@firstfloor.org>
-CC: ying.huang@intel.com, hpa@zytor.com, linux-kernel@vger.kernel.org,
-       mingo@elte.hu, tglx@linutronix.de
-Subject: Re: [PATCH] [3/4] x86: MCE: Improve mce_get_rip
-References: <20090407506.675031434@firstfloor.org> <20090407150656.43E161D046D@basil.firstfloor.org> <49DC5D11.4060505@jp.fujitsu.com> <87eiw3a29h.fsf@basil.nowhere.org> <49DD80B4.5060301@jp.fujitsu.com> <20090409071413.GD14687@one.firstfloor.org> <49DDC70E.2000602@jp.fujitsu.com> <20090409101349.GH14687@one.firstfloor.org>
-In-Reply-To: <20090409101349.GH14687@one.firstfloor.org>
-Content-Type: text/plain; charset=ISO-8859-1
+	Fri, 10 Apr 2009 00:46:56 -0400
+Date: Thu, 9 Apr 2009 21:36:43 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Wu Fengguang <fengguang.wu@intel.com>
+Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+       David Rientjes <rientjes@google.com>, Hugh Dickins <hugh@veritas.com>,
+       Ingo Molnar <mingo@elte.hu>, Lee Schermerhorn <lee.schermerhorn@hp.com>,
+       Mike Waychison <mikew@google.com>, Nick Piggin <npiggin@suse.de>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>,
+       Rohit Seth <rohitseth@google.com>, Edwin <edwintorok@gmail.com>,
+       "H. Peter Anvin" <hpa@zytor.com>, Ying Han <yinghan@google.com>,
+       LKML <linux-kernel@vger.kernel.org>, <linux-mm@kvack.org>,
+       <linux-fsdevel@vger.kernel.org>
+Subject: Re: [PATCH 00/14] filemap and readahead fixes
+Message-Id: <20090409213643.0e80fdcf.akpm@linux-foundation.org>
+In-Reply-To: <20090407115039.780820496@intel.com>
+References: <20090407115039.780820496@intel.com>
+X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.5; x86_64-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Andi Kleen wrote:
->> Following is a proposal version. Maybe dividing it into 2 pieces, function
->> improvement and MSR definition, would be a good idea.
-> 
-> I don't think we need the full MSR definitions right now, at least 
-> I don't have any plans to support them. After all current CPUs
-> don't.
-> 
-> The rest looks good.
+On Tue, 07 Apr 2009 19:50:39 +0800 Wu Fengguang <fengguang.wu@intel.com> wrote:
 
-Thanks.
+> This is a set of fixes and cleanups for filemap and readahead.
 
-I still believe that using MSR which only available on 32bit from 64bit
-code is not right thing.  However this is not logical bug, and adding
-definition is not suitable for 2.6.30.  I'd like to defer the MSR part
-to the next time.
+Unfortunately page_fault-retry-with-nopage_retry.patch got dropped so
+the first five patches are no longer applicable.  Patch #11 also died.
 
-BTW, since this patch is "Improve", I think you need to clarify why you
-bind it into the "bugfix" patch set for 2.6.30.  If there are known bug,
-please describe about it.
-
-
-Thanks,
-H.Seto
-
+Can you please respin the remains against current mainline?
