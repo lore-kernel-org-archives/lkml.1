@@ -1,82 +1,103 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1765665AbZDJLN1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934107AbZDJLRp@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1765665AbZDJLN1 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 10 Apr 2009 07:13:27 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756501AbZDJLNQ
+	id S934107AbZDJLRp (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 10 Apr 2009 07:17:45 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759871AbZDJLRe
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 10 Apr 2009 07:13:16 -0400
-Received: from hera.kernel.org ([140.211.167.34]:38948 "EHLO hera.kernel.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754167AbZDJLNP (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 10 Apr 2009 07:13:15 -0400
-Date: Fri, 10 Apr 2009 11:12:31 GMT
-From: Li Zefan <lizf@cn.fujitsu.com>
-To: linux-tip-commits@vger.kernel.org
-Cc: linux-kernel@vger.kernel.org, hpa@zytor.com, mingo@redhat.com,
-       penberg@cs.helsinki.fi, lizf@cn.fujitsu.com, fweisbec@gmail.com,
-       rostedt@goodmis.org, pq@iki.fi, tglx@linutronix.de, mingo@elte.hu
-Reply-To: mingo@redhat.com, hpa@zytor.com, linux-kernel@vger.kernel.org,
-       fweisbec@gmail.com, rostedt@goodmis.org, lizf@cn.fujitsu.com,
-       penberg@cs.helsinki.fi, pq@iki.fi, tglx@linutronix.de, mingo@elte.hu
-In-Reply-To: <49DE97EF.7080208@cn.fujitsu.com>
-References: <49DE97EF.7080208@cn.fujitsu.com>
-Subject: [tip:tracing/urgent] tracing: fix document references
-Message-ID: <tip-4d1f4372dbea068ba4ee3d98231133a4a4ee15bd@git.kernel.org>
-Git-Commit-ID: 4d1f4372dbea068ba4ee3d98231133a4a4ee15bd
-X-Mailer: tip-git-log-daemon
+	Fri, 10 Apr 2009 07:17:34 -0400
+Received: from mail-fx0-f158.google.com ([209.85.220.158]:42552 "EHLO
+	mail-fx0-f158.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757909AbZDJLRb (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 10 Apr 2009 07:17:31 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:to:cc:subject:message-id:references:mime-version
+         :content-type:content-disposition:in-reply-to:user-agent;
+        b=Ry/yTsl7yBRS0eCSz0pn6ZyTOGXllTxOnPu7XhrEiBp/nQtB5ldCd7QXrRa1FOIxAB
+         bxP8NOTFDRor4A5v5ZWhKQuCVzjnnuZ3xbPBERllfbM/RlveeDln3xivb43MKjGam0v5
+         JyX9wA4zPpai96aHe6/N6DSuXjw3OgjJjGc2c=
+Date: Fri, 10 Apr 2009 15:17:33 +0400
+From: Alexey Dobriyan <adobriyan@gmail.com>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: Matt Helsley <matthltc@us.ibm.com>, Tejun Heo <tj@kernel.org>,
+       Jeremy Fitzhardinge <jeremy@goop.org>, akpm@linux-foundation.org,
+       containers@lists.linux-foundation.org, xemul@parallels.com,
+       linux-kernel@vger.kernel.org, dave@linux.vnet.ibm.com,
+       hch@infradead.org, torvalds@linux-foundation.org
+Subject: Re: [PATCH 09/30] x86_64: ifdef out struct thread_struct::ip
+Message-ID: <20090410111733.GA3311@x200.localdomain>
+References: <20090410023522.GJ27788@x200.localdomain> <20090410035328.GB29496@us.ibm.com> <20090410091931.GF17962@elte.hu>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Fri, 10 Apr 2009 11:12:34 +0000 (UTC)
+In-Reply-To: <20090410091931.GF17962@elte.hu>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Commit-ID:  4d1f4372dbea068ba4ee3d98231133a4a4ee15bd
-Gitweb:     http://git.kernel.org/tip/4d1f4372dbea068ba4ee3d98231133a4a4ee15bd
-Author:     Li Zefan <lizf@cn.fujitsu.com>
-AuthorDate: Fri, 10 Apr 2009 08:48:36 +0800
-Committer:  Ingo Molnar <mingo@elte.hu>
-CommitDate: Fri, 10 Apr 2009 13:08:50 +0200
+On Fri, Apr 10, 2009 at 11:19:31AM +0200, Ingo Molnar wrote:
+> 
+> * Matt Helsley <matthltc@us.ibm.com> wrote:
+> 
+> > On Fri, Apr 10, 2009 at 06:35:22AM +0400, Alexey Dobriyan wrote:
+> > > struct thread_struct::ip isn't used on x86_64, struct pt_regs::ip is used
+> > > instead. 
+> > > 
+> > > kgdb should be reading 0, but I can't check it.
+> > > 
+> > > Signed-off-by: Alexey Dobriyan <adobriyan@gmail.com>
+> > > ---
+> > > 
+> > >  arch/x86/include/asm/processor.h |    2 ++
+> > >  arch/x86/kernel/kgdb.c           |    2 +-
+> > >  2 files changed, 3 insertions(+), 1 deletion(-)
+> > > 
+> > > --- a/arch/x86/include/asm/processor.h
+> > > +++ b/arch/x86/include/asm/processor.h
+> > > @@ -421,7 +421,9 @@ struct thread_struct {
+> > >  	unsigned short		fsindex;
+> > >  	unsigned short		gsindex;
+> > >  #endif
+> > > +#ifdef CONFIG_X86_32
+> > >  	unsigned long		ip;
+> > > +#endif
+> > >  #ifdef CONFIG_X86_64
+> > >  	unsigned long		fs;
+> > >  #endif
+> > 
+> > Do these make struct thread_struct behave better in cachelines 
+> > (smaller, less aliasing)? Can we really fit more in the slab du 
+> > jour?
+> > 
+> > Otherwise it seems like we're littering these structs with #ifdefs 
+> > and not really saving anything. [...]
+> 
+> Removing fields always saves memory (even if it does not show up 
+> currently due to allocators cache-aligning sizes).
+> 
+> But the #ifdef ugliness is a real worry.
 
-tracing: fix document references
+You should have thought about it when i386/x86_64 unification was
+introduced.
 
-When moving documents to Documentation/trace/, I forgot to
-grep Kconfig to find out those references.
+pagefault code was full of ifdefs (it's less now), and this is trivial
+ifdef in a header.
 
-Signed-off-by: Li Zefan <lizf@cn.fujitsu.com>
-Cc: Steven Rostedt <rostedt@goodmis.org>
-Cc: Frederic Weisbecker <fweisbec@gmail.com>
-Cc: Pekka Enberg <penberg@cs.helsinki.fi>
-Cc: Pekka Paalanen <pq@iki.fi>
-Cc: eduard.munteanu@linux360.ro
-LKML-Reference: <49DE97EF.7080208@cn.fujitsu.com>
-Signed-off-by: Ingo Molnar <mingo@elte.hu>
-
-
----
- kernel/trace/Kconfig |    4 ++--
- 1 files changed, 2 insertions(+), 2 deletions(-)
-
-diff --git a/kernel/trace/Kconfig b/kernel/trace/Kconfig
-index 2246141..417d198 100644
---- a/kernel/trace/Kconfig
-+++ b/kernel/trace/Kconfig
-@@ -312,7 +312,7 @@ config KMEMTRACE
- 	  and profile kernel code.
- 
- 	  This requires an userspace application to use. See
--	  Documentation/vm/kmemtrace.txt for more information.
-+	  Documentation/trace/kmemtrace.txt for more information.
- 
- 	  Saying Y will make the kernel somewhat larger and slower. However,
- 	  if you disable kmemtrace at run-time or boot-time, the performance
-@@ -403,7 +403,7 @@ config MMIOTRACE
- 	  implementation and works via page faults. Tracing is disabled by
- 	  default and can be enabled at run-time.
- 
--	  See Documentation/tracers/mmiotrace.txt.
-+	  See Documentation/trace/mmiotrace.txt.
- 	  If you are not helping to develop drivers, say N.
- 
- config MMIOTRACE_TEST
+> > [...] If these #ifdefs don't save any 
+> > space why not just put in a comment:
+> > 
+> > >  	unsigned long		ip; /* Used only on i386 */
+> 
+> Yes.
+> 
+> > Or maybe even:
+> > 
+> > 	union {
+> > 	  	unsigned long		ip; /* Used only on i386 */
+> > 	  	unsigned long		fs; /* Used only on x86_64 */
+> > 	};
+> 
+> Maybe. If this ever gets misunderstood somewhere in platform code we 
+> will get ugly failure modes and zero compiler help.
