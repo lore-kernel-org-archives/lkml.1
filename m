@@ -1,56 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S935381AbZDJQu1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S935563AbZDJQwY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S935381AbZDJQu1 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 10 Apr 2009 12:50:27 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762149AbZDJQuP
+	id S935563AbZDJQwY (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 10 Apr 2009 12:52:24 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1764012AbZDJQwO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 10 Apr 2009 12:50:15 -0400
-Received: from e32.co.us.ibm.com ([32.97.110.150]:40702 "EHLO
-	e32.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1760304AbZDJQuO (ORCPT
+	Fri, 10 Apr 2009 12:52:14 -0400
+Received: from zeniv.linux.org.uk ([195.92.253.2]:37112 "EHLO
+	ZenIV.linux.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1763215AbZDJQwO (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 10 Apr 2009 12:50:14 -0400
-From: Darren Hart <dvhltc@us.ibm.com>
-Subject: [tip PATCH V2] futex: fix futex_wait_setup key handling
-To: linux-kernel@vger.kernel.org
-Cc: Darren Hart <dvhltc@us.ibm.com>, Thomas Gleixner <tglx@linutronix.de>,
-       Ingo Molnar <mingo@elte.hu>
-Date: Fri, 10 Apr 2009 09:50:05 -0700
-Message-ID: <20090410165005.14342.16973.stgit@Aeon>
-User-Agent: StGIT/0.14.2
+	Fri, 10 Apr 2009 12:52:14 -0400
+Date: Fri, 10 Apr 2009 17:50:30 +0100
+From: Al Viro <viro@ZenIV.linux.org.uk>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: Ingo Molnar <mingo@elte.hu>, Tejun Heo <tj@kernel.org>,
+       Mike Travis <travis@sgi.com>,
+       Christoph Lameter <cl@linux-foundation.org>,
+       Heiko Carstens <heiko.carstens@de.ibm.com>,
+       Martin Schwidefsky <schwidefsky@de.ibm.com>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH] unbreak alpha percpu
+Message-ID: <20090410165030.GQ26366@ZenIV.linux.org.uk>
+References: <20090410151224.GM26366@ZenIV.linux.org.uk> <20090410154704.GN26366@ZenIV.linux.org.uk> <alpine.LFD.2.00.0904100915010.4583@localhost.localdomain>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <alpine.LFD.2.00.0904100915010.4583@localhost.localdomain>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-If the get_futex_key() call were to fail, the existing code would
-try and put_futex_key() prior to returning.  This patch makes sure
-we only put_futex_key() if get_futex_key() succeeded.
+On Fri, Apr 10, 2009 at 09:21:08AM -0700, Linus Torvalds wrote:
+> 
+> Hmm. I certainly personally _much_ prefer this version.
+> 
+> It looks like this actually simplifies things for S390 too (no more 
+> simple_identifier_##var games), and generally just looks better. And 
+> seeing that the S390 special case is no longer S390-specific is also a 
+> good sign, imho.
 
-Please apply to -rt and to tip:/core/futexes.
+simple_identifier_##var has been debris from back when Ingo forced
+s390 to use asm-generic/percpu.h; if you look at it, you'll see that
+a) it hadn't worked (look at the argument list carefully) and
+b) get_cpu_var() has the working version anyway
 
-Reported-by: Clark Williams <williams@redhat.com>
-Signed-off-by: Darren Hart <dvhltc@us.ibm.com>
-Cc: Thomas Gleixner <tglx@linutronix.de>
-Cc: Ingo Molnar <mingo@elte.hu>
----
+Less obvious part is that if it actually *would* work, we'd be screwed -
+unlike get_cpu_var() this sucker is called for things that are not
+simple variables; didn't happen for alpha, but did for s390.
 
- kernel/futex.c |    2 +-
- 1 files changed, 1 insertions(+), 1 deletions(-)
-
-diff --git a/kernel/futex.c b/kernel/futex.c
-index 185c981..47520d2 100644
---- a/kernel/futex.c
-+++ b/kernel/futex.c
-@@ -1645,7 +1645,7 @@ retry:
- 	q->key = FUTEX_KEY_INIT;
- 	ret = get_futex_key(uaddr, fshared, &q->key);
- 	if (unlikely(ret != 0))
--		goto out;
-+		return ret;
- 
- retry_private:
- 	*hb = queue_lock(q);
-
+IOW, that's just an old piece of junk that got removed now.
