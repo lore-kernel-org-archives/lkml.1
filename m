@@ -1,60 +1,112 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S936433AbZDJGk1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S937094AbZDJGtV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S936433AbZDJGk1 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 10 Apr 2009 02:40:27 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758974AbZDJGkK
+	id S937094AbZDJGtV (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 10 Apr 2009 02:49:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758974AbZDJGtK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 10 Apr 2009 02:40:10 -0400
-Received: from e23smtp02.au.ibm.com ([202.81.31.144]:58340 "EHLO
-	e23smtp02.au.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753139AbZDJGkI (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 10 Apr 2009 02:40:08 -0400
-Message-ID: <49DEE9C2.1040500@in.ibm.com>
-Date: Fri, 10 Apr 2009 12:10:02 +0530
-From: Sachin Sant <sachinp@in.ibm.com>
-User-Agent: Thunderbird 2.0.0.19 (X11/20081216)
+	Fri, 10 Apr 2009 02:49:10 -0400
+Received: from mga14.intel.com ([143.182.124.37]:10326 "EHLO mga14.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751728AbZDJGtJ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 10 Apr 2009 02:49:09 -0400
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.40,165,1239001200"; 
+   d="scan'208";a="130020299"
+Date: Fri, 10 Apr 2009 14:48:45 +0800
+From: Wu Fengguang <fengguang.wu@intel.com>
+To: Ying Han <yinghan@google.com>
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+       "linux-mm@kvack.org" <linux-mm@kvack.org>,
+       linux-kernel <linux-kernel@vger.kernel.org>,
+       "torvalds@linux-foundation.org" <torvalds@linux-foundation.org>,
+       Ingo Molnar <mingo@elte.hu>, Mike Waychison <mikew@google.com>,
+       Rohit Seth <rohitseth@google.com>, Hugh Dickins <hugh@veritas.com>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>,
+       "H. Peter Anvin" <hpa@zytor.com>,
+       =?utf-8?B?VMO2csO2aw==?= Edwin <edwintorok@gmail.com>,
+       Lee Schermerhorn <lee.schermerhorn@hp.com>,
+       Nick Piggin <npiggin@suse.de>
+Subject: Re: [PATCH][1/2]page_fault retry with NOPAGE_RETRY
+Message-ID: <20090410064845.GA21149@localhost>
+References: <604427e00904081302m7b29c538u7781cd8f4dd576f2@mail.gmail.com> <20090409230205.310c68a7.akpm@linux-foundation.org> <604427e00904092332w7e7a3004ne983abc373dd186b@mail.gmail.com>
 MIME-Version: 1.0
-To: Jens Axboe <jens.axboe@oracle.com>
-CC: linuxppc-dev@ozlabs.org, Stephen Rothwell <sfr@canb.auug.org.au>,
-       linux-next@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>
-Subject: Re: [CFQ/OOPS]  rb_erase with April 9 next tree
-References: <20090409163305.8c7a0371.sfr@canb.auug.org.au> <49DE1969.1000709@in.ibm.com> <20090409172918.GE5178@kernel.dk> <20090409174420.GG5178@kernel.dk>
-In-Reply-To: <20090409174420.GG5178@kernel.dk>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <604427e00904092332w7e7a3004ne983abc373dd186b@mail.gmail.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Jens Axboe wrote:
->
-> Can you see if this fixes it for you?
->
-> diff --git a/block/cfq-iosched.c b/block/cfq-iosched.c
-> index e01b103..64de5c0 100644
-> --- a/block/cfq-iosched.c
-> +++ b/block/cfq-iosched.c
-> @@ -1654,6 +1654,7 @@ retry:
->  		}
->
->  		RB_CLEAR_NODE(&cfqq->rb_node);
-> +		RB_CLEAR_NODE(&cfqq->p_node);
->  		INIT_LIST_HEAD(&cfqq->fifo);
->
->  		atomic_set(&cfqq->ref, 0);
->   
-Yes. The above patch fixed this oops. Thanks
+On Fri, Apr 10, 2009 at 02:32:01PM +0800, Ying Han wrote:
+> 2009/4/9 Andrew Morton <akpm@linux-foundation.org>:
+> >
+> >> Subject: [PATCH][1/2]page_fault retry with NOPAGE_RETRY
+> >
+> > Please give each patch in the series a unique and meaningful title.
+> >
+> > On Wed, 8 Apr 2009 13:02:35 -0700 Ying Han <yinghan@google.com> wrote:
+> >
+> >> support for FAULT_FLAG_RETRY with no user change:
+> >
+> > yup, we'd prefer a complete changelog here please.
+> >
+> >> Signed-off-by: Ying Han <yinghan@google.com>
+> >>              Mike Waychison <mikew@google.com>
+> >
+> > This form:
+> >
+> > Signed-off-by: Ying Han <yinghan@google.com>
+> > Signed-off-by: Mike Waychison <mikew@google.com>
+> 
+> Thanks Andrew,  and i need to add Fengguang to Signed-off-by.
 
-Regards
--Sachin
+Thank you.
 
--- 
+> >
+> > is conventional.
+> >
+> >> index 4a853ef..29c2c39 100644
+> >> --- a/include/linux/fs.h
+> >> +++ b/include/linux/fs.h
+> >> @@ -793,7 +793,7 @@ struct file_ra_state {
+> >>                                          there are only # of pages ahead */
+> >>
+> >>       unsigned int ra_pages;          /* Maximum readahead window */
+> >> -     int mmap_miss;                  /* Cache miss stat for mmap accesses */
+> >> +     unsigned int mmap_miss;         /* Cache miss stat for mmap accesses */
+> >
+> > This change makes sense, but we're not told the reasons for making it?
+> > Did it fix a bug, or is it an unrelated fixlet, or...?
+> 
+> Fengguang: Could you help making comments on this part? and i will
+> make changes elsewhere as Andrew pointed. Thanks
 
----------------------------------
-Sachin Sant
-IBM Linux Technology Center
-India Systems and Technology Labs
-Bangalore, India
----------------------------------
+Ah this may deserve a standalone patch:
+---
+readhead: make mmap_miss an unsigned int
 
+This makes the performance impact of possible mmap_miss wrap around to be
+temporary and tolerable: i.e. MMAP_LOTSAMISS=100 extra readarounds.
+
+Otherwise if ever mmap_miss wraps around to negative, it takes INT_MAX
+cache misses to bring it back to normal state.  During the time mmap
+readaround will be _enabled_ for whatever wild random workload. That's
+almost permanent performance impact.
+
+Signed-off-by: Wu Fengguang <fengguang.wu@intel.com>
+---
+ include/linux/fs.h |    2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+--- mm.orig/include/linux/fs.h
++++ mm/include/linux/fs.h
+@@ -824,7 +824,7 @@ struct file_ra_state {
+ 					   there are only # of pages ahead */
+ 
+ 	unsigned int ra_pages;		/* Maximum readahead window */
+-	int mmap_miss;			/* Cache miss stat for mmap accesses */
++	unsigned int mmap_miss;		/* Cache miss stat for mmap accesses */
+ 	loff_t prev_pos;		/* Cache last read() position */
+ };
+ 
