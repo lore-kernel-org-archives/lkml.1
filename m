@@ -1,89 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752582AbZDJEa2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754161AbZDJEib@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752582AbZDJEa2 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 10 Apr 2009 00:30:28 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751341AbZDJEaO
+	id S1754161AbZDJEib (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 10 Apr 2009 00:38:31 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751747AbZDJEiV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 10 Apr 2009 00:30:14 -0400
-Received: from hera.kernel.org ([140.211.167.34]:54777 "EHLO hera.kernel.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751122AbZDJEaN (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 10 Apr 2009 00:30:13 -0400
-Subject: Re: [PATCH -tip] x86: ftrace.c declare prepare_ftrace_return
- before they get used
-From: Jaswinder Singh Rajput <jaswinder@kernel.org>
-To: Steven Rostedt <rostedt@goodmis.org>
-Cc: Frederic Weisbecker <fweisbec@gmail.com>, Ingo Molnar <mingo@elte.hu>,
-       x86 maintainers <x86@kernel.org>, LKML <linux-kernel@vger.kernel.org>,
-       josh@freedesktop.org
-In-Reply-To: <alpine.DEB.2.00.0904091452590.21189@gandalf.stny.rr.com>
-References: <1239295068.3296.20.camel@ht.satnam>
-	 <20090409172053.GA6033@nowhere> <1239298915.3296.24.camel@ht.satnam>
-	 <alpine.DEB.2.00.0904091452590.21189@gandalf.stny.rr.com>
-Content-Type: text/plain
-Date: Fri, 10 Apr 2009 09:59:55 +0530
-Message-Id: <1239337795.3036.25.camel@ht.satnam>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.24.5 (2.24.5-1.fc10) 
+	Fri, 10 Apr 2009 00:38:21 -0400
+Received: from fgwmail6.fujitsu.co.jp ([192.51.44.36]:50437 "EHLO
+	fgwmail6.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751187AbZDJEiU (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 10 Apr 2009 00:38:20 -0400
+Message-ID: <49DECD2F.6060708@jp.fujitsu.com>
+Date: Fri, 10 Apr 2009 13:38:07 +0900
+From: Hidetoshi Seto <seto.hidetoshi@jp.fujitsu.com>
+User-Agent: Thunderbird 2.0.0.21 (Windows/20090302)
+MIME-Version: 1.0
+To: Andi Kleen <andi@firstfloor.org>
+CC: ying.huang@intel.com, hpa@zytor.com, linux-kernel@vger.kernel.org,
+       mingo@elte.hu, tglx@linutronix.de
+Subject: Re: [PATCH] [3/4] x86: MCE: Improve mce_get_rip
+References: <20090407506.675031434@firstfloor.org> <20090407150656.43E161D046D@basil.firstfloor.org> <49DC5D11.4060505@jp.fujitsu.com> <87eiw3a29h.fsf@basil.nowhere.org> <49DD80B4.5060301@jp.fujitsu.com> <20090409071413.GD14687@one.firstfloor.org> <49DDC70E.2000602@jp.fujitsu.com> <20090409101349.GH14687@one.firstfloor.org>
+In-Reply-To: <20090409101349.GH14687@one.firstfloor.org>
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 2009-04-09 at 14:55 -0400, Steven Rostedt wrote:
+Andi Kleen wrote:
+>> Following is a proposal version. Maybe dividing it into 2 pieces, function
+>> improvement and MSR definition, would be a good idea.
 > 
-> On Thu, 9 Apr 2009, Jaswinder Singh Rajput wrote:
+> I don't think we need the full MSR definitions right now, at least 
+> I don't have any plans to support them. After all current CPUs
+> don't.
 > 
-> > 
-> > Subject: [PATCH] x86: ftrace.c declare prepare_ftrace_return before they get used
-> > 
-> > Impact: fix sparse warning:
-> >   arch/x86/kernel/ftrace.c:411:6: warning: symbol 'prepare_ftrace_return' was not declared. Should it be static?
-> > 
-> > Signed-off-by: Jaswinder Singh Rajput <jaswinderrajput@gmail.com>
-> > ---
-> >  arch/x86/include/asm/ftrace.h |    5 +++++
-> >  1 files changed, 5 insertions(+), 0 deletions(-)
-> > 
-> > diff --git a/arch/x86/include/asm/ftrace.h b/arch/x86/include/asm/ftrace.h
-> > index bd2c651..ddc9236 100644
-> > --- a/arch/x86/include/asm/ftrace.h
-> > +++ b/arch/x86/include/asm/ftrace.h
-> > @@ -59,6 +59,11 @@ struct dyn_arch_ftrace {
-> >  };
-> >  
-> >  #endif /*  CONFIG_DYNAMIC_FTRACE */
-> > +
-> > +#ifdef CONFIG_FUNCTION_GRAPH_TRACER
-> > +extern void prepare_ftrace_return(unsigned long *, unsigned long);
-> > +#endif
-> > +
-> 
-> The only caller is from assembly, so this patch is unnecessary. Unless we 
-> have some rule that all functions must have a prototype, even when it is 
-> only called from assembly.
-> 
+> The rest looks good.
 
-Then:
+Thanks.
 
-diff --git a/arch/x86/kernel/ftrace.c b/arch/x86/kernel/ftrace.c
-index 18dfa30..75c0682 100644
---- a/arch/x86/kernel/ftrace.c
-+++ b/arch/x86/kernel/ftrace.c
-@@ -408,6 +408,7 @@ int ftrace_disable_ftrace_graph_caller(void)
-  * Hook the return address and push it in the stack of return addrs
-  * in current thread info.
-  */
-+asmlinkage
- void prepare_ftrace_return(unsigned long *parent, unsigned long self_addr)
- {
-        unsigned long old;
+I still believe that using MSR which only available on 32bit from 64bit
+code is not right thing.  However this is not logical bug, and adding
+definition is not suitable for 2.6.30.  I'd like to defer the MSR part
+to the next time.
+
+BTW, since this patch is "Improve", I think you need to clarify why you
+bind it into the "bugfix" patch set for 2.6.30.  If there are known bug,
+please describe about it.
 
 
-Josh: Do you think sparse should not warn like for this case.
-What will be the best solution for this case.
-
---
-JSR
-
+Thanks,
+H.Seto
 
