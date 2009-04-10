@@ -1,101 +1,94 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S936422AbZDJRtW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S939131AbZDJRuB@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S936422AbZDJRtW (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 10 Apr 2009 13:49:22 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1764908AbZDJRtG
+	id S939131AbZDJRuB (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 10 Apr 2009 13:50:01 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S936531AbZDJRtt
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 10 Apr 2009 13:49:06 -0400
-Received: from fg-out-1718.google.com ([72.14.220.153]:32266 "EHLO
-	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751550AbZDJRtD convert rfc822-to-8bit (ORCPT
+	Fri, 10 Apr 2009 13:49:49 -0400
+Received: from smtp-out.google.com ([216.239.45.13]:25756 "EHLO
+	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1764908AbZDJRts convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 10 Apr 2009 13:49:03 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
-         :cc:content-type:content-transfer-encoding;
-        b=tTfozlgXeTGgN9iM62RpLqiOPCKdhy+IYm+SQXtwipq0P9OyLG7AmY1frQBh1mgVSm
-         82Mtsv1IGNSAvHijMlGRvSLRNjQKP0oZOnMc3ZsR6tI4jGLlyzI1gZlkIxGgvy+mmX7q
-         rC28bSPpMi3jvkZe5+ROGlJMt1MT/l/6xW7jk=
+	Fri, 10 Apr 2009 13:49:48 -0400
+DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
+	h=mime-version:in-reply-to:references:date:message-id:subject:from:to:
+	cc:content-type:content-transfer-encoding:x-system-of-record;
+	b=ackh65dtxmKfS61QVh6077zDOkBbacxl1Bba9fuQshbLXs25XPvkP/eZjLFV8Y0lt
+	mDp98Tbwb9igIuer3/H4g==
 MIME-Version: 1.0
-In-Reply-To: <69e28c910904100953uc0c0811i6ea8dee19a956951@mail.gmail.com>
-References: <15d0b9b20904100916u3ff85ff5gd7a989120b7c048f@mail.gmail.com>
-	 <69e28c910904100953uc0c0811i6ea8dee19a956951@mail.gmail.com>
-Date: Fri, 10 Apr 2009 19:49:01 +0200
-Message-ID: <15d0b9b20904101049h1020f9d7yec3242e3c7cbc06b@mail.gmail.com>
-Subject: Re: Additional USB identifier for otus driver [WN111v2]
-From: Daniele Napolitano <dnax88@gmail.com>
-To: =?UTF-8?Q?G=C3=A1bor_Stefanik?= <netrolller.3d@gmail.com>
-Cc: linux-kernel@vger.kernel.org, linux-wireless@vger.kernel.org,
-       akpm@linux-foundation.org, gregkh@suse.de
-Content-Type: text/plain; charset=UTF-8
+In-Reply-To: <49DF1256.7080403@cn.fujitsu.com>
+References: <1236823015-4183-1-git-send-email-vgoyal@redhat.com>
+	 <49DF1256.7080403@cn.fujitsu.com>
+Date: Fri, 10 Apr 2009 10:49:39 -0700
+Message-ID: <e98e18940904101049u6b40801dhb671081c3cf2418@mail.gmail.com>
+Subject: Re: [RFC] IO Controller
+From: Nauman Rafique <nauman@google.com>
+To: Gui Jianfeng <guijianfeng@cn.fujitsu.com>
+Cc: Vivek Goyal <vgoyal@redhat.com>, dpshah@google.com, lizf@cn.fujitsu.com,
+       mikew@google.com, fchecconi@gmail.com, paolo.valente@unimore.it,
+       jens.axboe@oracle.com, ryov@valinux.co.jp, fernando@intellilink.co.jp,
+       s-uchida@ap.jp.nec.com, taka@valinux.co.jp, arozansk@redhat.com,
+       jmoyer@redhat.com, oz-kernel@redhat.com, dhaval@linux.vnet.ibm.com,
+       balbir@linux.vnet.ibm.com, linux-kernel@vger.kernel.org,
+       containers@lists.linux-foundation.org, akpm@linux-foundation.org,
+       menage@google.com, peterz@infradead.org
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 8BIT
+X-System-Of-Record: true
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-2009/4/10 Gábor Stefanik <netrolller.3d@gmail.com>:
-> On Fri, Apr 10, 2009 at 6:16 PM, Daniele Napolitano <dnax88@gmail.com> wrote:
->> This is a patch for Otus driver [Atheros 9k series] that provide
->> support for WN111v2 USB 802.11n
->> adapter.
+On Fri, Apr 10, 2009 at 2:33 AM, Gui Jianfeng
+<guijianfeng@cn.fujitsu.com> wrote:
+> Vivek Goyal wrote:
+>> Hi All,
 >>
->> Otus sources tree: OAL/Otus/Linux
->>
->> --- zdusb.h.orig        2009-04-10 17:48:17.620423000 +0200
->> +++ zdusb.h     2009-04-10 17:54:41.356419568 +0200
->> @@ -26,5 +26,9 @@
->>
->>
->>  #define VENDOR_DLINK            0x07D1  //Dlink
->>
->>  #define PRODUCT_DWA160A         0x3C10
->>
->> +
->> +#define VENDOR_NETGEAR          0x0846  //NetGear
->> +#define PRODUCT_WNDA3100        0x9010
->> +#define PRODUCT_WN111v2         0x9001
->>
->>
->>  #endif
->>
->>
->> --- zdusb.c.orig        2009-04-10 17:48:17.620423000 +0200
->> +++ zdusb.c     2009-04-10 17:53:15.316421516 +0200
->> @@ -36,7 +36,8 @@
->>  static struct usb_device_id zd1221_ids [] = {
->>
->>        { USB_DEVICE(VENDOR_ATHR, PRODUCT_AR9170) },
->>
->>         { USB_DEVICE(VENDOR_DLINK, PRODUCT_DWA160A) },
->>
->> -       { USB_DEVICE(0x0846, 0x9010) },
->>
->> +       { USB_DEVICE(VENDOR_NETGEAR, PRODUCT_WNDA3100) },
->> +       { USB_DEVICE(VENDOR_NETGEAR, PRODUCT_WN111v2) },
->>
->>        { }                                     /* Terminating entry */
->>
->>  };
->>
->>
->>
->>
->> --
->> Daniele "DnaX" Napolitano
->> https://launchpad.net/~dnax88
->> http://dnax.netsons.org/
->> --
->> To unsubscribe from this list: send the line "unsubscribe linux-wireless" in
->> the body of a message to majordomo@vger.kernel.org
->> More majordomo info at  http://vger.kernel.org/majordomo-info.html
->>
+>> Here is another posting for IO controller patches. Last time I had posted
+>> RFC patches for an IO controller which did bio control per cgroup.
 >
-> Need the same for ar9170.
+> �Hi Vivek,
+>
+> �I got the following OOPS when testing, can't reproduce again :(
+>
+> kernel BUG at block/elevator-fq.c:1396!
+> invalid opcode: 0000 [#1] SMP
+> last sysfs file: /sys/block/hdb/queue/scheduler
+> Modules linked in: ipv6 cpufreq_ondemand acpi_cpufreq dm_mirror dm_multipath sbd
+> Pid: 5032, comm: rmdir Not tainted (2.6.29-rc7-vivek #17) Veriton M460
+> EIP: 0060:[<c04ec7de>] EFLAGS: 00010082 CPU: 0
+> EIP is at iocg_destroy+0xdc/0x14e
+> EAX: 00000000 EBX: f62278b4 ECX: f6207800 EDX: f6227904
+> ESI: f6227800 EDI: f62278a0 EBP: 00000003 ESP: c8790f00
+> �DS: 007b ES: 007b FS: 00d8 GS: 0033 SS: 0068
+> Process rmdir (pid: 5032, ti=c8790000 task=f6636960 task.ti=c8790000)
+> Stack:
+> �f53cc5c0 f62b7258 f10991c8 00000282 f6227800 c0733fa0 ec1c5140 edfc6d34
+> �c8790000 c04463ce f6a4c84c edfc6d34 0804c840 c048883c f6a4c84c f6a4c84c
+> �c04888d6 f6a4c84c 00000000 c04897de f6a4c84c c048504c f115f4c0 ebc37954
+> Call Trace:
+> �[<c04463ce>] cgroup_diput+0x41/0x8c
+> �[<c048883c>] dentry_iput+0x45/0x5e
+> �[<c04888d6>] d_kill+0x19/0x32
+> �[<c04897de>] dput+0xd8/0xdf
+> �[<c048504c>] do_rmdir+0x8f/0xb6
+> �[<c06330fc>] do_page_fault+0x2a2/0x579
+> �[<c0402fc1>] sysenter_do_call+0x12/0x21
+> �[<c0630000>] schedule+0x641/0x830
+> Code: 08 00 74 04 0f 0b eb fe 83 7f 04 00 74 04 0f 0b eb fe 45 83 c3 1c 83 fd 0
+> EIP: [<c04ec7de>] iocg_destroy+0xdc/0x14e SS:ESP 0068:c8790f00
 
-Already present. Look at main.c at line 52 of ar9170 tree.
+We have seen this too. And have been able to reproduce it. I did not
+get a chance to fix it so far, but my understanding is that one of the
+async queues was active when the cgroup was getting destroyed. We
+moved it to root cgroup, but did not deactivate it; so active_entity
+still points to the entity of the async queue which has now been moved
+to the root cgroup. I will send an update if I can verify this, or fix
+it.
 
--- 
-Daniele "DnaX" Napolitano
-https://launchpad.net/~dnax88
-http://dnax.netsons.org/
+>
+> --
+> Regards
+> Gui Jianfeng
+>
+>
