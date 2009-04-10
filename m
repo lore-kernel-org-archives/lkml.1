@@ -1,52 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S935563AbZDJQwY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S936651AbZDJQxU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S935563AbZDJQwY (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 10 Apr 2009 12:52:24 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1764012AbZDJQwO
+	id S936651AbZDJQxU (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 10 Apr 2009 12:53:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933677AbZDJQw6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 10 Apr 2009 12:52:14 -0400
-Received: from zeniv.linux.org.uk ([195.92.253.2]:37112 "EHLO
-	ZenIV.linux.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1763215AbZDJQwO (ORCPT
+	Fri, 10 Apr 2009 12:52:58 -0400
+Received: from fg-out-1718.google.com ([72.14.220.155]:26917 "EHLO
+	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1759041AbZDJQw5 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 10 Apr 2009 12:52:14 -0400
-Date: Fri, 10 Apr 2009 17:50:30 +0100
-From: Al Viro <viro@ZenIV.linux.org.uk>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: Ingo Molnar <mingo@elte.hu>, Tejun Heo <tj@kernel.org>,
-       Mike Travis <travis@sgi.com>,
-       Christoph Lameter <cl@linux-foundation.org>,
-       Heiko Carstens <heiko.carstens@de.ibm.com>,
-       Martin Schwidefsky <schwidefsky@de.ibm.com>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH] unbreak alpha percpu
-Message-ID: <20090410165030.GQ26366@ZenIV.linux.org.uk>
-References: <20090410151224.GM26366@ZenIV.linux.org.uk> <20090410154704.GN26366@ZenIV.linux.org.uk> <alpine.LFD.2.00.0904100915010.4583@localhost.localdomain>
+	Fri, 10 Apr 2009 12:52:57 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
+         :cc:content-type:content-transfer-encoding;
+        b=YaJI5yvz15A4yTVJL5o52hxRZhG0JKx2PjQgouYsn5lPXhocqgrjIFzbtyuPjy0ufv
+         1Y+H19OuFhVMddBGJAg3K58cbtMJTo4KoM/8YUPARBB9zizzA6j9EE6WbueeltzSDyrD
+         aaekQlejPHAaiu6moEGcqAOUYgFvQ0QL3bhAg=
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <alpine.LFD.2.00.0904100915010.4583@localhost.localdomain>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+In-Reply-To: <alpine.LFD.2.00.0904101819070.21577@localhost.localdomain>
+References: <8db1092f0904070037q426fd8dcx4aa48c70e40b5d6c@mail.gmail.com>
+	 <20090409212028.7b2aa88c.akpm@linux-foundation.org>
+	 <8db1092f0904100340g7b7eb310y805e8680a32e3ac8@mail.gmail.com>
+	 <alpine.LFD.2.00.0904101329170.21577@localhost.localdomain>
+	 <8db1092f0904100747w297a0daas9ebd05486d06e706@mail.gmail.com>
+	 <alpine.LFD.2.00.0904101819070.21577@localhost.localdomain>
+Date: Fri, 10 Apr 2009 18:52:55 +0200
+Message-ID: <8db1092f0904100952x64048907gea6bbaf25488de26@mail.gmail.com>
+Subject: Re: [2.6.29-git12] BUG: scheduling while atomic: swapper/0/0x10000100
+From: Maciej Rutecki <maciej.rutecki@gmail.com>
+To: Thomas Gleixner <tglx@linutronix.de>
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       linux-bluetooth@vger.kernel.org, marcel@holtmann.org
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Apr 10, 2009 at 09:21:08AM -0700, Linus Torvalds wrote:
-> 
-> Hmm. I certainly personally _much_ prefer this version.
-> 
-> It looks like this actually simplifies things for S390 too (no more 
-> simple_identifier_##var games), and generally just looks better. And 
-> seeing that the S390 special case is no longer S390-specific is also a 
-> good sign, imho.
+(Forgot CC)
 
-simple_identifier_##var has been debris from back when Ingo forced
-s390 to use asm-generic/percpu.h; if you look at it, you'll see that
-a) it hadn't worked (look at the argument list carefully) and
-b) get_cpu_var() has the working version anyway
+2009/4/10 Thomas Gleixner <tglx@linutronix.de>:
 
-Less obvious part is that if it actually *would* work, we'd be screwed -
-unlike get_cpu_var() this sucker is called for things that are not
-simple variables; didn't happen for alpha, but did for s390.
+>
+> Is this with my patch applied ?
 
-IOW, that's just an old piece of junk that got removed now.
+Yes. I didn't observe any change.
+
+-- 
+Maciej Rutecki
+http://www.maciek.unixy.pl
