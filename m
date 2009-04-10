@@ -1,71 +1,91 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S938743AbZDJPU2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S938802AbZDJPVH@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S938743AbZDJPU2 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 10 Apr 2009 11:20:28 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S938668AbZDJPTy
+	id S938802AbZDJPVH (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 10 Apr 2009 11:21:07 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S938668AbZDJPUt
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 10 Apr 2009 11:19:54 -0400
-Received: from Mycroft.westnet.com ([216.187.52.7]:51765 "EHLO
-	Mycroft.westnet.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S938680AbZDJPTw (ORCPT
+	Fri, 10 Apr 2009 11:20:49 -0400
+Received: from yw-out-2324.google.com ([74.125.46.28]:64770 "EHLO
+	yw-out-2324.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S938692AbZDJPUr (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 10 Apr 2009 11:19:52 -0400
+	Fri, 10 Apr 2009 11:20:47 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=sender:date:from:to:cc:subject:message-id:references:mime-version
+         :content-type:content-disposition:in-reply-to:user-agent;
+        b=is3AvVRjG+Cx/cpJKf2JY/E1tIs2PBFQSoE5dbtdvXjRPIJG288SFOVArF9lRI0v0v
+         GvNFJGB0LXZbXrTpUdyaji0ODLze8SzuKnr4YDWJEgvGDj12sN9u1mDU+hIagz222Lyc
+         lxiSfbiZvjN1C9LpQHHMUUQjh6iFAYh2VBoIU=
+Date: Fri, 10 Apr 2009 18:21:22 +0300
+From: Eduard - Gabriel Munteanu <eduard.munteanu@linux360.ro>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: Zhaolei <zhaolei@cn.fujitsu.com>, Pekka Enberg <penberg@cs.helsinki.fi>,
+       Steven Rostedt <rostedt@goodmis.org>,
+       Frederic Weisbecker <fweisbec@gmail.com>,
+       Tom Zanussi <tzanussi@gmail.com>, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 1/2] ftrace: Separate include/trace/kmemtrace.h to
+	kmemtrace part and tracepoint part
+Message-ID: <20090410152121.GA5505@localhost>
+References: <49DEE68A.5040902@cn.fujitsu.com> <20090410110303.GB21506@elte.hu>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
-Message-ID: <18911.25419.893747.465556@stoffel.org>
-Date: Fri, 10 Apr 2009 11:18:35 -0400
-From: "John Stoffel" <john@stoffel.org>
-To: Pete Zaitcev <zaitcev@redhat.com>
-Cc: "John Stoffel" <john@stoffel.org>, Jarek Poplawski <jarkao2@gmail.com>,
-       linux-kernel@vger.kernel.org, netdev@vger.kernel.org,
-       linux-usb@vger.kernel.org
-Subject: Re: usb_mon oops Re: tcpdump crashes 2.6.29.1 (and 2.6.29-rc5)
-In-Reply-To: <20090410002435.52794220.zaitcev@redhat.com>
-References: <18906.49779.243047.207639@stoffel.org>
-	<20090407120022.GA6519@ff.dom.local>
-	<18907.28788.965069.573489@stoffel.org>
-	<20090407130403.e0061a8d.zaitcev@redhat.com>
-	<18908.42166.404232.721757@stoffel.org>
-	<20090408232344.afed8103.zaitcev@redhat.com>
-	<18910.46709.707557.135033@stoffel.org>
-	<20090410002435.52794220.zaitcev@redhat.com>
-X-Mailer: VM 8.0.9 under Emacs 22.3.1 (i486-pc-linux-gnu)
+Content-Disposition: inline
+In-Reply-To: <20090410110303.GB21506@elte.hu>
+User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Fri, Apr 10, 2009 at 01:03:03PM +0200, Ingo Molnar wrote:
+> 
+> * Zhaolei <zhaolei@cn.fujitsu.com> wrote:
+> 
+> > Current kmemtrace.h is used both as header file of kmemtrace and kmem's
+> > tracepoints definition.
+> > Tracepoints' definition file may be used by other code, and should only have
+> > definition of tracepoint.
+> > 
+> > We can separate include/trace/kmemtrace.h into 2 files:
+> >   include/linux/kmemtrace.h: header file for kmemtrace
+> >   include/trace/kmem.h:      definition of kmem tracepoints
+> > 
+> > Signed-off-by: Zhao Lei <zhaolei@cn.fujitsu.com>
+> > ---
+> >  include/linux/kmemtrace.h             |   25 +++++++++++++++++++++++++
+> >  include/linux/slab_def.h              |    2 +-
+> >  include/linux/slub_def.h              |    2 +-
+> >  include/trace/{kmemtrace.h => kmem.h} |   25 +++----------------------
+> >  init/main.c                           |    2 +-
+> >  kernel/trace/kmemtrace.c              |    2 +-
+> >  kernel/trace/trace.h                  |    2 +-
+> >  mm/slab.c                             |    2 +-
+> >  mm/slob.c                             |    2 +-
+> >  mm/slub.c                             |    2 +-
+> >  10 files changed, 36 insertions(+), 30 deletions(-)
+> >  create mode 100644 include/linux/kmemtrace.h
+> >  rename include/trace/{kmemtrace.h => kmem.h} (78%)
+> 
+> Pekka, Eduard, do you agree with these two patches? Converting those 
+> tracepoints to TRACE_EVENT() is really nice. The above include file 
+> restructuring makes sense too - it separates tracepoint definition 
+> from the plugin init method.
+> 
+> 	Ingo
 
-Pete> On Thu, 9 Apr 2009 23:01:09 -0400, "John Stoffel" <john@stoffel.org> wrote:
->> Any suggestions of a known good state I should start bisection from?
+Yes, these two patches look great. The first one makes the kmem
+tracepoints usable by other things (e.g. kmemcheck) in a
+kmemtrace-independent fashion, which is nice. Thanks, Zhao.
 
-Pete> No suggestions, sorry. The part of usbmon that peeks at DMA-ed
-Pete> data wasn't touched since December 2006. It worked fine since
-Pete> then, your oops is the first. So, I don't expect bisection to
-Pete> help.  At best you're going to find the commit where uvcvideo
-Pete> was merged.
+One thing I don't actually get is why have kmem_event_types.h separate
+from kmem.h, but it's not really an issue, I see other tracers doing the
+same thing. Other than that, it looks fine although I didn't test. Here's
+the ack if you need it:
 
-I guess my next step would be to unload that module and see if the
-crash happens while I have usbmon loaded.
+Acked-by: Eduard - Gabriel Munteanu <eduard.munteanu@linux360.ro>
 
-Pete> The right way forward is to deduce what's going on, IMHO. Maybe
-Pete> usbmon is trying to take an address in the GART aperture and
-Pete> convert it into a struct page. Or the direction in URB
-Pete> mismatches endpoint.  Or any number of other things.
+Pekka?
 
-I do have the Radeon driver installed, with DRI, etc.  
 
-Pete> I'm working on it, but I'm not done with puzzling out the dmesg
-Pete> you sent me, sorry again.
-
-Let me know if you want me to put in debugging messages or try for
-more netconsole output.  I built a bunch of kernels last night, but
-ran out of reboot time (learning git...) to test them.  I figured I'd
-go back to 2.6.26 and see if I had the problem there.  If not, it's a
-good start for bisection.
-
-I'll keep poking at this, though tax time is starting to fill my time
-right now too.  :]
-
-John
+	Eduard
 
