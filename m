@@ -1,32 +1,45 @@
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S936762AbZDIUuT (ORCPT <rfc822;list-kernel77@spinics.net>);
-	Thu, 9 Apr 2009 16:50:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S936684AbZDIUtv
+	id S1756049AbZDJAdb (ORCPT <rfc822;list-kernel77@spinics.net>);
+	Thu, 9 Apr 2009 20:33:31 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753341AbZDJAdU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 9 Apr 2009 16:49:51 -0400
-Received: from cp-out1.libero.it ([212.52.84.101]:44525 "EHLO
-	cp-out1.libero.it" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S936611AbZDIUtu convert rfc822-to-8bit (ORCPT
+	Thu, 9 Apr 2009 20:33:20 -0400
+Received: from 195-5-179-67.altanusprivatemedia.com ([195.5.179.67]:37240 "EHLO
+	mx11.localdomain" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1753142AbZDJAdU (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 9 Apr 2009 16:49:50 -0400
-Date: Thu,  9 Apr 2009 22:43:34 +0200
-Message-Id: <KHUPKM$71DFF459641DD1FCED418B0009F85251@libero.it>
-Subject: very urgent
+	Thu, 9 Apr 2009 20:33:20 -0400
+X-Greylist: delayed 1424 seconds by postgrey-1.27 at vger.kernel.org; Thu, 09 Apr 2009 20:33:20 EDT
 MIME-Version: 1.0
-X-Sensitivity: 3
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7BIT
-From: "suleman_m023" <suleman_m023@libero.it>
-X-XaM3-API-Version: 4.3 (R1) (B3pl25)
-X-SenderIP: 41.203.237.104
-To: unlisted-recipients:; (no To-header on input)
+From: "Alexandra" <Alex@Geld-Feuerwerk.info>
+User-Agent: Microsoft-Entourage/10.1.4.030702.0
+X-BounceID: 708bf6bf7f0f46c495996b838e616a5e
+Subject: Vor Ostern noch Geld verdienen
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: 8bit
+Message-ID: <khuz3y.ykdxzm@localhost>
+To: linux-kernel@vger.kernel.org
+Date: Fri, 10 Apr 2009 02:09:34 +0200 (CEST)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-I am Mr Suleman Muhammed the manager of auditing and accounting department  Bank of (BOA) in African,I need
-your urgent assistance in transferring the sum of ($8.5  million us dollars
-immediately to your account. upon your reply I will send you full details on how
-the business will be executed,Reply me througth this email adress suleman_m03@voila.fr
+Halli-hallo,
+Du spielst gern im Kasino?
+
+Dann habe ich hier einen Sonderbonus für Dich:
+http://www.Geld-Feuerwerk.info/
+
+Du kannst noch vor dem Osterfest Geld verdienen. Probier' es aus!
+
+Keine Abzocke, kein Betrug. Trau' Dich!
+
+
+Liebe Grüße,
+Alexandra
+
+
+
+
 
 
