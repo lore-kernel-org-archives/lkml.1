@@ -1,64 +1,122 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S938450AbZDJRQM@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S937741AbZDJRQj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S938450AbZDJRQM (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 10 Apr 2009 13:16:12 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S936944AbZDJRPn
+	id S937741AbZDJRQj (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 10 Apr 2009 13:16:39 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S937477AbZDJRPs
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 10 Apr 2009 13:15:43 -0400
-Received: from THUNK.ORG ([69.25.196.29]:44980 "EHLO thunker.thunk.org"
+	Fri, 10 Apr 2009 13:15:48 -0400
+Received: from mail.atheros.com ([12.36.123.2]:45044 "EHLO mail.atheros.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S937220AbZDJRPl (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 10 Apr 2009 13:15:41 -0400
-Date: Fri, 10 Apr 2009 12:48:08 -0400
-From: Theodore Tso <tytso@mit.edu>
-To: Jeff Chua <jeff.chua.linux@gmail.com>
-Cc: "Rafael J. Wysocki" <rjw@sisk.pl>, linux-kernel@vger.kernel.org
-Subject: Re: suspend-to-ram broken on X61 thinkpads in 2.6.30-rc1?
-Message-ID: <20090410164808.GA8491@mit.edu>
-Mail-Followup-To: Theodore Tso <tytso@mit.edu>,
-	Jeff Chua <jeff.chua.linux@gmail.com>,
-	"Rafael J. Wysocki" <rjw@sisk.pl>, linux-kernel@vger.kernel.org
-References: <E1Ls9pZ-0004IF-FZ@closure.thunk.org> <200904101448.38166.rjw@sisk.pl> <b6a2187b0904100600j261c4ea4l5e0f87a9fe0fe22c@mail.gmail.com>
+	id S937592AbZDJRPq (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 10 Apr 2009 13:15:46 -0400
+Date: Fri, 10 Apr 2009 10:15:44 -0700
+From: "Luis R. Rodriguez" <lrodriguez@atheros.com>
+To: Alan Jenkins <alan-jenkins@tuffmail.co.uk>
+CC: "ath5k-devel@lists.ath5k.org" <ath5k-devel@venema.h4ckr.net>,
+       Kernel Testers List <kernel-testers@vger.kernel.org>,
+       "linux-wireless@vger.kernel.org" <linux-wireless@vger.kernel.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: [ath5k-devel] BUG in wiphy_update_regulatory when loading
+	ath5k (on latest git)
+Message-ID: <20090410171544.GA5750@tesla>
+References: <49DF6216.8040303@tuffmail.co.uk> <49DF714F.9070600@tuffmail.co.uk>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset="us-ascii"
 Content-Disposition: inline
-In-Reply-To: <b6a2187b0904100600j261c4ea4l5e0f87a9fe0fe22c@mail.gmail.com>
+In-Reply-To: <49DF714F.9070600@tuffmail.co.uk>
 User-Agent: Mutt/1.5.18 (2008-05-17)
-X-SA-Exim-Connect-IP: <locally generated>
-X-SA-Exim-Mail-From: tytso@mit.edu
-X-SA-Exim-Scanned: No (on thunker.thunk.org); SAEximRunCond expanded to false
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Apr 10, 2009 at 09:00:08PM +0800, Jeff Chua wrote:
-> 2009/4/10 Rafael J. Wysocki <rjw@sisk.pl>:
-> > On Friday 10 April 2009, Theodore Ts'o wrote:
-> >> Hi, has anyone else noticed that suspend-to-ram seems to have gotten
-> >> broken in 2.6.30-rc1, sometime during last half of the merge window?
+On Fri, Apr 10, 2009 at 09:18:23AM -0700, Alan Jenkins wrote:
+> Alan Jenkins wrote:
+> > Hi, while testing latest Git (i.e. 2.6.30-rc1 + a bit), I hit a bug
+> > which killed my keyboard.  SysRQ keys worked, but I couldn't type in X
+> > or on the console.
 > 
-> My X61 STR is broken as well.
+> > This happened when ath5k was loaded dynamically, in response to my
+> > pressing the "wireless toggle" key.  (rfkill-input -> eeepc-laptop,
+> > which does weird acpi-driven PCI hotplug).
+> >
+> > Can anyone at least explain where this weird backtrace comes from?
 > 
-> This commit is in the latest git, but it's does not seem to fix the
-> problem. 2.6.29 STR works very well. And all the Think "Fn" keys are
-> no longer working (LID close still functioning though ... but that
-> could a configuration issue moving from 2.6.29 to 2.6.30-rc1.
+> Scratch that.  I was able to reproduce it once and get a proper dmesg.
+> My logs were just dropping all the useful bits.  Here it is (taint is
+> due to a libusual bug, note usual-tables(P) in list of modules, no
+> binary crap here, honest).
+> 
+> [   64.995032] ath5k 0000:01:00.0: registered as 'phy0'
+> [   65.062652] BUG: unable to handle kernel NULL pointer dereference at
+> 00000004
+> [   65.062665] IP: [<e0171332>] wiphy_update_regulatory+0x20f/0x295
+> [cfg80211]
+> [   65.062705] *pdpt = 0000000008bf1001 *pde = 0000000000000000
+> [   65.062717] Oops: 0000 [#1]
+> [   65.062724] last sysfs file: /sys/class/backlight/eeepc/brightness
+> [   65.062734] Modules linked in: ath5k(+) mac80211 led_class cfg80211
+> i915 drm i2c_algo_bit cfbcopyarea cfbimgblt cfbfillrect ipv6
+> rfkill_input joydev usual_tables(P) snd_hda_codec_realtek snd_hda_intel
+> snd_hda_codec snd_hwdep uhci_hcd snd_pcm_oss snd_mixer_oss i2c_i801
+> ehci_hcd psmouse serio_raw i2c_core pcspkr atl2 snd_pcm intel_agp
+> snd_timer usbcore agpgart eeepc_laptop snd_page_alloc ac video backlight
+> output battery rfkill button processor evdev thermal fan ata_generic
+> [   65.062839]
+> [   65.062849] Pid: 2909, comm: modprobe Tainted: P
+> (2.6.30-rc1eeepc #112) 701
+> [   65.062860] EIP: 0060:[<e0171332>] EFLAGS: 00010246 CPU: 0
+> [   65.062885] EIP is at wiphy_update_regulatory+0x20f/0x295 [cfg80211]
+> [   65.062894] EAX: 00000000 EBX: c5da0000 ECX: 00000000 EDX: c5da0060
+> [   65.062904] ESI: 0000001a EDI: c5da0060 EBP: df3bdd70 ESP: df3bdd40
+> [   65.062913]  DS: 007b ES: 007b FS: 0000 GS: 0033 SS: 0068
+> [   65.062923] Process modprobe (pid: 2909, ti=df3bc000 task=c5d03000
+> task.ti=df3bc000)
+> [   65.062930] Stack:
+> [   65.062935]  df3bdd90 c5da0060 c04277e0 00000001 00000044 c04277e4
+> c5da0060 00000002
+> [   65.062953]  00000002 c5da0000 0000001a c5da0060 df3bdda8 e01706a2
+> 00000002 00000002
+> [   65.062971]  00000282 000080d0 00000068 c5d53500 00000080 00000282
+> 00000080 c5da0140
+> [   65.062991] Call Trace:
+> [   65.062999]  [<e01706a2>] ? wiphy_register+0x122/0x1b7 [cfg80211]
+> [   65.063028]  [<e0328e02>] ? ieee80211_register_hw+0xd8/0x346 [mac80211]
+> [   65.063069]  [<e06a7c9f>] ? ath5k_hw_set_bssid_mask+0x71/0x78 [ath5k]
+> [   65.063099]  [<e06b0c52>] ? ath5k_pci_probe+0xa5c/0xd0a [ath5k]
+> [   65.063126]  [<c01a6037>] ? sysfs_find_dirent+0x16/0x27
+> [   65.063146]  [<c01fec95>] ? local_pci_probe+0xe/0x10
+> [   65.063162]  [<c01ff526>] ? pci_device_probe+0x48/0x66
+> [   65.063176]  [<c024c9fd>] ? driver_probe_device+0x7f/0xf2
+> [   65.063193]  [<c024cab3>] ? __driver_attach+0x43/0x5f
+> [   65.063205]  [<c024c0af>] ? bus_for_each_dev+0x39/0x5a
+> [   65.063217]  [<c024c8d0>] ? driver_attach+0x14/0x16
+> [   65.063228]  [<c024ca70>] ? __driver_attach+0x0/0x5f
+> [   65.063240]  [<c024c5b3>] ? bus_add_driver+0xd7/0x1e7
+> [   65.063252]  [<c024ccb9>] ? driver_register+0x7b/0xd7
+> [   65.063272]  [<c01ff827>] ? __pci_register_driver+0x32/0x85
+> [   65.063286]  [<e00a8018>] ? init_ath5k_pci+0x18/0x30 [ath5k]
+> [   65.063309]  [<c0101131>] ? _stext+0x49/0x10b
+> [   65.063322]  [<e00a8000>] ? init_ath5k_pci+0x0/0x30 [ath5k]
+> [   65.063330]  [<c012f452>] ? __blocking_notifier_call_chain+0x40/0x4c
+> [   65.063330]  [<c013a714>] ? sys_init_module+0x87/0x18b
+> [   65.063330]  [<c0102804>] ? sysenter_do_call+0x12/0x22
+> [   65.063330] Code: b8 da 17 e0 83 c0 04 e8 92 f9 ff ff 84 c0 75 2a 8b
+> 55 d4 8b 42 28 85 c0 74 0c 83 c0 04 e8 7c f9 ff ff 84 c0 75 14 a1 bc da
+> 17 e0 <83> 78 04 03 74 66 8b 4d d4 80 79 08 00 74 5d a1 e0 d2 17 e0 48
+> [   65.063330] EIP: [<e0171332>] wiphy_update_regulatory+0x20f/0x295
 
-I'm seeing this problem as well.
 
-> Shall I do the bisecting? I think this is the only one not working for
-> me other than the slow iptables that I reported earlier.
+What do you mean by you 2.6.30-rc1 + a bit. Are you using an unmodified
+wireless-testing or are you applying patches on top?
 
-Well, I can save you at least one or two reboots, based on some
-test kernels I had been building.
+Whip out gdb as follows:
 
-git bisect bad v2.6.30-rc1-git2
-git bisect bad v2.6.30-rc1	
-git bisect bad e0724bf6		(v2.6.29-git14 circa April 6th)
-git bisect good 5d80f8e5	(v2.6.29-git3 circa March 27th)
+gdb net/wireless/cfg80211.ko
 
-Only 3,074 revisions to go.  :-)
+Then do:
 
-          					- Ted
+l *(wiphy_update_regulatory+0x20f)
 
+That should show you the culprit line.
 
+  Luis
