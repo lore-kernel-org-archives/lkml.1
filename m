@@ -1,22 +1,22 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S938685AbZDJH2f@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S938240AbZDJH3H@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S938685AbZDJH2f (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 10 Apr 2009 03:28:35 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S938141AbZDJHSj
+	id S938240AbZDJH3H (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 10 Apr 2009 03:29:07 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758979AbZDJHSn
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 10 Apr 2009 03:18:39 -0400
-Received: from mfbichi11.ns.itscom.net ([219.110.2.189]:61532 "EHLO
+	Fri, 10 Apr 2009 03:18:43 -0400
+Received: from mfbichi11.ns.itscom.net ([219.110.2.189]:61545 "EHLO
 	mfbichi11.ns.itscom.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S938112AbZDJHSO (ORCPT
+	with ESMTP id S938110AbZDJHSP (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 10 Apr 2009 03:18:14 -0400
+	Fri, 10 Apr 2009 03:18:15 -0400
 From: "J. R. Okajima" <hooanon05@yahoo.co.jp>
 To: linux-kernel@vger.kernel.org
 Cc: greg@kroah.com, linux-fsdevel@vger.kernel.org,
        "J. R. Okajima" <hooanon05@yahoo.co.jp>
-Subject: [RFC Aufs2 #5 05/29] aufs xino
-Date: Fri, 10 Apr 2009 16:02:19 +0900
-Message-Id: <1239346963-30953-6-git-send-email-hooanon05@yahoo.co.jp>
+Subject: [RFC Aufs2 #5 16/29] aufs file
+Date: Fri, 10 Apr 2009 16:02:30 +0900
+Message-Id: <1239346963-30953-17-git-send-email-hooanon05@yahoo.co.jp>
 X-Mailer: git-send-email 1.6.1.284.g5dc13
 In-Reply-To: <1239346963-30953-1-git-send-email-hooanon05@yahoo.co.jp>
 References: <1239346963-30953-1-git-send-email-hooanon05@yahoo.co.jp>
@@ -25,20 +25,27 @@ List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 initial commit
-external inode number translation table and bitmap
+private data, file operations, vm operations, and address_space
+operations.
 
 Signed-off-by: J. R. Okajima <hooanon05@yahoo.co.jp>
 ---
- fs/aufs/xino.c | 1176 ++++++++++++++++++++++++++++++++++++++++++++++++++++++++
- 1 files changed, 1176 insertions(+), 0 deletions(-)
- create mode 100644 fs/aufs/xino.c
+ fs/aufs/f_op.c  |  551 +++++++++++++++++++++++++++++++++++++++++++++++++++++
+ fs/aufs/file.c  |  566 +++++++++++++++++++++++++++++++++++++++++++++++++++++++
+ fs/aufs/file.h  |  148 +++++++++++++++
+ fs/aufs/finfo.c |  124 ++++++++++++
+ 4 files changed, 1389 insertions(+), 0 deletions(-)
+ create mode 100644 fs/aufs/f_op.c
+ create mode 100644 fs/aufs/file.c
+ create mode 100644 fs/aufs/file.h
+ create mode 100644 fs/aufs/finfo.c
 
-diff --git a/fs/aufs/xino.c b/fs/aufs/xino.c
+diff --git a/fs/aufs/f_op.c b/fs/aufs/f_op.c
 new file mode 100644
-index 0000000..b756c54
+index 0000000..67ec02e
 --- /dev/null
-+++ b/fs/aufs/xino.c
-@@ -0,0 +1,1176 @@
++++ b/fs/aufs/f_op.c
+@@ -0,0 +1,551 @@
 +/*
 + * Copyright (C) 2005-2009 Junjiro R. Okajima
 + *
@@ -49,1170 +56,1401 @@ index 0000000..b756c54
 + */
 +
 +/*
-+ * external inode number translation table and bitmap
++ * file and vm operations
 + */
 +
-+#include <linux/seq_file.h>
-+#include <linux/uaccess.h>
++#include <linux/fs_stack.h>
++#include <linux/poll.h>
 +#include "aufs.h"
 +
-+ssize_t xino_fread(au_readf_t func, struct file *file, void *buf, size_t size,
-+		   loff_t *pos)
-+{
-+	ssize_t err;
-+	mm_segment_t oldfs;
-+
-+	oldfs = get_fs();
-+	set_fs(KERNEL_DS);
-+	do {
-+		/* todo: signal_pending? */
-+		err = func(file, (char __user *)buf, size, pos);
-+	} while (err == -EAGAIN || err == -EINTR);
-+	set_fs(oldfs);
-+
-+#if 0 /* reserved for future use */
-+	if (err > 0)
-+		fsnotify_access(file->f_dentry);
-+#endif
-+
-+	return err;
-+}
-+
-+/* ---------------------------------------------------------------------- */
-+
-+static ssize_t do_xino_fwrite(au_writef_t func, struct file *file, void *buf,
-+			      size_t size, loff_t *pos)
-+{
-+	ssize_t err;
-+	mm_segment_t oldfs;
-+
-+	oldfs = get_fs();
-+	set_fs(KERNEL_DS);
-+	lockdep_off();
-+	do {
-+		/* todo: signal_pending? */
-+		err = func(file, (const char __user *)buf, size, pos);
-+	} while (err == -EAGAIN || err == -EINTR);
-+	lockdep_on();
-+	set_fs(oldfs);
-+
-+#if 0 /* reserved for future use */
-+	if (err > 0)
-+		fsnotify_modify(file->f_dentry);
-+#endif
-+
-+	return err;
-+}
-+
-+struct do_xino_fwrite_args {
-+	ssize_t *errp;
-+	au_writef_t func;
-+	struct file *file;
-+	void *buf;
-+	size_t size;
-+	loff_t *pos;
-+};
-+
-+static void call_do_xino_fwrite(void *args)
-+{
-+	struct do_xino_fwrite_args *a = args;
-+	*a->errp = do_xino_fwrite(a->func, a->file, a->buf, a->size, a->pos);
-+}
-+
-+ssize_t xino_fwrite(au_writef_t func, struct file *file, void *buf, size_t size,
-+		    loff_t *pos)
-+{
-+	ssize_t err;
-+
-+	/* todo: signal block and no wkq? */
-+	/* todo: new credential scheme */
-+	/*
-+	 * it breaks RLIMIT_FSIZE and normal user's limit,
-+	 * users should care about quota and real 'filesystem full.'
-+	 */
-+	if (!au_test_wkq(current)) {
-+		int wkq_err;
-+		struct do_xino_fwrite_args args = {
-+			.errp	= &err,
-+			.func	= func,
-+			.file	= file,
-+			.buf	= buf,
-+			.size	= size,
-+			.pos	= pos
-+		};
-+
-+		wkq_err = au_wkq_wait(call_do_xino_fwrite, &args);
-+		if (unlikely(wkq_err))
-+			err = wkq_err;
-+	} else
-+		err = do_xino_fwrite(func, file, buf, size, pos);
-+
-+	return err;
-+}
-+
-+/* ---------------------------------------------------------------------- */
-+
-+/*
-+ * create a new xinofile at the same place/path as @base_file.
-+ */
-+static struct file *au_xino_create2(struct file *base_file,
-+				    struct file *copy_src)
-+{
-+	struct file *file;
-+	struct dentry *base, *dentry, *parent;
-+	struct inode *dir;
-+	struct qstr *name;
-+	int err;
-+
-+	base = base_file->f_dentry;
-+	parent = base->d_parent; /* dir inode is locked */
-+	dir = parent->d_inode;
-+	IMustLock(dir);
-+
-+	file = ERR_PTR(-EINVAL);
-+	name = &base->d_name;
-+	dentry = vfsub_lookup_one_len(name->name, parent, name->len);
-+	if (IS_ERR(dentry)) {
-+		file = (void *)dentry;
-+		AuErr("%.*s lookup err %ld\n", AuLNPair(name), PTR_ERR(dentry));
-+		goto out;
-+	}
-+
-+	/* no need to mnt_want_write() since we call dentry_open() later */
-+	err = vfs_create(dir, dentry, S_IRUGO | S_IWUGO, NULL);
-+	if (unlikely(err)) {
-+		file = ERR_PTR(err);
-+		AuErr("%.*s create err %d\n", AuLNPair(name), err);
-+		goto out_dput;
-+	}
-+
-+	file = vfsub_dentry_open(dget(dentry), mntget(base_file->f_vfsmnt),
-+				 O_RDWR | O_CREAT | O_EXCL | O_LARGEFILE,
-+				 current_cred());
-+	if (IS_ERR(file)) {
-+		AuErr("%.*s open err %ld\n", AuLNPair(name), PTR_ERR(file));
-+		goto out_dput;
-+	}
-+	AuDebugOn(!file->f_op);
-+
-+	err = vfsub_unlink(dir, &file->f_path, /*force*/0);
-+	if (unlikely(err)) {
-+		AuErr("%.*s unlink err %d\n", AuLNPair(name), err);
-+		goto out_fput;
-+	}
-+
-+	if (copy_src) {
-+		/* no one can touch copy_src xino */
-+		err = au_copy_file(file, copy_src,
-+				   i_size_read(copy_src->f_dentry->d_inode));
-+		if (unlikely(err)) {
-+			AuErr("%.*s copy err %d\n", AuLNPair(name), err);
-+			goto out_fput;
-+		}
-+	}
-+	goto out_dput; /* success */
-+
-+ out_fput:
-+	fput(file);
-+	file = ERR_PTR(err);
-+ out_dput:
-+	dput(dentry);
-+ out:
-+	return file;
-+}
-+
-+struct au_xino_lock_dir {
-+	struct au_hinode *hdir;
-+	struct dentry *parent;
-+	struct mutex *mtx;
-+};
-+
-+static void au_xino_lock_dir(struct super_block *sb, struct file *xino,
-+			     struct au_xino_lock_dir *ldir)
-+{
-+	aufs_bindex_t brid, bindex;
-+
-+	ldir->hdir = NULL;
-+	bindex = -1;
-+	brid = au_xino_brid(sb);
-+	if (brid >= 0)
-+		bindex = au_br_index(sb, brid);
-+	if (bindex >= 0) {
-+		ldir->hdir = au_hi(sb->s_root->d_inode, bindex);
-+		au_hin_imtx_lock_nested(ldir->hdir, AuLsc_I_PARENT);
-+	} else {
-+		ldir->parent = dget_parent(xino->f_dentry);
-+		ldir->mtx = &ldir->parent->d_inode->i_mutex;
-+		mutex_lock_nested(ldir->mtx, AuLsc_I_PARENT);
-+	}
-+}
-+
-+static void au_xino_unlock_dir(struct au_xino_lock_dir *ldir)
-+{
-+	if (ldir->hdir)
-+		au_hin_imtx_unlock(ldir->hdir);
-+	else {
-+		mutex_unlock(ldir->mtx);
-+		dput(ldir->parent);
-+	}
-+}
-+
-+/* ---------------------------------------------------------------------- */
-+
-+/* trucate xino files asynchronously */
-+
-+int au_xino_trunc(struct super_block *sb, aufs_bindex_t bindex)
++/* common function to regular file and dir */
++int aufs_flush(struct file *file, fl_owner_t id)
 +{
 +	int err;
-+	aufs_bindex_t bi, bend;
-+	struct au_branch *br;
-+	struct file *new_xino, *file;
-+	struct super_block *h_sb;
-+	struct au_xino_lock_dir ldir;
++	aufs_bindex_t bindex, bend;
++	struct dentry *dentry;
++	struct file *h_file;
 +
-+	err = -EINVAL;
-+	bend = au_sbend(sb);
-+	if (unlikely(bindex < 0 || bend < bindex))
-+		goto out;
-+	br = au_sbr(sb, bindex);
-+	file = br->br_xino.xi_file;
-+	if (!file)
-+		goto out;
++	dentry = file->f_dentry;
++	si_noflush_read_lock(dentry->d_sb);
++	fi_read_lock(file);
++	di_read_lock_child(dentry, AuLock_IW);
 +
-+	au_xino_lock_dir(sb, file, &ldir);
-+	/* mnt_want_write() is unnecessary here */
-+	new_xino = au_xino_create2(file, file);
-+	au_xino_unlock_dir(&ldir);
-+	err = PTR_ERR(new_xino);
-+	if (IS_ERR(new_xino))
-+		goto out;
 +	err = 0;
-+	fput(file);
-+	br->br_xino.xi_file = new_xino;
-+
-+	h_sb = br->br_mnt->mnt_sb;
-+	for (bi = 0; bi <= bend; bi++) {
-+		if (unlikely(bi == bindex))
-+			continue;
-+		br = au_sbr(sb, bi);
-+		if (br->br_mnt->mnt_sb != h_sb)
++	bend = au_fbend(file);
++	for (bindex = au_fbstart(file); !err && bindex <= bend; bindex++) {
++		h_file = au_h_fptr(file, bindex);
++		if (!h_file || !h_file->f_op->flush)
 +			continue;
 +
-+		fput(br->br_xino.xi_file);
-+		br->br_xino.xi_file = new_xino;
-+		get_file(new_xino);
++		err = h_file->f_op->flush(h_file, id);
++		if (!err)
++			vfsub_update_h_iattr(&h_file->f_path, /*did*/NULL);
++		/*ignore*/
 +	}
++	au_cpup_attr_timesizes(dentry->d_inode);
 +
-+ out:
++	di_read_unlock(dentry, AuLock_IW);
++	fi_read_unlock(file);
++	si_read_unlock(dentry->d_sb);
 +	return err;
 +}
 +
-+struct xino_do_trunc_args {
-+	struct super_block *sb;
-+	struct au_branch *br;
-+};
++/* ---------------------------------------------------------------------- */
 +
-+static void xino_do_trunc(void *_args)
++static int do_open_nondir(struct file *file, int flags)
 +{
-+	struct xino_do_trunc_args *args = _args;
-+	struct super_block *sb;
-+	struct au_branch *br;
-+	struct inode *dir;
 +	int err;
 +	aufs_bindex_t bindex;
++	struct file *h_file;
++	struct dentry *dentry;
 +
 +	err = 0;
-+	sb = args->sb;
-+	dir = sb->s_root->d_inode;
-+	br = args->br;
++	dentry = file->f_dentry;
++	au_fi(file)->fi_h_vm_ops = NULL;
++	bindex = au_dbstart(dentry);
++	/* O_TRUNC is processed already */
++	BUG_ON(au_test_ro(dentry->d_sb, bindex, dentry->d_inode)
++	       && (flags & O_TRUNC));
 +
-+	si_noflush_write_lock(sb);
-+	ii_read_lock_parent(dir);
-+	bindex = au_br_index(sb, br->br_id);
-+	err = au_xino_trunc(sb, bindex);
-+	if (unlikely(err))
-+		goto out;
-+
-+	if (br->br_xino.xi_file->f_dentry->d_inode->i_blocks
-+	    >= br->br_xino_upper)
-+		br->br_xino_upper += AUFS_XINO_TRUNC_STEP;
-+
-+ out:
-+	ii_read_unlock(dir);
-+	if (unlikely(err))
-+		AuWarn("err b%d, (%d)\n", bindex, err);
-+	atomic_dec(&br->br_xino_running);
-+	atomic_dec(&br->br_count);
-+	au_nwt_done(&au_sbi(sb)->si_nowait);
-+	si_write_unlock(sb);
-+	kfree(args);
-+}
-+
-+static void xino_try_trunc(struct super_block *sb, struct au_branch *br)
-+{
-+	struct xino_do_trunc_args *args;
-+	int wkq_err;
-+
-+	if (br->br_xino.xi_file->f_dentry->d_inode->i_blocks
-+	    < br->br_xino_upper)
-+		return;
-+
-+	if (atomic_inc_return(&br->br_xino_running) > 1)
-+		goto out;
-+
-+	/* lock and kfree() will be called in trunc_xino() */
-+	args = kmalloc(sizeof(*args), GFP_NOFS);
-+	if (unlikely(!args)) {
-+		AuErr1("no memory\n");
-+		goto out_args;
-+	}
-+
-+	atomic_inc(&br->br_count);
-+	args->sb = sb;
-+	args->br = br;
-+	wkq_err = au_wkq_nowait(xino_do_trunc, args, sb);
-+	if (!wkq_err)
-+		return; /* success */
-+
-+	AuErr("wkq %d\n", wkq_err);
-+	atomic_dec(&br->br_count);
-+
-+ out_args:
-+	kfree(args);
-+ out:
-+	atomic_dec(&br->br_xino_running);
-+}
-+
-+/* ---------------------------------------------------------------------- */
-+
-+static int au_xino_do_write(au_writef_t write, struct file *file,
-+			    ino_t h_ino, ino_t ino)
-+{
-+	loff_t pos;
-+	ssize_t sz;
-+
-+	pos = h_ino;
-+	if (unlikely(au_loff_max / sizeof(ino) - 1 < pos)) {
-+		AuIOErr1("too large hi%lu\n", (unsigned long)h_ino);
-+		return -EFBIG;
-+	}
-+	pos *= sizeof(ino);
-+	sz = xino_fwrite(write, file, &ino, sizeof(ino), &pos);
-+	if (sz == sizeof(ino))
-+		return 0; /* success */
-+
-+	AuIOErr("write failed (%zd)\n", sz);
-+	return -EIO;
-+}
-+
-+/*
-+ * write @ino to the xinofile for the specified branch{@sb, @bindex}
-+ * at the position of @h_ino.
-+ * even if @ino is zero, it is written to the xinofile and means no entry.
-+ * if the size of the xino file on a specific filesystem exceeds the watermark,
-+ * try truncating it.
-+ */
-+int au_xino_write(struct super_block *sb, aufs_bindex_t bindex, ino_t h_ino,
-+		  ino_t ino)
-+{
-+	int err;
-+	unsigned int mnt_flags;
-+	struct au_branch *br;
-+
-+	BUILD_BUG_ON(sizeof(long long) != sizeof(au_loff_max)
-+		     || ((loff_t)-1) > 0);
-+
-+	mnt_flags = au_mntflags(sb);
-+	if (!au_opt_test(mnt_flags, XINO))
-+		return 0;
-+
-+	br = au_sbr(sb, bindex);
-+	err = au_xino_do_write(au_sbi(sb)->si_xwrite, br->br_xino.xi_file,
-+			       h_ino, ino);
-+	if (!err) {
-+		if (au_opt_test(mnt_flags, TRUNC_XINO)
-+		    && au_test_fs_trunc_xino(br->br_mnt->mnt_sb))
-+			xino_try_trunc(sb, br);
-+		return 0; /* success */
-+	}
-+
-+	AuIOErr("write failed (%d)\n", err);
-+	return -EIO;
-+}
-+
-+/* ---------------------------------------------------------------------- */
-+
-+/* aufs inode number bitmap */
-+
-+static const int page_bits = (int)PAGE_SIZE * BITS_PER_BYTE;
-+static ino_t xib_calc_ino(unsigned long pindex, int bit)
-+{
-+	ino_t ino;
-+
-+	AuDebugOn(bit < 0 || page_bits <= bit);
-+	ino = AUFS_FIRST_INO + pindex * page_bits + bit;
-+	return ino;
-+}
-+
-+static void xib_calc_bit(ino_t ino, unsigned long *pindex, int *bit)
-+{
-+	AuDebugOn(ino < AUFS_FIRST_INO);
-+	ino -= AUFS_FIRST_INO;
-+	*pindex = ino / page_bits;
-+	*bit = ino % page_bits;
-+}
-+
-+static int xib_pindex(struct super_block *sb, unsigned long pindex)
-+{
-+	int err;
-+	loff_t pos;
-+	ssize_t sz;
-+	struct au_sbinfo *sbinfo;
-+	struct file *xib;
-+	unsigned long *p;
-+
-+	sbinfo = au_sbi(sb);
-+	MtxMustLock(&sbinfo->si_xib_mtx);
-+	AuDebugOn(pindex > ULONG_MAX / PAGE_SIZE
-+		  || !au_opt_test(sbinfo->si_mntflags, XINO));
-+
-+	if (pindex == sbinfo->si_xib_last_pindex)
-+		return 0;
-+
-+	xib = sbinfo->si_xib;
-+	p = sbinfo->si_xib_buf;
-+	pos = sbinfo->si_xib_last_pindex;
-+	pos *= PAGE_SIZE;
-+	sz = xino_fwrite(sbinfo->si_xwrite, xib, p, PAGE_SIZE, &pos);
-+	if (unlikely(sz != PAGE_SIZE))
-+		goto out;
-+
-+	pos = pindex;
-+	pos *= PAGE_SIZE;
-+	if (i_size_read(xib->f_dentry->d_inode) >= pos + PAGE_SIZE)
-+		sz = xino_fread(sbinfo->si_xread, xib, p, PAGE_SIZE, &pos);
++	h_file = au_h_open(dentry, bindex, flags, file);
++	if (IS_ERR(h_file))
++		err = PTR_ERR(h_file);
 +	else {
-+		memset(p, 0, PAGE_SIZE);
-+		sz = xino_fwrite(sbinfo->si_xwrite, xib, p, PAGE_SIZE, &pos);
++		au_set_fbstart(file, bindex);
++		au_set_fbend(file, bindex);
++		au_set_h_fptr(file, bindex, h_file);
++		au_update_figen(file);
++		/* todo: necessary? */
++		/* file->f_ra = h_file->f_ra; */
 +	}
-+	if (sz == PAGE_SIZE) {
-+		sbinfo->si_xib_last_pindex = pindex;
-+		return 0; /* success */
-+	}
-+
-+ out:
-+	AuIOErr1("write failed (%zd)\n", sz);
-+	err = sz;
-+	if (sz >= 0)
-+		err = -EIO;
 +	return err;
 +}
 +
-+/* ---------------------------------------------------------------------- */
-+
-+int au_xino_write0(struct super_block *sb, aufs_bindex_t bindex, ino_t h_ino,
-+		   ino_t ino)
++static int aufs_open_nondir(struct inode *inode __maybe_unused,
++			    struct file *file)
 +{
-+	int err, bit;
-+	unsigned long pindex;
-+	struct au_sbinfo *sbinfo;
-+
-+	if (!au_opt_test(au_mntflags(sb), XINO))
-+		return 0;
-+
-+	err = 0;
-+	if (ino) {
-+		sbinfo = au_sbi(sb);
-+		xib_calc_bit(ino, &pindex, &bit);
-+		AuDebugOn(page_bits <= bit);
-+		mutex_lock(&sbinfo->si_xib_mtx);
-+		err = xib_pindex(sb, pindex);
-+		if (!err) {
-+			clear_bit(bit, sbinfo->si_xib_buf);
-+			sbinfo->si_xib_next_bit = bit;
-+		}
-+		mutex_unlock(&sbinfo->si_xib_mtx);
-+	}
-+
-+	if (!err)
-+		err = au_xino_write(sb, bindex, h_ino, 0);
-+	return err;
++	return au_do_open(file, do_open_nondir);
 +}
 +
-+/* get an unused inode number from bitmap */
-+ino_t au_xino_new_ino(struct super_block *sb)
++static int aufs_release_nondir(struct inode *inode __maybe_unused,
++			       struct file *file)
 +{
-+	ino_t ino;
-+	unsigned long *p, pindex, ul, pend;
-+	struct au_sbinfo *sbinfo;
-+	struct file *file;
-+	int free_bit, err;
++	struct super_block *sb = file->f_dentry->d_sb;
 +
-+	if (!au_opt_test(au_mntflags(sb), XINO))
-+		return iunique(sb, AUFS_FIRST_INO);
-+
-+	sbinfo = au_sbi(sb);
-+	mutex_lock(&sbinfo->si_xib_mtx);
-+	p = sbinfo->si_xib_buf;
-+	free_bit = sbinfo->si_xib_next_bit;
-+	if (free_bit < page_bits && !test_bit(free_bit, p))
-+		goto out; /* success */
-+	free_bit = find_first_zero_bit(p, page_bits);
-+	if (free_bit < page_bits)
-+		goto out; /* success */
-+
-+	pindex = sbinfo->si_xib_last_pindex;
-+	for (ul = pindex - 1; ul < ULONG_MAX; ul--) {
-+		err = xib_pindex(sb, ul);
-+		if (unlikely(err))
-+			goto out_err;
-+		free_bit = find_first_zero_bit(p, page_bits);
-+		if (free_bit < page_bits)
-+			goto out; /* success */
-+	}
-+
-+	file = sbinfo->si_xib;
-+	pend = i_size_read(file->f_dentry->d_inode) / PAGE_SIZE;
-+	for (ul = pindex + 1; ul <= pend; ul++) {
-+		err = xib_pindex(sb, ul);
-+		if (unlikely(err))
-+			goto out_err;
-+		free_bit = find_first_zero_bit(p, page_bits);
-+		if (free_bit < page_bits)
-+			goto out; /* success */
-+	}
-+	BUG();
-+
-+ out:
-+	set_bit(free_bit, p);
-+	sbinfo->si_xib_next_bit++;
-+	pindex = sbinfo->si_xib_last_pindex;
-+	mutex_unlock(&sbinfo->si_xib_mtx);
-+	ino = xib_calc_ino(pindex, free_bit);
-+	AuDbg("i%lu\n", (unsigned long)ino);
-+	return ino;
-+ out_err:
-+	mutex_unlock(&sbinfo->si_xib_mtx);
-+	AuDbg("i0\n");
++	si_noflush_read_lock(sb);
++	au_finfo_fin(file);
++	si_read_unlock(sb);
 +	return 0;
 +}
 +
-+/*
-+ * read @ino from xinofile for the specified branch{@sb, @bindex}
-+ * at the position of @h_ino.
-+ * if @ino does not exist and @do_new is true, get new one.
-+ */
-+int au_xino_read(struct super_block *sb, aufs_bindex_t bindex, ino_t h_ino,
-+		 ino_t *ino)
++/* ---------------------------------------------------------------------- */
++
++static ssize_t aufs_read(struct file *file, char __user *buf, size_t count,
++			 loff_t *ppos)
 +{
-+	int err;
-+	ssize_t sz;
-+	loff_t pos;
-+	struct file *file;
-+	struct au_sbinfo *sbinfo;
++	ssize_t err;
++	struct dentry *dentry;
++	struct file *h_file;
++	struct super_block *sb;
 +
-+	*ino = 0;
-+	if (!au_opt_test(au_mntflags(sb), XINO))
-+		return 0; /* no xino */
++	dentry = file->f_dentry;
++	sb = dentry->d_sb;
++	si_read_lock(sb, AuLock_FLUSH);
++	err = au_reval_and_lock_fdi(file, au_reopen_nondir, /*wlock*/0);
++	if (unlikely(err))
++		goto out;
 +
-+	err = 0;
-+	sbinfo = au_sbi(sb);
-+	pos = h_ino;
-+	if (unlikely(au_loff_max / sizeof(*ino) - 1 < pos)) {
-+		AuIOErr1("too large hi%lu\n", (unsigned long)h_ino);
-+		return -EFBIG;
-+	}
-+	pos *= sizeof(*ino);
++	h_file = au_h_fptr(file, au_fbstart(file));
++	err = vfsub_read_u(h_file, buf, count, ppos);
++	/* todo: necessary? */
++	/* file->f_ra = h_file->f_ra; */
++	fsstack_copy_attr_atime(dentry->d_inode, h_file->f_dentry->d_inode);
 +
-+	file = au_sbr(sb, bindex)->br_xino.xi_file;
-+	if (i_size_read(file->f_dentry->d_inode) < pos + sizeof(*ino))
-+		return 0; /* no ino */
-+
-+	sz = xino_fread(sbinfo->si_xread, file, ino, sizeof(*ino), &pos);
-+	if (sz == sizeof(*ino))
-+		return 0; /* success */
-+
-+	err = sz;
-+	if (unlikely(sz >= 0)) {
-+		err = -EIO;
-+		AuIOErr("xino read error (%zd)\n", sz);
-+	}
-+
++	di_read_unlock(dentry, AuLock_IR);
++	fi_read_unlock(file);
++ out:
++	si_read_unlock(sb);
 +	return err;
 +}
 +
-+/* ---------------------------------------------------------------------- */
-+
-+/* create and set a new xino file */
-+
-+struct file *au_xino_create(struct super_block *sb, char *fname, int silent)
++static ssize_t aufs_write(struct file *file, const char __user *ubuf,
++			  size_t count, loff_t *ppos)
 +{
-+	struct file *file;
-+	struct dentry *h_parent, *d;
-+	struct inode *h_dir;
-+	int err;
++	ssize_t err;
++	aufs_bindex_t bstart;
++	struct au_pin pin;
++	struct dentry *dentry;
++	struct inode *inode;
++	struct super_block *sb;
++	struct file *h_file;
++	char __user *buf = (char __user *)ubuf;
 +
-+	/*
-+	 * at mount-time, and the xino file is the default path,
-+	 * hinotify is disabled so we have no inotify events to ignore.
-+	 * when a user specified the xino, we cannot get au_hdir to be ignored.
-+	 */
-+	file = vfsub_filp_open(fname, O_RDWR | O_CREAT | O_EXCL | O_LARGEFILE,
-+			       S_IRUGO | S_IWUGO);
-+	if (IS_ERR(file)) {
-+		if (!silent)
-+			AuErr("open %s(%ld)\n", fname, PTR_ERR(file));
-+		return file;
-+	}
++	dentry = file->f_dentry;
++	sb = dentry->d_sb;
++	inode = dentry->d_inode;
++	mutex_lock(&inode->i_mutex);
++	si_read_lock(sb, AuLock_FLUSH);
 +
-+	/* keep file count */
-+	h_parent = dget_parent(file->f_dentry);
-+	h_dir = h_parent->d_inode;
-+	mutex_lock_nested(&h_dir->i_mutex, AuLsc_I_PARENT);
-+	/* mnt_want_write() is unnecessary here */
-+	err = vfsub_unlink(h_dir, &file->f_path, /*force*/0);
-+	mutex_unlock(&h_dir->i_mutex);
-+	dput(h_parent);
-+	if (unlikely(err)) {
-+		if (!silent)
-+			AuErr("unlink %s(%d)\n", fname, err);
++	err = au_reval_and_lock_fdi(file, au_reopen_nondir, /*wlock*/1);
++	if (unlikely(err))
 +		goto out;
-+	}
++
++	err = au_ready_to_write(file, -1, &pin);
++	di_downgrade_lock(dentry, AuLock_IR);
++	if (unlikely(err))
++		goto out_unlock;
++
++	bstart = au_fbstart(file);
++	h_file = au_h_fptr(file, bstart);
++	au_unpin(&pin);
++	err = vfsub_write_u(h_file, buf, count, ppos);
++	au_cpup_attr_timesizes(inode);
++	inode->i_mode = h_file->f_dentry->d_inode->i_mode;
++
++ out_unlock:
++	di_read_unlock(dentry, AuLock_IR);
++	fi_write_unlock(file);
++ out:
++	si_read_unlock(sb);
++	mutex_unlock(&inode->i_mutex);
++	return err;
++}
++
++static ssize_t aufs_splice_read(struct file *file, loff_t *ppos,
++				struct pipe_inode_info *pipe, size_t len,
++				unsigned int flags)
++{
++	ssize_t err;
++	struct file *h_file;
++	struct dentry *dentry;
++	struct super_block *sb;
++
++	dentry = file->f_dentry;
++	sb = dentry->d_sb;
++	si_read_lock(sb, AuLock_FLUSH);
++	err = au_reval_and_lock_fdi(file, au_reopen_nondir, /*wlock*/0);
++	if (unlikely(err))
++		goto out;
 +
 +	err = -EINVAL;
-+	d = file->f_dentry;
-+	if (unlikely(sb == d->d_sb)) {
-+		if (!silent)
-+			AuErr("%s must be outside\n", fname);
-+		goto out;
++	h_file = au_h_fptr(file, au_fbstart(file));
++	if (au_test_loopback_kthread()) {
++		file->f_mapping = h_file->f_mapping;
++		smp_mb(); /* unnecessary? */
 +	}
-+	if (unlikely(au_test_fs_bad_xino(d->d_sb))) {
-+		if (!silent)
-+			AuErr("xino doesn't support %s(%s)\n",
-+			      fname, au_sbtype(d->d_sb));
-+		goto out;
-+	}
-+	return file; /* success */
++	err = vfsub_splice_to(h_file, ppos, pipe, len, flags);
++	/* todo: necessasry? */
++	/* file->f_ra = h_file->f_ra; */
++	fsstack_copy_attr_atime(dentry->d_inode, h_file->f_dentry->d_inode);
++
++	di_read_unlock(dentry, AuLock_IR);
++	fi_read_unlock(file);
 +
 + out:
-+	fput(file);
-+	file = ERR_PTR(err);
-+	return file;
++	si_read_unlock(sb);
++	return err;
 +}
 +
-+/*
-+ * find another branch who is on the same filesystem of the specified
-+ * branch{@btgt}. search until @bend.
-+ */
-+static int is_sb_shared(struct super_block *sb, aufs_bindex_t btgt,
-+			aufs_bindex_t bend)
++static ssize_t
++aufs_splice_write(struct pipe_inode_info *pipe, struct file *file, loff_t *ppos,
++		  size_t len, unsigned int flags)
 +{
-+	aufs_bindex_t bindex;
-+	struct super_block *tgt_sb = au_sbr_sb(sb, btgt);
++	ssize_t err;
++	struct au_pin pin;
++	struct dentry *dentry;
++	struct inode *inode;
++	struct super_block *sb;
++	struct file *h_file;
 +
-+	for (bindex = 0; bindex < btgt; bindex++)
-+		if (unlikely(tgt_sb == au_sbr_sb(sb, bindex)))
-+			return bindex;
-+	for (bindex++; bindex <= bend; bindex++)
-+		if (unlikely(tgt_sb == au_sbr_sb(sb, bindex)))
-+			return bindex;
-+	return -1;
++	dentry = file->f_dentry;
++	inode = dentry->d_inode;
++	mutex_lock(&inode->i_mutex);
++	sb = dentry->d_sb;
++	si_read_lock(sb, AuLock_FLUSH);
++
++	err = au_reval_and_lock_fdi(file, au_reopen_nondir, /*wlock*/1);
++	if (unlikely(err))
++		goto out;
++
++	err = au_ready_to_write(file, -1, &pin);
++	di_downgrade_lock(dentry, AuLock_IR);
++	if (unlikely(err))
++		goto out_unlock;
++
++	h_file = au_h_fptr(file, au_fbstart(file));
++	au_unpin(&pin);
++	err = vfsub_splice_from(pipe, h_file, ppos, len, flags);
++	au_cpup_attr_timesizes(inode);
++	inode->i_mode = h_file->f_dentry->d_inode->i_mode;
++
++ out_unlock:
++	di_read_unlock(dentry, AuLock_IR);
++	fi_write_unlock(file);
++ out:
++	si_read_unlock(sb);
++	mutex_unlock(&inode->i_mutex);
++	return err;
 +}
 +
 +/* ---------------------------------------------------------------------- */
 +
-+/*
-+ * initialize the xinofile for the specified branch @br
-+ * at the place/path where @base_file indicates.
-+ * test whether another branch is on the same filesystem or not,
-+ * if @do_test is true.
-+ */
-+int au_xino_br(struct super_block *sb, struct au_branch *br, ino_t h_ino,
-+	       struct file *base_file, int do_test)
++static struct file *au_safe_file(struct vm_area_struct *vma)
++{
++	struct file *file;
++
++	file = vma->vm_file;
++	if (file->private_data && au_test_aufs(file->f_dentry->d_sb))
++		return file;
++	return NULL;
++}
++
++static void au_reset_file(struct vm_area_struct *vma, struct file *file)
++{
++	vma->vm_file = file;
++	/* smp_mb(); */ /* flush vm_file */
++}
++
++static int aufs_fault(struct vm_area_struct *vma, struct vm_fault *vmf)
 +{
 +	int err;
-+	ino_t ino;
-+	aufs_bindex_t bend, bindex;
-+	struct au_branch *shared_br, *b;
-+	struct file *file;
-+	struct super_block *tgt_sb;
++	static DECLARE_WAIT_QUEUE_HEAD(wq);
++	struct file *file, *h_file;
++	struct au_finfo *finfo;
 +
-+	shared_br = NULL;
-+	bend = au_sbend(sb);
-+	if (do_test) {
-+		tgt_sb = br->br_mnt->mnt_sb;
-+		for (bindex = 0; bindex <= bend; bindex++) {
-+			b = au_sbr(sb, bindex);
-+			if (tgt_sb == b->br_mnt->mnt_sb) {
-+				shared_br = b;
-+				break;
-+			}
++	/* todo: non-robr mode, user vm_file as it is? */
++	wait_event(wq, (file = au_safe_file(vma)));
++
++	/* do not revalidate, no si lock */
++	finfo = au_fi(file);
++	h_file = finfo->fi_hfile[0 + finfo->fi_bstart].hf_file;
++	AuDebugOn(!h_file || !au_test_mmapped(file));
++
++	fi_write_lock(file);
++	vma->vm_file = h_file;
++	err = finfo->fi_h_vm_ops->fault(vma, vmf);
++	/* todo: necessary? */
++	/* file->f_ra = h_file->f_ra; */
++	au_reset_file(vma, file);
++	fi_write_unlock(file);
++#if 0 /* def CONFIG_SMP */
++	/* wake_up_nr(&wq, online_cpu - 1); */
++	wake_up_all(&wq);
++#else
++	wake_up(&wq);
++#endif
++
++	return err;
++}
++
++static struct vm_operations_struct aufs_vm_ops = {
++	.fault		= aufs_fault
++};
++
++/* ---------------------------------------------------------------------- */
++
++static struct vm_operations_struct *au_vm_ops(struct file *h_file,
++					      struct vm_area_struct *vma)
++{
++	struct vm_operations_struct *vm_ops;
++	int err;
++
++	err = h_file->f_op->mmap(h_file, vma);
++	vm_ops = ERR_PTR(err);
++	if (unlikely(err))
++		goto out;
++	vm_ops = vma->vm_ops;
++	err = do_munmap(current->mm, vma->vm_start,
++			vma->vm_end - vma->vm_start);
++	if (unlikely(err)) {
++		AuIOErr("failed internal unmapping %.*s, %d\n",
++			AuDLNPair(h_file->f_dentry), err);
++		vm_ops = ERR_PTR(-EIO);
++	}
++
++ out:
++	return vm_ops;
++}
++
++static int aufs_mmap(struct file *file, struct vm_area_struct *vma)
++{
++	int err;
++	unsigned char wlock, mmapped;
++	struct dentry *dentry;
++	struct super_block *sb;
++	struct file *h_file;
++	struct vm_operations_struct *vm_ops;
++
++	dentry = file->f_dentry;
++	mmapped = !!au_test_mmapped(file); /* can be harmless race condition */
++	wlock = !!(file->f_mode & FMODE_WRITE) && (vma->vm_flags & VM_SHARED);
++	sb = dentry->d_sb;
++	si_read_lock(sb, AuLock_FLUSH);
++	err = au_reval_and_lock_fdi(file, au_reopen_nondir, wlock | !mmapped);
++	if (unlikely(err))
++		goto out;
++
++	if (wlock) {
++		struct au_pin pin;
++
++		err = au_ready_to_write(file, -1, &pin);
++		di_downgrade_lock(dentry, AuLock_IR);
++		if (unlikely(err))
++			goto out_unlock;
++		au_unpin(&pin);
++	} else if (!mmapped)
++		di_downgrade_lock(dentry, AuLock_IR);
++
++	h_file = au_h_fptr(file, au_fbstart(file));
++	if (au_test_fs_bad_mapping(h_file->f_dentry->d_sb)) {
++		/*
++		 * by this assignment, f_mapping will differs from aufs inode
++		 * i_mapping.
++		 * if someone else mixes the use of f_dentry->d_inode and
++		 * f_mapping->host, then a problem may arise.
++		 */
++		file->f_mapping = h_file->f_mapping;
++	}
++
++	vm_ops = NULL;
++	if (!mmapped) {
++		vm_ops = au_vm_ops(h_file, vma);
++		err = PTR_ERR(vm_ops);
++		if (IS_ERR(vm_ops))
++			goto out_unlock;
++	}
++
++	/*
++	 * unnecessary to handle MAP_DENYWRITE and deny_write_access()?
++	 * currently MAP_DENYWRITE from userspace is ignored, but elf loader
++	 * sets it. when FMODE_EXEC is set (by open_exec() or sys_uselib()),
++	 * both of the aufs file and the lower file is deny_write_access()-ed.
++	 * finally I hope we can skip handlling MAP_DENYWRITE here.
++	 */
++	err = generic_file_mmap(file, vma);
++	if (unlikely(err))
++		goto out_unlock;
++	vma->vm_ops = &aufs_vm_ops;
++	/* test again */
++	if (!au_test_mmapped(file))
++		au_fi(file)->fi_h_vm_ops = vm_ops;
++
++	vfsub_file_accessed(h_file);
++	fsstack_copy_attr_atime(dentry->d_inode, h_file->f_dentry->d_inode);
++
++ out_unlock:
++	di_read_unlock(dentry, AuLock_IR);
++	if (!wlock && mmapped)
++		fi_read_unlock(file);
++	else
++		fi_write_unlock(file);
++ out:
++	si_read_unlock(sb);
++	return err;
++}
++
++/* ---------------------------------------------------------------------- */
++
++static unsigned int aufs_poll(struct file *file, poll_table *wait)
++{
++	unsigned int mask;
++	int err;
++	struct file *h_file;
++	struct dentry *dentry;
++	struct super_block *sb;
++
++	/* We should pretend an error happened. */
++	mask = POLLERR /* | POLLIN | POLLOUT */;
++	dentry = file->f_dentry;
++	sb = dentry->d_sb;
++	si_read_lock(sb, AuLock_FLUSH);
++	err = au_reval_and_lock_fdi(file, au_reopen_nondir, /*wlock*/0);
++	if (unlikely(err))
++		goto out;
++
++	/* it is not an error if h_file has no operation */
++	mask = DEFAULT_POLLMASK;
++	h_file = au_h_fptr(file, au_fbstart(file));
++	if (h_file->f_op->poll)
++		mask = h_file->f_op->poll(h_file, wait);
++
++	di_read_unlock(dentry, AuLock_IR);
++	fi_read_unlock(file);
++
++ out:
++	si_read_unlock(sb);
++	AuTraceErr((int)mask);
++	return mask;
++}
++
++static int aufs_fsync_nondir(struct file *file, struct dentry *dentry,
++			     int datasync)
++{
++	int err;
++	struct au_pin pin;
++	struct inode *inode;
++	struct file *h_file;
++	struct super_block *sb;
++
++	inode = dentry->d_inode;
++	IMustLock(file->f_mapping->host);
++	if (inode != file->f_mapping->host) {
++		mutex_unlock(&file->f_mapping->host->i_mutex);
++		mutex_lock(&inode->i_mutex);
++	}
++	IMustLock(inode);
++
++	sb = dentry->d_sb;
++	si_read_lock(sb, AuLock_FLUSH);
++
++	err = 0; /* -EBADF; */ /* posix? */
++	if (unlikely(!(file->f_mode & FMODE_WRITE)))
++		goto out;
++	err = au_reval_and_lock_fdi(file, au_reopen_nondir, /*wlock*/1);
++	if (unlikely(err))
++		goto out;
++
++	err = au_ready_to_write(file, -1, &pin);
++	di_downgrade_lock(dentry, AuLock_IR);
++	if (unlikely(err))
++		goto out_unlock;
++	au_unpin(&pin);
++
++	err = -EINVAL;
++	h_file = au_h_fptr(file, au_fbstart(file));
++	if (h_file->f_op->fsync) {
++		struct dentry *h_d;
++		struct mutex *h_mtx;
++
++		/*
++		 * no filemap_fdatawrite() since aufs file has no its own
++		 * mapping, but dir.
++		 */
++		h_d = h_file->f_dentry;
++		h_mtx = &h_d->d_inode->i_mutex;
++		mutex_lock_nested(h_mtx, AuLsc_I_CHILD);
++		err = h_file->f_op->fsync(h_file, h_d, datasync);
++		if (!err)
++			vfsub_update_h_iattr(&h_file->f_path, /*did*/NULL);
++		/*ignore*/
++		au_cpup_attr_timesizes(inode);
++		mutex_unlock(h_mtx);
++	}
++
++ out_unlock:
++	di_read_unlock(dentry, AuLock_IR);
++	fi_write_unlock(file);
++ out:
++	si_read_unlock(sb);
++	if (inode != file->f_mapping->host) {
++		mutex_unlock(&inode->i_mutex);
++		mutex_lock(&file->f_mapping->host->i_mutex);
++	}
++	return err;
++}
++
++static int aufs_fasync(int fd, struct file *file, int flag)
++{
++	int err;
++	struct file *h_file;
++	struct dentry *dentry;
++	struct super_block *sb;
++
++	dentry = file->f_dentry;
++	sb = dentry->d_sb;
++	si_read_lock(sb, AuLock_FLUSH);
++	err = au_reval_and_lock_fdi(file, au_reopen_nondir, /*wlock*/0);
++	if (unlikely(err))
++		goto out;
++
++	h_file = au_h_fptr(file, au_fbstart(file));
++	if (h_file->f_op->fasync)
++		err = h_file->f_op->fasync(fd, h_file, flag);
++
++	di_read_unlock(dentry, AuLock_IR);
++	fi_read_unlock(file);
++
++ out:
++	si_read_unlock(sb);
++	return err;
++}
++
++/* ---------------------------------------------------------------------- */
++
++const struct file_operations aufs_file_fop = {
++	/*
++	 * while generic_file_llseek/_unlocked() don't use BKL,
++	 * don't use it since it operates file->f_mapping->host.
++	 * in aufs, it may be a real file and may confuse users by UDBA.
++	 */
++	/* .llseek		= generic_file_llseek, */
++
++	.read		= aufs_read,
++	.write		= aufs_write,
++	.poll		= aufs_poll,
++	.mmap		= aufs_mmap,
++	.open		= aufs_open_nondir,
++	.flush		= aufs_flush,
++	.release	= aufs_release_nondir,
++	.fsync		= aufs_fsync_nondir,
++	.fasync		= aufs_fasync,
++	.splice_write	= aufs_splice_write,
++	.splice_read	= aufs_splice_read
++};
+diff --git a/fs/aufs/file.c b/fs/aufs/file.c
+new file mode 100644
+index 0000000..e3abf83
+--- /dev/null
++++ b/fs/aufs/file.c
+@@ -0,0 +1,566 @@
++/*
++ * Copyright (C) 2005-2009 Junjiro R. Okajima
++ *
++ * This program, aufs is free software; you can redistribute it and/or modify
++ * it under the terms of the GNU General Public License as published by
++ * the Free Software Foundation; either version 2 of the License, or
++ * (at your option) any later version.
++ */
++
++/*
++ * handling file/dir, and address_space operation
++ */
++
++#include <linux/fsnotify.h>
++#include <linux/pagemap.h>
++#include "aufs.h"
++
++/*
++ * a dirty trick for handling deny_write_access().
++ * because FMODE_EXEC flag is not passed to f_op->open(),
++ * set it to file->private_data temporary.
++ */
++void au_store_oflag(struct nameidata *nd, struct inode *inode)
++{
++	if (nd
++	    /* && !(nd->flags & LOOKUP_CONTINUE) */
++	    && (nd->flags & LOOKUP_OPEN)
++	    && (nd->intent.open.flags & vfsub_fmode_to_uint(FMODE_EXEC))
++	    && inode
++	    && S_ISREG(inode->i_mode)) {
++		/* suppress a warning in lp64 */
++		unsigned long flags = nd->intent.open.flags;
++		nd->intent.open.file->private_data = (void *)flags;
++		/* smp_mb(); */
++	}
++}
++
++/* drop flags for writing */
++unsigned int au_file_roflags(unsigned int flags)
++{
++	flags &= ~(O_WRONLY | O_RDWR | O_APPEND | O_CREAT | O_TRUNC);
++	flags |= O_RDONLY | O_NOATIME;
++	return flags;
++}
++
++/* common functions to regular file and dir */
++struct file *au_h_open(struct dentry *dentry, aufs_bindex_t bindex, int flags,
++		       struct file *file)
++{
++	struct file *h_file;
++	struct dentry *h_dentry;
++	struct inode *h_inode;
++	struct super_block *sb;
++	struct au_branch *br;
++	int err;
++
++	h_dentry = au_h_dptr(dentry, bindex);
++	h_inode = h_dentry->d_inode;
++	/* a race condition can happen between open and unlink/rmdir */
++	h_file = ERR_PTR(-ENOENT);
++	if (unlikely((!d_unhashed(dentry) && d_unhashed(h_dentry))
++		     || !h_inode))
++		goto out;
++
++	sb = dentry->d_sb;
++	br = au_sbr(sb, bindex);
++	h_file = ERR_PTR(-EACCES);
++	if (file && (file->f_mode & FMODE_EXEC)
++	    && (br->br_mnt->mnt_flags & MNT_NOEXEC))
++		goto out;
++
++	/* drop flags for writing */
++	if (au_test_ro(sb, bindex, dentry->d_inode))
++		flags = au_file_roflags(flags);
++	flags &= ~O_CREAT;
++	atomic_inc(&br->br_count);
++	h_file = vfsub_dentry_open(dget(h_dentry), mntget(br->br_mnt), flags,
++				   current_cred());
++	if (IS_ERR(h_file))
++		goto out_br;
++	AuDebugOn(!h_file->f_op);
++
++	if (file && (file->f_mode & FMODE_EXEC)) {
++		h_file->f_mode |= FMODE_EXEC;
++		err = deny_write_access(h_file);
++		if (unlikely(err)) {
++			fput(h_file);
++			h_file = ERR_PTR(err);
++			goto out_br;
 +		}
 +	}
-+
-+	if (!shared_br || !shared_br->br_xino.xi_file) {
-+		struct au_xino_lock_dir ldir;
-+
-+		au_xino_lock_dir(sb, base_file, &ldir);
-+		/* mnt_want_write() is unnecessary here */
-+		file = au_xino_create2(base_file, NULL);
-+		au_xino_unlock_dir(&ldir);
-+		err = PTR_ERR(file);
-+		if (IS_ERR(file))
-+			goto out;
-+		br->br_xino.xi_file = file;
-+	} else {
-+		br->br_xino.xi_file = shared_br->br_xino.xi_file;
-+		get_file(br->br_xino.xi_file);
-+	}
-+
-+	ino = AUFS_ROOT_INO;
-+	err = au_xino_do_write(au_sbi(sb)->si_xwrite, br->br_xino.xi_file,
-+			       h_ino, ino);
-+	if (!err)
-+		return 0; /* success */
-+
-+
-+ out:
-+	return err;
-+}
-+
-+/* ---------------------------------------------------------------------- */
-+
-+/* trucate a xino bitmap file */
-+
-+/* todo: slow */
-+static int do_xib_restore(struct super_block *sb, struct file *file, void *page)
-+{
-+	int err, bit;
-+	ssize_t sz;
-+	unsigned long pindex;
-+	loff_t pos, pend;
-+	struct au_sbinfo *sbinfo;
-+	au_readf_t func;
-+	ino_t *ino;
-+	unsigned long *p;
-+
-+	err = 0;
-+	sbinfo = au_sbi(sb);
-+	p = sbinfo->si_xib_buf;
-+	func = sbinfo->si_xread;
-+	pend = i_size_read(file->f_dentry->d_inode);
-+	pos = 0;
-+	while (pos < pend) {
-+		sz = xino_fread(func, file, page, PAGE_SIZE, &pos);
-+		err = sz;
-+		if (unlikely(sz <= 0))
-+			goto out;
-+
-+		err = 0;
-+		for (ino = page; sz > 0; ino++, sz -= sizeof(ino)) {
-+			if (unlikely(*ino < AUFS_FIRST_INO))
-+				continue;
-+
-+			xib_calc_bit(*ino, &pindex, &bit);
-+			AuDebugOn(page_bits <= bit);
-+			err = xib_pindex(sb, pindex);
-+			if (!err)
-+				set_bit(bit, p);
-+			else
-+				goto out;
-+		}
-+	}
-+
-+ out:
-+	return err;
-+}
-+
-+static int xib_restore(struct super_block *sb)
-+{
-+	int err;
-+	aufs_bindex_t bindex, bend;
-+	void *page;
-+
-+	err = -ENOMEM;
-+	page = (void *)__get_free_page(GFP_NOFS);
-+	if (unlikely(!page))
-+		goto out;
-+
-+	err = 0;
-+	bend = au_sbend(sb);
-+	for (bindex = 0; !err && bindex <= bend; bindex++)
-+		if (!bindex || is_sb_shared(sb, bindex, bindex - 1) < 0)
-+			err = do_xib_restore
-+				(sb, au_sbr(sb, bindex)->br_xino.xi_file, page);
-+		else
-+			AuDbg("b%d\n", bindex);
-+	free_page((unsigned long)page);
-+
-+ out:
-+	return err;
-+}
-+
-+int au_xib_trunc(struct super_block *sb)
-+{
-+	int err;
-+	ssize_t sz;
-+	loff_t pos;
-+	struct au_xino_lock_dir ldir;
-+	struct au_sbinfo *sbinfo;
-+	unsigned long *p;
-+	struct file *file;
-+
-+	err = 0;
-+	sbinfo = au_sbi(sb);
-+	if (!au_opt_test(sbinfo->si_mntflags, XINO))
-+		goto out;
-+
-+	file = sbinfo->si_xib;
-+	if (i_size_read(file->f_dentry->d_inode) <= PAGE_SIZE)
-+		goto out;
-+
-+	au_xino_lock_dir(sb, file, &ldir);
-+	/* mnt_want_write() is unnecessary here */
-+	file = au_xino_create2(sbinfo->si_xib, NULL);
-+	au_xino_unlock_dir(&ldir);
-+	err = PTR_ERR(file);
-+	if (IS_ERR(file))
-+		goto out;
-+	fput(sbinfo->si_xib);
-+	sbinfo->si_xib = file;
-+
-+	p = sbinfo->si_xib_buf;
-+	memset(p, 0, PAGE_SIZE);
-+	pos = 0;
-+	sz = xino_fwrite(sbinfo->si_xwrite, sbinfo->si_xib, p, PAGE_SIZE, &pos);
-+	if (unlikely(sz != PAGE_SIZE)) {
-+		err = sz;
-+		AuIOErr("err %d\n", err);
-+		if (sz >= 0)
-+			err = -EIO;
-+		goto out;
-+	}
-+
-+	mutex_lock(&sbinfo->si_xib_mtx);
-+	/* mnt_want_write() is unnecessary here */
-+	err = xib_restore(sb);
-+	mutex_unlock(&sbinfo->si_xib_mtx);
-+
-+out:
-+	return err;
-+}
-+
-+/* ---------------------------------------------------------------------- */
-+
-+/*
-+ * xino mount option handlers
-+ */
-+static au_readf_t find_readf(struct file *h_file)
-+{
-+	const struct file_operations *fop = h_file->f_op;
-+
-+	if (fop->read)
-+		return fop->read;
-+	if (fop->aio_read)
-+		return do_sync_read;
-+	return ERR_PTR(-ENOSYS);
-+}
-+
-+static au_writef_t find_writef(struct file *h_file)
-+{
-+	const struct file_operations *fop = h_file->f_op;
-+
-+	if (fop->write)
-+		return fop->write;
-+	if (fop->aio_write)
-+		return do_sync_write;
-+	return ERR_PTR(-ENOSYS);
-+}
-+
-+/* xino bitmap */
-+static void xino_clear_xib(struct super_block *sb)
-+{
-+	struct au_sbinfo *sbinfo;
-+
-+	sbinfo = au_sbi(sb);
-+	sbinfo->si_xread = NULL;
-+	sbinfo->si_xwrite = NULL;
-+	if (sbinfo->si_xib)
-+		fput(sbinfo->si_xib);
-+	sbinfo->si_xib = NULL;
-+	free_page((unsigned long)sbinfo->si_xib_buf);
-+	sbinfo->si_xib_buf = NULL;
-+}
-+
-+static int au_xino_set_xib(struct super_block *sb, struct file *base)
-+{
-+	int err;
-+	loff_t pos;
-+	struct au_sbinfo *sbinfo;
-+	struct file *file;
-+
-+	sbinfo = au_sbi(sb);
-+	file = au_xino_create2(base, sbinfo->si_xib);
-+	err = PTR_ERR(file);
-+	if (IS_ERR(file))
-+		goto out;
-+	if (sbinfo->si_xib)
-+		fput(sbinfo->si_xib);
-+	sbinfo->si_xib = file;
-+	sbinfo->si_xread = find_readf(file);
-+	sbinfo->si_xwrite = find_writef(file);
-+
-+	err = -ENOMEM;
-+	if (!sbinfo->si_xib_buf)
-+		sbinfo->si_xib_buf = (void *)get_zeroed_page(GFP_NOFS);
-+	if (unlikely(!sbinfo->si_xib_buf))
-+		goto out_unset;
-+
-+	sbinfo->si_xib_last_pindex = 0;
-+	sbinfo->si_xib_next_bit = 0;
-+	if (i_size_read(file->f_dentry->d_inode) < PAGE_SIZE) {
-+		pos = 0;
-+		err = xino_fwrite(sbinfo->si_xwrite, file, sbinfo->si_xib_buf,
-+				  PAGE_SIZE, &pos);
-+		if (unlikely(err != PAGE_SIZE))
-+			goto out_free;
-+	}
-+	err = 0;
++	fsnotify_open(h_dentry);
 +	goto out; /* success */
 +
-+ out_free:
-+	free_page((unsigned long)sbinfo->si_xib_buf);
-+	sbinfo->si_xib_buf = NULL;
-+	if (err >= 0)
-+		err = -EIO;
-+ out_unset:
-+	fput(sbinfo->si_xib);
-+	sbinfo->si_xib = NULL;
-+	sbinfo->si_xread = NULL;
-+	sbinfo->si_xwrite = NULL;
++ out_br:
++	atomic_dec(&br->br_count);
 + out:
-+	return err;
++	return h_file;
 +}
 +
-+/* xino for each branch */
-+static void xino_clear_br(struct super_block *sb)
-+{
-+	aufs_bindex_t bindex, bend;
-+	struct au_branch *br;
-+
-+	bend = au_sbend(sb);
-+	for (bindex = 0; bindex <= bend; bindex++) {
-+		br = au_sbr(sb, bindex);
-+		if (!br || !br->br_xino.xi_file)
-+			continue;
-+
-+		fput(br->br_xino.xi_file);
-+		br->br_xino.xi_file = NULL;
-+	}
-+}
-+
-+static int au_xino_set_br(struct super_block *sb, struct file *base)
++int au_do_open(struct file *file, int (*open)(struct file *file, int flags))
 +{
 +	int err;
-+	ino_t ino;
-+	aufs_bindex_t bindex, bend, bshared;
-+	struct {
-+		struct file *old, *new;
-+	} *fpair, *p;
-+	struct au_branch *br;
-+	struct inode *inode;
-+	au_writef_t writef;
++	unsigned int flags;
++	struct dentry *dentry;
++	struct super_block *sb;
 +
-+	err = -ENOMEM;
-+	bend = au_sbend(sb);
-+	fpair = kcalloc(bend + 1, sizeof(*fpair), GFP_NOFS);
-+	if (unlikely(!fpair))
++	dentry = file->f_dentry;
++	sb = dentry->d_sb;
++	si_read_lock(sb, AuLock_FLUSH);
++	err = au_finfo_init(file);
++	if (unlikely(err))
 +		goto out;
 +
-+	inode = sb->s_root->d_inode;
-+	ino = AUFS_ROOT_INO;
-+	writef = au_sbi(sb)->si_xwrite;
-+	for (bindex = 0, p = fpair; bindex <= bend; bindex++, p++) {
-+		br = au_sbr(sb, bindex);
-+		bshared = is_sb_shared(sb, bindex, bindex - 1);
-+		if (bshared >= 0) {
-+			/* shared xino */
-+			*p = fpair[bshared];
-+			get_file(p->new);
-+		}
++	di_read_lock_child(dentry, AuLock_IR);
++	spin_lock(&file->f_lock);
++	flags = file->f_flags;
++	spin_unlock(&file->f_lock);
++	err = open(file, flags);
++	di_read_unlock(dentry, AuLock_IR);
 +
-+		if (!p->new) {
-+			/* new xino */
-+			p->old = br->br_xino.xi_file;
-+			p->new = au_xino_create2(base, br->br_xino.xi_file);
-+			err = PTR_ERR(p->new);
-+			if (IS_ERR(p->new)) {
-+				p->new = NULL;
-+				goto out_pair;
-+			}
-+		}
-+
-+		err = au_xino_do_write(writef, p->new,
-+				       au_h_iptr(inode, bindex)->i_ino, ino);
-+		if (unlikely(err))
-+			goto out_pair;
-+	}
-+
-+	for (bindex = 0, p = fpair; bindex <= bend; bindex++, p++) {
-+		br = au_sbr(sb, bindex);
-+		if (br->br_xino.xi_file)
-+			fput(br->br_xino.xi_file);
-+		get_file(p->new);
-+		br->br_xino.xi_file = p->new;
-+	}
-+
-+ out_pair:
-+	for (bindex = 0, p = fpair; bindex <= bend; bindex++, p++)
-+		if (p->new)
-+			fput(p->new);
-+		else
-+			break;
-+	kfree(fpair);
++	fi_write_unlock(file);
++	if (unlikely(err))
++		au_finfo_fin(file);
 + out:
++	si_read_unlock(sb);
 +	return err;
 +}
 +
-+void au_xino_clr(struct super_block *sb)
++int au_reopen_nondir(struct file *file)
 +{
-+	struct au_sbinfo *sbinfo;
++	int err;
++	unsigned int flags;
++	aufs_bindex_t bstart, bindex, bend;
++	struct dentry *dentry;
++	struct file *h_file, *h_file_tmp;
 +
-+	xino_clear_xib(sb);
-+	xino_clear_br(sb);
-+	sbinfo = au_sbi(sb);
-+	/* lvalue, do not call au_mntflags() */
-+	au_opt_clr(sbinfo->si_mntflags, XINO);
-+}
++	dentry = file->f_dentry;
++	bstart = au_dbstart(dentry);
++	h_file_tmp = NULL;
++	if (au_fbstart(file) == bstart) {
++		h_file = au_h_fptr(file, bstart);
++		if (file->f_mode == h_file->f_mode)
++			return 0; /* success */
++		h_file_tmp = h_file;
++		get_file(h_file_tmp);
++		au_set_h_fptr(file, bstart, NULL);
++	}
++	AuDebugOn(au_fbstart(file) < bstart
++		  || au_fi(file)->fi_hfile[0 + bstart].hf_file);
 +
-+int au_xino_set(struct super_block *sb, struct au_opt_xino *xino, int remount)
-+{
-+	int err, skip;
-+	struct dentry *parent, *cur_parent;
-+	struct qstr *dname, *cur_name;
-+	struct file *cur_xino;
-+	struct inode *dir;
-+	struct au_sbinfo *sbinfo;
++	spin_lock(&file->f_lock);
++	flags = file->f_flags & ~O_TRUNC;
++	spin_unlock(&file->f_lock);
++	h_file = au_h_open(dentry, bstart, flags, file);
++	err = PTR_ERR(h_file);
++	if (IS_ERR(h_file))
++		goto out; /* todo: close all? */
 +
 +	err = 0;
-+	sbinfo = au_sbi(sb);
-+	parent = dget_parent(xino->file->f_dentry);
-+	if (remount) {
-+		skip = 0;
-+		dname = &xino->file->f_dentry->d_name;
-+		cur_xino = sbinfo->si_xib;
-+		if (cur_xino) {
-+			cur_parent = dget_parent(cur_xino->f_dentry);
-+			cur_name = &cur_xino->f_dentry->d_name;
-+			skip = (cur_parent == parent
-+				&& dname->len == cur_name->len
-+				&& !memcmp(dname->name, cur_name->name,
-+					   dname->len));
-+			dput(cur_parent);
-+		}
-+		if (skip)
-+			goto out;
-+	}
++	au_set_fbstart(file, bstart);
++	au_set_h_fptr(file, bstart, h_file);
++	au_update_figen(file);
++	/* todo: necessary? */
++	/* file->f_ra = h_file->f_ra; */
 +
-+	au_opt_set(sbinfo->si_mntflags, XINO);
-+	dir = parent->d_inode;
-+	mutex_lock_nested(&dir->i_mutex, AuLsc_I_PARENT);
-+	/* mnt_want_write() is unnecessary here */
-+	err = au_xino_set_xib(sb, xino->file);
-+	if (!err)
-+		err = au_xino_set_br(sb, xino->file);
-+	mutex_unlock(&dir->i_mutex);
-+	if (!err)
-+		goto out; /* success */
-+
-+	/* reset all */
-+	AuIOErr("failed creating xino(%d).\n", err);
++	/* close lower files */
++	bend = au_fbend(file);
++	for (bindex = bstart + 1; bindex <= bend; bindex++)
++		au_set_h_fptr(file, bindex, NULL);
++	au_set_fbend(file, bstart);
 +
 + out:
-+	dput(parent);
++	if (h_file_tmp)
++		fput(h_file_tmp);
 +	return err;
++}
++
++/* ---------------------------------------------------------------------- */
++
++static int au_reopen_wh(struct file *file, aufs_bindex_t btgt,
++			struct dentry *hi_wh)
++{
++	int err;
++	aufs_bindex_t bstart;
++	struct au_dinfo *dinfo;
++	struct dentry *h_dentry;
++
++	dinfo = au_di(file->f_dentry);
++	bstart = dinfo->di_bstart;
++	dinfo->di_bstart = btgt;
++	h_dentry = dinfo->di_hdentry[0 + btgt].hd_dentry;
++	dinfo->di_hdentry[0 + btgt].hd_dentry = hi_wh;
++	err = au_reopen_nondir(file);
++	dinfo->di_hdentry[0 + btgt].hd_dentry = h_dentry;
++	dinfo->di_bstart = bstart;
++
++	return err;
++}
++
++static int au_ready_to_write_wh(struct file *file, loff_t len,
++				aufs_bindex_t bcpup)
++{
++	int err;
++	struct inode *inode;
++	struct dentry *dentry, *hi_wh;
++	struct super_block *sb;
++
++	dentry = file->f_dentry;
++	inode = dentry->d_inode;
++	hi_wh = au_hi_wh(inode, bcpup);
++	if (!hi_wh)
++		err = au_sio_cpup_wh(dentry, bcpup, len, file);
++	else
++		/* already copied-up after unlink */
++		err = au_reopen_wh(file, bcpup, hi_wh);
++
++	sb = dentry->d_sb;
++	if (!err && inode->i_nlink > 1 && au_opt_test(au_mntflags(sb), PLINK))
++		au_plink_append(inode, bcpup, au_h_dptr(dentry, bcpup));
++
++	return err;
++}
++
++/*
++ * prepare the @file for writing.
++ */
++int au_ready_to_write(struct file *file, loff_t len, struct au_pin *pin)
++{
++	int err;
++	aufs_bindex_t bstart, bcpup;
++	struct dentry *dentry, *parent, *h_dentry;
++	struct inode *h_inode, *inode;
++	struct super_block *sb;
++
++	dentry = file->f_dentry;
++	sb = dentry->d_sb;
++	bstart = au_fbstart(file);
++	inode = dentry->d_inode;
++	err = au_test_ro(sb, bstart, inode);
++	if (!err && (au_h_fptr(file, bstart)->f_mode & FMODE_WRITE)) {
++		err = au_pin(pin, dentry, bstart, AuOpt_UDBA_NONE, /*flags*/0);
++		goto out;
++	}
++
++	/* need to cpup */
++	parent = dget_parent(dentry);
++	di_write_lock_parent(parent);
++	err = AuWbrCopyup(au_sbi(sb), dentry);
++	bcpup = err;
++	if (unlikely(err < 0))
++		goto out_dgrade;
++	err = 0;
++
++	if (!au_h_dptr(parent, bcpup)) {
++		err = au_cpup_dirs(dentry, bcpup);
++		if (unlikely(err))
++			goto out_dgrade;
++	}
++
++	err = au_pin(pin, dentry, bcpup, AuOpt_UDBA_NONE,
++		     AuPin_DI_LOCKED | AuPin_MNT_WRITE);
++	if (unlikely(err))
++		goto out_dgrade;
++
++	h_dentry = au_h_fptr(file, bstart)->f_dentry;
++	h_inode = h_dentry->d_inode;
++	mutex_lock_nested(&h_inode->i_mutex, AuLsc_I_CHILD);
++	if (d_unhashed(dentry) /* || d_unhashed(h_dentry) */
++	    /* || !h_inode->i_nlink */) {
++		err = au_ready_to_write_wh(file, len, bcpup);
++		di_downgrade_lock(parent, AuLock_IR);
++	} else {
++		di_downgrade_lock(parent, AuLock_IR);
++		if (!au_h_dptr(dentry, bcpup))
++			err = au_sio_cpup_simple(dentry, bcpup, len,
++						 AuCpup_DTIME);
++		if (!err)
++			err = au_reopen_nondir(file);
++	}
++	mutex_unlock(&h_inode->i_mutex);
++
++	if (!err) {
++		au_pin_set_parent_lflag(pin, /*lflag*/0);
++		goto out_dput; /* success */
++	}
++	au_unpin(pin);
++	goto out_unlock;
++
++ out_dgrade:
++	di_downgrade_lock(parent, AuLock_IR);
++ out_unlock:
++	di_read_unlock(parent, AuLock_IR);
++ out_dput:
++	dput(parent);
++ out:
++	return err;
++}
++
++/* ---------------------------------------------------------------------- */
++
++static int au_file_refresh_by_inode(struct file *file, int *need_reopen)
++{
++	int err;
++	aufs_bindex_t bstart;
++	struct au_pin pin;
++	struct au_finfo *finfo;
++	struct dentry *dentry, *parent, *hi_wh;
++	struct inode *inode;
++	struct super_block *sb;
++
++	err = 0;
++	finfo = au_fi(file);
++	dentry = file->f_dentry;
++	sb = dentry->d_sb;
++	inode = dentry->d_inode;
++	bstart = au_ibstart(inode);
++	if (bstart == finfo->fi_bstart)
++		goto out;
++
++	parent = dget_parent(dentry);
++	if (au_test_ro(sb, bstart, inode)) {
++		di_read_lock_parent(parent, !AuLock_IR);
++		err = AuWbrCopyup(au_sbi(sb), dentry);
++		bstart = err;
++		di_read_unlock(parent, !AuLock_IR);
++		if (unlikely(err < 0))
++			goto out_parent;
++		err = 0;
++	}
++
++	di_read_lock_parent(parent, AuLock_IR);
++	hi_wh = au_hi_wh(inode, bstart);
++	if (au_opt_test(au_mntflags(sb), PLINK)
++	    && au_plink_test(inode)
++	    && !d_unhashed(dentry)) {
++		err = au_test_and_cpup_dirs(dentry, bstart);
++		if (unlikely(err))
++			goto out_unlock;
++
++		/* always superio. */
++		err = au_pin(&pin, dentry, bstart, AuOpt_UDBA_NONE,
++			     AuPin_DI_LOCKED | AuPin_MNT_WRITE);
++		if (!err)
++			err = au_sio_cpup_simple(dentry, bstart, -1,
++						 AuCpup_DTIME);
++		au_unpin(&pin);
++	} else if (hi_wh) {
++		/* already copied-up after unlink */
++		err = au_reopen_wh(file, bstart, hi_wh);
++		*need_reopen = 0;
++	}
++
++ out_unlock:
++	di_read_unlock(parent, AuLock_IR);
++ out_parent:
++	dput(parent);
++ out:
++	return err;
++}
++
++static void au_do_refresh_file(struct file *file)
++{
++	aufs_bindex_t bindex, bend, new_bindex, brid;
++	struct au_hfile *p, tmp, *q;
++	struct au_finfo *finfo;
++	struct super_block *sb;
++
++	sb = file->f_dentry->d_sb;
++	finfo = au_fi(file);
++	p = finfo->fi_hfile + finfo->fi_bstart;
++	brid = p->hf_br->br_id;
++	bend = finfo->fi_bend;
++	for (bindex = finfo->fi_bstart; bindex <= bend; bindex++, p++) {
++		if (!p->hf_file)
++			continue;
++
++		new_bindex = au_br_index(sb, p->hf_br->br_id);
++		if (new_bindex == bindex)
++			continue;
++		if (new_bindex < 0) {
++			au_set_h_fptr(file, bindex, NULL);
++			continue;
++		}
++
++		/* swap two lower inode, and loop again */
++		q = finfo->fi_hfile + new_bindex;
++		tmp = *q;
++		*q = *p;
++		*p = tmp;
++		if (tmp.hf_file) {
++			bindex--;
++			p--;
++		}
++	}
++
++	p = finfo->fi_hfile;
++	if (!au_test_mmapped(file) && !d_unhashed(file->f_dentry)) {
++		bend = au_sbend(sb);
++		for (finfo->fi_bstart = 0; finfo->fi_bstart <= bend;
++		     finfo->fi_bstart++, p++)
++			if (p->hf_file) {
++				if (p->hf_file->f_dentry
++				    && p->hf_file->f_dentry->d_inode)
++					break;
++				else
++					au_hfput(p, file);
++			}
++	} else {
++		bend = au_br_index(sb, brid);
++		for (finfo->fi_bstart = 0; finfo->fi_bstart < bend;
++		     finfo->fi_bstart++, p++)
++			if (p->hf_file)
++				au_hfput(p, file);
++		bend = au_sbend(sb);
++	}
++
++	p = finfo->fi_hfile + bend;
++	for (finfo->fi_bend = bend; finfo->fi_bend >= finfo->fi_bstart;
++	     finfo->fi_bend--, p--)
++		if (p->hf_file) {
++			if (p->hf_file->f_dentry
++			    && p->hf_file->f_dentry->d_inode)
++				break;
++			else
++				au_hfput(p, file);
++		}
++	AuDebugOn(finfo->fi_bend < finfo->fi_bstart);
++}
++
++/*
++ * after branch manipulating, refresh the file.
++ */
++static int refresh_file(struct file *file, int (*reopen)(struct file *file))
++{
++	int err, need_reopen;
++	struct dentry *dentry;
++	aufs_bindex_t bend, bindex;
++
++	dentry = file->f_dentry;
++	err = au_fi_realloc(au_fi(file), au_sbend(dentry->d_sb) + 1);
++	if (unlikely(err))
++		goto out;
++	au_do_refresh_file(file);
++
++	err = 0;
++	need_reopen = 1;
++	if (!au_test_mmapped(file))
++		err = au_file_refresh_by_inode(file, &need_reopen);
++	if (!err && need_reopen && !d_unhashed(dentry))
++		err = reopen(file);
++	if (!err) {
++		au_update_figen(file);
++		return 0; /* success */
++	}
++
++	/* error, close all lower files */
++	bend = au_fbend(file);
++	for (bindex = au_fbstart(file); bindex <= bend; bindex++)
++		au_set_h_fptr(file, bindex, NULL);
++
++ out:
++	return err;
++}
++
++/* common function to regular file and dir */
++int au_reval_and_lock_fdi(struct file *file, int (*reopen)(struct file *file),
++			  int wlock)
++{
++	int err;
++	unsigned int sigen, figen;
++	aufs_bindex_t bstart;
++	unsigned char pseudo_link;
++	struct dentry *dentry;
++
++	err = 0;
++	dentry = file->f_dentry;
++	sigen = au_sigen(dentry->d_sb);
++	fi_write_lock(file);
++	figen = au_figen(file);
++	di_write_lock_child(dentry);
++	bstart = au_dbstart(dentry);
++	pseudo_link = (bstart != au_ibstart(dentry->d_inode));
++	if (sigen == figen && !pseudo_link && au_fbstart(file) == bstart) {
++		if (!wlock) {
++			di_downgrade_lock(dentry, AuLock_IR);
++			fi_downgrade_lock(file);
++		}
++		goto out; /* success */
++	}
++
++	AuDbg("sigen %d, figen %d\n", sigen, figen);
++	if (sigen != au_digen(dentry)
++	    || sigen != au_iigen(dentry->d_inode)) {
++		err = au_reval_dpath(dentry, sigen);
++		if (unlikely(err < 0))
++			goto out;
++		AuDebugOn(au_digen(dentry) != sigen
++			  || au_iigen(dentry->d_inode) != sigen);
++	}
++
++	err = refresh_file(file, reopen);
++	if (!err) {
++		if (!wlock) {
++			di_downgrade_lock(dentry, AuLock_IR);
++			fi_downgrade_lock(file);
++		}
++	} else {
++		di_write_unlock(dentry);
++		fi_write_unlock(file);
++	}
++
++ out:
++	return err;
++}
++
++/* ---------------------------------------------------------------------- */
++
++/* cf. aufs_nopage() */
++/* for madvise(2) */
++static int aufs_readpage(struct file *file __maybe_unused, struct page *page)
++{
++	unlock_page(page);
++	return 0;
++}
++
++/* they will never be called. */
++#ifdef CONFIG_AUFS_DEBUG
++static int aufs_write_begin(struct file *file, struct address_space *mapping,
++			    loff_t pos, unsigned len, unsigned flags,
++			    struct page **pagep, void **fsdata)
++{ AuUnsupport(); return 0; }
++static int aufs_write_end(struct file *file, struct address_space *mapping,
++			  loff_t pos, unsigned len, unsigned copied,
++			  struct page *page, void *fsdata)
++{ AuUnsupport(); return 0; }
++static int aufs_writepage(struct page *page, struct writeback_control *wbc)
++{ AuUnsupport(); return 0; }
++static void aufs_sync_page(struct page *page)
++{ AuUnsupport(); }
++
++static int aufs_set_page_dirty(struct page *page)
++{ AuUnsupport(); return 0; }
++static void aufs_invalidatepage(struct page *page, unsigned long offset)
++{ AuUnsupport(); }
++static int aufs_releasepage(struct page *page, gfp_t gfp)
++{ AuUnsupport(); return 0; }
++static ssize_t aufs_direct_IO(int rw, struct kiocb *iocb,
++			      const struct iovec *iov, loff_t offset,
++			      unsigned long nr_segs)
++{ AuUnsupport(); return 0; }
++#endif /* CONFIG_AUFS_DEBUG */
++
++struct address_space_operations aufs_aop = {
++	.readpage	= aufs_readpage,
++#ifdef CONFIG_AUFS_DEBUG
++	.writepage	= aufs_writepage,
++	.sync_page	= aufs_sync_page,
++	.set_page_dirty	= aufs_set_page_dirty,
++	.write_begin	= aufs_write_begin,
++	.write_end	= aufs_write_end,
++	.invalidatepage	= aufs_invalidatepage,
++	.releasepage	= aufs_releasepage,
++	.direct_IO	= aufs_direct_IO,
++#endif /* CONFIG_AUFS_DEBUG */
++};
+diff --git a/fs/aufs/file.h b/fs/aufs/file.h
+new file mode 100644
+index 0000000..dd9ee61
+--- /dev/null
++++ b/fs/aufs/file.h
+@@ -0,0 +1,148 @@
++/*
++ * Copyright (C) 2005-2009 Junjiro R. Okajima
++ *
++ * This program, aufs is free software; you can redistribute it and/or modify
++ * it under the terms of the GNU General Public License as published by
++ * the Free Software Foundation; either version 2 of the License, or
++ * (at your option) any later version.
++ */
++
++/*
++ * file operations
++ */
++
++#ifndef __AUFS_FILE_H__
++#define __AUFS_FILE_H__
++
++#ifdef __KERNEL__
++
++#include <linux/file.h>
++#include <linux/fs.h>
++#include <linux/aufs_type.h>
++#include "rwsem.h"
++
++struct au_branch;
++struct au_hfile {
++	struct file		*hf_file;
++	struct au_branch	*hf_br;
++};
++
++struct au_vdir;
++struct au_finfo {
++	atomic_t		fi_generation;
++
++	struct rw_semaphore	fi_rwsem;
++	struct au_hfile		*fi_hfile;
++	aufs_bindex_t		fi_bstart, fi_bend;
++
++	union {
++		/* non-dir only */
++		struct vm_operations_struct	*fi_h_vm_ops;
++
++		/* dir only */
++		struct {
++			struct au_vdir		*fi_vdir_cache;
++			int			fi_maintain_plink;
++		};
++	};
++};
++
++/* ---------------------------------------------------------------------- */
++
++/* file.c */
++extern struct address_space_operations aufs_aop;
++void au_store_oflag(struct nameidata *nd, struct inode *inode);
++unsigned int au_file_roflags(unsigned int flags);
++struct file *au_h_open(struct dentry *dentry, aufs_bindex_t bindex, int flags,
++		       struct file *file);
++int au_do_open(struct file *file, int (*open)(struct file *file, int flags));
++int au_reopen_nondir(struct file *file);
++struct au_pin;
++int au_ready_to_write(struct file *file, loff_t len, struct au_pin *pin);
++int au_reval_and_lock_fdi(struct file *file, int (*reopen)(struct file *file),
++			  int wlock);
++
++/* f_op.c */
++extern const struct file_operations aufs_file_fop;
++int aufs_flush(struct file *file, fl_owner_t id);
++
++/* finfo.c */
++void au_hfput(struct au_hfile *hf, struct file *file);
++void au_set_h_fptr(struct file *file, aufs_bindex_t bindex,
++		   struct file *h_file);
++
++void au_update_figen(struct file *file);
++
++void au_finfo_fin(struct file *file);
++int au_finfo_init(struct file *file);
++int au_fi_realloc(struct au_finfo *finfo, int nbr);
++
++/* ---------------------------------------------------------------------- */
++
++static inline struct au_finfo *au_fi(struct file *file)
++{
++	return file->private_data;
 +}
 +
 +/* ---------------------------------------------------------------------- */
 +
 +/*
-+ * create a xinofile at the default place/path.
++ * fi_read_lock, fi_write_lock,
++ * fi_read_unlock, fi_write_unlock, fi_downgrade_lock
 + */
-+struct file *au_xino_def(struct super_block *sb)
++AuSimpleRwsemFuncs(fi, struct file *f, &au_fi(f)->fi_rwsem);
++
++#define FiMustNoWaiters(f)	AuRwMustNoWaiters(&au_fi(f)->fi_rwsem)
++
++/* ---------------------------------------------------------------------- */
++
++/* todo: hard/soft set? */
++static inline aufs_bindex_t au_fbstart(struct file *file)
 +{
-+	struct file *file;
-+	char *page, *p;
-+	struct au_branch *br;
-+	struct super_block *h_sb;
-+	struct path path;
-+	aufs_bindex_t bend, bindex, bwr;
++	return au_fi(file)->fi_bstart;
++}
 +
-+	br = NULL;
-+	bend = au_sbend(sb);
-+	bwr = -1;
-+	for (bindex = 0; bindex <= bend; bindex++) {
-+		br = au_sbr(sb, bindex);
-+		if (au_br_writable(br->br_perm)
-+		    && !au_test_fs_bad_xino(br->br_mnt->mnt_sb)) {
-+			bwr = bindex;
-+			break;
-+		}
++static inline aufs_bindex_t au_fbend(struct file *file)
++{
++	return au_fi(file)->fi_bend;
++}
++
++static inline struct au_vdir *au_fvdir_cache(struct file *file)
++{
++	return au_fi(file)->fi_vdir_cache;
++}
++
++static inline void au_set_fbstart(struct file *file, aufs_bindex_t bindex)
++{
++	au_fi(file)->fi_bstart = bindex;
++}
++
++static inline void au_set_fbend(struct file *file, aufs_bindex_t bindex)
++{
++	au_fi(file)->fi_bend = bindex;
++}
++
++static inline void au_set_fvdir_cache(struct file *file,
++				      struct au_vdir *vdir_cache)
++{
++	au_fi(file)->fi_vdir_cache = vdir_cache;
++}
++
++static inline struct file *au_h_fptr(struct file *file, aufs_bindex_t bindex)
++{
++	return au_fi(file)->fi_hfile[0 + bindex].hf_file;
++}
++
++/* todo: memory barrier? */
++static inline unsigned int au_figen(struct file *f)
++{
++	return atomic_read(&au_fi(f)->fi_generation);
++}
++
++static inline int au_test_mmapped(struct file *f)
++{
++	return !!(au_fi(f)->fi_h_vm_ops);
++}
++
++#endif /* __KERNEL__ */
++#endif /* __AUFS_FILE_H__ */
+diff --git a/fs/aufs/finfo.c b/fs/aufs/finfo.c
+new file mode 100644
+index 0000000..dfb4851
+--- /dev/null
++++ b/fs/aufs/finfo.c
+@@ -0,0 +1,124 @@
++/*
++ * Copyright (C) 2005-2009 Junjiro R. Okajima
++ *
++ * This program, aufs is free software; you can redistribute it and/or modify
++ * it under the terms of the GNU General Public License as published by
++ * the Free Software Foundation; either version 2 of the License, or
++ * (at your option) any later version.
++ */
++
++/*
++ * file private data
++ */
++
++#include "aufs.h"
++
++void au_hfput(struct au_hfile *hf, struct file *file)
++{
++	if (file->f_mode & FMODE_EXEC)
++		allow_write_access(hf->hf_file);
++	fput(hf->hf_file);
++	hf->hf_file = NULL;
++	atomic_dec(&hf->hf_br->br_count);
++	hf->hf_br = NULL;
++}
++
++void au_set_h_fptr(struct file *file, aufs_bindex_t bindex, struct file *val)
++{
++	struct au_finfo *finfo = au_fi(file);
++	struct au_hfile *hf;
++
++	hf = finfo->fi_hfile + bindex;
++	if (hf->hf_file)
++		au_hfput(hf, file);
++	if (val) {
++		hf->hf_file = val;
++		hf->hf_br = au_sbr(file->f_dentry->d_sb, bindex);
 +	}
++}
 +
-+	if (bwr >= 0) {
-+		file = ERR_PTR(-ENOMEM);
-+		page = __getname();
-+		if (unlikely(!page))
-+			goto out;
-+		path.mnt = br->br_mnt;
-+		path.dentry = au_h_dptr(sb->s_root, bwr);
-+		p = d_path(&path, page, PATH_MAX - sizeof(AUFS_XINO_FNAME));
-+		file = (void *)p;
-+		if (!IS_ERR(p)) {
-+			strcat(p, "/" AUFS_XINO_FNAME);
-+			AuDbg("%s\n", p);
-+			file = au_xino_create(sb, p, /*silent*/0);
-+			if (!IS_ERR(file))
-+				au_xino_brid_set(sb, br->br_id);
-+		}
-+		__putname(page);
-+	} else {
-+		file = au_xino_create(sb, AUFS_XINO_DEFPATH, /*silent*/0);
-+		if (IS_ERR(file))
-+			goto out;
-+		h_sb = file->f_dentry->d_sb;
-+		if (unlikely(au_test_fs_bad_xino(h_sb))) {
-+			AuErr("xino doesn't support %s(%s)\n",
-+			      AUFS_XINO_DEFPATH, au_sbtype(h_sb));
-+			fput(file);
-+			file = ERR_PTR(-EINVAL);
-+		}
-+		if (!IS_ERR(file))
-+			au_xino_brid_set(sb, -1);
-+	}
-+
-+ out:
-+	return file;
++void au_update_figen(struct file *file)
++{
++	atomic_set(&au_fi(file)->fi_generation, au_digen(file->f_dentry));
++	/* smp_mb(); */ /* atomic_set */
 +}
 +
 +/* ---------------------------------------------------------------------- */
 +
-+int au_xino_path(struct seq_file *seq, struct file *file)
++void au_finfo_fin(struct file *file)
 +{
-+	int err;
++	struct au_finfo *finfo;
++	aufs_bindex_t bindex, bend;
 +
-+	err = au_seq_path(seq, &file->f_path);
-+	if (unlikely(err < 0))
++	fi_write_lock(file);
++	bend = au_fbend(file);
++	bindex = au_fbstart(file);
++	if (bindex >= 0)
++		/*
++		 * calls fput() instead of filp_close(),
++		 * since no dnotify or lock for the lower file.
++		 */
++		for (; bindex <= bend; bindex++)
++			au_set_h_fptr(file, bindex, NULL);
++
++	finfo = au_fi(file);
++	au_dbg_verify_hf(finfo);
++	kfree(finfo->fi_hfile);
++	fi_write_unlock(file);
++	au_rwsem_destroy(&finfo->fi_rwsem);
++	au_cache_free_finfo(finfo);
++}
++
++int au_finfo_init(struct file *file)
++{
++	struct au_finfo *finfo;
++	struct dentry *dentry;
++	unsigned long ul;
++
++	dentry = file->f_dentry;
++	finfo = au_cache_alloc_finfo();
++	if (unlikely(!finfo))
 +		goto out;
 +
-+	err = 0;
-+#define Deleted "\\040(deleted)"
-+	seq->count -= sizeof(Deleted) - 1;
-+	AuDebugOn(memcmp(seq->buf + seq->count, Deleted,
-+			 sizeof(Deleted) - 1));
-+#undef Deleted
++	finfo->fi_hfile = kcalloc(au_sbend(dentry->d_sb) + 1,
++				  sizeof(*finfo->fi_hfile), GFP_NOFS);
++	if (unlikely(!finfo->fi_hfile))
++		goto out_finfo;
 +
++	init_rwsem(&finfo->fi_rwsem);
++	down_write(&finfo->fi_rwsem);
++	finfo->fi_bstart = -1;
++	finfo->fi_bend = -1;
++	atomic_set(&finfo->fi_generation, au_digen(dentry));
++	/* smp_mb(); */ /* atomic_set */
++
++	/* cf. au_store_oflag() */
++	/* suppress a warning in lp64 */
++	ul = (unsigned long)file->private_data;
++	file->f_mode |= (vfsub_uint_to_fmode(ul) & FMODE_EXEC);
++	file->private_data = finfo;
++	return 0; /* success */
++
++ out_finfo:
++	au_cache_free_finfo(finfo);
 + out:
++	return -ENOMEM;
++}
++
++int au_fi_realloc(struct au_finfo *finfo, int nbr)
++{
++	int err, sz;
++	struct au_hfile *hfp;
++
++	err = -ENOMEM;
++	sz = sizeof(*hfp) * (finfo->fi_bend + 1);
++	if (!sz)
++		sz = sizeof(*hfp);
++	hfp = au_kzrealloc(finfo->fi_hfile, sz, sizeof(*hfp) * nbr, GFP_NOFS);
++	if (hfp) {
++		finfo->fi_hfile = hfp;
++		err = 0;
++	}
++
 +	return err;
 +}
 -- 
