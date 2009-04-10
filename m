@@ -1,22 +1,22 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S938179AbZDJHTd@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S938234AbZDJHUi@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S938179AbZDJHTd (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 10 Apr 2009 03:19:33 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S937912AbZDJHRI
+	id S938234AbZDJHUi (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 10 Apr 2009 03:20:38 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S938047AbZDJHRU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 10 Apr 2009 03:17:08 -0400
-Received: from mfbichi12.ns.itscom.net ([219.110.2.190]:35949 "EHLO
+	Fri, 10 Apr 2009 03:17:20 -0400
+Received: from mfbichi12.ns.itscom.net ([219.110.2.190]:35966 "EHLO
 	mfbichi12.ns.itscom.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S936856AbZDJHRE (ORCPT
+	with ESMTP id S938006AbZDJHRL (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 10 Apr 2009 03:17:04 -0400
+	Fri, 10 Apr 2009 03:17:11 -0400
 From: "J. R. Okajima" <hooanon05@yahoo.co.jp>
 To: linux-kernel@vger.kernel.org
 Cc: greg@kroah.com, linux-fsdevel@vger.kernel.org,
        "J. R. Okajima" <hooanon05@yahoo.co.jp>
-Subject: [RFC Aufs2 #5 06/29] aufs object lifetime management via sysfs
-Date: Fri, 10 Apr 2009 16:02:20 +0900
-Message-Id: <1239346963-30953-7-git-send-email-hooanon05@yahoo.co.jp>
+Subject: [RFC Aufs2 #5 25/29] aufs debug
+Date: Fri, 10 Apr 2009 16:02:39 +0900
+Message-Id: <1239346963-30953-26-git-send-email-hooanon05@yahoo.co.jp>
 X-Mailer: git-send-email 1.6.1.284.g5dc13
 In-Reply-To: <1239346963-30953-1-git-send-email-hooanon05@yahoo.co.jp>
 References: <1239346963-30953-1-git-send-email-hooanon05@yahoo.co.jp>
@@ -25,58 +25,24 @@ List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 initial commit
-some aufs objects have a corresponding entry under sysfs, so the
-lifetime will be managed by struct kref even if CONFIG_SYSFS is
-disabled.
-This file is compiled unconditionally.
+debug print
 
 Signed-off-by: J. R. Okajima <hooanon05@yahoo.co.jp>
 ---
- Documentation/ABI/testing/sysfs-aufs |   25 ++++++++
- fs/aufs/sysaufs.c                    |   95 +++++++++++++++++++++++++++++
- fs/aufs/sysaufs.h                    |  109 ++++++++++++++++++++++++++++++++++
- 3 files changed, 229 insertions(+), 0 deletions(-)
- create mode 100644 Documentation/ABI/testing/sysfs-aufs
- create mode 100644 fs/aufs/sysaufs.c
- create mode 100644 fs/aufs/sysaufs.h
+ fs/aufs/debug.c |  414 +++++++++++++++++++++++++++++++++++++++++++++++++++++++
+ fs/aufs/debug.h |  243 ++++++++++++++++++++++++++++++++
+ fs/aufs/sysrq.c |  106 ++++++++++++++
+ 3 files changed, 763 insertions(+), 0 deletions(-)
+ create mode 100644 fs/aufs/debug.c
+ create mode 100644 fs/aufs/debug.h
+ create mode 100644 fs/aufs/sysrq.c
 
-diff --git a/Documentation/ABI/testing/sysfs-aufs b/Documentation/ABI/testing/sysfs-aufs
+diff --git a/fs/aufs/debug.c b/fs/aufs/debug.c
 new file mode 100644
-index 0000000..ca49330
+index 0000000..dd46950
 --- /dev/null
-+++ b/Documentation/ABI/testing/sysfs-aufs
-@@ -0,0 +1,25 @@
-+What:		/sys/fs/aufs/si_<id>/
-+Date:		March 2009
-+Contact:	J. R. Okajima <hooanon05@yahoo.co.jp>
-+Description:
-+		Under /sys/fs/aufs, a directory named si_<id> is created
-+		per aufs mount, where <id> is a unique id generated
-+		internally.
-+
-+What:		/sys/fs/aufs/si_<id>/br0, br1 ... brN
-+Date:		March 2009
-+Contact:	J. R. Okajima <hooanon05@yahoo.co.jp>
-+Description:
-+		It shows the abolute path of a member directory (which
-+		is called branch) in aufs, and its permission.
-+
-+What:		/sys/fs/aufs/si_<id>/xi_path
-+Date:		March 2009
-+Contact:	J. R. Okajima <hooanon05@yahoo.co.jp>
-+Description:
-+		It shows the abolute path of XINO (External Inode Number
-+		Bitmap, Translation Table and Generation Table) file
-+		even if it is the default path.
-+		When the aufs mount option 'noxino' is specified, it
-+		will be empty. About XINO files, see
-+		Documentation/filesystems/aufs/aufs.5 in detail.
-diff --git a/fs/aufs/sysaufs.c b/fs/aufs/sysaufs.c
-new file mode 100644
-index 0000000..623f2e6
---- /dev/null
-+++ b/fs/aufs/sysaufs.c
-@@ -0,0 +1,95 @@
++++ b/fs/aufs/debug.c
+@@ -0,0 +1,414 @@
 +/*
 + * Copyright (C) 2005-2009 Junjiro R. Okajima
 + *
@@ -87,97 +53,416 @@ index 0000000..623f2e6
 + */
 +
 +/*
-+ * sysfs interface and lifetime management
-+ * they are necessary regardless sysfs is disabled.
++ * debug print functions
 + */
 +
-+#include <linux/fs.h>
-+#include <linux/random.h>
-+#include <linux/sysfs.h>
 +#include "aufs.h"
 +
-+unsigned long sysaufs_si_mask;
-+struct kset *sysaufs_ket;
++int aufs_debug;
++MODULE_PARM_DESC(debug, "debug print");
++module_param_named(debug, aufs_debug, int, S_IRUGO | S_IWUSR | S_IWGRP);
 +
-+#define AuSiAttr(_name) { \
-+	.attr   = { .name = __stringify(_name), .mode = 0444 },	\
-+	.show   = sysaufs_si_##_name,				\
-+}
-+
-+static struct sysaufs_si_attr sysaufs_si_attr_xi_path = AuSiAttr(xi_path);
-+struct attribute *sysaufs_si_attrs[] = {
-+	&sysaufs_si_attr_xi_path.attr,
-+	NULL,
-+};
-+
-+static struct sysfs_ops au_sbi_ops = {
-+	.show   = sysaufs_si_show
-+};
-+
-+static struct kobj_type au_sbi_ktype = {
-+	.release	= au_si_free,
-+	.sysfs_ops	= &au_sbi_ops,
-+	.default_attrs	= sysaufs_si_attrs
-+};
++char *au_plevel = KERN_DEBUG;
++#define dpri(fmt, arg...) do { \
++	if (au_debug_test()) \
++		printk("%s" fmt, au_plevel, ##arg); \
++} while (0)
 +
 +/* ---------------------------------------------------------------------- */
 +
-+int sysaufs_si_init(struct au_sbinfo *sbinfo)
++void au_dpri_whlist(struct au_nhash *whlist)
 +{
-+	int err;
++	int i;
++	struct hlist_head *head;
++	struct au_vdir_wh *tpos;
++	struct hlist_node *pos;
 +
-+	sbinfo->si_kobj.kset = sysaufs_ket;
-+	/* cf. sysaufs_name() */
-+	err = kobject_init_and_add
-+		(&sbinfo->si_kobj, &au_sbi_ktype, /*&sysaufs_ket->kobj*/NULL,
-+		 SysaufsSiNamePrefix "%lx", sysaufs_si_id(sbinfo));
-+
-+	dbgaufs_si_null(sbinfo);
-+	if (!err) {
-+		err = dbgaufs_si_init(sbinfo);
-+		if (unlikely(err))
-+			kobject_put(&sbinfo->si_kobj);
++	for (i = 0; i < AuSize_NHASH; i++) {
++		head = whlist->heads + i;
++		hlist_for_each_entry(tpos, pos, head, wh_hash)
++			dpri("b%d, %.*s, %d\n",
++			     tpos->wh_bindex,
++			     tpos->wh_str.len, tpos->wh_str.name,
++			     tpos->wh_str.len);
 +	}
-+	return err;
 +}
 +
-+void sysaufs_fin(void)
++void au_dpri_vdir(struct au_vdir *vdir)
 +{
-+	dbgaufs_fin();
-+	sysfs_remove_group(&sysaufs_ket->kobj, sysaufs_attr_group);
-+	kset_unregister(sysaufs_ket);
-+}
++	int i;
++	union au_vdir_deblk_p p;
++	unsigned char *o;
 +
-+int __init sysaufs_init(void)
-+{
-+	int err;
-+
-+	do {
-+		get_random_bytes(&sysaufs_si_mask, sizeof(sysaufs_si_mask));
-+	} while (!sysaufs_si_mask);
-+
-+	sysaufs_ket = kset_create_and_add(AUFS_NAME, NULL, fs_kobj);
-+	err = PTR_ERR(sysaufs_ket);
-+	if (IS_ERR(sysaufs_ket))
-+		goto out;
-+	err = sysfs_create_group(&sysaufs_ket->kobj, sysaufs_attr_group);
-+	if (unlikely(err)) {
-+		kset_unregister(sysaufs_ket);
-+		goto out;
++	if (!vdir || IS_ERR(vdir)) {
++		dpri("err %ld\n", PTR_ERR(vdir));
++		return;
 +	}
 +
-+	err = dbgaufs_init();
-+	if (unlikely(err))
-+		sysaufs_fin();
++	dpri("nblk %d, deblk %p, last{%d, %p}, ver %lu\n",
++	     vdir->vd_nblk, vdir->vd_deblk,
++	     vdir->vd_last.i, vdir->vd_last.p.p, vdir->vd_version);
++	for (i = 0; i < vdir->vd_nblk; i++) {
++		p.deblk = vdir->vd_deblk[i];
++		o = p.p;
++		dpri("[%d]: %p\n", i, o);
++	}
++}
++
++static int do_pri_inode(aufs_bindex_t bindex, struct inode *inode,
++			struct dentry *wh)
++{
++	char *n = NULL;
++	int l = 0;
++
++	if (!inode || IS_ERR(inode)) {
++		dpri("i%d: err %ld\n", bindex, PTR_ERR(inode));
++		return -1;
++	}
++
++	/* the type of i_blocks depends upon CONFIG_LSF */
++	BUILD_BUG_ON(sizeof(inode->i_blocks) != sizeof(unsigned long)
++		     && sizeof(inode->i_blocks) != sizeof(u64));
++	if (wh) {
++		n = (void *)wh->d_name.name;
++		l = wh->d_name.len;
++	}
++
++	dpri("i%d: i%lu, %s, cnt %d, nl %u, 0%o, sz %llu, blk %llu,"
++	     " ct %lld, np %lu, st 0x%lx, f 0x%x, g %x%s%.*s\n",
++	     bindex,
++	     inode->i_ino, inode->i_sb ? au_sbtype(inode->i_sb) : "??",
++	     atomic_read(&inode->i_count), inode->i_nlink, inode->i_mode,
++	     i_size_read(inode), (unsigned long long)inode->i_blocks,
++	     (long long)timespec_to_ns(&inode->i_ctime) & 0x0ffff,
++	     inode->i_mapping ? inode->i_mapping->nrpages : 0,
++	     inode->i_state, inode->i_flags, inode->i_generation,
++	     l ? ", wh " : "", l, n);
++	return 0;
++}
++
++void au_dpri_inode(struct inode *inode)
++{
++	struct au_iinfo *iinfo;
++	aufs_bindex_t bindex;
++	int err;
++
++	err = do_pri_inode(-1, inode, NULL);
++	if (err || !au_test_aufs(inode->i_sb))
++		return;
++
++	iinfo = au_ii(inode);
++	if (!iinfo)
++		return;
++	dpri("i-1: bstart %d, bend %d, gen %d\n",
++	     iinfo->ii_bstart, iinfo->ii_bend, au_iigen(inode));
++	if (iinfo->ii_bstart < 0)
++		return;
++	for (bindex = iinfo->ii_bstart; bindex <= iinfo->ii_bend; bindex++)
++		do_pri_inode(bindex, iinfo->ii_hinode[0 + bindex].hi_inode,
++			     iinfo->ii_hinode[0 + bindex].hi_whdentry);
++}
++
++static int do_pri_dentry(aufs_bindex_t bindex, struct dentry *dentry)
++{
++	struct dentry *wh = NULL;
++
++	if (!dentry || IS_ERR(dentry)) {
++		dpri("d%d: err %ld\n", bindex, PTR_ERR(dentry));
++		return -1;
++	}
++	/* do not call dget_parent() here */
++	dpri("d%d: %.*s?/%.*s, %s, cnt %d, flags 0x%x\n",
++	     bindex,
++	     AuDLNPair(dentry->d_parent), AuDLNPair(dentry),
++	     dentry->d_sb ? au_sbtype(dentry->d_sb) : "??",
++	     atomic_read(&dentry->d_count), dentry->d_flags);
++	if (bindex >= 0 && dentry->d_inode && au_test_aufs(dentry->d_sb)) {
++		struct au_iinfo *iinfo = au_ii(dentry->d_inode);
++		if (iinfo)
++			wh = iinfo->ii_hinode[0 + bindex].hi_whdentry;
++	}
++	do_pri_inode(bindex, dentry->d_inode, wh);
++	return 0;
++}
++
++void au_dpri_dentry(struct dentry *dentry)
++{
++	struct au_dinfo *dinfo;
++	aufs_bindex_t bindex;
++	int err;
++
++	err = do_pri_dentry(-1, dentry);
++	if (err || !au_test_aufs(dentry->d_sb))
++		return;
++
++	dinfo = au_di(dentry);
++	if (!dinfo)
++		return;
++	dpri("d-1: bstart %d, bend %d, bwh %d, bdiropq %d, gen %d\n",
++	     dinfo->di_bstart, dinfo->di_bend,
++	     dinfo->di_bwh, dinfo->di_bdiropq, au_digen(dentry));
++	if (dinfo->di_bstart < 0)
++		return;
++	for (bindex = dinfo->di_bstart; bindex <= dinfo->di_bend; bindex++)
++		do_pri_dentry(bindex, dinfo->di_hdentry[0 + bindex].hd_dentry);
++}
++
++static int do_pri_file(aufs_bindex_t bindex, struct file *file)
++{
++	char a[32];
++
++	if (!file || IS_ERR(file)) {
++		dpri("f%d: err %ld\n", bindex, PTR_ERR(file));
++		return -1;
++	}
++	a[0] = 0;
++	if (bindex < 0
++	    && file->f_dentry
++	    && au_test_aufs(file->f_dentry->d_sb)
++	    && au_fi(file))
++		snprintf(a, sizeof(a), ", mmapped %d", au_test_mmapped(file));
++	dpri("f%d: mode 0x%x, flags 0%o, cnt %ld, pos %llu%s\n",
++	     bindex, file->f_mode, file->f_flags, (long)file_count(file),
++	     file->f_pos, a);
++	if (file->f_dentry)
++		do_pri_dentry(bindex, file->f_dentry);
++	return 0;
++}
++
++void au_dpri_file(struct file *file)
++{
++	struct au_finfo *finfo;
++	aufs_bindex_t bindex;
++	int err;
++
++	err = do_pri_file(-1, file);
++	if (err || !file->f_dentry || !au_test_aufs(file->f_dentry->d_sb))
++		return;
++
++	finfo = au_fi(file);
++	if (!finfo)
++		return;
++	if (finfo->fi_bstart < 0)
++		return;
++	for (bindex = finfo->fi_bstart; bindex <= finfo->fi_bend; bindex++) {
++		struct au_hfile *hf;
++
++		hf = finfo->fi_hfile + bindex;
++		do_pri_file(bindex, hf ? hf->hf_file : NULL);
++	}
++}
++
++static int do_pri_br(aufs_bindex_t bindex, struct au_branch *br)
++{
++	struct vfsmount *mnt;
++	struct super_block *sb;
++
++	if (!br || IS_ERR(br))
++		goto out;
++	mnt = br->br_mnt;
++	if (!mnt || IS_ERR(mnt))
++		goto out;
++	sb = mnt->mnt_sb;
++	if (!sb || IS_ERR(sb))
++		goto out;
++
++	dpri("s%d: {perm 0x%x, cnt %d, wbr %p}, "
++	     "%s, dev 0x%02x%02x, flags 0x%lx, cnt(BIAS) %d, active %d, "
++	     "xino %d\n",
++	     bindex, br->br_perm, atomic_read(&br->br_count), br->br_wbr,
++	     au_sbtype(sb), MAJOR(sb->s_dev), MINOR(sb->s_dev),
++	     sb->s_flags, sb->s_count - S_BIAS,
++	     atomic_read(&sb->s_active), !!br->br_xino.xi_file);
++	return 0;
++
 + out:
-+	return err;
++	dpri("s%d: err %ld\n", bindex, PTR_ERR(br));
++	return -1;
 +}
-diff --git a/fs/aufs/sysaufs.h b/fs/aufs/sysaufs.h
++
++void au_dpri_sb(struct super_block *sb)
++{
++	struct au_sbinfo *sbinfo;
++	aufs_bindex_t bindex;
++	int err;
++	/* to reuduce stack size */
++	struct {
++		struct vfsmount mnt;
++		struct au_branch fake;
++	} *a;
++
++	/* this function can be called from magic sysrq */
++	a = kzalloc(sizeof(*a), GFP_ATOMIC);
++	if (unlikely(!a)) {
++		dpri("no memory\n");
++		return;
++	}
++
++	a->mnt.mnt_sb = sb;
++	a->fake.br_perm = 0;
++	a->fake.br_mnt = &a->mnt;
++	a->fake.br_xino.xi_file = NULL;
++	atomic_set(&a->fake.br_count, 0);
++	smp_mb(); /* atomic_set */
++	err = do_pri_br(-1, &a->fake);
++	kfree(a);
++	dpri("dev 0x%x\n", sb->s_dev);
++	if (err || !au_test_aufs(sb))
++		return;
++
++	sbinfo = au_sbi(sb);
++	if (!sbinfo)
++		return;
++	dpri("nw %d, gen %u, kobj %d\n",
++	     atomic_read(&sbinfo->si_nowait.nw_len), sbinfo->si_generation,
++	     atomic_read(&sbinfo->si_kobj.kref.refcount));
++	for (bindex = 0; bindex <= sbinfo->si_bend; bindex++)
++		do_pri_br(bindex, sbinfo->si_branch[0 + bindex]);
++}
++
++/* ---------------------------------------------------------------------- */
++
++void au_dbg_sleep_jiffy(int jiffy)
++{
++	while (jiffy)
++		jiffy = schedule_timeout_uninterruptible(jiffy);
++}
++
++void au_dbg_iattr(struct iattr *ia)
++{
++#define AuBit(name)	if (ia->ia_valid & ATTR_ ## name) \
++				dpri(#name "\n")
++	AuBit(MODE);
++	AuBit(UID);
++	AuBit(GID);
++	AuBit(SIZE);
++	AuBit(ATIME);
++	AuBit(MTIME);
++	AuBit(CTIME);
++	AuBit(ATIME_SET);
++	AuBit(MTIME_SET);
++	AuBit(FORCE);
++	AuBit(ATTR_FLAG);
++	AuBit(KILL_SUID);
++	AuBit(KILL_SGID);
++	AuBit(FILE);
++	AuBit(KILL_PRIV);
++	AuBit(OPEN);
++	AuBit(TIMES_SET);
++#undef	AuBit
++	dpri("ia_file %p\n", ia->ia_file);
++}
++
++/* ---------------------------------------------------------------------- */
++
++void au_dbg_verify_dir_parent(struct dentry *dentry, unsigned int sigen)
++{
++	struct dentry *parent;
++
++	parent = dget_parent(dentry);
++	AuDebugOn(!S_ISDIR(dentry->d_inode->i_mode)
++		  || IS_ROOT(dentry)
++		  || au_digen(parent) != sigen);
++	dput(parent);
++}
++
++void au_dbg_verify_nondir_parent(struct dentry *dentry, unsigned int sigen)
++{
++	struct dentry *parent;
++
++	parent = dget_parent(dentry);
++	AuDebugOn(S_ISDIR(dentry->d_inode->i_mode)
++		  || au_digen(parent) != sigen);
++	dput(parent);
++}
++
++void au_dbg_verify_gen(struct dentry *parent, unsigned int sigen)
++{
++	int err, i, j;
++	struct au_dcsub_pages dpages;
++	struct au_dpage *dpage;
++	struct dentry **dentries;
++
++	err = au_dpages_init(&dpages, GFP_NOFS);
++	AuDebugOn(err);
++	err = au_dcsub_pages_rev(&dpages, parent, /*do_include*/1, NULL, NULL);
++	AuDebugOn(err);
++	for (i = dpages.ndpage - 1; !err && i >= 0; i--) {
++		dpage = dpages.dpages + i;
++		dentries = dpage->dentries;
++		for (j = dpage->ndentry - 1; !err && j >= 0; j--)
++			AuDebugOn(au_digen(dentries[j]) != sigen);
++	}
++	au_dpages_free(&dpages);
++}
++
++void au_dbg_verify_hf(struct au_finfo *finfo)
++{
++	struct au_hfile *hf;
++	aufs_bindex_t bend, bindex;
++
++	if (finfo->fi_bstart >= 0) {
++		bend = finfo->fi_bend;
++		for (bindex = finfo->fi_bstart; bindex <= bend; bindex++) {
++			hf = finfo->fi_hfile + bindex;
++			AuDebugOn(hf->hf_file || hf->hf_br);
++		}
++	}
++}
++
++void au_dbg_verify_kthread(void)
++{
++	if (au_test_wkq(current)) {
++		au_dbg_blocked();
++		BUG();
++	}
++}
++
++/* ---------------------------------------------------------------------- */
++
++void au_debug_sbinfo_init(struct au_sbinfo *sbinfo __maybe_unused)
++{
++#ifdef AuForceNoPlink
++	au_opt_clr(sbinfo->si_mntflags, PLINK);
++#endif
++#ifdef AuForceNoXino
++	au_opt_clr(sbinfo->si_mntflags, XINO);
++#endif
++#ifdef AuForceNoRefrof
++	au_opt_clr(sbinfo->si_mntflags, REFROF);
++#endif
++#ifdef AuForceHinotify
++	au_opt_set_udba(sbinfo->si_mntflags, UDBA_HINOTIFY);
++#endif
++}
++
++int __init au_debug_init(void)
++{
++	aufs_bindex_t bindex;
++	struct au_vdir_destr destr;
++
++	bindex = -1;
++	AuDebugOn(bindex >= 0);
++
++	destr.len = -1;
++	AuDebugOn(destr.len < NAME_MAX);
++
++#ifdef CONFIG_4KSTACKS
++	AuWarn("CONFIG_4KSTACKS is defined.\n");
++#endif
++
++#ifdef AuForceNoBrs
++	sysaufs_brs = 0;
++#endif
++
++	return 0;
++}
+diff --git a/fs/aufs/debug.h b/fs/aufs/debug.h
 new file mode 100644
-index 0000000..c1202fa
+index 0000000..36ff0ea
 --- /dev/null
-+++ b/fs/aufs/sysaufs.h
-@@ -0,0 +1,109 @@
++++ b/fs/aufs/debug.h
+@@ -0,0 +1,243 @@
 +/*
 + * Copyright (C) 2005-2009 Junjiro R. Okajima
 + *
@@ -188,105 +473,351 @@ index 0000000..c1202fa
 + */
 +
 +/*
-+ * sysfs interface and mount lifetime management
++ * debug print functions
 + */
 +
-+#ifndef __SYSAUFS_H__
-+#define __SYSAUFS_H__
++#ifndef __AUFS_DEBUG_H__
++#define __AUFS_DEBUG_H__
 +
 +#ifdef __KERNEL__
 +
++#include <linux/delay.h>
 +#include <linux/fs.h>
-+#include <linux/sysfs.h>
++#include <linux/kd.h>
++#include <linux/vt_kern.h>
++#include <linux/sysrq.h>
 +#include <linux/aufs_type.h>
-+#include "module.h"
 +
-+struct sysaufs_si_attr {
-+	struct attribute attr;
-+	int (*show)(struct seq_file *seq, struct super_block *sb);
-+};
++#ifdef CONFIG_AUFS_DEBUG
++#define AuDebugOn(a)		BUG_ON(a)
 +
-+/* ---------------------------------------------------------------------- */
-+
-+/* sysaufs.c */
-+extern unsigned long sysaufs_si_mask;
-+extern struct kset *sysaufs_ket;
-+extern struct attribute *sysaufs_si_attrs[];
-+int sysaufs_si_init(struct au_sbinfo *sbinfo);
-+int __init sysaufs_init(void);
-+void sysaufs_fin(void);
-+
-+/* ---------------------------------------------------------------------- */
-+
-+/* some people doesn't like to show a pointer in kernel */
-+static inline unsigned long sysaufs_si_id(struct au_sbinfo *sbinfo)
++/* module parameter */
++extern int aufs_debug;
++static inline void au_debug(int n)
 +{
-+	return sysaufs_si_mask ^ (unsigned long)sbinfo;
++	aufs_debug = n;
++	smp_mb();
 +}
 +
-+#define SysaufsSiNamePrefix	"si_"
-+#define SysaufsSiNameLen	(sizeof(SysaufsSiNamePrefix) + 16)
-+static inline void sysaufs_name(struct au_sbinfo *sbinfo, char *name)
++static inline int au_debug_test(void)
 +{
-+	snprintf(name, SysaufsSiNameLen, SysaufsSiNamePrefix "%lx",
-+		 sysaufs_si_id(sbinfo));
++	return aufs_debug;
 +}
-+
-+struct au_branch;
-+#ifdef CONFIG_SYSFS
-+/* sysfs.c */
-+extern struct attribute_group *sysaufs_attr_group;
-+
-+int sysaufs_si_xi_path(struct seq_file *seq, struct super_block *sb);
-+ssize_t sysaufs_si_show(struct kobject *kobj, struct attribute *attr,
-+			 char *buf);
-+
-+void sysaufs_br_init(struct au_branch *br);
-+void sysaufs_brs_add(struct super_block *sb, aufs_bindex_t bindex);
-+void sysaufs_brs_del(struct super_block *sb, aufs_bindex_t bindex);
-+
-+#define sysaufs_brs_init()	do {} while (0)
-+
 +#else
-+#define sysaufs_attr_group	NULL
-+
-+static inline
-+int sysaufs_si_xi_path(struct seq_file *seq, struct super_block *sb)
++#define AuDebugOn(a)		do {} while (0)
++#define au_debug()		do {} while (0)
++static inline int au_debug_test(void)
 +{
 +	return 0;
 +}
++#endif /* CONFIG_AUFS_DEBUG */
 +
-+static inline
-+ssize_t sysaufs_si_show(struct kobject *kobj, struct attribute *attr,
-+			 char *buf)
++/* ---------------------------------------------------------------------- */
++
++/* debug print */
++
++#define AuDpri(lvl, fmt, arg...) \
++	printk(lvl AUFS_NAME " %s:%d:%s[%d]: " fmt, \
++	       __func__, __LINE__, current->comm, current->pid, ##arg)
++#define AuDbg(fmt, arg...) do { \
++	if (au_debug_test()) \
++		AuDpri(KERN_DEBUG, fmt, ##arg); \
++} while (0)
++#define AuLabel(l) 		AuDbg(#l "\n")
++#define AuInfo(fmt, arg...)	AuDpri(KERN_INFO, fmt, ##arg)
++#define AuWarn(fmt, arg...)	AuDpri(KERN_WARNING, fmt, ##arg)
++#define AuErr(fmt, arg...)	AuDpri(KERN_ERR, fmt, ##arg)
++#define AuIOErr(fmt, arg...)	AuErr("I/O Error, " fmt, ##arg)
++#define AuWarn1(fmt, arg...) do { \
++	static unsigned char _c; \
++	if (!_c++) \
++		AuWarn(fmt, ##arg); \
++} while (0)
++
++#define AuErr1(fmt, arg...) do { \
++	static unsigned char _c; \
++	if (!_c++) \
++		AuErr(fmt, ##arg); \
++} while (0)
++
++#define AuIOErr1(fmt, arg...) do { \
++	static unsigned char _c; \
++	if (!_c++) \
++		AuIOErr(fmt, ##arg); \
++} while (0)
++
++#define AuUnsupportMsg	"This operation is not supported." \
++			" Please report this application to aufs-users ML."
++#define AuUnsupport(fmt, args...) do { \
++	AuErr(AuUnsupportMsg "\n" fmt, ##args); \
++	dump_stack(); \
++} while (0)
++
++#define AuTraceErr(e) do { \
++	if (unlikely((e) < 0)) \
++		AuDbg("err %d\n", (int)(e)); \
++} while (0)
++
++#define AuTraceErrPtr(p) do { \
++	if (IS_ERR(p)) \
++		AuDbg("err %ld\n", PTR_ERR(p)); \
++} while (0)
++
++/* dirty macros for debug print, use with "%.*s" and caution */
++#define AuLNPair(qstr)		(qstr)->len, (qstr)->name
++#define AuDLNPair(d)		AuLNPair(&(d)->d_name)
++
++/* ---------------------------------------------------------------------- */
++
++struct au_sbinfo;
++struct au_finfo;
++#ifdef CONFIG_AUFS_DEBUG
++extern char *au_plevel;
++struct au_nhash;
++void au_dpri_whlist(struct au_nhash *whlist);
++struct au_vdir;
++void au_dpri_vdir(struct au_vdir *vdir);
++void au_dpri_inode(struct inode *inode);
++void au_dpri_dentry(struct dentry *dentry);
++void au_dpri_file(struct file *filp);
++void au_dpri_sb(struct super_block *sb);
++
++void au_dbg_sleep_jiffy(int jiffy);
++void au_dbg_iattr(struct iattr *ia);
++
++void au_dbg_verify_dir_parent(struct dentry *dentry, unsigned int sigen);
++void au_dbg_verify_nondir_parent(struct dentry *dentry, unsigned int sigen);
++void au_dbg_verify_gen(struct dentry *parent, unsigned int sigen);
++void au_dbg_verify_hf(struct au_finfo *finfo);
++void au_dbg_verify_kthread(void);
++
++int __init au_debug_init(void);
++void au_debug_sbinfo_init(struct au_sbinfo *sbinfo);
++#define AuDbgWhlist(w) do { \
++	AuDbg(#w "\n"); \
++	au_dpri_whlist(w); \
++} while (0)
++
++#define AuDbgVdir(v) do { \
++	AuDbg(#v "\n"); \
++	au_dpri_vdir(v); \
++} while (0)
++
++#define AuDbgInode(i) do { \
++	AuDbg(#i "\n"); \
++	au_dpri_inode(i); \
++} while (0)
++
++#define AuDbgDentry(d) do { \
++	AuDbg(#d "\n"); \
++	au_dpri_dentry(d); \
++} while (0)
++
++#define AuDbgFile(f) do { \
++	AuDbg(#f "\n"); \
++	au_dpri_file(f); \
++} while (0)
++
++#define AuDbgSb(sb) do { \
++	AuDbg(#sb "\n"); \
++	au_dpri_sb(sb); \
++} while (0)
++
++#define AuDbgSleep(sec) do { \
++	AuDbg("sleep %d sec\n", sec); \
++	ssleep(sec); \
++} while (0)
++
++#define AuDbgSleepJiffy(jiffy) do { \
++	AuDbg("sleep %d jiffies\n", jiffy); \
++	au_dbg_sleep_jiffy(jiffy); \
++} while (0)
++
++#define AuDbgIAttr(ia) do { \
++	AuDbg("ia_valid 0x%x\n", (ia)->ia_valid); \
++	au_dbg_iattr(ia); \
++} while (0)
++#else
++static inline void au_dbg_verify_dir_parent(struct dentry *dentry,
++					    unsigned int sigen)
 +{
-+	return 0;
++	/* empty */
 +}
-+
-+static inline void sysaufs_br_init(struct au_branch *br)
++static inline void au_dbg_verify_nondir_parent(struct dentry *dentry,
++					   unsigned int sigen)
++{
++	/* empty */
++}
++static inline void au_dbg_verify_gen(struct dentry *parent, unsigned int sigen)
++{
++	/* empty */
++}
++static inline void au_dbg_verify_hf(struct au_finfo *finfo)
++{
++	/* empty */
++}
++static inline void au_dbg_verify_kthread(void)
 +{
 +	/* empty */
 +}
 +
-+static inline void sysaufs_brs_add(struct super_block *sb, aufs_bindex_t bindex)
++static inline int au_debug_init(void)
 +{
-+	/* nothing */
++	return 0;
 +}
-+
-+static inline void sysaufs_brs_del(struct super_block *sb, aufs_bindex_t bindex)
++static inline void au_debug_sbinfo_init(struct au_sbinfo *sbinfo)
 +{
-+	/* nothing */
++	/* empty */
 +}
++#define AuDbgWhlist(w)		do {} while (0)
++#define AuDbgVdir(v)		do {} while (0)
++#define AuDbgInode(i)		do {} while (0)
++#define AuDbgDentry(d)		do {} while (0)
++#define AuDbgFile(f)		do {} while (0)
++#define AuDbgSb(sb)		do {} while (0)
++#define AuDbgSleep(sec)		do {} while (0)
++#define AuDbgSleepJiffy(jiffy)	do {} while (0)
++#define AuDbgIAttr(ia)		do {} while (0)
++#endif /* CONFIG_AUFS_DEBUG */
 +
-+static inline void sysaufs_brs_init(void)
++/* ---------------------------------------------------------------------- */
++
++#ifdef CONFIG_AUFS_MAGIC_SYSRQ
++int __init au_sysrq_init(void);
++void au_sysrq_fin(void);
++
++#ifdef CONFIG_HW_CONSOLE
++#define au_dbg_blocked() do { \
++	WARN_ON(1); \
++	handle_sysrq('w', vc_cons[fg_console].d->vc_tty); \
++} while (0)
++#else
++#define au_dbg_blocked()	do {} while (0)
++#endif
++
++#else
++static inline int au_sysrq_init(void)
 +{
-+	sysaufs_brs = 0;
++	return 0;
 +}
-+
-+#endif /* CONFIG_SYSFS */
++#define au_sysrq_fin()		do {} while (0)
++#define au_dbg_blocked()	do {} while (0)
++#endif /* CONFIG_AUFS_MAGIC_SYSRQ */
 +
 +#endif /* __KERNEL__ */
-+#endif /* __SYSAUFS_H__ */
++#endif /* __AUFS_DEBUG_H__ */
+diff --git a/fs/aufs/sysrq.c b/fs/aufs/sysrq.c
+new file mode 100644
+index 0000000..419ff2c
+--- /dev/null
++++ b/fs/aufs/sysrq.c
+@@ -0,0 +1,106 @@
++/*
++ * Copyright (C) 2005-2009 Junjiro R. Okajima
++ *
++ * This program, aufs is free software; you can redistribute it and/or modify
++ * it under the terms of the GNU General Public License as published by
++ * the Free Software Foundation; either version 2 of the License, or
++ * (at your option) any later version.
++ */
++
++/*
++ * magic sysrq hanlder
++ */
++
++#include <linux/fs.h>
++#include <linux/module.h>
++#include <linux/moduleparam.h>
++/* #include <linux/sysrq.h> */
++#include "aufs.h"
++
++/* ---------------------------------------------------------------------- */
++
++static void sysrq_sb(struct super_block *sb)
++{
++	char *plevel;
++	struct au_sbinfo *sbinfo;
++	struct file *file;
++
++	plevel = au_plevel;
++	au_plevel = KERN_WARNING;
++	au_debug(1);
++
++	sbinfo = au_sbi(sb);
++	pr_warning("si=%lx\n", sysaufs_si_id(sbinfo));
++	pr_warning(AUFS_NAME ": superblock\n");
++	au_dpri_sb(sb);
++	pr_warning(AUFS_NAME ": root dentry\n");
++	au_dpri_dentry(sb->s_root);
++	pr_warning(AUFS_NAME ": root inode\n");
++	au_dpri_inode(sb->s_root->d_inode);
++#if 0
++	struct inode *i;
++	pr_warning(AUFS_NAME ": isolated inode\n");
++	list_for_each_entry(i, &sb->s_inodes, i_sb_list)
++		if (list_empty(&i->i_dentry))
++			au_dpri_inode(i);
++#endif
++	pr_warning(AUFS_NAME ": files\n");
++	list_for_each_entry(file, &sb->s_files, f_u.fu_list)
++		if (!special_file(file->f_dentry->d_inode->i_mode))
++			au_dpri_file(file);
++
++	au_plevel = plevel;
++	au_debug(0);
++}
++
++/* ---------------------------------------------------------------------- */
++
++/* module parameter */
++static char *aufs_sysrq_key = "a";
++module_param_named(sysrq, aufs_sysrq_key, charp, S_IRUGO);
++MODULE_PARM_DESC(sysrq, "MagicSysRq key for " AUFS_NAME);
++
++static void au_sysrq(int key __maybe_unused,
++		     struct tty_struct *tty __maybe_unused)
++{
++	struct kobject *kobj;
++	struct au_sbinfo *sbinfo;
++
++	/* spin_lock(&sysaufs_ket->list_lock); */
++	list_for_each_entry(kobj, &sysaufs_ket->list, entry) {
++		sbinfo = container_of(kobj, struct au_sbinfo, si_kobj);
++		sysrq_sb(sbinfo->si_sb);
++	}
++	/* spin_unlock(&sysaufs_ket->list_lock); */
++}
++
++static struct sysrq_key_op au_sysrq_op = {
++	.handler	= au_sysrq,
++	.help_msg	= "Aufs",
++	.action_msg	= "Aufs",
++	.enable_mask	= SYSRQ_ENABLE_DUMP
++};
++
++/* ---------------------------------------------------------------------- */
++
++int __init au_sysrq_init(void)
++{
++	int err;
++	char key;
++
++	err = -1;
++	key = *aufs_sysrq_key;
++	if ('a' <= key && key <= 'z')
++		err = register_sysrq_key(key, &au_sysrq_op);
++	if (unlikely(err))
++		AuErr("err %d, sysrq=%c\n", err, key);
++	return err;
++}
++
++void au_sysrq_fin(void)
++{
++	int err;
++	err = unregister_sysrq_key(*aufs_sysrq_key, &au_sysrq_op);
++	if (unlikely(err))
++		AuErr("err %d (ignored)\n", err);
++}
 -- 
 1.6.1.284.g5dc13
 
