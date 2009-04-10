@@ -1,44 +1,75 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760084AbZDJSJb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S939363AbZDJSK6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760084AbZDJSJb (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 10 Apr 2009 14:09:31 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1765860AbZDJSJR
+	id S939363AbZDJSK6 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 10 Apr 2009 14:10:58 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S935751AbZDJSKq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 10 Apr 2009 14:09:17 -0400
-Received: from ogre.sisk.pl ([217.79.144.158]:45269 "EHLO ogre.sisk.pl"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1765652AbZDJSJQ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 10 Apr 2009 14:09:16 -0400
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-To: Pavel Machek <pavel@ucw.cz>
-Subject: Re: suspend-to-ram broken on X61 thinkpads in 2.6.30-rc1?
-Date: Fri, 10 Apr 2009 20:08:59 +0200
-User-Agent: KMail/1.11.2 (Linux/2.6.30-rc1-rjw; KDE/4.2.2; x86_64; ; )
-Cc: "Theodore Ts'o" <tytso@mit.edu>, linux-kernel@vger.kernel.org
-References: <E1Ls9pZ-0004IF-FZ@closure.thunk.org> <20090410175723.GA20983@elf.ucw.cz>
-In-Reply-To: <20090410175723.GA20983@elf.ucw.cz>
+	Fri, 10 Apr 2009 14:10:46 -0400
+Received: from smtp-out.google.com ([216.239.33.17]:47789 "EHLO
+	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1760084AbZDJSKp (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 10 Apr 2009 14:10:45 -0400
+DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
+	h=mime-version:in-reply-to:references:date:message-id:subject:from:to:
+	cc:content-type:content-transfer-encoding:x-system-of-record;
+	b=fmnhYC5XMNwhGbLrSE7B9MJDdsQ/XKNCvdGMRnXWk4UGa+jrYbXThpO5CiUbZhhzp
+	Q6fIeavIgnNL5r4ulsiLQ==
 MIME-Version: 1.0
-Content-Type: Text/Plain;
-  charset="iso-8859-1"
+In-Reply-To: <604427e00904091359t3e068ffm1868d164824fb575@mail.gmail.com>
+References: <1238715399-22172-1-git-send-email-jack@suse.cz>
+	 <a4a7801d0904031738h68bf6218lfd3349ca50f46642@mail.gmail.com>
+	 <20090406102329.GD31189@duck.suse.cz>
+	 <20090409133030.a7ea94c7.akpm@linux-foundation.org>
+	 <604427e00904091359t3e068ffm1868d164824fb575@mail.gmail.com>
+Date: Fri, 10 Apr 2009 11:10:41 -0700
+Message-ID: <604427e00904101110j68e0bd31t885e5d60b8842d80@mail.gmail.com>
+Subject: Re: [PATCH] ext2: Fix data corruption for racing writes
+From: Ying Han <yinghan@google.com>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: Jan Kara <jack@suse.cz>, yinghan@gmail.com, linux-ext4@vger.kernel.org,
+       linux-kernel@vger.kernel.org, nickpiggin@yahoo.com.au
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200904102008.59932.rjw@sisk.pl>
+X-System-Of-Record: true
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Friday 10 April 2009, Pavel Machek wrote:
-> On Fri 2009-04-10 02:03:13, Theodore Ts'o wrote:
-> > Hi, has anyone else noticed that suspend-to-ram seems to have gotten
-> > broken in 2.6.30-rc1, sometime during last half of the merge window?
-> > I've been at a conference all of this past week, so I haven't had time
-> > to bisect it yet.  I was wondering if anyone else had noticed and
-> > figured out what was going wrong.  Symptoms are that the suspend "moon"
-> > starts flashing and the system never manages to put itself to sleep.  
-> 
-> s2ram seems to work ok for me on thinkpad x60... Maybe it is
-> hw-dependend, mut maybe it is just a kernel config...
+On Thu, Apr 9, 2009 at 1:59 PM, Ying Han <yinghan@google.com> wrote:
+> On Thu, Apr 9, 2009 at 1:30 PM, Andrew Morton <akpm@linux-foundation.org> wrote:
+>> On Mon, 6 Apr 2009 12:23:29 +0200
+>> Jan Kara <jack@suse.cz> wrote:
+>>
+>>> >
+>>> > I tried this patch and seems i got deadlock on the truncate_mutex.
+>>> > Here is the message after enabling lockdep. I pasted the same message
+>>> > on the origianal thread.
+>>>
+>>> ...
+>>>
+>>>   I don't think this is a deadlock (or is the machine hung?). The thread
+>>> was just waiting for a long time. I'd think that you'll occasionally get
+>>> exactly the same message even without my patch if you stress the machine
+>>> like you do.
+>>>
+>>
+>> Well, it's easy to tell the difference
+>>
+>> deadlock: system never recovers
+>> long-sucky-delay: system eventually recovers.
+>>
+>> Which was it??
+> Guess i have to retest it. I didn't wait long enough to see what
+> happened on the machine. However, i do see the machine got rebooted
+> later, but i am not sure what is the reason it is got reboot.
+>
+> I will rerun the patch and keep an eye on it this time.
 
-Can you attach yours, so that we could compare, please?
+Ok, i rerun the patch and i don't see the message poping this time and
+the machine is up healthy.
 
-Rafael
+>
+> --Ying
+>>
+>
