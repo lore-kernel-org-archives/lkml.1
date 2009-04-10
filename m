@@ -1,114 +1,87 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S936573AbZDJDhy@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S936806AbZDJDqW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S936573AbZDJDhy (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 9 Apr 2009 23:37:54 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758085AbZDJDhj
+	id S936806AbZDJDqW (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 9 Apr 2009 23:46:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760774AbZDJDqH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 9 Apr 2009 23:37:39 -0400
-Received: from g1t0026.austin.hp.com ([15.216.28.33]:41397 "EHLO
-	g1t0026.austin.hp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756779AbZDJDhi (ORCPT
+	Thu, 9 Apr 2009 23:46:07 -0400
+Received: from mga06.intel.com ([134.134.136.21]:55794 "EHLO
+	orsmga101.jf.intel.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1756126AbZDJDqG (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 9 Apr 2009 23:37:38 -0400
-From: Vlad Yasevich <vladislav.yasevich@hp.com>
-To: netdev@vger.kernel.org
-Cc: davem@davemloft.net, linux-kernel@vger.kernel.org,
-       Vlad Yasevich <vladislav.yasevich@hp.com>
-Subject: [PATCH] ipv6: Fix NULL pointer dereference with time-wait sockets
-Date: Thu,  9 Apr 2009 23:37:33 -0400
-Message-Id: <1239334653-5412-1-git-send-email-vladislav.yasevich@hp.com>
-X-Mailer: git-send-email 1.5.4.3
-In-Reply-To: <200904072206.29396.edt@aei.ca>
-References: <200904072206.29396.edt@aei.ca>
+	Thu, 9 Apr 2009 23:46:06 -0400
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.40,164,1239001200"; 
+   d="scan'208";a="401958756"
+Subject: Re: [PATCH 0/13] Per-bdi writeback flusher threads #3
+From: "Zhang, Yanmin" <yanmin_zhang@linux.intel.com>
+To: Jens Axboe <jens.axboe@oracle.com>
+Cc: linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org,
+       chris.mason@oracle.com, david@fromorbit.com, hch@infradead.org,
+       akpm@linux-foundation.org, jack@suse.cz
+In-Reply-To: <1239192016-19857-1-git-send-email-jens.axboe@oracle.com>
+References: <1239192016-19857-1-git-send-email-jens.axboe@oracle.com>
+Content-Type: text/plain
+Date: Fri, 10 Apr 2009 11:46:39 +0800
+Message-Id: <1239335199.2567.784.camel@ymzhang>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.22.1 (2.22.1-2.fc9) 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Commit b2f5e7cd3dee2ed721bf0675e1a1ddebb849aee6
-(ipv6: Fix conflict resolutions during ipv6 binding)
-introduced a regression where time-wait sockets were
-not treated correctly.  This resulted in the following:
+On Wed, 2009-04-08 at 14:00 +0200, Jens Axboe wrote:
+> Hi,
+> 
+> This is the third version of the patchset. Changes since v2:
+Jens,
 
-BUG: unable to handle kernel NULL pointer dereference at 0000000000000062
-IP: [<ffffffff805d7d61>] ipv4_rcv_saddr_equal+0x61/0x70
-...
-Call Trace:
-[<ffffffffa033847b>] ipv6_rcv_saddr_equal+0x1bb/0x250 [ipv6]
-[<ffffffffa03505a8>] inet6_csk_bind_conflict+0x88/0xd0 [ipv6]
-[<ffffffff805bb18e>] inet_csk_get_port+0x1ee/0x400
-[<ffffffffa0319b7f>] inet6_bind+0x1cf/0x3a0 [ipv6]
-[<ffffffff8056d17c>] ? sockfd_lookup_light+0x3c/0xd0
-[<ffffffff8056ed49>] sys_bind+0x89/0x100
-[<ffffffff80613ea2>] ? trace_hardirqs_on_thunk+0x3a/0x3c
-[<ffffffff8020bf9b>] system_call_fastpath+0x16/0x1b
+The patchset forgets kernel/sysctl.c part, so the compilation link fails.
 
-Tested-by: Brian Haley <brian.haley@hp.com>
-Tested-by: Ed Tomlinson <edt@aei.ca>
-Signed-off-by: Vlad Yasevich <vladislav.yasevich@hp.com>
----
- include/net/udp.h |    2 --
- net/ipv4/udp.c    |    3 +--
- net/ipv6/udp.c    |    6 +++++-
- 3 files changed, 6 insertions(+), 5 deletions(-)
+Yanmin
 
-diff --git a/include/net/udp.h b/include/net/udp.h
-index 93dbe29..90e6ce5 100644
---- a/include/net/udp.h
-+++ b/include/net/udp.h
-@@ -124,8 +124,6 @@ static inline void udp_lib_close(struct sock *sk, long timeout)
- 	sk_common_release(sk);
- }
- 
--extern int	ipv4_rcv_saddr_equal(const struct sock *sk1,
--				    const struct sock *sk2);
- extern int	udp_lib_get_port(struct sock *sk, unsigned short snum,
- 		int (*)(const struct sock*,const struct sock*));
- 
-diff --git a/net/ipv4/udp.c b/net/ipv4/udp.c
-index bda08a0..7a1d1ce 100644
---- a/net/ipv4/udp.c
-+++ b/net/ipv4/udp.c
-@@ -222,7 +222,7 @@ fail:
- 	return error;
- }
- 
--int ipv4_rcv_saddr_equal(const struct sock *sk1, const struct sock *sk2)
-+static int ipv4_rcv_saddr_equal(const struct sock *sk1, const struct sock *sk2)
- {
- 	struct inet_sock *inet1 = inet_sk(sk1), *inet2 = inet_sk(sk2);
- 
-@@ -1823,7 +1823,6 @@ EXPORT_SYMBOL(udp_lib_getsockopt);
- EXPORT_SYMBOL(udp_lib_setsockopt);
- EXPORT_SYMBOL(udp_poll);
- EXPORT_SYMBOL(udp_lib_get_port);
--EXPORT_SYMBOL(ipv4_rcv_saddr_equal);
- 
- #ifdef CONFIG_PROC_FS
- EXPORT_SYMBOL(udp_proc_register);
-diff --git a/net/ipv6/udp.c b/net/ipv6/udp.c
-index 6842dd2..5ed54af 100644
---- a/net/ipv6/udp.c
-+++ b/net/ipv6/udp.c
-@@ -53,6 +53,8 @@ int ipv6_rcv_saddr_equal(const struct sock *sk, const struct sock *sk2)
- {
- 	const struct in6_addr *sk_rcv_saddr6 = &inet6_sk(sk)->rcv_saddr;
- 	const struct in6_addr *sk2_rcv_saddr6 = inet6_rcv_saddr(sk2);
-+	__be32 sk_rcv_saddr = inet_sk(sk)->rcv_saddr;
-+	__be32 sk2_rcv_saddr = inet_rcv_saddr(sk2);
- 	int sk_ipv6only = ipv6_only_sock(sk);
- 	int sk2_ipv6only = inet_v6_ipv6only(sk2);
- 	int addr_type = ipv6_addr_type(sk_rcv_saddr6);
-@@ -60,7 +62,9 @@ int ipv6_rcv_saddr_equal(const struct sock *sk, const struct sock *sk2)
- 
- 	/* if both are mapped, treat as IPv4 */
- 	if (addr_type == IPV6_ADDR_MAPPED && addr_type2 == IPV6_ADDR_MAPPED)
--		return ipv4_rcv_saddr_equal(sk, sk2);
-+		return (!sk2_ipv6only && 
-+			(!sk_rcv_saddr || !sk2_rcv_saddr ||
-+			  sk_rcv_saddr == sk2_rcv_saddr));
- 
- 	if (addr_type2 == IPV6_ADDR_ANY &&
- 	    !(sk2_ipv6only && addr_type == IPV6_ADDR_MAPPED))
--- 
-1.5.4.3
+> 
+> - Dropped some of the prep patches, since they are now in mainline.
+>   Unfortunately we grew another pdflush_operation() user (emergency thaw),
+>   so I had to introduce a new prep patch for that.
+> 
+> - Fix the data consistency issue in generic_sync_sb_inodes() with
+>   WB_SYNC_ALL that Jan Kara pointed out. I had to switch bdi_list
+>   to SRCU protection for this. I pondered using a mutex for bdi_lock,
+>   but that does not work with the pending list <-> active list
+>   RCU callback scheme.
+> 
+> - Fix race in bdi task removal, we need to synchronize_rcu() before
+>   doing the wb task kill, not after. This ensures that once we do the
+>   task kill, nobody is accessing our bdi anymore.
+> 
+> - Separate default wb task creation from filesystem initiated task
+>   additions. The former can be racy and should check the pending bit
+>   only to see whether it should proceed, the latter should block waiting
+>   for previous task additions to finish.
+> 
+> - Move the bdi_cap_flusher_forker() back in the series to where the
+>   BDI_CAP_FLUSH_FORKER flag was introduced.
+> 
+> - Fix a problem where the first incremental step ended up writing back
+>   all the dirty inodes on a bdi, not just the ones belonging to a
+>   specific super_block. Only a problem after the first patch, the 2nd
+>   patch in the series got it right again. (Thanks Jan Kara).
+> 
+> - Allow writeback tasks to exit, if the bdi has been idle for a certain
+>   period of time. The lazy create will recreate them if we see dirty
+>   inodes on the bdi later on.
+> 
+> - btrfs must register its fs_info bdi, or direct writeback will not work
+>   as intended. Also kill capabilities inherit from
+>   default_backing_dev_info and fix failure to check bdi_init() return
+>   value.
+> 
+> The branch can be pulled from:
+> 
+> git://git.kernel.dk/linux-2.6-block.git writeback
+> 
+> Or these patches can be applied directly to 2.6.30-rc1.
+> 
 
