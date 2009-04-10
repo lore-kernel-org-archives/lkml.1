@@ -1,92 +1,71 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751533AbZDJVEc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753724AbZDJVJP@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751533AbZDJVEc (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 10 Apr 2009 17:04:32 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751256AbZDJVER
+	id S1753724AbZDJVJP (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 10 Apr 2009 17:09:15 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751256AbZDJVI6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 10 Apr 2009 17:04:17 -0400
-Received: from smtp.infotech.no ([82.134.31.41]:51554 "EHLO
-	elrond2.infotech.no" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751054AbZDJVEQ (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 10 Apr 2009 17:04:16 -0400
-Message-ID: <49DFB447.5040009@interlog.com>
-Date: Fri, 10 Apr 2009 17:04:07 -0400
-From: Douglas Gilbert <dgilbert@interlog.com>
-Reply-To: dgilbert@interlog.com
-User-Agent: Thunderbird 2.0.0.21 (X11/20090318)
-MIME-Version: 1.0
-To: "Mike Miller (OS Dev)" <mikem@beardog.cca.cpqcorp.net>
-CC: Matthew Wilcox <matthew@wil.cx>, LKML-SCSI <linux-scsi@vger.kernel.org>,
-       LKML <linux-kernel@vger.kernel.org>, mike.miller@hp.com,
-       James Bottomley <james.bottomley@hansenpartnership.com>
-Subject: Re: READ CAPACITY (16) failing
-References: <20090408194357.GA15043@beardog.cca.cpqcorp.net> <20090408195447.GP20983@parisc-linux.org> <20090410193134.GA2615@beardog.cca.cpqcorp.net>
-In-Reply-To: <20090410193134.GA2615@beardog.cca.cpqcorp.net>
-Content-Type: text/plain; charset=us-ascii; format=flowed
-Content-Transfer-Encoding: 7bit
+	Fri, 10 Apr 2009 17:08:58 -0400
+Received: from wine.ocn.ne.jp ([122.1.235.145]:61772 "EHLO smtp.wine.ocn.ne.jp"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751243AbZDJVI6 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 10 Apr 2009 17:08:58 -0400
+To: paulmck@linux.vnet.ibm.com, viro@ZenIV.linux.org.uk
+Cc: linux-kernel@vger.kernel.org, hugh@veritas.com, jmorris@namei.org,
+       akpm@linux-foundation.org
+Subject: Re: [2.6.30-rc1] RCU detected CPU 1 stall
+From: Tetsuo Handa <penguin-kernel@I-love.SAKURA.ne.jp>
+References: <200904080057.n380vZAH051872@www262.sakura.ne.jp>
+	<20090410142203.GA6719@linux.vnet.ibm.com>
+	<20090410150353.GL26366@ZenIV.linux.org.uk>
+	<20090410153229.GB6719@linux.vnet.ibm.com>
+In-Reply-To: <20090410153229.GB6719@linux.vnet.ibm.com>
+Message-Id: <200904110608.IED21123.FQOVMtSOOHFFLJ@I-love.SAKURA.ne.jp>
+X-Mailer: Winbiff [Version 2.50 PL2]
+X-Accept-Language: ja,en
+Date: Sat, 11 Apr 2009 06:08:54 +0900
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Mike Miller (OS Dev) wrote:
-> On Wed, Apr 08, 2009 at 01:54:48PM -0600, Matthew Wilcox wrote:
->> On Wed, Apr 08, 2009 at 02:43:57PM -0500, Mike Miller (OS Dev) wrote:
->>> I'm working on the HP Smart Array SCSI driver (hpsa) and I'm seeing the
->>> following failures:
->>>
->>> hpsa1: <0x3230> at PCI 0000:02:00.0 IRQ 76 using DAC
->>> scsi4 : hpsa
->>> scsi 4:0:0:0: Direct-Access     HP       LOGICAL VOLUME   5.20 PQ: 0 ANSI: 5
->>> sd 4:0:0:0: Attached scsi generic sg4 type 0
->>> sd 4:0:0:0: [sdd] READ CAPACITY(16) failed
->>> sd 4:0:0:0: [sdd] Result: hostbyte=DID_ABORT driverbyte=DRIVER_OK
->>> sd 4:0:0:0: [sdd] Sense not available.
->>> hpsa: cp ffff8800cf400000 has check condition: unknown type: Sense: 0x5,
->>> ASC: 0x20, ASCQ: 0x0, Returning result: 0x2, cmd=[a0 00 00 00 00 00 00 00 10
->>> 00]
->>> The READ CAPACITY failures are what I'm concerned about. I can't seem to track
->>> down why that's failing.
->>> I've tried printing out the_result from sd but it's not printing out. I'm
->>> assuming that anytime I load the driver it goes thru sd.
->>>
->>> 	if (the_result) {
->>> 		sense_valid = scsi_sense_valid(&sshdr);
->>> 		if (sense_valid &&
->>> 			sshdr.sense_key == ILLEGAL_REQUEST &&
->>> 			(sshdr.asc == 0x20 || sshdr.asc == 0x24) &&
->>> 			sshdr.ascq == 0x00)
->>> 			/* Invalid Command Operation Code or
->>> 			 * Invalid Field in CDB, just retry
->>> 			 * silently with RC10 */
->>> 			return -EINVAL;
->>> 		}
->>> 	retries--;
->>> 	} while (the_result && retries);
->>> 	printk(KERN_WARNING "sd-mfm: the_result = %d\n", the_result);
->> Probably the device you're testing against doesn't support RC16, which
->> is fine.  But for some reason, we're not getting valid sense data back
->> from the device.  Now, there's two responses to this that seem rational
->> to me:
->>
->>  - In sd.c, if the drive has returned no/invalid sense data, try RC10
->>    silently, just like the 0x20 / 0x24 ASC case.
->>  - Find out why this drive doesn't report valid sense data when attached
->>    to hpsa.  I assume it does report valid sense data when attached to
->>    some other scsi card?
-> 
-> Me again,
-> The controllers do support RC16. After some more work it looks like RC16 is
-> never getting to the driver. I'm snooping the CDB's of all requests as well
-> as the completions from the driver and I never see a 0x9e. I do see the
-> RC10 (0x25) though, so I think my debug is right.
-> 
-> Why would I never the see the command in the driver?
+Hello.
 
-struct Scsi_host::max_cmd_len < 16 would be one reason but
-one would expect an indicative message in the log.
+Paul E. McKenney wrote:
+> Tetsuo, how many tasks did you have on this machine?
+I didn't count how many tasks were running on this machine.
+But the number of tasks should be very low, for this happened during
+the boot stage of Debian Sarge.
 
-Does a 'sg_readcap --long -vvv <device>' give you any further
-information?
+30 seconds ago from the first stalled message
 
-Doug Gilbert
+[   41.415158] INFO: RCU detected CPU 1 stall (t=4294902646/2500 jiffies)
+[   41.417332] Pid: 3487, comm: khelper Tainted: G        W  2.6.30-rc1 #1
+[   41.417332] Call Trace:
+
+the system was doing
+
+[   10.555521] kjournald starting.  Commit interval 5 seconds
+[   10.556727] EXT3 FS on sdb1, internal journal
+[   10.556727] EXT3-fs: recovery complete.
+[   10.557585] EXT3-fs: mounted filesystem with writeback data mode.
+/dev/sdb1 on /usr/src/all type ext3 (rw,noatime,nodiratime)
+Detecting hardware: agpgart pcnet32 piix BusLogic ide_scsi
+Skipping unavailable/built-in agpgart module.
+pcnet32 disabled in configuration.
+Skipping unavailable/built-in piix module.
+Skipping unavailable/built-in BusLogic module.
+Skipping unavailable/built-in ide_scsi module.
+Running 0dns-down to make sure resolv.conf is ok...done.
+Setting up networking...done.
+Starting hotplug subsystem:
+   pci     
+     ignoring pci display device 00:0f.0
+[   16.727603] ------------[ cut here ]------------
+[   16.729910] WARNING: at security/security.c:217 security_vm_enough_memory+0xa0/0xb0()
+
+> Though I too find it hard to believe that there were enough to chew up
+> two minutes.  Maybe the list got corrupted so that it has a loop?
+
+I powered off the machine after two minutes, for I thought the loop
+was infinite.
