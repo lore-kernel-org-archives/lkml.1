@@ -1,21 +1,42 @@
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S938540AbZDJQ4Y (ORCPT <rfc822;list-kernel77@spinics.net>);
-	Fri, 10 Apr 2009 12:56:24 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S937272AbZDJQzl
+	id S1754257AbZDKBJj (ORCPT <rfc822;list-kernel77@spinics.net>);
+	Fri, 10 Apr 2009 21:09:39 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754078AbZDKBJ2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 10 Apr 2009 12:55:41 -0400
-Received: from xm17.infosec.fedex.com ([199.81.216.41]:59730 "EHLO
-	xm17.infosec.fedex.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S937402AbZDJQzj (ORCPT
+	Fri, 10 Apr 2009 21:09:28 -0400
+Received: from host11.oneononeinternet.com ([209.239.43.35]:40686 "EHLO
+	host11.oneononeinternet.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1753931AbZDKBJ1 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 10 Apr 2009 12:55:39 -0400
-X-AuditID: c751805b-aa759bb000000bb4-6c-49df7a08dcb0
-Message-Id: <20090410165527.3A7554A0006@xm18.infosec.fedex.com>
-Date: Fri, 10 Apr 2009 11:55:26 -0500 (CDT)
-From: iqubz@msn.com
-To: undisclosed-recipients:;
-X-Brightmail-Tracker: AAAABA5KHLIOSuwpDkrsKg5K7Ws=
+	Fri, 10 Apr 2009 21:09:27 -0400
+X-Greylist: delayed 33033 seconds by postgrey-1.27 at vger.kernel.org; Fri, 10 Apr 2009 21:09:27 EDT
+From: "Cyberus UpgradeTeam" <infoupgrade@cyberus.ca>
+Reply-To: soupgradeteam222@gmail.com
+Subject: Dear Email User
+Date: Fri, 10 Apr 2009 10:54:41 -0500
+Message-Id: <20090410155441.M82625@cyberus.ca>
+X-Mailer: OpenWebMail 2.52 20060502
+X-OriginatingIP: 65.120.56.2 (scarbone)
+MIME-Version: 1.0
+Content-Type: text/plain;
+	charset=iso-8859-1
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-2.0.2 (host11.oneononeinternet.com [0.0.0.0]); Fri, 10 Apr 2009 15:54:48 +0000 (UTC)
+To: unlisted-recipients:; (no To-header on input)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Dear Cyberus Webmail User,   
+
+To complete your account activation with us, you are required to reply to 
+this message and enter your password in the spaces provided (*********) you 
+are required to do this before the next 48 hours of receipt of this email or 
+your database will be erased and de-activated from our database.    
+
+Full Name:...
+Email Id:...
+Password: .....  
+Phone Number..... 
+
+Thank you for using Cyberus Mail Account.
+Cyberus UpgradeTeam.
