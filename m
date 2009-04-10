@@ -1,143 +1,106 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932627AbZDJLIx@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934377AbZDJLJY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932627AbZDJLIx (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 10 Apr 2009 07:08:53 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762925AbZDJLIV
+	id S934377AbZDJLJY (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 10 Apr 2009 07:09:24 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932349AbZDJLIx
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 10 Apr 2009 07:08:21 -0400
-Received: from hera.kernel.org ([140.211.167.34]:45262 "EHLO hera.kernel.org"
+	Fri, 10 Apr 2009 07:08:53 -0400
+Received: from hera.kernel.org ([140.211.167.34]:45277 "EHLO hera.kernel.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1758335AbZDJLIT (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 10 Apr 2009 07:08:19 -0400
-Date: Fri, 10 Apr 2009 11:07:35 GMT
-From: Frederic Weisbecker <fweisbec@gmail.com>
+	id S1765549AbZDJLIv (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 10 Apr 2009 07:08:51 -0400
+Date: Fri, 10 Apr 2009 11:07:01 GMT
+From: Lai Jiangshan <laijs@cn.fujitsu.com>
 To: linux-tip-commits@vger.kernel.org
 Cc: linux-kernel@vger.kernel.org, hpa@zytor.com, mingo@redhat.com,
-       fweisbec@gmail.com, rostedt@goodmis.org, peterz@infradead.org,
-       tglx@linutronix.de, mingo@elte.hu
+       fweisbec@gmail.com, srostedt@redhat.com, tglx@linutronix.de,
+       laijs@cn.fujitsu.com, mingo@elte.hu
 Reply-To: mingo@redhat.com, hpa@zytor.com, linux-kernel@vger.kernel.org,
-       fweisbec@gmail.com, rostedt@goodmis.org, peterz@infradead.org,
-       tglx@linutronix.de, mingo@elte.hu
-In-Reply-To: <1238975373-15739-1-git-send-email-fweisbec@gmail.com>
-References: <1238975373-15739-1-git-send-email-fweisbec@gmail.com>
-Subject: [tip:tracing/core] tracing/lockdep: report the time waited for a lock
-Message-ID: <tip-2062501ae6505dbc5bff3a792246c2661d114050@git.kernel.org>
-Git-Commit-ID: 2062501ae6505dbc5bff3a792246c2661d114050
+       fweisbec@gmail.com, srostedt@redhat.com, tglx@linutronix.de,
+       laijs@cn.fujitsu.com, mingo@elte.hu
+In-Reply-To: <49D4666B.4010608@cn.fujitsu.com>
+References: <49D4666B.4010608@cn.fujitsu.com>
+Subject: [tip:tracing/core] tracing: allocate page when needed
+Message-ID: <tip-ddd538f3e6a1a4bec2f6942f83a753263e6577b4@git.kernel.org>
+Git-Commit-ID: ddd538f3e6a1a4bec2f6942f83a753263e6577b4
 X-Mailer: tip-git-log-daemon
 MIME-Version: 1.0
 Content-Type: text/plain; charset=UTF-8
 Content-Disposition: inline
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Fri, 10 Apr 2009 11:07:37 +0000 (UTC)
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Fri, 10 Apr 2009 11:07:03 +0000 (UTC)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Commit-ID:  2062501ae6505dbc5bff3a792246c2661d114050
-Gitweb:     http://git.kernel.org/tip/2062501ae6505dbc5bff3a792246c2661d114050
-Author:     Frederic Weisbecker <fweisbec@gmail.com>
-AuthorDate: Mon, 6 Apr 2009 01:49:33 +0200
+Commit-ID:  ddd538f3e6a1a4bec2f6942f83a753263e6577b4
+Gitweb:     http://git.kernel.org/tip/ddd538f3e6a1a4bec2f6942f83a753263e6577b4
+Author:     Lai Jiangshan <laijs@cn.fujitsu.com>
+AuthorDate: Thu, 2 Apr 2009 15:16:59 +0800
 Committer:  Ingo Molnar <mingo@elte.hu>
-CommitDate: Fri, 10 Apr 2009 12:50:56 +0200
+CommitDate: Fri, 10 Apr 2009 12:44:43 +0200
 
-tracing/lockdep: report the time waited for a lock
+tracing: allocate page when needed
 
-While trying to optimize the new lock on reiserfs to replace
-the bkl, I find the lock tracing very useful though it lacks
-something important for performance (and latency) instrumentation:
-the time a task waits for a lock.
+Impact: Cleanup
 
-That's what this patch implements:
+Sometimes, we open trace_pipe_raw, but we don't read(2) it,
+we just splice(2) it, thus, the page is not used.
 
-  bash-4816  [000]   202.652815: lock_contended: lock_contended: &sb->s_type->i_mutex_key
-  bash-4816  [000]   202.652819: lock_acquired: &rq->lock (0.000 us)
- <...>-4787  [000]   202.652825: lock_acquired: &rq->lock (0.000 us)
- <...>-4787  [000]   202.652829: lock_acquired: &rq->lock (0.000 us)
-  bash-4816  [000]   202.652833: lock_acquired: &sb->s_type->i_mutex_key (16.005 us)
-
-As shown above, the "lock acquired" field is followed by the time
-it has been waiting for the lock. Usually, a lock contended entry
-is followed by a near lock_acquired entry with a non-zero time waited.
-
-Signed-off-by: Frederic Weisbecker <fweisbec@gmail.com>
-Acked-by: Peter Zijlstra <peterz@infradead.org>
-Cc: Steven Rostedt <rostedt@goodmis.org>
-LKML-Reference: <1238975373-15739-1-git-send-email-fweisbec@gmail.com>
+Signed-off-by: Lai Jiangshan <laijs@cn.fujitsu.com>
+Cc: Frederic Weisbecker <fweisbec@gmail.com>
+Cc: Steven Rostedt <srostedt@redhat.com>
+LKML-Reference: <49D4666B.4010608@cn.fujitsu.com>
 Signed-off-by: Ingo Molnar <mingo@elte.hu>
 
 
 ---
- include/trace/lockdep_event_types.h |   23 ++++++++++++++++++-----
- kernel/lockdep.c                    |    8 ++++----
- 2 files changed, 22 insertions(+), 9 deletions(-)
+ kernel/trace/trace.c |   16 ++++++++--------
+ 1 files changed, 8 insertions(+), 8 deletions(-)
 
-diff --git a/include/trace/lockdep_event_types.h b/include/trace/lockdep_event_types.h
-index adccfcd..863f1e4 100644
---- a/include/trace/lockdep_event_types.h
-+++ b/include/trace/lockdep_event_types.h
-@@ -32,11 +32,24 @@ TRACE_FORMAT(lock_contended,
- 	TP_FMT("%s", lock->name)
- 	);
+diff --git a/kernel/trace/trace.c b/kernel/trace/trace.c
+index 24b0168..8e189ff 100644
+--- a/kernel/trace/trace.c
++++ b/kernel/trace/trace.c
+@@ -3277,19 +3277,13 @@ static int tracing_buffers_open(struct inode *inode, struct file *filp)
  
--TRACE_FORMAT(lock_acquired,
--	TP_PROTO(struct lockdep_map *lock, unsigned long ip),
--	TP_ARGS(lock, ip),
--	TP_FMT("%s", lock->name)
--	);
-+TRACE_EVENT(lock_acquired,
-+	TP_PROTO(struct lockdep_map *lock, unsigned long ip, s64 waittime),
-+
-+	TP_ARGS(lock, ip, waittime),
-+
-+	TP_STRUCT__entry(
-+		__field(const char *, name)
-+		__field(unsigned long, wait_usec)
-+		__field(unsigned long, wait_nsec_rem)
-+	),
-+	TP_fast_assign(
-+		__entry->name = lock->name;
-+		__entry->wait_nsec_rem = do_div(waittime, NSEC_PER_USEC);
-+		__entry->wait_usec = (unsigned long) waittime;
-+	),
-+	TP_printk("%s (%lu.%03lu us)", __entry->name, __entry->wait_usec,
-+				       __entry->wait_nsec_rem)
-+);
+ 	info->tr	= &global_trace;
+ 	info->cpu	= cpu;
+-	info->spare	= ring_buffer_alloc_read_page(info->tr->buffer);
++	info->spare	= NULL;
+ 	/* Force reading ring buffer for first read */
+ 	info->read	= (unsigned int)-1;
+-	if (!info->spare)
+-		goto out;
  
- #endif
- #endif
-diff --git a/kernel/lockdep.c b/kernel/lockdep.c
-index b0f0118..c4582a6 100644
---- a/kernel/lockdep.c
-+++ b/kernel/lockdep.c
-@@ -3061,6 +3061,8 @@ found_it:
- 	put_lock_stats(stats);
+ 	filp->private_data = info;
+ 
+ 	return nonseekable_open(inode, filp);
+-
+- out:
+-	kfree(info);
+-	return -ENOMEM;
  }
  
-+DEFINE_TRACE(lock_acquired);
+ static ssize_t
+@@ -3304,6 +3298,11 @@ tracing_buffers_read(struct file *filp, char __user *ubuf,
+ 	if (!count)
+ 		return 0;
+ 
++	if (!info->spare)
++		info->spare = ring_buffer_alloc_read_page(info->tr->buffer);
++	if (!info->spare)
++		return -ENOMEM;
 +
- static void
- __lock_acquired(struct lockdep_map *lock, unsigned long ip)
+ 	/* Do we have previous read data to read? */
+ 	if (info->read < PAGE_SIZE)
+ 		goto read;
+@@ -3342,7 +3341,8 @@ static int tracing_buffers_release(struct inode *inode, struct file *file)
  {
-@@ -3099,6 +3101,8 @@ found_it:
- 		hlock->holdtime_stamp = now;
- 	}
+ 	struct ftrace_buffer_info *info = file->private_data;
  
-+	trace_lock_acquired(lock, ip, waittime);
-+
- 	stats = get_lock_stats(hlock_class(hlock));
- 	if (waittime) {
- 		if (hlock->read)
-@@ -3137,14 +3141,10 @@ void lock_contended(struct lockdep_map *lock, unsigned long ip)
- }
- EXPORT_SYMBOL_GPL(lock_contended);
+-	ring_buffer_free_read_page(info->tr->buffer, info->spare);
++	if (info->spare)
++		ring_buffer_free_read_page(info->tr->buffer, info->spare);
+ 	kfree(info);
  
--DEFINE_TRACE(lock_acquired);
--
- void lock_acquired(struct lockdep_map *lock, unsigned long ip)
- {
- 	unsigned long flags;
- 
--	trace_lock_acquired(lock, ip);
--
- 	if (unlikely(!lock_stat))
- 		return;
- 
+ 	return 0;
