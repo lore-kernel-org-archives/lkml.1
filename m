@@ -1,57 +1,75 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S939127AbZDJRUt@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932588AbZDJRXV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S939127AbZDJRUt (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 10 Apr 2009 13:20:49 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S938944AbZDJRUJ
+	id S932588AbZDJRXV (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 10 Apr 2009 13:23:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759592AbZDJRXE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 10 Apr 2009 13:20:09 -0400
-Received: from terminus.zytor.com ([198.137.202.10]:53229 "EHLO
-	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1765248AbZDJRUH (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 10 Apr 2009 13:20:07 -0400
-Message-ID: <49DF7FA4.9070909@zytor.com>
-Date: Fri, 10 Apr 2009 10:19:32 -0700
-From: "H. Peter Anvin" <hpa@zytor.com>
-User-Agent: Thunderbird 2.0.0.19 (X11/20090105)
-MIME-Version: 1.0
-To: Pavel Machek <pavel@ucw.cz>
-CC: mingo@redhat.com, linux-kernel@vger.kernel.org, tglx@linutronix.de,
-       hpa@linux.intel.com, rjw@sisk.pl, linux-tip-commits@vger.kernel.org
-Subject: Re: [tip:x86/setup] x86, setup: "glove box" BIOS calls --	infrastructure
-References: <49DE7F79.4030106@zytor.com> <tip-7a734e7dd93b9aea08ed51036a9a0e2c9dfd8dac@git.kernel.org> <20090410080444.GC16512@elf.ucw.cz>
-In-Reply-To: <20090410080444.GC16512@elf.ucw.cz>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+	Fri, 10 Apr 2009 13:23:04 -0400
+Received: from hera.kernel.org ([140.211.167.34]:36947 "EHLO hera.kernel.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1759579AbZDJRXC (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 10 Apr 2009 13:23:02 -0400
+Subject: Re: [git-pull -tip] x86: declaration patches
+From: Jaswinder Singh Rajput <jaswinder@kernel.org>
+To: Thomas Gleixner <tglx@linutronix.de>
+Cc: Ingo Molnar <mingo@elte.hu>, x86 maintainers <x86@kernel.org>,
+       LKML <linux-kernel@vger.kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Andi Kleen <andi@firstfloor.org>
+In-Reply-To: <alpine.LFD.2.00.0904101849060.21577@localhost.localdomain>
+References: <1239381184.23116.5.camel@ht.satnam>
+	 <alpine.LFD.2.00.0904101849060.21577@localhost.localdomain>
+Content-Type: text/plain
+Date: Fri, 10 Apr 2009 22:51:51 +0530
+Message-Id: <1239384111.3169.13.camel@ht.satnam>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.24.5 (2.24.5-1.fc10) 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Pavel Machek wrote:
+On Fri, 2009-04-10 at 18:51 +0200, Thomas Gleixner wrote:
+> On Fri, 10 Apr 2009, Jaswinder Singh Rajput wrote:
+> >  #endif /* CONFIG_X86_32 */
+> > diff --git a/arch/x86/kernel/apic/io_apic.c b/arch/x86/kernel/apic/io_apic.c
+> > index 8499000..d1bac67 100644
+> > --- a/arch/x86/kernel/apic/io_apic.c
+> > +++ b/arch/x86/kernel/apic/io_apic.c
+> > @@ -59,6 +59,7 @@
+> >  #include <asm/setup.h>
+> >  #include <asm/irq_remapping.h>
+> >  #include <asm/hpet.h>
+> > +#include <asm/hw_irq.h>		/* smp_irq_move_cleanup_interrupt */
 > 
->> +	.code16
->> +	.text
->> +	.globl	intcall
->> +	.type	intcall, @function
->> +intcall:
->> +	/* Self-modify the INT instruction.  Ugly, but works. */
->> +	cmpb	%al, 3f
->> +	je	1f
->> +	movb	%al, 3f
->> +	jmp	1f		/* Synchronize pipeline */
->> +1:
-> 
-> There are various CPU bugs with self-modifying code, but I guess we
-> are not using it heavily enough. Also we are single-threaded so that
-> should be ok.
-> 								Pavel
+>   Can we please avoid these useless comments all over the place ?
 > 
 
-This case is extremely straightforward, so I'm not worried about it. 
-The final JMP is actually not required (there is a LOOP instruction 
-between the modify and the invocation point) but is there for extra safety.
+I kept these intentionally because few of these declarations I have
+already fixed earlier.
+For example during process.c unification work developers forget to
+include and fix syscalls.h :
 
-FWIW, we already do SMC during the transfer to protected mode 
-(pmjump.S), and hopefully got the issues worked out there.
+http://git.kernel.org/?p=linux/kernel/git/x86/linux-2.6-tip.git;a=commit;h=389d1fb11e5f2a16b5e34c547756f0c4dec641f7
 
-	-hpa
+Thats why I did:
+
+diff --git a/arch/x86/kernel/process.c b/arch/x86/kernel/process.c
+index 1d71442..4d397ce 100644
+--- a/arch/x86/kernel/process.c
++++ b/arch/x86/kernel/process.c
+@@ -15,6 +15,7 @@
+ #include <asm/uaccess.h>
+ #include <asm/i387.h>
+ #include <asm/ds.h>
++#include <asm/syscalls.h>              /* sys_fork, sys_vfork */
+ 
+ unsigned long idle_halt;
+ EXPORT_SYMBOL(idle_halt);
+
+Ingo, do you also think we need to remove these comments.
+
+--
+JSR
+
+
