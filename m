@@ -1,73 +1,85 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764708AbZDJLDa@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757654AbZDJLHe@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764708AbZDJLDa (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 10 Apr 2009 07:03:30 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751806AbZDJLDU
+	id S1757654AbZDJLHe (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 10 Apr 2009 07:07:34 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753495AbZDJLHY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 10 Apr 2009 07:03:20 -0400
-Received: from mx2.mail.elte.hu ([157.181.151.9]:37397 "EHLO mx2.mail.elte.hu"
+	Fri, 10 Apr 2009 07:07:24 -0400
+Received: from hera.kernel.org ([140.211.167.34]:45209 "EHLO hera.kernel.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751593AbZDJLDT (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 10 Apr 2009 07:03:19 -0400
-Date: Fri, 10 Apr 2009 13:03:03 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: Zhaolei <zhaolei@cn.fujitsu.com>, Pekka Enberg <penberg@cs.helsinki.fi>,
-       Eduard - Gabriel Munteanu <eduard.munteanu@linux360.ro>
-Cc: Steven Rostedt <rostedt@goodmis.org>,
-       Frederic Weisbecker <fweisbec@gmail.com>,
-       Tom Zanussi <tzanussi@gmail.com>, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 1/2] ftrace: Separate include/trace/kmemtrace.h to
-	kmemtrace part and tracepoint part
-Message-ID: <20090410110303.GB21506@elte.hu>
-References: <49DEE68A.5040902@cn.fujitsu.com>
+	id S1751806AbZDJLHX (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 10 Apr 2009 07:07:23 -0400
+Date: Fri, 10 Apr 2009 11:06:49 GMT
+From: Lai Jiangshan <laijs@cn.fujitsu.com>
+To: linux-tip-commits@vger.kernel.org
+Cc: linux-kernel@vger.kernel.org, hpa@zytor.com, mingo@redhat.com,
+       fweisbec@gmail.com, srostedt@redhat.com, tglx@linutronix.de,
+       laijs@cn.fujitsu.com, mingo@elte.hu
+Reply-To: mingo@redhat.com, hpa@zytor.com, linux-kernel@vger.kernel.org,
+       fweisbec@gmail.com, srostedt@redhat.com, tglx@linutronix.de,
+       laijs@cn.fujitsu.com, mingo@elte.hu
+In-Reply-To: <49D46668.8030806@cn.fujitsu.com>
+References: <49D46668.8030806@cn.fujitsu.com>
+Subject: [tip:tracing/core] tracing: disable seeking for trace_pipe_raw
+Message-ID: <tip-d1e7e02f30be672c6f6ee40908be83877a0d49d1@git.kernel.org>
+Git-Commit-ID: d1e7e02f30be672c6f6ee40908be83877a0d49d1
+X-Mailer: tip-git-log-daemon
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=UTF-8
 Content-Disposition: inline
-In-Reply-To: <49DEE68A.5040902@cn.fujitsu.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Fri, 10 Apr 2009 11:06:51 +0000 (UTC)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Commit-ID:  d1e7e02f30be672c6f6ee40908be83877a0d49d1
+Gitweb:     http://git.kernel.org/tip/d1e7e02f30be672c6f6ee40908be83877a0d49d1
+Author:     Lai Jiangshan <laijs@cn.fujitsu.com>
+AuthorDate: Thu, 2 Apr 2009 15:16:56 +0800
+Committer:  Ingo Molnar <mingo@elte.hu>
+CommitDate: Fri, 10 Apr 2009 12:44:42 +0200
 
-* Zhaolei <zhaolei@cn.fujitsu.com> wrote:
+tracing: disable seeking for trace_pipe_raw
 
-> Current kmemtrace.h is used both as header file of kmemtrace and kmem's
-> tracepoints definition.
-> Tracepoints' definition file may be used by other code, and should only have
-> definition of tracepoint.
-> 
-> We can separate include/trace/kmemtrace.h into 2 files:
->   include/linux/kmemtrace.h: header file for kmemtrace
->   include/trace/kmem.h:      definition of kmem tracepoints
-> 
-> Signed-off-by: Zhao Lei <zhaolei@cn.fujitsu.com>
-> ---
->  include/linux/kmemtrace.h             |   25 +++++++++++++++++++++++++
->  include/linux/slab_def.h              |    2 +-
->  include/linux/slub_def.h              |    2 +-
->  include/trace/{kmemtrace.h => kmem.h} |   25 +++----------------------
->  init/main.c                           |    2 +-
->  kernel/trace/kmemtrace.c              |    2 +-
->  kernel/trace/trace.h                  |    2 +-
->  mm/slab.c                             |    2 +-
->  mm/slob.c                             |    2 +-
->  mm/slub.c                             |    2 +-
->  10 files changed, 36 insertions(+), 30 deletions(-)
->  create mode 100644 include/linux/kmemtrace.h
->  rename include/trace/{kmemtrace.h => kmem.h} (78%)
+Impact: disable pread()
 
-Pekka, Eduard, do you agree with these two patches? Converting those 
-tracepoints to TRACE_EVENT() is really nice. The above include file 
-restructuring makes sense too - it separates tracepoint definition 
-from the plugin init method.
+We set tracing_buffers_fops.llseek to no_llseek,
+but we can still perform pread() to read this file.
 
-	Ingo
+That is not expected.
+
+This fix uses nonseekable_open() to disable it.
+
+tracing_buffers_fops.llseek is still set to no_llseek,
+it mark this file is a "non-seekable device" and is used by
+sys_splice(). See also do_splice() or manual of splice(2):
+
+ERRORS
+       EINVAL Target file system doesn't support  splicing;
+              neither  of the descriptors refers to a pipe;
+              or offset given for non-seekable device.
+
+Signed-off-by: Lai Jiangshan <laijs@cn.fujitsu.com>
+Cc: Frederic Weisbecker <fweisbec@gmail.com>
+Cc: Steven Rostedt <srostedt@redhat.com>
+LKML-Reference: <49D46668.8030806@cn.fujitsu.com>
+Signed-off-by: Ingo Molnar <mingo@elte.hu>
+
+
+---
+ kernel/trace/trace.c |    2 +-
+ 1 files changed, 1 insertions(+), 1 deletions(-)
+
+diff --git a/kernel/trace/trace.c b/kernel/trace/trace.c
+index 9d28476..24b0168 100644
+--- a/kernel/trace/trace.c
++++ b/kernel/trace/trace.c
+@@ -3285,7 +3285,7 @@ static int tracing_buffers_open(struct inode *inode, struct file *filp)
+ 
+ 	filp->private_data = info;
+ 
+-	return 0;
++	return nonseekable_open(inode, filp);
+ 
+  out:
+ 	kfree(info);
