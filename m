@@ -1,76 +1,73 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764892AbZDJLBV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764708AbZDJLDa@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764892AbZDJLBV (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 10 Apr 2009 07:01:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756531AbZDJLBL
+	id S1764708AbZDJLDa (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 10 Apr 2009 07:03:30 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751806AbZDJLDU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 10 Apr 2009 07:01:11 -0400
-Received: from mailservice.tudelft.nl ([130.161.131.5]:31973 "EHLO
-	mailservice.tudelft.nl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756023AbZDJLBJ (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 10 Apr 2009 07:01:09 -0400
-X-Spam-Flag: NO
-X-Spam-Score: -12.589
-Message-ID: <49DF26EB.4040106@tudelft.nl>
-Date: Fri, 10 Apr 2009 13:00:59 +0200
-From: =?ISO-8859-1?Q?=C9ric_Piel?= <E.A.B.Piel@tudelft.nl>
-User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.8.1.21) Gecko/20090319 Mandriva/2.0.0.21-1mdv2009.1 (2009.1) Thunderbird/2.0.0.21 Mnenhy/0.7.5.0
+	Fri, 10 Apr 2009 07:03:20 -0400
+Received: from mx2.mail.elte.hu ([157.181.151.9]:37397 "EHLO mx2.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751593AbZDJLDT (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 10 Apr 2009 07:03:19 -0400
+Date: Fri, 10 Apr 2009 13:03:03 +0200
+From: Ingo Molnar <mingo@elte.hu>
+To: Zhaolei <zhaolei@cn.fujitsu.com>, Pekka Enberg <penberg@cs.helsinki.fi>,
+       Eduard - Gabriel Munteanu <eduard.munteanu@linux360.ro>
+Cc: Steven Rostedt <rostedt@goodmis.org>,
+       Frederic Weisbecker <fweisbec@gmail.com>,
+       Tom Zanussi <tzanussi@gmail.com>, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 1/2] ftrace: Separate include/trace/kmemtrace.h to
+	kmemtrace part and tracepoint part
+Message-ID: <20090410110303.GB21506@elte.hu>
+References: <49DEE68A.5040902@cn.fujitsu.com>
 MIME-Version: 1.0
-To: Matthew Garrett <mjg@redhat.com>
-Cc: Rafi Rubin <rafi@seas.upenn.edu>, Len Brown <len.brown@intel.com>,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] Additional keys for dell-wmi
-References: <200904082116.n38LG4Df012420@ampersand.seas.upenn.edu> <20090409153203.GB17194@srcf.ucam.org>
-In-Reply-To: <20090409153203.GB17194@srcf.ucam.org>
-Content-Type: multipart/mixed;
- boundary="------------040609080009050404050601"
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <49DEE68A.5040902@cn.fujitsu.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This is a multi-part message in MIME format.
---------------040609080009050404050601
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
 
-Matthew Garrett schreef:
-> On Wed, Apr 08, 2009 at 05:16:04PM -0400, Rafi Rubin wrote:
+* Zhaolei <zhaolei@cn.fujitsu.com> wrote:
+
+> Current kmemtrace.h is used both as header file of kmemtrace and kmem's
+> tracepoints definition.
+> Tracepoints' definition file may be used by other code, and should only have
+> definition of tracepoint.
 > 
->>  static struct key_entry dell_wmi_keymap[] = {
->>  	{KE_KEY, 0xe045, KEY_PROG1},
->> +	{KE_KEY, 0xe046, KEY_PROG2},
->> +	{KE_KEY, 0xe047, KEY_PROG3},
+> We can separate include/trace/kmemtrace.h into 2 files:
+>   include/linux/kmemtrace.h: header file for kmemtrace
+>   include/trace/kmem.h:      definition of kmem tracepoints
 > 
-> Would this make more sense as a switch? That way userspace can know what 
-> state the screen is in.
-> 
-Indeed, that seems more logical. And in addition, there is a switch
-called SW_TABLET_MODE, which would fit perfectly.
-I guess at initialisation you can consider it is in standard mode, and
-actually sort out the real state on the first event received.
+> Signed-off-by: Zhao Lei <zhaolei@cn.fujitsu.com>
+> ---
+>  include/linux/kmemtrace.h             |   25 +++++++++++++++++++++++++
+>  include/linux/slab_def.h              |    2 +-
+>  include/linux/slub_def.h              |    2 +-
+>  include/trace/{kmemtrace.h => kmem.h} |   25 +++----------------------
+>  init/main.c                           |    2 +-
+>  kernel/trace/kmemtrace.c              |    2 +-
+>  kernel/trace/trace.h                  |    2 +-
+>  mm/slab.c                             |    2 +-
+>  mm/slob.c                             |    2 +-
+>  mm/slub.c                             |    2 +-
+>  10 files changed, 36 insertions(+), 30 deletions(-)
+>  create mode 100644 include/linux/kmemtrace.h
+>  rename include/trace/{kmemtrace.h => kmem.h} (78%)
 
-Eric
+Pekka, Eduard, do you agree with these two patches? Converting those 
+tracepoints to TRACE_EVENT() is really nice. The above include file 
+restructuring makes sense too - it separates tracepoint definition 
+from the plugin init method.
 
---------------040609080009050404050601
-Content-Type: text/x-vcard; charset=utf-8;
- name="E_A_B_Piel.vcf"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: attachment;
- filename="E_A_B_Piel.vcf"
-
-begin:vcard
-fn;quoted-printable:=C3=89ric Piel
-n;quoted-printable:Piel;=C3=89ric
-org:Technical University of Delft;Software Engineering Research Group
-adr:HB 08.080;;Mekelweg 4;Delft;;2628 CD;The Netherlands
-email;internet:E.A.B.Piel@tudelft.nl
-tel;work:+31 15 278 6338
-tel;cell:+31 6 2437 9135
-x-mozilla-html:FALSE
-url:http://pieleric.free.fr
-version:2.1
-end:vcard
-
-
---------------040609080009050404050601--
+	Ingo
