@@ -1,72 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S938314AbZDJPMg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S938520AbZDJPN2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S938314AbZDJPMg (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 10 Apr 2009 11:12:36 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761996AbZDJPM0
+	id S938520AbZDJPN2 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 10 Apr 2009 11:13:28 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1764040AbZDJPNS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 10 Apr 2009 11:12:26 -0400
-Received: from zeniv.linux.org.uk ([195.92.253.2]:34198 "EHLO
-	ZenIV.linux.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754043AbZDJPMZ (ORCPT
+	Fri, 10 Apr 2009 11:13:18 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:58898 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1761939AbZDJPNR (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 10 Apr 2009 11:12:25 -0400
-Date: Fri, 10 Apr 2009 16:12:24 +0100
-From: Al Viro <viro@ZenIV.linux.org.uk>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: linux-kernel@vger.kernel.org
-Subject: [PATCH] unbreak alpha percpu
-Message-ID: <20090410151224.GM26366@ZenIV.linux.org.uk>
+	Fri, 10 Apr 2009 11:13:17 -0400
+Date: Fri, 10 Apr 2009 08:06:55 -0700 (PDT)
+From: Linus Torvalds <torvalds@linux-foundation.org>
+X-X-Sender: torvalds@localhost.localdomain
+To: Alexey Dobriyan <adobriyan@gmail.com>
+cc: akpm@linux-foundation.org, containers@lists.linux-foundation.org,
+       xemul@parallels.com, serue@us.ibm.com, dave@linux.vnet.ibm.com,
+       mingo@elte.hu, orenl@cs.columbia.edu, hch@infradead.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 00/30] C/R OpenVZ/Virtuozzo style
+In-Reply-To: <20090410023207.GA27788@x200.localdomain>
+Message-ID: <alpine.LFD.2.00.0904100758410.4583@localhost.localdomain>
+References: <20090410023207.GA27788@x200.localdomain>
+User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-User-Agent: Mutt/1.5.18 (2008-05-17)
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-asm-generic/percpu.h is *NOT* included by every asm/percpu.h out there.
-Namely, alpha can't use it since it needs the var name in
-SHIFT_PERCPU_PTR - &per_cpu_var(var) won't do at all.  So adding stuff
-to asm-generic/percpu.h and expecting it to be picked by everything
-is not going to work.
 
-Frankly, I'd rather have SHIFT_PERCPU_PTR() calling conventions changed,
-but for now the patch below will do.
 
-Signed-off-by: Al Viro <viro@zeniv.linux.org.uk>
----
-diff --git a/arch/alpha/include/asm/percpu.h b/arch/alpha/include/asm/percpu.h
-index 3495e8e..fffec74 100644
---- a/arch/alpha/include/asm/percpu.h
-+++ b/arch/alpha/include/asm/percpu.h
-@@ -75,4 +75,30 @@ extern unsigned long __per_cpu_offset[NR_CPUS];
- 
- #define DECLARE_PER_CPU(type, name) extern __typeof__(type) per_cpu_var(name)
- 
-+# define percpu_read(var)						\
-+  ({									\
-+	typeof(per_cpu_var(var)) __tmp_var__;				\
-+	__tmp_var__ = get_cpu_var(var);					\
-+	put_cpu_var(var);						\
-+	__tmp_var__;							\
-+  })
-+
-+#define __percpu_generic_to_op(var, val, op)				\
-+do {									\
-+	get_cpu_var(var) op val;					\
-+	put_cpu_var(var);						\
-+} while (0)
-+
-+# define percpu_write(var, val)		__percpu_generic_to_op(var, (val), =)
-+
-+# define percpu_add(var, val)		__percpu_generic_to_op(var, (val), +=)
-+
-+# define percpu_sub(var, val)		__percpu_generic_to_op(var, (val), -=)
-+
-+# define percpu_and(var, val)		__percpu_generic_to_op(var, (val), &=)
-+
-+# define percpu_or(var, val)		__percpu_generic_to_op(var, (val), |=)
-+
-+# define percpu_xor(var, val)		__percpu_generic_to_op(var, (val), ^=)
-+
- #endif /* __ALPHA_PERCPU_H */
+On Fri, 10 Apr 2009, Alexey Dobriyan wrote:
+>
+> This is to show how we see C/R and to provoke discussion on number of
+> important issues (mounts, ...).
+
+My only initial reaction is that I absolutely hate the naming (not to say 
+I love the code - just to say that I didn't even look at it, because I got 
+hung up on the name).
+
+"cr"? It could be anything. I realize that to _you_ that is meaningful, 
+but to somebody less specifically interested in checkpoint-restore 'cr' 
+means 'carriage return' or just doesn't really say anything at all. 
+
+That goes both for file naming (kernel/cr/xyzzy.c) and to a lesser degree 
+for function naming too. I also don't think it makes sense to have 
+something like kernel/cr/cr-x86_32.c or kernel/cr/cr-tty.c - maybe that is 
+good right now, but I sure hope that the long-term goal is to have these 
+things in the code that will need to change them when the code gets 
+updated (ie arch/x86/kernel and drivers/char/)
+
+			Linus
