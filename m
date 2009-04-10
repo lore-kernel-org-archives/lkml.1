@@ -1,211 +1,125 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759668AbZDJKE0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760548AbZDJKMg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759668AbZDJKE0 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 10 Apr 2009 06:04:26 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752685AbZDJKER
+	id S1760548AbZDJKMg (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 10 Apr 2009 06:12:36 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756531AbZDJKMY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 10 Apr 2009 06:04:17 -0400
-Received: from wf-out-1314.google.com ([209.85.200.169]:65288 "EHLO
-	wf-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750847AbZDJKEQ convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 10 Apr 2009 06:04:16 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:from:date:message-id:subject:to:cc:content-type
-         :content-transfer-encoding;
-        b=rPcprV5ekNC6RfvdEiwGOWB3Suu9ZwGQuNpMOaloxT/8AhyZB2EHSCfhfd7rXIvV72
-         VUgZUhZH/ygV/5PnBGx/gtj3MEdgK4blgYwXEP1IR3yrkHQJT9FjKKZxjRRIycxLO3G3
-         VQ2Vcl9EugWin+4WBtmlcMORAjmikyuz6ruMU=
+	Fri, 10 Apr 2009 06:12:24 -0400
+Received: from lug-owl.de ([195.71.106.12]:35388 "EHLO lug-owl.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754272AbZDJKMW (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 10 Apr 2009 06:12:22 -0400
+Date: Fri, 10 Apr 2009 12:12:20 +0200
+From: Jan-Benedict Glaw <jbglaw@lug-owl.de>
+To: Andrew Morton <akpm@linux-foundation.org>, Alex Chiang <achiang@hp.com>,
+       Robin Holt <holt@sgi.com>, linux-kernel <linux-kernel@vger.kernel.org>,
+       linux-ia64@vger.kernel.org, Sam Ravnborg <sam@ravnborg.org>
+Subject: Re: cross-compilers
+Message-ID: <20090410101220.GF7921@lug-owl.de>
+Mail-Followup-To: Andrew Morton <akpm@linux-foundation.org>,
+	Alex Chiang <achiang@hp.com>, Robin Holt <holt@sgi.com>,
+	linux-kernel <linux-kernel@vger.kernel.org>,
+	linux-ia64@vger.kernel.org, Sam Ravnborg <sam@ravnborg.org>
+References: <20090408003921.GA5054@ldl.fc.hp.com> <20090408010331.GB10768@sgi.com> <20090408054612.GA6744@ldl.fc.hp.com> <20090407225457.86f8a458.akpm@linux-foundation.org> <20090409003308.GK16602@bilbo.ozlabs.org> <20090408174443.79e71503.akpm@linux-foundation.org> <20090409215207.GN16602@bilbo.ozlabs.org> <20090409234750.GE7921@lug-owl.de>
 MIME-Version: 1.0
-From: Kim Kyuwon <chammoru@gmail.com>
-Date: Fri, 10 Apr 2009 19:04:01 +0900
-Message-ID: <4d34a0a70904100304n1f9458cdo9924a2685bae2f9b@mail.gmail.com>
-Subject: [PATCH 3/3] leds: add the sysfs interface into the leds-bd2802 driver 
-	for changing wave pattern and led current.
-To: LKML <linux-kernel@vger.kernel.org>
-Cc: Richard Purdie <rpurdie@rpsys.net>,
-       =?EUC-KR?B?udqw5rnO?= <kyungmin.park@samsung.com>
-Content-Type: text/plain; charset=EUC-KR
-Content-Transfer-Encoding: 8BIT
+Content-Type: multipart/signed; micalg=pgp-sha1;
+	protocol="application/pgp-signature"; boundary="oeyAOmeIWsNJ4sHb"
+Content-Disposition: inline
+In-Reply-To: <20090409234750.GE7921@lug-owl.de>
+X-Operating-System: Linux mail 2.6.18-5-686
+X-gpg-fingerprint: 250D 3BCF 7127 0D8C A444  A961 1DBD 5E75 8399 E1BB
+X-gpg-key: wwwkeys.de.pgp.net
+X-Echelon-Enable: howto poison arsenous mail psychological biological
+	nuclear warfare test the bombastical terror of flooding the spy
+	listeners explosion sex drugs and rock'n'roll
+X-TKUeV: howto poison arsenous mail psychological biological nuclear
+	warfare test the bombastical terror of flooding the spy listeners
+	explosion sex drugs and rock'n'roll
+X-message-flag: Please send plain text messages only. Do not send HTML
+	emails. Thank you.
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This patch allow the user application to change the wave pattern and
-led current by 'wave_pattern' and 'rgb_current' sysfs files.
 
-Signed-off-by: Kim Kyuwon <q1.kim@samsung.com>
----
- drivers/leds/leds-bd2802.c |   86 +++++++++++++++++++++++++++++++++++++-------
- 1 files changed, 73 insertions(+), 13 deletions(-)
+--oeyAOmeIWsNJ4sHb
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-diff --git a/drivers/leds/leds-bd2802.c b/drivers/leds/leds-bd2802.c
-index 7a03efd..779d7f2 100644
---- a/drivers/leds/leds-bd2802.c
-+++ b/drivers/leds/leds-bd2802.c
-@@ -97,6 +97,10 @@ struct bd2802_led {
- 	enum led_ids			led_id;
- 	enum led_colors			color;
- 	enum led_bits			state;
-+
-+	/* General attributes of RGB LEDs */
-+	int				wave_pattern;
-+	int				rgb_current;
- };
+On Fri, 2009-04-10 01:47:50 +0200, Jan-Benedict Glaw <jbglaw@lug-owl.de> wr=
+ote:
+> On Fri, 2009-04-10 07:52:07 +1000, Tony Breeds <tony@bakeyournoodle.com> =
+wrote:
+> > On Wed, Apr 08, 2009 at 05:44:43PM -0700, Andrew Morton wrote:
+> >=20
+> > > Please do.
+> >=20
+> > linux-next is built on powerpc so I needed to rebuild many of the compi=
+lers for
+> > intel.
+>=20
+> I've started a build-bot like script for binutils + GCC from CVS/GIT.
+> If it builds through, I'll start uploading i686 hosted compilers
+> later on today.
 
+So... I've now build trunk kernel-only cross-compilers (hosted on
+i686) for these targets:
 
-@@ -254,7 +258,7 @@ static void bd2802_set_on(struct bd2802_led *led,
-enum led_ids id,
- 		bd2802_reset_cancel(led);
+	alpha-linux.tar.bz2
+	am33_2.0-linux.tar.bz2
+	arm-linux.tar.bz2
+	avr-linux.tar.bz2
+	bfin-uclinux.tar.bz2
+	cris-linux.tar.bz2
+	frv-linux.tar.bz2
+	h8300-elf.tar.bz2
+	hppa64-linux.tar.bz2
+	hppa-linux.tar.bz2
+	i386-linux.tar.bz2
+	ia64-linux.tar.bz2
+	m32r-linux.tar.bz2
+	m68k-linux.tar.bz2
+	mips64-linux.tar.bz2
+	mips-linux.tar.bz2
+	powerpc64-linux.tar.bz2
+	powerpc-linux.tar.bz2
+	s390-linux.tar.bz2
+	sh3-linux.tar.bz2
+	sh64-linux.tar.bz2
+	sparc64-linux.tar.bz2
+	sparc-linux.tar.bz2
+	v850e-linux.tar.bz2
+	vax-linux.tar.bz2
+	x86_64-linux.tar.bz2
+	xtensa-linux.tar.bz2
 
- 	reg = bd2802_get_reg_addr(id, color, BD2802_REG_CURRENT1SETUP);
--	bd2802_write_byte(led->client, reg, BD2802_CURRENT_032);
-+	bd2802_write_byte(led->client, reg, led->rgb_current);
- 	reg = bd2802_get_reg_addr(id, color, BD2802_REG_CURRENT2SETUP);
- 	bd2802_write_byte(led->client, reg, BD2802_CURRENT_000);
- 	reg = bd2802_get_reg_addr(id, color, BD2802_REG_WAVEPATTERN);
-@@ -275,9 +279,9 @@ static void bd2802_set_blink(struct bd2802_led
-*led, enum led_ids id,
- 	reg = bd2802_get_reg_addr(id, color, BD2802_REG_CURRENT1SETUP);
- 	bd2802_write_byte(led->client, reg, BD2802_CURRENT_000);
- 	reg = bd2802_get_reg_addr(id, color, BD2802_REG_CURRENT2SETUP);
--	bd2802_write_byte(led->client, reg, BD2802_CURRENT_032);
-+	bd2802_write_byte(led->client, reg, led->rgb_current);
- 	reg = bd2802_get_reg_addr(id, color, BD2802_REG_WAVEPATTERN);
--	bd2802_write_byte(led->client, reg, BD2802_PATTERN_HALF);
-+	bd2802_write_byte(led->client, reg, led->wave_pattern);
+They seem to build reliably, I'd easily build them once a day. If
+anybody is interested, I'll put them somewhere on lug-owl.de, or if
+you wish, on kernel.org .
 
- 	bd2802_enable(led, id);
- 	bd2802_update_state(led, id, color, BD2802_BLINK);
-@@ -406,7 +410,7 @@ static void bd2802_enable_adv_conf(struct bd2802_led *led)
- 		ret = device_create_file(&led->client->dev,
- 						bd2802_addr_attributes[i]);
- 		if (ret) {
--			dev_err(&led->client->dev, "failed to sysfs file %s\n",
-+			dev_err(&led->client->dev, "failed: sysfs file %s\n",
- 					bd2802_addr_attributes[i]->attr.name);
- 			goto failed_remove_files;
- 		}
-@@ -483,6 +487,52 @@ static struct device_attribute bd2802_adv_conf_attr = {
- 	.store = bd2802_store_adv_conf,
- };
+Comments?
 
-+#define BD2802_CONTROL_ATTR(attr_name, name_str)			\
-+static ssize_t bd2802_show_##attr_name(struct device *dev,		\
-+	struct device_attribute *attr, char *buf)			\
-+{									\
-+	struct bd2802_led *led = i2c_get_clientdata(to_i2c_client(dev));\
-+	ssize_t ret;							\
-+	down_read(&led->rwsem);						\
-+	ret = sprintf(buf, "0x%02x\n", led->attr_name);			\
-+	up_read(&led->rwsem);						\
-+	return ret;							\
-+}									\
-+static ssize_t bd2802_store_##attr_name(struct device *dev,		\
-+	struct device_attribute *attr, const char *buf, size_t count)	\
-+{									\
-+	struct bd2802_led *led = i2c_get_clientdata(to_i2c_client(dev));\
-+	unsigned long val;						\
-+	int ret;							\
-+	if (!count)							\
-+		return -EINVAL;						\
-+	ret = strict_strtoul(buf, 16, &val);				\
-+	if (ret)							\
-+		return ret;						\
-+	down_write(&led->rwsem);					\
-+	led->attr_name = val;						\
-+	up_write(&led->rwsem);						\
-+	return count;							\
-+}									\
-+static struct device_attribute bd2802_##attr_name##_attr = {		\
-+	.attr = {							\
-+		.name = name_str,					\
-+		.mode = 0644,						\
-+		.owner = THIS_MODULE					\
-+	},								\
-+	.show = bd2802_show_##attr_name,				\
-+	.store = bd2802_store_##attr_name,				\
-+};
-+
-+BD2802_CONTROL_ATTR(wave_pattern, "wave_pattern");
-+BD2802_CONTROL_ATTR(rgb_current, "rgb_current");
-+
-+static struct device_attribute *bd2802_attributes[] = {
-+	&bd2802_adv_conf_attr,
-+	&bd2802_wave_pattern_attr,
-+	&bd2802_rgb_current_attr,
-+};
-+
- static void bd2802_led_work(struct work_struct *work)
- {
- 	struct bd2802_led *led = container_of(work, struct bd2802_led, work);
-@@ -635,7 +685,7 @@ static int __devinit bd2802_probe(struct i2c_client *client,
- {
- 	struct bd2802_led *led;
- 	struct bd2802_led_platform_data *pdata;
--	int ret;
-+	int ret, i;
+MfG, JBG
 
- 	led = kzalloc(sizeof(struct bd2802_led), GFP_KERNEL);
- 	if (!led) {
-@@ -665,13 +715,20 @@ static int __devinit bd2802_probe(struct
-i2c_client *client,
- 	/* To save the power, reset BD2802 after detecting */
- 	gpio_set_value(led->pdata->reset_gpio, 0);
+--=20
+      Jan-Benedict Glaw      jbglaw@lug-owl.de              +49-172-7608481
+Signature of:          GDB has a 'break' feature; why doesn't it have 'fix'=
+ too?
+the second  :
 
-+	/* Default attributes */
-+	led->wave_pattern = BD2802_PATTERN_HALF;
-+	led->rgb_current = BD2802_CURRENT_032;
-+
- 	init_rwsem(&led->rwsem);
+--oeyAOmeIWsNJ4sHb
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: Digital signature
+Content-Disposition: inline
 
--	ret = device_create_file(&client->dev, &bd2802_adv_conf_attr);
--	if (ret) {
--		dev_err(&client->dev, "failed to create sysfs file %s\n",
--					bd2802_adv_conf_attr.attr.name);
--		goto failed_free;
-+	for (i = 0; i < ARRAY_SIZE(bd2802_attributes); i++) {
-+		ret = device_create_file(&led->client->dev,
-+						bd2802_attributes[i]);
-+		if (ret) {
-+			dev_err(&led->client->dev, "failed: sysfs file %s\n",
-+					bd2802_attributes[i]->attr.name);
-+			goto failed_unregister_dev_file;
-+		}
- 	}
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.9 (GNU/Linux)
 
- 	ret = bd2802_register_led_classdev(led);
-@@ -681,7 +738,8 @@ static int __devinit bd2802_probe(struct i2c_client *client,
- 	return 0;
+iEYEARECAAYFAknfG4QACgkQHb1edYOZ4btIhgCeJfszSwWkZev1aIafhUzqrSP6
+SL0An2hUmcMMYDZ771s/V7IBg5LXoAjo
+=Kw03
+-----END PGP SIGNATURE-----
 
- failed_unregister_dev_file:
--	device_remove_file(&client->dev, &bd2802_adv_conf_attr);
-+	for (i--; i >= 0; i--)
-+		device_remove_file(&led->client->dev, bd2802_attributes[i]);
- failed_free:
- 	i2c_set_clientdata(client, NULL);
- 	kfree(led);
-@@ -692,12 +750,14 @@ failed_free:
- static int __exit bd2802_remove(struct i2c_client *client)
- {
- 	struct bd2802_led *led = i2c_get_clientdata(client);
-+	int i;
-
--	bd2802_unregister_led_classdev(led);
- 	gpio_set_value(led->pdata->reset_gpio, 0);
-+	bd2802_unregister_led_classdev(led);
- 	if (led->adf_on)
- 		bd2802_disable_adv_conf(led);
--	device_remove_file(&client->dev, &bd2802_adv_conf_attr);
-+	for (i = 0; i < ARRAY_SIZE(bd2802_attributes); i++)
-+		device_remove_file(&led->client->dev, bd2802_attributes[i]);
- 	i2c_set_clientdata(client, NULL);
- 	kfree(led);
-
--- 
-1.5.2.5
-
-
--- 
-Kyuwon (±Ô¿ø)
+--oeyAOmeIWsNJ4sHb--
