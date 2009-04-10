@@ -1,78 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757342AbZDJINt@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758441AbZDJIOu@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757342AbZDJINt (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 10 Apr 2009 04:13:49 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759325AbZDJINP
+	id S1758441AbZDJIOu (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 10 Apr 2009 04:14:50 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757560AbZDJIOg
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 10 Apr 2009 04:13:15 -0400
-Received: from moutng.kundenserver.de ([212.227.126.187]:58399 "EHLO
-	moutng.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1758646AbZDJINM (ORCPT
+	Fri, 10 Apr 2009 04:14:36 -0400
+Received: from mail-fx0-f158.google.com ([209.85.220.158]:60632 "EHLO
+	mail-fx0-f158.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757239AbZDJIOd (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 10 Apr 2009 04:13:12 -0400
-Date: Fri, 10 Apr 2009 10:15:15 +0200
-From: Heinz Diehl <htd@fancy-poultry.org>
-To: Ingo Molnar <mingo@elte.hu>, Jens Axboe <jens.axboe@oracle.com>,
-       Arjan van de Ven <arjan@infradead.org>
-Cc: Justin Madru <jdm64@gawab.com>, lkml <linux-kernel@vger.kernel.org>,
-       "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: 2.6.30-rc1: invalid opcode with call trace
-Message-ID: <20090410081515.GA17762@fancy-poultry.org>
-Reply-To: linux-kernel@vger.kernel.org
-References: <49DC367A.90603@gawab.com> <20090408063240.GQ5178@kernel.dk> <20090408064733.GA16984@elte.hu> <20090408065201.GA6490@elte.hu>
+	Fri, 10 Apr 2009 04:14:33 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:to:cc:subject:message-id:mail-followup-to:references
+         :mime-version:content-type:content-disposition:in-reply-to
+         :user-agent;
+        b=CAbxgiMT8Uv7olRraQ6o1wErJ8TNK/1pSLu3zY5m2Zmpvf/yGCSuh8D9gLcEtxbToE
+         EVb1+wXWDss7w1uNF2hAiXTYDou+lG0/bPoRQD3gwJbDKxaFh5lajkA2c8ruZE8ZzwT7
+         59CLDU4eKlx5UTxK9ZwihPgklCm2fXNbF6wWg=
+Date: Fri, 10 Apr 2009 10:14:29 +0200
+From: Andrea Righi <righi.andrea@gmail.com>
+To: Pavel Roskin <proski@gnu.org>
+Cc: linux-kernel@vger.kernel.org, stable@kernel.org
+Subject: Re: [BISECTED] x11 fbdev on intelfb hangs hard after
+	66c1ca019078220dc1bf968f2bb18421100ef147
+Message-ID: <20090410081428.GA5595@linux>
+Mail-Followup-To: Pavel Roskin <proski@gnu.org>,
+	linux-kernel@vger.kernel.org, stable@kernel.org
+References: <1239314524.7390.14.camel@mj>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20090408065201.GA6490@elte.hu>
-Organization: private site
-User-Agent: Mutt/1.5.19+20090405 (GNU/Linux)
-X-Provags-ID: V01U2FsdGVkX1+zGk1mTBmagdyrmquHEsuTfiWZTVwL++t5UuI
- aVIxfhR77FpCyrXhoDjTju+nDfNz0s6XINvAswrif5QWu1rk6v
- MwZe7g6L9Pmt+oDaqeX8lRqzpSPvMto
+In-Reply-To: <1239314524.7390.14.camel@mj>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 08.04.2009, Ingo Molnar wrote: 
-
-One additional bug which is caused by commit 9710794:
-
-> * Ingo Molnar <mingo@elte.hu> wrote:
+On Thu, Apr 09, 2009 at 06:02:04PM -0400, Pavel Roskin wrote:
+> Hello!
 > 
-> > I too have an async hang/crash, on an old-style SCSI (aic7xxx) box 
-> > - hang log attached below.
-> > [...]
-> >
-> > ( Full bootlog attached below as well - i'm sending the config as a 
-> >   reply as this mail is close to lkml size limits already. )
+> I'm running the latest wireless-testing.git kernel, which is 2.6.30-rc1
+> plus some wireless bits.  I use intelfb with kernel mode switching and
+> X11 using fbdev.  This runs on Fedora 10, fbdev driver is
+> xorg-x11-drv-fbdev-0.3.1-7.fc9.x86_64.
 > 
-> Config attached.
+> This worked fine with Linux 2.6.29, but after upgrading to 2.6.30-rc1
+> X11 hangs hard.
 > 
->  known bad  : v2.6.29-9854-gd508afb
->  known good : v2.6.29
+> Bisecting found commit 66c1ca019078220dc1bf968f2bb18421100ef147 to be
+> responsible.  It can be reverted on top of 2.6.30-rc1, and the resulting
+> kernel is working fine.  The commit is called:
 > 
-> Suspected commit introducing the regression:
+> fbmem: fix fb_info->lock and mm->mmap_sem circular locking dependency
 > 
->  9710794: async: remove the temporary (2.6.29) "async is off by default" code
+> I'm especially concerned to see stable@kernel.org in the cc in the log.
+> This patch fails on two systems for me, so it's hardly ready for stable
+> kernels.
 > 
-> (i'll now try a revert of this.)
-> 
-> 	Ingo
+> The kernel config (very minimal, I used it to speed up bisecting),
+> xorg.conf and lspci output are attached.
 
-When trying to boot 2.6.30-rc1, -git3 on my notebook, which
-has an encrypted root partition (LUKS/dmcrypt), the root fs can
-not be found any more. 
+Thanks for reporting Pavel. I agree to revert 66c1ca ASAP.
 
-The bootscreen finally shows:
-[....]
-Could not find /dev/mapper/root
-...exiting to /bin/sh
+See also http://lkml.org/lkml/2009/4/9/177.
 
-And the system is dead. Since there's no root fs available, I can't provide
-any more information on this.
-
-BUT: Ingo's reversion does fix this.
-
-Regards, 
-Heinz.
-
+-Andrea
