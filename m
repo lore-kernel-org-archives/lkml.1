@@ -1,61 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S939240AbZDJSor@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S939077AbZDJS7D@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S939240AbZDJSor (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 10 Apr 2009 14:44:47 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762038AbZDJSoh
+	id S939077AbZDJS7D (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 10 Apr 2009 14:59:03 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1764998AbZDJS6v
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 10 Apr 2009 14:44:37 -0400
-Received: from hera.kernel.org ([140.211.167.34]:39270 "EHLO hera.kernel.org"
+	Fri, 10 Apr 2009 14:58:51 -0400
+Received: from ogre.sisk.pl ([217.79.144.158]:45376 "EHLO ogre.sisk.pl"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752434AbZDJSog (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 10 Apr 2009 14:44:36 -0400
-Message-ID: <49DF935E.8030607@kernel.org>
-Date: Fri, 10 Apr 2009 11:43:42 -0700
-From: Tejun Heo <tj@kernel.org>
-User-Agent: Thunderbird 2.0.0.19 (X11/20081227)
+	id S1764739AbZDJS6v (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 10 Apr 2009 14:58:51 -0400
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+To: linux-pm@lists.linux-foundation.org
+Subject: Re: [linux-pm] [2.6.30-rc1-git2 regressions] Hibernation broken and (minor but annoying) audio problem
+Date: Fri, 10 Apr 2009 20:58:35 +0200
+User-Agent: KMail/1.11.2 (Linux/2.6.29-rjw; KDE/4.2.2; x86_64; ; )
+Cc: Linus Torvalds <torvalds@linux-foundation.org>,
+       Takashi Iwai <tiwai@suse.de>, Arjan van de Ven <arjan@linux.intel.com>,
+       LKML <linux-kernel@vger.kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>, Ingo Molnar <mingo@elte.hu>
+References: <200904100057.43827.rjw@sisk.pl> <alpine.LFD.2.00.0904091605080.4583@localhost.localdomain> <200904101439.43480.rjw@sisk.pl>
+In-Reply-To: <200904101439.43480.rjw@sisk.pl>
 MIME-Version: 1.0
-To: Linus Torvalds <torvalds@linux-foundation.org>
-CC: Ivan Kokshaysky <ink@jurassic.park.msu.ru>,
-       Al Viro <viro@ZenIV.linux.org.uk>, Ingo Molnar <mingo@elte.hu>,
-       Mike Travis <travis@sgi.com>,
-       Christoph Lameter <cl@linux-foundation.org>,
-       Heiko Carstens <heiko.carstens@de.ibm.com>,
-       Martin Schwidefsky <schwidefsky@de.ibm.com>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH] unbreak alpha percpu
-References: <20090410151224.GM26366@ZenIV.linux.org.uk> <20090410154704.GN26366@ZenIV.linux.org.uk> <alpine.LFD.2.00.0904100915010.4583@localhost.localdomain> <20090410165030.GQ26366@ZenIV.linux.org.uk> <20090410170507.GR26366@ZenIV.linux.org.uk> <20090410171415.GA6033@ZenIV.linux.org.uk> <20090410180532.GA4419@jurassic.park.msu.ru> <alpine.LFD.2.00.0904101118470.4583@localhost.localdomain>
-In-Reply-To: <alpine.LFD.2.00.0904101118470.4583@localhost.localdomain>
-X-Enigmail-Version: 0.95.7
-Content-Type: text/plain; charset=ISO-8859-1
+Content-Type: Text/Plain;
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Fri, 10 Apr 2009 18:43:02 +0000 (UTC)
+Content-Disposition: inline
+Message-Id: <200904102058.36018.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Linus Torvalds wrote:
+On Friday 10 April 2009, Rafael J. Wysocki wrote:
+> On Friday 10 April 2009, Linus Torvalds wrote:
+> > 
+> > On Fri, 10 Apr 2009, Rafael J. Wysocki wrote:
+> > > 
+> > > I'm seeing two problems with -git from today.
+> > 
+> > When today? A number of people apparently had module problems before 
+> > commit 97c18e2c7a8e36d2d83d50ee070314aadac73a11 ("module: 
+> > try_then_request_module must wait").
+> > 
+> > If you don't have that one, then that might explain both problems, in that 
+> > a "second try" would work for modules (your sound issue), and that 
+> > compiling things in would obviously avoid it (your storage driver thing).
+> > 
+> > But if you _do_ have that, then it's obviously something else ;)
 > 
-> On Fri, 10 Apr 2009, Ivan Kokshaysky wrote:
->> Actually, all of this has been discussed on lkml; here is the latest
->> variant that makes everybody more or less happy, at least there are
->> no objections from percpu folks and Martin (similar fix should work
->> for s390 as well).
-> 
-> Is there any reason why this version of DEFINE_PER_CPU_SECTION wouldn't 
-> work on _any_ architecture? IOW, do we even need the #ifdef's and 
-> per-arch #define?
+> Well, I do have that one. :-)
 
-It should work for all archs but only alpha and s390 require __weak__
-and other archs can use actual static or global definitions, but then
-again we'll need to add the __per_cpu_multiple_def_ thing to make sure
-no two static definitions clash anyway, so there isn't much point in
-keeping things separate.
+I've just verified that the resume-after-hibernation issue goes away after
+reverting commit 9710794383ee5008d67f1a6613a4717bf6de47bc
+(async: remove the temporary (2.6.29) "async is off by default" code) , so it
+is async-related.
 
-I was waiting for responses on the original thread.  Is everyone okay
-with having the 'static per-cpu variables in different compile units
-can't have the same name' restriction?
+The audio issue still remains after the revert, so it is really different.
 
-Thanks.
-
--- 
-tejun
+Thanks,
+Rafael
