@@ -1,84 +1,72 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S935780AbZDJFhv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932092AbZDJFlh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S935780AbZDJFhv (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 10 Apr 2009 01:37:51 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761737AbZDJFdb
+	id S932092AbZDJFlh (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 10 Apr 2009 01:41:37 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756846AbZDJFl1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 10 Apr 2009 01:33:31 -0400
-Received: from sh.osrg.net ([192.16.179.4]:58969 "EHLO sh.osrg.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1759414AbZDJFdQ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 10 Apr 2009 01:33:16 -0400
-From: Ryusuke Konishi <konishi.ryusuke@lab.ntt.co.jp>
-To: linux-fsdevel@vger.kernel.org
-Cc: linux-kernel@vger.kernel.org,
-       Ryusuke Konishi <konishi.ryusuke@lab.ntt.co.jp>
-Subject: [PATCH 2/8] nilfs2: fix lockdep recursive locking warning on bmap
-Date: Fri, 10 Apr 2009 14:27:55 +0900
-Message-Id: <1239341281-20249-3-git-send-email-konishi.ryusuke@lab.ntt.co.jp>
-X-Mailer: git-send-email 1.5.6.5
-In-Reply-To: <1239341281-20249-1-git-send-email-konishi.ryusuke@lab.ntt.co.jp>
-References: <1239341281-20249-1-git-send-email-konishi.ryusuke@lab.ntt.co.jp>
-X-Dispatcher: imput version 20050308(IM148)
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-3.0 (sh.osrg.net [192.16.179.4]); Fri, 10 Apr 2009 14:33:12 +0900 (JST)
+	Fri, 10 Apr 2009 01:41:27 -0400
+Received: from pfepb.post.tele.dk ([195.41.46.236]:42770 "EHLO
+	pfepb.post.tele.dk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755281AbZDJFl0 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 10 Apr 2009 01:41:26 -0400
+Date: Fri, 10 Apr 2009 07:43:31 +0200
+From: Sam Ravnborg <sam@ravnborg.org>
+To: Jaswinder Singh Rajput <jaswinder@kernel.org>
+Cc: linux-kbuild <linux-kbuild@vger.kernel.org>,
+       LKML <linux-kernel@vger.kernel.org>, Ingo Molnar <mingo@elte.hu>
+Subject: Re: [ANNOUNCE] headercheck - check dependencies on header files
+Message-ID: <20090410054331.GB20005@uranus.ravnborg.org>
+References: <20090409204219.GA31511@uranus.ravnborg.org> <1239334100.3036.14.camel@ht.satnam>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1239334100.3036.14.camel@ht.satnam>
+User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-The bmap semaphore of DAT file can be held while a bmap of other files
-is locked.  This has caused the following false detection of lockdep
-check:
+On Fri, Apr 10, 2009 at 08:58:20AM +0530, Jaswinder Singh Rajput wrote:
+> Hello Sam,
+> 
+> On Thu, 2009-04-09 at 22:42 +0200, Sam Ravnborg wrote:
+> > We have at several occasions discussed if our header files
+> > should include their dependencies or not.
+> > 
+> > But we were lacking a tool to tell us if our header files
+> > included the headerfiles they needed or not.
+> > 
+> > headercheck can be used to do so.
+> > 
+> > headercheck use the existing Kbuild files in
+> > include/ to determine which directories to visit.
+> > 
+> > And for each directory it create one .c file for each
+> > .h file and build it.
+> > 
+> > A .c file looks like this:
+> > 
+> > 	$cat module.h.c
+> > 		#include <linux/module.h>
+> > 
+> 
+> Is it possible to check that which header files are included in source
+> file.
+> 
+> I mean how many header files are included for kernel/module.c and in
+> which order and we can also check that same file is requested how many
+> times, like:
+> 
+> 	linux/module.h (requested count, included or not)
+> 	+linux/list.h
+> 	++linux/stddef.h
 
-mount.nilfs2/4667 is trying to acquire lock:
- (&bmap->b_sem){..--}, at: [<d0c6c4b4>] nilfs_bmap_lookup_at_level+0x1a/0x74 [nilfs2]
+Try to take a look at:
+http://www.kernel.org/pub/linux/kernel/people/rayl/headergraphs/
 
-but task is already holding lock:
- (&bmap->b_sem){..--}, at: [<d0c6c4b4>] nilfs_bmap_lookup_at_level+0x1a/0x74 [nilfs2]
+and
 
-This will fix the false detection by distinguishing semaphores of the
-DAT and other files.
+http://www.kernel.org/pub/linux/kernel/people/acme/hviz
 
-Signed-off-by: Ryusuke Konishi <konishi.ryusuke@lab.ntt.co.jp>
----
- fs/nilfs2/bmap.c |    5 +++++
- 1 files changed, 5 insertions(+), 0 deletions(-)
-
-diff --git a/fs/nilfs2/bmap.c b/fs/nilfs2/bmap.c
-index 24638e0..064279e 100644
---- a/fs/nilfs2/bmap.c
-+++ b/fs/nilfs2/bmap.c
-@@ -688,6 +688,8 @@ static const struct nilfs_bmap_ptr_operations nilfs_bmap_ptr_ops_gc = {
- 	.bpop_translate		=	NULL,
- };
- 
-+static struct lock_class_key nilfs_bmap_dat_lock_key;
-+
- /**
-  * nilfs_bmap_read - read a bmap from an inode
-  * @bmap: bmap
-@@ -715,6 +717,7 @@ int nilfs_bmap_read(struct nilfs_bmap *bmap, struct nilfs_inode *raw_inode)
- 		bmap->b_pops = &nilfs_bmap_ptr_ops_p;
- 		bmap->b_last_allocated_key = 0;	/* XXX: use macro */
- 		bmap->b_last_allocated_ptr = NILFS_BMAP_NEW_PTR_INIT;
-+		lockdep_set_class(&bmap->b_sem, &nilfs_bmap_dat_lock_key);
- 		break;
- 	case NILFS_CPFILE_INO:
- 	case NILFS_SUFILE_INO:
-@@ -772,6 +775,7 @@ void nilfs_bmap_init_gcdat(struct nilfs_bmap *gcbmap, struct nilfs_bmap *bmap)
- {
- 	memcpy(gcbmap, bmap, sizeof(union nilfs_bmap_union));
- 	init_rwsem(&gcbmap->b_sem);
-+	lockdep_set_class(&bmap->b_sem, &nilfs_bmap_dat_lock_key);
- 	gcbmap->b_inode = &NILFS_BMAP_I(gcbmap)->vfs_inode;
- }
- 
-@@ -779,5 +783,6 @@ void nilfs_bmap_commit_gcdat(struct nilfs_bmap *gcbmap, struct nilfs_bmap *bmap)
- {
- 	memcpy(bmap, gcbmap, sizeof(union nilfs_bmap_union));
- 	init_rwsem(&bmap->b_sem);
-+	lockdep_set_class(&bmap->b_sem, &nilfs_bmap_dat_lock_key);
- 	bmap->b_inode = &NILFS_BMAP_I(bmap)->vfs_inode;
- }
--- 
-1.5.6.5
-
+	Sam
