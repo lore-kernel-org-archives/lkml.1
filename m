@@ -1,68 +1,86 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760791AbZDJKTf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764093AbZDJKX6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760791AbZDJKTf (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 10 Apr 2009 06:19:35 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756723AbZDJKTY
+	id S1764093AbZDJKX6 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 10 Apr 2009 06:23:58 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752907AbZDJKXt
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 10 Apr 2009 06:19:24 -0400
-Received: from yw-out-2324.google.com ([74.125.46.29]:54125 "EHLO
-	yw-out-2324.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751634AbZDJKTX convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 10 Apr 2009 06:19:23 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
-         :content-type:content-transfer-encoding;
-        b=U2ke/93P/8zC0pxyyQsdP13v+GzDG1aR1FaNoHSzrD//XUtPkpdTq6/Nof7aXaPaf+
-         mAfLJZXSetGZ9a8JWDgO0tcsMDaD6Nl2JmNaA8/GuyTJSw0lrdXiruRTrJIj2UpQ6Zpa
-         ZGLdaDDjlF/Ch6Lind61JKUZ/d3NqPcssc1yQ=
+	Fri, 10 Apr 2009 06:23:49 -0400
+Received: from mail.gmx.net ([213.165.64.20]:51344 "HELO mail.gmx.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
+	id S1752685AbZDJKXs (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 10 Apr 2009 06:23:48 -0400
+Cc: akpm@linux-foundation.org, peterz@infradead.org, lowdanie@gmail.com
+Content-Type: text/plain; charset="iso-8859-1"
+Date: Fri, 10 Apr 2009 12:23:46 +0200
+From: "Wolfram Strepp" <wstrepp@gmx.de>
+Message-ID: <20090410102346.320840@gmx.net>
 MIME-Version: 1.0
-In-Reply-To: <20090410101220.GF7921@lug-owl.de>
-References: <20090408003921.GA5054@ldl.fc.hp.com>
-	 <20090408010331.GB10768@sgi.com> <20090408054612.GA6744@ldl.fc.hp.com>
-	 <20090407225457.86f8a458.akpm@linux-foundation.org>
-	 <20090409003308.GK16602@bilbo.ozlabs.org>
-	 <20090408174443.79e71503.akpm@linux-foundation.org>
-	 <20090409215207.GN16602@bilbo.ozlabs.org>
-	 <20090409234750.GE7921@lug-owl.de> <20090410101220.GF7921@lug-owl.de>
-Date: Fri, 10 Apr 2009 06:19:21 -0400
-Message-ID: <8bd0f97a0904100319kb16c81bs596341e016cc41a@mail.gmail.com>
-Subject: Re: cross-compilers
-From: Mike Frysinger <vapier.adi@gmail.com>
-To: Andrew Morton <akpm@linux-foundation.org>, Alex Chiang <achiang@hp.com>,
-       Robin Holt <holt@sgi.com>, linux-kernel <linux-kernel@vger.kernel.org>,
-       linux-ia64@vger.kernel.org, Sam Ravnborg <sam@ravnborg.org>
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8BIT
+Subject: [PATCH 1/3] Further optimization of function rb_erase() in
+ lib/rbtree.c
+To: linux-kernel@vger.kernel.org
+X-Authenticated: #14768304
+X-Flags: 0001
+X-Mailer: WWW-Mail 6100 (Global Message Exchange)
+X-Priority: 3
+X-Provags-ID: V01U2FsdGVkX19btvA9OTlbegxaobzfU+ENd97gEVkT5IUAwnNb0t
+ E+2Dxephg/adjXSMiv18dofXyw47UAu+tlow== 
+Content-Transfer-Encoding: 8bit
+X-GMX-UID: Ayz5YX3aLi50AJh8i2tp9pJrZml1ZFgg
+X-FuHaFi: 0.58
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Apr 10, 2009 at 06:12, Jan-Benedict Glaw wrote:
-> On Fri, 2009-04-10 01:47:50 +0200, Jan-Benedict Glaw wrote:
->> I've started a build-bot like script for binutils + GCC from CVS/GIT.
->> If it builds through, I'll start uploading i686 hosted compilers
->> later on today.
->
-> So... I've now build trunk kernel-only cross-compilers (hosted on
-> i686) for these targets:
->
->        bfin-uclinux.tar.bz2
+This small patch-series reorganizes some lines in function rb_erase()
+in lib/rbtree.c, and as a result one if-condition can be omitted.
+Tested on x86.
 
-we already host up-to-date Blackfin compilers on the Blackfin website:
-http://blackfin.uclinux.org/gf/project/toolchain/frs/
 
-and we build for a variety of platforms ... atm that is x86, x86_64,
-ia64, and ppc
+First, move some code around in order to make the next change more obvious.
 
-we also provide for simple distro integration:
- - Gentoo has ebuilds in-tree
- - deb based distros can use "deb
-http://download.analog.com/27516/distros/debian stable main"
- - rpms are available at the link above (fedora/suse/etc...)
- - tarballs are available at the link above (everyone else)
+Signed-off-by: Peter Zijlstra <a.p.zijlstra@chello.nl>
+Signed-off-by: Wolfram Strepp <wstrepp@gmx.de>
 
-not sure it can get much easier than that for installing the Blackfin
-toolchain ;)
--mike
+---
+ lib/rbtree.c |   19 ++++++++++---------
+ 1 file changed, 10 insertions(+), 9 deletions(-)
+Index: linux-2.6/lib/rbtree.c
+===================================================================
+--- linux-2.6.orig/lib/rbtree.c
++++ linux-2.6/lib/rbtree.c
+@@ -237,6 +237,16 @@ void rb_erase(struct rb_node *node, stru
+ 		node = node->rb_right;
+ 		while ((left = node->rb_left) != NULL)
+ 			node = left;
++
++		if (rb_parent(old))
++		{
++			if (rb_parent(old)->rb_left == old)
++				rb_parent(old)->rb_left = node;
++			else
++				rb_parent(old)->rb_right = node;
++		} else
++			root->rb_node = node;
++
+ 		child = node->rb_right;
+ 		parent = rb_parent(node);
+ 		color = rb_color(node);
+@@ -253,15 +263,6 @@ void rb_erase(struct rb_node *node, stru
+ 		node->rb_right = old->rb_right;
+ 		node->rb_left = old->rb_left;
+ 
+-		if (rb_parent(old))
+-		{
+-			if (rb_parent(old)->rb_left == old)
+-				rb_parent(old)->rb_left = node;
+-			else
+-				rb_parent(old)->rb_right = node;
+-		} else
+-			root->rb_node = node;
+-
+ 		rb_set_parent(old->rb_left, node);
+ 		if (old->rb_right)
+ 			rb_set_parent(old->rb_right, node);
+
+-- 
+Neu: GMX FreeDSL Komplettanschluss mit DSL 6.000 Flatrate + Telefonanschluss f�r nur 17,95 Euro/mtl.!* http://dslspecial.gmx.de/freedsl-surfflat/?ac=OM.AD.PD003K11308T4569a
