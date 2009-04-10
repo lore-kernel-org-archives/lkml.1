@@ -1,126 +1,96 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S935095AbZDJWWj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933749AbZDJW25@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S935095AbZDJWWj (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 10 Apr 2009 18:22:39 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754982AbZDJWWa
+	id S933749AbZDJW25 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 10 Apr 2009 18:28:57 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752720AbZDJW2j
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 10 Apr 2009 18:22:30 -0400
-Received: from mga11.intel.com ([192.55.52.93]:29381 "EHLO mga11.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754830AbZDJWW3 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 10 Apr 2009 18:22:29 -0400
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.40,169,1239001200"; 
-   d="scan'208";a="446948641"
-Subject: [patch] x86: add linux kernel support for YMM state
-From: Suresh Siddha <suresh.b.siddha@intel.com>
-Reply-To: suresh.b.siddha@intel.com
-To: hpa@linux.intel.com, mingo@elte.hu, tglx@linutronix.de
-Cc: linux-kernel@vger.kernel.org
+	Fri, 10 Apr 2009 18:28:39 -0400
+Received: from bedivere.hansenpartnership.com ([66.63.167.143]:46409 "EHLO
+	bedivere.hansenpartnership.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1750935AbZDJW2i (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 10 Apr 2009 18:28:38 -0400
+Subject: Re: READ CAPACITY (16) failing
+From: James Bottomley <James.Bottomley@HansenPartnership.com>
+To: "Mike Miller (OS Dev)" <mikem@beardog.cca.cpqcorp.net>
+Cc: Matthew Wilcox <matthew@wil.cx>, LKML-SCSI <linux-scsi@vger.kernel.org>,
+       LKML <linux-kernel@vger.kernel.org>, mike.miller@hp.com
+In-Reply-To: <20090410193134.GA2615@beardog.cca.cpqcorp.net>
+References: <20090408194357.GA15043@beardog.cca.cpqcorp.net>
+	 <20090408195447.GP20983@parisc-linux.org>
+	 <20090410193134.GA2615@beardog.cca.cpqcorp.net>
 Content-Type: text/plain
-Organization: Intel Corp
-Date: Fri, 10 Apr 2009 15:21:24 -0700
-Message-Id: <1239402084.27006.8057.camel@localhost.localdomain>
+Date: Fri, 10 Apr 2009 15:28:38 -0700
+Message-Id: <1239402518.3393.9.camel@mulgrave>
 Mime-Version: 1.0
-X-Mailer: Evolution 2.24.1 (2.24.1-2.fc10) 
+X-Mailer: Evolution 2.22.3.1 (2.22.3.1-1.fc9) 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Suresh Siddha <suresh.b.siddha@intel.com>
-Subject: x86: add linux kernel support for YMM state
+On Fri, 2009-04-10 at 14:31 -0500, Mike Miller (OS Dev) wrote:
+> On Wed, Apr 08, 2009 at 01:54:48PM -0600, Matthew Wilcox wrote:
+> > On Wed, Apr 08, 2009 at 02:43:57PM -0500, Mike Miller (OS Dev) wrote:
+> > > I'm working on the HP Smart Array SCSI driver (hpsa) and I'm seeing the
+> > > following failures:
+> > > 
+> > > hpsa1: <0x3230> at PCI 0000:02:00.0 IRQ 76 using DAC
+> > > scsi4 : hpsa
+> > > scsi 4:0:0:0: Direct-Access     HP       LOGICAL VOLUME   5.20 PQ: 0 ANSI: 5
+> > > sd 4:0:0:0: Attached scsi generic sg4 type 0
+> > > sd 4:0:0:0: [sdd] READ CAPACITY(16) failed
+> > > sd 4:0:0:0: [sdd] Result: hostbyte=DID_ABORT driverbyte=DRIVER_OK
+> > > sd 4:0:0:0: [sdd] Sense not available.
+> > > hpsa: cp ffff8800cf400000 has check condition: unknown type: Sense: 0x5,
+> > > ASC: 0x20, ASCQ: 0x0, Returning result: 0x2, cmd=[a0 00 00 00 00 00 00 00 10
+> > > 00]
+> > 
+> > > The READ CAPACITY failures are what I'm concerned about. I can't seem to track
+> > > down why that's failing.
+> > > I've tried printing out the_result from sd but it's not printing out. I'm
+> > > assuming that anytime I load the driver it goes thru sd.
+> > > 
+> > > 	if (the_result) {
+> > > 		sense_valid = scsi_sense_valid(&sshdr);
+> > > 		if (sense_valid &&
+> > > 			sshdr.sense_key == ILLEGAL_REQUEST &&
+> > > 			(sshdr.asc == 0x20 || sshdr.asc == 0x24) &&
+> > > 			sshdr.ascq == 0x00)
+> > > 			/* Invalid Command Operation Code or
+> > > 			 * Invalid Field in CDB, just retry
+> > > 			 * silently with RC10 */
+> > > 			return -EINVAL;
+> > > 		}
+> > > 	retries--;
+> > > 	} while (the_result && retries);
+> > > 	printk(KERN_WARNING "sd-mfm: the_result = %d\n", the_result);
+> > 
+> > Probably the device you're testing against doesn't support RC16, which
+> > is fine.  But for some reason, we're not getting valid sense data back
+> > from the device.  Now, there's two responses to this that seem rational
+> > to me:
+> > 
+> >  - In sd.c, if the drive has returned no/invalid sense data, try RC10
+> >    silently, just like the 0x20 / 0x24 ASC case.
+> >  - Find out why this drive doesn't report valid sense data when attached
+> >    to hpsa.  I assume it does report valid sense data when attached to
+> >    some other scsi card?
+> 
+> Me again,
+> The controllers do support RC16. After some more work it looks like RC16 is
+> never getting to the driver. I'm snooping the CDB's of all requests as well
+> as the completions from the driver and I never see a 0x9e. I do see the
+> RC10 (0x25) though, so I think my debug is right.
+> 
+> Why would I never the see the command in the driver?
 
-Intel Advanced Vector Extensions (AVX) introduce 256-bit vector processing
-capability. More about AVX at http://software.intel.com/sites/avx
+Because your devices are reporting compliance to a standard before RC16
+was implemented (we have a check in sd_try_rc16_first() to see if you
+comply to higher than SBC-2).  Then, after you've failed this, if you
+don't return the conventional 0xffffffff to RC10, we never retry with
+RC16.
 
-Add OS support for YMM state management using xsave/xrstor infrastructure
-to support AVX.
-
-Signed-off-by: Suresh Siddha <suresh.b.siddha@intel.com>
----
-
-Index: tip/arch/x86/include/asm/processor.h
-===================================================================
---- tip.orig/arch/x86/include/asm/processor.h
-+++ tip/arch/x86/include/asm/processor.h
-@@ -352,6 +352,11 @@ struct i387_soft_struct {
- 	u32			entry_eip;
- };
- 
-+struct ymmh_struct {
-+	/* 16 * 16 bytes for each YMMH-reg = 256 bytes */
-+	u32 ymmh_space[64];
-+};
-+
- struct xsave_hdr_struct {
- 	u64 xstate_bv;
- 	u64 reserved1[2];
-@@ -361,6 +366,7 @@ struct xsave_hdr_struct {
- struct xsave_struct {
- 	struct i387_fxsave_struct i387;
- 	struct xsave_hdr_struct xsave_hdr;
-+	struct ymmh_struct ymmh;
- 	/* new processor state extensions will go here */
- } __attribute__ ((packed, aligned (64)));
- 
-Index: tip/arch/x86/include/asm/sigcontext.h
-===================================================================
---- tip.orig/arch/x86/include/asm/sigcontext.h
-+++ tip/arch/x86/include/asm/sigcontext.h
-@@ -269,6 +269,11 @@ struct _xsave_hdr {
- 	__u64 reserved2[5];
- };
- 
-+struct _ymmh_state {
-+	/* 16 * 16 bytes for each YMMH-reg */
-+	__u32 ymmh_space[64];
-+};
-+
- /*
-  * Extended state pointed by the fpstate pointer in the sigcontext.
-  * In addition to the fpstate, information encoded in the xstate_hdr
-@@ -278,6 +283,7 @@ struct _xsave_hdr {
- struct _xstate {
- 	struct _fpstate fpstate;
- 	struct _xsave_hdr xstate_hdr;
-+	struct _ymmh_state ymmh;
- 	/* new processor state extensions go here */
- };
- 
-Index: tip/arch/x86/include/asm/xsave.h
-===================================================================
---- tip.orig/arch/x86/include/asm/xsave.h
-+++ tip/arch/x86/include/asm/xsave.h
-@@ -7,6 +7,7 @@
- 
- #define XSTATE_FP	0x1
- #define XSTATE_SSE	0x2
-+#define XSTATE_YMM	0x4
- 
- #define XSTATE_FPSSE	(XSTATE_FP | XSTATE_SSE)
- 
-@@ -15,7 +16,7 @@
- /*
-  * These are the features that the OS can handle currently.
-  */
--#define XCNTXT_MASK	(XSTATE_FP | XSTATE_SSE)
-+#define XCNTXT_MASK	(XSTATE_FP | XSTATE_SSE | XSTATE_YMM)
- 
- #ifdef CONFIG_X86_64
- #define REX_PREFIX	"0x48, "
-Index: tip/arch/x86/kernel/xsave.c
-===================================================================
---- tip.orig/arch/x86/kernel/xsave.c
-+++ tip/arch/x86/kernel/xsave.c
-@@ -326,7 +326,7 @@ void __ref xsave_cntxt_init(void)
- 	}
- 
- 	/*
--	 * for now OS knows only about FP/SSE
-+	 * Support only the state known to OS.
- 	 */
- 	pcntxt_mask = pcntxt_mask & XCNTXT_MASK;
- 	xsave_init();
+James
 
 
