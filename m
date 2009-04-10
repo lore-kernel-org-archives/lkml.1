@@ -1,66 +1,44 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S937694AbZDJWGq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S937376AbZDJWIt@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S937694AbZDJWGq (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 10 Apr 2009 18:06:46 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752051AbZDJWGf
+	id S937376AbZDJWIt (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 10 Apr 2009 18:08:49 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755224AbZDJWIj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 10 Apr 2009 18:06:35 -0400
-Received: from www.tglx.de ([62.245.132.106]:34412 "EHLO www.tglx.de"
+	Fri, 10 Apr 2009 18:08:39 -0400
+Received: from mx2.redhat.com ([66.187.237.31]:50385 "EHLO mx2.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756058AbZDJWGe (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 10 Apr 2009 18:06:34 -0400
-Date: Sat, 11 Apr 2009 00:05:28 +0200 (CEST)
-From: Thomas Gleixner <tglx@linutronix.de>
-To: LKML <linux-kernel@vger.kernel.org>
-cc: rt-users <linux-rt-users@vger.kernel.org>, Ingo Molnar <mingo@elte.hu>,
-       Steven Rostedt <rostedt@goodmis.org>,
-       Peter Zijlstra <peterz@infradead.org>, Carsten Emde <ce@ceag.ch>,
-       Clark Williams <williams@redhat.com>,
-       Frank Rowand <frank.rowand@am.sony.com>,
-       Robin Gareus <robin@gareus.org>, Gregory Haskins <ghaskins@novell.com>,
-       Philippe Reynes <philippe.reynes@isismpp.fr>,
-       Fernando Lopez-Lezcano <nando@ccrma.Stanford.EDU>,
-       Will Schmidt <will_schmidt@vnet.ibm.com>,
-       Darren Hart <dvhltc@us.ibm.com>, Jan Blunck <jblunck@suse.de>
-Subject: [Announce] 2.6.29.1-rt7
-In-Reply-To: <alpine.LFD.2.00.0904092046440.21577@localhost.localdomain>
-Message-ID: <alpine.LFD.2.00.0904110003370.21577@localhost.localdomain>
-References: <alpine.LFD.2.00.0902112332370.415@localhost.localdomain> <alpine.LFD.2.00.0902122353050.16972@localhost.localdomain> <alpine.LFD.2.00.0902231854360.3523@localhost.localdomain> <alpine.LFD.2.00.0902241849230.3523@localhost.localdomain>
- <alpine.LFD.2.00.0902241856480.9135@localhost.localdomain> <alpine.LFD.2.00.0903122013230.29264@localhost.localdomain> <alpine.LFD.2.00.0903200014320.29264@localhost.localdomain> <alpine.LFD.2.00.0903201832590.29264@localhost.localdomain>
- <alpine.LFD.2.00.0903231723090.29264@localhost.localdomain> <alpine.LFD.2.00.0903252154040.3397@localhost.localdomain> <alpine.LFD.2.00.0904020155320.12916@localhost.localdomain> <alpine.LFD.2.00.0904031918090.12916@localhost.localdomain>
- <alpine.LFD.2.00.0904081937191.21577@localhost.localdomain> <alpine.LFD.2.00.0904092046440.21577@localhost.localdomain>
-User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	id S1763123AbZDJWIi (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 10 Apr 2009 18:08:38 -0400
+Organization: Red Hat UK Ltd. Registered Address: Red Hat UK Ltd, Amberley
+	Place, 107-111 Peascod Street, Windsor, Berkshire, SI4 1TE, United
+	Kingdom.
+	Registered in England and Wales under Company Registration No. 3798903
+From: David Howells <dhowells@redhat.com>
+In-Reply-To: <20090410192529.GA25551@uranus.ravnborg.org>
+References: <20090410192529.GA25551@uranus.ravnborg.org> <19057.1239370935@redhat.com>
+To: Linus Torvalds <torvalds@linux-foundation.org>,
+       Sam Ravnborg <sam@ravnborg.org>
+Cc: dhowells@redhat.com, akpm@linux-foundation.org, linux-am33-list@redhat.com,
+       linux-kernel@vger.kernel.org
+Subject: [GIT PULL] MN10300: Remove obsolete include/asm-mn10300/.gitignore
+Date: Fri, 10 Apr 2009 23:07:17 +0100
+Message-ID: <21602.1239401237@redhat.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-We are pleased to announce the next update to our new preempt-rt
-series.
- 
-   	- futex testing fallout fix (Darren Hart)
- 	- kvm vs. -rt fix resurrected (tglx)
 
-Download locations:
+The following changes since commit d848223808c5d21e1b3cea090047e34722c6254b:
+  Linus Torvalds (1):
+        Merge git://git.kernel.org/.../dhowells/linux-2.6-mn10300
 
-     http://rt.et.redhat.com/download/
-     http://www.kernel.org/pub/linux/kernel/projects/rt/
+are available in the git repository at:
 
-Information on the RT patch can be found at:
+  git://git.kernel.org/pub/scm/linux/kernel/git/dhowells/linux-2.6-mn10300.git master
 
-     http://rt.wiki.kernel.org/index.php/Main_Page
+David Howells (1):
+      MN10300: Remove obsolete .gitignore from include/asm-mn10300
 
-to build the 2.6.29.1-rt7 tree, the following patches should be
-applied:
-
-     http://www.kernel.org/pub/linux/kernel/v2.6/linux-2.6.29.1.tar.bz2
-     http://www.kernel.org/pub/linux/kernel/projects/rt/patch-2.6.29.1-rt7.bz2
-
-The broken out patches are also available at the same download
-locations.
-
-Enjoy !
-
-       tglx
-
+ include/asm-mn10300/.gitignore |    2 --
+ 1 files changed, 0 insertions(+), 2 deletions(-)
+ delete mode 100644 include/asm-mn10300/.gitignore
