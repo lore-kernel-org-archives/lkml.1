@@ -1,72 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1765780AbZDJUmJ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S936175AbZDJUne@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1765780AbZDJUmJ (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 10 Apr 2009 16:42:09 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759104AbZDJUlz
+	id S936175AbZDJUne (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 10 Apr 2009 16:43:34 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756425AbZDJUnZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 10 Apr 2009 16:41:55 -0400
-Received: from 69-30-77-85.dq1sn.easystreet.com ([69.30.77.85]:46076 "EHLO
-	kingsolver.anholt.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1758548AbZDJUly (ORCPT
+	Fri, 10 Apr 2009 16:43:25 -0400
+Received: from 136-022.dsl.LABridge.com ([206.117.136.22]:4076 "EHLO
+	mail.perches.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755294AbZDJUnY (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 10 Apr 2009 16:41:54 -0400
-Subject: Re: [patch 0/6] x86, PAT, CPA: Cleanups and minor bug fixes
-From: Eric Anholt <eric@anholt.net>
-To: venkatesh.pallipadi@intel.com
-Cc: mingo@elte.hu, tglx@linutronix.de, hpa@zytor.com,
-       linux-kernel@vger.kernel.org, Suresh Siddha <suresh.b.siddha@intel.com>
-In-Reply-To: <20090409212646.511925000@intel.com>
-References: <20090409212646.511925000@intel.com>
-Content-Type: multipart/signed; micalg="pgp-sha1"; protocol="application/pgp-signature"; boundary="=-gJocG84gRo03vZzHQj0A"
-Date: Fri, 10 Apr 2009 13:41:52 -0700
-Message-Id: <1239396112.6356.10.camel@gaiman.anholt.net>
+	Fri, 10 Apr 2009 16:43:24 -0400
+Subject: [GIT PULL] MAINTAINERS - Add file patterns and script to parse them
+From: Joe Perches <joe@perches.com>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: Andrew Morton <akpm@linux-foundation.org>, Pavel Machek <pavel@ucw.cz>,
+       LKML <linux-kernel@vger.kernel.org>
+Content-Type: text/plain
+Date: Fri, 10 Apr 2009 13:41:27 -0700
+Message-Id: <1239396087.12402.34.camel@localhost>
 Mime-Version: 1.0
-X-Mailer: Evolution 2.24.5 
+X-Mailer: Evolution 2.24.2-1.2mdv2009.0 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Now in a git repository.
+Let me know if I stuffed it up.
 
---=-gJocG84gRo03vZzHQj0A
-Content-Type: text/plain
-Content-Transfer-Encoding: quoted-printable
+Signed-off-by: Joe Perches <joe@perches.com> 
 
-On Thu, 2009-04-09 at 14:26 -0700, venkatesh.pallipadi@intel.com wrote:
-> This patchset contains cleanups and minor bug fixes in x86 PAT and CPA
-> related code. The bugs were mostly found by code inspection. There
-> should not be any functionality changes with this patchset.
+The following changes since commit d848223808c5d21e1b3cea090047e34722c6254b:
+  Linus Torvalds (1):
+        Merge git://git.kernel.org/.../dhowells/linux-2.6-mn10300
 
-I've been curious, what are you using to test PAT changes for
-regressions?  I've got some regression tests at:
+are available in the git repository at:
 
-http://cgit.freedesktop.org/xorg/app/intel-gpu-tools/
+  git://repo.or.cz/linux-2.6/trivial-mods.git gm_20090410
 
-Requires KMS enabled and master of libdrm, but after that you can sudo
-make check, and it tests execution of several DRM paths without
-requiring X.  In benchmarks/ there are a few microbenchmarks of various
-mapping types, which has been useful in making sure that we're ending up
-with the right PTEs.
+Joe Perches (19):
+      Add scripts/get_maintainer.pl
+      MAINTAINERS - Add file patterns
+      MAINTAINERS - Standardize style
+      MAINTAINERS - Remove HP Fibre Channel HBA no longer in tree
+      MAINTAINERS - standardize "T:       git urls"
+      MAINTAINERS - Add Linus Torvalds' git
+      MAINTAINERS - i2c_tiny_usb T: should be W:
+      MAINTAINERS - Update FPU Emulator contact address and web page
+      MAINTAINERS - Remove x86/Voyager no longer in tree
+      MAINTAINERS - Remove cyblafb frame buffer no longer in tree
+      MAINTAINERS - Coalesce sections "DVB" and "Video for Linux"
+      MAINTAINERS - Update M68K patterns
+      MAINTAINERS - Update DRIVER CORE patterns
+      MAINTAINERS - Add missing "/" to some pattern directories
+      MAINTAINERS - Add additional patterns
+      MAINTAINERS - Update Freescale sound patterns
+      scripts/get_maintainer.pl - Allow multiple files on command line
+      MAINTAINERS - Update frv arch patterns
+      MAINTAINERS - Update MN10300 patterns
 
-It should work on all Intel GPUs from the 830 through the GM45, though I
-haven't tested pre-915 much.
+ MAINTAINERS               | 1568 +++++++++++++++++++++++++++++++++++++++------
+ scripts/get_maintainer.pl |  515 +++++++++++++++
+ 2 files changed, 1896 insertions(+), 187 deletions(-)
+ create mode 100755 scripts/get_maintainer.pl
 
---=20
-Eric Anholt
-eric@anholt.net                         eric.anholt@intel.com
-
-
-
---=-gJocG84gRo03vZzHQj0A
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: This is a digitally signed message part
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.9 (GNU/Linux)
-
-iEYEABECAAYFAknfrw4ACgkQHUdvYGzw6vdhDACfTR6KW0PvsK10JKLy8oeVZLMH
-awQAoItvO3DDBf+FKoXEJG5tTTAfOhQ6
-=rwj7
------END PGP SIGNATURE-----
-
---=-gJocG84gRo03vZzHQj0A--
 
