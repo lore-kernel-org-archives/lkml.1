@@ -1,74 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757704AbZDJPbn@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763215AbZDJPct@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757704AbZDJPbn (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 10 Apr 2009 11:31:43 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750863AbZDJPbc
+	id S1763215AbZDJPct (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 10 Apr 2009 11:32:49 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756461AbZDJPch
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 10 Apr 2009 11:31:32 -0400
-Received: from mail-out.m-online.net ([212.18.0.9]:47568 "EHLO
-	mail-out.m-online.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750761AbZDJPbb (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 10 Apr 2009 11:31:31 -0400
-From: Andreas Schwab <schwab@linux-m68k.org>
-To: tom.leiming@gmail.com
-Cc: kay.sievers@vrfy.org, greg@kroah.com, cornelia.huck@de.ibm.com,
-       linux-kernel@vger.kernel.org, arjan@linux.intel.com
-Subject: Re: [PATCH] driver core: check bus->match without holding device lock(v2)
-References: <1232551667-4829-1-git-send-email-tom.leiming@gmail.com>
-X-Yow: I always liked FLAG DAY!!
-Date: Fri, 10 Apr 2009 17:31:24 +0200
-In-Reply-To: <1232551667-4829-1-git-send-email-tom.leiming@gmail.com> (tom
-	leiming's message of "Wed, 21 Jan 2009 23:27:47 +0800")
-Message-ID: <m2fxggle43.fsf@igel.home>
-User-Agent: Gnus/5.13 (Gnus v5.13) Emacs/23.0.92 (gnu/linux)
+	Fri, 10 Apr 2009 11:32:37 -0400
+Received: from e6.ny.us.ibm.com ([32.97.182.146]:47629 "EHLO e6.ny.us.ibm.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1756779AbZDJPcf (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 10 Apr 2009 11:32:35 -0400
+Date: Fri, 10 Apr 2009 08:32:29 -0700
+From: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
+To: Al Viro <viro@ZenIV.linux.org.uk>
+Cc: Tetsuo Handa <penguin-kernel@i-love.sakura.ne.jp>,
+       linux-kernel@vger.kernel.org, hugh@veritas.com, jmorris@namei.org,
+       akpm@linux-foundation.org
+Subject: Re: [2.6.30-rc1] RCU detected CPU 1 stall
+Message-ID: <20090410153229.GB6719@linux.vnet.ibm.com>
+Reply-To: paulmck@linux.vnet.ibm.com
+References: <200904080057.n380vZAH051872@www262.sakura.ne.jp> <20090410142203.GA6719@linux.vnet.ibm.com> <20090410150353.GL26366@ZenIV.linux.org.uk>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20090410150353.GL26366@ZenIV.linux.org.uk>
+User-Agent: Mutt/1.5.15+20070412 (2007-04-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-tom.leiming@gmail.com writes:
+On Fri, Apr 10, 2009 at 04:03:53PM +0100, Al Viro wrote:
+> On Fri, Apr 10, 2009 at 07:22:03AM -0700, Paul E. McKenney wrote:
+> 
+> > Hmmmm...  This indicates that CPU 1 was spinning in the kernel for
+> > a long time.  At 250 HZ, 32,565 jiffies is 130 seconds, or just over
+> > two -minutes-.  Ouch!!!
+> > 
+> > The interrupt happened on the stalled CPU, so we know that interrupts
+> > were enabled.  Because we have CONFIG_PREEMPT_NONE=y, there is no
+> > preemption, so preemption need not be disabled.  This could be due
+> > to lock contention, or even a simple infinite loop.
+> > 
+> > The timer interrupt (apic_timer_interrupt) occurred in either
+> > __bprm_mm_init(), __get_user_4(), count(), or do_execve().  There
+> > have been some recent changes around check_unsafe_exec() -- any
+> > possibility that these introduced excessive lock contention or
+> > an infinite loop?  Ditto for the recent security fixes?
+> 
+> Oh, joy... the loop in there is this:
+>         for (t = next_thread(p); t != p; t = next_thread(t)) {
+>                 if (t->fs == p->fs)
+>                         n_fs++;
+>         }
+> I find it hard to believe that it can take two minutes, though.
 
-> +static inline int driver_match_device(struct device_driver *drv,
-> +				      struct device *dev)
-> +{
-> +	return drv->bus->match && drv->bus->match(dev, drv);
-> +}
+Tetsuo, how many tasks did you have on this machine?
 
-This logic is wrong.  !(a && !b) <=> !a || b, not a && b
+Though I too find it hard to believe that there were enough to chew up
+two minutes.  Maybe the list got corrupted so that it has a loop?
 
-A bus that does not have a match function now never matches, whereas
-previously it would always match.  This breaks aoa-soundbus.
-
-Andreas.
----
-driver core: Fix logic in driver_match_device
-
-A bus that does not have a match function always matches.  This fixes
-49b420a13ff9 ("driver core: check bus->match without holding device
-lock").
-
-Signed-off-by: Andreas Schwab <schwab@linux-m68k.org>
----
- drivers/base/base.h |    2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
-
-diff --git a/drivers/base/base.h b/drivers/base/base.h
-index ddc9749..087e911 100644
---- a/drivers/base/base.h
-+++ b/drivers/base/base.h
-@@ -115,7 +115,7 @@ extern int driver_probe_device(struct device_driver *drv, struct device *dev);
- static inline int driver_match_device(struct device_driver *drv,
- 				      struct device *dev)
- {
--	return drv->bus->match && drv->bus->match(dev, drv);
-+	return !drv->bus->match || drv->bus->match(dev, drv);
- }
- 
- extern void sysdev_shutdown(void);
-
--- 
-Andreas Schwab, schwab@linux-m68k.org
-GPG Key fingerprint = 58CA 54C7 6D53 942B 1756  01D3 44D5 214B 8276 4ED5
-"And now for something completely different."
+							Thanx, Paul
