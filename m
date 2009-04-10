@@ -1,72 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757005AbZDJC2d@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760997AbZDJC3M@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757005AbZDJC2d (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 9 Apr 2009 22:28:33 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752568AbZDJC2Z
+	id S1760997AbZDJC3M (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 9 Apr 2009 22:29:12 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752568AbZDJC2x
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 9 Apr 2009 22:28:25 -0400
-Received: from mga06.intel.com ([134.134.136.21]:39866 "EHLO
-	orsmga101.jf.intel.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1751027AbZDJC2Y (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 9 Apr 2009 22:28:24 -0400
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.40,164,1239001200"; 
-   d="scan'208";a="505206829"
-Subject: Re: tiobench read 50% regression with 2.6.30-rc1
-From: "Zhang, Yanmin" <yanmin_zhang@linux.intel.com>
-To: Jens Axboe <jens.axboe@oracle.com>
-Cc: LKML <linux-kernel@vger.kernel.org>
-In-Reply-To: <20090409095706.GD5178@kernel.dk>
-References: <1239265763.2567.769.camel@ymzhang>
-	 <20090409095706.GD5178@kernel.dk>
+	Thu, 9 Apr 2009 22:28:53 -0400
+Received: from waste.org ([66.93.16.53]:58831 "EHLO waste.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1756239AbZDJC2w (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 9 Apr 2009 22:28:52 -0400
+Subject: Re: IRQF_SAMPLE_RANDOM question...
+From: Matt Mackall <mpm@selenic.com>
+To: Chris Peterson <cpeterso@cpeterso.com>
+Cc: Robin Getz <rgetz@blackfin.uclinux.org>, netdev@vger.kernel.org,
+       linux-kernel@vger.kernel.org
+In-Reply-To: <a24804730904091829k167668f1y6e546693b2f8e5da@mail.gmail.com>
+References: <200904061430.26276.rgetz@blackfin.uclinux.org>
+	 <200904071744.17727.rgetz@blackfin.uclinux.org>
+	 <1239220294.31467.55.camel@calx>
+	 <200904090954.54601.rgetz@blackfin.uclinux.org>
+	 <1239296459.31467.142.camel@calx>
+	 <a24804730904091829k167668f1y6e546693b2f8e5da@mail.gmail.com>
 Content-Type: text/plain
-Date: Fri, 10 Apr 2009 10:29:01 +0800
-Message-Id: <1239330541.2567.779.camel@ymzhang>
+Date: Thu, 09 Apr 2009 19:27:19 -0700
+Message-Id: <1239330439.3342.2.camel@calx>
 Mime-Version: 1.0
-X-Mailer: Evolution 2.22.1 (2.22.1-2.fc9) 
+X-Mailer: Evolution 2.24.5 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 2009-04-09 at 11:57 +0200, Jens Axboe wrote:
-> On Thu, Apr 09 2009, Zhang, Yanmin wrote:
-> > Comparing with 2.6.29's result, tiobench (read) has about 50% regression
-> > with 2.6.30-rc1 on all my machines. Bisect down to below patch.
-> > 
-> > b029195dda0129b427c6e579a3bb3ae752da3a93 is first bad commit
-> > commit b029195dda0129b427c6e579a3bb3ae752da3a93
-> > Author: Jens Axboe <jens.axboe@oracle.com>
-> > Date:   Tue Apr 7 11:38:31 2009 +0200
-> > 
-> >     cfq-iosched: don't let idling interfere with plugging
-> >     
-> >     When CFQ is waiting for a new request from a process, currently it'll
-> >     immediately restart queuing when it sees such a request. This doesn't
-> >     work very well with streamed IO, since we then end up splitting IO
-> >     that would otherwise have been merged nicely. For a simple dd test,
-> >     this causes 10x as many requests to be issued as we should have.
-> >     Normally this goes unnoticed due to the low overhead of requests
-> >     at the device side, but some hardware is very sensitive to request
-> >     sizes and there it can cause big slow downs.
-> > 
-> > 
-> > 
-> > Command to start the testing:
-> > #tiotest -k0 -k1 -k3 -f 80 -t 32
-> > 
-> > It's a multi-threaded program and starts 32 threads. Every thread does I/O
-> > on its own 80MB file.
-The files should be created before the testing and pls. drop page caches
-by "echo 3 >/proc/sys/vm/drop_caches" before testing.
-
+On Thu, 2009-04-09 at 18:29 -0700, Chris Peterson wrote:
+> > Hmm, this is a purely internal interface. Not sure if we need to bother
+> > with scheduling it. My plan was to simply get the new code in and sweep
+> > the kernel.
 > 
-> It's not a huge surprise that we regressed there. I'll get this fixed up
-> next week. Can you I talk you into trying to change the 'quantum' sysfs
-> variable for the drive? It's in /sys/block/xxx/queue/iosched where xxx
-> is your drive(s). It's set to 4, if you could try progressively larger
-> settings and retest, that would help get things started.
-I tried 4,8,16,64,128 and didn't find result difference.
+> Matt, sounds like you're volunteering? :)
+> 
+> >From my understanding, the roadmap looks something like:
+> 
+> 1. Add checkpatch warning about IRQF_SAMPLE_RANDOM
+> 2. Add any new add_*_randomness() functions (e.g. RTC and main clocks?
+> Serial or USB interrupts?)
+> 3. Remove IRQF_SAMPLE_RANDOM macro (and checkpatch warning)
+> 4. Add "pragmatic entropy accounting model"?
+
+Yeah, I just sat down with Ted Tso this evening and hashed out a new
+design. More to come.
+
+-- 
+http://selenic.com : development and support for Mercurial and Linux
 
 
