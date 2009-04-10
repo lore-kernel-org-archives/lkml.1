@@ -1,222 +1,124 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1765108AbZDJQNR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1765096AbZDJQOE@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1765108AbZDJQNR (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 10 Apr 2009 12:13:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753400AbZDJQNA
+	id S1765096AbZDJQOE (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 10 Apr 2009 12:14:04 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758721AbZDJQNu
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 10 Apr 2009 12:13:00 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:41429 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751191AbZDJQM6 (ORCPT
+	Fri, 10 Apr 2009 12:13:50 -0400
+Received: from fg-out-1718.google.com ([72.14.220.153]:13216 "EHLO
+	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753400AbZDJQNs (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 10 Apr 2009 12:12:58 -0400
-Date: Fri, 10 Apr 2009 09:04:16 -0700 (PDT)
-From: Linus Torvalds <torvalds@linux-foundation.org>
-X-X-Sender: torvalds@localhost.localdomain
-To: Wu Fengguang <fengguang.wu@intel.com>
-cc: Andrew Morton <akpm@linux-foundation.org>, Ying Han <yinghan@google.com>,
-       "linux-mm@kvack.org" <linux-mm@kvack.org>,
-       linux-kernel <linux-kernel@vger.kernel.org>,
-       Ingo Molnar <mingo@elte.hu>, Mike Waychison <mikew@google.com>,
-       Rohit Seth <rohitseth@google.com>, Hugh Dickins <hugh@veritas.com>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       "H. Peter Anvin" <hpa@zytor.com>,
-       =?ISO-8859-15?Q?T=F6r=F6k_Edwin?= <edwintorok@gmail.com>,
-       Lee Schermerhorn <lee.schermerhorn@hp.com>,
-       Nick Piggin <npiggin@suse.de>
-Subject: [PATCH 1/2] Remove internal use of 'write_access' in mm/memory.c
-In-Reply-To: <alpine.LFD.2.00.0904100835150.4583@localhost.localdomain>
-Message-ID: <alpine.LFD.2.00.0904100903470.4583@localhost.localdomain>
-References: <604427e00904081302m7b29c538u7781cd8f4dd576f2@mail.gmail.com> <20090409230205.310c68a7.akpm@linux-foundation.org> <20090410073042.GB21149@localhost> <alpine.LFD.2.00.0904100835150.4583@localhost.localdomain>
-User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
+	Fri, 10 Apr 2009 12:13:48 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=googlemail.com; s=gamma;
+        h=sender:message-id:date:from:user-agent:mime-version:to:cc:subject
+         :references:in-reply-to:content-type:content-transfer-encoding;
+        b=X6kyimyCBuj6PR3w2ofU/hajZYk7yrduz7tu7IaOugfaBMiGhQbSH+RhlMn+UKnd8/
+         hskY/kC/uYasPqS8fxMuZkM95O5Y+C/7y/5SvFn19E6oH1ypnNxO5MFR7K79N6s+AUFR
+         estkkqleqzYf4pRF1QPVezH9aHhO2rIWCIyj4=
+Message-ID: <49DF714F.9070600@tuffmail.co.uk>
+Date: Fri, 10 Apr 2009 17:18:23 +0100
+From: Alan Jenkins <alan-jenkins@tuffmail.co.uk>
+User-Agent: Mozilla-Thunderbird 2.0.0.19 (X11/20090103)
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+To: ath5k-devel@venema.h4ckr.net
+CC: Kernel Testers List <kernel-testers@vger.kernel.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       linux-wireless@vger.kernel.org
+Subject: BUG in wiphy_update_regulatory when loading ath5k (on latest git)
+References: <49DF6216.8040303@tuffmail.co.uk>
+In-Reply-To: <49DF6216.8040303@tuffmail.co.uk>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Alan Jenkins wrote:
+> Hi, while testing latest Git (i.e. 2.6.30-rc1 + a bit), I hit a bug 
+> which killed my keyboard.  SysRQ keys worked, but I couldn't type in X 
+> or on the console.
 
-From: Linus Torvalds <torvalds@linux-foundation.org>
-Date: Fri, 10 Apr 2009 08:43:11 -0700
+> This happened when ath5k was loaded dynamically, in response to my 
+> pressing the "wireless toggle" key.  (rfkill-input -> eeepc-laptop, 
+> which does weird acpi-driven PCI hotplug).
+>
+> Can anyone at least explain where this weird backtrace comes from?
 
-The fault handling routines really want more fine-grained flags than a
-single "was it a write fault" boolean - the callers will want to set
-flags like "you can return a retry error" etc.
+Scratch that.  I was able to reproduce it once and get a proper dmesg.  
+My logs were just dropping all the useful bits.  Here it is (taint is 
+due to a libusual bug, note usual-tables(P) in list of modules, no 
+binary crap here, honest).
 
-And that's actually how the VM works internally, but right now the
-top-level fault handling functions in mm/memory.c all pass just the
-'write_access' boolean around.
+[   64.995032] ath5k 0000:01:00.0: registered as 'phy0'
+[   65.062652] BUG: unable to handle kernel NULL pointer dereference at 
+00000004
+[   65.062665] IP: [<e0171332>] wiphy_update_regulatory+0x20f/0x295 
+[cfg80211]
+[   65.062705] *pdpt = 0000000008bf1001 *pde = 0000000000000000
+[   65.062717] Oops: 0000 [#1]
+[   65.062724] last sysfs file: /sys/class/backlight/eeepc/brightness
+[   65.062734] Modules linked in: ath5k(+) mac80211 led_class cfg80211 
+i915 drm i2c_algo_bit cfbcopyarea cfbimgblt cfbfillrect ipv6 
+rfkill_input joydev usual_tables(P) snd_hda_codec_realtek snd_hda_intel 
+snd_hda_codec snd_hwdep uhci_hcd snd_pcm_oss snd_mixer_oss i2c_i801 
+ehci_hcd psmouse serio_raw i2c_core pcspkr atl2 snd_pcm intel_agp 
+snd_timer usbcore agpgart eeepc_laptop snd_page_alloc ac video backlight 
+output battery rfkill button processor evdev thermal fan ata_generic
+[   65.062839]
+[   65.062849] Pid: 2909, comm: modprobe Tainted: P           
+(2.6.30-rc1eeepc #112) 701
+[   65.062860] EIP: 0060:[<e0171332>] EFLAGS: 00010246 CPU: 0
+[   65.062885] EIP is at wiphy_update_regulatory+0x20f/0x295 [cfg80211]
+[   65.062894] EAX: 00000000 EBX: c5da0000 ECX: 00000000 EDX: c5da0060
+[   65.062904] ESI: 0000001a EDI: c5da0060 EBP: df3bdd70 ESP: df3bdd40
+[   65.062913]  DS: 007b ES: 007b FS: 0000 GS: 0033 SS: 0068
+[   65.062923] Process modprobe (pid: 2909, ti=df3bc000 task=c5d03000 
+task.ti=df3bc000)
+[   65.062930] Stack:
+[   65.062935]  df3bdd90 c5da0060 c04277e0 00000001 00000044 c04277e4 
+c5da0060 00000002
+[   65.062953]  00000002 c5da0000 0000001a c5da0060 df3bdda8 e01706a2 
+00000002 00000002
+[   65.062971]  00000282 000080d0 00000068 c5d53500 00000080 00000282 
+00000080 c5da0140
+[   65.062991] Call Trace:
+[   65.062999]  [<e01706a2>] ? wiphy_register+0x122/0x1b7 [cfg80211]
+[   65.063028]  [<e0328e02>] ? ieee80211_register_hw+0xd8/0x346 [mac80211]
+[   65.063069]  [<e06a7c9f>] ? ath5k_hw_set_bssid_mask+0x71/0x78 [ath5k]
+[   65.063099]  [<e06b0c52>] ? ath5k_pci_probe+0xa5c/0xd0a [ath5k]
+[   65.063126]  [<c01a6037>] ? sysfs_find_dirent+0x16/0x27
+[   65.063146]  [<c01fec95>] ? local_pci_probe+0xe/0x10
+[   65.063162]  [<c01ff526>] ? pci_device_probe+0x48/0x66
+[   65.063176]  [<c024c9fd>] ? driver_probe_device+0x7f/0xf2
+[   65.063193]  [<c024cab3>] ? __driver_attach+0x43/0x5f
+[   65.063205]  [<c024c0af>] ? bus_for_each_dev+0x39/0x5a
+[   65.063217]  [<c024c8d0>] ? driver_attach+0x14/0x16
+[   65.063228]  [<c024ca70>] ? __driver_attach+0x0/0x5f
+[   65.063240]  [<c024c5b3>] ? bus_add_driver+0xd7/0x1e7
+[   65.063252]  [<c024ccb9>] ? driver_register+0x7b/0xd7
+[   65.063272]  [<c01ff827>] ? __pci_register_driver+0x32/0x85
+[   65.063286]  [<e00a8018>] ? init_ath5k_pci+0x18/0x30 [ath5k]
+[   65.063309]  [<c0101131>] ? _stext+0x49/0x10b
+[   65.063322]  [<e00a8000>] ? init_ath5k_pci+0x0/0x30 [ath5k]
+[   65.063330]  [<c012f452>] ? __blocking_notifier_call_chain+0x40/0x4c
+[   65.063330]  [<c013a714>] ? sys_init_module+0x87/0x18b
+[   65.063330]  [<c0102804>] ? sysenter_do_call+0x12/0x22
+[   65.063330] Code: b8 da 17 e0 83 c0 04 e8 92 f9 ff ff 84 c0 75 2a 8b 
+55 d4 8b 42 28 85 c0 74 0c 83 c0 04 e8 7c f9 ff ff 84 c0 75 14 a1 bc da 
+17 e0 <83> 78 04 03 74 66 8b 4d d4 80 79 08 00 74 5d a1 e0 d2 17 e0 48
+[   65.063330] EIP: [<e0171332>] wiphy_update_regulatory+0x20f/0x295 
+[cfg80211] SS:ESP 0068:df3bdd40
+[   65.063330] CR2: 0000000000000004
+[   65.063543] ---[ end trace 830f2dd2a95fd1a8 ]---
 
-This switches them over to pass around the FAULT_FLAG_xyzzy 'flags'
-variable instead.  The 'write_access' calling convention still exists
-for the exported 'handle_mm_fault()' function, but that is next.
+I had a look on kerneloops and found a recent bug in the same function, 
+I wonder if it is related (bugzilla.kernel.org/show_bug.cgi?id=12456).
 
-Signed-off-by: Linus Torvalds <torvalds@linux-foundation.org>
----
- mm/memory.c |   42 +++++++++++++++++++++---------------------
- 1 files changed, 21 insertions(+), 21 deletions(-)
+It's _probably_ a regression; I've been using the wireless-toggle button 
+quite a bit previouslly, on 2.6.29-rc8.
 
-diff --git a/mm/memory.c b/mm/memory.c
-index cf6873e..9050bae 100644
---- a/mm/memory.c
-+++ b/mm/memory.c
-@@ -2413,7 +2413,7 @@ int vmtruncate_range(struct inode *inode, loff_t offset, loff_t end)
-  */
- static int do_swap_page(struct mm_struct *mm, struct vm_area_struct *vma,
- 		unsigned long address, pte_t *page_table, pmd_t *pmd,
--		int write_access, pte_t orig_pte)
-+		unsigned int flags, pte_t orig_pte)
- {
- 	spinlock_t *ptl;
- 	struct page *page;
-@@ -2490,9 +2490,9 @@ static int do_swap_page(struct mm_struct *mm, struct vm_area_struct *vma,
- 
- 	inc_mm_counter(mm, anon_rss);
- 	pte = mk_pte(page, vma->vm_page_prot);
--	if (write_access && reuse_swap_page(page)) {
-+	if ((flags & FAULT_FLAG_WRITE) && reuse_swap_page(page)) {
- 		pte = maybe_mkwrite(pte_mkdirty(pte), vma);
--		write_access = 0;
-+		flags &= ~FAULT_FLAG_WRITE;
- 	}
- 	flush_icache_page(vma, page);
- 	set_pte_at(mm, address, page_table, pte);
-@@ -2505,7 +2505,7 @@ static int do_swap_page(struct mm_struct *mm, struct vm_area_struct *vma,
- 		try_to_free_swap(page);
- 	unlock_page(page);
- 
--	if (write_access) {
-+	if (flags & FAULT_FLAG_WRITE) {
- 		ret |= do_wp_page(mm, vma, address, page_table, pmd, ptl, pte);
- 		if (ret & VM_FAULT_ERROR)
- 			ret &= VM_FAULT_ERROR;
-@@ -2533,7 +2533,7 @@ out_nomap:
-  */
- static int do_anonymous_page(struct mm_struct *mm, struct vm_area_struct *vma,
- 		unsigned long address, pte_t *page_table, pmd_t *pmd,
--		int write_access)
-+		unsigned int flags)
- {
- 	struct page *page;
- 	spinlock_t *ptl;
-@@ -2698,7 +2698,7 @@ static int __do_fault(struct mm_struct *mm, struct vm_area_struct *vma,
- 	 * due to the bad i386 page protection. But it's valid
- 	 * for other architectures too.
- 	 *
--	 * Note that if write_access is true, we either now have
-+	 * Note that if FAULT_FLAG_WRITE is set, we either now have
- 	 * an exclusive copy of the page, or this is a shared mapping,
- 	 * so we can make it writable and dirty to avoid having to
- 	 * handle that later.
-@@ -2753,11 +2753,10 @@ out_unlocked:
- 
- static int do_linear_fault(struct mm_struct *mm, struct vm_area_struct *vma,
- 		unsigned long address, pte_t *page_table, pmd_t *pmd,
--		int write_access, pte_t orig_pte)
-+		unsigned int flags, pte_t orig_pte)
- {
- 	pgoff_t pgoff = (((address & PAGE_MASK)
- 			- vma->vm_start) >> PAGE_SHIFT) + vma->vm_pgoff;
--	unsigned int flags = (write_access ? FAULT_FLAG_WRITE : 0);
- 
- 	pte_unmap(page_table);
- 	return __do_fault(mm, vma, address, pmd, pgoff, flags, orig_pte);
-@@ -2774,12 +2773,12 @@ static int do_linear_fault(struct mm_struct *mm, struct vm_area_struct *vma,
-  */
- static int do_nonlinear_fault(struct mm_struct *mm, struct vm_area_struct *vma,
- 		unsigned long address, pte_t *page_table, pmd_t *pmd,
--		int write_access, pte_t orig_pte)
-+		unsigned int flags, pte_t orig_pte)
- {
--	unsigned int flags = FAULT_FLAG_NONLINEAR |
--				(write_access ? FAULT_FLAG_WRITE : 0);
- 	pgoff_t pgoff;
- 
-+	flags |= FAULT_FLAG_NONLINEAR;
-+
- 	if (!pte_unmap_same(mm, pmd, page_table, orig_pte))
- 		return 0;
- 
-@@ -2810,7 +2809,7 @@ static int do_nonlinear_fault(struct mm_struct *mm, struct vm_area_struct *vma,
-  */
- static inline int handle_pte_fault(struct mm_struct *mm,
- 		struct vm_area_struct *vma, unsigned long address,
--		pte_t *pte, pmd_t *pmd, int write_access)
-+		pte_t *pte, pmd_t *pmd, unsigned int flags)
- {
- 	pte_t entry;
- 	spinlock_t *ptl;
-@@ -2821,30 +2820,30 @@ static inline int handle_pte_fault(struct mm_struct *mm,
- 			if (vma->vm_ops) {
- 				if (likely(vma->vm_ops->fault))
- 					return do_linear_fault(mm, vma, address,
--						pte, pmd, write_access, entry);
-+						pte, pmd, flags, entry);
- 			}
- 			return do_anonymous_page(mm, vma, address,
--						 pte, pmd, write_access);
-+						 pte, pmd, flags);
- 		}
- 		if (pte_file(entry))
- 			return do_nonlinear_fault(mm, vma, address,
--					pte, pmd, write_access, entry);
-+					pte, pmd, flags, entry);
- 		return do_swap_page(mm, vma, address,
--					pte, pmd, write_access, entry);
-+					pte, pmd, flags, entry);
- 	}
- 
- 	ptl = pte_lockptr(mm, pmd);
- 	spin_lock(ptl);
- 	if (unlikely(!pte_same(*pte, entry)))
- 		goto unlock;
--	if (write_access) {
-+	if (flags & FAULT_FLAG_WRITE) {
- 		if (!pte_write(entry))
- 			return do_wp_page(mm, vma, address,
- 					pte, pmd, ptl, entry);
- 		entry = pte_mkdirty(entry);
- 	}
- 	entry = pte_mkyoung(entry);
--	if (ptep_set_access_flags(vma, address, pte, entry, write_access)) {
-+	if (ptep_set_access_flags(vma, address, pte, entry, flags & FAULT_FLAG_WRITE)) {
- 		update_mmu_cache(vma, address, entry);
- 	} else {
- 		/*
-@@ -2853,7 +2852,7 @@ static inline int handle_pte_fault(struct mm_struct *mm,
- 		 * This still avoids useless tlb flushes for .text page faults
- 		 * with threads.
- 		 */
--		if (write_access)
-+		if (flags & FAULT_FLAG_WRITE)
- 			flush_tlb_page(vma, address);
- 	}
- unlock:
-@@ -2871,13 +2870,14 @@ int handle_mm_fault(struct mm_struct *mm, struct vm_area_struct *vma,
- 	pud_t *pud;
- 	pmd_t *pmd;
- 	pte_t *pte;
-+	unsigned int flags = write_access ? FAULT_FLAG_WRITE : 0;
- 
- 	__set_current_state(TASK_RUNNING);
- 
- 	count_vm_event(PGFAULT);
- 
- 	if (unlikely(is_vm_hugetlb_page(vma)))
--		return hugetlb_fault(mm, vma, address, write_access);
-+		return hugetlb_fault(mm, vma, address, flags);
- 
- 	pgd = pgd_offset(mm, address);
- 	pud = pud_alloc(mm, pgd, address);
-@@ -2890,7 +2890,7 @@ int handle_mm_fault(struct mm_struct *mm, struct vm_area_struct *vma,
- 	if (!pte)
- 		return VM_FAULT_OOM;
- 
--	return handle_pte_fault(mm, vma, address, pte, pmd, write_access);
-+	return handle_pte_fault(mm, vma, address, pte, pmd, flags);
- }
- 
- #ifndef __PAGETABLE_PUD_FOLDED
--- 
-1.6.2.2.471.g6da14.dirty
+Thanks in advance
+Alan
 
