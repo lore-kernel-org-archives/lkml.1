@@ -1,82 +1,164 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760504AbZDJBvl@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760168AbZDJB4o@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760504AbZDJBvl (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 9 Apr 2009 21:51:41 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754517AbZDJBvb
+	id S1760168AbZDJB4o (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 9 Apr 2009 21:56:44 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752144AbZDJB40
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 9 Apr 2009 21:51:31 -0400
-Received: from mga11.intel.com ([192.55.52.93]:20207 "EHLO mga11.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753562AbZDJBva (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 9 Apr 2009 21:51:30 -0400
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.40,164,1239001200"; 
-   d="asc'?scan'208";a="680373723"
-Subject: Re: GCM benchmark
-From: Huang Ying <ying.huang@intel.com>
-To: Herbert Xu <herbert@gondor.apana.org.au>
-Cc: linux-crypto@vger.kernel.org, linux-kernel@vger.kernel.org
-In-Reply-To: <20090409082152.GA4099@gondor.apana.org.au>
-References: <1239263421.6384.41.camel@yhuang-dev.sh.intel.com>
-	 <20090409082152.GA4099@gondor.apana.org.au>
-Content-Type: multipart/signed; micalg="pgp-sha1"; protocol="application/pgp-signature"; boundary="=-AE2TDQ5F4aSmGFi0ab+H"
-Date: Fri, 10 Apr 2009 09:51:28 +0800
-Message-Id: <1239328288.6384.69.camel@yhuang-dev.sh.intel.com>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.24.5 
+	Thu, 9 Apr 2009 21:56:26 -0400
+Received: from fg-out-1718.google.com ([72.14.220.156]:23856 "EHLO
+	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752072AbZDJB4Y (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 9 Apr 2009 21:56:24 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:to:cc:subject:message-id:references:mime-version
+         :content-type:content-disposition:in-reply-to:user-agent;
+        b=h6ROV5NS5F6Y8atlikm8clbnrHvCceDrLCyjTUqribR9JLx/VMrPjR/pi35LX+cfJS
+         F4zMgJZFR96nTF3lxpM+DByqjAx3VcX2WSw8ZEMYKRdIfwOdH1mRQ6Ee3gruhW9oo4VD
+         pzx9waUQa3n3u1/ssZmG8nkwb12kmbkaF0pxc=
+Date: Fri, 10 Apr 2009 05:56:14 +0400
+From: Alexander Beregalov <a.beregalov@gmail.com>
+To: David Miller <davem@davemloft.net>, netdev@vger.kernel.org,
+       Josh Boyer <jwboyer@linux.vnet.ibm.com>
+Cc: Kumar Gala <galak@kernel.crashing.org>, subrata@linux.vnet.ibm.com,
+       Linuxppc-dev <Linuxppc-dev@ozlabs.org>,
+       linux-next <linux-next@vger.kernel.org>,
+       linux-kernel <linux-kernel@vger.kernel.org>, linux-net@vger.kernel.org,
+       Greg KH <greg@kroah.com>, sachinp <sachinp@linux.vnet.ibm.com>,
+       Stephen Rothwell <sfr@canb.auug.org.au>
+Subject: Re: [BUILD FAILURE 04] Next April 9 : PPC64 randconfig
+	[drivers/net/ibm_newemac/core.c]
+Message-ID: <20090410015614.GA5781@orion>
+References: <1239285152.5188.66.camel@subratamodak.linux.ibm.com> <BE92FB74-1784-414B-B27F-8329185EB3AE@kernel.crashing.org> <20090409143112.GA7538@yoda.jdub.homelinux.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20090409143112.GA7538@yoda.jdub.homelinux.org>
+User-Agent: Mutt/1.5.19 (2009-01-05)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Thu, Apr 09, 2009 at 10:31:12AM -0400, Josh Boyer wrote:
+> On Thu, Apr 09, 2009 at 09:28:23AM -0500, Kumar Gala wrote:
+> >
+> > On Apr 9, 2009, at 8:52 AM, Subrata Modak wrote:
+> >
+> >> Observed the following build error:
+> >>
+> >> CC      drivers/net/ibm_newemac/core.o
+> >> drivers/net/ibm_newemac/core.c: In function ???emac_probe???:
+> >> drivers/net/ibm_newemac/core.c:2831: error: ???struct net_device??? has no
+> >> member named ???open???
+> >> drivers/net/ibm_newemac/core.c:2834: error: ???struct net_device??? has no
+> >> member named ???tx_timeout???
+> >> drivers/net/ibm_newemac/core.c:2836: error: ???struct net_device??? has no
+> >> member named ???stop???
+> >> drivers/net/ibm_newemac/core.c:2837: error: ???struct net_device??? has no
+> >> member named ???get_stats???
+> >> drivers/net/ibm_newemac/core.c:2838: error: ???struct net_device??? has no
+> >> member named ???set_multicast_list???
+> >> drivers/net/ibm_newemac/core.c:2839: error: ???struct net_device??? has no
+> >> member named ???do_ioctl???
+> >> drivers/net/ibm_newemac/core.c:2841: error: ???struct net_device??? has no
+> >> member named ???hard_start_xmit???
+> >> drivers/net/ibm_newemac/core.c:2842: error: ???struct net_device??? has no
+> >> member named ???change_mtu???
+> >> drivers/net/ibm_newemac/core.c:2845: error: ???struct net_device??? has no
+> >> member named ???hard_start_xmit???
+> >> make[3]: *** [drivers/net/ibm_newemac/core.o] Error 1
+> >> make[2]: *** [drivers/net/ibm_newemac] Error 2
+> >> make[1]: *** [drivers/net] Error 2
+> >> make: *** [drivers] Error 2
+> >>
+> >> Regards--
+> >> Subrata
+> >>
+> >> <randconfig4-ppc64-next20090409.txt>
+> >
+> > This is because CONFIG_COMPAT_NET_DEV_OPS isnt set and needs to be for  
+> > this driver to build.  I've asked the netdev guys about either fixing  
+> > the driver or adding the proper thing to Kconfig to select  
+> > CONFIG_COMPAT_NET_DEV_OPS.
+> 
+> Thanks!
+> 
+> If someone has pointers on what needs to be done to fix it, let me know.
+> 
 
---=-AE2TDQ5F4aSmGFi0ab+H
-Content-Type: text/plain
-Content-Transfer-Encoding: quoted-printable
-
-On Thu, 2009-04-09 at 16:21 +0800, Herbert Xu wrote:
-> On Thu, Apr 09, 2009 at 03:50:21PM +0800, Huang Ying wrote:
-> > Hi, Herbert,
-> >=20
-> > I am working on GCM acceleration with Intel new PCLMULQDQ instructions
-> > now. Can you tell me how to do GCM benchmark?
->=20
-> We need to add the infrastructure for testing AEAD speed.  It can
-> be modelled after the cipher/hash speed testing code.
-
-One issue here is that blkcipher testing infrastructure uses
-local_bh_disable()/local_irq_disable() to get more accurate result. But
-AEAD uses asynchronous interface, something like
-wait_for_completion_interruptable() will be used in test path. How to
-get more accurate result for testing asynchronous interface? Maybe it
-can be: test many times, select the one with best performance. What's
-your opinion?
-
-> > BTW: Similar with AES-NI support, I use cryptd to defer requests in sof=
-t
-> > IRQ context. Now, cryptd uses crypto_hash instead of crypto_shash as
-> > child. I think we should change that. If you have not done that, I will
-> > do that.
->=20
-> We need to complete the conversion of all hash algorithms to shash
-> first.
-
-Yes.
-
-Best Regards,
-Huang Ying
+From: Alexander Beregalov <a.beregalov@gmail.com>
+Subject: [PATCH] ibm_newemac: convert to netdev_ops
 
 
---=-AE2TDQ5F4aSmGFi0ab+H
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: This is a digitally signed message part
+Reported-by: Subrata Modak <subrata@linux.vnet.ibm.com>
+Signed-off-by: Alexander Beregalov <a.beregalov@gmail.com>
+---
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.9 (GNU/Linux)
+ drivers/net/ibm_newemac/core.c |   41 ++++++++++++++++++++++++++++-----------
+ 1 files changed, 29 insertions(+), 12 deletions(-)
 
-iEYEABECAAYFAkneph4ACgkQKhFGF+eHlpjZdQCeN1YQbGWmiwSxOmYjfxIsN4RO
-YTkAoJluLPcdm7+8b2kr0x/Hp03oXzwI
-=f+Z1
------END PGP SIGNATURE-----
-
---=-AE2TDQ5F4aSmGFi0ab+H--
-
+diff --git a/drivers/net/ibm_newemac/core.c b/drivers/net/ibm_newemac/core.c
+index 77e4b5b..806533c 100644
+--- a/drivers/net/ibm_newemac/core.c
++++ b/drivers/net/ibm_newemac/core.c
+@@ -2686,6 +2686,32 @@ static int __devinit emac_init_config(struct emac_instance *dev)
+ 	return 0;
+ }
+ 
++static const struct net_device_ops emac_netdev_ops = {
++	.ndo_open		= emac_open,
++	.ndo_stop		= emac_close,
++	.ndo_get_stats		= emac_stats,
++	.ndo_set_multicast_list	= emac_set_multicast_list,
++	.ndo_do_ioctl		= emac_ioctl,
++	.ndo_tx_timeout		= emac_tx_timeout,
++	.ndo_validate_addr	= eth_validate_addr,
++	.ndo_set_mac_address	= eth_mac_addr,
++	.ndo_start_xmit		= emac_start_xmit,
++	.ndo_change_mtu		= eth_change_mtu,
++};
++
++static const struct net_device_ops emac_gige_netdev_ops = {
++	.ndo_open		= emac_open,
++	.ndo_stop		= emac_close,
++	.ndo_get_stats		= emac_stats,
++	.ndo_set_multicast_list	= emac_set_multicast_list,
++	.ndo_do_ioctl		= emac_ioctl,
++	.ndo_tx_timeout		= emac_tx_timeout,
++	.ndo_validate_addr	= eth_validate_addr,
++	.ndo_set_mac_address	= eth_mac_addr,
++	.ndo_start_xmit		= emac_start_xmit_sg,
++	.ndo_change_mtu		= emac_change_mtu,
++};
++
+ static int __devinit emac_probe(struct of_device *ofdev,
+ 				const struct of_device_id *match)
+ {
+@@ -2827,23 +2853,14 @@ static int __devinit emac_probe(struct of_device *ofdev,
+ 	if (err != 0)
+ 		goto err_detach_tah;
+ 
+-	/* Fill in the driver function table */
+-	ndev->open = &emac_open;
+ 	if (dev->tah_dev)
+ 		ndev->features |= NETIF_F_IP_CSUM | NETIF_F_SG;
+-	ndev->tx_timeout = &emac_tx_timeout;
+ 	ndev->watchdog_timeo = 5 * HZ;
+-	ndev->stop = &emac_close;
+-	ndev->get_stats = &emac_stats;
+-	ndev->set_multicast_list = &emac_set_multicast_list;
+-	ndev->do_ioctl = &emac_ioctl;
+ 	if (emac_phy_supports_gige(dev->phy_mode)) {
+-		ndev->hard_start_xmit = &emac_start_xmit_sg;
+-		ndev->change_mtu = &emac_change_mtu;
++		ndev->netdev_ops = &emac_gige_netdev_ops;
+ 		dev->commac.ops = &emac_commac_sg_ops;
+-	} else {
+-		ndev->hard_start_xmit = &emac_start_xmit;
+-	}
++	} else
++		ndev->netdev_ops = &emac_netdev_ops;
+ 	SET_ETHTOOL_OPS(ndev, &emac_ethtool_ops);
+ 
+ 	netif_carrier_off(ndev);
