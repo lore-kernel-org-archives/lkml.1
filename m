@@ -1,13 +1,13 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S935723AbZDJMTy@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934409AbZDJMT2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S935723AbZDJMTy (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 10 Apr 2009 08:19:54 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751071AbZDJMNi
+	id S934409AbZDJMT2 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 10 Apr 2009 08:19:28 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1764007AbZDJMNh
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 10 Apr 2009 08:13:38 -0400
-Received: from mail09.linbit.com ([212.69.161.110]:40088 "EHLO
+	Fri, 10 Apr 2009 08:13:37 -0400
+Received: from mail09.linbit.com ([212.69.161.110]:40089 "EHLO
 	mail09.linbit.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1759835AbZDJMNN (ORCPT
+	with ESMTP id S1758985AbZDJMNN (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
 	Fri, 10 Apr 2009 08:13:13 -0400
 From: Philipp Reisner <philipp.reisner@linbit.com>
@@ -21,11 +21,11 @@ Cc: Jens Axboe <jens.axboe@oracle.com>, Greg KH <gregkh@suse.de>,
        "Nicholas A. Bellinger" <nab@linux-iscsi.org>,
        Lars Ellenberg <lars.ellenberg@linbit.com>,
        Philipp Reisner <philipp.reisner@linbit.com>
-Subject: [PATCH 13/14] DRBD: misc
-Date: Fri, 10 Apr 2009 14:12:24 +0200
-Message-Id: <1239365545-10356-14-git-send-email-philipp.reisner@linbit.com>
+Subject: [PATCH 14/14] DRBD: final
+Date: Fri, 10 Apr 2009 14:12:25 +0200
+Message-Id: <1239365545-10356-15-git-send-email-philipp.reisner@linbit.com>
 X-Mailer: git-send-email 1.5.6.3
-In-Reply-To: <1239365545-10356-13-git-send-email-philipp.reisner@linbit.com>
+In-Reply-To: <1239365545-10356-14-git-send-email-philipp.reisner@linbit.com>
 References: <1239365545-10356-1-git-send-email-philipp.reisner@linbit.com>
  <1239365545-10356-2-git-send-email-philipp.reisner@linbit.com>
  <1239365545-10356-3-git-send-email-philipp.reisner@linbit.com>
@@ -39,143 +39,84 @@ References: <1239365545-10356-1-git-send-email-philipp.reisner@linbit.com>
  <1239365545-10356-11-git-send-email-philipp.reisner@linbit.com>
  <1239365545-10356-12-git-send-email-philipp.reisner@linbit.com>
  <1239365545-10356-13-git-send-email-philipp.reisner@linbit.com>
+ <1239365545-10356-14-git-send-email-philipp.reisner@linbit.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-buildtag.c tag will go away when we are not longer an external module.
+Kconfig integration and Makefile
 
 Signed-off-by: Philipp Reisner <philipp.reisner@linbit.com>
 Signed-off-by: Lars Ellenberg <lars.ellenberg@linbit.com>
 
 ---
-diff -uNrp linux-2.6.30-rc1/drivers/block/drbd/drbd_buildtag.c linux-2.6.30-rc1-drbd/drivers/block/drbd/drbd_buildtag.c
---- linux-2.6.30-rc1/drivers/block/drbd/drbd_buildtag.c	1970-01-01 01:00:00.000000000 +0100
-+++ linux-2.6.30-rc1-drbd/drivers/block/drbd/drbd_buildtag.c	2009-04-01 10:29:21.703133000 +0200
-@@ -0,0 +1,7 @@
-+/* automatically generated. DO NOT EDIT. */
-+#include <linux/drbd_config.h>
-+const char *drbd_buildtag(void)
-+{
-+	return "GIT-hash: bbadddd7bad33396ebb8c0c12da9aab594d00c4e drbd/Makefile-2.6"
-+		" build by phil@fat-tyre, 2009-04-01 10:29:21";
-+}
-diff -uNrp linux-2.6.30-rc1/drivers/block/drbd/drbd_strings.c linux-2.6.30-rc1-drbd/drivers/block/drbd/drbd_strings.c
---- linux-2.6.30-rc1/drivers/block/drbd/drbd_strings.c	1970-01-01 01:00:00.000000000 +0100
-+++ linux-2.6.30-rc1-drbd/drivers/block/drbd/drbd_strings.c	2009-03-26 15:55:39.583134000 +0100
-@@ -0,0 +1,115 @@
-+/*
-+  drbd.h
+diff -uNrp linux-2.6.30-rc1/drivers/block/Kconfig linux-2.6.30-rc1-drbd/drivers/block/Kconfig
+--- linux-2.6.30-rc1/drivers/block/Kconfig	2009-04-07 23:25:01.000000000 +0200
++++ linux-2.6.30-rc1-drbd/drivers/block/Kconfig	2009-04-10 13:13:43.178491859 +0200
+@@ -271,6 +271,8 @@ config BLK_DEV_CRYPTOLOOP
+ 	  instead, which can be configured to be on-disk compatible with the
+ 	  cryptoloop device.
+ 
++source "drivers/block/drbd/Kconfig"
 +
-+  This file is part of DRBD by Philipp Reisner and Lars Ellenberg.
+ config BLK_DEV_NBD
+ 	tristate "Network block device support"
+ 	depends on NET
+diff -uNrp linux-2.6.30-rc1/drivers/block/Makefile linux-2.6.30-rc1-drbd/drivers/block/Makefile
+--- linux-2.6.30-rc1/drivers/block/Makefile	2009-04-07 23:25:01.000000000 +0200
++++ linux-2.6.30-rc1-drbd/drivers/block/Makefile	2009-04-10 13:13:43.166492009 +0200
+@@ -37,3 +37,4 @@ obj-$(CONFIG_BLK_DEV_HD)	+= hd.o
+ obj-$(CONFIG_XEN_BLKDEV_FRONTEND)	+= xen-blkfront.o
+ 
+ swim_mod-objs	:= swim.o swim_asm.o
++obj-$(CONFIG_BLK_DEV_DRBD)     += drbd/
+diff -uNrp linux-2.6.30-rc1/drivers/block/drbd/Kconfig linux-2.6.30-rc1-drbd/drivers/block/drbd/Kconfig
+--- linux-2.6.30-rc1/drivers/block/drbd/Kconfig	1970-01-01 01:00:00.000000000 +0100
++++ linux-2.6.30-rc1-drbd/drivers/block/drbd/Kconfig	2009-04-01 12:07:38.936194000 +0200
+@@ -0,0 +1,37 @@
++#
++# DRBD device driver configuration
++#
 +
-+  Copyright (C) 2003-2008, LINBIT Information Technologies GmbH.
-+  Copyright (C) 2003-2008, Philipp Reisner <philipp.reisner@linbit.com>.
-+  Copyright (C) 2003-2008, Lars Ellenberg <lars.ellenberg@linbit.com>.
++comment "DRBD disabled because PROC_FS, INET or CONNECTOR not selected"
++	depends on !PROC_FS || !INET || !CONNECTOR
 +
-+  drbd is free software; you can redistribute it and/or modify
-+  it under the terms of the GNU General Public License as published by
-+  the Free Software Foundation; either version 2, or (at your option)
-+  any later version.
++config BLK_DEV_DRBD
++	tristate "DRBD Distributed Replicated Block Device support"
++	depends on PROC_FS && INET && CONNECTOR
++	help
 +
-+  drbd is distributed in the hope that it will be useful,
-+  but WITHOUT ANY WARRANTY; without even the implied warranty of
-+  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-+  GNU General Public License for more details.
++	  NOTE: In order to authenticate connections you have to select
++	  CRYPTO_HMAC and a hash function as well.
 +
-+  You should have received a copy of the GNU General Public License
-+  along with drbd; see the file COPYING.  If not, write to
-+  the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.
++	  DRBD is a shared-nothing, synchronously replicated block device. It
++	  is designed to serve as a building block for high availability
++	  clusters and in this context, is a "drop-in" replacement for shared
++	  storage. Simplistically, you could see it as a network RAID 1.
 +
-+*/
++	  Each minor device has a role, which can be 'primary' or 'secondary'.
++	  On the node with the primary device the application is supposed to
++	  run and to access the device (/dev/drbdX). Every write is sent to
++	  the local 'lower level block device' and, across the network, to the
++	  node with the device in 'secondary' state.  The secondary device
++	  simply writes the data to its lower level block device.
 +
-+#include <linux/drbd.h>
++	  DRBD can also be used in dual-Primary mode (device writable on both
++	  nodes), which means it can exhibit shared disk semantics in a
++	  shared-nothing cluster.  Needless to say, on top of dual-Primary
++	  DRBD utilizing a cluster file system is necessary to maintain for
++	  cache coherency.
 +
-+static const char *drbd_conn_s_names[] = {
-+	[StandAlone]     = "StandAlone",
-+	[Disconnecting]  = "Disconnecting",
-+	[Unconnected]    = "Unconnected",
-+	[Timeout]        = "Timeout",
-+	[BrokenPipe]     = "BrokenPipe",
-+	[NetworkFailure] = "NetworkFailure",
-+	[ProtocolError]  = "ProtocolError",
-+	[WFConnection]   = "WFConnection",
-+	[WFReportParams] = "WFReportParams",
-+	[TearDown]       = "TearDown",
-+	[Connected]      = "Connected",
-+	[StartingSyncS]  = "StartingSyncS",
-+	[StartingSyncT]  = "StartingSyncT",
-+	[WFBitMapS]      = "WFBitMapS",
-+	[WFBitMapT]      = "WFBitMapT",
-+	[WFSyncUUID]     = "WFSyncUUID",
-+	[SyncSource]     = "SyncSource",
-+	[SyncTarget]     = "SyncTarget",
-+	[VerifyS]        = "VerifyS",
-+	[VerifyT]        = "VerifyT",
-+	[PausedSyncS]    = "PausedSyncS",
-+	[PausedSyncT]    = "PausedSyncT"
-+};
++	  For automatic failover you need a cluster manager (e.g. heartbeat).
++	  See also: http://www.drbd.org/, http://www.linux-ha.org
 +
-+static const char *drbd_role_s_names[] = {
-+	[Primary]   = "Primary",
-+	[Secondary] = "Secondary",
-+	[Unknown]   = "Unknown"
-+};
++	  If unsure, say N.
+diff -uNrp linux-2.6.30-rc1/drivers/block/drbd/Makefile linux-2.6.30-rc1-drbd/drivers/block/drbd/Makefile
+--- linux-2.6.30-rc1/drivers/block/drbd/Makefile	1970-01-01 01:00:00.000000000 +0100
++++ linux-2.6.30-rc1-drbd/drivers/block/drbd/Makefile	2009-04-10 13:13:43.058491920 +0200
+@@ -0,0 +1,5 @@
++drbd-y := drbd_buildtag.o drbd_bitmap.o drbd_proc.o
++drbd-y += drbd_worker.o drbd_receiver.o drbd_req.o drbd_actlog.o
++drbd-y += lru_cache.o drbd_main.o drbd_strings.o drbd_nl.o
 +
-+static const char *drbd_disk_s_names[] = {
-+	[Diskless]     = "Diskless",
-+	[Attaching]    = "Attaching",
-+	[Failed]       = "Failed",
-+	[Negotiating]  = "Negotiating",
-+	[Inconsistent] = "Inconsistent",
-+	[Outdated]     = "Outdated",
-+	[DUnknown]     = "DUnknown",
-+	[Consistent]   = "Consistent",
-+	[UpToDate]     = "UpToDate",
-+};
-+
-+static const char *drbd_state_sw_errors[] = {
-+	[-SS_TwoPrimaries] = "Multiple primaries not allowed by config",
-+	[-SS_NoUpToDateDisk] =
-+		"Refusing to be Primary without at least one UpToDate disk",
-+	[-SS_BothInconsistent] = "Refusing to be inconsistent on both nodes",
-+	[-SS_SyncingDiskless] = "Refusing to be syncing and diskless",
-+	[-SS_ConnectedOutdates] = "Refusing to be Outdated while Connected",
-+	[-SS_PrimaryNOP] = "Refusing to be Primary while peer is not outdated",
-+	[-SS_ResyncRunning] = "Can not start OV/resync since it is already active",
-+	[-SS_AlreadyStandAlone] = "Can not disconnect a StandAlone device",
-+	[-SS_CW_FailedByPeer] = "State changed was refused by peer node",
-+	[-SS_IsDiskLess] =
-+		"Device is diskless, the requesed operation requires a disk",
-+	[-SS_DeviceInUse] = "Device is held open by someone",
-+	[-SS_NoNetConfig] = "Have no net/connection configuration",
-+	[-SS_NoVerifyAlg] = "Need a verify algorithm to start online verify",
-+	[-SS_NeedConnection] = "Need a connection to start verify or resync",
-+	[-SS_NotSupported] = "Peer does not support protocol",
-+	[-SS_LowerThanOutdated] = "Disk state is lower than outdated",
-+	[-SS_InTransientState] = "In transient state, retry after next state change",
-+	[-SS_ConcurrentStChg] = "Concurrent state changes detected and aborted",
-+};
-+
-+const char *conns_to_name(enum drbd_conns s)
-+{
-+	/* enums are unsigned... */
-+	return s > PausedSyncT ? "TOO_LARGE" : drbd_conn_s_names[s];
-+}
-+
-+const char *roles_to_name(enum drbd_role s)
-+{
-+	return s > Secondary   ? "TOO_LARGE" : drbd_role_s_names[s];
-+}
-+
-+const char *disks_to_name(enum drbd_disk_state s)
-+{
-+	return s > UpToDate    ? "TOO_LARGE" : drbd_disk_s_names[s];
-+}
-+
-+const char *set_st_err_name(enum set_st_err err)
-+{
-+	return err <= SS_AfterLastError ? "TOO_SMALL" :
-+	       err > SS_TwoPrimaries ? "TOO_LARGE"
-+			: drbd_state_sw_errors[-err];
-+}
++obj-$(CONFIG_BLK_DEV_DRBD)     += drbd.o
