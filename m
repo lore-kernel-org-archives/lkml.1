@@ -1,241 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S936711AbZDJLxS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S937226AbZDJLyU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S936711AbZDJLxS (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 10 Apr 2009 07:53:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S936384AbZDJLvn
+	id S937226AbZDJLyU (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 10 Apr 2009 07:54:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757143AbZDJLyG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 10 Apr 2009 07:51:43 -0400
-Received: from wine.ocn.ne.jp ([122.1.235.145]:59141 "EHLO smtp.wine.ocn.ne.jp"
+	Fri, 10 Apr 2009 07:54:06 -0400
+Received: from mx3.mail.elte.hu ([157.181.1.138]:51092 "EHLO mx3.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S936027AbZDJLvj (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 10 Apr 2009 07:51:39 -0400
-Message-Id: <20090408133525.714423392@I-love.SAKURA.ne.jp>
-References: <20090408133126.180521064@I-love.SAKURA.ne.jp>
-User-Agent: quilt/0.46-1
-Date: Wed, 08 Apr 2009 22:31:28 +0900
-From: Tetsuo Handa <penguin-kernel@I-love.SAKURA.ne.jp>
-To: jmorris@namei.org
-Cc: linux-security-module@vger.kernel.org, linux-kernel@vger.kernel.org,
-       Kentaro Takeda <takedakn@nttdata.co.jp>,
-       Tetsuo Handa <penguin-kernel@I-love.SAKURA.ne.jp>,
-       Toshiharu Harada <haradats@nttdata.co.jp>
-Subject: [TOMOYO 2/2] Hello.
-Content-Disposition: inline; filename=tomoyo-version-bump.patch
+	id S1756862AbZDJLyE (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 10 Apr 2009 07:54:04 -0400
+Date: Fri, 10 Apr 2009 13:53:48 +0200
+From: Ingo Molnar <mingo@elte.hu>
+To: venkatesh.pallipadi@intel.com
+Cc: tglx@linutronix.de, hpa@zytor.com, linux-kernel@vger.kernel.org,
+       Suresh Siddha <suresh.b.siddha@intel.com>
+Subject: Re: [patch 0/6] x86, PAT, CPA: Cleanups and minor bug fixes
+Message-ID: <20090410115348.GK21506@elte.hu>
+References: <20090409212646.511925000@intel.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20090409212646.511925000@intel.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-TOMOYO Linux was merged into the mainline in 2.6.29-git1.
 
-We thank Satoru Ueda for giving us opportunities to have presentations at CE
-Linux Forum's Japan Technical Jamboree. This was the first event that we were
-taught what the mainline is.
+* venkatesh.pallipadi@intel.com <venkatesh.pallipadi@intel.com> wrote:
 
-We thank Hirotaka Yoshioka for giving us opportunities to have presentations at
-YLUG kernel code reading party. This was the very event that we were
-foreordained to challenge the mainline. Without this event, we would not have
-started the challenge for the mainline.
+> This patchset contains cleanups and minor bug fixes in x86 PAT and 
+> CPA related code. The bugs were mostly found by code inspection. 
+> There should not be any functionality changes with this patchset.
+> 
+> Signed-off-by: Venkatesh Pallipadi <venkatesh.pallipadi@intel.com>
+> Signed-off-by: Suresh Siddha <suresh.b.siddha@intel.com>
 
-We thank James Morris for coming to Linux Foundation Japan Symposium #8 and
-Linux Conf Au 2009 and understanding why name based security is needed.
+Great, this series looks really nice!
 
-We thank Casey Schaufler for proving that new security modules can merge into
-the mainline.
+Does this solve the problems reported in the "2.6.29 git master and 
+PAT problems" thread and addressed via an earlier patch of yours:
 
-We thank Stephen Smalley for coming to Ottawa Linux Symposium 2007/2008 and
-giving us a critical comment that extricated ourselves from our stagnation.
+ Subject: [PATCH] x86, PAT: Remove page granularity tracking for vm_insert_pfn maps
 
-We thank Andrew Morton for listening to our problem when we were blocked by
-the lack of new LSM hooks.
+i am worried about this particular patch - it looks more like a 
+workaround than a true realization of a bug.
 
-We thank Al Viro for accepting new LSM hooks which made TOMOYO possible to
-merge into the mainline.
-
-We thank Crispin Cowan for proposing AppArmor. We were able to have a chance to
-understand why name based security is regarded as an inferior solution.
-We continued the name based security, with our belief that inode based security
-and name based security are complementary and both should be used together.
-The gate for name based security opened. Go for it!
-
-We thank Turbolinux for adopting TOMOYO into Turbolinux's products.
-
-We thank Mandriva Linux for adopting TOMOYO into Mandriva Linux's products.
-
-We thank Hideaki Yoshifuji for giving us advices on how to negotiate.
-
-We thank Motohiro Kosaki for giving us advices on how to write patch comments.
-
-We thank Fumihito Yoshida for supporting TOMOYO in Ubuntu.
-
-We thank Hideki Yamane for supporting TOMOYO in Debian.
-
-We thank Naohiro Aota for supporting TOMOYO in Gentoo.
-
-We thank Ken-ichi Akimoto for supporting TOMOYO in Natures Linux.
-
-We thank Vadim Korschok for using TOMOYO on Hardened Gentoo.
-
-We thank Hiroshi Shinji for using TOMOYO on embedded systems and
-requesting new features and helping debugging.
-
-We thank Toru Hirasaka for developing TOMOYO's GUI policy editor.
-
-We thank Yoshihiro Kusuno for enhancing TOMOYO's CUI policy editor.
-
-We thank Masafumi Tanaka for drawing posters and developing demonstration
-movies.
-
-We thank Akira Igarashi for drawing TOMOYO's logo and drawing many
-illustrations for presentations.
-
-We thank Kohei Kaigai for coordinating various open source events.
-
-We thank Japan Secure Operating System Users Group for giving us opportunities
-to familiarize SELinux, TOMOYO, AppArmor, LIDS etc. in Japan.
-
-We thank anonymous users giving us suggestions and comments and feature
-requests on 2ch.net and sourceforge.jp and blogs. TOMOYO achieved 30,000
-downloads since the release of TOMOYO Linux version 1.0 on 2005/11/11.
-
-We thank Dragos Ruiu for giving us opportunities to have presentations at
-PacSec conference 2007/2008.
-
-We thank Jonathan Corbet for writing many articles on TOMOYO at LWN.net ever
-since Embedded Linux Conference 2007.
-
-We thank CLAMP for creating Card Captor Sakura. TOMOYO's idea was taken from
-the Sakura's happy world.
-
-We thank SourceForge.jp for providing us storages and services.
-
-We thank NTT DATA CORPORATION for supporting us in development of TOMOYO.
-
-We thank Linus Torvalds for allowing us to join the Linux community.
-
-With many more thanks, we would like to release this snapshot as TOMOYO Linux
-version 2.2.0. Thank you for waiting.
-----------------------------------------
-Subject: [TOMOYO 2/2] tomoyo: version bump to 2.2.0.
-
-Signed-off-by: Kentaro Takeda <takedakn@nttdata.co.jp>
-Signed-off-by: Tetsuo Handa <penguin-kernel@I-love.SAKURA.ne.jp>
-Signed-off-by: Toshiharu Harada <haradats@nttdata.co.jp>
----
- security/tomoyo/common.c   |    6 +++---
- security/tomoyo/common.h   |    2 +-
- security/tomoyo/domain.c   |    2 +-
- security/tomoyo/file.c     |    2 +-
- security/tomoyo/realpath.c |    2 +-
- security/tomoyo/realpath.h |    2 +-
- security/tomoyo/tomoyo.c   |    2 +-
- security/tomoyo/tomoyo.h   |    2 +-
- 8 files changed, 10 insertions(+), 10 deletions(-)
-
---- linux-2.6.30-rc1.orig/security/tomoyo/common.c
-+++ linux-2.6.30-rc1/security/tomoyo/common.c
-@@ -5,7 +5,7 @@
-  *
-  * Copyright (C) 2005-2009  NTT DATA CORPORATION
-  *
-- * Version: 2.2.0-pre   2009/02/01
-+ * Version: 2.2.0   2009/04/01
-  *
-  */
- 
-@@ -1773,7 +1773,7 @@ void tomoyo_load_policy(const char *file
- 	envp[2] = NULL;
- 	call_usermodehelper(argv[0], argv, envp, 1);
- 
--	printk(KERN_INFO "TOMOYO: 2.2.0-pre   2009/02/01\n");
-+	printk(KERN_INFO "TOMOYO: 2.2.0   2009/04/01\n");
- 	printk(KERN_INFO "Mandatory Access Control activated.\n");
- 	tomoyo_policy_loaded = true;
- 	{ /* Check all profiles currently assigned to domains are defined. */
-@@ -1800,7 +1800,7 @@ void tomoyo_load_policy(const char *file
- static int tomoyo_read_version(struct tomoyo_io_buffer *head)
- {
- 	if (!head->read_eof) {
--		tomoyo_io_printf(head, "2.2.0-pre");
-+		tomoyo_io_printf(head, "2.2.0");
- 		head->read_eof = true;
- 	}
- 	return 0;
---- linux-2.6.30-rc1.orig/security/tomoyo/common.h
-+++ linux-2.6.30-rc1/security/tomoyo/common.h
-@@ -5,7 +5,7 @@
-  *
-  * Copyright (C) 2005-2009  NTT DATA CORPORATION
-  *
-- * Version: 2.2.0-pre   2009/02/01
-+ * Version: 2.2.0   2009/04/01
-  *
-  */
- 
---- linux-2.6.30-rc1.orig/security/tomoyo/domain.c
-+++ linux-2.6.30-rc1/security/tomoyo/domain.c
-@@ -5,7 +5,7 @@
-  *
-  * Copyright (C) 2005-2009  NTT DATA CORPORATION
-  *
-- * Version: 2.2.0-pre   2009/02/01
-+ * Version: 2.2.0   2009/04/01
-  *
-  */
- 
---- linux-2.6.30-rc1.orig/security/tomoyo/file.c
-+++ linux-2.6.30-rc1/security/tomoyo/file.c
-@@ -5,7 +5,7 @@
-  *
-  * Copyright (C) 2005-2009  NTT DATA CORPORATION
-  *
-- * Version: 2.2.0-pre   2009/02/01
-+ * Version: 2.2.0   2009/04/01
-  *
-  */
- 
---- linux-2.6.30-rc1.orig/security/tomoyo/realpath.c
-+++ linux-2.6.30-rc1/security/tomoyo/realpath.c
-@@ -5,7 +5,7 @@
-  *
-  * Copyright (C) 2005-2009  NTT DATA CORPORATION
-  *
-- * Version: 2.2.0-pre   2009/02/01
-+ * Version: 2.2.0   2009/04/01
-  *
-  */
- 
---- linux-2.6.30-rc1.orig/security/tomoyo/realpath.h
-+++ linux-2.6.30-rc1/security/tomoyo/realpath.h
-@@ -5,7 +5,7 @@
-  *
-  * Copyright (C) 2005-2009  NTT DATA CORPORATION
-  *
-- * Version: 2.2.0-pre   2009/02/01
-+ * Version: 2.2.0   2009/04/01
-  *
-  */
- 
---- linux-2.6.30-rc1.orig/security/tomoyo/tomoyo.c
-+++ linux-2.6.30-rc1/security/tomoyo/tomoyo.c
-@@ -5,7 +5,7 @@
-  *
-  * Copyright (C) 2005-2009  NTT DATA CORPORATION
-  *
-- * Version: 2.2.0-pre   2009/02/01
-+ * Version: 2.2.0   2009/04/01
-  *
-  */
- 
---- linux-2.6.30-rc1.orig/security/tomoyo/tomoyo.h
-+++ linux-2.6.30-rc1/security/tomoyo/tomoyo.h
-@@ -5,7 +5,7 @@
-  *
-  * Copyright (C) 2005-2009  NTT DATA CORPORATION
-  *
-- * Version: 2.2.0-pre   2009/02/01
-+ * Version: 2.2.0   2009/04/01
-  *
-  */
- 
-
--- 
+	Ingo
