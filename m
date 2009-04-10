@@ -1,75 +1,42 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932588AbZDJRXV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S935658AbZDJR1F@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932588AbZDJRXV (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 10 Apr 2009 13:23:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759592AbZDJRXE
+	id S935658AbZDJR1F (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 10 Apr 2009 13:27:05 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751778AbZDJR0s
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 10 Apr 2009 13:23:04 -0400
-Received: from hera.kernel.org ([140.211.167.34]:36947 "EHLO hera.kernel.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1759579AbZDJRXC (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 10 Apr 2009 13:23:02 -0400
-Subject: Re: [git-pull -tip] x86: declaration patches
-From: Jaswinder Singh Rajput <jaswinder@kernel.org>
-To: Thomas Gleixner <tglx@linutronix.de>
-Cc: Ingo Molnar <mingo@elte.hu>, x86 maintainers <x86@kernel.org>,
-       LKML <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Andi Kleen <andi@firstfloor.org>
-In-Reply-To: <alpine.LFD.2.00.0904101849060.21577@localhost.localdomain>
-References: <1239381184.23116.5.camel@ht.satnam>
-	 <alpine.LFD.2.00.0904101849060.21577@localhost.localdomain>
-Content-Type: text/plain
-Date: Fri, 10 Apr 2009 22:51:51 +0530
-Message-Id: <1239384111.3169.13.camel@ht.satnam>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.24.5 (2.24.5-1.fc10) 
-Content-Transfer-Encoding: 7bit
+	Fri, 10 Apr 2009 13:26:48 -0400
+Received: from mtoichi12.ns.itscom.net ([219.110.2.182]:46644 "EHLO
+	mtoichi12.ns.itscom.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1759938AbZDJR0r (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 10 Apr 2009 13:26:47 -0400
+From: hooanon05@yahoo.co.jp
+Subject: Re: [RFC Aufs2 #5 28/29] export lookup functions 
+To: Christoph Hellwig <hch@infradead.org>
+Cc: linux-kernel@vger.kernel.org, greg@kroah.com,
+       linux-fsdevel@vger.kernel.org
+In-Reply-To: <20090410170506.GA29152@infradead.org>
+References: <1239346963-30953-1-git-send-email-hooanon05@yahoo.co.jp> <1239346963-30953-29-git-send-email-hooanon05@yahoo.co.jp> <20090410162849.GA28377@infradead.org> <7612.1239382035@jrobl> <20090410165401.GA20673@infradead.org> <8041.1239382994@jrobl> <20090410170506.GA29152@infradead.org>
+Date: Sat, 11 Apr 2009 02:26:33 +0900
+Message-ID: <8416.1239384393@jrobl>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 2009-04-10 at 18:51 +0200, Thomas Gleixner wrote:
-> On Fri, 10 Apr 2009, Jaswinder Singh Rajput wrote:
-> >  #endif /* CONFIG_X86_32 */
-> > diff --git a/arch/x86/kernel/apic/io_apic.c b/arch/x86/kernel/apic/io_apic.c
-> > index 8499000..d1bac67 100644
-> > --- a/arch/x86/kernel/apic/io_apic.c
-> > +++ b/arch/x86/kernel/apic/io_apic.c
-> > @@ -59,6 +59,7 @@
-> >  #include <asm/setup.h>
-> >  #include <asm/irq_remapping.h>
-> >  #include <asm/hpet.h>
-> > +#include <asm/hw_irq.h>		/* smp_irq_move_cleanup_interrupt */
-> 
->   Can we please avoid these useless comments all over the place ?
-> 
 
-I kept these intentionally because few of these declarations I have
-already fixed earlier.
-For example during process.c unification work developers forget to
-include and fix syscalls.h :
+Christoph Hellwig:
+> No, we've always said that we want to do vfs-level union mounts, and
+> at the storage summit we've actually moved forward on that and Jan
+> and Val are sorting some of the remaining issues now.
 
-http://git.kernel.org/?p=linux/kernel/git/x86/linux-2.6-tip.git;a=commit;h=389d1fb11e5f2a16b5e34c547756f0c4dec641f7
+VFS-level union is promising. Actually I am going to try that after aufs
+in the future. I didn't know that people re-started working on union
+mount. It is interesting.
 
-Thats why I did:
-
-diff --git a/arch/x86/kernel/process.c b/arch/x86/kernel/process.c
-index 1d71442..4d397ce 100644
---- a/arch/x86/kernel/process.c
-+++ b/arch/x86/kernel/process.c
-@@ -15,6 +15,7 @@
- #include <asm/uaccess.h>
- #include <asm/i387.h>
- #include <asm/ds.h>
-+#include <asm/syscalls.h>              /* sys_fork, sys_vfork */
- 
- unsigned long idle_halt;
- EXPORT_SYMBOL(idle_halt);
-
-Ingo, do you also think we need to remove these comments.
-
---
-JSR
+I have been asked to include aufs into mainline from several people
+several times. As long as you have strong NACK for aufs and reject all
+union-type filesystems, I have to give up unwillingly and will answer
+them "Aufs was rejected. Let's give it up."
 
 
+J. R. Okajima
