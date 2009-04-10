@@ -1,21 +1,21 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763840AbZDJFhU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S935780AbZDJFhv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763840AbZDJFhU (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 10 Apr 2009 01:37:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760708AbZDJFd3
+	id S935780AbZDJFhv (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 10 Apr 2009 01:37:51 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761737AbZDJFdb
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 10 Apr 2009 01:33:29 -0400
-Received: from sh.osrg.net ([192.16.179.4]:58971 "EHLO sh.osrg.net"
+	Fri, 10 Apr 2009 01:33:31 -0400
+Received: from sh.osrg.net ([192.16.179.4]:58969 "EHLO sh.osrg.net"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1759476AbZDJFdR (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 10 Apr 2009 01:33:17 -0400
+	id S1759414AbZDJFdQ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 10 Apr 2009 01:33:16 -0400
 From: Ryusuke Konishi <konishi.ryusuke@lab.ntt.co.jp>
 To: linux-fsdevel@vger.kernel.org
 Cc: linux-kernel@vger.kernel.org,
        Ryusuke Konishi <konishi.ryusuke@lab.ntt.co.jp>
-Subject: [PATCH 3/8] nilfs2: fix lockdep recursive locking warning on meta data files
-Date: Fri, 10 Apr 2009 14:27:56 +0900
-Message-Id: <1239341281-20249-4-git-send-email-konishi.ryusuke@lab.ntt.co.jp>
+Subject: [PATCH 2/8] nilfs2: fix lockdep recursive locking warning on bmap
+Date: Fri, 10 Apr 2009 14:27:55 +0900
+Message-Id: <1239341281-20249-3-git-send-email-konishi.ryusuke@lab.ntt.co.jp>
 X-Mailer: git-send-email 1.5.6.5
 In-Reply-To: <1239341281-20249-1-git-send-email-konishi.ryusuke@lab.ntt.co.jp>
 References: <1239341281-20249-1-git-send-email-konishi.ryusuke@lab.ntt.co.jp>
@@ -25,45 +25,60 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This fixes the following false detection of lockdep against nilfs meta
-data files:
+The bmap semaphore of DAT file can be held while a bmap of other files
+is locked.  This has caused the following false detection of lockdep
+check:
 
-=============================================
-[ INFO: possible recursive locking detected ]
-2.6.29 #26
----------------------------------------------
-mount.nilfs2/4185 is trying to acquire lock:
- (&mi->mi_sem){----}, at: [<d0c7925b>] nilfs_sufile_get_stat+0x1e/0x105 [nilfs2]
- but task is already holding lock:
-  (&mi->mi_sem){----}, at: [<d0c72026>] nilfs_count_free_blocks+0x48/0x84 [nilfs2]
+mount.nilfs2/4667 is trying to acquire lock:
+ (&bmap->b_sem){..--}, at: [<d0c6c4b4>] nilfs_bmap_lookup_at_level+0x1a/0x74 [nilfs2]
+
+but task is already holding lock:
+ (&bmap->b_sem){..--}, at: [<d0c6c4b4>] nilfs_bmap_lookup_at_level+0x1a/0x74 [nilfs2]
+
+This will fix the false detection by distinguishing semaphores of the
+DAT and other files.
 
 Signed-off-by: Ryusuke Konishi <konishi.ryusuke@lab.ntt.co.jp>
 ---
- fs/nilfs2/the_nilfs.c |    4 ++++
- 1 files changed, 4 insertions(+), 0 deletions(-)
+ fs/nilfs2/bmap.c |    5 +++++
+ 1 files changed, 5 insertions(+), 0 deletions(-)
 
-diff --git a/fs/nilfs2/the_nilfs.c b/fs/nilfs2/the_nilfs.c
-index 33400cf..7f65b3b 100644
---- a/fs/nilfs2/the_nilfs.c
-+++ b/fs/nilfs2/the_nilfs.c
-@@ -115,6 +115,7 @@ void put_nilfs(struct the_nilfs *nilfs)
- static int nilfs_load_super_root(struct the_nilfs *nilfs,
- 				 struct nilfs_sb_info *sbi, sector_t sr_block)
- {
-+	static struct lock_class_key dat_lock_key;
- 	struct buffer_head *bh_sr;
- 	struct nilfs_super_root *raw_sr;
- 	struct nilfs_super_block **sbp = nilfs->ns_sbp;
-@@ -163,6 +164,9 @@ static int nilfs_load_super_root(struct the_nilfs *nilfs,
- 	if (unlikely(err))
- 		goto failed_sufile;
+diff --git a/fs/nilfs2/bmap.c b/fs/nilfs2/bmap.c
+index 24638e0..064279e 100644
+--- a/fs/nilfs2/bmap.c
++++ b/fs/nilfs2/bmap.c
+@@ -688,6 +688,8 @@ static const struct nilfs_bmap_ptr_operations nilfs_bmap_ptr_ops_gc = {
+ 	.bpop_translate		=	NULL,
+ };
  
-+	lockdep_set_class(&NILFS_MDT(nilfs->ns_dat)->mi_sem, &dat_lock_key);
-+	lockdep_set_class(&NILFS_MDT(nilfs->ns_gc_dat)->mi_sem, &dat_lock_key);
++static struct lock_class_key nilfs_bmap_dat_lock_key;
 +
- 	nilfs_mdt_set_shadow(nilfs->ns_dat, nilfs->ns_gc_dat);
- 	nilfs_mdt_set_entry_size(nilfs->ns_cpfile, checkpoint_size,
- 				 sizeof(struct nilfs_cpfile_header));
+ /**
+  * nilfs_bmap_read - read a bmap from an inode
+  * @bmap: bmap
+@@ -715,6 +717,7 @@ int nilfs_bmap_read(struct nilfs_bmap *bmap, struct nilfs_inode *raw_inode)
+ 		bmap->b_pops = &nilfs_bmap_ptr_ops_p;
+ 		bmap->b_last_allocated_key = 0;	/* XXX: use macro */
+ 		bmap->b_last_allocated_ptr = NILFS_BMAP_NEW_PTR_INIT;
++		lockdep_set_class(&bmap->b_sem, &nilfs_bmap_dat_lock_key);
+ 		break;
+ 	case NILFS_CPFILE_INO:
+ 	case NILFS_SUFILE_INO:
+@@ -772,6 +775,7 @@ void nilfs_bmap_init_gcdat(struct nilfs_bmap *gcbmap, struct nilfs_bmap *bmap)
+ {
+ 	memcpy(gcbmap, bmap, sizeof(union nilfs_bmap_union));
+ 	init_rwsem(&gcbmap->b_sem);
++	lockdep_set_class(&bmap->b_sem, &nilfs_bmap_dat_lock_key);
+ 	gcbmap->b_inode = &NILFS_BMAP_I(gcbmap)->vfs_inode;
+ }
+ 
+@@ -779,5 +783,6 @@ void nilfs_bmap_commit_gcdat(struct nilfs_bmap *gcbmap, struct nilfs_bmap *bmap)
+ {
+ 	memcpy(bmap, gcbmap, sizeof(union nilfs_bmap_union));
+ 	init_rwsem(&bmap->b_sem);
++	lockdep_set_class(&bmap->b_sem, &nilfs_bmap_dat_lock_key);
+ 	bmap->b_inode = &NILFS_BMAP_I(bmap)->vfs_inode;
+ }
 -- 
 1.5.6.5
 
