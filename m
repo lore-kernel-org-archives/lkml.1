@@ -1,125 +1,140 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756365AbZDJW4t@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757242AbZDJXGR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756365AbZDJW4t (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 10 Apr 2009 18:56:49 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752213AbZDJW4i
+	id S1757242AbZDJXGR (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 10 Apr 2009 19:06:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751758AbZDJXF7
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 10 Apr 2009 18:56:38 -0400
-Received: from e32.co.us.ibm.com ([32.97.110.150]:43203 "EHLO
-	e32.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751083AbZDJW4i (ORCPT
+	Fri, 10 Apr 2009 19:05:59 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:53188 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751083AbZDJXF6 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 10 Apr 2009 18:56:38 -0400
-Date: Fri, 10 Apr 2009 17:56:36 -0500
-From: "Serge E. Hallyn" <serue@us.ibm.com>
-To: Alexey Dobriyan <adobriyan@gmail.com>
-Cc: akpm@linux-foundation.org, containers@lists.linux-foundation.org,
-       xemul@parallels.com, dave@linux.vnet.ibm.com, mingo@elte.hu,
-       orenl@cs.columbia.edu, hch@infradead.org, torvalds@linux-foundation.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 07/30] netns: extract net_create()
-Message-ID: <20090410225636.GD13873@us.ibm.com>
-References: <20090410023448.GH27788@x200.localdomain>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090410023448.GH27788@x200.localdomain>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+	Fri, 10 Apr 2009 19:05:58 -0400
+Date: Fri, 10 Apr 2009 16:01:37 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Alessio Igor Bogani <abogani@texware.it>
+Cc: oakad@yahoo.com, linux-kernel@vger.kernel.org, abogani@texware.it,
+       Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
+       Alan Cox <alan@lxorguk.ukuu.org.uk>
+Subject: Re: [PATCH] tifm: avoid inconsistent lock state
+Message-Id: <20090410160137.2f6261ff.akpm@linux-foundation.org>
+In-Reply-To: <1239288723-4240-1-git-send-email-abogani@texware.it>
+References: <1239288723-4240-1-git-send-email-abogani@texware.it>
+X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Quoting Alexey Dobriyan (adobriyan@gmail.com):
-> net_create() will be used by C/R code to create fresh netns on restart.
+On Thu,  9 Apr 2009 16:52:03 +0200
+Alessio Igor Bogani <abogani@texware.it> wrote:
+
+> Avoid the following INFO from lock debugging:
 > 
-> Signed-off-by: Alexey Dobriyan <adobriyan@gmail.com>
-
-Acked-by: Serge Hallyn <serue@us.ibm.com>
-
-Although this ends up making a new assumption that setup_net(), and
-therefore the pernet_ops->init() functions, do not return error > 0.
-There's nothing actually stopping that (outside of code review, but
-there appears to be no comment anywhere saying that's uncooth).
-
-If it returns > 0, then we return the ns as though it were valid, but
-don't add it to the list of namespaces...  Do we care?
-
--serge
-
+> [  901.190400] irq 18: nobody cared (try booting with the "irqpoll" option)
+> [  901.190411] Pid: 4255, comm: pulseaudio Not tainted 2.6.30-rc1 #21
+> [  901.190415] Call Trace:
+> [  901.190419]  <IRQ>  [<ffffffffa0022969>] ? tifm_7xx1_isr+0x99/0x170 [tifm_7xx1]
+> [  901.190452]  [<ffffffff802bbdcb>] __report_bad_irq+0x2b/0xb0
+> [  901.190459]  [<ffffffff802bbfe8>] note_interrupt+0x198/0x1e0
+> [  901.190467]  [<ffffffff802bc6ad>] handle_fasteoi_irq+0xdd/0x110
+> [  901.190474]  [<ffffffff80215bd4>] handle_irq+0x24/0x40
+> [  901.190483]  [<ffffffff8074d0a3>] do_IRQ+0x73/0x100
+> [  901.190491]  [<ffffffff80213cd3>] ret_from_intr+0x0/0x16
+> [  901.190495]  <EOI>  [<ffffffff80747eb2>] ? _spin_unlock_irqrestore+0x72/0x80
+> [  901.190510]  [<ffffffff8027356e>] ? add_wait_queue+0x4e/0x60
+> [  901.190517]  [<ffffffff803292d6>] ? __pollwait+0x86/0x110
+> [  901.190535]  [<ffffffffa016c831>] ? snd_ctl_poll+0x61/0x70 [snd]
+> [  901.190543]  [<ffffffff803295cc>] ? do_sys_poll+0x21c/0x4c0
+> [  901.190549]  [<ffffffff80329250>] ? __pollwait+0x0/0x110
+> [  901.190556]  [<ffffffff80329360>] ? pollwake+0x0/0x50
+> [  901.190562]  [<ffffffff80329360>] ? pollwake+0x0/0x50
+> [  901.190569]  [<ffffffff80329360>] ? pollwake+0x0/0x50
+> [  901.190575]  [<ffffffff80329360>] ? pollwake+0x0/0x50
+> [  901.190581]  [<ffffffff80329360>] ? pollwake+0x0/0x50
+> [  901.190587]  [<ffffffff80329360>] ? pollwake+0x0/0x50
+> [  901.190594]  [<ffffffff80747e07>] ? _spin_unlock_irq+0x37/0x70
+> [  901.190601]  [<ffffffff80747e11>] ? _spin_unlock_irq+0x41/0x70
+> [  901.190609]  [<ffffffff8024c283>] ? finish_task_switch+0x83/0x140
+> [  901.190616]  [<ffffffff8024c240>] ? finish_task_switch+0x40/0x140
+> [  901.190625]  [<ffffffff80288558>] ? __lock_acquire+0x328/0x13e0
+> [  901.190634]  [<ffffffff8047ac0e>] ? _raw_spin_unlock+0x7e/0xa0
+> [  901.190642]  [<ffffffff8027cf51>] ? getnstimeofday+0x61/0xf0
+> [  901.190649]  [<ffffffff80276e51>] ? ktime_get_ts+0x61/0x70
+> [  901.190656]  [<ffffffff803289e8>] ? poll_select_set_timeout+0x88/0xa0
+> [  901.190663]  [<ffffffff80329a7c>] ? sys_poll+0x7c/0x110
+> [  901.190670]  [<ffffffff80213232>] ? system_call_fastpath+0x16/0x1b
+> [  901.190675] handlers:
+> [  901.190679] [<ffffffff8059f7d0>] (usb_hcd_irq+0x0/0xe0)
+> [  901.190690] [<ffffffff8059f7d0>] (usb_hcd_irq+0x0/0xe0)
+> [  901.190699] [<ffffffffa00228d0>] (tifm_7xx1_isr+0x0/0x170 [tifm_7xx1])
+> [  901.190710] Disabling IRQ #18
+> [  901.288126]
+> [  901.288128] =================================
+> [  901.288132] [ INFO: inconsistent lock state ]
+> [  901.288135] 2.6.30-rc1 #21
+> [  901.288137] ---------------------------------
+> [  901.288140] inconsistent {IN-HARDIRQ-W} -> {HARDIRQ-ON-W} usage.
+> [  901.288143] swapper/0 [HC0[0]:SC1[1]:HE1:SE0] takes:
+> [  901.288145]  (&irq_desc_lock_class){?.-...}, at: [<ffffffff802bbbc3>] try_one_irq+0x33/0x160
+> [  901.288156] {IN-HARDIRQ-W} state was registered at:
+> [  901.288158]   [<ffffffffffffffff>] 0xffffffffffffffff
+> [  901.288172] irq event stamp: 970106
+> [  901.288174] hardirqs last  enabled at (970106): [<ffffffff80747e00>] _spin_unlock_irq+0x30/0x70
+> [  901.288181] hardirqs last disabled at (970105): [<ffffffff807474cf>] _spin_lock_irq+0x1f/0x90
+> [  901.288186] softirqs last  enabled at (970078): [<ffffffff8025f0e4>] __do_softirq+0x1d4/0x250
+> [  901.288193] softirqs last disabled at (970103): [<ffffffff802144fc>] call_softirq+0x1c/0x30
+> 
+> Signed-off-by: Alessio Igor Bogani <abogani@texware.it>
 > ---
+>  drivers/misc/tifm_7xx1.c |    7 ++++---
+>  1 files changed, 4 insertions(+), 3 deletions(-)
 > 
->  include/net/net_namespace.h |    1 +
->  net/core/net_namespace.c    |   44 ++++++++++++++++++++------------------------
->  2 files changed, 21 insertions(+), 24 deletions(-)
-> 
-> --- a/include/net/net_namespace.h
-> +++ b/include/net/net_namespace.h
-> @@ -107,6 +107,7 @@ static inline struct net *copy_net_ns(unsigned long flags, struct net *net_ns)
->  extern struct list_head net_namespace_list;
-> 
->  #ifdef CONFIG_NET_NS
-> +struct net *net_create(void);
->  extern void __put_net(struct net *net);
-> 
->  static inline struct net *get_net(struct net *net)
-> --- a/net/core/net_namespace.c
-> +++ b/net/core/net_namespace.c
-> @@ -115,38 +115,34 @@ static void net_free(struct net *net)
->  	kmem_cache_free(net_cachep, net);
->  }
-> 
-> -struct net *copy_net_ns(unsigned long flags, struct net *old_net)
-> +struct net *net_create(void)
->  {
-> -	struct net *new_net = NULL;
-> -	int err;
-> -
-> -	if (!(flags & CLONE_NEWNET))
-> -		return get_net(old_net);
-> -
-> -	err = -ENOMEM;
-> -	new_net = net_alloc();
-> -	if (!new_net)
-> -		goto out_err;
-> +	struct net *net;
-> +	int rv;
-> 
-> +	net = net_alloc();
-> +	if (!net)
-> +		return ERR_PTR(-ENOMEM);
->  	mutex_lock(&net_mutex);
-> -	err = setup_net(new_net);
-> -	if (!err) {
-> +	rv = setup_net(net);
-> +	if (rv == 0) {
->  		rtnl_lock();
-> -		list_add_tail(&new_net->list, &net_namespace_list);
-> +		list_add_tail(&net->list, &net_namespace_list);
->  		rtnl_unlock();
+> diff --git a/drivers/misc/tifm_7xx1.c b/drivers/misc/tifm_7xx1.c
+> index a6ef182..b38ee02 100644
+> --- a/drivers/misc/tifm_7xx1.c
+> +++ b/drivers/misc/tifm_7xx1.c
+> @@ -41,11 +41,12 @@ static irqreturn_t tifm_7xx1_isr(int irq, void *dev_id)
+>  	struct tifm_adapter *fm = dev_id;
+>  	struct tifm_dev *sock;
+>  	unsigned int irq_status, cnt;
+> +	unsigned long flags;
+>  
+> -	spin_lock(&fm->lock);
+> +	spin_lock_irqsave(&fm->lock, flags);
+>  	irq_status = readl(fm->addr + FM_INTERRUPT_STATUS);
+>  	if (irq_status == 0 || irq_status == (~0)) {
+> -		spin_unlock(&fm->lock);
+> +		spin_unlock_irqrestore(&fm->lock, flags);
+>  		return IRQ_NONE;
 >  	}
->  	mutex_unlock(&net_mutex);
-> +	if (rv < 0) {
-> +		net_free(net);
-> +		return ERR_PTR(rv);
-> +	}
-> +	return net;
-> +}
-> 
-> -	if (err)
-> -		goto out_free;
-> -out:
-> -	return new_net;
-> -
-> -out_free:
-> -	net_free(new_net);
-> -out_err:
-> -	new_net = ERR_PTR(err);
-> -	goto out;
-> +struct net *copy_net_ns(unsigned long flags, struct net *old_net)
-> +{
-> +	if (!(flags & CLONE_NEWNET))
-> +		return get_net(old_net);
-> +	return net_create();
+>  
+> @@ -74,7 +75,7 @@ static irqreturn_t tifm_7xx1_isr(int irq, void *dev_id)
+>  	else
+>  		tifm_queue_work(&fm->media_switcher);
+>  
+> -	spin_unlock(&fm->lock);
+> +	spin_unlock_irqrestore(&fm->lock, flags);
+>  	return IRQ_HANDLED;
 >  }
-> 
->  static void cleanup_net(struct work_struct *work)
+>  
+
+Dunno, I think the problem here is in kernel/irq/spurious.c.
+
+tifm_7xx1_isr() can legitimately use spin_lock() on that lock, because
+it's running in hard IRQ context and "knows" that tifm_7xx1_isr()
+cannot be reentered on this CPU while it is running.
+
+But try_one_irq() is running tifm_7xx1_isr() with local interrupts
+enabled, which upsets lockdep.
+
+An appropriate fix might be to change try_one_irq() to run the handler
+under local_irq_disable(), but I'm sure it'll get more complex than
+that :(
+
+But I suspect that the code as it stands is non-buggy.  Unless the
+interrupt can magically come back to life.  In which case any change we
+make is purely a make-lockdep-shut-up thing.
+
