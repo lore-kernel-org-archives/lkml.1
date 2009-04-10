@@ -1,89 +1,47 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759385AbZDJP73@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759385AbZDJQES@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759385AbZDJP73 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 10 Apr 2009 11:59:29 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754508AbZDJP7T
+	id S1759385AbZDJQES (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 10 Apr 2009 12:04:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758321AbZDJQEB
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 10 Apr 2009 11:59:19 -0400
-Received: from lug-owl.de ([195.71.106.12]:52420 "EHLO lug-owl.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751191AbZDJP7S (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 10 Apr 2009 11:59:18 -0400
-Date: Fri, 10 Apr 2009 17:59:16 +0200
-From: Jan-Benedict Glaw <jbglaw@lug-owl.de>
-To: Sam Ravnborg <sam@ravnborg.org>
-Cc: Mike Frysinger <vapier.adi@gmail.com>,
+	Fri, 10 Apr 2009 12:04:01 -0400
+Received: from zeniv.linux.org.uk ([195.92.253.2]:55607 "EHLO
+	ZenIV.linux.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756324AbZDJQEA (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 10 Apr 2009 12:04:00 -0400
+Date: Fri, 10 Apr 2009 17:03:53 +0100
+From: Al Viro <viro@ZenIV.linux.org.uk>
+To: Sam Ravnborg <sam@ravnborg.org>, Mike Frysinger <vapier.adi@gmail.com>,
        Andrew Morton <akpm@linux-foundation.org>, Alex Chiang <achiang@hp.com>,
        Robin Holt <holt@sgi.com>, linux-kernel <linux-kernel@vger.kernel.org>,
        linux-ia64@vger.kernel.org
 Subject: Re: cross-compilers
-Message-ID: <20090410155916.GH7921@lug-owl.de>
-Mail-Followup-To: Sam Ravnborg <sam@ravnborg.org>,
-	Mike Frysinger <vapier.adi@gmail.com>,
-	Andrew Morton <akpm@linux-foundation.org>,
-	Alex Chiang <achiang@hp.com>, Robin Holt <holt@sgi.com>,
-	linux-kernel <linux-kernel@vger.kernel.org>,
-	linux-ia64@vger.kernel.org
-References: <20090408010331.GB10768@sgi.com> <20090408054612.GA6744@ldl.fc.hp.com> <20090407225457.86f8a458.akpm@linux-foundation.org> <20090409003308.GK16602@bilbo.ozlabs.org> <20090408174443.79e71503.akpm@linux-foundation.org> <20090409215207.GN16602@bilbo.ozlabs.org> <20090409234750.GE7921@lug-owl.de> <20090410101220.GF7921@lug-owl.de> <8bd0f97a0904100319kb16c81bs596341e016cc41a@mail.gmail.com> <20090410104913.GA21483@uranus.ravnborg.org>
+Message-ID: <20090410160353.GP26366@ZenIV.linux.org.uk>
+References: <20090408054612.GA6744@ldl.fc.hp.com> <20090407225457.86f8a458.akpm@linux-foundation.org> <20090409003308.GK16602@bilbo.ozlabs.org> <20090408174443.79e71503.akpm@linux-foundation.org> <20090409215207.GN16602@bilbo.ozlabs.org> <20090409234750.GE7921@lug-owl.de> <20090410101220.GF7921@lug-owl.de> <8bd0f97a0904100319kb16c81bs596341e016cc41a@mail.gmail.com> <20090410104913.GA21483@uranus.ravnborg.org> <20090410155916.GH7921@lug-owl.de>
 MIME-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha1;
-	protocol="application/pgp-signature"; boundary="PN3BvWO2pAtZiyQU"
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20090410104913.GA21483@uranus.ravnborg.org>
-X-Operating-System: Linux mail 2.6.18-5-686 
-X-gpg-fingerprint: 250D 3BCF 7127 0D8C A444  A961 1DBD 5E75 8399 E1BB
-X-gpg-key: wwwkeys.de.pgp.net
-X-Echelon-Enable: howto poison arsenous mail psychological biological
-	nuclear warfare test the bombastical terror of flooding the spy
-	listeners explosion sex drugs and rock'n'roll
-X-TKUeV: howto poison arsenous mail psychological biological nuclear
-	warfare test the bombastical terror of flooding the spy listeners
-	explosion sex drugs and rock'n'roll
-X-message-flag: Please send plain text messages only. Do not send HTML
-	emails. Thank you. 
+In-Reply-To: <20090410155916.GH7921@lug-owl.de>
 User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Fri, Apr 10, 2009 at 05:59:16PM +0200, Jan-Benedict Glaw wrote:
+> On Fri, 2009-04-10 12:49:13 +0200, Sam Ravnborg <sam@ravnborg.org> wrote:
+> > On Fri, Apr 10, 2009 at 06:19:21AM -0400, Mike Frysinger wrote:
+> 
+> > I'm after a one-stop place where we can locate cross compilers
+> > for all architectures that Linux supports so it is a much simpler
+> > task to actaully try to build our changes for as many architectures
+> > as we supports.
+> > 
+> > And please host them on kernel.org - preferably as an update
+> > of Vegards pages.
+> 
+> Known-working compilers, or the current latest-and-greatest for
+> testing? I can provide the HEAD compilers easily.
 
---PN3BvWO2pAtZiyQU
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
-
-On Fri, 2009-04-10 12:49:13 +0200, Sam Ravnborg <sam@ravnborg.org> wrote:
-> On Fri, Apr 10, 2009 at 06:19:21AM -0400, Mike Frysinger wrote:
-
-> I'm after a one-stop place where we can locate cross compilers
-> for all architectures that Linux supports so it is a much simpler
-> task to actaully try to build our changes for as many architectures
-> as we supports.
->=20
-> And please host them on kernel.org - preferably as an update
-> of Vegards pages.
-
-Known-working compilers, or the current latest-and-greatest for
-testing? I can provide the HEAD compilers easily.
-
-MfG, JBG
-
---=20
-      Jan-Benedict Glaw      jbglaw@lug-owl.de              +49-172-7608481
-  Signature of:                          Zensur im Internet? Nein danke!
-  the second  :
-
---PN3BvWO2pAtZiyQU
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: Digital signature
-Content-Disposition: inline
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.9 (GNU/Linux)
-
-iEYEARECAAYFAknfbNQACgkQHb1edYOZ4buiLQCfXjFs8FFGq3O9ef2sv+0ffhBw
-pXYAoI4kmkvkJatQHzYzmqcPtCO8v1go
-=+vyF
------END PGP SIGNATURE-----
-
---PN3BvWO2pAtZiyQU--
+There's /pub/scm/linux/kernel/git/viro/toolchain.git/ on kernel.org.
+Not updated for a while and it's Fedora-based set.
