@@ -1,86 +1,103 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764093AbZDJKX6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764661AbZDJKYV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764093AbZDJKX6 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 10 Apr 2009 06:23:58 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752907AbZDJKXt
+	id S1764661AbZDJKYV (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 10 Apr 2009 06:24:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760701AbZDJKX7
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 10 Apr 2009 06:23:49 -0400
-Received: from mail.gmx.net ([213.165.64.20]:51344 "HELO mail.gmx.net"
+	Fri, 10 Apr 2009 06:23:59 -0400
+Received: from mail.gmx.net ([213.165.64.20]:33543 "HELO mail.gmx.net"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
-	id S1752685AbZDJKXs (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 10 Apr 2009 06:23:48 -0400
+	id S1764007AbZDJKX6 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 10 Apr 2009 06:23:58 -0400
 Cc: akpm@linux-foundation.org, peterz@infradead.org, lowdanie@gmail.com
 Content-Type: text/plain; charset="iso-8859-1"
-Date: Fri, 10 Apr 2009 12:23:46 +0200
+Date: Fri, 10 Apr 2009 12:23:56 +0200
 From: "Wolfram Strepp" <wstrepp@gmx.de>
-Message-ID: <20090410102346.320840@gmx.net>
+Message-ID: <20090410102356.283330@gmx.net>
 MIME-Version: 1.0
-Subject: [PATCH 1/3] Further optimization of function rb_erase() in
+Subject: [PATCH 2/3] Further optimization of function rb_erase() in
  lib/rbtree.c
 To: linux-kernel@vger.kernel.org
 X-Authenticated: #14768304
 X-Flags: 0001
 X-Mailer: WWW-Mail 6100 (Global Message Exchange)
 X-Priority: 3
-X-Provags-ID: V01U2FsdGVkX19btvA9OTlbegxaobzfU+ENd97gEVkT5IUAwnNb0t
- E+2Dxephg/adjXSMiv18dofXyw47UAu+tlow== 
+X-Provags-ID: V01U2FsdGVkX19EH+pZS5hEf7TZYQeRQIua2s4sZBAdV4CeystAOm
+ AqMnKxAdtpubUvDSzLNt2zMrNHp57XHsRZ6Q== 
 Content-Transfer-Encoding: 8bit
-X-GMX-UID: Ayz5YX3aLi50AJh8i2tp9pJrZml1ZFgg
-X-FuHaFi: 0.58
+X-GMX-UID: WHe6CMMafW47UIoClmVoL61udmllckWT
+X-FuHaFi: 0.59
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This small patch-series reorganizes some lines in function rb_erase()
-in lib/rbtree.c, and as a result one if-condition can be omitted.
-Tested on x86.
+There are two cases when a node, having 2 childs, is erased:
+'normal case': the successor is not the right-hand-child of the node to be erased
+'special case': the successor is the right-hand child of the node to be erased
 
+Here some ascii-art, with following symbols (referring to the code):
+O: node to be deleted
+N: the successor of O
+P: parent of N
+C: child of N
+L: some other node
 
-First, move some code around in order to make the next change more obvious.
+normal case:
 
-Signed-off-by: Peter Zijlstra <a.p.zijlstra@chello.nl>
+               O                         N
+              / \                       / \
+             /   \                     /   \
+            L     \                   L     \
+           / \     P      ---->      / \     P
+                  / \                       / \
+                 /                         /
+                N                         C
+                 \                       / \
+                  \
+                   C
+                  / \
+
+special case:
+              O|P                        N
+              / \                       / \
+             /   \                     /   \
+            L     \                   L     \
+           / \     N      ---->      /       C
+                    \                       / \
+                     \
+                      C
+                     / \
+
+Notice that for the special case we don't have to reconnect C to N.
+
 Signed-off-by: Wolfram Strepp <wstrepp@gmx.de>
-
+Signed-off-by: Peter Zijlstra <a.p.zijlstra@chello.nl>
 ---
- lib/rbtree.c |   19 ++++++++++---------
- 1 file changed, 10 insertions(+), 9 deletions(-)
+ lib/rbtree.c |    8 ++++----
+ 1 file changed, 4 insertions(+), 4 deletions(-)
 Index: linux-2.6/lib/rbtree.c
 ===================================================================
 --- linux-2.6.orig/lib/rbtree.c
 +++ linux-2.6/lib/rbtree.c
-@@ -237,6 +237,16 @@ void rb_erase(struct rb_node *node, stru
- 		node = node->rb_right;
- 		while ((left = node->rb_left) != NULL)
- 			node = left;
-+
-+		if (rb_parent(old))
-+		{
-+			if (rb_parent(old)->rb_left == old)
-+				rb_parent(old)->rb_left = node;
-+			else
-+				rb_parent(old)->rb_right = node;
-+		} else
-+			root->rb_node = node;
-+
- 		child = node->rb_right;
+@@ -251,13 +251,13 @@ void rb_erase(struct rb_node *node, stru
  		parent = rb_parent(node);
  		color = rb_color(node);
-@@ -253,15 +263,6 @@ void rb_erase(struct rb_node *node, stru
- 		node->rb_right = old->rb_right;
- 		node->rb_left = old->rb_left;
  
--		if (rb_parent(old))
--		{
--			if (rb_parent(old)->rb_left == old)
--				rb_parent(old)->rb_left = node;
--			else
--				rb_parent(old)->rb_right = node;
+-		if (child)
+-			rb_set_parent(child, parent);
+ 		if (parent == old) {
+-			parent->rb_right = child;
+ 			parent = node;
 -		} else
--			root->rb_node = node;
--
- 		rb_set_parent(old->rb_left, node);
- 		if (old->rb_right)
- 			rb_set_parent(old->rb_right, node);
++		} else {
++			if (child)
++				rb_set_parent(child, parent);
+ 			parent->rb_left = child;
++		}
+ 
+ 		node->rb_parent_color = old->rb_parent_color;
+ 		node->rb_right = old->rb_right;
+
 
 -- 
-Neu: GMX FreeDSL Komplettanschluss mit DSL 6.000 Flatrate + Telefonanschluss für nur 17,95 Euro/mtl.!* http://dslspecial.gmx.de/freedsl-surfflat/?ac=OM.AD.PD003K11308T4569a
+Psssst! Schon vom neuen GMX MultiMessenger gehört? Der kann`s mit allen: http://www.gmx.net/de/go/multimessenger01
