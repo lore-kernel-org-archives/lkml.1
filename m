@@ -1,37 +1,74 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762013AbZDJFaX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762855AbZDJFdm@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762013AbZDJFaX (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 10 Apr 2009 01:30:23 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759499AbZDJF37
+	id S1762855AbZDJFdm (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 10 Apr 2009 01:33:42 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758105AbZDJFdO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 10 Apr 2009 01:29:59 -0400
-Received: from mfbichi12.ns.itscom.net ([219.110.2.190]:60364 "EHLO
-	mfbichi12.ns.itscom.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756627AbZDJF36 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 10 Apr 2009 01:29:58 -0400
-X-Greylist: delayed 787 seconds by postgrey-1.27 at vger.kernel.org; Fri, 10 Apr 2009 01:29:58 EDT
-From: hooanon05@yahoo.co.jp
-Subject: Re: current->mm == NULL in security_vm_enough_memory(). 
-To: Tetsuo Handa <penguin-kernel@I-love.SAKURA.ne.jp>
-Cc: jmorris@namei.org, alan@redhat.com, linux-kernel@vger.kernel.org,
-       linux-security-module@vger.kernel.org
-In-Reply-To: <200904092105.HBG52601.MHFOtQOLSVFOFJ@I-love.SAKURA.ne.jp>
-References: <200903260130.n2Q1U9EJ040448@www262.sakura.ne.jp> <alpine.LRH.2.00.0903261236580.30336@tundra.namei.org> <200904092105.HBG52601.MHFOtQOLSVFOFJ@I-love.SAKURA.ne.jp>
-Date: Fri, 10 Apr 2009 14:14:59 +0900
-Message-ID: <28936.1239340499@jrobl>
+	Fri, 10 Apr 2009 01:33:14 -0400
+Received: from sh.osrg.net ([192.16.179.4]:58953 "EHLO sh.osrg.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1756656AbZDJFdO (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 10 Apr 2009 01:33:14 -0400
+From: Ryusuke Konishi <konishi.ryusuke@lab.ntt.co.jp>
+To: linux-fsdevel@vger.kernel.org
+Cc: linux-kernel@vger.kernel.org
+Subject: [PATCH 0/8] nilfs2 updates for 2.6.30
+Date: Fri, 10 Apr 2009 14:27:53 +0900
+Message-Id: <1239341281-20249-1-git-send-email-konishi.ryusuke@lab.ntt.co.jp>
+X-Mailer: git-send-email 1.5.6.5
+X-Dispatcher: imput version 20050308(IM148)
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-3.0 (sh.osrg.net [192.16.179.4]); Fri, 10 Apr 2009 14:33:12 +0900 (JST)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Hi,
 
-Tetsuo Handa:
-> I don't see this message for 2.6.29 and earlier.
-> As of 2.6.30-rc1, this problem is not solved yet.
-> I think something happened between 2.6.29 and 2.6.30-rc1.
+Here are some fixes of nilfs2 we have scheduled for 2.6.30.  I am
+planning to send them to Linus a bit later.  This post is for your
+review.
 
-I could not reproduce the problem.
-Are there any conditions?
+The "nilfs2: simplify handling of active state of segments fix" patch
+is most important, which fixes user-reported file system corruption
+through garbage collection.
+
+The "nilfs2: fix lockdep recursive locking warning on bmap", and
+    "nilfs2: fix lockdep recursive locking warning on meta data files"
+fix known lockdep warnings.
+
+The "nilfs2: fix wrong accounting and duplicate brelse in nilfs_sufile_set_error",
+    "nilfs2: segment usage file cleanups", and
+    "nilfs2: fix possible mismatch of sufile counters on recovery"
+fix possible mismatch of on-disk counters keeping the number of dirty
+or clean segments, where the second patch is a preparation for the
+third one.
+
+The "nilfs2: return f_fsid for statfs2" follows the recent change by
+Coly Li's series "fs: return f_fsid for statfs(2)".
+
+And, the "nilfs2: remove module version" deletes a MODULE_VERSION()
+declaration which was used for the out-of-kernel module.
 
 
-J. R. Okajima
+With regards,
+Ryusuke Konishi
+--
+Ryusuke Konishi (8):
+      nilfs2: return f_fsid for statfs2
+      nilfs2: fix lockdep recursive locking warning on bmap
+      nilfs2: fix lockdep recursive locking warning on meta data files
+      nilfs2: remove module version
+      nilfs2: simplify handling of active state of segments fix
+      nilfs2: fix wrong accounting and duplicate brelse in nilfs_sufile_set_error
+      nilfs2: segment usage file cleanups
+      nilfs2: fix possible mismatch of sufile counters on recovery
+
+ fs/nilfs2/bmap.c      |    5 +
+ fs/nilfs2/nilfs.h     |    5 -
+ fs/nilfs2/recovery.c  |   20 +---
+ fs/nilfs2/sufile.c    |  290 ++++++++++++++++++-------------------------------
+ fs/nilfs2/sufile.h    |   79 +++++++++++++-
+ fs/nilfs2/super.c     |    7 +-
+ fs/nilfs2/the_nilfs.c |    4 +
+ 7 files changed, 197 insertions(+), 213 deletions(-)
+
