@@ -1,81 +1,134 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S935775AbZDJTgY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1765760AbZDJTl6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S935775AbZDJTgY (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 10 Apr 2009 15:36:24 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932522AbZDJTgB
+	id S1765760AbZDJTl6 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 10 Apr 2009 15:41:58 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754528AbZDJTlr
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 10 Apr 2009 15:36:01 -0400
-Received: from mx3.mail.elte.hu ([157.181.1.138]:47831 "EHLO mx3.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1759222AbZDJTgB (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 10 Apr 2009 15:36:01 -0400
-Date: Fri, 10 Apr 2009 21:34:44 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: Tejun Heo <tj@kernel.org>
-Cc: Linus Torvalds <torvalds@linux-foundation.org>,
-       Ivan Kokshaysky <ink@jurassic.park.msu.ru>,
-       Al Viro <viro@ZenIV.linux.org.uk>, Mike Travis <travis@sgi.com>,
-       Christoph Lameter <cl@linux-foundation.org>,
-       Heiko Carstens <heiko.carstens@de.ibm.com>,
-       Martin Schwidefsky <schwidefsky@de.ibm.com>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH] unbreak alpha percpu
-Message-ID: <20090410193444.GA18039@elte.hu>
-References: <20090410151224.GM26366@ZenIV.linux.org.uk> <20090410154704.GN26366@ZenIV.linux.org.uk> <alpine.LFD.2.00.0904100915010.4583@localhost.localdomain> <20090410165030.GQ26366@ZenIV.linux.org.uk> <20090410170507.GR26366@ZenIV.linux.org.uk> <20090410171415.GA6033@ZenIV.linux.org.uk> <20090410180532.GA4419@jurassic.park.msu.ru> <alpine.LFD.2.00.0904101118470.4583@localhost.localdomain> <49DF935E.8030607@kernel.org> <49DF97D0.9090506@kernel.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <49DF97D0.9090506@kernel.org>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+	Fri, 10 Apr 2009 15:41:47 -0400
+Received: from 82-117-125-11.tcdsl.calypso.net ([82.117.125.11]:38841 "EHLO
+	smtp.ossman.eu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752506AbZDJTlr (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 10 Apr 2009 15:41:47 -0400
+Date: Fri, 10 Apr 2009 21:41:43 +0200
+From: Pierre Ossman <drzeus-mmc@drzeus.cx>
+To: Purushotam Kumar <purushotam@ti.com>
+Cc: davinci-linux-open-source@linux.davincidsp.com,
+       linux-kernel@vger.kernel.org, purushotam@ti.com
+Subject: Re: [PATCH 1/1] DaVinci: MMC: V4: MMC/SD controller driver for
+ DaVinci family.
+Message-ID: <20090410214143.4aa4045e@mjolnir.ossman.eu>
+In-Reply-To: <1238666196-29979-1-git-send-email-purushotam@ti.com>
+References: <1238666196-29979-1-git-send-email-purushotam@ti.com>
+X-Mailer: Claws Mail 3.7.1 (GTK+ 2.16.0; x86_64-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Thu,  2 Apr 2009 15:26:36 +0530
+Purushotam Kumar <purushotam@ti.com> wrote:
 
-* Tejun Heo <tj@kernel.org> wrote:
+>  arch/arm/mach-davinci/include/mach/mmc.h |   25 +
+>  drivers/mmc/host/Kconfig                 |    8 +
+>  drivers/mmc/host/Makefile                |    1 +
+>  drivers/mmc/host/davinci_mmc.c           | 1264 ++++++++++++++++++++++++++++++
+>  4 files changed, 1298 insertions(+), 0 deletions(-)
+>  create mode 100644 arch/arm/mach-davinci/include/mach/mmc.h
+>  create mode 100644 drivers/mmc/host/davinci_mmc.c
 
-> Long term, I think what Ivan proposed with a bit of addition so 
-> that combination of DECLARE_PER_CPU() and static DEFINE_PER_CPU() 
-> triggers compile error but I think it's better to do it when 
-> converting non-x86 archs to dynamic percpu allocator which is 
-> scheduled for the next merge window.  For the time being, how 
-> about just moving the generic percpu_*() accessors to 
-> linux/percpu.h?  asm-generic/percpu.h is meant to carry generic 
-> stuff for low level stuff - declarations, definitions and pointer 
-> offset calculation and so on but not for generic interface.
-> 
-> I currently can't build or test stuff so the patch is not tested 
-> at all.  Ingo, can you please test whether this would work?
+I want a MAINTAINERS entry for this driver as well.
 
-Yes - but i'm somewhat confused - i frequently cross-built Alpha and 
-other architectures as well.
+> +	/*
+> +	 * Before non-DMA WRITE commands the controller needs priming:
+> +	 * FIFO should be populated with 32 bytes i.e. whatever is the FIFO size
+> +	 */
+> +	if (!host->do_dma && (host->data_dir == DAVINCI_MMC_DATADIR_WRITE) &&
+> +		((cmd->opcode == MMC_WRITE_BLOCK) ||
+> +		(cmd->opcode == MMC_WRITE_MULTIPLE_BLOCK)))
+> +		davinci_fifo_data_trans(host, DAVINCI_MMC_FIFO_SIZE_BYTE);
 
-So exactly what problem do we have here - has some devel tree grown 
-new use of these APIs in generic code, without waiting for all 
-arches to be properly converted?
+I'm still not following the requirements here. Why would the hardware
+only need to have the FIFO primed for those two commands and not every
+kind of write?
 
-(sounds of rummaging around)
+> +
+> +	/* We know sg_len and ccnt will never be out of range because
+> +	 * we told the mmc layer which in turn tells the block layer
+> +	 * to ensure that it only hands us one scatterlist segment
+> +	 * per EDMA PARAM entry.  Update the PARAM
+> +	 * entries needed for each segment of this scatterlist.
+> +	 */
+> +	for (slot = channel, link = 0, sg = data->sg, sg_len = host->sg_len;
+> +			sg_len-- != 0 && bytes_left;
+> +			sg = sg_next(sg), slot = host->links[link++]) {
 
-Oh drat:
+You might be able to make this cleaner using the for_each_sg helper.
 
-| commit 4e69489a0ac11a9b62a25923975bfc370a30eae5
-| Author: Eric Dumazet <dada1@cosmosbay.com>
-| Date:   Sat Apr 4 16:41:09 2009 -0700
-|
-|     socket: use percpu_add() while updating sockets_in_use
+> +static unsigned int calculate_freq_for_card(struct mmc_davinci_host *host,
+> +	unsigned int mmc_req_freq)
+> +{
+> +	unsigned int mmc_freq = 0, cpu_arm_clk = 0, mmc_push_pull = 0;
+> +
+> +	cpu_arm_clk = host->mmc_input_clk;
+> +	if (mmc_req_freq && cpu_arm_clk > (2 * mmc_req_freq))
+> +		mmc_push_pull = ((unsigned int)cpu_arm_clk
+> +				/ (2 * mmc_req_freq)) - 1;
+> +	else
+> +		mmc_push_pull = 0;
+> +
+> +	mmc_freq = (unsigned int)cpu_arm_clk / (2 * (mmc_push_pull + 1));
+> +
+> +	if (mmc_freq > mmc_req_freq)
+> +		mmc_push_pull = mmc_push_pull + 1;
 
-Now i understand the rush ...
+The naming of the divider is a bit confusing here. :)
 
-Yes, moving the APIs to the generic header should properly expose 
-the wrapped default implementations. I'll test your patch in a 
-minute.
+> +
+> +	/* Convert ns to clock cycles */
+> +	if (mmc_req_freq < 400000)
+> +		ns_in_one_cycle = 1000000 / ((cpu_arm_clk
+> +					/ (2 * (mmc_push_pull + 1)))/1000);
+> +	else
+> +		ns_in_one_cycle = 1000000 / ((cpu_arm_clk
+> +					/ (2 * (mmc_push_pull + 1)))/1000000);
+> +
 
-	Ingo
+The clock frequency is per host, so store this in the mmc_davinci_host
+structure.
+
+> +	if (ios->bus_mode == MMC_BUSMODE_OPENDRAIN) {
+> +		u32 temp;
+> +
+> +		/* Ignoring the init clock value passed for fixing the inter
+> +		 * operability with different cards.
+> +		 */
+> +		open_drain_freq = ((unsigned int)cpu_arm_clk
+> +				/ (2 * MMCSD_INIT_CLOCK)) - 1;
+> +
+> +		if (open_drain_freq > 0xFF)
+> +			open_drain_freq = 0xFF;
+> +
+> +		temp = readl(host->base + DAVINCI_MMCCLK) & ~MMCCLK_CLKRT_MASK;
+> +		temp |= open_drain_freq;
+> +		writel(temp, host->base + DAVINCI_MMCCLK);
+> +
+> +		/* Convert ns to clock cycles */
+> +		ns_in_one_cycle = (1000000) / (MMCSD_INIT_CLOCK/1000);
+
+I'm still not sure why you need this. Open drain mode is always used at
+a low frequency anyway.
+
+Rgds
+-- 
+     -- Pierre Ossman
+
+  Linux kernel, MMC maintainer        http://www.kernel.org
+  rdesktop, core developer          http://www.rdesktop.org
+  TigerVNC, core developer          http://www.tigervnc.org
+
+  WARNING: This correspondence is being monitored by the
+  Swedish government. Make sure your server uses encryption
+  for SMTP traffic and consider using PGP for end-to-end
+  encryption.
