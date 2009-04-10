@@ -1,136 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764939AbZDJAs3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756023AbZDJAua@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764939AbZDJAs3 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 9 Apr 2009 20:48:29 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S935240AbZDJAsI
+	id S1756023AbZDJAua (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 9 Apr 2009 20:50:30 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752165AbZDJAuU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 9 Apr 2009 20:48:08 -0400
-Received: from mga02.intel.com ([134.134.136.20]:29458 "EHLO mga02.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1764816AbZDJAsF (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 9 Apr 2009 20:48:05 -0400
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.40,164,1239001200"; 
-   d="scan'208";a="505184266"
-Date: Thu, 9 Apr 2009 17:48:04 -0700 (Pacific Daylight Time)
-From: "Brandeburg, Jesse" <jesse.brandeburg@intel.com>
-To: David Miller <davem@davemloft.net>, Andrew Lutomirski <amluto@gmail.com>
-cc: "netdev@vger.kernel.org" <netdev@vger.kernel.org>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH 1/1] Tell linkwatch about new interfaces
-In-Reply-To: <cb0375e10904042100o1a203512l593021ee66cb591d@mail.gmail.com>
-Message-ID: <alpine.WNT.2.00.0904091128270.6048@jbrandeb-desk1.amr.corp.intel.com>
-References: <cb0375e10904010840n1543a890w9039465d0f80ffcc@mail.gmail.com>  <20090404.170539.148727646.davem@davemloft.net> <cb0375e10904042100o1a203512l593021ee66cb591d@mail.gmail.com>
-User-Agent: Alpine 2.00 (WNT 1167 2008-08-23)
-ReplyTo: "Brandeburg, Jesse" <jesse.brandeburg@intel.com>
-X-X-Sender: amrjbrandeb@imapmail.glb.intel.com
+	Thu, 9 Apr 2009 20:50:20 -0400
+Received: from cn.fujitsu.com ([222.73.24.84]:65410 "EHLO song.cn.fujitsu.com"
+	rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org with ESMTP
+	id S1751280AbZDJAuT (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 9 Apr 2009 20:50:19 -0400
+Message-ID: <49DE97EF.7080208@cn.fujitsu.com>
+Date: Fri, 10 Apr 2009 08:50:55 +0800
+From: Li Zefan <lizf@cn.fujitsu.com>
+User-Agent: Thunderbird 2.0.0.9 (X11/20071115)
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+To: Ingo Molnar <mingo@elte.hu>
+CC: Steven Rostedt <rostedt@goodmis.org>,
+       Frederic Weisbecker <fweisbec@gmail.com>,
+       Pekka Enberg <penberg@cs.helsinki.fi>, Pekka Paalanen <pq@iki.fi>,
+       eduard.munteanu@linux360.ro, LKML <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH] tracing: fix document references
+References: <49DE9764.1090004@cn.fujitsu.com>
+In-Reply-To: <49DE9764.1090004@cn.fujitsu.com>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, 4 Apr 2009, Andrew Lutomirski wrote:
-> On Sat, Apr 4, 2009 at 8:05 PM, David Miller <davem@davemloft.net> wrote:
-> > From: Andrew Lutomirski <amluto@gmail.com>
-> > Date: Wed, 1 Apr 2009 11:40:06 -0400
-> >
-> >> When a network driver registers a new interface, linkwatch will not notice,
-> >> and hence not set the rfc2863 operstate, until netif_carrier_on gets called.
-> >> If the new interface has no carrier when it is connected, then a status of
-> >> "unknown" is reported to userspace, which confuses various tools
-> >> (NetworkManager, for example).
-> >>
-> >> This fires a linkwatch event for all new interfaces, so that operstate
-> >> gets set reasonably quickly.
-> >>
-> >> Signed-off-by: Andrew Lutomirski <amluto@gmail.com>
-> >
-> > The default assumed state for a freshly registered network
-> > device is that the link is up.
-> >
-> > If that disagrees from reality, the driver should make the
-> > appropriate netif_carrier_off() call.
-> >
-> > I'm sure you'll find that the e1000 driver is not doing this
-> > and that is what causes the bug you are seeing.
-> >
+CC: LKML
 
-Dave, if we move the netif_carrier_off call to our dev->open like tg3 has, 
-do you think this is sufficient?
-
-I note that we were calling netif_tx_stop_all_queues here, but I'm curious 
-if davem thinks we need to lock out our tx routine until dev->open 
-completes or whether the starting state of the netdev is sufficient.
-
-> Nope.  The end of e1000_probe (in e1000e) is:
+Li Zefan wrote:
+> When moving documents to Documentation/trace/, I forgot to
+> grep Kconfig to find out those references.
 > 
->         /* tell the stack to leave us alone until e1000_open() is called */
->         netif_carrier_off(netdev);
->         netif_tx_stop_all_queues(netdev);
+> Signed-off-by: Li Zefan <lizf@cn.fujitsu.com>
+> ---
+>  kernel/trace/Kconfig |    4 ++--
+>  1 files changed, 2 insertions(+), 2 deletions(-)
 > 
->         strcpy(netdev->name, "eth%d");
->         err = register_netdev(netdev);
->         if (err)
->                 goto err_register;
-> 
->         e1000_print_device_info(adapter);
-> 
-> netif_carrier_off does:
-> 
-> void netif_carrier_off(struct net_device *dev)
-> {
->         if (!test_and_set_bit(__LINK_STATE_NOCARRIER, &dev->state)) {
->                 if (dev->reg_state == NETREG_UNINITIALIZED)
->                         return;
->                 linkwatch_fire_event(dev);
->         }
-> }
-> 
-> So, either it should be illegal to call netif_carrier_off on an
-> unregistered net_device (and there should be a WARN() in
-> netif_carrier_off), or it should work correctly, and
-> register_netdevice should do the right thing when there is no carrier
-> (i.e. something like my patch).
+> diff --git a/kernel/trace/Kconfig b/kernel/trace/Kconfig
+> index 2246141..417d198 100644
+> --- a/kernel/trace/Kconfig
+> +++ b/kernel/trace/Kconfig
+> @@ -312,7 +312,7 @@ config KMEMTRACE
+>  	  and profile kernel code.
+>  
+>  	  This requires an userspace application to use. See
+> -	  Documentation/vm/kmemtrace.txt for more information.
+> +	  Documentation/trace/kmemtrace.txt for more information.
+>  
+>  	  Saying Y will make the kernel somewhat larger and slower. However,
+>  	  if you disable kmemtrace at run-time or boot-time, the performance
+> @@ -403,7 +403,7 @@ config MMIOTRACE
+>  	  implementation and works via page faults. Tracing is disabled by
+>  	  default and can be enabled at run-time.
+>  
+> -	  See Documentation/tracers/mmiotrace.txt.
+> +	  See Documentation/trace/mmiotrace.txt.
+>  	  If you are not helping to develop drivers, say N.
+>  
+>  config MMIOTRACE_TEST
 
-does this patch also fix the issue?
-
-===== begin =====
-
-e1000e: indicate link down at load
-
-From: Jesse Brandeburg <jesse.brandeburg@intel.com>
-
-same kind of patch as e1000, let driver explicitly push link state
-once link comes up.
-
-Signed-off-by: Jesse Brandeburg <jesse.brandeburg@intel.com>
----
-
- drivers/net/e1000e/netdev.c |    6 ++----
- 1 files changed, 2 insertions(+), 4 deletions(-)
-
-diff --git a/drivers/net/e1000e/netdev.c b/drivers/net/e1000e/netdev.c
-index fb78278..6a0411e 100644
---- a/drivers/net/e1000e/netdev.c
-+++ b/drivers/net/e1000e/netdev.c
-@@ -3072,6 +3072,8 @@ static int e1000_open(struct net_device *netdev)
- 	if (test_bit(__E1000_TESTING, &adapter->state))
- 		return -EBUSY;
- 
-+	netif_carrier_off(netdev);
-+
- 	/* allocate transmit descriptors */
- 	err = e1000e_setup_tx_resources(adapter);
- 	if (err)
-@@ -5006,10 +5008,6 @@ static int __devinit e1000_probe(struct pci_dev *pdev,
- 	if (!(adapter->flags & FLAG_HAS_AMT))
- 		e1000_get_hw_control(adapter);
- 
--	/* tell the stack to leave us alone until e1000_open() is called */
--	netif_carrier_off(netdev);
--	netif_tx_stop_all_queues(netdev);
--
- 	strcpy(netdev->name, "eth%d");
- 	err = register_netdev(netdev);
- 	if (err)
