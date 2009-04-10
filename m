@@ -1,50 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1765456AbZDJBUO@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932174AbZDJB30@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1765456AbZDJBUO (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 9 Apr 2009 21:20:14 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757814AbZDJBT7
+	id S932174AbZDJB30 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 9 Apr 2009 21:29:26 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757814AbZDJB3N
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 9 Apr 2009 21:19:59 -0400
-Received: from mail-bw0-f169.google.com ([209.85.218.169]:37123 "EHLO
-	mail-bw0-f169.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756427AbZDJBT6 convert rfc822-to-8bit (ORCPT
+	Thu, 9 Apr 2009 21:29:13 -0400
+Received: from yx-out-2324.google.com ([74.125.44.29]:17122 "EHLO
+	yx-out-2324.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754815AbZDJB3M (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 9 Apr 2009 21:19:58 -0400
+	Thu, 9 Apr 2009 21:29:12 -0400
 MIME-Version: 1.0
-In-Reply-To: <grlpna$3sq$1@ger.gmane.org>
-References: <20090409181039.GA605@elte.hu> <grlpna$3sq$1@ger.gmane.org>
-Date: Fri, 10 Apr 2009 03:19:56 +0200
-Message-ID: <897274600904091819q2ab5338fpe2125d7dc1c671e3@mail.gmail.com>
-Subject: Re: [RFC GIT PULL (late)] Xen updates for v2.6.30
-From: "Morten P.D. Stevens" <mstevens@win-professional.com>
-To: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 8BIT
+In-Reply-To: <1239296459.31467.142.camel@calx>
+References: <200904061430.26276.rgetz@blackfin.uclinux.org>
+	 <200904071744.17727.rgetz@blackfin.uclinux.org>
+	 <1239220294.31467.55.camel@calx>
+	 <200904090954.54601.rgetz@blackfin.uclinux.org>
+	 <1239296459.31467.142.camel@calx>
+Date: Thu, 9 Apr 2009 18:29:10 -0700
+Message-ID: <a24804730904091829k167668f1y6e546693b2f8e5da@mail.gmail.com>
+Subject: Re: IRQF_SAMPLE_RANDOM question...
+From: Chris Peterson <cpeterso@cpeterso.com>
+To: Matt Mackall <mpm@selenic.com>
+Cc: Robin Getz <rgetz@blackfin.uclinux.org>, netdev@vger.kernel.org,
+       linux-kernel@vger.kernel.org
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-2009/4/9 Kevin Bowling <kevin.bowling@gmail.com>:
+> Hmm, this is a purely internal interface. Not sure if we need to bother
+> with scheduling it. My plan was to simply get the new code in and sweep
+> the kernel.
 
-> There are a lot of us that would really like to see Xen dom0 merged
-> upstream, and several people were disappointed when it didn't go in the
-> 2.6.30-rc1 merge window (check that thread).  The biggest concern was "do
-> people _want_ Xen merged?" rather than any technical problems with the code.
-> I think, without a doubt, yes.  Xen is used by many corporations.  It has
-> excellent performance, works across platforms that do not have hardware
-> virt, and has a proven track record -- check out companies like Linode.com
-> and Slicehost.  It also has the maintainership of Citrix, so it is unlikely
-> that the code will stagnate or become a burden to other maintainers.
+Matt, sounds like you're volunteering? :)
 
-100% agree.
+>From my understanding, the roadmap looks something like:
 
-It is very important for thousands of companies to get xen dom0
-support, right now.
+1. Add checkpatch warning about IRQF_SAMPLE_RANDOM
+2. Add any new add_*_randomness() functions (e.g. RTC and main clocks?
+Serial or USB interrupts?)
+3. Remove IRQF_SAMPLE_RANDOM macro (and checkpatch warning)
+4. Add "pragmatic entropy accounting model"?
 
-We need Linux 2.6.30 with xen dom0 support.
 
-Please, merge it.
-
-Best Regards,
-
-Morten
+chris
