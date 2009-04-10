@@ -1,73 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763750AbZDJVvy@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762785AbZDJWAa@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763750AbZDJVvy (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 10 Apr 2009 17:51:54 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754412AbZDJVvo
+	id S1762785AbZDJWAa (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 10 Apr 2009 18:00:30 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752409AbZDJWAN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 10 Apr 2009 17:51:44 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:34359 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1753865AbZDJVvn (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 10 Apr 2009 17:51:43 -0400
-Date: Fri, 10 Apr 2009 14:47:15 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: "Jeff Haran" <jharan@Brocade.COM>
-Cc: linux-kernel@vger.kernel.org, Doug Thompson <dougthompson@xmission.com>,
-       Kumar Gala <galak@kernel.crashing.org>, Dave Jiang <djiang@mvista.com>,
-       linuxppc-dev@ozlabs.org
-Subject: Re: bug in drivers/edac/mpc85xx_edac.c:mpc85xx_mc_check() ?
-Message-Id: <20090410144715.0fa5939e.akpm@linux-foundation.org>
-In-Reply-To: <57AC2FA1761300418C7AB8F3EA493C9702C5F200@HQ-EXCH-5.corp.brocade.com>
-References: <57AC2FA1761300418C7AB8F3EA493C9702C5F200@HQ-EXCH-5.corp.brocade.com>
-X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Fri, 10 Apr 2009 18:00:13 -0400
+Received: from www.tglx.de ([62.245.132.106]:58910 "EHLO www.tglx.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752104AbZDJWAL (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 10 Apr 2009 18:00:11 -0400
+Date: Fri, 10 Apr 2009 23:59:48 +0200 (CEST)
+From: Thomas Gleixner <tglx@linutronix.de>
+To: jvrao <jvrao@linux.vnet.ibm.com>
+cc: LKML <linux-kernel@vger.kernel.org>,
+       rt-users <linux-rt-users@vger.kernel.org>,
+       Mike Anderson <andmike@linux.vnet.ibm.com>,
+       "Luis Claudio R. Goncalves" <lgoncalv@redhat.com>,
+       linux-driver@qlogic.com
+Subject: Re: Interrupts are being dropped under heavy IO on -rt .
+In-Reply-To: <49DF71CF.7070509@linux.vnet.ibm.com>
+Message-ID: <alpine.LFD.2.00.0904102357470.21577@localhost.localdomain>
+References: <49DF71CF.7070509@linux.vnet.ibm.com>
+User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-(cc's added)
+On Fri, 10 Apr 2009, jvrao wrote:
+> Qlogic driver uses MSI-EDGE interrupts by default.
+> 
+> On -rt kernel under heavy IO load we observed that the driver missed
+> interrupts occasionally.
+> 
+> Missing interrupts caused spurious mailbox timeouts and path failovers.
+> 
+> Suspecting MSI interrupts, we disabled MSI and forcing the driver to use APIC
+> interrupts (Patch attached).
+> 
+> With this change, our IO tests ran for extended period of time without any
+> issues.
+> 
+> It would be interesting to see if the MSI infrastructure itself has issues on
+> realtime, or it is the combination of qla2xxx/MSI.
+> 
+> Right now we don't have any setup to test out MSI with other adapters. Hence,
+> wondering if anyone faced similar issues.
 
-On Wed, 8 Apr 2009 14:57:42 -0700
-"Jeff Haran" <jharan@Brocade.COM> wrote:
+Hmm. Can we get down to the root cause of that problem instead of
+applying a bandaid patch ?
 
-> Hi,
-> 
-> Recent versions of this function start off with:
-> 
-> static void mpc85xx_mc_check(struct mem_ctl_info *mci)
-> {
->     struct mpc85xx_mc_pdata *pdata = mci->pvt_info;
->     ...
-> 
->     err_detect = in_be32(pdata->mc_vbase + MPC85XX_MC_ERR_DETECT);
->     if (err_detect)
->         return;
-> 
->     ...
-> }
-> 
-> My reading of the Freescale 8548E Manual leads me to conclude that the
-> Memory Error Detect register (ERR_DETECT) will have various bits set if
-> the memory controller has detected an error since the last time it was
-> cleared. If no memory error has occurred, the register will contain 0.
-> 
-> Perhaps I am missing something very basic, but it seem to me that the
-> above "if" should be:
-> 
->     if (!err_detect)
->         return;
-> 
-> as the existing code would seem to read "if any errors have occurred,
-> ignore them", though perhaps testing has demonstrated that the Freescale
-> manual is in error.
-> 
-> Please include this email address in responses as I do not subscribe.
-> 
-> Thanks,
-> 
-> Jeff Haran
-> Brocade
+If -rt has problems with MSI edge interrupts then we really need to
+figure out why. If the qlogic driver has problems with the different
+timings of -rt then we need to fix that one.
 
+Thanks,
+
+	tglx
