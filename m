@@ -1,122 +1,229 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S937741AbZDJRQj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S938964AbZDJRRJ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S937741AbZDJRQj (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 10 Apr 2009 13:16:39 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S937477AbZDJRPs
+	id S938964AbZDJRRJ (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 10 Apr 2009 13:17:09 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S938583AbZDJRQA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 10 Apr 2009 13:15:48 -0400
-Received: from mail.atheros.com ([12.36.123.2]:45044 "EHLO mail.atheros.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S937592AbZDJRPq (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 10 Apr 2009 13:15:46 -0400
-Date: Fri, 10 Apr 2009 10:15:44 -0700
-From: "Luis R. Rodriguez" <lrodriguez@atheros.com>
-To: Alan Jenkins <alan-jenkins@tuffmail.co.uk>
-CC: "ath5k-devel@lists.ath5k.org" <ath5k-devel@venema.h4ckr.net>,
-       Kernel Testers List <kernel-testers@vger.kernel.org>,
-       "linux-wireless@vger.kernel.org" <linux-wireless@vger.kernel.org>,
+	Fri, 10 Apr 2009 13:16:00 -0400
+Received: from zeniv.linux.org.uk ([195.92.253.2]:57759 "EHLO
+	ZenIV.linux.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S938784AbZDJRP7 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 10 Apr 2009 13:15:59 -0400
+Date: Fri, 10 Apr 2009 18:14:15 +0100
+From: Al Viro <viro@ZenIV.linux.org.uk>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: Ingo Molnar <mingo@elte.hu>, Tejun Heo <tj@kernel.org>,
+       Mike Travis <travis@sgi.com>,
+       Christoph Lameter <cl@linux-foundation.org>,
+       Heiko Carstens <heiko.carstens@de.ibm.com>,
+       Martin Schwidefsky <schwidefsky@de.ibm.com>,
        Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: [ath5k-devel] BUG in wiphy_update_regulatory when loading
-	ath5k (on latest git)
-Message-ID: <20090410171544.GA5750@tesla>
-References: <49DF6216.8040303@tuffmail.co.uk> <49DF714F.9070600@tuffmail.co.uk>
+Subject: Re: [PATCH] unbreak alpha percpu
+Message-ID: <20090410171415.GA6033@ZenIV.linux.org.uk>
+References: <20090410151224.GM26366@ZenIV.linux.org.uk> <20090410154704.GN26366@ZenIV.linux.org.uk> <alpine.LFD.2.00.0904100915010.4583@localhost.localdomain> <20090410165030.GQ26366@ZenIV.linux.org.uk> <20090410170507.GR26366@ZenIV.linux.org.uk>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <49DF714F.9070600@tuffmail.co.uk>
+In-Reply-To: <20090410170507.GR26366@ZenIV.linux.org.uk>
 User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Apr 10, 2009 at 09:18:23AM -0700, Alan Jenkins wrote:
-> Alan Jenkins wrote:
-> > Hi, while testing latest Git (i.e. 2.6.30-rc1 + a bit), I hit a bug
-> > which killed my keyboard.  SysRQ keys worked, but I couldn't type in X
-> > or on the console.
+On Fri, Apr 10, 2009 at 06:05:07PM +0100, Al Viro wrote:
+> On Fri, Apr 10, 2009 at 05:50:30PM +0100, Al Viro wrote:
+> > On Fri, Apr 10, 2009 at 09:21:08AM -0700, Linus Torvalds wrote:
+> > > 
+> > > Hmm. I certainly personally _much_ prefer this version.
+> > > 
+> > > It looks like this actually simplifies things for S390 too (no more 
+> > > simple_identifier_##var games), and generally just looks better. And 
+> > > seeing that the S390 special case is no longer S390-specific is also a 
+> > > good sign, imho.
+> > 
+> > simple_identifier_##var has been debris from back when Ingo forced
+> > s390 to use asm-generic/percpu.h; if you look at it, you'll see that
+> > a) it hadn't worked (look at the argument list carefully) and
+> > b) get_cpu_var() has the working version anyway
+> > 
+> > Less obvious part is that if it actually *would* work, we'd be screwed -
+> > unlike get_cpu_var() this sucker is called for things that are not
+> > simple variables; didn't happen for alpha, but did for s390.
+> > 
+> > IOW, that's just an old piece of junk that got removed now.
 > 
-> > This happened when ath5k was loaded dynamically, in response to my
-> > pressing the "wireless toggle" key.  (rfkill-input -> eeepc-laptop,
-> > which does weird acpi-driven PCI hotplug).
-> >
-> > Can anyone at least explain where this weird backtrace comes from?
-> 
-> Scratch that.  I was able to reproduce it once and get a proper dmesg.
-> My logs were just dropping all the useful bits.  Here it is (taint is
-> due to a libusual bug, note usual-tables(P) in list of modules, no
-> binary crap here, honest).
-> 
-> [   64.995032] ath5k 0000:01:00.0: registered as 'phy0'
-> [   65.062652] BUG: unable to handle kernel NULL pointer dereference at
-> 00000004
-> [   65.062665] IP: [<e0171332>] wiphy_update_regulatory+0x20f/0x295
-> [cfg80211]
-> [   65.062705] *pdpt = 0000000008bf1001 *pde = 0000000000000000
-> [   65.062717] Oops: 0000 [#1]
-> [   65.062724] last sysfs file: /sys/class/backlight/eeepc/brightness
-> [   65.062734] Modules linked in: ath5k(+) mac80211 led_class cfg80211
-> i915 drm i2c_algo_bit cfbcopyarea cfbimgblt cfbfillrect ipv6
-> rfkill_input joydev usual_tables(P) snd_hda_codec_realtek snd_hda_intel
-> snd_hda_codec snd_hwdep uhci_hcd snd_pcm_oss snd_mixer_oss i2c_i801
-> ehci_hcd psmouse serio_raw i2c_core pcspkr atl2 snd_pcm intel_agp
-> snd_timer usbcore agpgart eeepc_laptop snd_page_alloc ac video backlight
-> output battery rfkill button processor evdev thermal fan ata_generic
-> [   65.062839]
-> [   65.062849] Pid: 2909, comm: modprobe Tainted: P
-> (2.6.30-rc1eeepc #112) 701
-> [   65.062860] EIP: 0060:[<e0171332>] EFLAGS: 00010246 CPU: 0
-> [   65.062885] EIP is at wiphy_update_regulatory+0x20f/0x295 [cfg80211]
-> [   65.062894] EAX: 00000000 EBX: c5da0000 ECX: 00000000 EDX: c5da0060
-> [   65.062904] ESI: 0000001a EDI: c5da0060 EBP: df3bdd70 ESP: df3bdd40
-> [   65.062913]  DS: 007b ES: 007b FS: 0000 GS: 0033 SS: 0068
-> [   65.062923] Process modprobe (pid: 2909, ti=df3bc000 task=c5d03000
-> task.ti=df3bc000)
-> [   65.062930] Stack:
-> [   65.062935]  df3bdd90 c5da0060 c04277e0 00000001 00000044 c04277e4
-> c5da0060 00000002
-> [   65.062953]  00000002 c5da0000 0000001a c5da0060 df3bdda8 e01706a2
-> 00000002 00000002
-> [   65.062971]  00000282 000080d0 00000068 c5d53500 00000080 00000282
-> 00000080 c5da0140
-> [   65.062991] Call Trace:
-> [   65.062999]  [<e01706a2>] ? wiphy_register+0x122/0x1b7 [cfg80211]
-> [   65.063028]  [<e0328e02>] ? ieee80211_register_hw+0xd8/0x346 [mac80211]
-> [   65.063069]  [<e06a7c9f>] ? ath5k_hw_set_bssid_mask+0x71/0x78 [ath5k]
-> [   65.063099]  [<e06b0c52>] ? ath5k_pci_probe+0xa5c/0xd0a [ath5k]
-> [   65.063126]  [<c01a6037>] ? sysfs_find_dirent+0x16/0x27
-> [   65.063146]  [<c01fec95>] ? local_pci_probe+0xe/0x10
-> [   65.063162]  [<c01ff526>] ? pci_device_probe+0x48/0x66
-> [   65.063176]  [<c024c9fd>] ? driver_probe_device+0x7f/0xf2
-> [   65.063193]  [<c024cab3>] ? __driver_attach+0x43/0x5f
-> [   65.063205]  [<c024c0af>] ? bus_for_each_dev+0x39/0x5a
-> [   65.063217]  [<c024c8d0>] ? driver_attach+0x14/0x16
-> [   65.063228]  [<c024ca70>] ? __driver_attach+0x0/0x5f
-> [   65.063240]  [<c024c5b3>] ? bus_add_driver+0xd7/0x1e7
-> [   65.063252]  [<c024ccb9>] ? driver_register+0x7b/0xd7
-> [   65.063272]  [<c01ff827>] ? __pci_register_driver+0x32/0x85
-> [   65.063286]  [<e00a8018>] ? init_ath5k_pci+0x18/0x30 [ath5k]
-> [   65.063309]  [<c0101131>] ? _stext+0x49/0x10b
-> [   65.063322]  [<e00a8000>] ? init_ath5k_pci+0x0/0x30 [ath5k]
-> [   65.063330]  [<c012f452>] ? __blocking_notifier_call_chain+0x40/0x4c
-> [   65.063330]  [<c013a714>] ? sys_init_module+0x87/0x18b
-> [   65.063330]  [<c0102804>] ? sysenter_do_call+0x12/0x22
-> [   65.063330] Code: b8 da 17 e0 83 c0 04 e8 92 f9 ff ff 84 c0 75 2a 8b
-> 55 d4 8b 42 28 85 c0 74 0c 83 c0 04 e8 7c f9 ff ff 84 c0 75 14 a1 bc da
-> 17 e0 <83> 78 04 03 74 66 8b 4d d4 80 79 08 00 74 5d a1 e0 d2 17 e0 48
-> [   65.063330] EIP: [<e0171332>] wiphy_update_regulatory+0x20f/0x295
+> Fsck...  It breaks per_cpu_ptr() :-/  OK, back to square one, then...
 
+... and the reason we didn't step into that one on alpha et.al. is that it
+doesn't have HAVE_DYNAMIC_PER_CPU_AREA - only x86 does.  It's *still*
+fixable, but we need a different primitive for that one.
 
-What do you mean by you 2.6.30-rc1 + a bit. Are you using an unmodified
-wireless-testing or are you applying patches on top?
-
-Whip out gdb as follows:
-
-gdb net/wireless/cfg80211.ko
-
-Then do:
-
-l *(wiphy_update_regulatory+0x20f)
-
-That should show you the culprit line.
-
-  Luis
+diff --git a/arch/alpha/include/asm/percpu.h b/arch/alpha/include/asm/percpu.h
+index 3495e8e..1c52a2d 100644
+--- a/arch/alpha/include/asm/percpu.h
++++ b/arch/alpha/include/asm/percpu.h
+@@ -3,33 +3,8 @@
+ #include <linux/compiler.h>
+ #include <linux/threads.h>
+ 
+-/*
+- * Determine the real variable name from the name visible in the
+- * kernel sources.
+- */
+-#define per_cpu_var(var) per_cpu__##var
+-
+ #ifdef CONFIG_SMP
+-
+-/*
+- * per_cpu_offset() is the offset that has to be added to a
+- * percpu variable to get to the instance for a certain processor.
+- */
+-extern unsigned long __per_cpu_offset[NR_CPUS];
+-
+-#define per_cpu_offset(x) (__per_cpu_offset[x])
+-
+-#define __my_cpu_offset per_cpu_offset(raw_smp_processor_id())
+-#ifdef CONFIG_DEBUG_PREEMPT
+-#define my_cpu_offset per_cpu_offset(smp_processor_id())
+-#else
+-#define my_cpu_offset __my_cpu_offset
+-#endif
+-
+-#ifndef MODULE
+-#define SHIFT_PERCPU_PTR(var, offset) RELOC_HIDE(&per_cpu_var(var), (offset))
+-#define PER_CPU_ATTRIBUTES
+-#else
++#ifdef MODULE
+ /*
+  * To calculate addresses of locally defined variables, GCC uses 32-bit
+  * displacement from the GP. Which doesn't work for per cpu variables in
+@@ -39,40 +14,15 @@ extern unsigned long __per_cpu_offset[NR_CPUS];
+  * ldq instruction with a 'literal' relocation.
+  */
+ #define SHIFT_PERCPU_PTR(var, offset) ({		\
+-	extern int simple_identifier_##var(void);	\
+ 	unsigned long __ptr, tmp_gp;			\
+ 	asm (  "br	%1, 1f		  	      \n\
+ 	1:	ldgp	%1, 0(%1)	    	      \n\
+ 		ldq %0, per_cpu__" #var"(%1)\t!literal"		\
+ 		: "=&r"(__ptr), "=&r"(tmp_gp));		\
+ 	(typeof(&per_cpu_var(var)))(__ptr + (offset)); })
+-
+-#define PER_CPU_ATTRIBUTES	__used
+-
+ #endif /* MODULE */
+-
+-/*
+- * A percpu variable may point to a discarded regions. The following are
+- * established ways to produce a usable pointer from the percpu variable
+- * offset.
+- */
+-#define per_cpu(var, cpu) \
+-	(*SHIFT_PERCPU_PTR(var, per_cpu_offset(cpu)))
+-#define __get_cpu_var(var) \
+-	(*SHIFT_PERCPU_PTR(var, my_cpu_offset))
+-#define __raw_get_cpu_var(var) \
+-	(*SHIFT_PERCPU_PTR(var, __my_cpu_offset))
+-
+-#else /* ! SMP */
+-
+-#define per_cpu(var, cpu)		(*((void)(cpu), &per_cpu_var(var)))
+-#define __get_cpu_var(var)		per_cpu_var(var)
+-#define __raw_get_cpu_var(var)		per_cpu_var(var)
+-
+-#define PER_CPU_ATTRIBUTES
+-
+ #endif /* SMP */
+ 
+-#define DECLARE_PER_CPU(type, name) extern __typeof__(type) per_cpu_var(name)
++#include <asm-generic/percpu.h>
+ 
+ #endif /* __ALPHA_PERCPU_H */
+diff --git a/arch/s390/include/asm/percpu.h b/arch/s390/include/asm/percpu.h
+index 408d60b..6a71d73 100644
+--- a/arch/s390/include/asm/percpu.h
++++ b/arch/s390/include/asm/percpu.h
+@@ -13,20 +13,18 @@
+  */
+ #if defined(__s390x__) && defined(MODULE)
+ 
+-#define SHIFT_PERCPU_PTR(ptr,offset) (({			\
+-	extern int simple_identifier_##var(void);	\
++#define SHIFT_PERCPU_PTR(var,offset) (({			\
+ 	unsigned long *__ptr;				\
+ 	asm ( "larl %0, %1@GOTENT"		\
+-	    : "=a" (__ptr) : "X" (ptr) );		\
+-	(typeof(ptr))((*__ptr) + (offset));	}))
++	    : "=a" (__ptr) : "X" (&per_cpu_var(var)) );		\
++	(typeof(&per_cpu_var(var)))((*__ptr) + (offset));	}))
+ 
+ #else
+ 
+-#define SHIFT_PERCPU_PTR(ptr, offset) (({				\
+-	extern int simple_identifier_##var(void);		\
++#define SHIFT_PERCPU_PTR(var, offset) (({				\
+ 	unsigned long __ptr;					\
+-	asm ( "" : "=a" (__ptr) : "0" (ptr) );			\
+-	(typeof(ptr)) (__ptr + (offset)); }))
++	asm ( "" : "=a" (__ptr) : "0" (&per_cpu_var(var)) );			\
++	(typeof(&per_cpu_var(var))) (__ptr + (offset)); }))
+ 
+ #endif
+ 
+diff --git a/arch/x86/include/asm/percpu.h b/arch/x86/include/asm/percpu.h
+index aee103b..5ff94d2 100644
+--- a/arch/x86/include/asm/percpu.h
++++ b/arch/x86/include/asm/percpu.h
+@@ -202,4 +202,6 @@ DECLARE_PER_CPU(unsigned long, this_cpu_off);
+ 
+ #endif	/* !CONFIG_SMP */
+ 
++#define PERCPU_PTR RELOC_HIDE
++
+ #endif /* _ASM_X86_PERCPU_H */
+diff --git a/include/asm-generic/percpu.h b/include/asm-generic/percpu.h
+index 00f45ff..4543078 100644
+--- a/include/asm-generic/percpu.h
++++ b/include/asm-generic/percpu.h
+@@ -42,10 +42,10 @@ extern unsigned long __per_cpu_offset[NR_CPUS];
+ /*
+  * Add a offset to a pointer but keep the pointer as is.
+  *
+- * Only S390 provides its own means of moving the pointer.
++ * Only S390 and Alpha provide their own means of moving the pointer.
+  */
+ #ifndef SHIFT_PERCPU_PTR
+-#define SHIFT_PERCPU_PTR(__p, __offset)	RELOC_HIDE((__p), (__offset))
++#define SHIFT_PERCPU_PTR(__v, __offset)	RELOC_HIDE((&per_cpu_var(__v)), (__offset))
+ #endif
+ 
+ /*
+@@ -54,11 +54,11 @@ extern unsigned long __per_cpu_offset[NR_CPUS];
+  * offset.
+  */
+ #define per_cpu(var, cpu) \
+-	(*SHIFT_PERCPU_PTR(&per_cpu_var(var), per_cpu_offset(cpu)))
++	(*SHIFT_PERCPU_PTR(var, per_cpu_offset(cpu)))
+ #define __get_cpu_var(var) \
+-	(*SHIFT_PERCPU_PTR(&per_cpu_var(var), my_cpu_offset))
++	(*SHIFT_PERCPU_PTR(var, my_cpu_offset))
+ #define __raw_get_cpu_var(var) \
+-	(*SHIFT_PERCPU_PTR(&per_cpu_var(var), __my_cpu_offset))
++	(*SHIFT_PERCPU_PTR(var, __my_cpu_offset))
+ 
+ 
+ #ifdef CONFIG_HAVE_SETUP_PER_CPU_AREA
+diff --git a/include/linux/percpu.h b/include/linux/percpu.h
+index ee5615d..11a8a11 100644
+--- a/include/linux/percpu.h
++++ b/include/linux/percpu.h
+@@ -120,7 +120,7 @@ extern ssize_t __init pcpu_embed_first_chunk(
+  * dynamically allocated. Non-atomic access to the current CPU's
+  * version should probably be combined with get_cpu()/put_cpu().
+  */
+-#define per_cpu_ptr(ptr, cpu)	SHIFT_PERCPU_PTR((ptr), per_cpu_offset((cpu)))
++#define per_cpu_ptr(ptr, cpu)	PERCPU_PTR((ptr), per_cpu_offset((cpu)))
+ 
+ extern void *__alloc_reserved_percpu(size_t size, size_t align);
+ 
