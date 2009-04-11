@@ -1,112 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755276AbZDKBiQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755886AbZDKBic@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755276AbZDKBiQ (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 10 Apr 2009 21:38:16 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754479AbZDKBh7
+	id S1755886AbZDKBic (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 10 Apr 2009 21:38:32 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754991AbZDKBiP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 10 Apr 2009 21:37:59 -0400
-Received: from mail-bw0-f169.google.com ([209.85.218.169]:60807 "EHLO
-	mail-bw0-f169.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754424AbZDKBh6 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 10 Apr 2009 21:37:58 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:references:mime-version
-         :content-type:content-disposition:in-reply-to:user-agent;
-        b=PXuammnUJXEXSQUfW423/HaeixjDZmEGOJ/wr28cd2/vKIMaaGjmz9xcQEs3gLmhUY
-         yW3ZEa5Cd3cor9KDcD9vaco1QS/nGMKei6Hap41w3rAtIcu8YdUpnE6ED2aZkwHtqGtZ
-         KQIIEOOdyNTygKIRXPinm6vAUHXUr+89FH6Yk=
-Date: Sat, 11 Apr 2009 03:37:54 +0200
-From: Frederic Weisbecker <fweisbec@gmail.com>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: Greg KH <gregkh@suse.de>, LKML <linux-kernel@vger.kernel.org>,
-       LTP <ltp-list@lists.sourceforge.net>,
-       Peter Zijlstra <peterz@infradead.org>
-Subject: Re: [PATCH 2/2] lockdep: choose to continue lock debugging despite
-	taint
-Message-ID: <20090411013753.GB5992@nowhere>
-References: <1239312460-13396-1-git-send-email-fweisbec@gmail.com> <1239312460-13396-2-git-send-email-fweisbec@gmail.com> <20090410121515.GP21506@elte.hu> <20090410133844.GD5988@nowhere> <20090410134520.GC17878@elte.hu> <20090411011505.GA5992@nowhere>
+	Fri, 10 Apr 2009 21:38:15 -0400
+Received: from ozlabs.org ([203.10.76.45]:41214 "EHLO ozlabs.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1755208AbZDKBiO (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 10 Apr 2009 21:38:14 -0400
+From: Rusty Russell <rusty@rustcorp.com.au>
+To: Tejun Heo <tj@kernel.org>
+Subject: Re: [GIT RFC] percpu: use dynamic percpu allocator as the default percpu allocator
+Date: Sat, 11 Apr 2009 11:08:06 +0930
+User-Agent: KMail/1.11.2 (Linux/2.6.28-11-generic; KDE/4.2.2; i686; ; )
+Cc: Ivan Kokshaysky <ink@jurassic.park.msu.ru>,
+       Martin Schwidefsky <schwidefsky@de.ibm.com>,
+       Ingo Molnar <mingo@elte.hu>, tglx@linutronix.de, x86@kernel.org,
+       linux-kernel@vger.kernel.org, hpa@zytor.com,
+       Paul Mundt <lethal@linux-sh.org>, rmk@arm.linux.org.uk,
+       starvik@axis.com, ralf@linux-mips.org, davem@davemloft.net,
+       cooloney@kernel.org, kyle@mcmartin.ca, matthew@wil.cx,
+       grundler@parisc-linux.org, takata@linux-m32r.org,
+       benh@kernel.crashing.org, rth@twiddle.net, heiko.carstens@de.ibm.com
+References: <49D3231D.2040403@kernel.org> <20090409094713.GA6538@jurassic.park.msu.ru> <49DDE1B5.4070407@kernel.org>
+In-Reply-To: <49DDE1B5.4070407@kernel.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: Text/Plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <20090411011505.GA5992@nowhere>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+Message-Id: <200904111108.08323.rusty@rustcorp.com.au>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, Apr 11, 2009 at 03:15:06AM +0200, Frederic Weisbecker wrote:
-> On Fri, Apr 10, 2009 at 03:45:20PM +0200, Ingo Molnar wrote:
-> > 
-> > * Frederic Weisbecker <fweisbec@gmail.com> wrote:
-> > 
-> > > On Fri, Apr 10, 2009 at 02:15:15PM +0200, Ingo Molnar wrote:
-> > > > 
-> > > > * Frederic Weisbecker <fweisbec@gmail.com> wrote:
-> > > > 
-> > > > > Lockdep is disabled after any kernel taints. This might be 
-> > > > > convenient to ignore bad locking issues which sources come from 
-> > > > > outside the kernel tree. Nevertheless, it might be a frustrating 
-> > > > > experience for the staging developers or anyone who might develop 
-> > > > > a kernel that happens to be tainted.
-> > > > 
-> > > > Good point. Not having lockdep coverage for drivers/staging/ just 
-> > > > prolongs their transition - not good.
-> > > > 
-> > > > But instead of this:
-> > > > 
-> > > > >  void add_taint(unsigned flag)
-> > > > >  {
-> > > > > +#ifndef CONFIG_LOCKDEP_IGNORE_TAINT
-> > > > >  	/*
-> > > > >  	 * Can't trust the integrity of the kernel anymore.
-> > > > >  	 * We don't call directly debug_locks_off() because the issue
-> > > > > @@ -220,6 +221,7 @@ void add_taint(unsigned flag)
-> > > > >  	 */
-> > > > >  	if (xchg(&debug_locks, 0))
-> > > > >  		printk(KERN_WARNING "Disabling lockdep due to kernel taint\n");
-> > > > > +#endif
-> > > > 
-> > > > I'd suggest to not do the debug_locks_off() call if TAINT_CRAP. I.e. 
-> > > > something like:
-> > > > 
-> > > > 	if (!(flag & TAINT_CRAP) && debug_locks_off())
-> > > > 		printk(...);
-> > > > 
-> > > > will do the trick.
-> > > > 
-> > > > 	Ingo
-> > > 
-> > > 
-> > > Ok, but this is not only about staging. It's also about 
-> > > TAINT_WARN. Just imagine that you report a warning to a 
-> > > maintainer, and while you are waiting for it to be fixed, you 
-> > > can't use lockdep for your own needs.
-> > > 
-> > > Hm?
-> > 
-> > We can exclude TAINT_WARN too - i.e. (TAINT_CRAP|TAINT_WARN).
-> > 
-> > 	Ingo
+On Thu, 9 Apr 2009 09:23:25 pm Tejun Heo wrote:
+> It's generally a good idea to use uniquely
+> distinguisible identifier for static symbols anyway to help debugging.
+
+Sorry, I can't let this statement stand.  It's completely wrong: use the
+shortest clear name, always.
+
+> If this limitation is acceptable, I think we should also add the dup
+> build failure thing to the generic definition too tho so that such
+> cases can be discovered before they hit alpha and s390 later.
 > 
-> 
-> Fine :-)
-> 
-> See the v2 on further mails in this thread.
-> 
-> Side request: do you think you could merge them on kill-the-BKL tree?
+> Any objections?
 
+Yes.  If we decide that static per-cpu is unsupportable, let's not hide the
+damn thing.  We just make it give a compile warning if we can, patch out the
+current cases, and make checkpatch.pl warn on new ones.
 
-Sorry, forget about this side request. I thought merging tip:master
-into tip:core/kill-the-BKL would make me suffer a rain of conflicts
-but actually I've just tried and I only encountered a very simple
-conflict in sched.c so it's very easy to manage it locally. Then
-we can keep the history of kill-the-BKL, for now it's good as is.
+Don't silently override "static".  Don't come up with stupid justifications.
+Accept with open-eyes that it's evil, just a lesser evil.
 
-Frederic.
-
-
-> Thanks!
-> 
-
+Thanks,
+Rusty.
