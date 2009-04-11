@@ -1,64 +1,76 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756228AbZDKByT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756425AbZDKByn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756228AbZDKByT (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 10 Apr 2009 21:54:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751396AbZDKByE
+	id S1756425AbZDKByn (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 10 Apr 2009 21:54:43 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752272AbZDKBy0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 10 Apr 2009 21:54:04 -0400
-Received: from mga10.intel.com ([192.55.52.92]:30521 "EHLO
-	fmsmga102.fm.intel.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1751327AbZDKByC (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 10 Apr 2009 21:54:02 -0400
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.40,171,1239001200"; 
-   d="scan'208";a="680653911"
-Message-ID: <49DFF837.9080009@linux.intel.com>
-Date: Fri, 10 Apr 2009 18:53:59 -0700
-From: Arjan van de Ven <arjan@linux.intel.com>
-User-Agent: Thunderbird 2.0.0.21 (Windows/20090302)
+	Fri, 10 Apr 2009 21:54:26 -0400
+Received: from hera.kernel.org ([140.211.167.34]:47965 "EHLO hera.kernel.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754826AbZDKByZ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 10 Apr 2009 21:54:25 -0400
+Message-ID: <49DFF7EA.900@kernel.org>
+Date: Fri, 10 Apr 2009 18:52:42 -0700
+From: Tejun Heo <tj@kernel.org>
+User-Agent: Thunderbird 2.0.0.19 (X11/20081227)
 MIME-Version: 1.0
-To: Linus Torvalds <torvalds@linux-foundation.org>
-CC: "Rafael J. Wysocki" <rjw@sisk.pl>, linux-pm@lists.linux-foundation.org,
-       Takashi Iwai <tiwai@suse.de>, LKML <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>, Ingo Molnar <mingo@elte.hu>
-Subject: Re: [linux-pm] [2.6.30-rc1-git2 regressions] Hibernation broken and
- (minor but annoying) audio problem
-References: <200904100057.43827.rjw@sisk.pl> <alpine.LFD.2.00.0904091605080.4583@localhost.localdomain> <200904101439.43480.rjw@sisk.pl> <200904102058.36018.rjw@sisk.pl> <alpine.LFD.2.00.0904101204350.4583@localhost.localdomain>
-In-Reply-To: <alpine.LFD.2.00.0904101204350.4583@localhost.localdomain>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+To: Rusty Russell <rusty@rustcorp.com.au>
+CC: Ivan Kokshaysky <ink@jurassic.park.msu.ru>,
+       Martin Schwidefsky <schwidefsky@de.ibm.com>,
+       Ingo Molnar <mingo@elte.hu>, tglx@linutronix.de, x86@kernel.org,
+       linux-kernel@vger.kernel.org, hpa@zytor.com,
+       Paul Mundt <lethal@linux-sh.org>, rmk@arm.linux.org.uk,
+       starvik@axis.com, ralf@linux-mips.org, davem@davemloft.net,
+       cooloney@kernel.org, kyle@mcmartin.ca, matthew@wil.cx,
+       grundler@parisc-linux.org, takata@linux-m32r.org,
+       benh@kernel.crashing.org, rth@twiddle.net, heiko.carstens@de.ibm.com
+Subject: Re: [GIT RFC] percpu: use dynamic percpu allocator as the default
+ percpu allocator
+References: <49D3231D.2040403@kernel.org> <20090409094713.GA6538@jurassic.park.msu.ru> <49DDE1B5.4070407@kernel.org> <200904111108.08323.rusty@rustcorp.com.au>
+In-Reply-To: <200904111108.08323.rusty@rustcorp.com.au>
+X-Enigmail-Version: 0.95.7
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Sat, 11 Apr 2009 01:52:03 +0000 (UTC)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Linus Torvalds wrote:
+Rusty Russell wrote:
+> On Thu, 9 Apr 2009 09:23:25 pm Tejun Heo wrote:
+>> It's generally a good idea to use uniquely
+>> distinguisible identifier for static symbols anyway to help debugging.
 > 
-> On Fri, 10 Apr 2009, Rafael J. Wysocki wrote:
->> I've just verified that the resume-after-hibernation issue goes away after
->> reverting commit 9710794383ee5008d67f1a6613a4717bf6de47bc
->> (async: remove the temporary (2.6.29) "async is off by default" code) , so it
->> is async-related.
-> 
-> Arjan? Clearly all the necessary fixes weren't found..
-> 
-> There _is_ a module loading problem wrt initmem - I think you found that 
-> and we added a hack for it for the ACPI battery driver. I wonder if we're 
-> hitting a similar issue now with module discovery: modules that use 
-> "async_schedule()" to do their discovery asynchronously are now not 
-> necessarily fully "done" when the module is loaded. 
+> Sorry, I can't let this statement stand.  It's completely wrong: use the
+> shortest clear name, always.
 
-this is both a "yes and no" kind of thing. It already happened for many cases
-(USB, SCSI (and thus libata) etc) but now it can happen for more new cases.
+Heh... well, yeah, I don't think this is something everyone can agree
+about.  I generally like having proper prefix for static symbols.  It
+makes symbols more consistent too.
 
-
-> And so, anything that expected the devices to be available after module 
-> load (like they used to) would be screwed.
+>> If this limitation is acceptable, I think we should also add the dup
+>> build failure thing to the generic definition too tho so that such
+>> cases can be discovered before they hit alpha and s390 later.
+>>
+>> Any objections?
 > 
-> IOW, maybe something like the totally untested patch appended here (that 
-> should also allow us to make the ACPI battery code to go back to using 
-> __init).
+> Yes.  If we decide that static per-cpu is unsupportable, let's not
+> hide the damn thing.  We just make it give a compile warning if we
+> can, patch out the current cases, and make checkpatch.pl warn on new
+> ones.
 > 
+> Don't silently override "static".  Don't come up with stupid
+> justifications.  Accept with open-eyes that it's evil, just a lesser
+> evil.
 
-this will work. It's a tad unfortunate that we basically end up synchronizing
-at load time; maybe some time in the future we can make this opt-in/out ;-(
+It's different tho.  With the right tricks, we can still make percpu
+variables defined static unusable from other compile units.  ie. if we
+make the combination of DECLARE_PER_CPU() and static DEFINE_PER_CPU()
+trigger compile error, most of what the programmer meant by 'static'
+can be achieved whether the symbol itself ends up visible outside of
+the compile unit or not.
+
+Thanks.
+
+-- 
+tejun
