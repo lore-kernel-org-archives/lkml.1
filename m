@@ -1,84 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756076AbZDKBsM@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755276AbZDKBw1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756076AbZDKBsM (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 10 Apr 2009 21:48:12 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754917AbZDKBrt
+	id S1755276AbZDKBw1 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 10 Apr 2009 21:52:27 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754960AbZDKBwS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 10 Apr 2009 21:47:49 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:53371 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751115AbZDKBrr (ORCPT
+	Fri, 10 Apr 2009 21:52:18 -0400
+Received: from wf-out-1314.google.com ([209.85.200.170]:13480 "EHLO
+	wf-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754941AbZDKBwR convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 10 Apr 2009 21:47:47 -0400
-Date: Fri, 10 Apr 2009 18:39:18 -0700 (PDT)
-From: Linus Torvalds <torvalds@linux-foundation.org>
-X-X-Sender: torvalds@localhost.localdomain
-To: David Miller <davem@davemloft.net>,
-       "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>,
-       Ingo Molnar <mingo@elte.hu>, Lai Jiangshan <laijs@cn.fujitsu.com>
-cc: shemminger@vyatta.com, jeff.chua.linux@gmail.com, dada1@cosmosbay.com,
-       jengelh@medozas.de, kaber@trash.net, r000n@r000n.net,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       netfilter-devel@vger.kernel.org, netdev@vger.kernel.org
-Subject: Re: iptables very slow after commit
- 784544739a25c30637397ace5489eeb6e15d7d49
-In-Reply-To: <20090410.182507.140306636.davem@davemloft.net>
-Message-ID: <alpine.LFD.2.00.0904101828490.4583@localhost.localdomain>
-References: <Pine.LNX.4.64.0904101656190.2093@boston.corp.fedex.com> <20090410095246.4fdccb56@s6510> <20090410.182507.140306636.davem@davemloft.net>
-User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
+	Fri, 10 Apr 2009 21:52:17 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
+         :cc:content-type:content-transfer-encoding;
+        b=En+8BRniNiYwi3wU87H09GJ61uArt+sWqItvCzghKu2kpxsIoDbvi1S+fOZEccO3Nv
+         nEPWi0PIBApVm3ARo9NgxkGWECrSXGpzXgfl38Rx1yY381CNVDV4mB6z4D3Zp7vHSX1i
+         c1FfdpyUqmfjm0ag5fR1+mz+hmfZNAEmdH1Tk=
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+In-Reply-To: <m2fxggle43.fsf@igel.home>
+References: <1232551667-4829-1-git-send-email-tom.leiming@gmail.com>
+	 <m2fxggle43.fsf@igel.home>
+Date: Sat, 11 Apr 2009 09:52:16 +0800
+Message-ID: <d82e647a0904101852h7f41492epad2226f29124452d@mail.gmail.com>
+Subject: Re: [PATCH] driver core: check bus->match without holding device 
+	lock(v2)
+From: Ming Lei <tom.leiming@gmail.com>
+To: Andreas Schwab <schwab@linux-m68k.org>
+Cc: kay.sievers@vrfy.org, greg@kroah.com, cornelia.huck@de.ibm.com,
+       linux-kernel@vger.kernel.org, arjan@linux.intel.com
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+2009/4/10 Andreas Schwab <schwab@linux-m68k.org>:
+> diff --git a/drivers/base/base.h b/drivers/base/base.h
+> index ddc9749..087e911 100644
+> --- a/drivers/base/base.h
+> +++ b/drivers/base/base.h
+> @@ -115,7 +115,7 @@ extern int driver_probe_device(struct device_driver *drv, struct device *dev);
+>  static inline int driver_match_device(struct device_driver *drv,
+>                                      struct device *dev)
+>  {
+> -       return drv->bus->match && drv->bus->match(dev, drv);
+> +       return !drv->bus->match || drv->bus->match(dev, drv);
+>  }
 
+A similar patch has been in greg's tree:
 
-On Fri, 10 Apr 2009, David Miller wrote:
-> 
-> [ CC:'ing netfilter-devel and netdev... ]
+http://www.kernel.org/pub/linux/kernel/people/gregkh/gregkh-2.6/patches/driver-core.current/driver-core-fix-driver_match_device.patch
 
-I wonder if we should bring in the RCU people too, for them to tell you 
-that the networking people are beign silly, and should not synchronize 
-with the very heavy-handed
+Thanks!
 
-	synchronize_net()
-
-but instead of doing synchronization (which is probably why adding a few 
-hundred rules then takes several seconds - each synchronizes and that 
-takes a timer tick or so), add the rules to be free'd on some rcu-freeing 
-list for later freeing.
-
-Or whatever. Paul? synchronize_net() just calls synchronize_rcu(), and 
-with that knowledge and a simple
-
-	git show 784544739a25c30637397ace5489eeb6e15d7d49
-
-I bet you can already tell people how to fix their performance issue.
-
-		Linus
-
----
-> > On Fri, 10 Apr 2009 17:15:52 +0800 (SGT)
-> > Jeff Chua <jeff.chua.linux@gmail.com> wrote:
-> >> 
-> >> Adding 200 records in iptables took 6.0sec in 2.6.30-rc1 compared to 
-> >> 0.2sec in 2.6.29. I've bisected down this commit.
-> >> 
-> >> There are a few patches on top of the original patch. When I reverted the 
-> >> original commit + changing rcu_read() to rcu_read_bh(), it speeds up the 
-> >> inserts back to .2sec again.
-> >> 
-> >> I'm loading all the firewall rules during boot-up and this 6 secs slowness 
-> >> is really not very nice to wait for.
-> > 
-> > The performance benefit during operation is more important. The load
-> > time is fixable. The problem is probably generic to any set of rules,
-> > but could you post some info about your configuration (like the rule
-> > set), and the system configuration (# of cpu's, config etc).
-> > --
-> > To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
-> > the body of a message to majordomo@vger.kernel.org
-> > More majordomo info at  http://vger.kernel.org/majordomo-info.html
-> > Please read the FAQ at  http://www.tux.org/lkml/
-> 
+-- 
+Lei Ming
