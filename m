@@ -1,52 +1,102 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752937AbZDMPMu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752517AbZDMPOy@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752937AbZDMPMu (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 13 Apr 2009 11:12:50 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751715AbZDMPMk
+	id S1752517AbZDMPOy (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 13 Apr 2009 11:14:54 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751731AbZDMPOp
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 13 Apr 2009 11:12:40 -0400
-Received: from zone0.gcu-squad.org ([212.85.147.21]:13673 "EHLO
-	services.gcu-squad.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751579AbZDMPMk (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 13 Apr 2009 11:12:40 -0400
-Date: Mon, 13 Apr 2009 17:12:30 +0200
-From: Jean Delvare <khali@linux-fr.org>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: LKML <linux-kernel@vger.kernel.org>, Linux I2C <linux-i2c@vger.kernel.org>
-Subject: [GIT PULL] i2c fixes for 2.6.30
-Message-ID: <20090413171230.73078c3e@hyperion.delvare>
-X-Mailer: Claws Mail 3.5.0 (GTK+ 2.14.4; x86_64-suse-linux-gnu)
+	Mon, 13 Apr 2009 11:14:45 -0400
+Received: from turing-police.cc.vt.edu ([128.173.14.107]:42566 "EHLO
+	turing-police.cc.vt.edu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751653AbZDMPOp (ORCPT
+	<RFC822;linux-kernel@vger.kernel.org>);
+	Mon, 13 Apr 2009 11:14:45 -0400
+X-Mailer: exmh version 2.7.2 01/07/2005 with nmh-1.2
+To: Andrew Morton <akpm@linux-foundation.org>,
+       Linus Torvalds <torvalds@osdl.org>
+Cc: linux-kernel@vger.kernel.org, mm-commits@vger.kernel.org
+Subject: Re: mmotm 2009-04-10-02-21 uploaded - forkbombed by work_for_cpu
+In-Reply-To: Your message of "Fri, 10 Apr 2009 02:22:23 PDT."
+             <200904100922.n3A9MOIV013828@imap1.linux-foundation.org>
+From: Valdis.Kletnieks@vt.edu
+References: <200904100922.n3A9MOIV013828@imap1.linux-foundation.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+Content-Type: multipart/signed; boundary="==_Exmh_1239456126_4005P";
+	 micalg=pgp-sha1; protocol="application/pgp-signature"
 Content-Transfer-Encoding: 7bit
+Date: Sat, 11 Apr 2009 09:22:06 -0400
+Message-ID: <4609.1239456126@turing-police.cc.vt.edu>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Linus,
+--==_Exmh_1239456126_4005P
+Content-Type: text/plain; charset=us-ascii
 
-Please pull the i2c subsystem fixes for Linux 2.6.30 from:
+On Fri, 10 Apr 2009 02:22:23 PDT, akpm@linux-foundation.org said:
+> The mm-of-the-moment snapshot 2009-04-10-02-21 has been uploaded to
+> 
+>    http://userweb.kernel.org/~akpm/mmotm/
 
-git://jdelvare.pck.nerim.net/jdelvare-2.6 i2c-for-linus
+My system is reporting 70-90 forks per second, 'lastcomm' is reporting:
 
- Documentation/feature-removal-schedule.txt |    9 +++++++++
- drivers/i2c/algos/i2c-algo-pca.c           |    2 +-
- drivers/i2c/busses/Kconfig                 |    6 ++++--
- drivers/i2c/i2c-core.c                     |    3 +--
- include/linux/i2c.h                        |    2 +-
- 5 files changed, 16 insertions(+), 6 deletions(-)
+work_for_cpu      F    root     ??         0.00 secs Sat Apr 11 08:37
+work_for_cpu      F    root     ??         0.00 secs Sat Apr 11 08:37
+work_for_cpu      F    root     ??         0.00 secs Sat Apr 11 08:37
+work_for_cpu      F    root     ??         0.00 secs Sat Apr 11 08:37
+work_for_cpu      F    root     ??         0.00 secs Sat Apr 11 08:37
+work_for_cpu      F    root     ??         0.00 secs Sat Apr 11 08:37
+work_for_cpu      F    root     ??         0.00 secs Sat Apr 11 08:37
+work_for_cpu      F    root     ??         0.00 secs Sat Apr 11 08:37
+work_for_cpu      F    root     ??         0.00 secs Sat Apr 11 08:37
 
----------------
+(and about 100K more of same).
 
-Ben Hutchings (1):
-      i2c: Fix sparse warnings for I2C_BOARD_INFO()
+Reverting this commit made the forks go away:
 
-Jean Delvare (3):
-      i2c-algo-pca: Fix use of uninitialized variable in debug message
-      i2c-voodoo3: Deprecate in favor of tdfxfb
-      i2c: Let new-style drivers implement attach_adapter
+commit 6b44003e5ca66a3fffeb5bc90f40ada2c4340896
+Author: Andrew Morton <akpm@linux-foundation.org>
+Date:   Thu Apr 9 09:50:37 2009 -0600
 
-Thanks,
--- 
-Jean Delvare
+    work_on_cpu(): rewrite it to create a kernel thread on demand
+
+No, I don't see why this generated a user-visible fork and accounting
+record to be cut.  Maybe that's a normal side effect of kthread_create()
+that I've never noticed because kthreads rarely exit, especially not at
+90/sec.  I also don't know who's *calling* work_on_cpu() 90 times a
+second, but I suspect it's this:
+
+    This is not terribly fast, but the only current caller of work_on_cpu() is
+    pci_call_probe().
+
+Umm. No.
+
+% find . -name '*.c' | xargs grep -l work_on_cpu 2> /dev/null 
+./arch/x86/kernel/cpu/cpufreq/acpi-cpufreq.c
+./arch/x86/kernel/microcode_core.c
+./arch/x86/kernel/acpi/cstate.c
+./arch/x86/kernel/apm_32.c
+./kernel/workqueue.c
+./drivers/acpi/processor_throttling.c
+./drivers/pci/pci-driver.c
+
+Probable cause for my problem:
+
+arch/x86/kernel/cpu/cpufreq/acpi-cpufreq.c calls work_on_cpu(). We get into a
+state where we have enough activity to kick us to a high CPU speed, and then
+the activity of writing 90 acct records per sec keeps us there - with continual
+callbacks to see if we can drop the CPU speed.
+
+
+--==_Exmh_1239456126_4005P
+Content-Type: application/pgp-signature
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.9 (GNU/Linux)
+Comment: Exmh version 2.5 07/13/2001
+
+iD8DBQFJ4Jl+cC3lWbTT17ARAlWkAJ0cE21Ct8xo1I03rFGxO+8hq6KnXgCgyMiX
+rbUSSCmVWq3AIsMP0i6s+wE=
+=lcWo
+-----END PGP SIGNATURE-----
+
+--==_Exmh_1239456126_4005P--
