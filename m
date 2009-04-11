@@ -1,423 +1,77 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756113AbZDKTnZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757960AbZDKTsq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756113AbZDKTnZ (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 11 Apr 2009 15:43:25 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755190AbZDKTnQ
+	id S1757960AbZDKTsq (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 11 Apr 2009 15:48:46 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755540AbZDKTsi
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 11 Apr 2009 15:43:16 -0400
-Received: from pfepb.post.tele.dk ([195.41.46.236]:60327 "EHLO
-	pfepb.post.tele.dk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754790AbZDKTnO (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 11 Apr 2009 15:43:14 -0400
-Date: Sat, 11 Apr 2009 21:45:17 +0200
-From: Sam Ravnborg <sam@ravnborg.org>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: linux-kbuild <linux-kbuild@vger.kernel.org>,
-       LKML <linux-kernel@vger.kernel.org>,
-       Randy Dunlap <randy.dunlap@oracle.com>,
-       Maxime Bizon <mbizon@freebox.fr>, David Howells <dhowells@redhat.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Jan Beulich <jbeulich@novell.com>, Kirill Smelkov <kirr@mns.spb.ru>,
-       Oskar Schirmer <os@emlix.com>, Mikael Starvik <mikael.starvik@axis.com>,
-       Peter Korsgaard <jacmet@sunsite.dk>,
-       Massimo Maiurana <maiurana@gmail.com>,
-       Uwe =?iso-8859-1?Q?Kleine-K=F6nig?= 
-	<u.kleine-koenig@pengutronix.de>
-Subject: [GIT] kbuild
-Message-ID: <20090411194517.GA2184@uranus.ravnborg.org>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
+	Sat, 11 Apr 2009 15:48:38 -0400
+Received: from relay3.ptmail.sapo.pt ([212.55.154.23]:56284 "HELO sapo.pt"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with SMTP
+	id S1754741AbZDKTsh (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 11 Apr 2009 15:48:37 -0400
+X-AntiVirus: PTMail-AV 0.3-0.92.0
+Date: Sat, 11 Apr 2009 20:45:46 +0100
+From: Luis Henriques <henrix@sapo.pt>
+To: Avi Kivity <avi@redhat.com>
+Cc: Ingo Molnar <mingo@elte.hu>, Peter Zijlstra <peterz@infradead.org>,
+       linux-kernel@vger.kernel.org, Andrea Arcangeli <aarcange@redhat.com>
+Subject: Re: Problem with kvm on -tip
+Message-ID: <20090411194546.GA12126@hades.domain.com>
+References: <20090409210738.GA4566@hades.domain.com> <49E08857.2090503@redhat.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-User-Agent: Mutt/1.4.2.1i
+In-Reply-To: <49E08857.2090503@redhat.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Linus.
+Hi,
 
-kbuild stuff where the majority of the patch is Documentation updates.
+On Sat, Apr 11, 2009 at 03:08:55PM +0300, Avi Kivity wrote:
+>
+> This might be fixed by the attached patch.
 
-The most controversial part is the addition of a flag to discard
-local symbols from vmlinux.
-The patch has been in my inbox for a while but I had just not
-got around to it until now. It came in via Andrew so I expect it has
-been in -nect for a while.
+I confirm that the patch you sent removes the warnings but does it really solve
+the issue? (Sorry, I really do not know this code so I might be saying something
+really stupid.)
 
-This pull also add support for destination-y in header export files.
-This is not a fix but a few people has asked for this feature
-and they cannot use it until it is present.
+What I understand from your patch is that the only portion of code that needs
+protection is the __get_cpu_var().  If this is true then a patch like the one
+below would do a better job.  But I am not sure that nothing else needs
+protection since the code immediately following the preempt_enable (in your
+patch) is an invocation to local_irq_save()...
 
-The rest is assorted set of fixes as the shortlog below tells.
+---
+ arch/x86/kvm/x86.c |   10 +++++++---
+ 1 files changed, 7 insertions(+), 3 deletions(-)
 
-Please pull.
+diff --git a/arch/x86/kvm/x86.c b/arch/x86/kvm/x86.c
+index 8ca100a..cf918b5 100644
+--- a/arch/x86/kvm/x86.c
++++ b/arch/x86/kvm/x86.c
+@@ -626,13 +626,17 @@ static void kvm_write_guest_time(struct kvm_vcpu *v)
+ 	unsigned long flags;
+ 	struct kvm_vcpu_arch *vcpu = &v->arch;
+ 	void *shared_kaddr;
++	uint32_t tsc_khz;
+ 
+ 	if ((!vcpu->time_page))
+ 		return;
+ 
+-	if (unlikely(vcpu->hv_clock_tsc_khz != __get_cpu_var(cpu_tsc_khz))) {
+-		kvm_set_time_scale(__get_cpu_var(cpu_tsc_khz), &vcpu->hv_clock);
+-		vcpu->hv_clock_tsc_khz = __get_cpu_var(cpu_tsc_khz);
++	preempt_disable();
++	tsc_khz = __get_cpu_var(cpu_tsc_khz);
++	preempt_enable();
++	if (unlikely(vcpu->hv_clock_tsc_khz != tsc_khz)) {
++		kvm_set_time_scale(tsc_khz, &vcpu->hv_clock);
++		vcpu->hv_clock_tsc_khz = tsc_khz;
+ 	}
 
-	Sam
+ 	/* Keep irq disabled to prevent changes to the clock */
+-- 
+1.6.2.1
 
-The following changes since commit d848223808c5d21e1b3cea090047e34722c6254b:
-  Linus Torvalds (1):
-        Merge git://git.kernel.org/.../dhowells/linux-2.6-mn10300
-
-are available in the git repository at:
-
-  git://git.kernel.org/pub/scm/linux/kernel/git/sam/kbuild-fixes.git master
-
-David Howells (1):
-      kbuild: make it possible for the linker to discard local symbols from vmlinux
-
-Jan Beulich (1):
-      kbuild: remove pointless strdup() on arguments passed to new_module() in modpost
-
-Kirill Smelkov (1):
-      kbuild: fix a few typos in top-level Makefile
-
-Maxime Bizon (1):
-      kbuild: fix spurious initramfs rebuild
-
-Peter Korsgaard (1):
-      kbuild: use git svn instead of git-svn in setlocalversion
-
-Randy Dunlap (1):
-      docbook: make cleandocs
-
-Sam Ravnborg (3):
-      kconfig: fix update-po-config to accect backslash in input
-      kbuild: introduce destination-y for exported headers
-      Documentation: explain the difference between __bitwise and __bitwise__
-
-Uwe Kleine-König (1):
-      kbuild: fix option processing for -I in headerdep
-
- Documentation/DocBook/Makefile     |   11 +++-
- Documentation/kbuild/makefiles.txt |   83 ++++++++++++++++++++++++++++++++---
- Documentation/sparse.txt           |    8 +++
- Makefile                           |    8 +++-
- init/Kconfig                       |    8 +++
- scripts/Makefile.headersinst       |    2 +
- scripts/gen_initramfs_list.sh      |    2 +-
- scripts/headerdep.pl               |    2 +-
- scripts/kconfig/kxgettext.c        |    4 ++
- scripts/mod/modpost.c              |    4 +-
- scripts/setlocalversion            |    2 +-
- 11 files changed, 116 insertions(+), 18 deletions(-)
-
-diff --git a/Documentation/DocBook/Makefile b/Documentation/DocBook/Makefile
-index a3a83d3..8918a32 100644
---- a/Documentation/DocBook/Makefile
-+++ b/Documentation/DocBook/Makefile
-@@ -31,7 +31,7 @@ PS_METHOD	= $(prefer-db2x)
- 
- ###
- # The targets that may be used.
--PHONY += xmldocs sgmldocs psdocs pdfdocs htmldocs mandocs installmandocs
-+PHONY += xmldocs sgmldocs psdocs pdfdocs htmldocs mandocs installmandocs cleandocs
- 
- BOOKS := $(addprefix $(obj)/,$(DOCBOOKS))
- xmldocs: $(BOOKS)
-@@ -213,11 +213,12 @@ silent_gen_xml = :
- dochelp:
- 	@echo  ' Linux kernel internal documentation in different formats:'
- 	@echo  '  htmldocs        - HTML'
--	@echo  '  installmandocs  - install man pages generated by mandocs'
--	@echo  '  mandocs         - man pages'
- 	@echo  '  pdfdocs         - PDF'
- 	@echo  '  psdocs          - Postscript'
- 	@echo  '  xmldocs         - XML DocBook'
-+	@echo  '  mandocs         - man pages'
-+	@echo  '  installmandocs  - install man pages generated by mandocs'
-+	@echo  '  cleandocs       - clean all generated DocBook files'
- 
- ###
- # Temporary files left by various tools
-@@ -235,6 +236,10 @@ clean-files := $(DOCBOOKS) \
- 
- clean-dirs := $(patsubst %.xml,%,$(DOCBOOKS)) man
- 
-+cleandocs:
-+	$(Q)rm -f $(call objectify, $(clean-files))
-+	$(Q)rm -rf $(call objectify, $(clean-dirs))
-+
- # Declare the contents of the .PHONY variable as phony.  We keep that
- # information in a variable se we can use it in if_changed and friends.
- 
-diff --git a/Documentation/kbuild/makefiles.txt b/Documentation/kbuild/makefiles.txt
-index 51104f9..d4b0567 100644
---- a/Documentation/kbuild/makefiles.txt
-+++ b/Documentation/kbuild/makefiles.txt
-@@ -40,10 +40,16 @@ This document describes the Linux kernel Makefiles.
- 	   --- 6.7 Custom kbuild commands
- 	   --- 6.8 Preprocessing linker scripts
- 
--	=== 7 Kbuild Variables
--	=== 8 Makefile language
--	=== 9 Credits
--	=== 10 TODO
-+	=== 7 Kbuild syntax for exported headers
-+		--- 7.1 header-y
-+		--- 7.2 objhdr-y
-+		--- 7.3 destination-y
-+		--- 7.4 unifdef-y (deprecated)
-+
-+	=== 8 Kbuild Variables
-+	=== 9 Makefile language
-+	=== 10 Credits
-+	=== 11 TODO
- 
- === 1 Overview
- 
-@@ -1143,8 +1149,69 @@ When kbuild executes, the following steps are followed (roughly):
- 	The kbuild infrastructure for *lds file are used in several
- 	architecture-specific files.
- 
-+=== 7 Kbuild syntax for exported headers
-+
-+The kernel include a set of headers that is exported to userspace.
-+Many headers can be exported as-is but other headers requires  a
-+minimal pre-processing before they are ready for user-space.
-+The pre-processing does:
-+- drop kernel specific annotations
-+- drop include of compiler.h
-+- drop all sections that is kernel internat (guarded by ifdef __KERNEL__)
-+
-+Each relevant directory contain a file name "Kbuild" which specify the
-+headers to be exported.
-+See subsequent chapter for the syntax of the Kbuild file.
-+
-+	--- 7.1 header-y
-+
-+	header-y specify header files to be exported.
-+
-+		Example:
-+			#include/linux/Kbuild
-+			header-y += usb/
-+			header-y += aio_abi.h
-+
-+	The convention is to list one file per line and
-+	preferably in alphabetic order.
-+
-+	header-y also specify which subdirectories to visit.
-+	A subdirectory is identified by a trailing '/' which
-+	can be seen in the example above for the usb subdirectory.
-+
-+	Subdirectories are visited before their parent directories.
-+
-+	--- 7.2 objhdr-y
-+
-+	objhdr-y specifies generated files to be exported.
-+	Generated files are special as they need to be looked
-+	up in another directory when doing 'make O=...' builds.
-+
-+		Example:
-+			#include/linux/Kbuild
-+			objhdr-y += version.h
-+
-+	--- 7.3 destination-y
-+
-+	When an architecture have a set of exported headers that needs to be
-+	exported to a different directory destination-y is used.
-+	destination-y specify the destination directory for all exported
-+	headers in the file where it is present.
-+
-+		Example:
-+			#arch/xtensa/platforms/s6105/include/platform/Kbuild
-+			destination-y := include/linux
-+
-+	In the example above all exported headers in the Kbuild file
-+	will be located in the directory "include/linux" when exported.
-+
-+
-+	--- 7.4 unifdef-y (deprecated)
-+
-+	unifdef-y is deprecated. A direct replacement is header-y.
-+
- 
--=== 7 Kbuild Variables
-+=== 8 Kbuild Variables
- 
- The top Makefile exports the following variables:
- 
-@@ -1206,7 +1273,7 @@ The top Makefile exports the following variables:
- 	INSTALL_MOD_STRIP will used as the option(s) to the strip command.
- 
- 
--=== 8 Makefile language
-+=== 9 Makefile language
- 
- The kernel Makefiles are designed to be run with GNU Make.  The Makefiles
- use only the documented features of GNU Make, but they do use many
-@@ -1225,14 +1292,14 @@ time the left-hand side is used.
- There are some cases where "=" is appropriate.  Usually, though, ":="
- is the right choice.
- 
--=== 9 Credits
-+=== 10 Credits
- 
- Original version made by Michael Elizabeth Chastain, <mailto:mec@shout.net>
- Updates by Kai Germaschewski <kai@tp1.ruhr-uni-bochum.de>
- Updates by Sam Ravnborg <sam@ravnborg.org>
- Language QA by Jan Engelhardt <jengelh@gmx.de>
- 
--=== 10 TODO
-+=== 11 TODO
- 
- - Describe how kbuild supports shipped files with _shipped.
- - Generating offset header files.
-diff --git a/Documentation/sparse.txt b/Documentation/sparse.txt
-index 42f43fa..34c76a5 100644
---- a/Documentation/sparse.txt
-+++ b/Documentation/sparse.txt
-@@ -42,6 +42,14 @@ sure that bitwise types don't get mixed up (little-endian vs big-endian
- vs cpu-endian vs whatever), and there the constant "0" really _is_
- special.
- 
-+__bitwise__ - to be used for relatively compact stuff (gfp_t, etc.) that
-+is mostly warning-free and is supposed to stay that way.  Warnings will
-+be generated without __CHECK_ENDIAN__.
-+
-+__bitwise - noisy stuff; in particular, __le*/__be* are that.  We really
-+don't want to drown in noise unless we'd explicitly asked for it.
-+
-+
- Getting sparse
- ~~~~~~~~~~~~~~
- 
-diff --git a/Makefile b/Makefile
-index e5ad5fd..ad830bd 100644
---- a/Makefile
-+++ b/Makefile
-@@ -567,7 +567,7 @@ KBUILD_CFLAGS += $(call cc-option,-Wdeclaration-after-statement,)
- # disable pointer signed / unsigned warnings in gcc 4.0
- KBUILD_CFLAGS += $(call cc-option,-Wno-pointer-sign,)
- 
--# disable invalid "can't wrap" optimzations for signed / pointers
-+# disable invalid "can't wrap" optimizations for signed / pointers
- KBUILD_CFLAGS	+= $(call cc-option,-fwrapv)
- 
- # revert to pre-gcc-4.4 behaviour of .eh_frame
-@@ -597,6 +597,10 @@ LDFLAGS_BUILD_ID = $(patsubst -Wl$(comma)%,%,\
- LDFLAGS_MODULE += $(LDFLAGS_BUILD_ID)
- LDFLAGS_vmlinux += $(LDFLAGS_BUILD_ID)
- 
-+ifeq ($(CONFIG_STRIP_ASM_SYMS),y)
-+LDFLAGS_vmlinux	+= -X
-+endif
-+
- # Default kernel image to build when no specific target is given.
- # KBUILD_IMAGE may be overruled on the command line or
- # set in the environment
-@@ -1587,5 +1591,5 @@ PHONY += FORCE
- FORCE:
- 
- # Declare the contents of the .PHONY variable as phony.  We keep that
--# information in a variable se we can use it in if_changed and friends.
-+# information in a variable so we can use it in if_changed and friends.
- .PHONY: $(PHONY)
-diff --git a/init/Kconfig b/init/Kconfig
-index f2f9b53..7be4d38 100644
---- a/init/Kconfig
-+++ b/init/Kconfig
-@@ -808,6 +808,14 @@ config KALLSYMS_EXTRA_PASS
- 	   you wait for kallsyms to be fixed.
- 
- 
-+config STRIP_ASM_SYMS
-+	bool "Strip assembler-generated symbols during link"
-+	default n
-+	help
-+	  Strip internal assembler-generated symbols during a link (symbols
-+	  that look like '.Lxxx') so they don't pollute the output of
-+	  get_wchan() and suchlike.
-+
- config HOTPLUG
- 	bool "Support for hot-pluggable devices" if EMBEDDED
- 	default y
-diff --git a/scripts/Makefile.headersinst b/scripts/Makefile.headersinst
-index 612dc13..095cfc8 100644
---- a/scripts/Makefile.headersinst
-+++ b/scripts/Makefile.headersinst
-@@ -14,6 +14,8 @@ _dst := $(if $(dst),$(dst),$(obj))
- kbuild-file := $(srctree)/$(obj)/Kbuild
- include $(kbuild-file)
- 
-+_dst := $(if $(destination-y),$(destination-y),$(_dst))
-+
- include scripts/Kbuild.include
- 
- install       := $(INSTALL_HDR_PATH)/$(_dst)
-diff --git a/scripts/gen_initramfs_list.sh b/scripts/gen_initramfs_list.sh
-index 3eea8f1..76af5f9 100644
---- a/scripts/gen_initramfs_list.sh
-+++ b/scripts/gen_initramfs_list.sh
-@@ -97,7 +97,7 @@ print_mtime() {
- }
- 
- list_parse() {
--	echo "$1 \\"
-+	[ ! -L "$1" ] && echo "$1 \\" || :
- }
- 
- # for each file print a line in following format
-diff --git a/scripts/headerdep.pl b/scripts/headerdep.pl
-index 97399da..b7f6c56 100755
---- a/scripts/headerdep.pl
-+++ b/scripts/headerdep.pl
-@@ -19,7 +19,7 @@ my $opt_graph;
- 	version	=> \&version,
- 
- 	all	=> \$opt_all,
--	I	=> \@opt_include,
-+	"I=s"	=> \@opt_include,
- 	graph	=> \$opt_graph,
- );
- 
-diff --git a/scripts/kconfig/kxgettext.c b/scripts/kconfig/kxgettext.c
-index 6eb72a7..8d9ce22 100644
---- a/scripts/kconfig/kxgettext.c
-+++ b/scripts/kconfig/kxgettext.c
-@@ -43,6 +43,10 @@ static char *escape(const char* text, char *bf, int len)
- 			++text;
- 			goto next;
- 		}
-+		else if (*text == '\\') {
-+			*bfp++ = '\\';
-+			len--;
-+		}
- 		*bfp++ = *text++;
- next:
- 		--len;
-diff --git a/scripts/mod/modpost.c b/scripts/mod/modpost.c
-index 8cc7061..df6e628 100644
---- a/scripts/mod/modpost.c
-+++ b/scripts/mod/modpost.c
-@@ -1913,7 +1913,7 @@ static void read_dump(const char *fname, unsigned int kernel)
- 		if (!mod) {
- 			if (is_vmlinux(modname))
- 				have_vmlinux = 1;
--			mod = new_module(NOFAIL(strdup(modname)));
-+			mod = new_module(modname);
- 			mod->skip = 1;
- 		}
- 		s = sym_add_exported(symname, mod, export_no(export));
-@@ -1997,7 +1997,7 @@ static void read_markers(const char *fname)
- 
- 		mod = find_module(modname);
- 		if (!mod) {
--			mod = new_module(NOFAIL(strdup(modname)));
-+			mod = new_module(modname);
- 			mod->skip = 1;
- 		}
- 		if (is_vmlinux(modname)) {
-diff --git a/scripts/setlocalversion b/scripts/setlocalversion
-index f1c4b35..47e75b6 100755
---- a/scripts/setlocalversion
-+++ b/scripts/setlocalversion
-@@ -21,7 +21,7 @@ if head=`git rev-parse --verify --short HEAD 2>/dev/null`; then
- 
- 	# Is this git on svn?
- 	if git config --get svn-remote.svn.url >/dev/null; then
--	        printf -- '-svn%s' "`git-svn find-rev $head`"
-+	        printf -- '-svn%s' "`git svn find-rev $head`"
- 	fi
- 
- 	# Are there uncommitted changes?
