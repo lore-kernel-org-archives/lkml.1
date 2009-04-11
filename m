@@ -1,62 +1,112 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755963AbZDKBZd@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755276AbZDKBiQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755963AbZDKBZd (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 10 Apr 2009 21:25:33 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754699AbZDKBZT
+	id S1755276AbZDKBiQ (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 10 Apr 2009 21:38:16 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754479AbZDKBh7
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 10 Apr 2009 21:25:19 -0400
-Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:56868
-	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
-	by vger.kernel.org with ESMTP id S1754409AbZDKBZR (ORCPT
+	Fri, 10 Apr 2009 21:37:59 -0400
+Received: from mail-bw0-f169.google.com ([209.85.218.169]:60807 "EHLO
+	mail-bw0-f169.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754424AbZDKBh6 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 10 Apr 2009 21:25:17 -0400
-Date: Fri, 10 Apr 2009 18:25:07 -0700 (PDT)
-Message-Id: <20090410.182507.140306636.davem@davemloft.net>
-To: shemminger@vyatta.com
-Cc: jeff.chua.linux@gmail.com, dada1@cosmosbay.com, jengelh@medozas.de,
-       kaber@trash.net, r000n@r000n.net, torvalds@linux-foundation.org,
-       linux-kernel@vger.kernel.org, netfilter-devel@vger.kernel.org,
-       netdev@vger.kernel.org
-Subject: Re: iptables very slow after
- commit784544739a25c30637397ace5489eeb6e15d7d49
-From: David Miller <davem@davemloft.net>
-In-Reply-To: <20090410095246.4fdccb56@s6510>
-References: <Pine.LNX.4.64.0904101656190.2093@boston.corp.fedex.com>
-	<20090410095246.4fdccb56@s6510>
-X-Mailer: Mew version 6.2.51 on Emacs 22.1 / Mule 5.0 (SAKAKI)
-Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
+	Fri, 10 Apr 2009 21:37:58 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:to:cc:subject:message-id:references:mime-version
+         :content-type:content-disposition:in-reply-to:user-agent;
+        b=PXuammnUJXEXSQUfW423/HaeixjDZmEGOJ/wr28cd2/vKIMaaGjmz9xcQEs3gLmhUY
+         yW3ZEa5Cd3cor9KDcD9vaco1QS/nGMKei6Hap41w3rAtIcu8YdUpnE6ED2aZkwHtqGtZ
+         KQIIEOOdyNTygKIRXPinm6vAUHXUr+89FH6Yk=
+Date: Sat, 11 Apr 2009 03:37:54 +0200
+From: Frederic Weisbecker <fweisbec@gmail.com>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: Greg KH <gregkh@suse.de>, LKML <linux-kernel@vger.kernel.org>,
+       LTP <ltp-list@lists.sourceforge.net>,
+       Peter Zijlstra <peterz@infradead.org>
+Subject: Re: [PATCH 2/2] lockdep: choose to continue lock debugging despite
+	taint
+Message-ID: <20090411013753.GB5992@nowhere>
+References: <1239312460-13396-1-git-send-email-fweisbec@gmail.com> <1239312460-13396-2-git-send-email-fweisbec@gmail.com> <20090410121515.GP21506@elte.hu> <20090410133844.GD5988@nowhere> <20090410134520.GC17878@elte.hu> <20090411011505.GA5992@nowhere>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20090411011505.GA5992@nowhere>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Stephen Hemminger <shemminger@vyatta.com>
-Date: Fri, 10 Apr 2009 09:52:46 -0700
-
-[ CC:'ing netfilter-devel and netdev... ]
-
-> On Fri, 10 Apr 2009 17:15:52 +0800 (SGT)
-> Jeff Chua <jeff.chua.linux@gmail.com> wrote:
+On Sat, Apr 11, 2009 at 03:15:06AM +0200, Frederic Weisbecker wrote:
+> On Fri, Apr 10, 2009 at 03:45:20PM +0200, Ingo Molnar wrote:
+> > 
+> > * Frederic Weisbecker <fweisbec@gmail.com> wrote:
+> > 
+> > > On Fri, Apr 10, 2009 at 02:15:15PM +0200, Ingo Molnar wrote:
+> > > > 
+> > > > * Frederic Weisbecker <fweisbec@gmail.com> wrote:
+> > > > 
+> > > > > Lockdep is disabled after any kernel taints. This might be 
+> > > > > convenient to ignore bad locking issues which sources come from 
+> > > > > outside the kernel tree. Nevertheless, it might be a frustrating 
+> > > > > experience for the staging developers or anyone who might develop 
+> > > > > a kernel that happens to be tainted.
+> > > > 
+> > > > Good point. Not having lockdep coverage for drivers/staging/ just 
+> > > > prolongs their transition - not good.
+> > > > 
+> > > > But instead of this:
+> > > > 
+> > > > >  void add_taint(unsigned flag)
+> > > > >  {
+> > > > > +#ifndef CONFIG_LOCKDEP_IGNORE_TAINT
+> > > > >  	/*
+> > > > >  	 * Can't trust the integrity of the kernel anymore.
+> > > > >  	 * We don't call directly debug_locks_off() because the issue
+> > > > > @@ -220,6 +221,7 @@ void add_taint(unsigned flag)
+> > > > >  	 */
+> > > > >  	if (xchg(&debug_locks, 0))
+> > > > >  		printk(KERN_WARNING "Disabling lockdep due to kernel taint\n");
+> > > > > +#endif
+> > > > 
+> > > > I'd suggest to not do the debug_locks_off() call if TAINT_CRAP. I.e. 
+> > > > something like:
+> > > > 
+> > > > 	if (!(flag & TAINT_CRAP) && debug_locks_off())
+> > > > 		printk(...);
+> > > > 
+> > > > will do the trick.
+> > > > 
+> > > > 	Ingo
+> > > 
+> > > 
+> > > Ok, but this is not only about staging. It's also about 
+> > > TAINT_WARN. Just imagine that you report a warning to a 
+> > > maintainer, and while you are waiting for it to be fixed, you 
+> > > can't use lockdep for your own needs.
+> > > 
+> > > Hm?
+> > 
+> > We can exclude TAINT_WARN too - i.e. (TAINT_CRAP|TAINT_WARN).
+> > 
+> > 	Ingo
 > 
->> 
->> 
->> Adding 200 records in iptables took 6.0sec in 2.6.30-rc1 compared to 
->> 0.2sec in 2.6.29. I've bisected down this commit.
->> 
->> There are a few patches on top of the original patch. When I reverted the 
->> original commit + changing rcu_read() to rcu_read_bh(), it speeds up the 
->> inserts back to .2sec again.
->> 
->> I'm loading all the firewall rules during boot-up and this 6 secs slowness 
->> is really not very nice to wait for.
 > 
-> The performance benefit during operation is more important. The load
-> time is fixable. The problem is probably generic to any set of rules,
-> but could you post some info about your configuration (like the rule
-> set), and the system configuration (# of cpu's, config etc).
-> --
-> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
-> Please read the FAQ at  http://www.tux.org/lkml/
+> Fine :-)
+> 
+> See the v2 on further mails in this thread.
+> 
+> Side request: do you think you could merge them on kill-the-BKL tree?
+
+
+Sorry, forget about this side request. I thought merging tip:master
+into tip:core/kill-the-BKL would make me suffer a rain of conflicts
+but actually I've just tried and I only encountered a very simple
+conflict in sched.c so it's very easy to manage it locally. Then
+we can keep the history of kill-the-BKL, for now it's good as is.
+
+Frederic.
+
+
+> Thanks!
+> 
+
