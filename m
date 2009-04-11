@@ -1,63 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758210AbZDKRPX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757733AbZDKRPy@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758210AbZDKRPX (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 11 Apr 2009 13:15:23 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754448AbZDKRPI
+	id S1757733AbZDKRPy (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 11 Apr 2009 13:15:54 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754448AbZDKRPn
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 11 Apr 2009 13:15:08 -0400
-Received: from relay3.sgi.com ([192.48.156.57]:58147 "EHLO relay.sgi.com"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1751639AbZDKRPH (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 11 Apr 2009 13:15:07 -0400
-Date: Sat, 11 Apr 2009 12:15:04 -0500
-From: Dimitri Sivanich <sivanich@sgi.com>
-To: Thomas Gleixner <tglx@linutronix.de>
-Cc: LKML <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>, Ingo Molnar <mingo@elte.hu>,
-       john stultz <johnstul@us.ibm.com>,
-       Peter Zijlstra <peterz@infradead.org>
-Subject: Re: [PATCH v2] Move calc_load call out from xtime_lock protection
-Message-ID: <20090411171504.GA4132@sgi.com>
-References: <20090410173437.GA23415@sgi.com> <alpine.LFD.2.00.0904110931240.21577@localhost.localdomain> <20090411162416.GC3496@sgi.com> <alpine.LFD.2.00.0904111849450.21577@localhost.localdomain>
-MIME-Version: 1.0
+	Sat, 11 Apr 2009 13:15:43 -0400
+Received: from mx2.redhat.com ([66.187.237.31]:49422 "EHLO mx2.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754473AbZDKRPn (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 11 Apr 2009 13:15:43 -0400
+Date: Sat, 11 Apr 2009 13:14:18 -0400
+From: Kyle McMartin <kyle@redhat.com>
+To: David Woodhouse <dwmw2@infradead.org>
+Cc: Kyle McMartin <kyle@redhat.com>, Matthew Garrett <mjg@redhat.com>,
+       Ingo Molnar <mingo@elte.hu>, Andrew Lutomirski <amluto@gmail.com>,
+       Jesse Barnes <jbarnes@virtuousgeek.org>,
+       Fenghua Yu <fenghua.yu@intel.com>,
+       Suresh Siddha <suresh.b.siddha@intel.com>,
+       Yinghai Lu <yinghai@kernel.org>, Mark Gross <mgross@linux.intel.com>,
+       LKML <linux-kernel@vger.kernel.org>
+Subject: Re: 2.6.29: can't resume from suspend with DMAR (intel iommu) enabled
+Message-ID: <20090411171418.GB14287@kibblesnbits.boston.devel.redhat.com>
+References: <cb0375e10903241258x32c9d0f3g35a4f56793eb8677@mail.gmail.com> <20090324203259.GC26930@elte.hu> <1238003581.2085.53.camel@macbook.infradead.org> <20090325175908.GA25518@elte.hu> <1239051362.22733.87.camel@macbook.infradead.org> <20090407075640.GA16516@srcf.ucam.org> <1239429852.712.1532.camel@macbook.infradead.org> <20090411143834.GA14287@kibblesnbits.boston.devel.redhat.com> <1239468764.712.1546.camel@macbook.infradead.org>
+Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <alpine.LFD.2.00.0904111849450.21577@localhost.localdomain>
-User-Agent: Mutt/1.5.17 (2007-11-01)
+In-Reply-To: <1239468764.712.1546.camel@macbook.infradead.org>
+User-Agent: Mutt/1.4.2.2i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, Apr 11, 2009 at 06:53:45PM +0200, Thomas Gleixner wrote:
-> On Sat, 11 Apr 2009, Dimitri Sivanich wrote:
+On Sat, Apr 11, 2009 at 09:52:39AM -0700, David Woodhouse wrote:
+> > Does this include backporting the interrupt remapping fixes, or just
+> > ignoring it since none of the current laptop chipsets support it?
 > 
-> > On Sat, Apr 11, 2009 at 11:51:36AM +0200, Thomas Gleixner wrote:
-> > > On Fri, 10 Apr 2009, Dimitri Sivanich wrote:
-> > > 
-> > > > The xtime_lock is being held for long periods on larger systems due
-> > > > to an extensive amount of time being spent in calc_load(),
-> > > > specifically here:
-> > > >   do_timer->update_times->calc_load->count_active_tasks->nr_active()
-> > > > 
-> > > > On a 64 cpu system I've seen this take approximately 55 usec.
-> > > > Presumably it would be worse on larger systems.  This causes other
-> > > > cpus to be held off in places such as
-> > > > scheduler_tick->sched_clock_tick waiting for the xtime_lock to be
-> > > > released.
-> > > 
-> > > I thought more about that. Why don't we move the calc_load() call into
-> > > the timer softirq context and avoid fiddling with all the call sites ?
-> > > Also moving calc_load out of the timer interrupt context reduces the
-> > > interrupts off section as well.
-> > > 
-> > Sounds reasonable to me.
+> The latter. What I've done so far is quite large for a -stable
+> submission already. The interrupt remapping stuff would be even more
+> intrusive, and I'm entirely unconvinced that we actually _need_ it for
+> current systems.
 > 
-> Ok. I looked once more and I wonder if it's possible to avoid the
-> whole for_each_online_cpu() business by moving the accounting into the
-> scheduler and be a bit more clever than just blindly running over all
-> cpus everytime. 
-> 
-> /me goes back to stare a bit more at the avenrun stuff
-> 
+> I could make it refuse to suspend in intr_remap is enabled, I suppose --
+> that would be simple enough.
+>
 
-Also, if my patch gets replaced by this, you might want to avoid saving intermediate results in calc_load, as my patch attempts to do.
+Right, that's what I was afraid of. I think refusing to suspend is probably
+a good idea. I'm probably not the only person who suspends his desktop
+machines when they're not in use...
+
+regards, Kyle
