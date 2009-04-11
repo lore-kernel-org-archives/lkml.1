@@ -1,66 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755685AbZDKGC3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756080AbZDKGEt@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755685AbZDKGC3 (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 11 Apr 2009 02:02:29 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754655AbZDKGCT
+	id S1756080AbZDKGEt (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 11 Apr 2009 02:04:49 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752766AbZDKGEk
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 11 Apr 2009 02:02:19 -0400
-Received: from smtp239.poczta.interia.pl ([217.74.64.239]:49232 "EHLO
-	smtp239.poczta.interia.pl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754470AbZDKGCS (ORCPT
+	Sat, 11 Apr 2009 02:04:40 -0400
+Received: from bombadil.infradead.org ([18.85.46.34]:58120 "EHLO
+	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752637AbZDKGEj (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 11 Apr 2009 02:02:18 -0400
-Date: Sat, 11 Apr 2009 08:04:15 +0200
-From: Krzysztof Helt <krzysztof.h1@poczta.fm>
-To: Andrea Righi <righi.andrea@gmail.com>
-Cc: Eric Miao <eric.y.miao@gmail.com>, LKML <linux-kernel@vger.kernel.org>,
-       Geert Uytterhoeven <geert@linux-m68k.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       "Rafael J. Wysocki" <rjw@sisk.pl>,
-       Andrey Borzenkov <arvidjaar@gmail.com>,
-       "Antonino A. Daplas" <adaplas@gmail.com>,
-       linux-fbdev-devel@lists.sourceforge.net,
-       linux-pm@lists.linux-foundation.org, Dave Jones <davej@redhat.com>,
-       Harvey Harrison <harvey.harrison@gmail.com>,
-       Johannes Weiner <hannes@cmpxchg.org>,
-       Stefan Richter <stefanr@s5r6.in-berlin.de>
-Subject: Re: [REGRESSION] commit 66c1ca0: {fbmem: fix fb_info->lock and
- mm->mmap_sem ...} causes Xfbdev not working
-Message-Id: <20090411080415.7fe924a2.krzysztof.h1@poczta.fm>
-In-Reply-To: <20090410220521.GB21294@linux>
-References: <f17812d70904090436kd03744brca4a4bc4b85bba8@mail.gmail.com>
-	<20090409125850.GA2727@linux>
-	<20090410222122.87be60f6.krzysztof.h1@poczta.fm>
-	<20090410220521.GB21294@linux>
-X-Mailer: Sylpheed 2.4.3 (GTK+ 2.11.0; i686-pc-linux-gnu)
+	Sat, 11 Apr 2009 02:04:39 -0400
+Subject: Re: 2.6.29: can't resume from suspend with DMAR (intel iommu)
+ enabled
+From: David Woodhouse <dwmw2@infradead.org>
+To: Matthew Garrett <mjg@redhat.com>
+Cc: Ingo Molnar <mingo@elte.hu>, Andrew Lutomirski <amluto@gmail.com>,
+       Jesse Barnes <jbarnes@virtuousgeek.org>,
+       Kyle McMartin <kyle@redhat.com>, Fenghua Yu <fenghua.yu@intel.com>,
+       Suresh Siddha <suresh.b.siddha@intel.com>,
+       Yinghai Lu <yinghai@kernel.org>, Mark Gross <mgross@linux.intel.com>,
+       LKML <linux-kernel@vger.kernel.org>
+In-Reply-To: <20090407075640.GA16516@srcf.ucam.org>
+References: <cb0375e10903241258x32c9d0f3g35a4f56793eb8677@mail.gmail.com>
+	 <20090324203259.GC26930@elte.hu>
+	 <1238003581.2085.53.camel@macbook.infradead.org>
+	 <20090325175908.GA25518@elte.hu>
+	 <1239051362.22733.87.camel@macbook.infradead.org>
+	 <20090407075640.GA16516@srcf.ucam.org>
+Content-Type: text/plain
+Date: Fri, 10 Apr 2009 23:04:12 -0700
+Message-Id: <1239429852.712.1532.camel@macbook.infradead.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+X-Mailer: Evolution 2.26.0 (2.26.0-2.fc11) 
 Content-Transfer-Encoding: 7bit
-X-EMID: 14e2b138
+X-SRS-Rewrite: SMTP reverse-path rewritten from <dwmw2@infradead.org> by bombadil.infradead.org
+	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, 11 Apr 2009 00:05:22 +0200
-Andrea Righi <righi.andrea@gmail.com> wrote:
-
+On Tue, 2009-04-07 at 08:56 +0100, Matthew Garrett wrote:
+> On Mon, Apr 06, 2009 at 01:56:01PM -0700, David Woodhouse wrote:
 > 
-> mmmh... I may have missed something, but the common fb_mmap() should
-> acquire mm->mmap_sem and then info->lock, while fb_ioctl() can do that
-> in reverse order (info->lock first and then mm->mmap_sem) causing the
-> circular locking dependency. Are you sure that pushing info->lock down
-> each driver's fb_mmap will fix the problem?
+> > Dirk reported the same panic, but we've just turned his iommu back on
+> > and completely failed to reproduce the problem -- so I'm kind of stuck.
+> 
+> I saw this on a T400, but only on the first boot after enabling DMAR - 
+> power cycling "fixed" it.
 
-Right. The fb_mmap is called with the mmap_sem already held.
-I will try other possibilities like breaking info->lock() into two
-mutexex.
+OK, that should be fixed (amongst other things) in
+git.infradead.org/users/dwmw2/iommu-suspend-2.6.29.git and in the Fedora
+2.6.29.1-68.fc11 kernel. Thanks.
 
-Something should be done to solve this problem.
+http://www.kerneloops.org/raw.php?rawid=346794
 
-Best regards,
-Krzysztof
-
-----------------------------------------------------------------------
-Oblej swoich znajomych... wirtualnie! ;)
-http://link.interia.pl/f2119
+-- 
+David Woodhouse                            Open Source Technology Centre
+David.Woodhouse@intel.com                              Intel Corporation
 
