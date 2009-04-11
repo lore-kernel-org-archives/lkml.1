@@ -1,42 +1,81 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753914AbZDKAYM@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754132AbZDKAY4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753914AbZDKAYM (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 10 Apr 2009 20:24:12 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752192AbZDKAX4
+	id S1754132AbZDKAY4 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 10 Apr 2009 20:24:56 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752192AbZDKAYm
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 10 Apr 2009 20:23:56 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:36515 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1752038AbZDKAXz (ORCPT
+	Fri, 10 Apr 2009 20:24:42 -0400
+Received: from mail-fx0-f158.google.com ([209.85.220.158]:47790 "EHLO
+	mail-fx0-f158.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752038AbZDKAYl (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 10 Apr 2009 20:23:55 -0400
-Date: Fri, 10 Apr 2009 17:22:43 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Jack Steiner <steiner@sgi.com>
-Cc: linux-kernel@vger.kernel.org
-Subject: Re: [patch 03/13] GRU - dynamic allocation of kernel contexts
-Message-Id: <20090410172243.d60a43d5.akpm@linux-foundation.org>
-In-Reply-To: <20090410132418.GB18113@sgi.com>
-References: <20090406160809.278924000@sgi.com>
-	<20090406161011.887146000@sgi.com>
-	<20090409153709.96fb4d96.akpm@linux-foundation.org>
-	<20090410132418.GB18113@sgi.com>
-X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Fri, 10 Apr 2009 20:24:41 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:user-agent:mime-version:to:cc:subject
+         :references:in-reply-to:content-type:content-transfer-encoding;
+        b=xRkjY9dcOhyTuGWYHS+QvuJgfnKnZ7LBcqXGDmSG1wwkDdsjazpi9qd0CKcCb84+d0
+         9ZbDMoPx3LQGOYHl8cchM7sYEmW5Wo9okqCjsr9Jz9uAI63mNXHuDv6T1J51TBX9Qx9c
+         EZmbNP6yWOikrhnojbZDYJm12u8bP4PNTns/o=
+Message-ID: <49DFE345.3010109@gmail.com>
+Date: Sat, 11 Apr 2009 04:24:37 +0400
+From: Alexey Starikovskiy <aystarik@gmail.com>
+User-Agent: Thunderbird 2.0.0.21 (X11/20090319)
+MIME-Version: 1.0
+To: Alan Jenkins <alan-jenkins@tuffmail.co.uk>
+CC: linux-acpi@vger.kernel.org,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Kernel Testers List <kernel-testers@vger.kernel.org>
+Subject: Re: Regression: 20 ACPI interrupts per second on EEEPC 4G
+References: <49DF6835.9040501@tuffmail.co.uk>
+In-Reply-To: <49DF6835.9040501@tuffmail.co.uk>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 10 Apr 2009 08:24:18 -0500
-Jack Steiner <steiner@sgi.com> wrote:
+Hi Alan,
 
-> +			mutex_unlock(&gts->ts_ctxlock);
-> +			set_current_state(TASK_INTERRUPTIBLE);
->  			schedule_timeout(GRU_ASSIGN_DELAY);  /* true hack ZZZ */
+This patch looks to be a suspect: 34ff4dbccccce54c83b1234d39b7ad9e548a75dd,
+Please check if reversing it helps
 
-OK...  But if the calling task has signal_pending(), the
-schedule_timeout() will return immediately.
+Regards,
+Alex.
 
-If that's a problem then perhaps use plain old msleep()?
+Alan Jenkins wrote:
+> On latest git, powertop shows 20 ACPI interrupts per second.  
+> Previously, this was closer to 1 per second.  See attached output (a 
+> vs b, "a" is from 2.6.29-rc8).
+>
+> This is from a pretty sparse KDE desktop.  Normally I run 
+> gnome-power-manager, but I killed it to make sure that wasn't causing 
+> any problems.
+>
+> alan@alan-eeepc:/sys/firmware/acpi/interrupts$ grep -v "invalid" *
+> error:       0
+> ff_gbl_lock:       0    enabled
+> ff_pwr_btn:       0     enabled
+> ff_rt_clk:       0      disabled
+> gpe03:       0  disabled
+> gpe04:       0  disabled
+> gpe05:       0  disabled
+> gpe09:       0  disabled
+> gpe0B:       0  disabled
+> gpe0C:       0  disabled
+> gpe0D:       0  disabled
+> gpe0E:       0  disabled
+> gpe18:   60975  enabled
+> gpe_all:   60975
+> sci:   60975
+>
+> which I presume means lots of EC interrupts.
+>
+> [    0.134068] ACPI: EC: GPE = 0x18, I/O: command/status = 0x66, data 
+> = 0x62
+>
+> Any ideas?
+>
+> Thanks
+> Alan
+
