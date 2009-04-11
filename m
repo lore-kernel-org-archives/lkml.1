@@ -1,232 +1,423 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754519AbZDKTim@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756113AbZDKTnZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754519AbZDKTim (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 11 Apr 2009 15:38:42 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752487AbZDKTid
+	id S1756113AbZDKTnZ (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 11 Apr 2009 15:43:25 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755190AbZDKTnQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 11 Apr 2009 15:38:33 -0400
-Received: from cantor.suse.de ([195.135.220.2]:54729 "EHLO mx1.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752166AbZDKTic (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 11 Apr 2009 15:38:32 -0400
-From: "Rafael J. Wysocki" <rjw@suse.com>
-Organization: SUSE
-To: Arjan van de Ven <arjan@linux.intel.com>
-Subject: Re: [linux-pm] [2.6.30-rc1-git2 regressions] Hibernation broken and (minor but annoying) audio problem
-Date: Sat, 11 Apr 2009 21:38:25 +0200
-User-Agent: KMail/1.11.2 (Linux/2.6.30-rc1-rjw; KDE/4.2.2; x86_64; ; )
-Cc: Linus Torvalds <torvalds@linux-foundation.org>,
-       linux-pm@lists.linux-foundation.org, Takashi Iwai <tiwai@suse.de>,
+	Sat, 11 Apr 2009 15:43:16 -0400
+Received: from pfepb.post.tele.dk ([195.41.46.236]:60327 "EHLO
+	pfepb.post.tele.dk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754790AbZDKTnO (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 11 Apr 2009 15:43:14 -0400
+Date: Sat, 11 Apr 2009 21:45:17 +0200
+From: Sam Ravnborg <sam@ravnborg.org>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: linux-kbuild <linux-kbuild@vger.kernel.org>,
        LKML <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>, Ingo Molnar <mingo@elte.hu>
-References: <200904100057.43827.rjw@sisk.pl> <alpine.LFD.2.00.0904101817100.4583@localhost.localdomain> <49DFFC05.7070509@linux.intel.com>
-In-Reply-To: <49DFFC05.7070509@linux.intel.com>
-MIME-Version: 1.0
-Content-Type: Text/Plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
+       Randy Dunlap <randy.dunlap@oracle.com>,
+       Maxime Bizon <mbizon@freebox.fr>, David Howells <dhowells@redhat.com>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Jan Beulich <jbeulich@novell.com>, Kirill Smelkov <kirr@mns.spb.ru>,
+       Oskar Schirmer <os@emlix.com>, Mikael Starvik <mikael.starvik@axis.com>,
+       Peter Korsgaard <jacmet@sunsite.dk>,
+       Massimo Maiurana <maiurana@gmail.com>,
+       Uwe =?iso-8859-1?Q?Kleine-K=F6nig?= 
+	<u.kleine-koenig@pengutronix.de>
+Subject: [GIT] kbuild
+Message-ID: <20090411194517.GA2184@uranus.ravnborg.org>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=iso-8859-1
 Content-Disposition: inline
-Message-Id: <200904112138.26518.rjw@suse.com>
+Content-Transfer-Encoding: 8bit
+User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Saturday 11 April 2009, Arjan van de Ven wrote:
-> Linus Torvalds wrote:
-> > 
-> > On Sat, 11 Apr 2009, Rafael J. Wysocki wrote:
-> >> On Friday 10 April 2009, Linus Torvalds wrote:
-> >>> On Fri, 10 Apr 2009, Rafael J. Wysocki wrote:
-> >>>> I've just verified that the resume-after-hibernation issue goes away after
-> >>>> reverting commit 9710794383ee5008d67f1a6613a4717bf6de47bc
-> >>>> (async: remove the temporary (2.6.29) "async is off by default" code) , so it
-> >>>> is async-related.
-> >>> Arjan? Clearly all the necessary fixes weren't found..
-> >>>
-> >>> There _is_ a module loading problem wrt initmem - I think you found that 
-> >>> and we added a hack for it for the ACPI battery driver. I wonder if we're 
-> >>> hitting a similar issue now with module discovery: modules that use 
-> >>> "async_schedule()" to do their discovery asynchronously are now not 
-> >>> necessarily fully "done" when the module is loaded. 
-> >>>
-> >>> And so, anything that expected the devices to be available after module 
-> >>> load (like they used to) would be screwed.
-> >>>
-> >>> IOW, maybe something like the totally untested patch appended here (that 
-> >>> should also allow us to make the ACPI battery code to go back to using 
-> >>> __init).
-> >> I tested it and it worked.
-> > 
-> > Hmm.
-> > 
-> > I'm not 100% sure that patch is good.
-> > 
-> > The reason? I think it's going to deadlock if an async caller ends up 
-> > wanting to load a module, because then the nested 
-> > "async_synchronize_full()" will basically want to wait for itself.
-> > 
-> > So it's a good test-patch, and maybe no async caller ever loads a module, 
-> > but it makes me a bit nervous.
-> 
-> It would make a rule that async context can only use request_module_nowait().
-> Not too nice, I think we can do better.
-> 
-> > But the fact that it fixes things for you at least means that the _reason_ 
-> > for the problem is know, and maybe there are alternative solutions. Arjan?
-> 
-> We have async domains; for the acpi type of case we could make a "__init" domain
-> that we wait on selectively... but I'm not too fond of this since it'll be fragile over time.
-> 
-> I suppose this got exposed now that we (just) removed the stop_machine stuff from the module loader...
-> (which is a generally good improvement, don't get me wrong).
-> 
-> For the __init freeing case there is a even more interesting option:
-> We can schedule an async task that will free the init mem of the module, and have that
-> async task just wait for all its predecessors to complete before doing the actual work.
-> That way the module is available and ready to its caller, while the freeing of the init mem
-> will be done at a safe time.
-> 
-> Like this (not yet tested):
-> 
-> diff --git a/kernel/module.c b/kernel/module.c
-> index 1196f5d..4ec90e8 100644
-> --- a/kernel/module.c
-> +++ b/kernel/module.c
-> @@ -2312,6 +2312,22 @@ static noinline struct module *load_module(void __user *umod,
->   	goto free_hdr;
->   }
-> 
-> +static void async_module_free_initmem(void *data, async_cookie_t cookie)
-> +{
-> +	struct module *mod = data;
-> +	async_synchronize_cookie(cookie);
-> +
-> +	mutex_lock(&module_mutex);
-> +	/* Drop initial reference. */
-> +	module_put(mod);
-> +	module_free(mod, mod->module_init);
-> +	mod->module_init = NULL;
-> +	mod->init_size = 0;
-> +	mod->init_text_size = 0;
-> +	mutex_unlock(&module_mutex);
-> +
-> +}
-> +
->   /* This is where the real work happens */
->   SYSCALL_DEFINE3(init_module, void __user *, umod,
->   		unsigned long, len, const char __user *, uargs)
-> @@ -2372,15 +2388,7 @@ SYSCALL_DEFINE3(init_module, void __user *, umod,
->   	blocking_notifier_call_chain(&module_notify_list,
->   				     MODULE_STATE_LIVE, mod);
-> 
-> -	mutex_lock(&module_mutex);
-> -	/* Drop initial reference. */
-> -	module_put(mod);
-> -	module_free(mod, mod->module_init);
-> -	mod->module_init = NULL;
-> -	mod->init_size = 0;
-> -	mod->init_text_size = 0;
-> -	mutex_unlock(&module_mutex);
-> -
-> +	async_schedule(async_module_free_initmem, mod);
->   	return 0;
->   }
-> 
-> 
-> 
-> Now the second case of "the devices are available when the module load is done".
-> 
-> The hard case here is that we're talking about a storage device. In 2.6.28 and before (eg well before
-> any async stuff landed), SCSI probing already was done asynchronously. Same for USB. Libata I think is the same,
-> by virtue of using scsi as infrastructure.
-> 
-> Realistically, unless you call scsi_complete_async_scans(), you could not depend on scsi devices being available
-> after loading one of their modules. (from userland you could do this via the scsi_wait_scan module)
-> 
-> (speculation: on ATA likely the scan was done relatively quickly ... and with async it's just done with different timing. So it
-> was kind of luck before)
-> 
-> Rafael: would it be reasonable to call "scsi_compete_async_scans()" from the resume-from-disk code ?
+Hi Linus.
 
-FWIW, I applied the appended patch and it fixed the problem for me.
+kbuild stuff where the majority of the patch is Documentation updates.
 
-Thanks,
-Rafael
+The most controversial part is the addition of a flag to discard
+local symbols from vmlinux.
+The patch has been in my inbox for a while but I had just not
+got around to it until now. It came in via Andrew so I expect it has
+been in -nect for a while.
 
----
- drivers/scsi/scsi_priv.h      |    3 ---
- drivers/scsi/scsi_wait_scan.c |    2 +-
- include/scsi/scsi_scan.h      |   11 +++++++++++
- kernel/power/disk.c           |    8 ++++++++
- 4 files changed, 20 insertions(+), 4 deletions(-)
+This pull also add support for destination-y in header export files.
+This is not a fix but a few people has asked for this feature
+and they cannot use it until it is present.
 
-Index: linux-2.6/include/scsi/scsi_scan.h
-===================================================================
---- /dev/null
-+++ linux-2.6/include/scsi/scsi_scan.h
-@@ -0,0 +1,11 @@
-+#ifndef _SCSI_SCSI_SCAN_H
-+#define _SCSI_SCSI_SCAN_H
+The rest is assorted set of fixes as the shortlog below tells.
+
+Please pull.
+
+	Sam
+
+The following changes since commit d848223808c5d21e1b3cea090047e34722c6254b:
+  Linus Torvalds (1):
+        Merge git://git.kernel.org/.../dhowells/linux-2.6-mn10300
+
+are available in the git repository at:
+
+  git://git.kernel.org/pub/scm/linux/kernel/git/sam/kbuild-fixes.git master
+
+David Howells (1):
+      kbuild: make it possible for the linker to discard local symbols from vmlinux
+
+Jan Beulich (1):
+      kbuild: remove pointless strdup() on arguments passed to new_module() in modpost
+
+Kirill Smelkov (1):
+      kbuild: fix a few typos in top-level Makefile
+
+Maxime Bizon (1):
+      kbuild: fix spurious initramfs rebuild
+
+Peter Korsgaard (1):
+      kbuild: use git svn instead of git-svn in setlocalversion
+
+Randy Dunlap (1):
+      docbook: make cleandocs
+
+Sam Ravnborg (3):
+      kconfig: fix update-po-config to accect backslash in input
+      kbuild: introduce destination-y for exported headers
+      Documentation: explain the difference between __bitwise and __bitwise__
+
+Uwe Kleine-König (1):
+      kbuild: fix option processing for -I in headerdep
+
+ Documentation/DocBook/Makefile     |   11 +++-
+ Documentation/kbuild/makefiles.txt |   83 ++++++++++++++++++++++++++++++++---
+ Documentation/sparse.txt           |    8 +++
+ Makefile                           |    8 +++-
+ init/Kconfig                       |    8 +++
+ scripts/Makefile.headersinst       |    2 +
+ scripts/gen_initramfs_list.sh      |    2 +-
+ scripts/headerdep.pl               |    2 +-
+ scripts/kconfig/kxgettext.c        |    4 ++
+ scripts/mod/modpost.c              |    4 +-
+ scripts/setlocalversion            |    2 +-
+ 11 files changed, 116 insertions(+), 18 deletions(-)
+
+diff --git a/Documentation/DocBook/Makefile b/Documentation/DocBook/Makefile
+index a3a83d3..8918a32 100644
+--- a/Documentation/DocBook/Makefile
++++ b/Documentation/DocBook/Makefile
+@@ -31,7 +31,7 @@ PS_METHOD	= $(prefer-db2x)
+ 
+ ###
+ # The targets that may be used.
+-PHONY += xmldocs sgmldocs psdocs pdfdocs htmldocs mandocs installmandocs
++PHONY += xmldocs sgmldocs psdocs pdfdocs htmldocs mandocs installmandocs cleandocs
+ 
+ BOOKS := $(addprefix $(obj)/,$(DOCBOOKS))
+ xmldocs: $(BOOKS)
+@@ -213,11 +213,12 @@ silent_gen_xml = :
+ dochelp:
+ 	@echo  ' Linux kernel internal documentation in different formats:'
+ 	@echo  '  htmldocs        - HTML'
+-	@echo  '  installmandocs  - install man pages generated by mandocs'
+-	@echo  '  mandocs         - man pages'
+ 	@echo  '  pdfdocs         - PDF'
+ 	@echo  '  psdocs          - Postscript'
+ 	@echo  '  xmldocs         - XML DocBook'
++	@echo  '  mandocs         - man pages'
++	@echo  '  installmandocs  - install man pages generated by mandocs'
++	@echo  '  cleandocs       - clean all generated DocBook files'
+ 
+ ###
+ # Temporary files left by various tools
+@@ -235,6 +236,10 @@ clean-files := $(DOCBOOKS) \
+ 
+ clean-dirs := $(patsubst %.xml,%,$(DOCBOOKS)) man
+ 
++cleandocs:
++	$(Q)rm -f $(call objectify, $(clean-files))
++	$(Q)rm -rf $(call objectify, $(clean-dirs))
 +
-+#ifdef CONFIG_SCSI
-+/* drivers/scsi/scsi_scan.c */
-+extern int scsi_complete_async_scans(void);
-+#else
-+static inline int scsi_complete_async_scans(void) { return 0; }
-+#endif
+ # Declare the contents of the .PHONY variable as phony.  We keep that
+ # information in a variable se we can use it in if_changed and friends.
+ 
+diff --git a/Documentation/kbuild/makefiles.txt b/Documentation/kbuild/makefiles.txt
+index 51104f9..d4b0567 100644
+--- a/Documentation/kbuild/makefiles.txt
++++ b/Documentation/kbuild/makefiles.txt
+@@ -40,10 +40,16 @@ This document describes the Linux kernel Makefiles.
+ 	   --- 6.7 Custom kbuild commands
+ 	   --- 6.8 Preprocessing linker scripts
+ 
+-	=== 7 Kbuild Variables
+-	=== 8 Makefile language
+-	=== 9 Credits
+-	=== 10 TODO
++	=== 7 Kbuild syntax for exported headers
++		--- 7.1 header-y
++		--- 7.2 objhdr-y
++		--- 7.3 destination-y
++		--- 7.4 unifdef-y (deprecated)
 +
-+#endif /* _SCSI_SCSI_SCAN_H */
-Index: linux-2.6/drivers/scsi/scsi_priv.h
-===================================================================
---- linux-2.6.orig/drivers/scsi/scsi_priv.h
-+++ linux-2.6/drivers/scsi/scsi_priv.h
-@@ -38,9 +38,6 @@ static inline void scsi_log_completion(s
- 	{ };
- #endif
++	=== 8 Kbuild Variables
++	=== 9 Makefile language
++	=== 10 Credits
++	=== 11 TODO
  
--/* scsi_scan.c */
--int scsi_complete_async_scans(void);
--
- /* scsi_devinfo.c */
- extern int scsi_get_device_flags(struct scsi_device *sdev,
- 				 const unsigned char *vendor,
-Index: linux-2.6/drivers/scsi/scsi_wait_scan.c
-===================================================================
---- linux-2.6.orig/drivers/scsi/scsi_wait_scan.c
-+++ linux-2.6/drivers/scsi/scsi_wait_scan.c
-@@ -11,7 +11,7 @@
-  */
+ === 1 Overview
  
- #include <linux/module.h>
--#include "scsi_priv.h"
-+#include <scsi/scsi_scan.h>
+@@ -1143,8 +1149,69 @@ When kbuild executes, the following steps are followed (roughly):
+ 	The kbuild infrastructure for *lds file are used in several
+ 	architecture-specific files.
  
- static int __init wait_scan_init(void)
- {
-Index: linux-2.6/kernel/power/disk.c
-===================================================================
---- linux-2.6.orig/kernel/power/disk.c
-+++ linux-2.6/kernel/power/disk.c
-@@ -22,6 +22,7 @@
- #include <linux/console.h>
- #include <linux/cpu.h>
- #include <linux/freezer.h>
-+#include <scsi/scsi_scan.h>
- #include <asm/suspend.h>
- 
- #include "power.h"
-@@ -645,6 +646,13 @@ static int software_resume(void)
- 		return 0;
- 
- 	/*
-+	 * We can't depend on SCSI devices being available after loading one of
-+	 * their modules if scsi_complete_async_scans() is not called and the
-+	 * resume device usually is a SCSI one.
-+	 */
-+	scsi_complete_async_scans();
++=== 7 Kbuild syntax for exported headers
 +
-+	/*
- 	 * name_to_dev_t() below takes a sysfs buffer mutex when sysfs
- 	 * is configured into the kernel. Since the regular hibernate
- 	 * trigger path is via sysfs which takes a buffer mutex before
-
++The kernel include a set of headers that is exported to userspace.
++Many headers can be exported as-is but other headers requires  a
++minimal pre-processing before they are ready for user-space.
++The pre-processing does:
++- drop kernel specific annotations
++- drop include of compiler.h
++- drop all sections that is kernel internat (guarded by ifdef __KERNEL__)
++
++Each relevant directory contain a file name "Kbuild" which specify the
++headers to be exported.
++See subsequent chapter for the syntax of the Kbuild file.
++
++	--- 7.1 header-y
++
++	header-y specify header files to be exported.
++
++		Example:
++			#include/linux/Kbuild
++			header-y += usb/
++			header-y += aio_abi.h
++
++	The convention is to list one file per line and
++	preferably in alphabetic order.
++
++	header-y also specify which subdirectories to visit.
++	A subdirectory is identified by a trailing '/' which
++	can be seen in the example above for the usb subdirectory.
++
++	Subdirectories are visited before their parent directories.
++
++	--- 7.2 objhdr-y
++
++	objhdr-y specifies generated files to be exported.
++	Generated files are special as they need to be looked
++	up in another directory when doing 'make O=...' builds.
++
++		Example:
++			#include/linux/Kbuild
++			objhdr-y += version.h
++
++	--- 7.3 destination-y
++
++	When an architecture have a set of exported headers that needs to be
++	exported to a different directory destination-y is used.
++	destination-y specify the destination directory for all exported
++	headers in the file where it is present.
++
++		Example:
++			#arch/xtensa/platforms/s6105/include/platform/Kbuild
++			destination-y := include/linux
++
++	In the example above all exported headers in the Kbuild file
++	will be located in the directory "include/linux" when exported.
++
++
++	--- 7.4 unifdef-y (deprecated)
++
++	unifdef-y is deprecated. A direct replacement is header-y.
++
+ 
+-=== 7 Kbuild Variables
++=== 8 Kbuild Variables
+ 
+ The top Makefile exports the following variables:
+ 
+@@ -1206,7 +1273,7 @@ The top Makefile exports the following variables:
+ 	INSTALL_MOD_STRIP will used as the option(s) to the strip command.
+ 
+ 
+-=== 8 Makefile language
++=== 9 Makefile language
+ 
+ The kernel Makefiles are designed to be run with GNU Make.  The Makefiles
+ use only the documented features of GNU Make, but they do use many
+@@ -1225,14 +1292,14 @@ time the left-hand side is used.
+ There are some cases where "=" is appropriate.  Usually, though, ":="
+ is the right choice.
+ 
+-=== 9 Credits
++=== 10 Credits
+ 
+ Original version made by Michael Elizabeth Chastain, <mailto:mec@shout.net>
+ Updates by Kai Germaschewski <kai@tp1.ruhr-uni-bochum.de>
+ Updates by Sam Ravnborg <sam@ravnborg.org>
+ Language QA by Jan Engelhardt <jengelh@gmx.de>
+ 
+-=== 10 TODO
++=== 11 TODO
+ 
+ - Describe how kbuild supports shipped files with _shipped.
+ - Generating offset header files.
+diff --git a/Documentation/sparse.txt b/Documentation/sparse.txt
+index 42f43fa..34c76a5 100644
+--- a/Documentation/sparse.txt
++++ b/Documentation/sparse.txt
+@@ -42,6 +42,14 @@ sure that bitwise types don't get mixed up (little-endian vs big-endian
+ vs cpu-endian vs whatever), and there the constant "0" really _is_
+ special.
+ 
++__bitwise__ - to be used for relatively compact stuff (gfp_t, etc.) that
++is mostly warning-free and is supposed to stay that way.  Warnings will
++be generated without __CHECK_ENDIAN__.
++
++__bitwise - noisy stuff; in particular, __le*/__be* are that.  We really
++don't want to drown in noise unless we'd explicitly asked for it.
++
++
+ Getting sparse
+ ~~~~~~~~~~~~~~
+ 
+diff --git a/Makefile b/Makefile
+index e5ad5fd..ad830bd 100644
+--- a/Makefile
++++ b/Makefile
+@@ -567,7 +567,7 @@ KBUILD_CFLAGS += $(call cc-option,-Wdeclaration-after-statement,)
+ # disable pointer signed / unsigned warnings in gcc 4.0
+ KBUILD_CFLAGS += $(call cc-option,-Wno-pointer-sign,)
+ 
+-# disable invalid "can't wrap" optimzations for signed / pointers
++# disable invalid "can't wrap" optimizations for signed / pointers
+ KBUILD_CFLAGS	+= $(call cc-option,-fwrapv)
+ 
+ # revert to pre-gcc-4.4 behaviour of .eh_frame
+@@ -597,6 +597,10 @@ LDFLAGS_BUILD_ID = $(patsubst -Wl$(comma)%,%,\
+ LDFLAGS_MODULE += $(LDFLAGS_BUILD_ID)
+ LDFLAGS_vmlinux += $(LDFLAGS_BUILD_ID)
+ 
++ifeq ($(CONFIG_STRIP_ASM_SYMS),y)
++LDFLAGS_vmlinux	+= -X
++endif
++
+ # Default kernel image to build when no specific target is given.
+ # KBUILD_IMAGE may be overruled on the command line or
+ # set in the environment
+@@ -1587,5 +1591,5 @@ PHONY += FORCE
+ FORCE:
+ 
+ # Declare the contents of the .PHONY variable as phony.  We keep that
+-# information in a variable se we can use it in if_changed and friends.
++# information in a variable so we can use it in if_changed and friends.
+ .PHONY: $(PHONY)
+diff --git a/init/Kconfig b/init/Kconfig
+index f2f9b53..7be4d38 100644
+--- a/init/Kconfig
++++ b/init/Kconfig
+@@ -808,6 +808,14 @@ config KALLSYMS_EXTRA_PASS
+ 	   you wait for kallsyms to be fixed.
+ 
+ 
++config STRIP_ASM_SYMS
++	bool "Strip assembler-generated symbols during link"
++	default n
++	help
++	  Strip internal assembler-generated symbols during a link (symbols
++	  that look like '.Lxxx') so they don't pollute the output of
++	  get_wchan() and suchlike.
++
+ config HOTPLUG
+ 	bool "Support for hot-pluggable devices" if EMBEDDED
+ 	default y
+diff --git a/scripts/Makefile.headersinst b/scripts/Makefile.headersinst
+index 612dc13..095cfc8 100644
+--- a/scripts/Makefile.headersinst
++++ b/scripts/Makefile.headersinst
+@@ -14,6 +14,8 @@ _dst := $(if $(dst),$(dst),$(obj))
+ kbuild-file := $(srctree)/$(obj)/Kbuild
+ include $(kbuild-file)
+ 
++_dst := $(if $(destination-y),$(destination-y),$(_dst))
++
+ include scripts/Kbuild.include
+ 
+ install       := $(INSTALL_HDR_PATH)/$(_dst)
+diff --git a/scripts/gen_initramfs_list.sh b/scripts/gen_initramfs_list.sh
+index 3eea8f1..76af5f9 100644
+--- a/scripts/gen_initramfs_list.sh
++++ b/scripts/gen_initramfs_list.sh
+@@ -97,7 +97,7 @@ print_mtime() {
+ }
+ 
+ list_parse() {
+-	echo "$1 \\"
++	[ ! -L "$1" ] && echo "$1 \\" || :
+ }
+ 
+ # for each file print a line in following format
+diff --git a/scripts/headerdep.pl b/scripts/headerdep.pl
+index 97399da..b7f6c56 100755
+--- a/scripts/headerdep.pl
++++ b/scripts/headerdep.pl
+@@ -19,7 +19,7 @@ my $opt_graph;
+ 	version	=> \&version,
+ 
+ 	all	=> \$opt_all,
+-	I	=> \@opt_include,
++	"I=s"	=> \@opt_include,
+ 	graph	=> \$opt_graph,
+ );
+ 
+diff --git a/scripts/kconfig/kxgettext.c b/scripts/kconfig/kxgettext.c
+index 6eb72a7..8d9ce22 100644
+--- a/scripts/kconfig/kxgettext.c
++++ b/scripts/kconfig/kxgettext.c
+@@ -43,6 +43,10 @@ static char *escape(const char* text, char *bf, int len)
+ 			++text;
+ 			goto next;
+ 		}
++		else if (*text == '\\') {
++			*bfp++ = '\\';
++			len--;
++		}
+ 		*bfp++ = *text++;
+ next:
+ 		--len;
+diff --git a/scripts/mod/modpost.c b/scripts/mod/modpost.c
+index 8cc7061..df6e628 100644
+--- a/scripts/mod/modpost.c
++++ b/scripts/mod/modpost.c
+@@ -1913,7 +1913,7 @@ static void read_dump(const char *fname, unsigned int kernel)
+ 		if (!mod) {
+ 			if (is_vmlinux(modname))
+ 				have_vmlinux = 1;
+-			mod = new_module(NOFAIL(strdup(modname)));
++			mod = new_module(modname);
+ 			mod->skip = 1;
+ 		}
+ 		s = sym_add_exported(symname, mod, export_no(export));
+@@ -1997,7 +1997,7 @@ static void read_markers(const char *fname)
+ 
+ 		mod = find_module(modname);
+ 		if (!mod) {
+-			mod = new_module(NOFAIL(strdup(modname)));
++			mod = new_module(modname);
+ 			mod->skip = 1;
+ 		}
+ 		if (is_vmlinux(modname)) {
+diff --git a/scripts/setlocalversion b/scripts/setlocalversion
+index f1c4b35..47e75b6 100755
+--- a/scripts/setlocalversion
++++ b/scripts/setlocalversion
+@@ -21,7 +21,7 @@ if head=`git rev-parse --verify --short HEAD 2>/dev/null`; then
+ 
+ 	# Is this git on svn?
+ 	if git config --get svn-remote.svn.url >/dev/null; then
+-	        printf -- '-svn%s' "`git-svn find-rev $head`"
++	        printf -- '-svn%s' "`git svn find-rev $head`"
+ 	fi
+ 
+ 	# Are there uncommitted changes?
