@@ -1,129 +1,77 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757529AbZDKQt5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757500AbZDKQxg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757529AbZDKQt5 (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 11 Apr 2009 12:49:57 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756282AbZDKQtp
+	id S1757500AbZDKQxg (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 11 Apr 2009 12:53:36 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753280AbZDKQx1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 11 Apr 2009 12:49:45 -0400
-Received: from out01.mta.xmission.com ([166.70.13.231]:40529 "EHLO
-	out01.mta.xmission.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755888AbZDKQto (ORCPT
+	Sat, 11 Apr 2009 12:53:27 -0400
+Received: from casper.infradead.org ([85.118.1.10]:39124 "EHLO
+	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752926AbZDKQx0 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 11 Apr 2009 12:49:44 -0400
-To: Al Viro <viro@ZenIV.linux.org.uk>
-Cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
-       linux-pci@vger.kernel.org, linux-mm@kvack.org,
-       linux-fsdevel@vger.kernel.org, Hugh Dickins <hugh@veritas.com>,
-       Tejun Heo <tj@kernel.org>, Alexey Dobriyan <adobriyan@gmail.com>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Alan Cox <alan@lxorguk.ukuu.org.uk>,
-       Greg Kroah-Hartman <gregkh@suse.de>
-References: <m1skkf761y.fsf@fess.ebiederm.org>
-	<20090411155852.GV26366@ZenIV.linux.org.uk>
-From: ebiederm@xmission.com (Eric W. Biederman)
-Date: Sat, 11 Apr 2009 09:49:36 -0700
-In-Reply-To: <20090411155852.GV26366@ZenIV.linux.org.uk> (Al Viro's message of "Sat\, 11 Apr 2009 16\:58\:52 +0100")
-Message-ID: <m1k55ryw2n.fsf@fess.ebiederm.org>
-User-Agent: Gnus/5.11 (Gnus v5.11) Emacs/22.2 (gnu/linux)
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-X-XM-SPF: eid=;;;mid=;;;hst=in01.mta.xmission.com;;;ip=67.169.126.145;;;frm=ebiederm@xmission.com;;;spf=neutral
-X-SA-Exim-Connect-IP: 67.169.126.145
-X-SA-Exim-Rcpt-To: viro@ZenIV.linux.org.uk, gregkh@suse.de, alan@lxorguk.ukuu.org.uk, torvalds@linux-foundation.org, adobriyan@gmail.com, tj@kernel.org, hugh@veritas.com, linux-fsdevel@vger.kernel.org, linux-mm@kvack.org, linux-pci@vger.kernel.org, linux-kernel@vger.kernel.org, akpm@linux-foundation.org
-X-SA-Exim-Mail-From: ebiederm@xmission.com
-X-Spam-DCC: XMission; sa04 1397; Body=1 Fuz1=1 Fuz2=1 
-X-Spam-Combo: ;Al Viro <viro@ZenIV.linux.org.uk>
-X-Spam-Relay-Country: 
-X-Spam-Report: * -1.8 ALL_TRUSTED Passed through trusted hosts only via SMTP
-	*  1.5 XMNoVowels Alpha-numberic number with no vowels
-	*  0.0 T_TM2_M_HEADER_IN_MSG BODY: T_TM2_M_HEADER_IN_MSG
-	* -2.6 BAYES_00 BODY: Bayesian spam probability is 0 to 1%
-	*      [score: 0.0000]
-	* -0.0 DCC_CHECK_NEGATIVE Not listed in DCC
-	*      [sa04 1397; Body=1 Fuz1=1 Fuz2=1]
-	*  1.6 XMSubMetaSx_00 1+ Sexy Words
-	*  0.0 XM_SPF_Neutral SPF-Neutral
-	*  0.4 UNTRUSTED_Relay Comes from a non-trusted relay
-Subject: Re: [RFC][PATCH 0/9] File descriptor hot-unplug support
-X-SA-Exim-Version: 4.2.1 (built Thu, 25 Oct 2007 00:26:12 +0000)
-X-SA-Exim-Scanned: Yes (on in01.mta.xmission.com)
+	Sat, 11 Apr 2009 12:53:26 -0400
+Subject: Re: 2.6.29: can't resume from suspend with DMAR (intel iommu)
+ enabled
+From: David Woodhouse <dwmw2@infradead.org>
+To: Kyle McMartin <kyle@redhat.com>
+Cc: Matthew Garrett <mjg@redhat.com>, Ingo Molnar <mingo@elte.hu>,
+       Andrew Lutomirski <amluto@gmail.com>,
+       Jesse Barnes <jbarnes@virtuousgeek.org>,
+       Fenghua Yu <fenghua.yu@intel.com>,
+       Suresh Siddha <suresh.b.siddha@intel.com>,
+       Yinghai Lu <yinghai@kernel.org>, Mark Gross <mgross@linux.intel.com>,
+       LKML <linux-kernel@vger.kernel.org>
+In-Reply-To: <20090411143834.GA14287@kibblesnbits.boston.devel.redhat.com>
+References: <cb0375e10903241258x32c9d0f3g35a4f56793eb8677@mail.gmail.com>
+	 <20090324203259.GC26930@elte.hu>
+	 <1238003581.2085.53.camel@macbook.infradead.org>
+	 <20090325175908.GA25518@elte.hu>
+	 <1239051362.22733.87.camel@macbook.infradead.org>
+	 <20090407075640.GA16516@srcf.ucam.org>
+	 <1239429852.712.1532.camel@macbook.infradead.org>
+	 <20090411143834.GA14287@kibblesnbits.boston.devel.redhat.com>
+Content-Type: text/plain
+Date: Sat, 11 Apr 2009 09:52:39 -0700
+Message-Id: <1239468764.712.1546.camel@macbook.infradead.org>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.26.0 (2.26.0-2.fc11) 
+Content-Transfer-Encoding: 7bit
+X-SRS-Rewrite: SMTP reverse-path rewritten from <dwmw2@infradead.org> by casper.infradead.org
+	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Al Viro <viro@ZenIV.linux.org.uk> writes:
+On Sat, 2009-04-11 at 10:38 -0400, Kyle McMartin wrote:
+> On Fri, Apr 10, 2009 at 11:04:12PM -0700, David Woodhouse wrote:
+> > On Tue, 2009-04-07 at 08:56 +0100, Matthew Garrett wrote:
+> > > On Mon, Apr 06, 2009 at 01:56:01PM -0700, David Woodhouse wrote:
+> > > 
+> > > > Dirk reported the same panic, but we've just turned his iommu back on
+> > > > and completely failed to reproduce the problem -- so I'm kind of stuck.
+> > > 
+> > > I saw this on a T400, but only on the first boot after enabling DMAR - 
+> > > power cycling "fixed" it.
+> > 
+> > OK, that should be fixed (amongst other things) in
+> > git.infradead.org/users/dwmw2/iommu-suspend-2.6.29.git and in the Fedora
+> > 2.6.29.1-68.fc11 kernel. Thanks.
+> > 
+> > http://www.kerneloops.org/raw.php?rawid=346794
+> > 
+> 
+> Does this include backporting the interrupt remapping fixes, or just
+> ignoring it since none of the current laptop chipsets support it?
 
-> On Sat, Apr 11, 2009 at 05:01:29AM -0700, Eric W. Biederman wrote:
->
->> A couple of weeks ago I found myself looking at the uio, seeing that
->> it does not support pci hot-unplug, and thinking "Great yet another
->> implementation of hotunplug logic that needs to be added".
->> 
->> I decided to see what it would take to add a generic implementation of
->> the code we have for supporting hot unplugging devices in sysfs, proc,
->> sysctl, tty_io, and now almost in the tun driver.
->> 
->> Not long after I touched the tun driver and made it safe to delete the
->> network device while still holding it's file descriptor open I someone
->> else touch the code adding a different feature and my careful work
->> went up in flames.  Which brought home another point at the best of it
->> this is ultimately complex tricky code that subsystems should not need
->> to worry about.
->> 
->> What makes this even more interesting is that in the presence of pci
->> hot-unplug it looks like most subsystems and most devices will have to
->> deal with the issue one way or another.
->
-> Ehh...  The real mess is in things like "TTY in the middle of random
-> ioctl" and there's another pile that won't be solved on struct file
-> level - individual fs internals ;-/
+The latter. What I've done so far is quite large for a -stable
+submission already. The interrupt remapping stuff would be even more
+intrusive, and I'm entirely unconvinced that we actually _need_ it for
+current systems.
 
-I haven't tackled code with a noticeable number of ioctls yet.  But if
-they are anything like what I have seen so far, a ref count to see
-that you are in the still executing a function (so you don't pull the
-rug out) from under it, and an additional method to say stop sleeping
-and return should be sufficient.
+I could make it refuse to suspend in intr_remap is enabled, I suppose --
+that would be simple enough.
 
->> This infrastructure could also be used to implement sys_revoke and
->> when I could not think of a better name I have drawn on that.
->
-> Yes, that's more or less obvious direction for revoke(), but there's a
-> problem with locking overhead that always scared me away from that.
-> Maybe I'm wrong, though...  In any case, you want to carefully check
-> the overhead and cacheline bouncing implications for things like pipes
-> and sockets.  Hell knows, maybe it'll work out, but...
-
-I took a careful look and I can't claim perfection at this stage but I
-don't think there are any significant performance impacts from my
-code.  Further I am confident that if someone finds some performance
-issues I will be able to understand and address them without a redesign.
-
-While working on this I took a good hard look at the overhead I have
-added to single byte reads and writes (operations that are dominated
-by any possible overhead I am adding) and currently I am within 2% of
-the case without my refcounting/locking.
-
-I would be interested in anyone running micro benchmarks against my
-patches and giving me feedback.
-
-The fact that in the common case only one task ever accesses a struct
-file leaves a lot of room for optimization.
-
-> Anyway, the really nasty part of revoke() (and true SAK, which is obviously
-> related) is handling of deep-inside-the-driver ioctls.
-
-I doubt I have solved all of the problems.  My goals are more modest
-than a revoke that works for every possible file in the system.  I
-just want a common implementation of refcounting and blocking
-unregistration code that can be used to solve the common problem I see
-in sysfs, sysctl, proc, etc.  I completely expect to need to modify
-the code to take advantage of the infrastructure.  Patch 9/9 has an
-example of that, modifying proc so that it uses the infrastructure
-I add and removing 400 lines of code.
-
-I do think that what I have built once it is in use will make a good
-foundation for building the rest of revoke.  Mostly because I am solving
-common problems once in a common way.
-
-Eric
+-- 
+David Woodhouse                            Open Source Technology Centre
+David.Woodhouse@intel.com                              Intel Corporation
 
