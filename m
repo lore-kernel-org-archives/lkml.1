@@ -1,85 +1,83 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759234AbZDKVtV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758217AbZDKWJK@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759234AbZDKVtV (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 11 Apr 2009 17:49:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758192AbZDKVtI
+	id S1758217AbZDKWJK (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 11 Apr 2009 18:09:10 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754549AbZDKWIz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 11 Apr 2009 17:49:08 -0400
-Received: from smtp-out.google.com ([216.239.45.13]:46076 "EHLO
-	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757448AbZDKVtH convert rfc822-to-8bit (ORCPT
+	Sat, 11 Apr 2009 18:08:55 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:53889 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751024AbZDKWIy (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 11 Apr 2009 17:49:07 -0400
-DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
-	h=mime-version:in-reply-to:references:date:message-id:subject:from:to:
-	cc:content-type:content-transfer-encoding:x-system-of-record;
-	b=qsUDz8XSs3h+t9BzR5CjFKjTBXD+Hy+dzq0IqEktg1qB3uUK2JJM78wuiDoL+r8po
-	mqH7Z9FWqMM9mk0sEyEsQ==
-MIME-Version: 1.0
-In-Reply-To: <alpine.LFD.2.00.0904111250370.4583@localhost.localdomain>
-References: <49E0D47B.9070205@garzik.org>
-	 <20090411203246.513a0892@lxorguk.ukuu.org.uk>
-	 <alpine.LFD.2.00.0904111250370.4583@localhost.localdomain>
-Date: Sat, 11 Apr 2009 14:49:02 -0700
-Message-ID: <da824cf30904111449y5cb7c178ldf5291506ad6b393@mail.gmail.com>
-Subject: Re: Implementing NVMHCI...
-From: Grant Grundler <grundler@google.com>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: Alan Cox <alan@lxorguk.ukuu.org.uk>, Jeff Garzik <jeff@garzik.org>,
-       Linux IDE mailing list <linux-ide@vger.kernel.org>,
-       LKML <linux-kernel@vger.kernel.org>, Jens Axboe <jens.axboe@oracle.com>,
-       Arjan van de Ven <arjan@infradead.org>
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8BIT
-X-System-Of-Record: true
+	Sat, 11 Apr 2009 18:08:54 -0400
+Date: Sat, 11 Apr 2009 15:05:55 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Niel Lambrechts <niel.lambrechts@gmail.com>
+Cc: "linux.kernel" <linux-kernel@vger.kernel.org>,
+       Henrique de Moraes Holschuh <hmh@hmh.eng.br>,
+       linux-acpi@vger.kernel.org
+Subject: Re: 2.6.30-rc1 (latest git): thinkpad-acpi: cannot control
+ brightness with hotkeys
+Message-Id: <20090411150555.8b13ed18.akpm@linux-foundation.org>
+In-Reply-To: <49E10684.5090101@gmail.com>
+References: <49E10684.5090101@gmail.com>
+X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.5; x86_64-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, Apr 11, 2009 at 12:52 PM, Linus Torvalds
-<torvalds@linux-foundation.org> wrote:
->
->
-> On Sat, 11 Apr 2009, Alan Cox wrote:
->>
->> >       The spec describes the sector size as
->> >       "512, 1k, 2k, 4k, 8k, etc."   It will be interesting to reach
->> >       "etc" territory.
->>
->> Over 4K will be fun.
->
-> And by "fun", you mean "irrelevant".
->
-> If anybody does that, they'll simply not work. And it's not worth it even
-> trying to handle it.
+(cc's added)
 
-Why does it matter what the sector size is?
-I'm failing to see what the fuss is about.
+On Sat, 11 Apr 2009 23:07:16 +0200 Niel Lambrechts <niel.lambrechts@gmail.com> wrote:
 
-We've abstract the DMA mapping/SG list handling enough that the
-block size should make no more difference than it does for the
-MTU size of a network.
+> Hi there,
+> 
+> With latest git kernel, I'm no longer able to control my Thinkpad (W500)
+> brightness, although I can still control the backlight, bluetooth etc.
 
-And the linux VM does handle bigger than 4k pages (several architectures
-have implemented it) - even if x86 only supports 4k as base page size.
+So 2.6.29 was OK?
 
-Block size just defines the granularity of the device's address space in
-the same way the VM base page size defines the Virtual address space.
+> I originally got some errors (below), but I was able to get around them
+> by changing /etc/modprobe.d/thinkpad_acpi
+> from the (default OPENSUSE)
+> options thinkpad_acpi experimental=1 hotkey=enable,0xffffff
+> to
+> options thinkpad_acpi experimental=1
+> 
+> Any ideas on how I can regain control over the brightness gas-pedal?
+> 
+> Niel
+> 
+> dmesg:
+> thinkpad_acpi: ThinkPad ACPI Extras v0.22
+> thinkpad_acpi: http://ibm-acpi.sf.net/
+> thinkpad_acpi: ThinkPad BIOS 6FET50WW (1.20 ), EC 7VHT12WW-1.01
+> thinkpad_acpi: Lenovo ThinkPad W500, model 40622XG
+> thinkpad_acpi: radio switch found; radios are enabled
+> thinkpad_acpi: This ThinkPad has standard ACPI backlight brightness
+> control, supported by the ACPI video driver
+> thinkpad_acpi: Disabling thinkpad-acpi brightness events by default...
+> thinkpad_acpi: procfs hotkey enable/disable: access by process with PID 890
+> WARNING: at drivers/platform/x86/thinkpad_acpi.c:2954
+> hotkey_enabledisable_warn+0x3e/0x43 [thinkpad_acpi]()
+> thinkpad_acpi: hotkey enable/disable functionality has been removed from
+> the driver. Hotkeys are always enabled.
+> Modules linked in: thinkpad_acpi(+) snd_hda_intel(+) rfkill
+> snd_hda_codec rtc_cmos snd_hwdep mac80211 video i2c_i801 rtc_core
+> snd_pcm ohci1394 led_class battery ac output snd_timer snd soundcore
+> snd_page_alloc e1000e intel_agp button joydev wmi i2c_core sr_mod
+> rtc_lib cfg80211 sg ieee1394 iTCO_wdt agpgart cdrom nvram
+> iTCO_vendor_support sd_mod ehci_hcd uhci_hcd usbcore ext4 jbd2 crc16 edd
+> ext3 mbcache jbd fan ahci libata scsi_mod thermal processor
+>  [<f81a3f7c>] hotkey_enabledisable_warn+0x3e/0x43 [thinkpad_acpi]
+>  [<f81a5234>] hotkey_write+0x68/0x162 [thinkpad_acpi]
+>  [<f7c63f62>] thinkpad_acpi_module_init+0x742/0x839 [thinkpad_acpi]
+>  [<f7c63820>] ? thinkpad_acpi_module_init+0x0/0x839 [thinkpad_acpi]
+> Registered led device: tpacpi::thinklight
+> thinkpad_acpi: Standard ACPI backlight interface available, not loading
+> native one.
+> 
 
-> That said, I'm pretty certain Windows has the same 4k issue, so we can
-> hope nobody will ever do that kind of idiotically broken hardware. Of
-> course, hardware people often do incredibly stupid things, so no
-> guarantees.
-
-That's just flame-bait. Not touching that.
-
-thanks,
-grant
-
->
->                Linus
-> --
-> To unsubscribe from this list: send the line "unsubscribe linux-ide" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
->
