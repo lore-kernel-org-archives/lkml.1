@@ -1,54 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758609AbZDKSgg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757445AbZDKSzy@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758609AbZDKSgg (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 11 Apr 2009 14:36:36 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752499AbZDKSg2
+	id S1757445AbZDKSzy (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 11 Apr 2009 14:55:54 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756461AbZDKSzp
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 11 Apr 2009 14:36:28 -0400
-Received: from yx-out-2324.google.com ([74.125.44.30]:52935 "EHLO
-	yx-out-2324.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751851AbZDKSg1 (ORCPT
+	Sat, 11 Apr 2009 14:55:45 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:56973 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1756290AbZDKSzo (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 11 Apr 2009 14:36:27 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
-         :cc:content-type:content-transfer-encoding;
-        b=gq48ueNwvyQjacMmLH6YwoeuwF3mfHvjqvTXW7M2jXUOvNiNoR6amQDzZngo74ReH0
-         bFj/y6iTK2Xhm6QEh4XBZsrhM+SsgD/2WhHNkqFdr8OG1fGn5k+bsALZeaADdCQKx9oj
-         QQNCbnWfhvOUB4npaf+fI0Mk1XU9cOTVC1KuQ=
-MIME-Version: 1.0
-In-Reply-To: <3d2f29dc0904081505l4e0203a0q25144d200164c82a@mail.gmail.com>
-References: <3d2f29dc0904071551xadea34ajd2c177380ced4fef@mail.gmail.com>
-	 <49DCDF1F.5050805@xandros.com>
-	 <3d2f29dc0904081505l4e0203a0q25144d200164c82a@mail.gmail.com>
-Date: Sat, 11 Apr 2009 14:36:26 -0400
-Message-ID: <3d2f29dc0904111136q13e6104at657c8148a2765f71@mail.gmail.com>
-Subject: Re: Weird freezes with 2.6.28/29
-From: Chris Howie <cdhowie@gmail.com>
-To: Woody Suwalski <woodys@xandros.com>
-Cc: linux-kernel@vger.kernel.org
-Content-Type: text/plain; charset=UTF-8
+	Sat, 11 Apr 2009 14:55:44 -0400
+Date: Sat, 11 Apr 2009 11:49:20 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
+Cc: Wu Fengguang <fengguang.wu@intel.com>, linux-kernel@vger.kernel.org,
+       lpk@581.spb.su, wli@movementarian.org, torvalds@linux-foundation.org,
+       yinghan@google.com, Nick Piggin <npiggin@suse.de>,
+       Hugh Dickins <hugh@veritas.com>, Rik van Riel <riel@redhat.com>
+Subject: Re: [PATCH 6/9] readahead: clean up and simplify the code for
+ filemap  page fault readahead
+Message-Id: <20090411114920.b9d2493c.akpm@linux-foundation.org>
+In-Reply-To: <2f11576a0904110658i4c595f49odbaefda8f8fa95d@mail.gmail.com>
+References: <20090410060957.442203404@intel.com>
+	<20090410061254.530720232@intel.com>
+	<20090410164803.0c6cc25d.akpm@linux-foundation.org>
+	<2f11576a0904110658i4c595f49odbaefda8f8fa95d@mail.gmail.com>
+X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.5; x86_64-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Apr 8, 2009 at 6:05 PM, Chris Howie <cdhowie@gmail.com> wrote:
-> On Wed, Apr 8, 2009 at 1:30 PM, Woody Suwalski <woodys@xandros.com> wrote:
->> I am getting similar problem on Dell 4x00 laptops caused by loading
->> processor.ko.
->> If I use nocst=1 option, systems are OK.
->
-> Thanks, this has eliminated the second freeze (where I must hold down
-> a key to allow boot to proceed) but I still have to hit the power
-> button to get the initial boot going.
+On Sat, 11 Apr 2009 22:58:31 +0900 KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com> wrote:
 
-Hmm, it turns out it didn't actually fix it.  The hold-a-key-down
-freeze doesn't happen every time and it didn't for a while after I
-added this option, but it started again this morning.
+> > Ah. __But I have a note here that I didn't like it, because it adds lots
+> > of new spinlocking to fastpaths. __So I'll leave things as they stand
+> > until we have had a little talk about that.
+> 
+> add?
+> 
+> old code: grab zone->lru_lock via mark_page_accessed()
+> new code: grab zone->lru_lock via update_reclaim_stat()
+> 
+> one remove, one add.
+> 
 
--- 
-Chris Howie
-http://www.chrishowie.com
-http://en.wikipedia.org/wiki/User:Crazycomputers
+mm-update_page_reclaim_stat-is-called-from-page-fault-path.patch adds
+new calls to update_page_reclaim_stat() into do_swap_page() and
+filemap_fault().  update_page_reclaim_stat() does spin_lock_irq() and
+spin_unlock_irq().  It looks like a net slowdown to me.
+
+> But I agree its lock can be removed maybe..
+
+It would be nice to try to do something about it - every little bit
+counts.
+
