@@ -1,71 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757143AbZDKPIN@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756758AbZDKPjh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757143AbZDKPIN (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 11 Apr 2009 11:08:13 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753513AbZDKPHy
+	id S1756758AbZDKPjh (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 11 Apr 2009 11:39:37 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754157AbZDKPj3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 11 Apr 2009 11:07:54 -0400
-Received: from mail.vyatta.com ([76.74.103.46]:43433 "EHLO mail.vyatta.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752640AbZDKPHx (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 11 Apr 2009 11:07:53 -0400
-Date: Sat, 11 Apr 2009 08:07:39 -0700
-From: Stephen Hemminger <shemminger@vyatta.com>
-To: Jan Engelhardt <jengelh@medozas.de>
-Cc: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       David Miller <davem@davemloft.net>, Ingo Molnar <mingo@elte.hu>,
-       Lai Jiangshan <laijs@cn.fujitsu.com>, jeff.chua.linux@gmail.com,
-       dada1@cosmosbay.com, kaber@trash.net, r000n@r000n.net,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       netfilter-devel@vger.kernel.org, netdev@vger.kernel.org
-Subject: Re: iptables very slow after commit
- 784544739a25c30637397ace5489eeb6e15d7d49
-Message-ID: <20090411080739.4cb77370@nehalam>
-In-Reply-To: <alpine.LSU.2.00.0904110657410.26485@fbirervta.pbzchgretzou.qr>
-References: <Pine.LNX.4.64.0904101656190.2093@boston.corp.fedex.com>
-	<20090410095246.4fdccb56@s6510>
-	<20090410.182507.140306636.davem@davemloft.net>
-	<alpine.LFD.2.00.0904101828490.4583@localhost.localdomain>
-	<20090411041533.GB6822@linux.vnet.ibm.com>
-	<alpine.LSU.2.00.0904110657410.26485@fbirervta.pbzchgretzou.qr>
-Organization: Vyatta
-X-Mailer: Claws Mail 3.6.1 (GTK+ 2.16.0; x86_64-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Sat, 11 Apr 2009 11:39:29 -0400
+Received: from mail-bw0-f169.google.com ([209.85.218.169]:56699 "EHLO
+	mail-bw0-f169.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754088AbZDKPj2 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 11 Apr 2009 11:39:28 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:sender:in-reply-to:references:date
+         :x-google-sender-auth:message-id:subject:from:to:cc:content-type
+         :content-transfer-encoding;
+        b=KzydDC7HTP8BAIdjV+QmUM/Vpx0bjs6yWvgrTbjtjRhzVC4HkVGxaAXJCDe/T3kZwD
+         0p+e0Kx7oBZMVNGaslKrBhgvZSqOSA5xsODPa2k5AkHuEPEro3NHltd9ibpq8vtFVTGu
+         FUpMBEwjh0gJIgmqwA4P/788oY7FPYzIhU1TM=
+MIME-Version: 1.0
+In-Reply-To: <20090410160137.2f6261ff.akpm@linux-foundation.org>
+References: <1239288723-4240-1-git-send-email-abogani@texware.it>
+	 <20090410160137.2f6261ff.akpm@linux-foundation.org>
+Date: Sat, 11 Apr 2009 17:39:26 +0200
+X-Google-Sender-Auth: 953fce48d224796e
+Message-ID: <63a49ef40904110839w53cde9c6k1a261effd1338942@mail.gmail.com>
+Subject: Re: [PATCH] tifm: avoid inconsistent lock state
+From: Alessio Igor Bogani <abogani@texware.it>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: oakad@yahoo.com, linux-kernel@vger.kernel.org, Ingo Molnar <mingo@elte.hu>,
+       Thomas Gleixner <tglx@linutronix.de>,
+       Alan Cox <alan@lxorguk.ukuu.org.uk>
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, 11 Apr 2009 07:14:50 +0200 (CEST)
-Jan Engelhardt <jengelh@medozas.de> wrote:
+Dear Sir Morton,
 
-> 
-> On Saturday 2009-04-11 06:15, Paul E. McKenney wrote:
-> >On Fri, Apr 10, 2009 at 06:39:18PM -0700, Linus Torvalds wrote:
-> >>An unhappy user reported:
-> >>>>> Adding 200 records in iptables took 6.0sec in 2.6.30-rc1 compared to 
-> >>>>> 0.2sec in 2.6.29. I've bisected down this commit.
-> >>>>> 784544739a25c30637397ace5489eeb6e15d7d49
-> >> 
-> >> I wonder if we should bring in the RCU people too, for them to tell you 
-> >> that the networking people are beign silly, and should not synchronize 
-> >> with the very heavy-handed
-> >> 
-> >> 	synchronize_net()
-> >> 
-> >> but instead of doing synchronization (which is probably why adding a few 
-> >> hundred rules then takes several seconds - each synchronizes and that 
-> >> takes a timer tick or so), add the rules to be free'd on some rcu-freeing 
-> >> list for later freeing.
-> 
-> iptables works in whole tables. Userspace submits a table, checkentry is 
-> called for all rules in the new table, things are swapped, then destroy 
-> is called for all rules in the old table. By that logic (which existed
-> since dawn I think), only the swap operation needs to be locked.
-> 
+2009/4/11 Andrew Morton <akpm@linux-foundation.org>:
+[...]
+> tifm_7xx1_isr() can legitimately use spin_lock() on that lock, because
+> it's running in hard IRQ context and "knows" that tifm_7xx1_isr()
+> cannot be reentered on this CPU while it is running.
+[...]
 
-Part of the overhead is the API choice to take counter values from user
-space during the replace.  If the rule replacement just always started with
-zero counters it could be done with less overhead.
+Thank you for reply and explanation.
+
+Ciao,
+Alessio
