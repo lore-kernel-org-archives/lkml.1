@@ -1,61 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759226AbZDKUSU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758502AbZDKUS6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759226AbZDKUSU (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 11 Apr 2009 16:18:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756823AbZDKUSJ
+	id S1758502AbZDKUS6 (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 11 Apr 2009 16:18:58 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756695AbZDKUSu
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 11 Apr 2009 16:18:09 -0400
-Received: from mail-bw0-f169.google.com ([209.85.218.169]:62742 "EHLO
-	mail-bw0-f169.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754087AbZDKUSI convert rfc822-to-8bit (ORCPT
+	Sat, 11 Apr 2009 16:18:50 -0400
+Received: from casper.infradead.org ([85.118.1.10]:46927 "EHLO
+	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756649AbZDKUSt (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 11 Apr 2009 16:18:08 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=from:to:subject:date:user-agent:cc:references:in-reply-to
-         :mime-version:content-type:content-transfer-encoding
-         :content-disposition:message-id;
-        b=QOXMH9yHxALPQ28voXnvWu/ixa+nnhWWVn0Cta8HhRJ0kQBd043zkXxo+3000oyZ53
-         cbdgvjFSPJAN5vjfAtgUJHaR4JjKTMc6qM/52lIw4XICRO0MSmGTgPRsJmaAFRN6IQ/S
-         6388AFhnZWrBF/r9h96myjYmXsolnGOigQr/c=
-From: Arkadiusz Miskiewicz <a.miskiewicz@gmail.com>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Subject: Re: [linux-pm] [2.6.30-rc1-git2 regressions] Hibernation broken and (minor but annoying) audio problem
-Date: Sat, 11 Apr 2009 22:18:01 +0200
-User-Agent: KMail/1.11.2 (Linux/2.6.30-rc1; KDE/4.2.2; x86_64; ; )
-Cc: Arjan van de Ven <arjan@linux.intel.com>, Len Brown <lenb@kernel.org>,
-       "Rafael J. Wysocki" <rjw@sisk.pl>, Takashi Iwai <tiwai@suse.de>,
-       pm list <linux-pm@lists.linux-foundation.org>,
-       LKML <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>, linux-acpi@vger.kernel.org,
-       Heinz Diehl <htd@fancy-poultry.org>,
-       Vegard Nossum <vegard.nossum@gmail.com>
-References: <200904100057.43827.rjw@sisk.pl> <49E0EC87.9080808@linux.intel.com> <alpine.LFD.2.00.0904111247320.4583@localhost.localdomain>
-In-Reply-To: <alpine.LFD.2.00.0904111247320.4583@localhost.localdomain>
-MIME-Version: 1.0
-Content-Type: Text/Plain;
-  charset="utf-8"
-Content-Transfer-Encoding: 8BIT
-Content-Disposition: inline
-Message-Id: <200904112218.02159.a.miskiewicz@gmail.com>
+	Sat, 11 Apr 2009 16:18:49 -0400
+Date: Sat, 11 Apr 2009 13:20:33 -0700
+From: Arjan van de Ven <arjan@infradead.org>
+To: "Carlos R. Mafra" <crmafra2@gmail.com>
+Cc: linux-kernel@vger.kernel.org, tiwai@suse.de, alsa-devel@vger.kernel.org
+Subject: Re: General protection fault when unloading snd_hda_intel on
+ 2.6.30-rc1+
+Message-ID: <20090411132033.003c581c@infradead.org>
+In-Reply-To: <20090411193630.GA16968@Pilar.aei.mpg.de>
+References: <20090411193630.GA16968@Pilar.aei.mpg.de>
+Organization: Intel
+X-Mailer: Claws Mail 3.7.0 (GTK+ 2.14.7; i386-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
+X-SRS-Rewrite: SMTP reverse-path rewritten from <arjan@infradead.org> by casper.infradead.org
+	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Saturday 11 of April 2009, Linus Torvalds wrote:
-> On Sat, 11 Apr 2009, Arjan van de Ven wrote:
-> > Now that I've been able to scan most of my mail; it looks like the
-> > one-liner should just go in.
->
-> Ok, I committed my one-liner, and then also reverted the ACPI battery
-> workaround of removing __init, since the one-liner should fix that too.
+On Sat, 11 Apr 2009 21:36:30 +0200
+"Carlos R. Mafra" <crmafra2@gmail.com> wrote:
 
-Tested - works here|.
+> general protection fault:
 
-> 			Linus
+Hi,
+
+if you happen to have CONFIG_DEBUG_INFO enabled, then you can run the
+oops through scripts/markup_oops.pl to get the source code of the exact
+line that is oopsing.. makes diagnosing it even easier!
+
 
 
 -- 
-Arkadiusz Miśkiewicz        PLD/Linux Team
-arekm / maven.pl            http://ftp.pld-linux.org/
-
+Arjan van de Ven 	Intel Open Source Technology Centre
+For development, discussion and tips for power savings, 
+visit http://www.lesswatts.org
