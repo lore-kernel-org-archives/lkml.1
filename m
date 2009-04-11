@@ -1,52 +1,84 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755512AbZDKBqN@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756076AbZDKBsM@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755512AbZDKBqN (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 10 Apr 2009 21:46:13 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754325AbZDKBp5
+	id S1756076AbZDKBsM (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 10 Apr 2009 21:48:12 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754917AbZDKBrt
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 10 Apr 2009 21:45:57 -0400
-Received: from mga10.intel.com ([192.55.52.92]:26046 "EHLO
-	fmsmga102.fm.intel.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1754310AbZDKBp4 (ORCPT
+	Fri, 10 Apr 2009 21:47:49 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:53371 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751115AbZDKBrr (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 10 Apr 2009 21:45:56 -0400
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.40,171,1239001200"; 
-   d="scan'208";a="680653096"
-Message-ID: <49DFF651.5080909@linux.intel.com>
-Date: Fri, 10 Apr 2009 18:45:53 -0700
-From: Arjan van de Ven <arjan@linux.intel.com>
-User-Agent: Thunderbird 2.0.0.21 (Windows/20090302)
+	Fri, 10 Apr 2009 21:47:47 -0400
+Date: Fri, 10 Apr 2009 18:39:18 -0700 (PDT)
+From: Linus Torvalds <torvalds@linux-foundation.org>
+X-X-Sender: torvalds@localhost.localdomain
+To: David Miller <davem@davemloft.net>,
+       "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>,
+       Ingo Molnar <mingo@elte.hu>, Lai Jiangshan <laijs@cn.fujitsu.com>
+cc: shemminger@vyatta.com, jeff.chua.linux@gmail.com, dada1@cosmosbay.com,
+       jengelh@medozas.de, kaber@trash.net, r000n@r000n.net,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       netfilter-devel@vger.kernel.org, netdev@vger.kernel.org
+Subject: Re: iptables very slow after commit
+ 784544739a25c30637397ace5489eeb6e15d7d49
+In-Reply-To: <20090410.182507.140306636.davem@davemloft.net>
+Message-ID: <alpine.LFD.2.00.0904101828490.4583@localhost.localdomain>
+References: <Pine.LNX.4.64.0904101656190.2093@boston.corp.fedex.com> <20090410095246.4fdccb56@s6510> <20090410.182507.140306636.davem@davemloft.net>
+User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
 MIME-Version: 1.0
-To: Linus Torvalds <torvalds@linux-foundation.org>
-CC: "Rafael J. Wysocki" <rjw@suse.com>, linux-pm@lists.linux-foundation.org,
-       Takashi Iwai <tiwai@suse.de>, LKML <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>, Ingo Molnar <mingo@elte.hu>
-Subject: Re: [linux-pm] [2.6.30-rc1-git2 regressions] Hibernation broken and
- (minor but annoying) audio problem
-References: <200904100057.43827.rjw@sisk.pl> <200904102058.36018.rjw@sisk.pl> <alpine.LFD.2.00.0904101204350.4583@localhost.localdomain> <200904110206.33525.rjw@suse.com> <alpine.LFD.2.00.0904101817100.4583@localhost.localdomain>
-In-Reply-To: <alpine.LFD.2.00.0904101817100.4583@localhost.localdomain>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Linus Torvalds wrote:
-> 
-> Hmm.
-> 
-> I'm not 100% sure that patch is good.
-> 
-> The reason? I think it's going to deadlock if an async caller ends up 
-> wanting to load a module, because then the nestecd 
-> "async_synchronize_full()" will basically want to wait for itself.
-> 
-> So it's a good test-patch, and maybe no async caller ever loads a module, 
-> but it makes me a bit nervous.
-> 
-> But the fact that it fixes things for you at least means that the _reason_ 
-> for the problem is know, and maybe there are alternative solutions. Arjan?
 
-I just got back from the LF summit and am catching up on mail; I'll take a look
-at the history.
+
+On Fri, 10 Apr 2009, David Miller wrote:
+> 
+> [ CC:'ing netfilter-devel and netdev... ]
+
+I wonder if we should bring in the RCU people too, for them to tell you 
+that the networking people are beign silly, and should not synchronize 
+with the very heavy-handed
+
+	synchronize_net()
+
+but instead of doing synchronization (which is probably why adding a few 
+hundred rules then takes several seconds - each synchronizes and that 
+takes a timer tick or so), add the rules to be free'd on some rcu-freeing 
+list for later freeing.
+
+Or whatever. Paul? synchronize_net() just calls synchronize_rcu(), and 
+with that knowledge and a simple
+
+	git show 784544739a25c30637397ace5489eeb6e15d7d49
+
+I bet you can already tell people how to fix their performance issue.
+
+		Linus
+
+---
+> > On Fri, 10 Apr 2009 17:15:52 +0800 (SGT)
+> > Jeff Chua <jeff.chua.linux@gmail.com> wrote:
+> >> 
+> >> Adding 200 records in iptables took 6.0sec in 2.6.30-rc1 compared to 
+> >> 0.2sec in 2.6.29. I've bisected down this commit.
+> >> 
+> >> There are a few patches on top of the original patch. When I reverted the 
+> >> original commit + changing rcu_read() to rcu_read_bh(), it speeds up the 
+> >> inserts back to .2sec again.
+> >> 
+> >> I'm loading all the firewall rules during boot-up and this 6 secs slowness 
+> >> is really not very nice to wait for.
+> > 
+> > The performance benefit during operation is more important. The load
+> > time is fixable. The problem is probably generic to any set of rules,
+> > but could you post some info about your configuration (like the rule
+> > set), and the system configuration (# of cpu's, config etc).
+> > --
+> > To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
+> > the body of a message to majordomo@vger.kernel.org
+> > More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> > Please read the FAQ at  http://www.tux.org/lkml/
+> 
