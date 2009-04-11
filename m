@@ -1,64 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758672AbZDKSAQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758665AbZDKSIC@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758672AbZDKSAQ (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 11 Apr 2009 14:00:16 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758110AbZDKR7z
+	id S1758665AbZDKSIC (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 11 Apr 2009 14:08:02 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758189AbZDKSHu
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 11 Apr 2009 13:59:55 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:57383 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1755909AbZDKR7y (ORCPT
+	Sat, 11 Apr 2009 14:07:50 -0400
+Received: from mail-qy0-f118.google.com ([209.85.221.118]:63410 "EHLO
+	mail-qy0-f118.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1758110AbZDKSHs convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 11 Apr 2009 13:59:54 -0400
-Date: Sat, 11 Apr 2009 10:51:20 -0700 (PDT)
-From: Linus Torvalds <torvalds@linux-foundation.org>
-X-X-Sender: torvalds@localhost.localdomain
-To: Jan Engelhardt <jengelh@medozas.de>
-cc: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>,
-       David Miller <davem@davemloft.net>, Ingo Molnar <mingo@elte.hu>,
-       Lai Jiangshan <laijs@cn.fujitsu.com>, shemminger@vyatta.com,
-       jeff.chua.linux@gmail.com, dada1@cosmosbay.com, kaber@trash.net,
-       r000n@r000n.net,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       netfilter-devel@vger.kernel.org, netdev@vger.kernel.org
-Subject: Re: iptables very slow after commit
- 784544739a25c30637397ace5489eeb6e15d7d49
-In-Reply-To: <alpine.LSU.2.00.0904110657410.26485@fbirervta.pbzchgretzou.qr>
-Message-ID: <alpine.LFD.2.00.0904111049010.4583@localhost.localdomain>
-References: <Pine.LNX.4.64.0904101656190.2093@boston.corp.fedex.com> <20090410095246.4fdccb56@s6510> <20090410.182507.140306636.davem@davemloft.net> <alpine.LFD.2.00.0904101828490.4583@localhost.localdomain> <20090411041533.GB6822@linux.vnet.ibm.com>
- <alpine.LSU.2.00.0904110657410.26485@fbirervta.pbzchgretzou.qr>
-User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
+	Sat, 11 Apr 2009 14:07:48 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
+         :cc:content-type:content-transfer-encoding;
+        b=QQTRtzilg+PJKfPgseDJOcHj1SXATjJpLKNhU1A9IfVw+ZS7Bi6ntAcqCB1JgZ4/+Z
+         wLze/UIJZ7BfoA9h7gkh0jTqSdZkO8oY5o5SURqoZgiW4qh0D7jnb93hOf1ZT26A/gTG
+         N34+D8O5tFJ72VVrI7/UEPg5oEP2kPhiLRAQU=
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+In-Reply-To: <49E065CF.6040408@tuffmail.co.uk>
+References: <49E065CF.6040408@tuffmail.co.uk>
+Date: Sat, 11 Apr 2009 14:07:45 -0400
+Message-ID: <66dc75180904111107q645fbb77i3cf927ffab7a7ef0@mail.gmail.com>
+Subject: Re: Regression: EEE PC hangs when booting off battery
+From: Tzy-Jye Daniel Lin <ephemient@gmail.com>
+To: Alan Jenkins <alan-jenkins@tuffmail.co.uk>
+Cc: linux-acpi@vger.kernel.org, linux-kernel <linux-kernel@vger.kernel.org>,
+       Kernel Testers List <kernel-testers@vger.kernel.org>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Sat, Apr 11, 2009 at 5:41 AM, Alan Jenkins
+<alan-jenkins@tuffmail.co.uk> wrote:
+> Regression #6 on latest git! (last known good is 2.6.29-rc8)
+>
+> Magic SysRQ keys work though.  Unfortunately, SysRq-W / SysRq-T generate
+> too much output, so the useful bits immediately scroll off the top of
+> the screen.  I can't press SysRq-P (even if that would help), because
+> the SysRQ key on my laptop is accessed using a Fn modifier key, which
+> also turns the left hand side of the keyboard into a numeric pad.
 
+I don't own an Eee, but having played with one, the key sequence
 
-On Sat, 11 Apr 2009, Jan Engelhardt wrote:
-> 
-> iptables works in whole tables.
+    Alt down
+    Fn down
+    SysRq down, up
+    Fn up
+    P down, up
+    Alt up
 
-Not really.
+should work just fine.  As long as you keep holding Alt, you don't
+need to continue holding SysRq after the initial keypress.
 
-Yes, iptables as a single command works in whole tables.
+> Magic SysRQs on my USB keyboard generate no response.  (Sometimes the
+> numlock key seems to work though.  I can't tell on the laptop keyboard
+> because the laptop doesn't have a numlock led).
 
-USERS, on the other hand, often work in multiple iptables commands, ie 
-they just add things to the tables. And in fact, I think this is the exact 
-workload that Jeff complains about - doing two hundred "update table" 
-commands.
-
-> Userspace submits a table, checkentry is called for all rules in the new 
-> table, things are swapped, then destroy is called for all rules in the 
-> old table. By that logic (which existed since dawn I think), only the 
-> swap operation needs to be locked.
-
-The problem is, the new code makes the "wait after swap" thing happen 
-after every switch. And if you do two hundred "update table" commands, you 
-now take a _long_ time to update.
-
-Sure, you could tell people to just do everything as one single table 
-update, but that isn't what they do.
-
-		Linus
+SysRq over USB has never worked.  On PC hardware, Magic SysRq depends
+on features of the built-in i8042 controller, which only handles PS/2
+input.
