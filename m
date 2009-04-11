@@ -1,42 +1,42 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757955AbZDKQ5R@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757994AbZDKQ5p@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757955AbZDKQ5R (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 11 Apr 2009 12:57:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755495AbZDKQ47
+	id S1757994AbZDKQ5p (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 11 Apr 2009 12:57:45 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757521AbZDKQ5c
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 11 Apr 2009 12:56:59 -0400
-Received: from zeniv.linux.org.uk ([195.92.253.2]:37820 "EHLO
-	ZenIV.linux.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753418AbZDKQ46 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 11 Apr 2009 12:56:58 -0400
-Date: Sat, 11 Apr 2009 17:56:51 +0100
-From: Al Viro <viro@ZenIV.linux.org.uk>
-To: "Eric W. Biederman" <ebiederm@xmission.com>
-Cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
-       linux-pci@vger.kernel.org, linux-mm@kvack.org,
-       linux-fsdevel@vger.kernel.org, Hugh Dickins <hugh@veritas.com>,
-       Tejun Heo <tj@kernel.org>, Alexey Dobriyan <adobriyan@gmail.com>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Alan Cox <alan@lxorguk.ukuu.org.uk>,
-       Greg Kroah-Hartman <gregkh@suse.de>
-Subject: Re: [RFC][PATCH 0/9] File descriptor hot-unplug support
-Message-ID: <20090411165651.GW26366@ZenIV.linux.org.uk>
-References: <m1skkf761y.fsf@fess.ebiederm.org> <20090411155852.GV26366@ZenIV.linux.org.uk> <m1k55ryw2n.fsf@fess.ebiederm.org>
+	Sat, 11 Apr 2009 12:57:32 -0400
+Received: from mx2.redhat.com ([66.187.237.31]:53179 "EHLO mx2.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1755495AbZDKQ5a (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 11 Apr 2009 12:57:30 -0400
+Message-ID: <49E0CBB0.9030105@redhat.com>
+Date: Sat, 11 Apr 2009 19:56:16 +0300
+From: Avi Kivity <avi@redhat.com>
+User-Agent: Thunderbird 2.0.0.21 (X11/20090320)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <m1k55ryw2n.fsf@fess.ebiederm.org>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+To: Gregory Haskins <ghaskins@novell.com>
+CC: linux-kernel@vger.kernel.org, agraf@suse.de, pmullaney@novell.com,
+       pmorreale@novell.com, anthony@codemonkey.ws, rusty@rustcorp.com.au,
+       netdev@vger.kernel.org, kvm@vger.kernel.org, bhutchings@solarflare.com,
+       andi@firstfloor.org, gregkh@suse.de, herber@gondor.apana.org.au,
+       chrisw@sous-sol.org, shemminger@vyatta.com
+Subject: Re: [RFC PATCH v2 14/19] kvm: add a reset capability
+References: <20090409155200.32740.19358.stgit@dev.haskins.net> <20090409163155.32740.50340.stgit@dev.haskins.net>
+In-Reply-To: <20090409163155.32740.50340.stgit@dev.haskins.net>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, Apr 11, 2009 at 09:49:36AM -0700, Eric W. Biederman wrote:
+Gregory Haskins wrote:
+> We need a way to detect if a VM is reset later in the series, so lets
+> add a capability for userspace to signal a VM reset down to the kernel.
+>   
 
-> The fact that in the common case only one task ever accesses a struct
-> file leaves a lot of room for optimization.
+As I mentioned, this won't be reliable.  It needs to be driven from 
+userspace and be per-device.
 
-I'm not at all sure that it's a good assumption; even leaving aside e.g.
-several tasks sharing stdout/stderr, a bunch of datagrams coming out of
-several threads over the same socket is quite possible.
+-- 
+Do not meddle in the internals of kernels, for they are subtle and quick to panic.
+
