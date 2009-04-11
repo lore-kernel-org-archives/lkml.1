@@ -1,45 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757487AbZDKJpR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757744AbZDKJrS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757487AbZDKJpR (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 11 Apr 2009 05:45:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757003AbZDKJor
+	id S1757744AbZDKJrS (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 11 Apr 2009 05:47:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756809AbZDKJrB
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 11 Apr 2009 05:44:47 -0400
-Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:51752
-	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
-	by vger.kernel.org with ESMTP id S1756461AbZDKJoq (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 11 Apr 2009 05:44:46 -0400
-Date: Sat, 11 Apr 2009 02:44:36 -0700 (PDT)
-Message-Id: <20090411.024436.40931952.davem@davemloft.net>
-To: a.beregalov@gmail.com
-Cc: netdev@vger.kernel.org, jwboyer@linux.vnet.ibm.com,
-       galak@kernel.crashing.org, subrata@linux.vnet.ibm.com,
-       Linuxppc-dev@ozlabs.org, linux-next@vger.kernel.org,
-       linux-kernel@vger.kernel.org, linux-net@vger.kernel.org, greg@kroah.com,
-       sachinp@linux.vnet.ibm.com, sfr@canb.auug.org.au
-Subject: Re: [BUILD FAILURE 04] Next April 9 : PPC64 randconfig
- [drivers/net/ibm_newemac/core.c]
-From: David Miller <davem@davemloft.net>
-In-Reply-To: <20090410015614.GA5781@orion>
-References: <BE92FB74-1784-414B-B27F-8329185EB3AE@kernel.crashing.org>
-	<20090409143112.GA7538@yoda.jdub.homelinux.org>
-	<20090410015614.GA5781@orion>
-X-Mailer: Mew version 6.2.51 on Emacs 22.1 / Mule 5.0 (SAKAKI)
-Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
+	Sat, 11 Apr 2009 05:47:01 -0400
+Received: from bilbo.ozlabs.org ([203.10.76.25]:33151 "EHLO bilbo.ozlabs.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1756567AbZDKJrA (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 11 Apr 2009 05:47:00 -0400
+Date: Sat, 11 Apr 2009 19:46:58 +1000
+From: Tony Breeds <tony@bakeyournoodle.com>
+To: Sam Ravnborg <sam@ravnborg.org>
+Cc: Andrew Morton <akpm@linux-foundation.org>, Alex Chiang <achiang@hp.com>,
+       Robin Holt <holt@sgi.com>, linux-kernel <linux-kernel@vger.kernel.org>,
+       linux-ia64@vger.kernel.org
+Subject: Re: cross-compilers
+Message-ID: <20090411094658.GQ16602@bilbo.ozlabs.org>
+Mail-Followup-To: Sam Ravnborg <sam@ravnborg.org>,
+	Andrew Morton <akpm@linux-foundation.org>,
+	Alex Chiang <achiang@hp.com>, Robin Holt <holt@sgi.com>,
+	linux-kernel <linux-kernel@vger.kernel.org>,
+	linux-ia64@vger.kernel.org
+References: <20090408003921.GA5054@ldl.fc.hp.com> <20090408010331.GB10768@sgi.com> <20090408054612.GA6744@ldl.fc.hp.com> <20090407225457.86f8a458.akpm@linux-foundation.org> <20090409003308.GK16602@bilbo.ozlabs.org> <20090408174443.79e71503.akpm@linux-foundation.org> <20090409215207.GN16602@bilbo.ozlabs.org> <20090410054535.GC20005@uranus.ravnborg.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
+In-Reply-To: <20090410054535.GC20005@uranus.ravnborg.org>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Alexander Beregalov <a.beregalov@gmail.com>
-Date: Fri, 10 Apr 2009 05:56:14 +0400
-
-> Subject: [PATCH] ibm_newemac: convert to netdev_ops
+On Fri, Apr 10, 2009 at 07:45:35AM +0200, Sam Ravnborg wrote:
+> On Fri, Apr 10, 2009 at 07:52:07AM +1000, Tony Breeds wrote:
+> > On Wed, Apr 08, 2009 at 05:44:43PM -0700, Andrew Morton wrote:
+> > 
+> > > Please do.
+> > 
+> > linux-next is built on powerpc so I needed to rebuild many of the compilers for
+> > intel.
+> > 
+> > While I was there I "updated to 4.3.3 and a 4.4.0 snapshot (20090216).
+> > 
+> > I've placed (well am placing):
 > 
-> 
-> Reported-by: Subrata Modak <subrata@linux.vnet.ibm.com>
-> Signed-off-by: Alexander Beregalov <a.beregalov@gmail.com>
+> Where can I find them?
 
-Applied.
+D'oh  Sorry http://bakeyournoodle.com/cross/
+
+Yours Tony
