@@ -1,49 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758502AbZDKUS6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758735AbZDKUWT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758502AbZDKUS6 (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 11 Apr 2009 16:18:58 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756695AbZDKUSu
+	id S1758735AbZDKUWT (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 11 Apr 2009 16:22:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756798AbZDKUWD
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 11 Apr 2009 16:18:50 -0400
-Received: from casper.infradead.org ([85.118.1.10]:46927 "EHLO
-	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756649AbZDKUSt (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 11 Apr 2009 16:18:49 -0400
-Date: Sat, 11 Apr 2009 13:20:33 -0700
-From: Arjan van de Ven <arjan@infradead.org>
-To: "Carlos R. Mafra" <crmafra2@gmail.com>
-Cc: linux-kernel@vger.kernel.org, tiwai@suse.de, alsa-devel@vger.kernel.org
-Subject: Re: General protection fault when unloading snd_hda_intel on
- 2.6.30-rc1+
-Message-ID: <20090411132033.003c581c@infradead.org>
-In-Reply-To: <20090411193630.GA16968@Pilar.aei.mpg.de>
-References: <20090411193630.GA16968@Pilar.aei.mpg.de>
-Organization: Intel
-X-Mailer: Claws Mail 3.7.0 (GTK+ 2.14.7; i386-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Sat, 11 Apr 2009 16:22:03 -0400
+Received: from srv5.dvmed.net ([207.36.208.214]:38105 "EHLO mail.dvmed.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754601AbZDKUWB (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 11 Apr 2009 16:22:01 -0400
+Message-ID: <49E0FBC6.3050600@garzik.org>
+Date: Sat, 11 Apr 2009 16:21:26 -0400
+From: Jeff Garzik <jeff@garzik.org>
+User-Agent: Thunderbird 2.0.0.21 (X11/20090320)
+MIME-Version: 1.0
+To: Linus Torvalds <torvalds@linux-foundation.org>
+CC: Alan Cox <alan@lxorguk.ukuu.org.uk>,
+       Linux IDE mailing list <linux-ide@vger.kernel.org>,
+       LKML <linux-kernel@vger.kernel.org>, Jens Axboe <jens.axboe@oracle.com>,
+       Arjan van de Ven <arjan@infradead.org>
+Subject: Re: Implementing NVMHCI...
+References: <49E0D47B.9070205@garzik.org> <20090411203246.513a0892@lxorguk.ukuu.org.uk> <alpine.LFD.2.00.0904111250370.4583@localhost.localdomain>
+In-Reply-To: <alpine.LFD.2.00.0904111250370.4583@localhost.localdomain>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
-X-SRS-Rewrite: SMTP reverse-path rewritten from <arjan@infradead.org> by casper.infradead.org
-	See http://www.infradead.org/rpr.html
+X-Spam-Score: -4.4 (----)
+X-Spam-Report: SpamAssassin version 3.2.5 on srv5.dvmed.net summary:
+	Content analysis details:   (-4.4 points, 5.0 required)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, 11 Apr 2009 21:36:30 +0200
-"Carlos R. Mafra" <crmafra2@gmail.com> wrote:
+Linus Torvalds wrote:
+> 
+> On Sat, 11 Apr 2009, Alan Cox wrote:
+>>> 	  The spec describes the sector size as
+>>> 	  "512, 1k, 2k, 4k, 8k, etc."   It will be interesting to reach
+>>> 	  "etc" territory.
+>> Over 4K will be fun.
+> 
+> And by "fun", you mean "irrelevant".
+> 
+> If anybody does that, they'll simply not work. And it's not worth it even 
+> trying to handle it.
 
-> general protection fault:
+FSVO trying to handle...
 
-Hi,
+At the driver level, it would be easy to clamp sector size to 4k, and 
+point the scatterlist to a zero-filled region for the >4k portion of 
+each sector.  Inefficient, sure, but it is low-cost to the driver and 
+gives the user something other than a brick.
 
-if you happen to have CONFIG_DEBUG_INFO enabled, then you can run the
-oops through scripts/markup_oops.pl to get the source code of the exact
-line that is oopsing.. makes diagnosing it even easier!
+	if (too_large_sector_size)
+		nvmhci_fill_sg_clamped_interleave()
+	else
+		nvmhci_fill_sg()
+
+Regards,
+
+	Jeff
 
 
 
--- 
-Arjan van de Ven 	Intel Open Source Technology Centre
-For development, discussion and tips for power savings, 
-visit http://www.lesswatts.org
