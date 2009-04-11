@@ -1,69 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758533AbZDKRsX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758621AbZDKRtS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758533AbZDKRsX (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 11 Apr 2009 13:48:23 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757590AbZDKRsG
+	id S1758621AbZDKRtS (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 11 Apr 2009 13:49:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758358AbZDKRtI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 11 Apr 2009 13:48:06 -0400
-Received: from e9.ny.us.ibm.com ([32.97.182.139]:45616 "EHLO e9.ny.us.ibm.com"
+	Sat, 11 Apr 2009 13:49:08 -0400
+Received: from e2.ny.us.ibm.com ([32.97.182.142]:35733 "EHLO e2.ny.us.ibm.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1757440AbZDKRsD (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 11 Apr 2009 13:48:03 -0400
-Date: Sat, 11 Apr 2009 10:48:01 -0700
+	id S1757922AbZDKRtF (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 11 Apr 2009 13:49:05 -0400
+Date: Sat, 11 Apr 2009 10:49:05 -0700
 From: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: Linus Torvalds <torvalds@linux-foundation.org>,
-       David Miller <davem@davemloft.net>,
-       Lai Jiangshan <laijs@cn.fujitsu.com>, shemminger@vyatta.com,
-       jeff.chua.linux@gmail.com, dada1@cosmosbay.com, jengelh@medozas.de,
-       kaber@trash.net, r000n@r000n.net,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       netfilter-devel@vger.kernel.org, netdev@vger.kernel.org,
-       paulus@samba.org, benh@kernel.crashing.org
-Subject: Re: iptables very slow after commit
-	784544739a25c30637397ace5489eeb6e15d7d49
-Message-ID: <20090411174801.GG6822@linux.vnet.ibm.com>
+To: Jan Blunck <jblunck@suse.de>
+Cc: Nick Piggin <npiggin@suse.de>,
+       Linux-Kernel Mailinglist <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH] atomic: Only take lock when the counter drops to zero
+	on UP as well
+Message-ID: <20090411174905.GH6822@linux.vnet.ibm.com>
 Reply-To: paulmck@linux.vnet.ibm.com
-References: <Pine.LNX.4.64.0904101656190.2093@boston.corp.fedex.com> <20090410095246.4fdccb56@s6510> <20090410.182507.140306636.davem@davemloft.net> <alpine.LFD.2.00.0904101828490.4583@localhost.localdomain> <20090411041533.GB6822@linux.vnet.ibm.com> <20090411070854.GC11799@elte.hu>
+References: <20090411141754.45F7B16080@e179.suse.de>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20090411070854.GC11799@elte.hu>
+In-Reply-To: <20090411141754.45F7B16080@e179.suse.de>
 User-Agent: Mutt/1.5.15+20070412 (2007-04-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, Apr 11, 2009 at 09:08:54AM +0200, Ingo Molnar wrote:
-> 
-> * Paul E. McKenney <paulmck@linux.vnet.ibm.com> wrote:
-> 
-> > 	I will nevertheless suggest the following egregious hack to
-> > 	get a consistent sample of one counter for some other CPU:
-> > 
-> > 	a.	Disable interrupts
-> > 	b.	Atomically exchange the bottom 32 bits of the
-> > 		counter with the value zero.
-> > 	c.	Atomically exchange the top 32 bits of the counter
-> > 		with the value zero.
-> > 	d.	Concatenate the values obtained in (b) and (c), which
-> > 		is the snapshot value.
-> 
-> Note, i have recently implemented full atomic64_t support on 32-bit 
-> x86, for the perfcounters code, based on the CMPXCHG8B instruction.
-> 
-> Which, while not the lightest of instructions, is still much better 
-> than the sequence above.
-> 
-> So i think a better approach would be to also add a dumb generic 
-> implementation for atomic64_t (using a global lock or so), and then 
-> generic code could just assume that atomic64_t always exists.
-> 
-> It is far nicer - and faster as well - as the hack above, even on 
-> 32-bit x86.
+On Fri, Apr 10, 2009 at 06:13:57PM +0200, Jan Blunck wrote:
+> I think it is wrong to unconditionally take the lock before calling
+> atomic_dec_and_test() in _atomic_dec_and_lock(). This will deadlock in
+> situation where it is known that the counter will not reach zero (e.g. holding
+> another reference to the same object) but the lock is already taken.
 
-If the generic implementation is needed only on !SMP systems, that
-could work.  The architectures I would be worried about include
-powerpc and ia64, which I believe support 32-bit SMP builds.
+The thought of calling _atomic_dec_and_lock() when you already hold the
+lock really really scares me.
 
-						Thanx, Paul
+Could you please give an example where you need to do this?
+
+							Thanx, Paul
+
+> Signed-off-by: Jan Blunck <jblunck@suse.de>
+> ---
+>  lib/dec_and_lock.c |    3 +--
+>  1 files changed, 1 insertions(+), 2 deletions(-)
+> 
+> diff --git a/lib/dec_and_lock.c b/lib/dec_and_lock.c
+> index a65c314..e73822a 100644
+> --- a/lib/dec_and_lock.c
+> +++ b/lib/dec_and_lock.c
+> @@ -19,11 +19,10 @@
+>   */
+>  int _atomic_dec_and_lock(atomic_t *atomic, spinlock_t *lock)
+>  {
+> -#ifdef CONFIG_SMP
+>  	/* Subtract 1 from counter unless that drops it to 0 (ie. it was 1) */
+>  	if (atomic_add_unless(atomic, -1, 1))
+>  		return 0;
+> -#endif
+> +
+>  	/* Otherwise do it the slow way */
+>  	spin_lock(lock);
+>  	if (atomic_dec_and_test(atomic))
+> -- 
+> 1.6.0.2
+> 
