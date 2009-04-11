@@ -1,52 +1,93 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756758AbZDKPjh@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755820AbZDKPkF@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756758AbZDKPjh (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 11 Apr 2009 11:39:37 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754157AbZDKPj3
+	id S1755820AbZDKPkF (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 11 Apr 2009 11:40:05 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754952AbZDKPjw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 11 Apr 2009 11:39:29 -0400
-Received: from mail-bw0-f169.google.com ([209.85.218.169]:56699 "EHLO
-	mail-bw0-f169.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754088AbZDKPj2 (ORCPT
+	Sat, 11 Apr 2009 11:39:52 -0400
+Received: from zeniv.linux.org.uk ([195.92.253.2]:59700 "EHLO
+	ZenIV.linux.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754843AbZDKPjw (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 11 Apr 2009 11:39:28 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:sender:in-reply-to:references:date
-         :x-google-sender-auth:message-id:subject:from:to:cc:content-type
-         :content-transfer-encoding;
-        b=KzydDC7HTP8BAIdjV+QmUM/Vpx0bjs6yWvgrTbjtjRhzVC4HkVGxaAXJCDe/T3kZwD
-         0p+e0Kx7oBZMVNGaslKrBhgvZSqOSA5xsODPa2k5AkHuEPEro3NHltd9ibpq8vtFVTGu
-         FUpMBEwjh0gJIgmqwA4P/788oY7FPYzIhU1TM=
+	Sat, 11 Apr 2009 11:39:52 -0400
+Date: Sat, 11 Apr 2009 16:39:33 +0100
+From: Al Viro <viro@ZenIV.linux.org.uk>
+To: Sam Ravnborg <sam@ravnborg.org>
+Cc: Jike Song <albcamus@gmail.com>, David Howells <dhowells@redhat.com>,
+       Linus Torvalds <torvalds@linux-foundation.org>, torvalds@osdl.org,
+       akpm@linux-foundation.org, linux-am33-list@redhat.com,
+       linux-kernel@vger.kernel.org
+Subject: Re: [GIT PULL] MN10300: Move arch headers to arch dir
+Message-ID: <20090411153933.GU26366@ZenIV.linux.org.uk>
+References: <19057.1239370935@redhat.com> <20090410192529.GA25551@uranus.ravnborg.org> <df9815e70904102042r2cd2e3e3ue6159f348e4c192e@mail.gmail.com> <20090411054516.GA29493@uranus.ravnborg.org> <20090411064300.GT26366@ZenIV.linux.org.uk> <20090411075549.GA30873@uranus.ravnborg.org>
 MIME-Version: 1.0
-In-Reply-To: <20090410160137.2f6261ff.akpm@linux-foundation.org>
-References: <1239288723-4240-1-git-send-email-abogani@texware.it>
-	 <20090410160137.2f6261ff.akpm@linux-foundation.org>
-Date: Sat, 11 Apr 2009 17:39:26 +0200
-X-Google-Sender-Auth: 953fce48d224796e
-Message-ID: <63a49ef40904110839w53cde9c6k1a261effd1338942@mail.gmail.com>
-Subject: Re: [PATCH] tifm: avoid inconsistent lock state
-From: Alessio Igor Bogani <abogani@texware.it>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: oakad@yahoo.com, linux-kernel@vger.kernel.org, Ingo Molnar <mingo@elte.hu>,
-       Thomas Gleixner <tglx@linutronix.de>,
-       Alan Cox <alan@lxorguk.ukuu.org.uk>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20090411075549.GA30873@uranus.ravnborg.org>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Dear Sir Morton,
+On Sat, Apr 11, 2009 at 09:55:49AM +0200, Sam Ravnborg wrote:
+> > How about a single directory for *all* generated headers?  Only linux/version.h
+> > has many places including it and even that can be dealt with for a moment with
+> > linux/version.h consisting of #include <gen/version.h>.  The rest doesn't
+> > need anything like that even for transition period - too few includes to care.
+> 
+> So you suggest: include/gen/
 
-2009/4/11 Andrew Morton <akpm@linux-foundation.org>:
-[...]
-> tifm_7xx1_isr() can legitimately use spin_lock() on that lock, because
-> it's running in hard IRQ context and "knows" that tifm_7xx1_isr()
-> cannot be reentered on this CPU while it is running.
-[...]
+Yes.
 
-Thank you for reply and explanation.
+> asm-offsets.h, mach-types.h and version.h is the ones with the highest count.
+> And version.h is an exported header which we cannot move in our exported
+> set of headers. Fortunately I have just checked in a patch so we can specify
+> an alternative destination when exporting so this should deal with version.h.
+> 
+> asm-offsets.h and mach-types.h require a small helper file as you suggest,
+> otherwise it would be a _huge_ patch.
 
-Ciao,
-Alessio
+OK...  I suspect that many asm-offsets.h users might end up killable, but
+removal and replacement are not too different wrt patch size.
+
+> We can later migrate more generated files to this location.
+> (autoconf.h, config/* etc).
+
+autoconf.h is *trivial* to move.  What we have is
+
+Makefile:                   -include include/linux/autoconf.h
+Makefile:       $(Q)test -e include/linux/autoconf.h -a -e $@ || (              \
+Makefile:       echo "         include/linux/autoconf.h or $@ are missing.";    \
+Makefile:                  include/linux/autoconf.h include/linux/version.h      \
+arch/cris/arch-v32/kernel/head.S:#include <linux/autoconf.h>
+arch/cris/kernel/asm-offsets.c:#include <linux/autoconf.h>
+arch/cris/kernel/vmlinux.lds.S:#include <linux/autoconf.h>
+arch/ia64/kvm/asm-offsets.c:#include <linux/autoconf.h>
+drivers/accessibility/braille/braille_console.c:#include <linux/autoconf.h>
+drivers/hid/hid-lg.h:#include <linux/autoconf.h>
+drivers/platform/x86/compal-laptop.c:#include <linux/autoconf.h>
+include/linux/mmdebug.h:#include <linux/autoconf.h>
+scripts/basic/fixdep.c:         if (strrcmp(s, "include/linux/autoconf.h") &&
+scripts/kconfig/confdata.c:             name = "include/linux/autoconf.h";
+scripts/mkcompile_h:if [ -r $TARGET -a ! -O include/linux/autoconf.h ]; then
+
+and direct includes should be removed anyway - we already have -include in
+flags.  So it's 8 removals in one patch and 7 replacements in another (a
+bit more, since there are comments to update).  bounds.h is even easier:
+
+.gitignore:include/linux/bounds.h
+Kbuild:bounds-file := include/linux/bounds.h
+Makefile:                  include/linux/bounds.h include/asm*/asm-offsets.h     \
+include/linux/mmzone.h:#include <linux/bounds.h>
+include/linux/page-flags.h:#include <linux/bounds.h>
+
+utsrelease.h is a bit heavier - 19 instances.  compile.h - 6 instances.
+ia64 nr-irqs.h - 4 instances.  
+
+I'm not sure about include/config, actually - it's also not that much, but
+it might be better to merge separately.
+
+Note, BTW, that include/gen kills include/asm and include2/ (on O= builds),
+leaving us only with $(objtree)/source symlink and a couple of nonsense ones
+(arch/{i386,x86_64}/boot/bzImage -> ../../x86/boot/bzImage; do we still need
+them, anyway?)  IIRC, you wanted to get rid of symlinks...
