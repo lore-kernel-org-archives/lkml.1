@@ -1,54 +1,98 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757916AbZDKOj6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758031AbZDKOsw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757916AbZDKOj6 (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 11 Apr 2009 10:39:58 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755513AbZDKOjt
+	id S1758031AbZDKOsw (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 11 Apr 2009 10:48:52 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754734AbZDKOsn
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 11 Apr 2009 10:39:49 -0400
-Received: from mx2.redhat.com ([66.187.237.31]:51199 "EHLO mx2.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754775AbZDKOjt (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 11 Apr 2009 10:39:49 -0400
-Date: Sat, 11 Apr 2009 10:38:34 -0400
-From: Kyle McMartin <kyle@redhat.com>
-To: David Woodhouse <dwmw2@infradead.org>
-Cc: Matthew Garrett <mjg@redhat.com>, Ingo Molnar <mingo@elte.hu>,
-       Andrew Lutomirski <amluto@gmail.com>,
-       Jesse Barnes <jbarnes@virtuousgeek.org>,
-       Kyle McMartin <kyle@redhat.com>, Fenghua Yu <fenghua.yu@intel.com>,
-       Suresh Siddha <suresh.b.siddha@intel.com>,
-       Yinghai Lu <yinghai@kernel.org>, Mark Gross <mgross@linux.intel.com>,
-       LKML <linux-kernel@vger.kernel.org>
-Subject: Re: 2.6.29: can't resume from suspend with DMAR (intel iommu) enabled
-Message-ID: <20090411143834.GA14287@kibblesnbits.boston.devel.redhat.com>
-References: <cb0375e10903241258x32c9d0f3g35a4f56793eb8677@mail.gmail.com> <20090324203259.GC26930@elte.hu> <1238003581.2085.53.camel@macbook.infradead.org> <20090325175908.GA25518@elte.hu> <1239051362.22733.87.camel@macbook.infradead.org> <20090407075640.GA16516@srcf.ucam.org> <1239429852.712.1532.camel@macbook.infradead.org>
-Mime-Version: 1.0
+	Sat, 11 Apr 2009 10:48:43 -0400
+Received: from mail-bw0-f169.google.com ([209.85.218.169]:45259 "EHLO
+	mail-bw0-f169.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751930AbZDKOsm (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 11 Apr 2009 10:48:42 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:to:cc:subject:message-id:references:mime-version
+         :content-type:content-disposition:in-reply-to:user-agent;
+        b=TsrJkVHYfdj1JhvoI5FqQbdFcbKXHNAHwrICOPqWN5sfYShKZtlXRz2T51BZD2DxUZ
+         AyiFcCjpOsVD9QPJr24NUksyKmAv60Hm/J09o8yTTlhlzRRYzmNli1T1fOkJsvDm3AQ9
+         bAmwvClknasCqGpZiS+81os4/EeS3Vq+YCSwA=
+Date: Sat, 11 Apr 2009 16:48:33 +0200
+From: Frederic Weisbecker <fweisbec@gmail.com>
+To: Tom Zanussi <tzanussi@gmail.com>
+Cc: Li Zefan <lizf@cn.fujitsu.com>, Ingo Molnar <mingo@elte.hu>,
+       Steven Rostedt <rostedt@goodmis.org>,
+       LKML <linux-kernel@vger.kernel.org>, paulmck@linux.vnet.ibm.com
+Subject: Re: [PATCH 0/7] tracing: bug fixes for tracing/filters
+Message-ID: <20090411144823.GB5977@nowhere>
+References: <49E04C22.4040608@cn.fujitsu.com> <1239442248.8793.65.camel@tropicana>
+MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <1239429852.712.1532.camel@macbook.infradead.org>
-User-Agent: Mutt/1.4.2.2i
+In-Reply-To: <1239442248.8793.65.camel@tropicana>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Apr 10, 2009 at 11:04:12PM -0700, David Woodhouse wrote:
-> On Tue, 2009-04-07 at 08:56 +0100, Matthew Garrett wrote:
-> > On Mon, Apr 06, 2009 at 01:56:01PM -0700, David Woodhouse wrote:
-> > 
-> > > Dirk reported the same panic, but we've just turned his iommu back on
-> > > and completely failed to reproduce the problem -- so I'm kind of stuck.
-> > 
-> > I saw this on a T400, but only on the first boot after enabling DMAR - 
-> > power cycling "fixed" it.
+On Sat, Apr 11, 2009 at 04:30:48AM -0500, Tom Zanussi wrote:
+> Hi,
 > 
-> OK, that should be fixed (amongst other things) in
-> git.infradead.org/users/dwmw2/iommu-suspend-2.6.29.git and in the Fedora
-> 2.6.29.1-68.fc11 kernel. Thanks.
+> On Sat, 2009-04-11 at 15:52 +0800, Li Zefan wrote:
+> > This patchset fixes some bugs in tracing/filters. Most of the change
+> > goes to the last patch, and others are small ones.
+> > 
 > 
-> http://www.kerneloops.org/raw.php?rawid=346794
+> At first glance, they look good and fix real problems - thanks for
+> fixing them.  Re patch 7, there's been some discussion about using rcu
+> for this.  See:
+> 
+> http://lkml.org/lkml/2009/4/5/46
+> 
+> >From that discussion, it seems some non-trivial changes to rcu would be
+> needed for this.  I'm playing around with a different idea now to
+> hopefully avoid the need for that, or the other approach mentioned, of
+> temporarily stopping tracing while removing/changing the filters.
+> 
+> Basically my thought is to avoid the problem by not allocating or
+> destroying the preds when removing filters but instead switch out the
+> pred->fns with a nop version while keeping the fields intact for awhile.
+> I think that will work for removing filters, but I still need to think
+> about how it would (or would not) work for replacing them.
+>  
+> Tom
+
+
+
+It would be sort of reinventing rcu :-)
+Well, Paul proposed something recently, hmm I should double check
+this discussion.
+
+Anyway, the fixes from Li (other than 4 and 7 for which we have comments)
+look very good!
+
+Frederic.
+
+
+
+> 
+> > Maybe 3rd to 6th patches can be regarded as small enhancements instead
+> > of bug fixes? But they are behavioural changes.
+> > 
+> > 
+> > [PATCH 1/7] tracing/filters: NUL-terminate user input filter
+> > [PATCH 2/7] tracing/filters: fix NULL pointer dereference
+> > [PATCH 3/7] tracing/filters: allow user input integer to be oct or hex
+> > [PATCH 4/7] tracing/filters: allow user to specify a filter val to be string
+> > [PATCH 5/7] tracing/filters: disallow newline as delimeter
+> > [PATCH 6/7] tracing/filters: return proper error code when writing filter file
+> > [PATCH 7/7] tracing/filters: make filter preds RCU safe
+> > 
+> >  kernel/trace/trace.h                |    6 +-
+> >  kernel/trace/trace_events.c         |   16 +++--
+> >  kernel/trace/trace_events_filter.c  |  131 ++++++++++++++++++++++++++---------
+> >  kernel/trace/trace_events_stage_3.h |   10 +++-
+> >  4 files changed, 121 insertions(+), 42 deletions(-)
+> > ---
 > 
 
-Does this include backporting the interrupt remapping fixes, or just
-ignoring it since none of the current laptop chipsets support it?
-
-regards, Kyle
