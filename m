@@ -1,100 +1,122 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755200AbZDKBP3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754445AbZDKBRd@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755200AbZDKBP3 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 10 Apr 2009 21:15:29 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754105AbZDKBPN
+	id S1754445AbZDKBRd (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 10 Apr 2009 21:17:33 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754271AbZDKBRX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 10 Apr 2009 21:15:13 -0400
-Received: from mail-bw0-f169.google.com ([209.85.218.169]:38019 "EHLO
-	mail-bw0-f169.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754048AbZDKBPL (ORCPT
+	Fri, 10 Apr 2009 21:17:23 -0400
+Received: from mail-fx0-f158.google.com ([209.85.220.158]:45457 "EHLO
+	mail-fx0-f158.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754236AbZDKBRX (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 10 Apr 2009 21:15:11 -0400
+	Fri, 10 Apr 2009 21:17:23 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:references:mime-version
-         :content-type:content-disposition:in-reply-to:user-agent;
-        b=U7saM15EPBbboiW5RqdKrIK6tqsuxG6sTNP/aRbx4mSQ1SeJV5Xx8ZQKZY/EPI7gAn
-         OhjjIH6ass5FgezZZ/LMCWTrxCLba3oB2W/IaDMs2YnJijqVW0L+Lt3YY1KRv6aA6Cqo
-         zCiWrbvvZpr6iWUmO8FTgIQJ27IN9onNuWaE8=
-Date: Sat, 11 Apr 2009 03:15:06 +0200
+        h=from:to:cc:subject:date:message-id:x-mailer:in-reply-to:references;
+        b=V6eqvnYfFXnZmx1w+DsV4Nb0EBc2w54akdtIFcFX5pAIafshcfwUdeDGi+5bVMmJBN
+         2NHqtj1NocYXqH/TAIwjHqyM3a5WN9BoovtDyFASoZL/kwz4AobSF4Kk5j03rH3Y20Zx
+         pURnG9zpqnFEF2bSROi1KnbnXakTADGqq3n2s=
 From: Frederic Weisbecker <fweisbec@gmail.com>
 To: Ingo Molnar <mingo@elte.hu>
-Cc: Greg KH <gregkh@suse.de>, LKML <linux-kernel@vger.kernel.org>,
-       LTP <ltp-list@lists.sourceforge.net>,
+Cc: LKML <linux-kernel@vger.kernel.org>,
+       Frederic Weisbecker <fweisbec@gmail.com>,
        Peter Zijlstra <peterz@infradead.org>
-Subject: Re: [PATCH 2/2] lockdep: choose to continue lock debugging despite
-	taint
-Message-ID: <20090411011505.GA5992@nowhere>
-References: <1239312460-13396-1-git-send-email-fweisbec@gmail.com> <1239312460-13396-2-git-send-email-fweisbec@gmail.com> <20090410121515.GP21506@elte.hu> <20090410133844.GD5988@nowhere> <20090410134520.GC17878@elte.hu>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
+Subject: [PATCH 1/2 v2] lockdep: warn about lockdep disabling after kernel taint
+Date: Sat, 11 Apr 2009 03:17:17 +0200
+Message-Id: <1239412638-6739-1-git-send-email-fweisbec@gmail.com>
+X-Mailer: git-send-email 1.6.1
 In-Reply-To: <20090410134520.GC17878@elte.hu>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+References: <20090410134520.GC17878@elte.hu>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Apr 10, 2009 at 03:45:20PM +0200, Ingo Molnar wrote:
-> 
-> * Frederic Weisbecker <fweisbec@gmail.com> wrote:
-> 
-> > On Fri, Apr 10, 2009 at 02:15:15PM +0200, Ingo Molnar wrote:
-> > > 
-> > > * Frederic Weisbecker <fweisbec@gmail.com> wrote:
-> > > 
-> > > > Lockdep is disabled after any kernel taints. This might be 
-> > > > convenient to ignore bad locking issues which sources come from 
-> > > > outside the kernel tree. Nevertheless, it might be a frustrating 
-> > > > experience for the staging developers or anyone who might develop 
-> > > > a kernel that happens to be tainted.
-> > > 
-> > > Good point. Not having lockdep coverage for drivers/staging/ just 
-> > > prolongs their transition - not good.
-> > > 
-> > > But instead of this:
-> > > 
-> > > >  void add_taint(unsigned flag)
-> > > >  {
-> > > > +#ifndef CONFIG_LOCKDEP_IGNORE_TAINT
-> > > >  	/*
-> > > >  	 * Can't trust the integrity of the kernel anymore.
-> > > >  	 * We don't call directly debug_locks_off() because the issue
-> > > > @@ -220,6 +221,7 @@ void add_taint(unsigned flag)
-> > > >  	 */
-> > > >  	if (xchg(&debug_locks, 0))
-> > > >  		printk(KERN_WARNING "Disabling lockdep due to kernel taint\n");
-> > > > +#endif
-> > > 
-> > > I'd suggest to not do the debug_locks_off() call if TAINT_CRAP. I.e. 
-> > > something like:
-> > > 
-> > > 	if (!(flag & TAINT_CRAP) && debug_locks_off())
-> > > 		printk(...);
-> > > 
-> > > will do the trick.
-> > > 
-> > > 	Ingo
-> > 
-> > 
-> > Ok, but this is not only about staging. It's also about 
-> > TAINT_WARN. Just imagine that you report a warning to a 
-> > maintainer, and while you are waiting for it to be fixed, you 
-> > can't use lockdep for your own needs.
-> > 
-> > Hm?
-> 
-> We can exclude TAINT_WARN too - i.e. (TAINT_CRAP|TAINT_WARN).
-> 
-> 	Ingo
+Impact: provide useful missing info for developers
 
+Kernel taint can occur in several situations such as warnings,
+load of prorietary or staging modules, bad page, etc...
 
-Fine :-)
+But when such taint happens, a developer might still be working on
+the kernel, expecting that lockdep is still enabled. But a taint
+disables lockdep without ever warning about it.
+Such a kernel behaviour doesn't really help for kernel development.
 
-See the v2 on further mails in this thread.
+This patch adds this missing warning.
 
-Side request: do you think you could merge them on kill-the-BKL tree?
+Since the taint is done most of the time after the main message that
+explain the real source issue, it seems safe to warn about it inside
+add_taint() so that it appears at last, without hurting the main
+information.
 
-Thanks!
+v2: Use a generic helper to disable lockdep instead of an open coded
+xchg().
+
+Signed-off-by: Frederic Weisbecker <fweisbec@gmail.com>
+Cc: Peter Zijlstra <peterz@infradead.org>
+---
+ include/linux/debug_locks.h |    7 +++++++
+ kernel/panic.c              |   10 ++++++++--
+ lib/debug_locks.c           |    2 +-
+ 3 files changed, 16 insertions(+), 3 deletions(-)
+
+diff --git a/include/linux/debug_locks.h b/include/linux/debug_locks.h
+index 096476f..493dedb 100644
+--- a/include/linux/debug_locks.h
++++ b/include/linux/debug_locks.h
+@@ -2,12 +2,19 @@
+ #define __LINUX_DEBUG_LOCKING_H
+ 
+ #include <linux/kernel.h>
++#include <asm/atomic.h>
+ 
+ struct task_struct;
+ 
+ extern int debug_locks;
+ extern int debug_locks_silent;
+ 
++
++static inline int __debug_locks_off(void)
++{
++	return xchg(&debug_locks, 0);
++}
++
+ /*
+  * Generic 'turn off all lock debugging' function:
+  */
+diff --git a/kernel/panic.c b/kernel/panic.c
+index 3fd8c5b..940ca14 100644
+--- a/kernel/panic.c
++++ b/kernel/panic.c
+@@ -213,8 +213,14 @@ unsigned long get_taint(void)
+ 
+ void add_taint(unsigned flag)
+ {
+-	/* can't trust the integrity of the kernel anymore: */
+-	debug_locks = 0;
++	/*
++	 * Can't trust the integrity of the kernel anymore.
++	 * We don't call directly debug_locks_off() because the issue
++	 * is not necessarily serious enough to set oops_in_progress to 1
++	 */
++	if (__debug_locks_off())
++		printk(KERN_WARNING "Disabling lockdep due to kernel taint\n");
++
+ 	set_bit(flag, &tainted_mask);
+ }
+ EXPORT_SYMBOL(add_taint);
+diff --git a/lib/debug_locks.c b/lib/debug_locks.c
+index 0218b46..bc3b117 100644
+--- a/lib/debug_locks.c
++++ b/lib/debug_locks.c
+@@ -36,7 +36,7 @@ int debug_locks_silent;
+  */
+ int debug_locks_off(void)
+ {
+-	if (xchg(&debug_locks, 0)) {
++	if (__debug_locks_off()) {
+ 		if (!debug_locks_silent) {
+ 			oops_in_progress = 1;
+ 			console_verbose();
+-- 
+1.6.1
 
