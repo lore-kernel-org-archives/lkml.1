@@ -1,50 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755292AbZDKFnY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755378AbZDKGAi@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755292AbZDKFnY (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 11 Apr 2009 01:43:24 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750981AbZDKFnO
+	id S1755378AbZDKGAi (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 11 Apr 2009 02:00:38 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752177AbZDKGA0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 11 Apr 2009 01:43:14 -0400
-Received: from pfepa.post.tele.dk ([195.41.46.235]:42417 "EHLO
-	pfepa.post.tele.dk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752637AbZDKFnN (ORCPT
+	Sat, 11 Apr 2009 02:00:26 -0400
+Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:33643
+	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
+	by vger.kernel.org with ESMTP id S1751959AbZDKGAZ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 11 Apr 2009 01:43:13 -0400
-Date: Sat, 11 Apr 2009 07:45:16 +0200
-From: Sam Ravnborg <sam@ravnborg.org>
-To: Jike Song <albcamus@gmail.com>
-Cc: David Howells <dhowells@redhat.com>,
-       Linus Torvalds <torvalds@linux-foundation.org>, torvalds@osdl.org,
-       akpm@linux-foundation.org, viro@zeniv.linux.org.uk,
-       linux-am33-list@redhat.com, linux-kernel@vger.kernel.org
-Subject: Re: [GIT PULL] MN10300: Move arch headers to arch dir
-Message-ID: <20090411054516.GA29493@uranus.ravnborg.org>
-References: <19057.1239370935@redhat.com> <20090410192529.GA25551@uranus.ravnborg.org> <df9815e70904102042r2cd2e3e3ue6159f348e4c192e@mail.gmail.com>
+	Sat, 11 Apr 2009 02:00:25 -0400
+Date: Fri, 10 Apr 2009 23:00:16 -0700 (PDT)
+Message-Id: <20090410.230016.176733137.davem@davemloft.net>
+To: jengelh@medozas.de
+Cc: paulmck@linux.vnet.ibm.com, torvalds@linux-foundation.org, mingo@elte.hu,
+       laijs@cn.fujitsu.com, shemminger@vyatta.com, jeff.chua.linux@gmail.com,
+       dada1@cosmosbay.com, kaber@trash.net, r000n@r000n.net,
+       linux-kernel@vger.kernel.org, netfilter-devel@vger.kernel.org,
+       netdev@vger.kernel.org
+Subject: Re: iptables very slow after commit
+ 784544739a25c30637397ace5489eeb6e15d7d49
+From: David Miller <davem@davemloft.net>
+In-Reply-To: <alpine.LSU.2.00.0904110657410.26485@fbirervta.pbzchgretzou.qr>
+References: <alpine.LFD.2.00.0904101828490.4583@localhost.localdomain>
+	<20090411041533.GB6822@linux.vnet.ibm.com>
+	<alpine.LSU.2.00.0904110657410.26485@fbirervta.pbzchgretzou.qr>
+X-Mailer: Mew version 6.2.51 on Emacs 22.1 / Mule 5.0 (SAKAKI)
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <df9815e70904102042r2cd2e3e3ue6159f348e4c192e@mail.gmail.com>
-User-Agent: Mutt/1.4.2.1i
+Content-Type: Text/Plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, Apr 11, 2009 at 11:42:01AM +0800, Jike Song wrote:
-> On Sat, Apr 11, 2009 at 3:25 AM, Sam Ravnborg <sam@ravnborg.org> wrote:
-> >
-> > .gitignore is left in include/asm-mn10300.
-> >
-> > As the content of that file is obsoleted by your last patch it can safely be deleted.
-> > Linus - can I ask you to do so?
-> >
-> >        Sam
+From: Jan Engelhardt <jengelh@medozas.de>
+Date: Sat, 11 Apr 2009 07:14:50 +0200 (CEST)
+
+> The fact that `iptables -A` is called a hundred times means you are 
+> doing 100 table replacements -- instead of one. And calling
+> synchronize_net at least a 100 times.
 > 
-> off topic: there is also a .gitignore left in include/asm-arm.
-But its there for a reason.
-Arm generates mach-types.h and it should be ignored.
+> "Wanna use iptables-restore?"
 
-include/asm-arm is no longer a sensible place for these files,
-but for now I have no better place for them so they will
-stay there for a while.
+I want to derail this line of thinking as fast as possible.
 
-	Sam
+This is not an acceptable response to this problem.  We made something
+fundamentally slower by several orders of magnitude.
+
+Therefore, saying "Don't insert your firewall rules like that." is not
+a valid response for this regression.
+
+We really have to fix it or revert.
