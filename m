@@ -1,72 +1,78 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759005AbZDKVE1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759050AbZDKVHP@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759005AbZDKVE1 (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 11 Apr 2009 17:04:27 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754593AbZDKVER
+	id S1759050AbZDKVHP (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 11 Apr 2009 17:07:15 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753255AbZDKVG6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 11 Apr 2009 17:04:17 -0400
-Received: from ox1.aei.mpg.de ([194.94.224.6]:33203 "EHLO ox1.aei.mpg.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753324AbZDKVER (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 11 Apr 2009 17:04:17 -0400
-Date: Sat, 11 Apr 2009 23:03:36 +0200
-From: "Carlos R. Mafra" <crmafra2@gmail.com>
-To: Arjan van de Ven <arjan@infradead.org>
-Cc: linux-kernel@vger.kernel.org, tiwai@suse.de, alsa-devel@vger.kernel.org
-Subject: Re: General protection fault when unloading snd_hda_intel on
-	2.6.30-rc1+
-Message-ID: <20090411210336.GA15272@Pilar.aei.mpg.de>
-References: <20090411193630.GA16968@Pilar.aei.mpg.de> <20090411132033.003c581c@infradead.org>
+	Sat, 11 Apr 2009 17:06:58 -0400
+Received: from mail-bw0-f169.google.com ([209.85.218.169]:39055 "EHLO
+	mail-bw0-f169.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753366AbZDKVG5 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 11 Apr 2009 17:06:57 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:user-agent:mime-version:to:subject
+         :content-type:content-transfer-encoding;
+        b=ckDfZRSwjKoqEchECOxUBk6ipTJxeIRrGvIH18rSM3kEYMU+UNaAeGBmDR/vjNr0bR
+         +uEq6BGXQlnjDTBIwakbPy7ArlHLIstK6BWaIx5rrKIQQL4ZzdeEy9DNYt2JDDsOFxv1
+         zIAW7WIqYpcbtxEXUqSe7rAR/IpHrWasdLIK4=
+Message-ID: <49E10684.5090101@gmail.com>
+Date: Sat, 11 Apr 2009 23:07:16 +0200
+From: Niel Lambrechts <niel.lambrechts@gmail.com>
+User-Agent: Thunderbird 2.0.0.21 (X11/20090310)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090411132033.003c581c@infradead.org>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+To: "linux.kernel" <linux-kernel@vger.kernel.org>
+Subject: 2.6.30-rc1 (latest git): thinkpad-acpi: cannot control brightness
+ with hotkeys
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat 11.Apr'09 at 13:20:33 -0700, Arjan van de Ven wrote:
-> 
-> if you happen to have CONFIG_DEBUG_INFO enabled, then you can run the
-> oops through scripts/markup_oops.pl to get the source code of the exact
-> line that is oopsing.. makes diagnosing it even easier!
+Hi there,
 
-I did not have CONFIG_DEBUG_INFO enabled back then, but now I have.
+With latest git kernel, I'm no longer able to control my Thinkpad (W500)
+brightness, although I can still control the backlight, bluetooth etc.
 
-The script gives me this output:
+I originally got some errors (below), but I was able to get around them
+by changing /etc/modprobe.d/thinkpad_acpi
+from the (default OPENSUSE)
+options thinkpad_acpi experimental=1 hotkey=enable,0xffffff
+to
+options thinkpad_acpi experimental=1
 
-No vmlinux specified, assuming /lib/modules/2.6.30-rc1-00191-gd848223/build/vmlinux
- 		add_input_randomness(type, code, value); 
- 		input_handle_event(dev, type, code, value); 
- 		spin_unlock_irqrestore(&dev->event_lock, flags); 
- 	} 
- } 
- ffffffff8044bf7a:	48 8b 5d d8          	mov    -0x28(%rbp),%rbx |  %ebx => 3 
- ffffffff8044bf7e:	4c 8b 65 e0          	mov    -0x20(%rbp),%r12 |  %r12 => ffffffff805bb97c 
- ffffffff8044bf82:	4c 8b 6d e8          	mov    -0x18(%rbp),%r13 |  %r13 => 5 
- ffffffff8044bf86:	4c 8b 75 f0          	mov    -0x10(%rbp),%r14 |  %r14 => 697665646632785c 
- ffffffff8044bf8a:	4c 8b 7d f8          	mov    -0x8(%rbp),%r15 |  %r15 => 0 
- ffffffff8044bf8e:	c9                   	leaveq  
- ffffffff8044bf8f:	c3                   	retq    
-  
- static inline int variable_test_bit(int nr, volatile const unsigned long *addr) 
- { 
- 	int oldbit; 
-  
- 	asm volatile("bt %2,%1\n\t" 
-*ffffffff8044bf90:	0f a3 77 20          	bt     %esi,0x20(%rdi) |  %edi = 697665646632785c  %esi = 5 <--- faulting instruction
- ffffffff8044bf94:	19 c0                	sbb    %eax,%eax 
- static struct input_handler *input_table[8]; 
-  
- static inline int is_event_supported(unsigned int code, 
- 				     unsigned long *bm, unsigned int max) 
- { 
- 	return code <= max && test_bit(code, bm); 
- ffffffff8044bf96:	85 c0                	test   %eax,%eax 
- ffffffff8044bf98:	74 e0                	je     ffffffff8044bf7a <input_event+0x2a> 
- { 
- 	unsigned long flags; 
-  
- 	if (is_event_supported(type, dev->evbit, EV_MAX)) { 
+Any ideas on how I can regain control over the brightness gas-pedal?
+
+Niel
+
+dmesg:
+thinkpad_acpi: ThinkPad ACPI Extras v0.22
+thinkpad_acpi: http://ibm-acpi.sf.net/
+thinkpad_acpi: ThinkPad BIOS 6FET50WW (1.20 ), EC 7VHT12WW-1.01
+thinkpad_acpi: Lenovo ThinkPad W500, model 40622XG
+thinkpad_acpi: radio switch found; radios are enabled
+thinkpad_acpi: This ThinkPad has standard ACPI backlight brightness
+control, supported by the ACPI video driver
+thinkpad_acpi: Disabling thinkpad-acpi brightness events by default...
+thinkpad_acpi: procfs hotkey enable/disable: access by process with PID 890
+WARNING: at drivers/platform/x86/thinkpad_acpi.c:2954
+hotkey_enabledisable_warn+0x3e/0x43 [thinkpad_acpi]()
+thinkpad_acpi: hotkey enable/disable functionality has been removed from
+the driver. Hotkeys are always enabled.
+Modules linked in: thinkpad_acpi(+) snd_hda_intel(+) rfkill
+snd_hda_codec rtc_cmos snd_hwdep mac80211 video i2c_i801 rtc_core
+snd_pcm ohci1394 led_class battery ac output snd_timer snd soundcore
+snd_page_alloc e1000e intel_agp button joydev wmi i2c_core sr_mod
+rtc_lib cfg80211 sg ieee1394 iTCO_wdt agpgart cdrom nvram
+iTCO_vendor_support sd_mod ehci_hcd uhci_hcd usbcore ext4 jbd2 crc16 edd
+ext3 mbcache jbd fan ahci libata scsi_mod thermal processor
+ [<f81a3f7c>] hotkey_enabledisable_warn+0x3e/0x43 [thinkpad_acpi]
+ [<f81a5234>] hotkey_write+0x68/0x162 [thinkpad_acpi]
+ [<f7c63f62>] thinkpad_acpi_module_init+0x742/0x839 [thinkpad_acpi]
+ [<f7c63820>] ? thinkpad_acpi_module_init+0x0/0x839 [thinkpad_acpi]
+Registered led device: tpacpi::thinklight
+thinkpad_acpi: Standard ACPI backlight interface available, not loading
+native one.
 
