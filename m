@@ -1,69 +1,98 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756389AbZDKQFu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756964AbZDKQLT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756389AbZDKQFu (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 11 Apr 2009 12:05:50 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755581AbZDKQFh
+	id S1756964AbZDKQLT (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 11 Apr 2009 12:11:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755781AbZDKQLD
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 11 Apr 2009 12:05:37 -0400
-Received: from wf-out-1314.google.com ([209.85.200.171]:61126 "EHLO
-	wf-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754967AbZDKQFf convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 11 Apr 2009 12:05:35 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
-         :cc:content-type:content-transfer-encoding;
-        b=omjvEOOe2aLqD2wRlyPClGzzOWAFKZjl+qoybsY2DZbp8RA+eBcdRGHe29mVesmnGu
-         HfwOGc3NXeIF1/WUZJVm44zS41hxdMpvvqsJTEqZHSck+WBwZmwnC7ZINGJoEmVLL7vM
-         QXWgSz+pct9xQT2JC5i9HgDOyz9b3xq8w3UCM=
+	Sat, 11 Apr 2009 12:11:03 -0400
+Received: from srv5.dvmed.net ([207.36.208.214]:41208 "EHLO mail.dvmed.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754927AbZDKQLB (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 11 Apr 2009 12:11:01 -0400
+Message-ID: <49E0C102.4020705@pobox.com>
+Date: Sat, 11 Apr 2009 12:10:42 -0400
+From: Jeff Garzik <jgarzik@pobox.com>
+User-Agent: Thunderbird 2.0.0.21 (X11/20090320)
 MIME-Version: 1.0
-In-Reply-To: <20090411080739.4cb77370@nehalam>
-References: <Pine.LNX.4.64.0904101656190.2093@boston.corp.fedex.com>
-	 <20090410095246.4fdccb56@s6510>
-	 <20090410.182507.140306636.davem@davemloft.net>
-	 <alpine.LFD.2.00.0904101828490.4583@localhost.localdomain>
-	 <20090411041533.GB6822@linux.vnet.ibm.com>
-	 <alpine.LSU.2.00.0904110657410.26485@fbirervta.pbzchgretzou.qr>
-	 <20090411080739.4cb77370@nehalam>
-Date: Sun, 12 Apr 2009 00:05:34 +0800
-Message-ID: <b6a2187b0904110905kc2cca83ted751b42693b1565@mail.gmail.com>
-Subject: Re: iptables very slow after commit 784544739a25c30637397ace5489eeb6e15d7d49
-From: Jeff Chua <jeff.chua.linux@gmail.com>
-To: Stephen Hemminger <shemminger@vyatta.com>
-Cc: Jan Engelhardt <jengelh@medozas.de>,
-       "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       David Miller <davem@davemloft.net>, Ingo Molnar <mingo@elte.hu>,
-       Lai Jiangshan <laijs@cn.fujitsu.com>, dada1@cosmosbay.com,
-       kaber@trash.net, r000n@r000n.net,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       netfilter-devel@vger.kernel.org, netdev@vger.kernel.org
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 8BIT
+To: Tejun Heo <htejun@gmail.com>
+CC: Peter Zijlstra <peterz@infradead.org>,
+       Vegard Nossum <vegard.nossum@gmail.com>,
+       LKML <linux-kernel@vger.kernel.org>, Ingo Molnar <mingo@elte.hu>,
+       IDE/ATA development list <linux-ide@vger.kernel.org>,
+       Alan Cox <alan@lxorguk.ukuu.org.uk>
+Subject: Re: v2.6.25: WARNING: at kernel/lockdep.c:2437	__lock_acquire+0xc69/0xfa0()
+References: <19f34abd0804200329j3308b081vc0732c3ec5c0b721@mail.gmail.com> <1208782090.7115.179.camel@twins> <480FF821.9050208@gmail.com>
+In-Reply-To: <480FF821.9050208@gmail.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
+X-Spam-Score: -4.4 (----)
+X-Spam-Report: SpamAssassin version 3.2.5 on srv5.dvmed.net summary:
+	Content analysis details:   (-4.4 points, 5.0 required)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, Apr 11, 2009 at 11:07 PM, Stephen Hemminger
-<shemminger@vyatta.com> wrote:
->> iptables works in whole tables. Userspace submits a table, checkentry is
->> called for all rules in the new table, things are swapped, then destroy
->> is called for all rules in the old table. By that logic (which existed
->> since dawn I think), only the swap operation needs to be locked.
-> Part of the overhead is the API choice to take counter values from user
-> space during the replace.  If the rule replacement just always started with
-> zero counters it could be done with less overhead.
+Tejun Heo wrote:
+> Peter Zijlstra wrote:
+>> Indeed, quite easy to reproduce:
+>>
+>> diff --git a/kernel/lockdep.c b/kernel/lockdep.c
+>> index 81a4e4a..33901ef 100644
+>> --- a/kernel/lockdep.c
+>> +++ b/kernel/lockdep.c
+>> @@ -2434,6 +2434,13 @@ static int __lock_acquire(struct lockdep_map 
+>> *lock, unsigned int subclass,
+>>       * the hash, not class->key.
+>>       */
+>>      id = class - lock_classes;
+>> +    if (id >= MAX_LOCKDEP_KEYS) {
+>> +        spinlock_t *slock = container_of(lock, spinlock_t, dep_map);
+>> +
+>> +        printk(KERN_EMERG "magic: %x\n", slock->magic);
+>> +        printk(KERN_EMERG "class: %p\n", class);
+>> +        printk(KERN_EMERG "id: %u\n", id);
+>> +    }
+>>      if (DEBUG_LOCKS_WARN_ON(id >= MAX_LOCKDEP_KEYS))
+>>          return 0;
+>>  
+>>
+>>
+>> gives me:
+>>
+>> ata3: PATA max PIO4 cmd 0x1e8 ctl 0x3ee irq 11
+>> magic: c050cf60
+>> class: c7c20e54
+>> id: 2265185251
+>> ------------[ cut here ]------------
+>> WARNING: at /mnt/md0/src/linux-2.6-2/kernel/lockdep.c:2444
+>> __lock_acquire+0x57b/0xfd0()
+>>
+>>
+>> Looks like someone is stomping on the spinlock or just passing us
+>> garbage.
+> 
+> Does the attached patch help?
+> 
+> diff --git a/drivers/ata/pata_legacy.c b/drivers/ata/pata_legacy.c
+> index 7af4b29..f7ba234 100644
+> --- a/drivers/ata/pata_legacy.c
+> +++ b/drivers/ata/pata_legacy.c
+> @@ -1037,6 +1037,7 @@ static __init int legacy_init_one(struct legacy_probe *probe)
+>  			return 0;
+>  		}
+>  	}
+> +	ata_host_detach(host);
+>  fail:
+>  	platform_device_unregister(pdev);
+>  	return ret;
 
-It's always good practice to start from zero with these ...
 
-# iptables -F
-# iptables -t nat -F
-# iptables -X
+(going through old, unresolved email)
 
-And most of the time, rules should be put into a file so that it can
-rerun easily after reboot. So if it can be speed up for just this
-case, it'll help many out there.
+It looks like this might still be needed?  I never saw an "it works" 
+response to this email.
 
-Thanks,
-Jeff.
+	Jeff
+
+
+
