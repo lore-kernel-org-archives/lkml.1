@@ -1,59 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755886AbZDKBic@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755512AbZDKBqN@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755886AbZDKBic (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 10 Apr 2009 21:38:32 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754991AbZDKBiP
+	id S1755512AbZDKBqN (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 10 Apr 2009 21:46:13 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754325AbZDKBp5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 10 Apr 2009 21:38:15 -0400
-Received: from ozlabs.org ([203.10.76.45]:41214 "EHLO ozlabs.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755208AbZDKBiO (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 10 Apr 2009 21:38:14 -0400
-From: Rusty Russell <rusty@rustcorp.com.au>
-To: Tejun Heo <tj@kernel.org>
-Subject: Re: [GIT RFC] percpu: use dynamic percpu allocator as the default percpu allocator
-Date: Sat, 11 Apr 2009 11:08:06 +0930
-User-Agent: KMail/1.11.2 (Linux/2.6.28-11-generic; KDE/4.2.2; i686; ; )
-Cc: Ivan Kokshaysky <ink@jurassic.park.msu.ru>,
-       Martin Schwidefsky <schwidefsky@de.ibm.com>,
-       Ingo Molnar <mingo@elte.hu>, tglx@linutronix.de, x86@kernel.org,
-       linux-kernel@vger.kernel.org, hpa@zytor.com,
-       Paul Mundt <lethal@linux-sh.org>, rmk@arm.linux.org.uk,
-       starvik@axis.com, ralf@linux-mips.org, davem@davemloft.net,
-       cooloney@kernel.org, kyle@mcmartin.ca, matthew@wil.cx,
-       grundler@parisc-linux.org, takata@linux-m32r.org,
-       benh@kernel.crashing.org, rth@twiddle.net, heiko.carstens@de.ibm.com
-References: <49D3231D.2040403@kernel.org> <20090409094713.GA6538@jurassic.park.msu.ru> <49DDE1B5.4070407@kernel.org>
-In-Reply-To: <49DDE1B5.4070407@kernel.org>
+	Fri, 10 Apr 2009 21:45:57 -0400
+Received: from mga10.intel.com ([192.55.52.92]:26046 "EHLO
+	fmsmga102.fm.intel.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1754310AbZDKBp4 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 10 Apr 2009 21:45:56 -0400
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.40,171,1239001200"; 
+   d="scan'208";a="680653096"
+Message-ID: <49DFF651.5080909@linux.intel.com>
+Date: Fri, 10 Apr 2009 18:45:53 -0700
+From: Arjan van de Ven <arjan@linux.intel.com>
+User-Agent: Thunderbird 2.0.0.21 (Windows/20090302)
 MIME-Version: 1.0
-Content-Type: Text/Plain;
-  charset="iso-8859-1"
+To: Linus Torvalds <torvalds@linux-foundation.org>
+CC: "Rafael J. Wysocki" <rjw@suse.com>, linux-pm@lists.linux-foundation.org,
+       Takashi Iwai <tiwai@suse.de>, LKML <linux-kernel@vger.kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>, Ingo Molnar <mingo@elte.hu>
+Subject: Re: [linux-pm] [2.6.30-rc1-git2 regressions] Hibernation broken and
+ (minor but annoying) audio problem
+References: <200904100057.43827.rjw@sisk.pl> <200904102058.36018.rjw@sisk.pl> <alpine.LFD.2.00.0904101204350.4583@localhost.localdomain> <200904110206.33525.rjw@suse.com> <alpine.LFD.2.00.0904101817100.4583@localhost.localdomain>
+In-Reply-To: <alpine.LFD.2.00.0904101817100.4583@localhost.localdomain>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200904111108.08323.rusty@rustcorp.com.au>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 9 Apr 2009 09:23:25 pm Tejun Heo wrote:
-> It's generally a good idea to use uniquely
-> distinguisible identifier for static symbols anyway to help debugging.
-
-Sorry, I can't let this statement stand.  It's completely wrong: use the
-shortest clear name, always.
-
-> If this limitation is acceptable, I think we should also add the dup
-> build failure thing to the generic definition too tho so that such
-> cases can be discovered before they hit alpha and s390 later.
+Linus Torvalds wrote:
 > 
-> Any objections?
+> Hmm.
+> 
+> I'm not 100% sure that patch is good.
+> 
+> The reason? I think it's going to deadlock if an async caller ends up 
+> wanting to load a module, because then the nestecd 
+> "async_synchronize_full()" will basically want to wait for itself.
+> 
+> So it's a good test-patch, and maybe no async caller ever loads a module, 
+> but it makes me a bit nervous.
+> 
+> But the fact that it fixes things for you at least means that the _reason_ 
+> for the problem is know, and maybe there are alternative solutions. Arjan?
 
-Yes.  If we decide that static per-cpu is unsupportable, let's not hide the
-damn thing.  We just make it give a compile warning if we can, patch out the
-current cases, and make checkpatch.pl warn on new ones.
-
-Don't silently override "static".  Don't come up with stupid justifications.
-Accept with open-eyes that it's evil, just a lesser evil.
-
-Thanks,
-Rusty.
+I just got back from the LF summit and am catching up on mail; I'll take a look
+at the history.
