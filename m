@@ -1,50 +1,93 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753571AbZDKE7F@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754868AbZDKFPO@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753571AbZDKE7F (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 11 Apr 2009 00:59:05 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752766AbZDKE6y
+	id S1754868AbZDKFPO (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 11 Apr 2009 01:15:14 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752637AbZDKFOz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 11 Apr 2009 00:58:54 -0400
-Received: from rv-out-0506.google.com ([209.85.198.238]:14113 "EHLO
-	rv-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752754AbZDKE6x convert rfc822-to-8bit (ORCPT
+	Sat, 11 Apr 2009 01:14:55 -0400
+Received: from sovereign.computergmbh.de ([85.214.69.204]:45016 "EHLO
+	sovereign.computergmbh.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752201AbZDKFOx (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 11 Apr 2009 00:58:53 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
-         :cc:content-type:content-transfer-encoding;
-        b=nmb9ylGztEMqxJATrRauymFrqyt65bNhQlFY2FYTnrMOFQSEw0JPF5KE4G/q+7b9yl
-         BeB7+MfqLMXtlbwpR4JnRLNzuR1gdP4ZzV3rFthgfx5Xsj7M8dGtoFPTfue7r3yL+gmM
-         pJX12TpzX/NdepxH+ArQhkR4kVO+4Ry01surI=
+	Sat, 11 Apr 2009 01:14:53 -0400
+Date: Sat, 11 Apr 2009 07:14:50 +0200 (CEST)
+From: Jan Engelhardt <jengelh@medozas.de>
+To: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
+cc: Linus Torvalds <torvalds@linux-foundation.org>,
+       David Miller <davem@davemloft.net>, Ingo Molnar <mingo@elte.hu>,
+       Lai Jiangshan <laijs@cn.fujitsu.com>, shemminger@vyatta.com,
+       jeff.chua.linux@gmail.com, dada1@cosmosbay.com, kaber@trash.net,
+       r000n@r000n.net,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       netfilter-devel@vger.kernel.org, netdev@vger.kernel.org
+Subject: Re: iptables very slow after commit
+ 784544739a25c30637397ace5489eeb6e15d7d49
+In-Reply-To: <20090411041533.GB6822@linux.vnet.ibm.com>
+Message-ID: <alpine.LSU.2.00.0904110657410.26485@fbirervta.pbzchgretzou.qr>
+References: <Pine.LNX.4.64.0904101656190.2093@boston.corp.fedex.com> <20090410095246.4fdccb56@s6510> <20090410.182507.140306636.davem@davemloft.net> <alpine.LFD.2.00.0904101828490.4583@localhost.localdomain> <20090411041533.GB6822@linux.vnet.ibm.com>
+User-Agent: Alpine 2.00 (LSU 1167 2008-08-23)
 MIME-Version: 1.0
-In-Reply-To: <900814656-1239422746-cardhu_decombobulator_blackberry.rim.net-2124207137-@bxe1152.bisx.prod.on.blackberry>
-References: <E1Ls9pZ-0004IF-FZ@closure.thunk.org>
-	 <20090410175723.GA20983@elf.ucw.cz> <200904102008.59932.rjw@sisk.pl>
-	 <b6a2187b0904101812x270fbbc1i55918fd5ff98ccea@mail.gmail.com>
-	 <900814656-1239422746-cardhu_decombobulator_blackberry.rim.net-2124207137-@bxe1152.bisx.prod.on.blackberry>
-Date: Sat, 11 Apr 2009 12:58:52 +0800
-Message-ID: <b6a2187b0904102158r5e37860cw2f45bee5578ebcf0@mail.gmail.com>
-Subject: Re: suspend-to-ram broken on X61 thinkpads in 2.6.30-rc1?
-From: Jeff Chua <jeff.chua.linux@gmail.com>
-To: tytso@mit.edu
-Cc: "Rafael J. Wysocki" <rjw@sisk.pl>, Pavel Machek <pavel@ucw.cz>,
-       linux-kernel@vger.kernel.org
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 8BIT
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, Apr 11, 2009 at 12:04 PM, Theodore Tso <tytso@mit.edu> wrote:
-> So I tried to do a bisect using a reduced config, and I wasn't able to reproduce.  So I went back to 2.6.30-rc1 and started playing with configurations.   I was able to finally get a reproduction, and I found that the af_packet module seems to be responsible.   If I move the modules directory out of the way and reboot, then manually insmod the af_packet module, then suspend, it fails by hanging with the flashing moon LED.  If I reboot and don't load the af_packet module, the suspend works.   Needless to say this falls into the WTF category.   I will do more testing to see what's up...
 
-Latest linux git-pull seems to fix the problem. Suspend-to-ram and
-resume now works. I've tried a few times and it works. Reverting the
-patch makes it hang during suspend.
+On Saturday 2009-04-11 06:15, Paul E. McKenney wrote:
+>On Fri, Apr 10, 2009 at 06:39:18PM -0700, Linus Torvalds wrote:
+>>An unhappy user reported:
+>>>>> Adding 200 records in iptables took 6.0sec in 2.6.30-rc1 compared to 
+>>>>> 0.2sec in 2.6.29. I've bisected down this commit.
+>>>>> 784544739a25c30637397ace5489eeb6e15d7d49
+>> 
+>> I wonder if we should bring in the RCU people too, for them to tell you 
+>> that the networking people are beign silly, and should not synchronize 
+>> with the very heavy-handed
+>> 
+>> 	synchronize_net()
+>> 
+>> but instead of doing synchronization (which is probably why adding a few 
+>> hundred rules then takes several seconds - each synchronizes and that 
+>> takes a timer tick or so), add the rules to be free'd on some rcu-freeing 
+>> list for later freeing.
 
-Latest git pull from 62b8e680e61d3f48f2a12ee248ca03ea8f376926 to
-d848223808c5d21e1b3cea090047e34722c6254b
+iptables works in whole tables. Userspace submits a table, checkentry is 
+called for all rules in the new table, things are swapped, then destroy 
+is called for all rules in the old table. By that logic (which existed
+since dawn I think), only the swap operation needs to be locked.
 
-Thanks,
-Jeff.
+Jeff Chua wrote:
+>So, to make it easy for testing, you can do a loop like this ...
+>        for((i = 1; i < 100; i++))
+>        do
+>                iptables -A block -s 10.0.0.$i -j ACCEPT
+>        done
+
+The fact that `iptables -A` is called a hundred times means you are 
+doing 100 table replacements -- instead of one. And calling
+synchronize_net at least a 100 times.
+
+"Wanna use iptables-restore?"
+
+>1.	Assuming that the synchronize_net() is intended to guarantee
+>	that the new rules will be in effect before returning to
+>	user space:
+
+As I read the new code, it seems that synchronize_net is only
+used on copying the rules from kernel into userspace;
+not when updating them from userspace:
+
+IPT_SO_GET_ENTRIES -> get_entries -> copy_entries_to_user -> 
+alloc_counters -> synchronize_net.
+
+>3.	For the alloc_counters() case, the comments indicate that we
+>	really truly do want an atomic sampling of the counters.
+>	The counters are 64-bit entities, which is a bit inconvenient.
+>	Though people using this functionality are no doubt quite happy
+>	to never have to worry about overflow, I hasten to add!
+>
+>	I will nevertheless suggest the following egregious hack to
+>	get a consistent sample of one counter for some other CPU:
+>       [...]
+
+Would a seqlock suffice, as it does for the 64-bit jiffies?
