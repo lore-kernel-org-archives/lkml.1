@@ -1,196 +1,118 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754516AbZDKEQU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752742AbZDKEZ0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754516AbZDKEQU (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 11 Apr 2009 00:16:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753225AbZDKEPu
+	id S1752742AbZDKEZ0 (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 11 Apr 2009 00:25:26 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751845AbZDKEZM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 11 Apr 2009 00:15:50 -0400
-Received: from e7.ny.us.ibm.com ([32.97.182.137]:38806 "EHLO e7.ny.us.ibm.com"
+	Sat, 11 Apr 2009 00:25:12 -0400
+Received: from mga14.intel.com ([143.182.124.37]:4997 "EHLO mga14.intel.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753151AbZDKEPr (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 11 Apr 2009 00:15:47 -0400
-Date: Fri, 10 Apr 2009 21:15:33 -0700
-From: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: David Miller <davem@davemloft.net>, Ingo Molnar <mingo@elte.hu>,
-       Lai Jiangshan <laijs@cn.fujitsu.com>, shemminger@vyatta.com,
-       jeff.chua.linux@gmail.com, dada1@cosmosbay.com, jengelh@medozas.de,
-       kaber@trash.net, r000n@r000n.net,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       netfilter-devel@vger.kernel.org, netdev@vger.kernel.org
-Subject: Re: iptables very slow after commit
-	784544739a25c30637397ace5489eeb6e15d7d49
-Message-ID: <20090411041533.GB6822@linux.vnet.ibm.com>
-Reply-To: paulmck@linux.vnet.ibm.com
-References: <Pine.LNX.4.64.0904101656190.2093@boston.corp.fedex.com> <20090410095246.4fdccb56@s6510> <20090410.182507.140306636.davem@davemloft.net> <alpine.LFD.2.00.0904101828490.4583@localhost.localdomain>
+	id S1751705AbZDKEZK (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 11 Apr 2009 00:25:10 -0400
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.40,171,1239001200"; 
+   d="scan'208";a="130331714"
+Date: Sat, 11 Apr 2009 12:24:52 +0800
+From: Wu Fengguang <fengguang.wu@intel.com>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       "npiggin@suse.de" <npiggin@suse.de>,
+       "torvalds@linux-foundation.org" <torvalds@linux-foundation.org>,
+       "yinghan@google.com" <yinghan@google.com>
+Subject: Re: [PATCH 9/9] readahead: record mmap read-around states in
+	file_ra_state
+Message-ID: <20090411042452.GB6613@localhost>
+References: <20090410060957.442203404@intel.com> <20090410061255.041947147@intel.com> <20090410163853.0e1b8f7c.akpm@linux-foundation.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <alpine.LFD.2.00.0904101828490.4583@localhost.localdomain>
-User-Agent: Mutt/1.5.15+20070412 (2007-04-11)
+In-Reply-To: <20090410163853.0e1b8f7c.akpm@linux-foundation.org>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Apr 10, 2009 at 06:39:18PM -0700, Linus Torvalds wrote:
+On Sat, Apr 11, 2009 at 07:38:53AM +0800, Andrew Morton wrote:
+> On Fri, 10 Apr 2009 14:10:06 +0800
+> Wu Fengguang <fengguang.wu@intel.com> wrote:
 > 
-> 
-> On Fri, 10 Apr 2009, David Miller wrote:
+> > Mmap read-around now shares the same code style and data structure
+> > with readahead code.
 > > 
-> > [ CC:'ing netfilter-devel and netdev... ]
-> 
-> I wonder if we should bring in the RCU people too, for them to tell you 
-> that the networking people are beign silly, and should not synchronize 
-> with the very heavy-handed
-> 
-> 	synchronize_net()
-> 
-> but instead of doing synchronization (which is probably why adding a few 
-> hundred rules then takes several seconds - each synchronizes and that 
-> takes a timer tick or so), add the rules to be free'd on some rcu-freeing 
-> list for later freeing.
-> 
-> Or whatever. Paul? synchronize_net() just calls synchronize_rcu(), and 
-> with that knowledge and a simple
-> 
-> 	git show 784544739a25c30637397ace5489eeb6e15d7d49
-> 
-> I bet you can already tell people how to fix their performance issue.
-
-Well, I am certainly happy to demonstrate my ignorance of the networking
-code by throwing out a few suggestions.
-
-So, Dave and Steve, you might want to get out your barf bag before
-reading further.  You have been warned!  ;-)
-
-1.	Assuming that the synchronize_net() is intended to guarantee
-	that the new rules will be in effect before returning to
-	user space:
-
-	a.	Split this functionality, so that there is a new
-		user-space primitive that installs a new rule, but
-		without waiting.  They provide an additional user-space
-		primitive that waits for the rules to take effect.
-		Then, when loading a long list of rules, load them
-		using the non-waiting primitive, and wait at the end.
-
-	b.	As above, but provide a flag that says whether or not
-		to wait.  Same general effect.
-
-	But I am not seeing the direct connection between this patch
-	and netfilter, so...
-
-2.	For the xt_replace_table() case, it would be necessary to add an
-	rcu_head to the xt_table_info, and replace each caller's direct
-	calls to xt_free_table_info() with call_rcu().
-
-	Now this has an issue in that the caller wants to return the
-	final counter values.  My assumption is that these values do
-	not in fact need to be exact.  If I am wrong about that, then
-	my suggestion would lose the counts from late readers.
-	I must defer to the networking guys as to whether this is
-	acceptable or not.  If not, more head-scratching would be
-	required.  (But it looks to me that the rule is being trashed,
-	so who cares about the extra counts?)
-
-	In addition, a malicious user might be able to force this to
-	happen extremely frequently, running the system out of memory.
-	One way to fix this is to invoke synchronize_net() one out of
-	20 times or some such.
-
-3.	For the alloc_counters() case, the comments indicate that we
-	really truly do want an atomic sampling of the counters.
-	The counters are 64-bit entities, which is a bit inconvenient.
-	Though people using this functionality are no doubt quite happy
-	to never have to worry about overflow, I hasten to add!
-
-	I will nevertheless suggest the following egregious hack to
-	get a consistent sample of one counter for some other CPU:
-
-	a.	Disable interrupts
-	b.	Atomically exchange the bottom 32 bits of the
-		counter with the value zero.
-	c.	Atomically exchange the top 32 bits of the counter
-		with the value zero.
-	d.	Concatenate the values obtained in (b) and (c), which
-		is the snapshot value.
-	e.	Re-enable interrupts.  Yes, for each counter.  Do it
-		for the honor of the -rt patchset.  ;-)
-
-		Disabling interrupts should make it impossible for
-		the low-order 32 bits of the counter to overflow before
-		we get around to zeroing the upper 32 bits.  Yes, this
-		is horribly paranoid, but please keep in mind that even
-		my level of paranoia is not always sufficient to keep
-		RCU working correctly.  :-/
-
-		Architectures with 64-bit atomics can simply do a 64-bit
-		exchange (or cmpxchg(), for that matter).
-
-	Now we still have the possibility that the other CPU is still
-	hammering away on the counter that we just zeroed from a
-	long-running RCU read-side critical section.
-
-	So, we also need to add an rcu_head somewhere, perhaps reuse
-	the one in xt_table_info, create a second one, or squirrel one
-	away somewhere else.  As long as there is a way to get to the
-	old counter values.  And a flag to indicate that the rcu_head
-	is in use.  It is socially irresponsible to pass a given
-	rcu_head to call_rcu() before it has been invoked after the
-	previous time it was passed to call_rcu().  But you guys all
-	knew that already.
-
-	We replace the synchronize_net() with call_rcu(), more or less.
-	The call_rcu() probably needs to be under the lock -- or at the
-	very least, setting the flag saying that it is in use needs to
-	be under the lock.
-
-	The RCU callback function traverses the old counters one last
-	time, adding their values to the new set of counters.  No
-	atomic exchange tricks are required this time, since all the
-	RCU readers that could possibly have held a reference to the
-	old set of counters must now be done.  We now clear the flag,
-	allowing the next counter snapshot to proceed.
-
-OK, OK, Dave and Steve, I should have suggested that you get two
-barf bags.  Maybe three.  ;-)
-
-Additional caveat: coward that I am, I looked only at the IPv4 code.
-There might well be additional complications in the arp and IPv6 code.
-
-However, I do believe that something like this might actually work.
-
-Thoughts?
-
-						Thanx, Paul
-
-> 		Linus
-> 
-> ---
-> > > On Fri, 10 Apr 2009 17:15:52 +0800 (SGT)
-> > > Jeff Chua <jeff.chua.linux@gmail.com> wrote:
-> > >> 
-> > >> Adding 200 records in iptables took 6.0sec in 2.6.30-rc1 compared to 
-> > >> 0.2sec in 2.6.29. I've bisected down this commit.
-> > >> 
-> > >> There are a few patches on top of the original patch. When I reverted the 
-> > >> original commit + changing rcu_read() to rcu_read_bh(), it speeds up the 
-> > >> inserts back to .2sec again.
-> > >> 
-> > >> I'm loading all the firewall rules during boot-up and this 6 secs slowness 
-> > >> is really not very nice to wait for.
-> > > 
-> > > The performance benefit during operation is more important. The load
-> > > time is fixable. The problem is probably generic to any set of rules,
-> > > but could you post some info about your configuration (like the rule
-> > > set), and the system configuration (# of cpu's, config etc).
-> > > --
-> > > To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
-> > > the body of a message to majordomo@vger.kernel.org
-> > > More majordomo info at  http://vger.kernel.org/majordomo-info.html
-> > > Please read the FAQ at  http://www.tux.org/lkml/
+> > This also removes do_page_cache_readahead().
+> > Its last user, mmap read-around, has been changed to call ra_submit().
 > > 
-> --
-> To unsubscribe from this list: send the line "unsubscribe netfilter-devel" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> > The no-readahead-if-congested logic is dumped by the way.
+> > Users will be pretty sensitive about the slow loading of executables.
+> > So it's unfavorable to disabled mmap read-around on a congested queue.
+> 
+> Did you verify that the read-congested code ever triggers?
+
+No.
+
+Sorry the described is an imagined case. There could be other
+counter-cases, however..
+
+> It used to be (and probably still is) the case that
+> bdi_read_congested() is very very rare, because the read queue is long
+> and the kernel rarely puts many read requests into it.  You can of
+> course create this condition with a fake workload with may
+> threads/processes, but it _is_ fake.
+
+The major workloads that could trigger read congestions:
+
+1) file servers running highly concurrent IO streams
+2) concurrent sys_readahead()s on a desktop, for fast booting
+3) mysql is also able to issue concurrent sys_readahead()s
+4) more workloads out of my imaginary
+
+For 1) the change is favorable or irrelevant.
+
+For 2) and 3) the change is irrelevant. The user space readahead
+process must make sure the degree of parallelism is kept in control,
+so that read congestion _never_ happen. Or normal reads will be blocked.
+
+> Some real-world workloads (databases?) will of course trigger
+> bdi_read_congested().  But they're usually doing fixed-sized reads, and
+> if we're doing _any_ readahead/readaround in that case, readahead is
+> busted.
+
+Hmm I didn't have this possibility in mind: the read congestion is
+exactly caused by a pool of concurrent mmap readers _themself_.
+
+Let's assume they are doing N-page sized _sparse_ random reads.
+(otherwise this patch will be favorable)
+
+The current mmap_miss accounting works so that if ever N >= 2, the
+readaround will be enabled for ever; if N == 1, the readaround will
+be disabled quickly. The designer of this logic must be a master!
+
+Why? If an application is to do 2-page random reads, the best option
+will be the read() syscall. Because the size info will be _lost_ when
+doing mmap reads. If ever the application author cares about
+performance (i.e. big DBMS), he will find out that truth either by
+theorizing or through experiments.
+
+IMHO the kernel mmap readaround algorithm shall only be optimized for
+- enabled: sequential reads
+- enabled: large random reads
+- enabled: clustered random reads
+- disabled: 1-page random reads
+and to perform bad and therefore discourage
+- enabled and discouraged: small(2-page) and sparse random reads
+
+It will do undesirable readaround for small sparse random mmap readers,
+and I do think that we want this bad behavior to push such workloads
+into using the more optimal read() syscall.
+
+Therefore the change introduced by this patch is in line with the
+above principles: either the readaround is favorable and should be
+insisted even in read congestions, or readaround is already
+unfavorable and let's keep it. If there are user complaints, good. We
+_helped_ they discover performance bugs in their application and can
+point them to the optimal solution. If it's not viable in short term,
+there are workarounds like reducing the readahead size.
+
+Thanks,
+Fengguang
+
