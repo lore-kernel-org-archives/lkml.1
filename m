@@ -1,93 +1,105 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755820AbZDKPkF@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755572AbZDKPqW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755820AbZDKPkF (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 11 Apr 2009 11:40:05 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754952AbZDKPjw
+	id S1755572AbZDKPqW (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 11 Apr 2009 11:46:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752301AbZDKPqF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 11 Apr 2009 11:39:52 -0400
-Received: from zeniv.linux.org.uk ([195.92.253.2]:59700 "EHLO
-	ZenIV.linux.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754843AbZDKPjw (ORCPT
+	Sat, 11 Apr 2009 11:46:05 -0400
+Received: from mail-bw0-f169.google.com ([209.85.218.169]:62984 "EHLO
+	mail-bw0-f169.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750806AbZDKPqC convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 11 Apr 2009 11:39:52 -0400
-Date: Sat, 11 Apr 2009 16:39:33 +0100
-From: Al Viro <viro@ZenIV.linux.org.uk>
-To: Sam Ravnborg <sam@ravnborg.org>
-Cc: Jike Song <albcamus@gmail.com>, David Howells <dhowells@redhat.com>,
-       Linus Torvalds <torvalds@linux-foundation.org>, torvalds@osdl.org,
-       akpm@linux-foundation.org, linux-am33-list@redhat.com,
-       linux-kernel@vger.kernel.org
-Subject: Re: [GIT PULL] MN10300: Move arch headers to arch dir
-Message-ID: <20090411153933.GU26366@ZenIV.linux.org.uk>
-References: <19057.1239370935@redhat.com> <20090410192529.GA25551@uranus.ravnborg.org> <df9815e70904102042r2cd2e3e3ue6159f348e4c192e@mail.gmail.com> <20090411054516.GA29493@uranus.ravnborg.org> <20090411064300.GT26366@ZenIV.linux.org.uk> <20090411075549.GA30873@uranus.ravnborg.org>
+	Sat, 11 Apr 2009 11:46:02 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
+         :cc:content-type:content-transfer-encoding;
+        b=n/St7UaLNyCLFkPLEIATSKFF0mBpdYd7jZtT9OT1UU8x1/ftFv7wh2dO/6BTk79NAF
+         gXFwxm1GF9VtEZvaEKk76pHDdaaMc7brLrdYkUjrDrhtdRVHxRHcQPXjmGbj/2umInjZ
+         8247iJg85bYkCjSRJ0hhdOAEsE9HfkDu0VOZo=
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090411075549.GA30873@uranus.ravnborg.org>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+In-Reply-To: <alpine.WNT.2.00.0904091128270.6048@jbrandeb-desk1.amr.corp.intel.com>
+References: <cb0375e10904010840n1543a890w9039465d0f80ffcc@mail.gmail.com>
+	 <20090404.170539.148727646.davem@davemloft.net>
+	 <cb0375e10904042100o1a203512l593021ee66cb591d@mail.gmail.com>
+	 <alpine.WNT.2.00.0904091128270.6048@jbrandeb-desk1.amr.corp.intel.com>
+Date: Sat, 11 Apr 2009 11:46:00 -0400
+Message-ID: <cb0375e10904110846k53bd5edbvb9fc9f6ff43bc97c@mail.gmail.com>
+Subject: Re: [PATCH 1/1] Tell linkwatch about new interfaces
+From: Andrew Lutomirski <amluto@gmail.com>
+To: "Brandeburg, Jesse" <jesse.brandeburg@intel.com>
+Cc: David Miller <davem@davemloft.net>,
+       "netdev@vger.kernel.org" <netdev@vger.kernel.org>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, Apr 11, 2009 at 09:55:49AM +0200, Sam Ravnborg wrote:
-> > How about a single directory for *all* generated headers?  Only linux/version.h
-> > has many places including it and even that can be dealt with for a moment with
-> > linux/version.h consisting of #include <gen/version.h>.  The rest doesn't
-> > need anything like that even for transition period - too few includes to care.
-> 
-> So you suggest: include/gen/
+On Thu, Apr 9, 2009 at 8:48 PM, Brandeburg, Jesse
+<jesse.brandeburg@intel.com> wrote:
+>
+> does this patch also fix the issue?
 
 Yes.
 
-> asm-offsets.h, mach-types.h and version.h is the ones with the highest count.
-> And version.h is an exported header which we cannot move in our exported
-> set of headers. Fortunately I have just checked in a patch so we can specify
-> an alternative destination when exporting so this should deal with version.h.
-> 
-> asm-offsets.h and mach-types.h require a small helper file as you suggest,
-> otherwise it would be a _huge_ patch.
+2: eth0: <NO-CARRIER,BROADCAST,MULTICAST,UP> mtu 1500 qdisc pfifo_fast
+state DOWN qlen 1000
 
-OK...  I suspect that many asm-offsets.h users might end up killable, but
-removal and replacement are not too different wrt patch size.
+Tested-by: Andy Lutomirski <amluto@gmail.com>
 
-> We can later migrate more generated files to this location.
-> (autoconf.h, config/* etc).
+The link operational states are still funny, though:
 
-autoconf.h is *trivial* to move.  What we have is
+1: lo: <LOOPBACK,UP,LOWER_UP> mtu 16436 qdisc noqueue state UNKNOWN
+3: wmaster0: <BROADCAST,MULTICAST,UP,LOWER_UP> mtu 1500 qdisc
+pfifo_fast state UNKNOWN qlen 1000
 
-Makefile:                   -include include/linux/autoconf.h
-Makefile:       $(Q)test -e include/linux/autoconf.h -a -e $@ || (              \
-Makefile:       echo "         include/linux/autoconf.h or $@ are missing.";    \
-Makefile:                  include/linux/autoconf.h include/linux/version.h      \
-arch/cris/arch-v32/kernel/head.S:#include <linux/autoconf.h>
-arch/cris/kernel/asm-offsets.c:#include <linux/autoconf.h>
-arch/cris/kernel/vmlinux.lds.S:#include <linux/autoconf.h>
-arch/ia64/kvm/asm-offsets.c:#include <linux/autoconf.h>
-drivers/accessibility/braille/braille_console.c:#include <linux/autoconf.h>
-drivers/hid/hid-lg.h:#include <linux/autoconf.h>
-drivers/platform/x86/compal-laptop.c:#include <linux/autoconf.h>
-include/linux/mmdebug.h:#include <linux/autoconf.h>
-scripts/basic/fixdep.c:         if (strrcmp(s, "include/linux/autoconf.h") &&
-scripts/kconfig/confdata.c:             name = "include/linux/autoconf.h";
-scripts/mkcompile_h:if [ -r $TARGET -a ! -O include/linux/autoconf.h ]; then
+It looks like all interfaces that don't call netif_carrier_down after
+registration end up in UNKNOWN until something happens.  The case of
+carrier_on but UNKNOWN doesn't seem to confuse my userspace, but it's
+still odd.
 
-and direct includes should be removed anyway - we already have -include in
-flags.  So it's 8 removals in one patch and 7 replacements in another (a
-bit more, since there are comments to update).  bounds.h is even easier:
+--Andy
 
-.gitignore:include/linux/bounds.h
-Kbuild:bounds-file := include/linux/bounds.h
-Makefile:                  include/linux/bounds.h include/asm*/asm-offsets.h     \
-include/linux/mmzone.h:#include <linux/bounds.h>
-include/linux/page-flags.h:#include <linux/bounds.h>
-
-utsrelease.h is a bit heavier - 19 instances.  compile.h - 6 instances.
-ia64 nr-irqs.h - 4 instances.  
-
-I'm not sure about include/config, actually - it's also not that much, but
-it might be better to merge separately.
-
-Note, BTW, that include/gen kills include/asm and include2/ (on O= builds),
-leaving us only with $(objtree)/source symlink and a couple of nonsense ones
-(arch/{i386,x86_64}/boot/bzImage -> ../../x86/boot/bzImage; do we still need
-them, anyway?)  IIRC, you wanted to get rid of symlinks...
+>
+> ===== begin =====
+>
+> e1000e: indicate link down at load
+>
+> From: Jesse Brandeburg <jesse.brandeburg@intel.com>
+>
+> same kind of patch as e1000, let driver explicitly push link state
+> once link comes up.
+>
+> Signed-off-by: Jesse Brandeburg <jesse.brandeburg@intel.com>
+> ---
+>
+>  drivers/net/e1000e/netdev.c |    6 ++----
+>  1 files changed, 2 insertions(+), 4 deletions(-)
+>
+> diff --git a/drivers/net/e1000e/netdev.c b/drivers/net/e1000e/netdev.c
+> index fb78278..6a0411e 100644
+> --- a/drivers/net/e1000e/netdev.c
+> +++ b/drivers/net/e1000e/netdev.c
+> @@ -3072,6 +3072,8 @@ static int e1000_open(struct net_device *netdev)
+>        if (test_bit(__E1000_TESTING, &adapter->state))
+>                return -EBUSY;
+>
+> +       netif_carrier_off(netdev);
+> +
+>        /* allocate transmit descriptors */
+>        err = e1000e_setup_tx_resources(adapter);
+>        if (err)
+> @@ -5006,10 +5008,6 @@ static int __devinit e1000_probe(struct pci_dev *pdev,
+>        if (!(adapter->flags & FLAG_HAS_AMT))
+>                e1000_get_hw_control(adapter);
+>
+> -       /* tell the stack to leave us alone until e1000_open() is called */
+> -       netif_carrier_off(netdev);
+> -       netif_tx_stop_all_queues(netdev);
+> -
+>        strcpy(netdev->name, "eth%d");
+>        err = register_netdev(netdev);
+>        if (err)
+>
