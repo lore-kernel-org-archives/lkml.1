@@ -1,70 +1,73 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756475AbZDKVdX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758026AbZDKViT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756475AbZDKVdX (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 11 Apr 2009 17:33:23 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755773AbZDKVdM
+	id S1758026AbZDKViT (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 11 Apr 2009 17:38:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755945AbZDKViJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 11 Apr 2009 17:33:12 -0400
-Received: from Mycroft.westnet.com ([216.187.52.7]:58115 "EHLO
-	Mycroft.westnet.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754957AbZDKVdM (ORCPT
+	Sat, 11 Apr 2009 17:38:09 -0400
+Received: from casper.infradead.org ([85.118.1.10]:38747 "EHLO
+	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755773AbZDKViI (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 11 Apr 2009 17:33:12 -0400
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	Sat, 11 Apr 2009 17:38:08 -0400
+Date: Sat, 11 Apr 2009 14:39:50 -0700
+From: Arjan van de Ven <arjan@infradead.org>
+To: "Carlos R. Mafra" <crmafra2@gmail.com>
+Cc: linux-kernel@vger.kernel.org, tiwai@suse.de, alsa-devel@vger.kernel.org
+Subject: Re: General protection fault when unloading snd_hda_intel on
+ 2.6.30-rc1+
+Message-ID: <20090411143950.3429ebc0@infradead.org>
+In-Reply-To: <20090411210336.GA15272@Pilar.aei.mpg.de>
+References: <20090411193630.GA16968@Pilar.aei.mpg.de>
+	<20090411132033.003c581c@infradead.org>
+	<20090411210336.GA15272@Pilar.aei.mpg.de>
+Organization: Intel
+X-Mailer: Claws Mail 3.7.0 (GTK+ 2.14.7; i386-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-Message-ID: <18913.3106.750732.50314@stoffel.org>
-Date: Sat, 11 Apr 2009 17:31:14 -0400
-From: "John Stoffel" <john@stoffel.org>
-To: "John Stoffel" <john@stoffel.org>
-Cc: Jeff Garzik <jeff@garzik.org>, Alan Cox <alan@lxorguk.ukuu.org.uk>,
-       Linux IDE mailing list <linux-ide@vger.kernel.org>,
-       LKML <linux-kernel@vger.kernel.org>, Jens Axboe <jens.axboe@oracle.com>,
-       Arjan van de Ven <arjan@infradead.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>
-Subject: Re: Implementing NVMHCI...
-In-Reply-To: <18913.1720.994638.274611@stoffel.org>
-References: <49E0D47B.9070205@garzik.org>
-	<20090411203246.513a0892@lxorguk.ukuu.org.uk>
-	<49E0F581.6010901@garzik.org>
-	<18913.1720.994638.274611@stoffel.org>
-X-Mailer: VM 8.0.9 under Emacs 22.3.1 (i486-pc-linux-gnu)
+X-SRS-Rewrite: SMTP reverse-path rewritten from <arjan@infradead.org> by casper.infradead.org
+	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
->>>>> "John" == John Stoffel <john@stoffel.org> writes:
+On Sat, 11 Apr 2009 23:03:36 +0200
+"Carlos R. Mafra" <crmafra2@gmail.com> wrote:
 
->>>>> "Jeff" == Jeff Garzik <jeff@garzik.org> writes:
-Jeff> Alan Cox wrote:
+> From: "Carlos R. Mafra" <crmafra2@gmail.com>
+> To: Arjan van de Ven <arjan@infradead.org>
+> Cc: linux-kernel@vger.kernel.org, tiwai@suse.de,
+> alsa-devel@vger.kernel.org Subject: Re: General protection fault when
+> unloading snd_hda_intel on 2.6.30-rc1+ Date: Sat, 11 Apr 2009
+> 23:03:36 +0200 User-Agent: Mutt/1.5.18 (2008-05-17)
+> 
+> On Sat 11.Apr'09 at 13:20:33 -0700, Arjan van de Ven wrote:
+>  [...]
+  
+  
+ 	asm volatile("bt %2,%1\n\t" 
+*ffffffff8044bf90:	0f a3 77 20          	bt     %esi,0x20(%rdi) |  %edi = 697665646632785c  %esi = 5 <--- faulting instruction
+ ffffffff8044bf94:	19 c0                	sbb    %eax,%eax 
+ static struct input_handler *input_table[8]; 
+  
+ static inline int is_event_supported(unsigned int code, 
+ 				     unsigned long *bm, unsigned int max) 
+ { 
+ 	return code <= max && test_bit(code, bm); 
+ ffffffff8044bf96:	85 c0                	test   %eax,%eax 
+ ffffffff8044bf98:	74 e0                	je     ffffffff8044bf7a <input_event+0x2a> 
+ { 
+ 	unsigned long flags; 
+  
+ 	if (is_event_supported(type, dev->evbit, EV_MAX)) { 
 
->>>> With a brand new command set, might as well avoid SCSI completely
->>>> IMO, and create a brand new block device.
->>> 
->>> Providing we allow for the (inevitable ;)) joys of NVHCI over SAS etc 8)
 
-Jeff> Perhaps...  from what I can tell, this is a direct, asynchronous
-Jeff> NVM interface.  It appears to lack any concept of bus or bus
-Jeff> enumeration.  No worries about link up/down, storage device
-Jeff> hotplug, etc.  (you still have PCI hotplug case, of course)
 
-John> Didn't we just spend years merging the old IDE PATA block devices into
-John> the libata/scsi block device setup to get a more unified userspace and
-John> to share common code?  
 
-John> I'm a total ignoramous here, but it would seem that it would be nice
-John> to keep the /dev/sd# stuff around for this, esp since it is supported
-John> through/with/around AHCI and libata stuff.
+so... "dev" is pointing evbit at... 697665646632785 which looks like grabage.
 
-John> Honestly, I don't care as long as userspace isn't too affected and I
-John> can just format it using ext3.  :]  Which I realize would be silly
-John> since it's probably nothing like regular disk access, but more like
-John> the NVRAM used on Netapps for caching writes to disk so they can be
-John> acknowledged quicker to the clients.  Or like the old PrestoServe
-John> NVRAM modules on DECsystems and Alphas.  
-
-And actually spending some thought on this, I'm thinking that this
-will be like the MTD block device and such... seperate specialized
-block devices, but still usable.  So maybe I'll just shutup now.  :]
-
-John
+-- 
+Arjan van de Ven 	Intel Open Source Technology Centre
+For development, discussion and tips for power savings, 
+visit http://www.lesswatts.org
