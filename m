@@ -1,46 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758411AbZDKRpO@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758533AbZDKRsX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758411AbZDKRpO (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 11 Apr 2009 13:45:14 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757346AbZDKRoy
+	id S1758533AbZDKRsX (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 11 Apr 2009 13:48:23 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757590AbZDKRsG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 11 Apr 2009 13:44:54 -0400
-Received: from andromeda.dapyr.net ([206.212.254.10]:49318 "EHLO
-	andromeda.dapyr.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755188AbZDKRox (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 11 Apr 2009 13:44:53 -0400
-X-Greylist: delayed 525 seconds by postgrey-1.27 at vger.kernel.org; Sat, 11 Apr 2009 13:44:53 EDT
-From: Konrad Rzeszutek <ketuzsezr@darnok.org>
-Reply-To: ketuzsezr@darnok.org
-To: Ashutosh Naik <ashutosh.naik@gmail.com>
-Subject: Re: [PATCH]ibft: Fix the display of a few fields in the NIC attribute  structure in sysfs
-Date: Sat, 11 Apr 2009 13:34:32 -0400
-User-Agent: KMail/1.9.10
-Cc: linux-kernel@vger.kernel.org, linux-scsi@vger.kernel.org,
-       Andrew Morton <akpm@osdl.org>, pjones@redhat.com,
-       "Vishnu V. Mandyam" <vishnu@chelsio.com>
-References: <81083a450904110629j93c5c2j2c1250e9822c3888@mail.gmail.com>
-In-Reply-To: <81083a450904110629j93c5c2j2c1250e9822c3888@mail.gmail.com>
+	Sat, 11 Apr 2009 13:48:06 -0400
+Received: from e9.ny.us.ibm.com ([32.97.182.139]:45616 "EHLO e9.ny.us.ibm.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1757440AbZDKRsD (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 11 Apr 2009 13:48:03 -0400
+Date: Sat, 11 Apr 2009 10:48:01 -0700
+From: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: Linus Torvalds <torvalds@linux-foundation.org>,
+       David Miller <davem@davemloft.net>,
+       Lai Jiangshan <laijs@cn.fujitsu.com>, shemminger@vyatta.com,
+       jeff.chua.linux@gmail.com, dada1@cosmosbay.com, jengelh@medozas.de,
+       kaber@trash.net, r000n@r000n.net,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       netfilter-devel@vger.kernel.org, netdev@vger.kernel.org,
+       paulus@samba.org, benh@kernel.crashing.org
+Subject: Re: iptables very slow after commit
+	784544739a25c30637397ace5489eeb6e15d7d49
+Message-ID: <20090411174801.GG6822@linux.vnet.ibm.com>
+Reply-To: paulmck@linux.vnet.ibm.com
+References: <Pine.LNX.4.64.0904101656190.2093@boston.corp.fedex.com> <20090410095246.4fdccb56@s6510> <20090410.182507.140306636.davem@davemloft.net> <alpine.LFD.2.00.0904101828490.4583@localhost.localdomain> <20090411041533.GB6822@linux.vnet.ibm.com> <20090411070854.GC11799@elte.hu>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="utf-8"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Message-Id: <200904111334.33642.ketuzsezr@darnok.org>
+In-Reply-To: <20090411070854.GC11799@elte.hu>
+User-Agent: Mutt/1.5.15+20070412 (2007-04-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Saturday 11 April 2009 09:29:36 Ashutosh Naik wrote:
-> This patch fixes the display of a few fields in the iBFT NIC attribute
-> structure in sysfs.
->
-> Signed-off-by: Ashutosh Naik <ashutosh.naik@gmail.com>
-> Signed-off-by: Vishnu V<vishnu@chelsio.com>
+On Sat, Apr 11, 2009 at 09:08:54AM +0200, Ingo Molnar wrote:
+> 
+> * Paul E. McKenney <paulmck@linux.vnet.ibm.com> wrote:
+> 
+> > 	I will nevertheless suggest the following egregious hack to
+> > 	get a consistent sample of one counter for some other CPU:
+> > 
+> > 	a.	Disable interrupts
+> > 	b.	Atomically exchange the bottom 32 bits of the
+> > 		counter with the value zero.
+> > 	c.	Atomically exchange the top 32 bits of the counter
+> > 		with the value zero.
+> > 	d.	Concatenate the values obtained in (b) and (c), which
+> > 		is the snapshot value.
+> 
+> Note, i have recently implemented full atomic64_t support on 32-bit 
+> x86, for the perfcounters code, based on the CMPXCHG8B instruction.
+> 
+> Which, while not the lightest of instructions, is still much better 
+> than the sequence above.
+> 
+> So i think a better approach would be to also add a dumb generic 
+> implementation for atomic64_t (using a global lock or so), and then 
+> generic code could just assume that atomic64_t always exists.
+> 
+> It is far nicer - and faster as well - as the hack above, even on 
+> 32-bit x86.
 
-Thanks for finding such glaring copy-n-paste error.
+If the generic implementation is needed only on !SMP systems, that
+could work.  The architectures I would be worried about include
+powerpc and ia64, which I believe support 32-bit SMP builds.
 
-Acked-off-by:Konrad Rzeszutek <ketuzsezr@darnok.org>
-
-
+						Thanx, Paul
