@@ -1,99 +1,71 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759357AbZDKWQ2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759406AbZDKWRv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759357AbZDKWQ2 (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 11 Apr 2009 18:16:28 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757771AbZDKWQS
+	id S1759406AbZDKWRv (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 11 Apr 2009 18:17:51 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754484AbZDKWRn
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 11 Apr 2009 18:16:18 -0400
-Received: from mail-fx0-f158.google.com ([209.85.220.158]:51000 "EHLO
-	mail-fx0-f158.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754420AbZDKWQR (ORCPT
+	Sat, 11 Apr 2009 18:17:43 -0400
+Received: from fk-out-0910.google.com ([209.85.128.191]:56906 "EHLO
+	fk-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754420AbZDKWRm convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 11 Apr 2009 18:16:17 -0400
+	Sat, 11 Apr 2009 18:17:42 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:in-reply-to:references:x-mailer
-         :mime-version:content-type:content-transfer-encoding;
-        b=tqzG0S7ZfUOgIJy4O9LQ/J3Zf9xAgULx8eD/sJAz1UA0yMu2482PHisWSiLSxYrakN
-         tpOARrBn4g6c1DfXlp85gwQFj0uzE7bYXiG1m6Yto2eFQ5PurVSDgBePJ5UbR+XC96mD
-         uREXRvhs+yWmZWQs7wbMxSm8YWqo8x+lteSEI=
-Date: Sat, 11 Apr 2009 23:16:11 +0100
-From: Tiago =?ISO-8859-1?B?U2lt9WVz?= Batista <tiagosbatista@gmail.com>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: "Tiago =?ISO-8859-1?B?U2lt9WVz?= Batista" <tiagosbatista@gmail.com>,
-       linux-kernel@vger.kernel.org, linux-acpi@vger.kernel.org,
-       Matthew Garrett <mjg59@srcf.ucam.org>, Zhang Rui <rui.zhang@intel.com>
-Subject: Re: High latency on /sys/class/thermal
-Message-ID: <20090411231611.7c5f9b69@ua.pt>
-In-Reply-To: <20090411121416.91fe3c88.akpm@linux-foundation.org>
-References: <20090411155612.5808570c@ua.pt>
- <20090411121416.91fe3c88.akpm@linux-foundation.org>
-X-Mailer: Claws Mail 3.7.1 (GTK+ 2.14.7; i686-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+        h=from:to:subject:date:user-agent:cc:references:in-reply-to
+         :mime-version:content-type:content-transfer-encoding
+         :content-disposition:message-id;
+        b=ePvEb6M81pOuUwuihadBBVlhn1jhhTMQ4pe7HxUJDmMoAyFdLU3wbav9Hze/ne6kA0
+         3n8Jj1U2asRVReHgoGHO1VZIKFCStxZUaVPlY0IhE6rYy+2awZ9YpxaLRgbvUqAck/Os
+         eKToRER4x3iGUpHOCxoRt1ue/NeLDfUdM7E30=
+From: Arkadiusz Miskiewicz <a.miskiewicz@gmail.com>
+To: linux-kernel@vger.kernel.org
+Subject: Re: 2.6.30-rc1 (latest git): thinkpad-acpi: cannot control brightness with hotkeys
+Date: Sun, 12 Apr 2009 00:17:37 +0200
+User-Agent: KMail/1.11.2 (Linux/2.6.30-rc1; KDE/4.2.2; x86_64; ; )
+Cc: Niel Lambrechts <niel.lambrechts@gmail.com>,
+       Henrique de Moraes Holschuh <hmh@hmh.eng.br>
+References: <49E10684.5090101@gmail.com>
+In-Reply-To: <49E10684.5090101@gmail.com>
+MIME-Version: 1.0
+Content-Type: Text/Plain;
+  charset="utf-8"
+Content-Transfer-Encoding: 8BIT
+Content-Disposition: inline
+Message-Id: <200904120017.37469.a.miskiewicz@gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Sorry about the noise, by brain was stopped when I sent the last mail,
-please ignore the From address, it is wrong!
+On Saturday 11 of April 2009, Niel Lambrechts wrote:
+> Hi there,
+>
+> With latest git kernel, I'm no longer able to control my Thinkpad (W500)
+> brightness, although I can still control the backlight, bluetooth etc.
 
-On Sat, 11 Apr 2009 12:14:16 -0700
-Andrew Morton <akpm@linux-foundation.org> wrote:
+Same problem here (but no warning) on T400. I wasn't able to get it working. 
+Tried using different values (0, 1,2, 3) for brightness_mode without success.
 
-> (cc linux-acpi)
-> 
-> On Sat, 11 Apr 2009 15:56:12 +0100 "Tiago Sim__es Batista"
-> <tiagosbatista@gmail.com> wrote:
-> 
-> > Hi all
-> > 
-> > Yesterday, I recompiled my kernel (git + tuxonice)
-> > v2.6.30-rc1-1002-gac91f91, there were a couple of issues, the main
-> > one is ilustrated bellow.
-> > 
-> > I am not familiar with the kernel code, but if you give me some
-> > pointers, I will be glad to investigate this further
-> > 
-> > $time cat /sys/class/thermal/thermal_zone0/temp 
-> > 34000
-> > 
-> > real	0m6.613s
-> > user	0m0.000s
-> > sys	0m0.001s
-> > 
-> 
-> Is this a regression?  Was 2.6.29 OK?
-> 
-> Thanks.
-
-My last kernel was fine:
-
-$ time cat /sys/class/thermal/thermal_zone0/temp 
-48000
-
-real	0m0.007s
-user	0m0.001s
-sys	0m0.007s
+[ 7527.512263] thinkpad_acpi: ThinkPad ACPI Extras v0.22
+[ 7527.512269] thinkpad_acpi: http://ibm-acpi.sf.net/
+[ 7527.512274] thinkpad_acpi: ThinkPad BIOS 7UET61WW (2.07 ), EC 7VHT12WW-1.01
+[ 7527.512279] thinkpad_acpi: Lenovo ThinkPad T400, model 2764CTO
+[ 7527.526581] thinkpad_acpi: radio switch found; radios are enabled
+[ 7527.526902] thinkpad_acpi: This ThinkPad has standard ACPI backlight 
+brightness control, supported by the ACPI video driver
+[ 7527.526909] thinkpad_acpi: Disabling thinkpad-acpi brightness events by 
+default...
+[ 7527.547485] Registered led device: tpacpi::thinklight
+[ 7527.547747] Registered led device: tpacpi::power
+[ 7527.547799] Registered led device: tpacpi::standby
+[ 7527.554449] thinkpad_acpi: Standard ACPI backlight interface available, not 
+loading native one.
+[ 7527.554921] input: ThinkPad Extra Buttons as /class/input/input21
 
 
-I also forgot to add some information about my kernels...
+> Niel
 
-The good one is 2.6.29 + tuxonice as it was the day after the 2.6.29
-kernel was released.
-
-The bad one is a pull from linus tree on april the 9th plus tuxonice on
-the same day
-
-from git (hope this helps):
-$ git describe v2.6.29-tiago2-ice
-v2.6.29-836-g00492ed
-$ git describe v2.6.30-rc1-tiago1-ice
-v2.6.30-rc1-1002-gac91f91
-
-
-If tuxonice is a suspect, I will be glad to remove it and recompile.
-If I have the time later this weekend, and nothing was found, I will
-try to bisect this.
+-- 
+Arkadiusz Miśkiewicz        PLD/Linux Team
+arekm / maven.pl            http://ftp.pld-linux.org/
 
