@@ -1,81 +1,85 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754132AbZDKAY4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754619AbZDKAsZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754132AbZDKAY4 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 10 Apr 2009 20:24:56 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752192AbZDKAYm
+	id S1754619AbZDKAsZ (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 10 Apr 2009 20:48:25 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753586AbZDKAsP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 10 Apr 2009 20:24:42 -0400
-Received: from mail-fx0-f158.google.com ([209.85.220.158]:47790 "EHLO
-	mail-fx0-f158.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752038AbZDKAYl (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 10 Apr 2009 20:24:41 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:user-agent:mime-version:to:cc:subject
-         :references:in-reply-to:content-type:content-transfer-encoding;
-        b=xRkjY9dcOhyTuGWYHS+QvuJgfnKnZ7LBcqXGDmSG1wwkDdsjazpi9qd0CKcCb84+d0
-         9ZbDMoPx3LQGOYHl8cchM7sYEmW5Wo9okqCjsr9Jz9uAI63mNXHuDv6T1J51TBX9Qx9c
-         EZmbNP6yWOikrhnojbZDYJm12u8bP4PNTns/o=
-Message-ID: <49DFE345.3010109@gmail.com>
-Date: Sat, 11 Apr 2009 04:24:37 +0400
-From: Alexey Starikovskiy <aystarik@gmail.com>
-User-Agent: Thunderbird 2.0.0.21 (X11/20090319)
+	Fri, 10 Apr 2009 20:48:15 -0400
+Received: from e7.ny.us.ibm.com ([32.97.182.137]:48810 "EHLO e7.ny.us.ibm.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753394AbZDKAsP (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 10 Apr 2009 20:48:15 -0400
+Date: Fri, 10 Apr 2009 17:48:13 -0700
+From: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
+To: Al Viro <viro@ZenIV.linux.org.uk>
+Cc: Tetsuo Handa <penguin-kernel@I-love.SAKURA.ne.jp>,
+       linux-kernel@vger.kernel.org, hugh@veritas.com, jmorris@namei.org,
+       akpm@linux-foundation.org
+Subject: Re: [2.6.30-rc1] RCU detected CPU 1 stall
+Message-ID: <20090411004813.GA20242@linux.vnet.ibm.com>
+Reply-To: paulmck@linux.vnet.ibm.com
+References: <200904080057.n380vZAH051872@www262.sakura.ne.jp> <20090410142203.GA6719@linux.vnet.ibm.com> <20090410150353.GL26366@ZenIV.linux.org.uk> <20090410153229.GB6719@linux.vnet.ibm.com> <200904110608.IED21123.FQOVMtSOOHFFLJ@I-love.SAKURA.ne.jp> <20090410231245.GF6719@linux.vnet.ibm.com> <20090410233919.GS26366@ZenIV.linux.org.uk>
 MIME-Version: 1.0
-To: Alan Jenkins <alan-jenkins@tuffmail.co.uk>
-CC: linux-acpi@vger.kernel.org,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Kernel Testers List <kernel-testers@vger.kernel.org>
-Subject: Re: Regression: 20 ACPI interrupts per second on EEEPC 4G
-References: <49DF6835.9040501@tuffmail.co.uk>
-In-Reply-To: <49DF6835.9040501@tuffmail.co.uk>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20090410233919.GS26366@ZenIV.linux.org.uk>
+User-Agent: Mutt/1.5.15+20070412 (2007-04-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Alan,
+On Sat, Apr 11, 2009 at 12:39:20AM +0100, Al Viro wrote:
+> On Fri, Apr 10, 2009 at 04:12:45PM -0700, Paul E. McKenney wrote:
+> > On Sat, Apr 11, 2009 at 06:08:54AM +0900, Tetsuo Handa wrote:
+> > > Hello.
+> > > 
+> > > Paul E. McKenney wrote:
+> > > > Tetsuo, how many tasks did you have on this machine?
+> > > I didn't count how many tasks were running on this machine.
+> > > But the number of tasks should be very low, for this happened during
+> > > the boot stage of Debian Sarge.
+> > > 
+> > > 30 seconds ago from the first stalled message
+> > > 
+> > > [   41.415158] INFO: RCU detected CPU 1 stall (t=4294902646/2500 jiffies)
+> > > [   41.417332] Pid: 3487, comm: khelper Tainted: G        W  2.6.30-rc1 #1
+> > > [   41.417332] Call Trace:
+> > > 
+> > > the system was doing
+> > > 
+> > > [   10.555521] kjournald starting.  Commit interval 5 seconds
+> > > [   10.556727] EXT3 FS on sdb1, internal journal
+> > > [   10.556727] EXT3-fs: recovery complete.
+> > > [   10.557585] EXT3-fs: mounted filesystem with writeback data mode.
+> > > /dev/sdb1 on /usr/src/all type ext3 (rw,noatime,nodiratime)
+> > > Detecting hardware: agpgart pcnet32 piix BusLogic ide_scsi
+> > > Skipping unavailable/built-in agpgart module.
+> > > pcnet32 disabled in configuration.
+> > > Skipping unavailable/built-in piix module.
+> > > Skipping unavailable/built-in BusLogic module.
+> > > Skipping unavailable/built-in ide_scsi module.
+> > > Running 0dns-down to make sure resolv.conf is ok...done.
+> > > Setting up networking...done.
+> > > Starting hotplug subsystem:
+> > >    pci     
+> > >      ignoring pci display device 00:0f.0
+> > > [   16.727603] ------------[ cut here ]------------
+> > > [   16.729910] WARNING: at security/security.c:217 security_vm_enough_memory+0xa0/0xb0()
+> > > 
+> > > > Though I too find it hard to believe that there were enough to chew up
+> > > > two minutes.  Maybe the list got corrupted so that it has a loop?
+> > > 
+> > > I powered off the machine after two minutes, for I thought the loop
+> > > was infinite.
+> > 
+> > Is this reproducible?  If so, any chance you could try bisecting?
+> 
+> If that's execve() hang, we probably have something->fs->lock stuck.
+> I don't see any likely candidates, but...
+> 
+> I'd really love to see results of repeated alt-sysrq-p/alt-sysrq-l, just
+> to see where was it actually spinning.
 
-This patch looks to be a suspect: 34ff4dbccccce54c83b1234d39b7ad9e548a75dd,
-Please check if reversing it helps
+Even better!!!  ;-)
 
-Regards,
-Alex.
-
-Alan Jenkins wrote:
-> On latest git, powertop shows 20 ACPI interrupts per second.  
-> Previously, this was closer to 1 per second.  See attached output (a 
-> vs b, "a" is from 2.6.29-rc8).
->
-> This is from a pretty sparse KDE desktop.  Normally I run 
-> gnome-power-manager, but I killed it to make sure that wasn't causing 
-> any problems.
->
-> alan@alan-eeepc:/sys/firmware/acpi/interrupts$ grep -v "invalid" *
-> error:       0
-> ff_gbl_lock:       0    enabled
-> ff_pwr_btn:       0     enabled
-> ff_rt_clk:       0      disabled
-> gpe03:       0  disabled
-> gpe04:       0  disabled
-> gpe05:       0  disabled
-> gpe09:       0  disabled
-> gpe0B:       0  disabled
-> gpe0C:       0  disabled
-> gpe0D:       0  disabled
-> gpe0E:       0  disabled
-> gpe18:   60975  enabled
-> gpe_all:   60975
-> sci:   60975
->
-> which I presume means lots of EC interrupts.
->
-> [    0.134068] ACPI: EC: GPE = 0x18, I/O: command/status = 0x66, data 
-> = 0x62
->
-> Any ideas?
->
-> Thanks
-> Alan
-
+							Thanx, Paul
