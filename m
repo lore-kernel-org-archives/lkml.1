@@ -1,77 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757500AbZDKQxg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757858AbZDKQzQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757500AbZDKQxg (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 11 Apr 2009 12:53:36 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753280AbZDKQx1
+	id S1757858AbZDKQzQ (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 11 Apr 2009 12:55:16 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756358AbZDKQzA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 11 Apr 2009 12:53:27 -0400
-Received: from casper.infradead.org ([85.118.1.10]:39124 "EHLO
-	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752926AbZDKQx0 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 11 Apr 2009 12:53:26 -0400
-Subject: Re: 2.6.29: can't resume from suspend with DMAR (intel iommu)
- enabled
-From: David Woodhouse <dwmw2@infradead.org>
-To: Kyle McMartin <kyle@redhat.com>
-Cc: Matthew Garrett <mjg@redhat.com>, Ingo Molnar <mingo@elte.hu>,
-       Andrew Lutomirski <amluto@gmail.com>,
-       Jesse Barnes <jbarnes@virtuousgeek.org>,
-       Fenghua Yu <fenghua.yu@intel.com>,
-       Suresh Siddha <suresh.b.siddha@intel.com>,
-       Yinghai Lu <yinghai@kernel.org>, Mark Gross <mgross@linux.intel.com>,
-       LKML <linux-kernel@vger.kernel.org>
-In-Reply-To: <20090411143834.GA14287@kibblesnbits.boston.devel.redhat.com>
-References: <cb0375e10903241258x32c9d0f3g35a4f56793eb8677@mail.gmail.com>
-	 <20090324203259.GC26930@elte.hu>
-	 <1238003581.2085.53.camel@macbook.infradead.org>
-	 <20090325175908.GA25518@elte.hu>
-	 <1239051362.22733.87.camel@macbook.infradead.org>
-	 <20090407075640.GA16516@srcf.ucam.org>
-	 <1239429852.712.1532.camel@macbook.infradead.org>
-	 <20090411143834.GA14287@kibblesnbits.boston.devel.redhat.com>
-Content-Type: text/plain
-Date: Sat, 11 Apr 2009 09:52:39 -0700
-Message-Id: <1239468764.712.1546.camel@macbook.infradead.org>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.26.0 (2.26.0-2.fc11) 
-Content-Transfer-Encoding: 7bit
-X-SRS-Rewrite: SMTP reverse-path rewritten from <dwmw2@infradead.org> by casper.infradead.org
-	See http://www.infradead.org/rpr.html
+	Sat, 11 Apr 2009 12:55:00 -0400
+Received: from www.tglx.de ([62.245.132.106]:38744 "EHLO www.tglx.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1755766AbZDKQy7 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 11 Apr 2009 12:54:59 -0400
+Date: Sat, 11 Apr 2009 18:53:45 +0200 (CEST)
+From: Thomas Gleixner <tglx@linutronix.de>
+To: Dimitri Sivanich <sivanich@sgi.com>
+cc: LKML <linux-kernel@vger.kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>, Ingo Molnar <mingo@elte.hu>,
+       john stultz <johnstul@us.ibm.com>,
+       Peter Zijlstra <peterz@infradead.org>
+Subject: Re: [PATCH v2] Move calc_load call out from xtime_lock protection
+In-Reply-To: <20090411162416.GC3496@sgi.com>
+Message-ID: <alpine.LFD.2.00.0904111849450.21577@localhost.localdomain>
+References: <20090410173437.GA23415@sgi.com> <alpine.LFD.2.00.0904110931240.21577@localhost.localdomain> <20090411162416.GC3496@sgi.com>
+User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, 2009-04-11 at 10:38 -0400, Kyle McMartin wrote:
-> On Fri, Apr 10, 2009 at 11:04:12PM -0700, David Woodhouse wrote:
-> > On Tue, 2009-04-07 at 08:56 +0100, Matthew Garrett wrote:
-> > > On Mon, Apr 06, 2009 at 01:56:01PM -0700, David Woodhouse wrote:
+On Sat, 11 Apr 2009, Dimitri Sivanich wrote:
+
+> On Sat, Apr 11, 2009 at 11:51:36AM +0200, Thomas Gleixner wrote:
+> > On Fri, 10 Apr 2009, Dimitri Sivanich wrote:
+> > 
+> > > The xtime_lock is being held for long periods on larger systems due
+> > > to an extensive amount of time being spent in calc_load(),
+> > > specifically here:
+> > >   do_timer->update_times->calc_load->count_active_tasks->nr_active()
 > > > 
-> > > > Dirk reported the same panic, but we've just turned his iommu back on
-> > > > and completely failed to reproduce the problem -- so I'm kind of stuck.
-> > > 
-> > > I saw this on a T400, but only on the first boot after enabling DMAR - 
-> > > power cycling "fixed" it.
+> > > On a 64 cpu system I've seen this take approximately 55 usec.
+> > > Presumably it would be worse on larger systems.  This causes other
+> > > cpus to be held off in places such as
+> > > scheduler_tick->sched_clock_tick waiting for the xtime_lock to be
+> > > released.
 > > 
-> > OK, that should be fixed (amongst other things) in
-> > git.infradead.org/users/dwmw2/iommu-suspend-2.6.29.git and in the Fedora
-> > 2.6.29.1-68.fc11 kernel. Thanks.
+> > I thought more about that. Why don't we move the calc_load() call into
+> > the timer softirq context and avoid fiddling with all the call sites ?
+> > Also moving calc_load out of the timer interrupt context reduces the
+> > interrupts off section as well.
 > > 
-> > http://www.kerneloops.org/raw.php?rawid=346794
-> > 
-> 
-> Does this include backporting the interrupt remapping fixes, or just
-> ignoring it since none of the current laptop chipsets support it?
+> Sounds reasonable to me.
 
-The latter. What I've done so far is quite large for a -stable
-submission already. The interrupt remapping stuff would be even more
-intrusive, and I'm entirely unconvinced that we actually _need_ it for
-current systems.
+Ok. I looked once more and I wonder if it's possible to avoid the
+whole for_each_online_cpu() business by moving the accounting into the
+scheduler and be a bit more clever than just blindly running over all
+cpus everytime. 
 
-I could make it refuse to suspend in intr_remap is enabled, I suppose --
-that would be simple enough.
+/me goes back to stare a bit more at the avenrun stuff
 
--- 
-David Woodhouse                            Open Source Technology Centre
-David.Woodhouse@intel.com                              Intel Corporation
+Thanks,
+
+	tglx
+
+
 
