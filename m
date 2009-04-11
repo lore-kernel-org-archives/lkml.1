@@ -1,49 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759272AbZDKUm5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759391AbZDKUo2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759272AbZDKUm5 (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 11 Apr 2009 16:42:57 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753324AbZDKUmp
+	id S1759391AbZDKUo2 (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 11 Apr 2009 16:44:28 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757491AbZDKUoU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 11 Apr 2009 16:42:45 -0400
-Received: from pfepa.post.tele.dk ([195.41.46.235]:40088 "EHLO
-	pfepa.post.tele.dk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753032AbZDKUmp (ORCPT
+	Sat, 11 Apr 2009 16:44:20 -0400
+Received: from 136-022.dsl.LABridge.com ([206.117.136.22]:1080 "EHLO
+	mail.perches.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757076AbZDKUoT (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 11 Apr 2009 16:42:45 -0400
-Date: Sat, 11 Apr 2009 22:44:48 +0200
-From: Sam Ravnborg <sam@ravnborg.org>
-To: Al Viro <viro@ZenIV.linux.org.uk>
-Cc: Jike Song <albcamus@gmail.com>, David Howells <dhowells@redhat.com>,
-       Linus Torvalds <torvalds@linux-foundation.org>, torvalds@osdl.org,
-       akpm@linux-foundation.org, linux-am33-list@redhat.com,
-       linux-kernel@vger.kernel.org
-Subject: Re: [GIT PULL] MN10300: Move arch headers to arch dir
-Message-ID: <20090411204448.GA2784@uranus.ravnborg.org>
-References: <19057.1239370935@redhat.com> <20090410192529.GA25551@uranus.ravnborg.org> <df9815e70904102042r2cd2e3e3ue6159f348e4c192e@mail.gmail.com> <20090411054516.GA29493@uranus.ravnborg.org> <20090411064300.GT26366@ZenIV.linux.org.uk> <20090411075549.GA30873@uranus.ravnborg.org> <20090411153933.GU26366@ZenIV.linux.org.uk>
+	Sat, 11 Apr 2009 16:44:19 -0400
+Subject: Re: [PATCH, RFC 3/3] tracing: Add documentation for the power
+ tracer
+From: Joe Perches <joe@perches.com>
+To: "Theodore Ts'o" <tytso@mit.edu>
+Cc: Linux Kernel Developers List <linux-kernel@vger.kernel.org>,
+       Frederic Weisbecker <fweisbec@gmail.com>,
+       Steven Rostedt <srostedt@redhat.com>
+In-Reply-To: <1239479479-2603-4-git-send-email-tytso@mit.edu>
+References: <1239479479-2603-1-git-send-email-tytso@mit.edu>
+	 <1239479479-2603-2-git-send-email-tytso@mit.edu>
+	 <1239479479-2603-3-git-send-email-tytso@mit.edu>
+	 <1239479479-2603-4-git-send-email-tytso@mit.edu>
+Content-Type: text/plain
+Date: Sat, 11 Apr 2009 13:44:10 -0700
+Message-Id: <1239482650.24879.50.camel@localhost>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090411153933.GU26366@ZenIV.linux.org.uk>
-User-Agent: Mutt/1.4.2.1i
+X-Mailer: Evolution 2.24.2-1.2mdv2009.0 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, Apr 11, 2009 at 04:39:33PM +0100, Al Viro wrote:
-> On Sat, Apr 11, 2009 at 09:55:49AM +0200, Sam Ravnborg wrote:
-> > > How about a single directory for *all* generated headers?  Only linux/version.h
-> > > has many places including it and even that can be dealt with for a moment with
-> > > linux/version.h consisting of #include <gen/version.h>.  The rest doesn't
-> > > need anything like that even for transition period - too few includes to care.
-> > 
-> > So you suggest: include/gen/
-> 
-> Yes.
+On Sat, 2009-04-11 at 15:51 -0400, Theodore Ts'o wrote:
+> diff --git a/Documentation/power.txt b/Documentation/power.txt
+> new file mode 100644
+> index 0000000..16f95c9
+> --- /dev/null
+> +++ b/Documentation/power.txt
 
-I will work on a patch and cc: you on it when it is mainline ready.
-It looks trivial.
+Documentation/trace/power.txt?
+Documentation/power/trace.txt?
 
-I need to get my resurrected build box working first though so it
-will take a few days/weeks before I am on it.
+> @@ -0,0 +1,19 @@
+> +There is a helper script found in scrips/tracing/power.pl in the kernel
 
-	Sam
+scripts/tracing/power.pl
+
+
