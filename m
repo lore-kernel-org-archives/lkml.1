@@ -1,37 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759358AbZDKUJk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759073AbZDKUMS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759358AbZDKUJk (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 11 Apr 2009 16:09:40 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758016AbZDKUJb
+	id S1759073AbZDKUMS (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 11 Apr 2009 16:12:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756460AbZDKUMD
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 11 Apr 2009 16:09:31 -0400
-Received: from ogre.sisk.pl ([217.79.144.158]:34743 "EHLO ogre.sisk.pl"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1757402AbZDKUJb (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 11 Apr 2009 16:09:31 -0400
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-To: Thomas Meyer <thomas@m3y3r.de>
-Subject: Re: 2.6.29.1: card reader goes crazy
-Date: Sat, 11 Apr 2009 22:09:00 +0200
-User-Agent: KMail/1.11.2 (Linux/2.6.30-rc1-rjw; KDE/4.2.2; x86_64; ; )
-Cc: linux-kernel@vger.kernel.org
-References: <1239353267.3467.4.camel@localhost.localdomain>
-In-Reply-To: <1239353267.3467.4.camel@localhost.localdomain>
+	Sat, 11 Apr 2009 16:12:03 -0400
+Received: from mga07.intel.com ([143.182.124.22]:24207 "EHLO
+	azsmga101.ch.intel.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1755067AbZDKUMA (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 11 Apr 2009 16:12:00 -0400
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.40,173,1239001200"; 
+   d="scan'208";a="130449062"
+Message-ID: <49E0F98C.1090202@linux.intel.com>
+Date: Sat, 11 Apr 2009 13:11:56 -0700
+From: Arjan van de Ven <arjan@linux.intel.com>
+User-Agent: Thunderbird 2.0.0.21 (Windows/20090302)
 MIME-Version: 1.0
-Content-Type: Text/Plain;
-  charset="utf-8"
+To: Linus Torvalds <torvalds@linux-foundation.org>
+CC: Len Brown <lenb@kernel.org>, "Rafael J. Wysocki" <rjw@sisk.pl>,
+       Takashi Iwai <tiwai@suse.de>,
+       pm list <linux-pm@lists.linux-foundation.org>,
+       LKML <linux-kernel@vger.kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>, linux-acpi@vger.kernel.org,
+       Heinz Diehl <htd@fancy-poultry.org>,
+       Arkadiusz Miskiewicz <a.miskiewicz@gmail.com>,
+       Vegard Nossum <vegard.nossum@gmail.com>
+Subject: Re: [linux-pm] [2.6.30-rc1-git2 regressions] Hibernation broken and
+ (minor but annoying) audio problem
+References: <200904100057.43827.rjw@sisk.pl> <alpine.LFD.2.00.0904091605080.4583@localhost.localdomain> <200904101439.43480.rjw@sisk.pl> <alpine.LFD.2.00.0904102233330.8559@localhost.localdomain> <alpine.LFD.2.00.0904111109500.4583@localhost.localdomain> <49E0EC87.9080808@linux.intel.com> <alpine.LFD.2.00.0904111247320.4583@localhost.localdomain>
+In-Reply-To: <alpine.LFD.2.00.0904111247320.4583@localhost.localdomain>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200904112209.00735.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Friday 10 April 2009, Thomas Meyer wrote:
-> Hi,
+Linus Torvalds wrote:
 > 
-> 1.) Probably suspend/resume to/from ram related?
+> On Sat, 11 Apr 2009, Arjan van de Ven wrote:
+>> Now that I've been able to scan most of my mail; it looks like the one-liner
+>> should just go in.
+> 
+> Ok, I committed my one-liner, and then also reverted the ACPI battery 
+> workaround of removing __init, since the one-liner should fix that too.
+> 
+> Cc'ing the people involved with that commit, just so that they know to 
+> test to make sure the alternate fix really did fix it for them (I'm pretty 
+> sure it does, but still a good idea to verify or at least let people know 
+> that a previous fix got reverted)
 
-Is this a regression?  Ie. is 2.6.28(.x) fine?
+longer term I would like to work on two things
+1) Fix the __init thing by just only freeing when appropriate, but not having to wait for it
+2) Find a way for userland to trigger a sync
+    - for all storage probing
+    - for just async work
+    - "global sync", which includes all driver init
+    We can then have insmod/modprobe use this always, unless a flag is set
+    (so say, udev, can load a slew of modules, and then sync only on the last one)
 
-Rafael
+and then after a year or two we can maybe remove the sync from the module loader ;(
