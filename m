@@ -1,26 +1,32 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755697AbZDKHBH@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755837AbZDKHJh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755697AbZDKHBH (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 11 Apr 2009 03:01:07 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752776AbZDKHAz
+	id S1755837AbZDKHJh (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 11 Apr 2009 03:09:37 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752311AbZDKHJX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 11 Apr 2009 03:00:55 -0400
-Received: from mx2.mail.elte.hu ([157.181.151.9]:53872 "EHLO mx2.mail.elte.hu"
+	Sat, 11 Apr 2009 03:09:23 -0400
+Received: from mx2.mail.elte.hu ([157.181.151.9]:57247 "EHLO mx2.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752600AbZDKHAy (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 11 Apr 2009 03:00:54 -0400
-Date: Sat, 11 Apr 2009 09:00:35 +0200
+	id S1752244AbZDKHJW (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 11 Apr 2009 03:09:22 -0400
+Date: Sat, 11 Apr 2009 09:08:54 +0200
 From: Ingo Molnar <mingo@elte.hu>
-To: Eric Anholt <eric@anholt.net>
-Cc: venkatesh.pallipadi@intel.com, tglx@linutronix.de, hpa@zytor.com,
-       linux-kernel@vger.kernel.org, Suresh Siddha <suresh.b.siddha@intel.com>
-Subject: Re: [patch 0/6] x86, PAT, CPA: Cleanups and minor bug fixes
-Message-ID: <20090411070035.GB11799@elte.hu>
-References: <20090409212646.511925000@intel.com> <1239396112.6356.10.camel@gaiman.anholt.net>
+To: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
+Cc: Linus Torvalds <torvalds@linux-foundation.org>,
+       David Miller <davem@davemloft.net>,
+       Lai Jiangshan <laijs@cn.fujitsu.com>, shemminger@vyatta.com,
+       jeff.chua.linux@gmail.com, dada1@cosmosbay.com, jengelh@medozas.de,
+       kaber@trash.net, r000n@r000n.net,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       netfilter-devel@vger.kernel.org, netdev@vger.kernel.org
+Subject: Re: iptables very slow after commit
+	784544739a25c30637397ace5489eeb6e15d7d49
+Message-ID: <20090411070854.GC11799@elte.hu>
+References: <Pine.LNX.4.64.0904101656190.2093@boston.corp.fedex.com> <20090410095246.4fdccb56@s6510> <20090410.182507.140306636.davem@davemloft.net> <alpine.LFD.2.00.0904101828490.4583@localhost.localdomain> <20090411041533.GB6822@linux.vnet.ibm.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <1239396112.6356.10.camel@gaiman.anholt.net>
+In-Reply-To: <20090411041533.GB6822@linux.vnet.ibm.com>
 User-Agent: Mutt/1.5.18 (2008-05-17)
 X-ELTE-VirusStatus: clean
 X-ELTE-SpamScore: -1.5
@@ -35,26 +41,30 @@ List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-* Eric Anholt <eric@anholt.net> wrote:
+* Paul E. McKenney <paulmck@linux.vnet.ibm.com> wrote:
 
-> On Thu, 2009-04-09 at 14:26 -0700, venkatesh.pallipadi@intel.com wrote:
-> > This patchset contains cleanups and minor bug fixes in x86 PAT and CPA
-> > related code. The bugs were mostly found by code inspection. There
-> > should not be any functionality changes with this patchset.
+> 	I will nevertheless suggest the following egregious hack to
+> 	get a consistent sample of one counter for some other CPU:
 > 
-> I've been curious, what are you using to test PAT changes for 
-> regressions?  I've got some regression tests at:
-> 
-> http://cgit.freedesktop.org/xorg/app/intel-gpu-tools/
-> 
-> Requires KMS enabled and master of libdrm, but after that you can 
-> sudo make check, and it tests execution of several DRM paths 
-> without requiring X.  In benchmarks/ there are a few 
-> microbenchmarks of various mapping types, which has been useful in 
-> making sure that we're ending up with the right PTEs.
+> 	a.	Disable interrupts
+> 	b.	Atomically exchange the bottom 32 bits of the
+> 		counter with the value zero.
+> 	c.	Atomically exchange the top 32 bits of the counter
+> 		with the value zero.
+> 	d.	Concatenate the values obtained in (b) and (c), which
+> 		is the snapshot value.
 
-Looks really nice! Regarding libdrm, is there a version cutoff from 
-where it is expected to work just fine? I've got this version: 
-libdrm-2.4.6-3.fc11.x86_64.
+Note, i have recently implemented full atomic64_t support on 32-bit 
+x86, for the perfcounters code, based on the CMPXCHG8B instruction.
+
+Which, while not the lightest of instructions, is still much better 
+than the sequence above.
+
+So i think a better approach would be to also add a dumb generic 
+implementation for atomic64_t (using a global lock or so), and then 
+generic code could just assume that atomic64_t always exists.
+
+It is far nicer - and faster as well - as the hack above, even on 
+32-bit x86.
 
 	Ingo
