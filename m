@@ -1,65 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757491AbZDKQQj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757562AbZDKQY1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757491AbZDKQQj (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 11 Apr 2009 12:16:39 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756350AbZDKQQb
+	id S1757562AbZDKQY1 (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 11 Apr 2009 12:24:27 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755781AbZDKQYT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 11 Apr 2009 12:16:31 -0400
-Received: from ti-out-0910.google.com ([209.85.142.190]:12651 "EHLO
-	ti-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756277AbZDKQQa (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 11 Apr 2009 12:16:30 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=from:to:cc:subject:date:message-id:x-mailer;
-        b=YVnGK5ITmkMhOJMA+Ltt99ibDjZ+Lp2GlrJS1PAlRKneRTNylWM1FIYKsw9Iz/ZQyU
-         exp2MPKyYyCA0Bx46EZ4xxacKZS2cFyb/TGCkmnVmq+lmPvGyhjuEszHMPE+TjN1snvF
-         rEMqf0/ttlgIVe7Bzfi+MQK+IboUMK7glNE2Q=
-From: tom.leiming@gmail.com
-To: greg@kroah.com
-Cc: linux-kernel@vger.kernel.org, Ming Lei <tom.leiming@gmail.com>
-Subject: [PATCH] kobject: kzfree object in _release function
-Date: Sun, 12 Apr 2009 00:16:26 +0800
-Message-Id: <1239466586-29410-1-git-send-email-tom.leiming@gmail.com>
-X-Mailer: git-send-email 1.6.0.GIT
+	Sat, 11 Apr 2009 12:24:19 -0400
+Received: from relay1.sgi.com ([192.48.179.29]:54793 "EHLO relay.sgi.com"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1755199AbZDKQYS (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 11 Apr 2009 12:24:18 -0400
+Date: Sat, 11 Apr 2009 11:24:16 -0500
+From: Dimitri Sivanich <sivanich@sgi.com>
+To: Thomas Gleixner <tglx@linutronix.de>
+Cc: LKML <linux-kernel@vger.kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>, Ingo Molnar <mingo@elte.hu>,
+       john stultz <johnstul@us.ibm.com>,
+       Peter Zijlstra <peterz@infradead.org>
+Subject: Re: [PATCH v2] Move calc_load call out from xtime_lock protection
+Message-ID: <20090411162416.GC3496@sgi.com>
+References: <20090410173437.GA23415@sgi.com> <alpine.LFD.2.00.0904110931240.21577@localhost.localdomain>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <alpine.LFD.2.00.0904110931240.21577@localhost.localdomain>
+User-Agent: Mutt/1.5.17 (2007-11-01)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Ming Lei <tom.leiming@gmail.com>
-
-It helps to troubleshoot the __buggy__ case, in which
-unreferenced objects are still accessed, using kzfree
-to free objects safely in _release function.
-
-Signed-off-by: Ming Lei <tom.leiming@gmail.com>
----
- lib/kobject.c |    4 ++--
- 1 files changed, 2 insertions(+), 2 deletions(-)
-
-diff --git a/lib/kobject.c b/lib/kobject.c
-index a6dec32..cb5a562 100644
---- a/lib/kobject.c
-+++ b/lib/kobject.c
-@@ -597,7 +597,7 @@ void kobject_put(struct kobject *kobj)
- static void dynamic_kobj_release(struct kobject *kobj)
- {
- 	pr_debug("kobject: (%p): %s\n", kobj, __func__);
--	kfree(kobj);
-+	kzfree(kobj);
- }
- 
- static struct kobj_type dynamic_kobj_ktype = {
-@@ -762,7 +762,7 @@ static void kset_release(struct kobject *kobj)
- 	struct kset *kset = container_of(kobj, struct kset, kobj);
- 	pr_debug("kobject: '%s' (%p): %s\n",
- 		 kobject_name(kobj), kobj, __func__);
--	kfree(kset);
-+	kzfree(kset);
- }
- 
- static struct kobj_type kset_ktype = {
--- 
-1.6.0.GIT
-
+On Sat, Apr 11, 2009 at 11:51:36AM +0200, Thomas Gleixner wrote:
+> On Fri, 10 Apr 2009, Dimitri Sivanich wrote:
+> 
+> > The xtime_lock is being held for long periods on larger systems due
+> > to an extensive amount of time being spent in calc_load(),
+> > specifically here:
+> >   do_timer->update_times->calc_load->count_active_tasks->nr_active()
+> > 
+> > On a 64 cpu system I've seen this take approximately 55 usec.
+> > Presumably it would be worse on larger systems.  This causes other
+> > cpus to be held off in places such as
+> > scheduler_tick->sched_clock_tick waiting for the xtime_lock to be
+> > released.
+> 
+> I thought more about that. Why don't we move the calc_load() call into
+> the timer softirq context and avoid fiddling with all the call sites ?
+> Also moving calc_load out of the timer interrupt context reduces the
+> interrupts off section as well.
+> 
+Sounds reasonable to me.
