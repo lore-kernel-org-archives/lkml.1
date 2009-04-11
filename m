@@ -1,72 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759050AbZDKTFz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759127AbZDKTQh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759050AbZDKTFz (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 11 Apr 2009 15:05:55 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758609AbZDKTFm
+	id S1759127AbZDKTQh (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 11 Apr 2009 15:16:37 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758661AbZDKTQ2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 11 Apr 2009 15:05:42 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:48506 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1758250AbZDKTFl (ORCPT
+	Sat, 11 Apr 2009 15:16:28 -0400
+Received: from mga07.intel.com ([143.182.124.22]:21736 "EHLO
+	azsmga101.ch.intel.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1758377AbZDKTQ1 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 11 Apr 2009 15:05:41 -0400
-Date: Sat, 11 Apr 2009 11:57:16 -0700 (PDT)
-From: Linus Torvalds <torvalds@linux-foundation.org>
-X-X-Sender: torvalds@localhost.localdomain
-To: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
-cc: David Miller <davem@davemloft.net>, Ingo Molnar <mingo@elte.hu>,
-       Lai Jiangshan <laijs@cn.fujitsu.com>, shemminger@vyatta.com,
-       jeff.chua.linux@gmail.com, dada1@cosmosbay.com, jengelh@medozas.de,
-       kaber@trash.net, r000n@r000n.net,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       netfilter-devel@vger.kernel.org, netdev@vger.kernel.org
-Subject: Re: iptables very slow after commit
- 784544739a25c30637397ace5489eeb6e15d7d49
-In-Reply-To: <20090411041533.GB6822@linux.vnet.ibm.com>
-Message-ID: <alpine.LFD.2.00.0904111150380.4583@localhost.localdomain>
-References: <Pine.LNX.4.64.0904101656190.2093@boston.corp.fedex.com> <20090410095246.4fdccb56@s6510> <20090410.182507.140306636.davem@davemloft.net> <alpine.LFD.2.00.0904101828490.4583@localhost.localdomain> <20090411041533.GB6822@linux.vnet.ibm.com>
-User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
+	Sat, 11 Apr 2009 15:16:27 -0400
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.40,172,1239001200"; 
+   d="scan'208";a="130442046"
+Message-ID: <49E0EC87.9080808@linux.intel.com>
+Date: Sat, 11 Apr 2009 12:16:23 -0700
+From: Arjan van de Ven <arjan@linux.intel.com>
+User-Agent: Thunderbird 2.0.0.21 (Windows/20090302)
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+To: Linus Torvalds <torvalds@linux-foundation.org>
+CC: Len Brown <lenb@kernel.org>, "Rafael J. Wysocki" <rjw@sisk.pl>,
+       Takashi Iwai <tiwai@suse.de>,
+       pm list <linux-pm@lists.linux-foundation.org>,
+       LKML <linux-kernel@vger.kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>, linux-acpi@vger.kernel.org
+Subject: Re: [linux-pm] [2.6.30-rc1-git2 regressions] Hibernation broken and
+ (minor but annoying) audio problem
+References: <200904100057.43827.rjw@sisk.pl> <alpine.LFD.2.00.0904091605080.4583@localhost.localdomain> <200904101439.43480.rjw@sisk.pl> <alpine.LFD.2.00.0904102233330.8559@localhost.localdomain> <alpine.LFD.2.00.0904111109500.4583@localhost.localdomain>
+In-Reply-To: <alpine.LFD.2.00.0904111109500.4583@localhost.localdomain>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-
-On Fri, 10 Apr 2009, Paul E. McKenney wrote:
+Linus Torvalds wrote:
 > 
-> 1.	Assuming that the synchronize_net() is intended to guarantee
-> 	that the new rules will be in effect before returning to
-> 	user space:
+> On Fri, 10 Apr 2009, Len Brown wrote:
+>> fastboot also causes the S3 regression here:
+>>
+>> http://bugzilla.kernel.org/show_bug.cgi?id=12936
+> 
+> Looks like the same issue. Does my one-liner fix that case too?
+Now that I've been able to scan most of my mail; it looks like the one-liner should just go in.
+Restricting module loading from async work to only non-blocking is not a big deal,
+and it seems that userspace in various distros is really broken (and breaks on scsi already today),
+but that is not something we can really fix quickly.
+The sad part is that the userland is unlikely get fixed unless it shows breakage, and we can't break it (obviously).
 
-Btw, I think that's a bad assumption.
+I don't know of any good other solutions; right now it's mostly the partition scan (which is already mostly async on
+scsi since a really long time, just in practice fast enough unless you have a big server).
 
-The thing is, nobody can really care if the new rules are in effect or 
-not, because the thing you race with is not the "return to user space" 
-part, but the incoming packets.
+(The __init thing in modules is separate and easy to fix, but without the other stuff being fixed there's no point)
 
-And those incoming packets might have been incoming before the rules were 
-set up too.
 
-So I seriously doubt you need to synchronize with any returning to user 
-space. What you want to synchronize with is then later actions that do 
-things like turning on the interface that the rules are attached to etc!
-
-So I would suggest:
-
- - remove the synchronize_net() entirely. Replace it with just freeing the 
-   old rules using RCU.
-
- - new packets will always end up seeing the new rules. That includes the 
-   case of somebody doing "ifconfig eth0 up" that enables a new source of 
-   packets, so there are no real security issues.
-
- - if you enabled your network interfaces before you updated your packet 
-   filtering rules, you already had a window where packets would come in 
-   with the old rules, so doing a "synchronize_net()" in no way protects 
-   against any race conditions anyway.
-
-Am I missing something?
-
-			Linus
