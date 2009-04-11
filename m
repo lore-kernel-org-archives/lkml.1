@@ -1,82 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756006AbZDKJbC@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757059AbZDKJlv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756006AbZDKJbC (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 11 Apr 2009 05:31:02 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753811AbZDKJav
+	id S1757059AbZDKJlv (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 11 Apr 2009 05:41:51 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754759AbZDKJll
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 11 Apr 2009 05:30:51 -0400
-Received: from yw-out-2324.google.com ([74.125.46.31]:47701 "EHLO
-	yw-out-2324.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753210AbZDKJau (ORCPT
+	Sat, 11 Apr 2009 05:41:41 -0400
+Received: from fg-out-1718.google.com ([72.14.220.156]:64212 "EHLO
+	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754503AbZDKJlj (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 11 Apr 2009 05:30:50 -0400
+	Sat, 11 Apr 2009 05:41:39 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=subject:from:to:cc:in-reply-to:references:content-type:date
-         :message-id:mime-version:x-mailer:content-transfer-encoding;
-        b=T+VohbLz6p6xK+MoTEyP6Jc7Tq/HFQmmQxiqz22iKXGoXbNCsdGl1T6tYmmUxLVXsy
-         rYPkxFgKtwBGDh9G43wv82t+HX8XwQbdFOUVLl78PYRrWrnm7Pj9YSETPxawC25TvnoJ
-         0itJrXN+3lgxH/EvkcWq4vOnxltPKok/2I8dk=
-Subject: Re: [PATCH 0/7] tracing: bug fixes for tracing/filters
-From: Tom Zanussi <tzanussi@gmail.com>
-To: Li Zefan <lizf@cn.fujitsu.com>
-Cc: Ingo Molnar <mingo@elte.hu>, Steven Rostedt <rostedt@goodmis.org>,
-       Frederic Weisbecker <fweisbec@gmail.com>,
-       LKML <linux-kernel@vger.kernel.org>, paulmck@linux.vnet.ibm.com
-In-Reply-To: <49E04C22.4040608@cn.fujitsu.com>
-References: <49E04C22.4040608@cn.fujitsu.com>
-Content-Type: text/plain
-Date: Sat, 11 Apr 2009 04:30:48 -0500
-Message-Id: <1239442248.8793.65.camel@tropicana>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.24.1 
+        d=googlemail.com; s=gamma;
+        h=sender:message-id:date:from:user-agent:mime-version:to:cc:subject
+         :content-type:content-transfer-encoding;
+        b=OiFOe2jmaCqGL3NMfl0MuBpTHd2akVII4+dcBEkQSPtxAevId+VoE3T63EN6+tCeap
+         TCvJlsiueyNy+TWYPjB4sSpKEO9HC75A2k7SAq4nW/xbhBYNMgDZc5R/TgEkUIiAqNij
+         TnOr0+8YSbrtcoPWAHErQwFwNy+xVCyUfACJs=
+Message-ID: <49E065CF.6040408@tuffmail.co.uk>
+Date: Sat, 11 Apr 2009 10:41:35 +0100
+From: Alan Jenkins <alan-jenkins@tuffmail.co.uk>
+User-Agent: Thunderbird 2.0.0.21 (X11/20090318)
+MIME-Version: 1.0
+To: linux-acpi@vger.kernel.org
+CC: linux-kernel <linux-kernel@vger.kernel.org>,
+       Kernel Testers List <kernel-testers@vger.kernel.org>
+Subject: Regression: EEE PC hangs when booting off battery
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
+Regression #6 on latest git! (last known good is 2.6.29-rc8)
 
-On Sat, 2009-04-11 at 15:52 +0800, Li Zefan wrote:
-> This patchset fixes some bugs in tracing/filters. Most of the change
-> goes to the last patch, and others are small ones.
-> 
+My EEE PC hangs on bootup if it is not connected to mains power.  The
+hang happens during udev coldplug.  I've left it for >60 seconds with
+nmi_watchdog=1, soft lockup and hung task detection are enabled, and I
+get no trace.  Key presses are not echoed to the screen.
 
-At first glance, they look good and fix real problems - thanks for
-fixing them.  Re patch 7, there's been some discussion about using rcu
-for this.  See:
+Magic SysRQ keys work though.  Unfortunately, SysRq-W / SysRq-T generate
+too much output, so the useful bits immediately scroll off the top of
+the screen.  I can't press SysRq-P (even if that would help), because
+the SysRQ key on my laptop is accessed using a Fn modifier key, which
+also turns the left hand side of the keyboard into a numeric pad.
 
-http://lkml.org/lkml/2009/4/5/46
+Magic SysRQs on my USB keyboard generate no response.  (Sometimes the
+numlock key seems to work though.  I can't tell on the laptop keyboard
+because the laptop doesn't have a numlock led).
 
->From that discussion, it seems some non-trivial changes to rcu would be
-needed for this.  I'm playing around with a different idea now to
-hopefully avoid the need for that, or the other approach mentioned, of
-temporarily stopping tracing while removing/changing the filters.
+I also tried booting with vga=ask (anticipating nmi_watchdog output),
+and selecting the highest mode, 80x60.  It turns out that this doesn't
+really work, the screen flickers constantly until userspace changes the
+console font.  However, it avoided the hang in udev coldplug.  Instead,
+the hang occurred when X started, leaving me with a black screen and a
+non-responsive X cursor.
 
-Basically my thought is to avoid the problem by not allocating or
-destroying the preds when removing filters but instead switch out the
-pred->fns with a nop version while keeping the fields intact for awhile.
-I think that will work for removing filters, but I still need to think
-about how it would (or would not) work for replacing them.
- 
-Tom
+Booting with acpi=off fixes this.
 
-> Maybe 3rd to 6th patches can be regarded as small enhancements instead
-> of bug fixes? But they are behavioural changes.
-> 
-> 
-> [PATCH 1/7] tracing/filters: NUL-terminate user input filter
-> [PATCH 2/7] tracing/filters: fix NULL pointer dereference
-> [PATCH 3/7] tracing/filters: allow user input integer to be oct or hex
-> [PATCH 4/7] tracing/filters: allow user to specify a filter val to be string
-> [PATCH 5/7] tracing/filters: disallow newline as delimeter
-> [PATCH 6/7] tracing/filters: return proper error code when writing filter file
-> [PATCH 7/7] tracing/filters: make filter preds RCU safe
-> 
->  kernel/trace/trace.h                |    6 +-
->  kernel/trace/trace_events.c         |   16 +++--
->  kernel/trace/trace_events_filter.c  |  131 ++++++++++++++++++++++++++---------
->  kernel/trace/trace_events_stage_3.h |   10 +++-
->  4 files changed, 121 insertions(+), 42 deletions(-)
-> ---
-
+Regards
+Alan
