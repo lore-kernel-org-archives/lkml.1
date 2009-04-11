@@ -1,45 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759952AbZDKXPz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759923AbZDKX0f@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759952AbZDKXPz (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 11 Apr 2009 19:15:55 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759384AbZDKXPr
+	id S1759923AbZDKX0f (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 11 Apr 2009 19:26:35 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758947AbZDKX0Z
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 11 Apr 2009 19:15:47 -0400
-Received: from thunk.org ([69.25.196.29]:36280 "EHLO thunker.thunk.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1759319AbZDKXPq (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 11 Apr 2009 19:15:46 -0400
-Date: Sat, 11 Apr 2009 18:33:11 -0400
-From: Theodore Tso <tytso@mit.edu>
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: Jeff Chua <jeff.chua.linux@gmail.com>, Pavel Machek <pavel@ucw.cz>,
-       linux-kernel@vger.kernel.org
-Subject: Re: suspend-to-ram broken on X61 thinkpads in 2.6.30-rc1?
-Message-ID: <20090411223311.GA10547@mit.edu>
-Mail-Followup-To: Theodore Tso <tytso@mit.edu>,
-	"Rafael J. Wysocki" <rjw@sisk.pl>,
-	Jeff Chua <jeff.chua.linux@gmail.com>, Pavel Machek <pavel@ucw.cz>,
-	linux-kernel@vger.kernel.org
-References: <E1Ls9pZ-0004IF-FZ@closure.thunk.org> <900814656-1239422746-cardhu_decombobulator_blackberry.rim.net-2124207137-@bxe1152.bisx.prod.on.blackberry> <b6a2187b0904102158r5e37860cw2f45bee5578ebcf0@mail.gmail.com> <200904111251.49396.rjw@sisk.pl>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <200904111251.49396.rjw@sisk.pl>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-SA-Exim-Connect-IP: <locally generated>
-X-SA-Exim-Mail-From: tytso@mit.edu
-X-SA-Exim-Scanned: No (on thunker.thunk.org); SAEximRunCond expanded to false
+	Sat, 11 Apr 2009 19:26:25 -0400
+Received: from earthlight.etchedpixels.co.uk ([81.2.110.250]:58217 "EHLO
+	www.etchedpixels.co.uk" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1757997AbZDKX0Z (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 11 Apr 2009 19:26:25 -0400
+Date: Sun, 12 Apr 2009 00:25:27 +0100
+From: Alan Cox <alan@lxorguk.ukuu.org.uk>
+To: Grant Grundler <grundler@google.com>
+Cc: Linus Torvalds <torvalds@linux-foundation.org>,
+       Jeff Garzik <jeff@garzik.org>,
+       Linux IDE mailing list <linux-ide@vger.kernel.org>,
+       LKML <linux-kernel@vger.kernel.org>, Jens Axboe <jens.axboe@oracle.com>,
+       Arjan van de Ven <arjan@infradead.org>
+Subject: Re: Implementing NVMHCI...
+Message-ID: <20090412002527.631a5a89@lxorguk.ukuu.org.uk>
+In-Reply-To: <da824cf30904111449y5cb7c178ldf5291506ad6b393@mail.gmail.com>
+References: <49E0D47B.9070205@garzik.org>
+	<20090411203246.513a0892@lxorguk.ukuu.org.uk>
+	<alpine.LFD.2.00.0904111250370.4583@localhost.localdomain>
+	<da824cf30904111449y5cb7c178ldf5291506ad6b393@mail.gmail.com>
+X-Mailer: Claws Mail 3.7.0 (GTK+ 2.14.7; x86_64-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, Apr 11, 2009 at 12:51:48PM +0200, Rafael J. Wysocki wrote:
-> 
-> Great, thanks for checking this.
-> 
-> Ted, can you please see if the current -git fixed the problem for you too?
-> 
+> We've abstract the DMA mapping/SG list handling enough that the
+> block size should make no more difference than it does for the
+> MTU size of a network.
 
-Confirmed, it seems to be fixed.
+You need to start managing groups of pages in the vm and keeping them
+together and writing them out together and paging them together even if
+one of them is dirty and the other isn't. You have to deal with cases
+where a process forks and the two pages are dirtied one in each but still
+have to be written together.
 
-						- Ted
+Alternatively you go for read-modify-write (nasty performance hit
+especially for RAID or a log structured fs).
+
+Yes you can do it but it sure won't be pretty with a conventional fs.
+Some of the log structured file systems have no problems with this and
+some kinds of journalling can help but for a typical block file system
+it'll suck.
