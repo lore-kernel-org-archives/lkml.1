@@ -1,50 +1,115 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757562AbZDKQY1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755175AbZDKQab@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757562AbZDKQY1 (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 11 Apr 2009 12:24:27 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755781AbZDKQYT
+	id S1755175AbZDKQab (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 11 Apr 2009 12:30:31 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751562AbZDKQaN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 11 Apr 2009 12:24:19 -0400
-Received: from relay1.sgi.com ([192.48.179.29]:54793 "EHLO relay.sgi.com"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1755199AbZDKQYS (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 11 Apr 2009 12:24:18 -0400
-Date: Sat, 11 Apr 2009 11:24:16 -0500
-From: Dimitri Sivanich <sivanich@sgi.com>
-To: Thomas Gleixner <tglx@linutronix.de>
-Cc: LKML <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>, Ingo Molnar <mingo@elte.hu>,
-       john stultz <johnstul@us.ibm.com>,
-       Peter Zijlstra <peterz@infradead.org>
-Subject: Re: [PATCH v2] Move calc_load call out from xtime_lock protection
-Message-ID: <20090411162416.GC3496@sgi.com>
-References: <20090410173437.GA23415@sgi.com> <alpine.LFD.2.00.0904110931240.21577@localhost.localdomain>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <alpine.LFD.2.00.0904110931240.21577@localhost.localdomain>
-User-Agent: Mutt/1.5.17 (2007-11-01)
+	Sat, 11 Apr 2009 12:30:13 -0400
+Received: from casper.infradead.org ([85.118.1.10]:36146 "EHLO
+	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751022AbZDKQaL (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 11 Apr 2009 12:30:11 -0400
+Date: Sat, 11 Apr 2009 09:31:53 -0700
+From: Arjan van de Ven <arjan@infradead.org>
+To: linux-kernel@vger.kernel.org
+Cc: netdev@vger.kernel.org, torvalds@linux-foundation.org,
+       akpm@linux-foundation.org, greg@kroah.com
+Subject: kerneloops.org oops/warning report for the week of April 11 2009
+Message-ID: <20090411093153.0a70e08f@infradead.org>
+Organization: Intel
+X-Mailer: Claws Mail 3.7.0 (GTK+ 2.14.7; i386-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
+X-SRS-Rewrite: SMTP reverse-path rewritten from <arjan@infradead.org> by casper.infradead.org
+	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, Apr 11, 2009 at 11:51:36AM +0200, Thomas Gleixner wrote:
-> On Fri, 10 Apr 2009, Dimitri Sivanich wrote:
-> 
-> > The xtime_lock is being held for long periods on larger systems due
-> > to an extensive amount of time being spent in calc_load(),
-> > specifically here:
-> >   do_timer->update_times->calc_load->count_active_tasks->nr_active()
-> > 
-> > On a 64 cpu system I've seen this take approximately 55 usec.
-> > Presumably it would be worse on larger systems.  This causes other
-> > cpus to be held off in places such as
-> > scheduler_tick->sched_clock_tick waiting for the xtime_lock to be
-> > released.
-> 
-> I thought more about that. Why don't we move the calc_load() call into
-> the timer softirq context and avoid fiddling with all the call sites ?
-> Also moving calc_load out of the timer interrupt context reduces the
-> interrupts off section as well.
-> 
-Sounds reasonable to me.
+This week seems to be a networking special, with many of the networking
+drivers either being just buggy/chatty or getting caught in the iommu
+checking code...
+
+This week, a total of 12130 oopses and warnings have been reported,
+compared to 14579 reports in the previous week.
+
+
+Per file statistics
+1183	drivers/net/wireless/iwlwifi/iwl-3945-rs.c
+975	drivers/net/wireless/iwlwifi/iwl-sta.c
+444	drivers/net/forcedeth.c
+405	arch/x86/include/asm/mtrr.h
+371	drivers/net/tg3.c
+348	drivers/net/r8169.c
+331	drivers/gpu/drm/i915/i915_gem.c
+306	drivers/usb/core/endpoint.c
+250	drivers/net/wireless/iwlwifi/iwl-tx.c
+241	drivers/mtd/maps/ck804xrom.c
+240	drivers/net/e1000e/netdev.c
+228	drivers/net/e1000/e1000_main.c
+
+
+Rank 1: rs_get_rate (warning)
+	Reported 1183 times (21447 total reports)
+	Bug in the Intel IWL wireless drivers
+	This warning was last seen in version 2.6.29-rc2, and first seen in 2.6.25-rc2-git5.
+	More info: http://www.kerneloops.org/searchweek.php?search=rs_get_rate
+
+Rank 2: iwl_set_dynamic_key (warning)
+	Reported 975 times (7558 total reports)
+        Another Intel IWL wireless bug
+	This warning was last seen in version 2.6.29.1, and first seen in 2.6.27.
+	More info: http://www.kerneloops.org/searchweek.php?search=iwl_set_dynamic_key
+
+Rank 3: mtrr_trim_uncached_memory (warning)
+	Reported 405 times (41995 total reports)
+	BIOS bug (often in VMWare) where the MTRR's are set up incorrectly or not at all
+	This warning was last seen in version 2.6.29.1, and first seen in 2.6.24.
+	More info: http://www.kerneloops.org/searchweek.php?search=mtrr_trim_uncached_memory
+
+Rank 4: nv_tx_done_optimized (warning)
+	Caught by the IOMMU debugging code
+	Reported 389 times (2042 total reports)
+	This warning was last seen in version 2.6.29.1, and first seen in 2.6.29-rc3-git7.
+	More info: http://www.kerneloops.org/searchweek.php?search=nv_tx_done_optimized
+
+Rank 5: tg3_poll (warning)
+	Caught by the IOMMU debugging code
+	Reported 357 times (3326 total reports)
+	This warning was last seen in version 2.6.29.1, and first seen in 2.6.22.10.
+	More info: http://www.kerneloops.org/searchweek.php?search=tg3_poll
+
+Rank 6: dev_watchdog(r8169) (warning)
+	Reported 348 times (7138 total reports)
+	This oops was last seen in version 2.6.29.1, and first seen in 2.6.26.6.
+	More info: http://www.kerneloops.org/searchweek.php?search=dev_watchdog(r8169)
+
+Rank 7: i915_gem_leavevt_ioctl (warning)
+	Reported 323 times (4028 total reports)
+	This warning was last seen in version 2.6.29, and first seen in 2.6.27.7.
+	More info: http://www.kerneloops.org/searchweek.php?search=i915_gem_leavevt_ioctl
+
+Rank 8: usb_create_ep_files (warning)
+	Reported 303 times (1730 total reports)
+	This warning was last seen in version 2.6.29-rc0-git7, and first seen in 2.6.25-rc8.
+	More info: http://www.kerneloops.org/searchweek.php?search=usb_create_ep_files
+
+Rank 9: iwl_tx_cmd_complete (warning)
+	Reported 250 times (7231 total reports)
+	This warning was last seen in version 2.6.30-rc0-git8, and first seen in 2.6.27-rc9.
+	More info: http://www.kerneloops.org/searchweek.php?search=iwl_tx_cmd_complete
+
+Rank 10: e1000_put_txbuf (warning)
+	Caught by the IOMMU debugging code
+	Reported 240 times (2837 total reports)
+	This warning was last seen in version 2.6.29.1, and first seen in 2.6.29-rc3-git7.
+	More info: http://www.kerneloops.org/searchweek.php?search=e1000_put_txbuf
+
+
+
+-- 
+Arjan van de Ven 	Intel Open Source Technology Centre
+For development, discussion and tips for power savings, 
+visit http://www.lesswatts.org
