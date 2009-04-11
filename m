@@ -1,123 +1,89 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754517AbZDKQiX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756633AbZDKQrm@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754517AbZDKQiX (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 11 Apr 2009 12:38:23 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752926AbZDKQiM
+	id S1756633AbZDKQrm (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 11 Apr 2009 12:47:42 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752926AbZDKQra
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 11 Apr 2009 12:38:12 -0400
-Received: from mx2.redhat.com ([66.187.237.31]:44450 "EHLO mx2.redhat.com"
+	Sat, 11 Apr 2009 12:47:30 -0400
+Received: from mx2.redhat.com ([66.187.237.31]:34465 "EHLO mx2.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752385AbZDKQiL (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 11 Apr 2009 12:38:11 -0400
-Message-ID: <49E0C767.8060603@redhat.com>
-Date: Sat, 11 Apr 2009 19:37:59 +0300
+	id S1751984AbZDKQr3 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 11 Apr 2009 12:47:29 -0400
+Message-ID: <49E0C93E.5030205@redhat.com>
+Date: Sat, 11 Apr 2009 19:45:50 +0300
 From: Avi Kivity <avi@redhat.com>
 User-Agent: Thunderbird 2.0.0.21 (X11/20090320)
 MIME-Version: 1.0
-To: Glauber Costa <glommer@redhat.com>
-CC: kvm@vger.kernel.org, linux-kernel@vger.kernel.org,
-       "H. Peter Anvin" <hpa@zytor.com>
-Subject: Re: [PATCH] deal with interrupt shadow state for emulated instruction
-References: <1239226966-8205-1-git-send-email-glommer@redhat.com>
-In-Reply-To: <1239226966-8205-1-git-send-email-glommer@redhat.com>
+To: Gregory Haskins <ghaskins@novell.com>
+CC: linux-kernel@vger.kernel.org, agraf@suse.de, pmullaney@novell.com,
+       pmorreale@novell.com, anthony@codemonkey.ws, rusty@rustcorp.com.au,
+       netdev@vger.kernel.org, kvm@vger.kernel.org, bhutchings@solarflare.com,
+       andi@firstfloor.org, gregkh@suse.de, herber@gondor.apana.org.au,
+       chrisw@sous-sol.org, shemminger@vyatta.com
+Subject: Re: [RFC PATCH v2 00/19] virtual-bus
+References: <20090409155200.32740.19358.stgit@dev.haskins.net> <49DE26EE.9030402@novell.com>
+In-Reply-To: <49DE26EE.9030402@novell.com>
 Content-Type: text/plain; charset=UTF-8; format=flowed
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Glauber Costa wrote:
-> we currently unblock shadow interrupt state when we skip an instruction,
-> but failing to do so when we actually emulate one. This blocks interrupts
-> in key instruction blocks, in particular sti; hlt; sequences
+Gregory Haskins wrote:
+> Avi,
 >
-> If the instruction emulated is an sti, we have to block shadow interrupts.
-> The same goes for mov ss. pop ss also needs it, but we don't currently
-> emulate it. For sequences of two or more instructions of the same type
-> among those instructions, only the first one has this effect.
+> Gregory Haskins wrote:
+>   
+>> Todo:
+>> *) Develop some kind of hypercall registration mechanism for KVM so that
+>>    we can use that as an integration point instead of directly hooking
+>>    kvm hypercalls
+>>   
+>>     
 >
-> Without this patch, I cannot boot gpxe option roms at vmx machines.
-> This is described at https://bugzilla.redhat.com/show_bug.cgi?id=494469
+> What would you like to see here?  I now remember why I removed the
+> original patch I had for registration...it requires some kind of
+> discovery mechanism on its own.  Note that this is hard, but I figured
+> it would make the overall series simpler if I didn't go this route and
+> instead just integrated with a statically allocated vector.  That being
+> said, I have no problem adding this back in but figure we should discuss
+> the approach so I don't go down a rat-hole ;)
 >
-> --- a/arch/x86/include/asm/kvm_host.h
-> +++ b/arch/x86/include/asm/kvm_host.h
-> @@ -513,6 +513,8 @@ struct kvm_x86_ops {
->  	void (*run)(struct kvm_vcpu *vcpu, struct kvm_run *run);
->  	int (*handle_exit)(struct kvm_run *run, struct kvm_vcpu *vcpu);
->  	void (*skip_emulated_instruction)(struct kvm_vcpu *vcpu);
-> +	void (*block_interrupt_shadow)(struct kvm_vcpu *vcpu);
-> +	void (*unblock_interrupt_shadow)(struct kvm_vcpu *vcpu);
 >   
 
-set_interrupt_shadow(), clear_interrupt_shadow().  The interrupt shadow 
-blocks interrupts, but what happens when you block the interrupt shadow?
 
-Maybe better to fold into one callback with a parameter.
+One idea is similar to signalfd() or eventfd().  Provide a kvm ioctl 
+that takes a gsi and returns an fd.  Writes to the fd change the state 
+of the line, possible triggering an interrupt.  Another ioctl takes a 
+hypercall number or pio port as well as an existing fd.  Invocations of 
+the hypercall or writes to the port write to the fd (using the same 
+protocol as eventfd), so the other end can respond.
 
->  int x86_emulate_insn(struct x86_emulate_ctxt *ctxt,
-> -		     struct x86_emulate_ops *ops);
-> +		     struct x86_emulate_ops *ops, int *interruptibility);
+The nice thing is that this can be used by both kernel and userspace 
+components, and for kernel components, hypercalls can be either buffered 
+or unbuffered.
+
+> So, one thing we could do is use a string-identifier to discover
+> hypercall resources.  In this model, we would have one additional
+> hypercall registered with kvm (in addition to the mmu-ops, etc) called
+> KVM_HC_DYNHC or something like that.  The support for DYNHC could be
+> indicated in the cpuid (much like I do with the RESET, DYNIRQ, and VBUS
+> support today.   When hypercall provides register, the could provide a
+> string such as "vbus", and they would be allocated a hypercall id. 
+> Likewise, the HC_DYNHC interface would allow a guest to query the cpuid
+> for the DYNHC feature, and then query the HC_DYNHC vector for a string
+> to hc# translation.  If the provider is not present, we return -1 for
+> the hc#, otherwise we return the one that was allocated.
+>
+> I know how you feel about string-ids in general, but I am not quite sure
+> how to design this otherwise without it looking eerily similar to what I
+> already have (which is registering a new HC vector in kvm_para.h)
 >   
 
-Add to x86_emulate_ctxt, there's already some
+No need for a string ID.  Reserve a range of hypercall numbers for 
+dynamic IDs.  Userspace allocates one and gives it to the device using 
+its configuration space (as applies to whatever bus it is using).
 
->  
-> +static void svm_block_interrupt_shadow(struct kvm_vcpu *vcpu)
-> +{
-> +	struct vcpu_svm *svm = to_svm(vcpu);
-> +
-> +	svm->vmcb->control.int_state |= SVM_INTERRUPT_SHADOW_MASK;
-> +	vcpu->arch.interrupt_window_open = 0;
-> +}
-> +
-> +static void svm_unblock_interrupt_shadow(struct kvm_vcpu *vcpu)
-> +{
-> +	struct vcpu_svm *svm = to_svm(vcpu);
-> +
-> +	svm->vmcb->control.int_state &= ~SVM_INTERRUPT_SHADOW_MASK;
-> +	vcpu->arch.interrupt_window_open = (svm->vcpu.arch.hflags & HF_GIF_MASK);
->   
-
-If eflags.if = 0, the interrupt window is closed.
-
-> diff --git a/arch/x86/kvm/vmx.c b/arch/x86/kvm/vmx.c
-> index c6997c0..5158c2b 100644
-> --- a/arch/x86/kvm/vmx.c
-> +++ b/arch/x86/kvm/vmx.c
-> @@ -736,26 +736,45 @@ static void vmx_set_rflags(struct kvm_vcpu *vcpu, unsigned long rflags)
->  	vmcs_writel(GUEST_RFLAGS, rflags);
->  }
->  
-> -static void skip_emulated_instruction(struct kvm_vcpu *vcpu)
-> +static void vmx_block_interrupt_shadow(struct kvm_vcpu *vcpu)
->  {
-> -	unsigned long rip;
-> -	u32 interruptibility;
-> +	u32 interruptibility = vmcs_read32(GUEST_INTERRUPTIBILITY_INFO);
-> +	u32 interruptibility_mask = ((GUEST_INTR_STATE_STI | GUEST_INTR_STATE_MOV_SS));
->  
-> -	rip = kvm_rip_read(vcpu);
-> -	rip += vmcs_read32(VM_EXIT_INSTRUCTION_LEN);
-> -	kvm_rip_write(vcpu, rip);
-> +	if (!(interruptibility & interruptibility_mask))
-> +		vmcs_write32(GUEST_INTERRUPTIBILITY_INFO,
-> +			     interruptibility | interruptibility_mask);
-> +	vcpu->arch.interrupt_window_open = 0;
->   
-
-Setting both _MOV_SS and _STI is wierd; can't happen on real hardware.
-
->  {
->  	unsigned long memop = 0;
->  	u64 msr_data;
-> @@ -1359,6 +1360,10 @@ x86_emulate_insn(struct x86_emulate_ctxt *ctxt, struct x86_emulate_ops *ops)
->  	unsigned int port;
->  	int io_dir_in;
->  	int rc = 0;
-> +	static int movss_int_flag, movss_int_flag_old;
->   
-
-static, for shame.
 
 -- 
 Do not meddle in the internals of kernels, for they are subtle and quick to panic.
