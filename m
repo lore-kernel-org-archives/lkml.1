@@ -1,118 +1,93 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756194AbZDKMFg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756840AbZDKMFt@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756194AbZDKMFg (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 11 Apr 2009 08:05:36 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755036AbZDKMFR
+	id S1756840AbZDKMFt (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 11 Apr 2009 08:05:49 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756102AbZDKMFa
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 11 Apr 2009 08:05:17 -0400
-Received: from chilli.pcug.org.au ([203.10.76.44]:34089 "EHLO smtps.tip.net.au"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753403AbZDKMFP (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 11 Apr 2009 08:05:15 -0400
-Date: Sat, 11 Apr 2009 22:05:08 +1000
-From: Stephen Rothwell <sfr@canb.auug.org.au>
-To: Mauro Carvalho Chehab <mchehab@infradead.org>
-Cc: Andrew Morton <akpm@linux-foundation.org>, linux-next@vger.kernel.org,
-       LKML <linux-kernel@vger.kernel.org>, Marton Balint <cus@fazekas.hu>,
-       linux-media@vger.kernel.org
-Subject: Re: linux-next: Tree for April 9
-Message-Id: <20090411220508.501e5c7d.sfr@canb.auug.org.au>
-In-Reply-To: <20090411080953.0c22cf4e@pedra.chehab.org>
-References: <20090409163305.8c7a0371.sfr@canb.auug.org.au>
-	<20090410231158.33b85dc1.akpm@linux-foundation.org>
-	<20090411080953.0c22cf4e@pedra.chehab.org>
-X-Mailer: Sylpheed 2.6.0 (GTK+ 2.14.7; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Sat, 11 Apr 2009 08:05:30 -0400
+Received: from out01.mta.xmission.com ([166.70.13.231]:46498 "EHLO
+	out01.mta.xmission.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756260AbZDKMF2 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 11 Apr 2009 08:05:28 -0400
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: <linux-kernel@vger.kernel.org>, <linux-pci@vger.kernel.org>,
+       <linux-mm@kvack.org>, <linux-fsdevel@vger.kernel.org>,
+       Al Viro <viro@ZenIV.linux.org.uk>, Hugh Dickins <hugh@veritas.com>,
+       Tejun Heo <tj@kernel.org>, Alexey Dobriyan <adobriyan@gmail.com>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Alan Cox <alan@lxorguk.ukuu.org.uk>,
+       Greg Kroah-Hartman <gregkh@suse.de>
+References: <m1skkf761y.fsf@fess.ebiederm.org>
+From: ebiederm@xmission.com (Eric W. Biederman)
+Date: Sat, 11 Apr 2009 05:05:23 -0700
+In-Reply-To: <m1skkf761y.fsf@fess.ebiederm.org> (Eric W. Biederman's message of "Sat\, 11 Apr 2009 05\:01\:29 -0700")
+Message-ID: <m1iqlb75vg.fsf@fess.ebiederm.org>
+User-Agent: Gnus/5.11 (Gnus v5.11) Emacs/22.2 (gnu/linux)
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+X-XM-SPF: eid=;;;mid=;;;hst=in01.mta.xmission.com;;;ip=67.169.126.145;;;frm=ebiederm@xmission.com;;;spf=neutral
+X-SA-Exim-Connect-IP: 67.169.126.145
+X-SA-Exim-Rcpt-To: akpm@linux-foundation.org, gregkh@suse.de, alan@lxorguk.ukuu.org.uk, torvalds@linux-foundation.org, adobriyan@gmail.com, tj@kernel.org, hugh@veritas.com, viro@ZenIV.linux.org.uk, linux-fsdevel@vger.kernel.org, linux-mm@kvack.org, linux-pci@vger.kernel.org, linux-kernel@vger.kernel.org
+X-SA-Exim-Mail-From: ebiederm@xmission.com
+X-Spam-DCC: XMission; sa02 1397; Body=1 Fuz1=1 Fuz2=1 
+X-Spam-Combo: ;Andrew Morton <akpm@linux-foundation.org>
+X-Spam-Relay-Country: 
+X-Spam-Report: * -1.8 ALL_TRUSTED Passed through trusted hosts only via SMTP
+	*  1.5 XMNoVowels Alpha-numberic number with no vowels
+	* -2.6 BAYES_00 BODY: Bayesian spam probability is 0 to 1%
+	*      [score: 0.0000]
+	* -0.0 DCC_CHECK_NEGATIVE Not listed in DCC
+	*      [sa02 1397; Body=1 Fuz1=1 Fuz2=1]
+	*  0.0 XM_SPF_Neutral SPF-Neutral
+	*  0.4 UNTRUSTED_Relay Comes from a non-trusted relay
+Subject: [RFC][PATCH 2/9] mm: Implement generic support for revoking a mapping.
+X-SA-Exim-Version: 4.2.1 (built Thu, 25 Oct 2007 00:26:12 +0000)
+X-SA-Exim-Scanned: Yes (on in01.mta.xmission.com)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Mauro,
 
-On Sat, 11 Apr 2009 08:09:53 -0300 Mauro Carvalho Chehab <mchehab@infradead.org> wrote:
->
-> On Fri, 10 Apr 2009 23:11:58 -0700
-> Andrew Morton <akpm@linux-foundation.org> wrote:
-> 
-> > On Thu, 9 Apr 2009 16:33:05 +1000 Stephen Rothwell <sfr@canb.auug.org.au> wrote:
-> > 
-> > > I have created today's linux-next tree at
-> > > git://git.kernel.org/pub/scm/linux/kernel/git/sfr/linux-next.git
-> > 
-> > It has a link failure with i386 allmodconfig due to missing __divdi3.
-> > 
-> > It's due to this statement in drivers/media/video/cx88/cx88-dsp.c's
-> > int_goertzel():
-> > 
-> >         return (u32)(((s64)s_prev2*s_prev2 + (s64)s_prev*s_prev -
-> >                       (s64)coeff*s_prev2*s_prev/32768)/N/N);
-> > 
-> > that gem will need to be converted to use div64() or similar, please.
-> 
-> Updated to use do_div().
+Signed-off-by: Eric W. Biederman <ebiederm@xmission.com>
+---
+ include/linux/mm.h |    2 ++
+ mm/memory.c        |    9 +++++++++
+ 2 files changed, 11 insertions(+), 0 deletions(-)
 
-Thank you.  It will be included in next-20090414.
-
-Andrew, I have included the patch below in case you need it before then.
-
--- 
-Cheers,
-Stephen Rothwell                    sfr@canb.auug.org.au
-http://www.canb.auug.org.au/~sfr/
-
-commit ec0a97d2dd33e156283dd04c37d77603cb4dbaf7
-Author: Miroslav Sustek <sustmidown@centrum.cz>
-Date:   Mon Apr 6 20:07:04 2009 -0300
-
-    V4L/DVB (11441): cx88-dsp: fixing 64bit math
-    
-    cx88-dsp: fixing 64bit math on 32bit kernels
-    
-    Some gcc versions report the missing of __divdi3
-    
-    Signed-off-by: Miroslav Sustek <sustmidown@centrum.cz>
-    [mchehab.redhat.com: CodingStyle fixes]
-    Signed-off-by: Mauro Carvalho Chehab <mchehab@redhat.com>
-
-diff --git a/drivers/media/video/cx88/cx88-dsp.c b/drivers/media/video/cx88/cx88-dsp.c
-index a78286e..3e5eaf3 100644
---- a/drivers/media/video/cx88/cx88-dsp.c
-+++ b/drivers/media/video/cx88/cx88-dsp.c
-@@ -22,6 +22,7 @@
- #include <linux/kernel.h>
- #include <linux/module.h>
- #include <linux/jiffies.h>
-+#include <asm/div64.h>
+diff --git a/include/linux/mm.h b/include/linux/mm.h
+index 96d8342..3fcbb8e 100644
+--- a/include/linux/mm.h
++++ b/include/linux/mm.h
+@@ -807,6 +807,8 @@ static inline void unmap_shared_mapping_range(struct address_space *mapping,
  
- #include "cx88.h"
- #include "cx88-reg.h"
-@@ -100,13 +101,25 @@ static u32 int_goertzel(s16 x[], u32 N, u32 freq)
- 	s32 s_prev2 = 0;
- 	s32 coeff = 2*int_cos(freq);
- 	u32 i;
+ extern int vmtruncate(struct inode * inode, loff_t offset);
+ extern int vmtruncate_range(struct inode * inode, loff_t offset, loff_t end);
 +
-+	u64 tmp;
-+	u32 divisor;
-+
- 	for (i = 0; i < N; i++) {
- 		s32 s = x[i] + ((s64)coeff*s_prev/32768) - s_prev2;
- 		s_prev2 = s_prev;
- 		s_prev = s;
- 	}
--	return (u32)(((s64)s_prev2*s_prev2 + (s64)s_prev*s_prev -
--		      (s64)coeff*s_prev2*s_prev/32768)/N/N);
-+
-+	tmp = (s64)s_prev2 * s_prev2 + (s64)s_prev * s_prev -
-+		      (s64)coeff * s_prev2 * s_prev / 32768;
-+
-+	/* XXX: N must be low enough so that N*N fits in s32.
-+	 * Else we need two divisions. */
-+	divisor = N * N;
-+	do_div(tmp, divisor);
-+
-+	return (u32) tmp;
++extern struct vm_operations_struct revoked_vm_ops;
+ extern void remap_file_mappings(struct file *file, struct vm_operations_struct *vm_ops);
+ 
+ #ifdef CONFIG_MMU
+diff --git a/mm/memory.c b/mm/memory.c
+index dcd0a3c..f68c84e 100644
+--- a/mm/memory.c
++++ b/mm/memory.c
+@@ -2378,6 +2378,15 @@ out:
+ 	spin_lock(&mapping->i_mmap_lock);
  }
  
- static u32 freq_magnitude(s16 x[], u32 N, u32 freq)
++static int revoked_fault(struct vm_area_struct *vma, struct vm_fault *vmf)
++{
++	return VM_FAULT_SIGBUS;
++}
++
++struct vm_operations_struct revoked_vm_ops = {
++	.fault	= revoked_fault,
++};
++
+ void remap_file_mappings(struct file *file, struct vm_operations_struct *vm_ops)
+ {
+ 	/* After file->f_ops has been changed update the vmas */
+-- 
+1.6.1.2.350.g88cc
+
