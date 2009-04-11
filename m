@@ -1,90 +1,86 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758611AbZDKSMw@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758823AbZDKSOB@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758611AbZDKSMw (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 11 Apr 2009 14:12:52 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758311AbZDKSMj
+	id S1758823AbZDKSOB (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 11 Apr 2009 14:14:01 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758665AbZDKSNu
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 11 Apr 2009 14:12:39 -0400
-Received: from yw-out-2324.google.com ([74.125.46.30]:26232 "EHLO
-	yw-out-2324.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755120AbZDKSMh convert rfc822-to-8bit (ORCPT
+	Sat, 11 Apr 2009 14:13:50 -0400
+Received: from yx-out-2324.google.com ([74.125.44.29]:41477 "EHLO
+	yx-out-2324.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1758471AbZDKSNt (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 11 Apr 2009 14:12:37 -0400
+	Sat, 11 Apr 2009 14:13:49 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
+         :cc:content-type;
+        b=OKZ5TynrJed7AtGAqTq3oFZcbEFMGLiKtUOhEiJdh05DoB2pDvC+B7VJs03eUne/SY
+         OOYyGfNUyGjFTNQUthbiYJJaVL5vaRqanPBtgJLnEQ58saem4T2Zx+/+BYohxbWlq1cv
+         wkwJwFwLBXe1yLe/z0CZStNR5KVI6sJ0pwIqc=
 MIME-Version: 1.0
-In-Reply-To: <20090410.230016.176733137.davem@davemloft.net>
-References: <alpine.LFD.2.00.0904101828490.4583@localhost.localdomain>
-	 <20090411041533.GB6822@linux.vnet.ibm.com>
-	 <alpine.LSU.2.00.0904110657410.26485@fbirervta.pbzchgretzou.qr>
-	 <20090410.230016.176733137.davem@davemloft.net>
-Date: Sat, 11 Apr 2009 14:12:35 -0400
-Message-ID: <f73f7ab80904111112n7c95d06ei32eb1f081842ae41@mail.gmail.com>
-Subject: Re: iptables very slow after commit 784544739a25c30637397ace5489eeb6e15d7d49
-From: Kyle Moffett <kyle@moffetthome.net>
-To: David Miller <davem@davemloft.net>
-Cc: jengelh@medozas.de, paulmck@linux.vnet.ibm.com,
-       torvalds@linux-foundation.org, mingo@elte.hu, laijs@cn.fujitsu.com,
-       shemminger@vyatta.com, jeff.chua.linux@gmail.com, dada1@cosmosbay.com,
-       kaber@trash.net, r000n@r000n.net, linux-kernel@vger.kernel.org,
-       netfilter-devel@vger.kernel.org, netdev@vger.kernel.org
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8BIT
+In-Reply-To: <1239472568.3416.11.camel@mulgrave.int.hansenpartnership.com>
+References: <81083a450904110629j93c5c2j2c1250e9822c3888@mail.gmail.com>
+	 <1239472568.3416.11.camel@mulgrave.int.hansenpartnership.com>
+Date: Sat, 11 Apr 2009 23:43:48 +0530
+Message-ID: <81083a450904111113k4f2dd50et18585bf3c2dce8f2@mail.gmail.com>
+Subject: Re: [PATCH]ibft: Fix the display of a few fields in the NIC attribute 
+	structure in sysfs
+From: Ashutosh Naik <ashutosh.naik@gmail.com>
+To: James Bottomley <James.Bottomley@hansenpartnership.com>
+Cc: linux-kernel@vger.kernel.org, linux-scsi@vger.kernel.org,
+       Andrew Morton <akpm@osdl.org>, pjones@redhat.com,
+       konradr@linux.vnet.ibm.com, ketuzsezr@darnok.org,
+       "Vishnu V. Mandyam" <vishnu@chelsio.com>, open-iscsi@googlegroups.com
+Content-Type: multipart/mixed; boundary=0016e643594850546404674b7167
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, Apr 11, 2009 at 2:00 AM, David Miller <davem@davemloft.net> wrote:
-> From: Jan Engelhardt <jengelh@medozas.de>
-> Date: Sat, 11 Apr 2009 07:14:50 +0200 (CEST)
->
->> The fact that `iptables -A` is called a hundred times means you are
->> doing 100 table replacements -- instead of one. And calling
->> synchronize_net at least a 100 times.
->>
->> "Wanna use iptables-restore?"
->
-> I want to derail this line of thinking as fast as possible.
->
-> This is not an acceptable response to this problem.  We made something
-> fundamentally slower by several orders of magnitude.
->
-> Therefore, saying "Don't insert your firewall rules like that." is not
-> a valid response for this regression.
->
-> We really have to fix it or revert.
+--0016e643594850546404674b7167
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: quoted-printable
 
-Let me start by saying that I agree that for most systems this patch
-provided a bad performance tradeoff that needs to get fixed.
+On Sat, Apr 11, 2009 at 11:26 PM, James Bottomley
+<James.Bottomley@hansenpartnership.com> wrote:
 
-On the other hand I have certain systems where I would much rather
-reduce the per-packet load by a few percent...  even if it increases
-the effort to load a new ruleset by many orders of magnitude!!!  Quite
-simply the boxes only reboot a few times a year but in-between times
-they forward many terabytes of low-latency network traffic.
+> What do these signoffs mean?
 
-So... to play devils advocate:
+I am reattaching the patch here:
 
-Almost all of the standard firewall tools (such as shorewall, etc) are
-already using iptables-restore command to load firewall rules,
-primarily because using separate iptables commands was *already* way
-too slow.  There's also the serious race-condition of doing a firewall
-restart that way where you only have half your rules loaded for a bit.
- The "iptables" command is fine for fiddling around with the command
-line and making minor tweaks, but it simply doesn't cut it for
-large-scale rules.
+Description:This patch fixes the display of a few fields in the iBFT
+NIC attribute
+structure in sysfs.
 
-I remember when switching from a shell-based shorewall to a perl-based
-shorewall.  The time to build my rule lists with the perl-based
-version was about 20% of what it had been, but the time to load the
-rules into the kernel with iptables-restore was easily 2% or perhaps
-less.
+Signed-off-by: Ashutosh Naik <ashutosh.naik@gmail.com>
+Cc: Vishnu V<vishnu@chelsio.com>
 
-Finally, if you really are loading a couple hundred IPs into a linear
-ruleset, you're adding a fair amount of packet latency to each and
-every packet that goes through totally independent of iptables load
-time.  It would be much better to use ipsets (or similar) because they
-load all of the IP ranges into an appropriate tree datastructure with
-O(small-constant * log(N) + large-constant * 1) lookup instead of
-O(large-constant * N).
+> The second question is who picks this up? =A0The drivers/firmware
+> directory doesn't seem to have a dedicated tree, so I can take this
+> through the SCSI tree if required or Andrew can take it through -mm.
 
-Cheers,
-Kyle Moffett
+This is used for display of the various structures of the iBFT table
+via sysfs and can be picked up by any iSCSI initiator driver module
+that uses the information in the iBFT table to boot over iSCSI, such
+as open-iscsi.
+
+--0016e643594850546404674b7167
+Content-Type: text/plain; charset=US-ASCII; 
+	name="iscsi_ibft_c_fix_nic_attribute_display_in_sysfs.txt"
+Content-Disposition: attachment; 
+	filename="iscsi_ibft_c_fix_nic_attribute_display_in_sysfs.txt"
+Content-Transfer-Encoding: base64
+X-Attachment-Id: f_ftemesao0
+
+ZGlmZiAtcnVOIGxpbnV4LTIuNi4yOS4xLW9yaWcvZHJpdmVycy9maXJtd2FyZS9pc2NzaV9pYmZ0
+LmMgbGludXgtMi42LjI5LjEvZHJpdmVycy9maXJtd2FyZS9pc2NzaV9pYmZ0LmMKLS0tIGxpbnV4
+LTIuNi4yOS4xLW9yaWcvZHJpdmVycy9maXJtd2FyZS9pc2NzaV9pYmZ0LmMJMjAwOS0wNC0xMSAx
+ODoyNTo0MC4wMDAwMDAwMDAgKzA1MzAKKysrIGxpbnV4LTIuNi4yOS4xL2RyaXZlcnMvZmlybXdh
+cmUvaXNjc2lfaWJmdC5jCTIwMDktMDQtMTEgMTg6MzM6NDIuMDAwMDAwMDAwICswNTMwCkBAIC03
+NTQsMTEgKzc1NCwxMSBAQAogCQlyYyA9IDE7CiAJCWJyZWFrOwogCWNhc2UgaWJmdF9ldGhfaXBf
+YWRkcjoKLQkJaWYgKCFtZW1jbXAobmljLT5kaGNwLCBudWxscywgc2l6ZW9mKG5pYy0+ZGhjcCkp
+KQorCQlpZiAobWVtY21wKG5pYy0+aXBfYWRkciwgbnVsbHMsIHNpemVvZihuaWMtPmlwX2FkZHIp
+KSkKIAkJCXJjID0gMTsKIAkJYnJlYWs7CiAJY2FzZSBpYmZ0X2V0aF9zdWJuZXRfbWFzazoKLQkJ
+aWYgKCFtZW1jbXAobmljLT5kaGNwLCBudWxscywgc2l6ZW9mKG5pYy0+ZGhjcCkpKQorCQlpZiAo
+bmljLT5zdWJuZXRfbWFza19wcmVmaXgpCiAJCQlyYyA9IDE7CiAJCWJyZWFrOwogCWNhc2UgaWJm
+dF9ldGhfb3JpZ2luOgo=
+--0016e643594850546404674b7167--
