@@ -1,65 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759253AbZDLHXw@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759977AbZDLHYs@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759253AbZDLHXw (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 12 Apr 2009 03:23:52 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757385AbZDLHWj
+	id S1759977AbZDLHYs (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 12 Apr 2009 03:24:48 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758300AbZDLHXU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 12 Apr 2009 03:22:39 -0400
-Received: from mga14.intel.com ([143.182.124.37]:31531 "EHLO mga14.intel.com"
+	Sun, 12 Apr 2009 03:23:20 -0400
+Received: from tservice.net.ru ([195.178.208.66]:53792 "EHLO tservice.net.ru"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756621AbZDLHWh (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 12 Apr 2009 03:22:37 -0400
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.40,174,1239001200"; 
-   d="scan'208";a="130525056"
-Date: Sun, 12 Apr 2009 15:16:05 +0800
-From: Wu Fengguang <fengguang.wu@intel.com>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: LKML <linux-kernel@vger.kernel.org>, linux-fsdevel@vger.kernel.org,
-       Chenfeng Xu <xcf@ustc.edu.cn>
-Subject: [RFC][PATCH] vfs: check inode size on no_cached_page
-Message-ID: <20090412071605.GA14058@localhost>
+	id S1758168AbZDLHXS (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 12 Apr 2009 03:23:18 -0400
+Date: Sun, 12 Apr 2009 11:23:12 +0400
+From: Evgeniy Polyakov <zbr@ioremap.net>
+To: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
+Cc: Linus Torvalds <torvalds@linux-foundation.org>,
+       David Miller <davem@davemloft.net>, Ingo Molnar <mingo@elte.hu>,
+       Lai Jiangshan <laijs@cn.fujitsu.com>, shemminger@vyatta.com,
+       jeff.chua.linux@gmail.com, dada1@cosmosbay.com, jengelh@medozas.de,
+       kaber@trash.net, r000n@r000n.net,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       netfilter-devel@vger.kernel.org, netdev@vger.kernel.org
+Subject: Re: iptables very slow after commit 784544739a25c30637397ace5489eeb6e15d7d49
+Message-ID: <20090412072312.GA24580@ioremap.net>
+References: <Pine.LNX.4.64.0904101656190.2093@boston.corp.fedex.com> <20090410095246.4fdccb56@s6510> <20090410.182507.140306636.davem@davemloft.net> <alpine.LFD.2.00.0904101828490.4583@localhost.localdomain> <20090411041533.GB6822@linux.vnet.ibm.com> <alpine.LFD.2.00.0904111150380.4583@localhost.localdomain> <20090412003445.GK6822@linux.vnet.ibm.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-User-Agent: Mutt/1.5.18 (2008-05-17)
+In-Reply-To: <20090412003445.GK6822@linux.vnet.ibm.com>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-[This patch may not necessarily be merged, but at least we should
- be aware of the problem.]
+Hi.
 
-When user space requests past-EOF data, do_generic_file_read() will
-issue a bonus readpage call, which may be unfavorable.
+On Sat, Apr 11, 2009 at 05:34:45PM -0700, Paul E. McKenney (paulmck@linux.vnet.ibm.com) wrote:
+> The issue at this point seems to be the need to get accurate snapshots
+> of various counters -- there are a number of Linux networking users who
+> need to account for every byte flowing through their systems.  However,
 
-do_generic_file_read:
-        -> find_page:
-        -> find_get_page()             = NULL
-        -> page_cache_sync_readahead()
-        -> find_get_page()             = NULL
-        -> no_cached_page:
-        -> readpage:
-                -> nfs_readpage()      = error
-        -> readpage_error:
+If we add or change the rule we can not know if iptables' return to
+userspace does mean that rule started to act. There may be other queues
+already filled with the packets which could match the new rule (like
+receiving socket buffer). So effectively we want it to take effect very
+soon. What if there will be a timer which will synchronize RCU-added states,
+so if we update single rule - it will take effect in a second, and if we
+update bunch of them - during the delay second we pretty much can load
+them all.
 
-Reported-by: Xu Chenfeng <xcf@ustc.edu.cn>
-Signed-off-by: Wu Fengguang <fengguang.wu@intel.com>
----
- mm/filemap.c |    5 +++++
- 1 file changed, 5 insertions(+)
-
---- mm.orig/mm/filemap.c
-+++ mm/mm/filemap.c
-@@ -1269,6 +1269,11 @@ readpage_error:
- 		goto out;
- 
- no_cached_page:
-+		isize = i_size_read(inode);
-+		end_index = (isize - 1) >> PAGE_CACHE_SHIFT;
-+		if (unlikely(!isize || index > end_index))
-+			goto out;
-+
- 		/*
- 		 * Ok, it wasn't cached, so we need to create a new
- 		 * page..
+-- 
+	Evgeniy Polyakov
