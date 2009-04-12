@@ -1,129 +1,78 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759505AbZDLAfA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755476AbZDLAzh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759505AbZDLAfA (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 11 Apr 2009 20:35:00 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753123AbZDLAer
+	id S1755476AbZDLAzh (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 11 Apr 2009 20:55:37 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753357AbZDLAzY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 11 Apr 2009 20:34:47 -0400
-Received: from e1.ny.us.ibm.com ([32.97.182.141]:40308 "EHLO e1.ny.us.ibm.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751951AbZDLAeq (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 11 Apr 2009 20:34:46 -0400
-Date: Sat, 11 Apr 2009 17:34:45 -0700
-From: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: David Miller <davem@davemloft.net>, Ingo Molnar <mingo@elte.hu>,
-       Lai Jiangshan <laijs@cn.fujitsu.com>, shemminger@vyatta.com,
-       jeff.chua.linux@gmail.com, dada1@cosmosbay.com, jengelh@medozas.de,
-       kaber@trash.net, r000n@r000n.net,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       netfilter-devel@vger.kernel.org, netdev@vger.kernel.org
-Subject: Re: iptables very slow after commit
-	784544739a25c30637397ace5489eeb6e15d7d49
-Message-ID: <20090412003445.GK6822@linux.vnet.ibm.com>
-Reply-To: paulmck@linux.vnet.ibm.com
-References: <Pine.LNX.4.64.0904101656190.2093@boston.corp.fedex.com> <20090410095246.4fdccb56@s6510> <20090410.182507.140306636.davem@davemloft.net> <alpine.LFD.2.00.0904101828490.4583@localhost.localdomain> <20090411041533.GB6822@linux.vnet.ibm.com> <alpine.LFD.2.00.0904111150380.4583@localhost.localdomain>
+	Sat, 11 Apr 2009 20:55:24 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:51856 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1752784AbZDLAzX (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 11 Apr 2009 20:55:23 -0400
+Date: Sat, 11 Apr 2009 17:49:41 -0700 (PDT)
+From: Linus Torvalds <torvalds@linux-foundation.org>
+X-X-Sender: torvalds@localhost.localdomain
+To: Jeff Garzik <jeff@garzik.org>
+cc: Alan Cox <alan@lxorguk.ukuu.org.uk>, Grant Grundler <grundler@google.com>,
+       Linux IDE mailing list <linux-ide@vger.kernel.org>,
+       LKML <linux-kernel@vger.kernel.org>, Jens Axboe <jens.axboe@oracle.com>,
+       Arjan van de Ven <arjan@infradead.org>
+Subject: Re: Implementing NVMHCI...
+In-Reply-To: <49E12D03.5070906@garzik.org>
+Message-ID: <alpine.LFD.2.00.0904111725570.4583@localhost.localdomain>
+References: <49E0D47B.9070205@garzik.org> <20090411203246.513a0892@lxorguk.ukuu.org.uk> <alpine.LFD.2.00.0904111250370.4583@localhost.localdomain> <da824cf30904111449y5cb7c178ldf5291506ad6b393@mail.gmail.com> <20090412002527.631a5a89@lxorguk.ukuu.org.uk>
+ <49E12D03.5070906@garzik.org>
+User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <alpine.LFD.2.00.0904111150380.4583@localhost.localdomain>
-User-Agent: Mutt/1.5.15+20070412 (2007-04-11)
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, Apr 11, 2009 at 11:57:16AM -0700, Linus Torvalds wrote:
+
+
+On Sat, 11 Apr 2009, Jeff Garzik wrote:
 > 
-> 
-> On Fri, 10 Apr 2009, Paul E. McKenney wrote:
-> > 
-> > 1.	Assuming that the synchronize_net() is intended to guarantee
-> > 	that the new rules will be in effect before returning to
-> > 	user space:
-> 
-> Btw, I think that's a bad assumption.
+> Or just ignore the extra length, thereby excising the 'read-modify' step...
+> Total storage is halved or worse, but you don't take as much of a performance
+> hit.
 
-It does indeed appear to be!
+Well, the people who want > 4kB sectors usually want _much_ bigger (ie 
+32kB sectors), and if you end up doing the "just use the first part" 
+thing, you're wasting 7/8ths of the space. 
 
-> The thing is, nobody can really care if the new rules are in effect or 
-> not, because the thing you race with is not the "return to user space" 
-> part, but the incoming packets.
-> 
-> And those incoming packets might have been incoming before the rules were 
-> set up too.
-> 
-> So I seriously doubt you need to synchronize with any returning to user 
-> space. What you want to synchronize with is then later actions that do 
-> things like turning on the interface that the rules are attached to etc!
-> 
-> So I would suggest:
-> 
->  - remove the synchronize_net() entirely. Replace it with just freeing the 
->    old rules using RCU.
-> 
->  - new packets will always end up seeing the new rules. That includes the 
->    case of somebody doing "ifconfig eth0 up" that enables a new source of 
->    packets, so there are no real security issues.
-> 
->  - if you enabled your network interfaces before you updated your packet 
->    filtering rules, you already had a window where packets would come in 
->    with the old rules, so doing a "synchronize_net()" in no way protects 
->    against any race conditions anyway.
-> 
-> Am I missing something?
+Yes, it's doable, and yes, it obviously makes for a simple driver thing, 
+but no, I don't think people will consider it acceptable to lose that much 
+of their effective size of the disk.
 
-The issue at this point seems to be the need to get accurate snapshots
-of various counters -- there are a number of Linux networking users who
-need to account for every byte flowing through their systems.  However,
-it is also necessary to update these counters very efficiently, given
-that they are updated on a per-packet basis.  The current approach is
-as follows:
+I suspect people would scream even with a 8kB sector.
 
-1.	Install a new set of counters.
+Treating all writes as read-modify-write cycles on a driver level (and 
+then opportunistically avoiding the read part when you are lucky and see 
+bigger contiguous writes) is likely more acceptable. But it _will_ suck 
+dick from a performance angle, because no regular filesystem will care 
+enough, so even with nicely behaved big writes, the two end-points will 
+have a fairly high chance of requiring a rmw cycle.
 
-2.	Wait for a grace period to elapse.
+Even the journaling ones that might have nice logging write behavior tend 
+to have a non-logging part that then will behave badly. Rather few 
+filesystems are _purely_ log-based, and the ones that are tend to have 
+various limitations. Most commonly read performance just sucks.
 
-3.	At this point, we know that all subsequent counting will happen
-	on the new set of counters.
+We just merged nilfs2, and I _think_ that one is a pure logging filesystem 
+with just linear writes (within a segment). But I think random read 
+performance (think: loading executables off the disk) is bad.
 
-4.	Add the value of the old set of counters to the new set of
-	counters.
+And people tend to really dislike hardware that forces a particular 
+filesystem on them. Guess how big the user base is going to be if you 
+cannot format the device as NTFS, for example? Hint: if a piece of 
+hardware only works well with special filesystems, that piece of hardware 
+won't be a big seller. 
 
-5.	Copy the old set of counters up to user space.
+Modern technology needs big volume to become cheap and relevant.
 
-So we get a good snapshot in #5, while #4 ensures that we don't lose
-any counts when taking future snapshots.  Unfortunately, #2 hits us
-with grace-period latencies on the critical path.
+And maybe I'm wrong, and NTFS works fine as-is with sectors >4kB. But let 
+me doubt that.
 
-We are going through the following possibilities:
-
-o	Stick with the current approach, and ask people to move to
-	new batch-oriented interfaces.  However, a 30x decrease in
-	performance is pretty grim, even for an old-style interface.
-
-o	Use various atomic tricks to get an immediate snapshot of the
-	old counters after step 1.  Make step 3 use call_rcu() instead
-	of synchronize_rcu(), and then step 4 happens off the
-	critical path.
-
-	This approach moves the RCU grace period off of the critical
-	path, but the atomic tricks are extremely ugly on 32-bit SMP
-	machines.  32-bit UP machines and 64-bit machines are not
-	too bad, though the 32-bit UP case does add preemption-disable
-	overhead on the counter-update fastpath.
-
-o	Provide some sort of expedited synchronize_rcu().  This might
-	be able to decrease the hit from 30x down to maybe 5x.
-	But I might need to do this for the fast-boot folks anyway,
-	though I am first trying to get away with just speeding
-	up synchronized_rcu().  Though I was not thinking in terms
-	of 6x, let alone 30x.
-
-	Please note that this would not be a drop-in replacement for
-	synchronize_rcu().  One would use synchronize_rcu_expedited()
-	(or whatever) only when the system really could not get any
-	useful work done while the grace period was in progress.
-	The general approach would be to keep the whole machine busy
-	trying to get the grace period done as soon as possible.
-
-							Thanx, Paul
+			Linus
