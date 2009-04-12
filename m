@@ -1,84 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753388AbZDLSWU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752360AbZDLS1x@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753388AbZDLSWU (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 12 Apr 2009 14:22:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752085AbZDLSWI
+	id S1752360AbZDLS1x (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 12 Apr 2009 14:27:53 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750730AbZDLS1n
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 12 Apr 2009 14:22:08 -0400
-Received: from 136-022.dsl.LABridge.com ([206.117.136.22]:1805 "EHLO
-	mail.perches.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752062AbZDLSWH (ORCPT
+	Sun, 12 Apr 2009 14:27:43 -0400
+Received: from mga07.intel.com ([143.182.124.22]:9510 "EHLO
+	azsmga101.ch.intel.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1750745AbZDLS1m (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 12 Apr 2009 14:22:07 -0400
-Subject: Re: [PATCH] balance parentheses and braces
-From: Joe Perches <joe@perches.com>
-To: Sam Ravnborg <sam@ravnborg.org>
-Cc: Mariusz Kozlowski <m.kozlowski@tuxland.pl>, linux-kernel@vger.kernel.org
-In-Reply-To: <20090412122419.GA27929@uranus.ravnborg.org>
-References: <1239533251-31276-1-git-send-email-m.kozlowski@tuxland.pl>
-	 <20090412122419.GA27929@uranus.ravnborg.org>
-Content-Type: text/plain
-Date: Sun, 12 Apr 2009 11:21:33 -0700
-Message-Id: <1239560493.14004.25.camel@localhost>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.24.2-1.2mdv2009.0 
+	Sun, 12 Apr 2009 14:27:42 -0400
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.40,176,1239001200"; 
+   d="scan'208";a="130613217"
+Message-ID: <49E23298.5050702@linux.intel.com>
+Date: Sun, 12 Apr 2009 11:27:36 -0700
+From: Arjan van de Ven <arjan@linux.intel.com>
+User-Agent: Thunderbird 2.0.0.21 (Windows/20090302)
+MIME-Version: 1.0
+To: "Rafael J. Wysocki" <rjw@suse.com>
+CC: Linus Torvalds <torvalds@linux-foundation.org>,
+       linux-pm@lists.linux-foundation.org, Takashi Iwai <tiwai@suse.de>,
+       LKML <linux-kernel@vger.kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>, Ingo Molnar <mingo@elte.hu>
+Subject: Re: [linux-pm] [2.6.30-rc1-git2 regressions] Hibernation broken and
+ (minor but annoying) audio problem
+References: <200904100057.43827.rjw@sisk.pl> <alpine.LFD.2.00.0904111253520.4583@localhost.localdomain> <49E0F805.2090502@linux.intel.com> <200904122006.57425.rjw@suse.com>
+In-Reply-To: <200904122006.57425.rjw@suse.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, 2009-04-12 at 14:24 +0200, Sam Ravnborg wrote:
-> I suggest you put some effort into finding the relevant receivers for these patches.
-> This way they are more likely to be picked up and applied.
+Rafael J. Wysocki wrote:
+> 
+> OK, updated patch follows, with a changelog.
+> 
+> I've added this check to user.c too, because that code can be called
+> independently of the one in disk.c .  Also, if resume is user space-driven,
+> it's a good idea to wait for all of the device probes to complete before
+> continuing.
+> 
+> Thanks,
+> Rafael
+> 
+> ---
+> From: Rafael J. Wysocki <rjw@sisk.pl>
+> Subject: PM/Hibernate: Wait for SCSI devices scan to complete during resume
+> 
+> There is a race between resume from hibernation and the asynchronous
+> scanning of SCSI devices and to prevent it from happening we need to
+> call scsi_complete_async_scans() during resume from hibernation.
+> 
+> In addition, if the resume from hibernation is userland-driven, it's
+> better to wait for all device probes in the kernel to complete before
+> attempting to open the resume device.
+> 
+> Signed-off-by: Rafael J. Wysocki <rjw@sisk.pl>
 
-Or using the MAINTAINER patches and script I sent
-and very little effort:
+looks like a good fix to me (regardless of the async stuff)
 
-Without recent git-signers:
-
-$ ./scripts/get_maintainer.pl -f --no-git arch/blackfin/mach-bf538/include/mach/cdefBF538.h
-uclinux-dist-devel@blackfin.uclinux.org
-Bryan Wu <cooloney@kernel.org>
-$ ./scripts/get_maintainer.pl -f --no-git arch/blackfin/mach-bf548/include/mach/anomaly.h
-uclinux-dist-devel@blackfin.uclinux.org
-Bryan Wu <cooloney@kernel.org>
-$ ./scripts/get_maintainer.pl -f --no-git drivers/atm/iphase.c
-netdev@vger.kernel.org
-Chas Williams <chas@cmf.nrl.navy.mil>
-$ ./scripts/get_maintainer.pl -f --no-git drivers/media/dvb/frontends/stv0900_priv.h
-linux-media@vger.kernel.org
-Mauro Carvalho Chehab <mchehab@infradead.org>
-$ ./scripts/get_maintainer.pl -f --no-git drivers/video/sis/init301.c
-Thomas Winischhofer <thomas@winischhofer.net>
-
-or with recent git-signers:
-
-$ ./scripts/get_maintainer.pl -f arch/blackfin/mach-bf538/include/mach/cdefBF538.h
-uclinux-dist-devel@blackfin.uclinux.org
-Bryan Wu <cooloney@kernel.org>
-Mike Frysinger <vapier.adi@gmail.com>
-Yi Li <yi.li@analog.com>
-Michael Hennerich <michael.hennerich@analog.com>
-$ ./scripts/get_maintainer.pl -f arch/blackfin/mach-bf548/include/mach/anomaly.h
-uclinux-dist-devel@blackfin.uclinux.org
-Bryan Wu <cooloney@kernel.org>
-Mike Frysinger <vapier.adi@gmail.com>
-Robin Getz <rgetz@blackfin.uclinux.org>
-$ ./scripts/get_maintainer.pl -f drivers/atm/iphase.c
-netdev@vger.kernel.org
-Chas Williams <chas@cmf.nrl.navy.mil>
-David S. Miller <davem@davemloft.net>
-"Jorge Boncompte [DTI2]" <jorge@dti2.net>
-Andrew Morton <akpm@linux-foundation.org>
-Wu Fengguang <fengguang.wu@intel.com>
-$ ./scripts/get_maintainer.pl -f drivers/media/dvb/frontends/stv0900_priv.h
-linux-media@vger.kernel.org
-Mauro Carvalho Chehab <mchehab@infradead.org>
-Mauro Carvalho Chehab <mchehab@redhat.com>
-Randy Dunlap <randy.dunlap@oracle.com>
-Igor M. Liplianin <liplianin@netup.ru>
-Andrew Morton <akpm@linux-foundation.org>
-$ ./scripts/get_maintainer.pl -f drivers/video/sis/init301.c
-Thomas Winischhofer <thomas@winischhofer.net>
-
-
+Acked-by: Arjan van de Ven <arjan@linux.intel.com>
