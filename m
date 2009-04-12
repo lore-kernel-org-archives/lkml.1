@@ -1,135 +1,117 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760562AbZDLMgI@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760524AbZDLMkc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760562AbZDLMgI (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 12 Apr 2009 08:36:08 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758620AbZDLMfz
+	id S1760524AbZDLMkc (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 12 Apr 2009 08:40:32 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760259AbZDLMkO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 12 Apr 2009 08:35:55 -0400
-Received: from mga03.intel.com ([143.182.124.21]:6636 "EHLO mga03.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756090AbZDLMfy (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 12 Apr 2009 08:35:54 -0400
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.40,175,1239001200"; 
-   d="scan'208";a="130563572"
-Date: Sun, 12 Apr 2009 20:35:18 +0800
-From: Wu Fengguang <fengguang.wu@intel.com>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       Vladislav Bolkhovitin <vst@vlnb.net>,
-       Jens Axboe <jens.axboe@oracle.com>, Jeff Moyer <jmoyer@redhat.com>,
-       LKML <linux-kernel@vger.kernel.org>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>, Nick Piggin <npiggin@suse.de>,
-       Rik van Riel <riel@redhat.com>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Chenfeng Xu <xcf@ustc.edu.cn>, linux-mm@kvack.org
-Subject: Re: [PATCH 3/3] readahead: introduce context readahead algorithm
-Message-ID: <20090412123518.GA5599@localhost>
-References: <20090412071950.166891982@intel.com> <20090412072052.686760755@intel.com> <20090412084819.GA25314@elte.hu>
+	Sun, 12 Apr 2009 08:40:14 -0400
+Received: from ganesha.gnumonks.org ([213.95.27.120]:41569 "EHLO
+	ganesha.gnumonks.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1760031AbZDLMkM (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 12 Apr 2009 08:40:12 -0400
+Date: Sun, 12 Apr 2009 14:30:26 +0200
+From: Harald Welte <laforge@netfilter.org>
+To: david@lang.hm
+Cc: Kyle Moffett <kyle@moffetthome.net>, David Miller <davem@davemloft.net>,
+       jengelh@medozas.de, paulmck@linux.vnet.ibm.com,
+       torvalds@linux-foundation.org, mingo@elte.hu, laijs@cn.fujitsu.com,
+       shemminger@vyatta.com, jeff.chua.linux@gmail.com, dada1@cosmosbay.com,
+       kaber@trash.net, r000n@r000n.net, linux-kernel@vger.kernel.org,
+       netfilter-devel@vger.kernel.org, netdev@vger.kernel.org
+Subject: Re: iptables very slow after commit
+	784544739a25c30637397ace5489eeb6e15d7d49
+Message-ID: <20090412123026.GL19172@prithivi.gnumonks.org>
+References: <alpine.LFD.2.00.0904101828490.4583@localhost.localdomain> <20090411041533.GB6822@linux.vnet.ibm.com> <alpine.LSU.2.00.0904110657410.26485@fbirervta.pbzchgretzou.qr> <20090410.230016.176733137.davem@davemloft.net> <f73f7ab80904111112n7c95d06ei32eb1f081842ae41@mail.gmail.com> <alpine.DEB.1.10.0904111751430.28893@asgard.lang.hm>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: multipart/signed; micalg=pgp-sha1;
+	protocol="application/pgp-signature"; boundary="hLTC+yGFJlatjToQ"
 Content-Disposition: inline
-In-Reply-To: <20090412084819.GA25314@elte.hu>
+In-Reply-To: <alpine.DEB.1.10.0904111751430.28893@asgard.lang.hm>
 User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, Apr 12, 2009 at 04:48:19PM +0800, Ingo Molnar wrote:
-> 
-> * Wu Fengguang <fengguang.wu@intel.com> wrote:
-> 
-> > Introduce page cache context based readahead algorithm.
-> > This is to better support concurrent read streams in general.
-> 
-> >  /*
-> > + * Count contiguously cached pages from @offset-1 to @offset-@max,
-> > + * this count is a conservative estimation of
-> > + * 	- length of the sequential read sequence, or
-> > + * 	- thrashing threshold in memory tight systems
-> > + */
-> > +static pgoff_t count_history_pages(struct address_space *mapping,
-> > +				   struct file_ra_state *ra,
-> > +				   pgoff_t offset, unsigned long max)
-> > +{
-> > +	pgoff_t head;
-> > +
-> > +	rcu_read_lock();
-> > +	head = radix_tree_prev_hole(&mapping->page_tree, offset - 1, max);
-> > +	rcu_read_unlock();
-> > +
-> > +	return offset - 1 - head;
-> > +}
-> 
-> Very elegant method! I suspect this will work far better 
-> than adding various increasingly more complex heuristics.
-> 
-> Emphatically-Acked-by: Ingo Molnar <mingo@elte.hu>
 
-Thank you Ingo!
+--hLTC+yGFJlatjToQ
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-The only pity is that this heuristic can be defeated by some user
-space program that tries to do aggressive drop-behind via
-fadvise(DONTNEED) calls. But as long as the drop-behind algorithm
-be a bit lazy and does not try to squeeze the last page at @offset-1,
-this patch will work just OK.
+Hi all,
 
-The context readahead idea is so fundamental, that a slightly modified
-algorithm can be used for all kinds of sequential patterns, and it can
-automatically adapt to the thrashing threshold.
+On Sat, Apr 11, 2009 at 05:54:41PM -0700, david@lang.hm wrote:
+>> Almost all of the standard firewall tools (such as shorewall, etc) are
+>> already using iptables-restore command to load firewall rules,
+>> primarily because using separate iptables commands was *already* way
+>> too slow.  There's also the serious race-condition of doing a firewall
+>> restart that way where you only have half your rules loaded for a bit.
+>> The "iptables" command is fine for fiddling around with the command
+>> line and making minor tweaks, but it simply doesn't cut it for
+>> large-scale rules.
+>
+> what are the userspace level tools that I am supposed to use in place of =
+=20
+> my current process? (which is to have a script that 1. stops traffic, 2. =
+=20
+> executes the iptables commands to create the rules that I want, then 3. =
+=20
+> enables traffic)
+>
+> iptables-restore only works if you are actually restoring the old set of =
+=20
+> rules. if you need to change the rules that doesn't work.
 
-        1 if (probe_page(index - 1)) {
-        2          begin = next_hole(index, max);
-        3          H     = index - prev_hole(index, 2*max);
-        4          end   = index + H;
-        5          update_window(begin, end);
-        6          submit_io();
-        7 }
+That's what I implemented as "iptables-restore --noflush" a number of years
+ago. It doesn't flush the current uleset and swaps in a new one, but=20
+reads the current rules from kernel, applies any number of changes and swaps
+the new ruleset in.
 
-            [=] history [#] current [_] readahead [.] new readahead
-            ==========================#____________..............
-        1                            ^index-1
-        2                             |----------->[begin
-        3  |<----------- H -----------|
-        4                             |----------- H ----------->]end
-        5                                          [ new window ]
+The syntax of iptables-restore is almost identical to iptables commands, you
+just specify the table in a different way.  So you would just create your
+desired changes in that format, and echo that into iptables-restore.  If it=
+'s
+an entire new ruleset, you use no '--noflush' and it does automatic flushing
+of all old rules.  If your stdin-file contains only incremental changes, you
+use --noflush.
 
+In the netfilter project, we knew for many years that the 'swap the entire
+table atomically in' is a bad design choice.  This is what various develope=
+rs
+have been trying to address at different times, and which finally resulted
+in the nftables implementation of Patrick McHardy.  So for the mid- to long
+term there is a clear design that moves away from that.
 
-We didn't do that because we want to
-- avoid unnecessary page cache lookups for normal cases
-- be more aggressive when thrashings are not a concern
+But so far, we have to live with the API and its semantics.  iptables users=
+pace
+has been improved a number of times, and things like iptables-restore with =
+or
+without --noflush can be used as an intermediate solution - and have been u=
+sed
+by many systems out there.
 
-However, readahead thrashings are far more prevalent than one would
-expect in a FTP/HTTP file streaming server. It can happen in a modern
-server with 16GB memory, 1Gbps outbound bandwidth and 1MB readahead
-size, due to the existences of slow streams.
+--=20
+- Harald Welte <laforge@netfilter.org>                 http://netfilter.org/
+=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
+=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
+=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
+=3D
+  "Fragmentation is like classful addressing -- an interesting early
+   architectural error that shows how much experimentation was going
+   on while IP was being designed."                    -- Paul Vixie
 
-Let's do a coarse calculation. The 8GB inactive_list pages will be
-cycled in 64Gb/1Gbps=64 seconds. This means an async readahead window
-must be consumed in 64s, or it will be thrashed.  That's a speed of
-2048KB/64s=32KB/s. Any client below this speed will create thrashings
-in the server. In practice, those poor slow clients could amount to
-half of the total connections(partly because it will take them more
-time to download anything). The frequent thrashings will in return
-speedup the LRU cycling/aging speed...
+--hLTC+yGFJlatjToQ
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: Digital signature
+Content-Disposition: inline
 
-We need a thrashing safe mode which do
-- the above modified context readahead algorithm
-- conservative ramp up of readahead size
-- conservative async readahead size
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.9 (GNU/Linux)
 
-The main problem is: when shall we switch into the mode?
+iD8DBQFJ4d7iXaXGVTD0i/8RAsIbAKCEurTCifbQxxy9HxXJkh9fkGvCDgCfYmiG
+j581fDfdXd0kho8vp56EtqM=
+=ruDw
+-----END PGP SIGNATURE-----
 
-We can start with aggressive readahead and try to detect readahead
-thrashings and switch into thrashing safe mode automatically. This
-will work for non-interleaved reads.  However the big file streamer -
-lighttpd - does interleaved reads.  The current data structure is not
-able to detect most readahead thrashings for lighttpd.
-
-Luckily, the non-resident page tracking facility could help this case.
-There the thrashed pages with their timing info can be found, based on
-which we can have some extended context readahead algorithm that could
-even overcome the drop-behind problem :)
-
-Thanks,
-Fengguang
+--hLTC+yGFJlatjToQ--
