@@ -1,54 +1,139 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754591AbZDLFEU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756714AbZDLFGO@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754591AbZDLFEU (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 12 Apr 2009 01:04:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752142AbZDLFEJ
+	id S1756714AbZDLFGO (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 12 Apr 2009 01:06:14 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753051AbZDLFFz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 12 Apr 2009 01:04:09 -0400
-Received: from out2.smtp.messagingengine.com ([66.111.4.26]:35246 "EHLO
-	out2.smtp.messagingengine.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1752099AbZDLFEI (ORCPT
+	Sun, 12 Apr 2009 01:05:55 -0400
+Received: from yx-out-2324.google.com ([74.125.44.28]:58372 "EHLO
+	yx-out-2324.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752142AbZDLFFy convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 12 Apr 2009 01:04:08 -0400
-X-Sasl-enc: R0r8vRk6xjm5gJN9UuaQoqqPusKRXl3jK7cVEvZqOxyr 1239512647
-Date: Sun, 12 Apr 2009 02:04:05 -0300
-From: Henrique de Moraes Holschuh <hmh@hmh.eng.br>
-To: Niel Lambrechts <niel.lambrechts@gmail.com>
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       "linux.kernel" <linux-kernel@vger.kernel.org>,
-       linux-acpi@vger.kernel.org
-Subject: Re: 2.6.30-rc1 (latest git): thinkpad-acpi: cannot control
-	brightness with hotkeys
-Message-ID: <20090412050405.GB8211@khazad-dum.debian.net>
-References: <49E10684.5090101@gmail.com> <20090411150555.8b13ed18.akpm@linux-foundation.org> <49E11FD0.9040403@gmail.com> <49E12378.8070200@gmail.com>
+	Sun, 12 Apr 2009 01:05:54 -0400
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <49E12378.8070200@gmail.com>
-X-GPG-Fingerprint: 1024D/1CDB0FE3 5422 5C61 F6B7 06FB 7E04  3738 EE25 DE3F
-	1CDB 0FE3
-User-Agent: Mutt/1.5.18 (2008-05-17)
+In-Reply-To: <alpine.DEB.1.10.0904111751430.28893@asgard.lang.hm>
+References: <alpine.LFD.2.00.0904101828490.4583@localhost.localdomain>
+	 <20090411041533.GB6822@linux.vnet.ibm.com>
+	 <alpine.LSU.2.00.0904110657410.26485@fbirervta.pbzchgretzou.qr>
+	 <20090410.230016.176733137.davem@davemloft.net>
+	 <f73f7ab80904111112n7c95d06ei32eb1f081842ae41@mail.gmail.com>
+	 <alpine.DEB.1.10.0904111751430.28893@asgard.lang.hm>
+Date: Sun, 12 Apr 2009 01:05:52 -0400
+Message-ID: <f73f7ab80904112205x379a7d5n282085d90030f300@mail.gmail.com>
+Subject: Re: iptables very slow after commit 784544739a25c30637397ace5489eeb6e15d7d49
+From: Kyle Moffett <kyle@moffetthome.net>
+To: david@lang.hm
+Cc: David Miller <davem@davemloft.net>, jengelh@medozas.de,
+       paulmck@linux.vnet.ibm.com, torvalds@linux-foundation.org,
+       mingo@elte.hu, laijs@cn.fujitsu.com, shemminger@vyatta.com,
+       jeff.chua.linux@gmail.com, dada1@cosmosbay.com, kaber@trash.net,
+       r000n@r000n.net, linux-kernel@vger.kernel.org,
+       netfilter-devel@vger.kernel.org, netdev@vger.kernel.org
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, 12 Apr 2009, Niel Lambrechts wrote:
-> Okay, please bear with me (I'm a git novice) but when I did
-> 
-> 'git revert 0e501834f8c2ba7de2a56e332d346dcf4ac0b593'
-> 
-> and recompiled I was still unable to control the brightness with the
-> hotkeys...
+On Sat, Apr 11, 2009 at 8:54 PM,  <david@lang.hm> wrote:
+> On Sat, 11 Apr 2009, Kyle Moffett wrote:
+>> Almost all of the standard firewall tools (such as shorewall, etc) are
+>> already using iptables-restore command to load firewall rules,
+>> primarily because using separate iptables commands was *already* way
+>> too slow.  There's also the serious race-condition of doing a firewall
+>> restart that way where you only have half your rules loaded for a bit.
+>> The "iptables" command is fine for fiddling around with the command
+>> line and making minor tweaks, but it simply doesn't cut it for
+>> large-scale rules.
+>
+> what are the userspace level tools that I am supposed to use in place of my
+> current process? (which is to have a script that 1. stops traffic, 2.
+> executes the iptables commands to create the rules that I want, then 3.
+> enables traffic)
+>
+> iptables-restore only works if you are actually restoring the old set of
+> rules. if you need to change the rules that doesn't work.
 
-Which is not surprising.  None of those codepaths are active for your
-thinkpad, at least not by default.
+Not true...  The iptables-restore format is pretty well documented and
+not far off the standard command-line argument format.  For instance
+the "shorewall" tool does a sort of "compile" of its high-level
+firewall language into an input file for the "iptables-restore"
+command.
 
-Try bissecting keyed to changes to the ACPI video driver, or to the whole
-acpi directory (but do try Linus' latest git kernel, first. One never
-knows...)
+The basic format to atomically load a table is:
+*tablename
+:CHAINNAME DEFAULTACTION [packets:bytes]
+:ANOTHERCHAIN ANOTHERACTION [packets:bytes]
+:customchain - [packets:bytes]
+-A SOMECHAIN --rule-arguments-here
+-A customchain --rule-arguments-here
+COMMIT
 
--- 
-  "One disk to rule them all, One disk to find them. One disk to bring
-  them all and in the darkness grind them. In the Land of Redmond
-  where the shadows lie." -- The Silicon Valley Tarot
-  Henrique Holschuh
+At the end of this email you can find some sample data cut-n-pasted
+from the iptables-restore file from one of my boxes running shorewall.
+ The full file is 645 lines but takes at most a second or so to load
+once compiled.
+
+You could also do an iptables-save -c on one of your configured
+systems to see what various constructions you use look like in the
+iptables format.  It's all pretty straightforward.
+
+Cheers,
+Kyle Moffett
+
+
+*raw
+:PREROUTING ACCEPT [0:0]
+:OUTPUT ACCEPT [0:0]
+COMMIT
+*nat
+:PREROUTING ACCEPT [0:0]
+:OUTPUT ACCEPT [0:0]
+:POSTROUTING ACCEPT [0:0]
+:excl0 - [0:0]
+:excl1 - [0:0]
+:excl2 - [0:0]
+:world_masq - [0:0]
+-A POSTROUTING -o world -j world_masq
+-A excl0 -d 10.0.0.0/8 -j RETURN
+-A excl0 -d 192.168.0.0/16 -j RETURN
+-A excl0 -d 172.16.0.0/12 -j RETURN
+-A excl0 -j MASQUERADE
+-A excl1 -d 10.0.0.0/8 -j RETURN
+-A excl1 -d 192.168.0.0/16 -j RETURN
+-A excl1 -d 172.16.0.0/12 -j RETURN
+-A excl1 -j MASQUERADE
+-A excl2 -d 10.0.0.0/8 -j RETURN
+-A excl2 -d 192.168.0.0/16 -j RETURN
+-A excl2 -d 172.16.0.0/12 -j RETURN
+-A excl2 -j MASQUERADE
+-A world_masq -s 10.0.0.0/8 -j excl0
+-A world_masq -s 172.16.0.0/12 -j excl1
+-A world_masq -s 192.168.0.0/16 -j excl2
+COMMIT
+*mangle
+:PREROUTING ACCEPT [0:0]
+:INPUT ACCEPT [0:0]
+:FORWARD ACCEPT [0:0]
+:OUTPUT ACCEPT [0:0]
+:POSTROUTING ACCEPT [0:0]
+:fortos - [0:0]
+:tcfor - [0:0]
+:tcout - [0:0]
+:tcpost - [0:0]
+:tcpre - [0:0]
+-A PREROUTING  -j tcpre
+-A FORWARD -j tcfor
+-A FORWARD -j fortos
+-A OUTPUT  -j tcout
+-A POSTROUTING -j tcpost
+-A fortos -p 17 -i dmz -s 72.214.41.2 -j TOS --set-tos 16
+-A fortos -p 17 -o dmz -d 72.214.41.2 -j TOS --set-tos 16
+COMMIT
+*filter
+:INPUT DROP [0:0]
+:FORWARD DROP [0:0]
+:OUTPUT DROP [0:0]
+:Drop - [0:0]
+:Reject - [0:0]
+[...many more lines snipped...]
