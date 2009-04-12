@@ -1,43 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753289AbZDLNvg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753003AbZDLN7i@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753289AbZDLNvg (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 12 Apr 2009 09:51:36 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752021AbZDLNv1
+	id S1753003AbZDLN7i (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 12 Apr 2009 09:59:38 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751635AbZDLN73
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 12 Apr 2009 09:51:27 -0400
-Received: from vienpom.coecu.nl ([82.94.165.232]:50539 "EHLO vienpom.coecu.nl"
+	Sun, 12 Apr 2009 09:59:29 -0400
+Received: from mx2.mail.elte.hu ([157.181.151.9]:40830 "EHLO mx2.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751684AbZDLNv1 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 12 Apr 2009 09:51:27 -0400
-X-Greylist: delayed 439 seconds by postgrey-1.27 at vger.kernel.org; Sun, 12 Apr 2009 09:51:26 EDT
+	id S1750877AbZDLN72 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 12 Apr 2009 09:59:28 -0400
+Date: Sun, 12 Apr 2009 15:59:12 +0200
+From: Ingo Molnar <mingo@elte.hu>
+To: Alessio Igor Bogani <abogani@texware.it>
+Cc: Frederic Weisbecker <fweisbec@gmail.com>, Jonathan Corbet <corbet@lwn.net>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>,
+       LKML <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH] remove the BKL: remove "BKL auto-drop" assumption from
+	nfs3_rpc_wrapper()
+Message-ID: <20090412135912.GA5246@elte.hu>
+References: <1239381281-11282-1-git-send-email-abogani@texware.it> <20090410182936.GA6018@nowhere> <63a49ef40904101350y68e93b85tad7d355868de9a38@mail.gmail.com>
 MIME-Version: 1.0
-Date: Sun, 12 Apr 2009 15:45:51 +0200
-From: =?UTF-8?Q?M=C3=B4she_van_der_Sterre?= <me@moshe.nl>
-To: containers@lists.osdl.org, lxc-devel@lists.sourceforge.net,
-       linux-kernel@vger.kernel.org
-Subject: BUG in tty_open when using containers and ptrace
-Message-ID: <d06d0dd6a4ddf760bea53291c048e291@[::1]>
-User-Agent: RoundCube Webmail/0.2-beta
-Content-Transfer-Encoding: 8bit
-Content-Type: text/plain; charset="UTF-8"
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <63a49ef40904101350y68e93b85tad7d355868de9a38@mail.gmail.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hello,
 
-I am working on the lxc userspace tools, and got this BUG a couple of
-times.
-Here are the reports:
+* Alessio Igor Bogani <abogani@texware.it> wrote:
 
-http://moshe.nl/tty-bugshot1.png
-http://moshe.nl/tty-bugshot2.png
+> Hi,
+> 
+> 2009/4/10 Frederic Weisbecker <fweisbec@gmail.com>:
+> [...]
+> >> Fix nfs3_rpc_wrapper()'s "schedule() drops the BKL automatically" assumption,
+> >> when schedule_timeout_killable() does not do that it can lock up.
+> [...]
+> > Btw, does it fix the lockdep message you've seen while mounting
+> > an nfs point?
+> 
+> Unfortunately no. That lockdep message still happens when I 
+> unmount rpc_pipefs. I'll investigate further.
 
-I am running 2.6.29.1 from kernel.org in a virtual machine under kvm.
-I have not been able to reliably reproduce it, but it happens only after
-the container is setup and ptrace is active on lxc-start.
-I think the first screen shot is while all ttys where allowed in
-cgroup.devices, the second one while only tty1 was allowed.
+might make sense to post that message here out in the open - maybe 
+someone with a strong NFSd-fu will comment on it.
 
-Greetings,
-Môshe van der Sterre
+	Ingo
