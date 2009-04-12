@@ -1,149 +1,78 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760013AbZDLJ27@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759986AbZDLJ30@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760013AbZDLJ27 (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 12 Apr 2009 05:28:59 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759574AbZDLJ2j
+	id S1759986AbZDLJ30 (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 12 Apr 2009 05:29:26 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759574AbZDLJ3H
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 12 Apr 2009 05:28:39 -0400
-Received: from hera.kernel.org ([140.211.167.34]:55174 "EHLO hera.kernel.org"
+	Sun, 12 Apr 2009 05:29:07 -0400
+Received: from hera.kernel.org ([140.211.167.34]:55190 "EHLO hera.kernel.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1759472AbZDLJ2g (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 12 Apr 2009 05:28:36 -0400
-Date: Sun, 12 Apr 2009 09:27:42 GMT
-From: Zhaolei <zhaolei@cn.fujitsu.com>
+	id S1760027AbZDLJ3F (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 12 Apr 2009 05:29:05 -0400
+Date: Sun, 12 Apr 2009 09:28:12 GMT
+From: "Theodore Ts'o" <tytso@mit.edu>
 To: linux-tip-commits@vger.kernel.org
-Cc: linux-kernel@vger.kernel.org, acme@redhat.com, hpa@zytor.com,
-       mingo@redhat.com, tzanussi@gmail.com, zhaolei@cn.fujitsu.com,
-       davem@davemloft.net, fweisbec@gmail.com, nhorman@tuxdriver.com,
-       rostedt@goodmis.org, tglx@linutronix.de, mingo@elte.hu
-Reply-To: mingo@redhat.com, hpa@zytor.com, acme@redhat.com,
-       linux-kernel@vger.kernel.org, tzanussi@gmail.com,
-       zhaolei@cn.fujitsu.com, davem@davemloft.net, fweisbec@gmail.com,
-       rostedt@goodmis.org, nhorman@tuxdriver.com, tglx@linutronix.de,
-       mingo@elte.hu
-In-Reply-To: <49DD90D2.5020604@cn.fujitsu.com>
-References: <49DD90D2.5020604@cn.fujitsu.com>
-Subject: [tip:tracing/core] tracing, net, skb tracepoint: make skb tracepoint use the TRACE_EVENT() macro
-Message-ID: <tip-5cb3d1d9d34ac04bcaa2034139345b2a5fea54c1@git.kernel.org>
-Git-Commit-ID: 5cb3d1d9d34ac04bcaa2034139345b2a5fea54c1
+Cc: linux-kernel@vger.kernel.org, hpa@zytor.com, mingo@redhat.com,
+       arjan@linux.intel.com, tytso@mit.edu, fweisbec@gmail.com,
+       srostedt@redhat.com, tglx@linutronix.de, mingo@elte.hu
+Reply-To: mingo@redhat.com, hpa@zytor.com, linux-kernel@vger.kernel.org,
+       fweisbec@gmail.com, arjan@linux.intel.com, srostedt@redhat.com,
+       tglx@linutronix.de, tytso@mit.edu, mingo@elte.hu
+In-Reply-To: <1239479479-2603-4-git-send-email-tytso@mit.edu>
+References: <1239479479-2603-4-git-send-email-tytso@mit.edu>
+Subject: [tip:tracing/core] tracing: Add documentation for the power tracer
+Message-ID: <tip-f7a3b3845cdfa4d6383b74139392ff5c259531fc@git.kernel.org>
+Git-Commit-ID: f7a3b3845cdfa4d6383b74139392ff5c259531fc
 X-Mailer: tip-git-log-daemon
 MIME-Version: 1.0
 Content-Type: text/plain; charset=UTF-8
 Content-Disposition: inline
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Sun, 12 Apr 2009 09:27:45 +0000 (UTC)
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Sun, 12 Apr 2009 09:28:14 +0000 (UTC)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Commit-ID:  5cb3d1d9d34ac04bcaa2034139345b2a5fea54c1
-Gitweb:     http://git.kernel.org/tip/5cb3d1d9d34ac04bcaa2034139345b2a5fea54c1
-Author:     Zhaolei <zhaolei@cn.fujitsu.com>
-AuthorDate: Thu, 9 Apr 2009 14:08:18 +0800
+Commit-ID:  f7a3b3845cdfa4d6383b74139392ff5c259531fc
+Gitweb:     http://git.kernel.org/tip/f7a3b3845cdfa4d6383b74139392ff5c259531fc
+Author:     Theodore Ts'o <tytso@mit.edu>
+AuthorDate: Sat, 11 Apr 2009 15:51:19 -0400
 Committer:  Ingo Molnar <mingo@elte.hu>
-CommitDate: Fri, 10 Apr 2009 12:57:55 +0200
+CommitDate: Sun, 12 Apr 2009 11:23:49 +0200
 
-tracing, net, skb tracepoint: make skb tracepoint use the TRACE_EVENT() macro
+tracing: Add documentation for the power tracer
 
-TRACE_EVENT is a more generic way to define a tracepoint.
-Doing so adds these new capabilities to this tracepoint:
-
-  - zero-copy and per-cpu splice() tracing
-  - binary tracing without printf overhead
-  - structured logging records exposed under /debug/tracing/events
-  - trace events embedded in function tracer output and other plugins
-  - user-defined, per tracepoint filter expressions
-
-Signed-off-by: Zhao Lei <zhaolei@cn.fujitsu.com>
-Acked-by: Neil Horman <nhorman@tuxdriver.com>
-Cc: "David S. Miller" <davem@davemloft.net>
-Cc: Arnaldo Carvalho de Melo <acme@redhat.com>
-Cc: "Steven Rostedt ;" <rostedt@goodmis.org>
+Signed-off-by: "Theodore Ts'o" <tytso@mit.edu>
+Acked-by: Arjan van de Ven <arjan@linux.intel.com>
 Cc: Frederic Weisbecker <fweisbec@gmail.com>
-Cc: Tom Zanussi <tzanussi@gmail.com>
-LKML-Reference: <49DD90D2.5020604@cn.fujitsu.com>
+Cc: Steven Rostedt <srostedt@redhat.com>
+LKML-Reference: <1239479479-2603-4-git-send-email-tytso@mit.edu>
 Signed-off-by: Ingo Molnar <mingo@elte.hu>
 
 
 ---
- include/trace/skb.h               |    4 +--
- include/trace/skb_event_types.h   |   38 +++++++++++++++++++++++++++++++++++++
- include/trace/trace_event_types.h |    1 +
- include/trace/trace_events.h      |    1 +
- 4 files changed, 41 insertions(+), 3 deletions(-)
+ Documentation/trace/power.txt |   17 +++++++++++++++++
+ 1 files changed, 17 insertions(+), 0 deletions(-)
 
-diff --git a/include/trace/skb.h b/include/trace/skb.h
-index b66206d..d2de717 100644
---- a/include/trace/skb.h
-+++ b/include/trace/skb.h
-@@ -4,8 +4,6 @@
- #include <linux/skbuff.h>
- #include <linux/tracepoint.h>
- 
--DECLARE_TRACE(kfree_skb,
--	TP_PROTO(struct sk_buff *skb, void *location),
--	TP_ARGS(skb, location));
-+#include <trace/skb_event_types.h>
- 
- #endif
-diff --git a/include/trace/skb_event_types.h b/include/trace/skb_event_types.h
+diff --git a/Documentation/trace/power.txt b/Documentation/trace/power.txt
 new file mode 100644
-index 0000000..4a1c504
+index 0000000..9c584ff
 --- /dev/null
-+++ b/include/trace/skb_event_types.h
-@@ -0,0 +1,38 @@
++++ b/Documentation/trace/power.txt
+@@ -0,0 +1,17 @@
++The power trace collects detailed information about C-state and P-state
++transitions, instead of just looking at the high-level "average"
++information.
 +
-+/* use <trace/skb.h> instead */
-+#ifndef TRACE_EVENT
-+# error Do not include this file directly.
-+# error Unless you know what you are doing.
-+#endif
++There is a helper script found in scrips/tracing/power.pl in the kernel
++sources which can be used to parse this information and create a
++Scalable Vector Graphics (SVG) picture from the trace data.
 +
-+#undef TRACE_SYSTEM
-+#define TRACE_SYSTEM skb
++To use this tracer:
 +
-+/*
-+ * Tracepoint for free an sk_buff:
-+ */
-+TRACE_EVENT(kfree_skb,
-+
-+	TP_PROTO(struct sk_buff *skb, void *location),
-+
-+	TP_ARGS(skb, location),
-+
-+	TP_STRUCT__entry(
-+		__field(	void *,		skbaddr		)
-+		__field(	unsigned short,	protocol	)
-+		__field(	void *,		location	)
-+	),
-+
-+	TP_fast_assign(
-+		__entry->skbaddr = skb;
-+		if (skb) {
-+			__entry->protocol = ntohs(skb->protocol);
-+		}
-+		__entry->location = location;
-+	),
-+
-+	TP_printk("skbaddr=%p protocol=%u location=%p",
-+		__entry->skbaddr, __entry->protocol, __entry->location)
-+);
-+
-+#undef TRACE_SYSTEM
-diff --git a/include/trace/trace_event_types.h b/include/trace/trace_event_types.h
-index df56f56..33b6bfc 100644
---- a/include/trace/trace_event_types.h
-+++ b/include/trace/trace_event_types.h
-@@ -3,3 +3,4 @@
- #include <trace/sched_event_types.h>
- #include <trace/irq_event_types.h>
- #include <trace/lockdep_event_types.h>
-+#include <trace/skb_event_types.h>
-diff --git a/include/trace/trace_events.h b/include/trace/trace_events.h
-index fd13750..0e2aa80 100644
---- a/include/trace/trace_events.h
-+++ b/include/trace/trace_events.h
-@@ -3,3 +3,4 @@
- #include <trace/sched.h>
- #include <trace/irq.h>
- #include <trace/lockdep.h>
-+#include <trace/skb.h>
++	echo 0 > /sys/kernel/debug/tracing/tracing_enabled
++	echo power > /sys/kernel/debug/tracing/current_tracer
++	echo 1 > /sys/kernel/debug/tracing/tracing_enabled
++	sleep 1
++	echo 0 > /sys/kernel/debug/tracing/tracing_enabled
++	cat /sys/kernel/debug/tracing/trace | \
++		perl scripts/tracing/power.pl > out.sv
