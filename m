@@ -1,60 +1,74 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760072AbZDLLTX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760295AbZDLLU7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760072AbZDLLTX (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 12 Apr 2009 07:19:23 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754957AbZDLLTJ
+	id S1760295AbZDLLU7 (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 12 Apr 2009 07:20:59 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754519AbZDLLUu
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 12 Apr 2009 07:19:09 -0400
-Received: from srv5.dvmed.net ([207.36.208.214]:44991 "EHLO mail.dvmed.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754655AbZDLLTF (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 12 Apr 2009 07:19:05 -0400
-Message-ID: <49E1CE26.9050401@garzik.org>
-Date: Sun, 12 Apr 2009 07:19:02 -0400
-From: Jeff Garzik <jeff@garzik.org>
-User-Agent: Thunderbird 2.0.0.21 (X11/20090320)
+	Sun, 12 Apr 2009 07:20:50 -0400
+Received: from ti-out-0910.google.com ([209.85.142.184]:16486 "EHLO
+	ti-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752589AbZDLLUt (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 12 Apr 2009 07:20:49 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:to:cc:subject:message-id:reply-to:mime-version
+         :content-type:content-disposition:content-transfer-encoding
+         :user-agent;
+        b=XJDiFbouzk8h03lh/GaJddc1MjLDfc1yPnfmGW856zjCesTxW6auVJgC+YFcNkFnv3
+         BUqTj/hWYuttyhY1XikhRMwZxFRJIxBVMGsm+aJ8uhDooIIa20wiTuhTr40RJGP4JEE3
+         bTjOBdwc8RTROgKc/iqxdFVfoLXiolyyHqEek=
+Date: Sun, 12 Apr 2009 19:19:25 +0800
+From: Zhenwen Xu <helight.xu@gmail.com>
+To: linux-pci@vger.kernel.org
+Cc: linux-kernel@vger.kernel.org
+Subject: [PATCH]fix a warning on drivers/pci/hotplug/ibmphp_core.c
+Message-ID: <20090412111925.GB3574@helight>
+Reply-To: Zhenwen Xu <helight.xu@gmail.com>
 MIME-Version: 1.0
-To: Alexander Beregalov <a.beregalov@gmail.com>
-CC: linux-ide@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH] sata_sx4: refresh and convert to new EH
-References: <20090408200511.GA24071@havoc.gtf.org> <a4423d670904111946w2a8f3839n27b77f5473076563@mail.gmail.com>
-In-Reply-To: <a4423d670904111946w2a8f3839n27b77f5473076563@mail.gmail.com>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 7bit
-X-Spam-Score: -4.4 (----)
-X-Spam-Report: SpamAssassin version 3.2.5 on srv5.dvmed.net summary:
-	Content analysis details:   (-4.4 points, 5.0 required)
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
+Content-Transfer-Encoding: 8bit
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Alexander Beregalov wrote:
-> 2009/4/9 Jeff Garzik <jeff@garzik.org>:
->> I reviewed and refreshed libata-dev.git#new-eh, now renamed to #sx4.
->>
->> Several bugs and missing pieces in the new-EH conversion were addressed
->> (often by copying highly similar code from sata_promise, a highly
->> similar chip)
->>
->> The only thing left is some "it still works" testing...  any takers?
->>
-> 
-> Hi Jeff
-> 
-> I have SX4000 card, it is based on the same PDC20621 chip, but has PATA ports
-> (without PATA-SATA bridges).
-> Can I help?
-> 
-> I am newbie here, but I will try to modify the driver to support PATA
-> card as well
-> and test your patch.
 
-It's unknown how well, or what is needed, to support the SX4000.  You 
-are welcome to dive in and figure out what is needed, but you'd be 
-asking questions to which we wouldn't have answers.
+fix this warning:
+drivers/pci/hotplug/ibmphp_core.c:1414: warning: ‘ibmphp_exit’ defined but not used
 
-	Jeff
+It missed the "module_exit".
 
 
+>From bb3c7845b38dff4628fe482207790b82a3df0ab4 Mon Sep 17 00:00:00 2001
+From: Zhenwen Xu <Helight.Xu@gmail.com>
+Date: Sun, 12 Apr 2009 19:10:58 +0800
+Subject: [PATCH] fix the warning ‘ibmphp_exit’ defined but not used
+MIME-Version: 1.0
+Content-Type: text/plain; charset=utf-8
+Content-Transfer-Encoding: 8bit
 
+Signed-off-by: Zhenwen Xu <helight.xu@gmail.com>
+---
+ drivers/pci/hotplug/ibmphp_core.c |    1 +
+ 1 files changed, 1 insertions(+), 0 deletions(-)
+
+diff --git a/drivers/pci/hotplug/ibmphp_core.c b/drivers/pci/hotplug/ibmphp_core.c
+index dd18f85..29ccb8a 100644
+--- a/drivers/pci/hotplug/ibmphp_core.c
++++ b/drivers/pci/hotplug/ibmphp_core.c
+@@ -1419,3 +1419,4 @@ static void __exit ibmphp_exit(void)
+ }
+ 
+ module_init(ibmphp_init);
++module_exit(ibmphp_exit);
+-- 
+1.5.6.5
+
+-- 
+---------------------------------
+Zhenwen Xu - Open and Free
+Home Page:	http://zhwen.org
+My Studio:	http://dim4.cn
 
