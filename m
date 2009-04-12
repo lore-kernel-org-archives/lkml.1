@@ -1,52 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751456AbZDLQPF@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751920AbZDLQSS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751456AbZDLQPF (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 12 Apr 2009 12:15:05 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750815AbZDLQOx
+	id S1751920AbZDLQSS (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 12 Apr 2009 12:18:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751228AbZDLQSB
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 12 Apr 2009 12:14:53 -0400
-Received: from out2.smtp.messagingengine.com ([66.111.4.26]:53931 "EHLO
-	out2.smtp.messagingengine.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1750739AbZDLQOw (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 12 Apr 2009 12:14:52 -0400
-X-Sasl-enc: g7h5+Z1vUFMPb3lv0qh9aB8jWV01u9zLFVZLWr+tKI1I 1239552891
-Date: Sun, 12 Apr 2009 13:14:48 -0300
-From: Henrique de Moraes Holschuh <hmh@hmh.eng.br>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: Niel Lambrechts <niel.lambrechts@gmail.com>,
-       "linux.kernel" <linux-kernel@vger.kernel.org>,
-       linux-acpi@vger.kernel.org
-Subject: Re: 2.6.30-rc1 (latest git): thinkpad-acpi: cannot control
-	brightness with hotkeys
-Message-ID: <20090412161448.GC26502@khazad-dum.debian.net>
-References: <49E10684.5090101@gmail.com> <20090411150555.8b13ed18.akpm@linux-foundation.org>
+	Sun, 12 Apr 2009 12:18:01 -0400
+Received: from mx2.redhat.com ([66.187.237.31]:58380 "EHLO mx2.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750815AbZDLQSA (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 12 Apr 2009 12:18:00 -0400
+Message-ID: <49E213AE.4060506@redhat.com>
+Date: Sun, 12 Apr 2009 19:15:42 +0300
+From: Avi Kivity <avi@redhat.com>
+User-Agent: Thunderbird 2.0.0.21 (X11/20090320)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090411150555.8b13ed18.akpm@linux-foundation.org>
-X-GPG-Fingerprint: 1024D/1CDB0FE3 5422 5C61 F6B7 06FB 7E04  3738 EE25 DE3F
-	1CDB 0FE3
-User-Agent: Mutt/1.5.18 (2008-05-17)
+To: Alan Cox <alan@lxorguk.ukuu.org.uk>
+CC: Szabolcs Szakacsits <szaka@ntfs-3g.com>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Grant Grundler <grundler@google.com>,
+       Linux IDE mailing list <linux-ide@vger.kernel.org>,
+       LKML <linux-kernel@vger.kernel.org>, Jens Axboe <jens.axboe@oracle.com>,
+       Arjan van de Ven <arjan@infradead.org>
+Subject: Re: Implementing NVMHCI...
+References: <20090412091228.GA29937@elte.hu>	<Pine.LNX.4.62.0904121806060.9521@tamago.serverit.net> <20090412162018.6c1507b4@lxorguk.ukuu.org.uk>
+In-Reply-To: <20090412162018.6c1507b4@lxorguk.ukuu.org.uk>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, 11 Apr 2009, Andrew Morton wrote:
-> > With latest git kernel, I'm no longer able to control my Thinkpad (W500)
-> > brightness, although I can still control the backlight, bluetooth etc.
+Alan Cox wrote:
+>> The atomic building units (sector size, block size, etc) of NTFS are 
+>> entirely parametric. The maximum values could be bigger than the 
+>> currently "configured" maximum limits. 
+>>     
+>
+> That isn't what bites you - you can run 8K-32K ext2 file systems but if
+> your physical page size is smaller than the fs page size you have a
+> problem.
+>
+> The question is whether the NT VM can cope rather than the fs.
+>   
 
-Niels, something just occourred to me.  Is your problem the hotkeys, or the
-brightness control itself?  Check /sys/class/backlight/*, please.  What do
-you have in there?  Does it work?
+A quick test shows that it can.  I didn't try mmap(), but copying files 
+around worked.
 
-If it is the hotkeys, make sure you either have the legacy ACPI events
-enabled in kconfig, or that you have something tied to the thinkpad-acpi
-input device (no, HAL doesn't do it _yet_, it just forwards the events to
-X.org)...
+Did you expect it not to work?
 
 -- 
-  "One disk to rule them all, One disk to find them. One disk to bring
-  them all and in the darkness grind them. In the Land of Redmond
-  where the shadows lie." -- The Silicon Valley Tarot
-  Henrique Holschuh
+error compiling committee.c: too many arguments to function
+
