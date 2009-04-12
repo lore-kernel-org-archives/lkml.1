@@ -1,97 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758029AbZDLHXM@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759253AbZDLHXw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758029AbZDLHXM (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 12 Apr 2009 03:23:12 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755925AbZDLHW3
+	id S1759253AbZDLHXw (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 12 Apr 2009 03:23:52 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757385AbZDLHWj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 12 Apr 2009 03:22:29 -0400
-Received: from mga03.intel.com ([143.182.124.21]:54123 "EHLO mga03.intel.com"
+	Sun, 12 Apr 2009 03:22:39 -0400
+Received: from mga14.intel.com ([143.182.124.37]:31531 "EHLO mga14.intel.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756621AbZDLHW2 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 12 Apr 2009 03:22:28 -0400
+	id S1756621AbZDLHWh (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 12 Apr 2009 03:22:37 -0400
 X-ExtLoop1: 1
 X-IronPort-AV: E=Sophos;i="4.40,174,1239001200"; 
-   d="scan'208";a="130525061"
-Message-Id: <20090412072052.457214378@intel.com>
-References: <20090412071950.166891982@intel.com>
-User-Agent: quilt/0.46-1
-Date: Sun, 12 Apr 2009 15:19:51 +0800
+   d="scan'208";a="130525056"
+Date: Sun, 12 Apr 2009 15:16:05 +0800
 From: Wu Fengguang <fengguang.wu@intel.com>
 To: Andrew Morton <akpm@linux-foundation.org>
-Cc: Vladislav Bolkhovitin <vst@vlnb.net>,
-       Wu Fengguang <fengguang.wu@intel.com>
-Cc: LKML <linux-kernel@vger.kernel.org>
-Subject: [PATCH 1/3] radix-tree: add radix_tree_prev_hole()
-Content-Disposition: inline; filename=radixtree-prev-hole.patch
+Cc: LKML <linux-kernel@vger.kernel.org>, linux-fsdevel@vger.kernel.org,
+       Chenfeng Xu <xcf@ustc.edu.cn>
+Subject: [RFC][PATCH] vfs: check inode size on no_cached_page
+Message-ID: <20090412071605.GA14058@localhost>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-The counterpart of radix_tree_next_hole(). To be used by context readahead.
+[This patch may not necessarily be merged, but at least we should
+ be aware of the problem.]
 
+When user space requests past-EOF data, do_generic_file_read() will
+issue a bonus readpage call, which may be unfavorable.
+
+do_generic_file_read:
+        -> find_page:
+        -> find_get_page()             = NULL
+        -> page_cache_sync_readahead()
+        -> find_get_page()             = NULL
+        -> no_cached_page:
+        -> readpage:
+                -> nfs_readpage()      = error
+        -> readpage_error:
+
+Reported-by: Xu Chenfeng <xcf@ustc.edu.cn>
 Signed-off-by: Wu Fengguang <fengguang.wu@intel.com>
 ---
- include/linux/radix-tree.h |    2 +
- lib/radix-tree.c           |   37 +++++++++++++++++++++++++++++++++++
- 2 files changed, 39 insertions(+)
+ mm/filemap.c |    5 +++++
+ 1 file changed, 5 insertions(+)
 
---- mm.orig/lib/radix-tree.c
-+++ mm/lib/radix-tree.c
-@@ -666,6 +666,43 @@ unsigned long radix_tree_next_hole(struc
- }
- EXPORT_SYMBOL(radix_tree_next_hole);
+--- mm.orig/mm/filemap.c
++++ mm/mm/filemap.c
+@@ -1269,6 +1269,11 @@ readpage_error:
+ 		goto out;
  
-+/**
-+ *	radix_tree_prev_hole    -    find the prev hole (not-present entry)
-+ *	@root:		tree root
-+ *	@index:		index key
-+ *	@max_scan:	maximum range to search
-+ *
-+ *	Search backwards in the range [max(index-max_scan+1, 0), index]
-+ *	for the first hole.
-+ *
-+ *	Returns: the index of the hole if found, otherwise returns an index
-+ *	outside of the set specified (in which case 'index - return >= max_scan'
-+ *	will be true). In rare cases of wrap-around, LONG_MAX will be returned.
-+ *
-+ *	radix_tree_next_hole may be called under rcu_read_lock. However, like
-+ *	radix_tree_gang_lookup, this will not atomically search a snapshot of
-+ *	the tree at a single point in time. For example, if a hole is created
-+ *	at index 10, then subsequently a hole is created at index 5,
-+ *	radix_tree_prev_hole covering both indexes may return 5 if called under
-+ *	rcu_read_lock.
-+ */
-+unsigned long radix_tree_prev_hole(struct radix_tree_root *root,
-+				   unsigned long index, unsigned long max_scan)
-+{
-+	unsigned long i;
+ no_cached_page:
++		isize = i_size_read(inode);
++		end_index = (isize - 1) >> PAGE_CACHE_SHIFT;
++		if (unlikely(!isize || index > end_index))
++			goto out;
 +
-+	for (i = 0; i < max_scan; i++) {
-+		if (!radix_tree_lookup(root, index))
-+			break;
-+		index--;
-+		if (index == LONG_MAX)
-+			break;
-+	}
-+
-+	return index;
-+}
-+EXPORT_SYMBOL(radix_tree_prev_hole);
-+
- static unsigned int
- __lookup(struct radix_tree_node *slot, void ***results, unsigned long index,
- 	unsigned int max_items, unsigned long *next_index)
---- mm.orig/include/linux/radix-tree.h
-+++ mm/include/linux/radix-tree.h
-@@ -167,6 +167,8 @@ radix_tree_gang_lookup_slot(struct radix
- 			unsigned long first_index, unsigned int max_items);
- unsigned long radix_tree_next_hole(struct radix_tree_root *root,
- 				unsigned long index, unsigned long max_scan);
-+unsigned long radix_tree_prev_hole(struct radix_tree_root *root,
-+				unsigned long index, unsigned long max_scan);
- int radix_tree_preload(gfp_t gfp_mask);
- void radix_tree_init(void);
- void *radix_tree_tag_set(struct radix_tree_root *root,
-
--- 
-
+ 		/*
+ 		 * Ok, it wasn't cached, so we need to create a new
+ 		 * page..
