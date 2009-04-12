@@ -1,28 +1,33 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760210AbZDLKwB@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760175AbZDLKzK@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760210AbZDLKwB (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 12 Apr 2009 06:52:01 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759253AbZDLKvw
+	id S1760175AbZDLKzK (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 12 Apr 2009 06:55:10 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757418AbZDLKyw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 12 Apr 2009 06:51:52 -0400
-Received: from mx3.mail.elte.hu ([157.181.1.138]:56628 "EHLO mx3.mail.elte.hu"
+	Sun, 12 Apr 2009 06:54:52 -0400
+Received: from mx2.mail.elte.hu ([157.181.151.9]:47647 "EHLO mx2.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1758920AbZDLKvv (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 12 Apr 2009 06:51:51 -0400
-Date: Sun, 12 Apr 2009 12:51:32 +0200
+	id S1755673AbZDLKyv (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 12 Apr 2009 06:54:51 -0400
+Date: Sun, 12 Apr 2009 12:54:16 +0200
 From: Ingo Molnar <mingo@elte.hu>
-To: Jaswinder Singh Rajput <jaswinder@kernel.org>
-Cc: x86 maintainers <x86@kernel.org>,
-       Suresh Siddha <suresh.b.siddha@intel.com>,
-       LKML <linux-kernel@vger.kernel.org>, Sam Ravnborg <sam@ravnborg.org>
-Subject: Re: [PATCH -tip] x86: apic/x2apic_cluster.c
-	x86_cpu_to_logical_apicid should be static
-Message-ID: <20090412105132.GA25392@elte.hu>
-References: <1239434726.4418.24.camel@localhost.localdomain>
+To: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
+Cc: Linus Torvalds <torvalds@linux-foundation.org>,
+       David Miller <davem@davemloft.net>,
+       Lai Jiangshan <laijs@cn.fujitsu.com>, shemminger@vyatta.com,
+       jeff.chua.linux@gmail.com, dada1@cosmosbay.com, jengelh@medozas.de,
+       kaber@trash.net, r000n@r000n.net,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       netfilter-devel@vger.kernel.org, netdev@vger.kernel.org,
+       paulus@samba.org, benh@kernel.crashing.org
+Subject: Re: iptables very slow after commit
+	784544739a25c30637397ace5489eeb6e15d7d49
+Message-ID: <20090412105416.GB25392@elte.hu>
+References: <Pine.LNX.4.64.0904101656190.2093@boston.corp.fedex.com> <20090410095246.4fdccb56@s6510> <20090410.182507.140306636.davem@davemloft.net> <alpine.LFD.2.00.0904101828490.4583@localhost.localdomain> <20090411041533.GB6822@linux.vnet.ibm.com> <20090411070854.GC11799@elte.hu> <20090411174801.GG6822@linux.vnet.ibm.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <1239434726.4418.24.camel@localhost.localdomain>
+In-Reply-To: <20090411174801.GG6822@linux.vnet.ibm.com>
 User-Agent: Mutt/1.5.18 (2008-05-17)
 X-ELTE-VirusStatus: clean
 X-ELTE-SpamScore: -1.5
@@ -37,58 +42,45 @@ List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-* Jaswinder Singh Rajput <jaswinder@kernel.org> wrote:
+* Paul E. McKenney <paulmck@linux.vnet.ibm.com> wrote:
 
-> Impact: reduce kernel size a bit, avoid sparse warning
+> On Sat, Apr 11, 2009 at 09:08:54AM +0200, Ingo Molnar wrote:
+> > 
+> > * Paul E. McKenney <paulmck@linux.vnet.ibm.com> wrote:
+> > 
+> > > 	I will nevertheless suggest the following egregious hack to
+> > > 	get a consistent sample of one counter for some other CPU:
+> > > 
+> > > 	a.	Disable interrupts
+> > > 	b.	Atomically exchange the bottom 32 bits of the
+> > > 		counter with the value zero.
+> > > 	c.	Atomically exchange the top 32 bits of the counter
+> > > 		with the value zero.
+> > > 	d.	Concatenate the values obtained in (b) and (c), which
+> > > 		is the snapshot value.
+> > 
+> > Note, i have recently implemented full atomic64_t support on 32-bit 
+> > x86, for the perfcounters code, based on the CMPXCHG8B instruction.
+> > 
+> > Which, while not the lightest of instructions, is still much better 
+> > than the sequence above.
+> > 
+> > So i think a better approach would be to also add a dumb generic 
+> > implementation for atomic64_t (using a global lock or so), and then 
+> > generic code could just assume that atomic64_t always exists.
+> > 
+> > It is far nicer - and faster as well - as the hack above, even on 
+> > 32-bit x86.
 > 
-> Fixes sparse warning:
->   arch/x86/kernel/apic/x2apic_cluster.c:13:1: warning: symbol 'per_cpu__x86_cpu_to_logical_apicid' was not declared. Should it be static?
-> 
-> Signed-off-by: Jaswinder Singh Rajput <jaswinderrajput@gmail.com>
-> ---
->  arch/x86/kernel/apic/x2apic_cluster.c |    2 +-
->  1 files changed, 1 insertions(+), 1 deletions(-)
+> If the generic implementation is needed only on !SMP systems, that 
+> could work.  The architectures I would be worried about include 
+> powerpc and ia64, which I believe support 32-bit SMP builds.
 
-Applied, thanks.
+ia64 would naturally support the CMPXCHG8B instructions.
 
-There is a not so small nit:
-
-> Impact: reduce kernel size a bit, avoid sparse warning
-> 
-> Fixes sparse warning:
-
-the thing is, we dont 'fix', nor do we 'avoid' Sparse warnings!
-
-We _read_ them, _understand_ them, and then we act upon them, fixing 
-the problem they expose.
-
-Or, if there is no problem exposed, we annotate the code to fix the 
-Sparse false positive warning.
-
-Your changelog does not tell us anything whether you went through 
-that thought process. I had to double-check it and had to create 
-this information from scratch.
-
-Please take this as a last warning: you send lots of patches that 
-address various things mechanically, often without thinking through 
-the effects. They are expensive to maintain, because they cause 
-churn and because people often have to do more work accepting them 
-than you did creating them!
-
-You sent a hundred patches in two weeks and they are not applied yet 
-- and this is why: it is expensive to filter through them and if you 
-dont do it we can only do it by simply not taking them all that 
-easily. Taking them simply does not scale.
-
-And if you write a hundred patches in two weeks you _really_ have to 
-ask yourself whether your quality controls are strong enough before 
-emitting them. There are highly productive members of the Linux 
-community who only send a dozen patches per _year_.
-
-You really want to avoid the 'also sends clueless patches' 
-contributor label, because the only way to deal with such patches as 
-a maintainer is to rate-throttle them.
-
-Thanks,
+Not sure about powerpc32. Having a lock for the library 
+implementation is not _that_ much of a problem. We obviously dont 
+want the design of Linux to be dictated by the weakest link of all 
+platforms, right?
 
 	Ingo
