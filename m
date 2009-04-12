@@ -1,28 +1,29 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753003AbZDLN7i@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754254AbZDLOCu@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753003AbZDLN7i (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 12 Apr 2009 09:59:38 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751635AbZDLN73
+	id S1754254AbZDLOCu (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 12 Apr 2009 10:02:50 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751662AbZDLOCk
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 12 Apr 2009 09:59:29 -0400
-Received: from mx2.mail.elte.hu ([157.181.151.9]:40830 "EHLO mx2.mail.elte.hu"
+	Sun, 12 Apr 2009 10:02:40 -0400
+Received: from mx2.mail.elte.hu ([157.181.151.9]:51390 "EHLO mx2.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750877AbZDLN72 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 12 Apr 2009 09:59:28 -0400
-Date: Sun, 12 Apr 2009 15:59:12 +0200
+	id S1750877AbZDLOCj (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 12 Apr 2009 10:02:39 -0400
+Date: Sun, 12 Apr 2009 16:01:49 +0200
 From: Ingo Molnar <mingo@elte.hu>
-To: Alessio Igor Bogani <abogani@texware.it>
-Cc: Frederic Weisbecker <fweisbec@gmail.com>, Jonathan Corbet <corbet@lwn.net>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       LKML <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH] remove the BKL: remove "BKL auto-drop" assumption from
-	nfs3_rpc_wrapper()
-Message-ID: <20090412135912.GA5246@elte.hu>
-References: <1239381281-11282-1-git-send-email-abogani@texware.it> <20090410182936.GA6018@nowhere> <63a49ef40904101350y68e93b85tad7d355868de9a38@mail.gmail.com>
+To: "H. Peter Anvin" <hpa@zytor.com>
+Cc: Avi Kivity <avi@redhat.com>, Pavel Machek <pavel@ucw.cz>, mingo@redhat.com,
+       linux-kernel@vger.kernel.org, tglx@linutronix.de, hpa@linux.intel.com,
+       rjw@sisk.pl, linux-tip-commits@vger.kernel.org,
+       Linus Torvalds <torvalds@linux-foundation.org>
+Subject: Re: [tip:x86/setup] x86, setup: "glove box" BIOS calls --
+	infrastructure
+Message-ID: <20090412140149.GB5246@elte.hu>
+References: <49DE7F79.4030106@zytor.com> <tip-7a734e7dd93b9aea08ed51036a9a0e2c9dfd8dac@git.kernel.org> <20090410080444.GC16512@elf.ucw.cz> <20090410103934.GA21506@elte.hu> <20090410104648.GA31516@elf.ucw.cz> <20090410112546.GD21506@elte.hu> <20090410113824.GA18823@elf.ucw.cz> <49E0C1AB.2050608@redhat.com> <49E17A6E.5000104@zytor.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <63a49ef40904101350y68e93b85tad7d355868de9a38@mail.gmail.com>
+In-Reply-To: <49E17A6E.5000104@zytor.com>
 User-Agent: Mutt/1.5.18 (2008-05-17)
 X-ELTE-VirusStatus: clean
 X-ELTE-SpamScore: -1.5
@@ -37,22 +38,29 @@ List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-* Alessio Igor Bogani <abogani@texware.it> wrote:
+* H. Peter Anvin <hpa@zytor.com> wrote:
 
-> Hi,
-> 
-> 2009/4/10 Frederic Weisbecker <fweisbec@gmail.com>:
-> [...]
-> >> Fix nfs3_rpc_wrapper()'s "schedule() drops the BKL automatically" assumption,
-> >> when schedule_timeout_killable() does not do that it can lock up.
-> [...]
-> > Btw, does it fix the lockdep message you've seen while mounting
-> > an nfs point?
-> 
-> Unfortunately no. That lockdep message still happens when I 
-> unmount rpc_pipefs. I'll investigate further.
+> Avi Kivity wrote:
+>>
+>> kvm might help detecting these issues, but not in fixing them.  
+>> If you isolate the BIOS, then you've prevented corruption, but 
+>> you've also prevented it from doing whatever it is it was 
+>> supposed to do.  If you give it access to memory and the rest of 
+>> the system, then whatever evil it has wrought affects the system.
+>>
+>> You could try to allow the BIOS access to selected pieces of 
+>> memory and hardware, virtualizing the rest, but it seems to me it 
+>> would be more like a recipe for a giant headache that a solution.
+>>
+>
+> The main thing you could do is drop or virtualize memory accesses 
+> to RAM it should never access in the first place, like some BIOSes 
+> which scribble over random locations in low memory.
 
-might make sense to post that message here out in the open - maybe 
-someone with a strong NFSd-fu will comment on it.
+it would be enough to get the information out. That way we could see 
+(from the access patterns) what the heck it is trying to do (did 
+someone rootkit the bios?), and what we can do about it. Trying to 
+contain it will likely break the BIOS and causes silent hangs with 
+no usable bug report left.
 
 	Ingo
