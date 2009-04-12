@@ -1,61 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756328AbZDLDTi@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753110AbZDLE6e@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756328AbZDLDTi (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 11 Apr 2009 23:19:38 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755078AbZDLDT3
+	id S1753110AbZDLE6e (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 12 Apr 2009 00:58:34 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752142AbZDLE6Y
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 11 Apr 2009 23:19:29 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:56788 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1754519AbZDLDT2 (ORCPT
+	Sun, 12 Apr 2009 00:58:24 -0400
+Received: from out2.smtp.messagingengine.com ([66.111.4.26]:40485 "EHLO
+	out2.smtp.messagingengine.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1752099AbZDLE6X (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 11 Apr 2009 23:19:28 -0400
-Date: Sat, 11 Apr 2009 20:13:10 -0700 (PDT)
-From: Linus Torvalds <torvalds@linux-foundation.org>
-X-X-Sender: torvalds@localhost.localdomain
-To: david@lang.hm
-cc: Alan Cox <alan@lxorguk.ukuu.org.uk>, Grant Grundler <grundler@google.com>,
-       Jeff Garzik <jeff@garzik.org>,
-       Linux IDE mailing list <linux-ide@vger.kernel.org>,
-       LKML <linux-kernel@vger.kernel.org>, Jens Axboe <jens.axboe@oracle.com>,
-       Arjan van de Ven <arjan@infradead.org>
-Subject: Re: Implementing NVMHCI...
-In-Reply-To: <alpine.DEB.1.10.0904111810360.28893@asgard.lang.hm>
-Message-ID: <alpine.LFD.2.00.0904112006580.4583@localhost.localdomain>
-References: <49E0D47B.9070205@garzik.org> <20090411203246.513a0892@lxorguk.ukuu.org.uk> <alpine.LFD.2.00.0904111250370.4583@localhost.localdomain> <da824cf30904111449y5cb7c178ldf5291506ad6b393@mail.gmail.com> <20090412002527.631a5a89@lxorguk.ukuu.org.uk>
- <alpine.DEB.1.10.0904111810360.28893@asgard.lang.hm>
-User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
+	Sun, 12 Apr 2009 00:58:23 -0400
+X-Sasl-enc: aNUYp/HePj0X54xTFYQ4HqYl800r5jc5WlyVrqYERY05 1239512302
+Date: Sun, 12 Apr 2009 01:58:18 -0300
+From: Henrique de Moraes Holschuh <hmh@hmh.eng.br>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: Niel Lambrechts <niel.lambrechts@gmail.com>,
+       "linux.kernel" <linux-kernel@vger.kernel.org>,
+       linux-acpi@vger.kernel.org
+Subject: Re: 2.6.30-rc1 (latest git): thinkpad-acpi: cannot control
+	brightness with hotkeys
+Message-ID: <20090412045818.GA8211@khazad-dum.debian.net>
+References: <49E10684.5090101@gmail.com> <20090411150555.8b13ed18.akpm@linux-foundation.org>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20090411150555.8b13ed18.akpm@linux-foundation.org>
+X-GPG-Fingerprint: 1024D/1CDB0FE3 5422 5C61 F6B7 06FB 7E04  3738 EE25 DE3F
+	1CDB 0FE3
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Sat, 11 Apr 2009, Andrew Morton wrote:
+> > options thinkpad_acpi experimental=1 hotkey=enable,0xffffff
 
+Someday someone might be able to give me a good reason for why the hell
+distros like to do this sort of crap...  but I don't think it will be
+anytime soon.
 
-On Sat, 11 Apr 2009, david@lang.hm wrote:
-> 
-> gaining this sort of ability would not be a bad thing.
+> > Any ideas on how I can regain control over the brightness gas-pedal?
 
-.. and if my house was built of gold, that wouldn't be a bad thing either.
+I think what you're experiencing is some sort of breakage in ACPI video...
 
-What's your point?
+> > WARNING: at drivers/platform/x86/thinkpad_acpi.c:2954
+> > hotkey_enabledisable_warn+0x3e/0x43 [thinkpad_acpi]()
+> > thinkpad_acpi: hotkey enable/disable functionality has been removed from
+> > the driver. Hotkeys are always enabled.
 
-Are you going to create the magical patches that make that happen? Are you 
-going to maintain the added complexity that comes from suddenly having 
-multiple dirty bits per "page"? Are you going to create the mythical 
-filesystems that magically start doing tail packing in order to not waste 
-tons of disk-space with small files, even if they have a 32kB block-size?
+I will silence the warning for module parameters, thanks for the head's up.
+That was indeed an oversight.
 
-In other words, your whole argument is built in "wouldn't it be nice".
+But it is a red-herring, it doesn't change the driver behaviour at all in
+this case...
 
-And I'm just the grumpy old guy who tells you that there's this small 
-thing called REALITY that comes and bites you in the *ss. And I'm sorry, 
-but the very nature of "reality" is that it doesn't care one whit whether 
-you believe me or not.
+> > thinkpad_acpi: Standard ACPI backlight interface available, not loading
+> > native one.
 
-The fact is, >4kB sectors just aren't realistic right now, and I don't 
-think you have any _clue_ about the pain of trying to make them so. You're 
-just throwing pennies down a wishing well.
+And this has always been true for any Lenovo Vista BIOS, it is not new.
 
-			Linus
+I really think we need to get the people dealing with ACPI video in the
+loop for this one.
+
+-- 
+  "One disk to rule them all, One disk to find them. One disk to bring
+  them all and in the darkness grind them. In the Land of Redmond
+  where the shadows lie." -- The Silicon Valley Tarot
+  Henrique Holschuh
