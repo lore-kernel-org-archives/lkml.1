@@ -1,27 +1,28 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759283AbZDLKCn@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759253AbZDLKFZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759283AbZDLKCn (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 12 Apr 2009 06:02:43 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754634AbZDLKCe
+	id S1759253AbZDLKFZ (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 12 Apr 2009 06:05:25 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754339AbZDLKFI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 12 Apr 2009 06:02:34 -0400
-Received: from mx3.mail.elte.hu ([157.181.1.138]:40438 "EHLO mx3.mail.elte.hu"
+	Sun, 12 Apr 2009 06:05:08 -0400
+Received: from mx2.mail.elte.hu ([157.181.151.9]:50354 "EHLO mx2.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754556AbZDLKCd (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 12 Apr 2009 06:02:33 -0400
-Date: Sun, 12 Apr 2009 12:02:05 +0200
+	id S1753424AbZDLKFF (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 12 Apr 2009 06:05:05 -0400
+Date: Sun, 12 Apr 2009 12:04:50 +0200
 From: Ingo Molnar <mingo@elte.hu>
 To: Frederic Weisbecker <fweisbec@gmail.com>
-Cc: Tom Zanussi <tzanussi@gmail.com>, Li Zefan <lizf@cn.fujitsu.com>,
+Cc: Li Zefan <lizf@cn.fujitsu.com>, Tom Zanussi <tzanussi@gmail.com>,
        Steven Rostedt <rostedt@goodmis.org>,
-       LKML <linux-kernel@vger.kernel.org>, paulmck@linux.vnet.ibm.com
-Subject: Re: [PATCH 0/7] tracing: bug fixes for tracing/filters
-Message-ID: <20090412100205.GA3023@elte.hu>
-References: <49E04C22.4040608@cn.fujitsu.com> <1239442248.8793.65.camel@tropicana> <20090411144823.GB5977@nowhere>
+       LKML <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH 4/7] tracing/filters: allow user to specify a filter
+	val to be string
+Message-ID: <20090412100450.GB3023@elte.hu>
+References: <49E04C22.4040608@cn.fujitsu.com> <49E04C61.10209@cn.fujitsu.com> <20090411143533.GA5977@nowhere>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20090411144823.GB5977@nowhere>
+In-Reply-To: <20090411143533.GA5977@nowhere>
 User-Agent: Mutt/1.5.18 (2008-05-17)
 X-ELTE-VirusStatus: clean
 X-ELTE-SpamScore: -1.5
@@ -38,49 +39,62 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 * Frederic Weisbecker <fweisbec@gmail.com> wrote:
 
-> On Sat, Apr 11, 2009 at 04:30:48AM -0500, Tom Zanussi wrote:
-> > Hi,
-> > 
-> > On Sat, 2009-04-11 at 15:52 +0800, Li Zefan wrote:
-> > > This patchset fixes some bugs in tracing/filters. Most of the change
-> > > goes to the last patch, and others are small ones.
-> > > 
-> > 
-> > At first glance, they look good and fix real problems - thanks for
-> > fixing them.  Re patch 7, there's been some discussion about using rcu
-> > for this.  See:
-> > 
-> > http://lkml.org/lkml/2009/4/5/46
-> > 
-> > >From that discussion, it seems some non-trivial changes to rcu would be
-> > needed for this.  I'm playing around with a different idea now to
-> > hopefully avoid the need for that, or the other approach mentioned, of
-> > temporarily stopping tracing while removing/changing the filters.
-> > 
-> > Basically my thought is to avoid the problem by not allocating or
-> > destroying the preds when removing filters but instead switch out the
-> > pred->fns with a nop version while keeping the fields intact for awhile.
-> > I think that will work for removing filters, but I still need to think
-> > about how it would (or would not) work for replacing them.
-> >  
-> > Tom
+> Hi Li,
 > 
+> On Sat, Apr 11, 2009 at 03:53:05PM +0800, Li Zefan wrote:
+> > Suppose we would like to trace all tasks named '123', but this
+> > will fail:
+> >  # echo 'parent_comm == 123' > events/sched/sched_process_fork/filter
+> >  bash: echo: write error: Invalid argument
+> > 
+> > With this patch, we allow it by:
+> >  # echo 'parent_comm == \123' > events/sched/sched_process_fork/filter
+> >  # cat events/sched/sched_process_fork/filter
+> >  parent_comm == 123
 > 
-> 
-> It would be sort of reinventing rcu :-)
+> Well, IMHO, it would be rather better to just echo 
+> 'parent_comm == 123' and let it answer depending of which 
+> filter_pred_*() callback we have for the concerned field.
 >
-> Well, Paul proposed something recently, hmm I should 
-> double check this discussion.
 > 
-> Anyway, the fixes from Li (other than 4 and 7 for which we 
-> have comments) look very good!
+> The culprit is this part in filter_parse():
+> 
+> pred->val = simple_strtoull(val_str, &tmp, 10);
+> if (tmp == val_str) {
+> 	pred->str_val = kstrdup(val_str, GFP_KERNEL);
+> 	if (!pred->str_val)
+> 		return -ENOMEM;
+> }
+> 
+> The idea would be to not anymore base the check on simple_strtoull to
+> guess whether this is a number or a string, making it act subsequently
+> to this assumption, which is not the good assumption we must base our
+> parsing yet.
+> 
+> Instead, we could let filter_parse only do the job of extracting the tokens
+> and then fill the whole pred struct without yet bothering about the type
+> of the value.
+> 
+> Thereafter we may defer the real value type checking on filter_add_pred()
+> depending on the type of the concerned field:
+> 
+> if (is_string_field()) {
+> 	add it as a string value;
+> } else {
+> 	do the check with simple_strtoull
+> 	looks good? Then go to the number size switch....
+> 	...
+> }
+> 
+> You see?
+> 
+> I think it would be a saner basis of parsing.
 
-Ok, i've applied 1,2,3,6 to tip/tracing/urgent (most of them 
-are fixes needed for current mainline).
+Agreed. The user input itself is unambigously parse-able - 
+and we should not work around parsing limitations by 
+complicating the user input.
 
-5 had dependency on 4 which is being discussed. 7 is being 
-discussed as well, with Tom having promised a patch.
-
-Thanks,
+The failure situation that Li found should obviously be 
+fixed.
 
 	Ingo
