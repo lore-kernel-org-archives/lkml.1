@@ -1,29 +1,28 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754687AbZDLOHY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755688AbZDLOJq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754687AbZDLOHY (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 12 Apr 2009 10:07:24 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752500AbZDLOHJ
+	id S1755688AbZDLOJq (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 12 Apr 2009 10:09:46 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753432AbZDLOJh
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 12 Apr 2009 10:07:09 -0400
-Received: from mx2.mail.elte.hu ([157.181.151.9]:33539 "EHLO mx2.mail.elte.hu"
+	Sun, 12 Apr 2009 10:09:37 -0400
+Received: from mx2.mail.elte.hu ([157.181.151.9]:33758 "EHLO mx2.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751635AbZDLOHI (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 12 Apr 2009 10:07:08 -0400
-Date: Sun, 12 Apr 2009 16:06:50 +0200
+	id S1753003AbZDLOJg (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 12 Apr 2009 10:09:36 -0400
+Date: Sun, 12 Apr 2009 16:09:19 +0200
 From: Ingo Molnar <mingo@elte.hu>
-To: Cyrill Gorcunov <gorcunov@gmail.com>
-Cc: "H. Peter Anvin" <hpa@zytor.com>, Thomas Gleixner <tglx@linutronix.de>,
-       LKML <linux-kernel@vger.kernel.org>, Andi Kleen <andi@firstfloor.org>,
-       "Maciej W. Rozycki" <macro@linux-mips.org>,
-       Yinghai Lu <yhlu.kernel@gmail.com>
-Subject: Re: [RFC -tip] x86: do_IRQ - send APIC EOI for x86-32 on irq
-	without handler v3
-Message-ID: <20090412140650.GD5246@elte.hu>
-References: <20090409181802.GC7558@lenovo> <20090410122750.GR21506@elte.hu> <20090410135606.GA8204@lenovo> <20090410140023.GA29090@elte.hu> <20090410202941.GF8204@lenovo>
+To: Frederic Weisbecker <fweisbec@gmail.com>
+Cc: Greg KH <gregkh@suse.de>, LKML <linux-kernel@vger.kernel.org>,
+       LTP <ltp-list@lists.sourceforge.net>,
+       Peter Zijlstra <peterz@infradead.org>
+Subject: Re: [PATCH 2/2] lockdep: choose to continue lock debugging despite
+	taint
+Message-ID: <20090412140919.GE5246@elte.hu>
+References: <1239312460-13396-1-git-send-email-fweisbec@gmail.com> <1239312460-13396-2-git-send-email-fweisbec@gmail.com> <20090410121515.GP21506@elte.hu> <20090410133844.GD5988@nowhere> <20090410134520.GC17878@elte.hu> <20090411011505.GA5992@nowhere> <20090411013753.GB5992@nowhere>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20090410202941.GF8204@lenovo>
+In-Reply-To: <20090411013753.GB5992@nowhere>
 User-Agent: Mutt/1.5.18 (2008-05-17)
 X-ELTE-VirusStatus: clean
 X-ELTE-SpamScore: -1.5
@@ -38,95 +37,19 @@ List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-* Cyrill Gorcunov <gorcunov@gmail.com> wrote:
+* Frederic Weisbecker <fweisbec@gmail.com> wrote:
 
-> [Ingo Molnar - Fri, Apr 10, 2009 at 04:00:23PM +0200]
-> | 
-> | * Cyrill Gorcunov <gorcunov@gmail.com> wrote:
-> | 
-> | > [Ingo Molnar - Fri, Apr 10, 2009 at 02:27:50PM +0200]
-> | > | 
-> | > | * Cyrill Gorcunov <gorcunov@openvz.org> wrote:
-> | > | 
-> | > | > Ingo, I've checked the sources and as far as I see
-> | > | > we could NOP'ify apic->write indeed but I have
-> | > | > an internal feeling that this will bring us more problem
-> | > | > in future (for example it could be the following scenario:
-> | > | > some screwed APIC would require cleaning of LVT's or
-> | > | > IRR after resume regardless if it was initialized
-> | > | > or not at all). Mostly I mean that the idea of making
-> | > | > apic->write NOP'ified is quite elegant indeed but
-> | > | > cut off the subset of apic operations (we need
-> | > | > apic->read anyway) somehow bothering me from inside :)
-> | > | 
-> | > | it's as if assigned a special type of 'dummy apic' struct apic. It 
-> | > | wont cause problems down the line: we use the new APIC driver 
-> | > | infrastructure to abstract out quirks.
-> | > 
-> | > Well, it's not that new actually :-)
-> | 
-> | Yeah, i mean the new unified/modernized code in 2.6.30-to-be.
-> | 
-> | > | 
-> | > | one small detail:
-> | > | 
-> | > | > +/* Ack APIC irq if it's enabled only */
-> | > | > +static inline void ack_APIC_irq_safe(void)
-> | > | > +{
-> | > | > +#ifdef CONFIG_X86_LOCAL_APIC
-> | > | > +	if (cpu_has_apic)
-> | > | > +		ack_APIC_irq();
-> | > | > +#endif
-> | > | 
-> | > | we dont need the cpu_has_apic check there, do we? In the 
-> | > | !cpu_has_apic the ->write method should be a dummy.
-> | > 
-> | > Yes. In case you're talking about it'll not be needed
-> | > (we will find earlier whether cpu_has_apic or not).
-> | 
-> | yeah.
-> | 
-> | 	Ingo
-> | 
+> > Side request: do you think you could merge them on kill-the-BKL 
+> > tree?
 > 
-> Ingo,
-> 
-> I think you meant something like the patch below. It's
-> not finished yet -- I need to find out right place for
-> calling freshly introduced apic_disable_write_op.
-> Will continue tomorrow.
-> 
-> But even having it not completed yet I would like to
-> get some feedbackabout code structure in general.
+> Sorry, forget about this side request. I thought merging 
+> tip:master into tip:core/kill-the-BKL would make me suffer a rain 
+> of conflicts but actually I've just tried and I only encountered a 
+> very simple conflict in sched.c so it's very easy to manage it 
+> locally. Then we can keep the history of kill-the-BKL, for now 
+> it's good as is.
 
-Yeah, the goal now looks good.
-
-Note, i'd suggest to not expose it like this:
-
->  extern u64 native_apic_icr_read(void);
-> +extern void native_apic_write_dummy(u32 reg, u32 v);
->  
->  #define EIM_8BIT_APIC_ID	0
->  #define EIM_32BIT_APIC_ID	1
-> @@ -372,6 +373,15 @@ static inline void apic_write(u32 reg, u
->  	apic->write(reg, val);
->  }
->  
-> +/*
-> + * right after this call apic->write doesn't do anything
-> + * note that there is no restore operation it works one way
-> + */
-> +static inline void apic_disable_write_op(void)
-> +{
-> +	apic->write = native_apic_write_dummy;
-> +}
-> +
-
-But have a central and opaque:
-
-	extern void apic_disable(void);
-
-function, defined in apic.c - which does all the internal details 
-(like installing a dummy ->write) entry.
+Ok - that's how we like topics anyway: as independent trees which 
+happen to be mostly conflict-free when merged into tip:master.
 
 	Ingo
