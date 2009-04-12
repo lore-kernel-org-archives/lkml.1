@@ -1,54 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755450AbZDLPIS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755357AbZDLPSO@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755450AbZDLPIS (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 12 Apr 2009 11:08:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754124AbZDLPIE
+	id S1755357AbZDLPSO (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 12 Apr 2009 11:18:14 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753587AbZDLPR6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 12 Apr 2009 11:08:04 -0400
-Received: from hera.kernel.org ([140.211.167.34]:48755 "EHLO hera.kernel.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753062AbZDLPIB (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 12 Apr 2009 11:08:01 -0400
-Subject: [PATCH -tip] x86: vdso/vma.c declare vdso_enabled and
- arch_setup_additional_pages before they get used
-From: Jaswinder Singh Rajput <jaswinder@kernel.org>
-To: Ingo Molnar <mingo@elte.hu>, x86 maintainers <x86@kernel.org>,
-       Andi Kleen <andi@firstfloor.org>, LKML <linux-kernel@vger.kernel.org>
-Content-Type: text/plain
-Date: Sun, 12 Apr 2009 20:37:25 +0530
-Message-Id: <1239548845.4170.2.camel@localhost.localdomain>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.24.4 (2.24.4-1.fc10) 
-Content-Transfer-Encoding: 7bit
+	Sun, 12 Apr 2009 11:17:58 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:41755 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1753040AbZDLPR5 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 12 Apr 2009 11:17:57 -0400
+Date: Sun, 12 Apr 2009 08:15:12 -0700 (PDT)
+From: Linus Torvalds <torvalds@linux-foundation.org>
+X-X-Sender: torvalds@localhost.localdomain
+To: Wu Fengguang <fengguang.wu@intel.com>
+cc: Andrew Morton <akpm@linux-foundation.org>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       "npiggin@suse.de" <npiggin@suse.de>,
+       "yinghan@google.com" <yinghan@google.com>
+Subject: Re: [PATCH] readahead: enforce full sync mmap readahead size
+In-Reply-To: <20090412070943.GB5737@localhost>
+Message-ID: <alpine.LFD.2.00.0904120808040.4583@localhost.localdomain>
+References: <20090410060957.442203404@intel.com> <20090410061254.719205499@intel.com> <20090410163413.a014bde0.akpm@linux-foundation.org> <20090412070943.GB5737@localhost>
+User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Impact: cleanup, address sparse warnings
-
-Addresses the problem pointed out by these sparse warning:
-  arch/x86/vdso/vma.c:19:28: warning: symbol 'vdso_enabled' was not declared. Should it be static?
-  arch/x86/vdso/vma.c:101:5: warning: symbol 'arch_setup_additional_pages' was not declared. Should it be static?
-
-Signed-off-by: Jaswinder Singh Rajput <jaswinderrajput@gmail.com>
----
- arch/x86/vdso/vma.c |    1 +
- 1 files changed, 1 insertions(+), 0 deletions(-)
-
-diff --git a/arch/x86/vdso/vma.c b/arch/x86/vdso/vma.c
-index 7133cdf..cac0833 100644
---- a/arch/x86/vdso/vma.c
-+++ b/arch/x86/vdso/vma.c
-@@ -8,6 +8,7 @@
- #include <linux/sched.h>
- #include <linux/init.h>
- #include <linux/random.h>
-+#include <linux/elf.h>
- #include <asm/vsyscall.h>
- #include <asm/vgtod.h>
- #include <asm/proto.h>
--- 
-1.6.0.6
 
 
+On Sun, 12 Apr 2009, Wu Fengguang wrote:
+>
+> Now that we do readahead for sequential mmap reads, here is
+> a simple evaluation of the impacts, and one further optimization.
 
+Hmm.
+
+Wu, I just went through your latest (?) series of 1-9 and they all looked 
+(a) quite small and (b) all of them looked like good cleanups. 
+
+And not only do they look good, you seem to have numbers to back it all up 
+too.
+
+In other words, I'd really prefer to merge this sooner rather than later. 
+There just doesn't seem to be any reason _not_ to. Is there any reason to 
+not just take this? I realize that it's past -rc1, but this is way smaller 
+and saner-looking than the average patch that makes it in past -rc1.
+
+Besides, it was originally posted before -rc1, and the last series didn't 
+have the much more intrusive page-fault-retry patches. I'd leave those for 
+the next merge window, but the read-ahead series (1-9 plus this final 
+one-liner) seem to be pure improvement - both in code readability _and_ in 
+numbers - with no real contentious issues.
+
+No?
+
+			Linus
