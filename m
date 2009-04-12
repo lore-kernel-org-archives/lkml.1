@@ -1,84 +1,128 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752389AbZDLVyQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751339AbZDLV7n@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752389AbZDLVyQ (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 12 Apr 2009 17:54:16 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750999AbZDLVyF
+	id S1751339AbZDLV7n (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 12 Apr 2009 17:59:43 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750844AbZDLV7e
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 12 Apr 2009 17:54:05 -0400
-Received: from out02.mta.xmission.com ([166.70.13.232]:43042 "EHLO
-	out02.mta.xmission.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750929AbZDLVyB (ORCPT
+	Sun, 12 Apr 2009 17:59:34 -0400
+Received: from moutng.kundenserver.de ([212.227.126.188]:58556 "EHLO
+	moutng.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750815AbZDLV7d (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 12 Apr 2009 17:54:01 -0400
-To: Jamie Lokier <jamie@shareable.org>
-Cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
-       linux-pci@vger.kernel.org, linux-mm@kvack.org,
-       linux-fsdevel@vger.kernel.org, Al Viro <viro@ZenIV.linux.org.uk>,
-       Hugh Dickins <hugh@veritas.com>, Tejun Heo <tj@kernel.org>,
-       Alexey Dobriyan <adobriyan@gmail.com>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Alan Cox <alan@lxorguk.ukuu.org.uk>,
-       Greg Kroah-Hartman <gregkh@suse.de>
-References: <m1skkf761y.fsf@fess.ebiederm.org>
-	<m1prfj5qxp.fsf@fess.ebiederm.org>
-	<20090412185659.GE4394@shareable.org>
-	<m11vrxprk6.fsf@fess.ebiederm.org>
-	<20090412203107.GH4394@shareable.org>
-From: ebiederm@xmission.com (Eric W. Biederman)
-Date: Sun, 12 Apr 2009 14:53:51 -0700
-In-Reply-To: <20090412203107.GH4394@shareable.org> (Jamie Lokier's message of "Sun\, 12 Apr 2009 21\:31\:07 +0100")
-Message-ID: <m1tz4tiln4.fsf@fess.ebiederm.org>
-User-Agent: Gnus/5.11 (Gnus v5.11) Emacs/22.2 (gnu/linux)
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-X-XM-SPF: eid=;;;mid=;;;hst=in01.mta.xmission.com;;;ip=67.169.126.145;;;frm=ebiederm@xmission.com;;;spf=neutral
-X-SA-Exim-Connect-IP: 67.169.126.145
-X-SA-Exim-Rcpt-To: jamie@shareable.org, gregkh@suse.de, alan@lxorguk.ukuu.org.uk, torvalds@linux-foundation.org, adobriyan@gmail.com, tj@kernel.org, hugh@veritas.com, viro@ZenIV.linux.org.uk, linux-fsdevel@vger.kernel.org, linux-mm@kvack.org, linux-pci@vger.kernel.org, linux-kernel@vger.kernel.org, akpm@linux-foundation.org
-X-SA-Exim-Mail-From: ebiederm@xmission.com
-X-Spam-DCC: XMission; sa03 1397; Body=1 Fuz1=1 Fuz2=1 
-X-Spam-Combo: ;Jamie Lokier <jamie@shareable.org>
-X-Spam-Relay-Country: 
-X-Spam-Report: * -1.8 ALL_TRUSTED Passed through trusted hosts only via SMTP
-	*  1.5 XMNoVowels Alpha-numberic number with no vowels
-	*  0.0 T_TM2_M_HEADER_IN_MSG BODY: T_TM2_M_HEADER_IN_MSG
-	* -2.6 BAYES_00 BODY: Bayesian spam probability is 0 to 1%
-	*      [score: 0.0000]
-	* -0.0 DCC_CHECK_NEGATIVE Not listed in DCC
-	*      [sa03 1397; Body=1 Fuz1=1 Fuz2=1]
-	*  0.0 XM_SPF_Neutral SPF-Neutral
-	*  0.4 UNTRUSTED_Relay Comes from a non-trusted relay
-Subject: Re: [RFC][PATCH 8/9] vfs: Implement generic revoked file operations
-X-SA-Exim-Version: 4.2.1 (built Thu, 25 Oct 2007 00:26:12 +0000)
-X-SA-Exim-Scanned: Yes (on in01.mta.xmission.com)
+	Sun, 12 Apr 2009 17:59:33 -0400
+Subject: USB: Buffer I/O error on device dm-0, logical block XYZ
+From: Andreas <andreas@maxxle.de>
+To: linux-kernel@vger.kernel.org
+Content-Type: text/plain
+Date: Sun, 12 Apr 2009 23:59:29 +0200
+Message-Id: <1239573569.5997.21.camel@legolas>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.24.3 
+Content-Transfer-Encoding: 7bit
+X-Provags-ID: V01U2FsdGVkX1+XMvIf+UG72VXTTb3jwTfLgLsHIiVfQvVMioz
+ Ild4UYXSs5AQMS7QuxGvuoCXiHCOSWcJzSItDmfajknLHaDuPs
+ FxWhM54rdUUdkb8df2PCplAjyv2j6ne
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Jamie Lokier <jamie@shareable.org> writes:
+Hello,
 
-> Eric W. Biederman wrote:
->> >> revoked_file_ops return 0 from reads (aka EOF). Tell poll the file is
->> >> always ready for I/O and return -EIO from all other operations.
->> >
->> > I think read should return -EIO too.  If a program is reading from a
->> > /proc file (say), and the thing it's reading suddenly disappears, EOF
->> > gives the false impression that it's read to the end of formatted data
->> > from that file and it can process the data as if it's complete, which
->> > is wrong.
->> 
->> Good point EIO is the current read return value for a removed proc file.
->> 
->> For closed pipes, and hung up ttys the read return value is 0, and from
->> my reading that is what bsd returns after a sys_revoke.
->
-> A few suggestions below.  Feel free to ignore them on account of the
-> basic revoking functionality being more important :-)
+on heavy disk I/O my external USB device gets re-mounted read-only.
+(Ok - scp with 2,5MB/s over WLAN)
+After this i get EXT3-Errors.
 
-I think I will.  This seems to be the part of the code that is easily
-approachable and it is going to be easy to have different opinions on,
-and there is no one right answer.
+I've already:
+- tweaked kernel parameters (see below)
+- changed entries in sys-fs
 
-For now I'm just going to pick my best understanding of what BSD did.
+The only thing that works is if i remove the ehci module for USB2.0.
 
-Eric
+
+
+SysLog-Errors:
+==============
+Apr 12 17:45:08 elrond kernel: [  628.205804] usb-storage: device found
+at 2
+Apr 12 17:45:08 elrond kernel: [  628.205825] usb-storage: waiting for
+device to settle before scanning
+Apr 12 17:45:13 elrond kernel: [  633.206246] usb-storage: device scan
+complete
+Apr 12 17:45:13 elrond kernel: [  633.218523] scsi 3:0:0:0:
+Direct-Access     WD       3200JB External  0412 PQ: 0 ANSI: 0
+Apr 12 17:45:13 elrond kernel: [  633.252002] sd 3:0:0:0: [sdc]
+625142448 512-byte hardware sectors: (320 GB/298 GiB)
+Apr 12 17:45:13 elrond kernel: [  633.262009] sd 3:0:0:0: [sdc] Write
+Protect is off
+Apr 12 17:45:13 elrond kernel: [  633.262057] sd 3:0:0:0: [sdc] Mode
+Sense: 33 00 00 00
+Apr 12 17:45:13 elrond kernel: [  633.262083] sd 3:0:0:0: [sdc] Assuming
+drive cache: write through
+Apr 12 17:45:13 elrond kernel: [  633.285968] sd 3:0:0:0: [sdc]
+625142448 512-byte hardware sectors: (320 GB/298 GiB)
+Apr 12 17:45:13 elrond kernel: [  633.296113] sd 3:0:0:0: [sdc] Write
+Protect is off
+Apr 12 17:45:13 elrond kernel: [  633.296148] sd 3:0:0:0: [sdc] Mode
+Sense: 33 00 00 00
+Apr 12 17:45:13 elrond kernel: [  633.296170] sd 3:0:0:0: [sdc] Assuming
+drive cache: write through
+Apr 12 17:45:13 elrond kernel: [  633.296313]  sdc: sdc1
+Apr 12 17:45:13 elrond kernel: [  633.314525] sd 3:0:0:0: [sdc] Attached
+SCSI disk
+Apr 12 17:45:13 elrond kernel: [  633.315315] sd 3:0:0:0: Attached scsi
+generic sg1 type 0
+Apr 12 17:45:16 elrond kernel: [  635.773406] ext3_abort called.
+Apr 12 17:45:16 elrond kernel: [  635.773484] EXT3-fs error (device
+dm-0): ext3_journal_start_sb: Detected aborted journal
+Apr 12 17:45:16 elrond kernel: [  635.773588] Remounting filesystem
+read-only
+Apr 12 17:46:27 elrond kernel: [  706.828326] EXT3-fs error (device
+dm-0): ext3_get_inode_loc: unable to read inode block - inode=1015809
+, block=4063234
+Apr 12 17:46:27 elrond kernel: [  706.833874] EXT3-fs error (device
+dm-0): ext3_get_inode_loc: unable to read inode block - inode=1015809
+, block=4063234
+Apr 12 17:46:27 elrond kernel: [  706.840217] EXT3-fs error (device
+dm-0): ext3_get_inode_loc: unable to read inode block - inode=1015810
+, block=4063234
+...
+...
+...
+
+
+
+My Setup:
+=========
+Kernel:
+2.6.29-02062901-generic #02062901 SMP (Ubuntu 2.6.29.1)
+
+lspci:
+00:00.0 Host bridge: Transmeta Corporation LongRun Northbridge (rev 03)
+00:00.1 RAM memory: Transmeta Corporation SDRAM controller
+00:00.2 RAM memory: Transmeta Corporation BIOS scratchpad
+00:09.0 VGA compatible controller: Silicon Integrated Systems [SiS]
+315PRO PCI/AGP VGA Display Adapter
+00:10.0 USB Controller: VIA Technologies, Inc. VT82xxxxx UHCI USB 1.1
+Controller (rev 80)
+00:10.1 USB Controller: VIA Technologies, Inc. VT82xxxxx UHCI USB 1.1
+Controller (rev 80)
+00:10.2 USB Controller: VIA Technologies, Inc. VT82xxxxx UHCI USB 1.1
+Controller (rev 80)
+00:10.3 USB Controller: VIA Technologies, Inc. USB 2.0 (rev 82)
+00:11.0 ISA bridge: VIA Technologies, Inc. VT8235 ISA Bridge
+00:11.1 IDE interface: VIA Technologies, Inc.
+VT82C586A/B/VT82C686/A/B/VT823x/A/C PIPC Bus Master IDE (rev 06)
+00:11.5 Multimedia audio controller: VIA Technologies, Inc.
+VT8233/A/8235/8237 AC97 Audio Controller (rev 50)
+00:12.0 Ethernet controller: VIA Technologies, Inc. VT6102 [Rhine-II]
+(rev 74)
+
+
+/sys-parameters:
+echo 1024 > /sys/block/sdb/device/max_sectors
+echo 1 > /sys/block/sdb/device/scsi_diskXYZ/allow_restart
+
+
+grub-parameters:
+all_generic_ide combined_mode=ide enable_atapi=1 noapic
 
