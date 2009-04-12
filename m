@@ -1,54 +1,44 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757180AbZDLB7T@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759182AbZDLB7e@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757180AbZDLB7T (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 11 Apr 2009 21:59:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754239AbZDLB7D
+	id S1759182AbZDLB7e (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 11 Apr 2009 21:59:34 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756974AbZDLB7P
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 11 Apr 2009 21:59:03 -0400
-Received: from ox1.aei.mpg.de ([194.94.224.6]:38749 "EHLO ox1.aei.mpg.de"
+	Sat, 11 Apr 2009 21:59:15 -0400
+Received: from srv5.dvmed.net ([207.36.208.214]:35160 "EHLO mail.dvmed.net"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753470AbZDLB7B (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 11 Apr 2009 21:59:01 -0400
-Date: Sun, 12 Apr 2009 03:58:11 +0200
-From: "Carlos R. Mafra" <crmafra2@gmail.com>
-To: tiwai@suse.de
-Cc: Arjan van de Ven <arjan@infradead.org>, linux-kernel@vger.kernel.org,
-       alsa-devel@vger.kernel.org,
-       Michal Jaegermann <michal@ellpspace.math.ualberta.ca>
-Subject: Re: General protection fault when unloading snd_hda_intel on
-	2.6.30-rc1+ (bisected)
-Message-ID: <20090412015811.GA3907@Pilar.aei.mpg.de>
-References: <20090411193630.GA16968@Pilar.aei.mpg.de> <20090411132033.003c581c@infradead.org> <20090411210336.GA15272@Pilar.aei.mpg.de> <20090411143950.3429ebc0@infradead.org> <20090412003320.GA17346@ellpspace.math.ualberta.ca>
+	id S1756878AbZDLB7O (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 11 Apr 2009 21:59:14 -0400
+Message-ID: <49E14AE4.7010505@garzik.org>
+Date: Sat, 11 Apr 2009 21:59:00 -0400
+From: Jeff Garzik <jeff@garzik.org>
+User-Agent: Thunderbird 2.0.0.21 (X11/20090320)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090412003320.GA17346@ellpspace.math.ualberta.ca>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+To: Linus Torvalds <torvalds@linux-foundation.org>
+CC: Alan Cox <alan@lxorguk.ukuu.org.uk>, Grant Grundler <grundler@google.com>,
+       Linux IDE mailing list <linux-ide@vger.kernel.org>,
+       LKML <linux-kernel@vger.kernel.org>, Jens Axboe <jens.axboe@oracle.com>,
+       Arjan van de Ven <arjan@infradead.org>
+Subject: Re: Implementing NVMHCI...
+References: <49E0D47B.9070205@garzik.org> <20090411203246.513a0892@lxorguk.ukuu.org.uk> <alpine.LFD.2.00.0904111250370.4583@localhost.localdomain> <da824cf30904111449y5cb7c178ldf5291506ad6b393@mail.gmail.com> <20090412002527.631a5a89@lxorguk.ukuu.org.uk> <49E12D03.5070906@garzik.org> <alpine.LFD.2.00.0904111725570.4583@localhost.localdomain>
+In-Reply-To: <alpine.LFD.2.00.0904111725570.4583@localhost.localdomain>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
+X-Spam-Score: -4.4 (----)
+X-Spam-Report: SpamAssassin version 3.2.5 on srv5.dvmed.net summary:
+	Content analysis details:   (-4.4 points, 5.0 required)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat 11.Apr'09 at 18:33:20 -0600, Michal Jaegermann wrote:
-> On Sat, Apr 11, 2009 at 02:39:50PM -0700, Arjan van de Ven wrote:
-> > 
-> > so... "dev" is pointing evbit at... 697665646632785 which looks like grabage.
-> 
-> FWIW 697665646632785c decodes in ASCII as "\x2fdevi".
+Linus Torvalds wrote:
+> And maybe I'm wrong, and NTFS works fine as-is with sectors >4kB. But let 
+> me doubt that.
 
-So I painfully (exchanged 'good' for 'bad' in the middle and had
-to restart all over) bisected this down to
+FWIW...  No clue about sector size, but NTFS cluster size (i.e. block 
+size) goes up to 64k.  Compression is disabled after 4k.
 
-commit 3be141494a080a9189b51fa78154c975ad8d9806
-Author: Takashi Iwai <tiwai@suse.de>
-Date:   Fri Feb 20 14:11:16 2009 +0100
-
-    ALSA: hda - Add generic pincfg initialization
-
-    Added the generic pincfg cache and save/restore functions.
-    Also introduced the pin-overriding via hwdep sysfs.
+	Jeff
 
 
-It doesn't revert cleanly from the latest kernel, so I could not double 
-check it.
 
-OBS: All tests were done with the headphone plugged in.
