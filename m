@@ -1,78 +1,72 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755476AbZDLAzh@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759379AbZDLAzu@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755476AbZDLAzh (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 11 Apr 2009 20:55:37 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753357AbZDLAzY
+	id S1759379AbZDLAzu (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 11 Apr 2009 20:55:50 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754762AbZDLAz1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 11 Apr 2009 20:55:24 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:51856 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1752784AbZDLAzX (ORCPT
+	Sat, 11 Apr 2009 20:55:27 -0400
+Received: from mail-gx0-f160.google.com ([209.85.217.160]:37997 "EHLO
+	mail-gx0-f160.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753470AbZDLAzZ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 11 Apr 2009 20:55:23 -0400
-Date: Sat, 11 Apr 2009 17:49:41 -0700 (PDT)
-From: Linus Torvalds <torvalds@linux-foundation.org>
-X-X-Sender: torvalds@localhost.localdomain
-To: Jeff Garzik <jeff@garzik.org>
-cc: Alan Cox <alan@lxorguk.ukuu.org.uk>, Grant Grundler <grundler@google.com>,
-       Linux IDE mailing list <linux-ide@vger.kernel.org>,
-       LKML <linux-kernel@vger.kernel.org>, Jens Axboe <jens.axboe@oracle.com>,
-       Arjan van de Ven <arjan@infradead.org>
-Subject: Re: Implementing NVMHCI...
-In-Reply-To: <49E12D03.5070906@garzik.org>
-Message-ID: <alpine.LFD.2.00.0904111725570.4583@localhost.localdomain>
-References: <49E0D47B.9070205@garzik.org> <20090411203246.513a0892@lxorguk.ukuu.org.uk> <alpine.LFD.2.00.0904111250370.4583@localhost.localdomain> <da824cf30904111449y5cb7c178ldf5291506ad6b393@mail.gmail.com> <20090412002527.631a5a89@lxorguk.ukuu.org.uk>
- <49E12D03.5070906@garzik.org>
-User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
+	Sat, 11 Apr 2009 20:55:25 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:date:message-id:subject:from:to:cc:content-type
+         :content-transfer-encoding;
+        b=vu56TA3V3vZUItil6GwHG0tR1QYA6qpEZlvfcTEhihTcuzyIPmkgonQ6blSVHZRK7z
+         LuCrsE6Rpa6akpYm2X22Ikqz8ebDL0VfqVUNKsm18RkUo6nN5U8TfGe7vJTr5t3iUajO
+         ac+K9goggkBgr+reafv8qPrbANeMVBilhhw0I=
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Date: Sat, 11 Apr 2009 20:55:23 -0400
+Message-ID: <b4198de60904111755u5c2078c7xcc689dbd78aeb957@mail.gmail.com>
+Subject: alpha: half done futex implementation
+From: Matt Turner <mattst88@gmail.com>
+To: linux-kernel@vger.kernel.org, linux-alpha@vger.kernel.org
+Cc: Ivan Kokshaysky <ink@jurassic.park.msu.ru>,
+       Richard Henderson <rth@twiddle.net>,
+       Jay Estabrook <jay.estabrook@hp.com>,
+       Oliver Falk <oliver@linux-kernel.at>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Hi,
 
+Going on Richard's advice, I've tried to write an alpha futex
+implementation based on the powerpc futex.h.
 
-On Sat, 11 Apr 2009, Jeff Garzik wrote:
-> 
-> Or just ignore the extra length, thereby excising the 'read-modify' step...
-> Total storage is halved or worse, but you don't take as much of a performance
-> hit.
+I've gotten this far.. :\
 
-Well, the people who want > 4kB sectors usually want _much_ bigger (ie 
-32kB sectors), and if you end up doing the "just use the first part" 
-thing, you're wasting 7/8ths of the space. 
+#define __futex_atomic_op(insn, ret, oldval, uaddr, oparg) \
+    __asm__ __volatile(             \
+    "1: ldl_l   %0,%2\n"            \
+        insn                        \
+    /* something needs to happen here
+     * to save result of insn across
+     * stl_c? */
+    "   stl_c   %1,%2\n"            \
+    "   beq     %1,2f\n"            \
+    "   mb\n"                       \
+    /* something needs to happen here
+     * for the ret */
+    "   .subsection 2\n"            \
+    "2: br      1b\n"               \
+    "   .previous\n"                \
+    : "=&r" (oldval), "=&r" (ret)   \
+    : "b" (uaddr) \
+    : "memory")
 
-Yes, it's doable, and yes, it obviously makes for a simple driver thing, 
-but no, I don't think people will consider it acceptable to lose that much 
-of their effective size of the disk.
+Could someone take a look and help finish it?
 
-I suspect people would scream even with a 8kB sector.
+For futex_atomic_cmpxchg_inatomic, I think Ivan's DRM_CAS
+implementation can be used with only trivial changes. See
+http://cgit.freedesktop.org/mesa/drm/commit/?id=6feac49398d0f037103a4ae3d5a512badeed61fb
 
-Treating all writes as read-modify-write cycles on a driver level (and 
-then opportunistically avoiding the read part when you are lucky and see 
-bigger contiguous writes) is likely more acceptable. But it _will_ suck 
-dick from a performance angle, because no regular filesystem will care 
-enough, so even with nicely behaved big writes, the two end-points will 
-have a fairly high chance of requiring a rmw cycle.
+Please CC me on responses, as I'm not subscribed to linux-kernel@.
 
-Even the journaling ones that might have nice logging write behavior tend 
-to have a non-logging part that then will behave badly. Rather few 
-filesystems are _purely_ log-based, and the ones that are tend to have 
-various limitations. Most commonly read performance just sucks.
+Thanks,
 
-We just merged nilfs2, and I _think_ that one is a pure logging filesystem 
-with just linear writes (within a segment). But I think random read 
-performance (think: loading executables off the disk) is bad.
-
-And people tend to really dislike hardware that forces a particular 
-filesystem on them. Guess how big the user base is going to be if you 
-cannot format the device as NTFS, for example? Hint: if a piece of 
-hardware only works well with special filesystems, that piece of hardware 
-won't be a big seller. 
-
-Modern technology needs big volume to become cheap and relevant.
-
-And maybe I'm wrong, and NTFS works fine as-is with sectors >4kB. But let 
-me doubt that.
-
-			Linus
+Matt Turner
