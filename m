@@ -1,46 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752809AbZDLXH3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753059AbZDLXRN@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752809AbZDLXH3 (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 12 Apr 2009 19:07:29 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752192AbZDLXHO
+	id S1753059AbZDLXRN (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 12 Apr 2009 19:17:13 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752189AbZDLXRA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 12 Apr 2009 19:07:14 -0400
-Received: from terminus.zytor.com ([198.137.202.10]:46977 "EHLO
-	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752156AbZDLXHN (ORCPT
+	Sun, 12 Apr 2009 19:17:00 -0400
+Received: from fgwmail6.fujitsu.co.jp ([192.51.44.36]:41842 "EHLO
+	fgwmail6.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752169AbZDLXQ7 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 12 Apr 2009 19:07:13 -0400
-Message-ID: <49E273E0.60608@zytor.com>
-Date: Sun, 12 Apr 2009 16:06:08 -0700
-From: "H. Peter Anvin" <hpa@zytor.com>
-User-Agent: Thunderbird 2.0.0.21 (X11/20090320)
+	Sun, 12 Apr 2009 19:16:59 -0400
+From: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
+To: Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: [PATCH 6/9] readahead: clean up and simplify the code for filemap  page fault readahead
+Cc: kosaki.motohiro@jp.fujitsu.com, Wu Fengguang <fengguang.wu@intel.com>,
+       linux-kernel@vger.kernel.org, lpk@581.spb.su, wli@movementarian.org,
+       torvalds@linux-foundation.org, yinghan@google.com,
+       Nick Piggin <npiggin@suse.de>, Hugh Dickins <hugh@veritas.com>,
+       Rik van Riel <riel@redhat.com>
+In-Reply-To: <20090411114920.b9d2493c.akpm@linux-foundation.org>
+References: <2f11576a0904110658i4c595f49odbaefda8f8fa95d@mail.gmail.com> <20090411114920.b9d2493c.akpm@linux-foundation.org>
+Message-Id: <20090413081024.F451.A69D9226@jp.fujitsu.com>
 MIME-Version: 1.0
-To: Dag Bakke <dag@bakke.com>
-CC: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org
-Subject: Re: video (VGA) object-files unconditionally built/included?
-References: <49DF2DCE.5050102@bakke.com> <20090410204308.155b7d65.akpm@linux-foundation.org> <49E016EB.3000800@zytor.com> <49E08454.2060205@bakke.com> <49E1026F.3030006@zytor.com> <49E1D631.7080801@bakke.com>
-In-Reply-To: <49E1D631.7080801@bakke.com>
-Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Type: text/plain; charset="US-ASCII"
 Content-Transfer-Encoding: 7bit
+X-Mailer: Becky! ver. 2.50 [ja]
+Date: Mon, 13 Apr 2009 08:16:54 +0900 (JST)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Dag Bakke wrote:
+> On Sat, 11 Apr 2009 22:58:31 +0900 KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com> wrote:
 > 
-> Probably.
-> Hand-editing the video*.o-files out of the Makefile and dropping the
-> call to set_video in main.c gained me 4768 bytes. Definitely less than
-> 87kB, but posibly worth the effort. To me, anyway.
+> > > Ah. __But I have a note here that I didn't like it, because it adds lots
+> > > of new spinlocking to fastpaths. __So I'll leave things as they stand
+> > > until we have had a little talk about that.
+> > 
+> > add?
+> > 
+> > old code: grab zone->lru_lock via mark_page_accessed()
+> > new code: grab zone->lru_lock via update_reclaim_stat()
+> > 
+> > one remove, one add.
+> > 
 > 
-> Sorry about the noise, thank you for replying.
-> 
-> For the benefit of other readers working on small kernelimages, this URL
-> may prove helpful:
-> http://elinux.org/Kernel_Size_Tuning_Guide
-> 
+> mm-update_page_reclaim_stat-is-called-from-page-fault-path.patch adds
+> new calls to update_page_reclaim_stat() into do_swap_page() and
+> filemap_fault().  update_page_reclaim_stat() does spin_lock_irq() and
+> spin_unlock_irq().  It looks like a net slowdown to me.
 
-For what it's worth, you're welcome to submit a patch which makes this a 
-configuration option conditional on CONFIG_EMBEDDED.
+Ah, I compared with the code before Nick's mark_page_accessed() removing.
+but you don't.
 
-	-hpa
+but I agree this patch reduce the worth of nick's work.
+I have to improve more.
+
+> > But I agree its lock can be removed maybe..
+> 
+> It would be nice to try to do something about it - every little bit
+> counts.
+
+Yes. I can't opoose it.
+
+
+
+
