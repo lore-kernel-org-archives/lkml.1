@@ -1,40 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754189AbZDLNIr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754952AbZDLNKj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754189AbZDLNIr (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 12 Apr 2009 09:08:47 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751619AbZDLNIg
+	id S1754952AbZDLNKj (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 12 Apr 2009 09:10:39 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751981AbZDLNKa
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 12 Apr 2009 09:08:36 -0400
-Received: from andromeda.dapyr.net ([206.212.254.10]:46510 "EHLO
-	andromeda.dapyr.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750966AbZDLNIf (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 12 Apr 2009 09:08:35 -0400
-From: Konrad Rzeszutek <ketuzsezr@darnok.org>
-Reply-To: ketuzsezr@darnok.org
-To: James Bottomley <James.Bottomley@hansenpartnership.com>
-Subject: Re: [PATCH]ibft: Fix the display of a few fields in the NIC attribute  structure in sysfs
-Date: Sun, 12 Apr 2009 09:06:59 -0400
-User-Agent: KMail/1.9.10
-Cc: Ashutosh Naik <ashutosh.naik@gmail.com>, linux-kernel@vger.kernel.org,
-       linux-scsi@vger.kernel.org, Andrew Morton <akpm@osdl.org>,
-       pjones@redhat.com, konradr@linux.vnet.ibm.com,
-       "Vishnu V. Mandyam" <vishnu@chelsio.com>
-References: <81083a450904110629j93c5c2j2c1250e9822c3888@mail.gmail.com> <1239472568.3416.11.camel@mulgrave.int.hansenpartnership.com>
-In-Reply-To: <1239472568.3416.11.camel@mulgrave.int.hansenpartnership.com>
+	Sun, 12 Apr 2009 09:10:30 -0400
+Received: from brick.kernel.dk ([93.163.65.50]:33882 "EHLO kernel.dk"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751619AbZDLNKa (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 12 Apr 2009 09:10:30 -0400
+Date: Sun, 12 Apr 2009 15:10:28 +0200
+From: Jens Axboe <jens.axboe@oracle.com>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: Li Zefan <lizf@cn.fujitsu.com>, Arnaldo Carvalho de Melo <acme@redhat.com>,
+       Steven Rostedt <rostedt@goodmis.org>,
+       Frederic Weisbecker <fweisbec@gmail.com>,
+       LKML <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH 2/2] blktrace: fix output of BLK_TC_PC events
+Message-ID: <20090412131028.GT5178@kernel.dk>
+References: <49D3236D.3090705@cn.fujitsu.com> <49D32387.9040106@cn.fujitsu.com> <49E051B9.8060805@cn.fujitsu.com> <20090412130727.GC20281@elte.hu>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="utf-8"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Message-Id: <200904120907.08828.ketuzsezr@darnok.org>
+In-Reply-To: <20090412130727.GC20281@elte.hu>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> The second question is who picks this up?  The drivers/firmware
-> directory doesn't seem to have a dedicated tree, so I can take this
-> through the SCSI tree if required or Andrew can take it through -mm.
+On Sun, Apr 12 2009, Ingo Molnar wrote:
+> 
+> * Li Zefan <lizf@cn.fujitsu.com> wrote:
+> 
+> > Hi Ingo,
+> > 
+> > I would like to ask what's the status of these 2 patches.
+> > 
+> > Arnaldo acked on them.
+> 
+> They looked good to me - but i'm waiting for an Ack from Jens. Jens 
+> has complained about seeing un-ack-ed patches in the blktrace code, 
+> so i've started serializing any new patches on acks from Jens. The 
+> workflow would be more efficient i suspect if Jens 
+> nominated/declared you and Arnaldo as blktrace co-maintainers too - 
+> most of the patches come from you two.
 
-Which way works best for everybody? I was thinking SCSI, since the end result 
-of this module is to configure the storage used to bootstrap the box.
+I'd be fine with listing Li Zefan as co-maintainer of the blktrace bits.
+He knows what he is doing and is also a user of blktrace, so I think he
+would be fine. Li, what do you think?
+
+-- 
+Jens Axboe
+
