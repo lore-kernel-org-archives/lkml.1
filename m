@@ -1,163 +1,152 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751456AbZDLQDn@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751048AbZDLQGZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751456AbZDLQDn (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 12 Apr 2009 12:03:43 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750909AbZDLQDc
+	id S1751048AbZDLQGZ (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 12 Apr 2009 12:06:25 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750759AbZDLQGN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 12 Apr 2009 12:03:32 -0400
-Received: from mail-bw0-f169.google.com ([209.85.218.169]:44630 "EHLO
-	mail-bw0-f169.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750716AbZDLQDa convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 12 Apr 2009 12:03:30 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:in-reply-to:references:x-mailer
-         :mime-version:content-type:content-transfer-encoding;
-        b=VIecNCdR3oxfyn3uKk07AM441vHenejQFMFKCvcV4q13eyOTaQE/cWO2c8CT5zU7L3
-         BRkWgiu2StKJTCY0j+vj4NA66CymnQ1Z4cEWTiPBHdmI1zxHh56n9jrorfr992QDXdN5
-         HsDXSieZaYdFgZHgM5xCw4FR90MnPMqnvXodo=
-Date: Sun, 12 Apr 2009 17:03:20 +0100
-From: Tiago =?ISO-8859-1?B?U2lt9WVz?= Batista <tiagosbatista@gmail.com>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: "Tiago =?ISO-8859-1?B?U2lt9WVz?= Batista" <tiagosbatista@gmail.com>,
-       linux-kernel@vger.kernel.org, linux-acpi@vger.kernel.org,
-       Matthew Garrett <mjg59@srcf.ucam.org>, Zhang Rui <rui.zhang@intel.com>
-Subject: Re: High latency on /sys/class/thermal
-Message-ID: <20090412170320.52e374df@gmail.com>
-In-Reply-To: <20090411231611.7c5f9b69@ua.pt>
-References: <20090411155612.5808570c@ua.pt>
- <20090411121416.91fe3c88.akpm@linux-foundation.org>
- <20090411231611.7c5f9b69@ua.pt>
-X-Mailer: Claws Mail 3.7.1 (GTK+ 2.14.7; i686-pc-linux-gnu)
+	Sun, 12 Apr 2009 12:06:13 -0400
+Received: from mail.vyatta.com ([76.74.103.46]:44484 "EHLO mail.vyatta.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750739AbZDLQGL (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 12 Apr 2009 12:06:11 -0400
+Date: Sun, 12 Apr 2009 09:06:03 -0700
+From: Stephen Hemminger <shemminger@vyatta.com>
+To: paulmck@linux.vnet.ibm.com
+Cc: Linus Torvalds <torvalds@linux-foundation.org>,
+       David Miller <davem@davemloft.net>, Ingo Molnar <mingo@elte.hu>,
+       Lai Jiangshan <laijs@cn.fujitsu.com>, jeff.chua.linux@gmail.com,
+       dada1@cosmosbay.com, jengelh@medozas.de, kaber@trash.net,
+       r000n@r000n.net,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       netfilter-devel@vger.kernel.org, netdev@vger.kernel.org
+Subject: Re: iptables very slow after commit
+ 784544739a25c30637397ace5489eeb6e15d7d49
+Message-ID: <20090412090603.556ba4fa@nehalam>
+In-Reply-To: <20090412003445.GK6822@linux.vnet.ibm.com>
+References: <Pine.LNX.4.64.0904101656190.2093@boston.corp.fedex.com>
+	<20090410095246.4fdccb56@s6510>
+	<20090410.182507.140306636.davem@davemloft.net>
+	<alpine.LFD.2.00.0904101828490.4583@localhost.localdomain>
+	<20090411041533.GB6822@linux.vnet.ibm.com>
+	<alpine.LFD.2.00.0904111150380.4583@localhost.localdomain>
+	<20090412003445.GK6822@linux.vnet.ibm.com>
+Organization: Vyatta
+X-Mailer: Claws Mail 3.6.1 (GTK+ 2.16.0; x86_64-pc-linux-gnu)
 Mime-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 8BIT
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, 11 Apr 2009 23:16:11 +0100
-Tiago Simões Batista <tiagosbatista@gmail.com> wrote:
+On Sat, 11 Apr 2009 17:34:45 -0700
+"Paul E. McKenney" <paulmck@linux.vnet.ibm.com> wrote:
 
-> Sorry about the noise, by brain was stopped when I sent the last mail,
-> please ignore the From address, it is wrong!
-> 
-> On Sat, 11 Apr 2009 12:14:16 -0700
-> Andrew Morton <akpm@linux-foundation.org> wrote:
-> 
-> > (cc linux-acpi)
+> On Sat, Apr 11, 2009 at 11:57:16AM -0700, Linus Torvalds wrote:
 > > 
-> > On Sat, 11 Apr 2009 15:56:12 +0100 "Tiago Sim__es Batista"
-> > <tiagosbatista@gmail.com> wrote:
 > > 
-> > > Hi all
+> > On Fri, 10 Apr 2009, Paul E. McKenney wrote:
 > > > 
-> > > Yesterday, I recompiled my kernel (git + tuxonice)
-> > > v2.6.30-rc1-1002-gac91f91, there were a couple of issues, the main
-> > > one is ilustrated bellow.
-> > > 
-> > > I am not familiar with the kernel code, but if you give me some
-> > > pointers, I will be glad to investigate this further
-> > > 
-> > > $time cat /sys/class/thermal/thermal_zone0/temp 
-> > > 34000
-> > > 
-> > > real	0m6.613s
-> > > user	0m0.000s
-> > > sys	0m0.001s
-> > > 
+> > > 1.	Assuming that the synchronize_net() is intended to guarantee
+> > > 	that the new rules will be in effect before returning to
+> > > 	user space:
 > > 
-> > Is this a regression?  Was 2.6.29 OK?
+> > Btw, I think that's a bad assumption.
+> 
+> It does indeed appear to be!
+> 
+> > The thing is, nobody can really care if the new rules are in effect or 
+> > not, because the thing you race with is not the "return to user space" 
+> > part, but the incoming packets.
 > > 
-> > Thanks.
+> > And those incoming packets might have been incoming before the rules were 
+> > set up too.
+> > 
+> > So I seriously doubt you need to synchronize with any returning to user 
+> > space. What you want to synchronize with is then later actions that do 
+> > things like turning on the interface that the rules are attached to etc!
+> > 
+> > So I would suggest:
+> > 
+> >  - remove the synchronize_net() entirely. Replace it with just freeing the 
+> >    old rules using RCU.
+> > 
+> >  - new packets will always end up seeing the new rules. That includes the 
+> >    case of somebody doing "ifconfig eth0 up" that enables a new source of 
+> >    packets, so there are no real security issues.
+> > 
+> >  - if you enabled your network interfaces before you updated your packet 
+> >    filtering rules, you already had a window where packets would come in 
+> >    with the old rules, so doing a "synchronize_net()" in no way protects 
+> >    against any race conditions anyway.
+> > 
+> > Am I missing something?
 > 
-> My last kernel was fine:
+> The issue at this point seems to be the need to get accurate snapshots
+> of various counters -- there are a number of Linux networking users who
+> need to account for every byte flowing through their systems.  However,
+> it is also necessary to update these counters very efficiently, given
+> that they are updated on a per-packet basis.  The current approach is
+> as follows:
 > 
-> $ time cat /sys/class/thermal/thermal_zone0/temp 
-> 48000
+> 1.	Install a new set of counters.
 > 
-> real	0m0.007s
-> user	0m0.001s
-> sys	0m0.007s
+> 2.	Wait for a grace period to elapse.
 > 
+> 3.	At this point, we know that all subsequent counting will happen
+> 	on the new set of counters.
 > 
-> I also forgot to add some information about my kernels...
+> 4.	Add the value of the old set of counters to the new set of
+> 	counters.
 > 
-> The good one is 2.6.29 + tuxonice as it was the day after the 2.6.29
-> kernel was released.
+> 5.	Copy the old set of counters up to user space.
 > 
-> The bad one is a pull from linus tree on april the 9th plus tuxonice
-> on the same day
+> So we get a good snapshot in #5, while #4 ensures that we don't lose
+> any counts when taking future snapshots.  Unfortunately, #2 hits us
+> with grace-period latencies on the critical path.
 > 
-> from git (hope this helps):
-> $ git describe v2.6.29-tiago2-ice
-> v2.6.29-836-g00492ed
-> $ git describe v2.6.30-rc1-tiago1-ice
-> v2.6.30-rc1-1002-gac91f91
+> We are going through the following possibilities:
 > 
+> o	Stick with the current approach, and ask people to move to
+> 	new batch-oriented interfaces.  However, a 30x decrease in
+> 	performance is pretty grim, even for an old-style interface.
 > 
-> If tuxonice is a suspect, I will be glad to remove it and recompile.
-> If I have the time later this weekend, and nothing was found, I will
-> try to bisect this.
+> o	Use various atomic tricks to get an immediate snapshot of the
+> 	old counters after step 1.  Make step 3 use call_rcu() instead
+> 	of synchronize_rcu(), and then step 4 happens off the
+> 	critical path.
 > 
+> 	This approach moves the RCU grace period off of the critical
+> 	path, but the atomic tricks are extremely ugly on 32-bit SMP
+> 	machines.  32-bit UP machines and 64-bit machines are not
+> 	too bad, though the 32-bit UP case does add preemption-disable
+> 	overhead on the counter-update fastpath.
+> 
+> o	Provide some sort of expedited synchronize_rcu().  This might
+> 	be able to decrease the hit from 30x down to maybe 5x.
+> 	But I might need to do this for the fast-boot folks anyway,
+> 	though I am first trying to get away with just speeding
+> 	up synchronized_rcu().  Though I was not thinking in terms
+> 	of 6x, let alone 30x.
+> 
+> 	Please note that this would not be a drop-in replacement for
+> 	synchronize_rcu().  One would use synchronize_rcu_expedited()
+> 	(or whatever) only when the system really could not get any
+> 	useful work done while the grace period was in progress.
+> 	The general approach would be to keep the whole machine busy
+> 	trying to get the grace period done as soon as possible.
+> 
+> 							Thanx, Paul
 
-Here are some results from the bisect:
-The metric I used to mark a revision as good/bad was
-$ time for ((i =0; i < 100; i++)); do
-      cat /sys/class/thermal/thermal_zone0/temp > /dev/null; 
-  done
+We could also try:
+  * per-cpu spinlock on counters (instead of synchronize_net). 
+    When doing update, just acquire
+    lock on that cpu and futz with counters then. Overhead should
+    still be less than 2.6.29 and earlier global rwlock
 
-The bad ones take forever, i never even finished one bad run. The good
-ones take about half a second.
+  * synchonize_rcu/synchronize_net is more guarantee than needed?
 
-When I checked out revisions v2.6.29-148-g33526a5 and
-v2.6.29-159-g8a3f257, it took almost 2 secons to run the command, so I
-think some of the latency my have been introduced around these. Yet, I
-still marked them as good.
+  * use on_each_cpu() somehow to do grace periood?
 
-The resut was:
-478c6a43fcbc6c11609f8cee7c7b57223907754f is first bad commit
-witch is a merge. I am out of ideas...
-
-I forgot to ask, am I the only one experiencing this? I am using a
-TravelMate 4000 with the intel graphics chip, can anyone reproduce this?
-If no one can reproduce this, I can still test a vanilla kernel to
-remove TOI from the equation!
-
-Tiago
-
-
-Below is the bisect log:
-$ git bisect log
-git bisect start
-# bad: [ac91f917d7ed7d1ebe14532ee137fcd759b4406d] Merge branch 'all' into all-tuxonice
-git bisect bad ac91f917d7ed7d1ebe14532ee137fcd759b4406d
-# good: [178a426510a901d9335f39d3391ae5e8628a36d1] Merge branch 'tuxonice' into all-tuxonice
-git bisect good 178a426510a901d9335f39d3391ae5e8628a36d1
-# good: [fdf9c9979a355916433262ea5e5e64bed5def86e] V4L/DVB (10465): dsbr100: Add few lost mutex locks.
-git bisect good fdf9c9979a355916433262ea5e5e64bed5def86e
-# good: [edbd606c4671fcd439164c8d63e896044d706156] Staging: wlan-ng: Replace WLAN_LOG_ERROR() with printk()
-git bisect good edbd606c4671fcd439164c8d63e896044d706156
-# good: [3516c6a8dc0b1153c611c4cf0dc4a51631f052bb] Merge git://git.kernel.org/pub/scm/linux/kernel/git/gregkh/staging-2.6
-git bisect good 3516c6a8dc0b1153c611c4cf0dc4a51631f052bb
-# bad: [3989203290fba6fdf6bc4825fbf6526e1bf17977] Merge git://git.kernel.org/pub/scm/linux/kernel/git/davem/net-2.6
-git bisect bad 3989203290fba6fdf6bc4825fbf6526e1bf17977
-# bad: [d7ca6f8cdffa5765e486edb3dada9121fba8e6aa] Merge branch 'for-linus' of git://git.o-hand.com/linux-rpurdie-backlight
-git bisect bad d7ca6f8cdffa5765e486edb3dada9121fba8e6aa
-# good: [3b4dadf05d177289c279c50030c7c75e004952bb] Merge branch 'acpi_enforce_resources' into release
-git bisect good 3b4dadf05d177289c279c50030c7c75e004952bb
-# bad: [32fb6c17566ec66de87324a834c7776f40e35e78] Merge branch 'release' of git://git.kernel.org/pub/scm/linux/kernel/git/lenb/linux-acpi-2.6
-git bisect bad 32fb6c17566ec66de87324a834c7776f40e35e78
-# good: [45e36c1666aa6c8b0c538abcf984b336184d8c3f] Merge git://git.kernel.org/pub/scm/linux/kernel/git/lethal/sh-2.6
-git bisect good 45e36c1666aa6c8b0c538abcf984b336184d8c3f
-# good: [33526a53600ac887d100e3c9b4be3637ac8ae3a5] Merge branch 'x2apic' into release
-git bisect good 33526a53600ac887d100e3c9b4be3637ac8ae3a5
-# good: [c542aadeb4700bc316834d862d52ba3d2664f13a] panasonic-laptop: Fix autoloading
-git bisect good c542aadeb4700bc316834d862d52ba3d2664f13a
-# bad: [478c6a43fcbc6c11609f8cee7c7b57223907754f] Merge branch 'linus' into release
-git bisect bad 478c6a43fcbc6c11609f8cee7c7b57223907754f
-# good: [15065531c1c5902775ae3ade24eb37d0e688353b] toshiba-acpi: remove MAINTAINERS entry
-git bisect good 15065531c1c5902775ae3ade24eb37d0e688353b
-# good: [8a3f257c704e02aee9869decd069a806b45be3f1] Merge branch 'misc' into release
-git bisect good 8a3f257c704e02aee9869decd069a806b45be3f1
+  * Add a cond_resched() into net_rx_action which might cause rx processing
+    to get out of rcu sooner? also in transmit packet scheduler.
