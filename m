@@ -1,78 +1,82 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759986AbZDLJ30@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759609AbZDLJk7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759986AbZDLJ30 (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 12 Apr 2009 05:29:26 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759574AbZDLJ3H
+	id S1759609AbZDLJk7 (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 12 Apr 2009 05:40:59 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757451AbZDLJkt
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 12 Apr 2009 05:29:07 -0400
-Received: from hera.kernel.org ([140.211.167.34]:55190 "EHLO hera.kernel.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1760027AbZDLJ3F (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 12 Apr 2009 05:29:05 -0400
-Date: Sun, 12 Apr 2009 09:28:12 GMT
-From: "Theodore Ts'o" <tytso@mit.edu>
-To: linux-tip-commits@vger.kernel.org
-Cc: linux-kernel@vger.kernel.org, hpa@zytor.com, mingo@redhat.com,
-       arjan@linux.intel.com, tytso@mit.edu, fweisbec@gmail.com,
-       srostedt@redhat.com, tglx@linutronix.de, mingo@elte.hu
-Reply-To: mingo@redhat.com, hpa@zytor.com, linux-kernel@vger.kernel.org,
-       fweisbec@gmail.com, arjan@linux.intel.com, srostedt@redhat.com,
-       tglx@linutronix.de, tytso@mit.edu, mingo@elte.hu
-In-Reply-To: <1239479479-2603-4-git-send-email-tytso@mit.edu>
-References: <1239479479-2603-4-git-send-email-tytso@mit.edu>
-Subject: [tip:tracing/core] tracing: Add documentation for the power tracer
-Message-ID: <tip-f7a3b3845cdfa4d6383b74139392ff5c259531fc@git.kernel.org>
-Git-Commit-ID: f7a3b3845cdfa4d6383b74139392ff5c259531fc
-X-Mailer: tip-git-log-daemon
+	Sun, 12 Apr 2009 05:40:49 -0400
+Received: from fg-out-1718.google.com ([72.14.220.153]:22917 "EHLO
+	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755673AbZDLJks (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 12 Apr 2009 05:40:48 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:to:cc:subject:message-id:references:mime-version
+         :content-type:content-disposition:in-reply-to:user-agent;
+        b=deEUDWUDGQ7PCCxsPLkBJ09Ji5VwdKHVD9eOfCaPlPZhpNwJLbwt3bfdv0TEVwqJkM
+         5y/fPZFqGBo3DVcblJ7+D2Sck9i4XypF7N141dGEY7j2vcB5EN53xdmNAGCsKH0a4SNL
+         gjncLlnVjC9wvuIEbLRsG5D2SwLUGVeIq73Go=
+Date: Sun, 12 Apr 2009 13:40:44 +0400
+From: Cyrill Gorcunov <gorcunov@gmail.com>
+To: mingo@redhat.com, hpa@zytor.com, linux-kernel@vger.kernel.org,
+       rostedt@goodmis.org, tglx@linutronix.de, tytso@mit.edu, mingo@elte.hu
+Cc: linux-tip-commits@vger.kernel.org
+Subject: Re: [tip:tracing/core] tracing: Document the event tracing system
+Message-ID: <20090412094044.GA6942@lenovo>
+References: <1239479479-2603-3-git-send-email-tytso@mit.edu> <tip-1542263998a2d143596972b2776c59c9247578a7@git.kernel.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Sun, 12 Apr 2009 09:28:14 +0000 (UTC)
+In-Reply-To: <tip-1542263998a2d143596972b2776c59c9247578a7@git.kernel.org>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Commit-ID:  f7a3b3845cdfa4d6383b74139392ff5c259531fc
-Gitweb:     http://git.kernel.org/tip/f7a3b3845cdfa4d6383b74139392ff5c259531fc
-Author:     Theodore Ts'o <tytso@mit.edu>
-AuthorDate: Sat, 11 Apr 2009 15:51:19 -0400
-Committer:  Ingo Molnar <mingo@elte.hu>
-CommitDate: Sun, 12 Apr 2009 11:23:49 +0200
+[Theodore Ts'o - Sun, Apr 12, 2009 at 09:27:58AM +0000]
+| Commit-ID:  1542263998a2d143596972b2776c59c9247578a7
+| Gitweb:     http://git.kernel.org/tip/1542263998a2d143596972b2776c59c9247578a7
+| Author:     Theodore Ts'o <tytso@mit.edu>
+| AuthorDate: Sat, 11 Apr 2009 15:51:18 -0400
+| Committer:  Ingo Molnar <mingo@elte.hu>
+| CommitDate: Sun, 12 Apr 2009 11:23:48 +0200
+| 
+| tracing: Document the event tracing system
+| 
+| Signed-off-by: "Theodore Ts'o" <tytso@mit.edu>
+| Cc: Theodore Ts'o <tytso@mit.edu>
+| Cc: Steven Rostedt <rostedt@goodmis.org>
+| LKML-Reference: <1239479479-2603-3-git-send-email-tytso@mit.edu>
+| Signed-off-by: Ingo Molnar <mingo@elte.hu>
+| 
+| 
+| ---
+|  Documentation/trace/events.txt |  132 ++++++++++++++++++++++++++++++++++++++++
+|  1 files changed, 132 insertions(+), 0 deletions(-)
+| 
+...
+| +The events which are available for tracing can be found in the file
+| +/sys/kernel/debug/tracing/available_events.
+| +
+| +To enable a particular event, such as 'sched_wakeup', simply echo it to
+| +/sys/debug/tracing/set_event.  For example:
+| +
+| +	# echo sched_wakeup > /sys/kernel/debug/tracing/set_event
+| +
+| +To disable an event, echo the event name to the set_event file prefixed
+| +with an exclamation point:
+| +
+| +	# echo '!sched_wakeup' >> /sys/kernel//debug/tracing/set_event
+					    ^^^
+Since it's just being added and easy to fix (later maybe via trivial tree),
+I suppose here is quite a small misprint :)
 
-tracing: Add documentation for the power tracer
+| +
+| +To disable events, echo an empty line to the set_event file:
+| +
+| +	# echo > /sys/kernel/debug/tracing/set_event
+| +
+...
 
-Signed-off-by: "Theodore Ts'o" <tytso@mit.edu>
-Acked-by: Arjan van de Ven <arjan@linux.intel.com>
-Cc: Frederic Weisbecker <fweisbec@gmail.com>
-Cc: Steven Rostedt <srostedt@redhat.com>
-LKML-Reference: <1239479479-2603-4-git-send-email-tytso@mit.edu>
-Signed-off-by: Ingo Molnar <mingo@elte.hu>
-
-
----
- Documentation/trace/power.txt |   17 +++++++++++++++++
- 1 files changed, 17 insertions(+), 0 deletions(-)
-
-diff --git a/Documentation/trace/power.txt b/Documentation/trace/power.txt
-new file mode 100644
-index 0000000..9c584ff
---- /dev/null
-+++ b/Documentation/trace/power.txt
-@@ -0,0 +1,17 @@
-+The power trace collects detailed information about C-state and P-state
-+transitions, instead of just looking at the high-level "average"
-+information.
-+
-+There is a helper script found in scrips/tracing/power.pl in the kernel
-+sources which can be used to parse this information and create a
-+Scalable Vector Graphics (SVG) picture from the trace data.
-+
-+To use this tracer:
-+
-+	echo 0 > /sys/kernel/debug/tracing/tracing_enabled
-+	echo power > /sys/kernel/debug/tracing/current_tracer
-+	echo 1 > /sys/kernel/debug/tracing/tracing_enabled
-+	sleep 1
-+	echo 0 > /sys/kernel/debug/tracing/tracing_enabled
-+	cat /sys/kernel/debug/tracing/trace | \
-+		perl scripts/tracing/power.pl > out.sv
+        Cyrill
